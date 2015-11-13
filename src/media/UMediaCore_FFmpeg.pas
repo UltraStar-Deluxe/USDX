@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/media/UMediaCore_FFmpeg.pas $
+ * $Id: UMediaCore_FFmpeg.pas 3103 2014-11-22 23:21:19Z k-m_schindler $
  *}
 
 unit UMediaCore_FFmpeg;
@@ -284,7 +284,7 @@ begin
 {$ELSE}
     Stream := PPAVStream(PtrUInt(FormatCtx.streams) + i * Sizeof(pointer))^;
 {$IFEND}
- 
+
 {$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
     if (Stream.codec.codec_type = CODEC_TYPE_VIDEO) and
        (FirstVideoStream < 0) then
@@ -359,8 +359,9 @@ begin
     AV_SAMPLE_FMT_FLT: Format := asfFloat;
     AV_SAMPLE_FMT_DBL: Format := asfDouble;
     else               Result := false;
-  end;
+    end;
 end;
+
 
 {**
  * UTF-8 Filename wrapper based on:

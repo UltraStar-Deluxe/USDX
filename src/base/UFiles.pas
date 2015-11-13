@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UFiles.pas $
+ * $Id: UFiles.pas 2510 2010-06-13 09:03:10Z tobigun $
  *}
 
 unit UFiles;
@@ -154,6 +154,13 @@ begin
       if Song.Start       <> 0  then    SongFile.WriteLine('#START:'       + FloatToStr(Song.Start));
       if Song.Finish      <> 0  then    SongFile.WriteLine('#END:'         + IntToStr(Song.Finish));
       if Relative               then    SongFile.WriteLine('#RELATIVE:yes');
+
+      if (Song.Medley.Source=msTag) and not Relative and (Song.Medley.EndBeat - Song.Medley.StartBeat > 0) then
+      //if (Song.Medley.Source=msTag) and not Relative and (Song.Medley.EndBeat - Song.Medley.StartBeat > 0) then
+      begin
+        SongFile.WriteLine('#MedleyStartBeat:' + IntToStr(Song.Medley.StartBeat));
+        SongFile.WriteLine('#MedleyEndBeat:' + IntToStr(Song.Medley.EndBeat));
+      end;
 
       SongFile.WriteLine('#BPM:' + FloatToStr(Song.BPM[0].BPM / 4));
       SongFile.WriteLine('#GAP:' + FloatToStr(Song.GAP));

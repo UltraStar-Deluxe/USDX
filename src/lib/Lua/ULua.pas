@@ -87,7 +87,7 @@ type
 ** change lua_number2int & lua_number2integer.
 ** ===================================================================
 *)
-  LUA_NUMBER_   = type Double;            // ending underscore is needed in Pascal
+  LUA_NUMBER_  = type Double;            // ending underscore is needed in Pascal
 
 (*
 @@ LUA_INTEGER is the integral type used by lua_pushinteger/lua_tointeger.
@@ -856,18 +856,18 @@ type
   
   lua_Debug = packed record
     event : Integer;
-    name : PChar;              (* (n) *)
-    namewhat : PChar;          (* (n) `global', `local', `field', `method' *)
-    what : PChar;              (* (S) `Lua', `C', `main', `tail' *)
-    source : PChar;            (* (S) *)
-    currentline : Integer;     (* (l) *)
+    name : PChar;          (* (n) *)
+    namewhat : PChar;      (* (n) `global', `local', `field', `method' *)
+    what : PChar;          (* (S) `Lua', `C', `main', `tail' *)
+    source : PChar;        (* (S) *)
+    currentline : Integer; (* (l) *)
 {$IF LUA_VERSION_NUM = 501}
-    nups : Integer;            (* (u) number of upvalues *)
-    linedefined : Integer;     (* (S) *)
+    nups : Integer;        (* (u) number of upvalues *)
+    linedefined : Integer; (* (S) *)
     lastlinedefined : Integer; (* (S) *)
     short_src : array [0..LUA_IDSIZE-1] of Char; (* (S) *)
     (* private part *)
-    i_ci : Integer;            (* active function *)
+    i_ci : Integer;        (* active function *)
 {$ELSEIF LUA_VERSION_NUM >= 502}
     linedefined : Integer;     (* (S) *)
     lastlinedefined : Integer; (* (S) *)
@@ -980,6 +980,7 @@ procedure luaL_openlibs(L : Plua_State);
 
 procedure lua_assert(x : Boolean);    // a macro
 
+
 (*****************************************************************************)
 (*                                  lauxlib.h                                *)
 (*****************************************************************************)
@@ -1012,7 +1013,7 @@ procedure luaL_openlib(L : Plua_State; const libname : PChar;
                        const lr : PluaL_Reg; nup : Integer);
   cdecl; external LUA_LIB_NAME;
 procedure luaL_register(L : Plua_State; const libname : PChar;
-                        const lr : PluaL_Reg);
+                       const lr : PluaL_Reg);
   cdecl; external LUA_LIB_NAME;
 {$ELSEIF LUA_VERSION_NUM >= 502}
 // Added for simplicity --KMS
@@ -1210,9 +1211,9 @@ procedure luaL_getmetatable(L : Plua_State; n : PChar);
 type
   luaL_Buffer = packed record
 {$IF LUA_VERSION_NUM = 501}
-    p      : PChar;      (* current position in buffer *)
-    lvl    : Integer;    (* number of strings in the stack (level) *)
-    L      : Plua_State;
+    p : PChar;       (* current position in buffer *)
+    lvl : Integer;   (* number of strings in the stack (level) *)
+    L : Plua_State;
     buffer : array [0..LUAL_BUFFERSIZE-1] of Char;
 {$ELSEIF LUA_VERSION_NUM >= 502}
     b     : PChar;      (* buffer address *)
@@ -1314,8 +1315,8 @@ var
 begin
   Write(p);                        // show prompt
   ReadLn(s);                       // get line
-  b := PChar(s);                   // and return it
-  lua_readline := (b[0] <> #4);    // test for ctrl-D
+  b := PChar(s);                   //   and return it
+  lua_readline := (b[0] <> #4);          // test for ctrl-D
 end;
 
 procedure lua_saveline(L : Plua_State; idx : Integer);

@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/base/UPlaylist.pas $
+ * $Id: UPlaylist.pas 2199 2010-03-14 20:56:20Z brunzelchen $
  *}
 
 unit UPlaylist;
@@ -35,6 +35,7 @@ interface
 
 uses
   Classes,
+  UIni,
   USong,
   UPath,
   UPathUtils;
@@ -63,7 +64,7 @@ type
     private
 
     public
-      Mode:         TSingMode;     //Current Playlist Mode for SongScreen
+      Mode:         TSongMode;     //Current Playlist Mode for SongScreen
       CurPlayList:  Cardinal;
       CurItem:      Cardinal;
 
@@ -307,7 +308,7 @@ begin
 
   //Set CatSongsMode + Playlist Mode
   CatSongs.CatNumShow := -3;
-  Mode := smPlayListRandom;
+  Mode := smPlayList;
 
   //Set CurPlaylist
   CurPlaylist := Index;
@@ -321,7 +322,8 @@ begin
   ScreenSong.FixSelected;
 
   //Play correct Music
-  ScreenSong.ChangeMusic;
+  //ScreenSong.ChangeMusic;
+
 end;
 
 //----------

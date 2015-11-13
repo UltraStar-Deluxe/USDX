@@ -1,0 +1,8 @@
+1031 - Alemão
+1033 - Inglês
+1038 - Húngaro
+1045 - Polaco
+2070 - Português
+1034 - Espanhol
+
+add line Ultrastar Deluxe.nsi (574 e 510)

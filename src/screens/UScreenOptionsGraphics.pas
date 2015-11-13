@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/screens/UScreenOptionsGraphics.pas $
+ * $Id: UScreenOptionsGraphics.pas 2338 2010-05-03 21:58:30Z k-m_schindler $
  *}
 
 unit UScreenOptionsGraphics;
@@ -150,7 +150,7 @@ begin
 
   AddButton(Theme.OptionsGraphics.ButtonExit);
   if (Length(Button[0].Text)=0) then
-    AddButtonText(20, 5, Theme.Options.Description[7]);
+    AddButtonText(20, 5, Theme.Options.Description[10]);
 
 end;
 

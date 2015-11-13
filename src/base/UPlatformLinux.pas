@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/base/UPlatformLinux.pas $
+ * $Id: UPlatformLinux.pas 1939 2009-11-09 00:27:55Z s_alexander $
  *}
 
 unit UPlatformLinux;

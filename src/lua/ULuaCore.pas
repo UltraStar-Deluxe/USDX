@@ -59,7 +59,6 @@ type
   end;
 
   TLuaPlugin_Status = (psNone, psRunning, psClosed, psErrorOnLoad, psErrorOnCall, psErrorInInit, psErrorOnRun);
-
   { class represents a loaded plugin }
   TLuaPlugin = class
     private
@@ -96,7 +95,7 @@ type
       function  HasRegistered: boolean;
 
       procedure PausePlugin(doPause: boolean);
-      property  Paused: boolean read bPaused write PausePlugin;
+      property Paused: boolean read bPaused write PausePlugin;
 
       procedure ShutMeDown;
 
@@ -198,11 +197,11 @@ function TLua_CustomPanic (L: Plua_State): integer; cdecl;
   this function }
 function TLua_CustomRequire(L: PLua_State): integer; cdecl;
 
+
 var
   LuaCore: TLuaCore;
 
 implementation
-
 uses
   StrUtils,
   ULog,
@@ -479,7 +478,7 @@ begin
   lua_pop(L,1);
 
   // get package.searchers (former package.loaders) table
-  lua_getGlobal (L, PChar('package'));
+  lua_getglobal (L, PChar('package'));
 {$IF LUA_VERSION_NUM >= 502}
   lua_getfield(L,-1,PChar('searchers'));
 {$ELSE}
@@ -487,7 +486,7 @@ begin
 {$IFEND}
 
   {**** Move C-Library and all-in-one module loader backwards,
-  slot 3 is free now }
+        slot 3 is free now }
   // get package.loaders[4] function
   lua_pushinteger(L, 5); // push new index
   lua_pushinteger(L, 4); // push old index

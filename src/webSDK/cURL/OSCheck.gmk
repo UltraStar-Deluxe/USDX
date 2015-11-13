@@ -1,0 +1,33 @@
+
+LINSEP=$(findstring /, $(PATH))
+WINSEP=$(findstring \, $(PATH))
+
+oschk:
+  ifneq "$(LINSEP)" ""
+    OS=LINUX
+    NULL_DEV=/dev/null
+    ECHO=echo
+    NL=\r\n
+    MKDIR=mkdir
+    DCC=dcc
+    PPC=ppc386
+  else
+    ifneq "$(WINSEP)" ""
+      OS=WIN32
+      NULL_DEV=NUL
+      ECHO=gecho.exe
+      NL=\n
+      MKDIR=gmkdir.exe
+      DCC=dcc32.exe
+      PKG_RES = brcc32 -focurlpkg.res -r curlpkg.rc
+      UNIT_RES = brcc32 -focurlobj.res -r curlobj.rc
+      CONVERT=convert.exe
+      PPC=ppc386.exe
+    else
+	@echo "Could not determine OS type, exiting..."
+	@exit 127
+    endif
+  endif
+  export OS DCC NULL_DEV ECHO CONVERT NL
+
+.PHONY: oschk

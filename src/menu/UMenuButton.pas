@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/menu/UMenuButton.pas $
+ * $Id: UMenuButton.pas 3123 2015-08-23 03:15:31Z basisbit $
  *}
 
 unit UMenuButton;
@@ -123,7 +123,7 @@ type
 
 implementation
 
-uses 
+uses
   SysUtils,
   UDisplay,
   UDrawTexture;
@@ -213,7 +213,10 @@ begin
     Texture2.Int  := SelectInt;
 
     for T := 0 to High(Text) do
+    begin
+      Text[T].SetSelect(SelectBool);
       Text[T].Int := SelectTInt;
+    end;
 
     //Fade Mod
     if Fade then
@@ -240,8 +243,11 @@ begin
     Texture2.Int  := DeselectInt;
 
     for T := 0 to High(Text) do
+    begin
+      Text[T].SetSelect(SelectBool);
       Text[T].Int := DeselectTInt;
-
+    end;
+    
     //Fade Mod
     if Fade then
     begin
@@ -263,6 +269,7 @@ var
   T:       integer;
   Tick:    cardinal;
   Spacing: real;
+  x1, x2, x3, x4, y1, y2, y3, y4: real;
 begin
   if Visible then
   begin
@@ -458,6 +465,7 @@ begin
         glBindTexture(GL_TEXTURE_2D, TexNum);
 
         //Draw
+        {
         glBegin(GL_QUADS);//Top Left
           glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
           glTexCoord2f(TexX1*TexW, TexY2*TexH);
@@ -479,6 +487,47 @@ begin
           glTexCoord2f(TexX2*TexW, TexY2*TexH);
           glVertex3f(x+w*scaleW, y+h*scaleH + Spacing, z);
         glEnd;
+         }
+
+         y1 := y + h*scaleH + Spacing;
+         y2 := y+h*scaleH + h*scaleH/2 + Spacing;
+         y3 := y+h*scaleH + h*scaleH/2 + Spacing;
+         y4 := y+h*scaleH + Spacing;
+
+
+         glBegin(GL_QUADS);//Top Left
+          glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
+          glTexCoord2f(TexX1*TexW, TexY2*TexH);
+          glVertex3f(x, y1 - (y1 - (LeftScale * (y1))), z);
+
+          //Bottom Left
+          glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
+          glTexCoord2f(TexX1*TexW, TexY1+TexH*0.5);
+          glVertex3f(x, y2 - (y2 - (LeftScale * (y2))), z);
+
+          //Bottom Right
+          glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
+          glTexCoord2f(TexX2*TexW, TexY1+TexH*0.5);
+          glVertex3f(x+w*scaleW, y3 - (y3 - (RightScale * (y3))), z);
+
+          //Top Right
+          glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
+          glTexCoord2f(TexX2*TexW, TexY2*TexH);
+          glVertex3f(x+w*scaleW, y4 - (y4 - (RightScale * (y4))), z);
+        glEnd;
+
+         {
+           glBegin(GL_QUADS);
+      glTexCoord2f(TexX1*TexW, TexY1*TexH);
+      glVertex3f(x, y + (y - (LeftScale * (y))), z);
+      glTexCoord2f(TexX1*TexW, TexY2*TexH);
+      glVertex3f(x, y - (y - (LeftScale * (y))), z);
+      glTexCoord2f(TexX2*TexW, TexY2*TexH);
+      glVertex3f(x, y - (y - (RightScale * (y))), z);
+      glTexCoord2f(TexX2*TexW, TexY1*TexH);
+      glVertex3f(x, y + (y - (RightScale * (y))), z);
+    glEnd;
+          }
 
         glDisable(GL_TEXTURE_2D);
         glDisable(GL_DEPTH_TEST);
@@ -535,7 +584,7 @@ end;
 
 function TButton.GetMouseOverArea: TMouseOverRect;
 begin
-  if (Display.Cursor_HiddenByScreen = false) then
+  if not(Display.Cursor_HiddenByScreen) then
   begin
     if (FadeTex.TexNum = 0) then
     begin
@@ -582,6 +631,29 @@ end;
 
 destructor TButton.Destroy;
 begin
+  {if (FadeTex.TexNum > 0) then
+  begin
+    glDeleteTextures(1, PGLuint(@FadeTex.TexNum));
+    FadeTex.TexNum := 0;
+  end;
+
+  if (Texture.TexNum > 0) then
+  begin
+    glDeleteTextures(1, PGLuint(@Texture.TexNum));
+    Texture.TexNum := 0;
+  end;
+
+  if (Texture2.TexNum > 0) then
+  begin
+    glDeleteTextures(1, PGLuint(@Texture2.TexNum));
+    Texture2.TexNum := 0;
+  end;
+
+  if (DeSelectTexture.TexNum > 0) then
+  begin
+    glDeleteTextures(1, PGLuint(@DeSelectTexture.TexNum));
+    DeSelectTexture.TexNum := 0;
+  end;}
   inherited;
 end;
 

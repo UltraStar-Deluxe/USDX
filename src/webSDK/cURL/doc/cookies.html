@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+
+<head>
+  <title>tCurlCookieList</title>
+</head>
+
+<body>
+<h2><i>tCurlCookieList</i></h2>
+<div>
+The <i>tCurlCookieList</i> class is a wrapper around libcurl's internal cookie list.<br>
+It is created and maintained internally by each instance of <i>tCurl</i> and is accessible through the <i>tCurl.CookieList</i> property.<br>
+You should never need to create a <i>tCurlCookieList</i> by itself.<br><br>
+
+<b>Table of <i>tCurlCookieList</i> Methods</b>
+<table border="1" cellpadding="16" cellspacing="8" summary="tCurlCookieList Methods" width="100%">
+
+
+<tr><td><tt>
+function AddFromFile(const filename:ansistring):CurlCode;<br>
+__________________________________________________________
+</tt><br><br>
+Appends a list of cookies from a file, which can be either in Netscape/Mozilla format or 
+just regular HTTP-style headers dumped to a file.<br>
+Returns CURLE_OK on success, or CURLE_READ_ERROR on failure.
+<br><br></td></tr>
+
+
+<tr><td><tt>
+function SaveToFile(const filename:ansistring):CurlCode;<br>
+_________________________________________________________
+</tt><br><br>
+Saves all currently known cookies to a file.<br>
+Returns CURLE_OK on success, or CURLE_WRITE_ERROR on failure.
+<br><br></td></tr>
+
+
+<tr><td><tt>
+function Add(const cookie:ansistring):boolean;<br>
+_______________________________________________
+</tt><br><br>
+Appends a single cookie, which can be either in Netscape/Mozilla format or 
+just a regular http-style &nbsp;"Set-Cookie:"&nbsp; header.
+<br><br></td></tr>
+
+
+<tr><td><tt>
+procedure ForEachCookie(callback:tCurlEnumCookiesFunction; user_data:pointer);<br>
+_______________________________________________________________________________
+</tt><br><br>
+Iterates through the cookie list, calling your callback once for each cookie.<br><br>
+The callback parameter should be a pointer to a function that matches the prototype:<br>
+<tt>type tCurlEnumCookiesFunction = <br>
+&nbsp; &nbsp; function(Sender:tObject; const Cookie:ansistring; UserData:pointer):boolean;</tt><br><br>
+The arguments passed to your callback are as follows:<br>
+<tt>&nbsp; Sender:&nbsp; &nbsp; </tt> the CookieList object.<br>
+<tt>&nbsp; Cookie:&nbsp; &nbsp; </tt> the curent cookie string.<br>
+<tt>&nbsp; UserData:&nbsp; </tt> user-defined pointer, specified in the <tt>user_data</tt> argument of <i>ForEachCookie</i><br><br>
+Your callback should return <tt>TRUE</tt> to continue iteration, or <tt>FALSE</tt> to cancel.<br><br>
+NOTE: You can also accomplish the same thing directly from the parent <i>tCurl</i> component,<br>
+using the <i>ListCookies</i> procedure and the <i>OnListCookies</i> event handler.
+<br><br></td></tr>
+
+
+<tr><td><tt>
+procedure Clear;<br>
+_________________
+</tt><br><br>
+Clears the list of all cookies.
+<br><br></td></tr>
+
+
+</table>
+</div>
+</body>
+</html>

@@ -65,12 +65,12 @@ const
     );
 
   SampleFormat: array[1..8] of culong =
-    (paFloat32, paInt32, paInt24,        paInt16,
-     paInt8,    paUInt8, paCustomFormat, paNonInterleaved
+    (paFloat32,      paInt32,          paInt24, paInt16, paInt8, paUInt8,
+     paCustomFormat, paNonInterleaved
     );
   SampleFormatName: array[1..8] of string =
-    ('paFloat32', 'paInt32', 'paInt24',        'paInt16',
-     'paInt8',    'paUInt8', 'paCustomFormat', 'paNonInterleaved'
+    ('paFloat32',      'paInt32',          'paInt24', 'paInt16', 'paInt8', 'paUInt8',
+     'paCustomFormat', 'paNonInterleaved'
     );
 
 var
@@ -107,13 +107,13 @@ begin
     begin
       // check if API is available
       apiIndex := Pa_HostApiTypeIdToHostApiIndex(ApiPreferenceOrder[i]);
-      if apiIndex >= 0 then
+      if (apiIndex >= 0) then
       begin
         // we found an API but we must check if it works
         // (on linux portaudio might detect OSS but does not provide
         // any devices if ALSA is enabled)
         apiInfo := Pa_GetHostApiInfo(apiIndex);
-        if apiInfo^.deviceCount > 0 then
+        if (apiInfo^.deviceCount > 0) then
         begin
           Result := apiIndex;
           break;
@@ -239,7 +239,7 @@ begin
   writeln ('*** Test of GetPreferredApiIndex ***');
   PaError    := Pa_Initialize;
   paApiIndex := GetPreferredApiIndex();
-  if paApiIndex = -1 then
+  if (paApiIndex = -1) then
     writeln ('GetPreferredApiIndex: No working Audio-API found.')
   else
     writeln ('GetPreferredApiIndex: working Audio-API found. No: ', paApiIndex);
@@ -363,9 +363,9 @@ begin
       sampleRate := standardSampleRates[j];
       PaError    := Pa_IsFormatSupported(inputParameters, outputParameters, sampleRate);
       if PaError = paFormatIsSupported then
-        writeln ('Sample rate: ', sampleRate:5:0, ' : supported')
+	writeln ('Sample rate: ', sampleRate:5:0, ' : supported')
       else
-        writeln ('Sample rate: ', sampleRate:5:0, ' : Error: ', PaError);
+	writeln ('Sample rate: ', sampleRate:5:0, ' : Error: ', PaError);
     end;
 
     writeln;
@@ -374,7 +374,7 @@ begin
       if inputParameters <> nil then
         inputParameters^.sampleFormat := SampleFormat[j]
       else
-        outputParameters^.sampleFormat := SampleFormat[j];
+	outputParameters^.sampleFormat := SampleFormat[j];
       PaError := Pa_IsFormatSupported(inputParameters, outputParameters, sampleRate);
       if PaError = paFormatIsSupported then
         writeln ('Sample Format ', SampleFormatName[j], ': supported')
@@ -396,7 +396,7 @@ var
   duration: real;
 begin
   duration := (Now() - callbackStartTime) * 24 * 3600;
-  if duration < 2.0 then
+  if (duration < 2.0) then
     result := paContinue
   else
   begin
@@ -447,12 +447,12 @@ begin
                      stream,
                      inputParameters,
                      outputParameters,
-                     sampleRate,
+		     sampleRate,
                      framesPerBuffer,
                      streamFlags,
                      streamCallback,
                      userData 
-         );
+		     );
     if (PaError = paNoError) and (stream <> nil) then
       writeln ('Pa_OpenStream: success')
     else
@@ -463,10 +463,10 @@ begin
       callbackStartTime := Now();
 
       PaError := Pa_StartStream(stream);
-      if PaError = paNoError then
-        writeln ('Pa_StartStream: success')
+      if (PaError = paNoError) then
+	writeln ('Pa_StartStream: success')
       else
-        writeln ('Pa_StartStream: ', Pa_GetErrorText(PaError));
+	writeln ('Pa_StartStream: ', Pa_GetErrorText(PaError));
 
       callbackWorks := false;
 
@@ -474,18 +474,18 @@ begin
       writeln('Wait for callback');
       delay(4000);
 
-      if callbackWorks and (Pa_IsStreamStopped(stream) = 0) then
+      if (callbackWorks and (Pa_IsStreamStopped(stream) = 0)) then
       begin
-        writeln ('Success: Device works');
-        PaError := Pa_StopStream(stream);
-        if (PaError = paNoError) then
-          writeln ('Pa_StopStream: success')
-        else
-          writeln ('Pa_StopStream: ', Pa_GetErrorText(PaError));
+	writeln ('Success: Device works');
+	PaError := Pa_StopStream(stream);
+	if (PaError = paNoError) then
+	  writeln ('Pa_StopStream: success')
+	else
+	  writeln ('Pa_StopStream: ', Pa_GetErrorText(PaError));
       end
       else
       begin
-        writeln ('Error: Non working device');
+	writeln ('Error: Non working device');
         PaError := Pa_AbortStream(stream);
         if (PaError = paNoError) then
           writeln ('Pa_AbortStream: success')
@@ -516,12 +516,12 @@ begin
   writeln ('Start: Test of Portaudio libs');
   writeln;
 
-  TestInitTerminate();
-  TestErrorText(); 
-  TestVersion();
-  TestApiInfo();
-  TestDeviceInfo();
-  TestFormatInfo();
+  //TestInitTerminate();
+  //TestErrorText(); 
+  //TestVersion();
+  //TestApiInfo();
+  //TestDeviceInfo();
+  //TestFormatInfo();
   TestStreams();
   
   writeln ('End: Test of Portaudio libs');

@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/base/UMusic.pas $
+ * $Id: UMusic.pas 3103 2014-11-22 23:21:19Z k-m_schindler $
  *}
 
 unit UMusic;
@@ -38,10 +38,17 @@ uses
   Classes,
   UTime,
   UBeatTimer,
-  UPath;
+  UPath,
+  UWebcam;
 
 type
   TNoteType = (ntFreestyle, ntNormal, ntGolden);
+
+  TPos = record
+    CP:   integer;
+    line: integer;
+    note: integer;
+  end;
 
   {**
    * acoStretch: Stretch to screen width and height
@@ -86,6 +93,10 @@ type
     Tone:       integer;    // full range tone
     Text:       UTF8String; // text assigned to this fragment (a syllable, word, etc.)
     NoteType:   TNoteType;  // note-type: golden-note/freestyle etc.
+
+    IsMedley:   boolean;     //just for editor
+    IsStartPreview: boolean; //just for editor
+
   end;
 
   (**
@@ -98,7 +109,7 @@ type
     Lyric:      UTF8String;
     //LyricWidth: real;    // @deprecated: width of the line in pixels.
                          // Do not use this as the width is not correct.
-                         // Use TLyricsEngine.GetUpperLine().Width instead. 
+                         // Use TLyricsEngine.GetUpperLine().Width instead.
     End_:       integer;
     BaseNote:   integer;
     HighNote:   integer; // index of last note in line (= High(Note)?)
@@ -110,7 +121,7 @@ type
   (**
    * TLines stores sets of lyric lines and information on them.
    * Normally just one set is defined but in duet mode it might for example
-   * contain two sets.  
+   * contain two sets.
    *)
   TLines = record
     Current:    integer;  // for drawing of current line
@@ -286,7 +297,7 @@ type
        * free the SourceStream after the Playback-Stream is closed.
        * You may use an OnClose-handler to achieve this. GetSourceStream()
        * guarantees to deliver this method's SourceStream parameter to
-       * the OnClose-handler. Freeing SourceStream at OnClose is allowed. 
+       * the OnClose-handler. Freeing SourceStream at OnClose is allowed.
        *)
       function Open(SourceStream: TAudioSourceStream): boolean; virtual; abstract;
 
@@ -421,7 +432,7 @@ type
   ['{E4AE0B40-3C21-4DC5-847C-20A87E0DFB96}']
       function InitializePlayback: boolean;
       function FinalizePlayback: boolean;
-      
+
       function GetOutputDeviceList(): TAudioOutputDeviceList;
 
       procedure SetAppVolume(Volume: single);
@@ -899,6 +910,9 @@ begin
   // stop, close and free sounds
   SoundLib.Free;
 
+  // release webcam
+  Webcam.Free;
+
   // stop and close music stream
   if (AudioPlayback <> nil) then
     AudioPlayback.Close;
@@ -1091,7 +1105,9 @@ end;
 function TAudioPlaybackStream.Synchronize(BufferSize: integer; FormatInfo: TAudioFormatInfo): integer;
 var
   TimeDiff: double;
+  FrameDiff: double;
   FrameSkip: integer;
+  ReqFrames: integer;
   MasterClock: real;
   CurPosition: real;
 const

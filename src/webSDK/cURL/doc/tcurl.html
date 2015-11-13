@@ -1,0 +1,341 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+
+<head>
+  <title>tCurl: Properties and Methods</title>
+</head>
+
+<body>
+<h2><i>tCurl</i><small> &nbsp; Properties and Methods</small></h2>
+<div>
+Methods
+<table border="1" cellpadding="8" width="100%" summary="methods" >
+<tr>
+<td>constructor &nbsp; <a href="curlmeth.html#CREATE">Create</a> <i>(aOwner:tComponent)</i></td>
+<td>destructor &nbsp; <a href="curlmeth.html#DESTROY">Destroy</a></td>
+<td>procedure &nbsp; <a href="curlmeth.html#CLEAR">Clear</a></td>
+<td>class function &nbsp; <a href="curlmeth.html#ESCAPE">Escape</a> <i>(s:string):string</i></td>
+</tr>
+<tr>
+<td>function &nbsp; <a href="curlmeth.html#PERFORM">Perform </a> : <i>Boolean</i></td>
+<td>procedure &nbsp; <a href="curlmeth.html#LISTCOOKIES">ListCookies</a></td>
+<td>&nbsp;</td>
+<td>class function &nbsp; <a href="curlmeth.html#UNESCAPE">Unescape</a> <i>(s:string):string</i></td>
+</tr>
+</table>
+<br>
+
+Events
+<table border="1" cellpadding="8"  width="75%" summary="methods">
+<tr>
+<td><a href="curlprop.html#ONDEBUG">OnDebug</a></td>
+<td><a href="curlbase.html#ONWAIT">OnWait</a></td>
+<td><a href="curlprop.html#ONPROGRESS">OnProgress</a></td>
+<td><a href="curlprop.html#ONHEADER">OnHeader</a></td>
+</tr>
+<tr>
+<td><a href="curlprop.html#ONRECEIVE">OnReceive</a></td>
+<td><a href="curlprop.html#ONTRANSMIT">OnTransmit</a></td>
+<td><a href="curlprop.html#ONLISTCOOKIES">OnListCookies</a></td>
+<td>&nbsp;</td>
+</tr>
+</table>
+<br>
+Boolean Properties
+<table border="1" cellpadding="8" width="100%" summary="Boolean Properties">
+<tr>
+ <td><a href="curlprop.html#AUTOREFERER">AutoReferer</a></td>
+ <td><a href="curlprop.html#COOKIESESSION">CookieSession</a></td>
+ <td><a href="curlprop.html#CRLF">CrLf</a></td>
+ <td><a href="curlprop.html#DNSUSEGLOBALCACHE">DnsUseGlobalCache</a></td>
+</tr><tr>
+ <td><a href="curlprop.html#FAILONERROR">FailOnError</a></td>
+ <td><a href="curlprop.html#FOLLOWLOCATION">FollowLocation</a></td>
+ <td><a href="curlprop.html#FORBIDREUSE">ForbidReuse</a></td>
+ <td><a href="curlprop.html#FRESHCONNECT">FreshConnect</a></td>
+</tr><tr>
+ <td><a href="curlprop.html#FTPAPPEND">FtpAppend</a></td>
+ <td><a href="curlprop.html#FTPLISTONLY">FtpListOnly</a></td>
+ <td><a href="curlprop.html#FTPSKIPPASVIP">FtpSkipPasvIp</a></td>
+ <td><a href="curlprop.html#FTPUSEEPRT">FtpUseEprt</a></td>
+</tr><tr>
+ <td><a href="curlprop.html#FTPUSEEPSV">FtpUseEpsv</a></td>
+ <td><a href="curlprop.html#HEADER">Header</a></td>
+ <td><a href="curlprop.html#HTTPGET">HttpGet</a></td>
+ <td><a href="curlprop.html#HTTPPROXYTUNNEL">HttpProxyTunnel</a></td>
+</tr><tr>
+ <td><a href="curlprop.html#IGNORECONTENTLENGTH">IgnoreContentLength</a></td>
+ <td><a href="curlprop.html#NOBODY">NoBody</a></td>
+ <td><a href="curlprop.html#NOPROGRESS">NoProgress</a></td>
+ <td><a href="curlprop.html#NOSIGNAL">NoSignal</a></td>
+ <!-- td><a href="curlprop.html#POST">Post</a></td -->
+</tr><tr>
+ <td><a href="curlprop.html#FILETIME">RequestFileTime</a></td>
+ <td><a href="curlprop.html#SSLENGINEDEFAULT">SslEngineDefault</a></td>
+ <td><a href="curlprop.html#SSLVERIFYPEER">SslVerifyPeer</a></td>
+ <td><a href="curlprop.html#TCPNODELAY">TcpNoDelay</a></td>
+</tr><tr>
+ <td><a href="curlbase.html#THREADED">Threaded</a></td>
+ <td><a href="curlprop.html#TRANSFERTEXT">TransferText</a></td>
+ <td><a href="curlprop.html#UNRESTRICTEDAUTH">UnrestrictedAuth</a></td>
+ <td><a href="curlprop.html#UPLOAD">Upload</a></td>
+</tr><tr>
+ <td><a href="curlprop.html#VERBOSE">Verbose</a></td>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+</tr>
+</table>
+<br>
+
+Numeric Properties
+<table border="1" cellpadding="8"  width="100%" summary="Numeric Properties">
+<tr>
+ <td><a href="curlprop.html#BUFFERSIZE">BufferSize</a></td>
+ <td><a href="curlprop.html#CONNECTTIMEOUT">ConnectTimeout</a></td>
+ <td><a href="curlprop.html#DNSCACHETIMEOUT">DnsCacheTimeout</a></td>
+ <td><a href="curlprop.html#FTPRESPONSETIMEOUT">FtpResponseTimeout</a></td>
+</tr><tr>
+ <td><a href="curlprop.html#INFILESIZE">InfileSize</a></td>
+ <td><a href="curlprop.html#LOWSPEEDLIMIT">LowSpeedLimit</a></td>
+ <td><a href="curlprop.html#LOWSPEEDTIME">LowSpeedTime</a></td>
+ <td><a href="curlprop.html#MAXCONNECTS">MaxConnects</a></td>
+</tr><tr>
+ <td><a href="curlprop.html#MAXREDIRS">MaxRedirs</a></td>
+ <td><a href="curlprop.html#POSTFIELDSIZE">PostFieldSize</a></td>
+ <td><a href="curlprop.html#PROXYPORT">ProxyPort</a></td>
+ <td><a href="curlprop.html#RESUMEFROM">ResumeFrom</a></td>
+</tr><tr>
+ <td><a href="curlprop.html#TIMECONDITION">TimeCondition</a></td>
+ <td><a href="curlprop.html#TIMEOUT">Timeout</a></td>
+ <td><a href="curlprop.html#TIMEVALUE">TimeValue</a></td>
+ <td><a href="curlbase.html#WAITINTERVAL">WaitInterval</a></td>
+</tr>
+ <td><a href="curlprop.html#PRIVATEDATA">PrivateData</a></td>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+ <td>&nbsp;</td>
+</table>
+<br>
+
+Enumerated Properties
+<table border="1" cellpadding="8" width="100%" summary="String Properties">
+<tr>
+ <td><a href="curlprop.html#CLOSEPOLICY">ClosePolicy</a></td>
+ <td><a href="curlprop.html#ENCODING">Encoding</a></td>
+ <td><a href="curlprop.html#FTPAUTH">FtpAuth</a></td>
+ <td><a href="curlprop.html#FTPSSL">FtpSsl</a></td>
+</tr><tr>
+ <td><a href="curlprop.html#HTTPVERSION">HttpVersion</a></td>
+ <td><a href="curlprop.html#NETRC">Netrc</a></td>
+ <td><a href="curlprop.html#PROXYTYPE">ProxyType</a></td>
+ <td><a href="curlprop.html#RESULTCODE">ResultCode</a></td>
+</tr><tr>
+ <td><a href="curlprop.html#SSLCERTTYPE">SslCertType</a></td>
+ <td><a href="curlprop.html#SSLKEYTYPE">SslKeyType</a></td>
+ <td><a href="curlprop.html#SSLVERIFYHOST">SslVerifyHost</a></td>
+ <td>&nbsp;</td>
+</tr>
+</table>
+<br>
+
+String Properties
+<br>
+<table border="1" cellpadding="8" width="100%" summary="String Properties">
+<tr>
+  <td><a href="curlprop.html#CAINFO">CaInfo</a></td>
+  <td><a href="curlprop.html#CAPATH">CaPath</a></td>
+  <td><a href="curlprop.html#COOKIE">Cookie</a></td>
+  <td><a href="curlprop.html#CUSTOMREQUEST">CustomRequest</a></td>
+</tr><tr>
+  <td><a href="curlprop.html#EGDSOCKET">EgdSocket</a></td>
+  <td><a href="curlprop.html#ERRORSTRING">ErrorString</a></td>
+  <td><a href="curlprop.html#FTPACCOUNT">FtpAccount</a></td>
+  <td><a href="curlprop.html#FTPPORT">FtpPort</a></td>
+</tr><tr>
+  <td><a href="curlprop.html#NETINTERFACE">NetInterface</a></td>
+  <td><a href="curlprop.html#NETRCFILE">NetRcFile</a></td>
+  <td><a href="curlprop.html#KRB4LEVEL">Krb4Level</a></td>
+  <td><a href="curlprop.html#POSTFIELDS">PostFields</a></td>
+</tr><tr>
+  <td><a href="curlprop.html#PROXY">Proxy</a></td>
+  <td><a href="curlprop.html#PROXYUSERPWD">ProxyUserPwd</a></td>
+  <td><a href="curlprop.html#RANDOMFILE">RandomFile</a></td>
+  <td><a href="curlprop.html#RANGE">Range</a></td>
+</tr><tr>
+  <td><a href="curlprop.html#REFERER">Referer</a></td>
+  <td><a href="curlprop.html#SOURCEURL">SourceUrl</a></td>
+  <td><a href="curlprop.html#SOURCEUSERPWD">SourceUserPwd</a></td>
+  <td><a href="curlprop.html#SSLCIPHERLIST">SslCipherList</a></td>
+</tr><tr>
+  <td><a href="curlprop.html#SSLENGINE">SslEngine</a></td>
+  <td><a href="curlprop.html#SSLKEY">SslKey</a></td>
+  <td><a href="curlprop.html#SSLKEYPASSWD">SslKeyPassword</a></td>
+  <td><a href="curlprop.html#URL">URL</a></td>
+</tr><tr>
+  <td><a href="curlprop.html#USERAGENT">UserAgent</a></td>
+  <td><a href="curlprop.html#USERPWD">UserPwd</a></td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+</tr>
+</table>
+<br>
+
+Filename Properties
+<table border="1" cellpadding="8" width="50%" summary="Filename Properties">
+<tr>
+<td><a href="curlprop.html#COOKIEFILE">CookieFile</a></td>
+<td><a href="curlprop.html#COOKIEJAR">CookieJar</a></td>
+</tr><tr>
+<td><a href="curlprop.html#UPLOADSOURCE">InputFile</a></td>
+<td><a href="curlprop.html#DOWNLOADTARGET">OutputFile</a></td>
+</tr><tr>
+<td><a href="curlprop.html#ERRORFILE">ErrorFile</a></td>
+<td><a href="curlprop.html#HEADERFILE">HeaderFile</a></td>
+</tr>
+</table>
+
+<br>
+Linked-List Properties
+<table border="1" cellpadding="8" width="100%" summary="Linked-List Properties">
+<tr>
+ <td><a href="curlprop.html#HTTPHEADER">HttpHeader</a></td>
+ <td><a href="curlprop.html#HTTP200ALIASES">Http200Aliases</a></td>
+ <td><a href="curlprop.html#HTTPPOST">HttpPost</a></td>
+ <td><a href="curlprop.html#FORMDATA">FormData</a></td>
+</tr><tr>
+ <td><a href="curlprop.html#PREQUOTE">PreQuote</a></td>
+ <td><a href="curlprop.html#QUOTE">Quote</a></td>
+ <td><a href="curlprop.html#POSTQUOTE">PostQuote</a></td>
+ <td>&nbsp;</td>
+</tr><tr>
+ <td><a href="curlprop.html#SOURCEPREQUOTE">SourcePreQuote</a></td>
+ <td><a href="curlprop.html#SOURCEQUOTE">SourceQuote</a></td>
+ <td><a href="curlprop.html#SOURCEPOSTQUOTE">SourcePostQuote</a></td>
+ <td>&nbsp;</td>
+</tr><tr>
+ <td><a href="cookies.html">CookieList</a></td>
+ <td><a href="curlprop.html#TELNETOPTIONS">TelnetOptions</a></td>
+ <td><a href="curlprop.html#SSLENGINESLIST">SslEnginesList</a></td>
+ <td>&nbsp;</td>
+</tr>
+</table>
+<br>
+
+I/O Callback Properties and Data
+<table border="1" cellpadding="8" width="100%" summary="File I/O callbacks and data pointers">
+<tr align="center">
+<td>Uploading</td>
+<td>Downloading</td>
+<td>Response Headers</td>
+<td>IOCTL</td>
+</tr><tr>
+<td><a href="curlprop.html#READFUNCTION">ReadFunction</a></td>
+<td><a href="curlprop.html#WRITEFUNCTION">WriteFunction</a></td>
+<td><a href="curlprop.html#HEADERFUNCTION">HeaderFunction</a></td>
+<td><a href="curlprop.html#IOCTLFUNCTION">IoCtlFunction</a></td>
+</tr>
+<tr>
+<td><a href="curlprop.html#WRITEFUNCTION">InputStream</a></td>
+<td><a href="curlprop.html#READFUNCTION">OutputStream</a></td>
+<td><a href="curlprop.html#HEADERFUNCTION">HeaderStream</a></td>
+<td><a href="curlprop.html#IOCTLDATA">IoCtlData</a></td>
+</tr>
+</table>
+<br>
+
+
+Other Callback Properties and Data
+<table border="1" cellpadding="8" width="100%" summary="File I/O callbacks and data pointers">
+<tr align="center">
+<td>Progress Meter</td>
+<td>Debugging</td>
+<td>Threading</td>
+<td>SSL_CTX</td>
+</tr><tr>
+<td><a href="curlprop.html#PROGRESSFUNCTION">ProgressFunction</a></td>
+<td><a href="curlprop.html#DEBUGFUNCTION">DebugFunction</a></td>
+<td><a href="curlbase.html#WAITCALLBACK">WaitCallback</a></td>
+<td><a href="curlprop.html#SSLCTXFUNCTION">SslCtxFunction</a></td>
+</tr><tr>
+<td><a href="curlprop.html#PROGRESSDATA">ProgressData</a></td>
+<td><a href="curlprop.html#DEBUGDATA">DebugData</a></td>
+<td><a href="curlbase.html#WAITDATA">WaitData</a></td>
+<td><a href="curlprop.html#SSLCTXDATA">SslCtxData</a></td>
+</tr>
+</table>
+<br>
+
+
+<b>Version information functions:</b> These are defined as <i>class</i> functions.<br> 
+You can call them directly without initializing an instance of the class.
+<table border="1" cellpadding="8" width="100%" summary="Version information functions">
+<tr>
+  <td><a href="version.html#VERSIONINFO">VersionInfo</a></td>
+  <td><a href="version.html#CURLVERSION">CurlVersion</a></td>
+  <td><a href="version.html#LIBRARYVERSION">LibraryVersion</a></td>
+  <td><a href="version.html#VERSIONNUMBER">VersionNumber</a></td>
+</tr><tr>
+  <td><a href="version.html#PROTOCOLS">Protocols</a></td>
+  <td><a href="version.html#MACHINE">Machine</a></td>
+  <td><a href="version.html#FEATURES">Features</a></td>
+  <td><a href="version.html#SSLVERSIONSTRING">SslVersionString</a></td>
+</tr><tr>
+  <td><a href="version.html#SSLVERSIONNUMBER">SslVersionNumber</a></td>
+  <td><a href="version.html#LIBZVERSION">LibzVersion</a></td>
+  <td>&nbsp;</td>
+  <td>&nbsp;</td>
+</tr>
+</table>
+
+<br>
+<b>Transfer Information functions:</b> These values are only valid AFTER a successful call to <i>tCurl.Perform</i><br>
+They should (mostly) be self-explanatory, see <i>curl_easy_getinfo</i> in the <i>libcurl</i> documentation for clarification.<br>
+Note that some values may be empty, depending on the type of transfer, and the information returned by the server. <br>
+( For instance <i>SizeUpload</i> is irrelevant when <i>downloading</i> a file. )
+<table border="1" cellpadding="8" width="100%" summary="Information functions">
+<tr>
+<td>EffectiveUrl: string;</td>
+<td>ContentType: string; </td>
+<td>HttpCode: Word;</td>
+<td>SslVerifyResult: LongInt;</td>
+</tr>
+<tr>
+<td>NameLookupTime: double;</td>
+<td>PreTransferTime: double;</td>
+<td>ConnectTime: double;</td>
+<td>StartTransferTime: double;</td>
+</tr>
+<tr>
+<td>TotalTime: double;</td>
+<td>SpeedDownload: double;</td>
+<td>SpeedUpload: double;</td>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td>RequestSize: dword;</td>
+<td>HeaderSize: dword;</td>
+<td>SizeDownload: dword;</td>
+<td>SizeUpload: dword;</td>
+<tr>
+<td>ContentLengthDownload: dword;</td>
+<td>ContentLengthUpload: dword;</td>
+<td>RedirectCount: LongInt;</td>
+<td>RedirectTime: double;</td>
+</tr>
+</table>
+<pre>
+TODO:
+  PrivateData
+
+
+</pre>
+<br><br><br><br>
+<br><br><br><br>
+<br><br><br><br>
+<br><br><br><br>
+
+</div>
+</body>
+</html>
+

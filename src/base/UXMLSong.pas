@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UXMLSong.pas $
+ * $Id: UXMLSong.pas 1939 2009-11-09 00:27:55Z s_alexander $
  *}
 
 unit UXMLSong;

@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <General>
+      <MainUnit Value="0"/>
+      <ActiveEditorIndexAtStart Value="1"/>
+    </General>
+    <Units Count="2">
+      <Unit0>
+        <CursorPos X="1" Y="1"/>
+        <EditorIndex Value="0"/>
+        <Filename Value="curldemo.dpr"/>
+        <IsPartOfProject Value="True"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="66"/>
+      </Unit0>
+      <Unit1>
+        <CursorPos X="1" Y="161"/>
+        <EditorIndex Value="1"/>
+        <Filename Value="curlform.pas"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <Loaded Value="True"/>
+        <ResourceFilename Value="curlform.lrs"/>
+        <TopLine Value="130"/>
+        <UnitName Value="curlform"/>
+        <UsageCount Value="34"/>
+        <Bookmarks Count="1">
+          <Item0 X="1" Y="96" ID="0"/>
+        </Bookmarks>
+      </Unit1>
+    </Units>
+    <RequiredPackages Count="2">
+      <Item1>
+        <PackageName Value="LCL"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="curlpas"/>
+        <MinVersion Minor="1" Valid="True"/>
+      </Item2>
+    </RequiredPackages>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <SearchPaths>
+      <SrcPath Value="$(LazarusDir)/lcl/;$(LazarusDir)/lcl/interfaces/$(LCLWidgetType)/"/>
+    </SearchPaths>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+    </CodeGeneration>
+    <Linking>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
+    </Linking>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+</CONFIG>

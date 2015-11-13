@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/media/UAudioPlayback_Bass.pas $
+ * $Id: UAudioPlayback_Bass.pas 3141 2015-10-11 22:15:05Z basisbit $
  *}
 
 unit UAudioPlayback_Bass;
@@ -45,7 +45,7 @@ uses
   UAudioCore_Bass,
   ULog,
   sdl,
-  Bass,
+  bass,
   SysUtils;
 
 type
@@ -247,6 +247,7 @@ var
   FormatFlags: DWORD;
 begin
   Result := false;
+
   // close previous stream and reset state
   Reset();
 
@@ -368,7 +369,7 @@ begin
   if (BASS_GetInfo(Info)) then
     Result := Info.latency / 1000
   else
-    Result := 0;
+  Result := 0; 
 end;
 
 function TBassPlaybackStream.GetVolume(): single;
@@ -570,9 +571,7 @@ begin
     Result := nil;
 end;
 
-
 { TBassVoiceStream }
-
 function TBassVoiceStream.Open(ChannelMap: integer; FormatInfo: TAudioFormatInfo): boolean;
 var
   Flags: DWORD;
@@ -598,7 +597,7 @@ begin
   if ((ChannelMap and CHANNELMAP_RIGHT) <> 0) then
     Flags := Flags or BASS_SPEAKER_FRONTRIGHT;
   *)
-  
+
   // create the channel
   Handle := BASS_StreamCreate(Round(FormatInfo.SampleRate * (1-InputStretch)),
       1, Flags, STREAMPROC_PUSH, nil);
@@ -762,7 +761,7 @@ begin
   if (BASS_GetInfo(Info)) then
     Result := Info.latency / 1000
   else
-    Result := 0;
+  Result := 0;
 end;
 
 

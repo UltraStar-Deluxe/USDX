@@ -1,0 +1,65 @@
+package DCPdelphi4;
+
+{$R *.RES}
+{$ALIGN ON}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST ON}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $00400000}
+{$DESCRIPTION 'DCPcrypt cryptographic component library v2 BETA 3'}
+{$DESIGNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  vcl40;
+
+contains
+  DCPbase64 in 'DCPbase64.pas',
+  DCPblockciphers in 'DCPblockciphers.pas',
+  DCPconst in 'DCPconst.pas',
+  DCPcrypt2 in 'DCPcrypt2.pas',
+  DCPblowfish in 'Ciphers\DCPblowfish.pas',
+  DCPcast128 in 'Ciphers\DCPcast128.pas',
+  DCPcast256 in 'Ciphers\DCPcast256.pas',
+  DCPdes in 'Ciphers\DCPdes.pas',
+  DCPgost in 'Ciphers\DCPgost.pas',
+  DCPice in 'Ciphers\DCPice.pas',
+  DCPidea in 'Ciphers\DCPidea.pas',
+  DCPmars in 'Ciphers\DCPmars.pas',
+  DCPmisty1 in 'Ciphers\DCPmisty1.pas',
+  DCPrc2 in 'Ciphers\DCPrc2.pas',
+  DCPrc4 in 'Ciphers\DCPrc4.pas',
+  DCPrc5 in 'Ciphers\DCPrc5.pas',
+  DCPrc6 in 'Ciphers\DCPrc6.pas',
+  DCPrijndael in 'Ciphers\DCPrijndael.pas',
+  DCPtea in 'Ciphers\DCPtea.pas',
+  DCPtwofish in 'Ciphers\DCPtwofish.pas',
+  DCPhaval in 'Hashes\DCPhaval.pas',
+  DCPmd4 in 'Hashes\DCPmd4.pas',
+  DCPmd5 in 'Hashes\DCPmd5.pas',
+  DCPripemd128 in 'Hashes\DCPripemd128.pas',
+  DCPripemd160 in 'Hashes\DCPripemd160.pas',
+  DCPsha1 in 'Hashes\DCPsha1.pas',
+  DCPtiger in 'Hashes\DCPtiger.pas',
+  DCPreg in 'DCPreg.pas',
+  DCPserpent in 'Ciphers\DCPserpent.pas',
+  DCPsha256 in 'Hashes\DCPsha256.pas',
+  DCPsha512 in 'Hashes\DCPsha512.pas';
+
+end.

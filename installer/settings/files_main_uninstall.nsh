@@ -9,9 +9,10 @@
 
 ; Delete created Icon on Desktop
 
- Delete "$Desktop\Play UltraStar Deluxe.lnk"
+ Delete "$Desktop\Play UltraStar Deluxe WorldParty.lnk"
  Delete "$Desktop\UltraStar Deluxe spielen.lnk"
  Delete "$Desktop\UltraStar Deluxe karaoke.lnk"
+ Delete "$Desktop\Graj w UltraStar Deluxe WorldParty.lnk"
 
 ; Remove dirs
 
@@ -22,6 +23,9 @@
  RMDir /r "$INSTDIR\visuals"
  RMDir /r "$INSTDIR\resources"
  RMDir /r "$INSTDIR\sounds"
+ RMDir /r "$INSTDIR\webs"
+ RMDir /r "$INSTDIR\soundfonts"
+ RMDir /r "$INSTDIR\avatars"
 
 ; Delete remaining files
  Delete "$INSTDIR\ScoreConverter.exe"
@@ -39,6 +43,7 @@
  Delete "$INSTDIR\Error.log"
  Delete "$INSTDIR\Benchmark.log"
  Delete "$INSTDIR\cover.db"
+ Delete "$INSTDIR\avatar.db"
 
  Delete "$INSTDIR\avcodec-52.dll"
  Delete "$INSTDIR\avformat-52.dll"
@@ -46,6 +51,7 @@
  Delete "$INSTDIR\avdevice-52.dll"
  Delete "$INSTDIR\avutil-50.dll"
  Delete "$INSTDIR\bass.dll"
+ Delete "$INSTDIR\bassmidi.dll"
  Delete "$INSTDIR\freetype6.dll"
  Delete "$INSTDIR\glew32.dll"
  Delete "$INSTDIR\jpeg.dll"
@@ -64,6 +70,13 @@
  Delete "$INSTDIR\sqlite3.dll"
  Delete "$INSTDIR\swscale-0.dll"
  Delete "$INSTDIR\zlib1.dll"
+ Delete "$INSTDIR\libcurl-3.dll"
+ Delete "$INSTDIR\libeay32.dll"
+ Delete "$INSTDIR\libidn-11.dll"
+ Delete "$INSTDIR\libssl32.dll"
+ Delete "$INSTDIR\cv210.dll"
+ Delete "$INSTDIR\cxcore210.dll"
+ Delete "$INSTDIR\highgui210.dll"
 
  StrCpy $0 "$INSTDIR\songs"
  Call un.DeleteIfEmpty 
@@ -84,7 +97,8 @@
  Delete "$APPDATA\ultrastardx\Error.log"
  Delete "$APPDATA\ultrastardx\Benchmark.log"
  Delete "$APPDATA\ultrastardx\cover.db"
-
+ Delete "$APPDATA\ultrastardx\avatar.db"
+ 
  StrCpy $0 "$APPDATA\ultrastardx\covers"
  Call un.DeleteIfEmpty
 

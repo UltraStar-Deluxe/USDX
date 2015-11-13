@@ -1,0 +1,62 @@
+function plugin_init()
+  register('party mode: deaf', '1.00', 'nenuco');
+
+  require('Usdx.Party');
+  require('Usdx.ScreenSing');
+  require('Usdx.Log');
+  require('math');
+  require('os');
+ 
+  local Mode = {};
+
+  Mode.Name = 'deaf';
+  Mode.CanNonParty = true;
+  Mode.CanParty = true;
+  Mode.BeforeSing = 'BeforeSing';
+  Mode.OnSing = 'Sing';
+
+  Usdx.Party.Register(Mode)
+
+  return true;
+end
+
+function BeforeSing()
+  firstTime = true;
+
+  return true;
+end
+
+function Sing()
+  local Settings = {};
+  
+  local minMuteSeconds, minSoundSeconds, maxRandSeconds, muteSeconds;
+
+  minMuteSeconds = 3;
+  minSoundSeconds = 5;
+  maxRandSeconds = 3;
+
+  if (firstTime) then
+    muteSeconds = minMuteSeconds + math.random(maxRandSeconds);
+    keepMuteUntil = os.time() + muteSeconds;
+    nextMuteTime = os.time() + muteSeconds + minSoundSeconds + math.random(maxRandSeconds);
+    firstTime = false;
+  end;
+
+  if (os.difftime(os.time(), keepMuteUntil) > 0) then
+      Settings['SoundEnabled'] = true;
+  end;
+
+  if (os.difftime(os.time(), nextMuteTime) > 0) then
+    if (math.random() < 0.5) then
+      Settings['SoundEnabled'] = false;
+	  muteSeconds = minMuteSeconds + math.random(maxRandSeconds);
+      keepMuteUntil = os.time() + muteSeconds;
+      nextMuteTime = os.time() + muteSeconds + minSoundSeconds + math.random(maxRandSeconds);
+    end;
+  end;
+
+  ScreenSing.SetSettings(Settings);
+  
+  return true;
+end;
+			

@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UGraphic.pas $
+ * $Id: UGraphic.pas 2339 2010-05-05 07:22:17Z canni0 $
  *}
 
 unit UGraphic;
@@ -57,16 +57,21 @@ uses
   UScreenOptionsThemes,
   UScreenOptionsRecord,
   UScreenOptionsAdvanced,
+  UScreenOptionsNetwork,
+  UScreenOptionsWebcam,
+  UScreenOptionsJukebox,
   UScreenSong,
   UScreenSing,
+  UScreenJukebox,
+  UScreenJukeboxOptions,
+  UScreenJukeboxPlaylist,
   UScreenScore,
-  UScreenJukeBox,
   UScreenTop5,
   UScreenEditSub,
   UScreenEdit,
-  UScreenEditConvert,
   UScreenEditHeader,
   UScreenOpen,
+  UScreenAbout,
   UThemes,
   USkins,
   UScreenSongMenu,
@@ -78,6 +83,10 @@ uses
   UScreenPartyWin,
   UScreenPartyPlayer,
   UScreenPartyRounds,
+  UScreenPartyTournamentRounds,
+  UScreenPartyTournamentPlayer,
+  UScreenPartyTournamentOptions,
+  UScreenPartyTournamentWin,
   {Stats Screens}
   UScreenStatMain,
   UScreenStatDetail,
@@ -113,7 +122,11 @@ var
   ScreenLevel:        TScreenLevel;
   ScreenSong:         TScreenSong;
   ScreenSing:         TScreenSing;
-  ScreenJukebox:      TScreenJukebox;
+
+  ScreenJukebox:         TScreenJukebox;
+  ScreenJukeboxOptions:  TScreenJukeboxOptions;
+  ScreenJukeboxPlaylist: TScreenJukeboxPlaylist;
+
   ScreenScore:        TScreenScore;
   ScreenTop5:         TScreenTop5;
   ScreenOptions:          TScreenOptions;
@@ -124,11 +137,14 @@ var
   ScreenOptionsThemes:    TScreenOptionsThemes;
   ScreenOptionsRecord:    TScreenOptionsRecord;
   ScreenOptionsAdvanced:  TScreenOptionsAdvanced;
+  ScreenOptionsNetwork:   TScreenOptionsNetwork;
+  ScreenOptionsWebcam:    TScreenOptionsWebcam;
+  ScreenOptionsJukebox:   TScreenOptionsJukebox;
   ScreenEditSub:      TScreenEditSub;
   ScreenEdit:         TScreenEdit;
-  ScreenEditConvert:  TScreenEditConvert;
   ScreenEditHeader:   TScreenEditHeader;
   ScreenOpen:         TScreenOpen;
+  ScreenAbout:        TScreenAbout;
 
   ScreenSongMenu:     TScreenSongMenu;
   ScreenSongJumpto:     TScreenSongJumpto;
@@ -142,6 +158,12 @@ var
   ScreenPartyPlayer:      TScreenPartyPlayer;
   ScreenPartyRounds:      TScreenPartyRounds;
 
+  // Tournament
+  ScreenPartyTournamentRounds:   TScreenPartyTournamentRounds;
+  ScreenPartyTournamentPlayer:   TScreenPartyTournamentPlayer;
+  ScreenPartyTournamentOptions:  TScreenPartyTournamentOptions;
+  ScreenPartyTournamentWin:      TScreenPartyTournamentWin;
+
   //StatsScreens
   ScreenStatMain:         TScreenStatMain;
   ScreenStatDetail:       TScreenStatDetail;
@@ -153,6 +175,9 @@ var
   ScreenPopupCheck: TScreenPopupCheck;
   ScreenPopupError: TScreenPopupError;
   ScreenPopupInfo:  TScreenPopupInfo;
+  ScreenPopupInsertUser: TScreenPopupInsertUser;
+  ScreenPopupSendScore:  TScreenPopupSendScore;
+  ScreenPopupScoreDownload: TScreenPopupScoreDownload;
 
   //Notes
   Tex_Left:        array[1..6] of TTexture;   //rename to tex_note_left
@@ -177,7 +202,7 @@ var
 
   Tex_TimeProgress: TTexture;
   Tex_JukeboxTimeProgress: TTexture;
-
+  
   //Sing Bar Mod
   Tex_SingBar_Back:  TTexture;
   Tex_SingBar_Bar:  TTexture;
@@ -284,6 +309,7 @@ function LoadingThreadFunction: integer;
 
 implementation
 
+
 uses
   Classes,
   UMain,
@@ -313,55 +339,12 @@ var
 begin
   Log.LogStatus('Loading Textures', 'LoadTextures');
 
-  // P1-6
-  // TODO... do it once for each player... this is a bit crappy !!
-  //                                       can we make it any better !?
-  for P := 1 to 6 do
-  begin
-    LoadColor(R, G, B, 'P' + IntToStr(P) + 'Light');
-    Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-
-    { some colors for tests
-	Col := $10000 * Round(0.02*255) + $100 * Round(0.6 *255) + Round(0.8 *255); //blue
-	Col := $10000 * Round(0.8 *255)                                           ; //red
-	Col :=                            $100 * Round(0.85*255)                  ; //green
-	Col := $10000 * 255             + $100 * Round(0.52*255)                  ; //orange
-	Col := $10000 *            255  + $100 *            255                   ; //yellow
-	Col := $10000 * Round(0.82*255) +                   255                   ; //purple
-	Col := $10000 * Round(0.22*255) + $100 * Round(0.39*255) + Round(0.64*255); //dark blue
-	Col := $10000 * Round(0   *255) + $100 * Round(0   *255) + Round(0   *255); //black
-	Col := $10000 * Round(1.0 *255) + $100 * Round(0.43*255) + Round(0.70*255); //pink
-	Col := 0;       //black
-	Col := $FFFFFF; //white
-	Col := $FF0000; //red
-	Col := $00FF00; //green
-	Col := $002200; //light green
-	Col := $002222; //light greenblue
-	Col := $222200; //light yellow
-	Col := $340000; //red
-	Col := $FF6EB4; //pink
-	Col := $333333; //grey
-    }
-
-    Tex_Left[P]         := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),  TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Mid[P]          := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'),   TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Right[P]        := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_COLORIZED, Col);
-
-    Tex_plain_Left[P]   := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainLeft'),  TEXTURE_TYPE_COLORIZED, Col);
-    Tex_plain_Mid[P]    := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainMid'),   TEXTURE_TYPE_COLORIZED, Col);
-    Tex_plain_Right[P]  := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainRight'), TEXTURE_TYPE_COLORIZED, Col);
-
-    Tex_BG_Left[P]      := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGLeft'),  TEXTURE_TYPE_COLORIZED, Col);
-    Tex_BG_Mid[P]       := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGMid'),   TEXTURE_TYPE_COLORIZED, Col);
-    Tex_BG_Right[P]     := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGRight'), TEXTURE_TYPE_COLORIZED, Col);
-  end;
-
-  Log.LogStatus('Loading Textures - B', 'LoadTextures');
+  Log.LogStatus('Loading Textures - A', 'LoadTextures');
 
   Tex_Note_Perfect_Star := Texture.LoadTexture(Skin.GetTextureFileName('NotePerfectStar'), TEXTURE_TYPE_TRANSPARENT, 0);
   Tex_Note_Star         := Texture.LoadTexture(Skin.GetTextureFileName('NoteStar') ,       TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
   Tex_Ball              := Texture.LoadTexture(Skin.GetTextureFileName('Ball'),            TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  Tex_Lyric_Help_Bar    := Texture.LoadTexture(Skin.GetTextureFileName('LyricHelpBar'),    TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  Tex_Lyric_Help_Bar    := Texture.LoadTexture(Skin.GetTextureFileName('LyricHelpBar'),    TEXTURE_TYPE_TRANSPARENT, 0);
 
   Tex_SelectS_ArrowL    := Texture.LoadTexture(Skin.GetTextureFileName('Select_ArrowLeft'),    TEXTURE_TYPE_TRANSPARENT, 0);
   Tex_SelectS_ArrowR    := Texture.LoadTexture(Skin.GetTextureFileName('Select_ArrowRight'),    TEXTURE_TYPE_TRANSPARENT, 0);
@@ -375,11 +358,8 @@ begin
 
   //TimeBar mod
   Tex_TimeProgress := Texture.LoadTexture(Skin.GetTextureFileName('TimeBar'));
-  //eoa TimeBar mod
-  
-  //JukeBox mod
   Tex_JukeboxTimeProgress := Texture.LoadTexture(Skin.GetTextureFileName('JukeboxTimeBar'));
-  //end Jukebox Mod
+  //eoa TimeBar mod
 
   //SingBar Mod
   Tex_SingBar_Back  := Texture.LoadTexture(Skin.GetTextureFileName('SingBarBack'),  TEXTURE_TYPE_PLAIN, 0);
@@ -387,7 +367,7 @@ begin
   Tex_SingBar_Front := Texture.LoadTexture(Skin.GetTextureFileName('SingBarFront'), TEXTURE_TYPE_PLAIN, 0);
   //end Singbar Mod
 
-  Log.LogStatus('Loading Textures - C', 'LoadTextures');
+  Log.LogStatus('Loading Textures - B', 'LoadTextures');
 
   //Line Bonus PopUp
   for P := 0 to 8 do
@@ -418,48 +398,23 @@ begin
           G := 1;
           B := 0;
         end;
+        else begin
+          R := 1;
+          G := 0;
+          B := 0;
+        end;
+
       End;
 
       Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
       Tex_SingLineBonusBack[P] :=  Texture.LoadTexture(Skin.GetTextureFileName('LineBonusBack'), TEXTURE_TYPE_COLORIZED, Col);
     end;
 
-//## backgrounds for the scores ##
-  for P := 0 to 5 do begin
-    LoadColor(R, G, B, 'P' + IntToStr(P+1) + 'Light');
-    Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_ScoreBG[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreBG'), TEXTURE_TYPE_COLORIZED, Col);
-  end;
+    Log.LogStatus('Loading Textures - C', 'LoadTextures');
 
-
-  Log.LogStatus('Loading Textures - D', 'LoadTextures');
-
-// ######################
-// Score screen textures
-// ######################
-
-//## the bars that visualize the score ##
-  for P := 1 to 6 do begin
-//NoteBar ScoreBar
-    LoadColor(R, G, B, 'P' + IntToStr(P) + 'Dark');
-    Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Score_NoteBarLevel_Dark[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Dark'), TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Score_NoteBarRound_Dark[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Dark_Round'), TEXTURE_TYPE_COLORIZED, Col);
-//LineBonus ScoreBar
-    LoadColor(R, G, B, 'P' + IntToStr(P) + 'Light');
-    Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Score_NoteBarLevel_Light[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Light'), TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Score_NoteBarRound_Light[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Light_Round'), TEXTURE_TYPE_COLORIZED, Col);
-//GoldenNotes ScoreBar
-    LoadColor(R, G, B, 'P' + IntToStr(P) + 'Lightest');
-    Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Score_NoteBarLevel_Lightest[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Lightest'), TEXTURE_TYPE_COLORIZED, Col);
-    Tex_Score_NoteBarRound_Lightest[P] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Lightest_Round'), TEXTURE_TYPE_COLORIZED, Col);
-  end;
-
-//## rating pictures that show a picture according to your rate ##
+    //## rating pictures that show a picture according to your rate ##
     for P := 0 to 7 do begin
-    Tex_Score_Ratings[P] := Texture.LoadTexture(Skin.GetTextureFileName('Rating_'+IntToStr(P)), TEXTURE_TYPE_TRANSPARENT, 0);
+      Tex_Score_Ratings[P] := Texture.LoadTexture(Skin.GetTextureFileName('Rating_'+IntToStr(P)), TEXTURE_TYPE_TRANSPARENT, 0);
   end;
 
   Log.LogStatus('Loading Textures - Done', 'LoadTextures');
@@ -509,7 +464,7 @@ begin
   SDL_WM_SetCaption(PChar(Title), nil);
 
   { center window }
-  SDL_putenv('SDL_VIDEO_WINDOW_POS=center');
+  //SDL_putenv('SDL_VIDEO_WINDOW_POS=center');  //basisbit TODO
   { workaround for buggy Intel 3D driver on Linux }
   SDL_putenv('texture_tiling=false');
 
@@ -519,7 +474,7 @@ begin
   Texture := TTextureUnit.Create;
   // FIXME: this does not seem to be correct as Limit.
   // Is the max. of either width or height.
-  Texture.Limit := 1024*1024;
+  Texture.Limit :=63000;// 1024*1024;
 
   //LoadTextures;
   SDL_WM_SetCaption(PChar(Title + ' - Initializing video modules'), nil);
@@ -641,12 +596,12 @@ begin
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,     5);
 
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,    16); // Z-Buffer depth
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,  1);
+  //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,  1);
 
   // VSYNC works for windows only at the moment. SDL_GL_SWAP_CONTROL under
   // linux uses GLX_MESA_swap_control which is not supported by nvidea cards.
   // Maybe use glXSwapIntervalSGI(1) from the GLX_SGI_swap_control extension instead.
-  //SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL,  1); // VSYNC (currently Windows only)
+  SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL,  1); // VSYNC (currently Windows only)
 
   // If there is a resolution in Parameters, use it, else use the Ini value
   I := Params.Resolution;
@@ -710,12 +665,13 @@ procedure LoadLoadingScreen;
 begin
   ScreenLoading := TScreenLoading.Create;
   ScreenLoading.OnShow;
-  
+
   Display.CurrentScreen := @ScreenLoading;
 
   SwapBuffers;
 
   ScreenLoading.Draw;
+
   Display.Draw;
 
   SwapBuffers;
@@ -724,11 +680,11 @@ end;
 procedure LoadScreens(Title: string);
 begin
 {  ScreenLoading := TScreenLoading.Create;
-  ScreenLoading.OnShow;
+    ScreenLoading.onShow;
   Display.CurrentScreen := @ScreenLoading;
-  ScreenLoading.Draw;
+    ScreenLoading.Draw;
   Display.Draw;
-  SwapBuffers;
+    SwapBuffers;
 }
   SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenMain & ScreenName'), nil);
   ScreenMain :=             TScreenMain.Create;
@@ -739,9 +695,11 @@ begin
   SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenSongMenu & ScreenJukebox'), nil);
   ScreenSongMenu :=             TScreenSongMenu.Create;
   ScreenJukebox :=             TScreenJukebox.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenSing & ScreenScore & ScreenTop5'), nil);
-  ScreenSing :=             TScreenSing.Create;
-  ScreenScore :=            TScreenScore.Create;;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox', 3); Log.BenchmarkStart(3);
+  ScreenJukeboxOptions :=   TScreenJukeboxOptions.Create;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox Options', 3); Log.BenchmarkStart(3);
+  ScreenJukeboxPlaylist :=   TScreenJukeboxPlaylist.Create;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox Playlist', 3); Log.BenchmarkStart(3);
   ScreenTop5 :=             TScreenTop5.Create;
   SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptions & ScreenOptionsGame'), nil);
   ScreenOptions :=          TScreenOptions.Create;
@@ -754,21 +712,33 @@ begin
   ScreenOptionsThemes   :=    TScreenOptionsThemes.Create;
   SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsRecord & ScreenOptionsAdvanced'), nil);
   ScreenOptionsRecord   :=    TScreenOptionsRecord.Create;
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsAdvanced'), nil);
   ScreenOptionsAdvanced :=    TScreenOptionsAdvanced.Create;
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsNetwork'), nil);  
+  ScreenOptionsNetwork :=    TScreenOptionsNetwork.Create;
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsWebCam'), nil);
+  ScreenOptionsWebcam  :=    TScreenOptionsWebcam.Create;
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsJukebox'), nil);
+  ScreenOptionsJukebox :=    TScreenOptionsJukebox.Create;
   SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenEditSub & ScreenEdit'), nil);
   ScreenEditSub :=          TScreenEditSub.Create;
   ScreenEdit :=             TScreenEdit.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenEditConvert & ScreenOpen'), nil);
-  ScreenEditConvert :=      TScreenEditConvert.Create;
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOpen'), nil);
   ScreenOpen :=             TScreenOpen.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenSongMenu & ScreenSongJumpto'), nil);
-  ScreenSongMenu :=         TScreenSongMenu.Create;
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenAbout'), nil);
+  ScreenAbout :=             TScreenAbout.Create;
+  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen About', 3); Log.BenchmarkStart(3);
+  //ScreenSingModi :=         TScreenSingModi.Create;
+  //Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Sing with Modi support', 3); Log.BenchmarkStart(3);
   ScreenSongJumpto :=         TScreenSongJumpto.Create;
   SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPopupCheck & ScreenPopupError'), nil);
   ScreenPopupCheck := TScreenPopupCheck.Create;
   ScreenPopupError := TScreenPopupError.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPopupInfo & ScreenPartyNewRound'), nil);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPopupInfo & ScreenScoreX & ScreenPartyNewRound'), nil);
   ScreenPopupInfo := TScreenPopupInfo.Create;
+  ScreenPopupInsertUser := TScreenPopupInsertUser.Create;
+  ScreenPopupSendScore := TScreenPopupSendScore.Create;
+  ScreenPopupScoreDownload := TScreenPopupScoreDownload.Create;
   ScreenPartyNewRound :=    TScreenPartyNewRound.Create;
   SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPartyScore & ScreenPartyWin'), nil);
   ScreenPartyScore :=       TScreenPartyScore.Create;
@@ -776,13 +746,18 @@ begin
   SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPartyOptions & ScreenPartyPlayer'), nil);
   ScreenPartyOptions :=     TScreenPartyOptions.Create;
   ScreenPartyPlayer :=      TScreenPartyPlayer.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPartyRounds & ScreenStatMain'), nil);
+  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPartyRounds & ScreenTournamentX & ScreenStatMain'), nil);
   ScreenPartyRounds :=      TScreenPartyRounds.Create;
+  ScreenPartyTournamentRounds :=      TScreenPartyTournamentRounds.Create;
+  ScreenPartyTournamentPlayer :=      TScreenPartyTournamentPlayer.Create;
+  ScreenPartyTournamentOptions :=      TScreenPartyTournamentOptions.Create;
+  ScreenPartyTournamentWin :=      TScreenPartyTournamentWin.Create;
   ScreenStatMain :=         TScreenStatMain.Create;
   SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenStatDetail & ScreenCredits'), nil);
   ScreenStatDetail :=       TScreenStatDetail.Create;
   ScreenCredits    :=       TScreenCredits.Create;
   SDL_WM_SetCaption(PChar(Title), nil);
+  //SDL_Delay(1);
 end;
 
 function LoadingThreadFunction: integer;
@@ -798,33 +773,45 @@ begin
   ScreenLevel.Free;
   ScreenSong.Free;
   ScreenSing.Free;
-  ScreenJukebox.Free;
   ScreenScore.Free;
-  ScreenTop5.Free;
   ScreenOptions.Free;
   ScreenOptionsGame.Free;
   ScreenOptionsGraphics.Free;
   ScreenOptionsSound.Free;
   ScreenOptionsLyrics.Free;
-//  ScreenOptionsThemes.Free;
+  ScreenOptionsThemes.Free;
   ScreenOptionsRecord.Free;
   ScreenOptionsAdvanced.Free;
+  ScreenOptionsNetwork.Free;
+  ScreenOptionsWebcam.Free;
+  ScreenOptionsJukebox.Free;
   ScreenEditSub.Free;
   ScreenEdit.Free;
-  ScreenEditConvert.Free;
+  ScreenJukebox.Free;
+  ScreenJukeboxOptions.Free;
+  ScreenJukeboxPlaylist.Free;
+  ScreenTop5.Free;
   ScreenOpen.Free;
+  ScreenAbout.Free;
   //ScreenSingModi.Free;
   ScreenSongMenu.Free;
   ScreenSongJumpto.Free;
   ScreenPopupCheck.Free;
   ScreenPopupError.Free;
   ScreenPopupInfo.Free;
+  ScreenPopupInsertUser.Free;
+  ScreenPopupSendScore.Free;
+  ScreenPopupScoreDownload.Free;
   ScreenPartyNewRound.Free;
   ScreenPartyScore.Free;
   ScreenPartyWin.Free;
   ScreenPartyOptions.Free;
   ScreenPartyPlayer.Free;
   ScreenPartyRounds.Free;
+  ScreenPartyTournamentRounds.Free;
+  ScreenPartyTournamentPlayer.Free;
+  ScreenPartyTournamentOptions.Free;
+  ScreenPartyTournamentWin.Free;
   ScreenStatMain.Free;
   ScreenStatDetail.Free;
 end;

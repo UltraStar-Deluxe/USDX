@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UCommon.pas $
+ * $Id: UCommon.pas 2241 2010-04-15 17:57:15Z whiteshark0 $
  *}
 
 unit UCommon;
@@ -60,8 +60,25 @@ const
  *   SplitString(' split  me now ', 0) -> ['split', 'me', 'now']
  *   SplitString(' split  me now ', 1) -> ['split', 'me now']
  *}
-function SplitString(const Str: string; MaxCount: integer = 0; Separators: TSysCharSet = SepWhitespace): TStringDynArray;
+ function StringInArray(const Value: string; Strings: array of string): Boolean;
 
+ function SplitString(const Str: string; MaxCount: integer = 0; Separators: TSysCharSet = SepWhitespace): TStringDynArray;
+
+ function GetStringWithNoAccents(str: UTF8String):UTF8String;
+
+type
+  TRGB = record
+    R: single;
+    G: single;
+    B: single;
+  end;
+
+  TRGBA = record
+    R, G, B, A: double;
+  end;
+
+function RGBToHex(R, G, B: integer):string;
+function HexToRGB(Hex: string): TRGB;
 
 type
   TMessageType = (mtInfo, mtError);
@@ -103,6 +120,15 @@ uses
   UFilesystem,
   UMain,
   UUnicodeUtils;
+
+function StringInArray(const Value: string; Strings: array of string): Boolean;
+var I: Integer;
+begin
+  Result := True;
+  for I := Low(Strings) to High(Strings) do
+    if Strings[i] = Value then Exit;
+  Result := False;
+end;
 
 function SplitString(const Str: string; MaxCount: integer; Separators: TSysCharSet): TStringDynArray;
 
@@ -155,6 +181,41 @@ begin
   // last component
   if (Start > 0) then
     AddSplit(Start, Length(Str)+1);
+end;
+
+const
+  Accents: array [0..37] of UTF8String = ('ç', 'á', 'é', 'í', 'ó', 'ú', 'ý', 'à', 'è', 'ì', 'ò', 'ù', 'ã', 'õ', 'ñ', 'ä', 'ë', 'ï', 'ö', 'ü', 'ÿ', 'â', 'ê', 'î', 'ô', 'û', '!', '¡', '"', '&', '(', ')', '?', '¿', ',', '.', ':', ';');
+  NoAccents: array [0..37] of UTF8String = ('c', 'a', 'e', 'i', 'o', 'u', 'y', 'a', 'e', 'i', 'o', 'u', 'a', 'o', 'n', 'a', 'e', 'i', 'o', 'u', 'y', 'a', 'e', 'i', 'o', 'u', '', '', '', '', '', '', '', '', '', '', '', '');
+
+function GetStringWithNoAccents(str: UTF8String):UTF8String;
+var
+  i: integer;
+  tmp: string;
+begin
+  tmp := Utf8ToAnsi(str);
+
+  for i := 0 to High(Accents) do
+  begin
+    str := StringReplace(str, Accents[i], NoAccents[i], [rfReplaceAll, rfIgnoreCase]);
+  end;
+
+  Result := str;
+end;
+
+function RGBToHex(R, G, B: integer): string;
+begin
+  Result := IntToHex(R, 2) + IntToHex(G, 2) + IntToHex(B, 2);
+end;
+
+function HexToRGB(Hex: string): TRGB;
+var
+  Col: TRGB;
+begin
+  Col.R := StrToInt('$'+Copy(Hex, 1, 2));
+  Col.G := StrToInt('$'+Copy(Hex, 3, 2));
+  Col.B := StrToInt('$'+Copy(Hex, 5, 2));
+
+  Result := Col;
 end;
 
 // data used by the ...Locale() functions

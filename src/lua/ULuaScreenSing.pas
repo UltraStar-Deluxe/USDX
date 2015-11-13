@@ -330,7 +330,7 @@ begin
     ScreenSing.EndSong;
   end
   else
-    LuaL_error(L, 'Usdx.ScreenSing.Finish is called, but sing screen is not shown.'); 
+    LuaL_error(L, 'Usdx.ScreenSing.Finish is called, but sing screen is not shown.');
 end;
 
 { ScreenSing.GetSettings - no arguments
@@ -355,6 +355,8 @@ begin
   lua_pushBinInt(L, ScreenSing.Settings.PlayerEnabled);
   lua_setField(L, -2, 'PlayerEnabled');
 
+  lua_pushBoolean(L, ScreenSing.Settings.SoundEnabled);
+  lua_setField(L, -2, 'SoundEnabled');
 
   Result := 1;
 end;
@@ -382,7 +384,9 @@ begin
     else if (Key = 'notesvisible') and (lua_isTable(L, -1)) then
       ScreenSing.settings.NotesVisible := lua_toBinInt(L, -1)
     else if (Key = 'playerenabled') and (lua_isTable(L, -1)) then
-      ScreenSing.settings.PlayerEnabled := lua_toBinInt(L, -1);
+      ScreenSing.settings.PlayerEnabled := lua_toBinInt(L, -1)
+    else if (Key = 'soundenabled') and (lua_isBoolean(L, -1)) then
+      ScreenSing.settings.SoundEnabled := lua_toBoolean(L, -1);
 
     // pop value from stack so key is on top
     lua_pop(L, 1);

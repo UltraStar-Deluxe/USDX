@@ -503,7 +503,9 @@ implementation
 
 uses
   SysUtils,
+  {$IFDEF DARWIN}
   UConfig,
+  {$ENDIF DARWIN}  
   {$IFDEF MSWINDOWS}
   Windows;
   {$ENDIF MSWINDOWS}
@@ -534,8 +536,7 @@ const
   libpcremodulename = 'pcre3.dll';
   {$ENDIF MSWINDOWS}
   {$IFDEF LINUX}
-  // "libpcre.so.<soname>", soname is different on platforms
-  libpcremodulename = LIBPCRE_LIBNAME;
+  libpcremodulename = 'libpcre.so.0';
   {$ENDIF LINUX}
   {$IFDEF DARWIN}
   libpcremodulename = 'libpcre.dylib';  // this is a symlink for example to libpcre.0.0.1.dylib

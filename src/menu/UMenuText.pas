@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/menu/UMenuText.pas $
+ * $Id: UMenuText.pas 2293 2010-04-23 22:39:26Z tobigun $
  *}
 
 unit UMenuText;
@@ -36,9 +36,10 @@ interface
 uses
   math,
   SysUtils,
-  gl, 
+  gl,
   SDL,
   TextGL,
+  UMenuInteract,
   UTexture;
 
 type
@@ -62,6 +63,7 @@ type
       ColR:   real;
       ColG:   real;
       ColB:   real;
+
       Alpha:  real;
       Int:    real;
       Style:   integer;
@@ -71,6 +73,8 @@ type
       // reflection
       Reflection:        boolean;
       ReflectionSpacing: real;
+
+      Writable: boolean;
 
       procedure SetSelect(Value: boolean);
       property Selected: boolean read SelectBool write SetSelect;
@@ -83,7 +87,9 @@ type
       procedure Draw;
       constructor Create; overload;
       constructor Create(X, Y: real; const Text: UTF8String); overload;
-      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; const ParText: UTF8String; ParReflection: boolean; ParReflectionSpacing: real; ParZ: real); overload;
+      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; const ParText: UTF8String; ParReflection: boolean; ParReflectionSpacing: real; ParZ: real; Writable: boolean); overload;
+
+      function GetMouseOverArea: TMouseOverRect;
   end;
 
 implementation
@@ -91,12 +97,13 @@ implementation
 uses
   UGraphic,
   UUnicodeUtils,
+  UDisplay,
   StrUtils;
 
 procedure TText.SetSelect(Value: boolean);
 begin
   SelectBool := Value;
-  
+
   // set cursor visible
   SelectBlink := true;
   STicks := SDL_GetTicks() div 550;
@@ -253,7 +260,7 @@ end;
 procedure TText.Draw;
 var
   X2, Y2: real;
-  Text2:  UTF8String;
+  tmpText2, Text2:  UTF8String;
   I:      integer;
   Ticks:  cardinal;
 begin
@@ -306,14 +313,23 @@ begin
       Y2 := Y + MoveY;
       for I := 0 to High(TextTiles) do
       begin
+        tmpText2 := TextTiles[I];
+
         if (not (SelectBool and SelectBlink)) or (I <> High(TextTiles)) then
-          Text2 := TextTiles[I]
+        begin
+          Text2 := TextTiles[I];
+        end
         else
-          Text2 := TextTiles[I] + '|';
+        begin
+          if (Writable) then
+            Text2 := TextTiles[I] + '|'
+          else
+            Text2 := TextTiles[I];
+        end;
 
         case Align of
-          1: X2 := X + MoveX - glTextWidth(Text2)/2; { centered }
-          2: X2 := X + MoveX - glTextWidth(Text2); { right aligned }
+          1: X2 := X + MoveX - glTextWidth(tmpText2)/2; { centered }
+          2: X2 := X + MoveX - glTextWidth(tmpText2); { right aligned }
           else X2 := X + MoveX; { left aligned (default) }
         end;
 
@@ -344,7 +360,7 @@ end;
 
 constructor TText.Create(X, Y: real; const Text: UTF8String);
 begin
-  Create(X, Y, 0, ftNormal, 30, 0, 0, 0, 0, Text, false, 0, 0);
+  Create(X, Y, 0, ftNormal, 30, 0, 0, 0, 0, Text, false, 0, 0, false);
 end;
 
 constructor TText.Create(ParX, ParY, ParW: real;
@@ -354,7 +370,8 @@ constructor TText.Create(ParX, ParY, ParW: real;
                          const ParText: UTF8String;
                          ParReflection: boolean;
                          ParReflectionSpacing: real;
-                         ParZ: real);
+                         ParZ: real;
+                         Writable: boolean);
 begin
   inherited Create;
   Alpha := 1;
@@ -374,6 +391,48 @@ begin
   Visible := true;
   Reflection := ParReflection;
   ReflectionSpacing := ParReflectionSpacing;
+  Writable := Writable;
+end;
+
+function TText.GetMouseOverArea: TMouseOverRect;
+var
+  W1: real;
+begin
+  if not(Display.Cursor_HiddenByScreen) then
+  begin
+    if (Align = 0) then
+    begin
+      Result.X := X;
+      Result.Y := Y;
+      Result.W := glTextWidth(Text);
+      Result.H := Size;
+    end;
+
+    if (Align = 1) then
+    begin
+      Result.X := X -glTextWidth(Text)/2;
+      Result.Y := Y;
+      Result.W := glTextWidth(Text);
+      Result.H := Size;
+    end;
+
+    if (Align = 2) then
+    begin
+      if (W <> 0) then
+        Result.X := X - W
+      else
+        Result.X := X - glTextWidth(Text);
+
+      Result.Y := Y;
+
+      if (W <> 0) then
+        Result.W := W
+      else
+        Result.W := glTextWidth(Text);
+
+      Result.H := Size;
+    end;
+  end;
 end;
 
 end.

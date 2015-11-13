@@ -40,11 +40,11 @@ Var /GLOBAL checkbox_state
 
 XPStyle on
 
-Name "${name} - Update"
-Brandingtext "${name} Update"
-OutFile "ultrastardx-update.exe"
+Name "${name} ${version} - Update"
+Brandingtext "${name} ${version} Update"
+OutFile "ultrastardx-${version}-update.exe"
 
-InstallDir "$PROGRAMFILES\${name}"
+InstallDir "$PROGRAMFILES\${name} ${version}"
 
 ; Windows Vista / Windows 7:
 
@@ -130,7 +130,7 @@ Push "$TEMP\version.txt"
  Call ReadFileLine
 Pop $1
 
-ReadRegStr $R0  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name}" 'DisplayVersion'
+ReadRegStr $R0  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name} ${version}" 'DivsplayVersion'
 
 ${VersionCompare} "$R0" "$1" $R1
 

@@ -1,0 +1,48 @@
+function plugin_init()
+  register('party mode: 7000points', '1.00', 'zup3r_vock', 'http://www.ultrastar-es.org');
+
+  require('Usdx.Party')
+  require('Usdx.ScreenSing');
+
+  local Mode = {}
+
+  Mode.Name = '7000points'
+  Mode.CanNonParty = true;
+  Mode.CanParty = true;
+  Mode.OnSing = 'Sing';
+  Mode.AfterSing = 'Calculate_Winner';
+
+  Usdx.Party.Register(Mode)
+
+  return true;
+end
+
+function Sing()
+  Scores = ScreenSing.GetScores();
+
+  for i = 1, #Scores do
+    if (Scores[i] >= 7000) then
+      ScreenSing.Finish();
+      break;
+    end
+  end
+
+  return true;
+end
+
+function Calculate_Winner()
+  Scores = Scores or ScreenSing.GetScores();
+  local Ranking = {};
+  for i = 1, #Scores do
+    if Scores[i] >= 7000 then
+      Ranking[i] = 1
+    else
+      Ranking[i] = #Scores
+    end
+  end
+
+  Party.SetRoundRanking(Ranking);
+  Scores = nil;
+
+  return true;
+end

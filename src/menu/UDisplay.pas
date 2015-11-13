@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/menu/UDisplay.pas $
+ * $Id: UDisplay.pas 3150 2015-10-20 00:07:57Z basisbit $
  *}
 
 unit UDisplay;
@@ -204,8 +204,8 @@ var
 begin
   if (SupportsNPOT = false) then
   begin
-    TexW := Round(Power(2, Ceil(Log2(ScreenW div Screens))));
-    TexH := Round(Power(2, Ceil(Log2(ScreenH))));
+  TexW := Round(Power(2, Ceil(Log2(ScreenW div Screens))));
+  TexH := Round(Power(2, Ceil(Log2(ScreenH))));
   end
   else
   begin
@@ -215,7 +215,7 @@ begin
   for i := 0 to 1 do
   begin
     glBindTexture(GL_TEXTURE_2D, FadeTex[i]);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, 3, TexW, TexH, 0, GL_RGB, GL_UNSIGNED_BYTE, nil);
   end;
@@ -270,7 +270,13 @@ begin
       else if (ScreenPopupInfo <> nil) and ScreenPopupInfo.Visible then
         ScreenPopupInfo.Draw
       else if (ScreenPopupCheck <> nil) and ScreenPopupCheck.Visible then
-        ScreenPopupCheck.Draw;
+        ScreenPopupCheck.Draw
+      else if (ScreenPopupInsertUser <> nil) and ScreenPopupInsertUser.Visible then
+        ScreenPopupInsertUser.Draw
+      else if (ScreenPopupSendScore <> nil) and ScreenPopupSendScore.Visible then
+        ScreenPopupSendScore.Draw
+      else if (ScreenPopupScoreDownload <> nil) and ScreenPopupScoreDownload.Visible then
+        ScreenPopupScoreDownload.Draw;
 
       // fade
       FadeStartTime := 0;
@@ -536,7 +542,7 @@ begin
       Cursor_LastMove := Ticks;
       Cursor_Fade := true;
     end;
-    
+
     // fading
     if Cursor_Fade then
     begin

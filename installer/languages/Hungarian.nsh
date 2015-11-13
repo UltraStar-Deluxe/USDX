@@ -1,5 +1,5 @@
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
-; UltraStar Deluxe Installer - Language file: Hungarian
+; UltraStar Deluxe WorldParty Installer - Language file: Hungarian
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Translation by Gergely BOR <borg42+ultrastardx at gmail.com>.
 
@@ -15,7 +15,7 @@ LangString oninit_uninstall ${LANG_HUNGARIAN} "Do you want to uninstall the old 
 LangString update_connect ${LANG_HUNGARIAN} "Új verzió keresése az interneten"
 LangString button_next ${LANG_HUNGARIAN} "Tovább >"
 LangString button_close ${LANG_HUNGARIAN} "Bezárás"
-LangString update_information ${LANG_HUNGARIAN} "Ellenõrizheti, hogy van-e új 'UltraStar Deluxe'-verzió. Ehhez internetkapcsolat szükséges. Ha van új verzió, az ezt követõen telepíthetõ."
+LangString update_information ${LANG_HUNGARIAN} "Ellenõrizheti, hogy van-e új 'UltraStar Deluxe WorldParty'-verzió. Ehhez internetkapcsolat szükséges. Ha van új verzió, az ezt követõen telepíthetõ."
 
 LangString delete_components ${LANG_HUNGARIAN} "Also delete the following components:"
 LangString delete_covers ${LANG_HUNGARIAN} "Töröljük a borítókat?"
@@ -32,11 +32,11 @@ LangString update_check_failed ${LANG_HUNGARIAN} "Az ellenõrzés sikertelen. Kívá
 
 ; Welcome Page:
 
-LangString page_welcome_title_update ${LANG_HUNGARIAN} "Üdvözli Önt az UltraStar Deluxe frissítési varázslója!"
-LangString page_welcome_txt_update ${LANG_HUNGARIAN} "Ez a varázsló végigvezeti Önt az UltraStar Deluxe frissítési folyamatán. Az UltraStar Deluxe egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\rAz UltraStar Deluxe csapata jó szórakozást kíván!$\n$\rA projekt weboldala: http://www.ultrastardeluxe.org/$\n$\rTámogatás a fórumunkon: http://forum.ultrastardeluxe.org/"
-LangString page_welcome_title ${LANG_HUNGARIAN} "Üdvözli Önt az UltraStar Deluxe telepítési varázslója!"
-LangString page_welcome_txt ${LANG_HUNGARIAN} "Ez a varázsló végigvezeti Önt az UltraStar Deluxe telepítési folyamatán. Az UltraStar Deluxe egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\rAz UltraStar Deluxe csapata jó szórakozást kíván!$\n$\rA projekt weboldala: http://www.ultrastardeluxe.org/$\n$\rTámogatás a fórumunkon: http://forum.ultrastardeluxe.org/"
-LangString page_un_welcome_title ${LANG_HUNGARIAN} "Üdvözli Önt az UltraStar Deluxe eltávolítási varázslója!"
+LangString page_welcome_title_update ${LANG_HUNGARIAN} "Üdvözli Önt az UltraStar Deluxe WorldParty frissítési varázslója!"
+LangString page_welcome_txt_update ${LANG_HUNGARIAN} "Ez a varázsló végigvezeti Önt az UltraStar Deluxe WorldParty frissítési folyamatán. Az UltraStar Deluxe egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\rAz UltraStar Deluxe csapata és zup3r_vock (WorldParty Mod) jó szórakozást kíván!$\n$\rA projekt weboldala: http://www.ultrastardeluxe.org/  http://www.ultrastar-es.org/$\n$\rTámogatás a fórumunkon: http://forum.ultrastardeluxe.org/"
+LangString page_welcome_title ${LANG_HUNGARIAN} "Üdvözli Önt az UltraStar Deluxe WorldParty telepítési varázslója!"
+LangString page_welcome_txt ${LANG_HUNGARIAN} "Ez a varázsló végigvezeti Önt az UltraStar Deluxe WorldParty telepítési folyamatán. Az UltraStar Deluxe egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\rAz UltraStar Deluxe csapata és zup3r_vock (WorldParty Mod) jó szórakozást kíván!$\n$\rA projekt weboldala: http://www.ultrastardeluxe.org/  http://www.ultrastar-es.org/$\n$\rTámogatás a fórumunkon: http://forum.ultrastardeluxe.org/"
+LangString page_un_welcome_title ${LANG_HUNGARIAN} "Üdvözli Önt az UltraStar Deluxe WorldParty eltávolítási varázslója!"
 
 ; Components Page:
 
@@ -45,17 +45,17 @@ LangString page_components_info ${LANG_HUNGARIAN} "Részletes információért vigye
 ; Custom Page
 
 LangString page_settings_fullscreen ${LANG_HUNGARIAN} "Teljes képernyõs üzemmód"
-LangString page_settings_subtitle ${LANG_HUNGARIAN} "Adja meg a kedvenc UltraStar Deluxe-beállítását."
+LangString page_settings_subtitle ${LANG_HUNGARIAN} "Adja meg a kedvenc UltraStar Deluxe WorldParty-beállítását."
 
 ; Finish Page:
 
-LangString page_finish_txt ${LANG_HUNGARIAN} "Az UltraStar Deluxe telepítése sikeresen befejezõdött.$\n$\r$\n$\rHa kíváncsi a legfrissebb hírekre és frissítésekre, kérjük látogassa meg projektünk weboldalát."
+LangString page_finish_txt ${LANG_HUNGARIAN} "Az UltraStar Deluxe WorldParty telepítése sikeresen befejezõdött.$\n$\r$\n$\rHa kíváncsi a legfrissebb hírekre és frissítésekre, kérjük látogassa meg projektünk weboldalát."
 LangString page_finish_linktxt ${LANG_HUNGARIAN} "A projekt weboldala"
 LangString page_finish_desktop ${LANG_HUNGARIAN} "Tegyünk egy parancsikont az asztalra?"
 
 ; Start Menu and Shortcuts
 
-LangString sm_shortcut ${LANG_HUNGARIAN} "UltraStar Deluxe karaoke"
+LangString sm_shortcut ${LANG_HUNGARIAN} "UltraStar Deluxe WorldParty karaoke"
 LangString sm_uninstall ${LANG_HUNGARIAN} "Eltávolítás"
 LangString sm_website ${LANG_HUNGARIAN} "Weboldal"
 LangString sm_license ${LANG_HUNGARIAN} "Licensz"
@@ -75,7 +75,7 @@ LangString name_s2_sub2 ${LANG_HUNGARIAN} "Shearer"
 LangString name_s2_sub3 ${LANG_HUNGARIAN} "Wise Guys"
 LangString name_s2_sub4 ${LANG_HUNGARIAN} "Pornophonique"
 
-LangString DESC_Section1 ${LANG_HUNGARIAN} "Azok a fájlok, melyek mindenképpen szükségesek az UltraStar Deluxe futtatásához."
+LangString DESC_Section1 ${LANG_HUNGARIAN} "Azok a fájlok, melyek mindenképpen szükségesek az UltraStar Deluxe WorldParty futtatásához."
 LangString DESC_Section2 ${LANG_HUNGARIAN} "Kiválaszthatja, hogy milyen dalok legyenek telepítve."
 LangString DESC_Section2_sub1 ${LANG_HUNGARIAN} "Kiválaszthatja, hogy mely Jonathan Coulton-dalok (CC by-nc 3.0) legyenek telepítve."
 LangString DESC_Section2_sub2 ${LANG_HUNGARIAN} "Kiválaszthatja, hogy mely Shearer-dalok (CC by-nc-sa 2.0 / 3.0) legyenek telepítve."

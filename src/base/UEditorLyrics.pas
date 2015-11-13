@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UEditorLyrics.pas $
+ * $Id: UEditorLyrics.pas 2488 2010-06-11 15:54:50Z whiteshark0 $
  *}
 
 unit UEditorLyrics;

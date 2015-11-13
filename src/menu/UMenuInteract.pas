@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/menu/UMenuInteract.pas $
+ * $Id: UMenuInteract.pas 1950 2009-11-18 14:42:34Z whiteshark0 $
  *}
 
 unit UMenuInteract;

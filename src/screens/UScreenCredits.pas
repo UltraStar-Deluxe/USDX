@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/screens/UScreenCredits.pas $
+ * $Id: UScreenCredits.pas 2582 2010-07-18 11:11:57Z whiteshark0 $
  *}
 
 unit UScreenCredits;
@@ -145,10 +145,9 @@ type
 
 const
   Funky_Text: string =
-    'Grandma Deluxe has arrived! Thanks to Corvus5 for the massive work on UltraStar, Wome for the nice tune you are hearing, '+
+    'Grandma Deluxe v2 has arrived! Thanks to Corvus5, brian-ch, brunzelchen, canni0, k-m_schindler, whiteshark0, BasisBit and the USDX WP team for the massive work on UltraStar and USDX, Wome for the nice tune you are hearing, '+
     'all the people who put massive effort and work in new songs (do not forget UltraStar w/o songs would be nothing), ppl from '+
-    'irc helping us - eBandit and Gabari, scene ppl who really helped instead of compiling and running away. Greetings to DennisTheMenace for betatesting, '+
-    'Demoscene.tv, pouet.net, KakiArts, Sourceforge,..';
+    'irc helping us, pouet.net, KakiArts, Sourceforge,..';
 
 { texture names (loaded from gameshared/resources/credits}
   CRDTS_BG_FILE           = 'credits_v5_bg.png';

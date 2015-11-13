@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UMain.pas $
+ * $Id: UMain.pas 2631 2010-09-05 15:26:08Z tobigun $
  *}
 
 unit UMain;
@@ -36,6 +36,10 @@ interface
 uses
   SysUtils,
   SDL;
+
+var
+  CheckMouseButton: boolean; // for checking mouse motion
+
 
 procedure Main;
 procedure MainLoop;
@@ -62,12 +66,14 @@ implementation
 uses
   Math,
   gl,
+  UAvatars,
   UCatCovers,
   UCommandLine,
   UCommon,
   UConfig,
   UCovers,
   UDataBase,
+  UDllManager,
   UDisplay,
   UGraphic,
   UGraphicClasses,
@@ -85,6 +91,7 @@ uses
   USongs,
   UThemes,
   UParty,
+  UPartyTournament,
   ULuaCore,
   UHookableEvent,
   ULuaGl,
@@ -93,7 +100,9 @@ uses
   ULuaTextGL,
   ULuaParty,
   ULuaScreenSing,
-  UTime;
+  UTime,
+  UWebcam;
+  //UVideoAcinerella;
 
 procedure Main;
 var
@@ -161,6 +170,15 @@ begin
 
     Log.LogStatus('Loading Theme List', 'Initialization');
     Theme := TTheme.Create;
+    Log.LogStatus('Website-Manager', 'Initialization');
+    DLLMan := TDLLMan.Create;   // Load WebsiteList
+    Log.LogStatus('DataBase System', 'Initialization');
+    DataBase := TDataBaseSystem.Create;
+
+    if (Params.ScoreFile.IsUnset) then
+      DataBase.Init(Platform.GetGameUserPath.Append('Ultrastar.db'))
+    else
+      DataBase.Init(Params.ScoreFile);
 
     // Ini + Paths
     Log.LogStatus('Load Ini', 'Initialization');
@@ -187,6 +205,10 @@ begin
     Log.LogStatus('Creating Category Covers Array', 'Initialization');
     CatCovers:= TCatCovers.Create;
 
+    // Avatars Cache
+    Log.LogStatus('Creating Avatars Cache', 'Initialization');
+    Avatars := TAvatarDatabase.Create;
+    
     // Songs
     Log.LogStatus('Creating Song Array', 'Initialization');
     Songs := TSongs.Create;
@@ -196,15 +218,6 @@ begin
 
     // Graphics
     Initialize3D(WindowTitle);
-
-    // Score Saving System
-    Log.LogStatus('DataBase System', 'Initialization');
-    DataBase := TDataBaseSystem.Create;
-
-    if (Params.ScoreFile.IsUnset) then
-      DataBase.Init(Platform.GetGameUserPath.Append('Ultrastar.db'))
-    else
-      DataBase.Init(Params.ScoreFile);
 
     // Playlist Manager
     Log.LogStatus('Playlist Manager', 'Initialization');
@@ -220,9 +233,15 @@ begin
       Log.LogStatus('Initialize Joystick', 'Initialization');
       Joy := TJoy.Create;
     end;
+    
+    // Webcam
+    //Log.LogStatus('WebCam', 'Initialization');
+    //Webcam := TWebcam.Create;
+    UWebcam.IsEnabled:= false;
 
     // Lua
     Party := TPartyGame.Create;
+    PartyTournament := TPartyTournament.Create;
 
     LuaCore.RegisterModule('Log', ULuaLog_Lib_f);
     LuaCore.RegisterModule('Gl', ULuaGl_Lib_f);
@@ -294,6 +313,7 @@ var
   TicksBeforeFrame: cardinal;
   Done:             boolean;
 begin
+
   SDL_EnableKeyRepeat(125, 125);
 
   Done := false;
@@ -301,7 +321,7 @@ begin
   CountSkipTime();  // JB - for some reason this seems to be needed when we use the SDL Timer functions.
   repeat
     TicksBeforeFrame := SDL_GetTicks;
-    
+
     // joypad
     if (Ini.Joypad = 1) or (Params.Joypad) then
       Joy.Update;
@@ -323,6 +343,7 @@ begin
     CountSkipTime;
 
   until Done;
+
 end;
 
 procedure DoQuit;
@@ -363,16 +384,11 @@ begin
         if (Ini.Mouse > 0) then
         begin
           case Event.type_ of
-            SDL_MOUSEMOTION:
-            begin
-              mouseDown := false;
-              mouseBtn  := 0;
-            end;
             SDL_MOUSEBUTTONDOWN:
             begin
               mouseDown := true;
               mouseBtn  := Event.button.button;
-              
+              CheckMouseButton := true;
               if (mouseBtn = SDL_BUTTON_LEFT) or (mouseBtn = SDL_BUTTON_RIGHT) then
                 Display.OnMouseButton(true);
             end;
@@ -380,9 +396,17 @@ begin
             begin
               mouseDown := false;
               mouseBtn  := Event.button.button;
-
+              CheckMouseButton := false;
               if (mouseBtn = SDL_BUTTON_LEFT) or (mouseBtn = SDL_BUTTON_RIGHT) then
                 Display.OnMouseButton(false);
+            end;
+            SDL_MOUSEMOTION:
+            begin
+              if (CheckMouseButton) then
+                mouseDown := true
+              else
+                mouseDown := false;
+              mouseBtn  := 0;
             end;
           end;
 
@@ -397,6 +421,12 @@ begin
               KeepGoing := ScreenPopupInfo.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
               KeepGoing := ScreenPopupCheck.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+            else if (ScreenPopupInsertUser <> nil) and (ScreenPopupInsertUser.Visible) then
+              KeepGoing := ScreenPopupInsertUser.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+            else if (ScreenPopupSendScore <> nil) and (ScreenPopupSendScore.Visible) then
+              KeepGoing := ScreenPopupSendScore.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+            else if (ScreenPopupScoreDownload <> nil) and (ScreenPopupScoreDownload.Visible) then
+              KeepGoing := ScreenPopupScoreDownload.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else
             begin
               KeepGoing := Display.CurrentScreen^.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y);
@@ -425,12 +455,12 @@ begin
         //////
         if boolean( Ini.FullScreen ) then
         begin
-          {$IF Defined(Linux) or Defined(FreeBSD)}
+        {$IF Defined(Linux) or Defined(FreeBSD)}
           SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
-          {$ELSE}
-          Screen.W := ScreenW;
-          Screen.H := ScreenH;
-          {$IFEND}
+        {$ELSE}
+        Screen.W := ScreenW;
+        Screen.H := ScreenH;
+        {$IFEND}
         end
         else
           SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
@@ -493,6 +523,12 @@ begin
               KeepGoing := ScreenPopupInfo.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
             else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
               KeepGoing := ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+            else if (ScreenPopupInsertUser <> nil) and (ScreenPopupInsertUser.Visible) then
+              KeepGoing := ScreenPopupInsertUser.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+            else if (ScreenPopupSendScore <> nil) and (ScreenPopupSendScore.Visible) then
+              KeepGoing := ScreenPopupSendScore.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+            else if (ScreenPopupScoreDownload <> nil) and (ScreenPopupScoreDownload.Visible) then
+              KeepGoing := ScreenPopupScoreDownload.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
             else
             begin
               // check if screen wants to exit

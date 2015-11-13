@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/screens/UScreenOptionsSound.pas $
+ * $Id: UScreenOptionsSound.pas 3124 2015-08-23 03:31:49Z basisbit $
  *}
 
 unit UScreenOptionsSound;
@@ -97,7 +97,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
       begin
-        if (SelInteraction >= 0) and (SelInteraction < 6) then
+        if (SelInteraction >= 0) and (SelInteraction < 8) then
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractInc;
@@ -105,7 +105,7 @@ begin
       end;
       SDLK_LEFT:
       begin
-        if (SelInteraction >= 0) and (SelInteraction < 6) then
+        if (SelInteraction >= 0) and (SelInteraction < 8) then
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractDec;
@@ -163,7 +163,7 @@ begin
 
   AddButton(Theme.OptionsSound.ButtonExit);
   if (Length(Button[0].Text) = 0) then
-    AddButtonText(20, 5, Theme.Options.Description[7]);
+    AddButtonText(20, 5, Theme.Options.Description[10]);
 
   Interaction := 0;
 end;

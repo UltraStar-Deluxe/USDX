@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/base/UTexture.pas $
+ * $Id: UTexture.pas 3150 2015-10-20 00:07:57Z basisbit $
  *}
 
 unit UTexture;
@@ -56,6 +56,8 @@ type
     ScaleW:   real; // for dynamic scalling while leaving width constant
     ScaleH:   real; // for dynamic scalling while leaving height constant
     Rot:      real; // 0 - 2*pi
+    RightScale: real; //
+    LeftScale:  real; //
     Int:      real; // intensity
     ColR:     real;
     ColG:     real;
@@ -110,8 +112,8 @@ type
   end;
 
   TTextureUnit = class
-    //private
-
+    private
+      TextureDatabase: TTextureDatabase;
     public
       Limit: integer;
 
@@ -132,7 +134,6 @@ type
 
 var
   Texture: TTextureUnit;
-  TextureDatabase: TTextureDatabase;
   SupportsNPOT: Boolean;
 implementation
 
@@ -269,7 +270,7 @@ begin
   AdjustPixelFormat(TexSurface, Typ);
 
   // adjust texture size (scale down, if necessary)
-  newWidth   := TexSurface.W;
+  newWidth   := TexSurface.W;                            //basisbit ToDo make images scale in size and keep ratio?
   newHeight  := TexSurface.H;
 
   if (newWidth > Limit) then
@@ -289,14 +290,14 @@ begin
   oldWidth  := newWidth;
   oldHeight := newHeight;
 
-  if (SupportsNPOT = false) then
-  begin
-       // make texture dimensions be powers of 2
-       newWidth  := Round(Power(2, Ceil(Log2(newWidth))));
-       newHeight := Round(Power(2, Ceil(Log2(newHeight))));
-       if (newHeight <> oldHeight) or (newWidth <> oldWidth) then
-          FitImage(TexSurface, newWidth, newHeight);
-  end;
+  {if (SupportsNPOT = false) then
+  begin}
+  // make texture dimensions be powers of 2
+  newWidth  := Round(Power(2, Ceil(Log2(newWidth))));
+  newHeight := Round(Power(2, Ceil(Log2(newHeight))));
+  if (newHeight <> oldHeight) or (newWidth <> oldWidth) then
+    FitImage(TexSurface, newWidth, newHeight);
+  {end;}
 
   // at this point we have the image in memory...
   // scaled so that dimensions are powers of 2
@@ -311,6 +312,7 @@ begin
 
   glBindTexture(GL_TEXTURE_2D, ActTex);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
@@ -360,6 +362,9 @@ begin
     TexX2 := 1;
     TexY2 := 1;
 
+    RightScale := 1;
+    LeftScale := 1;
+
     Name := Identifier;
   end;
 
@@ -384,6 +389,7 @@ begin
 
   if (FromCache) then
   begin
+    // use texture
     TextureIndex := TextureDatabase.FindTexture(Name, Typ, Col);
     if (TextureIndex > -1) then
       Result := TextureDatabase.Texture[TextureIndex].TextureCache;
@@ -466,6 +472,9 @@ begin
   Result.TexX2 := 1;
   Result.TexY2 := 1;
 
+  Result.RightScale := 1;
+  Result.LeftScale := 1;
+
   Result.Name := Name;
 end;
 
@@ -480,6 +489,7 @@ var
   TexNum: GLuint;
 begin
   T := TextureDatabase.FindTexture(Name, Typ, Col);
+  if T < 0 then Exit;
 
   if not FromCache then
   begin

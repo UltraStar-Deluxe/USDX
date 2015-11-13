@@ -1,0 +1,11 @@
+package curlpkg;
+ 
+{$R *.res}
+
+requires
+  rtl;
+
+contains
+  curlobj in 'curlobj.pas';
+
+end.

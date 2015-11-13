@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UCatCovers.pas $
+ * $Id: UCatCovers.pas 2276 2010-04-22 11:07:24Z whiteshark0 $
  *}
 
 unit UCatCovers;

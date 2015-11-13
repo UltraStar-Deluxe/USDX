@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html>
+<head>
+  <title>tCurl Version information functions</title>
+</head>
+
+<body><div>
+<h2><i>tCurl</i><small> &nbsp; version information functions</small></h2>
+<table border="2" width="100%" cellpadding="8" summary="Version information functions">
+<tr><td><a name="VERSIONINFO"><b>VersionInfo:</b></a><i> curl_version_info_data</i><br>
+Returns the complete version information data structure as defined in the curl header file:<pre>
+  curl_version_info_data = record
+    age : CurlVersion;
+    version : pChar;
+    version_num : DWORD;
+    host : pChar;
+    features : LongInt;
+    ssl_version : pChar;
+    ssl_version_num : LongInt;
+    libz_version : pChar;
+    protocols : ppChar;
+  end;
+
+</pre>
+</td></tr>
+<tr><td><a name="CURLVERSION"><b>CurlVersion:</b></a><i> string</i><br>
+Returns a string describing the version and features of curl.<br>
+This is the same string that is printed by the curl command-line program<br>
+using the &nbsp; <tt>--version</tt> &nbsp; switch.
+</td></tr>
+<tr><td><a name="LIBRARYVERSION"><b>LibraryVersion:</b></a><i> string</i><br>
+Returns a string representation of the curl version, e.g. <tt>"7.10.2"</tt>
+</td></tr>
+<tr><td><a name="VERSIONNUMBER"><b>VersionNumber:</b></a><i> LongWord</i><br>
+Returns the numeric value of the curl version number.
+</td></tr>
+<tr><td><a name="PROTOCOLS"><b>Protocols:</b></a><i> tCurlProtocolList</i><br>
+List of supported protocols...<br>
+Returns an array of strings in the range of zero to <i>Protocols.Count-1</i><br>
+This type is something similar to a tStringList.<br>
+To walk the list, you could do something like:<pre>
+  for i:=0 to Protocols.Count-1 do begin
+    WriteLn(Protocols[i]);
+  end;
+</pre>
+Note that accessing an invalid index will not generate a range check
+error, but instead it will return an empty string.
+</td></tr>
+<tr><td><a name="MACHINE"><b>Machine:</b></a><i> string</i><br>
+Returns a string describing the type of system on which curl is running.<br>
+For instance: <tt>"i686-pc-linux-gnu"</tt>
+</td></tr>
+<tr><td><a name="FEATURES"><b>Features:</b></a><i> tCurlFeatures</i><br>
+Returns a record which represents the compiled-in features of your libcurl installation.  <br>
+The record contains these boolean fields:<pre>
+  type tCurlFeatures = record
+    IPv6: boolean;
+    Ssl: boolean;
+    Kerberos4: boolean;
+    Libz: boolean;
+  end;
+
+</pre>
+</td></tr>
+<tr><td><a name="SSLVERSIONSTRING"><b>SslVersionString:</b></a><i> string</i><br>
+Returns a string representation of the installed SSL version, if available.<br>
+For instance: <tt>"OpenSSL/0.9.6g"</tt>
+</td></tr>
+<tr><td><a name="SSLVERSIONNUMBER"><b>SslVersionNumber:</b></a><i> LongInt</i><br>
+Returns the numeric value of the SSL version number.
+</td></tr>
+<tr><td><a name="LIBZVERSION"><b>LibzVersion:</b></a><i> string</i><br>
+Returns a string representation of the installed LibZ version, if available.<br>
+For instance: <tt>"1.1.4"</tt>
+</td></tr>
+</table>
+<br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br>
+</div>
+</body>
+</html>

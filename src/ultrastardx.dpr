@@ -19,14 +19,14 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/ultrastardx.dpr $
+ * $Id: ultrastardx.dpr 3131 2015-09-07 00:11:32Z basisbit $
  *}
 
 program ultrastardx;
 
 {$IFDEF MSWINDOWS}
-  {$R '..\res\ultrastardx.res' '..\res\ultrastardx.rc'}
+  //{$R '..\res\ultrastardx.res' '..\res\ultrastardx.rc'}
 {$ENDIF}
 
 {$IFDEF FPC}
@@ -47,6 +47,7 @@ program ultrastardx;
 {$ENDIF}
 
 uses
+  //heaptrc,
   {$IFDEF Unix}
   cthreads,            // THIS MUST be the first used unit in FPC if Threads are used!!
                        // (see http://wiki.lazarus.freepascal.org/Multithreaded_Application_Tutorial)
@@ -121,18 +122,12 @@ uses
   projectM      in 'lib\projectM\projectM.pas',
   {$ENDIF}
 
-  MidiCons      in 'lib\midi\MidiCons.pas',
   {$IFDEF MSWINDOWS}
-  CircBuf       in 'lib\midi\CircBuf.pas',
-  DelphiMcb     in 'lib\midi\DelphiMcb.pas',
-  MidiDefs      in 'lib\midi\MidiDefs.pas',
-  MidiFile      in 'lib\midi\MidiFile.pas',
-  MidiOut       in 'lib\midi\MidiOut.pas',
-  MidiType      in 'lib\midi\MidiType.pas',
   {$IFDEF FPC}
   // FPC compatibility file for Allocate/DeallocateHWnd
   WinAllocation in 'lib\other\WinAllocation.pas',
   {$ENDIF}
+
   DirWatch      in 'lib\other\DirWatch.pas',
   {$ENDIF}
 
@@ -248,7 +243,7 @@ uses
   //------------------------------
   //Includes - Platform
   //------------------------------
-  
+
   UPlatform         in 'base\UPlatform.pas',
 {$IF Defined(MSWINDOWS)}
   UPlatformWindows  in 'base\UPlatformWindows.pas',
@@ -311,7 +306,7 @@ uses
 
   //------------------------------
   //Includes - Screens
-  //------------------------------  
+  //------------------------------
   UScreenLoading          in 'screens\UScreenLoading.pas',
   UScreenMain             in 'screens\UScreenMain.pas',
   UScreenName             in 'screens\UScreenName.pas',
@@ -330,7 +325,6 @@ uses
   UScreenOptionsAdvanced  in 'screens\UScreenOptionsAdvanced.pas',
   UScreenEditSub          in 'screens\UScreenEditSub.pas',
   UScreenEdit             in 'screens\UScreenEdit.pas',
-  UScreenEditConvert      in 'screens\UScreenEditConvert.pas',
   UScreenEditHeader       in 'screens\UScreenEditHeader.pas',
   UScreenOpen             in 'screens\UScreenOpen.pas',
   UScreenTop5             in 'screens\UScreenTop5.pas',
@@ -349,7 +343,36 @@ uses
   UScreenPartyRounds      in 'screens\UScreenPartyRounds.pas',
   UScreenPartyWin         in 'screens\UScreenPartyWin.pas',
 
+  // uses by zup3r_vock
+  UWebSDK                 in 'webSDK\UWebSDK.pas',
+  UMD5                    in 'webSDK\encrypt\UMD5.pas',
+
+  //BassMIDI                in 'lib\bassmidi\bassmidi.pas',
+
+  UMenuStaticList in 'menu\UMenuStaticList.pas',
+  UWebcam                 in 'base\UWebcam.pas',
+
+  UDLLManager             in 'base\UDLLManager.pas',
+
+  UPartyTournament              in 'base\UPartyTournament.pas',
+  UScreenPartyTournamentRounds  in 'screens\UScreenPartyTournamentRounds.pas',
+  UScreenPartyTournamentPlayer  in 'screens\UScreenPartyTournamentPlayer.pas',
+  UScreenPartyTournamentOptions in 'screens\UScreenPartyTournamentOptions.pas',
+  UScreenPartyTournamentWin     in 'screens\UScreenPartyTournamentWin.pas',
+  UScreenJukeboxOptions         in 'screens\UScreenJukeboxOptions.pas',
+  UScreenJukeboxPlaylist        in 'screens\UScreenJukeboxPlaylist.pas',
+
+  UScreenOptionsNetwork in 'screens\UScreenOptionsNetwork.pas',
+  UScreenOptionsWebcam  in 'screens\UScreenOptionsWebcam.pas',
+  UScreenOptionsJukebox in 'screens\UScreenOptionsJukebox.pas',
+
+  UAvatars                in 'base\UAvatars.pas',
+  UScreenAbout            in 'screens\UScreenAbout.pas',
+
+  //UVideoAcinerella        in 'base\UVideoAcinerella.pas',
+
   SysUtils;
+{$R ultrastardx.res}
 
 const
   sLineBreak = {$IFDEF LINUX} AnsiChar(#10) {$ENDIF}
@@ -360,7 +383,7 @@ var
 
 begin
   try
-    Main;
+  Main;
   except
     on E : Exception do
     begin

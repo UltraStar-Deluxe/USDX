@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/base/UPlatformMacOSX.pas $
+ * $Id: UPlatformMacOSX.pas 3018 2013-12-06 21:48:55Z k-m_schindler $
  *}
 
 unit UPlatformMacOSX;
@@ -91,7 +91,7 @@ type
    *
    * The log and benchmark files are stored in
    * $HOME/Library/Log/UltraStar Deluxe/
-   *
+   * 
    * Music should go into ~/Music/UltraStar Deluxe/
    *
    * ~/Library/Application Support/UltraStarDeluxe/songs is also used.
@@ -249,7 +249,7 @@ begin
     RelativePath := (DirectoryList[DirectoryIsFinished] as IPath);
     FileSystem.SetCurrentDir(BaseDir.Append(RelativePath));
     Iter := FileSystem.FileFind(Path('*'), faAnyFile);
-    while (Iter.HasNext) do
+    while (Iter.HasNext) do    
     begin
       FileInfo := Iter.Next;
       CurPath := FileInfo.Name;
@@ -257,15 +257,15 @@ begin
         writeln('Current path: ' + CurPath.ToNative);
       if CurPath.IsDirectory() then
       begin
-        if (not CurPath.Equals('.')) and
-           (not CurPath.Equals('..')) and
-           (not CurPath.Equals('MacOS')) then
+        if (not CurPath.Equals('.')) and 
+	   (not CurPath.Equals('..')) and 
+	   (not CurPath.Equals('MacOS')) then
           DirectoryList.Add(RelativePath.Append(CurPath));
       end
       else
         Filelist.Add(RelativePath.Append(CurPath));
     end;
-    inc(DirectoryIsFinished);
+    Inc(DirectoryIsFinished);
   until (DirectoryIsFinished = DirectoryList.Count);
 
   // create missing folders

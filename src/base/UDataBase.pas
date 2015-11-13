@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UDataBase.pas $
+ * $Id: UDataBase.pas 2574 2010-07-07 19:52:32Z brunzelchen $
  *}
 
 unit UDataBase;
@@ -36,6 +36,8 @@ interface
 uses
   Classes,
   SQLiteTable3,
+  UDllManager,
+  UIni,
   UPath,
   USong,
   USongs,
@@ -87,6 +89,24 @@ type
       TimesSungTot: word;
   end;
 
+  PUserInfo = ^TUserInfo;
+  TUserInfo = record
+    Username:     UTF8String;
+    Password:     UTF8String;
+    SendSavePlayer:   integer;
+    AutoMode:      integer;
+    AutoPlayer:      integer;
+    AutoScoreEasy:   integer;
+    AutoScoreMedium: integer;
+    AutoScoreHard:   integer;
+    Save:                boolean;
+  end;
+
+  PNetworkUser = ^TNetworkUser;
+  TNetworkUser = record
+    Website:  UTF8String;
+    UserList: array of TUserInfo;
+  end;
 
   TDataBaseSystem = class
     private
@@ -96,6 +116,9 @@ type
       function GetVersion(): integer;
       procedure SetVersion(Version: integer);
     public
+      // Network
+      NetworkUser: array of TNetworkUser;
+
       property Filename: IPath read fFilename;
 
       destructor Destroy; override;
@@ -106,11 +129,37 @@ type
       procedure AddScore(Song: TSong; Level: integer; const Name: UTF8String; Score: integer);
       procedure WriteScore(Song: TSong);
 
+      procedure ReadUsers;
+      procedure UpdateUsers;
+      procedure DeleteUser(Website: UTF8String; Username: UTF8String);
+      procedure NewUser(Website: UTF8String; Username, Password: UTF8String);
+
+      procedure AddWebsite;
+
+      procedure AddSong(Song: TSong);
+
+      procedure AddMax_Score (Song: TSong; WebID: integer; Receive_Max_Score: integer; Level: integer);
+      procedure AddMedia_Score (Song: TSong; WebID: integer; Receive_Media_Score: integer; Level: integer);
+      procedure AddUser_Score (Song: TSong; WebID: integer; Receive_User_Score: string; Level: integer);
+
+      function ReadMax_Score(Artist, Title: UTF8String; WebID, Level: integer): integer;
+      function ReadMedia_Score(Artist, Title: UTF8String; WebID, Level: integer): integer;
+      function ReadUser_Score(Artist, Title: UTF8String; WebID, Level: integer): string;
+
+      function ReadMax_ScoreLocal(Artist, Title: UTF8String; Level: integer): integer;
+      function ReadMedia_ScoreLocal(Artist, Title: UTF8String; Level: integer): integer;
+      function ReadUser_ScoreLocal(Artist, Title: UTF8String; Level: integer): string;
+
+      function Delete_Score(Song: TSong; WebID: integer): integer;
+
       function GetStats(Typ: TStatType; Count: byte; Page: cardinal; Reversed: boolean): TList;
       procedure FreeStats(StatList: TList);
       function GetTotalEntrys(Typ: TStatType): cardinal;
       function GetStatReset: TDateTime;
       function FormatDate(time_stamp: integer): UTF8String;
+
+      procedure SaveSongOptions(Song: TSong; Options: TSongOptions);
+      function GetSongOptions(Song: TSong): TSongOptions;
   end;
 
 var
@@ -121,6 +170,7 @@ implementation
 uses
   DateUtils,
   ULanguage,
+  UUnicodeUtils,
   StrUtils,
   SysUtils,
   ULog;
@@ -135,6 +185,9 @@ const
   cUS_Scores = 'us_scores';
   cUS_Songs  = 'us_songs';
   cUS_Statistics_Info = 'us_statistics_info';
+  cUS_Users_Info = 'us_users_info';
+  cUS_Webs = 'us_webs';
+  cUS_Webs_Stats = 'us_webs_stats';
 
 (**
  * Open database and create tables if they do not exist
@@ -206,9 +259,69 @@ begin
                       '[Artist] TEXT NOT NULL, ' +
                       '[Title] TEXT NOT NULL, ' +
                       '[TimesPlayed] INTEGER NOT NULL, ' +
-                      '[Rating] INTEGER NULL' +
+                      '[Rating] INTEGER NULL, ' +
+                      '[VideoRatioAspect] INTEGER NULL, ' +
+                      '[VideoWidth] INTEGER NULL, ' +
+                      '[VideoHeight] INTEGER NULL, ' +
+                      '[LyricPosition] INTEGER NULL, ' +
+                      '[LyricAlpha] INTEGER NULL, ' +
+                      '[LyricSingFillColor] TEXT NULL, ' +
+                      '[LyricActualFillColor] TEXT NULL, ' +
+                      '[LyricNextFillColor] TEXT NULL, ' +
+                      '[LyricSingOutlineColor] TEXT NULL, ' +
+                      '[LyricActualOutlineColor] TEXT NULL, ' +
+                      '[LyricNextOutlineColor] TEXT NULL' +
                     ');');
 
+    ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS [' + cUS_Webs + '] (' +
+                      '[ID] INTEGER PRIMARY KEY, ' +
+                      '[Name] TEXT NOT NULL ' +
+                     ');');
+
+    ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS [' + cUS_Webs_Stats + '] (' +
+                      '[WebID] INTEGER NOT NULL, ' +
+                      '[SongID] INTEGER NOT NULL, ' +
+                      '[Max_Score_0] INTEGER NULL,' +
+                      '[Media_Score_0] INTEGER NULL,' +
+                      '[User_Score_0] TEXT NULL,' +
+                      '[Max_Score_1] INTEGER NULL,' +
+                      '[Media_Score_1] INTEGER NULL,' +
+                      '[User_Score_1] TEXT NULL,' +
+                      '[Max_Score_2] INTEGER NULL,' +
+                      '[Media_Score_2] INTEGER NULL,' +
+                      '[User_Score_2] TEXT NULL ' +
+                    ');');
+
+    ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS [' + cUS_Users_Info + '] (' +
+                      '[WebID] INTEGER NOT NULL, ' +
+                      '[Username] TEXT NOT NULL, ' +
+                      '[Password] TEXT NOT NULL, ' +
+                      '[SendSavePlayer] INTEGER NOT NULL,' +
+                      '[AutoMode] INTEGER NOT NULL,' +
+                      '[AutoPlayer] INTEGER NOT NULL,' +
+                      '[AutoScoreEasy] INTEGER NOT NULL,' +
+                      '[AutoScoreMedium] INTEGER NOT NULL,' +
+                      '[AutoScoreHard] INTEGER NOT NULL' +
+                    ');');
+
+    //add column for options jukebox
+    if not ScoreDB.ContainsColumn(cUS_Songs, 'VideoRatioAspect') then
+    begin
+      Log.LogInfo('adding columns to "' + cUS_Songs + ' for jukebox options"', 'TDataBaseSystem.Init');
+
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [VideoRatioAspect] INTEGER NULL');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [VideoWidth] INTEGER NULL');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [VideoHeight] INTEGER NULL');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [LyricPosition] INTEGER NULL');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [LyricAlpha] INTEGER NULL');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [LyricSingFillColor] TEXT NULL');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [LyricActualFillColor] TEXT NULL');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [LyricNextFillColor] TEXT NULL');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [LyricSingOutlineColor] TEXT NULL');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [LyricActualOutlineColor] TEXT NULL');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [LyricNextOutlineColor] TEXT NULL');
+    end;
+    
     //add column date to cUS-Scores
     if not ScoreDB.ContainsColumn(cUS_Scores, 'Date') then
     begin
@@ -423,14 +536,17 @@ begin
       begin
         //filter player
         PlayerListed:=false;
-        if (Length(Song.Score[Difficulty])>0) then
+        if (Ini.TopScores = 1) then
         begin
-          for I := 0 to Length(Song.Score[Difficulty]) - 1 do
+          if (Length(Song.Score[Difficulty])>0) then
           begin
-            if (Song.Score[Difficulty, I].Name = TableData.FieldByName['Player']) then
+            for I := 0 to Length(Song.Score[Difficulty]) - 1 do
             begin
-              PlayerListed:=true;
-              break;
+              if (Song.Score[Difficulty, I].Name = TableData.FieldByName['Player']) then
+              begin
+                PlayerListed:=true;
+                break;
+              end;
             end;
           end;
         end;
@@ -531,7 +647,679 @@ begin
   end;
 end;
 
+
+(*
+ * Add Website
+ *)
+procedure TDataBaseSystem.AddWebsite;
+var
+  I, WebID: Integer;
+begin
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  try
+
+    for I := 0 to High(DLLMan.Websites) do
+    begin
+
+      // load functions
+      DLLMan.LoadWebsite(I);
+
+      WebID := ScoreDB.GetTableValue(
+               'SELECT [ID] FROM [' + cUS_Webs + '] ' +
+               'WHERE [Name] = ? ',
+               [UTF8Encode(DLLMan.Websites[I].Name)]);
+
+      if (WebID = 0) then
+      begin
+        // Create website if it does not exist
+        ScoreDB.ExecSQL(
+          'INSERT INTO [' + cUS_Webs + '] ' +
+          '([ID], [Name]) VALUES ' +
+          '(NULL, ?);',
+          [UTF8Encode(DLLMan.Websites[I].Name)]);
+          DLLMan.Websites[I].ID := ScoreDB.GetLastInsertRowID();
+      end
+      else
+        DLLMan.Websites[I].ID := WebID;
+    end;
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.AddWebsite');
+  end;
+
+end;
+
 (**
+ * Read Users Info to Array
+ *)
+procedure TDataBaseSystem.ReadUsers;
+var
+  TableData_Web, TableData_User: TSQLiteUniTable;
+  I, WebID: Integer;
+  Website: UTF8String;
+begin
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  NetworkUser := nil;
+
+  SetLength(NetworkUser, Length(DLLMan.Websites));
+  for I := 0 to High(DLLMan.Websites) do
+  begin
+    Website := DLLMan.Websites[I].Name;
+    NetworkUser[I].Website := UTF8Encode(Website);
+  end;
+
+  TableData_Web := nil;
+  TableData_User := nil;
+
+  try
+
+    // Search User's in DB
+    TableData_User := ScoreDB.GetUniTable('SELECT * FROM ['+cUS_Users_Info+'] ORDER BY [Username]');
+
+    // Go through all Entrys
+    while (not TableData_User.EOF) do
+    begin
+
+      // Add one Entry to Array of WebSite->UserList
+      for I:=0 to High(NetworkUser) do
+      begin
+        WebID := ScoreDB.GetTableValue(
+                 'SELECT [ID] FROM [' + cUS_Webs + '] ' +
+                 'WHERE [Name] = ? ',
+                 [NetworkUser[I].Website]);
+
+        if (WebID = StrToInt(TableData_User.Fields[0])) then
+        begin
+          SetLength(NetworkUser[I].UserList, Length(NetworkUser[I].UserList) + 1);
+          NetworkUser[I].UserList[High(NetworkUser[I].UserList)].Username := TableData_User.Fields[1];
+          NetworkUser[I].UserList[High(NetworkUser[I].UserList)].Password := TableData_User.Fields[2];
+          NetworkUser[I].UserList[High(NetworkUser[I].UserList)].SendSavePlayer := StrToInt(TableData_User.Fields[3]);
+          NetworkUser[I].UserList[High(NetworkUser[I].UserList)].AutoMode := StrToInt(TableData_User.Fields[4]);
+          NetworkUser[I].UserList[High(NetworkUser[I].UserList)].AutoPlayer := StrToInt(TableData_User.Fields[5]);
+          NetworkUser[I].UserList[High(NetworkUser[I].UserList)].AutoScoreEasy := StrToInt(TableData_User.Fields[6]);
+          NetworkUser[I].UserList[High(NetworkUser[I].UserList)].AutoScoreMedium := StrToInt(TableData_User.Fields[7]);
+          NetworkUser[I].UserList[High(NetworkUser[I].UserList)].AutoScoreHard := StrToInt(TableData_User.Fields[8]);
+        end;
+      end;
+      TableData_User.Next;
+    end; // while
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.ReadUser');
+  end;
+
+  TableData_User.Free;
+  TableData_Web.Free;
+
+end;
+
+(**
+ * Save User to DB
+ *)
+procedure TDataBaseSystem.NewUser(Website: UTF8String; Username, Password: UTF8String);
+var
+  WebID: integer;
+begin
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+
+  try
+    WebID := ScoreDB.GetTableValue(
+        'SELECT [ID] FROM [' + cUS_Webs + '] ' +
+        'WHERE [Name] = ? ',
+        [Website]);
+
+    // Insert New entry's
+    ScoreDB.ExecSQL('INSERT INTO [' + cUS_Users_Info + ']('+
+    '[WebID],[Username],[Password],[SendSavePlayer],[AutoMode],[AutoPlayer],[AutoScoreEasy],[AutoScoreMedium],[AutoScoreHard])' +
+    'VALUES (?,?,?,?,?,?,?,?,?)',
+    [WebID, Username, Password, 0, 0, 0, 0, 0, 0]);
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.NewUser');
+  end;
+
+end;
+
+(**
+ * Save Users Info to DB
+ *)
+procedure TDataBaseSystem.UpdateUsers;
+var
+  I, J, WebID: Integer;
+begin
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  try
+  begin
+    for I:=0 to High(NetworkUser) do
+    begin
+      for J:=0 to High(NetworkUser[I].UserList) do
+      begin
+        if (NetworkUser[I].UserList[J].Save = true) then
+        begin
+          WebID := ScoreDB.GetTableValue(
+          'SELECT [ID] FROM [' + cUS_Webs + '] ' +
+          'WHERE [Name] = ? ',
+          [NetworkUser[I].Website]);
+
+          // Update entry's
+          ScoreDB.ExecSQL(
+          'UPDATE [' + cUS_Users_Info + '] ' +
+          'SET [SendSavePlayer]=' + IntToStr(NetworkUser[I].UserList[J].SendSavePlayer) +
+          ', [AutoMode]=' + IntToStr(NetworkUser[I].UserList[J].AutoMode) +
+          ', [AutoPlayer]=' + IntToStr(NetworkUser[I].UserList[J].AutoPlayer) +
+          ', [AutoScoreEasy]=' + IntToStr(NetworkUser[I].UserList[J].AutoScoreEasy) +
+          ', [AutoScoreMedium]=' + IntToStr(NetworkUser[I].UserList[J].AutoScoreMedium) +
+          ', [AutoScoreHard]=' +  IntToStr(NetworkUser[I].UserList[J].AutoScoreHard) +
+          ' WHERE [WebID] = ? AND [Username] = ? ; ',
+          [WebID, NetworkUser[I].UserList[J].Username]);
+        end;
+      end;
+    end;
+  end;
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.UpdateUser');
+  end;
+
+end;
+
+(**
+ * Delete User Info on DB
+ *)
+procedure TDataBaseSystem.DeleteUser(Website: UTF8String; Username: UTF8String);
+var
+  WebID: integer;
+begin
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  try
+    WebID := ScoreDB.GetTableValue(
+             'SELECT [ID] FROM [' + cUS_Webs + '] ' +
+             'WHERE [Name] = ? ',
+             [Website]);
+
+    ScoreDB.ExecSQL('DELETE FROM [' + cUS_Users_Info + '] ' +
+        'WHERE [WebID] = ? AND [Username] = ?;',
+        [WebID, Username]);
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.DeleteUser');
+  end;
+
+end;
+
+(**
+ * Adds songs to DB
+ *)
+procedure TDataBaseSystem.AddSong(Song: TSong);
+var
+  ID:        integer;
+  TableData: TSQLiteTable;
+begin
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  TableData := nil;
+
+  if (Song.Artist <> '') and (Song.Title <> '') then
+  begin
+  try
+    ID := ScoreDB.GetTableValue(
+        'SELECT [ID] FROM ['+cUS_Songs+'] ' +
+        'WHERE [Artist] = ? AND [Title] = ?',
+        [Song.Artist, Song.Title]);
+
+    if (ID = 0) then
+    begin
+      // Create song if it does not exist
+      ScoreDB.ExecSQL(
+          'INSERT INTO ['+cUS_Songs+'] ' +
+          '([Artist], [Title], [TimesPlayed]) VALUES ' +
+          '(?, ?, 0);',
+          [Song.Artist, Song.Title]);
+    end;
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.AddSong');
+  end;
+  end;
+
+  TableData.Free;
+end;
+
+(**
+ * Add Max_Score to Song
+ *)
+procedure TDataBaseSystem.AddMax_Score (Song: TSong; WebID: integer; Receive_Max_Score: integer; Level: integer);
+var
+  Max_Score, ID, Count: integer;
+  TableData: TSQLiteTable;
+begin
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  TableData := nil;
+
+  try
+
+    ID := ScoreDB.GetTableValue(
+        'SELECT [ID] FROM ['+cUS_Songs+'] ' +
+        'WHERE [Artist] = ? AND [Title] = ?',
+        [Song.Artist, Song.Title]);
+
+    Count := ScoreDB.GetTableValue(
+        'SELECT COUNT(*) FROM [' + cUS_Webs_Stats + '] ' +
+        'WHERE [WebID] = ? AND [SongID] = ?',
+        [WebID, ID]);
+
+    if (Count = 0) then
+    begin
+      // Insert Max Score
+      ScoreDB.ExecSQL(
+         'INSERT INTO ['+cUS_Webs_Stats+'] ' +
+         '([WebID], [SongID], [Max_Score_' + IntToStr(Level) + ']) VALUES(?,?,?);',
+         [WebID, ID, Receive_Max_Score]);
+    end
+    else
+    begin
+
+      Max_Score := ScoreDB.GetTableValue(
+        'SELECT [Max_Score_' + IntToStr(Level) + '] FROM [' + cUS_Webs_Stats + '] ' +
+        'WHERE [WebID] = ? AND [SongID] = ?',
+        [WebID, ID]);
+
+      if (Max_Score <> Receive_Max_Score) then
+      begin
+        // Update Max Score
+        ScoreDB.ExecSQL(
+            'UPDATE ['+cUS_Webs_Stats+'] ' +
+            'SET [Max_Score_' + IntToStr(Level) + '] = ' + IntToStr(Receive_Max_Score) +
+            ' WHERE [WebID] = ? AND [SongID] = ?;',
+            [WebID, ID]);
+      end;
+    end;
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.AddMax_Score');
+  end;
+
+  TableData.Free;
+
+end;
+
+(**
+ * Add Media_Score to Song
+ *)
+procedure TDataBaseSystem.AddMedia_Score (Song: TSong; WebID: integer; Receive_Media_Score: integer; Level: integer);
+var
+  Media_Score, ID: integer;
+  TableData: TSQLiteTable;
+begin
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  TableData := nil;
+
+  try
+
+    ID := ScoreDB.GetTableValue(
+        'SELECT [ID] FROM ['+cUS_Songs+'] ' +
+        'WHERE [Artist] = ? AND [Title] = ?',
+        [Song.Artist, Song.Title]);
+
+    Media_Score := ScoreDB.GetTableValue(
+        'SELECT [Media_Score_' + IntToStr(Level) + '] FROM [' + cUS_Webs_Stats + '] ' +
+        'WHERE [WebID] = ? AND [SongID] = ?',
+        [WebID, ID]);
+
+    if (Media_Score <> Receive_Media_Score) then
+    begin
+      // Update Max Score
+      ScoreDB.ExecSQL(
+          'UPDATE ['+cUS_Webs_Stats+'] ' +
+          'SET [Media_Score_' + IntToStr(Level) + '] = ' + IntToStr(Receive_Media_Score) +
+          ' WHERE [WebID] = ? AND [SongID] = ?;',
+          [WebID, ID]);
+    end;
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.AddMedia_Score');
+  end;
+
+  TableData.Free;
+
+end;
+
+
+(**
+ * Add User to Song
+ *)
+procedure TDataBaseSystem.AddUser_Score (Song: TSong; WebID: integer; Receive_User_Score: string; Level: integer);
+var
+  User_Score: string;
+  ID: integer;
+  TableData: TSQLiteTable;
+begin
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  TableData := nil;
+
+  try
+
+    ID := ScoreDB.GetTableValue(
+        'SELECT [ID] FROM ['+cUS_Songs+'] ' +
+        'WHERE [Artist] = ? AND [Title] = ?',
+        [Song.Artist, Song.Title]);
+
+    User_Score := ScoreDB.GetTableString(
+        'SELECT [User_Score_' + IntToStr(Level) + '] FROM [' + cUS_Webs_Stats + '] ' +
+        'WHERE [WebID] = ? AND [SongID] = ?',
+        [WebID, ID]);
+
+    if (User_Score <> Receive_User_Score) then
+    begin
+      // Update User Score
+      ScoreDB.ExecSQL(
+          'UPDATE ['+cUS_Webs_Stats+'] ' +
+          'SET [User_Score_' + IntToStr(Level) + '] = ? ' +
+          ' WHERE [WebID] = ? AND [SongID] = ?;',
+          [UTF8Encode(Receive_User_Score), WebID, ID]);
+    end;
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.AddUser_Score');
+  end;
+
+  TableData.Free;
+
+end;
+
+(**
+ * Read Max_Score
+ *)
+function TDataBaseSystem.ReadMax_Score(Artist, Title: UTF8String; WebID, Level: integer): integer;
+var
+  Max_Score, SongID: integer;
+  TableData: TSQLiteTable;
+begin
+
+  Max_Score := 0;
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  TableData := nil;
+
+  try
+    SongID := ScoreDB.GetTableValue(
+        'SELECT [ID] FROM ['+cUS_Songs+'] ' +
+        'WHERE [Artist] = ? AND [Title] = ?',
+        [Artist, Title]);
+
+    Max_Score := ScoreDB.GetTableValue(
+        'SELECT [Max_Score_' + IntToStr(Level) + '] FROM ['+cUS_Webs_Stats+'] ' +
+        'WHERE [WebID] = ? AND [SongID] = ?',
+        [WebID, SongID]);
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.ReadMax_Score');
+  end;
+
+  TableData.Free;
+
+  result := Max_Score;
+
+end;
+
+(**
+ * Read Media_Score
+ *)
+function TDataBaseSystem.ReadMedia_Score(Artist, Title: UTF8String; WebID, Level: integer): integer;
+var
+  Media_Score, SongID: integer;
+  TableData: TSQLiteTable;
+begin
+  Media_Score := 0;
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  TableData := nil;
+
+  try
+    SongID := ScoreDB.GetTableValue(
+        'SELECT [ID] FROM ['+cUS_Songs+'] ' +
+        'WHERE [Artist] = ? AND [Title] = ?',
+        [Artist, Title]);
+
+    Media_Score := ScoreDB.GetTableValue(
+        'SELECT [Media_Score_' + IntToStr(Level) + '] FROM ['+cUS_Webs_Stats+'] ' +
+        'WHERE [WebID] = ? AND [SongID] = ?',
+        [WebID, SongID]);
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.ReadMedia_Score');
+  end;
+
+  TableData.Free;
+
+  Result := Media_Score;
+
+end;
+
+(**
+ * Read User_Score
+ *)
+function TDataBaseSystem.ReadUser_Score(Artist, Title: UTF8String; WebID, Level: integer): string;
+var
+  User_Score: string;
+  SongID: integer;
+  TableData: TSQLiteTable;
+begin
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  TableData := nil;
+
+  try
+    SongID := ScoreDB.GetTableValue(
+        'SELECT [ID] FROM ['+cUS_Songs+'] ' +
+        'WHERE [Artist] = ? AND [Title] = ?',
+        [Artist, Title]);
+
+    User_Score := ScoreDB.GetTableString(
+        'SELECT [User_Score_' + IntToStr(Level) + '] FROM ['+cUS_Webs_Stats+'] ' +
+        'WHERE [WebID] = ? AND [SongID] = ?',
+        [WebID, SongID]);
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.ReadUser_Score');
+  end;
+
+  TableData.Free;
+
+  Result := UTF8Decode(User_Score);
+
+end;
+
+
+(**
+ * Read Max_Score Local
+ *)
+function TDataBaseSystem.ReadMax_ScoreLocal(Artist, Title: UTF8String; Level: integer): integer;
+var
+  Max_Score, ID: integer;
+  TableData: TSQLiteTable;
+begin
+
+  Max_Score := 0;
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  TableData := nil;
+
+  try
+
+    ID := ScoreDB.GetTableValue(
+          'SELECT [ID] FROM ['+cUS_Songs+'] ' +
+          'WHERE [Artist] = ? AND [Title] = ?',
+          [Artist, Title]);
+
+    Max_Score := ScoreDB.GetTableValue(
+        'SELECT MAX([Score]) FROM ['+cUS_Scores+'] ' +
+        'WHERE [SongID] = ? AND [Difficulty] = ?',
+        [ID, Level]);
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.ReadMax_ScoreLocal');
+ end;
+
+  TableData.Free;
+
+  Result := Max_Score;
+
+end;
+
+(**
+ * Read Media_Score
+ *)
+function TDataBaseSystem.ReadMedia_ScoreLocal(Artist, Title: UTF8String; Level: integer): integer;
+var
+  Media_Score, ID: integer;
+  TableData: TSQLiteTable;
+begin
+
+  Media_Score := 0;
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  TableData := nil;
+
+  try
+    ID := ScoreDB.GetTableValue(
+          'SELECT [ID] FROM ['+cUS_Songs+'] ' +
+          'WHERE [Artist] = ? AND [Title] = ?',
+          [Artist, Title]);
+
+    Media_Score := ScoreDB.GetTableValue(
+        'SELECT AVG([Score]) FROM ['+cUS_Scores+'] ' +
+        'WHERE [SongID] = ? AND [Difficulty] = ?',
+        [ID, Level]);
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.ReadMedia_ScoreLocal');
+  end;
+
+  TableData.Free;
+
+  result := Media_Score;
+
+end;
+
+(**
+ * Read User_Score
+ *)
+function TDataBaseSystem.ReadUser_ScoreLocal(Artist, Title: UTF8String; Level: integer): string;
+var
+  User_Score: string;
+  ID: integer;
+  TableData: TSQLiteTable;
+begin
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  TableData := nil;
+
+  try
+    ID := ScoreDB.GetTableValue(
+          'SELECT [ID] FROM ['+cUS_Songs+'] ' +
+          'WHERE [Artist] = ? AND [Title] = ?',
+          [Artist, Title]);
+
+    User_Score := ScoreDB.GetTableString(
+                 'SELECT [Player] FROM ['+cUS_Scores+'] ' +
+                 'WHERE [SongID] = ? and [Difficulty] = ? ORDER BY [Score] DESC LIMIT 1',
+                 [ID, Level]);
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.ReadUser_Score');
+  end;
+
+  TableData.Free;
+
+  Result := User_Score;
+
+end;
+
+(**
+ * Delete Score (Maybe song not exist anymore (or update))
+ *)
+function TDataBaseSystem.Delete_Score(Song: TSong; WebID: integer): integer;
+var
+  Score: byte;
+  ID: integer;
+  TableData: TSQLiteTable;
+begin
+
+  Score := 0;
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  TableData := nil;
+
+  try
+
+    ID := ScoreDB.GetTableValue(
+        'SELECT [ID] FROM ['+cUS_Songs+'] ' +
+        'WHERE [Artist] = ? AND [Title] = ?',
+        [Song.Artist, Song.Title]);
+
+    Score := ScoreDB.GetTableValue(
+        'SELECT COUNT(*) FROM [' + cUS_Webs_Stats + '] ' +
+        'WHERE [WebID] = ? AND [SongID] = ?',
+        [WebID, ID]);
+
+    if (Score <> 0) then
+    begin
+      // Delete Score
+      ScoreDB.ExecSQL(
+          'DELETE FROM ['+cUS_Webs_Stats+'] ' +
+          ' WHERE [WebID] = ? AND [SongID] = ?;',
+          [WebID, ID]);
+    end;
+
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.Delete_Score');
+  end;
+
+  TableData.Free;
+
+  Result := Score;
+end;
+
+(*
  * Writes some stats to array.
  * Returns nil if the database is not ready or a list with zero or more statistic
  * entries.
@@ -715,6 +1503,75 @@ end;
 procedure TDataBaseSystem.SetVersion(Version: integer);
 begin
   ScoreDB.ExecSQL(Format('PRAGMA user_version = %d', [Version]));
+end;
+
+(**
+ * SaveSongOptions to DB
+ *)
+procedure TDataBaseSystem.SaveSongOptions(Song: TSong; Options: TSongOptions);
+begin
+
+  AddSong(Song);
+
+  ScoreDB.ExecSQL(
+          'UPDATE [' + cUS_Songs + '] ' +
+          'SET [VideoRatioAspect] = ?, ' +
+          '[VideoWidth] = ?, ' +
+          '[VideoHeight] = ?, ' +
+          '[LyricPosition] = ?, ' +
+          '[LyricAlpha] = ?, ' +
+          '[LyricSingFillColor] = ?, ' +
+          '[LyricActualFillColor] = ?, ' +
+          '[LyricNextFillColor] = ?, ' +
+          '[LyricSingOutlineColor] = ?, ' +
+          '[LyricActualOutlineColor] = ?, ' +
+          '[LyricNextOutlineColor] = ? ' +
+          'WHERE [Artist] = ? AND [Title] = ?;',
+          [Options.VideoRatioAspect, Options.VideoWidth, Options.VideoHeight,
+          Options.LyricPosition, Options.LyricAlpha,
+          Options.LyricSingFillColor, Options.LyricActualFillColor, Options.LyricNextFillColor,
+          Options.LyricSingOutlineColor, Options.LyricActualOutlineColor, Options.LyricNextOutlineColor,
+          Song.Artist, Song.Title]);
+
+  end;
+
+function TDataBaseSystem.GetSongOptions(Song: TSong): TSongOptions;
+var
+  TableData: TSQLiteUniTable;
+  SongOptions: TSongOptions;
+begin
+  Result := nil;
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  // Execute query
+  try
+    TableData := ScoreDB.GetUniTable('SELECT VideoRatioAspect, VideoWidth, VideoHeight, LyricPosition, LyricAlpha, ' +
+                                            'LyricSingFillColor, LyricActualFillColor, LyricNextFillColor,' +
+                                            'LyricSingOutlineColor, LyricActualOutlineColor, LyricNextOutlineColor ' +
+                                     'FROM [' + cUS_Songs + '] ' +
+                                     'WHERE [Artist] = ? AND [Title] = ?',
+                                     [Song.Artist, Song.Title]);
+  except
+    on E: Exception do
+    begin
+      Log.LogError(E.Message, 'TDataBaseSystem.GetSongOptions');
+      Exit;
+    end;
+  end;
+
+  if (TableData.EOF = false) then
+  begin
+    SongOptions := TSongOptions.Create(TableData.FieldAsInteger(0), TableData.FieldAsInteger(1), TableData.FieldAsInteger(2), TableData.FieldAsInteger(3), TableData.FieldAsInteger(4),
+      TableData.FieldAsString(5), TableData.FieldAsString(6), TableData.FieldAsString(7), TableData.FieldAsString(8), TableData.FieldAsString(9), TableData.FieldAsString(10));
+
+    Result := SongOptions;
+  end
+  else
+    Result := nil;
+
+  TableData.Free;
 end;
 
 end.

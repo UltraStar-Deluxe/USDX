@@ -42,12 +42,12 @@ CRCCheck on
 
 XPStyle on
 
-Name "${name} v.${version}"
-Brandingtext "${name} v.${version} Installation"
-OutFile "ultrastardx-${version}-installer-full.exe"
+Name "${name} ${version} ${version2}"
+Brandingtext "${name} ${version} ${version2} Installation"
+OutFile "ultrastardx-${version}-${version2}-installer-full.exe"
 
-InstallDir "$PROGRAMFILES\${name}"
-InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\UltraStar Deluxe" "InstallDir"
+InstallDir "$PROGRAMFILES\${name} ${version}"
+InstallDirRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\UltraStar Deluxe ${version}" "InstallDir"
 
 ; Windows Vista / Windows 7:
 ; must be "user" for UAC plugin 
@@ -85,7 +85,8 @@ RequestExecutionLevel user
 ; Pages Installation Routine Settings
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
-!define MUI_CUSTOMFUNCTION_GUIINIT bgmusic
+; NO BGMUSIC!
+; !define MUI_CUSTOMFUNCTION_GUIINIT bgmusic
 
 ; Welcome Page:
 
@@ -139,17 +140,17 @@ FunctionEnd
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${license}"
-!insertmacro MUI_PAGE_COMPONENTS
+;!insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 
 ; Start menu page
 
 Var ICONS_GROUP
 !define MUI_STARTMENUPAGE_NODISABLE
-!define MUI_STARTMENUPAGE_DEFAULTFOLDER "${name}"
+!define MUI_STARTMENUPAGE_DEFAULTFOLDER "${name} ${version}"
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "${PRODUCT_UNINST_KEY}"
-!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${name}"
+!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${name} ${version}"
 !insertmacro MUI_PAGE_STARTMENU Application $ICONS_GROUP
 
 !insertmacro MUI_PAGE_INSTFILES
@@ -259,7 +260,11 @@ FunctionEnd ; Settings page End
 ; Pages UnInstallation Routine
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
+!define MUI_WELCOMEPAGE_TITLE_3LINES
 !define MUI_WELCOMEPAGE_TITLE "$(page_un_welcome_title)"
+
+!define MUI_FINISHPAGE_TITLE_3LINES
+
 !insertmacro MUI_UNPAGE_WELCOME
 !insertmacro MUI_UNPAGE_CONFIRM
 
@@ -365,8 +370,8 @@ FunctionEnd
 ;------------------------------------
 ; MAIN COMPONENTS (Section 1)
 ;------------------------------------
-
 Section $(name_section1) Section1
+
 	SectionIn RO
 	SetOutPath $INSTDIR
 	SetOverwrite try
@@ -382,10 +387,10 @@ Section $(name_section1) Section1
 	SetShellVarContext all
 	SetOutPath "$INSTDIR"
 
-	CreateDirectory "${name}"
+	CreateDirectory "${name} ${version}"
 	CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
 	CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_shortcut).lnk" "$INSTDIR\${exe}.exe"
-	CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_website).lnk" "http://www.ultrastardeluxe.org/"
+	CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_website).lnk" "http://www.ultrastar-es.org/"
 	CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_songs).lnk" "$INSTDIR\songs"
 	CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_uninstall).lnk" "$INSTDIR\Uninstall.exe"
 !insertmacro MUI_STARTMENU_WRITE_END
@@ -397,7 +402,7 @@ Section $(name_section1) Section1
 
 	WriteUninstaller "$INSTDIR\Uninstall.exe"
 
-	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${name}"
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${name} ${version}"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\ultrastardx.exe"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "InstallDir" "$INSTDIR"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\Uninstall.exe"
@@ -413,7 +418,8 @@ SectionEnd
 ; OPTIONAL SONGS (Section 2)
 ;------------------------------------
 
- !include "${path_settings}\files_opt_songs.nsh"
+; No Songs Options
+; !include "${path_settings}\files_opt_songs.nsh"
 
 ;------------------------------------
 ; OPTIONAL THEMES (Section 3)
@@ -444,63 +450,63 @@ SectionEnd
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
 
-!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+;!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 
-	!insertmacro MUI_DESCRIPTION_TEXT ${Section1} $(DESC_Section1)
-	!insertmacro MUI_DESCRIPTION_TEXT ${Section2} $(DESC_Section2)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1} $(DESC_Section2_sub1)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2} $(DESC_Section2_sub2)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3} $(DESC_Section2_sub3)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub4} $(DESC_Section2_sub4)
+;	!insertmacro MUI_DESCRIPTION_TEXT ${Section1} $(DESC_Section1)
+;	!insertmacro MUI_DESCRIPTION_TEXT ${Section2} $(DESC_Section2)
+;	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1} $(DESC_Section2_sub1)
+;	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2} $(DESC_Section2_sub2)
+;	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3} $(DESC_Section2_sub3)
+;	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub4} $(DESC_Section2_sub4)
 ;	!insertmacro MUI_DESCRIPTION_TEXT ${Section3} $(DESC_Section3) THEMES
 
-	!insertmacro MUI_DESCRIPTION_TEXT ${g2Section1} $(DESC_g2Section1)
-	!insertmacro MUI_DESCRIPTION_TEXT ${g2Section2} $(DESC_g2Section2)
-	!insertmacro MUI_DESCRIPTION_TEXT ${g2Section3} $(DESC_g2Section3)
-	!insertmacro MUI_DESCRIPTION_TEXT ${g2Section4} $(DESC_g2Section4)
-	!insertmacro MUI_DESCRIPTION_TEXT ${g2Section5} $(DESC_g2Section5)
-	!insertmacro MUI_DESCRIPTION_TEXT ${g2Section6} $(DESC_g2Section6)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${g2Section1} $(DESC_g2Section1)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${g2Section2} $(DESC_g2Section2)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${g2Section3} $(DESC_g2Section3)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${g2Section4} $(DESC_g2Section4)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${g2Section5} $(DESC_g2Section5)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${g2Section6} $(DESC_g2Section6)
 
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section1} $(DESC_s2_sub1_Section1)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section2} $(DESC_s2_sub1_Section2)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section3} $(DESC_s2_sub1_Section3)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section4} $(DESC_s2_sub1_Section4)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section5} $(DESC_s2_sub1_Section5)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section6} $(DESC_s2_sub1_Section6)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section7} $(DESC_s2_sub1_Section7)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section8} $(DESC_s2_sub1_Section8)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section9} $(DESC_s2_sub1_Section9)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section10} $(DESC_s2_sub1_Section10)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section11} $(DESC_s2_sub1_Section11)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section12} $(DESC_s2_sub1_Section12)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section13} $(DESC_s2_sub1_Section13)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section14} $(DESC_s2_sub1_Section14)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section15} $(DESC_s2_sub1_Section15)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section16} $(DESC_s2_sub1_Section16)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section17} $(DESC_s2_sub1_Section17)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section18} $(DESC_s2_sub1_Section18)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section19} $(DESC_s2_sub1_Section19)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section20} $(DESC_s2_sub1_Section20)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section21} $(DESC_s2_sub1_Section21)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section22} $(DESC_s2_sub1_Section22)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section23} $(DESC_s2_sub1_Section23)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section24} $(DESC_s2_sub1_Section24)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section1} $(DESC_s2_sub1_Section1)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section2} $(DESC_s2_sub1_Section2)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section3} $(DESC_s2_sub1_Section3)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section4} $(DESC_s2_sub1_Section4)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section5} $(DESC_s2_sub1_Section5)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section6} $(DESC_s2_sub1_Section6)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section7} $(DESC_s2_sub1_Section7)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section8} $(DESC_s2_sub1_Section8)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section9} $(DESC_s2_sub1_Section9)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section10} $(DESC_s2_sub1_Section10)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section11} $(DESC_s2_sub1_Section11)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section12} $(DESC_s2_sub1_Section12)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section13} $(DESC_s2_sub1_Section13)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section14} $(DESC_s2_sub1_Section14)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section15} $(DESC_s2_sub1_Section15)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section16} $(DESC_s2_sub1_Section16)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section17} $(DESC_s2_sub1_Section17)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section18} $(DESC_s2_sub1_Section18)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section19} $(DESC_s2_sub1_Section19)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section20} $(DESC_s2_sub1_Section20)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section21} $(DESC_s2_sub1_Section21)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section22} $(DESC_s2_sub1_Section22)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section23} $(DESC_s2_sub1_Section23)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section24} $(DESC_s2_sub1_Section24)
 
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section1} $(DESC_s2_sub2_Section1)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section2} $(DESC_s2_sub2_Section2)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section3} $(DESC_s2_sub2_Section3)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section4} $(DESC_s2_sub2_Section4)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section5} $(DESC_s2_sub2_Section5)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section6} $(DESC_s2_sub2_Section6)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section7} $(DESC_s2_sub2_Section7)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section8} $(DESC_s2_sub2_Section8)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section9} $(DESC_s2_sub2_Section9)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section1} $(DESC_s2_sub2_Section1)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section2} $(DESC_s2_sub2_Section2)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section3} $(DESC_s2_sub2_Section3)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section4} $(DESC_s2_sub2_Section4)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section5} $(DESC_s2_sub2_Section5)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section6} $(DESC_s2_sub2_Section6)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section7} $(DESC_s2_sub2_Section7)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section8} $(DESC_s2_sub2_Section8)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section9} $(DESC_s2_sub2_Section9)
 
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3_Section1} $(DESC_s2_sub3_Section1)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3_Section2} $(DESC_s2_sub3_Section2)
-	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3_Section3} $(DESC_s2_sub3_Section3)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3_Section1} $(DESC_s2_sub3_Section1)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3_Section2} $(DESC_s2_sub3_Section2)
+	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3_Section3} $(DESC_s2_sub3_Section3)
 
-!insertmacro MUI_FUNCTION_DESCRIPTION_END
+;!insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Language Support
@@ -510,6 +516,8 @@ SectionEnd
 !insertmacro MUI_LANGUAGE "German"
 !insertmacro MUI_LANGUAGE "Hungarian"
 !insertmacro MUI_LANGUAGE "Polish"
+!insertmacro MUI_LANGUAGE "Portuguese"
+!insertmacro MUI_LANGUAGE "Spanish"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
@@ -517,10 +525,10 @@ SectionEnd
 
 ;!addPluginDir "${path_plugins}\"
  
-Function bgmusic
-	File /oname=$PLUGINSDIR\loop.wav .\dependencies\loop.wav
-	BGImage::Sound /NOUNLOAD /LOOP $PLUGINSDIR\loop.wav
-FunctionEnd
+; Function bgmusic
+	; File /oname=$PLUGINSDIR\loop.wav .\dependencies\loop.wav
+	; BGImage::Sound /NOUNLOAD /LOOP $PLUGINSDIR\loop.wav
+; FunctionEnd
 
 Function .onGUIEnd
 	BGImage::Sound /STOP
@@ -531,7 +539,7 @@ Function .onInit
 	${UAC.I.Elevate.AdminOnly}
 
 	var /GLOBAL version
-	StrCpy $version "1.1"
+	StrCpy $version "WorldParty"
 
 
 	System::Call 'kernel32::CreateMutexA(i 0, i 0, t "USdx Installer.exe") ?e'
@@ -542,29 +550,29 @@ Function .onInit
 	MessageBox MB_OK|MB_ICONEXCLAMATION $(oninit_running)
 	Abort
 
-	ReadRegStr $R0  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name}" 'DisplayVersion'
+	ReadRegStr $R0  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name} ${version}" 'DisplayVersion'
 
 	${If} $R0 == $version
 		MessageBox MB_YESNO|MB_ICONEXCLAMATION \
-			"${name} v.$R0 $(oninit_alreadyinstalled). $\n$\n $(oninit_installagain)" \
+			"${name} $R0 $(oninit_alreadyinstalled). $\n$\n $(oninit_installagain)" \
 			IDYES continue
 		Abort
 	${EndIf}
 
-	ReadRegStr $R1 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name}" 'UninstallString'
+	ReadRegStr $R1 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name} ${version}" 'UninstallString'
 	StrCmp $R1 "" done
   
 
 	${If} $R0 != $version
 		MessageBox MB_YESNO|MB_ICONEXCLAMATION \
-			"${name} v.$R0 $(oninit_alreadyinstalled). $\n$\n $(oninit_updateusdx) v.$R0 -> v.${version}" \
+			"${name} $R0 $(oninit_alreadyinstalled). $\n$\n $(oninit_updateusdx) $R0 -> ${version}" \
 			IDYES continue
 			Abort
 	${EndIf}
 
 
 continue:
-	ReadRegStr $R2 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name}" 'UninstallString'
+	ReadRegStr $R2 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name} ${version}" 'UninstallString'
 	MessageBox MB_YESNO|MB_ICONEXCLAMATION "$(oninit_uninstall)" IDNO done
 	ExecWait '"$R2" _?=$INSTDIR'
 
@@ -575,6 +583,8 @@ done:
 	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1033.ini" "Settings-1033"
 	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1038.ini" "Settings-1038"
 	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1045.ini" "Settings-1045"
+	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1034.ini" "Settings-1034"
+	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-2070.ini" "Settings-2070"
 
 FunctionEnd
 

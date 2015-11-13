@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UConfig.pas $
+ * $Id: UConfig.pas 2656 2010-10-10 18:55:31Z tobigun $
  *}
 
 unit UConfig;

@@ -6,7 +6,7 @@
 {* Libraries *}
 
 {$IF Defined(IncludeConstants)}
-  LUA_LIB_NAME        = 'lua';
+  lua_lib_name = 'lua';
   LUA_VERSION_INT     = 5001005;
   LUA_VERSION_RELEASE = '5';
   LUA_VERSION_MINOR   = '1';
@@ -29,17 +29,17 @@
   {$IF Defined(IncludeConstants)}
     FFMPEG_VERSION_INT = 2004000;
 
-    av__codec = 'libavcodec';
+  av__codec = 'libavcodec';
     LIBAVCODEC_VERSION_MAJOR   = 56;
     LIBAVCODEC_VERSION_MINOR   = 1;
     LIBAVCODEC_VERSION_RELEASE = 100;
 
-    av__format = 'libavformat';
+  av__format = 'libavformat';
     LIBAVFORMAT_VERSION_MAJOR   = 56;
     LIBAVFORMAT_VERSION_MINOR   = 4;
     LIBAVFORMAT_VERSION_RELEASE = 101;
 
-    av__util = 'libavutil';
+  av__util = 'libavutil';
     LIBAVUTIL_VERSION_MAJOR   = 54;
     LIBAVUTIL_VERSION_MINOR   = 7;
     LIBAVUTIL_VERSION_RELEASE = 100;

@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UParty.pas $
+ * $Id: UParty.pas 2581 2010-07-18 10:33:05Z whiteshark0 $
  *}
 
 unit UParty;
@@ -108,7 +108,6 @@ type
 
   TPartyGame = class
   private
-    bPartyGame: boolean; //< are we playing party or standard mode
     CurRound: Integer;   //< indicates which of the elements of Rounds is played next (at the moment)
 
     bPartyStarted: Boolean;
@@ -126,11 +125,15 @@ type
 
     procedure SetRankingByScore;
   public
+    bPartyGame: boolean; //< are we playing party or standard mode
+
     //Teams: TTeamInfo;
     Rounds: array of TParty_Round;    //< holds info which modes are played in this party game (if started)
     Teams: array of TParty_TeamInfo;  //< holds info of teams playing in current round (private for easy manipulation of lua functions)
 
     Modes: array of TParty_ModeInfo;  //< holds info of registred party modes
+
+    SungPartySongs: array of integer;
 
     property CurrentRound: Integer read CurRound;
 
@@ -206,12 +209,15 @@ type
       the index stands for the placing,
       team is the team number (in the team array)
       rank is correct rank if some teams have the
-      same score. 
+      same score.
       }
     function GetTeamRanking: AParty_TeamRanking;
 
     { returns a string like "Team 1 (and Team 2) win" }
     function GetWinnerString(Round: integer): UTF8String;
+
+    procedure SaveSungPartySong(ID: integer);
+    function SongNotSungAndNotDuet(ID, N_DuetSongs: integer): boolean;
 
     destructor  Destroy; override;
   end;
@@ -239,7 +245,7 @@ const
   PR_First = 1;
   PR_Second = 2;
   PR_Third = 3;
-  
+
   StandardModus = 0; //Modus Id that will be played in non-party mode
 
 var
@@ -254,6 +260,7 @@ uses
   ULuaCore,
   UDisplay,
   USong,
+  USongs,
   UNote,
   SysUtils;
 
@@ -288,6 +295,8 @@ begin
   // clear times played
   for I := 0 to High(TimesPlayed) do
     TimesPlayed[I] := 0;
+
+  SetLength(SungPartySongs, 0);
 end;
 
 { private: some intelligent randomnes for plugins }
@@ -821,7 +830,7 @@ begin
     // we set screen song to party mode
     // plugin should not have to do this if it
     // don't want default procedure to be executed
-    ScreenSong.Mode := smPartyMode;
+    //ScreenSong.Mode := smPartyClassic;
 
     with Modes[Rounds[CurRound].Mode] do
       ExecuteDefault := (CallLua(Parent, Functions.BeforeSongSelect));
@@ -873,6 +882,13 @@ begin
   else
     ExecuteDefault := true;
 
+  //set correct playersplay
+  if (bPartyGame) then
+    PlayersPlay := Length(Teams);
+
+  if (ScreenSong.Mode = smPartyTournament) then
+    PlayersPlay := 2;
+
   // execute default function:
   if ExecuteDefault then
   begin
@@ -884,10 +900,6 @@ begin
               sing screen is shown, or it should be called
               by plugin if it wants to define a custom
               singscreen start up. }
-
-    //set correct playersplay
-    if (bPartyGame) then
-      PlayersPlay := Length(Teams);
   end;
 end;
 
@@ -933,7 +945,12 @@ begin
       // display party score screen
       Display.FadeTo(@ScreenPartyScore)
     else //display standard score screen
-      Display.FadeTo(@ScreenScore);
+    begin
+      if (ScreenSong.Mode = smPartyTournament) then
+        Display.FadeTo(@ScreenPartyTournamentWin)
+      else
+        Display.FadeTo(@ScreenScore);
+    end;
   end;
 end;
 
@@ -1021,6 +1038,43 @@ begin
 
   if (Length(Result) = 0) then
     Result := Language.Translate('PARTY_NOBODY');
+end;
+
+procedure TPartyGame.SaveSungPartySong(ID: integer);
+begin
+  SetLength(SungPartySongs, Length(SungPartySongs) + 1);
+  SungPartySongs[High(SungPartySongs)] := ID;
+end;
+
+function TPartyGame.SongNotSungAndNotDuet(ID, N_DuetSongs: integer): boolean;
+var
+  I: integer;
+  Sung: boolean;
+begin
+  Sung := false;
+
+  if (CatSongs.Song[ID].isDuet) then
+  begin
+    Result := false;
+    Exit;
+  end;
+
+  for I := 0 to High(SungPartySongs) do
+  begin
+    if (SungPartySongs[I] = ID) then
+      Sung := true;
+  end;
+
+  if (Sung) then
+  begin
+    if (Songs.SongList.Count - High(Party.SungPartySongs) - N_DuetSongs <= 1) then
+      Result := true
+    else
+      Result := false
+  end
+  else
+    Result := true;
+
 end;
 
 end.

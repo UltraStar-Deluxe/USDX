@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/base/USingScores.pas $
+ * $Id: USingScores.pas 2293 2010-04-23 22:39:26Z tobigun $
  *}
 
 unit USingScores;
@@ -35,6 +35,7 @@ interface
 
 uses
   gl,
+  UCommon,
   UThemes,
   UTexture;
 
@@ -81,6 +82,8 @@ type
     // 1 - 1 player per screen
     // 2 - 2 players per screen
     // 4 - 3 players per screen
+    // 8 - 4 players per screen
+    // 16 - 6 players per screen
     // 6 would be 2 and 3 players per screen
 
     BGX: real;     // x position of the score bg
@@ -239,6 +242,7 @@ uses
   SDL,
   TextGL,
   ULog,
+  UNote,
   UGraphic;
 
 {**
@@ -322,7 +326,6 @@ begin
   if (Index < MaxPlayers) then
     aPlayers[Index].Visible := pVisible;
 end;
-
 {**
  * change player enabled
  *}
@@ -331,7 +334,6 @@ begin
   if (Index < MaxPlayers) then
     aPlayers[Index].Enabled := pEnabled;
 end;
-
 {**
  * procedure deletes all player information
  *}
@@ -402,7 +404,7 @@ begin
   for I := 0 to 8 do
     Settings.PopUpTex[I] := Tex_SingLineBonusBack[I];
 
-  // rating bar tex  
+  // rating bar tex
   Settings.RatingBar_BG_Tex   :=  Tex_SingBar_Back;
   Settings.RatingBar_FG_Tex   :=  Tex_SingBar_Front;
   Settings.RatingBar_Bar_Tex  :=  Tex_SingBar_Bar;
@@ -420,6 +422,7 @@ begin
 
   // player 3:
   AddByStatics(4, Theme.Sing.StaticP3RScoreBG, Theme.Sing.StaticP3SingBar, Theme.Sing.TextP3RScore);
+
 end;
 
 {**
@@ -589,7 +592,7 @@ end;
 procedure TSingScores.Init;
 var
   PlC:                 array [0..1] of byte; // playercount first screen and second screen
-  I, J:                integer;
+  I, J:    integer;
   MaxPlayersperScreen: byte;
   CurPlayer:           byte;
 
@@ -635,10 +638,19 @@ begin
   for I := 1 to 6 do
   begin
     // if there are enough positions -> write to maxplayers
-    if (GetPositionCountbyPlayerCount(I) = I) then
-      MaxPlayersPerScreen := I
+    if (Screens = 2) or (PlayersPlay <= 3) then
+    begin
+      if (GetPositionCountbyPlayerCount(I) = I) then
+        MaxPlayersPerScreen := I
+      else
+        Break;
+    end
     else
-      Break;
+    begin
+      // DIRTY HACK for 4/6 players one screen
+      MaxPlayersPerScreen := PlayersPlay;
+      //oPlayerCount := PlayersPlay;
+    end;
   end;
 
   // split players to both screens or display on one screen
@@ -662,14 +674,19 @@ begin
       Log.LogError('More Players than available Positions, TSingScores');
     end;
   end;
-  
+
   CurPlayer := 0;
   // give every player a position
   for I := 0 to Screens - 1 do
     for J := 0 to PlC[I]-1 do
     begin
-      aPlayers[CurPlayer].Position := GetPositionbyPlayernum(PlC[I], J) or (I shl 7);
-      // Log.LogError('Player ' + InttoStr(CurPlayer) + ' gets Position: ' + InttoStr(aPlayers[CurPlayer].Position));
+      // DIRTY HACK for 4/6 players one screen
+      if (Screens = 2) or (PlayersPlay <= 3) then
+        aPlayers[CurPlayer].Position := GetPositionbyPlayernum(PlC[I], J) or (I shl 7)
+      else
+        aPlayers[CurPlayer].Position := J;
+
+      //Log.LogError('Player ' + InttoStr(CurPlayer) + ' gets Position: ' + InttoStr(aPlayers[CurPlayer].Position));
       Inc(CurPlayer);
     end;
 end;
@@ -778,6 +795,11 @@ var
   ScoretoAdd:        word;
   PosDiff:           real;
 begin
+{ if screens = 2 and playerplay <= 3 the 2nd screen shows the
+   textures of screen 1 }
+  if (Screens = 2) and (PlayersPlay <= 3) then
+    ScreenAct := 1;
+
   if (PopUp <> nil) then
   begin
     // only draw if player has a position
@@ -798,7 +820,357 @@ begin
         // get position of popup
         PIndex := PIndex and 127;
 
-    
+        // DIRTY HACK
+        // correct position for duet with 3/6 players and 4/6 players in one screen
+        if (Screens = 1) and ((PlayersPlay = 4) or (PlayersPlay = 6)) then
+        begin
+          if (PlayersPlay = 4) then
+          begin
+            if (CurrentSong.isDuet) then
+            begin
+              aPositions[PIndex].PUFontSize := 14;
+
+              case (PopUp.Player) of
+                  0:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP1DuetFourPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP1DuetFourPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP1DuetFourPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP1DuetFourPScore.Y + 40;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP1DuetFourPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP1DuetFourPScore.Y;
+                    end;
+                  1:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP2DuetFourPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP2DuetFourPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP2DuetFourPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP2DuetFourPScore.Y + 40;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP2DuetFourPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP2DuetFourPScore.Y;
+                    end;
+                  2:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP3DuetFourPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP3DuetFourPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP3DuetFourPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP3DuetFourPScore.Y + 40;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP3DuetFourPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP3DuetFourPScore.Y;
+                    end;
+                  3:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP4DuetFourPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP4DuetFourPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP4DuetFourPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP4DuetFourPScore.Y + 40;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP4DuetFourPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP4DuetFourPScore.Y;
+                    end;
+                end;
+            end
+            else
+            begin
+              aPositions[PIndex].PUFontSize := 18;
+
+              case (PopUp.Player) of
+                  0:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP1FourPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP1FourPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP1FourPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP1FourPScore.Y + 65;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP1FourPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP1FourPScore.Y;
+                    end;
+                  1:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP2FourPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP2FourPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP2FourPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP2FourPScore.Y + 65;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP2FourPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP2FourPScore.Y;
+                    end;
+                  2:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP3FourPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP3FourPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP3FourPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP3FourPScore.Y + 65;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP3FourPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP3FourPScore.Y;
+                    end;
+                  3:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP4FourPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP4FourPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP4FourPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP4FourPScore.Y + 65;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP4FourPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP4FourPScore.Y;
+                    end;
+                end;
+            end;
+          end;
+
+          if (PlayersPlay = 6) then
+          begin
+            if (CurrentSong.isDuet) then
+            begin
+              aPositions[PIndex].PUFontSize := 14;
+
+              case (PopUp.Player) of
+                  0:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP1DuetSixPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP1DuetSixPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP1DuetSixPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP1DuetSixPScore.Y + 40;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP1DuetSixPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP1DuetSixPScore.Y;
+                    end;
+                  1:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP2DuetSixPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP2DuetSixPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP2DuetSixPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP2DuetSixPScore.Y + 40;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP2DuetSixPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP2DuetSixPScore.Y;
+                    end;
+                  2:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP3DuetSixPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP3DuetSixPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP3DuetSixPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP3DuetSixPScore.Y + 40;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP3DuetSixPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP3DuetSixPScore.Y;
+                    end;
+                  3:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP4DuetSixPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP4DuetSixPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP4DuetSixPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP4DuetSixPScore.Y + 40;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP4DuetSixPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP4DuetSixPScore.Y;
+                    end;
+                  4:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP5DuetSixPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP5DuetSixPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP5DuetSixPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP5DuetSixPScore.Y + 40;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP5DuetSixPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP5DuetSixPScore.Y;
+                    end;
+                  5:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP6DuetSixPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP6DuetSixPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP6DuetSixPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP6DuetSixPScore.Y + 40;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP6DuetSixPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP6DuetSixPScore.Y;
+                    end;
+                end;
+            end
+            else
+            begin
+              aPositions[PIndex].PUFontSize := 18;
+
+              case (PopUp.Player) of
+                  0:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP1SixPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP1SixPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP1SixPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP1SixPScore.Y + 65;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP1SixPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP1SixPScore.Y;
+                    end;
+                  1:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP2SixPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP2SixPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP2SixPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP2SixPScore.Y + 65;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP2SixPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP2SixPScore.Y;
+                    end;
+                  2:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP3SixPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP3SixPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP3SixPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP3SixPScore.Y + 65;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP3SixPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP3SixPScore.Y;
+                    end;
+                  3:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP4SixPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP4SixPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP4SixPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP4SixPScore.Y + 65;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP4SixPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP4SixPScore.Y;
+                    end;
+                  4:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP5SixPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP5SixPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP5SixPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP5SixPScore.Y + 65;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP5SixPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP5SixPScore.Y;
+                    end;
+                  5:
+                    begin
+                      aPositions[PIndex].PUW := Theme.Sing.StaticP6SixPScoreBG.W;
+                      aPositions[PIndex].PUH := Theme.Sing.StaticP6SixPScoreBG.H;
+
+                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP6SixPScoreBG.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.TextP6SixPScore.Y + 65;
+
+                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP6SixPScoreBG.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP6SixPScore.Y;
+                    end;
+                end;
+            end;
+          end;
+        end
+        else
+        begin
+
+          if (CurrentSong.isDuet) then
+          begin
+            aPositions[PIndex].PUFontSize := 14;
+
+            if ((PlayersPlay = 3) or (PlayersPlay = 6)) then
+            begin
+              case (PopUp.Player) of
+                0, 3, 6:
+                  begin
+                    aPositions[PIndex].PUW := Theme.Sing.StaticDuetP1ThreePScoreBG.W;
+                    aPositions[PIndex].PUH := Theme.Sing.StaticDuetP1ThreePScoreBG.H;
+
+                    aPositions[PIndex].PUStartX := Theme.Sing.StaticDuetP1ThreePScoreBG.X;
+                    aPositions[PIndex].PUStartY := Theme.Sing.TextDuetP1ThreePScore.Y + 40;
+
+                    aPositions[PIndex].PUTargetX := Theme.Sing.StaticDuetP1ThreePScoreBG.X;
+                    aPositions[PIndex].PUTargetY := Theme.Sing.TextDuetP1ThreePScore.Y;
+                  end;
+                1, 4, 7:
+                  begin
+                    aPositions[PIndex].PUW := Theme.Sing.StaticDuetP2MScoreBG.W;
+                    aPositions[PIndex].PUH := Theme.Sing.StaticDuetP2MScoreBG.H;
+
+                    aPositions[PIndex].PUStartX := Theme.Sing.StaticDuetP2MScoreBG.X;
+                    aPositions[PIndex].PUStartY := Theme.Sing.TextDuetP2MScore.Y + 40;
+
+                    aPositions[PIndex].PUTargetX := Theme.Sing.StaticDuetP2MScoreBG.X;
+                    aPositions[PIndex].PUTargetY := Theme.Sing.TextDuetP2MScore.Y;
+                  end;
+                2, 5, 8:
+                  begin
+                    aPositions[PIndex].PUW := Theme.Sing.StaticDuetP3RScoreBG.W;
+                    aPositions[PIndex].PUH := Theme.Sing.StaticDuetP3RScoreBG.H;
+
+                    aPositions[PIndex].PUStartX := Theme.Sing.StaticDuetP3RScoreBG.X;
+                    aPositions[PIndex].PUStartY := Theme.Sing.TextDuetP3RScore.Y + 40;
+
+                    aPositions[PIndex].PUTargetX := Theme.Sing.StaticDuetP3RScoreBG.X;
+                    aPositions[PIndex].PUTargetY := Theme.Sing.TextDuetP3RScore.Y;
+                  end;
+              end;
+            end;
+          end
+          else
+          begin
+          if ((PlayersPlay = 3) or (PlayersPlay = 6)) then
+            begin
+              aPositions[PIndex].PUFontSize := 18;
+
+              case (PopUp.Player) of
+                0, 3, 6:
+                  begin
+                    aPositions[PIndex].PUW := Theme.Sing.StaticP1ThreePScoreBG.W;
+                    aPositions[PIndex].PUH := Theme.Sing.StaticP1ThreePScoreBG.H;
+
+                    aPositions[PIndex].PUStartX := Theme.Sing.StaticP1ThreePScoreBG.X;
+                    aPositions[PIndex].PUStartY := Theme.Sing.TextP1ThreePScore.Y + 65;
+
+                    aPositions[PIndex].PUTargetX := Theme.Sing.StaticP1ThreePScoreBG.X;
+                    aPositions[PIndex].PUTargetY := Theme.Sing.TextP1ThreePScore.Y;
+                  end;
+                1, 4, 7:
+                  begin
+                    aPositions[PIndex].PUW := Theme.Sing.StaticP2MScoreBG.W;
+                    aPositions[PIndex].PUH := Theme.Sing.StaticP2MScoreBG.H;
+
+                    aPositions[PIndex].PUStartX := Theme.Sing.StaticP2MScoreBG.X;
+                    aPositions[PIndex].PUStartY := Theme.Sing.TextP2MScore.Y + 65;
+
+                    aPositions[PIndex].PUTargetX := Theme.Sing.StaticP2MScoreBG.X;
+                    aPositions[PIndex].PUTargetY := Theme.Sing.TextP2MScore.Y;
+                  end;
+                2, 5, 8:
+                  begin
+                    aPositions[PIndex].PUW := Theme.Sing.StaticP3RScoreBG.W;
+                    aPositions[PIndex].PUH := Theme.Sing.StaticP3RScoreBG.H;
+
+                    aPositions[PIndex].PUStartX := Theme.Sing.StaticP3RScoreBG.X;
+                    aPositions[PIndex].PUStartY := Theme.Sing.TextP3RScore.Y + 65;
+
+                    aPositions[PIndex].PUTargetX := Theme.Sing.StaticP3RScoreBG.X;
+                    aPositions[PIndex].PUTargetY := Theme.Sing.TextP3RScore.Y;
+                  end;
+              end;
+            end;
+          end;
+        end;
+
         // check for phase ...
         if (TimeDiff <= Settings.Phase1Time) then
         begin
@@ -949,173 +1321,686 @@ end;
  *}
 procedure TSingScores.DrawScore(const Index: integer);
 var
-  Position: PScorePosition;
+  Position: TScorePosition;
   ScoreStr: String;
+  Drawing: boolean;
 begin
-  // only draw if player has a position
-  if Players[Index].Position <> High(byte) then
+  Drawing := false;
+
+  { if screens = 2 and playerplay <= 3 the 2nd screen shows the
+   textures of screen 1 }
+  if (Screens = 2) and (PlayersPlay <= 3) then
+    ScreenAct := 1;
+
+  // DIRTY HACK
+  // correct position for duet with 3/6 players and 4/6 players one screen
+  if (Screens = 1) and ((PlayersPlay = 4) or (PlayersPlay = 6)) then
   begin
-    // only draw if player is on cur screen
-    if (((Players[Index].Position and 128) = 0) = (ScreenAct = 1)) and Players[Index].Visible then
+
+    Position := aPositions[Players[Index].Position and 127];
+    Drawing := true;
+
+    if (PlayersPlay = 4) then
     begin
-      Position := @aPositions[Players[Index].Position and 127];
+      if (CurrentSong.isDuet) then
+      begin
+        case Index of
+          0: begin
+               Position.BGX := Theme.Sing.StaticP1DuetFourPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP1DuetFourPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP1DuetFourPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP1DuetFourPScoreBG.H;
 
-      // draw scorebg
-      glEnable(GL_TEXTURE_2D);
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+               Position.TextX := Theme.Sing.TextP1DuetFourPScore.X;
+               Position.TextY := Theme.Sing.TextP1DuetFourPScore.Y;
+               Position.TextFont := Theme.Sing.TextP1DuetFourPScore.Font;
+               Position.TextSize := Theme.Sing.TextP1DuetFourPScore.Size;
+             end;
+          1: begin
+               Position.BGX := Theme.Sing.StaticP2DuetFourPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP2DuetFourPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP2DuetFourPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP2DuetFourPScoreBG.H;
 
-      glColor4f(1,1,1, 1);
-      glBindTexture(GL_TEXTURE_2D, Players[Index].ScoreBG.TexNum);
+               Position.TextX := Theme.Sing.TextP2DuetFourPScore.X;
+               Position.TextY := Theme.Sing.TextP2DuetFourPScore.Y;
+               Position.TextFont := Theme.Sing.TextP2DuetFourPScore.Font;
+               Position.TextSize := Theme.Sing.TextP2DuetFourPScore.Size;
+             end;
+          2: begin
+               Position.BGX := Theme.Sing.StaticP3DuetFourPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP3DuetFourPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP3DuetFourPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP3DuetFourPScoreBG.H;
 
-      glBegin(GL_QUADS);
-        glTexCoord2f(0, 0); glVertex2f(Position.BGX, Position.BGY);
-        glTexCoord2f(0, Players[Index].ScoreBG.TexH); glVertex2f(Position.BGX, Position.BGY + Position.BGH);
-        glTexCoord2f(Players[Index].ScoreBG.TexW, Players[Index].ScoreBG.TexH); glVertex2f(Position.BGX + Position.BGW, Position.BGY + Position.BGH);
-        glTexCoord2f(Players[Index].ScoreBG.TexW, 0); glVertex2f(Position.BGX + Position.BGW, Position.BGY);
-      glEnd;
+               Position.TextX := Theme.Sing.TextP3DuetFourPScore.X;
+               Position.TextY := Theme.Sing.TextP3DuetFourPScore.Y;
+               Position.TextFont := Theme.Sing.TextP3DuetFourPScore.Font;
+               Position.TextSize := Theme.Sing.TextP3DuetFourPScore.Size;
+             end;
+          3: begin
+               Position.BGX := Theme.Sing.StaticP4DuetFourPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP4DuetFourPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP4DuetFourPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP4DuetFourPScoreBG.H;
 
-      glDisable(GL_TEXTURE_2D);
-      glDisable(GL_BLEND);
+               Position.TextX := Theme.Sing.TextP4DuetFourPScore.X;
+               Position.TextY := Theme.Sing.TextP4DuetFourPScore.Y;
+               Position.TextFont := Theme.Sing.TextP4DuetFourPScore.Font;
+               Position.TextSize := Theme.Sing.TextP4DuetFourPScore.Size;
+             end;
+        end;
+      end
+      else
+      begin
+        case Index of
+          0: begin
+               Position.BGX := Theme.Sing.StaticP1FourPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP1FourPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP1FourPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP1FourPScoreBG.H;
 
-      // draw score text
-      SetFontStyle(Position.TextFont);
-      SetFontItalic(false);
-      SetFontSize(Position.TextSize);
-      SetFontPos(Position.TextX, Position.TextY);
-      SetFontReflection(false, 0);
+               Position.TextX := Theme.Sing.TextP1FourPScore.X;
+               Position.TextY := Theme.Sing.TextP1FourPScore.Y;
+               Position.TextFont := Theme.Sing.TextP1FourPScore.Font;
+               Position.TextSize := Theme.Sing.TextP1FourPScore.Size;
+             end;
+          1: begin
+               Position.BGX := Theme.Sing.StaticP2FourPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP2FourPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP2FourPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP2FourPScoreBG.H;
 
-      ScoreStr := InttoStr(Players[Index].ScoreDisplayed div 10) + '0';
-      while (Length(ScoreStr) < 5) do
-        ScoreStr := '0' + ScoreStr;
+               Position.TextX := Theme.Sing.TextP2FourPScore.X;
+               Position.TextY := Theme.Sing.TextP2FourPScore.Y;
+               Position.TextFont := Theme.Sing.TextP2FourPScore.Font;
+               Position.TextSize := Theme.Sing.TextP2FourPScore.Size;
+             end;
+          2: begin
+               Position.BGX := Theme.Sing.StaticP3FourPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP3FourPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP3FourPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP3FourPScoreBG.H;
 
-      glPrint(ScoreStr);
+               Position.TextX := Theme.Sing.TextP3FourPScore.X;
+               Position.TextY := Theme.Sing.TextP3FourPScore.Y;
+               Position.TextFont := Theme.Sing.TextP3FourPScore.Font;
+               Position.TextSize := Theme.Sing.TextP3FourPScore.Size;
+             end;
+          3: begin
+               Position.BGX := Theme.Sing.StaticP4FourPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP4FourPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP4FourPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP4FourPScoreBG.H;
 
-    end; // eo right screen
+               Position.TextX := Theme.Sing.TextP4FourPScore.X;
+               Position.TextY := Theme.Sing.TextP4FourPScore.Y;
+               Position.TextFont := Theme.Sing.TextP4FourPScore.Font;
+               Position.TextSize := Theme.Sing.TextP4FourPScore.Size;
+             end;
+        end;
+      end;
+    end
+    else
+    begin
+      // 6 players
+      if (CurrentSong.isDuet) then
+      begin
+        case Index of
+          0: begin
+               Position.BGX := Theme.Sing.StaticP1DuetSixPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP1DuetSixPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP1DuetSixPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP1DuetSixPScoreBG.H;
+
+               Position.TextX := Theme.Sing.TextP1DuetSixPScore.X;
+               Position.TextY := Theme.Sing.TextP1DuetSixPScore.Y;
+               Position.TextFont := Theme.Sing.TextP1DuetSixPScore.Font;
+               Position.TextSize := Theme.Sing.TextP1DuetSixPScore.Size;
+             end;
+          1: begin
+               Position.BGX := Theme.Sing.StaticP2DuetSixPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP2DuetSixPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP2DuetSixPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP2DuetSixPScoreBG.H;
+
+               Position.TextX := Theme.Sing.TextP2DuetSixPScore.X;
+               Position.TextY := Theme.Sing.TextP2DuetSixPScore.Y;
+               Position.TextFont := Theme.Sing.TextP2DuetSixPScore.Font;
+               Position.TextSize := Theme.Sing.TextP2DuetSixPScore.Size;
+             end;
+          2: begin
+               Position.BGX := Theme.Sing.StaticP3DuetSixPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP3DuetSixPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP3DuetSixPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP3DuetSixPScoreBG.H;
+
+               Position.TextX := Theme.Sing.TextP3DuetSixPScore.X;
+               Position.TextY := Theme.Sing.TextP3DuetSixPScore.Y;
+               Position.TextFont := Theme.Sing.TextP3DuetSixPScore.Font;
+               Position.TextSize := Theme.Sing.TextP3DuetSixPScore.Size;
+             end;
+          3: begin
+               Position.BGX := Theme.Sing.StaticP4DuetSixPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP4DuetSixPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP4DuetSixPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP4DuetSixPScoreBG.H;
+
+               Position.TextX := Theme.Sing.TextP4DuetSixPScore.X;
+               Position.TextY := Theme.Sing.TextP4DuetSixPScore.Y;
+               Position.TextFont := Theme.Sing.TextP4DuetSixPScore.Font;
+               Position.TextSize := Theme.Sing.TextP4DuetSixPScore.Size;
+             end;
+          4: begin
+               Position.BGX := Theme.Sing.StaticP5DuetSixPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP5DuetSixPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP5DuetSixPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP5DuetSixPScoreBG.H;
+
+               Position.TextX := Theme.Sing.TextP5DuetSixPScore.X;
+               Position.TextY := Theme.Sing.TextP5DuetSixPScore.Y;
+               Position.TextFont := Theme.Sing.TextP5DuetSixPScore.Font;
+               Position.TextSize := Theme.Sing.TextP5DuetSixPScore.Size;
+             end;
+          5: begin
+               Position.BGX := Theme.Sing.StaticP6DuetSixPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP6DuetSixPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP6DuetSixPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP6DuetSixPScoreBG.H;
+
+               Position.TextX := Theme.Sing.TextP6DuetSixPScore.X;
+               Position.TextY := Theme.Sing.TextP6DuetSixPScore.Y;
+               Position.TextFont := Theme.Sing.TextP6DuetSixPScore.Font;
+               Position.TextSize := Theme.Sing.TextP6DuetSixPScore.Size;
+             end;
+        end;
+      end
+      else
+      begin
+        case Index of
+          0: begin
+               Position.BGX := Theme.Sing.StaticP1SixPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP1SixPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP1SixPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP1SixPScoreBG.H;
+
+               Position.TextX := Theme.Sing.TextP1SixPScore.X;
+               Position.TextY := Theme.Sing.TextP1SixPScore.Y;
+               Position.TextFont := Theme.Sing.TextP1SixPScore.Font;
+               Position.TextSize := Theme.Sing.TextP1SixPScore.Size;
+             end;
+          1: begin
+               Position.BGX := Theme.Sing.StaticP2SixPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP2SixPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP2SixPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP2SixPScoreBG.H;
+
+               Position.TextX := Theme.Sing.TextP2SixPScore.X;
+               Position.TextY := Theme.Sing.TextP2SixPScore.Y;
+               Position.TextFont := Theme.Sing.TextP2SixPScore.Font;
+               Position.TextSize := Theme.Sing.TextP2SixPScore.Size;
+             end;
+          2: begin
+               Position.BGX := Theme.Sing.StaticP3SixPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP3SixPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP3SixPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP3SixPScoreBG.H;
+
+               Position.TextX := Theme.Sing.TextP3SixPScore.X;
+               Position.TextY := Theme.Sing.TextP3SixPScore.Y;
+               Position.TextFont := Theme.Sing.TextP3SixPScore.Font;
+               Position.TextSize := Theme.Sing.TextP3SixPScore.Size;
+             end;
+          3: begin
+               Position.BGX := Theme.Sing.StaticP4SixPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP4SixPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP4SixPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP4SixPScoreBG.H;
+
+               Position.TextX := Theme.Sing.TextP4SixPScore.X;
+               Position.TextY := Theme.Sing.TextP4SixPScore.Y;
+               Position.TextFont := Theme.Sing.TextP4SixPScore.Font;
+               Position.TextSize := Theme.Sing.TextP4SixPScore.Size;
+             end;
+          4: begin
+               Position.BGX := Theme.Sing.StaticP5SixPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP5SixPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP5SixPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP5SixPScoreBG.H;
+
+               Position.TextX := Theme.Sing.TextP5SixPScore.X;
+               Position.TextY := Theme.Sing.TextP5SixPScore.Y;
+               Position.TextFont := Theme.Sing.TextP5SixPScore.Font;
+               Position.TextSize := Theme.Sing.TextP5SixPScore.Size;
+             end;
+          5: begin
+               Position.BGX := Theme.Sing.StaticP6SixPScoreBG.X;
+               Position.BGY := Theme.Sing.StaticP6SixPScoreBG.Y;
+               Position.BGW := Theme.Sing.StaticP6SixPScoreBG.W;
+               Position.BGH := Theme.Sing.StaticP6SixPScoreBG.H;
+
+               Position.TextX := Theme.Sing.TextP6SixPScore.X;
+               Position.TextY := Theme.Sing.TextP6SixPScore.Y;
+               Position.TextFont := Theme.Sing.TextP6SixPScore.Font;
+               Position.TextSize := Theme.Sing.TextP6SixPScore.Size;
+             end;
+        end;
+      end;
+    end;
+  end
+  else
+  begin
+
+    // only draw if player has a position
+    if Players[Index].Position <> High(byte) then
+    begin
+      // only draw if player is on cur screen
+      if (((Players[Index].Position and 128) = 0) = (ScreenAct = 1)) and Players[Index].Visible then
+      begin
+        Position := aPositions[Players[Index].Position and 127];
+
+        Drawing := true;
+
+        if (CurrentSong.isDuet) and ((PlayersPlay = 3) or (PlayersPlay = 6)) then
+        begin
+          case Index of
+            0, 3, 6: begin
+                 Position.BGX := Theme.Sing.StaticDuetP1ThreePScoreBG.X;
+                 Position.BGY := Theme.Sing.StaticDuetP1ThreePScoreBG.Y;
+                 Position.BGW := Theme.Sing.StaticDuetP1ThreePScoreBG.W;
+                 Position.BGH := Theme.Sing.StaticDuetP1ThreePScoreBG.H;
+
+                 Position.TextX := Theme.Sing.TextDuetP1ThreePScore.X;
+                 Position.TextY := Theme.Sing.TextDuetP1ThreePScore.Y;
+                 Position.TextFont := Theme.Sing.TextDuetP1ThreePScore.Font;
+                 Position.TextSize := Theme.Sing.TextDuetP1ThreePScore.Size;
+               end;
+            1, 4, 7: begin
+                 Position.BGX := Theme.Sing.StaticDuetP2MScoreBG.X;
+                 Position.BGY := Theme.Sing.StaticDuetP2MScoreBG.Y;
+                 Position.BGW := Theme.Sing.StaticDuetP2MScoreBG.W;
+                 Position.BGH := Theme.Sing.StaticDuetP2MScoreBG.H;
+
+                 Position.TextX := Theme.Sing.TextDuetP2MScore.X;
+                 Position.TextY := Theme.Sing.TextDuetP2MScore.Y;
+                 Position.TextFont := Theme.Sing.TextDuetP2MScore.Font;
+                 Position.TextSize := Theme.Sing.TextDuetP2MScore.Size;
+               end;
+            2, 5, 8: begin
+                 Position.BGX := Theme.Sing.StaticDuetP3RScoreBG.X;
+                 Position.BGY := Theme.Sing.StaticDuetP3RScoreBG.Y;
+                 Position.BGW := Theme.Sing.StaticDuetP3RScoreBG.W;
+                 Position.BGH := Theme.Sing.StaticDuetP3RScoreBG.H;
+
+                 Position.TextX := Theme.Sing.TextDuetP3RScore.X;
+                 Position.TextY := Theme.Sing.TextDuetP3RScore.Y;
+                 Position.TextFont := Theme.Sing.TextDuetP3RScore.Font;
+                 Position.TextSize := Theme.Sing.TextDuetP3RScore.Size;
+               end;
+          end;
+      end;
+  end;
+  end;
+  end;
+
+  if (Drawing) then
+  begin
+    // draw scorebg
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glColor4f(1,1,1, 1);
+    glBindTexture(GL_TEXTURE_2D, Players[Index].ScoreBG.TexNum);
+
+    glBegin(GL_QUADS);
+      glTexCoord2f(0, 0); glVertex2f(Position.BGX, Position.BGY);
+      glTexCoord2f(0, Players[Index].ScoreBG.TexH); glVertex2f(Position.BGX, Position.BGY + Position.BGH);
+      glTexCoord2f(Players[Index].ScoreBG.TexW, Players[Index].ScoreBG.TexH); glVertex2f(Position.BGX + Position.BGW, Position.BGY + Position.BGH);
+      glTexCoord2f(Players[Index].ScoreBG.TexW, 0); glVertex2f(Position.BGX + Position.BGW, Position.BGY);
+    glEnd;
+
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_BLEND);
+
+    // draw score text
+    SetFontStyle(Position.TextFont);
+    SetFontItalic(false);
+    SetFontSize(Position.TextSize);
+    SetFontPos(Position.TextX, Position.TextY);
+    SetFontReflection(false, 0);
+
+    ScoreStr := InttoStr(Players[Index].ScoreDisplayed div 10) + '0';
+    while (Length(ScoreStr) < 5) do
+      ScoreStr := '0' + ScoreStr;
+
+    glPrint(ScoreStr);
   end; // eo player has position
 end;
 
 
 procedure TSingScores.DrawRatingBar(const Index: integer);
 var
-  Position:   PScorePosition;
+  Position:   TScorePosition;
   R, G, B:    real;
   Size, Diff: real;
+  Drawing: boolean;
 begin
-  // only draw if player has a position
-  if Players[Index].Position <> High(byte) then
+  { if screens = 2 and playerplay <= 3 the 2nd screen shows the
+   textures of screen 1 }
+  if (Screens = 2) and (PlayersPlay <= 3) then
+    ScreenAct := 1;
+
+  Drawing := false;
+
+  // DIRTY HACK
+  // correct position for duet with 3/6 players and 4/6 players in one screen
+  if (Screens = 1) and ((PlayersPlay = 4) or (PlayersPlay = 6)) then
   begin
-    // only draw if player is on cur screen
-    if (((Players[Index].Position and 128) = 0) = (ScreenAct = 1) and
-        Players[index].RBVisible and
-        Players[index].Visible) then
+    Drawing := true;
+
+    if (PlayersPlay = 4) then
     begin
-      Position := @aPositions[Players[Index].Position and 127];
 
-      if (Enabled and Players[Index].Enabled) then
+      if (CurrentSong.isDuet) then
       begin
-        // move position if enabled
-        Diff := Players[Index].RBTarget - Players[Index].RBPos;
-        if (Abs(Diff) < 0.02) then
-          aPlayers[Index].RBPos := aPlayers[Index].RBTarget
-        else
-          aPlayers[Index].RBPos := aPlayers[Index].RBPos + Diff*0.1;
-      end;
-
-      // get colors for rating bar
-      if (Players[index].RBPos <= 0.22) then
-      begin
-        R := 1;
-        G := 0;
-        B := 0;
-      end
-      else if (Players[index].RBPos <= 0.42) then
-      begin
-        R := 1;
-        G := Players[index].RBPos * 5;
-        B := 0;
-      end
-      else if (Players[index].RBPos <= 0.57) then
-      begin
-        R := 1;
-        G := 1;
-        B := 0;
-      end
-      else if (Players[index].RBPos <= 0.77) then
-      begin
-        R := 1 - (Players[index].RBPos - 0.57) * 5;
-        G := 1;
-        B := 0;
+        case Index of
+          0:
+             begin
+               Position.RBX := Theme.Sing.StaticP1DuetFourPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP1DuetFourPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP1DuetFourPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP1DuetFourPSingBar.H;
+             end;
+          1: begin
+               Position.RBX := Theme.Sing.StaticP2DuetFourPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP2DuetFourPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP2DuetFourPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP2DuetFourPSingBar.H;
+             end;
+          2: begin
+               Position.RBX := Theme.Sing.StaticP3DuetFourPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP3DuetFourPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP3DuetFourPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP3DuetFourPSingBar.H;
+             end;
+          3: begin
+               Position.RBX := Theme.Sing.StaticP4DuetFourPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP4DuetFourPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP4DuetFourPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP4DuetFourPSingBar.H;
+             end;
+        end;
       end
       else
       begin
-        R := 0;
-        G := 1;
-        B := 0;
+        case Index of
+          0:
+             begin
+               Position.RBX := Theme.Sing.StaticP1FourPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP1FourPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP1FourPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP1FourPSingBar.H;
+             end;
+          1: begin
+               Position.RBX := Theme.Sing.StaticP2FourPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP2FourPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP2FourPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP2FourPSingBar.H;
+             end;
+          2: begin
+               Position.RBX := Theme.Sing.StaticP3FourPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP3FourPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP3FourPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP3FourPSingBar.H;
+             end;
+          3: begin
+               Position.RBX := Theme.Sing.StaticP4FourPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP4FourPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP4FourPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP4FourPSingBar.H;
+             end;
+        end;
       end;
+    end
+    else
+    begin
+      // 6 players
+      if (CurrentSong.isDuet) then
+      begin
+        case Index of
+          0:
+             begin
+               Position.RBX := Theme.Sing.StaticP1DuetSixPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP1DuetSixPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP1DuetSixPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP1DuetSixPSingBar.H;
+             end;
+          1: begin
+               Position.RBX := Theme.Sing.StaticP2DuetSixPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP2DuetSixPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP2DuetSixPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP2DuetSixPSingBar.H;
+             end;
+          2: begin
+               Position.RBX := Theme.Sing.StaticP3DuetSixPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP3DuetSixPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP3DuetSixPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP3DuetSixPSingBar.H;
+             end;
+          3: begin
+               Position.RBX := Theme.Sing.StaticP4DuetSixPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP4DuetSixPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP4DuetSixPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP4DuetSixPSingBar.H;
+             end;
+          4: begin
+               Position.RBX := Theme.Sing.StaticP5DuetSixPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP5DuetSixPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP5DuetSixPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP5DuetSixPSingBar.H;
+             end;
+          5: begin
+               Position.RBX := Theme.Sing.StaticP6DuetSixPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP6DuetSixPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP6DuetSixPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP6DuetSixPSingBar.H;
+             end;
+        end;
+      end
+      else
+      begin
+        case Index of
+          0:
+             begin
+               Position.RBX := Theme.Sing.StaticP1SixPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP1SixPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP1SixPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP1SixPSingBar.H;
+             end;
+          1: begin
+               Position.RBX := Theme.Sing.StaticP2SixPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP2SixPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP2SixPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP2SixPSingBar.H;
+             end;
+          2: begin
+               Position.RBX := Theme.Sing.StaticP3SixPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP3SixPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP3SixPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP3SixPSingBar.H;
+             end;
+          3: begin
+               Position.RBX := Theme.Sing.StaticP4SixPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP4SixPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP4SixPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP4SixPSingBar.H;
+             end;
+          4: begin
+               Position.RBX := Theme.Sing.StaticP5SixPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP5SixPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP5SixPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP5SixPSingBar.H;
+             end;
+          5: begin
+               Position.RBX := Theme.Sing.StaticP6SixPSingBar.X;
+               Position.RBY := Theme.Sing.StaticP6SixPSingBar.Y;
+               Position.RBW := Theme.Sing.StaticP6SixPSingBar.W;
+               Position.RBH := Theme.Sing.StaticP6SixPSingBar.H;
+             end;
+        end;
+      end;
+    end;
+  end
+  else
+  begin
+    // only draw if player has a position
+    if Players[Index].Position <> High(byte) then
+    begin
+      // only draw if player is on cur screen
+      if (((Players[Index].Position and 128) = 0) = (ScreenAct = 1) and
+          Players[index].RBVisible and
+          Players[index].Visible) then
+      begin
+        Drawing := true;
 
-      // enable all glfuncs needed
-      glEnable(GL_TEXTURE_2D);
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        Position := aPositions[Players[Index].Position and 127];
 
-      // draw rating bar bg
-      glColor4f(1, 1, 1, 0.8);
-      glBindTexture(GL_TEXTURE_2D, Settings.RatingBar_BG_Tex.TexNum);
+        // DIRTY HACK
+        // correct position for duet with 3/6 players
+        if (CurrentSong.isDuet) and ((PlayersPlay = 3) or (PlayersPlay = 6)) then
+        begin
+          case Index of
+            0, 3, 6:
+               begin
+                 Position.RBX := Theme.Sing.StaticDuetP1ThreePSingBar.X;
+                 Position.RBY := Theme.Sing.StaticDuetP1ThreePSingBar.Y;
+                 Position.RBW := Theme.Sing.StaticDuetP1ThreePSingBar.W;
+                 Position.RBH := Theme.Sing.StaticDuetP1ThreePSingBar.H;
+               end;
+            1, 4, 7: begin
+                 Position.RBX := Theme.Sing.StaticDuetP2MSingBar.X;
+                 Position.RBY := Theme.Sing.StaticDuetP2MSingBar.Y;
+                 Position.RBW := Theme.Sing.StaticDuetP2MSingBar.W;
+                 Position.RBH := Theme.Sing.StaticDuetP2MSingBar.H;
+               end;
+            2, 5, 8: begin
+                 Position.RBX := Theme.Sing.StaticDuetP3RSingBar.X;
+                 Position.RBY := Theme.Sing.StaticDuetP3RSingBar.Y;
+                 Position.RBW := Theme.Sing.StaticDuetP3RSingBar.W;
+                 Position.RBH := Theme.Sing.StaticDuetP3RSingBar.H;
+               end;
+          end;
+        end;
+      end;
+    end;
+  end;
 
-      glBegin(GL_QUADS);
-        glTexCoord2f(0, 0);
-        glVertex2f(Position.RBX, Position.RBY);
+  if (Drawing) then
+  begin
+    if (Enabled and Players[Index].Enabled) then
+    begin
+      // move position if enabled
+      Diff := Players[Index].RBTarget - Players[Index].RBPos;
+      if (Abs(Diff) < 0.02) then
+        aPlayers[Index].RBPos := aPlayers[Index].RBTarget
+      else
+        aPlayers[Index].RBPos := aPlayers[Index].RBPos + Diff*0.1;
+    end;
 
-        glTexCoord2f(0, Settings.RatingBar_BG_Tex.TexH);
-        glVertex2f(Position.RBX, Position.RBY+Position.RBH);
+    // get colors for rating bar
+    if (Players[index].RBPos <= 0.22) then
+    begin
+      R := 1;
+      G := 0;
+      B := 0;
+    end
+    else if (Players[index].RBPos <= 0.42) then
+    begin
+      R := 1;
+      G := Players[index].RBPos * 5;
+      B := 0;
+    end
+    else if (Players[index].RBPos <= 0.57) then
+    begin
+      R := 1;
+      G := 1;
+      B := 0;
+    end
+    else if (Players[index].RBPos <= 0.77) then
+    begin
+      R := 1 - (Players[index].RBPos - 0.57) * 5;
+      G := 1;
+      B := 0;
+    end
+    else
+    begin
+      R := 0;
+      G := 1;
+      B := 0;
+    end;
 
-        glTexCoord2f(Settings.RatingBar_BG_Tex.TexW, Settings.RatingBar_BG_Tex.TexH);
-        glVertex2f(Position.RBX+Position.RBW, Position.RBY+Position.RBH);
+    // enable all glfuncs needed
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        glTexCoord2f(Settings.RatingBar_BG_Tex.TexW, 0);
-        glVertex2f(Position.RBX+Position.RBW, Position.RBY);
-      glEnd;
+    // draw rating bar bg
+    glColor4f(1, 1, 1, 0.8);
+    glBindTexture(GL_TEXTURE_2D, Settings.RatingBar_BG_Tex.TexNum);
 
-      // draw rating bar itself
-      Size := Position.RBX + Position.RBW * Players[Index].RBPos;
-      glColor4f(R, G, B, 1);
-      glBindTexture(GL_TEXTURE_2D, Settings.RatingBar_Bar_Tex.TexNum);
-      glBegin(GL_QUADS);
-        glTexCoord2f(0, 0);
-        glVertex2f(Position.RBX, Position.RBY);
+    glBegin(GL_QUADS);
+      glTexCoord2f(0, 0);
+      glVertex2f(Position.RBX, Position.RBY);
 
-        glTexCoord2f(0, Settings.RatingBar_Bar_Tex.TexH);
-        glVertex2f(Position.RBX, Position.RBY + Position.RBH);
+      glTexCoord2f(0, Settings.RatingBar_BG_Tex.TexH);
+      glVertex2f(Position.RBX, Position.RBY+Position.RBH);
 
-        glTexCoord2f(Settings.RatingBar_Bar_Tex.TexW, Settings.RatingBar_Bar_Tex.TexH);
-        glVertex2f(Size, Position.RBY + Position.RBH);
+      glTexCoord2f(Settings.RatingBar_BG_Tex.TexW, Settings.RatingBar_BG_Tex.TexH);
+      glVertex2f(Position.RBX+Position.RBW, Position.RBY+Position.RBH);
 
-        glTexCoord2f(Settings.RatingBar_Bar_Tex.TexW, 0);
-        glVertex2f(Size, Position.RBY);
-      glEnd;
+      glTexCoord2f(Settings.RatingBar_BG_Tex.TexW, 0);
+      glVertex2f(Position.RBX+Position.RBW, Position.RBY);
+    glEnd;
 
-      // draw rating bar fg (the thing with the 3 lines to get better readability)
-      glColor4f(1, 1, 1, 0.6);
-      glBindTexture(GL_TEXTURE_2D, Settings.RatingBar_FG_Tex.TexNum);
-      glBegin(GL_QUADS);
-        glTexCoord2f(0, 0);
-        glVertex2f(Position.RBX, Position.RBY);
+    // draw rating bar itself
+    Size := Position.RBX + Position.RBW * Players[Index].RBPos;
+    glColor4f(R, G, B, 1);
+    glBindTexture(GL_TEXTURE_2D, Settings.RatingBar_Bar_Tex.TexNum);
+    glBegin(GL_QUADS);
+      glTexCoord2f(0, 0);
+      glVertex2f(Position.RBX, Position.RBY);
 
-        glTexCoord2f(0, Settings.RatingBar_FG_Tex.TexH);
-        glVertex2f(Position.RBX, Position.RBY + Position.RBH);
+      glTexCoord2f(0, Settings.RatingBar_Bar_Tex.TexH);
+      glVertex2f(Position.RBX, Position.RBY + Position.RBH);
 
-        glTexCoord2f(Settings.RatingBar_FG_Tex.TexW, Settings.RatingBar_FG_Tex.TexH);
-        glVertex2f(Position.RBX + Position.RBW, Position.RBY + Position.RBH);
+      glTexCoord2f(Settings.RatingBar_Bar_Tex.TexW, Settings.RatingBar_Bar_Tex.TexH);
+      glVertex2f(Size, Position.RBY + Position.RBH);
 
-        glTexCoord2f(Settings.RatingBar_FG_Tex.TexW, 0);
-        glVertex2f(Position.RBX + Position.RBW, Position.RBY);
-      glEnd;
+      glTexCoord2f(Settings.RatingBar_Bar_Tex.TexW, 0);
+      glVertex2f(Size, Position.RBY);
+    glEnd;
 
-      // disable all enabled glfuncs
-      glDisable(GL_TEXTURE_2D);
-      glDisable(GL_BLEND);
-    end; // eo Right Screen
+    // draw rating bar fg (the thing with the 3 lines to get better readability)
+    glColor4f(1, 1, 1, 0.6);
+    glBindTexture(GL_TEXTURE_2D, Settings.RatingBar_FG_Tex.TexNum);
+    glBegin(GL_QUADS);
+      glTexCoord2f(0, 0);
+      glVertex2f(Position.RBX, Position.RBY);
+
+      glTexCoord2f(0, Settings.RatingBar_FG_Tex.TexH);
+      glVertex2f(Position.RBX, Position.RBY + Position.RBH);
+
+      glTexCoord2f(Settings.RatingBar_FG_Tex.TexW, Settings.RatingBar_FG_Tex.TexH);
+      glVertex2f(Position.RBX + Position.RBW, Position.RBY + Position.RBH);
+
+      glTexCoord2f(Settings.RatingBar_FG_Tex.TexW, 0);
+      glVertex2f(Position.RBX + Position.RBW, Position.RBY);
+    glEnd;
+
+    // disable all enabled glfuncs
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_BLEND);
   end; // eo Player has Position
 end;
 

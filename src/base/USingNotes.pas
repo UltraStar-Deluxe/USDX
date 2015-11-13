@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/base/USingNotes.pas $
+ * $Id: USingNotes.pas 1406 2008-09-23 21:43:52Z k-m_schindler $
  *}
 
 unit USingNotes;

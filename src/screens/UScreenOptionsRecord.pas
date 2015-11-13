@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/screens/UScreenOptionsRecord.pas $
+ * $Id: UScreenOptionsRecord.pas 3068 2014-01-01 19:17:11Z k-m_schindler $
  *}
 
 unit UScreenOptionsRecord;
@@ -339,7 +339,7 @@ begin
       end;
     end;
 
-    Theme.OptionsRecord.SelectThreshold.showArrows := true;
+    Theme.OptionsRecord.SelectThreshold.showArrows := true; //basisbit TODO
     Theme.OptionsRecord.SelectThreshold.oneItemOnly := true;
     AddSelectSlide(Theme.OptionsRecord.SelectThreshold, Ini.ThresholdIndex, IThreshold);
 
@@ -352,7 +352,7 @@ begin
   // add Exit-button
   AddButton(Theme.OptionsRecord.ButtonExit);
   if (Length(Button[0].Text) = 0) then
-    AddButtonText(20, 5, Theme.Options.Description[7]);
+    AddButtonText(20, 5, Theme.Options.Description[10]);
   // store InteractionID
   if (Length(AudioInputProcessor.DeviceList) > 0) then
     ExitButtonIID := MaxChannelCount + 4

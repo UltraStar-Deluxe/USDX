@@ -1,0 +1,74 @@
+--[[
+ * UltraStar Deluxe - Karaoke Game
+ *
+ * UltraStar Deluxe is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; see the file COPYING. If not, write to
+ * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ * Boston, MA 02110-1301, USA.
+ *
+ * $URL: http://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/game/plugins/5000points.usdx $
+ * $Id: 5000points.usdx 2258 2010-04-20 20:08:16Z whiteshark0 $
+ *]]
+    
+function plugin_init()
+  register('party mode: 2000points', '1.00', 'infanf', 'http://www.UltrastarDeluxe.org');
+
+  require('Usdx.Party')
+  require('Usdx.ScreenSing');
+
+  local Mode = {}
+
+  Mode.Name = '2000points'
+  Mode.CanNonParty = true;
+  Mode.CanParty = true;
+  Mode.OnSing = 'Sing';
+  Mode.AfterSing = 'Calculate_Winner';
+
+  Usdx.Party.Register(Mode)
+
+  return true;
+end
+
+function Sing()
+  Scores = ScreenSing.GetScores();
+
+  for i = 1, #Scores do
+    if (Scores[i] >= 2000) then
+      ScreenSing.Finish();
+      break;
+    end
+  end
+
+  return true;
+end
+
+function Calculate_Winner()
+  Scores = Scores or ScreenSing.GetScores();
+  local Ranking = {};
+  for i = 1, #Scores do
+    if Scores[i] >= 2000 then
+      Ranking[i] = 1
+    else
+      Ranking[i] = #Scores
+    end
+  end
+
+  Party.SetRoundRanking(Ranking);
+  Scores = nil;
+
+  return true;
+end

@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/screens/UScreenPartyPlayer.pas $
+ * $Id: UScreenPartyPlayer.pas 2201 2010-03-15 21:14:51Z brunzelchen $
  *}
 
 unit UScreenPartyPlayer;
@@ -34,12 +34,19 @@ interface
 {$I switches.inc}
 
 uses
+  UCommon,
   UMenu,
+  ULog,
   SDL,
   UDisplay,
   UMusic,
+  UNote,
   UFiles,
   SysUtils,
+  UScreenSing,
+  UScreenPartyNewRound,
+  UScreenPartyWin,
+  UScreenPartyScore,
   UThemes;
 
 type
@@ -74,7 +81,11 @@ type
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
+      
       procedure SetAnimationProgress(Progress: real); override;
+      function NoRepeatColors(ColorP:integer; Interaction:integer; Pos:integer):integer;
+      procedure TeamColorButton(K: integer; Interact: integer);
+
   end;
 
 const
@@ -84,6 +95,7 @@ const
 implementation
 
 uses
+  UAvatars,
   UGraphic,
   UMain,
   UIni,
@@ -92,6 +104,9 @@ uses
   UUnicodeUtils,
   UScreenPartyOptions,
   ULanguage;
+
+var
+  Num: array[0..2]of integer;
 
 procedure TScreenPartyPlayer.UpdateInterface;
   var
@@ -103,6 +118,8 @@ begin
   Btn := 0;
   for I := 0 to 2 do
   begin
+    TeamColorButton(Num[I], I);
+
     if (CountTeams + 1 >= I) then
     begin
       Button[Btn + 0].Visible := true;
@@ -124,9 +141,11 @@ begin
 end;
 
 procedure TScreenPartyPlayer.UpdateParty;
-  var
+var
     I, J: integer;
+    Col: TRGB;
 begin
+
   {//Save PlayerNames
   for I := 0 to PartySession.Teams.NumTeams-1 do
   begin
@@ -142,11 +161,45 @@ begin
 
   for I := 0 to CountTeams + 1 do
   begin
+    Ini.SingColor[I] := Num[I];
+    Ini.TeamColor[I] := Num[I];
+    
     Party.AddTeam(Button[I * 5].Text[0].Text);
 
     for J := 0 to CountPlayer[I] do
       Party.AddPlayer(I, Button[I * 5 + 1 + J].Text[0].Text);
+
+    // no avatar on Party
+    AvatarPlayerTextures[I + 1] := NoAvatarTexture[I + 1];
+
+    Col := GetPlayerColor(Num[I]);
+
+    AvatarPlayerTextures[I + 1].ColR := Col.R;
+    AvatarPlayerTextures[I + 1].ColG := Col.G;
+    AvatarPlayerTextures[I + 1].ColB := Col.B;
   end;
+
+
+  // MOD Colors
+  Ini.SaveTeamColors;
+  LoadTeamsColors;
+  Theme.ThemePartyLoad;
+  ScreenSong.ColorizeJokers;
+
+  // Reload ScreenSing and ScreenScore because of player colors
+  // TODO: do this better
+  freeandnil(ScreenSing);
+  freeandnil(ScreenPartyNewRound);
+  freeandnil(ScreenPartyWin);
+  freeandnil(ScreenPartyScore);
+
+  Party.bPartyGame := true;
+  PlayersPlay := Length(Party.Teams);
+
+  ScreenSing := TScreenSing.Create;
+  ScreenPartyNewRound := TScreenPartyNewRound.Create;
+  ScreenPartyWin := TScreenPartyWin.Create;
+  ScreenPartyScore := TScreenPartyScore.Create;
 
   if (Party.ModesAvailable) then
   begin //mode for current playersetup available
@@ -163,6 +216,8 @@ end;
 function TScreenPartyPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
   SDL_ModState:  word;
+  Team: integer;
+  I: integer;
   procedure IntNext;
   begin
     repeat
@@ -192,19 +247,14 @@ begin
   // check normal keys
   if (Interactions[Interaction].Typ = iButton) then
   begin
-    case CharCode of
-      Ord('0')..Ord('9'),
-      Ord('a')..Ord('z'),
-      Ord('A')..Ord('Z'),
-      Ord(' '), Ord('-'), Ord('_'), Ord('!'), Ord(','), Ord('<'), Ord('/'),
-      Ord('*'), Ord('?'), Ord(''''), Ord('"'):
-        begin
-          Button[Interactions[Interaction].Num].Text[0].Text :=
-            Button[Interactions[Interaction].Num].Text[0].Text + UCS4ToUTF8String(CharCode);
-          Exit;
-        end;
-    end;
 
+    // check normal keys
+    if (IsPrintableChar(CharCode)) then
+    begin
+      Button[Interactions[Interaction].Num].Text[0].Text := Button[Interactions[Interaction].Num].Text[0].Text +
+                                          UCS4ToUTF8String(CharCode);
+      Exit;
+    end;
 
     // check special keys
     case PressedKey of
@@ -338,16 +388,65 @@ begin
     // Up and Down could be done at the same time,
     // but I don't want to declare variables inside
     // functions like this one, called so many times
-    SDLK_DOWN:    IntNext;
-    SDLK_UP:      IntPrev;
+    SDLK_DOWN:
+      begin
+        if (Interaction in [1, 7, 13]) and (SDL_ModState = KMOD_LCTRL) then
+        begin
+
+          case Interaction of
+            1: Team := 0;
+            7: Team := 1;
+            13: Team := 2;
+          end;
+
+          Num[Team] := Num[Team] - 1;
+          Num[Team] := NoRepeatColors(Num[Team], Team, -1);
+          TeamColorButton(Num[Team], Team);
+        end
+        else
+          IntNext;
+      end;
+    SDLK_UP:
+      begin
+        if (Interaction in [1, 7, 13]) and (SDL_ModState = KMOD_LCTRL) then
+        begin
+
+          case Interaction of
+            1: Team := 0;
+            7: Team := 1;
+            13: Team := 2;
+          end;
+
+          //Button[Team * 5].Text[0].Text := 'BUTTON ' + IntTostr(Team);
+
+          Num[Team] := Num[Team] + 1;
+          Num[Team] := NoRepeatColors(Num[Team], Team, 1);
+          TeamColorButton(Num[Team], Team);
+        end
+        else
+          IntPrev;
+      end;
     SDLK_RIGHT:
       begin
         if (Interaction in [0,2,8,14]) then
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractInc;
-
           UpdateInterface;
+
+          if (Interaction = 0) then
+          begin
+            Num[2] := NoRepeatColors(Num[2], 2, 1);
+            TeamColorButton(Num[2], 2);
+          end;
+
+        //CORRECT
+        for I := 0 to 3 do
+          IntNext;
+
+        for I := 0 to 3 do
+          IntPrev;
+
         end;
       end;
     SDLK_LEFT:
@@ -356,14 +455,23 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractDec;
-
           UpdateInterface;
         end;
+
+        //CORRECT
+        for I := 0 to 3 do
+          IntNext;
+
+        for I := 0 to 3 do
+          IntPrev;
+
       end;
   end;
 end;
 
 constructor TScreenPartyPlayer.Create;
+var
+  ButtonID: integer;
 begin
   inherited Create;
 
@@ -374,34 +482,63 @@ begin
   SelectTeams     := AddSelectSlide(Theme.PartyPlayer.SelectTeams, CountTeams, ITeams);
 
   Team1Name := AddButton(Theme.PartyPlayer.Team1Name);
+  Button[Team1Name].Text[0].Writable := true;
+
   Theme.PartyPlayer.SelectPlayers1.oneItemOnly := true;
   Theme.PartyPlayer.SelectPlayers1.showArrows := true;
   SelectPlayers[0]  := AddSelectSlide(Theme.PartyPlayer.SelectPlayers1, CountPlayer[0], IPlayers);
 
-  AddButton(Theme.PartyPlayer.Player1Name);
-  AddButton(Theme.PartyPlayer.Player2Name);
-  AddButton(Theme.PartyPlayer.Player3Name);
-  AddButton(Theme.PartyPlayer.Player4Name);
+  ButtonID := AddButton(Theme.PartyPlayer.Player1Name);
+  Button[ButtonID].Text[0].Writable := true;
+
+  ButtonID := AddButton(Theme.PartyPlayer.Player2Name);
+  Button[ButtonID].Text[0].Writable := true;
+
+  ButtonID := AddButton(Theme.PartyPlayer.Player3Name);
+  Button[ButtonID].Text[0].Writable := true;
+
+  ButtonID := AddButton(Theme.PartyPlayer.Player4Name);
+  Button[ButtonID].Text[0].Writable := true;
 
   Team2Name := AddButton(Theme.PartyPlayer.Team2Name);
+  Button[Team2Name].Text[0].Writable := true;
+
   Theme.PartyPlayer.SelectPlayers2.oneItemOnly := true;
   Theme.PartyPlayer.SelectPlayers2.showArrows := true;
   SelectPlayers[1]  := AddSelectSlide(Theme.PartyPlayer.SelectPlayers2, CountPlayer[1], IPlayers);
 
-  AddButton(Theme.PartyPlayer.Player5Name);
-  AddButton(Theme.PartyPlayer.Player6Name);
-  AddButton(Theme.PartyPlayer.Player7Name);
-  AddButton(Theme.PartyPlayer.Player8Name);
+  ButtonID := AddButton(Theme.PartyPlayer.Player5Name);
+  Button[ButtonID].Text[0].Writable := true;
+
+  ButtonID := AddButton(Theme.PartyPlayer.Player6Name);
+  Button[ButtonID].Text[0].Writable := true;
+
+  ButtonID := AddButton(Theme.PartyPlayer.Player7Name);
+  Button[ButtonID].Text[0].Writable := true;
+
+  ButtonID := AddButton(Theme.PartyPlayer.Player8Name);
+  Button[ButtonID].Text[0].Writable := true;
 
   Team3Name := AddButton(Theme.PartyPlayer.Team3Name);
+  Button[Team3Name].Text[0].Writable := true;
+
   Theme.PartyPlayer.SelectPlayers3.oneItemOnly := true;
   Theme.PartyPlayer.SelectPlayers3.showArrows := true;
   SelectPlayers[2]  := AddSelectSlide(Theme.PartyPlayer.SelectPlayers3, CountPlayer[2], IPlayers);
-  
-  AddButton(Theme.PartyPlayer.Player9Name);
-  AddButton(Theme.PartyPlayer.Player10Name);
-  AddButton(Theme.PartyPlayer.Player11Name);
-  AddButton(Theme.PartyPlayer.Player12Name);
+
+  ButtonID := AddButton(Theme.PartyPlayer.Player9Name);
+  Button[ButtonID].Text[0].Writable := true;
+
+  ButtonID := AddButton(Theme.PartyPlayer.Player10Name);
+  Button[ButtonID].Text[0].Writable := true;
+
+  ButtonID := AddButton(Theme.PartyPlayer.Player11Name);
+  Button[ButtonID].Text[0].Writable := true;
+
+  ButtonID := AddButton(Theme.PartyPlayer.Player12Name);
+  Button[ButtonID].Text[0].Writable := true;
+
+  Button[Team2Name].Text[0].Selected  := true;
 
   Interaction := 0;
 
@@ -417,6 +554,9 @@ var
   I:    integer;
 begin
   inherited;
+
+  for I := 0 to 2 do
+    Num[I] := NoRepeatColors(Ini.TeamColor[I], I, 1);
 
   // Templates for Names Mod
   for I := 1 to 4 do
@@ -438,17 +578,83 @@ begin
   UpdateInterface;
 end;
 
-procedure TScreenPartyPlayer.SetAnimationProgress(Progress: real);
-{
+function TScreenPartyPlayer.NoRepeatColors(ColorP:integer; Interaction:integer; Pos:integer):integer;
 var
-  I:    integer;
-}
+  Z:integer;
 begin
-{
-  for I := 0 to high(Button) do
-    Button[I].Texture.ScaleW := Progress;
-}
+
+  if (ColorP >= 10) then
+    ColorP := NoRepeatColors(1, Interaction, Pos);
+
+  if (ColorP <= 0) then
+    ColorP := NoRepeatColors(9, Interaction, Pos);
+
+  for Z := 0 to CountTeams + 1 do
+  begin
+    if Z <> Interaction then
+    begin
+     if (Num[Z] = ColorP) then
+       ColorP := NoRepeatColors(ColorP + Pos, Interaction, Pos)
+    end;
+  end;
+
+  Result := ColorP;
+
 end;
 
+procedure TScreenPartyPlayer.TeamColorButton(K: integer; Interact: integer);
+var
+  Col, DesCol: TRGB;
+  I: integer;
+begin
+
+  Col := GetPlayerLightColor(K);
+  DesCol := GetPlayerColor(K);
+
+  for I := 0 to 4 do
+  begin
+    Button[Interact * 5 + I].SelectColR:= Col.R;
+    Button[Interact * 5 + I].SelectColG:= Col.G;
+    Button[Interact * 5 + I].SelectColB:= Col.B;
+
+    Button[Interact * 5 + I].DeselectColR:= DesCol.R;
+    Button[Interact * 5 + I].DeselectColG:= DesCol.G;
+    Button[Interact * 5 + I].DeselectColB:= DesCol.B;
+  end;
+
+  SelectsS[Interact + 1].ColR := Col.R;
+  SelectsS[Interact + 1].ColG := Col.G;
+  SelectsS[Interact + 1].ColB := Col.B;
+
+  SelectsS[Interact + 1].DColR := DesCol.R;
+  SelectsS[Interact + 1].DColG := DesCol.G;
+  SelectsS[Interact + 1].DColB := DesCol.B;
+
+  SelectsS[Interact + 1].SBGColR := Col.R;
+  SelectsS[Interact + 1].SBGColG := Col.G;
+  SelectsS[Interact + 1].SBGColB := Col.B;
+
+  SelectsS[Interact + 1].SBGDColR := DesCol.R;
+  SelectsS[Interact + 1].SBGDColG := DesCol.G;
+  SelectsS[Interact + 1].SBGDColB := DesCol.B;
+
+  //Interaction := Interact;
+
+  //CORRECT
+  for I := 0 to 15 do
+    InteractNext;
+
+  for I := 0 to 15 do
+    InteractPrev;
+
+end;
+
+procedure TScreenPartyPlayer.SetAnimationProgress(Progress: real);
+var
+  I:    integer;
+begin
+  {for I := 0 to high(Button) do
+    Button[I].Texture.ScaleW := Progress;   }
+end;
 
 end.

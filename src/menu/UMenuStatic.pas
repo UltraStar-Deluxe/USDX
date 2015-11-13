@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/menu/UMenuStatic.pas $
+ * $Id: UMenuStatic.pas 1692 2009-04-24 18:43:12Z k-m_schindler $
  *}
 
 unit UMenuStatic;
@@ -35,6 +35,7 @@ interface
 
 uses
   UTexture,
+  UMenuInteract,
   gl;
 
 type
@@ -43,17 +44,23 @@ type
       Texture:           TTexture; // Button Screen position and size
       Visible:           boolean;
 
+      // for list item
+      TextureSelect:     TTexture;
+      TextureDeselect:   TTexture; // Button Screen position and size
+
       //Reflection Mod
       Reflection:        boolean;
       Reflectionspacing: real;
 
       procedure Draw;
       constructor Create(Textura: TTexture); overload;
+      function GetMouseOverArea: TMouseOverRect;
   end;
 
 implementation
 uses
-  UDrawTexture;
+  UDrawTexture,
+  UDisplay;
 
 procedure TStatic.Draw;
 begin
@@ -112,6 +119,17 @@ constructor TStatic.Create(Textura: TTexture);
 begin
   inherited Create;
   Texture := Textura;
+end;
+
+function TStatic.GetMouseOverArea: TMouseOverRect;
+begin
+  if not(Display.Cursor_HiddenByScreen) then
+  begin
+    Result.X := Texture.X;
+    Result.Y := Texture.Y;
+    Result.W := Texture.W;
+    Result.H := Texture.H;
+  end;
 end;
 
 end.

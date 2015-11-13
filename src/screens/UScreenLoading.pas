@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/screens/UScreenLoading.pas $
+ * $Id: UScreenLoading.pas 1939 2009-11-09 00:27:55Z s_alexander $
  *}
 
 unit UScreenLoading;
@@ -44,6 +44,7 @@ type
   TScreenLoading = class(TMenu)
     public
       Fadeout: boolean;
+      TextDescription: integer;
 
       constructor Create; override;
       procedure OnShow; override;

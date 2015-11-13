@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/macosx/PseudoThread.pas $
+ * $Id: PseudoThread.pas 1577 2009-01-26 23:27:06Z k-m_schindler $
  *}
 
 unit PseudoThread;

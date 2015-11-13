@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/screens/UScreenOptionsGame.pas $
+ * $Id: UScreenOptionsGame.pas 2203 2010-03-16 19:25:13Z brunzelchen $
  *}
 
 unit UScreenOptionsGame;
@@ -36,16 +36,24 @@ interface
 uses
   SDL,
   UMenu,
+  ULog,
   UDisplay,
   UMusic,
   UFiles,
   UIni,
   UThemes,
+  UScreensong,
   USongs;
 
 type
   TScreenOptionsGame = class(TMenu)
+    private
+      procedure ReloadScreens;
+
     public
+      ActualLanguage:  Integer;
+      ActualSongMenu: Integer;
+
       old_Tabs, old_Sorting: integer;
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
@@ -57,6 +65,7 @@ implementation
 
 uses
   UGraphic,
+  ULanguage,
   UUnicodeUtils,
   SysUtils;
 
@@ -73,12 +82,13 @@ begin
           Exit;
         end;
     end;
-    
+
     // check special keys
     case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
+          ReloadScreens;
           AudioPlayback.PlaySound(SoundLib.Back);
           RefreshSongs;
           FadeTo(@ScreenOptions);
@@ -87,6 +97,7 @@ begin
         begin
           if SelInteraction = 6 then
           begin
+            ReloadScreens;
             AudioPlayback.PlaySound(SoundLib.Back);
             RefreshSongs;
             FadeTo(@ScreenOptions);
@@ -126,17 +137,13 @@ begin
   old_Sorting := Ini.Sorting;
   old_Tabs    := Ini.Tabs;
 
-  Theme.OptionsGame.SelectPlayers.showArrows  := true;
-  Theme.OptionsGame.SelectPlayers.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsGame.SelectPlayers,    Ini.Players,    IPlayers);
-
-  Theme.OptionsGame.SelectDifficulty.showArrows  := true;
-  Theme.OptionsGame.SelectDifficulty.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsGame.SelectDifficulty, Ini.Difficulty, IDifficultyTranslated);
-
   Theme.OptionsGame.SelectLanguage.showArrows  := true;
   Theme.OptionsGame.SelectLanguage.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsGame.SelectLanguage,   Ini.Language,   ILanguageTranslated);
+  AddSelectSlide(Theme.OptionsGame.SelectLanguage,   Ini.Language,  ILanguageTranslated);
+
+  Theme.OptionsGame.SelectSongMenu.showArrows  := true;
+  Theme.OptionsGame.SelectSongMenu.oneItemOnly := true;
+  AddSelectSlide(Theme.OptionsGame.SelectSongMenu,    Ini.SongMenu, ISongMenuTranslated);
 
   Theme.OptionsGame.SelectTabs.showArrows  := true;
   Theme.OptionsGame.SelectTabs.oneItemOnly := true;
@@ -146,22 +153,24 @@ begin
   Theme.OptionsGame.SelectSorting.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGame.SelectSorting,    Ini.Sorting,    ISortingTranslated);
 
+  Theme.OptionsGame.SelectShowScores.showArrows  := true;
+  Theme.OptionsGame.SelectShowScores.oneItemOnly := true;
+  AddSelectSlide(Theme.OptionsGame.SelectShowScores,    Ini.ShowScores,    IShowScoresTranslated);
+
   Theme.OptionsGame.SelectDebug.showArrows  := true;
   Theme.OptionsGame.SelectDebug.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGame.SelectDebug,      Ini.Debug,      IDebugTranslated);
 
-
-
   AddButton(Theme.OptionsGame.ButtonExit);
   if (Length(Button[0].Text) = 0) then
-    AddButtonText(20, 5, Theme.Options.Description[7]);
+    AddButtonText(20, 5, Theme.Options.Description[10]);
 
 end;
 
 //Refresh Songs Patch
 procedure TScreenOptionsGame.RefreshSongs;
 begin
-  if (ini.Sorting <> old_Sorting) or (ini.Tabs <> old_Tabs) then
+  if (Ini.Sorting <> old_Sorting) or (Ini.Tabs <> old_Tabs) then
     ScreenSong.Refresh;
 end;
 
@@ -169,7 +178,48 @@ procedure TScreenOptionsGame.OnShow;
 begin
   inherited;
 
-//  Interaction := 0;
+  ActualLanguage := Ini.Language;
+  ActualSongMenu := Ini.SongMenu;
+
+  Interaction := 0;
+end;
+
+procedure TScreenOptionsGame.ReloadScreens;
+begin
+
+  if(ActualSongMenu <> Ini.SongMenu) then
+  begin
+    Theme.ThemeSongLoad;
+
+    ScreenSong.Free;
+    ScreenSong := TScreenSong.Create;
+  end;
+
+  // Reload all screens, after Language changed
+  if(ActualLanguage <> Ini.Language) then
+  begin
+     {
+    //Language.ChangeLanguage(ILanguage[Ini.Language]);
+    Ini.Save;
+
+    Language.Free;
+    Language := TLanguage.Create;
+
+    Ini.Free;
+    Ini := TIni.Create;
+    //Ini.Load;
+
+    Theme.Free;
+    Theme := TTheme.Create;
+
+    Menu.Free;
+    Menu := TMenu.Create;
+
+    //Language.ChangeLanguage('Inglês');
+    UGraphic.UnLoadScreens();
+    UGraphic.LoadScreens(true);
+    }
+  end;
 end;
 
 end.

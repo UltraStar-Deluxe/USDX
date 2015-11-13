@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/media/UVideo.pas $
+ * $Id: UVideo.pas 3150 2015-10-20 00:07:57Z basisbit $
  *}
 
 unit UVideo;
@@ -396,8 +396,9 @@ begin
   //fCodecContext^.error_resilience := FF_ER_CAREFUL; //FF_ER_COMPLIANT;
   // allow non spec compliant speedup tricks.
 
-  fCodecContext^.flags2 := CODEC_FLAG2_FAST;
-  fCodecContext^.flags := CODEC_FLAG_LOW_DELAY;
+  //fCodecContext^.flags2 := CODEC_FLAG2_FAST;
+  if not (FileName.GetExtension().ToUTF8() = '.avi' )then
+    fCodecContext^.flags := CODEC_FLAG_LOW_DELAY;  //ffmpeg has a bug here when playing certain avi files
 
   // Note: avcodec_open() and avcodec_close() are not thread-safe and will
   // fail if called concurrently by different threads.
@@ -502,8 +503,8 @@ begin
 
   if (SupportsNPOT = false) then
   begin
-    fTexWidth   := Round(Power(2, Ceil(Log2(fCodecContext^.width))));
-    fTexHeight  := Round(Power(2, Ceil(Log2(fCodecContext^.height))));
+  fTexWidth   := Round(Power(2, Ceil(Log2(fCodecContext^.width))));
+  fTexHeight  := Round(Power(2, Ceil(Log2(fCodecContext^.height))));
   end
   else
   begin
@@ -538,7 +539,7 @@ begin
   glBindTexture(GL_TEXTURE_2D, fFrameTex);
   glTexImage2D(GL_TEXTURE_2D, 0, 3, fTexWidth, fTexHeight, 0,
       PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, nil);
-  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
   fOpened := true;
@@ -1391,8 +1392,8 @@ begin
      Round(Time / av_q2d(fStream^.time_base)),
      SeekFlags) < 0) then
   begin
-    Log.LogError('av_seek_frame() failed', 'TVideoPlayback_ffmpeg.SetPosition');
-    Exit;
+      Log.LogError('av_seek_frame() failed', 'TVideoPlayback_ffmpeg.SetPosition');
+      Exit;
   end;
 
   avcodec_flush_buffers(fCodecContext);

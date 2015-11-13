@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UCommandLine.pas $
+ * $Id: UCommandLine.pas 1939 2009-11-09 00:27:55Z s_alexander $
  *}
 
 unit UCommandLine;
@@ -83,7 +83,7 @@ type
 
 var
   Params:    TCMDParams;
-  
+
 const
   cHelp            = 'help';
   cDebug           = 'debug';
@@ -136,9 +136,9 @@ end;
  *}
 procedure TCMDParams.ResetVariables;
 begin
-  Debug       := False;
+  Debug       := false;
   Benchmark   := False;
-  NoLog       := False;
+  NoLog       := false;
   ScreenMode  := scmDefault;
   Joypad      := False;
   Split       := spmDefault;
@@ -166,7 +166,7 @@ var
 begin
   PCount := ParamCount;
   //Log.LogError('ParamCount: ' + Inttostr(PCount));
-  
+
   // check all parameters
   for I := 1 to PCount do
   begin
@@ -207,7 +207,7 @@ begin
           Command := ParamStr(I + 1);
 
           // check for valid value
-          // FIXME: guessing an array-index of depth is very error prone.  
+          // FIXME: guessing an array-index of depth is very error prone.
           If (Command = '16') then
             Depth := 0
           Else If (Command = '32') then

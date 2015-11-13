@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/screens/UScreenEdit.pas $
+ * $Id: UScreenEdit.pas 2246 2010-04-18 13:43:36Z tobigun $
  *}
 
 unit UScreenEdit;
@@ -95,7 +95,7 @@ begin
           if Interaction = 0 then
           begin
             AudioPlayback.PlaySound(SoundLib.Start);
-            FadeTo(@ScreenEditConvert);
+            //FadeTo(@ScreenEditConvert);
           end;
 
           if Interaction = 1 then

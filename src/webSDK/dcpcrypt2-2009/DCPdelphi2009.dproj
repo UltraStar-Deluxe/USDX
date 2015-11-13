@@ -1,0 +1,137 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{ae9b70a6-b2c2-45a0-ba7b-2448a376d73f}</ProjectGuid>
+			<MainSource>DCPdelphi2009.dpk</MainSource>
+			<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+			<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+			<DCC_DependencyCheckOutputName>C:\Documents and Settings\All Users\Documents\RAD Studio\5.0\Bpl\DCPdelphi2009.bpl</DCC_DependencyCheckOutputName>
+			<ProjectVersion>12.0</ProjectVersion>
+			<Config Condition="'$(Config)'==''">Debug</Config>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
+			<Cfg_1>true</Cfg_1>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
+			<Cfg_2>true</Cfg_2>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_ImageBase>00400000</DCC_ImageBase>
+			<DCC_DependencyCheckOutputName>C:\Documents and Settings\All Users\Documents\RAD Studio\6.0\Bpl\DCPdelphi2009.bpl</DCC_DependencyCheckOutputName>
+			<DCC_Description>DCPcrypt cryptographic component library v2 BETA 3</DCC_Description>
+			<DesignOnlyPackage>false</DesignOnlyPackage>
+			<GenDll>true</GenDll>
+			<GenPackage>true</GenPackage>
+			<DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_1)'!=''">
+			<Version>7.0</Version>
+			<DCC_DebugInformation>False</DCC_DebugInformation>
+			<DCC_LocalDebugSymbols>False</DCC_LocalDebugSymbols>
+			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2)'!=''">
+			<Version>7.0</Version>
+		</PropertyGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
+			<Borland.ProjectType>Package</Borland.ProjectType>
+			<BorlandProject>
+				<Delphi.Personality>
+					<Parameters>
+						<Parameters Name="UseLauncher">False</Parameters>
+						<Parameters Name="LoadAllSymbols">True</Parameters>
+						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+					</Parameters>
+					<VersionInfo>
+						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
+						<VersionInfo Name="MajorVer">1</VersionInfo>
+						<VersionInfo Name="MinorVer">0</VersionInfo>
+						<VersionInfo Name="Release">0</VersionInfo>
+						<VersionInfo Name="Build">0</VersionInfo>
+						<VersionInfo Name="Debug">False</VersionInfo>
+						<VersionInfo Name="PreRelease">False</VersionInfo>
+						<VersionInfo Name="Special">False</VersionInfo>
+						<VersionInfo Name="Private">False</VersionInfo>
+						<VersionInfo Name="DLL">False</VersionInfo>
+						<VersionInfo Name="Locale">1036</VersionInfo>
+						<VersionInfo Name="CodePage">1252</VersionInfo>
+					</VersionInfo>
+					<VersionInfoKeys>
+						<VersionInfoKeys Name="CompanyName"/>
+						<VersionInfoKeys Name="FileDescription"/>
+						<VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="InternalName"/>
+						<VersionInfoKeys Name="LegalCopyright"/>
+						<VersionInfoKeys Name="LegalTrademarks"/>
+						<VersionInfoKeys Name="OriginalFilename"/>
+						<VersionInfoKeys Name="ProductName"/>
+						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="Comments"/>
+					</VersionInfoKeys>
+					<Source>
+						<Source Name="MainSource">DCPdelphi2009.dpk</Source>
+					</Source>
+				</Delphi.Personality>
+			</BorlandProject>
+			<ProjectFileVersion>12</ProjectFileVersion>
+		</ProjectExtensions>
+		<ItemGroup>
+			<DelphiCompile Include="DCPdelphi2009.dpk">
+				<MainSource>MainSource</MainSource>
+			</DelphiCompile>
+			<DCCReference Include="rtl.dcp"/>
+			<DCCReference Include="DCPbase64.pas"/>
+			<DCCReference Include="DCPblockciphers.pas"/>
+			<DCCReference Include="DCPconst.pas"/>
+			<DCCReference Include="DCPcrypt2.pas"/>
+			<DCCReference Include="Ciphers\DCPblowfish.pas"/>
+			<DCCReference Include="Ciphers\DCPcast128.pas"/>
+			<DCCReference Include="Ciphers\DCPcast256.pas"/>
+			<DCCReference Include="Ciphers\DCPdes.pas"/>
+			<DCCReference Include="Ciphers\DCPgost.pas"/>
+			<DCCReference Include="Ciphers\DCPice.pas"/>
+			<DCCReference Include="Ciphers\DCPidea.pas"/>
+			<DCCReference Include="Ciphers\DCPmars.pas"/>
+			<DCCReference Include="Ciphers\DCPmisty1.pas"/>
+			<DCCReference Include="Ciphers\DCPrc2.pas"/>
+			<DCCReference Include="Ciphers\DCPrc4.pas"/>
+			<DCCReference Include="Ciphers\DCPrc5.pas"/>
+			<DCCReference Include="Ciphers\DCPrc6.pas"/>
+			<DCCReference Include="Ciphers\DCPrijndael.pas"/>
+			<DCCReference Include="Ciphers\DCPtea.pas"/>
+			<DCCReference Include="Ciphers\DCPtwofish.pas"/>
+			<DCCReference Include="Hashes\DCPhaval.pas"/>
+			<DCCReference Include="Hashes\DCPmd4.pas"/>
+			<DCCReference Include="Hashes\DCPmd5.pas"/>
+			<DCCReference Include="Hashes\DCPripemd128.pas"/>
+			<DCCReference Include="Hashes\DCPripemd160.pas"/>
+			<DCCReference Include="Hashes\DCPsha1.pas"/>
+			<DCCReference Include="Hashes\DCPtiger.pas"/>
+			<DCCReference Include="DCPreg.pas"/>
+			<DCCReference Include="Ciphers\DCPserpent.pas"/>
+			<DCCReference Include="Hashes\DCPsha256.pas"/>
+			<DCCReference Include="Hashes\DCPsha512.pas"/>
+			<BuildConfiguration Include="Base">
+				<Key>Base</Key>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Debug">
+				<Key>Cfg_2</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Release">
+				<Key>Cfg_1</Key>
+				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+		</ItemGroup>
+		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+	</Project>

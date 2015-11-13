@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+  <title>tCurl: List of example programs</title>
+</head>
+
+<body>
+<h2><i>CurlPas </i><small>example programs</small></h2>
+<table border="2" width="92%" align="center" summary="examples" cellpadding="8" >
+
+<tr><td ><a href="../demo/simple.pas">simple.pas</a></td>
+<td>
+  Simplest CURL program.
+</td></tr>
+
+
+<tr><td ><a href="../demo/testsave.pas">testsave.pas</a></td><td>
+  Example of tCurl's "save to disk" functions
+</td></tr>
+
+
+<tr><td ><a href="../demo/testcb.pas">testcb.pas</a></td><td>
+  Example using tCurl's c-style callbacks.
+</td></tr>
+
+<tr><td ><a href="../demo/testevnt.pas">testevnt.pas</a></td><td>
+  Example using tCurl's event-based callbacks.
+</td></tr>
+
+
+<tr><td ><a href="../demo/testput.pas">testput.pas</a></td>
+<td>
+  Example using FTP to upload a file and set its permissions 
+</td></tr>
+
+
+<tr><td ><a href="../demo/testtxcb.pas">testtxcb.pas</a></td><td>
+  Example using the ReadFunction callback to upload a file.
+</td></tr>
+
+<tr><td ><a href="../demo/testpart.pas">testpart.pas</a></td><td>
+  Program to test partial transfer requests - not all servers support this!
+</td></tr>
+
+<tr><td ><a href="../demo/testinfo.pas">testinfo.pas</a></td><td>
+  Shows how to get the stored information about the performance of a transfer.
+</td></tr>
+
+<tr><td ><a href="../demo/testver.pas">testver.pas</a></td>
+<td>
+  Example using the class functions of tCurl to retrieve libcurl's version information.
+</td></tr>
+
+
+<tr><td ><a href="../demo/testmult.pas">testmult.pas</a></td>
+<td>
+  Uses the <tt>curl_multi</tt> bindings to download two files at the same time.
+</td></tr>
+
+<tr>
+<td >
+<a href="../demo/testmobj.pas">testmobj.pas</a><br>
+<a href="../demo/testmthd.pas">testmthd.pas</a>
+</td>
+<td>
+  Two examples using the <i>tCurlMulti</i> object to download multiple files at the same time.<br>
+  ( The <tt> testmthd </tt> program also demonstrates the threaded <i>WaitCallback</i> property. )
+</td></tr>
+
+<tr><td ><a href="../demo/testpost.pas">testpost.pas</a></td><td>
+  Example using simple HTTP POST variables -<br>
+  This requires that you have a working Apache/PHP server on your local machine,<br>
+  and a copy of the file "testpost.php" in your htdocs directory.
+</td></tr>
+
+<tr><td >
+<a href="../demo/testmpf1.pas">testmpf1.pas</a><br>
+<a href="../demo/testmpf2.pas">testmpf2.pas</a>
+</td><td>
+   Two examples of rfc1867 multipart/form-data submissions:<br>
+   &nbsp;&nbsp;<tt>testmpf1</tt> uses the curl_formadd library functions.<br>
+   &nbsp;&nbsp;<tt>testmpf2</tt> uses the tCurl.FormData property .<br><br>
+   This requires that you have a working Apache/PHP server on your local machine,<br>
+   and a copy of the file "test1867.php" in you "htdocs" directory.<br><br>
+   These programs also use the files "sendme.txt" and "sendme.png" --<br>
+   &nbsp;&nbsp;they should be in the current working directory.
+</td></tr>
+
+<tr><td ><a href="../demo/testcook.pas">testcook.pas</a></td>
+<td>
+Program to show how to list the cookies from an HTTP server.
+</td></tr>
+
+</table>
+</body>
+</html>
+
+

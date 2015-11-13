@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/screens/UScreenOptionsThemes.pas $
+ * $Id: UScreenOptionsThemes.pas 3133 2015-09-07 17:10:36Z basisbit $
  *}
 
 unit UScreenOptionsThemes;
@@ -47,8 +47,15 @@ type
   TScreenOptionsThemes = class(TMenu)
     private
       procedure ReloadTheme;
+      procedure ReloadScreens;
+
     public
+      ActualTheme:  Integer;
+      ActualSkin:   Integer;
+      ActualColor:  Integer;
+
       SkinSelect: integer;
+
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
@@ -79,7 +86,7 @@ begin
           Exit;
         end;
     end;
-    
+
     // check special keys
     case PressedKey of
       SDLK_ESCAPE,
@@ -87,10 +94,7 @@ begin
         begin
           Ini.Save;
 
-          // Reload all screens, after Theme changed
-          // Todo : JB - Check if theme was actually changed
-          UGraphic.UnLoadScreens();
-          UGraphic.LoadScreens(USDXVersionStr);
+          ReloadScreens;
 
           AudioPlayback.PlaySound(SoundLib.Back);
 
@@ -105,10 +109,7 @@ begin
           begin
             Ini.Save;
 
-            // Reload all screens, after Theme changed
-            // Todo : JB - Check if theme was actually changed
-            UGraphic.UnLoadScreens();
-            UGraphic.LoadScreens(USDXVersionStr);
+            ReloadScreens;
 
             AudioPlayback.PlaySound(SoundLib.Back);
 
@@ -124,7 +125,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 2) then 
+          if (SelInteraction >= 0) and (SelInteraction <= 2) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
@@ -132,7 +133,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 2) then 
+          if (SelInteraction >= 0) and (SelInteraction <= 2) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
@@ -208,12 +209,17 @@ begin
 
   AddButton(Theme.OptionsThemes.ButtonExit);
   if (Length(Button[0].Text)=0) then
-    AddButtonText(20, 5, Theme.Options.Description[7]);
+    AddButtonText(20, 5, Theme.Options.Description[10]);
+
 end;
 
 procedure TScreenOptionsThemes.OnShow;
 begin
   inherited;
+
+  ActualTheme := Ini.Theme;
+  ActualSkin := Ini.SkinNo;
+  ActualColor := Ini.Color;
 
   Interaction := 0;
 end;
@@ -232,7 +238,24 @@ begin
   Display.Draw;
   SwapBuffers;
 
+  ScreenOptionsThemes.ActualTheme := self.ActualTheme;
+  ScreenOptionsThemes.ActualSkin := self.ActualSkin;
+  ScreenOptionsThemes.ActualColor := self.ActualColor;
+
   Self.Destroy;
+end;
+
+procedure TScreenOptionsThemes.ReloadScreens;
+begin
+  // Reload all screens, after Theme changed
+  if(ActualTheme <> Ini.Theme) or
+    (ActualSkin <> Ini.SkinNo) or
+    (ActualColor <> Ini.Color) then
+  begin
+    UGraphic.UnLoadScreens();
+    UGraphic.LoadScreens(USDXVersionStr);
+    Ini.Load;
+  end;
 end;
 
 end.

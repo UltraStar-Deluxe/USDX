@@ -1,0 +1,1260 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+<title>tCurl: Properties</title>
+</head>
+<body>
+<div>
+<table summary="Navigation Bar" border="0" cellpadding="2" cellspacing="4" width="100%" align="center">
+<tr>
+<td width="12%" align="center" bgcolor="#E0E0E0"><a href="#BOOLEAN"><small>Booleans</small></a></td>
+<td width="12%" align="center" bgcolor="#E0E0E0"><a href="#NUMERIC"><small>Numeric</small></a></td>
+<td width="12%" align="center" bgcolor="#E0E0E0"><a href="#STRING"><small>Strings</small></a></td>
+<td width="12%" align="center" bgcolor="#E0E0E0"><a href="#FILENAME"><small>Filenames</small></a></td>
+<td width="12%" align="center" bgcolor="#E0E0E0"><a href="#LINKEDLIST"><small>Lists</small></a></td>
+<td width="12%" align="center" bgcolor="#E0E0E0"><a href="#FORMDATA"><small>FormData</small></a></td>
+<td width="12%" align="center" bgcolor="#E0E0E0"><a href="#CALLBACKS"><small>Callbacks</small></a></td>
+<td width="12%" align="center" bgcolor="#E0E0E0"><a href="#EVENTS"><small>Events</small></a></td>
+</tr>
+</table>
+<h2><i>tCurl</i> <small>properties</small></h2>
+<p>
+Note: Most of the properties below are actually wrappers around the various <tt>curl_easy_setopt()</tt> library calls.</p>
+<p>
+Because <b><i>libcurl</i></b> does not provide a "read" interface to option settings, the underlying library options are effectively "write-only"</p>
+<p>
+The <b><i>tCurl</i></b> wrapper maintains a copy of your settings to emulate read/write access, and although it tries to initialize its private fields<br>
+to reasonable defaults, you should consider that read-access to a property might be "undefined" unless you explicitly assign it a value.
+</p>
+<p>
+For example, even though reading the unset <i>tCurl.Port</i> property returns zero, an <tt>http</tt> transfer will still attempt to use port 80, 
+unless otherwise specified.
+<br><br></p>
+
+
+
+<a name="BOOLEAN"></a>
+<table summary="Boolean Title Block" border="2" cellpadding="8" width="100%" bgcolor="#F0F0F0">
+<tr><td align="center"><b>Boolean Properties</b>
+</td></tr>
+</table>
+<table summary="Boolean Properties" border="2" cellpadding="16" width="100%">
+<tr><td><b><a name="AUTOREFERER"></a>
+AutoReferer:</b><i> boolean</i><br>
+<tt>TRUE</tt> if we want the <small><tt>referer</tt></small> field sent automatically when following redirects.<br>
+Note that <i>tCurl</i> automatically sets this property to <tt>TRUE</tt>, contrary to the library's default.<br>
+</td></tr>
+
+<tr><td><b><a name="COOKIESESSION"></a>
+CookieSession:</b><i> boolean</i><br>
+<tt>TRUE</tt> will mark this transfer as the start of a cookie session.
+</td></tr>
+
+<tr><td><b><a name="CRLF"></a>
+CrLf:</b><i> boolean</i><br>
+<tt>TRUE</tt> to convert Unix newlines to DOS newlines on FTP uploads. ( <tt>LF</tt> to <tt>CRLF</tt> )
+</td></tr>
+
+<tr><td><b><a name="DNSUSEGLOBALCACHE"></a>
+DnsUseGlobalCache:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells curl to use a global DNS cache that will survive between easy handle creations and deletions. <br>
+This is not thread-safe, it uses a global variable.
+</td></tr>
+
+<tr><td><b><a name="FAILONERROR"></a>
+FailOnError:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells the library to abort the transfer if the HTTP response code is equal to or larger than 300.<br>
+The default action would be to retrieve the document ( probably an error page ) normally, ignoring that code.
+</td></tr>
+
+<tr><td><b><a name="FOLLOWLOCATION"></a>
+FollowLocation:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells the library to follow any Location: header that the server sends as part of a HTTP header. <br>
+This means we continue to follow new Location: headers all the way until no more such headers are returned.<br>
+Note that <i>tCurl</i> automatically sets this property to <tt>TRUE</tt>, contrary to the library's default.<br>
+<i>tCurl.MaxRedirs</i> can be used to limit the number of redirects libcurl will follow.
+</td></tr>
+
+<tr><td><b><a name="FORBIDREUSE"></a>
+ForbidReuse:</b><i> boolean</i><br>
+<tt>TRUE</tt> to make the next transfer explicitly close the connection when done.
+Normally, libcurl keeps all connections alive when done with one transfer in case there comes a succeeding one that can re-use them.
+This option should be used with caution and only if you understand what it does.
+Set to <tt>FALSE</tt> to have libcurl keep the connection open for possibly later re-use (default behavior).
+</td></tr>
+
+<tr><td><b><a name="FRESHCONNECT"></a>
+FreshConnect:</b><i> boolean</i><br>
+<tt>TRUE</tt> to make the next transfer use a new (fresh) connection by force. If the connection cache is full before this connection,
+one of the existing connections will be closed as according to the selected or default policy.
+This option should be used with caution and only if you understand what it does.
+Set this to <tt>FALSE</tt> to have libcurl attempt re-using an existing connection (default behavior).
+</td></tr>
+
+<tr><td><b><a name="FTPAPPEND"></a>
+FtpAppend:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells the library to append to the remote file instead of overwrite it.
+This is only useful when uploading to a ftp site.
+</td></tr>
+
+<tr><td><b><a name="FTPLISTONLY"></a>
+FtpListOnly:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells the library to just list the names of an ftp directory,
+instead of doing a full directory listing that would include file sizes, dates etc.
+</td></tr>
+
+<tr><td><b><a name="FTPSKIPPASVIP"></a>
+FtpSkipPasvIp:</b><i> boolean</i><br>
+<tt>TRUE</tt> instructs libcurl to <i>not</i> use the IP address the server suggests in its 227-response 
+to libcurl's <tt>PASV</tt> command when libcurl connects the data connection. 
+Instead libcurl will re-use the same IP address it already uses for the control connection, but it will still use the port number from the 227-response.<br>
+This option has no effect if PORT, EPRT or EPSV is used instead of PASV.
+</td></tr>
+
+<tr><td><b><a name="FTPUSEEPRT"></a>
+FtpUseEprt:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells libcurl to use the EPRT (and LPRT) command when doing active FTP downloads <br>
+(which is enabled by <i>tCurl.FtpPort</i>). <br>
+Using EPRT means that it will first attempt to use EPRT and then LPRT before using PORT, <br>
+but if you set <i>FtpUseEprt</i> to <tt>FALSE</tt>, it will not try using EPRT or LPRT, only plain PORT.
+</td></tr>
+
+<tr><td><b><a name="FTPUSEEPSV"></a>
+FtpUseEpsv:</b><i> boolean</i><br>
+<tt>TRUE</tt> to tell curl to use the EPSV command when doing passive FTP downloads
+(which it always does by default).
+Using EPSV means that it will first attempt to use EPSV before using PASV,
+but if you pass FALSE to this option, it will not try using EPSV, only plain PASV.
+</td></tr>
+
+<tr><td><b><a name="HEADER"></a>
+Header:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells the library to include the header in the body output.
+This is only relevant for protocols that actually have headers preceding the data (like HTTP).
+</td></tr>
+
+<tr><td><b><a name="HTTPGET"></a>
+HttpGet:</b><i> boolean</i><br>
+<tt>TRUE</tt>  to force the HTTP request to get back to GET.
+Only really usable if POST, PUT or a custom request have been used previously using the same <i>tCurl</i> instance.
+</td></tr>
+
+<tr><td><b><a name="HTTPPROXYTUNNEL"></a>
+HttpProxyTunnel:</b><i> boolean</i><br>
+<tt>TRUE</tt> to get the library to tunnel all operations through a given HTTP proxy.
+Note that there is a big difference between using a proxy and to tunnel through it.
+If you don't know what this means, you probably don't want this tunneling option.
+</td></tr>
+
+<tr><td><b><a name="IGNORECONTENTLENGTH"></a>
+IgnoreContentLength:</b><i> boolean</i><br>
+<tt>TRUE</tt>  tells the library to ignore the Content-Length header in HTTP responses.<br>
+This is useful for Apache 1.x (and similar servers) which will report incorrect content length for files over 2 gigabytes.<br>
+If this option is used, curl will not be able to accurately report progress, and will simply stop the download when the server ends the connection.
+</td></tr>
+
+<tr><td><b><a name="NOBODY"></a>
+NoBody:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells the library to not include the body-part in the output.
+This is only relevant for protocols that have separate header and body parts.
+</td></tr>
+
+<tr><td><b><a name="NOPROGRESS"></a>
+NoProgress:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells the library to shut off the built-in progress meter completely.
+NOTE: future versions of libcurl is likely to not have any built-in progress meter at all.
+</td></tr>
+
+<tr><td><b><a name="NOSIGNAL"></a>
+NoSignal:</b><i> boolean</i><br>
+If <tt>TRUE</tt>, libcurl will not use any functions that install signal handlers or any functions that cause signals to be sent to the process. <br>
+This option is mainly here to allow multi-threaded unix applications to still set/use all timeout options etc, without risking getting signals.
+</td></tr>
+
+<tr><td><b><a name="POST"></a>
+Post:</b><i> boolean</i><br>
+Obsolete, Don't use! <br>
+&nbsp; ( This is now set automatically by <i>tCurl.PostFields</i> )
+<!-- tt>TRUE</tt> tells the library to do a regular HTTP post.<br>
+This is a normal application/x-wwwform-urlencoded kind, which is the most commonly used one by HTML forms.<br>
+See the <i>tCurl.PostFields</i> property for how to specify the data to post and <i>tCurl.PostFieldSize</i> to set the data size.<br>
+Setting <i>tCurl.PostFields</i> to any non-empty string automatically sets <i>tCurl.Post</i> to <tt>TRUE</tt -->
+</td></tr>
+
+<tr><td><b><a name="FILETIME"></a>
+RequestFileTime:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells libcurl to attempt to get the modification date of the remote document in this operation. <br>
+This requires that the remote server sends the time or replies to a time querying command. <br>
+The <i>tCurl.FileTime</i> function can be used after a transfer to extract the received time (if any).
+</td></tr>
+
+<tr><td><b><a name="SSLENGINEDEFAULT"></a>
+SslEngineDefault:</b><i> boolean</i><br>
+Sets the actual crypto engine as the default for (asymetric) crypto operations. <br>
+NOTE: If the crypto device cannot be set, <i>tCurl.ResultCode</i> will be set to CURLE_SSL_ENGINE_SETFAILED.
+</td></tr>
+
+<tr><td><b><a name="SSLVERIFYPEER"></a>
+SslVerifyPeer:</b><i> boolean</i><br>
+<tt>FALSE</tt> will stop curl from verifying the peer's certificate.<br>
+( Libcurl version 7.10 started setting this option to <tt>TRUE</tt> by default ). <br>
+Alternate certificates to verify against can be specified with the <i>tCurl.CAInfo</i> property,<br>
+or a certificate directory can be specified with the <i>tCurl.CAPath</i> property.<br>
+Libcurl version 7.10 and later installs its own default certificate bundle.<br>
+<i>SslVerifyHost</i> may also need to be set to <tt>CURL_VERIFY_NONE</tt> or <tt>CURL_VERIFY_EXIST</tt> if <i>SslVerifyPeer</i>
+is set to <tt>FALSE</tt>.
+<br>( <i>SslVerifyHost</i> defaults to <tt>CURL_VERIFY_MATCH</tt> )
+</td></tr>
+
+<tr><td><b><a name="TCPNODELAY"></a>
+TcpNoDelay:</b><i> boolean</i><br>
+<tt>TRUE</tt> will disable TCP's Nagle algorithm. <br>
+The purpose of this algorithm is to try to minimize the number of small packets on the network <br>
+(where "small packets" means TCP segments less than the  Maximum Segment Size (MSS) for the network).<br>
+Maximizing  the  amount of data sent per TCP segment is good because it amortizes the overhead of the send.<br>
+However, in some cases (most notably telnet or rlogin) small segments may need to be  sent  without  delay.<br>
+This  is  less efficient than sending larger amounts of data at a time, and can contribute to congestion on
+the network if overdone.<br>
+Changing this setting after the connection has been established will have no effect.
+</td></tr>
+
+<tr><td><b><a name="TRANSFERTEXT"></a>
+TransferText:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells the library to use ASCII mode for FTP transfers, instead of the default binary transfer. <br>
+For win32 systems it does not set the stdout to binary mode. <br>
+This option can be useful when transferring text data between systems with different views on certain characters, such as newlines or similar.<br><br>
+NOTE: libcurl does not do a complete ASCII conversion when doing ASCII transfers over FTP. <br>
+This is a known limitation/flaw that nobody has rectified. <br>
+Libcurl simply sets the mode to ascii and performs a standard transfer.
+</td></tr>
+
+<tr><td><b><a name="UNRESTRICTEDAUTH"></a>
+UnrestrictedAuth:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells the library it can continue to send authentication (user+password) when <br>
+following locations, even when the hostname changes. <br>
+Note that this is meaningful only when <i>tCurl.FollowLocation</i> is also set to <tt>TRUE</tt>
+</td></tr>
+
+<tr><td><b><a name="UPLOAD"></a>
+Upload:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells the library to prepare for an upload. <br>
+The <i>tCurl.Inputfile</i> and <i>tCurl.InfileSize</i> properties are also interesting for uploads.<br>
+If the protocol is <tt>HTTP</tt>, uploading means using the <tt>PUT</tt> request unless you tell libcurl otherwise.<br><br>
+Using <tt>PUT</tt> with <tt>HTTP/1.1</tt> implies the use of a <small><tt>'Expect: 100-continue'</tt></small> header.<br>
+You can disable this header as documented in the <i>tCurl.HttpHeader</i> property.<br><br>
+If you use <tt>PUT</tt> to a <tt>HTTP/1.1</tt> server using chunked encoding, you can upload data without knowing the size before starting the transfer.<br>
+You enable this by adding a header like <small><tt>'Transfer-Encoding: chunked'</tt></small> in the <i>tCurl.HttpHeader</i> property. <br><br>
+With <tt>HTTP/1.0</tt> &nbsp; ( or <tt>1.1</tt> without chunked transfer ) &nbsp; you must specify <i>tCurl.Inputfile</i> and/or <i>tCurl.InfileSize</i>.
+</td></tr>
+
+<tr><td><b><a name="VERBOSE"></a>
+Verbose:</b><i> boolean</i><br>
+<tt>TRUE</tt> tells the library to display a lot of verbose information about its operations. <br>
+Very useful for libcurl and/or protocol debugging and understanding. <br>
+You hardly ever want this set in production use, you will almost always want this when you debug/report problems. <br>
+Assigning an event handler to the <i>OnDebug</i> event automatically sets <i>Verbose</i> to <tt>TRUE</tt>.
+</td></tr>
+
+</table>
+<br>
+<br>
+
+<a name="NUMERIC"></a>
+<table summary="Numeric and Enumerated Title Block" border="2"  cellpadding="8" width="100%" bgcolor="#F0F0F0">
+<tr>
+<td align="center" ><b>Numeric and Enumerated Properties</b>
+</td></tr>
+</table>
+
+<table summary="Numeric and Enumerated Properties" border="2"  cellpadding="16" width="100%">
+<tr><td><b><a name="BUFFERSIZE"></a>
+BufferSize:</b><i> LongInt</i><br>
+Specifies your prefered size for the receive buffer in libcurl. <br>
+The main point of this would be that the write callback gets called more often and with smaller chunks. <br>
+This is just treated as a request, not an order. You cannot be guaranteed to actually get the given size.
+</td></tr>
+
+<tr><td><b><a name="CLOSEPOLICY"></a>
+ClosePolicy:</b><i> curl_closepolicy</i><br>
+ This option sets what libcurl should do when the connection cache is filled,
+ and an open connection has to be closed to allow for a new connection. <br>
+ This must be one of the following constants: <br>
+CURLCLOSEPOLICY_LEAST_RECENTLY_USED causes tCurl to close the connection that was least recently used,
+that connection is also least likely to be capable of reuse. <br>
+CURLCLOSEPOLICY_OLDEST causes tCurl to close the oldest connection, the one that was created first
+among the ones in the connection cache. <br>
+The other close policies are not supported yet.
+</td></tr>
+
+<tr><td><b><a name="CONNECTTIMEOUT"></a>
+ConnectTimeout:</b><i> LongInt</i><br>
+The maximum time in seconds that you allow the connection to the server to take. <br>
+This only limits the connection phase, once it has connected, this option is of no more use. <br>
+Set to zero to disable connection timeout (it will then only timeout on the system's internal timeouts). <br>
+See also the <i>tCurl.Timeout</i> property.<br>
+NOTE: this is not recommended to use in unix multi-threaded programs, as it uses signals.<br>
+( Unless <i>tCurl.NoSignal</i> is set to <tt>TRUE</tt> )
+</td></tr>
+
+<tr><td><b><a name="DNSCACHETIMEOUT"></a>
+DnsCacheTimeout:</b><i> LongInt</i><br>
+Name resolves will be kept in memory for this number of seconds. <br>
+Set to zero (0) to completely disable caching,
+or set to -1 to make the cached entries remain forever.<br>
+By default, libcurl caches info for 60 seconds.
+</td></tr>
+
+<tr><td><b><a name="ENCODING"></a>
+Encoding:</b><i> CurlEncoding</i><br>
+Requests that the server encode its response. Two encodings are supported:<br>
+&nbsp;&nbsp;CURL_ENCODING_DEFLATE: will request the server to compress its response using the zlib algorithm,<br>
+&nbsp;&nbsp;CURL_ENCODING_IDENTITY: does nothing. <br>
+This is not an order, the server may or may not do it. <br>
+See the special file lib/README.encoding in the libcurl sources for details.
+</td></tr>
+
+<tr><td><b><a name="FTPRESPONSETIMEOUT"></a>
+FtpResponseTimeout:</b><i> LongInt</i><br>
+Causes curl to set a timeout period (in seconds) on the amount of time that the server is allowed to take<br>
+in order to generate a response message for a command before the session is considered hung. <br>
+Note that while curl is waiting for a response, this value overrides the <i>tCurl.Timeout</i> property.
+<br>It is recommended that if used in conjunction with <i>tCurl.Timeout</i>, you set <i>tCurl.FtpResonseTimeout</i> to a value
+smaller than <i>tCurl.Timeout</i>.
+</td></tr>
+
+<tr><td><b><a name="FTPAUTH"></a>
+FtpAuth:</b><i> curl_ftpauth</i><br>
+Alters the way libcurl issues <small><tt>"AUTH TLS"</tt></small> or  <small><tt>"AUTH SSL"</tt></small> when FTP over SSL is activated.<br>
+<tt>&nbsp;&nbsp; CURLFTPAUTH_DEFAULT: </tt> Allow libcurl to decide.<br>
+<tt>&nbsp;&nbsp; CURLFTPAUTH_SSL: &nbsp;&nbsp;&nbsp;&nbsp;</tt> Try <small><tt>"AUTH SSL"</tt></small>, if it fails try <small><tt>"AUTH TLS"</tt></small><br>
+<tt>&nbsp;&nbsp; CURLFTPAUTH_TLS: &nbsp;&nbsp;&nbsp;&nbsp;</tt> Try <small><tt>"AUTH TLS"</tt></small>, if it fails try <small><tt>"AUTH SSL"</tt></small><br>
+(see also: <i>tCurl.FtpSsl:</i>)<br>
+</td></tr>
+
+<tr><td><b><a name="FTPSSL"></a>
+FtpSsl:</b><i> curl_ftpssl</i><br>
+Causes libcurl to use your desired level of SSL for an ftp transfer.<br>
+Set to one of the following values:<br>
+<tt>&nbsp;&nbsp; CURLFTPSSL_NONE:&nbsp;&nbsp;&nbsp;    </tt> Don't attempt to use SSL.<br>
+<tt>&nbsp;&nbsp; CURLFTPSSL_TRY:&nbsp;&nbsp;&nbsp;&nbsp;     </tt> Try using SSL, proceed as normal otherwise.<br>
+<tt>&nbsp;&nbsp; CURLFTPSSL_CONTROL: </tt> Require SSL for control connection or fail with CURLE_FTP_SSL_FAILED.<br>
+<tt>&nbsp;&nbsp; CURLFTPSSL_ALL:&nbsp;&nbsp;&nbsp;&nbsp;     </tt> Require SSL for all communication or fail with CURLE_FTP_SSL_FAILED.<br><br>
+</td></tr>
+
+<tr><td><b><a name="HANDLE"></a>
+Handle:</b><i> pCURL</i><br>
+Read-only handle to the CURL session.<br>
+This is the same value that would be returned if you called <i>curl_easy_init()</i> manually.<br>
+Access to this handle should rarely be needed, use with caution!
+</td></tr>
+
+<tr><td><b><a name="HTTPVERSION"></a>
+HttpVersion:</b><i> curl_http_version</i><br>
+Forces libcurl to use a specific HTTP version. <br>
+This is not sensible to do unless you have a good reason. <br>
+Possible values are:<br>
+&nbsp;&nbsp;CURL_HTTP_VERSION_NONE:&nbsp; The library will use whatever it thinks is best. <br>
+&nbsp;&nbsp;CURL_HTTP_VERSION_1_0:&nbsp; Enforce HTTP 1.0 requests. <br>
+&nbsp;&nbsp;CURL_HTTP_VERSION_1_1:&nbsp; Enforce HTTP 1.1 requests.
+</td></tr>
+
+<tr><td><b><a name="INFILESIZE"></a>
+InfileSize:</b><i> LongInt</i><br>
+When uploading a file to a remote site, this option can be used to tell libcurl what the expected size of the infile is. <br>
+The value is set automatically when you specify a filename using &nbsp;<i>tCurl.InputFile</i>
+</td></tr>
+
+<tr><td><b><a name="LOWSPEEDLIMIT"></a>
+LowSpeedLimit:</b><i> LongInt</i><br>
+The transfer speed in bytes per second that the transfer should be below during <i>tCurl.LowSpeedTime</i> seconds for the library
+to consider it too slow and abort.
+</td></tr>
+
+<tr><td><b><a name="LOWSPEEDTIME"></a>
+LowSpeedTime:</b><i> LongInt</i><br>
+The time in seconds that the transfer should be below <i>tCurl.LowSpeedLimit</i> for the library to consider it too slow and abort.
+</td></tr>
+
+<tr><td><b><a name="MAXCONNECTS"></a>
+MaxConnects:</b><i> LongInt</i><br>
+The set number will be the persistant connection cache size. <br>
+This will be the maximum amount of simultaneous connections that libcurl may cache between file transfers. <br>
+Default is 5, and there isn't much point in changing this value unless you are perfectly aware of how this work and changes libcurl's behaviour.<br>
+NOTE: if you already have performed transfers with this instance of <i>tCurl</i>, setting a smaller <i>MaxConnects</i> than before
+may cause open connections to get closed unnecessarily.
+</td></tr>
+
+<tr><td><b><a name="MAXREDIRS"></a>
+MaxRedirs:</b><i> LongInt</i><br>
+The set number will be the redirection limit. <br>
+If that many redirections have been followed, the next redirect will cause an error (CURLE_TOO_MANY_REDIRECTS). <br>
+This option only makes sense if <i>tCurl.FollowLocation</i> is set to <tt>TRUE</tt>.<br>
+Note that unless specified, <i>tCurl</i> automatically sets <i>MaxRedirs</i> to 25.
+</td></tr>
+
+<tr><td><b><a name="NETRC"></a>
+Netrc:</b><i> CURL_NETRC_OPTION</i><br>
+This parameter controls the preference of libcurl between using user names and passwords from your ~/.netrc file,
+relative to user names and passwords in the URL supplied with CURLOPT_URL.<br>
+The value must be one of the following:<br>
+CURL_NETRC_OPTIONAL<br>
+The use of your ~/.netrc file is optional, and information in the URL is to be preferred. The file will be scanned with the host and user name (to find the password only) or with the host only, to find the first user name and password after that machine, which ever information is not specified in the URL.
+Undefined values of the option will have this effect.<br>
+CURL_NETRC_IGNORED<br>
+The library will ignore the file and use only the information in the URL. This is the default.<br>
+CURL_NETRC_REQUIRED<br>
+This value tells the library that use of the file is required, to ignore the information in the URL, and to search the file with the host only.
+<br><br>
+Notes: <br>
+libcurl uses a user name (and supplied or prompted password) supplied with CURLOPT_USERPWD in preference to any of the options controlled by this parameter. <br>
+Only machine name, user name and password are taken into account (init macros and similar things aren't supported).<br>
+libcurl does not verify that the file has the correct properties set (as the standard Unix ftp client does). It should only be readable by user.
+</td></tr>
+
+<tr><td><b><a name="POSTFIELDSIZE"></a>
+PostFieldSize:</b><i> LongInt</i><br>
+Obsolete, Don't use!<br>
+The purpose of the underlying CURLOPT_POSTFIELDSIZE option is to allow for C-style strings to contain embedded NULL bytes.<br>
+Since the Pascal ansistring type can legally contain the <tt>#0</tt> character without being truncated, <br>
+<i>tCurl</i> will handle this option for you, automatically setting it to <tt>Length(PostFields)</tt>.
+<!-- If you want to post data to the server without letting libcurl do a strlen() to measure the data size, this option must be used. <br>
+When this option is used you can post fully binary data, which otherwise is likely to fail. <br>
+If this size is set to zero, the library will use strlen() to get the size, and the data will be truncated at the first NULL byte. -->
+</td></tr>
+
+<tr><td><b><a name="PROXYPORT"></a>
+ProxyPort:</b><i> LongInt</i><br>
+Pass a long with this option to set the proxy port to connect to unless it is specified in the proxy string <i>tCurl.Proxy</i>.
+</td></tr>
+
+<tr><td><b><a name="PROXYTYPE"></a>
+ProxyType:</b><i> curl_proxytype</i><br>
+Sets the type of proxy. <br>
+Available options for this are CURLPROXY_HTTP and CURLPROXY_SOCKS5, with the HTTP one being default.
+</td></tr>
+
+<tr><td><b><a name="RESULTCODE"></a>
+ResultCode:</b><i> CurlCODE</i><br>
+Read-only result of the last option setting or transfer request.<br>
+Note: If an attempt to set a property fails, subsequent property settings and method calls will be ignored.<br>
+Reading the <i>ResultCode</i> property clears any previous errors, and resets the internal value to CURLE_OK. <br>
+( This behavior is similar to system error codes such as <tt>IOResult</tt> )<br>
+See also: <i>tCurl.ErrorString</i>
+</td></tr>
+
+<tr><td><b><a name="RESUMEFROM"></a>
+ResumeFrom:</b><i> LongInt</i><br>
+The offset in number of bytes that you want the transfer to start from. <br>
+( Note that not all servers support this feature )
+</td></tr>
+
+<tr><td><b><a name="SSLCERTTYPE"></a>
+SslCertType:</b><i> CurlCertType</i><br>
+The format of your certificate. <br>Supported values are CURL_CERT_PEM and CURL_CERT_DER.
+</td></tr>
+
+<tr><td><b><a name="SSLKEYTYPE"></a>
+SslKeyType:</b><i> CurlKeyType</i><br>
+The format of your private key. <br>
+Possible values are: <br>
+&nbsp;&nbsp;CURL_KEY_PEM<br>
+&nbsp;&nbsp;CURL_KEY_DER<br>
+&nbsp;&nbsp;CURL_KEY_ENG<br>
+NOTE: The CURL_KEY_ENG enables you to load the private key from a crypto engine.
+in this case CURLOPT_SSLKEY is used as an identifier passed to the engine.
+You have to set the crypto engine with CURLOPT_SSL_ENGINE.
+</td></tr>
+
+<tr><td><b><a name="SSLVERIFYHOST"></a>
+SslVerifyHost:</b><i> CurlHostVerify</i><br>
+Set if we should verify the Common name from the peer certificate in the SSL handshake.<br>
+Possible values are:<br>
+&nbsp;&nbsp;CURL_VERIFY_NONE: The host will not be verified.<br>
+&nbsp;&nbsp;CURL_VERIFY_EXIST: Checks the existence of the host.<br>
+&nbsp;&nbsp;CURL_VERIFY_MATCH: Checks to ensure that the name from the peer certificate matches the hostname.
+</td></tr>
+
+<tr><td><b><a name="SSLVERSION"></a>
+SslVersion:</b><i> curl_sslversion</i><br>
+Set what version of SSL to attempt to use. By default, the SSL library will try to solve this by itself although
+some servers make this difficult why you at times may have to use this option. <br>
+Possible values are:<br>
+&nbsp;&nbsp;CURL_SSLVERSION_DEFAULT<br>
+&nbsp;&nbsp;CURL_SSLVERSION_TLSv1<br>
+&nbsp;&nbsp;CURL_SSLVERSION_SSLv2<br>
+&nbsp;&nbsp;CURL_SSLVERSION_SSLv3
+</td></tr>
+
+<tr><td><b><a name="TIMECONDITION"></a>
+TimeCondition:</b><i> Curl_TimeCond</i><br>
+This defines how <i>tCurl.TimeValue</i> is treated. <br>
+You can set this parameter to CURL_TIMECOND_IFMODSINCE or CURL_TIMECOND_IFUNMODSINCE. <br>
+This is a HTTP-only feature. (TBD)
+</td></tr>
+
+<tr><td><b><a name="TIMEOUT"></a>
+Timeout:</b><i> LongInt</i><br>
+ The maximum time in seconds that you allow the transfer operation to take. <br>
+ Normally, name lookups can take a considerable time and limiting operations to less than a few minutes risk aborting perfectly normal operations. <br>
+ NOTE: this is not recommended to use in unix multi-threaded programs, as it uses signals.<br>
+( Unless <i>tCurl.NoSignal</i> is set to <tt>TRUE</tt> )
+</td></tr>
+
+<tr><td><b><a name="TIMEVALUE"></a>
+TimeValue:</b><i> LongInt</i><br>
+This should be the time in seconds since 1 jan 1970, and the time will be used as specified in <i>tCurl.TimeCondition</i>
+or if that isn't used, it will be TIMECOND_IFMODSINCE by default.
+</td></tr>
+
+<tr><td><b><a name="PRIVATEDATA"></a>
+PrivateData:</b><i> pointer</i><br>
+A generic pointer to any data that you wish to associate with this <i>tCurl</i> instance.<br><br>
+Historical Note: <br>
+Earlier versions of <i>tCurl</i> used this property to access the underlying <tt><small>CURLOPT_PRIVATE</small></tt> library option.<br>
+However, this version of <i>tCurl</i> uses <tt><small>CURLOPT_PRIVATE</small></tt> internally to provide tighter integration with <i>tCurlMulti</i>.<br><br>
+Thus, the <tt><small>CURLOPT_PRIVATE</small></tt> library option is now officially "off limits" from the outside,<br>
+and <i>tCurl.PrivateData</i> is simply a "pointer to nothing" that you can use however you like.
+</td></tr>
+
+
+</table>
+<br>
+<br>
+
+
+<a name="STRING"></a>
+<table summary="String Title Block" border="2"  cellpadding="8" width="100%" bgcolor="#F0F0F0">
+<tr><td align="center" ><b>String Properties</b>
+</td></tr></table>
+
+<table summary="String Properties" border="2"  cellpadding="16" width="100%">
+<tr><td>
+<b>Note:</b><br>
+The <i>tCurl</i> object actually stores strings internally as <tt>pchar</tt> types.<br>
+Property read/write access is provided through protected methods. <br><br>
+Be aware that if you write code like this:<br>
+<tt>
+&nbsp for i:= 1 to length(SomeCurl.URL) do SomethingWith(SomeCurl.URL[i]);<br>
+</tt>
+- The internal routines will convert the entire pchar to a string, each time you read a single character!<br>
+It would be far better to say:<br>
+<tt>
+&nbsp Temp:=SomeCurl.URL;<br>
+&nbsp for i:= 1 to length(Temp) do SomethingWith(Temp[i]);
+</tt>
+</br>
+
+</td></tr>
+
+
+<tr><td><b><a name="CAINFO"></a>
+CaInfo:</b><i> string</i><br>
+File name holding one or more certificates to verify the peer with. <br>
+This only makes sense if the <i>SslVerifyPeer</i> property is set to <tt>TRUE</tt>.<br><br>
+Note to Win32 users:<br>
+&nbsp; <i>tCurl</i> attempts to initialize this to something sane by searching for a
+file named <tt> 'curl-ca-bundle.crt'</tt>. <br>
+&nbsp; The order of the directories it searches is:
+<ol>
+<li>The application's directory.
+<li>The current working directory.
+<li>The Windows System directory ( e.g. <tt>c:\windows\system32</tt> )
+<li>The Windows Directory ( e.g. <tt>c:\windows</tt> )
+<li>All directories along the environment <tt>%PATH%</tt>
+</ol>
+</td></tr>
+
+<tr><td><b><a name="CAPATH"></a>
+CaPath:</b><i> string</i><br>
+The name of the directory holding multiple CA certificates to verify the peer with. <br>
+The certificate directory must be prepared using the openssl c_rehash utility. <br>
+This only makes sense when the <i>SslVerifyPeer</i> property is set to <tt>TRUE</tt>. <br>
+The <i>CaPath</i> property apparently does not work in Windows, due to some limitation in OpenSSL.
+</td></tr>
+
+<tr><td><b><a name="COOKIE"></a>
+Cookie:</b><i> string</i><br>
+Used to set a cookie in the http request. <br>
+The format of the string should be [NAME]=[CONTENTS]; Where NAME is the cookie name.
+</td></tr>
+
+<tr><td><b><a name="CUSTOMREQUEST"></a>
+CustomRequest:</b><i> string</i><br>
+Used instead of GET or HEAD when doing the HTTP request. <br>
+This is useful for doing DELETE or other more or less obscure HTTP requests. <br>
+Don't do this at will, make sure your server supports the command first.
+</td></tr>
+
+<tr><td><b><a name="EGDSOCKET"></a>
+EgdSocket:</b><i> string</i><br>
+Path name to the Entropy Gathering Daemon socket. It will be used to seed the random engine for SSL.
+</td></tr>
+
+<tr><td><b><a name="ERRORSTRING"></a>
+ErrorString:</b><i> string</i><br>
+Read-only human readable error message. <br>
+This may be more helpful than just the return code from the library.<br>
+If the library does not return an error, the string will simply contain the word "success".
+</td></tr>
+
+<tr><td><b><a name="FTPACCOUNT"></a>
+FtpAccount:</b><i> string</i><br>
+When an FTP server asks for "account data" after user name and password
+has been provided, this string is sent off using the ACCT command.
+</td></tr>
+
+<tr><td><b><a name="FTPPORT"></a>
+FtpPort:</b><i> string</i><br>
+The IP address to use for the ftp PORT instruction. <br>
+The PORT instruction tells the remote server to connect to our specified IP address. <br>
+The string may be a plain IP address, a host name, an network interface name (under Unix) or just a '-' letter
+to let the library use your systems default IP address.<br>
+Default FTP operations are passive, and thus won't use PORT.
+</td></tr>
+
+<tr><td><b><a name="NETINTERFACE"></a>
+NetInterface:</b><i> string</i><br>
+The interface name to use as outgoing network interface. <br>
+This can be an interface name, an IP address or a host name.
+</td></tr>
+
+<tr><td><b><a name="NETRCFILE"></a>
+NetRcFile:</b><i> string</i><br>
+Set this to the full path name to the file you want libcurl to use as a &nbsp;<tt>.netrc</tt>&nbsp; file. <br>
+If this option is omitted, and <i>tCurl.NetRc</i> is <tt>TRUE</tt>, libcurl will
+attempt to find the &nbsp;<tt>.netrc</tt>&nbsp; file in the current user's home directory.
+</td></tr>
+
+<tr><td><b><a name="KRB4LEVEL"></a>
+Krb4Level:</b><i> string</i><br>
+Set the krb4 security level, this also enables krb4 awareness. <br>
+This can be one the strings: &nbsp; "<tt>clear</tt>" &nbsp; "<tt>safe</tt>" &nbsp; "<tt>confidential</tt>" &nbsp;or&nbsp; "<tt>private</tt>". <br>
+If the string is set but doesn't match one of these, "<tt>private</tt>" will be used. <br>
+Set this property to an empty string to disable kerberos4. <br>
+The kerberos support only works for FTP.
+</td></tr>
+
+<tr><td><b><a name="POSTFIELDS"></a>
+PostFields:</b><i> string</i><br>
+The full  data  to post in a HTTP post operation. <br>
+This is  a normal <tt><small>application/x-www-form-urlencoded</small></tt> kind,  which is the most commonly used one by HTML forms.<br><br>
+Setting this property implies that you want to do a <tt>HTTP POST</tt> request ( even if you set it to an empty string ). <br>
+To revert back to the <tt>HTTP GET</tt> method after setting <i>PostFields</i>, you should set <i>HttpGet</i> <b>:=</b> <tt>TRUE</tt>.<br><br>
+You must make sure that the data is formatted the way you want the server to receive it.<br>
+( Most web servers will assume this data to be url-encoded. ) <br>
+Take note that although <i>tCurl</i> will not automatically convert or encode it for you, <br>
+you can use the class function <i>tCurl.Escape(string)</i> for this task.<br><br>
+To make multipart/formdata posts (aka rfc1867-posts), check out the <i>tCurl.HttpPost</i> property. <br>
+</td></tr>
+
+<tr><td><b><a name="PROXY"></a>
+Proxy:</b><i> string</i><br>
+Set HTTP proxy to use. <br>
+The parameter should be a host name or dotted IP address. <br>
+The proxy string may be prefixed with [protocol]:// since any such prefix will be ignored. <br>
+To specify a port number, append <tt>:[port]</tt> to the end of the string, or use the <i>ProxyPort</i> property.<br>
+To specify a login, prepend <tt>username:password@</tt> to the start of the string, or use <i>ProxyUserPwd</i><br><br>
+When you tell the library to use an HTTP proxy, libcurl will transparently convert operations to HTTP,<br>
+even if you specify <tt>'ftp://'</tt> etc. in the URL.<br><br>
+This may have an impact on what other features of the library you can use, for instance,<br>
+<i>tCurl.Quote</i> and similar FTP specifics don't work unless you tunnel through the HTTP proxy. <br>
+Such tunneling is activated with <i>tCurl.HttpProxyTunnel</i>. <br><br>
+NOTE: libcurl respects the following environment variables:<br>  
+<tt>&nbsp; &nbsp; http_proxy, HTTPS_PROXY, FTP_PROXY, GOPHER_PROXY, ALL_PROXY, NO_PROXY</tt><br>
+If any of those is set, they they will be used by the library for the appropriate protocols. <br>
+The <i>tCurl.Proxy</i> property, if set, overrides the environment variables.<br>
+Note also that reading this property does not reflect the state of environment.
+</td></tr>
+
+<tr><td><b><a name="PROXYUSERPWD"></a>
+ProxyUserPwd:</b><i> string</i><br>
+<tt>'username:password'</tt> to use for the connection to the HTTP proxy. <br>
+See <i>tCurl.ProxyAuth</i> to determine authentication method.
+<!-- If the password is left out, you will be prompted for it. <br -->
+</td></tr>
+
+<tr><td><b><a name="RANDOMFILE"></a>
+RandomFile:</b><i> string</i><br>
+File name to read from to seed the random engine for SSL. <br>
+The more random the specified file is, the more secure will the SSL connection become.
+</td></tr>
+
+<tr><td><b><a name="RANGE"></a>
+Range:</b><i> string</i><br>
+Specify the range of bytes you want to retrieve. <br>
+It should be in the format "X-Y", where X or Y may be left out. <br>
+HTTP transfers also support several intervals, separated with commas as in "X-Y,N-M". <br>
+Using multiple intervals will cause the server to send the document in pieces,
+using standard MIME separation techniques. <br>
+Note: Not all servers support this!
+</td></tr>
+
+<tr><td><b><a name="REFERER"></a>
+Referer:</b><i> string</i><br>
+Used to set the <tt>Referer:</tt> header in the http request sent to the remote server. <br>
+This can be useful to fool servers that require a request from a specific web page or domain.
+</td></tr>
+
+<tr><td><b><a name="SOURCEURL"></a>
+SourceURL:</b><i> string</i><br>
+When set, this will enable a FTP third-party transfer, using <i>tCurl.SourceURL</i>  as the <u>source</u>, and <i>tCurl.URL</i> as the <u>target</u>.
+</td></tr>
+
+<tr><td><b><a name="SOURCEUSERPWD"></a>
+SourceUserPwd:</b><i> string</i><br>
+Set to the &nbsp;<small><tt>'username:password'</tt></small>&nbsp; to use for the <u>source</u> connection when doing FTP third-party transfers.<br>
+( Use <i>tCurl.UserPwd</i> for the <u>target</u> connection. )
+</td></tr>
+
+<tr><td><b><a name="SSLCERT"></a>
+SslCert:</b><i> string</i><br>
+The file name of your SSL certificate. <br>
+The default format is "PEM" and can be changed with the <i>SslCertType</i> property.
+</td></tr>
+
+<tr><td><b><a name="SSLCIPHERLIST"></a>
+SslCipherList:</b><i> string</i><br>
+String holding the list of ciphers to use for the SSL connection.<br>
+The list must be syntactly correct, it consists of one or more cipher strings separated by colons.
+Commas or spaces are also acceptable separators but colons are normally used, , - and + can be used as operators.
+Valid examples of cipher lists include 'RC4-SHA', 'SHA1+DES', 'TLSv1' and 'DEFAULT'.
+The default list is normally set when you compile OpenSSL.<br>
+You'll find more details about cipher lists at:
+<a href="http://www.openssl.org/docs/apps/ciphers.html">http://www.openssl.org/docs/apps/ciphers.html</a>
+</td></tr>
+
+<tr><td><b><a name="SSLENGINE"></a>
+SslEngine:</b><i> string</i><br>
+This is used as the identifier for the crypto engine you want to use for your private key. <br>
+If the crypto device cannot be loaded, CURLE_SSL_ENGINE_NOTFOUND is returned.
+</td></tr>
+
+<tr><td><b><a name="SSLKEY"></a>
+SslKey:</b><i> string</i><br>
+The file name of your private key. The default format is "PEM" and can be changed by setting the <i>SslKeyType</i> property.
+</td></tr>
+
+<tr><td><b><a name="SSLKEYPASSWD"></a>
+SslKeyPassword:</b><i> string</i><br>
+Password required to use the <i>SslKey</i> property. <br>
+<!-- If the password is not supplied, you will be prompted for it.<br -->
+</td></tr>
+
+<tr><td><b><a name="URL"></a>
+URL:</b><i> string</i><br>
+The actual URL to deal with.<br>
+<i>NOTE:</i> This property <tt>must</tt> be set before <i>tCurl.Perform</i> is called.
+</td></tr>
+
+<tr><td><b><a name="USERAGENT"></a>
+UserAgent:</b><i> string</i><br>
+Used to set the <tt>User-Agent:</tt> header in the http request sent to the remote server. <br>
+This can be useful for servers that require a specific web browser or return browser-specific documents. <br>
+For instance, to make tCurl look like IE5 on Win 2000, use:<br>
+ &nbsp;<tt> UserAgent:='Mozilla/4.0 (compatible; MSIE 5.01; Windows NT 5.0)';</tt>
+</td></tr>
+
+<tr><td><b><a name="USERPWD"></a>
+UserPwd:</b><i> string</i><br>
+<tt>'username:password'</tt> to use for the connection. <br>
+</td></tr>
+
+</table>
+<br>
+<br>
+
+
+
+<a name="FILENAME"></a>
+<table summary="Filename/FileStream Title Block" border="2" cellpadding="8" width="100%" bgcolor="#F0F0F0">
+<tr><td >
+<table summary="File notes" width="100%" border="0">
+<tr><td align="center" ><b>Filename / Filestream Properties</b></td></tr>
+</table>
+</td></tr>
+</table>
+<table summary="Filename/FileStream Properties" border="2" cellpadding="16" width="100%">
+<tr><td align="center">Be sure to read the <i><a href="./callback.html">SPECIAL NOTES</a></i> on  callbacks, events, filenames and streams.</td></tr>
+<tr><td><b><a name="COOKIEFILE"></a>
+CookieFile:</b><i> string</i><br>
+The name of your file holding cookie data. <br>
+The cookie data may be in Netscape / Mozilla cookie data format or just regular HTTP style headers dumped to a file.<br>
+Note that setting this property automatically sets <i>tCurl.CookieJar</i> to the same filename, unless you specify a different name for each.<br>
+For more fine-grained control over your cookies, see <a href="cookies.html"><i>tCurl.CookieList</i></a>
+</td></tr>
+
+<tr><td><b><a name="COOKIEJAR"></a>
+CookieJar:</b><i> string</i><br>
+This will make libcurl dump all internally known cookies to the specified file name when <i>tCurl.Destroy</i> is called. <br>
+If no cookies are known, no file will be created. Specify "-" to instead have the cookies written to stdout.<br>
+For more fine-grained control over your cookies, see <a href="cookies.html"><i>tCurl.CookieList</i></a>
+</td></tr>
+
+
+<tr><td><b><a name="ERRORFILE"></a>
+ErrorFile:</b><i> string</i><br>
+Filename to write error output to.<br>
+If the filename is empty (or unassigned) the data will be written to stderr.
+</td></tr>
+
+<tr><td><b><a name="DOWNLOADTARGET">
+</a>OutputFile:</b><i> string</i><br>
+Filename to write downloaded data to. <br>
+If the filename is empty (or unassigned) the data will be written to standard output.<br>
+Note: Line breaks on Win32 systems are NOT automatically adjusted.
+</td></tr>
+
+<tr><td><b><a name="OUTPUTSTREAM"></a>
+OutputStream:</b><i> pointer</i>
+&nbsp; -  See &nbsp; <i>tCurl.WriteFunction</i>
+</td></tr>
+
+<tr><td><b><a name="UPLOADSOURCE"></a>
+InputFile:</b><i> string</i><br>
+Filename to read uploaded data from.
+</td></tr>
+
+<tr><td><b><a name="INPUTSTREAM"></a>
+InputStream:</b><i> pointer</i>
+&nbsp; -  See  &nbsp; <i>tCurl.ReadFunction</i>
+</td></tr>
+
+<tr><td><b><a name="HEADERFILE"></a>
+HeaderFile:</b><i> string</i><br>
+Filename to write http headers to.
+</td></tr>
+
+<tr><td><b><a name="HEADERSTREAM"></a>
+HeaderStream:</b><i> pointer</i>
+&nbsp; - See  &nbsp; <i>tCurl.HeaderFunction</i>
+</td></tr>
+
+</table>
+<br>
+<br>
+
+
+<a name="LINKEDLIST"></a>
+<table summary="Linked-List Title Block" border="2"  cellpadding="8" width="100%" bgcolor="#F0F0F0">
+<tr><td >
+<table summary="Linked-List Title" width="100%" border="0" >
+<tr><td align="center" ><b>Linked-List Properties</b><br>
+</td></tr>
+</table>
+</td></tr>
+</table>
+
+<table summary="Linked-List Properties" border="2"  cellpadding="16" width="100%">
+
+<tr><td>
+NOTES: <br>
+Use the &nbsp;<i>Add(string)</i> method to append strings to a <i>tCurlRWList</i> property. <br>
+Clear the entire list with the &nbsp;<i>Clear</i> method.<br>
+(Curl will ignore the option if the list is empty).<br>
+</td></tr>
+
+
+<tr><td><b><a name="HTTP200ALIASES"></a>
+Http200Aliases:</b><i> tCurlRWList</i><br>
+A list of custom header responses to be treated as a valid HTTP 200 (OK) response. <br>
+For example, IceCast servers respond with "ICY 200 OK", so: <br>
+&nbsp; <tt>Http200Aliases.Add('ICY 200 OK');</tt> <br>
+will cause the response to be treated as a successful HTTP response.<br>
+</td></tr>
+
+<tr><td><b><a name="HTTPHEADER"></a>
+HttpHeader:</b><i> tCurlRWList</i><br>
+A list of HTTP headers to pass to the server in your HTTP request. <br>
+Using this option you can add new headers, replace internal headers and remove internal headers. <br><br>
+If you add a header that is normally generated by libcurl, your header will be used instead: <br>
+&nbsp; <tt>HttpHeader.Add('Accept: audio/mpeg, audio/x-mpegurl, */*');</tt><br><br>
+If you add a header with no contents, the internally used header will be disabled:<br>
+&nbsp; <tt>HttpHeader.Add('Accept:');</tt><br><br>
+If you add a custom header, it will be sent along with the other headers:<br>
+&nbsp; <tt>HttpHeader.Add('Foo: bar/baz');</tt><br><br>
+NOTE: The most commonly replaced headers have their own properties: <i>Cookie, UserAgent</i> and <i>Referer</i>.
+</td></tr>
+
+<tr><td><b><a name="QUOTE"></a>
+Quote:</b><i> tCurlRWList</i><br>
+A list of FTP commands that will be passed to the server BEFORE your ftp transfer.
+</td></tr>
+
+<tr><td><b><a name="POSTQUOTE"></a>
+PostQuote:</b><i> tCurlRWList</i><br>
+A list of FTP commands that will be passed to the server AFTER the ftp transfer is complete.<br>
+( Note that the property value should be set before calling &nbsp;<i>tCurl.Perform</i> )
+</td></tr>
+
+<tr><td><b><a name="PREQUOTE"></a>
+PreQuote:</b><i> tCurlRWList</i><br>
+A list of FTP commands to pass to the server after the transfer type is set.<br>
+( Note that the property value should be set before calling &nbsp;<i>tCurl.Perform</i> )
+</td></tr>
+
+<tr><td><b><a name="SOURCEQUOTE"></a>
+SourceQuote:</b><i> tCurlRWList</i><br>
+Exactly like <i>tCurl.Quote</i>, but for the source host.
+</td></tr>
+
+<tr><td><b><a name="SOURCEPOSTQUOTE"></a>
+SourcePostQuote:</b><i> tCurlRWList</i><br>
+Exactly like <i>tCurl.PostQuote</i>, but for the source host.
+</td></tr>
+
+<tr><td><b><a name="SOURCEPREQUOTE"></a>
+SourcePreQuote:</b><i> tCurlRWList</i><br>
+Exactly like <i>tCurl.PreQuote</i>, but for the source host.
+</td></tr>
+
+<tr><td><b><a name="TELNETOPTIONS"></a>
+TelnetOptions:</b><i> tCurlRWList</i><br>
+A list of variables to pass to the telnet negotiations. <br>
+The  variables  should be  in  the  format: &nbsp; <tt>&lt;option=value&gt;.</tt><br>
+libcurl supports the options &nbsp;<tt> TTYPE, XDISPLOC </tt>&nbsp; and &nbsp;<tt> NEW_ENV</tt>. <br>
+See the TELNET standard for details.
+</td></tr>
+
+<tr><td><b><a name="SSLENGINESLIST"></a>
+SslEnginesList:</b><i> tCurlROList</i><br>
+Read-only list of OpenSSL crypto-engines supported.<br>
+Note that engines are normally implemented in separate dynamic libraries.<br>
+Hence not all the returned engines may be available at run-time.<br>
+To iterate through all items on the list, you can do something like:<br>
+<tt>&nbsp;<b>for</b> i:=0 <b>to</b> SslEnginesList.Count-1 <b>do</b> ShowMessage(SslEnginesList<b>[</b>i<b>]</b>);</tt>
+</td></tr>
+
+</table>
+<br>
+<br>
+
+
+<a name="FORMDATA"></a>
+<table summary="HttpPost/FormData Title Block" border="2"  cellpadding="8" width="100%" bgcolor="#F0F0F0">
+<tr><td >
+<table summary="HttpPost/FormData Title" width="100%" border="0" >
+<tr><td align="center" ><b>HttpPost/FormData Properties</b><br>
+</td></tr>
+</table>
+</td></tr>
+</table>
+
+
+
+<table summary="HttpPost/FormData Properties" border="2"  cellpadding="16" width="100%">
+
+<tr><td >
+NOTE: The <i>HttpPost</i> and <i>FormData</i> properties are essentially two different means to the same end.<br>
+To ensure that all internal pointers remain valid, you should choose one means or the other, but not both.
+</td></tr>
+
+
+<tr><td><b><a name="HTTPPOST"></a>
+HttpPost:</b><i> pcurl_httppost</i><br>
+Pass a pointer to a valid tHttpPost record to tell libcurl you want a multipart/formdata HTTP POST to be made and to describe
+the data to pass on to the server.<br><br>
+The data in this list must remain intact until you close the CURL handle with <i>tCurl.Destroy</i>.<br><br>
+To generate complex <i>tHttpPost</i> structures, use the <tt>curl_formadd()</tt> library call, as documented in the libcurl man pages. <br>
+For simpler structures, see the <i>tCurl.FormData.Add()</i> method, below.
+</td></tr>
+
+<tr><td><b><a name="FORMDATA"></a>
+FormData:</b><i> tMultiPartFormData</i><br>
+Use the <i>FormData.Add()</i> method of this property to describe the data you want libcurl to use in a multipart/formdata HTTP POST request.
+ The syntax of this method is:<br>
+ ...<br><tt>
+tCurl.FormData.Add(Name, Contents, ContentType: string; PostType: tCurlPostType);<br>
+</tt>...<br>
+Where:<br>
+<b>Name</b> is the field name of the post data.<br>
+<b>Contents</b> can be the data itself, or the name of the file containing the data, depending on the value of <i>PostType</i>.<br>
+<b>ContentType</b> is a string representing the MIME type of the data, for example "text/html" or "image/jpeg" <br>
+<b>PostType</b> should be one of the following constants:<br>
+POST_TYPE_PLAIN :  "Contents" is sent to the server as a plain string.<br>
+POST_TYPE_FILEDATA : "Contents" is a filename, the content of the file will be read into the contents field.<br>
+POST_TYPE_ATTACHMENT : "Contents" is a filename, the file will be sent as an attachment, with the filename stored in the contents field.
+<br><br>
+You can call this method repeatedly, until all form-data has been added.<br>
+To clear the contents of the form, use <i>FormData.Clear;</i><br>.
+</td></tr>
+</table>
+<br>
+<br>
+
+
+
+<a name="CALLBACKS"></a>
+<table summary="Callback Title Block" border="2" cellpadding="8" width="100%" bgcolor="#F0F0F0">
+<tr><td align="center" ><b>Callback Properties (and associated data pointers)</b>
+</td></tr>
+</table>
+
+<table summary="Callback Properties" border="2" cellpadding="16" width="100%">
+
+<tr><td align="center">
+Be sure to read the <i><a href="./callback.html">SPECIAL NOTES</a></i> on  callbacks, events, filenames and streams.
+</td></tr>
+
+<tr><td><b><a name="PROGRESSDATA"></a>
+ProgressData:</b><i> pointer</i><br>
+Pass a pointer that will be passed as the first argument in the progress callback set with <i>tCurl.ProgressFunction</i>.
+</td></tr>
+
+<tr><td><b><a name="PROGRESSFUNCTION"></a>
+ProgressFunction:</b><i> curl_progress_callback</i><br>
+ Function pointer that should match the prototype:
+<br>...<br><tt>
+ type curl_progress_callback = <br>
+&nbsp; function( clientp: pointer; dltotal, dlnow, ultotal, ulnow: double ): LongInt;
+</tt><br>...<br>
+  This function gets called by libcurl instead of its internal equivalent with a frequent interval during data transfer. <br>
+ Unknown/unused argument values will be set to zero (like if you only download data, the upload size will remain 0). <br>
+ Returning a non-zero value from this callback will cause libcurl to abort the transfer and return CURLE_ABORTED_BY_CALLBACK.
+ <br>NOTE: &nbsp; You must set <i>&nbsp;tCurl.NoProgress:=</i><tt>FALSE&nbsp;</tt> in order to enable your callback!
+</td></tr>
+
+<tr><td><b><a name="READFUNCTION"></a>
+ReadFunction:</b><i> curl_read_callback</i><br>
+ Function pointer that should match the following prototype:
+<br>...<br><tt>
+type curl_read_callback = <br>&nbsp; function(ptr: pointer; size, nmemb:dword; stream:pointer):dword; cdecl;
+</tt><br>...<br>
+This function gets called by libcurl as soon as it needs to read data in order to send it to the peer. <br>
+The data area pointed at by the pointer <i>ptr</i> may be filled with at most ( <i>size</i> * <i>nmemb</i> ) bytes.<br>
+Your function must return the actual number of bytes that you stored in that memory area.<br>
+Returning 0 will signal end-of-file to the library and cause it to stop the current transfer. <br>
+Set the <i>stream</i> argument with the <i>tCurl.InputStream</i> property. <br>
+Note: You can also use <i>stream</i> for other data types, for instance: pChar( <i>stream</i> )<br>
+</td></tr>
+
+<tr><td><b><a name="WRITEFUNCTION"></a>
+WriteFunction:</b><i> curl_write_callback</i><br>
+ Function pointer that should match the following prototype:
+<br>...<br><tt>
+type curl_write_callback = <br>&nbsp; function(ptr: pointer; size, nmemb:dword; stream:pointer):dword; cdecl;
+</tt><br>...<br>
+ This function gets called by libcurl as soon as there is data available that needs to be saved. <br>
+ The size of the data pointed to by <i>ptr</i> is ( <i>size</i> * <i>nmemb</i> ). <br>
+ Return the number of bytes actually taken care of. If that amount differs from the amount passed to your function, <br>
+ it will signal an error to the library and it will abort the transfer and return CURLE_WRITE_ERROR. <br>
+ Set the <i>stream</i> argument with the <i>tCurl.OutputStream</i> property. <br>
+ You can also use <i>stream</i> for other data types, for instance: pChar( <i>stream</i> )<br>
+ NOTE: you will be passed as much data as possible in all invokes, but you cannot possibly make any assumptions. <br>
+ &nbsp;- It may be one byte, it may be thousands!
+</td></tr>
+
+<tr><td><b><a name="HEADERFUNCTION"></a>
+HeaderFunction:</b><i> curl_write_callback</i><br>
+Function pointer that should match the following prototype:
+<br>...<br><tt>
+type tCurlHeaderFunction = <br>&nbsp; function(ptr: pChar; size, nmemb:dword; stream:pointer):dword; cdecl;
+</tt><br>...<br>
+This function gets called as soon as there is received header data that needs to be written down. <br>
+The headers are guaranteed to be written one-by-one and only complete lines are written. <br>
+Parsing headers should be easy enough using this. <br>
+ The size of the data pointed to by <i>ptr</i> is ( <i>size</i> * <i>nmemb</i> ). <br>
+The pointer named <i>stream</i> will be the one you set with the <i>tCurl.HeaderStream</i> property.<br>
+Return the number of bytes actually written or return zero to signal an error to the library <br>
+(it will cause it to abort the transfer with a CURLE_WRITE_ERROR return code).
+</td></tr>
+
+<tr><td><b><a name="DEBUGFUNCTION"></a>
+DebugFunction:</b><i> curl_debug_callback</i><br>
+Pointer to a function that will receive the debug information normally written to the console when <i>tCurl.Verbose</i> is enabled. <br>
+The function should match the following prototype:
+<br>...<br><tt>
+type curl_debug_callback = function (handle: pCurl; infotype: curl_infotype;<br>
+ &nbsp; &nbsp;  &nbsp; &nbsp; data: pChar; size:dword; userp:pointer): LongInt; cdecl;
+</tt><br>...<br>
+Libcurl will pass one of the following constants to the <i>curl_infotype</i> argument:<br>
+<tt>
+&nbsp; CURLINFO_TEXT,<br>
+&nbsp; CURLINFO_HEADER_IN,&nbsp; &nbsp; CURLINFO_HEADER_OUT,<br>
+&nbsp; CURLINFO_DATA_IN,&nbsp; &nbsp; &nbsp; CURLINFO_DATA_OUT,<br>
+&nbsp; CURLINFO_SSL_DATA_IN,&nbsp; CURLINFO_SSL_DATA_OUT.<br><br>
+</tt>
+Note: This function must return 0.
+</td></tr>
+
+<tr><td><b><a name="DEBUGDATA"></a>
+DebugData:</b><i> pointer</i><br>
+Pass a pointer whatever data you want. <br>
+The passed pointer will be the last argument sent to the function specifed in the <i>tCurl.DebugFunction</i> property.
+</td></tr>
+
+<tr><td><b><a name="IOCTLFUNCTION"></a>
+IoCtlFunction:</b><i> curl_ioctl_callback</i><br>
+This function gets called by libcurl when something special I/O-related needs to be done that the library can't do by itself. <br>
+For now, rewinding the read data stream is the only action it can request. <br>
+The rewinding of the read data stream may be necessary when doing a HTTP PUT or POST with a multi-pass authentication method.<br><br>
+Your callback should match the following prototype:<br>
+<tt>curl_ioctl_callback = <br>
+&nbsp; &nbsp; function (handle:pCURL; cmd:longint; clientp:pointer):curlioerr; cdecl;<br><br>
+</tt>
+</td></tr>
+
+<tr><td><b><a name="IOCTLDATA"></a>
+IoCtlData:</b><i> pointer</i><br>
+Pass a pointer whatever data you want. <br>
+The passed pointer will be the third argument sent to the function specifed in the <i>tCurl.IoCtlFunction</i> property.
+</td></tr>
+
+<tr><td><b><a name="SSLCTXFUNCTION"></a>
+SslCtxFunction:</b><i> curl_ssl_ctx_callback</i><br><br>
+Function pointer that should match the following prototype: <br>
+<tt>
+&nbsp; curl_ssl_ctx_callback = function (curl:pCURL; ssl_ctx:pointer; userptr:pointer):CURLcode; cdecl;
+</tt><br><br>
+This function gets called by libcurl just before the initialization of an SSL connection after
+having processed all other SSL related options.<br>
+Its purpose is to give the application a last chance to modify the behaviour of the OpenSSL initialization.<br><br>
+The <tt>ssl_ctx</tt> parameter is actually a pointer to an openssl <tt>SSL_CTX</tt>.<br>
+Set the <tt>userptr</tt> argument with the <i>SslCtxData</i> property.<br><br>
+If an error is returned, no attempt to establish a connection is made, and the <i>ResultCode</i> property will
+contain the error code from this callback.<br><br>
+Using this function allows for example to use openssl callbacks to add additional validation code for certificates,<br>
+and even to change the actual URI of an HTTPS request.<br><br>
+NOTE: To use this properly, a non-trivial amount of knowledge of the openssl libraries is necessary.<br>
+<br>Refer to the <i>libcurl</i> and <i>openssl</i> documentation for more info.<br><br>
+</td></tr>
+
+<tr><td><b><a name="SSLCTXDATA"></a>
+SslCtxData:</b><i> pointer</i><br>
+Data pointer to pass to the ssl context callback set by the <i>SslCtxFunction</i> property.<br>
+This is the pointer you'll get as the third parameter, otherwise <tt>NIL</tt>.
+</td></tr>
+
+</table>
+<br><br>
+
+
+<h2><i>tCurl</i> <small>events</small></h2>
+
+
+Note:<br>
+<table summary="Event notes" width="75%" border="0">
+
+<tr>
+<td width="2%">&nbsp;</td>
+<td width="95%">
+The event properties below are wrappers around the callbacks listed above.
+Depending on your programming model, you should probably choose to use an <i>event</i> or a <i>callback</i>,
+mixing the two may have strange results! &nbsp; In general, <i>events</i> are suitable for component-based
+gui-style applications, and <i>callbacks</i> are for console-based applications, where a "parent" object is
+not available.<br>
+</td>
+</tr>
+</table>
+<br><br>
+
+
+<a name="EVENTS"></a>
+<table summary="Events Title Block" border="2" cellpadding="8" width="100%" bgcolor="#F0F0F0">
+<tr><td align="center" ><b>Events</b></td></tr>
+</table>
+<table summary="Events" border="2" cellpadding="16" width="100%">
+
+<tr><td><b><a name="ONDEBUG"></a>
+OnDebug:</b><i> tCurlDebugEvent</i><br>
+Provides read-only access to data and information about about the connection.<br>
+Pass a pointer to a method that matches the prototype:
+<br>...<br><tt>
+type tCurlDebugEvent = <br>
+&nbsp;procedure( Sender:tObject; infotype:CurlInfoType; data:pChar; len:dword;  var bContinue:boolean );
+</tt><br>...<br>
+Libcurl will pass one of the following constants as the <i>infotype</i> parameter:<br>
+<table border="0" summary="curl info type">
+<tr><td> &nbsp; CURLINFO_TEXT :</td><td> &nbsp; Informative text about the library's current operation.</td></tr>
+<tr><td> &nbsp; CURLINFO_HEADER_IN :</td><td> &nbsp; A single response header received from the connection.</td></tr>
+<tr><td> &nbsp; CURLINFO_HEADER_OUT :</td><td> &nbsp; All request headers transmitted to the connection.</td></tr>
+<tr><td> &nbsp; CURLINFO_DATA_IN :</td><td> &nbsp; Received data.</td></tr>
+<tr><td> &nbsp; CURLINFO_DATA_OUT :</td><td> &nbsp; Transmitted data.</td></tr>
+<tr><td>&nbsp; CURLINFO_SSL_DATA_IN :</td><td> &nbsp; Trace SSL data received from the connection.</td></tr>
+<tr><td>&nbsp; CURLINFO_SSL_DATA_OUT:</td><td> &nbsp; Trace SSL data transmitted to the connection.</td></tr>
+</table>
+<br>
+Assigning this event automatically sets <i>&nbsp;tCurl.Verbose</i> to <tt>TRUE</tt>.<br><br>
+</td></tr>
+
+
+<tr><td><b><a name="ONPROGRESS"></a>
+OnProgress:</b><i> tCurlProgressEvent</i><br>
+Pass a pointer to a method that matches the prototype:
+<br>...<br><tt>
+type tCurlProgressEvent = <br>
+&nbsp; procedure(Sender:tObject; BytesTotal, BytesNow:longint; var bContinue:Boolean);
+</tt><br>...<br>
+Since one or the other of the value-pairs ( dl_total/dl_now ) or ( ul_total/ul_now ) in the <i>tCurl.ProgressFunction</i> will <br>
+generally return zero/zero, the <i>OnProgress</i> procedure only returns the pair that is actually valid, depending on the <br>
+direction of data flow. <br>Setting the value of <i>bContinue</i> to <tt>FALSE</tt> will cause libcurl to abort the transfer and
+return CURLE_ABORTED_BY_CALLBACK. <br><br>
+Assigning this event automatically sets <i>&nbsp;tCurl.NoProgress</i> to <tt>FALSE</tt>.<br><br>
+</td></tr>
+
+
+<tr><td><b><a name="ONHEADER"></a>
+OnHeader:</b><i> tCurlHeaderEvent</i><br>
+This event will be fired each time libcurl receives a response header.<br>
+Pass a pointer to a method that matches the prototype:
+<br>...<br><tt>
+type tCurlHeaderEvent =  <br>
+&nbsp; procedure(Sender:tObject; data:string; var bContinue:Boolean);
+</tt><br>...<br>
+The headers are returned one per event, and are stripped of trailing carriage returns and line feeds.<br>
+( The last header in an HTTP response will be an empty string. )<br><br>
+Setting <i>bContinue</i> to <tt>FALSE</tt> will cause the library to abort the transfer and return CURLE_WRITE_ERROR.<br><br>
+Be sure to read the <i><a href="./callback.html">SPECIAL NOTES</a></i> on  callbacks, events, filenames and streams.
+</td></tr>
+
+
+<tr><td><b><a name="ONRECEIVE"></a>
+OnReceive:</b><i> tCurlReceiveEvent</i><br>
+This event will be fired whenever libcurl receives incoming data that <i>your</i> procedure should handle.<br>
+Pass a pointer to a method that matches the prototype:
+<br>...<br><tt>
+type tCurlReceiveEvent =  <br>
+&nbsp; procedure(Sender:tObject; data:pointer; len:dword; var bContinue:Boolean);
+</tt><br>...<br>
+You will be passed as much data as possible in all invokes, but you cannot possibly make any assumptions.<br>
+ - It may be one byte, it may be thousands!<br><br>
+Setting <i>bContinue</i> to <tt>FALSE</tt> will cause the library to abort the transfer and return CURLE_WRITE_ERROR.<br><br>
+Be sure to read the <i><a href="./callback.html">SPECIAL NOTES</a></i> on  callbacks, events, filenames and streams.
+</td></tr>
+
+
+<tr><td><b><a name="ONTRANSMIT"></a>
+OnTransmit:</b><i> tCurlTransmitEvent</i><br>
+This event will be fired as soon as libcurl needs to read data in order to send it to the peer. <br>
+Pass a pointer to a method that matches the prototype:
+<br>...<br><tt>
+type tCurlTransmitEvent =  <br>
+&nbsp; procedure(Sender:tObject; data:pointer; var len:dword);
+</tt><br>...<br>
+The data area pointed at by the <i>data</i> pointer may be filled with at most <i>len</i> bytes.<br>
+Setting <i>len</i> to <tt>ZERO</tt> will signal end-of-file to the library and cause it to stop the current transfer.
+<br><br>
+Be sure to read the <i><a href="./callback.html">SPECIAL NOTES</a></i> on  callbacks, events, filenames and streams.
+</td></tr>
+
+
+<tr><td><b><a name="ONLISTCOOKIES"></a>
+OnListCookies:</b><i> tCurlListCookiesEvent</i><br>
+
+The <i>ListCookies</i> procedure reads the <i>tCurl.CookieList</i>, invoking <i>OnListCookies</i> once for each cookie. <br><br>
+The <i>Sender</i> parameter will be set to the <i>tCurl</i> object that invoked the procedure,<br>
+and the <i>Data</i> parameter contains the text of the current cookie. <br><br>
+If you set the <i>bContinue</i> variable to <tt>FALSE</tt> from within your event handler, <br>
+it will cancel iteration of the remaining cookies.<br><br>
+Note:<br>
+For reasons beyond the scope of this document, it is simply not practical to provide <br>
+random-access to the list, for instance through a TStringList or similar.<br>
+The only efficient and reliable way to access the cookie list is sequentially, starting at the top.<br>
+This type of cookie support is relatively new to both CurlPas and libcurl, <br>
+and might be subject to change in the not-so-distant future.
+</td></tr>
+
+
+</table>
+<br><br><br><br><br><br><br><br><br><br><br><br>
+</div>
+</body></html>

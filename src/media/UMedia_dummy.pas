@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/media/UMedia_dummy.pas $
+ * $Id: UMedia_dummy.pas 2945 2013-02-22 22:33:33Z k-m_schindler $
  *}
 
 unit UMedia_dummy;

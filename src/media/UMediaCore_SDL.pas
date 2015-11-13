@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/media/UMediaCore_SDL.pas $
+ * $Id: UMediaCore_SDL.pas 2475 2010-06-10 18:27:53Z brunzelchen $
  *}
 
 unit UMediaCore_SDL;

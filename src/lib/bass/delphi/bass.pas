@@ -11,7 +11,7 @@
   NOTE: Delphi users should use the BASS_UNICODE flag where possible
 }
 
-unit BASS;
+unit Bass;
 
 interface
 
@@ -311,6 +311,7 @@ const
 
   BASS_STREAMPROC_END = $80000000; // end of user stream flag
 
+
   // BASS_StreamCreateFileUser file systems
   STREAMFILE_NOBUFFER     = 0;
   STREAMFILE_BUFFER       = 1;
@@ -406,7 +407,7 @@ const
   BASS_TAG_MP4        = 7; // MP4/iTunes metadata : series of null-terminated UTF-8 strings
   BASS_TAG_VENDOR     = 9; // OGG encoder : UTF-8 string
   BASS_TAG_LYRICS3    = 10; // Lyric3v2 tag : ASCII string
-  BASS_TAG_CA_CODEC   = 11;	// CoreAudio codec info : TAG_CA_CODEC structure
+  BASS_TAG_CA_CODEC   = 11; // CoreAudio codec info : TAG_CA_CODEC structure
   BASS_TAG_MF         = 13;	// Media Foundation tags : series of null-terminated UTF-8 strings
   BASS_TAG_WAVEFORMAT = 14;	// WAVE format : WAVEFORMATEEX structure
   BASS_TAG_RIFF_INFO  = $100; // RIFF "INFO" tags : series of null-terminated ANSI strings
@@ -428,7 +429,7 @@ const
   BASS_POS_DECODE         = $10000000; // flag: get the decoding (not playing) position
   BASS_POS_DECODETO       = $20000000; // flag: decode to the position instead of seeking
   BASS_POS_SCAN           = $40000000; // flag: scan to the position
-
+  
   // BASS_RecordSetInput flags
   BASS_INPUT_OFF    = $10000;
   BASS_INPUT_ON     = $20000;
@@ -618,7 +619,7 @@ type
     Reserved: Array[0..189] of Byte;
     CodingHistory: Array[0..maxInt div 2 - 1] of AnsiChar;           // history
   end;
-
+  
   BASS_DX8_CHORUS = record
     fWetDryMix: Single;
     fDepth: Single;
@@ -901,7 +902,6 @@ function BASS_SetEAXPreset(env: LongInt): BOOL;
   env    : a EAX_ENVIRONMENT_xxx constant
 }
 {$ENDIF}
-
 
 implementation
 

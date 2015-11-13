@@ -34,6 +34,7 @@ interface
 {$I switches.inc}
 
 uses
+  UCommon,
   UThemes,
   UMenuBackground;
 

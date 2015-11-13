@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/screens/UScreenSongJumpto.pas $
+ * $Id: UScreenSongJumpto.pas 2199 2010-03-14 20:56:20Z brunzelchen $
  *}
 
 unit UScreenSongJumpto;
@@ -91,6 +91,10 @@ begin
     begin
       if (Interaction = 0) then
       begin
+        Button[0].Text[0].ColR := Theme.SongJumpto.ButtonSearchText.ColR;
+        Button[0].Text[0].ColG := Theme.SongJumpto.ButtonSearchText.ColG;
+        Button[0].Text[0].ColB := Theme.SongJumpto.ButtonSearchText.ColB;
+
         Button[0].Text[0].Text := Button[0].Text[0].Text + UCS4ToUTF8String(CharCode);
         SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, fSelectType));
       end;
@@ -114,7 +118,7 @@ begin
           AudioPlayback.PlaySound(SoundLib.Back);
           if (fVisSongs = 0) and (Length(Button[0].Text[0].Text) > 0) then
           begin
-            ScreenSong.UnLoadDetailedCover;
+            //ScreenSong.UnLoadDetailedCover;
             Button[0].Text[0].Text := '';
             CatSongs.SetFilter('', fltAll);
             SetTextFound(0);
@@ -154,6 +158,8 @@ begin
 end;
 
 constructor TScreenSongJumpto.Create;
+var
+  ButtonID: integer;
 begin
   inherited Create;
 
@@ -161,9 +167,12 @@ begin
 
   LoadFromTheme(Theme.SongJumpto);
 
-  AddButton(Theme.SongJumpto.ButtonSearchText);
+  ButtonID := AddButton(Theme.SongJumpto.ButtonSearchText);
+
   if (Length(Button[0].Text) = 0) then
     AddButtonText(14, 20, '');
+
+  Button[ButtonID].Text[0].Writable := true;
 
   fSelectType := fltAll;
   AddSelectSlide(Theme.SongJumpto.SelectSlideType, PInteger(@fSelectType)^, Theme.SongJumpto.IType);
@@ -228,9 +237,22 @@ begin
   fVisSongs := Count;
 
   //Fix SongSelection
-  ScreenSong.Interaction := high(CatSongs.Song);
+  if (TSongMenuMode(Ini.SongMenu) in [smRoulette, smCarousel, smSlide, smSlotMachine]) then
+  begin
+    ScreenSong.Interaction := high(CatSongs.Song);
+  end;
+
+  if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList, smMosaic]) then
+  begin
+    ScreenSong.Interaction := 0;
+    ScreenSong.ChessboardMinLine := 0;
+    ScreenSong.ListMinLine := 0;
+  end;
+
   ScreenSong.SelectNext;
   ScreenSong.FixSelected;
+
+  ScreenSong.SetScrollRefresh;
 
   //Play Correct Music
   if (ScreenSong.Interaction <> fLastPlayed) or (CatSongs.VisibleSongs = 0) then

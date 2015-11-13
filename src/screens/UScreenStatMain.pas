@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/screens/UScreenStatMain.pas $
+ * $Id: UScreenStatMain.pas 1939 2009-11-09 00:27:55Z s_alexander $
  *}
 
 unit UScreenStatMain;
@@ -149,17 +149,6 @@ begin
   if (Length(Button[1].Text)=0) then
     AddButtonText(14, 20, Theme.StatDetail.Description[1]);
 
-// This fixes the size of the button texts for gaelic
-// Maybe other languages, too.
-// Could probably be extended for an automatic text size adjustment
-// It simply takes the number of characters, neglecting the actual width.
-// The actual width came back as 0. Maybe, it is not properly calculated.
-
-  if (Length(Button[1].Text[0].Text) > 13) then
-    Button[1].Text[0].Size := 21;
-  if (Length(Button[1].Text[0].Text) > 22) then
-    Button[1].Text[0].Size := 19;
-
   AddButton(Theme.StatMain.ButtonSongs);
   if (Length(Button[2].Text)=0) then
     AddButtonText(14, 20, Theme.StatDetail.Description[2]);
@@ -167,9 +156,6 @@ begin
   AddButton(Theme.StatMain.ButtonBands);
   if (Length(Button[3].Text)=0) then
     AddButtonText(14, 20, Theme.StatDetail.Description[3]);
-
-  if (Length(Button[3].Text[0].Text) > 22) then
-    Button[3].Text[0].Size := 19;
 
   AddButton(Theme.StatMain.ButtonExit);
   if (Length(Button[4].Text)=0) then

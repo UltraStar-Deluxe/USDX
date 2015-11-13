@@ -20,8 +20,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/game/plugins/5000points.usdx $
+ * $Id: 5000points.usdx 2258 2010-04-20 20:08:16Z whiteshark0 $
  *]]
     
 function plugin_init()

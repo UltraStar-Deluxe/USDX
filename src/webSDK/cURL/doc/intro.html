@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+  <title>CurlPas introduction</title>
+</head>
+<body>
+
+<table summary="Introduction toCurlPas" border="1" width="75%" cellpadding="48">
+<tr><td>
+<p>
+<b><i>CurlPas</i></b> is a Pascal binding and object-oriented wrapper for the <b><i>LibCurl</i></b> client-side URL transfer library.</p>
+<p>
+<b><i>LibCurl</i></b> is mature, stable, powerful, actively maintained, well-supported, and well-documented.<br>
+For more information on the wonders of LibCurl, visit <a href="http://curl.haxx.se/libcurl/">http://curl.haxx.se/libcurl/</a><br>
+</p>
+<p>
+While <i>CurlPas</i> is not nearly as well-tested as <i>LibCurl</i>, I would consider it to be quite stable at this point.
+</p>
+<p>Both <i>CurlPas</i> and <i>LibCurl</i> are distributed under a liberal open-source license, permitting their use in both open-source and proprietary applications.</p>
+<p>
+<b><i>CurlPas</i></b> was developed and tested on the following systems:
+<ul>
+<li>FreePascal-2.0 for Linux-i386 on SuSE-9.2.
+<li>Kylix-3.0 Open Edition on SuSE-9.2.
+<li>FreePascal-2.0 for Windows on Win98.
+<li>Delphi-6.0 Personal Edition on Win98.
+</ul>
+In addition, the <i>CurlPas</i> components are also compatible with the <a href="http://lazarus.freepascal.org"><i>Lazarus</i></a> LCL.
+</p>
+<p>
+The <i>CurlPas</i> package consists of three parts:
+<ul>
+<li>The core bindings to libcurl, contained in <tt>curl_h.pas</tt>
+<li>The <b><i>tCurl</i></b> component, which provides a wrapper around a <tt>curl_easy</tt> session.
+<li>The <b><i>tCurlMulti</i></b> component, which serves as a container for multiple <b><i>tCurl</i></b> objects,<br>and provides a wrapper around a <tt>curl_multi</tt> session.
+</ul>
+The <b><i>FreePascal</i></b> versions of <b><i>tCurl</i></b> and <b><i>tCurlMulti</i></b> exist in two different incarnations, the lightweight objects defined in <tt>curlobj.pas</tt>, and the full-fledged <b><i>Lazarus</i></b> components defined in <tt>lazcurl.pas</tt> .
+</p>
+<p>
+To date, the <b><i>tCurl</i></b> object has over 130 different properties and methods to handle a 
+wide variety of URL transfer requirements. While this may seem overwhelming at first glance, the 
+good news is you will probably need only a small subset of these for most situations.
+</p>
+<p>
+I would recommend at least browsing through the <a href="tcurl.html"><tt>tcurl.html</tt></a> file to get some idea of what's available, and then refer back to the documentation as needed.
+Examples for several <i>CurlPas</i> applications are also provided in the <a href="examples.html"><tt>demo</tt></a> folder.
+</td></tr>
+</table>
+</body>

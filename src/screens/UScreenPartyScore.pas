@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/screens/UScreenPartyScore.pas $
+ * $Id: UScreenPartyScore.pas 2654 2010-10-10 11:46:53Z b_krueger $
  *}
 
 unit UScreenPartyScore;
@@ -83,6 +83,7 @@ uses
   ULanguage,
   UTexture,
   USkins,
+  USong,
   UUnicodeUtils;
 
 function TScreenPartyScore.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -201,12 +202,15 @@ var
 begin
   inherited;
 
+  // restart time
+  //if (ScreenSong.Mode = smPartyTournament) then
+  //  ScreenSong.CurrentPartyTime := 0;
+
   // indicate that round is finished
   Party.RoundPlayed;
 
   // get rankings for current round
   Ranking := Party.Rounds[Party.CurrentRound].Ranking;
-
 
   {//Set Statics Length
   Statics[StaticTeam1].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[0].Percentage / 100;

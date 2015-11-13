@@ -39,6 +39,7 @@ uses
   TextGL,
   gl,
   UCommon,
+  UDataBase,
   UFiles,
   UGraphicClasses,
   UIni,
@@ -54,7 +55,8 @@ uses
   UPath,
   UTime,
   UHookableEvent,
-  UVideo;
+  UVideo,
+  UWebcam;
 
 type
   TSongJukebox = class
@@ -94,29 +96,44 @@ type
 type
   TScreenJukebox = class(TMenu)
   private
+    // move song
+    MoveX, MoveY: real;
+    MoveInicial, MoveFinal: integer;
+    MoveSong: boolean;
+
     // items
     JukeboxStaticTimeProgress:       integer;
     JukeboxStaticTimeBackground:     integer;
     JukeboxStaticSongBackground:     integer;
     JukeboxStaticSongListBackground: integer;
-    SongDescription: array[0..9] of integer;
+    SongDescription:  array[0..9] of integer;
+    SongDescriptionClone: integer;
+
+    JukeboxStaticActualSongStatic: array of integer;
+    JukeboxStaticActualSongCover:           integer;
+    JukeboxTextActualSongArtist:            integer;
+    JukeboxTextActualSongTitle:             integer;
+
+    JukeboxSongListUp:   integer;
+    JukeboxSongListDown: integer;
+
+    // Jukebox SongMenu items
+    JukeboxSongMenuPlayPause:            integer;
+    JukeboxSongMenuPlaylist:             integer;
+    JukeboxSongMenuOptions:              integer;
+    JukeboxSongMenuNext:                 integer;
+    JukeboxSongMenuPrevious:             integer;
+    JukeboxStaticSongMenuTimeProgress:   integer;
+    JukeboxStaticSongMenuTimeBackground: integer;
+    JukeboxTextSongMenuTimeText:         integer;
+    JukeboxStaticSongMenuBackground:     integer;
 
     SelectColR: real;
     SelectColG: real;
     SelectColB: real;
 
-    // options desc
-    JukeboxStaticOptions: integer;
-    JukeboxTextOptionsSongPosition: integer;
-    JukeboxTextOptionsLyric: integer;
-    JukeboxTextOptionsRandom: integer;
-    JukeboxTextOptionsRepeat: integer;
-    JukeboxTextOptionsFind: integer;
-    JukeboxTextOptionsSort: integer;
-
     JukeboxTextTimeText: integer;
-    JukeboxTextTimeDesc: integer;
-    JukeboxTextSongText: integer;    //Button of Songtitle
+    //JukeboxTextSongText: integer;
 
     SongFinish: boolean;
 
@@ -124,15 +141,17 @@ type
     tmpLyricsLowerY: real;
     //tmp_mouse: integer;
 
-    LyricsStart:     boolean;
-
-    JukeboxFindSong: integer;
+    JukeboxFindSong:       integer;
     JukeboxRepeatSongList: integer;
-    JukeboxSongListOrder: integer;
+    JukeboxSongListOrder:  integer;
     JukeboxRandomSongList: integer;
-    JukeboxListText: integer;
-    JukeboxCountText: integer;
-    JukeboxLyric: integer;
+    JukeboxListText:       integer;
+    JukeboxCountText:      integer;
+    JukeboxLyric:          integer;
+    JukeboxOptions:        integer;
+    JukeboxSongListClose:  integer;
+    JukeboxSongListFixPin: integer;
+    JukeboxPlayPause:      integer;
 
     Filter:         UTF8String;
 
@@ -143,44 +162,58 @@ type
     OrderType:      integer;
 
     fShowVisualization: boolean;
+    fShowWebcam:        boolean;
+    fShowBackground:    boolean;
+
     fCurrentVideo: IVideo;
     fVideoClip:    IVideo;
-    fLyricsSync: TLyricsSyncSource;
-    fMusicSync: TMusicSyncSource;
-    fTimebarMode: TTimebarMode;
+    fLyricsSync:   TLyricsSyncSource;
+    fMusicSync:    TMusicSyncSource;
+    fTimebarMode:  TTimebarMode;
 
   protected
-    eSongLoaded: THookableEvent; //< event is called after lyrics of a song are loaded on OnShow
-    Paused:     boolean; //pause Mod
+    eSongLoaded:       THookableEvent; //< event is called after lyrics of a song are loaded on OnShow
+    Paused:            boolean; //pause Mod
     NumEmptySentences: integer;
+
   public
-    ShowLyrics: boolean;
-    CurrentSongList: integer;
-    LastTick: cardinal;
-    SongListVisible: boolean;
+    ShowLyrics:  boolean;
+    LyricsStart: boolean;
 
-    ChangePosition: integer;
+    CurrentSongList:     integer;
+    LastTick:            cardinal;
+    LastSongMenuTick:    cardinal;
+    LastSongOptionsTick: cardinal;
+    DoubleClickTime:     cardinal;
+    CloseClickTime:      cardinal;
+    SongListVisible:     boolean;
+    SongListVisibleFix:  boolean;
+    SongMenuVisible:     boolean;
+    LastTickChangeSong:  cardinal;
+    MouseDownList:       cardinal;
+    MoveDown:            boolean;
+    MouseUpList:         cardinal;
+    MoveUp:              boolean;
 
-    JukeboxSongsList: array of integer;
-    JukeboxVisibleSongs: array of integer;
+    JukeboxSongsList:     array of integer;
+    JukeboxVisibleSongs:  array of integer;
 
-    ActualInteraction: integer;
-    ListMin:           integer;
-    CurrentSongID:  integer;
+    ActualInteraction:   integer;
+    ListMin:             integer;
+    CurrentSongID:       integer;
 
     //VideoAspect
-    VideoAspectText:    integer;
-    VideoAspectStatic:  integer;
-    AspectHandler:      THandler;
-    AspectCorrection: TAspectCorrection;
-
-    StaticPausePopup: integer;
+    VideoAspectText:     integer;
+    VideoAspectStatic:   integer;
+    AspectHandler:       THandler;
+    AspectCorrection:    TAspectCorrection;
 
     Tex_Background: TTexture;
     FadeOut: boolean;
     Lyrics:  TLyricEngine;
-
+    LyricsAlpha : real;
     StaticCover: integer;
+    LyricHelper: TRGB;
 
     constructor Create; override;
     procedure OnShow; override;
@@ -189,20 +222,21 @@ type
 
     function ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
       PressedDown: boolean): boolean; override;
+    function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; override;
+
     function Draw: boolean; override;
     procedure DrawBlackBars();
-    procedure DrawItems();
 
-    procedure PlayMusic(ID: integer);
+    procedure PlayMusic(ID: integer; ShowList: boolean);
     procedure Play;
     procedure Finish;
     procedure Pause; // toggle pause
 
-    procedure OnSentenceEnd(SentenceIndex: cardinal);     // for linebonus + singbar
     procedure OnSentenceChange(SentenceIndex: cardinal);  // for golden notes
 
-    //procedure DeleteSong(Id: integer);
+    procedure DeleteSong(Id: integer);
     procedure FilterSongList(Filter: UTF8String);
+    procedure GoToSongList(UpperLetter: UCS4Char);
     procedure SongListSort(Order: integer);
     procedure Sort(Order: integer);
     procedure Reset;
@@ -212,6 +246,24 @@ type
 
     procedure RefreshCover;
     procedure DrawPlaylist;
+    procedure DrawMoveLine;
+    procedure DrawSongInfo;
+    procedure DrawSongMenu;
+    procedure DrawLine(X, Y, W, H: real);
+
+    procedure ChangeTime(Time: real);
+    procedure ChangeSongPosition(Start, Final: integer);
+    procedure ChangeOrderList();
+    procedure RandomList();
+
+    procedure PageDown(N: integer);
+    procedure PageUp(N: integer);
+
+    procedure ChangeLyricPosition(N: integer);
+    procedure ChangeVideoWidth(N: integer);
+    procedure ChangeVideoHeight(N: integer);
+
+    procedure LoadJukeboxSongOptions();
   end;
 
 implementation
@@ -224,11 +276,50 @@ uses
   ULanguage,
   UNote,
   URecord,
+  USkins,
   USong,
   UDisplay,
   UParty,
-  UScreenSong,
-  UUnicodeUtils;
+  UScreenJukeboxOptions,
+  UMenuInteract,
+  UUnicodeUtils, UBeatTimer, UMenuButton;
+
+const
+  MAX_TIME_PLAYLIST = 4000; // msec
+
+  MAX_TIME_SONGDESC = 2000; // msec
+  MAX_TIME_FADESONGDESC = 2000; // msec
+
+  MAX_TIME_MOUSE_CHANGELIST = 300; // msec
+
+  MAX_TIME_MOUSE_CLOSE = 500; // msec
+
+  MAX_TIME_SONGMENU = 3000; // msec
+
+  MAX_TIME_SONGOPTIONS = 3000; // msec
+
+procedure TScreenJukebox.DrawLine(X, Y, W, H: real);
+begin
+  glEnable(GL_BLEND);
+  glColor4f(0.3, 0.3, 0.3, 0.4);
+  glbegin(gl_quads);
+   glVertex2f(X, Y);
+   glVertex2f(X, Y + H);
+   glVertex2f(X + W, Y + H);
+   glVertex2f(X + W, Y);
+  glEnd;
+end;
+
+procedure TScreenJukebox.DrawMoveLine();
+begin
+  glColor4f(SelectColR, SelectColG, SelectColB, 1);
+  glbegin(gl_quads);
+    glVertex2f(MoveX, MoveY);
+    glVertex2f(MoveX, MoveY + 2);
+    glVertex2f(MoveX + Button[SongDescription[0]].Texture.W, MoveY + 2);
+    glVertex2f(MoveX + Button[SongDescription[0]].Texture.W, MoveY);
+  glEnd;
+end;
 
 procedure TScreenJukebox.DrawBlackBars();
 var
@@ -366,6 +457,72 @@ begin
   end;
 end;
 
+procedure TScreenJukebox.GoToSongList(UpperLetter: UCS4Char);
+var
+  SongDesc: UTF8String;
+  I, S, CurrentInteractionSong: integer;
+  isCurrentPage, existNextSong: boolean;
+  ListCurrentPage: array of integer;
+begin
+ {
+
+  isCurrentPage := false;
+  existNextSong := false;
+  CurrentInteractionSong := ActualInteraction;
+
+  for I := ActualInteraction + 1 to High(JukeboxVisibleSongs) do
+  begin
+    if (OrderType = 2) then
+      SongDesc := CatSongs.Song[JukeboxSongsList[I]].TitleNoAccent
+    else
+      SongDesc := CatSongs.Song[JukeboxSongsList[I]].ArtistNoAccent;
+
+    if (UTF8StartsText(UCS4ToUTF8String(UpperLetter), SongDesc)) then
+    begin
+      ActualInteraction := I;
+      CurrentSongList := I;
+      existNextSong := true;
+      break;
+    end
+
+  end;
+
+  // page songsid
+  {
+        SetLength(JukeboxSongsListCurrentPage, 0);
+
+
+
+  JukeboxSongsList[I]
+        SetLength(JukeboxSongsListCurrentPage, Length(JukeboxSongsListCurrentPage) + 1);
+
+        JukeboxSongsListCurrentPage[High(JukeboxSongsListCurrentPage)] := JukeboxVisibleSongs[I + ListMin];
+
+  if (existNextSong) then
+  begin
+    while not (isCurrentPage) do
+    begin
+
+      for S := 0 to High(JukeboxSongsListCurrentPage) do
+      begin
+        if (JukeboxSongsListCurrentPage[S] = JukeboxSongsList[CurrentSongList]) then
+        begin
+          isCurrentPage := true;
+          break;
+        end;
+      end;
+
+      if not (isCurrentPage) then
+      begin
+        PageDown(10);
+        ListMin := ListMin + 1;
+      end;
+    end;
+  end;
+  }
+
+end;
+
 procedure TScreenJukebox.FilterSongList(Filter: UTF8String);
 var
   I: integer;
@@ -374,12 +531,14 @@ begin
 
   if (Filter <> '') then
   begin
+    Filter := GetStringWithNoAccents(UTF8Decode(UTF8LowerCase(Filter)));
+
     SetLength(JukeboxVisibleSongs, 0);
     for I := 0 to High(JukeboxSongsList) do
     begin
-      SongD := CatSongs.Song[JukeboxSongsList[I]].Artist + ' - ' + CatSongs.Song[JukeboxSongsList[I]].Title;
+      SongD := CatSongs.Song[JukeboxSongsList[I]].ArtistNoAccent + ' - ' + CatSongs.Song[JukeboxSongsList[I]].TitleNoAccent;
 
-      if (UTF8ContainsStr(UTF8UpperCase(SongD), UTF8UpperCase(Filter))) then
+      if (UTF8ContainsStr(SongD, Filter)) then
       begin
         SetLength(JukeboxVisibleSongs, Length(JukeboxVisibleSongs) + 1);
         JukeboxVisibleSongs[High(JukeboxVisibleSongs)] := JukeboxSongsList[I];
@@ -400,51 +559,76 @@ begin
   ActualInteraction := 0;
   Interaction := 0;
   ListMin := 0;
+
+  Button[SongDescription[0]].SetSelect(false);
 end;
 
-{
+
 procedure TScreenJukebox.DeleteSong(Id: integer);
 var
-  I: integer;
-  JukeboxSongsListTmp: array of integer;
-  JukeboxVisibleSongsTmp: array of integer;
+  ALength: Cardinal;
+  TailElements: Cardinal;
+  IndexVisibleSongs, IndexSongList, I: integer;
 begin
-
-  SetLength(JukeboxSongsListTmp, 0);
+  IndexVisibleSongs := Id;
 
   for I := 0 to High(JukeboxSongsList) do
   begin
-    if (I <> Id) then
+    if (JukeboxVisibleSongs[IndexVisibleSongs] = JukeboxSongsList[I]) then
     begin
-      SetLength(JukeboxSongsListTmp, Length(JukeboxSongsListTmp) + 1);
-      JukeboxSongsListTmp[High(JukeboxSongsListTmp)] := JukeboxSongsList[I];
+      IndexSongList := I;
+      break;
     end;
   end;
 
-  SetLength(JukeboxSongsList, Length(JukeboxSongsListTmp));
-  for I := 0 to High(JukeboxSongsListTmp) do
-    JukeboxSongsList[I] := JukeboxSongsListTmp[I];
+  // visible songs
+  ALength := Length(JukeboxVisibleSongs);
+  Assert(ALength > 0);
+  Assert(IndexVisibleSongs < ALength);
+  Finalize(JukeboxVisibleSongs[IndexVisibleSongs]);
+  TailElements := ALength - IndexVisibleSongs;
+  if TailElements > 0 then
+    Move(JukeboxVisibleSongs[IndexVisibleSongs + 1], JukeboxVisibleSongs[IndexVisibleSongs], SizeOf(integer) * TailElements);
+  Initialize(JukeboxVisibleSongs[ALength - 1]);
+  SetLength(JukeboxVisibleSongs, ALength - 1);
 
-  SetLength(JukeboxVisibleSongsTmp, 0);
-  for I := 0 to High(JukeboxVisibleSongs) do
-  begin
-    if (I <> Id) then
-    begin
-      SetLength(JukeboxVisibleSongsTmp, Length(JukeboxVisibleSongsTmp) + 1);
-      JukeboxVisibleSongsTmp[High(JukeboxVisibleSongsTmp)] := JukeboxVisibleSongs[I];
-    end;
-  end;
+  // all playlist
+  ALength := Length(JukeboxSongsList);
+  Assert(ALength > 0);
+  Assert(IndexSongList < ALength);
+  Finalize(JukeboxSongsList[IndexSongList]);
+  TailElements := ALength - IndexSongList;
+  if TailElements > 0 then
+    Move(JukeboxSongsList[IndexSongList + 1], JukeboxSongsList[IndexSongList], SizeOf(integer) * TailElements);
+  Initialize(JukeboxSongsList[ALength - 1]);
+  SetLength(JukeboxSongsList, ALength - 1);
 
-  SetLength(JukeboxVisibleSongs, Length(JukeboxVisibleSongsTmp));
-  for I := 0 to High(JukeboxVisibleSongsTmp) do
-    JukeboxVisibleSongs[I] := JukeboxVisibleSongsTmp[I];
-
-
-//  ActualInteraction := 0;
-//  Interaction := 0;
-//  ListMin := 0;
 end;
-}
+
+
+procedure TScreenJukebox.ChangeLyricPosition(N: integer);
+begin
+  Lyrics.UpperLineY := Lyrics.UpperLineY + N;
+  Lyrics.LowerLineY := Lyrics.LowerLineY + N;
+end;
+
+procedure TScreenJukebox.ChangeVideoWidth(N: integer);
+var
+  X, Y, Z: double;
+begin
+  fCurrentVideo.GetScreenPosition(X, Y, Z);
+  fCurrentVideo.SetScreenPosition(X - (N/2), Y, Z);
+  fCurrentVideo.SetWidth(fCurrentVideo.GetWidth + N);
+end;
+
+procedure TScreenJukebox.ChangeVideoHeight(N: integer);
+var
+  X, Y, Z: double;
+begin
+  fCurrentVideo.GetScreenPosition(X, Y, Z);
+  fCurrentVideo.SetScreenPosition(X, Y - (N/2), Z);
+  fCurrentVideo.SetHeight(fCurrentVideo.GetHeight + N);
+end;
 
 procedure TScreenJukebox.Reset;
 begin
@@ -489,7 +673,7 @@ begin
       OrderMode := false;
       Button[JukeboxSongListOrder].SetSelect(false);
       try
-         Button[JukeboxSongListOrder].Text[0].Text := Language.Translate('OPTION_VALUE_ARTIST');
+      Button[JukeboxSongListOrder].Text[0].Text := Language.Translate('OPTION_VALUE_ARTIST');
       finally
       end;
 
@@ -502,6 +686,22 @@ begin
   Button[JukeboxRandomSongList].SetSelect(false);
   Button[JukeboxRepeatSongList].SetSelect(false);
   Button[JukeboxFindSong].SetSelect(false);
+  Button[JukeboxPlayPause].SetSelect(false);
+  Button[JukeboxFindSong].Text[0].Selected := false;
+end;
+
+procedure OnDeleteSong(Value: boolean; Data: Pointer);
+var
+  tmp: integer;
+begin
+  Display.CheckOK := Value;
+
+  if (Value) then
+  begin
+    Display.CheckOK := false;
+
+    ScreenJukebox.DeleteSong(ScreenJukebox.ActualInteraction);
+  end;
 end;
 
 procedure OnEscapeJukebox(Value: boolean; Data: Pointer);
@@ -525,6 +725,588 @@ begin
   end;
 end;
 
+function TScreenJukebox.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+var
+  I, Max: integer;
+  Time: real;
+begin
+  Result := true;
+
+  //Jukebox Screen Extensions (Options)
+  if (ScreenJukeboxOptions.Visible) then
+  begin
+    Result := ScreenJukeboxOptions.ParseMouse(MouseButton, BtnDown, X, Y);
+    Exit;
+  end;
+
+  LastTick := SDL_GetTicks();
+
+  Max := 9;
+  if (High(JukeboxVisibleSongs) < 9) then
+    Max := High(JukeboxVisibleSongs);
+
+  // transfer mousecords to the 800x600 raster we use to draw
+  X := Round((X / (ScreenW / Screens)) * RenderW);
+  if (X > RenderW) then
+    X := X - RenderW;
+  Y := Round((Y / ScreenH) * RenderH);
+
+  if (SongListVisible) then
+  begin
+
+    if (BtnDown) then //and (MouseButton = SDL_BUTTON_LEFT) then
+    begin
+
+      // move song
+      if (Button[SongDescriptionClone].Visible) then
+      begin
+        Button[SongDescriptionClone].X := X;
+        Button[SongDescriptionClone].Y := Y;
+        Button[SongDescriptionClone].Text[0].X := X + Button[SongDescription[0]].Text[0].X - Button[SongDescription[0]].X;
+        Button[SongDescriptionClone].Text[0].Y := Y + Button[SongDescription[0]].Text[0].Y - Button[SongDescription[0]].Y;
+
+        //line position
+        MoveSong := false;
+
+        for I := 0 to Max do
+        begin
+          if InRegionX(X, Button[SongDescription[I]].GetMouseOverArea) then
+            MoveSong := true;
+
+          if InRegion(X, Y + Button[SongDescription[I]].Texture.H/2, Button[SongDescription[I]].GetMouseOverArea) then
+          begin
+            MoveX := Button[SongDescription[I]].Texture.X;
+            MoveY := Button[SongDescription[I]].Texture.Y;
+            MoveFinal := I + ListMin;
+          end;
+        end;
+
+        if (MoveSong) and (Y >= Button[SongDescription[Max]].Texture.Y + Button[SongDescription[Max]].Texture.H/2) then
+        begin
+          MoveX := Button[SongDescription[Max]].Texture.X;
+          MoveY := Button[SongDescription[Max]].Texture.Y + Button[SongDescription[Max]].Texture.H;
+          MoveFinal := Max + ListMin + 1;
+        end;
+
+        if (MoveSong) and (Y >= Button[SongDescription[Max]].Texture.Y + Button[SongDescription[Max]].Texture.H) then
+        begin
+          MoveX := Button[SongDescription[Max]].Texture.X;
+          MoveY := Button[SongDescription[Max]].Texture.Y + Button[SongDescription[Max]].Texture.H;
+          MoveFinal := Max + ListMin + 1;
+
+          if (MouseDownList = 0) then
+            MouseDownList := SDL_GetTicks()
+          else
+          begin
+            MoveDown := true;
+          end;
+        end
+        else
+        begin
+          MouseDownList := 0;
+          MoveDown := false;
+        end;
+
+        if (MoveSong) and (Y <= Button[SongDescription[0]].Texture.Y - Button[SongDescription[0]].Texture.H) then
+        begin
+          if (MouseUpList = 0) then
+            MouseUpList := SDL_GetTicks()
+          else
+          begin
+            MoveUp := true;
+          end;
+        end
+        else
+        begin
+          MouseUpList := 0;
+          MoveUp := false;
+        end;
+      end
+      else
+      begin
+        //song scrolling with mousewheel
+      if (MouseButton = SDL_BUTTON_WHEELDOWN) then
+        Result := ParseInput(SDLK_PAGEDOWN, 0, true);
+
+      if (MouseButton = SDL_BUTTON_WHEELUP) then
+        Result := ParseInput(SDLK_PAGEUP, 0, true)
+
+      else
+      begin
+        // up/down songlist
+        if InRegion(X, Y, Button[JukeboxSongListUp].GetMouseOverArea) then
+        begin
+          PageUp(10);
+        end;
+
+        if InRegion(X, Y, Button[JukeboxSongListDown].GetMouseOverArea) then
+        begin
+          PageDown(10);
+        end;
+
+        // change time
+        if InRegion(X, Y, Text[JukeboxTextTimeText].GetMouseOverArea) then
+        begin
+          if (fTimebarMode = High(TTimebarMode)) then
+            fTimebarMode := Low(TTimebarMode)
+          else
+            Inc(fTimebarMode);
+
+          Ini.JukeboxTimebarMode := Ord(fTimebarMode);
+          Ini.SaveJukeboxTimebarMode();
+        end;
+
+        // play or move song
+        for I := 0 to Max do
+        begin
+          if InRegion(X, Y, Button[SongDescription[I]].GetMouseOverArea) then
+          begin
+
+            // start move song
+            if not InRegion(X, Y, Button[SongDescription[Interaction]].GetMouseOverArea) then
+            begin
+              Button[SongDescriptionClone].X := X;
+              Button[SongDescriptionClone].Y := Y;
+              Button[SongDescriptionClone].Text[0].X := X + Button[SongDescription[I]].Text[0].X - Button[SongDescription[I]].X;
+              Button[SongDescriptionClone].Text[0].Y := Y + Button[SongDescription[I]].Text[0].Y - Button[SongDescription[I]].Y;
+              Button[SongDescriptionClone].Text[0].Text := CatSongs.Song[JukeboxVisibleSongs[Interaction + ListMin]].Artist + ' - ' + CatSongs.Song[JukeboxVisibleSongs[Interaction + ListMin]].Title;
+
+              MoveX := Button[SongDescription[I]].Texture.X;
+              MoveY := Button[SongDescription[I]].Texture.Y;
+              MoveInicial := ListMin + Interaction;
+
+              Button[SongDescriptionClone].Visible := true;
+              Button[SongDescription[Interaction]].SetSelect(false);
+            end
+            else
+            begin
+
+              if (MouseButton = SDL_BUTTON_LEFT) then
+              begin
+                if (SDL_GetTicks() - DoubleClickTime <= 500) then
+                  Result := ParseInput(SDLK_RETURN, 0, true);
+
+                DoubleClickTime := SDL_GetTicks();
+              end;
+
+            end;
+          end;
+        end;
+
+        // close songlist
+        if InRegion(X, Y, Button[JukeboxSongListClose].GetMouseOverArea)then
+        begin
+          Result := ParseInput(SDLK_ESCAPE, 0, true);
+          CloseClickTime := SDL_GetTicks();
+          Button[JukeboxSongListClose].SetSelect(false);
+        end;
+
+        // fix songlist
+        if InRegion(X, Y, Button[JukeboxSongListFixPin].GetMouseOverArea)then
+        begin
+          SongListVisibleFix := not SongListVisibleFix;
+
+          if (SongListVisibleFix) then
+            Ini.JukeboxSongMenu := 0
+          else
+            Ini.JukeboxSongMenu := 1;
+
+          Ini.SaveJukeboxSongMenu;
+
+          Button[JukeboxSongListFixPin].SetSelect(SongListVisibleFix);
+        end;
+
+        if InRegion(X, Y, Statics[JukeboxStaticTimeProgress].GetMouseOverArea) then
+        begin
+          Time := ((X - Statics[JukeboxStaticTimeProgress].Texture.X) * LyricsState.TotalTime)/(Statics[JukeboxStaticTimeProgress].Texture.W);
+
+          ChangeTime(Time);
+        end;
+
+        if InRegion(X, Y, Button[JukeboxRepeatSongList].GetMouseOverArea) then
+        begin
+          RepeatSongList := not RepeatSongList;
+          Button[JukeboxRepeatSongList].SetSelect(RepeatSongList);
+        end;
+
+        if InRegion(X, Y, Button[JukeboxSongListOrder].GetMouseOverArea) then
+        begin
+          ChangeOrderList();
+        end;
+
+        if InRegion(X, Y, Button[JukeboxRandomSongList].GetMouseOverArea) then
+        begin
+          RandomList();
+        end;
+
+        if InRegion(X, Y, Button[JukeboxLyric].GetMouseOverArea) then
+        begin
+          ShowLyrics := not ShowLyrics;
+          Button[JukeboxLyric].SetSelect(ShowLyrics);
+        end;
+
+        if InRegion(X, Y, Button[JukeboxPlayPause].GetMouseOverArea) then
+        begin
+          Pause;
+          Button[JukeboxPlayPause].SetSelect(Paused);
+        end;
+
+        if InRegion(X, Y, Button[JukeboxFindSong].GetMouseOverArea) then
+        begin
+          FindSongList := not FindSongList;
+
+          if (Filter = '') then
+          begin
+            if (FindSongList) then
+              Button[JukeboxFindSong].Text[0].Text := ''
+          end;
+
+          Button[JukeboxFindSong].SetSelect(FindSongList);
+
+          if not (FindSongList) and (Length(JukeboxSongsList) <> Length(JukeboxVisibleSongs)) then
+          begin
+            FilterSongList('');
+          end
+          else
+          begin
+            if (Filter <> '') then
+              FilterSongList(Filter);
+          end;
+
+          if (FindSongList) then
+            Button[JukeboxFindSong].Text[0].Selected := true
+          else
+            Button[JukeboxFindSong].Text[0].Selected := false;
+
+        end;
+
+        if InRegion(X, Y, Button[JukeboxOptions].GetMouseOverArea) then
+        begin
+          SongMenuVisible := false;
+          SongListVisible := false;
+
+          Button[JukeboxOptions].SetSelect(false);
+          ScreenJukeboxOptions.Visible := true;
+
+          LastSongOptionsTick := SDL_GetTicks();
+        end;
+
+      end;
+      end;
+    end
+    else
+    begin
+
+      // change music position
+      if (MoveSong) and (ListMin = 0) and (Y <= Button[SongDescription[0]].Texture.Y - Button[SongDescription[0]].Texture.H) then
+      begin
+        Interaction := 0;
+        ActualInteraction := 0;
+        Button[SongDescription[0]].SetSelect(true);
+
+        MoveFinal := 0;
+      end;
+
+      if (Button[SongDescriptionClone].Visible) and (MoveSong) then
+      begin
+        if (MoveInicial > MoveFinal) then
+          MoveInicial := MoveInicial + 1;
+
+        ChangeSongPosition(MoveInicial, MoveFinal);
+
+        DoubleClickTime := 0;
+      end;
+
+      Button[SongDescriptionClone].Visible := false;
+
+      for I := 0 to Max do
+      begin
+        if InRegion(X, Y, Button[SongDescription[I]].GetMouseOverArea) then
+        begin
+          Interaction := I;
+          ActualInteraction := ListMin + I;
+          Button[SongDescription[I]].SetSelect(true);
+        end
+        else
+        begin
+          Button[SongDescription[I]].SetSelect(false);
+        end;
+      end;
+
+      // hover
+      if (High(JukeboxVisibleSongs) > 9) then
+      begin
+        if InRegion(X, Y, Button[JukeboxSongListUp].GetMouseOverArea) then
+            Button[JukeboxSongListUp].SetSelect(true)
+        else
+            Button[JukeboxSongListUp].SetSelect(false);
+
+        if InRegion(X, Y, Button[JukeboxSongListDown].GetMouseOverArea) then
+            Button[JukeboxSongListDown].SetSelect(true)
+        else
+            Button[JukeboxSongListDown].SetSelect(false);
+      end;
+
+      if InRegion(X, Y, Button[JukeboxSongListClose].GetMouseOverArea) then
+        Button[JukeboxSongListClose].SetSelect(true)
+      else
+        Button[JukeboxSongListClose].SetSelect(false);
+
+      //hover fix pin
+      if (not SongListVisibleFix) then
+      begin
+        if InRegion(X, Y, Button[JukeboxSongListFixPin].GetMouseOverArea) then
+          Button[JukeboxSongListFixPin].SetSelect(true)
+        else
+          Button[JukeboxSongListFixPin].SetSelect(false);
+      end;
+
+      if InRegion(X, Y, Button[JukeboxSongListOrder].GetMouseOverArea) then
+        Button[JukeboxSongListOrder].SetSelect(true)
+      else
+        Button[JukeboxSongListOrder].SetSelect(not RandomMode);
+
+      if InRegion(X, Y, Button[JukeboxRandomSongList].GetMouseOverArea) then
+        Button[JukeboxRandomSongList].SetSelect(true)
+      else
+        Button[JukeboxRandomSongList].SetSelect(RandomMode);
+
+      if InRegion(X, Y, Button[JukeboxRepeatSongList].GetMouseOverArea) then
+        Button[JukeboxRepeatSongList].SetSelect(true)
+      else
+        Button[JukeboxRepeatSongList].SetSelect(RepeatSongList);
+
+      if InRegion(X, Y, Button[JukeboxPlayPause].GetMouseOverArea) then
+        Button[JukeboxPlayPause].SetSelect(true)
+      else
+        Button[JukeboxPlayPause].SetSelect(Paused);
+
+      if InRegion(X, Y, Button[JukeboxLyric].GetMouseOverArea) then
+        Button[JukeboxLyric].SetSelect(true)
+      else
+        Button[JukeboxLyric].SetSelect(ShowLyrics);
+
+      if InRegion(X, Y, Button[JukeboxOptions].GetMouseOverArea) then
+        Button[JukeboxOptions].SetSelect(true)
+      else
+        Button[JukeboxOptions].SetSelect(false);
+
+      if InRegion(X, Y, Button[JukeboxFindSong].GetMouseOverArea) then
+        Button[JukeboxFindSong].SetSelect(true)
+      else
+        Button[JukeboxFindSong].SetSelect(FindSongList);
+
+    end;
+  end;
+
+  if (SongMenuVisible) then
+  begin
+    //songmenu visible
+    if (BtnDown) and (MouseButton = SDL_BUTTON_LEFT) then
+    begin
+      if InRegion(X, Y, Button[JukeboxSongMenuPlayPause].GetMouseOverArea) then
+        Result := ParseInput(SDLK_SPACE, 0, true);
+
+      if InRegion(X, Y, Button[JukeboxSongMenuPrevious].GetMouseOverArea) then
+        Result := ParseInput(SDLK_LEFT, 0, true);
+
+      if InRegion(X, Y, Button[JukeboxSongMenuNext].GetMouseOverArea) then
+        Result := ParseInput(SDLK_RIGHT, 0, true);
+
+      if InRegion(X, Y, Button[JukeboxSongMenuPlaylist].GetMouseOverArea) then
+      begin
+        SongMenuVisible := false;
+        SongListVisible := true;
+
+        LastTick := SDL_GetTicks();
+      end;
+
+      if InRegion(X, Y, Statics[JukeboxStaticSongMenuTimeProgress].GetMouseOverArea) then
+      begin
+        Time := ((X - Statics[JukeboxStaticSongMenuTimeProgress].Texture.X) * LyricsState.TotalTime)/(Statics[JukeboxStaticSongMenuTimeProgress].Texture.W);
+
+        ChangeTime(Time);
+      end;
+
+      // change time
+      if InRegion(X, Y, Text[JukeboxTextSongMenuTimeText].GetMouseOverArea) then
+      begin
+        if (fTimebarMode = High(TTimebarMode)) then
+          fTimebarMode := Low(TTimebarMode)
+        else
+          Inc(fTimebarMode);
+
+        Ini.JukeboxTimebarMode := Ord(fTimebarMode);
+        Ini.SaveJukeboxTimebarMode();
+      end;
+
+      if InRegion(X, Y, Button[JukeboxSongMenuOptions].GetMouseOverArea) then
+      begin
+        SongMenuVisible := false;
+        SongListVisible := false;
+
+        Button[JukeboxSongMenuOptions].SetSelect(false);
+
+        ScreenJukeboxOptions.Visible := true;
+
+        LastSongOptionsTick := SDL_GetTicks();
+      end;
+    end
+    else
+    begin
+      // hover
+      if InRegion(X, Y, Button[JukeboxSongMenuPlayPause].GetMouseOverArea) then
+        Button[JukeboxSongMenuPlayPause].SetSelect(true)
+      else
+        Button[JukeboxSongMenuPlayPause].SetSelect(Paused);
+
+      if InRegion(X, Y, Button[JukeboxSongMenuPrevious].GetMouseOverArea) then
+        Button[JukeboxSongMenuPrevious].SetSelect(true)
+      else
+        Button[JukeboxSongMenuPrevious].SetSelect(false);
+
+      if InRegion(X, Y, Button[JukeboxSongMenuNext].GetMouseOverArea) then
+        Button[JukeboxSongMenuNext].SetSelect(true)
+      else
+        Button[JukeboxSongMenuNext].SetSelect(false);
+
+      if InRegion(X, Y, Button[JukeboxSongMenuPlaylist].GetMouseOverArea) then
+        Button[JukeboxSongMenuPlaylist].SetSelect(true)
+      else
+        Button[JukeboxSongMenuPlaylist].SetSelect(false);
+
+      if InRegion(X, Y, Button[JukeboxSongMenuOptions].GetMouseOverArea) then
+        Button[JukeboxSongMenuOptions].SetSelect(true)
+      else
+        Button[JukeboxSongMenuOptions].SetSelect(false);
+    end
+  end;
+
+  if (not(SongListVisible) and not(ScreenJukeboxOptions.Visible) and (SDL_GetTicks - CloseClickTime > MAX_TIME_MOUSE_CLOSE))
+    or (not(SongListVisible) and not(ScreenJukeboxOptions.Visible) and (Y <= 5)) then
+  begin
+    if (SongListVisibleFix) then
+    begin
+      SongListVisible := true;
+    end
+    else
+    begin
+      SongMenuVisible := true;
+      LastSongMenuTick := SDL_GetTicks();
+    end;
+  end;
+
+end;
+
+procedure TScreenJukebox.RandomList();
+var
+  I, RValueI, RValueE: integer;
+  tmp: integer;
+begin
+  LastTick := SDL_GetTicks();
+
+  Button[JukeboxRandomSongList].SetSelect(true);
+  Button[JukeboxSongListOrder].SetSelect(false);
+
+  RandomMode := true;
+  OrderMode := false;
+
+  for I := 0 to High(JukeboxVisibleSongs) * 2 do
+  begin
+    RValueI := RandomRange(0, High(JukeboxVisibleSongs) + 1);
+    RValueE := RandomRange(0, High(JukeboxVisibleSongs) + 1);
+
+    tmp := JukeboxVisibleSongs[RValueI];
+    JukeboxVisibleSongs[RValueI] := JukeboxVisibleSongs[RValueE];
+    JukeboxVisibleSongs[RValueE] := tmp;
+
+    if (RValueI = CurrentSongList) then
+      CurrentSongList := RValueE
+    else
+    begin
+      if (RValueE = CurrentSongList) then
+        CurrentSongList := RValueI;
+    end;
+  end;
+end;
+
+procedure TScreenJukebox.ChangeOrderList();
+begin
+  LastTick := SDL_GetTicks();
+
+  Button[JukeboxRandomSongList].SetSelect(false);
+  Button[JukeboxSongListOrder].SetSelect(true);
+
+  if (OrderMode) then
+  begin
+    if (OrderType < 5) then
+    begin
+      OrderType := OrderType + 1;
+    end
+    else
+      OrderType := 1;
+  end;
+
+  RandomMode := false;
+  OrderMode := true;
+
+  SongListSort(OrderType);
+end;
+
+procedure TScreenJukebox.ChangeSongPosition(Start, Final: integer);
+var
+  I_Index, F_Index: integer;
+  ALength: Cardinal;
+  TailElements: Cardinal;
+begin
+  LastTick := SDL_GetTicks();
+
+  I_Index := Start;
+  F_Index := Final;
+  ALength := Length(JukeboxVisibleSongs);
+
+  //insert
+  Assert(F_Index <= ALength);
+  SetLength(JukeboxVisibleSongs, ALength + 1);
+  Finalize(JukeboxVisibleSongs[ALength]);
+  TailElements := ALength - F_Index;
+  if TailElements > 0 then
+    Move(JukeboxVisibleSongs[F_Index], JukeboxVisibleSongs[F_Index + 1], SizeOf(I_Index) * TailElements);
+  Initialize(JukeboxVisibleSongs[F_Index]);
+  JukeboxVisibleSongs[F_Index] := JukeboxVisibleSongs[I_Index];
+
+  ALength := Length(JukeboxVisibleSongs);
+
+  //delete
+  Assert(ALength > 0);
+  Assert(I_Index < ALength);
+  Finalize(JukeboxVisibleSongs[I_Index]);
+  TailElements := ALength - I_Index;
+  if TailElements > 0 then
+    Move(JukeboxVisibleSongs[I_Index + 1], JukeboxVisibleSongs[I_Index], SizeOf(F_Index) * TailElements);
+  Initialize(JukeboxVisibleSongs[ALength - 1]);
+  SetLength(JukeboxVisibleSongs, ALength - 1);
+end;
+
+procedure TScreenJukebox.ChangeTime(Time: real);
+begin
+  LastTick := SDL_GetTicks();
+
+  AudioPlayback.Position := Time;
+
+  if (Assigned(fCurrentVideo)) then
+    fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start + Time;
+
+  // correct lyric timer
+  LyricsState.StartTime := CurrentSong.GAP + Time;
+  LyricsState.SetCurrentTime(Time);
+
+  // main text
+  Lyrics.Clear();
+
+end;
+
+
 // method for input parsing. if false is returned, getnextwindow
 // should be checked to know the next window to load;
 
@@ -535,8 +1317,16 @@ var
   I, RValueI, RValueE: integer;
   tmp: integer;
   X, Y, Z: double;
+  UpperLetter: UCS4Char;
 begin
   Result := true;
+
+  //Jukebox Screen Extensions (Options)
+  if (ScreenJukeboxOptions.Visible) then
+  begin
+    Result := ScreenJukeboxOptions.ParseInput(PressedKey, CharCode, PressedDown);
+    Exit;
+  end;
 
   SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT +
     KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT);
@@ -549,6 +1339,16 @@ begin
     begin
       if (IsPrintableChar(CharCode)) then
       begin
+
+        {if not (FindSongList) then
+        begin
+          UpperLetter := UCS4UpperCase(CharCode);
+
+          GoToSongList(UpperLetter);
+        end
+        else
+        begin}
+
         LastTick := SDL_GetTicks();
 
         Button[JukeboxFindSong].Text[0].Text := Button[JukeboxFindSong].Text[0].Text +
@@ -557,7 +1357,8 @@ begin
         Filter := Button[JukeboxFindSong].Text[0].Text;
         FilterSongList(Filter);
         Exit;
-      end;
+        {end;}
+      end
     end
     else
     begin
@@ -578,38 +1379,68 @@ begin
         // show visualization
         Ord('V'):
         begin
-          fShowVisualization := not fShowVisualization;
-
-          if fShowVisualization then
+          if fShowWebcam then
           begin
-            fCurrentVideo := Visualization.Open(PATH_NONE);
-            fCurrentVideo.play;
+            Webcam.Release;
+            fShowWebCam:=false;
+          end;
+          if ((fShowBackground = true) and (Ini.VideoEnabled = 1) and CurrentSong.Video.IsSet())
+                               or (fShowVisualization and not CurrentSong.Background.IsSet()) then //switch to video
+          begin
+            Log.LogStatus('decided to switch to video', 'UScreenSing.ParseInput');
+            fShowBackground := false;
+		    fShowWebCam := false;
+            fCurrentVideo := nil;
+            fShowVisualization := false;
+            fCurrentVideo := fVideoClip;
+            Log.LogStatus('finished switching to video', 'UScreenSing.ParseInput');
           end
           else
           begin
-            fCurrentVideo := fVideoClip;
+            if fShowVisualization and CurrentSong.Background.IsSet() then
+            begin //switch to Background only
+              Log.LogStatus('decided to switch to background', 'UScreenSing.ParseInput');
+              fShowBackground := true;
+			  fShowWebCam := false;
+              fCurrentVideo := nil;
+              fShowVisualization := false;
+              Log.LogStatus('finished switching to background', 'UScreenSing.ParseInput');
+            end
+            else
+            begin //Video is currently visible, change to visualization
+              Log.LogStatus('decided to switch to visualization', 'UScreenSing.ParseInput');
+              fShowVisualization := true;
+			  fShowWebCam := false;
+              fCurrentVideo := Visualization.Open(PATH_NONE);
+              fCurrentVideo.play;
+              Log.LogStatus('finished switching to visualization', 'UScreenSing.ParseInput');
+            end;
           end;
           Exit;
         end;
 
-        // pause
-        Ord('P'):
+        // show Webcam
+      Ord('W'):
+      begin
+        if (fShowWebCam = false) then
         begin
-          Pause;
-          Exit;
+          fCurrentVideo := nil;
+          fShowVisualization := false;
+          fShowBackground := false;
+          Webcam.Restart;
+          fShowWebCam := true;
+        //  ChangeEffectLastTick := SDL_GetTicks;
+        //  SelectsS[WebcamParamsSlide].Visible := true;
+        //  LastTickFrame := SDL_GetTicks;
+        end
+        else
+        begin
+          Webcam.Release;
+          fShowWebCam:=false;
         end;
 
-        // toggle time display
-        Ord('T'):
-        begin
-          LastTick := SDL_GetTicks();
-
-          if (fTimebarMode = High(TTimebarMode)) then
-            fTimebarMode := Low(TTimebarMode)
-          else
-            Inc(fTimebarMode);
-          Exit;
-        end;
+        Exit;
+      end;
 
         // allow search for songs
         Ord('J'):
@@ -629,37 +1460,45 @@ begin
           end;
         end;
 
-        //Randomixe Playlist
+        // skip intro
+        Ord('S'):
+        begin
+          if (AudioPlayback.Position < CurrentSong.gap / 1000 - 6) then
+          begin
+            AudioPlayback.SetPosition(CurrentSong.gap / 1000.0 - 5.0);
+          end;
+          Exit;
+        end;
+
+        // pause
+        Ord('P'):
+        begin
+          Pause;
+          Exit;
+        end;
+
         Ord('R'):
         begin
           if (SongListVisible) then
           begin
-            LastTick := SDL_GetTicks();
-
-            Button[JukeboxRandomSongList].SetSelect(true);
-            Button[JukeboxSongListOrder].SetSelect(false);
-
-            RandomMode := true;
-            OrderMode := false;
-
-            for I := 0 to High(JukeboxVisibleSongs) * 2 do
-            begin
-              RValueI := RandomRange(0, High(JukeboxVisibleSongs) + 1);
-              RValueE := RandomRange(0, High(JukeboxVisibleSongs) + 1);
-
-              tmp := JukeboxVisibleSongs[RValueI];
-              JukeboxVisibleSongs[RValueI] := JukeboxVisibleSongs[RValueE];
-              JukeboxVisibleSongs[RValueE] := tmp;
-
-              if (RValueI = CurrentSongList) then
-                CurrentSongList := RValueE
-              else
-              begin
-                if (RValueE = CurrentSongList) then
-                  CurrentSongList := RValueI;
-              end;
-            end;
+            RandomList();
           end;
+        end;
+
+        // toggle time display
+        Ord('T'):
+        begin
+          LastTick := SDL_GetTicks();
+
+          if (fTimebarMode = High(TTimebarMode)) then
+            fTimebarMode := Low(TTimebarMode)
+          else
+            Inc(fTimebarMode);
+
+          Ini.JukeboxTimebarMode := Ord(fTimebarMode);
+          Ini.SaveJukeboxTimebarMode();
+
+          Exit;
         end;
       end;
      end;
@@ -683,20 +1522,6 @@ begin
                   AspectCorrection := acoCrop;
               end;
             end;
-
-            //fCurrentVideo.ToggleAspectCorrection();
-            //AspectHandler.changed := true;
-            //AspectHandler.change_time := Czas.Teraz;
-            //Static[VideoAspectStatic].Visible := true;
-            //case UVideo.fAspectCorrection of
-            //  acoStretch: Text[VideoAspectText].Text := Language.Translate('VIDEO_ASPECT_STRETCH');
-            //  acoCrop: Text[VideoAspectText].Text := Language.Translate('VIDEO_ASPECT_CROP');
-            //  acoLetterBox: Text[VideoAspectText].Text := Language.Translate('VIDEO_ASPECT_LETTER_BOX');
-            //end;
-            //DataBase.SetAspect(AktSong.Artist, AktSong.Title, integer(UVideo.fAspectCorrection));
-            //Text[VideoAspectText].Visible := true;
-
-            //fCurrentVideo.Draw;
           end;
         end;
 
@@ -712,31 +1537,19 @@ begin
           end;
         end;
 
+        SDLK_O:
+        begin
+          ScreenJukeboxOptions.Visible := true;
+          Button[JukeboxOptions].SetSelect(false);
+          Exit;
+        end;
+
         SDLK_S:
         begin
 
           if (SongListVisible) and (SDL_ModState = KMOD_LCTRL) then
           begin
-            LastTick := SDL_GetTicks();
-
-            Button[JukeboxRandomSongList].SetSelect(false);
-            Button[JukeboxSongListOrder].SetSelect(true);
-
-            if (OrderMode) then
-            begin
-              if (OrderType < 5) then
-              begin
-                OrderType := OrderType + 1;
-              end
-              else
-                OrderType := 1;
-            end;
-
-            RandomMode := false;
-            OrderMode := true;
-
-            SongListSort(OrderType);
-
+            ChangeOrderList();
             Exit;
           end;
 
@@ -755,19 +1568,53 @@ begin
           end;
         end;
 
+        SDLK_F:
+        begin
+
+          if (SongListVisible) and (SDL_ModState = KMOD_LCTRL) then
+          begin
+            LastTick := SDL_GetTicks();
+
+            FindSongList := not FindSongList;
+
+            if (Filter = '') then
+            begin
+              if (FindSongList) then
+                Button[JukeboxFindSong].Text[0].Text := ''
+            end;
+
+            Button[JukeboxFindSong].SetSelect(FindSongList);
+
+            if not (FindSongList) then
+            begin
+              Button[JukeboxFindSong].Text[0].Selected := false;
+              FilterSongList('');
+            end
+            else
+            begin
+              Button[JukeboxFindSong].Text[0].Selected := true;
+              FilterSongList(Filter);
+            end;
+
+            Exit;
+          end;
+        end;
+
+        SDLK_R:
+        begin
+
+          if (SongListVisible) and (SDL_ModState = KMOD_LCTRL) then
+          begin
+            RandomList();
+          end;
+        end;
+
         SDLK_ESCAPE:
         begin
           if (SongListVisible) then
-          begin
-            SongListVisible := false;
-            FindSongList := false;
-            Button[JukeboxFindSong].SetSelect(FindSongList);
-            Filter:= '';
-            FilterSongList('');
-            Button[JukeboxFindSong].Text[0].Text := '';
-          end
+            SongListVisible := false
           else
-            ScreenPopupCheck.ShowPopup('MSG_END_JUKEBOX', OnEscapeJukebox, nil, false)
+            ScreenPopupCheck.ShowPopup('MSG_END_JUKEBOX', OnEscapeJukebox, 0, false)
         end;
 
         SDLK_BACKSPACE:
@@ -801,6 +1648,14 @@ begin
         begin
           if fShowVisualization then
             fCurrentVideo.Position := now; // move to a random position
+
+          if (fShowWebcam) then
+          begin
+            if (Ini.WebCamEffect < 10) then
+              Ini.WebCamEffect := Ini.WebCamEffect + 1
+            else
+              Ini.WebCamEffect := 0;
+          end;
         end;
 
         SDLK_RETURN:
@@ -819,42 +1674,53 @@ begin
             end;
             CurrentSongList := ActualInteraction - 1;
             Finish;
-            PlayMusic(CurrentSongList);
+            PlayMusic(CurrentSongList, True);
           end;
-
         end;
 
         SDLK_LEFT:
         begin
-          if (SDL_ModState = KMOD_LSHIFT) then
+
+          if not (SongListVisible) and (CurrentSongList > 0) then
           begin
-            fCurrentVideo.GetScreenPosition(X, Y, Z);
-            if (X < 200) then
-            begin
-              fCurrentVideo.SetScreenPosition(X + 2, Y, Z);
-              fCurrentVideo.SetWidth(fCurrentVideo.GetWidth - 4);
-            end;
+            CurrentSongList := CurrentSongList - 1;
+            PlayMusic(CurrentSongList, false);
           end;
 
         end;
 
         SDLK_RIGHT:
         begin
-          if (SDL_ModState = KMOD_LSHIFT) then
+
+          if not (SongListVisible) and (CurrentSongList < High(JukeboxVisibleSongs)) then
           begin
-            fCurrentVideo.GetScreenPosition(X, Y, Z);
-            fCurrentVideo.SetScreenPosition(X - 2, Y, Z);
-            fCurrentVideo.SetWidth(fCurrentVideo.GetWidth + 4);
+            CurrentSongList := CurrentSongList + 1;
+            PlayMusic(CurrentSongList, false);
           end;
+
         end;
 
         SDLK_DELETE:
         begin
           if (SongListVisible) then
           begin
-           // DeleteSong(ActualInteraction);
+            ScreenPopupCheck.ShowPopup('JUKEBOX_DELETE_SONG', OnDeleteSong, 0, false)
           end;
         end;
+
+        SDLK_PAGEDOWN:
+        begin
+          PageDown(10);
+        end;
+
+        SDLK_PAGEUP:
+        begin
+          PageUp(10);
+        end;
+
+        // up and down could be done at the same time,
+        // but i don't want to declare variables inside
+        // functions like this one, called so many times
 
         SDLK_DOWN:
         begin
@@ -896,23 +1762,6 @@ begin
           begin
             SongListVisible := true;
             LastTick := SDL_GetTicks();
-          end;
-
-          if (SDL_ModState = KMOD_LALT) then
-          begin
-            Lyrics.UpperLineY := Lyrics.UpperLineY + 2;
-            Lyrics.LowerLineY := Lyrics.LowerLineY + 2;
-            ChangePosition := ChangePosition + 2;
-          end;
-
-          if (SDL_ModState = KMOD_LSHIFT) then
-          begin
-            fCurrentVideo.GetScreenPosition(X, Y, Z);
-            if (Y < 200) then
-            begin
-              fCurrentVideo.SetScreenPosition(X, Y + 2, Z);
-              fCurrentVideo.SetHeight(fCurrentVideo.GetHeight - 4);
-            end;
           end;
 
         end;
@@ -957,29 +1806,59 @@ begin
             LastTick := SDL_GetTicks();
           end;
 
-          if not(SDL_ModState = KMOD_LSHIFT) and (SDL_ModState = KMOD_LALT) then
-          begin
-            Lyrics.UpperLineY := Lyrics.UpperLineY - 2;
-            Lyrics.LowerLineY := Lyrics.LowerLineY - 2;
-            ChangePosition := ChangePosition - 2;
-          end;
-
-          if (SDL_ModState = KMOD_LSHIFT) then
-          begin
-            fCurrentVideo.GetScreenPosition(X, Y, Z);
-            fCurrentVideo.SetScreenPosition(X, Y - 2, Z);
-            fCurrentVideo.SetHeight(fCurrentVideo.GetHeight + 4);
-          end;
-
         end;
 
       end;
     end;
 end;
 
+procedure TScreenJukebox.PageDown(N: integer);
+begin
+  if (SongListVisible) and (High(JukeboxVisibleSongs) > 9) then
+  begin
+    LastTick := SDL_GetTicks();
+
+    if (ListMin + N + Interaction < High(JukeboxVisibleSongs) - 9) then
+    begin
+      ActualInteraction := ListMin + N + Interaction;
+      ListMin := ListMin + N;
+    end
+    else
+    begin
+      ActualInteraction := High(JukeboxVisibleSongs);
+      ListMin := High(JukeboxVisibleSongs) - 9;
+      Interaction := 9;
+    end;
+  end;
+end;
+
+procedure TScreenJukebox.PageUp(N: integer);
+begin
+  if (SongListVisible) and (High(JukeboxVisibleSongs) > 9) then
+  begin
+    LastTick := SDL_GetTicks();
+
+    if (ListMin - N > 0) then
+    begin
+      ActualInteraction := ListMin - N;
+      ListMin := ListMin - N;
+
+      if ListMin < 0 then
+        ListMin := 0;
+    end
+    else
+    begin
+      ActualInteraction := 0;
+      ListMin := 0;
+      Interaction := 0;
+    end;
+  end;
+end;
+
 // pause mod
 procedure TScreenJukebox.Pause;
 begin
+
   if (not Paused) then  // enable pause
   begin
     // pause time
@@ -991,7 +1870,7 @@ begin
     AudioPlayback.Pause;
 
     // pause video
-    if (fCurrentVideo <> nil) then
+    if fCurrentVideo <> nil then
       fCurrentVideo.Pause;
 
   end
@@ -1003,11 +1882,15 @@ begin
     AudioPlayback.Play;
 
     // video
-    if (fCurrentVideo <> nil) then
+    if fCurrentVideo <> nil then
       fCurrentVideo.Pause;
 
     Paused := false;
   end;
+
+  Button[JukeboxSongMenuPlayPause].SetSelect(Paused);
+  Button[JukeboxPlayPause].SetSelect(Paused);
+
 end;
 // pause mod end
 
@@ -1021,19 +1904,15 @@ begin
   ListMin := 0;
   ShowLyrics := false;
 
-  //too dangerous, a mouse button is quickly pressed by accident
   RightMbESC := false;
 
   fShowVisualization := false;
+  fShowWebcam := false;
+  fShowBackground := false;
 
   fCurrentVideo := nil;
 
   LoadFromTheme(Theme.Jukebox);
-
-  StaticPausePopup := AddStatic(Theme.Sing.PausePopUp);
-
-  // <note> pausepopup is not visibile at the beginning </note>
-  Statics[StaticPausePopup].Visible := false;
 
   Lyrics := TLyricEngine.Create(
       Theme.LyricBar.UpperX, Theme.LyricBar.UpperY, Theme.LyricBar.UpperW, Theme.LyricBar.UpperH,
@@ -1042,8 +1921,6 @@ begin
   fLyricsSync := TLyricsSyncSource.Create();
   fMusicSync := TMusicSyncSource.Create();
 
-  //eSongLoaded := THookableEvent.Create('ScreenSing.SongLoaded');
-
   //Jukebox Items
   JukeboxStaticTimeProgress       := AddStatic(Theme.Jukebox.StaticTimeProgress);
   JukeboxStaticTimeBackground     := AddStatic(Theme.Jukebox.StaticTimeBackground);
@@ -1051,8 +1928,6 @@ begin
   JukeboxStaticSongListBackground := AddStatic(Theme.Jukebox.StaticSongListBackground);
 
   JukeboxTextTimeText         := AddText(Theme.Jukebox.TextTimeText);
-  JukeboxTextTimeDesc         := AddText(Theme.Jukebox.TextTimeDesc);
-  JukeboxTextSongText         := AddText(Theme.Jukebox.TextSongText);
 
   PosY := Theme.Jukebox.SongDescription.Y;
   for I := 0 to 9 do
@@ -1060,6 +1935,13 @@ begin
     Theme.Jukebox.SongDescription.Y := PosY + Theme.Jukebox.SongDescription.H * I;
     SongDescription[I] := AddButton(Theme.Jukebox.SongDescription);
   end;
+
+  SongDescriptionClone := AddButton(Theme.Jukebox.SongDescription);
+
+  Button[SongDescriptionClone].DeSelectTexture.ColR := Theme.Jukebox.SongDescription.ColR;
+  Button[SongDescriptionClone].DeSelectTexture.ColG := Theme.Jukebox.SongDescription.ColG;
+  Button[SongDescriptionClone].DeSelectTexture.ColB := Theme.Jukebox.SongDescription.ColB;
+  Button[SongDescriptionClone].Visible := false;
 
   SelectColR := Theme.Jukebox.SongDescription.ColR;
   SelectColG := Theme.Jukebox.SongDescription.ColG;
@@ -1070,41 +1952,73 @@ begin
   JukeboxSongListOrder := AddButton(Theme.Jukebox.SongListOrder);
   JukeboxRandomSongList := AddButton(Theme.Jukebox.RandomSongList);
   JukeboxLyric := AddButton(Theme.Jukebox.Lyric);
-  RepeatSongList := true;
+  JukeboxOptions := AddButton(Theme.Jukebox.Options);
+  JukeboxSongListClose := AddButton(Theme.Jukebox.SongListClose);
+  JukeboxSongListFixPin := AddButton(Theme.Jukebox.SongListFixPin);
+  JukeboxPlayPause := AddButton(Theme.Jukebox.SongListPlayPause);
 
   Button[JukeboxFindSong].Selectable := false;
-  Button[JukeboxRepeatSongList].Selectable := true;
+  Button[JukeboxRepeatSongList].Selectable := false;
   Button[JukeboxSongListOrder].Selectable := false;
   Button[JukeboxRandomSongList].Selectable := false;
   Button[JukeboxLyric].Selectable := false;
+  Button[JukeboxSongListClose].Selectable := false;
+  Button[JukeboxOptions].Selectable := false;
+  Button[JukeboxSongListFixPin].Selectable := false;
+  Button[JukeboxPlayPause].Selectable := false;
+
+  Button[JukeboxFindSong].Text[0].Writable := true;
 
   JukeboxListText  := AddText(Theme.Jukebox.TextListText);
   JukeboxCountText := AddText(Theme.Jukebox.TextCountText);
 
   StaticCover := AddStatic(Theme.Jukebox.SongCover);
 
-  JukeboxStaticOptions := AddStatic(Theme.Jukebox.StaticOptions);
-  JukeboxTextOptionsSongPosition := AddText(Theme.Jukebox.TextOptionsSongPosition);
-  JukeboxTextOptionsLyric := AddText(Theme.Jukebox.TextOptionsLyric);
-  JukeboxTextOptionsRandom := AddText(Theme.Jukebox.TextOptionsRandom);
-  JukeboxTextOptionsRepeat := AddText(Theme.Jukebox.TextOptionsRepeat);
-  JukeboxTextOptionsFind := AddText(Theme.Jukebox.TextOptionsFind);
-  JukeboxTextOptionsSort := AddText(Theme.Jukebox.TextOptionsSort);
+  SetLength(JukeboxStaticActualSongStatic, Length(Theme.Jukebox.StaticActualSongStatics));
+  for I := 0 to High(Theme.Jukebox.StaticActualSongStatics) do
+  begin
+    JukeboxStaticActualSongStatic[I] := AddStatic(Theme.Jukebox.StaticActualSongStatics[i]);
+  end;
+
+  JukeboxStaticActualSongCover := AddStatic(Theme.Jukebox.StaticActualSongCover);
+  JukeboxTextActualSongArtist := AddText(Theme.Jukebox.TextActualSongArtist);
+  JukeboxTextActualSongTitle := AddText(Theme.Jukebox.TextActualSongTitle);
+
+  JukeboxSongListUp := AddButton(Theme.Jukebox.SongListUp);
+  JukeboxSongListDown := AddButton(Theme.Jukebox.SongListDown);
+
+  // Jukebox SongMenu Items
+  JukeboxSongMenuPlayPause := AddButton(Theme.Jukebox.SongMenuPlayPause);
+  JukeboxSongMenuNext      := AddButton(Theme.Jukebox.SongMenuNext);
+  JukeboxSongMenuPrevious  := AddButton(Theme.Jukebox.SongMenuPrevious);
+  JukeboxSongMenuPlaylist  := AddButton(Theme.Jukebox.SongMenuPlaylist);
+  JukeboxSongMenuOptions   := AddButton(Theme.Jukebox.SongMenuOptions);
+
+  Button[JukeboxSongMenuPlaylist].Selectable := false;
+  Button[JukeboxSongMenuNext].Selectable := false;
+  Button[JukeboxSongMenuPrevious].Selectable := false;
+  Button[JukeboxSongMenuPlaylist].Selectable := false;
+  Button[JukeboxSongMenuOptions].Selectable := false;
+
+  JukeboxStaticSongMenuTimeProgress   := AddStatic(Theme.Jukebox.StaticSongMenuTimeProgress);
+  JukeboxStaticSongMenuTimeBackground := AddStatic(Theme.Jukebox.StaticSongMenuTimeBackground);
+  JukeboxTextSongMenuTimeText         := AddText(Theme.Jukebox.SongMenuTextTime);
+  JukeboxStaticSongMenuBackground     := AddStatic(Theme.Jukebox.StaticSongMenuBackground);
 end;
 
 procedure TScreenJukebox.OnShow;
-var
-  V1:     boolean;
-  V1TwoP: boolean;   // position of score box in two player mode
-  V1ThreeP: boolean; // position of score box in three player mode
-  V2R:    boolean;
-  V2M:    boolean;
-  V3R:    boolean;
-  Color: TRGB;
 begin
   inherited;
 
   Log.LogStatus('Begin', 'OnShow');
+
+  // songmenu
+  if (Ini.JukeboxSongMenu = 1) then
+    SongListVisibleFix := false
+  else
+    SongListVisibleFix := true;
+
+  Button[JukeboxSongListFixPin].SetSelect(SongListVisibleFix);
 
   {**
   * Pause background music
@@ -1112,10 +2026,6 @@ begin
   SoundLib.PauseBgMusic;
 
   FadeOut := false;
-
-  AspectCorrection := acoLetterBox;
-
-  ChangePosition := 0;
 
   Lyrics.UpperLineX := Theme.LyricBarJukebox.UpperX;
   Lyrics.UpperLineY := Theme.LyricBarJukebox.UpperY;
@@ -1130,33 +2040,19 @@ begin
   tmpLyricsUpperY := Lyrics.UpperLineY;
   tmpLyricsLowerY := Lyrics.LowerLineY;
 
-  Lyrics.FontStyle := ftOutline1;
-  Lyrics.LineColor_en.R := 1;
-  Lyrics.LineColor_en.G := 1;
-  Lyrics.LineColor_en.B := 1;
-  Lyrics.LineColor_en.A := 1;
+  Lyrics.FontStyle := Ini.JukeboxFont;
 
-  Lyrics.LineColor_dis.R := 1;
-  Lyrics.LineColor_dis.G := 1;
-  Lyrics.LineColor_dis.B := 1;
-  Lyrics.LineColor_dis.A := 1;
-
-  Lyrics.LineColor_act.R := 1;
-  Lyrics.LineColor_act.G := 0.75;
-  Lyrics.LineColor_act.B := 0;
-  Lyrics.LineColor_act.A := 1;
+  SongMenuVisible := false;
+  SongListVisible := true;
 
   Log.LogStatus('End', 'OnShow');
 end;
 
 procedure TScreenJukebox.OnShowFinish();
 begin
-  // hide cursor on singscreen show
-  Display.SetCursor;
-
   Reset;
 
-  PlayMusic(0);
+  PlayMusic(0, true);
 end;
 
 procedure TScreenJukebox.Play();
@@ -1174,33 +2070,35 @@ begin
     LyricsState.TotalTime := CurrentSong.Finish / 1000
   else
   begin
-       LyricsState.TotalTime := AudioPlayback.Length;
+      LyricsState.TotalTime := AudioPlayback.Length;
   end;
 
   LyricsState.UpdateBeats();
 
   // synchronize music
-  if (Ini.SyncTo = Ord(stLyrics)) then
-    AudioPlayback.SetSyncSource(fLyricsSync)
-  else
-    AudioPlayback.SetSyncSource(nil);
+    if (Ini.SyncTo = Ord(stLyrics)) then
+      AudioPlayback.SetSyncSource(fLyricsSync)
+    else
+      AudioPlayback.SetSyncSource(nil);
 
-  // synchronize lyrics (do not set this before AudioPlayback is initialized)
-  if (Ini.SyncTo = Ord(stMusic)) then
-    LyricsState.SetSyncSource(fMusicSync)
-  else
-    LyricsState.SetSyncSource(nil);
+    // synchronize lyrics (do not set this before AudioPlayback is initialized)
+    if (Ini.SyncTo = Ord(stMusic)) then
+      LyricsState.SetSyncSource(fMusicSync)
+    else
+      LyricsState.SetSyncSource(nil);
 
   // start lyrics
   LyricsState.Start(true);
 
   // start music
-  AudioPlayback.Play();
+    AudioPlayback.Play();
 
   // start timer
   CountSkipTimeSet;
 
   LastTick := SDL_GetTicks();
+  LastTickChangeSong := SDL_GetTicks();
+  LyricsStart := false;
 
 end;
 
@@ -1212,14 +2110,19 @@ begin
     glDeleteTextures(1, PGLuint(@Tex_Background.TexNum));
     Tex_Background.TexNum := 0;
   end;
-
+  if fShowWebcam then
+        begin
+          Webcam.Release;
+          fShowWebCam:=false;
+        end;
   Background.OnFinish;
-  Display.SetCursor;
+  //Display.SetCursor;
 end;
 
 function TScreenJukebox.FinishedMusic: boolean;
 begin
-  Result := AudioPlayback.Finished;
+    Result := AudioPlayback.Finished;
+
 end;
 
 function TScreenJukebox.Draw: boolean;
@@ -1240,8 +2143,12 @@ begin
   // draw background picture (if any, and if no visualizations)
   // when we don't check for visualizations the visualizations would
   // be overdrawn by the picture when {UNDEFINED UseTexture} in UVisualizer
-  if (not fShowVisualization) then
+  if (not fShowVisualization) or (fShowBackground) then
     SingDrawJukeboxBackground;
+
+  if (fShowWebCam) then
+    SingDrawWebCamFrame;
+
 
   // retrieve current lyrics time, we have to store the value to avoid
   // that min- and sec-values do not match
@@ -1266,9 +2173,10 @@ begin
   DisplayMin := Round(DisplayTime) div 60;
   DisplaySec := Round(DisplayTime) mod 60;
   Text[JukeboxTextTimeText].Text := Format('%s%.2d:%.2d', [DisplayPrefix, DisplayMin, DisplaySec]);
+  Text[JukeboxTextSongMenuTimeText].Text := Format('%s%.2d:%.2d', [DisplayPrefix, DisplayMin, DisplaySec]);
 
   // update and draw movie
-  if Assigned(fCurrentVideo) then
+  if Assigned(fCurrentVideo) and (not fShowWebcam) then
   begin
     // Just call this once
     // when Screens = 2
@@ -1288,11 +2196,13 @@ begin
       fCurrentVideo.GetFrame(VideoFrameTime);
     end;
 
-    fCurrentVideo.AspectCorrection := AspectCorrection;
+    fCurrentVideo.AspectCorrection := acoCrop;
     fCurrentVideo.SetScreen(ScreenAct);
     fCurrentVideo.Draw;
-    DrawBlackBars();
+    //DrawBlackBars();
   end;
+
+  SingDrawJukebox;
 
   // check for music finish
   //Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(LyricsState.CurrentTime*1000) + ' ' + IntToStr(CurrentSong.Finish));
@@ -1320,28 +2230,58 @@ begin
   if (ScreenAct = 1) and (SongListVisible) then
     DrawPlaylist;
 
-  //if (ShowLyrics) then
-  //begin
-  //  if (not(LyricsStart)) then
-  //  begin
-  //   if (CurLyricsTime >= GetTimeFromBeat(Line.Words[0].Start) - 2) then
-  //   begin
-        SingDrawJukebox;
-  //      LyricsStart := true;
-  //   end;
-  //  end
-  //  else
-  //    SingDrawJukebox;
-  //end;
+  if (ScreenAct = 1) and (SongMenuVisible) then
+    DrawSongMenu;
 
-  // draw pausepopup
-  // FIXME: this is a workaround that the static is drawn over the lyrics, lines, scores and effects
-  // maybe someone could find a better solution
-  if Paused then
+  if (ScreenAct = 1) and (ScreenJukeboxOptions.Visible) then
+    ScreenJukeboxOptions.Draw;
+
+  // draw time-bar
+  if (ScreenAct = 1) and (ScreenJukebox.SongListVisible or ScreenJukebox.SongMenuVisible) then
+    SingDrawJukeboxTimeBar();
+
+  DrawSongInfo;
+
+  // for move song
+  if (Button[SongDescriptionClone].Visible) then
   begin
-    Statics[StaticPausePopup].Visible := true;
-    Statics[StaticPausePopup].Draw;
-    Statics[StaticPausePopup].Visible := false;
+    LastTick := SDL_GetTicks();
+
+    if (MoveSong) then
+    begin
+      DrawMoveLine();
+
+      if (MoveDown) then
+      begin
+        if (SDL_GetTicks() - MouseDownList >= MAX_TIME_MOUSE_CHANGELIST) then
+        begin
+          MouseDownList := SDL_GetTicks();
+
+          if (ListMin + 9 < High(JukeboxVisibleSongs)) then
+          begin
+            ListMin := ListMin + 1;
+            ActualInteraction := ActualInteraction + 1;
+          end;
+        end;
+      end;
+
+      if (MoveUp) then
+      begin
+        if (SDL_GetTicks() - MouseUpList >= MAX_TIME_MOUSE_CHANGELIST) then
+        begin
+          MouseUpList := SDL_GetTicks();
+
+          if (ListMin > 0) then
+          begin
+            ListMin := ListMin - 1;
+            ActualInteraction := ActualInteraction - 1;
+          end;
+        end;
+      end;
+
+    end;
+
+    Button[SongDescriptionClone].Draw();
   end;
 
   Result := true;
@@ -1369,10 +2309,10 @@ begin
   begin
     if (RepeatSongList) then
     begin
-      // restart playlist
+      // resyart playlist
       CurrentSongList := 0;
       CatSongs.Selected := JukeboxVisibleSongs[CurrentSongList];
-      PlayMusic(CurrentSongList);
+      PlayMusic(CurrentSongList, false);
     end
     else
     begin
@@ -1385,40 +2325,8 @@ begin
 
     CatSongs.Selected := JukeboxVisibleSongs[CurrentSongList];
 
-    PlayMusic(CurrentSongList);
+    PlayMusic(CurrentSongList, false);
   end;
-end;
-
-procedure TScreenJukebox.OnSentenceEnd(SentenceIndex: cardinal);
-var
-  PlayerIndex: byte;
-  CurrentPlayer: PPLayer;
-  CurrentScore: real;
-  Line:      PLine;
-  LinePerfection: real;  // perfection of singing performance on the current line
-  Rating:    integer;
-  LineScore: real;
-  LineBonus: real;
-  MaxSongScore: integer; // max. points for the song (without line bonus)
-  MaxLineScore: real;    // max. points for the current line
-const
-  // TODO: move this to a better place
-  MAX_LINE_RATING = 8;        // max. rating for singing performance
-begin
-  Line := @Lines[0].Line[SentenceIndex];
-
-  // check for empty sentence
-  if (Line.TotalNotes <= 0) then
-    Exit;
-
-  // set max song score
-  if (Ini.LineBonus = 0) then
-    MaxSongScore := MAX_SONG_SCORE
-  else
-    MaxSongScore := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
-
-  // Note: ScoreValue is the sum of all note values of the song
-  MaxLineScore := MaxSongScore * (Line.TotalNotes / Lines[0].ScoreValue);
 end;
 
  // Called on sentence change
@@ -1435,6 +2343,7 @@ begin
     else
       Lyrics.AddLine(nil);
   end;
+
 end;
 
 function TLyricsSyncSource.GetClock(): real;
@@ -1444,7 +2353,7 @@ end;
 
 function TMusicSyncSource.GetClock(): real;
 begin
-  Result := AudioPlayback.Position;
+    Result := AudioPlayback.Position;
 end;
 
 procedure TScreenJukebox.AddSongToJukeboxList(ID: integer);
@@ -1472,39 +2381,44 @@ begin
   end;
 end;
 
-procedure TScreenJukebox.DrawItems();
+procedure TScreenJukebox.DrawSongInfo();
+var
+  I: integer;
+  Alpha: real;
+  CurrentTick: integer;
 begin
 
-  if (SDL_GetTicks() - LastTick <= 3000) then
+  if (not(SongListVisible) and not(ScreenJukeboxOptions.Visible) and (ScreenAct = 1)) or (ScreenAct = 2) then
   begin
-    Statics[JukeboxStaticTimeBackground].Draw;
-    Statics[JukeboxStaticTimeProgress].Draw;
+    CurrentTick := SDL_GetTicks() - LastTickChangeSong;
 
-  //  Statics[JukeboxStaticSongBackground].Draw;
+    if (CurrentTick < MAX_TIME_SONGDESC) then
+      Alpha := 0
+    else
+      Alpha := (CurrentTick - MAX_TIME_SONGDESC)/MAX_TIME_FADESONGDESC;
 
-    Statics[JukeboxStaticSongListBackground].Draw;
-    Statics[StaticCover].Draw;
+    if (CurrentTick - MAX_TIME_SONGDESC < MAX_TIME_FADESONGDESC) then
+    begin
+      for I := 0 to High(Theme.Jukebox.StaticActualSongStatics) do
+      begin
+        Statics[JukeboxStaticActualSongStatic[I]].Texture.Alpha := 1 - Alpha;
+        Statics[JukeboxStaticActualSongStatic[I]].Draw;
+      end;
 
-    Text[JukeboxTextTimeText].Draw;
-    Text[JukeboxTextTimeDesc].Draw;
-    Text[JukeboxTextSongText].Draw;
+      Statics[JukeboxStaticActualSongCover].Texture.Alpha := 1 - Alpha;
+      Statics[JukeboxStaticActualSongCover].Draw;
 
-    // options desc
-    Text[JukeboxTextOptionsSongPosition].Draw;
-    Text[JukeboxTextOptionsLyric].Draw;
-    Text[JukeboxTextOptionsRandom].Draw;
-    Text[JukeboxTextOptionsRepeat].Draw;
-    Text[JukeboxTextOptionsFind].Draw;
-    Text[JukeboxTextOptionsSort].Draw;
-    Statics[JukeboxStaticOptions].Draw;
+      Text[JukeboxTextActualSongArtist].Alpha := 1 - Alpha;
+      Text[JukeboxTextActualSongArtist].Draw;
 
-  end
-  else
-    SongListVisible := false;
+      Text[JukeboxTextActualSongTitle].Alpha := 1 - Alpha;
+      Text[JukeboxTextActualSongTitle].Draw;
+    end;
+  end;
 
 end;
 
-procedure TScreenJukebox.PlayMusic(ID: integer);
+procedure TScreenJukebox.PlayMusic(ID: integer; ShowList: boolean);
 var
   Index:  integer;
   VideoFile, BgFile: IPath;
@@ -1513,23 +2427,35 @@ var
   CoverPath: IPath;
 begin
 
-  // background texture
+  // background texture (garbage disposal)
   if (Tex_Background.TexNum > 0) then
   begin
     glDeleteTextures(1, PGLuint(@Tex_Background.TexNum));
     Tex_Background.TexNum := 0;
   end;
 
-  CurrentSong := CatSongs.Song[JukeboxVisibleSongs[ID]];
+  try
+    if high(JukeboxVisibleSongs) < ID then
+       ID:=0;
+    if high(JukeboxVisibleSongs) < 1 then
+       Finish;
+    CurrentSong := CatSongs.Song[JukeboxVisibleSongs[ID]];
+    Text[JukeboxTextActualSongArtist].Text := CurrentSong.Artist;
+    Text[JukeboxTextActualSongTitle].Text := CurrentSong.Title;
+
+  Button[JukeboxSongMenuPlaylist].SetSelect(false);
+  Paused := false;
 
   // Cover
   RefreshCover;
 
   // reset video playback engine
+  fVideoClip := nil;
   fCurrentVideo := nil;
+
   AspectCorrection := acoCrop;
 
-  fTimebarMode := tbmCurrent;
+  fTimebarMode := TTimebarMode(Ini.JukeboxTimebarMode);
 
   // FIXME: bad style, put the try-except into loadsong() and not here
   try
@@ -1537,7 +2463,7 @@ begin
     if CurrentSong.FileName.GetExtension.ToUTF8 = '.xml' then
       success := CurrentSong.AnalyseXML and CurrentSong.LoadXMLSong()
     else
-      success := CurrentSong.Analyse and CurrentSong.LoadSong();
+      success := CurrentSong.Analyse and CurrentSong.LoadSong(false);
   except
     success := false;
   end;
@@ -1571,24 +2497,26 @@ begin
    * set background to: video
    *}
   fShowVisualization := false;
+
   VideoFile := CurrentSong.Path.Append(CurrentSong.Video);
+
   if (Ini.VideoEnabled = 1) and CurrentSong.Video.IsSet() and VideoFile.IsFile then
   begin
     fVideoClip := VideoPlayback.Open(VideoFile);
     fCurrentVideo := fVideoClip;
     if (fVideoClip <> nil) then
     begin
-      fShowVisualization := false;
       fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start;
-      fCurrentVideo.Play;
+      //fCurrentVideo.Play;
     end;
   end;
 
   {*
    * set background to: picture
    *}
-  if (CurrentSong.Background.IsSet) and (fVideoClip = nil)
-    and (TVisualizerOption(Ini.VisualizerOption) = voOff)  then
+  //if (CurrentSong.Background.IsSet) and (fVideoClip = nil)
+  //  and (TVisualizerOption(Ini.VisualizerOption) = voOff)  then
+  if (CurrentSong.Background.IsSet) then
   begin
     BgFile := CurrentSong.Path.Append(CurrentSong.Background);
     try
@@ -1606,9 +2534,11 @@ begin
   {*
    * set background to: visualization (Overwrites all)
    *}
-  if (TVisualizerOption(Ini.VisualizerOption) in [voOn]) then
+  //if (TVisualizerOption(Ini.VisualizerOption) in [voOn]) then
+  if (not fShowWebcam) and (TVisualizerOption(Ini.VisualizerOption) in [voOn]) then
   begin
     fShowVisualization := true;
+    fShowBackground := false;
     fCurrentVideo := Visualization.Open(PATH_NONE);
     if (fCurrentVideo <> nil) then
       fCurrentVideo.Play;
@@ -1617,14 +2547,20 @@ begin
   {*
    * set background to: visualization (Videos are still shown)
    *}
-  if ((TVisualizerOption(Ini.VisualizerOption) in [voWhenNoVideo]) and
-     (fVideoClip = nil)) then
+  //if ((TVisualizerOption(Ini.VisualizerOption) in [voWhenNoVideo]) and
+  //   (fVideoClip = nil)) then
+  if (not fShowWebcam) and ((TVisualizerOption(Ini.VisualizerOption) in [voWhenNoVideo]) and
+      (fVideoClip = nil)) then
   begin
     fShowVisualization := true;
+    fShowBackground := false;
     fCurrentVideo := Visualization.Open(PATH_NONE);
     if (fCurrentVideo <> nil) then
       fCurrentVideo.Play;
   end;
+
+  // load options
+  LoadJukeboxSongOptions();
 
   // prepare lyrics timer
   LyricsState.Reset();
@@ -1643,34 +2579,12 @@ begin
   // main text
   Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
 
-  {*
-   * set background to: picture
-   *}
-  if (CurrentSong.Background.IsSet) and (fVideoClip = nil)
-    and (TVisualizerOption(Ini.VisualizerOption) = voOff)  then
-  begin
-    BgFile := CurrentSong.Path.Append(CurrentSong.Background);
-    try
-      Tex_Background := Texture.LoadTexture(BgFile);
-    except
-      Log.LogError('Background could not be loaded: ' + BgFile.ToNative);
-      Tex_Background.TexNum := 0;
-    end
-  end
-  else
-  begin
-    Tex_Background.TexNum := 0;
-  end;
-
   // initialize lyrics by filling its queue
   while (not Lyrics.IsQueueFull) and
         (Lyrics.LineCounter <= High(Lines[0].Line)) do
   begin
     Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
   end;
-
-  //Text[JukeboxTextSongText].Visible := true;
-  //Text[JukeboxTextSongText].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
 
   Max := 9;
 
@@ -1691,76 +2605,228 @@ begin
   Button[JukeboxSongListOrder].Visible := true;
   Button[JukeboxRandomSongList].Visible := true;
   Button[JukeboxLyric].Visible := true;
+  Button[JukeboxSongListUp].Visible := true;
+  Button[JukeboxSongListDown].Visible := true;
+  Button[JukeboxSongListClose].Visible := true;
+  Button[JukeboxOptions].Visible := true;
+  Button[JukeboxPlayPause].Visible := true;
 
   CurrentSongID := JukeboxVisibleSongs[CurrentSongList];
 
-  SongListVisible := true;
+  if (not SongListVisibleFix) then
+    SongListVisible := ShowList;
 
   Play();
+  except
+    ;
+  end;
 end;
 
 procedure TScreenJukebox.RefreshCover();
 var
   CoverPath: IPath;
 begin
-  CoverPath :=  CurrentSong.Path.Append(CurrentSong.Cover);
+
+  CoverPath := CurrentSong.Path.Append(CurrentSong.Cover);
+
   Statics[StaticCover].Texture := Texture.GetTexture(CoverPath, TEXTURE_TYPE_PLAIN, false);
+
+  if (Statics[StaticCover].Texture.TexNum = 0) then
+    Statics[StaticCover].Texture := Texture.GetTexture(Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN, false);
+
   Statics[StaticCover].Texture.X := Theme.Jukebox.SongCover.X;
   Statics[StaticCover].Texture.Y := Theme.Jukebox.SongCover.Y;
   Statics[StaticCover].Texture.W := Theme.Jukebox.SongCover.W;
   Statics[StaticCover].Texture.H := Theme.Jukebox.SongCover.H;
   Statics[StaticCover].Texture.Alpha := 0.7;
+
+  Statics[JukeboxStaticActualSongCover].Texture := Statics[StaticCover].Texture;
+  Statics[JukeboxStaticActualSongCover].Texture.X := Theme.Jukebox.StaticActualSongCover.X;
+  Statics[JukeboxStaticActualSongCover].Texture.Y := Theme.Jukebox.StaticActualSongCover.Y;
+  Statics[JukeboxStaticActualSongCover].Texture.W := Theme.Jukebox.StaticActualSongCover.W;
+  Statics[JukeboxStaticActualSongCover].Texture.H := Theme.Jukebox.StaticActualSongCover.H;
+  Statics[JukeboxStaticActualSongCover].Texture.Alpha := 1;
 end;
 
 procedure TScreenJukebox.DrawPlaylist;
 var
   I, Max: integer;
-  SongDesc: UTF8String;
+  SongDesc, Artist, Title, TimeString: UTF8String;
+  CurrentTick: integer;
+  Time: real;
 begin
-  DrawItems;
+  CurrentTick := SDL_GetTicks() - LastTick;
 
-  Max := 9;
-  if (High(JukeboxVisibleSongs) < 9) then
-    Max := High(JukeboxVisibleSongs);
+  if ((SongListVisibleFix) or (CurrentTick < MAX_TIME_PLAYLIST)) then
+  begin
+    SongMenuVisible := false;
 
-  Text[JukeboxCountText].Text := IntToStr(ActualInteraction + 1) + '/' + IntToStr(length(JukeboxVisibleSongs));
-  Text[JukeboxListText].Draw;
-  Text[JukeboxCountText].Draw;
+    Statics[JukeboxStaticTimeBackground].Draw;
+    Statics[JukeboxStaticTimeProgress].Draw;
+    Statics[JukeboxStaticSongListBackground].Draw;
 
-  Button[JukeboxFindSong].Draw;
-  Button[JukeboxSongListOrder].Draw;
+    Statics[StaticCover].Draw;
 
-  Button[JukeboxRepeatSongList].Draw;
-  Button[JukeboxRandomSongList].Draw;
-  Button[JukeboxLyric].Draw;
-  try
-    for I := 0 to Max do
+    Text[JukeboxTextTimeText].Draw;
+
+    Button[JukeboxSongListUp].Draw;
+    Button[JukeboxSongListDown].Draw;
+
+    Max := 9;
+    if (High(JukeboxVisibleSongs) < 9) then
+      Max := High(JukeboxVisibleSongs);
+
+    if (Max < 0) then
+      ActualInteraction := -1;
+
+    Text[JukeboxCountText].Text := IntToStr(ActualInteraction + 1) + '/' + IntToStr(length(JukeboxVisibleSongs));
+
+    Text[JukeboxListText].Draw;
+    Text[JukeboxCountText].Draw;
+
+    Button[JukeboxFindSong].Draw;
+    Button[JukeboxSongListOrder].Draw;
+    Button[JukeboxRepeatSongList].Draw;
+    Button[JukeboxRandomSongList].Draw;
+    Button[JukeboxLyric].Draw;
+    Button[JukeboxSongListClose].Draw;
+    Button[JukeboxOptions].Draw;
+    Button[JukeboxSongListFixPin].Draw;
+    Button[JukeboxPlayPause].Draw;
+
+    for I := 0 to 9 do
     begin
       Button[SongDescription[I]].Visible := true;
-      Button[SongDescription[I]].Selectable := true;
 
-      SongDesc := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Artist + ' - ' + CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Title;
-
-      if (JukeboxVisibleSongs[I + ListMin] = CurrentSongID) and (I + ListMin <> ActualInteraction) then
+      if (I <= Max) then
       begin
-        Button[SongDescription[I]].Text[0].ColR := SelectColR;
-        Button[SongDescription[I]].Text[0].ColG := SelectColG;
-        Button[SongDescription[I]].Text[0].ColB := SelectColB;
+        Button[SongDescription[I]].Selectable := true;
+        Artist := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Artist;
+        Title := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Title;
+
+        if (OrderType = 2) then
+          SongDesc := Title + ' - ' + Artist
+        else
+          SongDesc := Artist + ' - ' + Title;
+
+          {
+        if (CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Finish <> 0) then
+          Time := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Finish/1000
+        else
+        begin
+          AudioPlayback.Open(CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Mp3);
+          Time := AudioPlayback.Length;
+          AudioPlayback.Close();
+        //  Time := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].MP3Length;
+
+        end;
+
+        TimeString := IntToStr(Round(Time) div 60) + ':' + Format('%.*d', [2, Round(Time) mod 60]);
+        }
       end
       else
       begin
-        Button[SongDescription[I]].Text[0].ColR := 1;
-        Button[SongDescription[I]].Text[0].ColG := 1;
-        Button[SongDescription[I]].Text[0].ColB := 1;
+        Button[SongDescription[I]].Selectable := false;
+        SongDesc := '';
+        TimeString := '';
       end;
 
+      if (Max > -1) then
+      begin
+        if (JukeboxVisibleSongs[I + ListMin] = CurrentSongID) and (not Button[SongDescription[I]].Selected) then
+        begin
+          Button[SongDescription[I]].Text[0].ColR := SelectColR;
+          Button[SongDescription[I]].Text[0].ColG := SelectColG;
+          Button[SongDescription[I]].Text[0].ColB := SelectColB;
+
+          Button[SongDescription[I]].Text[1].ColR := SelectColR;
+          Button[SongDescription[I]].Text[1].ColG := SelectColG;
+          Button[SongDescription[I]].Text[1].ColB := SelectColB;
+        end
+        else
+        begin
+          Button[SongDescription[I]].Text[0].ColR := 1;
+          Button[SongDescription[I]].Text[0].ColG := 1;
+          Button[SongDescription[I]].Text[0].ColB := 1;
+
+          Button[SongDescription[I]].Text[1].ColR := 1;
+          Button[SongDescription[I]].Text[1].ColG := 1;
+          Button[SongDescription[I]].Text[1].ColB := 1;
+        end;
+      end
+      else
+        Interaction := -1;
+
       Button[SongDescription[I]].Text[0].Text := SongDesc;
+      Button[SongDescription[I]].Text[1].Text := TimeString;
       Button[SongDescription[I]].Draw;
     end;
-  finally
+
+    {
+    DrawLine(Button[JukeboxSongListUp].X,
+                    Button[JukeboxSongListUp].Y + Button[JukeboxSongListUp].H - 1,
+                    Button[JukeboxSongListUp].W,
+                    2);
+
+    DrawLine(Button[JukeboxSongListDown].X,
+                    Button[JukeboxSongListDown].Y - 1,
+                    Button[JukeboxSongListDown].W,
+                    2);
+   }
+  end
+  else
+    SongListVisible := false;
+
+end;
+
+procedure TScreenJukebox.DrawSongMenu;
+var
+  I, Max: integer;
+  CurrentTick: integer;
+begin
+  CurrentTick := SDL_GetTicks() - LastSongMenuTick;
+
+  if (CurrentTick < MAX_TIME_SONGMENU) then
+  begin
+    Statics[JukeboxStaticSongMenuTimeBackground].Draw;
+    Statics[JukeboxStaticSongMenuTimeProgress].Draw;
+    Statics[JukeboxStaticSongMenuBackground].Draw;
+
+    Text[JukeboxTextSongMenuTimeText].Draw;
+
+    Button[JukeboxSongMenuPlaylist].Draw;
+    Button[JukeboxSongMenuOptions].Draw;
+    Button[JukeboxSongMenuNext].Draw;
+    Button[JukeboxSongMenuPrevious].Draw;
+    Button[JukeboxSongMenuPlayPause].Draw;
+  end
+  else
+    SongMenuVisible := false;
+end;
+
+procedure TScreenJukebox.LoadJukeboxSongOptions();
+var
+  Opts: TSongOptions;
+begin
+
+  Opts := DataBase.GetSongOptions(CurrentSong);
+
+  if (Opts = nil) then
+  begin
+    ScreenJukeboxOptions.LoadDefaultOptions;
+  end
+  else
+  begin
+
+    if (Opts.LyricSingFillColor = '') then
+    begin
+      ScreenJukeboxOptions.LoadDefaultOptions;
+      Exit;
+    end;
+
+    ScreenJukeboxOptions.LoadSongOptions(Opts);
   end;
 end;
 
 end.
-
 

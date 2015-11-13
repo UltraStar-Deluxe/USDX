@@ -1,24 +1,23 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="9"/>
     <PathDelim Value="\"/>
+    <Version Value="7"/>
     <General>
       <Flags>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
+        <AlwaysBuild Value="False"/>
         <LRSInOutputDirectory Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
       <MainUnit Value="0"/>
+      <TargetFileExt Value=".exe"/>
       <Title Value="ultrastardx"/>
     </General>
     <VersionInfo>
-      <StringTable ProductVersion=""/>
+      <ProjectVersion Value=""/>
     </VersionInfo>
-    <BuildModes Count="1">
-      <Item1 Name="default" Default="True"/>
-    </BuildModes>
     <PublishOptions>
       <Version Value="2"/>
       <IgnoreBinaries Value="False"/>
@@ -31,10 +30,11 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="128">
+    <Units Count="127">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="ultrastardx"/>
       </Unit0>
       <Unit1>
         <Filename Value="base\UXMLSong.pas"/>
@@ -503,71 +503,75 @@
       <Unit117>
         <Filename Value="lua\ULuaUtils.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaUtils"/>
       </Unit117>
       <Unit118>
         <Filename Value="lua\UHookableEvent.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="UHookableEvent"/>
       </Unit118>
       <Unit119>
         <Filename Value="lua\ULuaCore.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaCore"/>
       </Unit119>
       <Unit120>
         <Filename Value="lua\ULuaGl.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaGl"/>
       </Unit120>
       <Unit121>
         <Filename Value="lua\ULuaLog.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaLog"/>
       </Unit121>
       <Unit122>
         <Filename Value="lua\ULuaParty.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaParty"/>
       </Unit122>
       <Unit123>
         <Filename Value="lua\ULuaScreenSing.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaScreenSing"/>
       </Unit123>
       <Unit124>
         <Filename Value="lua\ULuaTextGL.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaTextGL"/>
       </Unit124>
       <Unit125>
         <Filename Value="lua\ULuaTexture.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaTexture"/>
       </Unit125>
       <Unit126>
         <Filename Value="lua\ULuaUsdx.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaUsdx"/>
       </Unit126>
-      <Unit127>
-        <Filename Value="lib\bass\delphi\bass.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="BASS"/>
-      </Unit127>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="11"/>
+    <Version Value="8"/>
     <PathDelim Value="\"/>
     <Target>
       <Filename Value="..\game\ultrastardx"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="lib\JEDI-SDL\SDL\Pas"/>
-      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\JEDI-SDL\SDL\Pas;lib\JEDI-SDL\SDL_Image\Pas;lib\JEDI-SDL\OpenGL\Pas;lib\portaudio;lib\ffmpeg;lib\SQLite;lib\other;lib\bass\delphi"/>
+      <IncludeFiles Value="lib\JEDI-SDL\SDL\Pas\"/>
+      <OtherUnitFiles Value="base\;lua\;media\;menu\;screens\;lib\JEDI-SDL\SDL\Pas\;lib\JEDI-SDL\SDL_Image\Pas\;lib\JEDI-SDL\OpenGL\Pas\;lib\portaudio\;lib\ffmpeg\;lib\SQLite\;lib\other\"/>
       <UnitOutputDirectory Value="..\build\fpc-$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
       <SyntaxOptions>
         <CStyleOperator Value="False"/>
         <AllowLabel Value="False"/>
-        <UseAnsiStrings Value="False"/>
       </SyntaxOptions>
     </Parsing>
     <Linking>
       <Debugging>
-        <DebugInfoType Value="dsStabs"/>
+        <GenerateDebugInfo Value="True"/>
       </Debugging>
     </Linking>
     <Other>
@@ -575,6 +579,7 @@
         <ShowNotes Value="False"/>
         <ShowHints Value="False"/>
       </Verbosity>
+      <CompilerPath Value="$(CompPath)"/>
       <ExecuteBefore>
         <Command Value="clean.bat ..\build\fpc-$(TargetCPU)-$(TargetOS)"/>
         <CompileReasons Run="False"/>

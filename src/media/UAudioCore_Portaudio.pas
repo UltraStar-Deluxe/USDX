@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/media/UAudioCore_Portaudio.pas $
+ * $Id: UAudioCore_Portaudio.pas 2475 2010-06-10 18:27:53Z brunzelchen $
  *}
 
 unit UAudioCore_Portaudio;

@@ -4,14 +4,14 @@
 
 ; Product Information:
 
-!define version "1.1" ; Make sure version is also set in onInit
-
+!define version "Beta" ; Make sure version is also set in onInit
+!define version2 "1.2"
 
 !define name "UltraStar Deluxe"
-!define publisher "USDX Team"
-!define homepage "http://www.ultrastardeluxe.org"
-!define forum "http://forum.ultrastardeluxe.org"
-!define wiki "http://wiki.ultrastardeluxe.org"
+!define publisher "USDX Team & zup3r_vock"
+!define homepage "http://ultrastardx.sourceforge.net"
+!define forum "http://ultrastardx.sourceforge.net"
+!define wiki "http://ultrastardx.sourceforge.net"
 
 !define exe "ultrastardx"
 
@@ -29,11 +29,11 @@
 
 ; Registry for Start menu entries:
 
-!define PRODUCT_NAME "${name}"
+!define PRODUCT_NAME "${name} ${version}"
 !define PRODUCT_VERSION "${version}"
 !define PRODUCT_PUBLISHER "${publisher}"
 !define PRODUCT_WEB_SITE "${homepage}"
-!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name}"
+!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name} ${version}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 
 ; Download URLs for Songs and Themes:

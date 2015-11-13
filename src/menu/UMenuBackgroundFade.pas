@@ -34,6 +34,7 @@ interface
 {$I switches.inc}
 
 uses
+  UCommon,
   UThemes,
   UTexture,
   UMenuBackground,
@@ -68,7 +69,6 @@ uses
   gl,
   glext,
   USkins,
-  UCommon,
   UGraphic;
 
 constructor TMenuBackgroundFade.Create(const ThemedSettings: TThemeBackground);

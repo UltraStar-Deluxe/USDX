@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/media/UAudioDecoder_FFmpeg.pas $
+ * $Id: UAudioDecoder_FFmpeg.pas 3107 2014-11-23 00:02:56Z k-m_schindler $
  *}
 
 unit UAudioDecoder_FFmpeg;
@@ -379,7 +379,7 @@ begin
   // set debug options
   fCodecCtx^.debug_mv := 0;
   fCodecCtx^.debug := 0;
-  
+
   {$IF FFMPEG_VERSION_INT >= 1001000}
   // request required sample format
   // reference:

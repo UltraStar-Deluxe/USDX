@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/screens/UScreenTop5.pas $
+ * $Id: UScreenTop5.pas 2548 2010-06-18 11:00:21Z whiteshark0 $
  *}
 
 unit UScreenTop5;

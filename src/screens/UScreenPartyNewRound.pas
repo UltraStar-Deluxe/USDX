@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/screens/UScreenPartyNewRound.pas $
+ * $Id: UScreenPartyNewRound.pas 2246 2010-04-18 13:43:36Z tobigun $
  *}
 
 unit UScreenPartyNewRound;
@@ -44,6 +44,9 @@ uses
 
 type
   TScreenPartyNewRound = class(TMenu)
+    private
+      VisibleRound:  Integer;
+
     public
       //Texts:
       TextRound: array [0..6] of cardinal;
@@ -84,6 +87,7 @@ type
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
       procedure SetAnimationProgress(Progress: real); override;
+      procedure Refresh;
   end;
 
 implementation
@@ -127,6 +131,70 @@ begin
           AudioPlayback.PlaySound(SoundLib.Start);
           Party.CallBeforeSongSelect;
         end;
+
+      SDLK_UP:
+        begin
+         if VisibleRound > 0 then
+         begin
+           Dec(VisibleRound);
+           Refresh;
+         end;
+        end;
+
+      SDLK_DOWN:
+        begin
+          if VisibleRound < (Length(Party.Rounds) - 7) then
+          begin
+            Inc(VisibleRound);
+            Refresh;
+          end;
+        end;
+    end;
+  end;
+end;
+
+procedure TScreenPartyNewRound.Refresh;
+var
+  N, R, I: Integer;
+  NumRounds: Integer;
+begin
+  R := Party.CurrentRound;
+
+  //Set Visibility of Round Infos
+  NumRounds := Length(Party.Rounds);
+
+  N := VisibleRound;
+
+  if ((NumRounds-7) < N) then
+  begin
+    N := NumRounds - 7;
+    VisibleRound := N;
+  end;
+
+  if (N < 0) then
+  begin
+    N := 0;
+    VisibleRound := 0;
+  end;
+
+  //Set Visibility of Round Infos
+  for I := 0 to 6 do
+  begin
+    if (I <= High(Party.Rounds)) then
+    begin
+      Statics[StaticRound[I]].Visible := True;
+      Text[TextRound[I]].Visible := True;
+      Text[TextWinner[I]].Visible := True;
+
+      // update texts:
+      Text[TextRound[I]].Text := IntToStr(I + 1 + N)+') ' + Language.Translate('MODE_' + uppercase(Party.Modes[Party.Rounds[I + N].Mode].Name) + '_NAME');
+      Text[TextWinner[I]].Text := Party.GetWinnerString(I + N);
+    end
+    else
+    begin
+      Statics[StaticRound[I]].Visible := False;
+      Text[TextRound[I]].Visible := False;
+      Text[TextWinner[I]].Visible := False;
     end;
   end;
 end;
@@ -210,27 +278,15 @@ var
 begin
   inherited;
 
-  //Set Visibility of Round Infos
-  for I := 0 to 6 do
+  if (Party.CurrentRound > 0) then
   begin
-    if (I <= High(Party.Rounds)) then
-    begin
-      Statics[StaticRound[I]].Visible := True;
-      Text[TextRound[I]].Visible := True;
-      Text[TextWinner[I]].Visible := True;
-
-      // update texts:
-      Text[TextRound[I]].Text := Language.Translate('MODE_' + uppercase(Party.Modes[Party.Rounds[I].Mode].Name) + '_NAME');
-      Text[TextWinner[I]].Text := Party.GetWinnerString(I);
-    end
+    if (Party.CurrentRound > 1) then
+      VisibleRound := Party.CurrentRound - 2
     else
-    begin
-      Statics[StaticRound[I]].Visible := False;
-      Text[TextRound[I]].Visible := False;
-      Text[TextWinner[I]].Visible := False;
-    end;
+      VisibleRound := Party.CurrentRound - 1;
   end;
 
+  Refresh;
 
   //Display Scores
   if (Length(Party.Teams) >= 1) then
@@ -294,10 +350,11 @@ begin
     Text[TextTeam3Players].Visible := false;
     Statics[StaticTeam3].Visible := false;
     Statics[StaticNextPlayer3].Visible := false;
-  end;  
+  end;
 
   //nextRound Texts
   Text[TextNextRound].Text := Language.Translate('MODE_' + uppercase(Party.Modes[Party.Rounds[Party.CurrentRound].Mode].Name) + '_DESC');
+
   Text[TextNextRoundNo].Text := InttoStr(Party.CurrentRound + 1);
   if (Length(Party.Teams) >= 1) then
   begin

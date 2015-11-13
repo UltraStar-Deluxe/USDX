@@ -20,8 +20,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/game/plugins/teamduel.usdx $
+ * $Id: teamduel.usdx 2558 2010-06-23 22:20:13Z whiteshark0 $
  *]]
 
 -- some values to adjust the creation of PlayerChanges

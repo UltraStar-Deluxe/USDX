@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UFont.pas $
+ * $Id: UFont.pas 2675 2010-10-17 17:00:23Z tobigun $
  *}
 
 unit UFont;
@@ -843,6 +843,12 @@ const
       cShearFactor, 1, 0, 0,
       0,            0, 1, 0,
       0,            0, 0, 1
+  );
+  cShearMatrixInv: array[0..15] of GLfloat = (
+      1,             0, 0, 0,
+      -cShearFactor, 1, 0, 0,
+      0,             0, 1, 0,
+      0,             0, 0, 1
   );
 
 var
@@ -2221,6 +2227,7 @@ var
   OuterNumPoints, InnerNumPoints, GlyphNumPoints: FT_UInt;
   OuterNumContours, InnerNumContours, GlyphNumContours: FT_UInt;
   OuterBorder, InnerBorder: FT_StrokerBorder;
+  OutlineFlags: FT_Int;
   UseStencil: boolean;
 begin
   // It is possible to extrude the borders of a glyph with FT_Glyph_Stroke
@@ -2303,6 +2310,9 @@ begin
 
   GlyphNumPoints := InnerNumPoints + OuterNumPoints;
   GlyphNumContours := InnerNumContours + OuterNumContours;
+
+  // save flags before deletion (TODO: set them on the resulting outline)
+  OutlineFlags := Outline.flags;
 
   // resize glyph outline to hold inner and outer border
   FT_Outline_Done(Glyph.Library_, Outline);

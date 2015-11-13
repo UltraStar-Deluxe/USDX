@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/menu/UMenuEqualizer.pas $
+ * $Id: UMenuEqualizer.pas 1692 2009-04-24 18:43:12Z k-m_schindler $
  *}
 
 unit UMenuEqualizer;
@@ -35,6 +35,7 @@ interface
 
 uses
   UMusic,
+  UCommon,
   UThemes;
 
 type

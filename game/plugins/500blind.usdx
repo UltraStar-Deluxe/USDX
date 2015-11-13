@@ -1,0 +1,126 @@
+function plugin_init()
+  register('party mode: 500blind', '1.00', 'flokuep');
+
+  require('Usdx.Party');
+  require('Usdx.ScreenSing');
+  require('Usdx.Log');
+  require('table');
+
+  local Mode = {};
+
+  Mode.Name = '500blind';
+  Mode.CanNonParty = true;
+  Mode.CanParty = true;
+  Mode.OnSing = 'Sing';
+
+  Usdx.Party.Register(Mode)
+
+  return true;
+end
+
+function Sing()
+	-- Variable die den notwendigen Punkte-Vorsprung speichert
+    local Vorsprung = 500;
+    
+    -- Punkte laden und in Scores speichern
+	Scores = ScreenSing.GetScores();
+	
+	-- Teams ladne und in Teams speichern
+	Teams = Party.GetTeams();
+	
+	--Überprüfen ob 2 Teams spielen
+	if #Teams == 2 then
+	
+		-- Variablen setzen
+		local Spieler1HatVorsprung = false;
+		local Spieler2HatVorsprung = false;
+		
+		--Wenn Spieler 1 Vorsprung hat
+		if Scores[1] - Vorsprung >= Scores[2] then
+			Spieler1HatVorsprung = true;
+		else
+			Spieler1HatVorsprung = false;
+		end;
+		
+		--Wenn Spieler 2 Vorsprung hat
+		if Scores[2] - Vorsprung >= Scores[1] then	
+			Spieler2HatVorsprung = true;
+		else		
+			Spieler2HatVorsprung = false;
+		end;	
+		
+		--Variable für Einstellungen
+		local Settings = {}
+		Settings['NotesVisible'] = {}; 
+		
+		--Ergebnisse der Überprüfung anwenden
+		if Spieler1HatVorsprung == false then
+			-- Noten sind sichtbar für Spieler 1
+			table.insert(Settings['NotesVisible'],1);
+		end;
+		
+		if Spieler2HatVorsprung == false then
+			-- Noten sind sichtbar für Spieler 3
+			table.insert(Settings['NotesVisible'],2);
+		end;
+		
+		--Einstellungen anwenden
+		ScreenSing.SetSettings(Settings);		
+		
+		
+	-- Überprüfen ob 3 Teams Spielen
+	elseif #Teams == 3 then
+	
+		--Variablen setzen
+		local Spieler1HatVorsprung = false;
+		local Spieler2HatVorsprung = false;
+		local Spieler3HatVorsprung = false;
+		
+		--Wenn Spieler 1 Vorsprung hat
+		if Scores[1] - Vorsprung >= Scores[2] or Scores[1] - Vorsprung >= Scores[3] then
+			Spieler1HatVorsprung = true;
+		else
+			Spieler1HatVorsprung = false;
+		end;
+		
+		--Wenn Spieler 2 Vorsprung hat
+		if Scores[2] - Vorsprung >= Scores[1] or Scores[2] - Vorsprung >= Scores[3] then	
+			Spieler2HatVorsprung = true;
+		else		
+			Spieler2HatVorsprung = false;
+		end;	
+		
+		--Wenn Spieler 3 Vorsprung hat
+		if Scores[3] - Vorsprung >= Scores[1] or Scores[3] - Vorsprung >= Scores[2] then	
+			Spieler3HatVorsprung = true;
+		else		
+			Spieler3HatVorsprung = false;
+		end;
+		
+		--Variable für Einstellungen
+		local Settings = {}
+		Settings['NotesVisible'] = {}; 
+		
+		
+		--Ergebnisse der Überprüfung anwenden
+		if Spieler1HatVorsprung == false then
+			--Noten sind für Spieler 1 sichtbar
+			table.insert(Settings['NotesVisible'],1);
+		end;
+		
+		if Spieler2HatVorsprung == false then
+			--Noten sind für Spieler 1 sichtbar
+			table.insert(Settings['NotesVisible'],2);
+		end;
+		
+		if Spieler3HatVorsprung == false then
+			--Noten sind für Spieler 1 sichtbar
+			table.insert(Settings['NotesVisible'],3);
+		end;
+
+		--Einstellungen anwenden
+		ScreenSing.SetSettings(Settings);			
+				
+	end;
+end;
+			

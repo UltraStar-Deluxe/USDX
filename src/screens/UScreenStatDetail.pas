@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/screens/UScreenStatDetail.pas $
+ * $Id: UScreenStatDetail.pas 1972 2009-12-06 12:13:34Z s_alexander $
  *}
 
 unit UScreenStatDetail;
@@ -173,7 +173,7 @@ begin
 
   AddButton(Theme.StatDetail.ButtonExit);
   if (Length(Button[3].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[7]);
+    AddButtonText(14, 20, Theme.Options.Description[9]);
 
   Interaction := 0;
   Typ := TStatType(0);

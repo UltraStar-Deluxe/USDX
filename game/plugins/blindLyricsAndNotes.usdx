@@ -1,0 +1,28 @@
+function plugin_init()
+  register('party mode: blindTotal', '1.00', 'zup3r_vock', 'http://www.ultrastar-es.org');
+
+  require('Usdx.Party')
+  require('Usdx.ScreenSing')
+
+  local Mode = {}
+
+  Mode.Name = 'BlindTotal'
+  Mode.CanNonParty = true;
+  Mode.CanParty = true;
+
+  Mode.BeforeSing = 'BeforeSing';
+
+  Usdx.Party.Register(Mode)
+
+  return true;
+end
+
+function BeforeSing()
+  local Settings = {};
+  Settings['LyricsVisible'] = false;
+  Settings['NotesVisible'] = {}; -- notes hidden for every player
+
+  ScreenSing.SetSettings(Settings);
+
+  return true;
+end

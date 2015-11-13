@@ -19,8 +19,8 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
+ * $URL: svn://basisbit@svn.code.sf.net/p/ultrastardx/svn/trunk/src/media/UAudioConverter.pas $
+ * $Id: UAudioConverter.pas 3031 2013-12-15 21:08:54Z k-m_schindler $
  *}
 
 unit UAudioConverter;
@@ -200,6 +200,7 @@ begin
   Result := cvt.len_cvt;
 end;
 
+
 {$IFDEF UseFFmpegResample}
 
 function TAudioConverter_FFmpeg.Init(SrcFormatInfo: TAudioFormatInfo;
@@ -298,6 +299,7 @@ begin
 end;
 
 {$ENDIF}
+
 
 {$IFDEF UseSRCResample}
 
