@@ -12,3 +12,5 @@
 backup/
 *.a
 *.~*
+*.log
+config.ini
