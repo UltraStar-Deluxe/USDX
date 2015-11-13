@@ -1,0 +1,1613 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2C4B70230CF7581000B0F0BD /* Until5000.dpr in Sources */ = {isa = PBXBuildFile; fileRef = 2C4B70220CF757A400B0F0BD /* Until5000.dpr */; };
+		2C4B70240CF7584500B0F0BD /* ModiSDK.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5508B0CDA22B000627463 /* ModiSDK.pas */; };
+		2C4D9C8F0CC9EC8C0031092D /* TextGL.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C620CC9EC8C0031092D /* TextGL.pas */; };
+		2C4D9C920CC9EC8C0031092D /* UCatCovers.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C650CC9EC8C0031092D /* UCatCovers.pas */; };
+		2C4D9C930CC9EC8C0031092D /* UCommandLine.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C660CC9EC8C0031092D /* UCommandLine.pas */; };
+		2C4D9C940CC9EC8C0031092D /* UCommon.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C670CC9EC8C0031092D /* UCommon.pas */; };
+		2C4D9C950CC9EC8C0031092D /* UCore.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C680CC9EC8C0031092D /* UCore.pas */; };
+		2C4D9C960CC9EC8C0031092D /* UCoreModule.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C690CC9EC8C0031092D /* UCoreModule.pas */; };
+		2C4D9C970CC9EC8C0031092D /* UCovers.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C6A0CC9EC8C0031092D /* UCovers.pas */; };
+		2C4D9C980CC9EC8C0031092D /* UDataBase.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C6B0CC9EC8C0031092D /* UDataBase.pas */; };
+		2C4D9C990CC9EC8C0031092D /* UDLLManager.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C6C0CC9EC8C0031092D /* UDLLManager.pas */; };
+		2C4D9C9A0CC9EC8C0031092D /* UDraw.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C6D0CC9EC8C0031092D /* UDraw.pas */; };
+		2C4D9C9B0CC9EC8C0031092D /* UFiles.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C6E0CC9EC8C0031092D /* UFiles.pas */; };
+		2C4D9C9C0CC9EC8C0031092D /* UGraphic.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C6F0CC9EC8C0031092D /* UGraphic.pas */; };
+		2C4D9C9D0CC9EC8C0031092D /* UGraphicClasses.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C700CC9EC8C0031092D /* UGraphicClasses.pas */; };
+		2C4D9C9E0CC9EC8C0031092D /* UHooks.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C710CC9EC8C0031092D /* UHooks.pas */; };
+		2C4D9C9F0CC9EC8C0031092D /* UIni.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C720CC9EC8C0031092D /* UIni.pas */; };
+		2C4D9CA00CC9EC8C0031092D /* UJoystick.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C730CC9EC8C0031092D /* UJoystick.pas */; };
+		2C4D9CA10CC9EC8C0031092D /* ULanguage.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C740CC9EC8C0031092D /* ULanguage.pas */; };
+		2C4D9CA30CC9EC8C0031092D /* ULCD.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C760CC9EC8C0031092D /* ULCD.pas */; };
+		2C4D9CA40CC9EC8C0031092D /* ULight.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C770CC9EC8C0031092D /* ULight.pas */; };
+		2C4D9CA50CC9EC8C0031092D /* ULog.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C780CC9EC8C0031092D /* ULog.pas */; };
+		2C4D9CA60CC9EC8C0031092D /* ULyrics_bak.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C790CC9EC8C0031092D /* ULyrics_bak.pas */; };
+		2C4D9CA70CC9EC8C0031092D /* ULyrics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7A0CC9EC8C0031092D /* ULyrics.pas */; };
+		2C4D9CA80CC9EC8C0031092D /* UMain.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7B0CC9EC8C0031092D /* UMain.pas */; };
+		2C4D9CA90CC9EC8C0031092D /* UMedia_dummy.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7C0CC9EC8C0031092D /* UMedia_dummy.pas */; };
+		2C4D9CAA0CC9EC8C0031092D /* UModules.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7D0CC9EC8C0031092D /* UModules.pas */; };
+		2C4D9CAB0CC9EC8C0031092D /* UMusic.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7E0CC9EC8C0031092D /* UMusic.pas */; };
+		2C4D9CAC0CC9EC8C0031092D /* UParty.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7F0CC9EC8C0031092D /* UParty.pas */; };
+		2C4D9CAD0CC9EC8C0031092D /* UPlaylist.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C800CC9EC8C0031092D /* UPlaylist.pas */; };
+		2C4D9CAF0CC9EC8C0031092D /* UPluginInterface.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C820CC9EC8C0031092D /* UPluginInterface.pas */; };
+		2C4D9CB00CC9EC8C0031092D /* uPluginLoader.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C830CC9EC8C0031092D /* uPluginLoader.pas */; };
+		2C4D9CB10CC9EC8C0031092D /* URecord.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C840CC9EC8C0031092D /* URecord.pas */; };
+		2C4D9CB20CC9EC8C0031092D /* UServices.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C850CC9EC8C0031092D /* UServices.pas */; };
+		2C4D9CB30CC9EC8C0031092D /* USingNotes.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C860CC9EC8C0031092D /* USingNotes.pas */; };
+		2C4D9CB40CC9EC8C0031092D /* USingScores.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C870CC9EC8C0031092D /* USingScores.pas */; };
+		2C4D9CB50CC9EC8C0031092D /* USkins.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C880CC9EC8C0031092D /* USkins.pas */; };
+		2C4D9CB60CC9EC8C0031092D /* USongs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C890CC9EC8C0031092D /* USongs.pas */; };
+		2C4D9CB70CC9EC8C0031092D /* UTextClasses.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C8A0CC9EC8C0031092D /* UTextClasses.pas */; };
+		2C4D9CB80CC9EC8C0031092D /* UTexture.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C8B0CC9EC8C0031092D /* UTexture.pas */; };
+		2C4D9CB90CC9EC8C0031092D /* UThemes.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C8C0CC9EC8C0031092D /* UThemes.pas */; };
+		2C4D9CBA0CC9EC8C0031092D /* UTime.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C8D0CC9EC8C0031092D /* UTime.pas */; };
+		2C4D9CBB0CC9EC8C0031092D /* UVideo.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C8E0CC9EC8C0031092D /* UVideo.pas */; };
+		2C4D9CBC0CC9EC8C0031092D /* TextGL.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C620CC9EC8C0031092D /* TextGL.pas */; };
+		2C4D9CBF0CC9EC8C0031092D /* UCatCovers.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C650CC9EC8C0031092D /* UCatCovers.pas */; };
+		2C4D9CC00CC9EC8C0031092D /* UCommandLine.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C660CC9EC8C0031092D /* UCommandLine.pas */; };
+		2C4D9CC10CC9EC8C0031092D /* UCommon.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C670CC9EC8C0031092D /* UCommon.pas */; };
+		2C4D9CC20CC9EC8C0031092D /* UCore.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C680CC9EC8C0031092D /* UCore.pas */; };
+		2C4D9CC30CC9EC8C0031092D /* UCoreModule.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C690CC9EC8C0031092D /* UCoreModule.pas */; };
+		2C4D9CC40CC9EC8C0031092D /* UCovers.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C6A0CC9EC8C0031092D /* UCovers.pas */; };
+		2C4D9CC50CC9EC8C0031092D /* UDataBase.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C6B0CC9EC8C0031092D /* UDataBase.pas */; };
+		2C4D9CC60CC9EC8C0031092D /* UDLLManager.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C6C0CC9EC8C0031092D /* UDLLManager.pas */; };
+		2C4D9CC70CC9EC8C0031092D /* UDraw.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C6D0CC9EC8C0031092D /* UDraw.pas */; };
+		2C4D9CC80CC9EC8C0031092D /* UFiles.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C6E0CC9EC8C0031092D /* UFiles.pas */; };
+		2C4D9CC90CC9EC8C0031092D /* UGraphic.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C6F0CC9EC8C0031092D /* UGraphic.pas */; };
+		2C4D9CCA0CC9EC8C0031092D /* UGraphicClasses.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C700CC9EC8C0031092D /* UGraphicClasses.pas */; };
+		2C4D9CCB0CC9EC8C0031092D /* UHooks.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C710CC9EC8C0031092D /* UHooks.pas */; };
+		2C4D9CCC0CC9EC8C0031092D /* UIni.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C720CC9EC8C0031092D /* UIni.pas */; };
+		2C4D9CCD0CC9EC8C0031092D /* UJoystick.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C730CC9EC8C0031092D /* UJoystick.pas */; };
+		2C4D9CCE0CC9EC8C0031092D /* ULanguage.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C740CC9EC8C0031092D /* ULanguage.pas */; };
+		2C4D9CD00CC9EC8C0031092D /* ULCD.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C760CC9EC8C0031092D /* ULCD.pas */; };
+		2C4D9CD10CC9EC8C0031092D /* ULight.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C770CC9EC8C0031092D /* ULight.pas */; };
+		2C4D9CD20CC9EC8C0031092D /* ULog.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C780CC9EC8C0031092D /* ULog.pas */; };
+		2C4D9CD30CC9EC8C0031092D /* ULyrics_bak.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C790CC9EC8C0031092D /* ULyrics_bak.pas */; };
+		2C4D9CD40CC9EC8C0031092D /* ULyrics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7A0CC9EC8C0031092D /* ULyrics.pas */; };
+		2C4D9CD50CC9EC8C0031092D /* UMain.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7B0CC9EC8C0031092D /* UMain.pas */; };
+		2C4D9CD60CC9EC8C0031092D /* UMedia_dummy.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7C0CC9EC8C0031092D /* UMedia_dummy.pas */; };
+		2C4D9CD70CC9EC8C0031092D /* UModules.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7D0CC9EC8C0031092D /* UModules.pas */; };
+		2C4D9CD80CC9EC8C0031092D /* UMusic.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7E0CC9EC8C0031092D /* UMusic.pas */; };
+		2C4D9CD90CC9EC8C0031092D /* UParty.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C7F0CC9EC8C0031092D /* UParty.pas */; };
+		2C4D9CDA0CC9EC8C0031092D /* UPlaylist.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C800CC9EC8C0031092D /* UPlaylist.pas */; };
+		2C4D9CDC0CC9EC8C0031092D /* UPluginInterface.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C820CC9EC8C0031092D /* UPluginInterface.pas */; };
+		2C4D9CDD0CC9EC8C0031092D /* uPluginLoader.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C830CC9EC8C0031092D /* uPluginLoader.pas */; };
+		2C4D9CDE0CC9EC8C0031092D /* URecord.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C840CC9EC8C0031092D /* URecord.pas */; };
+		2C4D9CDF0CC9EC8C0031092D /* UServices.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C850CC9EC8C0031092D /* UServices.pas */; };
+		2C4D9CE00CC9EC8C0031092D /* USingNotes.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C860CC9EC8C0031092D /* USingNotes.pas */; };
+		2C4D9CE10CC9EC8C0031092D /* USingScores.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C870CC9EC8C0031092D /* USingScores.pas */; };
+		2C4D9CE20CC9EC8C0031092D /* USkins.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C880CC9EC8C0031092D /* USkins.pas */; };
+		2C4D9CE30CC9EC8C0031092D /* USongs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C890CC9EC8C0031092D /* USongs.pas */; };
+		2C4D9CE40CC9EC8C0031092D /* UTextClasses.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C8A0CC9EC8C0031092D /* UTextClasses.pas */; };
+		2C4D9CE50CC9EC8C0031092D /* UTexture.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C8B0CC9EC8C0031092D /* UTexture.pas */; };
+		2C4D9CE60CC9EC8C0031092D /* UThemes.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C8C0CC9EC8C0031092D /* UThemes.pas */; };
+		2C4D9CE70CC9EC8C0031092D /* UTime.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C8D0CC9EC8C0031092D /* UTime.pas */; };
+		2C4D9CE80CC9EC8C0031092D /* UVideo.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9C8E0CC9EC8C0031092D /* UVideo.pas */; };
+		2C4D9D920CC9ED4F0031092D /* FreeBitmap.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9D900CC9ED4F0031092D /* FreeBitmap.pas */; };
+		2C4D9D930CC9ED4F0031092D /* FreeImage.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9D910CC9ED4F0031092D /* FreeImage.pas */; };
+		2C4D9D940CC9ED4F0031092D /* FreeBitmap.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9D900CC9ED4F0031092D /* FreeBitmap.pas */; };
+		2C4D9D950CC9ED4F0031092D /* FreeImage.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9D910CC9ED4F0031092D /* FreeImage.pas */; };
+		2C4D9D970CC9EDEB0031092D /* libfreeimage.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C4D9D960CC9EDEB0031092D /* libfreeimage.dylib */; };
+		2C4D9D9A0CC9EE0B0031092D /* SDL_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C4D9D980CC9EE0B0031092D /* SDL_image.framework */; };
+		2C4D9D9B0CC9EE0B0031092D /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C4D9D990CC9EE0B0031092D /* SDL_ttf.framework */; };
+		2C4D9DD60CC9EE6F0031092D /* UDisplay.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DCC0CC9EE6F0031092D /* UDisplay.pas */; };
+		2C4D9DD70CC9EE6F0031092D /* UDrawTexture.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DCD0CC9EE6F0031092D /* UDrawTexture.pas */; };
+		2C4D9DD80CC9EE6F0031092D /* UMenu.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DCE0CC9EE6F0031092D /* UMenu.pas */; };
+		2C4D9DD90CC9EE6F0031092D /* UMenuButton.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DCF0CC9EE6F0031092D /* UMenuButton.pas */; };
+		2C4D9DDA0CC9EE6F0031092D /* UMenuButtonCollection.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DD00CC9EE6F0031092D /* UMenuButtonCollection.pas */; };
+		2C4D9DDB0CC9EE6F0031092D /* UMenuInteract.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DD10CC9EE6F0031092D /* UMenuInteract.pas */; };
+		2C4D9DDC0CC9EE6F0031092D /* UMenuSelect.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DD20CC9EE6F0031092D /* UMenuSelect.pas */; };
+		2C4D9DDD0CC9EE6F0031092D /* UMenuSelectSlide.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DD30CC9EE6F0031092D /* UMenuSelectSlide.pas */; };
+		2C4D9DDE0CC9EE6F0031092D /* UMenuStatic.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DD40CC9EE6F0031092D /* UMenuStatic.pas */; };
+		2C4D9DDF0CC9EE6F0031092D /* UMenuText.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DD50CC9EE6F0031092D /* UMenuText.pas */; };
+		2C4D9DE00CC9EE6F0031092D /* UDisplay.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DCC0CC9EE6F0031092D /* UDisplay.pas */; };
+		2C4D9DE10CC9EE6F0031092D /* UDrawTexture.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DCD0CC9EE6F0031092D /* UDrawTexture.pas */; };
+		2C4D9DE20CC9EE6F0031092D /* UMenu.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DCE0CC9EE6F0031092D /* UMenu.pas */; };
+		2C4D9DE30CC9EE6F0031092D /* UMenuButton.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DCF0CC9EE6F0031092D /* UMenuButton.pas */; };
+		2C4D9DE40CC9EE6F0031092D /* UMenuButtonCollection.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DD00CC9EE6F0031092D /* UMenuButtonCollection.pas */; };
+		2C4D9DE50CC9EE6F0031092D /* UMenuInteract.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DD10CC9EE6F0031092D /* UMenuInteract.pas */; };
+		2C4D9DE60CC9EE6F0031092D /* UMenuSelect.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DD20CC9EE6F0031092D /* UMenuSelect.pas */; };
+		2C4D9DE70CC9EE6F0031092D /* UMenuSelectSlide.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DD30CC9EE6F0031092D /* UMenuSelectSlide.pas */; };
+		2C4D9DE80CC9EE6F0031092D /* UMenuStatic.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DD40CC9EE6F0031092D /* UMenuStatic.pas */; };
+		2C4D9DE90CC9EE6F0031092D /* UMenuText.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DD50CC9EE6F0031092D /* UMenuText.pas */; };
+		2C4D9DED0CC9EF0A0031092D /* sdl_image.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DEC0CC9EF0A0031092D /* sdl_image.pas */; };
+		2C4D9DEE0CC9EF0A0031092D /* sdl_image.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DEC0CC9EF0A0031092D /* sdl_image.pas */; };
+		2C4D9DF10CC9EF210031092D /* sdl_ttf.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DEF0CC9EF210031092D /* sdl_ttf.pas */; };
+		2C4D9DF30CC9EF210031092D /* sdl_ttf.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9DEF0CC9EF210031092D /* sdl_ttf.pas */; };
+		2C4D9E100CC9EF840031092D /* OpenGL12.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E040CC9EF840031092D /* OpenGL12.pas */; };
+		2C4D9E150CC9EF840031092D /* Windows.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E090CC9EF840031092D /* Windows.pas */; };
+		2C4D9E1C0CC9EF840031092D /* OpenGL12.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E040CC9EF840031092D /* OpenGL12.pas */; };
+		2C4D9E210CC9EF840031092D /* Windows.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E090CC9EF840031092D /* Windows.pas */; };
+		2C4D9E450CC9F0ED0031092D /* switches.inc in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E440CC9F0ED0031092D /* switches.inc */; };
+		2C4D9E460CC9F0ED0031092D /* switches.inc in Sources */ = {isa = PBXBuildFile; fileRef = 2C4D9E440CC9F0ED0031092D /* switches.inc */; };
+		2C4FA2A80CDBAD1E002CC3B0 /* ustar-icon_v01.icns in Resources */ = {isa = PBXBuildFile; fileRef = 2C4FA2A70CDBAD1E002CC3B0 /* ustar-icon_v01.icns */; };
+		2C5663EF0D35645700D4FF53 /* portaudio.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C5663EE0D35645700D4FF53 /* portaudio.pas */; };
+		2C5663F00D35645700D4FF53 /* portaudio.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C5663EE0D35645700D4FF53 /* portaudio.pas */; };
+		2C56642C0D35683200D4FF53 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C56642B0D35683200D4FF53 /* SDLMain.m */; };
+		2C89372A0CE393FB005D8A87 /* UPlatform.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C8937290CE393FB005D8A87 /* UPlatform.pas */; };
+		2C89372B0CE393FB005D8A87 /* UPlatform.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C8937290CE393FB005D8A87 /* UPlatform.pas */; };
+		2C8937340CE395CE005D8A87 /* UPlatformMacOSX.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C8937310CE395CE005D8A87 /* UPlatformMacOSX.pas */; };
+		2C8937370CE395CE005D8A87 /* UPlatformMacOSX.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2C8937310CE395CE005D8A87 /* UPlatformMacOSX.pas */; };
+		2CAC2BE20D3809F500CA518A /* UAudioInput_Bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CAC2BDD0D3809F500CA518A /* UAudioInput_Bass.pas */; };
+		2CAC2BE40D3809F500CA518A /* UAudioPlayback_Bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CAC2BDF0D3809F500CA518A /* UAudioPlayback_Bass.pas */; };
+		2CAC2BE70D3809F500CA518A /* UAudioInput_Bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CAC2BDD0D3809F500CA518A /* UAudioInput_Bass.pas */; };
+		2CAC2BE90D3809F500CA518A /* UAudioPlayback_Bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CAC2BDF0D3809F500CA518A /* UAudioPlayback_Bass.pas */; };
+		2CAC2BF10D380AC200CA518A /* libbass.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CAC2BF00D380AC200CA518A /* libbass.dylib */; };
+		2CAC2BF40D380AE800CA518A /* libbass.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CAC2BF00D380AC200CA518A /* libbass.dylib */; };
+		2CAC2BF80D380B1B00CA518A /* Bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CAC2BF70D380B1B00CA518A /* Bass.pas */; };
+		2CAC2BF90D380B1B00CA518A /* Bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CAC2BF70D380B1B00CA518A /* Bass.pas */; };
+		2CB9E87E0D43B78400214DFA /* USong.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CB9E87D0D43B78400214DFA /* USong.pas */; };
+		2CB9E87F0D43B78400214DFA /* USong.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CB9E87D0D43B78400214DFA /* USong.pas */; };
+		2CDC716C0CDB9CB70018F966 /* StrUtils.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CDC716B0CDB9CB70018F966 /* StrUtils.pas */; };
+		2CDC716D0CDB9CB70018F966 /* StrUtils.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CDC716B0CDB9CB70018F966 /* StrUtils.pas */; };
+		2CDD4BDE0CB947A400549FAC /* sdl.pas in Sources */ = {isa = PBXBuildFile; fileRef = 98B8BE5C0B1F974F00162019 /* sdl.pas */; };
+		2CDD4BE00CB947B100549FAC /* sdl.pas in Sources */ = {isa = PBXBuildFile; fileRef = 98B8BE5C0B1F974F00162019 /* sdl.pas */; };
+		2CDD4BE20CB947BE00549FAC /* UltraStarDX.pas in Sources */ = {isa = PBXBuildFile; fileRef = DDC6851B09F57195004E4BFF /* UltraStarDX.pas */; };
+		2CDEA4F70CBD725B0096994C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CDEA4F60CBD725B0096994C /* OpenGL.framework */; };
+		2CDEC4960CC5264600FFA244 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 98B8BE570B1F972400162019 /* SDL.framework */; };
+		2CE603DA0D715F2100DB0D88 /* mathematics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CE603D90D715F2100DB0D88 /* mathematics.pas */; };
+		2CE603DB0D715F2100DB0D88 /* mathematics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CE603D90D715F2100DB0D88 /* mathematics.pas */; };
+		2CE603DE0D715F6700DB0D88 /* UAudioCore_Bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CE603DD0D715F6700DB0D88 /* UAudioCore_Bass.pas */; };
+		2CE603DF0D715F6700DB0D88 /* UAudioCore_Bass.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CE603DD0D715F6700DB0D88 /* UAudioCore_Bass.pas */; };
+		2CE603E20D715F8600DB0D88 /* UConfig.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CE603E10D715F8600DB0D88 /* UConfig.pas */; };
+		2CE603E30D715F8600DB0D88 /* UConfig.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CE603E10D715F8600DB0D88 /* UConfig.pas */; };
+		2CE907930D1BC8A800A1FDFF /* libavcodec.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CE907900D1BC8A800A1FDFF /* libavcodec.dylib */; };
+		2CE907940D1BC8A800A1FDFF /* libavformat.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CE907910D1BC8A800A1FDFF /* libavformat.dylib */; };
+		2CE907950D1BC8A800A1FDFF /* libavutil.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CE907920D1BC8A800A1FDFF /* libavutil.dylib */; };
+		2CE907980D1BC90A00A1FDFF /* libavcodec.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CE907900D1BC8A800A1FDFF /* libavcodec.dylib */; };
+		2CE907990D1BC91D00A1FDFF /* libavformat.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CE907910D1BC8A800A1FDFF /* libavformat.dylib */; };
+		2CE9079A0D1BC91D00A1FDFF /* libavutil.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CE907920D1BC8A800A1FDFF /* libavutil.dylib */; };
+		2CEA2AE00CE385190097A5FF /* Graphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2ADE0CE385190097A5FF /* Graphics.pas */; };
+		2CEA2AE10CE385190097A5FF /* JPEG.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2ADF0CE385190097A5FF /* JPEG.pas */; };
+		2CEA2AE20CE385190097A5FF /* Graphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2ADE0CE385190097A5FF /* Graphics.pas */; };
+		2CEA2AE30CE385190097A5FF /* JPEG.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2ADF0CE385190097A5FF /* JPEG.pas */; };
+		2CEA2AF10CE3868E0097A5FF /* PseudoThread.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2AF00CE3868E0097A5FF /* PseudoThread.pas */; };
+		2CEA2AF20CE3868E0097A5FF /* PseudoThread.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CEA2AF00CE3868E0097A5FF /* PseudoThread.pas */; };
+		2CF3EF220CDE13A0004F5956 /* Messages.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF3EF210CDE13A0004F5956 /* Messages.pas */; };
+		2CF3EF230CDE13A0004F5956 /* Messages.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF3EF210CDE13A0004F5956 /* Messages.pas */; };
+		2CF3EF270CDE13BA004F5956 /* MacResources.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF3EF260CDE13BA004F5956 /* MacResources.pas */; };
+		2CF3EF280CDE13BA004F5956 /* MacResources.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF3EF260CDE13BA004F5956 /* MacResources.pas */; };
+		2CF54F650CDA1B2B00627463 /* UScreenCredits.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F430CDA1B2B00627463 /* UScreenCredits.pas */; };
+		2CF54F660CDA1B2B00627463 /* UScreenEdit.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F440CDA1B2B00627463 /* UScreenEdit.pas */; };
+		2CF54F670CDA1B2B00627463 /* UScreenEditConvert.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F450CDA1B2B00627463 /* UScreenEditConvert.pas */; };
+		2CF54F680CDA1B2B00627463 /* UScreenEditHeader.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F460CDA1B2B00627463 /* UScreenEditHeader.pas */; };
+		2CF54F690CDA1B2B00627463 /* UScreenEditSub.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F470CDA1B2B00627463 /* UScreenEditSub.pas */; };
+		2CF54F6A0CDA1B2B00627463 /* UScreenLevel.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F480CDA1B2B00627463 /* UScreenLevel.pas */; };
+		2CF54F6B0CDA1B2B00627463 /* UScreenLoading.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F490CDA1B2B00627463 /* UScreenLoading.pas */; };
+		2CF54F6C0CDA1B2B00627463 /* UScreenMain.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4A0CDA1B2B00627463 /* UScreenMain.pas */; };
+		2CF54F6D0CDA1B2B00627463 /* UScreenName.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4B0CDA1B2B00627463 /* UScreenName.pas */; };
+		2CF54F6E0CDA1B2B00627463 /* UScreenOpen.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4C0CDA1B2B00627463 /* UScreenOpen.pas */; };
+		2CF54F6F0CDA1B2B00627463 /* UScreenOptions.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4D0CDA1B2B00627463 /* UScreenOptions.pas */; };
+		2CF54F700CDA1B2B00627463 /* UScreenOptionsAdvanced.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4E0CDA1B2B00627463 /* UScreenOptionsAdvanced.pas */; };
+		2CF54F710CDA1B2B00627463 /* UScreenOptionsGame.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4F0CDA1B2B00627463 /* UScreenOptionsGame.pas */; };
+		2CF54F720CDA1B2B00627463 /* UScreenOptionsGraphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F500CDA1B2B00627463 /* UScreenOptionsGraphics.pas */; };
+		2CF54F730CDA1B2B00627463 /* UScreenOptionsLyrics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F510CDA1B2B00627463 /* UScreenOptionsLyrics.pas */; };
+		2CF54F740CDA1B2B00627463 /* UScreenOptionsRecord.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F520CDA1B2B00627463 /* UScreenOptionsRecord.pas */; };
+		2CF54F750CDA1B2B00627463 /* UScreenOptionsSound.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F530CDA1B2B00627463 /* UScreenOptionsSound.pas */; };
+		2CF54F760CDA1B2B00627463 /* UScreenOptionsThemes.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F540CDA1B2B00627463 /* UScreenOptionsThemes.pas */; };
+		2CF54F770CDA1B2B00627463 /* UScreenPartyNewRound.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F550CDA1B2B00627463 /* UScreenPartyNewRound.pas */; };
+		2CF54F780CDA1B2B00627463 /* UScreenPartyOptions.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F560CDA1B2B00627463 /* UScreenPartyOptions.pas */; };
+		2CF54F790CDA1B2B00627463 /* UScreenPartyPlayer.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F570CDA1B2B00627463 /* UScreenPartyPlayer.pas */; };
+		2CF54F7A0CDA1B2B00627463 /* UScreenPartyScore.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F580CDA1B2B00627463 /* UScreenPartyScore.pas */; };
+		2CF54F7B0CDA1B2B00627463 /* UScreenPartyWin.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F590CDA1B2B00627463 /* UScreenPartyWin.pas */; };
+		2CF54F7C0CDA1B2B00627463 /* UScreenPopup.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5A0CDA1B2B00627463 /* UScreenPopup.pas */; };
+		2CF54F7D0CDA1B2B00627463 /* UScreenScore.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5B0CDA1B2B00627463 /* UScreenScore.pas */; };
+		2CF54F7E0CDA1B2B00627463 /* UScreenSing.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5C0CDA1B2B00627463 /* UScreenSing.pas */; };
+		2CF54F7F0CDA1B2B00627463 /* UScreenSingModi.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5D0CDA1B2B00627463 /* UScreenSingModi.pas */; };
+		2CF54F800CDA1B2B00627463 /* UScreenSong.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5E0CDA1B2B00627463 /* UScreenSong.pas */; };
+		2CF54F810CDA1B2B00627463 /* UScreenSongJumpto.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5F0CDA1B2B00627463 /* UScreenSongJumpto.pas */; };
+		2CF54F820CDA1B2B00627463 /* UScreenSongMenu.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F600CDA1B2B00627463 /* UScreenSongMenu.pas */; };
+		2CF54F830CDA1B2B00627463 /* UScreenStatDetail.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F610CDA1B2B00627463 /* UScreenStatDetail.pas */; };
+		2CF54F840CDA1B2B00627463 /* UScreenStatMain.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F620CDA1B2B00627463 /* UScreenStatMain.pas */; };
+		2CF54F850CDA1B2B00627463 /* UScreenTop5.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F630CDA1B2B00627463 /* UScreenTop5.pas */; };
+		2CF54F860CDA1B2B00627463 /* UScreenWelcome.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F640CDA1B2B00627463 /* UScreenWelcome.pas */; };
+		2CF54F870CDA1B2B00627463 /* UScreenCredits.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F430CDA1B2B00627463 /* UScreenCredits.pas */; };
+		2CF54F880CDA1B2B00627463 /* UScreenEdit.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F440CDA1B2B00627463 /* UScreenEdit.pas */; };
+		2CF54F890CDA1B2B00627463 /* UScreenEditConvert.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F450CDA1B2B00627463 /* UScreenEditConvert.pas */; };
+		2CF54F8A0CDA1B2B00627463 /* UScreenEditHeader.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F460CDA1B2B00627463 /* UScreenEditHeader.pas */; };
+		2CF54F8B0CDA1B2B00627463 /* UScreenEditSub.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F470CDA1B2B00627463 /* UScreenEditSub.pas */; };
+		2CF54F8C0CDA1B2B00627463 /* UScreenLevel.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F480CDA1B2B00627463 /* UScreenLevel.pas */; };
+		2CF54F8D0CDA1B2B00627463 /* UScreenLoading.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F490CDA1B2B00627463 /* UScreenLoading.pas */; };
+		2CF54F8E0CDA1B2B00627463 /* UScreenMain.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4A0CDA1B2B00627463 /* UScreenMain.pas */; };
+		2CF54F8F0CDA1B2B00627463 /* UScreenName.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4B0CDA1B2B00627463 /* UScreenName.pas */; };
+		2CF54F900CDA1B2B00627463 /* UScreenOpen.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4C0CDA1B2B00627463 /* UScreenOpen.pas */; };
+		2CF54F910CDA1B2B00627463 /* UScreenOptions.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4D0CDA1B2B00627463 /* UScreenOptions.pas */; };
+		2CF54F920CDA1B2B00627463 /* UScreenOptionsAdvanced.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4E0CDA1B2B00627463 /* UScreenOptionsAdvanced.pas */; };
+		2CF54F930CDA1B2B00627463 /* UScreenOptionsGame.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F4F0CDA1B2B00627463 /* UScreenOptionsGame.pas */; };
+		2CF54F940CDA1B2B00627463 /* UScreenOptionsGraphics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F500CDA1B2B00627463 /* UScreenOptionsGraphics.pas */; };
+		2CF54F950CDA1B2B00627463 /* UScreenOptionsLyrics.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F510CDA1B2B00627463 /* UScreenOptionsLyrics.pas */; };
+		2CF54F960CDA1B2B00627463 /* UScreenOptionsRecord.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F520CDA1B2B00627463 /* UScreenOptionsRecord.pas */; };
+		2CF54F970CDA1B2B00627463 /* UScreenOptionsSound.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F530CDA1B2B00627463 /* UScreenOptionsSound.pas */; };
+		2CF54F980CDA1B2B00627463 /* UScreenOptionsThemes.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F540CDA1B2B00627463 /* UScreenOptionsThemes.pas */; };
+		2CF54F990CDA1B2B00627463 /* UScreenPartyNewRound.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F550CDA1B2B00627463 /* UScreenPartyNewRound.pas */; };
+		2CF54F9A0CDA1B2B00627463 /* UScreenPartyOptions.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F560CDA1B2B00627463 /* UScreenPartyOptions.pas */; };
+		2CF54F9B0CDA1B2B00627463 /* UScreenPartyPlayer.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F570CDA1B2B00627463 /* UScreenPartyPlayer.pas */; };
+		2CF54F9C0CDA1B2B00627463 /* UScreenPartyScore.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F580CDA1B2B00627463 /* UScreenPartyScore.pas */; };
+		2CF54F9D0CDA1B2B00627463 /* UScreenPartyWin.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F590CDA1B2B00627463 /* UScreenPartyWin.pas */; };
+		2CF54F9E0CDA1B2B00627463 /* UScreenPopup.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5A0CDA1B2B00627463 /* UScreenPopup.pas */; };
+		2CF54F9F0CDA1B2B00627463 /* UScreenScore.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5B0CDA1B2B00627463 /* UScreenScore.pas */; };
+		2CF54FA00CDA1B2B00627463 /* UScreenSing.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5C0CDA1B2B00627463 /* UScreenSing.pas */; };
+		2CF54FA10CDA1B2B00627463 /* UScreenSingModi.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5D0CDA1B2B00627463 /* UScreenSingModi.pas */; };
+		2CF54FA20CDA1B2B00627463 /* UScreenSong.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5E0CDA1B2B00627463 /* UScreenSong.pas */; };
+		2CF54FA30CDA1B2B00627463 /* UScreenSongJumpto.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F5F0CDA1B2B00627463 /* UScreenSongJumpto.pas */; };
+		2CF54FA40CDA1B2B00627463 /* UScreenSongMenu.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F600CDA1B2B00627463 /* UScreenSongMenu.pas */; };
+		2CF54FA50CDA1B2B00627463 /* UScreenStatDetail.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F610CDA1B2B00627463 /* UScreenStatDetail.pas */; };
+		2CF54FA60CDA1B2B00627463 /* UScreenStatMain.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F620CDA1B2B00627463 /* UScreenStatMain.pas */; };
+		2CF54FA70CDA1B2B00627463 /* UScreenTop5.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F630CDA1B2B00627463 /* UScreenTop5.pas */; };
+		2CF54FA80CDA1B2B00627463 /* UScreenWelcome.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF54F640CDA1B2B00627463 /* UScreenWelcome.pas */; };
+		2CF5508C0CDA22B000627463 /* ModiSDK.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5508B0CDA22B000627463 /* ModiSDK.pas */; };
+		2CF5508D0CDA22B000627463 /* ModiSDK.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5508B0CDA22B000627463 /* ModiSDK.pas */; };
+		2CF551100CDA293700627463 /* SQLite3.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5510E0CDA293700627463 /* SQLite3.pas */; };
+		2CF551110CDA293700627463 /* SQLiteTable3.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5510F0CDA293700627463 /* SQLiteTable3.pas */; };
+		2CF551120CDA293700627463 /* SQLite3.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5510E0CDA293700627463 /* SQLite3.pas */; };
+		2CF551130CDA293700627463 /* SQLiteTable3.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5510F0CDA293700627463 /* SQLiteTable3.pas */; };
+		2CF5512D0CDA29C600627463 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CF5512C0CDA29C600627463 /* libsqlite3.dylib */; };
+		2CF552140CDA3D1400627463 /* UPluginDefs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552110CDA3D1400627463 /* UPluginDefs.pas */; };
+		2CF552170CDA3D1400627463 /* UPluginDefs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552110CDA3D1400627463 /* UPluginDefs.pas */; };
+		2CF552A70CDA42C900627463 /* avcodec.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5529E0CDA42C900627463 /* avcodec.pas */; };
+		2CF552A80CDA42C900627463 /* avformat.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5529F0CDA42C900627463 /* avformat.pas */; };
+		2CF552A90CDA42C900627463 /* avio.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A00CDA42C900627463 /* avio.pas */; };
+		2CF552AA0CDA42C900627463 /* avutil.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A10CDA42C900627463 /* avutil.pas */; };
+		2CF552AD0CDA42C900627463 /* opt.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A40CDA42C900627463 /* opt.pas */; };
+		2CF552AE0CDA42C900627463 /* rational.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A50CDA42C900627463 /* rational.pas */; };
+		2CF552B00CDA42C900627463 /* avcodec.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5529E0CDA42C900627463 /* avcodec.pas */; };
+		2CF552B10CDA42C900627463 /* avformat.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF5529F0CDA42C900627463 /* avformat.pas */; };
+		2CF552B20CDA42C900627463 /* avio.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A00CDA42C900627463 /* avio.pas */; };
+		2CF552B30CDA42C900627463 /* avutil.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A10CDA42C900627463 /* avutil.pas */; };
+		2CF552B60CDA42C900627463 /* opt.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A40CDA42C900627463 /* opt.pas */; };
+		2CF552B70CDA42C900627463 /* rational.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF552A50CDA42C900627463 /* rational.pas */; };
+		2CF553080CDA51B500627463 /* sdlutils.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF553070CDA51B500627463 /* sdlutils.pas */; };
+		2CF553090CDA51B500627463 /* sdlutils.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF553070CDA51B500627463 /* sdlutils.pas */; };
+		2CF553100CDA52D100627463 /* SDL_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2C4D9D980CC9EE0B0031092D /* SDL_image.framework */; };
+		2CF5533B0CDA52E200627463 /* SDL_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2C4D9D990CC9EE0B0031092D /* SDL_ttf.framework */; };
+		2CF5533F0CDA531100627463 /* libfreeimage.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2C4D9D960CC9EDEB0031092D /* libfreeimage.dylib */; };
+		2CF553400CDA531100627463 /* libsqlite3.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2CF5512C0CDA29C600627463 /* libsqlite3.dylib */; };
+		2CF8E6BE0CDFA8E80053A996 /* UPartyDefs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF8E6BD0CDFA8E80053A996 /* UPartyDefs.pas */; };
+		2CF8E6BF0CDFA8E80053A996 /* UPartyDefs.pas in Sources */ = {isa = PBXBuildFile; fileRef = 2CF8E6BD0CDFA8E80053A996 /* UPartyDefs.pas */; };
+		98B8BE340B1F947800162019 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE330B1F947800162019 /* AppKit.framework */; };
+		98B8BE390B1F949C00162019 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE370B1F949C00162019 /* Cocoa.framework */; };
+		98B8BE3A0B1F949C00162019 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE380B1F949C00162019 /* Foundation.framework */; };
+		98B8BE580B1F972400162019 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B8BE570B1F972400162019 /* SDL.framework */; };
+		DD37F23D0A60252800975B2D /* UltraStarDX.pas in Sources */ = {isa = PBXBuildFile; fileRef = DDC6851B09F57195004E4BFF /* UltraStarDX.pas */; };
+		DD37F2C70A6037EA00975B2D /* libfpcrtl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DD37F2430A60255800975B2D /* libfpcrtl.a */; };
+		DDC689B509F57C69004E4BFF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DDC689B309F57C69004E4BFF /* InfoPlist.strings */; };
+		DDC689B609F57C69004E4BFF /* SDLMain.nib in Resources */ = {isa = PBXBuildFile; fileRef = DDC689B409F57C69004E4BFF /* SDLMain.nib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		DD7C44CD0A6E5050003FA52B /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.inc";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+				"$(TARGET_TEMP_DIR)/$(INPUT_FILE_NAME).compiled",
+			);
+			script = "echo \\\"-Fi$INPUT_FILE_DIR\\\" >> \"$PROJECT_TEMP_DIR\"/unitpaths\ntouch \"$TARGET_TEMP_DIR\"/\"$INPUT_FILE_NAME\".compiled\n";
+		};
+		DD7C45710A6E7E36003FA52B /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			filePatterns = "*.inc";
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+			);
+			script = "";
+		};
+		DDC688F309F57599004E4BFF /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = sourcecode.pascal;
+			isEditable = 1;
+			outputFiles = (
+				"$(TARGET_TEMP_DIR)/$(INPUT_FILE_NAME).compiled",
+			);
+			script = "# set -vx\n\n# if FPC_MAIN_FILE is specified, only use that one\nif test \"x$FPC_MAIN_FILE\" = x ; then\n  echo \"$INPUT_FILE_SUFFIX\" \"$INPUT_FILE_PATH\" >> \"$PROJECT_TEMP_DIR\"/files_to_compile\nelif test \"x$INPUT_FILE_NAME\" = \"x$FPC_MAIN_FILE\" || test \"x$INPUT_FILE_PATH\" = \"x$FPC_MAIN_FILE\" ; then\n  echo \"$INPUT_FILE_SUFFIX\" \"$INPUT_FILE_PATH\" > \"$PROJECT_TEMP_DIR\"/files_to_compile\n  echo \"$INPUT_FILE_SUFFIX\" \"$INPUT_FILE_PATH\" > \"$PROJECT_TEMP_DIR\"/mainfile\nfi\n\necho \\\"-Fu$INPUT_FILE_DIR\\\" >> \"$PROJECT_TEMP_DIR\"/unitpaths\necho \\\"-Fi$INPUT_FILE_DIR\\\" >> \"$PROJECT_TEMP_DIR\"/unitpaths\n\n# if this file was not yet before compiled, it may be a new file -> delete\n# source cache (there might be a new mainfile now, unless FPC_MAIN_FILE is specified)\nif test ! -f \"$TARGET_TEMP_DIR\"/\"$INPUT_FILE_NAME\".compiled && test \"x$FPC_MAIN_FILE\" = x ; then\n  cd \"$PROJECT_TEMP_DIR\"\n  rm -f mainfile scriptrun > /dev/null 2>&1\nfi\n\ntouch \"$TARGET_TEMP_DIR\"/\"$INPUT_FILE_NAME\".compiled\n";
+		};
+		DDC6891509F57648004E4BFF /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = sourcecode.pascal;
+			isEditable = 1;
+			outputFiles = (
+				"$(PROJECT_DERIVED_FILE_DIR)/$(INPUT_FILE_BASE).s",
+			);
+			script = "";
+		};
+/* End PBXBuildRule section */
+
+/* Begin PBXContainerItemProxy section */
+		DD37F25D0A60268D00975B2D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DDC6850F09F5717A004E4BFF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DD37F2420A60255800975B2D;
+			remoteInfo = fpcrtl;
+		};
+		DDC688ED09F57578004E4BFF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DDC6850F09F5717A004E4BFF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DDC688D409F57523004E4BFF;
+			remoteInfo = "Put unit sources in the 'Compile Sources' phase of this target";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		2CDEC44F0CC5255600FFA244 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				2CAC2BF40D380AE800CA518A /* libbass.dylib in CopyFiles */,
+				2CE907990D1BC91D00A1FDFF /* libavformat.dylib in CopyFiles */,
+				2CE9079A0D1BC91D00A1FDFF /* libavutil.dylib in CopyFiles */,
+				2CE907980D1BC90A00A1FDFF /* libavcodec.dylib in CopyFiles */,
+				2CF5533F0CDA531100627463 /* libfreeimage.dylib in CopyFiles */,
+				2CF553400CDA531100627463 /* libsqlite3.dylib in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2CDEC4940CC5262700FFA244 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				2CDEC4960CC5264600FFA244 /* SDL.framework in CopyFiles */,
+				2CF553100CDA52D100627463 /* SDL_image.framework in CopyFiles */,
+				2CF5533B0CDA52E200627463 /* SDL_ttf.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		2C0199800D99840900974970 /* config-macosx.inc */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = "config-macosx.inc"; path = "../config-macosx.inc"; sourceTree = SOURCE_ROOT; };
+		2C4B70220CF757A400B0F0BD /* Until5000.dpr */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = text; name = Until5000.dpr; path = ../../../Modis/5000Points/Until5000.dpr; sourceTree = SOURCE_ROOT; };
+		2C4D9C620CC9EC8C0031092D /* TextGL.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = TextGL.pas; path = ../Classes/TextGL.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C650CC9EC8C0031092D /* UCatCovers.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UCatCovers.pas; path = ../Classes/UCatCovers.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C660CC9EC8C0031092D /* UCommandLine.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UCommandLine.pas; path = ../Classes/UCommandLine.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C670CC9EC8C0031092D /* UCommon.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UCommon.pas; path = ../Classes/UCommon.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C680CC9EC8C0031092D /* UCore.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UCore.pas; path = ../Classes/UCore.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C690CC9EC8C0031092D /* UCoreModule.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UCoreModule.pas; path = ../Classes/UCoreModule.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C6A0CC9EC8C0031092D /* UCovers.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UCovers.pas; path = ../Classes/UCovers.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C6B0CC9EC8C0031092D /* UDataBase.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UDataBase.pas; path = ../Classes/UDataBase.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C6C0CC9EC8C0031092D /* UDLLManager.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UDLLManager.pas; path = ../Classes/UDLLManager.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C6D0CC9EC8C0031092D /* UDraw.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UDraw.pas; path = ../Classes/UDraw.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C6E0CC9EC8C0031092D /* UFiles.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UFiles.pas; path = ../Classes/UFiles.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C6F0CC9EC8C0031092D /* UGraphic.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UGraphic.pas; path = ../Classes/UGraphic.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C700CC9EC8C0031092D /* UGraphicClasses.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UGraphicClasses.pas; path = ../Classes/UGraphicClasses.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C710CC9EC8C0031092D /* UHooks.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UHooks.pas; path = ../Classes/UHooks.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C720CC9EC8C0031092D /* UIni.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UIni.pas; path = ../Classes/UIni.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C730CC9EC8C0031092D /* UJoystick.pas */ = {isa = PBXFileReference; explicitFileType = sourcecode.pascal; fileEncoding = 5; indentWidth = 2; name = UJoystick.pas; path = ../Classes/UJoystick.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C740CC9EC8C0031092D /* ULanguage.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = ULanguage.pas; path = ../Classes/ULanguage.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C760CC9EC8C0031092D /* ULCD.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = ULCD.pas; path = ../Classes/ULCD.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C770CC9EC8C0031092D /* ULight.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = ULight.pas; path = ../Classes/ULight.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C780CC9EC8C0031092D /* ULog.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = ULog.pas; path = ../Classes/ULog.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C790CC9EC8C0031092D /* ULyrics_bak.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = ULyrics_bak.pas; path = ../Classes/ULyrics_bak.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C7A0CC9EC8C0031092D /* ULyrics.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = ULyrics.pas; path = ../Classes/ULyrics.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C7B0CC9EC8C0031092D /* UMain.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UMain.pas; path = ../Classes/UMain.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C7C0CC9EC8C0031092D /* UMedia_dummy.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UMedia_dummy.pas; path = ../Classes/UMedia_dummy.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C7D0CC9EC8C0031092D /* UModules.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UModules.pas; path = ../Classes/UModules.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C7E0CC9EC8C0031092D /* UMusic.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UMusic.pas; path = ../Classes/UMusic.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C7F0CC9EC8C0031092D /* UParty.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UParty.pas; path = ../Classes/UParty.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C800CC9EC8C0031092D /* UPlaylist.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UPlaylist.pas; path = ../Classes/UPlaylist.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C820CC9EC8C0031092D /* UPluginInterface.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UPluginInterface.pas; path = ../Classes/UPluginInterface.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C830CC9EC8C0031092D /* uPluginLoader.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = uPluginLoader.pas; path = ../Classes/uPluginLoader.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C840CC9EC8C0031092D /* URecord.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = URecord.pas; path = ../Classes/URecord.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C850CC9EC8C0031092D /* UServices.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UServices.pas; path = ../Classes/UServices.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C860CC9EC8C0031092D /* USingNotes.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = USingNotes.pas; path = ../Classes/USingNotes.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C870CC9EC8C0031092D /* USingScores.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = USingScores.pas; path = ../Classes/USingScores.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C880CC9EC8C0031092D /* USkins.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = USkins.pas; path = ../Classes/USkins.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C890CC9EC8C0031092D /* USongs.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = USongs.pas; path = ../Classes/USongs.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C8A0CC9EC8C0031092D /* UTextClasses.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UTextClasses.pas; path = ../Classes/UTextClasses.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C8B0CC9EC8C0031092D /* UTexture.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UTexture.pas; path = ../Classes/UTexture.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C8C0CC9EC8C0031092D /* UThemes.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UThemes.pas; path = ../Classes/UThemes.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C8D0CC9EC8C0031092D /* UTime.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UTime.pas; path = ../Classes/UTime.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9C8E0CC9EC8C0031092D /* UVideo.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UVideo.pas; path = ../Classes/UVideo.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9D900CC9ED4F0031092D /* FreeBitmap.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = FreeBitmap.pas; path = ../lib/FreeImage/FreeBitmap.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9D910CC9ED4F0031092D /* FreeImage.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = FreeImage.pas; path = ../lib/FreeImage/FreeImage.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9D960CC9EDEB0031092D /* libfreeimage.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfreeimage.dylib; path = ../lib/FreeImage/libfreeimage.dylib; sourceTree = SOURCE_ROOT; };
+		2C4D9D980CC9EE0B0031092D /* SDL_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_image.framework; path = /Library/Frameworks/SDL_image.framework; sourceTree = "<absolute>"; };
+		2C4D9D990CC9EE0B0031092D /* SDL_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_ttf.framework; path = /Library/Frameworks/SDL_ttf.framework; sourceTree = "<absolute>"; };
+		2C4D9DCC0CC9EE6F0031092D /* UDisplay.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UDisplay.pas; path = ../Menu/UDisplay.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9DCD0CC9EE6F0031092D /* UDrawTexture.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UDrawTexture.pas; path = ../Menu/UDrawTexture.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9DCE0CC9EE6F0031092D /* UMenu.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UMenu.pas; path = ../Menu/UMenu.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9DCF0CC9EE6F0031092D /* UMenuButton.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UMenuButton.pas; path = ../Menu/UMenuButton.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9DD00CC9EE6F0031092D /* UMenuButtonCollection.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UMenuButtonCollection.pas; path = ../Menu/UMenuButtonCollection.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9DD10CC9EE6F0031092D /* UMenuInteract.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UMenuInteract.pas; path = ../Menu/UMenuInteract.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9DD20CC9EE6F0031092D /* UMenuSelect.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UMenuSelect.pas; path = ../Menu/UMenuSelect.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9DD30CC9EE6F0031092D /* UMenuSelectSlide.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UMenuSelectSlide.pas; path = ../Menu/UMenuSelectSlide.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9DD40CC9EE6F0031092D /* UMenuStatic.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UMenuStatic.pas; path = ../Menu/UMenuStatic.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9DD50CC9EE6F0031092D /* UMenuText.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UMenuText.pas; path = ../Menu/UMenuText.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4D9DEC0CC9EF0A0031092D /* sdl_image.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdl_image.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL_image/sdl_image.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
+		2C4D9DEF0CC9EF210031092D /* sdl_ttf.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdl_ttf.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL_ttf/sdl_ttf.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
+		2C4D9E040CC9EF840031092D /* OpenGL12.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = OpenGL12.pas; path = Wrapper/OpenGL12.pas; sourceTree = "<group>"; tabWidth = 2; };
+		2C4D9E090CC9EF840031092D /* Windows.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = Windows.pas; path = Wrapper/Windows.pas; sourceTree = "<group>"; tabWidth = 2; };
+		2C4D9E440CC9F0ED0031092D /* switches.inc */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = switches.inc; path = ../switches.inc; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2C4FA2A70CDBAD1E002CC3B0 /* ustar-icon_v01.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = "ustar-icon_v01.icns"; path = "../../Graphics/ustar-icon_v01.icns"; sourceTree = SOURCE_ROOT; };
+		2C5663EE0D35645700D4FF53 /* portaudio.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = portaudio.pas; path = ../lib/portaudio/delphi/portaudio.pas; sourceTree = SOURCE_ROOT; };
+		2C56642B0D35683200D4FF53 /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; name = SDLMain.m; path = "/Library/Frameworks/JEDI-SDL.framework/SDL/SDLMain.m"; sourceTree = "<absolute>"; };
+		2C56642F0D35688200D4FF53 /* SDL.h */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.h; name = SDL.h; path = /Library/Frameworks/SDL.framework/Versions/A/Headers/SDL.h; sourceTree = "<absolute>"; };
+		2C8937290CE393FB005D8A87 /* UPlatform.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UPlatform.pas; path = ../Classes/UPlatform.pas; sourceTree = SOURCE_ROOT; };
+		2C8937310CE395CE005D8A87 /* UPlatformMacOSX.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; lineEnding = 0; name = UPlatformMacOSX.pas; path = ../Classes/UPlatformMacOSX.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CAC2BDD0D3809F500CA518A /* UAudioInput_Bass.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UAudioInput_Bass.pas; path = ../Classes/UAudioInput_Bass.pas; sourceTree = SOURCE_ROOT; };
+		2CAC2BDF0D3809F500CA518A /* UAudioPlayback_Bass.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = UAudioPlayback_Bass.pas; path = ../Classes/UAudioPlayback_Bass.pas; sourceTree = SOURCE_ROOT; };
+		2CAC2BF00D380AC200CA518A /* libbass.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbass.dylib; path = ../lib/bass/libbass.dylib; sourceTree = SOURCE_ROOT; };
+		2CAC2BF70D380B1B00CA518A /* Bass.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = Bass.pas; path = ../lib/bass/MacOSX/Bass.pas; sourceTree = SOURCE_ROOT; };
+		2CB9E87D0D43B78400214DFA /* USong.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = USong.pas; path = ../Classes/USong.pas; sourceTree = SOURCE_ROOT; };
+		2CDC716B0CDB9CB70018F966 /* StrUtils.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = StrUtils.pas; path = ../../../Modis/SDK/StrUtils.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CDEA4F60CBD725B0096994C /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		2CE603D90D715F2100DB0D88 /* mathematics.pas */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = sourcecode.pascal; name = mathematics.pas; path = ../lib/ffmpeg/mathematics.pas; sourceTree = SOURCE_ROOT; };
+		2CE603DD0D715F6700DB0D88 /* UAudioCore_Bass.pas */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = sourcecode.pascal; name = UAudioCore_Bass.pas; path = ../Classes/UAudioCore_Bass.pas; sourceTree = SOURCE_ROOT; };
+		2CE603E10D715F8600DB0D88 /* UConfig.pas */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = sourcecode.pascal; name = UConfig.pas; path = ../Classes/UConfig.pas; sourceTree = SOURCE_ROOT; };
+		2CE907900D1BC8A800A1FDFF /* libavcodec.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavcodec.dylib; path = ../lib/ffmpeg/libavcodec.dylib; sourceTree = SOURCE_ROOT; };
+		2CE907910D1BC8A800A1FDFF /* libavformat.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavformat.dylib; path = ../lib/ffmpeg/libavformat.dylib; sourceTree = SOURCE_ROOT; };
+		2CE907920D1BC8A800A1FDFF /* libavutil.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libavutil.dylib; path = ../lib/ffmpeg/libavutil.dylib; sourceTree = SOURCE_ROOT; };
+		2CEA2ADE0CE385190097A5FF /* Graphics.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = Graphics.pas; path = Wrapper/Graphics.pas; sourceTree = "<group>"; };
+		2CEA2ADF0CE385190097A5FF /* JPEG.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = JPEG.pas; path = Wrapper/JPEG.pas; sourceTree = "<group>"; };
+		2CEA2AF00CE3868E0097A5FF /* PseudoThread.pas */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.pascal; name = PseudoThread.pas; path = Wrapper/PseudoThread.pas; sourceTree = "<group>"; };
+		2CF3EF210CDE13A0004F5956 /* Messages.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = Messages.pas; path = Wrapper/Messages.pas; sourceTree = "<group>"; tabWidth = 2; };
+		2CF3EF260CDE13BA004F5956 /* MacResources.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = MacResources.pas; path = Wrapper/MacResources.pas; sourceTree = "<group>"; tabWidth = 2; };
+		2CF54F430CDA1B2B00627463 /* UScreenCredits.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenCredits.pas; path = ../Screens/UScreenCredits.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F440CDA1B2B00627463 /* UScreenEdit.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenEdit.pas; path = ../Screens/UScreenEdit.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F450CDA1B2B00627463 /* UScreenEditConvert.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenEditConvert.pas; path = ../Screens/UScreenEditConvert.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F460CDA1B2B00627463 /* UScreenEditHeader.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenEditHeader.pas; path = ../Screens/UScreenEditHeader.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F470CDA1B2B00627463 /* UScreenEditSub.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenEditSub.pas; path = ../Screens/UScreenEditSub.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F480CDA1B2B00627463 /* UScreenLevel.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenLevel.pas; path = ../Screens/UScreenLevel.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F490CDA1B2B00627463 /* UScreenLoading.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenLoading.pas; path = ../Screens/UScreenLoading.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F4A0CDA1B2B00627463 /* UScreenMain.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenMain.pas; path = ../Screens/UScreenMain.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F4B0CDA1B2B00627463 /* UScreenName.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenName.pas; path = ../Screens/UScreenName.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F4C0CDA1B2B00627463 /* UScreenOpen.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenOpen.pas; path = ../Screens/UScreenOpen.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F4D0CDA1B2B00627463 /* UScreenOptions.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenOptions.pas; path = ../Screens/UScreenOptions.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F4E0CDA1B2B00627463 /* UScreenOptionsAdvanced.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsAdvanced.pas; path = ../Screens/UScreenOptionsAdvanced.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F4F0CDA1B2B00627463 /* UScreenOptionsGame.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsGame.pas; path = ../Screens/UScreenOptionsGame.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F500CDA1B2B00627463 /* UScreenOptionsGraphics.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsGraphics.pas; path = ../Screens/UScreenOptionsGraphics.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F510CDA1B2B00627463 /* UScreenOptionsLyrics.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsLyrics.pas; path = ../Screens/UScreenOptionsLyrics.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F520CDA1B2B00627463 /* UScreenOptionsRecord.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsRecord.pas; path = ../Screens/UScreenOptionsRecord.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F530CDA1B2B00627463 /* UScreenOptionsSound.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsSound.pas; path = ../Screens/UScreenOptionsSound.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F540CDA1B2B00627463 /* UScreenOptionsThemes.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenOptionsThemes.pas; path = ../Screens/UScreenOptionsThemes.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F550CDA1B2B00627463 /* UScreenPartyNewRound.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenPartyNewRound.pas; path = ../Screens/UScreenPartyNewRound.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F560CDA1B2B00627463 /* UScreenPartyOptions.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenPartyOptions.pas; path = ../Screens/UScreenPartyOptions.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F570CDA1B2B00627463 /* UScreenPartyPlayer.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenPartyPlayer.pas; path = ../Screens/UScreenPartyPlayer.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F580CDA1B2B00627463 /* UScreenPartyScore.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenPartyScore.pas; path = ../Screens/UScreenPartyScore.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F590CDA1B2B00627463 /* UScreenPartyWin.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenPartyWin.pas; path = ../Screens/UScreenPartyWin.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F5A0CDA1B2B00627463 /* UScreenPopup.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenPopup.pas; path = ../Screens/UScreenPopup.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F5B0CDA1B2B00627463 /* UScreenScore.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenScore.pas; path = ../Screens/UScreenScore.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F5C0CDA1B2B00627463 /* UScreenSing.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenSing.pas; path = ../Screens/UScreenSing.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F5D0CDA1B2B00627463 /* UScreenSingModi.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenSingModi.pas; path = ../Screens/UScreenSingModi.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F5E0CDA1B2B00627463 /* UScreenSong.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenSong.pas; path = ../Screens/UScreenSong.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F5F0CDA1B2B00627463 /* UScreenSongJumpto.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenSongJumpto.pas; path = ../Screens/UScreenSongJumpto.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F600CDA1B2B00627463 /* UScreenSongMenu.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenSongMenu.pas; path = ../Screens/UScreenSongMenu.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F610CDA1B2B00627463 /* UScreenStatDetail.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenStatDetail.pas; path = ../Screens/UScreenStatDetail.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F620CDA1B2B00627463 /* UScreenStatMain.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenStatMain.pas; path = ../Screens/UScreenStatMain.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F630CDA1B2B00627463 /* UScreenTop5.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenTop5.pas; path = ../Screens/UScreenTop5.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF54F640CDA1B2B00627463 /* UScreenWelcome.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UScreenWelcome.pas; path = ../Screens/UScreenWelcome.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF5508B0CDA22B000627463 /* ModiSDK.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = ModiSDK.pas; path = ../../../Modis/SDK/ModiSDK.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF5510E0CDA293700627463 /* SQLite3.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = SQLite3.pas; path = ../lib/SQLite/SQLite3.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF5510F0CDA293700627463 /* SQLiteTable3.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = SQLiteTable3.pas; path = ../lib/SQLite/SQLiteTable3.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF5512C0CDA29C600627463 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = ../lib/SQLite/libsqlite3.dylib; sourceTree = SOURCE_ROOT; };
+		2CF551A70CDA356800627463 /* UltraStar.dpr */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = text; name = UltraStar.dpr; path = ../UltraStar.dpr; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF552110CDA3D1400627463 /* UPluginDefs.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UPluginDefs.pas; path = ../../../Modis/SDK/UPluginDefs.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF5529E0CDA42C900627463 /* avcodec.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = avcodec.pas; path = ../lib/ffmpeg/avcodec.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF5529F0CDA42C900627463 /* avformat.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = avformat.pas; path = ../lib/ffmpeg/avformat.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF552A00CDA42C900627463 /* avio.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = avio.pas; path = ../lib/ffmpeg/avio.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF552A10CDA42C900627463 /* avutil.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = avutil.pas; path = ../lib/ffmpeg/avutil.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF552A40CDA42C900627463 /* opt.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = opt.pas; path = ../lib/ffmpeg/opt.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF552A50CDA42C900627463 /* rational.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = rational.pas; path = ../lib/ffmpeg/rational.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		2CF553070CDA51B500627463 /* sdlutils.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdlutils.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL/sdlutils.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
+		2CF77DB60CF7556C00F3B101 /* libLib_UltraPong.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libLib_UltraPong.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		2CF8E6BD0CDFA8E80053A996 /* UPartyDefs.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = UPartyDefs.pas; path = ../../../Modis/SDK/UPartyDefs.pas; sourceTree = SOURCE_ROOT; tabWidth = 2; };
+		98B8BE330B1F947800162019 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
+		98B8BE370B1F949C00162019 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		98B8BE380B1F949C00162019 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /Developer/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		98B8BE570B1F972400162019 /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = /Library/Frameworks/SDL.framework; sourceTree = "<absolute>"; };
+		98B8BE5C0B1F974F00162019 /* sdl.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; name = sdl.pas; path = "/Library/Frameworks/JEDI-SDL.framework/SDL/sdl.pas"; sourceTree = "<absolute>"; tabWidth = 2; };
+		DD37F2430A60255800975B2D /* libfpcrtl.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libfpcrtl.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDC6851B09F57195004E4BFF /* UltraStarDX.pas */ = {isa = PBXFileReference; fileEncoding = 5; indentWidth = 2; lastKnownFileType = sourcecode.pascal; path = UltraStarDX.pas; sourceTree = "<group>"; tabWidth = 2; };
+		DDC6868B09F571C2004E4BFF /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 12; lastKnownFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
+		DDC688C809F574E9004E4BFF /* UltraStar Deluxe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "UltraStar Deluxe.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDC688CA09F574E9004E4BFF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
+		DDC689B309F57C69004E4BFF /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		DDC689B409F57C69004E4BFF /* SDLMain.nib */ = {isa = PBXFileReference; explicitFileType = wrapper.nib; name = SDLMain.nib; path = English.lproj/SDLMain.nib; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2CF77DB40CF7556C00F3B101 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDC688C609F574E9004E4BFF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DD37F2C70A6037EA00975B2D /* libfpcrtl.a in Frameworks */,
+				98B8BE340B1F947800162019 /* AppKit.framework in Frameworks */,
+				98B8BE390B1F949C00162019 /* Cocoa.framework in Frameworks */,
+				98B8BE3A0B1F949C00162019 /* Foundation.framework in Frameworks */,
+				98B8BE580B1F972400162019 /* SDL.framework in Frameworks */,
+				2CDEA4F70CBD725B0096994C /* OpenGL.framework in Frameworks */,
+				2C4D9D970CC9EDEB0031092D /* libfreeimage.dylib in Frameworks */,
+				2C4D9D9A0CC9EE0B0031092D /* SDL_image.framework in Frameworks */,
+				2C4D9D9B0CC9EE0B0031092D /* SDL_ttf.framework in Frameworks */,
+				2CF5512D0CDA29C600627463 /* libsqlite3.dylib in Frameworks */,
+				2CE907930D1BC8A800A1FDFF /* libavcodec.dylib in Frameworks */,
+				2CE907940D1BC8A800A1FDFF /* libavformat.dylib in Frameworks */,
+				2CE907950D1BC8A800A1FDFF /* libavutil.dylib in Frameworks */,
+				2CAC2BF10D380AC200CA518A /* libbass.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2C4D9DEB0CC9EECC0031092D /* SDL */ = {
+			isa = PBXGroup;
+			children = (
+				2C56642F0D35688200D4FF53 /* SDL.h */,
+				2C56642B0D35683200D4FF53 /* SDLMain.m */,
+				2CF553070CDA51B500627463 /* sdlutils.pas */,
+				2C4D9DEF0CC9EF210031092D /* sdl_ttf.pas */,
+				2C4D9DEC0CC9EF0A0031092D /* sdl_image.pas */,
+				98B8BE5C0B1F974F00162019 /* sdl.pas */,
+			);
+			name = SDL;
+			sourceTree = "<group>";
+		};
+		2C4D9DF50CC9EF3A0031092D /* Wrapper */ = {
+			isa = PBXGroup;
+			children = (
+				2CEA2AF00CE3868E0097A5FF /* PseudoThread.pas */,
+				2CEA2ADE0CE385190097A5FF /* Graphics.pas */,
+				2CEA2ADF0CE385190097A5FF /* JPEG.pas */,
+				2CF3EF260CDE13BA004F5956 /* MacResources.pas */,
+				2CF3EF210CDE13A0004F5956 /* Messages.pas */,
+				2C4D9E040CC9EF840031092D /* OpenGL12.pas */,
+				2C4D9E090CC9EF840031092D /* Windows.pas */,
+			);
+			name = Wrapper;
+			sourceTree = "<group>";
+		};
+		2C5663EC0D35642E00D4FF53 /* portaudio */ = {
+			isa = PBXGroup;
+			children = (
+				2C5663EE0D35645700D4FF53 /* portaudio.pas */,
+			);
+			name = portaudio;
+			sourceTree = "<group>";
+		};
+		2CAC2BF60D380B0800CA518A /* BASS */ = {
+			isa = PBXGroup;
+			children = (
+				2CAC2BF70D380B1B00CA518A /* Bass.pas */,
+			);
+			name = BASS;
+			sourceTree = "<group>";
+		};
+		2CDD43820CBBE8D400F364DE /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				2CE603E10D715F8600DB0D88 /* UConfig.pas */,
+				2CE603DD0D715F6700DB0D88 /* UAudioCore_Bass.pas */,
+				2CB9E87D0D43B78400214DFA /* USong.pas */,
+				2CAC2BDD0D3809F500CA518A /* UAudioInput_Bass.pas */,
+				2CAC2BDF0D3809F500CA518A /* UAudioPlayback_Bass.pas */,
+				2C8937310CE395CE005D8A87 /* UPlatformMacOSX.pas */,
+				2C8937290CE393FB005D8A87 /* UPlatform.pas */,
+				2C4D9C620CC9EC8C0031092D /* TextGL.pas */,
+				2C4D9C650CC9EC8C0031092D /* UCatCovers.pas */,
+				2C4D9C660CC9EC8C0031092D /* UCommandLine.pas */,
+				2C4D9C670CC9EC8C0031092D /* UCommon.pas */,
+				2C4D9C680CC9EC8C0031092D /* UCore.pas */,
+				2C4D9C690CC9EC8C0031092D /* UCoreModule.pas */,
+				2C4D9C6A0CC9EC8C0031092D /* UCovers.pas */,
+				2C4D9C6B0CC9EC8C0031092D /* UDataBase.pas */,
+				2C4D9C6C0CC9EC8C0031092D /* UDLLManager.pas */,
+				2C4D9C6D0CC9EC8C0031092D /* UDraw.pas */,
+				2C4D9C6E0CC9EC8C0031092D /* UFiles.pas */,
+				2C4D9C6F0CC9EC8C0031092D /* UGraphic.pas */,
+				2C4D9C700CC9EC8C0031092D /* UGraphicClasses.pas */,
+				2C4D9C710CC9EC8C0031092D /* UHooks.pas */,
+				2C4D9C720CC9EC8C0031092D /* UIni.pas */,
+				2C4D9C730CC9EC8C0031092D /* UJoystick.pas */,
+				2C4D9C740CC9EC8C0031092D /* ULanguage.pas */,
+				2C4D9C760CC9EC8C0031092D /* ULCD.pas */,
+				2C4D9C770CC9EC8C0031092D /* ULight.pas */,
+				2C4D9C780CC9EC8C0031092D /* ULog.pas */,
+				2C4D9C790CC9EC8C0031092D /* ULyrics_bak.pas */,
+				2C4D9C7A0CC9EC8C0031092D /* ULyrics.pas */,
+				2C4D9C7B0CC9EC8C0031092D /* UMain.pas */,
+				2C4D9C7C0CC9EC8C0031092D /* UMedia_dummy.pas */,
+				2C4D9C7D0CC9EC8C0031092D /* UModules.pas */,
+				2C4D9C7E0CC9EC8C0031092D /* UMusic.pas */,
+				2C4D9C7F0CC9EC8C0031092D /* UParty.pas */,
+				2C4D9C800CC9EC8C0031092D /* UPlaylist.pas */,
+				2C4D9C820CC9EC8C0031092D /* UPluginInterface.pas */,
+				2C4D9C830CC9EC8C0031092D /* uPluginLoader.pas */,
+				2C4D9C840CC9EC8C0031092D /* URecord.pas */,
+				2C4D9C850CC9EC8C0031092D /* UServices.pas */,
+				2C4D9C860CC9EC8C0031092D /* USingNotes.pas */,
+				2C4D9C870CC9EC8C0031092D /* USingScores.pas */,
+				2C4D9C880CC9EC8C0031092D /* USkins.pas */,
+				2C4D9C890CC9EC8C0031092D /* USongs.pas */,
+				2C4D9C8A0CC9EC8C0031092D /* UTextClasses.pas */,
+				2C4D9C8B0CC9EC8C0031092D /* UTexture.pas */,
+				2C4D9C8C0CC9EC8C0031092D /* UThemes.pas */,
+				2C4D9C8D0CC9EC8C0031092D /* UTime.pas */,
+				2C4D9C8E0CC9EC8C0031092D /* UVideo.pas */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		2CDD438D0CBBE8F700F364DE /* Menu */ = {
+			isa = PBXGroup;
+			children = (
+				2C4D9DCC0CC9EE6F0031092D /* UDisplay.pas */,
+				2C4D9DCD0CC9EE6F0031092D /* UDrawTexture.pas */,
+				2C4D9DCE0CC9EE6F0031092D /* UMenu.pas */,
+				2C4D9DCF0CC9EE6F0031092D /* UMenuButton.pas */,
+				2C4D9DD00CC9EE6F0031092D /* UMenuButtonCollection.pas */,
+				2C4D9DD10CC9EE6F0031092D /* UMenuInteract.pas */,
+				2C4D9DD20CC9EE6F0031092D /* UMenuSelect.pas */,
+				2C4D9DD30CC9EE6F0031092D /* UMenuSelectSlide.pas */,
+				2C4D9DD40CC9EE6F0031092D /* UMenuStatic.pas */,
+				2C4D9DD50CC9EE6F0031092D /* UMenuText.pas */,
+			);
+			name = Menu;
+			sourceTree = "<group>";
+		};
+		2CDD8D0B0CC5539900E4169D /* UltraStarDX Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "UltraStarDX Resources";
+			sourceTree = "<group>";
+		};
+		2CE1F4080CC3EEA400CD02E5 /* FreeImage */ = {
+			isa = PBXGroup;
+			children = (
+				2C4D9D900CC9ED4F0031092D /* FreeBitmap.pas */,
+				2C4D9D910CC9ED4F0031092D /* FreeImage.pas */,
+			);
+			name = FreeImage;
+			sourceTree = "<group>";
+		};
+		2CF54F420CDA1B0C00627463 /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				2CF54F430CDA1B2B00627463 /* UScreenCredits.pas */,
+				2CF54F440CDA1B2B00627463 /* UScreenEdit.pas */,
+				2CF54F450CDA1B2B00627463 /* UScreenEditConvert.pas */,
+				2CF54F460CDA1B2B00627463 /* UScreenEditHeader.pas */,
+				2CF54F470CDA1B2B00627463 /* UScreenEditSub.pas */,
+				2CF54F480CDA1B2B00627463 /* UScreenLevel.pas */,
+				2CF54F490CDA1B2B00627463 /* UScreenLoading.pas */,
+				2CF54F4A0CDA1B2B00627463 /* UScreenMain.pas */,
+				2CF54F4B0CDA1B2B00627463 /* UScreenName.pas */,
+				2CF54F4C0CDA1B2B00627463 /* UScreenOpen.pas */,
+				2CF54F4D0CDA1B2B00627463 /* UScreenOptions.pas */,
+				2CF54F4E0CDA1B2B00627463 /* UScreenOptionsAdvanced.pas */,
+				2CF54F4F0CDA1B2B00627463 /* UScreenOptionsGame.pas */,
+				2CF54F500CDA1B2B00627463 /* UScreenOptionsGraphics.pas */,
+				2CF54F510CDA1B2B00627463 /* UScreenOptionsLyrics.pas */,
+				2CF54F520CDA1B2B00627463 /* UScreenOptionsRecord.pas */,
+				2CF54F530CDA1B2B00627463 /* UScreenOptionsSound.pas */,
+				2CF54F540CDA1B2B00627463 /* UScreenOptionsThemes.pas */,
+				2CF54F550CDA1B2B00627463 /* UScreenPartyNewRound.pas */,
+				2CF54F560CDA1B2B00627463 /* UScreenPartyOptions.pas */,
+				2CF54F570CDA1B2B00627463 /* UScreenPartyPlayer.pas */,
+				2CF54F580CDA1B2B00627463 /* UScreenPartyScore.pas */,
+				2CF54F590CDA1B2B00627463 /* UScreenPartyWin.pas */,
+				2CF54F5A0CDA1B2B00627463 /* UScreenPopup.pas */,
+				2CF54F5B0CDA1B2B00627463 /* UScreenScore.pas */,
+				2CF54F5C0CDA1B2B00627463 /* UScreenSing.pas */,
+				2CF54F5D0CDA1B2B00627463 /* UScreenSingModi.pas */,
+				2CF54F5E0CDA1B2B00627463 /* UScreenSong.pas */,
+				2CF54F5F0CDA1B2B00627463 /* UScreenSongJumpto.pas */,
+				2CF54F600CDA1B2B00627463 /* UScreenSongMenu.pas */,
+				2CF54F610CDA1B2B00627463 /* UScreenStatDetail.pas */,
+				2CF54F620CDA1B2B00627463 /* UScreenStatMain.pas */,
+				2CF54F630CDA1B2B00627463 /* UScreenTop5.pas */,
+				2CF54F640CDA1B2B00627463 /* UScreenWelcome.pas */,
+			);
+			name = Screens;
+			sourceTree = "<group>";
+		};
+		2CF5508A0CDA228800627463 /* SDK */ = {
+			isa = PBXGroup;
+			children = (
+				2CF8E6BD0CDFA8E80053A996 /* UPartyDefs.pas */,
+				2CDC716B0CDB9CB70018F966 /* StrUtils.pas */,
+				2CF552110CDA3D1400627463 /* UPluginDefs.pas */,
+				2CF5508B0CDA22B000627463 /* ModiSDK.pas */,
+			);
+			name = SDK;
+			sourceTree = "<group>";
+		};
+		2CF5510C0CDA28F000627463 /* Lib */ = {
+			isa = PBXGroup;
+			children = (
+				2CAC2BF60D380B0800CA518A /* BASS */,
+				2C5663EC0D35642E00D4FF53 /* portaudio */,
+				2CF5529C0CDA428000627463 /* ffmpeg */,
+				2CE1F4080CC3EEA400CD02E5 /* FreeImage */,
+				2C4D9DEB0CC9EECC0031092D /* SDL */,
+				2CF5510D0CDA291200627463 /* SQLite */,
+			);
+			name = Lib;
+			sourceTree = "<group>";
+		};
+		2CF5510D0CDA291200627463 /* SQLite */ = {
+			isa = PBXGroup;
+			children = (
+				2CF5510E0CDA293700627463 /* SQLite3.pas */,
+				2CF5510F0CDA293700627463 /* SQLiteTable3.pas */,
+			);
+			name = SQLite;
+			sourceTree = "<group>";
+		};
+		2CF5529C0CDA428000627463 /* ffmpeg */ = {
+			isa = PBXGroup;
+			children = (
+				2CE603D90D715F2100DB0D88 /* mathematics.pas */,
+				2CF5529E0CDA42C900627463 /* avcodec.pas */,
+				2CF5529F0CDA42C900627463 /* avformat.pas */,
+				2CF552A00CDA42C900627463 /* avio.pas */,
+				2CF552A10CDA42C900627463 /* avutil.pas */,
+				2CF552A40CDA42C900627463 /* opt.pas */,
+				2CF552A50CDA42C900627463 /* rational.pas */,
+			);
+			name = ffmpeg;
+			sourceTree = "<group>";
+		};
+		2CF77DBA0CF755CA00F3B101 /* Modis */ = {
+			isa = PBXGroup;
+			children = (
+				2C4B70220CF757A400B0F0BD /* Until5000.dpr */,
+			);
+			name = Modis;
+			sourceTree = "<group>";
+		};
+		DD7C45450A6E72DE003FA52B /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				2CF5510C0CDA28F000627463 /* Lib */,
+				2CDD43820CBBE8D400F364DE /* Classes */,
+				2CF54F420CDA1B0C00627463 /* Screens */,
+				2CDD438D0CBBE8F700F364DE /* Menu */,
+				2CF5508A0CDA228800627463 /* SDK */,
+				2C4D9DF50CC9EF3A0031092D /* Wrapper */,
+				2CF77DBA0CF755CA00F3B101 /* Modis */,
+				DDC6851B09F57195004E4BFF /* UltraStarDX.pas */,
+				2CF551A70CDA356800627463 /* UltraStar.dpr */,
+				2C4D9E440CC9F0ED0031092D /* switches.inc */,
+				2C0199800D99840900974970 /* config-macosx.inc */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		DDC6850D09F5717A004E4BFF = {
+			isa = PBXGroup;
+			children = (
+				2CAC2BF00D380AC200CA518A /* libbass.dylib */,
+				2CE907900D1BC8A800A1FDFF /* libavcodec.dylib */,
+				2CE907910D1BC8A800A1FDFF /* libavformat.dylib */,
+				2CE907920D1BC8A800A1FDFF /* libavutil.dylib */,
+				98B8BE570B1F972400162019 /* SDL.framework */,
+				2C4D9D980CC9EE0B0031092D /* SDL_image.framework */,
+				2C4D9D990CC9EE0B0031092D /* SDL_ttf.framework */,
+				2CDEA4F60CBD725B0096994C /* OpenGL.framework */,
+				98B8BE370B1F949C00162019 /* Cocoa.framework */,
+				98B8BE380B1F949C00162019 /* Foundation.framework */,
+				98B8BE330B1F947800162019 /* AppKit.framework */,
+				2C4D9D960CC9EDEB0031092D /* libfreeimage.dylib */,
+				2CF5512C0CDA29C600627463 /* libsqlite3.dylib */,
+				DD7C45450A6E72DE003FA52B /* Source */,
+				DDC6868A09F571C2004E4BFF /* Resources */,
+				2CDD8D0B0CC5539900E4169D /* UltraStarDX Resources */,
+				DDC6888C09F57243004E4BFF /* Products */,
+				DDC688CA09F574E9004E4BFF /* Info.plist */,
+			);
+			comments = "(note: \"Main target\" is used below to indicate the target with the same name as your project)\n\nSee the comments for the \"Main target\" under \"Targets\" for detailed information on how this project operates.\n\nIn short:\n\na) add your sources to the  target called 'Put all program sources also in this target'\nb) add your sources *EXCEPT FOR INCLUDE FILES* to the Main Target\nd) add all frameworks, resources, libraries etc to the Main target\n\nIf there are errors, the \"Errors and Warnings\" smart group will probably not work properly (e.g. errors may disappear after you double click on them). To work around this Xcode bug, go to the Build Transcript by double clicking on the icon of the \"Errors and Warnings\" smart group. There you can (double) click on the errors to go to the right position in the right source file.\n\nNote that the assembly view of Xcode does not work before Xcode 2.3. And in Xcode 2.3, you will not be able to step over PowerPC Pascal function calls (this should be fixed in the next Xcode release though).";
+			sourceTree = "<group>";
+		};
+		DDC6868A09F571C2004E4BFF /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				2C4FA2A70CDBAD1E002CC3B0 /* ustar-icon_v01.icns */,
+				DDC689B309F57C69004E4BFF /* InfoPlist.strings */,
+				DDC689B409F57C69004E4BFF /* SDLMain.nib */,
+				DDC6868B09F571C2004E4BFF /* Info.plist */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		DDC6888C09F57243004E4BFF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DDC688C809F574E9004E4BFF /* UltraStar Deluxe.app */,
+				DD37F2430A60255800975B2D /* libfpcrtl.a */,
+				2CF77DB60CF7556C00F3B101 /* libLib_UltraPong.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		2CF77DB20CF7556C00F3B101 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		2CF77DB50CF7556C00F3B101 /* Modi_Until5000 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2CF77DB90CF7558B00F3B101 /* Build configuration list for PBXNativeTarget "Modi_Until5000" */;
+			buildPhases = (
+				2CF77DB20CF7556C00F3B101 /* Headers */,
+				2CF77DB30CF7556C00F3B101 /* Sources */,
+				2CF77DB40CF7556C00F3B101 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Modi_Until5000;
+			productName = Lib_UltraPong;
+			productReference = 2CF77DB60CF7556C00F3B101 /* libLib_UltraPong.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		DD37F2420A60255800975B2D /* fpcrtl */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DD37F2560A60258300975B2D /* Build configuration list for PBXNativeTarget "fpcrtl" */;
+			buildPhases = (
+				DD37F2460A60257100975B2D /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = fpcrtl;
+			productName = fpcrtl;
+			productReference = DD37F2430A60255800975B2D /* libfpcrtl.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		DDC688C709F574E9004E4BFF /* UltraStarDX */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DDC688CB09F574E9004E4BFF /* Build configuration list for PBXNativeTarget "UltraStarDX" */;
+			buildPhases = (
+				DDC688C409F574E9004E4BFF /* Resources */,
+				2CDEC44F0CC5255600FFA244 /* CopyFiles */,
+				2CDEC4940CC5262700FFA244 /* CopyFiles */,
+				DDC6891B09F576D9004E4BFF /* ShellScript */,
+				DDC688C509F574E9004E4BFF /* Sources */,
+				DDC688C609F574E9004E4BFF /* Frameworks */,
+				DDC6890909F5761D004E4BFF /* Rez */,
+				2CDD8E450CC554A000E4169D /* ShellScript */,
+			);
+			buildRules = (
+				DD7C45710A6E7E36003FA52B /* PBXBuildRule */,
+				DDC6891509F57648004E4BFF /* PBXBuildRule */,
+			);
+			comments = "This is the main target that does the actual compilation work. Because of several Xcode bugs and holes in its support for third party compilers, the structure is quite convoluted. There are three targets, but you only have to care about the first two:\n\na) This target (make sure this target is set as the \"Active Target\"!)\n\nThis target does the assembling and linking. It is dependent on the three other targets, so the scripts for those targets are run first. Next, it runs a script which compiles the main program and units (using the previously gathered information) and generate the assembler code. Then its \"Compile Sources\" phase will assemble the code, because if we directly generate the object files then Xcode will not perform any linking.\n\nb) The target called 'Put all program sources also in this target'\n\nAs the name says, you should add your sources to that target. The \"compilation rule\" for the Pascal files in that target will add those source files to a list of files to be compiled.\n\nc) The target called 'fpcrtl'\n\nThis target creates a static library of the FPC run time library. You should not have to change this target (you cannot add sources to it either)\n\n\nThe standard Xcode process is used to link in any necessary frameworks, libraries and resources. Therefore these frameworks, libraries and resources can be added to the project and this (the main) target like in any other Xcode project.\n";
+			dependencies = (
+				DDC688EE09F57578004E4BFF /* PBXTargetDependency */,
+				DD37F25E0A60268D00975B2D /* PBXTargetDependency */,
+			);
+			name = UltraStarDX;
+			productName = "JEDI-SDLCocoa";
+			productReference = DDC688C809F574E9004E4BFF /* UltraStar Deluxe.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DDC688D409F57523004E4BFF /* Put all program sources also in this target */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DDC688DC09F57542004E4BFF /* Build configuration list for PBXNativeTarget "Put all program sources also in this target" */;
+			buildPhases = (
+				DD37F2350A60250900975B2D /* ShellScript */,
+				DDC688D209F57523004E4BFF /* Sources */,
+			);
+			buildRules = (
+				DD7C44CD0A6E5050003FA52B /* PBXBuildRule */,
+				DDC688F309F57599004E4BFF /* PBXBuildRule */,
+			);
+			comments = "See the comments for the target called the same as your project for details.";
+			dependencies = (
+			);
+			name = "Put all program sources also in this target";
+			productName = "Put unit sources in the 'Compile Sources' phase of this target";
+			productType = "com.apple.product-type.objfile";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DDC6850F09F5717A004E4BFF /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = DDC6851009F5717A004E4BFF /* Build configuration list for PBXProject "UltraStarDX" */;
+			compatibilityVersion = "Xcode 2.4";
+			hasScannedForEncodings = 0;
+			mainGroup = DDC6850D09F5717A004E4BFF;
+			productRefGroup = DDC6888C09F57243004E4BFF /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DDC688C709F574E9004E4BFF /* UltraStarDX */,
+				DDC688D409F57523004E4BFF /* Put all program sources also in this target */,
+				DD37F2420A60255800975B2D /* fpcrtl */,
+				2CF77DB50CF7556C00F3B101 /* Modi_Until5000 */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DDC688C409F574E9004E4BFF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDC689B509F57C69004E4BFF /* InfoPlist.strings in Resources */,
+				DDC689B609F57C69004E4BFF /* SDLMain.nib in Resources */,
+				2C4FA2A80CDBAD1E002CC3B0 /* ustar-icon_v01.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXRezBuildPhase section */
+		DDC6890909F5761D004E4BFF /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXRezBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		2CDD8E450CC554A000E4169D /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\nUS_RESOURCES_SOURCE_DIR=UltraStarResources\nUS_RESOURCES_DEST_DIR=\"$CONFIGURATION_BUILD_DIR\"/\"$PRODUCT_NAME\".app/Contents\n\n#cp -Rf $US_RESOURCES_SOURCE_DIR $US_RESOURCES_DEST_DIR";
+		};
+		DD37F2350A60250900975B2D /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+				"$(PROJECT_TEMP_DIR)/cleanscriptrun",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# hack to workaround Xcode bug that $PROJECT_TEMP_DIR isn't cleaned when you clean,\n# and that scripts aren't run when you clean a project\n\nmkdir -p \"$PROJECT_TEMP_DIR\"\n\n# when the \"scripts not run when cleaning\" bug is fixed, this doesn't have be run\n# when cleaning\n\nif [ x\"$ACTION\" = \"xbuild\" ]; then\n  # remove unit path and source file cache\n  cd \"$PROJECT_TEMP_DIR\"\n  rm -f mainfile scriptrun unitpaths files_to_compile  > /dev/null 2>&1\nfi\n\n# simple so that the script isn't run every time you compile\ntouch \"$PROJECT_TEMP_DIR\"/cleanscriptrun";
+		};
+		DD37F2460A60257100975B2D /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/libfpcrtl.a",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# if you activate this to see what the script does, Xcode will take a *VERY LONG* time to process the output of the \"ar\" command line\n# set -vx\n\n\n# put the entire RTL in one static library so we can link it easily (without automatically linking all object files)\n\nif [ x\"$ACTION\" = \"xbuild\" ]; then\n  \n  rm -f \"$PROJECT_TEMP_DIR\"/rtllibs\n  for arch in $ARCHS\n  do\n    # get the correct compiler name\n    case $arch in\n      i386)\n        FPC_ARCH=386\n        RTL_ARCH=i386\n     ;;\n      ppc)\n        FPC_ARCH=ppc\n        RTL_ARCH=powerpc\n     ;;\n      * )\n       echo warning: Unsupported target architecture ${arch}, skipping...\n       continue\n     ;;\n    esac\n\n    FPC_VERSION=`/usr/local/bin/ppc${FPC_ARCH} -iV`\n    if [ $? != 0 ]; then\n      echo \"error: Cannot find the FPC binary for $RTL_ARCH (/usr/local/bin/ppc${FPC_ARCH}). Check if you have installed FPC for this architecture.\"\n      exit 1\n    fi\n    MY_OUTPUT_FILE=\"$PROJECT_TEMP_DIR\"/libfpcrtl-${FPC_ARCH}.a\n    ar -ru \"$MY_OUTPUT_FILE\" `ls \"$FPC_RTL_UNITS_BASE\"/\"$FPC_VERSION\"/units/${RTL_ARCH}-darwin/*/*.o | grep -v 'darwin/fv/'`\n    if [ $? != 0 ]; then\n      echo \"error: Problem creating static library for FPC Run Time Library. Check the FPC_RTL_UNITS_BASE setting in the global project configuration.\"\n      exit 1\n    fi\n    echo -n  \" \"\\\"\"$MY_OUTPUT_FILE\"\\\" >> \"$PROJECT_TEMP_DIR\"/rtllibs\n  done\n  /bin/sh -c \"lipo -create `cat \\\"$PROJECT_TEMP_DIR\\\"/rtllibs` -output \\\"$TARGET_BUILD_DIR\\\"/libfpcrtl.a\"\n  ranlib \"$TARGET_BUILD_DIR\"/libfpcrtl.a > /dev/null 2>&1\n  # delete working files\n  rm -f `cat \"$PROJECT_TEMP_DIR\"/rtllibs`\n  rm -f \"$PROJECT_TEMP_DIR\"/rtllibs\nfi\n";
+		};
+		DDC6891B09F576D9004E4BFF /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(PROJECT_TEMP_DIR)/files_to_compile",
+			);
+			outputPaths = (
+				"$(PROJECT_TEMP_DIR)/scriptrun",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# set -vx\n\nif [ x\"$ACTION\" = \"xclean\" ]; then\n  exit 0\nfi\n\nfunction make_conditional() {\n  for arch in $ARCHS\n  do\n    for file in \"$PROJECT_DERIVED_FILE_DIR\"/\"$arch\"/*.s\n    do\n      DEST_FILE=\"$PROJECT_DERIVED_FILE_DIR\"/`basename \"$file\"`\n      echo \"#ifdef __${arch}__\" >> /\"$DEST_FILE\"\n      cat \"$file\" >> \"$DEST_FILE\"\n      echo \"#endif\" >> \"$DEST_FILE\"\n    done\n  done\n}\n\n\nUNIT_PATHS_FILE=\"$PROJECT_TEMP_DIR\"/unitpaths\n\n# remove duplicate unit search paths\nif test -f \"$UNIT_PATHS_FILE\"; then\n  sort -u < \"$UNIT_PATHS_FILE\" > \"$UNIT_PATHS_FILE\".tmp\n  mv \"$UNIT_PATHS_FILE\".tmp \"$UNIT_PATHS_FILE\"\nelse\n  touch \"$UNIT_PATHS_FILE\"\nfi\n\n# Make sure there are some files to compile\nif test !  -f \"$PROJECT_TEMP_DIR\"/files_to_compile; then\n  echo error: Add your main program and its units to the \\\"Put all program sources also in this target\\\" target\n  exit 1\nfi\n\n\n# support for previous Xcode naming scheme\nif [ \"$BUILD_STYLE\" = Development ]\nthen\n  BUILD_STYLE=Debug\nfi\n\nif [ \"$BUILD_STYLE\" = Deployment ]\nthen\n  BUILD_STYLE=Release\nfi\n\n# keep track of whether we compiled the main program so that once we did, we can stop\nMAIN_PROGRAM_COMPILED=0\n\n# don't skip the first file, since it may be the main program.\nFIRST_FILE=1\n\nFILES_TO_SKIP=\n\nrm \"$PROJECT_DERIVED_FILE_DIR\"/*.s >/dev/null 2>&1\n\n\nwhile read INPUT_FILE_SUFFIX INPUT_FILE_PATH\ndo\n  # skip include files (crude, may miss some)\n  if ! egrep -qi 'end\\.' \"$INPUT_FILE_PATH\" >/dev/null 2>&1; then\n    FIRST_FILE=0\n    echo warning: Skipping compilation of \\\"$INPUT_FILE_PATH\\\", seems to be an include file or not a Pascal file\n    FILES_TO_SKIP=`echo -e \"$INPUT_FILE_PATH\"'\\n'\"$FILES_TO_SKIP\"`\n    continue\n  fi\n\n  for variant in $BUILD_VARIANTS\n  do\n    for arch in $ARCHS\n    do\n      # get the name of the objects file dir\n####\n      #FULL_OBJECT_FILES_DIR=\"$OBJECT_FILE_DIR\"-\"$variant\"/\"$arch\"\n      FULL_OBJECT_FILES_DIR=\"$PROJECT_DERIVED_FILE_DIR\"/\"$arch\"\n####\n\n      # create the necessary directories (not done by Xcode because we only specify a fake output file)\n      mkdir -p \"$PROJECT_TEMP_DIR\" \"$FULL_OBJECT_FILES_DIR\"\n  \n      # if the file was already compiled (because an earlier compiled unit depended on it), skip it\n      if test \"$FULL_OBJECT_FILES_DIR\"/`basename \"$INPUT_FILE_PATH\" $INPUT_FILE_SUFFIX`.o -nt \"$INPUT_FILE_PATH\" -a $FIRST_FILE -ne 1 ; then\n        continue 3\n      fi\n      \n      # get the correct compiler name\n      if [ \"$arch\" = \"i386\" ]\n      then\n        FPCARCH=386\n        RTLARCH=i386\n      else\n        FPCARCH=ppc\n        RTLARCH=powerpc\n      fi\n\n      # check if the compiler exists\n      if ! test -f /usr/local/bin/ppc${FPCARCH}\n      then\n        echo \"error: FPC for $arch is not installed on this machine. You can probably solve this problem by setting the architectures to build for to your native target only and rebuilding.\"\n        exit 2\n      fi\n  \n      # go into the object files dir so we can use short paths\n      cd \"$FULL_OBJECT_FILES_DIR\"\n  \n      # actually compile (but do not assemble nor link)\n      echo -n /usr/local/bin/ppc${FPCARCH} \\\"$INPUT_FILE_PATH\\\" $FPC_SPECIFIC_OPTIONS $FPC_COMMON_OPTIONS -Tdarwin -a -s -FE. -vbr $FPC_OVERRIDE_OPTIONS > docompile.sh\n\n      # add unit paths\n      while read unitsearchpath\n      do\n        echo -n \" \" $unitsearchpath >> docompile.sh\n      done < \"$UNIT_PATHS_FILE\"\n      \n      echo ' > \"$PROJECT_TEMP_DIR\"/compiler_output 2>&1' >> docompile.sh\n      echo 'compres=$?' >> docompile.sh\n      echo 'sed -e \"s/\\([^:]*\\):\\([^:]*\\):\\([^:]*\\):\\([^:]*\\):\\(.*\\)/\\1:\\2:\\3:column \\4 -\\5/\" < \"$PROJECT_TEMP_DIR\"/compiler_output' >> docompile.sh\n      echo 'exit $compres' >> docompile.sh\n      /bin/sh ./docompile.sh\n  \n      # Compilation successful?\n      if [ $? == 0 ]; then\n  \n        # if it was a unit, continue with the next file (no need to compile all its variants and archs, that\n        # will be done when compiling the main program)\n        if test ! -f ./link.res; then\n          continue 3\n        fi\n        \n        echo Main file found!\n\n        # this is the main program -> next time only compile this file\n        # (if units are modified, they will be added after this file, but that doesn't matter\n        echo \"$INPUT_FILE_SUFFIX\" \"$INPUT_FILE_PATH\" > \"$PROJECT_TEMP_DIR\"/files_to_compile\n        \n        # record that the main program was compiled, so we don't have to compile any more units\n        MAIN_PROGRAM_COMPILED=1\n        \n        # delete leftovers\n        rm -f ppas.sh link.res\n  \n        # log the name of the input file so it can be touched if necessary for recompilation\n        echo -n \"$INPUT_FILE_PATH\" > \"$PROJECT_TEMP_DIR\"/mainfile\n  \n      else\n        exit 2\n      fi\n    done\n  done\n\n  # if the main program was compiled, we can stop\n  if test $MAIN_PROGRAM_COMPILED -ne 0; then\n    make_conditional\n    touch \"$PROJECT_TEMP_DIR\"/scriptrun\n    exit 0\n  fi\n  FIRST_FILE=0\n\ndone < \"$PROJECT_TEMP_DIR\"/files_to_compile\n\necho \"warning: It seems your project only contains units and no main program\"\ngrep  -Fv \"$FILES_TO_SKIP\" < \"$PROJECT_TEMP_DIR\"/files_to_compile > \"$PROJECT_TEMP_DIR\"/files_to_compile.tmp\nsort -u < \"$PROJECT_TEMP_DIR\"/files_to_compile.tmp > \"$PROJECT_TEMP_DIR\"/files_to_compile\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2CF77DB30CF7556C00F3B101 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2C4B70240CF7584500B0F0BD /* ModiSDK.pas in Sources */,
+				2C4B70230CF7581000B0F0BD /* Until5000.dpr in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDC688C509F574E9004E4BFF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2CDD4BE20CB947BE00549FAC /* UltraStarDX.pas in Sources */,
+				2CDD4BE00CB947B100549FAC /* sdl.pas in Sources */,
+				2C4D9C8F0CC9EC8C0031092D /* TextGL.pas in Sources */,
+				2C4D9C920CC9EC8C0031092D /* UCatCovers.pas in Sources */,
+				2C4D9C930CC9EC8C0031092D /* UCommandLine.pas in Sources */,
+				2C4D9C940CC9EC8C0031092D /* UCommon.pas in Sources */,
+				2C4D9C950CC9EC8C0031092D /* UCore.pas in Sources */,
+				2C4D9C960CC9EC8C0031092D /* UCoreModule.pas in Sources */,
+				2C4D9C970CC9EC8C0031092D /* UCovers.pas in Sources */,
+				2C4D9C980CC9EC8C0031092D /* UDataBase.pas in Sources */,
+				2C4D9C990CC9EC8C0031092D /* UDLLManager.pas in Sources */,
+				2C4D9C9A0CC9EC8C0031092D /* UDraw.pas in Sources */,
+				2C4D9C9B0CC9EC8C0031092D /* UFiles.pas in Sources */,
+				2C4D9C9C0CC9EC8C0031092D /* UGraphic.pas in Sources */,
+				2C4D9C9D0CC9EC8C0031092D /* UGraphicClasses.pas in Sources */,
+				2C4D9C9E0CC9EC8C0031092D /* UHooks.pas in Sources */,
+				2C4D9C9F0CC9EC8C0031092D /* UIni.pas in Sources */,
+				2C4D9CA00CC9EC8C0031092D /* UJoystick.pas in Sources */,
+				2C4D9CA10CC9EC8C0031092D /* ULanguage.pas in Sources */,
+				2C4D9CA30CC9EC8C0031092D /* ULCD.pas in Sources */,
+				2C4D9CA40CC9EC8C0031092D /* ULight.pas in Sources */,
+				2C4D9CA50CC9EC8C0031092D /* ULog.pas in Sources */,
+				2C4D9CA60CC9EC8C0031092D /* ULyrics_bak.pas in Sources */,
+				2C4D9CA70CC9EC8C0031092D /* ULyrics.pas in Sources */,
+				2C4D9CA80CC9EC8C0031092D /* UMain.pas in Sources */,
+				2C4D9CA90CC9EC8C0031092D /* UMedia_dummy.pas in Sources */,
+				2C4D9CAA0CC9EC8C0031092D /* UModules.pas in Sources */,
+				2C4D9CAB0CC9EC8C0031092D /* UMusic.pas in Sources */,
+				2C4D9CAC0CC9EC8C0031092D /* UParty.pas in Sources */,
+				2C4D9CAD0CC9EC8C0031092D /* UPlaylist.pas in Sources */,
+				2C4D9CAF0CC9EC8C0031092D /* UPluginInterface.pas in Sources */,
+				2C4D9CB00CC9EC8C0031092D /* uPluginLoader.pas in Sources */,
+				2C4D9CB10CC9EC8C0031092D /* URecord.pas in Sources */,
+				2C4D9CB20CC9EC8C0031092D /* UServices.pas in Sources */,
+				2C4D9CB30CC9EC8C0031092D /* USingNotes.pas in Sources */,
+				2C4D9CB40CC9EC8C0031092D /* USingScores.pas in Sources */,
+				2C4D9CB50CC9EC8C0031092D /* USkins.pas in Sources */,
+				2C4D9CB60CC9EC8C0031092D /* USongs.pas in Sources */,
+				2C4D9CB70CC9EC8C0031092D /* UTextClasses.pas in Sources */,
+				2C4D9CB80CC9EC8C0031092D /* UTexture.pas in Sources */,
+				2C4D9CB90CC9EC8C0031092D /* UThemes.pas in Sources */,
+				2C4D9CBA0CC9EC8C0031092D /* UTime.pas in Sources */,
+				2C4D9CBB0CC9EC8C0031092D /* UVideo.pas in Sources */,
+				2C4D9D920CC9ED4F0031092D /* FreeBitmap.pas in Sources */,
+				2C4D9D930CC9ED4F0031092D /* FreeImage.pas in Sources */,
+				2C4D9DD60CC9EE6F0031092D /* UDisplay.pas in Sources */,
+				2C4D9DD70CC9EE6F0031092D /* UDrawTexture.pas in Sources */,
+				2C4D9DD80CC9EE6F0031092D /* UMenu.pas in Sources */,
+				2C4D9DD90CC9EE6F0031092D /* UMenuButton.pas in Sources */,
+				2C4D9DDA0CC9EE6F0031092D /* UMenuButtonCollection.pas in Sources */,
+				2C4D9DDB0CC9EE6F0031092D /* UMenuInteract.pas in Sources */,
+				2C4D9DDC0CC9EE6F0031092D /* UMenuSelect.pas in Sources */,
+				2C4D9DDD0CC9EE6F0031092D /* UMenuSelectSlide.pas in Sources */,
+				2C4D9DDE0CC9EE6F0031092D /* UMenuStatic.pas in Sources */,
+				2C4D9DDF0CC9EE6F0031092D /* UMenuText.pas in Sources */,
+				2C4D9DED0CC9EF0A0031092D /* sdl_image.pas in Sources */,
+				2C4D9DF10CC9EF210031092D /* sdl_ttf.pas in Sources */,
+				2C4D9E100CC9EF840031092D /* OpenGL12.pas in Sources */,
+				2C4D9E150CC9EF840031092D /* Windows.pas in Sources */,
+				2C4D9E450CC9F0ED0031092D /* switches.inc in Sources */,
+				2CF54F650CDA1B2B00627463 /* UScreenCredits.pas in Sources */,
+				2CF54F660CDA1B2B00627463 /* UScreenEdit.pas in Sources */,
+				2CF54F670CDA1B2B00627463 /* UScreenEditConvert.pas in Sources */,
+				2CF54F680CDA1B2B00627463 /* UScreenEditHeader.pas in Sources */,
+				2CF54F690CDA1B2B00627463 /* UScreenEditSub.pas in Sources */,
+				2CF54F6A0CDA1B2B00627463 /* UScreenLevel.pas in Sources */,
+				2CF54F6B0CDA1B2B00627463 /* UScreenLoading.pas in Sources */,
+				2CF54F6C0CDA1B2B00627463 /* UScreenMain.pas in Sources */,
+				2CF54F6D0CDA1B2B00627463 /* UScreenName.pas in Sources */,
+				2CF54F6E0CDA1B2B00627463 /* UScreenOpen.pas in Sources */,
+				2CF54F6F0CDA1B2B00627463 /* UScreenOptions.pas in Sources */,
+				2CF54F700CDA1B2B00627463 /* UScreenOptionsAdvanced.pas in Sources */,
+				2CF54F710CDA1B2B00627463 /* UScreenOptionsGame.pas in Sources */,
+				2CF54F720CDA1B2B00627463 /* UScreenOptionsGraphics.pas in Sources */,
+				2CF54F730CDA1B2B00627463 /* UScreenOptionsLyrics.pas in Sources */,
+				2CF54F740CDA1B2B00627463 /* UScreenOptionsRecord.pas in Sources */,
+				2CF54F750CDA1B2B00627463 /* UScreenOptionsSound.pas in Sources */,
+				2CF54F760CDA1B2B00627463 /* UScreenOptionsThemes.pas in Sources */,
+				2CF54F770CDA1B2B00627463 /* UScreenPartyNewRound.pas in Sources */,
+				2CF54F780CDA1B2B00627463 /* UScreenPartyOptions.pas in Sources */,
+				2CF54F790CDA1B2B00627463 /* UScreenPartyPlayer.pas in Sources */,
+				2CF54F7A0CDA1B2B00627463 /* UScreenPartyScore.pas in Sources */,
+				2CF54F7B0CDA1B2B00627463 /* UScreenPartyWin.pas in Sources */,
+				2CF54F7C0CDA1B2B00627463 /* UScreenPopup.pas in Sources */,
+				2CF54F7D0CDA1B2B00627463 /* UScreenScore.pas in Sources */,
+				2CF54F7E0CDA1B2B00627463 /* UScreenSing.pas in Sources */,
+				2CF54F7F0CDA1B2B00627463 /* UScreenSingModi.pas in Sources */,
+				2CF54F800CDA1B2B00627463 /* UScreenSong.pas in Sources */,
+				2CF54F810CDA1B2B00627463 /* UScreenSongJumpto.pas in Sources */,
+				2CF54F820CDA1B2B00627463 /* UScreenSongMenu.pas in Sources */,
+				2CF54F830CDA1B2B00627463 /* UScreenStatDetail.pas in Sources */,
+				2CF54F840CDA1B2B00627463 /* UScreenStatMain.pas in Sources */,
+				2CF54F850CDA1B2B00627463 /* UScreenTop5.pas in Sources */,
+				2CF54F860CDA1B2B00627463 /* UScreenWelcome.pas in Sources */,
+				2CF5508C0CDA22B000627463 /* ModiSDK.pas in Sources */,
+				2CF551100CDA293700627463 /* SQLite3.pas in Sources */,
+				2CF551110CDA293700627463 /* SQLiteTable3.pas in Sources */,
+				2CF552140CDA3D1400627463 /* UPluginDefs.pas in Sources */,
+				2CF552B00CDA42C900627463 /* avcodec.pas in Sources */,
+				2CF552B10CDA42C900627463 /* avformat.pas in Sources */,
+				2CF552B20CDA42C900627463 /* avio.pas in Sources */,
+				2CF552B30CDA42C900627463 /* avutil.pas in Sources */,
+				2CF552B60CDA42C900627463 /* opt.pas in Sources */,
+				2CF552B70CDA42C900627463 /* rational.pas in Sources */,
+				2CF553080CDA51B500627463 /* sdlutils.pas in Sources */,
+				2CDC716C0CDB9CB70018F966 /* StrUtils.pas in Sources */,
+				2CF3EF220CDE13A0004F5956 /* Messages.pas in Sources */,
+				2CF3EF270CDE13BA004F5956 /* MacResources.pas in Sources */,
+				2CF8E6BE0CDFA8E80053A996 /* UPartyDefs.pas in Sources */,
+				2CEA2AE00CE385190097A5FF /* Graphics.pas in Sources */,
+				2CEA2AE10CE385190097A5FF /* JPEG.pas in Sources */,
+				2CEA2AF10CE3868E0097A5FF /* PseudoThread.pas in Sources */,
+				2C89372A0CE393FB005D8A87 /* UPlatform.pas in Sources */,
+				2C8937340CE395CE005D8A87 /* UPlatformMacOSX.pas in Sources */,
+				2C5663EF0D35645700D4FF53 /* portaudio.pas in Sources */,
+				2C56642C0D35683200D4FF53 /* SDLMain.m in Sources */,
+				2CAC2BE20D3809F500CA518A /* UAudioInput_Bass.pas in Sources */,
+				2CAC2BE40D3809F500CA518A /* UAudioPlayback_Bass.pas in Sources */,
+				2CAC2BF80D380B1B00CA518A /* Bass.pas in Sources */,
+				2CB9E87E0D43B78400214DFA /* USong.pas in Sources */,
+				2CE603DA0D715F2100DB0D88 /* mathematics.pas in Sources */,
+				2CE603DE0D715F6700DB0D88 /* UAudioCore_Bass.pas in Sources */,
+				2CE603E20D715F8600DB0D88 /* UConfig.pas in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDC688D209F57523004E4BFF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2CDD4BDE0CB947A400549FAC /* sdl.pas in Sources */,
+				DD37F23D0A60252800975B2D /* UltraStarDX.pas in Sources */,
+				2C4D9CBC0CC9EC8C0031092D /* TextGL.pas in Sources */,
+				2C4D9CBF0CC9EC8C0031092D /* UCatCovers.pas in Sources */,
+				2C4D9CC00CC9EC8C0031092D /* UCommandLine.pas in Sources */,
+				2C4D9CC10CC9EC8C0031092D /* UCommon.pas in Sources */,
+				2C4D9CC20CC9EC8C0031092D /* UCore.pas in Sources */,
+				2C4D9CC30CC9EC8C0031092D /* UCoreModule.pas in Sources */,
+				2C4D9CC40CC9EC8C0031092D /* UCovers.pas in Sources */,
+				2C4D9CC50CC9EC8C0031092D /* UDataBase.pas in Sources */,
+				2C4D9CC60CC9EC8C0031092D /* UDLLManager.pas in Sources */,
+				2C4D9CC70CC9EC8C0031092D /* UDraw.pas in Sources */,
+				2C4D9CC80CC9EC8C0031092D /* UFiles.pas in Sources */,
+				2C4D9CC90CC9EC8C0031092D /* UGraphic.pas in Sources */,
+				2C4D9CCA0CC9EC8C0031092D /* UGraphicClasses.pas in Sources */,
+				2C4D9CCB0CC9EC8C0031092D /* UHooks.pas in Sources */,
+				2C4D9CCC0CC9EC8C0031092D /* UIni.pas in Sources */,
+				2C4D9CCD0CC9EC8C0031092D /* UJoystick.pas in Sources */,
+				2C4D9CCE0CC9EC8C0031092D /* ULanguage.pas in Sources */,
+				2C4D9CD00CC9EC8C0031092D /* ULCD.pas in Sources */,
+				2C4D9CD10CC9EC8C0031092D /* ULight.pas in Sources */,
+				2C4D9CD20CC9EC8C0031092D /* ULog.pas in Sources */,
+				2C4D9CD30CC9EC8C0031092D /* ULyrics_bak.pas in Sources */,
+				2C4D9CD40CC9EC8C0031092D /* ULyrics.pas in Sources */,
+				2C4D9CD50CC9EC8C0031092D /* UMain.pas in Sources */,
+				2C4D9CD60CC9EC8C0031092D /* UMedia_dummy.pas in Sources */,
+				2C4D9CD70CC9EC8C0031092D /* UModules.pas in Sources */,
+				2C4D9CD80CC9EC8C0031092D /* UMusic.pas in Sources */,
+				2C4D9CD90CC9EC8C0031092D /* UParty.pas in Sources */,
+				2C4D9CDA0CC9EC8C0031092D /* UPlaylist.pas in Sources */,
+				2C4D9CDC0CC9EC8C0031092D /* UPluginInterface.pas in Sources */,
+				2C4D9CDD0CC9EC8C0031092D /* uPluginLoader.pas in Sources */,
+				2C4D9CDE0CC9EC8C0031092D /* URecord.pas in Sources */,
+				2C4D9CDF0CC9EC8C0031092D /* UServices.pas in Sources */,
+				2C4D9CE00CC9EC8C0031092D /* USingNotes.pas in Sources */,
+				2C4D9CE10CC9EC8C0031092D /* USingScores.pas in Sources */,
+				2C4D9CE20CC9EC8C0031092D /* USkins.pas in Sources */,
+				2C4D9CE30CC9EC8C0031092D /* USongs.pas in Sources */,
+				2C4D9CE40CC9EC8C0031092D /* UTextClasses.pas in Sources */,
+				2C4D9CE50CC9EC8C0031092D /* UTexture.pas in Sources */,
+				2C4D9CE60CC9EC8C0031092D /* UThemes.pas in Sources */,
+				2C4D9CE70CC9EC8C0031092D /* UTime.pas in Sources */,
+				2C4D9CE80CC9EC8C0031092D /* UVideo.pas in Sources */,
+				2C4D9D940CC9ED4F0031092D /* FreeBitmap.pas in Sources */,
+				2C4D9D950CC9ED4F0031092D /* FreeImage.pas in Sources */,
+				2C4D9DE00CC9EE6F0031092D /* UDisplay.pas in Sources */,
+				2C4D9DE10CC9EE6F0031092D /* UDrawTexture.pas in Sources */,
+				2C4D9DE20CC9EE6F0031092D /* UMenu.pas in Sources */,
+				2C4D9DE30CC9EE6F0031092D /* UMenuButton.pas in Sources */,
+				2C4D9DE40CC9EE6F0031092D /* UMenuButtonCollection.pas in Sources */,
+				2C4D9DE50CC9EE6F0031092D /* UMenuInteract.pas in Sources */,
+				2C4D9DE60CC9EE6F0031092D /* UMenuSelect.pas in Sources */,
+				2C4D9DE70CC9EE6F0031092D /* UMenuSelectSlide.pas in Sources */,
+				2C4D9DE80CC9EE6F0031092D /* UMenuStatic.pas in Sources */,
+				2C4D9DE90CC9EE6F0031092D /* UMenuText.pas in Sources */,
+				2C4D9DEE0CC9EF0A0031092D /* sdl_image.pas in Sources */,
+				2C4D9DF30CC9EF210031092D /* sdl_ttf.pas in Sources */,
+				2C4D9E1C0CC9EF840031092D /* OpenGL12.pas in Sources */,
+				2C4D9E210CC9EF840031092D /* Windows.pas in Sources */,
+				2C4D9E460CC9F0ED0031092D /* switches.inc in Sources */,
+				2CF54F870CDA1B2B00627463 /* UScreenCredits.pas in Sources */,
+				2CF54F880CDA1B2B00627463 /* UScreenEdit.pas in Sources */,
+				2CF54F890CDA1B2B00627463 /* UScreenEditConvert.pas in Sources */,
+				2CF54F8A0CDA1B2B00627463 /* UScreenEditHeader.pas in Sources */,
+				2CF54F8B0CDA1B2B00627463 /* UScreenEditSub.pas in Sources */,
+				2CF54F8C0CDA1B2B00627463 /* UScreenLevel.pas in Sources */,
+				2CF54F8D0CDA1B2B00627463 /* UScreenLoading.pas in Sources */,
+				2CF54F8E0CDA1B2B00627463 /* UScreenMain.pas in Sources */,
+				2CF54F8F0CDA1B2B00627463 /* UScreenName.pas in Sources */,
+				2CF54F900CDA1B2B00627463 /* UScreenOpen.pas in Sources */,
+				2CF54F910CDA1B2B00627463 /* UScreenOptions.pas in Sources */,
+				2CF54F920CDA1B2B00627463 /* UScreenOptionsAdvanced.pas in Sources */,
+				2CF54F930CDA1B2B00627463 /* UScreenOptionsGame.pas in Sources */,
+				2CF54F940CDA1B2B00627463 /* UScreenOptionsGraphics.pas in Sources */,
+				2CF54F950CDA1B2B00627463 /* UScreenOptionsLyrics.pas in Sources */,
+				2CF54F960CDA1B2B00627463 /* UScreenOptionsRecord.pas in Sources */,
+				2CF54F970CDA1B2B00627463 /* UScreenOptionsSound.pas in Sources */,
+				2CF54F980CDA1B2B00627463 /* UScreenOptionsThemes.pas in Sources */,
+				2CF54F990CDA1B2B00627463 /* UScreenPartyNewRound.pas in Sources */,
+				2CF54F9A0CDA1B2B00627463 /* UScreenPartyOptions.pas in Sources */,
+				2CF54F9B0CDA1B2B00627463 /* UScreenPartyPlayer.pas in Sources */,
+				2CF54F9C0CDA1B2B00627463 /* UScreenPartyScore.pas in Sources */,
+				2CF54F9D0CDA1B2B00627463 /* UScreenPartyWin.pas in Sources */,
+				2CF54F9E0CDA1B2B00627463 /* UScreenPopup.pas in Sources */,
+				2CF54F9F0CDA1B2B00627463 /* UScreenScore.pas in Sources */,
+				2CF54FA00CDA1B2B00627463 /* UScreenSing.pas in Sources */,
+				2CF54FA10CDA1B2B00627463 /* UScreenSingModi.pas in Sources */,
+				2CF54FA20CDA1B2B00627463 /* UScreenSong.pas in Sources */,
+				2CF54FA30CDA1B2B00627463 /* UScreenSongJumpto.pas in Sources */,
+				2CF54FA40CDA1B2B00627463 /* UScreenSongMenu.pas in Sources */,
+				2CF54FA50CDA1B2B00627463 /* UScreenStatDetail.pas in Sources */,
+				2CF54FA60CDA1B2B00627463 /* UScreenStatMain.pas in Sources */,
+				2CF54FA70CDA1B2B00627463 /* UScreenTop5.pas in Sources */,
+				2CF54FA80CDA1B2B00627463 /* UScreenWelcome.pas in Sources */,
+				2CF5508D0CDA22B000627463 /* ModiSDK.pas in Sources */,
+				2CF551120CDA293700627463 /* SQLite3.pas in Sources */,
+				2CF551130CDA293700627463 /* SQLiteTable3.pas in Sources */,
+				2CF552170CDA3D1400627463 /* UPluginDefs.pas in Sources */,
+				2CF552A70CDA42C900627463 /* avcodec.pas in Sources */,
+				2CF552A80CDA42C900627463 /* avformat.pas in Sources */,
+				2CF552A90CDA42C900627463 /* avio.pas in Sources */,
+				2CF552AA0CDA42C900627463 /* avutil.pas in Sources */,
+				2CF552AD0CDA42C900627463 /* opt.pas in Sources */,
+				2CF552AE0CDA42C900627463 /* rational.pas in Sources */,
+				2CF553090CDA51B500627463 /* sdlutils.pas in Sources */,
+				2CDC716D0CDB9CB70018F966 /* StrUtils.pas in Sources */,
+				2CF3EF230CDE13A0004F5956 /* Messages.pas in Sources */,
+				2CF3EF280CDE13BA004F5956 /* MacResources.pas in Sources */,
+				2CF8E6BF0CDFA8E80053A996 /* UPartyDefs.pas in Sources */,
+				2CEA2AE20CE385190097A5FF /* Graphics.pas in Sources */,
+				2CEA2AE30CE385190097A5FF /* JPEG.pas in Sources */,
+				2CEA2AF20CE3868E0097A5FF /* PseudoThread.pas in Sources */,
+				2C89372B0CE393FB005D8A87 /* UPlatform.pas in Sources */,
+				2C8937370CE395CE005D8A87 /* UPlatformMacOSX.pas in Sources */,
+				2C5663F00D35645700D4FF53 /* portaudio.pas in Sources */,
+				2CAC2BE70D3809F500CA518A /* UAudioInput_Bass.pas in Sources */,
+				2CAC2BE90D3809F500CA518A /* UAudioPlayback_Bass.pas in Sources */,
+				2CAC2BF90D380B1B00CA518A /* Bass.pas in Sources */,
+				2CB9E87F0D43B78400214DFA /* USong.pas in Sources */,
+				2CE603DB0D715F2100DB0D88 /* mathematics.pas in Sources */,
+				2CE603DF0D715F6700DB0D88 /* UAudioCore_Bass.pas in Sources */,
+				2CE603E30D715F8600DB0D88 /* UConfig.pas in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DD37F25E0A60268D00975B2D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DD37F2420A60255800975B2D /* fpcrtl */;
+			targetProxy = DD37F25D0A60268D00975B2D /* PBXContainerItemProxy */;
+		};
+		DDC688EE09F57578004E4BFF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DDC688D409F57523004E4BFF /* Put all program sources also in this target */;
+			targetProxy = DDC688ED09F57578004E4BFF /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2CF77DB70CF7556D00F3B101 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_PREFIX = lib;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/lib;
+				LD_DYLIB_INSTALL_NAME = "@executable_path/libUntil5000.dylib";
+				PREBINDING = NO;
+				PRODUCT_NAME = Until5000;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		2CF77DB80CF7556D00F3B101 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/lib;
+				PREBINDING = NO;
+				PRODUCT_NAME = Lib_UltraPong;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		DD37F2570A60258300975B2D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INSTALL_PATH = /usr/local/lib;
+				PREBINDING = NO;
+				PRODUCT_NAME = fpcrtl;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		DD37F2580A60258300975B2D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/lib;
+				PREBINDING = NO;
+				PRODUCT_NAME = fpcrtl;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		DDC6851109F5717A004E4BFF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				FPC_COMMON_OPTIONS = "-Sd -XMSDL_main";
+				FPC_MAIN_FILE = "";
+				FPC_OVERRIDE_OPTIONS = "";
+				FPC_RTL_UNITS_BASE = /usr/local/lib/fpc/;
+				FPC_SPECIFIC_OPTIONS = "-Ci -Cr -Co -gl -O-";
+				FRAMEWORK_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = "";
+				REZ_SEARCH_PATHS = "";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		DDC6851209F5717A004E4BFF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				FPC_COMMON_OPTIONS = "-Sd -XMSDL_main";
+				FPC_MAIN_FILE = "";
+				FPC_OVERRIDE_OPTIONS = "";
+				FPC_RTL_UNITS_BASE = /usr/local/lib/fpc/;
+				FPC_SPECIFIC_OPTIONS = "-Ci- -Cr- -Co- -O3 -Xs ";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+			};
+			name = Release;
+		};
+		DDC688CC09F574E9004E4BFF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
+				);
+				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SYSTEM_DEVELOPER_DIR)/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks\"";
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_3)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_4)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_5)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_6)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_3)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_2)",
+				);
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/build/Debug\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/../lib/SQLite\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_3 = "\"$(SRCROOT)/../lib/ffmpeg\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_5 = "\"$(SRCROOT)/../lib/bass\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_6 = "\"$(SRCROOT)/../lib/FreeImage\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../lib/ffmpeg\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_2 = "\"$(SRCROOT)/../lib/bass\"";
+				LINK_WITH_STANDARD_LIBRARIES = YES;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Carbon,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "UltraStar Deluxe";
+				WRAPPER_EXTENSION = app;
+				ZERO_LINK = NO;
+			};
+			name = Debug;
+		};
+		DDC688CD09F574E9004E4BFF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_1)",
+				);
+				FRAMEWORK_SEARCH_PATHS_QUOTED_1 = "\"$(SYSTEM_DEVELOPER_DIR)/SDKs/MacOSX10.4u.sdk/System/Library/Frameworks\"";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_3)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_4)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_5)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_6)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_7)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_8)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_9)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
+				);
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "\"$(SRCROOT)/build/Debug\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "\"$(SRCROOT)/Bass\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_3 = "\"$(SRCROOT)/FreeImage\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_4 = "\"$(SRCROOT)/FreeImage\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_5 = "\"$(SRCROOT)/../lib/bass\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_6 = "\"$(SRCROOT)/../lib/FreeImage\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_7 = "\"$(SRCROOT)/../lib/SQLite\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_8 = "\"$(SRCROOT)/../lib/ffmpeg\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_9 = "\"$(SRCROOT)/../lib/ffmpeg\"";
+				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../lib/bass\"";
+				LINK_WITH_STANDARD_LIBRARIES = YES;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Carbon,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "UltraStar Deluxe";
+				WRAPPER_EXTENSION = app;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		DDC688DD09F57542004E4BFF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Carbon,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "Put unit sources in the 'Compile Sources' phase of this target";
+			};
+			name = Debug;
+		};
+		DDC688DE09F57542004E4BFF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
+				INSTALL_PATH = /usr/local/lib;
+				OTHER_LDFLAGS = (
+					"-framework",
+					Carbon,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = "Put unit sources in the 'Compile Sources' phase of this target";
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2CF77DB90CF7558B00F3B101 /* Build configuration list for PBXNativeTarget "Modi_Until5000" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2CF77DB70CF7556D00F3B101 /* Debug */,
+				2CF77DB80CF7556D00F3B101 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DD37F2560A60258300975B2D /* Build configuration list for PBXNativeTarget "fpcrtl" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DD37F2570A60258300975B2D /* Debug */,
+				DD37F2580A60258300975B2D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DDC6851009F5717A004E4BFF /* Build configuration list for PBXProject "UltraStarDX" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDC6851109F5717A004E4BFF /* Debug */,
+				DDC6851209F5717A004E4BFF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DDC688CB09F574E9004E4BFF /* Build configuration list for PBXNativeTarget "UltraStarDX" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDC688CC09F574E9004E4BFF /* Debug */,
+				DDC688CD09F574E9004E4BFF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DDC688DC09F57542004E4BFF /* Build configuration list for PBXNativeTarget "Put all program sources also in this target" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDC688DD09F57542004E4BFF /* Debug */,
+				DDC688DE09F57542004E4BFF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DDC6850F09F5717A004E4BFF /* Project object */;
+}

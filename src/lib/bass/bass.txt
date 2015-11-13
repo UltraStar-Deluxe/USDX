@@ -1,0 +1,1734 @@
+BASS 2.4
+Copyright (c) 1999-2009 Un4seen Developments Ltd. All rights reserved.
+
+Files that you should have found in the BASS package
+====================================================
+Win32 version
+-------------
+BASS.TXT        This file
+BASS.DLL        The BASS module
+BASS.CHM        BASS documentation
+MP3-FREE
+  BASS.DLL        BASS module using the Windows MP3 decoder
+C\              C/C++ API and examples...
+  BASS.H          BASS C/C++ header file
+  BASS.LIB        BASS import library
+  BASS.DSW        Visual C++ workspace for examples
+  MAKEFILE        Makefile for all examples
+  MAKEFILE.IN     Makefile helper macros
+  3DTEST\         3D/EAX example
+    3DTEST.C
+    3DTEST.RC
+    3DTEST.DSP
+    MAKEFILE
+  BASSTEST\       Simple playback example
+    BASSTEST.C
+    BASSTEST.RC
+    BASSTEST.DSP
+    MAKEFILE
+  CONTEST\        Console example
+    CONTEST.C
+    CONTEST.DSP
+    MAKEFILE
+  CUSTLOOP\       Custom looping example
+    CUSTLOOP.C
+    CUSTLOOP.DSP
+    MAKEFILE
+  DSPTEST\        DSP example
+    DSPTEST.C
+    DSPTEST.RC
+    DSPTEST.DSP
+    MAKEFILE
+  FXTEST\         DX8 effect example
+    FXTEST.C
+    FXTEST.RC
+    FXTEST.DSP
+    MAKEFILE
+  LIVEFX\         Full-duplex example
+    LIVEFX.C
+    LIVEFX.RC
+    LIVEFX.DSP
+    MAKEFILE
+  LIVESPEC\       "Live" version of spectrum analyser example
+    LIVESPEC.C
+    LIVESPEC.DSP
+    MAKEFILE
+  MULTI\          Multiple device example
+    MULTI.C
+    MULTI.RC
+    MULTI.DSP
+    MAKEFILE
+  NETRADIO\       Internet streaming example
+    NETRADIO.C
+    NETRADIO.RC
+    NETRADIO.DSP
+    MAKEFILE
+  PLUGINS\        Plugins example
+    PLUGINS.C
+    PLUGINS.RC
+    PLUGINS.DSP
+    MAKEFILE
+  RECTEST\        Recording example
+    RECTEST.C
+    RECTEST.RC
+    RECTEST.DSP
+    MAKEFILE
+  SPEAKERS\       Multi-speaker example
+    SPEAKERS.C
+    SPEAKERS.RC
+    SPEAKERS.DSP
+    MAKEFILE
+  SPECTRUM\       Spectrum analyser example
+    SPECTRUM.C
+    SPECTRUM.DSP
+    MAKEFILE
+  SYNTH\          Synth example
+    SYNTH.C
+    SYNTH.DSP
+    MAKEFILE
+  WRITEWAV\       WAVE writer example
+    WRITEWAV.C
+    WRITEWAV.DSP
+    MAKEFILE
+  BIN\            Precompiled examples
+    3DTEST.EXE
+    BASSTEST.EXE
+    CONTEST.EXE
+    CUSTLOOP.EXE
+    DSPTEST.EXE
+    FXTEST.EXE
+    LIVEFX.EXE
+    LIVESPEC.EXE
+    MULTI.EXE
+    NETRADIO.EXE
+    RECTEST.EXE
+    SPEAKERS.EXE
+    SPECTRUM.EXE
+    SYNTH.EXE
+    WRITEWAV.EXE
+VB\             Visual Basic API and examples...
+  BASS.BAS        BASS Visual Basic module
+  3DTEST\         3D/EAX example
+    PRJ3DTEST.VBP
+    PRJ3DTEST.FRM
+    PRJDEVICE.FRM
+  BASSTEST\       Simple playback example
+    PRJBASSTEST.VBP
+    FRMBASSTEST.FRM
+  CUSTLOOP\       Custom looping example
+    PRJCUSTLOOP.VBP
+    FRMCUSTLOOP.FRM
+    MODCUSTLOOP.BAS
+  DSPTEST\        DSP example
+    PRJDSPTEST.VBP
+    FRMDSPTEST.FRM
+    MODDSPTEST.BAS
+  FXTEST\         DX8 effect example
+    PRJFXTEST.VBP
+    FRMFXTEST.FRM
+  LIVEFX\         Full-duplex example
+    PRJLIVEFX.VBP
+    FRMLIVEFX.FRM
+    MODLIVEFX.BAS
+  LIVESPEC\       "Live" version of spectrum analyser example
+    PRJLIVESPEC.VBP
+    FRMLIVESPEC.FRM
+    MODLIVESPEC.BAS
+  MULTI\          Multiple device example
+    PRJMULTI.VBP
+    FRMMULTI.FRM
+    FRMDEVICE.FRM
+  NETRADIO\       Internet streaming example
+    PRJNETRADIO.VBP
+    FRMNETRADIO.FRM
+    MODNETRADIO.BAS
+    CLSFILEIO.CLS
+  PLUGINS\        Plugins example
+    PRJPLUGINS.VBP
+    FRMPLUGINS.FRM
+  RECTEST\        Recording example
+    PRJRECTEST.VBP
+    FRMRECTEST.FRM
+    MODRECTEST.BAS
+  SPEAKERS\       Multi-speaker example
+    PRJSPEAKERS.VBP
+    FRMSPEAKERS.FRM
+  SPECTRUM\       Spectrum analyser example
+    PRJSPECTRUM.VBP
+    FRMSPECTRUM.FRM
+    MODSPECTRUM.BAS
+  SYNTH\          Synth example
+    PRJSYNTH.VBP
+    FRMSYNTH.FRM
+    MODSYNTH.BAS
+  WRITEWAV\       WAVE writer example
+    PRJWRITEWAVE.VBP
+    PRJWRITEWAVE.FRM
+  MEMORY\         Playing from memory example by Jobnik
+    PRJMEMORY.VBP
+    FRMMEMORY.FRM
+    SYNCTEST.BAS
+    CBASS_TIME.CLS
+DELPHI\         Delphi API and examples...
+  BASS.PAS        BASS Delphi unit
+  3DTEST\         3D/EAX example
+    D3TEST.DPR
+    DTMAIN.PAS
+    DTMAIN.DFM
+    DTSELECT.PAS
+    DTSELECT.DFM
+  BASSTEST\       Simple playback example
+    BASSTEST.DPR
+    BTMAIN.PAS
+    BTMAIN.DFM
+  CONTEST\        Console example
+    CONTEST.DPR
+  CUSTLOOP\       Custom looping example
+    CUSTLOOP.DPR
+    UNIT1.PAS
+    UNIT1.DFM
+  DSPTEST\        DSP example
+    DSPTEST.DPR
+    DTMAIN.PAS
+    DTMAIN.DFM
+  FXTEST\         DX8 effect example
+    FXTEST.DPR
+    TEST.PAS
+    TEST.DFM
+  LIVEFX\         Full-duplex example
+    LIVEFX.DPR
+    UNIT1.PAS
+    UNIT1.DFM
+  LIVESPEC\       "Live" version of spectrum analyser example
+    LIVESPEC.DPR
+  MULTI\          Multiple device example
+    MULTI.DPR
+    UNIT1.PAS
+    UNIT1.DFM
+    UNIT2.PAS
+    UNIT2.DFM
+  NETRADIO\       Internet streaming example
+    NETRADIO.DPR
+    UNIT1.PAS
+    UNIT1.DFM
+  PLUGINS\        Plugins example
+    PLUGINS.DPR
+    UNIT1.PAS
+    UNIT1.DFM
+  RECORDTEST\     Recording example
+    RECORDTEST.DPR
+    UNIT1.PAS
+    UNIT1.DFM
+  SAMPLEVIS\      Visualisation example
+    SAMPLEVIS.DPR
+    MAIN.PAS
+    MAIN.DFM
+    SPECTRUM_VIS.PAS
+    CIRCLE_VIS.PAS
+    OSC_VIS.PAS
+    COMMONTYPES.PAS
+  SPEAKERS\       Multi-speaker example
+    SPEAKERS.DPR
+    UNIT1.PAS
+    UNIT1.DFM
+  SPECTRUM\       Spectrum analyser example
+    SPECTRUM.DPR
+    UNIT1.PAS
+    COMMON.INC
+  STREAMTEST\     User stream example
+    STREAMTEST.DPR
+    STMAIN.PAS
+    STMAIN.DFM
+  WRITEWAV\       WAVE writer example
+    WRITEWAV.DPR
+    UNITMAIN.PAS
+    UNITMAIN.DFM
+  DYNAMIC\        Dynamic-loading Delphi API
+    DYNAMIC_BASS.PAS  Dynamic-loading Delphi unit
+MASM\           MASM API and examples...
+  BASS.INC        BASS MASM include file
+  PLAYER\         Example MOD player
+    PLAYER.EXE
+    PLAYER.ASM
+    RSRC.RC
+    TOOLBAR.BMP
+    COMPILE.BAT
+
+NOTE: To run the example EXEs, first you will have to copy BASS.DLL into the
+      same directory as them.
+
+NOTE: To avoid unnecessary bloatage, the BASS DLLs are not digitally signed.
+      Signed versions are available on request (email: bass@un4seen.com).
+
+MacOSX version
+--------------
+BASS.TXT        This file
+LIBBASS.DYLIB   The BASS module
+BASS.CHM        BASS documentation
+CHMOX.APP       CHM file viewer
+BASS.H          BASS C/C++ header file
+MAKEFILE        Makefile for all examples
+MAKEFILE.IN     Makefile helper macros
+MP3-FREE
+  LIBBASS.DYLIB   BASS module using the OSX MP3 decoder
+3DTEST\         3D example
+  3DTEST.C
+  MAKEFILE
+  3DTEST.NIB
+BASSTEST\       Simple playback example
+  BASSTEST.C
+  MAKEFILE
+  BASSTEST.NIB
+CONTEST\        Console example
+  CONTEST.C
+  MAKEFILE
+CUSTLOOP\       Custom looping example
+  CUSTLOOP.C
+  MAKEFILE
+DSPTEST\        DSP example
+  DSPTEST.C
+  MAKEFILE
+  DSPTEST.NIB
+FXTEST\         DX8 effect example
+  FXTEST.C
+  MAKEFILE
+  FXTEST.NIB
+LIVESPEC\       "Live" version of spectrum analyser example
+  LIVESPEC.C
+  MAKEFILE
+MULTI\          Multiple device example
+  MULTI.C
+  MAKEFILE
+  MULTI.NIB
+NETRADIO\       Internet streaming example
+  NETRADIO.C
+  MAKEFILE
+  NETRADIO.NIB
+PLUGINS\        Plugins example
+  PLUGINS.C
+  MAKEFILE
+  PLUGINS.NIB
+RECTEST\        Recording example
+  RECTEST.C
+  MAKEFILE
+  RECTEST.NIB
+SPEAKERS\       Multi-speaker example
+  SPEAKERS.C
+  MAKEFILE
+  SPEAKERS.NIB
+SPECTRUM\       Spectrum analyser example
+  SPECTRUM.C
+  MAKEFILE
+WRITEWAV\       WAVE writer example
+  WRITEWAV.C
+  MAKEFILE
+
+
+What's the point?
+=================
+BASS is an audio library for use in Windows and MacOSX software. Its
+purpose is to provide the most powerful and efficient (yet easy to use),
+sample, stream, MOD music, and recording functions. All in a tiny DLL,
+under 100KB in size.
+
+See the documentation for descriptions of all the BASS functions. You
+should also look at the included example program source-codes for some
+examples of how to use BASS in your own programs.
+
+
+Requirements
+============
+Win32 version
+-------------
+BASS requires DirectX 3 or above for output. BASS does not require that a
+soundcard with DirectSound/DirectSound3D hardware accelerated drivers is
+installed, but it does improve performance if there is one. BASS also takes
+advantage of MMX, which improves the performance of the MOD music playback.
+
+MacOSX version
+--------------
+OSX 10.3 or above is recommended. BASS uses CoreAudio for output, so there
+are no special library/driver requirements. BASS supports both PowerPC and
+Intel Macs.
+
+
+Main Features
+=============
+* Samples
+  supports WAV/AIFF/MP3/MP2/MP1/OGG and custom generated samples
+
+* Sample streams
+  stream any sample data in 8/16/32 bit, with both "push" and "pull" systems
+
+* File streams
+  MP3/MP2/MP1/OGG/WAV/AIFF file streaming
+
+* Internet file streaming
+  stream files from the internet, including Shout/Icecast
+
+* User file streaming
+  stream files from anywhere using any delivery method
+
+* Multi-channel streaming
+  support for more than plain stereo, including multi-channel OGG/WAV/AIFF files
+
+* MOD music
+  uses the same engine as XMPlay = best accuracy, speed, and quality
+
+* MO3 music
+  MP3/OGG compressed MOD music
+
+* Add-on system
+  support for more formats is available via add-ons (aka plugins)
+
+* Multiple outputs
+  simultaneously use multiple soundcards, and move channels between them
+
+* Recording
+  flexible recording system, with support for multiple devices
+
+* Decode without playback
+  streams and MOD musics can be outputted in any way you want
+
+* Speaker assignment
+  assign streams and MOD musics to specific speakers
+
+* High precision synchronization
+  synchronize events in your software to the streams and MOD musics
+
+* DirectX 8 effects
+  chorus/compressor/distortion/echo/flanger/gargle/parameq/reverb
+
+* User defined DSP functions
+  custom effects may be applied to musics and streams
+
+* 32 bit floating-point decoding and processing
+  floating-point stream/music decoding, DSP, FX, and recording
+
+* 3D sound
+  play samples/streams/musics in any 3D position, with EAX support
+
+* Small
+  BASS is under 100KB (on Windows), so won't bloat your distribution
+
+
+Using BASS
+==========
+There is no guarantee that all future BASS versions will be compatible
+with all previous versions, so your program should use BASS_GetVersion
+to check the version that is loaded. This also means that you should
+put the BASS module in the same directory as your executable (not just
+somewhere in the path), to avoid the possibility of a wrong version being
+loaded.
+
+If you are updating your software from a previous BASS version, then
+you should check the "History" section (below), to see if any of the
+functions that you are using have been affected by a change.
+
+Win32 version
+-------------
+C/C++, Visual Basic, Delphi and MASM APIs are provided, to use BASS with
+another language you'll first have to convert the header file. Or, as a
+last resort, you could use LoadLibrary and GetProcAddress.
+
+The downside is that you have to manually import each function that you
+use, with the GetProcAddress function. But it has been made a lot simpler
+to import BASS this way by the use of the BASSDEF #define. Here's a small
+example:
+
+#define BASSDEF(f) (WINAPI *f) // define the functions as pointers
+#include "bass.h"
+...
+HINSTANCE bass=LoadLibrary("BASS.DLL"); // load BASS
+BASS_Init=GetProcAddress(bass,"BASS_Init"); // get BASS_Init
+BASS_Init(-1,44100,0,hWnd,NULL); // call BASS_Init
+
+To use BASS with Borland C++ Builder, you'll first have to create a
+Borland C++ Builder import library for it. This is done by using the
+IMPLIB tool that comes with Borland C++ Builder. Simply execute this:
+
+	IMPLIB BASSBCB.LIB BASS.DLL
+
+... and then use BASSBCB.LIB in your projects to import BASS.
+
+To use BASS with LCC-Win32, you'll first have to create a compatible
+import library for it. This is done by using the PEDUMP and BUILDLIB
+tools that come with LCC-Win32. Run these 2 commands:
+
+	PEDUMP /EXP BASS.LIB > BASSLCC.EXP
+	BUILDLIB BASSLCC.EXP BASSLCC.LIB
+
+... and then use BASSLCC.LIB in your projects to import BASS.
+
+For the BASS functions that return strings (char*), VB users should use
+the VBStrFromAnsiPtr function to convert the returned pointer into a VB
+string.
+
+MacOSX version
+--------------
+A separate "LIB" file is not required for OSX. Using XCode, you can simply
+add the DYLIB file to the project. Or using a makefile, you can build your
+programs like this, for example:
+
+	gcc yoursource -L. -lbass -o yourprog
+
+The LIBBASS.DYLIB file must be put in the same directory as the executable
+(it can't just be somewhere in the path). See the example makefiles.
+
+LIBBASS.DYLIB is a universal binary, with support for both PowerPC and
+Intel Macs. If you want PowerPC-only or Intel-only versions, the included
+makefile can create them for you, by typing "make ppc" or "make i386". It
+will also process any BASS add-ons placed in the same directory.
+
+
+Latest Version
+==============
+The latest version of BASS can always be found at the BASS website:
+
+	www.un4seen.com
+
+
+Licence
+=======
+BASS is free for non-commercial use. If you are a non-commercial entity
+(eg. an individual) and you are not charging for your product, and the
+product has no other commercial purpose, then you can use BASS in it
+for free. If you wish to use BASS in commercial products, then please
+also see the next section.
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, BASS IS PROVIDED
+"AS IS", WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY
+AND/OR FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS SHALL NOT BE HELD
+LIABLE FOR ANY DAMAGE THAT MAY RESULT FROM THE USE OF BASS. YOU USE
+BASS ENTIRELY AT YOUR OWN RISK.
+
+Usage of BASS indicates that you agree to the above conditions.
+
+All trademarks and other registered names contained in the BASS
+package are the property of their respective owners.
+
+Commercial licensing
+--------------------
+BASS is available for use in your commercial products. The licence
+types available are as follows:
+
+SHAREWARE: Allows the usage of BASS in an unlimited number of your
+shareware products, which must sell for no more than 40 Euros each.
+If you are an individual (not a corporation) making and selling your
+own software (and its price is within the limit), this is the licence
+for you.
+
+SINGLE COMMERCIAL: Allows the usage of BASS in a single commercial
+product.
+
+UNLIMITED COMMERCIAL: Allows the usage of BASS in an unlimited number
+of your commercial products. This licence is on a per site basis. So
+if your company has two sites that use BASS, then two licences are
+required.
+
+Please note the products must be end-user products, eg. not components
+used by other products. 
+
+These licences only cover your own software, not the publishing of
+other's software. If you publish other's software, its developers (or
+the software itself) will need to be licensed to use BASS.
+
+These licences are on a per-platform basis, with reductions available
+when licensing for both platforms. In all cases there are no royalties
+to pay, and you can use future BASS updates without further cost. One
+licence covers one person or entity and is not transferable.
+
+These licences do not allow reselling/sublicensing of BASS. For example,
+if a product is a development system, the users of said product are not
+licensed to use BASS in their productions; they will need their own
+licences.
+
+If the standard licences do not meet your requirements, or if you have
+any questions, please get in touch (email: bass@un4seen.com).
+
+Visit the BASS website for the latest pricing:
+
+	www.un4seen.com
+
+MP3
+---
+MP3 technology is patented, and Thomson license the use of their and
+Fraunhofer's patents. The inclusion of an MP3 decoder (eg. BASS) in a
+commercial product requires an MP3 patent licence. Contact Thomson for
+details:
+
+	www.mp3licensing.com
+
+Alternatively, the "MP3-FREE" BASS version does not include its own MP3
+decoder but instead makes use of the operating system's already licensed
+decoder.
+
+NOTE: When using the OS's MP3 decoder, BASS still does the file handling
+      so all the usual features are still supported, including streaming,
+      tag reading, pre-scanning, gapless playback, etc...
+
+
+History
+=======
+These are the major (and not so major) changes at each version stage.
+There are of course bug fixes and other little improvements made along
+the way too! To make upgrading simpler, all functions affected by a
+change to the BASS interface are listed.
+
+2.4.5 - 18/12/2009
+------------------
+* Support for little-endian AIFF files
+	BASS_StreamCreateFile/User/Url
+	BASS_SampleLoad
+* Support for 64-bit floating-point WAVE/AIFF files
+	BASS_StreamCreateFile/User/Url
+	BASS_SampleLoad
+* Input volume retrieval failure results in a reading of -1 instead of 1
+	BASS_RecordGetInput
+	RECTEST example updated
+* Input volume support on OSX
+	BASS_RecordSetInput
+	BASS_RecordGetInput
+	RECTEST example updated
+* Fix for deferred input settings on Vista
+	BASS_RecordSetInput
+* Windows MP3 codec given preference over other installed MP3 codecs (MP3-FREE version)
+	BASS_StreamCreateFile/User/Url
+	BASS_SampleLoad
+
+2.4.4 - 13/10/2009
+------------------
+* RIFF/BWF "radio traffic" tag retrieval
+	BASS_TAG_RIFF_CART (BASS_ChannelGetTags type)
+	TAG_CART structure
+* Support for ID3v2 tags in RIFF/WAVE/AIFF files ("ID3 " chunk)
+	BASS_TAG_ID3V2 (BASS_ChannelGetTags type)
+* Pushed fractional samples are refused rather than discarded
+	BASS_StreamPutData
+* DX8 effect emulation on OSX
+	BASS_FX_DX8_CHORUS/DISTORTION/ECHO/FLANGER/PARAMEQ/REVERB (BASS_ChannelSetFX types)
+	FXTEST example added
+* UTF-16 support on OSX
+	BASS_UNICODE (BASS_StreamCreateFile/SampleLoad/MusicLoad/PluginLoad flag)
+
+2.4.3 - 8/5/2009
+----------------
+* MOD order list retrieval
+	BASS_TAG_MUSIC_ORDERS (BASS_ChannelGetTags type)
+* Support for ID3v2 tags in RIFF/WAVE files ("id3 " chunk)
+	BASS_TAG_ID3V2 (BASS_ChannelGetTags type)
+* Improved position reporting precision on Vista
+	BASS_ChannelGetPosition
+* Length retrieval when streaming in blocks (BASS_STREAM_BLOCK)
+	BASS_ChannelGetLength
+* Support for CoreAudio codecs on OSX
+	BASS_StreamCreateFile/User
+	BASS_SampleLoad
+	BASS_TAG_CA_CODEC (BASS_ChannelGetTags type)
+	TAG_CA_CODEC structure
+* 3D algorithm option support on OSX
+	BASS_CONFIG_3DALGORITHM (BASS_SetConfig option)
+
+2.4.2 - 18/9/2008
+-----------------
+* RF64 support
+	BASS_StreamCreateFile/User
+* RIFF/BWF "Broadcast Audio Extension" tag retrieval
+	BASS_TAG_RIFF_BEXT (BASS_ChannelGetTags type)
+	TAG_BEXT structure
+* ID3v1 tag structure
+	TAG_ID3 structure
+* Multiple simultaneous recordings per device on Vista & OSX (as on XP)
+	BASS_RecordStart
+* DX8 effect parameter defaults updated/corrected in documentation
+
+2.4 - 2/4/2008
+--------------
+* "Push" streaming
+	STREAMPROC_PUSH (BASS_StreamCreate "proc")
+	BASS_StreamPutData
+	LIVEFX and MULTI examples updated
+* "Push" buffered file streaming
+	STREAMFILE_BUFFERPUSH (BASS_StreamCreateFileUser system)
+	BASS_StreamPutFileData
+* STREAMFILEPROC replaced by table of callbacks for each file operation
+	BASS_FILEPROCS (FILECLOSEPROC/FILELENPROC/FILEREADPROC/FILESEEKPROC)
+	STREAMFILEPROC *removed*
+* 64-bit file positioning
+	BASS_SampleLoad
+	BASS_MusicLoad
+	BASS_StreamCreateFile
+	BASS_StreamGetFilePosition
+* File buffer level retrieval
+	BASS_FILEPOS_BUFFER (BASS_StreamGetFilePosition mode)
+* Sinc interpolated MOD music mixing
+	BASS_MUSIC_SINCINTER (BASS_MusicLoad flag)
+* MO3 2.4 support
+	BASS_MusicLoad
+* MOD orders positioning incorporated into channel functions
+	BASS_ChannelGetLength
+	BASS_ChannelSetPosition
+	BASS_ChannelGetPosition
+	BASS_MusicGetOrderPosition *removed*
+	BASS_MusicGetOrders *removed*
+* Channel attribute functions consolidated
+	BASS_ChannelSetAttribute
+	BASS_ChannelGetAttribute
+	BASS_ChannelSlideAttribute
+	BASS_ChannelIsSliding
+	BASS_ChannelSetAttributes *removed*
+	BASS_ChannelGetAttributes *removed*
+	BASS_ChannelSlideAttributes *removed*
+	BASS_ChannelSetEAXMix *removed*
+	BASS_ChannelGetEAXMix *removed*
+	BASS_MusicSetAttribute *removed*
+	BASS_MusicGetAttribute *removed*
+* Floating-point volume and panning
+	BASS_SetVolume
+	BASS_GetVolume
+	BASS_RecordSetInput
+	BASS_RecordGetInput
+	BASS_ATTRIB_PAN/VOL (BASS_ChannelGet/Set/SlideAttribute options)
+	BASS_ATTRIB_MUSIC_VOL_CHAN/INST (BASS_ChannelGet/Set/SlideAttribute options)
+	BASS_SAMPLE (volume/pan/outvol members)
+	BASS_CONFIG_MAXVOL *removed*
+	BASSTEST and RECTEST examples updated
+* Output device volume control on Vista (as on other OS)
+	BASS_SetVolume
+	BASS_GetVolume
+* Multiple update threads
+	BASS_CONFIG_UPDATETHREADS
+	BASSTEST example updated
+* Global volume range increased to 10000
+	BASS_CONFIG_GVOL_SAMPLE/STREAM/MUSIC (BASS_SetConfig options)
+	BASSTEST example updated
+* Setting and retrieving of a sample's data
+	BASS_SampleSetData
+	BASS_SampleGetData
+	BASS_SampleCreate
+	BASS_SampleCreateDone *removed*
+* Channel flag setting mask
+	BASS_ChannelFlags
+	BASS_ChannelSetFlags *removed*
+	SPEAKERS example updated
+* 256 sample FFT
+	BASS_DATA_FFT256 (BASS_ChannelGetData flag)
+* Channel locking to prevent access by other threads
+	BASS_ChannelLock
+* Manual channel buffer updating
+	BASS_ChannelUpdate
+	BASS_ChannelPreBuf *removed*
+* Configurable manual update length
+	BASS_Update
+* Extended device information retrieval and detection of new/removed devices
+	BASS_GetDeviceInfo
+	BASS_RecordGetDeviceInfo
+	BASS_DEVICEINFO structure
+	BASS_GetDeviceDescription *removed*
+	BASS_RecordGetDeviceDescription *removed*
+	BASS_INFO (driver member) *removed*
+	BASS_RECORDINFO (driver member) *removed*
+	MULTI example updated
+* Default device change tracking on Windows (as on OSX)
+	BASS_Init
+	BASS_RecordInit
+* Speaker detection from Windows control panel
+	BASS_DEVICE_CPSPEAKERS (BASS_Init flag)
+* Channel automatically stopped & resumed for DX8 effects
+	BASS_ChannelSetFX
+	BASS_ChannelRemoveFX
+* "double" precision position conversion
+	BASS_ChannelBytes2Seconds
+	BASS_ChannelSeconds2Bytes
+* Separate config functions for pointers
+	BASS_SetConfigPtr
+	BASS_GetConfigPtr
+	BASS_CONFIG_NET_AGENT/PROXY (BASS_SetConfigPtr options)
+* Configurable file format verification length
+	BASS_CONFIG_VERIFY (BASS_SetConfig option)
+* Stream filename retrieval
+	BASS_CHANNELINFO (file member)
+* Channel sample retrieval
+	BASS_CHANNELINFO (sample member)
+* META syncs no longer receive metadata in the "data" parameter
+	BASS_SYNC_META (BASS_ChannelSetSync type)
+* Separate sync for OGG logical bitstream changes (instead of BASS_SYNC_META)
+	BASS_SYNC_OGG_CHANGE (BASS_ChannelSetSync type)
+	NETRADIO example updated (C version)
+* Message syncing removed (use PostMessage instead)
+	BASS_SYNC_MESSAGE (BASS_ChannelSetSync flag) *removed*
+* Data retrieval from stopped/paused channels
+	BASS_ChannelGetData
+* Callback "user" parameters changed to pointers
+	BASS_StreamCreate / STREAMPROC
+	BASS_StreamCreateFileUser
+	BASS_StreamCreateURL / DOWNLOADPROC
+	BASS_RecordStart / RECORDPROC
+	BASS_ChannelSetDSP / DSPPROC
+	BASS_ChannelSetSync / SYNCPROC
+
+2.3.0.3 - 30/7/2007
+-------------------
+* FX state resetting
+	BASS_FXReset
+* PLS/M3U playlist URL processing
+	BASS_CONFIG_NET_PLAYLIST
+	NETRADIO example updated
+* Internet stream connection status retrieval
+	BASS_FILEPOS_CONNECTED (BASS_StreamGetFilePosition mode)
+* Lyrics3v2 tags
+	BASS_TAG_LYRICS3 (BASS_ChannelGetTags type)
+* IT virtual channel configuration
+	BASS_CONFIG_MUSIC_VIRTUAL
+* Accurate speaker detection on Vista
+	BASS_INFO (speakers member)
+* Device output/input rate retrieval on Vista
+	BASS_INFO (freq member)
+	BASS_RECORDINFO (freq member)
+* Syncing upon position changes
+	BASS_SYNC_SETPOS (BASS_ChannelSetSync type)
+* Improved stall handling
+	BASS_SYNC_STALL
+* Invalid decoding channel flags produce an error instead of being ignored
+	BASS_StreamCreate/File/User/Url
+	BASS_MusicLoad
+
+2.3.0.2 - 22/1/2007
+-------------------
+* Retrieval of a sample's existing channel handles
+	BASS_SampleGetChannels
+* 8192 sample FFT
+	BASS_DATA_FFT8192 (BASS_ChannelGetData flag)
+* Adjustable recording buffer
+	BASS_CONFIG_REC_BUFFER (BASS_SetConfig option)
+* Stopping decoding channels before the end
+	BASS_ChannelStop
+* Sample channels created paused to prevent overriding before playback
+	BASS_SampleGetChannel
+* Separate "MP3-FREE" version using the OS's MP3 decoder
+	BASS_CONFIG_MP3_CODEC *removed*
+
+2.3.0.1 - 12/6/2006
+-------------------
+* Ability to move a channel to another device
+	BASS_ChannelSetDevice
+	MULTI example updated
+* Support for ID3v2.4 tags at end of file
+	BASS_TAG_ID3V2 (BASS_ChannelGetTags type)
+
+2.3 - 21/5/2006
+---------------
+* MOD message/instrument/sample text retrieval, merged with stream tag retrieval function
+	BASS_ChannelGetTags
+	BASS_TAG_MUSIC_NAME/MESSAGE/INST/SAMPLE (BASS_ChannelGetTags types)
+	BASS_MusicGetName *removed*
+	BASS_StreamGetTags *removed*
+* Plugin information retrieval
+	BASS_PluginGetInfo
+	BASS_PLUGININFO/FORM structures
+	BASS_CHANNELINFO (plugin member)
+	PLUGINS example updated
+* RIFF/WAVE "INFO" tag retrieval
+	BASS_TAG_RIFF_INFO (BASS_StreamGetTags type)
+* More specific WAVE format information
+	BASS_CTYPE_STREAM_WAV_PCM/FLOAT (channel types)
+	BASS_CTYPE_STREAM_WAV (channel type flag)
+* Proxy server configuration
+	BASS_CONFIG_NET_PROXY (BASS_SetConfig option)
+	BASS_CONFIG_NET_NOPROXY *removed*
+	NETRADIO example updated
+* Passive FTP mode
+	BASS_CONFIG_NET_PASSIVE (BASS_SetConfig option)
+* Agent changes take immediate effect
+	BASS_CONFIG_NET_AGENT (BASS_SetConfig option)
+* Minimum time gap between creating new sample channels
+	BASS_SAMPLE (mingap member)
+	BASS_SampleGetChannel
+* Support for Unicode plugin filenames
+	BASS_PluginLoad
+* Device output/input rate retrieval (MacOSX only)
+	BASS_INFO (freq member)
+	BASS_RECORDINFO (freq member)
+* Extended version info (minor revision)
+	BASS_GetVersion
+* Unsupported codec error code
+	BASS_ERROR_CODEC
+* Optional use of the Windows MP3 codec
+	BASS_CONFIG_MP3_CODEC (BASS_SetConfig option)
+* 3D support for MacOSX
+	BASS_Set3DFactors
+	BASS_Get3DFactors
+	BASS_Set3DPosition
+	BASS_Get3DPosition
+	BASS_Apply3D
+	BASS_ChannelSet3DAttributes
+	BASS_ChannelGet3DAttributes
+	BASS_ChannelSet3DPosition
+	BASS_ChannelGet3DPosition
+	3DTEST example added (Win32 example also updated)
+* VB version of SYNTH example added
+
+2.2 - 2/10/2005
+---------------
+* Add-on plugin system
+	BASS_PluginLoad
+	BASS_PluginFree
+	BASS_StreamCreateFile/User/Url
+	BASS_SampleLoad
+	PLUGINS example added
+* MOD position & syncing in bytes
+	BASS_ChannelSetPosition
+	BASS_ChannelGetPosition
+	BASS_MusicGetOrderPosition added for orders position
+	BASS_SYNC_MUSICPOS added for orders syncing
+	MAKEMUSICPOS macro/define
+	CUSTLOOP example updated
+* Stream/MOD "length" functions combined (also works with samples), new MOD orders length function
+	BASS_ChannelGetLength
+	BASS_MusicGetOrders
+	BASS_StreamGetLength *removed*
+	BASS_MusicGetLength *removed*
+* Support for AIFF files
+	BASS_StreamCreateFile/User/Url
+	BASS_SampleLoad
+* Support for 24 and 32-bit (integer) WAV files
+	BASS_StreamCreateFile/User/Url
+	BASS_SampleLoad
+* WAV files are no longer converted to the "device" resolution
+	BASS_StreamCreateFile/User/Url
+* Recording master control
+	BASS_RecordGetInput
+	BASS_RecordSetInput
+* Adjustable prebuffering
+	BASS_ChannelPreBuf
+* Floating-point data retrieval
+	BASS_DATA_FLOAT (BASS_ChannelGetData flag)
+* Support for floating-point samples
+	BASS_SampleLoad
+	BASS_SampleCreate
+* Multi-channel samples
+	BASS_SampleLoad/Create
+	BASS_SAMPLE (chans member)
+* Sample lengths given in bytes
+	BASS_SampleCreate
+	BASS_SAMPLE (length member)
+* MOD music 8-bit resolution option
+	BASS_MusicLoad
+* OGG vendor tag retrieval
+	BASS_TAG_VENDOR (BASS_StreamGetTags type)
+* Configurable "User-Agent" header for internet streams
+	BASS_CONFIG_NET_AGENT (BASS_SetConfig option)
+* Shoutcast metadata is now requested automatically
+	BASS_STREAM_META flag *removed*
+* Download callbacks receive all data from start of file/stream (including any non-audio data)
+	DOWNLOADPROC
+* Length when streaming in blocks is unavailable (BASS_ERROR_NOTAVAIL, not just 0)
+	BASS_ChannelGetLength
+* Support for growing custom file streams
+	BASS_FILE_LEN (STREAMFILEPROC action)
+* Query file action removed
+	BASS_FILE_QUERY *removed*
+* Recording channel syncing
+	BASS_ChannelSetSync
+* Info structure "size" members removed
+	BASS_INFO structure
+	BASS_RECORDINFO structure
+* Little bit of flag reshuffling
+	BASS_MP3_SETPOS renamed to BASS_STREAM_PRESCAN
+	BASS_MUSIC_CALCLEN value changed and renamed to BASS_MUSIC_PRESCAN
+	BASS_MUSIC_POSRESET value changed
+* Add-on API enhancements
+* MacOSX port introduced
+
+2.1 - 28/11/2004
+----------------
+* Improved "mixtime" sync system, allowing custom looping
+	SYNCPROC
+	CUSTLOOP example added
+* FX can now be in the DSP chain, so can be prioritized and applied in floating-point
+	BASS_ChannelSetFX
+	BASS_CONFIG_FLOATDSP (BASS_SetConfig option)
+* Ability to set channel flags (eg. looping) independent of playback
+	BASS_ChannelSetFlags
+	SPEAKERS example updated
+* Stream/MOD "play" and channel "resume" functions combined
+	BASS_ChannelPlay
+	BASS_StreamPlay *removed*
+	BASS_MusicPlay *removed*
+	BASS_MusicPlayEx *removed*
+	BASS_ChannelResume *removed*
+* Stream/MOD prebuffering functions combined
+	BASS_ChannelPreBuf
+	BASS_StreamPreBuf *removed*
+	BASS_MusicPreBuf *removed*
+* MOD attribute functions combined, with added BPM/speed/globalvolume options
+	BASS_MusicSetAttribute
+	BASS_MusicGetAttribute
+	BASS_MUSIC_ATTRIB_AMPLIFY
+	BASS_MUSIC_ATTRIB_PANSEP
+	BASS_MUSIC_ATTRIB_PSCALER
+	BASS_MUSIC_ATTRIB_BPM
+	BASS_MUSIC_ATTRIB_SPEED
+	BASS_MUSIC_ATTRIB_VOL_GLOBAL
+	BASS_MUSIC_ATTRIB_VOL_CHAN
+	BASS_MUSIC_ATTRIB_VOL_INST
+	BASS_MusicSetAmplify *removed*
+	BASS_MusicSetPanSep *removed*
+	BASS_MusicSetPositionScaler *removed*
+	BASS_MusicSetVolume *removed*
+	BASS_MusicGetVolume *removed*
+* Flag to reset bpm/etc as well as notes when seeking in MOD musics
+	BASS_MUSIC_POSRESETEX (BASS_MusicLoad & BASS_ChannelSetFlags flag)
+* More flexible and concise sample channel creation system
+	BASS_SampleGetChannel
+	BASS_SamplePlay *removed*
+	BASS_SamplePlayEx *removed*
+	BASS_SamplePlay3D *removed*
+	BASS_SamplePlay3DEx *removed*
+* Support for up to 30 speakers
+	BASS_SPEAKER_N macro/define
+* More precise level measurement
+	BASS_ChannelGetLevel
+* Level can now be retrieved from decoding channels
+	BASS_ChannelGetLevel
+* Retrieval of a sample/channel's original sample resolution
+	BASS_SAMPLE (origres member)
+	BASS_CHANNELINFO (origres member)
+* Support for streaming WAV files in "blocks"
+	BASS_StreamCreateURL
+	BASS_StreamCreateFileUser
+* Status info (HTTP/ICY tags) available during connection to server
+	BASS_STREAM_STATUS (BASS_StreamCreateURL flag)
+	DOWNLOADPROC
+	NETRADIO example updated (Delphi version also added)
+* Adjustable internet stream prebuffering
+	BASS_CONFIG_NET_PREBUF (BASS_SetConfig option)
+* Option to bypass proxy server
+	BASS_CONFIG_NET_NOPROXY (BASS_SetConfig option)
+* Option whether to allow channels to be played after BASS_Pause
+	BASS_CONFIG_PAUSE_NOPLAY (BASS_SetConfig option)
+* Recording channel count now a separate parameter
+	BASS_RecordStart (chans parameter)
+* Synchronizer for when a channel is freed
+	BASS_SYNC_FREE (BASS_ChannelSetSync type)
+* Data start file position retrieval
+	BASS_FILEPOS_START (BASS_StreamGetFilePosition mode)
+* Performance improvements
+	MP2 decoding ~20% faster
+	MP3/MP1 decoding & FFT processing all up to 10% faster
+	OGG decoding ~3% faster
+* C/C++ examples reorganised, with makefiles & VC++ projects
+* Add-on API enhancements
+* More DLL shrinkage :)
+
+2.0 - 31/10/2003
+----------------
+* Multiple output device support
+	BASS_Init (device number changes)
+	BASS_SetDevice
+	BASS_GetDevice
+	BASS_ChannelGetDevice
+	MULTI example updated (VB version also added)
+* Multiple recording device support
+	BASS_RecordSetDevice
+	BASS_RecordGetDevice
+	BASS_RecordStart
+	BASS_ChannelGetDevice
+	HRECORD handle
+	RECORDPROC (handle parameter)
+* Recording with DSP/FX
+	BASS_ChannelSetDSP
+	BASS_ChannelSetFX
+* Recording position retrieval
+	BASS_ChannelGetPosition
+* Start recording paused
+	BASS_RECORD_PAUSE (BASS_RecordStart flag)
+* Multi-channel streams, inc. support for multichannel OGG & WAV files
+	BASS_StreamCreate
+	BASS_StreamCreateFile/User/Url
+* FFT for individual channels, inc. multi-channel streams
+	BASS_DATA_FFT_INDIVIDUAL (BASS_ChannelGetData flag)
+	BASS_DATA_FFT512S/1024S/2048S/4096S *removed*
+* DSP prioritizing
+	BASS_ChannelSetDSP
+	DSPTEST example updated
+* Seeking in internet streamed files
+	BASS_ChannelSetPosition
+* Enhanced custom file stream systems
+	BASS_StreamCreateFileUser
+	BASS_FILE_SEEK (STREAMFILEPROC action)
+	BASS_STREAM_FILEPROC flag *removed*
+* Enhanced custom stream system with automatic stalling/resuming
+	STREAMPROC
+	BASS_STREAMPROC_END (STREAMPROC flag)
+* Synchronizer for stalled/resumed playback 
+	BASS_SYNC_STALL (BASS_ChannelSetSync type)
+* Synchronizer for completed download
+	BASS_SYNC_DOWNLOAD (BASS_ChannelSetSync type)
+* End sync support for custom streams
+	BASS_SYNC_END (BASS_ChannelSetSync type)
+* Synchronizer support for decoding channels
+	BASS_ChannelSetSync
+* Unified configuration function
+	BASS_SetConfig
+	BASS_GetConfig
+	BASS_SetBufferLength *removed*
+	BASS_SetNetConfig *removed*
+	BASS_SetGlobalVolumes *removed*
+	BASS_GetGlobalVolumes *removed*
+	BASS_SetLogCurves *removed*
+	BASS_Set3DAlgorithm *removed*
+	BASS_DEVICE_FLOATDSP flag *removed*
+* Internet stream saving to disk replaced by more flexible callback
+	BASS_StreamCreateURL
+	DOWNLOADPROC
+	VB NETRADIO example updated
+* Buffer length retrieval when "streaming in blocks"
+	BASS_FILEPOS_END (BASS_StreamGetFilePosition mode)
+* Individual sample rate setting for MOD musics
+	BASS_MusicLoad
+* Channel type and default sample rate retrieval
+	BASS_ChannelGetInfo (replaces BASS_ChannelGetFlags)
+	BASS_CHANNELINFO
+* MOD music flag retrieval
+	BASS_CHANNELINFO (flags member)
+* Adjustable instrument volumes in MOD musics
+	BASS_MusicSetVolume (replaces BASS_MusicSetChannelVol)
+	BASS_MusicGetVolume (replaces BASS_MusicGetChannelVol)
+* Automatically free a MOD music when it stops or ends
+	BASS_MUSIC_AUTOFREE (BASS_MusicLoad flag)
+* Class GUID added to initialization parameters
+	BASS_Init
+	BASS_SetCLSID *removed*
+* Update period adjustable at any time
+	BASS_CONFIG_UPDATEPERIOD (BASS_SetConfig option)
+	BASS_DEVICE_NOTHREAD flag *removed*
+* Customizable maximum volume setting
+	BASS_CONFIG_MAXVOL (BASS_SetConfig option)
+	BASS_DEVICE_VOL1000 flag *removed*
+* Device volume is now always left as it is during init/freeing
+	BASS_DEVICE_LEAVEVOL flag *removed*
+* Device driver name retrieval
+	BASS_INFO (driver member)
+	BASS_RECORDINFO (driver member)
+* Error codes are local to the current thread
+	BASS_ErrorGetCode
+* Performance improvements
+	MP2 decoding 15-20% faster
+	MP3 decoding ~5% faster
+* Built-in CD functions removed (replaced in BASSCD)
+	BASS_CDDoor *removed*
+	BASS_CDFree *removed*
+	BASS_CDGetID *removed*
+	BASS_CDGetTrackLength *removed*
+	BASS_CDGetTracks *removed*
+	BASS_CDInDrive *removed*
+	BASS_CDInit *removed*
+	BASS_CDPlay *removed*
+* Force channels to use software mixing
+	BASS_SAMPLE_SOFTWARE (BASS_StreamCreate/File/User/URL & BASS_MusicLoad flag)
+* Support for high-pass filter and forward/reverse (S9E/F) IT/MPT effects
+* BASS_MUSIC flags rearranged to mirror BASS_SAMPLE/STREAM counterparts
+* Output automatically started during initialization
+* BASS_ChannelGetData once again accepts any "length" param
+* All function comments have been removed from the API headers to avoid
+  outdated/incorrect information - the BASS.CHM documentation should be used.
+* TMT Pascal API removed from main distribution - now available on the website
+* A few more 'K' knocked off the DLL size :)
+
+1.8a - 18/6/2003
+----------------
+* Tweaks 'n' fixes, including...
+	Fixed seeking bug on 32-bit OGG streams
+	Fixed seeking on a decoding channel after it has reached the end
+	Low FPU precision (eg. when using Direct3D) issue addressed
+	Improved speakers (BASS_INFO) detection
+	BASS_ChannelSeconds2Bytes return value is rounded down to nearest sample
+	BASS_ChannelGetData "length" param must equal a whole number of samples
+	Slide syncs are triggered by "-2" volume slides on "autofree" streams
+* Support for UNICODE filenames
+	BASS_UNICODE (BASS_SampleLoad/BASS_StreamCreateFile/BASS_MusicLoad flag)
+* 4096 sample FFT
+	BASS_DATA_FFT4096/S (BASS_ChannelGetData flags)
+* Another 'K' knocked off the DLL size
+
+1.8 - 9/3/2003
+--------------
+* 32-bit floating-point channels
+	BASS_SAMPLE_FLOAT (BASS_StreamCreate/URL/File flag)
+	BASS_MUSIC_FLOAT (BASS_MusicLoad flag)
+	BASS_SAMPLE_FLOAT (BASS_RecordStart flag)
+	BASS_DEVICE_FLOATDSP (BASS_Init flag)
+	DSPTEST example updated
+* Support for 32-bit floating-point (type 3) WAV files
+	BASS_StreamCreateFile/URL
+	BASS_SampleLoad
+* Channel speaker assignment
+	BASS_SPEAKER_FRONT (BASS_MusicLoad/BASS_StreamCreate/File/URL flag)
+	BASS_SPEAKER_REAR                       "
+	BASS_SPEAKER_CENLFE                     "
+	BASS_SPEAKER_REAR2                      "
+	BASS_SPEAKER_FRONTLEFT                  "
+	BASS_SPEAKER_FRONTRIGHT                 "
+	BASS_SPEAKER_REARLEFT                   "
+	BASS_SPEAKER_REARRIGHT                  "
+	BASS_SPEAKER_CENTER                     "
+	BASS_SPEAKER_LFE                        "
+	BASS_SPEAKER_REAR2LEFT                  "
+	BASS_SPEAKER_REAR2RIGHT                 "
+	BASS_INFO (speakers member)
+	BASS_DEVICE_SPEAKERS (BASS_Init flag)
+	4SPEAKER example replaced by SPEAKERS example
+* Recording input type retrieval
+	BASS_INPUT_TYPE_xxx (BASS_RecordGetInput)
+	RECTEST example updated
+* Non-interpolated MOD mixing
+	BASS_MUSIC_NONINTER (BASS_MusicLoad/PlayEx flag)
+* Performance improvements
+	FFT up to 100% faster!
+	MP3(MPEG2/2.5) decoding up to 60% faster
+	MMX mixers 5-10% faster
+	MP3(MPEG1)/MP2/MP1/OGG decoding all ~5% faster
+* Optional disabling of FFT windowing
+	BASS_DATA_FFT_NOWINDOW (BASS_ChannelGetData flag)
+* BASS_ERROR_FILEFORM - error code to distinguish between file and sample format
+	BASS_MusicLoad
+	BASS_SampleLoad
+	BASS_StreamCreate/File/URL
+* BASS_StreamGetFilePosition mode flags added
+	BASS_FILEPOS_DECODE/DOWNLOAD/END
+* DirectX 9 detection
+	BASS_INFO (dsver member)
+* Initialization flags retrieval
+	BASS_INFO (initflags member)
+* Half-rate MP3 playback option removed
+	BASS_MP3_HALFRATE flag *removed*
+* New internal "plugin" system - BASSWMA is further integrated as a result
+* Improved documentation - integrated with BASSWMA, search option added
+* VB version of DSPTEST example added
+* Delphi RECORDTEST example added
+* Guess what... reduced DLL size again :)
+
+1.7 - 27/10/2002
+----------------
+* New alternative DX8 (DMO) effects implementation
+	BASS_StreamCreate/File/URL
+	BASS_MusicLoad
+	BASS_ChannelSetFX
+	SYNTH example updated
+* User file streaming
+	BASS_STREAM_FILEPROC (BASS_StreamCreate flag)
+	STREAMFILEPROC
+* DSP & FX support for decoding channels
+	BASS_ChannelSetDSP
+	BASS_ChannelSetFX
+* Support for DX8 (DMO) effects in IT/XM/MO3 files
+	BASS_MusicLoad
+* Support for chained OGG streaming (and syncing)
+	BASS_StreamCreateURL
+	BASS_SYNC_META (BASS_ChannelSetSync type)
+* Attribute (volume/frequency/pan) sliding
+	BASS_ChannelSlideAttributes
+	BASS_ChannelIsSliding
+	BASS_SYNC_SLIDE (BASS_ChannelSetSync type)
+* Recording without a callback function
+	BASS_RecordStart
+	LIVEFX example added
+* Query a channel's buffered data
+	BASS_DATA_AVAILABLE (BASS_ChannelGetData flag)
+* Discard data from the recording buffer
+	BASS_ChannelGetData
+* Adjustable internet stream config (timeout/buffer lengths)
+	BASS_SetNetConfig
+* Recommended minimum buffer length
+	BASS_INFO (minbuf member)
+* MOD music flags adjustment without changing playback position
+	BASS_MusicPlayEx
+	PLAYER (MASM) example updated
+* More functions are now useable in MOD music "mixtime" syncs
+	SYNCPROC
+	BASS_ChannelSetPosition
+	BASS_MusicPlayEx
+	BASS_MusicSetAmplify
+	BASS_MusicSetPanSep
+* Maximum buffer length increased to 5 seconds
+	BASS_SetBufferLength
+* Support for extended filter range in IT files
+	BASS_MusicLoad
+* Speedier MOD music file verification
+	BASS_MusicLoad
+* Delphi 3DTEST example fixed
+* Magically reduced DLL size again :)
+
+1.6a - 25/8/2002
+----------------
+* OGG support updated to 1.0
+* Stereo FFT
+	BASS_DATA_FFT512S/1024S/2048S (BASS_ChannelGetData flags)
+* Support for "Invert Loop" (EFx) MOD effect
+* Reduced DLL size
+* New Delphi examples
+	WRITEWAV - WAVE writer example
+	SAMPLEVIS - Visualisation example
+
+1.6 - 13/6/2002
+---------------
+* 64-bit stream lengths and positions
+	BASS_StreamGetLength
+	BASS_ChannelBytes2Seconds
+	BASS_ChannelSeconds2Bytes
+	BASS_ChannelGetPosition
+	BASS_ChannelSetPosition
+	BASS_ChannelSetSync
+* Recording input selection
+	BASS_RECORDINFO (inputs & singlein members)
+	BASS_RecordGetInputName
+	BASS_RecordGetInput
+	BASS_RecordSetInput
+* Adjustable recording update period
+	BASS_RecordStart
+* Load OGG files as samples
+	BASS_SampleLoad
+* CD drive door opening & closing
+	BASS_CDDoor
+* CDDB2 ID retrieval
+	BASS_CDID_CDDB2 (BASS_CDGetID flag)
+* Streaming beyond initial file length
+	BASS_StreamCreateFile
+* Recording position bytes<->seconds translation
+	BASS_ChannelBytes2Seconds
+	BASS_ChannelSeconds2Bytes
+* Improved multi-threaded support (play from any thread)
+	BASS_MusicPlay/Ex
+	BASS_SamplePlay/3D/Ex
+	BASS_StreamPlay
+	BASS_DEVICE_NOSYNC flag *removed*
+* Paused channel status
+	BASS_ACTIVE_PAUSED (BASS_ChannelIsActive)
+* Integrated WMA stream freeing
+	BASS_StreamFree
+	BASS_Free
+* Pin-point accurate OGG seeking without BASS_MP3_SETPOS flag
+* Win2k DS buffer bug fix
+
+1.5a - 14/4/2002
+----------------
+* NT4 fix (also enables "nosound" device without DX installed)
+	BASS_ERROR_DX error code
+* MOD music loading without the samples
+	BASS_MUSIC_NOSAMPLE (BASS_MusicLoad flag)
+* Custom decoding channels
+	BASS_STREAM_DECODE (BASS_StreamCreate flag)
+* 5 second HTTP connection timeout
+	BASS_ERROR_TIMEOUT (BASS_StreamCreateURL error code)
+
+1.5 - 31/3/2002
+---------------
+* Improved performance
+	MMX mixers lot faster (over 50% faster in some cases!)
+	OGG decoding 15-20% faster
+	MP3 decoding 5-10% faster
+* Recording
+	BASS_RecordGetDeviceDescription
+	BASS_RecordInit
+	BASS_RecordFree
+	BASS_RecordGetInfo
+	BASS_RecordStart
+* OGG support built-in (OGG/VORBIS DLLs not required)
+	BASS_DEVICE_OGG flag *removed*
+* MOD music seeking in seconds
+	BASS_MusicPlayEx
+	BASS_ChannelSetPosition
+* Shoutcast metadata retrieval
+	BASS_STREAM_META (BASS_StreamCreateURL flag)
+	BASS_TAG_META (BASS_StreamGetTags type)
+	BASS_SYNC_META (BASS_ChannelSetSync type)
+* 1000 volume levels
+	BASS_DEVICE_VOL1000 (BASS_Init/CDInit flag)
+* CDDB ID retrieval
+	BASS_CDID_CDDB (BASS_CDGetID flag)
+* Leave the CD volume as it is during init/closing
+	BASS_DEVICE_LEAVEVOL (BASS_CDInit flag)
+* FFT enabled on decoding channels
+	BASS_ChannelGetData
+* Left level duplicated on right for mono channels
+	BASS_ChannelGetLevel
+* Improved MPEG length estimation without BASS_MP3_SETPOS flag
+	BASS_StreamGetLength
+* Support for Modplug/ADPCM compressed files
+	BASS_MusicLoad
+* Device description function parameter change
+	BASS_GetDeviceDescription
+* MASM API
+
+1.4 - 30/1/2002
+---------------
+* Channel decoding without playback
+	BASS_MUSIC_DECODE (BASS_MusicLoad flag)
+	BASS_STREAM_DECODE (BASS_StreamCreateFile/URL flag)
+	BASS_ChannelGetData
+* Windows message sync callbacks
+	BASS_SYNC_MESSAGE (BASS_ChannelSetSync flag)
+* Adjustable channel volumes in MOD musics
+	BASS_MusicSetChannelVol
+	BASS_MusicGetChannelVol
+* Customizable DirectSound initialization object
+	BASS_SetCLSID
+* Retrieve HMUSIC/HSTREAM/HCHANNEL IDirectSoundBuffer interfaces
+	BASS_GetDSoundObject
+* A3D functions removed (use BASS_SetCLSID/BASS_GetDSoundObject to access A3D)
+	BASS_DEVICE_A3D (BASS_Init flag)
+	BASS_SetA3DResManager
+	BASS_GetA3DResManager
+	BASS_SetA3DHFAbsorbtion
+	BASS_GetA3DHFAbsorbtion
+* Callback functions now work in VB6
+	DSPPROC
+	STREAMPROC
+	SYNCPROC
+* Improved PCM WAVE streaming performance
+	BASS_StreamCreateFile
+	BASS_StreamCreateURL
+* OGG modules updated to RC3
+* Stereo sample support in MO3 format
+* MO3 encoder now distributed separately from BASS
+
+1.3 - 17/11/2001
+----------------
+* Manual buffer updating
+	BASS_DEVICE_NOTHREAD (BASS_Init flag)
+	BASS_Update
+* Adjustable buffer update period (allows small buffer sizes)
+	BASS_Init
+* Output device latency retrieval
+	BASS_INFO (latency member)
+* MPEG/OGG seeking without BASS_MP3_SETPOS flag
+	BASS_ChannelSetPosition
+* Internet file streaming from offsets
+	BASS_StreamCreateURL
+* File stream tag/comment retrieval (ID3/ID3v2/OGG/HTTP/ICY tags)
+	BASS_StreamGetTags
+* Byte<->time position translation
+	BASS_ChannelBytes2Seconds
+	BASS_ChannelSeconds2Bytes
+* UMX (Unreal/Tournament music package) format support
+	BASS_MusicLoad
+* S3M/IT sync fx changed to S2x (S0x conflicted with S00)
+	BASS_SYNC_MUSICFX
+* Stereo sample support in IT/XM/S3M formats
+* MO3: OGG compression supported
+
+1.2 - 25/9/2001
+---------------
+* OGG (Ogg Vorbis) stream support
+	BASS_DEVICE_OGG (BASS_Init flag)
+	BASS_StreamCreateFile
+	BASS_StreamCreateURL
+* Channel linking (start/stop/pause/resume channels together)
+	BASS_ChannelSetLink
+	BASS_ChannelRemoveLink
+* MOD music playback length calculation
+	BASS_MUSIC_CALCLEN (BASS_MusicLoad flag)
+	BASS_MusicGetLength
+* Pre-buffering
+	BASS_MusicPreBuf
+	BASS_StreamPreBuf
+* Samples with single simultaneous playbacks have same HSAMPLE/HCHANNEL handle
+	BASS_SamplePlay/Ex
+* Stopping a custom stream flushes its buffer contents
+	BASS_ChannelStop
+
+1.1a - 31/8/2001
+----------------
+* NT4 bug fixed
+* XM Wxx effect syncing
+	BASS_SYNC_MUSICFX
+* MP3/2/1 rewinding without BASS_MP3_SETPOS
+	BASS_ChannelSetPosition
+
+1.1 - 11/8/2001
+---------------
+* DX8 (DMO) effects
+	BASS_SAMPLE_FX (BASS_StreamCreate/File/URL flag)
+	BASS_MUSIC_FX (BASS_MusicLoad flag)
+	BASS_ChannelSetFX
+	BASS_ChannelRemoveFX
+	BASS_FXSetParameters
+	BASS_FXGetParameters
+	BASS_FXCHORUS structure
+	BASS_FXCOMPRESSOR structure
+	BASS_FXDISTORTION structure
+	BASS_FXECHO structure
+	BASS_FXFLANGER structure
+	BASS_FXGARGLE structure
+	BASS_FXI3DL2REVERB structure
+	BASS_FXPARAMEQ structure
+	BASS_FXREVERB structure
+* Internet file streaming in blocks (inc. Shoutcast/Icecast stream support)
+	BASS_STREAM_BLOCK (BASS_StreamCreateURL flag)
+* 512/1024/2048 sample FFT
+	BASS_DATA_FFT512/1024/2048 (BASS_ChannelGetData flags)
+* CD identification
+	BASS_CDGetID
+* Improved DX version detection
+	BASS_INFO (dsver member)
+
+1.0 - 20/6/2001
+---------------
+* Load MP3/MP2/MP1 files as samples
+	BASS_SampleLoad
+* Internet file streaming from FTP servers
+	BASS_StreamCreateURL
+* Save a local copy of internet file streams
+	BASS_StreamCreateURL
+* Sample accurate file stream seeking
+	BASS_ChannelSetPosition
+	BASS_StreamGetBlockLength *removed*
+* Stream position synchronizer
+	BASS_SYNC_POS
+* Increased synchronizer precision
+* Improved MPEG file detection and error detection
+* Stop MOD musics on a backwards jump effect
+	BASS_MUSIC_STOPBACK (BASS_MusicLoad/PlayEx flag)
+* Leave the volume as it is during closing (as well as initialization)
+	BASS_DEVICE_LEAVEVOL (BASS_Init flag)
+* Optional automatic use of foreground window handle during initialization
+	BASS_Init
+* Reduced DLL size
+* VB API fixes
+
+0.9 - 18/4/2001
+---------------
+* Internet file streaming
+	BASS_StreamCreateURL
+* MP1 & MP2 (MPEG layer 1 & 2) support
+	BASS_StreamCreateFile/URL
+* MPEG 2.5 support (12000/11025/8000hz sample rates)
+	BASS_StreamCreateFile/URL
+* Decoding/download/end file stream position retrieval
+	BASS_StreamGetFilePosition
+* XMPlay surround sound for MOD musics
+	BASS_MUSIC_SURROUND (BASS_MusicLoad/PlayEx flag)
+	BASS_MUSIC_SURROUND2 (BASS_MusicLoad/PlayEx flag)
+* Restrict the download rate of internet file streams
+	BASS_STREAM_RESTRATE (BASS_StreamCreateURL flag)
+* Check if an internet file stream is stalled
+	BASS_ChannelIsActive
+* Automatically free a stream when it stops or ends
+	BASS_STREAM_AUTOFREE (BASS_StreamCreate/File/URL flag)
+* Leave the volume as it is during initialization
+	BASS_DEVICE_LEAVEVOL (BASS_Init flag)
+* Number of CD tracks retrieval
+	BASS_CDGetTracks
+* CD track length retrieval
+	BASS_CDGetTrackLength
+* Exact stream length set after whole file is streamed
+	BASS_StreamGetLength
+* TMT Pascal API and samples
+* Dynamic-loading Delphi API
+
+0.8a - 28/2/2000
+----------------
+* Updated Delphi API and samples
+
+0.8 - 24/1/2000
+---------------
+* Improved MP3 performance on P2/K6 and above CPUs
+* User DSP functions on streams and MOD musics
+	BASS_ChannelSetDSP
+	BASS_ChannelRemoveDSP
+* DX7 voice allocation & management
+	BASS_SAMPLE_VAM (BASS_SampleLoad/Create flag)
+	BASS_VAM_xxx flags
+	BASS_SAMPLE (vam & priority members)
+* DX7 software 3D algorithm selection
+	BASS_Set3DAlgorithm
+* DirectSound interface retrieval
+	BASS_GetDSoundObject
+* Log/linear volume & panning curves
+	BASS_SetLogCurves
+* User data passed to callback functions
+	STREAMPROC - BASS_StreamCreate
+	SYNCPROC - BASS_ChannelSetSync
+* New synchronizer
+	BASS_SYNC_MUSICFX
+* New synchronizer flag
+	BASS_SYNC_MIXTIME
+* Disable synchronizers option - saves a little CPU time
+	BASS_DEVICE_NOSYNC (BASS_Init flag)
+* Hi-res floating-point CPU usage monitoring
+	BASS_GetCPU
+* Wait for playback to start when playing a CD
+	BASS_CDPlay
+* DirectSound (dsound.dll) version retrieval
+	BASS_INFO (dsver member)
+* Removed volume sliding functions (they were fairly pointless)
+	BASS_SlideVolume
+	BASS_IsSliding
+* MO3: read/write encoder settings
+* MO3: remove inst/samp/message texts now optional
+* MO3: LAME encoder settings
+
+0.7 - 3/10/1999
+---------------
+* MO3 (MP3 compressed MODs)
+* A3D functions
+	BASS_DEVICE_A3D (BASS_Init flag)
+	BASS_INFO (a3d member)
+	BASS_SetA3DResManager
+	BASS_GetA3DResManager
+	BASS_SetA3DHFAbsorbtion
+	BASS_GetA3DHFAbsorbtion
+* Music/stream immediate sample data retrieval
+	BASS_ChannelGetData
+* File stream (WAV/MP3) length retrieval
+	BASS_StreamGetLength
+	BASS_StreamGetBlockLength
+* File stream seeking
+	BASS_ChannelSetPosition
+* Mono MP3 option (lower CPU usage)
+	BASS_StreamCreateFile
+* Music length retrieval
+	BASS_MusicGetLength
+* Music name retrieval
+	BASS_MusicGetName
+* Stop notes when moving MOD music position
+	BASS_MUSIC_POSRESET (BASS_MusicLoad/BASS_MusicPlayEx flag)
+* BASS_ERROR_FREQ - invalid sample rate error code
+	BASS_SampleCreate
+	BASS_SamplePlayEx
+	BASS_SamplePlay3DEx
+	BASS_StreamCreate
+	BASS_ChannelSetAttributes
+* Delphi and VB APIs
+
+0.6a - 26/7/1999
+----------------
+* Half rate MP3 option (lower CPU usage)
+	BASS_MP3_HALFRATE
+* Loading/streaming from file offsets
+	BASS_MusicLoad
+	BASS_SampleLoad
+	BASS_StreamCreateFile
+* Global music/sample/stream volume levels
+	BASS_SetGlobalVolumes
+	BASS_GetGlobalVolumes
+* Other new function
+	BASS_SampleStop
+* New synchronizer
+	BASS_SYNC_END
+* New sample overrider
+	BASS_SAMPLE_OVER_DIST
+* LoadLibrary/GetProcAddress instructions and example
+
+0.5 - 4/7/1999
+--------------
+* Documentation!
+* File streaming (MP3 and WAV)
+	BASS_StreamCreateFile
+* Custom generated samples
+	BASS_SampleCreate
+	BASS_SampleCreateDone
+* Other new function
+	BASS_MusicSetPositionScaler
+* Renamed function
+	BASS_ChannelClearSync -> BASS_ChannelRemoveSync
+* Alterations made to
+	BASS_ChannelGetPosition
+	BASS_SampleLoad
+	BASS_StreamPlay
+
+0.4 - 30/3/1999
+---------------
+* Compressed WAV samples support (using audio CODECs)
+* Updated CD volume handling - now works with SB Live
+* More linear channel volume/pan scales (were slightly off before)
+* "no sound" device option
+* 3D sound functions
+	BASS_Set3DFactors
+	BASS_Get3DFactors
+	BASS_Set3DPosition
+	BASS_Get3DPosition
+	BASS_Apply3D
+	BASS_SamplePlay3D
+	BASS_SamplePlay3DEx
+	BASS_ChannelSet3DAttributes
+	BASS_ChannelGet3DAttributes
+	BASS_ChannelSet3DPosition
+	BASS_ChannelGet3DPosition
+* EAX functions
+	BASS_SetEAXParameters
+	BASS_GetEAXParameters
+	BASS_ChannelSetEAXMix
+	BASS_ChannelGetEAXMix
+* Other new functions
+	BASS_GetDeviceDescription
+	BASS_SetBufferLen
+	BASS_ChannelGetFlags
+	BASS_ChannelPause
+	BASS_ChannelResume
+	BASS_ChannelSetPosition
+* Replaced function
+	BASS_CDResume -> BASS_ChannelResume
+* Alterations made to
+	BASS_Init
+	BASS_CDInit
+	BASS_SampleLoad
+	BASS_StreamPlay
+	BASS_INFO structure
+	BASS_SAMPLE structure
+	BASS_DEVICE_xxx flags
+	BASS_SAMPLE_xxx flags
+
+0.3 - 8/3/1999
+--------------
+* Synchronization functions
+	BASS_ChannelSetSync
+	BASS_ChannelClearSync
+* Other new functions
+	BASS_GetVersion
+	BASS_ChannelGetPosition
+	BASS_ChannelGetLevel
+	BASS_ChannelGetAttributes
+	BASS_ChannelSetAttributes
+* Replaced functions
+	BASS_MusicStop -> BASS_ChannelStop
+	BASS_MusicSetVolume -> BASS_ChannelSetAttributes
+	BASS_CDStop -> BASS_ChannelStop
+	BASS_CDSetVolume -> BASS_ChannelSetAttributes
+	BASS_CDGetVolume -> BASS_ChannelGetAttributes
+	BASS_ChannelUpdate -> BASS_ChannelSetAttributes
+* Alterations made to
+	BASS_MusicPlayEx
+	BASS_StreamPlay
+	BASS_INFO structure
+
+0.2 - 28/2/1999
+---------------
+* First public release
+
+
+Credits
+=======
+Ogg Vorbis decoding is based on libogg/vorbis,
+Copyright (c) 2002-2004 Xiph.org Foundation
+
+CHMOX is (c) 2004 Stéphane Boisson, http://chmox.sourceforge.net/
+
+API/Sample contributors
+-----------------------
+Visual Basic: Adam Hoult, Hendrik Knaepen, Arthur Aminov,
+              Peter Hebels
+Delphi: Titus Miloi, Rogier Timmermans, Alessandro Cappellozza,
+        Jesse Naranjo, Chris Troesken, Evgeny Melnikov
+MASM: Octavian Chis
+
+
+Bug reports, Suggestions, Comments, Enquiries, etc...
+=====================================================
+If you have any of the aforementioned please visit the BASS forum at
+the website. If you can't find an answer there, you can also email:
+
+	bass@un4seen.com
+

@@ -1,0 +1,182 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="\"/>
+    <Version Value="6"/>
+    <General>
+      <MainUnit Value="0"/>
+      <IconPath Value=".\"/>
+      <TargetFileExt Value=""/>
+      <ActiveEditorIndexAtStart Value="0"/>
+    </General>
+    <VersionInfo>
+      <ProjectVersion Value=""/>
+      <Language Value=""/>
+      <CharSet Value=""/>
+    </VersionInfo>
+    <PublishOptions>
+      <Version Value="2"/>
+      <DestinationDirectory Value="$(TestDir)\publishedproject\"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="\usr\X11R6\bin\xterm -T 'Lazarus Run Output' -e $(LazarusDir)\tools\runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <Units Count="16">
+      <Unit0>
+        <Filename Value="engine-test.dpr"/>
+        <IsPartOfProject Value="True"/>
+        <CursorPos X="18" Y="25"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="0"/>
+        <UsageCount Value="72"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="JEDI-SDL\OpenGL\Pas\opengl12.pas"/>
+        <UnitName Value="opengl12"/>
+        <CursorPos X="20" Y="9922"/>
+        <TopLine Value="9889"/>
+        <UsageCount Value="5"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="JEDI-SDL\SDL\Pas\sdl.pas"/>
+        <UnitName Value="sdl"/>
+        <CursorPos X="29" Y="3569"/>
+        <TopLine Value="3547"/>
+        <UsageCount Value="5"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="FreeType.pas"/>
+        <UnitName Value="FreeType"/>
+        <CursorPos X="6" Y="1"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="5"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="UFreeType.pas"/>
+        <UnitName Value="UFreeType"/>
+        <CursorPos X="47" Y="111"/>
+        <TopLine Value="76"/>
+        <UsageCount Value="35"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="freetype"/>
+        <CursorPos X="1" Y="1"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="8"/>
+        <SyntaxHighlighter Value="None"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="freetype\freetype.pas"/>
+        <UnitName Value="freetype"/>
+        <CursorPos X="31" Y="807"/>
+        <TopLine Value="14"/>
+        <UsageCount Value="15"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="..\..\daten\Projekte\UltraStarDX\trunk\Game\Code\lib\ffmpeg\avcodec.pas"/>
+        <UnitName Value="avcodec"/>
+        <CursorPos X="1" Y="38"/>
+        <TopLine Value="1"/>
+        <UsageCount Value="6"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="..\..\JEDI-SDL\OpenGL\Pas\gl.pas"/>
+        <UnitName Value="gl"/>
+        <CursorPos X="2" Y="89"/>
+        <TopLine Value="69"/>
+        <UsageCount Value="9"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="..\..\ctypes\ctypes.pas"/>
+        <UnitName Value="ctypes"/>
+        <CursorPos X="8" Y="25"/>
+        <TopLine Value="51"/>
+        <UsageCount Value="9"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="..\..\JEDI-SDL\OpenGL\Pas\glu.pas"/>
+        <UnitName Value="glu"/>
+        <CursorPos X="14" Y="155"/>
+        <TopLine Value="135"/>
+        <UsageCount Value="9"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="..\..\JEDI-SDL\SDL\Pas\sdl.pas"/>
+        <UnitName Value="sdl"/>
+        <CursorPos X="12" Y="1418"/>
+        <TopLine Value="1398"/>
+        <UsageCount Value="9"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="..\freetype.pas"/>
+        <UnitName Value="freetype"/>
+        <CursorPos X="3" Y="1985"/>
+        <TopLine Value="1965"/>
+        <UsageCount Value="10"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="C:\Programme\lazarus\fpc\2.2.0\source\rtl\objpas\classes\classesh.inc"/>
+        <CursorPos X="13" Y="26"/>
+        <TopLine Value="6"/>
+        <UsageCount Value="13"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="C:\Programme\lazarus\fpc\2.2.0\source\rtl\objpas\types.pp"/>
+        <UnitName Value="types"/>
+        <CursorPos X="7" Y="105"/>
+        <TopLine Value="73"/>
+        <UsageCount Value="12"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="UFont.pas"/>
+        <UnitName Value="UFont"/>
+        <CursorPos X="15" Y="1752"/>
+        <TopLine Value="1734"/>
+        <UsageCount Value="10"/>
+      </Unit15>
+    </Units>
+    <JumpHistory Count="2" HistoryIndex="1">
+      <Position1>
+        <Filename Value="engine-test.dpr"/>
+        <Caret Line="52" Column="10" TopLine="37"/>
+      </Position1>
+      <Position2>
+        <Filename Value="engine-test.dpr"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position2>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="8"/>
+    <PathDelim Value="\"/>
+    <SearchPaths>
+      <IncludeFiles Value="..\..\JEDI-SDL\SDL\Pas\"/>
+    </SearchPaths>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <BreakPoints Count="1">
+      <Item1>
+        <Source Value="lesson43.dpr"/>
+        <Line Value="138"/>
+      </Item1>
+    </BreakPoints>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

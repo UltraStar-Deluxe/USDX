@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+  <title>tCurlMulti</title>
+</head>
+<body>
+<h2><i>tCurlMulti</i></h2>
+<div>
+The <i>tCurlMulti</i> class provides an object-oriented wrapper around libcurl's <tt>curl_multi</tt> functionality.<br>
+Using this interface, it is possible to perform several <i>tCurl</i> transfers at the same time, within a single program or thread.<br><br>
+Note: In addition to the properties and methods shown below, tCurlMulti also inherits the 
+background threading capabilities of <a href="curlbase.html"><i>tCurlBase</i></a><br><br>
+
+
+<b><i>tCurlMulti</i> methods and properties:</b>
+</div>
+<table border="1" cellpadding="16" cellspacing="8" summary="tCurlMulti" width="100%">
+
+<tr><td><tt>
+constructor Create(aOwner:tComponent);<br>
+_______________________________________
+</tt><br><br>
+Creates a new instance of the <i>tCurlMulti</i> object, and initializes the <tt>curl_multi_init()</tt> library interface.
+<br><br></td></tr>
+
+<tr><td><tt>
+destructor Destroy;<br>
+____________________
+</tt><br><br>
+Frees the the memory allocated to the <i>tCurlMulti</i> object,<br>
+and calls the <tt>curl_multi_cleanup()</tt> library interface.<br><br>
+This might also destroy the individual <i>tCurl</i> objects contained in the list,<br>
+depending on the setting of the <i>PreserveObjects</i> property.
+<br><br></td></tr>
+
+
+<tr><td><tt>
+procedure Perform;<br>
+___________________
+</tt><br><br>
+Performs the transfers for each of the <i>tCurl</i> objects in the list.<br>
+<br><br></td></tr>
+
+
+<tr><td><tt>
+procedure AddObject(aCurl:tCurl);<br>
+__________________________________
+</tt><br><br>
+Adds your <i>tCurl</i> object to the list of objects that <i>tCurlMulti</i> will act upon.<br>
+You can call <i>AddObject</i> repeatedly for each <i>tCurl</i> you want to add.<br><br>
+You should create and set up each <i>tCurl</i> as you normally would, with the exception <br>
+that you will call <i>tCurlMulti.Perform</i> instead of <i>tCurl.Perform</i>.<br><br>
+Note that a <i>tCurl</i> cannot "belong" to more than one <i>tCurlMulti</i> at a time, it will be<br>
+automatically detached from the previous <i>tCurlMulti</i> if you add it to a new one.
+<br><br></td></tr>
+
+
+<tr><td><tt>
+procedure DetachObject(aCurl:tCurl);<br>
+_____________________________________
+</tt><br><br>
+Removes the specified <i>tCurl</i> object from the list of objects that <i>tCurlMulti</i> will act upon,<br>
+but does not destroy the <i>tCurl</i> object.<br><br>
+Note that if you call <i>tCurl.Free</i> on an object, it will be detached automatically, <br>
+it is not necessary to explicitly detach it first.
+<br><br></td></tr>
+
+
+<tr><td><tt>
+procedure Clear;<br>
+_________________
+</tt><br><br>
+Removes all <i>tCurl</i> objects from <i>tCurlMulti's</i> list.<br><br>
+This might also destroy the individual <i>tCurl</i> objects contained in the list,<br>
+depending on the setting of the <i>PreserveObjects</i> property.
+<br><br></td></tr>
+
+
+<tr><td><tt>
+function IndexOfObject(aCurl:tCurl):LongInt;<br>
+_____________________________________________
+</tt><br><br>
+Returns the zero-based position of the specified <i>tCurl</i> object within the <i>tCurlMulti</i> list,<br>
+or <tt>(-<b>1</b>)</tt> if the object is not found in the list.
+<br><br></td></tr>
+
+<tr><td><tt>
+property Objects[n:integer]:tCurl;<br>
+___________________________________
+</tt><br><br>
+Returns the <i>tCurl</i> object at list position <tt>n</tt>.<br>
+Note that if the specified index is out-of-bounds, no error is generated,
+but the property will return <tt>NIL</tt>.
+<br><br></td></tr>
+
+
+<tr><td><tt>
+property Count:LongInt;<br>
+________________________
+</tt><br><br>
+Returns the total number of <i>tCurl</i> objects in the <i>tCurlMulti</i> list.
+<br><br></td></tr>
+
+
+<tr><td><tt>
+property OnSingleDone:tCurlMultiSingleDoneEvent;<br>
+_________________________________________________
+</tt><br><br>
+If assigned, this event handler will be called once for each time a <i>tCurl</i> completes (or fails) its transfer.<br><br>
+The <tt>Sender</tt> parameter will be set to the <i>tCurlMulti</i> that fired the event, <br>
+and the <tt>which</tt> parameter will point to the <i>tCurl</i> object that completed.<br><br>
+If the <i>PreserveObjects</i> property is set to <tt>FALSE</tt>, the <i>tCurl</i> object will be automatically destroyed<br>
+immediately <u>after</u> the event handler returns, otherwise, you can safely detach or free the object yourself <br>
+from within this event handler, if you want to.<br><br>
+Note that the <i>OnSingleDone</i> and <i>SingleDoneCallback</i> properties are mutually exclusive, <br>
+that is, setting one will unset the other.
+<br><br></td></tr>
+
+
+<tr><td><tt>
+property SingleDoneCallback:tCurlMultiSingleDoneCallback;<br>
+__________________________________________________________
+</tt><br><br>
+C-style callback that will be called during <i>tCurlMulti.Perform</i>,<br>
+once for each time a <i>tCurl</i> completes (or fails) its transfer.<br><br>
+You callback should match this prototype:<br>
+<tt>&nbsp; tCurlMultiSingleDoneCallback = <br>
+&nbsp; &nbsp; procedure(which:tCurl; UserData:pointer); cdecl;</tt><br><br>
+The <tt>which</tt> parameter will be set to the specific <i>tCurl</i> object which has just completed its transfer,<br>
+and the <tt>UserData</tt> pointer will be the same one as set by the <i>tCurlMulti.DoneData</i> property.<br><br>
+
+If the <i>PreserveObjects</i> property is set to <tt>FALSE</tt>, the <i>tCurl</i> object will be destroyed<br>
+immediately <u>after</u> your callback returns, otherwise, you can safely detach or free <br>
+the object yourself from within the callback, if you want to.<br><br>
+
+Note that the <i>SingleDoneCallback</i> and <i>OnSingleDone</i> properties are mutually exclusive, <br>
+that is, setting one will unset the other.
+<br><br></td></tr>
+
+<tr><td><tt>
+property DoneData:pointer;<br>
+___________________________
+</tt><br><br>
+A pointer to anything you want, this will be passed as the <tt>UserData</tt> pointer in the <i>tCurlMulti.SingleDoneCallback</i>.
+<br><br></td></tr>
+
+<tr><td><tt>
+property SelectTime:LongInt;<br>
+_____________________________
+</tt><br><br>
+The amount of time, in milliseconds, that the <i>tCurlMulti.Perform</i> procedure will spend<br>
+waiting on data during each call to the system's <tt>select()</tt> function.<br><br>
+There should be no need to change this value, unless you know a good reason to do so.
+<br><br></td></tr>
+
+<tr><td><tt>
+property PreserveObjects:boolean;<br>
+__________________________________
+</tt><br><br>
+If set to <tt>TRUE</tt>, the <i>tCurlMulti</i> will not try to destroy any of the <i>tCurl</i> objects in its list.<br><br>
+If set to <tt>FALSE</tt>, <i>tCurlMulti</i> will destroy its <i>tCurl</i> objects under any of the following conditions:
+<ul>
+<li>A transfer has been completed (whether or not it succeeded).
+<li>The <i>tCurlMulti.Clear</i> procedure is called.
+<li>The <i>tCurlMulti</i> object itself is destroyed.
+</ul>
+By changing the value of this property during various stages of your application,<br>
+in combination with the <i>DetachObject</i> procedure and <i>OnSingleDone</i> event,<br>
+you should be able to control whatever deallocation of objects your program requires.<br><br>
+( The default value is <tt>False</tt> )
+<br><br></td></tr>
+
+</table>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

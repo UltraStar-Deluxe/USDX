@@ -1,0 +1,41 @@
+#################################################
+# projectM C-wrapper
+# @configure_input@
+#################################################
+
+@SET_MAKE@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+
+OBJECTS	= projectM-cwrapper.o
+LIBRARY = libprojectM-cwrapper.a
+
+CXX      = @CXX@
+CXXFLAGS += @CXXFLAGS@
+INCLUDES = -I@libprojectM_INCLUDEDIR@/libprojectM
+DEFINES  = -DPROJECTM_VERSION_INT=@libprojectM_VERSION_INT@
+RANLIB   = @RANLIB@
+
+.PHONY: all clean distclean strip
+
+all : $(LIBRARY)
+
+$(LIBRARY): $(OBJECTS)
+	ar ruv $(LIBRARY) $(OBJECTS)
+	$(RANLIB) $(LIBRARY)
+
+%.o : %.cpp
+	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDES) -c $(<) -o $@
+
+clean : 
+	rm -f $(LIBRARY)
+	rm -f $(OBJECTS)
+
+distclean: clean
+	rm -rf Makefile
+
+strip : 
+	strip $(LIBRARY)
+	$(RANLIB) $(LIBRARY)
+

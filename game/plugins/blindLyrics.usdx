@@ -1,0 +1,27 @@
+function plugin_init()
+  register('party mode: blindLyrics', '1.00', 'zup3r_vock', 'http://www.ultrastar-es.org');
+
+  require('Usdx.Party')
+  require('Usdx.ScreenSing')
+
+  local Mode = {}
+
+  Mode.Name = 'BlindLyrics'
+  Mode.CanNonParty = true;
+  Mode.CanParty = true;
+
+  Mode.BeforeSing = 'BeforeSing';
+
+  Usdx.Party.Register(Mode)
+
+  return true;
+end
+
+function BeforeSing()
+  local Settings = {};
+  Settings['LyricsVisible'] = false;
+
+  ScreenSing.SetSettings(Settings);
+
+  return true;
+end

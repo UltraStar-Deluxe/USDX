@@ -1,0 +1,5 @@
+this document lists all hooks that are available and created by usdx
+Usdx.LoadingFinished - called when all plugins are loaded, not breakable
+Display.PreDraw - called before a frame is Drawn - not breakable
+Display.Draw - called after a frame w/ screen is drawn. you can draw above screen here
+ScreenSing.SongLoaded - called after a song is loaded to ScreenSing in OnShow, not breakable

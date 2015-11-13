@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+<title>tCurlBase class</title>
+</head>
+<body>
+<div>
+<h2><i>tCurlBase</i></h2>
+
+<i>TCurlBase</i> is the base class for both <i>tCurl</i> and <i>tCurlMulti</i>.<br><br>
+Its main purpose is to provide an <u><i>optional</i></u> thread to perform transfers in the background to prevent GUI applications<br>
+from appearing "hung" during potentially blocking system calls such as DNS resolution and <tt>connect()</tt> functions.
+<br><br>
+
+<b>Note</b>: <i>tCurlBase</i> is intended as a base class only, there should be no need to create an instance of this class directly!
+<br><br>
+<table summary="tCurlBase Properties and Methods" cellpadding="8" border="2"  width="100%">
+
+<tr><td><a name="THREADED"></a>
+<tt>property <b>Threaded:</b> <i>boolean</i>;</tt> (default=False)<br><br>
+If set to <tt>TRUE</tt>, this will enable the background thread for this object.<br>
+Note that all other properties described below are meaningless if <i>Threaded</i> is set to <tt>FALSE</tt>.<br><br>
+</td></tr>
+
+<tr><td><a name="ONWAIT"></a>
+<tt>property <b>OnWait: </b> <i>TNotifyEvent</i>;</tt><br><br>
+If assigned, this event will be fired every <i>WaitInterval</i> milliseconds during the <i>Perform</i> 
+function of a <i>tCurl</i> or <i>tCurlMulti</i> instance.<br>
+The main purpose of this event is simply to allow your application to call its <i>ProcessMessages</i> function,<br>
+or whatever it needs to do to update its GUI, etc.<br><br>
+Note that at this point, any interaction between the GUI and the <i>libcurl</i> library is not guaranteed to be 100% thread-safe,<br>
+for this reason, you should try to do only a bare mininum of processing within your event handlers when threading is enabled.<br><br>
+</td></tr>
+
+
+<tr><td><a name="WAITINTERVAL"></a>
+<tt>property <b>WaitInterval: </b>LongInt; </tt>(default=1000 ms)<br><br>
+The amount of time, in milliseconds, between calls to the <i>OnWait</i> event or <i>WaitCallback</i> procedure.<br><br>
+</td></tr>
+
+<tr><td><a name="WAITCALLBACK"></a>
+<tt>property <b>WaitCallback: </b><i>tCurlWaitCallback</i>;</tt><br><br>
+Similar to the <i>OnWait</i> property, only this provides a c-style callback rather than a GUI event handler.<br>
+The prototype for this callback is:<br>
+<tt>
+type tCurlWaitCallback = procedure ( UserData:pointer ); cdecl;</tt><br><br>
+Note that the <i>OnWait</i> and <i>WaitCallback</i> properties are mutually exclusive, that is, setting one will set the other back to <tt>NIL</tt>.
+<br><br>
+</td></tr>
+
+<tr><td><a name="WAITDATA"></a>
+<tt>property <b>WaitData: </b><i>tCurlWaitCallback</i>;</tt><br><br>
+User-defined pointer to anything you like, this will be passed in as the <i>UserData</i> parameter to the <i>WaitCallback</i> procedure.
+<br><br>
+</td></tr>
+</table>
+<br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br>
+</div>
+</body>
+</html>

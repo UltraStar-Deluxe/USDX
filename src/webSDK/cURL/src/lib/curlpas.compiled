@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Compiler Value="C:\lazarus\fpc\2.6.4\bin\i386-win32\fpc.exe" Date="1154382129"/>
+  <Params Value=" -MObjFPC -Scgi -O1 -g -gl -vewnhi -FuC:\lazarus\packager\units\i386-win32 -FuD:\usdx_2831_WORLDPARTY\src\webSDK\cURL\src\ -FUD:\usdx_2831_WORLDPARTY\src\webSDK\cURL\src\lib\ -l curlpas.pas"/>
+  <Complete Value="False" MainPPUExists="False"/>
+</CONFIG>

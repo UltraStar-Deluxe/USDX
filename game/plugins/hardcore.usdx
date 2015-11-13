@@ -1,0 +1,220 @@
+local LineEndings = {};
+local TeamsScore = {};
+local Teams = {}
+local TeamsOhnePunkteCount = {};
+local Zaehler = 1;
+local TimeOut = 0;
+local OSD = {};
+
+function plugin_init()
+  register('party mode: hardcore', '1.00', 'flokuep');
+
+  require('Usdx.Party');
+  require('Usdx.ScreenSing');
+  require('Usdx.Log');
+  require('Usdx.Gl');
+  require('Usdx.TextGl');
+  require('table');
+  require('math');
+
+  local Mode = {};
+
+  Mode.Name = 'hardcore';
+  Mode.CanNonParty = true;
+  Mode.CanParty = true;
+  Mode.BeforeSing = 'BeforeSing';
+  Mode.OnSing = 'Sing';
+  Mode.TeamCount = {2};
+
+  Usdx.Party.Register(Mode)
+
+  return true;
+end
+
+-- Vor dem Singen ausführen
+function BeforeSing() 
+	--Erst vorbereiten, wenn Song wirklich geladen wurde
+	hSongLoaded = Usdx.Hook('ScreenSing.SongLoaded', 'Prepare');
+	-- Ständig OSD zeichnen
+	hDraw = Usdx.Hook('Display.Draw', 'Draw');
+end;
+
+
+--Vorbereiten
+function Prepare()
+
+	-- Zähler zurücksetzen
+	Zaehler = 1;
+
+	-- Song-Zeilen abfragen
+	local Lines = ScreenSing.GetSongLines();
+	local OnlyFreestyle = true;	
+	local k = 1;
+	
+	-- für jeden Zeile...
+	for i = 1, #Lines, 1 do
+		OnlyFreestyle = true;
+		--- jede Note überprüfen
+			for j = 1, #Lines[i].Notes, 1 do
+				if Lines[i].Notes[j].NoteType ~= 0 then
+					OnlyFreestyle = false;
+				end;
+			end;
+		-- ... den Endbeat der Zeile berechnen und speichern
+		if OnlyFreestyle == false then
+			LineEndings[k] = Lines[i].Notes[#Lines[i].Notes].Start + Lines[i].Notes[#Lines[i].Notes].Length;
+			k = k + 1;
+		end;
+	end;
+	
+	-- Teams abfragen
+	Teams = Party.GetTeams();
+	Score = ScreenSing.GetScores();
+	
+	--Für jedes Team Punkte eintragen
+	for i = 1, #Teams, 1 do
+		TeamsScore[i] = Score[i];
+	end;
+	
+	--Für jedes Team TeamsOhnePunkteCount vorbelegen
+	for i = 1, #Teams, 1 do
+		TeamsOhnePunkteCount[i] = 0;
+	end;
+	
+	
+	-- OSD vorbereiten
+	ScoreBGRect = ScreenSing.GetScoreBGRect();
+	
+	for i=1, #Teams, 1 do 
+		OSD[i] = {};
+		OSD[i].Left   = ScoreBGRect[i].x + 5;
+		OSD[i].Right  = ScoreBGRect[i].x + ScoreBGRect[i].w +5;
+		OSD[i].Top    = ScoreBGRect[i].y;
+		OSD[i].Bottom = ScoreBGRect[i].y + ScoreBGRect[i].h;	
+	end;
+	
+	-- Alle Spieler aktivieren
+	local Settings = {};
+	
+	if #Teams == 2 then
+		Settings['NotesVisible'] = {1,2};
+		Settings['PlayerEnabled'] = {1,2};
+	elseif #Teams == 3 then
+		Settings['NotesVisible'] = {1,2,3};	
+		Settings['PlayerEnabled'] = {1,2,3};
+	end;
+	ScreenSing.SetSettings(Settings);
+		
+end;
+
+
+-- Wird während des Singens ausgeführt
+function Sing()
+	-- Überprüfen ob Zeile zu Ende
+	if LineEndings[Zaehler] <= ScreenSing.GetBeat() then
+		--Prüfen, ob Plugin schon angewendet werden soll
+		if Zaehler >= TimeOut then
+			-- Punkte abfragen
+			Score = ScreenSing.GetScores();
+			-- Für jedes Team...
+			for i = 1, #Teams, 1 do
+				-- .. überprüfen, ob Punkte-Zahl gleichgeblieben ist
+				if TeamsScore[i] == Score[i] then
+					--- dann Zähler für ZeileOhnePunkte um 1 erhöhen
+					TeamsOhnePunkteCount[i] = TeamsOhnePunkteCount[i] + 1;
+				end;
+				-- TeamScore wieder mit aktuellem Score überschreiben
+				TeamsScore[i] = Score[i];
+			end;			
+		end;
+		
+		--Überprüfen, ob Spiel beendet werden muss
+		-- Bei 2 Teams:
+		if #Teams == 2 then
+			-- Hat der Spieler 3 Fehlzeilen und der Gegner weniger als 3
+			if (TeamsOhnePunkteCount[1] >= 3 and TeamsOhnePunkteCount[2] < 3) or (TeamsOhnePunkteCount[2] >= 3 and TeamsOhnePunkteCount[1] < 3) then
+				-- Gewinner berechnen
+				CalculateWinner();
+			-- Haben beide Spieler 3 oder mehr als 3 Fehlzeilen?
+			elseif (TeamsOhnePunkteCount[1] >= 3 and TeamsOhnePunkteCount[2] >= 3) then		
+				-- Hat der Spieler 1 Fehlzeile mehr als der Gegner?
+				if (TeamsOhnePunkteCount[1] > 3 and TeamsOhnePunkteCount[1] - TeamsOhnePunkteCount[2]>=1) or (TeamsOhnePunkteCount[2] > 3 and TeamsOhnePunkteCount[2] - TeamsOhnePunkteCount[1]>=1) then		
+					-- Gewinner berechnen
+					CalculateWinner();
+				end;
+			end;
+		-- Bei 3 Teams
+		elseif #Teams == 3 then
+		end;
+		
+	-- Zeilen-Zähler erhöhen
+	Zaehler = Zaehler +1;
+	end;
+	
+end;
+
+
+-- Wird nach dem Singen ausgeführt
+function CalculateWinner()
+
+	-- Zum Speichern des Rankings
+	local Ranking = {};
+	
+	-- Bei 2 Teams
+	if #Teams == 2 then
+		-- Hat Spieler 1 mehr Fehlzeilen als Spieler 2?
+		if TeamsOhnePunkteCount[1] > TeamsOhnePunkteCount[2] then
+			-- -> Spieler 1 ist Zweiter und Spieler 2 ist Erster
+		    Ranking[1] = 2;
+		    Ranking[2] = 1;
+		-- Hat Spieler 2 mehr Fehlzeilen als Spieler 1?
+		elseif TeamsOhnePunkteCount[2] > TeamsOhnePunkteCount[1] then
+			-- -> Spieler 1 ist Erster und Spieler 2 ist Zweiter
+		    Ranking[1] = 1;
+		    Ranking[2] = 2;
+		end;
+	-- Bei 3 Teams
+	elseif #Teams == 3 then
+	
+	end;
+	
+	-- Ranking an Spiel übergeben
+	Party.SetRoundRanking(Ranking);
+	
+	-- Nicht mehr zeichnen	
+	hDraw:Unhook();
+	
+	-- Spiel beenden
+	ScreenSing.Finish();
+end;
+
+function Draw()
+	Gl.Disable('GL_TEXTURE_2D');
+	-- Für jedes Team das OSD zeichnen
+	for i=1, #Teams, 1 do
+		-- Wiederhole die Anzahl der Fehlzeilen
+		for j=1, TeamsOhnePunkteCount[i], 1 do
+			-- Wenn mindestens 1 Fehler gemacht wurde
+			if TeamsOhnePunkteCount[i] > 0 then
+				-- Möglichkeit den Spielern verschiedene Farben zu geben
+				if i == 1 then
+					Gl.Color (1, 1, 1, 0.8);
+				elseif i == 2 then
+					Gl.Color (1, 1, 1, 0.8);
+				elseif i == 3 then
+					Gl.Color (1, 1, 1, 0.8);
+				end;
+				-- Start von Zeichnen des Polygons
+				Gl.Begin("GL_POLYGON");
+				-- 4 Ecken definieren
+				Gl.Vertex(OSD[i].Left + 5*(j-1), OSD[i].Bottom-10);
+				Gl.Vertex(OSD[i].Left + 5*(j-1) +2, OSD[i].Bottom-10);
+				Gl.Vertex(OSD[i].Left + 5*(j-1) +2, OSD[i].Bottom-2);
+				Gl.Vertex(OSD[i].Left + 5*(j-1), OSD[i].Bottom-2);
+				-- Ende von Polygon-Zeichnen
+				Gl.End();
+			end;
+		end;
+	end;
+
+end;

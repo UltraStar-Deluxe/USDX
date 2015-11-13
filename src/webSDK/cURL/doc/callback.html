@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+<title>tCurl: Callbacks, Events, Filenames and Streams</title>
+</head>
+<body><div>
+<h2><i>tCurl</i> <small>special notes on callbacks, events, filenames and streams.</small></h2>
+
+The tCurl object provides several ways of communicating with<br>
+the I/O functions of libcurl, as shown in the following table:
+<br><br>
+<table summary="callback data table" border="1" cellspacing="2" cellpadding="8">
+<tr>
+<td align="center"><b>Operation</b></td>
+<td align="center"><b>Filename</b></td>
+<td align="center"><b>Stream</b></td>
+<td align="center"><b>Callback</b></td>
+<td align="center"><b>Event</b></td>
+</tr>
+<tr><td> Receive data     </td><td> OutputFile </td><td> OutputStream  </td><td> WriteFunction </td><td> OnReceive  </td></tr>
+<tr><td> Transmit data    </td><td> InputFile  </td><td> InputStream   </td><td> ReadFunction  </td><td> OnTransmit </td></tr>
+<tr><td> Receive headers  </td><td> HeaderFile </td><td> HeaderStream  </td><td> HeaderFunction </td><td> OnHeader   </td></tr>
+</table>
+<br>
+<ul>
+<li>The <b>filename</b> represents a disk file that will be used for input or output.<br>
+<li>The <b>stream</b> represents user data that will be passed to the callback.<br>
+<li>The <b>callback</b> represents a <i>c-style</i> function that is called by the library when it needs to read or write transferred data.<br>
+&nbsp; ( Callbacks should always be declared using the <tt>cdecl</tt> directive. )
+<li>The <b>event</b> represents a component-style procedure that is fired when the library needs to read or write transferred data.<br>
+&nbsp; ( Event procedures must be declared as a method of another object. )
+<li>The <b>filename</b>, <b>stream</b>, <b>callback</b>, and <b>event</b> each have an
+effect on the other, so they might not behave the way you expect!
+</ul>
+<br>
+Please consider the following principles:
+<p>
+If you assign a <b>stream</b>, the <b>filename</b> will be ignored.<br>
+If you assign a <b>filename</b>, the <b>stream</b> will be ignored.<br>
+<br>
+If you assign a <b>callback</b>, the <b>event</b> will be ignored.<br>
+If you assign an <b>event</b>, the <b>callback</b> will be ignored.<br>
+<br>
+If you don't specify any input or output handlers or filenames, 
+tCurl will expect to use the standard input or output of the current console.
+ This may cause problems with form-based Delphi applications, where a standard console is not available. <br>
+<br>
+If you assign a <b>callback</b>, the <b>filename</b> will be ignored.
+In this case your callback is responsible for handling
+or providing the data.<br>
+<br>
+If you assign an <b>event</b>, the <b>filename</b> will be honored, that is, 
+the data will be written to the file AND passed to your <b>event</b>. 
+However, you should NOT attempt to perform I/O operations on the <b>filename</b> 
+from INSIDE your <b>event</b>! The event actually uses its own internal callback to
+interface with the library, and the object's <i>self</i> parameter is passed to the callback's
+stream parameter. This allows multiple instances to access the same internal callback without interfering
+with each other. In this case, the stream <i>property</i> is independent of the <i>callback</i> stream.
+The stream and other properties can be accessed from within an event through the <i>Sender</i> parameter, for instance:<br>
+&nbsp;&nbsp;&nbsp;<tt>tCurl(Sender).HeaderStream;</tt><br>
+<br>
+A <b>stream</b> can be a pointer to any sort of data that you wish to pass
+to your <b>callback</b> or <b>event</b>. It does not need to be a file stream. <br>
+However... <br>
+If you assign a <b>stream</b>, and you do NOT use your own
+<b>callback</b> or <b>event</b>, libcurl will assume that the stream is a 
+C-style file stream. <br>In this case it MUST be a valid file-pointer
+created using the ANSI-C <tt>fopen()</tt> function. <br>
+</p>
+<br><br>
+If all this seems confusing, the simple version is this:
+<ul>
+<li>1. Use a <b>callback</b> or <b>event</b>, not both.
+<li>2. Use a <b>filename</b> or <b>stream</b>, not both.
+<li>3. If you assign a <b>stream</b> with something other than <tt>fopen()</tt>, handle it with your own <b>callback</b> or <b>event</b>.
+</ul>
+
+
+</div>
+</body>
+</html>

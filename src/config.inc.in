@@ -1,0 +1,58 @@
+{***************************************************************** 
+ * Configuration file for @PACKAGE_STRING@
+ * @configure_input@
+ *****************************************************************}
+
+{* Libraries *}
+
+{$IF Defined(IncludeConstants)}
+  lua_lib_name = '@lua_LIB_NAME@';
+{$IFEND}
+
+{$@DEFINE_HAVE_FFMPEG@ HaveFFmpeg}
+{$IF Defined(HaveFFmpeg) and Defined(IncludeConstants)}
+  av__codec = 'libavcodec';
+  LIBAVCODEC_VERSION_MAJOR   = @libavcodec_VERSION_MAJOR@;
+  LIBAVCODEC_VERSION_MINOR   = @libavcodec_VERSION_MINOR@;
+  LIBAVCODEC_VERSION_RELEASE = @libavcodec_VERSION_RELEASE@;
+
+  av__format = 'libavformat';
+  LIBAVFORMAT_VERSION_MAJOR   = @libavformat_VERSION_MAJOR@;
+  LIBAVFORMAT_VERSION_MINOR   = @libavformat_VERSION_MINOR@;
+  LIBAVFORMAT_VERSION_RELEASE = @libavformat_VERSION_RELEASE@;
+
+  av__util = 'libavutil';
+  LIBAVUTIL_VERSION_MAJOR   = @libavutil_VERSION_MAJOR@;
+  LIBAVUTIL_VERSION_MINOR   = @libavutil_VERSION_MINOR@;
+  LIBAVUTIL_VERSION_RELEASE = @libavutil_VERSION_RELEASE@;
+{$IFEND}
+
+{$@DEFINE_HAVE_SWSCALE@ HaveSWScale}
+{$IF Defined(HaveSWScale) and Defined(IncludeConstants)}
+  sw__scale = 'libswscale';
+  LIBSWSCALE_VERSION_MAJOR   = @libswscale_VERSION_MAJOR@;
+  LIBSWSCALE_VERSION_MINOR   = @libswscale_VERSION_MINOR@;
+  LIBSWSCALE_VERSION_RELEASE = @libswscale_VERSION_RELEASE@;
+{$IFEND}
+
+{$@DEFINE_HAVE_PROJECTM@ HaveProjectM}
+{$IF Defined(HaveProjectM) and Defined(IncludeConstants)}
+  ProjectM_DataDir = '@libprojectM_DATADIR@';
+  PROJECTM_VERSION_MAJOR   = @libprojectM_VERSION_MAJOR@;
+  PROJECTM_VERSION_MINOR   = @libprojectM_VERSION_MINOR@;
+  PROJECTM_VERSION_RELEASE = @libprojectM_VERSION_RELEASE@;
+{$IFEND}
+
+{$@DEFINE_HAVE_PORTAUDIO@ HavePortaudio}
+{$IF Defined(HavePortaudio) and Defined(IncludeConstants)}
+  PORTAUDIO_VERSION_MAJOR   = @portaudio_VERSION_MAJOR@;
+  PORTAUDIO_VERSION_MINOR   = @portaudio_VERSION_MINOR@;
+  PORTAUDIO_VERSION_RELEASE = @portaudio_VERSION_RELEASE@;
+{$IFEND}
+
+{$@DEFINE_HAVE_LIBPCRE@ HaveLibPcre}
+{$IF Defined(HaveLibPcre) and Defined(IncludeConstants)}
+  LIBPCRE_LIBDIR   = '@libpcre_LIBDIR@';
+{$IFEND}
+
+{$@DEFINE_HAVE_PORTMIXER@ HavePortmixer}

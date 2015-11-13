@@ -1,0 +1,17 @@
+Package: ultrastardx
+Priority: optional
+Section: games
+Installed-Size: 18400
+Maintainer: Jay Binks <jaybinks@gmail.com>
+Architecture: i386
+Version: 1.1.1
+Depends: libc6 (>= 2.1), libsdl1.2debian-alsa, libportaudio2, libavcodec1d, libavformat1d, libswscale1d, libsqlite3-0, libfreetype6,  libsdl-image1.2
+Description: 
+ Karaoke Software. 
+ It evaluates your singing by analyzing your voice pitch. 
+ Songs can be created with integrated Editor. 
+ .
+ http://www.ultrastardeluxe.org/
+
+
+

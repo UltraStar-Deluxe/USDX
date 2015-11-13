@@ -1,0 +1,299 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <PathDelim Value="/"/>
+    <Version Value="6"/>
+    <General>
+      <MainUnit Value="0"/>
+      <TargetFileExt Value=""/>
+      <ActiveEditorIndexAtStart Value="0"/>
+    </General>
+    <VersionInfo>
+      <ProjectVersion Value=""/>
+      <Language Value=""/>
+      <CharSet Value=""/>
+    </VersionInfo>
+    <PublishOptions>
+      <Version Value="2"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+    <RequiredPackages Count="2">
+      <Item1>
+        <PackageName Value="FPCUnitConsoleRunner"/>
+      </Item1>
+      <Item2>
+        <PackageName Value="FCL"/>
+      </Item2>
+    </RequiredPackages>
+    <Units Count="3">
+      <Unit0>
+        <Filename Value="test_libraries.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Test_Libraries"/>
+        <CursorPos X="77" Y="17"/>
+        <TopLine Value="1"/>
+        <EditorIndex Value="1"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="testsqllite.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="TestSQLLite"/>
+        <CursorPos X="23" Y="57"/>
+        <TopLine Value="39"/>
+        <EditorIndex Value="0"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="../lib/SQLite/SQLiteTable3.pas"/>
+        <UnitName Value="SQLiteTable3"/>
+        <CursorPos X="37" Y="29"/>
+        <TopLine Value="11"/>
+        <EditorIndex Value="2"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+      </Unit2>
+    </Units>
+    <JumpHistory Count="11" HistoryIndex="10">
+      <Position1>
+        <Filename Value="testsqllite.pas"/>
+        <Caret Line="8" Column="68" TopLine="1"/>
+      </Position1>
+      <Position2>
+        <Filename Value="../lib/SQLite/SQLiteTable3.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position2>
+      <Position3>
+        <Filename Value="../lib/SQLite/SQLiteTable3.pas"/>
+        <Caret Line="37" Column="64" TopLine="14"/>
+      </Position3>
+      <Position4>
+        <Filename Value="testsqllite.pas"/>
+        <Caret Line="26" Column="34" TopLine="1"/>
+      </Position4>
+      <Position5>
+        <Filename Value="testsqllite.pas"/>
+        <Caret Line="13" Column="10" TopLine="1"/>
+      </Position5>
+      <Position6>
+        <Filename Value="testsqllite.pas"/>
+        <Caret Line="20" Column="29" TopLine="4"/>
+      </Position6>
+      <Position7>
+        <Filename Value="testsqllite.pas"/>
+        <Caret Line="28" Column="22" TopLine="5"/>
+      </Position7>
+      <Position8>
+        <Filename Value="testsqllite.pas"/>
+        <Caret Line="33" Column="42" TopLine="5"/>
+      </Position8>
+      <Position9>
+        <Filename Value="testsqllite.pas"/>
+        <Caret Line="21" Column="15" TopLine="5"/>
+      </Position9>
+      <Position10>
+        <Filename Value="testsqllite.pas"/>
+        <Caret Line="20" Column="38" TopLine="5"/>
+      </Position10>
+      <Position11>
+        <Filename Value="testsqllite.pas"/>
+        <Caret Line="61" Column="47" TopLine="39"/>
+      </Position11>
+    </JumpHistory>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="5"/>
+    <CodeGeneration>
+      <Generate Value="Faster"/>
+    </CodeGeneration>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+  <Debugging>
+    <BreakPoints Count="37">
+      <Item1>
+        <Source Value="../../../../../project_mutliloader/fmmultiloaderform.pas"/>
+        <Line Value="370"/>
+      </Item1>
+      <Item2>
+        <Source Value="../../../../../project_mutliloader/uploader_infomine.pas"/>
+        <Line Value="1"/>
+      </Item2>
+      <Item3>
+        <Source Value="../../../../../project_mutliloader/uploader_seek_publicweb.pas"/>
+        <Line Value="515"/>
+      </Item3>
+      <Item4>
+        <Source Value="../../../../../project_mutliloader/fmmultiloaderform.pas"/>
+        <Line Value="803"/>
+      </Item4>
+      <Item5>
+        <Source Value="../../../../../project_mutliloader/fmmultiloaderform.pas"/>
+        <Line Value="822"/>
+      </Item5>
+      <Item6>
+        <Source Value="../../../../../project_mutliloader/fmmultiloaderform.pas"/>
+        <Line Value="824"/>
+      </Item6>
+      <Item7>
+        <Source Value="../../../../../project_mutliloader/fmmultiloaderform.pas"/>
+        <Line Value="1492"/>
+      </Item7>
+      <Item8>
+        <Source Value="../../../../../project_mutliloader/fmmultiloaderform.pas"/>
+        <Line Value="1536"/>
+      </Item8>
+      <Item9>
+        <Source Value="../../../../../Common/aSpell/spellcheck_controlls.pas"/>
+        <Line Value="425"/>
+      </Item9>
+      <Item10>
+        <Source Value="../../../../../Common/aSpell/spellcheck_controlls.pas"/>
+        <Line Value="455"/>
+      </Item10>
+      <Item11>
+        <Source Value="../../../../../Common/aSpell/spellcheck_controlls.pas"/>
+        <Line Value="574"/>
+      </Item11>
+      <Item12>
+        <Source Value="../../../../../Common/aSpell/spellcheck_controlls.pas"/>
+        <Line Value="602"/>
+      </Item12>
+      <Item13>
+        <Source Value="../../../../../project_mutliloader/fmmultiloaderform.pas"/>
+        <Line Value="1621"/>
+      </Item13>
+      <Item15>
+        <Source Value="../../../../../project_SkyeDB/fmclient.pas"/>
+        <Line Value="986"/>
+      </Item15>
+      <Item16>
+        <Source Value="../../../../../project_SkyeDB/fmclient.pas"/>
+        <Line Value="2065"/>
+      </Item16>
+      <Item17>
+        <Source Value="../../../../../project_SkyeDB/fmclient.pas"/>
+        <Line Value="1541"/>
+      </Item17>
+      <Item18>
+        <Source Value="../../../../../project_SkyeDB/fmcandidate.pas"/>
+        <Line Value="741"/>
+      </Item18>
+      <Item19>
+        <Source Value="../../../../../project_SkyeDB/fmcandidate.pas"/>
+        <Line Value="1633"/>
+      </Item19>
+      <Item20>
+        <Source Value="../../../../../project_SkyeDB/fmclient.pas"/>
+        <Line Value="3554"/>
+      </Item20>
+      <Item21>
+        <Source Value="../../../../../project_SkyeDB/fmcandidate.pas"/>
+        <Line Value="5037"/>
+      </Item21>
+      <Item22>
+        <Source Value="../../../../../project_SkyeDB/fmcandidate.pas"/>
+        <Line Value="2994"/>
+      </Item22>
+      <Item23>
+        <Source Value="../../../../../common/asterisk/comManagerMessage.pas"/>
+        <Line Value="564"/>
+      </Item23>
+      <Item24>
+        <Source Value="../../../../../common/asterisk/comManagerMessage.pas"/>
+        <Line Value="549"/>
+      </Item24>
+      <Item25>
+        <Source Value="../../../../../common/asterisk/comManagerMessage.pas"/>
+        <Line Value="438"/>
+      </Item25>
+      <Item26>
+        <Source Value="../../../../../common/asterisk/comManagerMessage.pas"/>
+        <Line Value="436"/>
+      </Item26>
+      <Item27>
+        <Source Value="../../../../../project_SkyeDB/fmcandidate.pas"/>
+        <Line Value="5648"/>
+      </Item27>
+      <Item28>
+        <Source Value="../../../../../project_SkyeDB/fmcandidate.pas"/>
+        <Line Value="636"/>
+      </Item28>
+      <Item29>
+        <Source Value="../../../../../common/common/ConvertUnicode.pas"/>
+        <Line Value="83"/>
+      </Item29>
+      <Item30>
+        <Source Value="/usr/share/lazarus/components/uniqueinstance/uniqueinstance.pas"/>
+        <Line Value="124"/>
+      </Item30>
+      <Item31>
+        <Source Value="/usr/share/lazarus/components/uniqueinstance/uniqueinstance.pas"/>
+        <Line Value="112"/>
+      </Item31>
+      <Item32>
+        <Source Value="/usr/share/lazarus/components/uniqueinstance/uniqueinstance.pas"/>
+        <Line Value="174"/>
+      </Item32>
+      <Item33>
+        <Source Value="/usr/share/lazarus/components/uniqueinstance/uniqueinstance.pas"/>
+        <Line Value="199"/>
+      </Item33>
+      <Item34>
+        <Source Value="../../../../../common/asterisk/comManagerMessage.pas"/>
+        <Line Value="800"/>
+      </Item34>
+      <Item35>
+        <Source Value="../../../../../common/asterisk/comManagerMessage.pas"/>
+        <Line Value="798"/>
+      </Item35>
+      <Item36>
+        <Source Value="../../../../../common/asterisk/comManagerMessage.pas"/>
+        <Line Value="778"/>
+      </Item36>
+      <Item37>
+        <Source Value="../../../../../common/asterisk/comManagerMessage.pas"/>
+        <Line Value="522"/>
+      </Item37>
+    </BreakPoints>
+    <Watches Count="6">
+      <Item1>
+        <Expression Value="edSearchSummry.text"/>
+      </Item1>
+      <Item2>
+        <Expression Value=" trim(edSearhSummary.text) "/>
+      </Item2>
+      <Item3>
+        <Expression Value="lData"/>
+      </Item3>
+      <Item4>
+        <Expression Value="ord(a)"/>
+      </Item4>
+      <Item5>
+        <Expression Value="lHTTP.headers.text"/>
+      </Item5>
+      <Item6>
+        <Expression Value="lSummaryContactName"/>
+      </Item6>
+    </Watches>
+    <Exceptions Count="2">
+      <Item1>
+        <Name Value="ECodetoolError"/>
+      </Item1>
+      <Item2>
+        <Name Value="EFOpenError"/>
+      </Item2>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

@@ -1,0 +1,17 @@
+This directory contains some simple php scripts for the curlpas demo programs.
+
+If you have a working apache/php installation on your local machine, you can 
+copy these scripts to you apache/htdocs/ directory to run the test apps. 
+
+The demo programs "testpost.pas", "testmpf1.pas" and "testmpf2.pas" are 
+hard-coded to point to "http://localhost/" , so if you upload the scripts
+to a remote machine, you should modify the pascal units accordingly.
+
+FILES - 
+
+testpost.php: 
+  Script to test basic HTTP POST variables.
+
+test1867.php: 
+  Script to test rfc1867 multipart/form-data posts.
+

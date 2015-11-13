@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+<title>tCurl: Methods</title>
+</head>
+<body>
+<div>
+<h2><i>tCurl</i> <small>methods</small></h2>
+<a name="METHODS"></a>
+<table summary="tCurl Methods" cellpadding="8" border="2"  width="100%">
+
+<tr><td><a name="CREATE"></a>
+<tt>constructor <b>Create (</b> aOwner: tComponent<b> )</b>;</tt><br><br> 
+Creates a new instance of tCurl, and initializes a new CURL session and related data structures.<br>
+<br>
+To create an instance of tCurl without a parent object, use &nbsp;<tt>tCurl.Create(nil)</tt><br>
+<br>
+Note to <i>Free Pascal</i> users:<br>
+The <tt>curlobj.pas</tt> unit defines a lightweight "psuedo-component" class without all the bells-and-whistles of a "real" TComponent.<br>
+This can greatly reduce the size and overhead of programs which don't require things like the SysUtils unit and the Lazarus LCL. <br>
+If you want a true TComponent version of tCurl for FreePascal, specify the <tt>lazcurl.pas</tt> unit instead, <br>
+it provides a Lazarus-compatible component with the same functionality as <tt>curlobj.pas</tt> .
+</td></tr>
+
+
+<tr><td><a name="DESTROY"></a>
+<tt>destructor <b>Destroy</b>;</tt><br><br>
+Frees all memory allocated to tCurl and its related data structures, and cleans up after the CURL session.
+</td></tr>
+
+
+<tr><td><a name="PERFORM"></a>
+<tt>function <b>Perform :</b><i> boolean</i>;</tt><br><br>
+Tells tCurl to begin the transfer. <br>
+Returns <tt>TRUE</tt> upon successful completion of the transfer, or <tt>FALSE</tt> if the transfer failed.<br>
+To find the cause of a failure, you can check values returned in <i>tCurl.ResultCode</i> or <i>tCurl.ErrorString</i>.<br>
+Note that at the very least, the <i>tCurl.URL</i> property MUST be set before calling <i>tCurl.Perform</i><br>
+</td></tr>
+
+
+<tr><td><a name="CLEAR"></a>
+<tt>procedure <b>Clear;</b></tt><br><br>
+Resets the properties of a tCurl instance to their initial values. <br>
+This does not reset the cookie list, nor some internal variables such as the Session ID cache,  the  DNS  cache, cookies and shares.
+</td></tr>
+
+
+<tr><td><a name="LISTCOOKIES"></a>
+<tt>procedure <b>ListCookies;</b></tt><br><br>
+Reads through the <i>CookieList</i>, invoking your <i>OnListCookies</i> event handler on each cookie.<br>
+See <a href="curlprop.html#ONLISTCOOKIES"><i>OnListCookies</i></a> and <a href="cookies.html"><i>CookieList</i></a> for more information.
+</td></tr>
+
+
+<tr><td><a name="ESCAPE"></a>
+<tt>class function <b>Escape </b>( const S: <i>string</i> ) : <i> string</i>;</tt><br><br>
+This function converts the given input string to an URL-encoded string and returns the new string. <br>
+All input characters that are not in the set of &nbsp;<tt><b>[</b>a..z,A..Z,0..9<b>]</b></tt>&nbsp; will be converted<br>
+to their "URL-escaped" version <tt>%NN</tt> where <tt>NN</tt> is a two-digit hexadecimal number.
+</td></tr>
+
+
+<tr><td><a name="UNESCAPE"></a>
+<tt>class function <b>Unescape </b>( const S: <i>string</i> ) : <i> string</i>;</tt><br><br>
+This function converts the given URL-encoded input string to a "plain string" and returns the new string.<br> 
+All input characters that are URL encoded (<tt>%NN</tt> where <tt>NN</tt> is a two-digit hexadecimal number) <br>
+will be converted to their "plain-text" versions.
+</td></tr>
+
+
+
+</table>
+<br><br><br><br>
+<br><br><br><br>
+<br><br><br><br>
+<br><br><br><br>
+</div>
+</body>
+</html>

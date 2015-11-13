@@ -1,0 +1,187 @@
+November 1, 2005
+  Sixth release, long overdue!
+
+  Updated against libcurl version 7.15.0:
+
+  Added properties  for new libcurl options:
+    CookieList, FtpAccount, FtpAuth, FtpSsl, IoCtlData, IoCtlFunction, 
+    NetRcFile, SourcePostQuote, SourcePreQuote, SourceQuote, SourceUrl, 
+    SourceUserPwd, SslEnginesList, TcpNoDelay, IgnoreContentLength, 
+    FtpResponseTimeout, FtpSkipPasvIp.
+    
+
+  Lots of code cleanup:
+    Replaced all FreePascal UNIX functions with their equivalents from the
+    LIBC unit, and also replaced the 'ARGS:ARRAY OF CONST' style library calls
+    with the VARARGS directive. This keeps compatibility with Borland compilers,
+    and therefore eliminates a bunch of IFDEF's. The downside is, that it breaks
+    with some older compilers. 
+
+    I also removed the CLONE method for TCurl. This cleaned up several hundred
+    lines of non-essential code that was probably of little use in most programs.
+    
+
+  Added some new features:
+    Thanks to libcurl's new COOKIELIST functions, you can now read cookies directly
+    from TCurl. With previous versions this was only possible by Freeing the TCurl
+    instance and reading the resulting cookie file, or by manually parsing the 
+    response headers.
+
+    The FollowLocation and AutoReferer properties now default to TRUE, with a default
+    maximum of 25 redirects, which to me seems more intuitive than the previous 
+    behavior of failing just because of a 'Location:' response.
+    
+    There is now a 'Clear' method for TCurl, which is mostly a wrapper around the
+    'curl_easy_reset' library function, and also class methods 'Escape' and 'Unescape'
+    for easier URI-encoding of POST data.
+
+    The TCurlMulti object is a complete re-write, and is (hopefully) much more usable
+    than the previous hack.
+    
+    Both TCurl and TCurlMulti have a new 'Threaded' property and 'OnWait' event to 
+    give GUI applications a chance to call ProcessMessages (or whatever) during 
+    potentially blocking system calls.
+    
+    The Win32 version of TCurl now automatically searches for the SSL cert bundle 
+    during the unit's initialization, using the Windows SearchPathA() function.
+
+    And, the TCurl component should now be compatible with Lazarus!
+
+============================================================
+
+November 5, 2003
+  Fifth release:
+
+  Updated to reflect libcurl version 7.10.8:
+
+  Added new curl options:
+    CURLOPT_HTTPAUTH,  CURLOPT_PROXYAUTH,  CURLOPT_FTP_CREATE_MISSING_DIRS, 
+    CURLOPT_FTP_RESPONSE_TIMEOUT,  CURLOPT_IPRESOLVE,  CURLOPT_MAXFILESIZE,
+    CURLOPT_SSL_CTX_FUNCTION,  CURLOPT_SSL_CTX_DATA
+
+  And their respective tCurl properties:
+    HttpAuthenticationMethods, ProxyAuthenticationMethods, FtpCreateMissingDirs,
+    FtpResponseTimeout,  IpResolverVersion, MaxFileSize,
+    SslCtxFunction, SslCtxData
+
+  Added conditionals for compatibility with FreePascal version 1.9.0
+
+============================================================
+
+April 7, 2003
+  Fourth release:
+
+  Updated to reflect libcurl version 7.10.5, 
+
+  Added the CURLOPT_UNRESTRICTED_AUTH and CURLOPT_FTP_USE_EPRT settings, 
+  and the respective UnrestrictedAuth / FtpUseEPRT properties. 
+
+  Removed lots of the formatting tags from the HTML documentation.
+
+  Fixed a bug in the logic that manages the closing of opened files.
+  The HeaderFile handle was not getting closed in most cases.
+  ( Thanks to somebody named "wing" for exposing this one! )
+
+  Fixed a nasty bug that was corrupting the filename for "tCurl.CookieJar"
+  The problem was that the filename string was getting freed before libcurl used it.
+  curl_easy_cleanup() is now called BEFORE any string properties are de-allocated.
+  ( Just like TFM says! )
+
+  Other minor code cleanup. 
+
+============================================================
+
+Jan 17, 2003
+  Third release, lots more changes!
+
+  Re-translated the bindings against libcurl version 7.10.3
+  
+  Renamed the "CurlResult" property to "ResultCode".
+  Revised the "ResultCode" property to point to a new access routine "GetCurlResult()",
+  Now, after you access the ResultCode, it is automatically reset to "CURLE_OK".
+  This will reset any previous error. It now behaves something like other system error
+  codes, for example, IOResult.
+ 
+  Updated the structure of the tHttpPost record type to reflect changes in the libcurl API,
+  which added two new fields, "buffer" and  "bufferlength". This makes the bindings 
+  compatible with versions >= 7.9.8, but breaks with older versions of libcurl. 
+  - Thanks to Erik L. for reporting this bug!
+
+  The curl_formadd() function is (hopefully) fixed now. To maintain cross-compiler 
+  compatibility, the function now takes an "array of const" as a parameter. 
+  The Delphi/Kylix version is a VERY UGLY hack that puts a size limit of 67 elements
+  on the array. I can't imagine why you would ever need more than this, but there is 
+  also a curl_formadd_va() function using the "varargs" directive to handle such cases.
+  
+  The tCurl.Create constructor for FreePascal now takes the (aOwner:tComponent) parameter 
+  to make it Delphi compatible. ( tComponent is simply an "alias" for tObject. )
+
+  curl_easy_getinfo now takes a var parameter instead of a pointer for the third argument.
+
+  Many of the curl constants are now properly declared as enumerated types instead of
+  integer constants. 
+  
+  Changed the "stream" parameter of the I/O callbacks from an integer to a pointer.
+  
+  Renamed the C-style I/O functions: fopen, fclose, fread and fwrite are now "aliased" 
+  to curl_fopen, curl_fclose, curl_fread and curl_fwrite. This resolves some conflicts
+  with the LibC unit on Linux.
+
+  Added access properties for some of the new and/or previously unimplemented features:
+    HttpVersion, ClosePolicy, ProxyType, WriteInfo, CookieSession,  DnsCacheTimeout,
+    DnsUseGlobalCache, NoSignal, PreQuote, Encoding, SslCertType, SslKeyType, SslKey,
+    SslKeyPassword, SslVerifyHost, SslEngine, SslCipherList, CaPath.
+
+  Added event wrappers to the library callbacks:
+    OnDebug, OnPassword, OnHeader, OnReceive, OnTransmit.
+
+  Added class functions to access the new extended version information:
+    Protocols, VersionInfo, LibraryVersion, VersionNumber, Machine, Features,
+    SslVersionString, SslVersionNumber, LibzVersion, CurlVersion.
+
+  Removed the "tCurl.ResultStr" property. This was mostly useless bloat, there is 
+  now a "curldbug.pas" unit which you can use to get string representations for
+  enumerated types. [ e.g. WriteLn(CurlCodeToString(ResultCode)); ]
+
+  Fixed a bug that caused binary uploads from Win32 machines to be truncated.
+  The internal fopen() routine now uses "rb" (read binary) instead of "r".
+
+  Added bindings to the "curl_multi" library interface - you can now do simultaneous
+  transfers from within a single program!
+  See the file "testmult.pas" in the /demo/ directory for an example.
+  
+  Added a new class "tCurlMulti" to provide a wrapper for the curl_multi interface,
+  see the file "testmobj.pas" in the /demo/ directory for an example.
+
+  Added a new method to tCurl: "Clone" will create a new tCurl object with the same 
+  property settings as the tCurl that created it. This is useful for adding similar 
+  tCurl instances to a tCurlMulti object.
+
+  Renamed the *.inc files to better reflect their purpose. The files needed by the
+  the tCurl object interface are now prefixed with the letter 'o'
+  
+  Converted all text files to DOS (CR/LF) format. This is not because I like it,
+  but because LINUX offers better support for DOS than DOS does for LINUX.
+
+  The MPL license has been dropped from both libcurl and curlpas. 
+  See the file COPYING for more information.
+
+============================================================
+
+May 20, 2002:
+  Second release, almost a complete rewrite!
+  Moved code from units to (*.inc) files. ( To get around some dependency problems. )
+  Removed the "curl_formadd" stuff - it was not working !!!
+   - If you need to post multipart/form-data, try to use the HttpPost property instead.
+  Implemented new callback properties for file I/O, headers, passwords, and debug functions.
+  Added code and $IFDEF's to compile on Win32 systems.
+  Renamed *.pp files to *.pas .
+  Added resources to build as a component package with some *other* compilers.
+  Added several new examples in the demo directory.
+  Updated documentation to reflect the new code and fix a few errors.
+  This release now requires cURL 7.9.6, to be able to use the new CURLOPT_DEBUG function.
+
+============================================================
+  
+Feb 28, 2002:
+  Initial release.

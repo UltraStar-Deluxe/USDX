@@ -1,0 +1,18 @@
+	cpu.pas
+	dict.pas
+	error.pas
+	log.pas
+	mathematics.pas
+	mem.pas
+	opt.pas
+	pixfmt.pas
+	samplefmt.pas
+	avutil.pas
+
+	audioconvert.pas
+	avcodec.pas
+
+	avio.pas
+	avformat.pas
+
+	swscale.pas

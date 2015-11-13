@@ -1,0 +1,65 @@
+local LineEndings = {};
+local EndingBeat;
+local Zaehler = 1;
+
+function plugin_init()
+  register('party mode: shortsong', '1.00', 'flokuep');
+
+  require('Usdx.Party');
+  require('Usdx.ScreenSing');
+  require('Usdx.Log');
+  require('table');
+
+  local Mode = {};
+
+  Mode.Name = 'shortsong';
+  Mode.CanNonParty = true;
+  Mode.CanParty = true;
+  Mode.BeforeSing = 'BeforeSing';
+  Mode.OnSing = 'Sing';
+
+  Usdx.Party.Register(Mode)
+
+  return true;
+end
+--53
+
+-- Vor dem Singen ausführen
+function BeforeSing() 
+	--Erst vorbereiten, wenn Song wirklich geladen wurde
+	hSongLoaded = Usdx.Hook('ScreenSing.SongLoaded', 'Prepare');
+end;
+
+
+--Vorbereiten
+function Prepare()
+
+	-- Song-Zeilen abfragen
+	local Lines = ScreenSing.GetSongLines();
+	
+	-- für jeden Zeile...
+	for i = 1, #Lines, 1 do
+		-- ... den Endbeat der Zeile berechnen und speichern
+		LineEndings[i] = Lines[i].Notes[#Lines[i].Notes].Start + Lines[i].Notes[#Lines[i].Notes].Length;
+	end;
+	
+	--den End-Beat speichern 
+	EndingBeat = Lines[#Lines].Notes[#Lines[#Lines].Notes].Start + Lines[#Lines].Notes[#Lines[#Lines].Notes].Length;
+	
+end;
+
+
+-- Wird während des Singens ausgeführt
+function Sing()
+	-- Überprüfen ob Zeile zu Ende
+	if LineEndings[Zaehler] <= ScreenSing.GetBeat() then
+		-- Zeilen-Zähler erhöhen
+		Zaehler = Zaehler +1;
+		-- Überprüfen, ob halber Song vorbei
+		if EndingBeat/2 <= ScreenSing.GetBeat() then
+			-- Wenn ja: Song beenden
+		    ScreenSing.Finish();
+		end;
+	end;
+	
+end;

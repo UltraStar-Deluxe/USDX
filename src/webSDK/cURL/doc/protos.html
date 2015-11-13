@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+<title>tCurl: Functional and procedural types</title>
+</head>
+<body>
+<h2><i>tCurl</i><small> &nbsp; function and procedure prototypes</small></h2>
+<h4>Callback functions<br>&nbsp; ( must be defined using the <i>cdecl</i> directive. )</h4>
+<pre>
+function ProgressCallback(
+  clientp:pointer; dltotal, dlnow, ultotal, ulnow:double):LongInt; cdecl;
+
+function PasswordCallback(
+  clientp:pointer; prompt:pChar; buffer:pChar; buflen:LongInt):LongInt; cdecl;
+
+function DebugCallback(
+  handle:pCurl; infotype:CurlInfoType;  data:pChar; size:DWORD; userp:pointer):LongInt; cdecl;
+
+function WriteCallback(
+  buffer:pChar; size:DWORD; nitems:DWORD; stream:pointer):DWORD; cdecl;
+
+function ReadCallback(
+  buffer:pChar; size:DWORD; nitems:DWORD; stream:pointer):DWORD; cdecl;
+
+function HeaderCallback(
+  buffer:pChar; size:DWORD; nitems:DWORD; stream:pointer):DWORD; cdecl;
+
+
+
+</pre>
+<h4> Event procedures<br>&nbsp; ( must be defined as <i>methods</i> of another object. )</h4>
+<pre>
+procedure SomeObj.CurlOnProgress(
+  Sender:tObject; BytesTotal, BytesNow:longint; var bContinue:Boolean);
+
+procedure SomeObj.CurlOnDebug(
+  Sender:tObject; infotype:CurlInfoType; data:pChar; len:DWORD;  var bContinue:boolean);
+
+procedure SomeObj.CurlOnPassword(
+  Sender:tObject; const prompt:string; var pwd:string; var bContinue:Boolean);
+
+procedure SomeObj.CurlOnHeader(
+  Sender:tObject; header:string; var bContinue:Boolean);
+
+procedure SomeObj.CurlOnReceive(
+  Sender:tObject; data:pointer; len:DWORD; var bContinue:Boolean);
+
+procedure SomeObj.CurlOnTransmit(
+  Sender:tObject; data:pointer; var len:DWORD);
+</pre>
+</body>
+</html>

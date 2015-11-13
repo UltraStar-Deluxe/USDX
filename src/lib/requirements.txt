@@ -1,0 +1,48 @@
+Included in SVN ..
+---------------------------------------------------------------------------
+
+
+Jedi-sdl
+  http://sourceforge.net/projects/jedi-sdl
+
+pngImage
+  http://pngdelphi.sourceforge.net/
+
+BASS.pas
+  http://www.un4seen.com/download.php?bass23
+
+ffmpeg
+  http://www.iversenit.dk/dev/ffmpeg-headers/
+
+SQLLite Wrapper
+  http://www.itwriting.com/sqlitesimple.php
+
+======================================
+LINUX build
+======================================
+On top of the above pas files, you will need development libraries for them.
+
+here are the instructions needed to compile on ubunty ( 7.04 )
+
+		sudo apt-get install libavcodec-dev libavformat-dev libsqlite3-dev libsdl-ttf2.0-dev libsdl-image1.2-dev portaudio19-dev 
+
+in order to build the configure file ( with autogen.sh )
+
+		sudo apt-get install automake autoconf
+
+
+for Fedora 8 ( contributed by kdub )
+
+		yum install ffmpeg-devel portaudio-devel SDL_ttf-devel SDL_image-devel sqlite-devel
+
+======================================
+Mac OS X build
+======================================
+You need the Developer tools from Apple, Xcode and fink, the open source software package manager.
+
+Install the FreePascal compiler (version 2.2.2 or later) using fink or a package.
+
+Install these libs and their dependences using fink:
+
+		fink install pkgconfig libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
+		fink install portaudio2 SDL SDL-image libpng3 sqlite3-dev

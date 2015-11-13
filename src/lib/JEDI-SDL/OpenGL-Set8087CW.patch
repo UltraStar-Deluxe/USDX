@@ -1,0 +1,16 @@
+Index: OpenGL/Pas/gl.pas
+===================================================================
+--- OpenGL/Pas/gl.pas	(revision 961)
++++ OpenGL/Pas/gl.pas	(working copy)
+@@ -2287,9 +2287,9 @@
+ end;
+ 
+ initialization
+-  {$ifdef x86}
++  {$IF Defined(CPU386) or Defined(CPUI386) or Defined(CPUX86_64)}
+   Set8087CW($133F);
+-  {$endif x86}
++  {$IFEND}
+ 
+   LoadOpenGL( GLLibName );
+ 

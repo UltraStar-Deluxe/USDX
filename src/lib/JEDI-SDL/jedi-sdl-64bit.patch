@@ -1,0 +1,1280 @@
+cvs diff: Diffing .
+cvs diff: Diffing Cal3D
+cvs diff: Diffing Cal3D/Demos
+cvs diff: Diffing Cal3D/Demos/DCally
+cvs diff: Diffing Cal3D/Demos/DCally/data
+cvs diff: Diffing Cal3D/Demos/DCally/data/cally
+cvs diff: Diffing Cal3D/Pas
+cvs diff: Diffing Demos
+cvs diff: Diffing Demos/2D
+cvs diff: Diffing Demos/2D/Aliens
+cvs diff: Diffing Demos/2D/Aliens/data
+cvs diff: Diffing Demos/2D/BlitzBomber
+cvs diff: Diffing Demos/2D/BlitzBomber/images
+cvs diff: Diffing Demos/2D/CustomCursors
+cvs diff: Diffing Demos/2D/CustomCursors/cursors
+cvs diff: Diffing Demos/2D/CustomCursors/images
+cvs diff: Diffing Demos/2D/Fading
+cvs diff: Diffing Demos/2D/Fading/images
+cvs diff: Diffing Demos/2D/Isometric
+cvs diff: Diffing Demos/2D/Isometric/images
+cvs diff: Diffing Demos/2D/Isometric/maps
+cvs diff: Diffing Demos/2D/Mouse
+cvs diff: Diffing Demos/2D/Mouse/images
+cvs diff: Diffing Demos/2D/PanAndZoom
+cvs diff: Diffing Demos/2D/Plasma
+Index: Demos/2D/Plasma/JEDISDLPlasma.dpr
+===================================================================
+RCS file: /cvsroot/jedi-sdl/JEDI-SDLv1.0/Demos/2D/Plasma/JEDISDLPlasma.dpr,v
+retrieving revision 1.1
+diff -u -r1.1 JEDISDLPlasma.dpr
+--- Demos/2D/Plasma/JEDISDLPlasma.dpr	30 Sep 2006 17:20:08 -0000	1.1
++++ Demos/2D/Plasma/JEDISDLPlasma.dpr	27 Feb 2008 09:15:58 -0000
+@@ -107,13 +107,13 @@
+   X3_ := trunc(x3 * (TABLEX / 2));
+   Y3_ := trunc(y3 * (TABLEY / 2));
+ 
+-  t1 := Pointer(Integer(t) + X1_ + Y1_ * TABLEX);
+-  t2 := Pointer(Integer(t) + X2_ + Y2_ * TABLEX);
+-  t3 := Pointer(Integer(t) + X3_ + Y3_ * TABLEX);
++  t1 := Pointer(PtrInt(t) + X1_ + Y1_ * TABLEX);
++  t2 := Pointer(PtrInt(t) + X2_ + Y2_ * TABLEX);
++  t3 := Pointer(PtrInt(t) + X3_ + Y3_ * TABLEX);
+ 
+   for y := 0 to SCREEN_HEIGHT - 1  do
+   begin
+-    tmp :=  PByte(Integer(surface.pixels) + y * surface.pitch);
++    tmp :=  PByte(PtrInt(surface.pixels) + y * surface.pitch);
+ 
+     tmin := y * TABLEX;
+     tmax := tmin + SCREEN_WIDTH;
+cvs diff: Diffing Demos/2D/SDLTests
+cvs diff: Diffing Demos/2D/SDLTests/images
+cvs diff: Diffing Demos/2D/SDLTests/testalpha
+Index: Demos/2D/SDLTests/testalpha/testalpha.dpr
+===================================================================
+RCS file: /cvsroot/jedi-sdl/JEDI-SDLv1.0/Demos/2D/SDLTests/testalpha/testalpha.dpr,v
+retrieving revision 1.1
+diff -u -r1.1 testalpha.dpr
+--- Demos/2D/SDLTests/testalpha/testalpha.dpr	30 Sep 2006 17:20:08 -0000	1.1
++++ Demos/2D/SDLTests/testalpha/testalpha.dpr	27 Feb 2008 09:15:59 -0000
+@@ -371,7 +371,6 @@
+   ticks, lastticks : Uint32;
+   clip, area : TSDL_Rect;
+ begin
+-
+   (* Initialize SDL *)
+   if ( SDL_Init( SDL_INIT_VIDEO ) < 0 ) then
+   begin
+@@ -392,11 +391,13 @@
+   end;
+ 
+   videoflags := SDL_SWSURFACE;
+-  for i := 0 to ParamCount - 1 do
++  i := 1;
++  while i <= ParamCount do
+   begin
+     if ( ParamStr( i ) = '-bpp' ) then
+     begin
+-      video_bpp := StrToInt( ParamStr( i + 1 ) );
++      Inc(i);
++      video_bpp := StrToInt( ParamStr( i ) );
+     end
+     else if ( ParamStr( i ) = '-hw' ) then
+     begin
+@@ -416,7 +417,9 @@
+         'MAIN' );
+       halt( 1 );
+     end;
++    Inc(i);
+   end;
++
+   (* Set 640 x 480 video mode *)
+   screen := SDL_SetVideoMode( 640, 480, video_bpp, videoflags );
+   if ( Screen = nil ) then
+@@ -442,7 +445,7 @@
+   buffer := PUint8( screen.pixels );
+   for i := 0 to screen.h - 1 do
+   begin
+-    FillChar( buffer, Screen.pitch, ( i * 255 ) div screen.h );
++    FillChar( buffer^, Screen.pitch, ( i * 255 ) div screen.h );
+     //memset(buffer, (i * 255) div screen.h , screen.pitch);
+     Inc( buffer, screen.pitch );
+   end;
+@@ -469,7 +472,7 @@
+   clip.w := screen.w - ( 2 * 32 );
+   clip.h := screen.h - ( 2 * 32 );
+   SDL_SetClipRect( screen, @clip );
+-
++  
+   (* Wait for a keystroke *)
+   lastticks := SDL_GetTicks;
+   done := False;
+cvs diff: Diffing Demos/2D/SDLTests/testgamma
+cvs diff: Diffing Demos/2D/SDLTests/testjoystick
+cvs diff: Diffing Demos/2D/SDLTests/testwin
+cvs diff: Diffing Demos/2D/SDLUtilsTests
+cvs diff: Diffing Demos/2D/SDLUtilsTests/MainTest
+cvs diff: Diffing Demos/2D/SDLUtilsTests/MainTest/images
+cvs diff: Diffing Demos/2D/SDLUtilsTests/PixelTest
+cvs diff: Diffing Demos/2D/SDLUtilsTests/PixelTest/images
+cvs diff: Diffing Demos/2D/SDLUtilsTests/RotateSurface
+cvs diff: Diffing Demos/2D/SDLUtilsTests/RotateSurface/images
+cvs diff: Diffing Demos/2D/SDLUtilsTests/WormHole
+cvs diff: Diffing Demos/2D/TimerTest
+cvs diff: Diffing Demos/2D/Voxel
+Index: Demos/2D/Voxel/JEDISDLNewVox.dpr
+===================================================================
+RCS file: /cvsroot/jedi-sdl/JEDI-SDLv1.0/Demos/2D/Voxel/JEDISDLNewVox.dpr,v
+retrieving revision 1.2
+diff -u -r1.2 JEDISDLNewVox.dpr
+--- Demos/2D/Voxel/JEDISDLNewVox.dpr	29 May 2007 21:44:24 -0000	1.2
++++ Demos/2D/Voxel/JEDISDLNewVox.dpr	27 Feb 2008 09:16:00 -0000
+@@ -246,7 +246,7 @@
+     // Draw the column  from a (last height) to y (current height)
+     if ( y < a ) then
+     begin
+-      b1 := PByte(Integer(@Video[0]) + a * SCREEN_WIDTH + i);
++      b1 := PByte(PtrInt(@Video[0]) + a * SCREEN_WIDTH + i);
+ 
+       if lastc[i] = -1 then
+       	lastc[i] := c;
+cvs diff: Diffing Demos/2D/YuvPlayer
+cvs diff: Diffing Demos/3D
+cvs diff: Diffing Demos/3D/BasicShader
+cvs diff: Diffing Demos/3D/NeHe
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 10
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 10/images
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 10/levels
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 11
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 11/images
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 12
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 12/images
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 13
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 13/images
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 16
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 16/images
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 17
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 17/images
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 18
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 18/images
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 19
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 19/images
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 2
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 20
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 20/images
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 21
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 21/images
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 21/sound
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 3
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 37
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 4
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 5
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 6
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 6/images
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 7
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 7/images
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 8
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 8/images
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 9
+cvs diff: Diffing Demos/3D/NeHe/Tutorial 9/images
+cvs diff: Diffing Documentation
+cvs diff: Diffing Documentation/HLP
+cvs diff: Diffing Documentation/html
+cvs diff: Diffing Documentation/html/images
+cvs diff: Diffing HawkVoice
+cvs diff: Diffing HawkVoice/Demos
+cvs diff: Diffing HawkVoice/Pas
+cvs diff: Diffing Newton
+cvs diff: Diffing Newton/Demos
+cvs diff: Diffing Newton/Demos/SDLBasic
+cvs diff: Diffing Newton/Demos/SDLBuoyancy
+cvs diff: Diffing Newton/Demos/SDLCharacterController
+cvs diff: Diffing Newton/Demos/SDLCharacterController/data
+cvs diff: Diffing Newton/Demos/SDLJoints
+cvs diff: Diffing Newton/Demos/SDLRagDoll
+cvs diff: Diffing Newton/Demos/SDLVehicle
+cvs diff: Diffing Newton/Demos/Tutorial 1
+cvs diff: Diffing Newton/Demos/Tutorial 1/images
+cvs diff: Diffing Newton/Demos/common
+cvs diff: Diffing Newton/Pas
+cvs diff: Diffing ODE
+cvs diff: Diffing ODE/Demos
+cvs diff: Diffing ODE/Demos/RagDoll
+Index: ODE/Demos/RagDoll/JEDISDLRagDoll.dpr
+===================================================================
+RCS file: /cvsroot/jedi-sdl/JEDI-SDLv1.0/ODE/Demos/RagDoll/JEDISDLRagDoll.dpr,v
+retrieving revision 1.3
+diff -u -r1.3 JEDISDLRagDoll.dpr
+--- ODE/Demos/RagDoll/JEDISDLRagDoll.dpr	20 May 2007 20:27:45 -0000	1.3
++++ ODE/Demos/RagDoll/JEDISDLRagDoll.dpr	27 Feb 2008 09:16:11 -0000
+@@ -83,8 +83,7 @@
+   glext,
+   logger,
+   sdl,
+-  odeimport,
+-  ragdoll;
++  odeimport;
+ 
+ const
+   // screen width, height, and bit depth
+cvs diff: Diffing ODE/Demos/TruckOff
+cvs diff: Diffing ODE/Demos/TruckOff/images
+cvs diff: Diffing ODE/Pas
+cvs diff: Diffing OpenGL
+cvs diff: Diffing OpenGL/Pas
+cvs diff: Diffing PixelPrachtFX
+cvs diff: Diffing PixelPrachtFX/Demo
+Index: PixelPrachtFX/Demo/Textures.pas
+===================================================================
+RCS file: /cvsroot/jedi-sdl/JEDI-SDLv1.0/PixelPrachtFX/Demo/Textures.pas,v
+retrieving revision 1.2
+diff -u -r1.2 Textures.pas
+--- PixelPrachtFX/Demo/Textures.pas	20 Dec 2005 20:26:54 -0000	1.2
++++ PixelPrachtFX/Demo/Textures.pas	27 Feb 2008 09:16:11 -0000
+@@ -33,25 +33,6 @@
+ implementation
+ 
+ {------------------------------------------------------------------}
+-{  Swap bitmap format from BGR to RGB                              }
+-{------------------------------------------------------------------}
+-procedure SwapRGB(data : Pointer; Size : Integer);
+-asm
+-  mov ebx, eax
+-  mov ecx, size
+-
+-@@loop :
+-  mov al,[ebx+0]
+-  mov ah,[ebx+2]
+-  mov [ebx+2],al
+-  mov [ebx+0],ah
+-  add ebx,3
+-  dec ecx
+-  jnz @@loop
+-end;
+-
+-
+-{------------------------------------------------------------------}
+ {  Create the Texture                                              }
+ {------------------------------------------------------------------}
+ function CreateTexture(Width, Height, Format : Word; pData : Pointer) : Integer;
+Index: PixelPrachtFX/Demo/fxBurn.pas
+===================================================================
+RCS file: /cvsroot/jedi-sdl/JEDI-SDLv1.0/PixelPrachtFX/Demo/fxBurn.pas,v
+retrieving revision 1.1
+diff -u -r1.1 fxBurn.pas
+--- PixelPrachtFX/Demo/fxBurn.pas	5 Dec 2005 01:09:29 -0000	1.1
++++ PixelPrachtFX/Demo/fxBurn.pas	27 Feb 2008 09:16:11 -0000
+@@ -2,7 +2,7 @@
+ 
+ interface
+ 
+-uses ppFXcore, ppFXlib, textures, gl;
++uses ppFXcore, ppFXlib, Textures, gl;
+ 
+ type
+ 
+cvs diff: Diffing PixelPrachtFX/Demo/gfx
+cvs diff: Diffing PixelPrachtFX/Pas
+cvs diff: Diffing SDL
+cvs diff: Diffing SDL/Pas
+Index: SDL/Pas/sdl.pas
+===================================================================
+RCS file: /cvsroot/jedi-sdl/JEDI-SDLv1.0/SDL/Pas/sdl.pas,v
+retrieving revision 1.38
+diff -u -r1.38 sdl.pas
+--- SDL/Pas/sdl.pas	26 Jan 2008 10:09:32 -0000	1.38
++++ SDL/Pas/sdl.pas	27 Feb 2008 09:16:11 -0000
+@@ -355,6 +355,12 @@
+   GPCMacOSAll;
+ {$ENDIF}
+ 
++{$ifndef FPC}
++type
++  PtrInt = LongInt;
++  PtrUInt = LongWord;
++{$endif}
++
+ const
+ {$IFDEF WINDOWS}
+   SDLLibName = 'SDL.dll';
+Index: SDL/Pas/sdlutils.pas
+===================================================================
+RCS file: /cvsroot/jedi-sdl/JEDI-SDLv1.0/SDL/Pas/sdlutils.pas,v
+retrieving revision 1.5
+diff -u -r1.5 sdlutils.pas
+--- SDL/Pas/sdlutils.pas	19 Nov 2006 18:56:44 -0000	1.5
++++ SDL/Pas/sdlutils.pas	27 Feb 2008 09:16:12 -0000
+@@ -260,7 +260,7 @@
+   right2, bottom2 : integer;
+   Scan1Start, Scan2Start, ScanWidth, ScanHeight : cardinal;
+   Mod1, Mod2   : cardinal;
+-  Addr1, Addr2 : cardinal;
++  Addr1, Addr2 : PtrUInt;
+   BPP          : cardinal;
+   Pitch1, Pitch2 : cardinal;
+   TransparentColor1, TransparentColor2 : cardinal;
+@@ -329,7 +329,7 @@
+   with SrcSurface1^ do
+   begin
+     Pitch1 := Pitch;
+-    Addr1 := cardinal( Pixels );
++    Addr1 := PtrUInt( Pixels );
+     inc( Addr1, Pitch1 * UInt32( Src_Rect1.y ) );
+     with format^ do
+     begin
+@@ -341,7 +341,7 @@
+   begin
+     TransparentColor2 := format.colorkey;
+     Pitch2 := Pitch;
+-    Addr2 := cardinal( Pixels );
++    Addr2 := PtrUInt( Pixels );
+     inc( Addr2, Pitch2 * UInt32( Src_Rect2.y ) );
+   end;
+   Mod1 := Pitch1 - ( ScanWidth * BPP );
+@@ -442,14 +442,14 @@
+   cardinal );
+ var
+   SrcColor     : cardinal;
+-  Addr         : cardinal;
++  Addr         : PtrUInt;
+   R, G, B      : cardinal;
+ begin
+   if Color = 0 then
+     exit;
+   with DstSurface^ do
+   begin
+-    Addr := cardinal( Pixels ) + y * Pitch + x * format.BytesPerPixel;
++    Addr := PtrUInt( Pixels ) + y * Pitch + x * format.BytesPerPixel;
+     SrcColor := PUInt32( Addr )^;
+     case format.BitsPerPixel of
+       8 :
+@@ -525,14 +525,14 @@
+   cardinal );
+ var
+   SrcColor     : cardinal;
+-  Addr         : cardinal;
++  Addr         : PtrUInt;
+   R, G, B      : cardinal;
+ begin
+   if Color = 0 then
+     exit;
+   with DstSurface^ do
+   begin
+-    Addr := cardinal( Pixels ) + y * Pitch + x * format.BytesPerPixel;
++    Addr := PtrUInt( Pixels ) + y * Pitch + x * format.BytesPerPixel;
+     SrcColor := PUInt32( Addr )^;
+     case format.BitsPerPixel of
+       8 :
+@@ -613,7 +613,7 @@
+   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
+   Src, Dest    : TSDL_Rect;
+   Diff         : integer;
+-  SrcAddr, DestAddr : cardinal;
++  SrcAddr, DestAddr : PtrUInt;
+   WorkX, WorkY : word;
+   SrcMod, DestMod : cardinal;
+   Bits         : cardinal;
+@@ -686,14 +686,14 @@
+   end;
+   with SrcSurface^ do
+   begin
+-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
++    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+       Format.BytesPerPixel;
+     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
+     TransparentColor := Format.colorkey;
+   end;
+   with DestSurface^ do
+   begin
+-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
++    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+       Format.BytesPerPixel;
+     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
+     Bits := Format.BitsPerPixel;
+@@ -883,7 +883,7 @@
+   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
+   Src, Dest    : TSDL_Rect;
+   Diff         : integer;
+-  SrcAddr, DestAddr : cardinal;
++  SrcAddr, DestAddr : PtrUInt;
+   _ebx, _esi, _edi, _esp : cardinal;
+   WorkX, WorkY : word;
+   SrcMod, DestMod : cardinal;
+@@ -957,14 +957,14 @@
+   end;
+   with SrcSurface^ do
+   begin
+-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
++    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+       Format.BytesPerPixel;
+     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
+     TransparentColor := Format.colorkey;
+   end;
+   with DestSurface^ do
+   begin
+-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
++    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+       Format.BytesPerPixel;
+     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
+     Bits := DestSurface.Format.BitsPerPixel;
+@@ -1145,7 +1145,7 @@
+ var
+   Src, Dest    : TSDL_Rect;
+   Diff         : integer;
+-  SrcAddr, DestAddr : cardinal;
++  SrcAddr, DestAddr : PtrUInt;
+   _ebx, _esi, _edi, _esp : cardinal;
+   WorkX, WorkY : word;
+   SrcMod, DestMod : cardinal;
+@@ -1220,14 +1220,14 @@
+   end;
+   with SrcSurface^ do
+   begin
+-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
++    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+       Format.BytesPerPixel;
+     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
+     TransparentColor := Format.colorkey;
+   end;
+   with DestSurface^ do
+   begin
+-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
++    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+       Format.BytesPerPixel;
+     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
+     BPP := DestSurface.Format.BytesPerPixel;
+@@ -1317,7 +1317,7 @@
+ var
+   Src, Dest    : TSDL_Rect;
+   Diff         : integer;
+-  SrcAddr, DestAddr, TextAddr : cardinal;
++  SrcAddr, DestAddr, TextAddr : PtrUInt;
+   _ebx, _esi, _edi, _esp : cardinal;
+   WorkX, WorkY : word;
+   SrcMod, DestMod, TextMod : cardinal;
+@@ -1392,21 +1392,21 @@
+   end;
+   with SrcSurface^ do
+   begin
+-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
++    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+       Format.BytesPerPixel;
+     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
+     TransparentColor := format.colorkey;
+   end;
+   with DestSurface^ do
+   begin
+-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
++    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+       Format.BytesPerPixel;
+     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
+     BPP := DestSurface.Format.BitsPerPixel;
+   end;
+   with Texture^ do
+   begin
+-    TextAddr := cardinal( Pixels ) + UInt32( TextureRect.y ) * Pitch +
++    TextAddr := PtrUInt( Pixels ) + UInt32( TextureRect.y ) * Pitch +
+       UInt32( TextureRect.x ) * Format.BytesPerPixel;
+     TextMod := Pitch - Src.w * Format.BytesPerPixel;
+   end;
+@@ -1910,17 +1910,17 @@
+     end
+     else
+       Locked := false;
+-    Row1 := pointer( cardinal( DstSurface^.Pixels ) + UInt32( Rect^.y ) *
++    Row1 := pointer( PtrUInt( DstSurface^.Pixels ) + UInt32( Rect^.y ) *
+       DstSurface^.Pitch );
+-    Row2 := pointer( cardinal( DstSurface^.Pixels ) + ( UInt32( Rect^.y ) + Rect^.h - 1 )
++    Row2 := pointer( PtrUInt( DstSurface^.Pixels ) + ( UInt32( Rect^.y ) + Rect^.h - 1 )
+       * DstSurface^.Pitch );
+     for y := 0 to FlipLength do
+     begin
+       Move( Row1^, OneRow, RowLength );
+       Move( Row2^, Row1^, RowLength );
+       Move( OneRow, Row2^, RowLength );
+-      inc( cardinal( Row1 ), DstSurface^.Pitch );
+-      dec( cardinal( Row2 ), DstSurface^.Pitch );
++      inc( PtrUInt( Row1 ), DstSurface^.Pitch );
++      dec( PtrUInt( Row2 ), DstSurface^.Pitch );
+     end;
+     if Locked then
+       SDL_UnlockSurface( DstSurface );
+@@ -1965,7 +1965,7 @@
+     case DstSurface^.format.BytesPerPixel of
+       1 :
+         begin
+-          Row8Bit := pointer( cardinal( DstSurface^.pixels ) + UInt32( Rect^.y ) *
++          Row8Bit := pointer( PtrUInt( DstSurface^.pixels ) + UInt32( Rect^.y ) *
+             DstSurface^.pitch );
+           for y := 1 to Rect^.h do
+           begin
+@@ -1977,12 +1977,12 @@
+               Row8Bit^[ RightSide ] := Pixel;
+               dec( RightSide );
+             end;
+-            inc( cardinal( Row8Bit ), DstSurface^.pitch );
++            inc( PtrUInt( Row8Bit ), DstSurface^.pitch );
+           end;
+         end;
+       2 :
+         begin
+-          Row16Bit := pointer( cardinal( DstSurface^.pixels ) + UInt32( Rect^.y ) *
++          Row16Bit := pointer( PtrUInt( DstSurface^.pixels ) + UInt32( Rect^.y ) *
+             DstSurface^.pitch );
+           for y := 1 to Rect^.h do
+           begin
+@@ -1994,12 +1994,12 @@
+               Row16Bit^[ RightSide ] := Pixel;
+               dec( RightSide );
+             end;
+-            inc( cardinal( Row16Bit ), DstSurface^.pitch );
++            inc( PtrUInt( Row16Bit ), DstSurface^.pitch );
+           end;
+         end;
+       3 :
+         begin
+-          Row24Bit := pointer( cardinal( DstSurface^.pixels ) + UInt32( Rect^.y ) *
++          Row24Bit := pointer( PtrUInt( DstSurface^.pixels ) + UInt32( Rect^.y ) *
+             DstSurface^.pitch );
+           for y := 1 to Rect^.h do
+           begin
+@@ -2011,12 +2011,12 @@
+               Row24Bit^[ RightSide ] := Pixel24;
+               dec( RightSide );
+             end;
+-            inc( cardinal( Row24Bit ), DstSurface^.pitch );
++            inc( PtrUInt( Row24Bit ), DstSurface^.pitch );
+           end;
+         end;
+       4 :
+         begin
+-          Row32Bit := pointer( cardinal( DstSurface^.pixels ) + UInt32( Rect^.y ) *
++          Row32Bit := pointer( PtrUInt( DstSurface^.pixels ) + UInt32( Rect^.y ) *
+             DstSurface^.pitch );
+           for y := 1 to Rect^.h do
+           begin
+@@ -2028,7 +2028,7 @@
+               Row32Bit^[ RightSide ] := Pixel;
+               dec( RightSide );
+             end;
+-            inc( cardinal( Row32Bit ), DstSurface^.pitch );
++            inc( PtrUInt( Row32Bit ), DstSurface^.pitch );
+           end;
+         end;
+     end;
+@@ -2088,8 +2088,8 @@
+   dx2 := dx shl 1;
+   src_pitch := Surface^.pitch;
+   dst_pitch := dst_surface^.pitch;
+-  src_pixels := PUint8( integer( Surface^.pixels ) + yr * src_pitch + y1 * depth );
+-  dst_pixels := PUint8( integer( dst_surface^.pixels ) + yw * dst_pitch + x1 *
++  src_pixels := PUint8( PtrUInt( Surface^.pixels ) + yr * src_pitch + y1 * depth );
++  dst_pixels := PUint8( PtrUInt( dst_surface^.pixels ) + yw * dst_pitch + x1 *
+     depth );
+   for d := 0 to dx - 1 do
+   begin
+@@ -2166,9 +2166,9 @@
+   src_pixels, dst_pixels : PUint8;
+   i            : integer;
+ begin
+-  src_pixels := PUint8( integer( Surface^.pixels ) + Surface^.w * y1 * depth + x2 *
++  src_pixels := PUint8( PtrUInt( Surface^.pixels ) + Surface^.w * y1 * depth + x2 *
+     depth );
+-  dst_pixels := PUint8( integer( Surface^.pixels ) + Surface^.w * y1 * depth + ( x2
++  dst_pixels := PUint8( PtrUInt( Surface^.pixels ) + Surface^.w * y1 * depth + ( x2
+     + xofs ) * depth );
+   for i := x2 downto x1 do
+   begin
+@@ -2187,7 +2187,7 @@
+ begin
+   bpp := SrcSurface.format.BytesPerPixel;
+   // Here p is the address to the pixel we want to retrieve
+-  p := Pointer( Uint32( SrcSurface.pixels ) + UInt32( y ) * SrcSurface.pitch + UInt32( x ) *
++  p := Pointer( PtrUInt( SrcSurface.pixels ) + UInt32( y ) * SrcSurface.pitch + UInt32( x ) *
+     bpp );
+   case bpp of
+     1 : result := PUint8( p )^;
+@@ -2214,7 +2214,7 @@
+   p            : PInteger;
+ begin
+   bpp := DstSurface.format.BytesPerPixel;
+-  p := Pointer( Uint32( DstSurface.pixels ) + UInt32( y ) * DstSurface.pitch + UInt32( x )
++  p := Pointer( PtrUInt( DstSurface.pixels ) + UInt32( y ) * DstSurface.pitch + UInt32( x )
+     * bpp );
+   case bpp of
+     1 : PUint8( p )^ := pixel;
+@@ -2480,7 +2480,7 @@
+     BPP := DstSurface.format.BytesPerPixel;
+     with DstSurface^ do
+     begin
+-      Addr := pointer( UInt32( pixels ) + UInt32( RealRect.y ) * pitch + UInt32( RealRect.x ) * BPP );
++      Addr := pointer( PtrUInt( pixels ) + UInt32( RealRect.y ) * pitch + UInt32( RealRect.x ) * BPP );
+       ModX := Pitch - UInt32( RealRect.w ) * BPP;
+     end;
+     case DstSurface.format.BitsPerPixel of
+@@ -2501,9 +2501,9 @@
+               if B > $03 then
+                 B := $03;
+               PUInt8( Addr )^ := R or G or B;
+-              inc( UInt32( Addr ), BPP );
++              inc( PtrUInt( Addr ), BPP );
+             end;
+-            inc( UInt32( Addr ), ModX );
++            inc( PtrUInt( Addr ), ModX );
+           end;
+         end;
+       15 :
+@@ -2523,9 +2523,9 @@
+               if B > $001F then
+                 B := $001F;
+               PUInt16( Addr )^ := R or G or B;
+-              inc( UInt32( Addr ), BPP );
++              inc( PtrUInt( Addr ), BPP );
+             end;
+-            inc( UInt32( Addr ), ModX );
++            inc( PtrUInt( Addr ), ModX );
+           end;
+         end;
+       16 :
+@@ -2545,9 +2545,9 @@
+               if B > $001F then
+                 B := $001F;
+               PUInt16( Addr )^ := R or G or B;
+-              inc( UInt32( Addr ), BPP );
++              inc( PtrUInt( Addr ), BPP );
+             end;
+-            inc( UInt32( Addr ), ModX );
++            inc( PtrUInt( Addr ), ModX );
+           end;
+         end;
+       24 :
+@@ -2567,9 +2567,9 @@
+               if B > $0000FF then
+                 B := $0000FF;
+               PUInt32( Addr )^ := SrcColor and $FF000000 or R or G or B;
+-              inc( UInt32( Addr ), BPP );
++              inc( PtrUInt( Addr ), BPP );
+             end;
+-            inc( UInt32( Addr ), ModX );
++            inc( PtrUInt( Addr ), ModX );
+           end;
+         end;
+       32 :
+@@ -2589,9 +2589,9 @@
+               if B > $0000FF then
+                 B := $0000FF;
+               PUInt32( Addr )^ := R or G or B;
+-              inc( UInt32( Addr ), BPP );
++              inc( PtrUInt( Addr ), BPP );
+             end;
+-            inc( UInt32( Addr ), ModX );
++            inc( PtrUInt( Addr ), ModX );
+           end;
+         end;
+     end;
+@@ -2613,7 +2613,7 @@
+     BPP := DstSurface.format.BytesPerPixel;
+     with DstSurface^ do
+     begin
+-      Addr := pointer( UInt32( pixels ) + UInt32( RealRect.y ) * pitch + UInt32( RealRect.x ) * BPP );
++      Addr := pointer( PtrUInt( pixels ) + UInt32( RealRect.y ) * pitch + UInt32( RealRect.x ) * BPP );
+       ModX := Pitch - UInt32( RealRect.w ) * BPP;
+     end;
+     case DstSurface.format.BitsPerPixel of
+@@ -2634,9 +2634,9 @@
+               if B > $03 then
+                 B := 0;
+               PUInt8( Addr )^ := R or G or B;
+-              inc( UInt32( Addr ), BPP );
++              inc( PtrUInt( Addr ), BPP );
+             end;
+-            inc( UInt32( Addr ), ModX );
++            inc( PtrUInt( Addr ), ModX );
+           end;
+         end;
+       15 :
+@@ -2656,9 +2656,9 @@
+               if B > $001F then
+                 B := 0;
+               PUInt16( Addr )^ := R or G or B;
+-              inc( UInt32( Addr ), BPP );
++              inc( PtrUInt( Addr ), BPP );
+             end;
+-            inc( UInt32( Addr ), ModX );
++            inc( PtrUInt( Addr ), ModX );
+           end;
+         end;
+       16 :
+@@ -2678,9 +2678,9 @@
+               if B > $001F then
+                 B := 0;
+               PUInt16( Addr )^ := R or G or B;
+-              inc( UInt32( Addr ), BPP );
++              inc( PtrUInt( Addr ), BPP );
+             end;
+-            inc( UInt32( Addr ), ModX );
++            inc( PtrUInt( Addr ), ModX );
+           end;
+         end;
+       24 :
+@@ -2700,9 +2700,9 @@
+               if B > $0000FF then
+                 B := 0;
+               PUInt32( Addr )^ := SrcColor and $FF000000 or R or G or B;
+-              inc( UInt32( Addr ), BPP );
++              inc( PtrUInt( Addr ), BPP );
+             end;
+-            inc( UInt32( Addr ), ModX );
++            inc( PtrUInt( Addr ), ModX );
+           end;
+         end;
+       32 :
+@@ -2722,9 +2722,9 @@
+               if B > $0000FF then
+                 B := 0;
+               PUInt32( Addr )^ := R or G or B;
+-              inc( UInt32( Addr ), BPP );
++              inc( PtrUInt( Addr ), BPP );
+             end;
+-            inc( UInt32( Addr ), ModX );
++            inc( PtrUInt( Addr ), ModX );
+           end;
+         end;
+     end;
+@@ -2800,7 +2800,7 @@
+ 
+ procedure SDL_2xBlit( Src, Dest : PSDL_Surface );
+ var
+-  ReadAddr, WriteAddr, ReadRow, WriteRow : UInt32;
++  ReadAddr, WriteAddr, ReadRow, WriteRow : PtrUInt;
+   SrcPitch, DestPitch, x, y : UInt32;
+ begin
+   if ( Src = nil ) or ( Dest = nil ) then
+@@ -2815,8 +2815,8 @@
+   if SDL_MustLock( Dest ) then
+     SDL_LockSurface( Dest );
+ 
+-  ReadRow := UInt32( Src.Pixels );
+-  WriteRow := UInt32( Dest.Pixels );
++  ReadRow := PtrUInt( Src.Pixels );
++  WriteRow := PtrUInt( Dest.Pixels );
+ 
+   SrcPitch := Src.pitch;
+   DestPitch := Dest.pitch;
+@@ -2835,8 +2835,8 @@
+           inc( ReadAddr );
+           inc( WriteAddr, 2 );
+         end;
+-        inc( UInt32( ReadRow ), SrcPitch );
+-        inc( UInt32( WriteRow ), DestPitch * 2 );
++        inc( PtrUInt( ReadRow ), SrcPitch );
++        inc( PtrUInt( WriteRow ), DestPitch * 2 );
+       end;
+     2 : for y := 1 to Src.h do
+       begin
+@@ -2851,8 +2851,8 @@
+           inc( ReadAddr, 2 );
+           inc( WriteAddr, 4 );
+         end;
+-        inc( UInt32( ReadRow ), SrcPitch );
+-        inc( UInt32( WriteRow ), DestPitch * 2 );
++        inc( PtrUInt( ReadRow ), SrcPitch );
++        inc( PtrUInt( WriteRow ), DestPitch * 2 );
+       end;
+     3 : for y := 1 to Src.h do
+       begin
+@@ -2867,8 +2867,8 @@
+           inc( ReadAddr, 3 );
+           inc( WriteAddr, 6 );
+         end;
+-        inc( UInt32( ReadRow ), SrcPitch );
+-        inc( UInt32( WriteRow ), DestPitch * 2 );
++        inc( PtrUInt( ReadRow ), SrcPitch );
++        inc( PtrUInt( WriteRow ), DestPitch * 2 );
+       end;
+     4 : for y := 1 to Src.h do
+       begin
+@@ -2883,8 +2883,8 @@
+           inc( ReadAddr, 4 );
+           inc( WriteAddr, 8 );
+         end;
+-        inc( UInt32( ReadRow ), SrcPitch );
+-        inc( UInt32( WriteRow ), DestPitch * 2 );
++        inc( PtrUInt( ReadRow ), SrcPitch );
++        inc( PtrUInt( WriteRow ), DestPitch * 2 );
+       end;
+   end;
+ 
+@@ -2896,7 +2896,7 @@
+ 
+ procedure SDL_Scanline2xBlit( Src, Dest : PSDL_Surface );
+ var
+-  ReadAddr, WriteAddr, ReadRow, WriteRow : UInt32;
++  ReadAddr, WriteAddr, ReadRow, WriteRow : PtrUInt;
+   SrcPitch, DestPitch, x, y : UInt32;
+ begin
+   if ( Src = nil ) or ( Dest = nil ) then
+@@ -2911,8 +2911,8 @@
+   if SDL_MustLock( Dest ) then
+     SDL_LockSurface( Dest );
+ 
+-  ReadRow := UInt32( Src.Pixels );
+-  WriteRow := UInt32( Dest.Pixels );
++  ReadRow := PtrUInt( Src.Pixels );
++  WriteRow := PtrUInt( Dest.Pixels );
+ 
+   SrcPitch := Src.pitch;
+   DestPitch := Dest.pitch;
+@@ -2929,8 +2929,8 @@
+           inc( ReadAddr );
+           inc( WriteAddr, 2 );
+         end;
+-        inc( UInt32( ReadRow ), SrcPitch );
+-        inc( UInt32( WriteRow ), DestPitch * 2 );
++        inc( PtrUInt( ReadRow ), SrcPitch );
++        inc( PtrUInt( WriteRow ), DestPitch * 2 );
+       end;
+     2 : for y := 1 to Src.h do
+       begin
+@@ -2943,8 +2943,8 @@
+           inc( ReadAddr, 2 );
+           inc( WriteAddr, 4 );
+         end;
+-        inc( UInt32( ReadRow ), SrcPitch );
+-        inc( UInt32( WriteRow ), DestPitch * 2 );
++        inc( PtrUInt( ReadRow ), SrcPitch );
++        inc( PtrUInt( WriteRow ), DestPitch * 2 );
+       end;
+     3 : for y := 1 to Src.h do
+       begin
+@@ -2957,8 +2957,8 @@
+           inc( ReadAddr, 3 );
+           inc( WriteAddr, 6 );
+         end;
+-        inc( UInt32( ReadRow ), SrcPitch );
+-        inc( UInt32( WriteRow ), DestPitch * 2 );
++        inc( PtrUInt( ReadRow ), SrcPitch );
++        inc( PtrUInt( WriteRow ), DestPitch * 2 );
+       end;
+     4 : for y := 1 to Src.h do
+       begin
+@@ -2971,8 +2971,8 @@
+           inc( ReadAddr, 4 );
+           inc( WriteAddr, 8 );
+         end;
+-        inc( UInt32( ReadRow ), SrcPitch );
+-        inc( UInt32( WriteRow ), DestPitch * 2 );
++        inc( PtrUInt( ReadRow ), SrcPitch );
++        inc( PtrUInt( WriteRow ), DestPitch * 2 );
+       end;
+   end;
+ 
+@@ -2984,7 +2984,7 @@
+ 
+ procedure SDL_50Scanline2xBlit( Src, Dest : PSDL_Surface );
+ var
+-  ReadAddr, WriteAddr, ReadRow, WriteRow : UInt32;
++  ReadAddr, WriteAddr, ReadRow, WriteRow : PtrUInt;
+   SrcPitch, DestPitch, x, y, Color : UInt32;
+ begin
+   if ( Src = nil ) or ( Dest = nil ) then
+@@ -2999,8 +2999,8 @@
+   if SDL_MustLock( Dest ) then
+     SDL_LockSurface( Dest );
+ 
+-  ReadRow := UInt32( Src.Pixels );
+-  WriteRow := UInt32( Dest.Pixels );
++  ReadRow := PtrUInt( Src.Pixels );
++  WriteRow := PtrUInt( Dest.Pixels );
+ 
+   SrcPitch := Src.pitch;
+   DestPitch := Dest.pitch;
+@@ -3021,8 +3021,8 @@
+           inc( ReadAddr );
+           inc( WriteAddr, 2 );
+         end;
+-        inc( UInt32( ReadRow ), SrcPitch );
+-        inc( UInt32( WriteRow ), DestPitch * 2 );
++        inc( PtrUInt( ReadRow ), SrcPitch );
++        inc( PtrUInt( WriteRow ), DestPitch * 2 );
+       end;
+     15 : for y := 1 to Src.h do
+       begin
+@@ -3039,8 +3039,8 @@
+           inc( ReadAddr, 2 );
+           inc( WriteAddr, 4 );
+         end;
+-        inc( UInt32( ReadRow ), SrcPitch );
+-        inc( UInt32( WriteRow ), DestPitch * 2 );
++        inc( PtrUInt( ReadRow ), SrcPitch );
++        inc( PtrUInt( WriteRow ), DestPitch * 2 );
+       end;
+     16 : for y := 1 to Src.h do
+       begin
+@@ -3057,8 +3057,8 @@
+           inc( ReadAddr, 2 );
+           inc( WriteAddr, 4 );
+         end;
+-        inc( UInt32( ReadRow ), SrcPitch );
+-        inc( UInt32( WriteRow ), DestPitch * 2 );
++        inc( PtrUInt( ReadRow ), SrcPitch );
++        inc( PtrUInt( WriteRow ), DestPitch * 2 );
+       end;
+     24 : for y := 1 to Src.h do
+       begin
+@@ -3075,8 +3075,8 @@
+           inc( ReadAddr, 3 );
+           inc( WriteAddr, 6 );
+         end;
+-        inc( UInt32( ReadRow ), SrcPitch );
+-        inc( UInt32( WriteRow ), DestPitch * 2 );
++        inc( PtrUInt( ReadRow ), SrcPitch );
++        inc( PtrUInt( WriteRow ), DestPitch * 2 );
+       end;
+     32 : for y := 1 to Src.h do
+       begin
+@@ -3093,8 +3093,8 @@
+           inc( ReadAddr, 4 );
+           inc( WriteAddr, 8 );
+         end;
+-        inc( UInt32( ReadRow ), SrcPitch );
+-        inc( UInt32( WriteRow ), DestPitch * 2 );
++        inc( PtrUInt( ReadRow ), SrcPitch );
++        inc( PtrUInt( WriteRow ), DestPitch * 2 );
+       end;
+   end;
+ 
+@@ -3113,7 +3113,7 @@
+   right2, bottom2 : integer;
+   Scan1Start, {Scan2Start,} ScanWidth, ScanHeight : cardinal;
+   Mod1         : cardinal;
+-  Addr1        : cardinal;
++  Addr1        : PtrUInt;
+   BPP          : cardinal;
+   Pitch1       : cardinal;
+   TransparentColor1 : cardinal;
+@@ -3171,7 +3171,7 @@
+   with SrcSurface1^ do
+   begin
+     Pitch1 := Pitch;
+-    Addr1 := cardinal( Pixels );
++    Addr1 := PtrUInt( Pixels );
+     inc( Addr1, Pitch1 * UInt32( Src_Rect1.y ) );
+     with format^ do
+     begin
+@@ -3277,7 +3277,7 @@
+   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
+   Src, Dest    : TSDL_Rect;
+   Diff         : integer;
+-  SrcAddr, DestAddr : cardinal;
++  SrcAddr, DestAddr : PtrUInt;
+   WorkX, WorkY : word;
+   SrcMod, DestMod : cardinal;
+   Bits         : cardinal;
+@@ -3350,14 +3350,14 @@
+   end;
+   with SrcSurface^ do
+   begin
+-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
++    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+       Format.BytesPerPixel;
+     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
+     TransparentColor := Format.colorkey;
+   end;
+   with DestSurface^ do
+   begin
+-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
++    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+       Format.BytesPerPixel;
+     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
+     Bits := Format.BitsPerPixel;
+@@ -3483,7 +3483,7 @@
+   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
+   Src, Dest    : TSDL_Rect;
+   Diff         : integer;
+-  SrcAddr, DestAddr : cardinal;
++  SrcAddr, DestAddr : PtrUInt;
+   WorkX, WorkY : word;
+   SrcMod, DestMod : cardinal;
+   Bits         : cardinal;
+@@ -3556,14 +3556,14 @@
+   end;
+   with SrcSurface^ do
+   begin
+-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
++    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+       Format.BytesPerPixel;
+     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
+     TransparentColor := Format.colorkey;
+   end;
+   with DestSurface^ do
+   begin
+-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
++    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+       Format.BytesPerPixel;
+     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
+     Bits := Format.BitsPerPixel;
+@@ -3691,7 +3691,7 @@
+   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
+   Src, Dest    : TSDL_Rect;
+   Diff         : integer;
+-  SrcAddr, DestAddr : cardinal;
++  SrcAddr, DestAddr : PtrUInt;
+   WorkX, WorkY : word;
+   SrcMod, DestMod : cardinal;
+   Bits         : cardinal;
+@@ -3764,14 +3764,14 @@
+   end;
+   with SrcSurface^ do
+   begin
+-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
++    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+       Format.BytesPerPixel;
+     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
+     TransparentColor := Format.colorkey;
+   end;
+   with DestSurface^ do
+   begin
+-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
++    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+       Format.BytesPerPixel;
+     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
+     Bits := Format.BitsPerPixel;
+@@ -3992,7 +3992,7 @@
+   R, G, B, Pixel1, Pixel2, TransparentColor : cardinal;
+   Src, Dest    : TSDL_Rect;
+   Diff         : integer;
+-  SrcAddr, DestAddr : cardinal;
++  SrcAddr, DestAddr : PtrUInt;
+   WorkX, WorkY : word;
+   SrcMod, DestMod : cardinal;
+   Bits         : cardinal;
+@@ -4065,14 +4065,14 @@
+   end;
+   with SrcSurface^ do
+   begin
+-    SrcAddr := cardinal( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
++    SrcAddr := PtrUInt( Pixels ) + UInt32( Src.y ) * Pitch + UInt32( Src.x ) *
+       Format.BytesPerPixel;
+     SrcMod := Pitch - Src.w * Format.BytesPerPixel;
+     TransparentColor := Format.colorkey;
+   end;
+   with DestSurface^ do
+   begin
+-    DestAddr := cardinal( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
++    DestAddr := PtrUInt( Pixels ) + UInt32( Dest.y ) * Pitch + UInt32( Dest.x ) *
+       Format.BytesPerPixel;
+     DestMod := Pitch - Dest.w * Format.BytesPerPixel;
+     Bits := Format.BitsPerPixel;
+cvs diff: Diffing SDLCtrls
+cvs diff: Diffing SDLCtrls/Demos
+cvs diff: Diffing SDLCtrls/Demos/SDLCtrls
+cvs diff: Diffing SDLCtrls/Demos/SDLCtrls/Graphic
+cvs diff: Diffing SDLCtrls/Pas
+cvs diff: Diffing SDLCtrls/Tools
+cvs diff: Diffing SDLCtrls/Tools/SDLFDesign
+cvs diff: Diffing SDLCtrls/Tools/SDLFDesign/Data
+cvs diff: Diffing SDLCtrls/Tools/SDLFDesign/Source
+cvs diff: Diffing SDLCtrls/Tools/SDLImages
+cvs diff: Diffing SDLCtrls/Tools/SGFont
+cvs diff: Diffing SDLCtrls/Tools/SGFont/SGFontConv
+cvs diff: Diffing SDLCtrls/docs
+cvs diff: Diffing SDLCtrls/docs/images
+cvs diff: Diffing SDLCtrls/zlib
+cvs diff: Diffing SDLFilter
+cvs diff: Diffing SDLFilter/Demos
+cvs diff: Diffing SDLFilter/Demos/Test
+cvs diff: Diffing SDLFilter/Demos/Test/images
+cvs diff: Diffing SDLFilter/Pas
+cvs diff: Diffing SDLMonoFonts
+cvs diff: Diffing SDLMonoFonts/Demos
+cvs diff: Diffing SDLMonoFonts/Demos/Test
+cvs diff: Diffing SDLMonoFonts/Images
+cvs diff: Diffing SDLMonoFonts/Pas
+Index: SDLMonoFonts/Pas/sdlmonofonts.pas
+===================================================================
+RCS file: /cvsroot/jedi-sdl/JEDI-SDLv1.0/SDLMonoFonts/Pas/sdlmonofonts.pas,v
+retrieving revision 1.3
+diff -u -r1.3 sdlmonofonts.pas
+--- SDLMonoFonts/Pas/sdlmonofonts.pas	26 Nov 2006 10:25:19 -0000	1.3
++++ SDLMonoFonts/Pas/sdlmonofonts.pas	27 Feb 2008 09:16:12 -0000
+@@ -152,7 +152,7 @@
+     end;
+     inc( ReadPos );
+   until ReadPos >= TextLength;
+-  FoundWord := pointer( cardinal( Txt ) + StartPos );
++  FoundWord := pointer( PtrUInt( Txt ) + StartPos );
+   ItsLength := ReadPos - StartPos;
+ end;
+ 
+cvs diff: Diffing SDLSpriteEngine
+cvs diff: Diffing SDLSpriteEngine/Demos
+cvs diff: Diffing SDLSpriteEngine/Demos/CollisionTest
+cvs diff: Diffing SDLSpriteEngine/Demos/Oxygene
+cvs diff: Diffing SDLSpriteEngine/Demos/Oxygene/Caverns
+cvs diff: Diffing SDLSpriteEngine/Demos/Oxygene/Gfx
+cvs diff: Diffing SDLSpriteEngine/Demos/Oxygene/Music
+cvs diff: Diffing SDLSpriteEngine/Demos/Oxygene/Sounds
+cvs diff: Diffing SDLSpriteEngine/Demos/Shooting
+Index: SDLSpriteEngine/Demos/Shooting/Shooting.dpr
+===================================================================
+RCS file: /cvsroot/jedi-sdl/JEDI-SDLv1.0/SDLSpriteEngine/Demos/Shooting/Shooting.dpr,v
+retrieving revision 1.2
+diff -u -r1.2 Shooting.dpr
+--- SDLSpriteEngine/Demos/Shooting/Shooting.dpr	23 Dec 2004 23:37:27 -0000	1.2
++++ SDLSpriteEngine/Demos/Shooting/Shooting.dpr	27 Feb 2008 09:16:13 -0000
+@@ -445,13 +445,13 @@
+   y : integer;
+   Row : array[ 0..319 ] of byte;
+   MustLock : boolean;
+-  Video1, Video2 : cardinal;
++  Video1, Video2 : PtrUInt;
+ begin
+   MustLock := SDL_MustLock( Background );
+   if MustLock then
+     SDL_LockSurface( Background );
+-  Video1 := cardinal( Background.pixels ) + 238 * Background.pitch; { from }
+-  Video2 := cardinal( Background.pixels ) + 239 * Background.pitch; { to }
++  Video1 := PtrUInt( Background.pixels ) + 238 * Background.pitch; { from }
++  Video2 := PtrUInt( Background.pixels ) + 239 * Background.pitch; { to }
+   { store lowest row }
+   Move( pointer( Video2 )^, Row[ 0 ], 320 );
+   for y := 0 to 238 do
+cvs diff: Diffing SDLSpriteEngine/Demos/ZTest
+cvs diff: Diffing SDLSpriteEngine/Demos/images
+cvs diff: Diffing SDLSpriteEngine/Pas
+cvs diff: Diffing SDL_Gfx
+cvs diff: Diffing SDL_Gfx/Pas
+cvs diff: Diffing SDL_Image
+cvs diff: Diffing SDL_Image/Pas
+cvs diff: Diffing SDL_Mixer
+cvs diff: Diffing SDL_Mixer/Demos
+cvs diff: Diffing SDL_Mixer/Demos/WavTest
+cvs diff: Diffing SDL_Mixer/Pas
+cvs diff: Diffing SDL_Net
+cvs diff: Diffing SDL_Net/Demos
+cvs diff: Diffing SDL_Net/Demos/Clients
+cvs diff: Diffing SDL_Net/Demos/Clients/TCPConsole
+cvs diff: Diffing SDL_Net/Demos/Clients/TCPGUI
+cvs diff: Diffing SDL_Net/Demos/Clients/TimeSync
+cvs diff: Diffing SDL_Net/Demos/Clients/UDPConsole
+cvs diff: Diffing SDL_Net/Demos/Servers
+cvs diff: Diffing SDL_Net/Demos/Servers/TCPMulti
+cvs diff: Diffing SDL_Net/Demos/Servers/TimeSync
+cvs diff: Diffing SDL_Net/Demos/Servers/UDP
+cvs diff: Diffing SDL_Net/Demos/WebUpdate
+cvs diff: Diffing SDL_Net/Demos/WebUpdate/fonts
+cvs diff: Diffing SDL_Net/Demos/WebUpdate/images
+cvs diff: Diffing SDL_Net/Pas
+cvs diff: Diffing SDL_Sound
+cvs diff: Diffing SDL_Sound/Pas
+cvs diff: Diffing SDL_flic
+cvs diff: Diffing SDL_flic/Demo
+cvs diff: Diffing SDL_flic/Pas
+Index: SDL_flic/Pas/sdl_flic.pas
+===================================================================
+RCS file: /cvsroot/jedi-sdl/JEDI-SDLv1.0/SDL_flic/Pas/sdl_flic.pas,v
+retrieving revision 1.1
+diff -u -r1.1 sdl_flic.pas
+--- SDL_flic/Pas/sdl_flic.pas	4 Jan 2006 00:49:06 -0000	1.1
++++ SDL_flic/Pas/sdl_flic.pas	27 Feb 2008 09:16:14 -0000
+@@ -276,16 +276,16 @@
+ var line , p: PUInt8;
+     numlines, numpackets, size: Integer;
+ begin
+-  line :=PUint8( Integer(flic.Surface.pixels) + readu16(flic) * flic.Surface.pitch);
++  line :=PUint8( PtrInt(flic.Surface.pixels) + readu16(flic) * flic.Surface.pitch);
+   numlines := readu16(flic);
+   while (numlines > 0) do
+   begin
+     p := line;
+-    line := PUint8(Integer(line) + flic.Surface.pitch);
++    line := PUint8(PtrInt(line) + flic.Surface.pitch);
+     numpackets := readu8(flic);
+     while numpackets > 0 do
+     begin
+-      p := PUint8(Integer(p)+ readu8(flic));
++      p := PUint8(PtrInt(p)+ readu8(flic));
+       size := Sint8(readu8(flic));
+       if size >= 0 then
+         readbuffer(flic, p, size)
+@@ -294,7 +294,7 @@
+         size := -size;
+         FillChar(p^, size, readu8(flic));
+       end;
+-      p := PUint8(Integer(p) + Size);
++      p := PUint8(PtrInt(p) + Size);
+       dec(numpackets);
+     end;
+     dec(numlines);
+@@ -316,8 +316,8 @@
+   begin
+           //* The number of packages is ignored, packets run until the next line is reached. */
+     readu8(flic);
+-    next := PUint8(Integer(p) + flic.Surface.pitch);
+-    while (Integer(p) < Integer(next)) do
++    next := PUint8(PtrInt(p) + flic.Surface.pitch);
++    while (PtrInt(p) < PtrInt(next)) do
+     begin
+        // size pixels will change. */
+        size := SInt8(readu8(flic));
+@@ -332,7 +332,7 @@
+           //* One pixel to be repeated follow. */
+           FillChar(p^, size, readu8(flic));
+        end;
+-       p := PUint8(Integer(p) + size);
++       p := PUint8(PtrInt(p) + size);
+      end;
+      dec(numlines);
+   end;
+@@ -382,11 +382,11 @@
+     case ((code shr 14) and $03) of
+       $00:
+         begin
+-          p := PUint8(Uint32(flic.Surface.pixels) + flic.Surface.pitch * y);
++          p := PUint8(PtrUInt(flic.Surface.pixels) + flic.Surface.pitch * y);
+           while (code > 0) do
+           begin
+             // Skip some pixels.
+-            p := PUint8(Integer(p) + readu8(flic));
++            p := PUint8(PtrInt(p) + readu8(flic));
+             size := SInt8(readu8(flic)) * 2;
+             if (size >= 0) then
+             begin
+@@ -399,7 +399,7 @@
+               readu8(flic);
+               FillChar(p, size, readu8(flic));
+             end;
+-            p := PUint8(Integer(p)+size);
++            p := PUint8(PtrInt(p)+size);
+             dec(code);
+           end;
+           y := y + 1;
+@@ -409,7 +409,7 @@
+       $02:
+         begin
+           // Last pixel of the line. */
+-          p := Pointer(UInt32(flic.Surface.pixels) + flic.Surface.pitch * UInt32(y + 1));
++          p := Pointer(PtrUInt(flic.Surface.pixels) + flic.Surface.pitch * UInt32(y + 1));
+           //p[-1] = code & 0xFF;
+           PUint8(p^-1)^ := code and $FF;
+         end;
+cvs diff: Diffing SDL_ttf
+cvs diff: Diffing SDL_ttf/Demos
+cvs diff: Diffing SDL_ttf/Demos/GLFont
+cvs diff: Diffing SDL_ttf/Demos/ShowFont
+cvs diff: Diffing SDL_ttf/Pas
+cvs diff: Diffing SFont
+cvs diff: Diffing SFont/Demos
+cvs diff: Diffing SFont/Demos/Tests
+cvs diff: Diffing SFont/Demos/Tests/images
+cvs diff: Diffing SFont/Pas
+cvs diff: Diffing fmod
+cvs diff: Diffing fmod/Pas
+cvs diff: Diffing smpeg
+cvs diff: Diffing smpeg/Demos
+cvs diff: Diffing smpeg/Demos/GLMovie
+cvs diff: Diffing smpeg/Demos/MpegPlayer
+cvs diff: Diffing smpeg/Demos/SMpegPlayer
+cvs diff: Diffing smpeg/Pas

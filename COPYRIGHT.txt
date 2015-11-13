@@ -1,0 +1,32 @@
+Ultrastar Deluxe
+Copyright (C) 2007-2008 by the following:
+
+If you have contributed to this project then you deserve to be on this
+list.  Contact us (see: AUTHORS) and we'll add you.
+
+Jay Binks "jaybinks"
+Dirk Dunger "blindy"
+Alexander Eckart "brunzel"
+"eddie-0815"
+Mike Gränz "mog"
+Tobias Gunkel "tobigun"
+"mota"
+Alexander S. "s_alexander"
+Karl-Michael Schindler "mischi"
+Philipp Steinhardt "whiteshark"
+Stefan Ludowicy "basisbit"
+UltraStar Deluxe World Party MOD team
+
+Based on UltraStar written by:
+"Corvus5"
+
+Patches contributed by:
+"d0ccrazy"
+"elBandito07"
+"f1fth_freed0m"
+"GogolNr1"
+"jekatt"
+Benedikt Krueger
+Holger Kuhn "hawkear"
+Florian Küpper "flokuep"
+Wesley Stessens "profoX"

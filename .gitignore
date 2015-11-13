@@ -1,0 +1,14 @@
+*.bak
+*.pas~
+*.exe
+*.dcu
+*.o
+*.ppu
+*.mp3
+*.avi
+*.mp4
+*.db
+*.7z
+backup/
+*.a
+*.~*
