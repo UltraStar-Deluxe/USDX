@@ -39,6 +39,7 @@ uses
 
 var
   CheckMouseButton: boolean; // for checking mouse motion
+  MAX_FPS: Byte; // 0 to 255 is enough
 
 
 procedure Main;
@@ -305,15 +306,13 @@ begin
 end;
 
 procedure MainLoop;
-const
-  MAX_FPS = 60;
 var
   Delay:            integer;
   TicksCurrent:     cardinal;
   TicksBeforeFrame: cardinal;
   Done:             boolean;
 begin
-
+  Max_FPS := Ini.MaxFramerateGet;
   SDL_EnableKeyRepeat(125, 125);
 
   Done := false;

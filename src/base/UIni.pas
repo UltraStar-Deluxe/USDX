@@ -128,6 +128,8 @@ type
       Debug:          integer;
 
       // Graphics
+      MaxFramerate:   byte;
+      MaxFramerateGet: byte;
       Screens:        integer;
       Split:          integer;
       Resolution:     integer;
@@ -302,6 +304,7 @@ const
 
   IDebug:            array[0..1] of UTF8String  = ('Off', 'On');
 
+  IMaxFramerate:     array[0..11] of UTF8String  = ('10', '20', '30', '40', '50', '60', '70', '80', '90', '100', '150', '200');
   IScreens:          array[0..1] of UTF8String  = ('1', '2');
   ISplit:            array[0..1] of UTF8String  = ('Off', 'On');
   IFullScreen:       array[0..1] of UTF8String  = ('Off', 'On');
@@ -1155,6 +1158,8 @@ var
   Modes: PPSDL_Rect;
   I:     integer;
 begin
+  MaxFramerate:= GetArrayIndex(IMaxFramerate, IniFile.ReadString('Graphics', 'MaxFramerate', '60'));
+  MaxFramerateGet:= StrToInt(IMaxFramerate[MaxFramerate]);
   // Screens
   Screens := GetArrayIndex(IScreens, IniFile.ReadString('Graphics', 'Screens', IScreens[0]));
 
@@ -1621,6 +1626,9 @@ begin
 
   // Debug
   IniFile.WriteString('Game', 'Debug', IDebug[Debug]);
+
+  // MaxFramerate
+  IniFile.WriteString('Graphics', 'MaxFramerate', IMaxFramerate[MaxFramerate]);
 
   // Screens
   IniFile.WriteString('Graphics', 'Screens', IScreens[Screens]);

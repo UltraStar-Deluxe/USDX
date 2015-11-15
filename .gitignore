@@ -9,8 +9,8 @@
 *.mp4
 *.db
 *.7z
-backup/
 *.a
 *.~*
 *.log
-config.ini
+*fig.ini
+backup/

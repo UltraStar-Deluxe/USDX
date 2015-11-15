@@ -380,7 +380,7 @@ function TTextureUnit.GetTexture(const Name: IPath; Typ: TTextureType; Col: Long
 var
   TextureIndex: integer;
 begin
-  if (Name.IsUnset) then
+  if (Name = nil) or(Name.IsUnset) then
   begin
     // zero texture data
     FillChar(Result, SizeOf(Result), 0);
@@ -488,6 +488,7 @@ var
   T:      integer;
   TexNum: GLuint;
 begin
+  if name = nil then Exit;
   T := TextureDatabase.FindTexture(Name, Typ, Col);
   if T < 0 then Exit;
 

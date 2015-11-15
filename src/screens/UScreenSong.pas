@@ -2016,6 +2016,7 @@ begin
     smList: SetListScrollRefresh;
     smMosaic: SetChessboardScrollRefresh;
   end;
+  Button[Interaction].Texture := Covers.FindCover(Button[Interaction].Texture.Name).GetTexture();
 end;
 
 procedure TScreenSong.SetScroll;
@@ -2227,9 +2228,13 @@ var
   Pos:    real;
   VS:     integer;
   Padding:     real;
-  X:        real;
+  X,AutoWidthCorrection:        real;
 begin
   VS := CatSongs.VisibleSongs();
+
+  //calculate Auto-Width-Correction
+  AutoWidthCorrection:= (UGraphic.RenderH/UGraphic.ScreenH)*(UGraphic.ScreenW/UGraphic.RenderW);
+
 
   // Update positions of all buttons
   for B := 0 to High(Button) do
@@ -2250,17 +2255,17 @@ begin
       begin
         Angle := Pi * (Pos / Min(VS, 5)); // Range: (-1/4*Pi .. +1/4*Pi)
 
-        Button[B].H := Abs(Theme.Song.Cover.H * cos(Angle*0.8));
-        Button[B].W := Button[B].H;
+        Button[B].H := Abs(Theme.Song.Cover.H * AutoWidthCorrection * cos(Angle*0.8));
+        Button[B].W := Abs(Theme.Song.Cover.W * cos(Angle*0.8));
 
         //Button[B].Reflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
         Button[B].DeSelectReflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
 
-        Padding := (Button[B].H - Theme.Song.Cover.H)/2;
-        X := Sin(Angle*1.3) * 0.9;
+        Padding := (Button[B].W - Theme.Song.Cover.W)/2;
+        X := Sin(Angle*1.3) * 0.9 * 1.6;
 
         Button[B].X := Theme.Song.Cover.X + Theme.Song.Cover.W * X - Padding;
-        Button[B].Y := (Theme.Song.Cover.Y  + (Theme.Song.Cover.H - Abs(Theme.Song.Cover.H * cos(Angle))) * 0.5);
+        Button[B].Y := ((Theme.Song.Cover.Y) + ((Theme.Song.Cover.H) - Abs(Theme.Song.Cover.H * cos(Angle))) * 0.5) - (Button[B].H - (Button[B].H/AutoWidthCorrection));
         Button[B].Z := 0.95 - Abs(Pos) * 0.01;
 
         if VS < 5 then
@@ -2286,11 +2291,11 @@ begin
         Angle := 2*Pi * Pos;
 
         Button[B].H := 0.6*(Theme.Song.Cover.H-Abs(Theme.Song.Cover.H * cos(Angle/2)*0.8));
-        Button[B].W := Button[B].H;
+        Button[B].W := 0.6*(Theme.Song.Cover.W-Abs(Theme.Song.Cover.W * cos(Angle/2)*0.8));
 
         //Padding := (Button[B].H - Theme.Song.Cover.H)/2;
 
-        Button[B].X :=  Theme.Song.Cover.X+Theme.Song.Cover.H/2-Button[b].H/2+Theme.Song.Cover.W/320*((Theme.Song.Cover.H)*sin(Angle/2)*1.52);
+        Button[B].X :=  Theme.Song.Cover.X+Theme.Song.Cover.W/2-Button[b].W/2+Theme.Song.Cover.W/320*((Theme.Song.Cover.W)*sin(Angle/2)*1.52);
         Button[B].Y := Theme.Song.Cover.Y  - (Button[B].H - Theme.Song.Cover.H)*0.75;
         Button[B].Z := (0.4 - Abs(Pos/4)) -0.00001; //z < 0.49999 is behind the cover 1 is in front of the covers
 
@@ -2330,13 +2335,13 @@ begin
       // adjust cover's width and height according its z-position
       // Note: Theme.Song.Cover.W is not used as width and height are equal
       //   and Theme.Song.Cover.W is used as circle radius in Scroll5.
-      Button[B].W := Theme.Song.Cover.H * Z2;
-      Button[B].H := Button[B].W;
+      Button[B].W := Theme.Song.Cover.W * Z2;
+      Button[B].H := Theme.Song.Cover.H * Z2;//Button[B].W;
 
       // set cover position
       Button[B].X := Theme.Song.Cover.X +
-                     (0.185 * Theme.Song.Cover.H * VS * sin(Angle)) * Z2 -
-                     ((Button[B].H - Theme.Song.Cover.H)/2);
+                     (0.185 * Theme.Song.Cover.W * VS * sin(Angle)) * Z2 -
+                     ((Button[B].W - Theme.Song.Cover.W)/2);
       Button[B].Y := Theme.Song.Cover.Y  +
                      (Theme.Song.Cover.H - Abs(Button[B].H)) * 0.7;
       Button[B].Z := Z / 2 + 0.3;
@@ -3035,6 +3040,7 @@ end;
 
 procedure TScreenSong.OnHide;
 begin
+
   // turn music volume to 100%
   AudioPlayback.SetVolume(1.0);
 
@@ -3136,10 +3142,10 @@ begin
     // cover fade
     if (CoverTime < 9) then
     begin
-      if (CoverTime < 1) and (CoverTime + TimeSkip >= 1) then
+      {if (CoverTime < 1) and (CoverTime + TimeSkip >= 1) then
       begin
         // load new texture
-        Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
+        //Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
         Button[Interaction].Texture.Alpha := 1;
         Button[Interaction].Texture2 := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
         Button[Interaction].Texture2.Alpha := 1;
@@ -3152,7 +3158,7 @@ begin
       Button[Interaction].Texture2.Alpha := (CoverTime - 1) * 1.5;
       if Button[Interaction].Texture2.Alpha > 1 then
         Button[Interaction].Texture2.Alpha := 1;
-    end;
+    }end;
   end;
 
   //inherited Draw;
@@ -3409,6 +3415,12 @@ begin
     NextInt := (Interaction + Skip) mod Length(Interactions);
 
     SongTarget := SongTarget + 1;//Skip;
+    if (Button[Interaction].Texture.TexNum > 0) and (Button[Interaction].Texture.TexH <> 1.0) then
+    begin
+      glDeleteTextures(1, @Button[Interaction].Texture.TexNum);
+      Button[Interaction].Texture := Covers.FindCover(Button[Interaction].Texture.Name).GetPreviewTexture();
+    end;
+
 
     if not ((TSongMenuMode(Ini.SongMenu) in [smChessboard, smList, smMosaic]) and (NextInt < Interaction)) then
       Interaction := NextInt;
@@ -3433,10 +3445,6 @@ begin
     end;
 
   end;
-
-  // Interaction -> Button, load cover
-  // show uncached texture
-  //Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
 end;
 
 procedure TScreenSong.SelectPrev;
@@ -3461,6 +3469,11 @@ begin
       Inc(Skip);
 
     SongTarget := SongTarget - 1;
+    if Button[Interaction].Texture.TexNum > 0 then
+    begin
+      glDeleteTextures(1, @Button[Interaction].Texture.TexNum);
+      Button[Interaction].Texture := Covers.FindCover(Button[Interaction].Texture.Name).GetPreviewTexture();
+    end;
 
     PrevInt := (Interaction - Skip + Length(Interactions)) mod Length(Interactions);
 
@@ -3479,9 +3492,6 @@ begin
       SongTarget := SongTarget + CatSongs.VisibleSongs;
       SongCurrent := SongCurrent + CatSongs.VisibleSongs;
     end;
-
-    // show uncached texture
-    //Button[Interaction].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
   end;
 end;
 

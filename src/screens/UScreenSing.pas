@@ -3721,7 +3721,7 @@ begin
         glColor4f(GetLyricColor(Ini.SingColor[0]).R, GetLyricColor(Ini.SingColor[0]).G, GetLyricColor(Ini.SingColor[0]).B, 0.8)
       else
         glColor4f(GetLyricColor(Ini.SingColor[CurrentLine]).R, GetLyricColor(Ini.SingColor[CurrentLine]).G, GetLyricColor(Ini.SingColor[CurrentLine]).B, 0.4);
-
+      if Lines[CurrentLine].Line[line].Note = nil then Continue;
       pos := (Lines[CurrentLine].Line[line].Note[0].Start)/ww*w;
       br := (Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].Start +
                 Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].Length -
