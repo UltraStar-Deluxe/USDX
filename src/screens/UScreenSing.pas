@@ -467,10 +467,9 @@ begin
       begin
         if (AudioPlayback.Position < CurrentSong.gap / 1000 - 6) then
         begin
-          if (CurrentSong.gap / 1000 - AudioPlayback.Position > 45) then
-            AudioPlayback.SetPosition(CurrentSong.gap / 1000.0 - 10.0)
-          else
-            AudioPlayback.SetPosition(CurrentSong.gap / 1000.0 - 5.0)
+          AudioPlayback.SetPosition(CurrentSong.gap / 1000.0 - 5.0);
+            if (Assigned(fCurrentVideo)) then
+               fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start + (CurrentSong.gap / 1000.0 - 5.0);
         end;
         Exit;
       end;
