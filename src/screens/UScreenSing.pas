@@ -391,10 +391,12 @@ begin
                              or (fShowVisualization and not CurrentSong.Background.IsSet()) then //switch to video
         begin
           Log.LogStatus('decided to switch to video', 'UScreenSing.ParseInput');
-        fShowBackground := false;
+          fShowBackground := false;
           fCurrentVideo := nil;
           fShowVisualization := false;
           fCurrentVideo := fVideoClip;
+          if (Assigned(fCurrentVideo)) then
+               fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start + AudioPlayback.Position;
           Log.LogStatus('finished switching to video', 'UScreenSing.ParseInput');
         end
         else
@@ -411,8 +413,8 @@ begin
           begin //Video is currently visible, change to visualization
             Log.LogStatus('decided to switch to visualization', 'UScreenSing.ParseInput');
             fShowVisualization := true;
-          fCurrentVideo := Visualization.Open(PATH_NONE);
-          fCurrentVideo.play;
+            fCurrentVideo := Visualization.Open(PATH_NONE);
+            fCurrentVideo.play;
             Log.LogStatus('finished switching to visualization', 'UScreenSing.ParseInput');
           end;
         end;

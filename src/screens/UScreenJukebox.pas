@@ -1393,6 +1393,8 @@ begin
             fCurrentVideo := nil;
             fShowVisualization := false;
             fCurrentVideo := fVideoClip;
+            if (Assigned(fCurrentVideo)) then
+               fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start + AudioPlayback.Position;
             Log.LogStatus('finished switching to video', 'UScreenSing.ParseInput');
           end
           else
