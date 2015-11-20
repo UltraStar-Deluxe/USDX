@@ -65,14 +65,10 @@ procedure MainThreadExec(Proc: TMainThreadExecProc; Data: Pointer);
 implementation
 
 uses
-  Math,
   gl,
-  UAvatars,
-  UCatCovers,
   UCommandLine,
   UCommon,
   UConfig,
-  UCovers,
   UDataBase,
   UDllManager,
   UDisplay,
@@ -89,12 +85,10 @@ uses
   UBeatTimer,
   UPlatform,
   USkins,
-  USongs,
   UThemes,
   UParty,
   UPartyTournament,
   ULuaCore,
-  UHookableEvent,
   ULuaGl,
   ULuaLog,
   ULuaTexture,
@@ -198,24 +192,6 @@ begin
 
     // Theme
     Theme.LoadTheme(Ini.Theme, Ini.Color);
-
-    // Covers Cache
-    Covers := TCoverDatabase.Create;
-
-    // Category Covers
-    Log.LogStatus('Creating Category Covers Array', 'Initialization');
-    CatCovers:= TCatCovers.Create;
-
-    // Avatars Cache
-    Log.LogStatus('Creating Avatars Cache', 'Initialization');
-    Avatars := TAvatarDatabase.Create;
-    
-    // Songs
-    Log.LogStatus('Creating Song Array', 'Initialization');
-    Songs := TSongs.Create;
-
-    Log.LogStatus('Creating 2nd Song Array', 'Initialization');
-    CatSongs := TCatSongs.Create;
 
     // Graphics
     Initialize3D(WindowTitle);

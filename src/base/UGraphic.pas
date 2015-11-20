@@ -44,6 +44,10 @@ uses
   SysUtils,
   ULyrics,
   UImage,
+  UCatCovers,
+  USongs,
+  UAvatars,
+  UCovers,
   UMusic,
   UScreenLoading,
   UScreenMain,
@@ -470,6 +474,7 @@ begin
 
   SDL_WM_SetCaption(PChar(Title + ' - Initializing screen'), nil);
   InitializeScreen;
+
   SDL_WM_SetCaption(PChar(Title + ' - Initializing texturizer'), nil);
   Texture := TTextureUnit.Create;
   // FIXME: this does not seem to be correct as Limit.
@@ -495,6 +500,24 @@ begin
   SDL_WM_SetCaption(PChar(Title + ' - Loading first screen'), nil);
   Log.LogStatus('Loading Loading Screen', 'UGraphic.Initialize3D');
   LoadLoadingScreen;
+
+  // Covers Cache
+  Covers := TCoverDatabase.Create;
+
+  // Category Covers
+  Log.LogStatus('Creating Category Covers Array', 'Initialization');
+  CatCovers:= TCatCovers.Create;
+
+  // Avatars Cache
+  Log.LogStatus('Creating Avatars Cache', 'Initialization');
+  Avatars := TAvatarDatabase.Create;
+
+  // Songs
+  Log.LogStatus('Creating Song Array', 'Initialization');
+  Songs := TSongs.Create;
+
+  Log.LogStatus('Creating 2nd Song Array', 'Initialization');
+  CatSongs := TCatSongs.Create;
 
   SDL_WM_SetCaption(PChar(Title + ' - Loading textures'), nil);
   Log.LogStatus(' Loading Textures', 'UGraphic.Initialize3D');
@@ -597,6 +620,7 @@ begin
 
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,    16); // Z-Buffer depth
   //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,  1);
+
 
   // VSYNC works for windows only at the moment. SDL_GL_SWAP_CONTROL under
   // linux uses GLX_MESA_swap_control which is not supported by nvidea cards.
