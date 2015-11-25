@@ -1959,11 +1959,30 @@ begin
     begin
       //Texture.AddTexture(CoverTexture, TEXTURE_TYPE_PLAIN, false);
       CoverButton.Texture := Cover.GetPreviewTexture();
-
       Song.CoverTex := CoverButton.Texture;  //basisbit ToDo 11.11.2015
-
+      glDeleteTextures(1, @CoverButton.Texture.TexNum);
       // set selected to false -> the right texture will be displayed
       CoverButton.Selected := False;
+    end
+    else
+    begin
+      Song.Cover := PATH_NONE;
+      if (Song.Cover.IsUnset) then
+      CoverFile := Skin.GetTextureFileName('SongCover');
+      Log.LogInfo(CoverFile.ToNative(), 'Test');
+      // load cover and cache its texture
+      Cover := Covers.FindCover(CoverFile);
+      if (Cover = nil) then
+        Cover := Covers.AddCover(CoverFile);
+      if (Cover <> nil) then
+      begin
+        //Texture.AddTexture(CoverTexture, TEXTURE_TYPE_PLAIN, false);
+        CoverButton.Texture := Cover.GetPreviewTexture();
+        Song.CoverTex := CoverButton.Texture;  //basisbit ToDo 11.11.2015
+        glDeleteTextures(1, @CoverButton.Texture.TexNum);
+        // set selected to false -> the right texture will be displayed
+        CoverButton.Selected := False;
+      end
     end;
     Cover.Free;
   end;
@@ -2016,6 +2035,11 @@ begin
     smList: SetListScrollRefresh;
     smMosaic: SetChessboardScrollRefresh;
   end;
+  {if Button[Interaction].Texture.TexNum > 0 then
+  begin
+    glDeleteTextures(1, PGLuint(@Button[Interaction].Texture.TexNum));
+    Button[Interaction].Texture.TexNum := 0;
+  end;}
   Button[Interaction].Texture := Covers.FindCover(Button[Interaction].Texture.Name).GetTexture();
 end;
 
@@ -3152,12 +3176,12 @@ begin
         Button[Interaction].Texture.Alpha := 1;
         Button[Interaction].Texture2 := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
         Button[Interaction].Texture2.Alpha := 1;
-      end;
+      end;}
 
       //Update Fading Time
       CoverTime := CoverTime + TimeSkip;
 
-      //Update Fading Texture
+      {//Update Fading Texture
       Button[Interaction].Texture2.Alpha := (CoverTime - 1) * 1.5;
       if Button[Interaction].Texture2.Alpha > 1 then
         Button[Interaction].Texture2.Alpha := 1;
