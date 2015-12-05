@@ -41,12 +41,7 @@ uses
   ULog,
   UMenu,
   UMusic,
-  {$IFDEF FPC}
   md5,
-  {$ENDIF}
-  {$IFDEF Delphi}
-  UMD5,
-  {$ENDIF}
   USkins,
   USongs,
   UScreenSong,

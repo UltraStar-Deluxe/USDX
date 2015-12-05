@@ -36,12 +36,7 @@ interface
 uses
   ULog,
   Windows,
-  {$IFDEF FPC}
-  md5,
-  {$ENDIF}
-  {$IFDEF Delphi}
-  UMD5,
-  {$ENDIF}
+  MD5,
   UMenu,
   SDL,
   UDisplay,

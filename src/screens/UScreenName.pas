@@ -40,12 +40,7 @@ uses
   UAvatars,
   UDisplay,
   UFiles,
-  {$IFDEF FPC}
   md5,
-  {$ENDIF}
-  {$IFDEF Delphi}
-  UMD5,
-  {$ENDIF}
   UMenu,
   UMusic,
   UNote,

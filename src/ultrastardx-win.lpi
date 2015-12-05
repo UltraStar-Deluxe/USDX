@@ -35,7 +35,7 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="135">
+    <Units Count="136">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -570,13 +570,17 @@
         <IsPartOfProject Value="True"/>
       </Unit132>
       <Unit133>
-        <Filename Value="webSDK\encrypt\UMD5.pas"/>
+        <Filename Value="lib\TntUnicodeControls\TntClasses.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit133>
       <Unit134>
-        <Filename Value="lib\TntUnicodeControls\TntClasses.pas"/>
+        <Filename Value="base\UNote.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit134>
+      <Unit135>
+        <Filename Value="base\UPath.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit135>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -597,6 +601,15 @@
         <UseAnsiStrings Value="False"/>
       </SyntaxOptions>
     </Parsing>
+    <CodeGeneration>
+      <Checks>
+        <OverflowChecks Value="True"/>
+        <StackChecks Value="True"/>
+      </Checks>
+      <Optimizations>
+        <OptimizationLevel Value="0"/>
+      </Optimizations>
+    </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsStabs"/>

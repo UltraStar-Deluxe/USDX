@@ -36,7 +36,7 @@ interface
 uses
   {$IFDEF MSWINDOWS}
     Windows,
-    UMD5,
+    MD5,
   {$ELSE}
     {$IFNDEF DARWIN}
       syscall,
@@ -220,9 +220,6 @@ uses
   TextGL,
   UIni,
   UPathUtils,
-  {$IFDEF Delphi}
-  UMD5,
-  {$ENDIF}
   USongs,
   UMusic,  //needed for Lines
   UNote;   //needed for Player
