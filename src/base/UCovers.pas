@@ -50,6 +50,7 @@ uses
   SysUtils,
   Classes,
   UImage,
+  UThemes,
   UTexture,
   UPath;
 
@@ -154,7 +155,11 @@ begin
 end;
 
 function TCover.GetTexture(): TTexture;
+var
+  debughelper: UTF8String;
 begin
+  if not (Assigned(Filename)) or (Filename = nil) then Exit;
+  debughelper:=Filename.ToUTF8(true);
   Result := Texture.LoadTexture(Filename);
 end;
 
@@ -268,10 +273,16 @@ begin
 end;
 
 function TCoverDatabase.FindCoverIntern(const Filename: IPath): int64;
+var FileUTF8String: UTF8String;
 begin
-  Result := DB.GetTableValue('SELECT [ID] FROM ['+COVER_TBL+'] ' +
-                             'WHERE [Filename] = ?',
-                             [Filename.ToUTF8]);
+  if Filename = nil then
+    Result := 0
+  else
+  begin
+    FileUTF8String:=Filename.ToUTF8;
+    Result := DB.GetTableValue('SELECT [ID] FROM ['+COVER_TBL+'] ' +
+                             'WHERE [Filename] = ?', [FileUTF8String]);
+  end;
 end;
 
 function TCoverDatabase.FindCover(const Filename: IPath): TCover;
@@ -315,7 +326,7 @@ begin
   FileDate := Now(); //FileDateToDateTime(FileAge(Filename));
 
   Thumbnail := CreateThumbnail(Filename, Info);
-  if (Thumbnail = nil) then
+  if not (assigned(Thumbnail)) or (Thumbnail = nil) then
     Exit;
 
   CoverData := TBlobWrapper.Create;
@@ -422,6 +433,7 @@ begin
   if (not assigned(Thumbnail)) then
   begin
     Log.LogError('Could not load cover: "'+ Filename.ToNative +'"', 'TCoverDatabase.AddCover');
+    //Result := CreateThumbnail(UThemes.AThemeStatic.);
     Exit;
   end;
 
