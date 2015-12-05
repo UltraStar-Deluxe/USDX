@@ -479,7 +479,7 @@ begin
   Texture := TTextureUnit.Create;
   // FIXME: this does not seem to be correct as Limit.
   // Is the max. of either width or height.
-  Texture.Limit :=63000;// 1024*1024;
+  Texture.Limit :=1920; //currently, Full HD is all we want. switch to 64bit target before going further up
 
   //LoadTextures;
   SDL_WM_SetCaption(PChar(Title + ' - Initializing video modules'), nil);
