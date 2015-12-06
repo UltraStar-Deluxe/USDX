@@ -796,7 +796,7 @@ begin
   ScreenName.Free;
   ScreenLevel.Free;
   ScreenSong.Free;
-  ScreenSing.Free;
+  //ScreenSing.Free;
   ScreenScore.Free;
   ScreenOptions.Free;
   ScreenOptionsGame.Free;

@@ -408,7 +408,9 @@ begin
         FileExt := LowerCase(Skin.GetTextureFileName(ThemedSettings.Tex).GetExtension.ToUTF8);
 
         if IsInArray(FileExt, SUPPORTED_EXTS_BACKGROUNDTEXTURE) then
+        begin
           TryBGCreate(TMenuBackgroundTexture)
+        end
         else if IsInArray(FileExt, SUPPORTED_EXTS_BACKGROUNDVIDEO) then
           TryBGCreate(TMenuBackgroundVideo);
 

@@ -345,7 +345,7 @@ uses
 
   // uses by zup3r_vock
   UWebSDK                 in 'webSDK\UWebSDK.pas',
-  UMD5                    in 'webSDK\encrypt\UMD5.pas',
+  //UMD5                    in 'webSDK\encrypt\UMD5.pas',
 
   //BassMIDI                in 'lib\bassmidi\bassmidi.pas',
 

@@ -395,7 +395,7 @@ begin
   //-> Display Songs
   if (CatSongs.CatNumShow = -3) and (Index = CurPlaylist) then
   begin
-    ScreenSong.UnLoadDetailedCover;
+    ScreenSong.UnloadCover(ScreenSong.Interaction);
     ScreenSong.HideCatTL;
     CatSongs.SetFilter('', fltAll);
     ScreenSong.Interaction := 0;

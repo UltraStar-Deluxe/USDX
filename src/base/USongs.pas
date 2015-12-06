@@ -695,9 +695,13 @@ begin
     CurSong.CatNumber := CatNumber;
 
     if (Ini.Tabs = 0) then
-      CurSong.Visible := true
+    begin
+      CurSong.Visible := true;
+    end
     else if (Ini.Tabs = 1) then
+    begin
       CurSong.Visible := false;
+    end;
 {
     if (Ini.Tabs = 1) and (Order = 1) then
     begin

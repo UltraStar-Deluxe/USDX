@@ -258,7 +258,7 @@ begin
   FillChar(Result, SizeOf(Result), 0);
 
   // load texture data into memory
-  TexSurface := LoadImage(Identifier);
+  if not (Identifier = nil) then TexSurface := LoadImage(Identifier);
   if not assigned(TexSurface) then
   begin
     Log.LogError('Could not load texture: "' + Identifier.ToNative +'" with type "'+ TextureTypeToStr(Typ) +'"',

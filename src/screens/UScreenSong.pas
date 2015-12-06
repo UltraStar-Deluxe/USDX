@@ -286,7 +286,8 @@ type
       procedure OnSongSelect;   // called when song flows movement stops at a song
       procedure OnSongDeSelect; // called before current song is deselected
 
-      procedure UnloadDetailedCover;
+      procedure UnloadCover(NumberOfButtonInArray: integer);
+      procedure LoadCover(NumberOfButtonInArray: integer);
 
       procedure SongScore;
 
@@ -1961,6 +1962,7 @@ begin
       CoverButton.Texture := Cover.GetPreviewTexture();
       Song.CoverTex := CoverButton.Texture;  //basisbit ToDo 11.11.2015
       glDeleteTextures(1, @CoverButton.Texture.TexNum);
+      CoverButton.Texture.TexNum := 0;
       // set selected to false -> the right texture will be displayed
       CoverButton.Selected := False;
     end
@@ -1980,6 +1982,7 @@ begin
         CoverButton.Texture := Cover.GetPreviewTexture();
         Song.CoverTex := CoverButton.Texture;  //basisbit ToDo 11.11.2015
         glDeleteTextures(1, @CoverButton.Texture.TexNum);
+        CoverButton.Texture.TexNum := 0;
         // set selected to false -> the right texture will be displayed
         CoverButton.Selected := False;
       end
@@ -2015,7 +2018,7 @@ begin
   DuetChange := false;
 
   CoverTime := 10;
-  UnLoadDetailedCover;
+  //UnloadCover(Interaction);
 
   StopMusicPreview();
   StopVideoPreview();
@@ -2039,8 +2042,9 @@ begin
   begin
     glDeleteTextures(1, PGLuint(@Button[Interaction].Texture.TexNum));
     Button[Interaction].Texture.TexNum := 0;
-  end;}
-  Button[Interaction].Texture := Covers.FindCover(Button[Interaction].Texture.Name).GetTexture();
+  end;
+  Button[Interaction].Texture := Covers.FindCover(Button[Interaction].Texture.Name).GetTexture();}
+  //basisbit todo here
 end;
 
 procedure TScreenSong.SetScroll;
@@ -2262,7 +2266,7 @@ begin
   //calculate Auto-Width-Correction
   AutoWidthCorrection:= (UGraphic.RenderH/UGraphic.ScreenH)*(UGraphic.ScreenW/UGraphic.RenderW);
 
-
+  //LoadCover(Interaction);
   // Update positions of all buttons
   for B := 0 to High(Button) do
   begin
@@ -2280,6 +2284,7 @@ begin
       // Use an alternate position for the five front covers.
       if (Abs(Pos) < 2.5) then
       begin
+        LoadCover(B);
         Angle := Pi * (Pos / Min(VS, 5)); // Range: (-1/4*Pi .. +1/4*Pi)
 
         Button[B].H := Abs(Theme.Song.Cover.H * AutoWidthCorrection * cos(Angle*0.8));
@@ -2296,7 +2301,9 @@ begin
         Button[B].Z := 0.95 - Abs(Pos) * 0.01;
 
         if VS < 5 then
-          Button[B].Texture.Alpha := 1 - Abs(Pos) / VS  * 2
+        begin
+          Button[B].Texture.Alpha := 1 - Abs(Pos) / VS  * 2;
+        end
         else
           Button[B].Texture.Alpha := 1;
       end
@@ -2304,6 +2311,7 @@ begin
         (the 3 that are on the opposite of the front covers}
       else if (VS > 7) and (Abs(Pos) > floor(VS/2) - 1.5) then
       begin
+        LoadCover(B);
         // Transform Pos to range [-1..-3/4, +3/4..+1]
         { the 3 covers at the back will show up in the gap between the
           front cover and its neighbors
@@ -2333,7 +2341,10 @@ begin
       end
       { all other covers are not visible }
       else
+      begin
         Button[B].Visible := false;
+        UnLoadCover(B);
+      end;
     end;
   end;
 end;
@@ -2441,6 +2452,7 @@ begin
 
       if (Line >= ChessboardMinLine) then
       begin
+        LoadCover(B);
         if (Index = Interaction) then
         begin
           if (LastSelectTime <> 0) then
@@ -2509,12 +2521,20 @@ begin
         LastLine := Line;
       end
       else
+      begin
         Button[B].Visible := false;
+        Button[B].Z := 0;
+        UnLoadCover(B);
+      end;
 
       Count := Count + 1;
     end
     else
+    begin
       Button[B].Visible := false;
+      Button[B].Z := 0;
+      UnLoadCover(B);
+    end;
 
     Index := Index + 1;
   end;
@@ -2523,7 +2543,12 @@ end;
 
 procedure TScreenSong.SetChessboardScrollRefresh;
 begin
-  Statics[StaticActual].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
+  if Statics[StaticActual].Texture.Name <> Skin.GetTextureFileName('SongCover') then
+  begin
+    glDeleteTextures(1, PGLuint(@Statics[StaticActual].Texture.TexNum));
+  end;
+
+  Statics[StaticActual].Texture := Covers.FindCover(Button[Interaction].Texture.Name).GetTexture();
   Statics[StaticActual].Texture.Alpha := 1;
 
   Statics[StaticActual].Texture.X := Theme.Song.Cover.SelectX;
@@ -2554,16 +2579,21 @@ begin
     if (Button[B].Visible) then
     begin
       Button[B].X := Theme.Song.Cover.X + (Count - SongCurrent) * (Theme.Song.Cover.W + Theme.Song.Cover.Padding);
-      Button[B].Y := Theme.Song.Cover.Y;
-      Button[B].W := Theme.Song.Cover.W;
-      Button[B].H := Theme.Song.Cover.H;
 
-      if (Button[B].X < -Button[B].W) or (Button[B].X > 800) then
+      if (Button[B].X < -Theme.Song.Cover.W) or (Button[B].X > 800) then
       begin
+        UnloadCover(B);
         Button[B].Visible := false;
       end
       else
+      begin
         Button[B].Visible := true;
+        LoadCover(B);
+      end;
+      Button[B].X := Theme.Song.Cover.X + (Count - SongCurrent) * (Theme.Song.Cover.W + Theme.Song.Cover.Padding);
+      Button[B].Y := Theme.Song.Cover.Y;
+      Button[B].W := Theme.Song.Cover.W;
+      Button[B].H := Theme.Song.Cover.H;
 
       Count := Count + 1;
     end;
@@ -2602,6 +2632,7 @@ begin
       //fixed Positions
       if (Abs(Pos) < 2.0) then
       begin
+        LoadCover(B);
         Angle := Pi * (Pos / 5);
 
         Button[B].Texture.Alpha := 1 - Abs(Pos/1.5);
@@ -2624,7 +2655,10 @@ begin
 
       end
       else
+      begin
         Button[B].Visible := false;
+        UnloadCover(B);
+      end;
      end;
   end;
 end;
@@ -2653,6 +2687,18 @@ begin
 
     if (Button[B].Visible) then
     begin
+
+      if (B <= Interaction) then
+        Button[B].X := Theme.Song.Cover.X + (Count - SongCurrent) * Theme.Song.Cover.Padding
+      else
+        Button[B].X := Theme.Song.Cover.X + (Count - SongCurrent) * Theme.Song.Cover.W - (Count - SongCurrent) * (Theme.Song.Cover.W * Scale - Theme.Song.Cover.Padding);
+
+      if (Button[B].X < -Theme.Song.Cover.W) or (Button[B].X > 800) then
+      begin
+        UnloadCover(B);
+      end
+      else
+        LoadCover(B);
 
       if (B <= Interaction) then
         Button[B].X := Theme.Song.Cover.X + (Count - SongCurrent) * Theme.Song.Cover.Padding
@@ -2756,6 +2802,7 @@ begin
 
         if (Line - ListMinLine < Theme.Song.ListCover.Rows) then
         begin
+          LoadCover(B);
           Button[B].Z := 1;
 
           Button[B].X := Theme.Song.Cover.X;
@@ -2768,12 +2815,14 @@ begin
         else
         begin
           Button[B].Visible := false;
+          UnloadCover(B);
         end;
       end
       else
       begin
         Line := Line + 1;
         Button[B].Visible := false;
+        UnloadCover(B);
       end;
     end;
   end;
@@ -2786,8 +2835,12 @@ var
   SongID: array of integer;
   Alpha: real;
 begin
+  if Statics[StaticActual].Texture.Name <> Skin.GetTextureFileName('SongCover') then
+  begin
+    glDeleteTextures(1, PGLuint(@Statics[StaticActual].Texture.TexNum));
+  end;
 
-  Statics[StaticActual].Texture := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
+  Statics[StaticActual].Texture := Covers.FindCover(Button[Interaction].Texture.Name).GetTexture();
   Statics[StaticActual].Texture.Alpha := 1;
 
   Statics[StaticActual].Texture.X := Theme.Song.Cover.SelectX;
@@ -3442,11 +3495,11 @@ begin
     NextInt := (Interaction + Skip) mod Length(Interactions);
 
     SongTarget := SongTarget + 1;//Skip;
-    if (Button[Interaction].Texture.TexNum > 0) and (Button[Interaction].Texture.TexH <> 1.0) then
+    {if (Button[Interaction].Texture.TexNum > 0) and (Button[Interaction].Texture.TexH <> 1.0) then
     begin
       glDeleteTextures(1, @Button[Interaction].Texture.TexNum);
       Button[Interaction].Texture := Covers.FindCover(Button[Interaction].Texture.Name).GetPreviewTexture();
-    end;
+    end;}
 
 
     if not ((TSongMenuMode(Ini.SongMenu) in [smChessboard, smList, smMosaic]) and (NextInt < Interaction)) then
@@ -3496,11 +3549,11 @@ begin
       Inc(Skip);
 
     SongTarget := SongTarget - 1;
-    if Button[Interaction].Texture.TexNum > 0 then
+    {if Button[Interaction].Texture.TexNum > 0 then
     begin
       glDeleteTextures(1, @Button[Interaction].Texture.TexNum);
       Button[Interaction].Texture := Covers.FindCover(Button[Interaction].Texture.Name).GetPreviewTexture();
-    end;
+    end;}
 
     PrevInt := (Interaction - Skip + Length(Interactions)) mod Length(Interactions);
 
@@ -4161,22 +4214,23 @@ begin
   end;
 end;
 
-//Detailed Cover Unloading. Unloads the Detailed, uncached Cover of the cur. Song
-procedure TScreenSong.UnloadDetailedCover;
+//Detailed Cover Unloading. Unloads the Detailed, uncached Cover of the Song Button
+procedure TScreenSong.UnloadCover(NumberOfButtonInArray: integer);
 begin
-  {// show cached texture
   // background texture (garbage disposal)
-  if (Button[Interaction].Texture2.TexNum > 0) then
+  if (not (Button[NumberOfButtonInArray].Texture.TexNum = 0)) and (Button[NumberOfButtonInArray].Texture.Name <> Skin.GetTextureFileName('SongCover')) then
   begin
-    glDeleteTextures(1, PGLuint(@Button[Interaction].Texture2.TexNum));
-    Button[Interaction].Texture2.TexNum := 0;
-  end;}
+    Texture.UnloadTexture(Button[NumberOfButtonInArray].Texture.Name, TEXTURE_TYPE_PLAIN, false);
+    glDeleteTextures(1, PGLuint(@Button[NumberOfButtonInArray].Texture.TexNum));
+    Button[NumberOfButtonInArray].Texture.TexNum := 0;
+  end;
+end;
 
-  //Button[Interaction].Texture2 := Texture.GetTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, true);
-  //Button[Interaction].Texture := Button[Interaction].Texture2;
-
-  if Button[Interaction].Texture.Name <> Skin.GetTextureFileName('SongCover') then
-    Texture.UnloadTexture(Button[Interaction].Texture.Name, TEXTURE_TYPE_PLAIN, false);
+//Detailled Cover Loading. Loads the Detailled, uncached Cover of the Song Button
+procedure TScreenSong.LoadCover(NumberOfButtonInArray: integer);
+begin
+  If Button[NumberOfButtonInArray].Texture.TexNum = 0 then
+    Button[NumberOfButtonInArray].Texture := Covers.FindCover(Button[NumberOfButtonInArray].Texture.Name).GetTexture();
 end;
 
 procedure TScreenSong.Refresh;
