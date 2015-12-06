@@ -30,10 +30,10 @@ uses
 
 const
 {$IFDEF MSWINDOWS}
-  // use libpng15-15 (Version 1.2.15), delivered wih SDL_Image
-  LibPng = 'libpng15-15';
+  // use libpng12 (Version 1.2.15), delivered wih SDL_Image
+  LibPng = 'libpng12';
   // matching lib version for libpngxx.dll, needed for initialization
-  PNG_LIBPNG_VER_STRING='1.2.15';
+  PNG_LIBPNG_VER_STRING='1.2.12';
   // define the compiler that was used to built the DLL (necessary for jmp_buf)
   // SDL_Image was compiled with GCC
   //{$define MSVC_DLL} // MS Visual C++
