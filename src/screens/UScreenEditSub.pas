@@ -1052,7 +1052,7 @@ begin
             midinotefound := false;
             PlayOne := true;
             PlayOneMidi := true;
-
+            //basisbit ToDo add midi tone playback support here
             LastClick := -100;
           end;
         end;
@@ -2580,6 +2580,9 @@ begin
           glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
           glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
+  SetFontPos(90, 560);
+  glColor4f(1, 1, 0, 1);
+  glPrint (GetNoteName(CurrentTone));
 end;
 
 procedure TScreenEditSub.DrawStatics_UP(X, Y, W, H: integer);
