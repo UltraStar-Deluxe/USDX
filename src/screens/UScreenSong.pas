@@ -53,6 +53,9 @@ uses
   USongs,
   UTexture,
   UThemes,
+  UUnicodeStringHelper,
+  LazUTF8Classes,
+  LazUTF8,
   UTime;
 
 type
@@ -1723,6 +1726,7 @@ begin
     Padding := I * (Theme.Song.ListCover.H + Theme.Song.ListCover.Padding);
 
     Theme.Song.TextArtist.Y  := TextArtistY + Padding;
+
     ListTextArtist[I] := AddText(Theme.Song.TextArtist);
 
     Theme.Song.TextTitle.Y  := TextTitleY + Padding;
@@ -2080,7 +2084,6 @@ begin
       // Set texts
       Text[TextArtist].Text := CatSongs.Song[Interaction].Artist;
       Text[TextTitle].Text  :=  CatSongs.Song[Interaction].Title;
-
       if ((Ini.Tabs = 0) or (TSortingType(Ini.Sorting) <> sYear))
         and (CatSongs.Song[Interaction].Year <> 0) then
           Text[TextYear].Text  :=  InttoStr(CatSongs.Song[Interaction].Year)
@@ -4228,9 +4231,14 @@ end;
 
 //Detailled Cover Loading. Loads the Detailled, uncached Cover of the Song Button
 procedure TScreenSong.LoadCover(NumberOfButtonInArray: integer);
+var
+  deb1: string;
 begin
-  If Button[NumberOfButtonInArray].Texture.TexNum = 0 then
+  If (Button[NumberOfButtonInArray].Texture.TexNum = 0) and Assigned(Button[NumberOfButtonInArray].Texture.Name) then
+  begin
+    deb1:=Button[NumberOfButtonInArray].Texture.Name.ToWide();
     Button[NumberOfButtonInArray].Texture := Covers.FindCover(Button[NumberOfButtonInArray].Texture.Name).GetTexture();
+  end;
 end;
 
 procedure TScreenSong.Refresh;
