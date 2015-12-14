@@ -134,8 +134,8 @@ function FindPath(
 begin
   Result := false;
 
-  if (RequestedPath.Equals(PATH_NONE)) then
-    Exit;
+  (*if (RequestedPath.Equals(PATH_NONE)) then
+    Exit;*)
 
   // Make sure the directory exists
   if (not RequestedPath.CreateDirectory(true)) then

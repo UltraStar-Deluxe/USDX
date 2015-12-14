@@ -63,6 +63,7 @@ uses
   UPlaylist,
   USong,
   UIni,
+  LazUTF8Classes,
   UCatCovers;
 
 type

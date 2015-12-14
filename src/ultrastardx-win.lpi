@@ -35,7 +35,7 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="136">
+    <Units Count="139">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -547,7 +547,7 @@
       <Unit127>
         <Filename Value="lib\bass\delphi\bass.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="BASS"/>
+        <UnitName Value="Bass"/>
       </Unit127>
       <Unit128>
         <Filename Value="webSDK\UWebSDK.pas"/>
@@ -570,17 +570,31 @@
         <IsPartOfProject Value="True"/>
       </Unit132>
       <Unit133>
-        <Filename Value="lib\TntUnicodeControls\TntClasses.pas"/>
+        <Filename Value="base\UNote.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit133>
       <Unit134>
-        <Filename Value="base\UNote.pas"/>
+        <Filename Value="base\UPath.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit134>
       <Unit135>
-        <Filename Value="base\UPath.pas"/>
+        <Filename Value="..\..\..\lazarus\fpc\3.0.0\source\packages\winunits-base\src\comobj.pp"/>
         <IsPartOfProject Value="True"/>
       </Unit135>
+      <Unit136>
+        <Filename Value="..\..\..\lazarus\fpc\3.0.0\source\packages\fcl-registry\src\registry.pp"/>
+        <IsPartOfProject Value="True"/>
+      </Unit136>
+      <Unit137>
+        <Filename Value="..\..\..\lazarus\components\lazutils\lazutils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="LazUtils"/>
+      </Unit137>
+      <Unit138>
+        <Filename Value="base\uunicodestringhelper.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UUnicodeStringHelper"/>
+      </Unit138>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -591,7 +605,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="lib\JEDI-SDL\SDL\Pas"/>
-      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\JEDI-SDL\SDL\Pas;lib\JEDI-SDL\SDL_Image\Pas;lib\JEDI-SDL\OpenGL\Pas;lib\portaudio;lib\ffmpeg;lib\SQLite;lib\other;lib\openCV;webSDK\cURL\src;webSDK;webSDK\encrypt;lib\TntUnicodeControls"/>
+      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\JEDI-SDL\SDL\Pas;lib\JEDI-SDL\SDL_Image\Pas;lib\JEDI-SDL\OpenGL\Pas;lib\portaudio;lib\ffmpeg;lib\SQLite;lib\other;lib\openCV;webSDK\cURL\src;webSDK;webSDK\encrypt;lib\TntUnicodeControls;..\..\..\lazarus\fpc\3.0.0\source\packages\fcl-base\src;..\..\..\lazarus\fpc\3.0.0\source\packages\fcl-registry\src;..\..\..\lazarus\fpc\3.0.0\source\packages\winunits-base\src;..\..\..\lazarus\components\lazutils"/>
       <UnitOutputDirectory Value="..\build\fpc-$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
@@ -602,18 +616,19 @@
       </SyntaxOptions>
     </Parsing>
     <CodeGeneration>
-      <Checks>
-        <OverflowChecks Value="True"/>
-        <StackChecks Value="True"/>
-      </Checks>
       <Optimizations>
-        <OptimizationLevel Value="0"/>
+        <OptimizationLevel Value="3"/>
       </Optimizations>
     </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsStabs"/>
       </Debugging>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
     </Linking>
     <Other>
       <Verbosity>

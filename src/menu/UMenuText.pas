@@ -96,8 +96,9 @@ implementation
 
 uses
   UGraphic,
-  UUnicodeUtils,
   UDisplay,
+  UUnicodeStringHelper,
+  LazUTF8,
   StrUtils;
 
 procedure TText.SetSelect(Value: boolean);
@@ -170,6 +171,7 @@ var
   end;
 
 begin
+  isBreak:=false;
   // set TextString
   TextString := Value;
 
@@ -254,7 +256,7 @@ end;
 
 procedure TText.DeleteLastLetter;
 begin
-  SetText(UTF8Copy(TextString, 1, LengthUTF8(TextString)-1));
+  SetText(UTF8Copy(TextString, 1, UTF8Length(TextString)-1));
 end;
 
 procedure TText.Draw;

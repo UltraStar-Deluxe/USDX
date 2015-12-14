@@ -39,10 +39,12 @@ uses
   Classes,
   IniFiles,
   {$IFDEF MSWINDOWS}
-  TntClasses,
+  //TntClasses,
   {$ENDIF}
   UConfig,
-  UUnicodeUtils;
+  UUnicodeStringHelper,
+  LazUTF8Classes,
+  LazUTF8;//UUnicodeUtils;
 
 type
   IPath = interface;
@@ -82,11 +84,11 @@ type
   {**
    * TBinaryFileStream (inherited from THandleStream)
    *}
-  {$IFDEF MSWINDOWS}
-  TBinaryFileStream = class(TTntFileStream)
-  {$ELSE}
+  //{$IFDEF MSWINDOWS}
+  //TBinaryFileStream = class(TTntFileStream)
+  //{$ELSE}
   TBinaryFileStream = class(TFileStream)
-  {$ENDIF}
+  //{$ENDIF}
   public
     {**
      * @seealso TFileStream.Create for valid Mode parameters
@@ -562,9 +564,9 @@ type
 
 function Path(const PathName: RawByteString; DelimOption: TPathDelimOption): IPath;
 begin
-  if (IsUTF8String(PathName)) then
+  if (IsUTF8StringH(PathName)) then
     Result := TPathImpl.Create(PathName, DelimOption)
-  else if (IsNativeUTF8()) then
+  else if (IsNativeUTF8H()) then
     Result := PATH_NONE
   else
     Result := TPathImpl.Create(AnsiToUtf8(PathName), DelimOption);
@@ -665,10 +667,10 @@ end;
 
 function TPathImpl.ToNative(): RawByteString;
 begin
-  if (IsNativeUTF8()) then
+  if (IsNativeUTF8H()) then
     Result := fName
-  else
-    Result := Utf8ToAnsi(fName);
+  else //basisbit hackyhack
+    Result := UTF8ToUTF16(fName);
 end;
 
 function TPathImpl.GetDrive(): IPath;
@@ -1112,6 +1114,7 @@ end;
 constructor TBinaryFileStream.Create(const FileName: IPath; Mode: word);
 begin
 {$IFDEF MSWINDOWS}
+//if FileExists(FileName.ToUTF8()) then
   inherited Create(FileName.ToWide(), Mode);
 {$ELSE}
   inherited Create(FileName.ToNative(), Mode);

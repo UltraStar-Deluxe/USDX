@@ -26,7 +26,6 @@
 unit USong;
 
 interface
-
 {$IFDEF FPC}
   {$MODE Delphi}
 {$ENDIF}
@@ -36,7 +35,6 @@ interface
 uses
   {$IFDEF MSWINDOWS}
     Windows,
-    MD5,
   {$ELSE}
     {$IFNDEF DARWIN}
       syscall,
@@ -44,6 +42,7 @@ uses
     baseunix,
     UnixType,
   {$ENDIF}
+  MD5,
   SysUtils,
   Classes,
   {$IFDEF DARWIN}
@@ -60,6 +59,7 @@ uses
   UPlatform,
   UTexture,
   UTextEncoding,
+  UUnicodeStringHelper,
   UUnicodeUtils,
   UXMLSong;
 
@@ -1043,7 +1043,9 @@ begin
 
   // check if file begins with a UTF-8 BOM, if so set encoding to UTF-8
   if (CheckReplaceUTF8BOM(Line)) then
-    Encoding := encUTF8;
+    Encoding := encUTF8
+  else
+    Encoding := encAuto;
 
   //Read Lines while Line starts with # or its empty
   while (Length(Line) = 0) or (Line[1] = '#') do
