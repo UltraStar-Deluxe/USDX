@@ -146,7 +146,7 @@ begin
     // Log + Benchmark
     Log := TLog.Create;
     Log.Title := WindowTitle;
-    Log.FileOutputEnabled := not Params.NoLog;
+    //Log.FileOutputEnabled := not Params.NoLog;
 
     // Language
     Log.LogStatus('Initialize Paths', 'Initialization');
