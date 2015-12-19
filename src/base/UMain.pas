@@ -110,6 +110,14 @@ begin
     WindowTitle := USDXVersionStr;
 
     Platform.Init;
+    
+    // Commandline Parameter Parser
+    Params := TCMDParams.Create;
+
+    // Log + Benchmark
+    Log := TLog.Create;
+    Log.Title := WindowTitle;
+    //Log.FileOutputEnabled := not Params.NoLog;
 
     if Platform.TerminateIfAlreadyRunning(WindowTitle) then
       Exit;
@@ -139,14 +147,6 @@ begin
 
     USTime := TTime.Create;
     VideoBGTimer := TRelativeTimer.Create;
-
-    // Commandline Parameter Parser
-    Params := TCMDParams.Create;
-
-    // Log + Benchmark
-    Log := TLog.Create;
-    Log.Title := WindowTitle;
-    //Log.FileOutputEnabled := not Params.NoLog;
 
     // Language
     Log.LogStatus('Initialize Paths', 'Initialization');
