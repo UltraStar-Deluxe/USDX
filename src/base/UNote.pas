@@ -209,6 +209,7 @@ var
   CurBeat: real;
   CurBPM:  integer;
 begin
+  try
   // static BPM
   if Length(CurrentSong.BPM) = 1 then
   begin
@@ -231,6 +232,10 @@ begin
   else
   begin
     Result := 0;
+  end;
+  except
+    on E : Exception do
+    Result :=0;
   end;
 end;
 
