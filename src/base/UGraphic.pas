@@ -433,7 +433,7 @@ begin
   // Load OpenGL 1.2 extensions for OpenGL 1.2 compatibility
   if (not Load_GL_version_1_2()) then
   begin
-    Log.LogCritical('Failed loading OpenGL 1.2', 'UGraphic.Initialize3D');
+    Log.LogCritical('Failed loading OpenGL 1.2. Suggested solution: Install current graphics chipset drivers from your hardware vendor or download and extract https://derpy.ws/builds/windows/trunk/latest/opengl32.7z to the UltraStar Deluxe folder and restart the game.', 'UGraphic.Initialize3D');
   end;
 
   // Other extensions e.g. OpenGL 1.3-2.0 or Framebuffer-Object might be loaded here
@@ -689,15 +689,10 @@ procedure LoadLoadingScreen;
 begin
   ScreenLoading := TScreenLoading.Create;
   ScreenLoading.OnShow;
-
   Display.CurrentScreen := @ScreenLoading;
-
   SwapBuffers;
-
   ScreenLoading.Draw;
-
   Display.Draw;
-
   SwapBuffers;
 end;
 
