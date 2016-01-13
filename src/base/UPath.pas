@@ -1163,7 +1163,7 @@ begin
   fStream := TMemoryStream.Create();
 
   // load data to memory in read mode
-  if ((Mode and 3) in [fmOpenRead, fmOpenReadWrite]) then
+  if (((Mode and 3) in [fmOpenRead, fmOpenReadWrite]) and (Mode <> fmCreate)) then
   begin
     FileStream := TBinaryFileStream.Create(Filename, fmOpenRead);
 
@@ -1187,7 +1187,7 @@ var
   SaveMode: word;
 begin
   // save changes in write mode (= not read-only mode)
-  if ((fMode) <> fmOpenRead) then
+  if (((fMode and 3) <> fmOpenRead) or (fMode = fmCreate)) then
   begin
     if (fMode = fmCreate) then
       SaveMode := fmCreate
