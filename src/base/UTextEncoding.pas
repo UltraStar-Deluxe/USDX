@@ -200,7 +200,8 @@ function CheckReplaceUTF8BOM(var Text: RawByteString): boolean;
 begin
   if AnsiStartsStr(UTF8_BOM, Text) then
   begin
-    Text := Copy(Text, Length(UTF8_BOM)+1, Length(Text)-Length(UTF8_BOM));
+    Delete(Text, 1, 3);
+    //Text := Copy(Text, Length(UTF8_BOM)+1, Length(Text)-Length(UTF8_BOM));
     Result := true;
     Exit;
   end;
