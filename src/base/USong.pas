@@ -1026,6 +1026,9 @@ begin
   Result := true;
   Done   := 0;
   MedleyFlags := 0;
+  SetLength(self.BPM, 1);
+  self.BPM[0].BPM := 0;
+  self.BPM[0].StartBeat := 0;
 
   //SetLength(tmpEdition, 0);
 
@@ -1048,7 +1051,8 @@ begin
     Encoding := encAuto;
 
   //Read Lines while Line starts with # or its empty
-  while (Length(Line) = 0) or (Line[1] = '#') do
+  //Log.LogDebug(Line,'TSong.ReadTXTHeader');
+  while (Length(Line) > 0) and (Line[1] = '#') do
   begin
     //Increase Line Number
     Inc (FileLineNo);
@@ -1307,7 +1311,7 @@ begin
   //Check if all Required Values are given
   if (Done <> 15) then
   begin
-    Result := false;
+    //Result := false;
     if (Done and 8) = 0 then      //No BPM Flag
       Log.LogError('BPM tag missing: ' + FullFileName)
     else if (Done and 4) = 0 then //No MP3 Flag
@@ -1740,10 +1744,10 @@ begin
       else
         Self.Medley.Source := msNone;
     end;
-
-  finally
-    SongFile.Free;
+  except
+    Log.LogError('Reading headers from file failed. File incomplete or not Ultrastar txt?: ' + Self.Path.Append(Self.FileName).ToUTF8(true));
   end;
+  SongFile.Free;
 end;
 
 
