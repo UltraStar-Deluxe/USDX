@@ -1311,7 +1311,7 @@ begin
   //Check if all Required Values are given
   if (Done <> 15) then
   begin
-    //Result := false;
+    Result := false;
     if (Done and 8) = 0 then      //No BPM Flag
       Log.LogError('BPM tag missing: ' + FullFileName)
     else if (Done and 4) = 0 then //No MP3 Flag
