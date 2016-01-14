@@ -1136,8 +1136,10 @@ begin
         if self.BPM[0].BPM <> 0 then
         begin
           //Add BPM Flag to Done
-          Done := Done or 8;
-        end;
+          Done := Done or 8
+        end
+        else
+            Log.LogError('Was not able to convert String ' + FullFileName + '"' + Value + '" to number.');
       end
 
       //---------
