@@ -1130,8 +1130,8 @@ begin
       begin
         SetLength(self.BPM, 1);
         self.BPM[0].StartBeat := 0;
-
-        self.BPM[0].BPM := StrToFloatI18n( Value ) * Mult * MultBPM;
+        StringReplace(Value, ',', '.', [rfReplaceAll]);
+        self.BPM[0].BPM := StrToFloatI18n(Value ) * Mult * MultBPM;
 
         if self.BPM[0].BPM <> 0 then
         begin
