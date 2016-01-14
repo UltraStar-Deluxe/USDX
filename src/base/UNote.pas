@@ -576,7 +576,10 @@ begin
               // half size notes patch
               NoteHit := false;
               ActualTone := CurrentSound.Tone;
-              Range := 2 - Ini.Difficulty;
+              if (ScreenSong.Mode = smNormal) then
+                Range := 2 - Ini.PlayerLevel[PlayerIndex]
+              else
+                Range := 2 - Ini.Difficulty;
 
               // check if the player hit the correct tone within the tolerated range
               if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) then

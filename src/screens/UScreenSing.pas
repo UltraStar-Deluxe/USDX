@@ -2226,7 +2226,7 @@ begin
 
   // Send Score
   Act_MD5Song := CurrentSong.MD5;
-  Act_Level := Ini.Difficulty;
+  Act_Level := Ini.PlayerLevel[0];
 
   // start timer
   CountSkipTimeSet;
