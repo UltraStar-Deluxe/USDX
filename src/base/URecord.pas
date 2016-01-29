@@ -36,7 +36,7 @@ interface
 uses
   Classes,
   Math,
-  sdl,
+  sdl2,
   SysUtils,
   UCommon,
   UMusic,
@@ -267,12 +267,12 @@ end;
 
 procedure TCaptureBuffer.LockAnalysisBuffer();
 begin
-  SDL_mutexP(fAnalysisBufferLock);
+  SDL_LockMutex(fAnalysisBufferLock);
 end;
 
 procedure TCaptureBuffer.UnlockAnalysisBuffer();
 begin
-  SDL_mutexV(fAnalysisBufferLock);
+  SDL_UnlockMutex(fAnalysisBufferLock);
 end;
 
 procedure TCaptureBuffer.Clear;

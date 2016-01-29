@@ -36,7 +36,7 @@ interface
 uses
   SysUtils,
   Classes,
-  SDL,
+  sdl2,
   gl,
   UDisplay,
   UIni,

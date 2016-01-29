@@ -35,7 +35,7 @@ interface
 
 uses
   UMenu,
-  SDL,
+  sdl2,
   USongs,
   USong,
   UPath,

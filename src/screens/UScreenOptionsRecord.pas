@@ -116,7 +116,7 @@ implementation
 uses
   SysUtils,
   Math,
-  SDL,
+  sdl2,
   gl,
   TextGL,
   UGraphic,

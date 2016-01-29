@@ -49,7 +49,7 @@ uses
   gl,
   glext,
   glu,
-  sdl,
+  sdl2,
   Math,
   Classes,
   SysUtils,

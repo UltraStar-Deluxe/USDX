@@ -45,7 +45,7 @@ uses
   avutil,
   {$ENDIF}
   UMediaCore_SDL,
-  sdl,
+  sdl2,
   SysUtils,
   Math;
 

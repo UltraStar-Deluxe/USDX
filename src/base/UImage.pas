@@ -34,93 +34,16 @@ interface
 {$I switches.inc}
 
 uses
-  SDL,
+  sdl2,
   UPath;
 
-{$DEFINE HavePNG}
 {$DEFINE HaveBMP}
 {$DEFINE HaveJPG}
-
-const
-  PixelFmt_RGBA: TSDL_Pixelformat = (
-    palette:      nil;
-    BitsPerPixel:  32;
-    BytesPerPixel:  4;
-    Rloss:          0;
-    Gloss:          0;
-    Bloss:          0;
-    Aloss:          0;
-    Rshift:         0;
-    Gshift:         8;
-    Bshift:        16;
-    Ashift:        24;
-    Rmask:  $000000ff;
-    Gmask:  $0000ff00;
-    Bmask:  $00ff0000;
-    Amask:  $ff000000;
-    ColorKey:       0;
-    Alpha:        255
-  );
-
-  PixelFmt_RGB: TSDL_Pixelformat = (
-    palette:      nil;
-    BitsPerPixel:  24;
-    BytesPerPixel:  3;
-    Rloss:          0;
-    Gloss:          0;
-    Bloss:          0;
-    Aloss:          0;
-    Rshift:         0;
-    Gshift:         8;
-    Bshift:        16;
-    Ashift:         0;
-    Rmask:  $000000ff;
-    Gmask:  $0000ff00;
-    Bmask:  $00ff0000;
-    Amask:  $00000000;
-    ColorKey:       0;
-    Alpha:        255
-  );
-
-  PixelFmt_BGRA: TSDL_Pixelformat = (
-    palette:      nil;
-    BitsPerPixel:  32;
-    BytesPerPixel:  4;
-    Rloss:          0;
-    Gloss:          0;
-    Bloss:          0;
-    Aloss:          0;
-    Rshift:        16;
-    Gshift:         8;
-    Bshift:         0;
-    Ashift:        24;
-    Rmask:  $00ff0000;
-    Gmask:  $0000ff00;
-    Bmask:  $000000ff;
-    Amask:  $ff000000;
-    ColorKey:       0;
-    Alpha:        255
-  );
-
-  PixelFmt_BGR: TSDL_Pixelformat = (
-    palette:      nil;
-    BitsPerPixel:  24;
-    BytesPerPixel:  3;
-    Rloss:          0;
-    Gloss:          0;
-    Bloss:          0;
-    Aloss:          0;
-    Rshift:        16;
-    Gshift:         8;
-    Bshift:         0;
-    Ashift:         0;
-    Rmask:  $00ff0000;
-    Gmask:  $0000ff00;
-    Bmask:  $000000ff;
-    Amask:  $00000000;
-    ColorKey:       0;
-    Alpha:        255
-  );
+//const
+  //PixelFmt_RGBA
+  //PixelFmt_RGB
+  //PixelFmt_BGRA
+  //PixelFmt_BGR
 
 type
   TImagePixelFmt = (
@@ -130,10 +53,6 @@ type
 (*******************************************************
  * Image saving
  *******************************************************)
-
-{$IFDEF HavePNG}
-function WritePNGImage(const FileName: IPath; Surface: PSDL_Surface): boolean;
-{$ENDIF}
 {$IFDEF HaveBMP}
 function WriteBMPImage(const FileName: IPath; Surface: PSDL_Surface): boolean;
 {$ENDIF}
@@ -176,13 +95,10 @@ uses
     jdatadst, jcapimin, jcapistd,
     {$ENDIF}
   {$ENDIF}
-  {$IFDEF HavePNG}
-  png,
-  {$ENDIF}
   zlib,
-  sdl_image,
+  SDL2_image,
   sdlutils,
-  sdlstreams,
+  //SDL 1.2: sdlstreams,
   UCommon,
   ULog;
 
@@ -236,9 +152,9 @@ begin
   begin
     // invalid format -> needs conversion
     if (pixelFmt.AMask <> 0) then
-      Result := SDL_ConvertSurface(Surface, @PixelFmt_BGRA, SDL_SWSURFACE)
+      Result := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_BGRA8888, SDL_SWSURFACE)
     else
-      Result := SDL_ConvertSurface(Surface, @PixelFmt_BGR, SDL_SWSURFACE);
+      Result := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_BGR24, SDL_SWSURFACE);
     Converted := true;
   end;
 end;
@@ -259,9 +175,9 @@ begin
   begin
     // invalid format -> needs conversion
     if (pixelFmt.AMask <> 0) then
-      Result := SDL_ConvertSurface(Surface, @PixelFmt_RGBA, SDL_SWSURFACE)
+      Result := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_ARGB8888, SDL_SWSURFACE)
     else
-      Result := SDL_ConvertSurface(Surface, @PixelFmt_RGB, SDL_SWSURFACE);
+      Result := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_RGB24, SDL_SWSURFACE);
     Converted := true;
   end;
 end;
@@ -269,163 +185,6 @@ end;
 (*******************************************************
  * Image saving
  *******************************************************)
-
-(***************************
- * PNG section
- *****************************)
-
-{$IFDEF HavePNG}
-
-// delphi does not support setjmp()/longjmp() -> define our own error-handler
-procedure user_error_fn(png_ptr: png_structp; error_msg: png_const_charp); cdecl;
-begin
-  raise Exception.Create(error_msg);
-end;
-
-procedure user_read_data(png_ptr: png_structp; data: png_bytep; length: png_size_t); cdecl;
-var
-  inFile: TStream;
-begin
-  inFile := TStream(png_get_io_ptr(png_ptr));
-  inFile.Read(data^, length);
-end;
-
-procedure user_write_data(png_ptr: png_structp; data: png_bytep; length: png_size_t); cdecl;
-var
-  outFile: TStream;
-begin
-  outFile := TStream(png_get_io_ptr(png_ptr));
-  outFile.Write(data^, length);
-end;
-
-procedure user_flush_data(png_ptr: png_structp); cdecl;
-//var
-//  outFile: TStream;
-begin
-  // binary files are flushed automatically, Flush() works with Text-files only
-  //outFile := TStream(png_get_io_ptr(png_ptr));
-  //outFile.Flush();
-end;
-
-procedure DateTimeToPngTime(time: TDateTime; var pngTime: png_time);
-var
-  year, month, day: word;
-  hour, minute, second, msecond: word;
-begin
-  DecodeDate(time, year, month, day);
-  pngTime.year  := png_uint_16(year);
-  pngTime.month := png_byte(month);
-  pngTime.day   := png_byte(day);
-  DecodeTime(time, hour, minute, second, msecond);
-  pngTime.hour   := png_byte(hour);
-  pngTime.minute := png_byte(minute);
-  pngTime.second := png_byte(second);
-end;
-
-(*
- * ImageData must be in RGB-format
- *)
-function WritePNGImage(const FileName: IPath; Surface: PSDL_Surface): boolean;
-var
-  png_ptr:   png_structp;
-  info_ptr:  png_infop;
-  pngFile:   TStream;
-  row:       integer;
-  rowData:   array of png_bytep;
-//  rowStride: integer;
-  converted: boolean;
-  colorType: integer;
-//  time:      png_time;
-begin
-  Result := false;
-
-  // open file for writing
-  try
-    pngFile := TBinaryFileStream.Create(FileName, fmCreate);
-  except
-    Log.LogError('Could not open file: "' + FileName.ToNative + '"', 'WritePngImage');
-    Exit;
-  end;
-
-  // only 24bit (RGB) or 32bit (RGBA) data is supported, so convert to it
-  Surface := ConvertToRGB_RGBASurface(Surface, converted);
-
-  png_ptr := nil;
-
-  try
-    // initialize png (and enable a user-defined error-handler that throws an exception on error)
-    png_ptr := png_create_write_struct(PNG_LIBPNG_VER_STRING, nil, @user_error_fn, nil);
-    // the error-handler is called if png_create_write_struct() fails, so png_ptr should always be <> nil
-    if (png_ptr = nil) then
-    begin
-      Log.LogError('png_create_write_struct() failed', 'WritePngImage');
-      if (converted) then
-        SDL_FreeSurface(Surface);
-      Exit;
-    end;
-
-    info_ptr := png_create_info_struct(png_ptr);
-
-    if (Surface^.format^.BitsPerPixel = 24) then
-      colorType := PNG_COLOR_TYPE_RGB
-    else
-      colorType := PNG_COLOR_TYPE_RGBA;
-
-    // define write IO-functions (POSIX-style FILE-pointers are not available in Delphi)
-    png_set_write_fn(png_ptr, pngFile, @user_write_data, @user_flush_data);
-    png_set_IHDR(
-      png_ptr, info_ptr,
-      Surface.w, Surface.h,
-      8,
-      colorType,
-      PNG_INTERLACE_NONE,
-      PNG_COMPRESSION_TYPE_DEFAULT,
-      PNG_FILTER_TYPE_DEFAULT
-    );
-
-    // TODO: do we need the modification time?
-    //DateTimeToPngTime(Now, time);
-    //png_set_tIME(png_ptr, info_ptr, @time);
-
-    if (SDL_MUSTLOCK(Surface)) then
-      SDL_LockSurface(Surface);
-
-    // setup data
-    SetLength(rowData, Surface.h);
-    for row := 0 to Surface.h-1 do
-    begin
-      // set rowData-elements to beginning of each image row
-      // Note: the byte-count of a row is pitch (which is not width*bitsPerPixel if the image is aligned)
-      rowData[row] := @PChar(Surface.pixels)[(Surface.h-row-1) * Surface.pitch];
-    end;
-
-    if (SDL_MUSTLOCK(Surface)) then
-      SDL_UnlockSurface(Surface);
-
-    png_write_info(png_ptr, info_ptr);
-    png_write_image(png_ptr, png_bytepp(rowData));
-    png_write_end(png_ptr, nil);
-
-    Result := true;
-  except on E: Exception do
-    Log.LogError(E.message, 'WritePngImage');
-  end;
-
-  // free row-data
-  SetLength(rowData, 0);
-
-  // free png-resources
-  if (png_ptr <> nil) then
-    png_destroy_write_struct(@png_ptr, nil);
-
-  if (converted) then
-    SDL_FreeSurface(Surface);
-
-  // close file
-  pngFile.Free;
-end;
-
-{$ENDIF}
 
 (***************************
  * BMP section
@@ -706,7 +465,7 @@ begin
       converted := false
     else
     begin
-      Surface := SDL_ConvertSurface(Surface, @PixelFmt_RGB, SDL_SWSURFACE);
+      Surface := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_RGB888, SDL_SWSURFACE);
       converted := true;
     end;
 
@@ -796,8 +555,7 @@ begin
 
   // load from file
   try
-    SDLStream := SDLStreamSetup(TBinaryFileStream.Create(FilenameCaseAdj, fmOpenRead));
-    Result := IMG_Load_RW(SDLStream, 1);
+    Result := IMG_Load(PChar(FilenameCaseAdj.ToUTF8())); //SDL2 uses wants UTF-8 strings according to doocumentation
     // Note: TBinaryFileStream is freed by SDLStream. SDLStream by IMG_Load_RW().
   except
     Log.LogError('Could not load from file "' + FilenameCaseAdj.ToNative + '"', 'LoadImage');
@@ -822,13 +580,20 @@ end;
 
 procedure ScaleImage(var ImgSurface: PSDL_Surface; Width, Height: cardinal);
 var
-  TempSurface: PSDL_Surface;
+   newstretchRect: PSDL_Rect;
+   origRect: PSDL_Rect;
 begin
-  TempSurface := ImgSurface;
-  ImgSurface := SDL_ScaleSurfaceRect(TempSurface,
-                  0, 0, TempSurface^.W,TempSurface^.H,
-                  Width, Height);
-  SDL_FreeSurface(TempSurface);
+  origRect := new(PSDL_Rect);
+  origRect.x:=0;
+  origRect.y:=0;
+  origRect.w:=ImgSurface.w;
+  origRect.h:=ImgSurface.h;
+  newstretchRect := new(PSDL_Rect);
+  newstretchRect.x := 0;
+  newstretchRect.y := 0;
+  newstretchRect.w := Width;
+  newstretchRect.h := Height;
+  SDL_UpperBlitScaled( ImgSurface, origRect, ImgSurface, newstretchRect );
 end;
 
 procedure FitImage(var ImgSurface: PSDL_Surface; Width, Height: cardinal);
@@ -845,58 +610,12 @@ begin
     ImgFmt^.RMask, ImgFmt^.GMask, ImgFmt^.BMask, ImgFmt^.AMask);
 
   // copy image from temp- to new surface
-  SDL_SetAlpha(ImgSurface, 0, 255);
-  SDL_SetAlpha(TempSurface, 0, 255);
+  SDL_SetSurfaceAlphaMod(ImgSurface, 255);
+  SDL_SetSurfaceAlphaMod(TempSurface, 255);
   SDL_BlitSurface(TempSurface, nil, ImgSurface, nil);
 
   SDL_FreeSurface(TempSurface);
 end;
-
-(*
-// Old slow floating point version of ColorizeTexture.
-// For an easier understanding of the faster fixed point version below.
-procedure ColorizeTexture(TexSurface: PSDL_Surface; Col: cardinal);
-var
-  clr: array[0..2] of double; // [0: R, 1: G, 2: B]
-  hsv: array[0..2] of double; // [0: H(ue), 1: S(aturation), 2: V(alue)]
-  delta, f, p, q, t: double;
-  max: double;
-begin
-  clr[0] := PixelColors[0]/255;
-  clr[1] := PixelColors[1]/255;
-  clr[2] := PixelColors[2]/255;
-  max := maxvalue(clr);
-  delta := max - minvalue(clr);
-
-  hsv[0] := DestinationHue; // set H(ue)
-  hsv[2] := max; // set V(alue)
-  // calc S(aturation)
-  if (max = 0.0) then
-    hsv[1] := 0.0
-  else
-    hsv[1] := delta/max;
-
-  //ColorizePixel(PByteArray(Pixel), DestinationHue);
-  h_int := trunc(hsv[0]);             // h_int = |_h_|
-  f := hsv[0]-h_int;                  // f = h-h_int
-  p := hsv[2]*(1.0-hsv[1]);           // p = v*(1-s)
-  q := hsv[2]*(1.0-(hsv[1]*f));       // q = v*(1-s*f)
-  t := hsv[2]*(1.0-(hsv[1]*(1.0-f))); // t = v*(1-s*(1-f))
-  case h_int of
-    0: begin clr[0] := hsv[2]; clr[1] := t;      clr[2] := p;      end; // (v,t,p)
-    1: begin clr[0] := q;      clr[1] := hsv[2]; clr[2] := p;      end; // (q,v,p)
-    2: begin clr[0] := p;      clr[1] := hsv[2]; clr[2] := t;      end; // (p,v,t)
-    3: begin clr[0] := p;      clr[1] := q;      clr[2] := hsv[2]; end; // (p,q,v)
-    4: begin clr[0] := t;      clr[1] := p;      clr[2] := hsv[2]; end; // (t,p,v)
-    5: begin clr[0] := hsv[2]; clr[1] := p;      clr[2] := q;      end; // (v,p,q)
-  end;
-
-  // and store new rgb back into the image
-  PixelColors[0] := trunc(255*clr[0]);
-  PixelColors[1] := trunc(255*clr[1]);
-  PixelColors[2] := trunc(255*clr[2]);
-end;
-*)
 
 procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: longword);
 
@@ -981,13 +700,15 @@ begin
   // whether something went wrong up to here.
 
   if ImgSurface^.format.BytesPerPixel <> 4 then
+  begin
     Log.LogError ('ColorizeImage: The pixel size should be 4, but it is '
                    + IntToStr(ImgSurface^.format.BytesPerPixel));
+  end;
 
   // Check whether the new color is white, grey or black, 
   // because a greyscale must be created in a different
   // way.
-  
+
   Red   := ((NewColor and $ff0000) shr 16); // R
   Green := ((NewColor and   $ff00) shr  8); // G
   Blue  :=  (NewColor and     $ff)        ; // B

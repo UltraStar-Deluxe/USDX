@@ -63,7 +63,7 @@ interface
 {.$DEFINE UseTexture}
 
 uses
-  SDL,
+  sdl2,
   UGraphicClasses,
   textgl,
   math,

@@ -36,7 +36,7 @@ interface
 uses
   Classes,
   ctypes,
-  sdl,
+  sdl2,
   avcodec,
   avformat,
   avutil,
@@ -236,12 +236,12 @@ end;
 
 procedure TMediaCore_FFmpeg.LockAVCodec();
 begin
-  SDL_mutexP(AVCodecLock);
+  SDL_LockMutex(AVCodecLock);
 end;
 
 procedure TMediaCore_FFmpeg.UnlockAVCodec();
 begin
-  SDL_mutexV(AVCodecLock);
+  SDL_UnlockMutex(AVCodecLock);
 end;
 
 function TMediaCore_FFmpeg.GetErrorString(ErrorNum: integer): string;

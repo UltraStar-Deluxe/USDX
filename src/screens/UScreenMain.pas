@@ -38,7 +38,7 @@ uses
   Windows,
   MD5,
   UMenu,
-  SDL,
+  sdl2,
   UDisplay,
   UMusic,
   UFiles,

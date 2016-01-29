@@ -35,8 +35,7 @@ interface
 
 uses
   gl,
-  glext,
-  SDL,
+  sdl2,
   Classes,
   UTexture,
   UFont,

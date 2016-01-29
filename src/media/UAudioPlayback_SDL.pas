@@ -37,7 +37,7 @@ implementation
 
 uses
   Classes,
-  sdl,
+  sdl2,
   SysUtils,
   UAudioPlayback_SoftMixer,
   UMusic,

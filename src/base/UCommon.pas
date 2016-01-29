@@ -116,7 +116,7 @@ uses
   {$IFDEF Delphi}
   Dialogs,
   {$ENDIF}
-  sdl,
+  sdl2,
   UFilesystem,
   UMain,
   UUnicodeUtils;

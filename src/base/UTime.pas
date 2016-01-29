@@ -79,7 +79,7 @@ var
 implementation
 
 uses
-  sdl,
+  sdl2,
   UCommon;
   
 const

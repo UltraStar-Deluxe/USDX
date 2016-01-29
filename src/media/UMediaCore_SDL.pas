@@ -35,7 +35,7 @@ interface
 
 uses
   UMusic,
-  sdl;
+  SDL2;
 
 function ConvertAudioFormatToSDL(Format: TAudioSampleFormat; out SDLFormat: UInt16): boolean;
 

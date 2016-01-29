@@ -239,7 +239,7 @@ implementation
 uses
   SysUtils,
   Math,
-  SDL,
+  sdl2,
   TextGL,
   ULog,
   UNote,

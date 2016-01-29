@@ -35,7 +35,7 @@ interface
 
 uses
   SysUtils,
-  SDL,
+  sdl2,
   gl,
   TextGL,
   UAvatars,

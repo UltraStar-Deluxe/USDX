@@ -62,7 +62,6 @@ uses
   USkins,
   SysUtils,
   gl,
-  glext,
   UGraphic;
 
 constructor TMenuBackgroundTexture.Create(const ThemedSettings: TThemeBackground);

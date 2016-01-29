@@ -532,7 +532,7 @@ implementation
 
 uses
   StrUtils,
-  SDL,
+  sdl2,
   UCommandLine,
   UDataBase,
   UDllManager,
@@ -1155,7 +1155,7 @@ procedure TIni.LoadScreenModes(IniFile: TCustomIniFile);
   end;
 
 var
-  Modes: PPSDL_Rect;
+  Modes: PSDL_Rect;
   I:     integer;
 begin
   MaxFramerate:= GetArrayIndex(IMaxFramerate, IniFile.ReadString('Graphics', 'MaxFramerate', '60'));
@@ -1175,7 +1175,8 @@ begin
   // Check if there are any modes available
   // TODO: we should seperate windowed and fullscreen modes. Otherwise it is not
   // possible to select a reasonable fullscreen mode when in windowed mode
-  if IFullScreen[FullScreen] = 'On' then
+  //basisbit todo implement sdl2 feature to get video modes here
+  {if IFullScreen[FullScreen] = 'On' then
     Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN)
   else
     Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_RESIZABLE) ;
@@ -1184,8 +1185,8 @@ begin
   begin
     Log.LogStatus( 'No resolutions Found' , 'Video');
   end
-  else if (Modes = PPSDL_Rect(-1)) then
-  begin
+  else if (Modes = PSDL_Rect(-1)) then
+  begin}
     // Fallback to some standard resolutions
     SetLength(IResolution, 18);
     IResolution[0] := '640x480';
@@ -1214,7 +1215,7 @@ begin
       IResolution[High(IResolution)] := IniFile.ReadString('Graphics', 'Resolution', '800x600');
       Resolution := High(IResolution);
     end;
-  end
+  {end
   else
   begin
     while assigned( Modes^ ) do //this should solve the biggest wine problem | THANKS Linnex (11.11.07)
@@ -1239,7 +1240,7 @@ begin
       if Resolution = -1 then
         Resolution := 0;
     end;
-  end;
+  end;}
 
   // if no modes were set, then failback to 800x600
   // as per http://sourceforge.net/forum/message.php?msg_id=4544965

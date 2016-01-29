@@ -36,7 +36,7 @@ interface
 uses
   UCommon,
   Math,
-  SDL,
+  sdl2,
   gl,
   glu,
   SysUtils,
@@ -674,7 +674,7 @@ begin
   begin
     // fill prefix to 4 digits with leading '0', e.g. '0001'
     Prefix := Format('screenshot%.4d', [Num]);
-    FileName := ScreenshotsPath.Append(Prefix + '.png');
+    FileName := ScreenshotsPath.Append(Prefix + '.jpg');
     if not FileName.Exists() then
       break;
   end;
@@ -694,9 +694,9 @@ begin
       ScreenData, ScreenW, ScreenH, 24, RowSize,
       $0000FF, $00FF00, $FF0000, 0);
 
-  //  Success := WriteJPGImage(FileName, Surface, 95);
+   Success := WriteJPGImage(FileName, Surface, 95);
   //  Success := WriteBMPImage(FileName, Surface);
-  Success := WritePNGImage(FileName, Surface);
+  //Success := WritePNGImage(FileName, Surface);
   if Success then
     ScreenPopupInfo.ShowPopup(Format(Language.Translate('SCREENSHOT_SAVED'), [FileName.GetName.ToUTF8()]))
   else
@@ -758,7 +758,7 @@ begin
   glPrint (OSD_LastError);
   SetFontPos(695, 39);
   glColor4f(0.5, 0.5, 0, 1);
-  glPrint ('Pre-alpha');
+  glPrint ('Muffins!');
 
   glColor4f(1, 1, 1, 1);
 end;

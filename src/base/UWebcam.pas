@@ -71,7 +71,7 @@ implementation
 uses
   gl,
   SysUtils,
-  SDL,
+  sdl2,
   ULog,
   UIni;
 

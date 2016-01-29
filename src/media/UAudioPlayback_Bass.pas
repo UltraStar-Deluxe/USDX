@@ -44,7 +44,7 @@ uses
   UAudioPlaybackBase,
   UAudioCore_Bass,
   ULog,
-  sdl,
+  sdl2,
   bass,
   SysUtils;
 

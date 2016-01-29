@@ -61,18 +61,20 @@ uses
   //------------------------------
   //Includes - 3rd Party Libraries
   //------------------------------
-  moduleloader           in 'lib\JEDI-SDL\SDL\Pas\moduleloader.pas',
-  gl                     in 'lib\JEDI-SDL\OpenGL\Pas\gl.pas',
-  glu                    in 'lib\JEDI-SDL\OpenGL\Pas\glu.pas',
-  glext                  in 'lib\JEDI-SDL\OpenGL\Pas\glext.pas',
-  sdl                    in 'lib\JEDI-SDL\SDL\Pas\sdl.pas',
-  sdl_image              in 'lib\JEDI-SDL\SDL_Image\Pas\sdl_image.pas',
-  sdlutils               in 'lib\JEDI-SDL\SDL\Pas\sdlutils.pas',
-  sdlstreams             in 'lib\JEDI-SDL\SDL\Pas\sdlstreams.pas',
+  sdl2                   in 'lib\SDL2\sdl2.pas',
+  SDL2_gfx               in 'lib\SDL2\SDL2_gfx.pas',
+  SDL2_image             in 'lib\SDL2\SDL2_image.pas',
+  SDL2_mixer             in 'lib\SDL2\SDL2_mixer.pas',
+  SDL2_net               in 'lib\SDL2\SDL2_net.pas',
+  SDL2_ttf               in 'lib\SDL2\SDL2_ttf.pas',
+  //hackyhack part of basisbit's OpenGL glue (based on JEDI-SDL code mainly) - this is part 1 of the OpenGL header work
+  moduleloader           in 'lib\OpenGL\moduleloader.pas',
+  gl                     in 'lib\OpenGL\gl.pas',
+  glu                    in 'lib\OpenGL\glu.pas',
+  glext                  in 'lib\OpenGL\glext.pas',
   UMediaCore_SDL         in 'media\UMediaCore_SDL.pas',
 
   zlib                   in 'lib\zlib\zlib.pas',
-  png                    in 'lib\libpng\png.pas',
   freetype               in 'lib\freetype\freetype.pas',
 
   {$IFDEF UseBass}

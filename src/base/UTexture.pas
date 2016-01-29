@@ -41,8 +41,8 @@ uses
   SysUtils,
   UCommon,
   UPath,
-  SDL,
-  SDL_Image;
+  sdl2,
+  SDL2_image;
 
 type
   PTexture = ^TTexture;
@@ -149,20 +149,20 @@ uses
 procedure AdjustPixelFormat(var TexSurface: PSDL_Surface; Typ: TTextureType);
 var
   TempSurface: PSDL_Surface;
-  NeededPixFmt: PSDL_Pixelformat;
+  NeededPixFmt: UInt32;
 begin
   if      (Typ = TEXTURE_TYPE_PLAIN) then
-    NeededPixFmt := @PixelFmt_RGB
+    NeededPixFmt := SDL_PIXELFORMAT_RGB24
   else if (Typ = TEXTURE_TYPE_TRANSPARENT) or
           (Typ = TEXTURE_TYPE_COLORIZED) then
-    NeededPixFmt := @PixelFmt_RGBA
+    NeededPixFmt := SDL_PIXELFORMAT_ARGB8888
   else
-    NeededPixFmt := @PixelFmt_RGB;
+    NeededPixFmt := SDL_PIXELFORMAT_RGB24;
 
-  if not PixelformatEquals(TexSurface^.format, NeededPixFmt) then
+  if not (TexSurface^.format.format = NeededPixFmt) then
   begin
     TempSurface := TexSurface;
-    TexSurface := SDL_ConvertSurface(TempSurface, NeededPixFmt, SDL_SWSURFACE);
+    TexSurface := SDL_ConvertSurfaceFormat(TempSurface, NeededPixFmt, SDL_SWSURFACE);
     SDL_FreeSurface(TempSurface);
   end;
 end;

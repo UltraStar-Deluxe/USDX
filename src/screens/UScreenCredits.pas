@@ -35,8 +35,8 @@ interface
 
 uses
   SysUtils,
-  SDL,
-  SDL_Image,
+  SDL2,
+  SDL2_image,
   gl,
   UMenu,
   UDisplay,

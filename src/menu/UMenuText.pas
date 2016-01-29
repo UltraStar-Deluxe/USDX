@@ -37,7 +37,7 @@ uses
   math,
   SysUtils,
   gl,
-  SDL,
+  sdl2,
   TextGL,
   UMenuInteract,
   UTexture;

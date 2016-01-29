@@ -1447,7 +1447,6 @@ uses
   UFileSystem,
   TextGL,
   gl,
-  glext,
   math,
   StrUtils;
 

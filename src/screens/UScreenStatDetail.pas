@@ -28,14 +28,14 @@ unit UScreenStatDetail;
 interface
 
 {$IFDEF FPC}
-  {$MODE Delphi}
+  {$mode objfpc}//{$MODE Delphi}
 {$ENDIF}
 
 {$I switches.inc}
 
 uses
   UMenu,
-  SDL,
+  sdl2,
   SysUtils,
   UDisplay,
   UMusic,

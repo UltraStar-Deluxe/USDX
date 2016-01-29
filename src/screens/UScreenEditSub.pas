@@ -36,7 +36,7 @@ uses
   UCommon,
   UMenu,
   UMusic,
-  SDL,
+  sdl2,
   SysUtils,
   UFiles,
   UGraphicClasses,

@@ -36,7 +36,7 @@ interface
 uses
   UTexture,
   ULog,
-  SDL;
+  SDL2;
 
 const
   DelayBetweenFrames : cardinal = 60;

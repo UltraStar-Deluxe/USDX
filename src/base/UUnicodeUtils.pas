@@ -73,6 +73,7 @@ function IsControlChar(ch: UCS4Char): boolean; overload;
 
 function IsPrintableChar(ch: WideChar): boolean; overload;
 function IsPrintableChar(ch: UCS4Char): boolean; overload;
+function IsPrintableChar(ch: UTF8String):boolean; overload;
 
 {**
  * Checks if the given string is a valid UTF-8 string.
@@ -109,6 +110,7 @@ function IsASCIIString(const str: RawByteString): boolean;
 function UTF8ToUCS4String(const str: UTF8String): UCS4String;
 function UCS4ToUTF8String(const str: UCS4String): UTF8String; overload;
 function UCS4ToUTF8String(ch: UCS4Char): UTF8String; overload;
+function UCS4ToUTF8String(ch: UTF8String): UTF8String; overload;
 
 {**
  * Returns the number of characters (not bytes) in string str.
@@ -144,7 +146,7 @@ function UCS4UpperCase(ch: UCS4Char): UCS4Char; overload;
 {**
  * Converts a UCS-4 string str to its upper-case representation.
  *}
-function UCS4UpperCase(const str: UCS4String): UCS4String; overload;
+ function UCS4UpperCase(const str: UCS4String): UCS4String; overload;
 
 {**
  * Converts a UCS4Char to an UCS4String.
@@ -324,6 +326,10 @@ begin
   Result := IsPrintableChar(WideChar(Ord(ch)));
 end;
 
+function IsPrintableChar(ch: UTF8String):boolean;
+begin
+  Result := ((Length(ch)=1) and (IsPrintableChar(ch[1])));
+end;
 
 function NextCharUTF8(var StrPtr: PAnsiChar; out Ch: UCS4Char): boolean;
 
@@ -456,6 +462,11 @@ end;
 function UCS4ToUTF8String(ch: UCS4Char): UTF8String;
 begin
   Result := UCS4ToUTF8String(UCS4CharToString(ch));
+end;
+
+function UCS4ToUTF8String(ch: UTF8String): UTF8String;
+begin
+  Result := ch;
 end;
 
 function LengthUTF8(const str: UTF8String): integer;

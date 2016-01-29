@@ -38,7 +38,7 @@ uses
   UTexture,
   gl,
   UMenuText,
-  SDL,
+  sdl2,
   UMenuInteract;
 
 type

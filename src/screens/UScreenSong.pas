@@ -35,7 +35,7 @@ interface
 
 uses
   SysUtils,
-  SDL,
+  sdl2,
   UCatCovers,
   UCommon,
   UDataBase,
@@ -1319,10 +1319,10 @@ begin
   begin
 
     case TSongMenuMode(Ini.SongMenu) of
-      smChessboard: ParseMouseChessboard(MouseButton, BtnDown, X, Y);
-      smMosaic: ParseMouseChessboard(MouseButton, BtnDown, X, Y);
+      smChessboard: Result := ParseMouseChessboard(MouseButton, BtnDown, X, Y);
+      smMosaic: Result := ParseMouseChessboard(MouseButton, BtnDown, X, Y);
       else
-        ParseMouseRoulette(MouseButton, BtnDown, X, Y);
+        Result := ParseMouseRoulette(MouseButton, BtnDown, X, Y);
     end;
 
   end;
@@ -1340,12 +1340,12 @@ begin
     if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) then
       Result:=ParseInput(SDLK_ESCAPE, 0, true)
 
-    //song scrolling with mousewheel
+    {//song scrolling with mousewheel
     else if (MouseButton = SDL_BUTTON_WHEELDOWN) then
       ParseInput(SDLK_DOWN, 0, true)
 
     else if (MouseButton = SDL_BUTTON_WHEELUP) then
-      ParseInput(SDLK_UP, 0, true)
+      ParseInput(SDLK_UP, 0, true)}
 
     else
     begin
@@ -1404,12 +1404,12 @@ begin
     if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) then
       Result:=ParseInput(SDLK_ESCAPE, 0, true)
 
-    //song scrolling with mousewheel
+    {//song scrolling with mousewheel
     else if (MouseButton = SDL_BUTTON_WHEELDOWN) then
       ParseInput(SDLK_RIGHT, 0, true)
 
     else if (MouseButton = SDL_BUTTON_WHEELUP) then
-      ParseInput(SDLK_LEFT, 0, true)
+      ParseInput(SDLK_LEFT, 0, true)}
 
     //LMB anywhere starts
     else if (MouseButton = SDL_BUTTON_LEFT) then

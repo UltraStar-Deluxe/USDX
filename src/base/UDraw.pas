@@ -36,7 +36,7 @@ interface
 uses
   UCommon,
   UThemes,
-  SDL,
+  sdl2,
   UGraphicClasses;
 
 procedure SingDraw;

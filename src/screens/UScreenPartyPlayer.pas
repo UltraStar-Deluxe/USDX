@@ -37,7 +37,7 @@ uses
   UCommon,
   UMenu,
   ULog,
-  SDL,
+  sdl2,
   UDisplay,
   UMusic,
   UNote,

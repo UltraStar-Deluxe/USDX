@@ -35,7 +35,7 @@ interface
 
 uses
   SysUtils,
-  SDL,
+  sdl2,
   TextGL,
   gl,
   UCommon,
@@ -825,14 +825,14 @@ begin
       else
       begin
         //song scrolling with mousewheel
-      if (MouseButton = SDL_BUTTON_WHEELDOWN) then
+      {if (MouseButton = SDL_BUTTON_WHEELDOWN) then
         Result := ParseInput(SDLK_PAGEDOWN, 0, true);
 
       if (MouseButton = SDL_BUTTON_WHEELUP) then
         Result := ParseInput(SDLK_PAGEUP, 0, true)
 
       else
-      begin
+      begin}
         // up/down songlist
         if InRegion(X, Y, Button[JukeboxSongListUp].GetMouseOverArea) then
         begin
@@ -991,7 +991,7 @@ begin
           LastSongOptionsTick := SDL_GetTicks();
         end;
 
-      end;
+      {end;}
       end;
     end
     else

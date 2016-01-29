@@ -9,7 +9,6 @@ interface
 uses
   FreeType,
   gl,
-  glu,
   classes,
   sysutils;
 

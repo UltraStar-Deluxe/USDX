@@ -65,9 +65,8 @@ const
 
 implementation
 uses
-  sdl,
+  sdl2,
   gl,
-  glext,
   USkins,
   UGraphic;
 
@@ -90,8 +89,8 @@ begin
   else
     UseTexture := false;
 
-  if (not UseTexture) then
-    FreeandNil(Tex);
+  {if (not UseTexture) then
+    FreeInstance(Tex); //BasisBit ToDo}
 end;
 
 destructor  TMenuBackgroundFade.Destroy;

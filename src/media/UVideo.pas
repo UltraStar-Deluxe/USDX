@@ -54,7 +54,7 @@ uses
   SysUtils,
   Math,
   ctypes,
-  SDL,
+  sdl2,
   avcodec,
   avformat,
   avutil,

@@ -36,7 +36,7 @@ interface
 uses
   UCommon,
   UMenu,
-  SDL,
+  sdl2,
   TextGL,
   UDisplay,
   UMusic,

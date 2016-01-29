@@ -103,7 +103,6 @@ implementation
 
 uses
   gl,
-  glext,
   SysUtils,
   UTime,
   USkins,

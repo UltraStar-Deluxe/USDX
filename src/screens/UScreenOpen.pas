@@ -37,7 +37,7 @@ uses
   Math,
   SysUtils,
   gl,
-  SDL,
+  sdl2,
   UPath,
   UMenu,
   UMusic,

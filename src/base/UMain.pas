@@ -35,7 +35,7 @@ interface
 
 uses
   SysUtils,
-  SDL;
+  SDL2;
 
 var
   CheckMouseButton: boolean; // for checking mouse motion
@@ -139,7 +139,7 @@ begin
     // initialize SDL
     // without SDL_INIT_TIMER SDL_GetTicks() might return strange values
     SDL_Init(SDL_INIT_VIDEO or SDL_INIT_TIMER);
-    SDL_EnableUnicode(1);
+    //SDL_EnableUnicode(1);  //not necessary in SDL2 any more
 
     // create luacore first so other classes can register their events
     LuaCore := TLuaCore.Create;
@@ -289,8 +289,8 @@ var
   Done:             boolean;
 begin
   Max_FPS := Ini.MaxFramerateGet;
-  SDL_EnableKeyRepeat(125, 125);
-
+  //SDL_EnableKeyRepeat(125, 125);  //it now uses system OS settings.
+  SDL_StartTextInput;
   Done := false;
 
   CountSkipTime();  // JB - for some reason this seems to be needed when we use the SDL Timer functions.
@@ -339,10 +339,13 @@ end;
 procedure CheckEvents;
 var
   Event:     TSDL_event;
+  KeyCharUnicode: UCS4Char;
+  s1: UTF8String;
   mouseDown: boolean;
   mouseBtn:  integer;
   KeepGoing: boolean;
 begin
+  KeyCharUnicode:=0;
   KeepGoing := true;
   while (SDL_PollEvent(@Event) <> 0) do
   begin
@@ -413,34 +416,39 @@ begin
           end;
         end;
       end;
-      SDL_VIDEORESIZE:
+      SDL_WINDOWEVENT://SDL_WINDOWEVENT_RESIZED:
       begin
-        ScreenW := Event.resize.w;
-        ScreenH := Event.resize.h;
-        // Note: do NOT call SDL_SetVideoMode on Windows and MacOSX here.
-        // This would create a new OpenGL render-context and all texture data
-        // would be invalidated.
-        // On Linux the mode MUST be reset, otherwise graphics will be corrupted.
-        // Update: It seems to work now without creating a new OpenGL context. At least
-        // with Win7 and SDL 1.2.14. Maybe it generally works now with SDL 1.2.14 and we
-        // can switch it on for windows.
-        // Important: Unless SDL_SetVideoMode() is called (it is not on Windows), Screen.w
-        // and Screen.h are not valid after a resize and still contain the old size. Use
-        // ScreenW and ScreenH instead.
-        //////
-        if boolean( Ini.FullScreen ) then
+        if Event.window.event = SDL_WINDOWEVENT_RESIZED then
         begin
-        {$IF Defined(Linux) or Defined(FreeBSD)}
-          SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
-        {$ELSE}
-        Screen.W := ScreenW;
-        Screen.H := ScreenH;
-        {$IFEND}
-        end
-        else
-          SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
+          ScreenW := Event.window.data1; //width
+          ScreenH := Event.window.data2; //hight
+          // Note: do NOT call SDL_SetVideoMode on Windows and MacOSX here.
+          // This would create a new OpenGL render-context and all texture data
+          // would be invalidated.
+          // On Linux the mode MUST be reset, otherwise graphics will be corrupted.
+          // Update: It seems to work now without creating a new OpenGL context. At least
+          // with Win7 and SDL 1.2.14. Maybe it generally works now with SDL 1.2.14 and we
+          // can switch it on for windows.
+          // Important: Unless SDL_SetVideoMode() is called (it is not on Windows), Screen.w
+          // and Screen.h are not valid after a resize and still contain the old size. Use
+          // ScreenW and ScreenH instead.
+          //////
+          if boolean( Ini.FullScreen ) then
+          begin
+          {$IF Defined(Linux) or Defined(FreeBSD)}
+            SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
+          {$ELSE}
+          Screen.W := ScreenW;
+          Screen.H := ScreenH;
+          {$IFEND}
+          end
+          else
+            SDL_SetWindowSize(screen,ScreenW, ScreenH);
+            {screen := SDL_CreateWindow('UltraStar Deluxe loading...',SDL_WINDOWPOS_UNDEFINED,
+                   SDL_WINDOWPOS_UNDEFINED, ScreenW, ScreenH, SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE);}
+        end;
       end;
-      SDL_KEYDOWN:
+      SDL_KEYDOWN, SDL_TEXTINPUT:
         begin
           // translate CTRL-A (ASCII 1) - CTRL-Z (ASCII 26) to correct charcodes.
           // keysyms (SDLK_A, ...) could be used instead but they ignore the
@@ -464,50 +472,52 @@ begin
                       even work on windows.
                       should we add (Event.key.keysym.sym = SDLK_F11) here
                       anyway? }
-            if ((Event.key.keysym.sym = SDLK_RETURN) and
-               ((Event.key.keysym.modifier and KMOD_ALT) <> 0)) then // toggle full screen
+            try
+              s1:=Event.text.text;
+              KeyCharUnicode:=UnicodeStringToUCS4String(UnicodeString(UTF8String(Event.text.text)))[0];
+              //KeyCharUnicode:=UnicodeStringToUCS4String(UnicodeString(Event.key.keysym.unicode))[1];//Event.text.text)[0];
+            except
+            end;
+            if (Event.key.keysym.sym = SDLK_F11) then // toggle full screen
             begin
               Ini.FullScreen := integer( not boolean( Ini.FullScreen ) );
 
-              // FIXME: SDL_SetVideoMode creates a new OpenGL RC so we have to
-              // reload all texture data (-> whitescreen bug).
-              // Only Linux and FreeBSD are able to handle screen-switching this way.
-              {$IF Defined(Linux) or Defined(FreeBSD)}
               if boolean( Ini.FullScreen ) then
               begin
-                SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
+                SDL_SetWindowFullscreen(screen, SDL_WINDOW_FULLSCREEN_DESKTOP or SDL_WINDOW_RESIZABLE);
+                //SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
               end
               else
               begin
-                SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
+                SDL_SetWindowFullscreen(screen, SDL_WINDOW_RESIZABLE);
+                //SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
               end;
+              Ini.Save();
+              //Display.SetCursor;
 
-              Display.SetCursor;
-
-              glViewPort(0, 0, ScreenW, ScreenH);
-              {$IFEND}
+              //glViewPort(0, 0, ScreenW, ScreenH);
             end
             // if print is pressed -> make screenshot and save to screenshot path
-            else if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINT) then
+            else if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINTSCREEN) then
               Display.SaveScreenShot
             // if there is a visible popup then let it handle input instead of underlying screen
             // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
             else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
-              KeepGoing := ScreenPopupError.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+              KeepGoing := ScreenPopupError.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
             else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
-              KeepGoing := ScreenPopupInfo.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+              KeepGoing := ScreenPopupInfo.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
             else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
-              KeepGoing := ScreenPopupCheck.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+              KeepGoing := ScreenPopupCheck.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
             else if (ScreenPopupInsertUser <> nil) and (ScreenPopupInsertUser.Visible) then
-              KeepGoing := ScreenPopupInsertUser.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+              KeepGoing := ScreenPopupInsertUser.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
             else if (ScreenPopupSendScore <> nil) and (ScreenPopupSendScore.Visible) then
-              KeepGoing := ScreenPopupSendScore.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+              KeepGoing := ScreenPopupSendScore.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
             else if (ScreenPopupScoreDownload <> nil) and (ScreenPopupScoreDownload.Visible) then
-              KeepGoing := ScreenPopupScoreDownload.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true)
+              KeepGoing := ScreenPopupScoreDownload.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
             else
             begin
               // check if screen wants to exit
-              KeepGoing := Display.ParseInput(Event.key.keysym.sym, Event.key.keysym.unicode, true);
+              KeepGoing := Display.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true);
 
               // if screen wants to exit
               if not KeepGoing then

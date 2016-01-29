@@ -34,7 +34,7 @@ interface
 {$I switches.inc}
 
 uses
-  SDL,
+  sdl2,
   gl,
   glext,
   UTexture,
@@ -108,7 +108,8 @@ type
   end;
 
 var
-  Screen:         PSDL_Surface;
+  Screen:         PSDL_Window;
+  glcontext:      TSDL_GLContext;
   LoadingThread:  PSDL_Thread;
   Mutex:          PSDL_Mutex;
 
@@ -433,7 +434,7 @@ begin
   // Load OpenGL 1.2 extensions for OpenGL 1.2 compatibility
   if (not Load_GL_version_1_2()) then
   begin
-    Log.LogCritical('Failed loading OpenGL 1.2. Suggested solution: Install current graphics chipset drivers from your hardware vendor or download and extract https://derpy.ws/builds/windows/trunk/latest/opengl32.7z to the UltraStar Deluxe folder and restart the game.', 'UGraphic.Initialize3D');
+    Log.LogWarn('Failed loading OpenGL 1.2. Suggested solution: Install current graphics chipset drivers from your hardware vendor or download and extract https://derpy.ws/builds/windows/trunk/latest/opengl32.7z to the UltraStar Deluxe folder and restart the game.', 'UGraphic.Initialize3D');
   end;
 
   // Other extensions e.g. OpenGL 1.3-2.0 or Framebuffer-Object might be loaded here
@@ -459,45 +460,45 @@ begin
   begin
     Log.LogCritical('SDL_Init Failed', 'UGraphic.Initialize3D');
   end;
-
+  InitializeScreen;
   // load icon image (must be 32x32 for win32)
   Icon := LoadImage(ResourcesPath.Append(WINDOW_ICON));
   if (Icon <> nil) then
-    SDL_WM_SetIcon(Icon, nil);
+    SDL_SetWindowIcon(Screen, Icon);
 
-  SDL_WM_SetCaption(PChar(Title), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title));
 
   { center window }
   //SDL_putenv('SDL_VIDEO_WINDOW_POS=center');  //basisbit TODO
   { workaround for buggy Intel 3D driver on Linux }
-  SDL_putenv('texture_tiling=false');
+  //SDL_putenv('texture_tiling=false');  //ToDo: on linux, check if this is still necessary with SDL 2
 
-  SDL_WM_SetCaption(PChar(Title + ' - Initializing screen'), nil);
-  InitializeScreen;
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing screen'));
 
-  SDL_WM_SetCaption(PChar(Title + ' - Initializing texturizer'), nil);
+
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing texturizer'));
   Texture := TTextureUnit.Create;
   // FIXME: this does not seem to be correct as Limit.
   // Is the max. of either width or height.
   Texture.Limit :=1920; //currently, Full HD is all we want. switch to 64bit target before going further up
 
   //LoadTextures;
-  SDL_WM_SetCaption(PChar(Title + ' - Initializing video modules'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing video modules'));
   // Note: do not initialize video modules earlier. They might depend on some
   // SDL video functions or OpenGL extensions initialized in InitializeScreen()
   InitializeVideo();
 
-  SDL_WM_SetCaption(PChar(Title + ' - Initializing 3D'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing 3D'));
   Log.LogStatus('TDisplay.Create', 'UGraphic.Initialize3D');
   Display := TDisplay.Create;
   //Display.SetCursor;
 
-  SDL_WM_SetCaption(PChar(Title + ' - Loading font textures'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading font textures'));
   Log.LogStatus('Loading Font Textures', 'UGraphic.Initialize3D');
   LoadFontTextures();
 
   // Show the Loading Screen
-  SDL_WM_SetCaption(PChar(Title + ' - Loading first screen'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading first screen'));
   Log.LogStatus('Loading Loading Screen', 'UGraphic.Initialize3D');
   LoadLoadingScreen;
 
@@ -519,7 +520,7 @@ begin
   Log.LogStatus('Creating 2nd Song Array', 'Initialization');
   CatSongs := TCatSongs.Create;
 
-  SDL_WM_SetCaption(PChar(Title + ' - Loading textures'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading textures'));
   Log.LogStatus(' Loading Textures', 'UGraphic.Initialize3D');
   LoadTextures;
 
@@ -533,7 +534,7 @@ begin
   //LoadingThread  := SDL_CreateThread(@LoadingThread, nil);
 
   // this would be run in the loadingthread
-  SDL_WM_SetCaption(PChar(Title + ' - Loading screens'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading screens'));
   Log.LogStatus(' Loading Screens', 'UGraphic.Initialize3D');
   LoadScreens(Title);
 
@@ -557,7 +558,7 @@ begin
   // currently does not work this way
   // SDL_WaitThread(LoadingThread, I);
   // SDL_DestroyMutex(Mutex);
-  SDL_WM_SetCaption(PChar(Title), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title));
   Display.CurrentScreen^.FadeTo( @ScreenMain );
 
   Log.BenchmarkEnd(2);
@@ -568,7 +569,7 @@ end;
 
 procedure SwapBuffers;
 begin
-  SDL_GL_SwapBuffers;
+  SDL_GL_SwapWindow(Screen);
   glMatrixMode(GL_PROJECTION);
     glLoadIdentity;
     glOrtho(0, RenderW, RenderH, 0, -1, 100);
@@ -614,18 +615,22 @@ begin
   // some cards/implementations do not support them (SDL_SetVideoMode fails).
   // We do not the alpha plane anymore since offscreen rendering in back-buffer
   // was removed.
-  SDL_GL_SetAttribute(SDL_GL_RED_SIZE,      5);
-  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,    5);
-  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,     5);
+  SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, '1');
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_Compatibility);
+  SDL_GL_SetAttribute(SDL_GL_RED_SIZE,      8);
+  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,    8);
+  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,     8);
 
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,    16); // Z-Buffer depth
-  //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,  1);
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,    24); // Z-Buffer depth
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,  1);
 
 
   // VSYNC works for windows only at the moment. SDL_GL_SWAP_CONTROL under
   // linux uses GLX_MESA_swap_control which is not supported by nvidea cards.
   // Maybe use glXSwapIntervalSGI(1) from the GLX_SGI_swap_control extension instead.
-  SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL,  1); // VSYNC (currently Windows only)
+  SDL_GL_SetSwapInterval(1); // VSYNC (currently Windows only)
 
   // If there is a resolution in Parameters, use it, else use the Ini value
   I := Params.Resolution;
@@ -655,12 +660,14 @@ begin
   if Fullscreen then
   begin
     Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Full Screen');
-    screen := SDL_SetVideoMode(W, H, (Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN );
+    screen := SDL_CreateWindow('UltraStar Deluxe loading...',
+           SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN_DESKTOP or SDL_WINDOW_RESIZABLE);
   end
   else
   begin
     Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Windowed');
-    screen := SDL_SetVideoMode(W, H, 0, SDL_OPENGL or SDL_RESIZABLE);
+    screen := SDL_CreateWindow('UltraStar Deluxe loading...',
+           SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE);
   end;
 
   SDL_ShowCursor(0);
@@ -669,9 +676,17 @@ begin
   begin
     Log.LogCritical('SDL_SetVideoMode Failed', 'Initialize3D');
   end;
+  glcontext := SDL_GL_CreateContext(Screen);
+  if not (glGetError = GL_NO_ERROR) then
+  begin
+    Log.LogInfo('an OpenGL Error happened.', 'UGraphic.InitializeScreen');
+  end;
+  Log.LogInfo('OpenGL vendor ' + glGetString(GL_VENDOR), 'UGraphic.InitializeScreen');
+  Log.LogInfo('OpenGL renderer ' + glGetString(GL_RENDERER), 'UGraphic.InitializeScreen');
+  Log.LogInfo('OpenGL version ' + glGetString(GL_VERSION), 'UGraphic.InitializeScreen');
+
 
   LoadOpenGLExtensions();
-
   // define virtual (Render) and real (Screen) screen size
   RenderW := 800;
   RenderH := 600;
@@ -705,13 +720,13 @@ begin
   Display.Draw;
     SwapBuffers;
 }
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenMain & ScreenName'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenMain & ScreenName'));
   ScreenMain :=             TScreenMain.Create;
   ScreenName :=             TScreenName.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenLevel & ScreenSong'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenLevel & ScreenSong'));
   ScreenLevel :=            TScreenLevel.Create;
   ScreenSong :=             TScreenSong.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenSongMenu & ScreenJukebox'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenSongMenu & ScreenJukebox'));
   ScreenSongMenu :=             TScreenSongMenu.Create;
   ScreenJukebox :=             TScreenJukebox.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox', 3); Log.BenchmarkStart(3);
@@ -720,62 +735,62 @@ begin
   ScreenJukeboxPlaylist :=   TScreenJukeboxPlaylist.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox Playlist', 3); Log.BenchmarkStart(3);
   ScreenTop5 :=             TScreenTop5.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptions & ScreenOptionsGame'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptions & ScreenOptionsGame'));
   ScreenOptions :=          TScreenOptions.Create;
   ScreenOptionsGame :=      TScreenOptionsGame.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsGraphics & ScreenOptionsSound'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsGraphics & ScreenOptionsSound'));
   ScreenOptionsGraphics  :=  TScreenOptionsGraphics.Create;
   ScreenOptionsSound    :=     TScreenOptionsSound.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsLyrics & ScreenOptionsThemes'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsLyrics & ScreenOptionsThemes'));
   ScreenOptionsLyrics   :=    TScreenOptionsLyrics.Create;
   ScreenOptionsThemes   :=    TScreenOptionsThemes.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsRecord & ScreenOptionsAdvanced'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsRecord & ScreenOptionsAdvanced'));
   ScreenOptionsRecord   :=    TScreenOptionsRecord.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsAdvanced'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsAdvanced'));
   ScreenOptionsAdvanced :=    TScreenOptionsAdvanced.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsNetwork'), nil);  
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsNetwork'));
   ScreenOptionsNetwork :=    TScreenOptionsNetwork.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsWebCam'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsWebCam'));
   ScreenOptionsWebcam  :=    TScreenOptionsWebcam.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOptionsJukebox'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsJukebox'));
   ScreenOptionsJukebox :=    TScreenOptionsJukebox.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenEditSub & ScreenEdit'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenEditSub & ScreenEdit'));
   ScreenEditSub :=          TScreenEditSub.Create;
   ScreenEdit :=             TScreenEdit.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenOpen'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOpen'));
   ScreenOpen :=             TScreenOpen.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenAbout'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenAbout'));
   ScreenAbout :=             TScreenAbout.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen About', 3); Log.BenchmarkStart(3);
   //ScreenSingModi :=         TScreenSingModi.Create;
   //Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Sing with Modi support', 3); Log.BenchmarkStart(3);
   ScreenSongJumpto :=         TScreenSongJumpto.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPopupCheck & ScreenPopupError'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPopupCheck & ScreenPopupError'));
   ScreenPopupCheck := TScreenPopupCheck.Create;
   ScreenPopupError := TScreenPopupError.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPopupInfo & ScreenScoreX & ScreenPartyNewRound'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPopupInfo & ScreenScoreX & ScreenPartyNewRound'));
   ScreenPopupInfo := TScreenPopupInfo.Create;
   ScreenPopupInsertUser := TScreenPopupInsertUser.Create;
   ScreenPopupSendScore := TScreenPopupSendScore.Create;
   ScreenPopupScoreDownload := TScreenPopupScoreDownload.Create;
   ScreenPartyNewRound :=    TScreenPartyNewRound.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPartyScore & ScreenPartyWin'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPartyScore & ScreenPartyWin'));
   ScreenPartyScore :=       TScreenPartyScore.Create;
   ScreenPartyWin :=         TScreenPartyWin.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPartyOptions & ScreenPartyPlayer'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPartyOptions & ScreenPartyPlayer'));
   ScreenPartyOptions :=     TScreenPartyOptions.Create;
   ScreenPartyPlayer :=      TScreenPartyPlayer.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenPartyRounds & ScreenTournamentX & ScreenStatMain'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPartyRounds & ScreenTournamentX & ScreenStatMain'));
   ScreenPartyRounds :=      TScreenPartyRounds.Create;
   ScreenPartyTournamentRounds :=      TScreenPartyTournamentRounds.Create;
   ScreenPartyTournamentPlayer :=      TScreenPartyTournamentPlayer.Create;
   ScreenPartyTournamentOptions :=      TScreenPartyTournamentOptions.Create;
   ScreenPartyTournamentWin :=      TScreenPartyTournamentWin.Create;
   ScreenStatMain :=         TScreenStatMain.Create;
-  SDL_WM_SetCaption(PChar(Title + ' - Loading ScreenStatDetail & ScreenCredits'), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenStatDetail & ScreenCredits'));
   ScreenStatDetail :=       TScreenStatDetail.Create;
   ScreenCredits    :=       TScreenCredits.Create;
-  SDL_WM_SetCaption(PChar(Title), nil);
+  SDL_SetWindowTitle(Screen, PChar(Title));
   //SDL_Delay(1);
 end;
 

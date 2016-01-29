@@ -34,7 +34,7 @@ interface
 {$I switches.inc}
 
 uses
-  SDL;
+  SDL2;
 
 type
   TJoyButton = record

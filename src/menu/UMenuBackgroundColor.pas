@@ -53,7 +53,6 @@ type
 implementation
 uses
   gl,
-  glext,
   UGraphic;
 
 constructor TMenuBackgroundColor.Create(const ThemedSettings: TThemeBackground);

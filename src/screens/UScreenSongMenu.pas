@@ -35,7 +35,7 @@ interface
 
 uses
   UMenu,
-  SDL,
+  sdl2,
   UDisplay,
   UIni,
   UMusic,
@@ -86,10 +86,10 @@ const
 var
   ISelections1: array of UTF8String;
   SelectValue1: integer;
-
+
   ISelections2: array of UTF8String;
   SelectValue2: integer;
-
+
   ISelections3: array of UTF8String;
   SelectValue3: integer;
 
@@ -468,7 +468,7 @@ begin
 
         SelectsS[0].Visible := false;
         SelectsS[1].Visible := false;
-        SelectsS[2].Visible := true;
+        SelectsS[2].Visible := true;
 
         Button[0].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_ADD_NEW');
         Button[3].Text[0].Text := Language.Translate('SONG_MENU_PLAYLIST_ADD_EXISTING');

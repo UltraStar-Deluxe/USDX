@@ -34,7 +34,7 @@ interface
 {$I switches.inc}
 
 uses
-  SDL,
+  sdl2,
   curlobj,
   UMenu,
   UDataBase,
