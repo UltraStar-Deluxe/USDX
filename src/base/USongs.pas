@@ -866,7 +866,7 @@ var
   WordArray: array of UTF8String;
 begin
 
-  FilterStr := Trim(UTF8Decode(FilterStr));
+  FilterStr := Trim(UTF8Decode(LowerCase(FilterStr)));
   FilterStr := GetStringWithNoAccents(FilterStr);
 
   if (FilterStr <> '') then

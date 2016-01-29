@@ -1092,7 +1092,7 @@ begin
 
       if (Identifier = 'TITLE') then
       begin
-        DecodeStringUTF8(Value, Title, Encoding);
+        self.Title:=DecodeStringUTF8(Value, Encoding);
         self.TitleNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(Title)));
 
         //Add Title Flag to Done
