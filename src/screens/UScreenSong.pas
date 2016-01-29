@@ -314,8 +314,6 @@ type
       procedure ResetScrollList;
   end;
 
-var
-   ThumbnailsGenerated: boolean; //true if Thumbnails were already genearated during application run
 implementation
 
 uses
