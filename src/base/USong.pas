@@ -1092,17 +1092,16 @@ begin
 
       if (Identifier = 'TITLE') then
       begin
-        self.Title:=DecodeStringUTF8(Value, Encoding);
-        self.TitleNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(Title)));
-
+        self.Title := DecodeStringUTF8(Value, Encoding);
+        self.TitleNoAccent := LowerCase(GetStringWithNoAccents(DecodeStringUTF8(Value, Encoding)));
         //Add Title Flag to Done
         Done := Done or 1;
       end
 
       else if (Identifier = 'ARTIST') then
       begin
-        DecodeStringUTF8(Value, Artist, Encoding);
-        self.ArtistNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(Artist)));
+        self.Artist := DecodeStringUTF8(Value, Encoding);
+        self.ArtistNoAccent := LowerCase(GetStringWithNoAccents(DecodeStringUTF8(Artist, Encoding)));
 
         //Add Artist Flag to Done
         Done := Done or 2;

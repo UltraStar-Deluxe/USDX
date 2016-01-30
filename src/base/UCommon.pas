@@ -64,7 +64,7 @@ const
 
  function SplitString(const Str: string; MaxCount: integer = 0; Separators: TSysCharSet = SepWhitespace): TStringDynArray;
 
- function GetStringWithNoAccents(str: UTF8String):UTF8String;
+ function GetStringWithNoAccents(str: String):String;
 
 type
   TRGB = record
@@ -184,15 +184,15 @@ begin
 end;
 
 const
-  Accents: array [0..37] of UTF8String = ('ç', 'á', 'é', 'í', 'ó', 'ú', 'ý', 'à', 'è', 'ì', 'ò', 'ù', 'ã', 'õ', 'ñ', 'ä', 'ë', 'ï', 'ö', 'ü', 'ÿ', 'â', 'ê', 'î', 'ô', 'û', '!', '¡', '"', '&', '(', ')', '?', '¿', ',', '.', ':', ';');
-  NoAccents: array [0..37] of UTF8String = ('c', 'a', 'e', 'i', 'o', 'u', 'y', 'a', 'e', 'i', 'o', 'u', 'a', 'o', 'n', 'a', 'e', 'i', 'o', 'u', 'y', 'a', 'e', 'i', 'o', 'u', '', '', '', '', '', '', '', '', '', '', '', '');
+  Accents: array [0..37] of String = ('ç', 'á', 'é', 'í', 'ó', 'ú', 'ý', 'à', 'è', 'ì', 'ò', 'ù', 'ã', 'õ', 'ñ', 'ä', 'ë', 'ï', 'ö', 'ü', 'ÿ', 'â', 'ê', 'î', 'ô', 'û', '!', '¡', '"', '&', '(', ')', '?', '¿', ',', '.', ':', ';');
+  NoAccents: array [0..37] of String = ('c', 'a', 'e', 'i', 'o', 'u', 'y', 'a', 'e', 'i', 'o', 'u', 'a', 'o', 'n', 'a', 'e', 'i', 'o', 'u', 'y', 'a', 'e', 'i', 'o', 'u', '', '', '', '', '', '', '', '', '', '', '', '');
 
-function GetStringWithNoAccents(str: UTF8String):UTF8String;
+function GetStringWithNoAccents(str: String):String;
 var
   i: integer;
   tmp: string;
 begin
-  tmp := Utf8ToAnsi(str);
+  tmp := str;//Utf8ToAnsi(str);
 
   for i := 0 to High(Accents) do
   begin
