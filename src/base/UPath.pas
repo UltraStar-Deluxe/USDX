@@ -44,6 +44,7 @@ uses
   UConfig,
   UUnicodeStringHelper,
   LazUTF8Classes,
+  SDL2,
   LazUTF8;//UUnicodeUtils;
 
 type
@@ -1114,8 +1115,8 @@ end;
 constructor TBinaryFileStream.Create(const FileName: IPath; Mode: word);
 begin
 {$IFDEF MSWINDOWS}
-//if FileExists(FileName.ToUTF8()) then
-  inherited Create(FileName.ToWide(), Mode);
+if FileExists(FileName.ToUTF8()) then
+  inherited Create(FileName.ToUTF8(), Mode);
 {$ELSE}
   inherited Create(FileName.ToNative(), Mode);
 {$ENDIF}
