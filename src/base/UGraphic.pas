@@ -615,22 +615,16 @@ begin
   // some cards/implementations do not support them (SDL_SetVideoMode fails).
   // We do not the alpha plane anymore since offscreen rendering in back-buffer
   // was removed.
-  SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, '1');
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  //SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, '1');
+  {SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_Compatibility);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);}
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE,      8);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,    8);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,     8);
 
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,    24); // Z-Buffer depth
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,    (Ini.Depth+1) * 16); // Z-Buffer depth
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,  1);
-
-
-  // VSYNC works for windows only at the moment. SDL_GL_SWAP_CONTROL under
-  // linux uses GLX_MESA_swap_control which is not supported by nvidea cards.
-  // Maybe use glXSwapIntervalSGI(1) from the GLX_SGI_swap_control extension instead.
-  SDL_GL_SetSwapInterval(1); // VSYNC (currently Windows only)
 
   // If there is a resolution in Parameters, use it, else use the Ini value
   I := Params.Resolution;
@@ -661,22 +655,27 @@ begin
   begin
     Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Full Screen');
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
-           SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN_DESKTOP or SDL_WINDOW_RESIZABLE);
+           SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN_DESKTOP or SDL_WINDOW_RESIZABLE);
   end
   else
   begin
     Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Windowed');
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
-           SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE);
+           SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE);
   end;
 
-  SDL_ShowCursor(0);
+  //SDL_ShowCursor(0);    just to be able to debug while having mosue cursor
 
   if (screen = nil) then
   begin
     Log.LogCritical('SDL_SetVideoMode Failed', 'Initialize3D');
   end;
   glcontext := SDL_GL_CreateContext(Screen);
+   // VSYNC works for windows only at the moment. SDL_GL_SWAP_CONTROL under
+  // linux uses GLX_MESA_swap_control which is not supported by nvidea cards.
+  // Maybe use glXSwapIntervalSGI(1) from the GLX_SGI_swap_control extension instead.
+  SDL_GL_SetSwapInterval(1); // VSYNC (currently Windows only)
+  LoadOpenGL();
   if not (glGetError = GL_NO_ERROR) then
   begin
     Log.LogInfo('an OpenGL Error happened.', 'UGraphic.InitializeScreen');
