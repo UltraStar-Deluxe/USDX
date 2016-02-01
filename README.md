@@ -1,7 +1,6 @@
-UltraStar Deluxe 1.0 README
-----------------------------
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ->8 - -
+# UltraStar Deluxe 1.3 trunk README
+```
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                    _______  _________
             ___   /       \/         \_______
            /   \  \      _/    /\____/       \__________
@@ -10,10 +9,10 @@ UltraStar Deluxe 1.0 README
          \              /\                   /   |\       \  \/      /
           \            /  \_ultrastardeluxe_/    |/       /         /
            \______www_/                 |____________org_/          \
-                                                      /      /\  ~=~ \
-                                                      \_____/  \ mog /
-                                                                 ~=~
-- - 8<- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+                                                      /      /\      \
+                                                      \_____/  \_____/
+                                                                    
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
  ============================
 = 1. About                   =
@@ -23,7 +22,6 @@ UltraStar Deluxe 1.0 README
  ============================
 
 SF.Net Page: http://sourceforge.net/projects/ultrastardx/
-Wiki:        http://wiki.ultrastardeluxe.org/
 
  ====================
  = 1. About         =
@@ -144,3 +142,4 @@ Songscreen
 
 
 Editor controls are described in documentation.pdf
+```

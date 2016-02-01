@@ -13,6 +13,7 @@
       <MainUnit Value="0"/>
       <Title Value="ultrastardx"/>
       <UseXPManifest Value="True"/>
+      <Icon Value="0"/>
     </General>
     <VersionInfo>
       <MajorVersionNr Value="1"/>
@@ -601,8 +602,7 @@
       <Filename Value="..\game\ultrastardx"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="lib\JEDI-SDL\SDL\Pas"/>
-      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\OpenGL;lib\SDL2;lib\portaudio;lib\ffmpeg;lib\SQLite;lib\other;lib\openCV;webSDK\cURL\src;webSDK;webSDK\encrypt;..\..\..\lazarus\fpc\3.0.0\source\packages\fcl-base\src;..\..\..\lazarus\fpc\3.0.0\source\packages\fcl-registry\src;..\..\..\lazarus\fpc\3.0.0\source\packages\winunits-base\src;..\..\..\lazarus\components\lazutils"/>
+      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\OpenGL;lib\SDL2;lib\portaudio;lib\ffmpeg;lib\SQLite;lib\other;lib\openCV;webSDK\cURL\src;webSDK;webSDK\encrypt;$(LazarusDir)\fpc\3.0.0\source\packages\fcl-base\src;$(LazarusDir)\fpc\3.0.0\source\packages\fcl-registry\src;$(LazarusDir)\fpc\3.0.0\source\packages\winunits-base\src;$(LazarusDir)\components\lazutils"/>
       <UnitOutputDirectory Value="..\build\fpc-$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
@@ -612,11 +612,6 @@
         <UseAnsiStrings Value="False"/>
       </SyntaxOptions>
     </Parsing>
-    <CodeGeneration>
-      <Optimizations>
-        <OptimizationLevel Value="3"/>
-      </Optimizations>
-    </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsStabs"/>

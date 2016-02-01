@@ -1,5 +1,5 @@
 Ultrastar Deluxe
-Copyright (C) 2007-2008 by the following:
+Copyright (C) 2007-2016 by the following:
 
 If you have contributed to this project then you deserve to be on this
 list.  Contact us (see: AUTHORS) and we'll add you.
