@@ -69,7 +69,7 @@ uses
   math,
   gl,
   {$IFDEF UseTexture}
-  glu,
+  //glu,
   {$ENDIF}
   SysUtils,
   UIni,

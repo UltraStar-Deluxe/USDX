@@ -68,7 +68,7 @@ uses
 {$IFDEF WINDOWS}
   Windows,
 {$ENDIF}
-  moduleloader,
+  //moduleloader,
   gl;
 
 // Test if the given extension name is present in the given extension string.
