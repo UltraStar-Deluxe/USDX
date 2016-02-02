@@ -40,6 +40,7 @@ uses
   UDisplay,
   UMusic,
   UFiles,
+  USongs,
   UIni,
   UThemes;
 
@@ -152,8 +153,13 @@ begin
 
           if SelInteraction = 9 then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
-            FadeTo(@ScreenOptionsJukebox);
+            if (Songs.SongList.Count >= 1) then
+            begin
+              AudioPlayback.PlaySound(SoundLib.Start);
+              FadeTo(@ScreenOptionsJukebox);
+            end
+            else //show error message, No Songs Loaded
+              ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
           end;
 
           if SelInteraction = 10 then
