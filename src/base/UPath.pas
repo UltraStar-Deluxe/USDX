@@ -1115,8 +1115,8 @@ end;
 constructor TBinaryFileStream.Create(const FileName: IPath; Mode: word);
 begin
 {$IFDEF MSWINDOWS}
-if FileExists(FileName.ToUTF8()) then
-  inherited Create(FileName.ToUTF8(), Mode);
+if FileExists(Utf8ToAnsi(FileName.ToUTF8())) or (Mode = fmCreate) then
+  inherited Create(Utf8ToAnsi(FileName.ToUTF8()), Mode);
 {$ELSE}
   inherited Create(FileName.ToNative(), Mode);
 {$ENDIF}
