@@ -1961,7 +1961,7 @@ begin
     if (Cover <> nil) then
     begin
       //Texture.AddTexture(CoverTexture, TEXTURE_TYPE_PLAIN, false);
-      CoverButton.Texture := Cover.GetPreviewTexture();
+      CoverButton.Texture := Cover.GetEmptyTexture();
       Song.CoverTex := CoverButton.Texture;  //basisbit ToDo 11.11.2015
       glDeleteTextures(1, @CoverButton.Texture.TexNum);
       CoverButton.Texture.TexNum := 0;

@@ -65,6 +65,7 @@ type
     public
       constructor Create(ID: int64; Filename: IPath);
       function GetPreviewTexture(): TTexture;
+      function GetEmptyTexture(): TTexture;
       function GetTexture(): TTexture;
   end;
 
@@ -151,7 +152,14 @@ end;
 
 function TCover.GetPreviewTexture(): TTexture;
 begin
-  Result := Covers.LoadCover(ID);
+  Result := GetTexture();
+end;
+
+function TCover.GetEmptyTexture(): TTexture;
+begin
+  if not (Assigned(Filename)) or (Filename = nil) then Exit;
+  FillChar(Result, SizeOf(TTexture), 0);
+  Result.Name:= Filename;
 end;
 
 function TCover.GetTexture(): TTexture;
@@ -352,7 +360,7 @@ begin
                '([ID], [Format], [Width], [Height], [Data]) VALUES' +
                '(?, ?, ?, ?, ?)',
                [CoverID, Ord(Info.PixelFormat),
-                Thumbnail^.w, Thumbnail^.h, CoverData]);
+                Thumbnail^.w, Thumbnail^.h, 0]);
 
     Result := TCover.Create(CoverID, Filename);
   except on E: Exception do
@@ -389,9 +397,11 @@ begin
     Height   := Table.FieldAsInteger(3);
 
     Data := Table.FieldAsBlobPtr(4, DataSize);
-    if (Data <> nil) and
+
+      if (Data <> nil) and
        (PixelFmt = ipfRGB) then
     begin
+
       Result := Texture.CreateTexture(Data, Filename, Width, Height, 24)
     end
     else
@@ -401,6 +411,7 @@ begin
       Result.Name := nil;
       FillChar(Result, SizeOf(TTexture), 0);
     end;
+
   except on E: Exception do
     Log.LogError(E.Message, 'TCoverDatabase.LoadCover');
   end;
