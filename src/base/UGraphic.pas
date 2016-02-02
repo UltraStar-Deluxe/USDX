@@ -616,15 +616,15 @@ begin
   // We do not the alpha plane anymore since offscreen rendering in back-buffer
   // was removed.
   //SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, '1');
-  {SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  {SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3); //just let SDL pick the best version
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);}
-  SDL_GL_SetAttribute(SDL_GL_RED_SIZE,      8);
+  {SDL_GL_SetAttribute(SDL_GL_RED_SIZE,      8);//this is standard anyways
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,    8);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,     8);
 
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,    (Ini.Depth+1) * 16); // Z-Buffer depth
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,  1);
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,  1);}
 
   // If there is a resolution in Parameters, use it, else use the Ini value
   I := Params.Resolution;
