@@ -120,6 +120,7 @@ begin
             else
             begin
                Webcam.Release;
+               PreVisualization := false;
             end;
 
             ChangeElementAlpha;
