@@ -42,7 +42,6 @@ uses
   UConfig,
   ULog,
   SysUtils,
-  ULyrics,
   UImage,
   UCatCovers,
   USongs,
@@ -76,7 +75,6 @@ uses
   UScreenEditHeader,
   UScreenOpen,
   UScreenAbout,
-  UThemes,
   USkins,
   UScreenSongMenu,
   UScreenSongJumpto,
@@ -317,7 +315,6 @@ implementation
 
 uses
   Classes,
-  UMain,
   UIni,
   UDisplay,
   UCommandLine,
@@ -468,8 +465,6 @@ begin
 
   SDL_SetWindowTitle(Screen, PChar(Title));
 
-  { center window }
-  //SDL_putenv('SDL_VIDEO_WINDOW_POS=center');  //basisbit TODO
   { workaround for buggy Intel 3D driver on Linux }
   //SDL_putenv('texture_tiling=false');  //ToDo: on linux, check if this is still necessary with SDL 2
 
@@ -478,8 +473,6 @@ begin
 
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing texturizer'));
   Texture := TTextureUnit.Create;
-  // FIXME: this does not seem to be correct as Limit.
-  // Is the max. of either width or height.
   Texture.Limit :=1920; //currently, Full HD is all we want. switch to 64bit target before going further up
 
   //LoadTextures;
@@ -524,40 +517,11 @@ begin
   Log.LogStatus(' Loading Textures', 'UGraphic.Initialize3D');
   LoadTextures;
 
-  // now that we have something to display while loading,
-  // start thread that loads the rest of ultrastar
-  //Mutex   := SDL_CreateMutex;
-  //SDL_UnLockMutex(Mutex);
-
-  // does not work this way because the loading thread tries to access opengl.
-  // See comment below
-  //LoadingThread  := SDL_CreateThread(@LoadingThread, nil);
-
   // this would be run in the loadingthread
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading screens'));
   Log.LogStatus(' Loading Screens', 'UGraphic.Initialize3D');
   LoadScreens(Title);
 
-
-  // TODO:
-  // here should be a loop which
-  // * draws the loading screen (form time to time)
-  // * controlls the "process of the loading screen"
-  // * checks if the loadingthread has loaded textures (check mutex) and
-  //   * load the textures into opengl
-  //   * tells the loadingthread, that the memory for the texture can be reused
-  //     to load the netx texture (over another mutex)
-  // * runs as long as the loadingthread tells, that everything is loaded and ready (using a third mutex)
-  //
-  // therefor loadtexture have to be changed, that it, instat of caling some opengl functions
-  // for itself, it should change mutex
-  // the mainthread have to know somehow what opengl function have to be called with which parameters like
-  // texturetype, textureobjekt, textur-buffer-adress, ...
-
-  // wait for loading thread to finish
-  // currently does not work this way
-  // SDL_WaitThread(LoadingThread, I);
-  // SDL_DestroyMutex(Mutex);
   SDL_SetWindowTitle(Screen, PChar(Title));
   Display.CurrentScreen^.FadeTo( @ScreenMain );
 
@@ -578,7 +542,6 @@ end;
 
 procedure Finalize3D;
 begin
-  // TODO: finalize other stuff
   UnloadFontTextures;
   SDL_QuitSubSystem(SDL_INIT_VIDEO);
 end;
@@ -610,22 +573,6 @@ begin
       Split := Ini.Split = 1;
   end; // case
 
-  // Set minimum color component sizes
-  // Note: do not request an alpha plane with SDL_GL_ALPHA_SIZE here as
-  // some cards/implementations do not support them (SDL_SetVideoMode fails).
-  // We do not the alpha plane anymore since offscreen rendering in back-buffer
-  // was removed.
-  //SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, '1');
-  {SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3); //just let SDL pick the best version
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);}
-  {SDL_GL_SetAttribute(SDL_GL_RED_SIZE,      8);//this is standard anyways
-  SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE,    8);
-  SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE,     8);
-
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE,    (Ini.Depth+1) * 16); // Z-Buffer depth
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER,  1);}
-
   // If there is a resolution in Parameters, use it, else use the Ini value
   I := Params.Resolution;
   if (I <> -1) then
@@ -638,11 +585,6 @@ begin
   H := StrToInt(Copy(S, I+1, 1000));
   if ((Screens > 1) and not Split) then
   	W := W * Screens;
-
-  if (Params.Depth <> -1) then
-    Depth := Params.Depth
-  else
-    Depth := Ini.Depth;
 
   Log.LogStatus('SDL_SetVideoMode', 'Initialize3D');
 
@@ -671,9 +613,6 @@ begin
     Log.LogCritical('SDL_SetVideoMode Failed', 'Initialize3D');
   end;
   glcontext := SDL_GL_CreateContext(Screen);
-   // VSYNC works for windows only at the moment. SDL_GL_SWAP_CONTROL under
-  // linux uses GLX_MESA_swap_control which is not supported by nvidea cards.
-  // Maybe use glXSwapIntervalSGI(1) from the GLX_SGI_swap_control extension instead.
   SDL_GL_SetSwapInterval(1); // VSYNC (currently Windows only)
   LoadOpenGL();
   if not (glGetError = GL_NO_ERROR) then
@@ -712,13 +651,6 @@ end;
 
 procedure LoadScreens(Title: string);
 begin
-{  ScreenLoading := TScreenLoading.Create;
-    ScreenLoading.onShow;
-  Display.CurrentScreen := @ScreenLoading;
-    ScreenLoading.Draw;
-  Display.Draw;
-    SwapBuffers;
-}
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenMain & ScreenName'));
   ScreenMain :=             TScreenMain.Create;
   ScreenName :=             TScreenName.Create;
@@ -790,7 +722,6 @@ begin
   ScreenStatDetail :=       TScreenStatDetail.Create;
   ScreenCredits    :=       TScreenCredits.Create;
   SDL_SetWindowTitle(Screen, PChar(Title));
-  //SDL_Delay(1);
 end;
 
 function LoadingThreadFunction: integer;
