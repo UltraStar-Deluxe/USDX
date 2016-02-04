@@ -2453,7 +2453,7 @@ begin
   end;
 
   CurrentSong := CatSongs.Song[CatSongs.Selected];
-
+  success := false;
   // FIXME: bad style, put the try-except into loadsong() and not here
   try
     // check if file is xml
@@ -2462,7 +2462,7 @@ begin
     else
       success := CurrentSong.Analyse(false, ScreenSong.DuetChange); // and CurrentSong.LoadSong();
   except
-    success := false;
+    on E: EInOutError do Log.LogWarn(E.Message, 'TScreenSing.LoadNextSong');
   end;
 
   if (not success) then

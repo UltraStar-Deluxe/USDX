@@ -1116,7 +1116,9 @@ constructor TBinaryFileStream.Create(const FileName: IPath; Mode: word);
 begin
 {$IFDEF MSWINDOWS}
 if FileExists(Utf8ToAnsi(FileName.ToUTF8())) or (Mode = fmCreate) then
-  inherited Create(Utf8ToAnsi(FileName.ToUTF8()), Mode);
+  inherited Create(Utf8ToAnsi(FileName.ToUTF8()), Mode)
+else
+  raise EInOutError.Create('File does not exist and Open-action is read, not create: ' + FileName.ToNative() + ' in UPath.TBinaryFileStream.Create');
 {$ELSE}
   inherited Create(FileName.ToNative(), Mode);
 {$ENDIF}
