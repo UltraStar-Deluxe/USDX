@@ -54,7 +54,7 @@
   {$ENDIF}
 
   {$DEFINE HaveBASS}
-  {$DEFINE UseMIDIPort}
+  {$UNDEF UseMIDIPort}
 {$ELSEIF Defined(DARWIN)}
   // include defines but no constants
   {$I config-darwin.inc}

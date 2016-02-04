@@ -314,6 +314,7 @@ uses
   UScreenOptionsAdvanced  in 'screens\UScreenOptionsAdvanced.pas',
   UScreenEditSub          in 'screens\UScreenEditSub.pas',
   UScreenEdit             in 'screens\UScreenEdit.pas',
+  UScreenEditConvert      in 'screens\UScreenEditConvert.pas',
   UScreenEditHeader       in 'screens\UScreenEditHeader.pas',
   UScreenOpen             in 'screens\UScreenOpen.pas',
   UScreenTop5             in 'screens\UScreenTop5.pas',
@@ -358,8 +359,6 @@ uses
   UAvatars                in 'base\UAvatars.pas',
   UScreenAbout            in 'screens\UScreenAbout.pas',
 
-  //UVideoAcinerella        in 'base\UVideoAcinerella.pas',
-
   SysUtils;
 {$R ultrastardx.res}
 
@@ -386,6 +385,7 @@ begin
       for I := 0 to ExceptFrameCount - 1 do
         Report := Report + LineEnding + BackTraceStrFunc(ExceptFrames[I]);
       ShowMessage(Report);
+
       Halt;
     end;
   end;

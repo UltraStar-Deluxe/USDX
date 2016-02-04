@@ -73,6 +73,7 @@ uses
   UScreenEditSub,
   UScreenEdit,
   UScreenEditHeader,
+  UScreenEditConvert,
   UScreenOpen,
   UScreenAbout,
   USkins,
@@ -145,6 +146,7 @@ var
   ScreenOptionsJukebox:   TScreenOptionsJukebox;
   ScreenEditSub:      TScreenEditSub;
   ScreenEdit:         TScreenEdit;
+  ScreenEditConvert:  TScreenEditConvert;
   ScreenEditHeader:   TScreenEditHeader;
   ScreenOpen:         TScreenOpen;
   ScreenAbout:        TScreenAbout;

@@ -95,7 +95,7 @@ begin
           if Interaction = 0 then
           begin
             AudioPlayback.PlaySound(SoundLib.Start);
-            //FadeTo(@ScreenEditConvert);
+            FadeTo(@ScreenEditConvert);
           end;
 
           if Interaction = 1 then
