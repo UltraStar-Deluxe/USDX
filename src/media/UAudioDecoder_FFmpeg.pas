@@ -432,7 +432,7 @@ begin
   fPacketQueue := TPacketQueue.Create();
 
   // finally start the decode thread
-  fParseThread := SDL_CreateThread(@ParseThreadMain, 0, Self);
+  fParseThread := SDL_CreateThread(@ParseThreadMain, nil, Self);
 
   Result := true;
 end;

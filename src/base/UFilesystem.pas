@@ -40,6 +40,7 @@ uses
   Windows,
   LazUTF8Classes,
   {$ENDIF}
+  LazFileUtils,
   UPath;
 
 type
@@ -292,7 +293,7 @@ end;
 
 function TFileSystemImpl.FileExists(const Name: IPath): boolean;
 begin
-  Result := SysUtils.FileExists(Name.ToWide());
+  Result := FileExistsUTF8(Name.ToUTF8());//SysUtils.FileExists(Name.ToWide());
 end;
 
 function TFileSystemImpl.FileGetAttr(const FileName: IPath): Cardinal;
@@ -369,8 +370,8 @@ begin
   try
     try
       // open source and target file (might throw an exception on error)
-      SourceFile := TFileStream.Create(Source.ToWide(), fmOpenRead);
-      TargetFile := TFileStream.Create(Target.ToWide(), fmCreate or fmOpenWrite);
+      SourceFile := TFileStream.Create(Source.ToNative(), fmOpenRead);
+      TargetFile := TFileStream.Create(Target.ToNative(), fmCreate or fmOpenWrite);
 
       while true do
       begin
@@ -440,7 +441,7 @@ end;
 
 function TFileSystemImpl.FindFirst(const FilePattern: IPath; Attr: integer; var F: TSytemSearchRec): integer;
 begin
-  Result := SysUtils.FindFirst(FilePattern.ToWide(), Attr, F);
+  Result := SysUtils.FindFirst(FilePattern.ToNative(), Attr, F);
 end;
 
 function TFileSystemImpl.FindNext(var F: TSytemSearchRec): integer;

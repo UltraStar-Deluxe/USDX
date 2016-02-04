@@ -36,6 +36,7 @@ interface
 
 uses
   SysUtils,
+  LazFileUtils,
   Classes,
   IniFiles,
   {$IFDEF MSWINDOWS}
@@ -671,7 +672,7 @@ begin
   if (IsNativeUTF8H()) then
     Result := fName
   else //basisbit hackyhack
-    Result := UTF8ToUTF16(fName);
+    Result := Utf8ToAnsi(fName);
 end;
 
 function TPathImpl.GetDrive(): IPath;
@@ -1115,7 +1116,7 @@ end;
 constructor TBinaryFileStream.Create(const FileName: IPath; Mode: word);
 begin
 {$IFDEF MSWINDOWS}
-if FileExists(Utf8ToAnsi(FileName.ToUTF8())) or (Mode = fmCreate) then
+if FileExistsUTF8(FileName.ToUTF8()) or (Mode = fmCreate) then
   inherited Create(Utf8ToAnsi(FileName.ToUTF8()), Mode)
 else
   raise EInOutError.Create('File does not exist and Open-action is read, not create: ' + FileName.ToNative() + ' in UPath.TBinaryFileStream.Create');
