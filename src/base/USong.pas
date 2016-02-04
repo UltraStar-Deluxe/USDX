@@ -1032,7 +1032,7 @@ begin
 
   //SetLength(tmpEdition, 0);
 
-  FullFileName := Path.Append(Filename).ToNative;
+  FullFileName := Path.Append(Filename).ToWide;
 
   //Read first Line
   SongFile.ReadLine(Line);

@@ -337,7 +337,7 @@ end;
 
 function TFileSystemImpl.RenameFile(const OldName, NewName: IPath): boolean;
 begin
-  Result := SysUtils.RenameFile(OldName.ToNative(), NewName.ToWide());
+  Result := SysUtils.RenameFile(OldName.ToWide(), NewName.ToWide());
 end;
 
 function TFileSystemImpl.DeleteFile(const FileName: IPath): boolean;
