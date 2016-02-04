@@ -430,7 +430,14 @@ begin
           fShowVisualization := false;
           fShowBackground := false;
           Webcam.Restart;
-          fShowWebCam := true;
+          if (Webcam.Capture = nil) then
+          begin
+            fShowWebCam := false;
+            fShowBackground := true;
+            ScreenPopupError.ShowPopup(Language.Translate('SING_OPTIONS_WEBCAM_NO_WEBCAM'))
+          end
+          else
+            fShowWebCam := true;
         //  ChangeEffectLastTick := SDL_GetTicks;
         //  SelectsS[WebcamParamsSlide].Visible := true;
         //  LastTickFrame := SDL_GetTicks;
