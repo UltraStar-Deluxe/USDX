@@ -35,7 +35,7 @@ interface
 
 uses
   gl,
-  glu,
+  //glu,
   glext,
   Classes,
   SysUtils,
@@ -552,8 +552,8 @@ begin
       Exit;
     end;
   end;
-  Log.LogInfo('Unknown texture type: "' + TypeStr + '". Using default texture type "'
-      + TextureTypeToStr(Default) + '"', 'UTexture.ParseTextureType');
+  //Log.LogInfo('Unknown texture type: "' + TypeStr + '". Using default texture type "'
+  //    + TextureTypeToStr(Default) + '"', 'UTexture.ParseTextureType');
   Result := Default;
 end;
 
