@@ -1287,6 +1287,18 @@ begin
         DecodeStringUTF8(Value, DuetNames[1], Encoding);
       end
 
+      // Duet Singer Name P1
+      else if (Identifier = 'P1') then
+      begin
+        DecodeStringUTF8(Value, DuetNames[0], Encoding);
+      end
+
+      // Duet Singer Name P2
+      else if (Identifier = 'P2') then
+      begin
+        DecodeStringUTF8(Value, DuetNames[1], Encoding);
+      end
+
       // unsupported tag
       else
       begin
