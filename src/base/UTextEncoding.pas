@@ -30,7 +30,7 @@ interface
 {$IFDEF FPC}
   {$MODE Delphi}
 {$ENDIF}
-
+{$codepage UTF8}
 {$I switches.inc}
 
 uses
@@ -200,11 +200,18 @@ function CheckReplaceUTF8BOM(var Text: RawByteString): boolean;
 begin
   if AnsiStartsStr(UTF8_BOM, Text) then
   begin
-    Delete(Text, 1, 3);
-    //Text := Copy(Text, Length(UTF8_BOM)+1, Length(Text)-Length(UTF8_BOM));
+    //Delete(Text, 1, 3);
+    Text := Copy(Text, Length(UTF8_BOM)+1, Length(Text)-Length(UTF8_BOM));
     Result := true;
     Exit;
-  end;
+  end
+  else if Text[1] = UTF8_BOM[1] then
+  begin
+    Delete(Text, 1, 3);
+    Result := true;
+    Exit;
+  end
+  else
   Result := false;
 end;
 
