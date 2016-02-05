@@ -27,10 +27,6 @@ unit UScreenScore;
 
 interface
 
-{$IFDEF FPC}
-  {$MODE Delphi}
-{$ENDIF}
-
 {$I switches.inc}
 
 uses
@@ -393,7 +389,7 @@ begin
       SDLK_RETURN:
         begin
          if (Interaction <> -1) then
-            ScreenPopupSendScore.ShowPopup(Language.Translate('SCORE_SEND_DESC'), OnSendScore, nil)
+            ScreenPopupSendScore.ShowPopup(Language.Translate('SCORE_SEND_DESC'), @OnSendScore, nil)
          else
          begin
            if (FinishScreenDraw = true) then
@@ -495,10 +491,10 @@ begin
   max_y := Button[button_s].Y + Button[button_s].H;
 
   // transfer mousecords to the 800x600 raster we use to draw
-  X := Round((X / (Screen.w / Screens)) * RenderW);
+  X := Round((X / (Screen^.w / Screens)) * RenderW);
   if (X > RenderW) then
     X := X - RenderW;
-  Y := Round((Y / Screen.h) * RenderH);
+  Y := Round((Y / Screen^.h) * RenderH);
 
   if (Button[button_s].Visible) and (InRegion(X, Y, Button[button_s].GetMouseOverArea)) then
     SetInteraction(button_s)
@@ -1317,7 +1313,10 @@ begin
     BarTime := 0;
 
   // swap static textures to current screen ones
-  SwapToScreen(ScreenAct);
+  try
+    SwapToScreen(ScreenAct);
+  except
+  end;
 
   //Draw the Background
   DrawBG;
