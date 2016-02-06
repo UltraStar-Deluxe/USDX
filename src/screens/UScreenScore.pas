@@ -707,7 +707,7 @@ begin
     Screen := 1;
 
   { set correct box textures }
-  if (Screens = 2) then
+  if (Screens = 3) then
   begin
 
     for I:= 0 to Max - 1 do
