@@ -1,4 +1,4 @@
-{* UltraStar Deluxe - Karaoke Game
+ï»¿{* UltraStar Deluxe - Karaoke Game
  *
  * UltraStar Deluxe is the legal property of its developers, whose names
  * are too numerous to list here. Please refer to the COPYRIGHT
@@ -28,6 +28,7 @@ unit UCommon;
 interface
 
 {$IFDEF FPC}
+{$codepage UTF8}
   {$MODE Delphi}
 {$ENDIF}
 
@@ -184,8 +185,8 @@ begin
 end;
 
 const
-  Accents: array [0..37] of String = ('ç', 'á', 'é', 'í', 'ó', 'ú', 'ý', 'à', 'è', 'ì', 'ò', 'ù', 'ã', 'õ', 'ñ', 'ä', 'ë', 'ï', 'ö', 'ü', 'ÿ', 'â', 'ê', 'î', 'ô', 'û', '!', '¡', '"', '&', '(', ')', '?', '¿', ',', '.', ':', ';');
-  NoAccents: array [0..37] of String = ('c', 'a', 'e', 'i', 'o', 'u', 'y', 'a', 'e', 'i', 'o', 'u', 'a', 'o', 'n', 'a', 'e', 'i', 'o', 'u', 'y', 'a', 'e', 'i', 'o', 'u', '', '', '', '', '', '', '', '', '', '', '', '');
+  Accents: array [0..42] of String = ('Ã§', 'Ã¡', 'Ã©', 'Ã­', 'Ã³', 'Ãº', 'Ã½', 'Ã ', 'Ã¨', 'Ã¬', 'Ã²', 'Ã¹', 'Ã£', 'Ãµ', 'Ã±', 'Ã¤', 'Ã«', 'Ã¯', 'Ã¶', 'Ã¼', 'Ã¿', 'Ã¢', 'Ãª', 'Ã®', 'Ã´', 'Ã»', 'Ä…', 'Ä‡', 'Å‚', 'Å›', 'Åº', '!', 'Â¡', '"', '&', '(', ')', '?', 'Â¿', ',', '.', ':', ';');
+  NoAccents: array [0..42] of String = ('c', 'a', 'e', 'i', 'o', 'u', 'y', 'a', 'e', 'i', 'o', 'u', 'a', 'o', 'n', 'a', 'e', 'i', 'o', 'u', 'y', 'a', 'e', 'i', 'o', 'u', 'a', 'c', 'l', 's', 'z', '', '', '', '', '', '', '', '', '', '', '', '');
 
 function GetStringWithNoAccents(str: String):String;
 var
