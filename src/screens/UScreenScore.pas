@@ -559,7 +559,7 @@ procedure TScreenScore.LoadSwapTextures;
     ThemeStatic: TThemeStatic;
 begin
   { we only need to load swapping textures if in dualscreen mode }
-  if Screens = 2 then
+  if Screens = 3 then
   begin
     { load swapping textures for custom statics }
     for P := low(PlayerStatic) to High(PlayerStatic) do
