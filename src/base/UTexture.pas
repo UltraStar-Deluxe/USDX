@@ -155,7 +155,7 @@ begin
     NeededPixFmt := SDL_PIXELFORMAT_RGB24
   else if (Typ = TEXTURE_TYPE_TRANSPARENT) or
           (Typ = TEXTURE_TYPE_COLORIZED) then
-    NeededPixFmt := SDL_PIXELFORMAT_ARGB8888
+    NeededPixFmt := SDL_PIXELFORMAT_ABGR8888
   else
     NeededPixFmt := SDL_PIXELFORMAT_RGB24;
 
