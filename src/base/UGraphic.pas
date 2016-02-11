@@ -630,8 +630,8 @@ begin
   // define virtual (Render) and real (Screen) screen size
   RenderW := 800;
   RenderH := 600;
-  ScreenW := W;
-  ScreenH := H;
+  ScreenW := Screen.w;
+  ScreenH := Screen.h;
 
   // clear screen once window is being shown
   // Note: SwapBuffers uses RenderW/H, so they must be defined before
