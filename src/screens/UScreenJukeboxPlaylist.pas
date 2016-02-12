@@ -109,7 +109,11 @@ begin
           if (Playlist = 3) and (Length(PlaylistMan.Playlists) = 0) then
             Exit;
 
-          InitJukebox;
+          try
+            InitJukebox;
+          except
+            Log.LogWarn('Starting jukebox failed. Most likely no folder / empty folder / paylist with not available songs was selected.', 'UScreenJokeboxPlaylist.ParseInput');
+          end;
         end;
       // Up and Down could be done at the same time,
       // but I don't want to declare variables inside
