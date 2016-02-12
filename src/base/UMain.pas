@@ -184,14 +184,14 @@ begin
     Log.LogStatus('Write Ini', 'Initialization');
     Ini.Save;
 
+    // Theme
+    Theme.LoadTheme(Ini.Theme, Ini.Color);
+
     // Sound
     InitializeSound();
 
     // Lyrics-engine with media reference timer
     LyricsState := TLyricsState.Create();
-
-    // Theme
-    Theme.LoadTheme(Ini.Theme, Ini.Color);
 
     // Graphics
     Initialize3D(WindowTitle);
