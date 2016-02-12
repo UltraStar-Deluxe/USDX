@@ -415,7 +415,10 @@ var
   Count: integer;
   TempR: real;
 begin
-  TempR := (Right-Left) / (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start);
+  if (Lines[NrLines].Line[Lines[NrLines].Current].TotalNotes > 0) and ( Right-Left > 0 ) and ( (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) > 0 ) then
+      TempR := (Right-Left) / (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start)
+    else
+      TempR := 0;
   glEnable(GL_BLEND);
   glBegin(GL_LINES);
   for Count := Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start to Lines[NrLines].Line[Lines[NrLines].Current].End_ do
@@ -439,8 +442,6 @@ var
   TempR: real;
 
   GoldenStarPos: real;
-
-  lTmpA, lTmpB : real;
 begin
 // We actually don't have a playernumber in this procedure, it should reside in NrLines - but it is always set to zero
 // So we exploit this behavior a bit - we give NrLines the playernumber, keep it in playernumber - and then we set NrLines to zero
@@ -458,13 +459,10 @@ begin
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    lTmpA := (Right-Left);
-    lTmpB := (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start);
-
-  if ( lTmpA > 0 ) and ( lTmpB > 0 ) then
-    TempR := lTmpA / lTmpB
-  else
-    TempR := 0;
+    if (Lines[NrLines].Line[Lines[NrLines].Current].TotalNotes > 0) and ( Right-Left > 0 ) and ( (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) > 0 ) then
+      TempR := (Right-Left) / (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start)
+    else
+      TempR := 0;
 
   with Lines[NrLines].Line[Lines[NrLines].Current] do
   begin
@@ -577,7 +575,10 @@ begin
 
   //if Player[NrGracza].LengthNote > 0 then
   begin
-    TempR := W / (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start);
+    if (Lines[NrLines].Line[Lines[NrLines].Current].TotalNotes > 0) and ( W > 0 ) and ( (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) > 0 ) then
+      TempR := W / (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start)
+    else
+      TempR := 0;
     for N := 0 to Player[PlayerIndex].HighNote do
     begin
       with Player[PlayerIndex].Note[N] do
@@ -676,7 +677,6 @@ var
   Count:          integer;
   TempR:          real;
   W, H:           real;
-  lTmpA, lTmpB:   real;
 begin
   if (ScreenSing.settings.NotesVisible and (1 shl PlayerIndex) <> 0) then
   begin
@@ -686,11 +686,8 @@ begin
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    lTmpA := (Right-Left);
-    lTmpB := (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start);
-
-    if ( lTmpA > 0 ) and ( lTmpB > 0 ) then
-      TempR := lTmpA / lTmpB
+    if (Lines[NrLines].Line[Lines[NrLines].Current].TotalNotes > 0) and ( Right-Left > 0 ) and ( (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) > 0 ) then
+      TempR := (Right-Left) / (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start)
     else
       TempR := 0;
 
@@ -1918,7 +1915,10 @@ begin
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  TempR := (Right-Left) / (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start);
+  if (Lines[NrLines].Line[Lines[NrLines].Current].TotalNotes > 0) and ( Right-Left > 0 ) and ( (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) > 0 ) then
+      TempR := (Right-Left) / (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start)
+    else
+      TempR := 0;
   with Lines[NrLines].Line[Lines[NrLines].Current] do
   begin
     for Count := 0 to HighNote do

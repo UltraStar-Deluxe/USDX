@@ -2827,32 +2827,26 @@ var
   PlayerNumber:  integer;
 
   GoldenStarPos: real;
-
-  lTmpA, lTmpB : real;
 begin
   if (ScreenSing.settings.NotesVisible and (1 shl NrLines) <> 0) then
   begin
-
     PlayerNumber := NrLines + 1; // Player 1 is 0
     glColor3f(1, 1, 1);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    lTmpA := (Right-Left);
-    lTmpB := (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start);
+    if (Lines[NrLines].Line[Lines[NrLines].Current].TotalNotes > 0) and ( Right-Left > 0 ) and ( (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) > 0 ) then
+      TempR := (Right-Left) / (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start)
+    else
+      TempR := 0;
 
-  if ( lTmpA > 0 ) and ( lTmpB > 0 ) then
-    TempR := lTmpA / lTmpB
-  else
-    TempR := 0;
-
-  with Lines[NrLines].Line[Lines[NrLines].Current] do
-  begin
-    for Count := 0 to HighNote do
+    with Lines[NrLines].Line[Lines[NrLines].Current] do
     begin
-      with Note[Count] do
+      for Count := 0 to HighNote do
       begin
+        with Note[Count] do
+        begin
           // left part
           Rec.Left  := 0;
           Rec.Right := 0;
