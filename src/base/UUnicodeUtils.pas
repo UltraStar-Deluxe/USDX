@@ -188,9 +188,6 @@ function WideStringLowerCase(ch: WideChar): WideString; overload;
 
 function WideStringReplaceChar(const text: WideString; search, rep: WideChar): WideString;
 
-function AnsiToAscii(const s:AnsiString):AnsiString;
-function AsciiToAnsi(const s:AnsiString):AnsiString;
-
 implementation
 
 {$IFDEF UNIX}
@@ -675,28 +672,6 @@ begin
   begin
     if result[iPos] = search then
       result[iPos] := rep;
-  end;
-end;
-
-function AnsiToAscii(const s:AnsiString):AnsiString;
-begin
-  Result := s;
-
-  if Result <> '' then
-  begin
-    UniqueString(Result);
-    CharToOem(Pchar(Result), Pchar(Result));
-  end;
-end;
-
-function AsciiToAnsi(const s:AnsiString):AnsiString;
-begin
-  Result := s;
-
-  if Result <> '' then
-  begin
-    UniqueString(Result);
-    OemToChar(Pchar(Result), Pchar(Result));
   end;
 end;
 
