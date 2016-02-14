@@ -2294,7 +2294,8 @@ begin
 
     Button[SongDescriptionClone].Draw();
   end;
-
+  if Paused = true then
+     SDL_Delay(100);
   Result := true;
 end;
 
