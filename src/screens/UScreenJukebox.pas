@@ -2449,7 +2449,7 @@ begin
   try
     if high(JukeboxVisibleSongs) < ID then
        ID:=0;
-    if high(JukeboxVisibleSongs) < 1 then
+    if high(JukeboxVisibleSongs) < 0 then
        Finish;
     CurrentSong := CatSongs.Song[JukeboxVisibleSongs[ID]];
     Text[JukeboxTextActualSongArtist].Text := CurrentSong.Artist;
