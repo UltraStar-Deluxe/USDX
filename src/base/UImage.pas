@@ -97,8 +97,6 @@ uses
   {$ENDIF}
   zlib,
   SDL2_image,
-  sdlutils,
-  //SDL 1.2: sdlstreams,
   UCommon,
   ULog;
 
