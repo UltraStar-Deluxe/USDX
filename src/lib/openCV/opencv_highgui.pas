@@ -7,11 +7,12 @@ interface
 {$ENDIF}
 
 uses
-{$IFDEF WIN32}
-  Windows, Dialogs, SysUtils, opencv_types ;
-{$ELSE}
-  Wintypes, WinProcs, Dialogs, SysUtils;
-{$ENDIF}
+  SysUtils, opencv_types,
+  {$IFDEF WIN32}
+    Windows, Dialogs;
+  {$ELSE}
+    dynlibs;
+  {$ENDIF}
 
 
 ///****************************************************************************************\
@@ -42,10 +43,10 @@ var
   cvDestroyAllWindows: procedure ;  cdecl;
 
 ///* get native window handle (HWND in case of Win32 and Widget in case of X Window) */
-  cvGetWindowHandle: function(name:pansichar): HWND; cdecl;
+  cvGetWindowHandle: function(name:pansichar): LongInt; cdecl;
 
 ///* get name of highgui window given its native handle */
-  cvGetWindowName: function(window_handle:HWND): pansichar; cdecl;
+  cvGetWindowName: function(window_handle:LongInt): pansichar; cdecl;
 
 //typedef void (CV_CDECL *CvTrackbarCallback)(int pos);
 

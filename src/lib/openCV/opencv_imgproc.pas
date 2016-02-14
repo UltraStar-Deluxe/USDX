@@ -7,11 +7,12 @@ interface
 {$ENDIF}
 
 uses
-{$IFDEF WIN32}
-  Windows, Dialogs, SysUtils, opencv_types;
-{$ELSE}
-  Wintypes, WinProcs, Dialogs, SysUtils;
-{$ENDIF}
+  SysUtils, opencv_types,
+  {$IFDEF WIN32}
+    Windows, Dialogs;
+  {$ELSE}
+    dynlibs;
+  {$ENDIF}
 
 ///****************************************************************************************\
 //*                                    Image Processing                                    *
