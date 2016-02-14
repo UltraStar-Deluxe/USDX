@@ -3722,27 +3722,29 @@ begin
     numLines := Length(Lines[CurrentLine].Line); //Lyric lines
     if (numLines < 2) then //catch cases which could cause endless loop
       Exit;
+    //set color to player.color
+    if (CurrentLine = 0) then
+      glColor4f(GetLyricColor(Ini.SingColor[0]).R, GetLyricColor(Ini.SingColor[0]).G, GetLyricColor(Ini.SingColor[0]).B, 0.8)
+    else
+      glColor4f(GetLyricColor(Ini.SingColor[CurrentLine]).R, GetLyricColor(Ini.SingColor[CurrentLine]).G, GetLyricColor(Ini.SingColor[CurrentLine]).B, 0.4);
 
+    glbegin(gl_quads);
     for line := 0 to numLines - 1 do
     begin
-      //set color to player.color
-      if (CurrentLine = 0) then
-        glColor4f(GetLyricColor(Ini.SingColor[0]).R, GetLyricColor(Ini.SingColor[0]).G, GetLyricColor(Ini.SingColor[0]).B, 0.8)
-      else
-        glColor4f(GetLyricColor(Ini.SingColor[CurrentLine]).R, GetLyricColor(Ini.SingColor[CurrentLine]).G, GetLyricColor(Ini.SingColor[CurrentLine]).B, 0.4);
       if Lines[CurrentLine].Line[line].Note = nil then Continue;
       pos := (Lines[CurrentLine].Line[line].Note[0].Start)/ww*w;
       br := (Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].Start +
                 Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].Length -
                 Lines[CurrentLine].Line[line].Note[0].Start ) / ww*w; //br = last note of sentence position + its length - first note of sentence position
 
-      glbegin(gl_quads); //draw a square
+       //draw a square
         glVertex2f(x+pos, y); //left top
         glVertex2f(x+pos, y+h); //left bottom
         glVertex2f(x+pos+br, y+h); //right bottom
         glVertex2f(x+pos+br, y); //right top
-      glEnd;
+
     end;
+    glEnd;
   end;
 end;
 
