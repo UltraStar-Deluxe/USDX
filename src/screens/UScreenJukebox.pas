@@ -1466,6 +1466,17 @@ begin
             else
               FilterSongList('');
             Exit;
+          end
+          else
+          begin
+            SongListVisible := true;
+            LastTick := SDL_GetTicks();
+            FindSongList := true;
+            if (Filter = '') then
+                Button[JukeboxFindSong].Text[0].Text := '';
+            Button[JukeboxFindSong].SetSelect(FindSongList);
+            FilterSongList(Filter);
+            Exit;
           end;
         end;
 
