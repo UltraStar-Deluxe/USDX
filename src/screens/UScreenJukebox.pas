@@ -1561,7 +1561,7 @@ begin
 
         SDLK_O:
         begin
-          if not (FindSongList) then
+          if not (FindSongList) or not (SongListVisible) then
           begin
             ScreenJukeboxOptions.Visible := true;
             Button[JukeboxOptions].SetSelect(false);
@@ -1666,7 +1666,8 @@ begin
 
         SDLK_SPACE:
         begin
-          Pause;
+          if not (FindSongList) and (SongListVisible) then
+            Pause;
         end;
 
         SDLK_TAB: // change visualization preset
