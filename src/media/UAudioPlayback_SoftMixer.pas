@@ -225,12 +225,12 @@ end;
 
 procedure TAudioMixerStream.Lock();
 begin
-  SDL_mutexP(InternalLock);
+  InternalLock:= SDL_CreateMutex();
 end;
 
 procedure TAudioMixerStream.Unlock();
 begin
-  SDL_mutexV(InternalLock);
+  SDL_DestroyMutex(InternalLock);
 end;
 
 function TAudioMixerStream.GetVolume(): single;
@@ -415,12 +415,12 @@ end;
 
 procedure TGenericPlaybackStream.LockSampleBuffer();
 begin
-  SDL_mutexP(InternalLock);
+  InternalLock:= SDL_CreateMutex();
 end;
 
 procedure TGenericPlaybackStream.UnlockSampleBuffer();
 begin
-  SDL_mutexV(InternalLock);
+  SDL_DestroyMutex(InternalLock);
 end;
 
 function TGenericPlaybackStream.InitFormatConversion(): boolean;
@@ -1046,13 +1046,13 @@ end;
 procedure TGenericVoiceStream.WriteData(Buffer: PByteArray; BufferSize: integer);
 begin
   // lock access to buffer
-  SDL_mutexP(BufferLock);
+  BufferLock := SDL_CreateMutex();
   try
     if (VoiceBuffer = nil) then
       Exit;
     VoiceBuffer.Write(Buffer, BufferSize);
   finally
-    SDL_mutexV(BufferLock);
+    SDL_DestroyMutex(BufferLock);
   end;
 end;
 
@@ -1061,21 +1061,21 @@ begin
   Result := -1;
 
   // lock access to buffer
-  SDL_mutexP(BufferLock);
+  BufferLock := SDL_CreateMutex();
   try
     if (VoiceBuffer = nil) then
       Exit;
     Result := VoiceBuffer.Read(Buffer, BufferSize);
   finally
-    SDL_mutexV(BufferLock);
+    SDL_DestroyMutex(BufferLock);
   end;
 end;
 
 function TGenericVoiceStream.IsEOF(): boolean;
 begin
-  SDL_mutexP(BufferLock);
+  BufferLock := SDL_CreateMutex();
   Result := (VoiceBuffer = nil);
-  SDL_mutexV(BufferLock);
+  SDL_DestroyMutex(BufferLock);
 end;
 
 function TGenericVoiceStream.IsError(): boolean;
