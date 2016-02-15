@@ -1550,9 +1550,12 @@ begin
 
         SDLK_O:
         begin
-          ScreenJukeboxOptions.Visible := true;
-          Button[JukeboxOptions].SetSelect(false);
-          Exit;
+          if not (FindSongList) then
+          begin
+            ScreenJukeboxOptions.Visible := true;
+            Button[JukeboxOptions].SetSelect(false);
+            Exit;
+          end;
         end;
 
         SDLK_S:
