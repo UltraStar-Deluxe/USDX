@@ -35,7 +35,6 @@ interface
 
 uses
   ULog,
-  Windows,
   MD5,
   UMenu,
   sdl2,
