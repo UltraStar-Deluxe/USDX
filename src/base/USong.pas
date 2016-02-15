@@ -1326,7 +1326,7 @@ begin
   begin
     Result := false;
     if (Done and 8) = 0 then      //No BPM Flag
-      Log.LogError('BPM tag missing: ' + FullFileName)
+      Log.LogError('File contains empty lines or BPM tag missing: ' + FullFileName)
     else if (Done and 4) = 0 then //No MP3 Flag
       Log.LogError('MP3 tag/file missing: ' + FullFileName)
     else if (Done and 2) = 0 then //No Artist Flag

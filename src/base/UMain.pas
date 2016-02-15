@@ -289,11 +289,10 @@ var
   Done:             boolean;
 begin
   Max_FPS := Ini.MaxFramerateGet;
-  //SDL_EnableKeyRepeat(125, 125);  //it now uses system OS settings.
   SDL_StartTextInput;
   Done := false;
 
-  CountSkipTime();  // JB - for some reason this seems to be needed when we use the SDL Timer functions.
+  CountSkipTime();
   repeat
     TicksBeforeFrame := SDL_GetTicks;
 
@@ -313,7 +312,7 @@ begin
     Delay := 1000 div MAX_FPS - (TicksCurrent - TicksBeforeFrame);
 
     if Delay >= 1 then
-      SDL_Delay(Delay); // dynamic, maximum is 100 fps
+      SDL_Delay(Delay);
 
     CountSkipTime;
 
