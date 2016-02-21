@@ -36,17 +36,16 @@ interface
 
 uses
   SysUtils,
-  LazFileUtils,
   Classes,
   IniFiles,
   {$IFDEF MSWINDOWS}
-  //TntClasses,
+  LazFileUtils,
+  LazUTF8,
+  LazUTF8Classes,
   {$ENDIF}
   UConfig,
   UUnicodeStringHelper,
-  LazUTF8Classes,
-  SDL2,
-  LazUTF8;//UUnicodeUtils;
+  SDL2;
 
 type
   IPath = interface;
