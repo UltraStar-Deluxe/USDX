@@ -416,6 +416,7 @@ macosx-app: all
 	@echo "Have fun."
 	@echo ""
 
+AVCODECLIB := $(shell $(OTOOL) -L $(macosx_bundle_path)/MacOS/ultrastardx | grep avcodec | cut -f 1 -d ' ' | cut -f 2 -d '/')
 .PHONY: macosx-standalone-app
 macosx-standalone-app: macosx-app 
 # Create double clickable standalone (does not need fink) Mac OS X 
@@ -430,12 +431,16 @@ macosx-standalone-app: macosx-app
 
 # work on the secondary dylibs from ffmpeg
 # libavcodec references all tertiary libraries of the ffmpeg libs
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libavcodec.dylib   | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/$(AVCODECLIB) | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+
 # same procedure in libfaac. it gets libgnugetopt
 	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libfaac.dylib      | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # same procedure for tertiary libs in SDL_image
 	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libSDL_image.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+
+# same procedure for secondary libs in libtiff
+	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libtiff.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # X11 libs as well, because users may not have installed it on 10.4
 	$(foreach dylib,$(shell $(OTOOL) -L /usr/X11R6/lib/libX11.dylib  | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
@@ -444,6 +449,9 @@ macosx-standalone-app: macosx-app
 	$(shell $(INSTALL) -m 755 $(finkLibDir)/libpcre.dylib $(macosx_bundle_path)/MacOS)
 	$(shell $(INSTALL_NAME_TOOL) -change $(finkLibDir)/libpcre.dylib @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
 	$(shell $(INSTALL_NAME_TOOL) -id @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
+
+# do  not forget to sign the code
+#	codesign -f -s USDX-codesign UltraStarDeluxe.app
 
 # final messages
 	@echo "Standalone Mac OS X application created."

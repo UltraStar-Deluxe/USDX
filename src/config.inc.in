@@ -7,10 +7,28 @@
 
 {$IF Defined(IncludeConstants)}
   lua_lib_name = '@lua_LIB_NAME@';
+  LUA_VERSION_INT     = @lua_VERSION_INT@;
+  LUA_VERSION_RELEASE = '@lua_VERSION_RELEASE@';
+  LUA_VERSION_MINOR   = '@lua_VERSION_MINOR@';
+  LUA_VERSION_MAJOR   = '@lua_VERSION_MAJOR@';
+  LUA_VERSION         = '@lua_VERSION@';
 {$IFEND}
 
 {$@DEFINE_HAVE_FFMPEG@ HaveFFmpeg}
-{$IF Defined(HaveFFmpeg) and Defined(IncludeConstants)}
+{$IF Defined(HaveFFmpeg)}
+  {$MACRO ON}
+  {$IFNDEF FFMPEG_DIR}
+    {$IF (@FFMPEG_VERSION_MINOR@ > 0) or (@FFMPEG_VERSION_MAJOR@ > 0)}
+      {$DEFINE FFMPEG_DIR := 'ffmpeg-@FFMPEG_VERSION_MAJOR@.@FFMPEG_VERSION_MINOR@'}
+      {$DEFINE FF_API_OLD_DECODE_AUDIO}
+    {$ELSE}
+      {$DEFINE FFMPEG_DIR := 'ffmpeg'}
+      {$DEFINE useOLD_FFMPEG}
+    {$IFEND}
+  {$ENDIF}
+  {$IF Defined(IncludeConstants)}
+    FFMPEG_VERSION_INT = @FFMPEG_VERSION_INT@;
+
   av__codec = 'libavcodec';
   LIBAVCODEC_VERSION_MAJOR   = @libavcodec_VERSION_MAJOR@;
   LIBAVCODEC_VERSION_MINOR   = @libavcodec_VERSION_MINOR@;
@@ -25,6 +43,7 @@
   LIBAVUTIL_VERSION_MAJOR   = @libavutil_VERSION_MAJOR@;
   LIBAVUTIL_VERSION_MINOR   = @libavutil_VERSION_MINOR@;
   LIBAVUTIL_VERSION_RELEASE = @libavutil_VERSION_RELEASE@;
+  {$IFEND}
 {$IFEND}
 
 {$@DEFINE_HAVE_SWSCALE@ HaveSWScale}
@@ -52,6 +71,7 @@
 
 {$@DEFINE_HAVE_LIBPCRE@ HaveLibPcre}
 {$IF Defined(HaveLibPcre) and Defined(IncludeConstants)}
+  LIBPCRE_LIBNAME  = '@libpcre_LIBNAME@';
   LIBPCRE_LIBDIR   = '@libpcre_LIBDIR@';
 {$IFEND}
 

@@ -1,5 +1,7 @@
 *.bak
 *.pas~
+Thumbs.db
+*.orig
 *.exe
 *.dcu
 *.o
@@ -19,3 +21,11 @@ build/
 screenshots/
 playlists/
 ToDo/
+Makefile
+config.log
+config.status
+__history
+aclocal.m4
+autom4te.cache/
+*.identcache
+*.bdsproj.local
