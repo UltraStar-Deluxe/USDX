@@ -39,8 +39,8 @@ uses
   {$IFDEF MSWINDOWS}
   Windows,
   LazUTF8Classes,
-  {$ENDIF}
   LazFileUtils,
+  {$ENDIF}
   UPath;
 
 type
