@@ -4609,61 +4609,61 @@ eof
 
 fi
 
-# find sdl
+# find sdl2
 
     have_lib="no"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sdl" >&5
-$as_echo_n "checking for sdl... " >&6; }
-    if test x"$with_sdl" = xnocheck; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sdl2" >&5
+$as_echo_n "checking for sdl2... " >&6; }
+    if test x"$with_sdl2" = xnocheck; then
         # do not call pkg-config, use user settings
         have_lib="yes"
-    elif test x"$with_sdl" != xno; then
+    elif test x"$with_sdl2" != xno; then
         # check if package exists
 	if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sdl\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "sdl") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sdl2\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "sdl2") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
 
             have_lib="yes"
-            sdl_LIBS=`$PKG_CONFIG --libs --silence-errors "sdl"`
-            sdl_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "sdl"`
-            sdl_LIBDIRS=`
-    echo "$sdl_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+            sdl2_LIBS=`$PKG_CONFIG --libs --silence-errors "sdl2"`
+            sdl2_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "sdl2"`
+            sdl2_LIBDIRS=`
+    echo "$sdl2_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
 `
             # add library directories to LIBS (ignore *_LIBS for now)
-	    if test -n "$sdl_LIBDIRS"; then
-                LIBS="$LIBS $sdl_LIBDIRS"
+	    if test -n "$sdl2_LIBDIRS"; then
+                LIBS="$LIBS $sdl2_LIBDIRS"
             fi
 
 fi
     fi
     if test x$have_lib = xyes; then
-        sdl_HAVE="yes"
-        if test -n "$sdl_LIBDIRS"; then
+        sdl2_HAVE="yes"
+        if test -n "$sdl2_LIBDIRS"; then
             # show additional lib-dirs
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes ($sdl_LIBDIRS)" >&5
-$as_echo "yes ($sdl_LIBDIRS)" >&6; }
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes ($sdl2_LIBDIRS)" >&5
+$as_echo "yes ($sdl2_LIBDIRS)" >&6; }
         else
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
         fi
     else
-        sdl_HAVE="no"
+        sdl2_HAVE="no"
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
         # check if package is required
-        if test xyes = xyes -o x"$with_sdl" = xyes ; then
+        if test xyes = xyes -o x"$with_sdl2" = xyes ; then
             # print error message and quit
-            err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "sdl"`
+            err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "sdl2"`
             as_fn_error "
 
 $err_msg
 
-Alternatively, you may set --with-sdl=nocheck and the environment
-variables sdl_[...] (see configure --help)
+Alternatively, you may set --with-sdl2=nocheck and the environment
+variables sdl2_[...] (see configure --help)
 to appropriate values to avoid the need to call pkg-config.
 
 See the pkg-config man page for more details.
