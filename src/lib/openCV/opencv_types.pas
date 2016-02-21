@@ -1,6 +1,9 @@
 unit opencv_types;
 
 interface
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
 
 type
 

@@ -45,6 +45,7 @@ uses
   {$IFDEF MSWINDOWS}
     Windows,
     DirWatch,
+    LazUTF8Classes,
   {$ELSE}
     {$IFNDEF DARWIN}
     syscall,
@@ -63,7 +64,6 @@ uses
   UPlaylist,
   USong,
   UIni,
-  LazUTF8Classes,
   UCatCovers;
 
 type

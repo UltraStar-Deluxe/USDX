@@ -54,8 +54,10 @@ uses
   UTexture,
   UThemes,
   UUnicodeStringHelper,
+  {$IFDEF MSWINDOWS}
   LazUTF8Classes,
   LazUTF8,
+  {$ENDIF}
   UTime;
 
 type
