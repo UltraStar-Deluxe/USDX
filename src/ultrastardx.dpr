@@ -369,8 +369,7 @@ uses
 {$R ultrastardx.res}
 
 const
-  sLineBreak = {$IFDEF LINUX} AnsiChar(#10) {$ENDIF}
-               {$IFDEF MSWINDOWS} AnsiString(#13#10) {$ENDIF};
+  sLineBreak = {$IFDEF MSWINDOWS} AnsiString(#13#10); {$ELSE} AnsiChar(#10); {$ENDIF}
 var
   I: Integer;
   Report: string;
