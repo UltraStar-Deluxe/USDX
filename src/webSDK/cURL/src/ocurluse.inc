@@ -32,7 +32,7 @@
     {$IFDEF CURL_COMPONENT}
       uses sysutils, classes, LResources, BaseUnix, cthreads;
     {$ELSE CURL_COMPONENT}
-      uses sysutils, strings, BaseUnix, cthreads;
+      uses sysutils, strings, BaseUnix, cthreads, unixtype;
     {$ENDIF CURL_COMPONENT}
   {$ENDIF WIN32}
 {$ELSE FPC}

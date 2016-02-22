@@ -9,10 +9,10 @@
 {=================   tCurlROList  ========================}
 {=========================================================}
 
-{$H+}
 {$IFDEF FPC}
   {$MODE OBJFPC}
 {$ENDIF}
+{$H+}
 
 
 constructor tCurlROList.Create;
@@ -132,7 +132,7 @@ begin
   if ( p <> nil ) then begin
     if ( p^.data <> nil ) then _free(p^.data);
     L:=length(s);
-    p^.data:=malloc(L+1);
+    p^.data:=Getmem(L+1);
     FillChar(p^.data^, L+1, #0);
     StrLCopy(p^.data,pChar(s), L);
     fDirty:=True;

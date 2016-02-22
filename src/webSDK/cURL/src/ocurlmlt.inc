@@ -70,6 +70,13 @@ begin
   aList:=nil;
 end;
 
+Procedure FD_Zero(var fds:fdSet);
+{
+  Clear the set of filedescriptors
+}
+begin
+  FillChar(fds,sizeof(fdSet),0);
+end;
 
 constructor tCurlMulti.Create(aOwner:tComponent);
 begin
@@ -249,31 +256,13 @@ procedure tCurlMulti.Perform;
 begin
   if fThreaded then begin
      fBusy:=True;
-    {$IFDEF WIN32}
       fThread:=_beginthread( @MultiPerform, 0, self );
       while (fBusy) do begin
-        Windows.Sleep(fWaitInterval);
+        Sleep(fWaitInterval);
         if Assigned(fOnWait) and ( {$IFNDEF FPC}@{$ENDIF}fOnWait <> nil ) then fOnWait(self)
         else if Assigned(fWaitCallback) and ( {$IFNDEF FPC}@{$ENDIF}fWaitCallback <> nil ) then fWaitCallback(fWaitData);
       end;
       CloseHandle(fThread);
-    {$ELSE WIN32}
-      pthread_mutex_init({$IFDEF FPC}@{$ENDIF}fMutex, nil);
-      pthread_create({$IFDEF FPC}@{$ENDIF}fThread, nil, {$IFDEF FPC}@{$ENDIF}MultiPerform, self);
-      while (fBusy) do begin 
-        usleep(fWaitInterval * 1000);
-        if Assigned(fOnWait) and ( {$IFNDEF FPC}@{$ENDIF}fOnWait <> nil ) then begin 
-          pthread_mutex_lock(fMutex);
-          fOnWait(self);
-          pthread_mutex_unlock(fMutex);
-        end else if Assigned(fWaitCallback) and ( {$IFNDEF FPC}@{$ENDIF}fWaitCallback <> nil ) then begin 
-          pthread_mutex_lock(fMutex);
-          fWaitCallback(fWaitData);
-          pthread_mutex_unlock(fMutex);
-        end;
-      end;
-      pthread_mutex_destroy({$IFDEF FPC}@{$ENDIF}fMutex);
-    {$ENDIF}
   end else MultiPerform(self);
 end;
 

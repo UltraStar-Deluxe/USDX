@@ -22,12 +22,7 @@ type
     fOnWait:tNotifyEvent;
     fWaitCallback:tCurlWaitCallback;
     fWaitData:pointer;
-    {$IFDEF WIN32}
-      fThread:DWORD;
-    {$ELSE WIN32}
-      fThread:pthread_t;
-      fMutex:pthread_mutex_t;
-    {$ENDIF WIN32}
+    fThread:DWORD;
   protected
     procedure SetWaitInterval(ms:Longint);
     procedure SetOnWait(aEvent:tNotifyEvent);
