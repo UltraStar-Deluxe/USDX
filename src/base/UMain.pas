@@ -434,12 +434,8 @@ begin
           //////
           if boolean( Ini.FullScreen ) then
           begin
-          {$IF Defined(Linux) or Defined(FreeBSD)}
-            SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
-          {$ELSE}
           Screen.W := ScreenW;
           Screen.H := ScreenH;
-          {$IFEND}
           end
           else
             SDL_SetWindowSize(screen,ScreenW, ScreenH);
