@@ -11,7 +11,7 @@ interface
 {$IFDEF WIN32}
 uses winsock;
 {$ELSE}
-uses Libc;
+uses BaseUnix;
 {$ENDIF}
 {$ENDIF CURL_H_INCLUDE}
 

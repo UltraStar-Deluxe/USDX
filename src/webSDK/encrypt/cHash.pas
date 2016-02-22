@@ -633,7 +633,6 @@ uses
   Windows;
   {$ENDIF}
   {$IFDEF UNIX}
-  libc,
   BaseUnix;
   {$ENDIF}
 
@@ -1914,11 +1913,7 @@ var Err: LongWord;
 begin
   Err := BaseUnix.fpgeterrno;
   FillChar(Buf, Sizeof(Buf), #0);
-  libc.strerror_r(Err, @Buf, SizeOf(Buf));
-  if Buf[0] = #0 then
-    Result := Format(SSystemError, [IntToStr(Err)])
-  else
-    Result := StrPas(@Buf);
+  Result := Format(SSystemError, [IntToStr(Err)]);
 end;
 {$ENDIF}{$ENDIF}
 

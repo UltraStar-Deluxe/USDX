@@ -30,13 +30,13 @@
     {$ENDIF CURL_COMPONENT}
   {$ELSE WIN32}
     {$IFDEF CURL_COMPONENT}
-      uses sysutils, classes, LResources, libc;
+      uses sysutils, classes, LResources, BaseUnix;
     {$ELSE CURL_COMPONENT}
-      uses strings, libc;
+      uses strings, BaseUnix;
     {$ENDIF CURL_COMPONENT}
   {$ENDIF WIN32}
 {$ELSE FPC}
-  uses Classes, sysutils, {$IFDEF LINUX} Libc {$ELSE} Windows, winsock {$ENDIF};
+  uses Classes, sysutils, {$IFDEF LINUX} BaseUnix {$ELSE} Windows, winsock {$ENDIF};
 {$ENDIF FPC}
 
 {$DEFINE CURL_H_INCLUDE}

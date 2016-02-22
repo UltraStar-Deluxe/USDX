@@ -35,7 +35,7 @@ interface
 
 uses
   sdl2,
-  curlobj,
+  //curlobj,
   UMenu,
   UDataBase,
   UDisplay,
