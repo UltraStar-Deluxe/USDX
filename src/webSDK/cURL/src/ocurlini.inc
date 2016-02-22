@@ -89,7 +89,6 @@ begin
   fOnProgress:=nil;
   fOnDebug:=nil;
   fOnListCookies:=nil;
-  fErrorStream:=nil;
 
   with fHeaderScheme do begin
     hdr_event:=nil;

@@ -157,12 +157,9 @@ protected
   procedure SetOnDebug ( aProc:tCurlDebugEvent );
 
   procedure SetError ( code:CurlCode; const msg:string ); // <- Generate a custom error message
-  procedure SetErrorStream ( value:pIOFile );
-  procedure SetErrorFile ( value:string );
   function  GetErrorFile:string;
   function  GetErrorBuffer :string;
-  procedure SetErrorBuffer ( const value: string ); // <- This is not exposed - the buffer is set in 'Create' 
-  procedure InitErrorFile;
+  procedure SetErrorBuffer ( const value: string ); // <- This is not exposed - the buffer is set in 'Create'
 
   function  GetCurlResult:CurlCode;
   

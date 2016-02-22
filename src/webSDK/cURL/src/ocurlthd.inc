@@ -144,7 +144,6 @@ begin
   SetHttpPostOption;
   if ( fUpload or fPut ) then InitInputFile else InitOutputFile;
   InitHeaderFile;
-  InitErrorFile;
   if ( fUrl = nil ) or ( fUrl^ = #0 ) then SetError(CURLE_URL_MALFORMAT, 'NULL or empty URL.');
   Result:=fCurlResult;
 end;
@@ -172,11 +171,6 @@ begin
   with fTransmitScheme do if ( fs_type = FST_FILENAME ) and ( stream <> nil ) then begin
     if ( fclose(stream) <> 0 ) then tmpCode:=CURLE_READ_ERROR;
     stream:=nil;
-  end;
-
-  if ( fErrorStream <> nil ) and ( fErrorFile <> nil ) then begin
-    if ( fclose(fErrorStream) <> 0 ) then tmpCode:=CURLE_WRITE_ERROR;
-    fErrorStream:=nil;
   end;
 
   if ( aCode = CURLE_OK ) and ( tmpCode <> CURLE_OK )

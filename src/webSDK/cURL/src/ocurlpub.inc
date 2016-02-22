@@ -77,8 +77,6 @@ public
   property SslCipherList: string read GetSslCipherList write SetSslCipherList;
   property SslKeyPassword: string read GetSslKeyPassword write SetSslKeyPassword;
   property BufferSize: LongInt read fBufferSize write SetBufferSize;
-  property ErrorStream: pIOFile read fErrorStream write SetErrorStream;
-  property ErrorFile: string read GetErrorFile write SetErrorFile;
   property NoProgress: boolean read fNoProgress write SetNoProgress;
   property ProgressFunction: curl_progress_callback read fProgressFunction write SetProgressFunction;
   property ProgressData: pointer read fProgressData write SetProgressData;

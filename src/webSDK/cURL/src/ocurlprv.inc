@@ -109,7 +109,7 @@ private
   
   fErrorBuffer: pChar;
   fErrorFile: pChar;
-  fErrorStream: pIOFile;
+  //fErrorStream: pIOFile;
 
   fHeaderScheme: tCallbackScheme;
   fReceiveScheme: tCallbackScheme;

@@ -164,28 +164,6 @@ begin
   StrLCopy(fErrorBuffer, pChar(msg), CURL_ERROR_SIZE-1);
 end;
 
-procedure tCurl.SetErrorFile(value:string);
-begin
-  SetStringProp(fErrorFile, value);
-  fErrorStream:=nil;
-end;
-
-procedure tCurl.SetErrorStream(value:pIOFile);
-begin
-  SetStringProp(fErrorFile, '');
-  SetPtrOption(CURLOPT_STDERR, pointer(fErrorStream), pointer(value));
-end;
-
-procedure tCurl.InitErrorFile;
-begin
-  if ( fErrorFile <> nil ) then begin
-    fErrorStream:=fopen( fErrorFile, 'w'#0 );
-    if ( fErrorStream <> nil )
-    then SetPtrOption(CURLOPT_STDERR, pointer(fErrorStream), pointer(fErrorStream))
-    else SetError(CURLE_WRITE_ERROR, 'Error creating error log.');
-  end;
-end;
-
 
 {****** COOKIE LIST ******}
 
