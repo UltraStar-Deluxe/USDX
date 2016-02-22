@@ -336,7 +336,7 @@ uses
   UScreenPartyWin         in 'screens\UScreenPartyWin.pas',
 
   UWebSDK                 in 'webSDK\UWebSDK.pas',
-  curlobj                 in 'webSDK\cURL\src\curlobj.pas',
+  //curlobj                 in 'webSDK\cURL\src\curlobj.pas',
 
   opencv_highgui          in 'lib\openCV\opencv_highgui.pas',
   opencv_core             in 'lib\openCV\opencv_core.pas',
