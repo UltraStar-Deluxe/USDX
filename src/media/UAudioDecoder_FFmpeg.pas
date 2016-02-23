@@ -599,9 +599,12 @@ end;
 
 procedure TFFmpegDecodeStream.PauseParser();
 begin
-  if (SDL_ThreadID() = fParseThread.threadid) then
+  if (fParseThread = nil) or (SDL_ThreadID() = fParseThread.threadid) then
+  begin
+    SDL_UnlockMutex(fStateLock);
     Exit;
-    
+  end;
+
   SDL_LockMutex(fStateLock);
   Inc(fParserPauseRequestCount);
   while (fParserLocked) do
@@ -611,8 +614,11 @@ end;
 
 procedure TFFmpegDecodeStream.ResumeParser();
 begin
-  if (SDL_ThreadID() = fParseThread.threadid) then
-    Exit;
+  if (fParseThread = nil) or (SDL_ThreadID() = fParseThread.threadid) then
+    begin
+      SDL_UnlockMutex(fStateLock);
+      Exit;
+    end;
 
   SDL_LockMutex(fStateLock);
   Dec(fParserPauseRequestCount);
@@ -622,6 +628,13 @@ end;
 
 procedure TFFmpegDecodeStream.SetPositionIntern(Time: real; Flush: boolean; Blocking: boolean);
 begin
+  if (fParseThread = nil) then //if thread is killed but doesn't know of it yet, leave the sinking ship.
+    begin
+      SDL_UnlockMutex(fStateLock);
+      ResumeDecoder();
+      ResumeParser();
+      Exit;
+    end;
   // - Pause the parser first to prevent it from putting obsolete packages
   //   into the queue after the queue was flushed and before seeking is done.
   //   Otherwise we will hear fragments of old data, if the stream was seeked
