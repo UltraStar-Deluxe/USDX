@@ -263,7 +263,13 @@ begin
 
   if (PreVisualization) and (SelectsS[ID].SelectOptInt > 0) then
   begin
-    DrawWebCamFrame;
+    try
+
+     DrawWebCamFrame;
+    except
+      ;
+    end;
+
 
     if (PreVisualization) then
       Alpha := 0.5
