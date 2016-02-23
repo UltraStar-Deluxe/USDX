@@ -1,0 +1,34 @@
+[main]
+host = https://www.transifex.com
+
+[usdx.texts]
+source_file = game/languages/English.ini
+source_lang = en
+trans.ca = game/languages/Catalan.ini
+trans.zh = game/languages/Chinese.ini
+trans.hr = game/languages/Croatian.ini
+trans.cs = game/languages/Czech.ini
+trans.da = game/languages/Danish.ini
+trans.nl = game/languages/Dutch.ini
+trans.eu = game/languages/Euskara.ini
+trans.fi = game/languages/Finnish.ini
+trans.fr = game/languages/French.ini
+trans.gl = game/languages/Galician.ini
+trans.de = game/languages/German.ini
+trans.el = game/languages/Greek.ini
+trans.hu = game/languages/Hungarian.ini
+trans.is = game/languages/Icelandic.ini
+trans.it = game/languages/Italian.ini
+trans.ja = game/languages/Japanese.ini
+trans.lb = game/languages/Luxembourgish.ini
+trans.no = game/languages/Norwegian.ini
+trans.pl = game/languages/Polish.ini
+trans.pt = game/languages/Portuguese.ini
+trans.ru = game/languages/Russian.ini
+trans.sr = game/languages/Serbian.ini
+trans.sk = game/languages/Slovak.ini
+trans.sl = game/languages/Slovenian.ini
+trans.es = game/languages/Spanish.ini
+trans.sv = game/languages/Swedish.ini
+type = INI
+
