@@ -2964,8 +2964,8 @@ begin
     end;
   end;
 
-  // draw info lyric bar
-  DrawInfoLyricBar;
+  // draw info lyric bar if not medley
+  if ScreenSong.Mode <> smMedley then DrawInfoLyricBar;
 
   // always draw custom items
   SingDraw;
