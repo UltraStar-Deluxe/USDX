@@ -261,7 +261,9 @@ begin
   FreeAndNil(LogBuffer);
   FreeAndNil(fVoiceStream);
   FreeAndNil(fAudioFormat);
+  SDL_UnlockMutex(fAnalysisBufferLock);
   SDL_DestroyMutex(fAnalysisBufferLock);
+  fAnalysisBufferLock:=nil;
   inherited;
 end;
 

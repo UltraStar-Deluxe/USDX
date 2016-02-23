@@ -1,5 +1,5 @@
 {*****************************************************************
- * Configuration file for UltraStar Deluxe 1.1
+ * Configuration file for UltraStar Deluxe 1.3
  *****************************************************************}
 
 {* Libraries *}

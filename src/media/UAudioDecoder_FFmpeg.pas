@@ -262,7 +262,9 @@ destructor TFFmpegDecodeStream.Destroy();
 begin
   Close();
 
+  SDL_UnlockMutex(fStateLock);
   SDL_DestroyMutex(fStateLock);
+  fStateLock:=nil;
   SDL_DestroyCond(fParserUnlockedCond);
   SDL_DestroyCond(fParserResumeCond);
   SDL_DestroyCond(fParserIdleCond);

@@ -219,18 +219,23 @@ begin
   if assigned(MixerBuffer) then
     Freemem(MixerBuffer);
   ActiveStreams.Free;
+  SDL_UnlockMutex(InternalLock);
   SDL_DestroyMutex(InternalLock);
+  InternalLock:=nil;
   inherited;
 end;
 
 procedure TAudioMixerStream.Lock();
 begin
-  InternalLock:= SDL_CreateMutex();
+  SDL_LockMutex(InternalLock);
+  //InternalLock:= SDL_CreateMutex();
 end;
 
 procedure TAudioMixerStream.Unlock();
 begin
-  SDL_DestroyMutex(InternalLock);
+  SDL_UnlockMutex(InternalLock);
+  //SDL_DestroyMutex(InternalLock);
+  //InternalLock:=nil;
 end;
 
 function TAudioMixerStream.GetVolume(): single;
@@ -327,8 +332,11 @@ begin
   begin
     ActiveStreams.Pack();
   end;
-
-  Unlock();
+  try
+    Unlock();
+  except
+    ;
+  end;
 end;
 
 
@@ -347,7 +355,12 @@ end;
 destructor TGenericPlaybackStream.Destroy();
 begin
   Close();
-  SDL_DestroyMutex(InternalLock);
+  SDL_UnlockMutex(InternalLock);
+  if (Assigned(InternalLock)) and (InternalLock <> nil) then
+  begin
+    SDL_DestroyMutex(InternalLock);
+    InternalLock:=nil;
+  end;
   FreeAndNil(SoundEffects);
   inherited;
 end;
@@ -408,9 +421,9 @@ begin
   Stop();
 
   // Note: PerformOnClose must be called before SourceStream is invalidated
-  PerformOnClose();
+  //PerformOnClose();
   // and free data
-  Reset();
+  //Reset();
 end;
 
 procedure TGenericPlaybackStream.LockSampleBuffer();
@@ -420,7 +433,9 @@ end;
 
 procedure TGenericPlaybackStream.UnlockSampleBuffer();
 begin
+  SDL_UnlockMutex(InternalLock);
   SDL_DestroyMutex(InternalLock);
+  InternalLock:=nil;
 end;
 
 function TGenericPlaybackStream.InitFormatConversion(): boolean;
@@ -1038,8 +1053,9 @@ begin
   // free data
   FreeAndNil(VoiceBuffer);
   if (BufferLock <> nil) then
+    SDL_UnlockMutex(BufferLock);
     SDL_DestroyMutex(BufferLock);
-
+    BufferLock:=nil;
   inherited Close();
 end;
 
@@ -1052,7 +1068,9 @@ begin
       Exit;
     VoiceBuffer.Write(Buffer, BufferSize);
   finally
+    SDL_UnlockMutex(BufferLock);
     SDL_DestroyMutex(BufferLock);
+    BufferLock:=nil;
   end;
 end;
 
@@ -1067,7 +1085,9 @@ begin
       Exit;
     Result := VoiceBuffer.Read(Buffer, BufferSize);
   finally
+    SDL_UnlockMutex(BufferLock);
     SDL_DestroyMutex(BufferLock);
+    BufferLock:=nil;
   end;
 end;
 
@@ -1075,7 +1095,9 @@ function TGenericVoiceStream.IsEOF(): boolean;
 begin
   BufferLock := SDL_CreateMutex();
   Result := (VoiceBuffer = nil);
+  SDL_UnlockMutex(BufferLock);
   SDL_DestroyMutex(BufferLock);
+  BufferLock:=nil;
 end;
 
 function TGenericVoiceStream.IsError(): boolean;
