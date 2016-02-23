@@ -459,7 +459,7 @@ begin
   if (fParseThread <> nil) then
   begin
     // and wait until it terminates
-    SDL_WaitThread(fParseThread, PInt(ThreadResult));
+    //SDL_WaitThread(fParseThread, PInt(ThreadResult));
     fParseThread := nil;
   end;
 
