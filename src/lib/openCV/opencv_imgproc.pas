@@ -276,16 +276,6 @@ var cvFindContours:function(image:pointer{PCvArr}; storage: PCvMemStorage;
                             offset: CvPoint  {CV_DEFAULT(cvPoint(0,0))} ) :integer; cdecl;
 
 
-function cvFindContours_(image:pointer{PCvArr};
-                            storage: PCvMemStorage;
-                            first_contour:PPCvSeq;
-                            header_size: integer {= sizeof(CvContour)};
-                            mode: integer{=CV_RETR_LIST};
-                            method: integer{=CV_CHAIN_APPROX_SIMPLE};
-                            offset: CvPoint  {CV_DEFAULT(cvPoint(0,0))} ) :integer; cdecl; external 'libcv200' name 'cvFindContours';
-
-
-
 
 ///****************************************************************************************\
 //*                            Contour Processing and Shape Analysis                       *
