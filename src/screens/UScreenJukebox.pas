@@ -1666,7 +1666,7 @@ begin
 
         SDLK_SPACE:
         begin
-          if not (FindSongList) and (SongListVisible) then
+          if not (FindSongList) then
             Pause;
         end;
 
