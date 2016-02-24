@@ -428,14 +428,12 @@ end;
 
 procedure TGenericPlaybackStream.LockSampleBuffer();
 begin
-  InternalLock:= SDL_CreateMutex();
+  SDL_LockMutex(InternalLock);
 end;
 
 procedure TGenericPlaybackStream.UnlockSampleBuffer();
 begin
   SDL_UnlockMutex(InternalLock);
-  SDL_DestroyMutex(InternalLock);
-  InternalLock:=nil;
 end;
 
 function TGenericPlaybackStream.InitFormatConversion(): boolean;
