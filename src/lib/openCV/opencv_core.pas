@@ -126,7 +126,13 @@ var cvChangeSeqBlock: procedure( reader: pointer;direction:integer ); cdecl;
 implementation
 
 const
-  DLL_CXCORE='cxcore210.dll';//'opencv_core231.dll';
+  {$IF Defined(MSWINDOWS)}
+    DLL_CXCORE='hcxcore210.dll';
+  {$ELSEIF Defined(DARWIN)}
+    DLL_CXCORE='libopencv_core.so';
+  {$ELSEIF Defined(UNIX)}
+    DLL_CXCORE='libopencv_core.so';
+  {$IFEND}
 
 var
   DLLHandle: THandle;

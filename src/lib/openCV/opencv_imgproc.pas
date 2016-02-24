@@ -331,7 +331,13 @@ var cvCheckContourConvexity: function(contour: PCvArr):integer;cdecl;
 implementation
 
 const
-  DLL_CV='cv210.dll'; //'opencv_imgproc231.dll';
+  {$IF Defined(MSWINDOWS)}
+    DLL_CV='cv210.dll';
+  {$ELSEIF Defined(DARWIN)}
+    DLL_CV='libopencv_imgproc.so';
+  {$ELSEIF Defined(UNIX)}
+    DLL_CV='libopencv_imgproc.so';
+  {$IFEND}
 
 var
   DLLHandle: THandle;
