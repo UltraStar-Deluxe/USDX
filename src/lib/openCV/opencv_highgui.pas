@@ -321,7 +321,7 @@ const
   {$IF Defined(MSWINDOWS)}
     DLL_HIGHGUI='highgui210.dll';//'opencv_highgui231.dll';
   {$ELSEIF Defined(DARWIN)}
-    DLL_HIGHGUI='libopencv_highgui.so';
+    DLL_HIGHGUI='libopencv_highgui.dylib';
   {$ELSEIF Defined(UNIX)}
     DLL_HIGHGUI='libopencv_highgui.so';
   {$IFEND}

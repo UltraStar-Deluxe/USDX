@@ -129,7 +129,7 @@ const
   {$IF Defined(MSWINDOWS)}
     DLL_CXCORE='hcxcore210.dll';
   {$ELSEIF Defined(DARWIN)}
-    DLL_CXCORE='libopencv_core.so';
+    DLL_CXCORE='libopencv_core.dylib';
   {$ELSEIF Defined(UNIX)}
     DLL_CXCORE='libopencv_core.so';
   {$IFEND}

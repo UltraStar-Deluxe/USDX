@@ -324,7 +324,7 @@ const
   {$IF Defined(MSWINDOWS)}
     DLL_CV='cv210.dll';
   {$ELSEIF Defined(DARWIN)}
-    DLL_CV='libopencv_imgproc.so';
+    DLL_CV='libopencv_imgproc.dylib';
   {$ELSEIF Defined(UNIX)}
     DLL_CV='libopencv_imgproc.so';
   {$IFEND}
