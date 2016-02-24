@@ -2988,7 +2988,7 @@ begin
     Statics[StaticPausePopup].Visible := true;
     Statics[StaticPausePopup].Draw;
     Statics[StaticPausePopup].Visible := false;
-    SDL_Delay(100);
+    SDL_Delay(33);
   end;
 
   Result := true;
