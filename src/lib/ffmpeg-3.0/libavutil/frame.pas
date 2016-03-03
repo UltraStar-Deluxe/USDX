@@ -680,7 +680,7 @@ function av_get_colorspace_name(val: TAVColorSpace): PAnsiChar;
  * manually.
  *)
 function av_frame_alloc(): PAVFrame;
-  cdecl; external av__codec;
+  cdecl; external av__util;
 
 (**
  * Free the frame and any dynamically allocated objects in it,
@@ -720,7 +720,7 @@ function av_frame_clone(src: {const} PAVFrame): PAVFrame;
  * Unreference all the buffers referenced by frame and reset the frame fields.
  *)
 procedure av_frame_unref(frame: PAVFrame);
-  cdecl; external av__codec;
+  cdecl; external av__util;
 
 (**
  * Move everything contained in src to dst and reset src.
