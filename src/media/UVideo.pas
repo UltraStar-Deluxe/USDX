@@ -248,7 +248,11 @@ var
   pts: Pint64;
   VideoPktPts: Pint64;
 begin
+  {$IF LIBAVCODEC_VERSION >= 56000000}
+  Result := avcodec_default_get_buffer2(CodecCtx, Frame, 0);
+  {$ELSE}
   Result := avcodec_default_get_buffer(CodecCtx, Frame);
+  {$ENDIF}
   VideoPktPts := CodecCtx^.opaque;
   if (VideoPktPts <> nil) then
   begin
@@ -264,7 +268,11 @@ procedure PtsReleaseBuffer(CodecCtx: PAVCodecContext; Frame: PAVFrame); cdecl;
 begin
   if (Frame <> nil) then
     av_freep(@Frame^.opaque);
+  {$IF LIBAVCODEC_VERSION >= 57000000}
+  av_frame_unref(Frame);
+  {$ELSE}
   avcodec_default_release_buffer(CodecCtx, Frame);
+  {$ENDIF}
 end;
 
 
@@ -435,8 +443,13 @@ begin
   {$endif}
 
   // allocate space for decoded frame and rgb frame
+  {$IF LIBAVCODEC_VERSION >= 57000000}
+  fAVFrame := av_frame_alloc();
+  fAVFrameRGB := av_frame_alloc();
+  {$ELSE}
   fAVFrame := avcodec_alloc_frame();
   fAVFrameRGB := avcodec_alloc_frame();
+  {$ENDIF}
   fFrameBuffer := av_malloc(avpicture_get_size(PIXEL_FMT_FFMPEG,
       fCodecContext^.width, fCodecContext^.height));
 
@@ -908,9 +921,14 @@ begin
 
   // otherwise we convert the pixeldata from YUV to RGB
   {$IFDEF UseSWScale}
+  try
+
   errnum := sws_scale(fSwScaleContext, @fAVFrame.data, @fAVFrame.linesize,
           0, fCodecContext^.Height,
           @fAVFrameRGB.data, @fAVFrameRGB.linesize);
+  except
+    ;
+  end;
   {$ELSE}
   // img_convert from lib/ffmpeg/avcodec.pas is actually deprecated.
   // If ./configure does not find SWScale then this gives the error

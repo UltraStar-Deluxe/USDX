@@ -280,7 +280,7 @@ end;
 function TFFmpegDecodeStream.Open(const Filename: IPath): boolean;
 var
   SampleFormat: TAudioSampleFormat;
-{  TestFrame: TAVPacket;}
+  TestFrame: TAVPacket;
   AVResult: integer;
 begin
   Result := false;
@@ -314,6 +314,10 @@ begin
   fFormatCtx^.flags := fFormatCtx^.flags or AVFMT_FLAG_GENPTS;
 
   // retrieve stream information
+  //{$IF LIBAVFORMAT_VERSION >= 54006000)}
+  // av_find_stream_info is deprecated and should be replaced by av_read_frame. Untested.
+  //AVResult := av_read_frame(fFormatCtx, TestFrame);
+
   {$IF LIBAVFORMAT_VERSION >= 53002000)}
   AVResult := avformat_find_stream_info(fFormatCtx, nil);
   {$ELSE}
@@ -326,14 +330,6 @@ begin
     Exit;
   end;
 
-{ av_find_stream_info is deprecated and should be replaced by av_read_frame. Untested.
-  if (av_read_frame(fFormatCtx, TestFrame) < 0) then
-  begin
-    Log.LogError('av_read_frame failed: "' + Filename.ToNative + '"', 'UAudio_FFmpeg');
-    Close();
-    Exit;
-  end;
-}
   // FIXME: hack used by ffplay. Maybe should not use url_feof() to test for the end
   fFormatCtx^.pb.eof_reached := 0;
 
@@ -360,14 +356,13 @@ begin
   fCodecCtx := fAudioStream^.codec;
 
   // TODO: should we use this or not? Should we allow 5.1 channel audio?
-  (*
+
   {$IF LIBAVCODEC_VERSION >= 51042000}
-  if (CodecCtx^.channels > 0) then
-    CodecCtx^.request_channels := Min(2, CodecCtx^.channels)
+  if (fCodecCtx^.channels > 0) then
+    fCodecCtx^.request_channels := Min(2, fCodecCtx^.channels)
   else
-    CodecCtx^.request_channels := 2;
+    fCodecCtx^.request_channels := 2;
   {$IFEND}
-  *)
 
   fCodec := avcodec_find_decoder(fCodecCtx^.codec_id);
   if (fCodec = nil) then
@@ -979,6 +974,10 @@ var
   DataSize: integer;         // size of output data decoded by FFmpeg
   BlockQueue: boolean;
   SilenceDuration: double;
+  {$IF LIBAVCODEC_VERSION >= 57000000}
+  AVFrame: PAVFrame;
+  got_frame_ptr: integer;
+  {$IFEND}
   {$IFDEF DebugFFmpegDecode}
   TmpPos: double;
   {$ENDIF}
@@ -1007,12 +1006,13 @@ begin
     begin
       DataSize := BufferSize;
 
-//      {$IF LIBAVCODEC_VERSION >= 53025000} // 53.25.0
-//      PaketDecodedSize := avcodec_decode_audio4(fCodecCtx, AVFrame,
-//            @got_frame_ptr, @fAudioPaket);
-//      DataSize := AVFrame.nb_samples;
-//      Buffer   := PByteArray(AVFrame.data[0]);
-      {$IF LIBAVCODEC_VERSION >= 52122000} // 52.122.0
+      {$IF LIBAVCODEC_VERSION >= 57000000}
+      AVFrame := av_frame_alloc();
+      PaketDecodedSize := avcodec_decode_audio4(fCodecCtx, AVFrame,
+            @got_frame_ptr, @fAudioPaket);
+      DataSize := AVFrame.nb_samples;
+      Buffer   := PByteArray(AVFrame.data[0]);
+      {$ELSEIF LIBAVCODEC_VERSION >= 52122000} // 52.122.0
       PaketDecodedSize := avcodec_decode_audio3(fCodecCtx, PSmallint(Buffer),
                   DataSize, @fAudioPaket);
       {$ELSEIF LIBAVCODEC_VERSION >= 51030000} // 51.30.0

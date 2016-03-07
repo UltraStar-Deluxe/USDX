@@ -502,7 +502,11 @@ begin
   {$ELSE}
   Stream := TStream(h.priv_data);
   {$ENDIF}
-  Stream.Free;
+  try
+    Stream.Free;
+  except
+    ;
+  end;
   Result := 0;
 end;
 
