@@ -463,7 +463,7 @@ begin
       converted := false
     else
     begin
-      Surface := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_RGB888, SDL_SWSURFACE);
+      Surface := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_RGB24, SDL_SWSURFACE);
       converted := true;
     end;
 
@@ -539,7 +539,6 @@ end;
 function LoadImage(const Filename: IPath): PSDL_Surface;
 var
   FilenameCaseAdj: IPath;
-  SDLStream: PSDL_RWops;
 begin
   Result := nil;
 
