@@ -162,7 +162,7 @@ begin
   if not (TexSurface^.format.format = NeededPixFmt) then
   begin
     TempSurface := TexSurface;
-    TexSurface := SDL_ConvertSurfaceFormat(TempSurface, NeededPixFmt, SDL_SWSURFACE);
+    TexSurface := SDL_ConvertSurfaceFormat(TempSurface, NeededPixFmt, 0);
     SDL_FreeSurface(TempSurface);
   end;
 end;
