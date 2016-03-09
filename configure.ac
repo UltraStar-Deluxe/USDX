@@ -166,11 +166,11 @@ else
     PKG_VERSION([libpng], [libpng >= 1.2])
 fi
 
-# find sdl
-PKG_HAVE([sdl], [sdl], yes)
+# find sdl2
+PKG_HAVE([sdl], [SDL2], yes)
 
 # find SDL2_image
-PKG_HAVE([SDL2_image], [SDL2_image], yes)
+PKG_HAVE([sdl_image], [SDL2_image], yes)
 # find freetype
 PKG_HAVE([freetype], [freetype2], yes)
 

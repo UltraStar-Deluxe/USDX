@@ -678,9 +678,9 @@ begin
     //Jump to Artist/Titel
     if ((SDL_ModState and KMOD_LALT <> 0) and (FreeListMode)) then
     begin
-      UpperLetter := UCS4UpperCase(CharCode);
+      UpperLetter := UCS4UpperCase(PressedKey);
 
-      if (UpperLetter in ([Ord('A')..Ord('Z'), Ord('0') .. Ord('9')]) ) then
+      if (PressedKey in ([SDLK_a..SDLK_z, SDLK_0..SDLK_9])) then
       begin
         I2 := Length(CatSongs.Song);
 

@@ -718,10 +718,10 @@ begin
   glDisable(GL_TEXTURE_2D);
   glColor4f(1, 1, 1, 0.5);
   glBegin(GL_QUADS);
-    glVertex2f(690, 60);
+    glVertex2f(690, 35);
     glVertex2f(690, 0);
     glVertex2f(800, 0);
-    glVertex2f(800, 60);
+    glVertex2f(800, 35);
   glEnd;
   glDisable(GL_BLEND);
 
@@ -748,16 +748,9 @@ begin
   SetFontPos(695, 0);
   glPrint ('FPS: ' + InttoStr(LastFPS));
 
-  // rspeed
+  // muffins
   SetFontPos(695, 13);
-  glPrint ('RSpeed: ' + InttoStr(Round(1000 * TimeMid)));
-
-  // lasterror
-  SetFontPos(695, 26);
-  glColor4f(1, 0, 0, 1);
-  glPrint (OSD_LastError);
-  SetFontPos(695, 39);
-  glColor4f(0.5, 0.5, 0, 1);
+  glColor4f(0.8, 0.5, 0.2, 1);
   glPrint ('Muffins!');
 
   glColor4f(1, 1, 1, 1);
