@@ -150,9 +150,9 @@ begin
   begin
     // invalid format -> needs conversion
     if (pixelFmt.AMask <> 0) then
-      Result := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_BGRA8888, SDL_SWSURFACE)
+      Result := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_BGRA8888, 0)
     else
-      Result := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_BGR24, SDL_SWSURFACE);
+      Result := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_BGR24, 0);
     Converted := true;
   end;
 end;
