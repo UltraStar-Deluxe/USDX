@@ -36,7 +36,8 @@
      
       {$IFDEF UNIX}
         {$IFDEF DARWIN}
-          SDLNet_LibName = 'libSDL2_net.dylib';
+          SDLNet_LibName = 'libSDL2.dylib';
+//          {$linklib libSDL2_net}
         {$ELSE}
           {$IFDEF FPC}
             SDLNet_LibName = 'libSDL2_net.so';
@@ -45,14 +46,6 @@
           {$ENDIF}
         {$ENDIF}
       {$ENDIF}
-     
-      {$IFDEF MACOS}
-        SDLNet_LibName = 'SDL2_net';
-        {$IFDEF FPC}
-          {$linklib libSDL2_net}
-        {$ENDIF}
-      {$ENDIF}
-     
      
     type
       TSDLNet_Version = TSDL_Version;

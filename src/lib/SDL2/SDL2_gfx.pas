@@ -44,20 +44,14 @@ const
 
   {$IFDEF UNIX}
     {$IFDEF DARWIN}
-      GFX_LibName = 'libSDL2_gfx.dylib';
+      GFX_LibName = 'libSDL2.dylib';
+//      {$linklib libSDL2_gfx}
     {$ELSE}
       {$IFDEF FPC}
         GFX_LibName = 'libSDL2_gfx.so';
       {$ELSE}
         GFX_LibName = 'libSDL2_gfx.so.0';
       {$ENDIF}
-    {$ENDIF}
-  {$ENDIF}
-
-  {$IFDEF MACOS}
-    GFX_LibName = 'SDL2_gfx';
-    {$IFDEF FPC}
-      {$linklib libSDL2_gfx}
     {$ENDIF}
   {$ENDIF}
 

@@ -44,20 +44,14 @@ const
 
   {$IFDEF UNIX}
     {$IFDEF DARWIN}
-      MIX_LibName = 'libSDL2_mixer.dylib';
+      MIX_LibName = 'libSDL2.dylib';
+//      {$linklib libSDL2_mixer}
     {$ELSE}
       {$IFDEF FPC}
         MIX_LibName = 'libSDL2_mixer.so';
       {$ELSE}
         MIX_LibName = 'libSDL2_mixer.so.0';
       {$ENDIF}
-    {$ENDIF}
-  {$ENDIF}
-
-  {$IFDEF MACOS}
-    MIX_LibName = 'SDL2_mixer';
-    {$IFDEF FPC}
-      {$linklib libSDL2_mixer}
     {$ENDIF}
   {$ENDIF}
 

@@ -157,19 +157,13 @@ const
   {$IFDEF UNIX}
     {$IFDEF DARWIN}
       SDL_LibName = 'libSDL2.dylib';
+      {$linklib libSDL2}
     {$ELSE}
       {$IFDEF FPC}
         SDL_LibName = 'libSDL2.so';
       {$ELSE}
         SDL_LibName = 'libSDL2.so.0';
       {$ENDIF}
-    {$ENDIF}
-  {$ENDIF}
-
-  {$IFDEF MACOS}
-    SDL_LibName = 'SDL2';
-    {$IFDEF FPC}
-      {$linklib libSDL2}
     {$ENDIF}
   {$ENDIF}
 

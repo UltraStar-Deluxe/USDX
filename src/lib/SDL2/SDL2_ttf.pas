@@ -49,20 +49,14 @@ const
 
   {$IFDEF UNIX}
     {$IFDEF DARWIN}
-      TTF_LibName = 'libSDL2_tff.dylib';
+      TTF_LibName = 'libSDL2.dylib';
+//      {$linklib libSDL2_ttf}
     {$ELSE}
       {$IFDEF FPC}
         TTF_LibName = 'libSDL2_ttf.so';
       {$ELSE}
         TTF_LibName = 'libSDL2_ttf.so.0';
       {$ENDIF}
-    {$ENDIF}
-  {$ENDIF}
-
-  {$IFDEF MACOS}
-    TTF_LibName = 'SDL2_ttf';
-    {$IFDEF FPC}
-      {$linklib libSDL2_ttf}
     {$ENDIF}
   {$ENDIF}
 
