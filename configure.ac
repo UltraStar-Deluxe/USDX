@@ -167,10 +167,10 @@ else
 fi
 
 # find sdl2
-PKG_HAVE([sdl], [SDL2], yes)
+PKG_HAVE([sdl2], [sdl2], yes)
 
 # find SDL2_image
-PKG_HAVE([sdl_image], [SDL2_image], yes)
+PKG_HAVE([sdl2_image], [SDL2_image], yes)
 # find freetype
 PKG_HAVE([freetype], [freetype2], yes)
 
