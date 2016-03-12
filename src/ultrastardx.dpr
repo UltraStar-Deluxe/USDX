@@ -124,13 +124,23 @@ uses
   projectM      in 'lib\projectM\projectM.pas',
   {$ENDIF}
 
+  {$IFDEF UseMIDIPort}
+  MidiCons      in 'lib\midi\MidiCons.pas',
+
+  CircBuf       in 'lib\midi\CircBuf.pas',
+  DelphiMcb     in 'lib\midi\DelphiMcb.pas',
+  MidiDefs      in 'lib\midi\MidiDefs.pas',
+  MidiFile      in 'lib\midi\MidiFile.pas',
+  MidiOut       in 'lib\midi\MidiOut.pas',
+  MidiType      in 'lib\midi\MidiType.pas',
+  {$ENDIF}
+
   {$IFDEF MSWINDOWS}
   {$IFDEF FPC}
   // FPC compatibility file for Allocate/DeallocateHWnd
   WinAllocation in 'lib\other\WinAllocation.pas',
   Windows,
   {$ENDIF}
-
   DirWatch      in 'lib\other\DirWatch.pas',
   {$ENDIF}
 

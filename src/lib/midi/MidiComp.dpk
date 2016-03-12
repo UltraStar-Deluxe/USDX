@@ -1,0 +1,45 @@
+package MidiComp;
+
+{$R *.RES}
+{$R 'MidiFile.dcr'}
+{$R 'MidiIn.dcr'}
+{$R 'MidiOut.dcr'}
+{$R 'MidiScope.dcr'}
+{$ALIGN ON}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST ON}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'Midi related components'}
+{$DESIGNONLY}
+{$IMPLICITBUILD ON}
+
+requires
+  vcl50;
+
+contains
+  MidiType in 'MidiType.pas',
+  MidiDefs in 'MidiDefs.pas',
+  MidiFile in 'MidiFile.pas',
+  MidiIn in 'MidiIn.pas',
+  MidiOut in 'MidiOut.pas',
+  MidiScope in 'MidiScope.pas',
+  MidiCons in 'MidiCons.pas';
+
+end.
