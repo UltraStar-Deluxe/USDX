@@ -52,6 +52,10 @@ uses
   UFilesystem,
   Math,
   gl,
+  {$IFDEF UseMIDIPort}
+  MidiOut,
+  MidiCons,
+  {$ENDIF}
   UThemes,
   UPath;
 
@@ -107,6 +111,14 @@ type
       LastClick:        integer;
       Click:            boolean;
       CopySrc:          integer;
+      {$IFDEF UseMIDIPort}
+      MidiOut:          TMidiOutput;
+      MidiStart:        real;
+      MidiStop:         real;
+      MidiTime:         real;
+      MidiPos:          real;
+      MidiLastNote:     integer;
+      {$ENDIF}
 
       //for mouse move
       LastPressedMouseButton:  boolean;
@@ -234,6 +246,10 @@ type
       // Interactive Line bar
       InteractiveLineId:  array of integer;
       TransparentLineButtonId:  array of integer;
+
+      {$IFDEF UseMIDIPort}
+      PlayMidi: boolean;
+	  {$ENDIF}// Midi
 
       // medley
       MedleyNotes:  TMedleyNotes;
@@ -559,8 +575,9 @@ begin
           }
           if (SDL_ModState = KMOD_LSHIFT) and MedleyNotes.IsEnd then //Medley End Note
           begin
+            {$IFDEF UseMIDIPort} MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
             PlaySentenceMidi := false;
-            PlayOneMidi := false;
+            PlayOneMidi := false; {$ENDIF}
             AudioPlayback.Stop;
             PlaySentence := false;
             PlayOne := false;
@@ -578,8 +595,9 @@ begin
             end;
           end else if MedleyNotes.IsStart then
           begin
+            {$IFDEF UseMIDIPort} MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
             PlaySentenceMidi := false;
-            PlayOneMidi := false;
+            PlayOneMidi := false; {$ENDIF}
             AudioPlayback.Stop;
             PlaySentence := false;
             PlayOne := false;
@@ -639,6 +657,10 @@ begin
       SDLK_R:   //reload
         begin
           AudioPlayback.Stop;
+          {$IFDEF UseMIDIPort}
+          MidiOut.Close;
+          MidiOut.Free;
+          {$ENDIF}
           Lyric.Free;
 
           onShow;
@@ -766,6 +788,10 @@ begin
             PlaySentenceMidi := true;
             PlayVideo := false;
             StopVideoPreview;
+            {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
+            MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[0].Start);
+            MidiStop := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_); {$ENDIF}
+
             LastClick := -100;
             Text[TextDebug].Text := Language.Translate('INFO_PLAY_SENTENCE');
           end
@@ -776,6 +802,10 @@ begin
             PlaySentenceMidi := true;
             PlayVideo := false;
             StopVideoPreview;
+            {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
+            MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[0].Start);
+            MidiStop  := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_); {$ENDIF}
+            
             LastClick := -100;
 
             PlaySentence := true;
@@ -1116,6 +1146,9 @@ begin
               PlaySentenceMidi := true;
               PlayVideo := false;
               StopVideoPreview;
+              {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
+              MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[0].Start);
+              MidiStop  := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_); {$ENDIF}
               LastClick := -100;
 
               PlaySentence := true;
@@ -1135,6 +1168,9 @@ begin
               PlaySentenceMidi := true;
               PlayVideo := false;
               StopVideoPreview;
+              {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
+              MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[0].Start);
+              MidiStop := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_); {$ENDIF}
 
               LastClick := -100;
               Text[TextDebug].Text := Language.Translate('INFO_PLAY_SENTENCE');
@@ -1204,31 +1240,36 @@ begin
            if high(InteractiveNoteId) >= Lines[0].Line[Lines[0].Current].HighNote then
            for i := 0 to Lines[0].Line[Lines[0].Current].HighNote do
            begin
-                if Interaction = InteractiveNoteId[i] then
+              if Interaction = InteractiveNoteId[i] then
+              begin
+                if (SDL_GetTicks() - LastClickTime < 250) and (SDL_ModState = 0) then
                 begin
-                  if (SDL_GetTicks() - LastClickTime < 250) and (SDL_ModState = 0) then
-                  begin
-                     CopyToUndo;
-                     GoldenRec.KillAll;
-                     DivideNote(true);
-                     ShowInteractiveBackground;
-                  end;
+                   CopyToUndo;
+                   GoldenRec.KillAll;
+                   DivideNote(true);
+                   ShowInteractiveBackground;
+                end;
 
-                  // to check last click for divide note
-                  LastClickTime := SDL_GetTicks();
+                // to check last click for divide note
+                LastClickTime := SDL_GetTicks();
 
-                  Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
-                  currentnote := i;
-                  Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
-                  Lyric.Selected := CurrentNote;
-                  //play current note playonewithmidi
-                  PlaySentenceMidi := false;
-                  midinotefound := false;
-                  PlayOne := true;
-                  PlayOneMidi := true;
+                Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
+                currentnote := i;
+                Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
+                Lyric.Selected := CurrentNote;
+                //play current note playonewithmidi
+                PlaySentenceMidi := false;
+                midinotefound := false;
+                PlayOne := true;
+                PlayOneMidi := true;
+                {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
+                MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
+                MidiStop := GetTimeFromBeat(
+                  Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start +
+                  Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length); {$ENDIF}
 
-                  // playone
-                  PlayVideo := false;
+                // playone
+                PlayVideo := false;
                 StopVideoPreview;
                 Click := false;
                 AudioPlayback.Stop;
@@ -1272,6 +1313,11 @@ begin
             PlaySentence := false;
             PlayOne := false;
             PlayVideo := false;
+            {$IFDEF UseMIDIPort}
+            MidiOut.PutShort($B1, $7, floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
+            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
+            PlaySentenceMidi := false;
+            {$endif}
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
             Inc(CurrentNote);
             if CurrentNote > Lines[0].Line[Lines[0].Current].HighNote then
@@ -1336,6 +1382,11 @@ begin
             PlaySentence := false;
             PlayOne := false;
             PlayVideo := false;
+            {$IFDEF UseMIDIPort}
+            MidiOut.PutShort($B1, $7, floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
+            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
+            PlaySentenceMidi := false;
+            {$endif}
 
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
             Dec(CurrentNote);
@@ -2098,6 +2149,12 @@ end;
 
 procedure TScreenEditSub.NextSentence;
 begin
+            {$IFDEF UseMIDIPort}
+            MidiOut.PutShort($B1, $7, floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
+            MidiOut.PutShort(MIDI_NOTEOFF or 1, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
+            PlaySentenceMidi := false;
+            PlayOne := false;
+            {$ENDIF}
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
             Inc(Lines[0].Current);
             CurrentNote := 0;
@@ -2119,6 +2176,11 @@ begin
             PlayVideo := false;
             PlaySentence := false;
             PlayOne := false;
+            {$IFDEF UseMIDIPort}
+            MidiOut.PutShort(MIDI_NOTEOFF or 1, $7, floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
+            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
+            PlaySentenceMidi := false;
+            {$endif}
 
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
             Dec(Lines[0].Current);
@@ -3147,6 +3209,10 @@ begin
   end
   else
   begin
+  {$IFDEF UseMIDIPort}
+    MidiOut := TMidiOutput.Create(nil);
+    MidiOut.Open;
+  {$ENDIF}
     //    Text[TextTitle].Text :=   CurrentSong.Title;
     // Header Title
     SetLength(TitleVal, 1);
@@ -3362,13 +3428,48 @@ end;
 
 function TScreenEditSub.Draw: boolean;
 var
-  i:    integer;
+  Pet, i:    integer;
   lastline, note,Count: integer;
   notechange:          boolean;
 begin
 
   //glClearColor(1,1,1,1);
 
+
+  {$IFDEF UseMIDIPort} // midi music
+  if PlaySentenceMidi and Not (PlayOneMidi) then
+  begin
+    MidiPos := USTime.GetTime - MidiTime + MidiStart;
+
+    // stop the music
+    if (MidiPos > MidiStop) then
+    begin
+      MidiOut.PutShort($B1, $7, floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
+      MidiOut.PutShort(MIDI_NOTEOFF or 1, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
+      PlaySentenceMidi := false;
+    end;
+
+    // click
+    AktBeat := Floor(GetMidBeat(MidiPos - CurrentSong.GAP / 1000));
+    Text[TextDebug].Text := IntToStr(AktBeat);
+
+    if AktBeat <> LastClick then
+    begin
+      for i := 0 to Lines[0].Line[Lines[0].Current].HighNote do
+        if (Lines[0].Line[Lines[0].Current].Note[i].Start = AktBeat) then
+        begin
+
+          LastClick := AktBeat;
+          MidiOut.PutShort($B1, $7, floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
+          if i > 0 then
+            MidiOut.PutShort(MIDI_NOTEOFF or 1, Lines[0].Line[Lines[0].Current].Note[i-1].Tone + 60, 127);
+          MidiOut.PutShort($91, Lines[0].Line[Lines[0].Current].Note[i].Tone + 60, 127);
+          MidiLastNote := i;
+
+        end;
+    end;
+  end; // if PlaySentenceMidi
+  {$ENDIF}
 
   // move "cursor"
   if (PlaySentence or PlaySentenceMidi or PlayVideo) and not (PlayOne) then //and Not (PlayNote) then
@@ -3436,6 +3537,43 @@ begin
       end;
     end; // click
   end; // if PlaySentence
+
+  {$IFDEF UseMIDIPort} if PlayOneMidi then
+  begin
+    MidiPos := USTime.GetTime - MidiTime + MidiStart;
+    // stop the music
+    if ((MidiPos > MidiStop))  then // and (midinotefound)
+    begin
+      MidiOut.PutShort($B1, $7, floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
+      MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[currentnote].Tone + 60, 127);
+      MidiOut.PutShort(MIDI_STOP, 0, 0);
+      PlayOneMidi := false;
+    end;
+
+    // click
+    AktBeat := Floor(GetMidBeat(MidiPos - CurrentSong.GAP / 1000));
+    Text[TextDebug].Text := IntToStr(AktBeat);
+
+    if ((AktBeat <> LastClick) and Not (midinotefound)) then
+    begin
+//      for i := 0 to Lines[0].Line[Lines[0].Current].HighNote do
+//      begin
+        if ((Lines[0].Line[Lines[0].Current].Note[currentnote].Start <= AktBeat) and
+        ((Lines[0].Line[Lines[0].Current].Note[currentnote].Start + Lines[0].Line[Lines[0].Current].Note[currentnote].Length) > AktBeat)) then
+        begin
+          LastClick := AktBeat;
+          midinotefound := true;
+          MidiOut.PutShort($B1, $7, floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
+//          if i > 0 then
+            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[currentnote-1].Tone + 60, 127);
+          MidiOut.PutShort($91, Lines[0].Line[Lines[0].Current].Note[currentnote].Tone + 60, 127);
+
+          MidiLastNote := i;
+        end;
+//      end;
+    end;
+  end; // if PlayOneNoteMidi
+  {$ENDIF}
 
   Button[TextSentence].Text[0].Text := Language.Translate('INFO_CURRENT_LINE') + ' ' + IntToStr(Lines[0].Current + 1) + ' / ' + IntToStr(Lines[0].Number);
   Button[TextNote].Text[0].Text :=  Language.Translate('INFO_CURRENT_NOTE') + ' ' + IntToStr(CurrentNote + 1) + ' / ' + IntToStr(Lines[0].Line[Lines[0].Current].HighNote + 1);
@@ -3556,6 +3694,10 @@ procedure TScreenEditSub.OnHide;
 var
 i: integer;
 begin
+  {$IFDEF UseMIDIPort}
+  MidiOut.Close;
+  MidiOut.Free;
+  {$ENDIF}
   Lyric.Free;
   //Music.SetVolume(1.0);
   AudioInput.CaptureStop;
@@ -3588,8 +3730,8 @@ begin
     7: Result := 'g';
     8: Result := 'g#';
     9: Result := 'a';
-    10: Result := 'a#';
-    11: Result := 'b';
+    10: Result := 'b';
+    11: Result := 'h';
   end;
 
   case N2 of
