@@ -3737,7 +3737,7 @@ begin
     glbegin(gl_quads);
     for line := 0 to numLines - 1 do
     begin
-      if Lines[CurrentLine].Line[line].Note = nil then Continue;
+      if (Lines[CurrentLine].Line[line].Note = nil) or (ww < Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].Start) then Continue;
       pos := (Lines[CurrentLine].Line[line].Note[0].Start)/ww*w;
       br := (Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].Start +
                 Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].Length -
