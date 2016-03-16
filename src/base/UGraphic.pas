@@ -431,20 +431,22 @@ end;
 procedure LoadOpenGLExtensions;
 begin
   // Load OpenGL 1.2 extensions for OpenGL 1.2 compatibility
-  if (not Load_GL_version_1_2()) then
+  if (not Load_GL_version_2_0()) then
   begin
-    Log.LogWarn('Failed loading OpenGL 1.2. Suggested solution: Install current graphics chipset drivers from your hardware vendor or download and extract https://derpy.ws/builds/windows/trunk/latest/opengl32.7z to the UltraStar Deluxe folder and restart the game.', 'UGraphic.Initialize3D');
+    Log.LogCritical('Failed loading OpenGL 1.2 or newer.' + sLineBreak +
+    'Please check that your graphic drivers are up-to-date and get the newest drivers from the manufacturers website.' + sLineBreak + sLineBreak +
+    'If that also fails, you could try to download and extract https://derpy.ws/builds/windows/trunk/latest/opengl32.7z to the UltraStar Deluxe folder and restart the game.', 'UGraphic.Initialize3D');
   end;
 
   // Other extensions e.g. OpenGL 1.3-2.0 or Framebuffer-Object might be loaded here
   // ...
-  //Load_GL_EXT_framebuffer_object();
+  Load_GL_EXT_framebuffer_object();
 
   // PBO functions are loaded with VBO
-  //PboSupported := Load_GL_ARB_pixel_buffer_object()
-  //    and Load_GL_ARB_vertex_buffer_object();
-  //Log.LogWarn('PBOSupported: ' + BoolToStr(PboSupported, true), 'LoadOpenGLExtensions');
-  PboSupported := false;
+  PboSupported := Load_GL_ARB_pixel_buffer_object()
+      and Load_GL_ARB_vertex_buffer_object();
+  Log.LogWarn('PBOSupported: ' + BoolToStr(PboSupported, true), 'LoadOpenGLExtensions');
+  //PboSupported := false;
 end;
 
 const
