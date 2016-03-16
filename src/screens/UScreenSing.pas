@@ -3672,6 +3672,12 @@ begin
       Result.G := 210/255;
       Result.B := 0;
     end;
+    else//blue
+    begin
+      Result.R := 5/255;
+      Result.G := 153/255;
+      Result.B := 204/255;
+    end;
   end;
 end;
 
