@@ -29,3 +29,7 @@ aclocal.m4
 autom4te.cache/
 *.identcache
 *.bdsproj.local
+link.res
+ppaslink.sh
+game/ultrastardx
+UltraStarDeluxe.app/*
