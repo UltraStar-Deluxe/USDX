@@ -7,19 +7,19 @@
 
 {$IF Defined(IncludeConstants)}
   lua_lib_name = 'lua';
-  LUA_VERSION_INT     = 5001005;
-  LUA_VERSION_RELEASE = '5';
-  LUA_VERSION_MINOR   = '1';
+  LUA_VERSION_INT     = 5003001;
+  LUA_VERSION_RELEASE = '1';
+  LUA_VERSION_MINOR   = '3';
   LUA_VERSION_MAJOR   = '5';
-  LUA_VERSION         = '5.1.5';
+  LUA_VERSION         = '5.3.1';
 {$IFEND}
 
 {$DEFINE HaveFFmpeg}
 {$IF Defined(HaveFFmpeg)}
   {$MACRO ON}
   {$IFNDEF FFMPEG_DIR}
-    {$IF (4 > 0) or (2 > 0)}
-      {$DEFINE FFMPEG_DIR := 'ffmpeg-2.4'}
+    {$IF (8 > 0) or (2 > 0)}
+      {$DEFINE FFMPEG_DIR := 'ffmpeg-2.8'}
       {$DEFINE FF_API_OLD_DECODE_AUDIO}
     {$ELSE}
       {$DEFINE FFMPEG_DIR := 'ffmpeg'}
@@ -27,22 +27,22 @@
     {$IFEND}
   {$ENDIF}
   {$IF Defined(IncludeConstants)}
-    FFMPEG_VERSION_INT = 2004000;
+    FFMPEG_VERSION_INT = 2008000;
 
   av__codec = 'libavcodec';
-    LIBAVCODEC_VERSION_MAJOR   = 56;
-    LIBAVCODEC_VERSION_MINOR   = 1;
-    LIBAVCODEC_VERSION_RELEASE = 100;
+  LIBAVCODEC_VERSION_MAJOR   = 56;
+  LIBAVCODEC_VERSION_MINOR   = 60;
+  LIBAVCODEC_VERSION_RELEASE = 100;
 
   av__format = 'libavformat';
-    LIBAVFORMAT_VERSION_MAJOR   = 56;
-    LIBAVFORMAT_VERSION_MINOR   = 4;
-    LIBAVFORMAT_VERSION_RELEASE = 101;
+  LIBAVFORMAT_VERSION_MAJOR   = 56;
+  LIBAVFORMAT_VERSION_MINOR   = 40;
+  LIBAVFORMAT_VERSION_RELEASE = 101;
 
   av__util = 'libavutil';
-    LIBAVUTIL_VERSION_MAJOR   = 54;
-    LIBAVUTIL_VERSION_MINOR   = 7;
-    LIBAVUTIL_VERSION_RELEASE = 100;
+  LIBAVUTIL_VERSION_MAJOR   = 54;
+  LIBAVUTIL_VERSION_MINOR   = 31;
+  LIBAVUTIL_VERSION_RELEASE = 100;
   {$IFEND}
 {$IFEND}
 
@@ -50,8 +50,8 @@
 {$IF Defined(HaveSWScale) and Defined(IncludeConstants)}
   sw__scale = 'libswscale';
   LIBSWSCALE_VERSION_MAJOR   = 3;
-  LIBSWSCALE_VERSION_MINOR   = 0;
-  LIBSWSCALE_VERSION_RELEASE = 100;
+  LIBSWSCALE_VERSION_MINOR   = 1;
+  LIBSWSCALE_VERSION_RELEASE = 101;
 {$IFEND}
 
 {$UNDEF HaveProjectM}
@@ -71,6 +71,7 @@
 
 {$DEFINE HaveLibPcre}
 {$IF Defined(HaveLibPcre) and Defined(IncludeConstants)}
+  LIBPCRE_LIBNAME  = '';
   LIBPCRE_LIBDIR   = '/sw/lib/libpcre1';
 {$IFEND}
 
