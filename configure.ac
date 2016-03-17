@@ -171,6 +171,7 @@ PKG_HAVE([sdl2], [sdl2], yes)
 
 # find SDL2_image
 PKG_HAVE([sdl2_image], [SDL2_image], yes)
+
 # find freetype
 PKG_HAVE([freetype], [freetype2], yes)
 
