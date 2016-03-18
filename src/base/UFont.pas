@@ -1523,7 +1523,9 @@ end;
 
  constructor TFTFontFace.Create(const Filename: IPath; Size: integer);
  var
+   {$IF Defined(MSWINDOWS)}
    SourceFile: TFileStreamUTF8;
+   {$IFEND}
    lengthvar: Integer;
    b1: Integer;
    arraylength: Int64;
@@ -1547,7 +1549,9 @@ end;
    except
      raise EFontError.Create('FT_New_Face: Error - Could not load font file to memory on Windows '''  + Filename.ToNative + '''');
    end;
+   {$IF Defined(MSWINDOWS)}
    SourceFile.Destroy;
+   {$IFEND}
    // load font information
    if (b1 <> 0) then
      raise EFontError.Create('FT_New_Face: Could not load font '''  + Filename.ToNative + '''');
