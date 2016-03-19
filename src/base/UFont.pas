@@ -1531,7 +1531,9 @@ end;
    arraylength: Int64;
  begin
    inherited Create();
+   {$IF Defined(MSWINDOWS)}
    SourceFile := nil;
+   {$IFEND}
    b1:=3;
 
    fFilename := Filename;
