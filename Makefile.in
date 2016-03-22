@@ -91,6 +91,7 @@ endif
 # copy the dylib and change its install names
 
 define install_osx_libraries
+    @echo "work on $(dylib)"
     $(shell $(INSTALL) -m 755 $(dylib) $(macosx_bundle_path)/MacOS)
     $(shell $(INSTALL_NAME_TOOL) -change $(dylib) @executable_path/$(notdir $(dylib)) $(macosx_bundle_path)/MacOS/ultrastardx)
     $(shell $(INSTALL_NAME_TOOL) -id @executable_path/$(notdir $(dylib)) $(macosx_bundle_path)/MacOS/$(notdir $(dylib)))
@@ -98,6 +99,7 @@ define install_osx_libraries
 endef
 
 define rename_secondary_osx_libraries
+    @echo "change the install name for $(linked_dylibs_2)"
     $(shell $(INSTALL_NAME_TOOL) -change $(linked_dylibs_2) @executable_path/$(notdir $(linked_dylibs_2)) $(macosx_bundle_path)/MacOS/$(notdir $(dylib)))
 endef
 
@@ -416,7 +418,8 @@ macosx-app: all
 	@echo "Have fun."
 	@echo ""
 
-AVCODECLIB := $(shell $(OTOOL) -L $(macosx_bundle_path)/MacOS/ultrastardx | grep avcodec | cut -f 1 -d ' ' | cut -f 2 -d '/')
+# use the original of ultrastardx. The one in the app bundle may already be changed 
+AVCODECLIB := $(shell $(OTOOL) -L game/ultrastardx | grep avcodec | cut -f 1 -d ' ' | cut -f 4-6 -d '/')
 .PHONY: macosx-standalone-app
 macosx-standalone-app: macosx-app 
 # Create double clickable standalone (does not need fink) Mac OS X 
@@ -426,6 +429,7 @@ macosx-standalone-app: macosx-app
 	@echo "Creating the standalone Mac OS X application"
 	@echo ""
 
+	@echo "avcodec lib found: $(finkLibDir)/$(AVCODECLIB)"
 # work on the dylibs in $(macosx_bundle_path)/MacOS/ultrastardx
 	$(foreach dylib,$(shell $(OTOOL) -L $(macosx_bundle_path)/MacOS/ultrastardx | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
@@ -442,10 +446,35 @@ macosx-standalone-app: macosx-app
 # same procedure for secondary libs in libtiff
 	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libtiff.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
-# X11 libs as well, because users may not have installed it on 10.4
-	$(foreach dylib,$(shell $(OTOOL) -L /usr/X11R6/lib/libX11.6.dylib  | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+# same procedure for secondary libs in libfreetype
+	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/freetype219/lib/libfreetype.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
-# libpcre.dylib must be installed extra, since it is not linked to the executable but opened using dlopen
+# same procedure for secondary libs in libzvbi
+	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libzvbi.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	
+# same procedure for secondary libs in libquvi
+	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libquvi.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	
+# same procedure for secondary libs in libcurl
+	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libcurl.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	
+# same procedure for secondary libs in libssh2
+	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libssh2.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	
+# same procedure for secondary libs in libfontconfig
+	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/fontconfig2/lib/libfontconfig.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	
+# same procedure for secondary libs in libcaca
+	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libcaca.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	
+# same procedure for secondary libs in libbluray
+	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libbluray.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+
+#	X11 libs as well, because users may not have installed it.
+	$(foreach dylib,$(shell $(OTOOL) -L /opt/X11/lib/libX11.6.dylib  | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+
+	@echo ""
+	@echo "libpcre.dylib must be work on additionally, since it is not linked to the executable but opened using dlopen"
 	$(shell $(INSTALL) -m 755 $(finkLibDir)/libpcre.dylib $(macosx_bundle_path)/MacOS)
 	$(shell $(INSTALL_NAME_TOOL) -change $(finkLibDir)/libpcre.dylib @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
 	$(shell $(INSTALL_NAME_TOOL) -id @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
@@ -454,6 +483,7 @@ macosx-standalone-app: macosx-app
 #	codesign -f -s USDX-codesign UltraStarDeluxe.app
 
 # final messages
+	@echo ""
 	@echo "Standalone Mac OS X application created."
 	@echo ""
 
