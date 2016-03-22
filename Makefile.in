@@ -418,8 +418,9 @@ macosx-app: all
 	@echo "Have fun."
 	@echo ""
 
-# use the original of ultrastardx. The one in the app bundle may already be changed 
-AVCODECLIB := $(shell $(OTOOL) -L game/ultrastardx | grep avcodec | cut -f 1 -d ' ' | cut -f 4-6 -d '/')
+# use pkg-config. The one in the app bundle may already be changed
+AVCODECLIBPATH := $(shell pkg-config --libs-only-L  libavcodec | cut -f 4-5 -d '/' | cut -f 1 -d ' ')
+AVCODECLIB := $(AVCODECLIBPATH)/libavcodec.dylib
 .PHONY: macosx-standalone-app
 macosx-standalone-app: macosx-app 
 # Create double clickable standalone (does not need fink) Mac OS X 
