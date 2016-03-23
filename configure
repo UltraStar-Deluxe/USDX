@@ -2879,7 +2879,7 @@ FPC_CPROCESSOR=`${PPC} -iSP`
 
 FPC_TARGET=${FPC_PROCESSOR}-${FPC_PLATFORM}
 
-# Check for x86_64
+# Check for x86_64 on darwin
 if test x$FPC_PLATFORM = xdarwin; then
   if test x`uname -m` = xx86_64; then
     PFLAGS="-Px86_64"
@@ -9273,5 +9273,17 @@ $as_echo "$as_me:
 !!!
 " >&6;}
 
+if test x$FPC_PLATFORM = xdarwin; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}:
+!!! Special target for OSX are:
+!!! \"make macosx-app\" to create a standalone .app
+!!! \"make macosx-dmg\" to create a dmg archive with standalone .app
+                   " >&5
+$as_echo "$as_me:
+!!! Special target for OSX are:
+!!! \"make macosx-app\" to create a standalone .app
+!!! \"make macosx-dmg\" to create a dmg archive with standalone .app
+                   " >&6;}
+fi
 
 

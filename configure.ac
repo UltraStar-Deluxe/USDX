@@ -336,5 +336,12 @@ AC_MSG_NOTICE([
 !!!
 ])
 
+if test x$FPC_PLATFORM = xdarwin; then
+    AC_MSG_NOTICE([
+!!! Special target for OSX are:
+!!! "make macosx-app" to create a standalone .app
+!!! "make macosx-dmg" to create a dmg archive with standalone .app
+                   ])
+fi
 
 
