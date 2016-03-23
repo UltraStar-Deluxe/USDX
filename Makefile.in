@@ -376,8 +376,8 @@ OTOOL := /usr/bin/otool
 INSTALL_NAME_TOOL := /usr/bin/install_name_tool
 # hdiutil: Mac OS X disk image tool
 HDIUTIL := /usr/bin/hdiutil
-# finkLibDir := path for libraries installed using fink
-finkLibDir := /sw/lib
+# brewLibDir := path for libraries installed using homebrew
+brewLibDir := /usr/local/lib
 
 #################################################
 # Mac OS X app-bundle
@@ -419,65 +419,65 @@ macosx-app: all
 	@echo ""
 
 # use pkg-config. The one in the app bundle may already be changed
-AVCODECLIBPATH := $(shell pkg-config --libs-only-L  libavcodec | cut -f 4-5 -d '/' | cut -f 1 -d ' ')
+AVCODECLIBPATH := /$(shell pkg-config --libs-only-L  libavcodec | cut -f 2- -d '/')
 AVCODECLIB := $(AVCODECLIBPATH)/libavcodec.dylib
 .PHONY: macosx-standalone-app
 macosx-standalone-app: macosx-app 
-# Create double clickable standalone (does not need fink) Mac OS X 
-# application. Not fully test, but should work on 10.5.
+# Create double clickable standalone Mac OS X application.
+# Not fully test, but should work on 10.5.
 
 	@echo ""
 	@echo "Creating the standalone Mac OS X application"
 	@echo ""
 
-	@echo "avcodec lib found: $(finkLibDir)/$(AVCODECLIB)"
+	@echo "avcodec lib found: $(AVCODECLIB)"
 # work on the dylibs in $(macosx_bundle_path)/MacOS/ultrastardx
 	$(foreach dylib,$(shell $(OTOOL) -L $(macosx_bundle_path)/MacOS/ultrastardx | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # work on the secondary dylibs from ffmpeg
 # libavcodec references all tertiary libraries of the ffmpeg libs
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/$(AVCODECLIB) | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L $(AVCODECLIB) | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # same procedure in libfaac. it gets libgnugetopt
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libfaac.dylib      | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libfaac.dylib      | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # same procedure for tertiary libs in SDL2_image
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libSDL2_image.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libSDL2_image.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # same procedure for secondary libs in libtiff
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libtiff.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libtiff.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # same procedure for secondary libs in libfreetype
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/freetype219/lib/libfreetype.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libfreetype.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # same procedure for secondary libs in libzvbi
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libzvbi.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libzvbi.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 	
 # same procedure for secondary libs in libquvi
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libquvi.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libquvi.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 	
 # same procedure for secondary libs in libcurl
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libcurl.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libcurl.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 	
 # same procedure for secondary libs in libssh2
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libssh2.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libssh2.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 	
 # same procedure for secondary libs in libfontconfig
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/fontconfig2/lib/libfontconfig.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libfontconfig.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 	
 # same procedure for secondary libs in libcaca
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libcaca.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libcaca.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 	
 # same procedure for secondary libs in libbluray
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/libbluray.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libbluray.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 #	X11 libs as well, because users may not have installed it.
 	$(foreach dylib,$(shell $(OTOOL) -L /opt/X11/lib/libX11.6.dylib  | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 	@echo ""
 	@echo "libpcre.dylib must be work on additionally, since it is not linked to the executable but opened using dlopen"
-	$(shell $(INSTALL) -m 755 $(finkLibDir)/libpcre.dylib $(macosx_bundle_path)/MacOS)
-	$(shell $(INSTALL_NAME_TOOL) -change $(finkLibDir)/libpcre.dylib @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
+	$(shell $(INSTALL) -m 755 $(brewLibDir)/libpcre.dylib $(macosx_bundle_path)/MacOS)
+	$(shell $(INSTALL_NAME_TOOL) -change $(brewLibDir)/libpcre.dylib @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
 	$(shell $(INSTALL_NAME_TOOL) -id @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
 
 # do  not forget to sign the code
