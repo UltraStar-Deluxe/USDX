@@ -60,3 +60,4 @@ Drag the application to your hard disk. It should run from any folder.
 - Needed brew libraries can be installed using:
   brew install sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_net sdl2_ttf ffmpeg libav portaudio binutils sqlite freetype libpng pcre lua libtiff
 
+- Pass argument --enable-osx-fink or --enable-osx-brew (default) according to the packaging you are using

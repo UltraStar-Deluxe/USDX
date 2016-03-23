@@ -103,6 +103,9 @@ define rename_secondary_osx_libraries
     $(shell $(INSTALL_NAME_TOOL) -change $(linked_dylibs_2) @executable_path/$(notdir $(linked_dylibs_2)) $(macosx_bundle_path)/MacOS/$(notdir $(dylib)))
 endef
 
+USE_OSX_PACKAGING=@USE_OSX_PACKAGING@
+USE_OSX_PACKAGING_LIBDIR=@USE_OSX_PACKAGING_LIBDIR@
+
 #################################################
 # general targets
 #################################################
@@ -376,8 +379,8 @@ OTOOL := /usr/bin/otool
 INSTALL_NAME_TOOL := /usr/bin/install_name_tool
 # hdiutil: Mac OS X disk image tool
 HDIUTIL := /usr/bin/hdiutil
-# brewLibDir := path for libraries installed using homebrew
-brewLibDir := /usr/local/lib
+# pkgingLibDir := path for libraries installed using packaging system
+pkgingLibDir := @USE_OSX_PACKAGING_LIBDIR@
 
 #################################################
 # Mac OS X app-bundle
@@ -414,13 +417,22 @@ macosx-app: all
 # final messages
 	@echo ""
 	@echo "Mac OS X application created (UltraStarDeluxe.app)."
+	@echo "Using @USE_OSX_PACKAGING@ with libdir @USE_OSX_PACKAGING_LIBDIR@"
 	@echo "Please report issues to the developer team, preferably mischi."
 	@echo "Have fun."
 	@echo ""
 
 # use pkg-config. The one in the app bundle may already be changed
+ifeq ($(USE_OSX_PACKAGING), brew)
 AVCODECLIBPATH := /$(shell pkg-config --libs-only-L  libavcodec | cut -f 2- -d '/')
+endif
+
+ifeq ($(USE_OSX_PACKAGING), fink)
+AVCODECLIBPATH := $(shell pkg-config --libs-only-L  libavcodec | cut -f 4-5 -d '/' | cut -f 1 -d ' ')
+endif
+
 AVCODECLIB := $(AVCODECLIBPATH)/libavcodec.dylib
+
 .PHONY: macosx-standalone-app
 macosx-standalone-app: macosx-app 
 # Create double clickable standalone Mac OS X application.
@@ -430,36 +442,67 @@ macosx-standalone-app: macosx-app
 	@echo "Creating the standalone Mac OS X application"
 	@echo ""
 
+ifeq ($(USE_OSX_PACKAGING), brew)
 	@echo "avcodec lib found: $(AVCODECLIB)"
+endif
+ifeq ($(USE_OSX_PACKAGING), fink)
+	@echo "avcodec lib found: $(finkLibDir)/$(AVCODECLIB)"
+endif
 # work on the dylibs in $(macosx_bundle_path)/MacOS/ultrastardx
+	@echo "[generic] copying libs of ultrastardx"
 	$(foreach dylib,$(shell $(OTOOL) -L $(macosx_bundle_path)/MacOS/ultrastardx | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # work on the secondary dylibs from ffmpeg
 # libavcodec references all tertiary libraries of the ffmpeg libs
+ifeq ($(USE_OSX_PACKAGING), brew)
+	@echo "[brew] copying libs of libavcodec"
 	$(foreach dylib,$(shell $(OTOOL) -L $(AVCODECLIB) | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+endif
+ifeq ($(USE_OSX_PACKAGING), fink)
+	@echo "[fink] copying libs of libavcodec"
+	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/$(AVCODECLIB) | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+endif
 
 # same procedure in libfaac. it gets libgnugetopt
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libfaac.dylib      | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	@echo "[generic] copying libs of libfaac"
+	$(foreach dylib,$(shell $(OTOOL) -L $(pkgingLibDir)/libfaac.dylib      | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # same procedure for tertiary libs in SDL2_image
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libSDL2_image.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	@echo "[generic] copying libs of libSDL2_image"
+	$(foreach dylib,$(shell $(OTOOL) -L $(pkgingLibDir)/libSDL2_image.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # same procedure for secondary libs in libtiff
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libtiff.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+	@echo "[generic] copying libs of libtiff"
+	$(foreach dylib,$(shell $(OTOOL) -L $(pkgingLibDir)/libtiff.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 # same procedure for secondary libs in libfreetype
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libfreetype.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+ifeq ($(USE_OSX_PACKAGING), brew)
+	@echo "[brew] copying libs of libfreetype"
+	$(foreach dylib,$(shell $(OTOOL) -L $(pkgingLibDir)/libfreetype.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+endif
+ifeq ($(USE_OSX_PACKAGING), fink)
+	@echo "[fink] copying libs of libfreetype"
+	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/freetype219/lib/libfreetype.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+endif
 
 # same procedure for secondary libs in libfontconfig
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libfontconfig.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-	
+ifeq ($(USE_OSX_PACKAGING), brew)
+	@echo "[brew] copying libs of libfontconfig"
+	$(foreach dylib,$(shell $(OTOOL) -L $(pkgingLibDir)/libfontconfig.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+endif
+ifeq ($(USE_OSX_PACKAGING), fink)
+	@echo "[fink] copying libs of libfontconfig"
+	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/fontconfig2/lib/libfontconfig.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+endif
+
 #	X11 libs as well, because users may not have installed it.
+	@echo "[xquartz] copying libs of libX11"
 	$(foreach dylib,$(shell $(OTOOL) -L /opt/X11/lib/libX11.6.dylib  | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
 	@echo ""
 	@echo "libpcre.dylib must be work on additionally, since it is not linked to the executable but opened using dlopen"
-	$(shell $(INSTALL) -m 755 $(brewLibDir)/libpcre.dylib $(macosx_bundle_path)/MacOS)
-	$(shell $(INSTALL_NAME_TOOL) -change $(brewLibDir)/libpcre.dylib @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
+	$(shell $(INSTALL) -m 755 $(pkgingLibDir)/libpcre.dylib $(macosx_bundle_path)/MacOS)
+	$(shell $(INSTALL_NAME_TOOL) -change $(pkgingLibDir)/libpcre.dylib @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
 	$(shell $(INSTALL_NAME_TOOL) -id @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
 
 # do  not forget to sign the code

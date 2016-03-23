@@ -113,6 +113,28 @@ AC_ARG_ENABLE(debug,
   [test $enableval = "yes" && ENABLE_DEBUG="yes"], [])
 AC_SUBST(ENABLE_DEBUG)
 
+# OSX Packaging
+AC_ARG_ENABLE(osx-fink, [AS_HELP_STRING([--enable-osx-fink], [Enable fink packaging for OSX])])
+AC_ARG_ENABLE(osx-brew, [AS_HELP_STRING([--enable-osx-brew], [Enable homebrew packaging for OSX])])
+
+if [[ x$enable_osx_fink != x -a x$enable_osx_brew != x ]]; then
+    AC_MSG_ERROR([
+!!! You can't use --enable-osx-fink with --enable-osx-brew at the same time
+])
+fi
+
+# Default (homebrew)
+USE_OSX_PACKAGING="brew"
+USE_OSX_PACKAGING_LIBDIR="/usr/local/lib"
+
+if [[ x$enable_osx_fink != x ]]; then
+    USE_OSX_PACKAGING="fink"
+    USE_OSX_PACKAGING_LIBDIR="/sw/lib"
+fi
+
+AC_SUBST(USE_OSX_PACKAGING, $USE_OSX_PACKAGING)
+AC_SUBST(USE_OSX_PACKAGING_LIBDIR, $USE_OSX_PACKAGING_LIBDIR)
+
 # -----------------------------------------
 # check for compilers
 # -----------------------------------------
@@ -339,8 +361,9 @@ AC_MSG_NOTICE([
 if test x$FPC_PLATFORM = xdarwin; then
     AC_MSG_NOTICE([
 !!! Special target for OSX are:
-!!! "make macosx-app" to create a standalone .app
+!!! "make macosx-standalone-app" to create a standalone .app
 !!! "make macosx-dmg" to create a dmg archive with standalone .app
+!!! Selected packaging: $USE_OSX_PACKAGING with libdir $USE_OSX_PACKAGING_LIBDIR
                    ])
 fi
 

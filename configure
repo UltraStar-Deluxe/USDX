@@ -699,6 +699,8 @@ build_os
 build_vendor
 build_cpu
 build
+USE_OSX_PACKAGING_LIBDIR
+USE_OSX_PACKAGING
 ENABLE_DEBUG
 GREP
 SED
@@ -758,6 +760,8 @@ with_cfg_dummy2
 enable_global
 enable_local
 enable_debug
+enable_osx_fink
+enable_osx_brew
 enable_dummy_fpc1
 with_fpc
 enable_verbose
@@ -1422,6 +1426,8 @@ Development options:
   --enable-global         (DEPRECATED, DO NOT USE)
   --enable-local          (DEPRECATED, DO NOT USE)
   --enable-debug          Enable debug build [default=no]
+  --enable-osx-fink       Enable fink packaging for OSX
+  --enable-osx-brew       Enable homebrew packaging for OSX
 
 Free Pascal Compiler specific options:
   --with-fpc=DIR          Directory of the FPC executable [PATH]
@@ -2483,6 +2489,38 @@ if test "${enable_debug+set}" = set; then :
   enableval=$enable_debug; test $enableval = "yes" && ENABLE_DEBUG="yes"
 fi
 
+
+
+# OSX Packaging
+# Check whether --enable-osx-fink was given.
+if test "${enable_osx_fink+set}" = set; then :
+  enableval=$enable_osx_fink;
+fi
+
+# Check whether --enable-osx-brew was given.
+if test "${enable_osx_brew+set}" = set; then :
+  enableval=$enable_osx_brew;
+fi
+
+
+if [ x$enable_osx_fink != x -a x$enable_osx_brew != x ]; then
+    as_fn_error $? "
+!!! You can't use --enable-osx-fink with --enable-osx-brew at the same time
+" "$LINENO" 5
+fi
+
+# Default (homebrew)
+USE_OSX_PACKAGING="brew"
+USE_OSX_PACKAGING_LIBDIR="/usr/local/lib"
+
+if [ x$enable_osx_fink != x ]; then
+    USE_OSX_PACKAGING="fink"
+    USE_OSX_PACKAGING_LIBDIR="/sw/lib"
+fi
+
+USE_OSX_PACKAGING=$USE_OSX_PACKAGING
+
+USE_OSX_PACKAGING_LIBDIR=$USE_OSX_PACKAGING_LIBDIR
 
 
 # -----------------------------------------
@@ -9276,13 +9314,15 @@ $as_echo "$as_me:
 if test x$FPC_PLATFORM = xdarwin; then
     { $as_echo "$as_me:${as_lineno-$LINENO}:
 !!! Special target for OSX are:
-!!! \"make macosx-app\" to create a standalone .app
+!!! \"make macosx-standalone-app\" to create a standalone .app
 !!! \"make macosx-dmg\" to create a dmg archive with standalone .app
+!!! Selected packaging: $USE_OSX_PACKAGING with libdir $USE_OSX_PACKAGING_LIBDIR
                    " >&5
 $as_echo "$as_me:
 !!! Special target for OSX are:
-!!! \"make macosx-app\" to create a standalone .app
+!!! \"make macosx-standalone-app\" to create a standalone .app
 !!! \"make macosx-dmg\" to create a dmg archive with standalone .app
+!!! Selected packaging: $USE_OSX_PACKAGING with libdir $USE_OSX_PACKAGING_LIBDIR
                    " >&6;}
 fi
 
