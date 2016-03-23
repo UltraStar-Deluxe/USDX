@@ -279,8 +279,12 @@ PKG_VALUE([libpcre], [LIBDIR], [variable=libdir], [$libpcre_PKG],
 if test x"$libpcre_HAVE" = xyes; then
     old_LIBS="$LIBS"
     LIBS="-lpcre"
+    OBJDUMP="objdump"
+    if test x$FPC_PLATFORM = xdarwin; then
+        OBJDUMP="gobjdump"
+    fi
     AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],
-                   [libpcre_LIBNAME=`objdump -p "conftest$EXEEXT" | grep pcre | awk '{print $2}'` dnl '
+                   [libpcre_LIBNAME=`$OBJDUMP -p "conftest$EXEEXT" | grep pcre | awk '{print $2}'` dnl '
                     AC_SUBST([libpcre_LIBNAME],[$libpcre_LIBNAME])],
                    [AC_MSG_ERROR([failed to link])])
     LIBS="$old_LIBS"
@@ -292,7 +296,7 @@ AC_SUBST_DEFINE(HAVE_PORTMIXER, $portmixer_HAVE)
 
 # determine linker-flags
 if test x$FPC_PLATFORM = xdarwin; then
-  LDFLAGS="-macosx_version_min 10.4 -undefined dynamic_lookup -headerpad_max_install_names"
+  LDFLAGS="-macosx_version_min 10.4 -undefined dynamic_lookup -headerpad_max_install_names -L/usr/X11/lib"
 fi
 #LIBS=
 AC_SUBST(LDFLAGS)

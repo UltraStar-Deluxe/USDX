@@ -192,7 +192,8 @@ if ( set x; as_fn_ret_success y && test x = \"\$1\" ); then :
 else
   exitcode=1; echo positional parameters were not saved.
 fi
-test x\$exitcode = x0 || exit 1"
+test x\$exitcode = x0 || exit 1
+test -x / || exit 1"
   as_suggested="  as_lineno_1=";as_suggested=$as_suggested$LINENO;as_suggested=$as_suggested" as_lineno_1a=\$LINENO
   as_lineno_2=";as_suggested=$as_suggested$LINENO;as_suggested=$as_suggested" as_lineno_2a=\$LINENO
   eval 'test \"x\$as_lineno_1'\$as_run'\" != \"x\$as_lineno_2'\$as_run'\" &&
@@ -237,7 +238,7 @@ IFS=$as_save_IFS
 
 
       if test "x$CONFIG_SHELL" != x; then :
-	export CONFIG_SHELL
+  export CONFIG_SHELL
              # We cannot yet assume a decent shell, so we have to provide a
 # neutralization value for shells without unset; and this also
 # works around shells that cannot unset nonexistent variables.
@@ -861,7 +862,7 @@ do
   case $ac_option in
   *=?*) ac_optarg=`expr "X$ac_option" : '[^=]*=\(.*\)'` ;;
   *=)   ac_optarg= ;;
-  *)	ac_optarg=yes ;;
+  *)    ac_optarg=yes ;;
   esac
 
   # Accept the important Cygnus configure options, so we can diagnose typos.
@@ -2040,6 +2041,7 @@ PACKAGE_WEBSITE="http://www.ultrastardeluxe.org/"
 PACKAGE_IRC="#ultrastardx at quakenet.org"
 
 
+
 # Specify a source-file so autoconf can check if the source-dir exists
 
 
@@ -2047,7 +2049,7 @@ PACKAGE_IRC="#ultrastardx at quakenet.org"
 ac_aux_dir=
 for ac_dir in dists/autogen "$srcdir"/dists/autogen; do
   if test -f "$ac_dir/install-sh"; then
-      ac_aux_dir=$ac_dir
+    ac_aux_dir=$ac_dir
     ac_install_sh="$ac_aux_dir/install-sh -c"
     break
   elif test -f "$ac_dir/install.sh"; then
@@ -2058,7 +2060,7 @@ for ac_dir in dists/autogen "$srcdir"/dists/autogen; do
     ac_aux_dir=$ac_dir
     ac_install_sh="$ac_aux_dir/shtool install -c"
     break
-    fi
+  fi
 done
 if test -z "$ac_aux_dir"; then
   as_fn_error $? "cannot find install-sh, install.sh, or shtool in dists/autogen \"$srcdir\"/dists/autogen" "$LINENO" 5
@@ -2877,6 +2879,12 @@ FPC_CPROCESSOR=`${PPC} -iSP`
 
 FPC_TARGET=${FPC_PROCESSOR}-${FPC_PLATFORM}
 
+# Check for x86_64
+if test x$FPC_PLATFORM = xdarwin; then
+  if test x`uname -m` = xx86_64; then
+    PFLAGS="-Px86_64"
+  fi
+fi
 
 
 
@@ -4190,6 +4198,11 @@ fi
 # find pkg-config
 
 
+
+
+
+
+
 if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
 	if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
@@ -4302,7 +4315,6 @@ $as_echo "yes" >&6; }
 $as_echo "no" >&6; }
 		PKG_CONFIG=""
 	fi
-
 fi
 if [ x$PKG_CONFIG = x ]; then
    as_fn_error $? "
@@ -4892,26 +4904,26 @@ See the pkg-config man page for more details.
     fi
 
 
-# find sdl2_image
+# find SDL2_image
 
     have_lib="no"
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sdl2_image" >&5
-$as_echo_n "checking for sdl2_image... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SDL2_image" >&5
+$as_echo_n "checking for SDL2_image... " >&6; }
     if test x"$with_sdl2_image" = xnocheck; then
         # do not call pkg-config, use user settings
         have_lib="yes"
     elif test x"$with_sdl2_image" != xno; then
         # check if package exists
 	if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"sdl2_image\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "sdl2_image") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"SDL2_image\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "SDL2_image") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
 
             have_lib="yes"
-            sdl2_image_LIBS=`$PKG_CONFIG --libs --silence-errors "sdl2_image"`
-            sdl2_image_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "sdl2_image"`
+            sdl2_image_LIBS=`$PKG_CONFIG --libs --silence-errors "SDL2_image"`
+            sdl2_image_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "SDL2_image"`
             sdl2_image_LIBDIRS=`
     echo "$sdl2_image_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
 `
@@ -4940,7 +4952,7 @@ $as_echo "no" >&6; }
         # check if package is required
         if test xyes = xyes -o x"$with_sdl2_image" = xyes ; then
             # print error message and quit
-            err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "sdl2_image"`
+            err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "SDL2_image"`
             as_fn_error $? "
 
 $err_msg
@@ -5159,7 +5171,7 @@ $as_echo_n "checking version of lua... " >&6; }
     if test -z "$lua_VERSION"; then
         # if not, get it from pkg-config
         if test x$lua_HAVE = xyes; then
-	if test -n "$PKG_CONFIG" && \
+            if test -n "$PKG_CONFIG" && \
     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"lua5.3\""; } >&5
   ($PKG_CONFIG --exists --print-errors "lua5.3") 2>&5
   ac_status=$?
@@ -5167,7 +5179,7 @@ $as_echo_n "checking version of lua... " >&6; }
   test $ac_status = 0; }; then
   lua_VERSION=`$PKG_CONFIG --modversion --silence-errors "lua5.3"`
 else
-            # print error message and quit
+  # print error message and quit
                  err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "lua5.3"`
                  as_fn_error $? "
 
@@ -5828,7 +5840,7 @@ See the pkg-config man page for more details.
         fi
     fi
 
-			lua_lib_name="lua"
+    lua_LIB_NAME="lua"
 
     if test x$lua_HAVE = xyes; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of lua" >&5
@@ -6594,12 +6606,12 @@ $as_echo_n "checking version of ffmpeg... " >&6; }
 			FFMPEG_VERSION="0.8"
 		elif test $libavformat_VERSION_INT -ge 50043000; then
 			FFMPEG_VERSION="0.7"
-    else
+		else
 			FFMPEG_VERSION="0"
 		fi
 	else
 		FFMPEG_VERSION="0"
-    fi
+	fi
 
     version=$FFMPEG_VERSION
 
@@ -7113,6 +7125,7 @@ $as_echo "[$FFMPEG_VERSION]" >&6; }
 
 
 
+
 # find projectM version
 libprojectM_PKG="libprojectM >= 0.98"
 
@@ -7292,12 +7305,12 @@ $as_echo_n "checking version of ffmpeg... " >&6; }
 			FFMPEG_VERSION="0.8"
 		elif test $libprojectM_VERSION_INT -ge 50043000; then
 			FFMPEG_VERSION="0.7"
-    else
+		else
 			FFMPEG_VERSION="0"
-    fi
-        else
+		fi
+	else
 		FFMPEG_VERSION="0"
-    fi
+	fi
 
     version=$FFMPEG_VERSION
 
@@ -7930,6 +7943,10 @@ fi
 if test x"$libpcre_HAVE" = xyes; then
     old_LIBS="$LIBS"
     LIBS="-lpcre"
+    OBJDUMP="objdump"
+    if test x$FPC_PLATFORM = xdarwin; then
+        OBJDUMP="gobjdump"
+    fi
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -7942,7 +7959,7 @@ main ()
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  libpcre_LIBNAME=`objdump -p "conftest$EXEEXT" | grep pcre | awk '{print $2}'`                     libpcre_LIBNAME=$libpcre_LIBNAME
+  libpcre_LIBNAME=`$OBJDUMP -p "conftest$EXEEXT" | grep pcre | awk '{print $2}'`                     libpcre_LIBNAME=$libpcre_LIBNAME
 
 else
   as_fn_error $? "failed to link" "$LINENO" 5
@@ -8025,7 +8042,7 @@ See the pkg-config man page for more details.
 
 # determine linker-flags
 if test x$FPC_PLATFORM = xdarwin; then
-  LDFLAGS="-macosx_version_min 10.4 -undefined dynamic_lookup -headerpad_max_install_names"
+  LDFLAGS="-macosx_version_min 10.4 -undefined dynamic_lookup -headerpad_max_install_names -L/usr/X11/lib"
 fi
 #LIBS=
 
