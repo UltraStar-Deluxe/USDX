@@ -413,7 +413,7 @@ macosx-app: all
 
 # final messages
 	@echo ""
-	@echo "Mac OS X application created."
+	@echo "Mac OS X application created (UltraStarDeluxe.app)."
 	@echo "Please report issues to the developer team, preferably mischi."
 	@echo "Have fun."
 	@echo ""
@@ -450,27 +450,9 @@ macosx-standalone-app: macosx-app
 # same procedure for secondary libs in libfreetype
 	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libfreetype.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
-# same procedure for secondary libs in libzvbi
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libzvbi.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-	
-# same procedure for secondary libs in libquvi
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libquvi.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-	
-# same procedure for secondary libs in libcurl
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libcurl.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-	
-# same procedure for secondary libs in libssh2
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libssh2.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-	
 # same procedure for secondary libs in libfontconfig
 	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libfontconfig.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 	
-# same procedure for secondary libs in libcaca
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libcaca.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-	
-# same procedure for secondary libs in libbluray
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libbluray.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-
 #	X11 libs as well, because users may not have installed it.
 	$(foreach dylib,$(shell $(OTOOL) -L /opt/X11/lib/libX11.6.dylib  | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 
@@ -490,6 +472,10 @@ macosx-standalone-app: macosx-app
 
 .PHONY: macosx-dmg
 macosx-dmg: macosx-standalone-app
+	@if test -d "/Volumes/UltraStarDeluxe"; then\
+		echo "Error: there is already a disk mounted on /Volumes/UltraStarDeluxe";\
+		exit 1;\
+	fi
 	$(RM) UltraStarDeluxe.dmg
 	$(RM) UltraStarDeluxe.sparseimage
 	$(HDIUTIL) create -type SPARSE -size 100m -fs HFS+ -volname UltraStarDeluxe -ov UltraStarDeluxe.sparseimage
@@ -501,6 +487,10 @@ macosx-dmg: macosx-standalone-app
 	$(HDIUTIL) detach /Volumes/UltraStarDeluxe
 	$(HDIUTIL) convert UltraStarDeluxe.sparseimage -format UDBZ -o UltraStarDeluxe.dmg
 	$(RM) UltraStarDeluxe.sparseimage
+
+	@echo ""
+	@echo "DMG Disk image created (UltraStarDeluxe.dmg)."
+	@echo ""
 
 # remove Mac OS X apllication bundle and disk image
 .PHONY: clean-macosx
