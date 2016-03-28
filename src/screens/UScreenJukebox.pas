@@ -2219,7 +2219,10 @@ begin
         // LyricsState.GetCurrentTime()
         VideoFrameTime := CurrentSong.VideoGAP;
       end;
-      fCurrentVideo.GetFrame(VideoFrameTime);
+      try
+         fCurrentVideo.GetFrame(VideoFrameTime);
+      except
+      end;
     end;
 
     fCurrentVideo.AspectCorrection := acoCrop;
