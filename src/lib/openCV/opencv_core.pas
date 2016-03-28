@@ -127,7 +127,7 @@ implementation
 
 const
   {$IF Defined(MSWINDOWS)}
-    DLL_CXCORE='hcxcore210.dll';
+    DLL_CXCORE='cxcore210.dll';
   {$ELSEIF Defined(DARWIN)}
     DLL_CXCORE='libopencv_core.dylib';
   {$ELSEIF Defined(UNIX)}
