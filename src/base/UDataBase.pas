@@ -349,8 +349,10 @@ begin
   except
     on E: Exception do
     begin
-      Log.LogError(E.Message, 'TDataBaseSystem.Init');
+      Log.LogError(E.Message, 'TDataBaseSystem.Init');;
       FreeAndNil(ScoreDB);
+      DeleteFile(Filename.ToNative());
+      Log.LogCritical(E.Message, 'TDataBaseSystem.Init');
     end;
   end;
 
