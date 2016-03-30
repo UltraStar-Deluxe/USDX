@@ -2267,8 +2267,9 @@ begin
   VS := CatSongs.VisibleSongs();
 
   //calculate Auto-Width-Correction
-  AutoWidthCorrection:= (UGraphic.RenderH/UGraphic.ScreenH)*(UGraphic.ScreenW/UGraphic.RenderW);
-
+  AutoWidthCorrection:= (UGraphic.RenderH/UGraphic.ScreenH)*(UGraphic.ScreenW/UGraphic.RenderW); //ToDo basisbit: width for 2-screen-setup
+  if Screens > 1 then
+   AutoWidthCorrection:= AutoWidthCorrection / 2;
   //LoadCover(Interaction);
   // Update positions of all buttons
   for B := 0 to High(Button) do
@@ -2312,7 +2313,7 @@ begin
       end
       { only draw 3 visible covers in the background
         (the 3 that are on the opposite of the front covers}
-      else if (VS > 7) and (Abs(Pos) > floor(VS/2) - 1.5) then
+      (*else if (VS > 7) and (Abs(Pos) > floor(VS/2) - 1.5) then
       begin
         LoadCover(B);
         // Transform Pos to range [-1..-3/4, +3/4..+1]
@@ -2341,7 +2342,7 @@ begin
 
         //Button[B].Reflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
         Button[B].DeSelectReflectionspacing := 15 * Button[B].H/Theme.Song.Cover.H;
-      end
+      end*)
       { all other covers are not visible }
       else
       begin
