@@ -800,6 +800,8 @@ begin
             begin
               // show refresh scores menu
               MenuShow(SM_Refresh_Scores);
+              ScreenSong.StopMusicPreview();
+              ScreenSong.StopVideoPreview();
             end;
           7: // button 5
             begin
