@@ -63,7 +63,6 @@ type
       TexW, TexH:    Cardinal;
  
       FPSCounter:    cardinal;
-      LastFPS:       cardinal;
       NextFPSSwap:   cardinal;
 
       OSD_LastError: string;
@@ -128,6 +127,7 @@ type
 var
   Display: TDisplay;
   SupportsNPOT: Boolean;
+  LastFPS:       cardinal;
 
 const
   { constants for screen transition
