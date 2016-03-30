@@ -3730,8 +3730,8 @@ begin
     7: Result := 'g';
     8: Result := 'g#';
     9: Result := 'a';
-    10: Result := 'b';
-    11: Result := 'h';
+    10: Result := 'a#/b';
+    11: Result := 'b/h';
   end;
 
   case N2 of
