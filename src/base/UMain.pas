@@ -265,6 +265,9 @@ begin
     // call an uninitialize routine for every initialize step
     // or at least use the corresponding Free methods
 
+    Log.LogStatus('Closing DB file', 'Finalization');
+    DataBase.Destroy();
+
     Log.LogStatus('Finalize Media', 'Finalization');
     FinalizeMedia();
 
@@ -287,35 +290,64 @@ var
   TicksCurrent:     cardinal;
   TicksBeforeFrame: cardinal;
   Done:             boolean;
+  Report: string;
+  I,J: Integer;
 begin
   Max_FPS := Ini.MaxFramerateGet;
   SDL_StartTextInput;
   Done := false;
-
+  J := 0;
   CountSkipTime();
   repeat
-    TicksBeforeFrame := SDL_GetTicks;
+    try
+    begin
+      TicksBeforeFrame := SDL_GetTicks;
 
-    // joypad
-    if (Ini.Joypad = 1) or (Params.Joypad) then
-      Joy.Update;
+      // joypad
+      if (Ini.Joypad = 1) or (Params.Joypad) then
+        Joy.Update;
 
-    // keyboard events
-    CheckEvents;
+      // keyboard events
+      CheckEvents;
 
-    // display
-    Done := not Display.Draw;
-    SwapBuffers;
+      // display
+      Done := not Display.Draw;
+      SwapBuffers;
 
-    // FPS limiter
-    TicksCurrent := SDL_GetTicks;
-    Delay := 1000 div MAX_FPS - (TicksCurrent - TicksBeforeFrame);
+      // FPS limiter
+      TicksCurrent := SDL_GetTicks;
+      Delay := 1000 div MAX_FPS - (TicksCurrent - TicksBeforeFrame);
 
-    if Delay >= 1 then
-      SDL_Delay(Delay);
+      if Delay >= 1 then
+        SDL_Delay(Delay);
 
-    CountSkipTime;
-
+      CountSkipTime;
+      J:=0;
+    end
+    except
+      on E : Exception do
+      begin
+        J := J+1;
+        if J > 1 then
+        begin
+          Report := 'Sorry, an error ocurred! Please report this error to the game-developers. Also check the Error.log file in the game folder.' + LineEnding +
+            'Stacktrace:' + LineEnding;
+          if E <> nil then begin
+            Report := Report + 'Exception class: ' + E.ClassName + LineEnding +
+            'Message: ' + E.Message + LineEnding;
+          end;
+          Report := Report + BackTraceStrFunc(ExceptAddr);
+          for I := 0 to ExceptFrameCount - 1 do
+            Report := Report + LineEnding + BackTraceStrFunc(ExceptFrames[I]);
+          ShowMessage(Report);
+          done := true;
+        end
+        else
+        begin
+          done := false;
+        end;
+      end;
+    end;
   until Done;
 
 end;
