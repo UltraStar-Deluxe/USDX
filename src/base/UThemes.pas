@@ -3243,6 +3243,13 @@ begin
           Result.G := 0;
           Result.B := 0;
         end;
+    else
+        begin
+          // blue
+          Result.R := 71/255;
+          Result.G := 175/255;
+          Result.B := 247/255;
+        end;
     //New Theme-Color Patch End
 
     end;
@@ -3347,6 +3354,12 @@ begin
       Result.G := 210/255;
       Result.B := 0;
     end;
+    else
+    begin
+      Result.R := 5/255;
+      Result.G := 153/255;
+      Result.B := 204/255;
+    end;
   end;
 end;
 
@@ -3406,6 +3419,12 @@ begin
       Result.R := 220/255;
       Result.G := 220/255;
       Result.B := 220/255;
+    end;
+    else
+    begin
+      Result.R := 145/255;
+      Result.G := 215/255;
+      Result.B := 240/255;
     end;
   end;
 end;
@@ -3509,6 +3528,12 @@ begin
       Result.G := 230/255;
       Result.B := 100/255;
     end;
+    else
+    begin
+      Result.R := 145/255;
+      Result.G := 215/255;
+      Result.B := 240/255;
+    end;
   end;
 end;
 
@@ -3538,6 +3563,11 @@ begin
          Result.G := Ini.JukeboxNextLineOtherColorG/255;
          Result.B := Ini.JukeboxNextLineOtherColorB/255;
        end;
+    else begin
+         Result.R := Ini.JukeboxSingLineOtherColorR/255;
+         Result.G := Ini.JukeboxSingLineOtherColorG/255;
+         Result.B := Ini.JukeboxSingLineOtherColorB/255;
+       end;
   end;
 end;
 
@@ -3558,6 +3588,11 @@ begin
          Result.R := Ini.JukeboxNextLineOtherOColorR/255;
          Result.G := Ini.JukeboxNextLineOtherOColorG/255;
          Result.B := Ini.JukeboxNextLineOtherOColorB/255;
+       end;
+    else begin
+         Result.R := Ini.JukeboxSingLineOtherOColorR/255;
+         Result.G := Ini.JukeboxSingLineOtherOColorG/255;
+         Result.B := Ini.JukeboxSingLineOtherOColorB/255;
        end;
   end;
 end;
@@ -3690,6 +3725,12 @@ begin
           Result.R := 255/255;
           Result.G := 204/255;
           Result.B := 51/255;
+        end;
+    else begin
+          // blue
+          Result.R := 0;
+          Result.G := 150/255;
+          Result.B := 255/255;
         end;
     end;
 end;
