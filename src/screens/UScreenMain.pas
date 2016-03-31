@@ -155,7 +155,7 @@ begin
               PlayersPlay := 6;
 
             if Ini.OnSongClick = sSelectPlayer then
-              FadeTo(@ScreenLevel)
+              FadeTo(@ScreenSong)
             else
             begin
               ScreenName.Goto_SingScreen := false;
