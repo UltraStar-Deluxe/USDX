@@ -88,7 +88,6 @@ type
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
-      procedure StopVideoPreview();
     public
       TextArtist:   integer;
       TextTitle:    integer;
@@ -306,6 +305,7 @@ type
       procedure ColorDuetNameSingers;
 
       procedure StopMusicPreview();
+      procedure StopVideoPreview();
 
       procedure ParseInputNextHorizontal(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
       procedure ParseInputPrevHorizontal(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
