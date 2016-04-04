@@ -500,6 +500,8 @@ begin
   LoadLoadingScreen;
 
   // Covers Cache
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading and checking songs'));
+  Log.LogStatus('Loading and checking songs', 'UGraphic.Initialize3D');
   Covers := TCoverDatabase.Create;
 
   // Category Covers
