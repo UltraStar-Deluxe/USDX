@@ -6,12 +6,12 @@
 {* Libraries *}
 
 {$IF Defined(IncludeConstants)}
-  lua_lib_name = 'lua';
-  LUA_VERSION_INT     = 5003001;
-  LUA_VERSION_RELEASE = '1';
-  LUA_VERSION_MINOR   = '3';
+  lua_lib_name = '';
+  LUA_VERSION_INT     = 5002004;
+  LUA_VERSION_RELEASE = '4';
+  LUA_VERSION_MINOR   = '2';
   LUA_VERSION_MAJOR   = '5';
-  LUA_VERSION         = '5.3.1';
+  LUA_VERSION         = '5.2.4';
 {$IFEND}
 
 {$DEFINE HaveFFmpeg}
@@ -72,7 +72,7 @@
 {$DEFINE HaveLibPcre}
 {$IF Defined(HaveLibPcre) and Defined(IncludeConstants)}
   LIBPCRE_LIBNAME  = '';
-  LIBPCRE_LIBDIR   = '/sw/lib/libpcre1';
+  LIBPCRE_LIBDIR   = '/usr/local/Cellar/pcre/8.38/lib';
 {$IFEND}
 
 {$UNDEF HavePortmixer}

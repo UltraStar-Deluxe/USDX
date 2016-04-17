@@ -113,6 +113,28 @@ AC_ARG_ENABLE(debug,
   [test $enableval = "yes" && ENABLE_DEBUG="yes"], [])
 AC_SUBST(ENABLE_DEBUG)
 
+# OSX Packaging
+AC_ARG_ENABLE(osx-fink, [AS_HELP_STRING([--enable-osx-fink], [Enable fink packaging for OSX])])
+AC_ARG_ENABLE(osx-brew, [AS_HELP_STRING([--enable-osx-brew], [Enable homebrew packaging for OSX])])
+
+if [[ x$enable_osx_fink != x -a x$enable_osx_brew != x ]]; then
+    AC_MSG_ERROR([
+!!! You can't use --enable-osx-fink with --enable-osx-brew at the same time
+])
+fi
+
+# Default (homebrew)
+USE_OSX_PACKAGING="brew"
+USE_OSX_PACKAGING_LIBDIR="/usr/local/lib"
+
+if [[ x$enable_osx_fink != x ]]; then
+    USE_OSX_PACKAGING="fink"
+    USE_OSX_PACKAGING_LIBDIR="/sw/lib"
+fi
+
+AC_SUBST(USE_OSX_PACKAGING, $USE_OSX_PACKAGING)
+AC_SUBST(USE_OSX_PACKAGING_LIBDIR, $USE_OSX_PACKAGING_LIBDIR)
+
 # -----------------------------------------
 # check for compilers
 # -----------------------------------------
@@ -279,8 +301,12 @@ PKG_VALUE([libpcre], [LIBDIR], [variable=libdir], [$libpcre_PKG],
 if test x"$libpcre_HAVE" = xyes; then
     old_LIBS="$LIBS"
     LIBS="-lpcre"
+    OBJDUMP="objdump"
+    if test x$FPC_PLATFORM = xdarwin; then
+        OBJDUMP="gobjdump"
+    fi
     AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],
-                   [libpcre_LIBNAME=`objdump -p "conftest$EXEEXT" | grep pcre | awk '{print $2}'` dnl '
+                   [libpcre_LIBNAME=`$OBJDUMP -p "conftest$EXEEXT" | grep pcre | awk '{print $2}'` dnl '
                     AC_SUBST([libpcre_LIBNAME],[$libpcre_LIBNAME])],
                    [AC_MSG_ERROR([failed to link])])
     LIBS="$old_LIBS"
@@ -292,7 +318,7 @@ AC_SUBST_DEFINE(HAVE_PORTMIXER, $portmixer_HAVE)
 
 # determine linker-flags
 if test x$FPC_PLATFORM = xdarwin; then
-  LDFLAGS="-macosx_version_min 10.4 -undefined dynamic_lookup -headerpad_max_install_names"
+  LDFLAGS="-macosx_version_min 10.4 -undefined dynamic_lookup -headerpad_max_install_names -L/usr/X11/lib"
 fi
 #LIBS=
 AC_SUBST(LDFLAGS)
@@ -332,5 +358,13 @@ AC_MSG_NOTICE([
 !!!
 ])
 
+if test x$FPC_PLATFORM = xdarwin; then
+    AC_MSG_NOTICE([
+!!! Special target for OSX are:
+!!! "make macosx-standalone-app" to create a standalone .app
+!!! "make macosx-dmg" to create a dmg archive with standalone .app
+!!! Selected packaging: $USE_OSX_PACKAGING with libdir $USE_OSX_PACKAGING_LIBDIR
+                   ])
+fi
 
 

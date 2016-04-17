@@ -18,6 +18,7 @@ UltraStar Deluxe Mac Specific README
  ============================
 = 1. Installation            =
 = 2. Song Folders            =
+= 3. Building                =
  ============================
 
 SF.Net Page: http://sourceforge.net/projects/ultrastardx/
@@ -45,3 +46,18 @@ Drag the application to your hard disk. It should run from any folder.
   SongDir1=/Users/My/Music/MyUSDXSongs
   SongDir2=/Volumes/MyExternalUSBDisk
   SongDir...=... (some more directories)
+
+====================
+ = 3. Building     =
+====================
+
+- USDX Is built using Homebrew and official FreePascal build
+
+- You can install Homebrew from http://brew.sh
+- You can get the FPC build from http://www.freepascal.org/down/i386/macosx.var
+- Don't miss XQuartz from http://www.xquartz.org
+
+- Needed brew libraries can be installed using:
+  brew install sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_net sdl2_ttf ffmpeg libav portaudio binutils sqlite freetype libpng pcre lua libtiff
+
+- Pass argument --enable-osx-fink or --enable-osx-brew (default) according to the packaging you are using

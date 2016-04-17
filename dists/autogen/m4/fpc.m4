@@ -144,6 +144,12 @@ FPC_CPROCESSOR=`${PPC} -iSP`
 
 FPC_TARGET=${FPC_PROCESSOR}-${FPC_PLATFORM}
 
+# Check for x86_64 on darwin
+if test x$FPC_PLATFORM = xdarwin; then
+  if test x`uname -m` = xx86_64; then
+    PFLAGS+=" -Px86_64 "
+  fi
+fi
 
 AC_SUBST(FPC_PLATFORM)
 AC_SUBST(FPC_PROCESSOR)
