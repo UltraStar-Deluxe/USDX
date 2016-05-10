@@ -72,6 +72,8 @@ uses
   gl                     in 'lib\OpenGL\gl.pas',
   glu                    in 'lib\OpenGL\glu.pas',
   glext                  in 'lib\OpenGL\glext.pas',
+  //new work on current OpenGL implementation
+  dglOpenGL              in 'lib\dglOpenGL\dglOpenGL.pas',
   UMediaCore_SDL         in 'media\UMediaCore_SDL.pas',
 
   zlib                   in 'lib\zlib\zlib.pas',
