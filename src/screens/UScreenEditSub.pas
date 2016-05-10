@@ -2890,7 +2890,7 @@ var
 
   GoldenStarPos: real;
 begin
-  if (ScreenSing.settings.NotesVisible and (1 shl NrLines) <> 0) then
+  if ( (1 shl NrLines) <> 0) then
   begin
     PlayerNumber := NrLines + 1; // Player 1 is 0
     glColor3f(1, 1, 1);
