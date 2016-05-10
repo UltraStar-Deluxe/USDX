@@ -704,7 +704,7 @@ begin
   //Log.LogStatus('Initializing Playback Subsystem', 'Music Initialize');
   BASS_SetConfig(BASS_CONFIG_DEV_DEFAULT, 1);
   // TODO: use BASS_DEVICE_LATENCY to determine the latency
-  if not BASS_Init(-1, 44100, BASS_DEVICE_LATENCY, 0, nil) then
+  if not BASS_Init(-1, 44100, 0, 0, nil) then
   begin
     Log.LogError('Could not initialize BASS', 'TAudioPlayback_Bass.InitializePlayback');
     Exit;
