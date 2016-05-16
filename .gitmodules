@@ -1,3 +1,0 @@
-[submodule "src/lib/dglOpenGL"]
-	path = src/lib/dglOpenGL
-	url = https://github.com/SaschaWillems/dglOpenGL.git
