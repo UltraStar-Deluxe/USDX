@@ -41,7 +41,7 @@ uses
   UMusic,
   USongs,
   UThemes,
-  gl,
+  dglOpenGL,
   math,
   UTexture,
   UDLLManager,

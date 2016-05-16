@@ -8,7 +8,7 @@ interface
 
 uses
   FreeType,
-  gl,
+  dglOpenGL,
   classes,
   sysutils;
 

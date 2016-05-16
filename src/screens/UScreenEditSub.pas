@@ -51,7 +51,7 @@ uses
   UEditorLyrics,
   UFilesystem,
   Math,
-  gl,
+  dglOpenGL,
   {$IFDEF UseMIDIPort}
   MidiOut,
   MidiCons,

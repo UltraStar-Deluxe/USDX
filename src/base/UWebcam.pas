@@ -69,7 +69,7 @@ var
 implementation
 
 uses
-  gl,
+  dglOpenGL,
   SysUtils,
   sdl2,
   ULog,

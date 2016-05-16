@@ -37,7 +37,7 @@ uses
   SysUtils,
   SDL2,
   SDL2_image,
-  gl,
+  dglOpenGL,
   UMenu,
   UDisplay,
   UTexture,

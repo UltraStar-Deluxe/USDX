@@ -37,7 +37,7 @@ uses
   SysUtils,
   sdl2,
   TextGL,
-  gl,
+  dglOpenGL,
   UCommon,
   UDataBase,
   UFiles,

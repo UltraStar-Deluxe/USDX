@@ -65,7 +65,7 @@ procedure MainThreadExec(Proc: TMainThreadExecProc; Data: Pointer);
 implementation
 
 uses
-  gl,
+  dglOpenGL,
   UCommandLine,
   UCommon,
   UConfig,

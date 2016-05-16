@@ -38,7 +38,7 @@ uses
   sdl2,
   SysUtils,
   UThemes,
-  gl;
+  dglOpenGL;
 
 type
   TScreenLoading = class(TMenu)

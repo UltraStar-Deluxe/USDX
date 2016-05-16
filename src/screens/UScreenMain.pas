@@ -80,7 +80,6 @@ uses
   UIni,
   UTexture,
   USongs,
-  Textgl,
   ULanguage,
   UParty,
   UScreenCredits,

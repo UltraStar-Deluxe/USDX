@@ -67,7 +67,7 @@ type
 implementation
 
 uses
-  gl,
+  dglOpenGL,
   UGraphic,
   ULanguage,
   UUnicodeUtils,

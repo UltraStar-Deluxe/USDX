@@ -36,7 +36,7 @@ interface
 uses
   TextGL,
   UTexture,
-  gl,
+  dglOpenGL,
   UMenuText,
   sdl2,
   UMenuInteract;

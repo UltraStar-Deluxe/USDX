@@ -117,7 +117,7 @@ uses
   SysUtils,
   Math,
   sdl2,
-  gl,
+  dglOpenGL,
   TextGL,
   UGraphic,
   UDraw,

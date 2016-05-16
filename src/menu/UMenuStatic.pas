@@ -36,7 +36,7 @@ interface
 uses
   UTexture,
   UMenuInteract,
-  gl;
+  dglOpenGL;
 
 type
   TStatic = class

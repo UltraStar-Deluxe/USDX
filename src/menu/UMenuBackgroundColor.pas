@@ -52,7 +52,7 @@ type
 
 implementation
 uses
-  gl,
+  dglOpenGL,
   UGraphic;
 
 constructor TMenuBackgroundColor.Create(const ThemedSettings: TThemeBackground);

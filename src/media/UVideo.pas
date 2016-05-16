@@ -63,10 +63,7 @@ uses
   {$IFDEF UseSWScale}
   swscale,
   {$ENDIF}
-  gl,
-  glu,
-  glext,
-  textgl,
+  dglOpenGL,
   StrUtils,
   UMediaCore_FFmpeg,
   UCommon,

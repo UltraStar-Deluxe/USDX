@@ -34,7 +34,7 @@ interface
 {$I switches.inc}
 
 uses
-  gl,
+  dglOpenGL,
   sdl2,
   Classes,
   UTexture,

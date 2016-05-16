@@ -144,7 +144,7 @@ implementation
 uses
   SysUtils,
   TextGL,
-  gl,
+  dglOpenGL,
   UDrawTexture,
   UFiles,
   UGraphic,

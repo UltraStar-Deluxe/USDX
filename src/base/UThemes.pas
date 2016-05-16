@@ -1446,7 +1446,7 @@ uses
   UPathUtils,
   UFileSystem,
   TextGL,
-  gl,
+  dglOpenGL,
   math,
   StrUtils;
 

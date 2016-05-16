@@ -67,11 +67,6 @@ uses
   SDL2_mixer             in 'lib\SDL2\SDL2_mixer.pas',
   SDL2_net               in 'lib\SDL2\SDL2_net.pas',
   SDL2_ttf               in 'lib\SDL2\SDL2_ttf.pas',
-  //hackyhack part of basisbit's OpenGL glue (based on JEDI-SDL code mainly) - this is part 1 of the OpenGL header work
-  moduleloader           in 'lib\OpenGL\moduleloader.pas',
-  gl                     in 'lib\OpenGL\gl.pas',
-  glu                    in 'lib\OpenGL\glu.pas',
-  glext                  in 'lib\OpenGL\glext.pas',
   //new work on current OpenGL implementation
   dglOpenGL              in 'lib\dglOpenGL\dglOpenGL.pas',
   UMediaCore_SDL         in 'media\UMediaCore_SDL.pas',

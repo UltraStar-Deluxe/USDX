@@ -35,7 +35,7 @@ interface
 
 uses
   sdl2,
-  gl,
+  dglOpenGL,
   TextGL,
   SysUtils,
   UCommon,

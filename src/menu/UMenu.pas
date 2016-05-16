@@ -36,7 +36,7 @@ interface
 uses
   SysUtils,
   Math,
-  gl,
+  dglOpenGL,
   sdl2,
   UPath,
   UMenuBackground,

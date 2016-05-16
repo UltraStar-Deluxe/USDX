@@ -34,8 +34,7 @@ interface
 {$I switches.inc}
 
 uses
-  gl,
-  glext,
+  dglOpenGL,
   UCommon,
   UTexture,
   UThemes,

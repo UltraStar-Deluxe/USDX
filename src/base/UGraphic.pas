@@ -35,8 +35,7 @@ interface
 
 uses
   sdl2,
-  gl,
-  glext,
+  dglOpenGL,
   UTexture,
   TextGL,
   UConfig,
@@ -431,9 +430,10 @@ end;
 procedure LoadOpenGLExtensions;
 begin
   // Load OpenGL 1.2 extensions for OpenGL 1.2 compatibility
+  {// Load OpenGL 1.2 extensions for OpenGL 1.2 compatibility
   if (not Load_GL_version_2_0()) then
   begin
-    Log.LogCritical('Failed loading OpenGL 1.2 or newer.' + sLineBreak +
+    Log.LogWarn('Failed loading OpenGL 1.2 or newer.' + sLineBreak +
     'Please check that your graphic drivers are up-to-date and get the newest drivers from the manufacturers website.' + sLineBreak + sLineBreak +
     'If that also fails, you could try to download and extract https://derpy.ws/builds/windows/trunk/latest/opengl32.7z to the UltraStar Deluxe folder and restart the game.', 'UGraphic.Initialize3D');
   end;
@@ -446,7 +446,7 @@ begin
   PboSupported := Load_GL_ARB_pixel_buffer_object()
       and Load_GL_ARB_vertex_buffer_object();
   Log.LogWarn('PBOSupported: ' + BoolToStr(PboSupported, true), 'LoadOpenGLExtensions');
-  //PboSupported := false;
+  }//PboSupported := false;
 end;
 
 const
@@ -609,7 +609,7 @@ begin
   begin
     Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Windowed');
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
-           SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE);
+           SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, W, H, SDL_Window_OPENGL or  SDL_RENDERER_ACCELERATED or SDL_WINDOW_RESIZABLE);
   end;
 
   //SDL_ShowCursor(0);    just to be able to debug while having mosue cursor
@@ -618,19 +618,38 @@ begin
   begin
     Log.LogCritical('SDL_SetVideoMode Failed', 'Initialize3D');
   end;
+
+  //LoadOpenGL();
   glcontext := SDL_GL_CreateContext(Screen);
-  SDL_GL_SetSwapInterval(1); // VSYNC (currently Windows only)
-  LoadOpenGL();
+  InitOpenGL();
+
+  //   ActivateRenderingContext(
+  ReadExtensions;
+  Log.LogInfo('OpenGL vendor ' + glGetString(GL_VENDOR), 'UGraphic.InitializeScreen');
   if not (glGetError = GL_NO_ERROR) then
   begin
     Log.LogInfo('an OpenGL Error happened.', 'UGraphic.InitializeScreen');
   end;
-  Log.LogInfo('OpenGL vendor ' + glGetString(GL_VENDOR), 'UGraphic.InitializeScreen');
   Log.LogInfo('OpenGL renderer ' + glGetString(GL_RENDERER), 'UGraphic.InitializeScreen');
   Log.LogInfo('OpenGL version ' + glGetString(GL_VERSION), 'UGraphic.InitializeScreen');
 
 
-  LoadOpenGLExtensions();
+  // define virtual (Render) and real (Screen) screen size
+  RenderW := 800;
+  RenderH := 600;
+  ScreenW := Screen.w;
+  ScreenH := Screen.h;
+  // Ausganswerte für die State-Machine setzen
+  SDL_GL_SetSwapInterval(1); // VSYNC (currently Windows only)
+  glEnable(GL_TEXTURE_2D);	                // Aktiviert Texture Mapping
+  glShadeModel(GL_SMOOTH);	                // Aktiviert weiches Shading
+  glClearColor(0.0, 0.0, 0.0, 0.5);         // Bildschirm löschen (schwarz)
+  glClearDepth(1.0);		                    // Depth Buffer Setup
+  glEnable(GL_DEPTH_TEST);	                // Aktiviert Depth Testing
+  glDepthFunc(GL_LEQUAL);	                  // Bestimmt den Typ des Depth Testing
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+  {LoadOpenGLExtensions();
   // define virtual (Render) and real (Screen) screen size
   RenderW := 800;
   RenderH := 600;
@@ -641,7 +660,7 @@ begin
   // Note: SwapBuffers uses RenderW/H, so they must be defined before
   glClearColor(1, 1, 1, 1);
   glClear(GL_COLOR_BUFFER_BIT);
-  SwapBuffers;
+  SwapBuffers;}
 end;
 
 procedure LoadLoadingScreen;

@@ -43,7 +43,7 @@ procedure DrawTexture(Texture: TTexture);
 implementation
 
 uses
-  gl;
+  dglOpenGL;
 
 procedure DrawLine(X1, Y1, X2, Y2, ColR, ColG, ColB: real);
 begin

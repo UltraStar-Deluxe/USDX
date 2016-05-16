@@ -102,7 +102,7 @@ const
 implementation
 
 uses
-  gl,
+  dglOpenGL,
   SysUtils,
   UTime,
   USkins,

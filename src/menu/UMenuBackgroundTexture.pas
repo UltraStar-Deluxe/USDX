@@ -61,7 +61,7 @@ implementation
 uses
   USkins,
   SysUtils,
-  gl,
+  dglOpenGL,
   UGraphic;
 
 constructor TMenuBackgroundTexture.Create(const ThemedSettings: TThemeBackground);

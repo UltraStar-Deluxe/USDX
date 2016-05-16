@@ -14,7 +14,7 @@ interface
 uses
   SysUtils,
   ctypes,
-  gl,
+  dglOpenGL,
   UConfig;
 
 type

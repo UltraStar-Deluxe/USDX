@@ -34,9 +34,7 @@ interface
 {$I switches.inc}
 
 uses
-  gl,
-  //glu,
-  glext,
+  dglOpenGL,
   Classes,
   SysUtils,
   UCommon,
@@ -321,9 +319,9 @@ begin
      (Typ = TEXTURE_TYPE_COLORIZED) then
   begin
     {$IFDEF FPC_BIG_ENDIAN}
-    glTexImage2D(GL_TEXTURE_2D, 0, 4, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, TexSurface.pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, TexSurface.pixels);
     {$ELSE}
-    glTexImage2D(GL_TEXTURE_2D, 0, 4, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, TexSurface.pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, TexSurface.pixels);
     {$ENDIF}
   end
   else //if Typ = TEXTURE_TYPE_PLAIN then

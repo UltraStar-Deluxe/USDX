@@ -203,7 +203,7 @@ var
 implementation
 
 uses
-  gl,
+  dglOpenGL,
   UGraphic,
   UMain,
   UIni,

@@ -127,7 +127,7 @@ implementation
 uses
   SysUtils,
   Math,
-  gl,
+  dglOpenGL,
   UCommon,
   UDrawTexture,
   UGraphic,

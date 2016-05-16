@@ -65,12 +65,8 @@ interface
 uses
   sdl2,
   UGraphicClasses,
-  textgl,
   math,
-  gl,
-  {$IFDEF UseTexture}
-  //glu,
-  {$ENDIF}
+  dglOpenGL,
   SysUtils,
   UIni,
   projectM,

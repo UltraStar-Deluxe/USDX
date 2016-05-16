@@ -66,7 +66,7 @@ const
 implementation
 uses
   sdl2,
-  gl,
+  dglOpenGL,
   USkins,
   UGraphic;
 

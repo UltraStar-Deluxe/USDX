@@ -35,7 +35,7 @@ interface
 
 uses
   SysUtils,
-  gl,
+  dglOpenGL,
   UMusic,
   UTexture;
 

@@ -34,7 +34,7 @@ interface
 {$I switches.inc}
 
 uses
-  gl,
+  dglOpenGL,
   TextGL,
   UMenuText,
   UTexture,

@@ -85,7 +85,7 @@ implementation
 uses
   math,
   sdl2,
-  gl;
+  dglOpenGL;
 
 constructor Tms_Equalizer.Create(Source: IAudioPlayback; mySkin: TThemeEqualizer);
 var

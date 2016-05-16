@@ -320,7 +320,7 @@ implementation
 
 uses
   Math,
-  gl,
+  dglOpenGL,
   UCovers,
   UGraphic,
   UMain,

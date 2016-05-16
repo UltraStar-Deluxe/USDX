@@ -98,7 +98,7 @@ implementation
 uses
   SysUtils,
   Math,
-  gl,
+  dglOpenGL,
   opencv_core,
   TextGL,
   UDrawTexture,

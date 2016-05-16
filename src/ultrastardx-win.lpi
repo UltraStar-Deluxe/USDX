@@ -39,7 +39,7 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="129">
+    <Units Count="130">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -559,6 +559,10 @@
         <Filename Value="base\UFilesystem.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit128>
+      <Unit129>
+        <Filename Value="base\UConfig.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit129>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -568,7 +572,7 @@
       <Filename Value="..\game\ultrastardx"/>
     </Target>
     <SearchPaths>
-      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\OpenGL;lib\SDL2;lib\portaudio;lib\ffmpeg;lib\SQLite;lib\other;lib\openCV;webSDK\cURL\src;webSDK;webSDK\encrypt;$(LazarusDir)\fpc\3.0.0\source\packages\fcl-base\src;$(LazarusDir)\fpc\3.0.0\source\packages\fcl-registry\src;$(LazarusDir)\fpc\3.0.0\source\packages\winunits-base\src;$(LazarusDir)\components\lazutils"/>
+      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\dglOpenGL;lib\SDL2;lib\portaudio;lib\ffmpeg;lib\SQLite;lib\other;lib\openCV;webSDK;webSDK\encrypt;$(LazarusDir)\fpc\3.0.0\source\packages\fcl-base\src;$(LazarusDir)\fpc\3.0.0\source\packages\fcl-registry\src;$(LazarusDir)\fpc\3.0.0\source\packages\winunits-base\src;$(LazarusDir)\components\lazutils;lib\freetype;lib\bass;lib\Lua"/>
       <UnitOutputDirectory Value="..\build\fpc-$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
@@ -578,10 +582,21 @@
         <UseAnsiStrings Value="False"/>
       </SyntaxOptions>
     </Parsing>
+    <CodeGeneration>
+      <SmartLinkUnit Value="True"/>
+      <Checks>
+        <OverflowChecks Value="True"/>
+        <StackChecks Value="True"/>
+      </Checks>
+      <Optimizations>
+        <OptimizationLevel Value="0"/>
+      </Optimizations>
+    </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsStabs"/>
       </Debugging>
+      <LinkSmart Value="True"/>
     </Linking>
     <Other>
       <Verbosity>
@@ -589,6 +604,7 @@
         <ShowHints Value="False"/>
         <ShowHintsForUnusedUnitsInMainSrc Value="True"/>
       </Verbosity>
+      <WriteFPCLogo Value="False"/>
       <ExecuteBefore>
         <Command Value="clean.bat ..\build\fpc-$(TargetCPU)-$(TargetOS)"/>
         <CompileReasons Run="False"/>

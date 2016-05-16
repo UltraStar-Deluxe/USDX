@@ -51,7 +51,7 @@ type
 
 implementation
 uses
-  gl,
+  dglOpenGL,
   UGraphic;
 
 constructor TMenuBackgroundNone.Create(const ThemedSettings: TThemeBackground);
