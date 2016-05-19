@@ -39,7 +39,12 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="130">
+    <RequiredPackages Count="1">
+      <Item1>
+        <PackageName Value="LazUtils"/>
+      </Item1>
+    </RequiredPackages>
+    <Units Count="131">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -563,6 +568,11 @@
         <Filename Value="base\UConfig.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit129>
+      <Unit130>
+        <Filename Value="screens\controllers\uscreensingc.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UScreenSingC"/>
+      </Unit130>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -572,7 +582,7 @@
       <Filename Value="..\game\ultrastardx"/>
     </Target>
     <SearchPaths>
-      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\dglOpenGL;lib\SDL2;lib\portaudio;lib\ffmpeg;lib\SQLite;lib\other;lib\openCV;webSDK;webSDK\encrypt;$(LazarusDir)\fpc\3.0.0\source\packages\fcl-base\src;$(LazarusDir)\fpc\3.0.0\source\packages\fcl-registry\src;$(LazarusDir)\fpc\3.0.0\source\packages\winunits-base\src;$(LazarusDir)\components\lazutils;lib\freetype;lib\bass;lib\Lua"/>
+      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\dglOpenGL;lib\SDL2;lib\portaudio;lib\ffmpeg;lib\SQLite;lib\other;lib\openCV;webSDK;webSDK\encrypt;$(LazarusDir)\components\lazutils;lib\freetype;lib\bass;lib\Lua;screens\controllers"/>
       <UnitOutputDirectory Value="..\build\fpc-$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
@@ -588,6 +598,7 @@
         <OverflowChecks Value="True"/>
         <StackChecks Value="True"/>
       </Checks>
+      <TargetCPU Value="i386"/>
       <Optimizations>
         <OptimizationLevel Value="0"/>
       </Optimizations>
@@ -602,13 +613,16 @@
       <Verbosity>
         <ShowNotes Value="False"/>
         <ShowHints Value="False"/>
-        <ShowHintsForUnusedUnitsInMainSrc Value="True"/>
       </Verbosity>
       <WriteFPCLogo Value="False"/>
       <ExecuteBefore>
         <Command Value="clean.bat ..\build\fpc-$(TargetCPU)-$(TargetOS)"/>
-        <CompileReasons Run="False"/>
+        <ScanForFPCMsgs Value="True"/>
+        <ScanForMakeMsgs Value="True"/>
       </ExecuteBefore>
+      <ExecuteAfter>
+        <CompileReasons Compile="False" Build="False" Run="False"/>
+      </ExecuteAfter>
     </Other>
     <CompileReasons Run="False"/>
   </CompilerOptions>
