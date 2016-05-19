@@ -50,8 +50,7 @@ uses
   LazUTF8Classes,
   {$IFEND}
   FreeType,
-  gl,
-  glext,
+  dglOpenGL,
   glu,
   sdl2,
   Math,
