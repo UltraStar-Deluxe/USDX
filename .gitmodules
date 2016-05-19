@@ -1,0 +1,3 @@
+[submodule "travis-lazarus"]
+	path = travis-lazarus
+	url = https://github.com/nielsAD/travis-lazarus.git
