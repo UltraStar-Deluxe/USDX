@@ -1,4 +1,5 @@
 # UltraStar Deluxe 1.3 trunk README
+[![Build Status](https://travis-ci.org/UltraStar-Deluxe/USDX.svg?branch=master)](https://travis-ci.org/UltraStar-Deluxe/USDX)
 ```
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                    _______  _________
