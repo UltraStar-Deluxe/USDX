@@ -206,17 +206,17 @@ PKG_HAVE([sqlite3], [sqlite3], yes)
 # Archlinux aur package for 5.3 use lua5.3.pc in order
 # to make it work alongside the 5.2 version.
 PKG_HAVE([lua], [lua5.3], check)
-lua_lib_name="lua5.3"
+lua_LIB_NAME="lua5.3"
 if [[ x$lua_HAVE = xyes ]]; then
 	PKG_VERSION([lua], [lua5.3])
 else
 	PKG_HAVE([lua], [lua5.2], check)
-	lua_lib_name="lua5.2"
+	lua_LIB_NAME="lua5.2"
 	if [[ x$lua_HAVE = xyes ]]; then
 		PKG_VERSION([lua], [lua5.2])
 	else
 		PKG_HAVE([lua], [lua5.1], check)
-		lua_lib_name="lua5.1"
+		lua_LIB_NAME="lua5.1"
 		if [[ x$lua_HAVE = xyes ]]; then
 			PKG_VERSION([lua], [lua5.1])
 		else
