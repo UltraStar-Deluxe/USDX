@@ -145,6 +145,14 @@ AC_CANONICAL_HOST
 # sets PFLAGS, FPC_VERSION, FPC_DEBUG, etc.
 AC_PROG_FPC
 
+if [[ "$FPC_VERSION_MAJOR" -lt 3 ]]; then
+   AC_MSG_ERROR([
+!!! fpc (the free Pascal compiler) is required in at least
+!!! version 3.0.0, but only version $FPC_VERSION was found.
+!!! Please install a newer fpc version.
+]) 
+fi
+
 # find and test the C compiler (for C-libs and wrappers)
 AC_PROG_CC
 AC_LANG([C])

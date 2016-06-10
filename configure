@@ -3078,6 +3078,14 @@ true ${PFLAGS_RELEASE:=\$(PFLAGS_RELEASE_DEFAULT)}
 
 
 
+if [ "$FPC_VERSION_MAJOR" -lt 3 ]; then
+   as_fn_error $? "
+!!! fpc (the free Pascal compiler) is required in at least
+!!! version 3.0.0, but only version $FPC_VERSION was found.
+!!! Please install a newer fpc version.
+" "$LINENO" 5
+fi
+
 # find and test the C compiler (for C-libs and wrappers)
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -5201,7 +5209,7 @@ See the pkg-config man page for more details.
         fi
     fi
 
-lua_lib_name="lua5.3"
+lua_LIB_NAME="lua5.3"
 if [ x$lua_HAVE = xyes ]; then
 
     if test x$lua_HAVE = xyes; then
@@ -5430,7 +5438,7 @@ See the pkg-config man page for more details.
         fi
     fi
 
-	lua_lib_name="lua5.2"
+	lua_LIB_NAME="lua5.2"
 	if [ x$lua_HAVE = xyes ]; then
 
     if test x$lua_HAVE = xyes; then
@@ -5659,7 +5667,7 @@ See the pkg-config man page for more details.
         fi
     fi
 
-		lua_lib_name="lua5.1"
+		lua_LIB_NAME="lua5.1"
 		if [ x$lua_HAVE = xyes ]; then
 
     if test x$lua_HAVE = xyes; then
