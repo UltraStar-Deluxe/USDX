@@ -3,18 +3,22 @@
 ```
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                    _______  _________
-            ___   /       \/         \_______
-           /   \  \      _/    /\____/       \__________
-          /   _/  /     / \______             \         \___    _____
-         /   |___/      \     \_/             /          \  \  /     \
-         \              /\                   /   |\       \  \/      /
-          \            /  \_ultrastardeluxe_/    |/       /         /
-           \______www_/                 |____________org_/          \
-                                                      /      /\      \
-                                                      \_____/  \_____/
+            ___   /       \/         \
+           /   \  \      _/    /\____/\__________
+          /   _/  /     / \______      \         \___    _____
+         /   |___/      \     \_/       /          \  \  /     \
+         \              /\             /   |\       \  \/      /
+          \            /  \_ultrastar_/    |/       /         /
+           \______www_/              |___deluxe____/          \
+                                                 /      /\      \
+                                                 \_org_/  \_____/
                                                                     
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+```
+Official Project Website: http://sourceforge.net/projects/ultrastardx/
 
+![UltraStar Deluxe Logo](https://github.com/UltraStar-Deluxe/USDX/blob/master/icons/ultrastardx-icon_256.png)
+```
  ============================
 = 1. About                   =
 = 2. Release Notes           =
@@ -22,7 +26,6 @@
 = 4. Controls                =
  ============================
 
-SF.Net Page: http://sourceforge.net/projects/ultrastardx/
 
  ====================
  = 1. About         =
@@ -42,6 +45,7 @@ Mac OS X.
  ====================
  = 2. Release Notes =
  ====================
+- New features contain 6 player on one screen capability, jukebox player, new song selection screen modes (chessboard, carousell, slot machine, Slide, List, Tile), during gameplay you can see on the time bar when there are lyrics to sing, duet mode, 
 
 - To set additional song directories change your config.ini like this:
   [Directories]
@@ -62,12 +66,10 @@ Mac OS X.
   [Controller]
   Joypad=On
 
-- To Enable 4 to 6 player mode 2 screens are needed.
-  Disable the full screen mode, extend your desktop horizontally and set
-  the resolution to fill one screen.
-  Add to Config.ini:
-  [Graphics]
-  Screens=2
+- To enable 2 or 3 player each on 2 screens,
+  disable the full screen mode, extend your desktop horizontally 
+  and set the resolution to fill one screen.
+  Then, in the config.ini set Screens=2
 
 - Press Alt + F[1..12] in NameScreen to save the name of a player
   Press F[1..12] to load the name of a player
@@ -78,7 +80,9 @@ Mac OS X.
  ==============================
  = 3. Command-Line Parameters =
  ==============================
-
+This is currently broken / in development.
+```
+<!---
 Command-line parameters are passed to the game adding it to the path of a
 shortcut or starting the game within the console.
 
@@ -123,24 +127,61 @@ ultrastar.exe -NoLog -Language polish
 
 Start with a customs configuration file and score database:
 ultrastar.exe -ConfigFile C:\Ultrastar\Configs\PartyConfig.ini -ScoreFile C:\Ultrastar\Scores\PartyScores.db
+--->
 
+###4. Controls
+####Song
+####Shortcuts for song selection screen
+|Keys | Action|
+| :--- | :--- |
+| J | open the "Search for a Song" interface |
+| [Enter] | confirm song or menu selection |
+| [Escape] | go to the previous screen |
+| R | select a random song/category |
+| [Alt] + [Letter] | jump to a artist with the first letter [Letter] |
+| [Alt] + [Shift] + [Letter] | jump to a title with the first letter [Letter] |
+| [Spacebar] | when a duet song is selected, switch first and second voice |
 
- ===============
- = 4. Controls =
- ===============
+####Shortcuts for song editor
+|Keys | Action|
+| :--- | :--- | 
+|arrow right	|select next syllable                                                             |
+|arrow left	|select previous syllable                                                         |
+|arrow up	|select next sentence                                                             |
+|arrow down	|select previous sentence                                                         |
+|ctrl + arrow right/left	|move only beginning of note to earlier/later                         |
+|Alt + arrow right/left	|move only ending of note to earlier/later                            |
+|Shift + arrow up/down	|change pitch of selected note                                        |
+|Shift + arrow right/left	|move the note (beginning and ending) to earlier/later            |
+|	                                                                                          |
+|=	|increase BPM                                                                              |
+|-	|decrease BPM                                                                              |
+|f	|toggle note freestyle/normal                                                              |
+|g	|toggle note golden/normal                                                                 |
+|t	|auto-fix timings of sentence switching                                                    |
+|v	|play audio + video and follow the lyrics                                                  |
+|	                                                                                          |
+|Ctrl + z	|undo last change                                                                  |
+|s	|save changes                                                                              |
+|p	|play current sentence audio                                                               |
+|Shift + P	|play current sentence midi                                                        |
+|Ctrl + Shift + P	|play current sentence audio and midi                                      |
+|	                                                                                          |
+|	                                                                                          |
+|double click on a note	|split note in two parts on the beat at mouse cursor location          |
+|select and drag a note up/down	|change pitch of a note                                        |
+|select and drag a note left/right	|move the beginning beat of the note to earlier / later    |
+|	                                                                                          |
+|4	|copy sentence                                                                             |
+|5 |copy sentence	                                                                              |
+|	                                                                                          |
+|7	|lower video gap                                                                           |
+|8 	|increase video gap                                                                        |
+|9	|decrease GAP                                                                              |
+|0	|increase GAP                                                                              |
 
-[J]      to open the "Search for a Song" interface
-[Cursor] to navigate through the screens.
-[Enter]  to confirm
-[Escape] to go to the previous screen.
-
-Songscreen
-[R],
-  [Shift] + [R],
-  [Strg]  + [R]            select a random song/category
-[Alt] + [Letter]           jump to a artist with the first letter [Letter]
-[Alt] + [Shift] + [Letter] jump to a title with the first letter [Letter]
-
-
-Editor controls are described in documentation.pdf
-```
+####Shortcuts for sing screen
+|Keys | Action|
+| :--- | :--- |
+| s | jump forward to 5 seconds before first singing note |
+| [Esc] or [Backspace] | cancel current song |
