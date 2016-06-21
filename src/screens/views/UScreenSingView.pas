@@ -495,7 +495,6 @@ var
   I: integer;
   Color: cardinal;
 begin
-  inherited Create;
   lastVolume:= -1;
   //too dangerous, a mouse button is quickly pressed by accident
   ScreenSing.RightMbESC := false;

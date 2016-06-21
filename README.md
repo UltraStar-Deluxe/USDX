@@ -39,7 +39,8 @@ The improved stability and code quality of USDX enabled ports to Linux and Mac O
 <!--- - To enable joypad support change config.ini "Joypad=Off" to "Joypad=On"--->
 - To enable 2 or 3 player each on 2 screens, disable the full screen mode, extend your desktop horizontally and set the resolution to fill one screen. Then, in the config.ini set Screens=2 and restart the game.
 - Press Alt + F[1..12] in NameScreen to save the name of a player, press F[1..12] to load the name of a player
-- To enable benchmark run the game with -benchmark parameter
+- The primary folder for songs on OS X is "$HOME/Music/UltraStar Deluxe", which is created when UltraStar Deluxe is run for the first time.
+- On OS X, by default the "config.ini" file is created in "$HOME/Library/Application Support/UltraStarDeluxe" when UltraStar Deluxe is run for the first time.
 
 
 ###3. Command-Line Parameters
@@ -98,8 +99,14 @@ ultrastar.exe -ConfigFile C:\Ultrastar\Configs\PartyConfig.ini -ScoreFile C:\Ult
 |Keys | Action|
 | :--- | :--- |
 | J | open the "Search for a Song" interface |
-| [Enter] | confirm song or menu selection |
+| [Enter] | confirm song, search or menu selection |
 | [Escape] | go to the previous screen |
+| D | play selected song as medley |
+| E | open selected song in song editor |
+| F | add song to medley list |
+| K | toggle on/off experimental automatic voice-removal |
+| M | open the song menu |
+| P | choose a playlist for song selection |
 | R | select a random song/category |
 | [Alt] + [Letter] | jump to a artist with the first letter [Letter] |
 | [Alt] + [Shift] + [Letter] | jump to a title with the first letter [Letter] |
@@ -149,6 +156,8 @@ ultrastar.exe -ConfigFile C:\Ultrastar\Configs\PartyConfig.ini -ScoreFile C:\Ult
 | s | jump forward to 5 seconds before first singing note |
 | v | switch between video, visualisation and background |
 | w | if configured and enabled, show webcam video instead as background |
+| t | toggle time displaying between total, remaining and already played time |
+| [Tab] | switch visualization / camera mode |
 | [Spacebar] | pause / play |
 | [Esc] or [Backspace] | cancel current song or end early |
 | [F11] | switch on the fly between fullscreen and window mode |
@@ -184,5 +193,14 @@ For linking and running the game, the following libraries are also required:
 4. make
 5. make install
 6. ultrastardx
+
+####Compiling on OS X
+- USDX Is built using Homebrew and official FreePascal build
+- You can install Homebrew from http://brew.sh
+- You can get the FPC build from http://www.freepascal.org/down/i386/macosx.var
+- Don't miss XQuartz from http://www.xquartz.org
+- Needed brew libraries can be installed using:
+  * brew install sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_net sdl2_ttf ffmpeg libav portaudio binutils sqlite freetype libpng pcre lua libtiff
+- Pass argument --enable-osx-fink or --enable-osx-brew (default) according to the packaging you are using
 
 Feel free to fork this project, modify it to your hearts content and maybe also do pull requests to this repository for additional features, improvements or clean-ups.
