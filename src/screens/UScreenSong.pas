@@ -326,6 +326,7 @@ uses
   UMain,
   UMenuButton,
   UNote,
+  UAudioPlaybackBase,
   UParty,
   UPlaylist,
   UScreenSongMenu,
@@ -751,8 +752,12 @@ begin
 
       Ord('K'):
         begin
-          //AudioPlayback.AddSoundEffect();
-          //Exit;
+          UAudioPlaybackBase.ToggleVoiceRemoval();
+          StopVideoPreview();
+          StopMusicPreview();
+          StartMusicPreview();
+          StartVideoPreview();
+          Exit;
         end;
 
       Ord('F'):

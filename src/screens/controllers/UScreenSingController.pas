@@ -1381,7 +1381,7 @@ end;
 
 function TScreenSingController.Draw: boolean;
 begin
-  screenSingViewRef.Draw();
+  Result := screenSingViewRef.Draw();
 end;
 
 function TScreenSingController.FinishedMusic: boolean;

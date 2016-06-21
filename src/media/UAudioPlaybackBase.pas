@@ -119,11 +119,18 @@ type
       procedure Close(); override;
   end;
 
+procedure ToggleVoiceRemoval();
+
 implementation
 
 uses
   ULog;
+var doVoiceRemoval: boolean;
 
+procedure ToggleVoiceRemoval();
+begin
+  doVoiceRemoval:=not(doVoiceRemoval);
+end;
 { TAudioPlaybackBase }
 
 function TAudioPlaybackBase.FinalizePlayback: boolean;
@@ -145,7 +152,7 @@ begin
     Exit;
   end;
 
-  //MusicStream.AddSoundEffect(TVoiceRemoval.Create());
+  if doVoiceRemoval then MusicStream.AddSoundEffect(TVoiceRemoval.Create());
 
   Result := true;
 end;
