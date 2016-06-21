@@ -186,6 +186,7 @@ type
   end;
 
 var screenSingViewRef: TScreenSingView;
+    TotalTime:              real;
 
 implementation
 

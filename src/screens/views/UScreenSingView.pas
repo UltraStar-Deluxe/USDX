@@ -204,7 +204,6 @@ type
     procedure DrawInfoLyricBar();
   end;
 var
-  TotalTime:              real;
   lastVolume: single;
 
 implementation
@@ -1059,6 +1058,9 @@ begin
   ScreenSing.LyricsDuetP2 := TLyricEngine.Create(
       Theme.LyricBarDuetP2.UpperX, Theme.LyricBarDuetP2.UpperY, Theme.LyricBarDuetP2.UpperW, Theme.LyricBarDuetP2.UpperH,
       Theme.LyricBarDuetP2.LowerX, Theme.LyricBarDuetP2.LowerY, Theme.LyricBarDuetP2.LowerW, Theme.LyricBarDuetP2.LowerH);
+
+  ScreenSing.fLyricsSync := TLyricsSyncSource.Create();
+  ScreenSing.fMusicSync := TMusicSyncSource.Create();
 
   SongNameStatic := ScreenSing.AddStatic(Theme.Sing.StaticSongName);;
   SongNameText := ScreenSing.AddText(Theme.Sing.TextSongName);
