@@ -218,6 +218,8 @@ function TScreenSingController.ParseInput(PressedKey: Cardinal; CharCode: UCS4Ch
   PressedDown: boolean): boolean;
 var
   SDL_ModState:  word;
+  i1: integer;
+  Color:      TRGB;
 begin
   Result := true;
   if (PressedDown) then
@@ -239,6 +241,55 @@ begin
           Pause;
 
         Result := false;
+        Exit;
+      end;
+
+      //Restart and pause song
+      Ord('R'):
+      begin
+        if ScreenSong.Mode = smMedley then Exit;
+        for i1 := 0 to High(Player) do
+        with Player[i1] do
+        begin
+          Score          := 0;
+          ScoreLine      := 0;
+          ScoreGolden    := 0;
+
+          ScoreInt       := 0;
+          ScoreLineInt   := 0;
+          ScoreGoldenInt := 0;
+          ScoreTotalInt  := 0;
+
+          ScoreLast      := 0;
+
+          LastSentencePerfect := false;
+        end;
+        AudioPlayback.SetPosition(CurrentSong.Start);
+        if (Assigned(fCurrentVideo)) then
+           fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start;// + (CurrentSong.gap / 1000.0 - 5.0);
+        Scores.KillAllPopUps;
+        // setup score manager
+        Scores.ClearPlayers; // clear old player values
+        Color.R := 0;
+        Color.G := 0;
+        Color.B := 0;
+
+        // add new players
+        for i1 := 0 to PlayersPlay - 1 do
+        begin
+          Scores.AddPlayer(Tex_ScoreBG[i1], Color);
+        end;
+        LyricsState.SetCurrentTime(CurrentSong.Start);
+        Scores.Init;
+        LyricsState.Reset();
+        LyricsState.SetCurrentTime(CurrentSong.Start);
+        LyricsState.StartTime := CurrentSong.Gap;
+        if CurrentSong.Finish > 0 then
+          LyricsState.TotalTime := CurrentSong.Finish / 1000
+        else
+          LyricsState.TotalTime := AudioPlayback.Length;
+
+        LyricsState.UpdateBeats();
         Exit;
       end;
 
