@@ -281,15 +281,6 @@ begin
         end;
         LyricsState.SetCurrentTime(CurrentSong.Start);
         Scores.Init;
-        LyricsState.Reset();
-        LyricsState.SetCurrentTime(CurrentSong.Start);
-        LyricsState.StartTime := CurrentSong.Gap;
-        if CurrentSong.Finish > 0 then
-          LyricsState.TotalTime := CurrentSong.Finish / 1000
-        else
-          LyricsState.TotalTime := AudioPlayback.Length;
-
-        LyricsState.UpdateBeats();
         Exit;
       end;
 
