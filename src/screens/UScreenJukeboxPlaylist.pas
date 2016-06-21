@@ -288,6 +288,8 @@ begin
 
   if Playlist = 2 then
   begin
+    if(High(PlaylistMan.PlayLists[Playlist2].Items)>0) then
+    begin
     for I := 0 to High(PlaylistMan.PlayLists[Playlist2].Items) do
     begin
       ScreenJukebox.AddSongToJukeboxList(PlaylistMan.PlayLists[Playlist2].Items[I].SongID);
@@ -296,6 +298,11 @@ begin
     ScreenJukebox.CurrentSongID := ScreenJukebox.JukeboxVisibleSongs[0];
 
     FadeTo(@ScreenJukebox);
+    end
+    else
+    begin
+      Log.LogWarn('Can not play selected playlist in JukeBox because playlist is empty or no song found.', 'ScreenJukeboxPlaylist.InitJukeBox');
+    end;
   end;
 
   if PlayList = 3 then
