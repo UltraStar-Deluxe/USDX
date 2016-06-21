@@ -44,7 +44,7 @@
         <PackageName Value="LazUtils"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="129">
+    <Units Count="130">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -366,7 +366,7 @@
         <IsPartOfProject Value="True"/>
       </Unit79>
       <Unit80>
-        <Filename Value="screens\UScreenSing.pas"/>
+        <Filename Value="screens\controllers\UScreenSingController.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit80>
       <Unit81>
@@ -564,6 +564,10 @@
         <Filename Value="base\UFilesystem.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit128>
+      <Unit129>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit129>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -573,7 +577,7 @@
       <Filename Value="..\game\ultrastardx"/>
     </Target>
     <SearchPaths>
-      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\OpenGL;lib\SDL2;lib\portaudio;lib\SQLite;lib\other;lib\openCV;webSDK;webSDK\encrypt"/>
+      <OtherUnitFiles Value="base;lua;media;menu;screens;screens\views;screens\controllers;lib\OpenGL;lib\SDL2;lib\portaudio;lib\SQLite;lib\other;lib\openCV;webSDK;webSDK\encrypt"/>
       <UnitOutputDirectory Value="..\build\fpc-$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

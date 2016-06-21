@@ -3,13 +3,12 @@
   <ProjectSession>
     <PathDelim Value="\"/>
     <Version Value="9"/>
-    <Units Count="184">
+    <Units Count="166">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
-        <TopLine Value="328"/>
-        <CursorPos X="3" Y="345"/>
+        <TopLine Value="301"/>
+        <CursorPos X="66" Y="314"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit0>
@@ -25,6 +24,7 @@
         <Filename Value="base\TextGL.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
+        <TopLine Value="19"/>
         <UsageCount Value="200"/>
       </Unit2>
       <Unit3>
@@ -35,14 +35,17 @@
       <Unit4>
         <Filename Value="base\UCommandLine.pas"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="75"/>
+        <CursorPos Y="105"/>
         <UsageCount Value="200"/>
       </Unit4>
       <Unit5>
         <Filename Value="base\UCommon.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="50"/>
-        <CursorPos X="47" Y="67"/>
+        <TopLine Value="35"/>
+        <CursorPos X="63" Y="35"/>
         <UsageCount Value="200"/>
       </Unit5>
       <Unit6>
@@ -57,6 +60,8 @@
         <Filename Value="base\UDataBase.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
+        <TopLine Value="455"/>
+        <CursorPos X="35" Y="473"/>
         <UsageCount Value="200"/>
       </Unit7>
       <Unit8>
@@ -64,23 +69,24 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="57"/>
-        <CursorPos X="44" Y="73"/>
+        <CursorPos X="17" Y="73"/>
         <UsageCount Value="200"/>
       </Unit8>
       <Unit9>
         <Filename Value="base\UDraw.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="76"/>
-        <CursorPos X="5" Y="101"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="94"/>
+        <CursorPos X="32" Y="96"/>
         <UsageCount Value="200"/>
+        <Loaded Value="True"/>
       </Unit9>
       <Unit10>
         <Filename Value="base\UEditorLyrics.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="19"/>
-        <CursorPos X="5" Y="38"/>
+        <CursorPos X="12" Y="38"/>
         <UsageCount Value="200"/>
       </Unit10>
       <Unit11>
@@ -95,48 +101,48 @@
         <Filename Value="base\UFont.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="2871"/>
-        <CursorPos X="22" Y="2888"/>
+        <TopLine Value="33"/>
+        <CursorPos X="13" Y="53"/>
         <UsageCount Value="200"/>
       </Unit12>
       <Unit13>
         <Filename Value="base\UGraphic.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="55"/>
-        <CursorPos X="22" Y="76"/>
+        <EditorIndex Value="6"/>
+        <TopLine Value="11"/>
+        <CursorPos Y="337"/>
         <UsageCount Value="200"/>
+        <Loaded Value="True"/>
       </Unit13>
       <Unit14>
         <Filename Value="base\UGraphicClasses.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="128"/>
-        <CursorPos X="26" Y="111"/>
+        <TopLine Value="124"/>
+        <CursorPos X="12" Y="130"/>
         <UsageCount Value="200"/>
       </Unit14>
       <Unit15>
         <Filename Value="base\UImage.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="453"/>
-        <CursorPos Y="481"/>
+        <TopLine Value="813"/>
+        <CursorPos X="15" Y="824"/>
         <UsageCount Value="200"/>
       </Unit15>
       <Unit16>
         <Filename Value="base\UIni.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="1266"/>
-        <CursorPos X="32" Y="1298"/>
+        <CursorPos X="57" Y="23"/>
         <UsageCount Value="200"/>
       </Unit16>
       <Unit17>
         <Filename Value="base\UJoystick.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="105"/>
-        <CursorPos X="34" Y="118"/>
+        <TopLine Value="27"/>
+        <CursorPos X="24" Y="51"/>
         <UsageCount Value="200"/>
       </Unit17>
       <Unit18>
@@ -148,34 +154,35 @@
         <Filename Value="base\ULog.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="110"/>
-        <CursorPos X="3" Y="127"/>
+        <TopLine Value="369"/>
+        <CursorPos Y="385"/>
         <UsageCount Value="200"/>
       </Unit19>
       <Unit20>
         <Filename Value="base\ULyrics.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="5"/>
-        <CursorPos X="5" Y="37"/>
+        <TopLine Value="22"/>
+        <CursorPos X="13" Y="37"/>
         <UsageCount Value="200"/>
       </Unit20>
       <Unit21>
         <Filename Value="base\UMain.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="461"/>
-        <CursorPos X="28" Y="509"/>
+        <EditorIndex Value="7"/>
+        <TopLine Value="105"/>
+        <CursorPos X="3" Y="42"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit21>
       <Unit22>
         <Filename Value="base\UMusic.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="88"/>
-        <CursorPos X="5" Y="113"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="422"/>
+        <CursorPos X="17" Y="439"/>
         <UsageCount Value="200"/>
+        <Loaded Value="True"/>
       </Unit22>
       <Unit23>
         <Filename Value="base\UParty.pas"/>
@@ -190,29 +197,40 @@
       <Unit25>
         <Filename Value="base\UPlatformLinux.pas"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="115"/>
         <UsageCount Value="200"/>
       </Unit25>
       <Unit26>
         <Filename Value="base\UPlatformMacOSX.pas"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="188"/>
+        <CursorPos X="35" Y="194"/>
         <UsageCount Value="200"/>
       </Unit26>
       <Unit27>
         <Filename Value="base\UPlatformWindows.pas"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="35"/>
+        <CursorPos X="17" Y="61"/>
         <UsageCount Value="200"/>
       </Unit27>
       <Unit28>
         <Filename Value="base\UPlaylist.pas"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="360"/>
+        <CursorPos X="12" Y="377"/>
         <UsageCount Value="200"/>
       </Unit28>
       <Unit29>
         <Filename Value="base\URecord.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="251"/>
-        <CursorPos X="7" Y="273"/>
+        <TopLine Value="272"/>
+        <CursorPos X="29" Y="287"/>
         <UsageCount Value="200"/>
       </Unit29>
       <Unit30>
@@ -230,7 +248,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="12"/>
-        <CursorPos X="5" Y="37"/>
+        <CursorPos X="12" Y="37"/>
         <UsageCount Value="200"/>
       </Unit32>
       <Unit33>
@@ -242,56 +260,56 @@
         <Filename Value="base\USong.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="1154"/>
-        <CursorPos X="32" Y="1171"/>
+        <TopLine Value="988"/>
+        <CursorPos X="7" Y="1011"/>
         <UsageCount Value="200"/>
       </Unit34>
       <Unit35>
         <Filename Value="base\USongs.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="190"/>
-        <CursorPos Y="206"/>
+        <TopLine Value="382"/>
+        <CursorPos X="47" Y="411"/>
         <UsageCount Value="200"/>
       </Unit35>
       <Unit36>
         <Filename Value="base\UTexture.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="40"/>
-        <CursorPos X="3" Y="74"/>
+        <TopLine Value="267"/>
+        <CursorPos X="60" Y="317"/>
         <UsageCount Value="200"/>
       </Unit36>
       <Unit37>
         <Filename Value="base\UThemes.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="1424"/>
-        <CursorPos X="3" Y="1449"/>
+        <TopLine Value="220"/>
+        <CursorPos X="81" Y="233"/>
         <UsageCount Value="200"/>
       </Unit37>
       <Unit38>
         <Filename Value="base\UTime.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="60"/>
-        <CursorPos X="7" Y="82"/>
+        <TopLine Value="194"/>
+        <CursorPos X="18" Y="208"/>
         <UsageCount Value="200"/>
       </Unit38>
       <Unit39>
         <Filename Value="menu\UMenuText.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="273"/>
-        <CursorPos X="30" Y="287"/>
+        <TopLine Value="23"/>
+        <CursorPos X="12" Y="39"/>
         <UsageCount Value="200"/>
       </Unit39>
       <Unit40>
         <Filename Value="menu\UDisplay.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="669"/>
-        <CursorPos X="52" Y="685"/>
+        <TopLine Value="132"/>
+        <CursorPos X="13" Y="40"/>
         <UsageCount Value="200"/>
       </Unit40>
       <Unit41>
@@ -299,15 +317,15 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="27"/>
-        <CursorPos Y="38"/>
+        <CursorPos X="12" Y="46"/>
         <UsageCount Value="200"/>
       </Unit41>
       <Unit42>
         <Filename Value="menu\UMenu.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="1673"/>
-        <CursorPos X="8" Y="1693"/>
+        <TopLine Value="1207"/>
+        <CursorPos X="20" Y="1235"/>
         <UsageCount Value="200"/>
       </Unit42>
       <Unit43>
@@ -322,8 +340,8 @@
         <Filename Value="menu\UMenuBackgroundColor.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="24"/>
-        <CursorPos X="5" Y="55"/>
+        <TopLine Value="40"/>
+        <CursorPos X="3" Y="55"/>
         <UsageCount Value="200"/>
       </Unit44>
       <Unit45>
@@ -331,15 +349,15 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="44"/>
-        <CursorPos X="5" Y="69"/>
+        <CursorPos X="12" Y="69"/>
         <UsageCount Value="200"/>
       </Unit45>
       <Unit46>
         <Filename Value="menu\UMenuBackgroundNone.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="22"/>
-        <CursorPos X="5" Y="54"/>
+        <TopLine Value="39"/>
+        <CursorPos X="12" Y="54"/>
         <UsageCount Value="200"/>
       </Unit46>
       <Unit47>
@@ -347,7 +365,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="56"/>
-        <CursorPos X="5" Y="64"/>
+        <CursorPos X="12" Y="64"/>
         <UsageCount Value="200"/>
       </Unit47>
       <Unit48>
@@ -355,7 +373,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="80"/>
-        <CursorPos X="5" Y="105"/>
+        <CursorPos X="12" Y="105"/>
         <UsageCount Value="200"/>
       </Unit48>
       <Unit49>
@@ -363,7 +381,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="15"/>
-        <CursorPos X="5" Y="39"/>
+        <CursorPos X="12" Y="39"/>
         <UsageCount Value="200"/>
       </Unit49>
       <Unit50>
@@ -376,7 +394,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="69"/>
-        <CursorPos X="5" Y="88"/>
+        <CursorPos X="12" Y="88"/>
         <UsageCount Value="200"/>
       </Unit51>
       <Unit52>
@@ -388,22 +406,24 @@
         <Filename Value="menu\UMenuSelectSlide.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="5"/>
-        <CursorPos X="5" Y="37"/>
+        <TopLine Value="22"/>
+        <CursorPos X="12" Y="37"/>
         <UsageCount Value="200"/>
       </Unit53>
       <Unit54>
         <Filename Value="menu\UMenuStatic.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
+        <TopLine Value="24"/>
+        <CursorPos X="12" Y="39"/>
         <UsageCount Value="200"/>
       </Unit54>
       <Unit55>
         <Filename Value="screens\UScreenCredits.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="22"/>
-        <CursorPos X="11" Y="37"/>
+        <TopLine Value="25"/>
+        <CursorPos X="27" Y="38"/>
         <UsageCount Value="200"/>
       </Unit55>
       <Unit56>
@@ -418,32 +438,32 @@
         <Filename Value="screens\UScreenEditConvert.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="54"/>
-        <CursorPos X="3" Y="63"/>
+        <TopLine Value="132"/>
+        <CursorPos X="12" Y="147"/>
         <UsageCount Value="200"/>
       </Unit57>
       <Unit58>
         <Filename Value="screens\UScreenEditHeader.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="411"/>
-        <CursorPos X="18" Y="263"/>
+        <TopLine Value="160"/>
+        <CursorPos X="36" Y="156"/>
         <UsageCount Value="200"/>
       </Unit58>
       <Unit59>
         <Filename Value="screens\UScreenEditSub.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="1416"/>
-        <CursorPos X="75" Y="1454"/>
+        <TopLine Value="38"/>
+        <CursorPos X="12" Y="54"/>
         <UsageCount Value="200"/>
       </Unit59>
       <Unit60>
         <Filename Value="screens\UScreenLevel.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="32"/>
-        <CursorPos X="36" Y="70"/>
+        <TopLine Value="73"/>
+        <CursorPos X="18" Y="85"/>
         <UsageCount Value="200"/>
       </Unit60>
       <Unit61>
@@ -451,7 +471,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="32"/>
-        <CursorPos X="76" Y="60"/>
+        <CursorPos X="12" Y="41"/>
         <UsageCount Value="200"/>
       </Unit61>
       <Unit62>
@@ -459,15 +479,15 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="67"/>
-        <CursorPos X="9" Y="83"/>
+        <CursorPos X="11" Y="82"/>
         <UsageCount Value="200"/>
       </Unit62>
       <Unit63>
         <Filename Value="screens\UScreenName.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="350"/>
-        <CursorPos X="45" Y="387"/>
+        <TopLine Value="430"/>
+        <CursorPos X="47" Y="448"/>
         <UsageCount Value="200"/>
       </Unit63>
       <Unit64>
@@ -475,7 +495,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="15"/>
-        <CursorPos X="75" Y="99"/>
+        <CursorPos X="12" Y="39"/>
         <UsageCount Value="200"/>
       </Unit64>
       <Unit65>
@@ -523,7 +543,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="102"/>
-        <CursorPos X="36" Y="140"/>
+        <CursorPos X="12" Y="120"/>
         <UsageCount Value="200"/>
       </Unit70>
       <Unit71>
@@ -562,7 +582,8 @@
         <Filename Value="screens\UScreenPartyPlayer.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <CursorPos X="7" Y="40"/>
+        <TopLine Value="181"/>
+        <CursorPos X="38" Y="199"/>
         <UsageCount Value="200"/>
       </Unit75>
       <Unit76>
@@ -585,32 +606,33 @@
         <Filename Value="screens\UScreenPopup.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="1082"/>
-        <CursorPos X="10" Y="1079"/>
+        <TopLine Value="1116"/>
+        <CursorPos X="11" Y="1129"/>
         <UsageCount Value="200"/>
       </Unit78>
       <Unit79>
         <Filename Value="screens\UScreenScore.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="292"/>
-        <CursorPos X="6" Y="308"/>
+        <TopLine Value="28"/>
+        <CursorPos X="12" Y="44"/>
         <UsageCount Value="200"/>
       </Unit79>
       <Unit80>
         <Filename Value="screens\UScreenSing.pas"/>
-        <IsPartOfProject Value="True"/>
+        <UnitName Value="UScreenSingView"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="3479"/>
-        <CursorPos X="14" Y="3496"/>
-        <UsageCount Value="200"/>
+        <TopLine Value="241"/>
+        <CursorPos X="20" Y="75"/>
+        <FoldState Value=" T3p80~11 p;P*P0~g5 pj9qF0{P1o"/>
+        <UsageCount Value="199"/>
       </Unit80>
       <Unit81>
         <Filename Value="screens\UScreenSong.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="955"/>
-        <CursorPos X="29" Y="962"/>
+        <TopLine Value="308"/>
+        <CursorPos X="12" Y="323"/>
         <UsageCount Value="200"/>
       </Unit81>
       <Unit82>
@@ -625,8 +647,8 @@
         <Filename Value="screens\UScreenSongMenu.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="42"/>
-        <CursorPos X="58" Y="116"/>
+        <TopLine Value="787"/>
+        <CursorPos X="45" Y="804"/>
         <UsageCount Value="200"/>
       </Unit83>
       <Unit84>
@@ -657,16 +679,16 @@
         <Filename Value="media\UVisualizer.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="136"/>
-        <CursorPos X="15" Y="157"/>
+        <TopLine Value="508"/>
+        <CursorPos X="21" Y="516"/>
         <UsageCount Value="200"/>
       </Unit87>
       <Unit88>
         <Filename Value="media\UAudioConverter.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="47"/>
-        <CursorPos X="14" Y="47"/>
+        <TopLine Value="220"/>
+        <CursorPos X="22" Y="237"/>
         <UsageCount Value="200"/>
       </Unit88>
       <Unit89>
@@ -677,6 +699,9 @@
       <Unit90>
         <Filename Value="media\UAudioCore_Portaudio.pas"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="302"/>
+        <CursorPos X="24" Y="315"/>
         <UsageCount Value="200"/>
       </Unit90>
       <Unit91>
@@ -695,6 +720,9 @@
       <Unit93>
         <Filename Value="media\UAudioInput_Bass.pas"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="456"/>
+        <CursorPos X="62" Y="471"/>
         <UsageCount Value="200"/>
       </Unit93>
       <Unit94>
@@ -706,8 +734,8 @@
         <Filename Value="media\UAudioPlayback_Bass.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="30"/>
-        <CursorPos X="3" Y="47"/>
+        <TopLine Value="691"/>
+        <CursorPos X="23" Y="696"/>
         <UsageCount Value="200"/>
       </Unit95>
       <Unit96>
@@ -733,10 +761,11 @@
       <Unit99>
         <Filename Value="media\UAudioPlaybackBase.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
+        <EditorIndex Value="3"/>
         <TopLine Value="150"/>
         <CursorPos X="20" Y="167"/>
         <UsageCount Value="200"/>
+        <Loaded Value="True"/>
       </Unit99>
       <Unit100>
         <Filename Value="media\UMedia_dummy.pas"/>
@@ -750,8 +779,8 @@
         <Filename Value="media\UMediaCore_FFmpeg.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="214"/>
-        <CursorPos X="18" Y="244"/>
+        <TopLine Value="545"/>
+        <CursorPos X="30" Y="731"/>
         <UsageCount Value="200"/>
       </Unit101>
       <Unit102>
@@ -766,23 +795,24 @@
         <Filename Value="media\UVideo.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="323"/>
-        <CursorPos X="36" Y="332"/>
+        <TopLine Value="50"/>
+        <CursorPos X="13" Y="66"/>
         <UsageCount Value="200"/>
       </Unit103>
       <Unit104>
         <Filename Value="switches.inc"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <CursorPos X="5" Y="6"/>
+        <TopLine Value="97"/>
+        <CursorPos Y="129"/>
         <UsageCount Value="200"/>
       </Unit104>
       <Unit105>
         <Filename Value="config-win.inc"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="44"/>
-        <CursorPos X="49" Y="17"/>
+        <TopLine Value="27"/>
+        <CursorPos X="3" Y="79"/>
         <UsageCount Value="200"/>
       </Unit105>
       <Unit106>
@@ -804,8 +834,8 @@
         <Filename Value="lua\ULuaGl.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="1479"/>
-        <CursorPos X="3" Y="88"/>
+        <TopLine Value="1436"/>
+        <CursorPos X="44" Y="1451"/>
         <UsageCount Value="200"/>
       </Unit109>
       <Unit110>
@@ -821,6 +851,9 @@
       <Unit112>
         <Filename Value="lua\ULuaScreenSing.pas"/>
         <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="99"/>
+        <CursorPos X="12" Y="110"/>
         <UsageCount Value="200"/>
       </Unit112>
       <Unit113>
@@ -851,32 +884,32 @@
         <Filename Value="webSDK\UWebSDK.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="5"/>
-        <CursorPos X="28" Y="16"/>
+        <TopLine Value="19"/>
+        <CursorPos X="22" Y="47"/>
         <UsageCount Value="203"/>
       </Unit117>
       <Unit118>
         <Filename Value="base\UWebcam.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="317"/>
-        <CursorPos Y="335"/>
+        <TopLine Value="57"/>
+        <CursorPos X="12" Y="72"/>
         <UsageCount Value="207"/>
       </Unit118>
       <Unit119>
         <Filename Value="screens\UScreenJukebox.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="1419"/>
-        <CursorPos X="49" Y="1424"/>
+        <TopLine Value="25"/>
+        <CursorPos X="12" Y="40"/>
         <UsageCount Value="206"/>
       </Unit119>
       <Unit120>
         <Filename Value="screens\UScreenOptionsWebcam.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="103"/>
-        <CursorPos X="18" Y="118"/>
+        <TopLine Value="54"/>
+        <CursorPos X="12" Y="70"/>
         <UsageCount Value="206"/>
       </Unit120>
       <Unit121>
@@ -891,16 +924,16 @@
         <Filename Value="base\UNote.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="197"/>
-        <CursorPos X="14" Y="215"/>
+        <TopLine Value="117"/>
+        <CursorPos X="25" Y="134"/>
         <UsageCount Value="202"/>
       </Unit122>
       <Unit123>
         <Filename Value="base\UPath.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="649"/>
-        <CursorPos X="27" Y="668"/>
+        <TopLine Value="1103"/>
+        <CursorPos Y="1121"/>
         <UsageCount Value="200"/>
       </Unit123>
       <Unit124>
@@ -924,377 +957,357 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UUnicodeStringHelper"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="6"/>
-        <CursorPos Y="37"/>
+        <TopLine Value="2"/>
+        <CursorPos X="10" Y="25"/>
         <UsageCount Value="218"/>
       </Unit127>
       <Unit128>
-        <Filename Value="base\UConfig.pas"/>
+        <Filename Value="base\UFilesystem.pas"/>
+        <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
-        <UsageCount Value="198"/>
+        <TopLine Value="481"/>
+        <CursorPos X="28" Y="509"/>
+        <UsageCount Value="207"/>
       </Unit128>
       <Unit129>
-        <Filename Value="base\UCore.pas"/>
-        <UsageCount Value="198"/>
+        <Filename Value="base\UConfig.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="115"/>
+        <CursorPos X="31" Y="125"/>
+        <UsageCount Value="225"/>
       </Unit129>
       <Unit130>
-        <Filename Value="base\UCoreModule.pas"/>
-        <UsageCount Value="198"/>
+        <Filename Value="screens\controllers\uscreensingc.pas"/>
+        <UnitName Value="UScreenSingC"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="13"/>
+        <CursorPos Y="25"/>
+        <FoldState Value=" T3p90}12 pnQrU0#sU p0;R0_%1 piZsO0.116 pl0v00{O5 pk5md0% TMi@P11,"/>
+        <UsageCount Value="239"/>
       </Unit130>
       <Unit131>
-        <Filename Value="base\UHooks.pas"/>
-        <UsageCount Value="198"/>
+        <Filename Value="base\UCore.pas"/>
+        <UsageCount Value="102"/>
       </Unit131>
       <Unit132>
-        <Filename Value="base\UPluginInterface.pas"/>
-        <UsageCount Value="198"/>
+        <Filename Value="base\UCoreModule.pas"/>
+        <UsageCount Value="102"/>
       </Unit132>
       <Unit133>
-        <Filename Value="base\UPluginLoader.pas"/>
-        <UsageCount Value="198"/>
+        <Filename Value="base\UHooks.pas"/>
+        <UsageCount Value="102"/>
       </Unit133>
       <Unit134>
-        <Filename Value="base\UServices.pas"/>
-        <UsageCount Value="198"/>
+        <Filename Value="base\UPluginInterface.pas"/>
+        <UsageCount Value="102"/>
       </Unit134>
       <Unit135>
-        <Filename Value="base\UTextClasses.pas"/>
-        <UsageCount Value="198"/>
+        <Filename Value="base\UPluginLoader.pas"/>
+        <UsageCount Value="102"/>
       </Unit135>
       <Unit136>
-        <Filename Value="screens\UScreenWelcome.pas"/>
-        <UsageCount Value="198"/>
+        <Filename Value="base\UServices.pas"/>
+        <UsageCount Value="102"/>
       </Unit136>
       <Unit137>
-        <Filename Value="screens\UScreenSingModi.pas"/>
-        <UsageCount Value="198"/>
+        <Filename Value="base\UTextClasses.pas"/>
+        <UsageCount Value="102"/>
       </Unit137>
       <Unit138>
-        <Filename Value="base\UModules.pas"/>
-        <UsageCount Value="177"/>
+        <Filename Value="screens\UScreenWelcome.pas"/>
+        <UsageCount Value="102"/>
       </Unit138>
       <Unit139>
+        <Filename Value="screens\UScreenSingModi.pas"/>
+        <UsageCount Value="102"/>
+      </Unit139>
+      <Unit140>
+        <Filename Value="base\UModules.pas"/>
+        <UsageCount Value="81"/>
+      </Unit140>
+      <Unit141>
         <Filename Value="webSDK\encrypt\UMD5.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="360"/>
         <CursorPos X="23" Y="19"/>
-        <UsageCount Value="145"/>
-      </Unit139>
-      <Unit140>
-        <Filename Value="lib\TntUnicodeControls\TntClasses.pas"/>
-        <EditorIndex Value="-1"/>
-        <WindowIndex Value="-1"/>
-        <TopLine Value="-1"/>
-        <CursorPos X="-1" Y="-1"/>
-        <UsageCount Value="63"/>
-      </Unit140>
-      <Unit141>
-        <Filename Value="lib\openCV\opencv_core.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="252"/>
-        <CursorPos X="93" Y="252"/>
-        <UsageCount Value="75"/>
+        <UsageCount Value="49"/>
       </Unit141>
       <Unit142>
-        <Filename Value="lib\openCV\opencv_highgui.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="451"/>
-        <CursorPos X="17" Y="482"/>
-        <UsageCount Value="80"/>
-      </Unit142>
-      <Unit143>
-        <Filename Value="lib\openCV\opencv_imgproc.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="451"/>
-        <CursorPos X="72" Y="488"/>
-        <UsageCount Value="80"/>
-      </Unit143>
-      <Unit144>
-        <Filename Value="menu\UMenuStaticList.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="12"/>
-        <CursorPos Y="12"/>
-        <UsageCount Value="79"/>
-      </Unit144>
-      <Unit145>
-        <Filename Value="screens\UScreenJukeboxPlaylist.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="42"/>
-        <CursorPos X="67" Y="62"/>
-        <UsageCount Value="84"/>
-      </Unit145>
-      <Unit146>
-        <Filename Value="screens\UScreenJukeboxOptions.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="176"/>
-        <CursorPos X="83" Y="214"/>
-        <UsageCount Value="84"/>
-      </Unit146>
-      <Unit147>
-        <Filename Value="screens\UScreenPartyTournamentWin.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="45"/>
-        <CursorPos X="36" Y="83"/>
-        <UsageCount Value="84"/>
-      </Unit147>
-      <Unit148>
-        <Filename Value="screens\UScreenPartyTournamentOptions.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="71"/>
-        <CursorPos X="36" Y="109"/>
-        <UsageCount Value="84"/>
-      </Unit148>
-      <Unit149>
-        <Filename Value="screens\UScreenPartyTournamentPlayer.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="23"/>
-        <CursorPos X="7" Y="38"/>
-        <UsageCount Value="79"/>
-      </Unit149>
-      <Unit150>
-        <Filename Value="screens\UScreenPartyTournamentRounds.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="106"/>
-        <CursorPos X="28" Y="145"/>
-        <UsageCount Value="85"/>
-      </Unit150>
-      <Unit151>
-        <Filename Value="base\UPartyTournament.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="12"/>
-        <CursorPos Y="12"/>
-        <UsageCount Value="79"/>
-      </Unit151>
-      <Unit152>
-        <Filename Value="..\..\..\..\lazarus\fpc\2.6.4\source\packages\fcl-base\src\inifiles.pp"/>
-        <UnitName Value="IniFiles"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="449"/>
-        <CursorPos X="19" Y="463"/>
-        <UsageCount Value="72"/>
-      </Unit152>
-      <Unit153>
-        <Filename Value="lib\JEDI-SDL\SDL\Pas\sdl.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="2320"/>
-        <CursorPos X="58" Y="2329"/>
-        <UsageCount Value="76"/>
-      </Unit153>
-      <Unit154>
-        <Filename Value="lib\JEDI-SDL\OpenGL\Pas\gl.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="1236"/>
-        <CursorPos X="3" Y="1250"/>
-        <UsageCount Value="40"/>
-      </Unit154>
-      <Unit155>
-        <Filename Value="lib\ffmpeg-2.8\avformat.pas"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="27"/>
-      </Unit155>
-      <Unit156>
-        <Filename Value="base\UFilesystem.pas"/>
-        <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="427"/>
-        <CursorPos X="23" Y="436"/>
-        <UsageCount Value="47"/>
-      </Unit156>
-      <Unit157>
-        <Filename Value="base\UUnicodeUtils.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="214"/>
-        <CursorPos Y="232"/>
-        <UsageCount Value="60"/>
-      </Unit157>
-      <Unit158>
-        <Filename Value="screens\UScreenOptionsJukebox.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="634"/>
-        <CursorPos Y="658"/>
-        <UsageCount Value="57"/>
-      </Unit158>
-      <Unit159>
-        <Filename Value="screens\UScreenOptionsNetwork.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="201"/>
-        <CursorPos X="83" Y="239"/>
-        <UsageCount Value="22"/>
-      </Unit159>
-      <Unit160>
-        <Filename Value="screens\UScreenPartyRounds.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="132"/>
-        <CursorPos X="36" Y="170"/>
-        <UsageCount Value="22"/>
-      </Unit160>
-      <Unit161>
-        <Filename Value="lib\SDL2\sdl2.pas"/>
-        <UnitName Value="SDL2"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="144"/>
-        <UsageCount Value="32"/>
-      </Unit161>
-      <Unit162>
-        <Filename Value="lib\SDL2\sdlpixels.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="280"/>
-        <CursorPos X="53" Y="290"/>
-        <UsageCount Value="39"/>
-      </Unit162>
-      <Unit163>
-        <Filename Value="..\..\..\lazarus\fpc\3.0.0\source\rtl\inc\systemh.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="412"/>
-        <CursorPos X="3" Y="429"/>
-        <UsageCount Value="39"/>
-      </Unit163>
-      <Unit164>
-        <Filename Value="lib\freetype\demo\nehe\UFreeType.pas"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="5" Y="11"/>
-        <UsageCount Value="29"/>
-      </Unit164>
-      <Unit165>
-        <Filename Value="lib\projectM\projectM.pas"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="5" Y="17"/>
-        <UsageCount Value="29"/>
-      </Unit165>
-      <Unit166>
-        <Filename Value="lib\OpenGL\moduleloader.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="105"/>
-        <UsageCount Value="3"/>
-      </Unit166>
-      <Unit167>
-        <Filename Value="lib\OpenGL\gl.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="2251"/>
-        <CursorPos X="11" Y="2278"/>
-        <UsageCount Value="83"/>
-      </Unit167>
-      <Unit168>
-        <Filename Value="lib\OpenGL\glu.pas"/>
+        <Filename Value="lib\openCV\opencv_core.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="120"/>
-        <CursorPos X="25" Y="127"/>
-        <UsageCount Value="22"/>
-      </Unit168>
-      <Unit169>
+        <CursorPos X="79" Y="138"/>
+        <UsageCount Value="84"/>
+      </Unit142>
+      <Unit143>
+        <Filename Value="lib\openCV\opencv_highgui.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="299"/>
+        <CursorPos X="7" Y="334"/>
+        <UsageCount Value="39"/>
+      </Unit143>
+      <Unit144>
+        <Filename Value="lib\openCV\opencv_imgproc.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="300"/>
+        <CursorPos X="74" Y="322"/>
+        <UsageCount Value="39"/>
+      </Unit144>
+      <Unit145>
+        <Filename Value="menu\UMenuStaticList.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="24"/>
+        <CursorPos X="12" Y="39"/>
+        <UsageCount Value="126"/>
+      </Unit145>
+      <Unit146>
+        <Filename Value="base\UUnicodeUtils.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="209"/>
+        <CursorPos X="20" Y="228"/>
+        <UsageCount Value="4"/>
+      </Unit146>
+      <Unit147>
+        <Filename Value="lib\OpenGL\gl.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2249"/>
+        <CursorPos X="62" Y="2256"/>
+        <UsageCount Value="129"/>
+      </Unit147>
+      <Unit148>
         <Filename Value="lib\OpenGL\glext.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="9542"/>
-        <CursorPos X="89" Y="2318"/>
-        <UsageCount Value="30"/>
-      </Unit169>
-      <Unit170>
+        <TopLine Value="57"/>
+        <CursorPos X="12" Y="72"/>
+        <UsageCount Value="76"/>
+      </Unit148>
+      <Unit149>
         <Filename Value="lib\SDL2\sdlvideo.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="201"/>
-        <CursorPos X="25" Y="215"/>
-        <UsageCount Value="53"/>
-      </Unit170>
-      <Unit171>
-        <Filename Value="lib\SDL2\sdlkeyboard.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="66"/>
-        <CursorPos X="140" Y="104"/>
-        <UsageCount Value="23"/>
-      </Unit171>
-      <Unit172>
-        <Filename Value="lib\SDL2\sdlevents.inc"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="21"/>
-      </Unit172>
-      <Unit173>
-        <Filename Value="base\UTextEncoding.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="215"/>
-        <CursorPos X="3" Y="124"/>
-        <UsageCount Value="60"/>
-      </Unit173>
-      <Unit174>
-        <Filename Value="..\..\..\lazarus\fpc\3.0.0\source\rtl\inc\objpash.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="403"/>
-        <CursorPos X="29" Y="308"/>
-        <UsageCount Value="32"/>
-      </Unit174>
-      <Unit175>
-        <Filename Value="..\..\..\lazarus\fpc\3.0.0\source\rtl\objpas\classes\classesh.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="922"/>
-        <CursorPos X="77" Y="927"/>
-        <UsageCount Value="32"/>
-      </Unit175>
-      <Unit176>
-        <Filename Value="..\game\languages\Catalan.ini"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="434"/>
-        <CursorPos X="51" Y="437"/>
-        <UsageCount Value="9"/>
-        <DefaultSyntaxHighlighter Value="Ini"/>
-      </Unit176>
-      <Unit177>
-        <Filename Value="..\game\Error.log"/>
-        <EditorIndex Value="-1"/>
-        <UsageCount Value="9"/>
-        <DefaultSyntaxHighlighter Value="None"/>
-      </Unit177>
-      <Unit178>
+        <TopLine Value="243"/>
+        <CursorPos X="16" Y="263"/>
+        <UsageCount Value="64"/>
+      </Unit149>
+      <Unit150>
         <Filename Value="encoding\Locale.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="17"/>
-        <CursorPos X="11" Y="28"/>
-        <UsageCount Value="13"/>
-      </Unit178>
-      <Unit179>
-        <Filename Value="encoding\CP1252.inc"/>
+        <TopLine Value="25"/>
+        <CursorPos X="13" Y="51"/>
+        <UsageCount Value="96"/>
+      </Unit150>
+      <Unit151>
+        <Filename Value="lib\SQLite\SQLiteTable3.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="48"/>
-        <CursorPos X="45" Y="61"/>
-        <UsageCount Value="13"/>
-      </Unit179>
-      <Unit180>
-        <Filename Value="..\..\..\lazarus\fpc\3.0.0\source\rtl\objpas\sysutils\filutilh.inc"/>
+        <TopLine Value="335"/>
+        <CursorPos Y="357"/>
+        <UsageCount Value="96"/>
+      </Unit151>
+      <Unit152>
+        <Filename Value="base\backup\UGraphic.pas.bak"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="107"/>
-        <CursorPos X="20" Y="124"/>
-        <UsageCount Value="12"/>
-      </Unit180>
-      <Unit181>
-        <Filename Value="..\..\..\lazarus\components\lazutils\lazutf8.pas"/>
-        <UnitName Value="LazUTF8"/>
+        <TopLine Value="480"/>
+        <CursorPos X="48" Y="498"/>
+        <UsageCount Value="55"/>
+        <DefaultSyntaxHighlighter Value="None"/>
+      </Unit152>
+      <Unit153>
+        <Filename Value="..\game\config.ini"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="166"/>
-        <CursorPos X="30" Y="174"/>
+        <TopLine Value="104"/>
+        <CursorPos X="17" Y="112"/>
+        <UsageCount Value="60"/>
+        <DefaultSyntaxHighlighter Value="Ini"/>
+      </Unit153>
+      <Unit154>
+        <Filename Value="lib\dglOpenGL\dglOpenGL.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="20596"/>
+        <CursorPos X="71" Y="10"/>
+        <UsageCount Value="70"/>
+      </Unit154>
+      <Unit155>
+        <Filename Value="..\..\..\lazarus\fpc\3.0.0\source\rtl\win\wininc\base.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="108"/>
+        <CursorPos X="6" Y="123"/>
+        <UsageCount Value="63"/>
+      </Unit155>
+      <Unit156>
+        <Filename Value="lib\openCV\opencv_types.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="72" Y="12"/>
+        <UsageCount Value="30"/>
+      </Unit156>
+      <Unit157>
+        <Filename Value="lib\ffmpeg\swscale.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="70"/>
+        <CursorPos X="5" Y="82"/>
+        <UsageCount Value="30"/>
+      </Unit157>
+      <Unit158>
+        <Filename Value="lib\midi\MidiOut.pas"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="30"/>
+      </Unit158>
+      <Unit159>
+        <Filename Value="lib\midi\MidiDefs.pas"/>
+        <UnitName Value="Mididefs"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="12" Y="11"/>
+        <UsageCount Value="30"/>
+      </Unit159>
+      <Unit160>
+        <Filename Value="lib\midi\DelphiMcb.pas"/>
+        <EditorIndex Value="-1"/>
+        <UsageCount Value="30"/>
+      </Unit160>
+      <Unit161>
+        <Filename Value="base\backup\UVideoAcinerella.pas.bak"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="54" Y="19"/>
+        <UsageCount Value="30"/>
+        <DefaultSyntaxHighlighter Value="None"/>
+      </Unit161>
+      <Unit162>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <IsPartOfProject Value="True"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="1681"/>
+        <CursorPos X="33" Y="1689"/>
+        <FoldState Value=" T3mK0~11 p0(N0g411i"/>
+        <UsageCount Value="30"/>
+        <Loaded Value="True"/>
+      </Unit162>
+      <Unit163>
+        <Filename Value="screens\controllers\UScreenSingController.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="417"/>
+        <CursorPos Y="386"/>
+        <FoldState Value=" T3pf0U021 piZtQ0.11412 pkFv50{O5]A5md0%X"/>
+        <UsageCount Value="30"/>
+        <Loaded Value="True"/>
+      </Unit163>
+      <Unit164>
+        <Filename Value="screens\UScreenPartyTournamentRounds.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="161"/>
+        <CursorPos X="49" Y="179"/>
         <UsageCount Value="10"/>
-      </Unit181>
-      <Unit182>
-        <Filename Value="lib\SQLite\example\uTestSqlite.pas"/>
+      </Unit164>
+      <Unit165>
+        <Filename Value="screens\UScreenJukeboxPlaylist.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="160"/>
-        <CursorPos X="14" Y="182"/>
-        <UsageCount Value="10"/>
-      </Unit182>
-      <Unit183>
-        <Filename Value="webSDK\dcpcrypt2-2009\Demos\FileEncrypt\uMain.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="174"/>
-        <CursorPos X="11" Y="191"/>
-        <UsageCount Value="10"/>
-      </Unit183>
+        <TopLine Value="286"/>
+        <CursorPos X="35" Y="291"/>
+        <UsageCount Value="11"/>
+      </Unit165>
     </Units>
-    <JumpHistory Count="1">
+    <JumpHistory Count="24" HistoryIndex="23">
       <Position1>
-        <Filename Value="ultrastardx.dpr"/>
-        <Caret Line="95" Column="7" TopLine="78"/>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="997" Column="39" TopLine="987"/>
       </Position1>
+      <Position2>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="960" Column="9" TopLine="944"/>
+      </Position2>
+      <Position3>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="971" Column="43" TopLine="944"/>
+      </Position3>
+      <Position4>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1433" Column="27" TopLine="1416"/>
+      </Position4>
+      <Position5>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1570" Column="10" TopLine="1638"/>
+      </Position5>
+      <Position6>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1433" Column="27" TopLine="1416"/>
+      </Position6>
+      <Position7>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1623" Column="45" TopLine="1606"/>
+      </Position7>
+      <Position8>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1656" Column="30" TopLine="1639"/>
+      </Position8>
+      <Position9>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1730" Column="29" TopLine="1729"/>
+      </Position9>
+      <Position10>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1433" Column="27" TopLine="1416"/>
+      </Position10>
+      <Position11>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1759" Column="14" TopLine="1745"/>
+      </Position11>
+      <Position12>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1433" Column="27" TopLine="1416"/>
+      </Position12>
+      <Position13>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1788" Column="27" TopLine="1764"/>
+      </Position13>
+      <Position14>
+        <Filename Value="screens\controllers\UScreenSingController.pas"/>
+        <Caret Line="180" Column="14" TopLine="175"/>
+      </Position14>
+      <Position15>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1433" Column="27" TopLine="1416"/>
+      </Position15>
+      <Position16>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1815" Column="29" TopLine="1790"/>
+      </Position16>
+      <Position17>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1430" Column="14" TopLine="1416"/>
+      </Position17>
+      <Position18>
+        <Filename Value="screens\controllers\UScreenSingController.pas"/>
+        <Caret Line="80" Column="5" TopLine="66"/>
+      </Position18>
+      <Position19>
+        <Filename Value="screens\controllers\UScreenSingController.pas"/>
+        <Caret Line="424" Column="20" TopLine="375"/>
+      </Position19>
+      <Position20>
+        <Filename Value="base\UMain.pas"/>
+        <Caret Line="301" Column="5" TopLine="301"/>
+      </Position20>
+      <Position21>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1433" Column="3" TopLine="1422"/>
+      </Position21>
+      <Position22>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1437" Column="32" TopLine="1422"/>
+      </Position22>
+      <Position23>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1444" Column="28" TopLine="1430"/>
+      </Position23>
+      <Position24>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
+        <Caret Line="1442" Column="18" TopLine="1430"/>
+      </Position24>
     </JumpHistory>
   </ProjectSession>
   <Debugging>
-    <BreakPoints Count="4">
+    <BreakPoints Count="10">
       <Item1>
         <Kind Value="bpkSource"/>
         <WatchScope Value="wpsLocal"/>
@@ -1321,8 +1334,50 @@
         <WatchScope Value="wpsLocal"/>
         <WatchKind Value="wpkWrite"/>
         <Source Value="media\UVisualizer.pas"/>
-        <Line Value="166"/>
+        <Line Value="162"/>
       </Item4>
+      <Item5>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="media\UAudioPlayback_Bass.pas"/>
+        <Line Value="370"/>
+      </Item5>
+      <Item6>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="media\UAudioPlayback_Bass.pas"/>
+        <Line Value="372"/>
+      </Item6>
+      <Item7>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="media\UAudioPlayback_Bass.pas"/>
+        <Line Value="762"/>
+      </Item7>
+      <Item8>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="media\UAudioPlayback_Bass.pas"/>
+        <Line Value="764"/>
+      </Item8>
+      <Item9>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="screens\UScreenEditSub.pas"/>
+        <Line Value="889"/>
+      </Item9>
+      <Item10>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="screens\UScreenEditSub.pas"/>
+        <Line Value="901"/>
+      </Item10>
     </BreakPoints>
     <Watches Count="3">
       <Item1>

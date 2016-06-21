@@ -366,212 +366,211 @@
         <IsPartOfProject Value="True"/>
       </Unit79>
       <Unit80>
-        <Filename Value="screens\UScreenSing.pas"/>
+        <Filename Value="screens\UScreenSong.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit80>
       <Unit81>
-        <Filename Value="screens\UScreenSong.pas"/>
+        <Filename Value="screens\UScreenSongJumpto.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit81>
       <Unit82>
-        <Filename Value="screens\UScreenSongJumpto.pas"/>
+        <Filename Value="screens\UScreenSongMenu.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit82>
       <Unit83>
-        <Filename Value="screens\UScreenSongMenu.pas"/>
+        <Filename Value="screens\UScreenStatDetail.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit83>
       <Unit84>
-        <Filename Value="screens\UScreenStatDetail.pas"/>
+        <Filename Value="screens\UScreenStatMain.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit84>
       <Unit85>
-        <Filename Value="screens\UScreenStatMain.pas"/>
+        <Filename Value="screens\UScreenTop5.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit85>
       <Unit86>
-        <Filename Value="screens\UScreenTop5.pas"/>
+        <Filename Value="media\UVisualizer.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit86>
       <Unit87>
-        <Filename Value="media\UVisualizer.pas"/>
+        <Filename Value="media\UAudioConverter.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit87>
       <Unit88>
-        <Filename Value="media\UAudioConverter.pas"/>
+        <Filename Value="media\UAudioCore_Bass.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit88>
       <Unit89>
-        <Filename Value="media\UAudioCore_Bass.pas"/>
+        <Filename Value="media\UAudioCore_Portaudio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit89>
       <Unit90>
-        <Filename Value="media\UAudioCore_Portaudio.pas"/>
+        <Filename Value="media\UAudioDecoder_Bass.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit90>
       <Unit91>
-        <Filename Value="media\UAudioDecoder_Bass.pas"/>
+        <Filename Value="media\UAudioDecoder_FFmpeg.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit91>
       <Unit92>
-        <Filename Value="media\UAudioDecoder_FFmpeg.pas"/>
+        <Filename Value="media\UAudioInput_Bass.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit92>
       <Unit93>
-        <Filename Value="media\UAudioInput_Bass.pas"/>
+        <Filename Value="media\UAudioInput_Portaudio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit93>
       <Unit94>
-        <Filename Value="media\UAudioInput_Portaudio.pas"/>
+        <Filename Value="media\UAudioPlayback_Bass.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit94>
       <Unit95>
-        <Filename Value="media\UAudioPlayback_Bass.pas"/>
+        <Filename Value="media\UAudioPlayback_Portaudio.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit95>
       <Unit96>
-        <Filename Value="media\UAudioPlayback_Portaudio.pas"/>
+        <Filename Value="media\UAudioPlayback_SDL.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit96>
       <Unit97>
-        <Filename Value="media\UAudioPlayback_SDL.pas"/>
+        <Filename Value="media\UAudioPlayback_SoftMixer.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit97>
       <Unit98>
-        <Filename Value="media\UAudioPlayback_SoftMixer.pas"/>
+        <Filename Value="media\UAudioPlaybackBase.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit98>
       <Unit99>
-        <Filename Value="media\UAudioPlaybackBase.pas"/>
+        <Filename Value="media\UMedia_dummy.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit99>
       <Unit100>
-        <Filename Value="media\UMedia_dummy.pas"/>
+        <Filename Value="media\UMediaCore_FFmpeg.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit100>
       <Unit101>
-        <Filename Value="media\UMediaCore_FFmpeg.pas"/>
+        <Filename Value="media\UMediaCore_SDL.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit101>
       <Unit102>
-        <Filename Value="media\UMediaCore_SDL.pas"/>
+        <Filename Value="media\UVideo.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit102>
       <Unit103>
-        <Filename Value="media\UVideo.pas"/>
+        <Filename Value="switches.inc"/>
         <IsPartOfProject Value="True"/>
       </Unit103>
       <Unit104>
-        <Filename Value="switches.inc"/>
+        <Filename Value="config-win.inc"/>
         <IsPartOfProject Value="True"/>
       </Unit104>
       <Unit105>
-        <Filename Value="config-win.inc"/>
+        <Filename Value="lua\ULuaUtils.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit105>
       <Unit106>
-        <Filename Value="lua\ULuaUtils.pas"/>
+        <Filename Value="lua\UHookableEvent.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit106>
       <Unit107>
-        <Filename Value="lua\UHookableEvent.pas"/>
+        <Filename Value="lua\ULuaCore.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit107>
       <Unit108>
-        <Filename Value="lua\ULuaCore.pas"/>
+        <Filename Value="lua\ULuaGl.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit108>
       <Unit109>
-        <Filename Value="lua\ULuaGl.pas"/>
+        <Filename Value="lua\ULuaLog.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit109>
       <Unit110>
-        <Filename Value="lua\ULuaLog.pas"/>
+        <Filename Value="lua\ULuaParty.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit110>
       <Unit111>
-        <Filename Value="lua\ULuaParty.pas"/>
+        <Filename Value="lua\ULuaScreenSing.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit111>
       <Unit112>
-        <Filename Value="lua\ULuaScreenSing.pas"/>
+        <Filename Value="lua\ULuaTextGL.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit112>
       <Unit113>
-        <Filename Value="lua\ULuaTextGL.pas"/>
+        <Filename Value="lua\ULuaTexture.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit113>
       <Unit114>
-        <Filename Value="lua\ULuaTexture.pas"/>
+        <Filename Value="lua\ULuaUsdx.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit114>
       <Unit115>
-        <Filename Value="lua\ULuaUsdx.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit115>
-      <Unit116>
         <Filename Value="lib\bass\delphi\bass.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Bass"/>
+      </Unit115>
+      <Unit116>
+        <Filename Value="webSDK\UWebSDK.pas"/>
+        <IsPartOfProject Value="True"/>
       </Unit116>
       <Unit117>
-        <Filename Value="webSDK\UWebSDK.pas"/>
+        <Filename Value="base\UWebcam.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit117>
       <Unit118>
-        <Filename Value="base\UWebcam.pas"/>
+        <Filename Value="screens\UScreenJukebox.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit118>
       <Unit119>
-        <Filename Value="screens\UScreenJukebox.pas"/>
+        <Filename Value="screens\UScreenOptionsWebcam.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit119>
       <Unit120>
-        <Filename Value="screens\UScreenOptionsWebcam.pas"/>
+        <Filename Value="screens\UScreenAbout.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit120>
       <Unit121>
-        <Filename Value="screens\UScreenAbout.pas"/>
+        <Filename Value="base\UNote.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit121>
       <Unit122>
-        <Filename Value="base\UNote.pas"/>
+        <Filename Value="base\UPath.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit122>
       <Unit123>
-        <Filename Value="base\UPath.pas"/>
+        <Filename Value="..\..\..\lazarus\fpc\3.0.0\source\packages\winunits-base\src\comobj.pp"/>
         <IsPartOfProject Value="True"/>
       </Unit123>
       <Unit124>
-        <Filename Value="..\..\..\lazarus\fpc\3.0.0\source\packages\winunits-base\src\comobj.pp"/>
+        <Filename Value="..\..\..\lazarus\fpc\3.0.0\source\packages\fcl-registry\src\registry.pp"/>
         <IsPartOfProject Value="True"/>
       </Unit124>
       <Unit125>
-        <Filename Value="..\..\..\lazarus\fpc\3.0.0\source\packages\fcl-registry\src\registry.pp"/>
-        <IsPartOfProject Value="True"/>
-      </Unit125>
-      <Unit126>
         <Filename Value="..\..\..\lazarus\components\lazutils\lazutils.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="LazUtils"/>
-      </Unit126>
-      <Unit127>
+      </Unit125>
+      <Unit126>
         <Filename Value="base\uunicodestringhelper.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UUnicodeStringHelper"/>
+      </Unit126>
+      <Unit127>
+        <Filename Value="base\UFilesystem.pas"/>
+        <IsPartOfProject Value="True"/>
       </Unit127>
       <Unit128>
-        <Filename Value="base\UFilesystem.pas"/>
+        <Filename Value="base\UConfig.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit128>
       <Unit129>
-        <Filename Value="base\UConfig.pas"/>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit129>
       <Unit130>
-        <Filename Value="screens\controllers\uscreensingc.pas"/>
+        <Filename Value="screens\controllers\UScreenSingController.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UScreenSingC"/>
       </Unit130>
     </Units>
   </ProjectOptions>
@@ -582,7 +581,7 @@
       <Filename Value="..\game\ultrastardx"/>
     </Target>
     <SearchPaths>
-      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\dglOpenGL;lib\SDL2;lib\portaudio;lib\ffmpeg;lib\SQLite;lib\other;lib\openCV;webSDK;webSDK\encrypt;$(LazarusDir)\components\lazutils;lib\freetype;lib\bass;lib\Lua;screens\controllers"/>
+      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\dglOpenGL;lib\SDL2;lib\portaudio;lib\ffmpeg;lib\SQLite;lib\other;lib\openCV;webSDK;webSDK\encrypt;$(LazarusDir)\components\lazutils;lib\freetype;lib\bass;lib\Lua;screens\controllers;screens\views"/>
       <UnitOutputDirectory Value="..\build\fpc-$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

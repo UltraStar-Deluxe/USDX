@@ -1712,7 +1712,7 @@ begin
     ScreenSing.Statics[StaticPausePopup].Visible := true;
     ScreenSing.Statics[StaticPausePopup].Draw;
     ScreenSing.Statics[StaticPausePopup].Visible := false;
-    SDL_Delay(33);
+    SDL_Delay(33);//wait a bit to save electricity...
   end;
 
   Result := true;
