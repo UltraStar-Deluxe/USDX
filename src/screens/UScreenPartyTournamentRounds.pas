@@ -44,7 +44,7 @@ uses
   UDisplay,
   UMusic,
   UPartyTournament,
-  UScreenSing,
+  UScreenSingController,
   UScreenPartyTournamentWin,
   UThemes;
 
@@ -176,7 +176,7 @@ begin
             LoadPlayersColors;
 
             freeandnil(ScreenSing);
-            ScreenSing  := TScreenSing.Create;
+            ScreenSing  := TScreenSingController.Create;
 
             AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenSong);

@@ -43,7 +43,7 @@ uses
   UNote,
   UFiles,
   SysUtils,
-  UScreenSing,
+  UScreenSingController,
   UScreenPartyNewRound,
   UScreenPartyWin,
   UScreenPartyScore,
@@ -196,7 +196,7 @@ begin
   Party.bPartyGame := true;
   PlayersPlay := Length(Party.Teams);
 
-  ScreenSing := TScreenSing.Create;
+  ScreenSing := TScreenSingController.Create;
   ScreenPartyNewRound := TScreenPartyNewRound.Create;
   ScreenPartyWin := TScreenPartyWin.Create;
   ScreenPartyScore := TScreenPartyScore.Create;

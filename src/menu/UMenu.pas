@@ -56,7 +56,6 @@ type
   PMenu = ^TMenu;
   TMenu = class
     protected
-      Background:       TMenuBackground;
 
       Interactions:     array of TInteract;
       SelInteraction:   integer;
@@ -67,6 +66,7 @@ type
       SelectsS:         array of TSelectSlide;
       ButtonCollection: array of TButtonCollection;
     public
+      Background:       TMenuBackground;
       Text:        array of TText;
       Statics:     array of TStatic;
       StaticsList: array of TStatic;

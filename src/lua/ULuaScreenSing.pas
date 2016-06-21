@@ -114,7 +114,14 @@ const
   );
 
 implementation
-uses UScreenSing, UNote, UDisplay, UGraphic, UMusic, ULuaUtils, SysUtils;
+uses
+  UScreenSingController,
+  UNote,
+  UDisplay,
+  UGraphic,
+  UMusic,
+  ULuaUtils,
+  SysUtils;
 
 { returns a table with following structure:
     t[1..playercount] = score of player i }

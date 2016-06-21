@@ -43,7 +43,7 @@ uses
   ULog,
   ULyrics,
   URecord,
-  UScreenSing,
+  UScreenSingController,
   UScreenJukebox,
   USong,
   UTime;
@@ -128,11 +128,11 @@ const
   MAX_SONG_SCORE = 10000;     // max. achievable points per song
   MAX_SONG_LINE_BONUS = 1000; // max. achievable line bonus per song
 
-procedure Sing(Screen: TScreenSing);
-procedure NewSentence(CP: integer; Screen: TScreenSing);
-procedure NewBeatClick(Screen: TScreenSing);  // executed when on then new beat for click
-procedure NewBeatDetect(Screen: TScreenSing); // executed when on then new beat for detection
-procedure NewNote(CP: integer; Screen: TScreenSing);       // detect note
+procedure Sing(Screen: TScreenSingController);
+procedure NewSentence(CP: integer; Screen: TScreenSingController);
+procedure NewBeatClick(Screen: TScreenSingController);  // executed when on then new beat for click
+procedure NewBeatDetect(Screen: TScreenSingController); // executed when on then new beat for detection
+procedure NewNote(CP: integer; Screen: TScreenSingController);       // detect note
 function  GetMidBeat(Time: real): real;
 function  GetTimeFromBeat(Beat: integer; SelfSong: TSong = nil): real;
 
@@ -298,7 +298,7 @@ begin
   end;
 end;
 
-procedure Sing(Screen: TScreenSing);
+procedure Sing(Screen: TScreenSingController);
 var
   Count:   integer;
   CountGr: integer;
@@ -369,7 +369,7 @@ begin
   Screen.onSentenceChange(Lines[0].Current);
 end;
 
-procedure NewSentence(CP: integer; Screen: TScreenSing);
+procedure NewSentence(CP: integer; Screen: TScreenSingController);
 var
   I: integer;
 begin
@@ -423,7 +423,7 @@ begin
   end;
 end;
 
-procedure NewBeatDetect(Screen: TScreenSing);
+procedure NewBeatDetect(Screen: TScreenSingController);
   var
     MaxCP, CP, SentenceEnd: integer;
     I, J: cardinal;
@@ -468,7 +468,7 @@ begin
   end;
 end;
 
-procedure NewNote(CP: integer; Screen: TScreenSing);
+procedure NewNote(CP: integer; Screen: TScreenSingController);
 var
   LineFragmentIndex:   integer;
   CurrentLineFragment: PLineFragment;

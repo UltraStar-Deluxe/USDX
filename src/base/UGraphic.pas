@@ -63,7 +63,7 @@ uses
   UScreenOptionsWebcam,
   UScreenOptionsJukebox,
   UScreenSong,
-  UScreenSing,
+  UScreenSingController,
   UScreenJukebox,
   UScreenJukeboxOptions,
   UScreenJukeboxPlaylist,
@@ -124,7 +124,7 @@ var
   ScreenName:         TScreenName;
   ScreenLevel:        TScreenLevel;
   ScreenSong:         TScreenSong;
-  ScreenSing:         TScreenSing;
+  ScreenSing:         TScreenSingController;
 
   ScreenJukebox:         TScreenJukebox;
   ScreenJukeboxOptions:  TScreenJukeboxOptions;

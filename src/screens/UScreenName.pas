@@ -45,7 +45,7 @@ uses
   UMusic,
   UNote,
   UScreenScore,
-  UScreenSing,
+  UScreenSingController,
   UScreenTop5,
   ULog,
   UTexture,
@@ -445,7 +445,7 @@ begin
           //ScreenSing.Free;
 
           ScreenScore := TScreenScore.Create;
-          ScreenSing  := TScreenSing.Create;
+          ScreenSing  := TScreenSingController.Create;
           //
 
           AudioPlayback.PlaySound(SoundLib.Start);

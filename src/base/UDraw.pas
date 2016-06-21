@@ -110,7 +110,7 @@ uses
   UParty,
   UMusic,
   URecord,
-  UScreenSing,
+  UScreenSingController,
   UScreenJukebox,
   USong,
   UTexture,
