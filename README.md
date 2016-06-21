@@ -18,71 +18,34 @@
 Official Project Website: http://sourceforge.net/projects/ultrastardx/
 
 ![UltraStar Deluxe Logo](https://github.com/UltraStar-Deluxe/USDX/blob/master/icons/ultrastardx-icon_256.png)
-```
- ============================
-= 1. About                   =
-= 2. Release Notes           =
-= 3. Command-Line Parameters =
-= 4. Controls                =
- ============================
 
 
- ====================
- = 1. About         =
- ====================
-
-UltraStar Deluxe (USDX) is a free and open source karaoke game.  It allows
-up to six players to sing along with music using microphones in order to
-score points, depending on the pitch of the voice and the rhythm of
-singing.
-
+###1. About
+UltraStar Deluxe (USDX) is a free and open source karaoke game. It allows up to six players to sing along with music using microphones in order to score points, depending on the pitch of the voice and the rhythm of singing.
 UltraStar Deluxe is a fork of the original UltraStar (developed by corvus5).
-Many features have been added like party mode, theme support and support
-for more audio and video formats.
-The improved stability and code quality of USDX enabled ports to Linux and
-Mac OS X.
+Many features have been added like party mode, theme support and support for more audio and video formats.
+The improved stability and code quality of USDX enabled ports to Linux and Mac OS X.
 
- ====================
- = 2. Release Notes =
- ====================
-- New features contain 6 player on one screen capability, jukebox player, new song selection screen modes (chessboard, carousell, slot machine, Slide, List, Tile), during gameplay you can see on the time bar when there are lyrics to sing, duet mode, 
-
+###2. Release Notes
+- New features contain 6 player on one screen capability, jukebox player, new song selection screen modes (chessboard, carousell, slot machine, Slide, List, Tile), during gameplay you can see on the time bar when there are lyrics to sing, duet mode, new party modes, support for current versions of Microsoft Windows, 
 - To set additional song directories change your config.ini like this:
+```
   [Directories]
   SongDir1=C:\Users\My\Music\MyUSDXSongs
   SongDir2=F:\EvenMoreUSDXSongs
   SongDir...=... (some more directories)
-
-- To take a screenshot press "PrintScreen" key.
-  Screenshots are saved in the directory "Screenshots".
-
-- To enable joypad support change config.ini:
-
-  [Controller]
-  Joypad=Off
-
-  to
-
-  [Controller]
-  Joypad=On
-
-- To enable 2 or 3 player each on 2 screens,
-  disable the full screen mode, extend your desktop horizontally 
-  and set the resolution to fill one screen.
-  Then, in the config.ini set Screens=2
-
-- Press Alt + F[1..12] in NameScreen to save the name of a player
-  Press F[1..12] to load the name of a player
-
+```
+- To take a screenshot press "PrintScreen" key. Screenshots are saved in the directory "Screenshots".
+<!--- - To enable joypad support change config.ini "Joypad=Off" to "Joypad=On"--->
+- To enable 2 or 3 player each on 2 screens, disable the full screen mode, extend your desktop horizontally and set the resolution to fill one screen. Then, in the config.ini set Screens=2 and restart the game.
+- Press Alt + F[1..12] in NameScreen to save the name of a player, press F[1..12] to load the name of a player
 - To enable benchmark run the game with -benchmark parameter
 
 
- ==============================
- = 3. Command-Line Parameters =
- ==============================
+###3. Command-Line Parameters
 This is currently broken / in development.
-```
-<!---
+
+
 Command-line parameters are passed to the game adding it to the path of a
 shortcut or starting the game within the console.
 
@@ -184,4 +147,42 @@ ultrastar.exe -ConfigFile C:\Ultrastar\Configs\PartyConfig.ini -ScoreFile C:\Ult
 |Keys | Action|
 | :--- | :--- |
 | s | jump forward to 5 seconds before first singing note |
-| [Esc] or [Backspace] | cancel current song |
+| v | switch between video, visualisation and background |
+| w | if configured and enabled, show webcam video instead as background |
+| [Spacebar] | pause / play |
+| [Esc] or [Backspace] | cancel current song or end early |
+| [F11] | switch on the fly between fullscreen and window mode |
+
+###5. Build and Run
+Freepascal 3.0.0 or newer is required to compile UltraStar Deluxe. If you had some older version of fpc installed before, make sure to remove everything of it correctly before trying to install freepascal (otherwise compiling will fail with various weird error messages). Also, using the 3.0-development branch with current fixes is suggested.
+If you want to help the project by coding patches, we suggest you to use the [Lazarus 1.6](http://www.lazarus-ide.org/) or newer integrated development environment.
+For linking and running the game, the following libraries are also required:
+- SDL2, SDL2_gfx, SDL2_mixer, SDL2_image, SDL2_ttf,
+- ffmpeg 2.8 or older
+- sqlite
+- [bass](http://www.un4seen.com/bass.html)
+- some fonts like ttf-dejavu and ttf-freefont
+- portaudio
+- pcre
+- lua 5.1 or 5.2 or 5.3
+- opencv if you want webcam support
+
+####Compiling using Lazarus
+1. Start Lazarus.
+2. Choose Project → Open Project … in the menu bar. A file-dialog box will show.
+3. Change to the src subdirectory of your USDX working copy (e.g. ultrastardx/src).
+  * If you are running Windows, open the ultrastardx-win.lpi project-file.
+  * On Unix-like systems use the ultrastardx-unix.lpi file.
+4. Now you can compile USDX by choosing the menu entry Run → Build or pressing Ctrl+F9.
+8. If you want to compile and/or start USDX directly choose Run → Run or press F9.
+
+####Compiling on linux/bsd using make
+1. make sure all required libraries are installed
+2. git clone https://github.com/UltraStar-Deluxe/USDX
+2. cd USDX
+3. ./configure (or use autoconf)
+4. make
+5. make install
+6. ultrastardx
+
+Feel free to fork this project, modify it to your hearts content and maybe also do pull requests to this repository for additional features, improvements or clean-ups.
