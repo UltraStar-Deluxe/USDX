@@ -30,3 +30,4 @@ Benedikt Krueger
 Holger Kuhn "hawkear"
 Florian Küpper "flokuep"
 Wesley Stessens "profoX"
+various other people, see commit log from github.com/UltraStar-Deluxe/USDX and github.com/UltraStar-Deluxe/mirror
