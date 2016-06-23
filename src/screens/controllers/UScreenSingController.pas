@@ -852,29 +852,25 @@ begin
         else
           Lyrics.FontStyle := ftOutline2;
 
-        if (CurrentSong.isDuet) then
-        begin
-          Lyrics.LineColor_en.R := 0.7;
-          Lyrics.LineColor_en.G := 0.7;
-          Lyrics.LineColor_en.B := 0.7;
-          Lyrics.LineColor_en.A := 1;
-        end
-        else
-        begin
-          Lyrics.LineColor_en.R := 0.75;
-          Lyrics.LineColor_en.G := 0.75;
-          Lyrics.LineColor_en.B := 1;
-          Lyrics.LineColor_en.A := 1;
-        end;
+        Col := GetLyricGrayColor(Ini.JukeboxActualLineColor);
 
-        Lyrics.LineColor_dis.R := 0.8;
-        Lyrics.LineColor_dis.G := 0.8;
-        Lyrics.LineColor_dis.B := 0.8;
+        Lyrics.LineColor_en.R := Col.R;
+        Lyrics.LineColor_en.G := Col.G;
+        Lyrics.LineColor_en.B := Col.B;
+        Lyrics.LineColor_en.A := 1;
+
+        Col := GetLyricGrayColor(Ini.JukeboxNextLineColor);
+
+        Lyrics.LineColor_dis.R := Col.R;
+        Lyrics.LineColor_dis.G := Col.G;
+        Lyrics.LineColor_dis.B := Col.B;
         Lyrics.LineColor_dis.A := 1;
 
-        Lyrics.LineColor_act.R := Col.R; //0.5;
-        Lyrics.LineColor_act.G := Col.G; //0.5;
-        Lyrics.LineColor_act.B := Col.B; //1;
+        Col := GetLyricColor(Ini.JukeboxSingLineColor);
+
+        Lyrics.LineColor_act.R := Col.R;
+        Lyrics.LineColor_act.G := Col.G;
+        Lyrics.LineColor_act.B := Col.B;
         Lyrics.LineColor_act.A := 1;
       end;
     end; // case
