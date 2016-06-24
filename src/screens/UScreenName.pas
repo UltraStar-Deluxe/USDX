@@ -42,6 +42,7 @@ uses
   UFiles,
   md5,
   UMenu,
+  UIni,
   UMusic,
   UNote,
   UScreenScore,
@@ -74,13 +75,13 @@ type
 
       isScrolling: boolean;   // true if avatar flow is about to move
 
-      PlayerCurrent:       array [0..5] of integer;
-      PlayerCurrentText:   array [0..5] of integer;
-      PlayerCurrentAvatar: array [0..5] of integer;
+      PlayerCurrent:       array [0..UIni.IMaxPlayerCount-1] of integer;
+      PlayerCurrentText:   array [0..UIni.IMaxPlayerCount-1] of integer;
+      PlayerCurrentAvatar: array [0..UIni.IMaxPlayerCount-1] of integer;
 
-      PlayerNames:   array [0..5] of UTF8String;
-      PlayerAvatars: array [0..5] of integer;
-      PlayerLevel:   array [0..5] of integer;
+      PlayerNames:   array [0..UIni.IMaxPlayerCount-1] of UTF8String;
+      PlayerAvatars: array [0..UIni.IMaxPlayerCount-1] of integer;
+      PlayerLevel:   array [0..UIni.IMaxPlayerCount-1] of integer;
 
       APlayerColor: array of integer;
 
@@ -114,7 +115,7 @@ type
   end;
 
 var
-  Num: array[0..5]of integer;
+  Num: array[0..UIni.IMaxPlayerCount-1]of integer;
 
 implementation
 
@@ -122,7 +123,6 @@ uses
   Math,
   UCommon,
   UGraphic,
-  UIni,
   ULanguage,
   UMenuButton,
   UPath,
@@ -400,8 +400,7 @@ begin
       SDLK_RETURN:
         begin
           Ini.Players := CountIndex;
-          if (Ini.Players >= 0) and (Ini.Players <= 3) then PlayersPlay := Ini.Players + 1;
-          if (Ini.Players = 4) then PlayersPlay := 6;
+          PlayersPlay:= UIni.IPlayersVals[CountIndex];
 
           for I := 1 to PlayersPlay do
           begin
@@ -486,8 +485,8 @@ begin
             RefreshPlayers();
 
           if (Interaction = 1) then
-          begin
-            if ((PlayerIndex < CountIndex) or ((CountIndex = 4) and (PlayerIndex <= CountIndex))) then
+          begin //TODO: adapt this to new playersize
+              if (PlayerIndex < UIni.IPlayersVals[CountIndex]-1) then
             begin
               PlayerIndex := PlayerIndex + 1;
 
@@ -578,8 +577,10 @@ begin
   SetLength(PlayerAvatarButtonMD5, Length(AvatarsList) + 1);
 
   // 1st no-avatar dummy
-  for I := 1 to 6 do
+  for I := 1 to UIni.IMaxPlayerCount do
+  begin
     NoAvatarTexture[I] := Texture.GetTexture(Skin.GetTextureFileName('NoAvatar_P' + IntToStr(I)), TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
+  end;
 
   // create no-avatar
   PlayerAvatarButton[0] := AddButton(Theme.Name.PlayerAvatar);
@@ -630,16 +631,13 @@ var
   Col, DesCol: TRGB;
 begin
 
-  Count := CountIndex;
+  Count := UIni.IPlayersVals[CountIndex];
 
-  if (CountIndex = 4) then
-    Count := 5;
-
-  while (PlayerIndex > CountIndex) do
+  while (PlayerIndex > Count-1) do
     PlayerIndex := PlayerIndex - 1;
 
   // Player Colors
-  for I := Count downto 0 do
+  for I := Count-1 downto 0 do
   begin
     if (Ini.PlayerColor[I] > 0) then
       Num[I] := NoRepeatColors(Ini.PlayerColor[I], I, 1)
@@ -653,24 +651,15 @@ begin
     Statics[PlayerCurrent[I]].Texture.ColB := DesCol.B;
   end;
 
-  for I := 0 to 5 do
+  for I := 0 to UIni.IMaxPlayerCount-1 do
   begin
-    if (Count = 5) then
-    begin
-      Statics[PlayerCurrent[I]].Visible := true;
-      Text[PlayerCurrentText[I]].Visible := true;
-      Statics[PlayerCurrentAvatar[I]].Visible := true;
-    end
-    else
-    begin
-      Statics[PlayerCurrent[I]].Visible := I <= CountIndex;
-      Text[PlayerCurrentText[I]].Visible := I <= CountIndex;
-      Statics[PlayerCurrentAvatar[I]].Visible := I <= CountIndex;
-    end;
+    Statics[PlayerCurrent[I]].Visible := I < Count;
+    Text[PlayerCurrentText[I]].Visible := I < Count;
+    Statics[PlayerCurrentAvatar[I]].Visible := I < Count;
   end;
 
   // list players
-  for I := 0 to Count do
+  for I := 0 to Count -1 do
   begin
     Text[PlayerCurrentText[I]].Text := PlayerNames[I];
     SetPlayerAvatar(I);
@@ -696,29 +685,26 @@ begin
 
   SelectsS[PlayerSelectLevel].SetSelectOpt(PlayerLevel[PlayerIndex]);
 
-  Count := CountIndex;
-
-  if (CountIndex = 4) then
-    Count := 5;
+  Count := UIni.IPlayersVals[CountIndex];
 
   ChangeSelectPlayerPosition(PlayerIndex);
 
   PlayerColorButton(Num[PlayerIndex]);
 
-  Max := Length(IPlayerColorTranslated) - Count;
+  Max := Length(IPlayerColorTranslated) - Count + 1;
   SetLength(ITmp, Max);
 
   APlayerColor := nil;
   SetLength(APlayerColor, Max);
 
   Index := 0;
-  for I := 0 to High(IPlayerColorTranslated) do
+  for I := 0 to High(IPlayerColorTranslated) do      //for every color
   begin
     Used := false;
 
-    for J := 0 to Count do
+    for J := 0 to Count -1 do      //for every active player
     begin
-      if (Num[J] - 1 = I) and (J <> PlayerIndex) then
+      if (Num[J] - 1 = I) and (J <> PlayerIndex) then   //check if color is already used for not current player
       begin
         Used := true;
         break;
@@ -757,10 +743,7 @@ function TScreenName.NoRepeatColors(ColorP:integer; Interaction:integer; Pos:int
 var
   Z, Count:integer;
 begin
-  Count := CountIndex;
-
-  if (CountIndex = 4) then
-    Count := 5;
+  Count := UIni.IPlayersVals[CountIndex];
 
   if (ColorP > Length(IPlayerColorTranslated)) then
     ColorP := NoRepeatColors(1, Interaction, Pos);
@@ -768,7 +751,7 @@ begin
   if (ColorP <= 0) then
     ColorP := NoRepeatColors(High(IPlayerColorTranslated), Interaction, Pos);
 
-  for Z := Count downto 0 do
+  for Z := Count -1 downto 0 do
   begin
     if (Num[Z] = ColorP) and (Z <> Interaction) then
       ColorP := NoRepeatColors(ColorP + Pos, Interaction, Pos)
@@ -855,7 +838,7 @@ begin
   Theme.Name.SelectPlayersCount.showArrows := true;
   PlayersCount := AddSelectSlide(Theme.Name.SelectPlayersCount, CountIndex, IPlayers);
 
-  for I := 0 to 5 do
+  for I := 0 to UIni.IMaxPlayerCount -1 do
   begin
     PlayerCurrentAvatar[I] := AddStatic(Theme.Name.PlayerSelectAvatar[I]);
     PlayerCurrent[I] := AddStatic(Theme.Name.PlayerSelect[I]);
@@ -924,7 +907,7 @@ begin
 
   CountIndex := Ini.Players;
 
-  for I := 0 to 5 do
+  for I := 0 to UIni.IMaxPlayerCount-1 do
   begin
     PlayerNames[I] := Ini.Name[I];
     PlayerLevel[I] := Ini.PlayerLevel[I];

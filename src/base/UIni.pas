@@ -23,6 +23,8 @@
  * $Id: UIni.pas 2630 2010-09-04 10:18:40Z brunzelchen $
  *}
 
+//TODO: lots of parts in this code should be rewritten in a more object oriented way.
+
 unit UIni;
 
 interface
@@ -72,6 +74,9 @@ type
 const
   CHANNEL_OFF = 0;         // for field ChannelToPlayerMap
   LATENCY_AUTODETECT = -1; // for field Latency
+  IMaxPlayerCount = 12;
+  IPlayers:     array[0..6] of UTF8String = ('1', '2', '3', '4', '6', '8', '12');
+  IPlayersVals: array[0..6] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 ,  8 ,  12 );
 
 type
 
@@ -99,18 +104,18 @@ type
 
     public
       // Players or Teams colors
-      SingColor:      array [0..5] of integer;
+      SingColor:      array[0..(IMaxPlayerCount-1)] of integer;
       
       Name:           array[0..15] of UTF8String;
-      PlayerColor:    array[0..5] of integer;
+      PlayerColor:    array[0..(IMaxPlayerCount-1)] of integer;
       TeamColor:      array[0..2] of integer;
 
-      PlayerAvatar:   array[0..5] of UTF8String;
-      PlayerLevel:    array[0..5] of integer;
+      PlayerAvatar:   array[0..(IMaxPlayerCount-1)] of UTF8String;
+      PlayerLevel:    array[0..(IMaxPlayerCount-1)] of integer;
 
       // Templates for Names Mod
       NameTeam:       array[0..2] of UTF8String;
-      NameTemplate:   array[0..11] of UTF8String;
+      NameTemplate:   array[0..(IMaxPlayerCount-1)] of UTF8String;
 
       //Filename of the opened iniFile
       Filename:       IPath;
@@ -285,9 +290,6 @@ var
  *}
 
 const
-  IPlayers:     array[0..4] of UTF8String = ('1', '2', '3', '4', '6');
-  IPlayersVals: array[0..4] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 );
-
   IDifficulty:  array[0..2] of UTF8String = ('Easy', 'Medium', 'Hard');
   ITabs:        array[0..1] of UTF8String = ('Off', 'On');
 
@@ -502,13 +504,13 @@ var
   IJukeboxTimebarModeTranslated:      array[0..2] of UTF8String = ('Current', 'Remaining', 'Total');
 
   // Recording options
-  IChannelPlayerTranslated:    array[0..6] of UTF8String = ('Off', '1', '2', '3', '4', '5', '6');
+  IChannelPlayerTranslated:    array[0..IMaxPlayerCount] of UTF8String = ('Off', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12');
   IMicBoostTranslated:         array[0..3] of UTF8String = ('Off', '+6dB', '+12dB', '+18dB');
 
   // Network
   ISendNameTranslated:        array[0..1] of UTF8String = ('Off', 'On');
   IAutoModeTranslated:        array[0..2] of UTF8String = ('Off', 'Send', 'Guardar');
-  IAutoPlayerTranslated:      array[0..6] of UTF8String = ('Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6', 'All');
+  IAutoPlayerTranslated:      array[0..IMaxPlayerCount] of UTF8String = ('Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6', 'Player 7', 'Player 8', 'Player 9', 'Player 10', 'Player 11', 'Player 12', 'All');
   IAutoScoreEasyTranslated:   array of UTF8String;
   IAutoScoreMediumTranslated: array of UTF8String;
   IAutoScoreHardTranslated:   array of UTF8String;
@@ -521,7 +523,7 @@ var
   IWebcamEffectTranslated:     array [0..10] of UTF8String;
 
   // Name
-  IPlayerTranslated:      array[0..5] of UTF8String = ('Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6');
+  IPlayerTranslated:      array[0..(IMaxPlayerCount-1)] of UTF8String = ('Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6', 'Player 7', 'Player 8', 'Player 9', 'Player 10', 'Player 11', 'Player 12');
 
   IRed:       array[0..255] of UTF8String;
   IGreen:     array[0..255] of UTF8String;
@@ -848,12 +850,10 @@ begin
 
   // Recording options
   IChannelPlayerTranslated[0]         := ULanguage.Language.Translate('OPTION_VALUE_OFF');
-  IChannelPlayerTranslated[1]         := '1';
-  IChannelPlayerTranslated[2]         := '2';
-  IChannelPlayerTranslated[3]         := '3';
-  IChannelPlayerTranslated[4]         := '4';
-  IChannelPlayerTranslated[5]         := '5';
-  IChannelPlayerTranslated[6]         := '6';
+  for I:=1 to IMaxPlayerCount do
+  begin
+    IChannelPlayerTranslated[I]       :=IntToStr(I);
+  end;
 
   IMicBoostTranslated[0]              := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IMicBoostTranslated[1]              := '+6dB';
@@ -865,13 +865,11 @@ begin
   IAutoModeTranslated[1]         := ULanguage.Language.Translate('OPTION_VALUE_SEND');
   IAutoModeTranslated[2]         := ULanguage.Language.Translate('OPTION_VALUE_SAVE');
 
-  IAutoPlayerTranslated[0]         := ULanguage.Language.Translate('OPTION_PLAYER_1');
-  IAutoPlayerTranslated[1]         := ULanguage.Language.Translate('OPTION_PLAYER_2');
-  IAutoPlayerTranslated[2]         := ULanguage.Language.Translate('OPTION_PLAYER_3');
-  IAutoPlayerTranslated[3]         := ULanguage.Language.Translate('OPTION_PLAYER_4');
-  IAutoPlayerTranslated[4]         := ULanguage.Language.Translate('OPTION_PLAYER_5');
-  IAutoPlayerTranslated[5]         := ULanguage.Language.Translate('OPTION_PLAYER_6');
-  IAutoPlayerTranslated[6]         := ULanguage.Language.Translate('OPTION_ALL_PLAYERS');
+  for I:=0 to IMaxPlayerCount-1 do
+  begin
+    IAutoPlayerTranslated[I]       :=ULanguage.Language.Translate('OPTION_PLAYER_' + IntToStr(I));
+  end;
+  IAutoPlayerTranslated[12]         := ULanguage.Language.Translate('OPTION_ALL_PLAYERS');
 
   // Webcam
   IWebcamFlipTranslated[0]          := ULanguage.Language.Translate('OPTION_VALUE_OFF');
@@ -1281,21 +1279,17 @@ begin
   Log.LogStatus('Using config : ' + FileName.ToNative, 'Ini');
   IniFile := TMemIniFile.Create(FileName.ToNative);
 
-  // Name
-  for I := 0 to 11 do
+  for I := 0 to IMaxPlayerCount-1 do
+  begin
+    // Name
     Name[I] := IniFile.ReadString('Name', 'P'+IntToStr(I+1), 'Player'+IntToStr(I+1));
-
-  // Color Player
-  for I := 0 to 5 do
+    // Color Player
     PlayerColor[I] := IniFile.ReadInteger('PlayerColor', 'P'+IntToStr(I+1), I + 1);
-
-  // Avatar Player
-  for I := 0 to 5 do
+    // Avatar Player
     PlayerAvatar[I] := IniFile.ReadString('PlayerAvatar', 'P'+IntToStr(I+1), '');
-
-  // Level Player
-  for I := 0 to 5 do
+    // Level Player
     PlayerLevel[I] := IniFile.ReadInteger('PlayerLevel', 'P'+IntToStr(I+1), 0);
+  end;
 
   // Color Team
   for I := 0 to 2 do
@@ -1916,7 +1910,7 @@ begin
     IniFile := TIniFile.Create(Filename.ToNative);
 
     //Colors for Names Mod
-    for I := 1 to 6 do
+    for I := 1 to IMaxPlayerCount do
       IniFile.WriteString('PlayerColor', 'P' + IntToStr(I), IntToStr(PlayerColor[I-1]));
 
     IniFile.Free;
@@ -1933,7 +1927,7 @@ begin
     IniFile := TIniFile.Create(Filename.ToNative);
 
     //Colors for Names Mod
-    for I := 1 to 6 do
+    for I := 1 to IMaxPlayerCount do
       IniFile.WriteString('PlayerAvatar', 'P' + IntToStr(I), PlayerAvatar[I-1]);
 
     IniFile.Free;
@@ -1949,7 +1943,7 @@ begin
   begin
     IniFile := TIniFile.Create(Filename.ToNative);
 
-    for I := 1 to 6 do
+    for I := 1 to IMaxPlayerCount do
       IniFile.WriteInteger('PlayerLevel', 'P' + IntToStr(I), PlayerLevel[I-1]);
 
     IniFile.Free;

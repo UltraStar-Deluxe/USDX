@@ -93,8 +93,8 @@ type
 var
   Avatars: TAvatarDatabase;
   AvatarsList: array of IPath;
-  NoAvatarTexture: array[1..6] of TTexture;
-  AvatarPlayerTextures: array[1..6] of TTexture;
+  NoAvatarTexture: array[1..12] of TTexture;
+  AvatarPlayerTextures: array[1..12] of TTexture;
 
 implementation
 

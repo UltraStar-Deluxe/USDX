@@ -44,6 +44,7 @@ uses
   dglOpenGL,
   math,
   UTexture,
+  UIni,
   UDLLManager,
   UWebSDK;
 
@@ -104,9 +105,9 @@ type
       BarTime:            cardinal;
       FinishScreenDraw:   boolean;
 
-      aPlayerScoreScreenTextures: array[1..6] of TPlayerScoreScreenTexture;
-      aPlayerScoreScreenDatas:    array[1..6] of TPlayerScoreScreenData;
-      aPlayerScoreScreenRatings:  array[1..6] of TPlayerScoreRatingPics;
+      aPlayerScoreScreenTextures: array[1..UIni.IMaxPlayerCount] of TPlayerScoreScreenTexture;
+      aPlayerScoreScreenDatas:    array[1..UIni.IMaxPlayerCount] of TPlayerScoreScreenData;
+      aPlayerScoreScreenRatings:  array[1..UIni.IMaxPlayerCount] of TPlayerScoreRatingPics;
 
       BarScore_EaseOut_Step:  real;
       BarPhrase_EaseOut_Step: real;
@@ -117,20 +118,20 @@ type
 
       TextArtistTitle:        integer;
 
-      TextName:             array[1..6] of integer;
-      TextScore:            array[1..6] of integer;
+      TextName:             array[1..UIni.IMaxPlayerCount] of integer;
+      TextScore:            array[1..UIni.IMaxPlayerCount] of integer;
 
-      TextNotes:            array[1..6] of integer;
-      TextNotesScore:       array[1..6] of integer;
-      TextLineBonus:        array[1..6] of integer;
-      TextLineBonusScore:   array[1..6] of integer;
-      TextGoldenNotes:      array[1..6] of integer;
-      TextGoldenNotesScore: array[1..6] of integer;
-      TextTotal:            array[1..6] of integer;
-      TextTotalScore:       array[1..6] of integer;
+      TextNotes:            array[1..UIni.IMaxPlayerCount] of integer;
+      TextNotesScore:       array[1..UIni.IMaxPlayerCount] of integer;
+      TextLineBonus:        array[1..UIni.IMaxPlayerCount] of integer;
+      TextLineBonusScore:   array[1..UIni.IMaxPlayerCount] of integer;
+      TextGoldenNotes:      array[1..UIni.IMaxPlayerCount] of integer;
+      TextGoldenNotesScore: array[1..UIni.IMaxPlayerCount] of integer;
+      TextTotal:            array[1..UIni.IMaxPlayerCount] of integer;
+      TextTotalScore:       array[1..UIni.IMaxPlayerCount] of integer;
 
-      PlayerStatic:         array[1..6] of array of integer;
-      AvatarStatic:         array[1..6] of integer;
+      PlayerStatic:         array[1..UIni.IMaxPlayerCount] of array of integer;
+      AvatarStatic:         array[1..UIni.IMaxPlayerCount] of integer;
       { texture pairs for swapping when screens = 2
         first array level: index of player ( actually this is a position
           1    - Player 1 if PlayersPlay = 1 <- we don't need swapping here
@@ -138,12 +139,12 @@ type
           4..6 - Player 1 - 3 or 4 - 6 if PlayersPlay = 3 or 6 )
         second array level: different playerstatics for positions
         third array level: texture for screen 1 or 2 }
-      PlayerStaticTextures: array[1..6] of array of array [1..2] of TPlayerStaticTexture;
-      PlayerTexts:          array[1..6] of array of integer;
+      PlayerStaticTextures: array[1..UIni.IMaxPlayerCount] of array of array [1..2] of TPlayerStaticTexture;
+      PlayerTexts:          array[1..UIni.IMaxPlayerCount] of array of integer;
 
-      StaticBoxLightest:    array[1..6] of integer;
-      StaticBoxLight:       array[1..6] of integer;
-      StaticBoxDark:        array[1..6] of integer;
+      StaticBoxLightest:    array[1..UIni.IMaxPlayerCount] of integer;
+      StaticBoxLight:       array[1..UIni.IMaxPlayerCount] of integer;
+      StaticBoxDark:        array[1..UIni.IMaxPlayerCount] of integer;
       { texture pairs for swapping when screens = 2
         for boxes
         first array level: index of player ( actually this is a position
@@ -152,21 +153,21 @@ type
           4..6 - Player 1 - 3 or 4 - 6 if PlayersPlay = 3 or 6 )
         second array level: different boxes for positions (0: lightest; 1: light; 2: dark)
         third array level: texture for screen 1 or 2 }
-      PlayerBoxTextures: array[1..6] of array[0..2] of array [1..2] of TPlayerStaticTexture;
+      PlayerBoxTextures: array[1..UIni.IMaxPlayerCount] of array[0..2] of array [1..2] of TPlayerStaticTexture;
 
-      StaticBackLevel:      array[1..6] of integer;
-      StaticBackLevelRound: array[1..6] of integer;
-      StaticLevel:          array[1..6] of integer;
-      StaticLevelRound:     array[1..6] of integer;
+      StaticBackLevel:      array[1..UIni.IMaxPlayerCount] of integer;
+      StaticBackLevelRound: array[1..UIni.IMaxPlayerCount] of integer;
+      StaticLevel:          array[1..UIni.IMaxPlayerCount] of integer;
+      StaticLevelRound:     array[1..UIni.IMaxPlayerCount] of integer;
 
       Animation:            real;
       Voice:                integer;
 
-      TextScore_ActualValue:  array[1..6] of integer;
-      TextPhrase_ActualValue: array[1..6] of integer;
-      TextGolden_ActualValue: array[1..6] of integer;
+      TextScore_ActualValue:  array[1..UIni.IMaxPlayerCount] of integer;
+      TextPhrase_ActualValue: array[1..UIni.IMaxPlayerCount] of integer;
+      TextGolden_ActualValue: array[1..UIni.IMaxPlayerCount] of integer;
 
-      ButtonSend: array[1..3] of integer;
+      ButtonSend: array[1..UIni.IMaxPlayerCount] of integer;
       ActualRound:          integer;
       StaticNavigate:       integer;
       TextNavigate:         integer;
@@ -220,7 +221,6 @@ uses
   UScreenSong,
   UMenuStatic,
   UTime,
-  UIni,
   USkins,
   ULog,
   ULanguage,
@@ -481,6 +481,7 @@ var
 begin
   Result := True;
 
+  //TODO: adapt for players 7 to 12
   case PlayersPlay of
     1 : button_s := ButtonSend[1];
     2, 4: button_s := ButtonSend[2];
@@ -551,6 +552,7 @@ begin
   ResetScores;
 end;
 
+//TODO: adapt for players 7 to 12
 procedure TScreenScore.LoadSwapTextures;
   var
     P, I: integer;
@@ -689,6 +691,7 @@ begin
   end;
 end;
 
+//TODO: adapt for players 7 to 12
 procedure TScreenScore.SwapToScreen(Screen: integer);
 var
   P, I, J, Max: integer;
@@ -828,7 +831,7 @@ begin
 
   TextArtistTitle := AddText(Theme.Score.TextArtistTitle);
 
-  for Player := 1 to 6 do
+  for Player := 1 to UIni.IMaxPlayerCount do
   begin
     SetLength(PlayerStatic[Player], Length(Theme.Score.PlayerStatic[Player]));
     SetLength(PlayerTexts[Player],  Length(Theme.Score.PlayerTexts[Player]));
@@ -895,6 +898,7 @@ begin
     aPlayerScoreScreenTextures[Player].Score_NoteBarRound_Lightest := Tex_Score_NoteBarRound_Lightest[Player];
   end;
 
+  //TODO: adapt for players 7 to 12
   // avatars
   case PlayersPlay of
     1: ArrayStartModifier := 0;
@@ -937,12 +941,14 @@ begin
   if (PlayersPlay <= 3) or (Screens = 2) then
     LoadSwapTextures;
 
+  //TODO: adapt for players 4 to 12
   //Send Buttons
   for I := 1 to 3 do
     ButtonSend[I] := AddButton(Theme.Score.ButtonSend[I]);
 
 end;
 
+//TODO: adapt for players 7 to 12
 procedure TScreenScore.MapPlayersToPosition;
   var
     ArrayStartModifier: integer;
@@ -1061,7 +1067,7 @@ procedure TScreenScore.OnShow;
 var
   P: integer;  // player
   I: integer;
-  V: array[1..6] of boolean; // visibility array
+  V: array[1..UIni.IMaxPlayerCount] of boolean; // visibility array
   ArrayStartModifier: integer;
 begin
 
@@ -1094,6 +1100,7 @@ begin
   Text[TextTitle].Text       := CurrentSong.Title;
   Text[TextArtistTitle].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
 
+  //TODO: adapt for players 7 to 12
   // set visibility
   case PlayersPlay of
     1:  begin
@@ -1146,7 +1153,7 @@ begin
         end;
   end;
 
-  for P := 1 to 6 do
+  for P := 1 to UIni.IMaxPlayerCount do
   begin
     Text[TextName[P]].Visible               := V[P];
     Text[TextScore[P]].Visible              := V[P];
@@ -1236,7 +1243,7 @@ begin
     TextGolden_ActualValue[P] := 0;
   end;
 
-  for P := 1 to 6 do
+  for P := 1 to UIni.IMaxPlayerCount do
   begin
     // We set alpha to 0 , so we can nicely blend them in when we need them
     Text[TextScore[P]].Alpha                   := 0;
@@ -1342,7 +1349,7 @@ begin
 
   // we have to swap the themeobjects values on every draw
   // to support dual screen
-  for PlayerCounter := 1 to PlayersPlay do
+  for PlayerCounter := 1 to PlayersPlay do       //TODO: adapt for players 7 to 12
   begin
     FillPlayerItems(PlayerCounter);
   end;

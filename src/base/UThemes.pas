@@ -39,6 +39,7 @@ uses
   Classes,
   UCommon,
   ULog,
+  UIni,
   UTexture,
   UPath;
 type
@@ -265,9 +266,9 @@ type
 
     PlayerAvatar:        TThemeButton;
 
-    PlayerSelect:        array [0..5] of TThemeStatic;
-    PlayerSelectText:    array [0..5] of TThemeText;
-    PlayerSelectAvatar:  array [0..5] of TThemeStatic;
+    PlayerSelect:        array [0..UIni.IMaxPlayerCount-1] of TThemeStatic;
+    PlayerSelectText:    array [0..UIni.IMaxPlayerCount-1] of TThemeText;
+    PlayerSelectAvatar:  array [0..UIni.IMaxPlayerCount-1] of TThemeStatic;
     PlayerSelectCurrent: TThemeButton;
     
     SelectPlayersCount:  TThemeSelectSlide;
@@ -764,35 +765,35 @@ type
 
     TextArtistTitle:  TThemeText;
 
-    PlayerStatic:     array[1..6] of AThemeStatic;
-    PlayerTexts:      array[1..6] of AThemeText;
+    PlayerStatic:     array[1..UIni.IMaxPlayerCount] of AThemeStatic;
+    PlayerTexts:      array[1..UIni.IMaxPlayerCount] of AThemeText;
 
-    TextName:         array[1..6] of TThemeText;
-    TextScore:        array[1..6] of TThemeText;
+    TextName:         array[1..UIni.IMaxPlayerCount] of TThemeText;
+    TextScore:        array[1..UIni.IMaxPlayerCount] of TThemeText;
 
-    AvatarStatic:     array[1..6] of TThemeStatic;
+    AvatarStatic:     array[1..UIni.IMaxPlayerCount] of TThemeStatic;
 
-    TextNotes:            array[1..6] of TThemeText;
-    TextNotesScore:       array[1..6] of TThemeText;
-    TextLineBonus:        array[1..6] of TThemeText;
-    TextLineBonusScore:   array[1..6] of TThemeText;
-    TextGoldenNotes:      array[1..6] of TThemeText;
-    TextGoldenNotesScore: array[1..6] of TThemeText;
-    TextTotal:            array[1..6] of TThemeText;
-    TextTotalScore:       array[1..6] of TThemeText;
+    TextNotes:            array[1..UIni.IMaxPlayerCount] of TThemeText;
+    TextNotesScore:       array[1..UIni.IMaxPlayerCount] of TThemeText;
+    TextLineBonus:        array[1..UIni.IMaxPlayerCount] of TThemeText;
+    TextLineBonusScore:   array[1..UIni.IMaxPlayerCount] of TThemeText;
+    TextGoldenNotes:      array[1..UIni.IMaxPlayerCount] of TThemeText;
+    TextGoldenNotesScore: array[1..UIni.IMaxPlayerCount] of TThemeText;
+    TextTotal:            array[1..UIni.IMaxPlayerCount] of TThemeText;
+    TextTotalScore:       array[1..UIni.IMaxPlayerCount] of TThemeText;
 
-    StaticBoxLightest:    array[1..6] of TThemeStatic;
-    StaticBoxLight:       array[1..6] of TThemeStatic;
-    StaticBoxDark:        array[1..6] of TThemeStatic;
+    StaticBoxLightest:    array[1..UIni.IMaxPlayerCount] of TThemeStatic;
+    StaticBoxLight:       array[1..UIni.IMaxPlayerCount] of TThemeStatic;
+    StaticBoxDark:        array[1..UIni.IMaxPlayerCount] of TThemeStatic;
 
-    StaticRatings:        array[1..6] of TThemeStatic;
+    StaticRatings:        array[1..UIni.IMaxPlayerCount] of TThemeStatic;
 
-    StaticBackLevel:        array[1..6] of TThemeStatic;
-    StaticBackLevelRound:   array[1..6] of TThemeStatic;
-    StaticLevel:            array[1..6] of TThemeStatic;
-    StaticLevelRound:       array[1..6] of TThemeStatic;
+    StaticBackLevel:        array[1..UIni.IMaxPlayerCount] of TThemeStatic;
+    StaticBackLevelRound:   array[1..UIni.IMaxPlayerCount] of TThemeStatic;
+    StaticLevel:            array[1..UIni.IMaxPlayerCount] of TThemeStatic;
+    StaticLevelRound:       array[1..UIni.IMaxPlayerCount] of TThemeStatic;
 
-    ButtonSend:  array[1..3] of TThemeButton;
+    ButtonSend:  array[1..UIni.IMaxPlayerCount] of TThemeButton;
 
     StaticNavigate:   TThemeStatic;
     TextNavigate:     TThemeText;
@@ -1442,7 +1443,6 @@ implementation
 uses
   ULanguage,
   USkins,
-  UIni,
   UPathUtils,
   UFileSystem,
   TextGL,
@@ -1705,11 +1705,11 @@ begin
       ThemeLoadSelectSlide(Name.SelectPlayerColor, 'NameSelectPlayerColor');
       ThemeLoadSelectSlide(Name.SelectPlayerLevel, 'NameSelectPlayerLevel');
 
-      for I := 0 to 5 do
+      for I := 0 to UIni.IMaxPlayerCount-1 do
       begin
-        ThemeLoadStatic(Name.PlayerSelect[I], 'NamePlayerSelectStatic' + IntToStr(I + 1));
-        ThemeLoadText(Name.PlayerSelectText[I], 'NamePlayerSelectStatic' + IntToStr(I + 1) + 'Text');
-        ThemeLoadStatic(Name.PlayerSelectAvatar[I], 'NamePlayerSelectStatic' + IntToStr(I + 1) + 'Avatar');
+        ThemeLoadStatic(Name.PlayerSelect[I], 'NamePlayerSelectStatic' + IntToStr((I + 1) mod 6));
+        ThemeLoadText(Name.PlayerSelectText[I], 'NamePlayerSelectStatic' + IntToStr((I + 1) mod 6) + 'Text');
+        ThemeLoadStatic(Name.PlayerSelectAvatar[I], 'NamePlayerSelectStatic' + IntToStr((I + 1) mod 6) + 'Avatar');
       end;
 
       ThemeLoadButton(Name.PlayerSelectCurrent, 'NamePlayerSelectCurrent');

@@ -548,7 +548,7 @@ var
   i: integer;
 begin
   inherited;
-  SetLength(Sound, 6 {max players});//Ini.Players+1);
+  SetLength(Sound, UIni.IMaxPlayerCount);
   for i := 0 to High(Sound) do
     Sound[i] := TCaptureBuffer.Create;
 end;
