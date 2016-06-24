@@ -797,8 +797,6 @@ type
 
     StaticNavigate:   TThemeStatic;
     TextNavigate:     TThemeText;
-
-//    Description:          array[0..5] of string;}
   end;
 
   TThemeTop5 = class(TThemeBasic)

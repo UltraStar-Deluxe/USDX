@@ -36,6 +36,7 @@ interface
 uses
   dglOpenGL,
   UCommon,
+  UIni,
   UTexture,
   UThemes,
   UMusic;
@@ -89,8 +90,7 @@ type
       LCounter:       integer;       // line counter
 
       // duet mode - textures for player icons
-      // FIXME: do not use a fixed player count, use MAX_PLAYERS instead
-      PlayerIconTex:  array[0..5] of TPlayerIconTex;
+      PlayerIconTex:  array[0..UIni.IMaxPlayerCount -1] of TPlayerIconTex;
 
       // Some helper procedures for lyric drawing
       procedure DrawLyrics (Beat: real);
@@ -163,8 +163,7 @@ uses
   UGraphic,
   UDisplay,
   ULog,
-  math,
-  UIni;
+  math;
 
 { TLyricLine }
 
@@ -272,7 +271,7 @@ begin
   BallTex := Texture.LoadTexture(Skin.GetTextureFileName('Ball'), TEXTURE_TYPE_TRANSPARENT, 0);
 
   // duet mode: load player icon
-  for I := 0 to 5 do
+  for I := 0 to UIni.IMaxPlayerCount - 1 do
   begin
     PlayerIconTex[I][0] := Texture.LoadTexture(Skin.GetTextureFileName('LyricIcon_P' + InttoStr(I+1)), TEXTURE_TYPE_TRANSPARENT, 0);
     PlayerIconTex[I][1] := Texture.LoadTexture(Skin.GetTextureFileName('LyricIconD_P' + InttoStr(I+1)), TEXTURE_TYPE_TRANSPARENT, 0);

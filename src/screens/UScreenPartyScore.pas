@@ -38,6 +38,7 @@ uses
   SysUtils,
   UMenu,
   UDisplay,
+  UIni,
   UMusic,
   UThemes;
 
@@ -61,8 +62,8 @@ type
       StaticTeam3Deco:   cardinal;
       TextWinner:        cardinal;
 
-      DecoTex:          array[0..5] of integer;
-      DecoColor:        array[0..5] of Record
+      DecoTex:          array[0..UIni.IMaxPlayerCount-1] of integer;
+      DecoColor:        array[0..UIni.IMaxPlayerCount-1] of Record
                                         R, G, B: real;
                         end;
 

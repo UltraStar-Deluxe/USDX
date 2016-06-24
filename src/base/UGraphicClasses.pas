@@ -36,6 +36,7 @@ interface
 uses
   UTexture,
   ULog,
+  UIni,
   SDL2;
 
 const
@@ -93,7 +94,7 @@ type
    Particle      : array of TParticle;
    LastTime      : cardinal;
    RecArray      : array of RectanglePositions;
-   TwinkleArray  : array[0..5] of real; // store x-position of last twinkle for every player
+   TwinkleArray  : array[0..UIni.IMaxPlayerCount-1] of real; // store x-position of last twinkle for every player
    PerfNoteArray : array of PerfectNotePositions;
 
    FlareTex: TTexture;
@@ -131,7 +132,6 @@ uses
   UCommon,
   UDrawTexture,
   UGraphic,
-  UIni,
   UNote,
   USkins,
   UThemes;

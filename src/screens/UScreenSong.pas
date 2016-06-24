@@ -205,7 +205,7 @@ type
       Static6PlayersDuetSingerP5: cardinal;
       Static6PlayersDuetSingerP6: cardinal;
 
-      ColPlayer:  array[0..5] of TRGB;
+      ColPlayer:  array[0..UIni.IMaxPlayerCount-1] of TRGB;
 
       //CurrentPartyTime: cardinal;
       //PartyTime: cardinal;
