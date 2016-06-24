@@ -637,12 +637,10 @@ begin
 end;
 
 function TAudioInputProcessor.ValidateSettings: integer;
-const
-  MAX_PLAYER_COUNT = 6; // FIXME: there should be a global variable for this
 var
   I, J: integer;
   PlayerID: integer;
-  PlayerMap: array [0 .. MAX_PLAYER_COUNT - 1] of boolean;
+  PlayerMap: array [0 .. UIni.IMaxPlayerCount - 1] of boolean;
   InputDevice: TAudioInputDevice;
   InputDeviceCfg: PInputDeviceConfig;
 begin
