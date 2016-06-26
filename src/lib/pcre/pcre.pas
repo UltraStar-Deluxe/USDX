@@ -536,7 +536,7 @@ const
   libpcremodulename = 'pcre3.dll';
   {$ENDIF MSWINDOWS}
   {$IFDEF LINUX}
-  libpcremodulename = 'libpcre.so.0';
+  libpcremodulename = 'libpcre.so';
   {$ENDIF LINUX}
   {$IFDEF DARWIN}
   libpcremodulename = 'libpcre.dylib';  // this is a symlink for example to libpcre.0.0.1.dylib
