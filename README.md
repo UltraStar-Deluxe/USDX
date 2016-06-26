@@ -166,7 +166,7 @@ ultrastar.exe -ConfigFile C:\Ultrastar\Configs\PartyConfig.ini -ScoreFile C:\Ult
 Freepascal 3.0.0 or newer is required to compile UltraStar Deluxe. If you had some older version of fpc installed before, make sure to remove everything of it correctly before trying to install freepascal (otherwise compiling will fail with various weird error messages). Also, using the 3.0-development branch with current fixes is suggested.
 If you want to help the project by coding patches, we suggest you to use the [Lazarus 1.6](http://www.lazarus-ide.org/) or newer integrated development environment.
 For linking and running the game, the following libraries are also required:
-- SDL2, SDL2_gfx, SDL2_mixer, SDL2_image, SDL2_ttf,
+- SDL2, SDL2_gfx, SDL2_mixer, SDL2_image, SDL2_ttf, SDL2_net
 - ffmpeg 2.8 or older
 - sqlite
 - [bass](http://www.un4seen.com/bass.html)
@@ -175,6 +175,7 @@ For linking and running the game, the following libraries are also required:
 - pcre
 - lua 5.1 or 5.2 or 5.3
 - opencv if you want webcam support
+- projectM if you want audio visualisation support
 
 ####Compiling using Lazarus
 1. Start Lazarus.
@@ -186,12 +187,14 @@ For linking and running the game, the following libraries are also required:
 8. If you want to compile and/or start USDX directly choose Run → Run or press F9.
 
 ####Compiling on linux/bsd using make
-1. make sure all required libraries are installed
+1. make sure all required libraries are installed 
+  * for current debian / ubuntu: sudo apt-get update && sudo apt-get install git fpc libsdl2-dev libsdl2-image-dev libsdl2-image-2.0-0 libsdl2-2.0-0 libsdl2-mixer-2.0-0 libsdl2-mixer-dev libsdl2-net-2.0-0 libsdl2-net-dev libsdl2-ttf-2.0-0 libsdl2-ttf-dev libsdl2-gfx-1.0-0 libsdl2-gfx-dev ffmpeg libavdevice-dev libsqlite3-0 libsqlite3-dev libpcre3 libpcre3-dev ttf-dejavu ttf-freefont portaudio19-dev lua5.1-dev libpng16-16 libopencv-highgui-dev libprojectm-dev
+  * for arch linux there is an aur package called [ultrastardx-git](https://aur.archlinux.org/packages/ultrastardx-git)
 2. git clone https://github.com/UltraStar-Deluxe/USDX
 2. cd USDX
 3. ./configure (or use autoconf)
 4. make
-5. make install
+5. sudo make install
 6. ultrastardx
 
 ####Compiling on OS X
