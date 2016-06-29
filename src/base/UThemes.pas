@@ -1705,9 +1705,9 @@ begin
 
       for I := 0 to UIni.IMaxPlayerCount-1 do
       begin
-        ThemeLoadStatic(Name.PlayerSelect[I], 'NamePlayerSelectStatic' + IntToStr((I + 1) mod 6));
-        ThemeLoadText(Name.PlayerSelectText[I], 'NamePlayerSelectStatic' + IntToStr((I + 1) mod 6) + 'Text');
-        ThemeLoadStatic(Name.PlayerSelectAvatar[I], 'NamePlayerSelectStatic' + IntToStr((I + 1) mod 6) + 'Avatar');
+        ThemeLoadStatic(Name.PlayerSelect[I], 'NamePlayerSelectStatic' + IntToStr((I + 1)));
+        ThemeLoadText(Name.PlayerSelectText[I], 'NamePlayerSelectStatic' + IntToStr((I + 1)) + 'Text');
+        ThemeLoadStatic(Name.PlayerSelectAvatar[I], 'NamePlayerSelectStatic' + IntToStr((I + 1)) + 'Avatar');
       end;
 
       ThemeLoadButton(Name.PlayerSelectCurrent, 'NamePlayerSelectCurrent');
