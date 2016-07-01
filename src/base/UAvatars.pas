@@ -40,6 +40,7 @@ uses
   SysUtils,
   Classes,
   UImage,
+  UIni,
   UTexture,
   UPath;
 
@@ -93,8 +94,8 @@ type
 var
   Avatars: TAvatarDatabase;
   AvatarsList: array of IPath;
-  NoAvatarTexture: array[1..12] of TTexture;
-  AvatarPlayerTextures: array[1..12] of TTexture;
+  NoAvatarTexture: array[1..UIni.IMaxPlayerCount] of TTexture;
+  AvatarPlayerTextures: array[1..UIni.IMaxPlayerCount] of TTexture;
 
 implementation
 
@@ -103,7 +104,6 @@ uses
   ULog,
   UPathUtils,
   UPlatform,
-  UIni,
   UFilesystem,
   Math,
   DateUtils;
