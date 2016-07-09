@@ -234,6 +234,7 @@ var
   I: integer;
   SDL_ModState: word;
   Col: TRGB;
+  isAlternate: boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -253,10 +254,12 @@ begin
     end;
 
     // check special keys
+    isAlternate := (SDL_ModState = KMOD_LSHIFT) or (SDL_ModState = KMOD_RSHIFT);
+    isAlternate := isAlternate or (SDL_ModState = KMOD_LALT); // legacy key combination
     case PressedKey of
       // Templates for Names Mod
       SDLK_F1:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[0] := Button[PlayerName].Text[0].Text;
          end
@@ -266,7 +269,7 @@ begin
            PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
          end;
       SDLK_F2:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[1] := Button[PlayerName].Text[0].Text;
          end
@@ -276,7 +279,7 @@ begin
            PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
          end;
       SDLK_F3:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[2] := Button[PlayerName].Text[0].Text;
          end
@@ -286,7 +289,7 @@ begin
            PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
          end;
       SDLK_F4:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[3] := Button[PlayerName].Text[0].Text;
          end
@@ -296,7 +299,7 @@ begin
            PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
          end;
       SDLK_F5:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[4] := Button[PlayerName].Text[0].Text;
          end
@@ -306,7 +309,7 @@ begin
            PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
          end;
       SDLK_F6:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[5] := Button[PlayerName].Text[0].Text;
          end
@@ -316,7 +319,7 @@ begin
            PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
          end;
       SDLK_F7:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[6] := Button[PlayerName].Text[0].Text;
          end
@@ -326,7 +329,7 @@ begin
            PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
          end;
       SDLK_F8:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[7] := Button[PlayerName].Text[0].Text;
          end
@@ -336,7 +339,7 @@ begin
            PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
          end;
       SDLK_F9:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[8] := Button[PlayerName].Text[0].Text;
          end
@@ -346,7 +349,7 @@ begin
            PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
          end;
       SDLK_F10:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[9] := Button[PlayerName].Text[0].Text;
          end
@@ -356,7 +359,7 @@ begin
            PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
          end;
       SDLK_F11:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[10] := Button[PlayerName].Text[0].Text;
          end
@@ -366,7 +369,7 @@ begin
            PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
          end;
       SDLK_F12:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[11] := Button[PlayerName].Text[0].Text;
          end
