@@ -73,6 +73,7 @@ type
       Player16Name: cardinal;
 
       constructor Create; override;
+      function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
       procedure SetAnimationProgress(Progress: real); override;
@@ -148,11 +149,29 @@ begin
 
 end;
 
+function TScreenPartyTournamentPlayer.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
+begin
+  Result := inherited;
+  // only suppress special keys for now
+  case PressedKey of
+    // Templates for Names Mod
+    SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12:
+     if (Button[Interactions[Interaction].Num].Selected) then
+     begin
+       SuppressKey := true;
+     end
+     else
+     begin
+       Result := false;
+     end;
+  end;
+end;
 
 function TScreenPartyTournamentPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
   SDL_ModState:  word;
   I:  integer;
+  isAlternate: boolean;
   procedure IntNext;
   begin
     repeat
@@ -192,10 +211,12 @@ begin
     end;
 
     // check special keys
+    isAlternate := (SDL_ModState = KMOD_LSHIFT) or (SDL_ModState = KMOD_RSHIFT);
+    isAlternate := isAlternate or (SDL_ModState = KMOD_LALT); // legacy key combination
     case PressedKey of
       // Templates for Names Mod
       SDLK_F1:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[0] := Button[Interactions[Interaction].Num].Text[0].Text;
          end
@@ -204,7 +225,7 @@ begin
            Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[0];
          end;
       SDLK_F2:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[1] := Button[Interactions[Interaction].Num].Text[0].Text;
          end
@@ -213,7 +234,7 @@ begin
            Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[1];
          end;
       SDLK_F3:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[2] := Button[Interactions[Interaction].Num].Text[0].Text;
          end
@@ -222,7 +243,7 @@ begin
            Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[2];
          end;
       SDLK_F4:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[3] := Button[Interactions[Interaction].Num].Text[0].Text;
          end
@@ -231,7 +252,7 @@ begin
            Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[3];
          end;
       SDLK_F5:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[4] := Button[Interactions[Interaction].Num].Text[0].Text;
          end
@@ -240,7 +261,7 @@ begin
            Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[4];
          end;
       SDLK_F6:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[5] := Button[Interactions[Interaction].Num].Text[0].Text;
          end
@@ -249,7 +270,7 @@ begin
            Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[5];
          end;
       SDLK_F7:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[6] := Button[Interactions[Interaction].Num].Text[0].Text;
          end
@@ -258,7 +279,7 @@ begin
            Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[6];
          end;
       SDLK_F8:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[7] := Button[Interactions[Interaction].Num].Text[0].Text;
          end
@@ -267,7 +288,7 @@ begin
            Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[7];
          end;
       SDLK_F9:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[8] := Button[Interactions[Interaction].Num].Text[0].Text;
          end
@@ -276,7 +297,7 @@ begin
            Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[8];
          end;
       SDLK_F10:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[9] := Button[Interactions[Interaction].Num].Text[0].Text;
          end
@@ -285,7 +306,7 @@ begin
            Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[9];
          end;
       SDLK_F11:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[10] := Button[Interactions[Interaction].Num].Text[0].Text;
          end
@@ -294,7 +315,7 @@ begin
            Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[10];
          end;
       SDLK_F12:
-       if (SDL_ModState = KMOD_LALT) then
+       if isAlternate then
          begin
            Ini.NameTemplate[11] := Button[Interactions[Interaction].Num].Text[0].Text;
          end
@@ -306,6 +327,17 @@ begin
       SDLK_BACKSPACE:
         begin
           Button[Interactions[Interaction].Num].Text[0].DeleteLastLetter;
+        end;
+    end;
+  end
+  else
+  begin
+    // check normal keys
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
+        begin
+          Result := false;
+          Exit;
         end;
     end;
   end;

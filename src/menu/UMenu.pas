@@ -149,6 +149,7 @@ type
       function DrawBG: boolean; virtual;
       function DrawFG: boolean; virtual;
       function Draw: boolean; virtual;
+      function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean; virtual;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean; virtual;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; virtual;
       function InRegion(X, Y: real; A: TMouseOverRect): boolean;
@@ -1712,6 +1713,12 @@ procedure TMenu.OnHide;
 begin
   // nothing
   Background.OnFinish;
+end;
+
+function TMenu.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
+begin
+  // nothing
+  Result := true;
 end;
 
 function TMenu.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
