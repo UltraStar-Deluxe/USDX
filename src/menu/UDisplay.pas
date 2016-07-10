@@ -102,6 +102,10 @@ type
 
       function  Draw: boolean;
 
+      // TODO rewrite ParseInput to include handling/suppressing input as return, use KeepGoing as by-reference
+      { checks if display is handling the passed key in ParseInput. calls HandleInput of cur or next Screen if assigned }
+      function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean;
+
       { calls ParseInput of cur or next Screen if assigned }
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
 
@@ -603,6 +607,16 @@ begin
       glDisable(GL_TEXTURE_2D);
     end;
   end;
+end;
+
+function TDisplay.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean;
+begin
+  if (assigned(NextScreen)) then
+    Result := NextScreen^.ShouldHandleInput(PressedKey, CharCode, PressedDown, SuppressKey)
+  else if (assigned(CurrentScreen)) then
+    Result := CurrentScreen^.ShouldHandleInput(PressedKey, CharCode, PressedDown, SuppressKey)
+  else
+    Result := True;
 end;
 
 function TDisplay.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;

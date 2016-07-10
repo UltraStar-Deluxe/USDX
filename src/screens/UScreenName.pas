@@ -91,6 +91,7 @@ type
       Goto_SingScreen: boolean; //If true then next Screen in SingScreen
       
       constructor Create; override;
+      function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
 
@@ -228,6 +229,23 @@ begin
 
 end;
 
+function TScreenName.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
+begin
+  Result := inherited;
+  // only suppress special keys for now
+  case PressedKey of
+    // Templates for Names Mod
+    SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12:
+     if (Button[PlayerName].Selected) then
+     begin
+       SuppressKey := true;
+     end
+     else
+     begin
+       Result := false;
+     end;
+  end;
+end;
 
 function TScreenName.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
@@ -243,9 +261,20 @@ begin
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
-    // check normal keys
-    if (Interaction = 3) and (IsPrintableChar(CharCode)) then
+    if (not Button[PlayerName].Selected) then
     begin
+      // check normal keys
+      case UCS4UpperCase(CharCode) of
+        Ord('Q'):
+          begin
+            Result := false;
+            Exit;
+          end;
+      end;
+    end
+    else if (Interaction = 3) and (IsPrintableChar(CharCode)) then
+    begin
+      // pass printable chars to button
       Button[PlayerName].Text[0].Text := Button[PlayerName].Text[0].Text +
                                           UCS4ToUTF8String(CharCode);
 

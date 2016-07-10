@@ -383,9 +383,11 @@ var
   mouseDown: boolean;
   mouseBtn:  integer;
   KeepGoing: boolean;
+  SuppressKey: boolean;
 begin
   KeyCharUnicode:=0;
   KeepGoing := true;
+  SuppressKey := false;
   while (SDL_PollEvent(@Event) <> 0) do
   begin
     case Event.type_ of
@@ -513,7 +515,35 @@ begin
               //KeyCharUnicode:=UnicodeStringToUCS4String(UnicodeString(Event.key.keysym.unicode))[1];//Event.text.text)[0];
             except
             end;
-            if (Event.key.keysym.sym = SDLK_F11) then // toggle full screen
+            // if print is pressed -> make screenshot and save to screenshot path
+            if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINTSCREEN) then
+              Display.SaveScreenShot
+            // if there is a visible popup then let it handle input instead of underlying screen
+            // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
+            else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
+              KeepGoing := ScreenPopupError.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
+            else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
+              KeepGoing := ScreenPopupInfo.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
+            else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
+              KeepGoing := ScreenPopupCheck.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
+            else if (ScreenPopupInsertUser <> nil) and (ScreenPopupInsertUser.Visible) then
+              KeepGoing := ScreenPopupInsertUser.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
+            else if (ScreenPopupSendScore <> nil) and (ScreenPopupSendScore.Visible) then
+              KeepGoing := ScreenPopupSendScore.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
+            else if (ScreenPopupScoreDownload <> nil) and (ScreenPopupScoreDownload.Visible) then
+              KeepGoing := ScreenPopupScoreDownload.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
+            else if (Display.ShouldHandleInput(Event.key.keysym.sym, KeyCharUnicode, true, SuppressKey)) then
+            begin
+              // check if screen wants to exit
+              KeepGoing := Display.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true);
+
+              // if screen wants to exit
+              if not KeepGoing then
+                DoQuit;
+
+            end;
+
+            if (not SuppressKey and (Event.key.keysym.sym = SDLK_F11)) then // toggle full screen
             begin
               Ini.FullScreen := integer( not boolean( Ini.FullScreen ) );
 
@@ -531,33 +561,6 @@ begin
               //Display.SetCursor;
 
               //glViewPort(0, 0, ScreenW, ScreenH);
-            end
-            // if print is pressed -> make screenshot and save to screenshot path
-            else if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINTSCREEN) then
-              Display.SaveScreenShot
-            // if there is a visible popup then let it handle input instead of underlying screen
-            // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
-            else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
-              KeepGoing := ScreenPopupError.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
-            else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
-              KeepGoing := ScreenPopupInfo.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
-            else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
-              KeepGoing := ScreenPopupCheck.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
-            else if (ScreenPopupInsertUser <> nil) and (ScreenPopupInsertUser.Visible) then
-              KeepGoing := ScreenPopupInsertUser.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
-            else if (ScreenPopupSendScore <> nil) and (ScreenPopupSendScore.Visible) then
-              KeepGoing := ScreenPopupSendScore.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
-            else if (ScreenPopupScoreDownload <> nil) and (ScreenPopupScoreDownload.Visible) then
-              KeepGoing := ScreenPopupScoreDownload.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
-            else
-            begin
-              // check if screen wants to exit
-              KeepGoing := Display.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true);
-
-              // if screen wants to exit
-              if not KeepGoing then
-                DoQuit;
-
             end;
           end;
         end;
