@@ -51,6 +51,9 @@ type
 const
   SepWhitespace = [#9, #10, #13, ' ']; // tab, lf, cr, space
 
+  SDL_BUTTON_WHEELUP = 1001; // emulated MouseButton ID for mouse wheel up. @Note some high number to prevent conflict. @see sdl_mouse.inc
+  SDL_BUTTON_WHEELDOWN = 1002; // emulated MouseButton ID for mouse wheel down. @Note some high number to prevent conflict. @see sdl_mouse.inc
+
 {**
  * Splits a string into pieces separated by Separators.
  * MaxCount specifies the max. number of pieces. If it is <= 0 the number is

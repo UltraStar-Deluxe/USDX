@@ -153,13 +153,13 @@ begin
     if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) then
       Result:=ParseInput(SDLK_ESCAPE, 0, true);
 
-    {//scrolling avatars with mousewheel
+    //scrolling avatars with mousewheel
     if (MouseButton = SDL_BUTTON_WHEELDOWN) then
       ParseInput(SDLK_RIGHT, 0, true)
     else if (MouseButton = SDL_BUTTON_WHEELUP) then
-      ParseInput(SDLK_LEFT, 0, true)}
-    {else
-    begin}
+      ParseInput(SDLK_LEFT, 0, true)
+    else
+    begin
       // click avatars
       // 1st left
       Btn := AvatarTarget - 2;
@@ -224,7 +224,7 @@ begin
           AvatarTarget := PlayerAvatars[PlayerIndex];
         end;
       end;
-    {end;}
+    end;
   end;
 
 end;
