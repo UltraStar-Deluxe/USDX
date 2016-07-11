@@ -678,7 +678,7 @@ end;
 
 function TDisplay.NeedsCursorUpdate: boolean;
 begin
-  Result := Cursor_Update;
+  Result := Cursor_Update and Cursor_Visible and not Cursor_Fade;
   Cursor_Update := false;
 end;
 
