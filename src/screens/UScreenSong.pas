@@ -739,7 +739,7 @@ begin
       I2 := Length(CatSongs.Song);
       //get first letter of artist of currently selected song
       UpperLetter := UCS4UpperCase(UTF8ToUCS4String(CatSongs.Song[(Interaction) mod I2].Artist)[0]);
-      if (PressedKey = SDLK_PAGEUP) then
+      if (PressedKey = SDLK_PAGEDOWN) then
       begin
         for I := 1 to High(CatSongs.Song) do
         begin
@@ -757,7 +757,7 @@ begin
           end;
         end;
       end
-      else if (PressedKey = SDLK_PAGEDOWN) then
+      else if (PressedKey = SDLK_PAGEUP) then
       begin
         for I := High(CatSongs.Song) downto 1 do
         begin
