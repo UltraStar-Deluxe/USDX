@@ -384,6 +384,7 @@ var
   mouseBtn:  integer;
   KeepGoing: boolean;
   SuppressKey: boolean;
+  UpdateMouse: boolean;
 begin
   KeyCharUnicode:=0;
   KeepGoing := true;
@@ -398,10 +399,11 @@ begin
         Display.CheckOK := true;
       end;
 
-      SDL_MOUSEMOTION, SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP:
+      SDL_MOUSEMOTION, SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP, SDL_MOUSEWHEEL:
       begin
         if (Ini.Mouse > 0) then
         begin
+          UpdateMouse := true;
           case Event.type_ of
             SDL_MOUSEBUTTONDOWN:
             begin
@@ -427,10 +429,18 @@ begin
                 mouseDown := false;
               mouseBtn  := 0;
             end;
+            SDL_MOUSEWHEEL:
+            begin
+              UpdateMouse := false;
+              mouseDown   := (Event.wheel.y <> 0);
+              mouseBtn    := SDL_BUTTON_WHEELDOWN;
+              if (Event.wheel.y > 0) then mouseBtn := SDL_BUTTON_WHEELUP;
+            end;
           end;
 
-          Display.MoveCursor(Event.button.X * 800 * Screens / ScreenW,
-                             Event.button.Y * 600 / ScreenH);
+          if UpdateMouse then
+            Display.MoveCursor(Event.button.X * 800 * Screens / ScreenW,
+                               Event.button.Y * 600 / ScreenH);
 
           if not Assigned(Display.NextScreen) then
           begin //drop input when changing screens

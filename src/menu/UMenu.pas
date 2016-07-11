@@ -1776,7 +1776,7 @@ begin
           else
             Action := maReturn;
         end
-        {else if (MouseButton = SDL_BUTTON_WHEELDOWN) then
+        else if (MouseButton = SDL_BUTTON_WHEELDOWN) then
         begin //forward on select slide with mousewheel
           if (Interactions[nBut].Typ = iSelectS) then
             Action := maRight;
@@ -1785,7 +1785,7 @@ begin
         begin //backward on select slide with mousewheel
           if (Interactions[nBut].Typ = iSelectS) then
             Action := maLeft;
-        end};
+        end;
       end;
 
         // do the action we have to do ;)

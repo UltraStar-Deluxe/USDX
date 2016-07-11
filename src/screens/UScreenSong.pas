@@ -1345,12 +1345,12 @@ begin
     if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) then
       Result:=ParseInput(SDLK_ESCAPE, 0, true)
 
-    {//song scrolling with mousewheel
+    //song scrolling with mousewheel
     else if (MouseButton = SDL_BUTTON_WHEELDOWN) then
       ParseInput(SDLK_DOWN, 0, true)
 
     else if (MouseButton = SDL_BUTTON_WHEELUP) then
-      ParseInput(SDLK_UP, 0, true)}
+      ParseInput(SDLK_UP, 0, true)
 
     else
     begin
@@ -1409,12 +1409,12 @@ begin
     if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) then
       Result:=ParseInput(SDLK_ESCAPE, 0, true)
 
-    {//song scrolling with mousewheel
+    //song scrolling with mousewheel
     else if (MouseButton = SDL_BUTTON_WHEELDOWN) then
       ParseInput(SDLK_RIGHT, 0, true)
 
     else if (MouseButton = SDL_BUTTON_WHEELUP) then
-      ParseInput(SDLK_LEFT, 0, true)}
+      ParseInput(SDLK_LEFT, 0, true)
 
     //LMB anywhere starts
     else if (MouseButton = SDL_BUTTON_LEFT) then
