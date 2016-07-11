@@ -733,6 +733,49 @@ begin
       end;
 
       Exit;
+    end
+    else if (((PressedKey = SDLK_PAGEUP) or (PressedKey = SDLK_PAGEDOWN)) and (FreeListMode)) then
+    begin
+      I2 := Length(CatSongs.Song);
+      //get first letter of artist of currently selected song
+      UpperLetter := UCS4UpperCase(UTF8ToUCS4String(CatSongs.Song[(Interaction) mod I2].Artist)[0]);
+      if (PressedKey = SDLK_PAGEUP) then
+      begin
+        for I := 1 to High(CatSongs.Song) do
+        begin
+          if (CatSongs.Song[(I + Interaction) mod I2].Visible) then
+          begin
+            TempStr := CatSongs.Song[(I + Interaction) mod I2].Artist;
+            if (Length(TempStr) > 0) and
+               (UCS4UpperCase(UTF8ToUCS4String(TempStr)[0]) <> UpperLetter) then
+            begin
+              SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2), (I + Interaction) mod I2, VS);
+              AudioPlayback.PlaySound(SoundLib.Change);
+              SetScrollRefresh;
+              Exit;
+            end;
+          end;
+        end;
+      end
+      else if (PressedKey = SDLK_PAGEDOWN) then
+      begin
+        for I := High(CatSongs.Song) downto 1 do
+        begin
+          if (CatSongs.Song[(I + Interaction) mod I2].Visible) then
+          begin
+            TempStr := CatSongs.Song[(I + Interaction) mod I2].Artist;
+            if (Length(TempStr) > 0) and
+               (UCS4UpperCase(UTF8ToUCS4String(TempStr)[0]) <> UpperLetter) then
+            begin
+              SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2), (I + Interaction) mod I2, VS);
+              AudioPlayback.PlaySound(SoundLib.Change);
+              SetScrollRefresh;
+              Exit;
+            end;
+          end;
+        end;
+      end;
+      Exit;
     end;
 
     // **********************
