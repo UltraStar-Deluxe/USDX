@@ -76,6 +76,8 @@ type
       Cursor_LastMove:     cardinal;
       Cursor_Fade:         boolean;
 
+      Cursor_Update:       boolean;
+
       procedure DrawDebugInformation;
 
       { called by MoveCursor and OnMouseButton to update last move and start fade in }
@@ -125,6 +127,10 @@ type
 
       { draws software cursor }
       procedure DrawCursor;
+
+      { returns whether this display is requesting an cursor update }
+      function NeedsCursorUpdate(): boolean;
+
   end;
 
 var
@@ -193,6 +199,7 @@ begin
   Cursor_Y        := -1;
   Cursor_Fade     := false;
   Cursor_HiddenByScreen := true;
+  Cursor_Update   := false;
 end;
 
 destructor TDisplay.Destroy;
@@ -418,6 +425,7 @@ begin
         begin
           CurrentScreen.OnShowFinish;
           CurrentScreen.ShowFinish := true;
+          Cursor_Update := true;
         end
         else
         begin
@@ -666,6 +674,12 @@ begin
     else
       Result.FadeTo(Screen);
   end;
+end;
+
+function TDisplay.NeedsCursorUpdate: boolean;
+begin
+  Result := Cursor_Update and Cursor_Visible and not Cursor_Fade;
+  Cursor_Update := false;
 end;
 
 procedure TDisplay.SaveScreenShot;

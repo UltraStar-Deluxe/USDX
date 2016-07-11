@@ -378,10 +378,12 @@ end;
 procedure CheckEvents;
 var
   Event:     TSDL_event;
+  SimEvent:  TSDL_event;
   KeyCharUnicode: UCS4Char;
   s1: UTF8String;
   mouseDown: boolean;
   mouseBtn:  integer;
+  mouseX, mouseY: PInt;
   KeepGoing: boolean;
   SuppressKey: boolean;
   UpdateMouse: boolean;
@@ -589,6 +591,19 @@ begin
         end;
     end; // case
   end; // while
+
+  if Display.NeedsCursorUpdate() then
+  begin
+
+
+    // push a generated event onto the queue in order to simulate a mouse movement
+    // the next tick will poll the motion event and handle it just like a real input
+    SDL_GetMouseState(@mouseX, @mouseY);
+    SimEvent.user.type_ := SDL_MOUSEMOTION;
+    SimEvent.button.x := longint(mouseX);
+    SimEvent.button.y := longint(mouseY);
+    SDL_PushEvent(@SimEvent);
+  end;
 end;
 
 procedure MainThreadExec(Proc: TMainThreadExecProc; Data: Pointer);
