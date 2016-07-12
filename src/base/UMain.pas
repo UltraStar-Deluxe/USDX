@@ -437,6 +437,12 @@ begin
               mouseDown   := (Event.wheel.y <> 0);
               mouseBtn    := SDL_BUTTON_WHEELDOWN;
               if (Event.wheel.y > 0) then mouseBtn := SDL_BUTTON_WHEELUP;
+
+              // some menu buttons require proper mouse location for trying to
+              // react to mouse wheel navigation simulation (see UMenu.ParseMouse)
+              SDL_GetMouseState(@mouseX, @mouseY);
+              Event.button.x := longint(mouseX);
+              Event.button.y := longint(mouseY);
             end;
           end;
 
