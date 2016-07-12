@@ -67,6 +67,8 @@ type
       ColorIndex:   integer;
       LevelIndex:   integer;
 
+      PlayerAvatarIID: integer; // interaction ID
+
       AvatarCurrent: real;
       AvatarTarget:  integer;
 
@@ -155,9 +157,15 @@ begin
 
     //scrolling avatars with mousewheel
     if (MouseButton = SDL_BUTTON_WHEELDOWN) then
-      ParseInput(SDLK_RIGHT, 0, true)
+    begin
+      if (Interaction = PlayerAvatarIID) then
+        ParseInput(SDLK_RIGHT, 0, true);
+    end
     else if (MouseButton = SDL_BUTTON_WHEELUP) then
-      ParseInput(SDLK_LEFT, 0, true)
+    begin
+      if (Interaction = PlayerAvatarIID) then
+        ParseInput(SDLK_LEFT, 0, true);
+    end
     else
     begin
       // click avatars
@@ -226,7 +234,6 @@ begin
       end;
     end;
   end;
-
 end;
 
 function TScreenName.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
@@ -880,6 +887,7 @@ begin
   PlayerSelect := AddButton(Theme.Name.PlayerSelectCurrent);
 
   PlayerAvatar := AddButton(Theme.Name.PlayerButtonAvatar);
+  PlayerAvatarIID := High(Interactions);
 
   PlayerName := AddButton(Theme.Name.PlayerButtonName);
   Button[PlayerName].Text[0].Writable := true;

@@ -825,173 +825,173 @@ begin
       else
       begin
         //song scrolling with mousewheel
-      if (MouseButton = SDL_BUTTON_WHEELDOWN) then
-        Result := ParseInput(SDLK_PAGEDOWN, 0, true);
+        if (MouseButton = SDL_BUTTON_WHEELDOWN) then
+          Result := ParseInput(SDLK_PAGEDOWN, 0, true)
 
-      if (MouseButton = SDL_BUTTON_WHEELUP) then
-        Result := ParseInput(SDLK_PAGEUP, 0, true)
+        else if (MouseButton = SDL_BUTTON_WHEELUP) then
+          Result := ParseInput(SDLK_PAGEUP, 0, true)
 
-      else
-      begin
-        // up/down songlist
-        if InRegion(X, Y, Button[JukeboxSongListUp].GetMouseOverArea) then
+        else
         begin
-          PageUp(10);
-        end;
-
-        if InRegion(X, Y, Button[JukeboxSongListDown].GetMouseOverArea) then
-        begin
-          PageDown(10);
-        end;
-
-        // change time
-        if InRegion(X, Y, Text[JukeboxTextTimeText].GetMouseOverArea) then
-        begin
-          if (fTimebarMode = High(TTimebarMode)) then
-            fTimebarMode := Low(TTimebarMode)
-          else
-            Inc(fTimebarMode);
-
-          Ini.JukeboxTimebarMode := Ord(fTimebarMode);
-          Ini.SaveJukeboxTimebarMode();
-        end;
-
-        // play or move song
-        for I := 0 to Max do
-        begin
-          if InRegion(X, Y, Button[SongDescription[I]].GetMouseOverArea) then
+          // up/down songlist
+          if InRegion(X, Y, Button[JukeboxSongListUp].GetMouseOverArea) then
           begin
+            PageUp(10);
+          end;
 
-            // start move song
-            if not InRegion(X, Y, Button[SongDescription[Interaction]].GetMouseOverArea) then
+          if InRegion(X, Y, Button[JukeboxSongListDown].GetMouseOverArea) then
+          begin
+            PageDown(10);
+          end;
+
+          // change time
+          if InRegion(X, Y, Text[JukeboxTextTimeText].GetMouseOverArea) then
+          begin
+            if (fTimebarMode = High(TTimebarMode)) then
+              fTimebarMode := Low(TTimebarMode)
+            else
+              Inc(fTimebarMode);
+
+            Ini.JukeboxTimebarMode := Ord(fTimebarMode);
+            Ini.SaveJukeboxTimebarMode();
+          end;
+
+          // play or move song
+          for I := 0 to Max do
+          begin
+            if InRegion(X, Y, Button[SongDescription[I]].GetMouseOverArea) then
             begin
-              Button[SongDescriptionClone].X := X;
-              Button[SongDescriptionClone].Y := Y;
-              Button[SongDescriptionClone].Text[0].X := X + Button[SongDescription[I]].Text[0].X - Button[SongDescription[I]].X;
-              Button[SongDescriptionClone].Text[0].Y := Y + Button[SongDescription[I]].Text[0].Y - Button[SongDescription[I]].Y;
-              Button[SongDescriptionClone].Text[0].Text := CatSongs.Song[JukeboxVisibleSongs[Interaction + ListMin]].Artist + ' - ' + CatSongs.Song[JukeboxVisibleSongs[Interaction + ListMin]].Title;
 
-              MoveX := Button[SongDescription[I]].Texture.X;
-              MoveY := Button[SongDescription[I]].Texture.Y;
-              MoveInicial := ListMin + Interaction;
+              // start move song
+              if not InRegion(X, Y, Button[SongDescription[Interaction]].GetMouseOverArea) then
+              begin
+                Button[SongDescriptionClone].X := X;
+                Button[SongDescriptionClone].Y := Y;
+                Button[SongDescriptionClone].Text[0].X := X + Button[SongDescription[I]].Text[0].X - Button[SongDescription[I]].X;
+                Button[SongDescriptionClone].Text[0].Y := Y + Button[SongDescription[I]].Text[0].Y - Button[SongDescription[I]].Y;
+                Button[SongDescriptionClone].Text[0].Text := CatSongs.Song[JukeboxVisibleSongs[Interaction + ListMin]].Artist + ' - ' + CatSongs.Song[JukeboxVisibleSongs[Interaction + ListMin]].Title;
 
-              Button[SongDescriptionClone].Visible := true;
-              Button[SongDescription[Interaction]].SetSelect(false);
+                MoveX := Button[SongDescription[I]].Texture.X;
+                MoveY := Button[SongDescription[I]].Texture.Y;
+                MoveInicial := ListMin + Interaction;
+
+                Button[SongDescriptionClone].Visible := true;
+                Button[SongDescription[Interaction]].SetSelect(false);
+              end
+              else
+              begin
+
+                if (MouseButton = SDL_BUTTON_LEFT) then
+                begin
+                  if (SDL_GetTicks() - DoubleClickTime <= 500) then
+                    Result := ParseInput(SDLK_RETURN, 0, true);
+
+                  DoubleClickTime := SDL_GetTicks();
+                end;
+
+              end;
+            end;
+          end;
+
+          // close songlist
+          if InRegion(X, Y, Button[JukeboxSongListClose].GetMouseOverArea)then
+          begin
+            Result := ParseInput(SDLK_ESCAPE, 0, true);
+            CloseClickTime := SDL_GetTicks();
+            Button[JukeboxSongListClose].SetSelect(false);
+          end;
+
+          // fix songlist
+          if InRegion(X, Y, Button[JukeboxSongListFixPin].GetMouseOverArea)then
+          begin
+            SongListVisibleFix := not SongListVisibleFix;
+
+            if (SongListVisibleFix) then
+              Ini.JukeboxSongMenu := 0
+            else
+              Ini.JukeboxSongMenu := 1;
+
+            Ini.SaveJukeboxSongMenu;
+
+            Button[JukeboxSongListFixPin].SetSelect(SongListVisibleFix);
+          end;
+
+          if InRegion(X, Y, Statics[JukeboxStaticTimeProgress].GetMouseOverArea) then
+          begin
+            Time := ((X - Statics[JukeboxStaticTimeProgress].Texture.X) * LyricsState.TotalTime)/(Statics[JukeboxStaticTimeProgress].Texture.W);
+
+            ChangeTime(Time);
+          end;
+
+          if InRegion(X, Y, Button[JukeboxRepeatSongList].GetMouseOverArea) then
+          begin
+            RepeatSongList := not RepeatSongList;
+            Button[JukeboxRepeatSongList].SetSelect(RepeatSongList);
+          end;
+
+          if InRegion(X, Y, Button[JukeboxSongListOrder].GetMouseOverArea) then
+          begin
+            ChangeOrderList();
+          end;
+
+          if InRegion(X, Y, Button[JukeboxRandomSongList].GetMouseOverArea) then
+          begin
+            RandomList();
+          end;
+
+          if InRegion(X, Y, Button[JukeboxLyric].GetMouseOverArea) then
+          begin
+            ShowLyrics := not ShowLyrics;
+            Button[JukeboxLyric].SetSelect(ShowLyrics);
+          end;
+
+          if InRegion(X, Y, Button[JukeboxPlayPause].GetMouseOverArea) then
+          begin
+            Pause;
+            Button[JukeboxPlayPause].SetSelect(Paused);
+          end;
+
+          if InRegion(X, Y, Button[JukeboxFindSong].GetMouseOverArea) then
+          begin
+            FindSongList := not FindSongList;
+
+            if (Filter = '') then
+            begin
+              if (FindSongList) then
+                Button[JukeboxFindSong].Text[0].Text := ''
+            end;
+
+            Button[JukeboxFindSong].SetSelect(FindSongList);
+
+            if not (FindSongList) and (Length(JukeboxSongsList) <> Length(JukeboxVisibleSongs)) then
+            begin
+              FilterSongList('');
             end
             else
             begin
-
-              if (MouseButton = SDL_BUTTON_LEFT) then
-              begin
-                if (SDL_GetTicks() - DoubleClickTime <= 500) then
-                  Result := ParseInput(SDLK_RETURN, 0, true);
-
-                DoubleClickTime := SDL_GetTicks();
-              end;
-
+              if (Filter <> '') then
+                FilterSongList(Filter);
             end;
-          end;
-        end;
 
-        // close songlist
-        if InRegion(X, Y, Button[JukeboxSongListClose].GetMouseOverArea)then
-        begin
-          Result := ParseInput(SDLK_ESCAPE, 0, true);
-          CloseClickTime := SDL_GetTicks();
-          Button[JukeboxSongListClose].SetSelect(false);
-        end;
-
-        // fix songlist
-        if InRegion(X, Y, Button[JukeboxSongListFixPin].GetMouseOverArea)then
-        begin
-          SongListVisibleFix := not SongListVisibleFix;
-
-          if (SongListVisibleFix) then
-            Ini.JukeboxSongMenu := 0
-          else
-            Ini.JukeboxSongMenu := 1;
-
-          Ini.SaveJukeboxSongMenu;
-
-          Button[JukeboxSongListFixPin].SetSelect(SongListVisibleFix);
-        end;
-
-        if InRegion(X, Y, Statics[JukeboxStaticTimeProgress].GetMouseOverArea) then
-        begin
-          Time := ((X - Statics[JukeboxStaticTimeProgress].Texture.X) * LyricsState.TotalTime)/(Statics[JukeboxStaticTimeProgress].Texture.W);
-
-          ChangeTime(Time);
-        end;
-
-        if InRegion(X, Y, Button[JukeboxRepeatSongList].GetMouseOverArea) then
-        begin
-          RepeatSongList := not RepeatSongList;
-          Button[JukeboxRepeatSongList].SetSelect(RepeatSongList);
-        end;
-
-        if InRegion(X, Y, Button[JukeboxSongListOrder].GetMouseOverArea) then
-        begin
-          ChangeOrderList();
-        end;
-
-        if InRegion(X, Y, Button[JukeboxRandomSongList].GetMouseOverArea) then
-        begin
-          RandomList();
-        end;
-
-        if InRegion(X, Y, Button[JukeboxLyric].GetMouseOverArea) then
-        begin
-          ShowLyrics := not ShowLyrics;
-          Button[JukeboxLyric].SetSelect(ShowLyrics);
-        end;
-
-        if InRegion(X, Y, Button[JukeboxPlayPause].GetMouseOverArea) then
-        begin
-          Pause;
-          Button[JukeboxPlayPause].SetSelect(Paused);
-        end;
-
-        if InRegion(X, Y, Button[JukeboxFindSong].GetMouseOverArea) then
-        begin
-          FindSongList := not FindSongList;
-
-          if (Filter = '') then
-          begin
             if (FindSongList) then
-              Button[JukeboxFindSong].Text[0].Text := ''
+              Button[JukeboxFindSong].Text[0].Selected := true
+            else
+              Button[JukeboxFindSong].Text[0].Selected := false;
+
           end;
 
-          Button[JukeboxFindSong].SetSelect(FindSongList);
+          if InRegion(X, Y, Button[JukeboxOptions].GetMouseOverArea) then
+          begin
+            SongMenuVisible := false;
+            SongListVisible := false;
 
-          if not (FindSongList) and (Length(JukeboxSongsList) <> Length(JukeboxVisibleSongs)) then
-          begin
-            FilterSongList('');
-          end
-          else
-          begin
-            if (Filter <> '') then
-              FilterSongList(Filter);
+            Button[JukeboxOptions].SetSelect(false);
+            ScreenJukeboxOptions.Visible := true;
+
+            LastSongOptionsTick := SDL_GetTicks();
           end;
 
-          if (FindSongList) then
-            Button[JukeboxFindSong].Text[0].Selected := true
-          else
-            Button[JukeboxFindSong].Text[0].Selected := false;
-
         end;
-
-        if InRegion(X, Y, Button[JukeboxOptions].GetMouseOverArea) then
-        begin
-          SongMenuVisible := false;
-          SongListVisible := false;
-
-          Button[JukeboxOptions].SetSelect(false);
-          ScreenJukeboxOptions.Visible := true;
-
-          LastSongOptionsTick := SDL_GetTicks();
-        end;
-
-      end;
       end;
     end
     else
