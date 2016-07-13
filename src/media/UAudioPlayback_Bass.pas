@@ -45,11 +45,13 @@ uses
   UAudioCore_Bass,
   ULog,
   sdl2,
-  bass,
+  BASS,
+  BASS_FX,
   SysUtils;
 
 type
   PHDSP = ^HDSP;
+  PHFX = ^HFX;
 
 type
   TBassPlaybackStream = class(TAudioPlaybackStream)
@@ -86,6 +88,9 @@ type
       procedure AddSoundEffect(Effect: TSoundEffect);    override;
       procedure RemoveSoundEffect(Effect: TSoundEffect); override;
 
+      procedure AddSoundFX(FX: TSoundFX);    override;
+      procedure RemoveSoundFX(FX: TSoundFX); override;
+
       procedure GetFFTData(var Data: TFFTData);           override;
       function  GetPCMData(var Data: TPCMData): Cardinal; override;
 
@@ -121,6 +126,8 @@ type
       function GetLatency(): double; override;
       function CreatePlaybackStream(): TAudioPlaybackStream; override;
     public
+      constructor Create(); override;
+
       function GetName: String; override;
       function InitializePlayback(): boolean; override;
       function FinalizePlayback: boolean; override;
@@ -133,9 +140,24 @@ type
       BassDeviceID: DWORD; // DeviceID used by BASS
   end;
 
+  TReplayGain_Bass = class(TReplayGain)
+    private
+      procedure Init(); override;
+    public
+      function GetType: DWORD; override;
+      function GetPriority: LongInt; override;
+      function GetName: string; override;
+  end;
+
 var
   BassCore: TAudioCore_Bass;
 
+constructor TAudioPlayback_Bass.Create();
+begin
+  inherited;
+
+  IReplayGain := TReplayGain_Bass;
+end;
 
 { TBassPlaybackStream }
 
@@ -532,6 +554,49 @@ begin
   Effect.EngineData := nil;
 end;
 
+procedure TBassPlaybackStream.AddSoundFX(FX: TSoundFX);
+var
+  FXHandle: HFX;
+begin
+  if assigned(FX.engineData) then
+  begin
+    Log.LogError(Concat(FX.GetName, ': ', 'TSoundFX.engineData already set'), 'TBassPlaybackStream.AddSoundFX');
+    Exit;
+  end;
+
+  FXHandle := BASS_ChannelSetFX(Handle, FX.GetType(), FX.GetPriority());
+  if (FXHandle = 0) then
+  begin
+    Log.LogError(Concat(FX.GetName, ': ', BassCore.ErrorGetString()), 'TBassPlaybackStream.AddSoundFX');
+    Exit;
+  end;
+
+  GetMem(FX.EngineData, SizeOf(HFX));
+  PHFX(FX.EngineData)^ := FXHandle;
+
+  FX.Init();
+end;
+
+procedure TBassPlaybackStream.RemoveSoundFX(FX: TSoundFX);
+begin
+  if not assigned(FX.EngineData) then
+  begin
+    Log.LogError(Concat(FX.GetName, ': ', 'TSoundFX.engineData invalid'), 'TBassPlaybackStream.RemoveSoundFX');
+    Exit;
+  end;
+
+  if not BASS_ChannelRemoveFX(Handle, PHFX(FX.EngineData)^) then
+  begin
+    Log.LogError(Concat(FX.GetName, ': ', BassCore.ErrorGetString()), 'TBassPlaybackStream.RemoveSoundFX');
+    Exit;
+  end;
+
+  FX.Removed();
+
+  FreeMem(FX.EngineData);
+  FX.EngineData := nil;
+end;
+
 procedure TBassPlaybackStream.GetFFTData(var Data: TFFTData);
 begin
   // get FFT channel data (Mono, FFT512 -> 256 values)
@@ -715,6 +780,7 @@ begin
   // config playing buffer
   //BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 10);
   //BASS_SetConfig(BASS_CONFIG_BUFFER, 100);
+  BASS_SetConfig(BASS_CONFIG_FLOATDSP, 1); // enable floating-point DSP
 
   Result := true;
 end;
@@ -762,6 +828,63 @@ begin
     Result := Info.latency / 1000
   else
   Result := 0;
+end;
+
+{ TReplayGain }
+
+procedure TReplayGain_Bass.Init();
+  var
+    FxGain: BASS_BFX_DAMP;
+    I: integer;
+begin
+
+  I := 1;
+  case I of
+    0: // soft preset
+      begin
+        FxGain.fTarget := 0.92; // target volume level [0<......1] linear
+        FxGain.fQuiet := 0.02;  // quiet  volume level [0.......1] linear
+        FxGain.fRate := 0.01;   // amp adjustment rate [0.......1] linear
+        FxGain.fGain := 1.0;    // amplification level [0...1...n] linear
+        FxGain.fDelay := 0.5;  // delay in seconds before increasing level
+        FxGain.lChannel := BASS_BFX_CHANALL;
+      end;
+    1: // medium preset
+      begin
+        FxGain.fTarget := 0.94; // target volume level [0<......1] linear
+        FxGain.fQuiet := 0.03;  // quiet  volume level [0.......1] linear
+        FxGain.fRate := 0.01;   // amp adjustment rate [0.......1] linear
+        FxGain.fGain := 1.0;    // amplification level [0...1...n] linear
+        FxGain.fDelay := 0.35;  // delay in seconds before increasing level
+        FxGain.lChannel := BASS_BFX_CHANALL;
+      end;
+    2: // hard preset
+      begin
+        FxGain.fTarget := 0.98; // target volume level [0<......1] linear
+        FxGain.fQuiet := 0.04;  // quiet  volume level [0.......1] linear
+        FxGain.fRate := 0.02;   // amp adjustment rate [0.......1] linear
+        FxGain.fGain := 2.0;    // amplification level [0...1...n] linear
+        FxGain.fDelay := 0.2;  // delay in seconds before increasing level
+        FxGain.lChannel := BASS_BFX_CHANALL;
+      end;
+  end;
+
+  BASS_FXSetParameters(DWORD(EngineData), @FxGain);
+end;
+
+function TReplayGain_Bass.GetName: String;
+begin
+  result := 'BASS_FX Dynamic Amplification';
+end;
+
+function TReplayGain_Bass.GetType(): DWORD;
+begin
+  Result := BASS_FX_BFX_DAMP;
+end;
+
+function TReplayGain_Bass.GetPriority(): LongInt;
+begin
+  Result := 3;
 end;
 
 

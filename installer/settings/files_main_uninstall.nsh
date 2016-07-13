@@ -51,6 +51,7 @@
  Delete "$INSTDIR\avdevice-52.dll"
  Delete "$INSTDIR\avutil-50.dll"
  Delete "$INSTDIR\bass.dll"
+ Delete "$INSTDIR\bass_fx.dll"
  Delete "$INSTDIR\bassmidi.dll"
  Delete "$INSTDIR\freetype6.dll"
  Delete "$INSTDIR\glew32.dll"

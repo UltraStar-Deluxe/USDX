@@ -17,6 +17,8 @@ IfFileExists $INSTDIR\avutil-49.dll 0 +2
 Delete "$INSTDIR\avutil-49.dll"
 IfFileExists $INSTDIR\bass.dll 0 +2
 Delete "$INSTDIR\bass.dll"
+IfFileExists $INSTDIR\bass_fx.dll 0 +2
+Delete "$INSTDIR\bass_fx.dll"
 IfFileExists $INSTDIR\bassmidi.dll 0 +2
 Delete "$INSTDIR\bassmidi.dll"
 IfFileExists $INSTDIR\SDL.dll 0 +2

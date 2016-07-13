@@ -41,10 +41,16 @@ uses
   SysUtils;
 
 type
+  FReplayGain = class of TReplayGain;
+
   TAudioPlaybackBase = class(TInterfacedObject, IAudioPlayback)
     protected
+
       OutputDeviceList: TAudioOutputDeviceList;
       MusicStream: TAudioPlaybackStream;
+
+      IReplayGain: FReplayGain;
+
       function CreatePlaybackStream(): TAudioPlaybackStream; virtual; abstract;
       procedure ClearOutputDeviceList();
       function GetLatency(): double; virtual; abstract;
@@ -54,6 +60,7 @@ type
       function OpenStreamBuffer(Buffer: TStream; Format: TAudioFormatInfo): TAudioPlaybackStream;
       function OpenDecodeStream(const Filename: IPath): TAudioDecodeStream;
     public
+      constructor Create(); virtual;
       function GetName: string; virtual; abstract;
 
       function Open(const Filename: IPath): boolean; // true if succeed
@@ -120,17 +127,30 @@ type
   end;
 
 procedure ToggleVoiceRemoval();
+procedure ToggleReplayGain();
 
 implementation
 
 uses
   ULog;
 var doVoiceRemoval: boolean;
+var doReplayGain: boolean;
+
+constructor TAudioPlaybackBase.Create();
+begin
+  inherited;
+end;
 
 procedure ToggleVoiceRemoval();
 begin
   doVoiceRemoval:=not(doVoiceRemoval);
 end;
+
+procedure ToggleReplayGain();
+begin
+  doReplayGain:=not(doReplayGain);
+end;
+
 { TAudioPlaybackBase }
 
 function TAudioPlaybackBase.FinalizePlayback: boolean;
@@ -153,6 +173,7 @@ begin
   end;
 
   if doVoiceRemoval then MusicStream.AddSoundEffect(TVoiceRemoval.Create());
+  if doReplayGain and assigned(IReplayGain) then MusicStream.AddSoundFX(IReplayGain.Create());
 
   Result := true;
 end;
