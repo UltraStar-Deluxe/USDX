@@ -803,16 +803,6 @@ begin
           Exit;
         end;
 
-      Ord('N'):
-        begin
-          UAudioPlaybackBase.ToggleReplayGain();
-          StopVideoPreview();
-          StopMusicPreview();
-          StartMusicPreview();
-          StartVideoPreview();
-          Exit;
-        end;
-
       Ord('F'):
         begin
           if (Mode = smNormal) and (SDL_ModState = KMOD_LSHIFT) and MakeMedley then

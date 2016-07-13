@@ -144,6 +144,8 @@ type
     private
       procedure Init(); override;
     public
+      class function CanEnable(): boolean; override; static;
+
       function GetType: DWORD; override;
       function GetPriority: LongInt; override;
       function GetName: string; override;
@@ -832,13 +834,19 @@ end;
 
 { TReplayGain }
 
+class function TReplayGain_Bass.CanEnable(): boolean;
+begin
+  Result := (Ini.MusicAutoGain > 0);
+end;
+
 procedure TReplayGain_Bass.Init();
   var
     FxGain: BASS_BFX_DAMP;
     I: integer;
 begin
 
-  I := 1;
+  if Ini.MusicAutoGain < 0 then Exit;
+  I := IMusicAutoGainVals[Ini.MusicAutoGain];
   case I of
     0: // soft preset
       begin

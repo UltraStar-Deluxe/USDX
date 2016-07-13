@@ -227,6 +227,8 @@ type
       procedure Init(); virtual; abstract;
       procedure Removed(); virtual; abstract;
 
+      class function CanEnable: boolean; virtual; abstract; static;
+
       function GetType: DWORD; virtual; abstract;
       function GetPriority: LongInt; virtual; abstract;
       function GetName: string; virtual; abstract;
