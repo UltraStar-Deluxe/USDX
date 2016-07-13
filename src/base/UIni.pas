@@ -159,6 +159,7 @@ type
       ThresholdIndex: integer;
       AudioOutputBufferSizeIndex: integer;
       VoicePassthrough: integer;
+      MusicAutoGain:  integer;
       SoundFont:      string;
 
       SyncTo: integer;
@@ -337,6 +338,10 @@ const
   IThresholdVals:    array[0..3] of single  = (0.05, 0.10,  0.15,  0.20);
 
   IVoicePassthrough: array[0..1] of UTF8String  = ('Off', 'On');
+  
+  IMusicAutoGain:        array[0..3] of UTF8String  = ('Off', 'Soft', 'Medium', 'Hard');
+  IMusicAutoGainVals:    array[0..3] of integer  = (-1, 0, 1, 2);
+
 
 const
   ISyncTo: array[0..2] of UTF8String  = ('Music', 'Lyrics', 'Off');
@@ -457,6 +462,8 @@ var
   ISavePlaybackTranslated:     array[0..1] of UTF8String  = ('Off', 'On');
 
   IVoicePassthroughTranslated: array[0..1] of UTF8String  = ('Off', 'On');
+  
+  IMusicAutoGainTranslated: array[0..3] of UTF8String  = ('Off', 'Soft', 'Medium', 'Hard');
 
   ISyncToTranslated:           array[0..2] of UTF8String  = ('Music', 'Lyrics', 'Off');
 
@@ -645,6 +652,11 @@ begin
 
   IVoicePassthroughTranslated[0]      := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IVoicePassthroughTranslated[1]      := ULanguage.Language.Translate('OPTION_VALUE_ON');
+
+  IMusicAutoGainTranslated[0]      := ULanguage.Language.Translate('OPTION_VALUE_OFF');
+  IMusicAutoGainTranslated[1]      := ULanguage.Language.Translate('OPTION_VALUE_GAIN_SOFT');
+  IMusicAutoGainTranslated[2]      := ULanguage.Language.Translate('OPTION_VALUE_GAIN_MEDIUM');
+  IMusicAutoGainTranslated[3]      := ULanguage.Language.Translate('OPTION_VALUE_GAIN_HARD');
 
   ISyncToTranslated[Ord(stMusic)]     := ULanguage.Language.Translate('OPTION_VALUE_MUSIC');
   ISyncToTranslated[Ord(stLyrics)]    := ULanguage.Language.Translate('OPTION_VALUE_LYRICS');
@@ -1396,6 +1408,9 @@ begin
 
   //AudioRepeat aka VoicePassthrough
   VoicePassthrough := GetArrayIndex(IVoicePassthrough, IniFile.ReadString('Sound', 'VoicePassthrough', IVoicePassthrough[0]));
+  
+  // ReplayGain aka MusicAutoGain
+  MusicAutoGain := GetArrayIndex(IMusicAutoGain, IniFile.ReadString('Sound', 'MusicAutoGain', IMusicAutoGain[0]));
 
   SoundFont := IniFile.ReadString('Sound', 'SoundFont', '');
 
@@ -1690,6 +1705,9 @@ begin
 
   // VoicePasstrough
   IniFile.WriteString('Sound', 'VoicePassthrough', IVoicePassthrough[VoicePassthrough]);
+  
+  // MusicAutoGain
+  IniFile.WriteString('Sound', 'MusicAutoGain', IMusicAutoGain[MusicAutoGain]);
 
   // Lyrics Font
   IniFile.WriteString('Lyrics', 'LyricsFont', ILyricsFont[LyricsFont]);

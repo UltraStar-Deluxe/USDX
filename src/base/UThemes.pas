@@ -855,6 +855,7 @@ type
     SelectSlidePreviewVolume:    TThemeSelectSlide;
     SelectSlidePreviewFading:    TThemeSelectSlide;
     SelectSlideVoicePassthrough: TThemeSelectSlide;
+    SelectSlideMusicAutoGain:    TThemeSelectSlide;
     ButtonExit:                  TThemeButton;
   end;
 
@@ -2242,6 +2243,7 @@ begin
       ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewVolume,    'OptionsSoundSelectSlidePreviewVolume');
       ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewFading,    'OptionsSoundSelectSlidePreviewFading');
       ThemeLoadSelectSlide(OptionsSound.SelectSlideVoicePassthrough, 'OptionsSoundSelectVoicePassthrough');
+      ThemeLoadSelectSlide(OptionsSound.SelectSlideMusicAutoGain,    'OptionsSoundSelectSlideMusicAutoGain');
 
       ThemeLoadButton(OptionsSound.ButtonExit, 'OptionsSoundButtonExit');
 

@@ -221,6 +221,23 @@ type
       procedure Callback(Buffer: PByteArray; BufSize: integer); override;
   end;
 
+  TSoundFX = class
+    public
+      EngineData: Pointer; // can be used for engine-specific data
+      procedure Init(); virtual; abstract;
+      procedure Removed(); virtual; abstract;
+
+      class function CanEnable: boolean; virtual; abstract; static;
+
+      function GetType: DWORD; virtual; abstract;
+      function GetPriority: LongInt; virtual; abstract;
+      function GetName: string; virtual; abstract;
+
+  end;
+  
+  TReplayGain = class(TSoundFX)
+  end;
+
 type
   TAudioProcessingStream = class;
   TOnCloseHandler = procedure(Stream: TAudioProcessingStream);
@@ -312,6 +329,9 @@ type
 
       procedure AddSoundEffect(Effect: TSoundEffect);    virtual; abstract;
       procedure RemoveSoundEffect(Effect: TSoundEffect); virtual; abstract;
+
+      procedure AddSoundFX(FX: TSoundFX);    virtual; abstract;
+      procedure RemoveSoundFX(FX: TSoundFX); virtual; abstract;
 
       procedure SetSyncSource(SyncSource: TSyncSource);
       function GetSourceStream(): TAudioSourceStream;
