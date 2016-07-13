@@ -1131,7 +1131,7 @@ begin
   inherited Create();
   fMode := Mode;
   fFilename := Filename;
-  fLineBreak := sLineBreak;
+  fLineBreak := AnsiString(#13#10); //Windows-Style Linebreak. Older USDX versions don't support other formats.
 end;
 
 function TTextFileStream.ReadLine(var Line: UTF8String): boolean;

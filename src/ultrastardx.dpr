@@ -378,7 +378,7 @@ uses
 {$R ultrastardx.res}
 
 const
-  sLineBreak = {$IFDEF MSWINDOWS} AnsiString(#13#10); {$ELSE} AnsiChar(#10); {$ENDIF}
+  sLineBreakWin = AnsiString(#13#10);//Windows-Style Linebreak. Older USDX versions don't support other formats.
 var
   I: Integer;
   Report: string;
