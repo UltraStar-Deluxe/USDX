@@ -89,7 +89,7 @@ begin
   Version[1] := (VersionHex shr 16) and $FF;
   Version[2] := (VersionHex shr 8) and $FF;
   Version[3] := (VersionHex shr 0) and $FF;
-  Result := Format('%x.%x.%x.%x', [Version[0], Version[1], Version[2], Version[3]]);
+  Result := Format('%d.%d.%d.%d', [Version[0], Version[1], Version[2], Version[3]]);
 end;
 
 function TAudioCore_Bass.CheckVersion(): boolean;
