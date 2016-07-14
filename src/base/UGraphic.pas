@@ -39,6 +39,7 @@ uses
   UTexture,
   TextGL,
   UConfig,
+  UCommon,
   ULog,
   UIni,
   SysUtils,
@@ -536,9 +537,11 @@ var
   S:      string;
   I:      integer;
   W, H:   integer;
+  X, Y:   integer; // offset for re-positioning
   Depth:  Integer;
   Fullscreen: boolean;
   Split: boolean;
+  Disp: TSDL_DisplayMode;
 begin
   if (Params.Screens <> -1) then
     Screens := Params.Screens + 1
@@ -554,34 +557,37 @@ begin
   end; // case
 
   // If there is a resolution in Parameters, use it, else use the Ini value
-  I := Params.Resolution;
-  if (I <> -1) then
-    S := IResolution[I]
+  // check for a custom resolution (in the format of WIDTHxHEIGHT) or try validating ID from TIni
+  if ParseResolutionString(Params.CustomResolution, W, H) then
+    Log.LogStatus(Format('Use custom resolution from Command line: %d x %d', [W, H]), 'SDL_SetVideoMode')
+  else if Ini.GetResolution(Params.Resolution, S) and ParseResolutionString(S, W, H) then
+    Log.LogStatus(Format('Use resolution by index from command line: %d x %d [%d]', [W, H, Params.Resolution]), 'SDL_SetVideoMode')
   else
-    S := IResolution[Ini.Resolution];
+  begin
+    Log.LogStatus('Use config resolution', 'SDL_SetVideoMode');
+    S := Ini.GetResolution(W, H);
+  end;
 
-  I := Pos('x', S);
-  W := StrToInt(Copy(S, 1, I-1));
-  H := StrToInt(Copy(S, I+1, 1000));
   if ((Screens > 1) and not Split) then
   	W := W * Screens;
 
-  Log.LogStatus('SDL_SetVideoMode', 'Initialize3D');
+  Log.LogStatus('Creating window', 'SDL_SetVideoMode');
 
   // check whether to start in fullscreen or windowed mode.
   // The command-line parameters take precedence over the ini settings.
   Fullscreen := ((Ini.FullScreen = 1) or (Params.ScreenMode = scmFullscreen)) and
                 not (Params.ScreenMode = scmWindowed);
 
+  // TODO: use new SDL2 method to create a proper game window
   if Fullscreen then
   begin
-    Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Full Screen');
+    Log.LogStatus('Set Video Mode...   Full Screen', 'SDL_SetVideoMode');
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
            SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN_DESKTOP or SDL_WINDOW_RESIZABLE);
   end
   else
   begin
-    Log.LogStatus('SDL_SetVideoMode', 'Set Video Mode...   Windowed');
+    Log.LogStatus('Set Video Mode...   Windowed', 'SDL_SetVideoMode');
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
            SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, W, H, SDL_Window_OPENGL or SDL_WINDOW_RESIZABLE);
   end;
@@ -590,7 +596,34 @@ begin
 
   if (screen = nil) then
   begin
-    Log.LogCritical('SDL_SetVideoMode Failed', 'Initialize3D');
+    Log.LogCritical('Creating window failed', 'SDL_SetVideoMode');
+  end
+  else
+  begin
+    X:=0; Y:=0;
+
+    // check if created window has the desired size, otherwise override the config resolution value
+    if SDL_GetWindowDisplayMode(screen, @Disp) = 0 then
+    begin
+      if (Disp.w < W) or (Disp.h < H) then
+      begin
+        Log.LogStatus(Format('Video resolution (%s) exceeded possible size (%s). Override stored config resolution!', [BuildResolutionString(W,H), BuildResolutionString(Disp.w, Disp.h)]), 'SDL_SetVideoMode');
+        Ini.SetResolution(Disp.w, Disp.h, true);
+      end;
+
+      X := Disp.w - Screen.w;
+      Y := Disp.h - Screen.h;
+    end;
+
+    // if screen is out of the visisble desktop area, move it back
+    // this likely happens when creating a Window bigger than the possible desktop size
+    if (SDL_GetWindowFlags(screen) and SDL_WINDOW_FULLSCREEN = 0) and ((screen.x < 0) or (screen.Y < 0)) then
+    begin
+      // TODO: update SDL2
+      //SDL_GetWindowBordersSize(screen, w, h, nil, nil);
+      Log.LogStatus('Bad position for window. Re-position to (0,0)', 'SDL_SetVideoMode');
+      SDL_SetWindowPosition(screen, x, y+x);
+    end;
   end;
 
   //LoadOpenGL();
