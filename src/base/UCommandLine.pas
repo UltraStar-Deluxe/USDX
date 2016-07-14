@@ -77,6 +77,8 @@ type
       property Language:      integer read GetLanguage;
       property Resolution:    integer read GetResolution;
 
+      property CustomResolution:    string read fResolution;
+
       // some procedures for reading infos
       constructor Create;
   end;
@@ -295,7 +297,7 @@ begin
   Log.LogInfo('Depth: ' + Inttostr(Depth));
 
   Log.LogInfo('Resolution: ' + Inttostr(Resolution));
-  Log.LogInfo('Resolution: ' + Inttostr(Language));
+  Log.LogInfo('Language: ' + Inttostr(Language));
 
   Log.LogInfo('sResolution: ' + sResolution);
   Log.LogInfo('sLanguage: ' + sLanguage);
@@ -311,42 +313,16 @@ end;
 // GetLanguage - Get Language ID from saved String Information
 //-------------
 function TCMDParams.GetLanguage: integer;
-{var
-  I: integer;
-}
 begin
-  Result := -1;
-{*  JB - 12sep07 to remove uINI dependency
-
-  //Search for Language
-  For I := 0 to high(ILanguage) do
-    if (LowerCase(ILanguage[I]) = sLanguage) then
-    begin
-      Result := I;
-      Break;
-    end;
-*}
+  Result := StrToIntDef(fLanguage, -1);
 end;
 
 //-------------
 // GetResolution - Get Resolution ID from saved String Information
 //-------------
 function TCMDParams.GetResolution: integer;
-{var
-  I: integer;
-}
 begin
-  Result := -1;
-{*  JB - 12sep07 to remove uINI dependency
-
-  //Search for Resolution
-  For I := 0 to high(IResolution) do
-    if (LowerCase(IResolution[I]) = sResolution) then
-    begin
-      Result := I;
-      Break;
-    end;
-*}
+  Result := StrToIntDef(fResolution, -1);
 end;
 
 end.
