@@ -64,14 +64,14 @@ const
  *   SplitString(' split  me now ', 0) -> ['split', 'me', 'now']
  *   SplitString(' split  me now ', 1) -> ['split', 'me now']
  *}
- function SplitString(const Str: string; MaxCount: integer = 0; Separators: TSysCharSet = SepWhitespace; RemoveEmpty: boolean = true): TStringDynArray;
+function SplitString(const Str: string; MaxCount: integer = 0; Separators: TSysCharSet = SepWhitespace; RemoveEmpty: boolean = true): TStringDynArray;
 
- function StringInArray(const Value: string; Strings: array of string): Boolean;
+function StringInArray(const Value: string; Strings: array of string): Boolean;
 
- function StringDeleteFromArray(var InStrings: TStringDynArray; const InIndex: integer): Boolean; overload;
- function StringDeleteFromArray(var InStrings: TUTF8StringDynArray; const InIndex: integer): Boolean; overload;
+function StringDeleteFromArray(var InStrings: TStringDynArray; const InIndex: integer): Boolean; overload;
+function StringDeleteFromArray(var InStrings: TUTF8StringDynArray; const InIndex: integer): Boolean; overload;
 
- function GetStringWithNoAccents(str: String):String;
+function GetStringWithNoAccents(str: String):String;
 
 type
   TRGB = record
@@ -157,7 +157,9 @@ begin
     SetLength(InStrings, Length(InStrings) - 1);
   end;
 end;
+
 function SplitString(const Str: string; MaxCount: integer; Separators: TSysCharSet; RemoveEmpty: boolean): TStringDynArray;
+
   // Adds Str[StartPos..Endpos-1] to the result array.
   procedure AddSplit(StartPos, EndPos: integer);
   begin
