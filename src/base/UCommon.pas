@@ -64,9 +64,9 @@ const
  *   SplitString(' split  me now ', 0) -> ['split', 'me', 'now']
  *   SplitString(' split  me now ', 1) -> ['split', 'me now']
  *}
- function StringInArray(const Value: string; Strings: array of string): Boolean;
+ function SplitString(const Str: string; MaxCount: integer = 0; Separators: TSysCharSet = SepWhitespace; RemoveEmpty: boolean = true): TStringDynArray;
 
- function SplitString(const Str: string; MaxCount: integer = 0; Separators: TSysCharSet = SepWhitespace): TStringDynArray;
+ function StringInArray(const Value: string; Strings: array of string): Boolean;
 
  function GetStringWithNoAccents(str: String):String;
 
@@ -134,57 +134,40 @@ begin
   Result := False;
 end;
 
-function SplitString(const Str: string; MaxCount: integer; Separators: TSysCharSet): TStringDynArray;
+function SplitString(const Str: string; MaxCount: integer; Separators: TSysCharSet; RemoveEmpty: boolean): TStringDynArray;
 
-  {*
-   * Adds Str[StartPos..Endpos-1] to the result array.
-   *}
+  // Adds Str[StartPos..Endpos-1] to the result array.
   procedure AddSplit(StartPos, EndPos: integer);
   begin
-    SetLength(Result, Length(Result)+1);
-    Result[High(Result)] := Copy(Str, StartPos, EndPos-StartPos);
+    if (not RemoveEmpty) or (EndPos > StartPos) then
+    begin
+      SetLength(Result, Length(Result)+1);
+      Result[High(Result)] := Copy(Str, StartPos, EndPos-StartPos);
+    end;
   end;
 
 var
-  I: integer;
+  I, Count: integer;
   Start: integer;
-  Last: integer;
 begin
   Start := 0;
+  Count := 0;
   SetLength(Result, 0);
 
   for I := 1 to Length(Str) do
   begin
     if (Str[I] in Separators) then
     begin
-      // end of component found
-      if (Start > 0) then
-      begin
-        AddSplit(Start, I);
-        Start := 0;
-      end;
-    end
-    else if (Start = 0) then
-    begin
-      // mark beginning of component
+      inc(Count);
+      AddSplit(Start+1, I);
       Start := I;
-      // check if this is the last component
-      if (Length(Result) = MaxCount-1) then
-      begin
-        // find last non-separator char
-        Last := Length(Str);
-        while (Str[Last] in Separators) do
-          Dec(Last);
-        // add component up to last non-separator
-        AddSplit(Start, Last);
-        Exit;
-      end;
+      if (MaxCount > 0) and (Count >= MaxCount) then Break
     end;
   end;
 
   // last component
-  if (Start > 0) then
-    AddSplit(Start, Length(Str)+1);
+  if (Start < Length(Str)+1) then
+    AddSplit(Start+1, Length(Str)+1);
 end;
 
 const
