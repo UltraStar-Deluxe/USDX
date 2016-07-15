@@ -154,8 +154,8 @@ type
     TextMedleyFadeTime: cardinal;
 
     // names
-    P1Name, P2Name, P3Name, P4Name, P5Name, P6Name: UTF8String;
-    P1DuetName, P2DuetName, P3DuetName, P4DuetName, P5DuetName, P6DuetName: UTF8String;
+    PlayerNames: array [1..IMaxPlayerCount] of UTF8String;
+    PlayerDuetNames:array [1..IMaxPlayerCount] of UTF8String;
 
     Tex_Background: TTexture;
     FadeOut: boolean;

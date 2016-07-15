@@ -645,119 +645,17 @@ begin
   TextDuetP2M   := ScreenSing.AddText(Theme.Sing.TextDuetP2M);
   TextDuetP3R   := ScreenSing.AddText(Theme.Sing.TextDuetP3R);
 
-  if (PlayersPlay = 1) then
+  for I := 1 to PlayersPlay do
   begin
     if (Party.bPartyGame) then
     begin
-      if (ScreenSing.Text[TextP1].Text = 'PLAYERNAME') then
-        ScreenSing.P1Name := Ini.NameTeam[0]
-      else
-        ScreenSing.P1Name := 'P1';
+      ScreenSing.PlayerNames[I] := Ini.NameTeam[I-1];
     end
     else
     begin
-      if (ScreenSing.Text[TextP1].Text = 'PLAYERNAME') then
-        ScreenSing.P1Name := Ini.Name[0]
-      else
-        ScreenSing.P1Name := 'P1';
+      ScreenSing.PlayerNames[I] := Ini.Name[I-1];
     end;
-  end;
-
-  if (PlayersPlay = 2) then
-  begin
-    if (Party.bPartyGame) then
-    begin
-      if (ScreenSing.Text[TextP1TwoP].Text = 'PLAYERNAME') then
-        ScreenSing.P1Name := Ini.NameTeam[0]
-      else
-        ScreenSing.P1Name := 'P1';
-
-      if (ScreenSing.Text[TextP2R].Text = 'PLAYERNAME') then
-        ScreenSing.P2Name := Ini.NameTeam[1]
-      else
-        ScreenSing.P2Name := 'P2';
-    end
-    else
-    begin
-      if (ScreenSing.Text[TextP1TwoP].Text = 'PLAYERNAME') then
-        ScreenSing.P1Name := Ini.Name[0]
-      else
-        ScreenSing.P1Name := 'P1';
-
-      if (ScreenSing.Text[TextP2R].Text = 'PLAYERNAME') then
-        ScreenSing.P2Name := Ini.Name[1]
-      else
-        ScreenSing.P2Name := 'P2';
-    end;
-  end;
-
-  if (PlayersPlay = 3) then
-  begin
-    if (Party.bPartyGame) then
-    begin
-
-      if (ScreenSing.Text[TextDuetP1ThreeP].Text = 'PLAYERNAME') then
-        ScreenSing.P1DuetName := Ini.NameTeam[0]
-      else
-        ScreenSing.P1DuetName := 'P1';
-
-      if (ScreenSing.Text[TextDuetP2M].Text = 'PLAYERNAME') then
-        ScreenSing.P2DuetName := Ini.NameTeam[1]
-      else
-        ScreenSing.P2DuetName := 'P2';
-
-      if (ScreenSing.Text[TextDuetP3R].Text = 'PLAYERNAME') then
-        ScreenSing.P3DuetName := Ini.NameTeam[2]
-      else
-        ScreenSing.P3DuetName := 'P3';
-
-      if (ScreenSing.Text[TextP1ThreeP].Text = 'PLAYERNAME') then
-        ScreenSing.P1Name := Ini.NameTeam[0]
-      else
-        ScreenSing.P1Name := 'P1';
-
-      if (ScreenSing.Text[TextP2M].Text = 'PLAYERNAME') then
-        ScreenSing.P2Name := Ini.NameTeam[1]
-      else
-        ScreenSing.P2Name := 'P2';
-
-      if (ScreenSing.Text[TextP3R].Text = 'PLAYERNAME') then
-        ScreenSing.P3Name := Ini.NameTeam[2]
-      else
-        ScreenSing.P3Name := 'P3';
-    end
-    else
-    begin
-      if (ScreenSing.Text[TextDuetP1ThreeP].Text = 'PLAYERNAME') then
-        ScreenSing.P1DuetName := Ini.Name[0]
-      else
-        ScreenSing.P1DuetName := 'P1';
-
-      if (ScreenSing.Text[TextDuetP2M].Text = 'PLAYERNAME') then
-        ScreenSing.P2DuetName := Ini.Name[1]
-      else
-        ScreenSing.P2DuetName := 'P2';
-
-      if (ScreenSing.Text[TextDuetP3R].Text = 'PLAYERNAME') then
-        ScreenSing.P3DuetName := Ini.Name[2]
-      else
-        ScreenSing.P3DuetName := 'P3';
-
-      if (ScreenSing.Text[TextP1ThreeP].Text = 'PLAYERNAME') then
-        ScreenSing.P1Name := Ini.Name[0]
-      else
-        ScreenSing.P1Name := 'P1';
-
-      if (ScreenSing.Text[TextP2M].Text = 'PLAYERNAME') then
-        ScreenSing.P2Name := Ini.Name[1]
-      else
-        ScreenSing.P2Name := 'P2';
-
-      if (ScreenSing.Text[TextP3R].Text = 'PLAYERNAME') then
-        ScreenSing.P3Name := Ini.Name[2]
-      else
-        ScreenSing.P3Name := 'P3';
-    end;
+    ScreenSing.PlayerDuetNames[I] := ScreenSing.PlayerNames[I];
   end;
 
   // 4/6 players in 1 screen
@@ -910,112 +808,6 @@ begin
   TextP4DuetSixP   := ScreenSing.AddText(Theme.Sing.TextP4DuetSixP);
   TextP5DuetSixP   := ScreenSing.AddText(Theme.Sing.TextP5DuetSixP);
   TextP6DuetSixP   := ScreenSing.AddText(Theme.Sing.TextP6DuetSixP);
-
-  if (PlayersPlay = 4) then
-  begin
-    if (ScreenSing.Text[TextP1DuetFourP].Text = 'PLAYERNAME') then
-      ScreenSing.P1DuetName := Ini.Name[0]
-    else
-      ScreenSing.P1DuetName := 'P1';
-
-    if (ScreenSing.Text[TextP2DuetFourP].Text = 'PLAYERNAME') then
-      ScreenSing.P2DuetName := Ini.Name[1]
-    else
-      ScreenSing.P2DuetName := 'P2';
-
-    if (ScreenSing.Text[TextP3DuetFourP].Text = 'PLAYERNAME') then
-      ScreenSing.P3DuetName := Ini.Name[2]
-    else
-      ScreenSing.P3DuetName := 'P3';
-
-    if (ScreenSing.Text[TextP4DuetFourP].Text = 'PLAYERNAME') then
-      ScreenSing.P4DuetName := Ini.Name[3]
-    else
-      ScreenSing.P4DuetName := 'P4';
-
-    if (ScreenSing.Text[TextP1FourP].Text = 'PLAYERNAME') then
-      ScreenSing.P1Name := Ini.Name[0]
-    else
-      ScreenSing.P1Name := 'P1';
-
-    if (ScreenSing.Text[TextP2FourP].Text = 'PLAYERNAME') then
-      ScreenSing.P2Name := Ini.Name[1]
-    else
-      ScreenSing.P2Name := 'P2';
-
-    if (ScreenSing.Text[TextP3FourP].Text = 'PLAYERNAME') then
-      ScreenSing.P3Name := Ini.Name[2]
-    else
-      ScreenSing.P3Name := 'P3';
-
-    if (ScreenSing.Text[TextP4FourP].Text = 'PLAYERNAME') then
-      ScreenSing.P4Name := Ini.Name[3]
-    else
-      ScreenSing.P4Name := 'P4';
-  end;
-
-  if (PlayersPlay = 6) then
-  begin
-    if (ScreenSing.Text[TextP1DuetSixP].Text = 'PLAYERNAME') then
-      ScreenSing.P1DuetName := Ini.Name[0]
-    else
-      ScreenSing.P1DuetName := 'P1';
-
-    if (ScreenSing.Text[TextP2DuetSixP].Text = 'PLAYERNAME') then
-      ScreenSing.P2DuetName := Ini.Name[1]
-    else
-      ScreenSing.P2DuetName := 'P2';
-
-    if (ScreenSing.Text[TextP3DuetSixP].Text = 'PLAYERNAME') then
-      ScreenSing.P3DuetName := Ini.Name[2]
-    else
-      ScreenSing.P3DuetName := 'P3';
-
-    if (ScreenSing.Text[TextP4DuetSixP].Text = 'PLAYERNAME') then
-      ScreenSing.P4DuetName := Ini.Name[3]
-    else
-      ScreenSing.P4DuetName := 'P4';
-
-    if (ScreenSing.Text[TextP5DuetSixP].Text = 'PLAYERNAME') then
-      ScreenSing.P5DuetName := Ini.Name[4]
-    else
-      ScreenSing.P5DuetName := 'P5';
-
-    if (ScreenSing.Text[TextP6DuetSixP].Text = 'PLAYERNAME') then
-      ScreenSing.P6DuetName := Ini.Name[5]
-    else
-      ScreenSing.P6DuetName := 'P6';
-
-    if (ScreenSing.Text[TextP1SixP].Text = 'PLAYERNAME') then
-      ScreenSing.P1Name := Ini.Name[0]
-    else
-      ScreenSing.P1Name := 'P1';
-
-    if (ScreenSing.Text[TextP2SixP].Text = 'PLAYERNAME') then
-      ScreenSing.P2Name := Ini.Name[1]
-    else
-      ScreenSing.P2Name := 'P2';
-
-    if (ScreenSing.Text[TextP3SixP].Text = 'PLAYERNAME') then
-      ScreenSing.P3Name := Ini.Name[2]
-    else
-      ScreenSing.P3Name := 'P3';
-
-    if (ScreenSing.Text[TextP4SixP].Text = 'PLAYERNAME') then
-      ScreenSing.P4Name := Ini.Name[3]
-    else
-      ScreenSing.P4Name := 'P4';
-
-    if (ScreenSing.Text[TextP5SixP].Text = 'PLAYERNAME') then
-      ScreenSing.P5Name := Ini.Name[4]
-    else
-      ScreenSing.P5Name := 'P5';
-
-    if (ScreenSing.Text[TextP6SixP].Text = 'PLAYERNAME') then
-      ScreenSing.P6Name := Ini.Name[5]
-    else
-      ScreenSing.P6Name := 'P6';
-  end;
 
   // Sing Bars
   // P1-6
@@ -1462,35 +1254,35 @@ begin
   // set player names (for 2 screens and only singstar skin)
   if ScreenAct = 1 then
   begin
-    ScreenSing.Text[TextP1].Text     := ScreenSing.P1Name;
-    ScreenSing.Text[TextP1TwoP].Text := ScreenSing.P1Name;
-    ScreenSing.Text[TextP1ThreeP].Text := ScreenSing.P1Name;
-    ScreenSing.Text[TextP2R].Text    := ScreenSing.P2Name;
-    ScreenSing.Text[TextP2M].Text    := ScreenSing.P2Name;
-    ScreenSing.Text[TextP3R].Text    := ScreenSing.P3Name;
-    ScreenSing.Text[TextDuetP1ThreeP].Text := ScreenSing.P1DuetName;
-    ScreenSing.Text[TextDuetP2M].Text      := ScreenSing.P2DuetName;
-    ScreenSing.Text[TextDuetP3R].Text      := ScreenSing.P3DuetName;
-    ScreenSing.Text[TextP1FourP].Text     := ScreenSing.P1Name;
-    ScreenSing.Text[TextP2FourP].Text     := ScreenSing.P2Name;
-    ScreenSing.Text[TextP3FourP].Text     := ScreenSing.P3Name;
-    ScreenSing.Text[TextP4FourP].Text     := ScreenSing.P4Name;
-    ScreenSing.Text[TextP1DuetFourP].Text     := ScreenSing.P1DuetName;
-    ScreenSing.Text[TextP2DuetFourP].Text     := ScreenSing.P2DuetName;
-    ScreenSing.Text[TextP3DuetFourP].Text     := ScreenSing.P3DuetName;
-    ScreenSing.Text[TextP4DuetFourP].Text     := ScreenSing.P4DuetName;
-    ScreenSing.Text[TextP1SixP].Text     := ScreenSing.P1Name;
-    ScreenSing.Text[TextP2SixP].Text     := ScreenSing.P2Name;
-    ScreenSing.Text[TextP3SixP].Text     := ScreenSing.P3Name;
-    ScreenSing.Text[TextP4SixP].Text     := ScreenSing.P4Name;
-    ScreenSing.Text[TextP5SixP].Text     := ScreenSing.P5Name;
-    ScreenSing.Text[TextP6SixP].Text     := ScreenSing.P6Name;
-    ScreenSing.Text[TextP1DuetSixP].Text     := ScreenSing.P1DuetName;
-    ScreenSing.Text[TextP2DuetSixP].Text     := ScreenSing.P2DuetName;
-    ScreenSing.Text[TextP3DuetSixP].Text     := ScreenSing.P3DuetName;
-    ScreenSing.Text[TextP4DuetSixP].Text     := ScreenSing.P4DuetName;
-    ScreenSing.Text[TextP5DuetSixP].Text     := ScreenSing.P5DuetName;
-    ScreenSing.Text[TextP6DuetSixP].Text     := ScreenSing.P6DuetName;
+    ScreenSing.Text[TextP1].Text     := ScreenSing.PlayerNames[1];
+    ScreenSing.Text[TextP1TwoP].Text := ScreenSing.PlayerNames[1];
+    ScreenSing.Text[TextP1ThreeP].Text := ScreenSing.PlayerNames[1];
+    ScreenSing.Text[TextP2R].Text    := ScreenSing.PlayerNames[2];
+    ScreenSing.Text[TextP2M].Text    := ScreenSing.PlayerNames[2];
+    ScreenSing.Text[TextP3R].Text    := ScreenSing.PlayerNames[3];
+    ScreenSing.Text[TextDuetP1ThreeP].Text := ScreenSing.PlayerDuetNames[1];
+    ScreenSing.Text[TextDuetP2M].Text      := ScreenSing.PlayerDuetNames[2];
+    ScreenSing.Text[TextDuetP3R].Text      := ScreenSing.PlayerDuetNames[3];
+    ScreenSing.Text[TextP1FourP].Text     := ScreenSing.PlayerNames[1];
+    ScreenSing.Text[TextP2FourP].Text     := ScreenSing.PlayerNames[2];
+    ScreenSing.Text[TextP3FourP].Text     := ScreenSing.PlayerNames[3];
+    ScreenSing.Text[TextP4FourP].Text     := ScreenSing.PlayerNames[4];
+    ScreenSing.Text[TextP1DuetFourP].Text     := ScreenSing.PlayerDuetNames[1];
+    ScreenSing.Text[TextP2DuetFourP].Text     := ScreenSing.PlayerDuetNames[2];
+    ScreenSing.Text[TextP3DuetFourP].Text     := ScreenSing.PlayerDuetNames[3];
+    ScreenSing.Text[TextP4DuetFourP].Text     := ScreenSing.PlayerDuetNames[4];
+    ScreenSing.Text[TextP1SixP].Text     := ScreenSing.PlayerNames[1];
+    ScreenSing.Text[TextP2SixP].Text     := ScreenSing.PlayerNames[2];
+    ScreenSing.Text[TextP3SixP].Text     := ScreenSing.PlayerNames[3];
+    ScreenSing.Text[TextP4SixP].Text     := ScreenSing.PlayerNames[4];
+    ScreenSing.Text[TextP5SixP].Text     := ScreenSing.PlayerNames[5];
+    ScreenSing.Text[TextP6SixP].Text     := ScreenSing.PlayerNames[6];
+    ScreenSing.Text[TextP1DuetSixP].Text     := ScreenSing.PlayerDuetNames[1];
+    ScreenSing.Text[TextP2DuetSixP].Text     := ScreenSing.PlayerDuetNames[2];
+    ScreenSing.Text[TextP3DuetSixP].Text     := ScreenSing.PlayerDuetNames[3];
+    ScreenSing.Text[TextP4DuetSixP].Text     := ScreenSing.PlayerDuetNames[4];
+    ScreenSing.Text[TextP5DuetSixP].Text     := ScreenSing.PlayerDuetNames[5];
+    ScreenSing.Text[TextP6DuetSixP].Text     := ScreenSing.PlayerDuetNames[6];
 
     if (CurrentSong.isDuet) then
     begin
@@ -1512,8 +1304,8 @@ begin
     case PlayersPlay of
       4:
       begin
-        ScreenSing.Text[TextP1TwoP].Text := ScreenSing.P3Name;
-        ScreenSing.Text[TextP2R].Text    := ScreenSing.P4Name;
+        ScreenSing.Text[TextP1TwoP].Text := ScreenSing.PlayerNames[3];
+        ScreenSing.Text[TextP2R].Text    := ScreenSing.PlayerNames[4];
 
         if (CurrentSong.isDuet) and (PlayersPlay = 4) then
         begin
@@ -1531,15 +1323,15 @@ begin
       begin
         if (CurrentSong.isDuet) then
         begin
-          ScreenSing.Text[TextDuetP1ThreeP].Text := ScreenSing.P4DuetName;
-          ScreenSing.Text[TextDuetP2M].Text      := ScreenSing.P5DuetName;
-          ScreenSing.Text[TextDuetP3R].Text      := ScreenSing.P6DuetName;
+          ScreenSing.Text[TextDuetP1ThreeP].Text := ScreenSing.PlayerDuetNames[4];
+          ScreenSing.Text[TextDuetP2M].Text      := ScreenSing.PlayerDuetNames[5];
+          ScreenSing.Text[TextDuetP3R].Text      := ScreenSing.PlayerDuetNames[6];
         end
         else
         begin
-          ScreenSing.Text[TextP1ThreeP].Text := ScreenSing.P4Name;
-          ScreenSing.Text[TextP2M].Text      := ScreenSing.P5Name;
-          ScreenSing.Text[TextP3R].Text      := ScreenSing.P6Name;
+          ScreenSing.Text[TextP1ThreeP].Text := ScreenSing.PlayerNames[4];
+          ScreenSing.Text[TextP2M].Text      := ScreenSing.PlayerNames[5];
+          ScreenSing.Text[TextP3R].Text      := ScreenSing.PlayerNames[6];
         end;
       end;
     end; // case
