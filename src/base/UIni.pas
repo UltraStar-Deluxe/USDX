@@ -74,6 +74,7 @@ type
 const
   CHANNEL_OFF = 0;         // for field ChannelToPlayerMap
   LATENCY_AUTODETECT = -1; // for field Latency
+  DEFAULT_RESOLUTION = '800x600';
   IMaxPlayerCount = 12;
   IPlayers:     array[0..6] of UTF8String = ('1', '2', '3', '4', '6', '8', '12');
   IPlayersVals: array[0..6] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 ,  8 ,  12 );
@@ -88,6 +89,7 @@ type
 
   TIni = class
     private
+
       function ExtractKeyIndex(const Key, Prefix, Suffix: string): integer;
       function GetMaxKeyIndex(Keys: TStringList; const Prefix, Suffix: string): integer;
       function ReadArrayIndex(const SearchArray: array of UTF8String; IniFile: TCustomIniFile;
@@ -277,11 +279,19 @@ type
       procedure SaveSingTimebarMode;
       procedure SaveJukeboxTimebarMode;
 
+      procedure SetResolution(ResolutionString: string; RemoveCurrent: boolean = false; NoSave: boolean = false); overload;
+      procedure SetResolution(w,h: integer; RemoveCurrent: boolean = false; NoSave: boolean = false); overload;
+      function SetResolution(index: integer): boolean; overload;
+      function GetResolution(): string; overload;
+      function GetResolution(out w,h: integer): string; overload;
+      function GetResolution(index: integer; out ResolutionString: string): boolean; overload;
+
   end;
 
 var
   Ini:         TIni;
   IResolution: TUTF8StringDynArray;
+  IResolutionFullScreen: TUTF8StringDynArray;
   ILanguage:   TUTF8StringDynArray;
   ITheme:      TUTF8StringDynArray;
   ISkin:       TUTF8StringDynArray;
@@ -1165,8 +1175,9 @@ procedure TIni.LoadScreenModes(IniFile: TCustomIniFile);
   end;
 
 var
-  Modes: PSDL_Rect;
-  I:     integer;
+  I, Success, DisplayIndex:     integer;
+  CurrentMode, ModeIter, MaxMode: TSDL_DisplayMode;
+  CurrentRes, ResString: string;
 begin
   MaxFramerate:= GetArrayIndex(IMaxFramerate, IniFile.ReadString('Graphics', 'MaxFramerate', '60'));
   MaxFramerateGet:= StrToInt(IMaxFramerate[MaxFramerate]);
@@ -1179,92 +1190,128 @@ begin
   // FullScreen
   FullScreen := GetArrayIndex(IFullScreen, IniFile.ReadString('Graphics', 'FullScreen', 'On'));
 
-  // Resolution
-  SetLength(IResolution, 0);
+  // standard fallback resolutions
+  SetLength(IResolution, 27);
+  IResolution[0] := '640x480'; // VGA
+  IResolution[1] := '720x480'; // SDTV 480i, EDTV 480p [TV]
+  IResolution[2] := '720x576'; // SDTV 576i, EDTV 576p [TV]
+  IResolution[3] := '768x576'; // SDTV 576i, EDTV 576p [TV]
+  IResolution[4] := '800x600'; // SVGA
+  IResolution[5] := '960x540'; // Quarter FHD
+  IResolution[6] := '1024x768'; // XGA
+  IResolution[7] := '1152x666';
+  IResolution[8] := '1152x864'; // XGA+
+  IResolution[9] := '1280x720'; // WXGA-H
+  IResolution[10] := '1280x800'; // WXGA
+  IResolution[11] := '1280x960'; // WXGA
+  IResolution[12] := '1280x1024'; // SXGA
+  IResolution[13] := '1366x768'; // HD
+  IResolution[14] := '1400x1050'; // SXGA+
+  IResolution[15] := '1440x900'; // WXGA+
+  IResolution[16] := '1600x900'; // HD+
+  IResolution[17] := '1600x1200'; // UXGA
+  IResolution[18] := '1680x1050'; // WSXGA+
+  IResolution[19] := '1920x1080'; // FHD
+  IResolution[20] := '1920x1200'; // WUXGA
+  IResolution[21] := '2048x1152'; // QWXGA
+  IResolution[22] := '2560x1440'; // WQHD
+  IResolution[23] := '2560x1600'; // WQXGA
+  IResolution[24] := '3840x2160'; // 4K UHD
+  IResolution[25] := '4096x2304'; // 4K
+  IResolution[26] := '4096x3072'; // HXGA
 
   // Check if there are any modes available
   // TODO: we should seperate windowed and fullscreen modes. Otherwise it is not
-  // possible to select a reasonable fullscreen mode when in windowed mode
-  //basisbit todo implement sdl2 feature to get video modes here
-  {if IFullScreen[FullScreen] = 'On' then
-    Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_FULLSCREEN)
-  else
-    Modes  := SDL_ListModes(nil, SDL_OPENGL or SDL_RESIZABLE) ;
+  //       possible to select a reasonable fullscreen mode when in windowed mode
 
-  if (Modes = nil) then
+  // retrieve currently used Video Display
+  DisplayIndex := -1;
+  MaxMode.h := 0; MaxMode.w := 0;
+  CurrentMode.h := -1; CurrentMode.w := -1;
+  for I := 0 to SDL_GetNumVideoDisplays() - 1 do
   begin
-    Log.LogStatus( 'No resolutions Found' , 'Video');
-  end
-  else if (Modes = PSDL_Rect(-1)) then
-  begin}
-    // Fallback to some standard resolutions
-    SetLength(IResolution, 18);
-    IResolution[0] := '640x480';
-    IResolution[1] := '800x600';
-    IResolution[2] := '1024x768';
-    IResolution[3] := '1152x666';;
-    IResolution[4] := '1152x864';
-    IResolution[5] := '1280x800';
-    IResolution[6] := '1280x960';
-    IResolution[7] := '1280x1024';
-    IResolution[8] := '1366x768';
-    IResolution[9] := '1400x1050';
-    IResolution[10] := '1440x900';
-    IResolution[11] := '1600x900';
-    IResolution[12] := '1600x1200';
-    IResolution[13] := '1680x1050';
-    IResolution[14] := '1920x1080';
-    IResolution[15] := '1920x1200';
-    IResolution[16] := '2048x1152';
-    IResolution[17] := '2560x1600';
+    Success := SDL_GetCurrentDisplayMode(I,  @CurrentMode);
+    if Success = 0 then
+    begin
+      DisplayIndex := I;
+      CurrentRes := BuildResolutionString(CurrentMode.w, CurrentMode.h);
+      Break
+    end;
+  end;
 
-    Resolution := GetArrayIndex(IResolution, IniFile.ReadString('Graphics', 'Resolution', '800x600'));
-    if Resolution = -1 then
-    begin
-      SetLength(IResolution, Length(IResolution) + 1);
-      IResolution[High(IResolution)] := IniFile.ReadString('Graphics', 'Resolution', '800x600');
-      Resolution := High(IResolution);
-    end;
-  {end
-  else
+  // retrieve available display modes, store into separate array
+  if DisplayIndex >= 0 then
   begin
-    while assigned( Modes^ ) do //this should solve the biggest wine problem | THANKS Linnex (11.11.07)
+    for I := 0 to SDL_GetNumDisplayModes(DisplayIndex) - 1 do
     begin
-      Log.LogStatus( 'Found Video Mode : ' + IntToStr(Modes^.w) + 'x' + IntToStr(Modes^.h) , 'Video');
-      SetLength(IResolution, Length(IResolution) + 1);
-      IResolution[High(IResolution)] := IntToStr(Modes^.w div (Screens+1)) + 'x' + IntToStr(Modes^.h);
-      Inc(Modes);
+      Success := SDL_GetDisplayMode(DisplayIndex, I, @ModeIter);
+      if Success <> 0 then continue;
+
+      ResString := BuildResolutionString(ModeIter.w, ModeIter.h);
+      if GetArrayIndex(IResolutionFullScreen, ResString) < 0 then
+      begin
+        Log.LogStatus('Found Video Mode: ' + ResString, 'Video');
+        SetLength(IResolutionFullScreen, Length(IResolutionFullScreen) + 1);
+        IResolutionFullScreen[High(IResolutionFullScreen)] := ResString;
+
+        if (ModeIter.w > MaxMode.w) or (ModeIter.h > ModeIter.h) then
+        begin
+          MaxMode := ModeIter;
+        end;
+      end;
     end;
+  end;
+
+  // if display modes are found, override fallback ones
+  if Length(IResolutionFullScreen) > 0 then
+  begin
+    Log.LogStatus( 'Found resolutions: ' + IntToStr(Length(IResolutionFullScreen)), 'Video');
+    IResolution := IResolutionFullScreen;
 
     // reverse order
-    Log.LogStatus( 'Log size of resolution: ' + IntToStr(Length(IResolution)), 'Video');
-    for I := 0 to (Length(IResolution) div 2) - 1 do
-    begin
-      swap(IResolution[I], IResolution[High(IResolution)-I]);
-    end;
-    Resolution := GetArrayIndex(IResolution, IniFile.ReadString('Graphics', 'Resolution', '800x600'));
+    for I := 0 to (Length(IResolution) div 2) - 1 do swap(IResolution[I], IResolution[High(IResolution)-I]);
+  end;
 
-    if Resolution = -1 then
-    begin
-      Resolution := GetArrayIndex(IResolution, '800x600');
-      if Resolution = -1 then
-        Resolution := 0;
-    end;
-  end;}
-
-  // if no modes were set, then failback to 800x600
-  // as per http://sourceforge.net/forum/message.php?msg_id=4544965
-  // THANKS : linnex at users.sourceforge.net
-  if Length(IResolution) < 1 then
+  // Check if there is a resolution configured, try using it
+  ResString := IniFile.ReadString('Graphics', 'Resolution', '');
+  if ResString = '' then
   begin
-    Log.LogStatus( 'Found Video Mode : NONE !!! ( Defaulted to 800 x 600 )', 'Video');
-    SetLength(IResolution, 1);
-    IResolution[0] := '800x600';
-    Resolution := 0;
-    Log.LogStatus('SDL_ListModes Defaulted Res To : ' + IResolution[0] , 'Graphics - Resolutions');
+    ResString := CurrentRes; // either store desktop resolution or invalid which results into DEFAULT
+  end;
 
-    // Default to fullscreen OFF, in this case !
-    FullScreen := 0;
+  // check if stored resolution is valid
+  Resolution := GetArrayIndex(IResolution, ResString);
+
+  // if resolution cannot be found, check if is larger than max resolution
+  if (Resolution < 0) and (MaxMode.w > 0) and (MaxMode.h > 0) and
+     (ParseResolutionString(ResString, ModeIter.w, ModeIter.h)) and
+     ((ModeIter.w > MaxMode.w) or (ModeIter.h > MaxMode.h)) then
+  begin
+    Log.LogInfo(Format('Exceeding resoluton found (%s). Reverting to standard resolution.', [ResString]), 'Video');
+    ResString := CurrentRes;
+    Resolution := GetArrayIndex(IResolution, ResString);
+  end;
+
+  // append unknown mode to list
+  if (Resolution = -1) and (Length(ResString) >= 3) then
+  begin
+    SetLength(IResolution, Length(IResolution) + 1);
+    IResolution[High(IResolution)] := ResString;
+    Resolution := High(IResolution);
+  end;
+
+  if (Length(IResolution) = 0) or (Resolution < 0) then
+  begin
+    // if no modes were set, then failback to DEFAULT_RESOLUTION (800x600)
+    // as per http://sourceforge.net/forum/message.php?msg_id=4544965
+    // THANKS : linnex at users.sourceforge.net
+    SetLength(IResolution, Length(IResolution) + 1);
+    IResolution[High(IResolution)] := DEFAULT_RESOLUTION;
+    Resolution := GetArrayIndex(IResolution, DEFAULT_RESOLUTION);
+    if Resolution < 0 then Resolution := 0;
+
+    Log.LogStatus( Format('No video mode found! Default to: %s ', [IResolution[Resolution]]), 'Video');
+    FullScreen := 0; // default to fullscreen OFF in this case
   end;
 
   // Depth
@@ -1653,7 +1700,7 @@ begin
   IniFile.WriteString('Graphics', 'Visualization', IVisualizer[VisualizerOption]);
 
   // Resolution
-  IniFile.WriteString('Graphics', 'Resolution', IResolution[Resolution]);
+  IniFile.WriteString('Graphics', 'Resolution', GetResolution);
 
   // Depth
   IniFile.WriteString('Graphics', 'Depth', IDepth[Depth]);
@@ -2069,6 +2116,68 @@ begin
     IniFile.WriteString('Advanced', 'JukeboxTimebarMode', IJukeboxTimebarMode[JukeboxTimebarMode]);
 
     IniFile.Free;
+  end;
+end;
+
+
+procedure TIni.SetResolution(ResolutionString: string; RemoveCurrent: boolean; NoSave: boolean);
+  var
+    Index: integer;
+    Dirty: boolean;
+begin
+  Dirty := false;
+  Index := GetArrayIndex(IResolution, ResolutionString);
+  if not NoSave and (Resolution <> Index) then Dirty := true;
+  if (Resolution >= 0) and (RemoveCurrent) then StringDeleteFromArray(IResolution, Resolution);
+  if Index < 0 then
+  begin
+    SetLength(IResolution, Length(IResolution) + 1);
+    IResolution[High(IResolution)] := ResolutionString;
+    index := High(IResolution);
+  end;
+
+  if SetResolution(index) and Dirty then
+  begin
+    Log.LogStatus('Resolution overridden to: ' + ResolutionString, 'Video');
+    Save();
+  end;
+end;
+
+procedure TIni.SetResolution(w,h: integer; RemoveCurrent: boolean; NoSave: boolean);
+begin
+  SetResolution(BuildResolutionString(w, h), RemoveCurrent, NoSave);
+end;
+
+function TIni.SetResolution(index: integer): boolean;
+begin
+  Result := false;
+  if (index >= 0) and (index < Length(IResolution)) then
+  begin
+      Resolution := index;
+      Result := true;
+  end;
+end;
+
+function TIni.GetResolution(): string;
+begin
+  if Resolution >= 0 then Result := IResolution[Resolution]
+  else if Length(IResolution) = 0 then Result := DEFAULT_RESOLUTION
+  else Result := IResolution[0];
+end;
+
+function TIni.GetResolution(out w,h: integer): string;
+begin
+  Result := GetResolution();
+  ParseResolutionString(Result, w, h);
+end;
+
+function TIni.GetResolution(index: integer; out ResolutionString: string): boolean;
+begin
+  Result := false;
+  if (index >= 0) and (index < Length(IResolution)) then
+  begin
+      ResolutionString := IResolution[index];
+      Result := true;
   end;
 end;
 

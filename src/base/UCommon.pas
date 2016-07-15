@@ -64,11 +64,14 @@ const
  *   SplitString(' split  me now ', 0) -> ['split', 'me', 'now']
  *   SplitString(' split  me now ', 1) -> ['split', 'me now']
  *}
- function SplitString(const Str: string; MaxCount: integer = 0; Separators: TSysCharSet = SepWhitespace; RemoveEmpty: boolean = true): TStringDynArray;
+function SplitString(const Str: string; MaxCount: integer = 0; Separators: TSysCharSet = SepWhitespace; RemoveEmpty: boolean = true): TStringDynArray;
 
- function StringInArray(const Value: string; Strings: array of string): Boolean;
+function StringInArray(const Value: string; Strings: array of string): Boolean;
 
- function GetStringWithNoAccents(str: String):String;
+function StringDeleteFromArray(var InStrings: TStringDynArray; const InIndex: integer): Boolean; overload;
+function StringDeleteFromArray(var InStrings: TUTF8StringDynArray; const InIndex: integer): Boolean; overload;
+
+function GetStringWithNoAccents(str: String):String;
 
 type
   TRGB = record
@@ -110,8 +113,11 @@ procedure MergeSort(List: TList; CompareFunc: TListSortCompare);
 function GetAlignedMem(Size: cardinal; Alignment: integer): pointer;
 procedure FreeAlignedMem(P: pointer);
 
-function GetArrayIndex(const SearchArray: array of UTF8String; Value: string; CaseInsensitiv: boolean = false): integer;
+function GetArrayIndex(const SearchArray: array of UTF8String; Value: string; CaseInsensitiv: boolean = false): integer; overload;
+function GetArrayIndex(const SearchArray: array of integer; Value: integer): integer; overload;
 
+function ParseResolutionString(const ResolutionString: string; out x, y: integer): boolean;
+function BuildResolutionString(x,y: integer): string;
 
 implementation
 
@@ -132,6 +138,24 @@ begin
   for I := Low(Strings) to High(Strings) do
     if Strings[i] = Value then Exit;
   Result := False;
+end;
+
+function StringDeleteFromArray(var InStrings: TStringDynArray; const InIndex: integer): Boolean;
+begin
+  if InIndex < Length(InStrings) then
+  begin
+    Move(InStrings[InIndex + 1], InStrings[InIndex], SizeOf(InStrings[0]) * (Length(InStrings) - InIndex - 1));
+    SetLength(InStrings, Length(InStrings) - 1);
+  end;
+end;
+
+function StringDeleteFromArray(var InStrings: TUTF8StringDynArray; const InIndex: integer): Boolean;
+begin
+  if InIndex < Length(InStrings) then
+  begin
+    Move(InStrings[InIndex + 1], InStrings[InIndex], SizeOf(InStrings[0]) * (Length(InStrings) - InIndex - 1));
+    SetLength(InStrings, Length(InStrings) - 1);
+  end;
 end;
 
 function SplitString(const Str: string; MaxCount: integer; Separators: TSysCharSet; RemoveEmpty: boolean): TStringDynArray;
@@ -318,7 +342,7 @@ begin
     SetSSECSR($1F80);
   {$IFEND}
   *)
-  
+
   // disable all of the six FPEs (x87 and SSE) to be compatible with C/C++ and
   // other libs which rely on the standard FPU behaviour (no div-by-zero FPE anymore).
   SetExceptionMask([exInvalidOp, exDenormalized, exZeroDivide,
@@ -511,7 +535,7 @@ begin
   else
     TempList[MidPos] := InList[MidPos];
 
-  // merge sorted left and right sub-lists into output-list 
+  // merge sorted left and right sub-lists into output-list
   LeftEnd := MidPos;
   RightEnd := StartPos + BlockSize;
   Pos := StartPos;
@@ -587,6 +611,51 @@ begin
   end;
 end;
 
+(**
+ * Returns the index of Value in SearchArray
+ * or -1 if Value is not in SearchArray.
+ *)
+function GetArrayIndex(const SearchArray: array of integer; Value: integer): integer;
+var
+  i: integer;
+begin
+  Result := -1;
+
+  for i := 0 to High(SearchArray) do
+  begin
+    if (SearchArray[i] = Value) then
+    begin
+      Result := i;
+      Break;
+    end;
+  end;
+end;
+
+function BuildResolutionString(x,y: integer): string;
+begin
+  Result := Format('%dx%d', [x, y]);
+end;
+
+function ParseResolutionString(const ResolutionString: string; out x,y : integer): boolean;
+  var
+    Pieces: TStringDynArray;
+begin
+  Pieces := SplitString(LowerCase(ResolutionString), 1, ['x']);
+  Result := false;
+
+  if (Length(Pieces) > 1) and (Length(Pieces[0]) > 0) and (Length(Pieces[1]) > 0) then
+  begin
+    x := StrToInt(Pieces[0]);
+    y := StrToInt(Pieces[1]);
+  end
+  // FIXME: legacy code as long as SplitString is not fixed
+  else if Pos('x', ResolutionString) > 0then
+  begin
+    x := StrToInt(Copy(ResolutionString, 1, Pos('x', ResolutionString)-1));
+    y := StrToInt(Copy(ResolutionString, Pos('x', ResolutionString)+1, 1000));
+    Result := (x > 0) and (y > 0);
+  end;
+end;
 
 type
   // stores the unaligned pointer of data allocated by GetAlignedMem()
