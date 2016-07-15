@@ -578,18 +578,19 @@ begin
   Fullscreen := ((Ini.FullScreen = 1) or (Params.ScreenMode = scmFullscreen)) and
                 not (Params.ScreenMode = scmWindowed);
 
-  // TODO: use new SDL2 method to create a proper game window
+  // TODO: use SDL renderer (for proper scale in "real fullscreen"). Able to choose rendering mode (OpenGL, OpenGL ES, Direct3D)
+  // TODO: Use real fullscreen mode with custom resolution, use native desktop fullscreen mode as "Windowed fullscreen" / borderless mode
   if Fullscreen then
   begin
     Log.LogStatus('Set Video Mode...   Full Screen', 'SDL_SetVideoMode');
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
-           SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN_DESKTOP or SDL_WINDOW_RESIZABLE);
+              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 0, 0, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN_DESKTOP);
   end
   else
   begin
     Log.LogStatus('Set Video Mode...   Windowed', 'SDL_SetVideoMode');
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
-           SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, W, H, SDL_Window_OPENGL or SDL_WINDOW_RESIZABLE);
+              SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE);
   end;
 
   //SDL_ShowCursor(0);    just to be able to debug while having mosue cursor
@@ -609,6 +610,11 @@ begin
       begin
         Log.LogStatus(Format('Video resolution (%s) exceeded possible size (%s). Override stored config resolution!', [BuildResolutionString(W,H), BuildResolutionString(Disp.w, Disp.h)]), 'SDL_SetVideoMode');
         Ini.SetResolution(Disp.w, Disp.h, true);
+      end
+      else if Fullscreen and ((Disp.w > W) or (Disp.h > H)) then
+      begin
+        Log.LogStatus(Format('Video resolution not used. Using native fullscreen resolution (%s)', [BuildResolutionString(Disp.w, Disp.h)]), 'SDL_SetVideoMode');
+        Ini.SetResolution(Disp.w, Disp.h, false, true);
       end;
 
       X := Disp.w - Screen.w;

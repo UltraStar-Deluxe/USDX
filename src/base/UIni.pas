@@ -279,8 +279,8 @@ type
       procedure SaveSingTimebarMode;
       procedure SaveJukeboxTimebarMode;
 
-      procedure SetResolution(ResolutionString: string; RemoveCurrent: boolean = false); overload;
-      procedure SetResolution(w,h: integer; RemoveCurrent: boolean = false); overload;
+      procedure SetResolution(ResolutionString: string; RemoveCurrent: boolean = false; NoSave: boolean = false); overload;
+      procedure SetResolution(w,h: integer; RemoveCurrent: boolean = false; NoSave: boolean = false); overload;
       function SetResolution(index: integer): boolean; overload;
       function GetResolution(): string; overload;
       function GetResolution(out w,h: integer): string; overload;
@@ -2120,14 +2120,14 @@ begin
 end;
 
 
-procedure TIni.SetResolution(ResolutionString: string; RemoveCurrent: boolean);
+procedure TIni.SetResolution(ResolutionString: string; RemoveCurrent: boolean; NoSave: boolean);
   var
     Index: integer;
     Dirty: boolean;
 begin
   Dirty := false;
   Index := GetArrayIndex(IResolution, ResolutionString);
-  if Resolution <> Index then Dirty := true;
+  if not NoSave and (Resolution <> Index) then Dirty := true;
   if (Resolution >= 0) and (RemoveCurrent) then StringDeleteFromArray(IResolution, Resolution);
   if Index < 0 then
   begin
@@ -2143,9 +2143,9 @@ begin
   end;
 end;
 
-procedure TIni.SetResolution(w,h: integer; RemoveCurrent: boolean);
+procedure TIni.SetResolution(w,h: integer; RemoveCurrent: boolean; NoSave: boolean);
 begin
-  SetResolution(BuildResolutionString(w, h), RemoveCurrent);
+  SetResolution(BuildResolutionString(w, h), RemoveCurrent, NoSave);
 end;
 
 function TIni.SetResolution(index: integer): boolean;
