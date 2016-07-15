@@ -583,8 +583,9 @@ begin
   if Fullscreen then
   begin
     Log.LogStatus('Set Video Mode...   Full Screen', 'SDL_SetVideoMode');
+    // TODO: use windowed resolution, in order to switch to proper windowed size (with F11); or apply size when switching mode
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
-              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 0, 0, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN_DESKTOP);
+              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN_DESKTOP or SDL_WINDOW_RESIZABLE);
   end
   else
   begin
