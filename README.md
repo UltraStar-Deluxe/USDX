@@ -1,4 +1,6 @@
 # UltraStar Deluxe 1.3 trunk README
+
+[![Join the chat at https://gitter.im/UltraStar-Deluxe/USDX](https://badges.gitter.im/UltraStar-Deluxe/USDX.svg)](https://gitter.im/UltraStar-Deluxe/USDX?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/UltraStar-Deluxe/USDX.svg?branch=master)](https://travis-ci.org/UltraStar-Deluxe/USDX)
 ```
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
