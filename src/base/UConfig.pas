@@ -127,11 +127,11 @@ const
   (*
    * Current version of UltraStar Deluxe
    *)
-  USDX_VERSION_MAJOR   = 2016;
-  USDX_VERSION_MINOR   = 1;
-  USDX_VERSION_RELEASE = 1;
-  USDX_VERSION_STATE   = '';
-  USDX_STRING = 'MyLittleKaraoke - Singing is Magic';
+   USDX_VERSION_MAJOR   = 1;
+   USDX_VERSION_MINOR   = 3;
+   USDX_VERSION_RELEASE = 2;
+   USDX_VERSION_STATE   = 'beta';
+   USDX_STRING = 'UltraStar Deluxe';
 
   (*
    * FPC version numbers are already defined as built-in macros:
