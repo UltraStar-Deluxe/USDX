@@ -40,6 +40,7 @@ uses
   TextGL,
   UConfig,
   ULog,
+  UIni,
   SysUtils,
   UImage,
   UCatCovers,
@@ -184,17 +185,17 @@ var
   ScreenPopupScoreDownload: TScreenPopupScoreDownload;
 
   //Notes
-  Tex_Left:        array[1..6] of TTexture;   //rename to tex_note_left
-  Tex_Mid:         array[1..6] of TTexture;   //rename to tex_note_mid
-  Tex_Right:       array[1..6] of TTexture;   //rename to tex_note_right
+  Tex_Left:        array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_note_left
+  Tex_Mid:         array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_note_mid
+  Tex_Right:       array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_note_right
 
-  Tex_plain_Left:  array[1..6] of TTexture;   //rename to tex_notebg_left
-  Tex_plain_Mid:   array[1..6] of TTexture;   //rename to tex_notebg_mid
-  Tex_plain_Right: array[1..6] of TTexture;   //rename to tex_notebg_right
+  Tex_plain_Left:  array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_notebg_left
+  Tex_plain_Mid:   array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_notebg_mid
+  Tex_plain_Right: array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_notebg_right
 
-  Tex_BG_Left:     array[1..6] of TTexture;   //rename to tex_noteglow_left
-  Tex_BG_Mid:      array[1..6] of TTexture;   //rename to tex_noteglow_mid
-  Tex_BG_Right:    array[1..6] of TTexture;   //rename to tex_noteglow_right
+  Tex_BG_Left:     array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_noteglow_left
+  Tex_BG_Mid:      array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_noteglow_mid
+  Tex_BG_Right:    array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_noteglow_right
 
   Tex_Note_Star:  TTexture;
   Tex_Note_Perfect_Star: TTexture;
@@ -221,16 +222,16 @@ var
   Tex_ScoreBG: array [0..5] of TTexture;
 
   //Score Screen Textures
-    Tex_Score_NoteBarLevel_Dark     : array [1..6] of TTexture;
-    Tex_Score_NoteBarRound_Dark     : array [1..6] of TTexture;
+    Tex_Score_NoteBarLevel_Dark     : array [1..UIni.IMaxPlayerCount] of TTexture;
+    Tex_Score_NoteBarRound_Dark     : array [1..UIni.IMaxPlayerCount] of TTexture;
 
-    Tex_Score_NoteBarLevel_Light    : array [1..6] of TTexture;
-    Tex_Score_NoteBarRound_Light    : array [1..6] of TTexture;
+    Tex_Score_NoteBarLevel_Light    : array [1..UIni.IMaxPlayerCount] of TTexture;
+    Tex_Score_NoteBarRound_Light    : array [1..UIni.IMaxPlayerCount] of TTexture;
 
-    Tex_Score_NoteBarLevel_Lightest : array [1..6] of TTexture;
-    Tex_Score_NoteBarRound_Lightest : array [1..6] of TTexture;
+    Tex_Score_NoteBarLevel_Lightest : array [1..UIni.IMaxPlayerCount] of TTexture;
+    Tex_Score_NoteBarRound_Lightest : array [1..UIni.IMaxPlayerCount] of TTexture;
 
-    Tex_Score_Ratings               : array [0..7] of TTexture;
+    Tex_Score_Ratings               : array [0..7] of TTexture;  //stores all possible rating result images
 
   // arrows for SelectSlide
     Tex_SelectS_ArrowL:  TTexture;
@@ -316,7 +317,6 @@ implementation
 
 uses
   Classes,
-  UIni,
   UDisplay,
   UCommandLine,
   UPathUtils;

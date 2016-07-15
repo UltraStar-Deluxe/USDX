@@ -1019,7 +1019,7 @@ begin
 
   // Sing Bars
   // P1-6
-  for I := 1 to 6 do
+  for I := 1 to UIni.IMaxPlayerCount do
   begin
     Color := RGBFloatToInt(Col[I].R, Col[I].G, Col[I].B);
 
