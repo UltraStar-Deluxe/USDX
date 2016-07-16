@@ -139,7 +139,8 @@ type
       MaxFramerateGet: byte;
       Screens:        integer;
       Split:          integer;
-      Resolution:     integer;
+      Resolution:     integer;             // Resolution for windowed mode
+      ResolutionFullscreen:     integer;   // Resolution for real fullscreen (changing Video mode)
       Depth:          integer;
       VisualizerOption: integer;
       FullScreen:     integer;
@@ -286,6 +287,10 @@ type
       function GetResolution(out w,h: integer): string; overload;
       function GetResolution(index: integer; out ResolutionString: string): boolean; overload;
 
+      function GetResolutionFullscreen(): string; overload;
+      function GetResolutionFullscreen(out w,h: integer): string; overload;
+      function GetResolutionFullscreen(index: integer; out ResolutionString: string): boolean; overload;
+
   end;
 
 var
@@ -320,7 +325,7 @@ const
   IMaxFramerate:     array[0..11] of UTF8String  = ('10', '20', '30', '40', '50', '60', '70', '80', '90', '100', '150', '200');
   IScreens:          array[0..1] of UTF8String  = ('1', '2');
   ISplit:            array[0..1] of UTF8String  = ('Off', 'On');
-  IFullScreen:       array[0..1] of UTF8String  = ('Off', 'On');
+  IFullScreen:       array[0..2] of UTF8String  = ('Off', 'On', 'Borderless');
   IDepth:            array[0..1] of UTF8String  = ('16 bit', '32 bit');
   IVisualizer:       array[0..2] of UTF8String  = ('Off', 'WhenNoVideo','On');
 
@@ -452,7 +457,7 @@ var
 
   IDebugTranslated:            array[0..1] of UTF8String  = ('Off', 'On');
 
-  IFullScreenTranslated:       array[0..1] of UTF8String  = ('Off', 'On');
+  IFullScreenTranslated:       array[0..2] of UTF8String  = ('Off', 'On', 'Borderless');
   IVisualizerTranslated:       array[0..2] of UTF8String  = ('Off', 'WhenNoVideo','On');
 
   IBackgroundMusicTranslated:  array[0..1] of UTF8String  = ('Off', 'On');
@@ -621,6 +626,7 @@ begin
 
   IFullScreenTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IFullScreenTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_ON');
+  IFullScreenTranslated[2]            := ULanguage.Language.Translate('OPTION_VALUE_BORDERLESS');
 
   IVisualizerTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IVisualizerTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_WHENNOVIDEO');
@@ -1188,7 +1194,7 @@ begin
   Split := GetArrayIndex(ISplit, IniFile.ReadString('Graphics', 'Split', ISplit[0]));
 
   // FullScreen
-  FullScreen := GetArrayIndex(IFullScreen, IniFile.ReadString('Graphics', 'FullScreen', 'On'));
+  FullScreen := GetArrayIndex(IFullScreen, IniFile.ReadString('Graphics', 'FullScreen', 'Borderless'));
 
   // standard fallback resolutions
   SetLength(IResolution, 27);
@@ -1271,6 +1277,10 @@ begin
     // reverse order
     for I := 0 to (Length(IResolution) div 2) - 1 do swap(IResolution[I], IResolution[High(IResolution)-I]);
   end;
+
+  // read fullscreen resolution and verify if possible
+  ResString := IniFile.ReadString('Graphics', 'ResolutionFullscreen', '');
+  ResolutionFullscreen := GetArrayIndex(IResolutionFullScreen, ResString);
 
   // Check if there is a resolution configured, try using it
   ResString := IniFile.ReadString('Graphics', 'Resolution', '');
@@ -1701,6 +1711,7 @@ begin
 
   // Resolution
   IniFile.WriteString('Graphics', 'Resolution', GetResolution);
+  IniFile.WriteString('Graphics', 'ResolutionFullscreen', GetResolutionFullscreen);
 
   // Depth
   IniFile.WriteString('Graphics', 'Depth', IDepth[Depth]);
@@ -2177,6 +2188,29 @@ begin
   if (index >= 0) and (index < Length(IResolution)) then
   begin
       ResolutionString := IResolution[index];
+      Result := true;
+  end;
+end;
+
+function TIni.GetResolutionFullscreen(): string;
+begin
+  if ResolutionFullscreen >= 0 then Result := IResolutionFullScreen[ResolutionFullscreen]
+  else if Length(IResolutionFullScreen) = 0 then Result := DEFAULT_RESOLUTION
+  else Result := IResolutionFullScreen[0];
+end;
+
+function TIni.GetResolutionFullscreen(out w,h: integer): string;
+begin
+  Result := GetResolutionFullscreen();
+  ParseResolutionString(Result, w, h);
+end;
+
+function TIni.GetResolutionFullscreen(index: integer; out ResolutionString: string): boolean;
+begin
+  Result := false;
+  if (index >= 0) and (index < Length(IResolutionFullScreen)) then
+  begin
+      ResolutionString := IResolutionFullScreen[index];
       Result := true;
   end;
 end;
