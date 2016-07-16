@@ -71,6 +71,11 @@ function SDL_HasSSE42(): TSDL_Bool cdecl; external SDL_LibName {$IFDEF DELPHI} {
 function SDL_HasAVX(): TSDL_Bool cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_HasAVX' {$ENDIF} {$ENDIF};
 
 {**
+ *  This function returns true if the CPU has AVX2 features.
+ *}
+function SDL_HasAVX2(): TSDL_Bool cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_HasAVX2' {$ENDIF} {$ENDIF};
+
+{**
  *  This function returns the amount of RAM configured in the system, in MB.
  *}
 function SDL_GetSystemRAM(): Integer cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetSystemRAM' {$ENDIF} {$ENDIF};

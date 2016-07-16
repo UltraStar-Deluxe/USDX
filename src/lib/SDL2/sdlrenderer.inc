@@ -448,6 +448,16 @@ function SDL_RenderSetClipRect(renderer: PSDL_Renderer; rect: PSDL_Rect): SInt32
 procedure SDL_RenderGetClipRect(renderer: PSDL_Renderer; rect: PSDL_Rect) cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_RenderGetClipRect' {$ENDIF} {$ENDIF};
 
   {**
+   *  \brief Get whether clipping is enabled on the given renderer.
+   *
+   *  \param renderer The renderer from which clip state should be queried.
+   *
+   *  \sa SDL_RenderGetClipRect()
+   *}
+function SDL_RenderIsClipEnabled(renderer: PSDL_Renderer): TSDL_Bool; cdecl;
+  external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_RenderIsClipEnabled' {$ENDIF} {$ENDIF};
+
+  {**
    *  Set the drawing scale for rendering on the current target.
    *
    *   renderer The renderer for which the drawing scale should be set.

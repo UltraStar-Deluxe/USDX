@@ -25,7 +25,7 @@ type
 const
   SDL_MAJOR_VERSION = 2;
   SDL_MINOR_VERSION = 0;
-  SDL_PATCHLEVEL    = 0;
+  SDL_PATCHLEVEL    = 4;
 
 {**
  *  Macro to determine SDL version program was compiled against.

@@ -251,6 +251,16 @@ SDL_HINT_ACCELEROMETER_AS_JOYSTICK = 'SDL_ACCELEROMETER_AS_JOYSTICK';
  */}
 SDL_HINT_XINPUT_ENABLED = 'SDL_XINPUT_ENABLED';
 
+{**
+ *  \brief  A hint that specifies that SDL should use the old axis and button mapping for XInput devices. 
+ *  
+ *  The variable can be set to the following values:
+ *    0  use the old axis and button mapping for XInput devices
+ *    1  do not use old axis and button mapping for XInput devices
+ *  
+ *  By default SDL does not use the old axis and button mapping for XInput devices. 
+ *}
+SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING = 'SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING';
 
 {/**
  *  \brief  A variable that lets you manually hint extra gamecontroller db entries
@@ -308,6 +318,15 @@ SDL_HINT_TIMER_RESOLUTION = 'SDL_TIMER_RESOLUTION';
  *  \brief If set to 1, then do not allow high-DPI windows. ("Retina" on Mac)
  *}
 SDL_HINT_VIDEO_HIGHDPI_DISABLED = 'SDL_VIDEO_HIGHDPI_DISABLED';
+
+{**
+ *  \brief  A hint that specifies if the SDL app should not be forced to become a foreground process on Mac OS X. 
+ *  
+ *  Possible values:
+ *    0  force the SDL app to become a foreground process (default)
+ *    1  do not force the SDL app to become a foreground process
+ *}
+SDL_HINT_MAC_BACKGROUND_APP = 'SDL_HINT_MAC_BACKGROUND_APP';
 
 {**
  *  \brief A variable that determines whether ctrl+click should generate a right-click event on Mac
@@ -429,6 +448,122 @@ SDL_HINT_WINRT_HANDLE_BACK_BUTTON = 'SDL_HINT_WINRT_HANDLE_BACK_BUTTON';
    *}
 SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES = 'SDL_VIDEO_MAC_FULLSCREEN_SPACES';
 
+{**
+ *  \brief  A hint that specifies the Android APK expansion main file version. 
+ *  
+ *  The variable should specify the Android APK expansion main file version (a string number like "1", "2" etc.).
+ *  This hint must be set together with the hint SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION. 
+ *  
+ *  If both hints were set then SDL_RWFromFile() will look into expansion files 
+ *  after a given relative path was not found in the internal storage and assets.
+ *  By default this hint is not set and the APK expansion files are not searched. 
+ *} 
+SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION = 'SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION';
+
+{**
+ *  \brief  A hint that specifies the Android APK expansion patch file version. 
+ *  
+ *  The variable should specify the Android APK expansion patch file version (a string number like "1", "2" etc.).
+ *  This hint must be set together with the hint SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION. 
+ *  
+ *  If both hints were set then SDL_RWFromFile() will look into expansion files 
+ *  after a given relative path was not found in the internal storage and assets.
+ *  By default this hint is not set and the APK expansion files are not searched. 
+ *} 
+SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION = 'SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION';
+
+{**
+ *  \brief  A hint that specifies a variable to control whether mouse and touch events are to be treated together or separately.
+ *  
+ *  Possible values:
+ *    0  mouse events will be handled as touch events and touch will raise fake mouse events
+ *    1  mouse events will be handled separately from pure touch events
+ *  
+ *  By default mouse events will be handled as touch events and touch will raise fake mouse events. 
+ *  The value of this hint is used at runtime, so it can be changed at any time. 
+ *}
+SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH = 'SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH';
+
+{**
+ *  \brief A hint that specifies a value to override the binding element for keyboard inputs for Emscripten builds. 
+ *  
+ *  Possible values:
+ *    #window      the JavaScript window object (this is the default)
+ *    #document    the JavaScript document object
+ *    #screen      the JavaScript window.screen object
+ *    #canvas      the default WebGL canvas element
+ *  
+ *  Any other string without a leading # sign applies to the element on the page with that ID. 
+ *  This hint only applies to the Emscripten platform. 
+ *}
+SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT = 'SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT';
+
+{**
+ *  \brief  A hint that specifies whether certain IMEs should handle text editing internally instead of sending SDL_TEXTEDITING events.
+ *  
+ *  Possible values: 
+ *    0  SDL_TEXTEDITING events are sent, and it is the application's responsibility 
+ *       to render the text from these events and differentiate it somehow from committed text. (default)
+ *
+ *    1  If supported by the IME then SDL_TEXTEDITING events are not sent,
+ *       and text that is being composed will be rendered in its own UI.
+ *}
+SDL_HINT_IME_INTERNAL_EDITING = 'SDL_HINT_IME_INTERNAL_EDITING';
+
+{**
+ *  \brief  A hint that specifies not to catch the SIGINT or SIGTERM signals.
+ *
+ *  Possible values:
+ *    0  SDL will install a SIGINT and SIGTERM handler, and when it catches a signal, convert it into an SDL_QUIT event (default)
+ *    1  SDL will not install a signal handler at all
+ *  
+ *  This hint only applies to Unix-like platforms. 
+ *} 
+SDL_HINT_NO_SIGNAL_HANDLERS = 'SDL_HINT_NO_SIGNAL_HANDLERS';
+
+{**
+ *  \brief  A hint that specifies a variable specifying SDL's threads stack size in bytes or "0" for the backend's default size.
+ *  
+ *  Possible values for this hint are:
+ *    0  use the backend's default threads stack size (default)
+ *    X  use the provided positive threads stack size
+ *  
+ *  Use this hint in case you need to set SDL's threads stack size to other than the default.
+ *  This is specially useful if you build SDL against a non glibc libc library (such as musl) 
+ *  which provides a relatively small default thread stack size (a few kilobytes versus the default 8 MB glibc uses).
+ *
+ *  Support for this hint is currently available only in the pthread backend.
+ *}
+SDL_HINT_THREAD_STACK_SIZE = 'SDL_HINT_THREAD_STACK_SIZE';
+
+{**
+ *  \brief  A hint that specifies whether the windows message loop is processed by SDL.
+ *  
+ *  Possible values for this hint:
+ *    0  the window message loop is not run
+ *    1  the window message loop is processed in SDL_PumpEvents()  [default]
+ *}
+SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP = 'SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP';
+
+{**
+ *  \brief  A hint that specifies that SDL should not to generate SDL_WINDOWEVENT_CLOSE events for Alt+F4 on Microsoft Windows.
+ *  
+ *  Possible values for this hint:
+ *    0  generate an SDL_WINDOWEVENT_CLOSE event for Alt+F4 (default)
+ *    1  do not generate event and only do normal key handling for Alt+F4
+ *}
+SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4 = 'SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4';
+
+{**
+ *  \brief  A hint that specifies whether the window frame and title bar are interactive when the cursor is hidden. 
+ *  
+ *  Possible values for this hint:
+ *    0  the window frame is not interactive when the cursor is hidden (no move, resize, etc)
+ *    1  the window frame is interactive when the cursor is hidden
+ *  
+ *  By default SDL will allow interaction with the window frame when the cursor is hidden. 
+ *}
+SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN = 'SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN';
 
 {/**
  *  \brief  An enumeration of hint priorities

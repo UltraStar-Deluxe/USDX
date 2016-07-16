@@ -88,7 +88,8 @@ unit SDL2;
 {
   Changelog:
   ----------
-               ?          ?: Delphi 6+ bugfixes/compatibility. Thx to Peter Karpov for identifiying and testing.
+               ? 31.01.2016: updated sdlevents.inc to SDL2 2.0.4, adressing issue #24 (thx to imantsg)
+               ? 16.01.2016: Delphi 6+ bugfixes/compatibility. Thx to Peter Karpov for identifiying and testing.
   v.1.80-stable; 09.10.2014: added sdl_cpuinfo.h and sdl_clipboard.h
   v.1.74-stable; 10.11.2013: added sdl_gamecontroller.h
   v.1.73-stable; 08.11.2013: added sdl_hints.h and some keystate helpers
@@ -157,13 +158,19 @@ const
   {$IFDEF UNIX}
     {$IFDEF DARWIN}
       SDL_LibName = 'libSDL2.dylib';
-      {$linklib libSDL2}
     {$ELSE}
       {$IFDEF FPC}
         SDL_LibName = 'libSDL2.so';
       {$ELSE}
         SDL_LibName = 'libSDL2.so.0';
       {$ENDIF}
+    {$ENDIF}
+  {$ENDIF}
+
+  {$IFDEF MACOS}
+    SDL_LibName = 'SDL2';
+    {$IFDEF FPC}
+      {$linklib libSDL2}
     {$ENDIF}
   {$ENDIF}
 
@@ -258,6 +265,14 @@ begin
   Result := (A.x = B.x) and (A.y = B.y) and (A.w = B.w) and (A.h = B.h);
 end;
 
+function SDL_PointInRect(const p: PSDL_Point; const r: PSDL_Rect): Boolean; Inline;
+begin
+  Result := 
+    (p^.x >= r^.x) and (p^.x < (r^.x + r^.w)) 
+    and 
+    (p^.y >= r^.y) and (p^.y < (r^.y + r^.h))
+end;
+
 //from "sdl_rwops.h"
 
 function SDL_RWsize(ctx: PSDL_RWops): SInt64;
@@ -334,29 +349,29 @@ end;
 
 //from "sdl_pixels.h"
 
-function SDL_PIXELFLAG(X: Cardinal): Boolean;
+function SDL_PIXELFLAG(X: Cardinal): Cardinal;
 begin
-  Result := (X shr 28) = $0F;
+  Result := (X shr 28) and $0F;
 end;
 
-function SDL_PIXELTYPE(X: Cardinal): Boolean;
+function SDL_PIXELTYPE(X: Cardinal): Cardinal;
 begin
-  Result := (X shr 24) = $0F;
+  Result := (X shr 24) and $0F;
 end;
 
-function SDL_PIXELORDER(X: Cardinal): Boolean;
+function SDL_PIXELORDER(X: Cardinal): Cardinal;
 begin
-  Result := (X shr 20) = $0F;
+  Result := (X shr 20) and $0F;
 end;
 
-function SDL_PIXELLAYOUT(X: Cardinal): Boolean;
+function SDL_PIXELLAYOUT(X: Cardinal): Cardinal;
 begin
-  Result := (X shr 16) = $0F;
+  Result := (X shr 16) and $0F;
 end;
 
-function SDL_BITSPERPIXEL(X: Cardinal): Boolean;
+function SDL_BITSPERPIXEL(X: Cardinal): Cardinal;
 begin
-  Result := (X shr 8) = $FF;
+  Result := (X shr 8) and $FF;
 end;
 
 function SDL_IsPixelFormat_FOURCC(format: Variant): Boolean;

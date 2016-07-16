@@ -31,6 +31,11 @@ type
   end;
 
   {**
+   *  \brief Returns true if point resides inside a rectangle.
+   *}
+function SDL_PointInRect(const p: PSDL_Point; const r: PSDL_Rect): Boolean; Inline;
+
+  {**
    *  Returns true if the rectangle has no area.
    *}
 

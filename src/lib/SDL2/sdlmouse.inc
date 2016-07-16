@@ -48,6 +48,33 @@ type
 
   function SDL_GetMouseState(x: PInt; y: PInt): UInt32 cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetMouseState' {$ENDIF}{$ENDIF};
 
+
+  {**
+   *  \brief Get the current state of the mouse, in relation to the desktop
+   *
+   *  This works just like SDL_GetMouseState(), but the coordinates will be
+   *  reported relative to the top-left of the desktop. This can be useful if
+   *  you need to track the mouse outside of a specific window and
+   *  SDL_CaptureMouse() doesn't fit your needs. For example, it could be
+   *  useful if you need to track the mouse while dragging a window, where
+   *  coordinates relative to a window might not be in sync at all times.
+   *
+   *  \note SDL_GetMouseState() returns the mouse position as SDL understands
+   *        it from the last pump of the event queue. This function, however,
+   *        queries the OS for the current mouse position, and as such, might
+   *        be a slightly less efficient function. Unless you know what you're
+   *        doing and have a good reason to use this function, you probably want
+   *        SDL_GetMouseState() instead.
+   *
+   *  \param x Returns the current X coord, relative to the desktop. Can be NULL.
+   *  \param y Returns the current Y coord, relative to the desktop. Can be NULL.
+   *  \return The current button state as a bitmask, which can be tested using the SDL_BUTTON(X) macros.
+   *
+   *  \sa SDL_GetMouseState
+   *}
+  function SDL_GetGlobalMouseState(x, y: PSInt32): UInt32; cdecl;
+    external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetGlobalMouseState' {$ENDIF}{$ENDIF};
+
   {**
    *  Retrieve the relative state of the mouse.
    *
@@ -71,6 +98,18 @@ type
   procedure SDL_WarpMouseInWindow(window: PSDL_Window; x: SInt32; y: SInt32) cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_WarpMouseInWindow' {$ENDIF}{$ENDIF};
 
   {**
+   *  \brief Moves the mouse to the given position in global screen space.
+   *
+   *  \param x The x coordinate
+   *  \param y The y coordinate
+   *  \return 0 on success, -1 on error (usually: unsupported by a platform).
+   *
+   *  \note This function generates a mouse motion event
+   *}
+  Function SDL_WarpMouseGlobal(x, y: SInt32): SInt32; cdecl;
+    external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_WarpMouseGlobal' {$ENDIF}{$ENDIF};
+
+  {**
    *  Set relative mouse mode.
    *
    *  enabled Whether or not to enable relative mode
@@ -88,6 +127,38 @@ type
    *}
 
   function SDL_SetRelativeMouseMode(enabled: TSDL_Bool): SInt32 cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_SetRelativeMouseMode' {$ENDIF}{$ENDIF};
+
+  {**
+   *  \brief Capture the mouse, to track input outside an SDL window.
+   *
+   *  \param enabled Whether or not to enable capturing
+   *
+   *  Capturing enables your app to obtain mouse events globally, instead of
+   *  just within your window. Not all video targets support this function.
+   *  When capturing is enabled, the current window will get all mouse events,
+   *  but unlike relative mode, no change is made to the cursor and it is
+   *  not restrained to your window.
+   *
+   *  This function may also deny mouse input to other windows--both those in
+   *  your application and others on the system--so you should use this
+   *  function sparingly, and in small bursts. For example, you might want to
+   *  track the mouse while the user is dragging something, until the user
+   *  releases a mouse button. It is not recommended that you capture the mouse
+   *  for long periods of time, such as the entire time your app is running.
+   *
+   *  While captured, mouse events still report coordinates relative to the
+   *  current (foreground) window, but those coordinates may be outside the
+   *  bounds of the window (including negative values). Capturing is only
+   *  allowed for the foreground window. If the window loses focus while
+   *  capturing, the capture will be disabled automatically.
+   *
+   *  While capturing is enabled, the current window will have the
+   *  SDL_WINDOW_MOUSE_CAPTURE flag set.
+   *
+   *  \return 0 on success, or -1 if not supported.
+   *}
+   function SDL_CaptureMouse(enabled: TSDL_Bool): SInt32; cdecl;
+     external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_CaptureMouse' {$ENDIF}{$ENDIF};
 
   {**
    *  Query whether relative mouse mode is enabled.

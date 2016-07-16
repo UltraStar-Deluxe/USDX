@@ -52,7 +52,7 @@ type
    *
    *  See SDL_Keycode for details.
    *  
-   *  SDL_GetCharCode()
+   *  SDL_GetKeyName()
    *}
 
   function SDL_GetKeyFromScancode(scancode: TSDL_ScanCode): TSDL_KeyCode cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetKeyFromScancode' {$ENDIF}{$ENDIF};
@@ -101,7 +101,7 @@ type
    *  SDL_Key
    *}
 
-  function SDL_GetCharCode(key: TSDL_ScanCode): PAnsiChar cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetCharCode' {$ENDIF}{$ENDIF};
+  function SDL_GetKeyName(key: TSDL_ScanCode): PAnsiChar cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetKeyName' {$ENDIF}{$ENDIF};
 
   {**
    *  Get a key code from a human-readable name
