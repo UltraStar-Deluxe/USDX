@@ -328,6 +328,10 @@ procedure UnloadScreens;
 
 function LoadingThreadFunction: integer;
 
+procedure UpdateResolution;
+procedure UpdateVideoMode;
+
+procedure SetVideoMode(Mode: FullscreenModes);
 function SwitchVideoMode(Mode: FullscreenModes): FullscreenModes;
 function HasWindowState(Flag: integer): boolean;
 
@@ -705,15 +709,60 @@ begin
   Result := SDL_GetWindowFlags(screen) and Flag <> 0;
 end;
 
-function SwitchVideoMode(Mode: FullscreenModes): FullscreenModes;
-var
-  w,h: integer;
-  Disp: TSDL_DisplayMode;
+procedure UpdateResolution();
+  var
+    Disp: TSDL_DisplayMode;
+    Event: TSDL_event;
+    w,h: integer;
+    wascentered: boolean;
 begin
-  Result := CurrentWindowMode;
-  Mode := CurrentWindowMode xor Mode;
-  if Mode = CurrentWindowMode then Exit;
+  if CurrentWindowMode = Mode_Borderless then Exit;
+  case CurrentWindowMode of
+    Mode_Fullscreen:
+    begin
+      SDL_GetWindowDisplayMode(screen, @Disp); // TODO: verify if not failed
+      Ini.GetResolutionFullscreen(Disp.W, Disp.H);
+      SDL_SetWindowDisplayMode(screen, @Disp);
+      SDL_SetWindowSize(screen, Disp.W, Disp.H);
+    end;
+    Mode_Windowed:
+    begin
+      Ini.GetResolution(Disp.W, Disp.H);
+      SDL_SetWindowSize(screen, Disp.W, Disp.H);
 
+      // re-center window if it wasn't moved already, keeps it centered
+      if not HasValidPosition then
+      begin
+        SDL_SetWindowPosition(screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+      end;
+
+      // simulate window re-drawing, otherwise the context will be different sized
+      Event.user.type_ := SDL_WINDOWEVENT;
+      Event.window.event := SDL_WINDOWEVENT_RESIZED;
+      Event.window.data1 := Disp.W;
+      Event.window.data2 := Disp.H;
+      SDL_PushEvent(@Event);
+    end;
+  end;
+end;
+
+procedure UpdateVideoMode();
+  var
+    Mode: FullscreenModes;
+begin
+  if Ini.Fullscreen = 1 then Mode := Mode_Fullscreen
+  else if Ini.FullScreen = 2 then Mode := Mode_Borderless
+  else Mode := Mode_Windowed;
+
+  SetVideoMode(Mode);
+end;
+
+procedure SetVideoMode(Mode: FullscreenModes);
+  var
+    w,h: integer;
+    Disp: TSDL_DisplayMode;
+begin
+  if Mode = CurrentWindowMode then Exit;
   if Mode >= Mode_Fullscreen then
   begin
     Mode := Mode and not Mode_Borderless;
@@ -740,6 +789,12 @@ begin
   end;
 
   CurrentWindowMode := Mode;
+end;
+
+function SwitchVideoMode(Mode: FullscreenModes): FullscreenModes;
+begin
+  if Mode = Mode_Windowed then Mode := CurrentWindowMode;
+  SetVideoMode(CurrentWindowMode xor Mode);
   Result := CurrentWindowMode;
 end;
 
