@@ -498,7 +498,10 @@ begin
           begin
             if (SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT) = KMOD_LALT) then
             begin
-              SwitchVideoMode(Mode_Fullscreen);
+              if SwitchVideoMode(Mode_Fullscreen) = Mode_Fullscreen then Ini.FullScreen := 1
+              else Ini.FullScreen := 0;
+              Ini.Save();
+
               Break;
             end;
           end;
