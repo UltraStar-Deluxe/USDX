@@ -805,6 +805,11 @@ begin
   begin
     SDL_SetWindowSize(screen, ScreenW, ScreenH);
   end;
+
+  if assigned(Display) then
+  begin
+    Display.OnWindowResized(); // notify display window has changed
+  end;
 end;
 
 procedure LoadLoadingScreen;
