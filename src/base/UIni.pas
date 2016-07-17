@@ -280,8 +280,14 @@ type
       procedure SaveSingTimebarMode;
       procedure SaveJukeboxTimebarMode;
 
-      procedure SetResolution(ResolutionString: string; RemoveCurrent: boolean = false; NoSave: boolean = false); overload;
-      procedure SetResolution(w,h: integer; RemoveCurrent: boolean = false; NoSave: boolean = false); overload;
+      { Sets resolution.
+        @return (@true when resolution was added, @false otherwise) }
+      function SetResolution(ResolutionString: string; RemoveCurrent: boolean = false; NoSave: boolean = false): boolean; overload;
+      { Sets resolution.
+        @return (@true when resolution was added, @false otherwise) }
+      function SetResolution(w,h: integer; RemoveCurrent: boolean = false; NoSave: boolean = false): boolean; overload;
+      { Sets resolution given by the index pointing to a resolution in IResolution.
+        @return (@true when resolution ID was found, @false otherwise) }
       function SetResolution(index: integer): boolean; overload;
       function GetResolution(): string; overload;
       function GetResolution(out w,h: integer): string; overload;
@@ -291,12 +297,15 @@ type
       function GetResolutionFullscreen(out w,h: integer): string; overload;
       function GetResolutionFullscreen(index: integer; out ResolutionString: string): boolean; overload;
 
+      procedure ClearCustomResolutions();
+
   end;
 
 var
   Ini:         TIni;
   IResolution: TUTF8StringDynArray;
   IResolutionFullScreen: TUTF8StringDynArray;
+  IResolutionCustom: TUTF8StringDynArray;
   ILanguage:   TUTF8StringDynArray;
   ITheme:      TUTF8StringDynArray;
   ISkin:       TUTF8StringDynArray;
@@ -1308,6 +1317,10 @@ begin
     SetLength(IResolution, Length(IResolution) + 1);
     IResolution[High(IResolution)] := ResString;
     Resolution := High(IResolution);
+
+    // store also as custom resolution to eventually remove it upon window size change
+    SetLength(IResolutionCustom, Length(IResolutionCustom) + 1);
+    IResolutionCustom[High(IResolutionCustom)] := ResString;
   end;
 
   if (Length(IResolution) = 0) or (Resolution < 0) then
@@ -2131,12 +2144,25 @@ begin
 end;
 
 
-procedure TIni.SetResolution(ResolutionString: string; RemoveCurrent: boolean; NoSave: boolean);
+function TIni.SetResolution(ResolutionString: string; RemoveCurrent: boolean; NoSave: boolean): boolean;
   var
     Index: integer;
     Dirty: boolean;
 begin
+  Result := false;
   Dirty := false;
+
+  // check if current resolution is custom and then remove anyway (no matter what RemoveCurrent is set)
+  if (Resolution >= 0) then
+  begin
+    Index := GetArrayIndex(IResolutionCustom, IResolution[Resolution]);
+    if Index >= 0 then
+    begin
+      StringDeleteFromArray(IResolutionCustom, Index);
+      StringDeleteFromArray(IResolution, Resolution);
+    end;
+  end;
+
   Index := GetArrayIndex(IResolution, ResolutionString);
   if not NoSave and (Resolution <> Index) then Dirty := true;
   if (Resolution >= 0) and (RemoveCurrent) then StringDeleteFromArray(IResolution, Resolution);
@@ -2145,6 +2171,13 @@ begin
     SetLength(IResolution, Length(IResolution) + 1);
     IResolution[High(IResolution)] := ResolutionString;
     index := High(IResolution);
+    Result := true;
+
+    if GetArrayIndex(IResolutionCustom, ResolutionString) < 0 then
+    begin
+      SetLength(IResolutionCustom, Length(IResolutionCustom) + 1);
+      IResolutionCustom[High(IResolutionCustom)] := ResolutionString;
+    end;
   end;
 
   if SetResolution(index) and Dirty then
@@ -2154,9 +2187,9 @@ begin
   end;
 end;
 
-procedure TIni.SetResolution(w,h: integer; RemoveCurrent: boolean; NoSave: boolean);
+function TIni.SetResolution(w,h: integer; RemoveCurrent: boolean; NoSave: boolean): boolean;
 begin
-  SetResolution(BuildResolutionString(w, h), RemoveCurrent, NoSave);
+  Result := SetResolution(BuildResolutionString(w, h), RemoveCurrent, NoSave);
 end;
 
 function TIni.SetResolution(index: integer): boolean;
@@ -2213,6 +2246,30 @@ begin
       ResolutionString := IResolutionFullScreen[index];
       Result := true;
   end;
+end;
+
+procedure TIni.ClearCustomResolutions();
+  var
+    Index, i, custom: integer;
+    ResString: string;
+begin
+  if Resolution < 0 then Exit;
+
+  // check if current resolution is a custom one
+  ResString := IResolution[Resolution];
+  Index := GetArrayIndex(IResolutionCustom, ResString);
+  for i := High(IResolutionCustom) downto 0 do
+  begin
+    custom := GetArrayIndex(IResolution, IResolutionCustom[i]);
+    if (custom >= 0) and (Index <> i) then
+    begin
+      StringDeleteFromArray(IResolution, custom);
+      StringDeleteFromArray(IResolutionCustom, i);
+    end;
+  end;
+
+  // update index
+  Resolution := GetArrayIndex(IResolution, ResString);
 end;
 
 end.
