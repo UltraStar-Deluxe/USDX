@@ -1236,8 +1236,6 @@ begin
   IResolution[26] := '4096x3072'; // HXGA
 
   // Check if there are any modes available
-  // TODO: we should seperate windowed and fullscreen modes. Otherwise it is not
-  //       possible to select a reasonable fullscreen mode when in windowed mode
 
   // retrieve currently used Video Display
   DisplayIndex := -1;

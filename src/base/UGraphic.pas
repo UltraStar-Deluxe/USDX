@@ -615,7 +615,6 @@ begin
   begin
     Log.LogStatus('Set Video Mode...   Borderless fullscreen', 'SDL_SetVideoMode');
     CurrentWindowMode := Mode_Borderless;
-    // TODO: use windowed resolution, in order to switch to proper windowed size (with F11); or apply size when switching mode
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN_DESKTOP or SDL_WINDOW_RESIZABLE);
   end
