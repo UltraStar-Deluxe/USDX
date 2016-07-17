@@ -466,7 +466,7 @@ begin
               KeepGoing := ScreenPopupScoreDownload.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else
             begin
-              KeepGoing := Display.CurrentScreen^.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y);
+              KeepGoing := Display.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y);
 
               // if screen wants to exit
               if not KeepGoing then
@@ -493,6 +493,12 @@ begin
           // translated charcode. Use keysyms instead.
           //if (Event.key.keysym.unicode in [1 .. 26]) then
           //  Event.key.keysym.unicode := Ord('A') + Event.key.keysym.unicode - 1;
+
+          // toggle in-game console if allowed
+          if boolean(Ini.Debug) and ((Event.key.keysym.sym = SInt32('~')) or (Event.key.keysym.sym = SDLK_CARET)) then
+          begin
+            Display.ToggleConsole;
+          end;
 
           if Event.key.keysym.sym = SDLK_RETURN then
           begin

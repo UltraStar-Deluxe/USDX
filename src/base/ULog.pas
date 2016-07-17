@@ -66,6 +66,8 @@ const
   LOG_LEVEL_DEFAULT      = LOG_LEVEL_WARN;
   LOG_FILE_LEVEL_DEFAULT = LOG_LEVEL_ERROR;
 
+  CONSOLE_SCROLLBACK_SIZE = 512;
+
 type
   TLog = class
   private
@@ -73,12 +75,16 @@ type
     LogFileOpened:       boolean;
     BenchmarkFile:       TextFile;
     BenchmarkFileOpened: boolean;
+    Buffer: TStringList; // stores logged messages for in-game console, capped to CONSOLE_SCROLLBACK_SIZE
 
     LogLevel: integer;
     // level of messages written to the log-file
     LogFileLevel: integer;
 
     procedure LogToFile(const Text: string);
+
+    function GetConsoleCount: integer;
+
   public
     BenchmarkTimeStart:   array[0..31] of real;
     BenchmarkTimeLength:  array[0..31] of real;//TDateTime;
@@ -119,6 +125,13 @@ type
     procedure LogVoice(SoundNr: integer);
     // buffer
     procedure LogBuffer(const buf : Pointer; const bufLength : Integer; const filename : IPath);
+
+    // console
+    property ConsoleCount: integer read GetConsoleCount;
+    function GetConsole(const index: integer; FromTheBeginning: boolean = false): string;
+    procedure LogConsole(const Text: string);
+    procedure ClearConsoleLog;
+
   end;
 
 procedure DebugWriteln(const aString: String);
@@ -162,6 +175,8 @@ begin
   LogLevel := LOG_LEVEL_DEFAULT;
   LogFileLevel := LOG_FILE_LEVEL_DEFAULT;
   FileOutputEnabled := true;
+
+  Buffer := TStringList.Create;
 end;
 
 destructor TLog.Destroy;
@@ -172,6 +187,8 @@ begin
   //  CloseFile(AnalyzeFile);
   if LogFileOpened then
     CloseFile(LogFile);
+
+  Buffer.Free;
   inherited;
 end;
 
@@ -346,6 +363,7 @@ begin
     if (Level <= LogLevel) then
     begin
       DebugWriteLn(LogMsg);
+      LogConsole(LogMsg);
     end;
     
     // write message to log-file
@@ -521,6 +539,28 @@ begin
   except on e : Exception do
     Log.LogError('TLog.LogBuffer: Failed to log buffer into file "' + filename.ToNative + '". ErrMsg: ' + e.Message);
   end;
+end;
+
+procedure TLog.ClearConsoleLog;
+begin
+  Buffer.Clear;
+end;
+
+function TLog.GetConsole(const index: integer; FromTheBeginning: boolean = false): string;
+begin
+  if FromTheBeginning then Result := Buffer[index]
+  else Result := Buffer[Buffer.Count-1-index];
+end;
+
+function TLog.GetConsoleCount: integer;
+begin
+  Result := Buffer.Count;
+end;
+
+procedure TLog.LogConsole(const Text: string);
+begin
+  Buffer.Insert(0, Text);
+  if Buffer.Count > CONSOLE_SCROLLBACK_SIZE then Buffer.Capacity:=CONSOLE_SCROLLBACK_SIZE;
 end;
 
 end.
