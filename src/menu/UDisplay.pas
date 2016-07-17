@@ -132,7 +132,7 @@ type
       function NeedsCursorUpdate(): boolean;
 
       { called when the window has been resized }
-      procedure OnWindowResized();
+      procedure OnWindowResized(); virtual;
 
   end;
 
@@ -689,6 +689,10 @@ procedure TDisplay.OnWindowResized();
 begin
   // update cursor position once the window has been resized, otherwise the cursor jumps
   Cursor_Update := true;
+
+  if (assigned(NextScreen)) then NextScreen^.OnWindowResized()
+  else if (assigned(CurrentScreen)) then CurrentScreen^.OnWindowResized()
+
 end;
 
 procedure TDisplay.SaveScreenShot;
