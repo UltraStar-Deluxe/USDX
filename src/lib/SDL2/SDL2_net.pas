@@ -36,8 +36,7 @@
      
       {$IFDEF UNIX}
         {$IFDEF DARWIN}
-          SDLNet_LibName = 'libSDL2.dylib';
-//          {$linklib libSDL2_net}
+          SDLNet_LibName = 'libSDL2_net.dylib';
         {$ELSE}
           {$IFDEF FPC}
             SDLNet_LibName = 'libSDL2_net.so';
@@ -46,6 +45,14 @@
           {$ENDIF}
         {$ENDIF}
       {$ENDIF}
+     
+      {$IFDEF MACOS}
+        SDLNet_LibName = 'SDL2_net';
+        {$IFDEF FPC}
+          {$linklib libSDL2_net}
+        {$ENDIF}
+      {$ENDIF}
+     
      
     type
       TSDLNet_Version = TSDL_Version;
@@ -325,7 +332,7 @@
          socket that was in the socket set, to find out if data is available
          for reading.
        *}
-    function SDLNet_SocketReady(sock: TSDLNet_GenericSocket): Integer;
+    function SDLNet_SocketReady(sock: TSDLNet_GenericSocket): Integer; {$IFNDEF DELPHI} inline; {$ELSE} {$IFDEF DELPHI10UP} inline; {$ENDIF} {$ENDIF}
      
       {* Free a set of sockets allocated by SDL_NetAllocSocketSet() *}
     procedure SDLNet_FreeSocketSet(set_: TSDLNet_SocketSet) cdecl; external SDLNet_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDLNet_FreeSocketSet' {$ENDIF} {$ENDIF};

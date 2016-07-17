@@ -161,6 +161,8 @@ type
       procedure OnShowFinish; virtual;
       procedure OnHide; virtual;
 
+      procedure OnWindowResized(); virtual;
+
       procedure SetAnimationProgress(Progress: real); virtual;
 
       function IsSelectable(Int: cardinal): boolean;
@@ -1713,6 +1715,11 @@ procedure TMenu.OnHide;
 begin
   // nothing
   Background.OnFinish;
+end;
+
+procedure TMenu.OnWindowResized;
+begin
+  // nothing
 end;
 
 function TMenu.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;

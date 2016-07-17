@@ -139,7 +139,8 @@ type
       MaxFramerateGet: byte;
       Screens:        integer;
       Split:          integer;
-      Resolution:     integer;
+      Resolution:     integer;             // Resolution for windowed mode
+      ResolutionFullscreen:     integer;   // Resolution for real fullscreen (changing Video mode)
       Depth:          integer;
       VisualizerOption: integer;
       FullScreen:     integer;
@@ -279,12 +280,24 @@ type
       procedure SaveSingTimebarMode;
       procedure SaveJukeboxTimebarMode;
 
-      procedure SetResolution(ResolutionString: string; RemoveCurrent: boolean = false; NoSave: boolean = false); overload;
-      procedure SetResolution(w,h: integer; RemoveCurrent: boolean = false; NoSave: boolean = false); overload;
+      { Sets resolution.
+        @return (@true when resolution was added, @false otherwise) }
+      function SetResolution(ResolutionString: string; RemoveCurrent: boolean = false; NoSave: boolean = false): boolean; overload;
+      { Sets resolution.
+        @return (@true when resolution was added, @false otherwise) }
+      function SetResolution(w,h: integer; RemoveCurrent: boolean = false; NoSave: boolean = false): boolean; overload;
+      { Sets resolution given by the index pointing to a resolution in IResolution.
+        @return (@true when resolution ID was found, @false otherwise) }
       function SetResolution(index: integer): boolean; overload;
       function GetResolution(): string; overload;
       function GetResolution(out w,h: integer): string; overload;
       function GetResolution(index: integer; out ResolutionString: string): boolean; overload;
+
+      function GetResolutionFullscreen(): string; overload;
+      function GetResolutionFullscreen(out w,h: integer): string; overload;
+      function GetResolutionFullscreen(index: integer; out ResolutionString: string): boolean; overload;
+
+      procedure ClearCustomResolutions();
 
   end;
 
@@ -292,6 +305,7 @@ var
   Ini:         TIni;
   IResolution: TUTF8StringDynArray;
   IResolutionFullScreen: TUTF8StringDynArray;
+  IResolutionCustom: TUTF8StringDynArray;
   ILanguage:   TUTF8StringDynArray;
   ITheme:      TUTF8StringDynArray;
   ISkin:       TUTF8StringDynArray;
@@ -320,7 +334,7 @@ const
   IMaxFramerate:     array[0..11] of UTF8String  = ('10', '20', '30', '40', '50', '60', '70', '80', '90', '100', '150', '200');
   IScreens:          array[0..1] of UTF8String  = ('1', '2');
   ISplit:            array[0..1] of UTF8String  = ('Off', 'On');
-  IFullScreen:       array[0..1] of UTF8String  = ('Off', 'On');
+  IFullScreen:       array[0..2] of UTF8String  = ('Off', 'On', 'Borderless');
   IDepth:            array[0..1] of UTF8String  = ('16 bit', '32 bit');
   IVisualizer:       array[0..2] of UTF8String  = ('Off', 'WhenNoVideo','On');
 
@@ -452,7 +466,7 @@ var
 
   IDebugTranslated:            array[0..1] of UTF8String  = ('Off', 'On');
 
-  IFullScreenTranslated:       array[0..1] of UTF8String  = ('Off', 'On');
+  IFullScreenTranslated:       array[0..2] of UTF8String  = ('Off', 'On', 'Borderless');
   IVisualizerTranslated:       array[0..2] of UTF8String  = ('Off', 'WhenNoVideo','On');
 
   IBackgroundMusicTranslated:  array[0..1] of UTF8String  = ('Off', 'On');
@@ -621,6 +635,7 @@ begin
 
   IFullScreenTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IFullScreenTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_ON');
+  IFullScreenTranslated[2]            := ULanguage.Language.Translate('OPTION_VALUE_BORDERLESS');
 
   IVisualizerTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IVisualizerTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_WHENNOVIDEO');
@@ -1188,7 +1203,7 @@ begin
   Split := GetArrayIndex(ISplit, IniFile.ReadString('Graphics', 'Split', ISplit[0]));
 
   // FullScreen
-  FullScreen := GetArrayIndex(IFullScreen, IniFile.ReadString('Graphics', 'FullScreen', 'On'));
+  FullScreen := GetArrayIndex(IFullScreen, IniFile.ReadString('Graphics', 'FullScreen', 'Borderless'));
 
   // standard fallback resolutions
   SetLength(IResolution, 27);
@@ -1221,8 +1236,6 @@ begin
   IResolution[26] := '4096x3072'; // HXGA
 
   // Check if there are any modes available
-  // TODO: we should seperate windowed and fullscreen modes. Otherwise it is not
-  //       possible to select a reasonable fullscreen mode when in windowed mode
 
   // retrieve currently used Video Display
   DisplayIndex := -1;
@@ -1272,6 +1285,10 @@ begin
     for I := 0 to (Length(IResolution) div 2) - 1 do swap(IResolution[I], IResolution[High(IResolution)-I]);
   end;
 
+  // read fullscreen resolution and verify if possible
+  ResString := IniFile.ReadString('Graphics', 'ResolutionFullscreen', '');
+  ResolutionFullscreen := GetArrayIndex(IResolutionFullScreen, ResString);
+
   // Check if there is a resolution configured, try using it
   ResString := IniFile.ReadString('Graphics', 'Resolution', '');
   if ResString = '' then
@@ -1298,6 +1315,10 @@ begin
     SetLength(IResolution, Length(IResolution) + 1);
     IResolution[High(IResolution)] := ResString;
     Resolution := High(IResolution);
+
+    // store also as custom resolution to eventually remove it upon window size change
+    SetLength(IResolutionCustom, Length(IResolutionCustom) + 1);
+    IResolutionCustom[High(IResolutionCustom)] := ResString;
   end;
 
   if (Length(IResolution) = 0) or (Resolution < 0) then
@@ -1701,6 +1722,7 @@ begin
 
   // Resolution
   IniFile.WriteString('Graphics', 'Resolution', GetResolution);
+  IniFile.WriteString('Graphics', 'ResolutionFullscreen', GetResolutionFullscreen);
 
   // Depth
   IniFile.WriteString('Graphics', 'Depth', IDepth[Depth]);
@@ -2120,12 +2142,25 @@ begin
 end;
 
 
-procedure TIni.SetResolution(ResolutionString: string; RemoveCurrent: boolean; NoSave: boolean);
+function TIni.SetResolution(ResolutionString: string; RemoveCurrent: boolean; NoSave: boolean): boolean;
   var
     Index: integer;
     Dirty: boolean;
 begin
+  Result := false;
   Dirty := false;
+
+  // check if current resolution is custom and then remove anyway (no matter what RemoveCurrent is set)
+  if (Resolution >= 0) then
+  begin
+    Index := GetArrayIndex(IResolutionCustom, IResolution[Resolution]);
+    if Index >= 0 then
+    begin
+      StringDeleteFromArray(IResolutionCustom, Index);
+      StringDeleteFromArray(IResolution, Resolution);
+    end;
+  end;
+
   Index := GetArrayIndex(IResolution, ResolutionString);
   if not NoSave and (Resolution <> Index) then Dirty := true;
   if (Resolution >= 0) and (RemoveCurrent) then StringDeleteFromArray(IResolution, Resolution);
@@ -2134,6 +2169,13 @@ begin
     SetLength(IResolution, Length(IResolution) + 1);
     IResolution[High(IResolution)] := ResolutionString;
     index := High(IResolution);
+    Result := true;
+
+    if GetArrayIndex(IResolutionCustom, ResolutionString) < 0 then
+    begin
+      SetLength(IResolutionCustom, Length(IResolutionCustom) + 1);
+      IResolutionCustom[High(IResolutionCustom)] := ResolutionString;
+    end;
   end;
 
   if SetResolution(index) and Dirty then
@@ -2143,9 +2185,9 @@ begin
   end;
 end;
 
-procedure TIni.SetResolution(w,h: integer; RemoveCurrent: boolean; NoSave: boolean);
+function TIni.SetResolution(w,h: integer; RemoveCurrent: boolean; NoSave: boolean): boolean;
 begin
-  SetResolution(BuildResolutionString(w, h), RemoveCurrent, NoSave);
+  Result := SetResolution(BuildResolutionString(w, h), RemoveCurrent, NoSave);
 end;
 
 function TIni.SetResolution(index: integer): boolean;
@@ -2179,6 +2221,53 @@ begin
       ResolutionString := IResolution[index];
       Result := true;
   end;
+end;
+
+function TIni.GetResolutionFullscreen(): string;
+begin
+  if ResolutionFullscreen >= 0 then Result := IResolutionFullScreen[ResolutionFullscreen]
+  else if Length(IResolutionFullScreen) = 0 then Result := DEFAULT_RESOLUTION
+  else Result := IResolutionFullScreen[0];
+end;
+
+function TIni.GetResolutionFullscreen(out w,h: integer): string;
+begin
+  Result := GetResolutionFullscreen();
+  ParseResolutionString(Result, w, h);
+end;
+
+function TIni.GetResolutionFullscreen(index: integer; out ResolutionString: string): boolean;
+begin
+  Result := false;
+  if (index >= 0) and (index < Length(IResolutionFullScreen)) then
+  begin
+      ResolutionString := IResolutionFullScreen[index];
+      Result := true;
+  end;
+end;
+
+procedure TIni.ClearCustomResolutions();
+  var
+    Index, i, custom: integer;
+    ResString: string;
+begin
+  if Resolution < 0 then Exit;
+
+  // check if current resolution is a custom one
+  ResString := IResolution[Resolution];
+  Index := GetArrayIndex(IResolutionCustom, ResString);
+  for i := High(IResolutionCustom) downto 0 do
+  begin
+    custom := GetArrayIndex(IResolution, IResolutionCustom[i]);
+    if (custom >= 0) and (Index <> i) then
+    begin
+      StringDeleteFromArray(IResolution, custom);
+      StringDeleteFromArray(IResolutionCustom, i);
+    end;
+  end;
+
+  // update index
+  Resolution := GetArrayIndex(IResolution, ResString);
 end;
 
 end.

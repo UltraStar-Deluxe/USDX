@@ -477,31 +477,10 @@ begin
       end;
       SDL_WINDOWEVENT://SDL_WINDOWEVENT_RESIZED:
       begin
-        if Event.window.event = SDL_WINDOWEVENT_RESIZED then
-        begin
-          ScreenW := Event.window.data1; //width
-          ScreenH := Event.window.data2; //hight
-          // Note: do NOT call SDL_SetVideoMode on Windows and MacOSX here.
-          // This would create a new OpenGL render-context and all texture data
-          // would be invalidated.
-          // On Linux the mode MUST be reset, otherwise graphics will be corrupted.
-          // Update: It seems to work now without creating a new OpenGL context. At least
-          // with Win7 and SDL 1.2.14. Maybe it generally works now with SDL 1.2.14 and we
-          // can switch it on for windows.
-          // Important: Unless SDL_SetVideoMode() is called (it is not on Windows), Screen.w
-          // and Screen.h are not valid after a resize and still contain the old size. Use
-          // ScreenW and ScreenH instead.
-          //////
-          if boolean( Ini.FullScreen ) then
-          begin
-          Screen.W := ScreenW;
-          Screen.H := ScreenH;
-          end
-          else
-            SDL_SetWindowSize(screen,ScreenW, ScreenH);
-            {screen := SDL_CreateWindow('UltraStar Deluxe loading...',SDL_WINDOWPOS_UNDEFINED,
-                   SDL_WINDOWPOS_UNDEFINED, ScreenW, ScreenH, SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE);}
-        end;
+        case Event.window.event of
+          SDL_WINDOWEVENT_MOVED: OnWindowMoved(Event.window.data1, Event.window.data2);
+          SDL_WINDOWEVENT_RESIZED: OnWindowResized(Event.window.data1, Event.window.data2);
+        end
       end;
       SDL_KEYDOWN, SDL_TEXTINPUT:
         begin
@@ -515,18 +494,23 @@ begin
           //if (Event.key.keysym.unicode in [1 .. 26]) then
           //  Event.key.keysym.unicode := Ord('A') + Event.key.keysym.unicode - 1;
 
+          if Event.key.keysym.sym = SDLK_RETURN then
+          begin
+            if (SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT) = KMOD_LALT) then
+            begin
+              if SwitchVideoMode(Mode_Fullscreen) = Mode_Fullscreen then Ini.FullScreen := 1
+              else Ini.FullScreen := 0;
+              Ini.Save();
+
+              Break;
+            end;
+          end;
+
           // remap the "keypad enter" key to the "standard enter" key
-          if (Event.key.keysym.sym = SDLK_KP_ENTER) then
-            Event.key.keysym.sym := SDLK_RETURN;
+          if (Event.key.keysym.sym = SDLK_KP_ENTER) then Event.key.keysym.sym := SDLK_RETURN;
 
           if not Assigned(Display.NextScreen) then
           begin //drop input when changing screens
-            { to-do : F11 was used for fullscreen toggle, too here
-                      but we also use the key in screenname and some other
-                      screens. It is droped although fullscreen toggle doesn't
-                      even work on windows.
-                      should we add (Event.key.keysym.sym = SDLK_F11) here
-                      anyway? }
             try
               s1:=Event.text.text;
               KeyCharUnicode:=UnicodeStringToUCS4String(UnicodeString(UTF8String(Event.text.text)))[0];
@@ -563,19 +547,13 @@ begin
 
             if (not SuppressKey and (Event.key.keysym.sym = SDLK_F11)) then // toggle full screen
             begin
-              Ini.FullScreen := integer( not boolean( Ini.FullScreen ) );
-
-              if boolean( Ini.FullScreen ) then
+              if (CurrentWindowMode <> Mode_Fullscreen) then // only switch borderless fullscreen in windowed mode
               begin
-                SDL_SetWindowFullscreen(screen, SDL_WINDOW_FULLSCREEN_DESKTOP or SDL_WINDOW_RESIZABLE);
-                //SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_FULLSCREEN);
-              end
-              else
-              begin
-                SDL_SetWindowFullscreen(screen, SDL_WINDOW_RESIZABLE);
-                //SDL_SetVideoMode(ScreenW, ScreenH, (Ini.Depth+1) * 16, SDL_OPENGL or SDL_RESIZABLE);
+                if SwitchVideoMode(Mode_Borderless) = Mode_Borderless then Ini.FullScreen := 2
+                else Ini.FullScreen := 0;
+                Ini.Save();
               end;
-              Ini.Save();
+
               //Display.SetCursor;
 
               //glViewPort(0, 0, ScreenW, ScreenH);

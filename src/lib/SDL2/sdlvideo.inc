@@ -293,6 +293,32 @@ const
 type
   TSDL_GLcontextFlag = DWord;
 
+  {**
+   *  \brief Possible return values from the SDL_HitTest callback.
+   *
+   *  \sa SDL_HitTest
+   *}
+  TSDL_HitTestResult = (
+    SDL_HITTEST_NORMAL,     {**< Region is normal. No special properties. *}
+    SDL_HITTEST_DRAGGABLE,  {**< Region can drag entire window. *}
+    SDL_HITTEST_RESIZE_TOPLEFT,
+    SDL_HITTEST_RESIZE_TOP,
+    SDL_HITTEST_RESIZE_TOPRIGHT,
+    SDL_HITTEST_RESIZE_RIGHT,
+    SDL_HITTEST_RESIZE_BOTTOMRIGHT,
+    SDL_HITTEST_RESIZE_BOTTOM,
+    SDL_HITTEST_RESIZE_BOTTOMLEFT,
+    SDL_HITTEST_RESIZE_LEFT
+  );
+
+  {**
+   *  \brief Callback used for hit-testing.
+   *
+   *  \sa SDL_SetWindowHitTest
+   *}
+  TSDL_HitTest = Function(win: PSDL_Window; const area: PSDL_Point; data: Pointer): TSDL_HitTestResult; cdecl;
+
+
   {* Function prototypes *}
 
   {**
@@ -380,6 +406,19 @@ function SDL_GetDisplayName(displayIndex: SInt32): PAnsiChar cdecl; external SDL
    *}
 
 function SDL_GetDisplayBounds(displayIndex: SInt32; rect: PSDL_Rect): SInt32 cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetDisplayBounds' {$ENDIF} {$ENDIF};
+
+  {**
+   *  \brief Get the dots/pixels-per-inch for a display
+   *
+   *  \note Diagonal, horizontal and vertical DPI can all be optionally
+   *        returned if the parameter is non-NULL.
+   *
+   *  \return 0 on success, or -1 if no DPI information is available or the index is out of range.
+   *
+   *  \sa SDL_GetNumVideoDisplays()
+   *}
+function SDL_GetDisplayDPI(displayIndex: SInt32; ddpi, hdpi, vdpi: PSingle): SInt32; cdecl; 
+  external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetDisplayDPI' {$ENDIF} {$ENDIF}; 
 
   {**
    *  Returns the number of available display modes.
@@ -825,6 +864,16 @@ procedure SDL_SetWindowGrab(window: PSDL_Window; grabbed: TSDL_Bool) cdecl; exte
 function SDL_GetWindowGrab(window: PSDL_Window): TSDL_Bool cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetWindowGrab' {$ENDIF} {$ENDIF};
 
   {**
+   *  \brief Get the window that currently has an input grab enabled.
+   *
+   *  \return This returns the window if input is grabbed, and NULL otherwise.
+   *
+   *  \sa SDL_SetWindowGrab()
+   *}
+function SDL_GetGrabbedWindow(): PSDL_Window; cdecl;
+  external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetGrabbedWindow' {$ENDIF} {$ENDIF};
+
+  {**
    *  Set the brightness (gamma correction) for a window.
    *
    *  0 on success, or -1 if setting the brightness isn't supported.
@@ -881,6 +930,46 @@ function SDL_SetWindowGammaRamp(window: PSDL_Window; const red: PUInt16; const g
    *}
 
 function SDL_GetWindowGammaRamp(window: PSDL_Window; red: PUInt16; green: PUInt16; blue: PUInt16): SInt32 cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetWindowGammaRamp' {$ENDIF} {$ENDIF};
+
+  {**
+   *  \brief Provide a callback that decides if a window region has special properties.
+   *
+   *  Normally windows are dragged and resized by decorations provided by the
+   *  system window manager (a title bar, borders, etc), but for some apps, it
+   *  makes sense to drag them from somewhere else inside the window itself; for
+   *  example, one might have a borderless window that wants to be draggable
+   *  from any part, or simulate its own title bar, etc.
+   *
+   *  This function lets the app provide a callback that designates pieces of
+   *  a given window as special. This callback is run during event processing
+   *  if we need to tell the OS to treat a region of the window specially; the
+   *  use of this callback is known as "hit testing."
+   *
+   *  Mouse input may not be delivered to your application if it is within
+   *  a special area; the OS will often apply that input to moving the window or
+   *  resizing the window and not deliver it to the application.
+   *
+   *  Specifying NULL for a callback disables hit-testing. Hit-testing is
+   *  disabled by default.
+   *
+   *  Platforms that don't support this functionality will return -1
+   *  unconditionally, even if you're attempting to disable hit-testing.
+   *
+   *  Your callback may fire at any time, and its firing does not indicate any
+   *  specific behavior (for example, on Windows, this certainly might fire
+   *  when the OS is deciding whether to drag your window, but it fires for lots
+   *  of other reasons, too, some unrelated to anything you probably care about
+   *  _and when the mouse isn't actually at the location it is testing_).
+   *  Since this can fire at any time, you should try to keep your callback
+   *  efficient, devoid of allocations, etc.
+   *
+   *  \param window The window to set hit-testing on.
+   *  \param callback The callback to call when doing a hit-test.
+   *  \param callback_data An app-defined void pointer passed to the callback.
+   *  \return 0 on success, -1 on error (including unsupported).
+   *}
+Function SDL_SetWindowHitTest(window: PSDL_Window; callback: TSDL_HitTest; callback_data: Pointer): SInt32; cdecl;
+  external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_SetWindowHitTest' {$ENDIF} {$ENDIF};
 
   {**
    *  Destroy a window.

@@ -119,6 +119,12 @@ function SDL_GameControllerNameForIndex(joystick_index: Integer): PAnsiChar cdec
 function SDL_GameControllerOpen(joystick_index: Integer): PSDL_GameController cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GameControllerOpen' {$ENDIF} {$ENDIF};
 
   {**
+   * Return the SDL_GameController associated with an instance id.
+   *}
+function SDL_GameControllerFromInstanceID(joyid: TSDL_JoystickID): PSDL_GameController; cdecl;
+  external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GameControllerFromInstanceID' {$ENDIF} {$ENDIF};
+
+  {**
    *  Return the name for this currently opened controller
    *}
 function SDL_GameControllerName(gamecontroller: PSDL_GameController): PAnsiChar cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GameControllerName' {$ENDIF} {$ENDIF};

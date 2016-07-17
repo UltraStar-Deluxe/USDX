@@ -131,6 +131,9 @@ type
       { returns whether this display is requesting an cursor update }
       function NeedsCursorUpdate(): boolean;
 
+      { called when the window has been resized }
+      procedure OnWindowResized(); virtual;
+
   end;
 
 var
@@ -680,6 +683,16 @@ function TDisplay.NeedsCursorUpdate: boolean;
 begin
   Result := Cursor_Update and Cursor_Visible and not Cursor_Fade;
   Cursor_Update := false;
+end;
+
+procedure TDisplay.OnWindowResized();
+begin
+  // update cursor position once the window has been resized, otherwise the cursor jumps
+  Cursor_Update := true;
+
+  if (assigned(NextScreen)) then NextScreen^.OnWindowResized()
+  else if (assigned(CurrentScreen)) then CurrentScreen^.OnWindowResized()
+
 end;
 
 procedure TDisplay.SaveScreenShot;

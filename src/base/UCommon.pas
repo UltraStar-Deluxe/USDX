@@ -45,6 +45,7 @@ uses
   UPath;
 
 type
+  TIntegerDynArray = array of integer;
   TStringDynArray = array of string;
   TUTF8StringDynArray = array of UTF8String;
 
@@ -68,6 +69,7 @@ function SplitString(const Str: string; MaxCount: integer = 0; Separators: TSysC
 
 function StringInArray(const Value: string; Strings: array of string): Boolean;
 
+function StringDeleteFromArray(var InArray: TIntegerDynArray; const InIndex: integer): Boolean; overload;
 function StringDeleteFromArray(var InStrings: TStringDynArray; const InIndex: integer): Boolean; overload;
 function StringDeleteFromArray(var InStrings: TUTF8StringDynArray; const InIndex: integer): Boolean; overload;
 
@@ -140,20 +142,45 @@ begin
   Result := False;
 end;
 
-function StringDeleteFromArray(var InStrings: TStringDynArray; const InIndex: integer): Boolean;
+function StringDeleteFromArray(var InArray: TIntegerDynArray; const InIndex: integer): Boolean;
 begin
-  if InIndex < Length(InStrings) then
+  Result := false;
+  if (InIndex >= 0) and (InIndex < Length(InArray)) then
   begin
-    Move(InStrings[InIndex + 1], InStrings[InIndex], SizeOf(InStrings[0]) * (Length(InStrings) - InIndex - 1));
+    Result := true;
+    Move(InArray[InIndex + 1], InArray[InIndex], SizeOf(InArray[0]) * (Length(InArray) - InIndex - 1));
+    SetLength(InArray, Length(InArray) - 1);
+  end;
+end;
+
+function StringDeleteFromArray(var InStrings: TStringDynArray; const InIndex: integer): Boolean;
+var
+  i: integer;
+begin
+  Result := false;
+  if (InIndex >= 0) and (InIndex < Length(InStrings)) then
+  begin
+    Result := true;
+    for i := High(InStrings) downto InIndex+1 do
+    begin
+      InStrings[i-1] := InStrings[i];
+    end;
     SetLength(InStrings, Length(InStrings) - 1);
   end;
 end;
 
 function StringDeleteFromArray(var InStrings: TUTF8StringDynArray; const InIndex: integer): Boolean;
+var
+  i: integer;
 begin
-  if InIndex < Length(InStrings) then
+  Result := false;
+  if (InIndex >= 0) and (InIndex < Length(InStrings)) then
   begin
-    Move(InStrings[InIndex + 1], InStrings[InIndex], SizeOf(InStrings[0]) * (Length(InStrings) - InIndex - 1));
+    Result := true;
+    for i := High(InStrings) downto InIndex+1 do
+    begin
+      InStrings[i-1] := InStrings[i];
+    end;
     SetLength(InStrings, Length(InStrings) - 1);
   end;
 end;
