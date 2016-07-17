@@ -2,11 +2,9 @@
 
 [![Join the chat at https://gitter.im/UltraStar-Deluxe/USDX](https://badges.gitter.im/UltraStar-Deluxe/USDX.svg)](https://gitter.im/UltraStar-Deluxe/USDX?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/UltraStar-Deluxe/USDX.svg?branch=master)](https://travis-ci.org/UltraStar-Deluxe/USDX)
-[![SourceForge](https://img.shields.io/sourceforge/dt/ultrastardx.svg?maxAge=2592000)]()
-[![GitHub license](https://img.shields.io/badge/license-GPLv2-blue.svg)](LICENSE)
-[![AUR](https://img.shields.io/aur/version/ultrastardx-git.svg?maxAge=2592000)](https://aur.archlinux.org/packages/ultrastardx-git)
-[![Maintenance](https://img.shields.io/maintenance/yes/2016.svg?maxAge=2592000)]()
-[![Website](https://img.shields.io/website-up-down-green-red/http/ultrastardeluxe.de.svg?maxAge=2592000)](http://ultrastardeluxe.de)
+[![SourceForge](https://img.shields.io/sourceforge/dt/ultrastardx.svg?maxAge=86400)](https://sourceforge.net/projects/ultrastardx/files/latest/download)
+[![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](LICENSE)
+
 ```
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                    _______  _________
