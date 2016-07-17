@@ -233,11 +233,10 @@ begin
 end;
 
 function TScreenPartyPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
-var
-  SDL_ModState:  word;
-  Team: integer;
-  I: integer;
-  isAlternate: boolean;
+  var
+    SDL_ModState:  word;
+    Team: integer;
+    I: integer;
   procedure IntNext;
   begin
     repeat
@@ -253,6 +252,16 @@ var
     until ((Interactions[Interaction].Typ = iSelectS) and
       SelectsS[Interactions[Interaction].Num].Visible) or
       (Button[Interactions[Interaction].Num].Visible);
+  end;
+  procedure HandleNameTemplate(const index: integer);
+  var
+    isAlternate: boolean;
+  begin
+    isAlternate := (SDL_ModState = KMOD_LSHIFT) or (SDL_ModState = KMOD_RSHIFT);
+    isAlternate := isAlternate or (SDL_ModState = KMOD_LALT); // legacy key combination
+
+    if isAlternate then Ini.NameTemplate[index] := Button[Interactions[Interaction].Num].Text[0].Text
+    else Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[index];
   end;
 begin
   Result := true;
@@ -277,118 +286,20 @@ begin
     end;
 
     // check special keys
-    isAlternate := (SDL_ModState = KMOD_LSHIFT) or (SDL_ModState = KMOD_RSHIFT);
-    isAlternate := isAlternate or (SDL_ModState = KMOD_LALT); // legacy key combination
     case PressedKey of
       // Templates for Names Mod
-      SDLK_F1:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[0] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[0];
-         end;
-      SDLK_F2:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[1] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[1];
-         end;
-      SDLK_F3:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[2] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[2];
-         end;
-      SDLK_F4:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[3] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[3];
-         end;
-      SDLK_F5:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[4] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[4];
-         end;
-      SDLK_F6:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[5] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[5];
-         end;
-      SDLK_F7:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[6] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[6];
-         end;
-      SDLK_F8:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[7] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[7];
-         end;
-      SDLK_F9:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[8] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[8];
-         end;
-      SDLK_F10:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[9] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[9];
-         end;
-      SDLK_F11:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[10] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[10];
-         end;
-      SDLK_F12:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[11] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[11];
-         end;
+      SDLK_F1: HandleNameTemplate(0);
+      SDLK_F2: HandleNameTemplate(1);
+      SDLK_F3: HandleNameTemplate(2);
+      SDLK_F4: HandleNameTemplate(3);
+      SDLK_F5: HandleNameTemplate(4);
+      SDLK_F6: HandleNameTemplate(5);
+      SDLK_F7: HandleNameTemplate(6);
+      SDLK_F8: HandleNameTemplate(7);
+      SDLK_F9: HandleNameTemplate(8);
+      SDLK_F10: HandleNameTemplate(9);
+      SDLK_F11: HandleNameTemplate(10);
+      SDLK_F12: HandleNameTemplate(11);
 
       SDLK_BACKSPACE:
         begin
