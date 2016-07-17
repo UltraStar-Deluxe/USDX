@@ -144,8 +144,10 @@ end;
 
 function StringDeleteFromArray(var InArray: TIntegerDynArray; const InIndex: integer): Boolean;
 begin
-  if InIndex < Length(InArray) then
+  Result := false;
+  if (InIndex >= 0) and (InIndex < Length(InArray)) then
   begin
+    Result := true;
     Move(InArray[InIndex + 1], InArray[InIndex], SizeOf(InArray[0]) * (Length(InArray) - InIndex - 1));
     SetLength(InArray, Length(InArray) - 1);
   end;
@@ -155,22 +157,32 @@ function StringDeleteFromArray(var InStrings: TStringDynArray; const InIndex: in
 var
   i: integer;
 begin
-  for i := High(InStrings) downto InIndex+1 do
+  Result := false;
+  if (InIndex >= 0) and (InIndex < Length(InStrings)) then
   begin
-    InStrings[i-1] := InStrings[i];
+    Result := true;
+    for i := High(InStrings) downto InIndex+1 do
+    begin
+      InStrings[i-1] := InStrings[i];
+    end;
+    SetLength(InStrings, Length(InStrings) - 1);
   end;
-  SetLength(InStrings, Length(InStrings) - 1);
 end;
 
 function StringDeleteFromArray(var InStrings: TUTF8StringDynArray; const InIndex: integer): Boolean;
 var
   i: integer;
 begin
-  for i := High(InStrings) downto InIndex+1 do
+  Result := false;
+  if (InIndex >= 0) and (InIndex < Length(InStrings)) then
   begin
-    InStrings[i-1] := InStrings[i];
+    Result := true;
+    for i := High(InStrings) downto InIndex+1 do
+    begin
+      InStrings[i-1] := InStrings[i];
+    end;
+    SetLength(InStrings, Length(InStrings) - 1);
   end;
-  SetLength(InStrings, Length(InStrings) - 1);
 end;
 
 function SplitString(const Str: string; MaxCount: integer; Separators: TSysCharSet; RemoveEmpty: boolean): TStringDynArray;

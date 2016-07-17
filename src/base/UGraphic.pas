@@ -712,8 +712,6 @@ procedure UpdateResolution();
   var
     Disp: TSDL_DisplayMode;
     Event: TSDL_event;
-    w,h: integer;
-    wascentered: boolean;
 begin
   if CurrentWindowMode = Mode_Borderless then Exit;
   case CurrentWindowMode of
