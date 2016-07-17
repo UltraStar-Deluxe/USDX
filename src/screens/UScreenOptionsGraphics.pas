@@ -53,12 +53,15 @@ type
 
       OldWindowMode:       integer;
 
+      procedure UpdateWindowMode;
       procedure UpdateResolution;
 
     public
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
+      procedure OnHide; override;
+      procedure OnWindowResized; override;
   end;
 
 implementation
@@ -180,19 +183,45 @@ begin
 end;
 
 procedure TScreenOptionsGraphics.OnShow;
+var
+  i: integer;
 begin
   inherited;
 
-  UpdateSelectSlideOptions(Theme.OptionsGraphics.SelectFullscreen, SelectWindowMode, IFullScreenTranslated, Ini.FullScreen);
+  if CurrentWindowMode = Mode_Windowed then Ini.SetResolution(ScreenW, ScreenH);
+
+  UpdateWindowMode();
   UpdateResolution();
 
-  OldWindowMode := integer(Ini.FullScreen);
   Interaction := 0;
+end;
+
+procedure TScreenOptionsGraphics.OnHide;
+begin
+  inherited;
+  Ini.ClearCustomResolutions();
+end;
+
+procedure TScreenOptionsGraphics.OnWindowResized;
+begin
+  inherited;
+
+  UpdateWindowMode;
+
+  if CurrentWindowMode = Mode_Windowed then Ini.SetResolution(ScreenW, ScreenH);
+  UpdateResolution;
+
+end;
+
+procedure TScreenOptionsGraphics.UpdateWindowMode;
+begin
+
+  UpdateSelectSlideOptions(Theme.OptionsGraphics.SelectFullscreen, SelectWindowMode, IFullScreenTranslated, Ini.FullScreen);
+  OldWindowMode := integer(Ini.FullScreen);
 end;
 
 procedure TScreenOptionsGraphics.UpdateResolution;
 begin
-  inherited;
 
   if Ini.Fullscreen = 2 then
     UpdateSelectSlideOptions(Theme.OptionsGraphics.SelectResolution, SelectResolution, IResolutionEmpty, ResolutionEmpty)
