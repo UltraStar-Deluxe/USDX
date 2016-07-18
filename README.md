@@ -209,6 +209,9 @@ For linking and running the game, the following libraries are also required:
 - Don't miss XQuartz from http://www.xquartz.org
 - Needed brew libraries can be installed using:
   * brew install sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_net sdl2_ttf ffmpeg libav portaudio binutils sqlite freetype libpng pcre lua libtiff
+  * brew switch ffmpeg 2.8.6
 - Pass argument --enable-osx-fink or --enable-osx-brew (default) according to the packaging you are using
+- ./configure
+- make macosx-standalone-app
 
 Feel free to fork this project, modify it to your hearts content and maybe also do pull requests to this repository for additional features, improvements or clean-ups.
