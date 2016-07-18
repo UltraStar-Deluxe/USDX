@@ -563,7 +563,7 @@ procedure TScreenScore.LoadSwapTextures;
     ThemeStatic: TThemeStatic;
 begin
   { we only need to load swapping textures if in dualscreen mode }
-  if Screens = 3 then
+  if Screens = 2 then
   begin
     { load swapping textures for custom statics }
     for P := low(PlayerStatic) to High(PlayerStatic) do
@@ -702,6 +702,8 @@ begin
     1:    Max := 1;
     2, 4: Max := 2;
     3, 6: Max := 3;
+    8:    Max := 4;
+    12:   Max := 6;
   else
     Max := 0; //this should never happen
   end;
@@ -712,7 +714,7 @@ begin
     Screen := 1;
 
   { set correct box textures }
-  if (Screens = 3) then
+  if (Screens = 2) then
   begin
 
     for I:= 0 to Max - 1 do
@@ -1322,10 +1324,7 @@ begin
     BarTime := 0;
 
   // swap static textures to current screen ones
-  try
-    SwapToScreen(ScreenAct);
-  except
-  end;
+  SwapToScreen(ScreenAct);
 
   //Draw the Background
   DrawBG;
