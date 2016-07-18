@@ -2898,10 +2898,8 @@ begin
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    if (Lines[NrLines].Line[Lines[NrLines].Current].TotalNotes > 0) and ( Right-Left > 0 ) and ( (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) > 0 ) then
-      TempR := (Right-Left) / (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start)
-    else
-      TempR := 0;
+    if not Lines[NrLines].Line[Lines[NrLines].Current].HasLength(TempR) then TempR := 0
+    else TempR := (Right-Left) / TempR;
 
     with Lines[NrLines].Line[Lines[NrLines].Current] do
     begin

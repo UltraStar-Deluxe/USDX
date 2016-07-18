@@ -116,6 +116,22 @@ type
     TotalNotes: integer; // value of all notes in the line
     LastLine:   boolean;
     Note:       array of TLineFragment;
+
+    private
+    function GetLength(): integer;
+
+    public
+    { Returns whether the line has a valid length. }
+    function HasLength(): boolean; overload;
+    { Returns whether the line has a valid length and passes length. }
+    function HasLength(out Len: Integer): boolean; overload;
+    { Returns whether the line has a valid length and passes length. Output converted to Real }
+    function HasLength(out Len: real): boolean; overload;
+    { Returns whether the line has a valid length and passes length. Output converted to Double }
+    function HasLength(out Len: double): boolean; overload;
+
+    property Length_: integer read GetLength;
+
   end;
 
   (**
@@ -1278,5 +1294,42 @@ procedure TAudioVoiceStream.SetLoop(Enabled: boolean);
 begin
 end;
 
+
+{ TLine }
+
+function TLine.HasLength(): boolean;
+var tempi: integer;
+begin
+  Result := HasLength(tempi);
+end;
+
+function TLine.HasLength(out Len: integer): boolean;
+begin
+  Result := false;
+  if Length(Note) >= 0 then
+  begin
+    Result := true;
+    Len := End_ - Note[0].Start;
+  end;
+end;
+
+function TLine.HasLength(out Len: real): boolean;
+var tempi: integer;
+begin
+  Result := HasLength(tempi);
+  Len := tempi;
+end;
+
+function TLine.HasLength(out Len: double): boolean;
+var tempi: integer;
+begin
+  Result := HasLength(tempi);
+  Len := tempi;
+end;
+
+function TLine.GetLength(): integer;
+begin
+  Result := ifthen(Length(Note) < 0, 0, End_ - Note[0].Start);
+end;
 
 end.
