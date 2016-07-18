@@ -911,7 +911,8 @@ begin
   ScreenOptionsWebcam  :=    TScreenOptionsWebcam.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsJukebox'));
   ScreenOptionsJukebox :=    TScreenOptionsJukebox.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenEditSub & ScreenEdit'));
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenEditConvert & ScreenEditSub & ScreenEdit'));
+  ScreenEditConvert :=      TScreenEditConvert.Create;
   ScreenEditSub :=          TScreenEditSub.Create;
   ScreenEdit :=             TScreenEdit.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOpen'));
@@ -977,6 +978,7 @@ begin
   ScreenOptionsJukebox.Free;
   ScreenEditSub.Free;
   ScreenEdit.Free;
+  ScreenEditConvert.Free;
   ScreenJukebox.Free;
   ScreenJukeboxOptions.Free;
   ScreenJukeboxPlaylist.Free;
