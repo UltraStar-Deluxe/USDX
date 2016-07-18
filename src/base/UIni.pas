@@ -1286,7 +1286,7 @@ begin
   end;
 
   // read fullscreen resolution and verify if possible
-  ResString := IniFile.ReadString('Graphics', 'ResolutionFullscreen', '');
+  ResString := IniFile.ReadString('Graphics', 'ResolutionFullscreen', CurrentRes);
   ResolutionFullscreen := GetArrayIndex(IResolutionFullScreen, ResString);
 
   // Check if there is a resolution configured, try using it
