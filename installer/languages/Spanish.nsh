@@ -31,11 +31,11 @@ LangString update_check_failed ${LANG_SPANISH} "La comprobación ha fallado, ¿Qui
 
 ; Welcome Page:
 
-LangString page_welcome_title_update ${LANG_SPANISH} "Bienvenido al asistente de instalación de UltraStar Deluxe Worldparty"
-LangString page_welcome_txt_update ${LANG_SPANISH} "El asistente te guiará a través de este proceso. UltraStar Deluxe Worldparty es un juego gratuito y libre.$\n$\r$\n$\r El equipo de UltraStar Deluxe Worldparty os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web: http://ultrastar-es.org$\n$\r"
-LangString page_welcome_title ${LANG_SPANISH} "Bienvenido a la instalación de UltraStar Deluxe Worldparty"
-LangString page_welcome_txt ${LANG_SPANISH} "El asistente te guiará a través de este proceso. UltraStar Deluxe Worldparty es un juego gratuito y libre.$\n$\r$\n$\r El equipo de UltraStar Deluxe Worldparty os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web: http://ultrastar-es.org$\n$\r"
-LangString page_un_welcome_title ${LANG_SPANISH} "Bienvenido a la desinstalación de UltraStar Deluxe Worldparty"
+LangString page_welcome_title_update ${LANG_SPANISH} "Bienvenido al asistente de instalación de UltraStar Deluxe"
+LangString page_welcome_txt_update ${LANG_SPANISH} "El asistente te guiará a través de este proceso. UltraStar Deluxe es un juego gratuito y libre.$\n$\r$\n$\r El equipo de UltraStar Deluxe os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web: http://www.ultrastardeluxe.org$\n$\r"
+LangString page_welcome_title ${LANG_SPANISH} "Bienvenido a la instalación de UltraStar Deluxe"
+LangString page_welcome_txt ${LANG_SPANISH} "El asistente te guiará a través de este proceso. UltraStar Deluxe es un juego gratuito y libre.$\n$\r$\n$\r El equipo de UltraStar Deluxe os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web: http://www.ultrastardeluxe.org$\n$\r"
+LangString page_un_welcome_title ${LANG_SPANISH} "Bienvenido a la desinstalación de UltraStar Deluxe"
 
 ; Components Page:
 
@@ -44,17 +44,17 @@ LangString page_components_info ${LANG_SPANISH} "Muévete por los componentes par
 ; Custom Page
 
 LangString page_settings_fullscreen ${LANG_SPANISH} "Pantalla completa"
-LangString page_settings_subtitle ${LANG_SPANISH} "Configura rápidamente tu UltraStar Deluxe Worldparty."
+LangString page_settings_subtitle ${LANG_SPANISH} "Configura rápidamente tu UltraStar Deluxe."
 
 ; Finish Page:
 
-LangString page_finish_txt ${LANG_SPANISH} "UltraStar Deluxe Worldparty ha sido instalado con éxito.$\n$\r$\n$\rVisita nuestra página web para obtener las últimas noticias y actualizaciones."
+LangString page_finish_txt ${LANG_SPANISH} "UltraStar Deluxe ha sido instalado con éxito.$\n$\r$\n$\rVisita nuestra página web para obtener las últimas noticias y actualizaciones."
 LangString page_finish_linktxt ${LANG_SPANISH} "Página web"
 LangString page_finish_desktop ${LANG_SPANISH} "¿Quieres crear un acceso directo?"
 
 ; Start Menu and Shortcuts
 
-LangString sm_shortcut ${LANG_SPANISH} "UltraStar Deluxe WorldParty"
+LangString sm_shortcut ${LANG_SPANISH} "UltraStar Deluxe"
 LangString sm_uninstall ${LANG_SPANISH} "Desinstalar"
 LangString sm_website ${LANG_SPANISH} "Página web"
 LangString sm_license ${LANG_SPANISH} "Licencia"
@@ -74,7 +74,7 @@ LangString name_s2_sub2 ${LANG_SPANISH} "Shearer"
 LangString name_s2_sub3 ${LANG_SPANISH} "Wise Guys"
 LangString name_s2_sub4 ${LANG_SPANISH} "Pornophonique"
 
-LangString DESC_Section1 ${LANG_SPANISH} "Estos son los archivos necesarios para instalar UltraStar Deluxe Worldparty"
+LangString DESC_Section1 ${LANG_SPANISH} "Estos son los archivos necesarios para instalar UltraStar Deluxe"
 LangString DESC_Section2 ${LANG_SPANISH} "Si quieres puedes empezar descargando estas canciones (requiere conexión a internet)"
 LangString DESC_Section2_sub1 ${LANG_SPANISH} "You can choose which Jonathan Coulton songs (CC by-nc 3.0) should be installed."
 LangString DESC_Section2_sub2 ${LANG_SPANISH} "You can choose which Shearer songs (CC by-nc-sa 2.0 / 3.0) should be installed."

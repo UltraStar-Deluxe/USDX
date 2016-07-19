@@ -462,10 +462,10 @@ SectionEnd
 
 ;!addPluginDir "${path_plugins}\"
  
-; Function bgmusic
-	; File /oname=$PLUGINSDIR\loop.wav .\dependencies\loop.wav
-	; BGImage::Sound /NOUNLOAD /LOOP $PLUGINSDIR\loop.wav
-; FunctionEnd
+Function bgmusic
+	File /oname=$PLUGINSDIR\loop.wav .\dependencies\loop.wav
+	BGImage::Sound /NOUNLOAD /LOOP $PLUGINSDIR\loop.wav
+FunctionEnd
 
 Function .onGUIEnd
 	BGImage::Sound /STOP

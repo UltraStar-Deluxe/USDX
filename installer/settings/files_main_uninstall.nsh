@@ -12,7 +12,6 @@
  Delete "$Desktop\Play UltraStar Deluxe.lnk"
  Delete "$Desktop\UltraStar Deluxe spielen.lnk"
  Delete "$Desktop\UltraStar Deluxe karaoke.lnk"
- Delete "$Desktop\ UltraStar Deluxe.lnk"
 
 ; Remove dirs
 

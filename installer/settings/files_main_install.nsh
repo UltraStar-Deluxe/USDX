@@ -97,12 +97,12 @@ File "..\${exe}.exe"
 
 ; Covers dir:
 
-;SetOutPath "$INSTDIR\covers"
+SetOutPath "$INSTDIR\covers"
 
-;IfFileExists $INSTDIR\covers\covers.ini +2 0
-;File ..\game\covers\covers.ini
-;File ..\game\covers\NoCover.jpg
-;File "..\game\covers\*.*"
+IfFileExists $INSTDIR\covers\covers.ini +2 0
+File ..\game\covers\covers.ini
+File ..\game\covers\NoCover.jpg
+File "..\game\covers\*.*"
 
 ; Plugins dir:
 
