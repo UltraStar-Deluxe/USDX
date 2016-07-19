@@ -37,6 +37,7 @@
       {$IFDEF UNIX}
         {$IFDEF DARWIN}
           SDLNet_LibName = 'libSDL2_net.dylib';
+		  {$linklib libSDL2_net}
         {$ELSE}
           {$IFDEF FPC}
             SDLNet_LibName = 'libSDL2_net.so';
