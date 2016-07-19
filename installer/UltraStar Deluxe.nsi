@@ -390,7 +390,7 @@ Section $(name_section1) Section1
 	CreateDirectory "${name} ${version}"
 	CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
 	CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_shortcut).lnk" "$INSTDIR\${exe}.exe"
-	CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_website).lnk" "http://www.ultrastar-es.org/"
+	CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_website).lnk" "http://ultrastardeluxe.org"
 	CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_songs).lnk" "$INSTDIR\songs"
 	CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\$(sm_uninstall).lnk" "$INSTDIR\Uninstall.exe"
 !insertmacro MUI_STARTMENU_WRITE_END
@@ -446,69 +446,6 @@ Section Uninstall
 SectionEnd
 
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
-; Section Descriptions
-; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
-
-
-;!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-
-;	!insertmacro MUI_DESCRIPTION_TEXT ${Section1} $(DESC_Section1)
-;	!insertmacro MUI_DESCRIPTION_TEXT ${Section2} $(DESC_Section2)
-;	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1} $(DESC_Section2_sub1)
-;	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2} $(DESC_Section2_sub2)
-;	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3} $(DESC_Section2_sub3)
-;	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub4} $(DESC_Section2_sub4)
-;	!insertmacro MUI_DESCRIPTION_TEXT ${Section3} $(DESC_Section3) THEMES
-
-	; !insertmacro MUI_DESCRIPTION_TEXT ${g2Section1} $(DESC_g2Section1)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${g2Section2} $(DESC_g2Section2)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${g2Section3} $(DESC_g2Section3)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${g2Section4} $(DESC_g2Section4)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${g2Section5} $(DESC_g2Section5)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${g2Section6} $(DESC_g2Section6)
-
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section1} $(DESC_s2_sub1_Section1)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section2} $(DESC_s2_sub1_Section2)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section3} $(DESC_s2_sub1_Section3)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section4} $(DESC_s2_sub1_Section4)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section5} $(DESC_s2_sub1_Section5)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section6} $(DESC_s2_sub1_Section6)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section7} $(DESC_s2_sub1_Section7)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section8} $(DESC_s2_sub1_Section8)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section9} $(DESC_s2_sub1_Section9)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section10} $(DESC_s2_sub1_Section10)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section11} $(DESC_s2_sub1_Section11)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section12} $(DESC_s2_sub1_Section12)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section13} $(DESC_s2_sub1_Section13)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section14} $(DESC_s2_sub1_Section14)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section15} $(DESC_s2_sub1_Section15)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section16} $(DESC_s2_sub1_Section16)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section17} $(DESC_s2_sub1_Section17)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section18} $(DESC_s2_sub1_Section18)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section19} $(DESC_s2_sub1_Section19)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section20} $(DESC_s2_sub1_Section20)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section21} $(DESC_s2_sub1_Section21)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section22} $(DESC_s2_sub1_Section22)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section23} $(DESC_s2_sub1_Section23)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub1_Section24} $(DESC_s2_sub1_Section24)
-
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section1} $(DESC_s2_sub2_Section1)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section2} $(DESC_s2_sub2_Section2)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section3} $(DESC_s2_sub2_Section3)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section4} $(DESC_s2_sub2_Section4)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section5} $(DESC_s2_sub2_Section5)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section6} $(DESC_s2_sub2_Section6)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section7} $(DESC_s2_sub2_Section7)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section8} $(DESC_s2_sub2_Section8)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub2_Section9} $(DESC_s2_sub2_Section9)
-
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3_Section1} $(DESC_s2_sub3_Section1)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3_Section2} $(DESC_s2_sub3_Section2)
-	; !insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3_Section3} $(DESC_s2_sub3_Section3)
-
-;!insertmacro MUI_FUNCTION_DESCRIPTION_END
-
-; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Language Support
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
@@ -539,7 +476,7 @@ Function .onInit
 	${UAC.I.Elevate.AdminOnly}
 
 	var /GLOBAL version
-	StrCpy $version "WorldParty"
+	StrCpy $version "1.3beta"
 
 
 	System::Call 'kernel32::CreateMutexA(i 0, i 0, t "USdx Installer.exe") ?e'

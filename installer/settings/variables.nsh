@@ -5,13 +5,13 @@
 ; Product Information:
 
 !define version "Beta" ; Make sure version is also set in onInit
-!define version2 "1.2"
+!define version2 "1.3"
 
 !define name "UltraStar Deluxe"
-!define publisher "USDX Team & zup3r_vock"
-!define homepage "http://ultrastardx.sourceforge.net"
-!define forum "http://ultrastardx.sourceforge.net"
-!define wiki "http://ultrastardx.sourceforge.net"
+!define publisher "USDX Team"
+!define homepage "http://ultrastardeluxe.org"
+!define forum "https://github.com/UltraStar-Deluxe/USDX/issues"
+!define wiki "http://ultrastardeluxe.org"
 
 !define exe "ultrastardx"
 

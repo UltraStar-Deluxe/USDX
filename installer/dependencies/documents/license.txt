@@ -1,3 +1,6 @@
+UltraStar Deluxe is licensed unter the GPLv2 license or a newer version of it.
+For a quick summary, take a look at https://tldrlegal.com/license/gnu-general-public-license-v2 .
+
 The GNU General Public License (GPL)
 Version 2, June 1991
 Copyright (C) 1989, 1991 Free Software Foundation, Inc.

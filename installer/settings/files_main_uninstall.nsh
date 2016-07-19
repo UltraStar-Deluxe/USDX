@@ -9,10 +9,10 @@
 
 ; Delete created Icon on Desktop
 
- Delete "$Desktop\Play UltraStar Deluxe WorldParty.lnk"
+ Delete "$Desktop\Play UltraStar Deluxe.lnk"
  Delete "$Desktop\UltraStar Deluxe spielen.lnk"
  Delete "$Desktop\UltraStar Deluxe karaoke.lnk"
- Delete "$Desktop\Graj w UltraStar Deluxe WorldParty.lnk"
+ Delete "$Desktop\ UltraStar Deluxe.lnk"
 
 ; Remove dirs
 
