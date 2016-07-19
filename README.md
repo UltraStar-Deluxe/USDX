@@ -1,4 +1,4 @@
-# UltraStar Deluxe 1.3 trunk README
+# UltraStar Deluxe Development README
 
 [![Join the chat at https://gitter.im/UltraStar-Deluxe/USDX](https://badges.gitter.im/UltraStar-Deluxe/USDX.svg)](https://gitter.im/UltraStar-Deluxe/USDX?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/UltraStar-Deluxe/USDX.svg?branch=master)](https://travis-ci.org/UltraStar-Deluxe/USDX)
@@ -32,24 +32,24 @@ Many features have been added like party mode, theme support and support for mor
 The improved stability and code quality of USDX enabled ports to Linux and Mac OS X.
 
 ###2. Release Notes
-- New features contain 6 player on one screen capability, jukebox player, new song selection screen modes (chessboard, carousell, slot machine, Slide, List, Tile), during gameplay you can see on the time bar when there are lyrics to sing, duet mode, new party modes, support for current versions of Microsoft Windows, 
+- New features contain 6 player on one screen capability, jukebox player, new song selection screen modes (Chessboard, Carousell, Slot machine, Slide, List, Tile), during gameplay you can see on the time bar when there are lyrics to sing, duet mode, new party modes, support for current versions of Microsoft Windows, 
 - To set additional song directories change your config.ini like this:
-```
+```ini
   [Directories]
   SongDir1=C:\Users\My\Music\MyUSDXSongs
   SongDir2=F:\EvenMoreUSDXSongs
   SongDir...=... (some more directories)
 ```
-- To take a screenshot press "PrintScreen" key. Screenshots are saved in the directory "Screenshots".
-<!--- - To enable joypad support change config.ini "Joypad=Off" to "Joypad=On"--->
-- To enable 2 or 3 player each on 2 screens, disable the full screen mode, extend your desktop horizontally and set the resolution to fill one screen. Then, in the config.ini set Screens=2 and restart the game.
-- Press Alt + F[1..12] in NameScreen to save the name of a player, press F[1..12] to load the name of a player
-- The primary folder for songs on OS X is "$HOME/Music/UltraStar Deluxe", which is created when UltraStar Deluxe is run for the first time.
-- On OS X, by default the "config.ini" file is created in "$HOME/Library/Application Support/UltraStarDeluxe" when UltraStar Deluxe is run for the first time.
+- To take a screenshot press _PrintScreen_ key. Screenshots are saved in the directory `screenshots`.
+- ~~To enable joypad support change config.ini `Joypad=Off` to `Joypad=On`~~
+- To enable 2 or 3 player each on 2 screens, disable the full screen mode, extend your desktop horizontally and set the resolution to fill one screen. Then, in the config.ini set `Screens=2` and restart the game.
+- Press [Shift] + F[1..12] in _NameScreen_ to save the name of a player (alternative use [Alt] instead of [Shift], keep in mind [Alt]+[F4] quits the game on platforms like Windows), press F[1..12] to load the name of a player
+- The primary folder for songs on OS X is `$HOME/Music/UltraStar Deluxe`, which is created when UltraStar Deluxe is run for the first time.
+- On OS X, by default the `config.ini` file is created in `$HOME/Library/Application Support/UltraStarDeluxe` when UltraStar Deluxe is run for the first time.
 
 
 ###3. Command-Line Parameters
-This is currently broken / in development.
+_Note: This is currently broken / in development._
 
 
 Command-line parameters are passed to the game adding it to the path of a
@@ -57,48 +57,54 @@ shortcut or starting the game within the console.
 
 The following parameters are possible. They can be joined in any possible way.
 
-- Benchmark         : Create a benchmark.log file with start timings.
+- `-Benchmark`         : Create a benchmark.log file with start timings.
 
-- NoLog    	    : Do not create any .log files
+- `-NoLog`    	       : Do not create any .log files
 
-- Joypad            : Start with joypad support
+- `-Joypad`            : Start with joypad support
 
-- Language [ID]     : Load language [ID] on startup.
-                      Example: -Language german
+- `-Language <ID>`     : Load language [ID] on startup.
+                         Example: `-Language german`
 
-- Songpath [Path]   : Same as config Songpath.
-                      Example: -SongPath "C:\Ultrastar Songs"
+- `-Songpath <PATH>`   : Same as config Songpath.
+                         Example: `-SongPath "C:\Ultrastar Songs"`
 
-- ConfigFile [File] : Load configuration file [File] instead of config.ini.
-                      The path to the file has to exist.
-                      Example: -ConfigFile config.SongCreation.ini
+- `-ConfigFile <FILE>` : Load configuration file [File] instead of config.ini.
+                         The path to the file has to exist.
+                         Example: `-ConfigFile config.SongCreation.ini`
 
-- ScoreFile [File]  : Use [File] instead of Ultrastar.db
-                      The path to the file has to exist.
-                      Example: -ScoreFile HouseParty.db
+- `-ScoreFile <FILE>`  : Use [File] instead of Ultrastar.db
+                         The path to the file has to exist.
+                         Example: `-ScoreFile HouseParty.db`
 
-- FullScreen        : Start the game in full screen mode
+- `-FullScreen`        : Start the game in full screen mode
 
-- Depth [16/32]     : Force depth to 16 or 32. Example: -Depth 16
+- `-Depth {16|32}`     : Force depth to 16 or 32. Example: `-Depth 16`
 
-- Resolution [ID]   : Force resolution. Example: -Resolution 800x600
+- `-Resolution <ID|RESOLUTION>`   : Force resolution. Either by ID (matching an entry of the possible resolution list)
+                                    or custom resolution (with the format of `WIDTHxHEIGHT`).
+                                    Example: `-Resolution 800x600`
 
-- Screens [1/2]     : Force 1 or 2 screens. Example: -Screens 2
+- `-Screens {1|2}`     : Force 1 or 2 screens. Example: `-Screens 2`
 
 Some Examples:
 
-Start with a resolution of 1024x768, a depth of 32 bit and in full screen
-mode:
-ultrastar.exe -Resolution 1024x768 -Depth 32 -Fullscreen
+Start with a resolution of 1024x768, a depth of 32 bit and in full screen mode:  
+`ultrastar.exe -Resolution 1024x768 -Depth 32 -Fullscreen`
 
-Start without logging and with polish language
-ultrastar.exe -NoLog -Language polish
+Start without logging and with polish language  
+`ultrastar.exe -NoLog -Language polish`
 
-Start with a customs configuration file and score database:
-ultrastar.exe -ConfigFile C:\Ultrastar\Configs\PartyConfig.ini -ScoreFile C:\Ultrastar\Scores\PartyScores.db
---->
+Start with a customs configuration file and score database:  
+`ultrastar.exe -ConfigFile "C:\Ultrastar\Configs\PartyConfig.ini" -ScoreFile "C:\Ultrastar\Scores\PartyScores.db"`
 
 ###4. Controls
+####General
+|Keys | Action|
+| :--- | :--- |
+| [F11] | switch on the fly between windowed fullscreen and window mode |
+| [Alt] + [Enter] | switch to real fullscreen (including changing resolution) and window mode |
+
 ####Song
 ####Shortcuts for song selection screen
 |Keys | Action|
@@ -113,59 +119,56 @@ ultrastar.exe -ConfigFile C:\Ultrastar\Configs\PartyConfig.ini -ScoreFile C:\Ult
 | M | open the song menu |
 | P | choose a playlist for song selection |
 | R | select a random song/category |
-| [Alt] + [Letter] | jump to a artist with the first letter [Letter] |
-| [Alt] + [Shift] + [Letter] | jump to a title with the first letter [Letter] |
+| [Alt] + [_Character_] | jump to artist with the first letter/digit _Character_ \(A to Z, 0 to 9\) |
+| [Alt] + [Shift] + [_Character_] | jump to title with the first letter/digit _Character_ \(A to Z, 0 to 9\) |
 | [Spacebar] | when a duet song is selected, switch first and second voice |
 
 ####Shortcuts for song editor
 |Keys | Action|
 | :--- | :--- | 
-|arrow right	|select next syllable                                                             |
-|arrow left	|select previous syllable                                                         |
-|arrow up	|select next sentence                                                             |
-|arrow down	|select previous sentence                                                         |
-|ctrl + arrow right/left	|move only beginning of note to earlier/later                         |
-|Alt + arrow right/left	|move only ending of note to earlier/later                            |
-|Shift + arrow up/down	|change pitch of selected note                                        |
-|Shift + arrow right/left	|move the note (beginning and ending) to earlier/later            |
+| Arrow Left/Right	| select previous/next syllable                                                             |
+| Arrow Down/Up	| select previous/next syllable                                                         |
+| [Ctrl] + Arrow Right/Left	| move only beginning of note to earlier/later                         |
+| [Alt] + Arrow Right/Left	| move only ending of note to earlier/later                            |
+| [Shift] + Arrow Up/Down	| change pitch of selected note                                        |
+| [Shift] + Arrow Right/Left	| move the note (beginning and ending) to earlier/later            |
 |	                                                                                          |
-|=	|increase BPM                                                                              |
-|-	|decrease BPM                                                                              |
-|f	|toggle note freestyle/normal                                                              |
-|g	|toggle note golden/normal                                                                 |
-|t	|auto-fix timings of sentence switching                                                    |
-|v	|play audio + video and follow the lyrics                                                  |
+| =	| increase BPM                                                                              |
+| -	| decrease BPM                                                                              |
+| F	| toggle note freestyle/normal                                                              |
+| G	| toggle note golden/normal                                                                 |
+| T	| auto-fix timings of sentence switching                                                    |
+| V	| play audio + video and follow the lyrics                                                  |
 |	                                                                                          |
-|Ctrl + z	|undo last change                                                                  |
-|s	|save changes                                                                              |
-|p	|play current sentence audio                                                               |
-|Shift + P	|play current sentence midi                                                        |
-|Ctrl + Shift + P	|play current sentence audio and midi                                      |
+| [Ctrl] + Z	| undo last change                                                                  |
+| S	| save changes                                                                              |
+| P	| play current sentence audio                                                               |
+| [Shift] + P	| play current sentence midi                                                        |
+| [Ctrl] + [Shift] + P | play current sentence audio and midi                                      |
 |	                                                                                          |
 |	                                                                                          |
-|double click on a note	|split note in two parts on the beat at mouse cursor location          |
-|select and drag a note up/down	|change pitch of a note                                        |
-|select and drag a note left/right	|move the beginning beat of the note to earlier / later    |
+| double click on a note	|split note in two parts on the beat at mouse cursor location          |
+| select and drag a note up/down	|change pitch of a note                                        |
+| select and drag a note left/right	|move the beginning beat of the note to earlier / later    |
 |	                                                                                          |
-|4	|copy sentence                                                                             |
-|5 |copy sentence	                                                                              |
+| 4	| copy 4 sentence                                                                             |
+| 5 | copy 5 sentence	                                                                              |
 |	                                                                                          |
-|7	|lower video gap                                                                           |
-|8 	|increase video gap                                                                        |
-|9	|decrease GAP                                                                              |
-|0	|increase GAP                                                                              |
+| 7	| lower video gap                                                                           |
+| 8 | increase video gap                                                                        |
+| 9	| decrease GAP                                                                              |
+| 0	| increase GAP                                                                              |
 
 ####Shortcuts for sing screen
 |Keys | Action|
 | :--- | :--- |
-| s | jump forward to 5 seconds before first singing note |
-| v | switch between video, visualisation and background |
-| w | if configured and enabled, show webcam video instead as background |
-| t | toggle time displaying between total, remaining and already played time |
+| S | jump forward to 5 seconds before first singing note |
+| V | switch between video, visualisation and background |
+| W | if configured and enabled, show webcam video instead as background |
+| T | toggle time displaying between total, remaining and already played time |
 | [Tab] | switch visualization / camera mode |
 | [Spacebar] | pause / play |
 | [Esc] or [Backspace] | cancel current song or end early |
-| [F11] | switch on the fly between fullscreen and window mode |
 
 ###5. Build and Run
 Freepascal 3.0.0 or newer is required to compile UltraStar Deluxe. If you had some older version of fpc installed before, make sure to remove everything of it correctly before trying to install freepascal (otherwise compiling will fail with various weird error messages). Also, using the 3.0-development branch with current fixes is suggested.
@@ -191,27 +194,32 @@ For linking and running the game, the following libraries are also required:
 4. Now you can compile USDX by choosing the menu entry Run → Build or pressing Ctrl+F9.
 8. If you want to compile and/or start USDX directly choose Run → Run or press F9.
 
-####Compiling on linux/bsd using make
+####Compiling on Linux/BSD using make
 1. make sure all required libraries are installed 
-  * for current debian / ubuntu: sudo apt-get update && sudo apt-get install git fpc libsdl2-dev libsdl2-image-dev libsdl2-image-2.0-0 libsdl2-2.0-0 libsdl2-mixer-2.0-0 libsdl2-mixer-dev libsdl2-net-2.0-0 libsdl2-net-dev libsdl2-ttf-2.0-0 libsdl2-ttf-dev libsdl2-gfx-1.0-0 libsdl2-gfx-dev ffmpeg libavdevice-dev libsqlite3-0 libsqlite3-dev libpcre3 libpcre3-dev ttf-dejavu ttf-freefont portaudio19-dev lua5.1-dev libpng16-16 libopencv-highgui-dev libprojectm-dev
+  * for current debian / ubuntu: 
+    `sudo apt-get update && sudo apt-get install git fpc libsdl2-dev libsdl2-image-dev libsdl2-image-2.0-0 libsdl2-2.0-0 libsdl2-mixer-2.0-0 libsdl2-mixer-dev libsdl2-net-2.0-0 libsdl2-net-dev libsdl2-ttf-2.0-0 libsdl2-ttf-dev libsdl2-gfx-1.0-0 libsdl2-gfx-dev ffmpeg libavdevice-dev libsqlite3-0 libsqlite3-dev libpcre3 libpcre3-dev ttf-dejavu ttf-freefont portaudio19-dev lua5.1-dev libpng16-16 libopencv-highgui-dev libprojectm-dev`
   * for arch linux there is an aur package called [ultrastardx-git](https://aur.archlinux.org/packages/ultrastardx-git)
-2. git clone https://github.com/UltraStar-Deluxe/USDX
-2. cd USDX
-3. ./configure (or use autoconf)
-4. make
-5. sudo make install
-6. ultrastardx
+2. `git clone https://github.com/UltraStar-Deluxe/USDX`
+2. `cd USDX`
+3. `./configure` (or use _autoconf_)
+4. `make`
+6. Play the game, 
+   * install the game and start it
+     - `sudo make install`
+     - `ultrastardx`
+   * or start it directly  
+     `./game/ultrastardx`
 
 ####Compiling on OS X
-- USDX Is built using Homebrew and official FreePascal build
-- You can install Homebrew from http://brew.sh
-- You can get the FPC build from http://www.freepascal.org/down/i386/macosx.var
-- Don't miss XQuartz from http://www.xquartz.org
+- USDX is built using _Homebrew_ and official _FreePascal build_ (using its compiler _FPC_)
+- You can install Homebrew from [brew.sh](http://brew.sh)
+- You can get the FPC build from [freepascal.org](http://www.freepascal.org/down/i386/macosx.var)
+- Don't miss _XQuartz_ from [xquartz.org](http://www.xquartz.org)
 - Needed brew libraries can be installed using:
-  * brew install sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_net sdl2_ttf ffmpeg libav portaudio binutils sqlite freetype libpng pcre lua libtiff
-  * brew switch ffmpeg 2.8.6
-- Pass argument --enable-osx-fink or --enable-osx-brew (default) according to the packaging you are using
-- ./configure
-- make macosx-standalone-app
+  * `brew install sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_net sdl2_ttf ffmpeg libav portaudio binutils sqlite freetype libpng pcre lua libtiff`
+  * `brew switch ffmpeg 2.8.6`
+- Pass argument `--enable-osx-fink` or `--enable-osx-brew` (default) according to the packaging you are using
+- `./configure`
+- `make macosx-standalone-app`
 
 Feel free to fork this project, modify it to your hearts content and maybe also do pull requests to this repository for additional features, improvements or clean-ups.
