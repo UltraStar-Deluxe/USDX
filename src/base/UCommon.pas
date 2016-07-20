@@ -75,8 +75,6 @@ function StringDeleteFromArray(var InStrings: TUTF8StringDynArray; const InIndex
 
 function GetStringWithNoAccents(str: String):String;
 
-function ifthen(val:boolean;const iftrue:string ; const iffalse:string = ''):string;  inline; overload;
-
 type
   TRGB = record
     R: single;
@@ -240,11 +238,6 @@ begin
   end;
 
   Result := str;
-end;
-
-function ifthen(val:boolean;const iftrue:string; const iffalse:string = '') :string;
-begin
-  if val then result:=iftrue else result:=iffalse;
 end;
 
 function RGBToHex(R, G, B: integer): string;

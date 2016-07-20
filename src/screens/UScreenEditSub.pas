@@ -38,6 +38,7 @@ uses
   UMusic,
   sdl2,
   SysUtils,
+  strutils,
   UFiles,
   UGraphicClasses,
   UTime,
