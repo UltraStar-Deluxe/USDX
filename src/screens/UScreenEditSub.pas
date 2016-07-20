@@ -285,6 +285,7 @@ type
       //video view
       procedure StartVideoPreview();
       procedure StopVideoPreview();
+      procedure UpdateVideoPosition(NewPosition: real);
       //Note Name Mod
       function GetNoteName(Note: integer): string;
       // show transparent background note for intaractions
@@ -513,6 +514,9 @@ begin
               Click := false;
               AudioPlayback.Position := CurrentSong.PreviewStart;
               AudioPlayback.Play;
+
+              // play video in sync if visible
+              if (fCurrentVideo <> nil) then UpdateVideoPosition(AudioPlayback.Position);
             end
             else if SDL_ModState = 0 then
             begin // jump to preview start
@@ -691,6 +695,9 @@ begin
                 PlaySentence := true;
                 Click := false;
                 AudioPlayback.Play;
+
+                // play video in sync if visible
+                if (fCurrentVideo <> nil) then UpdateVideoPosition(AudioPlayback.Position);
               end;
             end;
           end;
@@ -3042,6 +3049,15 @@ begin
   begin
     fCurrentVideo.Stop();
     fCurrentVideo := nil;
+  end;
+end;
+
+procedure TScreenEditSub.UpdateVideoPosition(NewPosition: real);
+begin
+  if (fCurrentVideo <> nil) then
+  begin
+    fCurrentVideo.Position := CurrentSong.VideoGAP + NewPosition;
+    fCurrentVideo.Play;
   end;
 end;
 
