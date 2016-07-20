@@ -67,6 +67,7 @@ type
     Preview: TPos;
     isStart: boolean;   //start beat is declared
     isEnd: boolean;     //end beat is declared
+    isCustom: boolean;
   end;
 
   TVisibleHeaders = record
@@ -289,7 +290,8 @@ type
       // show transparent background note for intaractions
       procedure ShowInteractiveBackground;
 
-      function GetMedleyLength: real; //returns if availible the length of the medley in seconds, else 0
+      procedure UpdateMedleyInfo;
+      function GetMedleyLength: real; //if available returns the length of the medley in seconds, otherwise 0
 
     public
       Tex_PrevBackground:     TTexture;
@@ -429,6 +431,7 @@ begin
           end
           else }
           if (MedleyNotes.isStart and MedleyNotes.isEnd) and
+             MedleyNotes.isCustom and
             (MedleyNotes.start.line < MedleyNotes.end_.line) and
             (Length(Lines[0].Line)> MedleyNotes.end_.line) and
             (Length(Lines[0].Line[MedleyNotes.end_.line].Note)>MedleyNotes.end_.note) and
@@ -440,7 +443,7 @@ begin
               Lines[0].Line[MedleyNotes.end_.line].Note[MedleyNotes.end_.note].Length;
             CurrentSong.Medley.FadeIn_time := DEFAULT_FADE_IN_TIME;
             CurrentSong.Medley.FadeOut_time := DEFAULT_FADE_OUT_TIME;
-          end else
+          end else if MedleyNotes.isCustom then
           begin
             CurrentSong.Medley.Source := msNone;
             CurrentSong.Medley.StartBeat:=0;
@@ -502,6 +505,7 @@ begin
           end;
           }
 
+          MedleyNotes.isCustom := true;
           if SDL_ModState = KMOD_LSHIFT then //Medley End Note
           begin
             if MedleyNotes.isEnd then
@@ -552,8 +556,7 @@ begin
             end;
           end;
 
-          //show length of medley
-          Text[TextDebug].Text := FormatFloat('MedleyLength: #0.00s', GetMedleyLength);
+          UpdateMedleyInfo;
           Exit;
         end;
 
@@ -573,6 +576,14 @@ begin
             Exit;
           end;
           }
+
+          if not MedleyNotes.IsEnd and not MedleyNotes.IsStart then
+          begin
+            // TODO: localize popup message for medley without start/end beat
+            ScreenPopupError.ShowPopup('No Medley section set. Check your txt file or set it with A and Shift+A.');
+            Exit;
+          end;
+
           if (SDL_ModState = KMOD_LSHIFT) and MedleyNotes.IsEnd then //Medley End Note
           begin
             {$IFDEF UseMIDIPort} MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
@@ -649,8 +660,9 @@ begin
             end;
           end;
 
-          //show length of medley
-          Text[TextDebug].Text := FormatFloat('MedleyLength: #0.00s', GetMedleyLength);
+          GoldenRec.KillAll;
+          ShowInteractiveBackground;
+          UpdateMedleyInfo;
           Exit;
         end;
 
@@ -3162,6 +3174,69 @@ var
   FileExt: IPath;
   Files: TPathDynArray;
   i: integer;
+
+  function IsBeatMatchingNote(beat: integer; Note: TLineFragment): boolean;
+  begin
+    Result := InRange(beat, Note.Start, Note.Start+Note.Length);
+  end;
+
+  // borrowed from TScreenSing.LoadNextSong
+  function FindNote(beat: integer): TPos;
+  var
+    line:  integer;
+    note:  integer;
+    diff, mindiff: integer;
+
+  begin
+    for line := 0 to length(Lines[0].Line) - 1 do
+    begin
+      for note := 0 to length(Lines[0].Line[line].Note) - 1 do
+      begin
+        if IsBeatMatchingNote(beat, Lines[0].Line[line].Note[note]) then
+        begin
+          Result.cp := 0;
+          Result.line := line;
+          Result.note := note;
+          Exit;
+        end;
+
+        diff := abs(Lines[0].Line[line].Note[note].Start - beat);
+        if diff < mindiff then
+        begin
+          mindiff := diff;
+          Result.line := line;
+          Result.note := note;
+        end;
+      end;
+    end;
+
+    //second try (approximating)
+    mindiff := high(integer);
+    for line := 0 to length(Lines[0].Line) - 1 do
+    begin
+      for note := 0 to length(Lines[0].Line[line].Note) - 1 do
+      begin
+        diff := abs(Lines[0].Line[line].Note[note].Start - beat);
+        if diff < mindiff then
+        begin
+          mindiff := diff;
+          Result.line := line;
+          Result.note := note;
+        end;
+      end;
+    end;
+
+    // return approximated note
+    if diff > 0 then
+    begin
+      Result.cp := 0;
+      Exit;
+    end;
+
+    Result.cp := 0;
+    Result.line := -1;
+    Result.note := -1;
+  end;
 begin
   inherited;
   // reset video playback engine
@@ -3191,8 +3266,10 @@ begin
     begin
       // reread header with custom tags
       Error := not CurrentSong.Analyse(true, false);
-      if not Error then
-        Error := not CurrentSong.LoadSong(false);
+
+      // with the duet/medley code, TSong.Analyse is already loading the song
+      //if not Error then
+      //  Error := not CurrentSong.LoadSong(false);
     end;
   except
     Error := true;
@@ -3364,6 +3441,17 @@ begin
     AudioPlayBack.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
     //Set Down Music Volume for Better hearability of Midi Sounds
     //Music.SetVolume(0.4);
+
+    // finding the note for the Medley section
+    MedleyNotes := Default(TMedleyNotes);
+    if (CurrentSong.Medley.Source = msTag) then
+    begin
+      if (CurrentSong.Medley.EndBeat > 0) then MedleyNotes.end_ := FindNote(CurrentSong.Medley.EndBeat);
+      if (CurrentSong.Medley.EndBeat > CurrentSong.Medley.StartBeat) then MedleyNotes.start := FindNote(CurrentSong.Medley.StartBeat);
+
+      MedleyNotes.isEnd := (MedleyNotes.end_.line > 0) or (MedleyNotes.end_.note >= 0);
+      MedleyNotes.isStart:= (MedleyNotes.start.line > 0) or (MedleyNotes.start.note >= 0);
+    end;
 
     Lyric.Clear;
     Lyric.X := 400;
@@ -3753,6 +3841,19 @@ begin
       GetTimeFromBeat(Lines[0].Line[MedleyNotes.start.line].Note[MedleyNotes.start.note].Start);
   end else
     Result := 0;
+end;
+
+procedure TScreenEditSub.UpdateMedleyInfo;
+begin
+  if not MedleyNotes.IsStart and not MedleyNotes.IsEnd then
+    Text[TextDebug].Text := ''
+  else if not MedleyNotes.IsStart then
+    Text[TextDebug].Text := Format('No Medley start beat.%s', [ifthen(MedleyNotes.IsEnd, Format(' End beat is at %d', [Lines[0].Line[MedleyNotes.end_.line].Note[MedleyNotes.end_.note].Start]))])
+  else if not MedleyNotes.IsEnd then
+    Text[TextDebug].Text := Format('No Medley end beat.%s', [ifthen(MedleyNotes.IsStart, Format(' Start beat is at %d', [Lines[0].Line[MedleyNotes.start.line].Note[MedleyNotes.start.note].Start]))])
+  else
+    Text[TextDebug].Text := Format('MedleyLength: %0.2fs %s', [GetMedleyLength, ifthen(MedleyNotes.isCustom, '(custom)', '(txt)')]);
+
 end;
 
 end.
