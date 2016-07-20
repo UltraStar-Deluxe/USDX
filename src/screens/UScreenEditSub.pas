@@ -640,54 +640,40 @@ begin
 
           if (SDL_ModState = KMOD_LSHIFT) and MedleyNotes.IsEnd then //Medley End Note
           begin
-            {$IFDEF UseMIDIPort} MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
-            PlaySentenceMidi := false;
-            PlayOneMidi := false; {$ENDIF}
-            AudioPlayback.Stop;
-            PlaySentence := false;
-            PlayOne := false;
+            // simulate sentence switch to clear props
+            PreviousSentence;
 
-            if (Length(Lines[0].Line)> MedleyNotes.end_.line) and
-              (Length(Lines[0].Line[MedleyNotes.end_.line].Note)>MedleyNotes.end_.note) then
+            if (Length(Lines[0].Line) > MedleyNotes.end_.line) and
+               (Length(Lines[0].Line[MedleyNotes.end_.line].Note) > MedleyNotes.end_.note) then
             begin
-              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
               Lines[0].Current := MedleyNotes.end_.line;
               CurrentNote := MedleyNotes.end_.note;
               Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
 
-              //EditorLyric[0].AddCzesc(0, Lines[0].Current);
-              //EditorLyric[0].Selected := AktNuta[0];
+              Lyric.AddLine(Lines[0].Current);
+              Lyric.Selected := 0;
             end;
           end else if MedleyNotes.IsStart then
           begin
-            {$IFDEF UseMIDIPort} MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[MidiLastNote].Tone + 60, 127);
-            PlaySentenceMidi := false;
-            PlayOneMidi := false; {$ENDIF}
-            AudioPlayback.Stop;
-            PlaySentence := false;
-            PlayOne := false;
+            // simulate sentence switch to clear props
+            PreviousSentence;
 
             if (Length(Lines[0].Line)> MedleyNotes.start.line) and
-              (Length(Lines[0].Line[MedleyNotes.start.line].Note)>MedleyNotes.start.note) then
+               (Length(Lines[0].Line[MedleyNotes.start.line].Note) > MedleyNotes.start.note) then
             begin
-              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 0;
               Lines[0].Current := MedleyNotes.start.line;
               CurrentNote := MedleyNotes.start.note;
               Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
 
-              //EditorLyric[0].AddCzesc(0, Lines[0].Akt);
-              //EditorLyric[0].Selected := AktNuta[0];
+              Lyric.AddLine(Lines[0].Current);
+              Lyric.Selected := 0;
             end;
           end;
 
           if (SDL_ModState = KMOD_LALT) then
           begin
-            PlaySentenceMidi := false;
-            PlayOneMidi := false;
-            PlayOne := false;
-            AudioPlayback.Stop;
-            //LineChanged[0]:=false;
-            //LineChanged[1]:=false;
+            // simulate sentence switch to clear props
+            PreviousSentence;
 
             if (MedleyNotes.isStart and MedleyNotes.isEnd) and
               (MedleyNotes.start.line < MedleyNotes.end_.line) and
@@ -696,26 +682,19 @@ begin
               (Length(Lines[0].Line[MedleyNotes.start.line].Note)>MedleyNotes.start.note) then
             begin
               R := GetTimeFromBeat(Lines[0].Line[MedleyNotes.start.line].Note[MedleyNotes.start.note].Start);
-              if R <= AudioPlayback.Length then
+              if InRange(R, 0.0, AudioPlayback.Length) then
               begin
                 AudioPlayback.Position:= R;
-
-                //noteStart := AktNuta[0];
-                //lineStart := Lines[0].Akt;
-                //cpStart := 0;
-
                 PlayStopTime := GetTimeFromBeat(
                   Lines[0].Line[MedleyNotes.end_.line].Note[MedleyNotes.end_.note].Start +
                   Lines[0].Line[MedleyNotes.end_.line].Note[MedleyNotes.end_.note].Length);
                 PlaySentence := true;
+                Click := false;
                 AudioPlayback.Play;
-                LastClick := Lines[0].Line[MedleyNotes.start.line].Note[MedleyNotes.start.note].Start-1;
               end;
             end;
           end;
 
-          GoldenRec.KillAll;
-          ShowInteractiveBackground;
           UpdateMedleyInfo;
           Exit;
         end;
