@@ -488,6 +488,60 @@ begin
           Exit;
         end;
 
+      // set PreviewStart tag
+      SDLK_I:
+        begin
+          if SDL_ModState and KMOD_SHIFT <> 0 then
+          begin
+            // set preview start
+            R := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[CurrentNote].End_);
+            CurrentSong.PreviewStart := ifthen(CurrentSong.PreviewStart <> R, R, -1);
+            CurrentSong.HasPreview := CurrentSong.PreviewStart >= 0.0;
+            Text[TextDebug].Text := ifthen(CurrentSong.HasPreview, Format('Preview start set at %0.2fs', [CurrentSong.PreviewStart]), 'Preview start cleared');
+          end
+          else if InRange(CurrentSong.PreviewStart, 0.0, AudioPlayback.Length) then
+          begin
+            if SDL_ModState = KMOD_LALT then
+            begin // jump and play
+              // simulate sentence switch to clear props
+              PreviousSentence;
+
+              Lines[0].Current := 0; // update lyric
+
+              PlayStopTime := AudioPlayback.Length;
+              PlaySentence := true;
+              Click := false;
+              AudioPlayback.Position := CurrentSong.PreviewStart;
+              AudioPlayback.Play;
+            end
+            else if SDL_ModState = 0 then
+            begin // jump to preview start
+              // simulate sentence switch to clear props
+              PreviousSentence;
+
+              AktBeat := Floor(GetMidBeat(CurrentSong.PreviewStart - (CurrentSong.GAP) / 1000));
+              i := 0; while (i <= Lines[0].High) and (AktBeat > Lines[0].Line[i].End_) do Inc(i);
+              if i <= High(Lines[0].Line) then
+              begin
+                Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
+                Lines[0].Current := i;
+
+                // finding the right note
+                CurrentNote := 0;
+                while (CurrentNote <= Lines[0].Line[i].HighNote) and (AktBeat > Lines[0].Line[i].Note[CurrentNote].End_) do Inc(CurrentNote);
+
+                Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 2;
+                Lyric.AddLine(Lines[0].Current);
+                Lyric.Selected := 0;
+
+                Text[TextDebug].Text := Format('Preview starts at %0.2fs', [CurrentSong.PreviewStart]);
+              end;
+            end;
+          end
+          else Text[TextDebug].Text := 'No preview start';
+          Exit;
+        end;
+
       // set Medley tags
       SDLK_A:
         begin

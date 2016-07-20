@@ -146,6 +146,10 @@ Start with a customs configuration file and score database:
 | [Shift] + P	| play current sentence midi                                                        |
 | [Ctrl] + [Shift] + P | play current sentence audio and midi                                      |
 |	                                                                                          |
+| I | jump to preview start                                                                   |
+| [Alt] + I | play audio starting from the preview start                                      |
+| [Shift] + I | set a new preview start at the current note's time                            |
+|	                                                                                          |
 |	                                                                                          |
 | double click on a note	|split note in two parts on the beat at mouse cursor location          |
 | select and drag a note up/down	|change pitch of a note                                        |
