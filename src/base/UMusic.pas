@@ -97,6 +97,13 @@ type
     IsMedley:   boolean;     //just for editor
     IsStartPreview: boolean; //just for editor
 
+    private
+    function GetEnd:integer;
+
+    public
+    property End_:integer read GetEnd;
+
+
   end;
 
   (**
@@ -1294,6 +1301,12 @@ procedure TAudioVoiceStream.SetLoop(Enabled: boolean);
 begin
 end;
 
+{ TLineFragment }
+
+function TLineFragment.GetEnd(): integer;
+begin
+  Result := Start+Length;
+end;
 
 { TLine }
 
