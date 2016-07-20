@@ -155,7 +155,7 @@ begin
       if Song.Finish      <> 0    then    SongFile.WriteLine('#END:'         + IntToStr(Song.Finish));
       if Relative                 then    SongFile.WriteLine('#RELATIVE:yes');
 
-      if Song.HasPreview and (Song.PreviewStart > 0.0) then
+      if Song.HasPreview and (Song.PreviewStart >= 0.0) then // also allow writing 0.0 preview if set
         SongFile.WriteLine('#PREVIEWSTART:' + FloatToStr(Song.PreviewStart));
 
       if (Song.Medley.Source=msTag) and not Relative and (Song.Medley.EndBeat - Song.Medley.StartBeat > 0) then
