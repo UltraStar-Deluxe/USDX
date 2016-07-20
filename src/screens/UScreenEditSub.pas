@@ -771,19 +771,41 @@ begin
         end;
       SDLK_V:
         begin
-          if SDL_ModState = 0 then
+          if (SDL_ModState = 0) or (SDL_ModState = KMOD_LALT) then
           begin
-              AudioPlayback.Stop;
-              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
-              CurrentNote := 0;
-              AudioPlayback.Position := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[0].Start);
-              PlayStopTime := GetTimeFromBeat(Lines[0].Line[Lines[0].High].End_);
-              PlaySentence := true;
-              AudioPlayback.Play;
-              LastClick := -100;
+            if fCurrentVideo <> nil then
+            begin
+              PlayVideo := false;
+              StopVideoPreview();
+            end
+            else
+            begin
               PlayVideo := true;
               StartVideoPreview();
-              Text[TextDebug].Text := Language.Translate('INFO_PLAY_SONG');
+
+              if PlaySentence then // TODO: use and create audio interface properties/functions like IsPlaying (AudioPlayback.IsPlaying)
+              begin
+                UpdateVideoPosition(AudioPlayback.Position);
+              end
+              else
+              begin
+                AudioPlayback.Stop;
+                CurrentNote := 0;
+                with Lines[0].Line[Lines[0].Current] do
+                begin
+                  Note[CurrentNote].Color := 1;
+                  AudioPlayback.Position := GetTimeFromBeat(Note[0].Start);
+                  PlayStopTime := ifthen(SDL_ModState = KMOD_LALT,
+                                       GetTimeFromBeat(Lines[0].Line[Lines[0].High].End_),
+                                       GetTimeFromBeat(Note[High(Note)].End_));
+                end;
+                PlaySentence := true;
+                AudioPlayback.Play;
+                LastClick := -100;
+                StartVideoPreview();
+                Text[TextDebug].Text := Language.Translate('INFO_PLAY_SONG');
+              end;
+            end;
           end;
           // Paste text
           if SDL_ModState = KMOD_LCTRL then
