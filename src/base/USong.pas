@@ -157,6 +157,7 @@ type
     
     Encoding:   TEncoding;
     PreviewStart: real;   // in seconds
+    HasPreview: boolean;  // set if a valid PreviewStart was read
     CalcMedley: boolean;  // if true => do not calc medley for that song
     Medley:     TMedley;  // medley params
 
@@ -1251,7 +1252,10 @@ begin
       begin
         self.PreviewStart := StrToFloatI18n( Value );
         if (self.PreviewStart>0) then
+        begin
           MedleyFlags := MedleyFlags or 1;
+          HasPreview := true;
+        end;
       end
 
       // MedleyStartBeat

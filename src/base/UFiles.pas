@@ -148,15 +148,17 @@ begin
       if Song.Background.IsSet then    SongFile.WriteLine('#BACKGROUND:'  + EncodeToken(Song.Background.ToUTF8));
       if Song.Video.IsSet      then    SongFile.WriteLine('#VIDEO:'       + EncodeToken(Song.Video.ToUTF8));
 
-      if Song.VideoGAP    <> 0  then    SongFile.WriteLine('#VIDEOGAP:'    + FloatToStr(Song.VideoGAP));
-      if Song.Resolution  <> 4  then    SongFile.WriteLine('#RESOLUTION:'  + IntToStr(Song.Resolution));
-      if Song.NotesGAP    <> 0  then    SongFile.WriteLine('#NOTESGAP:'    + IntToStr(Song.NotesGAP));
-      if Song.Start       <> 0  then    SongFile.WriteLine('#START:'       + FloatToStr(Song.Start));
-      if Song.Finish      <> 0  then    SongFile.WriteLine('#END:'         + IntToStr(Song.Finish));
-      if Relative               then    SongFile.WriteLine('#RELATIVE:yes');
+      if Song.VideoGAP    <> 0.0  then    SongFile.WriteLine('#VIDEOGAP:'    + FloatToStr(Song.VideoGAP));
+      if Song.Resolution  <> 4    then    SongFile.WriteLine('#RESOLUTION:'  + IntToStr(Song.Resolution));
+      if Song.NotesGAP    <> 0    then    SongFile.WriteLine('#NOTESGAP:'    + IntToStr(Song.NotesGAP));
+      if Song.Start       <> 0.0  then    SongFile.WriteLine('#START:'       + FloatToStr(Song.Start));
+      if Song.Finish      <> 0    then    SongFile.WriteLine('#END:'         + IntToStr(Song.Finish));
+      if Relative                 then    SongFile.WriteLine('#RELATIVE:yes');
+
+      if Song.HasPreview and (Song.PreviewStart > 0.0) then
+        SongFile.WriteLine('#PREVIEWSTART:' + FloatToStr(Song.PreviewStart));
 
       if (Song.Medley.Source=msTag) and not Relative and (Song.Medley.EndBeat - Song.Medley.StartBeat > 0) then
-      //if (Song.Medley.Source=msTag) and not Relative and (Song.Medley.EndBeat - Song.Medley.StartBeat > 0) then
       begin
         SongFile.WriteLine('#MedleyStartBeat:' + IntToStr(Song.Medley.StartBeat));
         SongFile.WriteLine('#MedleyEndBeat:' + IntToStr(Song.Medley.EndBeat));
