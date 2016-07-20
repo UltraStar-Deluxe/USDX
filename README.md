@@ -146,9 +146,15 @@ Start with a customs configuration file and score database:
 | [Shift] + P	| play current sentence midi                                                        |
 | [Ctrl] + [Shift] + P | play current sentence audio and midi                                      |
 |	                                                                                          |
+| A | set/clear medley start beat                                                             |
+| [Shift] + A | set/clear medley end beat                                                     |
+| J | jump to medley start beat                                                               |
+| [Shift] + J | jump to medley end beat                                                       |
+| [Alt] + J | play medley (starting from medley start, ending at medley end)                  |
+|	                                                                                          |
 | I | jump to preview start                                                                   |
 | [Alt] + I | play audio starting from the preview start                                      |
-| [Shift] + I | set a new preview start at the current note's time                            |
+| [Shift] + I | set/clear preview start at the current note's time                            |
 |	                                                                                          |
 |	                                                                                          |
 | double click on a note	|split note in two parts on the beat at mouse cursor location          |
