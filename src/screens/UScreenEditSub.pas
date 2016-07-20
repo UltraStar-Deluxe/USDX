@@ -3617,11 +3617,12 @@ begin
     if (PlaySentence or PlayVideo) then
       AktBeat := Floor(GetMidBeat(AudioPlayback.Position - (CurrentSong.GAP) / 1000));
 
+    // store current line, find next line to given beat
     lastline := Lines[0].Current;
-    repeat              //find current line
-    if Lines[0].Line[Lines[0].Current].End_ < AktBeat then
+    while (Lines[0].Current < High(Lines[0].Line)) and (Lines[0].Line[Lines[0].Current].End_ < AktBeat) do
       inc(Lines[0].Current);
-    until ((Length(Lines[0].Line) = Lines[0].Current) or (Lines[0].Line[Lines[0].Current].End_ >= AktBeat));
+
+    // only update lyric if line changes
     if Lines[0].Current <> lastline then
     begin
         Lines[0].Line[lastline].Note[CurrentNote].Color := 1;
