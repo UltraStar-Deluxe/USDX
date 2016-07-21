@@ -1228,13 +1228,14 @@ begin
 
   {*
    * == Background ==
-   * We have four types of backgrounds:
+   * We have five types of backgrounds:
    *   + Blank        : Nothing has been set, this is our fallback
    *   + Picture      : Picture has been set, and exists - otherwise we fallback
    *   + Video        : Video has been set, and exists - otherwise we fallback
-   *   + Visualization: + Off        : No visualization
-   *                    + WhenNoVideo: Overwrites blank and picture
-   *                    + On         : Overwrites blank, picture and video
+   *   + Visualization: + Off                 : No visualization
+   *                    + WhenNoVideo         : Overwrites blank and picture
+   *                    + WhenNoVideoAndImage : Overwrites blank
+   *                    + On                  : Overwrites blank, picture and video
    *}
 
   {*
@@ -1285,12 +1286,24 @@ begin
     fCurrentVideo := Visualization.Open(PATH_NONE);
     if (fCurrentVideo <> nil) then
       fCurrentVideo.Play;
-  end;
+  end
+
+  {*
+   * set background to: visualization (if video and image is not set)
+   *}
+  else if (TVisualizerOption(Ini.VisualizerOption) in [voWhenNoVideoAndImage]) and
+     (not CurrentSong.Background.IsSet) and (fVideoClip = nil) then
+  begin
+    fShowVisualization := true;
+    fCurrentVideo := Visualization.Open(PATH_NONE);
+    if fCurrentVideo <> nil then
+      fCurrentVideo.Play;
+  end
 
   {*
    * set background to: visualization (Videos are still shown)
    *}
-  if ((TVisualizerOption(Ini.VisualizerOption) in [voWhenNoVideo]) and
+  else if ((TVisualizerOption(Ini.VisualizerOption) in [voWhenNoVideo]) and
      (fVideoClip = nil)) then
   begin
     fShowVisualization := true;
