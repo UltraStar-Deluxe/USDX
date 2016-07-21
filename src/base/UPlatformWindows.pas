@@ -37,6 +37,7 @@ interface
 {$WARN SYMBOL_PLATFORM OFF}
 
 uses
+  Windows,
   Classes,
   UPlatform,
   UPath;
@@ -57,12 +58,14 @@ type
       function GetGameUserPath: IPath; override;
   end;
 
+  function GetConsoleWindow: THandle; stdcall; external kernel32 name 'GetConsoleWindow';
+  function HasConsole: Boolean;
+
 implementation
 
 uses
   SysUtils,
   ShlObj,
-  Windows,
   UConfig;
 
 procedure TPlatformWindows.Init;
@@ -204,6 +207,11 @@ begin
     Result := GetExecutionDir()
   else
     Result := GetSpecialPath(CSIDL_APPDATA).Append('ultrastardx', pdAppend);
+end;
+
+function HasConsole: Boolean;
+begin
+  Result := GetConsoleWindow <> 0;
 end;
 
 end.

@@ -39,6 +39,7 @@ uses
   Classes,
   {$IFDEF MSWINDOWS}
   Windows,
+  UPlatformWindows,
   {$ENDIF}
   UConfig,
   ULog,
@@ -419,7 +420,7 @@ begin
   Log.LogConsole(aString);
   {$IFDEF MSWINDOWS}
   // sanity check to avoid crashes with writeln()
-  if (IsConsole) then
+  if IsConsole and HasConsole then
   begin
   {$ENDIF}
     Writeln(aString);
