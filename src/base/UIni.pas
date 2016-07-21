@@ -83,7 +83,7 @@ type
 
 //Options
 
-  TVisualizerOption      = (voOff, voWhenNoVideo, voOn);
+  TVisualizerOption      = (voOff, voWhenNoVideo, voWhenNoVideoAndImage, voOn);
   TBackgroundMusicOption = (bmoOff, bmoOn);
   TSongMenuMode = ( smRoulette, smChessboard, smCarousel, smSlotMachine, smSlide, smList, smMosaic);
 
@@ -336,7 +336,7 @@ const
   ISplit:            array[0..1] of UTF8String  = ('Off', 'On');
   IFullScreen:       array[0..2] of UTF8String  = ('Off', 'On', 'Borderless');
   IDepth:            array[0..1] of UTF8String  = ('16 bit', '32 bit');
-  IVisualizer:       array[0..2] of UTF8String  = ('Off', 'WhenNoVideo','On');
+  IVisualizer:       array[0..3] of UTF8String  = ('Off', 'WhenNoVideo', 'WhenNoVideoAndImage', 'On');
 
   IBackgroundMusic:  array[0..1] of UTF8String  = ('Off', 'On');
 
@@ -467,7 +467,7 @@ var
   IDebugTranslated:            array[0..1] of UTF8String  = ('Off', 'On');
 
   IFullScreenTranslated:       array[0..2] of UTF8String  = ('Off', 'On', 'Borderless');
-  IVisualizerTranslated:       array[0..2] of UTF8String  = ('Off', 'WhenNoVideo','On');
+  IVisualizerTranslated:       array[0..3] of UTF8String  = ('Off', 'WhenNoVideo', 'WhenNoVideoAndImage','On');
 
   IBackgroundMusicTranslated:  array[0..1] of UTF8String  = ('Off', 'On');
   ISingWindowTranslated:       array[0..1] of UTF8String  = ('Small', 'Big');
@@ -639,7 +639,8 @@ begin
 
   IVisualizerTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IVisualizerTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_WHENNOVIDEO');
-  IVisualizerTranslated[2]            := ULanguage.Language.Translate('OPTION_VALUE_ON');
+  IVisualizerTranslated[2]            := ULanguage.Language.Translate('OPTION_VALUE_WHENNOVIDEOANDIMAGE');
+  IVisualizerTranslated[3]            := ULanguage.Language.Translate('OPTION_VALUE_ON');
 
   IBackgroundMusicTranslated[0]       := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IBackgroundMusicTranslated[1]       := ULanguage.Language.Translate('OPTION_VALUE_ON');
