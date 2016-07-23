@@ -187,47 +187,47 @@ begin
 
   AddButton(Theme.Options.ButtonGame);
   if (Length(Button[0].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[0]);
+    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_GAME]);
 
   AddButton(Theme.Options.ButtonGraphics);
   if (Length(Button[1].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[1]);
+    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_GRAPHICS]);
 
   AddButton(Theme.Options.ButtonSound);
   if (Length(Button[2].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[2]);
+    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_SOUND]);
 
   AddButton(Theme.Options.ButtonLyrics);
   if (Length(Button[3].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[3]);
+    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_LYRICS]);
 
   AddButton(Theme.Options.ButtonThemes);
   if (Length(Button[4].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[4]);
+    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_THEMES]);
 
   AddButton(Theme.Options.ButtonRecord);
   if (Length(Button[5].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[5]);
+    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_RECORD]);
 
   AddButton(Theme.Options.ButtonAdvanced);
   if (Length(Button[6].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[6]);
+    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_ADVANCED]);
 
   AddButton(Theme.Options.ButtonNetwork);
   if (Length(Button[7].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[7]);
+    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_NETWORK]);
 
   AddButton(Theme.Options.ButtonWebcam);
   if (Length(Button[8].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[8]);
+    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_WEBCAM]);
 
   AddButton(Theme.Options.ButtonJukebox);
   if (Length(Button[9].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[9]);
+    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_JUKEBOX]);
 
   AddButton(Theme.Options.ButtonExit);
   if (Length(Button[10].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[10]);
+    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_BACK]);
 
   Interaction := 0;
 end;
@@ -242,24 +242,32 @@ end;
 procedure TScreenOptions.InteractNext;
 begin
   inherited InteractNext;
+
+  // TODO: Access Theme.Options.Description array by mapped interaction to ID index
   Text[TextDescription].Text := Theme.Options.Description[Interaction];
 end;
 
 procedure TScreenOptions.InteractPrev;
 begin
   inherited InteractPrev;
+
+  // TODO: Access Theme.Options.Description array by mapped interaction to ID index
   Text[TextDescription].Text := Theme.Options.Description[Interaction];
 end;
 
 procedure TScreenOptions.InteractNextRow;
 begin
   inherited InteractNextRow;
+
+  // TODO: Access Theme.Options.Description array by mapped interaction to ID index
   Text[TextDescription].Text := Theme.Options.Description[Interaction];
 end;
 
 procedure TScreenOptions.InteractPrevRow;
 begin
   inherited InteractPrevRow;
+
+  // TODO: Access Theme.Options.Description array by mapped interaction to ID index
   Text[TextDescription].Text := Theme.Options.Description[Interaction];
 end;
 

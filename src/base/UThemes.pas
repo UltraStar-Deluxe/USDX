@@ -67,6 +67,18 @@ const
     Alpha:  1.0
   );
 
+  OPTIONS_DESC_INDEX_BACK      = 0;
+  OPTIONS_DESC_INDEX_GAME      = 1;
+  OPTIONS_DESC_INDEX_GRAPHICS  = 2;
+  OPTIONS_DESC_INDEX_SOUND     = 3;
+  OPTIONS_DESC_INDEX_LYRICS    = 4;
+  OPTIONS_DESC_INDEX_THEMES    = 5;
+  OPTIONS_DESC_INDEX_RECORD    = 6;
+  OPTIONS_DESC_INDEX_ADVANCED  = 7;
+  OPTIONS_DESC_INDEX_NETWORK   = 8;
+  OPTIONS_DESC_INDEX_WEBCAM    = 9;
+  OPTIONS_DESC_INDEX_JUKEBOX   = 10;
+
 
 type
   TThemePosition = record
@@ -2193,20 +2205,21 @@ begin
       ThemeLoadButton(Options.ButtonJukebox,  'OptionsButtonJukebox');
       ThemeLoadButton(Options.ButtonExit,     'OptionsButtonExit');
 
-      Options.Description[0] := Language.Translate('SING_OPTIONS_GAME_DESC');
-      Options.Description[1] := Language.Translate('SING_OPTIONS_GRAPHICS_DESC');
-      Options.Description[2] := Language.Translate('SING_OPTIONS_SOUND_DESC');
-      Options.Description[3] := Language.Translate('SING_OPTIONS_LYRICS_DESC');
-      Options.Description[4] := Language.Translate('SING_OPTIONS_THEMES_DESC');
-      Options.Description[5] := Language.Translate('SING_OPTIONS_RECORD_DESC');
-      Options.Description[6] := Language.Translate('SING_OPTIONS_ADVANCED_DESC');
-      Options.Description[7] := Language.Translate('SING_OPTIONS_NETWORK_DESC');
-      Options.Description[8] := Language.Translate('SING_OPTIONS_WEBCAM_DESC');
-      Options.Description[9] := Language.Translate('SING_OPTIONS_JUKEBOX_DESC');
-      Options.Description[10] := Language.Translate('SING_OPTIONS_EXIT');
+      // Note: always update the indexes constant on top of this unit when changing the order (see OPTIONS_DESC_INDEX_*)
+      Options.Description[OPTIONS_DESC_INDEX_BACK] := Language.Translate('SING_OPTIONS_EXIT');
+      Options.Description[OPTIONS_DESC_INDEX_GAME] := Language.Translate('SING_OPTIONS_GAME_DESC');
+      Options.Description[OPTIONS_DESC_INDEX_GRAPHICS] := Language.Translate('SING_OPTIONS_GRAPHICS_DESC');
+      Options.Description[OPTIONS_DESC_INDEX_SOUND] := Language.Translate('SING_OPTIONS_SOUND_DESC');
+      Options.Description[OPTIONS_DESC_INDEX_LYRICS] := Language.Translate('SING_OPTIONS_LYRICS_DESC');
+      Options.Description[OPTIONS_DESC_INDEX_THEMES] := Language.Translate('SING_OPTIONS_THEMES_DESC');
+      Options.Description[OPTIONS_DESC_INDEX_RECORD] := Language.Translate('SING_OPTIONS_RECORD_DESC');
+      Options.Description[OPTIONS_DESC_INDEX_ADVANCED] := Language.Translate('SING_OPTIONS_ADVANCED_DESC');
+      Options.Description[OPTIONS_DESC_INDEX_NETWORK] := Language.Translate('SING_OPTIONS_NETWORK_DESC');
+      Options.Description[OPTIONS_DESC_INDEX_WEBCAM] := Language.Translate('SING_OPTIONS_WEBCAM_DESC');
+      Options.Description[OPTIONS_DESC_INDEX_JUKEBOX] := Language.Translate('SING_OPTIONS_JUKEBOX_DESC');
 
       ThemeLoadText(Options.TextDescription, 'OptionsTextDescription');
-      Options.TextDescription.Text := Options.Description[0];
+      Options.TextDescription.Text := Options.Description[OPTIONS_DESC_INDEX_GAME]; // Select default first menu button 'Game'
 
       // Options Game
       ThemeLoadBasic(OptionsGame, 'OptionsGame');

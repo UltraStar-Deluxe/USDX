@@ -173,7 +173,7 @@ begin
 
   AddButton(Theme.StatDetail.ButtonExit);
   if (Length(Button[3].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[9]);
+    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_NETWORK]);
 
   Interaction := 0;
   Typ := TStatType(0);
