@@ -68,10 +68,7 @@ type
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
-      procedure InteractNext; override;
-      procedure InteractPrev; override;
-      procedure InteractNextRow; override;
-      procedure InteractPrevRow; override;
+      procedure SetInteraction(Num: integer); override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
@@ -248,27 +245,9 @@ begin
   SoundLib.StartBgMusic;
 end;
 
-procedure TScreenOptions.InteractNext;
+procedure TScreenOptions.SetInteraction(Num: integer);
 begin
-  inherited InteractNext;
-  UpdateTextDescriptionFor(Interaction);
-end;
-
-procedure TScreenOptions.InteractPrev;
-begin
-  inherited InteractPrev;
-  UpdateTextDescriptionFor(Interaction);
-end;
-
-procedure TScreenOptions.InteractNextRow;
-begin
-  inherited InteractNextRow;
-  UpdateTextDescriptionFor(Interaction);
-end;
-
-procedure TScreenOptions.InteractPrevRow;
-begin
-  inherited InteractPrevRow;
+  inherited SetInteraction(Num);
   UpdateTextDescriptionFor(Interaction);
 end;
 

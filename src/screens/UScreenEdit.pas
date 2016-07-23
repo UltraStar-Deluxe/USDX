@@ -46,10 +46,7 @@ type
 
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
-      procedure InteractNext; override;
-      procedure InteractPrev; override;
-      procedure InteractInc; override;
-      procedure InteractDec; override;
+      procedure SetInteraction(Num: integer); override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
@@ -131,28 +128,13 @@ begin
   Interaction := 0;
 end;
 
-procedure TScreenEdit.InteractNext;
+procedure TScreenEdit.SetInteraction(Num: integer);
 begin
-  inherited InteractNext;
-  Text[TextDescription].Text := Theme.Edit.Description[Interaction];
-end;
+  inherited SetInteraction(Num);
+  Text[TextDescription].Text     := Theme.Edit.Description[Interaction];
 
-procedure TScreenEdit.InteractPrev;
-begin
-  inherited InteractPrev;
-  Text[TextDescription].Text := Theme.Edit.Description[Interaction];
-end;
-
-procedure TScreenEdit.InteractDec;
-begin
-  inherited InteractDec;
-  Text[TextDescription].Text := Theme.Edit.Description[Interaction];
-end;
-
-procedure TScreenEdit.InteractInc;
-begin
-  inherited InteractInc;
-  Text[TextDescription].Text := Theme.Edit.Description[Interaction];
+  // long description not used atm // IMPROVE: Theme
+  //Text[TextDescriptionLong].Text := Theme.Edit.DescriptionLong[Interaction];
 end;
 
 procedure TScreenEdit.SetAnimationProgress(Progress: real);
