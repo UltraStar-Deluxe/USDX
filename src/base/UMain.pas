@@ -65,6 +65,7 @@ procedure MainThreadExec(Proc: TMainThreadExecProc; Data: Pointer);
 implementation
 
 uses
+  math,
   dglOpenGL,
   UCommandLine,
   UCommon,
@@ -207,8 +208,7 @@ begin
     // Joypad
     if (Ini.Joypad = 1) or (Params.Joypad) then
     begin
-      Log.LogStatus('Initialize Joystick', 'Initialization');
-      Joy := TJoy.Create;
+      InitializeJoystick;
     end;
     
     // Webcam
@@ -279,6 +279,8 @@ begin
     Log.LogStatus('Finalize Media', 'Finalization');
     FinalizeMedia();
 
+    FinalizeJoyStick;
+
     Log.LogStatus('Uninitialize 3D', 'Finalization');
     Finalize3D();
 
@@ -311,11 +313,7 @@ begin
     begin
       TicksBeforeFrame := SDL_GetTicks;
 
-      // joypad
-      if (Ini.Joypad = 1) or (Params.Joypad) then
-        Joy.Update;
-
-      // keyboard events
+      // keyboard/mouse/joystick events
       CheckEvents;
 
       // display
@@ -447,8 +445,14 @@ begin
           end;
 
           if UpdateMouse then
+          begin
+            // used to update mouse coords and allow the relative mouse emulated by joystick axis motion
+            if assigned(Joy) then Joy.OnMouseMove(EnsureRange(Event.button.X, 0, 799),
+                                                  EnsureRange(Event.button.Y, 0,599));
+
             Display.MoveCursor(Event.button.X * 800 * Screens / ScreenW,
                                Event.button.Y * 600 / ScreenH);
+          end;
 
           if not Assigned(Display.NextScreen) then
           begin //drop input when changing screens
@@ -517,12 +521,20 @@ begin
 
           if not Assigned(Display.NextScreen) then
           begin //drop input when changing screens
+            if (Event.type_ = SDL_TEXTINPUT) or (Event.key.keysym.unicode <> 0) then
             try
               s1:=Event.text.text;
               KeyCharUnicode:=UnicodeStringToUCS4String(UnicodeString(UTF8String(Event.text.text)))[0];
               //KeyCharUnicode:=UnicodeStringToUCS4String(UnicodeString(Event.key.keysym.unicode))[1];//Event.text.text)[0];
             except
+            end
+            // TODO: hacky workaround for enabling keyboard simulation of controllers. use SDL2 new input handling SDL_StartTextInput and SDL_StopTextInput(
+            else if Event.key.keysym.unicode = 0 then
+            begin
+              s1 := SDL_GetScancodeName(Event.key.keysym.scancode);
+              if Length(s1) = 1 then KeyCharUnicode := Ord(s1[1])
             end;
+
             // if print is pressed -> make screenshot and save to screenshot path
             if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINTSCREEN) then
               Display.SaveScreenShot
@@ -566,19 +578,16 @@ begin
             end;
           end;
         end;
-      SDL_JOYAXISMOTION:
-        begin
-          // not implemented
-        end;
-      SDL_JOYBUTTONDOWN:
-        begin
-          // not implemented
-        end;
       MAINTHREAD_EXEC_EVENT:
         with Event.user do
         begin
           TMainThreadExecProc(data1)(data2);
         end;
+
+      otherwise
+      begin
+        OnJoystickPollEvent(Event);
+      end;
     end; // case
   end; // while
 
