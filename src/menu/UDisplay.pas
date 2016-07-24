@@ -142,6 +142,9 @@ type
       { draws software cursor }
       procedure DrawCursor;
 
+      { forces to update cursor (position and set visibility) }
+      procedure UpdateCursor;
+
       { returns whether this display is requesting an cursor update }
       function NeedsCursorUpdate(): boolean;
 
@@ -721,6 +724,12 @@ begin
     else
       Result.FadeTo(Screen);
   end;
+end;
+
+procedure TDisplay.UpdateCursor;
+begin
+  UpdateCursorFade;
+  Cursor_Update := true;
 end;
 
 function TDisplay.NeedsCursorUpdate: boolean;
