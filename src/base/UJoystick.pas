@@ -50,6 +50,10 @@ const
   JOYSTICK_AXIS_PRESSED_THRESHOLD = 0.2;
   JOYSTICK_AXIS_RELEASED_THRESHOLD = 0.7;
   JOYSTICK_AXIS_REPEAT_THRESHOLD = 0.8;
+  JOYSTICK_AXIS_REPEAT_TIME = 150; // milliseconds to ignore repeated input
+  JOYSTICK_AXIS_MAX_RANGE = 32767; // SDL ranges -32768 to 32767
+
+  { Missing SDL header constants }
 
   SDL_HAT_CENTERED  = $0000;
   SDL_HAT_UP        = $0001;
@@ -60,6 +64,11 @@ const
   SDL_HAT_RIGHTDOWN = SDL_HAT_RIGHT or SDL_HAT_DOWN;
   SDL_HAT_LEFTUP    = SDL_HAT_LEFT or SDL_HAT_UP;
   SDL_HAT_LEFTDOWN  = SDL_HAT_LEFT or SDL_HAT_DOWN;
+
+  SDL_PRESSED = 1;
+  SDL_RELEASED = 0;
+
+  { custom SDL mapping for Axis-mapping }
 
   // Axis mapping names for legacy Joystick to button/key mapping
   SDL_HAT_AXIS_Center = 0;
@@ -83,29 +92,6 @@ type
     DeltaX, DeltaY: double;
     Time: LongInt;
     IsSet: boolean;
-  end;
-
-  // TODO: unused. Remove
-  TJoyButton = record
-    State:      integer;
-    Enabled:    boolean;
-    Type_:      byte;
-    Sym:        cardinal;
-  end;
-
-  // TODO: unused. Remove
-  TJoyHatState = record
-    State:      Boolean;
-    LastTick:   Cardinal;
-    Enabled:    boolean;
-    Type_:      byte;
-    Sym:        cardinal;
-  end;
-
-  // TODO: unused. Remove
-  TJoyUnit = record
-    Button:   array[0..15] of TJoyButton;
-    HatState: Array[0..3]  of TJoyHatState;
   end;
 
   PControllerDPadState = ^TControllerDPadState;
@@ -344,7 +330,7 @@ begin
     with Event.jaxis do
     begin
       Log.LogDebug(Format('JOYAXISMOTION [%d] Axis:%d  Value:%d  Time:%d', [which, axis, value, timestamp]), 'TJoy.Polling');
-      Joy.OnControllerMotion(which, axis, EnsureRange((1.0*value) / 32767, -1.0, 1.0), timestamp, true); // SDL ranges -32768 to 32767
+      Joy.OnControllerMotion(which, axis, EnsureRange((1.0*value) / JOYSTICK_AXIS_MAX_RANGE, -1.0, 1.0), timestamp, true);
     end;
 
   SDL_JOYHATMOTION:
@@ -359,7 +345,7 @@ begin
     with Event.jbutton do
     begin
       Log.LogDebug(Format('JOYBUTTON [%d] Button:%d  State:%d  Type:%d  Time:%d', [which, button, state, type_, timestamp]), 'TJoy.Polling');
-      Joy.OnControllerButton(which, button, ifthen(state = 1, bsPressed, bsReleased), true);
+      Joy.OnControllerButton(which, button, ifthen(state = SDL_PRESSED, bsPressed, bsReleased), true);
     end;
 
   SDL_CONTROLLERDEVICEADDED:
@@ -382,19 +368,19 @@ begin
     with Event.caxis do
     begin
       Log.LogDebug(Format('CONTROLLERAXISMOTION [%d] Axis:%d  Value:%d  Time:%d', [which, axis, value, timestamp]), 'TJoy.Polling');
-      Joy.OnControllerMotion(which, axis, EnsureRange((1.0*value) / 32767, -1.0, 1.0), timestamp); // SDL ranges -32768 to 32767
+      Joy.OnControllerMotion(which, axis, EnsureRange((1.0*value) / JOYSTICK_AXIS_MAX_RANGE, -1.0, 1.0), timestamp);
     end;
   SDL_CONTROLLERBUTTONDOWN:
     with Event.cbutton do
     begin
       Log.LogDebug(Format('CONTROLLERBUTTONDOWN [%d] Button:%d  State:%d  Type:%d  Time:%d', [which, button, state, type_, timestamp]), 'TJoy.Polling');
-      Joy.OnControllerButton(which, button, ifthen(state = 1, bsPressed, bsReleased));
+      Joy.OnControllerButton(which, button, ifthen(state = SDL_PRESSED, bsPressed, bsReleased));
     end;
   SDL_CONTROLLERBUTTONUP:
     with Event.cbutton do
     begin
       Log.LogDebug(Format('CONTROLLERBUTTONUP [%d] Button:%d  State:%d  Type:%d  Time:%d', [which, button, state, type_, timestamp]), 'TJoy.Polling');
-      Joy.OnControllerButton(which, button, ifthen(state = 1, bsPressed, bsReleased));
+      Joy.OnControllerButton(which, button, ifthen(state = SDL_PRESSED, bsPressed, bsReleased));
     end;
   end; // case
 end;
@@ -644,13 +630,11 @@ end;
 
 procedure TJoy.OnControllerRemoved(InstanceId: integer);
 begin
-  writeLn('OnControllerRemoved');
   RemoveController(InstanceId);
 end;
 
 procedure TJoy.OnControllerRemapped(InstanceId: integer);
 begin
-  writeLn('OnControllerRemapped');
   // TODO: TJoy.OnControllerRemapped. Not implemented
 end;
 
@@ -954,7 +938,7 @@ begin
       end else if (abs(Perc) > JOYSTICK_AXIS_REPEAT_THRESHOLD) then begin
         State.Repeat_ := true;
 
-        if (Time - State.Time > 150) then begin
+        if (Time - State.Time > JOYSTICK_AXIS_REPEAT_TIME) then begin
           State.Pressed := true;
           SimulateKeyboard(Key, true);
         end;
