@@ -57,6 +57,7 @@ uses
   UScreenOptionsGame,
   UScreenOptionsGraphics,
   UScreenOptionsSound,
+  UScreenOptionsInput,
   UScreenOptionsLyrics,
   UScreenOptionsThemes,
   UScreenOptionsRecord,
@@ -154,6 +155,7 @@ var
   ScreenOptionsGame:      TScreenOptionsGame;
   ScreenOptionsGraphics:  TScreenOptionsGraphics;
   ScreenOptionsSound:     TScreenOptionsSound;
+  ScreenOptionsInput:     TScreenOptionsInput;
   ScreenOptionsLyrics:    TScreenOptionsLyrics;
   ScreenOptionsThemes:    TScreenOptionsThemes;
   ScreenOptionsRecord:    TScreenOptionsRecord;
@@ -895,9 +897,10 @@ begin
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptions & ScreenOptionsGame'));
   ScreenOptions :=          TScreenOptions.Create;
   ScreenOptionsGame :=      TScreenOptionsGame.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsGraphics & ScreenOptionsSound'));
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsGraphics & ScreenOptionsSound & ScreenOptionsInput'));
   ScreenOptionsGraphics  :=  TScreenOptionsGraphics.Create;
   ScreenOptionsSound    :=     TScreenOptionsSound.Create;
+  ScreenOptionsInput    :=     TScreenOptionsInput.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsLyrics & ScreenOptionsThemes'));
   ScreenOptionsLyrics   :=    TScreenOptionsLyrics.Create;
   ScreenOptionsThemes   :=    TScreenOptionsThemes.Create;
@@ -969,6 +972,7 @@ begin
   ScreenOptionsGame.Free;
   ScreenOptionsGraphics.Free;
   ScreenOptionsSound.Free;
+  ScreenOptionsInput.Free;
   ScreenOptionsLyrics.Free;
   ScreenOptionsThemes.Free;
   ScreenOptionsRecord.Free;
