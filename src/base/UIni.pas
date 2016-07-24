@@ -586,11 +586,11 @@ var
   I: integer;
   Zeros: string;
 begin
-  // Load Languagefile
-  if (Params.Language <> -1) then
+  // Load Languagefile, fallback to config language if param is invalid
+  if (Params.Language > -1) and (Params.Language < Length(ILanguage)) then
     ULanguage.Language.ChangeLanguage(ILanguage[Params.Language])
   else
-    ULanguage.Language.ChangeLanguage(ILanguage[Ini.Language]);
+    ULanguage.Language.ChangeLanguage(ILanguage[Language]);
 
   SetLength(ILanguageTranslated, Length(ILanguage));
   for I := 0 to High(ILanguage) do
@@ -1390,6 +1390,8 @@ begin
 
   // Language
   Language := GetArrayIndex(ILanguage, IniFile.ReadString('Game', 'Language', 'English'));
+  if Language < 0 then Language := GetArrayIndex(ILanguage, 'English'); // Default to english
+  if Language < 0 then Language := 0; // Default to first available
 
   // SongMenu
   SongMenu := GetArrayIndex(ISongMenuMode, IniFile.ReadString('Game', 'SongMenu', ISongMenuMode[Ord(smRoulette)]));
