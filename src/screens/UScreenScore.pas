@@ -1042,7 +1042,7 @@ procedure TScreenScore.DrawPlayerBars;
 begin
   for I := 0 to PlayersPlay - 1 do
   begin
-    if (PlayerPositionMap[I].Position > 0) then //and ((ScreenAct = PlayerPositionMap[I].Screen) or (PlayerPositionMap[I].BothScreens)) then
+    if (PlayerPositionMap[I].Position > 0) and ((ScreenAct = PlayerPositionMap[I].Screen) or (PlayerPositionMap[I].BothScreens)) then
     begin
       if (BarScore_EaseOut_Step >= (EaseOut_MaxSteps * 10)) then
       begin
