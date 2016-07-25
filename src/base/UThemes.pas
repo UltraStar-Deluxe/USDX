@@ -78,6 +78,7 @@ const
   OPTIONS_DESC_INDEX_NETWORK   = 8;
   OPTIONS_DESC_INDEX_WEBCAM    = 9;
   OPTIONS_DESC_INDEX_JUKEBOX   = 10;
+  OPTIONS_DESC_INDEX_INPUT     = 11;
 
 
 type
@@ -826,6 +827,7 @@ type
     ButtonGame:       TThemeButton;
     ButtonGraphics:   TThemeButton;
     ButtonSound:      TThemeButton;
+    ButtonInput:      TThemeButton;
     ButtonLyrics:     TThemeButton;
     ButtonThemes:     TThemeButton;
     ButtonRecord:     TThemeButton;
@@ -836,7 +838,7 @@ type
     ButtonExit:       TThemeButton;
 
     TextDescription:      TThemeText;
-    Description:          array[0..10] of UTF8String;
+    Description:          array[0..11] of UTF8String;
   end;
 
   TThemeOptionsGame = class(TThemeBasic)
@@ -869,6 +871,12 @@ type
     SelectSlideVoicePassthrough: TThemeSelectSlide;
     SelectSlideMusicAutoGain:    TThemeSelectSlide;
     ButtonExit:                  TThemeButton;
+  end;
+
+  TThemeOptionsInput = class(TThemeBasic)
+    SelectMouse:        TThemeSelectSlide;
+    SelectJoypad:       TThemeSelectSlide;
+    ButtonExit:         TThemeButton;
   end;
 
   TThemeOptionsLyrics = class(TThemeBasic)
@@ -1335,6 +1343,7 @@ type
     OptionsGame:      TThemeOptionsGame;
     OptionsGraphics:  TThemeOptionsGraphics;
     OptionsSound:     TThemeOptionsSound;
+    OptionsInput:     TThemeOptionsInput;
     OptionsLyrics:    TThemeOptionsLyrics;
     OptionsThemes:    TThemeOptionsThemes;
     OptionsRecord:    TThemeOptionsRecord;
@@ -1500,6 +1509,7 @@ begin
   OptionsGame := TThemeOptionsGame.Create;
   OptionsGraphics := TThemeOptionsGraphics.Create;
   OptionsSound := TThemeOptionsSound.Create;
+  OptionsInput := TThemeOptionsInput.Create;
   OptionsLyrics := TThemeOptionsLyrics.Create;
   OptionsThemes := TThemeOptionsThemes.Create;
   OptionsRecord := TThemeOptionsRecord.Create;
@@ -2196,6 +2206,7 @@ begin
       ThemeLoadButton(Options.ButtonGame,     'OptionsButtonGame');
       ThemeLoadButton(Options.ButtonGraphics, 'OptionsButtonGraphics');
       ThemeLoadButton(Options.ButtonSound,    'OptionsButtonSound');
+      ThemeLoadButton(Options.ButtonInput,    'OptionsButtonInput');
       ThemeLoadButton(Options.ButtonLyrics,   'OptionsButtonLyrics');
       ThemeLoadButton(Options.ButtonThemes,   'OptionsButtonThemes');
       ThemeLoadButton(Options.ButtonRecord,   'OptionsButtonRecord');
@@ -2210,6 +2221,7 @@ begin
       Options.Description[OPTIONS_DESC_INDEX_GAME] := Language.Translate('SING_OPTIONS_GAME_DESC');
       Options.Description[OPTIONS_DESC_INDEX_GRAPHICS] := Language.Translate('SING_OPTIONS_GRAPHICS_DESC');
       Options.Description[OPTIONS_DESC_INDEX_SOUND] := Language.Translate('SING_OPTIONS_SOUND_DESC');
+      Options.Description[OPTIONS_DESC_INDEX_INPUT] := Language.Translate('SING_OPTIONS_INPUT_DESC');
       Options.Description[OPTIONS_DESC_INDEX_LYRICS] := Language.Translate('SING_OPTIONS_LYRICS_DESC');
       Options.Description[OPTIONS_DESC_INDEX_THEMES] := Language.Translate('SING_OPTIONS_THEMES_DESC');
       Options.Description[OPTIONS_DESC_INDEX_RECORD] := Language.Translate('SING_OPTIONS_RECORD_DESC');
@@ -2259,6 +2271,13 @@ begin
       ThemeLoadSelectSlide(OptionsSound.SelectSlideMusicAutoGain,    'OptionsSoundSelectSlideMusicAutoGain');
 
       ThemeLoadButton(OptionsSound.ButtonExit, 'OptionsSoundButtonExit');
+
+      // Options Input
+      ThemeLoadBasic(OptionsInput, 'OptionsInput');
+
+      ThemeLoadSelectSlide(OptionsInput.SelectMouse,     'OptionsInputSelectMouse');
+      ThemeLoadSelectSlide(OptionsInput.SelectJoypad,    'OptionsInputSelectJoypad');
+      ThemeLoadButton(OptionsInput.ButtonExit, 'OptionsInputButtonExit');
 
       // Options Lyrics
       ThemeLoadBasic(OptionsLyrics, 'OptionsLyrics');
@@ -4488,6 +4507,9 @@ begin
 
   freeandnil(OptionsSound);
   OptionsSound := TThemeOptionsSound.Create;
+
+  freeandnil(OptionsInput);
+  OptionsInput := TThemeOptionsInput.Create;
 
   freeandnil(OptionsLyrics);
   OptionsLyrics := TThemeOptionsLyrics.Create;

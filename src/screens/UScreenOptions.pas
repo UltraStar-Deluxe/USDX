@@ -50,6 +50,7 @@ type
       ButtonGameIID,
       ButtonGraphicsIID,
       ButtonSoundIID,
+      ButtonInputIID,
       ButtonLyricsIID,
       ButtonThemesIID,
       ButtonRecordIID,
@@ -122,6 +123,12 @@ begin
           begin
             AudioPlayback.PlaySound(SoundLib.Start);
             FadeTo(@ScreenOptionsSound);
+          end;
+
+          if Interaction = ButtonInputIID then
+          begin
+            AudioPlayback.PlaySound(SoundLib.Start);
+            FadeTo(@ScreenOptionsInput);
           end;
 
           if Interaction = ButtonLyricsIID then
@@ -223,8 +230,9 @@ begin
   AddButtonChecked(Theme.Options.ButtonGame, OPTIONS_DESC_INDEX_GAME,  ButtonGameIID);
   AddButtonChecked(Theme.Options.ButtonGraphics, OPTIONS_DESC_INDEX_GRAPHICS,  ButtonGraphicsIID);
   AddButtonChecked(Theme.Options.ButtonSound, OPTIONS_DESC_INDEX_SOUND,  ButtonSoundIID);
-  AddButtonChecked(Theme.Options.ButtonLyrics, OPTIONS_DESC_INDEX_LYRICS,  ButtonLyricsIID);
+  AddButtonChecked(Theme.Options.ButtonInput, OPTIONS_DESC_INDEX_INPUT,  ButtonInputIID);
 
+  AddButtonChecked(Theme.Options.ButtonLyrics, OPTIONS_DESC_INDEX_LYRICS,  ButtonLyricsIID);
   AddButtonChecked(Theme.Options.ButtonThemes, OPTIONS_DESC_INDEX_THEMES,  ButtonThemesIID);
   AddButtonChecked(Theme.Options.ButtonRecord, OPTIONS_DESC_INDEX_RECORD,  ButtonRecordIID);
   AddButtonChecked(Theme.Options.ButtonAdvanced, OPTIONS_DESC_INDEX_ADVANCED,  ButtonAdvancedIID);
