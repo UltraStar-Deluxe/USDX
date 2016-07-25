@@ -75,7 +75,7 @@ type
     LogFileOpened:       boolean;
     BenchmarkFile:       TextFile;
     BenchmarkFileOpened: boolean;
-    Buffer: TStringList; // stores logged messages for in-game console, capped to CONSOLE_SCROLLBACK_SIZE
+    ConsoleBuffer: TStringList; // stores logged messages for in-game console, capped to CONSOLE_SCROLLBACK_SIZE
 
     LogLevel: integer;
     // level of messages written to the log-file
@@ -171,12 +171,11 @@ end;
 
 constructor TLog.Create;
 begin
+  ConsoleBuffer := TStringList.Create;
   inherited;
   LogLevel := LOG_LEVEL_DEFAULT;
   LogFileLevel := LOG_FILE_LEVEL_DEFAULT;
   FileOutputEnabled := true;
-
-  Buffer := TStringList.Create;
 end;
 
 destructor TLog.Destroy;
@@ -188,7 +187,7 @@ begin
   if LogFileOpened then
     CloseFile(LogFile);
 
-  Buffer.Free;
+  ConsoleBuffer.Free;
   inherited;
 end;
 
@@ -543,24 +542,24 @@ end;
 
 procedure TLog.ClearConsoleLog;
 begin
-  Buffer.Clear;
+  ConsoleBuffer.Clear;
 end;
 
 function TLog.GetConsole(const index: integer; FromTheBeginning: boolean = false): string;
 begin
-  if FromTheBeginning then Result := Buffer[index]
-  else Result := Buffer[Buffer.Count-1-index];
+  if FromTheBeginning then Result := ConsoleBuffer[index]
+  else Result := ConsoleBuffer[ConsoleBuffer.Count-1-index];
 end;
 
 function TLog.GetConsoleCount: integer;
 begin
-  Result := Buffer.Count;
+  Result := ConsoleBuffer.Count;
 end;
 
 procedure TLog.LogConsole(const Text: string);
 begin
-  Buffer.Insert(0, Text);
-  if Buffer.Count > CONSOLE_SCROLLBACK_SIZE then Buffer.Capacity:=CONSOLE_SCROLLBACK_SIZE;
+  ConsoleBuffer.Insert(0, Text);
+  if ConsoleBuffer.Count > CONSOLE_SCROLLBACK_SIZE then ConsoleBuffer.Capacity:=CONSOLE_SCROLLBACK_SIZE;
 end;
 
 end.
