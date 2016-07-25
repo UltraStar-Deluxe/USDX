@@ -616,6 +616,9 @@ begin
 
   Interaction := 0;
 
+  // BgMusic distracts too much, pause it
+  SoundLib.PauseBgMusic;
+
 {$IFDEF UseMIDIPort}
   MidiOut := TMidiOutput.Create(nil);
   Log.LogInfo(MidiOut.ProductName, 'MIDI');

@@ -45,6 +45,7 @@ type
       TextDescriptionLong: integer;
 
       constructor Create; override;
+      procedure OnShow; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure SetInteraction(Num: integer); override;
       procedure SetAnimationProgress(Progress: real); override;
@@ -126,6 +127,13 @@ begin
   AddButton(Theme.Edit.ButtonExit);
 
   Interaction := 0;
+end;
+
+procedure TScreenEdit.OnShow;
+begin
+  inherited;
+  // continue possibly stopped bg-music (stopped in midi import screen)
+  SoundLib.StartBgMusic;
 end;
 
 procedure TScreenEdit.SetInteraction(Num: integer);
