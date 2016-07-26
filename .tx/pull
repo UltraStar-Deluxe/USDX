@@ -1,0 +1,5 @@
+#!/bin/sh
+DIR="$(dirname $0)"
+
+tx pull "$@" || exit 1
+sed -i -e 's/^#/;TODO:/' -e 's/&quot;/"/g' $DIR/../game/languages/*.ini
