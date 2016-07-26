@@ -25,6 +25,9 @@
 
 unit UScreenEditConvert;
 
+// TODO: Add tracks and channel paging for UI
+// TODO: Use a midi lib (or extend it) in order to read channels from midi files
+
 {*
  * See
  * MIDI Recommended Practice (RP-017): SMF Lyric Meta Event Definition
@@ -59,10 +62,12 @@ interface
 uses
   math,
   UMenu,
+  UMenuInteract,
   SDL2,
   {$IFDEF UseMIDIPort}
   MidiFile,
   MidiOut,
+  MidiCons,
   {$ENDIF}
   ULog,
   USongs,
@@ -86,11 +91,18 @@ type
   TLyricType = (ltKMIDI, ltSMFLyric);
 
   TTrack = record
+    Selected: boolean;
     Note:   array of TMidiNote;
     Name:   UTF8String; // normally ASCII
     Status: set of (tsNotes, tsLyrics); //< track contains notes, lyrics or both
     LyricType: set of TLyricType;
     NoteType:  (ntNone, ntAvail);
+    HighNote, LowNote: byte; // highest and lowest note of this track
+  end;
+
+  TChannel = record
+    Filter: boolean;
+    Name:   UTF8String; // normally ASCII
   end;
 
   TNote = record
@@ -102,16 +114,33 @@ type
   end;
 
   TArrayTrack = array of TTrack;
+  TArrayChannel = array of TChannel;
 
   TScreenEditConvert = class(TMenu)
     private
-      Tracks:    TArrayTrack; // current track
+      Tracks:    TArrayTrack;      // current tracks
+      Channels:  TArrayChannel;    // current channels
+
       ColR:      array[0..100] of real;
       ColG:      array[0..100] of real;
       ColB:      array[0..100] of real;
-      Len:       real;
-      SelTrack:  integer;     // index of selected track
+
+      Len:                  real;
+      SelTrack:             integer;    // index of selected track
+      SelChannel:           integer;    // index of selected channel
+      SelMaxHeight:         boolean;    // set when the selected tack should be maxed to possible height
+      HighNote, LowNote:    byte;       // highest and lowest note in all tracks
+      LowStart, HighEnd:  integer;      // tracks lowest start and highest end of all tracks
+
+      OffsetHighNote, OffsetLowNote: byte; // offset for zooming
+
       fFileName: IPath;
+      IsFileOpen: boolean;
+      IsPlaying: boolean;
+      IsPlayingSelective: boolean;
+
+      ShowChannels: boolean;
+      TracksArea: TMouseOverRect;
 
       {$IFDEF UseMIDIPort}
       MidiFile:  TMidiFile;
@@ -130,11 +159,18 @@ type
       {$ENDIF}
 
       function CountSelectedTracks: integer;
+      procedure ClearMidi;
+
+      procedure DrawTracks(InWidth: real; Offset: real = 0.0);
+      procedure DrawChannels(InWidth: real; Offset: real = 0.5);
+
+      procedure StopPlayback();
 
     public
       constructor Create; override;
       procedure OnShow; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       function Draw: boolean; override;
       procedure OnHide; override;
   end;
@@ -162,6 +198,13 @@ const
   DEFAULT_ENCODING = encCP1252;
 
 const
+  // TODO: Localize and use localization strings, instead of constants
+  BUTTON_TEXT_PLAY           = 'Play';
+  BUTTON_TEXT_PLAY_SELECTED  = 'Play selected';
+  BUTTON_TEXT_PAUSE          = 'Pause';
+  BUTTON_TEXT_STOP           = 'Stop';
+
+const
   MIDI_EVENTTYPE_NOTEOFF    = $8;
   MIDI_EVENTTYPE_NOTEON     = $9;
   MIDI_EVENTTYPE_META_SYSEX = $F;
@@ -170,15 +213,19 @@ const
   MIDI_META_TEXT   = $1;
   MIDI_META_LYRICS = $5;
 
+  TRACK_SCROLL_ZOOM_AMOUNT = 2;
+
+
 function TScreenEditConvert.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 {$IFDEF UseMIDIPort}
 var
   SResult: TSaveSongResult;
-  Playing: boolean;
   MidiTrack: TMidiTrack;
   Song:  TSong;
   Lines: TLines;
+  i: integer;
 {$ENDIF}
+
 begin
   Result := true;
   if (PressedDown) then
@@ -207,35 +254,87 @@ begin
 
       SDLK_RETURN:
         begin
-          if Interaction = 0 then
+          if Interaction = 0 then // open
           begin
+            IsFileOpen := true;
             AudioPlayback.PlaySound(SoundLib.Start);
             ScreenOpen.Filename := GamePath.Append('file.mid');
             ScreenOpen.BackScreen := @ScreenEditConvert;
             FadeTo(@ScreenOpen);
           end
-          else if Interaction = 1 then
+          else if Interaction = 1 then // play
           begin
             {$IFDEF UseMIDIPort}
             if (MidiFile <> nil) then
             begin
-              MidiFile.OnMidiEvent := MidiFile1MidiEvent;
-              //MidiFile.GoToTime(MidiFile.GetTrackLength div 2);
-              MidiFile.StartPlaying;
+              if IsPlaying then
+              begin
+                MidiOut.PutShort(MIDI_STOP, 0, 0);
+                MidiOut.PutShort(MIDI_NOTEOFF or 1, 0, 127);
+                MidiFile.OnMidiEvent := nil;
+                MidiFile.StopPlaying;
+                Button[Interaction].Text[0].Text := BUTTON_TEXT_PLAY;
+                IsPlaying := false;
+                Button[2].Text[0].Text := BUTTON_TEXT_PLAY_SELECTED;
+              end else
+              begin
+                MidiFile.OnMidiEvent := MidiFile1MidiEvent;
+                //MidiFile.GoToTime(MidiFile.GetTrackLength div 2);
+                MidiFile.ContinuePlaying;
+                Button[Interaction].Text[0].Text := BUTTON_TEXT_PAUSE;
+                IsPlaying := true;
+                IsPlayingSelective := false;
+              end;
             end;
             {$ENDIF}
           end
-          else if Interaction = 2 then
+          else if Interaction = 2 then // play selected
           begin
             {$IFDEF UseMIDIPort}
             if (MidiFile <> nil) then
             begin
-              MidiFile.OnMidiEvent := nil;
-              MidiFile.StartPlaying;
+              if CountSelectedTracks > 0 then
+              begin
+                if IsPlayingSelective then
+                begin
+                  MidiFile.OnMidiEvent := nil;
+                  MidiFile.StopPlaying;
+                  Button[Interaction].Text[0].Text := BUTTON_TEXT_PLAY_SELECTED;
+                  IsPlayingSelective := false;
+                end
+                else
+                begin
+                  if IsPlaying then MidiFile.StopPlaying;
+                  MidiFile.OnMidiEvent := nil;
+
+                  // play only selected
+                  for i := 0 to High(Tracks) do
+                  begin
+                    MidiTrack := MidiFile.GetTrack(i);
+                    if not assigned(MidiTrack) then continue;
+                    if Tracks[i].Selected then MidiTrack.OnMidiEvent := MidiFile1MidiEvent
+                    else MidiTrack.OnMidiEvent := nil;
+                  end;
+
+                  MidiFile.ContinuePlaying;
+                  Button[Interaction].Text[0].Text := BUTTON_TEXT_PAUSE;
+                  Button[1].Text[0].Text := BUTTON_TEXT_PLAY;
+                  IsPlaying := false;
+                  IsPlayingSelective := true;
+                end;
+              end
+              else
+              begin
+                ScreenPopupError.ShowPopup(Language.Translate('EDITOR_ERROR_NO_TRACK_SELECTED'));
+              end;
             end;
             {$ENDIF}
           end
-          else if Interaction = 3 then
+          else if Interaction = 3 then // stop
+          begin
+            StopPlayback();
+          end
+          else if Interaction = 4 then // save
           begin
             {$IFDEF UseMIDIPort}
             if CountSelectedTracks > 0 then
@@ -263,45 +362,71 @@ begin
           {$IFDEF UseMIDIPort}
           if (MidiFile <> nil) then
           begin
-            if (Tracks[SelTrack].NoteType = ntAvail) and
-               (Tracks[SelTrack].LyricType <> []) then
+            if not ShowChannels then
             begin
-              if (Tracks[SelTrack].Status = []) then
-                Tracks[SelTrack].Status := [tsNotes]
-              else if (Tracks[SelTrack].Status = [tsNotes]) then
-                Tracks[SelTrack].Status := [tsLyrics]
-              else if (Tracks[SelTrack].Status = [tsLyrics]) then
-                Tracks[SelTrack].Status := [tsNotes, tsLyrics]
-              else if (Tracks[SelTrack].Status = [tsNotes, tsLyrics]) then
-                Tracks[SelTrack].Status := [];
-            end
-            else if (Tracks[SelTrack].NoteType = ntAvail) then
-            begin
-              if (Tracks[SelTrack].Status = []) then
-                Tracks[SelTrack].Status := [tsNotes]
-              else
-                Tracks[SelTrack].Status := [];
-            end
-            else if (Tracks[SelTrack].LyricType <> []) then
-            begin
-              if (Tracks[SelTrack].Status = []) then
-                Tracks[SelTrack].Status := [tsLyrics]
-              else
-                Tracks[SelTrack].Status := [];
-            end;
+              if (Tracks[SelTrack].NoteType = ntAvail) and
+                 (Tracks[SelTrack].LyricType <> []) then
+              begin
+                if (Tracks[SelTrack].Status = []) then
+                  Tracks[SelTrack].Status := [tsNotes]
+                else if (Tracks[SelTrack].Status = [tsNotes]) then
+                  Tracks[SelTrack].Status := [tsLyrics]
+                else if (Tracks[SelTrack].Status = [tsLyrics]) then
+                  Tracks[SelTrack].Status := [tsNotes, tsLyrics]
+                else if (Tracks[SelTrack].Status = [tsNotes, tsLyrics]) then
+                  Tracks[SelTrack].Status := [];
+              end
+              else if (Tracks[SelTrack].NoteType = ntAvail) then
+              begin
+                if (Tracks[SelTrack].Status = []) then
+                  Tracks[SelTrack].Status := [tsNotes]
+                else
+                  Tracks[SelTrack].Status := [];
+              end
+              else if (Tracks[SelTrack].LyricType <> []) then
+              begin
+                if (Tracks[SelTrack].Status = []) then
+                  Tracks[SelTrack].Status := [tsLyrics]
+                else
+                  Tracks[SelTrack].Status := [];
+              end;
 
-            Playing := (MidiFile.GetCurrentTime > 0);
-            MidiFile.StopPlaying();
-            MidiTrack := MidiFile.GetTrack(SelTrack);
-            if tsNotes in Tracks[SelTrack].Status then
-              MidiTrack.OnMidiEvent := MidiFile1MidiEvent
+              MidiTrack := MidiFile.GetTrack(SelTrack);
+              if tsNotes in Tracks[SelTrack].Status then
+                MidiTrack.OnMidiEvent := MidiFile1MidiEvent
+              else
+                MidiTrack.OnMidiEvent := nil;
+              Tracks[SelTrack].Selected := assigned(MidiTrack.OnMidiEvent);
+            end
             else
-              MidiTrack.OnMidiEvent := nil;
-            if (Playing) then
-              MidiFile.ContinuePlaying();
-          end;
+            begin
+              Channels[SelChannel].Filter := not Channels[SelChannel].Filter;
+            end;
+          end
+
           {$ENDIF}
         end;
+
+      SDLK_TAB:
+        begin
+          if Length(Channels) > 0 then
+          begin
+            ShowChannels := not ShowChannels;
+            if ShowChannels then SelChannel := 0;
+          end;
+        end;
+
+      // zooming controls
+
+      SDLK_KP_MULTIPLY: SelMaxHeight := not SelMaxHeight;
+
+      SDLK_KP_7: OffsetHighNote := Min(Max(0, OffsetHighNote-TRACK_SCROLL_ZOOM_AMOUNT), Tracks[SelTrack].HighNote);
+      SDLK_KP_9: OffsetHighNote := Min(OffsetHighNote+TRACK_SCROLL_ZOOM_AMOUNT, HighNote - Tracks[SelTrack].HighNote);
+      SDLK_KP_8: OffsetHighNote := 0;
+
+      SDLK_KP_1: OffsetLowNote := Max(0, OffsetLowNote-TRACK_SCROLL_ZOOM_AMOUNT);
+      SDLK_KP_3: OffsetLowNote := Min( OffsetLowNote+TRACK_SCROLL_ZOOM_AMOUNT, Tracks[SelTrack].LowNote - LowNote - 1);
+      SDLK_KP_2: OffsetLowNote := 0;
 
       SDLK_RIGHT:
         begin
@@ -313,18 +438,64 @@ begin
           InteractPrev;
         end;
 
-      SDLK_DOWN:
+      SDLK_DOWN, SDLK_UP:
         begin
-          Inc(SelTrack);
-          if SelTrack > High(Tracks) then
-            SelTrack := 0;
+          if ShowChannels then
+          begin
+            inc(SelChannel, ifthen(PressedKey = SDLK_DOWN, 1, -1));
+            if SelChannel < 0 then SelChannel := High(Channels)
+            else if SelChannel > High(Channels) then SelChannel := 0;
+          end
+          else
+          begin
+            inc(SelTrack, ifthen(PressedKey = SDLK_DOWN, 1, -1));
+            if SelTrack < 0 then SelTrack := High(Tracks)
+            else if SelTrack > High(Tracks) then SelTrack := 0;
+
+            SelMaxHeight := false;
+            OffsetHighNote := 0;
+            OffsetLowNote := 0;
+
+          end;
         end;
-      SDLK_UP:
-        begin
-          Dec(SelTrack);
-          if SelTrack < 0 then
-            SelTrack := High(Tracks);
-        end;
+    end;
+  end;
+end;
+
+function TScreenEditConvert.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+var
+  seektime: real;
+  i: integer;
+  MidiTrack: TMidiTrack;
+begin
+  Result := inherited ParseMouse(MouseButton, BtnDown, X, Y);
+
+  // transfer mousecords to the 800x600 raster we use to draw
+  X := Min(RenderW, Round((X / (ScreenW / Screens)) * RenderW));
+  Y := Round((Y / ScreenH) * RenderH);
+
+  if BtnDown and (MouseButton = SDL_BUTTON_LEFT) then
+  begin
+    if InRegion(X, Y, TracksArea) then
+    begin
+
+      MidiFile.OnMidiEvent := nil;
+
+      seektime := ((X - TracksArea.X) / TracksArea.W);
+      seektime := seektime * MidiFile.GetTrackLength;
+      if seektime < MidiFile.GetCurrentTime then
+        MidiFile.GoToTime(trunc(seektime));
+
+      for i := 0 to High(Tracks) do
+      begin
+        MidiTrack := MidiFile.GetTrack(i);
+        if not assigned(MidiTrack) then continue;
+        if not IsPlayingSelective or Tracks[i].Selected then
+          MidiTrack.OnMidiEvent := MidiFile1MidiEvent;
+      end;
+
+      MidiFile.PlayToTime(trunc(seektime));
+      MidiFile.ContinuePlaying;
     end;
   end;
 end;
@@ -577,21 +748,44 @@ var
   P:  integer;
 begin
   inherited Create;
+
+  MidiFile := nil;
+  MidiOut := nil;
+
+  // TODO: Add midi channel filtering. It should allow to filer channels of instruments in single-track midi files
+  //       The following lines can be uncommented to test the current UI functionality. With
+  //       the TAB button, you can toggle the visible channels and select them with SPACE to filter them.
+  //       The notes of these channel should be filter in the extraction method
+  //SetLength(Channels, 8);
+  //Channels[0].Name := 'Flute';
+  //Channels[1].Name := 'Bass';
+  //Channels[2].Name := 'Drum';
+  //Channels[3].Name := 'Piano';
+  //Channels[4].Name := 'Trumpet';
+  //Channels[5].Name := 'Violin';
+  //Channels[6].Name := 'Oboe';
+  //Channels[7].Name := 'Gramophone';
+
   AddButton(40, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
   AddButtonText(15, 5, 0, 0, 0, 'Open');
   //Button[High(Button)].Text[0].Size := 11;
 
   AddButton(160, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(25, 5, 0, 0, 0, 'Play');
+  AddButtonText(25, 5, 0, 0, 0, BUTTON_TEXT_PLAY);
 
-  AddButton(280, 20, 200, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(25, 5, 0, 0, 0, 'Play Selected');
+  AddButton(270, 20, 200, 40, Skin.GetTextureFileName('ButtonF'));
+  AddButtonText(25, 5, 0, 0, 0, BUTTON_TEXT_PLAY_SELECTED);
 
-  AddButton(500, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
+  AddButton(480, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
+  AddButtonText(25, 5, 0, 0, 0, BUTTON_TEXT_STOP);
+
+
+  AddButton(620, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
   AddButtonText(20, 5, 0, 0, 0, 'Save');
 
   fFileName := PATH_NONE;
 
+  // generate color array, randomize color
   for P := 0 to 100 do
   begin
     ColR[P] := Random(10)/10;
@@ -619,18 +813,19 @@ begin
   // BgMusic distracts too much, pause it
   SoundLib.PauseBgMusic;
 
-{$IFDEF UseMIDIPort}
-  MidiOut := TMidiOutput.Create(nil);
-  Log.LogInfo(MidiOut.ProductName, 'MIDI');
-  MidiOut.Open;
-  MidiFile := nil;
-  SetLength(Tracks, 0);
+  // abort if File-open dialog wasn't shown previously, don't need to do anything without a file
+  if not IsFileOpen then Exit;
+  IsFileOpen := false;
 
+{$IFDEF UseMIDIPort}
   // Filename is only <> PATH_NONE if we called the OpenScreen before
   fFilename := ScreenOpen.Filename;
   if (fFilename = PATH_NONE) then
     Exit;
   ScreenOpen.Filename := PATH_NONE;
+
+  // clear old midi runtime
+  ClearMidi;
 
   FileOpened := false;
   if fFileName.Exists then
@@ -642,6 +837,7 @@ begin
       FileOpened := true;
     except
       MidiFile.Free;
+      MidiFile := nil;
     end;
   end;
 
@@ -651,25 +847,38 @@ begin
     Exit;
   end;
 
+  MidiOut := TMidiOutput.Create(nil);
+  Log.LogInfo(MidiOut.ProductName, 'MIDI');
+  MidiOut.Open;
+  SetLength(Tracks, 0);
+
   Len := 0;
   SelTrack := 0;
+  SelMaxHeight := false;
+  OffsetHighNote := 0;
+  OffsetLowNote := 0;
   BPM := MidiFile.Bpm;
   Ticks := MidiFile.TicksPerQuarter / 4;
 
   KMIDITrackIndex := -1;
   SMFTrackIndex := -1;
 
+  HighNote := 0;
+  LowNote := 255;
+
+  HighEnd := 0;
+  LowStart := MaxInt;
+
   SetLength(Tracks, MidiFile.NumberOfTracks);
   for T := 0 to MidiFile.NumberOfTracks-1 do
-    Tracks[T].LyricType := [];
-
-  for T := 0 to MidiFile.NumberOfTracks-1 do
   begin
+    Tracks[T].HighNote := 0;
+    Tracks[T].LowNote := 255;
+
     MidiTrack := MidiFile.GetTrack(T);
     MidiTrack.OnMidiEvent := nil;
     Tracks[T].Name := DecodeStringUTF8(MidiTrack.getName, DEFAULT_ENCODING);
     Tracks[T].NoteType := ntNone;
-    Tracks[T].Status := [];
 
     SetLength(Tracks[T].Note, MidiTrack.getEventCount());
     for N := 0 to MidiTrack.getEventCount-1 do
@@ -684,6 +893,21 @@ begin
       Tracks[T].Note[N].Data1     := MidiEvent.data1;
       Tracks[T].Note[N].Data2     := MidiEvent.data2;
       Tracks[T].Note[N].Str       := DecodeStringUTF8(MidiEvent.str, DEFAULT_ENCODING);
+
+      // store lowest and highest note for the track and file
+      if (Tracks[T].Note[N].Event <> MIDI_EVENT_META) then
+      begin
+        if MidiEvent.len > 0 then // ignore invalid notes
+        begin
+          HighEnd := Max(HighEnd, MidiEvent.time);
+          LowStart := Min(LowStart, MidiEvent.time+MidiEvent.len);
+          HighNote := Max(HighNote, MidiEvent.data1);
+          LowNote := Min(LowNote, MidiEvent.data1);
+
+          Tracks[T].HighNote := Max(Tracks[T].HighNote, MidiEvent.data1);
+          Tracks[T].LowNote := Min(Tracks[T].LowNote, MidiEvent.data1);
+        end;
+      end;
 
       if (Tracks[T].Note[N].Event = MIDI_EVENT_META) then
       begin
@@ -726,43 +950,130 @@ begin
 end;
 
 function TScreenEditConvert.Draw: boolean;
-var
-  Count:  integer;
-  Count2: integer;
-  Bottom: real;
-  X:      real;
-  Y:      real;
-  Height: real;
-  YSkip:  real;
 begin
   // draw static menu
-  inherited Draw;
+  Result := inherited Draw;
 
-  Y := 100;
+  // abort if no tracks loaded
+  if Length(Tracks) < 1 then Exit;
 
-  Height := min(480, 40 * Length(Tracks));
-  Bottom := Y + Height;
+  if ShowChannels then
+  begin
+    DrawTracks(RenderW*0.7);
+    DrawChannels(RenderW*0.3, 0.7);
+  end
+  else DrawTracks(RenderW);
 
-  YSkip := Height / Length(Tracks);
+end;
+
+procedure TScreenEditConvert.DrawTracks(InWidth: real; Offset: real = 0.0);
+  procedure MidiTimeToSeconds(InTime: integer; out Minutes, Seconds: integer);
+  var t: real;
+  begin
+    t := (((BPM * Ticks * 4) / 60000) * InTime) / 1000;
+    Minutes := trunc(t) div 60;
+    Seconds := trunc(t) mod 60;
+  end;
+
+var
+  Count:    integer;
+  Count2:   integer;
+  Bottom:   real;
+  Padding:  real;
+  Right:    real;
+  Top:      real;
+  FontSize: real;
+  Y:        real;
+  Height:   real;
+  YSkip:    real;
+  TrackPos: real;
+  TrackPadding:  real;
+  TrackWidth: real;
+  NoteDiff, TrackDiff, TrackDiffSel, TrackDiffOther: integer;
+  YSelected: real;
+  YHeight, YNote:    real;
+
+  XTrack: real;
+  TimeWidth: real;
+  tm, ts: integer;
+
+begin
+
+  // define
+  Top := 100;
+  XTrack := 60;
+  Padding := 10;
+  FontSize := 12;
+
+  // calc
+  Height := RenderH - Padding - Top;
+  Bottom := Top + Height;
+  Right := InWidth - Padding;
+  Y := Top;
+
+  if SelMaxHeight then
+  begin
+    YSkip := FontSize + 2;
+    YSelected := Height;
+  end
+  else
+  begin
+    YSkip := EnsureRange(Height / (Length(Tracks)+20), FontSize + 2, FontSize * 2);
+    YSelected := Min(Max(YSkip, Height - Length(Tracks)*YSkip), 6*YSkip);
+  end;
+
+  TrackPadding := 0.15 * YSkip;
+  TrackDiffSel := (HighNote-OffsetHighNote) - (LowNote+OffsetLowNote);
+  TrackDiffOther := HighNote - LowNote;
+  TrackWidth := InWidth - XTrack - 5 - Padding;
+
+
+  // Draw time bar
+  DrawLine(XTrack, Y-YSkip, XTrack, Y, 0, 0, 0); // start
+  DrawLine(Right, Y-YSkip, Right, Y, 0, 0, 0); // end
+  // draw time
+  SetFontSize(FontSize);
+  TimeWidth := glTextWidth('00:00');
+  SetFontPos(XTrack-TimeWidth-5, Y-YSkip);
+  glPrint(Format('%.2d:%.2d', [0,0]));
+  SetFontPos(Right-TimeWidth-5, Y-YSkip);
+  MidiTimeToSeconds(MidiFile.GetTrackLength, tm, ts);
+  glPrint(Format('%.2d:%.2d', [tm,ts]));
+
 
   // highlight selected track
-  DrawQuad(10, Y+SelTrack*YSkip, 780, YSkip, 0.8, 0.8, 0.8);
+  DrawQuad(Padding, Y+ ifthen(SelMaxHeight, 0, SelTrack*YSkip), Right-Padding, YSelected, 0.8, 0.8, 0.8);
 
-  // track-selection info
-  for Count := 0 to High(Tracks) do
-    if Tracks[Count].Status <> [] then
-      DrawQuad(10, Y + Count*YSkip, 50, YSkip, 0.8, 0.3, 0.3);
+  // vertical grid
+  DrawLine(Padding,   Y,  Padding,   Bottom, 0, 0, 0);
+  DrawLine(XTrack,    Y,  XTrack,    Bottom, 0, 0, 0);
+  DrawLine(Right,     Y,  Right,     Bottom, 0, 0, 0);
+
   glColor3f(0, 0, 0);
+  DrawLine(Padding, Y, Right, Y, 0, 0, 0);
   for Count := 0 to High(Tracks) do
   begin
+    YHeight := ifthen(Count = SelTrack, YSelected, YSkip);
+    TrackDiff := ifthen(SelTrack = Count, TrackDiffSel, TrackDiffOther);
+
+    // if maxed mode, skip all non-selected tracks
+    if SelMaxHeight and (Count <> SelTrack) then continue;
+
+    // draw track-selection
+    if Tracks[Count].Status <> [] then
+    begin
+      DrawQuad(Padding, Y, XTrack-Padding, YHeight, 0.8, 0.3, 0.3);
+    end;
+
+    // draw track info
     if Tracks[Count].NoteType = ntAvail then
     begin
       if tsNotes in Tracks[Count].Status then
         glColor3f(0, 0, 0)
       else
         glColor3f(0.7, 0.7, 0.7);
-      SetFontPos(25, Y + Count*YSkip + 10);
-      SetFontSize(15);
+      SetFontPos(Padding+FontSize, Y);
+      SetFontSize(FontSize);
       glPrint('N');
     end;
     if Tracks[Count].LyricType <> [] then
@@ -771,58 +1082,188 @@ begin
         glColor3f(0, 0, 0)
       else
         glColor3f(0.7, 0.7, 0.7);
-      SetFontPos(40, Y + Count*YSkip + 10);
-      SetFontSize(15);
+      SetFontPos(Padding+30, Y);
+      SetFontSize(FontSize);
       glPrint('L');
     end;
-  end;
 
-  DrawLine( 10, Y,  10, Bottom, 0, 0, 0);
-  DrawLine( 60, Y,  60, Bottom, 0, 0, 0);
-  DrawLine(790, Y, 790, Bottom, 0, 0, 0);
+    // Draw track lines
+    DrawLine(Padding, Y+YHeight, Right, Y+YHeight, 0, 0, 0);
 
-  for Count := 0 to Length(Tracks) do
-    DrawLine(10, Y + Count*YSkip, 790, Y + Count*YSkip, 0, 0, 0);
-
-  for Count := 0 to High(Tracks) do
-  begin
-    SetFontPos(65, Y + Count*YSkip);
-    SetFontSize(15);
+    // Draw track names
+    SetFontPos(XTrack+5, Y);
+    SetFontSize(FontSize);
     glPrint(Tracks[Count].Name);
-  end;
 
-  for Count := 0 to High(Tracks) do
-  begin
+    // draw track notes
+    //if Count = SelTrack then
     for Count2 := 0 to High(Tracks[Count].Note) do
     begin
+      NoteDiff := Tracks[Count].Note[Count2].Data1 - (LowNote+ ifthen(Count = SelTrack, OffsetLowNote, 0));
+      YNote := NoteDiff / TrackDiff;
+
       if Tracks[Count].Note[Count2].EventType = MIDI_EVENTTYPE_NOTEON then
-        DrawQuad(60 + Tracks[Count].Note[Count2].Start/Len * 725,
-                 Y + (Count+1)*YSkip - Tracks[Count].Note[Count2].Data1*35/127,
-                 3, 3,
+        DrawQuad(XTrack + Tracks[Count].Note[Count2].Start/Len * TrackWidth,
+                 Y+YHeight - (YHeight - 2*Padding)*YNote - Padding,
+                 Max(1.0, (Tracks[Count].Note[Count2].Len/Len) * TrackWidth), Max(1.0, YHeight / TrackDiff),
                  ColR[Count], ColG[Count], ColB[Count]);
-      if Tracks[Count].Note[Count2].EventType = 15 then
-        DrawLine(60 + Tracks[Count].Note[Count2].Start/Len * 725, Y + 0.75 * YSkip + Count*YSkip,
-                 60 + Tracks[Count].Note[Count2].Start/Len * 725, Y + YSkip + Count*YSkip,
+      if Tracks[Count].Note[Count2].EventType = MIDI_EVENTTYPE_META_SYSEX then
+        DrawLine(XTrack + Tracks[Count].Note[Count2].Start/Len * TrackWidth, Y+YHeight - 0.25*YSkip,
+                 XTrack + Tracks[Count].Note[Count2].Start/Len * TrackWidth, Y+YHeight,
                  ColR[Count], ColG[Count], ColB[Count]);
     end;
+
+    Y := Y + YHeight;
   end;
+
+  // last horizontal track line
+  DrawLine(Padding, Y+YHeight, Right, Y+YHeight, 0, 0, 0);
+
+
+  // update tracks area for mouse interaction (e.g. seeking bar)
+  TracksArea.X := XTrack;
+  TracksArea.Y := Top - YSkip;
+  TracksArea.W := Right - TracksArea.X;
+  TracksArea.H := Y - YHeight;
 
   // playing line
   {$IFDEF UseMIDIPort}
   if (MidiFile <> nil) then
-    X := 60 + MidiFile.GetCurrentTime/MidiFile.GetTrackLength*730;
+    // TODO: use proper event to stop midi playback
+    TrackPos := XTrack + (MidiFile.GetCurrentTime/MidiFile.GetTrackLength) * TrackWidth;
+    if MidiFile.GetCurrentTime > MidiFile.GetTrackLength then StopPlayback;
   {$ENDIF}
-  DrawLine(X, Y, X, Bottom, 0.3, 0.3, 0.3);
+  DrawLine(TrackPos, Top, TrackPos, Bottom, 0.3, 0.3, 0.3);
 
-  Result := true;
+  // TODO: time stamp (in seconds) seems to run slower than actual seconds. IIRC the calculation is correct. Could be related to the Mouse lag while playing
+  SetFontSize(FontSize);
+  SetFontPos(Max(XTrack + 5, Min(Right - 5 - 2*TimeWidth - 5, TrackPos-(0.5*TimeWidth))), Top-YSkip);
+  MidiTimeToSeconds(MidiFile.GetCurrentTime, tm, ts);
+  glPrint(Format('%.2d:%.2d', [tm, ts]));
+end;
+
+procedure TScreenEditConvert.DrawChannels(InWidth: real; Offset: real = 0.5);
+var
+  Count:    integer;
+  Count2:   integer;
+
+  Top:      real;
+  Padding:  real;
+  FontSize: real;
+
+  Bottom:   real;
+  Left:     real;
+  Right:    real;
+  Y, X:     real;
+  Height:   real;
+
+  YHeight:    real;
+  XPadding: real;
+  XChannel: real;
+
+begin
+
+  // define
+  Top := 100;
+  Padding := 10;
+  FontSize := 12;
+
+  // calc
+  Left := RenderW * Offset;
+  Height := RenderH - Padding - Top;
+
+  Y := Top;
+  XPadding := Left + Padding;
+  YHeight := EnsureRange(Height / (Length(Channels)+20), FontSize + 2, FontSize * 2);
+
+  Bottom := Top + Min(YHeight * Length(Channels), Height);
+  Right := Left + InWidth - Padding;
+
+  // highlight selected channel
+  DrawQuad(XPadding, Y+SelChannel*YHeight, InWidth - 2*Padding, YHeight, 0.8, 0.8, 0.8);
+
+  SetFontSize(FontSize);
+  X := glTextWidth('XXX');
+  XChannel := 0;
+
+  for Count := 0 to High(Channels) do
+  begin
+    glColor3f(0, 0, 0);
+
+    // draw channel-filter state
+    if Channels[Count].Filter then
+    begin
+      SetFontPos(XPadding, Y);
+      SetFontSize(FontSize);
+
+      glPrint(' X ');
+    end;
+
+    // draw channel name
+    SetFontPos(XPadding+X, Y);
+    SetFontSize(FontSize);
+    XChannel := Max(XChannel, glTextWidth(Channels[Count].Name));
+    glPrint(Channels[Count].Name);
+
+    // Draw track lines
+    DrawLine(XPadding, Y, Right, Y, 0, 0, 0);
+
+    Y := Y + YHeight;
+  end;
+
+  XChannel := XPadding + X + XChannel + 10;
+
+  // grid
+  DrawLine(XPadding, Y, Right, Y, 0, 0, 0); // horz
+  DrawLine(XPadding, Top, XPadding, Bottom, 0, 0, 0);
+  DrawLine(XChannel, Top, XChannel, Bottom, 0, 0, 0);
+  DrawLine(Right,    Top, Right,    Bottom, 0, 0, 0);
 end;
 
 procedure TScreenEditConvert.OnHide;
 begin
 {$IFDEF UseMIDIPort}
+  if not IsFileOpen then ClearMidi; // do not clear midi when opening file
+{$ENDIF}
+end;
+
+procedure TScreenEditConvert.ClearMidi;
+begin
+{$IFDEF UseMIDIPort}
+  // clear data
+  Tracks := nil;
+
   FreeAndNil(MidiFile);
-  MidiOut.Close;
-  FreeAndNil(MidiOut);
+
+  If assigned(MidiOut) then
+  begin
+    MidiOut.Close;
+    FreeAndNil(MidiOut);
+  end;
+{$ENDIF}
+end;
+
+procedure TScreenEditConvert.StopPlayback;
+begin
+{$IFDEF UseMIDIPort}
+  if (MidiFile <> nil) then
+  begin
+    MidiFile.OnMidiEvent := nil;
+
+    // seek to start first, to update time bar
+    MidiFile.PlayToTime(0);
+    MidiFile.GoToTime(0);
+
+    MidiFile.StopPlaying;
+
+    MidiOut.Close;
+    MidiOut.Open;
+
+    Button[1].Text[0].Text := BUTTON_TEXT_PLAY;
+    Button[2].Text[0].Text := BUTTON_TEXT_PLAY_SELECTED;
+    IsPlaying := false;
+    IsPlayingSelective := false;
+  end;
 {$ENDIF}
 end;
 
