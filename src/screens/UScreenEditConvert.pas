@@ -466,7 +466,9 @@ function TScreenEditConvert.ParseMouse(MouseButton: integer; BtnDown: boolean; X
 var
   seektime: real;
   i: integer;
+  {$IFDEF UseMIDIPort}
   MidiTrack: TMidiTrack;
+  {$ENDIF}
 begin
   Result := inherited ParseMouse(MouseButton, BtnDown, X, Y);
 
@@ -478,7 +480,7 @@ begin
   begin
     if InRegion(X, Y, TracksArea) then
     begin
-
+      {$IFDEF UseMIDIPort}
       MidiFile.OnMidiEvent := nil;
 
       seektime := ((X - TracksArea.X) / TracksArea.W);
@@ -496,6 +498,7 @@ begin
 
       MidiFile.PlayToTime(trunc(seektime));
       MidiFile.ContinuePlaying;
+      {$ENDIF}
     end;
   end;
 end;
@@ -748,9 +751,10 @@ var
   P:  integer;
 begin
   inherited Create;
-
+  {$IFDEF UseMIDIPort}
   MidiFile := nil;
   MidiOut := nil;
+  {$ENDIF}
 
   // TODO: Add midi channel filtering. It should allow to filer channels of instruments in single-track midi files
   //       The following lines can be uncommented to test the current UI functionality. With
@@ -1037,7 +1041,9 @@ begin
   SetFontPos(XTrack-TimeWidth-5, Y-YSkip);
   glPrint(Format('%.2d:%.2d', [0,0]));
   SetFontPos(Right-TimeWidth-5, Y-YSkip);
+  {$IFDEF UseMIDIPort}
   MidiTimeToSeconds(MidiFile.GetTrackLength, tm, ts);
+  {$ENDIF}
   glPrint(Format('%.2d:%.2d', [tm,ts]));
 
 
