@@ -44,7 +44,7 @@
         <PackageName Value="LazUtils"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="133">
+    <Units Count="131">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -572,15 +572,6 @@
         <Filename Value="screens\controllers\UScreenSingController.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit130>
-      <Unit131>
-        <Filename Value="base\UAvatars.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit131>
-      <Unit132>
-        <Filename Value="base\uplayers.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="UPlayers"/>
-      </Unit132>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -590,7 +581,7 @@
       <Filename Value="..\game\ultrastardx"/>
     </Target>
     <SearchPaths>
-      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\dglOpenGL;lib\SDL2;lib\portaudio;lib\ffmpeg;lib\SQLite;lib\other;lib\openCV;webSDK;webSDK\encrypt;$(LazarusDir)\components\lazutils;lib\freetype;lib\bass;lib\Lua;screens\controllers;screens\views;lib\pcre"/>
+      <OtherUnitFiles Value="base;lua;media;menu;screens;lib\dglOpenGL;lib\SDL2;lib\portaudio;lib\ffmpeg;lib\SQLite;lib\other;lib\openCV;webSDK;webSDK\encrypt;$(LazarusDir)\components\lazutils;lib\freetype;lib\bass;lib\Lua;screens\controllers;screens\views;lib\pcre;lib\openCV"/>
       <UnitOutputDirectory Value="..\build\fpc-$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
