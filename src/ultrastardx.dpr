@@ -323,6 +323,7 @@ uses
   UScreenOptionsThemes    in 'screens\UScreenOptionsThemes.pas',
   UScreenOptionsRecord    in 'screens\UScreenOptionsRecord.pas',
   UScreenOptionsAdvanced  in 'screens\UScreenOptionsAdvanced.pas',
+  UScreenOptionsInput     in 'screens\UScreenOptionsInput.pas',
   UScreenEditSub          in 'screens\UScreenEditSub.pas',
   UScreenEdit             in 'screens\UScreenEdit.pas',
   UScreenEditConvert      in 'screens\UScreenEditConvert.pas',
