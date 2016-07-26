@@ -21,40 +21,59 @@
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA 02110-1301, USA.
 
+from __future__ import with_statement, print_function
+
 import re
 import sys
 import os
 import codecs
 
+def xopen(file, mode, encoding):
+	if sys.version_info[0] > 2:
+		return open(file=file, mode=mode, encoding=encoding)
+	else:
+		return open(name=file, mode=mode)
+		
+def xwriteline(file, content):
+	if sys.version_info[0] > 2:
+		# line endings should be handled by the file writer in newer python version
+		file.write(content + u"\n")
+	else:
+		# binary mode does not convert "\n" to the os specific line-ending.
+		# Use os.linesep instead.
+		file.write(content + os.linesep)
+		
+def xutf8header():
+	if sys.version_info[0] > 2:
+		return u'\ufeff';
+	else:
+		return codecs.BOM_UTF8;
+
+
 # buffer english file (always open binary, handle newline uniformly as "\n")
-f = open("English.ini", "rbU")
 english = []
-for line in f:
-	english.append(line.rstrip("\n"))
-f.close
+with xopen("English.ini", "rU", encoding="utf8") as f:
+	for line in f:
+		english.append(line.strip())
 
 transPattern = re.compile("\s*(\w+)\s*=(.+)$")
 
+	
 def update(lang):
-	print "\nUpdate " + lang
+	print("\nUpdate " +  lang)
 
 	# buffer translation file (always open binary, handle newline uniformly)
-	f = open(lang, "rbU")
 	translation = []
-	for line in f:
-		translation.append(line.rstrip("\n"))
-	f.close
-	# WORKAROUND: On windows the file does not seem to be closed by f.close
-	# as long as it is still referenced. Hence os.rename(lang, oldLang) will
-	# fail later as the file is still opened for reading.
-	f = None;
+	with xopen(lang, "rU", encoding="utf8") as f:
+		for line in f:
+			translation.append(line.strip())
 
 	outList = []
 	# find new fields
 	for line in english:
 		# header
 		if re.search("\[Text\]", line, re.I):
-			outList.append(codecs.BOM_UTF8 + "[Text]")
+			outList.append(xutf8header() + "[Text]")
 			continue
 		# ignore comments
 		elif re.match("\s*[;#]", line):
@@ -65,7 +84,7 @@ def update(lang):
 			continue
 		m = transPattern.match(line)
 		if (not m):
-			print "Invalid line: " + line
+			print("Invalid line: " + line)
 			sys.exit(1)
 		untranslated = True
 		for transline in translation:
@@ -75,7 +94,7 @@ def update(lang):
 				untranslated = False
 				break
 		if (untranslated):
-			print ("  +" + m.group(1))
+			print("  +" + m.group(1))
 			outList.append(";TODO: " + line)
 
 	# find unsupported (not in English.ini) translations
@@ -95,7 +114,7 @@ def update(lang):
 			continue
 		m = transPattern.match(line)
 		if (not m):
-			print ("  -" + line)
+			print("  -" + line)
 			outList.append(";INVALID: " + line)
 			continue
 		# check if field is in English.ini
@@ -108,7 +127,7 @@ def update(lang):
 				break
 		# unsupported translation
 		if (unsupported):
-			print ("  -" + m.group(1))
+			print("  -" + m.group(1))
 			outList.append(";UNUSED: " + m.group(1) + "=" + m.group(2))
 
 	# check if file changed
@@ -130,12 +149,9 @@ def update(lang):
 			os.remove(oldLang)
 		os.rename(lang, oldLang)
 
-		f = open(lang, 'wb')
-		for line in outList:
-			# binary mode does not convert "\n" to the os specific line-ending.
-			# Use os.linesep instead.
-			f.write(line + os.linesep)
-		f.close()
+		with xopen(lang, 'w', encoding='utf-8') as f:
+			for line in outList:
+				xwriteline(f, line)
 
 if len(sys.argv) >= 2:
 	# update specific language file passed as command-line argument
