@@ -1144,7 +1144,9 @@ begin
   // TODO: time stamp (in seconds) seems to run slower than actual seconds. IIRC the calculation is correct. Could be related to the Mouse lag while playing
   SetFontSize(FontSize);
   SetFontPos(Max(XTrack + 5, Min(Right - 5 - 2*TimeWidth - 5, TrackPos-(0.5*TimeWidth))), Top-YSkip);
+  {$IFDEF UseMIDIPort}
   MidiTimeToSeconds(MidiFile.GetCurrentTime, tm, ts);
+  {$ENDIF}
   glPrint(Format('%.2d:%.2d', [tm, ts]));
 end;
 
