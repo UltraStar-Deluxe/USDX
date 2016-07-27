@@ -41,9 +41,9 @@ The improved stability and code quality of USDX enabled ports to Linux and Mac O
   SongDir...=... (some more directories)
 ```
 - To take a screenshot press _PrintScreen_ key. Screenshots are saved in the directory `screenshots`.
-- ~~To enable joypad support change config.ini `Joypad=Off` to `Joypad=On`~~
+- To enable joypad support change config.ini `Joypad=Off` to `Joypad=On`
 - To enable 2 or 3 player each on 2 screens, disable the full screen mode, extend your desktop horizontally and set the resolution to fill one screen. Then, in the config.ini set `Screens=2` and restart the game.
-- Press [Shift] + F[1..12] in _NameScreen_ to save the name of a player (alternative use [Alt] instead of [Shift], keep in mind [Alt]+[F4] quits the game on platforms like Windows), press F[1..12] to load the name of a player
+- Press [Shift] + F[1..12] in _NameScreen_ to save the name of a player (alternative use [Shift] instead of [Alt], keep in mind [Alt]+[F4] quits the game on platforms like Windows), press F[1..12] to load the name of a player
 - The primary folder for songs on OS X is `$HOME/Music/UltraStar Deluxe`, which is created when UltraStar Deluxe is run for the first time.
 - On OS X, by default the `config.ini` file is created in `$HOME/Library/Application Support/UltraStarDeluxe` when UltraStar Deluxe is run for the first time.
 
@@ -122,6 +122,30 @@ Start with a customs configuration file and score database:
 | [Alt] + [_Character_] | jump to artist with the first letter/digit _Character_ \(A to Z, 0 to 9\) |
 | [Alt] + [Shift] + [_Character_] | jump to title with the first letter/digit _Character_ \(A to Z, 0 to 9\) |
 | [Spacebar] | when a duet song is selected, switch first and second voice |
+
+####Joypad / Controller
+|Axis | Action|
+| :--- | :--- |
+| D-Pad | Navigation (+switching to non-mouse mode) |
+| Left Stick | Mouse (+switching to mouse mode if not already) |
+| Right Stick | Navigation |
+
+##### Keyboard mode
+|Buttons | Action|
+| :--- | :--- |
+| A / Button 1 | Simulates [Enter] |
+| B / Button 2 | Simulates [Escape] |
+| Y / Button 3 | Simulates [M] |
+| X / Button 4 | Simulates [R] |
+
+##### Mouse mode
+|Buttons | Action|
+| :--- | :--- |
+| A / Button 1 | Simulates _Left Mouse Button_ |
+| B / Button 2 | Simulates _Right Mouse Button_ |
+| Left/Right Stick Button | Simulates _Middle Mouse Button_ |
+| Start | Simulates [Enter] |
+| Select | Simulates [Escape] |
 
 ####Shortcuts for song editor
 |Keys | Action|
