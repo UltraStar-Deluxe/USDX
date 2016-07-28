@@ -132,6 +132,7 @@ type
 
       PlayerStatic:         array[1..UIni.IMaxPlayerCount] of array of integer;
       AvatarStatic:         array[1..UIni.IMaxPlayerCount] of integer;
+      AvatarStaticRef:      array[1..UIni.IMaxPlayerCount] of Integer;
       { texture pairs for swapping when screens = 2
         first array level: index of player ( actually this is a position
           1    - Player 1 if PlayersPlay = 1 <- we don't need swapping here
@@ -794,6 +795,14 @@ begin
         Text[TextTotalScore[I + 1 + Max]].ColG := Col.G;
         Text[TextTotalScore[I + 1 + Max]].ColB := Col.B;
       end;
+      if((PlayersPlay > Max) and (Screen = 2)) then
+      begin
+        Statics[AvatarStaticRef[PlayersPlay-Max+I+1]].Visible:=true;
+      end
+      else if((PlayersPlay > Max) and (Screen = 1)) then
+      begin
+        Statics[AvatarStaticRef[PlayersPlay-Max+I+1]].Visible:=false;
+      end;
     end;
 
     { to keep it simple we just swap all statics, not just the shown ones }
@@ -924,17 +933,30 @@ begin
 
   for I := 1 to PlayersPlay do
   begin
-    AvatarStatic[I + ArrayStartModifier] := AddStatic(Theme.Score.AvatarStatic[I + ArrayStartModifier]);
-    Statics[AvatarStatic[I + ArrayStartModifier]].Texture := AvatarPlayerTextures[I];
-
-    Statics[AvatarStatic[I + ArrayStartModifier]].Texture.X := Theme.Score.AvatarStatic[I + ArrayStartModifier].X;
-    Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Y := Theme.Score.AvatarStatic[I + ArrayStartModifier].Y;
-    Statics[AvatarStatic[I + ArrayStartModifier]].Texture.H := Theme.Score.AvatarStatic[I + ArrayStartModifier].H;
-    Statics[AvatarStatic[I + ArrayStartModifier]].Texture.W := Theme.Score.AvatarStatic[I + ArrayStartModifier].W;
-    Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Z := Theme.Score.AvatarStatic[I + ArrayStartModifier].Z;
-    Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Alpha := Theme.Score.AvatarStatic[I + ArrayStartModifier].Alpha;
-
+    if((Screens = 2) and (PlayersPlay > 3) and (I > 3)) then
+    begin
+      AvatarStatic[I + ArrayStartModifier] := AddStatic(Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier]);
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture := AvatarPlayerTextures[I];
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.X := Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier].X;
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Y := Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier].Y;
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.H := Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier].H;
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.W := Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier].W;
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Z := Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier].Z;
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Alpha := Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier].Alpha;
+    end
+    else
+    begin
+      AvatarStatic[I + ArrayStartModifier] := AddStatic(Theme.Score.AvatarStatic[I + ArrayStartModifier]);
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture := AvatarPlayerTextures[I];
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.X := Theme.Score.AvatarStatic[I + ArrayStartModifier].X;
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Y := Theme.Score.AvatarStatic[I + ArrayStartModifier].Y;
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.H := Theme.Score.AvatarStatic[I + ArrayStartModifier].H;
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.W := Theme.Score.AvatarStatic[I + ArrayStartModifier].W;
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Z := Theme.Score.AvatarStatic[I + ArrayStartModifier].Z;
+      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Alpha := Theme.Score.AvatarStatic[I + ArrayStartModifier].Alpha;
+    end;
     Statics[AvatarStatic[I + ArrayStartModifier]].Visible := true;
+    AvatarStaticRef[I]:=AvatarStatic[I + ArrayStartModifier];
   end;
 
   StaticNavigate := AddStatic(Theme.Score.StaticNavigate);
