@@ -14776,8 +14776,8 @@ const
     OPENGL_LIBNAME = 'libGL.dylib';
     GLU_LIBNAME = 'libGLU.dylib';
   {$ELSE}
-    OPENGL_LIBNAME = 'libGL.so.1';
-    GLU_LIBNAME = 'libGLU.so.1';
+    OPENGL_LIBNAME = 'libGL.so';
+    GLU_LIBNAME = 'libGLU.so';
   {$ENDIF}
 {$ENDIF}
 
