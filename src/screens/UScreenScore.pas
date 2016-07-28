@@ -933,7 +933,7 @@ begin
 
   for I := 1 to PlayersPlay do
   begin
-    if((Screens = 2) and (PlayersPlay > 3) and (I > 3)) then
+    if((Screens = 2) and (PlayersPlay > 3) and (I > Trunc(PlayersPlay/2))) then
     begin
       AvatarStatic[I + ArrayStartModifier] := AddStatic(Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier]);
       Statics[AvatarStatic[I + ArrayStartModifier]].Texture := AvatarPlayerTextures[I];
