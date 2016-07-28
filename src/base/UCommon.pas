@@ -682,8 +682,10 @@ begin
   begin
     x := StrToInt(Copy(ResolutionString, 1, Pos('x', ResolutionString)-1));
     y := StrToInt(Copy(ResolutionString, Pos('x', ResolutionString)+1, 1000));
-    Result := (x > 0) and (y > 0);
-  end;
+  end else Exit;
+
+  // verify if resolution has proper values
+  Result := (x > 0) and (y > 0);
 end;
 
 type
