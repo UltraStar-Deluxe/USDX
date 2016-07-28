@@ -2215,7 +2215,7 @@ end;
 
 function TIni.GetResolution(): string;
 begin
-  if Resolution >= 0 then Result := IResolution[Resolution-1]
+  if Resolution >= 0 then Result := IResolution[Resolution]
   else if Length(IResolution) = 0 then Result := DEFAULT_RESOLUTION
   else Result := IResolution[0];
 end;
