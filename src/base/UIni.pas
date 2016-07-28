@@ -2200,6 +2200,12 @@ end;
 
 function TIni.SetResolution(w,h: integer; RemoveCurrent: boolean; NoSave: boolean): boolean;
 begin
+
+  // hacky fix to support multiplied resolution (in width) in multiple screen setup (Screens=2 and more)
+  // TODO: RattleSN4K3: Improve the way multiplied screen resolution is applied and stored (see UGraphics::InitializeScreen; W := W * Screens)
+  if (Screens > 0) and not ((Params.Split = spmSplit ) or (Split > 0)) then w := w div (Screens+1) // integral div
+  else if (Params.Screens > 0) and not ((Params.Split = spmSplit ) or (Split > 0)) then w := w div (Params.Screens+1);
+
   Result := SetResolution(BuildResolutionString(w, h), RemoveCurrent, NoSave);
 end;
 
@@ -2224,6 +2230,11 @@ function TIni.GetResolution(out w,h: integer): string;
 begin
   Result := GetResolution();
   ParseResolutionString(Result, w, h);
+
+  // hacky fix to support multiplied resolution (in width) in multiple screen setup (Screens=2 and more)
+  // TODO: RattleSN4K3: Improve the way multiplied screen resolution is applied and stored (see UGraphics::InitializeScreen; W := W * Screens)
+  if (Screens > 0) and not ((Params.Split = spmSplit ) or (Split > 0)) then w := w * (Screens+1)
+  else if (Params.Screens > 0) and not ((Params.Split = spmSplit ) or (Split > 0)) then w := w * (Params.Screens+1);
 end;
 
 function TIni.GetResolution(index: integer; out ResolutionString: string): boolean;

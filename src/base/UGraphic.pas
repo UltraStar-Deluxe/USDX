@@ -570,6 +570,10 @@ var
   Borderless, Fullscreen: boolean;
   Split: boolean;
   Disp: TSDL_DisplayMode;
+
+label
+  NoDoubledResolution;
+
 begin
   if (Params.Screens <> -1) then
     Screens := Params.Screens + 1
@@ -600,15 +604,26 @@ begin
   begin
     Log.LogStatus('Use config fullscreen resolution', 'SDL_SetVideoMode');
     S := Ini.GetResolutionFullscreen(W, H);
+
+    // fullscreen resolution shouldn't be doubled as it would not allow running real fullscreen
+    // in a specific resolution if desired and required for some TVs/monitors/display devices
+    Goto NoDoubledResolution;
   end
   else
   begin
     Log.LogStatus('Use config resolution', 'SDL_SetVideoMode');
     S := Ini.GetResolution(W, H);
+
+    // hackfix to prevent a doubled resolution twice as GetResolution(int,int) is already doubling the resolution
+    Goto NoDoubledResolution;
   end;
 
+  // hacky fix to support multiplied resolution (in width) in multiple screen setup (Screens=2 and more)
+  // TODO: RattleSN4K3: Improve the way multiplied screen resolution is applied and stored (see UGraphics::InitializeScreen; W := W * Screens)
   if ((Screens > 1) and not Split) then
   	W := W * Screens;
+
+NoDoubledResolution:
 
   Log.LogStatus('Creating window', 'SDL_SetVideoMode');
 
@@ -720,7 +735,7 @@ begin
     Mode_Fullscreen:
     begin
       SDL_GetWindowDisplayMode(screen, @Disp); // TODO: verify if not failed
-      Ini.GetResolutionFullscreen(Disp.W, Disp.H);
+      Ini.GetResolutionFullscreen(Disp.W, Disp.H); // we use the fullscreen resolution without being doubled, true fullscreen uses non-multiplied one
       SDL_SetWindowDisplayMode(screen, @Disp);
       SDL_SetWindowSize(screen, Disp.W, Disp.H);
     end;
