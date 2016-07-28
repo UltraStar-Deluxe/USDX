@@ -1357,8 +1357,7 @@ begin
   if (ShowFinish) then
     DrawPlayerBars;
 
-  //Draw Theme Objects
-  DrawFG;
+
 
 (*
     //todo: i need a clever method to draw statics with their z value
@@ -1374,7 +1373,8 @@ begin
   begin
     FillPlayerItems(PlayerCounter);
   end;
-
+   //Draw Theme Objects
+  DrawFG;
   Result := true;
 end;
 
