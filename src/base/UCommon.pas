@@ -116,6 +116,8 @@ procedure MergeSort(List: TList; CompareFunc: TListSortCompare);
 function GetAlignedMem(Size: cardinal; Alignment: integer): pointer;
 procedure FreeAlignedMem(P: pointer);
 
+function Equals(A, B: string; CaseSensitive: boolean = false): Boolean; overload;
+
 function GetArrayIndex(const SearchArray: array of UTF8String; Value: string; CaseInsensitiv: boolean = false): integer; overload;
 function GetArrayIndex(const SearchArray: array of integer; Value: integer): integer; overload;
 
@@ -616,6 +618,12 @@ begin
   if (List.Count >= 2) then
     _MergeSort(List, TempList, List, 0, List.Count, CompareFunc);
   TempList.Free;
+end;
+
+function Equals(A,B: string; CaseSensitive: boolean = false): boolean;
+begin
+  if CaseSensitive then Result := A = B
+  else Result := (CompareText(A, B) = 0);
 end;
 
 (**
