@@ -4,8 +4,20 @@
 
 ; Product Information:
 
-!define version "Beta" ; Make sure version is also set in onInit
-!define version2 "1.3"
+!define VersionStr "1.3"
+!define FullVersion "1.3.1-beta+dev" ; semver compatible. see semver.org
+!define Release "Beta"
+!define DevBuild false
+!define ReleaseMeta "-beta"
+!define ReleaseApp " Beta"
+
+
+!define installername " Installer"
+
+; generated
+!define version "${VersionStr}${ReleaseApp}"
+!define meta StrLower($version)
+
 
 !define name "UltraStar Deluxe"
 !define publisher "USDX Team"
@@ -14,8 +26,24 @@
 !define wiki "http://ultrastardeluxe.org"
 
 !define exe "ultrastardx"
+!define exeuninstall "Uninstall"
 
 !define license ".\dependencies\documents\license.txt"
+!define music1 ".\dependencies\loop.wav"
+!define music2 "$PLUGINSDIR\loop.wav"
+
+; Installer
+
+!define installer_version_path "$LOCALAPPDATA\Temp\usdxversion"
+!define installer_exe_path "$LOCALAPPDATA\Temp\usdxupdate.exe"
+!define version_url "http://raw.githubusercontent.com/UltraStar-Deluxe/USDX/release/VERSION"
+!define update_url "https://github.com/UltraStar-Deluxe/USDX/releases/download/%VERSION%/ultrastardx-%VERSIONSTRING%-installer-full.exe"
+!define update_mask_online_version "%VERSION%"
+!define update_mask_installer_version "%VERSIONSTRING%"
+
+; debug - uncomment for testing
+;!define /redef update_url "http://downloads.sourceforge.net/project/ultrastardx/UltraStar%20Deluxe/Version%201.0.1a/ultrastardx-101a-installer-full.exe"
+;!define /redef version_url "http://raw.githubusercontent.com/UltraStar-Deluxe/USDX/master/VERSION"
 
 ; Icons
 
@@ -35,6 +63,7 @@
 !define PRODUCT_WEB_SITE "${homepage}"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name} ${version}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
+!define PRODUCT_PATH "$PROGRAMFILES\${name} ${version}"
 
 ; Download URLs for Songs and Themes:
 

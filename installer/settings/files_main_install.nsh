@@ -93,7 +93,7 @@ File ..\README.txt
 File .\dependencies\documents\license.txt
 File .\dependencies\documents\documentation.pdf
 
-File "..\${exe}.exe"
+File ..\game\${exe}.exe
 
 ; Covers dir:
 

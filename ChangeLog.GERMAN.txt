@@ -1,0 +1,350 @@
+﻿Ultrastar Deluxe 1.1
+-----------------------------
+
+--------------
+Plattform
+--------------
+Upd: Plattformunabhängige Codebasis
+Upd: Codebasis unabhängig von der Byte-Reihenfolge
+Add: Unterstützung für Linux und FreeBSD (beide x86/x86_64)
+Add: Unterstützung für Mac OS X (Intel 10.5/10.6)
+
+--------------
+Audio
+--------------
+Upd: Audio Ausgabe und Eingabe komplett neu implementiert
+Upd: Austauschbare Audio/Video Module
+       - Bass Eingabe/Ausgabe/Dekodierung (Nur Windows)
+       - SDL Audio Ausgabe (Alle Plattformen)
+       - Portaudio Eingabe/Ausgabe (Alle Plattformen)
+       - FFmpeg Dekodierung (Alle Plattformen)
+Upd: Es können nun auch Videodateien für das #MP3 Tag verwendet werden (der erste Audiostream des Videos wird verwendet)
+Add: Mikrofon Weiterleitung (sehr experimentell)
+Fix: Ein Start ohne angeschlossenes Mikrofon führt nicht mehr zum Absturz
+Add: Hintergrundmusik
+
+--------------
+Video
+--------------
+Upd: Videodekodierung überarbeitet
+Upd: Windows: FFmpeg Version aktualisiert
+Upd: Einige Performanceverbesserungen
+
+--------------
+Interface
+--------------
+Upd: Videohintergründe für Themes
+Upd: Performance im Songscreen bei vielen Songs verbessert
+Upd: Themewechsel ohne Neustart möglich
+Upd: Neue Punkteanzeige im Singscreen (animiert)
+Upd: Score Screen umgestaltet (Animationen)
+Upd: Deluxe Theme komplett überholt (ty mog)
+Upd: Party Plugins können vor dem Spiel ausgewählt werden
+Upd: Default Skin und Color kann in Themes bzw. Skins gespeichert werden
+Add: Visualisierungen (mit projectM) als Hintergrund beim Singen
+Upd: Truetype Schriften (durch freetype) anstatt der alten Bitmap Font
+     -> Unterstützung internationale Zeichensätze
+     -> glatteres Schriftbild
+Upd: Neuer Lyrics Effekt: Shift
+Upd: Mehr als ein Songpfad kann in der config.ini (SongDirX) angegeben werden
+Upd: Mikrofon Einstellungen vereinfacht
+      - Vu-meter für einkommende Signale auf dem gewählen Eingang
+      - Anzeige für Eingangslautstärke
+      - Eingangslautstärke über '+' und '-' Tasten regelbar
+      - Anzeige für Rauschunterdrückung (grauer Balken)
+      - Rauschunterdrückung (Threshold) änderbar mit Taste 'T'
+Upd: Internationales Keyboard-Layout (einheitliche Shortcuts bei QWERTZ, QWERTY, AZERTY, ...)
+Rem: verwirrende Solmization Option entfernt
+Add: Textreflektionen für Themes
+Add: Notenlinien in den Optionen abschaltbar
+Add: Maus-Unterstützung
+Add: Texturtyp "Colorized": Textur wird über Hue-Wert (siehe HSB-Farbmodell) eingefärbt
+Add: Overlay bei aktiviertem Pause-Modus im SingScreen
+Fix: Einige "Screens=2" Bugs
+Add: Unicode support: Alle "druckbaren" Zeichen sollten nun mit den Eingabefeldern (z.B. Spielernamen) funktionieren
+Add: Fenstergröße veränderbar
+Add: Wechsel von Vollbild und Fenstermodus mit ALT+Eingabe (nur Linux und FreeBSD)
+Fix: Aktion bei Eingabe und Return (Zehnertastatur) ist nun gleich
+Add: VideoPreview in der Songauswahl
+Add: Zeitanzeige mit Taste 'T' wählbar zwischen aktueller Position, Restanzeige und Gesamtzeit
+Add: Unterstützung des Benutzers bei den Konfiguration der Mikrofone durch Fehlermeldungen, wenn Spieler mehrere oder keine Mikrofone zugewiesen wurden
+
+--------------
+Intern
+--------------
+Upd: Synchronisation von Lyrics, Video und Audio
+     (Vorher wurden die verschiedenen Timer nicht synchronisiert)
+     Es kann per config.ini ("SyncTo"-Option) gewählt werden zwischen:
+      - Lyrics und Video gegen Audio synchronisieren (Standard)
+      - Audio und Video gegen Lyrics synchronisieren
+      - keine Synchronisation
+Upd: Lua Plugin Interface anstatt des alten DLL Interfaces
+Upd: Select Objekt entfernt stattdessen wird überall Select Slide verwendet
+Upd: Verbesserte Stabilität und aufgeräumte Codebase
+Fix: Einige Fehler/Crashes im Midi/Kar-Konverter behoben
+Upd: Vista/Win7 Konformität: Konfigurationsdateien werden im Benutzerordner abgelegt. Ein Programmstart von CD/DVD sollte nun möglich sein.
+Upd: Cover-Thumbnails werden in einer SQLite Tabelle gespeichert
+     -> Verlässlicher als die alte Lösung; leichte Performance-Einbußen beim Start
+Fix: hängende Maus nach Alt-Tab durch Austausch der SDL.dll behoben
+Fix: bessere Erkennung des Endes eines Songs/Videos bei Verwendung von FFmpeg
+Upd: Windows: Benutzerdaten werden nun im Installationsordner abgelegt falls Schreibrechte darauf existieren, anderenfalls in APPDATA
+
+--------------
+Song Dateien
+--------------
+Upd: Unterstützung für UTF8
+Upd: #Encoding Tag
+      - CP1250: Mittel-/Osteuropäische Kodierung; wird standardmäßig von Corvus Ultrastar benutzt (sollte für neue Dateien nicht verwendet werden)
+      - CP1252: Westeuropäische Kodierung; wurde standardmäßig von Ultrastar Deluxe vor 1.1 benutzt (sollte für neue Dateien nicht verwendet werden)
+      - Locale: Benutzt die Systemkodierung (sollte für neue Dateien nicht verwendet werden)
+      - UTF8:   Textdatei ist in UTF8 kodiert (empfohlen)
+Upd: Sollte kein #Encoding Tag oder UTF-8 BOM in der Song Datei vorhanden sein, wird der in der config.ini
+  gewählte Standardwert der "Encoding" Option genutzt:
+  - Werte:
+    - "Auto" (Standard), "UTF8",
+    - "CP1252" (USDX<1.1 Standard), "CP1250" (alter US Standard), "Locale" (Systemkodierung)
+  - WICHTIG:
+    - "CP1252", "CP1250" und "Locale" dienen nur zur Kompatibilität mit älteren USDX und US Versionen,
+      neue Song Dateien sollten immer in UTF-8 mit BOM gespeichert werden.
+Upd: Unterstützung für UTF8 BOM (neuer Standard in Ultrastar Deluxe)
+Upd: #Year Tag wird gelesen und gespeichert
+Fix: Kein Absturz mehr, wenn kein Lyrics-Zeilenumbruch in der Datei ist
+Fix: Leere Lyrics Zeilen werden ignoriert
+Fix: Der Editor löscht beim Speichern keine unbekannten Tags mehr aus den TXT-Dateien
+
+UltraStar Deluxe 1.01a
+-----------------------------
+Fix: VideoGap funktioniert wieder mit Mpeg Videos
+Fix: Video Start wird nun richtig berechnet, wenn der Start-Tag benutzt wird
+
+UltraStar Deluxe 1.01
+-----------------------------
+Upd: Neue SDL-Lib
+Upd: Neue Bass.dll
+Upd: Video support neu geschrieben (FFMpeg anstatt SMPeg)
+     ->Fast alle Videoformate werden nun unterstützt. Bessere Synchronisation der meisten Videos.
+Upd: Theme, Skin und Farbe können ohne Neustart geändert werden
+Upd: Einige Geschwindigkeitsverbesserungen
+Upd: Backspace ist nun identisch mit ESC bei den meisten Screens
+Upd: Editor: Singlenote-playback (SHIFT + Leertaste / STRG + SHIFT + Leertaste)
+Upd: Editor: Mehr Buchstaben funktionieren nun im Texteditmodus z.B. '~'
+Upd: Deluxe-Theme verschönert.
+       - Neue Texturen für die Leiste
+       - Neue Hintergründe für die Deluxe Skins
+       - Farbe ist nun im Deluxe-Theme änderbar \o/
+Upd: Executable Name zu USdx.exe geändert
+Upd: Neue Sounds für die Menüs
+Upd: 3 neue Skins von Skar/Alajasam hinzugefügt
+Upd: TeamDuell (ähnlich Gib das Mikro weiter) Modiplugin hinzugefügt
+
+Add: Installer verfügbar
+
+Fix: 4/6 Spieler: Richtige Punktzahlen werden auf dem Scorescreen angezeigt
+Fix: Doppeltes hinzufügen der Scores bei Screens=2
+Fix: Überlappen einiger Artistennamen mit den Songname sollte nun in den meisten Fällen gefixed sein.
+Fix: License- und Readme.txt Dateien tauchen nicht mehr in der error.log auf
+Fix: Einige Sounds, (hauptsächlich der Editor 'klick'-Sound) waren zu leise
+Fix: USdx sollte nun mit Girder funktionieren
+
+UltraStar Deluxe 1.00 (by Ultrastar Deluxe Team)
+-----------------------------
+
+--------------
+Theme System
+--------------
+Upd: Neues Skin/Theme System aus Ultrastar 0.5.1
+Upd: Laden von selbsterstellten Themes ermöglicht
+Upd: Covereigenschaften in Theme.ini ausgelagert (z.B. Position)
+Upd: Optionale Coverspiegelungen hinzugefügt
+Upd: Neue Coveranordnung (Bessereres Aussehen mit vielen Songs). (Kann im Theme an und ausgeschaltet werden)
+Upd: SongScreen Equalizer Objekt hinzugefügt
+Upd: Optionale Spiegelungen zu Buttons und Statics hinzugefügt. (Reflection = 1)
+Upd: Buttons können nun im Theme zu Gruppen zusammengefasst werden.z.B. Deluxe Theme Main Menu Tools Collection.
+Upd: Buttons könen vom Theme ausgeblendet werden. z.B. für den Exit Button, oder falls Hotkeys existieren.
+Upd: Texte können nun eine Länge (w= ..) erhalten. Sie werden dann bei der gegebenen Länge umgebrochen.
+
+--------------
+Aufnahme Optionen
+--------------
+Upd: Ultrastar 0.5.2 Recording Optionen hinzugefügt
+Fix: Soundcard Einträge wurden mehrmals in die Config.Ini eingetragen
+Fix: Mehr als ein Singstaradapter sind jetzt möglich(2 Soundkarten mit dem selben Namen)
+
+--------------
+Song Screen
+--------------
+Upd: Playlist Support hinzugefügt
+
+Upd: Song Suche (mit Interface)
+Upd: Jump to Letter Hotkey
+Upd: Songscreen Menu ähnlich wie bei Singstar
+Upd: Spielernamen können nun vor dem Singen geändert werden
+Upd: Song Vorschau Lautstärke kann nun geändert werden
+Upd: Song Vorschau kann eingefadet werden
+
+--------------
+Party Modus
+--------------
+Upd: Party Modus hinzugefügt:
+       3 Teams mit bis zu 4 Spielern möglich
+       => insgesamt 12 Spieler
+Upd: Modi SDK: Party Modi können mit etwas Programmiererfahrung leicht erstellt werden.
+Upd: 4 Standard Party Modi Plugins: Duell, Hold the Line, Until 5000, Blind Mode
+
+--------------
+Effekte
+--------------
+Upd: Neue Perfect Note Effekte
+Upd: Effekt bei perfekt gesungenem Satz hinzugefügt
+Upd: Goldene Noten haben jetzt einen Singstar ähnlichen Glitzereffekt, und sind nicht mehr gelb.
+Upd: Neuer Effekt bei getroffenen Goldenen Noten
+Upd: Neuer Menü-Übergangs-Effekt: Screen verschwimmt und "fliegt aus dem Bild heraus". Neue Möglichkeiten für Theme-Ersteller
+
+--------------
+Sonstiges
+--------------
+Upd: Deluxe Theme hinzugefügt: Theme mit PS3 ähnlichem Aussehen
+Upd: Neues Score Speicherungssystem (basierend auf SQLite)
+Upd: Statistiken hinzugefügt. Generelle Statistiken und
+     Beste Scores, Beste Sänger, beliebteste Songs, beliebteste Bands
+Upd: Einige On Screen Fehler Benachrichtigungen hinzugefügt, die neuen Spielern helfen sollten.
+Upd: Neuer Erweiterter Options Screen hinzugefügt
+Upd: Abfrage vor dem Beenden hinzugefügt
+Upd: Song Hintergrundbilder können jetzt auch auf voller Bildschrimfläche dargestellt werden.
+Upd: Im Editor werden jetzt zusätzlich die richtigen Notennamen ausgegeben (C, F#, etc.)
+Upd: Neue Schriftarten
+Upd: Bessere Unterstützung für Kommandozeilen Parameter
+Fix: Nahezu keine Abstürze mehr wegen fehlerhaften TXT-Dateien.
+     In Game Popup hinzugefügt und einen Rücksprunk zum Songscreen.
+     Selbst der Partymodus wird nicht unterbrochen.
+Fix: Workaround für Cover und Hintergrund JPEG-Errors
+Fix: Videosize kann wieder geändert werden.
+Fix: Bug in LineBonus Popup behoben das zu Speicherüberläufen führen kann.
+Fix: Bug in SelectSlide behoben der zu Fehlern mit weniger als 3 optionen führen kann.
+     Automatisches Resizing hinzugefügt
+Fix: Backgrounds can be used now in option Screens, too
+Fix: Unnützer Speicherverbauch wenn ein Song mit Video abgespielt wird. Einige Videodaten blieben im Speicher nachdem der Song beendet wurde.
+     Dies könnte zu einem Out Of Memory Error führen wenn viele Songs mit Video gespielt werden.
+Fix: Einige Speichernutzungs und Ladezeit Updates
+Fix: Falsche Satzübergänge wenn T im Editor benutzt wurde und sich 2 Noten von verschiedenen
+     Sätzen überlagerten.
+Fix: Editor stürzte ab wenn die letzte Note eines Satzes gelöscht wurde.
+Fix: [Midi Converter]Noten wurden mehrmals hinzugefügt wenn eine Datei mehrmals geöffnet wurde
+                     oder der Save Button mehrmals gedrückt wurde.
+Fix: [Midi Converter]Satzübergänge werden nun vom Mide Converter automatisch berechnet.
+
+UltraStar 0.5.0 ultra-star.dl.am Mod X-Mas Edition (by Mota und Whiteshark)
+-----------------------------
+Upd: Neue schnellerer und fehlerresistenter Headereinlesefunktion
+Upd: Bewertungs Bar (Singstar Like)
+Upd: PhrasenBonus + Popups
+
+Upd: Skin verschönert
+
+UltraStar 0.5.0 ultra-star.dl.am Mod r10 (by Mota und Whiteshark)
+-----------------------------
+Fix: Ein kleiner Bug bei der Pause Funktion wurde gefixt.
+Fix: Ein Bug im Theme System wurde behoben. (SelectSlide konnte nicht weniger als 3 Einträge enthalten.)
+Fix: Skin, Beschränkung auf 4 Skins aufgehoben
+Fix: Noten Texturen werden anders/besser eingelesen
+
+Upd: Zahlen bei der Songauswahl sind jetzt sinnvoller.
+Upd: Anzahl der Songs die eine Kategorie beinhaltet wird in der Übersicht angezeigt
+Upd: Neuer Notenskin
+
+Upd: LanguageTag + Sortierung
+Upd: Unterstützung der Covers.ini aus 0.5.1 - Für alle Sortier-Funtionen. Die alte Möglichkeit ohne die Covers.ini ist weiterhin möglich, genauso wie eine Kombination beider Methoden.
+
+UltraStar 0.5.0 ultra-star.dl.am Mod r9 (Release by Whiteshark)
+-----------------------------
+
+Upd: BPM und VideoGap Angaben mit Punkt werden jetzt auch eingelesen. Es wird aber in diesem Fall in der Error.log eine meldung mit dem Namen des Fehlerhaften Songs ausgegeben.
+Upd: Sollte beim Einlesen eines Songs(speziell beim Header) ein Fehler auftreten wird in der Error.log der Songname + Zeile ausgegeben.
+
+Upd, Beta: Pause. P drücken und der Song wird pausiert, nocheinmal P und es kann wieder gesungen werden. Noch keine Anzeige ob Pause aktiviert wird, und noch kein Pause Menü.
+
+bekannte Probleme:
+Stellt man die Aufnahme Funktion ein, kommt es zu einem extremen CPU-Zeit verbrauch und es fängt an zu Laggen
+
+UltraStar 0.5.0 ultra-star.dl.am Mod r8b (Release by Whiteshark)
+-----------------------------
+Fix: Random Funktionen funktionieren alle ohne Fehler
+Fix: In der Kategorieauswahl wird jetzt beim Start immer die erste Kategorie angezeigt
+Fix: Musik wird nach Kategoriewechsel korrekt abgespielt
+Fix: Richtiger Text wird jetzt nicht mehr zu falscher Musik abgespielt
+Fix: Nach Beenden eines Songs ist dieser jetzt wieder in der Übersicht angewählt
+Fix: Midi-konvertor Bug behoben (Nur Freestyle Noten anstatt Normalen)
+
+Thx to: dennisthemenace und mota für die super Bug-Reports :P
+
+Upd: doomhammers Cover sind Integriert: thx to doomhammer
+
+UltraStar 0.5.0 ultra-star.dl.am Mod r8a (Release by Whiteshark)
+-----------------------------
+Fix: Theme System konnte nicht ausgewählt werden (workaround: Nur bis zu 4 Themes möglich)
+Fix: Richtige Kategorie wird angezeigt nach Druck von Escape
+
+Upd: Neue Random Funktionen: R + [Strg]: Random in allen Kategorien (Hier wird die Kategorie oben noch falsch angezeigt); R + [Shift]: Zufällige Kategorie
+Upd: Gerade gewählte Kategorie wird oben links in der Ecke gezeigt
+
+UltraStar 0.5.0 ultra-star.dl.am Mod r8 (Release by Whiteshark)
+-----------------------------
+Fix: Creatorbug behoben
+Fix: Wenn Tabs=on kam es manchmal vor das der angewählte Song nicht mit dem Angezeigten übereingestimmt hat
+
+Upd: Theme System komplett
+   -Bei Start nach Themes Suchen
+   -Den ThemeOptions Screen ändern
+Upd: Neue Farben für Themes :)
+Upd: kleine änderungen am Editor
+   -Leerzeichen im Header werden automatisch korrigiert
+   -Header ist nicht mehr Case Sensitive
+
+Upd: Skin Ordner gesäubert, Es gibt jetzt 2 Skins: Motas und der Original Skin
+Upd: Ordner haben ihr eigenes Cover, welches angezeigt wird falls kein spezielles Cover vorhanden ist
+Upd: Der BewertungsText (Ultrastar, Singstar, etc.) kann jetzt übersetzt werden
+
+Upd: Falls eine Sprache nicht komplett ist werden die nicht übersetzten Texte, mit der Englischen Sprachdatei übersetzt. (Falls es zu nicht kompletten Sprachdateien kommt)
+
+Upd: neues Kategorie System:
+   -Wenn eine Kategorie angewählt wird, werden nur die enthaltenden Songs angezeigt.
+   -Mit Escape gehts zurück in die Kategorie Auswahl
+   -Mit Hoch und Runter kann die Kategorie gewechselt werden.
+
+UltraStar 0.5.0 mota patch r7 (Release by Mota)
+-----------------------------
+- Neues Notendesign.
+- versch. Neue Grafiken.
+- Neue Bewertung "Ultrastar" ab 9810 Punkte.
+- Textgröße-Bug im Editor behoben.
+
+UltraStar 0.5.0 mota patch r6 - 17.11.06 (Release by Mota)
+----------------------------------------
+- Editiorfunktionen für Goldene/Freestyle-Noten. (Tasten [G] und [F])
+- Speicherfunktion des Editors angepasst.
+- Verändertes Theme "SingStar".
+
+UltraStar 0.5.0 mota patch r5 - 16.11.06 (Release by Mota)
+----------------------------------------
+- Goldene Noten werden dargestellt
+- Zufallsauswahl verbessert
+
+UltraStar 0.5.0 mota patch r4 (Release by Mota)
+-----------------------------
+- Perfekt-Stern animation
+
+UltraStar 0.5.0 mota patch r3 (Release by Mota)
+-----------------------------
+- Sortierung Title2 und Artist2 -> Zahlen in Ordner "#"
+
+UltraStar 0.5.0 mota patch r2 (Release by Mota)
+-----------------------------
+- Eigene Cover für alle Sortierungen
+
+UltraStar 0.5.0 mota patch (Release by Mota)
+--------------------------
+- Eigene Cover für Sortierung nach Edition.
+
+UltraStar 0.5.0 (by Corvus5)
+--------------------------
+- Original Code
