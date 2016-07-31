@@ -16,8 +16,9 @@
  RMDir /r "$INSTDIR\avatars"
 
 ; Delete remaining files
- Delete "$INSTDIR\ScoreConverter.exe"
  Delete "$INSTDIR\${exe}.exe"
+ Delete "$INSTDIR\${exeupdate}.exe"
+ Delete "$INSTDIR\ScoreConverter.exe"
  Delete "$INSTDIR\ChangeLog.GERMAN.txt"
  Delete "$INSTDIR\ChangeLog.txt"
  Delete "$INSTDIR\LuaCommands.odt"
@@ -119,7 +120,7 @@
 
 ; Self delete:
 
- Delete "$INSTDIR\Uninstall.exe"
+ Delete "$INSTDIR\${exeuninstall}.exe"
 
  StrCpy $0 "$INSTDIR"
  Call un.DeleteIfEmpty

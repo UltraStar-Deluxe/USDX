@@ -27,6 +27,7 @@
 
 !define exe "ultrastardx"
 !define exeuninstall "Uninstall"
+!define exeupdate "Update"
 
 !define license ".\dependencies\documents\license.txt"
 !define music1 ".\dependencies\loop.wav"

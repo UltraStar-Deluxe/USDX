@@ -64,7 +64,9 @@ XPStyle on
 
 Name "${name} ${version} - Update"
 Brandingtext "${name} ${version} - Update"
-OutFile "ultrastardx-${VersionStr}${ReleaseMeta}-update.exe"
+
+!system 'md "dist"'
+OutFile "dist\${exeupdate}.exe"
 
 InstallDir "${PRODUCT_PATH}"
 

@@ -94,6 +94,7 @@ File .\dependencies\documents\license.txt
 File .\dependencies\documents\documentation.pdf
 
 File ..\game\${exe}.exe
+File .\dist\${exeupdate}.exe
 
 ; Covers dir:
 

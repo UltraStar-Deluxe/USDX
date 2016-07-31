@@ -9,6 +9,9 @@
 !include nsDialogs.nsh
 !include UAC.nsh
 
+; Build updater first
+!system '"${NSISDIR}\makensis.exe" "Update.nsi"' = 0
+
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Variables
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
@@ -44,7 +47,9 @@ XPStyle on
 
 Name "${name} ${version}"
 Brandingtext "${name} ${version} Installation"
-OutFile "ultrastardx-${VersionStr}${ReleaseMeta}-installer-full.exe"
+
+!system 'md "dist"'
+OutFile "dist\ultrastardx-${VersionStr}${ReleaseMeta}-installer-full.exe"
 
 InstallDir "${PRODUCT_PATH}"
 InstallDirRegKey "${PRODUCT_UNINST_ROOT_KEY}" "${PRODUCT_UNINST_KEY}" "InstallDir"
@@ -393,6 +398,7 @@ Section $(name_section1) Section1
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(sm_website).lnk" "${homepage}"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(sm_songs).lnk" "$INSTDIR\songs"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(sm_uninstall).lnk" "$INSTDIR\${exeuninstall}.exe"
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(sm_update).lnk" "$INSTDIR\${exeupdate}.exe"
 !insertmacro MUI_STARTMENU_WRITE_END
 
 	; Vista Game Explorer:
@@ -452,6 +458,7 @@ Section Uninstall
 	Delete "$SMPROGRAMS\$StartMenuFolder\$(sm_website).lnk"
 	Delete "$SMPROGRAMS\$StartMenuFolder\$(sm_songs).lnk"
 	Delete "$SMPROGRAMS\$StartMenuFolder\$(sm_uninstall).lnk"
+	Delete "$SMPROGRAMS\$StartMenuFolder\$(sm_update).lnk"
 	RMDir "$SMPROGRAMS\$StartMenuFolder"
 	
 	DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
