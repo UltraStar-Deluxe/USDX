@@ -139,10 +139,10 @@ def update(lang, createortransfer = False, noremove = False):
 		return
 		
 	# create a backup first
-	# oldLang = lang + ".bak"
-	# if (os.path.exists(oldLang)):
-		# os.remove(oldLang)
-	# os.rename(lang, oldLang)
+	oldLang = lang + ".bak"
+	if (os.path.exists(oldLang)):
+		os.remove(oldLang)
+	os.rename(lang, oldLang)
 	
 	outList = []
 	outKeys = []
@@ -262,7 +262,7 @@ def update(lang, createortransfer = False, noremove = False):
 	print ("Removed translations: %i"  % (0 if noremove else langcheck.count(True) - ((len(outTodo)-outKeys.count("")) - outTodo.count(True))))
 	print ("New translations: %i"  % (outTodo.count(True)))
 			
-	with xopen(lang+"new", 'w', encoding='utf-8') as f:
+	with xopen(lang, 'w', encoding='utf-8') as f:
 		n = len(outList)
 		for i in range(0, n):
 			if outTodo[i] == True:
