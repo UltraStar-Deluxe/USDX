@@ -35,9 +35,9 @@ ${LangFileString} update_check_failed "Az ellenõrzés sikertelen. Kívánja bet
 ; Welcome Page:
 
 ${LangFileString} page_welcome_title_update "Üdvözli Önt az ${name} frissítési varázslója!"
-${LangFileString} page_welcome_txt_update "Ez a varázsló végigvezeti Önt az ${name} frissítési folyamatán. Az ${name} egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\rAz ${name} csapata jó szórakozást kíván!$\n$\rA projekt weboldala: http://www.ultrastardeluxe.org/$\n$\rTámogatás a fórumunkon: http://forum.ultrastardeluxe.org/"
+${LangFileString} page_welcome_txt_update "Ez a varázsló végigvezeti Önt az ${name} frissítési folyamatán. Az ${name} egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\r${publisher} csapata jó szórakozást kíván!$\n$\r$\n$\rA projekt weboldala:$\n$\r${homepage}$\n$\r$\n$\rTámogatás a fórumunkon:$\n$\r${forum}"
 ${LangFileString} page_welcome_title "Üdvözli Önt az ${name} telepítési varázslója!"
-${LangFileString} page_welcome_txt "Ez a varázsló végigvezeti Önt az ${name} telepítési folyamatán. Az ${name} egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\rAz ${name} csapata jó szórakozást kíván!$\n$\rA projekt weboldala: http://www.ultrastardeluxe.org/$\n$\rTámogatás a fórumunkon: http://forum.ultrastardeluxe.org/"
+${LangFileString} page_welcome_txt "Ez a varázsló végigvezeti Önt az ${name} telepítési folyamatán. Az ${name} egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\r${publisher} csapata jó szórakozást kíván!$\n$\r$\n$\rA projekt weboldala:$\n$\r${homepage}$\n$\r$\n$\rTámogatás a fórumunkon:$\n$\r${forum}"
 ${LangFileString} page_un_welcome_title "Üdvözli Önt az ${name} eltávolítási varázslója!"
 
 ; Components Page:

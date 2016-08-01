@@ -34,9 +34,9 @@ ${LangFileString} update_check_failed "La comprobación ha fallado, ¿Quieres vi
 ; Welcome Page:
 
 ${LangFileString} page_welcome_title_update "Bienvenido al asistente de instalación de ${name}"
-${LangFileString} page_welcome_txt_update "El asistente te guiará a través de este proceso. ${name} es un juego gratuito y libre.$\n$\r$\n$\r El equipo de ${name} os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web: http://www.ultrastardeluxe.org$\n$\r"
+${LangFileString} page_welcome_txt_update "El asistente te guiará a través de este proceso. ${name} es un juego gratuito y libre.$\n$\r$\n$\r${publisher} os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web:$\n$\r${homepage}"
 ${LangFileString} page_welcome_title "Bienvenido a la instalación de ${name}"
-${LangFileString} page_welcome_txt "El asistente te guiará a través de este proceso. ${name} es un juego gratuito y libre.$\n$\r$\n$\r El equipo de ${name} os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web: http://www.ultrastardeluxe.org$\n$\r"
+${LangFileString} page_welcome_txt "El asistente te guiará a través de este proceso. ${name} es un juego gratuito y libre.$\n$\r$\n$\r${publisher} os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web:$\n$\r${homepage}"
 ${LangFileString} page_un_welcome_title "Bienvenido a la desinstalación de ${name}"
 
 ; Components Page:

@@ -34,9 +34,9 @@ ${LangFileString} update_check_failed "A verificação de uma nova versão falho
 ; Welcome Page:
 
 ${LangFileString} page_welcome_title_update "Bem-vindo ao assistente de actualização do ${name}"
-${LangFileString} page_welcome_txt_update "Este assistente irá guiá-lo através do processo de atualização do ${name}. ${name} é um jogo de Karaoke livre de código aberto, que pode ser comparado com o Singstar.$\n$\r$\n$\rA equipa do ${name} deseja-lhe que se divirta.$\n$\r$\n$\rWebsite do projecto: http://www.ultrastardeluxe.org$\n$\rForúm Suporte: http://forum.ultrastardeluxe.org"
+${LangFileString} page_welcome_txt_update "Este assistente irá guiá-lo através do processo de atualização do ${name}. ${name} é um jogo de Karaoke livre de código aberto, que pode ser comparado com o Singstar.$\n$\r$\n$\r${publisher} deseja-lhe que se divirta.$\n$\r$\n$\rWebsite do projecto:$\n$\r${homepage}$\n$\r$\n$\rForúm Suporte:$\n$\r${forum}"
 ${LangFileString} page_welcome_title "Bem-vindo ao assistente de instalação do ${name}"
-${LangFileString} page_welcome_txt "Este assistente irá guiá-lo através do processo de instalação do ${name}. ${name} é um jogo de Karaoke livre de código aberto, que pode ser comparado com o Singstar.$\n$\r$\n$\rA equipa do ${name} deseja-lhe que se divirta.$\n$\r$\n$\rWebsite do projecto: http://www.ultrastardeluxe.org$\n$\rForúm Suporte: http://forum.ultrastardeluxe.org"
+${LangFileString} page_welcome_txt "Este assistente irá guiá-lo através do processo de instalação do ${name}. ${name} é um jogo de Karaoke livre de código aberto, que pode ser comparado com o Singstar.$\n$\r$\n$\r${publisher} deseja-lhe que se divirta.$\n$\r$\n$\rWebsite do projecto:$\n$\r${homepage}$\n$\r$\n$\rForúm Suporte:$\n$\r${forum}"
 ${LangFileString} page_un_welcome_title "Bem-vindo ao assistente de desinstalação do ${name}"
 
 ; Components Page:
