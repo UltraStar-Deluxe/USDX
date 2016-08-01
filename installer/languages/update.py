@@ -75,13 +75,10 @@ with xopen("English.nsh", "rU", encoding="utf8") as f:
 	for line in f:
 		english.append(line.strip())
 
-#transPattern = re.compile('^.*?\s+([\w_0-9]+)\s+"(\X*?)"$')
-#transPattern = re.compile(".*LangFileString")
 transPattern = re.compile('^\s*\$.*?\s+(?P<key>[\w_0-9]+)\s+"(?P<trans>.*)"$')
 headerPattern = re.compile('!insertmacro\s+(LANG[\w_0-9]*)\s*(?P<trans>[\w_0-9]+)')
 headerReplacement = '!insertmacro LANGFILE_EXT %s'
 replacementPattern = '${LangFileString} %s "%s"'
-repPattern = '%s %s'
 
 
 englishkeys,englishtrans = parse(english, transPattern)
@@ -101,19 +98,20 @@ def update(lang, createortransfer = False, noremove = False):
 	langcheck = []
 	langkeys = []
 	langtrans = []
-	with xopen(lang, "rU", encoding="utf8") as f:
-		for line in f:
-			stripped = line.strip()
-			langlines.append(stripped)
-			m = transPattern.match(stripped)
-			if (m):
-				langcheck.append(True)
-				langkeys.append(m.group('key'))
-				langtrans.append(m.group('trans'))
-			else:
-				langcheck.append(False)
-				langkeys.append("")
-				langtrans.append("")
+	if os.path.exists(lang):
+		with xopen(lang, "rU", encoding="utf8") as f:
+			for line in f:
+				stripped = line.strip()
+				langlines.append(stripped)
+				m = transPattern.match(stripped)
+				if (m):
+					langcheck.append(True)
+					langkeys.append(m.group('key'))
+					langtrans.append(m.group('trans'))
+				else:
+					langcheck.append(False)
+					langkeys.append("")
+					langtrans.append("")
 
 	if createortransfer == True:
 		with xopen(lang, 'w', encoding='utf-8') as f:
@@ -139,10 +137,11 @@ def update(lang, createortransfer = False, noremove = False):
 		return
 		
 	# create a backup first
-	oldLang = lang + ".bak"
-	if (os.path.exists(oldLang)):
-		os.remove(oldLang)
-	os.rename(lang, oldLang)
+	if os.path.exists(lang):
+		oldLang = lang + ".bak"
+		if (os.path.exists(oldLang)):
+			os.remove(oldLang)
+		os.rename(lang, oldLang)
 	
 	outList = []
 	outKeys = []
@@ -155,15 +154,15 @@ def update(lang, createortransfer = False, noremove = False):
 	# remove lines which do not exist in new language file
 	n = len(langlines)
 	for i in range(0, n):
+		if re.match("\s*;\s*TODO", langlines[i]):
+			print("Old TODO removed: %s" % (langlines[i]))
+			continue
+			
 		key = langkeys[i]
 		if key == "":
 			outList.append(langlines[i])
 			outKeys.append("")
 			outTodo.append(False)
-			continue
-			
-		if re.match("\s*;\s*TODO", langlines[i]):
-			print("Old TODO removed '%s' with: %s" % (key, langlines[i]))
 			continue
 				
 			
@@ -224,7 +223,7 @@ def update(lang, createortransfer = False, noremove = False):
 		w = index_in_eng-1
 		while w >= 0:
 			if englishkeys[w] == "": break # previous item wasn't a key, skip and search for next
-			elif re.match("^\s*;", outList[w]): break # is a comment
+			elif re.match("^\s*;", englishkeys[w]): break # is a comment
 			elif englishkeys[w] in outKeys:
 				index_insert = outKeys.index(englishkeys[w])
 				break
@@ -273,16 +272,20 @@ def update(lang, createortransfer = False, noremove = False):
 				
 if len(sys.argv) >= 2:
 	# update specific language file passed as command-line argument
-	update(sys.argv[1], sys.argv[2] if len(sys.argv) > 1 else False, sys.argv[3] if len(sys.argv) > 2 else False)
+	createortransfer = False
+	if len(sys.argv) > 2: createortransfer = sys.argv[2];
+	noremove = False
+	if len(sys.argv) > 3: noremove = sys.argv[3];
+	update(sys.argv[1], createortransfer, noremove)
 else:
-	# update all language (ini) files
-	iniList=os.listdir(".")
-	for ini in iniList: 
-		if not re.search(".ini$", ini):
+	# update all language (nsh) files
+	nshList=os.listdir(".")
+	for nsh in nshList: 
+		if not re.search(".nsh$", nsh):
 			continue
-		if ini == "English.ini":
+		if nsh == "English.nsh":
 			continue
-		update(ini);
+		update(nsh);
 
 	# update template (do not use an .nsi prefix as NSIS might load it)
 	update("Language.new");
