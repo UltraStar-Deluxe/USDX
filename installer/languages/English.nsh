@@ -75,8 +75,21 @@ ${LangFileString} page_components_info "Hover the component to get details"
 
 ; Custom Page
 
-${LangFileString} page_settings_fullscreen "Fullscreen Mode"
 ${LangFileString} page_settings_subtitle "Specify your favorite settings for ${name}."
+${LangFileString} page_settings_config_title "${name} Configuration (optional)"
+${LangFileString} page_settings_config_info "All settings can also be changed in the GUI later."
+${LangFileString} page_settings_fullscreen_label "Fullscreen Mode:"
+${LangFileString} page_settings_fullscreen_info "Start game in window or fullscreen?"
+${LangFileString} page_settings_language_label "Language:"
+${LangFileString} page_settings_language_info "Adjust the GUI language."
+${LangFileString} page_settings_resolution_label "Resolution:"
+${LangFileString} page_settings_resolution_info "Choose screen resolution/window size."
+${LangFileString} page_settings_tabs_label "Tabs:"
+${LangFileString} page_settings_tabs_info "Employ a virtual folder structure to show songs?"
+${LangFileString} page_settings_sorting_label "Sorting:"
+${LangFileString} page_settings_sorting_info "Select criterion to sort songs."
+${LangFileString} page_settings_songdir_label "SongDir"
+${LangFileString} page_settings_songdir_info "Choose additional song directory for ${name}."
 
 ; Finish Page:
 

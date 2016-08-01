@@ -33,11 +33,11 @@ ${LangFileString} update_check_failed "La comprobación ha fallado, ¿Quieres vi
 
 ; Welcome Page:
 
-${LangFileString} page_welcome_title_update "Bienvenido al asistente de instalación de UltraStar Deluxe"
-${LangFileString} page_welcome_txt_update "El asistente te guiará a través de este proceso. UltraStar Deluxe es un juego gratuito y libre.$\n$\r$\n$\r El equipo de UltraStar Deluxe os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web: http://www.ultrastardeluxe.org$\n$\r"
-${LangFileString} page_welcome_title "Bienvenido a la instalación de UltraStar Deluxe"
-${LangFileString} page_welcome_txt "El asistente te guiará a través de este proceso. UltraStar Deluxe es un juego gratuito y libre.$\n$\r$\n$\r El equipo de UltraStar Deluxe os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web: http://www.ultrastardeluxe.org$\n$\r"
-${LangFileString} page_un_welcome_title "Bienvenido a la desinstalación de UltraStar Deluxe"
+${LangFileString} page_welcome_title_update "Bienvenido al asistente de instalación de ${name}"
+${LangFileString} page_welcome_txt_update "El asistente te guiará a través de este proceso. ${name} es un juego gratuito y libre.$\n$\r$\n$\r El equipo de ${name} os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web: http://www.ultrastardeluxe.org$\n$\r"
+${LangFileString} page_welcome_title "Bienvenido a la instalación de ${name}"
+${LangFileString} page_welcome_txt "El asistente te guiará a través de este proceso. ${name} es un juego gratuito y libre.$\n$\r$\n$\r El equipo de ${name} os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web: http://www.ultrastardeluxe.org$\n$\r"
+${LangFileString} page_un_welcome_title "Bienvenido a la desinstalación de ${name}"
 
 ; Components Page:
 
@@ -45,18 +45,31 @@ ${LangFileString} page_components_info "Muévete por los componentes para más d
 
 ; Custom Page
 
-${LangFileString} page_settings_fullscreen "Pantalla completa"
-${LangFileString} page_settings_subtitle "Configura rápidamente tu UltraStar Deluxe."
+${LangFileString} page_settings_subtitle "Configura rápidamente tu ${name}."
+${LangFileString} page_settings_config_title "Configuración de ${name} (opcional)"
+${LangFileString} page_settings_config_info "Toda la configuración será cambiada más tarde."
+${LangFileString} page_settings_fullscreen_label "Pantalla completa:"
+${LangFileString} page_settings_fullscreen_info "¿Ejecutar el juego en ventana o pantalla completa?"
+${LangFileString} page_settings_language_label "Idioma:"
+${LangFileString} page_settings_language_info "Elige un idioma."
+${LangFileString} page_settings_resolution_label "Resolución:"
+${LangFileString} page_settings_resolution_info "Elige una resolución / Tamaño de la ventana."
+${LangFileString} page_settings_tabs_label "Etiquetas"
+${LangFileString} page_settings_tabs_info "¿Quieres usar una estructura de carpeta virtual para ver las canciones?"
+${LangFileString} page_settings_sorting_label "Ordenar por:"
+${LangFileString} page_settings_sorting_info "Selecciona un criterio para ordenar las canciones."
+${LangFileString} page_settings_songdir_label "SongDir"
+${LangFileString} page_settings_songdir_info "Elige un directorio adicional para tus canciones."
 
 ; Finish Page:
 
-${LangFileString} page_finish_txt "UltraStar Deluxe ha sido instalado con éxito.$\n$\r$\n$\rVisita nuestra página web para obtener las últimas noticias y actualizaciones."
+${LangFileString} page_finish_txt "${name} ha sido instalado con éxito.$\n$\r$\n$\rVisita nuestra página web para obtener las últimas noticias y actualizaciones."
 ${LangFileString} page_finish_linktxt "Página web"
 ${LangFileString} page_finish_desktop "¿Quieres crear un acceso directo?"
 
 ; Start Menu and Shortcuts
 
-${LangFileString} sm_shortcut "UltraStar Deluxe"
+${LangFileString} sm_shortcut "${name}"
 ${LangFileString} sm_uninstall "Desinstalar"
 ${LangFileString} sm_website "Página web"
 ${LangFileString} sm_license "Licencia"
@@ -76,7 +89,7 @@ ${LangFileString} name_s2_sub2 "Shearer"
 ${LangFileString} name_s2_sub3 "Wise Guys"
 ${LangFileString} name_s2_sub4 "Pornophonique"
 
-${LangFileString} DESC_Section1 "Estos son los archivos necesarios para instalar UltraStar Deluxe"
+${LangFileString} DESC_Section1 "Estos son los archivos necesarios para instalar ${name}"
 ${LangFileString} DESC_Section2 "Si quieres puedes empezar descargando estas canciones (requiere conexión a internet)"
 ${LangFileString} DESC_Section2_sub1 "You can choose which Jonathan Coulton songs (CC by-nc 3.0) should be installed."
 ${LangFileString} DESC_Section2_sub2 "You can choose which Shearer songs (CC by-nc-sa 2.0 / 3.0) should be installed."

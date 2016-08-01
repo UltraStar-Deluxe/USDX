@@ -211,11 +211,32 @@ FunctionEnd
 
 Function Settings
 
-	!insertmacro INSTALLOPTIONS_WRITE "Settings-$LANGUAGE" "Field 18" "State" "$INSTDIR\songs"
+	; localize settings
+	
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 17" "Text" "$(page_settings_config_title)"
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 10" "Text" "$(page_settings_config_info)"
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 1" "Text" "$(page_settings_fullscreen_label)"
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 9" "Text" "$(page_settings_fullscreen_info)"
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 2" "Text" "$(page_settings_language_label)"
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 11" "Text" "$(page_settings_language_info)"
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 3" "Text" "$(page_settings_resolution_label)"
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 12" "Text" "$(page_settings_resolution_info)"
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 4" "Text" "$(page_settings_tabs_label)"
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 13" "Text" "$(page_settings_tabs_info)"
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 14" "Text" "$(page_settings_sorting_label)"
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 16" "Text" "$(page_settings_sorting_info)"
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 18" "Text" "$(page_settings_songdir_label)"
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 19" "Text" "$(page_settings_songdir_info)"
 
+	; Set default value
+	
+	!insertmacro INSTALLOPTIONS_WRITE "Settings" "Field 18" "State" "$INSTDIR\songs"
+	
+
+	; show dialog
 	!insertmacro MUI_HEADER_TEXT " " "$(page_settings_subtitle)"   
-	!insertmacro INSTALLOPTIONS_DISPLAY "Settings-$LANGUAGE"
-
+	!insertmacro INSTALLOPTIONS_DISPLAY "Settings"
+	
 	; Get all the variables:
 
 	Var /GLOBAL LABEL_COMPONENTS
@@ -240,12 +261,12 @@ Function Settings
 	Var /GLOBAL sorting
 	Var /GLOBAL songdir
 
-	!insertmacro INSTALLOPTIONS_READ $fullscreen "Settings-$LANGUAGE" "Field 5" "State"
-	!insertmacro INSTALLOPTIONS_READ $language2 "Settings-$LANGUAGE" "Field 6" "State"
-	!insertmacro INSTALLOPTIONS_READ $resolution "Settings-$LANGUAGE" "Field 7" "State"
-	!insertmacro INSTALLOPTIONS_READ $tabs "Settings-$LANGUAGE" "Field 8" "State"
-	!insertmacro INSTALLOPTIONS_READ $sorting "Settings-$LANGUAGE" "Field 15" "State"
-	!insertmacro INSTALLOPTIONS_READ $songdir "Settings-$LANGUAGE" "Field 18" "State"
+	!insertmacro INSTALLOPTIONS_READ $fullscreen "Settings" "Field 5" "State"
+	!insertmacro INSTALLOPTIONS_READ $language2 "Settings" "Field 6" "State"
+	!insertmacro INSTALLOPTIONS_READ $resolution "Settings" "Field 7" "State"
+	!insertmacro INSTALLOPTIONS_READ $tabs "Settings" "Field 8" "State"
+	!insertmacro INSTALLOPTIONS_READ $sorting "Settings" "Field 15" "State"
+	!insertmacro INSTALLOPTIONS_READ $songdir "Settings" "Field 18" "State"
 
 	WriteINIStr "$ConfigIniPath" "Game" "Language" "$language2"
 	WriteINIStr "$ConfigIniPath" "Game" "Tabs" "$tabs"
@@ -597,12 +618,7 @@ continue:
 done:
 	!insertmacro MUI_LANGDLL_DISPLAY
 
-	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1031.ini" "Settings-1031"
-	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1033.ini" "Settings-1033"
-	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1038.ini" "Settings-1038"
-	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1045.ini" "Settings-1045"
-	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-1034.ini" "Settings-1034"
-	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings-2070.ini" "Settings-2070"
+	!insertmacro INSTALLOPTIONS_EXTRACT_AS ".\settings\settings.ini" "Settings"
 
 FunctionEnd
 

@@ -75,8 +75,21 @@ ${LangFileString} page_components_info "Bewege den Mauszeiger über die Komponen
 
 ; Custom Page
 
-${LangFileString} page_settings_fullscreen "Vollbild Modus:"
 ${LangFileString} page_settings_subtitle "Lege deine favorisierten Einstellungen für ${name} fest."
+${LangFileString} page_settings_config_title "${name} Konfiguration (Optional)"
+${LangFileString} page_settings_config_info "Alle Einstellungen können nachträglich im Spielmenü geändert werden."
+${LangFileString} page_settings_fullscreen_label "Vollbild Modus:"
+${LangFileString} page_settings_fullscreen_info "Spiel im Fenster oder Vollbild starten?"
+${LangFileString} page_settings_language_label "Sprache:"
+${LangFileString} page_settings_language_info "Passe die Sprache des Menüs an."
+${LangFileString} page_settings_resolution_label "Auflösung:"
+${LangFileString} page_settings_resolution_info "Wähle die Auflösung/Fenstergröße aus."
+${LangFileString} page_settings_tabs_label "Ordnerstruktur:"
+${LangFileString} page_settings_tabs_info "Eine virtuelle Ordnerstruktur zum Anzeigen der Lieder verwenden?"
+${LangFileString} page_settings_sorting_label "Sortierung:"
+${LangFileString} page_settings_sorting_info "Kriterium zum Sortieren der Lieder wählen."
+${LangFileString} page_settings_songdir_label "SongDir"
+${LangFileString} page_settings_songdir_info "Hier kann ein weiterer Ordner mit Songs für ${name} angegeben werden."
 
 ; Finish Page:
 

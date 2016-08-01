@@ -17,7 +17,7 @@ ${LangFileString} oninit_uninstall "Do you want to uninstall the old version? (r
 ${LangFileString} update_connect "Új verzió keresése az interneten"
 ${LangFileString} button_next "Tovább >"
 ${LangFileString} button_close "Bezárás"
-${LangFileString} update_information "Ellenõrizheti, hogy van-e új 'UltraStar Deluxe'-verzió. Ehhez internetkapcsolat szükséges. Ha van új verzió, az ezt követõen telepíthetõ."
+${LangFileString} update_information "Ellenõrizheti, hogy van-e új '${name}'-verzió. Ehhez internetkapcsolat szükséges. Ha van új verzió, az ezt követõen telepíthetõ."
 
 ${LangFileString} delete_components "Also delete the following components:"
 ${LangFileString} delete_covers "Töröljük a borítókat?"
@@ -34,11 +34,11 @@ ${LangFileString} update_check_failed "Az ellenõrzés sikertelen. Kívánja bet
 
 ; Welcome Page:
 
-${LangFileString} page_welcome_title_update "Üdvözli Önt az UltraStar Deluxe frissítési varázslója!"
-${LangFileString} page_welcome_txt_update "Ez a varázsló végigvezeti Önt az UltraStar Deluxe frissítési folyamatán. Az UltraStar Deluxe egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\rAz UltraStar Deluxe csapata jó szórakozást kíván!$\n$\rA projekt weboldala: http://www.ultrastardeluxe.org/$\n$\rTámogatás a fórumunkon: http://forum.ultrastardeluxe.org/"
-${LangFileString} page_welcome_title "Üdvözli Önt az UltraStar Deluxe telepítési varázslója!"
-${LangFileString} page_welcome_txt "Ez a varázsló végigvezeti Önt az UltraStar Deluxe telepítési folyamatán. Az UltraStar Deluxe egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\rAz UltraStar Deluxe csapata jó szórakozást kíván!$\n$\rA projekt weboldala: http://www.ultrastardeluxe.org/$\n$\rTámogatás a fórumunkon: http://forum.ultrastardeluxe.org/"
-${LangFileString} page_un_welcome_title "Üdvözli Önt az UltraStar Deluxe eltávolítási varázslója!"
+${LangFileString} page_welcome_title_update "Üdvözli Önt az ${name} frissítési varázslója!"
+${LangFileString} page_welcome_txt_update "Ez a varázsló végigvezeti Önt az ${name} frissítési folyamatán. Az ${name} egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\rAz ${name} csapata jó szórakozást kíván!$\n$\rA projekt weboldala: http://www.ultrastardeluxe.org/$\n$\rTámogatás a fórumunkon: http://forum.ultrastardeluxe.org/"
+${LangFileString} page_welcome_title "Üdvözli Önt az ${name} telepítési varázslója!"
+${LangFileString} page_welcome_txt "Ez a varázsló végigvezeti Önt az ${name} telepítési folyamatán. Az ${name} egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\rAz ${name} csapata jó szórakozást kíván!$\n$\rA projekt weboldala: http://www.ultrastardeluxe.org/$\n$\rTámogatás a fórumunkon: http://forum.ultrastardeluxe.org/"
+${LangFileString} page_un_welcome_title "Üdvözli Önt az ${name} eltávolítási varázslója!"
 
 ; Components Page:
 
@@ -46,18 +46,31 @@ ${LangFileString} page_components_info "Részletes információért vigye az ege
 
 ; Custom Page
 
-${LangFileString} page_settings_fullscreen "Teljes képernyõs üzemmód"
-${LangFileString} page_settings_subtitle "Adja meg a kedvenc UltraStar Deluxe-beállítását."
+${LangFileString} page_settings_subtitle "Adja meg a kedvenc ${name}-beállítását."
+;TODO ${LangFileString} page_settings_config_title "${name} Configuration (optional)"
+;TODO ${LangFileString} page_settings_config_info "All settings can also be changed in the GUI later."
+${LangFileString} page_settings_fullscreen_label "Teljes képernyõs üzemmód:"
+;TODO ${LangFileString} page_settings_fullscreen_info "Start game in window or fullscreen?"
+${LangFileString} page_settings_language_label "Nyelv:"
+;TODO ${LangFileString} page_settings_language_info "Adjust the GUI language."
+${LangFileString} page_settings_resolution_label "Felbontás:"
+;TODO ${LangFileString} page_settings_resolution_info "Choose screen resolution/window size."
+;TODO ${LangFileString} page_settings_tabs_label "Tabs:"
+;TODO ${LangFileString} page_settings_tabs_info "Employ a virtual folder structure to show songs?"
+;TODO ${LangFileString} page_settings_sorting_label "Sorting:"
+;TODO ${LangFileString} page_settings_sorting_info "Select criterion to sort songs."
+;TODO ${LangFileString} page_settings_songdir_label "SongDir"
+;TODO ${LangFileString} page_settings_songdir_info "Choose additional song directory for ${name}."
 
 ; Finish Page:
 
-${LangFileString} page_finish_txt "Az UltraStar Deluxe telepítése sikeresen befejezõdött.$\n$\r$\n$\rHa kíváncsi a legfrissebb hírekre és frissítésekre, kérjük látogassa meg projektünk weboldalát."
+${LangFileString} page_finish_txt "Az ${name} telepítése sikeresen befejezõdött.$\n$\r$\n$\rHa kíváncsi a legfrissebb hírekre és frissítésekre, kérjük látogassa meg projektünk weboldalát."
 ${LangFileString} page_finish_linktxt "A projekt weboldala"
 ${LangFileString} page_finish_desktop "Tegyünk egy parancsikont az asztalra?"
 
 ; Start Menu and Shortcuts
 
-${LangFileString} sm_shortcut "UltraStar Deluxe karaoke"
+${LangFileString} sm_shortcut "${name} karaoke"
 ${LangFileString} sm_uninstall "Eltávolítás"
 ${LangFileString} sm_website "Weboldal"
 ${LangFileString} sm_license "Licensz"
@@ -77,7 +90,7 @@ ${LangFileString} name_s2_sub2 "Shearer"
 ${LangFileString} name_s2_sub3 "Wise Guys"
 ${LangFileString} name_s2_sub4 "Pornophonique"
 
-${LangFileString} DESC_Section1 "Azok a fájlok, melyek mindenképpen szükségesek az UltraStar Deluxe futtatásához."
+${LangFileString} DESC_Section1 "Azok a fájlok, melyek mindenképpen szükségesek az ${name} futtatásához."
 ${LangFileString} DESC_Section2 "Kiválaszthatja, hogy milyen dalok legyenek telepítve."
 ${LangFileString} DESC_Section2_sub1 "Kiválaszthatja, hogy mely Jonathan Coulton-dalok (CC by-nc 3.0) legyenek telepítve."
 ${LangFileString} DESC_Section2_sub2 "Kiválaszthatja, hogy mely Shearer-dalok (CC by-nc-sa 2.0 / 3.0) legyenek telepítve."

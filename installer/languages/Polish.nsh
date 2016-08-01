@@ -16,7 +16,7 @@ ${LangFileString} oninit_uninstall "Czy chcesz odinstalowaæ star¹ wersjê ? (r
 ${LangFileString} update_connect "SprawdŸ po³¹czenie z insternetm i sprawdŸ nowe wersje"
 ${LangFileString} button_next "Dalej >"
 ${LangFileString} button_close "Zamknij"
-${LangFileString} update_information "Mo¿esz sprawdziæ czy jest nowsza wersja 'UltraStar Deluxe'. Aby to zrobiæ po³¹cz siê z internetm. Jeœli nowa wersja zostanie znaleziona, bêdzie mo¿na j¹ zainstalowaæ."
+${LangFileString} update_information "Mo¿esz sprawdziæ czy jest nowsza wersja '${name}'. Aby to zrobiæ po³¹cz siê z internetm. Jeœli nowa wersja zostanie znaleziona, bêdzie mo¿na j¹ zainstalowaæ."
 
 ${LangFileString} delete_components "Tak¿ê usun¹æ nastêpuj¹ce sk³adniki:"
 ${LangFileString} delete_covers "Ok³adka?"
@@ -33,11 +33,11 @@ ${LangFileString} update_check_failed "Poszukiwanie nowyszch wersji zakoñczy³o
 
 ; Welcome Page:
 
-${LangFileString} page_welcome_title_update "Witamy w kreatorze aktualizacji programu UltraStar Deluxe"
-${LangFileString} page_welcome_txt_update "Ten kreator przeprowadzi ciê przez proces aktualizacji gry UltraStar Deluxe. UltraStar Deluxe jest bezp³atn¹ i Otwart¹ gr¹ Karaoke, któr¹ mo¿na porównaæ z SingStar'em.$\n$\r$\n$\rZespó³ UltraStar Deluxe ¿yczy mi³ej zabawy.$\n$\rStrona projektu: http://www.ultrastardeluxe.org$\n$\rForum wsparcia: http://forum.ultrastardeluxe.org"
-${LangFileString} page_welcome_title "Witamy w kreatorze instalacji programu UltraStar Deluxe"
-${LangFileString} page_welcome_txt "Ten kreator przeprowadzi ciê przez proces instalacji gry UltraStar Deluxe. UltraStar Deluxe jest bezp³atn¹ i Otwart¹ gr¹ Karaoke, któr¹ mo¿na porównaæ z SingStar'em.$\n$\r$\n$\rZespó³ UltraStar Deluxe ¿yczy mi³ej zabawy.$\n$\rStrona projektu: http://www.ultrastardeluxe.org$\n$\rForum wsparcia: http://forum.ultrastardeluxe.org"
-${LangFileString} page_un_welcome_title "Witamy w kreatorze deinstalacji gry UltraStar Deluxe"
+${LangFileString} page_welcome_title_update "Witamy w kreatorze aktualizacji programu ${name}"
+${LangFileString} page_welcome_txt_update "Ten kreator przeprowadzi ciê przez proces aktualizacji gry ${name}. ${name} jest bezp³atn¹ i Otwart¹ gr¹ Karaoke, któr¹ mo¿na porównaæ z SingStar'em.$\n$\r$\n$\rZespó³ ${name} ¿yczy mi³ej zabawy.$\n$\rStrona projektu: http://www.ultrastardeluxe.org$\n$\rForum wsparcia: http://forum.ultrastardeluxe.org"
+${LangFileString} page_welcome_title "Witamy w kreatorze instalacji programu ${name}"
+${LangFileString} page_welcome_txt "Ten kreator przeprowadzi ciê przez proces instalacji gry ${name}. ${name} jest bezp³atn¹ i Otwart¹ gr¹ Karaoke, któr¹ mo¿na porównaæ z SingStar'em.$\n$\r$\n$\rZespó³ ${name} ¿yczy mi³ej zabawy.$\n$\rStrona projektu: http://www.ultrastardeluxe.org$\n$\rForum wsparcia: http://forum.ultrastardeluxe.org"
+${LangFileString} page_un_welcome_title "Witamy w kreatorze deinstalacji gry ${name}"
 
 ; Components Page:
 
@@ -45,18 +45,31 @@ ${LangFileString} page_components_info "NajedŸ myszk¹ na komponent, aby zobacz
 
 ; Custom Page
 
-${LangFileString} page_settings_fullscreen "Tryb Pe³noekranowy"
 ${LangFileString} page_settings_subtitle "Wybierz ustawienia dogodne dla Ciebie."
+${LangFileString} page_settings_config_title "Konfiguracja ${name} (opcjonalnie)"
+${LangFileString} page_settings_config_info "Wszystkie ustawienia mo¿na póŸniej zmieniæ w grze."
+${LangFileString} page_settings_fullscreen_label "Tryb Pe³noekranowy:"
+${LangFileString} page_settings_fullscreen_info "Czy uruchamiaæ grê w oknie czy na pe³nym ekranie?"
+${LangFileString} page_settings_language_label "Jêzyk:"
+${LangFileString} page_settings_language_info "Dostosuj jêzyk GUI."
+${LangFileString} page_settings_resolution_label "Rozdzielczoœæ:"
+${LangFileString} page_settings_resolution_info "Wybierz rozdzieczoœæ ekrany/okna."
+${LangFileString} page_settings_tabs_label "Zak³adki:"
+${LangFileString} page_settings_tabs_info "Czy chcesz aby piosenki zosta³y pogrupowane na zak³adki?"
+${LangFileString} page_settings_sorting_label "Sortowanie:"
+${LangFileString} page_settings_sorting_info "Wybierz kryteria sortowania piosenek."
+${LangFileString} page_settings_songdir_label "SongDir"
+${LangFileString} page_settings_songdir_info "Wybierz katalog w którym znajduj¹ siê piosenki?"
 
 ; Finish Page:
 
-${LangFileString} page_finish_txt "UltraStar Deluxe zosta³ poprawnie zainstalowany na twoim komputerze.$\n$\r$\n$\rOdwiedŸ Nasz¹ stronê aby otrzymaæ najnowsze wiadomoœci i aktualizacjê."
+${LangFileString} page_finish_txt "${name} zosta³ poprawnie zainstalowany na twoim komputerze.$\n$\r$\n$\rOdwiedŸ Nasz¹ stronê aby otrzymaæ najnowsze wiadomoœci i aktualizacjê."
 ${LangFileString} page_finish_linktxt "Strona Projektu"
 ${LangFileString} page_finish_desktop "Czy stwórzyæ skrót na Pulpicie ?"
 
 ; Start Menu and Shortcuts
 
-${LangFileString} sm_shortcut "Graj w UltraStar Deluxe"
+${LangFileString} sm_shortcut "Graj w ${name}"
 ${LangFileString} sm_uninstall "Odinstaluj"
 ${LangFileString} sm_website "Strona Projektu"
 ${LangFileString} sm_license "Licencja"
@@ -76,7 +89,7 @@ ${LangFileString} name_s2_sub2 "Shearer"
 ${LangFileString} name_s2_sub3 "Wise Guys"
 ${LangFileString} name_s2_sub4 "Pornophonique"
 
-${LangFileString} DESC_Section1 "To s¹ podstawowe pliki potrzebe przez UltraStar Deluxe"
+${LangFileString} DESC_Section1 "To s¹ podstawowe pliki potrzebe przez ${name}"
 ${LangFileString} DESC_Section2 "Mo¿esz wybraæ które piosenki chcesz œci¹gn¹æ (Wymagane po³¹czenie z internetem!)"
 ${LangFileString} DESC_Section2_sub1 "Mo¿esz wybraæ które piosenki Jonathan Coulton (CC by-nc 3.0) chcesz zainstalowaæ."
 ${LangFileString} DESC_Section2_sub2 "Mo¿esz wybraæ które piosenki Shearer (CC by-nc-sa 2.0 / 3.0) chcesz zainstalowaæ."
