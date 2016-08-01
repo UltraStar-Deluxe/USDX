@@ -4,6 +4,15 @@
 
 !insertmacro LANGFILE_EXT English
 
+${LangFileString} error_download_song_info "Error downloading song \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+${LangFileString} error_download_song_msg "Error downloading song: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+${LangFileString} error_download_theme_info "Error downloading theme \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+${LangFileString} error_download_theme_msg "Error downloading theme: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+${LangFileString} error_download_skin_info "Error downloading skin \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+${LangFileString} error_download_skin_msg "Error downloading skin: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+${LangFileString} error_download_plugin_info "Error downloading plugin \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+${LangFileString} error_download_plugin_msg "Error downloading plugin: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+
 ${LangFileString} abort_install "Are you sure to abort installation?"
 ${LangFileString} abort_uninstall "Are you sure to abort uninstallation?"
 ${LangFileString} abort_update "Are you sure to abort the update?"

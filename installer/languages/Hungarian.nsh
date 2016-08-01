@@ -5,6 +5,15 @@
 
 !insertmacro LANGFILE_EXT Hungarian
 
+;TODO ${LangFileString} error_download_song_info "Error downloading song \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+;TODO ${LangFileString} error_download_song_msg "Error downloading song: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+;TODO ${LangFileString} error_download_theme_info "Error downloading theme \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+;TODO ${LangFileString} error_download_theme_msg "Error downloading theme: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+;TODO ${LangFileString} error_download_skin_info "Error downloading skin \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+;TODO ${LangFileString} error_download_skin_msg "Error downloading skin: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+;TODO ${LangFileString} error_download_plugin_info "Error downloading plugin \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+;TODO ${LangFileString} error_download_plugin_msg "Error downloading plugin: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+
 ${LangFileString} abort_install "Biztosan megszakítja a telepítést?"
 ${LangFileString} abort_uninstall "Biztosan megszakítja a program eltávolítását?"
 ;TODO ${LangFileString} abort_update "Are you sure to abort the update?"
@@ -60,7 +69,6 @@ ${LangFileString} update_check_failed "Az ellenõrzés sikertelen. Kívánja bet
 ;TODO ${LangFileString} update_download_remain_secs " (%u seconds remaining)"
 ;TODO ${LangFileString} update_download_remain_mins " (%u minutes remaining)"
 ;TODO ${LangFileString} update_download_remain_hours " (%u hours remaining)"
-;TODO ${LangFileString} page_finish_txt_update "${name} Update has checked for a new version."
 
 ; Welcome Page:
 
@@ -97,6 +105,9 @@ ${LangFileString} page_settings_resolution_label "Felbontás:"
 ${LangFileString} page_finish_txt "Az ${name} telepítése sikeresen befejezõdött.$\n$\r$\n$\rHa kíváncsi a legfrissebb hírekre és frissítésekre, kérjük látogassa meg projektünk weboldalát."
 ${LangFileString} page_finish_linktxt "A projekt weboldala"
 ${LangFileString} page_finish_desktop "Tegyünk egy parancsikont az asztalra?"
+
+;unused
+;TODO ${LangFileString} page_finish_txt_update "${name} Update has checked for a new version."
 
 ; Start Menu and Shortcuts
 
@@ -170,7 +181,7 @@ ${LangFileString} DESC_s2_sub2_Section6 "Telepítésre kerül a 'Man Song' címu
 ${LangFileString} DESC_s2_sub2_Section7 "Telepítésre kerül a 'Man Song (Karaoke)' címu dal."
 ${LangFileString} DESC_s2_sub2_Section8 "Telepítésre kerül a 'Stay with me' címu dal."
 ${LangFileString} DESC_s2_sub2_Section9 "Telepítésre kerül a 'Stay with me (Karaoke)' címu dal."
-${LangFileString} DESC_s2_sub2_Section9 "Telepítésre kerül a 'Consequence Of Dawn' címu dal."
+${LangFileString} DESC_s2_sub2_Section10 "Telepítésre kerül a 'Consequence Of Dawn' címu dal."
 
 ${LangFileString} DESC_s2_sub3_Section1 "Telepítésre kerül a 'Lebendig und kräftig und schärfer' címu dal."
 ${LangFileString} DESC_s2_sub3_Section2 "Telepítésre kerül a 'Mensch, wo bist du?' címu dal."

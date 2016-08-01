@@ -4,6 +4,15 @@
 
 !insertmacro LANGFILE_EXT Spanish
 
+;TODO ${LangFileString} error_download_song_info "Error downloading song \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+;TODO ${LangFileString} error_download_song_msg "Error downloading song: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+;TODO ${LangFileString} error_download_theme_info "Error downloading theme \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+;TODO ${LangFileString} error_download_theme_msg "Error downloading theme: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+;TODO ${LangFileString} error_download_skin_info "Error downloading skin \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+;TODO ${LangFileString} error_download_skin_msg "Error downloading skin: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+;TODO ${LangFileString} error_download_plugin_info "Error downloading plugin \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+;TODO ${LangFileString} error_download_plugin_msg "Error downloading plugin: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+
 ${LangFileString} abort_install "¿Seguro que quieres salir de la instalación?"
 ${LangFileString} abort_uninstall "¿Seguro que quieres salir de la desinstalación?"
 ;TODO ${LangFileString} abort_update "Are you sure to abort the update?"
@@ -59,7 +68,6 @@ ${LangFileString} update_check_failed "La comprobación ha fallado, ¿Quieres vi
 ;TODO ${LangFileString} update_download_remain_secs " (%u seconds remaining)"
 ;TODO ${LangFileString} update_download_remain_mins " (%u minutes remaining)"
 ;TODO ${LangFileString} update_download_remain_hours " (%u hours remaining)"
-;TODO ${LangFileString} page_finish_txt_update "${name} Update has checked for a new version."
 
 ; Welcome Page:
 
@@ -96,6 +104,9 @@ ${LangFileString} page_settings_songdir_info "Elige un directorio adicional para
 ${LangFileString} page_finish_txt "${name} ha sido instalado con éxito.$\n$\r$\n$\rVisita nuestra página web para obtener las últimas noticias y actualizaciones."
 ${LangFileString} page_finish_linktxt "Página web"
 ${LangFileString} page_finish_desktop "¿Quieres crear un acceso directo?"
+
+;unused
+;TODO ${LangFileString} page_finish_txt_update "${name} Update has checked for a new version."
 
 ; Start Menu and Shortcuts
 

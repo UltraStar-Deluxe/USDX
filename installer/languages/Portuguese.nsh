@@ -4,6 +4,15 @@
 
 !insertmacro LANGFILE_EXT Portuguese
 
+;TODO ${LangFileString} error_download_song_info "Error downloading song \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+;TODO ${LangFileString} error_download_song_msg "Error downloading song: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+;TODO ${LangFileString} error_download_theme_info "Error downloading theme \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+;TODO ${LangFileString} error_download_theme_msg "Error downloading theme: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+;TODO ${LangFileString} error_download_skin_info "Error downloading skin \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+;TODO ${LangFileString} error_download_skin_msg "Error downloading skin: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+;TODO ${LangFileString} error_download_plugin_info "Error downloading plugin \'$0' from: $\r$\n$1$\r$\n$\r$\n"
+;TODO ${LangFileString} error_download_plugin_msg "Error downloading plugin: '$0' from: $\r$\n$1$\r$\n$\r$\nClick OK to continue the installation."
+
 ${LangFileString} abort_install "Tem a certeza que deseja cancelar a instalação?"
 ${LangFileString} abort_uninstall "Tem a certeza que deseja cancelar a desinstalação?"
 ;TODO ${LangFileString} abort_update "Are you sure to abort the update?"
@@ -59,7 +68,6 @@ ${LangFileString} update_check_failed "A verificação de uma nova versão falho
 ;TODO ${LangFileString} update_download_remain_secs " (%u seconds remaining)"
 ;TODO ${LangFileString} update_download_remain_mins " (%u minutes remaining)"
 ;TODO ${LangFileString} update_download_remain_hours " (%u hours remaining)"
-;TODO ${LangFileString} page_finish_txt_update "${name} Update has checked for a new version."
 
 ; Welcome Page:
 
@@ -96,6 +104,9 @@ ${LangFileString} page_settings_songdir_info "Escolha diretório adicional para 
 ${LangFileString} page_finish_txt "${name} foi instalado com sucesso no seu sistema.$\n$\r$\n$\rVisite o site do projecto para receber as últimas notícias e actualizações."
 ${LangFileString} page_finish_linktxt "Website"
 ${LangFileString} page_finish_desktop "Criar atalho no Ambiente de Trabalho"
+
+;unused
+;TODO ${LangFileString} page_finish_txt_update "${name} Update has checked for a new version."
 
 ; Start Menu and Shortcuts
 

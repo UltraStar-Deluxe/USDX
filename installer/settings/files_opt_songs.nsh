@@ -13,14 +13,21 @@
 		NSISdl::download /TIMEOUT=50000 ${Url} "$LOCALAPPDATA\Temp\${FileName}"
 
 		Pop $R0
-		StrCmp $R0 "success" dlok
-			MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+		StrCmp $R0 "success" dlok 0
+			StrCpy $0 "${Title}"
+			StrCpy $1 "${Url}"
+			DetailPrint "$(error_download_song_info)"
+			MessageBox MB_OK|MB_ICONEXCLAMATION "$(error_download_song_msg)" /SD IDOK
+			Goto dlcontinue
+
 		dlok:
 		ZipDLL::extractall "$LOCALAPPDATA\Temp\${FileName}" "$INSTDIR\songs\${SubPath}"
 
-	  Delete "$LOCALAPPDATA\Temp\${FileName}"
+		dlcontinue:
+		IfFileExists "$LOCALAPPDATA\Temp\${FileName}" 0 +2
+			Delete "$LOCALAPPDATA\Temp\${FileName}"
 
-	  SetOutPath "$INSTDIR"
+		SetOutPath "$INSTDIR"
 
 	SectionEnd
 !macroend
