@@ -63,7 +63,7 @@ ${LangFileString} update_download_remain_hours " (%u Stunden verbleibend)"
 
 ; Welcome Page:
 
-${LangFileString} page_welcome_title_update "Willkommen beim Aktualisierungsassistenten von ${name}" 
+${LangFileString} page_welcome_title_update "Willkommen beim Aktualisierungsassistenten von ${name}"
 ${LangFileString} page_welcome_txt_update "Dieser Assistent wird dich durch die Aktualisierung von ${name} begleiten. ${name} ist ein kostenloses quelloffenes Karaokespiel, welches Singstar ähnelt. $\n$\r$\n$\rDas ${publisher} wünscht viel Spaß.$\n$\r$\n$\rProjektseite:$\n$\r${homepage}$\n$\r$\n$\rSupport Forum:$\n$\r${forum}"
 ${LangFileString} page_welcome_title "Willkommen zur Installationsroutine von ${name}"
 ${LangFileString} page_welcome_txt "Dieser Assistent wird dich durch die Installation von ${name} begleiten. ${name} ist ein kostenloses quelloffenes Karaokespiel, welches Singstar ähnelt. $\n$\r$\n$\rDas ${publisher} wünscht viel Spaß.$\n$\r$\n$\rProjektseite:$\n$\r${homepage}$\n$\r$\n$\rSupport Forum:$\n$\r${forum}"
@@ -103,8 +103,8 @@ ${LangFileString} page_finish_txt_update "${name} Update hat nach einer neuen Ve
 
 ; Start Menu and Shortcuts
 
-${LangFileString} sm_shortcut "${name} spielen"  
-${LangFileString} sm_uninstall "Deinstallieren"		  
+${LangFileString} sm_shortcut "${name} spielen"
+${LangFileString} sm_uninstall "Deinstallieren"
 ${LangFileString} sm_website "Webseite"
 ${LangFileString} sm_license "Lizenz"
 ${LangFileString} sm_readme "Lies mich"
@@ -112,8 +112,8 @@ ${LangFileString} sm_songs "Songs"
 ${LangFileString} sm_update "Updaten"
 ${LangFileString} sm_documentation "Dokumentation"
 
-${LangFileString} sc_play "Spielen" 
-${LangFileString} sc_desktop "Verknüpfung auf dem Desktop erstellen" 
+${LangFileString} sc_play "Spielen"
+${LangFileString} sc_desktop "Verknüpfung auf dem Desktop erstellen"
 
 ; Sections and SectionGroups
 
