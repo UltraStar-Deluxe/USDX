@@ -725,6 +725,28 @@ Section /o "Shearer - Can't stop it (Karaoke)" s2_sub2_Section4
 
 SectionEnd
 ;-----------------------------------------------------------------------
+Section /o "Shearer - Consequence of Dawn" s2_sub2_Section10
+
+   AddSize 6508
+   SetOverwrite try
+   SetOutPath "$INSTDIR\songs\"
+
+; Download song:
+  NSISdl::download /TIMEOUT=50000 ${download_sub2_song10} $LOCALAPPDATA\Temp\Song-Shearer-SWM-COD.zip
+ 
+  Pop $R0
+    StrCmp $R0 "success" dlok
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Download Error, click OK to Continue" /SD IDOK
+  dlok:
+
+  ZipDLL::extractall "$LOCALAPPDATA\Temp\Song-Shearer-SWM-COD.zip" "$INSTDIR\songs\"
+
+  Delete "$LOCALAPPDATA\Temp\Song-Shearer-SWM-COD.zip"
+
+  SetOutPath "$INSTDIR"
+
+SectionEnd
+;-----------------------------------------------------------------------
 Section /o "Shearer - In My Hand" s2_sub2_Section5
 
    AddSize 5960

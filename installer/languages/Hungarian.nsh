@@ -170,6 +170,7 @@ ${LangFileString} DESC_s2_sub2_Section6 "Telepítésre kerül a 'Man Song' címu
 ${LangFileString} DESC_s2_sub2_Section7 "Telepítésre kerül a 'Man Song (Karaoke)' címu dal."
 ${LangFileString} DESC_s2_sub2_Section8 "Telepítésre kerül a 'Stay with me' címu dal."
 ${LangFileString} DESC_s2_sub2_Section9 "Telepítésre kerül a 'Stay with me (Karaoke)' címu dal."
+${LangFileString} DESC_s2_sub2_Section9 "Telepítésre kerül a 'Consequence Of Dawn' címu dal."
 
 ${LangFileString} DESC_s2_sub3_Section1 "Telepítésre kerül a 'Lebendig und kräftig und schärfer' címu dal."
 ${LangFileString} DESC_s2_sub3_Section2 "Telepítésre kerül a 'Mensch, wo bist du?' címu dal."

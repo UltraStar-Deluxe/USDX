@@ -172,6 +172,7 @@ ${LangFileString} DESC_s2_sub2_Section6 "Download the song 'Man Song'."
 ${LangFileString} DESC_s2_sub2_Section7 "Download the song 'Man Song (Karaoke)'."
 ${LangFileString} DESC_s2_sub2_Section8 "Download the song 'Stay with me'."
 ${LangFileString} DESC_s2_sub2_Section9 "Download the song 'Stay with me (Karaoke)'."
+${LangFileString} DESC_s2_sub2_Section10 "Download the song 'Consequence Of Dawn'."
 
 ${LangFileString} DESC_s2_sub3_Section1 "Download the song 'Lebendig und kräftig und schärfer'."
 ${LangFileString} DESC_s2_sub3_Section2 "Download the song 'Mensch, wo bist du?'."

@@ -110,6 +110,7 @@
 !define download_sub2_song7 "http://downloads.sourceforge.net/ultrastardx/usdx_song-shearer_-_man_song_kar.zip"
 !define download_sub2_song8 "http://downloads.sourceforge.net/ultrastardx/usdx_song-shearer_-_stay_with_me.zip"
 !define download_sub2_song9 "http://downloads.sourceforge.net/ultrastardx/usdx_song-shearer_-_stay_with_me_kar.zip"
+!define download_sub2_song10 "http://downloads.sourceforge.net/ultrastardx/usdx_song-shearer_-_consequence_of_dawn.zip"
 
 !define download_sub3_song1 "http://downloads.sourceforge.net/ultrastardx/usdx_song-wise_guys_-_lebendig_und_kraeftig_und_schaerfer.zip"
 !define download_sub3_song2 "http://downloads.sourceforge.net/ultrastardx/usdx_song-wise_guys_-_mensch_wo_bist_du.zip"

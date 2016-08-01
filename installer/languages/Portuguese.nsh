@@ -168,6 +168,7 @@ ${LangFileString} DESC_s2_sub2_Section6 "Baixar 'Man Song'."
 ${LangFileString} DESC_s2_sub2_Section7 "Baixar 'Man Song (Karaoke)'."
 ${LangFileString} DESC_s2_sub2_Section8 "Baixar 'Stay with me'."
 ${LangFileString} DESC_s2_sub2_Section9 "Baixar 'Stay with me (Karaoke)'."
+${LangFileString} DESC_s2_sub2_Section10 "Baixar 'Consequence Of Dawn'."
 
 ${LangFileString} DESC_s2_sub3_Section1 "Baixar 'Lebendig und kräftig und schärfer'."
 ${LangFileString} DESC_s2_sub3_Section2 "Baixar 'Mensch, wo bist du?'."

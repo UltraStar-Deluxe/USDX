@@ -172,6 +172,7 @@ ${LangFileString} DESC_s2_sub2_Section6 "Lädt das Lied 'Man Song' herunter."
 ${LangFileString} DESC_s2_sub2_Section7 "Lädt das Lied 'Man Song (Karaoke)' herunter."
 ${LangFileString} DESC_s2_sub2_Section8 "Lädt das Lied 'Stay with me' herunter."
 ${LangFileString} DESC_s2_sub2_Section9 "Lädt das Lied 'Stay with me (Karaoke)' herunter."
+${LangFileString} DESC_s2_sub2_Section10 "Lädt das Lied 'Consequence Of Dawn' herunter."
 
 ${LangFileString} DESC_s2_sub3_Section1 "Lädt das Lied 'Lebendig und kräftig und schärfer' herunter."
 ${LangFileString} DESC_s2_sub3_Section2 "Lädt das Lied 'Mensch, wo bist du?' herunter."

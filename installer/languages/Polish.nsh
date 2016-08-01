@@ -168,6 +168,7 @@ ${LangFileString} DESC_s2_sub2_Section6 "Œciągnij piosenkê 'Man Song'."
 ${LangFileString} DESC_s2_sub2_Section7 "Œciągnij piosenkê 'Man Song (Karaoke)'."
 ${LangFileString} DESC_s2_sub2_Section8 "Œciągnij piosenkê 'Stay with me'."
 ${LangFileString} DESC_s2_sub2_Section9 "Œciągnij piosenkê 'Stay with me (Karaoke)'."
+${LangFileString} DESC_s2_sub2_Section10 "Œciągnij piosenkê 'Consequence Of Dawn'."
 
 ${LangFileString} DESC_s2_sub3_Section1 "Œciągnij piosenkê 'Lebendig und kräftig und schärfer'."
 ${LangFileString} DESC_s2_sub3_Section2 "Œciągnij piosenkê 'Mensch, wo bist du?'."
