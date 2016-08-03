@@ -1,34 +1,50 @@
+# general files
 *.bak
 *.pas~
 Thumbs.db
 *.orig
 *.exe
-*.dcu
-*.o
-*.ppu
-*.avi
-*.mp4
-*.db
-*.7z
-*.a
 *.~*
 *.log
-*fig.ini
-backup/
-songs/
-build/
-screenshots/
-playlists/
-ToDo/
+
+# lazarus project files
+*.o
+*.ppu
+*.a
+*.dcu
+
+# intermediates
+/build/
 Makefile
 config.log
 config.status
 __history
 aclocal.m4
-autom4te.cache/
-*.identcache
-*.bdsproj.local
+/autom4te.cache/
 link.res
 ppaslink.sh
-game/ultrastardx
-UltraStarDeluxe.app/*
+/UltraStarDeluxe.app/*
+
+# source intermediates
+#/src/**/*.cfg
+/src/**/*.local
+/src/**/*.bdsproj
+/src/**/*.identcache
+/src/config-linux.inc
+/src/paths.inc
+/src/ultrastardx-*.lps
+
+# dev files
+/backup/
+/[Tt]o[Dd]o/
+
+# game folders
+/game/playlists/
+/game/screenshots/
+/game/songs/
+
+# game files
+/game/config.ini
+/game/*.db
+/game/*.log
+/game/ultrastardx
