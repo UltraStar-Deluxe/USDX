@@ -124,10 +124,10 @@ begin
 end;
 
 procedure TScreenParty.SetAnimationProgress(Progress: real);
+var I: integer;
 begin
-  Button[0].Texture.ScaleW := Progress;
-  Button[1].Texture.ScaleW := Progress;
-  Button[2].Texture.ScaleW := Progress;
+  for I := 0 to High(Button) do
+    Button[I].Texture.ScaleW := Progress;
 end;
 
 end.
