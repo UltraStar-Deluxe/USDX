@@ -2962,6 +2962,7 @@ var
   TempR: real;
 
   PlayerNumber:  integer;
+  OrgFontStyle:  integer;
 
   GoldenStarPos: real;
 begin
@@ -2978,6 +2979,13 @@ begin
 
     with Lines[NrLines].Line[Lines[NrLines].Current] do
     begin
+
+      OrgFontStyle := ActFont;
+      glColor4f(0, 0, 0, 1);
+      SetFontStyle(1);
+      SetFontItalic(False);
+      SetFontSize(14);
+
       for Count := 0 to HighNote do
       begin
         with Note[Count] do
@@ -2991,15 +2999,14 @@ begin
           // middle part
           Rec.Left := (Start-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left + 0.5 + 10*ScreenX + NotesW[0];
           Rec.Right := (Start+Length-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left - NotesW[0] - 0.5 + 10*ScreenX;
-          glColor4f(0, 0, 0, 1);
-          SetFontStyle (1);
-          SetFontItalic(False);
-          SetFontSize(14);
           SetFontPos (Rec.Left, Rec.Top);
           glPrint(Text);
         end; // with
       end; // for
     end; // with
+
+    // revert the font to prevent conflicts within drawing the editor lyric line
+    SetFontStyle(OrgFontStyle);
 
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
