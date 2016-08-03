@@ -26,7 +26,7 @@
 program ultrastardx;
 
 {$IFDEF MSWINDOWS}
-  //{$R '..\res\ultrastardx.res' '..\res\ultrastardx.rc'}
+  {$R '..\res\link.res' '..\res\link.rc'}
 {$ENDIF}
 
 {$IFDEF FPC}
@@ -376,7 +376,6 @@ uses
   UScreenAbout            in 'screens\UScreenAbout.pas',
 
   SysUtils;
-{$R ultrastardx.res}
 
 const
   sLineBreakWin = AnsiString(#13#10);//Windows-Style Linebreak. Older USDX versions don't support other formats.

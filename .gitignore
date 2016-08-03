@@ -33,6 +33,7 @@ ppaslink.sh
 /src/config-linux.inc
 /src/paths.inc
 /src/ultrastardx-*.lps
+/src/ultrastardx.res
 
 # dev files
 /backup/
