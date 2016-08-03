@@ -1073,7 +1073,22 @@ type
     IType:            array [0..2] of UTF8String;
   end;
 
+  //Party
+
+  TThemeParty = class(TThemeBasic)
+    ButtonClassic:        TThemeButton;
+    ButtonClassicFree:    TThemeButton;
+    ButtonChallenge:      TThemeButton;
+    ButtonTournament:     TThemeButton;
+
+    TextDescription:      TThemeText;
+    TextDescriptionLong:  TThemeText;
+    Description:          array[0..3] of UTF8String;
+    DescriptionLong:      array[0..3] of UTF8String;
+  end;
+
   //Party Screens
+
   TThemePartyNewRound = class(TThemeBasic)
     TextRound1:        TThemeText;
     TextRound2:        TThemeText;
@@ -1364,6 +1379,7 @@ type
     SongMenu:         TThemeSongMenu;
     SongJumpto:       TThemeSongJumpTo;
     //Party Screens:
+    Party:            TThemeParty;
     PartyNewRound:    TThemePartyNewRound;
     PartyScore:       TThemePartyScore;
     PartyWin:         TThemePartyWin;
@@ -1529,6 +1545,10 @@ begin
 
   SongMenu := TThemeSongMenu.Create;
   SongJumpto := TThemeSongJumpto.Create;
+
+  //Party
+  Party := TThemeParty.Create;
+
   //Party Screens
   PartyNewRound := TThemePartyNewRound.Create;
   PartyWin := TThemePartyWin.Create;
@@ -2487,6 +2507,32 @@ begin
       SongJumpto.SongsFound := Language.Translate('SONG_JUMPTO_SONGSFOUND');
       SongJumpto.NoSongsFound := Language.Translate('SONG_JUMPTO_NOSONGSFOUND');
       SongJumpto.CatText := Language.Translate('SONG_JUMPTO_CATTEXT');
+
+      // Party
+      ThemeLoadBasic(Party, 'PartyMain');
+
+      ThemeLoadText(Party.TextDescription, 'PartyMainTextDescription');
+      ThemeLoadText(Party.TextDescriptionLong, 'PartyMainTextDescriptionLong');
+      ThemeLoadButton(Party.ButtonClassic, 'PartyMainButtonClassic');
+      ThemeLoadButton(Party.ButtonClassicFree, 'PartyMainButtonClassicFree');
+      ThemeLoadButton(Party.ButtonChallenge, 'PartyMainButtonChallenge');
+      ThemeLoadButton(Party.ButtonTournament, 'PartyMainButtonTournament');
+
+      // Party Desc Text Translation Start
+
+      Party.Description[0] := Language.Translate('PARTY_MODE_CLASSIC');
+      Party.DescriptionLong[0] := Language.Translate('PARTY_MODE_CLASSIC_DESC');
+      Party.Description[1] := Language.Translate('PARTY_MODE_CLASSIC_FREE');
+      Party.DescriptionLong[1] := Language.Translate('PARTY_MODE_CLASSIC_FREE_DESC');
+      Party.Description[2] := Language.Translate('PARTY_MODE_CHALLENGE');
+      Party.DescriptionLong[2] := Language.Translate('PARTY_MODE_CHALLENGE_DESC');
+      Party.Description[3] := Language.Translate('PARTY_MODE_TOURNAMENT');
+      Party.DescriptionLong[3] := Language.Translate('PARTY_MODE_TOURNAMENT_DESC');
+
+      // Party Desc Text Translation End
+
+      Party.TextDescription.Text := Party.Description[0];
+      Party.TextDescriptionLong.Text := Party.DescriptionLong[0];
 
       //Party Options
       ThemeLoadBasic(PartyOptions, 'PartyOptions');
@@ -4559,7 +4605,10 @@ begin
   freeandnil(SongJumpto);
   SongJumpto := TThemeSongJumpto.Create;
 
-  //Party Screens
+  //Party
+  freeandnil(Party);
+  Party := TThemeParty.Create;
+
   freeandnil(PartyNewRound);
   PartyNewRound := TThemePartyNewRound.Create;
 
