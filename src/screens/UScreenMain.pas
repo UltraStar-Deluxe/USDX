@@ -114,7 +114,7 @@ begin
       Ord('M'): begin
         if (Ini.Players >= 1) and (Party.ModesAvailable) then
         begin
-          FadeTo(@ScreenPartyOptions, SoundLib.Start);
+          FadeTo(@ScreenParty, SoundLib.Start);
           Exit;
         end;
       end;
@@ -172,7 +172,7 @@ begin
           begin
             Party.bPartyGame := true;
 
-            FadeTo(@ScreenPartyOptions, SoundLib.Start);
+            FadeTo(@ScreenParty, SoundLib.Start);
           end
           else //show error message, No Songs Loaded
             ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
