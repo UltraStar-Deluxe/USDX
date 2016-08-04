@@ -782,7 +782,11 @@ begin
   // config playing buffer
   //BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 10);
   //BASS_SetConfig(BASS_CONFIG_BUFFER, 100);
-  BASS_SetConfig(BASS_CONFIG_FLOATDSP, 1); // enable floating-point DSP
+
+  // Using floating-point DSP config converts the passed data to 32bit sample data
+  // some used effects doesn't expect this kind of data, therefore they are bugging
+  // (see Voice removal; UMusic TVoiceRemoval.Callback)
+  //BASS_SetConfig(BASS_CONFIG_FLOATDSP, 1); // enable floating-point DSP
 
   Result := true;
 end;
