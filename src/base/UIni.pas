@@ -75,7 +75,7 @@ const
   CHANNEL_OFF = 0;         // for field ChannelToPlayerMap
   LATENCY_AUTODETECT = -1; // for field Latency
   DEFAULT_RESOLUTION = '800x600';
-  DEFAULT_THEME = 'Deluxe';
+  DEFAULT_THEME = 'Modern';
   IMaxPlayerCount = 12;
   IPlayers:     array[0..4] of UTF8String = ('1', '2', '3', '4', '6'); //, '8', '12'      //TODO IMaxPlayerCount
   IPlayersVals: array[0..4] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 ); //,  8 ,  12       //TODO IMaxPlayerCount
