@@ -70,6 +70,7 @@ type
       // indices for widget-updates
       SelectInputSourceID:   integer;
       SelectSlideChannelID: array of integer;
+      SelectThresholdID: integer;
 
       // interaction IDs
       ExitButtonIID: integer;
@@ -161,6 +162,7 @@ begin
             Ini.ThresholdIndex := (Ini.ThresholdIndex + Length(IThresholdVals) - 1) mod Length(IThresholdVals)
           else
             Ini.ThresholdIndex := (Ini.ThresholdIndex + 1) mod Length(IThresholdVals);
+          UpdateSelectSlideOptions(Theme.OptionsRecord.SelectThreshold, SelectThresholdID, IThreshold, Ini.ThresholdIndex);
         end;
     end;
 
@@ -341,7 +343,7 @@ begin
 
     Theme.OptionsRecord.SelectThreshold.showArrows := true; //basisbit TODO
     Theme.OptionsRecord.SelectThreshold.oneItemOnly := true;
-    AddSelectSlide(Theme.OptionsRecord.SelectThreshold, Ini.ThresholdIndex, IThreshold);
+    SelectThresholdID := AddSelectSlide(Theme.OptionsRecord.SelectThreshold, Ini.ThresholdIndex, IThreshold);
 
     Theme.OptionsRecord.SelectMicBoost.showArrows := true;
     Theme.OptionsRecord.SelectMicBoost.oneItemOnly := true;
