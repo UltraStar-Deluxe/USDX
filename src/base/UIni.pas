@@ -1510,10 +1510,10 @@ begin
   SoundFont := IniFile.ReadString('Sound', 'SoundFont', '');
 
   // Lyrics Font
-  LyricsFont := ReadArrayIndex(ILyricsFont, IniFile, 'Lyrics', 'LyricsFont', 0);
+  LyricsFont := ReadArrayIndex(ILyricsFont, IniFile, 'Lyrics', 'LyricsFont', 2);
 
   // Lyrics Effect
-  LyricsEffect := ReadArrayIndex(ILyricsEffect, IniFile, 'Lyrics', 'LyricsEffect', 4);
+  LyricsEffect := ReadArrayIndex(ILyricsEffect, IniFile, 'Lyrics', 'LyricsEffect', 2);
 
   // NoteLines
   NoteLines := ReadArrayIndex(INoteLines, IniFile, 'Lyrics', 'NoteLines', 1);
