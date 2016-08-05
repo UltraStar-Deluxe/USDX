@@ -4,8 +4,8 @@
 
 ; Product Information:
 
-!define VersionStr "1.3"
-!define FullVersion "1.3.1-beta+dev" ; semver compatible. see semver.org
+!define VersionStr "1.3.2"
+!define FullVersion "1.3.2-beta" ; semver compatible. see semver.org
 !define Release "Beta"
 !define DevBuild false
 !define ReleaseMeta "-beta"
