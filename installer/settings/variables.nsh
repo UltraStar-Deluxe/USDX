@@ -5,11 +5,11 @@
 ; Product Information:
 
 !define VersionStr "1.3.2"
-!define FullVersion "1.3.2-beta" ; semver compatible. see semver.org
-!define Release "Beta"
-!define DevBuild false
-!define ReleaseMeta "-beta"
-!define ReleaseApp " Beta"
+!define FullVersion "1.3.2+dev" ; semver compatible. see semver.org
+!define Release "Dev"
+!define DevBuild true
+!define ReleaseMeta "+dev"
+!define ReleaseApp " Dev"
 
 !define installername " Installer"
 !define installerexe "UltraStar.Deluxe_v${VersionStr}${ReleaseMeta}_installer"
