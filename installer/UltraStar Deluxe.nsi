@@ -49,7 +49,7 @@ Name "${name} ${version}"
 Brandingtext "${name} ${version} Installation"
 
 !system 'md "dist"'
-OutFile "dist\ultrastardx-${VersionStr}${ReleaseMeta}-installer-full.exe"
+OutFile "dist\${installerexe}.exe"
 
 InstallDir "${PRODUCT_PATH}"
 InstallDirRegKey "${PRODUCT_UNINST_ROOT_KEY}" "${PRODUCT_UNINST_KEY}" "InstallDir"
@@ -151,10 +151,10 @@ FunctionEnd
 ; TODO: verify. don't think we should disallow disabling shortcuts. think of a portable version
 ;!define MUI_STARTMENUPAGE_NODISABLE
 
-!define MUI_STARTMENUPAGE_DEFAULTFOLDER "${name} ${version}"
+!define MUI_STARTMENUPAGE_DEFAULTFOLDER "${name}"
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "${PRODUCT_UNINST_KEY}"
-!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${name} ${version}"
+!define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${name}"
 
 Var StartMenuFolder
 !insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder
@@ -429,7 +429,7 @@ Section $(name_section1) Section1
 
 	WriteUninstaller "$INSTDIR\${exeuninstall}.exe"
 
-	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${name} ${version}"
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${name}"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\${exe}.exe"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "InstallDir" "$INSTDIR"
 	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\${exeuninstall}.exe"

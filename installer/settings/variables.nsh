@@ -11,8 +11,9 @@
 !define ReleaseMeta "-beta"
 !define ReleaseApp " Beta"
 
-
 !define installername " Installer"
+!define installerexe "UltraStar.Deluxe_v${VersionStr}${ReleaseMeta}_installer"
+
 
 ; generated
 !define version "${VersionStr}${ReleaseApp}"
@@ -38,7 +39,7 @@
 !define installer_version_path "$LOCALAPPDATA\Temp\usdxversion"
 !define installer_exe_path "$LOCALAPPDATA\Temp\usdxupdate.exe"
 !define version_url "http://raw.githubusercontent.com/UltraStar-Deluxe/USDX/release/VERSION"
-!define update_url "https://github.com/UltraStar-Deluxe/USDX/releases/download/%VERSION%/ultrastardx-%VERSIONSTRING%-installer-full.exe"
+!define update_url "https://github.com/UltraStar-Deluxe/USDX/releases/download/%VERSION%/UltraStar.Deluxe_v%VERSIONSTRING%-installer.exe"
 !define update_mask_online_version "%VERSION%"
 !define update_mask_installer_version "%VERSIONSTRING%"
 
@@ -58,13 +59,13 @@
 
 ; Registry for Start menu entries:
 
-!define PRODUCT_NAME "${name} ${version}"
+!define PRODUCT_NAME "${name}"
 !define PRODUCT_VERSION "${version}"
 !define PRODUCT_PUBLISHER "${publisher}"
 !define PRODUCT_WEB_SITE "${homepage}"
-!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name} ${version}"
+!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${name}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
-!define PRODUCT_PATH "$PROGRAMFILES\${name} ${version}"
+!define PRODUCT_PATH "$PROGRAMFILES\${name}"
 
 ; Download URLs for Songs and Themes:
 
