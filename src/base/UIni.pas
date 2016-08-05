@@ -411,7 +411,6 @@ const
 
   IHexSingColor: array[0..20] of UTF8String = ('0096FF', '3FBF3F', 'FF3FC0', 'DC0000', 'B43FE6', 'FF9000', 'FFFF00', 'C07F1F', '000000', '00FFE6', 'FF7F66',
                                                 '99FF66', 'CCCCFF', 'FFE6CC', '339999', '9900CC', '336699', 'FF99FF', '8A5C2E', 'FFCC33', '');
-  //IHexColor:     array[0..9] of UTF8String = ('0096FF', '3FBF3F', 'FF3FC0', 'DC0000', 'B43FE6', 'FF9000', 'FFFF00', 'C07F1F', '000000', '');
   IHexGrayColor: array[0..9] of UTF8String = ('000000', '202020', '404040', '606060', '808080', 'A0A0A0', 'C0C0C0', 'D6D6D6', 'FFFFFF', '');
   IHexOColor:    array[0..2] of UTF8String = ('000000', 'FFFFFF', '');
 
@@ -1604,10 +1603,10 @@ begin
   JukeboxSongMenu := ReadArrayIndex(IJukeboxSongMenu, IniFile, 'Jukebox', 'SongMenu', IGNORE_INDEX, 'On');
 
 
-  JukeboxSingLineColor := ReadArrayIndex(IHexSingColor, IniFile, 'Jukebox', 'SingLineColor', 0);
+  JukeboxSingLineColor := ReadArrayIndex(IHexSingColor, IniFile, 'Jukebox', 'SingLineColor', High(IHexSingColor));
 
   // other color
-  if (JukeboxSingLineColor = -1) then
+  if (JukeboxSingLineColor = -1) or (JukeboxSingLineColor = High(IHexSingColor)) then
   begin
     JukeboxSingLineColor := High(IHexSingColor);
 
@@ -1619,14 +1618,14 @@ begin
     Ini.JukeboxSingLineOtherColorB := Round(Col.B);
   end;
 
-  JukeboxActualLineColor := ReadArrayIndex(IHexGrayColor, IniFile, 'Jukebox', 'ActualLineColor', 5);
+  JukeboxActualLineColor := ReadArrayIndex(IHexGrayColor, IniFile, 'Jukebox', 'ActualLineColor', High(IHexGrayColor));
 
   // other color
-  if (JukeboxActualLineColor = -1) then
+  if (JukeboxActualLineColor = -1) or (JukeboxActualLineColor = High(IHexGrayColor)) then
   begin
     JukeboxActualLineColor := High(IHexGrayColor);
 
-    HexColor := IniFile.ReadString('Jukebox', 'ActualLineColor', IHexGrayColor[5]);
+    HexColor := IniFile.ReadString('Jukebox', 'ActualLineColor', IHexGrayColor[8]);
     Col := HexToRGB(HexColor);
 
     Ini.JukeboxActualLineOtherColorR := Round(Col.R);
@@ -1634,13 +1633,13 @@ begin
     Ini.JukeboxActualLineOtherColorB := Round(Col.B);
   end;
 
-  JukeboxNextLineColor := ReadArrayIndex(IHexGrayColor, IniFile, 'Jukebox', 'NextLineColor', 3);
+  JukeboxNextLineColor := ReadArrayIndex(IHexGrayColor, IniFile, 'Jukebox', 'NextLineColor', High(IHexGrayColor));
   // other color
-  if (JukeboxNextLineColor = -1) then
+  if (JukeboxNextLineColor = -1) or (JukeboxNextLineColor = High(IHexGrayColor)) then
   begin
     JukeboxNextLineColor := High(IHexGrayColor);
 
-    HexColor := IniFile.ReadString('Jukebox', 'NextLineColor', IHexGrayColor[3]);
+    HexColor := IniFile.ReadString('Jukebox', 'NextLineColor', IHexGrayColor[6]);
     Col := HexToRGB(HexColor);
 
     Ini.JukeboxNextLineOtherColorR := Round(Col.R);
