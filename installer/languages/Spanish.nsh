@@ -46,10 +46,10 @@ ${LangFileString} update_check_equal "Ya tienesla última versión instalada"
 ${LangFileString} update_check_newer "Ya tienesla última versión instalada"
 ;TODO ${LangFileString} update_check_no "The current updater/installer won't install a version. Check our website ${homepage} for a new version."
 ${LangFileString} update_check_failed "La comprobación ha fallado, ¿Quieres visitar la web para comprobar si existe una nueva versión?"
-;TODO ${LangFileString} update_download_success "The download of the new version $online_version succeeded.$\n$\r$\n$\rFinish the update by closing this updater. The new installation will be started right after."
-;TODO ${LangFileString} update_download_failed "The download of the new version $online_version failed. The installer could not be downloaded.$\n$\r$\n$\rPlease, visit our website ${homepage} for the new version."
+;TODO ${LangFileString} update_download_success "The download of the new version $online_version succeeded.$\r$\n$\r$\nFinish the update by closing this updater. The new installation will be started right after."
+;TODO ${LangFileString} update_download_failed "The download of the new version $online_version failed. The installer could not be downloaded.$\r$\n$\r$\nPlease, visit our website ${homepage} for the new version."
 ;TODO ${LangFileString} update_download_aborted "The download of the new version $online_version was aborted. Nothing will be updated. Remember, visit our website ${homepage} for latest news and updates."
-;TODO ${LangFileString} update_download_invalid_installer "The download of the new version $online_version failed. The downloaded installer was invalid. This can happen if the server/website has some issues, does not exist anymore or is in maintenance mode.$\n$\r$\n$\rPlease, visit our website ${homepage} and download the installer manually."
+;TODO ${LangFileString} update_download_invalid_installer "The download of the new version $online_version failed. The downloaded installer was invalid. This can happen if the server/website has some issues, does not exist anymore or is in maintenance mode.$\r$\n$\r$\nPlease, visit our website ${homepage} and download the installer manually."
 ;TODO ${LangFileString} update_download_none "No version to download selected. The current installer cannot update your version. Check our website ${homepage} for latest news and updates."
 ;TODO ${LangFileString} update_versions_info "At least one new version of ${name} has been found. Please, select a specific version and choose to update. This version will be downloaded and the installation will be started afterwards."
 ;TODO ${LangFileString} update_versions_none "None"
@@ -72,9 +72,9 @@ ${LangFileString} update_check_failed "La comprobación ha fallado, ¿Quieres vi
 ; Welcome Page:
 
 ${LangFileString} page_welcome_title_update "Bienvenido al asistente de instalación de ${name}"
-${LangFileString} page_welcome_txt_update "El asistente te guiará a través de este proceso. ${name} es un juego gratuito y libre.$\n$\r$\n$\r${publisher} os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web:$\n$\r${homepage}"
+${LangFileString} page_welcome_txt_update "El asistente te guiará a través de este proceso. ${name} es un juego gratuito y libre.$\r$\n$\r$\n${publisher} os desea que lo paseis muy bien.$\r$\n$\r$\nVisita nuestra web:$\n$\r${homepage}"
 ${LangFileString} page_welcome_title "Bienvenido a la instalación de ${name}"
-${LangFileString} page_welcome_txt "El asistente te guiará a través de este proceso. ${name} es un juego gratuito y libre.$\n$\r$\n$\r${publisher} os desea que lo paseis muy bien.$\n$\r$\n$\rVisita nuestra web:$\n$\r${homepage}"
+${LangFileString} page_welcome_txt "El asistente te guiará a través de este proceso. ${name} es un juego gratuito y libre.$\r$\n$\r$\n${publisher} os desea que lo paseis muy bien.$\r$\n$\r$\nVisita nuestra web:$\n$\r${homepage}"
 ${LangFileString} page_un_welcome_title "Bienvenido a la desinstalación de ${name}"
 
 ; Components Page:
@@ -101,7 +101,7 @@ ${LangFileString} page_settings_songdir_info "Elige un directorio adicional para
 
 ; Finish Page:
 
-${LangFileString} page_finish_txt "${name} ha sido instalado con éxito.$\n$\r$\n$\rVisita nuestra página web para obtener las últimas noticias y actualizaciones."
+${LangFileString} page_finish_txt "${name} ha sido instalado con éxito.$\r$\n$\r$\nVisita nuestra página web para obtener las últimas noticias y actualizaciones."
 ${LangFileString} page_finish_linktxt "Página web"
 ${LangFileString} page_finish_desktop "¿Quieres crear un acceso directo?"
 

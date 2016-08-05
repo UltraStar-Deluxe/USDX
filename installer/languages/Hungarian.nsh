@@ -47,10 +47,10 @@ ${LangFileString} update_check_equal "Az Ön gépén a legfrissebb verzió ($ins
 ${LangFileString} update_check_newer "Az Ön gépén telepített verzió ($installed_version) frissebb, mint a jelenlegi kiadás (online_version). Frissítés nem szükséges."
 ;TODO ${LangFileString} update_check_no "The current updater/installer won't install a version. Check our website ${homepage} for a new version."
 ${LangFileString} update_check_failed "Az ellenõrzés sikertelen. Kívánja betölteni a program weboldalát, hogy ellenõrizhesse hogy van-e frissítés?"
-;TODO ${LangFileString} update_download_success "The download of the new version $online_version succeeded.$\n$\r$\n$\rFinish the update by closing this updater. The new installation will be started right after."
-;TODO ${LangFileString} update_download_failed "The download of the new version $online_version failed. The installer could not be downloaded.$\n$\r$\n$\rPlease, visit our website ${homepage} for the new version."
+;TODO ${LangFileString} update_download_success "The download of the new version $online_version succeeded.$\r$\n$\r$\nFinish the update by closing this updater. The new installation will be started right after."
+;TODO ${LangFileString} update_download_failed "The download of the new version $online_version failed. The installer could not be downloaded.$\r$\n$\r$\nPlease, visit our website ${homepage} for the new version."
 ;TODO ${LangFileString} update_download_aborted "The download of the new version $online_version was aborted. Nothing will be updated. Remember, visit our website ${homepage} for latest news and updates."
-;TODO ${LangFileString} update_download_invalid_installer "The download of the new version $online_version failed. The downloaded installer was invalid. This can happen if the server/website has some issues, does not exist anymore or is in maintenance mode.$\n$\r$\n$\rPlease, visit our website ${homepage} and download the installer manually."
+;TODO ${LangFileString} update_download_invalid_installer "The download of the new version $online_version failed. The downloaded installer was invalid. This can happen if the server/website has some issues, does not exist anymore or is in maintenance mode.$\r$\n$\r$\nPlease, visit our website ${homepage} and download the installer manually."
 ;TODO ${LangFileString} update_download_none "No version to download selected. The current installer cannot update your version. Check our website ${homepage} for latest news and updates."
 ;TODO ${LangFileString} update_versions_info "At least one new version of ${name} has been found. Please, select a specific version and choose to update. This version will be downloaded and the installation will be started afterwards."
 ;TODO ${LangFileString} update_versions_none "None"
@@ -73,9 +73,9 @@ ${LangFileString} update_check_failed "Az ellenõrzés sikertelen. Kívánja bet
 ; Welcome Page:
 
 ${LangFileString} page_welcome_title_update "Üdvözli Önt az ${name} frissítési varázslója!"
-${LangFileString} page_welcome_txt_update "Ez a varázsló végigvezeti Önt az ${name} frissítési folyamatán. Az ${name} egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\r${publisher} csapata jó szórakozást kíván!$\n$\r$\n$\rA projekt weboldala:$\n$\r${homepage}$\n$\r$\n$\rTámogatás a fórumunkon:$\n$\r${forum}"
+${LangFileString} page_welcome_txt_update "Ez a varázsló végigvezeti Önt az ${name} frissítési folyamatán. Az ${name} egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\r$\n$\r$\n${publisher} csapata jó szórakozást kíván!$\r$\n$\r$\nA projekt weboldala:$\n$\r${homepage}$\r$\n$\r$\nTámogatás a fórumunkon:$\n$\r${forum}"
 ${LangFileString} page_welcome_title "Üdvözli Önt az ${name} telepítési varázslója!"
-${LangFileString} page_welcome_txt "Ez a varázsló végigvezeti Önt az ${name} telepítési folyamatán. Az ${name} egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\n$\r$\n$\r${publisher} csapata jó szórakozást kíván!$\n$\r$\n$\rA projekt weboldala:$\n$\r${homepage}$\n$\r$\n$\rTámogatás a fórumunkon:$\n$\r${forum}"
+${LangFileString} page_welcome_txt "Ez a varázsló végigvezeti Önt az ${name} telepítési folyamatán. Az ${name} egy ingyenes és szabad karaokeprogram, olyan mint a Singstar.$\r$\n$\r$\n${publisher} csapata jó szórakozást kíván!$\r$\n$\r$\nA projekt weboldala:$\n$\r${homepage}$\r$\n$\r$\nTámogatás a fórumunkon:$\n$\r${forum}"
 ${LangFileString} page_un_welcome_title "Üdvözli Önt az ${name} eltávolítási varázslója!"
 
 ; Components Page:
@@ -102,7 +102,7 @@ ${LangFileString} page_settings_resolution_label "Felbontás:"
 
 ; Finish Page:
 
-${LangFileString} page_finish_txt "Az ${name} telepítése sikeresen befejezõdött.$\n$\r$\n$\rHa kíváncsi a legfrissebb hírekre és frissítésekre, kérjük látogassa meg projektünk weboldalát."
+${LangFileString} page_finish_txt "Az ${name} telepítése sikeresen befejezõdött.$\r$\n$\r$\nHa kíváncsi a legfrissebb hírekre és frissítésekre, kérjük látogassa meg projektünk weboldalát."
 ${LangFileString} page_finish_linktxt "A projekt weboldala"
 ${LangFileString} page_finish_desktop "Tegyünk egy parancsikont az asztalra?"
 
