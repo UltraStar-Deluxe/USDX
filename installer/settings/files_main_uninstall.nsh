@@ -28,6 +28,9 @@
  Delete "$INSTDIR\screenshots.lnk"
  Delete "$INSTDIR\playlists.lnk"
  Delete "$INSTDIR\config.ini.lnk"
+ 
+ ; delete third party licenses
+ Delete "$INSTDIR\LICENSE*"
 
  Delete "$INSTDIR\Error.log"
  Delete "$INSTDIR\Benchmark.log"
