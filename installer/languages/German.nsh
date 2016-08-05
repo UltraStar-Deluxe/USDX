@@ -5,13 +5,13 @@
 !insertmacro LANGFILE_EXT German
 
 ${LangFileString} error_download_song_info "Fehler beim Herunterladen des Songs \'$0' von: $\r$\n$1$\r$\n$\r$\n"
-${LangFileString} error_download_song_msg "Fehler beim Herunterladen des Songs \'$0' von: $\r$\n$1$\r$\n$\r$\Klicke OK um mit der Installation fortzufahren."
+${LangFileString} error_download_song_msg "Fehler beim Herunterladen des Songs \'$0' von: $\r$\n$1$\r$\n$\r$\nKlicke OK um mit der Installation fortzufahren."
 ${LangFileString} error_download_theme_info "Fehler beim Herunterladen des Designs \'$0' von: $\r$\n$1$\r$\n$\r$\n"
-${LangFileString} error_download_theme_msg "Fehler beim Herunterladen des Designs \'$0' von: $\r$\n$1$\r$\n$\r$\Klicke OK um mit der Installation fortzufahren."
+${LangFileString} error_download_theme_msg "Fehler beim Herunterladen des Designs \'$0' von: $\r$\n$1$\r$\n$\r$\nKlicke OK um mit der Installation fortzufahren."
 ${LangFileString} error_download_skin_info "Fehler beim Herunterladen des Skins \'$0' von: $\r$\n$1$\r$\n$\r$\n"
-${LangFileString} error_download_skin_msg "Fehler beim Herunterladen des Skins \'$0' von: $\r$\n$1$\r$\n$\r$\Klicke OK um mit der Installation fortzufahren."
+${LangFileString} error_download_skin_msg "Fehler beim Herunterladen des Skins \'$0' von: $\r$\n$1$\r$\n$\r$\nKlicke OK um mit der Installation fortzufahren."
 ${LangFileString} error_download_plugin_info "Fehler beim Herunterladen des Plugins \'$0' von: $\r$\n$1$\r$\n$\r$\n"
-${LangFileString} error_download_plugin_msg "Fehler beim Herunterladen des Plugins \'$0' von: $\r$\n$1$\r$\n$\r$\Klicke OK um mit der Installation fortzufahren."
+${LangFileString} error_download_plugin_msg "Fehler beim Herunterladen des Plugins \'$0' von: $\r$\n$1$\r$\n$\r$\nKlicke OK um mit der Installation fortzufahren."
 
 ${LangFileString} abort_install "Willst du die Installation wirklich abbrechen?"
 ${LangFileString} abort_uninstall "Willst du die Deinstallation wirklich abbrechen?"
