@@ -90,8 +90,6 @@ RequestExecutionLevel user
 ; Pages Installation Routine Settings
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
-!define MUI_CUSTOMFUNCTION_GUIINIT bgmusic
-
 ; Welcome Page:
 
 !define MUI_WELCOMEPAGE_TITLE_3LINES
@@ -565,11 +563,6 @@ SectionEnd
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
 ;!addPluginDir "${path_plugins}\"
- 
-Function bgmusic
-	File /oname=$PLUGINSDIR\loop.wav ${music1}
-	BGImage::Sound /NOUNLOAD /LOOP ${music2}
-FunctionEnd
 
 Function .onGUIEnd
 	BGImage::Sound /STOP
