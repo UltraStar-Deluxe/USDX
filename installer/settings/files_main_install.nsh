@@ -91,6 +91,7 @@ File ..\ChangeLog.GERMAN.txt
 File ..\game\LuaCommands.odt
 File ..\README.txt
 File .\dependencies\documents\license.txt
+File .\dependencies\documents\thirdparty\*
 File .\dependencies\documents\documentation.pdf
 
 File ..\game\${exe}.exe

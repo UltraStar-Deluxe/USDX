@@ -44,13 +44,13 @@ ${LangFileString} update_noinstallation_offline "You have no version installed. 
 ${LangFileString} update_check_offline "Your version $installed_version is up-to-date. The current installer cannot update your version. Visit our project website to get latest news and updates."
 ${LangFileString} update_check_older "Your version $installed_version is outdated. The new version $online_version of ${name} is available. Choose your option:"
 ${LangFileString} update_check_equal "Your currently installed version $installed_version is up-to-date. No update needed."
-${LangFileString} update_check_newer "Your installed version $installed_version is newer than the $\n$\rcurrent release version $online_version of ${name}. No update needed."
+${LangFileString} update_check_newer "Your installed version $installed_version is newer than the $\r$\ncurrent release version $online_version of ${name}. No update needed."
 ${LangFileString} update_check_no "The current updater/installer won't install a version. Check our website ${homepage} for a new version."
 ${LangFileString} update_check_failed "The check for a new version failed. Check our website ${homepage} for a new version and manually download a new version."
-${LangFileString} update_download_success "The download of the new version $online_version succeeded.$\n$\r$\n$\rFinish the update by closing this updater. The new installation will be started right after."
-${LangFileString} update_download_failed "The download of the new version $online_version failed. The installer could not be downloaded.$\n$\r$\n$\rPlease, visit our website ${homepage} for the new version."
+${LangFileString} update_download_success "The download of the new version $online_version succeeded.$\r$\n$\r$\nFinish the update by closing this updater. The new installation will be started right after."
+${LangFileString} update_download_failed "The download of the new version $online_version failed. The installer could not be downloaded.$\r$\n$\r$\nPlease, visit our website ${homepage} for the new version."
 ${LangFileString} update_download_aborted "The download of the new version $online_version was aborted. Nothing will be updated. Remember, visit our website ${homepage} for latest news and updates."
-${LangFileString} update_download_invalid_installer "The download of the new version $online_version failed. The downloaded installer was invalid. This can happen if the server/website has some issues, does not exist anymore or is in maintenance mode.$\n$\r$\n$\rPlease, visit our website ${homepage} and download the installer manually."
+${LangFileString} update_download_invalid_installer "The download of the new version $online_version failed. The downloaded installer was invalid. This can happen if the server/website has some issues, does not exist anymore or is in maintenance mode.$\r$\n$\r$\nPlease, visit our website ${homepage} and download the installer manually."
 ${LangFileString} update_download_none "No version to download selected. The current installer cannot update your version. Check our website ${homepage} for latest news and updates."
 ${LangFileString} update_versions_info "At least one new version of ${name} has been found. Please, select a specific version and choose to update. This version will be downloaded and the installation will be started afterwards."
 ${LangFileString} update_versions_none "None"
@@ -73,9 +73,9 @@ ${LangFileString} update_download_remain_hours " (%u hours remaining)"
 ; Welcome Page:
 
 ${LangFileString} page_welcome_title_update "Welcome to the ${name} Update Wizard"
-${LangFileString} page_welcome_txt_update "This wizard will guide you through the Update process of ${name}. ${name} is a free open source Karaoke game, which can be compared with Singstar.$\n$\r$\n$\rThe ${publisher} wishes you fun.$\n$\r$\n$\rProject website:$\n$\r${homepage}$\n$\r$\n$\rSupport Forum:$\n$\r${forum}"
+${LangFileString} page_welcome_txt_update "This wizard will guide you through the Update process of ${name}. ${name} is a free open source Karaoke game, which can be compared with Singstar.$\r$\n$\r$\nThe ${publisher} wishes you fun.$\r$\n$\r$\nProject website:$\r$\n${homepage}$\r$\n$\r$\nSupport Forum:$\n$\r${forum}"
 ${LangFileString} page_welcome_title "Welcome to the ${name} Setup Wizard"
-${LangFileString} page_welcome_txt "This wizard will guide you through the Installation of ${name}. ${name} is a free open source Karaoke game, which can be compared with Singstar.$\n$\r$\n$\rThe ${publisher} wishes you fun.$\n$\rProject website: ${homepage}$\n$\rSupport Forum: ${forum}"
+${LangFileString} page_welcome_txt "This wizard will guide you through the Installation of ${name}. ${name} is a free open source Karaoke game, which can be compared with Singstar.$\r$\n$\r$\nThe ${publisher} wishes you fun.$\r$\n$\r$\nProject website:$\r$\n${homepage}$\r$\n$\r$\nSupport Forum:$\r$\n${forum}"
 ${LangFileString} page_un_welcome_title "Welcome to the ${name} uninstall wizard"
 
 ; Components Page:
@@ -102,7 +102,7 @@ ${LangFileString} page_settings_songdir_info "Choose additional song directory f
 
 ; Finish Page:
 
-${LangFileString} page_finish_txt "${name} was installed successfully on your system.$\n$\r$\n$\rVisit our project website to get latest news and updates."
+${LangFileString} page_finish_txt "${name} was installed successfully on your system.$\r$\n$\r$\nVisit our project website to get latest news and updates."
 ${LangFileString} page_finish_linktxt "Project website"
 ${LangFileString} page_finish_desktop "Create Desktop Shortcut?"
 

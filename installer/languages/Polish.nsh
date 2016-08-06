@@ -43,13 +43,13 @@ ${LangFileString} delete_songs "Usunąæ piosenki? UWAGA: Wszystkie pliki w kata
 ;TODO ${LangFileString} update_check_offline "Your version $installed_version is up-to-date. The current installer cannot update your version. Visit our project website to get latest news and updates."
 ${LangFileString} update_check_older "Twoja werjsa $installed_version jest przestarzała. Nowa wersja online_version ${name} jest już dostêpna. Czy chcesz dokonaæ aktualizacji?"
 ${LangFileString} update_check_equal "Obecnie zainstalowana wersja $installed_version jest najbardziej aktualna. Nie ma nowszych wersji."
-${LangFileString} update_check_newer "Twoja obecnie zainstalowana wersja $installed_version jest nowsza niż $\n$\robecnie wydana wersja online_version ${name}. Nie ma nowszych aktualizacji."
+${LangFileString} update_check_newer "Twoja obecnie zainstalowana wersja $installed_version jest nowsza niż $\r$\nobecnie wydana wersja online_version ${name}. Nie ma nowszych aktualizacji."
 ;TODO ${LangFileString} update_check_no "The current updater/installer won't install a version. Check our website ${homepage} for a new version."
 ${LangFileString} update_check_failed "Poszukiwanie nowyszch wersji zakoñczyło siê błêdem. Czy chcesz odwiedziæ stronê główną i sprawdziæ rêcznie?"
-;TODO ${LangFileString} update_download_success "The download of the new version $online_version succeeded.$\n$\r$\n$\rFinish the update by closing this updater. The new installation will be started right after."
-;TODO ${LangFileString} update_download_failed "The download of the new version $online_version failed. The installer could not be downloaded.$\n$\r$\n$\rPlease, visit our website ${homepage} for the new version."
+;TODO ${LangFileString} update_download_success "The download of the new version $online_version succeeded.$\r$\n$\r$\nFinish the update by closing this updater. The new installation will be started right after."
+;TODO ${LangFileString} update_download_failed "The download of the new version $online_version failed. The installer could not be downloaded.$\r$\n$\r$\nPlease, visit our website ${homepage} for the new version."
 ;TODO ${LangFileString} update_download_aborted "The download of the new version $online_version was aborted. Nothing will be updated. Remember, visit our website ${homepage} for latest news and updates."
-;TODO ${LangFileString} update_download_invalid_installer "The download of the new version $online_version failed. The downloaded installer was invalid. This can happen if the server/website has some issues, does not exist anymore or is in maintenance mode.$\n$\r$\n$\rPlease, visit our website ${homepage} and download the installer manually."
+;TODO ${LangFileString} update_download_invalid_installer "The download of the new version $online_version failed. The downloaded installer was invalid. This can happen if the server/website has some issues, does not exist anymore or is in maintenance mode.$\r$\n$\r$\nPlease, visit our website ${homepage} and download the installer manually."
 ;TODO ${LangFileString} update_download_none "No version to download selected. The current installer cannot update your version. Check our website ${homepage} for latest news and updates."
 ;TODO ${LangFileString} update_versions_info "At least one new version of ${name} has been found. Please, select a specific version and choose to update. This version will be downloaded and the installation will be started afterwards."
 ;TODO ${LangFileString} update_versions_none "None"
@@ -72,9 +72,9 @@ ${LangFileString} update_check_failed "Poszukiwanie nowyszch wersji zakoñczyło
 ; Welcome Page:
 
 ${LangFileString} page_welcome_title_update "Witamy w kreatorze aktualizacji programu ${name}"
-${LangFileString} page_welcome_txt_update "Ten kreator przeprowadzi ciê przez proces aktualizacji gry ${name}. ${name} jest bezpłatną i Otwartą grą Karaoke, którą można porównaæ z SingStar'em.$\n$\r$\n$\rZespół ${name} życzy miłej zabawy.$\n$\r$\n$\rStrona projektu:$\n$\r${homepage}$\n$\r$\n$\rForum wsparcia:$\n$\r${forum}"
+${LangFileString} page_welcome_txt_update "Ten kreator przeprowadzi ciê przez proces aktualizacji gry ${name}. ${name} jest bezpłatną i Otwartą grą Karaoke, którą można porównaæ z SingStar'em.$\r$\n$\r$\nZespół ${name} życzy miłej zabawy.$\r$\n$\r$\nStrona projektu:$\n$\r${homepage}$\r$\n$\r$\nForum wsparcia:$\n$\r${forum}"
 ${LangFileString} page_welcome_title "Witamy w kreatorze instalacji programu ${name}"
-${LangFileString} page_welcome_txt "Ten kreator przeprowadzi ciê przez proces instalacji gry ${name}. ${name} jest bezpłatną i Otwartą grą Karaoke, którą można porównaæ z SingStar'em.$\n$\r$\n$\rZespół ${name} życzy miłej zabawy.$\n$\r$\n$\rStrona projektu:$\n$\r${homepage}$\n$\r$\n$\rForum wsparcia:$\n$\r${forum}"
+${LangFileString} page_welcome_txt "Ten kreator przeprowadzi ciê przez proces instalacji gry ${name}. ${name} jest bezpłatną i Otwartą grą Karaoke, którą można porównaæ z SingStar'em.$\r$\n$\r$\nZespół ${name} życzy miłej zabawy.$\r$\n$\r$\nStrona projektu:$\n$\r${homepage}$\r$\n$\r$\nForum wsparcia:$\n$\r${forum}"
 ${LangFileString} page_un_welcome_title "Witamy w kreatorze deinstalacji gry ${name}"
 
 ; Components Page:
@@ -101,7 +101,7 @@ ${LangFileString} page_settings_songdir_info "Wybierz katalog w którym znajduj�
 
 ; Finish Page:
 
-${LangFileString} page_finish_txt "${name} został poprawnie zainstalowany na twoim komputerze.$\n$\r$\n$\rOdwiedŸ Naszą stronê aby otrzymaæ najnowsze wiadomoœci i aktualizacjê."
+${LangFileString} page_finish_txt "${name} został poprawnie zainstalowany na twoim komputerze.$\r$\n$\r$\nOdwiedŸ Naszą stronê aby otrzymaæ najnowsze wiadomoœci i aktualizacjê."
 ${LangFileString} page_finish_linktxt "Strona Projektu"
 ${LangFileString} page_finish_desktop "Czy stwórzyæ skrót na Pulpicie?"
 

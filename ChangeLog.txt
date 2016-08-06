@@ -1,3 +1,24 @@
+Ultrastar Deluxe 1.3.2 Beta - 2016-08-05
+-----------------------------
+- 6 player support on one or split over two screens
+- jukebox mode
+- "battle of the bands" party mode
+- webcam support
+- support for almost any video or audio file format
+- the game now runs on windows xp up to windows 10, OS X up to el capitain and many linux distributions
+- duet singing of songs
+- many new keyboard shortcuts
+- greatly improved song editor
+- improved overall speed and lowered memory requirements - you can now easily play the game with 5000 songs loaded on a system with 1 GB of ram
+- smart search feature for song selection
+- switched from SDL1.2 to SDL2, updated many other dependent libraries
+- better Unicode support for multilingual characters in lyrics
+- less bugs and improved overall stability
+- lots more
+
+WIP
+
+
 Ultrastar Deluxe 1.1
 -----------------------------
 
