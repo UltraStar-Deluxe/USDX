@@ -86,8 +86,8 @@ File /r /x .svn /x .gitignore ..\game\avatars
 
 File .\dependencies\dll\*.dll
 
-File ..\ChangeLog.txt
-File ..\ChangeLog.GERMAN.txt
+;File ..\ChangeLog.txt
+;File ..\ChangeLog.GERMAN.txt
 File ..\game\LuaCommands.odt
 File ..\README.txt
 File .\dependencies\documents\license.txt

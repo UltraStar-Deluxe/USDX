@@ -400,6 +400,12 @@ Section $(name_section1) Section1
 	SectionIn RO
 	SetOutPath $INSTDIR
 	SetOverwrite try
+	
+	; make installation folder read/writable for all authenticated users,
+	; so shared settings, songs, logfile,... can be used and overall game handling is easier
+	; TODO: use All Users->AppData for this instead in future releases
+	AccessControl::GrantOnFile \
+	"$INSTDIR\" "(BU)" "GenericRead + GenericExecute + GenericWrite + Delete"
 
 	Call DetermineUserDataDir
 	

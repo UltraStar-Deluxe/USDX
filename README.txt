@@ -1,19 +1,20 @@
 UltraStar Deluxe 1.3.2 README
 ----------------------------
 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ->8 - -
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                    _______  _________
-            ___   /       \/         \_______
-           /   \  \      _/    /\____/       \__________
-          /   _/  /     / \______             \         \___    _____
-         /   |___/      \     \_/             /          \  \  /     \
-         \              /\                   /   |\       \  \/      /
-          \            /  \_ultrastardeluxe_/    |/       /         /
-           \______www_/                 |____________org_/          \
-                                                      /      /\  ~=~ \
-                                                      \_____/  \ mog /
-                                                                 ~=~
-- - 8<- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            ___   /       \/         \
+           /   \  \      _/    /\____/\__________
+          /   _/  /     / \______      \         \___    _____
+         /   |___/      \     \_/       /          \  \  /     \
+         \              /\             /   |\       \  \/      /
+          \            /  \_ultrastar_/    |/       /         /
+           \______www_/              |___deluxe____/          \
+                                                 /      /\      \
+                                                 \_org_/  \_____/
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 
  ============================
 = 1. About                   =
@@ -22,9 +23,8 @@ UltraStar Deluxe 1.3.2 README
 = 4. Controls                =
  ============================
 
-SF.Net Page: http://sourceforge.net/projects/ultrastardx/
+Project website: http://ultrastardeluxe.org
 Github Repo: https://github.com/UltraStar-Deluxe/USDX/
-Wiki:        http://wiki.ultrastardeluxe.org/
 
  ====================
  = 1. About         =
@@ -59,15 +59,7 @@ Mac OS X.
 - To take a screenshot press "PrintScreen" key.
   Screenshots are saved in the directory "Screenshots".
 
-- To enable joypad support change config.ini:
-
-  [Controller]
-  Joypad=Off
-
-  to
-
-  [Controller]
-  Joypad=On
+- To enable joypad support change config.ini Joypad=Off to Joypad=On
 
 - To enable 4 to 6 player mode, 2 screens are needed for proper usage.
   Disable the full screen mode, extend your desktop horizontally and set
@@ -77,7 +69,7 @@ Mac OS X.
   Screens=2
 
 - To enable 2 or 3 player each on 2 screens, disable the full screen mode,
-  extend your desktop horizontally and set the resolution to fill one screen.
+  extend your desktop horizontally and set the resolution to fill both screens.
   Then, in the config.ini set Screens=2 and restart the game.
 
 - Press [Alt] + F[1..12] in NameScreen to save the name of a player
