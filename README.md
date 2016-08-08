@@ -1,8 +1,6 @@
 # UltraStar Deluxe Development README
 
-[![Join the chat at https://gitter.im/UltraStar-Deluxe/USDX](https://badges.gitter.im/UltraStar-Deluxe/USDX.svg)](https://gitter.im/UltraStar-Deluxe/USDX?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/UltraStar-Deluxe/USDX.svg?branch=master)](https://travis-ci.org/UltraStar-Deluxe/USDX)
-[![SourceForge](https://img.shields.io/sourceforge/dt/ultrastardx.svg?maxAge=86400)](https://sourceforge.net/projects/ultrastardx/files/latest/download)
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](LICENSE)
 
 ```
