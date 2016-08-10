@@ -159,11 +159,16 @@ Start with a customs configuration file and score database:
 | -	| decrease BPM                                                                              |
 | F	| toggle note freestyle/normal                                                              |
 | G	| toggle note golden/normal                                                                 |
-| T	| auto-fix timings of sentence switching                                                    |
+| T	| auto-fix timings of all sentence switching                                                |
+| C	| capitalize letter at the beginning of all lines                                           |
+| [Shift] + C	    | correct all spaces                                                          |
 | V	| play audio + video and follow the lyrics                                                  |
 |	                                                                                          |
-| [Ctrl] + Z	| undo last change                                                                  |
+| [Ctrl] + C	    | copy current sentence                                                       |
+| [Ctrl] + V	    | paste current sentence                                                      |
+| [Ctrl] + Z	    | **undo last change**                                                        |
 | S	| save changes                                                                              |
+| R	| reload file without saving                                                                |
 | P	| play current sentence audio                                                               |
 | [Shift] + P	| play current sentence midi                                                        |
 | [Ctrl] + [Shift] + P | play current sentence audio and midi                                      |
@@ -177,17 +182,31 @@ Start with a customs configuration file and score database:
 | I | jump to preview start                                                                   |
 | [Alt] + I | play audio starting from the preview start                                      |
 | [Shift] + I | set/clear preview start at the current note's time                            |
-|	                                                                                          |
+|	                                                                                            |
+| [Shift] + D | divide BPM by 2 but keep correct timings                                      |
+| [Shift] + M | multiply BPM by 2 but keep correct timings                                    |
 |	                                                                                          |
 | double click on a note	|split note in two parts on the beat at mouse cursor location          |
 | select and drag a note up/down	|change pitch of a note                                        |
 | select and drag a note left/right	|move the beginning beat of the note to earlier / later    |
 |	                                                                                          |
+| [Ctrl] + [Del]	 | delete current note                                                      |
+| [+ on numberpad] | Increase tone of all notes by 1                                           |
+| [- on numberpad] | Decrease tone of all notes by 1                                           |
+| [Shift] + [+ on numberpad] | Increase tone of all notes by octave                                      |
+| [Shift] + [- on numberpad] | Decrease tone of all notes by octave                                      |
+| [F4]             | enter or leave text edit mode                                            |
+| . | moves text to right in current sentence                                               |
+|	                                                                                          |
 | 4	| copy 4 sentence                                                                             |
 | 5 | copy 5 sentence	                                                                              |
-|	                                                                                          |
-| 7	| lower video gap                                                                           |
+|	                                                                                              |
+| 7	| lower video gap by 1                                                                      |
+| [Shift] + 7	| lower video gap by 10                                                           |
+| [Ctrl] + 7	| lower video gap by 100                                                          |
 | 8 | increase video gap                                                                        |
+| [Shift] + 8	| increase video gap by 10                                                        |
+| [Ctrl] + 8	| increase video gap by 100                                                       |
 | 9	| decrease GAP                                                                              |
 | 0	| increase GAP                                                                              |
 
