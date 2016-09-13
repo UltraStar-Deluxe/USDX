@@ -77,7 +77,7 @@ const
 
   (* Max. supported version by this header *)
   LIBSWSCALE_MAX_VERSION_MAJOR   =  4;
-  LIBSWSCALE_MAX_VERSION_MINOR   =  0;
+  LIBSWSCALE_MAX_VERSION_MINOR   =  1;
   LIBSWSCALE_MAX_VERSION_RELEASE =  100;
   LIBSWSCALE_MAX_VERSION = (LIBSWSCALE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBSWSCALE_MAX_VERSION_MINOR * VERSION_MINOR) +
@@ -136,7 +136,7 @@ const
   SWS_PRINT_INFO           = $1000;
 
   // the following 3 flags are not completely implemented
-  // internal chrominace subsampling info
+  // internal chrominance subsampling info
   SWS_FULL_CHR_H_INT    = $2000;
   // input subsampling info
   SWS_FULL_CHR_H_INP    = $4000;
@@ -153,6 +153,7 @@ const
   SWS_CS_SMPTE170M      = 5;
   SWS_CS_SMPTE240M      = 7;
   SWS_CS_DEFAULT        = 5;
+  SWS_CS_BT2020         = 9;
 
 (**
  * Return a pointer to yuv<->rgb coefficients for the given colorspace
@@ -329,20 +330,6 @@ function sws_getGaussianVec(variance: cdouble; quality: cdouble): PSwsVector;
   cdecl; external sw__scale;
 
 (**
- * Allocate and return a vector with length coefficients, all
- * with the same value c.
- *)
-function sws_getConstVec(c: cdouble; length: cint): PSwsVector;
-  cdecl; external sw__scale;
-  
-(**
- * Allocate and return a vector with just one coefficient, with
- * value 1.0.
- *)
-function sws_getIdentityVec: PSwsVector;
-  cdecl; external sw__scale;
-
-(**
  * Scale all the coefficients of a by the scalar value.
  *)
 procedure sws_scaleVec(a: PSwsVector; scalar: cdouble);
@@ -354,33 +341,26 @@ procedure sws_scaleVec(a: PSwsVector; scalar: cdouble);
 procedure sws_normalizeVec(a: PSwsVector; height: cdouble);
   cdecl; external sw__scale;
 
+{$IFDEF FF_API_SWS_VECTOR}
+function sws_getConstVec(c: cdouble; length: cint): PSwsVector;
+  cdecl; external sw__scale; deprecated;
+function sws_getIdentityVec: PSwsVector;
+  cdecl; external sw__scale; deprecated;
 procedure sws_convVec(a: PSwsVector; b: PSwsVector);
-  cdecl; external sw__scale;
-
+  cdecl; external sw__scale; deprecated;
 procedure sws_addVec(a: PSwsVector; b: PSwsVector);
-  cdecl; external sw__scale;
-
+  cdecl; external sw__scale; deprecated;
 procedure sws_subVec(a: PSwsVector; b: PSwsVector);
-  cdecl; external sw__scale;
-
+  cdecl; external sw__scale; deprecated;
 procedure sws_shiftVec(a: PSwsVector; shift: cint);
-  cdecl; external sw__scale;
-
-(**
- * Allocate and return a clone of the vector a, that is a vector
- * with the same coefficients as a.
- *)
+  cdecl; external sw__scale; deprecated;
 function sws_cloneVec(a: PSwsVector): PSwsVector;
-  cdecl; external sw__scale;
-
-(**
- * Print with av_log() a textual representation of the vector a
- * if log_level <= av_log_level.
- *)
+  cdecl; external sw__scale; deprecated;
 procedure sws_printVec2(a:         PSwsVector;
                         log_ctx:   PAVClass; // PAVClass is declared in avcodec.pas
                         log_level: cint);
-  cdecl; external sw__scale;
+  cdecl; external sw__scale; deprecated;
+{$ENDIF}
 
 procedure sws_freeVec(a: PSwsVector);
   cdecl; external sw__scale;

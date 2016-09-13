@@ -168,6 +168,21 @@
 {$ifndef FF_API_PRIVATE_OPT}
 {$define FF_API_PRIVATE_OPT      := (LIBAVCODEC_VERSION_MAJOR < 59)}
 {$endif}
+{$ifndef FF_API_ASS_TIMING}
+{$define FF_API_ASS_TIMING       := (LIBAVCODEC_VERSION_MAJOR < 59)}
+{$endif}
+{$ifndef FF_API_OLD_BSF}
+{$define FF_API_OLD_BSF          := (LIBAVCODEC_VERSION_MAJOR < 59)}
+{$endif}
+{$ifndef FF_API_COPY_CONTEXT}
+{$define FF_API_COPY_CONTEXT     := (LIBAVCODEC_VERSION_MAJOR < 59)}
+{$endif}
+{$ifndef FF_API_GET_CONTEXT_DEFAULTS}
+{$define FF_API_GET_CONTEXT_DEFAULTS := (LIBAVCODEC_VERSION_MAJOR < 59)}
+{$endif}
+{$ifndef FF_API_NVENC_OLD_NAME}
+{$define FF_API_NVENC_OLD_NAME   := (LIBAVCODEC_VERSION_MAJOR < 59)}
+{$endif}
 
 (* avutil defines *)
 {$ifndef FF_API_VDPAU}
@@ -220,7 +235,17 @@
 {$ifndef FF_API_OLD_OPEN_CALLBACKS}
 {$define FF_API_OLD_OPEN_CALLBACKS    := (LIBAVFORMAT_VERSION_MAJOR < 58)}
 {$endif}
+{$ifndef FF_API_LAVF_AVCTX}
+{$define FF_API_LAVF_AVCTX            := (LIBAVFORMAT_VERSION_MAJOR < 58)}
+{$endif}
+
+{$ifndef FF_API_R_FRAME_RATE}
+{$define FF_API_R_FRAME_RATE          := 1}
+{$endif}
 
 (** swscale FF_API defines *)
+{$ifndef FF_API_SWS_VECTOR}
+{$define FF_API_SWS_VECTOR            := (LIBSWSCALE_VERSION_MAJOR < 6)}
+{$endif}
 
 {$ENDIF PASDOC}

@@ -61,7 +61,7 @@ const
   AV_OPT_FLAG_VIDEO_PARAM     = 16;
   AV_OPT_FLAG_SUBTITLE_PARAM  = 32;
   (**
-   * The option is inteded for exporting values to the caller.
+   * The option is intended for exporting values to the caller.
    *)
   AV_OPT_FLAG_EXPORT          = 64;
   (**
@@ -484,6 +484,24 @@ function av_default_get_category(ptr: pointer): TAVClassCategory;
  *)
 procedure av_log_format_line(ptr: pointer; level: cint; fmt: {const} PAnsiChar; vl: va_list;
                         line: PAnsiChar; line_size: cint; print_prefix: Pcint);
+  cdecl; external av__util;
+
+(**
+ * Format a line of log the same way as the default callback.
+ * @param line          buffer to receive the formatted line;
+ *                      may be NULL if line_size is 0
+ * @param line_size     size of the buffer; at most line_size-1 characters will
+ *                      be written to the buffer, plus one null terminator
+ * @param print_prefix  used to store whether the prefix must be printed;
+ *                      must point to a persistent integer initially set to 1
+ * @return Returns a negative value if an error occurred, otherwise returns
+ *         the number of characters that would have been written for a
+ *         sufficiently large buffer, not including the terminating null
+ *         character. If the return value is not less than line_size, it means
+ *         that the log message was truncated to fit the buffer.
+ *)
+function av_log_format_line2(ptr: pointer; level: cint; fmt: {const} PAnsiChar; vl: va_list;
+                             line: PAnsiChar; line_size: cint; print_prefix: Pcint): cint;
   cdecl; external av__util;
 
 {$IFDEF FF_API_DLOG}

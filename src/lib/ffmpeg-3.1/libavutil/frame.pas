@@ -229,7 +229,11 @@ type
  * Similarly fields that are marked as to be only accessed by
  * av_opt_ptr() can be reordered. This allows 2 forks to add fields
  * without breaking compatibility with each other.
-*)
+ *
+ * Fields can be accessed through AVOptions, the name string used, matches the
+ * C structure field name for fields accessable through AVOptions. The AVClass
+ * for AVFrame can be obtained from avcodec_get_frame_class()
+ *)
   PPAVFrame = ^PAVFrame;
   PAVFrame = ^TAVFrame;
   TAVFrame = record
@@ -241,6 +245,9 @@ type
      * see avcodec_align_dimensions2(). Some filters and swscale can read
      * up to 16 bytes beyond the planes, if these filters are to be used,
      * then 16 extra bytes must be allocated.
+     *
+     * NOTE: Except for hwaccel formats, pointers not needed by the format
+     * MUST be set to NULL.
      *)
     data: array [0..AV_NUM_DATA_POINTERS - 1] of pbyte;
 
@@ -374,7 +381,7 @@ type
     palette_has_changed: cint;
 
     (**
-     * reordered opaque 64bit (generally an integer or a double precision float
+     * reordered opaque 64 bits (generally an integer or a double precision float
      * PTS but can be anything).
      * The user sets AVCodecContext.reordered_opaque to represent the input at
      * that time,
@@ -551,6 +558,11 @@ type
      *)
     qp_table_buf: PAVBufferRef; {deprecated}
 {$ENDIF}
+    (**
+     * For hwaccel-format frames, this should be a reference to the
+     * AVHWFramesContext describing the frame.
+     *)
+    hw_frames_ctx: PAVBufferRef;
   end; {TAVFrame}
 
 (**
@@ -648,6 +660,10 @@ procedure av_frame_free(frame: PPAVFrame);
  * If src is not reference counted, new buffers are allocated and the data is
  * copied.
  *
+ * @warning: dst MUST have been either unreferenced with av_frame_unref(dst),
+ *           or newly allocated with av_frame_alloc() before calling this
+ *           function, or undefined behavior will occur.
+ *
  * @return 0 on success, a negative AVERROR on error
  *)
 function av_frame_ref(dst: PAVFrame; src: {const} PAVFrame): cint;
@@ -671,6 +687,10 @@ procedure av_frame_unref(frame: PAVFrame);
 
 (**
  * Move everything contained in src to dst and reset src.
+ *
+ * @warning: dst is not unreferenced, but directly overwritten without reading
+ *           or deallocating its contents. Call av_frame_unref(dst) manually
+ *           before calling this function to ensure that no memory is leaked.
  *)
 procedure av_frame_move_ref(dst, src: PAVFrame);
   cdecl; external av__codec;
@@ -686,6 +706,10 @@ procedure av_frame_move_ref(dst, src: PAVFrame);
  * This function will fill AVFrame.data and AVFrame.buf arrays and, if
  * necessary, allocate and fill AVFrame.extended_data and AVFrame.extended_buf.
  * For planar formats, one buffer will be allocated for each plane.
+ *
+ * @warning: if frame already has been allocated, calling this function will
+ *           leak memory. In addition, undefined behavior can occur in certain
+ *           cases.
  *
  * @param frame frame in which to store the new buffers.
  * @param align required buffer size alignment
