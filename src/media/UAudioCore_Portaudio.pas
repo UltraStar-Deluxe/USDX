@@ -314,8 +314,8 @@ begin
   end;
 
   cbWorks := false;
-  // check if the callback was called (poll for max. 400ms)
-  for cbPolls := 1 to 40 do
+  // check if the callback was called (poll for max. 1500ms)
+  for cbPolls := 1 to 150 do
   begin
     // if the test-callback was called it should be aborted now
     if (Pa_IsStreamActive(stream) = 0) then
