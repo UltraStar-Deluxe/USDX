@@ -222,7 +222,7 @@ Start with a customs configuration file and score database:
 | [Esc] or [Backspace] | cancel current song or end early |
 
 ###5. Build and Run
-Freepascal 3.0.0 or newer is required to compile UltraStar Deluxe. If you had some older version of fpc installed before, make sure to remove everything of it correctly before trying to install freepascal (otherwise compiling will fail with various weird error messages). Also, using the 3.0-development branch with current fixes is suggested.
+[Freepascal](http://freepascal.org/) 3.0.0 or newer is required to compile UltraStar Deluxe. If you had some older version of fpc installed before, make sure to remove everything of it correctly before trying to install freepascal (otherwise compiling will fail with various weird error messages). Also, using the 3.0-development branch with current fixes is suggested.
 If you want to help the project by coding patches, we suggest you to use the [Lazarus 1.6](http://www.lazarus-ide.org/) or newer integrated development environment.
 For linking and running the game, the following libraries are also required:
 - SDL2, SDL2_gfx, SDL2_mixer, SDL2_image, SDL2_ttf, SDL2_net
