@@ -16,7 +16,7 @@ AC_PREREQ(2.61)
 
 # Init autoconf
 AC_INIT([ultrastardx], 
-        [1.3.2+], 
+        [m4_esyscmd([tr -d '\n' < VERSION])],
         [http://sourceforge.net/tracker/?group_id=191560&atid=937872])
 # specify the website here
 PACKAGE_WEBSITE="http://www.ultrastardeluxe.org/"
