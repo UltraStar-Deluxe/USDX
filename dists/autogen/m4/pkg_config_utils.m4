@@ -100,48 +100,49 @@ AC_DEFUN([PKG_VERSION],
     ifelse($1, [libavutil], [
         # map avutil library version to ffmpeg version
         AC_MSG_CHECKING([version of ffmpeg])
-        if test $[$1][_VERSION_INT] -le 60000000; then
-		if   test $[$1][_VERSION_INT] -ge 55027100; then
-			FFMPEG_VERSION="3.1"
-		elif test $[$1][_VERSION_INT] -ge 55017100; then
-			FFMPEG_VERSION="3.0"
-		elif test $[$1][_VERSION_INT] -ge 54031100; then
-			FFMPEG_VERSION="2.8"    	    	
-		elif test $[$1][_VERSION_INT] -ge 54027100; then
-			FFMPEG_VERSION="2.7"    	    	
-		elif test $[$1][_VERSION_INT] -ge 54020100; then
-			FFMPEG_VERSION="2.6"    	    	
-		elif test $[$1][_VERSION_INT] -ge 54015100; then
-			FFMPEG_VERSION="2.5"    	    	
-		elif test $[$1][_VERSION_INT] -ge 54007001; then
-			FFMPEG_VERSION="2.4"    	
-		elif test $[$1][_VERSION_INT] -ge 52066100; then
-			FFMPEG_VERSION="2.2"    	
-		elif test $[$1][_VERSION_INT] -ge 52048100; then
-			FFMPEG_VERSION="2.1"
-		elif test $[$1][_VERSION_INT] -ge 52038100; then
-			FFMPEG_VERSION="2.0"
-		elif test $[$1][_VERSION_INT] -ge 52018100; then
-			FFMPEG_VERSION="1.2"
-		elif test $[$1][_VERSION_INT] -ge 52013100; then
-			FFMPEG_VERSION="1.1"
-		elif test $[$1][_VERSION_INT] -ge 51073101; then
-			FFMPEG_VERSION="1.0"
-		elif test $[$1][_VERSION_INT] -ge 51054100; then
-			FFMPEG_VERSION="0.11"
-		elif test $[$1][_VERSION_INT] -ge 51034101; then
-			FFMPEG_VERSION="0.10"
-		elif test $[$1][_VERSION_INT] -ge 51032000; then
-			FFMPEG_VERSION="0.9"
-		elif test $[$1][_VERSION_INT] -ge 51009001; then
-			FFMPEG_VERSION="0.8"
-		elif test $[$1][_VERSION_INT] -ge 50043000; then
-			FFMPEG_VERSION="0.7"
-		else
-			FFMPEG_VERSION="0"
-		fi
-        else
+        if   test $[$1][_VERSION_INT] -le 55028100 -a $[$1][_VERSION_INT] -ge 55027100; then
+            FFMPEG_VERSION="3.1"
+        elif test $[$1][_VERSION_INT] -eq 55017103; then
+            FFMPEG_VERSION="3.0"
+        elif test $[$1][_VERSION_INT] -le 54099100 -a $[$1][_VERSION_INT] -ge 54030100; then
+            FFMPEG_VERSION="2.8"
+        elif test $[$1][_VERSION_INT] -le 54030100 -a $[$1][_VERSION_INT] -ge 54027100; then
+            FFMPEG_VERSION="2.7"
+        elif test $[$1][_VERSION_INT] -eq 54020100; then
+            FFMPEG_VERSION="2.6"
+        elif test $[$1][_VERSION_INT] -eq 54015100; then
+            FFMPEG_VERSION="2.5"
+        elif test $[$1][_VERSION_INT] -eq 54007100; then
+            FFMPEG_VERSION="2.4"
+        elif test $[$1][_VERSION_INT] -eq 52066100; then
+            FFMPEG_VERSION="2.2"
+        elif test $[$1][_VERSION_INT] -le 52048101 -a $[$1][_VERSION_INT] -ge 52048100; then
+            FFMPEG_VERSION="2.1"
+        elif test $[$1][_VERSION_INT] -le 52038100 -a $[$1][_VERSION_INT] -ge 52038000; then
+            FFMPEG_VERSION="2.0"
+        elif test $[$1][_VERSION_INT] -le 52018100 -a $[$1][_VERSION_INT] -ge 52018000; then
+            FFMPEG_VERSION="1.2"
+        elif test $[$1][_VERSION_INT] -le 52013100 -a $[$1][_VERSION_INT] -ge 52013000; then
+            FFMPEG_VERSION="1.1"
+        elif test $[$1][_VERSION_INT] -le 51073101 -a $[$1][_VERSION_INT] -ge 51073000; then
+            FFMPEG_VERSION="1.0"
+        elif test $[$1][_VERSION_INT] -le 51054100 -a $[$1][_VERSION_INT] -ge 51054000; then
+            FFMPEG_VERSION="0.11"
+        elif test $[$1][_VERSION_INT] -le 51035100 -a $[$1][_VERSION_INT] -ge 51034101; then
+            FFMPEG_VERSION="0.10"
+        elif test $[$1][_VERSION_INT] -eq 51032000; then
+            FFMPEG_VERSION="0.9"
+        elif test $[$1][_VERSION_INT] -le 51022002 -a $[$1][_VERSION_INT] -ge 51009001; then
+            FFMPEG_VERSION="0.8"
+        elif test $[$1][_VERSION_INT] -eq 50043000; then
+            FFMPEG_VERSION="0.7"
+        elif test $[$1][_VERSION_INT] -le 50024000 -a $[$1][_VERSION_INT] -ge 49000001; then
             FFMPEG_VERSION="0"
+        else
+            AC_MSG_ERROR([
+
+Unsupported ffmpeg version.
+])
         fi
         AX_EXTRACT_VERSION(FFMPEG, $FFMPEG_VERSION)
         AC_SUBST(FFMPEG_VERSION)
