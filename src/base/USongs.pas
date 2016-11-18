@@ -44,7 +44,6 @@ uses
   Classes,
   {$IFDEF MSWINDOWS}
     Windows,
-    DirWatch,
     LazUTF8Classes,
   {$ELSE}
     {$IFNDEF DARWIN}
@@ -95,9 +94,6 @@ type
     fNotify, fWatch:     longint;
     fParseSongDirectory: boolean;
     fProcessing:         boolean;
-    {$ifdef MSWINDOWS}
-    fDirWatch:           TDirectoryWatch;
-    {$endif}
     procedure int_LoadSongList;
     procedure DoDirChanged(Sender: TObject);
   protected
@@ -179,21 +175,6 @@ begin
   Self.FreeOnTerminate := true;
 
   SongList           := TList.Create();
-
-  // FIXME: threaded loading does not work this way.
-  // It will just cause crashes but nothing else at the moment.
-(*
-  {$ifdef MSWINDOWS}
-    fDirWatch := TDirectoryWatch.create(nil);
-    fDirWatch.OnChange     := DoDirChanged;
-    fDirWatch.Directory    := SongPath;
-    fDirWatch.WatchSubDirs := true;
-    fDirWatch.active       := true;
-  {$ENDIF}
-
-  // now we can start the thread
-  Resume();
-*)
 
   // until it is fixed, simply load the song-list
   int_LoadSongList();

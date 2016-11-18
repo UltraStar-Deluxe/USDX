@@ -139,7 +139,6 @@ uses
   WinAllocation in 'lib\other\WinAllocation.pas',
   Windows,
   {$ENDIF}
-  DirWatch      in 'lib\other\DirWatch.pas',
   {$ENDIF}
 
   {$IFDEF DARWIN}

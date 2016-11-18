@@ -359,10 +359,6 @@ type
     function DeleteEmptyDir(): boolean;
     function Rename(const NewName: IPath): boolean;
     function CopyFile(const Target: IPath; FailIfExists: boolean): boolean;
-
-    // TODO: Dirwatch stuff
-    // AddFileChangeListener(Listener: TFileChangeListener);
-
     {**
      * Internal string representation. For debugging only.
      *}
