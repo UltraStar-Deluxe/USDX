@@ -385,11 +385,6 @@ var
 
 begin
   try
-  {$IFDEF MSWINDOWS}
-  {$IFDEF CONSOLE}
-    FreeConsole(); //hacky workaround to get a working GUI-only experience on windows 10 when using fpc 3.0.0 on windows
-  {$ENDIF}
-  {$ENDIF}
   Main;
   except
     on E : Exception do
