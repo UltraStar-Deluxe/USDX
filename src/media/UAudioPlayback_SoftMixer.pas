@@ -1060,15 +1060,13 @@ end;
 procedure TGenericVoiceStream.WriteData(Buffer: PByteArray; BufferSize: integer);
 begin
   // lock access to buffer
-  BufferLock := SDL_CreateMutex();
+  SDL_LockMutex(BufferLock);
   try
     if (VoiceBuffer = nil) then
       Exit;
     VoiceBuffer.Write(Buffer, BufferSize);
   finally
     SDL_UnlockMutex(BufferLock);
-    SDL_DestroyMutex(BufferLock);
-    BufferLock:=nil;
   end;
 end;
 
@@ -1077,25 +1075,21 @@ begin
   Result := -1;
 
   // lock access to buffer
-  BufferLock := SDL_CreateMutex();
+  SDL_LockMutex(BufferLock);
   try
     if (VoiceBuffer = nil) then
       Exit;
     Result := VoiceBuffer.Read(Buffer, BufferSize);
   finally
     SDL_UnlockMutex(BufferLock);
-    SDL_DestroyMutex(BufferLock);
-    BufferLock:=nil;
   end;
 end;
 
 function TGenericVoiceStream.IsEOF(): boolean;
 begin
-  BufferLock := SDL_CreateMutex();
+  SDL_LockMutex(BufferLock);
   Result := (VoiceBuffer = nil);
   SDL_UnlockMutex(BufferLock);
-  SDL_DestroyMutex(BufferLock);
-  BufferLock:=nil;
 end;
 
 function TGenericVoiceStream.IsError(): boolean;
