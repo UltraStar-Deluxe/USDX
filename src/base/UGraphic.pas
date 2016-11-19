@@ -240,7 +240,7 @@ var
   //End PhrasenBonus - Line Bonus Mod
 
   //ScoreBG Texs
-  Tex_ScoreBG: array [0..5] of TTexture;
+  Tex_ScoreBG: array [0..UIni.IMaxPlayerCount-1] of TTexture;
 
   //Score Screen Textures
     Tex_Score_NoteBarLevel_Dark     : array [1..UIni.IMaxPlayerCount] of TTexture;

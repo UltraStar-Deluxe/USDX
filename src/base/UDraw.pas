@@ -37,7 +37,8 @@ uses
   UCommon,
   UThemes,
   sdl2,
-  UGraphicClasses;
+  UGraphicClasses,
+  UIni;
 
 procedure SingDraw;
 procedure SingDrawLines;
@@ -81,8 +82,8 @@ type
   end;
 
 var
-  NotesW:   array [0..5] of real;
-  NotesH:   array [0..5] of real;
+  NotesW:   array [0..UIni.IMaxPlayerCount-1] of real;
+  NotesH:   array [0..UIni.IMaxPlayerCount-1] of real;
   Starfr:   integer;
   StarfrG:  integer;
 
@@ -103,7 +104,6 @@ uses
   TextGL,
   UDrawTexture,
   UGraphic,
-  UIni,
   ULog,
   ULyrics,
   UNote,

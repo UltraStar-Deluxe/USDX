@@ -490,7 +490,7 @@ end;
 
 constructor TScreenSingView.Create;
 var
-  Col: array [1..6] of TRGB;
+  Col: array [1..UIni.IMaxPlayerCount] of TRGB;
   I: integer;
   Color: cardinal;
 begin
