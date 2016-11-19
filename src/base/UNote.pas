@@ -541,7 +541,7 @@ begin
         CurrentSound := AudioInputProcessor.Sound[PlayerIndex];
 
         // at the beginning of the song there is no previous note
-        if (Length(CurrentPlayer.Note) > 0) then
+        if (Length(CurrentPlayer.Note) > 0) and (CurrentPlayer.HighNote > -1) then
           LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote]
         else
           LastPlayerNote := nil;
