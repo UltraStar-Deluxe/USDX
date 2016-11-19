@@ -855,7 +855,7 @@ function BASS_RecordFree: BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; e
 function BASS_RecordGetInfo(var info: BASS_RECORDINFO): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 function BASS_RecordGetInputName(input: LongInt): PAnsiChar; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 function BASS_RecordSetInput(input: LongInt; flags: DWORD; volume: Single): BOOL; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
-function BASS_RecordGetInput(input: LongInt; var volume: Single): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
+function BASS_RecordGetInput(input: LongInt; volume: PSingle): DWORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 function BASS_RecordStart(freq, chans, flags: DWORD; proc: RECORDPROC; user: Pointer): HRECORD; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF}; external bassdll;
 
 function BASS_ChannelBytes2Seconds(handle: DWORD; pos: QWORD): Double; {$IFDEF MSWINDOWS}stdcall{$ELSE}cdecl{$ENDIF};external bassdll;

@@ -119,7 +119,7 @@ begin
   for i := 0 to SourceCnt-1 do
   begin
     // get input settings
-    flags := BASS_RecordGetInput(i, PSingle(nil)^);
+    flags := BASS_RecordGetInput(i, nil);
     if (flags = DWORD(-1)) then
     begin
       Log.LogError('BASS_RecordGetInput: ' + BassCore.ErrorGetString(), 'TBassInputDevice.GetInputSource');
@@ -166,7 +166,7 @@ begin
       if (i = SourceIndex) then
         continue;
       // get input settings
-      flags := BASS_RecordGetInput(i, PSingle(nil)^);
+      flags := BASS_RecordGetInput(i, nil);
       if (flags = DWORD(-1)) then
       begin
         Log.LogError('BASS_RecordGetInput: ' + BassCore.ErrorGetString(), 'TBassInputDevice.GetInputSource');
@@ -310,7 +310,7 @@ begin
       Exit;
   end;
 
-  if (BASS_RecordGetInput(SourceIndex, lVolume) = DWORD(-1)) then
+  if (BASS_RecordGetInput(SourceIndex, PSingle(lVolume)) = DWORD(-1)) then
   begin
     Log.LogError('BASS_RecordGetInput: ' + BassCore.ErrorGetString() , 'TBassInputDevice.GetVolume');
     Exit;
@@ -468,7 +468,9 @@ begin
         BassDevice.Source[SourceIndex].Name := DecodeStringUTF8(SourceName, encLocale);
 
         // get input-source info
-        Flags := BASS_RecordGetInput(SourceIndex, PSingle(nil)^);
+        {$push} {$R-}
+        Flags := BASS_RecordGetInput(SourceIndex, nil);
+        {$POP}
         if (Flags <> -1) then
         begin
           // chech if current source is a mic (and none was set before)
