@@ -61,6 +61,8 @@ uses
   //------------------------------
   //Includes - 3rd Party Libraries
   //------------------------------
+  SQLiteTable3  in 'lib\SQLite\SQLiteTable3.pas',
+  SQLite3       in 'lib\SQLite\SQLite3.pas',
   sdl2                   in 'lib\SDL2\sdl2.pas',
   SDL2_gfx               in 'lib\SDL2\SDL2_gfx.pas',
   SDL2_image             in 'lib\SDL2\SDL2_image.pas',
@@ -144,9 +146,6 @@ uses
   {$IFDEF DARWIN}
   PseudoThread  in 'macosx\PseudoThread.pas',
   {$ENDIF}
-
-  SQLiteTable3  in 'lib\SQLite\SQLiteTable3.pas',
-  SQLite3       in 'lib\SQLite\SQLite3.pas',
 
   pcre          in 'lib\pcre\pcre.pas',
 
