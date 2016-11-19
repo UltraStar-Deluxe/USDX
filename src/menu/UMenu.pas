@@ -305,29 +305,36 @@ var
   NewNum, NewTyp: integer;
 begin
   // set inactive
+  if(Interaction > -1) then
+  begin
   OldNum := Interactions[Interaction].Num;
   OldTyp := Interactions[Interaction].Typ;
-
-  NewNum := Interactions[Num].Num;
-  NewTyp := Interactions[Num].Typ;
-
-  case OldTyp of
-    iButton:  Button[OldNum].Selected := false;
-    iText:    Text[OldNum].Selected := false;
-    iSelectS: SelectsS[OldNum].Selected := false;
-    //Button Collection Mod
-    iBCollectionChild:
-      begin
-        Button[OldNum].Selected := false;
-      
-        // deselect collection if next button is not from collection
-        if (NewTyp <> iButton) or (Button[NewNum].Parent <> Button[OldNum].Parent) then
-          ButtonCollection[Button[OldNum].Parent-1].Selected := false;
-      end;
   end;
+  if(Num > -1) then
+  begin
+    NewNum := Interactions[Num].Num;
+    NewTyp := Interactions[Num].Typ;
+  end;
+  if(Interaction > -1) then
+  begin
+    case OldTyp of
+      iButton:  Button[OldNum].Selected := false;
+      iText:    Text[OldNum].Selected := false;
+      iSelectS: SelectsS[OldNum].Selected := false;
+      //Button Collection Mod
+      iBCollectionChild:
+        begin
+          Button[OldNum].Selected := false;
 
-  // set active
+          // deselect collection if next button is not from collection
+          if (NewTyp <> iButton) or (Button[NewNum].Parent <> Button[OldNum].Parent) then
+            ButtonCollection[Button[OldNum].Parent-1].Selected := false;
+        end;
+    end;
+  end;
   SelInteraction := Num;
+  if(Num = -1) then exit;
+  // set active
   case NewTyp of
     iButton:  Button[NewNum].Selected := true;
     iText:    Text[NewNum].Selected := true;
