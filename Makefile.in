@@ -251,8 +251,23 @@ install-plugins:
 
 .PHONY: install-data
 install-data:
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/avatars" \
+            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/avatars" \
+            install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/covers" \
+            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/covers" \
+            install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/fonts" \
+            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/fonts" \
+            install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/languages" \
             RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/languages" \
+            install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/resources" \
+            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/resources" \
+            install-data-recursive
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/soundfonts" \
+            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/sounds" \
             install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/sounds" \
             RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/sounds" \
@@ -260,11 +275,11 @@ install-data:
 	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/themes" \
             RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/themes" \
             install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/fonts" \
-            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/fonts" \
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/visuals" \
+            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/visuals" \
             install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/resources" \
-            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/resources" \
+	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/webs" \
+            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/themes" \
             install-data-recursive
 	$(INSTALL_DATA) "COPYING.txt" "$(DESTDIR)$(INSTALL_DATADIR)/COPYING.txt"
 
@@ -295,11 +310,16 @@ uninstall-all: uninstall-data uninstall-exec uninstall-plugins
 
 .PHONY: uninstall-data
 uninstall-data:
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/avatars"
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/covers"
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/fonts"
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/languages"
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/resources"
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/soundfonts"
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/sounds"
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/themes"
-	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/fonts"
-	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/resources"
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/visuals"
+	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/webs"
 	$(RM)     "$(DESTDIR)$(INSTALL_DATADIR)/COPYING.txt"
 	-rmdir "$(DESTDIR)$(INSTALL_DATADIR)"
 
