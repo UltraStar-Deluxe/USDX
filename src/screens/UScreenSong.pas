@@ -679,6 +679,10 @@ begin
     //Jump to Artist/Titel
     if ((SDL_ModState and KMOD_LALT <> 0) and (FreeListMode)) then
     begin
+      if(PressedKey > 1114111) then
+      begin
+        Exit;
+      end;
       UpperLetter := UCS4UpperCase(PressedKey);
 
       if (PressedKey in ([SDLK_a..SDLK_z, SDLK_0..SDLK_9])) then
