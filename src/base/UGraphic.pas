@@ -713,7 +713,7 @@ NoDoubledResolution:
   ScreenW := Screen.w;
   ScreenH := Screen.h;
   // Ausganswerte für die State-Machine setzen
-  //SDL_GL_SetSwapInterval(1); // VSYNC (currently Windows only)
+  SDL_GL_SetSwapInterval(1); // VSYNC (currently Windows only)
 
   {// clear screen once window is being shown
   // Note: SwapBuffers uses RenderW/H, so they must be defined before
