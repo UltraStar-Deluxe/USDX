@@ -1644,13 +1644,16 @@ begin
         end;
       SDLK_BACKSPACE:
         begin
-          UTF8Delete(CurrentEditText, TextPosition, 1);
-          dec(TextPosition);
-          if TextEditMode then
+          if (TextPosition > 0) then
           begin
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
-            Lyric.AddLine(Lines[0].Current);
-            Lyric.Selected := CurrentNote;
+            UTF8Delete(CurrentEditText, TextPosition, 1);
+            dec(TextPosition);
+            if TextEditMode then
+            begin
+              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
+              Lyric.AddLine(Lines[0].Current);
+              Lyric.Selected := CurrentNote;
+            end;
           end;
         end;
       SDLK_DELETE:
