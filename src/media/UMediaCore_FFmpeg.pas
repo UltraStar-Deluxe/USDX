@@ -223,7 +223,6 @@ end;
 
 destructor TMediaCore_FFmpeg.Destroy();
 begin
-  SDL_UnlockMutex(AVCodecLock);
   SDL_DestroyMutex(AVCodecLock);
   AVCodecLock:=nil;
   inherited;
@@ -557,7 +556,6 @@ end;
 destructor TPacketQueue.Destroy();
 begin
   Flush();
-  SDL_UnlockMutex(Mutex);
   SDL_DestroyMutex(Mutex);
   Mutex:=nil;
   SDL_DestroyCond(Condition);

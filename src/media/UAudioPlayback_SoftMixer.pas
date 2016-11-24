@@ -219,7 +219,6 @@ begin
   if assigned(MixerBuffer) then
     Freemem(MixerBuffer);
   ActiveStreams.Free;
-  SDL_UnlockMutex(InternalLock);
   SDL_DestroyMutex(InternalLock);
   InternalLock:=nil;
   inherited;
@@ -355,7 +354,6 @@ end;
 destructor TGenericPlaybackStream.Destroy();
 begin
   Close();
-  SDL_UnlockMutex(InternalLock);
   if (Assigned(InternalLock)) and (InternalLock <> nil) then
   begin
     SDL_DestroyMutex(InternalLock);
@@ -1051,7 +1049,6 @@ begin
   // free data
   FreeAndNil(VoiceBuffer);
   if (BufferLock <> nil) then
-    SDL_UnlockMutex(BufferLock);
     SDL_DestroyMutex(BufferLock);
     BufferLock:=nil;
   inherited Close();

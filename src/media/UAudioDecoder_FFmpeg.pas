@@ -262,7 +262,6 @@ destructor TFFmpegDecodeStream.Destroy();
 begin
   Close();
 
-  SDL_UnlockMutex(fStateLock);
   SDL_DestroyMutex(fStateLock);
   fStateLock:=nil;
   SDL_DestroyCond(fParserUnlockedCond);
@@ -546,9 +545,7 @@ end;
 
 function TFFmpegDecodeStream.IsQuit(): boolean;
 begin
-  SDL_LockMutex(fStateLock);
   Result := fQuitRequest;
-  SDL_UnlockMutex(fStateLock);
 end;
 
 function TFFmpegDecodeStream.GetPosition(): real;
@@ -697,11 +694,18 @@ begin
   // reuse thread as long as the stream is not terminated
   while (ParseLoop()) do
   begin
+    if(fQuitRequest = false) then
+    begin
     // wait for reuse or destruction of stream
     SDL_LockMutex(fStateLock);
     while (not (fSeekRequest or fQuitRequest)) do
       SDL_CondWait(fParserIdleCond, fStateLock);
      SDL_UnlockMutex(fStateLock);
+    end
+    else
+    begin
+      Break;
+    end;
   end;
 end;
 
@@ -738,15 +742,17 @@ var
   // instead and give priority to the threads requesting the parser to pause.
   procedure LockParser();
   begin
+    if fQuitRequest then Exit;
     SDL_LockMutex(fStateLock);
     while (fParserPauseRequestCount > 0) do
       SDL_CondWait(fParserResumeCond, fStateLock);
     fParserLocked := true;
-     SDL_UnlockMutex(fStateLock);
+    SDL_UnlockMutex(fStateLock);
   end;
 
   procedure UnlockParser();
   begin
+    if fQuitRequest then Exit;
     SDL_LockMutex(fStateLock);
     fParserLocked := false;
     SDL_CondBroadcast(fParserUnlockedCond);
