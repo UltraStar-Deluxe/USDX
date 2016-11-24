@@ -521,7 +521,7 @@ begin
 
           if not Assigned(Display.NextScreen) then
           begin //drop input when changing screens
-            if (Event.type_ = SDL_TEXTINPUT) or (Event.key.keysym.unicode <> 0) then
+            if (Event.type_ = SDL_TEXTINPUT) and (Event.key.keysym.unicode <> 0) then
             try
               s1:=Event.text.text;
               KeyCharUnicode:=UnicodeStringToUCS4String(UnicodeString(UTF8String(Event.text.text)))[0];
