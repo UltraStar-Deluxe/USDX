@@ -1740,6 +1740,8 @@ begin
     Xmouse := 0;
   end;
 
+  if (nBut > -1) then
+  begin
   if (BtnDown) then
   begin
 
@@ -1889,79 +1891,81 @@ begin
      end;
 
   end;
-  // changed cover
-  if ((CoverSlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
-  begin
-    CopyToUndo;
-    SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
-    CurrentSong.Cover := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
-  end;
-
-  if ((CoverSlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
-  begin
-    CopyToUndo;
-    SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
-    CurrentSong.Cover := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
-  end;
-
-  if ((BackgroundSlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
-  begin
-    CopyToUndo;
-    SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
-    CurrentSong.Background := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
-    // change background picture
-    Tex_PrevBackground := Texture.LoadTexture(CurrentSong.Path.Append(CurrentSong.Background));
-    Texture.AddTexture(Tex_PrevBackground, TEXTURE_TYPE_PLAIN, false);
-    Statics[BackgroundImageId].Texture := Tex_PrevBackground;
-    Statics[BackgroundImageId].Texture.X := theme.EditSub.BackgroundImage.X;
-    Statics[BackgroundImageId].Texture.Y := theme.EditSub.BackgroundImage.Y;
-    Statics[BackgroundImageId].Texture.W := theme.EditSub.BackgroundImage.W;
-    Statics[BackgroundImageId].Texture.H := theme.EditSub.BackgroundImage.H;
-  end;
-
-  if ((BackgroundSlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
-  begin
-    CopyToUndo;
-    SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
-    CurrentSong.Background := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
-    // change background picture
-    Tex_PrevBackground := Texture.LoadTexture(CurrentSong.Path.Append(CurrentSong.Background));
-    Texture.AddTexture(Tex_PrevBackground, TEXTURE_TYPE_PLAIN, false);
-    Statics[BackgroundImageId].Texture := Tex_PrevBackground;
-    Statics[BackgroundImageId].Texture.X := theme.EditSub.BackgroundImage.X;
-    Statics[BackgroundImageId].Texture.Y := theme.EditSub.BackgroundImage.Y;
-    Statics[BackgroundImageId].Texture.W := theme.EditSub.BackgroundImage.W;
-    Statics[BackgroundImageId].Texture.H := theme.EditSub.BackgroundImage.H;
-    end;
-
-  if ((Mp3SlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
+    // changed cover
+    if ((CoverSlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
     begin
       CopyToUndo;
       SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
-      CurrentSong.Mp3 := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
-      AudioPlayback.Close;
-      AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+      CurrentSong.Cover := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
     end;
 
-  if ((Mp3SlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
+    if ((CoverSlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
     begin
       CopyToUndo;
       SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
-      CurrentSong.Mp3 := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
-      AudioPlayback.Close();
-      AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+      CurrentSong.Cover := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
     end;
 
-  if (((VolumeAudioSlideId = Interactions[nBut].Num) or (VolumeMidiSlideId = Interactions[nBut].Num) or (VolumeClickSlideId = Interactions[nBut].Num))
-    and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
-  begin
+    if ((BackgroundSlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
+    begin
+      CopyToUndo;
       SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
-  end;
+      CurrentSong.Background := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
+      // change background picture
+      Tex_PrevBackground := Texture.LoadTexture(CurrentSong.Path.Append(CurrentSong.Background));
+      Texture.AddTexture(Tex_PrevBackground, TEXTURE_TYPE_PLAIN, false);
+      Statics[BackgroundImageId].Texture := Tex_PrevBackground;
+      Statics[BackgroundImageId].Texture.X := theme.EditSub.BackgroundImage.X;
+      Statics[BackgroundImageId].Texture.Y := theme.EditSub.BackgroundImage.Y;
+      Statics[BackgroundImageId].Texture.W := theme.EditSub.BackgroundImage.W;
+      Statics[BackgroundImageId].Texture.H := theme.EditSub.BackgroundImage.H;
+    end;
 
-  if (((VolumeAudioSlideId = Interactions[nBut].Num) or (VolumeMidiSlideId = Interactions[nBut].Num) or (VolumeClickSlideId = Interactions[nBut].Num))
-    and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
-  begin
+    if ((BackgroundSlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
+    begin
+      CopyToUndo;
       SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
+      CurrentSong.Background := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
+      // change background picture
+      Tex_PrevBackground := Texture.LoadTexture(CurrentSong.Path.Append(CurrentSong.Background));
+      Texture.AddTexture(Tex_PrevBackground, TEXTURE_TYPE_PLAIN, false);
+      Statics[BackgroundImageId].Texture := Tex_PrevBackground;
+      Statics[BackgroundImageId].Texture.X := theme.EditSub.BackgroundImage.X;
+      Statics[BackgroundImageId].Texture.Y := theme.EditSub.BackgroundImage.Y;
+      Statics[BackgroundImageId].Texture.W := theme.EditSub.BackgroundImage.W;
+      Statics[BackgroundImageId].Texture.H := theme.EditSub.BackgroundImage.H;
+      end;
+
+    if ((Mp3SlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
+      begin
+        CopyToUndo;
+        SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
+        CurrentSong.Mp3 := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
+        AudioPlayback.Close;
+        AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+      end;
+
+    if ((Mp3SlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
+      begin
+        CopyToUndo;
+        SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
+        CurrentSong.Mp3 := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
+        AudioPlayback.Close();
+        AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+      end;
+
+    if (((VolumeAudioSlideId = Interactions[nBut].Num) or (VolumeMidiSlideId = Interactions[nBut].Num) or (VolumeClickSlideId = Interactions[nBut].Num))
+      and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
+    begin
+        SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
+    end;
+
+    if (((VolumeAudioSlideId = Interactions[nBut].Num) or (VolumeMidiSlideId = Interactions[nBut].Num) or (VolumeClickSlideId = Interactions[nBut].Num))
+      and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
+    begin
+        SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
+    end;
+
   end;
 
   case Action of
