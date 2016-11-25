@@ -266,6 +266,7 @@ For linking and running the game, the following libraries are also required:
 - You can install Homebrew from [brew.sh](http://brew.sh)
 - You can get the FPC build from [freepascal.org](http://www.freepascal.org/down/i386/macosx.var)
 - Don't miss _XQuartz_ from [xquartz.org](http://www.xquartz.org)
+- Make sure the XCode command line tools are installed. `xcode-select --install`
 - Needed brew libraries can be installed using:
   * `brew install sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_net sdl2_ttf ffmpeg libav portaudio binutils sqlite freetype libpng pcre lua libtiff`
   * `brew switch ffmpeg 2.8.6`
