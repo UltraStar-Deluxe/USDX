@@ -51,8 +51,8 @@ type
   TLyricWord = record
     X:          real;     // left corner
     Width:      real;     // width
-    Start:      cardinal; // start of the word in quarters (beats)
-    Length:     cardinal; // length of the word in quarters
+    Start:      Longint; // start of the word in quarters (beats)
+    Length:     Longint; // length of the word in quarters
     Text:       UTF8String; // text
     Freestyle:  boolean;  // is freestyle?
   end;
