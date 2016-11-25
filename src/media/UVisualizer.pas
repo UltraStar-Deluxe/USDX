@@ -666,8 +666,8 @@ begin
   begin
     for i := 0 to 511 do
     begin
-      Data[i][0] := Random(High(SmallInt));
-      Data[i][1] := Random(High(SmallInt));
+      Data[i][0] := Random(High(Word)) - High(Smallint);
+      Data[i][1] := Random(High(Word)) - High(Smallint);
     end;
   end;
   Inc(fRndPCMcount);
