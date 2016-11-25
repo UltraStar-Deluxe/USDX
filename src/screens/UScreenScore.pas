@@ -487,6 +487,8 @@ begin
     1 : button_s := ButtonSend[1];
     2, 4: button_s := ButtonSend[2];
     3, 6: button_s := ButtonSend[3];
+  else
+    button_s := ButtonSend[3];
   end;
 
   min_x := Button[button_s].X;
