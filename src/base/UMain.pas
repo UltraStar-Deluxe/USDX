@@ -274,7 +274,10 @@ begin
     // or at least use the corresponding Free methods
 
     Log.LogStatus('Closing DB file', 'Finalization');
-    DataBase.Destroy();
+    if (DataBase <> nil) then
+    begin
+         DataBase.Destroy();
+    end;
 
     Log.LogStatus('Finalize Media', 'Finalization');
     FinalizeMedia();
