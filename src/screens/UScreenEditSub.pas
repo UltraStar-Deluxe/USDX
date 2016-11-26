@@ -1154,10 +1154,16 @@ begin
           begin
             // Play Midi
             PlaySentenceMidi := false;
+            PlayVideo := false;
             midinotefound := false;
             PlayOne := true;
             PlayOneMidi := true;
-            //basisbit ToDo add midi tone playback support here
+            StopVideoPreview();
+            {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
+            MidiStart := GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start);
+            MidiStop := GetTimeFromBeat(
+              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Start +
+              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Length); {$ENDIF}
             LastClick := -100;
           end;
         end;
