@@ -449,7 +449,7 @@ begin
     LinePos := OldLinePos;
     raise EUSDXParseException.Create('Character expected');
   end
-  else if (Length(Str) > 1) then
+  else if (Length(Str) > 1) and (Str[1] <> 'P') then
   begin
     Log.LogWarn(Format('"%s" in line %d: %s',
         [FileName.ToNative, FileLineNo, 'character expected but found "' + Str + '"']),
