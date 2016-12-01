@@ -910,7 +910,7 @@ begin
     Text_SongSituation := Language.Translate('SCORE_DOWNLOAD_SONG') + ' ' + IntToStr(Actual_Song) + '/' + IntToStr(Num_Songs);
     Text_WebSituation := IntToStr(Actual_Web) + '/' + IntToStr(Num_Webs);
 
-    for J := 0 to 2 do
+    for J := 0 to 2 do //for each difficulty level
     begin
 
       if (Position_Receive_List[J] <= Length(Receive_List[J])) then
@@ -921,7 +921,14 @@ begin
         while (Receive_List[J][Position_Receive_List[J]] <> #10) and (Position_Receive_List[J] <= Length(Receive_List[J])) do
         begin
           String_Text := String_Text + Receive_List[J][Position_Receive_List[J]];
-          Position_Receive_List[J] := Position_Receive_List[J] + 1;
+          if((Position_Receive_List[J] < Length(Receive_List[J]))) then
+          begin
+            Position_Receive_List[J] := Position_Receive_List[J] + 1;
+          end
+          else
+          begin
+            Break;
+          end;
         end;
 
         // E -> Error song no exist in web
