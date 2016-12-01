@@ -129,7 +129,7 @@ const
    *)
    USDX_VERSION_MAJOR   = 1;
    USDX_VERSION_MINOR   = 3;
-   USDX_VERSION_RELEASE = 2;
+   USDX_VERSION_RELEASE = 5;
    USDX_VERSION_STATE   = 'beta';
    USDX_STRING = 'UltraStar Deluxe';
 
