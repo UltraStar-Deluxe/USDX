@@ -712,31 +712,20 @@ begin
 
   if (CurrentSong.isDuet) then
   begin
-    Col := GetLyricColor(Ini.SingColor[0]);
-
-//    if (PlayersPlay = 3) or (PlayersPlay = 6) then
-//      Col := GetLyricColor(1);
-
     if (PlayersPlay = 4) then
     begin
-      screenSingViewRef.ColPlayer[0] := GetLyricColor(Ini.SingColor[0]);
-      screenSingViewRef.ColPlayer[1] := GetLyricColor(Ini.SingColor[1]);
-      screenSingViewRef.ColPlayer[2] := GetLyricColor(Ini.SingColor[2]);
-      screenSingViewRef.ColPlayer[3] := GetLyricColor(Ini.SingColor[3]);
+      screenSingViewRef.ColPlayer[0] := GetPlayerColor(Ini.PlayerColor[0]);
+      screenSingViewRef.ColPlayer[1] := GetPlayerColor(Ini.PlayerColor[1]);
+      screenSingViewRef.ColPlayer[2] := GetPlayerColor(Ini.PlayerColor[2]);
+      screenSingViewRef.ColPlayer[3] := GetPlayerColor(Ini.PlayerColor[3]);
     end;
-
-  end
-  else
-    Col := GetLyricColor(1);;
+  end;
 
   // set custom options
   if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
   begin
-    ColP1 := GetLyricColor(Ini.SingColor[0]);
-    ColP2 := GetLyricColor(Ini.SingColor[1]);
-
-    //if (PlayersPlay = 6) then
-    //  Col := GetLyricColor(2);
+    ColP1 := GetPlayerColor(Ini.PlayerColor[0]);
+    ColP2 := GetPlayerColor(Ini.PlayerColor[1]);
 
     // set custom options
     case Ini.LyricsFont of
@@ -755,14 +744,14 @@ begin
         LyricsDuetP2.LineColor_en.B := Skin_FontB;
         LyricsDuetP2.LineColor_en.A := 1;
 
-        LyricsDuetP1.LineColor_dis.R := 0.4;
-        LyricsDuetP1.LineColor_dis.G := 0.4;
-        LyricsDuetP1.LineColor_dis.B := 0.4;
+        LyricsDuetP1.LineColor_dis.R := 0.2;
+        LyricsDuetP1.LineColor_dis.G := 0.2;
+        LyricsDuetP1.LineColor_dis.B := 0.2;
         LyricsDuetP1.LineColor_dis.A := 1;
 
-        LyricsDuetP2.LineColor_dis.R := 0.4;
-        LyricsDuetP2.LineColor_dis.G := 0.4;
-        LyricsDuetP2.LineColor_dis.B := 0.4;
+        LyricsDuetP2.LineColor_dis.R := 0.2;
+        LyricsDuetP2.LineColor_dis.G := 0.2;
+        LyricsDuetP2.LineColor_dis.B := 0.2;
         LyricsDuetP2.LineColor_dis.A := 1;
 
         LyricsDuetP1.LineColor_act.R := ColP1.R; //0.02;
@@ -835,10 +824,15 @@ begin
         Lyrics.LineColor_en.B := Skin_FontB;
         Lyrics.LineColor_en.A := 1;
 
-        Lyrics.LineColor_dis.R := 0.4;
-        Lyrics.LineColor_dis.G := 0.4;
-        Lyrics.LineColor_dis.B := 0.4;
+        Lyrics.LineColor_dis.R := 0.2;
+        Lyrics.LineColor_dis.G := 0.2;
+        Lyrics.LineColor_dis.B := 0.2;
         Lyrics.LineColor_dis.A := 1;
+
+        if (Ini.JukeboxSingLineColor = High(UIni.ISingLineColor)) then
+          Col := GetJukeboxLyricOtherColor(0)
+        else
+          Col := GetLyricColor(Ini.JukeboxSingLineColor);
 
         Lyrics.LineColor_act.R := Col.R; //0.02;
         Lyrics.LineColor_act.G := Col.G; //0.6;
