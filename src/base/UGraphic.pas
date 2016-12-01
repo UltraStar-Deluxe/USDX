@@ -82,7 +82,6 @@ uses
   UScreenSongMenu,
   UScreenSongJumpto,
   {Party Screens}
-  UScreenParty,
   UScreenPartyNewRound,
   UScreenPartyScore,
   UScreenPartyOptions,
@@ -176,7 +175,6 @@ var
 
   //Party Screens
   //ScreenSingModi:         TScreenSingModi;
-  ScreenParty:            TScreenParty;
   ScreenPartyNewRound:    TScreenPartyNewRound;
   ScreenPartyScore:       TScreenPartyScore;
   ScreenPartyWin:         TScreenPartyWin;
@@ -943,16 +941,14 @@ begin
   //ScreenSingModi :=         TScreenSingModi.Create;
   //Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Sing with Modi support', 3); Log.BenchmarkStart(3);
   ScreenSongJumpto :=         TScreenSongJumpto.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPopupCheck & ScreenPopupError & ScreenPopupInfo'));
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPopupCheck & ScreenPopupError'));
   ScreenPopupCheck := TScreenPopupCheck.Create;
   ScreenPopupError := TScreenPopupError.Create;
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPopupInfo & ScreenScoreX & ScreenPartyNewRound'));
   ScreenPopupInfo := TScreenPopupInfo.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPopupInsertUser & ScreenPopupSendScore & ScreenPopupScoreDownload'));
   ScreenPopupInsertUser := TScreenPopupInsertUser.Create;
   ScreenPopupSendScore := TScreenPopupSendScore.Create;
   ScreenPopupScoreDownload := TScreenPopupScoreDownload.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenParty & ScreenPartyNewRound'));
-  ScreenParty :=            TScreenParty.Create;
   ScreenPartyNewRound :=    TScreenPartyNewRound.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPartyScore & ScreenPartyWin'));
   ScreenPartyScore :=       TScreenPartyScore.Create;
@@ -1017,7 +1013,6 @@ begin
   ScreenPopupInsertUser.Free;
   ScreenPopupSendScore.Free;
   ScreenPopupScoreDownload.Free;
-  ScreenParty.Free;
   ScreenPartyNewRound.Free;
   ScreenPartyScore.Free;
   ScreenPartyWin.Free;
