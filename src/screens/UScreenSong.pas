@@ -911,23 +911,23 @@ begin
 
       Ord('S'):
         begin
-          if (SDL_ModState = KMOD_LSHIFT) and not MakeMedley and
+          if not (SDL_ModState = KMOD_LSHIFT) and (CatSongs.Song[Interaction].Medley.Source>=msTag)
+            and not MakeMedley and (Mode = smNormal) then
+            StartMedley(0, msTag)
+          else if not MakeMedley and
             (CatSongs.Song[Interaction].Medley.Source>=msCalculated) and
             (Mode = smNormal)then
-            StartMedley(0, msCalculated)
-          else if (CatSongs.Song[Interaction].Medley.Source>=msTag) and not MakeMedley and
-            (Mode = smNormal) then
-            StartMedley(0, msTag);
+            StartMedley(0, msCalculated);
         end;
 
       Ord('D'):
         begin
-          if (Mode = smNormal) and (SDL_ModState = KMOD_LSHIFT) and not MakeMedley and
+          if not (SDL_ModState = KMOD_LSHIFT) and (Mode = smNormal) and
+            (Length(getVisibleMedleyArr(msTag)) > 0) and not MakeMedley then
+            StartMedley(5, msTag)
+          else if (Mode = smNormal) and not MakeMedley and
             (length(getVisibleMedleyArr(msCalculated))>0) then
-            StartMedley(5, msCalculated)
-          else if (Mode = smNormal) and (Length(getVisibleMedleyArr(msTag)) > 0)
-            and not MakeMedley then
-            StartMedley(5, msTag);
+            StartMedley(5, msCalculated);
         end;
 
       Ord('R'):

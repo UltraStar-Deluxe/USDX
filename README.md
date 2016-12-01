@@ -110,8 +110,8 @@ Start with a customs configuration file and score database:
 | J | open the "Search for a Song" interface |
 | [Enter] | confirm song, search or menu selection |
 | [Escape] | go to the previous screen |
-| S | play selected song as medley |
-| D | play songs with medle tags as medleys |
+| S | play selected song as medley (if medley tags are set, use these, otherwise use calculated values - can be forced using shift key) |
+| D | play up to 5 random songs as medleys (if there are songs available with medley tags set, only use these, otherwise use calculated values - can be forced using shift key) |
 | E | open selected song in song editor |
 | F | add song to medley list |
 | K | toggle on/off experimental automatic voice-removal |
