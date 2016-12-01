@@ -1062,8 +1062,8 @@ var
     begin
       for note := 0 to length(Lines[0].Line[line].Note) - 1 do
       begin
-        if (beat >= Lines[0].Line[line].Note[line].Start) and
-           (beat <= Lines[0].Line[line].Note[line].Start + Lines[0].Line[line].Note[note].Length) then
+        if (beat >= Lines[0].Line[line].Note[note].Start) and
+           (beat <= Lines[0].Line[line].Note[note].Start + Lines[0].Line[line].Note[note].Length) then
         begin
           Result.part := 0;
           Result.line := line;
