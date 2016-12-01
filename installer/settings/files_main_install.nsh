@@ -89,7 +89,7 @@ File .\dependencies\dll\*.dll
 ;File ..\ChangeLog.txt
 ;File ..\ChangeLog.GERMAN.txt
 File ..\game\LuaCommands.odt
-File ..\README.txt
+File ..\README.md
 File .\dependencies\documents\license.txt
 File .\dependencies\documents\thirdparty\*
 File .\dependencies\documents\documentation.pdf
