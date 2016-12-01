@@ -24,7 +24,7 @@
  Delete "$INSTDIR\LuaCommands.odt"
  Delete "$INSTDIR\documentation.pdf"
  Delete "$INSTDIR\license.txt"
- Delete "$INSTDIR\README.txt"
+ Delete "$INSTDIR\README.md"
  Delete "$INSTDIR\screenshots.lnk"
  Delete "$INSTDIR\playlists.lnk"
  Delete "$INSTDIR\config.ini.lnk"
