@@ -336,7 +336,6 @@ uses
   UScreenPopup            in 'screens\UScreenPopup.pas',
 
   //Includes - Screens PartyMode
-  UScreenParty            in 'screens\UScreenParty.pas',
   UScreenPartyNewRound    in 'screens\UScreenPartyNewRound.pas',
   UScreenPartyScore       in 'screens\UScreenPartyScore.pas',
   UScreenPartyPlayer      in 'screens\UScreenPartyPlayer.pas',
