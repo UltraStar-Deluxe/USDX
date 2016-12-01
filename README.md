@@ -110,7 +110,8 @@ Start with a customs configuration file and score database:
 | J | open the "Search for a Song" interface |
 | [Enter] | confirm song, search or menu selection |
 | [Escape] | go to the previous screen |
-| D | play selected song as medley |
+| S | play selected song as medley |
+| D | play songs with medle tags as medleys |
 | E | open selected song in song editor |
 | F | add song to medley list |
 | K | toggle on/off experimental automatic voice-removal |
@@ -119,6 +120,8 @@ Start with a customs configuration file and score database:
 | R | select a random song/category |
 | [Alt] + [_Character_] | jump to artist with the first letter/digit _Character_ \(A to Z, 0 to 9\) |
 | [Alt] + [Shift] + [_Character_] | jump to title with the first letter/digit _Character_ \(A to Z, 0 to 9\) |
+| [Page down] | jump to first artist with the next letter/digit |
+| [Page up] | jump to last artist with the previous letter/digit | 
 | [Spacebar] | when a duet song is selected, switch first and second voice |
 
 ####Joypad / Controller
@@ -214,6 +217,7 @@ Start with a customs configuration file and score database:
 |Keys | Action|
 | :--- | :--- |
 | S | jump forward to 5 seconds before first singing note |
+| R | restart playback for current song but keep scores for already sung parts |
 | V | switch between video, visualisation and background |
 | W | if configured and enabled, show webcam video instead as background |
 | T | toggle time displaying between total, remaining and already played time |
