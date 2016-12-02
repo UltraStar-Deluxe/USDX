@@ -18,7 +18,7 @@
                                                                     
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ```
-Official Project Website: http://sourceforge.net/projects/ultrastardx/
+Official Project Website: http://ultrastardeluxe.de/
 
 ![UltraStar Deluxe Logo](https://github.com/UltraStar-Deluxe/USDX/blob/master/icons/ultrastardx-icon_256.png)
 
