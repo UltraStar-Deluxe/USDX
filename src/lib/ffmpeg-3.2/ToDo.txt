@@ -1,0 +1,112 @@
+1)	avutil.pas
+
+from mem.pas:
+inline function av_x_if_null
+inline function av_size_mult
+
+from log.pas:
+inline function av_log
+inline function av_log_set_callback
+inline function av_log_default_callback
+inline function av_dlog
+
+
+FFmpeg 3.0 changes:
+2016-02-10 - bc9a596 / 9f61abc - lavf 57.25.100 / 57.3.0 - avformat.h
+  Add AVFormatContext.opaque, io_open and io_close, allowing custom IO
+
+2016-02-01 - 1dba837 - lavf 57.24.100 - avformat.h, avio.h
+  Add protocol_whitelist to AVFormatContext, AVIOContext
+
+2016-01-31 - 66e9d2f - lavu 55.17.100 - frame.h
+  Add AV_FRAME_DATA_GOP_TIMECODE for exporting MPEG1/2 GOP timecodes.
+
+2016-01-01 - 5e8b053 / 2c68113 - lavc 57.21.100 / 57.12.0 - avcodec.h
+  Add AVCodecDescriptor.profiles and avcodec_profile_name().
+
+2015-12-28 - 1f9139b - lavf 57.21.100 - avformat.h
+  Add automatic bitstream filtering; add av_apply_bitstream_filters()
+
+2015-12-22 - 39a09e9 - lavfi 6.21.101 - avfilter.h
+  Deprecate avfilter_link_set_closed().
+  Applications are not supposed to mess with links,
+  they should close the sinks.
+
+2015-12-17 - lavc 57.18.100 / 57.11.0 - avcodec.h dirac.h
+  xxxxxxx - Add av_packet_add_side_data().
+  xxxxxxx - Add AVCodecContext.coded_side_data.
+  xxxxxxx - Add AVCPBProperties API.
+  xxxxxxx - Add a new public header dirac.h containing
+            av_dirac_parse_sequence_header()
+
+2015-12-11 - 676a93f - lavf 57.20.100 - avformat.h
+  Add av_program_add_stream_index()
+
+2015-11-29 - 93fb4a4 - lavc 57.16.101 - avcodec.h
+  Deprecate rtp_callback without replacement, i.e. it won't be possible to
+  get image slices before the full frame is encoded any more. The libavformat
+  rtpenc muxer can still be used for RFC-2190 packetization.
+
+2015-11-22 - fe20e34 - lavc 57.16.100 - avcodec.h
+  Add AV_PKT_DATA_FALLBACK_TRACK for making fallback associations between
+  streams.
+
+2015-11-22 - ad317c9 - lavf 57.19.100 - avformat.h
+  Add av_stream_new_side_data().
+
+2015-11-22 - e12f403 - lavu 55.8.100 - xtea.h
+    Add av_xtea_le_init and av_xtea_le_crypt
+
+2015-11-18 - lavu 55.7.100 - mem.h
+  Add av_fast_mallocz()
+
+2015-10-29 - lavc 57.12.100 / 57.8.0 - avcodec.h
+  xxxxxx - Deprecate av_free_packet(). Use av_packet_unref() as replacement,
+           it resets the packet in a more consistent way.
+  xxxxxx - Deprecate av_dup_packet(), it is a no-op for most cases.
+           Use av_packet_ref() to make a non-refcounted AVPacket refcounted.
+  xxxxxx - Add av_packet_alloc(), av_packet_clone(), av_packet_free().
+           They match the AVFrame functions with the same name.
+
+2015-10-27 - 1e477a9 - lavu 55.5.100 - cpu.h
+  Add AV_CPU_FLAG_AESNI.
+
+2015-10-22 - ee573b4 / a17a766 - lavc 57.9.100 / 57.5.0 - avcodec.h
+  Add data and linesize array to AVSubtitleRect, to be used instead of
+  the ones from the embedded AVPicture.
+
+2015-10-22 - 866a417 / dc923bc - lavc 57.8.100 / 57.0.0 - qsv.h
+  Add an API for allocating opaque surfaces.
+
+2015-10-15 - 2c2d162 - lavf 57.4.100
+  Remove the latm demuxer that was a duplicate of the loas demuxer.
+
+2015-10-14 - b994788 / 11c5f43 - lavu 55.4.100 / 55.2.0 - dict.h
+  Change return type of av_dict_copy() from void to int, so that a proper
+  error code can be reported.
+
+2015-09-29 - b01891a / 948f3c1 - lavc 57.3.100 / 57.2.0 - avcodec.h
+  Change type of AVPacket.duration from int to int64_t.
+
+2015-09-17 - 7c46f24 / e3d4784 - lavc 57.3.100 / 57.2.0 - d3d11va.h
+  Add av_d3d11va_alloc_context(). This function must from now on be used for
+  allocating AVD3D11VAContext.
+
+2015-09-15 - lavf 57.2.100 - avformat.h
+  probesize and max_analyze_duration switched to 64bit, both
+  are only accessible through AVOptions
+
+2015-09-15 - lavf 57.1.100 - avformat.h
+  bit_rate was changed to 64bit, make sure you update any
+  printf() or other type sensitive code
+
+2015-09-15 - lavc 57.2.100 - avcodec.h
+  bit_rate/rc_max_rate/rc_min_rate were changed to 64bit, make sure you update
+  any printf() or other type sensitive code
+
+2015-09-07 - lavu 55.0.100 / 55.0.0
+  c734b34 / b8b5d82 - Change type of AVPixFmtDescriptor.flags from uint8_t to uint64_t.
+  f53569a / 6b3ef7f - Change type of AVComponentDescriptor fields from uint16_t to int
+            and drop bit packing.
+  151aa2e / 2268db2 - Add step, offset, and depth to AVComponentDescriptor to replace
+            the deprecated step_minus1, offset_plus1, and depth_minus1.
