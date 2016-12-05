@@ -20,7 +20,7 @@ before_install:
 
 install:
     # Install prerequisites (fpc/lazarus/wine/qemu)
-  - ./.travis.install.py
+  - travis-lazarus/.travis.install.py
 
 script:
   #- lazbuild $LAZ_OPT ./src/ultrastardx-unix.lpi               # Build my_lazarus_test project
