@@ -17,7 +17,6 @@ env:
 before_install:
     # Start virtual display server
   - sh -e /etc/init.d/xvfb start || true
-  - chmod +x ./.travis.install.py
 
 install:
     # Install prerequisites (fpc/lazarus/wine/qemu)
