@@ -6,6 +6,13 @@ if [ -n "$LAZ_VER" ]; then
     # Start virtual display server
     sh /etc/init.d/xvfb start
 
+elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
+    # OSX build
+
+    brew tap caskroom/cask
+    brew tap homebrew/versions
+    brew update
+
 else
     # Linux build
 

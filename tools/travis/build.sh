@@ -5,6 +5,12 @@ if [ -n "$LAZ_OPT" ]; then
 
     lazbuild $LAZ_OPT ./src/ultrastardx-travis.lpi
 
+elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
+    # OSX build
+
+    ./configure --enable-osx-brew
+    make macosx-standalone-app
+
 else
     # Linux build
 

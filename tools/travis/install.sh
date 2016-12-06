@@ -7,6 +7,18 @@ if [ -n "$LAZ_VER" ]; then
 
     $DIR/lazarus/.travis.install.py
 
+elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
+    # OSX build
+
+    # already present on travis
+    #brew cask install xquartz
+
+    brew install sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_net sdl2_ttf \
+        fpc portaudio binutils sqlite freetype libpng pcre lua libtiff
+
+    # This is from: https://github.com/Homebrew/homebrew-versions
+    brew install ffmpeg28
+
 else
     # Linux build
 
