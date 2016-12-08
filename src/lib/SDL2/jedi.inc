@@ -393,6 +393,31 @@
    {$DEFINE HAS_TYPES}
 {$ENDIF ver270}
 
+{$IFNDEF FPC}	  
+{$IF CompilerVersion > 27}
+   {$DEFINE Delphi}      {Delphi / C++ Builder}
+   {$DEFINE Delphi4UP}
+   {$DEFINE Delphi5UP}
+   {$DEFINE Delphi6UP}
+   {$DEFINE Delphi7UP}
+   {$DEFINE Delphi8UP}
+   {$DEFINE Delphi9UP}
+   {$DEFINE Delphi10UP}
+   {$DEFINE Delphi11UP}
+   {$DEFINE Delphi12UP}
+   {$DEFINE Delphi13UP}
+   {$DEFINE Delphi14UP}
+   {$DEFINE Delphi15UP}
+   {$DEFINE Delphi16UP}
+   {$DEFINE Delphi17UP}
+   {$WARN UNSAFE_TYPE OFF} {Disable warning for unsafe types}
+   {$DEFINE Has_Int64}
+   {$DEFINE Has_UInt64}
+   {$DEFINE Has_Native}
+   {$DEFINE HAS_TYPES}
+{$IFEND}
+{$ENDIF}
+	  
 {*************** define 16/32/64 Bit ********************}
 
 {$IFDEF WIN16}

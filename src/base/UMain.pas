@@ -139,7 +139,8 @@ begin
 
     // initialize SDL
     // without SDL_INIT_TIMER SDL_GetTicks() might return strange values
-    SDL_Init(SDL_INIT_VIDEO or SDL_INIT_TIMER);
+    SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, '1');
+    SDL_Init(SDL_INIT_EVERYTHING); //SDL_INIT_VIDEO or SDL_INIT_TIMER);
     //SDL_EnableUnicode(1);  //not necessary in SDL2 any more
 
     // create luacore first so other classes can register their events

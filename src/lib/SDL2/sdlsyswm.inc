@@ -26,7 +26,8 @@ Type
       SDL_SYSWM_WAYLAND, // Since SDL 2.0.2
       SDL_SYSWM_MIR,     // Since SDL 2.0.2
       SDL_SYSWM_WINRT,   // Since SDL 2.0.3
-      SDL_SYSWM_ANDROID  // Planned for SDL 2.0.4
+      SDL_SYSWM_ANDROID, // Since SDL 2.0.4
+      SDL_SYSWM_VIVANTE  // Since SDL 2.0.5
    );
 
 /// sdl_syswm.h uses anonymous structs, declared right in SDL_SysWMmsg.

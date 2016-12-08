@@ -555,6 +555,36 @@ SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP = 'SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP';
 SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4 = 'SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4';
 
 {**
+ *  \brief Prevent SDL from using version 4 of the bitmap header when saving BMPs.
+ *
+ * The bitmap header version 4 is required for proper alpha channel support and
+ * SDL will use it when required. Should this not be desired, this hint can
+ * force the use of the 40 byte header version which is supported everywhere.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Surfaces with a colorkey or an alpha channel are saved to a
+ *               32-bit BMP file with an alpha mask. SDL will use the bitmap
+ *               header version 4 and set the alpha mask accordingly.
+ *   "1"       - Surfaces with a colorkey or an alpha channel are saved to a
+ *               32-bit BMP file without an alpha mask. The alpha channel data
+ *               will be in the file, but applications are going to ignore it.
+ *
+ * The default value is "0".
+ *}
+SDL_HINT_BMP_SAVE_LEGACY_FORMAT = 'SDL_BMP_SAVE_LEGACY_FORMAT';
+
+{**
+ * \brief Tell SDL not to name threads on Windows.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - SDL will raise the 0x406D1388 Exception to name threads.
+ *               This is the default behavior of SDL <= 2.0.4. (default)
+ *   "1"       - SDL will not raise this exception, and threads will be unnamed.
+ *               For .NET languages this is required when running under a debugger.
+ *}
+SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING = 'SDL_WINDOWS_DISABLE_THREAD_NAMING';
+
+{**
  *  \brief  A hint that specifies whether the window frame and title bar are interactive when the cursor is hidden. 
  *  
  *  Possible values for this hint:
