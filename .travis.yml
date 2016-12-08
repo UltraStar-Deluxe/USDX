@@ -1,29 +1,23 @@
-# Part of `travis-lazarus` (https://github.com/nielsAD/travis-lazarus)
-# Part of `usdxworldparty` (https://github.com/ultrastares/usdxworldparty)
-# License: MIT
-
 sudo: true
 
-os:
-  - linux
+matrix:
+  include:
+    - os: linux
+      env: LAZ_VER=1.6 LAZ_ENV=wine WINEARCH=win32 LAZ_OPT="--os=win32 --cpu=i386"
+    - os: linux
+      dist: trusty
+    - os: osx
 
 env:
   global:
     - WINEPREFIX=~/.winelaz
     - DISPLAY=:99.0
-  matrix:
-    - LAZ_VER=1.6    LAZ_ENV=wine WINEARCH=win32 LAZ_OPT="--os=win32 --cpu=i386"
 
 before_install:
-    # Start virtual display server
-  - sh -e /etc/init.d/xvfb start || true
-  - chmod +x ./.travis.install.py
+  - tools/travis/before_install.sh
 
 install:
-    # Install prerequisites (fpc/lazarus/wine/qemu)
-  - ./.travis.install.py
+  - tools/travis/install.sh
 
 script:
-  #- lazbuild $LAZ_OPT ./src/ultrastardx-unix.lpi               # Build my_lazarus_test project
-  - lazbuild $LAZ_OPT ./src/ultrastardx-travis.lpi               # Build my_lazarus_test project
-  #- $LAZ_ENV ./bin/my_lazarus_tests --all --format=plain # Run my_lazarus_test testsuite
+  - tools/travis/build.sh
