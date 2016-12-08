@@ -100,11 +100,7 @@ AC_DEFUN([PKG_VERSION],
     ifelse($1, [libavutil], [
         # map avutil library version to ffmpeg version
         AC_MSG_CHECKING([version of ffmpeg])
-        if   test $[$1][_VERSION_INT] -le 55028100 -a $[$1][_VERSION_INT] -ge 55027100; then
-            FFMPEG_VERSION="3.1"
-        elif test $[$1][_VERSION_INT] -eq 55017103; then
-            FFMPEG_VERSION="3.0"
-        elif test $[$1][_VERSION_INT] -le 54099100 -a $[$1][_VERSION_INT] -ge 54030100; then
+        if test $[$1][_VERSION_INT] -le 54099100 -a $[$1][_VERSION_INT] -ge 54030100; then
             FFMPEG_VERSION="2.8"
         elif test $[$1][_VERSION_INT] -le 54030100 -a $[$1][_VERSION_INT] -ge 54027100; then
             FFMPEG_VERSION="2.7"
@@ -141,7 +137,7 @@ AC_DEFUN([PKG_VERSION],
         else
             AC_MSG_ERROR([
 
-Unsupported ffmpeg version.
+Unsupported ffmpeg version, most recent version supported is 2.8.
 ])
         fi
         AX_EXTRACT_VERSION(FFMPEG, $FFMPEG_VERSION)

@@ -6187,11 +6187,7 @@ eof
         # map avutil library version to ffmpeg version
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of ffmpeg" >&5
 $as_echo_n "checking version of ffmpeg... " >&6; }
-        if   test $libavutil_VERSION_INT -le 55028100 -a $libavutil_VERSION_INT -ge 55027100; then
-            FFMPEG_VERSION="3.1"
-        elif test $libavutil_VERSION_INT -eq 55017103; then
-            FFMPEG_VERSION="3.0"
-        elif test $libavutil_VERSION_INT -le 54099100 -a $libavutil_VERSION_INT -ge 54030100; then
+        if test $libavutil_VERSION_INT -le 54099100 -a $libavutil_VERSION_INT -ge 54030100; then
             FFMPEG_VERSION="2.8"
         elif test $libavutil_VERSION_INT -le 54030100 -a $libavutil_VERSION_INT -ge 54027100; then
             FFMPEG_VERSION="2.7"
@@ -6228,7 +6224,7 @@ $as_echo_n "checking version of ffmpeg... " >&6; }
         else
             as_fn_error $? "
 
-Unsupported ffmpeg version.
+Unsupported ffmpeg version, most recent version supported is 2.8.
 " "$LINENO" 5
         fi
 
