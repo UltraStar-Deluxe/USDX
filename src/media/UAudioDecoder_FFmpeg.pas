@@ -974,7 +974,7 @@ begin
   end;
 end;
 
-function TFFmpegDecodeStream.DecodeFrame(Buffer: PByteArray; BufferSize: integer): integer;
+function TFFmpegDecodeStream.DecodeFrame(Buffer: PIntegerArray; BufferSize: integer): integer;
 var
   PaketDecodedSize: integer; // size of packet data used for decoding
   DataSize: integer;         // size of output data decoded by FFmpeg
@@ -1017,7 +1017,7 @@ begin
       PaketDecodedSize := avcodec_decode_audio4(fCodecCtx, AVFrame,
             @got_frame_ptr, @fAudioPaket);
       DataSize := AVFrame.nb_samples;
-      Buffer   := PByteArray(AVFrame.data[0]);
+      Buffer   := PIntegerArray(AVFrame.data[0]);
       {$ELSEIF LIBAVCODEC_VERSION >= 52122000} // 52.122.0
       PaketDecodedSize := avcodec_decode_audio3(fCodecCtx, PSmallint(Buffer),
                   DataSize, @fAudioPaket);
@@ -1130,7 +1130,7 @@ begin
   end;
 end;
 
-function TFFmpegDecodeStream.ReadData(Buffer: PByteArray; BufferSize: integer): integer;
+function TFFmpegDecodeStream.ReadData(Buffer: PIntegerArray; BufferSize: integer): integer;
 var
   CopyByteCount:   integer; // number of bytes to copy
   RemainByteCount: integer; // number of bytes left (remain) to read
