@@ -141,7 +141,7 @@ type
       // state-vars for AudioCallback (locked by DecoderLock)
       fAudioBufferPos:  integer;
       fAudioBufferSize: integer;
-      fAudioBuffer:     PByteArray;
+      fAudioBuffer:     PIntegerArray;
 
       fFilename: IPath;
 
@@ -158,7 +158,7 @@ type
       procedure PauseParser();
       procedure ResumeParser();
 
-      function DecodeFrame(Buffer: PByteArray; BufferSize: integer): integer;
+      function DecodeFrame(Buffer: PIntegerArray; BufferSize: integer): integer;
       procedure FlushCodecBuffers();
       procedure PauseDecoder();
       procedure ResumeDecoder();
@@ -178,7 +178,7 @@ type
       function IsEOF(): boolean;             override;
       function IsError(): boolean;           override;
 
-      function ReadData(Buffer: PByteArray; BufferSize: integer): integer; override;
+      function ReadData(Buffer: PIntegerArray; BufferSize: integer): integer; override;
   end;
 
 type
@@ -356,7 +356,9 @@ begin
 
   // TODO: should we use this or not? Should we allow 5.1 channel audio?
 
-  {$IF LIBAVCODEC_VERSION >= 51042000}
+  {$IF LIBAVCODEC_VERSION >= 56042000}
+  fCodecCtx^.request_channel_layout := ($20000000 or $40000000); //avcodec.c AV_CH_LAYOUT_STEREO_DOWNMIX;
+  {$ELSEIF LIBAVCODEC_VERSION >= 51042000}
   if (fCodecCtx^.channels > 0) then
     fCodecCtx^.request_channels := Min(2, fCodecCtx^.channels)
   else
@@ -989,6 +991,7 @@ var
   {$ENDIF}
 begin
   Result := -1;
+  got_frame_ptr := 1;
 
   if (EOF) then
     Exit;
@@ -1029,7 +1032,7 @@ begin
                   DataSize, fAudioPaketData, fAudioPaketSize);
       {$IFEND}
 
-      if(PaketDecodedSize < 0) then
+      if(PaketDecodedSize < 0) or (got_frame_ptr < 1) then
       begin
         // if error, skip frame
         {$IFDEF DebugFFmpegDecode}

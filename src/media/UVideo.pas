@@ -425,8 +425,10 @@ begin
   end;
 
   // register custom callbacks for pts-determination
-  fCodecContext^.get_buffer := PtsGetBuffer;
-  fCodecContext^.release_buffer := PtsReleaseBuffer;
+  {$IF LIBAVCODEC_VERSION < 56042000}
+    fCodecContext^.get_buffer := PtsGetBuffer;
+    fCodecContext^.release_buffer := PtsReleaseBuffer;
+  {$IFEND}
 
   {$ifdef DebugDisplay}
   DebugWriteln('Found a matching Codec: '+ fCodecContext^.Codec.Name + sLineBreak +
