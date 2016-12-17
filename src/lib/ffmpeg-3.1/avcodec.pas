@@ -1951,7 +1951,7 @@ type
      * Can be AV_NOPTS_VALUE if it is not stored in the file.
      *)
     dts:          cint64;
-    data:         Pcuint8;
+    data:         PByteArray;
     size:         cint;
     stream_index: cint;
     (**
