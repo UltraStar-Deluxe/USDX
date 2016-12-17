@@ -96,7 +96,7 @@ type
 
       function GetAudioFormatInfo(): TAudioFormatInfo; override;
 
-      function ReadData(Buffer: PIntegerArray; BufferSize: integer): integer;
+      function ReadData(Buffer: PByteArray; BufferSize: integer): integer;
 
       property EOF: boolean READ IsEOF;
   end;
@@ -113,7 +113,7 @@ type
       procedure Close(); override;
 
       procedure WriteData(Buffer: PByteArray; BufferSize: integer); override;
-      function ReadData(Buffer: PIntegerArray; BufferSize: integer): integer; override;
+      function ReadData(Buffer: PByteArray; BufferSize: integer): integer; override;
       function IsEOF(): boolean; override;
       function IsError(): boolean; override;
   end;
@@ -188,7 +188,7 @@ begin
     Result := BytesRead;
 end;
 
-function TBassPlaybackStream.ReadData(Buffer: PIntegerArray; BufferSize: integer): integer;
+function TBassPlaybackStream.ReadData(Buffer: PByteArray; BufferSize: integer): integer;
 var
   AdjustedSize: integer;
   RequestedSourceSize, SourceSize: integer;
@@ -701,7 +701,7 @@ begin
 end;
 
 // Note: we do not need the read-function for the BASS implementation
-function TBassVoiceStream.ReadData(Buffer: PIntegerArray; BufferSize: integer): integer;
+function TBassVoiceStream.ReadData(Buffer: PByteArray; BufferSize: integer): integer;
 begin
   Result := -1;
 end;
