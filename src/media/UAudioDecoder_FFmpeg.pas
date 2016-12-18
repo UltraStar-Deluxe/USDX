@@ -991,7 +991,9 @@ var
   {$ENDIF}
 begin
   Result := -1;
-  got_frame_ptr := 1;
+  {$IF LIBAVCODEC_VERSION >= 57000000}
+      got_frame_ptr := 1;
+  {$IFEND}
 
   if (EOF) then
     Exit;
@@ -1032,7 +1034,11 @@ begin
                   DataSize, fAudioPaketData, fAudioPaketSize);
       {$IFEND}
 
+      {$IF LIBAVCODEC_VERSION >= 57000000}
       if(PaketDecodedSize < 0) or (got_frame_ptr < 1) then
+      {$ELSE}
+      if(PaketDecodedSize < 0) then
+      {$IFEND}
       begin
         // if error, skip frame
         {$IFDEF DebugFFmpegDecode}
