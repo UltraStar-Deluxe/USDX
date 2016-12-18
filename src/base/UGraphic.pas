@@ -827,29 +827,34 @@ end;
 
 procedure OnWindowResized(w,h: integer);
 begin
-  if WindowModeDirty then
+  if WindowModeDirty and not HasWindowState(SDL_WINDOW_FULLSCREEN) then
   begin
-    if not HasWindowState(SDL_WINDOW_FULLSCREEN) then
+    if not HasValidSize then
     begin
-      if not HasValidSize then
-      begin
-        LastH := ScreenH;
-        LastW := ScreenW;
-      end;
+      LastH := ScreenH;
+      LastW := ScreenW;
+    end;
 
-      // restoring from maximized state will additionally call a SDL_WINDOWEVENT_RESIZED event
-      // we keep the dirty flag to still revert to the last none-maximized stored position and size
-      if HasWindowState(SDL_WINDOW_MINIMIZED or SDL_WINDOW_MAXIMIZED) then SDL_RestoreWindow(screen)
-      else WindowModeDirty := false;
+    // restoring from maximized state will additionally call a SDL_WINDOWEVENT_RESIZED event
+    // we keep the dirty flag to still revert to the last none-maximized stored position and size
+    if HasWindowState(SDL_WINDOW_MINIMIZED or SDL_WINDOW_MAXIMIZED) then
+    begin
+      SDL_RestoreWindow(screen);
+    end
+    else
+    begin
+      WindowModeDirty := false;
+    end;
 
-      ScreenW := LastW; ScreenH := LastH; // override render size
-      SDL_SetWindowPosition(screen, LastX, LastY);
+    // override render size
+    ScreenW := LastW;
+    ScreenH := LastH;
+    SDL_SetWindowPosition(screen, LastX, LastY);
 
-      // if there wasn't a windowed mode before, center window
-      if not HasValidPosition then
-      begin
-        SDL_SetWindowPosition(screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-      end;
+    // if there wasn't a windowed mode before, center window
+    if not HasValidPosition then
+    begin
+      SDL_SetWindowPosition(screen, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     end;
   end
   else
