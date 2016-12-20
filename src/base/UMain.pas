@@ -390,7 +390,6 @@ var
   SuppressKey: boolean;
   UpdateMouse: boolean;
 begin
-  KeyCharUnicode:=0;
   KeepGoing := true;
   SuppressKey := false;
   while (SDL_PollEvent(@Event) <> 0) do
@@ -525,6 +524,7 @@ begin
 
           if not Assigned(Display.NextScreen) then
           begin //drop input when changing screens
+            KeyCharUnicode:=0;
             if (Event.type_ = SDL_TEXTINPUT) and (Event.key.keysym.unicode <> 0) then
             try
               s1:=Event.text.text;
