@@ -791,10 +791,10 @@ begin
               else
               begin
                 AudioPlayback.Stop;
-                  CurrentNote := 0;
                 with Lines[0].Line[Lines[0].Current] do
                 begin
                   Note[CurrentNote].Color := 1;
+                  CurrentNote := 0;
                   AudioPlayback.Position := GetTimeFromBeat(Note[0].Start);
                   PlayStopTime := ifthen(SDL_ModState = KMOD_LALT,
                                        GetTimeFromBeat(Lines[0].Line[Lines[0].High].End_),
@@ -1087,7 +1087,7 @@ begin
           ShowInteractiveBackground;
         end;
 
-      SDLK_SLASH:
+      SDLK_SLASH, SDLK_HASH:
         begin
           CopyToUndo;
           if SDL_ModState = 0 then
