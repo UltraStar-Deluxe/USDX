@@ -382,6 +382,10 @@ begin
       Log.LogDebug(Format('CONTROLLERBUTTONUP [%d] Button:%d  State:%d  Type:%d  Time:%d', [which, button, state, type_, timestamp]), 'TJoy.Polling');
       Joy.OnControllerButton(which, button, ifthen(state = SDL_PRESSED, bsPressed, bsReleased));
     end;
+  SDL_JOYDEVICEADDED:
+    begin
+      Joy := TJoy.Create;
+    end;
   end; // case
 end;
 

@@ -140,7 +140,7 @@ begin
     // initialize SDL
     // without SDL_INIT_TIMER SDL_GetTicks() might return strange values
     SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, '1');
-    SDL_Init(SDL_INIT_EVERYTHING); //SDL_INIT_VIDEO or SDL_INIT_TIMER);
+    SDL_Init(SDL_INIT_VIDEO or SDL_INIT_TIMER);
     //SDL_EnableUnicode(1);  //not necessary in SDL2 any more
 
     // create luacore first so other classes can register their events
@@ -571,8 +571,14 @@ begin
             begin
               if (CurrentWindowMode <> Mode_Fullscreen) then // only switch borderless fullscreen in windowed mode
               begin
-                if SwitchVideoMode(Mode_Borderless) = Mode_Borderless then Ini.FullScreen := 2
-                else Ini.FullScreen := 0;
+                if SwitchVideoMode(Mode_Borderless) = Mode_Borderless then
+                begin
+                  Ini.FullScreen := 2;
+                end
+                else
+                begin
+                  Ini.FullScreen := 0;
+                end;
                 Ini.Save();
               end;
 
@@ -582,6 +588,13 @@ begin
             end;
           end;
         end;
+      SDL_CONTROLLERDEVICEADDED, SDL_CONTROLLERDEVICEREMOVED,
+      SDL_CONTROLLERBUTTONDOWN, SDL_CONTROLLERBUTTONUP, SDL_CONTROLLERAXISMOTION,
+      SDL_JOYAXISMOTION, SDL_JOYBALLMOTION, SDL_JOYBUTTONDOWN, SDL_JOYBUTTONUP,
+      SDL_JOYDEVICEADDED, SDL_JOYDEVICEREMOVED, SDL_JOYHATMOTION:
+        begin
+          OnJoystickPollEvent(Event);
+        end;
       MAINTHREAD_EXEC_EVENT:
         with Event.user do
         begin
@@ -590,7 +603,7 @@ begin
 
       otherwise
       begin
-        OnJoystickPollEvent(Event);
+        ;
       end;
     end; // case
   end; // while
