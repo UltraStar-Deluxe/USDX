@@ -774,39 +774,25 @@ begin
         begin
           if (SDL_ModState = 0) or (SDL_ModState = KMOD_LALT) then
           begin
-            if fCurrentVideo <> nil then
+            StopVideoPreview;
+            AudioPlayback.Stop;
+            PlayVideo := true;
+            StopVideoPreview();
+            Click := true;
+            with Lines[0].Line[Lines[0].Current] do
             begin
-              PlayVideo := false;
-              StopVideoPreview();
-            end
-            else
-            begin
-              PlayVideo := true;
-              StartVideoPreview();
-
-              if PlaySentence then // TODO: use and create audio interface properties/functions like IsPlaying (AudioPlayback.IsPlaying)
-              begin
-                UpdateVideoPosition(AudioPlayback.Position);
-              end
-              else
-              begin
-                AudioPlayback.Stop;
-                with Lines[0].Line[Lines[0].Current] do
-                begin
-                  Note[CurrentNote].Color := 1;
-                  CurrentNote := 0;
-                  AudioPlayback.Position := GetTimeFromBeat(Note[0].Start);
-                  PlayStopTime := ifthen(SDL_ModState = KMOD_LALT,
-                                       GetTimeFromBeat(Lines[0].Line[Lines[0].High].End_),
-                                       GetTimeFromBeat(Note[High(Note)].End_));
-                end;
-                PlaySentence := true;
-                AudioPlayback.Play;
-                LastClick := -100;
-                StartVideoPreview();
-                Text[TextDebug].Text := Language.Translate('INFO_PLAY_SONG');
-              end;
+              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
+              CurrentNote := 0;
+              AudioPlayback.Position := GetTimeFromBeat(Note[0].Start);
+              PlayStopTime := ifthen(SDL_ModState = KMOD_LALT,
+                                   GetTimeFromBeat(Lines[0].Line[Lines[0].High].End_),
+                                   GetTimeFromBeat(Note[High(Note)].End_));
             end;
+            PlaySentence := true;
+            AudioPlayback.Play;
+            LastClick := -100;
+            StartVideoPreview();
+            Text[TextDebug].Text := Language.Translate('INFO_PLAY_SONG');
           end;
           // Paste text
           if SDL_ModState = KMOD_LCTRL then
