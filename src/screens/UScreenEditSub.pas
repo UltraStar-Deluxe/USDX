@@ -791,7 +791,7 @@ begin
               else
               begin
                 AudioPlayback.Stop;
-                CurrentNote := 0;
+                  CurrentNote := 0;
                 with Lines[0].Line[Lines[0].Current] do
                 begin
                   Note[CurrentNote].Color := 1;
