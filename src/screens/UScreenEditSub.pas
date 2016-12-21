@@ -777,16 +777,24 @@ begin
             StopVideoPreview;
             AudioPlayback.Stop;
             PlayVideo := true;
+            PlaySentenceMidi := false;
             StopVideoPreview();
             Click := true;
             with Lines[0].Line[Lines[0].Current] do
             begin
-              Lines[0].Line[Lines[0].Current].Note[CurrentNote].Color := 1;
+              Note[CurrentNote].Color := 1;
               CurrentNote := 0;
               AudioPlayback.Position := GetTimeFromBeat(Note[0].Start);
               PlayStopTime := ifthen(SDL_ModState = KMOD_LALT,
                                    GetTimeFromBeat(Lines[0].Line[Lines[0].High].End_),
                                    GetTimeFromBeat(Note[High(Note)].End_));
+            end;
+            if (SDL_ModState = KMOD_LALT) then
+            begin
+              PlaySentenceMidi := true;
+              {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
+              MidiStart := AudioPlayback.Position;
+              MidiStop  := PlayStopTime; {$ENDIF}
             end;
             PlaySentence := true;
             AudioPlayback.Play;
