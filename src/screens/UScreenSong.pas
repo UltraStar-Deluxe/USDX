@@ -2283,7 +2283,7 @@ begin
       Text[TextNumber].Text := IntToStr(CatSongs.VisibleIndex(Interaction)+1) + '/' + IntToStr(VS)
     else if (Ini.TabsAtStartup = 1) then
     begin
-      Text[TextNumber].Text := IntToStr(CatSongs.Song[Interaction].CatNumber);
+      Text[TextNumber].Text := IntToStr(CatSongs.Song[Interaction].CatNumber)+ '/' + IntToStr(VS);
       if not Interaction = 0 then Text[TextNumber].Text := Text[TextNumber].Text + '/' + IntToStr(CatSongs.Song[Interaction - CatSongs.Song[Interaction].CatNumber].CatNumber);
     end
     else
