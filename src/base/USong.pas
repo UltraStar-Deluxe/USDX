@@ -530,7 +530,7 @@ begin
       while (SongFile.ReadLine(CurLine)) do
       begin
         Inc(FileLineNo);
-        if (Length(CurLine) > 0) and (CurLine[1] in [':', 'F', '*', 'P']) then
+        if (Length(CurLine) > 0) and (CurLine[1] in [':', 'F', '*', 'R', 'G', 'P']) then
         begin
           NotesFound := true;
           Break;
@@ -620,7 +620,7 @@ begin
         begin
           Break
         end
-        else if (Param0 in [':', '*', 'F']) then
+        else if (Param0 in [':', '*', 'F', 'R', 'G']) then
         begin
           // read notes
           Param1 := ParseLyricIntParam(CurLine, LinePos);
@@ -816,6 +816,8 @@ begin
           NT_Normal:    NoteType := ':';
           NT_Golden:    NoteType := '*';
           NT_Freestyle: NoteType := 'F';
+          NT_Rap:       NoteType := 'R';
+          NT_RapGolden: NoteType := 'G';
         end;
 
         Param1:=Parser.SongInfo.Sentences[I].Notes[J].Start;       //Note Start
@@ -1401,6 +1403,8 @@ begin
       'F':  Note[HighNote].NoteType := ntFreestyle;
       ':':  Note[HighNote].NoteType := ntNormal;
       '*':  Note[HighNote].NoteType := ntGolden;
+      'R':  Note[HighNote].NoteType := ntRap;
+      'G':  Note[HighNote].NoteType := ntRapGolden;
     end;
 
     //add this notes value ("notes length" * "notes scorefactor") to the current songs entire value

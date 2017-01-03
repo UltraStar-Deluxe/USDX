@@ -582,7 +582,7 @@ begin
                 Range := 2 - Ini.Difficulty;
 
               // check if the player hit the correct tone within the tolerated range
-              if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) then
+              if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) or (CurrentLineFragment.NoteType = ntRap) or (CurrentLineFragment.NoteType = ntRapGolden) then
               begin
                 // adjust the players tone to the correct one
                 // TODO: do we need to do this?
@@ -607,8 +607,10 @@ begin
                 CurNotePoints := (MaxSongPoints / Lines[CP].ScoreValue) * ScoreFactor[CurrentLineFragment.NoteType];
 
                 case CurrentLineFragment.NoteType of
-                  ntNormal: CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
-                  ntGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
+                  ntNormal:    CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
+                  ntGolden:    CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
+                  ntRap:       CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
+                  ntRapGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
                 end;
 
                 // a problem if we use floor instead of round is that a score of
