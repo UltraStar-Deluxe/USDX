@@ -25,9 +25,14 @@ else
     sudo apt-get install fpc \
         libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev \
         libsdl2-ttf-dev libsdl2-gfx-dev \
-        libavcodec-ffmpeg-dev libavformat-ffmpeg-dev libswscale-ffmpeg-dev \
+        libavcodec-dev libavformat-dev libswscale-dev \
         portaudio19-dev libprojectm-dev libopencv-highgui-dev \
         libsqlite3-dev libpcre3-dev liblua5.1-dev libpng-dev \
         ttf-dejavu ttf-freefont
+        
+    # Extra dependencies for ffmpeg from ppa
+    sudo apt-get install \
+        libavcodec-ffmpeg-dev libavformat-ffmpeg-dev libswscale-ffmpeg-dev \
+        libavutil-ffmpeg-dev libswresample-ffmpeg-dev
 
 fi
