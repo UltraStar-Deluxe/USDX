@@ -10,6 +10,13 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
 
     ./configure --enable-osx-brew
     make macosx-standalone-app
+    make macosx-dmg
+
+    if [ -r "UltraStarDeluxe.dmg" ]; then
+        link=$(curl --upload-file 'UltraStarDeluxe.dmg' 'https://transfer.sh/UltraStarDeluxe.dmg')
+        echo "UltraStarDeluxe.dmg should be available at:"
+        echo "    $link"
+    fi
 
 else
     # Linux build

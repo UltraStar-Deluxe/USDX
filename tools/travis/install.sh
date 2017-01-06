@@ -29,5 +29,10 @@ else
         portaudio19-dev libprojectm-dev libopencv-highgui-dev \
         libsqlite3-dev libpcre3-dev liblua5.1-dev libpng-dev \
         ttf-dejavu ttf-freefont
+        
+    # Extra dependencies for ffmpeg from ppa
+    sudo apt-get install \
+        libavcodec-ffmpeg-dev libavformat-ffmpeg-dev libswscale-ffmpeg-dev \
+        libavutil-ffmpeg-dev libswresample-ffmpeg-dev
 
 fi
