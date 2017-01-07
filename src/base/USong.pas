@@ -164,6 +164,8 @@ type
     isDuet: boolean;
     DuetNames:  array of UTF8String; // duet singers name
 
+    hasRap: boolean;
+
     CustomTags: array of TCustomHeaderTag;
 
     Score:      array[0..2] of array of TScore;
@@ -622,6 +624,11 @@ begin
         end
         else if (Param0 in [':', '*', 'F', 'R', 'G']) then
         begin
+          // sets the rap icon if the song has rap notes
+          if(Param0 in ['R', 'G']) then
+          begin
+            CurrentSong.hasRap := true;
+          end;
           // read notes
           Param1 := ParseLyricIntParam(CurLine, LinePos);
           Param2 := ParseLyricIntParam(CurLine, LinePos);
