@@ -42,6 +42,7 @@ uses
   UIni,
   ULog,
   ULyrics,
+  UMusic,
   URecord,
   UScreenSingController,
   UScreenJukebox,
@@ -51,12 +52,13 @@ uses
 type
   PPLayerNote = ^TPlayerNote;
   TPlayerNote = record
-    Start:   integer;
-    Length:  integer;
-    Detect:  real;    // accurate place, detected in the note
-    Tone:    real;
-    Perfect: boolean; // true if the note matches the original one, light the star
-    Hit:     boolean; // true if the note hits the line
+    Start:    integer;
+    Length:   integer;
+    Detect:   real;    // accurate place, detected in the note
+    Tone:     real;
+    Perfect:  boolean; // true if the note matches the original one, light the star
+    Hit:      boolean; // true if the note hits the line
+    NoteType: TNoteType;
   end;
 
   PPLayer = ^TPlayer;
@@ -153,7 +155,6 @@ uses
   UGraphicClasses,
   UJoystick,
   ULanguage,
-  UMusic,
   UParty,
   UPathUtils,
   UPlatform,
@@ -489,6 +490,7 @@ var
   NoteHit:             boolean;
   MaxSongPoints:       integer; // max. points for the song (without line bonus)
   CurNotePoints:       real;    // Points for the cur. Note (PointsperNote * ScoreFactor[CurNote])
+  CurrentNoteType:     TNoteType;
 begin
   ActualTone := 0;
   NoteHit := false;
@@ -556,6 +558,7 @@ begin
         // add note if possible
         if (CurrentSound.ToneValid and NoteAvailable) then
         begin
+          CurrentNoteType := ntNormal;
           Line := @Lines[CP].Line[SentenceDetected];
           // process until last note
           for LineFragmentIndex := 0 to Line.HighNote do
@@ -564,6 +567,8 @@ begin
             if (CurrentLineFragment.Start <= ActualBeat) and
               (CurrentLineFragment.Start + CurrentLineFragment.Length > ActualBeat) then
             begin
+              // set the current note type
+              CurrentNoteType := CurrentLineFragment.NoteType;
               // compare notes (from song-file and from player)
 
               // move players tone to proper octave
@@ -673,11 +678,12 @@ begin
               LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote];
               with LastPlayerNote^ do
               begin
-                Start  := ActualBeat;
-                Length := 1;
-                Tone   := ActualTone; // Tone || ToneAbs
+                Start    := ActualBeat;
+                Length   := 1;
+                Tone     := ActualTone; // Tone || ToneAbs
                 //Detect := LyricsState.MidBeat; // Not used!
-                Hit    := NoteHit; // half note patch
+                Hit      := NoteHit; // half note patch
+                NoteType := CurrentNoteType;
               end;
             end
             else

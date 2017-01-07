@@ -627,7 +627,7 @@ begin
 
         // draw the left part
         glColor3f(1, 1, 1);
-        If (Lines[NrLines].Line[Lines[NrLines].Current].Note[N].NoteType = ntRap) or (Lines[NrLines].Line[Lines[NrLines].Current].Note[N].NoteType = ntRapGolden) then
+        If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
           glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap[PlayerIndex+1].TexNum);
         end
@@ -655,7 +655,7 @@ begin
           Rec.Right := Rec.Left;
 
         // draw the middle part
-        If (Lines[NrLines].Line[Lines[NrLines].Current].Note[N].NoteType = ntRap) or (Lines[NrLines].Line[Lines[NrLines].Current].Note[N].NoteType = ntRapGolden) then
+        If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
           glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap[PlayerIndex+1].TexNum);
         end
@@ -677,7 +677,7 @@ begin
         Rec.Left  := Rec.Right;
         Rec.Right := Rec.Right + NotesW[PlayerIndex];
 
-        If (Lines[NrLines].Line[Lines[NrLines].Current].Note[N].NoteType = ntRap) or (Lines[NrLines].Line[Lines[NrLines].Current].Note[N].NoteType = ntRapGolden) then
+        If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
           glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap[PlayerIndex+1].TexNum);
         end
