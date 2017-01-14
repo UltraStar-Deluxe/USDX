@@ -42,6 +42,7 @@ uses
   UIni,
   ULog,
   ULyrics,
+  UMusic,
   URecord,
   UScreenSingController,
   UScreenJukebox,
@@ -51,12 +52,13 @@ uses
 type
   PPLayerNote = ^TPlayerNote;
   TPlayerNote = record
-    Start:   integer;
-    Length:  integer;
-    Detect:  real;    // accurate place, detected in the note
-    Tone:    real;
-    Perfect: boolean; // true if the note matches the original one, light the star
-    Hit:     boolean; // true if the note hits the line
+    Start:    integer;
+    Length:   integer;
+    Detect:   real;    // accurate place, detected in the note
+    Tone:     real;
+    Perfect:  boolean; // true if the note matches the original one, light the star
+    Hit:      boolean; // true if the note hits the line
+    NoteType: TNoteType;
   end;
 
   PPLayer = ^TPlayer;
@@ -153,7 +155,6 @@ uses
   UGraphicClasses,
   UJoystick,
   ULanguage,
-  UMusic,
   UParty,
   UPathUtils,
   UPlatform,
@@ -489,6 +490,7 @@ var
   NoteHit:             boolean;
   MaxSongPoints:       integer; // max. points for the song (without line bonus)
   CurNotePoints:       real;    // Points for the cur. Note (PointsperNote * ScoreFactor[CurNote])
+  CurrentNoteType:     TNoteType;
 begin
   ActualTone := 0;
   NoteHit := false;
@@ -556,6 +558,7 @@ begin
         // add note if possible
         if (CurrentSound.ToneValid and NoteAvailable) then
         begin
+          CurrentNoteType := ntNormal;
           Line := @Lines[CP].Line[SentenceDetected];
           // process until last note
           for LineFragmentIndex := 0 to Line.HighNote do
@@ -564,6 +567,8 @@ begin
             if (CurrentLineFragment.Start <= ActualBeat) and
               (CurrentLineFragment.Start + CurrentLineFragment.Length > ActualBeat) then
             begin
+              // set the current note type
+              CurrentNoteType := CurrentLineFragment.NoteType;
               // compare notes (from song-file and from player)
 
               // move players tone to proper octave
@@ -582,7 +587,7 @@ begin
                 Range := 2 - Ini.Difficulty;
 
               // check if the player hit the correct tone within the tolerated range
-              if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) then
+              if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) or (CurrentLineFragment.NoteType = ntRap) or (CurrentLineFragment.NoteType = ntRapGolden) then
               begin
                 // adjust the players tone to the correct one
                 // TODO: do we need to do this?
@@ -607,8 +612,10 @@ begin
                 CurNotePoints := (MaxSongPoints / Lines[CP].ScoreValue) * ScoreFactor[CurrentLineFragment.NoteType];
 
                 case CurrentLineFragment.NoteType of
-                  ntNormal: CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
-                  ntGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
+                  ntNormal:    CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
+                  ntGolden:    CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
+                  ntRap:       CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
+                  ntRapGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
                 end;
 
                 // a problem if we use floor instead of round is that a score of
@@ -671,11 +678,12 @@ begin
               LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote];
               with LastPlayerNote^ do
               begin
-                Start  := ActualBeat;
-                Length := 1;
-                Tone   := ActualTone; // Tone || ToneAbs
+                Start    := ActualBeat;
+                Length   := 1;
+                Tone     := ActualTone; // Tone || ToneAbs
                 //Detect := LyricsState.MidBeat; // Not used!
-                Hit    := NoteHit; // half note patch
+                Hit      := NoteHit; // half note patch
+                NoteType := CurrentNoteType;
               end;
             end
             else

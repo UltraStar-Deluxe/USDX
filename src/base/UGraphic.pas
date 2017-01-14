@@ -216,6 +216,18 @@ var
   Tex_BG_Mid:      array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_noteglow_mid
   Tex_BG_Right:    array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_noteglow_right
 
+  Tex_Left_Rap:        array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_note_left
+  Tex_Mid_Rap:         array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_note_mid
+  Tex_Right_Rap:       array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_note_right
+
+  Tex_plain_Left_Rap:  array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_notebg_left
+  Tex_plain_Mid_Rap:   array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_notebg_mid
+  Tex_plain_Right_Rap: array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_notebg_right
+
+  Tex_BG_Left_Rap:     array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_noteglow_left
+  Tex_BG_Mid_Rap:      array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_noteglow_mid
+  Tex_BG_Right_Rap:    array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_noteglow_right
+
   Tex_Note_Star:  TTexture;
   Tex_Note_Perfect_Star: TTexture;
 

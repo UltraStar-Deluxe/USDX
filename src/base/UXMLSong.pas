@@ -110,6 +110,8 @@ const
   NT_Normal = 1;
   NT_Freestyle = 0;
   NT_Golden = 2;
+  NT_Rap = 3;
+  NT_RapGolden = 4;
 
   DS_Player1 = 1;
   DS_Player2 = 2;
@@ -239,6 +241,7 @@ var
   Duration, Tone: Integer;
   Lyric: String;
   NoteType: Byte;
+  IsRap: Boolean;
 
   Procedure MakeValuesArray;
   var Len, Pos, State, StateChange: Integer;
@@ -468,6 +471,7 @@ begin
           MakeValuesArray;
 
           NoteType := NT_Normal;
+          IsRap := False;
           For I := 0 to High(AValues) do
           begin
             If (AValues[I].Name = 'DURATION') then
@@ -492,6 +496,10 @@ begin
             begin
               NoteType := NT_Freestyle;
             end
+            Else If (AValues[I].Name = 'RAP') AND (Uppercase(AValues[I].Value) = 'YES') then
+            begin
+              IsRap := True;
+            end
             Else If (AValues[I].Name = 'LYRIC') then
             begin
               Lyric := AValues[I].Value;
@@ -514,6 +522,16 @@ begin
                   BindLyrics := False; //There should be a Space
               end;
             end;
+          end;
+
+          //Set rap
+          If (IsRap = True) AND (NoteType = NT_Freestyle) then
+          begin
+            NoteType := NT_Rap;
+          end;
+          If (IsRap = True) AND (NoteType = NT_Golden) then
+          begin
+            NoteType := NT_RapGolden;
           end;
 
           //Add Note
