@@ -537,10 +537,6 @@ ifeq ($(USE_OSX_PACKAGING), fink)
 	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libbluray.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 endif
 
-#	X11 libs as well, because users may not have installed it.
-	@echo "[xquartz] copying libs of libX11"
-	$(foreach dylib,$(shell $(OTOOL) -L /opt/X11/lib/libX11.6.dylib  | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-
 	@echo ""
 	@echo "libpcre.dylib must be work on additionally, since it is not linked to the executable but opened using dlopen"
 	$(shell $(INSTALL) -m 755 $(pkgingLibDir)/libpcre.dylib $(macosx_bundle_path)/MacOS)

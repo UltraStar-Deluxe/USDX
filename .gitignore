@@ -6,6 +6,7 @@ Thumbs.db
 *.exe
 *.~*
 *.log
+.DS_Store
 
 # lazarus project files
 *.o
