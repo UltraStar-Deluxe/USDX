@@ -31,6 +31,7 @@ ppaslink.sh
 /src/**/*.local
 /src/**/*.bdsproj
 /src/**/*.identcache
+/src/config-darwin.inc
 /src/config-linux.inc
 /src/paths.inc
 /src/ultrastardx-*.lps
