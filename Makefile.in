@@ -535,6 +535,10 @@ ifeq ($(USE_OSX_PACKAGING), fink)
 	# same procedure for secondary libs in libbluray
 	@echo "[fink] copying libs of libblueray"
 	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libbluray.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
+
+	# X11 libs as well, because users may not have installed it.
+	@echo "[fink] copying libs of libX11"
+	$(foreach dylib,$(shell $(OTOOL) -L /opt/X11/lib/libX11.6.dylib  | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
 endif
 
 	@echo ""
