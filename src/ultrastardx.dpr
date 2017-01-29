@@ -96,6 +96,7 @@ uses
       avutil              in 'lib\' + FFMPEG_DIR + '\avutil.pas',
       rational            in 'lib\' + FFMPEG_DIR + '\rational.pas',
       avio                in 'lib\' + FFMPEG_DIR + '\avio.pas',
+      swresample          in 'lib\' + FFMPEG_DIR + '\swresample.pas',
       {$IFDEF useOLD_FFMPEG}
         mathematics       in 'lib\' + FFMPEG_DIR + '\mathematics.pas',
         opt               in 'lib\' + FFMPEG_DIR + '\opt.pas',
