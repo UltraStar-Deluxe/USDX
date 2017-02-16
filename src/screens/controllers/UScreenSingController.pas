@@ -1809,12 +1809,6 @@ begin
 
           SendInfo.Username := DataBase.NetworkUser[IndexWeb].UserList[IndexUser].Username;
           SendInfo.Password := DataBase.NetworkUser[IndexWeb].UserList[IndexUser].Password;
-
-          if (DataBase.NetworkUser[IndexWeb].UserList[IndexUser].SendSavePlayer = 1) then
-            SendInfo.Name := Ini.Name[PlayerIndex - 1]
-          else
-            SendInfo.Name := '';
-
           SendInfo.ScoreInt := player[PlayerIndex - 1].ScoreInt;
           SendInfo.ScoreLineInt := player[PlayerIndex - 1].ScoreLineInt;
           SendInfo.ScoreGoldenInt := player[PlayerIndex - 1].ScoreGoldenInt;
@@ -1881,12 +1875,6 @@ begin
 
           SendInfo.Username := DataBase.NetworkUser[IndexWeb].UserList[IndexUser].Username;
           SendInfo.Password := DataBase.NetworkUser[IndexWeb].UserList[IndexUser].Password;
-
-          if (DataBase.NetworkUser[IndexWeb].UserList[IndexUser].SendSavePlayer = 1) then
-            SendInfo.Name := Ini.Name[PlayerIndex - 1]
-          else
-            SendInfo.Name := '';
-
           SendInfo.ScoreInt := player[PlayerIndex - 1].ScoreInt;
           SendInfo.ScoreLineInt := player[PlayerIndex - 1].ScoreLineInt;
           SendInfo.ScoreGoldenInt := player[PlayerIndex - 1].ScoreGoldenInt;

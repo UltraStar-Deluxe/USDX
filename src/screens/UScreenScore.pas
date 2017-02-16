@@ -339,10 +339,6 @@ begin
       SendInfo.Password := UDataBase.DataBase.NetworkUser[ScreenPopupSendScore.SelectValueW].UserList[ScreenPopupSendScore.SelectValueU].Password;
     end;
 
-    SendInfo.Name := '';
-    if (ScreenPopUpSendScore.SelectValueU <> High(ScreenPopUpSendScore.IUsername)) and (UDataBase.DataBase.NetworkUser[ScreenPopupSendScore.SelectValueW].UserList[ScreenPopupSendScore.SelectValueU].SendSavePlayer = 1) then
-      SendInfo.Name := Ini.Name[ScreenPopupSendScore.SelectValueP];
-
     index := ScreenPopupSendScore.SelectValueP;
     SendInfo.ScoreInt := player[index].ScoreInt;
     SendInfo.ScoreLineInt := player[index].ScoreLineInt;
