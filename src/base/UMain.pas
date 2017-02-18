@@ -310,7 +310,7 @@ begin
   Max_FPS := Ini.MaxFramerateGet;
   SDL_StartTextInput;
   Done := false;
-  J := 0;
+  J := 1;
   CountSkipTime();
   repeat
     try
@@ -332,7 +332,7 @@ begin
         SDL_Delay(Delay);
 
       CountSkipTime;
-      J:=0;
+      J:=1;
     end
     except
       on E : Exception do
