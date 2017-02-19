@@ -1031,8 +1031,17 @@ begin
       DataSize := AUDIO_BUFFER_SIZE;
 
       {$IF LIBAVCODEC_VERSION >= 57000000}
+        {$IF LIBAVCODEC_VERSION >= 57037100}
+      got_frame_ptr := avcodec_receive_frame(fCodecCtx, fAudioBufferFrame);
+      if (got_frame_ptr = AVERROR(EAGAIN)) then
+        PaketDecodedSize := fAudioPaketSize
+      else
+        PaketDecodedSize := 0;
+      got_frame_ptr := ord(got_frame_ptr = 0);
+        {$ELSE}
       PaketDecodedSize := avcodec_decode_audio4(fCodecCtx, fAudioBufferFrame,
             @got_frame_ptr, @fAudioPaket);
+        {$IFEND}
       if(got_frame_ptr <> 0) then
       begin
         DataSize := fAudioBufferFrame.nb_samples * fBytesPerSample;
@@ -1135,6 +1144,10 @@ begin
 
     fAudioPaketData := fAudioPaket.data;
     fAudioPaketSize := fAudioPaket.size;
+
+    {$IF LIBAVCODEC_VERSION >= 57037100}
+    avcodec_send_packet(fCodecCtx, @fAudioPaket);
+    {$IFEND}
 
     // if available, update the stream position to the presentation time of this package
     if(fAudioPaket.pts <> AV_NOPTS_VALUE) then
