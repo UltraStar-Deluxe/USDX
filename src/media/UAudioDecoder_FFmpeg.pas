@@ -116,6 +116,9 @@ type
       fPacketQueue: TPacketQueue;
 
       fFormatInfo: TAudioFormatInfo;
+      {$IF LIBAVCODEC_VERSION >= 57000000}
+      fBytesPerSample: integer;
+      {$IFEND}
 
       // FFmpeg specific data
       fFormatCtx: PAVFormatContext;
@@ -142,6 +145,9 @@ type
       fAudioBufferPos:  integer;
       fAudioBufferSize: integer;
       fAudioBuffer:     PByteArray;
+      {$IF LIBAVCODEC_VERSION >= 57000000}
+      fAudioBufferFrame: PAVFrame;
+      {$IFEND}
 
       fFilename: IPath;
 
@@ -211,6 +217,9 @@ begin
   fDecoderUnlockedCond := SDL_CreateCond();
   fDecoderResumeCond := SDL_CreateCond();
 
+  {$IF LIBAVCODEC_VERSION >= 57000000}
+  fAudioBufferFrame := av_frame_alloc();
+  {$ELSE}
   // according to the documentation of avcodec_decode_audio(2), sample-data
   // should be aligned on a 16 byte boundary. Otherwise internal calls
   // (e.g. to SSE or Altivec operations) might fail or lack performance on some
@@ -227,6 +236,7 @@ begin
   // was not applicable as Delphi in contrast to FPC provides at most 8 byte
   // alignment ({$ALIGN 16} is not supported) by this directive.
   fAudioBuffer := GetAlignedMem(AUDIO_BUFFER_SIZE, 16);
+  {$IFEND}
 
   Reset();
 end;
@@ -271,7 +281,11 @@ begin
   SDL_DestroyCond(fDecoderUnlockedCond);
   SDL_DestroyCond(fDecoderResumeCond);
 
+  {$IF LIBAVCODEC_VERSION >= 57000000}
+  av_frame_free(@fAudioBufferFrame);
+  {$ELSE}
   FreeAlignedMem(fAudioBuffer);
+  {$IFEND}
 
   inherited;
 end;
@@ -426,6 +440,9 @@ begin
     fCodecCtx^.sample_rate,
     SampleFormat
   );
+  {$IF LIBAVCODEC_VERSION >= 57000000}
+  fBytesPerSample := av_get_bytes_per_sample(fCodecCtx^.sample_fmt) * fCodecCtx^.channels;
+  {$IFEND}
 
   fPacketQueue := TPacketQueue.Create();
 
@@ -983,7 +1000,6 @@ var
   BlockQueue: boolean;
   SilenceDuration: double;
   {$IF LIBAVCODEC_VERSION >= 57000000}
-  AVFrame: PAVFrame;
   got_frame_ptr: integer;
   {$IFEND}
   {$IFDEF DebugFFmpegDecode}
@@ -991,9 +1007,6 @@ var
   {$ENDIF}
 begin
   Result := -1;
-  {$IF LIBAVCODEC_VERSION >= 57000000}
-      got_frame_ptr := 1;
-  {$IFEND}
 
   if (EOF) then
     Exit;
@@ -1018,11 +1031,15 @@ begin
       DataSize := AUDIO_BUFFER_SIZE;
 
       {$IF LIBAVCODEC_VERSION >= 57000000}
-      AVFrame := av_frame_alloc();
-      PaketDecodedSize := avcodec_decode_audio4(fCodecCtx, AVFrame,
+      PaketDecodedSize := avcodec_decode_audio4(fCodecCtx, fAudioBufferFrame,
             @got_frame_ptr, @fAudioPaket);
-      DataSize := AVFrame.nb_samples;
-      fAudioBuffer   := PByteArray(AVFrame.data[0]);
+      if(got_frame_ptr <> 0) then
+      begin
+        DataSize := fAudioBufferFrame.nb_samples * fBytesPerSample;
+        fAudioBuffer := PByteArray(fAudioBufferFrame.data[0]);
+      end
+      else
+        DataSize := 0;
       {$ELSEIF LIBAVCODEC_VERSION >= 52122000} // 52.122.0
       PaketDecodedSize := avcodec_decode_audio3(fCodecCtx, PSmallint(fAudioBuffer),
                   DataSize, @fAudioPaket);
@@ -1034,11 +1051,7 @@ begin
                   DataSize, fAudioPaketData, fAudioPaketSize);
       {$IFEND}
 
-      {$IF LIBAVCODEC_VERSION >= 57000000}
-      if(PaketDecodedSize < 0) or (got_frame_ptr < 1) then
-      {$ELSE}
       if(PaketDecodedSize < 0) then
-      {$IFEND}
       begin
         // if error, skip frame
         {$IFDEF DebugFFmpegDecode}
