@@ -6230,7 +6230,7 @@ $as_echo_n "checking version of ffmpeg... " >&6; }
         else
             as_fn_error $? "
 
-Unsupported ffmpeg version, most recent version supported is 2.8.
+Unsupported ffmpeg version, most recent version supported is 3.2.
 " "$LINENO" 5
         fi
 
