@@ -999,6 +999,9 @@ var
   DataSize: integer;         // size of output data decoded by FFmpeg
   BlockQueue: boolean;
   SilenceDuration: double;
+  {$IF (LIBAVCODEC_VERSION >= 52122000) and (LIBAVCODEC_VERSION < 57037100)}
+  AVPacket: TAVPacket;
+  {$IFEND}
   {$IF LIBAVCODEC_VERSION >= 57000000}
   got_frame_ptr: integer;
   {$IFEND}
@@ -1010,6 +1013,10 @@ begin
 
   if (EOF) then
     Exit;
+
+  {$IF (LIBAVCODEC_VERSION >= 52122000) and (LIBAVCODEC_VERSION < 57037100)}
+  AVPacket := fAudioPaket;
+  {$IFEND}
 
   while(true) do
   begin
@@ -1029,6 +1036,10 @@ begin
     while (fAudioPaketSize > 0) do
     begin
       DataSize := AUDIO_BUFFER_SIZE;
+      {$IF (LIBAVCODEC_VERSION >= 52122000) and (LIBAVCODEC_VERSION < 57037100)}
+      AVPacket.data := fAudioPaketData;
+      AVPacket.size := fAudioPaketSize;
+      {$IFEND}
 
       {$IF LIBAVCODEC_VERSION >= 57000000}
         {$IF LIBAVCODEC_VERSION >= 57037100}
@@ -1040,7 +1051,7 @@ begin
       got_frame_ptr := ord(got_frame_ptr = 0);
         {$ELSE}
       PaketDecodedSize := avcodec_decode_audio4(fCodecCtx, fAudioBufferFrame,
-            @got_frame_ptr, @fAudioPaket);
+            @got_frame_ptr, @AVPacket);
         {$IFEND}
       if(got_frame_ptr <> 0) then
       begin
@@ -1051,7 +1062,7 @@ begin
         DataSize := 0;
       {$ELSEIF LIBAVCODEC_VERSION >= 52122000} // 52.122.0
       PaketDecodedSize := avcodec_decode_audio3(fCodecCtx, PSmallint(fAudioBuffer),
-                  DataSize, @fAudioPaket);
+                  DataSize, @AVPacket);
       {$ELSEIF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
       PaketDecodedSize := avcodec_decode_audio2(fCodecCtx, PSmallint(fAudioBuffer),
                   DataSize, fAudioPaketData, fAudioPaketSize);
