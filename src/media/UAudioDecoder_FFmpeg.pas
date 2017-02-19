@@ -158,7 +158,7 @@ type
       procedure PauseParser();
       procedure ResumeParser();
 
-      function DecodeFrame(Buffer: PByteArray; BufferSize: integer): integer;
+      function DecodeFrame(): integer;
       procedure FlushCodecBuffers();
       procedure PauseDecoder();
       procedure ResumeDecoder();
@@ -976,7 +976,7 @@ begin
   end;
 end;
 
-function TFFmpegDecodeStream.DecodeFrame(Buffer: PByteArray; BufferSize: integer): integer;
+function TFFmpegDecodeStream.DecodeFrame(): integer;
 var
   PaketDecodedSize: integer; // size of packet data used for decoding
   DataSize: integer;         // size of output data decoded by FFmpeg
@@ -1004,8 +1004,8 @@ begin
     // until we reach the pts of the first data packet.
     if (fAudioPaketSilence > 0) then
     begin
-      DataSize := Min(fAudioPaketSilence, BufferSize);
-      FillChar(Buffer[0], DataSize, 0);
+      DataSize := Min(fAudioPaketSilence, AUDIO_BUFFER_SIZE);
+      FillChar(fAudioBuffer[0], DataSize, 0);
       Dec(fAudioPaketSilence, DataSize);
       fAudioStreamPos := fAudioStreamPos + DataSize / fFormatInfo.BytesPerSec;
       Result := DataSize;
@@ -1015,22 +1015,22 @@ begin
     // read packet data
     while (fAudioPaketSize > 0) do
     begin
-      DataSize := BufferSize;
+      DataSize := AUDIO_BUFFER_SIZE;
 
       {$IF LIBAVCODEC_VERSION >= 57000000}
       AVFrame := av_frame_alloc();
       PaketDecodedSize := avcodec_decode_audio4(fCodecCtx, AVFrame,
             @got_frame_ptr, @fAudioPaket);
       DataSize := AVFrame.nb_samples;
-      Buffer   := PByteArray(AVFrame.data[0]);
+      fAudioBuffer   := PByteArray(AVFrame.data[0]);
       {$ELSEIF LIBAVCODEC_VERSION >= 52122000} // 52.122.0
-      PaketDecodedSize := avcodec_decode_audio3(fCodecCtx, PSmallint(Buffer),
+      PaketDecodedSize := avcodec_decode_audio3(fCodecCtx, PSmallint(fAudioBuffer),
                   DataSize, @fAudioPaket);
       {$ELSEIF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
-      PaketDecodedSize := avcodec_decode_audio2(fCodecCtx, PSmallint(Buffer),
+      PaketDecodedSize := avcodec_decode_audio2(fCodecCtx, PSmallint(fAudioBuffer),
                   DataSize, fAudioPaketData, fAudioPaketSize);
       {$ELSE}
-      PaketDecodedSize := avcodec_decode_audio(fCodecCtx, PSmallint(Buffer),
+      PaketDecodedSize := avcodec_decode_audio(fCodecCtx, PSmallint(fAudioBuffer),
                   DataSize, fAudioPaketData, fAudioPaketSize);
       {$IFEND}
 
@@ -1184,7 +1184,7 @@ begin
         fAudioBufferPos := 0;
 
         // we have already sent all our data; get more
-        fAudioBufferSize := DecodeFrame(fAudioBuffer, AUDIO_BUFFER_SIZE);
+        fAudioBufferSize := DecodeFrame();
 
         // check for errors or EOF
         if(fAudioBufferSize < 0) then
