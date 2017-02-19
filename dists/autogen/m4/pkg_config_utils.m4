@@ -143,7 +143,7 @@ AC_DEFUN([PKG_VERSION],
         else
             AC_MSG_ERROR([
 
-Unsupported ffmpeg version, most recent version supported is 2.8.
+Unsupported ffmpeg version, most recent version supported is 3.2.
 ])
         fi
         AX_EXTRACT_VERSION(FFMPEG, $FFMPEG_VERSION)

@@ -358,4 +358,9 @@ begin
     av_mallocz_array := av_mallocz(nmemb * size);
 end;
 
+function AVERROR(e: integer): integer;
+begin
+  AVERROR := AVERROR_SIGN * e;
+end;
+
 end.
