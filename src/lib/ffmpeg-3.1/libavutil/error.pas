@@ -46,9 +46,11 @@ const
   ENOSYS = ESysENOSYS;
   EILSEQ = ESysEILSEQ;
   EPIPE  = ESysEPIPE;
+  EAGAIN = ESysEAGAIN;
 {$ELSE}
   ENOENT = 2;
   EIO    = 5;
+  EAGAIN = 11;
   ENOMEM = 12;
   EINVAL = 22;
   EPIPE  = 32;  // just an assumption. needs to be checked.
@@ -86,6 +88,7 @@ const
 #define AVUNERROR(e) (e)
 #endif
 *)
+function AVERROR(e: integer): integer;
 
 const
 
