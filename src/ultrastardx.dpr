@@ -96,6 +96,9 @@ uses
       avutil              in 'lib\' + FFMPEG_DIR + '\avutil.pas',
       rational            in 'lib\' + FFMPEG_DIR + '\rational.pas',
       avio                in 'lib\' + FFMPEG_DIR + '\avio.pas',
+      {$IFDEF UseSWResample}
+      swresample          in 'lib\' + FFMPEG_DIR + '\swresample.pas',
+      {$ENDIF}
       {$IFDEF useOLD_FFMPEG}
         mathematics       in 'lib\' + FFMPEG_DIR + '\mathematics.pas',
         opt               in 'lib\' + FFMPEG_DIR + '\opt.pas',
@@ -109,6 +112,9 @@ uses
       avutil             in 'lib\ffmpeg-0.10\avutil.pas',
       rational           in 'lib\ffmpeg-0.10\rational.pas',
       avio               in 'lib\ffmpeg-0.10\avio.pas',
+      {$IFDEF UseSWResample}
+      swresample         in 'lib\ffmpeg-0.10\swresample.pas',
+      {$ENDIF}
       {$IFDEF UseSWScale}
         swscale          in 'lib\ffmpeg-0.10\swscale.pas',
       {$ENDIF}

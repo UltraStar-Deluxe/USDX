@@ -54,6 +54,15 @@
   LIBSWSCALE_VERSION_RELEASE = @libswscale_VERSION_RELEASE@;
 {$IFEND}
 
+{* libswresample was introduced with FFmpeg 0.9 *}
+{$@DEFINE_HAVE_SWRESAMPLE@ HaveSWResample}
+{$IF Defined(HaveSWResample) and Defined(IncludeConstants)}
+  sw__resample = 'libswresample';
+  LIBSWRESAMPLE_VERSION_MAJOR   = @libswresample_VERSION_MAJOR@;
+  LIBSWRESAMPLE_VERSION_MINOR   = @libswresample_VERSION_MINOR@;
+  LIBSWRESAMPLE_VERSION_RELEASE = @libswresample_VERSION_RELEASE@;
+{$IFEND}
+
 {$@DEFINE_HAVE_PROJECTM@ HaveProjectM}
 {$IF Defined(HaveProjectM) and Defined(IncludeConstants)}
   ProjectM_DataDir = '@libprojectM_DATADIR@';
