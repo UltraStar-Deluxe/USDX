@@ -50,10 +50,10 @@ const
   AV_CH_TOP_BACK_RIGHT         = $00020000;
   AV_CH_STEREO_LEFT            = $20000000;  ///< Stereo downmix.
   AV_CH_STEREO_RIGHT           = $40000000;  ///< See AV_CH_STEREO_LEFT.
-  AV_CH_WIDE_LEFT: cuint64             = $0000000080000000;
-  AV_CH_WIDE_RIGHT: cuint64            = $0000000100000000;
-  AV_CH_SURROUND_DIRECT_LEFT: cuint64  = $0000000200000000;
-  AV_CH_SURROUND_DIRECT_RIGHT: cuint64 = $0000000400000000;
+  AV_CH_WIDE_LEFT              = $0000000080000000;
+  AV_CH_WIDE_RIGHT             = $0000000100000000;
+  AV_CH_SURROUND_DIRECT_LEFT   = $0000000200000000;
+  AV_CH_SURROUND_DIRECT_RIGHT  = $0000000400000000;
 
 (** Channel mask value used for AVCodecContext.request_channel_layout
  *  to indicate that the user requests the channel order of the decoder output

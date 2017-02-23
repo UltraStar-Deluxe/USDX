@@ -47,6 +47,7 @@ interface
 
 uses
     ctypes,
+    avutil,
     rational,
     {$IFDEF UNIX}
     BaseUnix,
@@ -54,7 +55,7 @@ uses
     UConfig;
 
 const
-  {$IF LIBRESAMPLE_VERSION_MAJOR <  1}
+  {$IF LIBSWRESAMPLE_VERSION_MAJOR <  1}
   SWR_CH_MAX = 32;  (* < Maximum number of channels *)
   {$ENDIF}
   SWR_FLAG_RESAMPLE = 1; (* < Force resampling even if equal sample rate *)
@@ -101,7 +102,7 @@ type
  * @see av_opt_find().
  *)
 function swr_get_class(): PAVClass;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Allocate SwrContext.
@@ -113,7 +114,7 @@ function swr_get_class(): PAVClass;
  * @return NULL on error, allocated context otherwise
  *)
 function swr_alloc(): PSwrContext;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Initialize context after user parameters have been set.
@@ -121,7 +122,7 @@ function swr_alloc(): PSwrContext;
  * @return AVERROR error code in case of failure.
  *)
 function swr_init(s: PSwrContext): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Allocate SwrContext if needed and set/reset common parameters.
@@ -147,13 +148,13 @@ function swr_alloc_set_opts(s: PSwrContext;
                             out_ch_layout: cint64; out_sample_fmt: TAVSampleFormat; out_sample_rate: cint;
                             in_ch_layout:  cint64; in_sample_fmt:  TAVSampleFormat; in_sample_rate:  cint;
                             log_offset: cint; log_ctx: pointer): PSwrContext;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Free the given SwrContext and set the pointer to NULL.
  *)
 procedure swr_free(s: PPSwrContext);
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Convert audio.
@@ -173,9 +174,9 @@ procedure swr_free(s: PPSwrContext);
  *
  * @return number of samples output per channel, negative value on error
  *)
-function swr_convert(s: PSwrContext; out_: PByte; out_count: cint;
-                             {const} in_:  PByte; in_count:  cint): cint;
-  cdecl; external swresample;
+function swr_convert(s: PSwrContext; var out_: PByte; out_count: cint;
+                             {const} var in_:  PByte; in_count:  cint): cint;
+  cdecl; external sw__resample;
 
 (**
  * Convert the next timestamp from input to output
@@ -191,13 +192,13 @@ function swr_convert(s: PSwrContext; out_: PByte; out_count: cint;
  * @return the output timestamp for the next output sample
  *)
 function swr_next_pts(s: PSwrContext; pts: cint64): cint64;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Activate resampling compensation.
  *)
 function swr_set_compensation(s: PSwrContext; sample_delta: cint; compensation_distance: cint): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Set a customized input channel mapping.
@@ -208,7 +209,7 @@ function swr_set_compensation(s: PSwrContext; sample_delta: cint; compensation_d
  * @return AVERROR error code in case of failure.
  *)
 function swr_set_channel_mapping(s: PSwrContext; {const} channel_map: pcint): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Set a customized remix matrix.
@@ -220,19 +221,19 @@ function swr_set_channel_mapping(s: PSwrContext; {const} channel_map: pcint): ci
  * @return  AVERROR error code in case of failure.
  *)
 function swr_set_matrix(s: PSwrContext; {const} matrix: pcdouble; stride: cint): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Drops the specified number of output samples.
  *)
 function swr_drop_output(s: PSwrContext; count: cint): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Injects the specified number of silence samples.
  *)
 function swr_inject_silence(s: PSwrContext; count: cint): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Gets the delay the next input sample will experience relative to the next output sample.
@@ -255,25 +256,25 @@ function swr_inject_silence(s: PSwrContext; count: cint): cint;
  * @returns     the delay in 1/base units.
  *)
 function swr_get_delay(s: PSwrContext; base: cint64): cint64;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Return the LIBSWRESAMPLE_VERSION_INT constant.
  *)
 function swresample_version(): cuint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Return the swr build-time configuration.
  *)
 function swresample_configuration(): cuchar;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Return the swr license.
  *)
 function swresample_license(): cuchar;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * @

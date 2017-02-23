@@ -61,11 +61,11 @@ const
   AV_CH_TOP_BACK_RIGHT         = $00020000;
   AV_CH_STEREO_LEFT            = $20000000;  ///< Stereo downmix.
   AV_CH_STEREO_RIGHT           = $40000000;  ///< See AV_CH_STEREO_LEFT.
-  AV_CH_WIDE_LEFT: cuint64             = $0000000080000000;
-  AV_CH_WIDE_RIGHT: cuint64            = $0000000100000000;
-  AV_CH_SURROUND_DIRECT_LEFT: cuint64  = $0000000200000000;
-  AV_CH_SURROUND_DIRECT_RIGHT: cuint64 = $0000000400000000;
-  AV_CH_LOW_FREQUENCY_2: cuint64       = $0000000800000000;
+  AV_CH_WIDE_LEFT              = $0000000080000000;
+  AV_CH_WIDE_RIGHT             = $0000000100000000;
+  AV_CH_SURROUND_DIRECT_LEFT   = $0000000200000000;
+  AV_CH_SURROUND_DIRECT_RIGHT  = $0000000400000000;
+  AV_CH_LOW_FREQUENCY_2        = $0000000800000000;
 
 (** Channel mask value used for AVCodecContext.request_channel_layout
  *  to indicate that the user requests the channel order of the decoder output
@@ -194,7 +194,7 @@ function av_channel_layout_extract_channel(channel_layout: cuint64; index: cint)
  *
  * @return channel name on success, NULL on error.
  *)
-function av_get_channel_name(uint64_t channel: cuint64): PAnsiChar;
+function av_get_channel_name(channel: cuint64): PAnsiChar;
   cdecl; external av__util;
 
 (**
@@ -203,7 +203,7 @@ function av_get_channel_name(uint64_t channel: cuint64): PAnsiChar;
  * @param channel  a channel layout with a single channel
  * @return  channel description on success, NULL on error
  *)
-function av_get_channel_description(uint64_t channel: cuint64): PAnsiChar;
+function av_get_channel_description(channel: cuint64): PAnsiChar;
   cdecl; external av__util;
 
 (**
