@@ -75,6 +75,10 @@ uses
   UConfig,
   UPath;
 
+  {$IF LIBAVCODEC_VERSION >= 57000000}
+    {$DEFINE UseFrameDecoderAPI}
+  {$ENDIF}
+
 const
   MAX_AUDIOQ_SIZE = (5 * 16 * 1024);
 
@@ -116,7 +120,7 @@ type
       fPacketQueue: TPacketQueue;
 
       fFormatInfo: TAudioFormatInfo;
-      {$IF LIBAVCODEC_VERSION >= 57000000}
+      {$IFDEF UseFrameDecoderAPI}
       fBytesPerSample: integer;
       {$IFEND}
 
@@ -145,7 +149,7 @@ type
       fAudioBufferPos:  integer;
       fAudioBufferSize: integer;
       fAudioBuffer:     PByteArray;
-      {$IF LIBAVCODEC_VERSION >= 57000000}
+      {$IFDEF UseFrameDecoderAPI}
       fAudioBufferFrame: PAVFrame;
       {$IFEND}
 
@@ -217,7 +221,7 @@ begin
   fDecoderUnlockedCond := SDL_CreateCond();
   fDecoderResumeCond := SDL_CreateCond();
 
-  {$IF LIBAVCODEC_VERSION >= 57000000}
+  {$IFDEF UseFrameDecoderAPI}
   fAudioBufferFrame := av_frame_alloc();
   {$ELSE}
   // according to the documentation of avcodec_decode_audio(2), sample-data
@@ -281,7 +285,7 @@ begin
   SDL_DestroyCond(fDecoderUnlockedCond);
   SDL_DestroyCond(fDecoderResumeCond);
 
-  {$IF LIBAVCODEC_VERSION >= 57000000}
+  {$IFDEF UseFrameDecoderAPI}
   av_frame_free(@fAudioBufferFrame);
   {$ELSE}
   FreeAlignedMem(fAudioBuffer);
@@ -440,7 +444,7 @@ begin
     fCodecCtx^.sample_rate,
     SampleFormat
   );
-  {$IF LIBAVCODEC_VERSION >= 57000000}
+  {$IFDEF UseFrameDecoderAPI}
   fBytesPerSample := av_get_bytes_per_sample(fCodecCtx^.sample_fmt) * fCodecCtx^.channels;
   {$IFEND}
 
@@ -1002,7 +1006,7 @@ var
   {$IF (LIBAVCODEC_VERSION >= 52122000) and (LIBAVCODEC_VERSION < 57037100)}
   AVPacket: TAVPacket;
   {$IFEND}
-  {$IF LIBAVCODEC_VERSION >= 57000000}
+  {$IFDEF UseFrameDecoderAPI}
   got_frame_ptr: integer;
   {$IFEND}
   {$IFDEF DebugFFmpegDecode}
@@ -1041,7 +1045,7 @@ begin
       AVPacket.size := fAudioPaketSize;
       {$IFEND}
 
-      {$IF LIBAVCODEC_VERSION >= 57000000}
+      {$IFDEF UseFrameDecoderAPI}
         {$IF LIBAVCODEC_VERSION >= 57037100}
       got_frame_ptr := avcodec_receive_frame(fCodecCtx, fAudioBufferFrame);
       if (got_frame_ptr = AVERROR(EAGAIN)) then
@@ -1060,15 +1064,17 @@ begin
       end
       else
         DataSize := 0;
-      {$ELSEIF LIBAVCODEC_VERSION >= 52122000} // 52.122.0
+      {$ELSE}
+        {$IF LIBAVCODEC_VERSION >= 52122000} // 52.122.0
       PaketDecodedSize := avcodec_decode_audio3(fCodecCtx, PSmallint(fAudioBuffer),
                   DataSize, @AVPacket);
-      {$ELSEIF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
+        {$ELSEIF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
       PaketDecodedSize := avcodec_decode_audio2(fCodecCtx, PSmallint(fAudioBuffer),
                   DataSize, fAudioPaketData, fAudioPaketSize);
-      {$ELSE}
+        {$ELSE}
       PaketDecodedSize := avcodec_decode_audio(fCodecCtx, PSmallint(fAudioBuffer),
                   DataSize, fAudioPaketData, fAudioPaketSize);
+        {$IFEND}
       {$IFEND}
 
       if(PaketDecodedSize < 0) then
