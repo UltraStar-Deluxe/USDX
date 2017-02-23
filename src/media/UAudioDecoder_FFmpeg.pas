@@ -66,6 +66,9 @@ uses
   avio,
 	ctypes,
   rational,
+{$IFDEF UseSWResample}
+  swresample,
+{$ENDIF}
   UMusic,
   UIni,
   UMain,
@@ -75,9 +78,16 @@ uses
   UConfig,
   UPath;
 
+{$IFDEF UseSWResample}
+  {$IF LIBAVCODEC_VERSION >= 54041100}
+    {$DEFINE UseFrameDecoderAPI}
+    {$DEFINE ConvertPlanar}
+  {$ENDIF}
+{$ELSE}
   {$IF LIBAVCODEC_VERSION >= 57000000}
     {$DEFINE UseFrameDecoderAPI}
   {$ENDIF}
+{$ENDIF}
 
 const
   MAX_AUDIOQ_SIZE = (5 * 16 * 1024);
@@ -122,6 +132,9 @@ type
       fFormatInfo: TAudioFormatInfo;
       {$IFDEF UseFrameDecoderAPI}
       fBytesPerSample: integer;
+      {$IFEND}
+      {$IFDEF ConvertPlanar}
+      fSwrContext: PSwrContext;
       {$IFEND}
 
       // FFmpeg specific data
@@ -305,6 +318,7 @@ end;
 function TFFmpegDecodeStream.Open(const Filename: IPath): boolean;
 var
   SampleFormat: TAudioSampleFormat;
+  PackedSampleFormat: TAVSampleFormat;
   TestFrame: TAVPacket;
   AVResult: integer;
 begin
@@ -439,8 +453,35 @@ begin
   end;
 
   // now initialize the audio-format
+  {$IFDEF ConvertPlanar}
+  PackedSampleFormat := av_get_packed_sample_fmt(fCodecCtx^.sample_fmt);
+  if (PackedSampleFormat <> fCodecCtx^.sample_fmt) then
+  begin
+    // There is no point in leaving PackedSampleFormat as is.
+    // av_audio_resample_init as used by TAudioConverter_FFmpeg will internally
+    // convert to AV_SAMPLE_FMT_S16 anyway and most architectures have assembly
+    // optimized conversion routines from AV_SAMPLE_FMT_FLTP to AV_SAMPLE_FMT_S16.
+    PackedSampleFormat := AV_SAMPLE_FMT_S16;
+    fSwrContext := swr_alloc_set_opts(nil, fCodecCtx^.channel_layout, PackedSampleFormat, fCodecCtx^.sample_rate,
+                                      fCodecCtx^.channel_layout, fCodecCtx^.sample_fmt, fCodecCtx^.sample_rate, 0, nil);
+    if (fSwrContext = nil) then
+      Log.LogStatus('Error: Failed to create SwrContext', 'TFFmpegDecodeStream.Open')
+    else
+    begin
+      av_opt_set_int(fSwrContext, 'ich', fCodecCtx^.channels, 0);
+      av_opt_set_int(fSwrContext, 'och', fCodecCtx^.channels, 0);
+      if (swr_init(fSwrContext) < 0) then
+      begin
+        swr_free(@fSwrContext);
+        Log.LogStatus('Error: Failed to initialize SwrContext', 'TFFmpegDecodeStream.Open');
+      end;
+    end;
+  end;
+  {$ELSE}
+  PackedSampleFormat := fCodecCtx^.sample_fmt;
+  {$IFEND}
 
-  if (not FFmpegCore.ConvertFFmpegToAudioFormat(fCodecCtx^.sample_fmt, SampleFormat)) then
+  if (not FFmpegCore.ConvertFFmpegToAudioFormat(PackedSampleFormat, SampleFormat)) then
   begin
     // try standard format
     SampleFormat := asfS16;
@@ -453,7 +494,7 @@ begin
     SampleFormat
   );
   {$IFDEF UseFrameDecoderAPI}
-  fBytesPerSample := av_get_bytes_per_sample(fCodecCtx^.sample_fmt) * fCodecCtx^.channels;
+  fBytesPerSample := av_get_bytes_per_sample(PackedSampleFormat) * fCodecCtx^.channels;
   {$IFEND}
 
   fPacketQueue := TPacketQueue.Create();
@@ -487,6 +528,12 @@ begin
     //SDL_WaitThread(fParseThread, PInt(ThreadResult));
     fParseThread := nil;
   end;
+
+  {$IFDEF ConvertPlanar}
+  // Free the swresample context
+  if (fSwrContext <> nil) then
+    swr_free(@fSwrContext);
+  {$IFEND}
 
   // Close the codec
   if (fCodecCtx <> nil) then
@@ -1195,6 +1242,7 @@ var
   CopyByteCount:   integer; // number of bytes to copy
   RemainByteCount: integer; // number of bytes left (remain) to read
   BufferPos: integer;
+  BufferPtr: PByte;
 
   // prioritize pause requests
   procedure LockDecoder();
@@ -1220,17 +1268,39 @@ begin
   // set number of bytes to copy to the output buffer
   BufferPos := 0;
 
+  {$IFDEF ConvertPlanar}
+  if (fSwrContext <> nil) then
+  begin
+    RemainByteCount := BufferSize mod fBytesPerSample;
+    BufferSize := BufferSize - RemainByteCount;
+  end;
+  {$IFEND}
+
   LockDecoder();
   try
     // leave if end-of-file is reached
     if (EOF) then
       Exit;
 
+    BufferPtr := nil;
+    {$IFDEF ConvertPlanar}
+    if ((fSwrContext <> nil) and (fAudioBufferSize > 0)) then
+    begin
+      BufferPtr := @Buffer[0];
+      BufferPos := swr_convert(fSwrContext, BufferPtr, BufferSize div fBytesPerSample,
+                               fAudioBufferFrame.extended_data^, 0);
+      if (BufferPos < 0) then // might happen if out of memory
+        Exit;
+      BufferPos := BufferPos * fBytesPerSample;
+      Inc(fAudioBufferPos, BufferPos);
+    end;
+    {$IFEND}
+
     // copy data to output buffer
     while (BufferPos < BufferSize) do
     begin
       // check if we need more data
-      if (fAudioBufferPos >= fAudioBufferSize) then
+      if ((fAudioBufferPos >= fAudioBufferSize) or (BufferPtr <> nil)) then
       begin
         fAudioBufferPos := 0;
 
@@ -1245,10 +1315,27 @@ begin
         end;
       end;
 
+      RemainByteCount := BufferSize - BufferPos;
+
+      {$IFDEF ConvertPlanar}
+      if (fSwrContext <> nil) then
+      begin
+        BufferPtr := @Buffer[BufferPos];
+        CopyByteCount := swr_convert(fSwrContext, BufferPtr, RemainByteCount div fBytesPerSample,
+                                     fAudioBufferFrame.extended_data^, fAudioBufferFrame.nb_samples);
+        if (CopyByteCount < 0) then
+          Exit;
+        CopyByteCount := CopyByteCount * fBytesPerSample;
+
+        Inc(BufferPos,       CopyByteCount);
+        Inc(fAudioBufferPos, CopyByteCount);
+        continue;
+      end;
+      {$IFEND}
+
       // calc number of new bytes in the decode-buffer
       CopyByteCount := fAudioBufferSize - fAudioBufferPos;
       // resize copy-count if more bytes available than needed (remaining bytes are used the next time)
-      RemainByteCount := BufferSize - BufferPos;
       if (CopyByteCount > RemainByteCount) then
         CopyByteCount := RemainByteCount;
 
