@@ -93,6 +93,7 @@ type
       function FindStreamIDs(FormatCtx: PAVFormatContext; out FirstVideoStream, FirstAudioStream: integer ): boolean;
       function FindAudioStreamIndex(FormatCtx: PAVFormatContext): integer;
       function ConvertFFmpegToAudioFormat(FFmpegFormat: TAVSampleFormat; out Format: TAudioSampleFormat): boolean;
+      class function ConvertAudioFormatToFFmpeg(Format: TAudioSampleFormat; out FFmpegFormat: TAVSampleFormat): boolean;
       procedure LockAVCodec();
       procedure UnlockAVCodec();
       function AVFormatOpenInput(ps: PPAVFormatContext; filename: {const} PAnsiChar): Integer;
@@ -360,6 +361,19 @@ begin
     AV_SAMPLE_FMT_FLT: Format := asfFloat;
     AV_SAMPLE_FMT_DBL: Format := asfDouble;
     else               Result := false;
+    end;
+end;
+
+class function TMediaCore_FFmpeg.ConvertAudioFormatToFFmpeg(Format: TAudioSampleFormat; out FFmpegFormat: TAVSampleFormat): boolean;
+begin
+  Result := true;
+  case Format of
+    asfU8:     FFmpegFormat := AV_SAMPLE_FMT_U8;
+    asfS16:    FFmpegFormat := AV_SAMPLE_FMT_S16;
+    asfS32:    FFmpegFormat := AV_SAMPLE_FMT_S32;
+    asfFloat:  FFmpegFormat := AV_SAMPLE_FMT_FLT;
+    asfDouble: FFmpegFormat := AV_SAMPLE_FMT_DBL;
+    else       Result := false;
     end;
 end;
 

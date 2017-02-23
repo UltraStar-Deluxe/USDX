@@ -43,6 +43,7 @@ uses
   {$IFDEF UseFFmpegResample}
   avcodec,
   avutil,
+  UMediaCore_FFmpeg,
   {$ENDIF}
   UMediaCore_SDL,
   sdl2,
@@ -205,11 +206,15 @@ end;
 
 function TAudioConverter_FFmpeg.Init(SrcFormatInfo: TAudioFormatInfo;
                                      DstFormatInfo: TAudioFormatInfo): boolean;
+var
+  SrcFormat: TAVSampleFormat;
+  DstFormat: TAVSampleFormat;
 begin
   inherited Init(SrcFormatInfo, DstFormatInfo);
 
   Result := false;
 
+  {$IF LIBAVCODEC_VERSION < 52015000} // 52.15.0
   // Note: ffmpeg does not support resampling for more than 2 input channels
 
   if srcFormatInfo.Format <> asfS16 then
@@ -229,15 +234,30 @@ begin
     Exit;
   end;
 
-  {$IF LIBAVCODEC_VERSION < 52122000} // 52.122.0
   ResampleContext := audio_resample_init(
       dstFormatInfo.Channels, srcFormatInfo.Channels,
       Round(dstFormatInfo.SampleRate), Round(srcFormatInfo.SampleRate));
   {$ELSE}
+  if not TMediaCore_FFmpeg.ConvertAudioFormatToFFmpeg(srcFormatInfo.Format, SrcFormat) then
+  begin
+    Log.LogError('Unsupported format', 'TAudioConverter_FFmpeg.Init');
+    Log.LogError('srcFormatInfo.Format: ' + intToStr(integer(srcFormatInfo.Format)),
+                 'TAudioConverter_FFmpeg.Init');
+    Exit;
+  end;
+
+  if not TMediaCore_FFmpeg.ConvertAudioFormatToFFmpeg(DstFormatInfo.Format, DstFormat) then
+  begin
+    Log.LogError('Unsupported format', 'TAudioConverter_FFmpeg.Init');
+    Log.LogError('dstFormatInfo.Format: ' + intToStr(integer(dstFormatInfo.Format)),
+                 'TAudioConverter_FFmpeg.Init');
+    Exit;
+  end;
+
   ResampleContext := av_audio_resample_init(
       dstFormatInfo.Channels, srcFormatInfo.Channels,
       Round(dstFormatInfo.SampleRate), Round(srcFormatInfo.SampleRate),
-      AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_S16,
+      DstFormat, SrcFormat,
       16, 10, 0, 0.8);
   {$IFEND}
   if ResampleContext = nil then
