@@ -525,13 +525,24 @@ begin
           if not Assigned(Display.NextScreen) then
           begin //drop input when changing screens
             KeyCharUnicode:=0;
-            if (Event.type_ = SDL_TEXTINPUT) then
+            if (Event.type_ = SDL_TEXTINPUT) and (Event.text.text <> '') then
             try
               s1:=Event.text.text;
               KeyCharUnicode:=UnicodeStringToUCS4String(UnicodeString(UTF8String(Event.text.text)))[0];
               //KeyCharUnicode:=UnicodeStringToUCS4String(UnicodeString(Event.key.keysym.unicode))[1];//Event.text.text)[0];
             except
             end;
+
+            Writeln('');
+            if Event.type_ = SDL_TEXTINPUT then
+              Writeln('TEXTINPUT')
+            else
+              Writeln('KEYDOWN');
+            Writeln('Text: ' + Event.text.text);
+            Writeln('KeyCharUnicode: ' + IntToStr(KeyCharUnicode));
+            Writeln('Scancode name: ' + SDL_GetScancodeName(Event.key.keysym.scancode));
+            Writeln('Scancode: ' + IntToStr(Event.key.keysym.scancode));
+            Writeln('Sym: ' + IntToStr(Event.key.keysym.sym));
 
             // if print is pressed -> make screenshot and save to screenshot path
             if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINTSCREEN) then
