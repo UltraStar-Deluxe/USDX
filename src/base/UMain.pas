@@ -530,6 +530,14 @@ begin
               KeyCharUnicode:=UnicodeStringToUCS4String(UnicodeString(UTF8String(Event.text.text)))[0];
               //KeyCharUnicode:=UnicodeStringToUCS4String(UnicodeString(Event.key.keysym.unicode))[1];//Event.text.text)[0];
             except
+            end
+            // TODO: hacky workaround for enabling keyboard simulation of controllers. use SDL2 new input handling SDL_StartTextInput and SDL_StopTextInput(
+            else if (Event.type_ <> SDL_TEXTINPUT) and
+              (Event.key.keysym.unicode = 0) // verify if the event is not a valid keyboard-text-input (and originating from keyboard simulation)
+              then
+            begin
+              s1 := SDL_GetScancodeName(Event.key.keysym.scancode);
+              if Length(s1) = 1 then KeyCharUnicode := Ord(s1[1])
             end;
 
             // if print is pressed -> make screenshot and save to screenshot path
