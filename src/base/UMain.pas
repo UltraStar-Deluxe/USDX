@@ -533,17 +533,6 @@ begin
             except
             end;
 
-            Writeln('');
-            if Event.type_ = SDL_TEXTINPUT then
-              Writeln('TEXTINPUT')
-            else
-              Writeln('KEYDOWN');
-            Writeln('Text: ' + Event.text.text);
-            Writeln('KeyCharUnicode: ' + IntToStr(KeyCharUnicode));
-            Writeln('Scancode name: ' + SDL_GetScancodeName(Event.key.keysym.scancode));
-            Writeln('Scancode: ' + IntToStr(Event.key.keysym.scancode));
-            Writeln('Sym: ' + IntToStr(Event.key.keysym.sym));
-
             // if print is pressed -> make screenshot and save to screenshot path
             if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINTSCREEN) then
               Display.SaveScreenShot
