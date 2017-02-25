@@ -527,7 +527,6 @@ begin
             KeyCharUnicode:=0;
             if (Event.type_ = SDL_TEXTINPUT) and (Event.text.text <> '') then
             try
-              s1:=Event.text.text;
               KeyCharUnicode:=UnicodeStringToUCS4String(UnicodeString(UTF8String(Event.text.text)))[0];
               //KeyCharUnicode:=UnicodeStringToUCS4String(UnicodeString(Event.key.keysym.unicode))[1];//Event.text.text)[0];
             except
