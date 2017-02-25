@@ -222,7 +222,11 @@ begin
   fDecoderResumeCond := SDL_CreateCond();
 
   {$IFDEF UseFrameDecoderAPI}
+    {$IF LIBAVUTIL_VERSION >= 52019101}
   fAudioBufferFrame := av_frame_alloc();
+    {$ELSE}
+  fAudioBufferFrame := avcodec_alloc_frame();
+    {$IFEND}
   {$ELSE}
   // according to the documentation of avcodec_decode_audio(2), sample-data
   // should be aligned on a 16 byte boundary. Otherwise internal calls
@@ -286,7 +290,11 @@ begin
   SDL_DestroyCond(fDecoderResumeCond);
 
   {$IFDEF UseFrameDecoderAPI}
+    {$IF LIBAVUTIL_VERSION >= 52019101}
   av_frame_free(@fAudioBufferFrame);
+    {$ELSE}
+  avcodec_free_frame(@fAudioBufferFrame);
+    {$IFEND}
   {$ELSE}
   FreeAlignedMem(fAudioBuffer);
   {$IFEND}
