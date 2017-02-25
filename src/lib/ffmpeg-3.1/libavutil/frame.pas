@@ -649,7 +649,7 @@ function av_frame_alloc(): PAVFrame;
  * @param frame frame to be freed. The pointer will be set to NULL.
  *)
 procedure av_frame_free(frame: PPAVFrame);
-  cdecl; external av__codec;
+  cdecl; external av__util;
 
 (**
  * Set up a new reference to the data described by the source frame.
