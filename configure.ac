@@ -279,6 +279,57 @@ PKG_HAVE([libswresample], [libswresample], no)
 PKG_VERSION([libswresample], [libswresample])
 AC_SUBST_DEFINE(HAVE_SWRESAMPLE, $libswresample_HAVE)
 
+# map avutil library version to ffmpeg version
+AC_MSG_CHECKING([version of ffmpeg])
+if   test $libavutil_VERSION_INT -eq 55034100; then
+    FFMPEG_VERSION="3.2"
+elif test $libavutil_VERSION_INT -le 55028100 -a $libavutil_VERSION_INT -ge 55027100; then
+    FFMPEG_VERSION="3.1"
+elif test $libavutil_VERSION_INT -eq 55017103; then
+    FFMPEG_VERSION="3.0"
+elif test $libavutil_VERSION_INT -le 54099100 -a $libavutil_VERSION_INT -ge 54030100; then
+    FFMPEG_VERSION="2.8"
+elif test $libavutil_VERSION_INT -le 54030100 -a $libavutil_VERSION_INT -ge 54027100; then
+    FFMPEG_VERSION="2.7"
+elif test $libavutil_VERSION_INT -eq 54020100; then
+    FFMPEG_VERSION="2.6"
+elif test $libavutil_VERSION_INT -eq 54015100; then
+    FFMPEG_VERSION="2.5"
+elif test $libavutil_VERSION_INT -eq 54007100; then
+    FFMPEG_VERSION="2.4"
+elif test $libavutil_VERSION_INT -eq 52066100; then
+    FFMPEG_VERSION="2.2"
+elif test $libavutil_VERSION_INT -le 52048101 -a $libavutil_VERSION_INT -ge 52048100; then
+    FFMPEG_VERSION="2.1"
+elif test $libavutil_VERSION_INT -le 52038100 -a $libavutil_VERSION_INT -ge 52038000; then
+    FFMPEG_VERSION="2.0"
+elif test $libavutil_VERSION_INT -le 52018100 -a $libavutil_VERSION_INT -ge 52018000; then
+    FFMPEG_VERSION="1.2"
+elif test $libavutil_VERSION_INT -le 52013100 -a $libavutil_VERSION_INT -ge 52013000; then
+    FFMPEG_VERSION="1.1"
+elif test $libavutil_VERSION_INT -le 51073101 -a $libavutil_VERSION_INT -ge 51073000; then
+    FFMPEG_VERSION="1.0"
+elif test $libavutil_VERSION_INT -le 51054100 -a $libavutil_VERSION_INT -ge 51054000; then
+    FFMPEG_VERSION="0.11"
+elif test $libavutil_VERSION_INT -le 51035100 -a $libavutil_VERSION_INT -ge 51034101; then
+    FFMPEG_VERSION="0.10"
+elif test $libavutil_VERSION_INT -eq 51032000; then
+    FFMPEG_VERSION="0.9"
+elif test $libavutil_VERSION_INT -le 51022002 -a $libavutil_VERSION_INT -ge 51009001; then
+    FFMPEG_VERSION="0.8"
+elif test $libavutil_VERSION_INT -eq 50043000; then
+    FFMPEG_VERSION="0.7"
+elif test $libavutil_VERSION_INT -le 50024000 -a $libavutil_VERSION_INT -ge 49000001; then
+    FFMPEG_VERSION="0"
+else
+    AC_MSG_ERROR([
+
+Unsupported ffmpeg version, most recent version supported is 3.2.
+])
+fi
+AX_EXTRACT_VERSION(FFMPEG, $FFMPEG_VERSION)
+AC_SUBST(FFMPEG_VERSION)
+AC_MSG_RESULT(@<:@$FFMPEG_VERSION@:>@)
 
 # find projectM version
 libprojectM_PKG="libprojectM >= 0.98"
