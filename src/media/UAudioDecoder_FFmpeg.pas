@@ -1014,12 +1014,12 @@ begin
   if (EOF) then
     Exit;
 
-  {$IF (LIBAVCODEC_VERSION >= 52122000) and (LIBAVCODEC_VERSION < 57037100)}
-  AVPacket := fAudioPaket;
-  {$IFEND}
-
   while(true) do
   begin
+    {$IF (LIBAVCODEC_VERSION >= 52122000) and (LIBAVCODEC_VERSION < 57037100)}
+    AVPacket := fAudioPaket;
+    {$IFEND}
+
     // for titles with start_time > 0 we have to generate silence
     // until we reach the pts of the first data packet.
     if (fAudioPaketSilence > 0) then
