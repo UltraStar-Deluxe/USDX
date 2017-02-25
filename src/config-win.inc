@@ -45,6 +45,14 @@
   {$IFEND}
 {$IFEND}
 
+{$DEFINE HaveSWResample}
+{$IF Defined(HaveSWScale) and Defined(IncludeConstants)}
+  sw__resample = 'swresample-2';
+  LIBSWRESAMPLE_VERSION_MAJOR   = 2;
+  LIBSWRESAMPLE_VERSION_MINOR   = 1;
+  LIBSWRESAMPLE_VERSION_RELEASE = 100;
+{$IFEND}
+
 {$DEFINE HaveSWScale}
 {$IF Defined(HaveSWScale) and Defined(IncludeConstants)}
   sw__scale = 'swscale-4';

@@ -98,6 +98,9 @@
   {$DEFINE UseFFmpegResample}
   {$DEFINE FF_API_AVCODEC_RESAMPLE}
   {$DEFINE UseFFmpegVideo}
+  {$IFDEF HaveSWResample}
+    {$DEFINE UseSWResample}
+  {$ENDIF}
   {$IFDEF HaveSWScale}
     {$DEFINE UseSWScale}
   {$ENDIF}

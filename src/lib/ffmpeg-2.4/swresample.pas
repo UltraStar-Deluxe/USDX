@@ -24,7 +24,7 @@
  * Conversion of
  *
  * libswresample/swresample.h:
- * version: 0.18.100
+ * version: 1.1.100
  *
  *)
 
@@ -47,6 +47,7 @@ interface
 
 uses
     ctypes,
+    avutil,
     rational,
     {$IFDEF UNIX}
     BaseUnix,
@@ -81,16 +82,16 @@ const
    *)
 
   (* Supported version by this header *)
-  LIBSWRESAMPLE_MAX_VERSION_MAJOR   = 0;
-  LIBSWRESAMPLE_MAX_VERSION_MINOR   = 18;
+  LIBSWRESAMPLE_MAX_VERSION_MAJOR   = 1;
+  LIBSWRESAMPLE_MAX_VERSION_MINOR   = 1;
   LIBSWRESAMPLE_MAX_VERSION_RELEASE = 100;
   LIBSWRESAMPLE_MAX_VERSION = (LIBSWRESAMPLE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                            (LIBSWRESAMPLE_MAX_VERSION_MINOR * VERSION_MINOR) +
-                           (LIBSWRESAMPLE_VERSION_RELEASE * VERSION_RELEASE);
+                           (LIBSWRESAMPLE_MAX_VERSION_RELEASE * VERSION_RELEASE);
 
   (* Min. supported version by this header *)
-  LIBSWRESAMPLE_MIN_VERSION_MAJOR   = 0;
-  LIBSWRESAMPLE_MIN_VERSION_MINOR   = 18;
+  LIBSWRESAMPLE_MIN_VERSION_MAJOR   = 1;
+  LIBSWRESAMPLE_MIN_VERSION_MINOR   = 1;
   LIBSWRESAMPLE_MIN_VERSION_RELEASE = 100;
   LIBSWRESAMPLE_MIN_VERSION = (LIBSWRESAMPLE_MIN_VERSION_MAJOR * VERSION_MAJOR) +
                             (LIBSWRESAMPLE_MIN_VERSION_MINOR * VERSION_MINOR) +
@@ -106,7 +107,7 @@ const
   {$MESSAGE Error 'Linked version of libswresample is not yet supported!'}
 {$IFEND}
   
-{$IF LIBRESAMPLE_VERSION_MAJOR < 1}
+{$IF LIBSWRESAMPLE_VERSION_MAJOR < 1}
   SWR_CH_MAX = 32;  (* < Maximum number of channels *)
 {$ENDIF}
   SWR_FLAG_RESAMPLE = 1; (* < Force resampling even if equal sample rate *)
@@ -162,7 +163,7 @@ type
  * @see av_opt_find().
  *)
 function swr_get_class(): PAVClass;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Allocate SwrContext.
@@ -174,7 +175,7 @@ function swr_get_class(): PAVClass;
  * @return NULL on error, allocated context otherwise
  *)
 function swr_alloc(): PSwrContext;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Initialize context after user parameters have been set.
@@ -186,7 +187,7 @@ function swr_alloc(): PSwrContext;
  * @return AVERROR error code in case of failure.
  *)
 function swr_init(s: PSwrContext): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Check whether an swr context has been initialized or not.
@@ -196,7 +197,7 @@ function swr_init(s: PSwrContext): cint;
  * @return positive if it has been initialized, 0 if not initialized
  *)
 function swr_is_initialized(s: PSwrContext): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
   
 (**
  * Allocate SwrContext if needed and set/reset common parameters.
@@ -206,11 +207,11 @@ function swr_is_initialized(s: PSwrContext): cint;
  * on the allocated context.
  *
  * @param s               existing Swr context if available, or NULL if not
- * @param out_ch_layout   output channel layout (AV_CH_LAYOUT_*)
- * @param out_sample_fmt  output sample format (AV_SAMPLE_FMT_*).
+ * @param out_ch_layout   output channel layout (AV_CH_LAYOUT_* )
+ * @param out_sample_fmt  output sample format (AV_SAMPLE_FMT_* ).
  * @param out_sample_rate output sample rate (frequency in Hz)
- * @param in_ch_layout    input channel layout (AV_CH_LAYOUT_*)
- * @param in_sample_fmt   input sample format (AV_SAMPLE_FMT_*).
+ * @param in_ch_layout    input channel layout (AV_CH_LAYOUT_* )
+ * @param in_sample_fmt   input sample format (AV_SAMPLE_FMT_* ).
  * @param in_sample_rate  input sample rate (frequency in Hz)
  * @param log_offset      logging level offset
  * @param log_ctx         parent logging context, can be NULL
@@ -222,7 +223,7 @@ function swr_alloc_set_opts(s: PSwrContext;
                             out_ch_layout: cint64; out_sample_fmt: TAVSampleFormat; out_sample_rate: cint;
                             in_ch_layout:  cint64; in_sample_fmt:  TAVSampleFormat; in_sample_rate:  cint;
                             log_offset: cint; log_ctx: pointer): PSwrContext;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Free the given SwrContext and set the pointer to NULL.
@@ -230,7 +231,7 @@ function swr_alloc_set_opts(s: PSwrContext;
  * @param[in] s a pointer to a pointer to Swr context
  *)
 procedure swr_free(s: PPSwrContext);
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Closes the context so that swr_is_initialized() returns 0.
@@ -243,7 +244,7 @@ procedure swr_free(s: PPSwrContext);
  * @param[in,out] s Swr context to be closed
  *)
 procedure swr_close(s: PSwrContext);
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Convert audio.
@@ -265,7 +266,7 @@ procedure swr_close(s: PSwrContext);
  *)
 function swr_convert(s: PSwrContext; var out_: PByte; out_count: cint;
                      var in_: {const} PByte; in_count: cint): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Convert the next timestamp from input to output
@@ -281,7 +282,7 @@ function swr_convert(s: PSwrContext; var out_: PByte; out_count: cint;
  * @return the output timestamp for the next output sample
  *)
 function swr_next_pts(s: PSwrContext; pts: cint64): cint64;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Activate resampling compensation ("soft" compensation). This function is
@@ -300,7 +301,7 @@ function swr_next_pts(s: PSwrContext; pts: cint64): cint64;
  *            @li swr_init() fails when called.
  *)
 function swr_set_compensation(s: PSwrContext; sample_delta: cint; compensation_distance: cint): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Set a customized input channel mapping.
@@ -311,7 +312,7 @@ function swr_set_compensation(s: PSwrContext; sample_delta: cint; compensation_d
  * @return >= 0 on success, or AVERROR error code in case of failure.
  *)
 function swr_set_channel_mapping(s: PSwrContext; {const} channel_map: pcint): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Set a customized remix matrix.
@@ -323,7 +324,7 @@ function swr_set_channel_mapping(s: PSwrContext; {const} channel_map: pcint): ci
  * @return  >= 0 on success, or AVERROR error code in case of failure.
  *)
 function swr_set_matrix(s: PSwrContext; {const} matrix: pcdouble; stride: cint): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Drops the specified number of output samples.
@@ -337,7 +338,7 @@ function swr_set_matrix(s: PSwrContext; {const} matrix: pcdouble; stride: cint):
  * @return >= 0 on success, or a negative AVERROR code on failure
  *)
 function swr_drop_output(s: PSwrContext; count: cint): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Injects the specified number of silence samples.
@@ -351,7 +352,7 @@ function swr_drop_output(s: PSwrContext; count: cint): cint;
  * @return >= 0 on success, or a negative AVERROR code on failure
  *)
 function swr_inject_silence(s: PSwrContext; count: cint): cint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Gets the delay the next input sample will experience relative to the next output sample.
@@ -378,7 +379,7 @@ function swr_inject_silence(s: PSwrContext; count: cint): cint;
  * @returns     the delay in 1 / @c base units.
  *)
 function swr_get_delay(s: PSwrContext; base: cint64): cint64;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Return the @ref LIBSWRESAMPLE_VERSION_INT constant.
@@ -389,7 +390,7 @@ function swr_get_delay(s: PSwrContext; base: cint64): cint64;
  * @returns     the unsigned int-typed version
  *)
 function swresample_version(): cuint;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Return the swr build-time configuration.
@@ -397,7 +398,7 @@ function swresample_version(): cuint;
  * @returns     the build-time @c ./configure flags
  *)
 function swresample_configuration(): PAnsiChar;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 (**
  * Return the swr license.
@@ -405,7 +406,7 @@ function swresample_configuration(): PAnsiChar;
  * @returns     the license of libswresample, determined at build-time
  *)
 function swresample_license(): PAnsiChar;
-  cdecl; external swresample;
+  cdecl; external sw__resample;
 
 implementation
 

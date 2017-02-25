@@ -613,6 +613,12 @@ libprojectM_VERSION_RELEASE
 libprojectM_VERSION_MINOR
 libprojectM_VERSION_MAJOR
 libprojectM_VERSION
+DEFINE_HAVE_SWRESAMPLE
+libswresample_VERSION_INT
+libswresample_VERSION_RELEASE
+libswresample_VERSION_MINOR
+libswresample_VERSION_MAJOR
+libswresample_VERSION
 DEFINE_HAVE_SWSCALE
 libswscale_VERSION_INT
 libswscale_VERSION_RELEASE
@@ -796,6 +802,7 @@ libavcodec_VERSION
 libavformat_VERSION
 libavutil_VERSION
 libswscale_VERSION
+libswresample_VERSION
 libprojectM_VERSION
 libprojectM_INCLUDEDIR
 libprojectM_DATADIR
@@ -1473,6 +1480,8 @@ Some influential environment variables:
               version of libavutil, overriding pkg-config
   libswscale_VERSION
               version of libswscale, overriding pkg-config
+  libswresample_VERSION
+              version of libswresample, overriding pkg-config
   libprojectM_VERSION
               version of libprojectM, overriding pkg-config
   libprojectM_INCLUDEDIR
@@ -6436,6 +6445,157 @@ eof
         DEFINE_HAVE_SWSCALE=DEFINE
     else
 	DEFINE_HAVE_SWSCALE=UNDEF
+    fi
+
+
+
+
+    have_lib="no"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libswresample" >&5
+$as_echo_n "checking for libswresample... " >&6; }
+    if test x"$with_libswresample" = xnocheck; then
+        # do not call pkg-config, use user settings
+        have_lib="yes"
+    elif test x"$with_libswresample" != xno; then
+        # check if package exists
+	if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libswresample\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libswresample") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+
+            have_lib="yes"
+            libswresample_LIBS=`$PKG_CONFIG --libs --silence-errors "libswresample"`
+            libswresample_LIBDIRS=`$PKG_CONFIG --libs-only-L --silence-errors "libswresample"`
+            libswresample_LIBDIRS=`
+    echo "$libswresample_LIBDIRS" | $SED 's/^[ \t]*//' | $SED 's/[ \t]*$//'
+`
+            # add library directories to LIBS (ignore *_LIBS for now)
+	    if test -n "$libswresample_LIBDIRS"; then
+                LIBS="$LIBS $libswresample_LIBDIRS"
+            fi
+
+fi
+    fi
+    if test x$have_lib = xyes; then
+        libswresample_HAVE="yes"
+        if test -n "$libswresample_LIBDIRS"; then
+            # show additional lib-dirs
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes ($libswresample_LIBDIRS)" >&5
+$as_echo "yes ($libswresample_LIBDIRS)" >&6; }
+        else
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+        fi
+    else
+        libswresample_HAVE="no"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+        # check if package is required
+        if test xno = xyes -o x"$with_libswresample" = xyes ; then
+            # print error message and quit
+            err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "libswresample"`
+            as_fn_error $? "
+
+$err_msg
+
+Alternatively, you may set --with-libswresample=nocheck and the environment
+variables libswresample_[...] (see configure --help)
+to appropriate values to avoid the need to call pkg-config.
+
+See the pkg-config man page for more details.
+" "$LINENO" 5
+        fi
+    fi
+
+
+    if test x$libswresample_HAVE = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking version of libswresample" >&5
+$as_echo_n "checking version of libswresample... " >&6; }
+
+
+    # check if variable was defined by the user
+    if test -z "$libswresample_VERSION"; then
+        # if not, get it from pkg-config
+        if test x$libswresample_HAVE = xyes; then
+            if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libswresample\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libswresample") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  libswresample_VERSION=`$PKG_CONFIG --modversion --silence-errors "libswresample"`
+else
+  # print error message and quit
+                 err_msg=`$PKG_CONFIG --errors-to-stdout --print-errors "libswresample"`
+                 as_fn_error $? "
+
+$err_msg
+
+If --with-libswresample=nocheck is defined the environment variable
+libswresample_VERSION
+must be set to avoid the need to call pkg-config.
+
+See the pkg-config man page for more details.
+" "$LINENO" 5
+
+
+fi
+        fi
+    fi
+
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: [$libswresample_VERSION]" >&5
+$as_echo "[$libswresample_VERSION]" >&6; }
+    else
+        libswresample_VERSION="0.0.0"
+    fi
+
+    version=$libswresample_VERSION
+
+    # strip leading non-numeric tokens
+    # (necessary for some ffmpeg-packages in ubuntu)
+    # example: 0d.51.1.0 -> 51.1.0
+    version=`echo $version | sed 's/^[^.]*[^0-9.][^.]*\.//'`
+
+    # replace "." and "-" with " " and ignore trailing tokens.
+    # 1.23.4-r2 will be splitted to [maj=1, min=23, rel=4].
+    # In addition we delete everything after the first character
+    # which is not 0-9.
+    # 1.3a4-r32 will be [maj=1, min=3, rel=0].
+    read major minor release ignore <<eof
+        `echo $version | tr '.-' ' ' | sed 's/[^0-9\ ].*//'`
+eof
+    # Note: Do NOT indent the eof-delimiter
+    # We use a here-document (<<< here-strings not POSIX compatible)
+
+    test -z $major && major=0
+    test -z $minor && minor=0
+    test -z $release && release=0
+
+    # strip preceding 0s and set unset version-parts to 0
+    libswresample_VERSION_MAJOR=$(($major))
+    libswresample_VERSION_MINOR=$(($minor))
+    libswresample_VERSION_RELEASE=$(($release))
+    # integer representation: MMMmmmrrr (M:major,m:minor,r:release)
+    # can be used if pkg-config's comparison fails
+    libswresample_VERSION_INT=$(($libswresample_VERSION_MAJOR*1000000+$libswresample_VERSION_MINOR*1000+$libswresample_VERSION_RELEASE))
+
+
+
+
+
+
+
+
+
+
+    if [ x$libswresample_HAVE = xyes ]; then
+        DEFINE_HAVE_SWRESAMPLE=DEFINE
+    else
+	DEFINE_HAVE_SWRESAMPLE=UNDEF
     fi
 
 

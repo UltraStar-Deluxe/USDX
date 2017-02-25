@@ -24,7 +24,7 @@
  * Conversions of
  *
  * libswresample/swresample.h:
- * version: 0.17.104
+ * version: 0.6.100
  *
  *)
 
@@ -55,54 +55,14 @@ uses
     UConfig;
 
 const
-  {$IF LIBSWRESAMPLE_VERSION_MAJOR <  1}
-  SWR_CH_MAX = 32;  (* < Maximum number of channels *)
-  {$ENDIF}
+  SWR_CH_MAX = 16;  (* < Maximum number of channels *)
   SWR_FLAG_RESAMPLE = 1; (* < Force resampling even if equal sample rate *)
 
 type
-  TSwrDitherType = (
-    SWR_DITHER_NONE = 0,
-    SWR_DITHER_RECTANGULAR,
-    SWR_DITHER_TRIANGULAR,
-    SWR_DITHER_TRIANGULAR_HIGHPASS,
-
-    SWR_DITHER_NS = 64,         (* < not part of API/ABI *)
-    SWR_DITHER_NS_LIPSHITZ,
-    SWR_DITHER_NS_F_WEIGHTED,
-    SWR_DITHER_NS_MODIFIED_E_WEIGHTED,
-    SWR_DITHER_NS_IMPROVED_E_WEIGHTED,
-    SWR_DITHER_NS_SHIBATA,
-    SWR_DITHER_NS_LOW_SHIBATA,
-    SWR_DITHER_NS_HIGH_SHIBATA,
-    SWR_DITHER_NB               (* < not part of API/ABI *)
-  );
-
-  TSwrEngine = (
-    SWR_ENGINE_SWR,             (* < SW Resampler *)
-    SWR_ENGINE_SOXR,            (* < SoX Resampler *)
-    SWR_ENGINE_NB               (* < not part of API/ABI *)
-  );
-
-  TSwrFilterType = (
-    SWR_FILTER_TYPE_CUBIC,              (* < Cubic *)
-    SWR_FILTER_TYPE_BLACKMAN_NUTTALL,   (* < Blackman Nuttall Windowed Sinc *)
-    SWR_FILTER_TYPE_KAISER              (* < Kaiser Windowed Sinc *)
-  );
-
   PPSwrContext= ^PSwrContext;
   PSwrContext = ^TSwrContext;
   TSwrContext = record
   end;
-
-(**
- * Get the AVClass for swrContext. It can be used in combination with
- * AV_OPT_SEARCH_FAKE_OBJ for examining options.
- *
- * @see av_opt_find().
- *)
-function swr_get_class(): PAVClass;
-  cdecl; external sw__resample;
 
 (**
  * Allocate SwrContext.
@@ -179,22 +139,6 @@ function swr_convert(s: PSwrContext; var out_: PByte; out_count: cint;
   cdecl; external sw__resample;
 
 (**
- * Convert the next timestamp from input to output
- * timestamps are in 1/(in_sample_rate * out_sample_rate) units.
- *
- * @note There are 2 slightly differently behaving modes.
- *       First is when automatic timestamp compensation is not used, (min_compensation >= FLT_MAX)
- *              in this case timestamps will be passed through with delays compensated
- *       Second is when automatic timestamp compensation is used, (min_compensation < FLT_MAX)
- *              in this case the output timestamps will match output sample numbers
- *
- * @param pts   timestamp for the next input sample, INT64_MIN if unknown
- * @return the output timestamp for the next output sample
- *)
-function swr_next_pts(s: PSwrContext; pts: cint64): cint64;
-  cdecl; external sw__resample;
-
-(**
  * Activate resampling compensation.
  *)
 function swr_set_compensation(s: PSwrContext; sample_delta: cint; compensation_distance: cint): cint;
@@ -209,53 +153,6 @@ function swr_set_compensation(s: PSwrContext; sample_delta: cint; compensation_d
  * @return AVERROR error code in case of failure.
  *)
 function swr_set_channel_mapping(s: PSwrContext; {const} channel_map: pcint): cint;
-  cdecl; external sw__resample;
-
-(**
- * Set a customized remix matrix.
- *
- * @param s       allocated Swr context, not yet initialized
- * @param matrix  remix coefficients; matrix[i + stride * o] is
- *                the weight of input channel i in output channel o
- * @param stride  offset between lines of the matrix
- * @return  AVERROR error code in case of failure.
- *)
-function swr_set_matrix(s: PSwrContext; {const} matrix: pcdouble; stride: cint): cint;
-  cdecl; external sw__resample;
-
-(**
- * Drops the specified number of output samples.
- *)
-function swr_drop_output(s: PSwrContext; count: cint): cint;
-  cdecl; external sw__resample;
-
-(**
- * Injects the specified number of silence samples.
- *)
-function swr_inject_silence(s: PSwrContext; count: cint): cint;
-  cdecl; external sw__resample;
-
-(**
- * Gets the delay the next input sample will experience relative to the next output sample.
- *
- * Swresample can buffer data if more input has been provided than available
- * output space, also converting between sample rates needs a delay.
- * This function returns the sum of all such delays.
- * The exact delay is not necessarily an integer value in either input or
- * output sample rate. Especially when downsampling by a large value, the
- * output sample rate may be a poor choice to represent the delay, similarly
- * for upsampling and the input sample rate.
- *
- * @param s     swr context
- * @param base  timebase in which the returned delay will be
- *              if its set to 1 the returned delay is in seconds
- *              if its set to 1000 the returned delay is in milli seconds
- *              if its set to the input sample rate then the returned delay is in input samples
- *              if its set to the output sample rate then the returned delay is in output samples
- *              an exact rounding free delay can be found by using LCM(in_sample_rate, out_sample_rate)
- * @returns     the delay in 1/base units.
- *)
-function swr_get_delay(s: PSwrContext; base: cint64): cint64;
   cdecl; external sw__resample;
 
 (**

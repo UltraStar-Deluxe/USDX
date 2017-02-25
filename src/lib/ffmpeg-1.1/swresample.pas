@@ -24,7 +24,7 @@
  * Conversions of
  *
  * libswresample/swresample.h:
- * version: 0.17.104
+ * version: 0.17.102
  *
  *)
 
@@ -66,15 +66,6 @@ type
     SWR_DITHER_RECTANGULAR,
     SWR_DITHER_TRIANGULAR,
     SWR_DITHER_TRIANGULAR_HIGHPASS,
-
-    SWR_DITHER_NS = 64,         (* < not part of API/ABI *)
-    SWR_DITHER_NS_LIPSHITZ,
-    SWR_DITHER_NS_F_WEIGHTED,
-    SWR_DITHER_NS_MODIFIED_E_WEIGHTED,
-    SWR_DITHER_NS_IMPROVED_E_WEIGHTED,
-    SWR_DITHER_NS_SHIBATA,
-    SWR_DITHER_NS_LOW_SHIBATA,
-    SWR_DITHER_NS_HIGH_SHIBATA,
     SWR_DITHER_NB               (* < not part of API/ABI *)
   );
 

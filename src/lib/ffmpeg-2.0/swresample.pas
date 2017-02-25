@@ -24,7 +24,7 @@
  * Conversions of
  *
  * libswresample/swresample.h:
- * version: 0.17.104
+ * version: 0.17.102
  *
  *)
 
