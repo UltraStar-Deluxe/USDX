@@ -567,6 +567,8 @@ macosx-dmg: macosx-standalone-app
 	$(HDIUTIL) attach UltraStarDeluxe.sparseimage
 	/bin/ln -s /Applications /Volumes/UltraStarDeluxe/Applications
 	/bin/cp -R UltraStarDeluxe.app /Volumes/UltraStarDeluxe
+	$(MKDIR) /Volumes/UltraStarDeluxe/Licenses
+	find $(USDX_GAME_DIR) -name 'LICENSE.*' -maxdepth 1 -exec cp {} /Volumes/UltraStarDeluxe/Licenses \;
 #	/bin/cp ultrastardx/icons/UltraStarDeluxeVolumeIcon.icns /Volumes/UltraStarDeluxe/.VolumeIcon.icns
 #	/Developer/Tools/SetFile -a C /Volumes/UltraStarDeluxe/.VolumeIcon.icns /Volumes/UltraStarDeluxe
 	$(HDIUTIL) detach /Volumes/UltraStarDeluxe
