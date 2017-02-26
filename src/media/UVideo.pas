@@ -396,8 +396,6 @@ begin
   // allow non spec compliant speedup tricks.
 
   //fCodecContext^.flags2 := CODEC_FLAG2_FAST;
-  if (FileName.GetExtension().ToUTF8() = '.mp4') or (FileName.GetExtension().ToUTF8() = '.mkv') then
-  fCodecContext^.flags := CODEC_FLAG_LOW_DELAY;  //ffmpeg has a bug here when playing certain avi files
 
   // Note: avcodec_open() and avcodec_close() are not thread-safe and will
   // fail if called concurrently by different threads.
