@@ -3738,7 +3738,7 @@ begin
           midinotefound := true;
           MidiOut.PutShort($B1, $7, floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
 //          if i > 0 then
-            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[currentnote-1].Tone + 60, 127);
+            MidiOut.PutShort($81, Lines[0].Line[Lines[0].Current].Note[currentnote].Tone + 60, 127);
           MidiOut.PutShort($91, Lines[0].Line[Lines[0].Current].Note[currentnote].Tone + 60, 127);
 
           MidiLastNote := i;
