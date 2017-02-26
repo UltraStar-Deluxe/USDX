@@ -1889,7 +1889,6 @@ begin
               Xmouse := CurrentX - LastX;
 //          log.LogError('beside notes');
      end;
-
   end;
     // changed cover
     if ((CoverSlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
@@ -1966,8 +1965,18 @@ begin
         SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
     end;
 
+  end
+  else if (MouseButton = SDL_BUTTON_RIGHT) then
+  begin
+    if length(UndoLines) > 0 then
+    begin
+      ScreenPopupcheck.ShowPopup(Language.Translate('INFO_EXIT'), OnExit, 0, false);
+    end
+    else
+    begin
+      FadeTo(@ScreenSong);
+    end;
   end;
-
   case Action of
     maReturn: Result := ParseInput(SDLK_RETURN, 0, true);
 //    maLeft:   Result := ParseInput(SDLK_LEFT, 0, true);
