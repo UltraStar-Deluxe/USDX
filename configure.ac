@@ -281,13 +281,13 @@ AC_SUBST_DEFINE(HAVE_SWRESAMPLE, $libswresample_HAVE)
 
 # map avutil library version to ffmpeg version
 AC_MSG_CHECKING([version of ffmpeg])
-if   test $libavutil_VERSION_INT -eq 55034100; then
-    FFMPEG_VERSION="3.2"
-elif test $libavutil_VERSION_INT -le 55028100 -a $libavutil_VERSION_INT -ge 55027100; then
+if   FFMPEG_LIBS_COMPATIBLE([55034100], [57064100,57093100], [57056100], [4002100], [2003100]); then
+    FFMPEG_VERSION="3.2" # and 3.3
+elif FFMPEG_LIBS_COMPATIBLE([55027100,55028100], [57048101], [57040101], [4001100], [2001100]); then
     FFMPEG_VERSION="3.1"
-elif test $libavutil_VERSION_INT -eq 55017103; then
+elif FFMPEG_LIBS_COMPATIBLE([55017103,55018100], [57024102,57037100], [57025100], [4000100], [2000101]); then
     FFMPEG_VERSION="3.0"
-elif test $libavutil_VERSION_INT -le 54099100 -a $libavutil_VERSION_INT -ge 54030100; then
+elif FFMPEG_LIBS_COMPATIBLE([54030100], [56060100], [56040101], [3001101], [1002101]); then
     FFMPEG_VERSION="2.8"
 elif test $libavutil_VERSION_INT -le 54030100 -a $libavutil_VERSION_INT -ge 54027100; then
     FFMPEG_VERSION="2.7"
@@ -324,7 +324,7 @@ elif test $libavutil_VERSION_INT -le 50024000 -a $libavutil_VERSION_INT -ge 4900
 else
     AC_MSG_ERROR([
 
-Unsupported ffmpeg version, most recent version supported is 3.2.
+Unsupported ffmpeg version, most recent version supported is 3.3.
 ])
 fi
 AX_EXTRACT_VERSION(FFMPEG, $FFMPEG_VERSION)
