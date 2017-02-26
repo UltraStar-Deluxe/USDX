@@ -11,14 +11,14 @@
           /   _/  /     / \______      \         \___    _____
          /   |___/      \     \_/       /          \  \  /     \
          \              /\             /   |\       \  \/      /
-          \            /  \_ultrastar_/    |/       /         /
-           \______www_/              |___deluxe____/          \
+          \            /  \_____/    |/       /         /
+           \__________/              |_____________/          \
                                                  /      /\      \
-                                                 \__de_/  \_____/
+                                                 \_____/  \_____/  .eu
                                                                     
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ```
-Official Project Website: http://ultrastardeluxe.de/
+Official Project Website: https://usdx.eu/
 
 ![UltraStar Deluxe Logo](https://github.com/UltraStar-Deluxe/USDX/blob/master/icons/ultrastardx-icon_256.png)
 
