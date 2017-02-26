@@ -190,9 +190,9 @@ const
     2, 2,     // asfU16LSB, asfS16LSB
     2, 2,     // asfU16MSB, asfS16MSB
     2, 2,     // asfU16,    asfS16
-    3,        // asfS24
     4,        // asfS32
-    4         // asfFloat
+    4,        // asfFloat
+    8         // asfDouble
   );
 
 const
