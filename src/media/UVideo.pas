@@ -238,6 +238,7 @@ var
   SupportsNPOT: Boolean;
 
 
+{$IF LIBAVCODEC_VERSION < 51068000}
 // These are called whenever we allocate a frame buffer.
 // We use this to store the global_pts in a frame at the time it is allocated.
 function PtsGetBuffer(CodecCtx: PAVCodecContext; Frame: PAVFrame): integer; cdecl;
@@ -245,11 +246,7 @@ var
   pts: Pint64;
   VideoPktPts: Pint64;
 begin
-  {$IF LIBAVCODEC_VERSION >= 56000000}
-  Result := avcodec_default_get_buffer2(CodecCtx, Frame, 0);
-  {$ELSE}
   Result := avcodec_default_get_buffer(CodecCtx, Frame);
-  {$ENDIF}
   VideoPktPts := CodecCtx^.opaque;
   if (VideoPktPts <> nil) then
   begin
@@ -265,12 +262,9 @@ procedure PtsReleaseBuffer(CodecCtx: PAVCodecContext; Frame: PAVFrame); cdecl;
 begin
   if (Frame <> nil) then
     av_freep(@Frame^.opaque);
-  {$IF LIBAVCODEC_VERSION >= 57000000}
-  av_frame_unref(Frame);
-  {$ELSE}
   avcodec_default_release_buffer(CodecCtx, Frame);
-  {$ENDIF}
 end;
+{$ENDIF}
 
 
 {*------------------------------------------------------------------------------
@@ -425,7 +419,7 @@ begin
   end;
 
   // register custom callbacks for pts-determination
-  {$IF LIBAVCODEC_VERSION < 56042000}
+  {$IF LIBAVCODEC_VERSION < 51068000}
     fCodecContext^.get_buffer := PtsGetBuffer;
     fCodecContext^.release_buffer := PtsReleaseBuffer;
   {$IFEND}
@@ -669,7 +663,9 @@ end;
 function TVideo_FFmpeg.DecodeFrame(): boolean;
 var
   FrameFinished: Integer;
+  {$IF LIBAVCODEC_VERSION < 51068000}
   VideoPktPts: int64;
+  {$ENDIF}
   {$IF FFMPEG_VERSION_INT < 1001000}
   pbIOCtx: PByteIOContext;
   {$ELSE}
@@ -750,9 +746,13 @@ begin
     // if we got a packet from the video stream, then decode it
     if (AVPacket.stream_index = fStreamIndex) then
     begin
+      {$IF LIBAVCODEC_VERSION < 51068000}
       // save pts to be stored in pFrame in first call of PtsGetBuffer()
       VideoPktPts := AVPacket.pts;
       fCodecContext^.opaque := @VideoPktPts;
+      {$ELSEIF LIBAVCODEC_VERSION < 51105000}
+      fCodecContext^.reordered_opaque := AVPacket.pts;
+      {$IFEND}
 
       // decode packet
       {$IF LIBAVFORMAT_VERSION < 52012200)}
@@ -764,18 +764,32 @@ begin
       {$IFEND}
 
       // reset opaque data
+      {$IF LIBAVCODEC_VERSION < 51068000}
       fCodecContext^.opaque := nil;
+      {$ELSEIF LIBAVCODEC_VERSION < 51105000}
+      fCodecContext^.reordered_opaque := AV_NOPTS_VALUE;
+      {$IFEND}
 
       // update pts
+      {$IF LIBAVCODEC_VERSION < 51068000}
+      if ((fAVFrame^.opaque <> nil) and
+          (Pint64(fAVFrame^.opaque)^ <> AV_NOPTS_VALUE)) then
+        pts := Pint64(fAVFrame^.opaque)^
+      {$ELSEIF LIBAVCODEC_VERSION < 51105000}
+      if (fAVFrame^.reordered_opaque <> AV_NOPTS_VALUE) then
+        pts := fAVFrame^.reordered_opaque
+      {$ELSE}
+      if (fAVFrame^.pkt_pts <> AV_NOPTS_VALUE) then
+        pts := fAVFrame^.pkt_pts
+      {$IFEND}
+      else
+      {$IF LIBAVCODEC_VERSION < 51106000}
       if (AVPacket.dts <> AV_NOPTS_VALUE) then
-      begin
-        pts := AVPacket.dts;
-      end
-      else if ((fAVFrame^.opaque <> nil) and
-               (Pint64(fAVFrame^.opaque)^ <> AV_NOPTS_VALUE)) then
-      begin
-        pts := Pint64(fAVFrame^.opaque)^;
-      end
+        pts := AVPacket.dts
+      {$ELSE}
+      if (fAVFrame^.pkt_dts <> AV_NOPTS_VALUE) then
+        pts := fAVFrame^.pkt_dts
+      {$IFEND}
       else
       begin
         pts := 0;
