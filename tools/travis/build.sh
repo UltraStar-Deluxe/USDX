@@ -13,7 +13,7 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
     make macosx-dmg
 
     if [ -r "UltraStarDeluxe.dmg" ]; then
-        link=$(curl --upload-file 'UltraStarDeluxe.dmg' 'https://transfer.sh/UltraStarDeluxe.dmg')
+        link=$(curl --upload-file 'UltraStarDeluxe.dmg' "https://transfer.sh/UltraStarDeluxe-$(git rev-parse --short HEAD).dmg")
         echo "UltraStarDeluxe.dmg should be available at:"
         echo "    $link"
     fi
