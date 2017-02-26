@@ -17,12 +17,12 @@ AC_PREREQ(2.61)
 # Init autoconf
 AC_INIT([ultrastardx],
         m4_esyscmd_s([cat VERSION]),
-        [http://sourceforge.net/tracker/?group_id=191560&atid=937872])
+        [https://github.com/UltraStar-Deluxe/USDX/issues/])
 # specify the website here
-PACKAGE_WEBSITE="http://www.ultrastardeluxe.org/"
+PACKAGE_WEBSITE="http://usdx.eu/"
 AC_SUBST(PACKAGE_WEBSITE)
 # specify the IRC-channel here
-PACKAGE_IRC="#ultrastardx at quakenet.org"
+PACKAGE_IRC="#usdx at freenode.net"
 AC_SUBST(PACKAGE_IRC)
 
 AC_CONFIG_MACRO_DIR([dists/autogen/m4])
