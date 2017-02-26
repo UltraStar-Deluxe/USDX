@@ -1,3 +1,10 @@
 #!/bin/sh
-AUTOGEN_DIR=dists/autogen
-aclocal -I ${AUTOGEN_DIR}/m4 && autoconf
+# Run this to set up the build system: configure, makefiles, etc.
+set -e
+
+srcdir=`dirname $0`
+test -n "$srcdir" && cd "$srcdir"
+
+echo "Updating build configuration files for USDX, please wait..."
+
+autoreconf -isf
