@@ -283,7 +283,8 @@ begin
     end
     else
     begin
-      if (Ext.Equals(FileName.GetExtension(), true)) then
+      // do not load files which either have wrong extension or start with a point
+      if (Ext.Equals(FileName.GetExtension(), true) and not (FileName.ToUTF8()[1] = '.')) then
       begin
         SetLength(Files, Length(Files)+1);
         Files[High(Files)] := Dir.Append(FileName);
