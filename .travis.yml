@@ -21,3 +21,8 @@ install:
 
 script:
   - tools/travis/build.sh
+
+cache:
+  bundler: false
+  directories:
+    - dists/linux/prefix
