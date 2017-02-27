@@ -44,7 +44,7 @@ cd build
 	--enable-alsa --enable-pulseaudio-shared \
 	--enable-video-wayland --enable-wayland-shared \
 	--enable-x11-shared --enable-ibus --enable-fcitx --enable-ime \
-	--disable-rpath
+	--disable-rpath --disable-input-tslib
 make $makearg
 make install
 make distclean
@@ -120,6 +120,7 @@ make distclean
 
 echo "Building FFmpeg"
 cd "$SRC/ffmpeg"
+# disable vaapi until it can be tested
 ./configure --prefix="$PREFIX" \
 	--enable-gpl \
 	--disable-static \
@@ -142,7 +143,8 @@ cd "$SRC/ffmpeg"
 	--disable-filters \
 	--disable-protocols \
 	--disable-lzma \
-	--disable-bzlib
+	--disable-bzlib \
+	--disable-vaapi
 make $makearg
 make install
 make distclean
