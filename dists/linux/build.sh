@@ -12,7 +12,7 @@ export PATH="$PREFIX/bin:$PATH"
 export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
 PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
 
-echo "Building USDX"
+echo "Building UltraStar Deluxe"
 cd "$root/../.."
 bash ./autogen.sh
 ./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" # --with-libprojectM
