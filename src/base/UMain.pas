@@ -533,7 +533,7 @@ begin
             end
             // TODO: hacky workaround for enabling keyboard simulation of controllers. use SDL2 new input handling SDL_StartTextInput and SDL_StopTextInput(
             else if (Event.type_ <> SDL_TEXTINPUT) and
-              (Event.key.keysym.unicode = 0) // verify if the event is not a valid keyboard-text-input (and originating from keyboard simulation)
+              ShouldSimulateJoystickKeyInput(Event) // verify if the event is not a valid keyboard-text-input (and originating from keyboard simulation)
               then
             begin
               s1 := SDL_GetScancodeName(Event.key.keysym.scancode);
