@@ -22,17 +22,29 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
 else
     # Linux build
 
-    sudo apt-get install fpc \
-        libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev \
-        libsdl2-ttf-dev libsdl2-gfx-dev \
-        libavcodec-dev libavformat-dev libswscale-dev \
-        portaudio19-dev libprojectm-dev libopencv-highgui-dev \
-        libsqlite3-dev libpcre3-dev liblua5.1-dev libpng-dev \
-        ttf-dejavu ttf-freefont
+    #sudo apt-get install fpc \
+    #    libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev \
+    #    libsdl2-ttf-dev libsdl2-gfx-dev \
+    #    libavcodec-dev libavformat-dev libswscale-dev \
+    #    portaudio19-dev libprojectm-dev libopencv-highgui-dev \
+    #    libsqlite3-dev libpcre3-dev liblua5.1-dev libpng-dev \
+    #    ttf-dejavu ttf-freefont
         
     # Extra dependencies for ffmpeg from ppa
+    # sudo apt-get install \
+    #    libavcodec-ffmpeg-dev libavformat-ffmpeg-dev libswscale-ffmpeg-dev \
+    #    libavutil-ffmpeg-dev libswresample-ffmpeg-dev
+
     sudo apt-get install \
-        libavcodec-ffmpeg-dev libavformat-ffmpeg-dev libswscale-ffmpeg-dev \
-        libavutil-ffmpeg-dev libswresample-ffmpeg-dev
+        fpc libpcre3 libpcre3-dev liblua5.1-dev libopencv-highgui-dev \
+        cmake ftgl-dev libglew-dev \
+        build-essential autoconf automake \
+        libtool libasound2-dev libpulse-dev libaudio-dev libx11-dev libxext-dev \
+        libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxxf86vm-dev \
+        libxss-dev libgl1-mesa-dev libesd0-dev libdbus-1-dev libudev-dev \
+        libgles1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libibus-1.0-dev \
+        fcitx-libs-dev libsamplerate0-dev \
+        libwayland-dev libxkbcommon-dev ibus \
+        chrpath curl
 
 fi

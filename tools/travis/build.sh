@@ -21,8 +21,9 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
 else
     # Linux build
 
-    ./autogen.sh
-    ./configure
-    make
-
+    #./autogen.sh
+    #./configure
+    #make
+    cd dists/linux
+    make upload
 fi
