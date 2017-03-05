@@ -328,6 +328,7 @@ var
   errnum: Integer;
   glErr: GLenum;
   AudioStreamIndex: integer;
+  r_frame_rate: cdouble;
 begin
   Result := false;
   Reset();
@@ -477,12 +478,18 @@ begin
     fAspect := fAspect * fCodecContext^.width /
                          fCodecContext^.height;
 
-  fFrameDuration := 1/av_q2d(fStream^.r_frame_rate);
+  {$IF LIBAVFORMAT_VERSION_MAJOR >= 55}
+  r_frame_rate := av_q2d(av_stream_get_r_frame_rate(fStream));
+  {$ELSE}
+  r_frame_rate := av_q2d(fStream^.r_frame_rate);
+  {$ENDIF}
+
+  fFrameDuration := 1/r_frame_rate;
 
   // hack to get reasonable framerate (for divx and others)
   if (fFrameDuration < 0.02) then // 0.02 <-> 50 fps
   begin
-    fFrameDuration := av_q2d(fStream^.r_frame_rate);
+    fFrameDuration := r_frame_rate;
     while (fFrameDuration > 50) do
       fFrameDuration := fFrameDuration/10;
     fFrameDuration := 1/fFrameDuration;
