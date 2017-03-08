@@ -186,6 +186,8 @@ begin
               ntFreestyle: NoteState := 'F ';
               ntNormal: NoteState := ': ';
               ntGolden: NoteState := '* ';
+              ntRap: NoteState:= 'R ';
+              ntRapGolden: NoteState:='G ';
             end; // case
             S := NoteState + IntToStr(Start-RelativeSubTime) + ' '
                            + IntToStr(Length) + ' '
