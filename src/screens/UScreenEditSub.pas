@@ -894,9 +894,17 @@ begin
         begin
           CopyToUndo;
           if (Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType = ntGolden) then
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntNormal
+          begin
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntRapGolden;
+          end
+          else if (Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType = ntRapGolden) then
+          begin
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntNormal;
+          end
           else
+          begin
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntGolden;
+          end;
           GoldenRec.KillAll;
           Exit;
         end;
@@ -906,14 +914,22 @@ begin
         begin
           CopyToUndo;
           if (Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType = ntFreestyle) then
-            Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntNormal
+          begin
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntRap;
+          end
+          else if (Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType = ntRap) then
+          begin
+            Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntNormal;
+          end
           else
+          begin
             Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntFreestyle;
-          	GoldenRec.KillAll;
+          end;
+          GoldenRec.KillAll;
 
-            // update lyrics
-            Lyric.AddLine(Lines[0].Current);
-            Lyric.Selected := CurrentNote;
+          // update lyrics
+          Lyric.AddLine(Lines[0].Current);
+          Lyric.Selected := CurrentNote;
           Exit;
         end;
       SDLK_Z:
@@ -1273,9 +1289,17 @@ begin
            begin
               CopyToUndo;
               if (Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType = ntGolden) then
-                Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntNormal
+              begin
+                Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntRapGolden;
+              end
+              else if (Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType = ntRapGolden) then
+              begin
+                Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntNormal;
+              end
               else
+              begin
                 Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntGolden;
+              end;
               GoldenRec.KillAll;
               Exit;
            end;
@@ -1284,10 +1308,18 @@ begin
            begin
               CopyToUndo;
               if (Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType = ntFreestyle) then
-                Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntNormal
+              begin
+                Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntRap;
+              end
+              else if (Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType = ntRap) then
+              begin
+                Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntNormal;
+              end
               else
+              begin
                 Lines[0].Line[Lines[0].Current].Note[CurrentNote].NoteType := ntFreestyle;
-          	  GoldenRec.KillAll;
+              end;
+              GoldenRec.KillAll;
 
               // update lyrics
               Lyric.AddLine(Lines[0].Current);
