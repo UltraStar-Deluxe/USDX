@@ -1194,8 +1194,11 @@ begin
       SongMenuVisible := true;
       LastSongMenuTick := SDL_GetTicks();
     end;
+    if MouseButton = SDL_BUTTON_RIGHT then
+    begin
+      ScreenPopupCheck.ShowPopup('MSG_END_JUKEBOX', OnEscapeJukebox, nil, true)
+    end;
   end;
-
 end;
 
 procedure TScreenJukebox.RandomList();
