@@ -1871,7 +1871,14 @@ begin
         Rec.Right := Rec.Left + NotesW[0];
         Rec.Top := Top - (Tone-BaseNote)*Space/2 - NotesH[0];
         Rec.Bottom := Rec.Top + 2 * NotesH[0];
-        glBindTexture(GL_TEXTURE_2D, Tex_Left[Color].TexNum);
+        If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+        begin
+          glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap[Color].TexNum);
+        end
+        else
+        begin
+          glBindTexture(GL_TEXTURE_2D, Tex_Left[Color].TexNum);
+        end;
         glBegin(GL_QUADS);
           glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
           glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
@@ -1884,7 +1891,14 @@ begin
         Rec.Left  := Rec.Right;
         Rec.Right := (Start+Length-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left - NotesW[0] - 0.5 + 10*ScreenX;
 
-        glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum);
+        If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+        begin
+          glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap[Color].TexNum);
+        end
+        else
+        begin
+          glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum);
+        end;
         glBegin(GL_QUADS);
           glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
           glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
@@ -1896,7 +1910,14 @@ begin
         Rec.Left  := Rec.Right;
         Rec.Right := Rec.Right + NotesW[0];
 
-        glBindTexture(GL_TEXTURE_2D, Tex_Right[Color].TexNum);
+        If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+        begin
+          glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap[Color].TexNum);
+        end
+        else
+        begin
+          glBindTexture(GL_TEXTURE_2D, Tex_Right[Color].TexNum);
+        end;
         glBegin(GL_QUADS);
           glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
           glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
