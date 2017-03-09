@@ -33,5 +33,13 @@ At the end of the `ultrastardx.dpr` file is the program start. It calls the main
 After that, the game starts a while() in which it first cleans the screen, shows the last calculated new screen frame, checks for key-presses, calculates the next screen frame and then restarts the while until the user decided to close the game (->break). Everything is recalculated and freshly drawn for every single frame. (if you have some free time and know SDL2/OpenGL, feel free to improve this so that for example static background images are only sent once from system memory to graphics card memory and then drawn from there.) 
 The logic code about how to handle key pressed events for each screen can be found in `src/screens/Uscreen[*].pas` (this will later on be split up into models, views and controllers by refactoring. Feel free to help)
 
-
-
+###Where to find stuff:
+- UMain: main game loop, fps limiter, game initialization, mouse + keyboard handling (which is then passed to the specific game screen UScreen...)
+- UGraphic: initializes graphics stuff + much of the game initialization, gets OpenGL handle, sets up SDL window
+- UDraw: draws the notes, lyrics, ...
+- UScreenEdit + UScreenEditSub: songs editor stuff
+- USong: reads + parses single song xml or txt files
+- USongs: scans folders for song files to load, provides song filtering, category and sorting
+- UIni: reads + writes settings form the config.ini file
+- UTheme: loads all the theme files and processes them
+- UScreenOptions...: displays the various game screens + handles mouse + keyboard input
