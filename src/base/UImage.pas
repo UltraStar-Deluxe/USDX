@@ -554,6 +554,10 @@ begin
   try
     Result := IMG_Load(PChar(FilenameCaseAdj.ToUTF8())); //SDL2 uses wants UTF-8 strings according to doocumentation
     // Note: TBinaryFileStream is freed by SDLStream. SDLStream by IMG_Load_RW().
+    if (Result = nil) then
+    begin
+      Log.LogError('Could not load image "' + FilenameCaseAdj.ToNative + '", Error: ' + IMG_GetError(), 'LoadImage');
+    end;
   except
     Log.LogError('Could not load from file "' + FilenameCaseAdj.ToNative + '"', 'LoadImage');
     Exit;
