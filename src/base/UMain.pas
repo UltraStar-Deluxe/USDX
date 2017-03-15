@@ -322,6 +322,13 @@ begin
 
       // display
       Done := not Display.Draw;
+
+      //experimental drawing of a triangle
+      SDL_SetRenderDrawColor(UGraphic.sdlRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+      SDL_RenderDrawLine(UGraphic.sdlRenderer, 320, 200, 300, 240);
+      SDL_RenderDrawLine(UGraphic.sdlRenderer, 300, 240, 340, 240);
+      SDL_RenderDrawLine(UGraphic.sdlRenderer, 340, 240, 320, 200);
+
       SwapBuffers;
 
       // FPS limiter

@@ -62,6 +62,8 @@ uses
   USkins,
   SysUtils,
   dglOpenGL,
+  UDraw,
+  SDL2,
   UGraphic;
 
 constructor TMenuBackgroundTexture.Create(const ThemedSettings: TThemeBackground);
@@ -88,38 +90,32 @@ end;
 destructor  TMenuBackgroundTexture.Destroy;
 begin
   //freeandnil(Tex); <- this causes an Access Violation o0
+  SDL_DestroyTexture(Tex.sdlTex);
   inherited;
 end;
 
 procedure   TMenuBackgroundTexture.Draw;
+var
+  rectDraw, rectOrig:   TSDL_Rect;
 begin
   If (ScreenAct = 1) then //Clear just once when in dual screen mode
     glClear(GL_DEPTH_BUFFER_BIT);
     
   glColorRGB(Color);
 
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  //glEnable(GL_TEXTURE_2D);
+  //glEnable(GL_BLEND);
+  //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  glBindTexture(GL_TEXTURE_2D, Tex.TexNum);
-
-  glBegin(GL_QUADS);
-    glTexCoord2f(Tex.TexX1*Tex.TexW, Tex.TexY1*Tex.TexH);
-    glVertex2f(0, 0);
-
-    glTexCoord2f(Tex.TexX1*Tex.TexW, Tex.TexY2*Tex.TexH);
-    glVertex2f(0, 600);
-
-    glTexCoord2f(Tex.TexX2*Tex.TexW, Tex.TexY2*Tex.TexH);
-    glVertex2f(800, 600);
-
-    glTexCoord2f(Tex.TexX2*Tex.TexW, Tex.TexY1*Tex.TexH);
-    glVertex2f(800, 0);
-  glEnd;
-
-  glDisable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
+  //rectOrig.x:=Round(Tex.TexX1*Tex.TexW);
+  //rectOrig.w:=Round((Tex.TexX2-Tex.TexX1)*Tex.TexW);
+  //rectOrig.y:=Round(Tex.TexY1*Tex.TexH);
+  //rectOrig.h:=Round((Tex.TexY2-Tex.TexY1)*Tex.TexH);
+  rectDraw.x:=0;
+  rectDraw.y:=0;
+  rectDraw.h:=ScreenH;
+  rectDraw.w:=ScreenW;
+  SDL_RenderCopy(sdlRenderer, Tex.sdlTex, nil, @rectDraw);
 end;
 
 end.

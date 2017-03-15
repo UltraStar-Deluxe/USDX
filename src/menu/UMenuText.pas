@@ -98,6 +98,8 @@ uses
   UGraphic,
   UDisplay,
   UUnicodeStringHelper,
+  UCommon,
+  UDraw,
   {$IFDEF MSWINDOWS}
     LazUTF8,
   {$ELSE}

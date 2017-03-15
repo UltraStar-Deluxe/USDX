@@ -100,14 +100,6 @@ uses
   {Popup for errors, etc.}
   UScreenPopup;
 
-type
-  TRecR = record
-    Top:    real;
-    Left:   real;
-    Right:  real;
-    Bottom: real;
-  end;
-
 const
   Mode_Windowed = 0;
   Mode_Borderless = 1;
@@ -119,6 +111,7 @@ type
 
 var
   Screen:         PSDL_Window;
+  sdlRenderer:    PSDL_Renderer;
   glcontext:      TSDL_GLContext;
   LoadingThread:  PSDL_Thread;
   Mutex:          PSDL_Mutex;
@@ -554,16 +547,29 @@ end;
 
 procedure SwapBuffers;
 begin
-  SDL_GL_SwapWindow(Screen);
-  glMatrixMode(GL_PROJECTION);
-    glLoadIdentity;
-    glOrtho(0, RenderW, RenderH, 0, -1, 100);
-  glMatrixMode(GL_MODELVIEW);
+  SDL_RenderPresent(UGraphic.sdlRenderer);
+  //SDL_GL_SwapWindow(Screen);
+  //glMatrixMode(GL_PROJECTION);
+  //  glLoadIdentity;
+  //  glOrtho(0, RenderW, RenderH, 0, -1, 100);
+  //glMatrixMode(GL_MODELVIEW);
+  SDL_SetRenderDrawColor(UGraphic.sdlRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+  SDL_RenderClear(UGraphic.sdlRenderer);
 end;
 
 procedure Finalize3D;
 begin
   UnloadFontTextures;
+  if(Assigned(glcontext) and (glcontext <> nil)) then
+  begin
+       SDL_GL_DeleteContext(glcontext);
+  end;
+  //SDL_DestroyTexture(texture);
+  if(Assigned(sdlRenderer) and (sdlRenderer <> nil)) then
+  begin
+       SDL_DestroyRenderer(sdlRenderer);
+  end;
+  SDL_DestroyWindow(Screen);
   SDL_QuitSubSystem(SDL_INIT_VIDEO);
 end;
 
@@ -582,10 +588,6 @@ var
   Borderless, Fullscreen: boolean;
   Split: boolean;
   Disp: TSDL_DisplayMode;
-
-label
-  NoDoubledResolution;
-
 begin
   if (Params.Screens <> -1) then
     Screens := Params.Screens + 1
@@ -609,33 +611,29 @@ begin
   // If there is a resolution in Parameters, use it, else use the Ini value
   // check for a custom resolution (in the format of WIDTHxHEIGHT) or try validating ID from TIni
   if ParseResolutionString(Params.CustomResolution, W, H) then
-    Log.LogStatus(Format('Use custom resolution from Command line: %d x %d', [W, H]), 'SDL_SetVideoMode')
+  begin
+    Log.LogStatus(Format('Use custom resolution from Command line: %d x %d', [W, H]), 'SDL_SetVideoMode');
+    if ((Screens > 1) and not Split) then
+    begin
+  	W := W * Screens;
+    end;
+  end
   else if Ini.GetResolution(Params.Resolution, S) and ParseResolutionString(S, W, H) then
-    Log.LogStatus(Format('Use resolution by index from command line: %d x %d [%d]', [W, H, Params.Resolution]), 'SDL_SetVideoMode')
+  begin
+    Log.LogStatus(Format('Use resolution by index from command line: %d x %d [%d]', [W, H, Params.Resolution]), 'SDL_SetVideoMode');
+    if ((Screens > 1) and not Split) then
+  	W := W * Screens;
+  end
   else if Fullscreen then
   begin
     Log.LogStatus('Use config fullscreen resolution', 'SDL_SetVideoMode');
     S := Ini.GetResolutionFullscreen(W, H);
-
-    // fullscreen resolution shouldn't be doubled as it would not allow running real fullscreen
-    // in a specific resolution if desired and required for some TVs/monitors/display devices
-    Goto NoDoubledResolution;
   end
   else
   begin
     Log.LogStatus('Use config resolution', 'SDL_SetVideoMode');
     S := Ini.GetResolution(W, H);
-
-    // hackfix to prevent a doubled resolution twice as GetResolution(int,int) is already doubling the resolution
-    Goto NoDoubledResolution;
   end;
-
-  // hacky fix to support multiplied resolution (in width) in multiple screen setup (Screens=2 and more)
-  // TODO: RattleSN4K3: Improve the way multiplied screen resolution is applied and stored (see UGraphics::InitializeScreen; W := W * Screens)
-  if ((Screens > 1) and not Split) then
-  	W := W * Screens;
-
-NoDoubledResolution:
 
   Log.LogStatus('Creating window', 'SDL_SetVideoMode');
 
@@ -661,6 +659,8 @@ NoDoubledResolution:
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE);
   end;
+
+  sdlRenderer := SDL_CreateRenderer(screen,-1,SDL_RENDERER_ACCELERATED or SDL_RENDERER_PRESENTVSYNC);
 
   //SDL_ShowCursor(0);    just to be able to debug while having mosue cursor
 

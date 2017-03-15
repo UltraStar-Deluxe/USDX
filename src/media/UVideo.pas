@@ -69,6 +69,7 @@ uses
   UCommon,
   UConfig,
   ULog,
+  UDraw,
   UMusic,
   UGraphicClasses,
   UGraphic,
@@ -1166,7 +1167,7 @@ var
   TexRect:      TRectCoords;
   HeightFactor: double;
   WidthFactor:  double;
-
+  rect:   TSDL_Rect;
 begin
   // exit if there's nothing to draw
   if (not fOpened) then
@@ -1182,46 +1183,51 @@ begin
   WidthFactor := (ScreenW/Screens) / RenderW;
   HeightFactor := ScreenH / RenderH;
 
-  glScissor(
-    round(fPosX*WidthFactor + (ScreenW/Screens)*(fScreen-1)),
-    round((RenderH-fPosY-fHeight)*HeightFactor),
-    round(fWidth*WidthFactor),
-    round(fHeight*HeightFactor)
-    );
-
-  glEnable(GL_SCISSOR_TEST);
-  glEnable(GL_BLEND);
-  glDepthRange(0, 10);
-  glDepthFunc(GL_LEQUAL);
-  glEnable(GL_DEPTH_TEST);
-
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, fFrameTex);
-  glColor4f(1, 1, 1, fAlpha);
-  glBegin(GL_QUADS);
-    // upper-left coord
-    glTexCoord2f(TexRect.Left, TexRect.Upper);
-    glVertex3f(ScreenRect.Left, ScreenRect.Upper, fPosZ);
-    // lower-left coord
-    glTexCoord2f(TexRect.Left, TexRect.Lower);
-    glVertex3f(ScreenRect.Left, ScreenRect.Lower, fPosZ);
-    // lower-right coord
-    glTexCoord2f(TexRect.Right, TexRect.Lower);
-    glVertex3f(ScreenRect.Right, ScreenRect.Lower, fPosZ);
-    // upper-right coord
-    glTexCoord2f(TexRect.Right, TexRect.Upper);
-    glVertex3f(ScreenRect.Right, ScreenRect.Upper, fPosZ);
-  glEnd;
-
-  glDisable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  //draw black borders
-  DrawBorders(ScreenRect);
-
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_BLEND);
-  glDisable(GL_SCISSOR_TEST);
+  //glScissor(
+  //  round(fPosX*WidthFactor + (ScreenW/Screens)*(fScreen-1)),
+  //  round((RenderH-fPosY-fHeight)*HeightFactor),
+  //  round(fWidth*WidthFactor),
+  //  round(fHeight*HeightFactor)
+  //  );
+  //
+  //glEnable(GL_SCISSOR_TEST);
+  //glEnable(GL_BLEND);
+  //glDepthRange(0, 10);
+  //glDepthFunc(GL_LEQUAL);
+  //glEnable(GL_DEPTH_TEST);
+  //
+  //glEnable(GL_TEXTURE_2D);
+  //glBindTexture(GL_TEXTURE_2D, fFrameTex);
+  //glColor4f(1, 1, 1, fAlpha);
+  //glBegin(GL_QUADS);
+  //  // upper-left coord
+  //  glTexCoord2f(TexRect.Left, TexRect.Upper);
+  //  glVertex3f(ScreenRect.Left, ScreenRect.Upper, fPosZ);
+  //  // lower-left coord
+  //  glTexCoord2f(TexRect.Left, TexRect.Lower);
+  //  glVertex3f(ScreenRect.Left, ScreenRect.Lower, fPosZ);
+  //  // lower-right coord
+  //  glTexCoord2f(TexRect.Right, TexRect.Lower);
+  //  glVertex3f(ScreenRect.Right, ScreenRect.Lower, fPosZ);
+  //  // upper-right coord
+  //  glTexCoord2f(TexRect.Right, TexRect.Upper);
+  //  glVertex3f(ScreenRect.Right, ScreenRect.Upper, fPosZ);
+  //glEnd;
+  //
+  //glDisable(GL_TEXTURE_2D);
+  //glBindTexture(GL_TEXTURE_2D, 0);
+  //
+  ////draw black borders
+  //DrawBorders(ScreenRect);
+  //
+  //glDisable(GL_DEPTH_TEST);
+  //glDisable(GL_BLEND);
+  //glDisable(GL_SCISSOR_TEST);
+  rect.x:=0;
+  rect.y:=0;
+  rect.h:=ScreenH;
+  rect.w:=ScreenW;
+  //SDL_RenderCopy(sdlRenderer, fFrameTex, nil, @rect);
 
   {$IFDEF VideoBenchmark}
   Log.BenchmarkEnd(15);

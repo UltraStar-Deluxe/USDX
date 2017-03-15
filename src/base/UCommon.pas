@@ -49,6 +49,12 @@ type
   TIntegerDynArray = array of integer;
   TStringDynArray = array of string;
   TUTF8StringDynArray = array of UTF8String;
+  TRecR = record
+    Top:    real;
+    Left:   real;
+    Right:  real;
+    Bottom: real;
+  end;
 
 const
   SepWhitespace = [#9, #10, #13, ' ']; // tab, lf, cr, space

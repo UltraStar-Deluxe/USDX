@@ -43,20 +43,19 @@ procedure DrawTexture(Texture: TTexture);
 implementation
 
 uses
-  dglOpenGL;
+  dglOpenGL,
+  UDraw,
+  UCommon;
 
 procedure DrawLine(X1, Y1, X2, Y2, ColR, ColG, ColB: real);
 begin
-  glColor3f(ColR, ColG, ColB);
-  glBegin(GL_LINES);
-    glVertex2f(x1, y1);
-    glVertex2f(x2, y2);
-  glEnd;
+  setSdlDrawColor(ColR, ColG, ColB);
+  drawSdlLine(x1, y1, x2, y2);
 end;
 
 procedure DrawQuad(X, Y, W, H, ColR, ColG, ColB: real);
 begin
-  glColor3f(ColR, ColG, ColB);
+  setSdlDrawColor(ColR, ColG, ColB);
   glBegin(GL_QUADS);
     glVertex2f(x,   y);
     glVertex2f(x,   y+h);
@@ -67,6 +66,7 @@ end;
 
 procedure DrawTexture(Texture: TTexture);
 var
+  rec:            TRecR;
   x1, x2, x3, x4:     real;
   y1, y2, y3, y4:     real;
   xt1, xt2, xt3, xt4: real;
@@ -74,17 +74,17 @@ var
 begin
   with Texture do
   begin
-    glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha);
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glDepthRange(0, 10);
-    glDepthFunc(GL_LEQUAL);
-//    glDepthFunc(GL_GEQUAL);
-    glEnable(GL_DEPTH_TEST);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//    glBlendFunc(GL_SRC_COLOR, GL_ZERO);
-
-    glBindTexture(GL_TEXTURE_2D, TexNum);
+    setSdlDrawColor(ColR * Int, ColG * Int, ColB * Int, Alpha);
+//    glEnable(GL_TEXTURE_2D);
+//    glEnable(GL_BLEND);
+//    glDepthRange(0, 10);
+//    glDepthFunc(GL_LEQUAL);
+////    glDepthFunc(GL_GEQUAL);
+//    glEnable(GL_DEPTH_TEST);
+//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+////    glBlendFunc(GL_SRC_COLOR, GL_ZERO);
+//
+//    glBindTexture(GL_TEXTURE_2D, TexNum);
 
     x1 := x;
     x2 := x;
@@ -133,20 +133,25 @@ begin
       glTexCoord2f(TexX2*TexW, TexY1*TexH); glVertex3f(x4, y4, z);
     glEnd;
     }
-    glBegin(GL_QUADS);
-      glTexCoord2f(TexX1*TexW, TexY1*TexH);
-      glVertex3f(x1, y1 + (y2 - (LeftScale * (y2))), z);
-      glTexCoord2f(TexX1*TexW, TexY2*TexH);
-      glVertex3f(x2, y2 - (y2 - (LeftScale * (y2))), z);
-      glTexCoord2f(TexX2*TexW, TexY2*TexH);
-      glVertex3f(x3, y3 - (y2 - (RightScale * (y2))), z);
-      glTexCoord2f(TexX2*TexW, TexY1*TexH);
-      glVertex3f(x4, y4 + (y2 - (RightScale * (y2))), z);
-    glEnd;
+    //glBegin(GL_QUADS);
+    //  glTexCoord2f(TexX1*TexW, TexY1*TexH);
+    //  glVertex3f(x1, y1 + (y2 - (LeftScale * (y2))), z);
+    //  glTexCoord2f(TexX1*TexW, TexY2*TexH);
+    //  glVertex3f(x2, y2 - (y2 - (LeftScale * (y2))), z);
+    //  glTexCoord2f(TexX2*TexW, TexY2*TexH);
+    //  glVertex3f(x3, y3 - (y2 - (RightScale * (y2))), z);
+    //  glTexCoord2f(TexX2*TexW, TexY1*TexH);
+    //  glVertex3f(x4, y4 + (y2 - (RightScale * (y2))), z);
+    //glEnd;
 
+    rec.Left:=x1;
+    rec.Right:=x3;
+    rec.Top:=y1 + (y2 - (LeftScale * (y2)));
+    rec.Bottom:=y3 - (y2 - (RightScale * (y2)));
+    drawSdlTexture(sdlTex, rec);
   end;
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_TEXTURE_2D);
+  //glDisable(GL_DEPTH_TEST);
+  //glDisable(GL_TEXTURE_2D);
 end;
 
 end.

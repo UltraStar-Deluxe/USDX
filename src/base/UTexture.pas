@@ -68,6 +68,7 @@ type
     TexY2:    real;
     Alpha:    real;
     Name:     IPath; // experimental for handling cache images. maybe it's useful for dynamic skins
+    sdlTex:   PSDL_Texture;
   end;
 
 type
@@ -86,6 +87,8 @@ const
 
 function TextureTypeToStr(TexType: TTextureType): string;
 function ParseTextureType(const TypeStr: string; Default: TTextureType): TTextureType;
+function calculateSdlRec(rec: TRect): TSDL_Rect; overload;
+function calculateSDLRec(rec: TRecR): TSDL_Rect; overload;
 
 procedure AdjustPixelFormat(var TexSurface: PSDL_Surface; Typ: TTextureType);
 
@@ -139,6 +142,7 @@ uses
   DateUtils,
   StrUtils,
   Math,
+  UGraphic,
   ULog,
   UCovers,
   UThemes,
@@ -250,7 +254,6 @@ var
   TexSurface: PSDL_Surface;
   newWidth, newHeight: integer;
   oldWidth, oldHeight: integer;
-  ActTex: GLuint;
 begin
   // zero texture data
   FillChar(Result, SizeOf(Result), 0);
@@ -264,37 +267,37 @@ begin
     Exit;
   end;
 
-  // convert pixel format as needed
-  AdjustPixelFormat(TexSurface, Typ);
-
-  // adjust texture size (scale down, if necessary)
-  newWidth   := TexSurface.W;                            //basisbit ToDo make images scale in size and keep ratio?
-  newHeight  := TexSurface.H;
-
-  if (newWidth > Limit) then
-    newWidth := Limit;
-
-  if (newHeight > Limit) then
-    newHeight := Limit;
-
-  if (TexSurface.W > newWidth) or (TexSurface.H > newHeight) then
-    ScaleImage(TexSurface, newWidth, newHeight);
-
-  // now we might colorize the whole thing
-  if (Typ = TEXTURE_TYPE_COLORIZED) then
-    ColorizeImage(TexSurface, Col);
+  //// convert pixel format as needed
+  //AdjustPixelFormat(TexSurface, Typ);
+  //
+  //// adjust texture size (scale down, if necessary)
+  //newWidth   := TexSurface.W;                            //basisbit ToDo make images scale in size and keep ratio?
+  //newHeight  := TexSurface.H;
+  //
+  //if (newWidth > Limit) then
+  //  newWidth := Limit;
+  //
+  //if (newHeight > Limit) then
+  //  newHeight := Limit;
+  //
+  //if (TexSurface.W > newWidth) or (TexSurface.H > newHeight) then
+  //  ScaleImage(TexSurface, newWidth, newHeight);
+  //
+  //// now we might colorize the whole thing
+  //if (Typ = TEXTURE_TYPE_COLORIZED) then
+  //  ColorizeImage(TexSurface, Col);
 
   // save actual dimensions of our texture
-  oldWidth  := newWidth;
-  oldHeight := newHeight;
+  //oldWidth  := newWidth;
+  //oldHeight := newHeight;
 
   {if (SupportsNPOT = false) then
   begin}
   // make texture dimensions be powers of 2
-  newWidth  := Round(Power(2, Ceil(Log2(newWidth))));
-  newHeight := Round(Power(2, Ceil(Log2(newHeight))));
-  if (newHeight <> oldHeight) or (newWidth <> oldWidth) then
-    FitImage(TexSurface, newWidth, newHeight);
+  //newWidth  := Round(Power(2, Ceil(Log2(newWidth))));
+  //newHeight := Round(Power(2, Ceil(Log2(newHeight))));
+  //if (newHeight <> oldHeight) or (newWidth <> oldWidth) then
+  //  FitImage(TexSurface, newWidth, newHeight);
   {end;}
 
   // at this point we have the image in memory...
@@ -306,32 +309,32 @@ begin
   // and could now create our openGL texture from it
 
   // prepare OpenGL texture
-  glGenTextures(1, @ActTex);
-
-  glBindTexture(GL_TEXTURE_2D, ActTex);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  // load data into gl texture
-  if (Typ = TEXTURE_TYPE_TRANSPARENT) or
-     (Typ = TEXTURE_TYPE_COLORIZED) then
-  begin
-    {$IFDEF FPC_BIG_ENDIAN}
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, TexSurface.pixels);
-    {$ELSE}
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, TexSurface.pixels);
-    {$ENDIF}
-  end
-  else //if Typ = TEXTURE_TYPE_PLAIN then
-  begin
-    {$IFDEF FPC_BIG_ENDIAN}
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_BGR, GL_UNSIGNED_BYTE, TexSurface.pixels);
-    {$ELSE}
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, TexSurface.pixels);
-    {$ENDIF}
-  end;
+  //glGenTextures(1, @ActTex);
+  //
+  //glBindTexture(GL_TEXTURE_2D, ActTex);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  //
+  //// load data into gl texture
+  //if (Typ = TEXTURE_TYPE_TRANSPARENT) or
+  //   (Typ = TEXTURE_TYPE_COLORIZED) then
+  //begin
+  //  {$IFDEF FPC_BIG_ENDIAN}
+  //  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, TexSurface.pixels);
+  //  {$ELSE}
+  //  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, TexSurface.pixels);
+  //  {$ENDIF}
+  //end
+  //else //if Typ = TEXTURE_TYPE_PLAIN then
+  //begin
+  //  {$IFDEF FPC_BIG_ENDIAN}
+  //  glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_BGR, GL_UNSIGNED_BYTE, TexSurface.pixels);
+  //  {$ELSE}
+  //  glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, TexSurface.pixels);
+  //  {$ENDIF}
+  //end;
 
   // setup texture struct
   with Result do
@@ -344,7 +347,7 @@ begin
     ScaleW := 1;
     ScaleH := 1;
     Rot := 0;
-    TexNum := ActTex;
+    TexNum := 1; //hackyhack TODO basisbit remove this
     TexW := oldWidth / newWidth;
     TexH := oldHeight / newHeight;
 
@@ -364,6 +367,7 @@ begin
     LeftScale := 1;
 
     Name := Identifier;
+    sdlTex:=SDL_CreateTextureFromSurface(UGraphic.sdlRenderer, TexSurface);
   end;
 
   SDL_FreeSurface(TexSurface);
@@ -496,6 +500,10 @@ begin
     if TexNum > 0 then
     begin
       glDeleteTextures(1, PGLuint(@TexNum));
+      if(Assigned(TextureDatabase.Texture[T].Texture.sdlTex)) then
+      begin
+           SDL_DestroyTexture(TextureDatabase.Texture[T].Texture.sdlTex);
+      end;
       TextureDatabase.Texture[T].Texture.TexNum := 0;
       //Log.LogError('Unload texture no '+IntToStr(TexNum));
     end;
@@ -506,6 +514,10 @@ begin
     if TexNum > 0 then
     begin
       glDeleteTextures(1, @TexNum);
+      if(Assigned(TextureDatabase.Texture[T].TextureCache.sdlTex)) then
+      begin
+           SDL_DestroyTexture(TextureDatabase.Texture[T].TextureCache.sdlTex);
+      end;
       TextureDatabase.Texture[T].TextureCache.TexNum := 0;
       //Log.LogError('Unload texture cache no '+IntToStr(TexNum));
     end;
@@ -553,6 +565,28 @@ begin
   //Log.LogInfo('Unknown texture type: "' + TypeStr + '". Using default texture type "'
   //    + TextureTypeToStr(Default) + '"', 'UTexture.ParseTextureType');
   Result := Default;
+end;
+
+function calculateSdlRec(rec: TRect): TSDL_Rect;
+var
+  sdlRect: TSDL_Rect;
+begin
+  sdlRect.x:=rec.Left;
+  sdlRect.y:=rec.Top;
+  sdlRect.w:=rec.Right - rec.Left;
+  sdlRect.h:=rec.Bottom - rec.Top;
+  Result := sdlRect;
+end;
+
+function calculateSDLRec(rec: TRecR): TSDL_Rect;
+var
+  sdlRect: TSDL_Rect;
+begin
+  sdlRect.x:=round(rec.Left);
+  sdlRect.y:=round(rec.Top);
+  sdlRect.w:=round((rec.Right - rec.Left));
+  sdlRect.h:=round((rec.Bottom - rec.Top));
+  Result := sdlRect;
 end;
 
 end.

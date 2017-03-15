@@ -67,19 +67,10 @@ procedure SingDrawLyricHelperJukebox(Left, LyricsMid: real);
 // Draw Webcam
 procedure SingDrawWebCamFrame;
 
-type
-  TRecR = record
-    Top:    real;
-    Left:   real;
-    Right:  real;
-    Bottom: real;
-
-    Width:  real;
-    WMid:   real;
-    Height: real;
-    HMid:   real;
-    Mid:    real;
-  end;
+procedure drawSdlLine(x1, y1, x2, y2: real);
+procedure drawSdlTexture(tex: PSDL_Texture; rec: TRecR);
+procedure setSdlDrawColor(R,G,B,A: single); overload;
+procedure setSdlDrawColor(R,G,B: single); overload;
 
 var
   NotesW:   array [0..UIni.IMaxPlayerCount-1] of real;
@@ -127,7 +118,7 @@ begin
 
   if (Webcam.TextureCam.TexNum > 0) then
   begin
-    glColor4f(1, 1, 1, 1);
+    setSdlDrawColor(1, 1, 1, 1);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
     glEnable(GL_TEXTURE_2D);
 
@@ -168,6 +159,7 @@ end;
 procedure SingDrawBackground;
 var
   Rec:    TRecR;
+  rect:   TSDL_Rect;
   TexRec: TRecR;
 begin
   if (ScreenSing.Tex_Background.TexNum > 0) then
@@ -191,10 +183,10 @@ begin
       glBegin(GL_QUADS);
         (* gradient draw *)
         (* top *)
-        glColor4f(1, 1, 1, 0);
+        setSdlDrawColor(1, 1, 1, 0);
         glTexCoord2f(TexRec.Right, TexRec.Top);    glVertex2f(Rec.Right, Rec.Top);
         glTexCoord2f(TexRec.Left,  TexRec.Top);    glVertex2f(Rec.Left,  Rec.Top);
-        glColor4f(1, 1, 1, 1);
+        setSdlDrawColor(1, 1, 1, 1);
         glTexCoord2f(TexRec.Left,  TexRec.Bottom); glVertex2f(Rec.Left,  Rec.Bottom);
         glTexCoord2f(TexRec.Right, TexRec.Bottom); glVertex2f(Rec.Right, Rec.Bottom);
         (* mid *)
@@ -213,7 +205,7 @@ begin
         TexRec.Bottom := (Rec.Bottom / 600) * ScreenSing.Tex_Background.TexH;
         glTexCoord2f(TexRec.Right, TexRec.Top);    glVertex2f(Rec.Right, Rec.Top);
         glTexCoord2f(TexRec.Left,  TexRec.Top);    glVertex2f(Rec.Left,  Rec.Top);
-        glColor4f(1, 1, 1, 0);
+        setSdlDrawColor(1, 1, 1, 0);
         glTexCoord2f(TexRec.Left,  TexRec.Bottom); glVertex2f(Rec.Left,  Rec.Bottom);
         glTexCoord2f(TexRec.Right, TexRec.Bottom); glVertex2f(Rec.Right, Rec.Bottom);
 
@@ -223,19 +215,11 @@ begin
     end
     else //Full Size BG
     begin
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, ScreenSing.Tex_Background.TexNum);
-      //glEnable(GL_BLEND);
-      glBegin(GL_QUADS);
-
-        glTexCoord2f(0, 0);   glVertex2f(0,  0);
-        glTexCoord2f(0,  ScreenSing.Tex_Background.TexH);   glVertex2f(0,  600);
-        glTexCoord2f( ScreenSing.Tex_Background.TexW,  ScreenSing.Tex_Background.TexH);   glVertex2f(800, 600);
-        glTexCoord2f( ScreenSing.Tex_Background.TexW, 0);   glVertex2f(800, 0);
-
-      glEnd;
-      glDisable(GL_TEXTURE_2D);
-      //glDisable(GL_BLEND);
+      rect.x:=0;
+      rect.y:=0;
+      rect.h:=ScreenH;
+      rect.w:=ScreenW;
+      SDL_RenderCopy(sdlRenderer, ScreenSing.Tex_Background.sdlTex, nil, @rect);
     end;
   end;
 end;
@@ -243,6 +227,7 @@ end;
 procedure SingDrawJukeboxBackground;
 var
   Rec:    TRecR;
+  rect:   TSDL_Rect;
   TexRec: TRecR;
 begin
   if (ScreenJukebox.Tex_Background.TexNum > 0) then
@@ -267,10 +252,10 @@ begin
       glBegin(GL_QUADS);
         (* gradient draw *)
         (* top *)
-        glColor4f(1, 1, 1, 0);
+        setSdlDrawColor(1, 1, 1, 0);
         glTexCoord2f(TexRec.Right, TexRec.Top);    glVertex2f(Rec.Right, Rec.Top);
         glTexCoord2f(TexRec.Left,  TexRec.Top);    glVertex2f(Rec.Left,  Rec.Top);
-        glColor4f(1, 1, 1, 1);
+        setSdlDrawColor(1, 1, 1, 1);
         glTexCoord2f(TexRec.Left,  TexRec.Bottom); glVertex2f(Rec.Left,  Rec.Bottom);
         glTexCoord2f(TexRec.Right, TexRec.Bottom); glVertex2f(Rec.Right, Rec.Bottom);
         (* mid *)
@@ -290,7 +275,7 @@ begin
         TexRec.Bottom := (Rec.Bottom / 600) * ScreenJukebox.Tex_Background.TexH;
         glTexCoord2f(TexRec.Right, TexRec.Top);    glVertex2f(Rec.Right, Rec.Top);
         glTexCoord2f(TexRec.Left,  TexRec.Top);    glVertex2f(Rec.Left,  Rec.Top);
-        glColor4f(1, 1, 1, 0);
+        setSdlDrawColor(1, 1, 1, 0);
         glTexCoord2f(TexRec.Left,  TexRec.Bottom); glVertex2f(Rec.Left,  Rec.Bottom);
         glTexCoord2f(TexRec.Right, TexRec.Bottom); glVertex2f(Rec.Right, Rec.Bottom);
 
@@ -300,60 +285,33 @@ begin
     end
     else //Full Size BG
     begin
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, ScreenJukebox.Tex_Background.TexNum);
-      glEnable(GL_BLEND);
-      glBegin(GL_QUADS);
-        glColor4f(1, 1, 1, 1);
-
-        glTexCoord2f(0, 0);   glVertex2f(0,  0);
-        glTexCoord2f(0,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(0,  600);
-        glTexCoord2f( ScreenJukebox.Tex_Background.TexW,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(800, 600);
-        glTexCoord2f( ScreenJukebox.Tex_Background.TexW, 0);   glVertex2f(800, 0);
-
-      glEnd;
-      glDisable(GL_TEXTURE_2D);
-      glDisable(GL_BLEND);
+      rect.x:=0;
+      rect.y:=0;
+      rect.h:=ScreenH;
+      rect.w:=ScreenW;
+      SDL_RenderCopy(sdlRenderer, ScreenJukebox.Tex_Background.sdlTex, nil, @rect);
     end;
   end
   else
   begin
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, ScreenJukebox.Tex_Background.TexNum);
-    //glEnable(GL_BLEND);
-    glBegin(GL_QUADS);
-      glColor4f(0, 0, 0, 1);
-
-      glTexCoord2f(0, 0);   glVertex2f(0,  0);
-      glTexCoord2f(0,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(0,  600);
-      glTexCoord2f( ScreenJukebox.Tex_Background.TexW,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(800, 600);
-      glTexCoord2f( ScreenJukebox.Tex_Background.TexW, 0);   glVertex2f(800, 0);
-
-    glEnd;
-    glDisable(GL_TEXTURE_2D);
-    //glDisable(GL_BLEND);
+    rect.x:=0;
+    rect.y:=0;
+    rect.h:=ScreenH;
+    rect.w:=ScreenW;
+    SDL_RenderCopy(sdlRenderer, ScreenJukebox.Tex_Background.sdlTex, nil, @rect);
   end;
 end;
 
 procedure SingDrawJukeboxBlackBackground;
 var
-  Rec:    TRecR;
-  TexRec: TRecR;
+  rect:   TSDL_Rect;
 begin
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, ScreenJukebox.Tex_Background.TexNum);
-  //glEnable(GL_BLEND);
-  glBegin(GL_QUADS);
-    glColor4f(0, 0, 0, 1);
-
-    glTexCoord2f(0, 0);   glVertex2f(0,  0);
-    glTexCoord2f(0,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(0,  600);
-    glTexCoord2f( ScreenJukebox.Tex_Background.TexW,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(800, 600);
-    glTexCoord2f( ScreenJukebox.Tex_Background.TexW, 0);   glVertex2f(800, 0);
-
-  glEnd;
-  glDisable(GL_TEXTURE_2D);
-  //glDisable(GL_BLEND);
+  setSdlDrawColor(0, 0, 0);
+  rect.x:=0;
+  rect.y:=0;
+  rect.h:=ScreenH;
+  rect.w:=ScreenW;
+  SDL_RenderFillRect(sdlRenderer, @rect);
 end;
 
 procedure SingDrawOscilloscope(X, Y, W, H: real; NrSound: integer);
@@ -362,34 +320,31 @@ var
   Sound:       TCaptureBuffer;
   MaxX, MaxY:  real;
   Col: TRGB;
+  posX, posY: integer;
 begin;
   Sound := AudioInputProcessor.Sound[NrSound];
 
   //  Log.LogStatus('Oscilloscope', 'SingDraw');
-  //glColor3f(Skin_OscR, Skin_OscG, Skin_OscB);
+  //setSdlDrawColor(Skin_OscR, Skin_OscG, Skin_OscB);
 
   if (Party.bPartyGame) then
     Col := GetPlayerColor(Ini.TeamColor[NrSound])
   else
     Col := GetPlayerColor(Ini.PlayerColor[NrSound]);
 
-  glColor3f(Col.R, Col.G, Col.B);
-{
-  if (ParamStr(1) = '-black') or (ParamStr(1) = '-fsblack') then
-    glColor3f(1, 1, 1);
-}
+  setSdlDrawColor(Col.R, Col.G, Col.B);
+
   MaxX := W-1;
   MaxY := (H-1) / 2;
 
   Sound.LockAnalysisBuffer();
 
-  glBegin(GL_LINE_STRIP);
     for SampleIndex := 0 to High(Sound.AnalysisBuffer) do
     begin
-      glVertex2f(X + MaxX * SampleIndex/High(Sound.AnalysisBuffer),
-                 Y + MaxY * (1 - Sound.AnalysisBuffer[SampleIndex]/-Low(Smallint)));
+      posX := round(X + MaxX * SampleIndex/High(Sound.AnalysisBuffer));
+      posY := round(Y + MaxY * (1 - Sound.AnalysisBuffer[SampleIndex]/-Low(Smallint)));
+      SDL_RenderDrawPoint(sdlRenderer, posX, posY);
     end;
-  glEnd;
 
   Sound.UnlockAnalysisBuffer();
 end;
@@ -398,16 +353,11 @@ procedure SingDrawNoteLines(Left, Top, Right: real; Space: integer);
 var
   Count: integer;
 begin
-  glEnable(GL_BLEND);
-  glColor4f(Skin_P1_LinesR, Skin_P1_LinesG, Skin_P1_LinesB, 0.4);
-  glBegin(GL_LINES);
+  setSdlDrawColor(Skin_P1_LinesR, Skin_P1_LinesG, Skin_P1_LinesB, 0.4);
   for Count := 0 to 9 do
   begin
-    glVertex2f(Left,  Top + Count * Space);
-    glVertex2f(Right, Top + Count * Space);
+    drawSdlLine(Left, (Top + Count * Space), Right, (Top + Count * Space));
   end;
-  glEnd;
-  glDisable(GL_BLEND);
 end;
 
 procedure SingDrawBeatDelimeters(Left, Top, Right: real; NrLines: integer);
@@ -423,19 +373,19 @@ begin
       TempR := (Right-Left) / (Lines[NrLines].Line[Lines[NrLines].Current].End_ - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start)
     else
       TempR := 0;
-  glEnable(GL_BLEND);
-  glBegin(GL_LINES);
   for Count := Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start to Lines[NrLines].Line[Lines[NrLines].Current].End_ do
   begin
     if (Count mod Lines[NrLines].Resolution) = Lines[NrLines].NotesGAP then
-      glColor4f(0, 0, 0, 1)
+    begin
+      setSdlDrawColor(0, 0, 0, 1)
+    end
     else
-      glColor4f(0, 0, 0, 0.3);
-    glVertex2f(Left + TempR * (Count - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start), Top);
-    glVertex2f(Left + TempR * (Count - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start), Top + 135);
+    begin
+      setSdlDrawColor(0, 0, 0, 0.3);
+    end;
+    drawSdlLine(Left + TempR * (Count - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start), Top,
+      Left + TempR * (Count - Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start), Top + 135);
   end;
-  glEnd;
-  glDisable(GL_BLEND);
 end;
 
 // draw blank Notebars
@@ -458,10 +408,10 @@ begin
 
   // exploit done
 
-    glColor3f(1, 1, 1);
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    setSdlDrawColor(1, 1, 1);
+    //glEnable(GL_TEXTURE_2D);
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     if not Lines[NrLines].Line[Lines[NrLines].Current].HasLength(TempR) then TempR := 0
     else TempR := (Right-Left) / TempR;
@@ -480,14 +430,14 @@ begin
               // If Golden note Effect of then Change not Color
             begin
               case NoteType of
-                ntNormal: glColor4f(1, 1, 1, 1);   // We set alpha to 1, cause we can control the transparency through the png itself
-                ntGolden: glColor4f(1, 1, 0.3, 1); // no stars, paint yellow -> glColor4f(1, 1, 0.3, 0.85); - we could
-                ntRap:    glColor4f(1, 1, 1, 1);
-                ntRapGolden: glColor4f(1, 1, 0.3, 1);
+                ntNormal: setSdlDrawColor(1, 1, 1, 1);   // We set alpha to 1, cause we can control the transparency through the png itself
+                ntGolden: setSdlDrawColor(1, 1, 0.3, 1); // no stars, paint yellow -> setSdlDrawColor(1, 1, 0.3, 0.85); - we could
+                ntRap:    setSdlDrawColor(1, 1, 1, 1);
+                ntRapGolden: setSdlDrawColor(1, 1, 0.3, 1);
             end; // case
             end //Else all Notes same Color
             else
-              glColor4f(1, 1, 1, 1);        // We set alpha to 1, cause we can control the transparency through the png itself
+              setSdlDrawColor(1, 1, 1, 1);        // We set alpha to 1, cause we can control the transparency through the png itself
 
           // left part
           Rec.Left  := (Start-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left + 0.5 + 10*ScreenX;
@@ -496,18 +446,12 @@ begin
           Rec.Bottom := Rec.Top + 2 * NotesH[PlayerNumber - 1];
           If (NoteType = ntRap) or (NoteType = ntRapGolden) then
           begin
-            glBindTexture(GL_TEXTURE_2D, Tex_plain_Left_Rap[PlayerNumber].TexNum);
+            drawSdlTexture(Tex_plain_Left_Rap[PlayerNumber].sdlTex, Rec);
           end
           else
           begin
-            glBindTexture(GL_TEXTURE_2D, Tex_plain_Left[PlayerNumber].TexNum);
+            drawSdlTexture(Tex_plain_Left[PlayerNumber].sdlTex, Rec);
           end;
-          glBegin(GL_QUADS);
-            glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-            glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-            glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-            glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-          glEnd;
 
             //We keep the postion of the top left corner b4 it's overwritten
             GoldenStarPos := Rec.Left;
@@ -523,20 +467,20 @@ begin
 
             If (NoteType = ntRap) or (NoteType = ntRapGolden) then
             begin
-              glBindTexture(GL_TEXTURE_2D, Tex_plain_Mid_Rap[PlayerNumber].TexNum);
+              drawSdlTexture(Tex_plain_Mid_Rap[PlayerNumber].sdlTex, Rec);
             end
             else
             begin
-              glBindTexture(GL_TEXTURE_2D, Tex_plain_Mid[PlayerNumber].TexNum);
+              drawSdlTexture(Tex_plain_Mid[PlayerNumber].sdlTex, Rec);
             end;
-            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-            glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-            glBegin(GL_QUADS);
-              glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-              glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-              glTexCoord2f(round((Rec.Right-Rec.Left)/32), 1); glVertex2f(Rec.Right, Rec.Bottom);
-              glTexCoord2f(round((Rec.Right-Rec.Left)/32), 0); glVertex2f(Rec.Right, Rec.Top);
-            glEnd;
+            //glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+            //glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+            //glBegin(GL_QUADS);
+            //  glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+            //  glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+            //  glTexCoord2f(round((Rec.Right-Rec.Left)/32), 1); glVertex2f(Rec.Right, Rec.Bottom); //TODO check this
+            //  glTexCoord2f(round((Rec.Right-Rec.Left)/32), 0); glVertex2f(Rec.Right, Rec.Top);
+            //glEnd;
 
         // right part
         Rec.Left  := Rec.Right;
@@ -545,19 +489,13 @@ begin
 
             If (NoteType = ntRap) or (NoteType = ntRapGolden) then
             begin
-              glBindTexture(GL_TEXTURE_2D, Tex_plain_Right_Rap[PlayerNumber].TexNum);
+              drawSdlTexture(Tex_plain_Right_Rap[PlayerNumber].sdlTex, Rec);
             end
             else
             begin
-              glBindTexture(GL_TEXTURE_2D, Tex_plain_Right[PlayerNumber].TexNum);
+              drawSdlTexture(Tex_plain_Right[PlayerNumber].sdlTex, Rec);
             end;
-            glBegin(GL_QUADS);
-              glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-              glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-              glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-              glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-            glEnd;
-
+            //SDL_RenderPresent(sdlRenderer);
           // Golden Star Patch
           if ((NoteType = ntGolden) or (NoteType = ntRapGolden)) and (Ini.EffectSing=1) then
           begin
@@ -568,9 +506,6 @@ begin
         end; // with
       end; // for
     end; // with
-
-    glDisable(GL_BLEND);
-    glDisable(GL_TEXTURE_2D);
   end;
 end;
 
@@ -594,7 +529,7 @@ begin
   //G := 175/255;
   //B := 247/255;
 
-  glColor3f(1, 1, 1);
+  setSdlDrawColor(1, 1, 1);
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -626,7 +561,7 @@ begin
         Rec.Bottom := Rec.Top + 2 * NotesH2;
 
         // draw the left part
-        glColor3f(1, 1, 1);
+        setSdlDrawColor(1, 1, 1);
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
           glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap[PlayerIndex+1].TexNum);
@@ -671,7 +606,7 @@ begin
           glTexCoord2f(round((Rec.Right-Rec.Left)/32), 1); glVertex2f(Rec.Right, Rec.Bottom);
           glTexCoord2f(round((Rec.Right-Rec.Left)/32), 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
-        glColor3f(1, 1, 1);
+        setSdlDrawColor(1, 1, 1);
 
         // the right part of the note
         Rec.Left  := Rec.Right;
@@ -726,8 +661,8 @@ var
 begin
   if (ScreenSing.settings.NotesVisible and (1 shl PlayerIndex) <> 0) then
   begin
-    //glColor4f(1, 1, 1, sqrt((1+sin( AudioPlayback.Position * 3))/4)/ 2 + 0.5 );
-    glColor4f(1, 1, 1, sqrt((1 + sin(AudioPlayback.Position * 3)))/2 + 0.05);
+    //setSdlDrawColor(1, 1, 1, sqrt((1+sin( AudioPlayback.Position * 3))/4)/ 2 + 0.5 );
+    setSdlDrawColor(1, 1, 1, sqrt((1 + sin(AudioPlayback.Position * 3)))/2 + 0.05);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -927,9 +862,6 @@ begin
       Bounds.Bottom := Bounds.Top + BarHeight + 3;
 
       // draw lyric help bar
-      glEnable(GL_TEXTURE_2D);
-      glEnable(GL_BLEND);
-
       if (CurrentSong.isDuet) then
       begin
         if (PlayersPlay = 1) or (PlayersPlay = 2) then
@@ -956,17 +888,10 @@ begin
       else
         Col := GetLyricBarColor(1);
 
-      glColor4f(Col.R, Col.G, Col.B, BarAlpha);
+      setSdlDrawColor(Col.R, Col.G, Col.B, BarAlpha);
 
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
-      glBegin(GL_QUADS);
-        glTexCoord2f(0, 0); glVertex2f(Bounds.Left,  Bounds.Top);
-        glTexCoord2f(0, 1); glVertex2f(Bounds.Left,  Bounds.Bottom);
-        glTexCoord2f(1, 1); glVertex2f(Bounds.Right, Bounds.Bottom);
-        glTexCoord2f(1, 0); glVertex2f(Bounds.Right, Bounds.Top);
-      glEnd;
-      glDisable(GL_BLEND);
+      //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      drawSdlTexture(Tex_Lyric_Help_Bar.sdlTex, Bounds);
     end;
   end;
 end;
@@ -1058,22 +983,11 @@ begin
       Bounds.Top := Theme.LyricBarJukebox.IndicatorYOffset + ScreenJukeBox.Lyrics.UpperLineY;
       Bounds.Bottom := Bounds.Top + BarHeight + 3;
 
-      // draw lyric help bar
-      glEnable(GL_TEXTURE_2D);
-      glEnable(GL_BLEND);
+      //setSdlDrawColor(1, 0.75, 0, BarAlpha);
+      setSdlDrawColor(ScreenJukebox.LyricHelper.R, ScreenJukebox.LyricHelper.G, ScreenJukebox.LyricHelper.B, BarAlpha);
 
-      //glColor4f(1, 0.75, 0, BarAlpha);
-      glColor4f(ScreenJukebox.LyricHelper.R, ScreenJukebox.LyricHelper.G, ScreenJukebox.LyricHelper.B, BarAlpha);
-
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
-      glBegin(GL_QUADS);
-        glTexCoord2f(0, 0); glVertex2f(Bounds.Left,  Bounds.Top);
-        glTexCoord2f(0, 1); glVertex2f(Bounds.Left,  Bounds.Bottom);
-        glTexCoord2f(1, 1); glVertex2f(Bounds.Right, Bounds.Bottom);
-        glTexCoord2f(1, 0); glVertex2f(Bounds.Right, Bounds.Top);
-      glEnd;
-      glDisable(GL_BLEND);
+      //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      drawSdlTexture(Tex_Lyric_Help_Bar.sdlTex, Bounds);
     end;
   end;
 end;
@@ -1091,10 +1005,6 @@ begin
     NR.Left := 20;
 
   NR.Right := 780;
-
-  NR.Width := NR.Right - NR.Left;
-  NR.WMid  := NR.Width / 2;
-  NR.Mid   := NR.Left + NR.WMid;
 
   // draw note-lines
 
@@ -1197,10 +1107,6 @@ begin
 
   NR.Right := 780;
 
-  NR.Width := NR.Right - NR.Left;
-  NR.WMid  := NR.Width / 2;
-  NR.Mid   := NR.Left + NR.WMid;
-
   // FIXME: accessing ScreenSing is not that generic
   if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
   begin
@@ -1219,15 +1125,15 @@ begin
     if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
     begin
       LyricEngineDuetP1.Draw(LyricsState.MidBeat);
-      SingDrawLyricHelper(0, NR.Left, NR.WMid);
+      SingDrawLyricHelper(0, NR.Left, (NR.Right - NR.Left) / 2);
 
       LyricEngineDuetP2.Draw(LyricsState.MidBeat);
-      SingDrawLyricHelper(1, NR.Left, NR.WMid);
+      SingDrawLyricHelper(1, NR.Left, (NR.Right - NR.Left) / 2);
     end
     else
     begin
       LyricEngine.Draw(LyricsState.MidBeat);
-      SingDrawLyricHelper(0, NR.Left, NR.WMid);
+      SingDrawLyricHelper(0, NR.Left, (NR.Right - NR.Left) / 2);
     end;
   end;
 
@@ -1406,7 +1312,7 @@ begin
   begin
     SingDrawPlayerBGLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 0, 15);  // Background glow    - colorized in playercolor
     SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 1, 15);             // Plain unsung notes - colorized in playercolor
-    SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 0, 0, 15);       // imho the sung notes
+    SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, (NR.Right - NR.Left) - 40, 0, 0, 15);       // imho the sung notes
   end;
 
   if PlayersPlay = 2 then
@@ -1419,8 +1325,8 @@ begin
       SingDrawLine(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, 0, 1, 15);
       SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 1, 2, 15);
 
-      SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, 0, 0, 15);
-      SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 1, 1, 15);
+      SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, (NR.Right - NR.Left) - 40, 0, 0, 15);
+      SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, (NR.Right - NR.Left) - 40, 1, 1, 15);
     end
     else
     begin
@@ -1430,8 +1336,8 @@ begin
       SingDrawLine(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, 0, 1, 15);
       SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 2, 15);
 
-      SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, 0, 0, 15);
-      SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 0, 1, 15);
+      SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, (NR.Right - NR.Left) - 40, 0, 0, 15);
+      SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, (NR.Right - NR.Left) - 40, 0, 1, 15);
     end;
   end;
 
@@ -1447,9 +1353,9 @@ begin
       SingDrawLine(NR.Left + 20, 245+95, NR.Right - 20, 1, 2, 12);
       SingDrawLine(NR.Left + 20, 370+95, NR.Right - 20, 0, 3, 12);
 
-      SingDrawPlayerLine(NR.Left + 20, 120+95, NR.Width - 40, 0, 0, 12);
-      SingDrawPlayerLine(NR.Left + 20, 245+95, NR.Width - 40, 1, 1, 12);
-      SingDrawPlayerLine(NR.Left + 20, 370+95, NR.Width - 40, 0, 2, 12);
+      SingDrawPlayerLine(NR.Left + 20, 120+95, (NR.Right - NR.Left) - 40, 0, 0, 12);
+      SingDrawPlayerLine(NR.Left + 20, 245+95, (NR.Right - NR.Left) - 40, 1, 1, 12);
+      SingDrawPlayerLine(NR.Left + 20, 370+95, (NR.Right - NR.Left) - 40, 0, 2, 12);
     end
     else
     begin
@@ -1461,9 +1367,9 @@ begin
       SingDrawLine(NR.Left + 20, 245+95, NR.Right - 20, 0, 2, 12);
       SingDrawLine(NR.Left + 20, 370+95, NR.Right - 20, 0, 3, 12);
 
-      SingDrawPlayerLine(NR.Left + 20, 120+95, NR.Width - 40, 0, 0, 12);
-      SingDrawPlayerLine(NR.Left + 20, 245+95, NR.Width - 40, 0, 1, 12);
-      SingDrawPlayerLine(NR.Left + 20, 370+95, NR.Width - 40, 0, 2, 12);
+      SingDrawPlayerLine(NR.Left + 20, 120+95, (NR.Right - NR.Left) - 40, 0, 0, 12);
+      SingDrawPlayerLine(NR.Left + 20, 245+95, (NR.Right - NR.Left) - 40, 0, 1, 12);
+      SingDrawPlayerLine(NR.Left + 20, 370+95, (NR.Right - NR.Left) - 40, 0, 2, 12);
     end;
   end;
 
@@ -1572,30 +1478,30 @@ begin
       begin
         if (Ini.Screens = 1) then
         begin
-          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, 0, 0, 15);
-          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 0, 1, 15);
+          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, (NR.Right - NR.Left) - 40, 0, 0, 15);
+          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, (NR.Right - NR.Left) - 40, 0, 1, 15);
         end
         else
         begin
-          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 50, 0, 0, 15);
-          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 50, 0, 1, 15);
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 30, 0, 2, 15);
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 30, 0, 3, 15);
+          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, (NR.Right - NR.Left)/2 - 50, 0, 0, 15);
+          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, (NR.Right - NR.Left)/2 - 50, 0, 1, 15);
+          SingDrawPlayerLine((NR.Right - NR.Left)/2 - 10 + NR.Left + 20, Skin_P1_NotesB, (NR.Right - NR.Left)/2 - 30, 0, 2, 15);
+          SingDrawPlayerLine((NR.Right - NR.Left)/2 - 10 + NR.Left + 20, Skin_P2_NotesB, (NR.Right - NR.Left)/2 - 30, 0, 3, 15);
         end;
       end
       else
       begin
         if (Ini.Screens = 1) then
         begin
-          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, 0, 0, 15);
-          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 1, 1, 15);
+          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, (NR.Right - NR.Left) - 40, 0, 0, 15);
+          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, (NR.Right - NR.Left) - 40, 1, 1, 15);
         end
         else
         begin
-          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 50, 0, 0, 15);
-          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 50, 1, 1, 15);
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 30, 0, 2, 15);
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 30, 1, 3, 15);
+          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, (NR.Right - NR.Left)/2 - 50, 0, 0, 15);
+          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, (NR.Right - NR.Left)/2 - 50, 1, 1, 15);
+          SingDrawPlayerLine((NR.Right - NR.Left)/2 - 10 + NR.Left + 20, Skin_P1_NotesB, (NR.Right - NR.Left)/2 - 30, 0, 2, 15);
+          SingDrawPlayerLine((NR.Right - NR.Left)/2 - 10 + NR.Left + 20, Skin_P2_NotesB, (NR.Right - NR.Left)/2 - 30, 1, 3, 15);
         end;
       end;
     end;
@@ -1604,13 +1510,13 @@ begin
     begin
       if not(CurrentSong.isDuet) then
       begin
-        SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, 0, 2, 15);
-        SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 0, 3, 15);
+        SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, (NR.Right - NR.Left) - 40, 0, 2, 15);
+        SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, (NR.Right - NR.Left) - 40, 0, 3, 15);
       end
       else
       begin
-        SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, 0, 2, 15);
-        SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 1, 3, 15);
+        SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, (NR.Right - NR.Left) - 40, 0, 2, 15);
+        SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, (NR.Right - NR.Left) - 40, 1, 3, 15);
       end;
     end;
   end;
@@ -1739,38 +1645,38 @@ begin
       begin
         if (Ini.Screens = 1) then
         begin
-          SingDrawPlayerLine(NR.Left + 20, 120+95, NR.Width - 40, 0, 0, 12);
-          SingDrawPlayerLine(NR.Left + 20, 245+95, NR.Width - 40, 0, 1, 12);
-          SingDrawPlayerLine(NR.Left + 20, 370+95, NR.Width - 40, 0, 2, 12);
+          SingDrawPlayerLine(NR.Left + 20, 120+95, (NR.Right - NR.Left) - 40, 0, 0, 12);
+          SingDrawPlayerLine(NR.Left + 20, 245+95, (NR.Right - NR.Left) - 40, 0, 1, 12);
+          SingDrawPlayerLine(NR.Left + 20, 370+95, (NR.Right - NR.Left) - 40, 0, 2, 12);
         end
         else
         begin
-          SingDrawPlayerLine(NR.Left + 20, 120+95, NR.Width/2 - 50, 0, 0, 12);
-          SingDrawPlayerLine(NR.Left + 20, 245+95, NR.Width/2 - 50, 0, 1, 12);
-          SingDrawPlayerLine(NR.Left + 20, 370+95, NR.Width/2 - 50, 0, 2, 12);
+          SingDrawPlayerLine(NR.Left + 20, 120+95, (NR.Right - NR.Left)/2 - 50, 0, 0, 12);
+          SingDrawPlayerLine(NR.Left + 20, 245+95, (NR.Right - NR.Left)/2 - 50, 0, 1, 12);
+          SingDrawPlayerLine(NR.Left + 20, 370+95, (NR.Right - NR.Left)/2 - 50, 0, 2, 12);
 
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, 120+95, NR.Width/2 - 30, 0, 3, 12);
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, 245+95, NR.Width/2 - 30, 0, 4, 12);
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, 370+95, NR.Width/2 - 30, 0, 5, 12);
+          SingDrawPlayerLine((NR.Right - NR.Left)/2 - 10 + NR.Left + 20, 120+95, (NR.Right - NR.Left)/2 - 30, 0, 3, 12);
+          SingDrawPlayerLine((NR.Right - NR.Left)/2 - 10 + NR.Left + 20, 245+95, (NR.Right - NR.Left)/2 - 30, 0, 4, 12);
+          SingDrawPlayerLine((NR.Right - NR.Left)/2 - 10 + NR.Left + 20, 370+95, (NR.Right - NR.Left)/2 - 30, 0, 5, 12);
         end;
       end
       else
       begin
         if (Ini.Screens = 1) then
         begin
-          SingDrawPlayerLine(NR.Left + 20, 120+95, NR.Width - 40, 0, 0, 12);
-          SingDrawPlayerLine(NR.Left + 20, 245+95, NR.Width - 40, 1, 1, 12);
-          SingDrawPlayerLine(NR.Left + 20, 370+95, NR.Width - 40, 0, 2, 12);
+          SingDrawPlayerLine(NR.Left + 20, 120+95, (NR.Right - NR.Left) - 40, 0, 0, 12);
+          SingDrawPlayerLine(NR.Left + 20, 245+95, (NR.Right - NR.Left) - 40, 1, 1, 12);
+          SingDrawPlayerLine(NR.Left + 20, 370+95, (NR.Right - NR.Left) - 40, 0, 2, 12);
         end
         else
         begin
-          SingDrawPlayerLine(NR.Left + 20, 120+95, NR.Width/2 - 50, 0, 0, 12);
-          SingDrawPlayerLine(NR.Left + 20, 245+95, NR.Width/2 - 50, 1, 1, 12);
-          SingDrawPlayerLine(NR.Left + 20, 370+95, NR.Width/2 - 50, 0, 2, 12);
+          SingDrawPlayerLine(NR.Left + 20, 120+95, (NR.Right - NR.Left)/2 - 50, 0, 0, 12);
+          SingDrawPlayerLine(NR.Left + 20, 245+95, (NR.Right - NR.Left)/2 - 50, 1, 1, 12);
+          SingDrawPlayerLine(NR.Left + 20, 370+95, (NR.Right - NR.Left)/2 - 50, 0, 2, 12);
 
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, 120+95, NR.Width/2 - 30, 1, 3, 12);
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, 245+95, NR.Width/2 - 30, 0, 4, 12);
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, 370+95, NR.Width/2 - 30, 1, 5, 12);
+          SingDrawPlayerLine((NR.Right - NR.Left)/2 - 10 + NR.Left + 20, 120+95, (NR.Right - NR.Left)/2 - 30, 1, 3, 12);
+          SingDrawPlayerLine((NR.Right - NR.Left)/2 - 10 + NR.Left + 20, 245+95, (NR.Right - NR.Left)/2 - 30, 0, 4, 12);
+          SingDrawPlayerLine((NR.Right - NR.Left)/2 - 10 + NR.Left + 20, 370+95, (NR.Right - NR.Left)/2 - 30, 1, 5, 12);
         end;
       end;
     end;
@@ -1779,20 +1685,18 @@ begin
     begin
       if not(CurrentSong.isDuet) then
       begin
-        SingDrawPlayerLine(NR.Left + 20, 120+95, NR.Width - 40, 0, 3, 12);
-        SingDrawPlayerLine(NR.Left + 20, 245+95, NR.Width - 40, 0, 4, 12);
-        SingDrawPlayerLine(NR.Left + 20, 370+95, NR.Width - 40, 0, 5, 12);
+        SingDrawPlayerLine(NR.Left + 20, 120+95, (NR.Right - NR.Left) - 40, 0, 3, 12);
+        SingDrawPlayerLine(NR.Left + 20, 245+95, (NR.Right - NR.Left) - 40, 0, 4, 12);
+        SingDrawPlayerLine(NR.Left + 20, 370+95, (NR.Right - NR.Left) - 40, 0, 5, 12);
       end
       else
       begin
-        SingDrawPlayerLine(NR.Left + 20, 120+95, NR.Width - 40, 1, 3, 12);
-        SingDrawPlayerLine(NR.Left + 20, 245+95, NR.Width - 40, 0, 4, 12);
-        SingDrawPlayerLine(NR.Left + 20, 370+95, NR.Width - 40, 1, 5, 12);
+        SingDrawPlayerLine(NR.Left + 20, 120+95, (NR.Right - NR.Left) - 40, 1, 3, 12);
+        SingDrawPlayerLine(NR.Left + 20, 245+95, (NR.Right - NR.Left) - 40, 0, 4, 12);
+        SingDrawPlayerLine(NR.Left + 20, 370+95, (NR.Right - NR.Left) - 40, 1, 5, 12);
       end;
     end;
   end;
-  glDisable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
 end;
 
 procedure SingDrawJukebox;
@@ -1808,10 +1712,6 @@ begin
 
   NR.Right := 780;
 
-  NR.Width := NR.Right - NR.Left;
-  NR.WMid  := NR.Width / 2;
-  NR.Mid   := NR.Left + NR.WMid;
-
   // FIXME: accessing ScreenJukebox is not that generic
   LyricEngine := ScreenJukebox.Lyrics;
 
@@ -1821,7 +1721,7 @@ begin
     if (ScreenJukebox.LyricsStart) or ((not(ScreenJukebox.LyricsStart) and (LyricsState.GetCurrentTime() * 1000 >= LyricsState.StartTime - 3000))) then
     begin
         LyricEngine.Draw(LyricsState.MidBeat);
-        SingDrawLyricHelperJukebox(NR.Left, NR.WMid);
+        SingDrawLyricHelperJukebox(NR.Left, (NR.Right - NR.Left) / 2);
         ScreenJukebox.LyricsStart := true;
     end;
   end;
@@ -1842,7 +1742,7 @@ var
   TempR: real;
   GoldenStarPos: real;
 begin
-  glColor3f(1, 1, 1);
+  setSdlDrawColor(1, 1, 1);
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -1859,11 +1759,11 @@ begin
 
         // Golden Note Patch
         case NoteType of
-          ntFreestyle: glColor4f(1, 1, 1, 0.35);
-          ntNormal: glColor4f(1, 1, 1, 0.85);
-          ntGolden: Glcolor4f(1, 1, 0.3, 0.85);
-          ntRap: glColor4f(1, 1, 1, 0.85);
-          ntRapGolden: Glcolor4f(1, 1, 0.3, 0.85);
+          ntFreestyle: setSdlDrawColor(1, 1, 1, 0.35);
+          ntNormal: setSdlDrawColor(1, 1, 1, 0.85);
+          ntGolden: setSdlDrawColor(1, 1, 0.3, 0.85);
+          ntRap: setSdlDrawColor(1, 1, 1, 0.85);
+          ntRapGolden: setSdlDrawColor(1, 1, 0.3, 0.85);
         end; // case
 
         // left part
@@ -1873,18 +1773,12 @@ begin
         Rec.Bottom := Rec.Top + 2 * NotesH[0];
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap[Color].TexNum);
+          drawSdlTexture(Tex_Left_Rap[Color].sdlTex, Rec);
         end
         else
         begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Left[Color].TexNum);
+          drawSdlTexture(Tex_Left[Color].sdlTex, Rec);
         end;
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-        glEnd;
         GoldenStarPos := Rec.Left;
 
         // middle part
@@ -1893,18 +1787,12 @@ begin
 
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap[Color].TexNum);
+          drawSdlTexture(Tex_Mid_Rap[Color].sdlTex, Rec);
         end
         else
         begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum);
+          drawSdlTexture(Tex_Mid[Color].sdlTex, Rec);
         end;
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-        glEnd;
 
         // right part
         Rec.Left  := Rec.Right;
@@ -1912,18 +1800,12 @@ begin
 
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap[Color].TexNum);
+          drawSdlTexture(Tex_Right_Rap[Color].sdlTex, Rec);
         end
         else
         begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Right[Color].TexNum);
+          drawSdlTexture(Tex_Right[Color].sdlTex, Rec);
         end;
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-        glEnd;
 
         if ((NoteType = ntGolden) or (NoteType = ntRapGolden)) and (Ini.EffectSing=1) then
         begin
@@ -1933,15 +1815,13 @@ begin
       end; // with
     end; // for
   end; // with
-
-  glDisable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
 end;
 
 procedure SingDrawTimeBar();
 var
   x, y:           real;
   width, height:  real;
+  rec:            TRecR;
   LyricsProgress: real;
   CurLyricsTime:  real;
   TotalTime:      real;
@@ -1953,56 +1833,43 @@ begin
   width  := Theme.Sing.StaticTimeProgress.w;
   height := Theme.Sing.StaticTimeProgress.h;
 
-  glColor4f(Theme.Sing.StaticTimeProgress.ColR,
+  setSdlDrawColor(Theme.Sing.StaticTimeProgress.ColR,
             Theme.Sing.StaticTimeProgress.ColG,
             Theme.Sing.StaticTimeProgress.ColB, 1); //Set Color
 
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
+  if ScreenSong.Mode = smMedley then
+  begin
+    CurLyricsTime := LyricsState.GetCurrentTime() - ScreenSing.MedleyStart;
+    TotalTime := ScreenSing.MedleyEnd - ScreenSing.MedleyStart;
+  end
+  else
+  begin
+    CurLyricsTime := LyricsState.GetCurrentTime();
+    TotalTime := LyricsState.TotalTime;
+  end;
 
-  glBindTexture(GL_TEXTURE_2D, Tex_TimeProgress.TexNum);
+  if (CurLyricsTime > 0) and
+     (TotalTime > 0) then
+  begin
+    LyricsProgress := CurLyricsTime / TotalTime;
+    // avoid that the bar "overflows" for inaccurate song lengths
+    if LyricsProgress > 1.0 then
+      LyricsProgress := 1.0;
 
-  glBegin(GL_QUADS);
-    glTexCoord2f(0, 0);
-    glVertex2f(x, y);
+    rec.Left:=x;
+    rec.Top:=y;
+    rec.Bottom:=y+height;
+    rec.Right:=width * LyricsProgress + x;
+    drawSdlTexture(Tex_TimeProgress.sdlTex, rec);
+  end;
 
-    if ScreenSong.Mode = smMedley then
-    begin
-      CurLyricsTime := LyricsState.GetCurrentTime() - ScreenSing.MedleyStart;
-      TotalTime := ScreenSing.MedleyEnd - ScreenSing.MedleyStart;
-    end
-    else
-    begin
-      CurLyricsTime := LyricsState.GetCurrentTime();
-      TotalTime := LyricsState.TotalTime;
-    end;
-
-    if (CurLyricsTime > 0) and
-       (TotalTime > 0) then
-    begin
-      LyricsProgress := CurLyricsTime / TotalTime;
-      // avoid that the bar "overflows" for inaccurate song lengths
-      if LyricsProgress > 1.0 then
-        LyricsProgress := 1.0;
-      glTexCoord2f((width * LyricsProgress) / 8, 0);
-      glVertex2f(x + width * LyricsProgress, y);
-
-      glTexCoord2f((width * LyricsProgress) / 8, 1);
-      glVertex2f(x + width * LyricsProgress, y + height);
-    end;
-
-    glTexCoord2f(0, 1);
-    glVertex2f(x, y + height);
-  glEnd;
-
- glDisable(GL_TEXTURE_2D);
- glDisable(GL_BLEND);
- glcolor4f(1, 1, 1, 1);
+ setSdlDrawColor(1, 1, 1, 1);
 end;
 
 procedure SingDrawJukeboxTimeBar();
 var
   x, y:           real;
+  rec:            TRecR;
   width, height:  real;
   LyricsProgress: real;
   CurLyricsTime:  real;
@@ -2016,7 +1883,7 @@ begin
     width  := Theme.Jukebox.StaticTimeProgress.w;
     height := Theme.Jukebox.StaticTimeProgress.h;
 
-    glColor4f(Theme.Jukebox.StaticTimeProgress.ColR,
+    setSdlDrawColor(Theme.Jukebox.StaticTimeProgress.ColR,
               Theme.Jukebox.StaticTimeProgress.ColG,
               Theme.Jukebox.StaticTimeProgress.ColB, 1); //Set Color
   end;
@@ -2029,43 +1896,52 @@ begin
     width  := Theme.Jukebox.StaticSongMenuTimeProgress.w;
     height := Theme.Jukebox.StaticSongMenuTimeProgress.h;
 
-    glColor4f(Theme.Jukebox.StaticSongMenuTimeProgress.ColR,
+    setSdlDrawColor(Theme.Jukebox.StaticSongMenuTimeProgress.ColR,
               Theme.Jukebox.StaticSongMenuTimeProgress.ColG,
               Theme.Jukebox.StaticSongMenuTimeProgress.ColB, 1); //Set Color
   end;
 
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
+  CurLyricsTime := LyricsState.GetCurrentTime();
+  if (CurLyricsTime > 0) and
+     (LyricsState.TotalTime > 0) then
+  begin
+    LyricsProgress := CurLyricsTime / LyricsState.TotalTime;
+    // avoid that the bar "overflows" for inaccurate song lengths
+    if (LyricsProgress > 1.0) then
+      LyricsProgress := 1.0;
 
-  glBindTexture(GL_TEXTURE_2D, Tex_JukeboxTimeProgress.TexNum);
+    rec.Left:=x;
+    rec.Top:=y;
+    rec.Bottom:=y+height;
+    rec.Right:=width * LyricsProgress + x;
+    drawSdlTexture(Tex_JukeboxTimeProgress.sdlTex, rec);
+  end;
 
-  glBegin(GL_QUADS);
-    glTexCoord2f(0, 0);
-    glVertex2f(x, y);
+ setSdlDrawColor(1, 1, 1, 1);
 
-    CurLyricsTime := LyricsState.GetCurrentTime();
-    if (CurLyricsTime > 0) and
-       (LyricsState.TotalTime > 0) then
-    begin
-      LyricsProgress := CurLyricsTime / LyricsState.TotalTime;
-      // avoid that the bar "overflows" for inaccurate song lengths
-      if (LyricsProgress > 1.0) then
-        LyricsProgress := 1.0;
-      glTexCoord2f((width * LyricsProgress) / 8, 0);
-      glVertex2f(x + width * LyricsProgress, y);
+end;
 
-      glTexCoord2f((width * LyricsProgress) / 8, 1);
-      glVertex2f(x + width * LyricsProgress, y + height);
-    end;
+procedure drawSdlLine(x1, y1, x2, y2: real);
+begin
+ SDL_RenderDrawLine(sdlRenderer, Round(x1), Round(y1), Round(x2), Round(y2));
+end;
 
-    glTexCoord2f(0, 1);
-    glVertex2f(x, y + height);
-  glEnd;
+procedure drawSdlTexture(tex: PSDL_Texture; rec: TRecR);
+var
+  prect: TSDL_Rect;
+begin
+ prect := UTexture.calculateSdlRec(rec);
+ SDL_RenderCopy(sdlRenderer, tex, nil, @prect);
+end;
 
- glDisable(GL_TEXTURE_2D);
- glDisable(GL_BLEND);
- glcolor4f(1, 1, 1, 1);
+procedure setSdlDrawColor(R,G,B,A: single);
+begin
+ SDL_SetRenderDrawColor(sdlRenderer, Round(R*255), Round(G*255), Round(B*255), Min(Max(Round(A*255),0),255));
+end;
 
+procedure setSdlDrawColor(R,G,B: single);
+begin
+ SDL_SetRenderDrawColor(sdlRenderer, Round(R*255), Round(G*255), Round(B*255), SDL_ALPHA_OPAQUE);
 end;
 
 end.

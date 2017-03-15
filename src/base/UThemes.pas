@@ -1469,6 +1469,7 @@ uses
   UPathUtils,
   UFileSystem,
   TextGL,
+  UDraw,
   dglOpenGL,
   math,
   StrUtils;
@@ -1478,22 +1479,22 @@ uses
 //-----------
 procedure glColorRGB(Color: TRGB);  overload;
 begin
-  glColor3f(Color.R, Color.G, Color.B);
+  setSdlDrawColor(Color.R, Color.G, Color.B);
 end;
 
 procedure glColorRGB(Color: TRGB; Alpha: real);  overload;
 begin
-  glColor4f(Color.R, Color.G, Color.B, Alpha);
+  setSdlDrawColor(Color.R, Color.G, Color.B, Alpha);
 end;
 
 procedure glColorRGB(Color: TRGBA); overload;
 begin
-  glColor4f(Color.R, Color.G, Color.B, Color.A);
+  setSdlDrawColor(Color.R, Color.G, Color.B, Color.A);
 end;
 
 procedure glColorRGB(Color: TRGBA; Alpha: real); overload;
 begin
-  glColor4f(Color.R, Color.G, Color.B, Min(Color.A, Alpha));
+  setSdlDrawColor(Color.R, Color.G, Color.B, Min(Color.A, Alpha));
 end;
 
 constructor TTheme.Create;
