@@ -178,7 +178,7 @@ type
 
       procedure Parse();
       function ParseLoop(): boolean;
-      procedure PauseParser();
+      function PauseParser(): boolean;
       procedure ResumeParser();
 
       function DecodeFrame(): integer;
@@ -671,9 +671,10 @@ end;
  * Parser section
  ********************************************)
 
-procedure TFFmpegDecodeStream.PauseParser();
+function TFFmpegDecodeStream.PauseParser(): boolean;
 begin
-  if (fParseThread = nil) or (SDL_ThreadID() = fParseThread.threadid) then
+  Result := true;
+  if (SDL_ThreadID() = fParseThread.threadid) then
   begin
     Exit;
   end;
@@ -681,11 +682,16 @@ begin
   Inc(fParserPauseRequestCount);
   while (fParserLocked) do
     SDL_CondWait(fParserUnlockedCond, fStateLock);
+  if (fParseThread = nil) then
+  begin
+    Dec(fParserPauseRequestCount);
+    Result := false;
+  end;
 end;
 
 procedure TFFmpegDecodeStream.ResumeParser();
 begin
-  if (fParseThread = nil) or (SDL_ThreadID() = fParseThread.threadid) then
+  if (SDL_ThreadID() = fParseThread.threadid) then
     begin
       Exit;
     end;
@@ -696,19 +702,16 @@ end;
 
 procedure TFFmpegDecodeStream.SetPositionIntern(Time: real; Flush: boolean; Blocking: boolean);
 begin
-  if (fParseThread = nil) then //if thread is killed but doesn't know of it yet, leave the sinking ship.
-    begin
-      ResumeDecoderUnlocked();
-      ResumeParser();
-      Exit;
-    end;
   // - The state lock has already been locked.
   // - Pause the parser first to prevent it from putting obsolete packages
   //   into the queue after the queue was flushed and before seeking is done.
   //   Otherwise we will hear fragments of old data, if the stream was seeked
   //   in stopped mode and resumed afterwards (applies to non-blocking mode only).
   // - Pause the decoder to avoid race-condition that might occur otherwise.
-  PauseParser();
+  if (PauseParser()) then
+  begin
+    Exit;
+  end;
   PauseDecoderUnlocked();
   try
     fEOFState := false;
