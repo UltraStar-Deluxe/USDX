@@ -823,9 +823,9 @@ var
 begin
   Result := true;
 
+  SDL_LockMutex(fStateLock);
   while (true) do
   begin
-    SDL_LockMutex(fStateLock);
     LockParser();
     SDL_UnlockMutex(fStateLock);
     try
@@ -833,7 +833,7 @@ begin
       if (IsQuit()) then
       begin
         Result := false;
-        Exit;
+        Break;
       end;
 
       // handle seek-request (Note: no need to lock SeekRequest here)
@@ -945,7 +945,7 @@ begin
             SDL_UnlockMutex(fStateLock);
             // signal end-of-file
             fPacketQueue.PutStatus(PKT_STATUS_FLAG_EOF, nil);
-            Exit;
+            Break;
           end;
         end;
 
@@ -959,7 +959,7 @@ begin
         begin
           // an error occured -> abort and wait for repositioning or termination
           fPacketQueue.PutStatus(PKT_STATUS_FLAG_ERROR, nil);
-          Exit;
+          Break;
         end;
 
         // url_feof() does not detect an EOF for some files
@@ -972,12 +972,12 @@ begin
         if ((fileSize <> 0) and (ByteIOCtx^.pos >= fileSize)) then
         begin
           fPacketQueue.PutStatus(PKT_STATUS_FLAG_EOF, nil);
-          Exit;
+          Break;
         end;
 
         // unknown error occured, exit
         fPacketQueue.PutStatus(PKT_STATUS_FLAG_ERROR, nil);
-        Exit;
+        Break;
       end;
 
       if (Packet.stream_index = fAudioStreamIndex) then
@@ -988,9 +988,9 @@ begin
     finally
       SDL_LockMutex(fStateLock);
       UnlockParser();
-      SDL_UnlockMutex(fStateLock);
     end;
   end;
+  SDL_UnlockMutex(fStateLock);
 end;
 
 
