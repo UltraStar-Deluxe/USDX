@@ -528,8 +528,11 @@ begin
   if (fParseThread <> nil) then
   begin
     // and wait until it terminates
-    //SDL_WaitThread(fParseThread, PInt(ThreadResult));
+    SDL_WaitThread(fParseThread, @ThreadResult);
+    SDL_LockMutex(fStateLock);
     fParseThread := nil;
+    SDL_CondBroadcast(SeekFinishedCond);
+    SDL_UnlockMutex(fStateLock);
   end;
 
   {$IFDEF ConvertPlanar}
