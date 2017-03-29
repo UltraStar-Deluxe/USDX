@@ -758,21 +758,14 @@ end;
 procedure TFFmpegDecodeStream.Parse();
 begin
   // reuse thread as long as the stream is not terminated
+  SDL_LockMutex(fStateLock);
   while (ParseLoop()) do
   begin
-    if(fQuitRequest = false) then
-    begin
     // wait for reuse or destruction of stream
-    SDL_LockMutex(fStateLock);
     while (not (fSeekRequest or fQuitRequest)) do
       SDL_CondWait(fParserIdleCond, fStateLock);
-    SDL_UnlockMutex(fStateLock);
-    end
-    else
-    begin
-      Break;
-    end;
   end;
+  SDL_UnlockMutex(fStateLock);
 end;
 
 (**
@@ -784,6 +777,8 @@ end;
  * - the stream was quited (received a quit-request)
  * Returns true if the stream can be resumed or false if the stream has to
  * be terminated.
+ * Must be called and returns with fStateLock locked but temporarily
+ * unlocks it.
  *)
 function TFFmpegDecodeStream.ParseLoop(): boolean;
 var
@@ -824,7 +819,6 @@ var
 begin
   Result := true;
 
-  SDL_LockMutex(fStateLock);
   while LockParser() do
   begin
     SDL_UnlockMutex(fStateLock);
@@ -983,7 +977,6 @@ begin
       UnlockParser();
     end;
   end;
-  SDL_UnlockMutex(fStateLock);
   if (IsQuit()) then
   begin
     Result := false;
