@@ -809,19 +809,15 @@ var
   procedure LockParser();
   begin
     if fQuitRequest then Exit;
-    SDL_LockMutex(fStateLock);
     while (fParserPauseRequestCount > 0) do
       SDL_CondWait(fParserResumeCond, fStateLock);
     fParserLocked := true;
-    SDL_UnlockMutex(fStateLock);
   end;
 
   procedure UnlockParser();
   begin
-    SDL_LockMutex(fStateLock);
     fParserLocked := false;
     SDL_CondBroadcast(fParserUnlockedCond);
-    SDL_UnlockMutex(fStateLock);
   end;
 
 begin
@@ -829,7 +825,9 @@ begin
 
   while (true) do
   begin
+    SDL_LockMutex(fStateLock);
     LockParser();
+    SDL_UnlockMutex(fStateLock);
     try
 
       if (IsQuit()) then
@@ -988,7 +986,9 @@ begin
         av_free_packet(@Packet);
 
     finally
+      SDL_LockMutex(fStateLock);
       UnlockParser();
+      SDL_UnlockMutex(fStateLock);
     end;
   end;
 end;
