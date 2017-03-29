@@ -183,6 +183,8 @@ type
 
       function DecodeFrame(): integer;
       procedure FlushCodecBuffers();
+      procedure PauseDecoderUnlocked();
+      procedure ResumeDecoderUnlocked();
       procedure PauseDecoder();
       procedure ResumeDecoder();
     public
@@ -700,8 +702,8 @@ procedure TFFmpegDecodeStream.SetPositionIntern(Time: real; Flush: boolean; Bloc
 begin
   if (fParseThread = nil) then //if thread is killed but doesn't know of it yet, leave the sinking ship.
     begin
+      ResumeDecoderUnlocked();
       SDL_UnlockMutex(fStateLock);
-      ResumeDecoder();
       ResumeParser();
       Exit;
     end;
@@ -712,8 +714,8 @@ begin
   // - Pause the decoder to avoid race-condition that might occur otherwise.
   // - Last lock the state lock because we are manipulating some shared state-vars.
   PauseParser();
-  PauseDecoder();
   SDL_LockMutex(fStateLock);
+  PauseDecoderUnlocked();
   try
     fEOFState := false;
     fErrorState := false;
@@ -742,8 +744,8 @@ begin
     // send a reuse signal in case the parser was stopped (e.g. because of an EOF)
     SDL_CondSignal(fParserIdleCond);
   finally
+    ResumeDecoderUnlocked();
     SDL_UnlockMutex(fStateLock);
-    ResumeDecoder();
     ResumeParser();
   end;
 
@@ -874,8 +876,8 @@ begin
         // pause decoder and lock state (keep the lock-order to avoid deadlocks).
         // Note that the decoder does not block in the packet-queue in seeking state,
         // so locking the decoder here does not cause a dead-lock.
-        PauseDecoder();
         SDL_LockMutex(fStateLock);
+        PauseDecoderUnlocked();
         try
           if (ErrorCode < 0) then
           begin
@@ -920,8 +922,8 @@ begin
           fSeekRequest := false;
           SDL_CondBroadcast(SeekFinishedCond);
         finally
+          ResumeDecoderUnlocked();
           SDL_UnlockMutex(fStateLock);
-          ResumeDecoder();
         end;
       end;
 
@@ -1008,20 +1010,30 @@ end;
  * Decoder section
  ********************************************)
 
-procedure TFFmpegDecodeStream.PauseDecoder();
+procedure TFFmpegDecodeStream.PauseDecoderUnlocked();
 begin
-  SDL_LockMutex(fStateLock);
   Inc(fDecoderPauseRequestCount);
   while (fDecoderLocked) do
     SDL_CondWait(fDecoderUnlockedCond, fStateLock);
+end;
+
+procedure TFFmpegDecodeStream.PauseDecoder();
+begin
+  SDL_LockMutex(fStateLock);
+  PauseDecoderUnlocked();
   SDL_UnlockMutex(fStateLock);
+end;
+
+procedure TFFmpegDecodeStream.ResumeDecoderUnlocked();
+begin
+  Dec(fDecoderPauseRequestCount);
+  SDL_CondSignal(fDecoderResumeCond);
 end;
 
 procedure TFFmpegDecodeStream.ResumeDecoder();
 begin
   SDL_LockMutex(fStateLock);
-  Dec(fDecoderPauseRequestCount);
-  SDL_CondSignal(fDecoderResumeCond);
+  ResumeDecoderUnlocked();
   SDL_UnlockMutex(fStateLock);
 end;
 
