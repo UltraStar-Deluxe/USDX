@@ -673,29 +673,23 @@ procedure TFFmpegDecodeStream.PauseParser();
 begin
   if (fParseThread = nil) or (SDL_ThreadID() = fParseThread.threadid) then
   begin
-    SDL_UnlockMutex(fStateLock);
     Exit;
   end;
 
-  SDL_LockMutex(fStateLock);
   Inc(fParserPauseRequestCount);
   while (fParserLocked) do
     SDL_CondWait(fParserUnlockedCond, fStateLock);
-  SDL_UnlockMutex(fStateLock);
 end;
 
 procedure TFFmpegDecodeStream.ResumeParser();
 begin
   if (fParseThread = nil) or (SDL_ThreadID() = fParseThread.threadid) then
     begin
-      SDL_UnlockMutex(fStateLock);
       Exit;
     end;
 
-  SDL_LockMutex(fStateLock);
   Dec(fParserPauseRequestCount);
   SDL_CondSignal(fParserResumeCond);
-  SDL_UnlockMutex(fStateLock);
 end;
 
 procedure TFFmpegDecodeStream.SetPositionIntern(Time: real; Flush: boolean; Blocking: boolean);
@@ -703,8 +697,8 @@ begin
   if (fParseThread = nil) then //if thread is killed but doesn't know of it yet, leave the sinking ship.
     begin
       ResumeDecoderUnlocked();
-      SDL_UnlockMutex(fStateLock);
       ResumeParser();
+      SDL_UnlockMutex(fStateLock);
       Exit;
     end;
   // - Pause the parser first to prevent it from putting obsolete packages
@@ -713,8 +707,8 @@ begin
   //   in stopped mode and resumed afterwards (applies to non-blocking mode only).
   // - Pause the decoder to avoid race-condition that might occur otherwise.
   // - Last lock the state lock because we are manipulating some shared state-vars.
-  PauseParser();
   SDL_LockMutex(fStateLock);
+  PauseParser();
   PauseDecoderUnlocked();
   try
     fEOFState := false;
@@ -745,8 +739,8 @@ begin
     SDL_CondSignal(fParserIdleCond);
   finally
     ResumeDecoderUnlocked();
-    SDL_UnlockMutex(fStateLock);
     ResumeParser();
+    SDL_UnlockMutex(fStateLock);
   end;
 
   // in blocking mode, wait until seeking is done
