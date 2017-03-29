@@ -168,7 +168,7 @@ type
 
       fFilename: IPath;
 
-      procedure SetPositionIntern(Time: real; Flush: boolean; Blocking: boolean);
+      procedure SetPositionIntern(Time: real; Flush: boolean);
       procedure SetEOF(State: boolean);   {$IFDEF HasInline}inline;{$ENDIF}
       procedure SetError(State: boolean); {$IFDEF HasInline}inline;{$ENDIF}
       function IsSeeking(): boolean;
@@ -647,8 +647,20 @@ end;
 
 procedure TFFmpegDecodeStream.SetPosition(Time: real);
 begin
+  // - Pause the parser first to prevent it from putting obsolete packages
+  //   into the queue after the queue was flushed and before seeking is done.
+  //   Otherwise we will hear fragments of old data, if the stream was seeked
+  //   in stopped mode and resumed afterwards (applies to non-blocking mode only).
   SDL_LockMutex(fStateLock);
-  SetPositionIntern(Time, true, true);
+  if (PauseParser()) then
+  begin
+    SetPositionIntern(Time, true);
+    ResumeParser();
+
+    // wait until seeking is done
+    while ((fParseThread <> nil) and fSeekRequest) do
+      SDL_CondWait(SeekFinishedCond, fStateLock);
+  end;
   SDL_UnlockMutex(fStateLock);
 end;
 
@@ -674,11 +686,6 @@ end;
 function TFFmpegDecodeStream.PauseParser(): boolean;
 begin
   Result := true;
-  if (SDL_ThreadID() = fParseThread.threadid) then
-  begin
-    Exit;
-  end;
-
   Inc(fParserPauseRequestCount);
   while (fParserLocked) do
     SDL_CondWait(fParserUnlockedCond, fStateLock);
@@ -691,27 +698,14 @@ end;
 
 procedure TFFmpegDecodeStream.ResumeParser();
 begin
-  if (SDL_ThreadID() = fParseThread.threadid) then
-    begin
-      Exit;
-    end;
-
   Dec(fParserPauseRequestCount);
   SDL_CondSignal(fParserResumeCond);
 end;
 
-procedure TFFmpegDecodeStream.SetPositionIntern(Time: real; Flush: boolean; Blocking: boolean);
+procedure TFFmpegDecodeStream.SetPositionIntern(Time: real; Flush: boolean);
 begin
   // - The state lock has already been locked.
-  // - Pause the parser first to prevent it from putting obsolete packages
-  //   into the queue after the queue was flushed and before seeking is done.
-  //   Otherwise we will hear fragments of old data, if the stream was seeked
-  //   in stopped mode and resumed afterwards (applies to non-blocking mode only).
   // - Pause the decoder to avoid race-condition that might occur otherwise.
-  if (PauseParser()) then
-  begin
-    Exit;
-  end;
   PauseDecoderUnlocked();
   try
     fEOFState := false;
@@ -742,14 +736,6 @@ begin
     SDL_CondSignal(fParserIdleCond);
   finally
     ResumeDecoderUnlocked();
-    ResumeParser();
-  end;
-
-  // in blocking mode, wait until seeking is done
-  if (Blocking) then
-  begin
-    while (fSeekRequest) do
-      SDL_CondWait(SeekFinishedCond, fStateLock);
   end;
 end;
 
@@ -946,7 +932,7 @@ begin
           begin
             // rewind stream (but do not flush)
             SDL_LockMutex(fStateLock);
-            SetPositionIntern(0, false, false);
+            SetPositionIntern(0, false);
             SDL_UnlockMutex(fStateLock);
             Continue;
           end
