@@ -823,7 +823,6 @@ var
 
   procedure UnlockParser();
   begin
-    if fQuitRequest then Exit;
     SDL_LockMutex(fStateLock);
     fParserLocked := false;
     SDL_CondBroadcast(fParserUnlockedCond);
