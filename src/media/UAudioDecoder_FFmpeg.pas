@@ -806,12 +806,13 @@ var
   // on the mutex (e.g. SetPosition) making usdx look like it was froozen.
   // Instead of simply locking the critical section we set a ParserLocked flag
   // instead and give priority to the threads requesting the parser to pause.
-  procedure LockParser();
+  function LockParser(): boolean;
   begin
-    if fQuitRequest then Exit;
-    while (fParserPauseRequestCount > 0) do
+    while ((fParserPauseRequestCount > 0) and not fQuitRequest) do
       SDL_CondWait(fParserResumeCond, fStateLock);
-    fParserLocked := true;
+    if (not fQuitRequest) then
+      fParserLocked := true;
+    Result := fParserLocked;
   end;
 
   procedure UnlockParser();
@@ -824,18 +825,10 @@ begin
   Result := true;
 
   SDL_LockMutex(fStateLock);
-  while (true) do
+  while LockParser() do
   begin
-    LockParser();
     SDL_UnlockMutex(fStateLock);
     try
-
-      if (IsQuit()) then
-      begin
-        Result := false;
-        Break;
-      end;
-
       // handle seek-request (Note: no need to lock SeekRequest here)
       if (fSeekRequest) then
       begin
@@ -991,6 +984,10 @@ begin
     end;
   end;
   SDL_UnlockMutex(fStateLock);
+  if (IsQuit()) then
+  begin
+    Result := false;
+  end;
 end;
 
 
