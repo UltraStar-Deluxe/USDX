@@ -173,6 +173,7 @@ type
       procedure SetError(State: boolean); {$IFDEF HasInline}inline;{$ENDIF}
       function IsSeeking(): boolean;
       function IsQuit(): boolean;
+      function GetLoopInternal(): boolean;
 
       procedure Reset();
 
@@ -664,10 +665,15 @@ begin
   SDL_UnlockMutex(fStateLock);
 end;
 
+function TFFmpegDecodeStream.GetLoopInternal(): boolean;
+begin
+  Result := fLoop;
+end;
+
 function TFFmpegDecodeStream.GetLoop(): boolean;
 begin
   SDL_LockMutex(fStateLock);
-  Result := fLoop;
+  Result := GetLoopInternal();
   SDL_UnlockMutex(fStateLock);
 end;
 
@@ -928,16 +934,17 @@ begin
         if (avio_feof(ByteIOCtx) <> 0) then
         {$IFEND}
         begin
-          if (GetLoop()) then
+          SDL_LockMutex(fStateLock);
+          if (GetLoopInternal()) then
           begin
             // rewind stream (but do not flush)
-            SDL_LockMutex(fStateLock);
             SetPositionIntern(0, false);
             SDL_UnlockMutex(fStateLock);
             Continue;
           end
           else
           begin
+            SDL_UnlockMutex(fStateLock);
             // signal end-of-file
             fPacketQueue.PutStatus(PKT_STATUS_FLAG_EOF, nil);
             Exit;
