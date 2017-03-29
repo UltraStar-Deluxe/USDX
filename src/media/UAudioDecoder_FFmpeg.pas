@@ -647,7 +647,9 @@ end;
 
 procedure TFFmpegDecodeStream.SetPosition(Time: real);
 begin
+  SDL_LockMutex(fStateLock);
   SetPositionIntern(Time, true, true);
+  SDL_UnlockMutex(fStateLock);
 end;
 
 function TFFmpegDecodeStream.GetLoop(): boolean;
@@ -698,16 +700,14 @@ begin
     begin
       ResumeDecoderUnlocked();
       ResumeParser();
-      SDL_UnlockMutex(fStateLock);
       Exit;
     end;
+  // - The state lock has already been locked.
   // - Pause the parser first to prevent it from putting obsolete packages
   //   into the queue after the queue was flushed and before seeking is done.
   //   Otherwise we will hear fragments of old data, if the stream was seeked
   //   in stopped mode and resumed afterwards (applies to non-blocking mode only).
   // - Pause the decoder to avoid race-condition that might occur otherwise.
-  // - Last lock the state lock because we are manipulating some shared state-vars.
-  SDL_LockMutex(fStateLock);
   PauseParser();
   PauseDecoderUnlocked();
   try
@@ -740,16 +740,13 @@ begin
   finally
     ResumeDecoderUnlocked();
     ResumeParser();
-    SDL_UnlockMutex(fStateLock);
   end;
 
   // in blocking mode, wait until seeking is done
   if (Blocking) then
   begin
-    SDL_LockMutex(fStateLock);
     while (fSeekRequest) do
       SDL_CondWait(SeekFinishedCond, fStateLock);
-    SDL_UnlockMutex(fStateLock);
   end;
 end;
 
@@ -946,7 +943,9 @@ begin
           if (GetLoop()) then
           begin
             // rewind stream (but do not flush)
+            SDL_LockMutex(fStateLock);
             SetPositionIntern(0, false, false);
+            SDL_UnlockMutex(fStateLock);
             Continue;
           end
           else
