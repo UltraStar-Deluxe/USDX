@@ -419,9 +419,9 @@ begin
   Stop();
 
   // Note: PerformOnClose must be called before SourceStream is invalidated
-  //PerformOnClose();
+  PerformOnClose();
   // and free data
-  //Reset();
+  Reset();
 end;
 
 procedure TGenericPlaybackStream.LockSampleBuffer();
