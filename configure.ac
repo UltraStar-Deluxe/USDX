@@ -157,10 +157,6 @@ fi
 AC_PROG_CC
 AC_LANG([C])
 
-# find and test the C++ compiler (for C-libs and wrappers)
-AC_PROG_CXX
-AC_LANG([C++])
-
 AC_PROG_RANLIB
 
 # find pkg-config
@@ -291,6 +287,14 @@ PKG_VALUE([libprojectM], [DATADIR], [variable=pkgdatadir], [$libprojectM_PKG],
 # check if we need the c-wrapper
 if [[ "$libprojectM_VERSION_MAJOR" -ge 1 ]]; then
     libprojectM_USE_CWRAPPER=yes
+    AC_MSG_NOTICE([Need C++ compiler to build libprojectM wrapper])
+    AC_PROG_CXX
+    AC_LANG_PUSH([C++])
+    AC_MSG_CHECKING([if C++ toolchain works])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],,[AC_MSG_FAILURE([C++ compiler does not work])])
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],,[AC_MSG_FAILURE([linking C++ programs does not work])])
+    AC_MSG_RESULT([yes])
+    AC_LANG_POP([C++])
 else
     libprojectM_USE_CWRAPPER=no
 fi
