@@ -216,6 +216,11 @@ if test x$enable_noexecstack = xyes; then
     fi
 fi
 
+AC_CACHE_CHECK([whether FPC supports -k"--copy-dt-needed-entries"], ac_cv_prog_ppc_copy_dt_needed_entries,
+[
+    AC_PROG_FPC_CHECK([ac_cv_prog_ppc_copy_dt_needed_entries], [-k"--copy-dt-needed-entries"], [$SIMPLE_PROGRAM])
+])
+
 # Finally substitute PFLAGS
 
 # set unset PFLAGS_XYZ vars to $(PFLAGS_XYZ_DEFAULT)

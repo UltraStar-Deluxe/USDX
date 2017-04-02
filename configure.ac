@@ -294,6 +294,12 @@ if [[ "$libprojectM_VERSION_MAJOR" -ge 1 ]]; then
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],,[AC_MSG_FAILURE([C++ compiler does not work])])
     AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],,[AC_MSG_FAILURE([linking C++ programs does not work])])
     AC_MSG_RESULT([yes])
+    # Hack to link to libstdc++ through libprojectM where needed
+    # Of course only works if libprojectM is a shared library
+    # --no-copy-dt-needed-entries is the default since Binutils 2.22
+    if test x$ac_cv_prog_ppc_copy_dt_needed_entries = xyes ; then
+        PFLAGS_EXTRA="$PFLAGS_EXTRA -k\"--copy-dt-needed-entries\""
+    fi
     AC_LANG_POP([C++])
 else
     libprojectM_USE_CWRAPPER=no
