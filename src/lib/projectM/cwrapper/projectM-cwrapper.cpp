@@ -8,10 +8,16 @@
 #define	PM_PCM(pm) (PM_CLASS(pm)->pcm)
 #endif
 
-// this is needed if ld is used instead of gcc to link this static
-// library (which is the case if the fpc pascal compiler is used).
-// Otherwise compilation fails with "undefined reference to __dso_handle"
-void *__dso_handle = 0;
+// If linking fails with "undefined reference to __dso_handle", check
+// if the directory containing crtbegin.o is in your library search path.
+// For Free Pascal on Unix this is usually configured in /etc/fpc.cfg.
+// In the past there have been Linux distributions where the path
+// mentioned in there became invalid once GCC was updated.
+//
+// The references to __dso_handle are emitted by GCC to register the
+// destructor for the global std::strings PROJECTM_FILE_EXTENSION,
+// MILKDROP_FILE_EXTENSION, and PROJECTM_MODULE_EXTENSION defined (yuck!)
+// by the projectM headers with __cxa_atexit.
 
 projectM_ptr projectM_create1(char* config_file) 
 {
