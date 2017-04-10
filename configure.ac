@@ -245,7 +245,14 @@ PKG_HAVE([libavcodec], [libavcodec], check)
 # It only takes the last from the list, assuming that this is the latest 
 # version.
 if [[ x$libavcodec_HAVE = xno -a x$FPC_PLATFORM = xdarwin ]]; then
-    PKG_CONFIG_PATH=`find $FPCDIR/lib/ffmpeg* -name libavcodec.pc | tail -n 1 | xargs dirname`:$PKG_CONFIG_PATH export PKG_CONFIG_PATH
+    if [[ x$enable_osx_fink != x ]]; then
+        PKG_CONFIG_PATH=`find /sw/lib -name libavcodec.pc | tail -n 1 | xargs dirname`:$PKG_CONFIG_PATH
+    elif [[ x$enable_osx_brew != x ]]; then
+        PKG_CONFIG_PATH=`find /usr/local/opt/ffmpeg*/lib /usr/local/lib -name libavcodec.pc | tail -n 1 | xargs dirname`:$PKG_CONFIG_PATH
+    else
+        PKG_CONFIG_PATH=`find $FPCDIR/lib/ffmpeg* -name libavcodec.pc | tail -n 1 | xargs dirname`:$PKG_CONFIG_PATH
+    fi
+    export PKG_CONFIG_PATH
     PKG_HAVE([libavcodec], [libavcodec], yes)
 fi
 PKG_VERSION([libavcodec], [libavcodec])
