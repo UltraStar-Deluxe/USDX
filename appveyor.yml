@@ -1,0 +1,16 @@
+install:
+  - appveyor AddMessage "installing NewPascal v1.0.50"
+  - curl -fsSL -o newpascal.zip "https://github.com/newpascal/newpascal/releases/download/np-v1.0.50/newpascal.zip"
+  - 7z x -y "newpascal.zip" -o"C:\" > nul
+
+build_script:
+  - c:\newpascal\configure.bat
+  - set FPCDIR=c:\newpascal\fpcsrc
+  - set PATH=c:\newpascal\fpc\bin\i386-win32;c:\newpascal\binw32
+  - cd src
+  - c:\newpascal\lazarus\lazbuild ultrastardx-win.lpi --lazarusdir=c:\newpascal\lazarus
+
+artifacts:
+  - path: game
+    name: UltraStar.Deluxe_continuous_portable
+    type: zip
