@@ -1,16 +1,29 @@
-install:
-  - appveyor AddMessage "installing NewPascal v1.0.50"
-  - curl -fsSL -o newpascal.zip "https://github.com/newpascal/newpascal/releases/download/np-v1.0.50/newpascal.zip"
-  - 7z x -y "newpascal.zip" -o"C:\" > nul
+environment:
+  NewPascalVersion: v1.0.50
 
-build_script:
+install:
+  - appveyor AddMessage -Category Information "Downloading NewPascal %NewPascalVersion%..."
+  - appveyor DownloadFile https://github.com/newpascal/newpascal/releases/download/np-%NewPascalVersion%/newpascal.zip
+  - appveyor AddMessage "Unpacking NewPascal %NewPascalVersion%..."
+  - 7z x -y "newpascal.zip" -o"C:\" > nul
+  - appveyor AddMessage -Category Information "Configuring NewPascal..."
   - c:\newpascal\configure.bat
   - set FPCDIR=c:\newpascal\fpcsrc
-  - set PATH=c:\newpascal\fpc\bin\i386-win32;c:\newpascal\binw32
-  - cd src
-  - c:\newpascal\lazarus\lazbuild ultrastardx-win.lpi --lazarusdir=c:\newpascal\lazarus
+  - set PATH=c:\newpascal\fpc\bin\i386-win32;c:\newpascal\binw32;C:\Program Files (x86)\NSIS;%path%
+
+build_script:
+  - appveyor AddMessage -Category Information "Building UltraStar-Deluxe..."
+  - c:\newpascal\lazarus\lazbuild src\ultrastardx-win.lpi --lazarusdir=c:\newpascal\lazarus
+  - appveyor AddMessage -Category Information "Done."
+
+after_build:
+  - appveyor AddMessage -Category Information "Creating Installer..."
+  - xcopy game\*.dll installer\dependencies\dll /y
+  - makensis "installer\UltraStar Deluxe.nsi"
+  - appveyor AddMessage -Category Information "Done."
 
 artifacts:
   - path: game
     name: UltraStar.Deluxe_continuous_portable
     type: zip
+  - path: installer\dist\UltraStar.Deluxe_*_installer.exe
