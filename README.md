@@ -23,13 +23,13 @@ Official Project Website: https://usdx.eu/
 ![UltraStar Deluxe Logo](https://github.com/UltraStar-Deluxe/USDX/blob/master/icons/ultrastardx-icon_256.png)
 
 
-###1. About
+### 1. About
 UltraStar Deluxe (USDX) is a free and open source karaoke game. It allows up to six players to sing along with music using microphones in order to score points, depending on the pitch of the voice and the rhythm of singing.
 UltraStar Deluxe is a fork of the original UltraStar (developed by corvus5).
 Many features have been added like party mode, theme support and support for more audio and video formats.
 The improved stability and code quality of USDX enabled ports to Linux and Mac OS X.
 
-###2. Release Notes
+### 2. Release Notes
 - New features contain 6 player on one screen capability, jukebox player, new song selection screen modes (Chessboard, Carousell, Slot machine, Slide, List, Tile), during gameplay you can see on the time bar when there are lyrics to sing, duet mode, new party modes, support for current versions of Microsoft Windows, 
 - To set additional song directories change your config.ini like this:
 ```ini
@@ -45,8 +45,7 @@ The improved stability and code quality of USDX enabled ports to Linux and Mac O
 - The primary folder for songs on OS X is `$HOME/Music/UltraStar Deluxe`, which is created when UltraStar Deluxe is run for the first time.
 - On OS X, by default the `config.ini` file is created in `$HOME/Library/Application Support/UltraStarDeluxe` when UltraStar Deluxe is run for the first time.
 
-
-###3. Command-Line Parameters
+### 3. Command-Line Parameters
 _Note: This is currently broken / in development._
 
 
@@ -96,15 +95,15 @@ Start without logging and with polish language
 Start with a customs configuration file and score database:  
 `ultrastar.exe -ConfigFile "C:\Ultrastar\Configs\PartyConfig.ini" -ScoreFile "C:\Ultrastar\Scores\PartyScores.db"`
 
-###4. Controls
-####General
+### 4. Controls
+#### General
 |Keys | Action|
 | :--- | :--- |
 | [F11] | switch on the fly between windowed fullscreen and window mode |
 | [Alt] + [Enter] | switch to real fullscreen (including changing resolution) and window mode |
 
-####Song
-####Shortcuts for song selection screen
+#### Song
+#### Shortcuts for song selection screen
 |Keys | Action|
 | :--- | :--- |
 | J | open the "Search for a Song" interface |
@@ -124,7 +123,7 @@ Start with a customs configuration file and score database:
 | [Page up] | jump to last artist with the previous letter/digit | 
 | [Spacebar] | when a duet song is selected, switch first and second voice |
 
-####Joypad / Controller
+#### Joypad / Controller
 |Axis | Action|
 | :--- | :--- |
 | D-Pad | Navigation (+switching to non-mouse mode) |
@@ -148,7 +147,7 @@ Start with a customs configuration file and score database:
 | Start | Simulates [Enter] |
 | Select | Simulates [Escape] |
 
-####Shortcuts for song editor
+#### Shortcuts for song editor
 |Keys | Action|
 | :--- | :--- | 
 | Arrow Left/Right	| select previous/next syllable                                                             |
@@ -213,7 +212,7 @@ Start with a customs configuration file and score database:
 | 9	| decrease GAP                                                                              |
 | 0	| increase GAP                                                                              |
 
-####Shortcuts for sing screen
+#### Shortcuts for sing screen
 |Keys | Action|
 | :--- | :--- |
 | S | jump forward to 5 seconds before first singing note |
@@ -225,7 +224,7 @@ Start with a customs configuration file and score database:
 | [Spacebar] | pause / play |
 | [Esc] or [Backspace] | cancel current song or end early |
 
-###5. Build and Run
+### 5. Build and Run
 [Freepascal](http://freepascal.org/) 3.0.0 or newer is required to compile UltraStar Deluxe. If you had some older version of fpc installed before, make sure to remove everything of it correctly before trying to install freepascal (otherwise compiling will fail with various weird error messages). Also, using the 3.0-development branch with current fixes is suggested.
 If you want to help the project by coding patches, we suggest you to use the [Lazarus 1.6](http://www.lazarus-ide.org/) or newer integrated development environment.
 For linking and running the game, the following libraries are also required:
@@ -240,7 +239,7 @@ For linking and running the game, the following libraries are also required:
 - opencv if you want webcam support
 - projectM if you want audio visualisation support
 
-####Compiling using Lazarus
+#### Compiling using Lazarus
 1. Start Lazarus.
 2. Choose Project → Open Project … in the menu bar. A file-dialog box will show.
 3. Change to the src subdirectory of your USDX working copy (e.g. ultrastardx/src).
@@ -249,7 +248,7 @@ For linking and running the game, the following libraries are also required:
 4. Now you can compile USDX by choosing the menu entry Run → Build or pressing Ctrl+F9.
 8. If you want to compile and/or start USDX directly choose Run → Run or press F9.
 
-####Compiling on Linux/BSD using make
+#### Compiling on Linux/BSD using make
 1. make sure all required libraries are installed 
   * for current debian / ubuntu: 
     `sudo apt-get update && sudo apt-get install git fpc libsdl2-dev libsdl2-image-dev libsdl2-image-2.0-0 libsdl2-2.0-0 libsdl2-mixer-2.0-0 libsdl2-mixer-dev libsdl2-net-2.0-0 libsdl2-net-dev libsdl2-ttf-2.0-0 libsdl2-ttf-dev libsdl2-gfx-1.0-0 libsdl2-gfx-dev ffmpeg libavdevice-dev libsqlite3-0 libsqlite3-dev libpcre3 libpcre3-dev ttf-dejavu ttf-freefont portaudio19-dev lua5.1-dev libpng16-16 libopencv-highgui-dev libprojectm-dev`
@@ -265,7 +264,7 @@ For linking and running the game, the following libraries are also required:
    * or start it directly  
      `./game/ultrastardx`
 
-####Compiling on OS X
+#### Compiling on OS X
 - USDX is built using _Homebrew_ and official _FreePascal build_ (using its compiler _FPC_)
 - You can install Homebrew from [brew.sh](http://brew.sh)
 - You can get the FPC build from [freepascal.org](http://www.freepascal.org/down/i386/macosx.var)
