@@ -2683,7 +2683,8 @@ end;
 
 procedure TScreenJukebox.DrawPlaylist;
 var
-  I, Max: integer;
+  Report: string;
+  I, J, Max: integer;
   SongDesc, Artist, Title, TimeString: UTF8String;
   CurrentTick: integer;
   Time: real;
@@ -2729,70 +2730,89 @@ begin
 
     for I := 0 to 9 do
     begin
-      Button[SongDescription[I]].Visible := true;
+      try
+        Button[SongDescription[I]].Visible := true;
 
-      if (I <= Max) then
-      begin
-        Button[SongDescription[I]].Selectable := true;
-        Artist := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Artist;
-        Title := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Title;
-
-        if (OrderType = 2) then
-          SongDesc := Title + ' - ' + Artist
-        else
-          SongDesc := Artist + ' - ' + Title;
-
-          {
-        if (CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Finish <> 0) then
-          Time := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Finish/1000
-        else
+        if (I <= Max) then
         begin
-          AudioPlayback.Open(CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Mp3);
-          Time := AudioPlayback.Length;
-          AudioPlayback.Close();
-        //  Time := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].MP3Length;
+          Button[SongDescription[I]].Selectable := true;
+          Artist := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Artist;
+          Title := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Title;
 
-        end;
+          if (OrderType = 2) then
+            SongDesc := Title + ' - ' + Artist
+          else
+            SongDesc := Artist + ' - ' + Title;
 
-        TimeString := IntToStr(Round(Time) div 60) + ':' + Format('%.*d', [2, Round(Time) mod 60]);
-        }
-      end
-      else
-      begin
-        Button[SongDescription[I]].Selectable := false;
-        SongDesc := '';
-        TimeString := '';
-      end;
+            {
+          if (CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Finish <> 0) then
+            Time := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Finish/1000
+          else
+          begin
+            AudioPlayback.Open(CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Mp3);
+            Time := AudioPlayback.Length;
+            AudioPlayback.Close();
+          //  Time := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].MP3Length;
 
-      if (Max > -1) then
-      begin
-        if (JukeboxVisibleSongs[I + ListMin] = CurrentSongID) and (not Button[SongDescription[I]].Selected) then
-        begin
-          Button[SongDescription[I]].Text[0].ColR := SelectColR;
-          Button[SongDescription[I]].Text[0].ColG := SelectColG;
-          Button[SongDescription[I]].Text[0].ColB := SelectColB;
+          end;
 
-          Button[SongDescription[I]].Text[1].ColR := SelectColR;
-          Button[SongDescription[I]].Text[1].ColG := SelectColG;
-          Button[SongDescription[I]].Text[1].ColB := SelectColB;
+          TimeString := IntToStr(Round(Time) div 60) + ':' + Format('%.*d', [2, Round(Time) mod 60]);
+          }
         end
         else
         begin
-          Button[SongDescription[I]].Text[0].ColR := 1;
-          Button[SongDescription[I]].Text[0].ColG := 1;
-          Button[SongDescription[I]].Text[0].ColB := 1;
-
-          Button[SongDescription[I]].Text[1].ColR := 1;
-          Button[SongDescription[I]].Text[1].ColG := 1;
-          Button[SongDescription[I]].Text[1].ColB := 1;
+          Button[SongDescription[I]].Selectable := false;
+          SongDesc := '';
+          TimeString := '';
         end;
-      end
-      else
-        Interaction := -1;
 
-      Button[SongDescription[I]].Text[0].Text := SongDesc;
-      Button[SongDescription[I]].Text[1].Text := TimeString;
-      Button[SongDescription[I]].Draw;
+        if (Max > -1) then
+        begin
+          if (JukeboxVisibleSongs[I + ListMin] = CurrentSongID) and (not Button[SongDescription[I]].Selected) then
+          begin
+            Button[SongDescription[I]].Text[0].ColR := SelectColR;
+            Button[SongDescription[I]].Text[0].ColG := SelectColG;
+            Button[SongDescription[I]].Text[0].ColB := SelectColB;
+
+            Button[SongDescription[I]].Text[1].ColR := SelectColR;
+            Button[SongDescription[I]].Text[1].ColG := SelectColG;
+            Button[SongDescription[I]].Text[1].ColB := SelectColB;
+          end
+          else
+          begin
+            Button[SongDescription[I]].Text[0].ColR := 1;
+            Button[SongDescription[I]].Text[0].ColG := 1;
+            Button[SongDescription[I]].Text[0].ColB := 1;
+
+            Button[SongDescription[I]].Text[1].ColR := 1;
+            Button[SongDescription[I]].Text[1].ColG := 1;
+            Button[SongDescription[I]].Text[1].ColB := 1;
+          end;
+        end
+        else
+          Interaction := -1;
+
+        Button[SongDescription[I]].Text[0].Text := SongDesc;
+        Button[SongDescription[I]].Text[1].Text := TimeString;
+        Button[SongDescription[I]].Draw;
+      except
+        on E : Exception do
+        begin
+          Report := 'Drawing of a jukebox entry failed. Check your theme files.' + LineEnding +
+          'Stacktrace:' + LineEnding;
+          if E <> nil then
+          begin
+	    Report := Report + 'Exception class: ' + E.ClassName + LineEnding +
+	    'Message: ' + E.Message + LineEnding;
+          end;
+          Report := Report + BackTraceStrFunc(ExceptAddr);
+          for J := 0 to ExceptFrameCount - 1 do
+          begin
+	    Report := Report + LineEnding + BackTraceStrFunc(ExceptFrames[J]);
+          end;
+          Log.LogWarn(Report, 'UScreenJukebox.DrawPlaylist');
+        end;
+      end;
     end;
 
     {

@@ -350,7 +350,10 @@ begin
     Msg := sqlite3_errmsg(self.fDB);
 
   if Msg <> nil then
-    raise ESqliteException.CreateFmt(s +'.'#13'Error [%d]: %s.'#13'"%s": %s', [ret, SQLiteErrorStr(ret),SQL, Msg])
+    raise ESqliteException.CreateFmt('This game can not successfully read data ' +
+    'from one of the database files. Most likely this application crashed last ' +
+    'time while it was changing this file.\n' + s +
+    '.'#13'Error [%d]: %s.'#13'"%s": %s', [ret, SQLiteErrorStr(ret),SQL, Msg])
   else
     raise ESqliteException.CreateFmt(s, [SQL, 'No message']);
 

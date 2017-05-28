@@ -38,7 +38,7 @@ implementation
 uses
   Classes,
   SysUtils,
-  bass,
+  BASS,
   UMain,
   UMusic,
   UAudioCore_Bass,
@@ -195,8 +195,31 @@ begin
 end;
 
 function TBassDecodeStream.ReadData(Buffer: PByteArray; BufSize: integer): integer;
+var
+  Report: string;
+  I: Integer;
 begin
-  Result := BASS_ChannelGetData(Handle, Buffer, BufSize);
+  Result := -1;
+  try
+    Result := BASS_ChannelGetData(Handle, Buffer, BufSize);
+  except
+    on E : Exception do
+    begin
+      Report := 'Reading decoded audio data from the BASS library failed. Faulty audio file?' + LineEnding +
+      'Stacktrace:' + LineEnding;
+      if E <> nil then
+      begin
+	Report := Report + 'Exception class: ' + E.ClassName + LineEnding +
+	'Message: ' + E.Message + LineEnding;
+      end;
+      Report := Report + BackTraceStrFunc(ExceptAddr);
+      for I := 0 to ExceptFrameCount - 1 do
+      begin
+	Report := Report + LineEnding + BackTraceStrFunc(ExceptFrames[I]);
+      end;
+      Log.LogWarn(Report, 'UAudioDecoder_Bass.ReadData');
+    end;
+  end;
   // check error state (do not handle EOF as error)
   if ((Result = -1) and (BASS_ErrorGetCode() <> BASS_ERROR_ENDED)) then
     Error := true

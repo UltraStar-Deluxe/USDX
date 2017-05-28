@@ -81,6 +81,9 @@ uses
   UUnicodeUtils;
 
 function TScreenJukeboxPlaylist.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+var
+  Report: string;
+  I: Integer;
 begin
   Result := true;
   if (PressedDown) then
@@ -112,7 +115,22 @@ begin
           try
             InitJukebox;
           except
-            Log.LogWarn('Starting jukebox failed. Most likely no folder / empty folder / paylist with not available songs was selected.', 'UScreenJokeboxPlaylist.ParseInput');
+            on E : Exception do
+            begin
+	      Report := 'Starting jukebox failed. Most likely no folder / empty folder / paylist with not available songs was selected.' + LineEnding +
+              'Stacktrace:' + LineEnding;
+	      if E <> nil then
+	      begin
+		Report := Report + 'Exception class: ' + E.ClassName + LineEnding +
+		'Message: ' + E.Message + LineEnding;
+	      end;
+	      Report := Report + BackTraceStrFunc(ExceptAddr);
+	      for I := 0 to ExceptFrameCount - 1 do
+	      begin
+		Report := Report + LineEnding + BackTraceStrFunc(ExceptFrames[I]);
+	      end;
+	      Log.LogWarn(Report, 'UScreenJokeboxPlaylist.ParseInput');
+            end;
           end;
         end;
       // Up and Down could be done at the same time,
