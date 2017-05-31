@@ -249,6 +249,16 @@ For linking and running the game, the following libraries are also required:
 4. Now you can compile USDX by choosing the menu entry Run → Build or pressing Ctrl+F9.
 8. If you want to compile and/or start USDX directly choose Run → Run or press F9.
 
+#### Compiling using Lazarus (on Windows 64-bit)
+1. [Download](https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2064%20bits/) and install the cross compiler (lazarus-x.x.x-fpc-3.0.0-cross-i386-win32-win64.exe) from win64 to win32. Choose your compiler version.
+2. Start Lazarus.
+3. Choose Project → Open Project … in the menu bar. A file-dialog box will show.
+4. Change to the src subdirectory of your USDX working copy (e.g. ultrastardx/src) and open the ultrastardx-win.lpi project-file.
+5. Choose Project → Project Options → Compiler Options → Config and Target.
+6. Set the Target OS option to Win32.
+7. Now you can compile USDX by choosing the menu entry Run → Build or pressing Ctrl+F9.
+8. If you want to compile and/or start USDX directly choose Run → Run or press F9.
+
 #### Compiling on Linux/BSD using make
 1. make sure all required libraries are installed 
   * for current debian / ubuntu: 
