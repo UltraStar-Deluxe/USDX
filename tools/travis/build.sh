@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 if [ -n "$LAZ_OPT" ]; then
     # Lazarus build (with wine)
