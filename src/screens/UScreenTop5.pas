@@ -40,6 +40,7 @@ uses
   UMenu,
   UMusic,
   USongs,
+  ULog,
   UThemes;
 
 type
@@ -174,6 +175,7 @@ var
   I:    integer;
   PMax: integer;
   sung: boolean; //score added? otherwise in wasn't sung!
+  Report: string;
 begin
   inherited;
 
@@ -195,9 +197,30 @@ begin
     end;
   end;
 
-  if sung then
-    DataBase.WriteScore(CurrentSong);
-  DataBase.ReadScore(CurrentSong);
+  try
+    if sung then
+    begin
+       DataBase.WriteScore(CurrentSong);
+    end;
+    DataBase.ReadScore(CurrentSong);
+  except
+    on E : Exception do
+    begin
+      Report := 'Writing or reading songscore failed in Top-5-creen. Faulty database file?' + LineEnding +
+      'Stacktrace:' + LineEnding;
+      if E <> nil then
+      begin
+	Report := Report + 'Exception class: ' + E.ClassName + LineEnding +
+	'Message: ' + E.Message + LineEnding;
+      end;
+      Report := Report + BackTraceStrFunc(ExceptAddr);
+      for I := 0 to ExceptFrameCount - 1 do
+      begin
+	Report := Report + LineEnding + BackTraceStrFunc(ExceptFrames[I]);
+      end;
+      Log.LogWarn(Report, 'UScreenTop5.OnShow');
+    end;
+  end;
 
   Text[TextArtistTitle].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
 
