@@ -8,6 +8,7 @@ if [ -n "$LAZ_OPT" ]; then
 elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
     # OSX build
 
+    ./autogen.sh
     ./configure --enable-osx-brew
     make macosx-standalone-app
     make macosx-dmg
