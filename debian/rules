@@ -6,8 +6,8 @@
 # use own PLDFLAGS variable for Pascal linker because autotools
 # use LDFLAGS for other checks too and therefore build will fail
 export DEB_LDFLAGS_MAINT_SET =
-export PLDFLAGS = -k"-z relro" -k"--as-needed"
-
+export PLDFLAGS = -k"-z relro" -k"--as-needed" -k"-pie"
+export PFLAGS_EXTRA = -Cg
 
 %:
 	dh $@ --with autotools_dev,autoreconf
@@ -23,6 +23,7 @@ override_dh_auto_configure:
 override_dh_auto_clean:
 	dh_auto_clean
 	-rm config.log src/config-linux.inc
+	-rm game/link.res
 
 
 override_dh_install:
