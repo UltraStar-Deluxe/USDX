@@ -1,0 +1,6 @@
+?package(ultrastardx):needs="x11" \
+  section="Games/Action" \
+  title="UltraStar Deluxe" \
+  longtitle="UltraStar Deluxe - karaoke game that allows user supplied songs" \
+  command="/usr/games/ultrastardx" \
+  icon="/usr/share/pixmaps/ultrastardx_32x32.xpm"
