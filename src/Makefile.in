@@ -127,7 +127,7 @@ ifneq ($(linkflags),)
 PLINKFLAGS := -k"$(linkflags)"
 endif
 
-PFLAGS_ALL = $(PFLAGS) $(PDEFINES) $(PLINKFLAGS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS)
+PFLAGS_ALL = $(PFLAGS) $(PDEFINES) $(PLINKFLAGS) $(PLDFLAGS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS)
 
 #################################################
 # USDX project config
