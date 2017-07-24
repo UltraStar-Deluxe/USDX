@@ -17,7 +17,7 @@ run: output/ultrastardx
 
 build: output/ultrastardx
 output/ultrastardx output/VERSION: prefix/built_libs
-	@./build.sh | tee build.log
+	@bash -o pipefail -c './build.sh | tee build.log'
 	@mkdir -p output/data/songs
 	@cp -v launch.sh output/
 	@cp -v ../../LICENSE output/
