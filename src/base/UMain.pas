@@ -382,6 +382,7 @@ var
   Event:     TSDL_event;
   SimEvent:  TSDL_event;
   KeyCharUnicode: UCS4Char;
+  SimKey: LongWord;
   s1: UTF8String;
   mouseDown: boolean;
   mouseBtn:  integer;
@@ -532,27 +533,33 @@ begin
             except
             end;
 
+            SimKey :=0;
+            if((Event.key.keysym.sym > LongWord.MinValue) and (Event.key.keysym.sym < LongWord.MaxValue)) then
+            begin
+              SimKey := Event.key.keysym.sym;
+            end;
+
             // if print is pressed -> make screenshot and save to screenshot path
-            if (Event.key.keysym.sym = SDLK_SYSREQ) or (Event.key.keysym.sym = SDLK_PRINTSCREEN) then
+            if (SimKey = SDLK_SYSREQ) or (SimKey = SDLK_PRINTSCREEN) then
               Display.SaveScreenShot
             // if there is a visible popup then let it handle input instead of underlying screen
             // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
             else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
-              KeepGoing := ScreenPopupError.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
+              KeepGoing := ScreenPopupError.ParseInput(SimKey, KeyCharUnicode, true)
             else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
-              KeepGoing := ScreenPopupInfo.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
+              KeepGoing := ScreenPopupInfo.ParseInput(SimKey, KeyCharUnicode, true)
             else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
-              KeepGoing := ScreenPopupCheck.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
+              KeepGoing := ScreenPopupCheck.ParseInput(SimKey, KeyCharUnicode, true)
             else if (ScreenPopupInsertUser <> nil) and (ScreenPopupInsertUser.Visible) then
-              KeepGoing := ScreenPopupInsertUser.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
+              KeepGoing := ScreenPopupInsertUser.ParseInput(SimKey, KeyCharUnicode, true)
             else if (ScreenPopupSendScore <> nil) and (ScreenPopupSendScore.Visible) then
-              KeepGoing := ScreenPopupSendScore.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
+              KeepGoing := ScreenPopupSendScore.ParseInput(SimKey, KeyCharUnicode, true)
             else if (ScreenPopupScoreDownload <> nil) and (ScreenPopupScoreDownload.Visible) then
-              KeepGoing := ScreenPopupScoreDownload.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true)
-            else if (Display.ShouldHandleInput(Event.key.keysym.sym, KeyCharUnicode, true, SuppressKey)) then
+              KeepGoing := ScreenPopupScoreDownload.ParseInput(SimKey, KeyCharUnicode, true)
+            else if (Display.ShouldHandleInput(LongWord(SimKey), KeyCharUnicode, true, SuppressKey)) then
             begin
               // check if screen wants to exit
-              KeepGoing := Display.ParseInput(Event.key.keysym.sym, KeyCharUnicode, true);
+              KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true);
 
               // if screen wants to exit
               if not KeepGoing then
