@@ -335,50 +335,11 @@ uninstall-plugins:
 # Distributable source-package (TODO)
 #################################################
 
-#disttmpdir := $(USDX_PACKAGE_NAME)-$(USDX_VERSION)-src
-disttmpdir := $(USDX_PACKAGE_NAME)-1.1_alpha-src
-# choose all files in SVN that are not deleted
-svn-files := svn status -v | grep -v "^[?D]" | cut -c8- | tr -s " " | cut -f5- -d" "
-
 .PHONY: dist
 dist:
-	@$(svn-files) | while read FILE; do \
-	  if test -d "$$FILE"; then \
-	    echo "MKDIR: $(disttmpdir)/$$FILE"; \
-	    $(MKDIR) "$(disttmpdir)/$$FILE" || exit 1; \
-	  else \
-	    echo "COPY:  $$FILE"; \
-	    cp "$$FILE" "$(disttmpdir)/$$FILE" || exit 1; \
-	  fi; \
-	done
-	tar cvf $(disttmpdir).tar $(disttmpdir)
-	gzip $(disttmpdir).tar
-	$(RM_REC) $(disttmpdir)
+	git archive master --prefix=$(USDX_PACKAGE_NAME)-$(USDX_VERSION)/ \
+		-o ../$(USDX_PACKAGE_NAME)-$(USDX_VERSION).tar.gz
 
-#################################################
-# Debian package
-#################################################
-
-debpkgdir    ?= dists/debian
-debpkgtmpdir := $(debpkgdir)/deb-package
-debpkgprefix := $(USDX_PACKAGE_NAME)
-debpkgname   := $(debpkgprefix)_$(USDX_VERSION)_$(PPROCESSOR).deb
-
-.PHONY: deb
-deb: all
-	$(RM_REC) $(debpkgtmpdir)
-
-	$(MKDIR) $(debpkgdir)
-	$(MKDIR) $(debpkgtmpdir)/DEBIAN
-
-	$(MAKE) DESTDIR=$(debpkgtmpdir)/ install-all
-
-	$(INSTALL_DATA) $(debpkgdir)/$(debpkgprefix).control $(debpkgtmpdir)/DEBIAN/control
-
-	dpkg-deb --build $(debpkgtmpdir)
-	mv $(debpkgtmpdir)/../deb-package.deb $(debpkgdir)/$(debpkgname)
-
-	$(RM_REC) $(debpkgtmpdir)
 
 #################################################
 # RPM (TODO)
@@ -527,7 +488,7 @@ ifeq ($(USE_OSX_PACKAGING), fink)
 	# same procedure for secondary libs in libssh2
 	@echo "[fink] copying libs of libssh2"
 	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libssh2.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-	
+
 	# same procedure for secondary libs in libcaca
 	@echo "[fink] copying libs of libssh2"
 	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libcaca.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
