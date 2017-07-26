@@ -534,7 +534,7 @@ begin
             end;
 
             SimKey :=0;
-            if((Event.key.keysym.sym > LongWord.MinValue) and (Event.key.keysym.sym < LongWord.MaxValue)) then
+            if((Event.key.keysym.sym > Low(LongWord)) and (Event.key.keysym.sym < High(LongWord))) then
             begin
               SimKey := Event.key.keysym.sym;
             end;
