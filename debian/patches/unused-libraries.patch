@@ -1,0 +1,20 @@
+diff --git a/src/ultrastardx.dpr b/src/ultrastardx.dpr
+index 2cb16a8..17612e8 100644
+--- a/src/ultrastardx.dpr
++++ b/src/ultrastardx.dpr
+@@ -64,11 +64,11 @@ uses
+   SQLiteTable3  in 'lib\SQLite\SQLiteTable3.pas',
+   SQLite3       in 'lib\SQLite\SQLite3.pas',
+   sdl2                   in 'lib\SDL2\sdl2.pas',
+-  SDL2_gfx               in 'lib\SDL2\SDL2_gfx.pas',
++//  SDL2_gfx               in 'lib\SDL2\SDL2_gfx.pas',
+   SDL2_image             in 'lib\SDL2\SDL2_image.pas',
+-  SDL2_mixer             in 'lib\SDL2\SDL2_mixer.pas',
+-  SDL2_net               in 'lib\SDL2\SDL2_net.pas',
+-  SDL2_ttf               in 'lib\SDL2\SDL2_ttf.pas',
++//  SDL2_mixer             in 'lib\SDL2\SDL2_mixer.pas',
++//  SDL2_net               in 'lib\SDL2\SDL2_net.pas',
++//  SDL2_ttf               in 'lib\SDL2\SDL2_ttf.pas',
+   //new work on current OpenGL implementation
+   dglOpenGL              in 'lib\dglOpenGL\dglOpenGL.pas',
+   UMediaCore_SDL         in 'media\UMediaCore_SDL.pas',
