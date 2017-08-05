@@ -789,9 +789,8 @@ begin
     pts := dts;
 
   if pts = AV_NOPTS_VALUE then
-    pts := 0;
-
-  if fStream^.start_time <> AV_NOPTS_VALUE then
+    pts := 0
+  else if fStream^.start_time <> AV_NOPTS_VALUE then
     pts := pts - fStream^.start_time;
 
   // synchronize time on each complete frame
