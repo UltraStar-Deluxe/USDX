@@ -155,6 +155,7 @@ type
     fFrameDuration: extended; //**< duration of a video frame in seconds (= 1/fps)
     fFrameTime: extended; //**< video time position (absolute)
     fLoopTime: extended;  //**< start time of the current loop
+    fPreferDTS: boolean;
 
     fPboEnabled: boolean;
     fPboId:      GLuint;
@@ -376,6 +377,11 @@ begin
   fStream := PPAVStream(PtrUInt(fFormatContext^.streams) + fStreamIndex * Sizeof(pointer))^;
 {$IFEND}
   fCodecContext := fStream^.codec;
+
+  fPreferDTS := false;
+  // workaround for FFmpeg bug #6560
+  if (LeftStr(fFormatContext^.iformat^.name, 4) = 'mov,') or (fFormatContext^.iformat^.name = 'mov') then
+    fPreferDTS := true;
 
   fCodec := avcodec_find_decoder(fCodecContext^.codec_id);
   if (fCodec = nil) then
@@ -785,7 +791,7 @@ begin
   dts := fAVFrame^.pkt_dts;
   {$IFEND}
 
-  if pts = AV_NOPTS_VALUE then
+  if (pts = AV_NOPTS_VALUE) or (fPreferDTS and (dts <> AV_NOPTS_VALUE)) then
     pts := dts;
 
   if pts = AV_NOPTS_VALUE then
