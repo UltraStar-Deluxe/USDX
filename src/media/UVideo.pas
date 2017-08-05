@@ -767,20 +767,15 @@ begin
     av_free_packet( @AVPacket );
   end;
 
-  // reset opaque data
+  // reset opaque data and update pts
   {$IF LIBAVCODEC_VERSION < 51068000}
   fCodecContext^.opaque := nil;
-  {$ELSEIF LIBAVCODEC_VERSION < 51105000}
-  fCodecContext^.reordered_opaque := AV_NOPTS_VALUE;
-  {$IFEND}
-
-  // update pts
-  {$IF LIBAVCODEC_VERSION < 51068000}
   if fAVFrame^.opaque <> nil then
     pts := Pint64(fAVFrame^.opaque)^
   else
     pts := AV_NOPTS_VALUE;
   {$ELSEIF LIBAVCODEC_VERSION < 51105000}
+  fCodecContext^.reordered_opaque := AV_NOPTS_VALUE;
   pts := fAVFrame^.reordered_opaque;
   {$ELSE}
   pts := fAVFrame^.pkt_pts;
