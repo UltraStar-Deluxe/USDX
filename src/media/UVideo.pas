@@ -667,10 +667,8 @@ var
   {$ENDIF}
   errnum: integer;
   AVPacket: TAVPacket;
-  pts: double;
-  {$IF LIBAVCODEC_VERSION < 51106000}
+  pts: int64;
   dts: int64;
-  {$ENDIF}
   fileSize: int64;
   urlError: integer;
 begin
@@ -778,36 +776,31 @@ begin
 
   // update pts
   {$IF LIBAVCODEC_VERSION < 51068000}
-  if ((fAVFrame^.opaque <> nil) and
-      (Pint64(fAVFrame^.opaque)^ <> AV_NOPTS_VALUE)) then
+  if fAVFrame^.opaque <> nil then
     pts := Pint64(fAVFrame^.opaque)^
+  else
+    pts := AV_NOPTS_VALUE;
   {$ELSEIF LIBAVCODEC_VERSION < 51105000}
-  if (fAVFrame^.reordered_opaque <> AV_NOPTS_VALUE) then
-    pts := fAVFrame^.reordered_opaque
+  pts := fAVFrame^.reordered_opaque;
   {$ELSE}
-  if (fAVFrame^.pkt_pts <> AV_NOPTS_VALUE) then
-    pts := fAVFrame^.pkt_pts
+  pts := fAVFrame^.pkt_pts;
   {$IFEND}
-  else
-  {$IF LIBAVCODEC_VERSION < 51106000}
-  if (dts <> AV_NOPTS_VALUE) then
-    pts := dts
-  {$ELSE}
-  if (fAVFrame^.pkt_dts <> AV_NOPTS_VALUE) then
-    pts := fAVFrame^.pkt_dts
+
+  {$IF LIBAVCODEC_VERSION >= 51106000}
+  dts := fAVFrame^.pkt_dts;
   {$IFEND}
-  else
-  begin
+
+  if pts = AV_NOPTS_VALUE then
+    pts := dts;
+
+  if pts = AV_NOPTS_VALUE then
     pts := 0;
-  end;
 
   if fStream^.start_time <> AV_NOPTS_VALUE then
     pts := pts - fStream^.start_time;
 
-  pts := pts * av_q2d(fStream^.time_base);
-
   // synchronize time on each complete frame
-  SynchronizeTime(fAVFrame, pts);
+  SynchronizeTime(fAVFrame, pts * av_q2d(fStream^.time_base));
 
   Result := true;
 end;
