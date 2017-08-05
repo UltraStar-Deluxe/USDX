@@ -160,7 +160,7 @@ type
     fPboId:      GLuint;
     procedure Reset();
     function DecodeFrame(): boolean;
-    procedure SynchronizeTime(Frame: PAVFrame; var pts: double);
+    procedure SynchronizeTime(Frame: PAVFrame; pts: double);
 
     procedure GetVideoRect(var ScreenRect, TexRect: TRectCoords);
     procedure DrawBorders(ScreenRect: TRectCoords);
@@ -631,7 +631,7 @@ begin
   fOpened := False;
 end;
 
-procedure TVideo_FFmpeg.SynchronizeTime(Frame: PAVFrame; var pts: double);
+procedure TVideo_FFmpeg.SynchronizeTime(Frame: PAVFrame; pts: double);
 var
   FrameDelay: double;
 begin
@@ -639,10 +639,6 @@ begin
   begin
     // if we have pts, set video clock to it
     fFrameTime := pts;
-  end else
-  begin
-    // if we aren't given a pts, set it to the clock
-    pts := fFrameTime;
   end;
   // update the video clock
   FrameDelay := av_q2d(fCodecContext^.time_base);
