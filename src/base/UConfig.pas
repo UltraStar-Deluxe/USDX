@@ -127,11 +127,11 @@ const
   (*
    * Current version of UltraStar Deluxe
    *)
-   USDX_VERSION_MAJOR   = 1;
-   USDX_VERSION_MINOR   = 3;
-   USDX_VERSION_RELEASE = 5;
-   USDX_VERSION_STATE   = 'beta';
-   USDX_STRING = 'UltraStar Deluxe';
+   USDX_VERSION_MAJOR   = 2017;
+   USDX_VERSION_MINOR   = 8;
+   USDX_VERSION_RELEASE = 0;
+   USDX_VERSION_STATE   = 'dev';
+   USDX_STRING = 'UltraStar Deluxe - www.usdx.eu';
 
   (*
    * FPC version numbers are already defined as built-in macros:
@@ -156,11 +156,9 @@ const
                     (FPC_RELEASE * VERSION_MINOR) +
                     (FPC_PATCH * VERSION_RELEASE);
 
-  // FPC 2.2.0 unicode support is very buggy. The cwstring unit for example
-  // always crashes whenever UTF8ToAnsi() is called on a non UTF8 encoded string
-  // what is fixed in 2.2.2.
-  {$IF Defined(FPC) and (FPC_VERSION_INT < 2002002)} // < 2.2.2
-    {$MESSAGE FATAL 'FPC >= 2.2.2 required!'}
+  // FPC 3.0.0 or newer is required. FPC 3.0.2 or newer is suggested.
+  {$IF Defined(FPC) and (FPC_VERSION_INT < 3000000)} // < 2.2.2
+    {$MESSAGE FATAL 'FPC >= 3.0.0 required! 3.0.2 or newer suggested.'}
   {$IFEND}
 
   {$IFDEF HaveFFmpeg}

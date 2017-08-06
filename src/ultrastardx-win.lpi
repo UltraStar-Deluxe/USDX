@@ -597,7 +597,6 @@
         <IOChecks Value="True"/>
         <RangeChecks Value="True"/>
         <OverflowChecks Value="True"/>
-        <StackChecks Value="True"/>
       </Checks>
       <TargetCPU Value="i386"/>
     </CodeGeneration>
