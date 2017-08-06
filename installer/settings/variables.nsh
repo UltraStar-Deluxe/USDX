@@ -4,12 +4,12 @@
 
 ; Product Information:
 
-!define VersionStr "1.3.5"
-!define FullVersion "1.3.5+dev" ; semver compatible. see semver.org
+!define VersionStr "2017.8.0"
+!define FullVersion "2017.8.0+stable" ; semver compatible. see semver.org
 !define Release "Dev"
 !define DevBuild true
-!define ReleaseMeta "+dev"
-!define ReleaseApp " Dev"
+!define ReleaseMeta "+stable"
+!define ReleaseApp " Stable"
 
 !define installername " Installer"
 !define installerexe "UltraStar.Deluxe_v${VersionStr}${ReleaseMeta}_installer"
@@ -22,9 +22,9 @@
 
 !define name "UltraStar Deluxe"
 !define publisher "USDX Team"
-!define homepage "http://ultrastardeluxe.org"
+!define homepage "https://usdx.eu"
 !define forum "https://github.com/UltraStar-Deluxe/USDX/issues"
-!define wiki "http://ultrastardeluxe.org"
+!define wiki "https://usdx.eu"
 
 !define exe "ultrastardx"
 !define exeuninstall "Uninstall"
