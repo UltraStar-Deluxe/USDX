@@ -424,6 +424,9 @@ Section $(name_section1) Section1
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(sm_songs).lnk" "$INSTDIR\songs"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(sm_uninstall).lnk" "$INSTDIR\${exeuninstall}.exe"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(sm_update).lnk" "$INSTDIR\${exeupdate}.exe"
+	
+	; SendTo shortcut
+	CreateShortCut "$SENDTO\${name}.lnk" "$INSTDIR\${exe}.exe" "-SongPath"
 !insertmacro MUI_STARTMENU_WRITE_END
 
 	; Vista Game Explorer:
@@ -462,7 +465,19 @@ SectionEnd
 ; for current version of ultrastardx
 
 ;------------------------------------
-; UNINSTALL (Section 4)
+; ULTRASTAR MANAGER (Section 4)
+;------------------------------------
+
+!include "${path_settings}\ultrastar_manager.nsh"
+
+;------------------------------------
+; ULTRASTAR CREATOR (Section 5)
+;------------------------------------
+
+!include "${path_settings}\ultrastar_creator.nsh"
+
+;------------------------------------
+; UNINSTALL (Section 6)
 ;------------------------------------
 
 Section Uninstall
@@ -475,10 +490,13 @@ Section Uninstall
 	 
 	 ; Delete created Icon on Desktop
 	 Delete "$Desktop\$(sm_shortcut).lnk"
+	 
+	 ; Delete SendTo shortcut
+	Delete "$SENDTO\${name}.lnk"
  
 	!include "${path_settings}\files_main_uninstall.nsh"
 	
-	!insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder	
+	!insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
 	Delete "$SMPROGRAMS\$StartMenuFolder\$(sm_shortcut).lnk"
 	Delete "$SMPROGRAMS\$StartMenuFolder\$(sm_website).lnk"
 	Delete "$SMPROGRAMS\$StartMenuFolder\$(sm_songs).lnk"
@@ -507,6 +525,8 @@ SectionEnd
 	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub3} $(DESC_Section2_sub3)
 	!insertmacro MUI_DESCRIPTION_TEXT ${s2_sub4} $(DESC_Section2_sub4)
 ;	!insertmacro MUI_DESCRIPTION_TEXT ${Section3} $(DESC_Section3) THEMES
+	!insertmacro MUI_DESCRIPTION_TEXT ${Section4} $(DESC_Section4)
+	!insertmacro MUI_DESCRIPTION_TEXT ${Section5} $(DESC_Section5)
 
 	!insertmacro MUI_DESCRIPTION_TEXT ${g2Section1} $(DESC_g2Section1)
 	!insertmacro MUI_DESCRIPTION_TEXT ${g2Section2} $(DESC_g2Section2)
