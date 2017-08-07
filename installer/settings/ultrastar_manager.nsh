@@ -3,7 +3,7 @@
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
 Section $(name_section4) Section4
-	File ".\tools\UltraStar-Manager-1.8.4-win32-setup.exe"
-	ExecWait "$INSTDIR\UltraStar-Manager-1.8.4-win32-setup.exe"
-	Delete "$INSTDIR\UltraStar-Manager-1.8.4-win32-setup.exe"
+	File ".\tools\UltraStar-Manager-setup.exe"
+	ExecWait "$INSTDIR\UltraStar-Manager-setup.exe"
+	Delete "$INSTDIR\UltraStar-Manager-setup.exe"
 SectionEnd

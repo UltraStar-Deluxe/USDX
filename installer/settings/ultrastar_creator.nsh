@@ -3,7 +3,7 @@
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
 Section $(name_section5) Section5
-	File ".\tools\UltraStar-Creator-1.2.0-win32-setup.exe"
-	ExecWait "$INSTDIR\UltraStar-Creator-1.2.0-win32-setup.exe"
-	Delete "$INSTDIR\UltraStar-Creator-1.2.0-win32-setup.exe"
+	File ".\tools\UltraStar-Creator-setup.exe"
+	ExecWait "$INSTDIR\UltraStar-Creator-setup.exe"
+	Delete "$INSTDIR\UltraStar-Creator-setup.exe"
 SectionEnd
