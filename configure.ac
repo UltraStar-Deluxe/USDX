@@ -220,6 +220,14 @@ else
 	fi
 fi
 AC_SUBST(lua_LIB_NAME)
+AC_MSG_CHECKING([size of lua_Integer])
+PKG_VALUE([lua],[CFLAGS],[cflags],[$lua_LIB_NAME],[C compiler flags for Lua])
+old_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $lua_CFLAGS"
+AC_COMPUTE_INT([LUA_INTEGER_BITS],[(long)sizeof(lua_Integer)*8],[#include <lua.h>])
+CFLAGS="$old_CFLAGS"
+AC_SUBST(LUA_INTEGER_BITS)
+AC_MSG_RESULT([$LUA_INTEGER_BITS bits])
 
 # find FFMpeg
 # Note: do not use the min/max version parameters with ffmpeg

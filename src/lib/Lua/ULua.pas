@@ -94,14 +94,22 @@ type
 ** CHANGE that if ptrdiff_t is not adequate on your machine. (On most
 ** machines, ptrdiff_t gives a good choice between int or long.)
 *)
-  LUA_INTEGER_  = type ptrdiff_t;
+{$IF LUA_INTEGER_BITS = 32}
+  LUA_INTEGER_  = type Int32;
+{$ELSEIF LUA_INTEGER_BITS = 64}
+  LUA_INTEGER_  = type Int64;
+{$IFEND}
 
 {$IF LUA_VERSION_NUM >= 502}
 (*
 @@ LUA_UNSIGNED is the integral type used by lua_pushunsigned/lua_tounsigned.
 ** It must have at least 32 bits.
 *)
-  LUA_UNSIGNED_ = type Cardinal;
+{$IF LUA_INTEGER_BITS = 32}
+  LUA_UNSIGNED_ = type UInt32;
+{$ELSEIF LUA_INTEGER_BITS = 64}
+  LUA_UNSIGNED_ = type UInt64;
+{$IFEND}
 {$IFEND}
 {$IF LUA_VERSION_NUM >= 503}
 (*
