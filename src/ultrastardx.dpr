@@ -128,6 +128,7 @@ uses
 
   {$IFDEF UseMIDIPort}
   MidiCons      in 'lib\midi\MidiCons.pas',
+  MidiConsWin   in 'lib\midi\MidiConsWin.pas',
 
   CircBuf       in 'lib\midi\CircBuf.pas',
   DelphiMcb     in 'lib\midi\DelphiMcb.pas',

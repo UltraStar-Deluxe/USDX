@@ -13,11 +13,6 @@ interface
   {$H+} // use long strings
 {$ENDIF}
 
-{$IFNDEF FPC}
-uses
-  Messages;
-{$ENDIF}
-
 const
   MIDI_ALLNOTESOFF     = $7B;
   MIDI_NOTEON          = $90;
@@ -39,13 +34,6 @@ const
   MIDI_STOP            = $FC;
   MIDI_ACTIVESENSING   = $FE;
   MIDI_SYSTEMRESET     = $FF;
-
-{$IFDEF FPC}
-  WM_USER              = $400;        { standard WM_USER value }
-{$ENDIF}
-
-  MIM_OVERFLOW         = WM_USER;     { Input buffer overflow }
-  MOM_PLAYBACK_DONE    = WM_USER + 1; { Timed playback complete }
 
 implementation
 
