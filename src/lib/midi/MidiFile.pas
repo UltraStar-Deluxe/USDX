@@ -321,6 +321,11 @@ begin
     end;
   end;
 end;
+
+function GetMillisecondTime: integer;
+begin
+  result := windows.GetTickCount;
+end;
 {$ENDIF}
 
 constructor TMidiTrack.Create;
@@ -521,7 +526,7 @@ procedure TMidifile.MidiTimer(Sender: TObject);
 begin
   if playing then
   begin
-    PlayToTime(GetTickCount - PlayStartTime);
+    PlayToTime(GetMillisecondTime - PlayStartTime);
     if assigned(FOnUpdateEvent) then FOnUpdateEvent(self);
   end;
 end;
@@ -533,7 +538,7 @@ var
 begin
   for i := 0 to tracks.count - 1 do
     TMidiTrack(tracks[i]).Rewind(0);
-  playStartTime := getTickCount;
+  playStartTime := GetMillisecondTime;
   playing := true;
 
   SetMidiTimer;
@@ -544,7 +549,7 @@ end;
 {$WARNINGS OFF}
 procedure TMidifile.ContinuePlaying;
 begin
-  PlayStartTime := GetTickCount - currentTime;
+  PlayStartTime := GetMillisecondTime - currentTime;
   playing := true;
 
   SetMidiTimer;
