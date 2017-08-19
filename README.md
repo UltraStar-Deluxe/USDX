@@ -256,9 +256,10 @@ For linking and running the game, the following libraries are also required:
   * for arch linux there is an aur package called [ultrastardx-git](https://aur.archlinux.org/packages/ultrastardx-git)
 2. `git clone https://github.com/UltraStar-Deluxe/USDX`
 2. `cd USDX`
-3. `./configure` (or use _autoconf_)
-4. `make`
-6. Play the game, 
+4. `./autogen.sh`
+5. `./configure` (or use _autoconf_)
+6. `make`
+7. Play the game, 
    * install the game and start it
      - `sudo make install`
      - `ultrastardx`
