@@ -86,3 +86,11 @@
 {$IFEND}
 
 {$@DEFINE_HAVE_PORTMIXER@ HavePortmixer}
+{$@DEFINE_HAVE_PORTMIDI@ UsePortMidi}
+{$IF Defined(UsePortMidi)}
+  {$DEFINE UseMIDIPort}
+{$IFEND}
+{$@DEFINE_HAVE_PORTTIME@ UsePortTime}
+{$IF Defined(IncludeConstants)}
+  porttime_lib_name = '@porttime_LIB_NAME@';
+{$IFEND}

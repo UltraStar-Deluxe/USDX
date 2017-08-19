@@ -94,6 +94,7 @@ interface
   {$MODE Delphi}
   {$H+} // use long strings
 {$ENDIF}
+{$I switches.inc}
 
 uses
   Classes,
@@ -160,9 +161,17 @@ type
   TMidiFile = class(TComponent)
   private
     { Private declarations }
+{$IFNDEF MSWINDOWS}
+{$IFNDEF UsePortTime}
+    TimerID: Int32;
+{$ENDIF}
+{$ENDIF}
     procedure MidiTimer(sender : TObject);
 {$IFDEF MSWINDOWS}
     procedure WndProc(var Msg : TMessage);
+{$ELSE}
+    procedure SetMidiTimer;
+    procedure KillMidiTimer;
 {$ENDIF}
   protected
     { Protected declarations }
@@ -242,6 +251,12 @@ implementation
 uses
 {$IFDEF MSWINDOWS}
   mmsystem;
+{$ELSE}
+{$IFDEF UsePortTime}
+  PortTime,
+{$ENDIF}
+  UMain,
+  SDL2;
 {$ENDIF}
 
 const
@@ -326,6 +341,84 @@ function GetMillisecondTime: integer;
 begin
   result := windows.GetTickCount;
 end;
+
+{$ELSE}
+
+function GetMillisecondTime: integer;
+begin
+  result := SDL_GetTicks;
+end;
+
+procedure EventHandler(param: Pointer);
+var
+  MidiFile: TMidiFile;
+begin
+  MidiFile := TMidiFile(param);
+  MidiFile.MidiTimer(MidiFile);
+end;
+
+{$IFDEF UsePortTime}
+
+var
+  PlayingList: TFPList;
+  ListLock: PSDL_Mutex;
+
+procedure TimerCallback(timestamp : PtTimestamp; userData : Pointer); cdecl;
+var
+  param: TMidiFile;
+begin
+  SDL_LockMutex(ListLock);
+  for param in PlayingList do
+    MainThreadExec(@EventHandler, param);
+  SDL_UnlockMutex(ListLock);
+end;
+
+procedure TMidiFile.SetMidiTimer;
+var
+  WasEmpty: boolean;
+begin
+  SDL_LockMutex(ListLock);
+  if PlayingList = nil then
+    PlayingList := TFPList.Create;
+  WasEmpty := (PlayingList.First = nil);
+  PlayingList.Add(self);
+  if WasEmpty then
+    Pt_Start(TIMER_RESOLUTION, @TimerCallback, nil);
+  SDL_UnlockMutex(ListLock);
+end;
+
+procedure TMidiFile.KillMidiTimer;
+begin
+  SDL_LockMutex(ListLock);
+  PlayingList.Remove(self);
+  if PlayingList.First = nil then
+    Pt_Stop;
+  SDL_UnlockMutex(ListLock);
+end;
+
+{$ELSE}
+
+function TimerCallback(interval: UInt32; param: Pointer): UInt32; cdecl;
+begin
+  MainThreadExec(@EventHandler, param);
+  result := interval;
+end;
+
+procedure TMidiFile.SetMidiTimer;
+begin
+  if TimerID = 0 then
+    TimerID := SDL_AddTimer(TIMER_RESOLUTION, @TimerCallback, self);
+end;
+
+procedure TMidiFile.KillMidiTimer;
+begin
+  if TimerID <> 0 then
+  begin
+    SDL_RemoveTimer(TimerID);
+    TimerID := 0;
+  end;
+end;
+{$ENDIF}
 {$ENDIF}
 
 constructor TMidiTrack.Create;

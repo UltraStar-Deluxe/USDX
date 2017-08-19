@@ -84,6 +84,12 @@ uses
   {$IFDEF UsePortmixer}
   portmixer              in 'lib\portmixer\portmixer.pas',
   {$ENDIF}
+  {$IFDEF UsePortMidi}
+  portmidi               in 'lib\portmidi\portmidi.pp',
+  {$ENDIF}
+  {$IFDEF UsePortTime}
+  porttime               in 'lib\portmidi\porttime.pp',
+  {$ENDIF}
 
   {$IFDEF UseFFmpeg}
     {$IFDEF FPC} // This solution is not very elegant, but working
@@ -127,15 +133,21 @@ uses
   {$ENDIF}
 
   {$IFDEF UseMIDIPort}
-  MidiCons      in 'lib\midi\MidiCons.pas',
-  MidiConsWin   in 'lib\midi\MidiConsWin.pas',
+    MidiCons          in 'lib\midi\MidiCons.pas',
+    MidiFile          in 'lib\midi\MidiFile.pas',
 
-  CircBuf       in 'lib\midi\CircBuf.pas',
-  DelphiMcb     in 'lib\midi\DelphiMcb.pas',
-  MidiDefs      in 'lib\midi\MidiDefs.pas',
-  MidiFile      in 'lib\midi\MidiFile.pas',
-  MidiOut       in 'lib\midi\MidiOut.pas',
-  MidiType      in 'lib\midi\MidiType.pas',
+    {$IFDEF MSWINDOWS}
+      CircBuf         in 'lib\midi\CircBuf.pas',
+      MidiConsWin     in 'lib\midi\MidiConsWin.pas',
+      DelphiMcb       in 'lib\midi\DelphiMcb.pas',
+      MidiDefs        in 'lib\midi\MidiDefs.pas',
+      MidiType        in 'lib\midi\MidiType.pas',
+      MidiOut         in 'lib\midi\MidiOut.pas',
+    {$ELSE}
+      {$IFDEF UsePortMidi}
+        MidiOut       in 'lib\portmidi\MidiOut.pas',
+      {$ENDIF}
+    {$ENDIF}
   {$ENDIF}
 
   {$IFDEF MSWINDOWS}

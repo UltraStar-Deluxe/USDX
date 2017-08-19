@@ -393,6 +393,34 @@ fi
 PKG_HAVE([portmixer], [portmixer], no)
 AC_SUBST_DEFINE(HAVE_PORTMIXER, $portmixer_HAVE)
 
+AC_ARG_ENABLE(portmidi, [AS_HELP_STRING([--disable-portmidi], [Disable PortTime Midi loop])])
+AC_ARG_WITH(porttime, [AS_HELP_STRING([--with-porttime], [Use PortTime instead of SDL Midi loop])])
+
+if [[ x$enable_portmidi != xno ]] ; then
+    AC_CHECK_LIB([portmidi], [Pm_Initialize], [
+        portmidi_HAVE=yes
+        if [[ x$with_porttime = xyes ]] ; then
+            porttime_HAVE=yes
+            AC_CHECK_LIB([portmidi], [Pt_Start], [porttime_LIB_NAME=portmidi],
+                [AC_CHECK_LIB([porttime], [Pt_Start], [porttime_LIB_NAME=porttime],
+                     [AC_MSG_ERROR([PortTime library not found])])])
+        else
+            porttime_HAVE=no
+        fi
+        ], [
+        if [[ x$enable_portmidi = xyes ]] ; then
+            AC_MSG_ERROR([PortMidi library not found])
+        else
+            portmidi_HAVE=no
+        fi
+        ])
+else
+	portmidi_HAVE=no
+fi
+AC_SUBST_DEFINE(HAVE_PORTMIDI, $portmidi_HAVE)
+AC_SUBST_DEFINE(HAVE_PORTTIME, $porttime_HAVE)
+AC_SUBST(porttime_LIB_NAME)
+
 # determine linker-flags
 if test x$FPC_PLATFORM = xdarwin; then
   LDFLAGS="-macosx_version_min 10.4 -undefined dynamic_lookup -headerpad_max_install_names -L/usr/X11/lib"
