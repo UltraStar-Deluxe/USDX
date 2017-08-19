@@ -11,6 +11,8 @@ deps+=('ffmpeg,https://ffmpeg.org/releases/ffmpeg-3.2.2.tar.gz')
 deps+=('portaudio,http://www.portaudio.com/archives/pa_stable_v190600_20161030.tgz')
 deps+=('freetype,http://download.savannah.gnu.org/releases/freetype/freetype-2.7.1.tar.gz')
 deps+=('libpng,https://sourceforge.net/projects/libpng/files/libpng16/older-releases/1.6.28/libpng-1.6.28.tar.gz/download')
+deps+=('portmidi,https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip/download')
+deps+=('portmidi-debian,http://http.debian.net/debian/pool/main/p/portmidi/portmidi_217-6.debian.tar.xz')
 
 rm -rf deps
 
@@ -20,6 +22,31 @@ for i in "${deps[@]}"; do
 	name="${dep[0]}"
 	url="${dep[1]}"
 	echo "Downloading $url"
-	mkdir -p "deps/$name"
-	curl --progress-bar -L "$url" | tar -xz -C "deps/$name" --strip-components=1
+	filename="${url%/download}"
+	case "$filename" in
+	*.zip)
+		mkdir -p deps
+		curl --progress-bar -L "$url" -o deps/$name.zip
+		mkdir -p "deps/$name.tmp"
+		unzip -q deps/$name.zip -d "deps/$name.tmp"
+		rm deps/$name.zip
+		mv "deps/$name.tmp/"* "deps/$name"
+		rmdir "deps/$name.tmp"
+		;;
+
+	*.tar|*.tar.gz|*.tar.xz|*.tar.bz2|*.tgz)
+		case "$filename" in
+		*xz)	compressor=J ;;
+		*bz2)	compressor=j ;;
+		*gz)	compressor=z ;;
+		*)	compressor= ;;
+		esac
+		mkdir -p "deps/$name"
+		curl --progress-bar -L "$url" | tar -x$compressor -C "deps/$name" --strip-components=1
+		;;
+
+	*)
+		echo "Unsupported archive format"
+		false
+	esac
 done
