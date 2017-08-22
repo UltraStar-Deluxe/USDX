@@ -69,7 +69,11 @@ type
   TSongFilter = (
     fltAll,
     fltTitle,
-    fltArtist
+    fltArtist,
+    fltLanguage,
+    fltEdition,
+    fltGenre,
+    fltYear
   );
 
   TBPM = record
@@ -878,11 +882,19 @@ begin
       begin
         case Filter of
           fltAll:
-            TmpString := Song[I].ArtistNoAccent + ' ' + Song[i].TitleNoAccent; //+ ' ' + Song[i].Folder;
+            TmpString := Song[I].ArtistNoAccent + ' ' + Song[i].TitleNoAccent + ' ' + Song[i].LanguageNoAccent + ' ' + Song[i].EditionNoAccent + ' ' + Song[i].GenreNoAccent + ' ' + IntToStr(Song[i].Year); //+ ' ' + Song[i].Folder;
           fltTitle:
             TmpString := Song[I].TitleNoAccent;
           fltArtist:
             TmpString := Song[I].ArtistNoAccent;
+          fltLanguage:
+            TmpString := Song[I].LanguageNoAccent;
+          fltEdition:
+            TmpString := Song[I].EditionNoAccent;
+          fltGenre:
+            TmpString := Song[I].GenreNoAccent;
+          fltYear:
+            TmpString := IntToStr(Song[I].Year);
         end;
         Song[i].Visible := true;
         // Look for every searched word

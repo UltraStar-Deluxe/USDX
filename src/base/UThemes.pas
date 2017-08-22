@@ -1073,7 +1073,7 @@ type
     Songsfound:       UTF8String;
     NoSongsfound:     UTF8String;
     CatText:          UTF8String;
-    IType:            array [0..2] of UTF8String;
+    IType:            array [0..6] of UTF8String;
   end;
 
   //Party Screens
@@ -2485,6 +2485,10 @@ begin
       SongJumpto.IType[0] := Language.Translate('SONG_JUMPTO_TYPE1');
       SongJumpto.IType[1] := Language.Translate('SONG_JUMPTO_TYPE2');
       SongJumpto.IType[2] := Language.Translate('SONG_JUMPTO_TYPE3');
+      SongJumpto.IType[3] := Language.Translate('SONG_JUMPTO_TYPE4');
+      SongJumpto.IType[4] := Language.Translate('SONG_JUMPTO_TYPE5');
+      SongJumpto.IType[5] := Language.Translate('SONG_JUMPTO_TYPE6');
+      SongJumpto.IType[6] := Language.Translate('SONG_JUMPTO_TYPE7');
       SongJumpto.SongsFound := Language.Translate('SONG_JUMPTO_SONGSFOUND');
       SongJumpto.NoSongsFound := Language.Translate('SONG_JUMPTO_NOSONGSFOUND');
       SongJumpto.CatText := Language.Translate('SONG_JUMPTO_CATTEXT');
