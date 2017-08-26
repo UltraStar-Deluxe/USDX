@@ -56,6 +56,10 @@ uses
 
 {$IFDEF LINKOBJECT}
   {$LINKLIB portmidi.o}
+{$ELSE}
+  {$IFDEF Darwin}
+    {$LINKLIB libportmidi}
+  {$ENDIF}
 {$ENDIF}
 
 

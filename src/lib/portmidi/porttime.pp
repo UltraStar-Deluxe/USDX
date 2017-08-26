@@ -46,6 +46,7 @@ interface
 {$CALLING CDECL}
 {$MACRO ON}
 
+{$I switches.inc}
 
 uses
   UConfig,
@@ -56,6 +57,14 @@ uses
 
 {$IFDEF LINKOBJECT}
   {$LINKLIB portmidi.o}
+{$ELSE}
+  {$IFDEF Darwin}
+    {$IFDEF PortTime_in_portmidi}
+      {$LINKLIB libportmidi}
+    {$ELSE}
+      {$LINKLIB libporttime}
+    {$ENDIF}
+  {$ENDIF}
 {$ENDIF}
 
 
