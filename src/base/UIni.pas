@@ -305,13 +305,13 @@ type
   end;
 
 var
-  Ini:         TIni;
-  IResolution: TUTF8StringDynArray;
+  Ini:                   TIni;
+  IResolution:           TUTF8StringDynArray;
   IResolutionFullScreen: TUTF8StringDynArray;
-  IResolutionCustom: TUTF8StringDynArray;
-  ILanguage:   TUTF8StringDynArray;
-  ITheme:      TUTF8StringDynArray;
-  ISkin:       TUTF8StringDynArray;
+  IResolutionCustom:     TUTF8StringDynArray;
+  ILanguage:             TUTF8StringDynArray;
+  ITheme:                TUTF8StringDynArray;
+  ISkin:                 TUTF8StringDynArray;
 
 {*
  * Options
@@ -592,15 +592,11 @@ var
   I: integer;
   Zeros: string;
 begin
-  // Load Languagefile, fallback to config language if param is invalid
+  // Load language file, fallback to config language if param is invalid
   if (Params.Language > -1) and (Params.Language < Length(ILanguage)) then
     ULanguage.Language.ChangeLanguage(ILanguage[Params.Language])
   else
     ULanguage.Language.ChangeLanguage(ILanguage[Language]);
-
-  SetLength(ILanguageTranslated, Length(ILanguage));
-  for I := 0 to High(ILanguage) do
-    ILanguageTranslated[I] := ILanguage[I];
 
   IDifficultyTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_EASY');
   IDifficultyTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_MEDIUM');
