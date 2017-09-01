@@ -600,11 +600,7 @@ begin
 
   SetLength(ILanguageTranslated, Length(ILanguage));
   for I := 0 to High(ILanguage) do
-  begin
-    ILanguageTranslated[I] := ULanguage.Language.Translate(
-      'OPTION_VALUE_' + UpperCase(ILanguage[I])
-    );
-  end;
+    ILanguageTranslated[I] := ILanguage[I];
 
   IDifficultyTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_EASY');
   IDifficultyTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_MEDIUM');

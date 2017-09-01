@@ -108,22 +108,22 @@ begin
   //Then use English Language
   for I := 0 to high(List) do //Search for English Language
   begin
+    // Load each language to store the native language name
+    ChangeLanguage(List[I].Name);
+    ILanguage[I] := Translate('LANGUAGE');
+
     //English Language Found -> Load
     if Uppercase(List[I].Name) = 'ENGLISH' then
     begin
-      ChangeLanguage('English');
-
       SetLength(EntryDefault, Length(Entry));
       for J := 0 to high(Entry) do
         EntryDefault[J] := Entry[J];
 
       SetLength(Entry, 0);
-      
-      Break;
     end;
 
     if (I = high(List)) then
-      Log.LogError('English Languagefile missing! No standard Translation loaded');
+      Log.LogError('English language file missing! No standard translation loaded');
   end;
   //Standard Language END
   
