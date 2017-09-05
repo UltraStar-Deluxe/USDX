@@ -21,6 +21,7 @@ uses
   MMsystem,
   CircBuf,
   MidiDefs,
+  MidiConsWin,
   MidiCons;
 
 procedure MidiHandler(

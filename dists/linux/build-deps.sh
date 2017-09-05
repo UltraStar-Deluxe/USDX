@@ -117,6 +117,29 @@ make $makearg
 make install
 make distclean
 
+echo "Building PortMidi"
+cd "$SRC"
+find portmidi/ portmidi-debian/patches/ -type f | while read a ; do
+	tr -d '\r' < "$a" > t
+	cat t >$a
+done
+rm t
+cd portmidi
+while read a ; do
+	patch -l -p1 < ../portmidi-debian/patches/$a
+done < ../portmidi-debian/patches/series
+mkdir -p build
+cd build
+cmake \
+	-DCMAKE_CACHEFILE_DIR=$(pwd)/out \
+	-DCMAKE_INSTALL_PREFIX="$PREFIX" \
+	-DCMAKE_BUILD_TYPE="Release" \
+	..
+make portmidi-dynamic
+make -C pm_dylib install
+cd ..
+rm -R build
+
 # echo "Building projectM"
 # cd "$SRC/projectm"
 # mkdir -p build

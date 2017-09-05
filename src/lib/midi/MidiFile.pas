@@ -94,14 +94,17 @@ interface
   {$MODE Delphi}
   {$H+} // use long strings
 {$ENDIF}
+{$I switches.inc}
 
 uses
+  Classes,
+{$IFDEF MSWINDOWS}
   Windows,
   Messages,
-  Classes,
   {$IFDEF FPC}
   WinAllocation,
   {$ENDIF}
+{$ENDIF}
   SysUtils,
   UPath;
 
@@ -158,8 +161,18 @@ type
   TMidiFile = class(TComponent)
   private
     { Private declarations }
+{$IFNDEF MSWINDOWS}
+{$IFNDEF UsePortTime}
+    TimerID: Int32;
+{$ENDIF}
+{$ENDIF}
     procedure MidiTimer(sender : TObject);
+{$IFDEF MSWINDOWS}
     procedure WndProc(var Msg : TMessage);
+{$ELSE}
+    procedure SetMidiTimer;
+    procedure KillMidiTimer;
+{$ENDIF}
   protected
     { Protected declarations }
     MidiFile: TBinaryFileStream;
@@ -168,7 +181,6 @@ type
     chunkData: PByte;
     chunkIndex: PByte;
     chunkEnd: PByte;
-    FPriority: dword;
 
     // midi file attributes
     FFileFormat: TFileFormat;
@@ -237,8 +249,20 @@ procedure Register;
 implementation
 
 uses
+{$IFDEF MSWINDOWS}
   mmsystem;
+{$ELSE}
+{$IFDEF UsePortTime}
+  PortTime,
+{$ENDIF}
+  UMain,
+  SDL2;
+{$ENDIF}
 
+const
+  TIMER_RESOLUTION = 10;
+
+{$IFDEF MSWINDOWS}
 type
 {$IFDEF FPC}
   TTimerProc = TTIMECALLBACK;
@@ -248,12 +272,11 @@ type
 {$ENDIF}
 
 const
-  TIMER_RESOLUTION = 10;
   WM_MULTIMEDIA_TIMER = WM_USER + 127;
 
 var
   MidiFileHandle: HWND;
-  TimerProc:      TTimerProc;
+  FPriority:      dword;
   MidiTimerID:    integer;
   TimerPeriod:    integer;
 
@@ -266,6 +289,7 @@ procedure SetMidiTimer;
 var
   TimeCaps: TTimeCaps;
 begin
+  SetPriorityClass(MidiFileHandle, REALTIME_PRIORITY_CLASS);
   timeGetDevCaps(@TimeCaps, SizeOf(TimeCaps));
   if TIMER_RESOLUTION < TimeCaps.wPeriodMin then
     TimerPeriod := TimeCaps.wPeriodMin
@@ -275,7 +299,7 @@ begin
     TimerPeriod := TIMER_RESOLUTION;
 
   timeBeginPeriod(TimerPeriod);
-  MidiTimerID := timeSetEvent(TimerPeriod, TimerPeriod, TimerProc,
+  MidiTimerID := timeSetEvent(TimerPeriod, TimerPeriod, @TimerCallBackProc,
                             dword(MidiFileHandle), TIME_PERIODIC);
   if MidiTimerID=0 then
     timeEndPeriod(TimerPeriod);
@@ -283,9 +307,119 @@ end;
 
 procedure KillMidiTimer;
 begin
-  timeKillEvent(MidiTimerID);
-  timeEndPeriod(TimerPeriod);
+  if MidiTimerID <> 0 then
+  begin
+    timeKillEvent(MidiTimerID);
+    timeEndPeriod(TimerPeriod);
+  end;
+  SetPriorityClass(MidiFileHandle, FPriority);
 end;
+
+procedure TMidiFile.WndProc(var Msg : TMessage);
+begin
+  with Msg do
+  begin
+    case Msg of
+      WM_MULTIMEDIA_TIMER:
+      begin
+        //try
+          MidiTimer(self);
+        //except
+        // Note: HandleException() is called by default if exception is not handled
+        //  Application.HandleException(Self);
+        //end;
+      end;
+    else
+      begin
+        Result := DefWindowProc(MidiFileHandle, Msg, wParam, lParam);
+      end;
+    end;
+  end;
+end;
+
+function GetMillisecondTime: integer;
+begin
+  result := windows.GetTickCount;
+end;
+
+{$ELSE}
+
+function GetMillisecondTime: integer;
+begin
+  result := SDL_GetTicks;
+end;
+
+procedure EventHandler(param: Pointer);
+var
+  MidiFile: TMidiFile;
+begin
+  MidiFile := TMidiFile(param);
+  MidiFile.MidiTimer(MidiFile);
+end;
+
+{$IFDEF UsePortTime}
+
+var
+  PlayingList: TFPList;
+  ListLock: PSDL_Mutex;
+
+procedure TimerCallback(timestamp : PtTimestamp; userData : Pointer); cdecl;
+var
+  param: TMidiFile;
+begin
+  SDL_LockMutex(ListLock);
+  for param in PlayingList do
+    MainThreadExec(@EventHandler, param);
+  SDL_UnlockMutex(ListLock);
+end;
+
+procedure TMidiFile.SetMidiTimer;
+var
+  WasEmpty: boolean;
+begin
+  SDL_LockMutex(ListLock);
+  if PlayingList = nil then
+    PlayingList := TFPList.Create;
+  WasEmpty := (PlayingList.First = nil);
+  PlayingList.Add(self);
+  if WasEmpty then
+    Pt_Start(TIMER_RESOLUTION, @TimerCallback, nil);
+  SDL_UnlockMutex(ListLock);
+end;
+
+procedure TMidiFile.KillMidiTimer;
+begin
+  SDL_LockMutex(ListLock);
+  PlayingList.Remove(self);
+  if PlayingList.First = nil then
+    Pt_Stop;
+  SDL_UnlockMutex(ListLock);
+end;
+
+{$ELSE}
+
+function TimerCallback(interval: UInt32; param: Pointer): UInt32; cdecl;
+begin
+  MainThreadExec(@EventHandler, param);
+  result := interval;
+end;
+
+procedure TMidiFile.SetMidiTimer;
+begin
+  if TimerID = 0 then
+    TimerID := SDL_AddTimer(TIMER_RESOLUTION, @TimerCallback, self);
+end;
+
+procedure TMidiFile.KillMidiTimer;
+begin
+  if TimerID <> 0 then
+  begin
+    SDL_RemoveTimer(TimerID);
+    TimerID := 0;
+  end;
+end;
+{$ENDIF}
+{$ENDIF}
 
 constructor TMidiTrack.Create;
 begin
@@ -429,12 +563,13 @@ end;
 constructor TMidifile.Create(AOwner: TComponent);
 begin
   inherited Create(AOWner);
+{$IFDEF MSWINDOWS}
   MidiFileHandle := AllocateHWnd(WndProc);
+  FPriority := GetPriorityClass(MidiFileHandle);
+{$ENDIF}
   chunkData := nil;
   chunkType := illegal;
   Tracks := TList.Create;
-  TimerProc := @TimerCallBackProc;
-  FPriority := GetPriorityClass(MidiFileHandle);
 end;
 
 destructor TMidifile.Destroy;
@@ -446,12 +581,12 @@ begin
   for i := 0 to Tracks.Count - 1 do
     TMidiTrack(Tracks.Items[i]).Free;
   Tracks.Free;
-  SetPriorityClass(MidiFileHandle, FPriority);
 
-  if MidiTimerID <> 0 then
-    KillMidiTimer;
+  KillMidiTimer;
 
+{$IFDEF MSWINDOWS}
   DeallocateHWnd(MidiFileHandle);
+{$ENDIF}
 
   inherited Destroy;
 end;
@@ -484,7 +619,7 @@ procedure TMidifile.MidiTimer(Sender: TObject);
 begin
   if playing then
   begin
-    PlayToTime(GetTickCount - PlayStartTime);
+    PlayToTime(GetMillisecondTime - PlayStartTime);
     if assigned(FOnUpdateEvent) then FOnUpdateEvent(self);
   end;
 end;
@@ -496,10 +631,8 @@ var
 begin
   for i := 0 to tracks.count - 1 do
     TMidiTrack(tracks[i]).Rewind(0);
-  playStartTime := getTickCount;
+  playStartTime := GetMillisecondTime;
   playing := true;
-
-  SetPriorityClass(MidiFileHandle, REALTIME_PRIORITY_CLASS);
 
   SetMidiTimer;
   currentPos := 0.0;
@@ -509,10 +642,8 @@ end;
 {$WARNINGS OFF}
 procedure TMidifile.ContinuePlaying;
 begin
-  PlayStartTime := GetTickCount - currentTime;
+  PlayStartTime := GetMillisecondTime - currentTime;
   playing := true;
-
-  SetPriorityClass(MidiFileHandle, REALTIME_PRIORITY_CLASS);
 
   SetMidiTimer;
 end;
@@ -522,7 +653,6 @@ procedure TMidifile.StopPlaying;
 begin
   playing := false;
   KillMidiTimer;
-  SetPriorityClass(MidiFileHandle, FPriority);
 end;
 
 function TMidiFile.GetCurrentTime: integer;
@@ -606,7 +736,8 @@ begin
   GetMem(chunkData, chunkLength + 10);
   MidiFile.Read(chunkData^, chunkLength);
   chunkIndex := chunkData;
-  chunkEnd := PByte(integer(chunkIndex) + integer(chunkLength) - 1);
+  chunkEnd := chunkIndex;
+  Inc(chunkEnd, chunkLength - 1);
 end;
 
 procedure TMidifile.ReadChunk;
@@ -661,7 +792,7 @@ begin
     currentTrack := TMidiTrack.Create;
     currentTrack.OnMidiEvent := FOnMidiEvent;
     Tracks.add(currentTrack);
-    while integer(chunkIndex) < integer(chunkEnd) do
+    while chunkIndex < chunkEnd do
     begin
       // each event starts with var length delta time
       dTime := ReadVarLength;
@@ -934,28 +1065,6 @@ begin
   if ready then
     if assigned(FOnUpdateEvent) then
       FOnUpdateEvent(self);
-end;
-
-procedure TMidiFile.WndProc(var Msg : TMessage);
-begin
-  with Msg do
-  begin
-    case Msg of
-      WM_MULTIMEDIA_TIMER:
-      begin
-        //try
-          MidiTimer(self);
-        //except
-        // Note: HandleException() is called by default if exception is not handled
-        //  Application.HandleException(Self);
-        //end;
-      end;
-    else
-      begin
-        Result := DefWindowProc(MidiFileHandle, Msg, wParam, lParam);
-      end;
-    end;
-  end;
 end;
 
 procedure Register;
