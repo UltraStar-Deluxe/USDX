@@ -1,0 +1,52 @@
+getdylibs = $(shell $(OTOOL) -L $(1) | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib | grep -v executable_path)
+dest = $(macosx_bundle_path)/MacOS/$(notdir $(1))
+
+# Let's create a list of all libraries used at runtime, starting with the
+# application and the dlopen'ed libpcre.
+
+FILES :=
+NEWFILES := $(USDX_BIN) $(pkgingLibDir)/libpcre.dylib
+
+define recurse
+FILES := $$(FILES) $$(NEWFILES)
+NEWFILES := $$(filter-out $$(FILES),$$(sort $$(foreach dylib,$$(NEWFILES),$$(call getdylibs,$$(dylib)))))
+ifneq ($$(NEWFILES),)
+$$(eval $$(recurse))
+endif
+endef
+
+$(eval $(recurse))
+
+# Libavutil is referenced as /usr/local/opt/ffmpeg@2.8/lib/libavutil.54.dylib by
+# ultrastardx and as /usr/local/Cellar/ffmpeg@2.8/2.8.11/lib/libavutil.54.dylib
+# by libavcodec. We don't want make to call the installdylib rule for both in
+# parallel. Handle this by creating a variable libavutil.54.dylib that is
+# assigned the full path. The last one wins.
+
+define removedupes
+$(1) := $(2)
+endef
+
+$(foreach dylib,$(FILES),$(eval $(call removedupes,$(notdir $(dylib)),$(dylib))))
+FILES := $(sort $(foreach dylib,$(FILES),$($(notdir $(dylib)))))
+
+# The first rule in this file and thus the default target:
+all: $(foreach dylib,$(FILES),$(call dest,$(dylib)))
+
+define changeimport
+	@echo change the install name for $(2)
+	@$(INSTALL_NAME_TOOL) -change $(2) @executable_path/$(notdir $(2)) $(1)
+
+endef
+
+define installdylib
+$(call dest,$(1)): $(1)
+	@echo work on $(1)
+	@$(INSTALL) -m 755  $(1) $(call dest,$(1))
+ifneq ($(1),$(USDX_BIN))
+	@$(INSTALL_NAME_TOOL) -id @executable_path/$(notdir $(1)) $(call dest,$(1))
+endif
+	$$(foreach dylib,$$(call getdylibs,$(1)),$$(call changeimport,$(call dest,$(1)),$$(dylib)))
+endef
+
+$(foreach dylib,$(FILES),$(eval $(call installdylib,$(dylib))))
