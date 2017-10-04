@@ -12,6 +12,7 @@
   LUA_VERSION_MINOR   = '@lua_VERSION_MINOR@';
   LUA_VERSION_MAJOR   = '@lua_VERSION_MAJOR@';
   LUA_VERSION         = '@lua_VERSION@';
+  LUA_INTEGER_BITS    = @LUA_INTEGER_BITS@;
 {$IFEND}
 
 {$@DEFINE_HAVE_FFMPEG@ HaveFFmpeg}
@@ -85,3 +86,12 @@
 {$IFEND}
 
 {$@DEFINE_HAVE_PORTMIXER@ HavePortmixer}
+{$@DEFINE_HAVE_PORTMIDI@ UsePortMidi}
+{$IF Defined(UsePortMidi)}
+  {$DEFINE UseMIDIPort}
+{$IFEND}
+{$@DEFINE_HAVE_PORTTIME@ UsePortTime}
+{$@DEFINE_HAVE_PORTTIME@ PortTime_in_@porttime_LIB_NAME@}
+{$IF Defined(IncludeConstants)}
+  porttime_lib_name = '@porttime_LIB_NAME@';
+{$IFEND}

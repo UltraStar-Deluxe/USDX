@@ -11,15 +11,16 @@
   LUA_VERSION_MINOR   = '1';
   LUA_VERSION_MAJOR   = '5';
   LUA_VERSION         = '5.1.5';
+  LUA_INTEGER_BITS    = 32;
 {$IFEND}
 
 {$DEFINE HaveFFmpeg}
-//the required DLLs can be downloaded here: https://ffmpeg.zeranoe.com/builds/win32/shared/
+//the required DLLs can be downloaded here: https://ffmpeg.zeranoe.com/builds/win32/shared/ffmpeg-20150814-git-affbecb-win32-shared.7z
 {$IF Defined(HaveFFmpeg)}
   {$MACRO ON}
   {$IFNDEF FFMPEG_DIR}
     {$IF (4 > 0) or (2 > 0)}
-      {$DEFINE FFMPEG_DIR := 'ffmpeg-3.1'}
+      {$DEFINE FFMPEG_DIR := 'ffmpeg-2.8'}
       {$DEFINE FF_API_OLD_DECODE_AUDIO}
     {$ELSE}
       {$DEFINE FFMPEG_DIR := 'ffmpeg'}
@@ -27,38 +28,30 @@
     {$IFEND}
   {$ENDIF}
   {$IF Defined(IncludeConstants)}
-    FFMPEG_VERSION_INT = 3001000;
-    av__codec = 'avcodec-57';
-    LIBAVCODEC_VERSION_MAJOR   = 57;
-    LIBAVCODEC_VERSION_MINOR   = 48;
-    LIBAVCODEC_VERSION_RELEASE = 101;
+    FFMPEG_VERSION_INT = 2008000;
+    av__codec = 'avcodec-56';
+    LIBAVCODEC_VERSION_MAJOR   = 56;
+    LIBAVCODEC_VERSION_MINOR   = 60;
+    LIBAVCODEC_VERSION_RELEASE = 100;
 
-    av__format = 'avformat-57';
-    LIBAVFORMAT_VERSION_MAJOR   = 57;
-    LIBAVFORMAT_VERSION_MINOR   = 41;
-    LIBAVFORMAT_VERSION_RELEASE = 100;
+    av__format = 'avformat-56';
+    LIBAVFORMAT_VERSION_MAJOR   = 56;
+    LIBAVFORMAT_VERSION_MINOR   = 40;
+    LIBAVFORMAT_VERSION_RELEASE = 101;
 
-    av__util = 'avutil-55';
-    LIBAVUTIL_VERSION_MAJOR   = 55;
-    LIBAVUTIL_VERSION_MINOR   = 28;
+    av__util = 'avutil-54';
+    LIBAVUTIL_VERSION_MAJOR   = 54;
+    LIBAVUTIL_VERSION_MINOR   = 31;
     LIBAVUTIL_VERSION_RELEASE = 100;
   {$IFEND}
 {$IFEND}
 
-{$DEFINE HaveSWResample}
-{$IF Defined(HaveSWScale) and Defined(IncludeConstants)}
-  sw__resample = 'swresample-2';
-  LIBSWRESAMPLE_VERSION_MAJOR   = 2;
-  LIBSWRESAMPLE_VERSION_MINOR   = 1;
-  LIBSWRESAMPLE_VERSION_RELEASE = 100;
-{$IFEND}
-
 {$DEFINE HaveSWScale}
 {$IF Defined(HaveSWScale) and Defined(IncludeConstants)}
-  sw__scale = 'swscale-4';
-  LIBSWSCALE_VERSION_MAJOR   = 4;
+  sw__scale = 'swscale-3';
+  LIBSWSCALE_VERSION_MAJOR   = 3;
   LIBSWSCALE_VERSION_MINOR   = 1;
-  LIBSWSCALE_VERSION_RELEASE = 100;
+  LIBSWSCALE_VERSION_RELEASE = 101;
 {$IFEND}
 
 {$DEFINE HaveProjectM}

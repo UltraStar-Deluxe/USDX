@@ -118,6 +118,7 @@ uses
   MidiDefs,
   MidiType,
   MidiCons,
+  MidiConsWin,
   CircBuf,
   DelphiMcb;
 

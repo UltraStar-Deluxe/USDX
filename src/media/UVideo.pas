@@ -101,6 +101,7 @@ const
   PIXEL_FMT_SIZE   = 3;
 {$ENDIF}
 
+  BUFFER_ALIGN = 32;
   ReflectionH = 0.5; //reflection height (50%)
 
 type
@@ -155,12 +156,13 @@ type
     fFrameDuration: extended; //**< duration of a video frame in seconds (= 1/fps)
     fFrameTime: extended; //**< video time position (absolute)
     fLoopTime: extended;  //**< start time of the current loop
+    fPreferDTS: boolean;
 
     fPboEnabled: boolean;
     fPboId:      GLuint;
     procedure Reset();
     function DecodeFrame(): boolean;
-    procedure SynchronizeTime(Frame: PAVFrame; var pts: double);
+    procedure SynchronizeTime(Frame: PAVFrame; pts: double);
 
     procedure GetVideoRect(var ScreenRect, TexRect: TRectCoords);
     procedure DrawBorders(ScreenRect: TRectCoords);
@@ -327,6 +329,7 @@ var
   errnum: Integer;
   glErr: GLenum;
   AudioStreamIndex: integer;
+  r_frame_rate: cdouble;
 begin
   Result := false;
   Reset();
@@ -376,6 +379,11 @@ begin
   fStream := PPAVStream(PtrUInt(fFormatContext^.streams) + fStreamIndex * Sizeof(pointer))^;
 {$IFEND}
   fCodecContext := fStream^.codec;
+
+  fPreferDTS := false;
+  // workaround for FFmpeg bug #6560
+  if (LeftStr(fFormatContext^.iformat^.name, 4) = 'mov,') or (fFormatContext^.iformat^.name = 'mov') then
+    fPreferDTS := true;
 
   fCodec := avcodec_find_decoder(fCodecContext^.codec_id);
   if (fCodec = nil) then
@@ -442,7 +450,7 @@ begin
   fAVFrameRGB := avcodec_alloc_frame();
   {$ENDIF}
   fFrameBuffer := av_malloc(avpicture_get_size(PIXEL_FMT_FFMPEG,
-      fCodecContext^.width, fCodecContext^.height));
+      (fCodecContext^.width + BUFFER_ALIGN - 1) and -BUFFER_ALIGN, fCodecContext^.height));
 
   if ((fAVFrame = nil) or (fAVFrameRGB = nil) or (fFrameBuffer = nil)) then
   begin
@@ -451,10 +459,8 @@ begin
     Exit;
   end;
 
-  // TODO: pad data for OpenGL to GL_UNPACK_ALIGNMENT
-  // (otherwise video will be distorted if width/height is not a multiple of the alignment)
   errnum := avpicture_fill(PAVPicture(fAVFrameRGB), fFrameBuffer, PIXEL_FMT_FFMPEG,
-      fCodecContext^.width, fCodecContext^.height);
+      (fCodecContext^.width + BUFFER_ALIGN - 1) and -BUFFER_ALIGN, fCodecContext^.height);
   if (errnum < 0) then
   begin
     Log.LogError('avpicture_fill failed: ' + FFmpegCore.GetErrorString(errnum), 'TVideoPlayback_ffmpeg.Open');
@@ -471,12 +477,18 @@ begin
     fAspect := fAspect * fCodecContext^.width /
                          fCodecContext^.height;
 
-  fFrameDuration := 1/av_q2d(fStream^.r_frame_rate);
+  {$IF LIBAVFORMAT_VERSION_MAJOR >= 55}
+  r_frame_rate := av_q2d(av_stream_get_r_frame_rate(fStream));
+  {$ELSE}
+  r_frame_rate := av_q2d(fStream^.r_frame_rate);
+  {$ENDIF}
+
+  fFrameDuration := 1/r_frame_rate;
 
   // hack to get reasonable framerate (for divx and others)
   if (fFrameDuration < 0.02) then // 0.02 <-> 50 fps
   begin
-    fFrameDuration := av_q2d(fStream^.r_frame_rate);
+    fFrameDuration := r_frame_rate;
     while (fFrameDuration > 50) do
       fFrameDuration := fFrameDuration/10;
     fFrameDuration := 1/fFrameDuration;
@@ -525,7 +537,7 @@ begin
     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, fPboId);
     glBufferDataARB(
         GL_PIXEL_UNPACK_BUFFER_ARB,
-        fCodecContext^.width * fCodecContext^.height * PIXEL_FMT_SIZE,
+        fCodecContext^.height * fAVFrameRGB.linesize[0],
         nil,
         GL_STREAM_DRAW_ARB);
     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
@@ -631,7 +643,7 @@ begin
   fOpened := False;
 end;
 
-procedure TVideo_FFmpeg.SynchronizeTime(Frame: PAVFrame; var pts: double);
+procedure TVideo_FFmpeg.SynchronizeTime(Frame: PAVFrame; pts: double);
 var
   FrameDelay: double;
 begin
@@ -639,10 +651,6 @@ begin
   begin
     // if we have pts, set video clock to it
     fFrameTime := pts;
-  end else
-  begin
-    // if we aren't given a pts, set it to the clock
-    pts := fFrameTime;
   end;
   // update the video clock
   FrameDelay := av_q2d(fCodecContext^.time_base);
@@ -671,7 +679,8 @@ var
   {$ENDIF}
   errnum: integer;
   AVPacket: TAVPacket;
-  pts: double;
+  pts: int64;
+  dts: int64;
   fileSize: int64;
   urlError: integer;
 begin
@@ -761,51 +770,43 @@ begin
           frameFinished, @AVPacket);
       {$IFEND}
 
-      // reset opaque data
-      {$IF LIBAVCODEC_VERSION < 51068000}
-      fCodecContext^.opaque := nil;
-      {$ELSEIF LIBAVCODEC_VERSION < 51105000}
-      fCodecContext^.reordered_opaque := AV_NOPTS_VALUE;
-      {$IFEND}
-
-      // update pts
-      {$IF LIBAVCODEC_VERSION < 51068000}
-      if ((fAVFrame^.opaque <> nil) and
-          (Pint64(fAVFrame^.opaque)^ <> AV_NOPTS_VALUE)) then
-        pts := Pint64(fAVFrame^.opaque)^
-      {$ELSEIF LIBAVCODEC_VERSION < 51105000}
-      if (fAVFrame^.reordered_opaque <> AV_NOPTS_VALUE) then
-        pts := fAVFrame^.reordered_opaque
-      {$ELSE}
-      if (fAVFrame^.pkt_pts <> AV_NOPTS_VALUE) then
-        pts := fAVFrame^.pkt_pts
-      {$IFEND}
-      else
       {$IF LIBAVCODEC_VERSION < 51106000}
-      if (AVPacket.dts <> AV_NOPTS_VALUE) then
-        pts := AVPacket.dts
-      {$ELSE}
-      if (fAVFrame^.pkt_dts <> AV_NOPTS_VALUE) then
-        pts := fAVFrame^.pkt_dts
+      dts := AVPacket.dts
       {$IFEND}
-      else
-      begin
-        pts := 0;
-      end;
-
-      if fStream^.start_time <> AV_NOPTS_VALUE then
-        pts := pts - fStream^.start_time;
-
-      pts := pts * av_q2d(fStream^.time_base);
-
-      // synchronize time on each complete frame
-      if (frameFinished <> 0) then
-        SynchronizeTime(fAVFrame, pts);
     end;
 
     // free the packet from av_read_frame
     av_free_packet( @AVPacket );
   end;
+
+  // reset opaque data and update pts
+  {$IF LIBAVCODEC_VERSION < 51068000}
+  fCodecContext^.opaque := nil;
+  if fAVFrame^.opaque <> nil then
+    pts := Pint64(fAVFrame^.opaque)^
+  else
+    pts := AV_NOPTS_VALUE;
+  {$ELSEIF LIBAVCODEC_VERSION < 51105000}
+  fCodecContext^.reordered_opaque := AV_NOPTS_VALUE;
+  pts := fAVFrame^.reordered_opaque;
+  {$ELSE}
+  pts := fAVFrame^.pkt_pts;
+  {$IFEND}
+
+  {$IF LIBAVCODEC_VERSION >= 51106000}
+  dts := fAVFrame^.pkt_dts;
+  {$IFEND}
+
+  if (pts = AV_NOPTS_VALUE) or (fPreferDTS and (dts <> AV_NOPTS_VALUE)) then
+    pts := dts;
+
+  if pts = AV_NOPTS_VALUE then
+    pts := 0
+  else if fStream^.start_time <> AV_NOPTS_VALUE then
+    pts := pts - fStream^.start_time;
+
+  // synchronize time on each complete frame
+  SynchronizeTime(fAVFrame, pts * av_q2d(fStream^.time_base));
 
   Result := true;
 end;
@@ -963,12 +964,9 @@ begin
   Log.BenchmarkStart(16);
   {$ENDIF}
 
-  // TODO: data is not padded, so we will need to tell OpenGL.
-  //   Or should we add padding with avpicture_fill? (check which one is faster)
-  //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
   // glTexEnvi with GL_REPLACE might give a small speed improvement
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, fAVFrameRGB.linesize[0] div PIXEL_FMT_SIZE);
 
   if (not fPboEnabled) then
   begin
@@ -983,7 +981,7 @@ begin
 
     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, fPboId);
     glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB,
-        fCodecContext^.height * fCodecContext^.width * PIXEL_FMT_SIZE,
+        fCodecContext^.height * fAVFrameRGB.linesize[0],
         nil,
         GL_STREAM_DRAW_ARB);
 
@@ -991,7 +989,7 @@ begin
     if(bufferPtr <> nil) then
     begin
       Move(fAVFrameRGB^.data[0]^, bufferPtr^,
-           fCodecContext^.height * fCodecContext^.width * PIXEL_FMT_SIZE);
+           fCodecContext^.height * fAVFrameRGB.linesize[0]);
 
       // release pointer to mapping buffer
       glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
@@ -1011,6 +1009,7 @@ begin
   end;
 
   // reset to default
+  glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
   if (not fFrameTexValid) then

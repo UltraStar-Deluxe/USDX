@@ -64,11 +64,7 @@ uses
   SQLiteTable3  in 'lib\SQLite\SQLiteTable3.pas',
   SQLite3       in 'lib\SQLite\SQLite3.pas',
   sdl2                   in 'lib\SDL2\sdl2.pas',
-  SDL2_gfx               in 'lib\SDL2\SDL2_gfx.pas',
   SDL2_image             in 'lib\SDL2\SDL2_image.pas',
-  SDL2_mixer             in 'lib\SDL2\SDL2_mixer.pas',
-  SDL2_net               in 'lib\SDL2\SDL2_net.pas',
-  SDL2_ttf               in 'lib\SDL2\SDL2_ttf.pas',
   //new work on current OpenGL implementation
   dglOpenGL              in 'lib\dglOpenGL\dglOpenGL.pas',
   UMediaCore_SDL         in 'media\UMediaCore_SDL.pas',
@@ -87,6 +83,12 @@ uses
   {$ENDIF}
   {$IFDEF UsePortmixer}
   portmixer              in 'lib\portmixer\portmixer.pas',
+  {$ENDIF}
+  {$IFDEF UsePortMidi}
+  portmidi               in 'lib\portmidi\portmidi.pp',
+  {$ENDIF}
+  {$IFDEF UsePortTime}
+  porttime               in 'lib\portmidi\porttime.pp',
   {$ENDIF}
 
   {$IFDEF UseFFmpeg}
@@ -131,14 +133,21 @@ uses
   {$ENDIF}
 
   {$IFDEF UseMIDIPort}
-  MidiCons      in 'lib\midi\MidiCons.pas',
+    MidiCons          in 'lib\midi\MidiCons.pas',
+    MidiFile          in 'lib\midi\MidiFile.pas',
 
-  CircBuf       in 'lib\midi\CircBuf.pas',
-  DelphiMcb     in 'lib\midi\DelphiMcb.pas',
-  MidiDefs      in 'lib\midi\MidiDefs.pas',
-  MidiFile      in 'lib\midi\MidiFile.pas',
-  MidiOut       in 'lib\midi\MidiOut.pas',
-  MidiType      in 'lib\midi\MidiType.pas',
+    {$IFDEF MSWINDOWS}
+      CircBuf         in 'lib\midi\CircBuf.pas',
+      MidiConsWin     in 'lib\midi\MidiConsWin.pas',
+      DelphiMcb       in 'lib\midi\DelphiMcb.pas',
+      MidiDefs        in 'lib\midi\MidiDefs.pas',
+      MidiType        in 'lib\midi\MidiType.pas',
+      MidiOut         in 'lib\midi\MidiOut.pas',
+    {$ELSE}
+      {$IFDEF UsePortMidi}
+        MidiOut       in 'lib\portmidi\MidiOut.pas',
+      {$ENDIF}
+    {$ENDIF}
   {$ENDIF}
 
   {$IFDEF MSWINDOWS}
@@ -391,7 +400,7 @@ begin
   try
   {$IFDEF MSWINDOWS}
   {$IFDEF CONSOLE}
-  FreeConsole(); //hacky workaround to get a working GUI-only experience on windows 10 when using fpc 3.0.0 on windows
+  //FreeConsole(); //hacky workaround to get a working GUI-only experience on windows 10 when using fpc 3.0.0 on windows
   {$ENDIF}
   {$ENDIF}
   Main;

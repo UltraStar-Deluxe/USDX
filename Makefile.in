@@ -86,27 +86,6 @@ DEPS += $(PROJECTM_CWRAPPER_DIR)
 endif
 
 #################################################
-# Mac OS X library functions
-#################################################
-# copy the dylib and change its install names
-
-define install_osx_libraries
-    @echo "work on $(dylib)"
-    $(shell $(INSTALL) -m 755 $(dylib) $(macosx_bundle_path)/MacOS)
-    $(shell $(INSTALL_NAME_TOOL) -change $(dylib) @executable_path/$(notdir $(dylib)) $(macosx_bundle_path)/MacOS/ultrastardx)
-    $(shell $(INSTALL_NAME_TOOL) -id @executable_path/$(notdir $(dylib)) $(macosx_bundle_path)/MacOS/$(notdir $(dylib)))
-    $(foreach linked_dylibs_2,$(shell $(OTOOL) -L $(dylib) | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \usr\/lib | grep -v executable_path),$(rename_secondary_osx_libraries))
-endef
-
-define rename_secondary_osx_libraries
-    @echo "change the install name for $(linked_dylibs_2)"
-    $(shell $(INSTALL_NAME_TOOL) -change $(linked_dylibs_2) @executable_path/$(notdir $(linked_dylibs_2)) $(macosx_bundle_path)/MacOS/$(notdir $(dylib)))
-endef
-
-USE_OSX_PACKAGING=@USE_OSX_PACKAGING@
-USE_OSX_PACKAGING_LIBDIR=@USE_OSX_PACKAGING_LIBDIR@
-
-#################################################
 # general targets
 #################################################
 
@@ -335,11 +314,50 @@ uninstall-plugins:
 # Distributable source-package (TODO)
 #################################################
 
+#disttmpdir := $(USDX_PACKAGE_NAME)-$(USDX_VERSION)-src
+disttmpdir := $(USDX_PACKAGE_NAME)-1.1_alpha-src
+# choose all files in SVN that are not deleted
+svn-files := svn status -v | grep -v "^[?D]" | cut -c8- | tr -s " " | cut -f5- -d" "
+
 .PHONY: dist
 dist:
-	git archive master --prefix=$(USDX_PACKAGE_NAME)-$(USDX_VERSION)/ \
-		-o ../$(USDX_PACKAGE_NAME)-$(USDX_VERSION).tar.gz
+	@$(svn-files) | while read FILE; do \
+	  if test -d "$$FILE"; then \
+	    echo "MKDIR: $(disttmpdir)/$$FILE"; \
+	    $(MKDIR) "$(disttmpdir)/$$FILE" || exit 1; \
+	  else \
+	    echo "COPY:  $$FILE"; \
+	    cp "$$FILE" "$(disttmpdir)/$$FILE" || exit 1; \
+	  fi; \
+	done
+	tar cvf $(disttmpdir).tar $(disttmpdir)
+	gzip $(disttmpdir).tar
+	$(RM_REC) $(disttmpdir)
 
+#################################################
+# Debian package
+#################################################
+
+debpkgdir    ?= dists/debian
+debpkgtmpdir := $(debpkgdir)/deb-package
+debpkgprefix := $(USDX_PACKAGE_NAME)
+debpkgname   := $(debpkgprefix)_$(USDX_VERSION)_$(PPROCESSOR).deb
+
+.PHONY: deb
+deb: all
+	$(RM_REC) $(debpkgtmpdir)
+
+	$(MKDIR) $(debpkgdir)
+	$(MKDIR) $(debpkgtmpdir)/DEBIAN
+
+	$(MAKE) DESTDIR=$(debpkgtmpdir)/ install-all
+
+	$(INSTALL_DATA) $(debpkgdir)/$(debpkgprefix).control $(debpkgtmpdir)/DEBIAN/control
+
+	dpkg-deb --build $(debpkgtmpdir)
+	mv $(debpkgtmpdir)/../deb-package.deb $(debpkgdir)/$(debpkgname)
+
+	$(RM_REC) $(debpkgtmpdir)
 
 #################################################
 # RPM (TODO)
@@ -403,16 +421,13 @@ macosx-app: all
 	@echo "Have fun."
 	@echo ""
 
-# use pkg-config. The one in the app bundle may already be changed
-ifeq ($(USE_OSX_PACKAGING), brew)
-AVCODECLIBPATH := /$(shell pkg-config --libs-only-L  libavcodec | cut -f 2- -d '/')
-endif
-
-ifeq ($(USE_OSX_PACKAGING), fink)
-AVCODECLIBPATH := $(shell pkg-config --libs-only-L  libavcodec | cut -f 4-5 -d '/' | cut -f 1 -d ' ')
-endif
-
-AVCODECLIB := $(AVCODECLIBPATH)/libavcodec.dylib
+# export some variables used by Makefile.osx-helper
+export USDX_BIN
+export pkgingLibDir
+export macosx_bundle_path
+export INSTALL
+export INSTALL_NAME_TOOL
+export OTOOL
 
 .PHONY: macosx-standalone-app
 macosx-standalone-app: macosx-app 
@@ -423,90 +438,8 @@ macosx-standalone-app: macosx-app
 	@echo "Creating the standalone Mac OS X application"
 	@echo ""
 
-ifeq ($(USE_OSX_PACKAGING), brew)
-	@echo "avcodec lib found: $(AVCODECLIB)"
-endif
-ifeq ($(USE_OSX_PACKAGING), fink)
-	@echo "avcodec lib found: $(finkLibDir)/$(AVCODECLIB)"
-endif
-# work on the dylibs in $(macosx_bundle_path)/MacOS/ultrastardx
-	@echo "[generic] copying libs of ultrastardx"
-	$(foreach dylib,$(shell $(OTOOL) -L $(macosx_bundle_path)/MacOS/ultrastardx | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-
-# work on the secondary dylibs from ffmpeg
-# libavcodec references all tertiary libraries of the ffmpeg libs
-ifeq ($(USE_OSX_PACKAGING), brew)
-	@echo "[brew] copying libs of libavcodec"
-	$(foreach dylib,$(shell $(OTOOL) -L $(AVCODECLIB) | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-endif
-ifeq ($(USE_OSX_PACKAGING), fink)
-	@echo "[fink] copying libs of libavcodec"
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/$(AVCODECLIB) | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-endif
-
-# same procedure in libfaac. it gets libgnugetopt
-	@echo "[generic] copying libs of libfaac"
-	$(foreach dylib,$(shell $(OTOOL) -L $(pkgingLibDir)/libfaac.dylib      | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-
-# same procedure for tertiary libs in SDL2_image
-	@echo "[generic] copying libs of libSDL2_image"
-	$(foreach dylib,$(shell $(OTOOL) -L $(pkgingLibDir)/libSDL2_image.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-
-# same procedure for secondary libs in libtiff
-	@echo "[generic] copying libs of libtiff"
-	$(foreach dylib,$(shell $(OTOOL) -L $(pkgingLibDir)/libtiff.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-
-# same procedure for secondary libs in libfreetype
-ifeq ($(USE_OSX_PACKAGING), brew)
-	@echo "[brew] copying libs of libfreetype"
-	$(foreach dylib,$(shell $(OTOOL) -L $(pkgingLibDir)/libfreetype.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-endif
-ifeq ($(USE_OSX_PACKAGING), fink)
-	@echo "[fink] copying libs of libfreetype"
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/freetype219/lib/libfreetype.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-endif
-
-# same procedure for secondary libs in libfontconfig
-ifeq ($(USE_OSX_PACKAGING), brew)
-	@echo "[brew] copying libs of libfontconfig"
-	$(foreach dylib,$(shell $(OTOOL) -L $(pkgingLibDir)/libfontconfig.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-endif
-ifeq ($(USE_OSX_PACKAGING), fink)
-	@echo "[fink] copying libs of libfontconfig"
-	$(foreach dylib,$(shell $(OTOOL) -L $(finkLibDir)/fontconfig2/lib/libfontconfig.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-endif
-
-ifeq ($(USE_OSX_PACKAGING), fink)
-	# same procedure for secondary libs in libzvbi
-	@echo "[fink] copying libs of libzvbi"
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libzvbi.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-
-	# same procedure for secondary libs in libquvi
-	@echo "[fink] copying libs of libquvi"
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libquvi.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-
-	# same procedure for secondary libs in libssh2
-	@echo "[fink] copying libs of libssh2"
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libssh2.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-
-	# same procedure for secondary libs in libcaca
-	@echo "[fink] copying libs of libssh2"
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libcaca.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-
-	# same procedure for secondary libs in libbluray
-	@echo "[fink] copying libs of libblueray"
-	$(foreach dylib,$(shell $(OTOOL) -L $(brewLibDir)/libbluray.dylib | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-
-	# X11 libs as well, because users may not have installed it.
-	@echo "[fink] copying libs of libX11"
-	$(foreach dylib,$(shell $(OTOOL) -L /opt/X11/lib/libX11.6.dylib  | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib),$(install_osx_libraries))
-endif
-
-	@echo ""
-	@echo "libpcre.dylib must be work on additionally, since it is not linked to the executable but opened using dlopen"
-	$(shell $(INSTALL) -m 755 $(pkgingLibDir)/libpcre.dylib $(macosx_bundle_path)/MacOS)
-	$(shell $(INSTALL_NAME_TOOL) -change $(pkgingLibDir)/libpcre.dylib @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
-	$(shell $(INSTALL_NAME_TOOL) -id @executable_path/libpcre.dylib $(macosx_bundle_path)/MacOS/libpcre.dylib)
+	@rm -f $(macosx_bundle_path)/MacOS/$(USDX_BIN_NAME)
+	@$(MAKE) -f Makefile.osx-helper
 
 # do  not forget to sign the code
 #	codesign -f -s USDX-codesign UltraStarDeluxe.app

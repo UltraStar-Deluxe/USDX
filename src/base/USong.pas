@@ -139,8 +139,11 @@ type
     Artist:     UTF8String;
 
     // use in search
-    TitleNoAccent:  UTF8String;
-    ArtistNoAccent: UTF8String;
+    TitleNoAccent:    UTF8String;
+    ArtistNoAccent:   UTF8String;
+    LanguageNoAccent: UTF8String;
+    EditionNoAccent:  UTF8String;
+    GenreNoAccent:    UTF8String;
 
     Creator:    UTF8String;
 
@@ -960,15 +963,18 @@ begin
 
     //Genre Sorting
     self.Genre := Parser.SongInfo.Header.Genre;
+    self.GenreNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(Parser.SongInfo.Header.Genre)));
 
     //Edition Sorting
     self.Edition := Parser.SongInfo.Header.Edition;
+    self.EditionNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(Parser.SongInfo.Header.Edition)));
 
     //Year Sorting
     //self.Year := Parser.SongInfo.Header.Year
 
     //Language Sorting
     self.Language := Parser.SongInfo.Header.Language;
+    self.LanguageNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(Parser.SongInfo.Header.Language)));
   end
   else
     Log.LogError('File incomplete or not SingStar XML (A): ' + aFileName.ToNative);
@@ -1192,13 +1198,15 @@ begin
       //Genre Sorting
       else if (Identifier = 'GENRE') then
       begin
-        DecodeStringUTF8(Value, Genre, Encoding)
+        DecodeStringUTF8(Value, Genre, Encoding);
+        self.GenreNoAccent := LowerCase(GetStringWithNoAccents(DecodeStringUTF8(Value, Encoding)));
       end
 
       //Edition Sorting
       else if (Identifier = 'EDITION') then
       begin
-        DecodeStringUTF8(Value, Edition, Encoding)
+        DecodeStringUTF8(Value, Edition, Encoding);
+        self.EditionNoAccent := LowerCase(GetStringWithNoAccents(DecodeStringUTF8(Value, Encoding)));
       end
 
       //Creator Tag
@@ -1210,7 +1218,8 @@ begin
       //Language Sorting
       else if (Identifier = 'LANGUAGE') then
       begin
-        DecodeStringUTF8(Value, Language, Encoding)
+        DecodeStringUTF8(Value, Language, Encoding);
+        self.LanguageNoAccent := LowerCase(GetStringWithNoAccents(DecodeStringUTF8(Value, Encoding)));
       end
 
       //Year Sorting

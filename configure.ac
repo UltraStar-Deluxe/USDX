@@ -181,17 +181,6 @@ fi
 # check for libraries
 # -----------------------------------------
 
-# find libpng
-# pkgconfig name for 1.2 is "libpng12", for 1.4 "libpng"
-PKG_HAVE([libpng], [libpng12], no)
-if [[ x$libpng_HAVE = xyes ]]; then
-    PKG_VERSION([libpng], [libpng12])
-else
-    # check for the generic .pc file
-    PKG_HAVE([libpng], [libpng >= 1.2], yes)
-    PKG_VERSION([libpng], [libpng >= 1.2])
-fi
-
 # find sdl2
 PKG_HAVE([sdl2], [sdl2], yes)
 
@@ -231,6 +220,14 @@ else
 	fi
 fi
 AC_SUBST(lua_LIB_NAME)
+AC_MSG_CHECKING([size of lua_Integer])
+PKG_VALUE([lua],[CFLAGS],[cflags],[$lua_LIB_NAME],[C compiler flags for Lua])
+old_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $lua_CFLAGS"
+AC_COMPUTE_INT([LUA_INTEGER_BITS],[(long)sizeof(lua_Integer)*8],[#include <lua.h>])
+CFLAGS="$old_CFLAGS"
+AC_SUBST(LUA_INTEGER_BITS)
+AC_MSG_RESULT([$LUA_INTEGER_BITS bits])
 
 # find FFMpeg
 # Note: do not use the min/max version parameters with ffmpeg
@@ -279,6 +276,57 @@ PKG_HAVE([libswresample], [libswresample], no)
 PKG_VERSION([libswresample], [libswresample])
 AC_SUBST_DEFINE(HAVE_SWRESAMPLE, $libswresample_HAVE)
 
+# map avutil library version to ffmpeg version
+AC_MSG_CHECKING([version of ffmpeg])
+if   FFMPEG_LIBS_COMPATIBLE([55034100], [57064100,57093100], [57056100], [4002100], [2003100]); then
+    FFMPEG_VERSION="3.2" # and 3.3
+elif FFMPEG_LIBS_COMPATIBLE([55027100,55028100], [57048101], [57040101], [4001100], [2001100]); then
+    FFMPEG_VERSION="3.1"
+elif FFMPEG_LIBS_COMPATIBLE([55017103,55018100], [57024102,57037100], [57025100], [4000100], [2000101]); then
+    FFMPEG_VERSION="3.0"
+elif FFMPEG_LIBS_COMPATIBLE([54030100], [56060100], [56040101], [3001101], [1002101]); then
+    FFMPEG_VERSION="2.8"
+elif test $libavutil_VERSION_INT -le 54030100 -a $libavutil_VERSION_INT -ge 54027100; then
+    FFMPEG_VERSION="2.7"
+elif test $libavutil_VERSION_INT -eq 54020100; then
+    FFMPEG_VERSION="2.6"
+elif test $libavutil_VERSION_INT -eq 54015100; then
+    FFMPEG_VERSION="2.5"
+elif test $libavutil_VERSION_INT -eq 54007100; then
+    FFMPEG_VERSION="2.4"
+elif test $libavutil_VERSION_INT -eq 52066100; then
+    FFMPEG_VERSION="2.2"
+elif test $libavutil_VERSION_INT -le 52048101 -a $libavutil_VERSION_INT -ge 52048100; then
+    FFMPEG_VERSION="2.1"
+elif test $libavutil_VERSION_INT -le 52038100 -a $libavutil_VERSION_INT -ge 52038000; then
+    FFMPEG_VERSION="2.0"
+elif test $libavutil_VERSION_INT -le 52018100 -a $libavutil_VERSION_INT -ge 52018000; then
+    FFMPEG_VERSION="1.2"
+elif test $libavutil_VERSION_INT -le 52013100 -a $libavutil_VERSION_INT -ge 52013000; then
+    FFMPEG_VERSION="1.1"
+elif test $libavutil_VERSION_INT -le 51073101 -a $libavutil_VERSION_INT -ge 51073000; then
+    FFMPEG_VERSION="1.0"
+elif test $libavutil_VERSION_INT -le 51054100 -a $libavutil_VERSION_INT -ge 51054000; then
+    FFMPEG_VERSION="0.11"
+elif test $libavutil_VERSION_INT -le 51035100 -a $libavutil_VERSION_INT -ge 51034101; then
+    FFMPEG_VERSION="0.10"
+elif test $libavutil_VERSION_INT -eq 51032000; then
+    FFMPEG_VERSION="0.9"
+elif test $libavutil_VERSION_INT -le 51022002 -a $libavutil_VERSION_INT -ge 51009001; then
+    FFMPEG_VERSION="0.8"
+elif test $libavutil_VERSION_INT -eq 50043000; then
+    FFMPEG_VERSION="0.7"
+elif test $libavutil_VERSION_INT -le 50024000 -a $libavutil_VERSION_INT -ge 49000001; then
+    FFMPEG_VERSION="0"
+else
+    AC_MSG_ERROR([
+
+Unsupported ffmpeg version, most recent version supported is 3.3.
+])
+fi
+AX_EXTRACT_VERSION(FFMPEG, $FFMPEG_VERSION)
+AC_SUBST(FFMPEG_VERSION)
+AC_MSG_RESULT(@<:@$FFMPEG_VERSION@:>@)
 
 # find projectM version
 libprojectM_PKG="libprojectM >= 0.98"
@@ -344,6 +392,34 @@ fi
 # find portmixer
 PKG_HAVE([portmixer], [portmixer], no)
 AC_SUBST_DEFINE(HAVE_PORTMIXER, $portmixer_HAVE)
+
+AC_ARG_ENABLE(portmidi, [AS_HELP_STRING([--disable-portmidi], [Disable PortTime Midi loop])])
+AC_ARG_WITH(porttime, [AS_HELP_STRING([--with-porttime], [Use PortTime instead of SDL Midi loop])])
+
+if [[ x$enable_portmidi != xno ]] ; then
+    AC_CHECK_LIB([portmidi], [Pm_Initialize], [
+        portmidi_HAVE=yes
+        if [[ x$with_porttime = xyes ]] ; then
+            porttime_HAVE=yes
+            AC_CHECK_LIB([portmidi], [Pt_Start], [porttime_LIB_NAME=portmidi],
+                [AC_CHECK_LIB([porttime], [Pt_Start], [porttime_LIB_NAME=porttime],
+                     [AC_MSG_ERROR([PortTime library not found])])])
+        else
+            porttime_HAVE=no
+        fi
+        ], [
+        if [[ x$enable_portmidi = xyes ]] ; then
+            AC_MSG_ERROR([PortMidi library not found])
+        else
+            portmidi_HAVE=no
+        fi
+        ])
+else
+	portmidi_HAVE=no
+fi
+AC_SUBST_DEFINE(HAVE_PORTMIDI, $portmidi_HAVE)
+AC_SUBST_DEFINE(HAVE_PORTTIME, $porttime_HAVE)
+AC_SUBST(porttime_LIB_NAME)
 
 # determine linker-flags
 if test x$FPC_PLATFORM = xdarwin; then

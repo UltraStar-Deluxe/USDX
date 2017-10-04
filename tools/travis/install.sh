@@ -14,7 +14,8 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
     #brew cask install xquartz
 
     brew install sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_net sdl2_ttf \
-        fpc portaudio binutils sqlite freetype libpng pcre lua libtiff
+        fpc portaudio binutils sqlite freetype libpng pcre lua libtiff \
+        portmidi
 
     # This is from: https://github.com/Homebrew/homebrew-versions
     brew install ffmpeg28

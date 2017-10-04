@@ -17,13 +17,13 @@
 #
 #   Calls pkg-config with a given command and stores the result.
 #   If the variable was already defined by the user or the package
-#   is not present on the system ([$VARIABLE_PREFIX]_HAVE <> yes)
+#   is not present on the system ([$VARIABLE_PREFIX]_HAVE <> yes) 
 #   pkg-config will not be executed and the old value remains.
 #   In addition the variable will be shown on "./configure --help"
 #   described by a given help-string.
 #
 #   Parameters:
-#     - VARIABLE_PREFIX: the prefix for the variables storing
+#     - VARIABLE_PREFIX: the prefix for the variables storing 
 #                        information about the package.
 #     - POSTFIX:         [$VARIABLE_PREFIX]_[$POSTFIX] will contain the value
 #     - COMMAND:         a pkg-config command, e.g. "variable=prefix"
@@ -35,7 +35,7 @@
 
 AC_DEFUN([PKG_VALUE],
 [
-    AC_ARG_VAR([$1]_[$2], [$5, overriding pkg-config])
+    AC_ARG_VAR([$1]_[$2], [$5, overriding pkg-config])   
     # check if variable was defined by the user
     if test -z "$[$1]_[$2]"; then
         # if not, get it from pkg-config
@@ -49,7 +49,7 @@ AC_DEFUN([PKG_VALUE],
 
 $err_msg
 
-If --with-[$1]=nocheck is defined the environment variable
+If --with-[$1]=nocheck is defined the environment variable 
 [$1]_[$2]
 must be set to avoid the need to call pkg-config.
 
@@ -71,85 +71,31 @@ See the pkg-config man page for more details.
 #   Retrieves the version of a package
 #
 #   Parameters:
-#     - VARIABLE_PREFIX: the prefix for the variables storing
+#     - VARIABLE_PREFIX: the prefix for the variables storing 
 #                        information about the package.
 #     - MODULE:          package name according to pkg-config
 #
 #   Sets:
-#     [$VARIABLE_PREFIX]_VERSION         # full version string
+#     [$VARIABLE_PREFIX]_VERSION         # full version string 
 #                                        #   (format: "major.minor.release")
 #
 #     [$VARIABLE_PREFIX]_VERSION_MAJOR   # major version number
 #     [$VARIABLE_PREFIX]_VERSION_MINOR   # minor version number
 #     [$VARIABLE_PREFIX]_VERSION_RELEASE # release version number
 #
-#     [$VARIABLE_PREFIX]_VERSION_INT     # integer representation:
+#     [$VARIABLE_PREFIX]_VERSION_INT     # integer representation: 
 #                                        #   MMMmmmrrr (M:major,m:minor,r:release)
 
 AC_DEFUN([PKG_VERSION],
 [
     if test x$[$1][_HAVE] = xyes; then
         AC_MSG_CHECKING([version of $1])
-        PKG_VALUE([$1], [VERSION], [modversion], [$2], [version of $1])
+        PKG_VALUE([$1], [VERSION], [modversion], [$2], [version of $1])   
         AC_MSG_RESULT(@<:@$[$1][_VERSION]@:>@)
     else
         [$1][_VERSION]="0.0.0"
     fi
     AX_EXTRACT_VERSION([$1], $[$1][_VERSION])
-
-    ifelse($1, [libavutil], [
-        # map avutil library version to ffmpeg version
-        AC_MSG_CHECKING([version of ffmpeg])
-        if   test $[$1][_VERSION_INT] -le 55034101 -a $[$1][_VERSION_INT] -ge 55034100; then
-            FFMPEG_VERSION="3.2"
-        elif test $[$1][_VERSION_INT] -le 55028100 -a $[$1][_VERSION_INT] -ge 55027100; then
-            FFMPEG_VERSION="3.1"
-        elif test $[$1][_VERSION_INT] -eq 55017103; then
-            FFMPEG_VERSION="3.0"
-        elif test $[$1][_VERSION_INT] -le 54099100 -a $[$1][_VERSION_INT] -ge 54030100; then
-            FFMPEG_VERSION="2.8"
-        elif test $[$1][_VERSION_INT] -le 54030100 -a $[$1][_VERSION_INT] -ge 54027100; then
-            FFMPEG_VERSION="2.7"
-        elif test $[$1][_VERSION_INT] -eq 54020100; then
-            FFMPEG_VERSION="2.6"
-        elif test $[$1][_VERSION_INT] -eq 54015100; then
-            FFMPEG_VERSION="2.5"
-        elif test $[$1][_VERSION_INT] -eq 54007100; then
-            FFMPEG_VERSION="2.4"
-        elif test $[$1][_VERSION_INT] -eq 52066100; then
-            FFMPEG_VERSION="2.2"
-        elif test $[$1][_VERSION_INT] -le 52048101 -a $[$1][_VERSION_INT] -ge 52048100; then
-            FFMPEG_VERSION="2.1"
-        elif test $[$1][_VERSION_INT] -le 52038100 -a $[$1][_VERSION_INT] -ge 52038000; then
-            FFMPEG_VERSION="2.0"
-        elif test $[$1][_VERSION_INT] -le 52018100 -a $[$1][_VERSION_INT] -ge 52018000; then
-            FFMPEG_VERSION="1.2"
-        elif test $[$1][_VERSION_INT] -le 52013100 -a $[$1][_VERSION_INT] -ge 52013000; then
-            FFMPEG_VERSION="1.1"
-        elif test $[$1][_VERSION_INT] -le 51073101 -a $[$1][_VERSION_INT] -ge 51073000; then
-            FFMPEG_VERSION="1.0"
-        elif test $[$1][_VERSION_INT] -le 51054100 -a $[$1][_VERSION_INT] -ge 51054000; then
-            FFMPEG_VERSION="0.11"
-        elif test $[$1][_VERSION_INT] -le 51035100 -a $[$1][_VERSION_INT] -ge 51034101; then
-            FFMPEG_VERSION="0.10"
-        elif test $[$1][_VERSION_INT] -eq 51032000; then
-            FFMPEG_VERSION="0.9"
-        elif test $[$1][_VERSION_INT] -le 51022002 -a $[$1][_VERSION_INT] -ge 51009001; then
-            FFMPEG_VERSION="0.8"
-        elif test $[$1][_VERSION_INT] -eq 50043000; then
-            FFMPEG_VERSION="0.7"
-        elif test $[$1][_VERSION_INT] -le 50024000 -a $[$1][_VERSION_INT] -ge 49000001; then
-            FFMPEG_VERSION="0"
-        else
-            AC_MSG_ERROR([
-
-Unsupported ffmpeg version, most recent version supported is 3.2.
-])
-        fi
-        AX_EXTRACT_VERSION(FFMPEG, $FFMPEG_VERSION)
-        AC_SUBST(FFMPEG_VERSION)
-        AC_MSG_RESULT(@<:@$FFMPEG_VERSION@:>@)
-    ])
 ])
 
 # SYNOPSIS

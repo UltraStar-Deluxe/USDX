@@ -229,7 +229,7 @@ Start with a customs configuration file and score database:
 [Freepascal](http://freepascal.org/) 3.0.0 or newer is required to compile UltraStar Deluxe. If you had some older version of fpc installed before, make sure to remove everything of it correctly before trying to install freepascal (otherwise compiling will fail with various weird error messages). Also, using the 3.0-development branch with current fixes is suggested.
 If you want to help the project by coding patches, we suggest you to use the [Lazarus 1.6](http://www.lazarus-ide.org/) or newer integrated development environment.
 For linking and running the game, the following libraries are also required:
-- SDL2, SDL2_gfx, SDL2_mixer, SDL2_image, SDL2_ttf, SDL2_net
+- SDL2, SDL2_image
 - ffmpeg 2.8 or older
 - sqlite
 - [bass](http://www.un4seen.com/bass.html)
@@ -252,13 +252,14 @@ For linking and running the game, the following libraries are also required:
 #### Compiling on Linux/BSD using make
 1. make sure all required libraries are installed 
   * for current debian / ubuntu: 
-    `sudo apt-get update && sudo apt-get install git fpc libsdl2-dev libsdl2-image-dev libsdl2-image-2.0-0 libsdl2-2.0-0 libsdl2-mixer-2.0-0 libsdl2-mixer-dev libsdl2-net-2.0-0 libsdl2-net-dev libsdl2-ttf-2.0-0 libsdl2-ttf-dev libsdl2-gfx-1.0-0 libsdl2-gfx-dev ffmpeg libavdevice-dev libsqlite3-0 libsqlite3-dev libpcre3 libpcre3-dev ttf-dejavu ttf-freefont portaudio19-dev lua5.1-dev libpng16-16 libopencv-highgui-dev libprojectm-dev`
+    `sudo apt-get update && sudo apt-get install git fpc libsdl2-dev libsdl2-image-dev libsdl2-image-2.0-0 libsdl2-2.0-0 ffmpeg libavdevice-dev libsqlite3-0 libsqlite3-dev libpcre3 libpcre3-dev ttf-dejavu ttf-freefont portaudio19-dev lua5.1-dev libopencv-highgui-dev libprojectm-dev`
   * for arch linux there is an aur package called [ultrastardx-git](https://aur.archlinux.org/packages/ultrastardx-git)
 2. `git clone https://github.com/UltraStar-Deluxe/USDX`
 2. `cd USDX`
-3. `./configure` (or use _autoconf_)
-4. `make`
-6. Play the game, 
+4. `./autogen.sh`
+5. `./configure` (or use _autoconf_)
+6. `make`
+7. Play the game, 
    * install the game and start it
      - `sudo make install`
      - `ultrastardx`
@@ -272,7 +273,7 @@ For linking and running the game, the following libraries are also required:
 - Don't miss _XQuartz_ from [xquartz.org](http://www.xquartz.org)
 - Make sure the XCode command line tools are installed. `xcode-select --install`
 - Needed brew libraries can be installed using:
-  * `brew install sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_net sdl2_ttf ffmpeg libav portaudio binutils sqlite freetype libpng pcre lua libtiff`
+  * `brew install sdl2 sdl2_image ffmpeg libav portaudio binutils sqlite freetype pcre lua libtiff`
   * `brew switch ffmpeg 2.8.6`
 - Pass argument `--enable-osx-fink` or `--enable-osx-brew` (default) according to the packaging you are using
 - `./configure`

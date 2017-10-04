@@ -305,13 +305,13 @@ type
   end;
 
 var
-  Ini:         TIni;
-  IResolution: TUTF8StringDynArray;
+  Ini:                   TIni;
+  IResolution:           TUTF8StringDynArray;
   IResolutionFullScreen: TUTF8StringDynArray;
-  IResolutionCustom: TUTF8StringDynArray;
-  ILanguage:   TUTF8StringDynArray;
-  ITheme:      TUTF8StringDynArray;
-  ISkin:       TUTF8StringDynArray;
+  IResolutionCustom:     TUTF8StringDynArray;
+  ILanguage:             TUTF8StringDynArray;
+  ITheme:                TUTF8StringDynArray;
+  ISkin:                 TUTF8StringDynArray;
 
 {*
  * Options
@@ -592,19 +592,11 @@ var
   I: integer;
   Zeros: string;
 begin
-  // Load Languagefile, fallback to config language if param is invalid
+  // Load language file, fallback to config language if param is invalid
   if (Params.Language > -1) and (Params.Language < Length(ILanguage)) then
     ULanguage.Language.ChangeLanguage(ILanguage[Params.Language])
   else
     ULanguage.Language.ChangeLanguage(ILanguage[Language]);
-
-  SetLength(ILanguageTranslated, Length(ILanguage));
-  for I := 0 to High(ILanguage) do
-  begin
-    ILanguageTranslated[I] := ULanguage.Language.Translate(
-      'OPTION_VALUE_' + UpperCase(ILanguage[I])
-    );
-  end;
 
   IDifficultyTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_EASY');
   IDifficultyTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_MEDIUM');
@@ -1702,250 +1694,259 @@ var
   I: integer;
   C: TRGB;
 begin
-  if (Filename.IsFile and Filename.IsReadOnly) then
+  try
   begin
-    Log.LogError('Config-file is read-only', 'TIni.Save');
-    Exit;
+    if (Filename.IsFile and Filename.IsReadOnly) then
+    begin
+      Log.LogError('Config-file is read-only', 'TIni.Save');
+      Exit;
+    end;
+
+    IniFile := TIniFile.Create(Filename.ToNative);
+
+    // Players
+    IniFile.WriteString('Game', 'Players', IPlayers[Players]);
+
+    // Difficulty
+    IniFile.WriteString('Game', 'Difficulty', IDifficulty[Difficulty]);
+
+    // Language
+    IniFile.WriteString('Game', 'Language', ILanguage[Language]);
+
+    // Tabs
+    IniFile.WriteString('Game', 'Tabs', ITabs[Tabs]);
+
+    // SongMenu
+    IniFile.WriteString('Game', 'SongMenu', ISongMenuMode[Ord(SongMenu)]);
+
+    // Sorting
+    IniFile.WriteString('Game', 'Sorting', ISorting[Sorting]);
+
+    // Show Scores
+    IniFile.WriteString('Game', 'ShowScores', IShowScores[ShowScores]);
+
+    // Debug
+    IniFile.WriteString('Game', 'Debug', IDebug[Debug]);
+
+    // MaxFramerate
+    IniFile.WriteString('Graphics', 'MaxFramerate', IMaxFramerate[MaxFramerate]);
+
+    // Screens
+    IniFile.WriteString('Graphics', 'Screens', IScreens[Screens]);
+
+    // Split
+    IniFile.WriteString('Graphics', 'Split', ISplit[Split]);
+
+    // FullScreen
+    IniFile.WriteString('Graphics', 'FullScreen', IFullScreen[FullScreen]);
+
+    // Visualization
+    IniFile.WriteString('Graphics', 'Visualization', IVisualizer[VisualizerOption]);
+
+    // Resolution
+    IniFile.WriteString('Graphics', 'Resolution', GetResolution);
+    IniFile.WriteString('Graphics', 'ResolutionFullscreen', GetResolutionFullscreen);
+
+    // Depth
+    IniFile.WriteString('Graphics', 'Depth', IDepth[Depth]);
+
+    // TextureSize
+    IniFile.WriteString('Graphics', 'TextureSize', ITextureSize[TextureSize]);
+
+    // Sing Window
+    IniFile.WriteString('Graphics', 'SingWindow', ISingWindow[SingWindow]);
+
+    // Oscilloscope
+    IniFile.WriteString('Graphics', 'Oscilloscope', IOscilloscope[Oscilloscope]);
+
+    // Spectrum
+    //IniFile.WriteString('Graphics', 'Spectrum', ISpectrum[Spectrum]);
+
+    // Spectrograph
+    //IniFile.WriteString('Graphics', 'Spectrograph', ISpectrograph[Spectrograph]);
+
+    // Movie Size
+    IniFile.WriteString('Graphics', 'MovieSize', IMovieSize[MovieSize]);
+
+    // VideoPreview
+    IniFile.WriteString('Graphics', 'VideoPreview', IVideoPreview[VideoPreview]);
+
+    // VideoEnabled
+    IniFile.WriteString('Graphics', 'VideoEnabled', IVideoEnabled[VideoEnabled]);
+
+    // ClickAssist
+    IniFile.WriteString('Sound', 'ClickAssist', IClickAssist[ClickAssist]);
+
+    // BeatClick
+    IniFile.WriteString('Sound', 'BeatClick', IBeatClick[BeatClick]);
+
+    // AudioOutputBufferSize
+    IniFile.WriteString('Sound', 'AudioOutputBufferSize', IAudioOutputBufferSize[AudioOutputBufferSizeIndex]);
+
+    // Background music
+    IniFile.WriteString('Sound', 'BackgroundMusic', IBackgroundMusic[BackgroundMusicOption]);
+
+    // Song Preview
+    IniFile.WriteString('Sound', 'PreviewVolume', IPreviewVolume[PreviewVolume]);
+
+    // PreviewFading
+    IniFile.WriteString('Sound', 'PreviewFading', IPreviewFading[PreviewFading]);
+
+    // SavePlayback
+    IniFile.WriteString('Sound', 'SavePlayback', ISavePlayback[SavePlayback]);
+
+    // VoicePasstrough
+    IniFile.WriteString('Sound', 'VoicePassthrough', IVoicePassthrough[VoicePassthrough]);
+
+    // MusicAutoGain
+    IniFile.WriteString('Sound', 'MusicAutoGain', IMusicAutoGain[MusicAutoGain]);
+
+    // Lyrics Font
+    IniFile.WriteString('Lyrics', 'LyricsFont', ILyricsFont[LyricsFont]);
+
+    // Lyrics Effect
+    IniFile.WriteString('Lyrics', 'LyricsEffect', ILyricsEffect[LyricsEffect]);
+
+    // NoteLines
+    IniFile.WriteString('Lyrics', 'NoteLines', INoteLines[NoteLines]);
+
+    //Encoding default
+    IniFile.WriteString('Lyrics', 'Encoding', EncodingName(DefaultEncoding));
+
+    // Theme
+    IniFile.WriteString('Themes', 'Theme', ITheme[Theme]);
+
+    // Skin
+    IniFile.WriteString('Themes', 'Skin', ISkin[SkinNo]);
+
+    // Color
+    IniFile.WriteString('Themes', 'Color', IColor[Color]);
+
+    SaveInputDeviceCfg(IniFile);
+
+    //LoadAnimation
+    IniFile.WriteString('Advanced', 'LoadAnimation', ILoadAnimation[LoadAnimation]);
+
+    //EffectSing
+    IniFile.WriteString('Advanced', 'EffectSing', IEffectSing[EffectSing]);
+
+    //ScreenFade
+    IniFile.WriteString('Advanced', 'ScreenFade', IScreenFade[ScreenFade]);
+
+    //AskbeforeDel
+    IniFile.WriteString('Advanced', 'AskbeforeDel', IAskbeforeDel[AskBeforeDel]);
+
+    //OnSongClick
+    IniFile.WriteString('Advanced', 'OnSongClick', IOnSongClick[OnSongClick]);
+
+    //Line Bonus
+    IniFile.WriteString('Advanced', 'LineBonus', ILineBonus[LineBonus]);
+
+    //Party Popup
+    IniFile.WriteString('Advanced', 'PartyPopup', IPartyPopup[PartyPopup]);
+
+    //SingScores
+    IniFile.WriteString('Advanced', 'SingScores', ISingScores[SingScores]);
+
+    //TopScores
+    IniFile.WriteString('Advanced', 'TopScores', ITopScores[TopScores]);
+
+    //SyncTo
+    IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);
+
+    // Joypad
+    IniFile.WriteString('Controller', 'Joypad', IJoypad[Joypad]);
+
+    // Mouse
+    IniFile.WriteString('Controller', 'Mouse', IMouse[Mouse]);
+
+    // SingTimebarMode
+    IniFile.WriteString('Advanced', 'SingTimebarMode', ISingTimebarMode[SingTimebarMode]);
+
+    // JukeboxTimebarMode
+    IniFile.WriteString('Advanced', 'JukeboxTimebarMode', IJukeboxTimebarMode[JukeboxTimebarMode]);
+
+    // Directories (add a template if section is missing)
+    // Note: Value must be ' ' and not '', otherwise no key is generated on Linux
+    if (not IniFile.SectionExists('Directories')) then
+      IniFile.WriteString('Directories', 'SongDir1', ' ');
+
+    if (not IniFile.ValueExists('Directories', 'WebScoresDir')) then
+      IniFile.WriteString('Directories', 'WebScoresDir', ' ');
+
+    // Jukebox
+    IniFile.WriteString('Jukebox', 'LyricsFont', ILyricsFont[JukeboxFont]);
+    IniFile.WriteString('Jukebox', 'LyricsEffect', ILyricsEffect[JukeboxEffect]);
+    IniFile.WriteString('Jukebox', 'LyricsAlpha', ILyricsAlpha[JukeboxAlpha]);
+
+    if (JukeboxSingLineColor <> High(ISingLineColor)) then
+    begin
+      C := GetLyricColor(JukeboxSingLineColor);
+      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
+    end
+    else
+      HexColor := RGBToHex(JukeboxSingLineOtherColorR, JukeboxSingLineOtherColorG, JukeboxSingLineOtherColorB);
+
+    IniFile.WriteString('Jukebox', 'SingLineColor', HexColor);
+
+    if (JukeboxActualLineColor <> High(IActualLineColor)) then
+    begin
+      C := GetLyricGrayColor(JukeboxActualLineColor);
+      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
+    end
+    else
+      HexColor := RGBToHex(JukeboxActualLineOtherColorR, JukeboxActualLineOtherColorG, JukeboxActualLineOtherColorB);
+
+    IniFile.WriteString('Jukebox', 'ActualLineColor', HexColor);
+
+    if (JukeboxNextLineColor <> High(INextLineColor)) then
+    begin
+      C := GetLyricGrayColor(JukeboxNextLineColor);
+      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
+    end
+    else
+      HexColor := RGBToHex(JukeboxNextLineOtherColorR, JukeboxNextLineOtherColorG, JukeboxNextLineOtherColorB);
+
+    IniFile.WriteString('Jukebox', 'NextLineColor', HexColor);
+
+    if (JukeboxSingLineOutlineColor <> High(ISingLineOColor)) then
+    begin
+      C := GetLyricOutlineColor(JukeboxSingLineOutlineColor);
+      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
+    end
+    else
+      HexColor := RGBToHex(JukeboxSingLineOtherOColorR, JukeboxSingLineOtherOColorG, JukeboxSingLineOtherOColorB);
+
+    IniFile.WriteString('Jukebox', 'SingLineOColor', HexColor);
+
+    if (JukeboxActualLineOutlineColor <> High(IActualLineOColor)) then
+    begin
+      C := GetLyricOutlineColor(JukeboxActualLineOutlineColor);
+      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
+    end
+    else
+      HexColor := RGBToHex(JukeboxActualLineOtherOColorR, JukeboxActualLineOtherOColorG, JukeboxActualLineOtherOColorB);
+
+    IniFile.WriteString('Jukebox', 'ActualLineOColor', HexColor);
+
+    if (JukeboxNextLineOutlineColor <> High(INextLineOColor)) then
+    begin
+      C := GetLyricOutlineColor(JukeboxNextLineOutlineColor);
+      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
+    end
+    else
+      HexColor := RGBToHex(JukeboxNextLineOtherOColorR, JukeboxNextLineOtherOColorG, JukeboxNextLineOtherOColorB);
+
+    IniFile.WriteString('Jukebox', 'NextLineOColor', HexColor);
+
+    IniFile.Free;
+
+  end
+  except
+    On e :Exception do begin
+      Log.LogWarn('Saving InputDeviceConfig failed: ' + e.Message, 'UIni.Save');
+    end;
   end;
-
-  IniFile := TIniFile.Create(Filename.ToNative);
-
-  // Players
-  IniFile.WriteString('Game', 'Players', IPlayers[Players]);
-
-  // Difficulty
-  IniFile.WriteString('Game', 'Difficulty', IDifficulty[Difficulty]);
-
-  // Language
-  IniFile.WriteString('Game', 'Language', ILanguage[Language]);
-
-  // Tabs
-  IniFile.WriteString('Game', 'Tabs', ITabs[Tabs]);
-
-  // SongMenu
-  IniFile.WriteString('Game', 'SongMenu', ISongMenuMode[Ord(SongMenu)]);
-
-  // Sorting
-  IniFile.WriteString('Game', 'Sorting', ISorting[Sorting]);
-
-  // Show Scores
-  IniFile.WriteString('Game', 'ShowScores', IShowScores[ShowScores]);
-
-  // Debug
-  IniFile.WriteString('Game', 'Debug', IDebug[Debug]);
-
-  // MaxFramerate
-  IniFile.WriteString('Graphics', 'MaxFramerate', IMaxFramerate[MaxFramerate]);
-
-  // Screens
-  IniFile.WriteString('Graphics', 'Screens', IScreens[Screens]);
-
-  // Split
-  IniFile.WriteString('Graphics', 'Split', ISplit[Split]);
-
-  // FullScreen
-  IniFile.WriteString('Graphics', 'FullScreen', IFullScreen[FullScreen]);
-
-  // Visualization
-  IniFile.WriteString('Graphics', 'Visualization', IVisualizer[VisualizerOption]);
-
-  // Resolution
-  IniFile.WriteString('Graphics', 'Resolution', GetResolution);
-  IniFile.WriteString('Graphics', 'ResolutionFullscreen', GetResolutionFullscreen);
-
-  // Depth
-  IniFile.WriteString('Graphics', 'Depth', IDepth[Depth]);
-
-  // TextureSize
-  IniFile.WriteString('Graphics', 'TextureSize', ITextureSize[TextureSize]);
-
-  // Sing Window
-  IniFile.WriteString('Graphics', 'SingWindow', ISingWindow[SingWindow]);
-
-  // Oscilloscope
-  IniFile.WriteString('Graphics', 'Oscilloscope', IOscilloscope[Oscilloscope]);
-
-  // Spectrum
-  //IniFile.WriteString('Graphics', 'Spectrum', ISpectrum[Spectrum]);
-
-  // Spectrograph
-  //IniFile.WriteString('Graphics', 'Spectrograph', ISpectrograph[Spectrograph]);
-
-  // Movie Size
-  IniFile.WriteString('Graphics', 'MovieSize', IMovieSize[MovieSize]);
-
-  // VideoPreview
-  IniFile.WriteString('Graphics', 'VideoPreview', IVideoPreview[VideoPreview]);
-
-  // VideoEnabled
-  IniFile.WriteString('Graphics', 'VideoEnabled', IVideoEnabled[VideoEnabled]);
-
-  // ClickAssist
-  IniFile.WriteString('Sound', 'ClickAssist', IClickAssist[ClickAssist]);
-
-  // BeatClick
-  IniFile.WriteString('Sound', 'BeatClick', IBeatClick[BeatClick]);
-
-  // AudioOutputBufferSize
-  IniFile.WriteString('Sound', 'AudioOutputBufferSize', IAudioOutputBufferSize[AudioOutputBufferSizeIndex]);
-
-  // Background music
-  IniFile.WriteString('Sound', 'BackgroundMusic', IBackgroundMusic[BackgroundMusicOption]);
-
-  // Song Preview
-  IniFile.WriteString('Sound', 'PreviewVolume', IPreviewVolume[PreviewVolume]);
-
-  // PreviewFading
-  IniFile.WriteString('Sound', 'PreviewFading', IPreviewFading[PreviewFading]);
-
-  // SavePlayback
-  IniFile.WriteString('Sound', 'SavePlayback', ISavePlayback[SavePlayback]);
-
-  // VoicePasstrough
-  IniFile.WriteString('Sound', 'VoicePassthrough', IVoicePassthrough[VoicePassthrough]);
-  
-  // MusicAutoGain
-  IniFile.WriteString('Sound', 'MusicAutoGain', IMusicAutoGain[MusicAutoGain]);
-
-  // Lyrics Font
-  IniFile.WriteString('Lyrics', 'LyricsFont', ILyricsFont[LyricsFont]);
-
-  // Lyrics Effect
-  IniFile.WriteString('Lyrics', 'LyricsEffect', ILyricsEffect[LyricsEffect]);
-
-  // NoteLines
-  IniFile.WriteString('Lyrics', 'NoteLines', INoteLines[NoteLines]);
-
-  //Encoding default
-  IniFile.WriteString('Lyrics', 'Encoding', EncodingName(DefaultEncoding));
-
-  // Theme
-  IniFile.WriteString('Themes', 'Theme', ITheme[Theme]);
-
-  // Skin
-  IniFile.WriteString('Themes', 'Skin', ISkin[SkinNo]);
-
-  // Color
-  IniFile.WriteString('Themes', 'Color', IColor[Color]);
-
-  SaveInputDeviceCfg(IniFile);
-
-  //LoadAnimation
-  IniFile.WriteString('Advanced', 'LoadAnimation', ILoadAnimation[LoadAnimation]);
-
-  //EffectSing
-  IniFile.WriteString('Advanced', 'EffectSing', IEffectSing[EffectSing]);
-
-  //ScreenFade
-  IniFile.WriteString('Advanced', 'ScreenFade', IScreenFade[ScreenFade]);
-
-  //AskbeforeDel
-  IniFile.WriteString('Advanced', 'AskbeforeDel', IAskbeforeDel[AskBeforeDel]);
-
-  //OnSongClick
-  IniFile.WriteString('Advanced', 'OnSongClick', IOnSongClick[OnSongClick]);
-
-  //Line Bonus
-  IniFile.WriteString('Advanced', 'LineBonus', ILineBonus[LineBonus]);
-
-  //Party Popup
-  IniFile.WriteString('Advanced', 'PartyPopup', IPartyPopup[PartyPopup]);
-
-  //SingScores
-  IniFile.WriteString('Advanced', 'SingScores', ISingScores[SingScores]);
-
-  //TopScores
-  IniFile.WriteString('Advanced', 'TopScores', ITopScores[TopScores]);
-
-  //SyncTo
-  IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);
-
-  // Joypad
-  IniFile.WriteString('Controller', 'Joypad', IJoypad[Joypad]);
-
-  // Mouse
-  IniFile.WriteString('Controller', 'Mouse', IMouse[Mouse]);
-
-  // SingTimebarMode
-  IniFile.WriteString('Advanced', 'SingTimebarMode', ISingTimebarMode[SingTimebarMode]);
-
-  // JukeboxTimebarMode
-  IniFile.WriteString('Advanced', 'JukeboxTimebarMode', IJukeboxTimebarMode[JukeboxTimebarMode]);
-
-  // Directories (add a template if section is missing)
-  // Note: Value must be ' ' and not '', otherwise no key is generated on Linux
-  if (not IniFile.SectionExists('Directories')) then
-    IniFile.WriteString('Directories', 'SongDir1', ' ');
-
-  if (not IniFile.ValueExists('Directories', 'WebScoresDir')) then
-    IniFile.WriteString('Directories', 'WebScoresDir', ' ');
-
-  // Jukebox
-  IniFile.WriteString('Jukebox', 'LyricsFont', ILyricsFont[JukeboxFont]);
-  IniFile.WriteString('Jukebox', 'LyricsEffect', ILyricsEffect[JukeboxEffect]);
-  IniFile.WriteString('Jukebox', 'LyricsAlpha', ILyricsAlpha[JukeboxAlpha]);
-
-  if (JukeboxSingLineColor <> High(ISingLineColor)) then
-  begin
-    C := GetLyricColor(JukeboxSingLineColor);
-    HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-  end
-  else
-    HexColor := RGBToHex(JukeboxSingLineOtherColorR, JukeboxSingLineOtherColorG, JukeboxSingLineOtherColorB);
-
-  IniFile.WriteString('Jukebox', 'SingLineColor', HexColor);
-
-  if (JukeboxActualLineColor <> High(IActualLineColor)) then
-  begin
-    C := GetLyricGrayColor(JukeboxActualLineColor);
-    HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-  end
-  else
-    HexColor := RGBToHex(JukeboxActualLineOtherColorR, JukeboxActualLineOtherColorG, JukeboxActualLineOtherColorB);
-
-  IniFile.WriteString('Jukebox', 'ActualLineColor', HexColor);
-
-  if (JukeboxNextLineColor <> High(INextLineColor)) then
-  begin
-    C := GetLyricGrayColor(JukeboxNextLineColor);
-    HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-  end
-  else
-    HexColor := RGBToHex(JukeboxNextLineOtherColorR, JukeboxNextLineOtherColorG, JukeboxNextLineOtherColorB);
-
-  IniFile.WriteString('Jukebox', 'NextLineColor', HexColor);
-
-  if (JukeboxSingLineOutlineColor <> High(ISingLineOColor)) then
-  begin
-    C := GetLyricOutlineColor(JukeboxSingLineOutlineColor);
-    HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-  end
-  else
-    HexColor := RGBToHex(JukeboxSingLineOtherOColorR, JukeboxSingLineOtherOColorG, JukeboxSingLineOtherOColorB);
-
-  IniFile.WriteString('Jukebox', 'SingLineOColor', HexColor);
-
-  if (JukeboxActualLineOutlineColor <> High(IActualLineOColor)) then
-  begin
-    C := GetLyricOutlineColor(JukeboxActualLineOutlineColor);
-    HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-  end
-  else
-    HexColor := RGBToHex(JukeboxActualLineOtherOColorR, JukeboxActualLineOtherOColorG, JukeboxActualLineOtherOColorB);
-
-  IniFile.WriteString('Jukebox', 'ActualLineOColor', HexColor);
-
-  if (JukeboxNextLineOutlineColor <> High(INextLineOColor)) then
-  begin
-    C := GetLyricOutlineColor(JukeboxNextLineOutlineColor);
-    HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-  end
-  else
-    HexColor := RGBToHex(JukeboxNextLineOtherOColorR, JukeboxNextLineOtherOColorG, JukeboxNextLineOtherOColorB);
-
-  IniFile.WriteString('Jukebox', 'NextLineOColor', HexColor);
-
-  IniFile.Free;
 end;
 
 procedure TIni.SaveNames;

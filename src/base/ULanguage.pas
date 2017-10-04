@@ -92,41 +92,47 @@ uses
 constructor TLanguage.Create;
 var
   I, J: Integer;
+  DefaultLanguageFound: Boolean;
 begin
   inherited;
+  DefaultLanguageFound := False;
 
+  //Load list of available translations (*.ini files in LanguagesPath)
   LoadList;
 
   //Set Implode Glues for Backward Compatibility
   Implode_Glue1 := ', ';
   Implode_Glue2 := ' and ';
 
-  if (Length(List) = 0) then //No Language Files Loaded -> Abort Loading
-    Log.CriticalError('Could not load any Language File');
+  //If no translations are found, abort loading
+  if (Length(List) = 0) then
+    Log.CriticalError('Could not load any language file');
 
-  //Standard Language (If a Language File is Incomplete)
-  //Then use English Language
-  for I := 0 to high(List) do //Search for English Language
+  SetLength(ILanguageTranslated, Length(ILanguage));
+
+  //Load each translation and store the native language name
+  for I := 0 to high(List) do
   begin
-    //English Language Found -> Load
+    ChangeLanguage(List[I].Name);
+    ILanguageTranslated[I] := Translate('LANGUAGE');
+
+    //If currently loaded translation is English, use this translation as default (for incomplete translation files)
     if Uppercase(List[I].Name) = 'ENGLISH' then
     begin
-      ChangeLanguage('English');
-
       SetLength(EntryDefault, Length(Entry));
       for J := 0 to high(Entry) do
         EntryDefault[J] := Entry[J];
 
       SetLength(Entry, 0);
-      
-      Break;
+      DefaultLanguageFound := True;
     end;
-
-    if (I = high(List)) then
-      Log.LogError('English Languagefile missing! No standard Translation loaded');
   end;
-  //Standard Language END
-  
+
+  //Log an error if English language file was not found and therefore no default translation is available
+  if (DefaultLanguageFound = True) then
+    Log.LogStatus('Load Default Language English', 'Initialization')
+  else
+    Log.LogError('English language file missing! No default translation loaded');
 end;
 
 {**

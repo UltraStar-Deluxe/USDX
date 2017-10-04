@@ -49,40 +49,8 @@ make $makearg
 make install
 make distclean
 
-echo "Building SDL2_mixer"
-cd "$SRC/SDL2_mixer"
-bash ./autogen.sh
-./configure --prefix="$PREFIX" --with-sdl-prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --disable-static --disable-music-mod --disable-music-midi --disable-smpegtest --disable-music-mp3 --disable-music-ogg --disable-music-flac --disable-music-midi
-make $makearg
-make install
-make distclean
-
 echo "Building SDL2_image"
 cd "$SRC/SDL2_image"
-bash ./autogen.sh
-./configure --prefix="$PREFIX" --with-sdl-prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --disable-static
-make $makearg
-make install
-make distclean
-
-echo "Building SDL2_ttf"
-cd "$SRC/SDL2_ttf"
-bash ./autogen.sh
-./configure --prefix="$PREFIX" --with-sdl-prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --disable-static
-make $makearg
-make install
-make distclean
-
-echo "Building SDL2_net"
-cd "$SRC/SDL2_net"
-bash ./autogen.sh
-./configure --prefix="$PREFIX" --with-sdl-prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --disable-static --disable-gui
-make $makearg
-make install
-make distclean
-
-echo "Building SDL2_gfx"
-cd "$SRC/SDL2_gfx"
 bash ./autogen.sh
 ./configure --prefix="$PREFIX" --with-sdl-prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --disable-static
 make $makearg
@@ -148,6 +116,29 @@ cd "$SRC/ffmpeg"
 make $makearg
 make install
 make distclean
+
+echo "Building PortMidi"
+cd "$SRC"
+find portmidi/ portmidi-debian/patches/ -type f | while read a ; do
+	tr -d '\r' < "$a" > t
+	cat t >$a
+done
+rm t
+cd portmidi
+while read a ; do
+	patch -l -p1 < ../portmidi-debian/patches/$a
+done < ../portmidi-debian/patches/series
+mkdir -p build
+cd build
+cmake \
+	-DCMAKE_CACHEFILE_DIR=$(pwd)/out \
+	-DCMAKE_INSTALL_PREFIX="$PREFIX" \
+	-DCMAKE_BUILD_TYPE="Release" \
+	..
+make portmidi-dynamic
+make -C pm_dylib install
+cd ..
+rm -R build
 
 # echo "Building projectM"
 # cd "$SRC/projectm"
