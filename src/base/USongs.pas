@@ -73,7 +73,8 @@ type
     fltLanguage,
     fltEdition,
     fltGenre,
-    fltYear
+    fltYear,
+    fltCreator
   );
 
   TBPM = record

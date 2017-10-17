@@ -144,6 +144,7 @@ type
     LanguageNoAccent: UTF8String;
     EditionNoAccent:  UTF8String;
     GenreNoAccent:    UTF8String;
+    CreatorNoAccent:  UTF8String;
 
     Creator:    UTF8String;
 
@@ -963,18 +964,18 @@ begin
 
     //Genre Sorting
     self.Genre := Parser.SongInfo.Header.Genre;
-    self.GenreNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(Parser.SongInfo.Header.Genre)));
+    self.GenreNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(self.Genre)));
 
     //Edition Sorting
     self.Edition := Parser.SongInfo.Header.Edition;
-    self.EditionNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(Parser.SongInfo.Header.Edition)));
+    self.EditionNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(self.Edition)));
 
     //Year Sorting
     //self.Year := Parser.SongInfo.Header.Year
 
     //Language Sorting
     self.Language := Parser.SongInfo.Header.Language;
-    self.LanguageNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(Parser.SongInfo.Header.Language)));
+    self.LanguageNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(self.Language)));
   end
   else
     Log.LogError('File incomplete or not SingStar XML (A): ' + aFileName.ToNative);
@@ -1199,27 +1200,28 @@ begin
       else if (Identifier = 'GENRE') then
       begin
         DecodeStringUTF8(Value, Genre, Encoding);
-        self.GenreNoAccent := LowerCase(GetStringWithNoAccents(DecodeStringUTF8(Value, Encoding)));
+        self.GenreNoAccent := LowerCase(GetStringWithNoAccents(Genre));
       end
 
       //Edition Sorting
       else if (Identifier = 'EDITION') then
       begin
         DecodeStringUTF8(Value, Edition, Encoding);
-        self.EditionNoAccent := LowerCase(GetStringWithNoAccents(DecodeStringUTF8(Value, Encoding)));
+        self.EditionNoAccent := LowerCase(GetStringWithNoAccents(Edition));
       end
 
       //Creator Tag
       else if (Identifier = 'CREATOR') then
       begin
-        DecodeStringUTF8(Value, Creator, Encoding)
+        DecodeStringUTF8(Value, Creator, Encoding);
+        self.CreatorNoAccent := LowerCase(GetStringWithNoAccents(Creator));
       end
 
       //Language Sorting
       else if (Identifier = 'LANGUAGE') then
       begin
         DecodeStringUTF8(Value, Language, Encoding);
-        self.LanguageNoAccent := LowerCase(GetStringWithNoAccents(DecodeStringUTF8(Value, Encoding)));
+        self.LanguageNoAccent := LowerCase(GetStringWithNoAccents(Language));
       end
 
       //Year Sorting

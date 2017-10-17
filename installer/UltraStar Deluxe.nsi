@@ -48,6 +48,18 @@ XPStyle on
 Name "${name} ${version}"
 Brandingtext "${name} ${version} Installation"
 
+VIAddVersionKey "FileDescription" "${name} ${version} installer"
+VIProductVersion "${VersionStr}.0"
+VIFileVersion "${VersionStr}.0"
+VIAddVersionKey "FileVersion" "${VersionStr}.0"
+VIAddVersionKey "ProductName" "${name}"
+VIAddVersionKey "ProductVersion" "${version}"
+VIAddVersionKey "LegalCopyright" "${publisher}"
+VIAddVersionKey "LegalTrademarks" "${name} is a trademark of the ${publisher}"
+VIAddVersionKey "OriginalFilename" "${installerexe}.exe"
+VIAddVersionKey "Comments" "The free and open source karaoke singing game UltraStar Deluxe, inspired by Sony SingStar"
+VIAddVersionKey "CompanyName" "${publisher}"
+
 !system 'md "dist"'
 OutFile "dist\${installerexe}.exe"
 
