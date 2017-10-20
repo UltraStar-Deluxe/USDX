@@ -283,7 +283,7 @@ begin
     FileName := FileInfo.Name;
     if ((FileInfo.Attr and faDirectory) <> 0) then
     begin
-      if Recursive and (not FileName.Equals('.')) and (not FileName.Equals('..')) then
+      if Recursive and (not FileName.Equals('.')) and (not FileName.Equals('..')) and (not FileName.Equals('')) then
         FindFilesByExtension(Dir.Append(FileName), Ext, true, Files);
     end
     else
