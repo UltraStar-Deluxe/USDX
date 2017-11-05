@@ -235,7 +235,6 @@ For linking and running the game, the following libraries are also required:
 - [bass](http://www.un4seen.com/bass.html)
 - some fonts like ttf-dejavu and ttf-freefont
 - portaudio
-- pcre
 - lua 5.1 or 5.2 or 5.3
 - opencv if you want webcam support
 - projectM if you want audio visualisation support
@@ -252,7 +251,7 @@ For linking and running the game, the following libraries are also required:
 #### Compiling on Linux/BSD using make
 1. make sure all required libraries are installed 
   * for current debian / ubuntu: 
-    `sudo apt-get update && sudo apt-get install git automake make gcc fpc libsdl2-image-dev libavformat-dev libswscale-dev libsqlite3-dev libpcre3-dev libfreetype6-dev portaudio19-dev libportmidi-dev liblua5.3-dev libopencv-highgui-dev`
+    `sudo apt-get update && sudo apt-get install git automake make gcc fpc libsdl2-image-dev libavformat-dev libswscale-dev libsqlite3-dev libfreetype6-dev portaudio19-dev libportmidi-dev liblua5.3-dev libopencv-highgui-dev`
   * if you want to build --with-libprojectM, you also need
     `sudo apt-get install g++ libprojectm-dev`
   * for arch linux there is an aur package called [ultrastardx-git](https://aur.archlinux.org/packages/ultrastardx-git)
@@ -275,7 +274,7 @@ For linking and running the game, the following libraries are also required:
 - Don't miss _XQuartz_ from [xquartz.org](http://www.xquartz.org)
 - Make sure the XCode command line tools are installed. `xcode-select --install`
 - Needed brew libraries can be installed using:
-  * `brew install sdl2 sdl2_image ffmpeg libav portaudio binutils sqlite freetype pcre lua libtiff`
+  * `brew install sdl2 sdl2_image ffmpeg libav portaudio binutils sqlite freetype lua libtiff`
   * `brew switch ffmpeg 2.8.6`
 - Pass argument `--enable-osx-fink` or `--enable-osx-brew` (default) according to the packaging you are using
 - `./configure`
