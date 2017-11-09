@@ -162,8 +162,6 @@ uses
   PseudoThread  in 'macosx\PseudoThread.pas',
   {$ENDIF}
 
-  pcre          in 'lib\pcre\pcre.pas',
-
   //------------------------------
   //Includes - Lua Support
   //------------------------------
