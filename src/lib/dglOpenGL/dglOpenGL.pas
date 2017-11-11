@@ -49,6 +49,11 @@
 
 ============================================================================== }
 
+{$define DGL_USE_SDL}
+{
+  Load the OpenGL library and query its functions using SDL.
+}
+
 {$define DGL_DEPRECATED}
 {
   This define defines if the header should use deprecated ARB stuff or not.
@@ -175,6 +180,7 @@ uses
   {$IFDEF DGL_WIN}, Windows{$ENDIF}
   {$IFDEF DGL_64BIT} ,math {$ENDIF}
   {$IFDEF DGL_LINUX}, X, XLib, XUtil{$ENDIF}
+  {$IFDEF DGL_USE_SDL}, SDL2{$ENDIF}
   ;
 
 type
@@ -15112,6 +15118,12 @@ function dglFreeLibrary(LibHandle: Pointer): Boolean;
 begin
   if LibHandle = nil then
     Result := False
+  {$IFDEF DGL_USE_SDL}
+  else if LibHandle = @GL_LibHandle then begin
+    SDL_GL_UnloadLibrary();
+    Result := True
+  end
+  {$ENDIF}
   else
     {$IFDEF DGL_WIN}
     Result := FreeLibrary(HMODULE(LibHandle));
@@ -15136,6 +15148,12 @@ begin
   if LibHandle = nil then
     LibHandle := GL_LibHandle;
 
+  {$IFDEF DGL_USE_SDL}
+    if LibHandle = @GL_LibHandle then begin
+      Result := SDL_GL_GetProcAddress(ProcName);
+      exit;
+    end;
+  {$ENDIF}
 
   {$IFDEF DGL_WIN}
     Result := GetProcAddress(HMODULE(LibHandle), ProcName);
@@ -15252,7 +15270,13 @@ begin
     dglFreeLibrary(GLU_LibHandle);
 
   // load library
+{$IFDEF DGL_USE_SDL}
+  GL_LibHandle := nil;
+  if SDL_GL_LoadLibrary(nil) = 0 then
+    GL_LibHandle := @GL_LibHandle;
+{$ELSE}
   GL_LibHandle := dglLoadLibrary(PChar(LibName));
+{$ENDIF}
   GLU_LibHandle := dglLoadLibrary(PChar(GLULibName));
 
   // load GL functions
