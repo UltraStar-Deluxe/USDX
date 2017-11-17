@@ -86,6 +86,7 @@ type
       procedure SetAnimationProgress(Progress: real); override;
       function NoRepeatColors(ColorP:integer; Interaction:integer; Pos:integer):integer;
       procedure TeamColorButton(K: integer; Interact: integer);
+      procedure ShuffleNames(var PlayerNames: array of UTF8String);
 
   end;
 
@@ -107,7 +108,7 @@ uses
   ULanguage;
 
 var
-  Num: array[0..2]of integer;
+  Num: array[0..2] of integer;
 
 procedure TScreenPartyPlayer.UpdateInterface;
   var
@@ -236,7 +237,8 @@ function TScreenPartyPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
   var
     SDL_ModState:  word;
     Team: integer;
-    I: integer;
+    I, J, count: integer;
+    randomNames: array of UTF8String; // new for randomizing names
   procedure IntNext;
   begin
     repeat
@@ -409,6 +411,40 @@ begin
         for I := 0 to 3 do
           IntPrev;
 
+      end;
+    SDLK_R:
+      begin
+        if (SDL_ModState = KMOD_LCTRL) then
+        begin
+          AudioPlayback.PlaySound(SoundLib.Option);
+          //InteractDec;
+          //UpdateInterface;
+
+          count := 0;
+          SetLength(randomNames, 12);
+
+          // collect all player names
+          for I := 0 to self.CountTeams+1 do
+            for J := 0 to CountPlayer[I] do
+            begin
+              randomNames[count] := Button[5*I+J+1].Text[0].Text;
+              inc(count);
+            end;
+
+          // shuffle player names
+          SetLength(randomNames, count);
+          ShuffleNames(randomNames);
+
+          // set shuffled player names
+          dec(count);
+          for I := 0 to self.CountTeams+1 do
+            for J := 0 to CountPlayer[I] do
+            begin
+              //Writeln(Button[5*I+J+1].Text[0].Text);
+              Button[5*I+J+1].Text[0].Text := randomNames[count];
+              dec(count);
+            end;
+        end;
       end;
   end;
 end;
@@ -599,6 +635,20 @@ var
 begin
   {for I := 0 to high(Button) do
     Button[I].Texture.ScaleW := Progress;   }
+end;
+
+// random permutation of player names according to Fisher-Yates
+procedure TScreenPartyPlayer.ShuffleNames(var PlayerNames: array of UTF8String);
+var
+  I, J: Integer;
+  tmp: UTF8String;
+begin
+  for I := Low(PlayerNames) to High(PlayerNames) do begin
+    J := I + Random(Length(PlayerNames) - I + Low(PlayerNames));
+    tmp := PlayerNames[J];
+    PlayerNames[J] := PlayerNames[I];
+    PlayerNames[I] := tmp;
+  end;
 end;
 
 end.
