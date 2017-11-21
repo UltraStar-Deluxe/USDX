@@ -54,6 +54,8 @@ type
       TextureCam: TTexture;
 
       constructor Create;
+      destructor Destroy; override;
+      procedure Start;
       procedure Release;
       procedure Restart;
       procedure GetWebcamFrame();
@@ -79,11 +81,21 @@ uses
 //Create - Construct Class - Dummy for now
 //----------
 constructor TWebcam.Create;
+begin
+  inherited;
+end;
+
+destructor TWebcam.Destroy;
+begin
+  Release;
+  inherited;
+end;
+
+procedure TWebcam.Start;
 var
   H, W, I: integer;
   s: string;
 begin
-  inherited;
 
   if (Ini.WebCamID <> 0) then
   begin
@@ -124,7 +136,7 @@ procedure TWebcam.Restart;
 begin
   Release;
   try
-    Webcam := TWebcam.Create;
+    Start
   except
     ;
   end;

@@ -219,7 +219,7 @@ begin
     
     // Webcam
     //Log.LogStatus('WebCam', 'Initialization');
-    //Webcam := TWebcam.Create;
+    Webcam := TWebcam.Create;
     UWebcam.IsEnabled:= false;
 
     // Lua
