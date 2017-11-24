@@ -103,14 +103,6 @@ begin
   begin // Key Down
         // check normal keys
     case UCS4UpperCase(CharCode) of
-      Ord('Q'): begin
-        Result := false;
-        Exit;
-      end;
-      Ord('C'): begin
-         FadeTo(@ScreenCredits, SoundLib.Start);
-         Exit;
-      end;
       Ord('P'): begin
         if (Ini.Players >= 1) and (Party.ModesAvailable) then
         begin
@@ -126,6 +118,16 @@ begin
 
       Ord('E'): begin
         FadeTo(@ScreenEdit, SoundLib.Start);
+        Exit;
+      end;
+
+      Ord('C'): begin
+         FadeTo(@ScreenCredits, SoundLib.Start);
+         Exit;
+      end;
+
+      Ord('Q'): begin
+        Result := false;
         Exit;
       end;
     end;
