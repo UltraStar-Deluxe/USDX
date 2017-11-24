@@ -65,11 +65,15 @@ type
       function Draw: boolean; override;
   end;
 
+const
+  ID='ID_024';   //for help system
+
 implementation
 
 uses
   UDataBase,
   UGraphic,
+  UHelp,
   ULog,
   UMain,
   UIni,
@@ -101,6 +105,10 @@ begin
             FadeTo(@ScreenSong);
             Fadeout := true;
           end;
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RIGHT:
         begin
@@ -174,6 +182,9 @@ var
   Report: string;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenTop5)');
 
   sung := false;
   Fadeout := false;

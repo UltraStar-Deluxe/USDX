@@ -63,10 +63,15 @@ type
       procedure InteractDec; override;
   end;
 
+const
+  ID='ID_076';   //for help system
+
 implementation
 
 uses 
   UGraphic,
+  UHelp,
+  ULog,
   UMain,
   UPathUtils,
   USkins,
@@ -102,6 +107,10 @@ begin
           ScreenOptions.Interaction := 4;
 
           FadeTo(@ScreenOptions);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RETURN:
         begin
@@ -216,6 +225,9 @@ end;
 procedure TScreenOptionsThemes.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsThemes)');
 
   ActualTheme := Ini.Theme;
   ActualSkin := Ini.SkinNo;

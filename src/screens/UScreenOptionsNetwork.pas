@@ -77,10 +77,14 @@ type
       procedure DeleteUser;
   end;
 
+const
+  ID='ID_079';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
   ULanguage,
   ULog,
   UUnicodeUtils,
@@ -256,6 +260,10 @@ begin
           DataBase.UpdateUsers;
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_INSERT:
         begin
@@ -501,6 +509,9 @@ var
   I, J: integer;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsNetwork)');
 
   CurrentWebsiteIndex := 0;
   CurrentUserIndex := 0;

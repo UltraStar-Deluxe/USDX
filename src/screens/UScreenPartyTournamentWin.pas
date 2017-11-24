@@ -62,10 +62,14 @@ type
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
+const
+  ID='ID_039';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
   ULanguage,
   ULog,
   UMain,
@@ -134,6 +138,10 @@ begin
             FadeTo(@ScreenPartyTournamentRounds);
 
         end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
+        end;
     end;
   end;
 end;
@@ -159,6 +167,9 @@ var
   Col: TRGB;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyTournamentWin)');
 
   Col := GetPlayerColor(Ini.SingColor[0]);
 

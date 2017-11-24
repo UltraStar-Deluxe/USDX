@@ -65,10 +65,14 @@ type
       procedure InitJukebox;
   end;
 
+const
+  ID='ID_040';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
   UMain,
   UIni,
   UTexture,
@@ -104,6 +108,11 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
+        end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_RETURN:
@@ -254,6 +263,9 @@ end;
 procedure TScreenJukeboxPlaylist.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenJukeboxPlaylist)');
 
 end;
 

@@ -63,11 +63,15 @@ type
       procedure OnShow; override;
   end;
 
+const
+  ID='ID_071';   //for help system
+
 implementation
 
 uses
   UConfig,
   UGraphic,
+  UHelp,
   ULanguage,
   ULog,
   UUnicodeUtils,
@@ -92,6 +96,10 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
           Leave;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
+        end;
       SDLK_RETURN:
         begin
           if SelInteraction = 6 then
@@ -176,6 +184,9 @@ begin
   old_Tabs     := Ini.Tabs;
 
   Interaction := 0;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsGame)');
 end;
 
 procedure TScreenOptionsGame.Leave;

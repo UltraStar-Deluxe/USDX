@@ -140,6 +140,9 @@ type
       TextMediaScoreLocal:  integer;
       TextScoreUserLocal:   integer;
 
+      //Help system
+      ID:              string;
+
       //Party Mod
       Mode: TSingMode;
 
@@ -325,6 +328,7 @@ uses
   UAudioPlaybackBase,
   UCovers,
   UGraphic,
+  UHelp,
   ULog,
   UMain,
   UMenuButton,
@@ -1153,6 +1157,13 @@ begin
             SetScrollRefresh;
 
         end;
+
+      SDLK_TAB:
+        begin
+          Help.SetHelpID(ID);
+          ScreenPopupHelp.ShowPopup();
+        end;
+
       SDLK_RETURN:
         begin
           CloseMessage();
@@ -3149,6 +3160,32 @@ begin
     HideCatTL;
   end;
 
+  case Mode of
+    smNormal:
+      begin
+        ID := 'ID_012';
+        if not Help.SetHelpID(ID) then
+          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smNormal)');
+      end;
+    smPartyClassic:
+      begin
+        ID := 'ID_013';
+        if not Help.SetHelpID(ID) then
+          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smPartyClassic)');
+      end;
+    smPartyFree:
+      begin
+        ID := 'ID_014';
+        if not Help.SetHelpID(ID) then
+          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smPartyFree)');
+      end;
+    smPartyTournament:
+      begin
+        ID := 'ID_015';
+        if not Help.SetHelpID(ID) then
+          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smPartyTournament)');
+      end;
+  end;
 
   //Playlist Mode
   if not(Mode = smPartyClassic) then

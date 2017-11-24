@@ -69,10 +69,14 @@ type
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
+const
+  ID='ID_032';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
   UIni,
   ULanguage,
   ULog,
@@ -185,6 +189,11 @@ begin
           FadeTo(@ScreenPartyPlayer);
         end;
 
+      SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
+      end;
+
       SDLK_RETURN: StartParty;
 
       // Up and Down could be done at the same time,
@@ -258,6 +267,9 @@ procedure TScreenPartyRounds.OnShow;
     I, J: integer;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyRounds)');
 
   // check if there are loaded modes
   if Party.ModesAvailable then

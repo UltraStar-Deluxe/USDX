@@ -47,6 +47,7 @@ type
   TScreenSongMenu = class(TMenu)
     private
       CurMenu: byte; // num of the cur. shown menu
+      ID:       String; //for help-system
     public
       Visible: boolean; // whether the menu should be drawn
 
@@ -98,7 +99,9 @@ implementation
 uses
   UDatabase,
   UGraphic,
+  UHelp,
   ULanguage,
+  ULog,
   UMain,
   UNote,
   UParty,
@@ -158,6 +161,12 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           Visible := false;
+        end;
+
+      SDLK_TAB:
+        begin
+          Help.SetHelpID(ID);
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_RETURN:
@@ -329,6 +338,7 @@ begin
   case sMenu of
     SM_Main:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
 
         Text[0].Text := Language.Translate('SONG_MENU_NAME_MAIN');
@@ -354,6 +364,7 @@ begin
       end;
     SM_Song:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_SONG');
 
@@ -376,6 +387,7 @@ begin
 
     SM_Medley:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         MSongs := CountMedleySongs;
 
@@ -401,6 +413,7 @@ begin
 
     SM_Sorting:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_SORTING');
 
@@ -442,6 +455,7 @@ begin
 
     SM_PlayList:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST');
 
@@ -463,6 +477,7 @@ begin
 
     SM_Playlist_Add:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_ADD');
 
@@ -500,6 +515,7 @@ begin
 
     SM_Playlist_New:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_NEW');
 
@@ -522,6 +538,7 @@ begin
 
     SM_Playlist_DelItem:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_DELITEM');
 
@@ -541,6 +558,7 @@ begin
 
     SM_Playlist_Load:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_LOAD');
 
@@ -581,6 +599,7 @@ begin
 
     SM_Playlist_Del:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_DEL');
 
@@ -600,6 +619,7 @@ begin
 
     SM_Party_Main:
       begin
+        ID := 'ID_018';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PARTY_MAIN');
 
@@ -621,6 +641,7 @@ begin
 
     SM_Party_Joker:
       begin
+        ID := 'ID_018';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PARTY_JOKER');
         // to-do : Party
@@ -660,6 +681,7 @@ begin
 
     SM_Refresh_Scores:
       begin
+        ID := 'ID_019';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_REFRESH_SCORES_TITLE');
 
@@ -716,6 +738,7 @@ begin
 
     SM_Party_Free_Main:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PARTY_MAIN');
 
@@ -732,9 +755,11 @@ begin
       end;
     SM_Extra:
       begin
+        ID := 'ID_020';
       end;
     SM_Jukebox:
       begin
+        ID := 'ID_021';
         CurMenu := sMenu;
 
         Text[0].Text := Language.Translate('SONG_MENU_NAME_JUKEBOX');
@@ -761,6 +786,8 @@ begin
 
       end;
   end;
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSongMenu)');
 end;
 
 procedure TScreenSongMenu.HandleReturn;

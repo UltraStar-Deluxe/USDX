@@ -64,12 +64,14 @@ type
   end;
 
 const
+  ID='ID_037';   //for help system
   IRoundCount:  array[0..2] of UTF8String = ('1', '3', '5');
 
 implementation
 
 uses
   UGraphic,
+  UHelp,
   UIni,
   ULanguage,
   ULog,
@@ -121,6 +123,11 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenPartyTournamentPlayer);
+        end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_RETURN:
@@ -179,6 +186,9 @@ end;
 procedure TScreenPartyTournamentOptions.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyTournamentOptions)');
 
   SelectsS[SelectRounds2Final].Visible := false;
   SelectsS[SelectRounds4Final].Visible := false;

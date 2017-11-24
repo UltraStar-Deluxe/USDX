@@ -73,12 +73,17 @@ type
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
+const
+  ID='ID_070';   //for help system
+
 implementation
 
 uses
   UDatabase,
   UGraphic,
+  UHelp,
   ULanguage,
+  ULog,
   UWebcam,
   UUnicodeUtils;
 
@@ -177,6 +182,12 @@ begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
         end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
+        end;
+
       SDLK_RETURN:
         begin
           if Interaction = ButtonGameIID then
@@ -321,6 +332,10 @@ end;
 procedure TScreenOptions.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptions)');
+
   // continue possibly stopped bg-music (stopped in record options)
   SoundLib.StartBgMusic;
 end;

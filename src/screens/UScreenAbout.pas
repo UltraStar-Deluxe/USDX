@@ -54,12 +54,16 @@ type
       procedure SetOverview;
   end;
 
+const
+  ID='ID_002';   //for help system
+
 implementation
 
 uses
   UCommon,
   UDataBase,
   UGraphic,
+  UHelp,
   ULanguage,
   ULog,
   USong,
@@ -95,6 +99,10 @@ begin
           Ini.Save;
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RETURN:
         begin
@@ -149,6 +157,9 @@ end;
 procedure TScreenAbout.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+      Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenAbout)');
 
   //Set Overview Text:
   SetOverview;

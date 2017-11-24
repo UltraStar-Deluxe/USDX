@@ -114,10 +114,14 @@ type
       function NoRepeatColors(ColorP: integer; Interaction: integer; Pos: integer):integer;
   end;
 
+const
+  ID='ID_038';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
   ULanguage,
   ULog,
   UMain,
@@ -161,6 +165,10 @@ begin
       SDLK_ESCAPE:
         begin
           ScreenPopupCheck.ShowPopup('MSG_END_PARTY', OnFinish, nil);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RETURN :
         begin
@@ -392,6 +400,9 @@ var
   CountPlayer: integer;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyTournamentRounds)');
 
   CountPlayer := PartyTournament.PlayersCount;
 

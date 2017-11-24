@@ -63,10 +63,14 @@ type
       Procedure SetPage(NewPage: cardinal);
   end;
 
+const
+  ID='ID_051';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
   ULanguage,
   ULog,
   UUnicodeUtils,
@@ -94,6 +98,10 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenStatMain);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RETURN:
         begin
@@ -182,6 +190,9 @@ end;
 procedure TScreenStatDetail.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenStatDetail)');
 
   //Set Tot Entrys and Pages
   TotEntrys := DataBase.GetTotalEntrys(Typ);

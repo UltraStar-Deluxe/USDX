@@ -67,11 +67,16 @@ type
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
+const
+  ID='ID_035';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
   ULanguage,
+  ULog,
   UMain,
   UParty,
   UUnicodeUtils;
@@ -98,6 +103,10 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Start);
           FadeTo(@ScreenMain);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
     end;
   end;
@@ -145,6 +154,9 @@ var
 
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyWin)');
 
   // get team ranking
   // Ranking is sorted by score

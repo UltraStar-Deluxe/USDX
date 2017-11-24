@@ -93,11 +93,15 @@ const
   ITeams:   array[0..1] of UTF8String = ('2', '3');
   IPlayers: array[0..3] of UTF8String = ('1', '2', '3', '4');
 
+const
+  ID='ID_031';   //for help system
+
 implementation
 
 uses
   UAvatars,
   UGraphic,
+  UHelp,
   UIni,
   ULanguage,
   ULog,
@@ -329,6 +333,11 @@ begin
         FadeTo(@ScreenPartyOptions);
       end;
 
+    SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
+      end;
+
     SDLK_RETURN: UpdateParty;
 
     // Up and Down could be done at the same time,
@@ -533,6 +542,9 @@ var
   I:    integer;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyPlayer)');
 
   for I := 0 to 2 do
     Num[I] := NoRepeatColors(Ini.TeamColor[I], I, 1);

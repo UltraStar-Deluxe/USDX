@@ -243,11 +243,15 @@ const
   NameW = 326;
   NameH = 258;
 
+const
+  ID='ID_003';   //for help system
+
 implementation
 
 uses
   UCommon,
   UGraphic,
+  UHelp,
   UIni,
   ULanguage,
   ULog,
@@ -282,6 +286,11 @@ begin
           FadeTo(@ScreenMain);
           AudioPlayback.PlaySound(SoundLib.Back);
         end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
+        end;
+
 {
       SDLK_SPACE:
          begin
@@ -347,6 +356,9 @@ end;
 procedure TScreenCredits.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenCredits)');
 
  { pause background music }
   SoundLib.PauseBgMusic;

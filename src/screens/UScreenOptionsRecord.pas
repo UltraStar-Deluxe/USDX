@@ -112,6 +112,9 @@ const
   SourceBarsTotalHeight = BarHeight + BarUpperSpacing + BarLowerSpacing;
   ChannelBarsTotalHeight = 2*BarHeight + BarUpperSpacing + BarLowerSpacing;
 
+const
+  ID='ID_077';   //for help system
+
 implementation
 
 uses
@@ -119,6 +122,7 @@ uses
   UDraw,
   UFiles,
   UGraphic,
+  UHelp,
   UIni,
   ULanguage,
   ULog,
@@ -179,6 +183,10 @@ begin
             FadeTo(@ScreenOptions);
           end;
         end;
+      SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
+      end;
       SDLK_RETURN:
         begin
           if (SelInteraction = ExitButtonIID) then
@@ -460,6 +468,9 @@ begin
   SoundLib.PauseBgMusic;
 
   Interaction := 0;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsRecord)');
 
   // create preview sound-buffers
   SetLength(PreviewChannel, MaxChannelCount);

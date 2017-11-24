@@ -73,11 +73,16 @@ type
 
   end;
 
+const
+  ID='ID_074';   //for help system
+
 implementation
 
 uses
   UDisplay,
   UGraphic,
+  UHelp,
+  ULog,
   UUnicodeUtils,
   SysUtils;
 
@@ -103,6 +108,10 @@ begin
           Ini.Save;
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RETURN:
         begin
@@ -167,6 +176,9 @@ end;
 procedure TScreenOptionsInput.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsInput)');
 
   ActualMouse := Ini.Mouse;
   UpdateSelectSlideOptions(Theme.OptionsInput.SelectMouse, SelectMouse, IMouseTranslated, ActualMouse);

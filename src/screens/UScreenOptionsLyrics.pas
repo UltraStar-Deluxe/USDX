@@ -50,10 +50,15 @@ type
       procedure OnShow; override;
   end;
 
+const
+  ID='ID_075';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
+  ULog,
   UUnicodeUtils,
   SysUtils;
 
@@ -80,6 +85,10 @@ begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
         end;
+      SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
+      end;
       SDLK_RETURN:
         begin
           if SelInteraction = 3 then
@@ -142,6 +151,9 @@ begin
   inherited;
 
   Interaction := 0;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsLyrics)');
 end;
 
 end.

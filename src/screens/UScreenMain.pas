@@ -70,11 +70,13 @@ type
 const
   { start credits after 60 seconds w/o interaction }
   TicksUntilCredits = 5 * 60 * 1000;
+  ID = 'ID_001';   //for help system
 
 implementation
 
 uses
   UGraphic,
+  UHelp,
   UIni,
   ULanguage,
   ULog,
@@ -158,6 +160,11 @@ begin
       SDLK_BACKSPACE:
       begin
         Result := false;
+      end;
+
+      SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
       end;
 
       SDLK_RETURN:
@@ -308,6 +315,9 @@ begin
   SoundLib.StartBgMusic;
 
   ScreenSong.Mode := smNormal;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenMain)');
 
  {**
   * Clean up TPartyGame here

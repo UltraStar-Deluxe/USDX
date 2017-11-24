@@ -51,11 +51,16 @@ type
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
+const
+  ID='ID_011';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
   UIni,
+  ULog,
   UMain,
   USong,
   UTexture,
@@ -127,6 +132,8 @@ begin
   inherited;
 
   Interaction := Ini.Difficulty;
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenLevel)');
 end;
 
 procedure TScreenLevel.SetAnimationProgress(Progress: real);

@@ -78,10 +78,14 @@ type
       procedure InitTournament;
   end;
 
+const
+  ID='ID_030';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
   UIni,
   ULanguage,
   ULog,
@@ -114,6 +118,11 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
+        end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_RETURN:
@@ -338,6 +347,9 @@ end;
 procedure TScreenPartyOptions.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyOptions)');
 
   Party.Clear;
 

@@ -167,10 +167,14 @@ type
       property Visible: boolean read fVisible write SetVisible;
   end;
 
+const
+  ID='ID_042';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
   UIni,
   ULanguage,
   ULog,
@@ -238,6 +242,11 @@ begin
           Visible := false;
           Exit;
         end;
+
+      SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
+      end;
 
       SDLK_SPACE:
         begin
@@ -607,6 +616,9 @@ end;
 procedure TScreenJukeboxOptions.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenJukeboxOptions)');
 
   // saved info
   Text[TextSaved].Visible := false;

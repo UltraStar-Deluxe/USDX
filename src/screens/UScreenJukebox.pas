@@ -265,6 +265,9 @@ type
     procedure LoadJukeboxSongOptions();
   end;
 
+const
+  ID='ID_041';   //for help system
+
 implementation
 
 uses
@@ -272,6 +275,7 @@ uses
   UDisplay,
   UDraw,
   UGraphic,
+  UHelp,
   ULanguage,
   ULog,
   UMenuButton,
@@ -1690,6 +1694,8 @@ begin
                 Ini.WebCamEffect := 0;
             end;
           end
+          else // show help popup
+            ScreenPopupHelp.ShowPopup();
         end;
 
         SDLK_RETURN:
@@ -2044,6 +2050,8 @@ procedure TScreenJukebox.OnShow;
 begin
   inherited;
 
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenJukebox)');
 
   // songmenu
   if (Ini.JukeboxSongMenu = 1) then

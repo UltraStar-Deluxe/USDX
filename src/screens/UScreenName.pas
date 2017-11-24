@@ -119,12 +119,16 @@ type
 var
   Num: array[0..UIni.IMaxPlayerCount-1]of integer;
 
+const
+  ID='ID_010';   //for help system
+
 implementation
 
 uses
 
   UCommon,
   UGraphic,
+  UHelp,
   ULanguage,
   ULog,
   UMenuButton,
@@ -334,6 +338,11 @@ begin
           end
           else
             ParseInput(SDLK_ESCAPE, CharCode, PressedDown);
+        end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_ESCAPE :
@@ -885,6 +894,9 @@ begin
   isScrolling := false;
 
   Interaction := 0;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenName)');
 end;
 
 procedure TScreenName.SetAvatarScroll;

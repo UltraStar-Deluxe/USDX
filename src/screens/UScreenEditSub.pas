@@ -306,12 +306,16 @@ type
       procedure OnHide; override;
   end;
 
+const
+  ID='ID_064';   //for help system
+
 implementation
 
 uses
   UDisplay,
   UDraw,
   UGraphic,
+  UHelp,
   ULanguage,
   ULog,
   UMenuInteract,
@@ -955,6 +959,11 @@ begin
             FadeTo(@ScreenSong);
           end;
         end;
+
+      SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
+      end;
 
       SDLK_BACKQUOTE:
         begin
@@ -3436,6 +3445,10 @@ begin
     MidiOut := TMidiOutput.Create(nil);
     MidiOut.Open;
   {$ENDIF}
+
+    if not Help.SetHelpID(ID) then
+      Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenEditSub)');
+
     //    Text[TextTitle].Text :=   CurrentSong.Title;
     // Header Title
     SetLength(TitleVal, 1);

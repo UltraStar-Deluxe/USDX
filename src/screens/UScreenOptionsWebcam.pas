@@ -64,11 +64,16 @@ type
       procedure ChangeElementAlpha;
   end;
 
+const
+  ID='ID_080';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
   ULanguage,
+  ULog,
   UUnicodeUtils,
   UWebcam,
   dglOpenGL,
@@ -99,6 +104,10 @@ begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
           Ini.SaveWebcamSettings;
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RETURN:
         begin
@@ -245,6 +254,9 @@ end;
 procedure TScreenOptionsWebcam.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsWebcam)');
 
   PreVisualization := false;
 

@@ -214,11 +214,15 @@ type
       function Draw: boolean; override;
   end;
 
+const
+  ID='ID_023';   //for help system
+
 implementation
 
 uses
   UAvatars,
   UGraphic,
+  UHelp,
   ULanguage,
   ULog,
   UMenuStatic,
@@ -383,6 +387,11 @@ begin
           end
           else
             BarTime := 0;
+        end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_RETURN:
@@ -1089,6 +1098,8 @@ var
   V: array[1..UIni.IMaxPlayerCount] of boolean; // visibility array
   ArrayStartModifier: integer;
 begin
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenScore)');
 
   FinishScreenDraw := false;
 
