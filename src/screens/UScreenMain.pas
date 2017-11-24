@@ -111,7 +111,7 @@ begin
          FadeTo(@ScreenCredits, SoundLib.Start);
          Exit;
       end;
-      Ord('M'): begin
+      Ord('P'): begin
         if (Ini.Players >= 1) and (Party.ModesAvailable) then
         begin
           FadeTo(@ScreenPartyOptions, SoundLib.Start);
@@ -119,7 +119,7 @@ begin
         end;
       end;
 
-      Ord('S'): begin
+      Ord('T'): begin
         FadeTo(@ScreenStatMain, SoundLib.Start);
         Exit;
       end;
