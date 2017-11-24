@@ -34,14 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  SysUtils,
-  UMenu,
   UDisplay,
-  UMusic,
   UFiles,
+  UMenu,
+  UMusic,
   USongs,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenSongJumpto = class(TMenu)
@@ -71,13 +71,13 @@ implementation
 
 uses
   UGraphic,
-  UMain,
   UIni,
-  UTexture,
   ULanguage,
+  ULog,
+  UMain,
   UParty,
   UScreenSong,
-  ULog,
+  UTexture,
   UUnicodeUtils;
 
 function TScreenSongJumpto.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;

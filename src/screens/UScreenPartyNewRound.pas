@@ -34,13 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  SysUtils,
-  UMenu,
   UDisplay,
-  UMusic,
   UFiles,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyNewRound = class(TMenu)
@@ -94,13 +94,13 @@ implementation
 
 uses
   UGraphic,
-  UMain,
   UIni,
-  UTexture,
-  UParty,
   ULanguage,
-  USong,
   ULog,
+  UMain,
+  UParty,
+  USong,
+  UTexture,
   UUnicodeUtils;
 
 function TScreenPartyNewRound.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;

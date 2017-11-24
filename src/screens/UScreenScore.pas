@@ -33,20 +33,20 @@ interface
 
 uses
   UCommon,
-  UMenu,
-  sdl2,
-  SysUtils,
   UDataBase,
   UDisplay,
+  UDLLManager,
+  UIni,
+  UMenu,
   UMusic,
   USongs,
+  UTexture,
   UThemes,
+  UWebSDK,
   dglOpenGL,
   math,
-  UTexture,
-  UIni,
-  UDLLManager,
-  UWebSDK;
+  sdl2,
+  SysUtils;
 
 const
   ZBars:            real = 0.8;   // Z value for the bars
@@ -219,17 +219,17 @@ implementation
 uses
   UAvatars,
   UGraphic,
-  UScreenSong,
-  UMenuStatic,
-  UTime,
-  USkins,
-  ULog,
   ULanguage,
+  ULog,
+  UMenuStatic,
   UNote,
-  USong,
   UPathUtils,
-  UUnicodeUtils,
-  UScreenPopup;
+  UScreenPopup,
+  UScreenSong,
+  USkins,
+  USong,
+  UTime,
+  UUnicodeUtils;
 
 {
  *****************************

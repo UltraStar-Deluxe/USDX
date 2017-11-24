@@ -34,10 +34,10 @@ interface
 {$I switches.inc}
 
 uses
-  UThemes,
+  UMenu,
   UMusic,
   URecord,
-  UMenu;
+  UThemes;
 
 type
   TDrawState = record
@@ -115,22 +115,22 @@ const
 implementation
 
 uses
-  SysUtils,
-  Math,
-  sdl2,
-  dglOpenGL,
-  TextGL,
-  UGraphic,
+  UDisplay,
   UDraw,
+  UFiles,
+  UGraphic,
+  UIni,
   ULanguage,
+  ULog,
   UMain,
   UMenuSelectSlide,
   UMenuText,
-  UFiles,
-  UDisplay,
-  UIni,
   UUnicodeUtils,
-  ULog;
+  dglOpenGL,
+  Math,
+  sdl2,
+  SysUtils,
+  TextGL;
 
 function TScreenOptionsRecord.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin

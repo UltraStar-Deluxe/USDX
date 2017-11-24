@@ -34,13 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
-  SysUtils,
   UDisplay,
-  UMusic,
   UIni,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenAbout = class(TMenu)
@@ -57,15 +57,15 @@ type
 implementation
 
 uses
-  UGraphic,
-  UDataBase,
-  USongs,
-  USong,
-  ULanguage,
   UCommon,
-  Classes,
+  UDataBase,
+  UGraphic,
+  ULanguage,
   ULog,
-  UUnicodeUtils;
+  USong,
+  USongs,
+  UUnicodeUtils,
+  Classes;
 
 function TScreenAbout.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin

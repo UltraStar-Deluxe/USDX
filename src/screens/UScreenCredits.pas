@@ -34,18 +34,18 @@ interface
 {$I switches.inc}
 
 uses
-  SysUtils,
+  UDisplay,
+  UFiles,
+  UGraphicClasses,
+  UMenu,
+  UMusic,
+  UPath,
+  UTexture,
+  UThemes,
+  dglOpenGL,
   SDL2,
   SDL2_image,
-  dglOpenGL,
-  UMenu,
-  UDisplay,
-  UTexture,
-  UMusic,
-  UFiles,
-  UThemes,
-  UPath,
-  UGraphicClasses;
+  SysUtils;
 
 { beat detection constants and types }
 const
@@ -246,17 +246,17 @@ const
 implementation
 
 uses
-  Math,
-  ULog,
+  UCommon,
   UGraphic,
-  UMain,
   UIni,
+  ULanguage,
+  ULog,
+  UMain,
+  UPathUtils,
   USongs,
   UUnicodeUtils,
-  Textgl,
-  ULanguage,
-  UCommon,
-  UPathUtils;
+  Math,
+  Textgl;
 
 function TScreenCredits.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin

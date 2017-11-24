@@ -34,31 +34,30 @@ interface
 {$I switches.inc}
 
 uses
-  SysUtils,
-  sdl2,
   UCatCovers,
   UCommon,
   UDataBase,
   UDisplay,
-  UDllManager,
-  UPath,
+  UDLLManager,
   UFiles,
   UIni,
   ULanguage,
-  ULog,
   UMenu,
   UMenuEqualizer,
   UMusic,
+  UPath,
   USong,
   USongs,
   UTexture,
   UThemes,
+  UTime,
   UUnicodeStringHelper,
   {$IFDEF MSWINDOWS}
   LazUTF8Classes,
   LazUTF8,
   {$ENDIF}
-  UTime;
+  sdl2,
+  SysUtils;
 
 type
   TVisArr = array of integer;
@@ -323,19 +322,21 @@ type
 implementation
 
 uses
-  Math,
-  dglOpenGL,
+  UAudioPlaybackBase,
   UCovers,
   UGraphic,
+  ULog,
   UMain,
   UMenuButton,
+  UMenuStatic,
   UNote,
-  UAudioPlaybackBase,
   UParty,
   UPlaylist,
   UScreenSongMenu,
   USkins,
-  UUnicodeUtils, UMenuStatic;
+  UUnicodeUtils,
+  dglOpenGL,
+  Math;
 
 const
   MAX_TIME = 30;

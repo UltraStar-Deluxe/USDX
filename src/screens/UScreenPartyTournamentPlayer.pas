@@ -34,15 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UDisplay,
-  UMusic,
   UFiles,
+  UMenu,
+  UMusic,
   UPartyTournament,
-  SysUtils,
-  ULog,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyTournamentPlayer = class(TMenu)
@@ -86,6 +85,7 @@ implementation
 
 uses
   UGraphic,
+  ULog,
   UMain,
   UIni,
   UTexture,

@@ -34,13 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UDisplay,
-  UMusic,
   UFiles,
-  SysUtils,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyTournamentOptions = class(TMenu)
@@ -70,16 +70,16 @@ implementation
 
 uses
   UGraphic,
-  UMain,
   UIni,
-  UTexture,
   ULanguage,
-  UPartyTournament,
-  USong,
-  UPlaylist,
-  USongs,
   ULog,
+  UMain,
   UNote,
+  UPartyTournament,
+  UPlaylist,
+  USong,
+  USongs,
+  UTexture,
   UUnicodeUtils;
 
 procedure TScreenPartyTournamentOptions.UpdateTournament();

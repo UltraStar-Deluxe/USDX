@@ -34,15 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UCommon,
   UDisplay,
-  UMusic,
   UFiles,
-  SysUtils,
-  ULog,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyRounds = class(TMenu)
@@ -74,15 +73,17 @@ implementation
 
 uses
   UGraphic,
-  UMain,
   UIni,
-  UTexture,
   ULanguage,
+  ULog,
+  UMain,
+  UMenuSelectSlide,
   UParty,
-  USong,
   UPlaylist,
+  USong,
   USongs,
-  UUnicodeUtils, UMenuSelectSlide;
+  UTexture,
+  UUnicodeUtils;
 
 procedure TScreenPartyRounds.InteractNext;
 var

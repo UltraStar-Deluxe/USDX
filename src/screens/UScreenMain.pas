@@ -34,17 +34,16 @@ interface
 {$I switches.inc}
 
 uses
-  ULog,
-  MD5,
-  UMenu,
-  sdl2,
   UDisplay,
-  UMusic,
   UFiles,
-  USong,
+  UMenu,
+  UMusic,
   UScreenSong,
-  SysUtils,
-  UThemes;
+  USong,
+  UThemes,
+  MD5,
+  sdl2,
+  SysUtils;
 
 type
 
@@ -76,14 +75,15 @@ implementation
 
 uses
   UGraphic,
-  UNote,
   UIni,
-  UTexture,
-  USongs,
   ULanguage,
+  ULog,
+  UNote,
   UParty,
   UScreenCredits,
   USkins,
+  USongs,
+  UTexture,
   UUnicodeUtils;
 
 function TScreenMain.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;

@@ -34,18 +34,17 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  //curlobj,
-  UMenu,
   UDataBase,
   UDisplay,
   UDLLManager,
-  UWebSDK,
-  ULog,
-  UMusic,
   UFiles,
   UIni,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  UWebSDK,
+  //curlobj,
+  sdl2;
 
 type
   TScreenOptionsNetwork = class(TMenu)
@@ -83,6 +82,7 @@ implementation
 uses
   UGraphic,
   ULanguage,
+  ULog,
   UUnicodeUtils,
   SysUtils;
 

@@ -34,15 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UDisplay,
+  UFiles,
+  UMenu,
   UMusic,
   UNote,
-  ULog,
-  UFiles,
-  SysUtils,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenJukeboxPlaylist = class(TMenu)
@@ -74,6 +73,7 @@ uses
   UIni,
   UTexture,
   ULanguage,
+  ULog,
   UParty,
   USong,
   UPlaylist,

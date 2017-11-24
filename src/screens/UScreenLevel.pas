@@ -34,13 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UDisplay,
-  UMusic,
   UFiles,
-  SysUtils,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenLevel = class(TMenu)
@@ -55,8 +55,8 @@ implementation
 
 uses
   UGraphic,
-  UMain,
   UIni,
+  UMain,
   USong,
   UTexture,
   UUnicodeUtils;

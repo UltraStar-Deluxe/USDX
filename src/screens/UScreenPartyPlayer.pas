@@ -35,19 +35,18 @@ interface
 
 uses
   UCommon,
-  UMenu,
-  ULog,
-  sdl2,
   UDisplay,
+  UFiles,
+  UMenu,
   UMusic,
   UNote,
-  UFiles,
-  SysUtils,
   UScreenSingController,
   UScreenPartyNewRound,
-  UScreenPartyWin,
   UScreenPartyScore,
-  UThemes;
+  UScreenPartyWin,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyPlayer = class(TMenu)
@@ -99,13 +98,14 @@ implementation
 uses
   UAvatars,
   UGraphic,
-  UMain,
   UIni,
-  UTexture,
+  ULanguage,
+  ULog,
+  UMain,
   UParty,
-  UUnicodeUtils,
   UScreenPartyOptions,
-  ULanguage;
+  UTexture,
+  UUnicodeUtils;
 
 var
   Num: array[0..2] of integer;

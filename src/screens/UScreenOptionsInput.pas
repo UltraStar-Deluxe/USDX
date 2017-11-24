@@ -35,12 +35,12 @@ interface
 
 uses
   UCommon,
-  UMenu,
-  sdl2,
-  UMusic,
   UIni,
+  UJoystick,
+  UMenu,
+  UMusic,
   UThemes,
-  UJoystick;
+  sdl2;
 
 type
 
@@ -76,8 +76,8 @@ type
 implementation
 
 uses
-  UGraphic,
   UDisplay,
+  UGraphic,
   UUnicodeUtils,
   SysUtils;
 

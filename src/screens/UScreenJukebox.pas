@@ -34,29 +34,28 @@ interface
 {$I switches.inc}
 
 uses
-  SysUtils,
-  sdl2,
-  TextGL,
-  dglOpenGL,
   UCommon,
   UDataBase,
   UFiles,
   UGraphicClasses,
+  UHookableEvent,
   UIni,
-  ULog,
   ULyrics,
   UMenu,
   UMusic,
+  UPath,
   UPlaylist,
   USingScores,
   USongs,
   UTexture,
   UThemes,
-  UPath,
   UTime,
-  UHookableEvent,
   UVideo,
-  UWebcam;
+  UWebcam,
+  dglOpenGL,
+  sdl2,
+  SysUtils,
+  TextGL;
 
 type
   TSongJukebox = class
@@ -269,20 +268,23 @@ type
 implementation
 
 uses
-  Classes,
-  Math,
+  UBeatTimer,
+  UDisplay,
   UDraw,
   UGraphic,
   ULanguage,
+  ULog,
+  UMenuButton,
+  UMenuInteract,
   UNote,
+  UParty,
   URecord,
   USkins,
-  USong,
-  UDisplay,
-  UParty,
   UScreenJukeboxOptions,
-  UMenuInteract,
-  UUnicodeUtils, UBeatTimer, UMenuButton;
+  USong,
+  UUnicodeUtils,
+  Classes,
+  Math;
 
 const
   MAX_TIME_PLAYLIST = 4000; // msec

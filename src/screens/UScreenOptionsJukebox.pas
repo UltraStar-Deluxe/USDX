@@ -35,15 +35,15 @@ interface
 
 uses
   UCommon,
-  UMenu,
-  sdl2,
-  TextGL,
   UDisplay,
-  UMusic,
   UFiles,
   UIni,
   ULyrics,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  TextGL;
 
 type
   TScreenOptionsJukebox = class(TMenu)

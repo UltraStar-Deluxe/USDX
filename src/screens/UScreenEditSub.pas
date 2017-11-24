@@ -34,31 +34,30 @@ interface
 
 uses
   UCommon,
-  UMenu,
-  UMusic,
-  sdl2,
-  SysUtils,
-  strutils,
-  UFiles,
-  UGraphicClasses,
-  UTime,
-  USongs,
-  USong,
-  UIni,
-  ULog,
-  UTexture,
-  UMenuText,
-  URecord,
   UEditorLyrics,
+  UFiles,
   UFilesystem,
-  Math,
+  UGraphicClasses,
+  UIni,
+  UMenu,
+  UMenuText,
+  UMusic,
+  UPath,
+  URecord,
+  USong,
+  USongs,
+  UTexture,
+  UThemes,
+  UTime,
   dglOpenGL,
+  Math,
   {$IFDEF UseMIDIPort}
   MidiOut,
   MidiCons,
   {$ENDIF}
-  UThemes,
-  UPath;
+  sdl2,
+  strutils,
+  SysUtils;
 
 type
 
@@ -310,16 +309,17 @@ type
 implementation
 
 uses
-  UGraphic,
-  UDraw,
   UDisplay,
+  UDraw,
+  UGraphic,
+  ULanguage,
+  ULog,
   UMenuInteract,
   UNote,
   USkins,
-  ULanguage,
-  TextGL,
   UTextEncoding,
-  UUnicodeUtils;
+  UUnicodeUtils,
+  TextGL;
 
 const
   DEFAULT_FADE_IN_TIME = 8;    //TODO in INI

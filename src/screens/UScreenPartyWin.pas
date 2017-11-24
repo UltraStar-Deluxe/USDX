@@ -34,12 +34,12 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  SysUtils,
-  UMenu,
   UDisplay,
+  UMenu,
   UMusic,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyWin = class(TMenu)
@@ -71,9 +71,9 @@ implementation
 
 uses
   UGraphic,
+  ULanguage,
   UMain,
   UParty,
-  ULanguage,
   UUnicodeUtils;
 
 function TScreenPartyWin.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;

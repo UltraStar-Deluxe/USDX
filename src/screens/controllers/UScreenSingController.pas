@@ -34,28 +34,27 @@ interface
 {$I switches.inc}
 
 uses
-  SysUtils,
-  sdl2,
-  dglOpenGL,
-  TextGL,
   UAvatars,
   UCommon,
   UFiles,
   UGraphicClasses,
   UHookableEvent,
-  UScreenSingView,
   UIni,
-  ULog,
   ULyrics,
   UMenu,
   UMusic,
   UPath,
+  UScreenSingView,
   USingScores,
+  USkins,
   USongs,
   UTexture,
   UThemes,
   UTime,
-  USkins;
+  dglOpenGL,
+  sdl2,
+  SysUtils,
+  TextGL;
 
 type
   TPos = record // Lines[part].Line[line].Note[note]
@@ -191,22 +190,23 @@ var screenSingViewRef: TScreenSingView;
 implementation
 
 uses
-  Classes,
-  Math,
   UDatabase,
-  UDllManager,
+  UDisplay,
+  UDLLManager,
   UDraw,
   UGraphic,
   ULanguage,
+  ULog,
   UNote,
   URecord,
-  USong,
-  UDisplay,
   UParty,
   UPathUtils,
+  USong,
   UUnicodeUtils,
   UWebcam,
-  UWebSDK;
+  UWebSDK,
+  Classes,
+  Math;
 
 const
   MAX_MESSAGE = 3;

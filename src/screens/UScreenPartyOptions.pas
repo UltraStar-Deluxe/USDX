@@ -34,13 +34,12 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UDisplay,
+  UFiles,
+  UMenu,
   UMusic,
   UNote,
-  ULog,
-  UFiles,
+  sdl2,
   SysUtils,
   UThemes;
 
@@ -83,14 +82,15 @@ implementation
 
 uses
   UGraphic,
-  UMain,
   UIni,
-  UTexture,
   ULanguage,
+  ULog,
+  UMain,
   UParty,
-  USong,
   UPlaylist,
+  USong,
   USongs,
+  UTexture,
   UUnicodeUtils;
 
 function TScreenPartyOptions.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;

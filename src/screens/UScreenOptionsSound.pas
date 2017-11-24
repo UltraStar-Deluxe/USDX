@@ -34,13 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  UMenu,
   UDisplay,
-  UMusic,
   UFiles,
   UIni,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2;
 
 type
   TScreenOptionsSound = class(TMenu)

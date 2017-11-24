@@ -35,11 +35,11 @@ interface
 
 uses
   UMenu,
-  sdl2,
-  USongs,
-  USong,
   UPath,
-  UThemes;
+  USong,
+  USongs,
+  UThemes,
+  sdl2;
 
 type
   TScreenEditHeader = class(TMenu)
@@ -82,13 +82,13 @@ type
 implementation
 
 uses
+  UFiles,
   UGraphic,
   UMusic,
-  SysUtils,
-  UFiles,
   USkins,
   UTexture,
-  UUnicodeUtils;
+  UUnicodeUtils,
+  SysUtils;
 
 function TScreenEditHeader.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var

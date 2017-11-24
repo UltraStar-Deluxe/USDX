@@ -34,14 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UDisplay,
-  UIni,
-  UMusic,
   UFiles,
-  SysUtils,
-  UThemes;
+  UIni,
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenSongMenu = class(TMenu)
@@ -98,14 +98,14 @@ implementation
 uses
   UDatabase,
   UGraphic,
+  ULanguage,
   UMain,
   UNote,
-  UTexture,
-  ULanguage,
   UParty,
   UPlaylist,
   USong,
   USongs,
+  UTexture,
   UUnicodeUtils;
 
 function TScreenSongMenu.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;

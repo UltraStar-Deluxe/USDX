@@ -34,14 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
-  SysUtils,
-  UDisplay,
-  UMusic,
-  UIni,
   UDataBase,
-  UThemes;
+  UDisplay,
+  UIni,
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenStatDetail = class(TMenu)
@@ -66,12 +66,12 @@ type
 implementation
 
 uses
-  Math,
-  Classes,
   UGraphic,
   ULanguage,
   ULog,
-  UUnicodeUtils;
+  UUnicodeUtils,
+  Math,
+  Classes;
 
 function TScreenStatDetail.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin

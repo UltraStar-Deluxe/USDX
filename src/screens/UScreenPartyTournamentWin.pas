@@ -34,14 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  SysUtils,
   UCommon,
-  UMenu,
   UDisplay,
-  UMusic,
   UIni,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyTournamentWin = class(TMenu)
@@ -66,12 +66,12 @@ implementation
 
 uses
   UGraphic,
-  UMain,
-  UPartyTournament,
   ULanguage,
-  UScreenPartyTournamentRounds,
-  UNote,
   ULog,
+  UMain,
+  UNote,
+  UPartyTournament,
+  UScreenPartyTournamentRounds,
   UUnicodeUtils;
 
 function TScreenPartyTournamentWin.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;

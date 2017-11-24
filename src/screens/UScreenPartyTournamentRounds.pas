@@ -34,19 +34,19 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  dglOpenGL,
-  TextGL,
-  SysUtils,
   UCommon,
+  UDisplay,
   UIni,
   UMenu,
-  UDisplay,
   UMusic,
   UPartyTournament,
-  UScreenSingController,
   UScreenPartyTournamentWin,
-  UThemes;
+  UScreenSingController,
+  UThemes,
+  dglOpenGL,
+  sdl2,
+  SysUtils,
+  TextGL;
 
 type
 
@@ -118,10 +118,12 @@ implementation
 
 uses
   UGraphic,
-  UMain,
   ULanguage,
   ULog,
-  UUnicodeUtils, UMenuText;
+  UMain,
+  UMenuText,
+  UUnicodeUtils;
+
 
 procedure OnFinish(Value: boolean; Data: Pointer);
 begin

@@ -34,16 +34,15 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  UMenu,
-  ULog,
   UDisplay,
-  UMusic,
   UFiles,
   UIni,
-  UThemes,
+  UMenu,
+  UMusic,
   UScreensong,
-  USongs;
+  USongs,
+  UThemes,
+  sdl2;
 
 type
   TScreenOptionsGame = class(TMenu)
@@ -70,6 +69,7 @@ uses
   UConfig,
   UGraphic,
   ULanguage,
+  ULog,
   UUnicodeUtils,
   SysUtils;
 

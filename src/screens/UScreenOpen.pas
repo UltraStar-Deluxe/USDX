@@ -34,22 +34,21 @@ interface
 {$I switches.inc}
 
 uses
-  Math,
-  SysUtils,
-  dglOpenGL,
-  sdl2,
-  UPath,
   UMenu,
   UMusic,
   UFiles,
-  UTime,
-  USongs,
   UIni,
-  ULog,
-  UTexture,
-  UMenuText,
   ULyrics,
-  UThemes;
+  UMenuText,
+  UPath,
+  USongs,
+  UTexture,
+  UThemes,
+  UTime,
+  dglOpenGL,
+  Math,
+  sdl2,
+  SysUtils;
 
 type
   TScreenOpen = class(TMenu)
@@ -78,8 +77,9 @@ type
 implementation
 
 uses
-  UGraphic,
   UDraw,
+  UGraphic,
+  ULog,
   UMain,
   USkins,
   UUnicodeUtils;

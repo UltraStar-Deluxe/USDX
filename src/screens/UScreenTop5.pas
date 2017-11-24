@@ -34,14 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  SysUtils,
-  sdl2,
   UDisplay,
   UMenu,
   UMusic,
   USongs,
-  ULog,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenTop5 = class(TMenu)
@@ -71,6 +70,7 @@ implementation
 uses
   UDataBase,
   UGraphic,
+  ULog,
   UMain,
   UIni,
   UNote,

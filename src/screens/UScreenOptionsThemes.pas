@@ -34,14 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  UMenu,
+  UConfig,
   UDisplay,
-  UMusic,
   UFiles,
   UIni,
-  UConfig,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2;
 
 type
   TScreenOptionsThemes = class(TMenu)
@@ -66,12 +66,12 @@ type
 implementation
 
 uses 
-  SysUtils,
   UGraphic,
   UMain,
   UPathUtils,
+  USkins,
   UUnicodeUtils,
-  USkins;
+  SysUtils;
 
 function TScreenOptionsThemes.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin

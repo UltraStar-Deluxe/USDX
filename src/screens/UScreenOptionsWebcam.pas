@@ -34,13 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  UMenu,
   UDisplay,
-  UMusic,
   UFiles,
   UIni,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2;
 
 type
   TScreenOptionsWebcam = class(TMenu)
@@ -67,11 +67,11 @@ type
 implementation
 
 uses
-  dglOpenGL,
   UGraphic,
   ULanguage,
   UUnicodeUtils,
   UWebcam,
+  dglOpenGL,
   SysUtils;
 
 function TScreenOptionsWebcam.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;

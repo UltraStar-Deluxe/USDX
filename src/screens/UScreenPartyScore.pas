@@ -34,13 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  SysUtils,
-  UMenu,
   UDisplay,
   UIni,
+  UMenu,
   UMusic,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyScore = class(TMenu)
@@ -79,12 +79,12 @@ implementation
 
 uses
   UGraphic,
+  ULanguage,
   UMain,
   UParty,
-  ULanguage,
-  UTexture,
   USkins,
   USong,
+  UTexture,
   UUnicodeUtils;
 
 function TScreenPartyScore.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;

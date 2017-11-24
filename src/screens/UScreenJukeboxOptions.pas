@@ -34,17 +34,17 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  SysUtils,
   UCommon,
-  UMenu,
   UDataBase,
   UDisplay,
-  UMusic,
   UFiles,
+  UMenu,
+  UMusic,
   USong,
   USongs,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenJukeboxOptions = class(TMenu)
@@ -171,13 +171,13 @@ implementation
 
 uses
   UGraphic,
-  UMain,
   UIni,
-  UTexture,
   ULanguage,
+  ULog,
+  UMain,
   UParty,
   UScreenJukebox,
-  ULog,
+  UTexture,
   UUnicodeUtils;
 
 function TScreenJukeboxOptions.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
