@@ -245,6 +245,8 @@ uses
   UPath             in 'base\UPath.pas',
   UFilesystem       in 'base\UFilesystem.pas',
 
+  UHelp             in 'base\UHelp.pas',
+
   //------------------------------
   //Includes - Plugin Support
   //------------------------------

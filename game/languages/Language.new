@@ -407,6 +407,8 @@
 ;TODO: MSG_QUESTION_TITLE=Question
 ;TODO: MSG_QUIT_USDX=Really leave UltraStar?
 ;TODO: MSG_END_PARTY=Really leave Party Mode?
+;TODO: MSG_HELP_KEYMAP = Key Mapping
+;TODO: MSG_HELP_TITLE = Help
 
 ;TODO: ERROR_NO_SONGS=No Songs loaded
 ;TODO: ERROR_NO_PLUGINS=No Plugins loaded

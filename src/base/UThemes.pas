@@ -1047,6 +1047,11 @@ type
     TextCheck: TThemeText;
   end;
 
+  //Help-Popup
+  TThemeHelp = class(TThemeBasic)
+    Button1:    TThemeButton;
+  end;
+
   TThemeInsertUser = class(TThemeBasic)
     TextInsertUser: TThemeText;
     ButtonUsername: TThemeButton;
@@ -1389,6 +1394,8 @@ type
     InsertUserPopup:    TThemeInsertUser;
     SendScorePopup:     TThemeSendScore;
     ScoreDownloadPopup: TThemeScoreDownload;
+    //help popup
+    HelpPopup:          TThemeHelp;
     //ScreenSong extensions
     SongMenu:         TThemeSongMenu;
     SongJumpto:       TThemeSongJumpTo;
@@ -1557,6 +1564,8 @@ begin
   InsertUserPopup := TThemeInsertUser.Create;
   SendScorePopup := TThemeSendScore.Create;
   ScoreDownloadPopup := TThemeScoreDownload.Create;
+
+  HelpPopup := TThemeHelp.Create;
 
   SongMenu := TThemeSongMenu.Create;
   SongJumpto := TThemeSongJumpto.Create;
@@ -4611,6 +4620,9 @@ begin
 
   freeandnil(CheckPopup);
   CheckPopup := TThemeCheck.Create;
+
+  freeandnil(HelpPopup);
+  HelpPopup := TThemeHelp.Create;
 
   freeandnil(InsertUserPopup);
   InsertUserPopup := TThemeInsertUser.Create;
