@@ -34,31 +34,30 @@ interface
 {$I switches.inc}
 
 uses
-  SysUtils,
-  sdl2,
   UCatCovers,
   UCommon,
   UDataBase,
   UDisplay,
-  UDllManager,
-  UPath,
+  UDLLManager,
   UFiles,
   UIni,
   ULanguage,
-  ULog,
   UMenu,
   UMenuEqualizer,
   UMusic,
+  UPath,
   USong,
   USongs,
   UTexture,
   UThemes,
+  UTime,
   UUnicodeStringHelper,
   {$IFDEF MSWINDOWS}
   LazUTF8Classes,
   LazUTF8,
   {$ENDIF}
-  UTime;
+  sdl2,
+  SysUtils;
 
 type
   TVisArr = array of integer;
@@ -140,6 +139,9 @@ type
       TextMaxScoreLocal:    integer;
       TextMediaScoreLocal:  integer;
       TextScoreUserLocal:   integer;
+
+      //Help system
+      ID:              string;
 
       //Party Mod
       Mode: TSingMode;
@@ -288,7 +290,7 @@ type
       //procedures for Menu
       procedure StartSong;
       procedure OpenEditor;
-      procedure DoJoker(Team: integer);
+      procedure DoJoker(Team: integer; SDL_ModState: Word);
       procedure SelectPlayers;
 
       procedure OnSongSelect;   // called when song flows movement stops at a song
@@ -323,19 +325,22 @@ type
 implementation
 
 uses
-  Math,
-  dglOpenGL,
+  UAudioPlaybackBase,
   UCovers,
   UGraphic,
+  UHelp,
+  ULog,
   UMain,
   UMenuButton,
+  UMenuStatic,
   UNote,
-  UAudioPlaybackBase,
   UParty,
   UPlaylist,
   UScreenSongMenu,
   USkins,
-  UUnicodeUtils, UMenuStatic;
+  UUnicodeUtils,
+  dglOpenGL,
+  Math;
 
 const
   MAX_TIME = 30;
@@ -680,7 +685,7 @@ begin
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
-    //Jump to Artist/Titel
+    //Jump to Artist/Title
     if ((SDL_ModState and KMOD_LALT <> 0) and (FreeListMode)) then
     begin
       if(PressedKey > 1114111) then
@@ -693,7 +698,7 @@ begin
       begin
         I2 := Length(CatSongs.Song);
 
-        //Jump To Titel
+        //Jump To Title
         if (SDL_ModState = (KMOD_LALT or KMOD_LSHIFT)) then
         begin
           for I := 1 to High(CatSongs.Song) do
@@ -1152,6 +1157,13 @@ begin
             SetScrollRefresh;
 
         end;
+
+      SDLK_TAB:
+        begin
+          Help.SetHelpID(ID);
+          ScreenPopupHelp.ShowPopup();
+        end;
+
       SDLK_RETURN:
         begin
           CloseMessage();
@@ -1315,7 +1327,7 @@ begin
             begin
             end
             else
-              DoJoker(0);
+              DoJoker(0, SDL_ModState);
             end;
         end;
 
@@ -1330,7 +1342,7 @@ begin
             begin
             end
             else
-              DoJoker(1);
+              DoJoker(1, SDL_ModState);
           end;
 
         end;
@@ -1346,7 +1358,7 @@ begin
             begin
             end
             else
-              DoJoker(2);
+              DoJoker(2, SDL_ModState);
           end;
       end;
     end;
@@ -3144,6 +3156,32 @@ begin
     HideCatTL;
   end;
 
+  case Mode of
+    smNormal:
+      begin
+        ID := 'ID_012';
+        if not Help.SetHelpID(ID) then
+          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smNormal)');
+      end;
+    smPartyClassic:
+      begin
+        ID := 'ID_013';
+        if not Help.SetHelpID(ID) then
+          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smPartyClassic)');
+      end;
+    smPartyFree:
+      begin
+        ID := 'ID_014';
+        if not Help.SetHelpID(ID) then
+          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smPartyFree)');
+      end;
+    smPartyTournament:
+      begin
+        ID := 'ID_015';
+        if not Help.SetHelpID(ID) then
+          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smPartyTournament)');
+      end;
+  end;
 
   //Playlist Mode
   if not(Mode = smPartyClassic) then
@@ -4187,14 +4225,16 @@ begin
 end;
 
 //Team No of Team (0-5)
-procedure TScreenSong.DoJoker (Team: integer);
+procedure TScreenSong.DoJoker (Team: integer; SDL_ModState: Word);
 begin
   if (Mode = smPartyClassic) and
      (High(Party.Teams) >= Team) and
      (Party.Teams[Team].JokersLeft > 0) then
   begin
-    //Use Joker
-    Dec(Party.Teams[Team].JokersLeft);
+    //Use Joker (unless ALT modifier is used to cheat)
+    if (SDL_ModState <> KMOD_LALT) then
+      Dec(Party.Teams[Team].JokersLeft);
+
     SelectRandomSong;
     SetJoker;
   end;

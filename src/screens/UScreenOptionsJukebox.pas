@@ -35,15 +35,15 @@ interface
 
 uses
   UCommon,
-  UMenu,
-  sdl2,
-  TextGL,
   UDisplay,
-  UMusic,
   UFiles,
   UIni,
   ULyrics,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  TextGL;
 
 type
   TScreenOptionsJukebox = class(TMenu)
@@ -106,10 +106,15 @@ type
       procedure LyricSample;
   end;
 
+const
+  ID='ID_081';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
+  ULog,
   UUnicodeUtils,
   SysUtils;
 
@@ -141,6 +146,10 @@ begin
           Ini.Save;
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RETURN:
         begin
@@ -648,6 +657,9 @@ end;
 procedure TScreenOptionsJukebox.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsJukebox)');
 
   Interaction := 0;
 

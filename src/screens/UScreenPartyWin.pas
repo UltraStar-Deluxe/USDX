@@ -34,12 +34,12 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  SysUtils,
-  UMenu,
   UDisplay,
+  UMenu,
   UMusic,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyWin = class(TMenu)
@@ -67,13 +67,18 @@ type
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
+const
+  ID='ID_035';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
+  ULanguage,
+  ULog,
   UMain,
   UParty,
-  ULanguage,
   UUnicodeUtils;
 
 function TScreenPartyWin.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -94,10 +99,14 @@ begin
     case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE,
-      SDLK_RETURN :
+      SDLK_RETURN:
         begin
           AudioPlayback.PlaySound(SoundLib.Start);
           FadeTo(@ScreenMain);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
     end;
   end;
@@ -145,6 +154,9 @@ var
 
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyWin)');
 
   // get team ranking
   // Ranking is sorted by score

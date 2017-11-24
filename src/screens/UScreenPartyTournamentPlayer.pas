@@ -34,15 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UDisplay,
-  UMusic,
   UFiles,
+  UMenu,
+  UMusic,
   UPartyTournament,
-  SysUtils,
-  ULog,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyTournamentPlayer = class(TMenu)
@@ -80,12 +79,15 @@ type
   end;
 
 const
+  ID='ID_036';   //for help system
   ITournamentPlayers: array[0..14] of UTF8String = ('2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16');
 
 implementation
 
 uses
   UGraphic,
+  UHelp,
+  ULog,
   UMain,
   UIni,
   UTexture,
@@ -350,6 +352,11 @@ begin
         FadeTo(@ScreenPartyOptions);
       end;
 
+    SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
+      end;
+
     SDLK_RETURN:
       begin
         UpdatePartyTournament;
@@ -416,6 +423,9 @@ var
   I:    integer;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyPlayer)');
 
   PartyTournament.Clear;
 

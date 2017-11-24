@@ -60,21 +60,20 @@ interface
 {$I switches.inc}
 
 uses
-  math,
   UMenu,
   UMenuInteract,
-  SDL2,
+  UMusic,
+  UPath,
+  USong,
+  USongs,
+  UThemes,
+  math,
   {$IFDEF UseMIDIPort}
   MidiFile,
   MidiOut,
   MidiCons,
   {$ENDIF}
-  ULog,
-  USongs,
-  USong,
-  UMusic,
-  UThemes,
-  UPath;
+  SDL2;
 
 type
   TMidiNote = record
@@ -175,22 +174,26 @@ type
       procedure OnHide; override;
   end;
 
+const
+  ID='ID_063';   //for help system
+
 implementation
 
 uses
-  SysUtils,
-  TextGL,
-  dglOpenGL,
   UDrawTexture,
   UFiles,
   UGraphic,
   UIni,
+  ULanguage,
+  ULog,
   UMain,
   UPathUtils,
   USkins,
-  ULanguage,
   UTextEncoding,
-  UUnicodeUtils;
+  UUnicodeUtils,
+  dglOpenGL,
+  SysUtils,
+  TextGL;
 
 const
   // MIDI/KAR lyrics are specified to be ASCII only.

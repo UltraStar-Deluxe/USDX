@@ -34,23 +34,22 @@ interface
 {$I switches.inc}
 
 uses
-  dglOpenGL,
-  SysUtils,
-  sdl2,
   UAvatars,
   UDisplay,
   UFiles,
-  md5,
-  UMenu,
   UIni,
+  UMenu,
   UMusic,
   UNote,
   UScreenScore,
   UScreenSingController,
   UScreenTop5,
-  ULog,
   UTexture,
-  UThemes;
+  UThemes,
+  dglOpenGL,
+  SysUtils,
+  sdl2,
+  md5;
 
 type
   TScreenName = class(TMenu)
@@ -120,19 +119,25 @@ type
 var
   Num: array[0..UIni.IMaxPlayerCount-1]of integer;
 
+const
+  ID='ID_010';   //for help system
+
 implementation
 
 uses
-  Math,
+
   UCommon,
   UGraphic,
+  UHelp,
   ULanguage,
+  ULog,
   UMenuButton,
   UPath,
   USkins,
   USongs,
   UTime,
-  UUnicodeUtils;
+  UUnicodeUtils,
+  Math;
 
 function TScreenName.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 var
@@ -333,6 +338,11 @@ begin
           end
           else
             ParseInput(SDLK_ESCAPE, CharCode, PressedDown);
+        end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_ESCAPE :
@@ -884,6 +894,9 @@ begin
   isScrolling := false;
 
   Interaction := 0;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenName)');
 end;
 
 procedure TScreenName.SetAvatarScroll;

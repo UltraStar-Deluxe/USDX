@@ -35,8 +35,8 @@ interface
 
 uses
   UMenu,
-  sdl2,
-  UThemes;
+  UThemes,
+  sdl2;
 
 type
   TScreenEdit = class(TMenu)
@@ -51,10 +51,15 @@ type
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
+const
+  ID='ID_060';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
+  ULog,
   UMusic,
   USkins,
   UUnicodeUtils,
@@ -87,6 +92,10 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RETURN:
         begin
@@ -132,6 +141,10 @@ end;
 procedure TScreenEdit.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenEdit)');
+
   // continue possibly stopped bg-music (stopped in midi import screen)
   SoundLib.StartBgMusic;
 end;
