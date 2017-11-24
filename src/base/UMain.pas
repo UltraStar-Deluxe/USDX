@@ -75,6 +75,7 @@ uses
   UDisplay,
   UGraphic,
   UGraphicClasses,
+  UHelp,
   UIni,
   UJoystick,
   ULanguage,
@@ -181,6 +182,10 @@ begin
     Log.LogStatus('Load Ini', 'Initialization');
     Ini := TIni.Create;
     Ini.Load;
+
+    // Help
+    Log.LogStatus('Load Help', 'Initialization');
+    Help := THelp.Create;
 
     // it is possible that this is the first run, create a .ini file if neccessary
     Log.LogStatus('Write Ini', 'Initialization');
@@ -556,6 +561,8 @@ begin
               KeepGoing := ScreenPopupSendScore.ParseInput(SimKey, KeyCharUnicode, true)
             else if (ScreenPopupScoreDownload <> nil) and (ScreenPopupScoreDownload.Visible) then
               KeepGoing := ScreenPopupScoreDownload.ParseInput(SimKey, KeyCharUnicode, true)
+            else if (ScreenPopupHelp <> nil) and (ScreenPopupHelp.Visible) then
+              KeepGoing := ScreenPopupHelp.ParseInput(SimKey, KeyCharUnicode, true)
             else if (Display.ShouldHandleInput(LongWord(SimKey), KeyCharUnicode, true, SuppressKey)) then
             begin
               // check if screen wants to exit

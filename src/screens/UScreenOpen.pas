@@ -34,22 +34,21 @@ interface
 {$I switches.inc}
 
 uses
-  Math,
-  SysUtils,
-  dglOpenGL,
-  sdl2,
-  UPath,
   UMenu,
   UMusic,
   UFiles,
-  UTime,
-  USongs,
   UIni,
-  ULog,
-  UTexture,
-  UMenuText,
   ULyrics,
-  UThemes;
+  UMenuText,
+  UPath,
+  USongs,
+  UTexture,
+  UThemes,
+  UTime,
+  dglOpenGL,
+  Math,
+  sdl2,
+  SysUtils;
 
 type
   TScreenOpen = class(TMenu)
@@ -76,11 +75,16 @@ type
       property BackScreen: PMenu READ fBackScreen WRITE fBackScreen;
   end;
 
+const
+  ID='ID_062';   //for help system
+
 implementation
 
 uses
-  UGraphic,
   UDraw,
+  UGraphic,
+  UHelp,
+  ULog,
   UMain,
   USkins,
   UUnicodeUtils;
@@ -135,6 +139,11 @@ begin
             AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(fBackScreen);
           end;
+        end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_LEFT:
@@ -206,6 +215,9 @@ end;
 procedure TScreenOpen.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOpen)');
 
   Interaction := 0;
   Text[fTextN].Text := fFilename.ToUTF8();

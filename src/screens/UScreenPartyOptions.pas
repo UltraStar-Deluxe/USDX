@@ -34,13 +34,12 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UDisplay,
+  UFiles,
+  UMenu,
   UMusic,
   UNote,
-  ULog,
-  UFiles,
+  sdl2,
   SysUtils,
   UThemes;
 
@@ -79,18 +78,23 @@ type
       procedure InitTournament;
   end;
 
+const
+  ID='ID_030';   //for help system
+
 implementation
 
 uses
   UGraphic,
-  UMain,
+  UHelp,
   UIni,
-  UTexture,
   ULanguage,
+  ULog,
+  UMain,
   UParty,
-  USong,
   UPlaylist,
+  USong,
   USongs,
+  UTexture,
   UUnicodeUtils;
 
 function TScreenPartyOptions.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -114,6 +118,11 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
+        end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_RETURN:
@@ -338,6 +347,9 @@ end;
 procedure TScreenPartyOptions.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyOptions)');
 
   Party.Clear;
 

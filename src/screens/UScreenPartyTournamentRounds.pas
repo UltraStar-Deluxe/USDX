@@ -34,19 +34,19 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  dglOpenGL,
-  TextGL,
-  SysUtils,
   UCommon,
+  UDisplay,
   UIni,
   UMenu,
-  UDisplay,
   UMusic,
   UPartyTournament,
-  UScreenSingController,
   UScreenPartyTournamentWin,
-  UThemes;
+  UScreenSingController,
+  UThemes,
+  dglOpenGL,
+  sdl2,
+  SysUtils,
+  TextGL;
 
 type
 
@@ -114,14 +114,20 @@ type
       function NoRepeatColors(ColorP: integer; Interaction: integer; Pos: integer):integer;
   end;
 
+const
+  ID='ID_038';   //for help system
+
 implementation
 
 uses
   UGraphic,
-  UMain,
+  UHelp,
   ULanguage,
   ULog,
-  UUnicodeUtils, UMenuText;
+  UMain,
+  UMenuText,
+  UUnicodeUtils;
+
 
 procedure OnFinish(Value: boolean; Data: Pointer);
 begin
@@ -159,6 +165,10 @@ begin
       SDLK_ESCAPE:
         begin
           ScreenPopupCheck.ShowPopup('MSG_END_PARTY', OnFinish, nil);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RETURN :
         begin
@@ -390,6 +400,9 @@ var
   CountPlayer: integer;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyTournamentRounds)');
 
   CountPlayer := PartyTournament.PlayersCount;
 

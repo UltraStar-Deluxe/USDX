@@ -34,14 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  SysUtils,
   UCommon,
-  UMenu,
   UDisplay,
-  UMusic,
   UIni,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyTournamentWin = class(TMenu)
@@ -62,16 +62,20 @@ type
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
+const
+  ID='ID_039';   //for help system
+
 implementation
 
 uses
   UGraphic,
-  UMain,
-  UPartyTournament,
+  UHelp,
   ULanguage,
-  UScreenPartyTournamentRounds,
-  UNote,
   ULog,
+  UMain,
+  UNote,
+  UPartyTournament,
+  UScreenPartyTournamentRounds,
   UUnicodeUtils;
 
 function TScreenPartyTournamentWin.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -134,6 +138,10 @@ begin
             FadeTo(@ScreenPartyTournamentRounds);
 
         end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
+        end;
     end;
   end;
 end;
@@ -159,6 +167,9 @@ var
   Col: TRGB;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyTournamentWin)');
 
   Col := GetPlayerColor(Ini.SingColor[0]);
 

@@ -34,10 +34,10 @@ interface
 {$I switches.inc}
 
 uses
-  UThemes,
+  UMenu,
   UMusic,
   URecord,
-  UMenu;
+  UThemes;
 
 type
   TDrawState = record
@@ -112,25 +112,29 @@ const
   SourceBarsTotalHeight = BarHeight + BarUpperSpacing + BarLowerSpacing;
   ChannelBarsTotalHeight = 2*BarHeight + BarUpperSpacing + BarLowerSpacing;
 
+const
+  ID='ID_077';   //for help system
+
 implementation
 
 uses
-  SysUtils,
-  Math,
-  sdl2,
-  dglOpenGL,
-  TextGL,
-  UGraphic,
+  UDisplay,
   UDraw,
+  UFiles,
+  UGraphic,
+  UHelp,
+  UIni,
   ULanguage,
+  ULog,
   UMain,
   UMenuSelectSlide,
   UMenuText,
-  UFiles,
-  UDisplay,
-  UIni,
   UUnicodeUtils,
-  ULog;
+  dglOpenGL,
+  Math,
+  sdl2,
+  SysUtils,
+  TextGL;
 
 function TScreenOptionsRecord.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
@@ -179,6 +183,10 @@ begin
             FadeTo(@ScreenOptions);
           end;
         end;
+      SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
+      end;
       SDLK_RETURN:
         begin
           if (SelInteraction = ExitButtonIID) then
@@ -460,6 +468,9 @@ begin
   SoundLib.PauseBgMusic;
 
   Interaction := 0;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsRecord)');
 
   // create preview sound-buffers
   SetLength(PreviewChannel, MaxChannelCount);

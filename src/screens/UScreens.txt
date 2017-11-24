@@ -1,0 +1,64 @@
+---  UScreenLoading
+
+001  UScreenMain
+002  UScreenAbout
+003  UScreenCredits
+
+010  UScreenName
+011  UScreenLevel
+012  UScreenSong, smNormal
+013  UScreenSong, smPartyClassic
+014  UScreenSong, smPartyFree
+015  UScreenSong, smPartyTournament
+
+016  UScreenSongJumpto
+017  UScreenSongMenu
+018  UScreenSongMenu Party
+019  UScreenSongMenu Refresh Scores
+020  UScreenSongMenu Extra
+021  UScreenSongMenu Jukebox
+022  UScreenSingController
+023  UScreenScore
+024  UScreenTop5
+
+030  UScreenPartyOptions
+031  UScreenPartyPlayer
+032  UScreenPartyRounds
+033  UScreenPartyNewRound
+034  UScreenPartyScore
+035  UScreenPartyWin
+036  UScreenPartyTournamentPlayer
+037  UScreenPartyTournamentOptions
+038  UScreenPartyTournamentRounds
+039  UScreenPartyTournamentWin
+
+040  UScreenJukeboxPlaylist
+041  UScreenJukebox
+042  UScreenJukeboxOptions
+
+050  UScreenStatMain
+051  UScreenStatDetail
+
+060  UScreenEdit
+061  UScreenEditConvert
+062  UScreenOpen
+063  UScreenEditHeader
+064  UScreenEditSub
+
+070  UScreenOptions
+071  UScreenOptionsGame
+072  UScreenOptionsGraphics
+073  UScreenOptionsSound
+074  UScreenOptionsInput
+075  UScreenOptionsLyrics
+076  UScreenOptionsThemes
+077  UScreenOptionsRecord
+078  UScreenOptionsAdvanced
+079  UScreenOptionsNetwork
+080  UScreenOptionsWebcam
+081  UScreenOptionsJukebox
+
+---  UScreenPopup
+
+
+

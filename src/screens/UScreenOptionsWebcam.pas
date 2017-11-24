@@ -34,20 +34,20 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  UMenu,
   UDisplay,
-  UMusic,
   UFiles,
   UIni,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2;
 
 type
   TScreenOptionsWebcam = class(TMenu)
     private
       PreVisualization: boolean;
 
-      ID: integer;
+      WCID: integer;
       Resolution: integer;
       FPS: integer;
       Flip: integer;
@@ -64,14 +64,19 @@ type
       procedure ChangeElementAlpha;
   end;
 
+const
+  ID='ID_080';   //for help system
+
 implementation
 
 uses
-  dglOpenGL,
   UGraphic,
+  UHelp,
   ULanguage,
+  ULog,
   UUnicodeUtils,
   UWebcam,
+  dglOpenGL,
   SysUtils;
 
 function TScreenOptionsWebcam.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -99,6 +104,10 @@ begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
           Ini.SaveWebcamSettings;
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RETURN:
         begin
@@ -193,7 +202,7 @@ begin
 
   Theme.OptionsWebcam.SelectWebcam.showArrows := true;
   Theme.OptionsWebcam.SelectWebcam.oneItemOnly := true;
-  ID := AddSelectSlide(Theme.OptionsWebcam.SelectWebcam, Ini.WebCamID, WebcamsIDs);
+  WCID := AddSelectSlide(Theme.OptionsWebcam.SelectWebcam, Ini.WebCamID, WebcamsIDs);
 
   Theme.OptionsWebcam.SelectResolution.showArrows := true;
   Theme.OptionsWebcam.SelectResolution.oneItemOnly := true;
@@ -246,6 +255,9 @@ procedure TScreenOptionsWebcam.OnShow;
 begin
   inherited;
 
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsWebcam)');
+
   PreVisualization := false;
 
   ChangeElementAlpha;
@@ -261,7 +273,7 @@ var
   Alpha: real;
 begin
 
-  if (PreVisualization) and (SelectsS[ID].SelectOptInt > 0) then
+  if (PreVisualization) and (SelectsS[WCID].SelectOptInt > 0) then
   begin
     try
 

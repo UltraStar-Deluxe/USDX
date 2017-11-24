@@ -306,7 +306,9 @@ begin
       else if (ScreenPopupSendScore <> nil) and ScreenPopupSendScore.Visible then
         ScreenPopupSendScore.Draw
       else if (ScreenPopupScoreDownload <> nil) and ScreenPopupScoreDownload.Visible then
-        ScreenPopupScoreDownload.Draw;
+        ScreenPopupScoreDownload.Draw
+      else if (ScreenPopupHelp <> nil) and ScreenPopupHelp.Visible then
+        ScreenPopupHelp.Draw;
 
       // fade
       FadeStartTime := 0;

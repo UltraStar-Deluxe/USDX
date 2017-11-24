@@ -34,29 +34,28 @@ interface
 {$I switches.inc}
 
 uses
-  SysUtils,
-  sdl2,
-  TextGL,
-  dglOpenGL,
   UCommon,
   UDataBase,
   UFiles,
   UGraphicClasses,
+  UHookableEvent,
   UIni,
-  ULog,
   ULyrics,
   UMenu,
   UMusic,
+  UPath,
   UPlaylist,
   USingScores,
   USongs,
   UTexture,
   UThemes,
-  UPath,
   UTime,
-  UHookableEvent,
   UVideo,
-  UWebcam;
+  UWebcam,
+  dglOpenGL,
+  sdl2,
+  SysUtils,
+  TextGL;
 
 type
   TSongJukebox = class
@@ -266,23 +265,30 @@ type
     procedure LoadJukeboxSongOptions();
   end;
 
+const
+  ID='ID_041';   //for help system
+
 implementation
 
 uses
-  Classes,
-  Math,
+  UBeatTimer,
+  UDisplay,
   UDraw,
   UGraphic,
+  UHelp,
   ULanguage,
+  ULog,
+  UMenuButton,
+  UMenuInteract,
   UNote,
+  UParty,
   URecord,
   USkins,
-  USong,
-  UDisplay,
-  UParty,
   UScreenJukeboxOptions,
-  UMenuInteract,
-  UUnicodeUtils, UBeatTimer, UMenuButton;
+  USong,
+  UUnicodeUtils,
+  Classes,
+  Math;
 
 const
   MAX_TIME_PLAYLIST = 4000; // msec
@@ -1673,18 +1679,23 @@ begin
             Pause;
         end;
 
-        SDLK_TAB: // change visualization preset
+        SDLK_TAB:
         begin
-          if fShowVisualization then
-            fCurrentVideo.Position := now; // move to a random position
-
-          if (fShowWebcam) then
+          if (SDL_ModState = KMOD_LCTRL) then // change visualization preset
           begin
-            if (Ini.WebCamEffect < 10) then
-              Ini.WebCamEffect := Ini.WebCamEffect + 1
-            else
-              Ini.WebCamEffect := 0;
-          end;
+            if fShowVisualization then
+              fCurrentVideo.Position := now; // move to a random position
+
+            if (fShowWebcam) then
+            begin
+              if (Ini.WebCamEffect < 10) then
+                Ini.WebCamEffect := Ini.WebCamEffect + 1
+              else
+                Ini.WebCamEffect := 0;
+            end;
+          end
+          else // show help popup
+            ScreenPopupHelp.ShowPopup();
         end;
 
         SDLK_RETURN:
@@ -2039,7 +2050,8 @@ procedure TScreenJukebox.OnShow;
 begin
   inherited;
 
-  Log.LogStatus('Begin', 'OnShow');
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenJukebox)');
 
   // songmenu
   if (Ini.JukeboxSongMenu = 1) then
