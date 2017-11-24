@@ -288,7 +288,7 @@ type
       //procedures for Menu
       procedure StartSong;
       procedure OpenEditor;
-      procedure DoJoker(Team: integer);
+      procedure DoJoker(Team: integer; SDL_ModState: Word);
       procedure SelectPlayers;
 
       procedure OnSongSelect;   // called when song flows movement stops at a song
@@ -1315,7 +1315,7 @@ begin
             begin
             end
             else
-              DoJoker(0);
+              DoJoker(0, SDL_ModState);
             end;
         end;
 
@@ -1330,7 +1330,7 @@ begin
             begin
             end
             else
-              DoJoker(1);
+              DoJoker(1, SDL_ModState);
           end;
 
         end;
@@ -1346,7 +1346,7 @@ begin
             begin
             end
             else
-              DoJoker(2);
+              DoJoker(2, SDL_ModState);
           end;
       end;
     end;
@@ -4197,14 +4197,16 @@ begin
 end;
 
 //Team No of Team (0-5)
-procedure TScreenSong.DoJoker (Team: integer);
+procedure TScreenSong.DoJoker (Team: integer; SDL_ModState: Word);
 begin
   if (Mode = smPartyClassic) and
      (High(Party.Teams) >= Team) and
      (Party.Teams[Team].JokersLeft > 0) then
   begin
-    //Use Joker
-    Dec(Party.Teams[Team].JokersLeft);
+    //Use Joker (unless ALT modifier is used to cheat)
+    if (SDL_ModState <> KMOD_LALT) then
+      Dec(Party.Teams[Team].JokersLeft);
+
     SelectRandomSong;
     SetJoker;
   end;

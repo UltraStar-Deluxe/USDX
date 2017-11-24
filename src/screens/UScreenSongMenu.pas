@@ -109,6 +109,9 @@ uses
   UUnicodeUtils;
 
 function TScreenSongMenu.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+var
+  SDL_ModState:  Word;
+
 begin
   Result := true;
   if (PressedDown) then
@@ -144,6 +147,9 @@ begin
           Exit;
         end;
     end;
+
+    SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
     // check special keys
     case PressedKey of
@@ -199,7 +205,7 @@ begin
           case CurMenu of
             SM_Party_Main:
             begin
-              ScreenSong.DoJoker(0)
+              ScreenSong.DoJoker(0, SDL_ModState)
             end;
           end;
         end;
@@ -209,7 +215,7 @@ begin
           case CurMenu of
             SM_Party_Main:
             begin
-              ScreenSong.DoJoker(1)
+              ScreenSong.DoJoker(1, SDL_ModState)
             end;
           end;
         end;
@@ -219,7 +225,7 @@ begin
           case CurMenu of
             SM_Party_Main:
             begin
-              ScreenSong.DoJoker(2)
+              ScreenSong.DoJoker(2, SDL_ModState)
             end;
           end;
         end;
@@ -760,7 +766,10 @@ end;
 procedure TScreenSongMenu.HandleReturn;
 var
   I: integer;
+  SDL_ModState:  Word;
 begin
+  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
   case CurMenu of
     SM_Main:
       begin
@@ -1147,19 +1156,19 @@ begin
           0: // button 1
             begin
               // joker team 1
-              ScreenSong.DoJoker(0);
+              ScreenSong.DoJoker(0, SDL_ModState);
             end;
 
           1: // button 2
             begin
               // joker team 2
-              ScreenSong.DoJoker(1);
+              ScreenSong.DoJoker(1, SDL_ModState);
             end;
 
           2: // button 3
             begin
               // joker team 3
-              ScreenSong.DoJoker(2);
+              ScreenSong.DoJoker(2, SDL_ModState);
             end;
 
           6: // button 4
