@@ -212,6 +212,7 @@ const
 function TScreenEditConvert.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 {$IFDEF UseMIDIPort}
 var
+  SDL_ModState: word;
   SResult: TSaveSongResult;
   MidiTrack: TMidiTrack;
   Song:  TSong;
@@ -231,6 +232,9 @@ begin
           Exit;
         end;
     end;
+
+    SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
     // check special keys
     case PressedKey of
@@ -402,11 +406,14 @@ begin
 
       SDLK_TAB:
         begin
-          if Length(Channels) > 0 then
-          begin
-            ShowChannels := not ShowChannels;
-            if ShowChannels then SelChannel := 0;
-          end;
+          if (SDL_ModState = KMOD_LCTRL) then // toggle channels
+            begin
+              if Length(Channels) > 0 then
+              begin
+                ShowChannels := not ShowChannels;
+                if ShowChannels then SelChannel := 0;
+              end;
+            end
         end;
 
       // zooming controls

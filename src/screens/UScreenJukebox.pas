@@ -1673,18 +1673,21 @@ begin
             Pause;
         end;
 
-        SDLK_TAB: // change visualization preset
+        SDLK_TAB:
         begin
-          if fShowVisualization then
-            fCurrentVideo.Position := now; // move to a random position
-
-          if (fShowWebcam) then
+          if (SDL_ModState = KMOD_LCTRL) then // change visualization preset
           begin
-            if (Ini.WebCamEffect < 10) then
-              Ini.WebCamEffect := Ini.WebCamEffect + 1
-            else
-              Ini.WebCamEffect := 0;
-          end;
+            if fShowVisualization then
+              fCurrentVideo.Position := now; // move to a random position
+
+            if (fShowWebcam) then
+            begin
+              if (Ini.WebCamEffect < 10) then
+                Ini.WebCamEffect := Ini.WebCamEffect + 1
+              else
+                Ini.WebCamEffect := 0;
+            end;
+          end
         end;
 
         SDLK_RETURN:
