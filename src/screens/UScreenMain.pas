@@ -103,12 +103,22 @@ begin
   begin // Key Down
         // check normal keys
     case UCS4UpperCase(CharCode) of
+      Ord('S'): begin
+        FadeTo(@ScreenName, SoundLib.Start);
+        Exit;
+      end;
+
       Ord('P'): begin
         if (Ini.Players >= 1) and (Party.ModesAvailable) then
         begin
           FadeTo(@ScreenPartyOptions, SoundLib.Start);
           Exit;
         end;
+      end;
+
+      Ord('J'): begin
+        FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start);
+        Exit;
       end;
 
       Ord('T'): begin
@@ -118,6 +128,16 @@ begin
 
       Ord('E'): begin
         FadeTo(@ScreenEdit, SoundLib.Start);
+        Exit;
+      end;
+
+      Ord('O'): begin
+        FadeTo(@ScreenOptions, SoundLib.Start);
+        Exit;
+      end;
+
+      Ord('A'): begin
+        FadeTo(@ScreenAbout, SoundLib.Start);
         Exit;
       end;
 

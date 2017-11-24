@@ -252,6 +252,7 @@ uses
   UMain,
   UIni,
   USongs,
+  UUnicodeUtils,
   Textgl,
   ULanguage,
   UCommon,
@@ -262,6 +263,16 @@ begin
   Result := true;
   if (PressedDown) then
   begin // Key Down
+    // check normal keys
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
+        begin
+          Result := false;
+          Exit;
+        end;
+    end;
+
+    // check special keys
     case PressedKey of
 
       SDLK_ESCAPE,

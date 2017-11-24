@@ -89,6 +89,78 @@ begin
   begin // Key Down
     // check normal keys
     case UCS4UpperCase(CharCode) of
+      Ord('G'):
+        begin
+          FadeTo(@ScreenOptionsGame, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('H'):
+        begin
+          FadeTo(@ScreenOptionsGraphics, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('S'):
+        begin
+          FadeTo(@ScreenOptionsSound, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('I'):
+        begin
+          FadeTo(@ScreenOptionsInput, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('L'):
+        begin
+          FadeTo(@ScreenOptionsLyrics, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('T'):
+        begin
+          FadeTo(@ScreenOptionsThemes, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('R'):
+        begin
+          FadeTo(@ScreenOptionsRecord, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('A'):
+        begin
+          FadeTo(@ScreenOptionsAdvanced, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('N'):
+        begin
+          if (High(DataBase.NetworkUser) = -1) then
+            ScreenPopupError.ShowPopup(Language.Translate('SING_OPTIONS_NETWORK_NO_DLL'))
+          else
+          begin
+            AudioPlayback.PlaySound(SoundLib.Back);
+            FadeTo(@ScreenOptionsNetwork);
+          end;
+          Exit;
+        end;
+
+      Ord('W'):
+        begin
+          FadeTo(@ScreenOptionsWebcam, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('J'):
+        begin
+          FadeTo(@ScreenOptionsJukebox, SoundLib.Start);
+          Exit;
+        end;
+
       Ord('Q'):
         begin
           Result := false;

@@ -74,6 +74,12 @@ begin
   begin // Key Down
     // check normal keys
     case UCS4UpperCase(CharCode) of
+      Ord('C'):
+        begin
+          FadeTo(@ScreenCredits, SoundLib.Start);
+          Exit;
+        end;
+
       Ord('Q'):
         begin
           Result := false;
