@@ -47,7 +47,7 @@ type
     private
       PreVisualization: boolean;
 
-      ID: integer;
+      WCID: integer;
       Resolution: integer;
       FPS: integer;
       Flip: integer;
@@ -193,7 +193,7 @@ begin
 
   Theme.OptionsWebcam.SelectWebcam.showArrows := true;
   Theme.OptionsWebcam.SelectWebcam.oneItemOnly := true;
-  ID := AddSelectSlide(Theme.OptionsWebcam.SelectWebcam, Ini.WebCamID, WebcamsIDs);
+  WCID := AddSelectSlide(Theme.OptionsWebcam.SelectWebcam, Ini.WebCamID, WebcamsIDs);
 
   Theme.OptionsWebcam.SelectResolution.showArrows := true;
   Theme.OptionsWebcam.SelectResolution.oneItemOnly := true;
@@ -261,7 +261,7 @@ var
   Alpha: real;
 begin
 
-  if (PreVisualization) and (SelectsS[ID].SelectOptInt > 0) then
+  if (PreVisualization) and (SelectsS[WCID].SelectOptInt > 0) then
   begin
     try
 
