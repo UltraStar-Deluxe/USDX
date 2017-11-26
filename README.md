@@ -276,7 +276,7 @@ For linking and running the game, the following libraries are also required:
 - Make sure the XCode command line tools are installed. 
   * `xcode-select --install`
 - Needed brew libraries can be installed using:
-  * `brew install sdl2 sdl2_image ffmpeg@2.8 libav portaudio binutils sqlite freetype lua libtiff`
+  * `brew install sdl2 sdl2_image ffmpeg@2.8 automake portaudio binutils sqlite freetype lua libtiff`
   * `export PATH=/usr/local/opt/ffmpeg@2.8/bin:"$PATH"`
 - Clone repo
   * `git clone https://github.com/UltraStar-Deluxe/USDX`
