@@ -93,7 +93,11 @@ var
 
 
 implementation
-uses UFiles, SDL, Classes, ULanguage;
+uses
+  UFiles,
+  ULanguage,
+  Classes,
+  sdl2;
 
 //----------
 //Create - Construct Class then LoadList + Standard Language + Set Standard Implode Glues
