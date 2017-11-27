@@ -4,6 +4,8 @@ unit UHelp;
   {$MODE Delphi}
 {$ENDIF}
 
+{$I switches.inc}
+
 interface
 uses
   ULog,
