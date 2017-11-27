@@ -4,6 +4,10 @@ unit UHelp;
   {$MODE Delphi}
 {$ENDIF}
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 interface
 uses
   ULog,
