@@ -282,7 +282,6 @@ For linking and running the game, the following libraries are also required:
   * `./autogen.sh`
 - Make sure that you have your build setup right
   * `./configure`
-    * add argument `--enable-osx-fink` or `--enable-osx-brew` (default) according to the packaging you are using
 - Now build the UltraStar application
   * `make macosx-standalone-app`
 - Run by clicking UltraStarDeluxe in your build folder or
