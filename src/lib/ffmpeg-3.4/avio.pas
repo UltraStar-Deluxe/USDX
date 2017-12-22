@@ -64,7 +64,15 @@ const
   FF_API_URL_CLASS            = (LIBAVFORMAT_VERSION_MAJOR >= 53);
 
 const
-  AVIO_SEEKABLE_NORMAL = 0001; (**< Seeking works like for a local file *)
+  (**
+   * Seeking works like for a local file.
+   *)
+  AVIO_SEEKABLE_NORMAL = (1 << 0);
+
+  (**
+   * Seeking by timestamp with avio_seek_time() is possible.
+   *)
+  AVIO_SEEKABLE_TIME   = (1 << 1);
 
 type
   TReadWriteFunc = function(opaque: Pointer; buf: PByteArray; buf_size: cint): cint; cdecl;
@@ -135,7 +143,13 @@ type
      * Trailer data, which doesn't contain actual content, but only for
      * finalizing the output file.
      *)
-    AVIO_DATA_MARKER_TRAILER
+    AVIO_DATA_MARKER_TRAILER,
+    (**
+     * A point in the output bytestream where the underlying AVIOContext might
+     * flush the buffer depending on latency or buffering requirements. Typically
+     * means the end of a packet.
+     *)
+    AVIO_DATA_MARKER_FLUSH_POINT
   );
 
  (**
@@ -198,10 +212,11 @@ type
      * to any av_opt_* functions in that case.
      *)
     av_class: {const} PAVClass;
-    
+
     (*
-     * The following shows the relationship between buffer, buf_ptr, buf_end, buf_size,
-     * and pos, when reading and when writing (since AVIOContext is used for both):
+     * The following shows the relationship between buffer, buf_ptr,
+     * buf_ptr_max, buf_end, buf_size, and pos, when reading and when writing
+     * (since AVIOContext is used for both):
      *
      **********************************************************************************
      *                                   READING
@@ -228,21 +243,24 @@ type
      *                                   WRITING
      **********************************************************************************
      *
-     *                                          |          buffer_size          |
-     *                                          |-------------------------------|
-     *                                          |                               |
+     *                             |          buffer_size                 |
+     *                             |--------------------------------------|
+     *                             |                                      |
      *
-     *                                       buffer              buf_ptr     buf_end
-     *                                          +-------------------+-----------+
-     *                                          |/ / / / / / / / / /|           |
-     *  write buffer:                           | / to be flushed / |           |
-     *                                          |/ / / / / / / / / /|           |
-     *                                          +-------------------+-----------+
+     *                                                buf_ptr_max
+     *                          buffer                 (buf_ptr)       buf_end
+     *                             +-----------------------+--------------+
+     *                             |/ / / / / / / / / / / /|              |
+     *  write buffer:              | / / to be flushed / / |              |
+     *                             |/ / / / / / / / / / / /|              |
+     *                             +-----------------------+--------------+
+     *                               buf_ptr can be in this
+     *                               due to a backward seek
      *
-     *                                         pos
-     *               +--------------------------+-----------------------------------+
-     *  output file: |                          |                                   |
-     *               +--------------------------+-----------------------------------+
+     *                            pos
+     *               +-------------+----------------------------------------------+
+     *  output file: |             |                                              |
+     *               +-------------+----------------------------------------------+
      *
      *)
 
@@ -259,7 +277,7 @@ type
     write_packet: TReadWriteFunc;
     seek: TSeekFunc;
     pos: cint64;         (**< position in the file of the current buffer *)
-    must_flush: cint;    (**< true if the next seek should flush *)
+    must_flush: cint;    (**< unused *)
     eof_reached: cint;   (**< true if eof reached *)
     write_flag: cint;    (**< true if open for writing *)
     max_packet_size: cint;
@@ -326,7 +344,7 @@ type
      * This is current internal only, do not use from outside.
      *)
     short_seek_threshold: cint;
-    
+
     (**
      * ',' separated list of allowed protocols.
      *)
@@ -349,10 +367,29 @@ type
      *)
     current_type: TAVIODataMarkerType;
     last_time: cint64;
+
+    (**
+     * A callback that is used instead of short_seek_threshold.
+     * This is current internal only, do not use from outside.
+     *)
+    short_seek_get: function(opaque: pointer): cint; cdecl;
+
+    written: cint64;
+
+    (**
+     * Maximum reached position before a backward seek in the write buffer,
+     * used keeping track of already written data for a later flush.
+     *)
+    buf_ptr_max: PByteArray;
+
+    (**
+     * Try to buffer at least this amount of data before flushing it
+     *)
+    min_packet_size: cint;
   end; {AVIOContext}
 
 (* unbuffered I/O *)
-  
+
 (**
  * Return the name of the protocol that will handle the passed URL.
  *
@@ -362,7 +399,7 @@ type
  *)
 function avio_find_protocol_name(url: {const} PAnsiChar): {const} PAnsiChar;
   cdecl; external av__format;
-	
+
 (**
  * Return AVIO_* access flags corresponding to the access permissions
  * of the resource in url, or a negative value corresponding to an
@@ -448,7 +485,7 @@ procedure avio_free_directory_entry(entry: PPAVIODirEntry);
 
 (**
  * Allocate and initialize an AVIOContext for buffered I/O. It must be later
- * freed with av_free().
+ * freed with avio_context_free().
  *
  * @param buffer Memory block for input/output operations via AVIOContext.
  *        The buffer must be allocated with av_malloc() and friends.
@@ -476,7 +513,16 @@ function avio_alloc_context(
                   write_packet: TReadWriteFunc;
                   seek: TSeekFunc): PAVIOContext;
   cdecl; external av__format;
-		  
+
+(**
+ * Free the supplied IO context and everything associated with it.
+ *
+ * @param s Double pointer to the IO context. This function will write NULL
+ * into s.
+ *)
+procedure avio_context_free(s: PAVIOContext);
+  cdecl; external av__format;
+
 procedure avio_w8(s: PAVIOContext; b: cint);
   cdecl; external av__format;
 procedure avio_write(s: PAVIOContext; buf: {const} PAnsiChar; size: cint);
@@ -597,7 +643,7 @@ function avio_feof(s: PAVIOContext): cint;
 function url_feof(s: PAVIOContext): cint;
   cdecl; external av__format; {attribute_deprecated}
 {$ENDIF}
- 
+
 (** @warning Writes up to 4 KiB per call *)
 function avio_printf(s: PAVIOContext; fmt: {const} PAnsiChar; args: array of const): cint;
   cdecl; external av__format;
@@ -620,6 +666,16 @@ procedure avio_flush(s: PAVIOContext);
  * @return number of bytes read or AVERROR
  *)
 function avio_read(s: PAVIOContext; buf: Pbyte; size: cint): cint;
+  cdecl; external av__format;
+
+(**
+ * Read size bytes from AVIOContext into buf. Unlike avio_read(), this is allowed
+ * to read fewer bytes than requested. The missing bytes can be read in the next
+ * call. This always tries to read at least 1 byte.
+ * Useful to reduce latency in certain cases.
+ * @return number of bytes read or AVERROR
+ *)
+function avio_read_partial(s: PAVIOContext; buf: Pbyte; size: cint): cint;
   cdecl; external av__format;
 
 (**
@@ -713,7 +769,7 @@ const
  * Warning:  non-blocking protocols is work-in-progress; this flag may be
  * silently ignored.
  *)
-  AVIO_FLAG_NONBLOCK = 8;    
+  AVIO_FLAG_NONBLOCK = 8;
 
 (**
  * Use direct mode.
@@ -797,6 +853,19 @@ function avio_open_dyn_buf(s: PPAVIOContext): cint;
   cdecl; external av__format;
 
 (**
+ * Return the written size and a pointer to the buffer.
+ * The AVIOContext stream is left intact.
+ * The buffer must NOT be freed.
+ * No padding is added to the buffer.
+ *
+ * @param s IO context
+ * @param pbuffer pointer to a byte buffer
+ * @return the length of the byte buffer
+ *)
+function avio_get_dyn_buf(s: PAVIOContext; var pbuffer: Pcuint8): cint;
+  cdecl; external av__format;
+
+(**
  * Return the written size and a pointer to the buffer. The buffer
  * must be freed with av_free().
  * Padding of AV_INPUT_BUFFER_PADDING_SIZE is added to the buffer.
@@ -855,7 +924,7 @@ function avio_seek_time(h: PAVIOContext; stream_index: cint;
 type
   PAVBPrint = ^TAVBPrint;
   TAVBPrint = record
-	end;	
+	end;
 
 (**
  * Read contents of h into print buffer, up to max_size bytes, or up to EOF.

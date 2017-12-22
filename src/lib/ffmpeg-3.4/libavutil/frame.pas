@@ -93,14 +93,14 @@ type
      * - decoding: set by libavcodec. *)
     position: array [0..2] of array [0..1] of cint16;
   end; {TAVPanScan}
-  
+
   (**
    * @defgroup lavu_frame AVFrame
    * @ingroup lavu_data
    *
    * @
    * AVFrame is an abstraction for reference-counted raw multimedia data.
-   *)  
+   *)
   TAVFrameSideDataType = (
     (**
      * The data is the AVPanScan struct defined in libavcodec.
@@ -177,7 +177,23 @@ type
      * The GOP timecode in 25 bit timecode format. Data format is 64-bit integer.
      * This is set on the first frame of a GOP that has a temporal reference of 0.
      *)
-    AV_FRAME_DATA_GOP_TIMECODE
+    AV_FRAME_DATA_GOP_TIMECODE,
+    (**
+      * The data represents the AVSphericalMapping structure defined in
+      * libavutil/spherical.h.
+      *)
+    AV_FRAME_DATA_SPHERICAL,
+    (**
+     * Content light level (based on CTA-861.3). This payload contains data in
+     * the form of the AVContentLightMetadata struct.
+     *)
+    AV_FRAME_DATA_CONTENT_LIGHT_LEVEL,
+    (**
+     * The data contains an ICC profile as an opaque octet buffer following the
+     * format described by ISO 15076-1 with an optional name defined in the
+     * metadata key entry "name".
+     *)
+    AV_FRAME_DATA_ICC_PROFILE
   );
 
 	TAVActiveFormatDescription = (
@@ -230,9 +246,6 @@ type
  *
  * sizeof(AVFrame) is not a part of the public ABI, so new fields may be added
  * to the end with a minor bump.
- * Similarly fields that are marked as to be only accessed by
- * av_opt_ptr() can be reordered. This allows 2 forks to add fields
- * without breaking compatibility with each other.
  *
  * Fields can be accessed through AVOptions, the name string used, matches the
  * C structure field name for fields accessible through AVOptions. The AVClass
@@ -289,7 +302,12 @@ type
     extended_data: ^pbyte;
 
     (**
-     * width and height of the video frame
+     * @name Video dimensions
+     * Video frames only. The coded dimensions (in pixels) of the video frame,
+     * i.e. the size of the rectangle that contains some well-defined values.
+     *
+     * @note The part of the frame intended for display/presentation is further
+     * restricted by the @ref cropping "Cropping rectangle".
      *)
     width, height: cint;
     (**
@@ -445,7 +463,7 @@ type
 
     (**
      * @defgroup lavu_frame_flags AV_FRAME_FLAGS
-     * @ingroup lavu_frame	
+     * @ingroup lavu_frame
      * Flags describing additional frame properties.
      *
      * @
@@ -458,8 +476,6 @@ type
 
     (**
      * MPEG vs JPEG YUV range.
-     * It must be accessed using av_frame_get_color_range() and
-     * av_frame_set_color_range().
      * - encoding: Set by user
      * - decoding: Set by libavcodec
      *)
@@ -471,8 +487,6 @@ type
 
     (**
      * YUV colorspace type.
-     * It must be accessed using av_frame_get_colorspace() and
-     * av_frame_set_colorspace().
      * - encoding: Set by user
      * - decoding: Set by libavcodec
      *)
@@ -482,8 +496,6 @@ type
 
     (**
      * frame timestamp estimated using various heuristics, in stream time base
-     * Code outside libavutil should access this field using:
-     * av_frame_get_best_effort_timestamp(frame)
      * - encoding: unused
      * - decoding: set by libavcodec, read by user.
      *)
@@ -491,8 +503,6 @@ type
 
     (**
      * reordered pos from the last AVPacket that has been input into the decoder
-     * Code outside libavutil should access this field using:
-     * av_frame_get_pkt_pos(frame)
      * - encoding: unused
      * - decoding: Read by user.
      *)
@@ -501,8 +511,6 @@ type
     (**
      * duration of the corresponding packet, expressed in
      * AVStream->time_base units, 0 if unknown.
-     * Code outside libavutil should access this field using:
-     * av_frame_get_pkt_duration(frame)
      * - encoding: unused
      * - decoding: Read by user.
      *)
@@ -510,8 +518,6 @@ type
 
     (**
      * metadata.
-     * Code outside libavutil should access this field using:
-     * av_frame_get_metadata(frame)
      * - encoding: Set by user.
      * - decoding: Set by libavcodec.
      *)
@@ -521,8 +527,6 @@ type
      * decode error flags of the frame, set to a combination of
      * FF_DECODE_ERROR_xxx flags if the decoder produced a frame, but there
      * were errors during the decoding.
-     * Code outside libavutil should access this field using:
-     * av_frame_get_decode_error_flags(frame)
      * - encoding: unused
      * - decoding: set by libavcodec, read by user.
      *)
@@ -530,8 +534,6 @@ type
 
     (**
      * number of audio channels, only used for audio.
-     * Code outside libavutil should access this field using:
-     * av_frame_get_channels(frame)
      * - encoding: unused
      * - decoding: Read by user.
      *)
@@ -539,8 +541,7 @@ type
 
     (**
      * size of the corresponding packet containing the compressed
-     * frame. It must be accessed using av_frame_get_pkt_size() and
-     * av_frame_set_pkt_size().
+     * frame.
      * It is set to a negative value if unknown.
      * - encoding: unused
      * - decoding: set by libavcodec, read by user.
@@ -550,19 +551,15 @@ type
 {$IFDEF FF_API_FRAME_QP}
     (**
      * QP table
-     * Not to be accessed directly from outside libavutil
      *)
     qscale_table: PByte; {deprecated}
     (**
      * QP store stride
-     * Not to be accessed directly from outside libavutil
      *)
     qstride: cint; {deprecated}
 
     qscale_type: cint; {deprecated}
-    (**
-     * Not to be accessed directly from outside libavutil
-     *)
+
     qp_table_buf: PAVBufferRef; {deprecated}
 {$ENDIF}
     (**
@@ -570,12 +567,34 @@ type
      * AVHWFramesContext describing the frame.
      *)
     hw_frames_ctx: PAVBufferRef;
+
+    (**
+     * AVBufferRef for free use by the API user. FFmpeg will never check the
+     * contents of the buffer ref. FFmpeg calls av_buffer_unref() on it when
+     * the frame is unreferenced. av_frame_copy_props() calls create a new
+     * reference with av_buffer_ref() for the target frame's opaque_ref field.
+     *
+     * This is unrelated to the opaque field, although it serves a similar
+     * purpose.
+     *)
+    opaque_ref: PAVBufferRef;
+
+   (**
+     * @anchor cropping
+     * @name Cropping
+     * Video frames only. The number of pixels to discard from the the
+     * top/bottom/left/right border of the frame to obtain the sub-rectangle of
+     * the frame intended for presentation.
+     *)
+    crop_top: size_t;
+    crop_bottom: size_t;
+    crop_left: size_t;
+    crop_right: size_t;
   end; {TAVFrame}
 
 (**
- * Accessors for some AVFrame fields.
- * The position of these field in the structure is not part of the ABI,
- * they should not be accessed directly outside libavutil.
+ * Accessors for some AVFrame fields. These used to be provided for ABI
+ * compatibility, and do not need to be used anymore.
  *)
 function  av_frame_get_best_effort_timestamp(frame: {const} PAVFrame): cint64;
   cdecl; external av__codec; overload;
@@ -719,7 +738,9 @@ procedure av_frame_move_ref(dst, src: PAVFrame);
  *           cases.
  *
  * @param frame frame in which to store the new buffers.
- * @param align required buffer size alignment
+ * @param align Required buffer size alignment. If equal to 0, alignment will be
+ *              chosen automatically for the current CPU. It is highly
+ *              recommended to pass 0 here unless you know what you are doing.
  *
  * @return 0 on success, a negative AVERROR on error.
  *)
@@ -768,7 +789,7 @@ function av_frame_make_writable(frame: PAVFrame): cint;
  *)
 function av_frame_copy(dst: PAVFrame; src: {const} PAVFrame): cint;
   cdecl; external av__codec;
-  
+
 (**
  * Copy only "metadata" fields from src to dst.
  *
@@ -819,9 +840,42 @@ function av_frame_get_side_data(frame: {const} PAVFrame; type_: TAVFrameSideData
 procedure av_frame_remove_side_data(frame: PAVFrame; type_: TAVFrameSideDataType);
   cdecl; external av__codec;
 
+
+(**
+ * Flags for frame cropping.
+ *)
+const
+  (**
+   * Apply the maximum possible cropping, even if it requires setting the
+   * AVFrame.data[] entries to unaligned pointers. Passing unaligned data
+   * to FFmpeg API is generally not allowed, and causes undefined behavior
+   * (such as crashes). You can pass unaligned data only to FFmpeg APIs that
+   * are explicitly documented to accept it. Use this flag only if you
+   * absolutely know what you are doing.
+   *)
+  AV_FRAME_CROP_UNALIGNED     = 1 << 0;
+
+(**
+ * Crop the given video AVFrame according to its crop_left/crop_top/crop_right/
+ * crop_bottom fields. If cropping is successful, the function will adjust the
+ * data pointers and the width/height fields, and set the crop fields to 0.
+ *
+ * In all cases, the cropping boundaries will be rounded to the inherent
+ * alignment of the pixel format. In some cases, such as for opaque hwaccel
+ * formats, the left/top cropping is ignored. The crop fields are set to 0 even
+ * if the cropping was rounded or ignored.
+ *
+ * @param frame the frame which should be cropped
+ * @param flags Some combination of AV_FRAME_CROP_* flags, or 0.
+ *
+ * @return >= 0 on success, a negative AVERROR on error. If the cropping fields
+ * were invalid, AVERROR(ERANGE) is returned, and nothing is changed.
+ *)
+function av_frame_apply_cropping(frame: PAVFrame; flags: cint): cint;
+  cdecl; external av__codec;
+
 (**
  * @return a string identifying the side data type
  *)
 function av_frame_side_data_name(type_: TAVFrameSideDataType): PAnsiChar;
   cdecl; external av__codec;
-

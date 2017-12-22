@@ -49,14 +49,14 @@ const
   AV_CPU_FLAG_AVXSLOW       = $8000000;  ///< AVX supported, but slow when using YMM registers (e.g. Bulldozer)
   AV_CPU_FLAG_XOP           = $0400;     ///< Bulldozer XOP functions
   AV_CPU_FLAG_FMA4          = $0800;     ///< Bulldozer FMA4 functions
- 
+
   AV_CPU_FLAG_CMOV          = $1000;     ///< supports cmov instruction
-  
+
   AV_CPU_FLAG_AVX2          = $8000;     ///< AVX2 functions: requires OS support even if YMM registers aren't used
   AV_CPU_FLAG_FMA3          = $10000;    ///< Haswell FMA3 functions
   AV_CPU_FLAG_BMI1          = $20000;    ///< Bit Manipulation Instruction Set 1
-  AV_CPU_FLAG_BMI2          = $40000;    ///< Bit Manipulation Instruction Set 2  
-  
+  AV_CPU_FLAG_BMI2          = $40000;    ///< Bit Manipulation Instruction Set 2
+
   AV_CPU_FLAG_ALTIVEC       = $0001;     ///< standard
   AV_CPU_FLAG_VSX           = $0002;     ///< ISA 2.06
   AV_CPU_FLAG_POWER8        = $0004;     ///< ISA 2.07
@@ -91,8 +91,6 @@ procedure av_force_cpu_flags(flags: cint);
  * Set a mask on flags returned by av_get_cpu_flags().
  * This function is mainly useful for testing.
  * Please use av_force_cpu_flags() and av_get_cpu_flags() instead which are more flexible
- *
- * @warning this function is not thread safe.
  *)
 procedure av_set_cpu_flags_mask(mask: cint);
   cdecl; external av__util; deprecated;
@@ -121,4 +119,16 @@ function av_parse_cpu_caps(flags: Pcuint; s: {const} PAnsiChar): cint;
  * @return the number of logical CPU cores present.
  *)
 function av_cpu_count(): cint;
+  cdecl; external av__util;
+
+(**
+ * Get the maximum data alignment that may be required by FFmpeg.
+ *
+ * Note that this is affected by the build configuration and the CPU flags mask,
+ * so e.g. if the CPU supports AVX, but libavutil has been built with
+ * --disable-avx or the AV_CPU_FLAG_AVX flag has been disabled through
+ *  av_set_cpu_flags_mask(), then this function will behave as if AVX is not
+ *  present.
+ *)
+function av_cpu_max_align(): size_t;
   cdecl; external av__util;

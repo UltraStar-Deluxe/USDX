@@ -58,7 +58,7 @@ uses
 
 const
   (*
-   * IMPORTANT: This headers are valid for all minor revisions of ffmpeg 
+   * IMPORTANT: This headers are valid for all minor revisions of ffmpeg
    * version 2.4.*
    *)
   (* Max. supported version by this header *)
@@ -526,7 +526,7 @@ const
 	AVPROBE_SCORE_MIME         =  75; ///< score for file mime type
   AVPROBE_SCORE_MAX          = 100; ///< maximum score
 
-	AVPROBE_SCORE_RETRY        = (AVPROBE_SCORE_MAX DIV 4);  
+	AVPROBE_SCORE_RETRY        = (AVPROBE_SCORE_MAX DIV 4);
   AVPROBE_SCORE_STREAM_RETRY = (AVPROBE_SCORE_MAX DIV 4-1);
 
   AVPROBE_PADDING_SIZE       = 32;  ///< extra allocated bytes at the end of the probe buffer
@@ -561,7 +561,7 @@ const
                                         The user or muxer can override this through
                                         AVFormatContext.avoid_negative_ts
                                         *)
- 
+
   AVFMT_SEEK_TO_PTS   = $4000000;  (**< Seeking is based on PTS *)
 
   // used by AVIndexEntry
@@ -594,7 +594,9 @@ const
   AVFMT_FLAG_MP4A_LATM       =  $8000; ///< Enable RTP MP4A-LATM payload
   AVFMT_FLAG_SORT_DTS        = $10000; ///< try to interleave outputted packets by dts (using this flag can slow demuxing down)
   AVFMT_FLAG_PRIV_OPT        = $20000; ///< Enable use of private options by delaying codec open (this could be made default once all code is converted)
-  AVFMT_FLAG_KEEP_SIDE_DATA  = $40000; ///< Don't merge side data but keep it separate.
+  {$IFDEF FF_API_LAVF_KEEPSIDE_FLAG}
+  AVFMT_FLAG_KEEP_SIDE_DATA  = $40000; ///< Don't merge side data but keep it separate. Deprecated, will be the default.
+  {$ENDIF}
   AVFMT_FLAG_FAST_SEEK       = $80000; ///< Enable fast, but inaccurate seeks for some formats
   AVFMT_FLAG_SHORTEST        = $100000; ///< Stop muxing when the shortest stream stops.
   AVFMT_FLAG_AUTO_BSF        = $200000; ///< Wait for packet data before writing a header, and add bitstream filters as requested by the muxer
@@ -645,7 +647,7 @@ const
   AV_DISPOSITION_CAPTIONS     = $10000;
   AV_DISPOSITION_DESCRIPTIONS = $20000;
   AV_DISPOSITION_METADATA     = $40000;
-  
+
 (**
  * Options for behavior on timestamp wrap detection.
  *)
@@ -817,7 +819,7 @@ type
      *)
     write_uncodec_frame: function(s: PAVFormatContext; stream_index: cint;
 				  frame: PPAVFrame; flags: cuint): cint; cdecl;
-    
+
     (**
      * Returns device list with it properties.
      * @see avdevice_list_devices() for more details.
@@ -837,7 +839,7 @@ type
     free_device_capabilities: function(s: PAVFormatContext; caps: PAVDeviceCapabilitiesQuery): cint; cdecl;
 
     data_codec: TAVCodecID; (**< default data codec *)
-    
+
     (**
      * Initialize format. May allocate data here, and set any AVFormatContext or
      * AVStream parameters that need to be set before packets are sent.
@@ -848,7 +850,7 @@ type
      * Any allocations made here must be freed in deinit().
      *)
     init: function(s: PAVFormatContext): cint; cdecl;
-    
+
     (**
      * Deinitialize format. If present, this is called whenever the muxer is being
      * destroyed, regardless of whether or not the header has been written.
@@ -858,7 +860,7 @@ type
      * This is called if init() fails as well.
      *)
     deinit: procedure(s: PAVFormatContext);
-    
+
     (**
      * Set up any necessary bitstream filtering and extract any extra data needed
      * for the global header.
@@ -869,7 +871,7 @@ type
 (**
  * @}
  *)
- 
+
 (**
  * @addtogroup lavf_decoding
  * @
@@ -926,7 +928,7 @@ type
      * Raw demuxers store their codec ID here.
      *)
     raw_codec_id: cint;
-    
+
     (**
      * Size of private data so that it can be allocated in the wrapper.
      *)
@@ -989,7 +991,7 @@ type
     (**
      * Pause playing - only meaningful if using a network-based format
      * (RTSP).
-     *)  
+     *)
     read_pause: function (c: PAVFormatContext): cint; cdecl;
 
     (**
@@ -1001,7 +1003,7 @@ type
     read_seek2: function (s:            PAVFormatContext;
                           stream_index: cint;
                           min_ts:       cint64;
-                          ts:           cint64; 
+                          ts:           cint64;
                           max_ts:       cint64;
 			  flags:        cint): cint; cdecl;
 
@@ -1010,7 +1012,7 @@ type
      * @see avdevice_list_devices() for more details.
      *)
     get_device_list: function(s: PAVFormatContext; device_list: PAVDeviceInfoList): cint; cdecl;
-    
+
     (**
      * Initialize device capabilities submodule.
      * @see avdevice_capabilities_create() for more details.
@@ -1027,7 +1029,7 @@ type
 (**
  * @}
  *)
- 
+
   TAVStreamParseType = (
     AVSTREAM_PARSE_NONE,
     AVSTREAM_PARSE_FULL,       (**< full parsing and repack *)
@@ -1081,7 +1083,7 @@ type
     fps_last_dts:      cint64;
     fps_last_dts_idx:  cint;
   end;
- 
+
  (**
   * Stream structure.
   * New fields can be added to the end with minor version bumps.
@@ -1106,7 +1108,7 @@ type
     priv_data: pointer;
 
 {$IFDEF FF_API_LAVF_FRAC}
-    (** 
+    (**
      * @deprecated this field is unused
      *)
     pts: TAVFrac; {attribute_deprecated}
@@ -1140,11 +1142,14 @@ type
      * Decoding: duration of the stream, in stream time base.
      * If a source file does not specify a duration, but does specify
      * a bitrate, this value will be estimated from bitrate and file size.
+     *
+     * Encoding: May be set by the caller before avformat_write_header() to
+     * provide a hint to the muxer about the estimated duration.
      *)
     duration: cint64;
 
     nb_frames: cint64;                 ///< number of frames in this stream if known or 0
-    
+
     disposition: cint; (**< AV_DISPOSITION_* bitfield *)
 
     discard: TAVDiscard; ///< Selects which packets can be discarded at will and do not need to be demuxed.
@@ -1212,15 +1217,17 @@ type
      * All fields below this line are not part of the public API. They
      * may not be used outside of libavformat and can be changed and
      * removed at will.
-     * New public fields should be added right above.
+     * Internal note: be aware that physically removing these fields
+     * will break ABI. Replace removed fields with dummy fields, and
+     * add new fields to AVStreamInternal.
     *****************************************************************
      *)
 
     (**
-     * Stream information used internally by av_find_stream_info()
+     * Stream information used internally by avformat_find_stream_info()
      *)
     info: PStreamInfo;
-    
+
     pts_wrap_bits: cint; (**< number of bits in pts (used for wrapping control) *)
 
     // Timestamp generation support:
@@ -1242,7 +1249,7 @@ type
     probe_packets: cint;
 
      (**
-     * Number of frames that have been demuxed during av_find_stream_info()
+     * Number of frames that have been demuxed during avformat_find_stream_info()
      *)
     codec_info_nb_frames: cint;
 
@@ -1371,7 +1378,7 @@ type
     (**
      * Internal data to analyze DTS and detect faulty mpeg streams
      *)
-    last_dts_for_order_check: cint64;    
+    last_dts_for_order_check: cint64;
     dts_ordered: byte;
     dts_misordered: byte;
 
@@ -1379,6 +1386,12 @@ type
      * Internal data to inject global side data
      *)
     inject_global_side_data: cint;
+
+    (*****************************************************************
+     * All fields above this line are not part of the public API.
+     * Fields below are part of the public API and ABI again.
+     *****************************************************************
+     *)
 
     (**
      * String containing paris of key and values describing recommended encoder configuration.
@@ -1401,7 +1414,7 @@ type
      * Must not be accessed in any way by callers.
      *)
     internal: pointer;
-    
+
     (*
      * Codec parameters associated with this stream. Allocated and freed by
      * libavformat in avformat_new_stream() and avformat_free_context()
@@ -1476,9 +1489,9 @@ type
     nb_interleaved_streams: cint;
     inject_global_side_data: cint;
   end;
-  
+
   TAv_format_control_message = function (s: PAVFormatContext; type_: cint;
-				  data: pointer; data_size: size_t): cint; cdecl;  
+				  data: pointer; data_size: size_t): cint; cdecl;
 
   TAVOpenCallback = function (s: PAVFormatContext; pb: PPAVIOContext; url: {const} PAnsiChar; flags: cint;
                               int_cb: {const} PAVIOInterruptCB; options: PPAVDictionary): cint; cdecl;
@@ -1677,7 +1690,7 @@ type
      * Freed by libavformat in avformat_free_context().
      *)
     metadata: PAVDictionary;
-    
+
     (**
      * Start time of the stream in real world time, in microseconds
      * since the Unix epoch (00:00 1st January 1970). That is, pts=0 in the
@@ -1690,7 +1703,7 @@ type
      *             have been received.
      *)
     start_time_realtime: cint64;
-    
+
     (**
      * The number of frames used for determining the framerate in
      * avformat_find_stream_info().
@@ -1738,7 +1751,7 @@ type
      * Muxing only, set by the caller before avformat_write_header().
      *)
     max_interleave_delta: cint64;
-    
+
     (**
      * Allow non-standard and experimental extension
      * @see AVCodecContext.strict_std_compliance
@@ -1776,7 +1789,7 @@ type
     (**
      * Audio preload in microseconds.
      * Note, not all formats support this and unpredictable things may happen if it is used when not supported.
-     * - encoding: Set by user via AVOptions (NO direct access)
+     * - encoding: Set by user
      * - decoding: unused
      *)
     audio_preload: cint;
@@ -1784,7 +1797,7 @@ type
     (**
      * Max chunk time in microseconds.
      * Note, not all formats support this and unpredictable things may happen if it is used when not supported.
-     * - encoding: Set by user via AVOptions (NO direct access)
+     * - encoding: Set by user
      * - decoding: unused
      *)
     max_chunk_duration: cint;
@@ -1792,7 +1805,7 @@ type
     (**
      * Max chunk size in bytes
      * Note, not all formats support this and unpredictable things may happen if it is used when not supported.
-     * - encoding: Set by user via AVOptions (NO direct access)
+     * - encoding: Set by user
      * - decoding: unused
      *)
     max_chunk_size: cint;
@@ -1801,14 +1814,14 @@ type
      * forces the use of wallclock timestamps as pts/dts of packets
      * This has undefined results in the presence of B frames.
      * - encoding: unused
-     * - decoding: Set by user via AVOptions (NO direct access)
+     * - decoding: Set by user
      *)
     use_wallclock_as_timestamps: cint;
 
     (**
      * avio flags, used to force AVIO_FLAG_DIRECT.
      * - encoding: unused
-     * - decoding: Set by user via AVOptions (NO direct access)
+     * - decoding: Set by user
      *)
     avio_flags: cint;
 
@@ -1816,34 +1829,34 @@ type
      * The duration field can be estimated through various ways, and this field can be used
      * to know how the duration was estimated.
      * - encoding: unused
-     * - decoding: Read by user via AVOptions (NO direct access)
+     * - decoding: Read by user
      *)
     duration_estimation_method: TAVDurationEstimationMethod;
 
     (**
      * Skip initial bytes when opening stream
      * - encoding: unused
-     * - decoding: Set by user via AVOptions (NO direct access)
+     * - decoding: Set by user
      *)
     skip_initial_bytes: cint64;
 
     (**
      * Correct single timestamp overflows
      * - encoding: unused
-     * - decoding: Set by user via AVOPtions (NO direct access)
+     * - decoding: Set by user
      *)
     correct_ts_overflow: cuint;
 
     (**
      * Force seeking to any (also non key) frames.
      * - encoding: unused
-     * - decoding: Set by user via AVOPtions (NO direct access)
+     * - decoding: Set by user
      *)
     seek2any: cint;
 
     (**
      * Flush the I/O context after each packet.
-     * - encoding: Set by user via AVOptions (NO direct access)
+     * - encoding: Set by user
      * - decoding: unused
      *)
     flush_packets: cint;
@@ -1853,14 +1866,14 @@ type
      * The maximal score is AVPROBE_SCORE_MAX, its set when the demuxer probes
      * the format.
      * - encoding: unused
-     * - decoding: set by avformat, read by user via av_format_get_probe_score() (NO direct access)
+     * - decoding: set by avformat, read by user
      *)
     probe_score: cint;
 
     (**
      * number of bytes to read maximally to identify format.
      * - encoding: unused
-     * - decoding: set by user through AVOPtions (NO direct access)
+     * - decoding: set by user
      *)
     format_probesize: cint;
 
@@ -1868,7 +1881,7 @@ type
      * ',' separated list of allowed decoders.
      * If NULL then all are allowed
      * - encoding: unused
-     * - decoding: set by user through AVOptions (NO direct access)
+     * - decoding: set by user
      *)
     codec_whitelist: PAnsiChar;
 
@@ -1876,7 +1889,7 @@ type
      * ',' separated list of allowed demuxers.
      * If NULL then all are allowed
      * - encoding: unused
-     * - decoding: set by user through AVOptions (NO direct access)
+     * - decoding: set by user
      *)
     format_whitelist: PAnsiChar;
 
@@ -1899,7 +1912,7 @@ type
      * Forced video codec.
      * This allows forcing a specific decoder, even when there are multiple with
      * the same codec_id.
-     * Demuxing: Set by user via av_format_set_video_codec (NO direct access).
+     * Demuxing: Set by user
      *)
     video_codec: PAVCodec;
 
@@ -1907,7 +1920,7 @@ type
      * Forced audio codec.
      * This allows forcing a specific decoder, even when there are multiple with
      * the same codec_id.
-     * Demuxing: Set by user via av_format_set_audio_codec (NO direct access).
+     * Demuxing: Set by user
      *)
     audio_codec: PAVCodec;
 
@@ -1915,7 +1928,7 @@ type
      * Forced subtitle codec.
      * This allows forcing a specific decoder, even when there are multiple with
      * the same codec_id.
-     * Demuxing: Set by user via av_format_set_subtitle_codec (NO direct access).
+     * Demuxing: Set by user
      *)
     subtitle_codec: PAVCodec;
 
@@ -1923,7 +1936,7 @@ type
      * Forced data codec.
      * This allows forcing a specific decoder, even when there are multiple with
      * the same codec_id.
-     * Demuxing: Set by user via av_format_set_data_codec (NO direct access).
+     * Demuxing: Set by user
      *)
     data_codec: PAVCodec;
 
@@ -1943,19 +1956,17 @@ type
     (**
      * Callback used by devices to communicate with application.
      *)
-    control_message_cb: TAv_format_control_message; 
-    
+    control_message_cb: TAv_format_control_message;
+
     (**
      * Output timestamp offset, in microseconds.
-     * Muxing: set by user via AVOptions (NO direct access)
+     * Muxing: set by user
      *)
     output_ts_offset: cint64;
 
     (**
      * dump format separator.
      * can be ", " or "\n      " or anything else
-     * Code outside libavformat should access this field using AVOptions
-     * (NO direct access).
      * - muxing: Set by user.
      * - demuxing: Set by user.
      *)
@@ -1986,11 +1997,11 @@ type
      *)
     open_cb: function(s: PAVFormatContext; p: PPAVIOContext; url: {const} PAnsiChar; flags: cint; int_cb: {const} PAVIOInterruptCB; options: PPAVDictionary): cint; cdecl;  {deprecated}
 {$ENDIF}
-    
+
     (**
      * ',' separated list of allowed protocols.
      * - encoding: unused
-     * - decoding: set by user through AVOptions (NO direct access)
+     * - decoding: set by user
      *)
     protocol_whitelist: pchar;
 
@@ -2020,14 +2031,21 @@ type
     (**
      * A callback for closing the streams opened with AVFormatContext.io_open().
      *)
-    io_close: procedure(s: PAVFormatContext; pb: PAVIOContext); cdecl; 
+    io_close: procedure(s: PAVFormatContext; pb: PAVIOContext); cdecl;
 
     (**
      * ',' separated list of disallowed protocols.
      * - encoding: unused
-     * - decoding: set by user through AVOptions (NO direct access)
+     * - decoding: set by user
      *)
     protocol_blacklist: PAnsiChar;
+
+    (**
+     * The maximum number of streams.
+     * - encoding: unused
+     * - decoding: set by user
+     *)
+    max_streams: cint;
   end; (** TAVFormatContext **)
 
   TAVTimebaseSource = (
@@ -2039,6 +2057,10 @@ type
 {$ENDIF}
   );
 
+(**
+ * Accessors for some AVFormatContext fields. These used to be provided for ABI
+ * compatibility, and do not need to be used anymore.
+ *)
 function av_format_get_probe_score(s: {const} PAVFormatContext): cint;
   cdecl; external av__format;
 function av_format_get_video_codec(s: {const} PAVFormatContext): PAVCodec;
@@ -2233,6 +2255,22 @@ function avformat_new_stream(s: PAVFormatContext; c: {const} PAVCodec): PAVStrea
   cdecl; external av__format;
 
 (**
+ * Wrap an existing array as stream side data.
+ *
+ * @param st stream
+ * @param type side information type
+ * @param data the side data array. It must be allocated with the av_malloc()
+ *             family of functions. The ownership of the data is transferred to
+ *             st.
+ * @param size side information size
+ * @return zero on success, a negative AVERROR code on failure. On failure,
+ *         the stream is unchanged and the data remains owned by the caller.
+ *)
+function av_stream_add_side_data(st: PAVStream; type_: TAVPacketSideDataType;
+                                 data: Pcuint8; size: size_t): cint;
+  cdecl; external av__format;
+
+(**
  * Allocate new information from stream.
  *
  * @param stream stream
@@ -2369,7 +2407,7 @@ function av_probe_input_buffer(pb: PAVIOContext; var fmt: PAVInputFormat;
                           url: {const} PAnsiChar; logctx: pointer;
                           offset: cuint; max_probe_size: cuint): cint;
   cdecl; external av__format;
-  
+
 (**
  * Open an input stream and read the header. The codecs are not opened.
  * The stream must be closed with av_close_input_file().
@@ -2592,7 +2630,7 @@ const
   AVSEEK_FLAG_BYTE     = 2; ///< seeking based on position in bytes
   AVSEEK_FLAG_ANY      = 4; ///< seek to any frame, even non-keyframes
   AVSEEK_FLAG_FRAME    = 8;
-  
+
   AVSTREAM_INIT_IN_WRITE_HEADER = 0; ///< stream parameters initialized in avformat_write_header
   AVSTREAM_INIT_IN_INIT_OUTPUT  = 1; ///< stream parameters initialized in avformat_init_output
 
@@ -2722,7 +2760,7 @@ function av_write_frame(s: PAVFormatContext; pkt: PAVPacket): cint;
  *            increasing (unless the output format is flagged with the
  *            AVFMT_TS_NONSTRICT, then they merely have to be nondecreasing).
  *            @ref AVPacket.duration "duration") should also be set if known.
- * 
+ *
  * @return 0 on success, a negative AVERROR on error. Libavformat will always
  *         take care of freeing the packet, even if this function fails.
  *
@@ -2931,7 +2969,7 @@ function av_codec_get_tag(var tags: PAVCodecTag; id: TAVCodecID): cuint;
 function av_codec_get_tag2(var tags: PAVCodecTag; id: TAVCodecID;
                            tag: Pcuint): cint;
   cdecl; external av__format;
-		      
+
 function av_find_default_stream_index(s: PAVFormatContext): cint;
   cdecl; external av__format;
 
@@ -3161,6 +3199,7 @@ function avformat_match_stream_specifier(s: PAVFormatContext; st: PAVStream;
 function avformat_queue_attached_pictures(s: PAVFormatContext): cint;
   cdecl; external av__format;
 
+{$IFDEF FF_API_OLD_BSF}
 (**
  * Apply a list of bitstream filters to a packet.
  *
@@ -3173,7 +3212,6 @@ function avformat_queue_attached_pictures(s: PAVFormatContext): cint;
  * @return  >=0 on success;
  *          AVERROR code on failure
  *)
-{$IFDEF FF_API_OLD_BSF}
 function av_apply_bitstream_filters(codec: PAVCodecContext; pkt: PAVPacket;
 				    bsfc: PAVBitStreamFilterContext): cint;
   cdecl; external av__format; deprecated;

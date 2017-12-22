@@ -145,9 +145,9 @@ const
   FF_LAMBDA_SCALE = (1 shl FF_LAMBDA_SHIFT);
   FF_QP2LAMBDA    = 118; ///< factor to convert from H.263 QP to lambda
   FF_LAMBDA_MAX   = (256*128-1);
- 
+
   FF_QUALITY_SCALE = FF_LAMBDA_SCALE; //FIXME maybe remove
- 
+
 (**
  * @brief Undefined timestamp value
  *
@@ -162,7 +162,7 @@ const
  *)
 
   AV_TIME_BASE     = 1000000;
-  
+
 (**
  * Internal time base represented as fractional value
  *)
@@ -239,6 +239,22 @@ function av_fopen_utf8(path: {const} Pchar; mode: {const} Pchar): PAVFile;
  * Return the fractional representation of the internal time base.
  *)
 function av_get_time_base_q: TAVRational;
+  cdecl; external av__util;
+
+const AV_FOURCC_MAX_STRING_SIZE = 32;
+
+function av_fourcc2str(fourcc: cuint64): PAnsiChar;
+  cdecl; external av__util;
+
+(**
+ * Fill the provided buffer with a string containing a FourCC (four-character
+ * code) representation.
+ *
+ * @param buf    a buffer with size in bytes of at least AV_FOURCC_MAX_STRING_SIZE
+ * @param fourcc the fourcc to represent
+ * @return the buffer in input
+ *)
+function av_fourcc_make_string(buf: PAnsiChar; fourcc: cuint64): PAnsiChar;
   cdecl; external av__util;
 
 {$INCLUDE libavutil/cpu.pas}

@@ -17,9 +17,6 @@
 {$ifndef FF_API_AVCODEC_RESAMPLE}
 {$define FF_API_AVCODEC_RESAMPLE := FF_API_AUDIO_CONVERT}
 {$endif}
-{$ifndef FF_API_GETCHROMA}
-{$define FF_API_GETCHROMA       := (LIBAVCODEC_VERSION_MAJOR < 58)}
-{$endif}
 {$ifndef FF_API_MISSING_SAMPLE}
 {$define FF_API_MISSING_SAMPLE   := (LIBAVCODEC_VERSION_MAJOR < 58)}
 {$endif}
@@ -114,6 +111,9 @@
 {$ifndef FF_API_VAAPI_CONTEXT}
 {$define FF_API_VAAPI_CONTEXT    := (LIBAVCODEC_VERSION_MAJOR < 58)}
 {$endif}
+{$ifndef FF_API_MERGE_SD}
+{$define FF_API_MERGE_SD         := (LIBAVCODEC_VERSION_MAJOR < 58)}
+{$endif}
 {$ifndef FF_API_AVCTX_TIMEBASE}
 {$define FF_API_AVCTX_TIMEBASE   := (LIBAVCODEC_VERSION_MAJOR < 59)}
 {$endif}
@@ -183,6 +183,18 @@
 {$ifndef FF_API_NVENC_OLD_NAME}
 {$define FF_API_NVENC_OLD_NAME   := (LIBAVCODEC_VERSION_MAJOR < 59)}
 {$endif}
+{$ifndef FF_API_STRUCT_VAAPI_CONTEXT}
+{$define FF_API_STRUCT_VAAPI_CONTEXT := (LIBAVCODEC_VERSION_MAJOR < 59)}
+{$endif}
+{$ifndef FF_API_MERGE_SD_API}
+{$define FF_API_MERGE_SD_API     := (LIBAVCODEC_VERSION_MAJOR < 59)}
+{$endif}
+{$ifndef FF_API_TAG_STRING}
+{$define FF_API_TAG_STRING       := (LIBAVCODEC_VERSION_MAJOR < 59)}
+{$endif}
+{$ifndef FF_API_GETCHROMA}
+{$define FF_API_GETCHROMA        := (LIBAVCODEC_VERSION_MAJOR < 59)}
+{$endif}
 
 (* avutil defines *)
 {$ifndef FF_API_VDPAU}
@@ -215,6 +227,9 @@
 {$ifndef FF_API_PKT_PTS}
 {$define FF_API_PKT_PTS                  := (LIBAVUTIL_VERSION_MAJOR < 56)}
 {$endif}
+{$ifndef FF_API_CRYPTO_SIZE_T}
+{$define FF_API_CRYPTO_SIZE_T            := (LIBAVUTIL_VERSION_MAJOR < 56)}
+{$endif}
 
 (** avformat FF_API defines *)
 {$ifndef FF_API_LAVF_BITEXACT}
@@ -246,6 +261,18 @@
 {$endif}
 {$ifndef FF_API_HTTP_USER_AGENT}
 {$define FF_API_HTTP_USER_AGENT       := (LIBAVFORMAT_VERSION_MAJOR < 58)}
+{$endif}
+{$ifndef FF_API_HLS_WRAP}
+{$define FF_API_HLS_WRAP              := (LIBAVFORMAT_VERSION_MAJOR < 58)}
+{$endif}
+{$ifndef FF_API_LAVF_MERGE_SD}
+{$define FF_API_LAVF_MERGE_SD         := (LIBAVFORMAT_VERSION_MAJOR < 58)}
+{$endif}
+{$ifndef FF_API_LAVF_KEEPSIDE_FLAG}
+{$define FF_API_LAVF_KEEPSIDE_FLAG    := (LIBAVFORMAT_VERSION_MAJOR < 58)}
+{$endif}
+{$ifndef FF_API_OLD_ROTATE_API}
+{$define FF_API_OLD_ROTATE_API        := (LIBAVFORMAT_VERSION_MAJOR < 58)}
 {$endif}
 
 {$ifndef FF_API_R_FRAME_RATE}
