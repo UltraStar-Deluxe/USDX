@@ -221,6 +221,27 @@ AC_CACHE_CHECK([whether FPC supports -k"--copy-dt-needed-entries"], ac_cv_prog_p
     AC_PROG_FPC_CHECK([ac_cv_prog_ppc_copy_dt_needed_entries], [-k"--copy-dt-needed-entries"], [$SIMPLE_PROGRAM])
 ])
 
+# The new i386 ELF ABI wants the first argument on the stack to be aligned to 16 bytes.
+# See https://www.uclibc.org/docs/psABI-i386.pdf section 2.2.2.
+if test "$FPC_TARGET" = i386-linux && test "$FPC_CPROCESSOR-$FPC_CPLATFORM" = "$FPC_TARGET" ; then
+    AC_CACHE_CHECK([for stack alignment of generated code], ac_cv_prog_ppc_stack_alignment,
+    [
+        AC_PROG_FPC_I386_STACK_ALIGNMENT(ac_cv_prog_ppc_stack_alignment, [])
+    ])
+    if test "$ac_cv_prog_ppc_stack_alignment" -lt 16 ; then
+        AC_CACHE_CHECK([for stack alignment with -OaLOCALMIN=16 (Free Pascal bug 15582)], ac_cv_prog_ppc_localmin_16_stack_alignment,
+        [
+            AC_PROG_FPC_I386_STACK_ALIGNMENT(ac_cv_prog_ppc_localmin_16_stack_alignment, [-OaLOCALMIN=16])
+        ])
+        if test $ac_cv_prog_ppc_localmin_16_stack_alignment -ge 16 ; then
+            PFLAGS_EXTRA="$PFLAGS_EXTRA -OaLOCALMIN=16"
+        else
+            AC_MSG_WARN([Can't raise stack alignment to 16 bytes.])
+            AC_MSG_WARN([Expect crashes in libraries using SSE.])
+        fi
+    fi
+fi
+
 # Finally substitute PFLAGS
 
 # set unset PFLAGS_XYZ vars to $(PFLAGS_XYZ_DEFAULT)
@@ -275,5 +296,97 @@ AC_DEFUN([AC_PROG_FPC_CHECK],
     fi
 
     # remove test file
+    rm -f conftest*
+])
+
+# SYNOPSIS
+#
+#   AC_PROG_FPC_I386_STACK_ALIGNMENT(RESULT, FPC_FLAGS)
+#
+# DESCRIPTION
+#
+#   Tries to determine the stack alignment for calling
+#   cdecl functions. Test works only on x86-32.
+#   The result is stored in [$RESULT]
+#
+#   Parameters:
+#     RESULT:    Name of result variable
+#     FPC_FLAGS: Flags passed to FPC
+
+AC_DEFUN([AC_PROG_FPC_I386_STACK_ALIGNMENT],
+[
+    rm -f conftest*
+    cat > conftest.pp <<EOF
+[program StackAlignment;
+
+function xn() : cardinal; cdecl; external name 'func';
+function xa(a : integer) : cardinal; cdecl; external name 'func';
+function xb(a : integer; b : integer) : cardinal; cdecl; external name 'func';
+function xc(a : integer; b : integer; c : integer) : cardinal; cdecl; external name 'func';
+
+var depth : integer;
+
+function func(a : integer) : cardinal; cdecl; assembler; [alias:'func'];
+asm
+  lea a, %eax
+end;
+
+function nx() : cardinal;
+var
+  v : cardinal;
+begin
+  v := xn() or xa(1) or xb(2, 2) or xc(3, 3, 3);
+  depth := depth + 1;
+  if depth < 4 then
+    v := v or nx();
+  depth := depth - 1;
+  nx := v
+end;
+
+function ax(a: integer) : cardinal;
+var
+  v : cardinal;
+begin
+  v := xn() or xa(a) or xb(a, 2) or xc(a, 3 ,3);
+  depth := depth + 1;
+  if depth < 4 then
+    v := v or ax(a + 1);
+  depth := depth - 1;
+  ax := v
+end;
+
+function bx(a : integer; b : integer) : cardinal;
+var
+  v : cardinal;
+begin
+  v := xn() or xa(a) or xb(a, b) or xc(a, b, 3);
+  depth := depth + 1;
+  if depth < 4 then
+    v := v or bx(a + 1, b + 2);
+  depth := depth - 1;
+  bx := v
+end;
+
+function cx(a : integer; b : integer; c : integer) : cardinal;
+var
+  v : cardinal;
+begin
+  v := xn() or xa(a) or xb(a, b) or xc(a, b, c);
+  depth := depth + 1;
+  if depth < 4 then
+    v := v or cx(a + 1, b + 2, c + 3);
+  depth := depth - 1;
+  cx := v
+end;
+
+var
+  v : cardinal;
+begin
+  v := nx() or ax(1) or bx(2, 2) or cx(3, 3, 3);
+  writeln(v - (v and (v - 1)))
+end.]
+EOF
+    ${PPC} [$2] conftest.pp >> config.log 2>&1
+    [$1]=`./conftest`
     rm -f conftest*
 ])
