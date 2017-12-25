@@ -644,12 +644,17 @@ begin
         end;
 
         sYear: begin
-          if CurSong.Year <> 0 then
-          begin
-            CurCategory := InttoStr(CurSong.Year);
+           if (CurSong.Year <> 0) then
+             tmpCategory := IntToStr(CurSong.Year)
+           else
+             tmpCategory := 'Unknown';
 
-            // add Category Button
-            AddCategoryButton(CurCategory);
+           if (tmpCategory <> CurCategory) then
+           begin
+             CurCategory := tmpCategory;
+
+             // add Category Button
+             AddCategoryButton(CurCategory);
            end;
          end;
 
