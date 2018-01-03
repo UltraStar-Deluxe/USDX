@@ -175,7 +175,7 @@ type
   end;
 
 const
-  ID='ID_063';   //for help system
+  ID='ID_061';   //for help system
 
 implementation
 
@@ -222,6 +222,7 @@ const
 function TScreenEditConvert.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 {$IFDEF UseMIDIPort}
 var
+  SDL_ModState: word;
   SResult: TSaveSongResult;
   MidiTrack: TMidiTrack;
   Song:  TSong;
@@ -412,11 +413,16 @@ begin
 
       SDLK_TAB:
         begin
-          if Length(Channels) > 0 then
-          begin
-            ShowChannels := not ShowChannels;
-            if ShowChannels then SelChannel := 0;
-          end;
+          if (SDL_ModState = KMOD_LCTRL) then // change visualization preset
+            begin
+              if Length(Channels) > 0 then
+              begin
+                ShowChannels := not ShowChannels;
+                if ShowChannels then SelChannel := 0;
+              end;
+            end
+          else // show help popup
+            ScreenPopupHelp.ShowPopup();
         end;
 
       // zooming controls
