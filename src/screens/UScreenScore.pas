@@ -415,11 +415,6 @@ begin
           end;
         end;
 
-      SDLK_SYSREQ:
-        begin
-          Display.SaveScreenShot;
-        end;
-
       // Up and Down could be done at the same time,
       // but I don't want to declare variables inside
       // functions like this one, called so many times

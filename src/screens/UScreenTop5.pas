@@ -138,10 +138,6 @@ begin
             DifficultyShow:=2;
           DrawScores(DifficultyShow);
         end;
-      SDLK_SYSREQ:
-        begin
-          Display.SaveScreenShot;
-        end;
     end;
   end;
 end;
