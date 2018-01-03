@@ -198,13 +198,6 @@ const
   DEFAULT_ENCODING = encCP1252;
 
 const
-  // TODO: Localize and use localization strings, instead of constants
-  BUTTON_TEXT_PLAY           = 'Play';
-  BUTTON_TEXT_PLAY_SELECTED  = 'Play selected';
-  BUTTON_TEXT_PAUSE          = 'Pause';
-  BUTTON_TEXT_STOP           = 'Stop';
-
-const
   MIDI_EVENTTYPE_NOTEOFF    = $8;
   MIDI_EVENTTYPE_NOTEON     = $9;
   MIDI_EVENTTYPE_META_SYSEX = $F;
@@ -273,15 +266,15 @@ begin
                 MidiOut.PutShort(MIDI_NOTEOFF or 1, 0, 127);
                 MidiFile.OnMidiEvent := nil;
                 MidiFile.StopPlaying;
-                Button[Interaction].Text[0].Text := BUTTON_TEXT_PLAY;
+                Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAY');
                 IsPlaying := false;
-                Button[2].Text[0].Text := BUTTON_TEXT_PLAY_SELECTED;
+                Button[2].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAYSELECTED');
               end else
               begin
                 MidiFile.OnMidiEvent := MidiFile1MidiEvent;
                 //MidiFile.GoToTime(MidiFile.GetTrackLength div 2);
                 MidiFile.ContinuePlaying;
-                Button[Interaction].Text[0].Text := BUTTON_TEXT_PAUSE;
+                Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PAUSE');
                 IsPlaying := true;
                 IsPlayingSelective := false;
               end;
@@ -299,7 +292,7 @@ begin
                 begin
                   MidiFile.OnMidiEvent := nil;
                   MidiFile.StopPlaying;
-                  Button[Interaction].Text[0].Text := BUTTON_TEXT_PLAY_SELECTED;
+                  Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAYSELECTED');
                   IsPlayingSelective := false;
                 end
                 else
@@ -317,8 +310,8 @@ begin
                   end;
 
                   MidiFile.ContinuePlaying;
-                  Button[Interaction].Text[0].Text := BUTTON_TEXT_PAUSE;
-                  Button[1].Text[0].Text := BUTTON_TEXT_PLAY;
+                  Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PAUSE');
+                  Button[1].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAY');
                   IsPlaying := false;
                   IsPlayingSelective := true;
                 end;
@@ -770,22 +763,13 @@ begin
   //Channels[6].Name := 'Oboe';
   //Channels[7].Name := 'Gramophone';
 
-  AddButton(40, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(15, 5, 0, 0, 0, 'Open');
-  //Button[High(Button)].Text[0].Size := 11;
+  LoadFromTheme(Theme.EditConvert);
 
-  AddButton(160, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(25, 5, 0, 0, 0, BUTTON_TEXT_PLAY);
-
-  AddButton(270, 20, 200, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(25, 5, 0, 0, 0, BUTTON_TEXT_PLAY_SELECTED);
-
-  AddButton(480, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(25, 5, 0, 0, 0, BUTTON_TEXT_STOP);
-
-
-  AddButton(620, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(20, 5, 0, 0, 0, 'Save');
+  AddButton(Theme.EditConvert.ButtonOpen);
+  AddButton(Theme.EditConvert.ButtonPlay);
+  AddButton(Theme.EditConvert.ButtonPlaySelected);
+  AddButton(Theme.EditConvert.ButtonStop);
+  AddButton(Theme.EditConvert.ButtonSave);
 
   fFileName := PATH_NONE;
 
@@ -986,6 +970,7 @@ var
   Padding:  real;
   Right:    real;
   Top:      real;
+  Footer:   real;
   FontSize: real;
   Y:        real;
   Height:   real;
@@ -1004,13 +989,14 @@ var
 begin
 
   // define
-  Top := 100;
+  Top := 200;
   XTrack := 60;
   Padding := 10;
   FontSize := 12;
+  Footer := 70;
 
   // calc
-  Height := RenderH - Padding - Top;
+  Height := RenderH - Padding - Top - Footer;
   Bottom := Top + Height;
   Right := InWidth - Padding;
   Y := Top;
@@ -1267,8 +1253,8 @@ begin
     MidiOut.Close;
     MidiOut.Open;
 
-    Button[1].Text[0].Text := BUTTON_TEXT_PLAY;
-    Button[2].Text[0].Text := BUTTON_TEXT_PLAY_SELECTED;
+    Button[1].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAY');
+    Button[2].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAYSELECTED');
     IsPlaying := false;
     IsPlayingSelective := false;
   end;
