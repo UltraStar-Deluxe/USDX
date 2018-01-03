@@ -114,8 +114,6 @@ var
   TMP_PlayersName: array of UTF8String;
   TMP2_PlayersName: array of UTF8String;
 begin
-
-
   SetLength(PlayersName, CountPlayer + 2);
   SetLength(TMP_PlayersName, CountPlayer + 2);
 

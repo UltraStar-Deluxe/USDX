@@ -449,7 +449,6 @@ begin
           for I := 0 to self.CountTeams+1 do
             for J := 0 to CountPlayer[I] do
             begin
-              //Writeln(Button[5*I+J+1].Text[0].Text);
               Button[5*I+J+1].Text[0].Text := randomNames[count];
               dec(count);
             end;

@@ -3929,7 +3929,7 @@ begin
             SelectNext;
 
             // choose song
-            // duets not playble
+            // duets not playable
             if (Mode = smPartyClassic) then
             begin
               repeat
@@ -3956,7 +3956,7 @@ begin
           // when tabs are deactivated use easy method
           else
           begin
-            // duets not playble
+            // duets not playable
             if (Mode = smPartyClassic) then
             begin
               repeat
@@ -3990,7 +3990,7 @@ begin
           SelectNext;
           FixSelected2;
 
-          // duets not playble
+          // duets not playable
           if (Mode = smPartyClassic) then
           begin
             repeat
@@ -4017,7 +4017,7 @@ begin
         begin
           PlaylistMan.SetPlayList(PlaylistMan.CurPlayList);
 
-          // duets not playble
+          // duets not playable
           if (Mode = smPartyClassic) then
           begin
             repeat
