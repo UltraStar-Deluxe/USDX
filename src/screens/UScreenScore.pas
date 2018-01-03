@@ -169,7 +169,7 @@ type
       TextGolden_ActualValue: array[1..UIni.IMaxPlayerCount] of integer;
 
       ButtonSend: array[1..UIni.IMaxPlayerCount] of integer;
-      ActualRound:          integer;
+      CurrentRound:          integer;
       StaticNavigate:       integer;
       TextNavigate:         integer;
 
@@ -424,12 +424,13 @@ begin
         begin
           if (ScreenSong.Mode = smMedley) then
           begin
-            if ActualRound<Length(PlaylistMedley.Stats)-1 then
-            begin
-              AudioPlayback.PlaySound(SoundLib.Change);
-              inc(ActualRound);
-              RefreshTexts;
-            end;
+            if (CurrentRound < Length(PlaylistMedley.Stats)-1) then
+              inc(CurrentRound)
+            else
+              CurrentRound := 0;
+
+            AudioPlayback.PlaySound(SoundLib.Change);
+            RefreshTexts;
 
             if not (Ini.SavePlayback=1) then
               StartPreview
@@ -449,12 +450,13 @@ begin
         begin
           if (ScreenSong.Mode = smMedley) then
           begin
-            if ActualRound>0 then
-            begin
-              AudioPlayback.PlaySound(SoundLib.Change);
-              dec(ActualRound);
-              RefreshTexts;
-            end;
+            if (CurrentRound > 0) then
+              dec(CurrentRound)
+            else
+              CurrentRound := Length(PlaylistMedley.Stats)-1;
+
+            AudioPlayback.PlaySound(SoundLib.Change);
+            RefreshTexts;
 
             if not (Ini.SavePlayback=1) then
               StartPreview
@@ -517,17 +519,17 @@ var
   P:    integer;
 
 begin
-  if (ActualRound < Length(PlaylistMedley.Stats)-1) then
+  if (CurrentRound < Length(PlaylistMedley.Stats)-1) then
   begin
-    Text[TextArtist].Text      := IntToStr(ActualRound+1) + '/' +
+    Text[TextArtist].Text      := IntToStr(CurrentRound+1) + '/' +
       IntToStr(Length(PlaylistMedley.Stats)-1) + ': ' +
-      PlaylistMedley.Stats[ActualRound].SongArtist;
-    Text[TextTitle].Text       := PlaylistMedley.Stats[ActualRound].SongTitle;
+      PlaylistMedley.Stats[CurrentRound].SongArtist;
+    Text[TextTitle].Text       := PlaylistMedley.Stats[CurrentRound].SongTitle;
     Text[TextTitle].Visible    := true;
-    Text[TextArtistTitle].Text := IntToStr(ActualRound+1) + '/' +
+    Text[TextArtistTitle].Text := IntToStr(CurrentRound+1) + '/' +
       IntToStr(Length(PlaylistMedley.Stats)-1) + ': ' +
-      PlaylistMedley.Stats[ActualRound].SongArtist +
-      ' - ' + PlaylistMedley.Stats[ActualRound].SongTitle;
+      PlaylistMedley.Stats[CurrentRound].SongArtist +
+      ' - ' + PlaylistMedley.Stats[CurrentRound].SongTitle;
   end else
   begin
     if (ScreenSong.Mode = smMedley) then
@@ -537,11 +539,11 @@ begin
       Text[TextArtistTitle].Text := Language.Translate('SING_TOTAL');
     end else
     begin
-      Text[TextArtist].Text      := PlaylistMedley.Stats[ActualRound].SongArtist;
-      Text[TextTitle].Text       := PlaylistMedley.Stats[ActualRound].SongTitle;
+      Text[TextArtist].Text      := PlaylistMedley.Stats[CurrentRound].SongArtist;
+      Text[TextTitle].Text       := PlaylistMedley.Stats[CurrentRound].SongTitle;
       Text[TextTitle].Visible    := true;
-      Text[TextArtistTitle].Text := PlaylistMedley.Stats[ActualRound].SongArtist + ' - ' +
-        PlaylistMedley.Stats[ActualRound].SongTitle;
+      Text[TextArtistTitle].Text := PlaylistMedley.Stats[CurrentRound].SongArtist + ' - ' +
+        PlaylistMedley.Stats[CurrentRound].SongTitle;
     end;
   end;
 
@@ -549,7 +551,7 @@ begin
   begin
 
     for P := 0 to PlayersPlay - 1 do
-      Player[P] := PlaylistMedley.Stats[ActualRound].Player[P];
+      Player[P] := PlaylistMedley.Stats[CurrentRound].Player[P];
   end;
 
   ResetScores;
@@ -1108,11 +1110,13 @@ begin
 
   inherited;
 
-  ActualRound := 0;
+  // intially show total score
+  CurrentRound := Length(PlaylistMedley.Stats)-1;
   if (ScreenSong.Mode = smMedley) then
   begin
+    StartPreview;
     for P := 0 to PlayersPlay - 1 do
-      Player[P] := PlaylistMedley.Stats[ActualRound].Player[P];
+      Player[P] := PlaylistMedley.Stats[CurrentRound].Player[P];
 
     Statics[StaticNavigate].Visible := true;
     Text[TextNavigate].Visible := true;
@@ -1794,18 +1798,24 @@ var
   select:   integer;
   changed:  boolean;
 begin
-  //When Music Preview is avtivated -> then Change Music
+  //When Music Preview is activated -> then change music
   if (Ini.PreviewVolume <> 0) then
   begin
     changed := false;
     if (ScreenSong.Mode = smMedley) then
     begin
-      if (ActualRound < Length(PlaylistMedley.Stats) - 1) and (ScreenSong.SongIndex <> PlaylistMedley.Song[ActualRound])  then
+      if (CurrentRound < Length(PlaylistMedley.Stats) - 1) and (ScreenSong.SongIndex <> PlaylistMedley.Song[CurrentRound])  then
       begin
-        select := PlaylistMedley.Song[ActualRound];
+        select := PlaylistMedley.Song[CurrentRound];
         changed := true;
         ScreenSong.SongIndex := select;
       end;
+      if (CurrentRound = Length(PlaylistMedley.Stats) - 1) then // Total Score --> play last song in medley
+      begin
+        select := PlaylistMedley.Song[CurrentRound-1];
+        changed := true;
+        ScreenSong.SongIndex := select;
+      end
     end else
     begin
       select := ScreenSong.Interaction;
@@ -1857,9 +1867,9 @@ begin
   {
   if (ScreenSong.Mode = smMedley) then
   begin
-    if (ActualRound<Length(PlaylistMedley.Stats)-1) and (Voice <> ActualRound)  then
+    if (CurrentRound<Length(PlaylistMedley.Stats)-1) and (Voice <> CurrentRound)  then
     begin
-      Voice := ActualRound;
+      Voice := CurrentRound;
       changed := true;
       SetLength(files, PlaylistMedley.NumPlayer);
       for I := 0 to Length(files) - 1 do

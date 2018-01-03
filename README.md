@@ -267,17 +267,24 @@ For linking and running the game, the following libraries are also required:
    * or start it directly  
      `./game/ultrastardx`
 
-#### Compiling on OS X
+#### Compiling on MacOS (High Sierra)
 - USDX is built using _Homebrew_ and official _FreePascal build_ (using its compiler _FPC_)
-- You can install Homebrew from [brew.sh](http://brew.sh)
-- You can get the FPC build from [freepascal.org](http://www.freepascal.org/down/i386/macosx.var)
-- Don't miss _XQuartz_ from [xquartz.org](http://www.xquartz.org)
-- Make sure the XCode command line tools are installed. `xcode-select --install`
-- Needed brew libraries can be installed using:
-  * `brew install sdl2 sdl2_image ffmpeg libav portaudio binutils sqlite freetype lua libtiff`
-  * `brew switch ffmpeg 2.8.6`
-- Pass argument `--enable-osx-fink` or `--enable-osx-brew` (default) according to the packaging you are using
-- `./configure`
-- `make macosx-standalone-app`
+- To install Homebrew, follow instructions from [brew.sh](http://brew.sh)
+- You can get the FPC build from [freepascal.org](http://www.freepascal.org/down/i386/macosx.var) or
+  * `brew install fpc`
+- Make sure the XCode command line tools are installed.
+  * `xcode-select --install`
+- Needed brew libraries can be installed using (ffmpeg up to 3.3 is supported):
+  * `brew install sdl2 sdl2_image automake portaudio binutils sqlite freetype lua libtiff pkg-config ffmpeg@2.8`
+- Clone repo
+  * `git clone https://github.com/UltraStar-Deluxe/USDX`
+- Generate `configure` file and more
+  * `./autogen.sh`
+- Make sure that you have your build setup right
+  * `./configure`
+- Now build the UltraStar application
+  * `make macosx-standalone-app`
+- Run by clicking UltraStarDeluxe in your build folder or
+  * `open UltraStarDeluxe.app`
 
 Feel free to fork this project, modify it to your hearts content and maybe also do pull requests to this repository for additional features, improvements or clean-ups.
