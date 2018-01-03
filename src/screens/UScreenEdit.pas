@@ -83,7 +83,7 @@ begin
     // check special keys
     case PressedKey of
       SDLK_ESCAPE,
-      SDLK_BACKSPACE :
+      SDLK_BACKSPACE:
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);

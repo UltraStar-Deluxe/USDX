@@ -200,7 +200,7 @@ begin
         end;
 
       SDLK_1:
-        begin // jocker
+        begin // joker
             // use joker
           case CurMenu of
             SM_Party_Main:
@@ -210,7 +210,7 @@ begin
           end;
         end;
       SDLK_2:
-        begin // jocker
+        begin // joker
             // use joker
           case CurMenu of
             SM_Party_Main:
@@ -220,7 +220,7 @@ begin
           end;
         end;
       SDLK_3:
-        begin // jocker
+        begin // joker
             // use joker
           case CurMenu of
             SM_Party_Main:

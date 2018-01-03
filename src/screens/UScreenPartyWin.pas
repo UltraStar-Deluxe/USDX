@@ -94,7 +94,7 @@ begin
     case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE,
-      SDLK_RETURN :
+      SDLK_RETURN:
         begin
           AudioPlayback.PlaySound(SoundLib.Start);
           FadeTo(@ScreenMain);

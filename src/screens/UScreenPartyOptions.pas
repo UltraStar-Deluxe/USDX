@@ -122,7 +122,7 @@ begin
           //if (ScreenSong.Mode = smPartyTournament) then
           //  ScreenSong.CurrentPartyTime := 0;
 
-          //Don'T start when Playlist is Selected and there are no Playlists
+          //Don't start when Playlist is Selected and there are no Playlists
           if (Playlist = 3) and (Length(PlaylistMan.Playlists) = 0) then
             Exit;
 

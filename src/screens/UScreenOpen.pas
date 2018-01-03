@@ -180,20 +180,4 @@ begin
   Button[FileNameID].Text[0].Text := fFilename.ToUTF8();
 end;
 
-(*
-function TScreenEditSub.Draw: boolean;
-var
-  Min:     integer;
-  Sec:     integer;
-  AktBeat: integer;
-begin
-
-end;
-
-procedure TScreenEditSub.Finish;
-begin
-//
-end;
-*)
-
 end.

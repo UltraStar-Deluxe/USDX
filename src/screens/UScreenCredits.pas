@@ -277,7 +277,7 @@ begin
 
       SDLK_ESCAPE,
       SDLK_BACKSPACE,
-      SDLK_RETURN :
+      SDLK_RETURN:
         begin
           FadeTo(@ScreenMain);
           AudioPlayback.PlaySound(SoundLib.Back);

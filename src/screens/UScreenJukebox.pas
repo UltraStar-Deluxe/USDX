@@ -2042,7 +2042,6 @@ procedure TScreenJukebox.OnShow;
 begin
   inherited;
 
-  Log.LogStatus('Begin', 'OnShow');
 
   // songmenu
   if (Ini.JukeboxSongMenu = 1) then

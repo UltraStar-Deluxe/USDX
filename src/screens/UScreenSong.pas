@@ -680,7 +680,7 @@ begin
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
-    //Jump to Artist/Titel
+    //Jump to Artist/Title
     if ((SDL_ModState and KMOD_LALT <> 0) and (FreeListMode)) then
     begin
       if(PressedKey > 1114111) then
@@ -693,7 +693,7 @@ begin
       begin
         I2 := Length(CatSongs.Song);
 
-        //Jump To Titel
+        //Jump To Title
         if (SDL_ModState = (KMOD_LALT or KMOD_LSHIFT)) then
         begin
           for I := 1 to High(CatSongs.Song) do
@@ -3895,7 +3895,7 @@ begin
             SelectNext;
 
             // choose song
-            // duets not playble
+            // duets not playable
             if (Mode = smPartyClassic) then
             begin
               repeat
@@ -3922,7 +3922,7 @@ begin
           // when tabs are deactivated use easy method
           else
           begin
-            // duets not playble
+            // duets not playable
             if (Mode = smPartyClassic) then
             begin
               repeat
@@ -3956,7 +3956,7 @@ begin
           SelectNext;
           FixSelected2;
 
-          // duets not playble
+          // duets not playable
           if (Mode = smPartyClassic) then
           begin
             repeat
@@ -3983,7 +3983,7 @@ begin
         begin
           PlaylistMan.SetPlayList(PlaylistMan.CurPlayList);
 
-          // duets not playble
+          // duets not playable
           if (Mode = smPartyClassic) then
           begin
             repeat
