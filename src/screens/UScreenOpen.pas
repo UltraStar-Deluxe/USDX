@@ -54,7 +54,7 @@ type
   TScreenOpen = class(TMenu)
     private
       //fTextF:      array[0..1] of integer;
-      fTextN:      integer; // text-box ID of filename
+      FileNameID:  integer; // button ID of filename
       fFilename:   IPath;
       fBackScreen: PMenu;
 
@@ -100,7 +100,7 @@ begin
     begin
       if (Interaction = 0) then
       begin
-        Text[fTextN].Text := Text[fTextN].Text + UCS4ToUTF8String(CharCode);
+        Button[FileNameID].Text[0].Text := Button[FileNameID].Text[0].Text + UCS4ToUTF8String(CharCode);
         Exit;
       end;
     end;
@@ -111,7 +111,7 @@ begin
         begin
           if Interaction = 0 then
           begin
-            Text[fTextN].DeleteLastLetter;
+            Button[FileNameID].Text[0].DeleteLastLetter;
           end;
         end;
 
@@ -120,24 +120,31 @@ begin
           //Empty Filename and go to last Screen
           fFileName := PATH_NONE;
           AudioPlayback.PlaySound(SoundLib.Back);
-          FadeTo(fBackScreen);
+          //FadeTo(fBackScreen);
+          FadeTo(@ScreenEditConvert);
         end;
 
       SDLK_RETURN:
         begin
-          if (Interaction = 2) then
+          if (Interaction = 0) then
           begin
-            //Update Filename and go to last Screen
-            fFileName := Path(Text[fTextN].Text);
-            AudioPlayback.PlaySound(SoundLib.Back);
-            FadeTo(fBackScreen);
+            InteractNext;
           end
           else if (Interaction = 1) then
+          begin
+            //Update Filename and go to last Screen
+            fFileName := Path(Button[0].Text[0].Text);
+            AudioPlayback.PlaySound(SoundLib.Back);
+            //FadeTo(fBackScreen);
+            FadeTo(@ScreenEditConvert);
+          end
+          else if (Interaction = 2) then
           begin
             //Empty Filename and go to last Screen
             fFileName := PATH_NONE;
             AudioPlayback.PlaySound(SoundLib.Back);
-            FadeTo(fBackScreen);
+            //FadeTo(fBackScreen);
+            FadeTo(@ScreenEditConvert);
           end;
         end;
 
@@ -146,22 +153,16 @@ begin
           ScreenPopupHelp.ShowPopup();
         end;
 
-      SDLK_LEFT:
+      SDLK_LEFT,
+      SDLK_UP:
         begin
           InteractPrev;
         end;
 
-      SDLK_RIGHT:
-        begin
-          InteractNext;
-        end;
-
+      SDLK_RIGHT,
       SDLK_DOWN:
         begin
-        end;
-
-      SDLK_UP:
-        begin
+          InteractNext;
         end;
     end;
   end;
@@ -179,6 +180,8 @@ begin
 
   fFilename := PATH_NONE;
 
+  LoadFromTheme(Theme.EditOpen);
+
   // line
   {
   AddStatic(20, 10, 80, 30, 0, 0, 0, 'MainBar', 'JPG', TEXTURE_TYPE_COLORIZED);
@@ -193,23 +196,18 @@ begin
   //TextF[1] :=  AddText(430, 180,  0, 24, 0, 0, 0, 'a');
 
   // file name
-  AddBox(20, 540, 500, 40);
-  fTextN := AddText(50, 548, 0, 24, 0, 0, 0, fFileName.ToUTF8);
+  {
+  AddBox(200, 200, 400, 40);
+  fTextN := AddText(210, 208, 0, 24, 0, 0, 0, fFileName.ToUTF8);
   AddInteraction(iText, fTextN);
+  }
+
+  FileNameID := AddButton(Theme.EditOpen.ButtonFileName);
+  Button[FileNameID].Text[0].Writable := true;
 
   // buttons
-  {AddButton(540, 540, 100, 40, Skin.SkinPath + Skin.ButtonF);
-  AddButtonText(10, 5, 0, 0, 0, 'Cancel');
-
-  AddButton(670, 540, 100, 40, Skin.SkinPath + Skin.ButtonF);
-  AddButtonText(30, 5, 0, 0, 0, 'OK');}
-  // buttons
-  AddButton(540, 540, 100, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(10, 5, 0, 0, 0, 'Cancel');
-
-  AddButton(670, 540, 100, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(30, 5, 0, 0, 0, 'OK');
-
+  AddButton(Theme.EditOpen.ButtonLoad);
+  AddButton(Theme.EditOpen.ButtonBack);
 end;
 
 procedure TScreenOpen.OnShow;
@@ -220,23 +218,7 @@ begin
     Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOpen)');
 
   Interaction := 0;
-  Text[fTextN].Text := fFilename.ToUTF8();
+  Button[FileNameID].Text[0].Text := fFilename.ToUTF8();
 end;
-
-(*
-function TScreenEditSub.Draw: boolean;
-var
-  Min:     integer;
-  Sec:     integer;
-  AktBeat: integer;
-begin
-
-end;
-
-procedure TScreenEditSub.Finish;
-begin
-//
-end;
-*)
 
 end.
