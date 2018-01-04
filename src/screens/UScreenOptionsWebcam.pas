@@ -298,7 +298,7 @@ begin
   else
     DrawBG;
 
-  DrawFG;
+  Result := DrawFG;
 end;
 
 procedure TScreenOptionsWebcam.ChangeElementAlpha;

@@ -1648,7 +1648,7 @@ begin
           if (SongListVisible) then
             SongListVisible := false
           else
-            ScreenPopupCheck.ShowPopup('MSG_END_JUKEBOX', OnEscapeJukebox, 0, false)
+            ScreenPopupCheck.ShowPopup('MSG_END_JUKEBOX', OnEscapeJukebox, nil, false)
         end;
 
         SDLK_BACKSPACE:
@@ -1744,7 +1744,7 @@ begin
         begin
           if (SongListVisible) then
           begin
-            ScreenPopupCheck.ShowPopup('JUKEBOX_DELETE_SONG', OnDeleteSong, 0, false)
+            ScreenPopupCheck.ShowPopup('JUKEBOX_DELETE_SONG', OnDeleteSong, nil, false)
           end;
         end;
 

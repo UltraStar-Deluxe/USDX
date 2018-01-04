@@ -391,10 +391,10 @@ begin
     cvCvtColor(Frame, TmpFrame, CV_BGR2RGB );
 
     // Split hue, saturation and value of hsv on them
-    cvSplit(TmpFrame, HueFrame, SaturationFrame, ValueFrame, 0);
+    cvSplit(TmpFrame, HueFrame, SaturationFrame, ValueFrame, nil);
     //cvCvtColor(ImageFrame, Frame, CV_GRAY2RGB);
 
-    cvMerge(SaturationFrame, HueFrame, ValueFrame, 0, Frame);
+    cvMerge(SaturationFrame, HueFrame, ValueFrame, nil, Frame);
 
     // convert back for displaying
     //cvCvtColor(TmpFrame, Frame, CV_BGR2RGB);

@@ -954,7 +954,7 @@ begin
 //      SDLK_BACKSPACE : // disable to leave editor by backspace key
         begin
           if length(UndoLines) > 0 then
-            ScreenPopupcheck.ShowPopup(Language.Translate('INFO_EXIT'), OnExit, 0, false)
+            ScreenPopupcheck.ShowPopup(Language.Translate('INFO_EXIT'), OnExit, nil, false)
           else
           begin
             FadeTo(@ScreenSong);
@@ -2011,7 +2011,7 @@ begin
   begin
     if length(UndoLines) > 0 then
     begin
-      ScreenPopupcheck.ShowPopup(Language.Translate('INFO_EXIT'), OnExit, 0, false);
+      ScreenPopupcheck.ShowPopup(Language.Translate('INFO_EXIT'), OnExit, nil, false);
     end
     else
     begin
@@ -3337,7 +3337,7 @@ var
         end;
 
         diff := abs(Lines[0].Line[line].Note[note].Start - beat);
-        if diff < mindiff then
+        if diff < mindiff then // Warning: Local variable "mindiff" does not seem to be initialized
         begin
           mindiff := diff;
           Result.line := line;
