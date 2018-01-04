@@ -4212,14 +4212,11 @@ begin
   end;
 end;
 
-//Detailled Cover Loading. Loads the Detailled, uncached Cover of the Song Button
+//Detailled Cover Loading. Loads the Detailed, uncached Cover of the Song Button
 procedure TScreenSong.LoadCover(NumberOfButtonInArray: integer);
-var
-  deb1: string;
 begin
   If (Button[NumberOfButtonInArray].Texture.TexNum = 0) and Assigned(Button[NumberOfButtonInArray].Texture.Name) then
   begin
-    deb1:=Button[NumberOfButtonInArray].Texture.Name.ToWide();
     Button[NumberOfButtonInArray].Texture := Covers.FindCover(Button[NumberOfButtonInArray].Texture.Name).GetTexture();
   end;
 end;
