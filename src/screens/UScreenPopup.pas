@@ -147,12 +147,12 @@ type
 
   TScreenPopupError = class(TScreenPopup)
     public
-      constructor Create;
+      constructor Create; override;
   end;
 
   TScreenPopupInfo = class(TScreenPopup)
     public
-      constructor Create;
+      constructor Create; override;
   end;
 
 type
