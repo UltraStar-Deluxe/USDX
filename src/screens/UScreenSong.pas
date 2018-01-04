@@ -2118,7 +2118,7 @@ end;
 
 procedure TScreenSong.SetScroll;
 var
-  VS, B: integer;
+  VS, B, SongsInCat: integer;
 begin
   VS := CatSongs.VisibleSongs;
   if VS > 0 then
@@ -2291,7 +2291,11 @@ begin
     if (Ini.TabsAtStartup = 1) and (CatSongs.CatNumShow = -1) then
     begin
       Text[TextNumber].Text := IntToStr(CatSongs.Song[Interaction].OrderNum) + '/' + IntToStr(CatSongs.CatCount);
-      Text[TextTitle].Text  := '(' + IntToStr(CatSongs.Song[Interaction].CatNumber) + ' ' + Language.Translate('SING_SONGS_IN_CAT') + ')';
+      SongsInCat := CatSongs.Song[Interaction].CatNumber;
+      if (SongsInCat = 1) then
+        Text[TextTitle].Text  := '(' + IntToStr(CatSongs.Song[Interaction].CatNumber) + ' ' + Language.Translate('SING_SONG_IN_CAT') + ')'
+      else
+        Text[TextTitle].Text  := '(' + IntToStr(CatSongs.Song[Interaction].CatNumber) + ' ' + Language.Translate('SING_SONGS_IN_CAT') + ')';
     end
     else if (CatSongs.CatNumShow = -2) then
       Text[TextNumber].Text := IntToStr(CatSongs.VisibleIndex(Interaction)+1) + '/' + IntToStr(VS)
