@@ -56,9 +56,7 @@ type
       //fTextF:      array[0..1] of integer;
       FileNameID:  integer; // button ID of filename
       fFilename:   IPath;
-      fBackScreen: PMenu;
 
-      procedure AddBox(X, Y, W, H: real);
     public
       constructor Create; override;
       procedure OnShow; override;
@@ -71,8 +69,6 @@ type
        * TODO: maybe pass this value with a callback OnValueChanged()
        *}
       property Filename: IPath READ fFilename WRITE fFilename;
-      {** The screen that is shown after this screen is closed (set by the caller) *}
-      property BackScreen: PMenu READ fBackScreen WRITE fBackScreen;
   end;
 
 const
@@ -120,7 +116,6 @@ begin
           //Empty Filename and go to last Screen
           fFileName := PATH_NONE;
           AudioPlayback.PlaySound(SoundLib.Back);
-          //FadeTo(fBackScreen);
           FadeTo(@ScreenEditConvert);
         end;
 
@@ -135,7 +130,6 @@ begin
             //Update Filename and go to last Screen
             fFileName := Path(Button[0].Text[0].Text);
             AudioPlayback.PlaySound(SoundLib.Back);
-            //FadeTo(fBackScreen);
             FadeTo(@ScreenEditConvert);
           end
           else if (Interaction = 2) then
@@ -143,7 +137,6 @@ begin
             //Empty Filename and go to last Screen
             fFileName := PATH_NONE;
             AudioPlayback.PlaySound(SoundLib.Back);
-            //FadeTo(fBackScreen);
             FadeTo(@ScreenEditConvert);
           end;
         end;
@@ -168,12 +161,6 @@ begin
   end;
 end;
 
-procedure TScreenOpen.AddBox(X, Y, W, H: real);
-begin
-  AddStatic(X,   Y,   W,   H,   0, 0, 0, Skin.GetTextureFileName('MainBar'), TEXTURE_TYPE_COLORIZED);
-  AddStatic(X+2, Y+2, W-4, H-4, 1, 1, 1, Skin.GetTextureFileName('MainBar'), TEXTURE_TYPE_COLORIZED);
-end;
-
 constructor TScreenOpen.Create;
 begin
   inherited Create;
@@ -182,26 +169,7 @@ begin
 
   LoadFromTheme(Theme.EditOpen);
 
-  // line
-  {
-  AddStatic(20, 10, 80, 30, 0, 0, 0, 'MainBar', 'JPG', TEXTURE_TYPE_COLORIZED);
-  AddText(35, 17, 1, 18, 1, 1, 1, 'line');
-  TextSentence := AddText(120, 14, 1, 24, 0, 0, 0, '0 / 0');
-  }
-
-  // file list
-  //AddBox(400, 100, 350, 450);
-
-  //TextF[0] :=  AddText(430, 155,  0, 24, 0, 0, 0, 'a');
-  //TextF[1] :=  AddText(430, 180,  0, 24, 0, 0, 0, 'a');
-
-  // file name
-  {
-  AddBox(200, 200, 400, 40);
-  fTextN := AddText(210, 208, 0, 24, 0, 0, 0, fFileName.ToUTF8);
-  AddInteraction(iText, fTextN);
-  }
-
+  // button with editable text for filename
   FileNameID := AddButton(Theme.EditOpen.ButtonFileName);
   Button[FileNameID].Text[0].Writable := true;
 
