@@ -950,7 +950,7 @@ begin
 //      SDLK_BACKSPACE : // disable to leave editor by backspace key
         begin
           if length(UndoLines) > 0 then
-            ScreenPopupcheck.ShowPopup(Language.Translate('INFO_EXIT'), OnExit, 0, false)
+            ScreenPopupcheck.ShowPopup(Language.Translate('INFO_EXIT'), OnExit, nil, false)
           else
           begin
             FadeTo(@ScreenSong);
@@ -2002,7 +2002,7 @@ begin
   begin
     if length(UndoLines) > 0 then
     begin
-      ScreenPopupcheck.ShowPopup(Language.Translate('INFO_EXIT'), OnExit, 0, false);
+      ScreenPopupcheck.ShowPopup(Language.Translate('INFO_EXIT'), OnExit, nil, false);
     end
     else
     begin
