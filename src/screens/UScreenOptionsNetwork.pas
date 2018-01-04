@@ -96,7 +96,7 @@ var I:LongInt;
 begin
   Result:= ( ItemSize * ItemCount );
   for I:=0 to Result-1 do
-    Receive_String := Receive_String + IncomingData[I];
+    Receive_String := Receive_String + widechar(IncomingData[I]);
 end;
 
 procedure OnDeleteUser(Value: boolean; Data: Pointer);
