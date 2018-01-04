@@ -34,18 +34,18 @@ interface
 {$I switches.inc}
 
 uses
-  SysUtils,
+  UDisplay,
+  UFiles,
+  UGraphicClasses,
+  UMenu,
+  UMusic,
+  UPath,
+  UTexture,
+  UThemes,
+  dglOpenGL,
   SDL2,
   SDL2_image,
-  dglOpenGL,
-  UMenu,
-  UDisplay,
-  UTexture,
-  UMusic,
-  UFiles,
-  UThemes,
-  UPath,
-  UGraphicClasses;
+  SysUtils;
 
 { beat detection constants and types }
 const
@@ -243,34 +243,54 @@ const
   NameW = 326;
   NameH = 258;
 
+const
+  ID='ID_003';   //for help system
+
 implementation
 
 uses
-  Math,
-  ULog,
-  UGraphic,
-  UMain,
-  UIni,
-  USongs,
-  Textgl,
-  ULanguage,
   UCommon,
-  UPathUtils;
+  UGraphic,
+  UHelp,
+  UIni,
+  ULanguage,
+  ULog,
+  UMain,
+  UPathUtils,
+  USongs,
+  UUnicodeUtils,
+  Math,
+  Textgl;
 
 function TScreenCredits.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
   if (PressedDown) then
   begin // Key Down
+    // check normal keys
+    case UCS4UpperCase(CharCode) of
+      Ord('Q'):
+        begin
+          Result := false;
+          Exit;
+        end;
+    end;
+
+    // check special keys
     case PressedKey of
 
       SDLK_ESCAPE,
       SDLK_BACKSPACE,
-      SDLK_RETURN :
+      SDLK_RETURN:
         begin
           FadeTo(@ScreenMain);
           AudioPlayback.PlaySound(SoundLib.Back);
         end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
+        end;
+
 {
       SDLK_SPACE:
          begin
@@ -336,6 +356,9 @@ end;
 procedure TScreenCredits.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenCredits)');
 
  { pause background music }
   SoundLib.PauseBgMusic;

@@ -34,13 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  SysUtils,
-  UMenu,
   UDisplay,
   UIni,
+  UMenu,
   UMusic,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyScore = class(TMenu)
@@ -75,16 +75,21 @@ type
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
+const
+  ID='ID_034';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
+  ULanguage,
+  ULog,
   UMain,
   UParty,
-  ULanguage,
-  UTexture,
   USkins,
   USong,
+  UTexture,
   UUnicodeUtils;
 
 function TScreenPartyScore.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -105,7 +110,7 @@ begin
     case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE,
-      SDLK_RETURN :
+      SDLK_RETURN:
         begin
           AudioPlayback.PlaySound(SoundLib.Start);
 
@@ -119,6 +124,10 @@ begin
           begin
             FadeTo(@ScreenPartyWin);
           end;
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
     end;
   end;
@@ -202,6 +211,9 @@ var
   Ranking: AParty_TeamRanking;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyScore)');
 
   // restart time
   //if (ScreenSong.Mode = smPartyTournament) then

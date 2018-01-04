@@ -33,20 +33,20 @@ interface
 
 uses
   UCommon,
-  UMenu,
-  sdl2,
-  SysUtils,
   UDataBase,
   UDisplay,
+  UDLLManager,
+  UIni,
+  UMenu,
   UMusic,
   USongs,
+  UTexture,
   UThemes,
+  UWebSDK,
   dglOpenGL,
   math,
-  UTexture,
-  UIni,
-  UDLLManager,
-  UWebSDK;
+  sdl2,
+  SysUtils;
 
 const
   ZBars:            real = 0.8;   // Z value for the bars
@@ -214,22 +214,26 @@ type
       function Draw: boolean; override;
   end;
 
+const
+  ID='ID_023';   //for help system
+
 implementation
 
 uses
   UAvatars,
   UGraphic,
-  UScreenSong,
-  UMenuStatic,
-  UTime,
-  USkins,
-  ULog,
+  UHelp,
   ULanguage,
+  ULog,
+  UMenuStatic,
   UNote,
-  USong,
   UPathUtils,
-  UUnicodeUtils,
-  UScreenPopup;
+  UScreenPopup,
+  UScreenSong,
+  USkins,
+  USong,
+  UTime,
+  UUnicodeUtils;
 
 {
  *****************************
@@ -385,6 +389,11 @@ begin
             BarTime := 0;
         end;
 
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
+        end;
+
       SDLK_RETURN:
         begin
          if (Interaction <> -1) then
@@ -404,11 +413,6 @@ begin
            else
              BarTime := 0;
           end;
-        end;
-
-      SDLK_SYSREQ:
-        begin
-          Display.SaveScreenShot;
         end;
 
       // Up and Down could be done at the same time,
@@ -1094,6 +1098,8 @@ var
   V: array[1..UIni.IMaxPlayerCount] of boolean; // visibility array
   ArrayStartModifier: integer;
 begin
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenScore)');
 
   FinishScreenDraw := false;
 

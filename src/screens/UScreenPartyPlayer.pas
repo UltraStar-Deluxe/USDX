@@ -35,19 +35,18 @@ interface
 
 uses
   UCommon,
-  UMenu,
-  ULog,
-  sdl2,
   UDisplay,
+  UFiles,
+  UMenu,
   UMusic,
   UNote,
-  UFiles,
-  SysUtils,
   UScreenSingController,
   UScreenPartyNewRound,
-  UScreenPartyWin,
   UScreenPartyScore,
-  UThemes;
+  UScreenPartyWin,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyPlayer = class(TMenu)
@@ -94,18 +93,23 @@ const
   ITeams:   array[0..1] of UTF8String = ('2', '3');
   IPlayers: array[0..3] of UTF8String = ('1', '2', '3', '4');
 
+const
+  ID='ID_031';   //for help system
+
 implementation
 
 uses
   UAvatars,
   UGraphic,
-  UMain,
+  UHelp,
   UIni,
-  UTexture,
+  ULanguage,
+  ULog,
+  UMain,
   UParty,
-  UUnicodeUtils,
   UScreenPartyOptions,
-  ULanguage;
+  UTexture,
+  UUnicodeUtils;
 
 var
   Num: array[0..2] of integer;
@@ -329,6 +333,11 @@ begin
         FadeTo(@ScreenPartyOptions);
       end;
 
+    SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
+      end;
+
     SDLK_RETURN: UpdateParty;
 
     // Up and Down could be done at the same time,
@@ -440,7 +449,6 @@ begin
           for I := 0 to self.CountTeams+1 do
             for J := 0 to CountPlayer[I] do
             begin
-              //Writeln(Button[5*I+J+1].Text[0].Text);
               Button[5*I+J+1].Text[0].Text := randomNames[count];
               dec(count);
             end;
@@ -534,6 +542,9 @@ var
   I:    integer;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyPlayer)');
 
   for I := 0 to 2 do
     Num[I] := NoRepeatColors(Ini.TeamColor[I], I, 1);

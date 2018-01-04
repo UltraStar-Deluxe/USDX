@@ -34,15 +34,15 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  SysUtils,
-  UMenu,
   UDisplay,
-  UMusic,
   UFiles,
-  USongs,
   UIni,
-  UThemes;
+  UMenu,
+  UMusic,
+  USongs,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenOptions = class(TMenu)
@@ -73,12 +73,17 @@ type
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
+const
+  ID='ID_070';   //for help system
+
 implementation
 
 uses
-  UGraphic,
   UDatabase,
+  UGraphic,
+  UHelp,
   ULanguage,
+  ULog,
   UWebcam,
   UUnicodeUtils;
 
@@ -89,6 +94,78 @@ begin
   begin // Key Down
     // check normal keys
     case UCS4UpperCase(CharCode) of
+      Ord('G'):
+        begin
+          FadeTo(@ScreenOptionsGame, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('H'):
+        begin
+          FadeTo(@ScreenOptionsGraphics, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('S'):
+        begin
+          FadeTo(@ScreenOptionsSound, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('I'):
+        begin
+          FadeTo(@ScreenOptionsInput, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('L'):
+        begin
+          FadeTo(@ScreenOptionsLyrics, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('T'):
+        begin
+          FadeTo(@ScreenOptionsThemes, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('R'):
+        begin
+          FadeTo(@ScreenOptionsRecord, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('A'):
+        begin
+          FadeTo(@ScreenOptionsAdvanced, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('N'):
+        begin
+          if (High(DataBase.NetworkUser) = -1) then
+            ScreenPopupError.ShowPopup(Language.Translate('SING_OPTIONS_NETWORK_NO_DLL'))
+          else
+          begin
+            AudioPlayback.PlaySound(SoundLib.Back);
+            FadeTo(@ScreenOptionsNetwork);
+          end;
+          Exit;
+        end;
+
+      Ord('W'):
+        begin
+          FadeTo(@ScreenOptionsWebcam, SoundLib.Start);
+          Exit;
+        end;
+
+      Ord('J'):
+        begin
+          FadeTo(@ScreenOptionsJukebox, SoundLib.Start);
+          Exit;
+        end;
+
       Ord('Q'):
         begin
           Result := false;
@@ -105,6 +182,12 @@ begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
         end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
+        end;
+
       SDLK_RETURN:
         begin
           if Interaction = ButtonGameIID then
@@ -249,6 +332,10 @@ end;
 procedure TScreenOptions.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptions)');
+
   // continue possibly stopped bg-music (stopped in record options)
   SoundLib.StartBgMusic;
 end;

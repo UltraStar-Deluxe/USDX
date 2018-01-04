@@ -34,14 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  SysUtils,
-  sdl2,
   UDisplay,
   UMenu,
   UMusic,
   USongs,
-  ULog,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenTop5 = class(TMenu)
@@ -66,11 +65,16 @@ type
       function Draw: boolean; override;
   end;
 
+const
+  ID='ID_024';   //for help system
+
 implementation
 
 uses
   UDataBase,
   UGraphic,
+  UHelp,
+  ULog,
   UMain,
   UIni,
   UNote,
@@ -102,6 +106,10 @@ begin
             Fadeout := true;
           end;
         end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
+        end;
       SDLK_RIGHT:
         begin
           inc(DifficultyShow);
@@ -129,10 +137,6 @@ begin
           if (DifficultyShow<0) then
             DifficultyShow:=2;
           DrawScores(DifficultyShow);
-        end;
-      SDLK_SYSREQ:
-        begin
-          Display.SaveScreenShot;
         end;
     end;
   end;
@@ -178,6 +182,9 @@ var
   Report: string;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenTop5)');
 
   sung := false;
   Fadeout := false;

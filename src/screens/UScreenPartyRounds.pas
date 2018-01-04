@@ -34,15 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UCommon,
   UDisplay,
-  UMusic,
   UFiles,
-  SysUtils,
-  ULog,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyRounds = class(TMenu)
@@ -70,19 +69,25 @@ type
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
+const
+  ID='ID_032';   //for help system
+
 implementation
 
 uses
   UGraphic,
-  UMain,
+  UHelp,
   UIni,
-  UTexture,
   ULanguage,
+  ULog,
+  UMain,
+  UMenuSelectSlide,
   UParty,
-  USong,
   UPlaylist,
+  USong,
   USongs,
-  UUnicodeUtils, UMenuSelectSlide;
+  UTexture,
+  UUnicodeUtils;
 
 procedure TScreenPartyRounds.InteractNext;
 var
@@ -178,11 +183,16 @@ begin
     // check special keys
     case PressedKey of
       SDLK_ESCAPE,
-      SDLK_BACKSPACE :
+      SDLK_BACKSPACE:
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenPartyPlayer);
         end;
+
+      SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
+      end;
 
       SDLK_RETURN: StartParty;
 
@@ -257,6 +267,9 @@ procedure TScreenPartyRounds.OnShow;
     I, J: integer;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyRounds)');
 
   // check if there are loaded modes
   if Party.ModesAvailable then

@@ -34,13 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  UMenu,
   UDisplay,
-  UMusic,
   UFiles,
   UIni,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2;
 
 type
   TScreenOptionsSound = class(TMenu)
@@ -51,10 +51,15 @@ type
     procedure OnShow; override;
   end;
 
+const
+  ID='ID_073';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
+  ULog,
   UUnicodeUtils,
   SysUtils;
 
@@ -81,6 +86,10 @@ begin
         Ini.Save;
         AudioPlayback.PlaySound(SoundLib.Back);
         FadeTo(@ScreenOptions);
+      end;
+      SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
       end;
       SDLK_RETURN:
       begin
@@ -176,6 +185,9 @@ procedure TScreenOptionsSound.OnShow;
 begin
   inherited;
   Interaction := 0;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsSound)');
 end;
 
 end.

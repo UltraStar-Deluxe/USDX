@@ -34,14 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  SysUtils,
-  UMenu,
   UDisplay,
-  UMusic,
   UFiles,
+  UMenu,
+  UMusic,
   USongs,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenSongJumpto = class(TMenu)
@@ -67,17 +67,21 @@ type
       property Visible: boolean read fVisible write SetVisible;
   end;
 
+const
+  ID='ID_016';   //for help system
+
 implementation
 
 uses
   UGraphic,
-  UMain,
+  UHelp,
   UIni,
-  UTexture,
   ULanguage,
+  ULog,
+  UMain,
   UParty,
   UScreenSong,
-  ULog,
+  UTexture,
   UUnicodeUtils;
 
 function TScreenSongJumpto.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -109,6 +113,11 @@ begin
             Button[0].Text[0].DeleteLastLetter();
             SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, fSelectType));
           end;
+        end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_RETURN,
@@ -193,6 +202,9 @@ end;
 procedure TScreenSongJumpto.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSongJumpTo)');
 
   //Reset Screen if no Old Search is Displayed
   if (CatSongs.CatNumShow <> -2) then

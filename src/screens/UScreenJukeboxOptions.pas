@@ -34,17 +34,17 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  SysUtils,
   UCommon,
-  UMenu,
   UDataBase,
   UDisplay,
-  UMusic,
   UFiles,
+  UMenu,
+  UMusic,
   USong,
   USongs,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenJukeboxOptions = class(TMenu)
@@ -167,17 +167,21 @@ type
       property Visible: boolean read fVisible write SetVisible;
   end;
 
+const
+  ID='ID_042';   //for help system
+
 implementation
 
 uses
   UGraphic,
-  UMain,
+  UHelp,
   UIni,
-  UTexture,
   ULanguage,
+  ULog,
+  UMain,
   UParty,
   UScreenJukebox,
-  ULog,
+  UTexture,
   UUnicodeUtils;
 
 function TScreenJukeboxOptions.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
@@ -238,6 +242,11 @@ begin
           Visible := false;
           Exit;
         end;
+
+      SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
+      end;
 
       SDLK_SPACE:
         begin
@@ -607,6 +616,9 @@ end;
 procedure TScreenJukeboxOptions.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenJukeboxOptions)');
 
   // saved info
   Text[TextSaved].Visible := false;

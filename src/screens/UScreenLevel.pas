@@ -34,13 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UDisplay,
-  UMusic,
   UFiles,
-  SysUtils,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenLevel = class(TMenu)
@@ -51,12 +51,17 @@ type
       procedure SetAnimationProgress(Progress: real); override;
   end;
 
+const
+  ID='ID_011';   //for help system
+
 implementation
 
 uses
   UGraphic,
-  UMain,
+  UHelp,
   UIni,
+  ULog,
+  UMain,
   USong,
   UTexture,
   UUnicodeUtils;
@@ -127,6 +132,8 @@ begin
   inherited;
 
   Interaction := Ini.Difficulty;
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenLevel)');
 end;
 
 procedure TScreenLevel.SetAnimationProgress(Progress: real);
