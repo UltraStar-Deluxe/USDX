@@ -130,8 +130,8 @@ begin
 
     // setup separators for parsing
     // Note: ThousandSeparator must be set because of a bug in TIniFile.ReadFloat
-    ThousandSeparator := ',';
-    DecimalSeparator := '.';
+    DefaultFormatSettings.ThousandSeparator := ',';
+    DefaultFormatSettings.DecimalSeparator := '.';
 
     //------------------------------
     // StartUp - create classes and load files

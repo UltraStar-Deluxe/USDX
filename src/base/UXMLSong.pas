@@ -128,7 +128,7 @@ begin
   inherited Create;
   ErrorMessage := '';
 
-  DecimalSeparator := '.';
+  DefaultFormatSettings.DecimalSeparator := '.';
 end;
 
 function TParser.ParseSong(const Filename: IPath): Boolean;
