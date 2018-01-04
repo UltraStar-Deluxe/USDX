@@ -257,7 +257,6 @@ begin
             IsFileOpen := true;
             AudioPlayback.PlaySound(SoundLib.Start);
             ScreenOpen.Filename := GamePath.Append('file.mid');
-            ScreenOpen.BackScreen := @ScreenEditConvert;
             FadeTo(@ScreenOpen);
           end
           else if Interaction = 1 then // play
@@ -1002,7 +1001,7 @@ var
 begin
 
   // define
-  Top := 180;
+  Top := 200;
   XTrack := 60;
   Padding := 10;
   FontSize := 12;
