@@ -3328,7 +3328,7 @@ var
         end;
 
         diff := abs(Lines[0].Line[line].Note[note].Start - beat);
-        if diff < mindiff then
+        if diff < mindiff then // Warning: Local variable "mindiff" does not seem to be initialized
         begin
           mindiff := diff;
           Result.line := line;
