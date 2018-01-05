@@ -137,7 +137,7 @@ type
 
       BackupEditText:   UTF8String; //backup of current text in text-edit-mode
       CurrentEditText:  UTF8String; // current edit text
-      editLenghtText:   integer;
+      editLengthText:   integer;
       CurrentSlideId:   integer;
       //title header
       TitleSlideId:     integer;
@@ -717,7 +717,6 @@ begin
           Lyric.Free;
 
           onShow;
-//          Text[TextDebug].Text := 'song reloaded'; //TODO: Language.Translate('SONG_RELOADED');
           Text[TextDebug].Text := Language.Translate('INFO_SONG_RELOADED');
         end;
 
@@ -1102,7 +1101,7 @@ begin
           CopyToUndo;
           if SDL_ModState = 0 then
           begin
-            // Insert start of sentece
+            // Insert start of sentence
             if CurrentNote > 0 then
               DivideSentence;
             GoldenRec.KillAll;
@@ -1134,7 +1133,7 @@ begin
           CurrentEditText := BackupEditText;
           CurrentSlideId := LyricSlideId;
           TextPosition := LengthUTF8(BackupEditText);
-          editLenghtText := LengthUTF8(BackupEditText);
+          editLengthText := LengthUTF8(BackupEditText);
           TextEditMode := true;
         end;
 
@@ -1184,7 +1183,7 @@ begin
            begin
              BackupEditText := CurrentSong.Title;
              CurrentEditText := BackupEditText;
-             editLenghtText := LengthUTF8(BackupEditText);
+             editLengthText := LengthUTF8(BackupEditText);
              CurrentSlideId := TitleSlideId;
              TextPosition := LengthUTF8(BackupEditText);
              TitleEditMode := true;
@@ -1193,7 +1192,7 @@ begin
            begin
              BackupEditText := CurrentSong.Artist;
              CurrentEditText := BackupEditText;
-             editLenghtText := LengthUTF8(BackupEditText);
+             editLengthText := LengthUTF8(BackupEditText);
              CurrentSlideId := ArtistSlideId;
              TextPosition := LengthUTF8(BackupEditText);
              ArtistEditMode := true;
@@ -1203,7 +1202,7 @@ begin
            begin
              BackupEditText := Lines[0].Line[Lines[0].Current].Note[CurrentNote].Text;
              CurrentEditText := BackupEditText;
-             editLenghtText := LengthUTF8(BackupEditText);
+             editLengthText := LengthUTF8(BackupEditText);
              CurrentSlideId := LyricSlideId;
              TextPosition := LengthUTF8(BackupEditText);
              TextEditMode := true;
@@ -1611,7 +1610,7 @@ begin
       CurrentEditText :=
       UTF8Copy(CurrentEditText, 1,TextPosition) + UCS4ToUTF8String(CharCode) +
       UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText));
-      inc(editLenghtText);
+      inc(editLengthText);
       inc(TextPosition);
 
       if TextEditMode then
@@ -1643,7 +1642,7 @@ begin
           TextEditMode := false;
           TitleEditMode := false;
           ArtistEditMode := false;
-          editLenghtText := 0;
+          editLengthText := 0;
           TextPosition := -1;
         end;
       SDLK_F4, SDLK_RETURN:
@@ -1670,7 +1669,7 @@ begin
           TitleEditMode := false;
           TextEditMode := false;
           ArtistEditMode := false;
-          editLenghtText := 0;
+          editLengthText := 0;
           TextPosition := -1;
           CurrentSlideId := -1;
         end;
@@ -1698,7 +1697,7 @@ begin
           // right
           if SDL_ModState = 0 then
           begin
-            if (TextPosition >= 0) and (TextPosition < editLenghtText-1) then
+            if (TextPosition >= 0) and (TextPosition < editLengthText-1) then
                 TextPosition := TextPosition + 1
             else
               begin
@@ -1717,7 +1716,7 @@ begin
             else
               begin
                 // todo change to next note
-                TextPosition := editLenghtText-1;
+                TextPosition := editLengthText-1;
               end;
           end;
         end;
@@ -2136,11 +2135,26 @@ end;
 
 procedure TScreenEditSub.FixTimings;
 var
-  C:    integer;
-  S:    integer;
-  Min:  integer;
-  Max:  integer;
+  C:         integer;
+  D:         integer;
+  S:         integer;
+  Min:       integer;
+  Max:       integer;
+  StartBeat: integer;
 begin
+  StartBeat := Lines[0].Line[0].Note[0].Start;
+  if (StartBeat <> 0) then
+  begin
+    // set first note to start at beat 0 (common practice)
+    for C := 0 to Lines[0].High do
+      for D := 0 to Lines[0].Line[C].HighNote do
+        Lines[0].Line[C].Note[D].Start := Lines[0].Line[C].Note[D].Start - StartBeat;
+
+    // adjust GAP accordingly
+    CurrentSong.GAP := round((CurrentSong.GAP + (StartBeat * 15000) / CurrentSong.BPM[0].BPM) * 100) / 100;
+  end;
+
+  // adjust line break timings
   for C := 1 to Lines[0].High do
   begin
     with Lines[0].Line[C-1] do
@@ -3635,7 +3649,7 @@ begin
   TitleEditMode := false;
   ArtistEditMode := false;
 
-  editLenghtText := 0;
+  editLengthText := 0;
   TextPosition := -1;
 end;
 
@@ -3826,7 +3840,7 @@ begin
     if TextPosition >= 0 then
     SelectsS[CurrentSlideId].TextOpt[0].Text :=
       UTF8Copy(CurrentEditText, 1, TextPosition) + '|' + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
-    editLenghtText := LengthUTF8(SelectsS[CurrentSlideId].TextOpt[0].Text);
+    editLengthText := LengthUTF8(SelectsS[CurrentSlideId].TextOpt[0].Text);
   end;
 
   // draw static menu
