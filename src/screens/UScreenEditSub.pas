@@ -967,7 +967,8 @@ begin
           ShowInteractiveBackground;
         end;
 
-      SDLK_EQUALS:
+      SDLK_EQUALS, // for keyboards which produce the EQUALS symbol without SHIFT modifier
+      SDLK_PLUS: // for keyboards which produce the PLUS symbol without SHIFT modifier
         begin
           // Increase BPM
           CopyToUndo;
