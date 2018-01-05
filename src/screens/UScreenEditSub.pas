@@ -740,7 +740,7 @@ begin
             CopyToUndo;
             MultiplyBPM;
             ShowInteractiveBackground;
-            Text[TextDebug].Text := Language.Translate('INFO_MULTIPLIED');
+            Text[TextDebug].Text := Language.Translate('INFO_MULTIPLIED_BPM');
             Exit;
           end;
         end;
