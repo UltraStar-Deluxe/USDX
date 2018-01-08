@@ -98,7 +98,6 @@ type
       function ReadArrayIndex(const SearchArray: array of UTF8String; IniFile: TCustomIniFile;
           IniSection: string; IniProperty: string; Default: integer; DefaultValue: UTF8String; CaseInsensitive: boolean = false): integer; overload;
 
-      procedure TranslateOptionValues;
       procedure LoadInputDeviceCfg(IniFile: TMemIniFile);
       procedure SaveInputDeviceCfg(IniFile: TIniFile);
       procedure LoadThemes(IniFile: TCustomIniFile);
@@ -282,6 +281,8 @@ type
       procedure SaveNumberOfPlayers;
       procedure SaveSingTimebarMode;
       procedure SaveJukeboxTimebarMode;
+
+      procedure TranslateOptionValues;
 
       { Sets resolution.
         @return (@true when resolution was added, @false otherwise) }
