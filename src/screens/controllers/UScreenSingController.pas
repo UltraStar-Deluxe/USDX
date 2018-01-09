@@ -387,6 +387,12 @@ begin
         end;
         Exit;
       end;
+
+      // toggle oscilloscope
+      Ord('O'):
+      begin
+        Ini.Oscilloscope := (Ini.Oscilloscope + 1) mod 2;
+      end;
     end;
 
     // check special keys
