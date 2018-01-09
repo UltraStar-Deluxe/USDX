@@ -2141,18 +2141,24 @@ var
   S:         integer;
   Min:       integer;
   Max:       integer;
-  StartBeat: integer;
+  FirstBeat: integer;
 begin
-  StartBeat := Lines[0].Line[0].Note[0].Start;
-  if (StartBeat <> 0) then
+  FirstBeat := Lines[0].Line[0].Note[0].Start;
+  if (FirstBeat <> 0) then
   begin
     // set first note to start at beat 0 (common practice)
     for C := 0 to Lines[0].High do
       for D := 0 to Lines[0].Line[C].HighNote do
-        Lines[0].Line[C].Note[D].Start := Lines[0].Line[C].Note[D].Start - StartBeat;
+        Lines[0].Line[C].Note[D].Start := Lines[0].Line[C].Note[D].Start - FirstBeat;
 
     // adjust GAP accordingly
-    CurrentSong.GAP := round((CurrentSong.GAP + (StartBeat * 15000) / CurrentSong.BPM[0].BPM) * 100) / 100;
+    CurrentSong.GAP := round((CurrentSong.GAP + (FirstBeat * 15000) / CurrentSong.BPM[0].BPM) * 100) / 100;
+
+    // adjust medley tags accordingly
+    if (MedleyNotes.isStart) then
+      CurrentSong.Medley.StartBeat := CurrentSong.Medley.StartBeat - FirstBeat;
+    if (MedleyNotes.isEnd) then
+      CurrentSong.Medley.EndBeat := CurrentSong.Medley.EndBeat - FirstBeat;
   end;
 
   // adjust line break timings
