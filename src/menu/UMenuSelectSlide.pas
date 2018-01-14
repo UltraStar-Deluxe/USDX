@@ -370,7 +370,10 @@ begin
   
   if (TextureSBG.W > 0) then
   begin
-    MaxLen := TextureSBG.W - MinSideSpacing * 2;
+    if (showArrows) then
+      MaxLen := TextureSBG.W - MinSideSpacing * 2
+    else
+      MaxLen := TextureSBG.W;
 
     SetFontStyle(ftNormal);
     SetFontSize(Text.Size);

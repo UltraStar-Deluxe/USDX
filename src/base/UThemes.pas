@@ -996,11 +996,23 @@ type
 
       SlideTitle:          TThemeSelectSlide;
       SlideArtist:         TThemeSelectSlide;
+      SlideLanguage:       TThemeSelectSlide;
+      SlideEdition:        TThemeSelectSlide;
+      SlideGenre:          TThemeSelectSlide;
+      SlideYear:           TThemeSelectSlide;
+      SlideCreator:        TThemeSelectSlide;
       SlideMP3:            TThemeSelectSlide;
       SlideCover:          TThemeSelectSlide;
       SlideBackground:     TThemeSelectSlide;
+      SlideVideo:          TThemeSelectSlide;
       SlideBPM:            TThemeSelectSlide;
       SlideGAP:            TThemeSelectSlide;
+      SlideStartTag:       TThemeSelectSlide;
+      SlideEndTag:         TThemeSelectSlide;
+      SlideMedleyStart:    TThemeSelectSlide;
+      SlideMedleyEnd:      TThemeSelectSlide;
+      SlidePreviewStart:   TThemeSelectSlide;
+      SlideRelative:       TThemeSelectSlide;
       SlideStart:          TThemeSelectSlide;
       SlideDuration:       TThemeSelectSlide;
       SlideTone:           TThemeSelectSlide;
@@ -1049,7 +1061,7 @@ type
     DownloadProgressWeb: TThemeStatic;
   end;
 
-  //ScreenSong Menue
+  //ScreenSong Menu
   TThemeSongMenu = class(TThemeBasic)
     Button1: TThemeButton;
     Button2: TThemeButton;
@@ -2411,11 +2423,23 @@ begin
       ThemeLoadButton(EditSub.undo,    'EditSubBarStatic8');
       ThemeLoadSelectSlide(EditSub.SlideTitle, 'EditSubTitle');
       ThemeLoadSelectSlide(EditSub.SlideArtist, 'EditSubArtist');
+      ThemeLoadSelectSlide(EditSub.SlideLanguage, 'EditSubLanguage');
+      ThemeLoadSelectSlide(EditSub.SlideEdition, 'EditSubEdition');
+      ThemeLoadSelectSlide(EditSub.SlideGenre, 'EditSubGenre');
+      ThemeLoadSelectSlide(EditSub.SlideYear, 'EditSubYear');
+      ThemeLoadSelectSlide(EditSub.SlideCreator, 'EditSubCreator');
       ThemeLoadSelectSlide(EditSub.SlideMP3, 'EditSubMP3');
       ThemeLoadSelectSlide(EditSub.SlideCover, 'EditSubSlideCover');
-      ThemeLoadSelectSlide(EditSub.SlideBackground, 'EditSubSlideBG');
+      ThemeLoadSelectSlide(EditSub.SlideBackground, 'EditSubSlideBackground');
+      ThemeLoadSelectSlide(EditSub.SlideVideo, 'EditSubSlideVideo');
       ThemeLoadSelectSlide(EditSub.SlideBPM, 'EditSubBPM');
       ThemeLoadSelectSlide(EditSub.SlideGAP, 'EditSubGAP');
+      ThemeLoadSelectSlide(EditSub.SlideStartTag, 'EditSubStartTag');
+      ThemeLoadSelectSlide(EditSub.SlideEndTag, 'EditSubEndTag');
+      ThemeLoadSelectSlide(EditSub.SlideMedleyStart, 'EditSubMedleyStart');
+      ThemeLoadSelectSlide(EditSub.SlideMedleyEnd, 'EditSubMedleyEnd');
+      ThemeLoadSelectSlide(EditSub.SlidePreviewStart, 'EditSubPreviewStart');
+      ThemeLoadSelectSlide(EditSub.SlideRelative, 'EditSubRelative');
       ThemeLoadSelectSlide(EditSub.SlideStart, 'EditSubStart');
       ThemeLoadSelectSlide(EditSub.SlideDuration, 'EditSubDuration');
       ThemeLoadSelectSlide(EditSub.SlideTone, 'EditSubTone');
