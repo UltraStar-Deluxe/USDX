@@ -1345,6 +1345,9 @@ begin
   if self.Cover.IsUnset then
     self.Cover := FindSongFile(Path, '*[CO].jpg');
 
+  if self.Background.IsUnset then
+    self.Cover := FindSongFile(Path, '*[BG].jpg');
+
   //Check if all Required Values are given
   if (Done <> 15) then
   begin
