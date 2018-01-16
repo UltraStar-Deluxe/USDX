@@ -137,11 +137,11 @@ begin
       SongFile.WriteLine('#TITLE:'    + EncodeToken(Song.Title));
       SongFile.WriteLine('#ARTIST:'   + EncodeToken(Song.Artist));
 
-      if Song.Creator     <> ''        then SongFile.WriteLine('#CREATOR:'   + EncodeToken(Song.Creator));
+      if Song.Language    <> 'Unknown' then SongFile.WriteLine('#LANGUAGE:'  + EncodeToken(Song.Language));
       if Song.Edition     <> 'Unknown' then SongFile.WriteLine('#EDITION:'   + EncodeToken(Song.Edition));
       if Song.Genre       <> 'Unknown' then SongFile.WriteLine('#GENRE:'     + EncodeToken(Song.Genre));
-      if Song.Language    <> 'Unknown' then SongFile.WriteLine('#LANGUAGE:'  + EncodeToken(Song.Language));
       if Song.Year        <> 0         then SongFile.WriteLine('#YEAR:'      + IntToStr(Song.Year));
+      if Song.Creator     <> ''        then SongFile.WriteLine('#CREATOR:'   + EncodeToken(Song.Creator));
 
       SongFile.WriteLine('#MP3:' + EncodeToken(Song.Mp3.ToUTF8));
       if Song.Cover.IsSet      then    SongFile.WriteLine('#COVER:'       + EncodeToken(Song.Cover.ToUTF8));
@@ -160,8 +160,8 @@ begin
 
       if (Song.Medley.Source=msTag) and not Relative and (Song.Medley.EndBeat - Song.Medley.StartBeat > 0) then
       begin
-        SongFile.WriteLine('#MedleyStartBeat:' + IntToStr(Song.Medley.StartBeat));
-        SongFile.WriteLine('#MedleyEndBeat:' + IntToStr(Song.Medley.EndBeat));
+        SongFile.WriteLine('#MEDLEYSTARTBEAT:' + IntToStr(Song.Medley.StartBeat));
+        SongFile.WriteLine('#MEDLEYENDBEAT:' + IntToStr(Song.Medley.EndBeat));
       end;
 
       SongFile.WriteLine('#BPM:' + FloatToStr(Song.BPM[0].BPM / 4));
