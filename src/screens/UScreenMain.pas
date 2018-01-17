@@ -44,7 +44,8 @@ uses
   USong,
   UScreenSong,
   SysUtils,
-  UThemes;
+  UThemes,
+  UConfig;
 
 type
 
@@ -107,16 +108,24 @@ begin
         Result := false;
         Exit;
       end;
+
       Ord('C'): begin
          FadeTo(@ScreenCredits, SoundLib.Start);
          Exit;
       end;
+
       Ord('M'): begin
         if (Ini.Players >= 1) and (Party.ModesAvailable) then
         begin
           FadeTo(@ScreenPartyOptions, SoundLib.Start);
           Exit;
         end;
+      end;
+
+      Ord('R'): begin
+        UGraphic.UnLoadScreens();
+        Theme.LoadTheme(Ini.Theme, Ini.Color);
+        UGraphic.LoadScreens(USDXVersionStr);
       end;
 
       Ord('S'): begin
