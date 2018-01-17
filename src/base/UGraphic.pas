@@ -74,7 +74,6 @@ uses
   UScreenTop5,
   UScreenEditSub,
   UScreenEdit,
-  UScreenEditHeader,
   UScreenEditConvert,
   UScreenOpen,
   UScreenAbout,
@@ -166,7 +165,6 @@ var
   ScreenEditSub:      TScreenEditSub;
   ScreenEdit:         TScreenEdit;
   ScreenEditConvert:  TScreenEditConvert;
-  ScreenEditHeader:   TScreenEditHeader;
   ScreenOpen:         TScreenOpen;
   ScreenAbout:        TScreenAbout;
 
