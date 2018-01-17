@@ -43,7 +43,9 @@ uses
   UThemes,
   MD5,
   sdl2,
-  SysUtils;
+  SysUtils,
+  UThemes,
+  UConfig;
 
 type
 
@@ -123,7 +125,13 @@ begin
         Exit;
       end;
 
-      Ord('T'): begin
+      Ord('R'): begin
+        UGraphic.UnLoadScreens();
+        Theme.LoadTheme(Ini.Theme, Ini.Color);
+        UGraphic.LoadScreens(USDXVersionStr);
+      end;
+
+      Ord('S'): begin
         FadeTo(@ScreenStatMain, SoundLib.Start);
         Exit;
       end;
