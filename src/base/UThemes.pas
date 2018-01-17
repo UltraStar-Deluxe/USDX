@@ -980,20 +980,29 @@ type
   end;
 
   TThemeEditSub = class(TThemeBasic)
-      //in editor - headers
-      BackgroundImage:     TThemeStatic;
+      // statics
+      BackgroundImage:              TThemeStatic;
+      HeaderBackground:             TThemeStatic;
+      CurrentNoteInfoBackground:    TThemeStatic;
+      VolumeSliderBackground:       TThemeStatic;
+      NotesBackground:              TThemeStatic;
+      P1InfoBarBackground:          TThemeStatic;
+      P2InfoBarBackground:          TThemeStatic;
+      SentenceBackground:           TThemeStatic;
+
+      // buttons
       ButtonCurrentLine:   TThemeButton;
       ButtonCurrentNote:   TThemeButton;
-      // buttons
-      PlayOnly:             TThemeButton;
-      PlayWithNote:         TThemeButton;
-      PlayNote:             TThemeButton;
-      previousseq:          TThemeButton;
-      nextseq:              TThemeButton;
-      undo:                 TThemeButton;
-      gold:                 TThemeButton;
-      freestyle:            TThemeButton;
+      PlayOnly:            TThemeButton;
+      PlayWithNote:        TThemeButton;
+      PlayNote:            TThemeButton;
+      previousseq:         TThemeButton;
+      nextseq:             TThemeButton;
+      undo:                TThemeButton;
+      gold:                TThemeButton;
+      freestyle:           TThemeButton;
 
+      // sliders
       SlideTitle:          TThemeSelectSlide;
       SlideArtist:         TThemeSelectSlide;
       SlideLanguage:       TThemeSelectSlide;
@@ -1021,6 +1030,10 @@ type
       SelectVolMidi:       TThemeSelectSlide;
       SelectVolClick:      TThemeSelectSlide;
       SlideVideoGap:       TThemeSelectSlide;
+
+      // texts
+      TextDebug:           TThemeText;
+      TextSentence:        TThemeText;
   end;
 
   //Error- and Check-Popup
@@ -2410,6 +2423,13 @@ begin
       // editor
       ThemeLoadBasic (EditSub,               'EditSub');
       ThemeLoadStatic(EditSub.BackgroundImage, 'EditSubBackgroundImage');
+      ThemeLoadStatic(EditSub.HeaderBackground, 'EditSubHeaderBackground');
+      ThemeLoadStatic(EditSub.CurrentNoteInfoBackground, 'EditSubCurrentNoteInfoBackground');
+      ThemeLoadStatic(EditSub.VolumeSliderBackground, 'EditSubVolumeSliderBackground');
+      ThemeLoadStatic(EditSub.NotesBackground, 'EditSubNotesBackground');
+      ThemeLoadStatic(EditSub.P1InfoBarBackground, 'EditSubP1InfoBarBackground');
+      ThemeLoadStatic(EditSub.P2InfoBarBackground, 'EditSubP2InfoBarBackground');
+      ThemeLoadStatic(EditSub.SentenceBackground, 'EditSubSentenceBackground');
       // current position in editor
       ThemeLoadButton(EditSub.ButtonCurrentLine, 'EditSubButtonCurrentLine');
       ThemeLoadButton(EditSub.ButtonCurrentNote, 'EditSubButtonCurrentNote');
@@ -2448,6 +2468,8 @@ begin
       ThemeLoadSelectSlide(EditSub.SelectVolMidi, 'EditSubSelectVolMidi');
       ThemeLoadSelectSlide(EditSub.SelectVolClick, 'EditSubSelectVolClick');
       ThemeLoadSelectSlide(EditSub.SlideVideoGap, 'EditSubVideoGap');
+      ThemeLoadText(EditSub.TextDebug, 'EditSubTextDebug');
+      ThemeLoadText(EditSub.TextSentence, 'EditSubTextSentence');
 
       //error popup
       ThemeLoadBasic (ErrorPopup, 'ErrorPopup');

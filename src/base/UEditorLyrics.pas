@@ -77,12 +77,12 @@ type
       procedure AddWord(Text: UTF8String);
       procedure Refresh;
     public
-      ColR:   real;
-      ColG:   real;
-      ColB:   real;
-      ColSR:  real;
-      ColSG:  real;
-      ColSB:  real;
+      DColR:   real;
+      DColG:   real;
+      DColB:   real;
+      ColR:  real;
+      ColG:  real;
+      ColB:  real;
       Italic: boolean;
 
       constructor Create;
@@ -157,18 +157,18 @@ begin
   if (-1 < SelectedI) and (SelectedI <= High(Word)) then
   begin
     Word[SelectedI].Selected := false;
-    Word[SelectedI].ColR := ColR;
-    Word[SelectedI].ColG := ColG;
-    Word[SelectedI].ColB := ColB;
+    Word[SelectedI].ColR := DColR;
+    Word[SelectedI].ColG := DColG;
+    Word[SelectedI].ColB := DColB;
   end;
 
   SelectedI := Value;
   if (-1 < Value) and (Value <= High(Word)) then
   begin
     Word[Value].Selected := true;
-    Word[Value].ColR := ColSR;
-    Word[Value].ColG := ColSG;
-    Word[Value].ColB := ColSB;
+    Word[Value].ColR := ColR;
+    Word[Value].ColG := ColG;
+    Word[Value].ColB := ColB;
   end;
 
   Refresh;
@@ -198,9 +198,9 @@ begin
   SetFontItalic(Italic);
   Word[WordNum].Width := glTextWidth(Text);
   Word[WordNum].Text := Text;
-  Word[WordNum].ColR := ColR;
-  Word[WordNum].ColG := ColG;
-  Word[WordNum].ColB := ColB;
+  Word[WordNum].ColR := DColR;
+  Word[WordNum].ColG := DColG;
+  Word[WordNum].ColB := DColB;
   Word[WordNum].Italic := Italic;
 
   Refresh;

@@ -362,14 +362,11 @@ type
       procedure PasteText;
       procedure CopySentence(Src, Dst: integer);
       procedure CopySentences(Src, Dst, Num: integer);
-      procedure CopyToUndo; //copy current Lines,mouse position and headers
-      procedure CopyFromUndo; //undo last Lines,mouse position and headers
+      procedure CopyToUndo; //copy current lines, mouse position and headers
+      procedure CopyFromUndo; //undo last lines, mouse position and headers
       procedure DrawPlayerTrack(X, Y, W: real; Space: integer; CurrentTone: integer; Count: integer; CurrentNote: integer);
-      procedure DrawStatics_UP(X, Y, W, H: integer);
-      procedure DrawStatics_Sentences(X, Y, W, H: integer);
-      procedure DrawStatics_Notes(X, Y, W, H: integer);
-      procedure DrawInfoBar(x, y, w, h: integer; currentLines: integer);
-      procedure DrawText(Left, Top, Right: real; NrLines: integer; Space: integer);
+      procedure DrawInfoBar(X, Y, W, H: integer; ColR, ColG, ColB, Alpha: real; Track: integer);
+      procedure DrawText(X, Y, W, H: real; Track: integer; NumLines: integer = 10);
       //video view
       procedure StartVideoPreview();
       procedure StopVideoPreview();
@@ -3113,109 +3110,7 @@ begin
   glPrint(GetNoteName(CurrentTone));
 end;
 
-procedure TScreenEditSub.DrawStatics_UP(X, Y, W, H: integer);
-begin
-  glDisable(GL_BLEND);
-
-  // Line
-{  glColor4f(0.9, 0.9, 0.9, 1);
-  x := 20;
-  y := 5;
-  w := 200;
-  h := 40;
-  glbegin(gl_quads);
-    glVertex2f(x, y);
-    glVertex2f(x, y+h);
-    glVertex2f(x+w, y+h);
-    glVertex2f(x+w, y);
-  glEnd;
-
-  // Note
-  x := 260;
-  y := 5;
-  w := 200;
-  h := 40;
-  glbegin(gl_quads);
-    glVertex2f(x, y);
-    glVertex2f(x, y+h);
-    glVertex2f(x+w, y+h);
-    glVertex2f(x+w, y);
-  glEnd;}
-
-  // some borders
-
-  glColor4f(0.9, 0.9, 0.9, 0.5);
-  glbegin(gl_quads);
-    glVertex2f(x, y);
-    glVertex2f(x, y+h);
-    glVertex2f(x+w, y+h);
-    glVertex2f(x+w, y);
-  glEnd;
-
-  glColor4f(0, 0, 0, 1);
-  glLineWidth(2);
-  glBegin(GL_LINE_LOOP);
-    glVertex2f(x-1, y-1);
-    glVertex2f(x+w+1, y-1);
-    glVertex2f(x+w+1, y+h+1);
-    glVertex2f(x-1, y+h+1);
-  glEnd;
-
-end;
-procedure TScreenEditSub.DrawStatics_Notes(X, Y, W, H: integer);
-begin
-{  x := 20;
-  y := 305;
-  w := 760;
-  h := 135;}
-  glColor4f(0.9, 0.9, 0.9, 1);
-  glbegin(gl_quads);
-   glVertex2f(x, y);
-   glVertex2f(x, y+h);
-   glVertex2f(x+w, y+h);
-   glVertex2f(x+w, y);
-  glEnd;
-
-  glColor4f(0, 0, 0, 1);
-  glLineWidth(2);
-  glBegin(GL_LINE_LOOP);
-    glVertex2f(x-1, y-1);
-    glVertex2f(x+w+1, y-1);
-    glVertex2f(x+w+1, y+h+1);
-    glVertex2f(x-1, y+h+1);
-  glEnd;
-end;
-
-procedure TScreenEditSub.DrawStatics_Sentences(X, Y, W, H: integer);
-begin
-  //Theme:
-  //bg
-  glDisable(GL_BLEND);
-{  x := 20;
-  y := 500;
-  w := 760;
-  h := 40;}
-  glColor4f(0.9, 0.9, 0.9, 1);
-  glbegin(gl_quads);
-   glVertex2f(x, y);
-   glVertex2f(x, y+h);
-   glVertex2f(x+w, y+h);
-   glVertex2f(x+w, y);
-  glEnd;
-
-  glColor4f(0, 0, 0, 1);
-  glLineWidth(2);
-  glBegin(GL_LINE_LOOP);
-    glVertex2f(x-1, y-1);
-    glVertex2f(x+w+1, y-1);
-    glVertex2f(x+w+1, y+h+1);
-    glVertex2f(x-1, y+h+1);
-  glEnd;
-
-  glLineWidth(1);
-end;
-
-procedure TScreenEditSub.DrawInfoBar(x, y, w, h: integer; currentLines: integer);
+procedure TScreenEditSub.DrawInfoBar(X, Y, W, H: integer; ColR, ColG, ColB, Alpha: real; Track: integer);
 var
   start, end_:        integer;
   SongStart, SongEnd: integer;
@@ -3229,36 +3124,18 @@ var
   numLines:           integer;
 
 begin
-  numLines := Length(Lines[currentLines].Line);
+  numLines := Length(Lines[Track].Line);
 
-  // black border
-  glColor4f(0, 0, 0, 1);
-  glDisable(GL_BLEND);
-  glLineWidth(2);
-  glBegin(GL_LINE_LOOP);
-    glVertex2f(x-1, y-1);
-    glVertex2f(x+w+1, y-1);
-    glVertex2f(x+w+1, y+h+1);
-    glVertex2f(x-1, y+h+1);
-  glEnd;
-
-  // gray background
-  glColor4f(0.9, 0.9, 0.9, 1);
-  glbegin(gl_quads);
-   glVertex2f(x, y);
-   glVertex2f(x, y+h);
-   glVertex2f(x+w, y+h);
-   glVertex2f(x+w, y);
-  glEnd;
+  EditDrawBorderedBox(X, Y, W, H, ColR, ColG, ColB, Alpha);
 
   if(numLines=1) then
     Exit;
 
-  SongStart := Lines[currentLines].Line[0].Note[0].Start;
-  SongEnd := Lines[currentLines].Line[numLines-1].End_;
+  SongStart := Lines[Track].Line[0].Note[0].Start;
+  SongEnd := Lines[Track].Line[numLines-1].End_;
   ww := SongEnd - SongStart;
 
-  Statics[playerIconId[currentLines+1]].Visible := true;
+  Statics[playerIconId[Track+1]].Visible := true;
 
   for i := 0 to Length(TransparentLineButtonId)-1 do
   begin
@@ -3278,7 +3155,7 @@ begin
 
   for line := 0 to numLines - 1 do
   begin
-    if (line = Lines[currentLines].Current) and not (PlaySentence or PlaySentenceMidi or PlayOne) then
+    if (line = Lines[Track].Current) and not (PlaySentence or PlaySentenceMidi or PlayOne) then
       glColor4f(0.4, 0.4, 0, 1) // currently selected line
     else
       if (CurrentSong.Medley.Source <> msNone) and (line >= MedleyNotes.start.line) and (line <= MedleyNotes.end_.line) then
@@ -3287,9 +3164,9 @@ begin
         glColor4f(1, 0.6, 0, 1); // all other lines in orange
 
 
-    start := Lines[currentLines].Line[line].Note[0].Start;
-    end_ := Lines[currentLines].Line[line].Note[Lines[0].Line[line].HighNote].Start+
-      Lines[currentLines].Line[line].Note[Lines[0].Line[line].HighNote].Length;
+    start := Lines[Track].Line[line].Note[0].Start;
+    end_ := Lines[Track].Line[line].Note[Lines[0].Line[line].HighNote].Start+
+      Lines[Track].Line[line].Note[Lines[0].Line[line].HighNote].Length;
 
     pos := (start - SongStart)/ww*w;
     br := (end_-start)/ww*w;
@@ -3318,8 +3195,8 @@ begin
   end else
   begin
     glColor4f(1, 0, 0, 1);
-    pos := (Lines[currentLines].Line[Lines[0].Current].Note[CurrentNote].Start - SongStart)/ww*w;
-    br := Lines[currentLines].Line[Lines[0].Current].Note[CurrentNote].Length/ww*w;
+    pos := (Lines[Track].Line[Lines[0].Current].Note[CurrentNote].Start - SongStart)/ww*w;
+    br := Lines[Track].Line[Lines[0].Current].Note[CurrentNote].Length/ww*w;
     if (br<1) then
       br := 1;
   end;
@@ -3336,29 +3213,31 @@ begin
   glLineWidth(1);
 end;
 
-procedure TScreenEditSub.DrawText(Left, Top, Right: real; NrLines: integer; Space: integer);
+procedure TScreenEditSub.DrawText(X, Y, W, H: real; Track: integer; NumLines: integer);
 var
   Rec:   TRecR;
   Count: integer;
   TempR: real;
+  Space: real;
 
   PlayerNumber:  integer;
   OrgFontStyle:  integer;
 
   GoldenStarPos: real;
 begin
-  if ( (1 shl NrLines) <> 0) then
+  if ( (1 shl Track) <> 0) then
   begin
-    PlayerNumber := NrLines + 1; // Player 1 is 0
+    Space := H / (NumLines - 1);
+    PlayerNumber := Track + 1; // Player 1 is 0
     glColor3f(1, 1, 1);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    if not Lines[NrLines].Line[Lines[NrLines].Current].HasLength(TempR) then TempR := 0
-    else TempR := (Right-Left) / TempR;
+    if not Lines[Track].Line[Lines[Track].Current].HasLength(TempR) then TempR := 0
+    else TempR := W / TempR;
 
-    with Lines[NrLines].Line[Lines[NrLines].Current] do
+    with Lines[Track].Line[Lines[Track].Current] do
     begin
 
       OrgFontStyle := ActFont;
@@ -3374,12 +3253,12 @@ begin
           // left part
           Rec.Left  := 0;
           Rec.Right := 0;
-          BaseNote := Lines[0].Line[Lines[NrLines].Current].BaseNote;
-          Rec.Top := Top - (Tone-BaseNote)*Space/2 - NotesH[0];
+          BaseNote := Lines[0].Line[Lines[Track].Current].BaseNote;
+          Rec.Top := Y - (Tone-BaseNote)*Space/2 - NotesH[0];
           Rec.Bottom := Rec.Top + 2 * NotesH[0];
           // middle part
-          Rec.Left := (Start-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left + 0.5 + 10*ScreenX + NotesW[0];
-          Rec.Right := (Start+Length-Lines[NrLines].Line[Lines[NrLines].Current].Note[0].Start) * TempR + Left - NotesW[0] - 0.5 + 10*ScreenX;
+          Rec.Left := (Start-Lines[Track].Line[Lines[Track].Current].Note[0].Start) * TempR + X + 0.5 + 10*ScreenX + NotesW[0];
+          Rec.Right := (Start+Length-Lines[Track].Line[Lines[Track].Current].Note[0].Start) * TempR + X - NotesW[0] - 0.5 + 10*ScreenX;
           SetFontPos (Rec.Left, Rec.Top);
           glPrint(Text);
         end; // with
@@ -3667,23 +3546,6 @@ begin
   // Click Volume
   VolumeClickSlideId := AddSelectSlide(Theme.EditSub.SelectVolClick, VolumeClickIndex, VolumeClick);
 
-//  TextTitle :=  AddText(180, 65,  0, 24, 0, 0, 0, 'a');
-//  TextArtist := AddText(180, 90,  0, 24, 0, 0, 0, 'b');
-//  TextMp3 :=    AddText(180, 115, 0, 24, 0, 0, 0, 'c');
-//  TextBPM :=    AddText(180, 140, 0, 24, 0, 0, 0, 'd');
-//  TextGAP :=    AddText(180, 165, 0, 24, 0, 0, 0, 'e');
-
-  // note info
-//  AddText(30, 190,  0, 24, 0, 0, 0, 'Start:');
-//  AddText(30, 215,  0, 24, 0, 0, 0, 'Duration:');
-//  AddText(30, 240,  0, 24, 0, 0, 0, 'Tone:');
-//  AddText(30, 265,  0, 24, 0, 0, 0, 'Text:');      //AddText(500, 265,  0, 8, 0, 0, 0, 'VideoGap:');
-
-//  TextNStart :=   AddText(180, 190,  0, 24, 0, 0, 0, 'a');
-//  TextNLength :=  AddText(180, 215,  0, 24, 0, 0, 0, 'b');
-//  TextNTon :=     AddText(180, 240,  0, 24, 0, 0, 0, 'c');
-//  TextNText :=    AddText(180, 265,  0, 24, 0, 0, 0, 'd');
-
   {
   //TextVideoGap :=  AddText(600, 265,  0, 24, 0, 0, 0, 'e');
     playerIconId[1] := AddStatic(Theme.Score.StaticPlayerIdBox[1]);
@@ -3705,7 +3567,8 @@ begin
     }
 
   // debug
-  TextDebug := AddText(265, 551, 0, 18, 0, 0, 0, '');
+  //TextDebug := AddText(265, 551, 0, 18, 0, 0, 0, '');
+  TextDebug := AddText(Theme.EditSub.TextDebug);
   // in notes place -> for move notes by mouse
 //  NotesBackgroundId := AddSelectSlide(Theme.EditSub.NotesBackground, i, Empty);
 
@@ -3835,7 +3698,7 @@ begin
     MidiOut := TMidiOutput.Create(nil);
     MidiOut.Open;
   {$ENDIF}
-    //    Text[TextTitle].Text :=   CurrentSong.Title;
+
     // Header Title
     SetLength(TitleVal, 1);
     TitleVal[0] := CurrentSong.Title;
@@ -3844,7 +3707,6 @@ begin
     SelectsS[TitleSlideId].TextOpt[0].Align := 0;
     SelectsS[TitleSlideId].TextOpt[0].X := SelectsS[TitleSlideId].TextureSBG.X + 5;
 
-    //    Text[TextArtist].Text :=  CurrentSong.Artist;
     // Header Artist
     SetLength(ArtistVal, 1);
     ArtistVal[0] := CurrentSong.Artist;
@@ -4102,9 +3964,9 @@ begin
     VolumeAudioIndex := 100;
     VolumeMidiIndex := 100;
     VolumeClickIndex := 100;
-    UpdateSelectSlideOptions(Theme.EditSub.SelectVolAudio,VolumeAudioSlideId,VolumeAudio,VolumeAudioIndex);
-    UpdateSelectSlideOptions(Theme.EditSub.SelectVolMidi,VolumeMidiSlideId,VolumeMidi,VolumeMidiIndex);
-    UpdateSelectSlideOptions(Theme.EditSub.SelectVolClick,VolumeClickSlideId,VolumeClick,VolumeClickIndex);
+    UpdateSelectSlideOptions(Theme.EditSub.SelectVolAudio, VolumeAudioSlideId, VolumeAudio, VolumeAudioIndex);
+    UpdateSelectSlideOptions(Theme.EditSub.SelectVolMidi, VolumeMidiSlideId, VolumeMidi, VolumeMidiIndex);
+    UpdateSelectSlideOptions(Theme.EditSub.SelectVolClick, VolumeClickSlideId, VolumeClick, VolumeClickIndex);
 
     Lines[0].Current := 0;
     CurrentNote := 0;
@@ -4125,16 +3987,18 @@ begin
     end;
 
     Lyric.Clear;
-    Lyric.X := 400;
-    Lyric.Y := 500;
-    Lyric.Align := atCenter;
-    Lyric.Size := 42;
-    Lyric.ColR := 0;
-    Lyric.ColG := 0;
-    Lyric.ColB := 0;
-    Lyric.ColSR := Skin_FontHighlightR;
-    Lyric.ColSG := Skin_FontHighlightG;
-    Lyric.ColSB := Skin_FontHighlightB;
+
+    Lyric.X := Theme.EditSub.TextSentence.X;
+    Lyric.Y := Theme.EditSub.TextSentence.Y;
+    Lyric.Align := UEditorLyrics.TAlignmentType(Theme.EditSub.TextSentence.Align);
+    Lyric.Size := Theme.EditSub.TextSentence.Size;
+    Lyric.ColR := Theme.EditSub.TextSentence.ColR;
+    Lyric.ColG := Theme.EditSub.TextSentence.ColG;
+    Lyric.ColB := Theme.EditSub.TextSentence.ColB;
+    Lyric.DColR := Theme.EditSub.TextSentence.DColR;
+    Lyric.DColG := Theme.EditSub.TextSentence.DColG;
+    Lyric.DColB := Theme.EditSub.TextSentence.DColB;
+
     Lyric.AddLine(0);
     Lyric.Selected := 0;
 
@@ -4189,6 +4053,9 @@ begin
 end;
 
 function TScreenEditSub.Draw: boolean;
+const
+  Padding: Integer = 20;
+  NumLines: Integer = 10;
 var
   Pet, i:    integer;
   lastline, note,Count: integer;
@@ -4411,17 +4278,24 @@ begin
 
   // draw static menu
   DrawBG;
+
   // header background
-  DrawStatics_UP(20, 56, 760, 226);
+  EditDrawBorderedBox(Theme.EditSub.HeaderBackground.X, Theme.EditSub.HeaderBackground.Y, Theme.EditSub.HeaderBackground.W, Theme.EditSub.HeaderBackground.H, Theme.EditSub.HeaderBackground.ColR, Theme.EditSub.HeaderBackground.ColG, Theme.EditSub.HeaderBackground.ColB, Theme.EditSub.HeaderBackground.Alpha);
+
   // currently selected note info background
-  DrawStatics_UP(20, 290, 760, 26);
+  EditDrawBorderedBox(Theme.EditSub.CurrentNoteInfoBackground.X, Theme.EditSub.CurrentNoteInfoBackground.Y, Theme.EditSub.CurrentNoteInfoBackground.W, Theme.EditSub.CurrentNoteInfoBackground.H, Theme.EditSub.CurrentNoteInfoBackground.ColR, Theme.EditSub.CurrentNoteInfoBackground.ColG, Theme.EditSub.CurrentNoteInfoBackground.ColB, Theme.EditSub.CurrentNoteInfoBackground.Alpha);
+
   // volume slider background
-  DrawStatics_UP(600, 3, 180, 48);
-  // info bar
-  DrawInfoBar(20, 470, 760, 15, 0);
-  // sentence
-  DrawStatics_Sentences(20, 500, 760, 40);
-//  DrawInfoBar(20, 480, 760, 15, 1);  //for duet mode
+  EditDrawBorderedBox(Theme.EditSub.VolumeSliderBackground.X, Theme.EditSub.VolumeSliderBackground.Y, Theme.EditSub.VolumeSliderBackground.W, Theme.EditSub.VolumeSliderBackground.H, Theme.EditSub.VolumeSliderBackground.ColR, Theme.EditSub.VolumeSliderBackground.ColG, Theme.EditSub.VolumeSliderBackground.ColB, Theme.EditSub.VolumeSliderBackground.Alpha);
+
+  // P1 info bar
+  DrawInfoBar(Theme.EditSub.P1InfoBarBackground.X, Theme.EditSub.P1InfoBarBackground.Y, Theme.EditSub.P1InfoBarBackground.W, Theme.EditSub.P1InfoBarBackground.H, Theme.EditSub.P1InfoBarBackground.ColR, Theme.EditSub.P1InfoBarBackground.ColG, Theme.EditSub.P1InfoBarBackground.ColB, Theme.EditSub.P1InfoBarBackground.Alpha, 0);
+
+  // P2 info bar - for duet mode
+  //DrawInfoBar(Theme.EditSub.P2InfoBarBackground.X, Theme.EditSub.P2InfoBarBackground.Y, Theme.EditSub.P2InfoBarBackground.W, Theme.EditSub.P2InfoBarBackground.H, Theme.EditSub.P2InfoBarBackground.ColR, Theme.EditSub.P2InfoBarBackground.ColG, Theme.EditSub.P2InfoBarBackground.ColB, Theme.EditSub.P2InfoBarBackground.Alpha, 1);
+
+  // sentence background
+  EditDrawBorderedBox(Theme.EditSub.SentenceBackground.X, Theme.EditSub.SentenceBackground.Y, Theme.EditSub.SentenceBackground.W, Theme.EditSub.SentenceBackground.H, Theme.EditSub.SentenceBackground.ColR, Theme.EditSub.SentenceBackground.ColG, Theme.EditSub.SentenceBackground.ColB, Theme.EditSub.SentenceBackground.Alpha);
 
   //inherited Draw;
   DrawFG;
@@ -4432,29 +4306,29 @@ begin
   begin
     if Xmouse < 0 then
     begin
-      // notes table
-      DrawStatics_Notes(20, 325, 760+Xmouse, 135);
+      // notes background
+      EditDrawBorderedBox(Theme.EditSub.NotesBackground.X, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W + Xmouse, Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.ColR, Theme.EditSub.NotesBackground.ColG, Theme.EditSub.NotesBackground.ColB, Theme.EditSub.NotesBackground.Alpha);
       // horizontal lines
-      SingDrawNoteLines(20, 325, 780+Xmouse, 15);
+      SingDrawNoteLines(Theme.EditSub.NotesBackground.X, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W + Xmouse, Theme.EditSub.NotesBackground.H);
       // vertical lines
-      SingDrawBeatDelimeters(40, 325, 760+Xmouse, 0);
+      EditDrawBeatDelimiters(Theme.EditSub.NotesBackground.X + Padding, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - 2 * Padding + Xmouse, Theme.EditSub.NotesBackground.H, 0);
       // draw notes
-      EditDrawLine(40, 430, 760+Xmouse, 0, 15);
+      EditDrawLine(Theme.EditSub.NotesBackground.X + Padding, Theme.EditSub.NotesBackground.Y + (7/9) * Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.W - 2 * Padding + Xmouse, Theme.EditSub.NotesBackground.W, 0);
       // draw text on notes
-      DrawText(40, 430, 760+Xmouse, 0, 15);
+      DrawText(Theme.EditSub.NotesBackground.X + Padding, Theme.EditSub.NotesBackground.Y + (7/9) * Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.W - 2 * Padding + Xmouse, Theme.EditSub.NotesBackground.H, 0);
     end
     else
     begin
-      // notes table
-      DrawStatics_Notes(20+Xmouse, 325, 760-Xmouse, 135);
+      // notes background
+      EditDrawBorderedBox(Theme.EditSub.NotesBackground.X + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - Xmouse, Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.ColR, Theme.EditSub.NotesBackground.ColG, Theme.EditSub.NotesBackground.ColB, Theme.EditSub.NotesBackground.Alpha);
       // horizontal lines
-      SingDrawNoteLines(20+Xmouse, 325, 780, 15);
+      SingDrawNoteLines(Theme.EditSub.NotesBackground.X + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W, Theme.EditSub.NotesBackground.H);
       // vertical lines
-      SingDrawBeatDelimeters(40+Xmouse, 325, 760, 0);
+      EditDrawBeatDelimiters(Theme.EditSub.NotesBackground.X + Padding + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - 2 * Padding, Theme.EditSub.NotesBackground.H, 0);
       // draw notes
-      EditDrawLine(40+Xmouse, 430, 760, 0, 15);
+      EditDrawLine(Theme.EditSub.NotesBackground.X + Padding + Xmouse, Theme.EditSub.NotesBackground.Y + (7/9) * Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.W - 2 * Padding, Theme.EditSub.NotesBackground.H, 0);
       // draw text on notes
-      DrawText(40+Xmouse, 430, 760, 0, 15);
+      DrawText(Theme.EditSub.NotesBackground.X + Padding + Xmouse, Theme.EditSub.NotesBackground.Y + (7/9) * Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.W - 2 * Padding, Theme.EditSub.NotesBackground.H, 0);
     end;
 
     if Xmouse <> 0 then
@@ -4466,7 +4340,7 @@ begin
   if (CurrentSound.ToneString <> '-') then
   begin
     Count := trunc((720 / (GetTimeFromBeat(Lines[0].Line[Lines[0].Current].End_) - GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[0].Start)))*(AudioPlayback.Position - GetTimeFromBeat(Lines[0].Line[Lines[0].Current].Note[0].Start)));
-    DrawPlayerTrack(0, 16, 32, 15, CurrentSound.Tone, Count,CurrentNote);
+    DrawPlayerTrack(0, 16, 32, 15, CurrentSound.Tone, Count, CurrentNote);
   end;
 
   GoldenRec.SpawnRec;
