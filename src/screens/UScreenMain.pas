@@ -34,6 +34,7 @@ interface
 {$I switches.inc}
 
 uses
+  UConfig,
   UDisplay,
   UFiles,
   UMenu,
@@ -121,6 +122,12 @@ begin
       Ord('J'): begin
         FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start);
         Exit;
+      end;
+
+      Ord('R'): begin
+        UGraphic.UnLoadScreens();
+        Theme.LoadTheme(Ini.Theme, Ini.Color);
+        UGraphic.LoadScreens(USDXVersionStr);
       end;
 
       Ord('T'): begin
