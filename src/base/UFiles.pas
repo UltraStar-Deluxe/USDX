@@ -50,7 +50,7 @@ type
  * Throws a TEncodingException if the song's fields cannot be encoded in the
  * requested encoding.
  *}
-function SaveSong(const Song: TSong; const Lines: TLines; const Name: IPath; Relative: boolean): TSaveSongResult;
+function SaveSong(const Song: TSong; const Lines: array of TLines; const Name: IPath; Relative: boolean): TSaveSongResult;
 
 implementation
 
@@ -83,11 +83,12 @@ end;
 //--------------------
 // Saves a Song
 //--------------------
-function SaveSong(const Song: TSong; const Lines: TLines; const Name: IPath; Relative: boolean): TSaveSongResult;
+function SaveSong(const Song: TSong; const Lines: array of TLines; const Name: IPath; Relative: boolean): TSaveSongResult;
 var
-  C:      integer;
-  N:      integer;
-  S:      AnsiString;
+  CurrentLine:      integer;
+  CurrentNote:      integer;
+  CurrentTrack:     integer;
+  Line:             AnsiString;
   B:      integer;
   RelativeSubTime: integer;
   NoteState: AnsiString;
@@ -137,23 +138,23 @@ begin
       SongFile.WriteLine('#TITLE:'    + EncodeToken(Song.Title));
       SongFile.WriteLine('#ARTIST:'   + EncodeToken(Song.Artist));
 
-      if Song.Language    <> 'Unknown' then SongFile.WriteLine('#LANGUAGE:'  + EncodeToken(Song.Language));
-      if Song.Edition     <> 'Unknown' then SongFile.WriteLine('#EDITION:'   + EncodeToken(Song.Edition));
-      if Song.Genre       <> 'Unknown' then SongFile.WriteLine('#GENRE:'     + EncodeToken(Song.Genre));
-      if Song.Year        <> 0         then SongFile.WriteLine('#YEAR:'      + IntToStr(Song.Year));
-      if Song.Creator     <> ''        then SongFile.WriteLine('#CREATOR:'   + EncodeToken(Song.Creator));
+      if Song.Language    <> 'Unknown' then    SongFile.WriteLine('#LANGUAGE:'  + EncodeToken(Song.Language));
+      if Song.Edition     <> 'Unknown' then    SongFile.WriteLine('#EDITION:'   + EncodeToken(Song.Edition));
+      if Song.Genre       <> 'Unknown' then    SongFile.WriteLine('#GENRE:'     + EncodeToken(Song.Genre));
+      if Song.Year        <> 0         then    SongFile.WriteLine('#YEAR:'      + IntToStr(Song.Year));
+      if Song.Creator     <> ''        then    SongFile.WriteLine('#CREATOR:'   + EncodeToken(Song.Creator));
 
       SongFile.WriteLine('#MP3:' + EncodeToken(Song.Mp3.ToUTF8));
-      if Song.Cover.IsSet      then    SongFile.WriteLine('#COVER:'       + EncodeToken(Song.Cover.ToUTF8));
-      if Song.Background.IsSet then    SongFile.WriteLine('#BACKGROUND:'  + EncodeToken(Song.Background.ToUTF8));
-      if Song.Video.IsSet      then    SongFile.WriteLine('#VIDEO:'       + EncodeToken(Song.Video.ToUTF8));
+      if Song.Cover.IsSet              then    SongFile.WriteLine('#COVER:'       + EncodeToken(Song.Cover.ToUTF8));
+      if Song.Background.IsSet         then    SongFile.WriteLine('#BACKGROUND:'  + EncodeToken(Song.Background.ToUTF8));
+      if Song.Video.IsSet              then    SongFile.WriteLine('#VIDEO:'       + EncodeToken(Song.Video.ToUTF8));
 
-      if Song.VideoGAP    <> 0.0  then    SongFile.WriteLine('#VIDEOGAP:'    + FloatToStr(Song.VideoGAP));
-      if Song.Resolution  <> 4    then    SongFile.WriteLine('#RESOLUTION:'  + IntToStr(Song.Resolution));
-      if Song.NotesGAP    <> 0    then    SongFile.WriteLine('#NOTESGAP:'    + IntToStr(Song.NotesGAP));
-      if Song.Start       <> 0.0  then    SongFile.WriteLine('#START:'       + FloatToStr(Song.Start));
-      if Song.Finish      <> 0    then    SongFile.WriteLine('#END:'         + IntToStr(Song.Finish));
-      if Relative                 then    SongFile.WriteLine('#RELATIVE:yes');
+      if Song.VideoGAP    <> 0.0       then    SongFile.WriteLine('#VIDEOGAP:'    + FloatToStr(Song.VideoGAP));
+      if Song.Resolution  <> 4         then    SongFile.WriteLine('#RESOLUTION:'  + IntToStr(Song.Resolution));
+      if Song.NotesGAP    <> 0         then    SongFile.WriteLine('#NOTESGAP:'    + IntToStr(Song.NotesGAP));
+      if Song.Start       <> 0.0       then    SongFile.WriteLine('#START:'       + FloatToStr(Song.Start));
+      if Song.Finish      <> 0         then    SongFile.WriteLine('#END:'         + IntToStr(Song.Finish));
+      if not Song.isDuet and Relative  then    SongFile.WriteLine('#RELATIVE:yes');
 
       if Song.HasPreview and (Song.PreviewStart >= 0.0) then // also allow writing 0.0 preview if set
         SongFile.WriteLine('#PREVIEWSTART:' + FloatToStr(Song.PreviewStart));
@@ -167,6 +168,12 @@ begin
       SongFile.WriteLine('#BPM:' + FloatToStr(Song.BPM[0].BPM / 4));
       SongFile.WriteLine('#GAP:' + FloatToStr(Song.GAP));
 
+      if Song.isDuet then
+      begin
+        SongFile.WriteLine('#P1:' + EncodeToken(Song.DuetNames[0]));
+        SongFile.WriteLine('#P2:' + EncodeToken(Song.DuetNames[1]));
+      end;
+
       // write custom header tags
       WriteCustomTags;
 
@@ -175,42 +182,51 @@ begin
         SongFile.WriteLine('B ' + FloatToStr(Song.BPM[B].StartBeat) + ' '
                                 + FloatToStr(Song.BPM[B].BPM/4));
 
-      for C := 0 to Lines.High do
+      for CurrentTrack := 0 to Length(Lines) - 1 do
       begin
-        for N := 0 to Lines.Line[C].HighNote do
+        if Song.isDuet then
         begin
-          with Lines.Line[C].Note[N] do
-          begin
-            //Golden + Freestyle Note Patch
-            case Lines.Line[C].Note[N].NoteType of
-              ntFreestyle: NoteState := 'F ';
-              ntNormal: NoteState := ': ';
-              ntGolden: NoteState := '* ';
-              ntRap: NoteState:= 'R ';
-              ntRapGolden: NoteState:='G ';
-            end; // case
-            S := NoteState + IntToStr(Start-RelativeSubTime) + ' '
-                           + IntToStr(Length) + ' '
-                           + IntToStr(Tone) + ' '
-                           + EncodeToken(Text);
-
-            SongFile.WriteLine(S);
-          end; // with
-        end; // N
-
-        if C < Lines.High then // don't write end of last sentence
-        begin
-          if not Relative then
-            S := '- ' + IntToStr(Lines.Line[C+1].Start)
-          else
-          begin
-            S := '- ' + IntToStr(Lines.Line[C+1].Start - RelativeSubTime) +
-              ' ' + IntToStr(Lines.Line[C+1].Start - RelativeSubTime);
-            RelativeSubTime := Lines.Line[C+1].Start;
-          end;
-          SongFile.WriteLine(S);
+          Line := 'P' + IntToStr(CurrentTrack+1);
+          SongFile.WriteLine(Line);
         end;
-      end; // C
+
+        for CurrentLine := 0 to Lines[CurrentTrack].High do
+        begin
+          for CurrentNote := 0 to Lines[CurrentTrack].Line[CurrentLine].HighNote do
+          begin
+            with Lines[CurrentTrack].Line[CurrentLine].Note[CurrentNote] do
+            begin
+              //Golden + Freestyle Note Patch
+              case Lines[CurrentTrack].Line[CurrentLine].Note[CurrentNote].NoteType of
+                ntFreestyle: NoteState := 'F ';
+                ntNormal: NoteState := ': ';
+                ntGolden: NoteState := '* ';
+                ntRap: NoteState:= 'R ';
+                ntRapGolden: NoteState:='G ';
+              end; // case
+              Line := NoteState + IntToStr(Start-RelativeSubTime) + ' '
+                                + IntToStr(Length) + ' '
+                                + IntToStr(Tone) + ' '
+                                + EncodeToken(Text);
+
+              SongFile.WriteLine(Line);
+            end; // with
+          end; // CurrentNote
+
+          if CurrentLine < Lines[CurrentTrack].High then // don't write end of last sentence
+          begin
+            if not Relative then
+              Line := '- ' + IntToStr(Lines[CurrentTrack].Line[CurrentLine+1].Start)
+            else
+            begin
+              Line := '- ' + IntToStr(Lines[CurrentTrack].Line[CurrentLine+1].Start - RelativeSubTime) +
+                ' ' + IntToStr(Lines[CurrentTrack].Line[CurrentLine+1].Start - RelativeSubTime);
+              RelativeSubTime := Lines[CurrentTrack].Line[CurrentLine+1].Start;
+            end;
+            SongFile.WriteLine(Line);
+          end;
+        end; // CurrentLine
+      end;
 
       SongFile.WriteLine('E');
     finally
