@@ -4182,7 +4182,7 @@ begin
   if (Songs.SongList.Count > 0) and
      (not CatSongs.Song[Interaction].Main) and
      // currently, the editor is not suitable to edit duets
-     (not CatSongs.Song[Interaction].isDuet) and
+     //(not CatSongs.Song[Interaction].isDuet) and
      (Mode = smNormal) then
   begin
     StopMusicPreview();
@@ -4190,10 +4190,10 @@ begin
     CurrentSong := CatSongs.Song[Interaction];
     FadeTo(@ScreenEditSub);
   end
-  else if (CatSongs.Song[Interaction].isDuet) then
+  {else if (CatSongs.Song[Interaction].isDuet) then
   begin
     ScreenPopupError.ShowPopup (Language.Translate('ERROR_DUETS_NOT_EDITABLE'));
-  end;
+  end;}
 end;
 
 //Team No of Team (0-5)
