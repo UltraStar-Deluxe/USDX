@@ -40,8 +40,6 @@ uses
   UTexture;
 
 type
-  TAlignmentType = (atLeft, atCenter, atRight);
-
   TWord = record
     X:         real;
     Y:         real;
@@ -58,7 +56,7 @@ type
 
   TEditorLyrics = class
     private
-      AlignI:     TAlignmentType;
+      AlignI:     integer;
       XR:         real;
       YR:         real;
       SizeR:      real;
@@ -69,7 +67,7 @@ type
       procedure SetX(Value: real);
       procedure SetY(Value: real);
       function GetClientX: real;
-      procedure SetAlign(Value: TAlignmentType);
+      procedure SetAlign(Value: integer);
       function GetSize: real;
       procedure SetSize(Value: real);
       procedure SetSelected(Value: integer);
@@ -88,7 +86,7 @@ type
       constructor Create;
       destructor Destroy; override;
 
-      procedure AddLine(NrLine: integer);
+      procedure AddLine(CurrentTrack, CurrentLine: integer);
 
       procedure Clear;
       procedure Draw;
@@ -96,7 +94,7 @@ type
       property X: real write SetX;
       property Y: real write SetY;
       property ClientX: real read GetClientX;
-      property Align: TAlignmentType write SetAlign;
+      property Align: integer write SetAlign;
       property Size: real read GetSize write SetSize;
       property Selected: integer read SelectedI write SetSelected;
       property FontStyle: integer write SetFontStyle;
@@ -137,7 +135,7 @@ begin
   Result := Word[0].X;
 end;
 
-procedure TEditorLyrics.SetAlign(Value: TAlignmentType);
+procedure TEditorLyrics.SetAlign(Value: integer);
 begin
   AlignI := Value;
 end;
@@ -206,15 +204,23 @@ begin
   Refresh;
 end;
 
-procedure TEditorLyrics.AddLine(NrLine: integer);
+procedure TEditorLyrics.AddLine(CurrentTrack, CurrentLine: integer);
 var
-  NoteIndex: integer;
+  CurrentNote: integer;
 begin
   Clear;
-  for NoteIndex := 0 to Lines[0].Line[NrLine].HighNote do
+  if (Length(Lines[CurrentTrack].Line[CurrentLine].Note) > 0) then
   begin
-    Italic := Lines[0].Line[NrLine].Note[NoteIndex].NoteType = ntFreestyle;
-    AddWord(Lines[0].Line[NrLine].Note[NoteIndex].Text);
+    for CurrentNote := 0 to Lines[CurrentTrack].Line[CurrentLine].HighNote do
+    begin
+      Italic := Lines[CurrentTrack].Line[CurrentLine].Note[CurrentNote].NoteType = ntFreestyle;
+      AddWord(Lines[CurrentTrack].Line[CurrentLine].Note[CurrentNote].Text);
+    end;
+  {end else
+  begin
+    Italic := false;
+    AddWord(' ', false);
+    Text := ' ';}
   end;
   Selected := -1;
 end;
@@ -230,7 +236,7 @@ var
   WordIndex:  integer;
   TotalWidth: real;
 begin
-  if AlignI = atCenter then
+  if AlignI = 1 then // center
   begin
     TotalWidth := 0;
     for WordIndex := 0 to High(Word) do
