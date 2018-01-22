@@ -551,23 +551,23 @@ begin
   Line.Note[4].Text := ' sit';
   Line.Note[5].Text := ' amet';
 
-  Line.Note[0].Start := 0;
-  Line.Note[1].Start := 10;
-  Line.Note[2].Start := 20;
-  Line.Note[3].Start := 30;
-  Line.Note[4].Start := 40;
-  Line.Note[5].Start := 50;
+  Line.Note[0].StartBeat := 0;
+  Line.Note[1].StartBeat := 10;
+  Line.Note[2].StartBeat := 20;
+  Line.Note[3].StartBeat := 30;
+  Line.Note[4].StartBeat := 40;
+  Line.Note[5].StartBeat := 50;
 
-  Line.Note[0].Length := 10;
-  Line.Note[1].Length := 10;
-  Line.Note[2].Length := 10;
-  Line.Note[3].Length := 10;
-  Line.Note[4].Length := 10;
-  Line.Note[5].Length := 10;
+  Line.Note[0].Duration := 10;
+  Line.Note[1].Duration := 10;
+  Line.Note[2].Duration := 10;
+  Line.Note[3].Duration := 10;
+  Line.Note[4].Duration := 10;
+  Line.Note[5].Duration := 10;
 
   Line.TotalNotes := 6;
-  Line.End_ := 60;
-  Line.Start := 0;
+  Line.EndBeat := 60;
+  Line.StartBeat := 0;
   Line.LastLine := true;
   Lyrics.AddLine(@Line);
 
@@ -579,13 +579,13 @@ begin
   Line.Note[1].Text := ' adipiscing';
   Line.Note[2].Text := ' elit';
 
-  Line.Note[0].Start := 60;
-  Line.Note[1].Start := 70;
-  Line.Note[2].Start := 80;
+  Line.Note[0].StartBeat := 60;
+  Line.Note[1].StartBeat := 70;
+  Line.Note[2].StartBeat := 80;
 
-  Line.Note[0].Length := 10;
-  Line.Note[1].Length := 10;
-  Line.Note[2].Length := 10;
+  Line.Note[0].Duration := 10;
+  Line.Note[1].Duration := 10;
+  Line.Note[2].Duration := 10;
 
   Line.LastLine := true;
 

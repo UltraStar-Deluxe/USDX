@@ -1363,9 +1363,9 @@ begin
 
 (*
     //todo: i need a clever method to draw statics with their z value
-    for I := 0 to Length(Statics) - 1 do
+    for I := 0 to High(Statics) do
       Statics[I].Draw;
-    for I := 0 to Length(Text) - 1 do
+    for I := 0 to High(Text) do
       Text[I].Draw;
 *)
 
@@ -1866,7 +1866,7 @@ begin
       Voice := CurrentRound;
       changed := true;
       SetLength(files, PlaylistMedley.NumPlayer);
-      for I := 0 to Length(files) - 1 do
+      for I := 0 to High(files) do
         files[I] := PlaylistMedley.Stats[Voice].Player[I].VoiceFile;
     end;
   end else
@@ -1874,7 +1874,7 @@ begin
     Voice := 0;
     changed := true;
     SetLength(files, PlayersPlay);
-    for I := 0 to Length(files) - 1 do
+    for I := 0 to High(files) do
       files[I] := Player[I].VoiceFile;
   end;
 

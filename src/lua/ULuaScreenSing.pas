@@ -445,7 +445,7 @@ begin
       lua_CreateTable(L, 0, 3);
 
       // line start
-      lua_PushInteger(L, Start);
+      lua_PushInteger(L, StartBeat);
       lua_SetField(L, -2, PChar('Start'));
 
       // line lyric
@@ -463,11 +463,11 @@ begin
         lua_CreateTable(L, 0, 5);
 
         // Notes[J+1].Start
-        lua_PushInteger(L, Note[J].Start);
+        lua_PushInteger(L, Note[J].StartBeat);
         lua_SetField(L, -2, PChar('Start'));
 
         // Notes[J+1].Length
-        lua_PushInteger(L, Note[J].Length);
+        lua_PushInteger(L, Note[J].Duration);
         lua_SetField(L, -2, PChar('Length'));
 
         // Notes[J+1].Tone

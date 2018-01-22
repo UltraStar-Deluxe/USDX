@@ -1409,7 +1409,7 @@ begin
     SetLength(Note, Length(Note) + 1);
     HighNote := High(Note);
 
-    Note[HighNote].Start := StartP;
+    Note[HighNote].StartBeat := StartP;
     if HighNote = 0 then
     begin
       if Lines[LineNumber].Number = 1 then
@@ -1417,7 +1417,7 @@ begin
         //Start := Note[HighNote].Start;
     end;
 
-    Note[HighNote].Length := DurationP;
+    Note[HighNote].Duration := DurationP;
 
     // back to the normal system with normal, golden and now freestyle notes
     case TypeP of
@@ -1429,10 +1429,10 @@ begin
     end;
 
     //add this notes value ("notes length" * "notes scorefactor") to the current songs entire value
-    Inc(Lines[LineNumber].ScoreValue, Note[HighNote].Length * ScoreFactor[Note[HighNote].NoteType]);
+    Inc(Lines[LineNumber].ScoreValue, Note[HighNote].Duration * ScoreFactor[Note[HighNote].NoteType]);
 
     //and to the current lines entire value
-    Inc(TotalNotes, Note[HighNote].Length * ScoreFactor[Note[HighNote].NoteType]);
+    Inc(TotalNotes, Note[HighNote].Duration * ScoreFactor[Note[HighNote].NoteType]);
 
 
     Note[HighNote].Tone := NoteP;
@@ -1447,7 +1447,7 @@ begin
     DecodeStringUTF8(LyricS, Note[HighNote].Text, Encoding);
     Lyric := Lyric + Note[HighNote].Text;
 
-    End_ := Note[HighNote].Start + Note[HighNote].Length;
+    EndBeat := Note[HighNote].StartBeat + Note[HighNote].Duration;
   end; // with
 end;
 
@@ -1483,11 +1483,11 @@ begin
 
   if self.Relative then
   begin
-    Lines[LineNumberP].Line[Lines[LineNumberP].High].Start := Param1;
+    Lines[LineNumberP].Line[Lines[LineNumberP].High].StartBeat := Param1;
     Rel[LineNumberP] := Rel[LineNumberP] + Param2;
   end
   else
-    Lines[LineNumberP].Line[Lines[LineNumberP].High].Start := Param1;
+    Lines[LineNumberP].Line[Lines[LineNumberP].High].StartBeat := Param1;
 
   Lines[LineNumberP].Line[Lines[LineNumberP].High].LastLine := false;
 end;
@@ -1536,7 +1536,7 @@ begin
   for I := 0 to num_lines - 1 do
   begin
     sentences[I] := '';
-    for J := 0 to Length(Lines[0].Line[I].Note) - 1 do
+    for J := 0 to High(Lines[0].Line[I].Note) do
     begin
       if (Lines[0].Line[I].Note[J].NoteType <> ntFreestyle) then
         sentences[I] := sentences[I] + Lines[0].Line[I].Note[J].Text;
@@ -1578,7 +1578,7 @@ begin
   max := 0;
   if Length(series) > 0 then
   begin
-    for I := 0 to Length(series) - 1 do
+    for I := 0 to High(series) do
     begin
       if series[I].len > series[max].len then
         max := I;
@@ -1589,10 +1589,10 @@ begin
 
   if (Length(series) > 0) and (series[max].len > 3) then
   begin
-    self.Medley.StartBeat := Lines[0].Line[series[max].start].Note[0].Start;
+    self.Medley.StartBeat := Lines[0].Line[series[max].start].Note[0].StartBeat;
     len_notes := length(Lines[0].Line[series[max].end_].Note);
-    self.Medley.EndBeat := Lines[0].Line[series[max].end_].Note[len_notes - 1].Start +
-      Lines[0].Line[series[max].end_].Note[len_notes - 1].Length;
+    self.Medley.EndBeat := Lines[0].Line[series[max].end_].Note[len_notes - 1].StartBeat +
+      Lines[0].Line[series[max].end_].Note[len_notes - 1].Duration;
 
     found_end := false;
 
@@ -1613,12 +1613,12 @@ begin
         for J := 0 to len_notes - 1 do
         begin
           if GetTimeFromBeat(self.Medley.StartBeat) + MEDLEY_MIN_DURATION >
-            GetTimeFromBeat(Lines[0].Line[I].Note[J].Start +
-            Lines[0].Line[I].Note[J].Length) then
+            GetTimeFromBeat(Lines[0].Line[I].Note[J].StartBeat +
+            Lines[0].Line[I].Note[J].Duration) then
           begin
             found_end := true;
-            self.Medley.EndBeat := Lines[0].Line[I].Note[len_notes-1].Start +
-              Lines[0].Line[I].Note[len_notes - 1].Length;
+            self.Medley.EndBeat := Lines[0].Line[I].Note[len_notes-1].StartBeat +
+              Lines[0].Line[I].Note[len_notes - 1].Duration;
             break;
           end;
         end;
@@ -1660,20 +1660,20 @@ begin
   SetLength(cut_line, Length(Lines));
   SetLength(foundcut, Length(Lines));
 
-  for pl := 0 to Length(Lines) - 1 do
+  for pl := 0 to High(Lines) do
   begin
     foundcut[pl] := false;
     cut_line[pl] := high(Integer);
     Lines[pl].ScoreValue := 0;
-    for line := 0 to Length(Lines[pl].Line) - 1 do
+    for line := 0 to High(Lines[pl].Line) do
     begin
       Lines[pl].Line[line].TotalNotes := 0;
-      for note := 0 to Length(Lines[pl].Line[line].Note) - 1 do
+      for note := 0 to High(Lines[pl].Line[line].Note) do
       begin
-        if Lines[pl].Line[line].Note[note].Start < start then      //check start
+        if Lines[pl].Line[line].Note[note].StartBeat < start then      //check start
         begin
           Lines[pl].Line[line].Note[note].NoteType := ntFreeStyle;
-        end else if Lines[pl].Line[line].Note[note].Start>= end_ then  //check end
+        end else if Lines[pl].Line[line].Note[note].StartBeat >= end_ then  //check end
         begin
           Lines[pl].Line[line].Note[note].NoteType := ntFreeStyle;
           if not foundcut[pl] then
@@ -1688,15 +1688,15 @@ begin
 	else
         begin
           //add this notes value ("notes length" * "notes scorefactor") to the current songs entire value
-          Inc(Lines[pl].ScoreValue, Lines[pl].Line[line].Note[note].Length * ScoreFactor[Lines[pl].Line[line].Note[note].NoteType]);
+          Inc(Lines[pl].ScoreValue, Lines[pl].Line[line].Note[note].Duration * ScoreFactor[Lines[pl].Line[line].Note[note].NoteType]);
           //and to the current lines entire value
-          Inc(Lines[pl].Line[line].TotalNotes, Lines[pl].Line[line].Note[note].Length * ScoreFactor[Lines[pl].Line[line].Note[note].NoteType]);
+          Inc(Lines[pl].Line[line].TotalNotes, Lines[pl].Line[line].Note[note].Duration * ScoreFactor[Lines[pl].Line[line].Note[note].NoteType]);
         end;
       end;
     end;
   end;
 
-  for pl := 0 to Length(Lines) - 1 do
+  for pl := 0 to High(Lines) do
   begin
     if (foundcut[pl]) and (Length(Lines[pl].Line) > cut_line[pl]) then
     begin

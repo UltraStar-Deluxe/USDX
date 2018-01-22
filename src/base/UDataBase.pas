@@ -542,7 +542,7 @@ begin
         begin
           if (Length(Song.Score[Difficulty])>0) then
           begin
-            for I := 0 to Length(Song.Score[Difficulty]) - 1 do
+            for I := 0 to High(Song.Score[Difficulty]) do
             begin
               if (Song.Score[Difficulty, I].Name = TableData.FieldByName['Player']) then
               begin
