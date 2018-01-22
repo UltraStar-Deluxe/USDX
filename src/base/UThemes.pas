@@ -4122,7 +4122,7 @@ procedure TTheme.ThemeSaveStatics(ThemeStatic: AThemeStatic; const Name: string)
 var
   S: integer;
 begin
-  for S := 0 to Length(ThemeStatic)-1 do
+  for S := 0 to High(ThemeStatic) do
     ThemeSaveStatic(ThemeStatic[S], Name + {'Static' +} IntToStr(S+1));
 
   ThemeIni.EraseSection(Name + {'Static' + }IntToStr(S+1));

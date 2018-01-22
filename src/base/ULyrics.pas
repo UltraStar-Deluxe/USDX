@@ -290,7 +290,7 @@ end;
 procedure TLyricEngine.AddLine(Line: PLine);
 var
   LyricLine: TLyricLine;
-  I: integer;
+  NoteIndex: integer;
 begin
   // only add lines, if there is space
   if not IsQueueFull then
@@ -323,23 +323,23 @@ begin
   begin
 
     // copy values from SongLine to LyricLine
-    LyricLine.Start     := Line.Start;
-    LyricLine.StartNote := Line.Note[0].Start;
-    LyricLine.Length    := Line.Note[High(Line.Note)].Start +
-                           Line.Note[High(Line.Note)].Length -
-                           Line.Note[0].Start;
+    LyricLine.Start     := Line.StartBeat;
+    LyricLine.StartNote := Line.Note[0].StartBeat;
+    LyricLine.Length    := Line.Note[High(Line.Note)].StartBeat +
+                           Line.Note[High(Line.Note)].Duration -
+                           Line.Note[0].StartBeat;
     LyricLine.LastLine  := Line.LastLine;
 
     // copy words
     SetLength(LyricLine.Words, Length(Line.Note));
-    for I := 0 to High(Line.Note) do
+    for NoteIndex := 0 to High(Line.Note) do
     begin
-      LyricLine.Words[I].Start     := Line.Note[I].Start;
-      LyricLine.Words[I].Length    := Line.Note[I].Length;
-      LyricLine.Words[I].Text      := Line.Note[I].Text;
-      LyricLine.Words[I].Freestyle := Line.Note[I].NoteType = ntFreestyle;
+      LyricLine.Words[NoteIndex].Start     := Line.Note[NoteIndex].StartBeat;
+      LyricLine.Words[NoteIndex].Length    := Line.Note[NoteIndex].Duration;
+      LyricLine.Words[NoteIndex].Text      := Line.Note[NoteIndex].Text;
+      LyricLine.Words[NoteIndex].Freestyle := Line.Note[NoteIndex].NoteType = ntFreestyle;
 
-      LyricLine.Text := LyricLine.Text + LyricLine.Words[I].Text;
+      LyricLine.Text := LyricLine.Text + LyricLine.Words[NoteIndex].Text;
     end;
 
     UpdateLineMetrics(LyricLine);

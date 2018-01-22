@@ -208,7 +208,7 @@ var
   I: integer;
 begin
   // search for first valid cover-size > Size
-  for I := 0 to Length(ITextureSizeVals)-1 do
+  for I := 0 to High(ITextureSizeVals) do
   begin
     if (Size <= ITextureSizeVals[I]) then
     begin

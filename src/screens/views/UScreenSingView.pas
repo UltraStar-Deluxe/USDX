@@ -1773,8 +1773,8 @@ begin
     numLines := Length(Lines[CurrentLine].Line); //Lyric lines
     if (numLines < 2) then //catch cases which could cause endless loop
       Exit;
-    if SongStart > (Lines[CurrentLine].Line[0].Note[0].Start+(CurrentSong.BPM[0].BPM*CurrentSong.GAP*(1/60/1000))) then
-           SongStart := Lines[CurrentLine].Line[0].Note[0].Start + (CurrentSong.BPM[0].BPM*CurrentSong.GAP*(1/60/1000));
+    if SongStart > (Lines[CurrentLine].Line[0].Note[0].StartBeat + (CurrentSong.BPM[0].BPM*CurrentSong.GAP*(1/60/1000))) then
+      SongStart := Lines[CurrentLine].Line[0].Note[0].StartBeat + (CurrentSong.BPM[0].BPM*CurrentSong.GAP*(1/60/1000));
   end;
   ww := SongEnd - SongStart;
 
@@ -1792,11 +1792,11 @@ begin
     glbegin(gl_quads);
     for line := 0 to numLines - 1 do
     begin
-      if (Lines[CurrentLine].Line[line].Note = nil) or (ww < Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].Start) then Continue;
-      pos := (Lines[CurrentLine].Line[line].Note[0].Start)/ww*w;
-      br := (Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].Start +
-                Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].Length -
-                Lines[CurrentLine].Line[line].Note[0].Start ) / ww*w; //br = last note of sentence position + its length - first note of sentence position
+      if (Lines[CurrentLine].Line[line].Note = nil) or (ww < Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].StartBeat) then Continue;
+      pos := (Lines[CurrentLine].Line[line].Note[0].StartBeat) / ww*w;
+      br := (Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].StartBeat +
+                Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].Duration -
+                Lines[CurrentLine].Line[line].Note[0].StartBeat) / ww*w; //br = last note of sentence position + its duration - first note of sentence position
 
        //draw a square
         glVertex2f(x+pos, y); //left top

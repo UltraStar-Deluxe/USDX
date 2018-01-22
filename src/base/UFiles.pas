@@ -182,7 +182,7 @@ begin
         SongFile.WriteLine('B ' + FloatToStr(Song.BPM[B].StartBeat) + ' '
                                 + FloatToStr(Song.BPM[B].BPM/4));
 
-      for CurrentTrack := 0 to Length(Lines) - 1 do
+      for CurrentTrack := 0 to High(Lines) do
       begin
         if Song.isDuet then
         begin
@@ -204,8 +204,8 @@ begin
                 ntRap: NoteState:= 'R ';
                 ntRapGolden: NoteState:='G ';
               end; // case
-              Line := NoteState + IntToStr(Start-RelativeSubTime) + ' '
-                                + IntToStr(Length) + ' '
+              Line := NoteState + IntToStr(StartBeat - RelativeSubTime) + ' '
+                                + IntToStr(Duration) + ' '
                                 + IntToStr(Tone) + ' '
                                 + EncodeToken(Text);
 
@@ -216,12 +216,12 @@ begin
           if CurrentLine < Lines[CurrentTrack].High then // don't write end of last sentence
           begin
             if not Relative then
-              Line := '- ' + IntToStr(Lines[CurrentTrack].Line[CurrentLine+1].Start)
+              Line := '- ' + IntToStr(Lines[CurrentTrack].Line[CurrentLine+1].StartBeat)
             else
             begin
-              Line := '- ' + IntToStr(Lines[CurrentTrack].Line[CurrentLine+1].Start - RelativeSubTime) +
-                ' ' + IntToStr(Lines[CurrentTrack].Line[CurrentLine+1].Start - RelativeSubTime);
-              RelativeSubTime := Lines[CurrentTrack].Line[CurrentLine+1].Start;
+              Line := '- ' + IntToStr(Lines[CurrentTrack].Line[CurrentLine+1].StartBeat - RelativeSubTime) +
+                ' ' + IntToStr(Lines[CurrentTrack].Line[CurrentLine+1].StartBeat - RelativeSubTime);
+              RelativeSubTime := Lines[CurrentTrack].Line[CurrentLine+1].StartBeat;
             end;
             SongFile.WriteLine(Line);
           end;

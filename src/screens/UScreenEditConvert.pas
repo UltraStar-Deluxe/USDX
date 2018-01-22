@@ -90,10 +90,10 @@ type
   TLyricType = (ltKMIDI, ltSMFLyric);
 
   TTrack = record
-    Selected: boolean;
-    Note:   array of TMidiNote;
-    Name:   UTF8String; // normally ASCII
-    Status: set of (tsNotes, tsLyrics); //< track contains notes, lyrics or both
+    Selected:  boolean;
+    Note:      array of TMidiNote;
+    Name:      UTF8String; // normally ASCII
+    Status:    set of (tsNotes, tsLyrics); //< track contains notes, lyrics or both
     LyricType: set of TLyricType;
     NoteType:  (ntNone, ntAvail);
     HighNote, LowNote: byte; // highest and lowest note of this track
@@ -105,11 +105,11 @@ type
   end;
 
   TNote = record
-    Start:    integer;
-    Len:      integer;
-    Tone:     integer;
-    Lyric:    UTF8String;
-    NewSentence:  boolean;
+    StartBeat:   integer;
+    Len:         integer;
+    Tone:        integer;
+    Lyric:       UTF8String;
+    NewSentence: boolean;
   end;
 
   TArrayTrack = array of TTrack;
@@ -150,7 +150,7 @@ type
       Ticks:     real;
       Note:      array of TNote;
 
-      procedure AddLyric(Start: integer; LyricType: TLyricType; Text: UTF8String);
+      procedure AddLyric(StartBeat: integer; LyricType: TLyricType; Text: UTF8String);
       procedure Extract(out Song: TSong; out Lines: TLines);
 
       {$IFDEF UseMIDIPort}
@@ -509,7 +509,7 @@ begin
   end;
 end;
 
-procedure TScreenEditConvert.AddLyric(Start: integer; LyricType: TLyricType; Text: UTF8String);
+procedure TScreenEditConvert.AddLyric(StartBeat: integer; LyricType: TLyricType; Text: UTF8String);
 var
   N:    integer;
 begin
@@ -517,7 +517,7 @@ begin
   N := 0;
   while (N <= High(Note)) do
   begin
-    if Note[N].Start = Start then
+    if Note[N].StartBeat = StartBeat then
       Break;
     Inc(N);
   end;
@@ -596,7 +596,7 @@ begin
         begin
           Nu := Length(Note);
           SetLength(Note, Nu + 1);
-          Note[Nu].Start := Round(Tracks[T].Note[N].Start / Ticks);
+          Note[Nu].StartBeat := Round(Tracks[T].Note[N].Start / Ticks);
           Note[Nu].Len := Round(Tracks[T].Note[N].Len / Ticks);
           Note[Nu].Tone := Tracks[T].Note[N].Data1 - 12*5;
           Note[Nu].Lyric := '-';
@@ -657,7 +657,7 @@ begin
   // sort notes
   for N := 0 to High(Note) do
     for Nu := 0 to High(Note)-1 do
-      if Note[Nu].Start > Note[Nu+1].Start then
+      if Note[Nu].StartBeat > Note[Nu+1].StartBeat then
       begin
         NoteTemp := Note[Nu];
         Note[Nu] := Note[Nu+1];
@@ -665,9 +665,9 @@ begin
       end;
 
   // move to 0 at beginning
-  Move := Note[0].Start;
+  Move := Note[0].StartBeat;
   for N := 0 to High(Note) do
-    Note[N].Start := Note[N].Start - Move;
+    Note[N].StartBeat := Note[N].StartBeat - Move;
 
   // copy notes
   SetLength(Lines.Line, 1);
@@ -697,19 +697,19 @@ begin
       //Calculate Start of the Last Sentence
       if (C > 0) and (Nu > 0) then
       begin
-        Max := Note[Nu].Start;
-        Min := Note[Nu-1].Start + Note[Nu-1].Len;
+        Max := Note[Nu].StartBeat;
+        Min := Note[Nu-1].StartBeat + Note[Nu-1].Len;
         
         case (Max - Min) of
-          0:    Lines.Line[C].Start := Max;
-          1:    Lines.Line[C].Start := Max;
-          2:    Lines.Line[C].Start := Max - 1;
-          3:    Lines.Line[C].Start := Max - 2;
+          0:    Lines.Line[C].StartBeat := Max;
+          1:    Lines.Line[C].StartBeat := Max;
+          2:    Lines.Line[C].StartBeat := Max - 1;
+          3:    Lines.Line[C].StartBeat := Max - 2;
           else
             if ((Max - Min) > 4) then
-              Lines.Line[C].Start := Min + 2
+              Lines.Line[C].StartBeat := Min + 2
             else
-              Lines.Line[C].Start := Max;
+              Lines.Line[C].StartBeat := Max;
 
         end; // case
 
@@ -721,8 +721,8 @@ begin
     Inc(Lines.Line[C].HighNote);
 
     // initialize note
-    Lines.Line[C].Note[N].Start := Note[Nu].Start;
-    Lines.Line[C].Note[N].Length := Note[Nu].Len;
+    Lines.Line[C].Note[N].StartBeat := Note[Nu].StartBeat;
+    Lines.Line[C].Note[N].Duration := Note[Nu].Len;
     Lines.Line[C].Note[N].Tone := Note[Nu].Tone;
     Lines.Line[C].Note[N].Text := DecodeStringUTF8(Note[Nu].Lyric, DEFAULT_ENCODING);
     Lines.Line[C].Note[N].NoteType := ntNormal;

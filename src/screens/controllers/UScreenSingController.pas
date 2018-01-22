@@ -1065,27 +1065,27 @@ var
 
   function FindNote(beat: integer): TPos;
   var
-    line:   integer;
-    note:   integer;
-    found:  boolean;
-    min:    integer;
-    diff:   integer;
+    LineIndex: integer;
+    NoteIndex: integer;
+    found:     boolean;
+    min:       integer;
+    diff:      integer;
 
   begin
     found := false;
 
-    for line := 0 to length(Lines[0].Line) - 1 do
+    for LineIndex := 0 to High(Lines[0].Line) do
     begin
-      for note := 0 to length(Lines[0].Line[line].Note) - 1 do
+      for NoteIndex := 0 to High(Lines[0].Line[LineIndex].Note) do
       begin
-        if (beat >= Lines[0].Line[line].Note[note].Start) and
-           (beat <= Lines[0].Line[line].Note[note].Start + Lines[0].Line[line].Note[note].Length) then
+        if (beat >= Lines[0].Line[LineIndex].Note[NoteIndex].StartBeat) and
+           (beat <= Lines[0].Line[LineIndex].Note[NoteIndex].StartBeat + Lines[0].Line[LineIndex].Note[NoteIndex].Duration) then
         begin
           Result.part := 0;
-          Result.line := line;
-          Result.note := note;
+          Result.line := LineIndex;
+          Result.note := NoteIndex;
           Result.CP := 0;
-          found:=true;
+          found := true;
           break;
         end;
       end;
@@ -1096,17 +1096,17 @@ var
 
     if CurrentSong.isDuet and (PlayersPlay <> 1) then
     begin
-      for Line := 0 to length(Lines[1].Line) - 1 do
+      for LineIndex := 0 to High(Lines[1].Line) do
       begin
-        for Note := 0 to length(Lines[1].Line[Line].Note) - 1 do
+        for NoteIndex := 0 to High(Lines[1].Line[LineIndex].Note) do
         begin
-          if (beat>=Lines[1].Line[Line].Note[Note].Start) and
-            (beat<=Lines[1].Line[Line].Note[Note].Start + Lines[1].Line[Line].Note[Note].Length) then
+          if (beat>=Lines[1].Line[LineIndex].Note[NoteIndex].StartBeat) and
+             (beat<=Lines[1].Line[LineIndex].Note[NoteIndex].StartBeat + Lines[1].Line[LineIndex].Note[NoteIndex].Duration) then
           begin
             Result.CP := 1;
-            Result.line := Line;
-            Result.note := Note;
-            found:=true;
+            Result.line := LineIndex;
+            Result.note := NoteIndex;
+            found := true;
             break;
           end;
         end;
@@ -1118,16 +1118,16 @@ var
 
     min := high(integer);
     //second try (approximating)
-    for line := 0 to length(Lines[0].Line) - 1 do
+    for LineIndex := 0 to High(Lines[0].Line) do
     begin
-      for note := 0 to length(Lines[0].Line[line].Note) - 1 do
+      for NoteIndex := 0 to High(Lines[0].Line[LineIndex].Note) do
       begin
-        diff := abs(Lines[0].Line[line].Note[note].Start - beat);
+        diff := abs(Lines[0].Line[LineIndex].Note[NoteIndex].StartBeat - beat);
         if diff < min then
         begin
           Result.part := 0;
-          Result.line := line;
-          Result.note := note;
+          Result.line := LineIndex;
+          Result.note := NoteIndex;
           Result.CP := 0;
           min := diff;
         end;
@@ -1136,16 +1136,16 @@ var
 
     if CurrentSong.isDuet and (PlayersPlay <> 1) then
     begin
-      for Line := 0 to length(Lines[1].Line) - 1 do
+      for LineIndex := 0 to High(Lines[1].Line) do
       begin
-        for Note := 0 to length(Lines[1].Line[Line].Note) - 1 do
+        for NoteIndex := 0 to High(Lines[1].Line[LineIndex].Note) do
         begin
-          diff := abs(Lines[1].Line[Line].Note[Note].Start - beat);
+          diff := abs(Lines[1].Line[LineIndex].Note[NoteIndex].StartBeat - beat);
           if diff<min then
           begin
             Result.CP := 1;
-            Result.line := Line;
-            Result.note := Note;
+            Result.line := LineIndex;
+            Result.note := NoteIndex;
             min := diff;
           end;
         end;
@@ -1231,7 +1231,7 @@ begin
 
     //medley start and end timestamps
     StartNote := FindNote(CurrentSong.Medley.StartBeat - round(CurrentSong.BPM[0].BPM*CurrentSong.Medley.FadeIn_time/60));
-    MedleyStart := GetTimeFromBeat(Lines[0].Line[StartNote.line].Note[0].Start);
+    MedleyStart := GetTimeFromBeat(Lines[0].Line[StartNote.line].Note[0].StartBeat);
 
     //check Medley-Start
     if (MedleyStart+CurrentSong.Medley.FadeIn_time*0.5>GetTimeFromBeat(CurrentSong.Medley.StartBeat)) then

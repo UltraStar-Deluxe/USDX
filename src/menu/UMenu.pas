@@ -1031,7 +1031,7 @@ begin
     SelectsS[J].Draw;
 
   // Third, we draw all our widgets
-  //  for J := 0 to Length(WidgetsSrc) - 1 do
+  //  for J := 0 to High(WidgetsSrc) do
   //    SDL_BlitSurface(WidgetsSrc[J], nil, ParentBackBuf, WidgetsRect[J]);
   Result := true;
 end;

@@ -412,7 +412,7 @@ begin
           if (Interaction = 1) then
           begin
             Password_TMP := '';
-            for I := 1 to Length(Password)-1 do
+            for I := 1 to High(Password) do
               Password_TMP := Password_TMP + Password[I];
             Password := Password_TMP;
           end;
@@ -572,7 +572,7 @@ begin
             if (Interaction = 4) then
             begin
               Password_TMP := '';
-              for I := 1 to Length(Password)-1 do
+              for I := 1 to High(Password) do
                 Password_TMP := Password_TMP + Password[I];
               Password := Password_TMP;
             end;
