@@ -53,7 +53,7 @@ type
   PPLayerNote = ^TPlayerNote;
   TPlayerNote = record
     Start:    integer;
-    Length:   integer;
+    Duration: integer;
     Detect:   real;    // accurate place, detected in the note
     Tone:     real;
     Perfect:  boolean; // true if the note matches the original one, light the star
@@ -323,7 +323,7 @@ begin
     // choose current parts
     for Count := 0 to Lines[CP].High do
     begin
-      if LyricsState.CurrentBeat >= Lines[CP].Line[Count].Start then
+      if LyricsState.CurrentBeat >= Lines[CP].Line[Count].StartBeat then
         Lines[CP].Current := Count;
     end;
 
@@ -361,7 +361,7 @@ begin
     // choose current parts
     for Count := 0 to Lines[CP].High do
     begin
-      if LyricsState.CurrentBeat >= Lines[CP].Line[Count].Start then
+      if LyricsState.CurrentBeat >= Lines[CP].Line[Count].StartBeat then
         Lines[CP].Current := Count;
     end;
   end; // for CountGr
@@ -405,7 +405,7 @@ begin
     for Count := 0 to Lines[0].Line[Lines[0].Current].HighNote do
     begin
       //basisbit todo
-      if (Lines[0].Line[Lines[0].Current].Note[Count].Start = LyricsState.CurrentBeatC) then
+      if (Lines[0].Line[Lines[0].Current].Note[Count].StartBeat = LyricsState.CurrentBeatC) then
       begin
         // click assist
         if Ini.ClickAssist = 1 then
@@ -458,7 +458,7 @@ begin
         begin
           if (HighNote >= 0) then
           begin
-            SentenceEnd := Note[HighNote].Start + Note[HighNote].Length;
+            SentenceEnd := Note[HighNote].StartBeat + Note[HighNote].Duration;
 
             if (LyricsState.OldBeatD < SentenceEnd) and (LyricsState.CurrentBeatD >= SentenceEnd) then
               Screen.OnSentenceEnd(CP, I);
@@ -522,10 +522,10 @@ begin
           begin
             CurrentLineFragment := @Line.Note[LineFragmentIndex];
             // check if line is active
-            if ((CurrentLineFragment.Start <= ActualBeat) and
-              (CurrentLineFragment.Start + CurrentLineFragment.Length-1 >= ActualBeat)) and
+            if ((CurrentLineFragment.StartBeat <= ActualBeat) and
+              (CurrentLineFragment.StartBeat + CurrentLineFragment.Duration-1 >= ActualBeat)) and
               (CurrentLineFragment.NoteType <> ntFreestyle) and       // but ignore FreeStyle notes
-              (CurrentLineFragment.Length > 0) then                   // and make sure the note length is at least 1
+              (CurrentLineFragment.Duration > 0) then                   // and make sure the note length is at least 1
             begin
               SentenceDetected := SentenceIndex;
               NoteAvailable := true;
@@ -564,8 +564,8 @@ begin
           for LineFragmentIndex := 0 to Line.HighNote do
           begin
             CurrentLineFragment := @Line.Note[LineFragmentIndex];
-            if (CurrentLineFragment.Start <= ActualBeat) and
-              (CurrentLineFragment.Start + CurrentLineFragment.Length > ActualBeat) then
+            if (CurrentLineFragment.StartBeat <= ActualBeat) and
+              (CurrentLineFragment.StartBeat + CurrentLineFragment.Duration > ActualBeat) then
             begin
               // set the current note type
               CurrentNoteType := CurrentLineFragment.NoteType;
@@ -654,7 +654,7 @@ begin
             if ((CurrentPlayer.LengthNote > 0) and
                 (LastPlayerNote <> nil) and
                 (LastPlayerNote.Tone = ActualTone) and
-                ((LastPlayerNote.Start + LastPlayerNote.Length) = ActualBeat)) then
+                ((LastPlayerNote.Start + LastPlayerNote.Duration) = ActualBeat)) then
             begin
               NewNote := false;
             end;
@@ -662,7 +662,7 @@ begin
             // if is not as new note to control
             for LineFragmentIndex := 0 to Line.HighNote do
             begin
-              if (Line.Note[LineFragmentIndex].Start = ActualBeat) then
+              if (Line.Note[LineFragmentIndex].StartBeat = ActualBeat) then
                 NewNote := true;
             end;
 
@@ -679,7 +679,7 @@ begin
               with LastPlayerNote^ do
               begin
                 Start    := ActualBeat;
-                Length   := 1;
+                Duration := 1;
                 Tone     := ActualTone; // Tone || ToneAbs
                 //Detect := LyricsState.MidBeat; // Not used!
                 Hit      := NoteHit; // half note patch
@@ -690,15 +690,15 @@ begin
             begin
               // extend note length
               if (LastPlayerNote <> nil) then
-                Inc(LastPlayerNote.Length);
+                Inc(LastPlayerNote.Duration);
             end;
 
             // check for perfect note and then light the star (on Draw)
             for LineFragmentIndex := 0 to Line.HighNote do
             begin
               CurrentLineFragment := @Line.Note[LineFragmentIndex];
-              if (CurrentLineFragment.Start  = LastPlayerNote.Start) and
-                (CurrentLineFragment.Length = LastPlayerNote.Length) and
+              if (CurrentLineFragment.StartBeat  = LastPlayerNote.Start) and
+                (CurrentLineFragment.Duration = LastPlayerNote.Duration) and
                 (CurrentLineFragment.Tone   = LastPlayerNote.Tone) then
               begin
                 LastPlayerNote.Perfect := true;

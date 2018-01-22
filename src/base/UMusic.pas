@@ -87,21 +87,21 @@ type
    *)
   PLineFragment = ^TLineFragment;
   TLineFragment = record
-    Color:      integer;
-    Start:      integer;    // beat the fragment starts at
-    Length:     integer;    // length in beats
-    Tone:       integer;    // full range tone
-    Text:       UTF8String; // text assigned to this fragment (a syllable, word, etc.)
-    NoteType:   TNoteType;  // note-type: golden-note/freestyle etc.
+    Color:          integer;
+    StartBeat:      integer;    // beat the fragment starts at
+    Duration:       integer;    // duration in beats
+    Tone:           integer;    // full range tone
+    Text:           UTF8String; // text assigned to this fragment (a syllable, word, etc.)
+    NoteType:       TNoteType;  // note-type: golden-note/freestyle etc.
 
-    IsMedley:   boolean;     //just for editor
-    IsStartPreview: boolean; //just for editor
+    IsMedley:       boolean; // just for editor
+    IsStartPreview: boolean; // just for editor
 
     private
     function GetEnd:integer;
 
     public
-    property End_:integer read GetEnd;
+    property EndBeat:integer read GetEnd;
 
 
   end;
@@ -112,12 +112,12 @@ type
    *)
   PLine = ^TLine;
   TLine = record
-    Start:      integer; // the start beat of this line (<> start beat of the first note of this line)
+    StartBeat:  integer; // the start beat of this line (<> start beat of the first note of this line)
     Lyric:      UTF8String;
     //LyricWidth: real;    // @deprecated: width of the line in pixels.
                          // Do not use this as the width is not correct.
                          // Use TLyricsEngine.GetUpperLine().Width instead.
-    End_:       integer;
+    EndBeat:    integer;
     BaseNote:   integer;
     HighNote:   integer; // index of last note in line (= High(Note)?)
     TotalNotes: integer; // value of all notes in the line
@@ -1305,7 +1305,7 @@ end;
 
 function TLineFragment.GetEnd(): integer;
 begin
-  Result := Start+Length;
+  Result := StartBeat + Duration;
 end;
 
 { TLine }
@@ -1322,7 +1322,7 @@ begin
   if Length(Note) >= 0 then
   begin
     Result := true;
-    Len := End_ - Note[0].Start;
+    Len := EndBeat - Note[0].StartBeat;
   end;
 end;
 
@@ -1342,7 +1342,7 @@ end;
 
 function TLine.GetLength(): integer;
 begin
-  Result := ifthen(Length(Note) < 0, 0, End_ - Note[0].Start);
+  Result := ifthen(Length(Note) < 0, 0, EndBeat - Note[0].StartBeat);
 end;
 
 end.
