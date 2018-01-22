@@ -483,7 +483,7 @@ begin
   begin
 
   SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
-    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT {+ KMOD_CAPS});
+    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT {+ KMOD_CAPS});
 
   if (PressedDown) then  // Key Down
   begin
@@ -1898,7 +1898,7 @@ begin
           end;
 
           // switch to second track, if possible
-          if (SDL_ModState = KMOD_LCTRL) and (CurrentSong.isDuet) then
+          if (SDL_ModState = KMOD_LCTRL or KMOD_LALT) and (CurrentSong.isDuet) then
           begin
             if (Length(Lines[CurrentTrack].Line[Lines[CurrentTrack].Current].Note) > 0) then
             begin
@@ -1952,7 +1952,7 @@ begin
           end;
 
           // switch to first track, if possible
-          if (SDL_ModState = KMOD_LCTRL) and (CurrentSong.isDuet) then
+          if (SDL_ModState = KMOD_LCTRL or KMOD_LALT) and (CurrentSong.isDuet) then
           begin
             if (Length(Lines[CurrentTrack].Line[Lines[CurrentTrack].Current].Note) > 0) then
             begin
