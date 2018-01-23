@@ -321,7 +321,7 @@ type
       resize_note_right:       boolean;
       move_note:               boolean;
 
-      CurrentTrack:             integer; // 0 or 1 (for duets)
+      CurrentTrack:            integer; // 0 or 1 (for duets)
       EditorLyrics:            array[0..1] of TEditorLyrics;
 
       //undo declaration
@@ -1896,6 +1896,8 @@ begin
               Lines[CurrentTrack].Line[Lines[CurrentTrack].Current].Note[CurrentNote[CurrentTrack]].Color := 0;
               CurrentTrack := 1;
               Lines[CurrentTrack].Line[Lines[CurrentTrack].Current].Note[CurrentNote[CurrentTrack]].Color := 2;
+              EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Lines[CurrentTrack].Current);
+              EditorLyrics[CurrentTrack].Selected := 0;
               Text[TextDebug].Text := Language.Translate('EDIT_INFO_SWITCHED_TO_TRACK') + ' 2';
             end;
           end;
@@ -1950,6 +1952,8 @@ begin
               Lines[CurrentTrack].Line[Lines[CurrentTrack].Current].Note[CurrentNote[CurrentTrack]].Color := 0;
               CurrentTrack := 0;
               Lines[CurrentTrack].Line[Lines[CurrentTrack].Current].Note[CurrentNote[CurrentTrack]].Color := 2;
+              EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Lines[CurrentTrack].Current);
+              EditorLyrics[CurrentTrack].Selected := 0;
               Text[TextDebug].Text := Language.Translate('EDIT_INFO_SWITCHED_TO_TRACK') + ' 1';
             end;
           end;
@@ -4940,7 +4944,7 @@ begin
       // notes background
       EditDrawBorderedBox(Theme.EditSub.NotesBackground.X, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W + Xmouse, Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.ColR, Theme.EditSub.NotesBackground.ColG, Theme.EditSub.NotesBackground.ColB, Theme.EditSub.NotesBackground.Alpha);
       // horizontal lines
-      SingDrawNoteLines(Theme.EditSub.NotesBackground.X, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W + Xmouse, Theme.EditSub.NotesBackground.H);
+      SingDrawNoteLines(Theme.EditSub.NotesBackground.X, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.X + Theme.EditSub.NotesBackground.W + Xmouse, 15);
       // vertical lines
       EditDrawBeatDelimiters(Theme.EditSub.NotesBackground.X + Padding, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - 2 * Padding + Xmouse, Theme.EditSub.NotesBackground.H, CurrentTrack);
       // draw notes
@@ -4953,7 +4957,7 @@ begin
       // notes background
       EditDrawBorderedBox(Theme.EditSub.NotesBackground.X + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - Xmouse, Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.ColR, Theme.EditSub.NotesBackground.ColG, Theme.EditSub.NotesBackground.ColB, Theme.EditSub.NotesBackground.Alpha);
       // horizontal lines
-      SingDrawNoteLines(Theme.EditSub.NotesBackground.X + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W, Theme.EditSub.NotesBackground.H);
+      SingDrawNoteLines(Theme.EditSub.NotesBackground.X + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.X + Theme.EditSub.NotesBackground.W, 15);
       // vertical lines
       EditDrawBeatDelimiters(Theme.EditSub.NotesBackground.X + Padding + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - 2 * Padding, Theme.EditSub.NotesBackground.H, CurrentTrack);
       // draw notes
