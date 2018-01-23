@@ -44,7 +44,7 @@ procedure SingDraw;
 procedure SingDrawLines;
 procedure SingDrawBackground;
 procedure SingDrawOscilloscope(X, Y, W, H: real; NrSound: integer);
-procedure SingDrawNoteLines(X, Y, W, H: real; NumLines: integer = 10);
+procedure SingDrawNoteLines(Left, Top, Right: real; Space: integer);
 procedure SingDrawLyricHelper(CP: integer; Left, LyricsMid: real);
 procedure SingDrawLine(Left, Top, Right: real; Track, PlayerNumber: integer; Space: integer = 15);
 procedure SingDrawPlayerLine(X, Y, W: real; Track, PlayerIndex: integer; Space: integer = 15);
@@ -395,19 +395,17 @@ begin;
   Sound.UnlockAnalysisBuffer();
 end;
 
-procedure SingDrawNoteLines(X, Y, W, H: real; NumLines: integer);
+procedure SingDrawNoteLines(Left, Top, Right: real; Space: integer);
 var
   Count: integer;
-  Space: real;
 begin
-  Space := H / (NumLines - 1);
   glEnable(GL_BLEND);
   glColor4f(Skin_P1_LinesR, Skin_P1_LinesG, Skin_P1_LinesB, 0.4);
   glBegin(GL_LINES);
-  for Count := 0 to (NumLines - 1) do
+  for Count := 0 to 9 do
   begin
-    glVertex2f(X, Y + Count * Space);
-    glVertex2f(X+W, Y + Count * Space);
+    glVertex2f(Left,  Top + Count * Space);
+    glVertex2f(Right, Top + Count * Space);
   end;
   glEnd;
   glDisable(GL_BLEND);
@@ -465,7 +463,7 @@ begin
               glColor4f(1, 1, 1, 1);        // We set alpha to 1, cause we can control the transparency through the png itself
 
           // left part
-          Rec.Left  := (StartBeat-Lines[Track].Line[Lines[Track].Current].Note[0].StartBeat) * TempR + Left + 0.5 + 10*ScreenX;
+          Rec.Left  := (StartBeat - Lines[Track].Line[Lines[Track].Current].Note[0].StartBeat) * TempR + Left + 0.5 + 10*ScreenX;
           Rec.Right := Rec.Left + NotesW[PlayerNumber - 1];
           Rec.Top := Top - (Tone-BaseNote)*Space/2 - NotesH[PlayerNumber - 1];
           Rec.Bottom := Rec.Top + 2 * NotesH[PlayerNumber - 1];
@@ -584,7 +582,7 @@ begin
       with Player[PlayerIndex].Note[N] do
       begin
         // Left part of note
-        Rec.Left  := X + (Start-Lines[Track].Line[Lines[Track].Current].Note[0].StartBeat) * TempR + 0.5 + 10*ScreenX;
+        Rec.Left  := X + (Start - Lines[Track].Line[Lines[Track].Current].Note[0].StartBeat) * TempR + 0.5 + 10*ScreenX;
         Rec.Right := Rec.Left + NotesW[PlayerIndex];
 
         // Draw it in half size, if not hit
@@ -670,7 +668,7 @@ begin
         // Perfect note is stored
         if Perfect and (Ini.EffectSing=1) then
         begin
-          //A := 1 - 2*(LyricsState.GetCurrentTime() - GetTimeFromBeat(Start+Length));
+          //A := 1 - 2*(LyricsState.GetCurrentTime() - GetTimeFromBeat(Start + Duration));
           if not (Start + Duration - 1 = LyricsState.CurrentBeatD) then
           begin
             //Star animation counter
@@ -1075,14 +1073,14 @@ begin
 
   // to-do : needs fix when party mode works w/ 2 screens
   if (PlayersPlay = 1) and (Ini.NoteLines = 1) and (ScreenSing.settings.NotesVisible and (1) <> 0) then
-    SingDrawNoteLines(NR.Left + 10*ScreenX, Skin_P2_NotesB - 105, NR.Width + 10*ScreenX, 15);
+    SingDrawNoteLines(NR.Left + 10*ScreenX, Skin_P2_NotesB - 105, NR.Right + 10*ScreenX, 15);
 
   if (PlayersPlay = 2) and (Ini.NoteLines = 1) then
   begin
     if (ScreenSing.settings.NotesVisible and (1 shl 0) <> 0) then
-      SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, NR.Width + 10*ScreenX, 15);
+      SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right + 10*ScreenX, 15);
     if (ScreenSing.settings.NotesVisible and (1 shl 1) <> 0) then
-      SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, NR.Width + 10*ScreenX, 15);
+      SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15);
   end;
 
   if (PlayersPlay = 4) and (Ini.NoteLines = 1) then
@@ -1090,66 +1088,66 @@ begin
     if (ScreenSing.settings.NotesVisible and (1 shl 0) <> 0) then
     begin
       if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, NR.Width + 10*ScreenX, 15)
+        SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right + 10*ScreenX, 15)
       else
       begin
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, NR.Width/2 - 5 + 10*ScreenX, 15);
-        SingDrawNoteLines(NR.Width/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, NR.Width + 10*ScreenX, 15)
+        SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right/2 - 5 + 10*ScreenX, 15);
+        SingDrawNoteLines(Nr.Right/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right + 10*ScreenX, 15)
       end;
     end;
 
     if (ScreenSing.settings.NotesVisible and (1 shl 1) <> 0) then
     begin
       if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, NR.Width + 10*ScreenX, 15)
+        SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15)
       else
       begin
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, NR.Width/2 - 5 + 10*ScreenX, 15);
-        SingDrawNoteLines(NR.Width/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, NR.Width + 10*ScreenX, 15)
+        SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right/2 - 5 + 10*ScreenX, 15);
+        SingDrawNoteLines(Nr.Right/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15)
       end;
     end;
   end;
 
   if (PlayersPlay = 3) and (Ini.NoteLines = 1) then begin
     if (ScreenSing.settings.NotesVisible and (1 shl 0) <> 0) then
-      SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, NR.Width + 10*ScreenX, 12);
+      SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, Nr.Right + 10*ScreenX, 12);
     if (ScreenSing.settings.NotesVisible and (1 shl 1) <> 0) then
-      SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, NR.Width + 10*ScreenX, 12);
+      SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, Nr.Right + 10*ScreenX, 12);
     if (ScreenSing.settings.NotesVisible and (1 shl 2) <> 0) then
-      SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, NR.Width + 10*ScreenX, 12);
+      SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12);
   end;
 
   if (PlayersPlay = 6) and (Ini.NoteLines = 1) then begin
     if (ScreenSing.settings.NotesVisible and (1 shl 0) <> 0) then
     begin
       if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, NR.Width + 10*ScreenX, 12)
+        SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, Nr.Right + 10*ScreenX, 12)
       else
       begin
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, NR.Width/2 - 5 + 10*ScreenX, 12);
-        SingDrawNoteLines(NR.Width/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, 120, NR.Width + 10*ScreenX, 12);
+        SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, Nr.Right/2 - 5 + 10*ScreenX, 12);
+        SingDrawNoteLines(Nr.Right/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, 120, Nr.Right + 10*ScreenX, 12);
       end;
     end;
 
     if (ScreenSing.settings.NotesVisible and (1 shl 1) <> 0) then
     begin
       if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, NR.Width + 10*ScreenX, 12)
+        SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, Nr.Right + 10*ScreenX, 12)
       else
       begin
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, NR.Width/2 - 5 + 10*ScreenX, 12);
-        SingDrawNoteLines(NR.Width/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, 245, NR.Width + 10*ScreenX, 12);
+        SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, Nr.Right/2 - 5 + 10*ScreenX, 12);
+        SingDrawNoteLines(Nr.Right/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, 245, Nr.Right + 10*ScreenX, 12);
       end;
     end;
 
     if (ScreenSing.settings.NotesVisible and (1 shl 2) <> 0) then
     begin
       if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, NR.Width + 10*ScreenX, 12)
+        SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12)
       else
       begin
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, NR.Width/2 - 5 + 10*ScreenX, 12);
-        SingDrawNoteLines(NR.Width/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, 370, NR.Width + 10*ScreenX, 12);
+        SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right/2 - 5 + 10*ScreenX, 12);
+        SingDrawNoteLines(Nr.Right/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12);
       end;
     end;
   end;
@@ -1844,7 +1842,7 @@ begin
         end; // case
 
         // left part
-        Rec.Left  := (StartBeat-Lines[Track].Line[Lines[Track].Current].Note[0].StartBeat) * TempR + X + 0.5 + 10*ScreenX;
+        Rec.Left  := (StartBeat - Lines[Track].Line[Lines[Track].Current].Note[0].StartBeat) * TempR + X + 0.5 + 10*ScreenX;
         Rec.Right := Rec.Left + NotesW[0];
         Rec.Top := Y - (Tone-BaseNote)*Space/2 - NotesH[0];
         Rec.Bottom := Rec.Top + 2 * NotesH[0];

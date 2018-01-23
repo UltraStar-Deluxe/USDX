@@ -57,11 +57,11 @@ uses
   TextGL;
 
 type
-  TPos = record // Lines[part].Line[line].Note[note]
-    part: integer;
-    line: integer;
-    note: integer;
-    CP: integer;
+  TPos = record // Lines[track].Line[line].Note[note]
+    track: integer;
+    line:  integer;
+    note:  integer;
+    CP:    integer;
   end;
 
   TLyricsSyncSource = class(TSyncSource)
@@ -908,14 +908,14 @@ end;
 
 procedure TScreenSingController.onShowFinish;
 var
-  I, Index: integer;
+  I, PlayerIndex: integer;
 begin
   // hide cursor on singscreen show
   Display.SetCursor;
 
   // clear the scores of all players
-  for Index := 0 to High(Player) do
-    with Player[Index] do
+  for PlayerIndex := 0 to High(Player) do
+    with Player[PlayerIndex] do
     begin
       Score          := 0;
       ScoreLine      := 0;
@@ -1074,14 +1074,14 @@ var
   begin
     found := false;
 
-    for LineIndex := 0 to High(Lines[0].Line) do
+    for LineIndex := 0 to length(Lines[0].Line) - 1 do
     begin
-      for NoteIndex := 0 to High(Lines[0].Line[LineIndex].Note) do
+      for NoteIndex := 0 to length(Lines[0].Line[LineIndex].Note) - 1 do
       begin
         if (beat >= Lines[0].Line[LineIndex].Note[NoteIndex].StartBeat) and
            (beat <= Lines[0].Line[LineIndex].Note[NoteIndex].StartBeat + Lines[0].Line[LineIndex].Note[NoteIndex].Duration) then
         begin
-          Result.part := 0;
+          Result.track := 0;
           Result.line := LineIndex;
           Result.note := NoteIndex;
           Result.CP := 0;
@@ -1096,17 +1096,17 @@ var
 
     if CurrentSong.isDuet and (PlayersPlay <> 1) then
     begin
-      for LineIndex := 0 to High(Lines[1].Line) do
+      for LineIndex := 0 to length(Lines[1].Line) - 1 do
       begin
-        for NoteIndex := 0 to High(Lines[1].Line[LineIndex].Note) do
+        for NoteIndex := 0 to length(Lines[1].Line[LineIndex].Note) - 1 do
         begin
           if (beat>=Lines[1].Line[LineIndex].Note[NoteIndex].StartBeat) and
-             (beat<=Lines[1].Line[LineIndex].Note[NoteIndex].StartBeat + Lines[1].Line[LineIndex].Note[NoteIndex].Duration) then
+            (beat<=Lines[1].Line[LineIndex].Note[NoteIndex].StartBeat + Lines[1].Line[LineIndex].Note[NoteIndex].Duration) then
           begin
             Result.CP := 1;
             Result.line := LineIndex;
             Result.note := NoteIndex;
-            found := true;
+            found:=true;
             break;
           end;
         end;
@@ -1118,14 +1118,14 @@ var
 
     min := high(integer);
     //second try (approximating)
-    for LineIndex := 0 to High(Lines[0].Line) do
+    for LineIndex := 0 to length(Lines[0].Line) - 1 do
     begin
-      for NoteIndex := 0 to High(Lines[0].Line[LineIndex].Note) do
+      for NoteIndex := 0 to length(Lines[0].Line[LineIndex].Note) - 1 do
       begin
         diff := abs(Lines[0].Line[LineIndex].Note[NoteIndex].StartBeat - beat);
         if diff < min then
         begin
-          Result.part := 0;
+          Result.track := 0;
           Result.line := LineIndex;
           Result.note := NoteIndex;
           Result.CP := 0;
@@ -1136,9 +1136,9 @@ var
 
     if CurrentSong.isDuet and (PlayersPlay <> 1) then
     begin
-      for LineIndex := 0 to High(Lines[1].Line) do
+      for LineIndex := 0 to length(Lines[1].Line) - 1 do
       begin
-        for NoteIndex := 0 to High(Lines[1].Line[LineIndex].Note) do
+        for NoteIndex := 0 to length(Lines[1].Line[LineIndex].Note) - 1 do
         begin
           diff := abs(Lines[1].Line[LineIndex].Note[NoteIndex].StartBeat - beat);
           if diff<min then
