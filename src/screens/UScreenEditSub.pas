@@ -1889,7 +1889,7 @@ begin
           end;
 
           // switch to second track, if possible
-          if (SDL_ModState = KMOD_LCTRL or KMOD_LALT) and (CurrentSong.isDuet) then
+          if ((SDL_ModState = KMOD_LCTRL) or (SDL_ModState = KMOD_LALT)) and (CurrentSong.isDuet) then
           begin
             if (Length(Lines[CurrentTrack].Line[Lines[CurrentTrack].Current].Note) > 0) then
             begin
@@ -1945,7 +1945,7 @@ begin
           end;
 
           // switch to first track, if possible
-          if (SDL_ModState = KMOD_LCTRL or KMOD_LALT) and (CurrentSong.isDuet) then
+          if ((SDL_ModState = KMOD_LCTRL) or (SDL_ModState = KMOD_LALT)) and (CurrentSong.isDuet) then
           begin
             if (Length(Lines[CurrentTrack].Line[Lines[CurrentTrack].Current].Note) > 0) then
             begin
@@ -4607,9 +4607,13 @@ begin
     UpdateSelectSlideOptions(Theme.EditSub.SelectVolMidi, VolumeMidiSlideId, VolumeMidi, VolumeMidiIndex);
     UpdateSelectSlideOptions(Theme.EditSub.SelectVolClick, VolumeClickSlideId, VolumeClick, VolumeClickIndex);
 
-    Lines[CurrentTrack].Current := 0;
-    CurrentNote[CurrentTrack] := 0;
-    Lines[CurrentTrack].Line[0].Note[0].Color := 2;
+    for TrackIndex := 0 to High(Lines) do
+    begin
+      Lines[TrackIndex].Current := 0;
+      CurrentNote[TrackIndex] := 0;
+      Lines[TrackIndex].Line[0].Note[0].Color := 2;
+    end;
+
     AudioPlayBack.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
     //Set Down Music Volume for Better hearability of Midi Sounds
     //Music.SetVolume(0.4);
@@ -4640,7 +4644,7 @@ begin
       EditorLyrics[TrackIndex].DColG := Theme.EditSub.TextSentence.DColG;
       EditorLyrics[TrackIndex].DColB := Theme.EditSub.TextSentence.DColB;
 
-      EditorLyrics[TrackIndex].AddLine(CurrentTrack, 0);
+      EditorLyrics[TrackIndex].AddLine(TrackIndex, 0);
       EditorLyrics[TrackIndex].Selected := 0;
     end;
 
@@ -4975,7 +4979,7 @@ begin
   if (CurrentSound.ToneString <> '-') then
   begin
     Count := trunc((720 / (GetTimeFromBeat(Lines[CurrentTrack].Line[Lines[CurrentTrack].Current].EndBeat) - GetTimeFromBeat(Lines[CurrentTrack].Line[Lines[CurrentTrack].Current].Note[0].StartBeat)))*(AudioPlayback.Position - GetTimeFromBeat(Lines[CurrentTrack].Line[Lines[CurrentTrack].Current].Note[0].StartBeat)));
-    // DrawPlayerTrack(0, 16, 32, 15, CurrentSound.Tone, Count, CurrentNote[CurrentTrack]); // FIXME: crash when switching from first to second track
+    //DrawPlayerTrack(0, 16, 32, 15, CurrentSound.Tone, Count, CurrentNote[CurrentTrack]); // FIXME: crash when switching from first to second track
   end;
 
   GoldenRec.SpawnRec;
