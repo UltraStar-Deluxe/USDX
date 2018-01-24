@@ -318,18 +318,18 @@ begin
     CP := CountGr;
 
     // old parts
-    LyricsState.OldLine := Lines[CP].Current;
+    LyricsState.OldLine := Lines[CP].CurrentLine;
 
     // choose current parts
     for Count := 0 to Lines[CP].High do
     begin
       if LyricsState.CurrentBeat >= Lines[CP].Line[Count].StartBeat then
-        Lines[CP].Current := Count;
+        Lines[CP].CurrentLine := Count;
     end;
 
     // clean player note if there is a new line
     // (optimization on halfbeat time)
-    if Lines[CP].Current <> LyricsState.OldLine then
+    if Lines[CP].CurrentLine <> LyricsState.OldLine then
       NewSentence(CP, Screen);
 
   end; // for CountGr
@@ -356,18 +356,18 @@ begin
   begin;
     CP := CountGr;
     // old parts
-    LyricsState.OldLine := Lines[CP].Current;
+    LyricsState.OldLine := Lines[CP].CurrentLine;
 
     // choose current parts
     for Count := 0 to Lines[CP].High do
     begin
       if LyricsState.CurrentBeat >= Lines[CP].Line[Count].StartBeat then
-        Lines[CP].Current := Count;
+        Lines[CP].CurrentLine := Count;
     end;
   end; // for CountGr
 
   // on sentence change...
-  Screen.onSentenceChange(Lines[0].Current);
+  Screen.onSentenceChange(Lines[0].CurrentLine);
 end;
 
 procedure NewSentence(CP: integer; Screen: TScreenSingController);
@@ -385,7 +385,7 @@ begin
     end;
   end;
 
-  Screen.onSentenceChange(CP, Lines[CP].Current)
+  Screen.onSentenceChange(CP, Lines[CP].CurrentLine)
 end;
 
 procedure NewBeatClick;
@@ -402,10 +402,10 @@ begin
       AudioPlayback.PlaySound(SoundLib.Click);
     end;
 
-    for Count := 0 to Lines[0].Line[Lines[0].Current].HighNote do
+    for Count := 0 to Lines[0].Line[Lines[0].CurrentLine].HighNote do
     begin
       //basisbit todo
-      if (Lines[0].Line[Lines[0].Current].Note[Count].StartBeat = LyricsState.CurrentBeatC) then
+      if (Lines[0].Line[Lines[0].CurrentLine].Note[Count].StartBeat = LyricsState.CurrentBeatC) then
       begin
         // click assist
         if Ini.ClickAssist = 1 then
@@ -500,10 +500,10 @@ begin
 
   // count min and max sentence range for checking
   // (detection is delayed to the notes we see on the screen)
-  SentenceMin := Lines[CP].Current-1;
+  SentenceMin := Lines[CP].CurrentLine-1;
   if (SentenceMin < 0) then
     SentenceMin := 0;
-  SentenceMax := Lines[CP].Current;
+  SentenceMax := Lines[CP].CurrentLine;
 
   for ActualBeat := LyricsState.OldBeatD+1 to LyricsState.CurrentBeatD do
   begin

@@ -564,7 +564,7 @@ begin
       begin
         Lines[Count].High := 0;
         Lines[Count].Number := 1;
-        Lines[Count].Current := 0;
+        Lines[Count].CurrentLine := 0;
         Lines[Count].Resolution := self.Resolution;
         Lines[Count].NotesGAP   := self.NotesGAP;
         Lines[Count].ScoreValue := 0;
@@ -795,7 +795,7 @@ begin
   begin
     Lines[Count].High := 0;
       Lines[Count].Number := 1;
-      Lines[Count].Current := 0;
+      Lines[Count].CurrentLine := 0;
       Lines[Count].Resolution := self.Resolution;
       Lines[Count].NotesGAP   := self.NotesGAP;
       Lines[Count].ScoreValue := 0;
