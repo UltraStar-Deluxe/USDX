@@ -147,13 +147,13 @@ type
    * contain two sets.
    *)
   TLines = record
-    Current:    integer;  // for drawing of current line
-    High:       integer;  // = High(Line)!
-    Number:     integer;
-    Resolution: integer;
-    NotesGAP:   integer;
-    ScoreValue: integer;
-    Line:       array of TLine;
+    CurrentLine: integer;  // for drawing of current line
+    High:        integer;  // = High(Line)!
+    Number:      integer;
+    Resolution:  integer;
+    NotesGAP:    integer;
+    ScoreValue:  integer;
+    Line:        array of TLine;
   end;
 
 const

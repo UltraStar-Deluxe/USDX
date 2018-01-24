@@ -665,12 +665,12 @@ begin
 
   // copy notes
   SetLength(Lines.Line, 1);
-  Lines.Number     := 1;
-  Lines.High       := 0;
-  Lines.Current    := 0;
-  Lines.Resolution := 0;
-  Lines.NotesGAP   := 0;
-  Lines.ScoreValue := 0;
+  Lines.Number      := 1;
+  Lines.High        := 0;
+  Lines.CurrentLine := 0;
+  Lines.Resolution  := 0;
+  Lines.NotesGAP    := 0;
+  Lines.ScoreValue  := 0;
 
   C := 0;
   N := 0;
