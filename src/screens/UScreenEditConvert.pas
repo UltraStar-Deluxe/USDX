@@ -60,21 +60,20 @@ interface
 {$I switches.inc}
 
 uses
-  math,
   UMenu,
   UMenuInteract,
-  SDL2,
+  UMusic,
+  UPath,
+  USong,
+  USongs,
+  UThemes,
+  math,
   {$IFDEF UseMIDIPort}
   MidiFile,
   MidiOut,
   MidiCons,
   {$ENDIF}
-  ULog,
-  USongs,
-  USong,
-  UMusic,
-  UThemes,
-  UPath;
+  SDL2;
 
 type
   TMidiNote = record
@@ -175,34 +174,32 @@ type
       procedure OnHide; override;
   end;
 
+const
+  ID='ID_061';   //for help system
+
 implementation
 
 uses
-  SysUtils,
-  TextGL,
-  dglOpenGL,
   UDrawTexture,
   UFiles,
   UGraphic,
+  UHelp,
   UIni,
+  ULanguage,
+  ULog,
   UMain,
   UPathUtils,
   USkins,
-  ULanguage,
   UTextEncoding,
-  UUnicodeUtils;
+  UUnicodeUtils,
+  dglOpenGL,
+  SysUtils,
+  TextGL;
 
 const
   // MIDI/KAR lyrics are specified to be ASCII only.
   // Assume backward compatible CP1252 encoding.
   DEFAULT_ENCODING = encCP1252;
-
-const
-  // TODO: Localize and use localization strings, instead of constants
-  BUTTON_TEXT_PLAY           = 'Play';
-  BUTTON_TEXT_PLAY_SELECTED  = 'Play selected';
-  BUTTON_TEXT_PAUSE          = 'Pause';
-  BUTTON_TEXT_STOP           = 'Stop';
 
 const
   MIDI_EVENTTYPE_NOTEOFF    = $8;
@@ -219,6 +216,7 @@ const
 function TScreenEditConvert.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 {$IFDEF UseMIDIPort}
 var
+  SDL_ModState: word;
   SResult: TSaveSongResult;
   MidiTrack: TMidiTrack;
   Song:  TSong;
@@ -238,6 +236,9 @@ begin
           Exit;
         end;
     end;
+
+    SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
     // check special keys
     case PressedKey of
@@ -273,15 +274,15 @@ begin
                 MidiOut.PutShort(MIDI_NOTEOFF or 1, 0, 127);
                 MidiFile.OnMidiEvent := nil;
                 MidiFile.StopPlaying;
-                Button[Interaction].Text[0].Text := BUTTON_TEXT_PLAY;
+                Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAY');
                 IsPlaying := false;
-                Button[2].Text[0].Text := BUTTON_TEXT_PLAY_SELECTED;
+                Button[2].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAYSELECTED');
               end else
               begin
                 MidiFile.OnMidiEvent := MidiFile1MidiEvent;
                 //MidiFile.GoToTime(MidiFile.GetTrackLength div 2);
                 MidiFile.ContinuePlaying;
-                Button[Interaction].Text[0].Text := BUTTON_TEXT_PAUSE;
+                Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PAUSE');
                 IsPlaying := true;
                 IsPlayingSelective := false;
               end;
@@ -299,7 +300,7 @@ begin
                 begin
                   MidiFile.OnMidiEvent := nil;
                   MidiFile.StopPlaying;
-                  Button[Interaction].Text[0].Text := BUTTON_TEXT_PLAY_SELECTED;
+                  Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAYSELECTED');
                   IsPlayingSelective := false;
                 end
                 else
@@ -317,8 +318,8 @@ begin
                   end;
 
                   MidiFile.ContinuePlaying;
-                  Button[Interaction].Text[0].Text := BUTTON_TEXT_PAUSE;
-                  Button[1].Text[0].Text := BUTTON_TEXT_PLAY;
+                  Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PAUSE');
+                  Button[1].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAY');
                   IsPlaying := false;
                   IsPlayingSelective := true;
                 end;
@@ -409,11 +410,16 @@ begin
 
       SDLK_TAB:
         begin
-          if Length(Channels) > 0 then
-          begin
-            ShowChannels := not ShowChannels;
-            if ShowChannels then SelChannel := 0;
-          end;
+          if (SDL_ModState = KMOD_LCTRL) then // toggle channels
+            begin
+              if Length(Channels) > 0 then
+              begin
+                ShowChannels := not ShowChannels;
+                if ShowChannels then SelChannel := 0;
+              end;
+            end
+          else // show help popup
+            ScreenPopupHelp.ShowPopup();
         end;
 
       // zooming controls
@@ -770,22 +776,13 @@ begin
   //Channels[6].Name := 'Oboe';
   //Channels[7].Name := 'Gramophone';
 
-  AddButton(40, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(15, 5, 0, 0, 0, 'Open');
-  //Button[High(Button)].Text[0].Size := 11;
+  LoadFromTheme(Theme.EditConvert);
 
-  AddButton(160, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(25, 5, 0, 0, 0, BUTTON_TEXT_PLAY);
-
-  AddButton(270, 20, 200, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(25, 5, 0, 0, 0, BUTTON_TEXT_PLAY_SELECTED);
-
-  AddButton(480, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(25, 5, 0, 0, 0, BUTTON_TEXT_STOP);
-
-
-  AddButton(620, 20, 100, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(20, 5, 0, 0, 0, 'Save');
+  AddButton(Theme.EditConvert.ButtonOpen);
+  AddButton(Theme.EditConvert.ButtonPlay);
+  AddButton(Theme.EditConvert.ButtonPlaySelected);
+  AddButton(Theme.EditConvert.ButtonStop);
+  AddButton(Theme.EditConvert.ButtonSave);
 
   fFileName := PATH_NONE;
 
@@ -811,6 +808,9 @@ var
 {$ENDIF}
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenEditConvert)');
 
   Interaction := 0;
 
@@ -986,6 +986,7 @@ var
   Padding:  real;
   Right:    real;
   Top:      real;
+  Footer:   real;
   FontSize: real;
   Y:        real;
   Height:   real;
@@ -1004,13 +1005,14 @@ var
 begin
 
   // define
-  Top := 100;
+  Top := 200;
   XTrack := 60;
   Padding := 10;
   FontSize := 12;
+  Footer := 70;
 
   // calc
-  Height := RenderH - Padding - Top;
+  Height := RenderH - Padding - Top - Footer;
   Bottom := Top + Height;
   Right := InWidth - Padding;
   Y := Top;
@@ -1267,8 +1269,8 @@ begin
     MidiOut.Close;
     MidiOut.Open;
 
-    Button[1].Text[0].Text := BUTTON_TEXT_PLAY;
-    Button[2].Text[0].Text := BUTTON_TEXT_PLAY_SELECTED;
+    Button[1].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAY');
+    Button[2].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAYSELECTED');
     IsPlaying := false;
     IsPlayingSelective := false;
   end;

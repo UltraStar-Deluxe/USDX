@@ -34,15 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UDisplay,
+  UFiles,
+  UMenu,
   UMusic,
   UNote,
-  ULog,
-  UFiles,
-  SysUtils,
-  UThemes;
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenJukeboxPlaylist = class(TMenu)
@@ -66,14 +65,19 @@ type
       procedure InitJukebox;
   end;
 
+const
+  ID='ID_040';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
   UMain,
   UIni,
   UTexture,
   ULanguage,
+  ULog,
   UParty,
   USong,
   UPlaylist,
@@ -104,6 +108,11 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
+        end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_RETURN:
@@ -254,6 +263,9 @@ end;
 procedure TScreenJukeboxPlaylist.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenJukeboxPlaylist)');
 
 end;
 

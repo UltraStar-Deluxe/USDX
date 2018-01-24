@@ -34,28 +34,27 @@ interface
 {$I switches.inc}
 
 uses
-  SysUtils,
-  sdl2,
-  dglOpenGL,
-  TextGL,
   UAvatars,
   UCommon,
   UFiles,
   UGraphicClasses,
   UHookableEvent,
-  UScreenSingView,
   UIni,
-  ULog,
   ULyrics,
   UMenu,
   UMusic,
   UPath,
+  UScreenSingView,
   USingScores,
+  USkins,
   USongs,
   UTexture,
   UThemes,
   UTime,
-  USkins;
+  dglOpenGL,
+  sdl2,
+  SysUtils,
+  TextGL;
 
 type
   TPos = record // Lines[part].Line[line].Note[note]
@@ -188,25 +187,30 @@ type
 var screenSingViewRef: TScreenSingView;
     TotalTime:              real;
 
+const
+  ID='ID_022';   //for help system
+
 implementation
 
 uses
-  Classes,
-  Math,
   UDatabase,
-  UDllManager,
+  UDisplay,
+  UDLLManager,
   UDraw,
   UGraphic,
+  UHelp,
   ULanguage,
+  ULog,
   UNote,
   URecord,
-  USong,
-  UDisplay,
   UParty,
   UPathUtils,
+  USong,
   UUnicodeUtils,
   UWebcam,
-  UWebSDK;
+  UWebSDK,
+  Classes,
+  Math;
 
 const
   MAX_MESSAGE = 3;
@@ -415,17 +419,26 @@ begin
         Pause;
       end;
 
-      SDLK_TAB: // change visualization preset
+      SDLK_TAB:
       begin
-        if fShowVisualization then
-          fCurrentVideo.Position := now; // move to a random position
-
-        if (fShowWebcam) then
+        if (SDL_ModState = KMOD_LCTRL) then // change visualization preset
         begin
-          if (Ini.WebCamEffect < 10) then
-            Ini.WebCamEffect := Ini.WebCamEffect + 1
-          else
-            Ini.WebCamEffect := 0;
+          if fShowVisualization then
+            fCurrentVideo.Position := now; // move to a random position
+
+          if (fShowWebcam) then
+          begin
+            if (Ini.WebCamEffect < 10) then
+              Ini.WebCamEffect := Ini.WebCamEffect + 1
+            else
+              Ini.WebCamEffect := 0;
+          end;
+        end
+        else // show help popup
+        begin
+          if not paused then
+            Pause;
+          ScreenPopupHelp.ShowPopup();
         end;
       end;
     end;
@@ -515,6 +528,9 @@ begin
   inherited;
 
   Log.LogStatus('Begin', 'OnShow');
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSingController)');
 
   FadeOut := false;
 

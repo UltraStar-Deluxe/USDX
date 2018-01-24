@@ -34,14 +34,14 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  UMenu,
+  UConfig,
   UDisplay,
-  UMusic,
   UFiles,
   UIni,
-  UConfig,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2;
 
 type
   TScreenOptionsThemes = class(TMenu)
@@ -63,15 +63,20 @@ type
       procedure InteractDec; override;
   end;
 
+const
+  ID='ID_076';   //for help system
+
 implementation
 
 uses 
-  SysUtils,
   UGraphic,
+  UHelp,
+  ULog,
   UMain,
   UPathUtils,
+  USkins,
   UUnicodeUtils,
-  USkins;
+  SysUtils;
 
 function TScreenOptionsThemes.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
@@ -102,6 +107,10 @@ begin
           ScreenOptions.Interaction := 4;
 
           FadeTo(@ScreenOptions);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RETURN:
         begin
@@ -216,6 +225,9 @@ end;
 procedure TScreenOptionsThemes.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsThemes)');
 
   ActualTheme := Ini.Theme;
   ActualSkin := Ini.SkinNo;

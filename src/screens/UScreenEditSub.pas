@@ -34,31 +34,30 @@ interface
 
 uses
   UCommon,
-  UMenu,
-  UMusic,
-  sdl2,
-  SysUtils,
-  strutils,
-  UFiles,
-  UGraphicClasses,
-  UTime,
-  USongs,
-  USong,
-  UIni,
-  ULog,
-  UTexture,
-  UMenuText,
-  URecord,
   UEditorLyrics,
+  UFiles,
   UFilesystem,
-  Math,
+  UGraphicClasses,
+  UIni,
+  UMenu,
+  UMenuText,
+  UMusic,
+  UPath,
+  URecord,
+  USong,
+  USongs,
+  UTexture,
+  UThemes,
+  UTime,
   dglOpenGL,
+  Math,
   {$IFDEF UseMIDIPort}
   MidiOut,
   MidiCons,
   {$ENDIF}
-  UThemes,
-  UPath;
+  sdl2,
+  strutils,
+  SysUtils;
 
 type
 
@@ -307,19 +306,24 @@ type
       procedure OnHide; override;
   end;
 
+const
+  ID='ID_064';   //for help system
+
 implementation
 
 uses
-  UGraphic,
-  UDraw,
   UDisplay,
+  UDraw,
+  UGraphic,
+  UHelp,
+  ULanguage,
+  ULog,
   UMenuInteract,
   UNote,
   USkins,
-  ULanguage,
-  TextGL,
   UTextEncoding,
-  UUnicodeUtils;
+  UUnicodeUtils,
+  TextGL;
 
 const
   DEFAULT_FADE_IN_TIME = 8;    //TODO in INI
@@ -955,6 +959,11 @@ begin
             FadeTo(@ScreenSong);
           end;
         end;
+
+      SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
+      end;
 
       SDLK_BACKQUOTE:
         begin
@@ -3436,6 +3445,10 @@ begin
     MidiOut := TMidiOutput.Create(nil);
     MidiOut.Open;
   {$ENDIF}
+
+    if not Help.SetHelpID(ID) then
+      Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenEditSub)');
+
     //    Text[TextTitle].Text :=   CurrentSong.Title;
     // Header Title
     SetLength(TitleVal, 1);

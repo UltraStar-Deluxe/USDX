@@ -203,6 +203,9 @@ var
   ScreenPopupSendScore:  TScreenPopupSendScore;
   ScreenPopupScoreDownload: TScreenPopupScoreDownload;
 
+  //popup help system
+  ScreenPopupHelp:  TScreenPopupHelp;
+
   //Notes
   Tex_Left:        array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_note_left
   Tex_Mid:         array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_note_mid
@@ -958,9 +961,10 @@ begin
   //ScreenSingModi :=         TScreenSingModi.Create;
   //Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Sing with Modi support', 3); Log.BenchmarkStart(3);
   ScreenSongJumpto :=         TScreenSongJumpto.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPopupCheck & ScreenPopupError'));
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPopupCheck & ScreenPopupError & ScreenPopupHelp'));
   ScreenPopupCheck := TScreenPopupCheck.Create;
   ScreenPopupError := TScreenPopupError.Create;
+  ScreenPopupHelp  := TScreenPopupHelp.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPopupInfo & ScreenScoreX & ScreenPartyNewRound'));
   ScreenPopupInfo := TScreenPopupInfo.Create;
   ScreenPopupInsertUser := TScreenPopupInsertUser.Create;

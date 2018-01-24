@@ -34,13 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
-  SysUtils,
   UDisplay,
-  UMusic,
   UIni,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenStatMain = class(TMenu)
@@ -60,18 +60,22 @@ type
       procedure SetOverview;
   end;
 
+const
+  ID='ID_050';   //for help system
+
 implementation
 
 uses
-  UGraphic,
-  UDataBase,
-  USongs,
-  USong,
-  ULanguage,
   UCommon,
-  Classes,
+  UDataBase,
+  UGraphic,
+  UHelp,
+  ULanguage,
   ULog,
-  UUnicodeUtils;
+  USong,
+  USongs,
+  UUnicodeUtils,
+  Classes;
 
 function TScreenStatMain.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
@@ -95,6 +99,10 @@ begin
           Ini.Save;
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenMain);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RETURN:
         begin
@@ -173,6 +181,9 @@ end;
 procedure TScreenStatMain.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenStatMain)');
 
   //Set Overview Text:
   SetOverview;
