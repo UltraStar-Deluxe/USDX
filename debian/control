@@ -5,7 +5,6 @@ Maintainer: Markus Meier <memcopy@epic-bytes.net>
 Build-Depends: debhelper (>= 10),
  autotools-dev,
  fpc (>= 3.0.0),
- libpng-dev,
  libfreetype6-dev,
  libsqlite3-dev,
  libsdl2-dev,
@@ -15,9 +14,9 @@ Build-Depends: debhelper (>= 10),
  libavformat-dev,
  libavutil-dev,
  portaudio19-dev,
+ libportmidi-dev,
  libswscale-dev,
- libprojectm-dev,
- libpcre3-dev
+ libprojectm-dev
 Standards-Version: 3.9.8
 Homepage: https://usdx.eu
 
@@ -27,7 +26,8 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
          fonts-dejavu-core, fonts-freefont-ttf
 Recommends: projectm-data,
             ttf-bitstream-vera
-Suggests: fonts-wqy-microhei
+Suggests: fonts-wqy-microhei, libopencv-highgui-dev,
+          libopencv-imgproc-dev, libopencv-core-dev
 Description: Free and Open Source karaoke game
  A karaoke game similar to SingStar™ where one or more players perform a song
  and the game scores their performances, depending on the pitch of the voice

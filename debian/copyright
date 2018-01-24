@@ -3,16 +3,12 @@ Upstream-Name: UltraStar Deluxe
 Source: git://github.com/UltraStar-Deluxe/USDX.git
 
 Files: *
-Copyright: 2015 - 2017 UltraStar Deluxe Developers <usdx@basisbit.de>
+Copyright: UltraStar Deluxe Developers see https://github.com/UltraStar-Deluxe/USDX
 License: GPL-2.0+
 
 Files: src/lib/SDL2/* src/lib/dglOpenGL/*
-Copyright: 2015 - 2017 UltraStar Deluxe Developers <usdx@basisbit.de>
+Copyright: see https://github.com/UltraStar-Deluxe/USDX
 License: MPL-2.0
-
-Files: debian/*
-Copyright: 2017 Markus Meier <memcopy@epic-bytes.net>
-License: GPL-2.0+
 
 License: GPL-2.0+
  This package is free software; you can redistribute it and/or modify
