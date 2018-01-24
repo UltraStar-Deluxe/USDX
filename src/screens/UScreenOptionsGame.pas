@@ -34,38 +34,46 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  UMenu,
-  ULog,
   UDisplay,
-  UMusic,
   UFiles,
   UIni,
-  UThemes,
+  UMenu,
+  UMusic,
   UScreensong,
-  USongs;
+  USongs,
+  UThemes,
+  sdl2;
 
 type
   TScreenOptionsGame = class(TMenu)
     private
-      procedure ReloadScreens;
+      old_Language:  integer;
+      old_SongMenu:  integer;
+      old_Sorting:   integer;
+      old_Tabs:      integer;
+
+      procedure Leave;
+      procedure ReloadCurrentScreen;
+      procedure ReloadAllScreens;
+      procedure ReloadSongMenu;
 
     public
-      ActualLanguage:  Integer;
-      ActualSongMenu: Integer;
-
-      old_Tabs, old_Sorting: integer;
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
-      procedure RefreshSongs;
   end;
+
+const
+  ID='ID_071';   //for help system
 
 implementation
 
 uses
+  UConfig,
   UGraphic,
+  UHelp,
   ULanguage,
+  ULog,
   UUnicodeUtils,
   SysUtils;
 
@@ -87,21 +95,15 @@ begin
     case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
+          Leave;
+      SDLK_TAB:
         begin
-          ReloadScreens;
-          AudioPlayback.PlaySound(SoundLib.Back);
-          RefreshSongs;
-          FadeTo(@ScreenOptions);
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_RETURN:
         begin
           if SelInteraction = 6 then
-          begin
-            ReloadScreens;
-            AudioPlayback.PlaySound(SoundLib.Back);
-            RefreshSongs;
-            FadeTo(@ScreenOptions);
-          end;
+            Leave;
         end;
       SDLK_DOWN:
         InteractNext;
@@ -114,6 +116,10 @@ begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
           end;
+          if (SelInteraction = 0) then
+          begin
+            ReloadCurrentScreen;
+          end;
         end;
       SDLK_LEFT:
         begin
@@ -121,6 +127,10 @@ begin
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
+          end;
+          if (SelInteraction = 0) then
+          begin
+            ReloadCurrentScreen;
           end;
         end;
     end;
@@ -132,10 +142,6 @@ begin
   inherited Create;
 
   LoadFromTheme(Theme.OptionsGame);
-
-  //Refresh Songs Patch
-  old_Sorting := Ini.Sorting;
-  old_Tabs    := Ini.Tabs;
 
   Theme.OptionsGame.SelectLanguage.showArrows  := true;
   Theme.OptionsGame.SelectLanguage.oneItemOnly := true;
@@ -167,58 +173,66 @@ begin
 
 end;
 
-//Refresh Songs Patch
-procedure TScreenOptionsGame.RefreshSongs;
-begin
-  if (Ini.Sorting <> old_Sorting) or (Ini.Tabs <> old_Tabs) then
-    ScreenSong.Refresh;
-end;
-
 procedure TScreenOptionsGame.OnShow;
 begin
   inherited;
 
-  ActualLanguage := Ini.Language;
-  ActualSongMenu := Ini.SongMenu;
+  // save current settings in order to determine if a refresh is required
+  old_Language := Ini.Language;
+  old_SongMenu := Ini.SongMenu;
+  old_Sorting  := Ini.Sorting;
+  old_Tabs     := Ini.Tabs;
 
   Interaction := 0;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsGame)');
 end;
 
-procedure TScreenOptionsGame.ReloadScreens;
+procedure TScreenOptionsGame.Leave;
 begin
+  Ini.Save;
+  ReloadAllScreens;
+  ReloadSongMenu;
 
-  if(ActualSongMenu <> Ini.SongMenu) then
+  AudioPlayback.PlaySound(SoundLib.Back);
+  FadeTo(@ScreenOptions);
+end;
+
+procedure TScreenOptionsGame.ReloadCurrentScreen;
+begin
+  ScreenOptionsGame.Free;
+  Language.ChangeLanguage(ILanguage[Ini.Language]);
+  Ini.TranslateOptionValues;
+  Theme.LoadTheme(Ini.Theme, Ini.Color);
+  ScreenOptionsGame := TScreenOptionsGame.Create;
+end;
+
+procedure TScreenOptionsGame.ReloadAllScreens;
+begin
+  // Reload all screens after language changed
+  if (old_Language <> Ini.Language) then
+  begin
+    UGraphic.UnloadScreens;
+
+    Theme.LoadTheme(Ini.Theme, Ini.Color);
+    UGraphic.LoadScreens(USDXVersionStr);
+
+    old_Language := Ini.Language;
+    old_SongMenu := Ini.SongMenu;
+    old_Sorting  := Ini.Sorting;
+    old_Tabs     := Ini.Tabs;
+  end;
+end;
+
+procedure TScreenOptionsGame.ReloadSongMenu;
+begin
+  if (Ini.Sorting <> old_Sorting) or (Ini.Tabs <> old_Tabs) or (old_SongMenu <> Ini.SongMenu) then
   begin
     Theme.ThemeSongLoad;
 
     ScreenSong.Free;
     ScreenSong := TScreenSong.Create;
-  end;
-
-  // Reload all screens, after Language changed
-  if(ActualLanguage <> Ini.Language) then
-  begin
-     {
-    //Language.ChangeLanguage(ILanguage[Ini.Language]);
-    Ini.Save;
-
-    Language.Free;
-    Language := TLanguage.Create;
-
-    Ini.Free;
-    Ini := TIni.Create;
-    //Ini.Load;
-
-    Theme.Free;
-    Theme := TTheme.Create;
-
-    Menu.Free;
-    Menu := TMenu.Create;
-
-    //Language.ChangeLanguage('Inglês');
-    UGraphic.UnLoadScreens();
-    UGraphic.LoadScreens(true);
-    }
   end;
 end;
 

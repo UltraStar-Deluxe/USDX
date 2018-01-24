@@ -34,17 +34,16 @@ interface
 {$I switches.inc}
 
 uses
-  ULog,
-  MD5,
-  UMenu,
-  sdl2,
   UDisplay,
-  UMusic,
   UFiles,
-  USong,
+  UMenu,
+  UMusic,
   UScreenSong,
-  SysUtils,
-  UThemes;
+  USong,
+  UThemes,
+  MD5,
+  sdl2,
+  SysUtils;
 
 type
 
@@ -71,19 +70,22 @@ type
 const
   { start credits after 60 seconds w/o interaction }
   TicksUntilCredits = 5 * 60 * 1000;
+  ID = 'ID_001';   //for help system
 
 implementation
 
 uses
   UGraphic,
-  UNote,
+  UHelp,
   UIni,
-  UTexture,
-  USongs,
   ULanguage,
+  ULog,
+  UNote,
   UParty,
   UScreenCredits,
   USkins,
+  USongs,
+  UTexture,
   UUnicodeUtils;
 
 function TScreenMain.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
@@ -103,15 +105,12 @@ begin
   begin // Key Down
         // check normal keys
     case UCS4UpperCase(CharCode) of
-      Ord('Q'): begin
-        Result := false;
+      Ord('S'): begin
+        FadeTo(@ScreenName, SoundLib.Start);
         Exit;
       end;
-      Ord('C'): begin
-         FadeTo(@ScreenCredits, SoundLib.Start);
-         Exit;
-      end;
-      Ord('M'): begin
+
+      Ord('P'): begin
         if (Ini.Players >= 1) and (Party.ModesAvailable) then
         begin
           FadeTo(@ScreenPartyOptions, SoundLib.Start);
@@ -119,13 +118,38 @@ begin
         end;
       end;
 
-      Ord('S'): begin
+      Ord('J'): begin
+        FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start);
+        Exit;
+      end;
+
+      Ord('T'): begin
         FadeTo(@ScreenStatMain, SoundLib.Start);
         Exit;
       end;
 
       Ord('E'): begin
         FadeTo(@ScreenEdit, SoundLib.Start);
+        Exit;
+      end;
+
+      Ord('O'): begin
+        FadeTo(@ScreenOptions, SoundLib.Start);
+        Exit;
+      end;
+
+      Ord('A'): begin
+        FadeTo(@ScreenAbout, SoundLib.Start);
+        Exit;
+      end;
+
+      Ord('C'): begin
+         FadeTo(@ScreenCredits, SoundLib.Start);
+         Exit;
+      end;
+
+      Ord('Q'): begin
+        Result := false;
         Exit;
       end;
     end;
@@ -136,6 +160,11 @@ begin
       SDLK_BACKSPACE:
       begin
         Result := false;
+      end;
+
+      SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
       end;
 
       SDLK_RETURN:
@@ -286,6 +315,9 @@ begin
   SoundLib.StartBgMusic;
 
   ScreenSong.Mode := smNormal;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenMain)');
 
  {**
   * Clean up TPartyGame here

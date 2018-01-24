@@ -76,7 +76,7 @@ type
     AV_PIX_FMT_PAL8,      ///< 8 bits with AV_PIX_FMT_RGB32 palette
     AV_PIX_FMT_YUVJ420P,  ///< planar YUV 4:2:0, 12bpp, full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV420P and setting color_range
     AV_PIX_FMT_YUVJ422P,  ///< planar YUV 4:2:2, 16bpp, full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV422P and setting color_range
-    AV_PIX_FMT_YUVJ444P,  ///< planar YUV 4:4:4, 24bpp, full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV444P and setting color_range    
+    AV_PIX_FMT_YUVJ444P,  ///< planar YUV 4:4:4, 24bpp, full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV444P and setting color_range
 {$IFDEF FF_API_XVMC}
     AV_PIX_FMT_XVMC_MPEG2_MC,///< XVideo Motion Acceleration via common packet passing
     AV_PIX_FMT_XVMC_MPEG2_IDCT,
@@ -348,7 +348,7 @@ const
     AV_PIX_FMT_YUV420P16 = AV_PIX_FMT_YUV420P16BE;
     AV_PIX_FMT_YUV422P16 = AV_PIX_FMT_YUV422P16BE;
     AV_PIX_FMT_YUV444P16 = AV_PIX_FMT_YUV444P16BE;
- 
+
     AV_PIX_FMT_GBRP9  = AV_PIX_FMT_GBRP9BE;
     AV_PIX_FMT_GBRP10 = AV_PIX_FMT_GBRP10BE;
     AV_PIX_FMT_GBRP12 = AV_PIX_FMT_GBRP12BE;
@@ -376,6 +376,7 @@ const
     AV_PIX_FMT_XYZ12      = AV_PIX_FMT_XYZ12BE;
     AV_PIX_FMT_NV20       = AV_PIX_FMT_NV20BE;
     AV_PIX_FMT_AYUV64     = AV_PIX_FMT_AYUV64BE;
+    AV_PIX_FMT_P010       = AV_PIX_FMT_P010BE;
 
 {$ELSE}
     AV_PIX_FMT_RGB32   = AV_PIX_FMT_BGRA;
@@ -443,6 +444,7 @@ const
     AV_PIX_FMT_XYZ12      = AV_PIX_FMT_XYZ12LE;
     AV_PIX_FMT_NV20       = AV_PIX_FMT_NV20LE;
     AV_PIX_FMT_AYUV64     = AV_PIX_FMT_AYUV64LE;
+    AV_PIX_FMT_P010       = AV_PIX_FMT_P010LE;
 {$ENDIF}
 
 type

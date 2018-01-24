@@ -34,32 +34,30 @@ interface
 {$I switches.inc}
 
 uses
-  Math,
-  SysUtils,
-  dglOpenGL,
-  sdl2,
-  UPath,
   UMenu,
   UMusic,
   UFiles,
-  UTime,
-  USongs,
   UIni,
-  ULog,
-  UTexture,
-  UMenuText,
   ULyrics,
-  UThemes;
+  UMenuText,
+  UPath,
+  USongs,
+  UTexture,
+  UThemes,
+  UTime,
+  dglOpenGL,
+  Math,
+  sdl2,
+  SysUtils;
 
 type
   TScreenOpen = class(TMenu)
     private
       //fTextF:      array[0..1] of integer;
-      fTextN:      integer; // text-box ID of filename
+      FileNameID:  integer; // button ID of filename
       fFilename:   IPath;
       fBackScreen: PMenu;
 
-      procedure AddBox(X, Y, W, H: real);
     public
       constructor Create; override;
       procedure OnShow; override;
@@ -76,11 +74,16 @@ type
       property BackScreen: PMenu READ fBackScreen WRITE fBackScreen;
   end;
 
+const
+  ID='ID_062';   //for help system
+
 implementation
 
 uses
-  UGraphic,
   UDraw,
+  UGraphic,
+  UHelp,
+  ULog,
   UMain,
   USkins,
   UUnicodeUtils;
@@ -96,7 +99,7 @@ begin
     begin
       if (Interaction = 0) then
       begin
-        Text[fTextN].Text := Text[fTextN].Text + UCS4ToUTF8String(CharCode);
+        Button[FileNameID].Text[0].Text := Button[FileNameID].Text[0].Text + UCS4ToUTF8String(CharCode);
         Exit;
       end;
     end;
@@ -107,7 +110,7 @@ begin
         begin
           if Interaction = 0 then
           begin
-            Text[fTextN].DeleteLastLetter;
+            Button[FileNameID].Text[0].DeleteLastLetter;
           end;
         end;
 
@@ -121,14 +124,18 @@ begin
 
       SDLK_RETURN:
         begin
-          if (Interaction = 2) then
+          if (Interaction = 0) then
+          begin
+            InteractNext;
+          end
+          else if (Interaction = 1) then
           begin
             //Update Filename and go to last Screen
-            fFileName := Path(Text[fTextN].Text);
+            fFileName := Path(Button[0].Text[0].Text);
             AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(fBackScreen);
           end
-          else if (Interaction = 1) then
+          else if (Interaction = 2) then
           begin
             //Empty Filename and go to last Screen
             fFileName := PATH_NONE;
@@ -137,31 +144,24 @@ begin
           end;
         end;
 
-      SDLK_LEFT:
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
+        end;
+
+      SDLK_LEFT,
+      SDLK_UP:
         begin
           InteractPrev;
         end;
 
-      SDLK_RIGHT:
+      SDLK_RIGHT,
+      SDLK_DOWN:
         begin
           InteractNext;
         end;
-
-      SDLK_DOWN:
-        begin
-        end;
-
-      SDLK_UP:
-        begin
-        end;
     end;
   end;
-end;
-
-procedure TScreenOpen.AddBox(X, Y, W, H: real);
-begin
-  AddStatic(X,   Y,   W,   H,   0, 0, 0, Skin.GetTextureFileName('MainBar'), TEXTURE_TYPE_COLORIZED);
-  AddStatic(X+2, Y+2, W-4, H-4, 1, 1, 1, Skin.GetTextureFileName('MainBar'), TEXTURE_TYPE_COLORIZED);
 end;
 
 constructor TScreenOpen.Create;
@@ -170,61 +170,26 @@ begin
 
   fFilename := PATH_NONE;
 
-  // line
-  {
-  AddStatic(20, 10, 80, 30, 0, 0, 0, 'MainBar', 'JPG', TEXTURE_TYPE_COLORIZED);
-  AddText(35, 17, 1, 18, 1, 1, 1, 'line');
-  TextSentence := AddText(120, 14, 1, 24, 0, 0, 0, '0 / 0');
-  }
+  LoadFromTheme(Theme.EditOpen);
 
-  // file list
-  //AddBox(400, 100, 350, 450);
-
-  //TextF[0] :=  AddText(430, 155,  0, 24, 0, 0, 0, 'a');
-  //TextF[1] :=  AddText(430, 180,  0, 24, 0, 0, 0, 'a');
-
-  // file name
-  AddBox(20, 540, 500, 40);
-  fTextN := AddText(50, 548, 0, 24, 0, 0, 0, fFileName.ToUTF8);
-  AddInteraction(iText, fTextN);
+  // button with editable text for filename
+  FileNameID := AddButton(Theme.EditOpen.ButtonFileName);
+  Button[FileNameID].Text[0].Writable := true;
 
   // buttons
-  {AddButton(540, 540, 100, 40, Skin.SkinPath + Skin.ButtonF);
-  AddButtonText(10, 5, 0, 0, 0, 'Cancel');
-
-  AddButton(670, 540, 100, 40, Skin.SkinPath + Skin.ButtonF);
-  AddButtonText(30, 5, 0, 0, 0, 'OK');}
-  // buttons
-  AddButton(540, 540, 100, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(10, 5, 0, 0, 0, 'Cancel');
-
-  AddButton(670, 540, 100, 40, Skin.GetTextureFileName('ButtonF'));
-  AddButtonText(30, 5, 0, 0, 0, 'OK');
-
+  AddButton(Theme.EditOpen.ButtonLoad);
+  AddButton(Theme.EditOpen.ButtonBack);
 end;
 
 procedure TScreenOpen.OnShow;
 begin
   inherited;
 
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOpen)');
+
   Interaction := 0;
-  Text[fTextN].Text := fFilename.ToUTF8();
+  Button[FileNameID].Text[0].Text := fFilename.ToUTF8();
 end;
-
-(*
-function TScreenEditSub.Draw: boolean;
-var
-  Min:     integer;
-  Sec:     integer;
-  AktBeat: integer;
-begin
-
-end;
-
-procedure TScreenEditSub.Finish;
-begin
-//
-end;
-*)
 
 end.

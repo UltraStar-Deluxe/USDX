@@ -979,6 +979,30 @@ type
     DescriptionLong:      array[0..5] of UTF8string;
   end;
 
+  TThemeEditConvert = class(TThemeBasic)
+    ButtonOpen:           TThemeButton;
+    ButtonPlay:           TThemeButton;
+    ButtonPlaySelected:   TThemeButton;
+    ButtonStop:           TThemeButton;
+    ButtonSave:           TThemeButton;
+
+    TextDescription:      TThemeText;
+    TextDescriptionLong:  TThemeText;
+    Description:          array[0..5] of UTF8string;
+    DescriptionLong:      array[0..5] of UTF8string;
+  end;
+
+  TThemeEditOpen = class(TThemeBasic)
+    ButtonFileName:       TThemeButton;
+    ButtonLoad:           TThemeButton;
+    ButtonBack:           TThemeButton;
+
+    TextDescription:      TThemeText;
+    TextDescriptionLong:  TThemeText;
+    Description:          array[0..5] of UTF8string;
+    DescriptionLong:      array[0..5] of UTF8string;
+  end;
+
   TThemeEditSub = class(TThemeBasic)
       //in editor - headers
       BackgroundImage:     TThemeStatic;
@@ -1021,6 +1045,11 @@ type
     Button1: TThemeButton;
     Button2: TThemeButton;
     TextCheck: TThemeText;
+  end;
+
+  //Help-Popup
+  TThemeHelp = class(TThemeBasic)
+    Button1:    TThemeButton;
   end;
 
   TThemeInsertUser = class(TThemeBasic)
@@ -1073,7 +1102,7 @@ type
     Songsfound:       UTF8String;
     NoSongsfound:     UTF8String;
     CatText:          UTF8String;
-    IType:            array [0..6] of UTF8String;
+    IType:            array [0..7] of UTF8String;
   end;
 
   //Party Screens
@@ -1356,6 +1385,8 @@ type
     OptionsJukebox:   TThemeOptionsJukebox;
     //edit
     Edit:             TThemeEdit;
+    EditConvert:      TThemeEditConvert;
+    EditOpen:         TThemeEditOpen;
     EditSub:          TThemeEditSub;
     //error and check popup
     ErrorPopup:         TThemeError;
@@ -1363,6 +1394,8 @@ type
     InsertUserPopup:    TThemeInsertUser;
     SendScorePopup:     TThemeSendScore;
     ScoreDownloadPopup: TThemeScoreDownload;
+    //help popup
+    HelpPopup:          TThemeHelp;
     //ScreenSong extensions
     SongMenu:         TThemeSongMenu;
     SongJumpto:       TThemeSongJumpTo;
@@ -1522,6 +1555,8 @@ begin
   OptionsJukebox := TThemeOptionsJukebox.Create;
 
   Edit := TThemeEdit.Create;
+  EditConvert := TThemeEditConvert.Create;
+  EditOpen := TThemeEditOpen.Create;
   EditSub := TThemeEditSub.Create;
 
   ErrorPopup := TThemeError.Create;
@@ -1529,6 +1564,8 @@ begin
   InsertUserPopup := TThemeInsertUser.Create;
   SendScorePopup := TThemeSendScore.Create;
   ScoreDownloadPopup := TThemeScoreDownload.Create;
+
+  HelpPopup := TThemeHelp.Create;
 
   SongMenu := TThemeSongMenu.Create;
   SongJumpto := TThemeSongJumpto.Create;
@@ -2395,6 +2432,37 @@ begin
       ThemeLoadText(Edit.TextDescription, 'EditTextDescription');
       Edit.TextDescription.Text := Edit.Description[0];
 
+      //Edit Convert Menu
+      ThemeLoadBasic (EditConvert,        'EditConvert');
+
+      ThemeLoadButton(EditConvert.ButtonOpen,         'EditConvertButtonOpen');
+      ThemeLoadButton(EditConvert.ButtonPlay,         'EditConvertButtonPlay');
+      ThemeLoadButton(EditConvert.ButtonPlaySelected, 'EditConvertButtonPlaySelected');
+      ThemeLoadButton(EditConvert.ButtonStop,         'EditConvertButtonStop');
+      ThemeLoadButton(EditConvert.ButtonSave,         'EditConvertButtonSave');
+
+      EditConvert.Description[0] := Language.Translate('SING_EDIT_CONVERT_BUTTON_DESCRIPTION_OPEN');
+      EditConvert.Description[1] := Language.Translate('SING_EDIT_CONVERT_BUTTON_DESCRIPTION_PLAY');
+      EditConvert.Description[2] := Language.Translate('SING_EDIT_CONVERT_BUTTON_DESCRIPTION_PLAYSELECTED');
+      EditConvert.Description[3] := Language.Translate('SING_EDIT_CONVERT_BUTTON_DESCRIPTION_STOP');
+      EditConvert.Description[4] := Language.Translate('SING_EDIT_CONVERT_BUTTON_DESCRIPTION_SAVE');
+
+      ThemeLoadText(EditConvert.TextDescription, 'EditConvertTextDescription');
+      EditConvert.TextDescription.Text := EditConvert.Description[0];
+
+      //Edit Open Menu
+      ThemeLoadBasic (EditOpen,           'EditOpen');
+
+      ThemeLoadButton(EditOpen.ButtonFileName, 'EditOpenButtonFileName');
+      ThemeLoadButton(EditOpen.ButtonLoad,     'EditOpenButtonLoad');
+      ThemeLoadButton(EditOpen.ButtonBack,     'EditOpenButtonBack');
+
+      //EditOpen.Description[0] := Language.Translate('SING_EDIT_OPEN_BUTTON_DESCRIPTION_LOAD');
+      //EditOpen.Description[1] := Language.Translate('SING_EDIT_OPEN_BUTTON_DESCRIPTION_BACK');
+
+      ThemeLoadText(EditOpen.TextDescription, 'EditOpenTextDescription');
+      EditOpen.TextDescription.Text := EditOpen.Description[0];
+
       // editor
       ThemeLoadBasic (EditSub,               'EditSub');
       ThemeLoadStatic(EditSub.BackgroundImage, 'EditSubBackgroundImage');
@@ -2489,6 +2557,7 @@ begin
       SongJumpto.IType[4] := Language.Translate('SONG_JUMPTO_TYPE5');
       SongJumpto.IType[5] := Language.Translate('SONG_JUMPTO_TYPE6');
       SongJumpto.IType[6] := Language.Translate('SONG_JUMPTO_TYPE7');
+      SongJumpto.IType[7] := Language.Translate('SONG_JUMPTO_TYPE8');
       SongJumpto.SongsFound := Language.Translate('SONG_JUMPTO_SONGSFOUND');
       SongJumpto.NoSongsFound := Language.Translate('SONG_JUMPTO_NOSONGSFOUND');
       SongJumpto.CatText := Language.Translate('SONG_JUMPTO_CATTEXT');
@@ -4551,6 +4620,9 @@ begin
 
   freeandnil(CheckPopup);
   CheckPopup := TThemeCheck.Create;
+
+  freeandnil(HelpPopup);
+  HelpPopup := TThemeHelp.Create;
 
   freeandnil(InsertUserPopup);
   InsertUserPopup := TThemeInsertUser.Create;

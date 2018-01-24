@@ -34,13 +34,13 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UDisplay,
-  UMusic,
   UFiles,
-  SysUtils,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyTournamentOptions = class(TMenu)
@@ -64,22 +64,24 @@ type
   end;
 
 const
+  ID='ID_037';   //for help system
   IRoundCount:  array[0..2] of UTF8String = ('1', '3', '5');
 
 implementation
 
 uses
   UGraphic,
-  UMain,
+  UHelp,
   UIni,
-  UTexture,
   ULanguage,
-  UPartyTournament,
-  USong,
-  UPlaylist,
-  USongs,
   ULog,
+  UMain,
   UNote,
+  UPartyTournament,
+  UPlaylist,
+  USong,
+  USongs,
+  UTexture,
   UUnicodeUtils;
 
 procedure TScreenPartyTournamentOptions.UpdateTournament();
@@ -121,6 +123,11 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenPartyTournamentPlayer);
+        end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_RETURN:
@@ -179,6 +186,9 @@ end;
 procedure TScreenPartyTournamentOptions.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyTournamentOptions)');
 
   SelectsS[SelectRounds2Final].Visible := false;
   SelectsS[SelectRounds4Final].Visible := false;

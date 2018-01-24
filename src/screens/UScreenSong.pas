@@ -34,31 +34,30 @@ interface
 {$I switches.inc}
 
 uses
-  SysUtils,
-  sdl2,
   UCatCovers,
   UCommon,
   UDataBase,
   UDisplay,
-  UDllManager,
-  UPath,
+  UDLLManager,
   UFiles,
   UIni,
   ULanguage,
-  ULog,
   UMenu,
   UMenuEqualizer,
   UMusic,
+  UPath,
   USong,
   USongs,
   UTexture,
   UThemes,
+  UTime,
   UUnicodeStringHelper,
   {$IFDEF MSWINDOWS}
   LazUTF8Classes,
   LazUTF8,
   {$ENDIF}
-  UTime;
+  sdl2,
+  SysUtils;
 
 type
   TVisArr = array of integer;
@@ -140,6 +139,9 @@ type
       TextMaxScoreLocal:    integer;
       TextMediaScoreLocal:  integer;
       TextScoreUserLocal:   integer;
+
+      //Help system
+      ID:              string;
 
       //Party Mod
       Mode: TSingMode;
@@ -288,7 +290,7 @@ type
       //procedures for Menu
       procedure StartSong;
       procedure OpenEditor;
-      procedure DoJoker(Team: integer);
+      procedure DoJoker(Team: integer; SDL_ModState: Word);
       procedure SelectPlayers;
 
       procedure OnSongSelect;   // called when song flows movement stops at a song
@@ -323,19 +325,22 @@ type
 implementation
 
 uses
-  Math,
-  dglOpenGL,
+  UAudioPlaybackBase,
   UCovers,
   UGraphic,
+  UHelp,
+  ULog,
   UMain,
   UMenuButton,
+  UMenuStatic,
   UNote,
-  UAudioPlaybackBase,
   UParty,
   UPlaylist,
   UScreenSongMenu,
   USkins,
-  UUnicodeUtils, UMenuStatic;
+  UUnicodeUtils,
+  dglOpenGL,
+  Math;
 
 const
   MAX_TIME = 30;
@@ -680,7 +685,7 @@ begin
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
-    //Jump to Artist/Titel
+    //Jump to Artist/Title
     if ((SDL_ModState and KMOD_LALT <> 0) and (FreeListMode)) then
     begin
       if(PressedKey > 1114111) then
@@ -693,7 +698,7 @@ begin
       begin
         I2 := Length(CatSongs.Song);
 
-        //Jump To Titel
+        //Jump To Title
         if (SDL_ModState = (KMOD_LALT or KMOD_LSHIFT)) then
         begin
           for I := 1 to High(CatSongs.Song) do
@@ -1152,6 +1157,13 @@ begin
             SetScrollRefresh;
 
         end;
+
+      SDLK_TAB:
+        begin
+          Help.SetHelpID(ID);
+          ScreenPopupHelp.ShowPopup();
+        end;
+
       SDLK_RETURN:
         begin
           CloseMessage();
@@ -1315,7 +1327,7 @@ begin
             begin
             end
             else
-              DoJoker(0);
+              DoJoker(0, SDL_ModState);
             end;
         end;
 
@@ -1330,7 +1342,7 @@ begin
             begin
             end
             else
-              DoJoker(1);
+              DoJoker(1, SDL_ModState);
           end;
 
         end;
@@ -1346,7 +1358,7 @@ begin
             begin
             end
             else
-              DoJoker(2);
+              DoJoker(2, SDL_ModState);
           end;
       end;
     end;
@@ -2118,7 +2130,7 @@ end;
 
 procedure TScreenSong.SetScroll;
 var
-  VS, B: integer;
+  VS, B, SongsInCat: integer;
 begin
   VS := CatSongs.VisibleSongs;
   if VS > 0 then
@@ -2291,7 +2303,11 @@ begin
     if (Ini.TabsAtStartup = 1) and (CatSongs.CatNumShow = -1) then
     begin
       Text[TextNumber].Text := IntToStr(CatSongs.Song[Interaction].OrderNum) + '/' + IntToStr(CatSongs.CatCount);
-      Text[TextTitle].Text  := '(' + IntToStr(CatSongs.Song[Interaction].CatNumber) + ' ' + Language.Translate('SING_SONGS_IN_CAT') + ')';
+      SongsInCat := CatSongs.Song[Interaction].CatNumber;
+      if (SongsInCat = 1) then
+        Text[TextTitle].Text  := '(' + IntToStr(CatSongs.Song[Interaction].CatNumber) + ' ' + Language.Translate('SING_SONG_IN_CAT') + ')'
+      else
+        Text[TextTitle].Text  := '(' + IntToStr(CatSongs.Song[Interaction].CatNumber) + ' ' + Language.Translate('SING_SONGS_IN_CAT') + ')';
     end
     else if (CatSongs.CatNumShow = -2) then
       Text[TextNumber].Text := IntToStr(CatSongs.VisibleIndex(Interaction)+1) + '/' + IntToStr(VS)
@@ -3144,6 +3160,32 @@ begin
     HideCatTL;
   end;
 
+  case Mode of
+    smNormal:
+      begin
+        ID := 'ID_012';
+        if not Help.SetHelpID(ID) then
+          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smNormal)');
+      end;
+    smPartyClassic:
+      begin
+        ID := 'ID_013';
+        if not Help.SetHelpID(ID) then
+          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smPartyClassic)');
+      end;
+    smPartyFree:
+      begin
+        ID := 'ID_014';
+        if not Help.SetHelpID(ID) then
+          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smPartyFree)');
+      end;
+    smPartyTournament:
+      begin
+        ID := 'ID_015';
+        if not Help.SetHelpID(ID) then
+          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smPartyTournament)');
+      end;
+  end;
 
   //Playlist Mode
   if not(Mode = smPartyClassic) then
@@ -3891,7 +3933,7 @@ begin
             SelectNext;
 
             // choose song
-            // duets not playble
+            // duets not playable
             if (Mode = smPartyClassic) then
             begin
               repeat
@@ -3918,7 +3960,7 @@ begin
           // when tabs are deactivated use easy method
           else
           begin
-            // duets not playble
+            // duets not playable
             if (Mode = smPartyClassic) then
             begin
               repeat
@@ -3952,7 +3994,7 @@ begin
           SelectNext;
           FixSelected2;
 
-          // duets not playble
+          // duets not playable
           if (Mode = smPartyClassic) then
           begin
             repeat
@@ -3979,7 +4021,7 @@ begin
         begin
           PlaylistMan.SetPlayList(PlaylistMan.CurPlayList);
 
-          // duets not playble
+          // duets not playable
           if (Mode = smPartyClassic) then
           begin
             repeat
@@ -4177,24 +4219,32 @@ procedure TScreenSong.OpenEditor;
 begin
   if (Songs.SongList.Count > 0) and
      (not CatSongs.Song[Interaction].Main) and
+     // currently, the editor is not suitable to edit duets
+     (not CatSongs.Song[Interaction].isDuet) and
      (Mode = smNormal) then
   begin
     StopMusicPreview();
     AudioPlayback.PlaySound(SoundLib.Start);
     CurrentSong := CatSongs.Song[Interaction];
     FadeTo(@ScreenEditSub);
+  end
+  else if (CatSongs.Song[Interaction].isDuet) then
+  begin
+    ScreenPopupError.ShowPopup (Language.Translate('ERROR_DUETS_NOT_EDITABLE'));
   end;
 end;
 
 //Team No of Team (0-5)
-procedure TScreenSong.DoJoker (Team: integer);
+procedure TScreenSong.DoJoker (Team: integer; SDL_ModState: Word);
 begin
   if (Mode = smPartyClassic) and
      (High(Party.Teams) >= Team) and
      (Party.Teams[Team].JokersLeft > 0) then
   begin
-    //Use Joker
-    Dec(Party.Teams[Team].JokersLeft);
+    //Use Joker (unless ALT modifier is used to cheat)
+    if (SDL_ModState <> KMOD_LALT) then
+      Dec(Party.Teams[Team].JokersLeft);
+
     SelectRandomSong;
     SetJoker;
   end;
@@ -4212,14 +4262,11 @@ begin
   end;
 end;
 
-//Detailled Cover Loading. Loads the Detailled, uncached Cover of the Song Button
+//Detailled Cover Loading. Loads the Detailed, uncached Cover of the Song Button
 procedure TScreenSong.LoadCover(NumberOfButtonInArray: integer);
-var
-  deb1: string;
 begin
   If (Button[NumberOfButtonInArray].Texture.TexNum = 0) and Assigned(Button[NumberOfButtonInArray].Texture.Name) then
   begin
-    deb1:=Button[NumberOfButtonInArray].Texture.Name.ToWide();
     Button[NumberOfButtonInArray].Texture := Covers.FindCover(Button[NumberOfButtonInArray].Texture.Name).GetTexture();
   end;
 end;

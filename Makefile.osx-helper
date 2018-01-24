@@ -2,10 +2,10 @@ getdylibs = $(shell $(OTOOL) -L $(1) | grep version | cut -f 1 -d ' ' | grep -v 
 dest = $(macosx_bundle_path)/MacOS/$(notdir $(1))
 
 # Let's create a list of all libraries used at runtime, starting with the
-# application and the dlopen'ed libpcre.
+# application.
 
 FILES :=
-NEWFILES := $(USDX_BIN) $(pkgingLibDir)/libpcre.dylib
+NEWFILES := $(USDX_BIN)
 
 define recurse
 FILES := $$(FILES) $$(NEWFILES)

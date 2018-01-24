@@ -71,13 +71,6 @@ make $makearg
 make install
 make distclean
 
-#	echo "Building PCRE"
-#	cd "$SRC/pcre"
-#	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --disable-static --enable-utf --enable-unicode-properties
-#	make $makearg
-#	make install
-#	make distclean
-
 echo "Building Yasm"
 cd "$SRC/yasm"
 ./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --disable-static

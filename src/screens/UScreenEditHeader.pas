@@ -35,11 +35,11 @@ interface
 
 uses
   UMenu,
-  sdl2,
-  USongs,
-  USong,
   UPath,
-  UThemes;
+  USong,
+  USongs,
+  UThemes,
+  sdl2;
 
 type
   TScreenEditHeader = class(TMenu)
@@ -79,16 +79,21 @@ type
       procedure Finish;}
   end;
 
+const
+  ID='ID_063';   //for help system
+
 implementation
 
 uses
-  UGraphic,
-  UMusic,
-  SysUtils,
   UFiles,
+  UGraphic,
+  UHelp,
+  ULog,
+  UMusic,
   USkins,
   UTexture,
-  UUnicodeUtils;
+  UUnicodeUtils,
+  SysUtils;
 
 function TScreenEditHeader.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
@@ -112,6 +117,11 @@ begin
           //Music.PlayBack;
           //FadeTo(@MainScreen);
           Result := false;
+        end;
+
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_RETURN:
@@ -255,6 +265,9 @@ end;
 procedure TScreenEditHeader.OnShow;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenEditHeader)');
 
 {  if FileExists(FileName) then  // load file
   begin

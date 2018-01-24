@@ -35,19 +35,18 @@ interface
 
 uses
   UCommon,
-  UMenu,
-  ULog,
-  sdl2,
   UDisplay,
+  UFiles,
+  UMenu,
   UMusic,
   UNote,
-  UFiles,
-  SysUtils,
   UScreenSingController,
   UScreenPartyNewRound,
-  UScreenPartyWin,
   UScreenPartyScore,
-  UThemes;
+  UScreenPartyWin,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenPartyPlayer = class(TMenu)
@@ -86,6 +85,7 @@ type
       procedure SetAnimationProgress(Progress: real); override;
       function NoRepeatColors(ColorP:integer; Interaction:integer; Pos:integer):integer;
       procedure TeamColorButton(K: integer; Interact: integer);
+      procedure ShuffleNames(var PlayerNames: array of UTF8String);
 
   end;
 
@@ -93,21 +93,26 @@ const
   ITeams:   array[0..1] of UTF8String = ('2', '3');
   IPlayers: array[0..3] of UTF8String = ('1', '2', '3', '4');
 
+const
+  ID='ID_031';   //for help system
+
 implementation
 
 uses
   UAvatars,
   UGraphic,
-  UMain,
+  UHelp,
   UIni,
-  UTexture,
+  ULanguage,
+  ULog,
+  UMain,
   UParty,
-  UUnicodeUtils,
   UScreenPartyOptions,
-  ULanguage;
+  UTexture,
+  UUnicodeUtils;
 
 var
-  Num: array[0..2]of integer;
+  Num: array[0..2] of integer;
 
 procedure TScreenPartyPlayer.UpdateInterface;
   var
@@ -236,7 +241,8 @@ function TScreenPartyPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
   var
     SDL_ModState:  word;
     Team: integer;
-    I: integer;
+    I, J, count: integer;
+    randomNames: array of UTF8String; // new for randomizing names
   procedure IntNext;
   begin
     repeat
@@ -327,6 +333,11 @@ begin
         FadeTo(@ScreenPartyOptions);
       end;
 
+    SDLK_TAB:
+      begin
+        ScreenPopupHelp.ShowPopup();
+      end;
+
     SDLK_RETURN: UpdateParty;
 
     // Up and Down could be done at the same time,
@@ -409,6 +420,39 @@ begin
         for I := 0 to 3 do
           IntPrev;
 
+      end;
+    SDLK_R:
+      begin
+        if (SDL_ModState = KMOD_LCTRL) then
+        begin
+          AudioPlayback.PlaySound(SoundLib.Option);
+          //InteractDec;
+          //UpdateInterface;
+
+          count := 0;
+          SetLength(randomNames, 12);
+
+          // collect all player names
+          for I := 0 to self.CountTeams+1 do
+            for J := 0 to CountPlayer[I] do
+            begin
+              randomNames[count] := Button[5*I+J+1].Text[0].Text;
+              inc(count);
+            end;
+
+          // shuffle player names
+          SetLength(randomNames, count);
+          ShuffleNames(randomNames);
+
+          // set shuffled player names
+          dec(count);
+          for I := 0 to self.CountTeams+1 do
+            for J := 0 to CountPlayer[I] do
+            begin
+              Button[5*I+J+1].Text[0].Text := randomNames[count];
+              dec(count);
+            end;
+        end;
       end;
   end;
 end;
@@ -498,6 +542,9 @@ var
   I:    integer;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyPlayer)');
 
   for I := 0 to 2 do
     Num[I] := NoRepeatColors(Ini.TeamColor[I], I, 1);
@@ -599,6 +646,20 @@ var
 begin
   {for I := 0 to high(Button) do
     Button[I].Texture.ScaleW := Progress;   }
+end;
+
+// random permutation of player names according to Fisher-Yates
+procedure TScreenPartyPlayer.ShuffleNames(var PlayerNames: array of UTF8String);
+var
+  I, J: Integer;
+  tmp: UTF8String;
+begin
+  for I := Low(PlayerNames) to High(PlayerNames) do begin
+    J := I + Random(Length(PlayerNames) - I + Low(PlayerNames));
+    tmp := PlayerNames[J];
+    PlayerNames[J] := PlayerNames[I];
+    PlayerNames[I] := tmp;
+  end;
 end;
 
 end.

@@ -73,7 +73,8 @@ type
     fltLanguage,
     fltEdition,
     fltGenre,
-    fltYear
+    fltYear,
+    fltCreator
   );
 
   TBPM = record
@@ -282,7 +283,7 @@ begin
     FileName := FileInfo.Name;
     if ((FileInfo.Attr and faDirectory) <> 0) then
     begin
-      if Recursive and (not FileName.Equals('.')) and (not FileName.Equals('..')) then
+      if Recursive and (not FileName.Equals('.')) and (not FileName.Equals('..')) and (not FileName.Equals('')) then
         FindFilesByExtension(Dir.Append(FileName), Ext, true, Files);
     end
     else
@@ -493,6 +494,8 @@ var
   CatNumber:   integer;    // Number of Song in Category
   tmpCategory: UTF8String; //
   I, J:        integer;
+  StringIndex: integer;
+  MainArtist:  UTF8String;
 
   procedure AddCategoryButton(const CategoryName: UTF8String);
   var
@@ -634,21 +637,35 @@ begin
         sArtist2: begin
           { this new sorting puts all songs by the same artist into
             a single category }
-          if (UTF8CompareText(CurCategory, CurSong.Artist) <> 0) then
+          //
+          if (UTF8ContainsText(CurSong.Artist, ' feat.')) then
           begin
-            CurCategory := CurSong.Artist;
+            StringIndex := UTF8Pos(' feat', CurSong.Artist);
+            MainArtist := TrimRight(UTF8Copy(CurSong.Artist, 1, StringIndex-1));
+          end
+          else
+            MainArtist := CurSong.Artist;
+          //
+          if (UTF8CompareText(CurCategory, MainArtist) <> 0) then
+          begin
+            CurCategory := MainArtist;
             // add folder tab
             AddCategoryButton(CurCategory);
           end;
         end;
 
         sYear: begin
-          if CurSong.Year <> 0 then
-          begin
-            CurCategory := InttoStr(CurSong.Year);
+           if (CurSong.Year <> 0) then
+             tmpCategory := IntToStr(CurSong.Year)
+           else
+             tmpCategory := 'Unknown';
 
-            // add Category Button
-            AddCategoryButton(CurCategory);
+           if (tmpCategory <> CurCategory) then
+           begin
+             CurCategory := tmpCategory;
+
+             // add Category Button
+             AddCategoryButton(CurCategory);
            end;
          end;
 
@@ -882,7 +899,7 @@ begin
       begin
         case Filter of
           fltAll:
-            TmpString := Song[I].ArtistNoAccent + ' ' + Song[i].TitleNoAccent + ' ' + Song[i].LanguageNoAccent + ' ' + Song[i].EditionNoAccent + ' ' + Song[i].GenreNoAccent + ' ' + IntToStr(Song[i].Year); //+ ' ' + Song[i].Folder;
+            TmpString := Song[I].ArtistNoAccent + ' ' + Song[i].TitleNoAccent + ' ' + Song[i].LanguageNoAccent + ' ' + Song[i].EditionNoAccent + ' ' + Song[i].GenreNoAccent + ' ' + IntToStr(Song[i].Year) + ' ' + Song[i].CreatorNoAccent; //+ ' ' + Song[i].Folder;
           fltTitle:
             TmpString := Song[I].TitleNoAccent;
           fltArtist:
@@ -895,6 +912,8 @@ begin
             TmpString := Song[I].GenreNoAccent;
           fltYear:
             TmpString := IntToStr(Song[I].Year);
+          fltCreator:
+            TmpString := Song[I].CreatorNoAccent;
         end;
         Song[i].Visible := true;
         // Look for every searched word

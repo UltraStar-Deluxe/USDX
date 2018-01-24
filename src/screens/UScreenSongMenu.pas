@@ -34,19 +34,20 @@ interface
 {$I switches.inc}
 
 uses
-  UMenu,
-  sdl2,
   UDisplay,
-  UIni,
-  UMusic,
   UFiles,
-  SysUtils,
-  UThemes;
+  UIni,
+  UMenu,
+  UMusic,
+  UThemes,
+  sdl2,
+  SysUtils;
 
 type
   TScreenSongMenu = class(TMenu)
     private
       CurMenu: byte; // num of the cur. shown menu
+      ID:       String; //for help-system
     public
       Visible: boolean; // whether the menu should be drawn
 
@@ -98,17 +99,22 @@ implementation
 uses
   UDatabase,
   UGraphic,
+  UHelp,
+  ULanguage,
+  ULog,
   UMain,
   UNote,
-  UTexture,
-  ULanguage,
   UParty,
   UPlaylist,
   USong,
   USongs,
+  UTexture,
   UUnicodeUtils;
 
 function TScreenSongMenu.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+var
+  SDL_ModState:  Word;
+
 begin
   Result := true;
   if (PressedDown) then
@@ -145,6 +151,9 @@ begin
         end;
     end;
 
+    SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
+
     // check special keys
     case PressedKey of
       SDLK_ESCAPE,
@@ -152,6 +161,12 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Back);
           Visible := false;
+        end;
+
+      SDLK_TAB:
+        begin
+          Help.SetHelpID(ID);
+          ScreenPopupHelp.ShowPopup();
         end;
 
       SDLK_RETURN:
@@ -194,32 +209,32 @@ begin
         end;
 
       SDLK_1:
-        begin // jocker
+        begin // joker
             // use joker
           case CurMenu of
             SM_Party_Main:
             begin
-              ScreenSong.DoJoker(0)
+              ScreenSong.DoJoker(0, SDL_ModState)
             end;
           end;
         end;
       SDLK_2:
-        begin // jocker
+        begin // joker
             // use joker
           case CurMenu of
             SM_Party_Main:
             begin
-              ScreenSong.DoJoker(1)
+              ScreenSong.DoJoker(1, SDL_ModState)
             end;
           end;
         end;
       SDLK_3:
-        begin // jocker
+        begin // joker
             // use joker
           case CurMenu of
             SM_Party_Main:
             begin
-              ScreenSong.DoJoker(2)
+              ScreenSong.DoJoker(2, SDL_ModState)
             end;
           end;
         end;
@@ -323,6 +338,7 @@ begin
   case sMenu of
     SM_Main:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
 
         Text[0].Text := Language.Translate('SONG_MENU_NAME_MAIN');
@@ -348,6 +364,7 @@ begin
       end;
     SM_Song:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_SONG');
 
@@ -370,6 +387,7 @@ begin
 
     SM_Medley:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         MSongs := CountMedleySongs;
 
@@ -395,6 +413,7 @@ begin
 
     SM_Sorting:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_SORTING');
 
@@ -436,6 +455,7 @@ begin
 
     SM_PlayList:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST');
 
@@ -457,6 +477,7 @@ begin
 
     SM_Playlist_Add:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_ADD');
 
@@ -494,6 +515,7 @@ begin
 
     SM_Playlist_New:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_NEW');
 
@@ -516,6 +538,7 @@ begin
 
     SM_Playlist_DelItem:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_DELITEM');
 
@@ -535,6 +558,7 @@ begin
 
     SM_Playlist_Load:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_LOAD');
 
@@ -575,6 +599,7 @@ begin
 
     SM_Playlist_Del:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PLAYLIST_DEL');
 
@@ -594,6 +619,7 @@ begin
 
     SM_Party_Main:
       begin
+        ID := 'ID_018';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PARTY_MAIN');
 
@@ -615,6 +641,7 @@ begin
 
     SM_Party_Joker:
       begin
+        ID := 'ID_018';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PARTY_JOKER');
         // to-do : Party
@@ -654,6 +681,7 @@ begin
 
     SM_Refresh_Scores:
       begin
+        ID := 'ID_019';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_REFRESH_SCORES_TITLE');
 
@@ -710,6 +738,7 @@ begin
 
     SM_Party_Free_Main:
       begin
+        ID := 'ID_017';
         CurMenu := sMenu;
         Text[0].Text := Language.Translate('SONG_MENU_NAME_PARTY_MAIN');
 
@@ -726,9 +755,11 @@ begin
       end;
     SM_Extra:
       begin
+        ID := 'ID_020';
       end;
     SM_Jukebox:
       begin
+        ID := 'ID_021';
         CurMenu := sMenu;
 
         Text[0].Text := Language.Translate('SONG_MENU_NAME_JUKEBOX');
@@ -755,12 +786,17 @@ begin
 
       end;
   end;
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSongMenu)');
 end;
 
 procedure TScreenSongMenu.HandleReturn;
 var
   I: integer;
+  SDL_ModState:  Word;
 begin
+  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
   case CurMenu of
     SM_Main:
       begin
@@ -1147,19 +1183,19 @@ begin
           0: // button 1
             begin
               // joker team 1
-              ScreenSong.DoJoker(0);
+              ScreenSong.DoJoker(0, SDL_ModState);
             end;
 
           1: // button 2
             begin
               // joker team 2
-              ScreenSong.DoJoker(1);
+              ScreenSong.DoJoker(1, SDL_ModState);
             end;
 
           2: // button 3
             begin
               // joker team 3
-              ScreenSong.DoJoker(2);
+              ScreenSong.DoJoker(2, SDL_ModState);
             end;
 
           6: // button 4

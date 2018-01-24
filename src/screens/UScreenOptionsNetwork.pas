@@ -34,18 +34,17 @@ interface
 {$I switches.inc}
 
 uses
-  sdl2,
-  //curlobj,
-  UMenu,
   UDataBase,
   UDisplay,
   UDLLManager,
-  UWebSDK,
-  ULog,
-  UMusic,
   UFiles,
   UIni,
-  UThemes;
+  UMenu,
+  UMusic,
+  UThemes,
+  UWebSDK,
+  //curlobj,
+  sdl2;
 
 type
   TScreenOptionsNetwork = class(TMenu)
@@ -78,11 +77,16 @@ type
       procedure DeleteUser;
   end;
 
+const
+  ID='ID_079';   //for help system
+
 implementation
 
 uses
   UGraphic,
+  UHelp,
   ULanguage,
+  ULog,
   UUnicodeUtils,
   SysUtils;
 
@@ -96,7 +100,7 @@ var I:LongInt;
 begin
   Result:= ( ItemSize * ItemCount );
   for I:=0 to Result-1 do
-    Receive_String := Receive_String + IncomingData[I];
+    Receive_String := Receive_String + widechar(IncomingData[I]);
 end;
 
 procedure OnDeleteUser(Value: boolean; Data: Pointer);
@@ -256,6 +260,10 @@ begin
           DataBase.UpdateUsers;
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenOptions);
+        end;
+      SDLK_TAB:
+        begin
+          ScreenPopupHelp.ShowPopup();
         end;
       SDLK_INSERT:
         begin
@@ -501,6 +509,9 @@ var
   I, J: integer;
 begin
   inherited;
+
+  if not Help.SetHelpID(ID) then
+    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsNetwork)');
 
   CurrentWebsiteIndex := 0;
   CurrentUserIndex := 0;

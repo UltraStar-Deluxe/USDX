@@ -76,6 +76,7 @@ type
     BenchmarkFile:       TextFile;
     BenchmarkFileOpened: boolean;
     ConsoleBuffer: TStringList; // stores logged messages for in-game console, capped to CONSOLE_SCROLLBACK_SIZE
+    Lock:                TRTLCriticalSection;
 
     LogLevel: integer;
     // level of messages written to the log-file
@@ -176,10 +177,12 @@ begin
   LogLevel := LOG_LEVEL_DEFAULT;
   LogFileLevel := LOG_FILE_LEVEL_DEFAULT;
   FileOutputEnabled := true;
+  InitCriticalSection(Lock);
 end;
 
 destructor TLog.Destroy;
 begin
+  DoneCriticalSection(Lock);
   if BenchmarkFileOpened then
     CloseFile(BenchmarkFile);
   //if AnalyzeFileOpened then
@@ -213,6 +216,7 @@ var
 
   ValueText:    string;
 begin
+  EnterCriticalSection(Lock);
   if (FileOutputEnabled and Params.Benchmark) then
   begin
     if not BenchmarkFileOpened then
@@ -284,10 +288,12 @@ begin
       Flush(BenchmarkFile);
     end;
   end;
+  LeaveCriticalSection(Lock);
 end;
 
 procedure TLog.LogToFile(const Text: string);
 begin
+  EnterCriticalSection(Lock);
   if (FileOutputEnabled and not LogFileOpened) then
   begin
     AssignFile(LogFile, LogPath.Append('Error.log').ToNative);
@@ -317,6 +323,7 @@ begin
       LogFileOpened := false;
     end;
   end;
+  LeaveCriticalSection(Lock);
 end;
 
 procedure TLog.SetLogLevel(Level: integer);
@@ -542,24 +549,32 @@ end;
 
 procedure TLog.ClearConsoleLog;
 begin
+  EnterCriticalSection(Lock);
   ConsoleBuffer.Clear;
+  LeaveCriticalSection(Lock);
 end;
 
 function TLog.GetConsole(const index: integer; FromTheBeginning: boolean = false): string;
 begin
+  EnterCriticalSection(Lock);
   if FromTheBeginning then Result := ConsoleBuffer[index]
   else Result := ConsoleBuffer[ConsoleBuffer.Count-1-index];
+  LeaveCriticalSection(Lock);
 end;
 
 function TLog.GetConsoleCount: integer;
 begin
+  EnterCriticalSection(Lock);
   Result := ConsoleBuffer.Count;
+  LeaveCriticalSection(Lock);
 end;
 
 procedure TLog.LogConsole(const Text: string);
 begin
+  EnterCriticalSection(Lock);
   ConsoleBuffer.Insert(0, Text);
   if ConsoleBuffer.Count > CONSOLE_SCROLLBACK_SIZE then ConsoleBuffer.Capacity:=CONSOLE_SCROLLBACK_SIZE;
+  LeaveCriticalSection(Lock);
 end;
 
 end.

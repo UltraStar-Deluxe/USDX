@@ -14,7 +14,7 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
     #brew cask install xquartz
 
     brew install sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_net sdl2_ttf \
-        fpc portaudio binutils sqlite freetype libpng pcre lua libtiff \
+        fpc portaudio binutils freetype libpng lua libtiff \
         portmidi
 
     # This is from: https://github.com/Homebrew/homebrew-versions
@@ -28,7 +28,7 @@ else
     #    libsdl2-ttf-dev libsdl2-gfx-dev \
     #    libavcodec-dev libavformat-dev libswscale-dev \
     #    portaudio19-dev libprojectm-dev libopencv-highgui-dev \
-    #    libsqlite3-dev libpcre3-dev liblua5.1-dev libpng-dev \
+    #    libsqlite3-dev liblua5.1-dev libpng-dev \
     #    ttf-dejavu ttf-freefont
         
     # Extra dependencies for ffmpeg from ppa
@@ -37,7 +37,7 @@ else
     #    libavutil-ffmpeg-dev libswresample-ffmpeg-dev
 
     sudo apt-get install \
-        fpc libpcre3 libpcre3-dev liblua5.1-dev libopencv-highgui-dev \
+        fpc liblua5.1-dev libopencv-highgui-dev \
         cmake ftgl-dev libglew-dev \
         build-essential autoconf automake \
         libtool libasound2-dev libpulse-dev libaudio-dev libx11-dev libxext-dev \

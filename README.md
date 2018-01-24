@@ -235,7 +235,6 @@ For linking and running the game, the following libraries are also required:
 - [bass](http://www.un4seen.com/bass.html)
 - some fonts like ttf-dejavu and ttf-freefont
 - portaudio
-- pcre
 - lua 5.1 or 5.2 or 5.3
 - opencv if you want webcam support
 - projectM if you want audio visualisation support
@@ -252,7 +251,9 @@ For linking and running the game, the following libraries are also required:
 #### Compiling on Linux/BSD using make
 1. make sure all required libraries are installed 
   * for current debian / ubuntu: 
-    `sudo apt-get update && sudo apt-get install git fpc libsdl2-dev libsdl2-image-dev libsdl2-image-2.0-0 libsdl2-2.0-0 ffmpeg libavdevice-dev libsqlite3-0 libsqlite3-dev libpcre3 libpcre3-dev ttf-dejavu ttf-freefont portaudio19-dev lua5.1-dev libopencv-highgui-dev libprojectm-dev`
+    `sudo apt-get update && sudo apt-get install git automake make gcc fpc libsdl2-image-dev libavformat-dev libswscale-dev libsqlite3-dev libfreetype6-dev portaudio19-dev libportmidi-dev liblua5.3-dev libopencv-highgui-dev`
+  * if you want to build --with-libprojectM, you also need
+    `sudo apt-get install g++ libprojectm-dev`
   * for arch linux there is an aur package called [ultrastardx-git](https://aur.archlinux.org/packages/ultrastardx-git)
 2. `git clone https://github.com/UltraStar-Deluxe/USDX`
 2. `cd USDX`
@@ -266,17 +267,24 @@ For linking and running the game, the following libraries are also required:
    * or start it directly  
      `./game/ultrastardx`
 
-#### Compiling on OS X
+#### Compiling on MacOS (High Sierra)
 - USDX is built using _Homebrew_ and official _FreePascal build_ (using its compiler _FPC_)
-- You can install Homebrew from [brew.sh](http://brew.sh)
-- You can get the FPC build from [freepascal.org](http://www.freepascal.org/down/i386/macosx.var)
-- Don't miss _XQuartz_ from [xquartz.org](http://www.xquartz.org)
-- Make sure the XCode command line tools are installed. `xcode-select --install`
-- Needed brew libraries can be installed using:
-  * `brew install sdl2 sdl2_image ffmpeg libav portaudio binutils sqlite freetype pcre lua libtiff`
-  * `brew switch ffmpeg 2.8.6`
-- Pass argument `--enable-osx-fink` or `--enable-osx-brew` (default) according to the packaging you are using
-- `./configure`
-- `make macosx-standalone-app`
+- To install Homebrew, follow instructions from [brew.sh](http://brew.sh)
+- You can get the FPC build from [freepascal.org](http://www.freepascal.org/down/i386/macosx.var) or
+  * `brew install fpc`
+- Make sure the XCode command line tools are installed.
+  * `xcode-select --install`
+- Needed brew libraries can be installed using (ffmpeg up to 3.3 is supported):
+  * `brew install sdl2 sdl2_image automake portaudio binutils sqlite freetype lua libtiff pkg-config ffmpeg@2.8`
+- Clone repo
+  * `git clone https://github.com/UltraStar-Deluxe/USDX`
+- Generate `configure` file and more
+  * `./autogen.sh`
+- Make sure that you have your build setup right
+  * `./configure`
+- Now build the UltraStar application
+  * `make macosx-standalone-app`
+- Run by clicking UltraStarDeluxe in your build folder or
+  * `open UltraStarDeluxe.app`
 
 Feel free to fork this project, modify it to your hearts content and maybe also do pull requests to this repository for additional features, improvements or clean-ups.
