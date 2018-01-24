@@ -367,8 +367,8 @@ type
       procedure MoveTextToRight;
       procedure MarkSrc;
       procedure PasteText;
-      procedure CopySentence(Src, Dst: integer);
-      procedure CopySentences(Src, Dst, Num: integer);
+      procedure CopySentence(SrcLine, DstLine: integer);
+      procedure CopySentences(SrcLine, DstLine, Num: integer);
       procedure MakeSolo;
       procedure MakeDuet;
       function  DuetCopyLine: boolean;
@@ -1703,6 +1703,16 @@ begin
             GoldenRec.KillAll;
             ShowInteractiveBackground;
           end;
+
+          if (SDL_ModState = KMOD_LCTRL or KMOD_LSHIFT) then
+          begin
+            // deletes current sentence
+            CopyToUndo;
+            DeleteSentence;
+            Text[TextDebug].Text := Language.Translate('EDIT_INFO_DELETE_SENTENCE');
+            GoldenRec.KillAll;
+            ShowInteractiveBackground;
+          end;
         end;
 
       SDLK_PERIOD:
@@ -2673,11 +2683,11 @@ var
   Max:        integer;
   FirstBeat:  integer;
 begin
-  FirstBeat := Lines[0].Line[0].Note[0].StartBeat;
-  if (CurrentSong.isDuet) then
-    for TrackIndex := 1 to High(Lines) do
-      if (Lines[TrackIndex].Line[0].Note[0].StartBeat < FirstBeat) then
-        FirstBeat := Lines[TrackIndex].Line[0].Note[0].StartBeat;
+  FirstBeat := High(integer);
+
+  for TrackIndex := 0 to High(Lines) do
+    if (Lines[TrackIndex].Line[0].Note[0].StartBeat < FirstBeat) then
+    FirstBeat := Lines[TrackIndex].Line[0].Note[0].StartBeat;
 
   // set first note to start at beat 0 (common practice)
   if (FirstBeat <> 0) then
@@ -2896,58 +2906,59 @@ end;
 
 procedure TScreenEditSub.DivideNote(doubleclick: boolean);
 var
-  C:    integer;
-  N:    integer;
-  wherecutting, spacepos: integer;
-  tempR:  real;
-  tempstr : UCS4String;
+  LineIndex:     integer;
+  NoteIndex:     integer;
+  CutPosition:   integer;
+  SpacePosition: integer;
+  tempR:         real;
+  tempstr:       UCS4String;
 begin
-  C := Lines[CurrentTrack].CurrentLine;
+  LineIndex := Lines[CurrentTrack].CurrentLine;
   tempR := 720 / (Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].EndBeat - Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].Note[0].StartBeat);
 
   if (doubleclick) and (InteractAt(currentX, CurrentY) > 0) then
-      wherecutting := Round((currentX - button[Interactions[InteractAt(currentX, CurrentY)].Num].X) / tempR)
+      CutPosition := Round((currentX - button[Interactions[InteractAt(currentX, CurrentY)].Num].X) / tempR)
   else
-      wherecutting := 1;
+      CutPosition := 1;
 
-  with Lines[CurrentTrack].Line[C] do
+  with Lines[CurrentTrack].Line[LineIndex] do
   begin
     Inc(HighNote);
     SetLength(Note, HighNote + 1);
 
     // we copy all notes including selected one
-    for N := HighNote downto CurrentNote[CurrentTrack]+1 do
+    for NoteIndex := HighNote downto CurrentNote[CurrentTrack]+1 do
     begin
-      Note[N] := Note[N-1];
+      Note[NoteIndex] := Note[NoteIndex-1];
     end;
 
     // Note[Cur] and Note[Cur + 1] is identical at this point
     // modify first note
-    Note[CurrentNote[CurrentTrack]].Duration := wherecutting;
+    Note[CurrentNote[CurrentTrack]].Duration := CutPosition;
 
     // 2nd note
     Note[CurrentNote[CurrentTrack]+1].StartBeat := Note[CurrentNote[CurrentTrack]].StartBeat + Note[CurrentNote[CurrentTrack]].Duration;
     Note[CurrentNote[CurrentTrack]+1].Duration := Note[CurrentNote[CurrentTrack]+1].Duration - Note[CurrentNote[CurrentTrack]].Duration;
 
     // find space in text
-    spacepos := -1;
-    for  N:=0 to LengthUTF8(Note[CurrentNote[CurrentTrack]].Text) do
+    SpacePosition := -1;
+    for  NoteIndex := 0 to LengthUTF8(Note[CurrentNote[CurrentTrack]].Text) do
     begin
 
       tempstr := UTF8ToUCS4String(Note[CurrentNote[CurrentTrack]].Text);
-      if ((UCS4ToUTF8String(tempstr[N]) = ' ') and (spacepos < 0)) then
-         spacepos := N;
+      if ((UCS4ToUTF8String(tempstr[NoteIndex]) = ' ') and (SpacePosition < 0)) then
+         SpacePosition := NoteIndex;
 
     end;
     if ((TextPosition < 0) and (ansipos(' ', Note[CurrentNote[CurrentTrack]].Text) > 1) and (ansipos(' ', Note[CurrentNote[CurrentTrack]].Text) < Length(Note[CurrentNote[CurrentTrack]].Text)  )) then
     begin
-        Note[CurrentNote[CurrentTrack]+1].Text := UTF8Copy(Note[CurrentNote[CurrentTrack]].Text,spacepos + 2,LengthUTF8(Note[CurrentNote[CurrentTrack]].Text));
-        Note[CurrentNote[CurrentTrack]].Text := UTF8Copy(Note[CurrentNote[CurrentTrack]].Text, 1,spacepos+1)
+        Note[CurrentNote[CurrentTrack]+1].Text := UTF8Copy(Note[CurrentNote[CurrentTrack]].Text, SpacePosition + 2, LengthUTF8(Note[CurrentNote[CurrentTrack]].Text));
+        Note[CurrentNote[CurrentTrack]].Text := UTF8Copy(Note[CurrentNote[CurrentTrack]].Text, 1, SpacePosition + 1)
     end
     else
     if ((TextPosition >= 0) and (TextPosition < Length(Note[CurrentNote[CurrentTrack]].Text))) then
     begin
-        Note[CurrentNote[CurrentTrack]+1].Text := UTF8Copy(SelectsS[LyricSlideId].TextOpt[0].Text, TextPosition+2, LengthUTF8(SelectsS[LyricSlideId].TextOpt[0].Text));
+        Note[CurrentNote[CurrentTrack]+1].Text := UTF8Copy(SelectsS[LyricSlideId].TextOpt[0].Text, TextPosition + 2, LengthUTF8(SelectsS[LyricSlideId].TextOpt[0].Text));
         Note[CurrentNote[CurrentTrack]].Text := UTF8Copy(SelectsS[LyricSlideId].TextOpt[0].Text, 1, TextPosition);
         SelectsS[LyricSlideId].TextOpt[0].Text := Note[CurrentNote[CurrentTrack]].Text;
         TextPosition := -1;
@@ -2964,44 +2975,46 @@ end;
 
 procedure TScreenEditSub.DeleteNote;
 var
-  C:    integer;
-  N:    integer;
+  CurrentLine: integer;
+  LineIndex:   integer;
+  NoteIndex:   integer;
 begin
-  C := Lines[CurrentTrack].CurrentLine;
+  CurrentLine := Lines[CurrentTrack].CurrentLine;
 
   //Do Not delete Last Note
-  if (Lines[CurrentTrack].Line[C].HighNote > 0) then
+  if (Lines[CurrentTrack].Line[CurrentLine].HighNote > 0) then
   begin
     // we copy all notes from the next to the selected one
-    for N := CurrentNote[CurrentTrack]+1 to Lines[CurrentTrack].Line[C].HighNote do
+    for NoteIndex := CurrentNote[CurrentTrack]+1 to Lines[CurrentTrack].Line[CurrentLine].HighNote do
     begin
-      Lines[CurrentTrack].Line[C].Note[N-1] := Lines[CurrentTrack].Line[C].Note[N];
+      Lines[CurrentTrack].Line[CurrentLine].Note[NoteIndex-1] := Lines[CurrentTrack].Line[CurrentLine].Note[NoteIndex];
     end;
     
-    Dec(Lines[CurrentTrack].Line[C].HighNote);
+    Dec(Lines[CurrentTrack].Line[CurrentLine].HighNote);
 
-    SetLength(Lines[CurrentTrack].Line[C].Note, Lines[CurrentTrack].Line[C].HighNote + 1);
+    SetLength(Lines[CurrentTrack].Line[CurrentLine].Note, Lines[CurrentTrack].Line[CurrentLine].HighNote + 1);
 
     // last note was deleted
-    if (CurrentNote[CurrentTrack] > Lines[CurrentTrack].Line[C].HighNote) then
+    if (CurrentNote[CurrentTrack] > Lines[CurrentTrack].Line[CurrentLine].HighNote) then
     begin
       // select new last note
-      CurrentNote[CurrentTrack] := Lines[CurrentTrack].Line[C].HighNote;
+      CurrentNote[CurrentTrack] := Lines[CurrentTrack].Line[CurrentLine].HighNote;
 
       // correct Line ending
-      with Lines[CurrentTrack].Line[C] do
+      with Lines[CurrentTrack].Line[CurrentLine] do
         EndBeat := Note[HighNote].StartBeat + Note[HighNote].Duration;
     end;
 
-    Lines[CurrentTrack].Line[C].Note[CurrentNote[CurrentTrack]].Color := 2;
+    Lines[CurrentTrack].Line[CurrentLine].Note[CurrentNote[CurrentTrack]].Color := 2;
   end
   // Last Note of current Sentence Deleted - > Delete Sentence
   // if there are more than two left
   else if (Lines[CurrentTrack].High > 1) then
   begin
     //Move all Sentences after the current to the Left
-    for N := C+1 to Lines[CurrentTrack].High do
-      Lines[CurrentTrack].Line[N-1] := Lines[CurrentTrack].Line[N];
+    for LineIndex := CurrentLine+1 to Lines[CurrentTrack].High do
+      CopyLine(CurrentTrack, LineIndex, CurrentTrack, LineIndex-1);
+      //Lines[CurrentTrack].Line[LineIndex-1] := Lines[CurrentTrack].Line[LineIndex];
 
     //Delete Last Sentence
     SetLength(Lines[CurrentTrack].Line, Lines[CurrentTrack].High);
@@ -3009,8 +3022,8 @@ begin
     Lines[CurrentTrack].Number := Length(Lines[CurrentTrack].Line);
 
     CurrentNote[CurrentTrack] := 0;
-    if (C > 0) then
-      Lines[CurrentTrack].CurrentLine := C - 1
+    if (CurrentLine > 0) then
+      Lines[CurrentTrack].CurrentLine := CurrentLine - 1
     else
       Lines[CurrentTrack].CurrentLine := 0;
 
@@ -3024,55 +3037,26 @@ end;
 
 procedure TScreenEditSub.DeleteSentence;
 var
-  Pv, Pt:         integer;
-  TrackIndex:     integer;
   CurrentLine:    integer;
   LineIndex:      integer;
 
 begin
-  Pv := CurrentTrack;
-  Pt := CurrentTrack;
+  CurrentLine := Lines[CurrentTrack].CurrentLine;
 
-  // FIXME
-  {if CurrentSong.isDuet then
-  begin
-    if (Length(Lines[(CP+1) mod 2].Line[Lines[CP].Current].Note)=0) then
-    begin
-      Pv := 0;
-      Pt := 1;
-    end;
-  end;  }
+  // move all sentences after the current to the Left
+  for LineIndex := CurrentLine+1 to Lines[CurrentTrack].High do
+    CopyLine(CurrentTrack, LineIndex, CurrentTrack, LineIndex-1);
 
-  for TrackIndex := Pv to Pt do
-  begin
-    CurrentLine := Lines[CurrentTrack].CurrentLine;
-    {if (Pv <> Pt) or not CurrentSong.isDuet then
-    begin}
-      //Move all Sentences after the current to the Left
-      for LineIndex := CurrentLine+1 to Lines[TrackIndex].High do
-        CopyLine(TrackIndex, LineIndex, TrackIndex, LineIndex-1);
+  // delete last sentence
+  SetLength(Lines[CurrentTrack].Line, Lines[CurrentTrack].High);
+  Lines[CurrentTrack].High := High(Lines[CurrentTrack].Line);
+  Lines[CurrentTrack].Number := Length(Lines[CurrentTrack].Line);
 
-      //Delete Last Sentence
-      SetLength(Lines[TrackIndex].Line, Lines[TrackIndex].High);
-      Lines[TrackIndex].High := High(Lines[TrackIndex].Line);
-      Lines[TrackIndex].Number := Length(Lines[TrackIndex].Line);
-
-      CurrentNote[TrackIndex] := 0;
-      if (CurrentLine > 0) then
-        Lines[TrackIndex].CurrentLine := CurrentLine - 1
-      else
-        Lines[TrackIndex].CurrentLine := 0;
-    {end else
-    begin
-      //delete all notes in that line
-      SetLength(Lines[TrackIndex].Line[CurrentLine].Note, 0);
-
-      //switch to the other line
-      CP := (CP+1) mod 2;
-      CurrentNote[CP] := 0;
-      CurrentNote[(CP+1) mod 2] := 0;
-    end;}
-  end;
+  CurrentNote[CurrentTrack] := 0;
+  if (CurrentLine > 0) then
+    Lines[CurrentTrack].CurrentLine := CurrentLine - 1
+  else
+    Lines[CurrentTrack].CurrentLine := 0;
 
   Refresh;
   //SelectPrevNote();
@@ -3088,73 +3072,62 @@ end;
 
 procedure TScreenEditSub.ChangeWholeTone(Tone: integer);
 var
-  C:  integer;
-  N:  integer;
+  LineIndex: integer;
+  NoteIndex: integer;
 begin
-  for C := 0 to Lines[CurrentTrack].High do
+  for LineIndex := 0 to Lines[CurrentTrack].High do
   begin
-    Lines[CurrentTrack].Line[C].BaseNote := Lines[CurrentTrack].Line[C].BaseNote + Tone;
-    for N := 0 to Lines[CurrentTrack].Line[C].HighNote do
-      Lines[CurrentTrack].Line[C].Note[N].Tone := Lines[CurrentTrack].Line[C].Note[N].Tone + Tone;
+    Lines[CurrentTrack].Line[LineIndex].BaseNote := Lines[CurrentTrack].Line[LineIndex].BaseNote + Tone;
+    for NoteIndex := 0 to Lines[CurrentTrack].Line[LineIndex].HighNote do
+      Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex].Tone := Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex].Tone + Tone;
   end;
 end;
 
 procedure TScreenEditSub.MoveAllToEnd(Move: integer);
 var
-  C:    integer;
-  N:    integer;
-  NStart: integer;
+  LineIndex: integer;
+  NoteIndex: integer;
+  NoteStart:    integer;
 begin
-  for C := Lines[CurrentTrack].CurrentLine to Lines[CurrentTrack].High do
+  for LineIndex := Lines[CurrentTrack].CurrentLine to Lines[CurrentTrack].High do
   begin
-    NStart := 0;
-    if C = Lines[CurrentTrack].CurrentLine then
-      NStart := CurrentNote[CurrentTrack];
-    for N := NStart to Lines[CurrentTrack].Line[C].HighNote do
+    NoteStart := 0;
+    if LineIndex = Lines[CurrentTrack].CurrentLine then
+      NoteStart := CurrentNote[CurrentTrack];
+    for NoteIndex := NoteStart to Lines[CurrentTrack].Line[LineIndex].HighNote do
     begin
-      Inc(Lines[CurrentTrack].Line[C].Note[N].StartBeat, Move); // move note start
+      Inc(Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex].StartBeat, Move); // move note start
 
-      if N = 0 then
+      if NoteIndex = 0 then
       begin // fix beginning
-        Inc(Lines[CurrentTrack].Line[C].StartBeat, Move);
+        Inc(Lines[CurrentTrack].Line[LineIndex].StartBeat, Move);
       end;
 
-      if N = Lines[CurrentTrack].Line[C].HighNote then // fix ending
-        Inc(Lines[CurrentTrack].Line[C].EndBeat, Move);
+      if NoteIndex = Lines[CurrentTrack].Line[LineIndex].HighNote then // fix ending
+        Inc(Lines[CurrentTrack].Line[LineIndex].EndBeat, Move);
 
-    end; // for
-  end; // for
+    end; // for NoteIndex
+  end; // for LineIndex
 end;
 
 procedure TScreenEditSub.MoveTextToRight;
 var
-  C:      integer;
-  N:      integer;
-  NHigh:  integer;
+  LineIndex: integer;
+  NoteIndex: integer;
+  NoteHigh:  integer;
 begin
-  {
-  C := Lines[CurrentTrack].Current;
-
-  for N := Lines[CurrentTrack].Line[C].HighNut downto 1 do
-  begin
-    Lines[CurrentTrack].Line[C].Note[N].Text := Lines[CurrentTrack].Line[C].Note[N-1].Text;
-  end; // for
-
-  Lines[CurrentTrack].Line[C].Note[0].Text := '- ';
-  }
-
-  C := Lines[CurrentTrack].CurrentLine;
-  NHigh := Lines[CurrentTrack].Line[C].HighNote;
+  LineIndex := Lines[CurrentTrack].CurrentLine;
+  NoteHigh := Lines[CurrentTrack].Line[LineIndex].HighNote;
 
   // last word
-  Lines[CurrentTrack].Line[C].Note[NHigh].Text := Lines[CurrentTrack].Line[C].Note[NHigh-1].Text + Lines[CurrentTrack].Line[C].Note[NHigh].Text;
+  Lines[CurrentTrack].Line[LineIndex].Note[NoteHigh].Text := Lines[CurrentTrack].Line[LineIndex].Note[NoteHigh-1].Text + Lines[CurrentTrack].Line[LineIndex].Note[NoteHigh].Text;
 
   // other words
-  for N := NHigh - 1 downto CurrentNote[CurrentTrack] + 1 do
+  for NoteIndex := NoteHigh - 1 downto CurrentNote[CurrentTrack] + 1 do
   begin
-    Lines[CurrentTrack].Line[C].Note[N].Text := Lines[CurrentTrack].Line[C].Note[N-1].Text;
+    Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex].Text := Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex-1].Text;
   end; // for
-  Lines[CurrentTrack].Line[C].Note[CurrentNote[CurrentTrack]].Text := '- ';
+  Lines[CurrentTrack].Line[LineIndex].Note[CurrentNote[CurrentTrack]].Text := '- ';
 end;
 
 procedure TScreenEditSub.MarkSrc;
@@ -3164,74 +3137,77 @@ end;
 
 procedure TScreenEditSub.PasteText;
 var
-  C:    integer;
-  N:    integer;
+  LineIndex: integer;
+  NoteIndex: integer;
 begin
-  C := Lines[CurrentTrack].CurrentLine;
+  LineIndex := Lines[CurrentTrack].CurrentLine;
 
-  for N := 0 to Lines[CurrentTrack].Line[CopySrc].HighNote do
-    Lines[CurrentTrack].Line[C].Note[N].Text := Lines[CurrentTrack].Line[CopySrc].Note[N].Text;
+  for NoteIndex := 0 to Lines[CurrentTrack].Line[CopySrc].HighNote do
+    Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex].Text := Lines[CurrentTrack].Line[CopySrc].Note[NoteIndex].Text;
 end;
 
-procedure TScreenEditSub.CopySentence(Src, Dst: integer);
+procedure TScreenEditSub.CopySentence(SrcLine, DstLine: integer);
 var
-  N:     integer;
-  Time1: integer;
-  Time2: integer;
-  TD:    integer;
+  NoteIndex: integer;
+  Time1:     integer;
+  Time2:     integer;
+  TimeDiff:  integer;
 begin
-  Time1 := Lines[CurrentTrack].Line[Src].Note[0].StartBeat;
-  Time2 := Lines[CurrentTrack].Line[Dst].Note[0].StartBeat;
-  TD := Time2-Time1;
+  Time1 := Lines[CurrentTrack].Line[SrcLine].Note[0].StartBeat;
+  Time2 := Lines[CurrentTrack].Line[DstLine].Note[0].StartBeat;
+  TimeDiff := Time2-Time1;
 
-  SetLength(Lines[CurrentTrack].Line[Dst].Note, Lines[CurrentTrack].Line[Src].HighNote + 1);
-  Lines[CurrentTrack].Line[Dst].HighNote := Lines[CurrentTrack].Line[Src].HighNote;
-  for N := 0 to Lines[CurrentTrack].Line[Src].HighNote do
+  SetLength(Lines[CurrentTrack].Line[DstLine].Note, Lines[CurrentTrack].Line[SrcLine].HighNote + 1);
+  Lines[CurrentTrack].Line[DstLine].HighNote := Lines[CurrentTrack].Line[SrcLine].HighNote;
+  for NoteIndex := 0 to Lines[CurrentTrack].Line[SrcLine].HighNote do
   begin
-    Lines[CurrentTrack].Line[Dst].Note[N].Text := Lines[CurrentTrack].Line[Src].Note[N].Text;
-    Lines[CurrentTrack].Line[Dst].Note[N].Duration := Lines[CurrentTrack].Line[Src].Note[N].Duration;
-    Lines[CurrentTrack].Line[Dst].Note[N].Tone := Lines[CurrentTrack].Line[Src].Note[N].Tone;
-    Lines[CurrentTrack].Line[Dst].Note[N].StartBeat := Lines[CurrentTrack].Line[Src].Note[N].StartBeat + TD;
+    Lines[CurrentTrack].Line[DstLine].Note[NoteIndex].Text := Lines[CurrentTrack].Line[SrcLine].Note[NoteIndex].Text;
+    Lines[CurrentTrack].Line[DstLine].Note[NoteIndex].Duration := Lines[CurrentTrack].Line[SrcLine].Note[NoteIndex].Duration;
+    Lines[CurrentTrack].Line[DstLine].Note[NoteIndex].Tone := Lines[CurrentTrack].Line[SrcLine].Note[NoteIndex].Tone;
+    Lines[CurrentTrack].Line[DstLine].Note[NoteIndex].StartBeat := Lines[CurrentTrack].Line[SrcLine].Note[NoteIndex].StartBeat + TimeDiff;
   end;
-  N := Lines[CurrentTrack].Line[Src].HighNote;
-  Lines[CurrentTrack].Line[Dst].EndBeat := Lines[CurrentTrack].Line[Dst].Note[N].StartBeat + Lines[CurrentTrack].Line[Dst].Note[N].Duration;
+  //NoteIndex := Lines[CurrentTrack].Line[Src].HighNote;
+  Lines[CurrentTrack].Line[DstLine].EndBeat := Lines[CurrentTrack].Line[DstLine].Note[NoteIndex].StartBeat + Lines[CurrentTrack].Line[DstLine].Note[NoteIndex].Duration;
 end;
 
-procedure TScreenEditSub.CopySentences(Src, Dst, Num: integer);
+procedure TScreenEditSub.CopySentences(SrcLine, DstLine, Num: integer);
 var
-  C:      integer;
+  LineIndex: integer;
 begin
   // create place for new sentences
   SetLength(Lines[CurrentTrack].Line, Lines[CurrentTrack].Number + Num - 1);
 
   // moves sentences next to the destination
-  for C := Lines[CurrentTrack].High downto Dst + 1 do
+  for LineIndex := Lines[CurrentTrack].High downto DstLine + 1 do
   begin
-    Lines[CurrentTrack].Line[C + Num - 1] := Lines[CurrentTrack].Line[C];
+    Lines[CurrentTrack].Line[LineIndex + Num - 1] := Lines[CurrentTrack].Line[LineIndex];
   end;
 
   // prepares new sentences: sets sentence start and create first note
-  for C := 1 to Num-1 do
+  for LineIndex := 1 to Num-1 do
   begin
-    Lines[CurrentTrack].Line[Dst + C].StartBeat := Lines[CurrentTrack].Line[Dst + C - 1].Note[0].StartBeat +
-      (Lines[CurrentTrack].Line[Src + C].Note[0].StartBeat - Lines[CurrentTrack].Line[Src + C - 1].Note[0].StartBeat);
-    SetLength(Lines[CurrentTrack].Line[Dst + C].Note, 1);
-    Lines[CurrentTrack].Line[Dst + C].HighNote := 0;
-    Lines[CurrentTrack].Line[Dst + C].Note[0].StartBeat := Lines[CurrentTrack].Line[Dst + C].StartBeat;
-    Lines[CurrentTrack].Line[Dst + C].Note[0].Duration := 1;
-    Lines[CurrentTrack].Line[Dst + C].EndBeat := Lines[CurrentTrack].Line[Dst + C].StartBeat + 1;
+    Lines[CurrentTrack].Line[DstLine + LineIndex].StartBeat := Lines[CurrentTrack].Line[DstLine + LineIndex - 1].Note[0].StartBeat +
+      (Lines[CurrentTrack].Line[SrcLine + LineIndex].Note[0].StartBeat - Lines[CurrentTrack].Line[SrcLine + LineIndex - 1].Note[0].StartBeat);
+    SetLength(Lines[CurrentTrack].Line[DstLine + LineIndex].Note, 1);
+    Lines[CurrentTrack].Line[DstLine + LineIndex].HighNote := 0;
+    Lines[CurrentTrack].Line[DstLine + LineIndex].Note[0].StartBeat := Lines[CurrentTrack].Line[DstLine + LineIndex].StartBeat;
+    Lines[CurrentTrack].Line[DstLine + LineIndex].Note[0].Duration := 1;
+    Lines[CurrentTrack].Line[DstLine + LineIndex].EndBeat := Lines[CurrentTrack].Line[DstLine + LineIndex].StartBeat + 1;
   end;
 
   // increase counters
   Lines[CurrentTrack].Number := Lines[CurrentTrack].Number + Num - 1;
   Lines[CurrentTrack].High := Lines[CurrentTrack].High + Num - 1;
 
-  for C := 0 to Num-1 do
-    CopySentence(Src + C, Dst + C);
+  for LineIndex := 0 to Num-1 do
+    CopySentence(SrcLine + LineIndex, DstLine + LineIndex);
 end;
 
 procedure TScreenEditSub.MakeSolo;
 begin
+  if not (CurrentSong.isDuet) then
+    Exit;
+
   // use current track to make solo
   if (CurrentTrack <> 0) then
     Lines[0] := Lines[CurrentTrack];
@@ -3253,25 +3229,28 @@ var
   LineIndex:  integer;
 
 begin
+  if (CurrentSong.isDuet) then
+    Exit;
+
   SetLength(Lines, 2);
 
-  Lines[1].CurrentLine := Lines[0].CurrentLine;
-  Lines[1].High := Lines[0].High;
-  Lines[1].Number := Lines[0].Number;
-  Lines[1].Resolution := Lines[0].Resolution;
-  Lines[1].NotesGAP := Lines[0].NotesGAP;
-  Lines[1].ScoreValue := 0;
-  SetLength(Lines[1].Line, Length(Lines[0].Line));
+  Lines[CurrentTrack+1].CurrentLine := Lines[CurrentTrack].CurrentLine;
+  Lines[CurrentTrack+1].High := Lines[CurrentTrack].High;
+  Lines[CurrentTrack+1].Number := Lines[CurrentTrack].Number;
+  Lines[CurrentTrack+1].Resolution := Lines[CurrentTrack].Resolution;
+  Lines[CurrentTrack+1].NotesGAP := Lines[CurrentTrack].NotesGAP;
+  Lines[CurrentTrack+1].ScoreValue := 0;
+  SetLength(Lines[CurrentTrack+1].Line, Length(Lines[CurrentTrack].Line));
 
-  for LineIndex := 0 to High(Lines[0].Line) do
+  for LineIndex := 0 to High(Lines[CurrentTrack].Line) do
     CopyLine(0, LineIndex, 1, LineIndex);
 
   CurrentSong.isDuet := true;
 
-  CurrentNote[1] := 0;
-  Lines[1].CurrentLine := 0;
+  CurrentNote[CurrentTrack+1] := 0;
+  Lines[CurrentTrack+1].CurrentLine := 0;
 
-  EditorLyrics[1] := EditorLyrics[0];
+  EditorLyrics[CurrentTrack+1] := EditorLyrics[0];
 
   //delete medley
   MedleyNotes.isStart := false;
@@ -3357,8 +3336,6 @@ begin
 end;
 
 procedure TScreenEditSub.CopyLine(SrcTrack, SrcLine, DstTrack, DstLine: integer);
-var
-  N:  integer;
 begin
   Lines[DstTrack].Line[DstLine] := Lines[SrcTrack].Line[SrcLine];
   Lines[DstTrack].Line[DstLine].Note := Copy(Lines[SrcTrack].Line[SrcLine].Note);
@@ -3462,15 +3439,18 @@ begin
   FixTimings;
   LyricsCorrectSpaces;
 
-  if MedleyNotes.isStart and
-    ((High(Lines[0].Line) < MedleyNotes.start.line) or
-     (High(Lines[0].Line[MedleyNotes.start.line].Note) < MedleyNotes.start.note)) then
-    MedleyNotes.isStart := false;
+  if not (CurrentSong.isDuet) then
+  begin
+    if MedleyNotes.isStart and
+      ((High(Lines[CurrentTrack].Line) < MedleyNotes.start.line) or
+       (High(Lines[CurrentTrack].Line[MedleyNotes.start.line].Note) < MedleyNotes.start.note)) then
+      MedleyNotes.isStart := false;
 
-  if MedleyNotes.isEnd and
-    ((High(Lines[0].Line) < MedleyNotes.end_.line) or
-     (High(Lines[0].Line[MedleyNotes.end_.line].Note) < MedleyNotes.end_.note)) then
-    MedleyNotes.isEnd := false;
+    if MedleyNotes.isEnd and
+      ((High(Lines[CurrentTrack].Line) < MedleyNotes.end_.line) or
+       (High(Lines[CurrentTrack].Line[MedleyNotes.end_.line].Note) < MedleyNotes.end_.note)) then
+      MedleyNotes.isEnd := false;
+  end;
 
   {
   for TrackIndex := 0 to High(Lines) do
@@ -4207,12 +4187,12 @@ var
   begin
     found := false;
 
-    for LineIndex := 0 to High(Lines[0].Line) do
+    for LineIndex := 0 to High(Lines[CurrentTrack].Line) do
     begin
-      for NoteIndex := 0 to High(Lines[0].Line[LineIndex].Note) do
+      for NoteIndex := 0 to High(Lines[CurrentTrack].Line[LineIndex].Note) do
       begin
-        if (beat >= Lines[0].Line[LineIndex].Note[NoteIndex].StartBeat) and
-           (beat <= Lines[0].Line[LineIndex].Note[NoteIndex].StartBeat + Lines[0].Line[LineIndex].Note[NoteIndex].Duration) then
+        if (beat >= Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex].StartBeat) and
+           (beat <= Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex].StartBeat + Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex].Duration) then
         begin
           //Result.part := 0;
           Result.line := LineIndex;
@@ -4251,11 +4231,11 @@ var
 
     min := high(integer);
     //second try (approximating)
-    for LineIndex := 0 to High(Lines[0].Line) do
+    for LineIndex := 0 to High(Lines[CurrentTrack].Line) do
     begin
-      for NoteIndex := 0 to High(Lines[0].Line[LineIndex].Note) do
+      for NoteIndex := 0 to High(Lines[CurrentTrack].Line[LineIndex].Note) do
       begin
-        diff := abs(Lines[0].Line[LineIndex].Note[NoteIndex].StartBeat - beat);
+        diff := abs(Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex].StartBeat - beat);
         if diff < min then
         begin
           //Result.part := 0;
