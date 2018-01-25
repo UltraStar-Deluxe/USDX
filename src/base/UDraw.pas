@@ -44,17 +44,17 @@ procedure SingDraw;
 procedure SingDrawLines;
 procedure SingDrawBackground;
 procedure SingDrawOscilloscope(X, Y, W, H: real; NrSound: integer);
-procedure SingDrawNoteLines(Left, Top, Right: real; Space: integer);
+procedure SingDrawNoteLines(Left, Top, Right: real; LineSpacing: integer = 15);
 procedure SingDrawLyricHelper(CP: integer; Left, LyricsMid: real);
-procedure SingDrawLine(Left, Top, Right: real; Track, PlayerNumber: integer; Space: integer = 15);
-procedure SingDrawPlayerLine(X, Y, W: real; Track, PlayerIndex: integer; Space: integer = 15);
-procedure SingDrawPlayerBGLine(Left, Top, Right: real; Track, PlayerIndex: integer; Space: integer = 15);
+procedure SingDrawLine(Left, Top, Right: real; Track, PlayerNumber: integer; LineSpacing: integer = 15);
+procedure SingDrawPlayerLine(X, Y, W: real; Track, PlayerIndex: integer; LineSpacing: integer = 15);
+procedure SingDrawPlayerBGLine(Left, Top, Right: real; Track, PlayerIndex: integer; LineSpacing: integer = 15);
 
 // TimeBar
 procedure SingDrawTimeBar();
 
 //Draw Editor NoteLines
-procedure EditDrawLine(X, Y, W, H: real; Track: integer; NumLines: integer = 10);
+procedure EditDrawLine(X, YBaseNote, W, H: real; Track: integer; NumLines: integer = 10);
 procedure EditDrawBorderedBox(X, Y, W, H: integer; FillR: real = 0.9; FillG: real = 0.9; FillB: real = 0.9; FillAlpha: real = 0.5);
 procedure EditDrawBeatDelimiters(X, Y, W, H: real; Track: integer);
 
@@ -395,7 +395,7 @@ begin;
   Sound.UnlockAnalysisBuffer();
 end;
 
-procedure SingDrawNoteLines(Left, Top, Right: real; Space: integer);
+procedure SingDrawNoteLines(Left, Top, Right: real; LineSpacing: integer);
 var
   Count: integer;
 begin
@@ -404,15 +404,15 @@ begin
   glBegin(GL_LINES);
   for Count := 0 to 9 do
   begin
-    glVertex2f(Left,  Top + Count * Space);
-    glVertex2f(Right, Top + Count * Space);
+    glVertex2f(Left,  Top + Count * LineSpacing);
+    glVertex2f(Right, Top + Count * LineSpacing);
   end;
   glEnd;
   glDisable(GL_BLEND);
 end;
 
 // draw blank Notebars
-procedure SingDrawLine(Left, Top, Right: real; Track, PlayerNumber: integer; Space: integer);
+procedure SingDrawLine(Left, Top, Right: real; Track, PlayerNumber: integer; LineSpacing: integer);
 var
   Rec:   TRecR;
   Count: integer;
@@ -465,7 +465,7 @@ begin
           // left part
           Rec.Left  := (StartBeat - Lines[Track].Line[Lines[Track].CurrentLine].Note[0].StartBeat) * TempR + Left + 0.5 + 10*ScreenX;
           Rec.Right := Rec.Left + NotesW[PlayerNumber - 1];
-          Rec.Top := Top - (Tone-BaseNote)*Space/2 - NotesH[PlayerNumber - 1];
+          Rec.Top := Top - (Tone-BaseNote)*LineSpacing/2 - NotesH[PlayerNumber - 1];
           Rec.Bottom := Rec.Top + 2 * NotesH[PlayerNumber - 1];
           If (NoteType = ntRap) or (NoteType = ntRapGolden) then
           begin
@@ -548,7 +548,7 @@ begin
 end;
 
 // draw sung notes
-procedure SingDrawPlayerLine(X, Y, W: real; Track, PlayerIndex: integer; Space: integer);
+procedure SingDrawPlayerLine(X, Y, W: real; Track, PlayerIndex: integer; LineSpacing: integer);
 var
   TempR:      real;
   Rec:        TRecR;
@@ -595,7 +595,7 @@ begin
           NotesH2 := int(NotesH[PlayerIndex] * 0.65);
         end;
 
-        Rec.Top    := Y - (Tone-Lines[Track].Line[Lines[Track].CurrentLine].BaseNote)*Space/2 - NotesH2;
+        Rec.Top    := Y - (Tone-Lines[Track].Line[Lines[Track].CurrentLine].BaseNote)*LineSpacing/2 - NotesH2;
         Rec.Bottom := Rec.Top + 2 * NotesH2;
 
         // draw the left part
@@ -690,7 +690,7 @@ begin
 end;
 
 //draw Note glow
-procedure SingDrawPlayerBGLine(Left, Top, Right: real; Track, PlayerIndex: integer; Space: integer);
+procedure SingDrawPlayerBGLine(Left, Top, Right: real; Track, PlayerIndex: integer; LineSpacing: integer);
 var
   Rec:            TRecR;
   Count:          integer;
@@ -732,7 +732,7 @@ begin
             // left
             Rec.Right := (StartBeat - Lines[Track].Line[Lines[Track].CurrentLine].Note[0].StartBeat) * TempR + Left + 0.5 + 10*ScreenX + 4;
             Rec.Left  := Rec.Right - W;
-            Rec.Top := Top - (Tone-BaseNote)*Space/2 - H;
+            Rec.Top := Top - (Tone-BaseNote)*LineSpacing/2 - H;
             Rec.Bottom := Rec.Top + 2 * H;
 
             If (NoteType = ntRap) or (NoteType = ntRapGolden) then
@@ -1808,7 +1808,7 @@ end;
 // 1. It does not look good when you draw the golden note star effect in the editor
 // 2. You can see the freestyle notes in the editor semitransparent
 // 3. It is easier and faster then changing the old procedure
-procedure EditDrawLine(X, Y, W, H: real; Track: integer; NumLines: integer);
+procedure EditDrawLine(X, YBaseNote, W, H: real; Track: integer; NumLines: integer);
 var
   Rec:   TRecR;
   Count: integer;
@@ -1844,7 +1844,7 @@ begin
         // left part
         Rec.Left  := (StartBeat - Lines[Track].Line[Lines[Track].CurrentLine].Note[0].StartBeat) * TempR + X + 0.5 + 10*ScreenX;
         Rec.Right := Rec.Left + NotesW[0];
-        Rec.Top := Y - (Tone-BaseNote)*Space/2 - NotesH[0];
+        Rec.Top := YBaseNote - (Tone-BaseNote)*Space/2 - NotesH[0];
         Rec.Bottom := Rec.Top + 2 * NotesH[0];
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin

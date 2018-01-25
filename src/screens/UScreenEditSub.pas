@@ -423,6 +423,8 @@ const
   DEFAULT_FADE_IN_TIME = 8;    //TODO in INI
   DEFAULT_FADE_OUT_TIME = 2;
   NOT_SET = '-';
+  NotesSkipX: integer = 20;
+  LineSpacing: integer = 15;
 
 procedure OnSaveEncodingError(Value: boolean; Data: Pointer);
 var
@@ -3877,19 +3879,20 @@ begin
 // adding transparent buttons
   while (Length(TransparentNoteButtonId)-1 < Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].HighNote) do
   begin
-      SetLength(InteractiveNoteId, Length(InteractiveNoteId)+1);
-      SetLength(TransparentNoteButtonId, Length(TransparentNoteButtonId)+1);
-      TransparentNoteButtonId[Length(TransparentNoteButtonId)-1] := AddButton(0, 0, 0, 0,PATH_NONE);
-      InteractiveNoteId[Length(InteractiveNoteId)-1] := length(Interactions)-1;
-
+    SetLength(InteractiveNoteId, Length(InteractiveNoteId)+1);
+    SetLength(TransparentNoteButtonId, Length(TransparentNoteButtonId)+1);
+    TransparentNoteButtonId[Length(TransparentNoteButtonId)-1] := AddButton(0, 0, 0, 0, PATH_NONE);
+    // for debug purposes: use some button texture instead of a transparent button (comment out line above, uncomment line below)
+    //TransparentNoteButtonId[Length(TransparentNoteButtonId)-1] := AddButton(0, 0, 0, 0, Skin.GetTextureFileName(Theme.Main.Buttonsolo.Tex));
+    InteractiveNoteId[Length(InteractiveNoteId)-1] := length(Interactions)-1;
   end;
   TempR := 720 / (Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].EndBeat - Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].Note[0].StartBeat);
   for i := 0 to Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].HighNote do
   begin
-    Button[TransparentNoteButtonId[i]].SetX(40 + (Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].Note[i].StartBeat - Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].Note[0].StartBeat) * TempR + 0.5 + 10*ScreenX);
-    Button[TransparentNoteButtonId[i]].SetY(410 - (Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].Note[i].Tone - Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].BaseNote)*15/2 - 9);
-    Button[TransparentNoteButtonId[i]].SetW((Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].Note[i].Duration) * TempR - 0.5  + 10*(ScreenX));
-    Button[TransparentNoteButtonId[i]].SetH(19);
+    Button[TransparentNoteButtonId[i]].SetX(Theme.EditSub.NotesBackground.X + NotesSkipX + (Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].Note[i].StartBeat - Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].Note[0].StartBeat) * TempR + 0.5 + 10*ScreenX);
+    Button[TransparentNoteButtonId[i]].SetY(Theme.EditSub.NotesBackground.Y + 7 * LineSpacing - (Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].Note[i].Tone - Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].BaseNote) * LineSpacing / 2 - NotesH[0]);
+    Button[TransparentNoteButtonId[i]].SetW((Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].Note[i].Duration) * TempR - 0.5 + 10*(ScreenX));
+    Button[TransparentNoteButtonId[i]].SetH(2 * NotesH[0]);
   end;
 end;
 
@@ -4678,8 +4681,7 @@ end;
 
 function TScreenEditSub.Draw: boolean;
 const
-  Padding: Integer = 20;
-  NumLines: Integer = 10;
+  NumLines:      integer = 10;
 var
   Pet, i:    integer;
   lastline, note,Count: integer;
@@ -4934,26 +4936,26 @@ begin
       // notes background
       EditDrawBorderedBox(Theme.EditSub.NotesBackground.X, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W + Xmouse, Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.ColR, Theme.EditSub.NotesBackground.ColG, Theme.EditSub.NotesBackground.ColB, Theme.EditSub.NotesBackground.Alpha);
       // horizontal lines
-      SingDrawNoteLines(Theme.EditSub.NotesBackground.X, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.X + Theme.EditSub.NotesBackground.W + Xmouse, 15);
+      SingDrawNoteLines(Theme.EditSub.NotesBackground.X, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.X + Theme.EditSub.NotesBackground.W + Xmouse);
       // vertical lines
-      EditDrawBeatDelimiters(Theme.EditSub.NotesBackground.X + Padding, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - 2 * Padding + Xmouse, Theme.EditSub.NotesBackground.H, CurrentTrack);
+      EditDrawBeatDelimiters(Theme.EditSub.NotesBackground.X + NotesSkipX, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - 2 * NotesSkipX + Xmouse, Theme.EditSub.NotesBackground.H, CurrentTrack);
       // draw notes
-      EditDrawLine(Theme.EditSub.NotesBackground.X + Padding, Theme.EditSub.NotesBackground.Y + (7/9) * Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.W - 2 * Padding + Xmouse, Theme.EditSub.NotesBackground.W, CurrentTrack);
+      EditDrawLine(Theme.EditSub.NotesBackground.X + NotesSkipX, Theme.EditSub.NotesBackground.Y + 7 * LineSpacing, Theme.EditSub.NotesBackground.W - 2 * NotesSkipX + Xmouse, Theme.EditSub.NotesBackground.W, CurrentTrack);
       // draw text on notes
-      DrawText(Theme.EditSub.NotesBackground.X + Padding, Theme.EditSub.NotesBackground.Y + (7/9) * Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.W - 2 * Padding + Xmouse, Theme.EditSub.NotesBackground.H, CurrentTrack);
+      DrawText(Theme.EditSub.NotesBackground.X + NotesSkipX, Theme.EditSub.NotesBackground.Y + 7 * LineSpacing, Theme.EditSub.NotesBackground.W - 2 * NotesSkipX + Xmouse, Theme.EditSub.NotesBackground.H, CurrentTrack);
     end
     else
     begin
       // notes background
       EditDrawBorderedBox(Theme.EditSub.NotesBackground.X + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - Xmouse, Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.ColR, Theme.EditSub.NotesBackground.ColG, Theme.EditSub.NotesBackground.ColB, Theme.EditSub.NotesBackground.Alpha);
       // horizontal lines
-      SingDrawNoteLines(Theme.EditSub.NotesBackground.X + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.X + Theme.EditSub.NotesBackground.W, 15);
+      SingDrawNoteLines(Theme.EditSub.NotesBackground.X + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.X + Theme.EditSub.NotesBackground.W);
       // vertical lines
-      EditDrawBeatDelimiters(Theme.EditSub.NotesBackground.X + Padding + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - 2 * Padding, Theme.EditSub.NotesBackground.H, CurrentTrack);
+      EditDrawBeatDelimiters(Theme.EditSub.NotesBackground.X + NotesSkipX + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - 2 * NotesSkipX, Theme.EditSub.NotesBackground.H, CurrentTrack);
       // draw notes
-      EditDrawLine(Theme.EditSub.NotesBackground.X + Padding + Xmouse, Theme.EditSub.NotesBackground.Y + (7/9) * Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.W - 2 * Padding, Theme.EditSub.NotesBackground.H, CurrentTrack);
+      EditDrawLine(Theme.EditSub.NotesBackground.X + NotesSkipX + Xmouse, Theme.EditSub.NotesBackground.Y + (7/9) * Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.W - 2 * NotesSkipX, Theme.EditSub.NotesBackground.H, CurrentTrack);
       // draw text on notes
-      DrawText(Theme.EditSub.NotesBackground.X + Padding + Xmouse, Theme.EditSub.NotesBackground.Y + (7/9) * Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.W - 2 * Padding, Theme.EditSub.NotesBackground.H, CurrentTrack);
+      DrawText(Theme.EditSub.NotesBackground.X + NotesSkipX + Xmouse, Theme.EditSub.NotesBackground.Y + (7/9) * Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.W - 2 * NotesSkipX, Theme.EditSub.NotesBackground.H, CurrentTrack);
     end;
 
     if Xmouse <> 0 then
