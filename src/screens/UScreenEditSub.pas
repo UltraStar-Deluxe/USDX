@@ -324,8 +324,8 @@ type
       EditorLyrics:            array[0..1] of TEditorLyrics;
 
       //undo declaration
-      UndoLines:               array of TLines;
-      UndoStateNote:           array of integer; //UNDO: note's position
+      UndoLines:               array of array of TLines;
+      UndoStateNote:           array of array of integer; //UNDO: note's position
       CurrentUndoLines:        integer;
       UndoHeader:              array of TVisibleHeaders;
 
@@ -581,8 +581,8 @@ begin
           if (SResult = ssrOK) then // saving was successful
           begin
             Text[TextDebug].Text := Language.Translate('INFO_FILE_SAVED');
-            SetLength(UndoLines, 0); //clear undo lines
-            SetLength(UndoStateNote, 0); //clear undo CurrentNote[CurrentTrack] state
+            SetLength(UndoLines, 0, High(Lines)); //clear undo lines
+            SetLength(UndoStateNote, 0, Length(Lines)); //clear undo CurrentNote[CurrentTrack] state
             SetLength(Undoheader, 0); //clear undo headers
             CurrentUndoLines := 0;
             //if not CheckSong then
@@ -1924,7 +1924,7 @@ begin
           // copy line from first to second track
           if (CurrentSong.isDuet) and (CurrentTrack = 0) and (SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL) then
           begin
-            //CopyToUndo; // FIXME: implement correct undo functionality also for duets
+            CopyToUndo;
             if (DuetCopyLine) then
               Text[TextDebug].Text := Language.Translate('EDIT_INFO_LINE_COPIED_TO_TRACK') + ' 2'
             else
@@ -1934,7 +1934,7 @@ begin
           // move line from first to second track
           if (CurrentSong.isDuet) and (CurrentTrack = 0) and (SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL or KMOD_LALT) then
           begin
-            //CopyToUndo; FIXME: implement correct undo functionality also for duets
+            CopyToUndo;
             if (DuetMoveLine) then
               Text[TextDebug].Text := Language.Translate('EDIT_INFO_LINE_MOVED_TO_TRACK') + ' 2'
             else
@@ -1980,7 +1980,7 @@ begin
           // copy line from second to first track
           if (CurrentSong.isDuet) and (CurrentTrack = 1) and (SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL) then
           begin
-            //CopyToUndo; //FIXME: implement correct undo functionality also for duets
+            CopyToUndo;
             if (DuetCopyLine) then
               Text[TextDebug].Text := Language.Translate('EDIT_INFO_LINE_COPIED_TO_TRACK') + ' 1'
             else
@@ -1990,7 +1990,7 @@ begin
           // move line from second to first track
           if (CurrentSong.isDuet) and (CurrentTrack = 1) and (SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL or KMOD_LALT) then
           begin
-            //CopyToUndo; //FIXME: implement correct undo functionality also for duets
+            CopyToUndo;
             if (DuetMoveLine) then
               Text[TextDebug].Text := Language.Translate('EDIT_INFO_LINE_MOVED_TO_TRACK') + ' 1'
             else
@@ -3364,75 +3364,75 @@ var
   LineIndex:     integer;
   NoteIndex:     integer;
 begin
-  SetLength(UndoLines, high(UndoLines)+2);
+  SetLength(UndoLines, Length(UndoLines)+1, Length(Lines));
   CurrentUndoLines := high(UndoLines);
-  SetLength(UndoStateNote, CurrentUndoLines+1);
+  SetLength(UndoStateNote, CurrentUndoLines+1, Length(Lines));
   SetLength(UndoHeader, CurrentUndoLines+1);
 
-  Undoheader[CurrentUndoLines].Title := CurrentSong.Title;
-  Undoheader[CurrentUndoLines].Artist := CurrentSong.Artist;
-  Undoheader[CurrentUndoLines].Language := CurrentSong.Language;
-  Undoheader[CurrentUndoLines].Edition := CurrentSong.Edition;
-  Undoheader[CurrentUndoLines].Genre := CurrentSong.Genre;
-  Undoheader[CurrentUndoLines].Year := CurrentSong.Year;
-  Undoheader[CurrentUndoLines].Creator := CurrentSong.Creator;
-  Undoheader[CurrentUndoLines].Mp3 := CurrentSong.Mp3;
-  Undoheader[CurrentUndoLines].Mp3Id := SelectsS[Mp3SlideId].SelectedOption;
-  Undoheader[CurrentUndoLines].Cover := CurrentSong.Cover;
-  Undoheader[CurrentUndoLines].CoverId := SelectsS[CoverSlideId].SelectedOption;
-  Undoheader[CurrentUndoLines].Background := CurrentSong.Background;
-  Undoheader[CurrentUndoLines].BackgroundId := SelectsS[BackgroundSlideId].SelectedOption;
-  Undoheader[CurrentUndoLines].Video := CurrentSong.Video;
-  Undoheader[CurrentUndoLines].VideoId := SelectsS[VideoSlideId].SelectedOption;
-  Undoheader[CurrentUndoLines].VideoGAP := CurrentSong.VideoGAP;
-  SetLength(Undoheader[CurrentUndoLines].BPM, length(CurrentSong.BPM));
+  UndoHeader[CurrentUndoLines].Title := CurrentSong.Title;
+  UndoHeader[CurrentUndoLines].Artist := CurrentSong.Artist;
+  UndoHeader[CurrentUndoLines].Language := CurrentSong.Language;
+  UndoHeader[CurrentUndoLines].Edition := CurrentSong.Edition;
+  UndoHeader[CurrentUndoLines].Genre := CurrentSong.Genre;
+  UndoHeader[CurrentUndoLines].Year := CurrentSong.Year;
+  UndoHeader[CurrentUndoLines].Creator := CurrentSong.Creator;
+  UndoHeader[CurrentUndoLines].Mp3 := CurrentSong.Mp3;
+  UndoHeader[CurrentUndoLines].Mp3Id := SelectsS[Mp3SlideId].SelectedOption;
+  UndoHeader[CurrentUndoLines].Cover := CurrentSong.Cover;
+  UndoHeader[CurrentUndoLines].CoverId := SelectsS[CoverSlideId].SelectedOption;
+  UndoHeader[CurrentUndoLines].Background := CurrentSong.Background;
+  UndoHeader[CurrentUndoLines].BackgroundId := SelectsS[BackgroundSlideId].SelectedOption;
+  UndoHeader[CurrentUndoLines].Video := CurrentSong.Video;
+  UndoHeader[CurrentUndoLines].VideoId := SelectsS[VideoSlideId].SelectedOption;
+  UndoHeader[CurrentUndoLines].VideoGAP := CurrentSong.VideoGAP;
+  SetLength(UndoHeader[CurrentUndoLines].BPM, length(CurrentSong.BPM));
   for BPMIndex := 0 to High(CurrentSong.BPM) do
   begin
-    Undoheader[CurrentUndoLines].BPM[BPMIndex].BPM := CurrentSong.BPM[BPMIndex].BPM;
-    Undoheader[CurrentUndoLines].BPM[BPMIndex].StartBeat := CurrentSong.BPM[BPMIndex].StartBeat;
+    UndoHeader[CurrentUndoLines].BPM[BPMIndex].BPM := CurrentSong.BPM[BPMIndex].BPM;
+    UndoHeader[CurrentUndoLines].BPM[BPMIndex].StartBeat := CurrentSong.BPM[BPMIndex].StartBeat;
   end;
-  Undoheader[CurrentUndoLines].GAP  := CurrentSong.GAP;
-  Undoheader[CurrentUndoLines].StartTag := CurrentSong.Start;
-  Undoheader[CurrentUndoLines].EndTag := CurrentSong.Finish;
+  UndoHeader[CurrentUndoLines].GAP  := CurrentSong.GAP;
+  UndoHeader[CurrentUndoLines].StartTag := CurrentSong.Start;
+  UndoHeader[CurrentUndoLines].EndTag := CurrentSong.Finish;
   if not (CurrentSong.isDuet) then
   begin
-    Undoheader[CurrentUndoLines].MedleyStartBeat := Lines[CurrentTrack].Line[MedleyNotes.start.line].Note[MedleyNotes.start.note].StartBeat;
-    Undoheader[CurrentUndoLines].MedleyEndBeat := Lines[CurrentTrack].Line[MedleyNotes.end_.line].Note[MedleyNotes.end_.note].StartBeat + Lines[CurrentTrack].Line[MedleyNotes.end_.line].Note[MedleyNotes.end_.note].Duration;
+    UndoHeader[CurrentUndoLines].MedleyStartBeat := Lines[CurrentTrack].Line[MedleyNotes.start.line].Note[MedleyNotes.start.note].StartBeat;
+    UndoHeader[CurrentUndoLines].MedleyEndBeat := Lines[CurrentTrack].Line[MedleyNotes.end_.line].Note[MedleyNotes.end_.note].StartBeat + Lines[CurrentTrack].Line[MedleyNotes.end_.line].Note[MedleyNotes.end_.note].Duration;
   end;
-  Undoheader[CurrentUndoLines].PreviewStart := CurrentSong.PreviewStart;
-  Undoheader[CurrentUndoLines].Relative := CurrentSong.Relative;
+  UndoHeader[CurrentUndoLines].PreviewStart := CurrentSong.PreviewStart;
+  UndoHeader[CurrentUndoLines].Relative := CurrentSong.Relative;
 
-  for TrackIndex := 0 to 0 do // High(Lines) do
+  for TrackIndex := 0 to High(Lines) do
   begin
-    UndoStateNote[CurrentUndoLines] := CurrentNote[TrackIndex];
+    UndoStateNote[CurrentUndoLines, TrackIndex] := CurrentNote[TrackIndex];
 
-    UndoLines[CurrentUndoLines].CurrentLine := Lines[TrackIndex].CurrentLine;
-    UndoLines[CurrentUndoLines].High := Lines[TrackIndex].High;
-    UndoLines[CurrentUndoLines].Number := Lines[TrackIndex].Number;
-    UndoLines[CurrentUndoLines].Resolution := Lines[TrackIndex].Resolution;
-    UndoLines[CurrentUndoLines].NotesGAP := Lines[TrackIndex].NotesGAP;
-    UndoLines[CurrentUndoLines].ScoreValue := Lines[TrackIndex].ScoreValue;
-    SetLength(UndoLines[CurrentUndoLines].Line, length(Lines[TrackIndex].Line));
+    UndoLines[CurrentUndoLines, TrackIndex].CurrentLine := Lines[TrackIndex].CurrentLine;
+    UndoLines[CurrentUndoLines, TrackIndex].High := Lines[TrackIndex].High;
+    UndoLines[CurrentUndoLines, TrackIndex].Number := Lines[TrackIndex].Number;
+    UndoLines[CurrentUndoLines, TrackIndex].Resolution := Lines[TrackIndex].Resolution;
+    UndoLines[CurrentUndoLines, TrackIndex].NotesGAP := Lines[TrackIndex].NotesGAP;
+    UndoLines[CurrentUndoLines, TrackIndex].ScoreValue := Lines[TrackIndex].ScoreValue;
+    SetLength(UndoLines[CurrentUndoLines, TrackIndex].Line, length(Lines[TrackIndex].Line));
 
     for LineIndex := 0 to High(Lines[TrackIndex].Line) do
     begin
-      UndoLines[CurrentUndoLines].Line[LineIndex].StartBeat  := Lines[TrackIndex].Line[LineIndex].StartBeat;
-      UndoLines[CurrentUndoLines].Line[LineIndex].Lyric      := Lines[TrackIndex].Line[LineIndex].Lyric;
-      UndoLines[CurrentUndoLines].Line[LineIndex].EndBeat    := Lines[TrackIndex].Line[LineIndex].EndBeat;
-      UndoLines[CurrentUndoLines].Line[LineIndex].BaseNote   := Lines[TrackIndex].Line[LineIndex].BaseNote;
-      UndoLines[CurrentUndoLines].Line[LineIndex].HighNote   := Lines[TrackIndex].Line[LineIndex].HighNote;
-      UndoLines[CurrentUndoLines].Line[LineIndex].TotalNotes := Lines[TrackIndex].Line[LineIndex].TotalNotes;
-      UndoLines[CurrentUndoLines].Line[LineIndex].LastLine   := Lines[TrackIndex].Line[LineIndex].LastLine;
+      UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].StartBeat  := Lines[TrackIndex].Line[LineIndex].StartBeat;
+      UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Lyric      := Lines[TrackIndex].Line[LineIndex].Lyric;
+      UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].EndBeat    := Lines[TrackIndex].Line[LineIndex].EndBeat;
+      UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].BaseNote   := Lines[TrackIndex].Line[LineIndex].BaseNote;
+      UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].HighNote   := Lines[TrackIndex].Line[LineIndex].HighNote;
+      UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].TotalNotes := Lines[TrackIndex].Line[LineIndex].TotalNotes;
+      UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].LastLine   := Lines[TrackIndex].Line[LineIndex].LastLine;
 
-      SetLength(UndoLines[CurrentUndoLines].Line[LineIndex].Note, length(Lines[TrackIndex].Line[LineIndex].Note));
+      SetLength(UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note, length(Lines[TrackIndex].Line[LineIndex].Note));
       for NoteIndex := 0 to High(Lines[TrackIndex].Line[LineIndex].Note) do
       begin
-        UndoLines[CurrentUndoLines].Line[LineIndex].Note[NoteIndex].Color     := Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Color;
-        UndoLines[CurrentUndoLines].Line[LineIndex].Note[NoteIndex].StartBeat := Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].StartBeat;
-        UndoLines[CurrentUndoLines].Line[LineIndex].Note[NoteIndex].Duration    := Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Duration;
-        UndoLines[CurrentUndoLines].Line[LineIndex].Note[NoteIndex].Tone      := Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Tone;
-        UndoLines[CurrentUndoLines].Line[LineIndex].Note[NoteIndex].Text      := Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Text;
-        UndoLines[CurrentUndoLines].Line[LineIndex].Note[NoteIndex].NoteType  := Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].NoteType;
+        UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note[NoteIndex].Color     := Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Color;
+        UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note[NoteIndex].StartBeat := Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].StartBeat;
+        UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note[NoteIndex].Duration    := Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Duration;
+        UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note[NoteIndex].Tone      := Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Tone;
+        UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note[NoteIndex].Text      := Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Text;
+        UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note[NoteIndex].NoteType  := Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].NoteType;
       end; //for NoteIndex
     end; //for LineIndex
   end; // TrackIndex
@@ -3513,7 +3513,10 @@ end;
 
 procedure TScreenEditSub.CopyFromUndo;
 var
- I,J: integer;
+  I:             integer;
+  TrackIndex:    integer;
+  LineIndex:     integer;
+  NoteIndex:     integer;
 
 begin
 
@@ -3551,36 +3554,39 @@ begin
   CurrentSong.PreviewStart := Undoheader[CurrentUndoLines].PreviewStart;
   CurrentSong.Relative := Undoheader[CurrentUndoLines].Relative;
 
-  CurrentNote[CurrentTrack] := UndoStateNote[high(UndoStateNote)];
-
-  Lines[CurrentTrack].CurrentLine := UndoLines[CurrentUndoLines].CurrentLine;
-  Lines[CurrentTrack].High := UndoLines[CurrentUndoLines].High;
-  Lines[CurrentTrack].Number := UndoLines[CurrentUndoLines].Number;
-  Lines[CurrentTrack].Resolution := UndoLines[CurrentUndoLines].Resolution;
-  Lines[CurrentTrack].NotesGAP := UndoLines[CurrentUndoLines].NotesGAP;
-  Lines[CurrentTrack].ScoreValue := UndoLines[CurrentUndoLines].ScoreValue;
-  SetLength(Lines[CurrentTrack].Line, length(UndoLines[CurrentUndoLines].Line));
-  for I := 0 to High(UndoLines[CurrentUndoLines].Line) do
+  for TrackIndex := 0 to High(Lines) do
   begin
-      Lines[CurrentTrack].Line[I].StartBeat := UndoLines[CurrentUndoLines].Line[I].StartBeat;
-      Lines[CurrentTrack].Line[I].Lyric := UndoLines[CurrentUndoLines].Line[I].Lyric;
-      Lines[CurrentTrack].Line[I].EndBeat := UndoLines[CurrentUndoLines].Line[I].EndBeat;
-      Lines[CurrentTrack].Line[I].BaseNote := UndoLines[CurrentUndoLines].Line[I].BaseNote;
-      Lines[CurrentTrack].Line[I].HighNote := UndoLines[CurrentUndoLines].Line[I].HighNote;
-      Lines[CurrentTrack].Line[I].TotalNotes := UndoLines[CurrentUndoLines].Line[I].TotalNotes;
-      Lines[CurrentTrack].Line[I].LastLine := UndoLines[CurrentUndoLines].Line[I].LastLine;
+    CurrentNote[TrackIndex] := UndoStateNote[high(UndoStateNote), TrackIndex];
 
-      SetLength(Lines[CurrentTrack].Line[I].Note, length(UndoLines[CurrentUndoLines].Line[I].Note));
-      for  J:= 0 to High(UndoLines[CurrentUndoLines].Line[I].Note) do
-      begin
-        Lines[CurrentTrack].Line[I].Note[J].Color := UndoLines[CurrentUndoLines].Line[I].Note[J].Color;
-        Lines[CurrentTrack].Line[I].Note[J].StartBeat := UndoLines[CurrentUndoLines].Line[I].Note[J].StartBeat;
-        Lines[CurrentTrack].Line[I].Note[J].Duration := UndoLines[CurrentUndoLines].Line[I].Note[J].Duration;
-        Lines[CurrentTrack].Line[I].Note[J].Tone := UndoLines[CurrentUndoLines].Line[I].Note[J].Tone;
-        Lines[CurrentTrack].Line[I].Note[J].Text := UndoLines[CurrentUndoLines].Line[I].Note[J].Text;
-        Lines[CurrentTrack].Line[I].Note[J].NoteType := UndoLines[CurrentUndoLines].Line[I].Note[J].NoteType;
-      end; //for J
-  end; //for I
+    Lines[TrackIndex].CurrentLine := UndoLines[CurrentUndoLines, TrackIndex].CurrentLine;
+    Lines[TrackIndex].High := UndoLines[CurrentUndoLines, TrackIndex].High;
+    Lines[TrackIndex].Number := UndoLines[CurrentUndoLines, TrackIndex].Number;
+    Lines[TrackIndex].Resolution := UndoLines[CurrentUndoLines, TrackIndex].Resolution;
+    Lines[TrackIndex].NotesGAP := UndoLines[CurrentUndoLines, TrackIndex].NotesGAP;
+    Lines[TrackIndex].ScoreValue := UndoLines[CurrentUndoLines, TrackIndex].ScoreValue;
+    SetLength(Lines[TrackIndex].Line, length(UndoLines[CurrentUndoLines, TrackIndex].Line));
+    for LineIndex := 0 to High(UndoLines[CurrentUndoLines, TrackIndex].Line) do
+    begin
+        Lines[TrackIndex].Line[LineIndex].StartBeat := UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].StartBeat;
+        Lines[TrackIndex].Line[LineIndex].Lyric := UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Lyric;
+        Lines[TrackIndex].Line[LineIndex].EndBeat := UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].EndBeat;
+        Lines[TrackIndex].Line[LineIndex].BaseNote := UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].BaseNote;
+        Lines[TrackIndex].Line[LineIndex].HighNote := UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].HighNote;
+        Lines[TrackIndex].Line[LineIndex].TotalNotes := UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].TotalNotes;
+        Lines[TrackIndex].Line[LineIndex].LastLine := UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].LastLine;
+
+        SetLength(Lines[TrackIndex].Line[LineIndex].Note, length(UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note));
+        for  NoteIndex := 0 to High(UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note) do
+        begin
+          Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Color := UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note[NoteIndex].Color;
+          Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].StartBeat := UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note[NoteIndex].StartBeat;
+          Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Duration := UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note[NoteIndex].Duration;
+          Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Tone := UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note[NoteIndex].Tone;
+          Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Text := UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note[NoteIndex].Text;
+          Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].NoteType := UndoLines[CurrentUndoLines, TrackIndex].Line[LineIndex].Note[NoteIndex].NoteType;
+        end; //for NoteIndex
+    end; //for LineIndex
+  end; //for TrackIndex
   SetLength(UndoStateNote, high(UndoStateNote));
   SetLength(UndoHeader, high(UndoLines));
   SetLength(UndoLines, high(UndoLines));
