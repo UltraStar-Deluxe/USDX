@@ -3653,16 +3653,18 @@ end;
 
 procedure TScreenEditSub.DrawInfoBar(X, Y, W, H: integer; ColR, ColG, ColB, Alpha: real; Track: integer);
 var
-  start, end_:        integer;
-  SongStart, SongEnd: integer;
-  ww:                 integer;
-  i:                  integer;
+  StartBeat:    integer;
+  EndBeat:      integer;
+  SongStart:    integer;
+  SongEnd:      integer;
+  SongDuration: integer;
+  i:            integer;
 
-  pos:                real;
-  br:                 real;
+  CurrentPos: real;
+  Width:      real;
 
-  line:               integer;
-  numLines:           integer;
+  LineIndex: integer;
+  numLines:  integer;
 
   function FindStartBeat(): integer;
   var
@@ -3695,7 +3697,7 @@ var
       begin
         if (Length(Lines[TrackIndex].Line[LineIndex].Note)>0) then
         begin
-          NoteIndex := Length(Lines[TrackIndex].Line[LineIndex].Note)-1;
+          NoteIndex := Length(Lines[TrackIndex].Line[LineIndex].Note) - 1;
           if(Result < Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].StartBeat + Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Duration) then
             Result := Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].StartBeat + Lines[TrackIndex].Line[LineIndex].Note[NoteIndex].Duration;
         end;
@@ -3710,12 +3712,12 @@ begin
   else
     EditDrawBorderedBox(X, Y, W, H, ColR, ColG, ColB, Alpha);
 
-  if(numLines=1) then
+  if(numLines = 1) then
     Exit;
 
   SongStart := FindStartBeat;
   SongEnd := FindEndBeat;
-  ww := SongEnd - SongStart;
+  SongDuration := SongEnd - SongStart;
 
   Statics[playerIconId[Track+1]].Visible := true;
 
@@ -3729,18 +3731,19 @@ begin
 
   while (length(TransparentLineButtonId) < numLines) do
   begin
-      SetLength(InteractiveLineId, Length(InteractiveLineId)+1);
-      SetLength(TransparentLineButtonId, Length(TransparentLineButtonId)+1);
-      TransparentLineButtonId[Length(TransparentLineButtonId)-1] := AddButton(0, 0, 0, 0,PATH_NONE);
-      InteractiveLineId[Length(InteractiveLineId)-1] := length(Interactions)-1;
+    SetLength(InteractiveLineId, Length(InteractiveLineId) + 1);
+    SetLength(TransparentLineButtonId, Length(TransparentLineButtonId) + 1);
+    TransparentLineButtonId[Length(TransparentLineButtonId) - 1] := AddButton(0, 0, 0, 0,PATH_NONE);
+    //TransparentLineButtonId[Length(TransparentLineButtonId) - 1] := AddButton(0, 0, 0, 0, Skin.GetTextureFileName(Theme.Main.Buttonsolo.Tex));
+    InteractiveLineId[Length(InteractiveLineId) - 1] := length(Interactions) - 1;
   end;
 
-  for line := 0 to numLines - 1 do
+  for LineIndex := 0 to numLines - 1 do
   begin
-    if (line = Lines[Track].CurrentLine) and not (PlaySentence or PlaySentenceMidi or PlayOne) then
+    if (LineIndex = Lines[Track].CurrentLine) and not (PlaySentence or PlaySentenceMidi or PlayOne) then
       glColor4f(0.4, 0.4, 0, 1) // currently selected line
     else
-      if (CurrentSong.Medley.Source <> msNone) and (line >= MedleyNotes.start.line) and (line <= MedleyNotes.end_.line) then
+      if (CurrentSong.Medley.Source <> msNone) and (LineIndex >= MedleyNotes.start.line) and (LineIndex <= MedleyNotes.end_.line) then
         glColor4f(0.15, 0.75, 0.15, 1)
       else
       begin
@@ -3751,49 +3754,49 @@ begin
           glColor4f(0.7, 0.7, 0.7, 1);
       end;
 
-    start := Lines[Track].Line[line].Note[0].StartBeat;
-    end_ := Lines[Track].Line[line].Note[Lines[Track].Line[line].HighNote].StartBeat +
-      Lines[Track].Line[line].Note[Lines[Track].Line[line].HighNote].Duration;
+    StartBeat := Lines[Track].Line[LineIndex].Note[0].StartBeat;
+    EndBeat := Lines[Track].Line[LineIndex].Note[Lines[Track].Line[LineIndex].HighNote].StartBeat +
+      Lines[Track].Line[LineIndex].Note[Lines[Track].Line[LineIndex].HighNote].Duration;
 
-    pos := (start - SongStart)/ww*w;
-    br := (end_-start)/ww*w;
+    CurrentPos := (StartBeat - SongStart) / SongDuration * W;
+    Width := (EndBeat - StartBeat) / SongDuration * W;
 
     // todo: add transparent active button to change current line
-    Button[TransparentLineButtonId[line]].SetX(x+pos);
-    Button[TransparentLineButtonId[line]].SetY(y);
-    Button[TransparentLineButtonId[line]].SetW(br);
-    Button[TransparentLineButtonId[line]].SetH(h);
+    Button[TransparentLineButtonId[LineIndex]].SetX(X + CurrentPos);
+    Button[TransparentLineButtonId[LineIndex]].SetY(Y);
+    Button[TransparentLineButtonId[LineIndex]].SetW(Width);
+    Button[TransparentLineButtonId[LineIndex]].SetH(H);
 
     glbegin(gl_quads);
-      glVertex2f(x+pos, y);
-      glVertex2f(x+pos, y+h);
-      glVertex2f(x+pos+br, y+h);
-      glVertex2f(x+pos+br, y);
+      glVertex2f(X + CurrentPos, Y);
+      glVertex2f(X + CurrentPos, Y + H);
+      glVertex2f(X + CurrentPos + Width, Y + H);
+      glVertex2f(X + CurrentPos + Width, Y);
     glEnd;
   end;
 
   if(PlaySentence or PlaySentenceMidi or PlayOne) then
   begin
     glColor4f(0, 0, 0, 0.5);
-    pos := 0;
-    br := (CurrentBeat - SongStart)/ww*w;
-    if (br>w) then
-      br := w;
+    CurrentPos := 0;
+    Width := (CurrentBeat - SongStart) / SongDuration * W;
+    if (Width > W) then
+      Width := W;
   end else
   begin
     glColor4f(1, 0, 0, 1);
-    pos := (Lines[Track].Line[Lines[Track].CurrentLine].Note[CurrentNote[Track]].StartBeat - SongStart) / ww*w;
-    br := Lines[Track].Line[Lines[Track].CurrentLine].Note[CurrentNote[Track]].Duration / ww*w;
-    if (br<1) then
-      br := 1;
+    CurrentPos := (Lines[Track].Line[Lines[Track].CurrentLine].Note[CurrentNote[Track]].StartBeat - SongStart) / SongDuration * W;
+    Width := Lines[Track].Line[Lines[Track].CurrentLine].Note[CurrentNote[Track]].Duration / SongDuration * W;
+    if (Width < 1) then
+      Width := 1;
   end;
 
   glEnable(GL_BLEND);
   glbegin(gl_quads);
-    glVertex2f(x+pos, y);
-    glVertex2f(x+pos, y+h);
-    glVertex2f(x+pos+br, y+h);
-    glVertex2f(x+pos+br, y);
+    glVertex2f(X + CurrentPos, Y);
+    glVertex2f(X + CurrentPos, Y + H);
+    glVertex2f(X + CurrentPos + Width, Y + H);
+    glVertex2f(X + CurrentPos + Width, Y);
   glEnd;
   glDisable(GL_BLEND);
 
