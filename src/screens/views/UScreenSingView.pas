@@ -1769,7 +1769,7 @@ begin
   //calculate total singing seconds of song
   SongStart := 99999999999999;
   SongEnd := CurrentSong.BPM[0].BPM*TotalTime/60;
-  for CurrentTrack := 0 to High(Lines) do //P1 of Duett or standard, P2 of Duett,..
+  for CurrentTrack := 0 to High(Lines) do //P1 of duet or solo, P2 of duet,..
   begin
     numLines := Length(Lines[CurrentTrack].Line); //Lyric lines
     if (numLines < 2) then //catch cases which could cause endless loop
@@ -1779,7 +1779,7 @@ begin
   end;
   ww := SongEnd - SongStart;
 
-  for CurrentTrack := 0 to High(Lines) do //for P1 of Duett-lyrics or standard-lyrics, P2 of Duett,..
+  for CurrentTrack := 0 to High(Lines) do //for P1 of duet or solo lyrics, P2 of duet,..
   begin
     numLines := Length(Lines[CurrentTrack].Line); //Lyric lines
     if (numLines < 2) then //catch cases which could cause endless loop
@@ -1799,12 +1799,11 @@ begin
                 Lines[CurrentTrack].Line[line].Note[Lines[CurrentTrack].Line[line].HighNote].Duration -
                 Lines[CurrentTrack].Line[line].Note[0].StartBeat) / ww*w; //br = last note of sentence position + its duration - first note of sentence position
 
-       //draw a square
-        glVertex2f(x+pos, y); //left top
-        glVertex2f(x+pos, y+h); //left bottom
-        glVertex2f(x+pos+br, y+h); //right bottom
-        glVertex2f(x+pos+br, y); //right top
-
+      //draw a square
+      glVertex2f(x+pos, y); //left top
+      glVertex2f(x+pos, y+h); //left bottom
+      glVertex2f(x+pos+br, y+h); //right bottom
+      glVertex2f(x+pos+br, y); //right top
     end;
     glEnd;
   end;
