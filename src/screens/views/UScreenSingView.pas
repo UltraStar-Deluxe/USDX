@@ -1738,17 +1738,18 @@ end;
 
 procedure TScreenSingView.DrawInfoLyricBar();
 var
-  SongStart, SongEnd: real;
-  ww:                 real;
+  SongStart:       real;
+  SongEnd:         real;
+  ww:              real;
 
-  pos:                real;
-  br:                 real;
+  pos:             real;
+  br:              real;
 
-  line:               integer;
-  numLines:           integer;
+  line:            integer;
+  numLines:        integer;
 
-  x, y, w, h: real;
-  CurrentLine: integer;
+  x, y, w, h:      real;
+  CurrentTrack:    integer;
   GAPxStart, GAPw: real;
 begin
   x := Theme.Sing.StaticTimeProgress.x;
@@ -1768,35 +1769,35 @@ begin
   //calculate total singing seconds of song
   SongStart := 99999999999999;
   SongEnd := CurrentSong.BPM[0].BPM*TotalTime/60;
-  for CurrentLine := 0 to High(Lines) do //P1 of Duett or standard, P2 of Duett,..
+  for CurrentTrack := 0 to High(Lines) do //P1 of Duett or standard, P2 of Duett,..
   begin
-    numLines := Length(Lines[CurrentLine].Line); //Lyric lines
+    numLines := Length(Lines[CurrentTrack].Line); //Lyric lines
     if (numLines < 2) then //catch cases which could cause endless loop
       Exit;
-    if SongStart > (Lines[CurrentLine].Line[0].Note[0].StartBeat + (CurrentSong.BPM[0].BPM*CurrentSong.GAP*(1/60/1000))) then
-      SongStart := Lines[CurrentLine].Line[0].Note[0].StartBeat + (CurrentSong.BPM[0].BPM*CurrentSong.GAP*(1/60/1000));
+    if SongStart > (Lines[CurrentTrack].Line[0].Note[0].StartBeat + (CurrentSong.BPM[0].BPM*CurrentSong.GAP*(1/60/1000))) then
+      SongStart := Lines[CurrentTrack].Line[0].Note[0].StartBeat + (CurrentSong.BPM[0].BPM*CurrentSong.GAP*(1/60/1000));
   end;
   ww := SongEnd - SongStart;
 
-  for CurrentLine := 0 to High(Lines) do //for P1 of Duett-lyrics or standard-lyrics, P2 of Duett,..
+  for CurrentTrack := 0 to High(Lines) do //for P1 of Duett-lyrics or standard-lyrics, P2 of Duett,..
   begin
-    numLines := Length(Lines[CurrentLine].Line); //Lyric lines
+    numLines := Length(Lines[CurrentTrack].Line); //Lyric lines
     if (numLines < 2) then //catch cases which could cause endless loop
       Exit;
     //set color to player.color
-    if (CurrentLine = 0) then
+    if (CurrentTrack = 0) then
       glColor4f(GetLyricColor(Ini.SingColor[0]).R, GetLyricColor(Ini.SingColor[0]).G, GetLyricColor(Ini.SingColor[0]).B, 0.8)
     else
-      glColor4f(GetLyricColor(Ini.SingColor[CurrentLine]).R, GetLyricColor(Ini.SingColor[CurrentLine]).G, GetLyricColor(Ini.SingColor[CurrentLine]).B, 0.4);
+      glColor4f(GetLyricColor(Ini.SingColor[CurrentTrack]).R, GetLyricColor(Ini.SingColor[CurrentTrack]).G, GetLyricColor(Ini.SingColor[CurrentTrack]).B, 0.4);
 
     glbegin(gl_quads);
     for line := 0 to numLines - 1 do
     begin
-      if (Lines[CurrentLine].Line[line].Note = nil) or (ww < Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].StartBeat) then Continue;
-      pos := (Lines[CurrentLine].Line[line].Note[0].StartBeat) / ww*w;
-      br := (Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].StartBeat +
-                Lines[CurrentLine].Line[line].Note[Lines[CurrentLine].Line[line].HighNote].Duration -
-                Lines[CurrentLine].Line[line].Note[0].StartBeat) / ww*w; //br = last note of sentence position + its duration - first note of sentence position
+      if (Lines[CurrentTrack].Line[line].Note = nil) or (ww < Lines[CurrentTrack].Line[line].Note[Lines[CurrentTrack].Line[line].HighNote].StartBeat) then Continue;
+      pos := (Lines[CurrentTrack].Line[line].Note[0].StartBeat) / ww*w;
+      br := (Lines[CurrentTrack].Line[line].Note[Lines[CurrentTrack].Line[line].HighNote].StartBeat +
+                Lines[CurrentTrack].Line[line].Note[Lines[CurrentTrack].Line[line].HighNote].Duration -
+                Lines[CurrentTrack].Line[line].Note[0].StartBeat) / ww*w; //br = last note of sentence position + its duration - first note of sentence position
 
        //draw a square
         glVertex2f(x+pos, y); //left top
