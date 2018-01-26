@@ -122,7 +122,7 @@ type
     HighNote:   integer; // index of last note in line (= High(Note)?)
     TotalNotes: integer; // value of all notes in the line
     LastLine:   boolean;
-    Note:       array of TLineFragment;
+    Notes:       array of TLineFragment;
 
     private
     function GetLength(): integer;
@@ -153,7 +153,7 @@ type
     Resolution:  integer;
     NotesGAP:    integer;
     ScoreValue:  integer;
-    Line:        array of TLine;
+    Lines:       array of TLine;
   end;
 
 const
@@ -648,7 +648,7 @@ type
 
 var
   // TODO: JB --- THESE SHOULD NOT BE GLOBAL
-  Lines: array of TLines;
+  Tracks: array of TLines;
   LyricsState: TLyricsState;
   SoundLib: TSoundLibrary;
 
@@ -1319,10 +1319,10 @@ end;
 function TLine.HasLength(out Len: integer): boolean;
 begin
   Result := false;
-  if Length(Note) >= 0 then
+  if Length(Notes) >= 0 then
   begin
     Result := true;
-    Len := EndBeat - Note[0].StartBeat;
+    Len := EndBeat - Notes[0].StartBeat;
   end;
 end;
 
@@ -1342,7 +1342,7 @@ end;
 
 function TLine.GetLength(): integer;
 begin
-  Result := ifthen(Length(Note) < 0, 0, EndBeat - Note[0].StartBeat);
+  Result := ifthen(Length(Notes) < 0, 0, EndBeat - Notes[0].StartBeat);
 end;
 
 end.

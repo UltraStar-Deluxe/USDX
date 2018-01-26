@@ -301,10 +301,10 @@ end;
 
 procedure Sing(Screen: TScreenSingController);
 var
-  Count:   integer;
-  CountGr: integer;
-  CP:      integer;
-  PetGr:   integer;
+  LineIndex:  integer;
+  CountGr:    integer;
+  TrackIndex: integer;
+  PetGr:      integer;
 begin
   LyricsState.UpdateBeats();
 
@@ -313,24 +313,24 @@ begin
     PetGr := 1;
 
   // sentences routines
-  for CountGr := 0 to PetGr do //High(Lines)
+  for CountGr := 0 to PetGr do //High(Tracks)
   begin;
-    CP := CountGr;
+    TrackIndex := CountGr;
 
     // old parts
-    LyricsState.OldLine := Lines[CP].CurrentLine;
+    LyricsState.OldLine := Tracks[TrackIndex].CurrentLine;
 
     // choose current parts
-    for Count := 0 to Lines[CP].High do
+    for LineIndex := 0 to Tracks[TrackIndex].High do
     begin
-      if LyricsState.CurrentBeat >= Lines[CP].Line[Count].StartBeat then
-        Lines[CP].CurrentLine := Count;
+      if LyricsState.CurrentBeat >= Tracks[TrackIndex].Lines[LineIndex].StartBeat then
+        Tracks[TrackIndex].CurrentLine := LineIndex;
     end;
 
     // clean player note if there is a new line
     // (optimization on halfbeat time)
-    if Lines[CP].CurrentLine <> LyricsState.OldLine then
-      NewSentence(CP, Screen);
+    if Tracks[TrackIndex].CurrentLine <> LyricsState.OldLine then
+      NewSentence(TrackIndex, Screen);
 
   end; // for CountGr
 
@@ -352,22 +352,22 @@ begin
   LyricsState.UpdateBeats();
 
   // sentences routines
-  for CountGr := 0 to 0 do //High(Lines)
+  for CountGr := 0 to 0 do //High(Tracks)
   begin;
     CP := CountGr;
     // old parts
-    LyricsState.OldLine := Lines[CP].CurrentLine;
+    LyricsState.OldLine := Tracks[CP].CurrentLine;
 
     // choose current parts
-    for Count := 0 to Lines[CP].High do
+    for Count := 0 to Tracks[CP].High do
     begin
-      if LyricsState.CurrentBeat >= Lines[CP].Line[Count].StartBeat then
-        Lines[CP].CurrentLine := Count;
+      if LyricsState.CurrentBeat >= Tracks[CP].Lines[Count].StartBeat then
+        Tracks[CP].CurrentLine := Count;
     end;
   end; // for CountGr
 
   // on sentence change...
-  Screen.onSentenceChange(Lines[0].CurrentLine);
+  Screen.onSentenceChange(Tracks[0].CurrentLine);
 end;
 
 procedure NewSentence(CP: integer; Screen: TScreenSingController);
@@ -385,7 +385,7 @@ begin
     end;
   end;
 
-  Screen.onSentenceChange(CP, Lines[CP].CurrentLine)
+  Screen.onSentenceChange(CP, Tracks[CP].CurrentLine)
 end;
 
 procedure NewBeatClick;
@@ -397,15 +397,15 @@ begin
   if not (CurrentSong.isDuet) or (PlayersPlay = 1) then
   begin
     if ((Ini.BeatClick = 1) and
-        ((LyricsState.CurrentBeatC + Lines[0].Resolution + Lines[0].NotesGAP) mod Lines[0].Resolution = 0)) then
+        ((LyricsState.CurrentBeatC + Tracks[0].Resolution + Tracks[0].NotesGAP) mod Tracks[0].Resolution = 0)) then
     begin
       AudioPlayback.PlaySound(SoundLib.Click);
     end;
 
-    for Count := 0 to Lines[0].Line[Lines[0].CurrentLine].HighNote do
+    for Count := 0 to Tracks[0].Lines[Tracks[0].CurrentLine].HighNote do
     begin
       //basisbit todo
-      if (Lines[0].Line[Lines[0].CurrentLine].Note[Count].StartBeat = LyricsState.CurrentBeatC) then
+      if (Tracks[0].Lines[Tracks[0].CurrentLine].Notes[Count].StartBeat = LyricsState.CurrentBeatC) then
       begin
         // click assist
         if Ini.ClickAssist = 1 then
@@ -452,13 +452,13 @@ begin
 
       NewNote(CP, Screen);
 
-      for I := 0 to Lines[CP].High do
+      for I := 0 to Tracks[CP].High do
       begin
-        with Lines[CP].Line[I] do
+        with Tracks[CP].Lines[I] do
         begin
           if (HighNote >= 0) then
           begin
-            SentenceEnd := Note[HighNote].StartBeat + Note[HighNote].Duration;
+            SentenceEnd := Notes[HighNote].StartBeat + Notes[HighNote].Duration;
 
             if (LyricsState.OldBeatD < SentenceEnd) and (LyricsState.CurrentBeatD >= SentenceEnd) then
               Screen.OnSentenceEnd(CP, I);
@@ -496,14 +496,14 @@ begin
   NoteHit := false;
 
   // TODO: add duet mode support
-  // use Lines[LineSetIndex] with LineSetIndex depending on the current player
+  // use Tracks[LineSetIndex] with LineSetIndex depending on the current player
 
   // count min and max sentence range for checking
   // (detection is delayed to the notes we see on the screen)
-  SentenceMin := Lines[CP].CurrentLine-1;
+  SentenceMin := Tracks[CP].CurrentLine-1;
   if (SentenceMin < 0) then
     SentenceMin := 0;
-  SentenceMax := Lines[CP].CurrentLine;
+  SentenceMax := Tracks[CP].CurrentLine;
 
   for ActualBeat := LyricsState.OldBeatD+1 to LyricsState.CurrentBeatD do
   begin
@@ -517,10 +517,10 @@ begin
         SentenceDetected := SentenceMin;
         for SentenceIndex := SentenceMin to SentenceMax do
         begin
-          Line := @Lines[CP].Line[SentenceIndex];
+          Line := @Tracks[CP].Lines[SentenceIndex];
           for LineFragmentIndex := 0 to Line.HighNote do
           begin
-            CurrentLineFragment := @Line.Note[LineFragmentIndex];
+            CurrentLineFragment := @Line.Notes[LineFragmentIndex];
             // check if line is active
             if ((CurrentLineFragment.StartBeat <= ActualBeat) and
               (CurrentLineFragment.StartBeat + CurrentLineFragment.Duration-1 >= ActualBeat)) and
@@ -559,11 +559,11 @@ begin
         if (CurrentSound.ToneValid and NoteAvailable) then
         begin
           CurrentNoteType := ntNormal;
-          Line := @Lines[CP].Line[SentenceDetected];
+          Line := @Tracks[CP].Lines[SentenceDetected];
           // process until last note
           for LineFragmentIndex := 0 to Line.HighNote do
           begin
-            CurrentLineFragment := @Line.Note[LineFragmentIndex];
+            CurrentLineFragment := @Line.Notes[LineFragmentIndex];
             if (CurrentLineFragment.StartBeat <= ActualBeat) and
               (CurrentLineFragment.StartBeat + CurrentLineFragment.Duration > ActualBeat) then
             begin
@@ -609,7 +609,7 @@ begin
                 // gets for a hit of one beat of a normal note
                 // CurNotePoints is the amount of points that is meassured
                 // for a hit of the note per full beat
-                CurNotePoints := (MaxSongPoints / Lines[CP].ScoreValue) * ScoreFactor[CurrentLineFragment.NoteType];
+                CurNotePoints := (MaxSongPoints / Tracks[CP].ScoreValue) * ScoreFactor[CurrentLineFragment.NoteType];
 
                 case CurrentLineFragment.NoteType of
                   ntNormal:    CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
@@ -662,7 +662,7 @@ begin
             // if is not as new note to control
             for LineFragmentIndex := 0 to Line.HighNote do
             begin
-              if (Line.Note[LineFragmentIndex].StartBeat = ActualBeat) then
+              if (Line.Notes[LineFragmentIndex].StartBeat = ActualBeat) then
                 NewNote := true;
             end;
 
@@ -696,7 +696,7 @@ begin
             // check for perfect note and then light the star (on Draw)
             for LineFragmentIndex := 0 to Line.HighNote do
             begin
-              CurrentLineFragment := @Line.Note[LineFragmentIndex];
+              CurrentLineFragment := @Line.Notes[LineFragmentIndex];
               if (CurrentLineFragment.StartBeat  = LastPlayerNote.Start) and
                 (CurrentLineFragment.Duration = LastPlayerNote.Duration) and
                 (CurrentLineFragment.Tone   = LastPlayerNote.Tone) then

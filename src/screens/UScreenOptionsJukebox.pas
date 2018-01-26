@@ -552,27 +552,27 @@ begin
 
   //Line.Lyric := 'Lorem ipsum dolor sit amet';
   // 1st line
-  SetLength(Line.Note, 6);
-  Line.Note[0].Text := 'Lor';
-  Line.Note[1].Text := 'em';
-  Line.Note[2].Text := ' ipsum';
-  Line.Note[3].Text := ' dolor';
-  Line.Note[4].Text := ' sit';
-  Line.Note[5].Text := ' amet';
+  SetLength(Line.Notes, 6);
+  Line.Notes[0].Text := 'Lor';
+  Line.Notes[1].Text := 'em';
+  Line.Notes[2].Text := ' ipsum';
+  Line.Notes[3].Text := ' dolor';
+  Line.Notes[4].Text := ' sit';
+  Line.Notes[5].Text := ' amet';
 
-  Line.Note[0].StartBeat := 0;
-  Line.Note[1].StartBeat := 10;
-  Line.Note[2].StartBeat := 20;
-  Line.Note[3].StartBeat := 30;
-  Line.Note[4].StartBeat := 40;
-  Line.Note[5].StartBeat := 50;
+  Line.Notes[0].StartBeat := 0;
+  Line.Notes[1].StartBeat := 10;
+  Line.Notes[2].StartBeat := 20;
+  Line.Notes[3].StartBeat := 30;
+  Line.Notes[4].StartBeat := 40;
+  Line.Notes[5].StartBeat := 50;
 
-  Line.Note[0].Duration := 10;
-  Line.Note[1].Duration := 10;
-  Line.Note[2].Duration := 10;
-  Line.Note[3].Duration := 10;
-  Line.Note[4].Duration := 10;
-  Line.Note[5].Duration := 10;
+  Line.Notes[0].Duration := 10;
+  Line.Notes[1].Duration := 10;
+  Line.Notes[2].Duration := 10;
+  Line.Notes[3].Duration := 10;
+  Line.Notes[4].Duration := 10;
+  Line.Notes[5].Duration := 10;
 
   Line.TotalNotes := 6;
   Line.EndBeat := 60;
@@ -582,19 +582,19 @@ begin
 
   // 2nd line
   //consectetur adipiscing elit
-  SetLength(Line.Note, 3);
+  SetLength(Line.Notes, 3);
 
-  Line.Note[0].Text := 'consectetur';
-  Line.Note[1].Text := ' adipiscing';
-  Line.Note[2].Text := ' elit';
+  Line.Notes[0].Text := 'consectetur';
+  Line.Notes[1].Text := ' adipiscing';
+  Line.Notes[2].Text := ' elit';
 
-  Line.Note[0].StartBeat := 60;
-  Line.Note[1].StartBeat := 70;
-  Line.Note[2].StartBeat := 80;
+  Line.Notes[0].StartBeat := 60;
+  Line.Notes[1].StartBeat := 70;
+  Line.Notes[2].StartBeat := 80;
 
-  Line.Note[0].Duration := 10;
-  Line.Note[1].Duration := 10;
-  Line.Note[2].Duration := 10;
+  Line.Notes[0].Duration := 10;
+  Line.Notes[1].Duration := 10;
+  Line.Notes[2].Duration := 10;
 
   Line.LastLine := true;
 
