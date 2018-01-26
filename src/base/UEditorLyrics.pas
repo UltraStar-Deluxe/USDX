@@ -209,12 +209,12 @@ var
   CurrentNote: integer;
 begin
   Clear;
-  if (Length(Lines[CurrentTrack].Line[CurrentLine].Note) > 0) then
+  if (Length(Tracks[CurrentTrack].Lines[CurrentLine].Notes) > 0) then
   begin
-    for CurrentNote := 0 to Lines[CurrentTrack].Line[CurrentLine].HighNote do
+    for CurrentNote := 0 to Tracks[CurrentTrack].Lines[CurrentLine].HighNote do
     begin
-      Italic := Lines[CurrentTrack].Line[CurrentLine].Note[CurrentNote].NoteType = ntFreestyle;
-      AddWord(Lines[CurrentTrack].Line[CurrentLine].Note[CurrentNote].Text);
+      Italic := Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote].NoteType = ntFreestyle;
+      AddWord(Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote].Text);
     end;
   {end else
   begin

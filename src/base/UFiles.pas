@@ -50,7 +50,7 @@ type
  * Throws a TEncodingException if the song's fields cannot be encoded in the
  * requested encoding.
  *}
-function SaveSong(const Song: TSong; const Lines: array of TLines; const Name: IPath; Relative: boolean): TSaveSongResult;
+function SaveSong(const Song: TSong; const Tracks: array of TLines; const Name: IPath; Relative: boolean): TSaveSongResult;
 
 implementation
 
@@ -69,11 +69,11 @@ procedure ResetSingTemp;
 var
   Count:  integer;
 begin
-  SetLength(Lines, Length(Player));
+  SetLength(Tracks, Length(Player));
   for Count := 0 to High(Player) do begin
-    SetLength(Lines[Count].Line, 1);
-    SetLength(Lines[Count].Line[0].Note, 0);
-    Lines[Count].Line[0].Lyric := '';
+    SetLength(Tracks[Count].Lines, 1);
+    SetLength(Tracks[Count].Lines[0].Notes, 0);
+    Tracks[Count].Lines[0].Lyric := '';
     Player[Count].Score := 0;
     Player[Count].LengthNote := 0;
     Player[Count].HighNote := -1;
@@ -83,7 +83,7 @@ end;
 //--------------------
 // Saves a Song
 //--------------------
-function SaveSong(const Song: TSong; const Lines: array of TLines; const Name: IPath; Relative: boolean): TSaveSongResult;
+function SaveSong(const Song: TSong; const Tracks: array of TLines; const Name: IPath; Relative: boolean): TSaveSongResult;
 var
   CurrentLine:      integer;
   CurrentNote:      integer;
@@ -182,7 +182,7 @@ begin
         SongFile.WriteLine('B ' + FloatToStr(Song.BPM[B].StartBeat) + ' '
                                 + FloatToStr(Song.BPM[B].BPM/4));
 
-      for CurrentTrack := 0 to High(Lines) do
+      for CurrentTrack := 0 to High(Tracks) do
       begin
         if Song.isDuet then
         begin
@@ -190,14 +190,14 @@ begin
           SongFile.WriteLine(Line);
         end;
 
-        for CurrentLine := 0 to Lines[CurrentTrack].High do
+        for CurrentLine := 0 to Tracks[CurrentTrack].High do
         begin
-          for CurrentNote := 0 to Lines[CurrentTrack].Line[CurrentLine].HighNote do
+          for CurrentNote := 0 to Tracks[CurrentTrack].Lines[CurrentLine].HighNote do
           begin
-            with Lines[CurrentTrack].Line[CurrentLine].Note[CurrentNote] do
+            with Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote] do
             begin
               //Golden + Freestyle Note Patch
-              case Lines[CurrentTrack].Line[CurrentLine].Note[CurrentNote].NoteType of
+              case Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote].NoteType of
                 ntFreestyle: NoteState := 'F ';
                 ntNormal: NoteState := ': ';
                 ntGolden: NoteState := '* ';
@@ -213,15 +213,15 @@ begin
             end; // with
           end; // CurrentNote
 
-          if CurrentLine < Lines[CurrentTrack].High then // don't write end of last sentence
+          if CurrentLine < Tracks[CurrentTrack].High then // don't write end of last sentence
           begin
             if not Relative then
-              Line := '- ' + IntToStr(Lines[CurrentTrack].Line[CurrentLine+1].StartBeat)
+              Line := '- ' + IntToStr(Tracks[CurrentTrack].Lines[CurrentLine+1].StartBeat)
             else
             begin
-              Line := '- ' + IntToStr(Lines[CurrentTrack].Line[CurrentLine+1].StartBeat - RelativeSubTime) +
-                ' ' + IntToStr(Lines[CurrentTrack].Line[CurrentLine+1].StartBeat - RelativeSubTime);
-              RelativeSubTime := Lines[CurrentTrack].Line[CurrentLine+1].StartBeat;
+              Line := '- ' + IntToStr(Tracks[CurrentTrack].Lines[CurrentLine+1].StartBeat - RelativeSubTime) +
+                ' ' + IntToStr(Tracks[CurrentTrack].Lines[CurrentLine+1].StartBeat - RelativeSubTime);
+              RelativeSubTime := Tracks[CurrentTrack].Lines[CurrentLine+1].StartBeat;
             end;
             SongFile.WriteLine(Line);
           end;
