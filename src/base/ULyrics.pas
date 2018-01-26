@@ -319,25 +319,25 @@ begin
   LyricLine.Reset();
                           
   // check if sentence has notes
-  if (Line <> nil) and (Length(Line.Note) > 0) then
+  if (Line <> nil) and (Length(Line.Notes) > 0) then
   begin
 
     // copy values from SongLine to LyricLine
     LyricLine.Start     := Line.StartBeat;
-    LyricLine.StartNote := Line.Note[0].StartBeat;
-    LyricLine.Length    := Line.Note[High(Line.Note)].StartBeat +
-                           Line.Note[High(Line.Note)].Duration -
-                           Line.Note[0].StartBeat;
+    LyricLine.StartNote := Line.Notes[0].StartBeat;
+    LyricLine.Length    := Line.Notes[High(Line.Notes)].StartBeat +
+                           Line.Notes[High(Line.Notes)].Duration -
+                           Line.Notes[0].StartBeat;
     LyricLine.LastLine  := Line.LastLine;
 
     // copy words
-    SetLength(LyricLine.Words, Length(Line.Note));
-    for NoteIndex := 0 to High(Line.Note) do
+    SetLength(LyricLine.Words, Length(Line.Notes));
+    for NoteIndex := 0 to High(Line.Notes) do
     begin
-      LyricLine.Words[NoteIndex].Start     := Line.Note[NoteIndex].StartBeat;
-      LyricLine.Words[NoteIndex].Length    := Line.Note[NoteIndex].Duration;
-      LyricLine.Words[NoteIndex].Text      := Line.Note[NoteIndex].Text;
-      LyricLine.Words[NoteIndex].Freestyle := Line.Note[NoteIndex].NoteType = ntFreestyle;
+      LyricLine.Words[NoteIndex].Start     := Line.Notes[NoteIndex].StartBeat;
+      LyricLine.Words[NoteIndex].Length    := Line.Notes[NoteIndex].Duration;
+      LyricLine.Words[NoteIndex].Text      := Line.Notes[NoteIndex].Text;
+      LyricLine.Words[NoteIndex].Freestyle := Line.Notes[NoteIndex].NoteType = ntFreestyle;
 
       LyricLine.Text := LyricLine.Text + LyricLine.Words[NoteIndex].Text;
     end;

@@ -90,7 +90,7 @@ type
 
   TLyricType = (ltKMIDI, ltSMFLyric);
 
-  TTrack = record
+  TMTrack = record
     Selected:  boolean;
     Note:      array of TMidiNote;
     Name:      UTF8String; // normally ASCII
@@ -113,12 +113,12 @@ type
     NewSentence: boolean;
   end;
 
-  TArrayTrack = array of TTrack;
+  TArrayMTrack = array of TMTrack;
   TArrayChannel = array of TChannel;
 
   TScreenEditConvert = class(TMenu)
     private
-      Tracks:    TArrayTrack;      // current tracks
+      MTracks:   TArrayMTrack;      // current tracks
       Channels:  TArrayChannel;    // current channels
 
       ColR:      array[0..100] of real;
@@ -149,10 +149,10 @@ type
 
       BPM:       real;
       Ticks:     real;
-      Note:      array of TNote;
+      Notes:     array of TNote;
 
       procedure AddLyric(StartBeat: integer; LyricType: TLyricType; Text: UTF8String);
-      procedure Extract(out Song: TSong; out Lines: TLines);
+      procedure Extract(out Song: TSong; out Track: TLines);
 
       {$IFDEF UseMIDIPort}
       procedure MidiFile1MidiEvent(event: PMidiEvent);
@@ -308,11 +308,11 @@ begin
                   MidiFile.OnMidiEvent := nil;
 
                   // play only selected
-                  for i := 0 to High(Tracks) do
+                  for i := 0 to High(MTracks) do
                   begin
                     MidiTrack := MidiFile.GetTrack(i);
                     if not assigned(MidiTrack) then continue;
-                    if Tracks[i].Selected then MidiTrack.OnMidiEvent := MidiFile1MidiEvent
+                    if MTracks[i].Selected then MidiTrack.OnMidiEvent := MidiFile1MidiEvent
                     else MidiTrack.OnMidiEvent := nil;
                   end;
 
@@ -364,39 +364,39 @@ begin
           begin
             if not ShowChannels then
             begin
-              if (Tracks[SelTrack].NoteType = ntAvail) and
-                 (Tracks[SelTrack].LyricType <> []) then
+              if (MTracks[SelTrack].NoteType = ntAvail) and
+                 (MTracks[SelTrack].LyricType <> []) then
               begin
-                if (Tracks[SelTrack].Status = []) then
-                  Tracks[SelTrack].Status := [tsNotes]
-                else if (Tracks[SelTrack].Status = [tsNotes]) then
-                  Tracks[SelTrack].Status := [tsLyrics]
-                else if (Tracks[SelTrack].Status = [tsLyrics]) then
-                  Tracks[SelTrack].Status := [tsNotes, tsLyrics]
-                else if (Tracks[SelTrack].Status = [tsNotes, tsLyrics]) then
-                  Tracks[SelTrack].Status := [];
+                if (MTracks[SelTrack].Status = []) then
+                  MTracks[SelTrack].Status := [tsNotes]
+                else if (MTracks[SelTrack].Status = [tsNotes]) then
+                  MTracks[SelTrack].Status := [tsLyrics]
+                else if (MTracks[SelTrack].Status = [tsLyrics]) then
+                  MTracks[SelTrack].Status := [tsNotes, tsLyrics]
+                else if (MTracks[SelTrack].Status = [tsNotes, tsLyrics]) then
+                  MTracks[SelTrack].Status := [];
               end
-              else if (Tracks[SelTrack].NoteType = ntAvail) then
+              else if (MTracks[SelTrack].NoteType = ntAvail) then
               begin
-                if (Tracks[SelTrack].Status = []) then
-                  Tracks[SelTrack].Status := [tsNotes]
+                if (MTracks[SelTrack].Status = []) then
+                  MTracks[SelTrack].Status := [tsNotes]
                 else
-                  Tracks[SelTrack].Status := [];
+                  MTracks[SelTrack].Status := [];
               end
-              else if (Tracks[SelTrack].LyricType <> []) then
+              else if (MTracks[SelTrack].LyricType <> []) then
               begin
-                if (Tracks[SelTrack].Status = []) then
-                  Tracks[SelTrack].Status := [tsLyrics]
+                if (MTracks[SelTrack].Status = []) then
+                  MTracks[SelTrack].Status := [tsLyrics]
                 else
-                  Tracks[SelTrack].Status := [];
+                  MTracks[SelTrack].Status := [];
               end;
 
               MidiTrack := MidiFile.GetTrack(SelTrack);
-              if tsNotes in Tracks[SelTrack].Status then
+              if tsNotes in MTracks[SelTrack].Status then
                 MidiTrack.OnMidiEvent := MidiFile1MidiEvent
               else
                 MidiTrack.OnMidiEvent := nil;
-              Tracks[SelTrack].Selected := assigned(MidiTrack.OnMidiEvent);
+              MTracks[SelTrack].Selected := assigned(MidiTrack.OnMidiEvent);
             end
             else
             begin
@@ -420,12 +420,12 @@ begin
 
       SDLK_KP_MULTIPLY: SelMaxHeight := not SelMaxHeight;
 
-      SDLK_KP_7: OffsetHighNote := Min(Max(0, OffsetHighNote-TRACK_SCROLL_ZOOM_AMOUNT), Tracks[SelTrack].HighNote);
-      SDLK_KP_9: OffsetHighNote := Min(OffsetHighNote+TRACK_SCROLL_ZOOM_AMOUNT, HighNote - Tracks[SelTrack].HighNote);
+      SDLK_KP_7: OffsetHighNote := Min(Max(0, OffsetHighNote-TRACK_SCROLL_ZOOM_AMOUNT), MTracks[SelTrack].HighNote);
+      SDLK_KP_9: OffsetHighNote := Min(OffsetHighNote+TRACK_SCROLL_ZOOM_AMOUNT, HighNote - MTracks[SelTrack].HighNote);
       SDLK_KP_8: OffsetHighNote := 0;
 
       SDLK_KP_1: OffsetLowNote := Max(0, OffsetLowNote-TRACK_SCROLL_ZOOM_AMOUNT);
-      SDLK_KP_3: OffsetLowNote := Min( OffsetLowNote+TRACK_SCROLL_ZOOM_AMOUNT, Tracks[SelTrack].LowNote - LowNote - 1);
+      SDLK_KP_3: OffsetLowNote := Min( OffsetLowNote+TRACK_SCROLL_ZOOM_AMOUNT, MTracks[SelTrack].LowNote - LowNote - 1);
       SDLK_KP_2: OffsetLowNote := 0;
 
       SDLK_RIGHT:
@@ -449,8 +449,8 @@ begin
           else
           begin
             inc(SelTrack, ifthen(PressedKey = SDLK_DOWN, 1, -1));
-            if SelTrack < 0 then SelTrack := High(Tracks)
-            else if SelTrack > High(Tracks) then SelTrack := 0;
+            if SelTrack < 0 then SelTrack := High(MTracks)
+            else if SelTrack > High(MTracks) then SelTrack := 0;
 
             SelMaxHeight := false;
             OffsetHighNote := 0;
@@ -488,11 +488,11 @@ begin
       if seektime < MidiFile.GetCurrentTime then
         MidiFile.GoToTime(trunc(seektime));
 
-      for i := 0 to High(Tracks) do
+      for i := 0 to High(MTracks) do
       begin
         MidiTrack := MidiFile.GetTrack(i);
         if not assigned(MidiTrack) then continue;
-        if not IsPlayingSelective or Tracks[i].Selected then
+        if not IsPlayingSelective or MTracks[i].Selected then
           MidiTrack.OnMidiEvent := MidiFile1MidiEvent;
       end;
 
@@ -509,15 +509,15 @@ var
 begin
   // find corresponding note
   N := 0;
-  while (N <= High(Note)) do
+  while (N <= High(Notes)) do
   begin
-    if Note[N].StartBeat = StartBeat then
+    if Notes[N].StartBeat = StartBeat then
       Break;
     Inc(N);
   end;
 
   // check if note was found
-  if (N > High(Note)) then
+  if (N > High(Notes)) then
     Exit;
   
   // set text
@@ -532,7 +532,7 @@ begin
     else if Copy(Text, 1, 1) = '/' then
     begin
       Delete(Text, 1, 1);
-      Note[N].NewSentence := true;
+      Notes[N].NewSentence := true;
     end;
   end
   else // SMFLyric
@@ -546,18 +546,18 @@ begin
     else if Copy(Text, 1, 1) = #$0D then
     begin
       Delete(Text, 1, 1);
-      Note[N].NewSentence := true;
+      Notes[N].NewSentence := true;
     end;
   end;
 
   // overwrite lyric or append
-  if Note[N].Lyric = '-' then
-    Note[N].Lyric := Text
+  if Notes[N].Lyric = '-' then
+    Notes[N].Lyric := Text
   else
-    Note[N].Lyric := Note[N].Lyric + Text;
+    Notes[N].Lyric := Notes[N].Lyric + Text;
 end;
 
-procedure TScreenEditConvert.Extract(out Song: TSong; out Lines: TLines);
+procedure TScreenEditConvert.Extract(out Song: TSong; out Track: TLines);
 
 var
   T:    integer;
@@ -576,44 +576,44 @@ begin
   Song.Resolution := 4;
   SetLength(Song.BPM, 1);
   Song.BPM[0].BPM := BPM*4;
-  SetLength(Note, 0);
+  SetLength(Notes, 0);
 
   // extract notes
-  for T := 0 to High(Tracks) do
+  for T := 0 to High(MTracks) do
   begin
-    if tsNotes in Tracks[T].Status then
+    if tsNotes in MTracks[T].Status then
     begin
-      for N := 0 to High(Tracks[T].Note) do
+      for N := 0 to High(MTracks[T].Note) do
       begin
-        if (Tracks[T].Note[N].EventType = MIDI_EVENTTYPE_NOTEON) and
-           (Tracks[T].Note[N].Data2 > 0) then
+        if (MTracks[T].Note[N].EventType = MIDI_EVENTTYPE_NOTEON) and
+           (MTracks[T].Note[N].Data2 > 0) then
         begin
-          Nu := Length(Note);
-          SetLength(Note, Nu + 1);
-          Note[Nu].StartBeat := Round(Tracks[T].Note[N].Start / Ticks);
-          Note[Nu].Len := Round(Tracks[T].Note[N].Len / Ticks);
-          Note[Nu].Tone := Tracks[T].Note[N].Data1 - 12*5;
-          Note[Nu].Lyric := '-';
+          Nu := Length(Notes);
+          SetLength(Notes, Nu + 1);
+          Notes[Nu].StartBeat := Round(MTracks[T].Note[N].Start / Ticks);
+          Notes[Nu].Len := Round(MTracks[T].Note[N].Len / Ticks);
+          Notes[Nu].Tone := MTracks[T].Note[N].Data1 - 12*5;
+          Notes[Nu].Lyric := '-';
         end;
       end;
     end;
   end;
 
   // extract lyrics (and artist + title info)
-  for T := 0 to High(Tracks) do
+  for T := 0 to High(MTracks) do
   begin
-    if not (tsLyrics in Tracks[T].Status) then
+    if not (tsLyrics in MTracks[T].Status) then
       Continue;
 
-    for N := 0 to High(Tracks[T].Note) do
+    for N := 0 to High(MTracks[T].Note) do
     begin
-      if (Tracks[T].Note[N].Event = MIDI_EVENT_META) then
+      if (MTracks[T].Note[N].Event = MIDI_EVENT_META) then
       begin
         // determine and validate lyric meta tag
-        if (ltKMIDI in Tracks[T].LyricType) and
-           (Tracks[T].Note[N].Data1 = MIDI_META_TEXT) then
+        if (ltKMIDI in MTracks[T].LyricType) and
+           (MTracks[T].Note[N].Data1 = MIDI_META_TEXT) then
         begin
-          Text := Tracks[T].Note[N].Str;
+          Text := MTracks[T].Note[N].Str;
           
           // check for meta info
           if (Length(Text) > 2) and (Text[1] = '@') then
@@ -632,8 +632,8 @@ begin
 
           LyricType := ltKMIDI;
         end
-        else if (ltSMFLyric in Tracks[T].LyricType) and
-                (Tracks[T].Note[N].Data1 = MIDI_META_LYRICS) then
+        else if (ltSMFLyric in MTracks[T].LyricType) and
+                (MTracks[T].Note[N].Data1 = MIDI_META_LYRICS) then
         begin
           LyricType := ltSMFLyric;
         end
@@ -643,67 +643,67 @@ begin
           Continue;
         end;
 
-        AddLyric(Round(Tracks[T].Note[N].Start / Ticks), LyricType, Tracks[T].Note[N].Str);
+        AddLyric(Round(MTracks[T].Note[N].Start / Ticks), LyricType, MTracks[T].Note[N].Str);
       end;
     end;
   end;
 
   // sort notes
-  for N := 0 to High(Note) do
-    for Nu := 0 to High(Note)-1 do
-      if Note[Nu].StartBeat > Note[Nu+1].StartBeat then
+  for N := 0 to High(Notes) do
+    for Nu := 0 to High(Notes)-1 do
+      if Notes[Nu].StartBeat > Notes[Nu+1].StartBeat then
       begin
-        NoteTemp := Note[Nu];
-        Note[Nu] := Note[Nu+1];
-        Note[Nu+1] := NoteTemp;
+        NoteTemp := Notes[Nu];
+        Notes[Nu] := Notes[Nu+1];
+        Notes[Nu+1] := NoteTemp;
       end;
 
   // move to 0 at beginning
-  Move := Note[0].StartBeat;
-  for N := 0 to High(Note) do
-    Note[N].StartBeat := Note[N].StartBeat - Move;
+  Move := Notes[0].StartBeat;
+  for N := 0 to High(Notes) do
+    Notes[N].StartBeat := Notes[N].StartBeat - Move;
 
   // copy notes
-  SetLength(Lines.Line, 1);
-  Lines.Number      := 1;
-  Lines.High        := 0;
-  Lines.CurrentLine := 0;
-  Lines.Resolution  := 0;
-  Lines.NotesGAP    := 0;
-  Lines.ScoreValue  := 0;
+  SetLength(Track.Lines, 1);
+  Track.Number      := 1;
+  Track.High        := 0;
+  Track.CurrentLine := 0;
+  Track.Resolution  := 0;
+  Track.NotesGAP    := 0;
+  Track.ScoreValue  := 0;
 
   C := 0;
   N := 0;
-  Lines.Line[C].HighNote := -1;
+  Track.Lines[C].HighNote := -1;
 
-  for Nu := 0 to High(Note) do
+  for Nu := 0 to High(Notes) do
   begin
-    if Note[Nu].NewSentence then // new line
+    if Notes[Nu].NewSentence then // new line
     begin
-      SetLength(Lines.Line, Length(Lines.Line)+1);
-      Lines.Number := Lines.Number + 1;
-      Lines.High := Lines.High + 1;
+      SetLength(Track.Lines, Length(Track.Lines)+1);
+      Track.Number := Track.Number + 1;
+      Track.High := Track.High + 1;
       C := C + 1;
       N := 0;
-      SetLength(Lines.Line[C].Note, 0);
-      Lines.Line[C].HighNote := -1;
+      SetLength(Track.Lines[C].Notes, 0);
+      Track.Lines[C].HighNote := -1;
 
       //Calculate Start of the Last Sentence
       if (C > 0) and (Nu > 0) then
       begin
-        Max := Note[Nu].StartBeat;
-        Min := Note[Nu-1].StartBeat + Note[Nu-1].Len;
+        Max := Notes[Nu].StartBeat;
+        Min := Notes[Nu-1].StartBeat + Notes[Nu-1].Len;
         
         case (Max - Min) of
-          0:    Lines.Line[C].StartBeat := Max;
-          1:    Lines.Line[C].StartBeat := Max;
-          2:    Lines.Line[C].StartBeat := Max - 1;
-          3:    Lines.Line[C].StartBeat := Max - 2;
+          0:    Track.Lines[C].StartBeat := Max;
+          1:    Track.Lines[C].StartBeat := Max;
+          2:    Track.Lines[C].StartBeat := Max - 1;
+          3:    Track.Lines[C].StartBeat := Max - 2;
           else
             if ((Max - Min) > 4) then
-              Lines.Line[C].StartBeat := Min + 2
+              Track.Lines[C].StartBeat := Min + 2
             else
-              Lines.Line[C].StartBeat := Max;
+              Track.Lines[C].StartBeat := Max;
 
         end; // case
 
@@ -711,15 +711,15 @@ begin
     end;
 
     // create space for new note
-    SetLength(Lines.Line[C].Note, Length(Lines.Line[C].Note)+1);
-    Inc(Lines.Line[C].HighNote);
+    SetLength(Track.Lines[C].Notes, Length(Track.Lines[C].Notes)+1);
+    Inc(Track.Lines[C].HighNote);
 
     // initialize note
-    Lines.Line[C].Note[N].StartBeat := Note[Nu].StartBeat;
-    Lines.Line[C].Note[N].Duration := Note[Nu].Len;
-    Lines.Line[C].Note[N].Tone := Note[Nu].Tone;
-    Lines.Line[C].Note[N].Text := DecodeStringUTF8(Note[Nu].Lyric, DEFAULT_ENCODING);
-    Lines.Line[C].Note[N].NoteType := ntNormal;
+    Track.Lines[C].Notes[N].StartBeat := Notes[Nu].StartBeat;
+    Track.Lines[C].Notes[N].Duration := Notes[Nu].Len;
+    Track.Lines[C].Notes[N].Tone := Notes[Nu].Tone;
+    Track.Lines[C].Notes[N].Text := DecodeStringUTF8(Notes[Nu].Lyric, DEFAULT_ENCODING);
+    Track.Lines[C].Notes[N].NoteType := ntNormal;
     Inc(N);
   end;
 end;
@@ -729,8 +729,8 @@ var
   T:    integer; // track
 begin
   Result := 0;
-  for T := 0 to High(Tracks) do
-    if tsNotes in Tracks[T].Status then
+  for T := 0 to High(MTracks) do
+    if tsNotes in MTracks[T].Status then
       Inc(Result);
 end;
 
@@ -854,7 +854,7 @@ begin
   MidiOut := TMidiOutput.Create(nil);
   Log.LogInfo(MidiOut.ProductName, 'MIDI');
   MidiOut.Open;
-  SetLength(Tracks, 0);
+  SetLength(MTracks, 0);
 
   Len := 0;
   SelTrack := 0;
@@ -873,33 +873,33 @@ begin
   HighEnd := 0;
   LowStart := MaxInt;
 
-  SetLength(Tracks, MidiFile.NumberOfTracks);
+  SetLength(MTracks, MidiFile.NumberOfTracks);
   for T := 0 to MidiFile.NumberOfTracks-1 do
   begin
-    Tracks[T].HighNote := 0;
-    Tracks[T].LowNote := 255;
+    MTracks[T].HighNote := 0;
+    MTracks[T].LowNote := 255;
 
     MidiTrack := MidiFile.GetTrack(T);
     MidiTrack.OnMidiEvent := nil;
-    Tracks[T].Name := DecodeStringUTF8(MidiTrack.getName, DEFAULT_ENCODING);
-    Tracks[T].NoteType := ntNone;
+    MTracks[T].Name := DecodeStringUTF8(MidiTrack.getName, DEFAULT_ENCODING);
+    MTracks[T].NoteType := ntNone;
 
-    SetLength(Tracks[T].Note, MidiTrack.getEventCount());
+    SetLength(MTracks[T].Note, MidiTrack.getEventCount());
     for N := 0 to MidiTrack.getEventCount-1 do
     begin
       MidiEvent := MidiTrack.GetEvent(N);
 
-      Tracks[T].Note[N].Start     := MidiEvent.time;
-      Tracks[T].Note[N].Len       := MidiEvent.len;
-      Tracks[T].Note[N].Event     := MidiEvent.event;
-      Tracks[T].Note[N].EventType := MidiEvent.event shr 4;
-      Tracks[T].Note[N].Channel   := MidiEvent.event and $0F;
-      Tracks[T].Note[N].Data1     := MidiEvent.data1;
-      Tracks[T].Note[N].Data2     := MidiEvent.data2;
-      Tracks[T].Note[N].Str       := DecodeStringUTF8(MidiEvent.str, DEFAULT_ENCODING);
+      MTracks[T].Note[N].Start     := MidiEvent.time;
+      MTracks[T].Note[N].Len       := MidiEvent.len;
+      MTracks[T].Note[N].Event     := MidiEvent.event;
+      MTracks[T].Note[N].EventType := MidiEvent.event shr 4;
+      MTracks[T].Note[N].Channel   := MidiEvent.event and $0F;
+      MTracks[T].Note[N].Data1     := MidiEvent.data1;
+      MTracks[T].Note[N].Data2     := MidiEvent.data2;
+      MTracks[T].Note[N].Str       := DecodeStringUTF8(MidiEvent.str, DEFAULT_ENCODING);
 
       // store lowest and highest note for the track and file
-      if (Tracks[T].Note[N].Event <> MIDI_EVENT_META) then
+      if (MTracks[T].Note[N].Event <> MIDI_EVENT_META) then
       begin
         if MidiEvent.len > 0 then // ignore invalid notes
         begin
@@ -908,48 +908,48 @@ begin
           HighNote := Max(HighNote, MidiEvent.data1);
           LowNote := Min(LowNote, MidiEvent.data1);
 
-          Tracks[T].HighNote := Max(Tracks[T].HighNote, MidiEvent.data1);
-          Tracks[T].LowNote := Min(Tracks[T].LowNote, MidiEvent.data1);
+          MTracks[T].HighNote := Max(MTracks[T].HighNote, MidiEvent.data1);
+          MTracks[T].LowNote := Min(MTracks[T].LowNote, MidiEvent.data1);
         end;
       end;
 
-      if (Tracks[T].Note[N].Event = MIDI_EVENT_META) then
+      if (MTracks[T].Note[N].Event = MIDI_EVENT_META) then
       begin
-        case (Tracks[T].Note[N].Data1) of
+        case (MTracks[T].Note[N].Data1) of
           MIDI_META_TEXT: begin
             // KMIDI lyrics (uses MIDI_META_TEXT events)
-            if (StrLComp(PAnsiChar(Tracks[T].Note[N].Str), '@KMIDI KARAOKE FILE', 19) = 0) and
-               (High(Tracks) >= T+1) then
+            if (StrLComp(PAnsiChar(MTracks[T].Note[N].Str), '@KMIDI KARAOKE FILE', 19) = 0) and
+               (High(MTracks) >= T+1) then
             begin
               // The '@KMIDI ...' mark is in the first track (mostly named 'Soft Karaoke')
               // but the lyrics are in the second track (named 'Words')
-              Tracks[T+1].LyricType := Tracks[T+1].LyricType + [ltKMIDI];
+              MTracks[T+1].LyricType := MTracks[T+1].LyricType + [ltKMIDI];
               KMIDITrackIndex := T+1;
             end;
           end;
           MIDI_META_LYRICS: begin
             // lyrics in Standard Midi File format found (uses MIDI_META_LYRICS events)
-            Tracks[T].LyricType := Tracks[T].LyricType + [ltSMFLyric];
+            MTracks[T].LyricType := MTracks[T].LyricType + [ltSMFLyric];
             SMFTrackIndex := T;
           end;
         end;
       end
-      else if (Tracks[T].Note[N].EventType = MIDI_EVENTTYPE_NOTEON) then
+      else if (MTracks[T].Note[N].EventType = MIDI_EVENTTYPE_NOTEON) then
       begin
         // notes available
-        Tracks[T].NoteType := ntAvail;
+        MTracks[T].NoteType := ntAvail;
       end;
 
-      if Tracks[T].Note[N].Start + Tracks[T].Note[N].Len > Len then
-        Len := Tracks[T].Note[N].Start + Tracks[T].Note[N].Len;
+      if MTracks[T].Note[N].Start + MTracks[T].Note[N].Len > Len then
+        Len := MTracks[T].Note[N].Start + MTracks[T].Note[N].Len;
     end;
   end;
 
   // set default lyric track. Prefer KMIDI.
   if (KMIDITrackIndex > -1) then
-    Tracks[KMIDITrackIndex].Status := Tracks[KMIDITrackIndex].Status + [tsLyrics]
+    MTracks[KMIDITrackIndex].Status := MTracks[KMIDITrackIndex].Status + [tsLyrics]
   else if (SMFTrackIndex > -1) then
-    Tracks[SMFTrackIndex].Status := Tracks[SMFTrackIndex].Status + [tsLyrics];
+    MTracks[SMFTrackIndex].Status := MTracks[SMFTrackIndex].Status + [tsLyrics];
 {$ENDIF}
 end;
 
@@ -959,7 +959,7 @@ begin
   Result := inherited Draw;
 
   // abort if no tracks loaded
-  if Length(Tracks) < 1 then Exit;
+  if Length(MTracks) < 1 then Exit;
 
   if ShowChannels then
   begin
@@ -1022,8 +1022,8 @@ begin
   end
   else
   begin
-    YSkip := EnsureRange(Height / (Length(Tracks)+20), FontSize + 2, FontSize * 2);
-    YSelected := Min(Max(YSkip, Height - Length(Tracks)*YSkip), 6*YSkip);
+    YSkip := EnsureRange(Height / (Length(MTracks)+20), FontSize + 2, FontSize * 2);
+    YSelected := Min(Max(YSkip, Height - Length(MTracks)*YSkip), 6*YSkip);
   end;
 
   TrackPadding := 0.15 * YSkip;
@@ -1057,7 +1057,7 @@ begin
 
   glColor3f(0, 0, 0);
   DrawLine(Padding, Y, Right, Y, 0, 0, 0);
-  for Count := 0 to High(Tracks) do
+  for Count := 0 to High(MTracks) do
   begin
     YHeight := ifthen(Count = SelTrack, YSelected, YSkip);
     TrackDiff := ifthen(SelTrack = Count, TrackDiffSel, TrackDiffOther);
@@ -1066,15 +1066,15 @@ begin
     if SelMaxHeight and (Count <> SelTrack) then continue;
 
     // draw track-selection
-    if Tracks[Count].Status <> [] then
+    if MTracks[Count].Status <> [] then
     begin
       DrawQuad(Padding, Y, XTrack-Padding, YHeight, 0.8, 0.3, 0.3);
     end;
 
     // draw track info
-    if Tracks[Count].NoteType = ntAvail then
+    if MTracks[Count].NoteType = ntAvail then
     begin
-      if tsNotes in Tracks[Count].Status then
+      if tsNotes in MTracks[Count].Status then
         glColor3f(0, 0, 0)
       else
         glColor3f(0.7, 0.7, 0.7);
@@ -1082,9 +1082,9 @@ begin
       SetFontSize(FontSize);
       glPrint('N');
     end;
-    if Tracks[Count].LyricType <> [] then
+    if MTracks[Count].LyricType <> [] then
     begin
-      if tsLyrics in Tracks[Count].Status then
+      if tsLyrics in MTracks[Count].Status then
         glColor3f(0, 0, 0)
       else
         glColor3f(0.7, 0.7, 0.7);
@@ -1099,23 +1099,23 @@ begin
     // Draw track names
     SetFontPos(XTrack+5, Y);
     SetFontSize(FontSize);
-    glPrint(Tracks[Count].Name);
+    glPrint(MTracks[Count].Name);
 
     // draw track notes
     //if Count = SelTrack then
-    for Count2 := 0 to High(Tracks[Count].Note) do
+    for Count2 := 0 to High(MTracks[Count].Note) do
     begin
-      NoteDiff := Tracks[Count].Note[Count2].Data1 - (LowNote+ ifthen(Count = SelTrack, OffsetLowNote, 0));
+      NoteDiff := MTracks[Count].Note[Count2].Data1 - (LowNote+ ifthen(Count = SelTrack, OffsetLowNote, 0));
       YNote := NoteDiff / TrackDiff;
 
-      if Tracks[Count].Note[Count2].EventType = MIDI_EVENTTYPE_NOTEON then
-        DrawQuad(XTrack + Tracks[Count].Note[Count2].Start/Len * TrackWidth,
+      if MTracks[Count].Note[Count2].EventType = MIDI_EVENTTYPE_NOTEON then
+        DrawQuad(XTrack + MTracks[Count].Note[Count2].Start/Len * TrackWidth,
                  Y+YHeight - (YHeight - 2*Padding)*YNote - Padding,
-                 Max(1.0, (Tracks[Count].Note[Count2].Len/Len) * TrackWidth), Max(1.0, YHeight / TrackDiff),
+                 Max(1.0, (MTracks[Count].Note[Count2].Len/Len) * TrackWidth), Max(1.0, YHeight / TrackDiff),
                  ColR[Count], ColG[Count], ColB[Count]);
-      if Tracks[Count].Note[Count2].EventType = MIDI_EVENTTYPE_META_SYSEX then
-        DrawLine(XTrack + Tracks[Count].Note[Count2].Start/Len * TrackWidth, Y+YHeight - 0.25*YSkip,
-                 XTrack + Tracks[Count].Note[Count2].Start/Len * TrackWidth, Y+YHeight,
+      if MTracks[Count].Note[Count2].EventType = MIDI_EVENTTYPE_META_SYSEX then
+        DrawLine(XTrack + MTracks[Count].Note[Count2].Start/Len * TrackWidth, Y+YHeight - 0.25*YSkip,
+                 XTrack + MTracks[Count].Note[Count2].Start/Len * TrackWidth, Y+YHeight,
                  ColR[Count], ColG[Count], ColB[Count]);
     end;
 
@@ -1239,7 +1239,7 @@ procedure TScreenEditConvert.ClearMidi;
 begin
 {$IFDEF UseMIDIPort}
   // clear data
-  Tracks := nil;
+  MTracks := nil;
 
   FreeAndNil(MidiFile);
 
