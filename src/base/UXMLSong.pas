@@ -77,11 +77,11 @@ type
     private
       SSFile: TStringList;
 
-      ParserState: Byte;
-      CurPosinSong: Cardinal; //Cur Beat Pos in the Song
-      CurDuettSinger: Byte;   //Who sings this Part?
-      BindLyrics: Boolean;    //Should the Lyrics be bind to the last Word (no Space)
-      FirstNote: Boolean;     //Is this the First Note found? For Gap calculating
+      ParserState:   Byte;
+      CurPosInSong:  Cardinal; // Cur Beat Pos in the Song
+      CurDuetSinger: Byte;     // Who sings this Part?
+      BindLyrics:    Boolean;  // Should the Lyrics be bind to the last Word (no Space)
+      FirstNote:     Boolean;  // Is this the First Note found? For Gap calculating
 
       function  ParseLine(Line: RawByteString): Boolean;
     public
@@ -152,7 +152,7 @@ begin
       I := 0;
 
       SongInfo.CountSentences := 0;
-      CurDuettSinger := DS_Both; //Both is Singstar Standard
+      CurDuetSinger  := DS_Both; //Both is Singstar Standard
       CurPosinSong   := 0; //Start at Pos 0
       BindLyrics     := True; //Dont start with Space
       FirstNote      := True; //First Note found should be the First Note ;)
@@ -199,10 +199,10 @@ begin
         I := 0;
 
         SongInfo.CountSentences := 0;
-        CurDuettSinger := DS_Both; //Both is Singstar Standard
-        CurPosinSong   := 0; //Start at Pos 0
-        BindLyrics     := True; //Dont start with Space
-        FirstNote      := True; //First Note found should be the First Note ;)
+        CurDuetSinger := DS_Both; // Both is Singstar Standard
+        CurPosinSong  := 0;       // Start at Pos 0
+        BindLyrics    := True;    // Don't start with Space
+        FirstNote     := True;    // First Note found should be the First Note ;)
 
         SongInfo.ID := 0;
         SongInfo.Header.Language := '';
@@ -400,18 +400,18 @@ begin
 
           BindLyrics := True; //Don't let Txts Begin w/ Space
           
-          //Search for Duett Singer Info
+          //Search for duet Singer Info
           MakeValuesArray;
           For I := 0 to High(AValues) do
             If (AValues[I].Name = 'SINGER') then
             begin
               AValues[I].Value := Uppercase(AValues[I].Value);
               If (AValues[I].Value = 'SOLO 1') then
-                CurDuettSinger := DS_Player1
+                CurDuetSinger := DS_Player1
               Else If (AValues[I].Value = 'SOLO 2') then
-                CurDuettSinger := DS_Player2
+                CurDuetSinger := DS_Player2
               Else
-                CurDuettSinger := DS_Both; //In case of "Group" or anything that is not identified use Both
+                CurDuetSinger := DS_Both; //In case of "Group" or anything that is not identified use Both
             end;
         end
 
