@@ -1919,7 +1919,7 @@ begin
               Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].Note[CurrentNote[CurrentTrack]].Color := 2;
               EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Lines[CurrentTrack].CurrentLine);
               EditorLyrics[CurrentTrack].Selected := 0;
-              Text[TextDebug].Text := Language.Translate('EDIT_INFO_SWITCHED_TO_TRACK') + ' 2';
+              Text[TextDebug].Text := Language.Translate('EDIT_INFO_SWITCHED_TO_TRACK') + ' 2 (' + CurrentSong.DuetNames[CurrentTrack] + ')';
             end;
           end;
 
@@ -1975,7 +1975,7 @@ begin
               Lines[CurrentTrack].Line[Lines[CurrentTrack].CurrentLine].Note[CurrentNote[CurrentTrack]].Color := 2;
               EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Lines[CurrentTrack].CurrentLine);
               EditorLyrics[CurrentTrack].Selected := 0;
-              Text[TextDebug].Text := Language.Translate('EDIT_INFO_SWITCHED_TO_TRACK') + ' 1';
+              Text[TextDebug].Text := Language.Translate('EDIT_INFO_SWITCHED_TO_TRACK') + ' 1 (' + CurrentSong.DuetNames[CurrentTrack] + ')';
             end;
           end;
 
@@ -3276,17 +3276,17 @@ var
   SrcTrack:   integer;
   DstTrack:   integer;
 
-  SrcStart:   integer;
-  SrcEnd:     integer;
+  SrcStartBeat: integer;
+  SrcEndBeat:   integer;
 
-  DstStart:   integer;
-  DstEnd:     integer;
+  DstStartBeat: integer;
+  DstEndBeat:   integer;
 
-  SrcNumN:    integer;
-  DstNumN:    integer;
+  SrcNumN:      integer;
+  DstNumN:      integer;
 
-  LineIndex1: integer;
-  LineIndex2: integer;
+  LineIndex1:   integer;
+  LineIndex2:   integer;
 
   LineLength: integer;
 begin
@@ -3297,38 +3297,73 @@ begin
   SrcLine := Lines[SrcTrack].CurrentLine;
   DstLine := -1;
 
-  SrcStart := Lines[SrcTrack].Line[SrcLine].Note[0].StartBeat;
+  SrcStartBeat := Lines[SrcTrack].Line[SrcLine].Note[0].StartBeat;
   SrcNumN := Length(Lines[SrcTrack].Line[SrcLine].Note);
-  SrcEnd := Lines[SrcTrack].Line[SrcLine].Note[SrcNumN-1].StartBeat + Lines[SrcTrack].Line[SrcLine].Note[SrcNumN-1].Duration;
+  SrcEndBeat := Lines[SrcTrack].Line[SrcLine].Note[SrcNumN-1].StartBeat + Lines[SrcTrack].Line[SrcLine].Note[SrcNumN-1].Duration;
 
   for LineIndex1 := 0 to High(Lines[DstTrack].Line) do
   begin
-    DstStart := Lines[DstTrack].Line[LineIndex1].Note[0].StartBeat;
+    DstStartBeat := Lines[DstTrack].Line[LineIndex1].Note[0].StartBeat;
     DstNumN := Length(Lines[DstTrack].Line[LineIndex1].Note);
-    DstEnd := Lines[DstTrack].Line[LineIndex1].Note[DstNumN-1].StartBeat + Lines[DstTrack].Line[LineIndex1].Note[DstNumN-1].Duration;
-    if (DstStart<=SrcStart) and (SrcEnd<=DstEnd) then
+    DstEndBeat := Lines[DstTrack].Line[LineIndex1].Note[DstNumN-1].StartBeat + Lines[DstTrack].Line[LineIndex1].Note[DstNumN-1].Duration;
+    if (DstStartBeat <= SrcStartBeat) and (SrcEndBeat <= DstEndBeat) then // SrcLine fits into existing line DstLine --> replace DstLine by SrcLine
     begin
+      Writeln('Replace');
       DstLine := LineIndex1;
       break;
     end;
 
-    if (DstLine = -1) and (LineIndex1 < Length(Lines[DstTrack].Line)-1) then
+    if (DstLine = -1) then // SrcLine does not fit into any of the existing lines --> insert SrcLine
     begin
-      DstStart := DstEnd;
-      DstEnd := Lines[DstTrack].Line[LineIndex1+1].Note[0].StartBeat;
-      if (DstStart<SrcStart) and (SrcEnd<DstEnd) then
+      if (LineIndex1 < Length(Lines[DstTrack].Line)-1) then // insert somewhere in the middle
       begin
-        LineLength := Length(Lines[DstTrack].Line);
-        SetLength(Lines[DstTrack].Line, LineLength + 1);
-        Inc(Lines[DstTrack].Number);
-        Inc(Lines[DstTrack].High);
+        DstStartBeat := DstEndBeat;
+        DstEndBeat := Lines[DstTrack].Line[LineIndex1+1].Note[0].StartBeat;
+        if (DstStartBeat < SrcStartBeat) and (SrcEndBeat < DstEndBeat) then
+        begin
+          LineLength := Length(Lines[DstTrack].Line);
+          SetLength(Lines[DstTrack].Line, LineLength + 1);
+          Inc(Lines[DstTrack].Number);
+          Inc(Lines[DstTrack].High);
 
-        for LineIndex2 := LineLength-1 downto LineIndex1 do
-          CopyLine(DstTrack, LineIndex2, DstTrack, LineIndex2+1);
+          // make room for new line
+          for LineIndex2 := LineLength-1 downto LineIndex1 do
+            CopyLine(DstTrack, LineIndex2, DstTrack, LineIndex2+1);
 
-        SetLength(Lines[DstTrack].Line[LineIndex1+1].Note, 0);
-        DstLine := LineIndex1+1;
-        break;
+          DstLine := LineIndex1 + 1;
+          SetLength(Lines[DstTrack].Line[DstLine].Note, 0);
+          break;
+        end;
+      end
+      else
+      begin
+        if (SrcEndBeat <= Lines[DstTrack].Line[0].Note[0].StartBeat) then // insert at beginning
+        begin
+          LineLength := Length(Lines[DstTrack].Line);
+          SetLength(Lines[DstTrack].Line, LineLength + 1);
+          Inc(Lines[DstTrack].Number);
+          Inc(Lines[DstTrack].High);
+
+          // make room for new line
+          for LineIndex2 := LineLength-1 downto 0 do
+            CopyLine(DstTrack, LineIndex2, DstTrack, LineIndex2+1);
+
+          DstLine := 0;
+          SetLength(Lines[DstTrack].Line[DstLine].Note, 0);
+          break;
+        end
+        else
+        if (SrcStartBeat >= Lines[DstTrack].Line[High(Lines[DstTrack].Line)].EndBeat) then // insert at end
+        begin
+          LineLength := Length(Lines[DstTrack].Line);
+          SetLength(Lines[DstTrack].Line, LineLength + 1);
+          Inc(Lines[DstTrack].Number);
+          Inc(Lines[DstTrack].High);
+
+          DstLine := High(Lines[DstTrack].Line);
+          SetLength(Lines[DstTrack].Line[DstLine].Note, 0);
+          break;
+        end;
       end;
     end;
   end;
@@ -3668,6 +3703,7 @@ var
   SongEnd:      integer;
   SongDuration: integer;
   i:            integer;
+  Color:        TRGB;
 
   CurrentPos: real;
   Width:      real;
@@ -3750,15 +3786,18 @@ begin
   for LineIndex := 0 to numLines - 1 do
   begin
     if (LineIndex = Lines[Track].CurrentLine) and not (PlaySentence or PlaySentenceMidi or PlayOne) then
-      glColor4f(0.4, 0.4, 0, 1) // currently selected line
+      glColor4f(1, 0.6, 0, 1) // currently selected line in orange
     else
       if (CurrentSong.Medley.Source <> msNone) and (LineIndex >= MedleyNotes.start.line) and (LineIndex <= MedleyNotes.end_.line) then
         glColor4f(0.15, 0.75, 0.15, 1)
       else
       begin
-        // all other lines in orange
+        // all other lines in orange (current track) and gray (other track)
         if (Track = CurrentTrack) then
-          glColor4f(1, 0.6, 0, 1)
+        begin
+          Color := GetPlayerColor(Ini.SingColor[CurrentTrack]);
+          glColor4f(Color.R, Color.G, Color.B, 1)
+        end
         else
           glColor4f(0.7, 0.7, 0.7, 1);
       end;
