@@ -45,9 +45,9 @@ type
   TNoteType = (ntFreestyle, ntNormal, ntGolden, ntRap, ntRapGolden);
 
   TPos = record
-    CP:   integer;
-    line: integer;
-    note: integer;
+    track: integer;
+    line:  integer;
+    note:  integer;
   end;
 
   {**

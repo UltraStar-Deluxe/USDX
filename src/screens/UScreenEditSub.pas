@@ -4215,10 +4215,9 @@ var
         if (beat >= Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex].StartBeat) and
            (beat <= Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex].StartBeat + Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex].Duration) then
         begin
-          //Result.part := 0;
+          Result.track := 0;
           Result.line := LineIndex;
           Result.note := NoteIndex;
-          Result.CP := 0;
           found := true;
           break;
         end;
@@ -4237,7 +4236,7 @@ var
           if (beat >= Lines[1].Line[LineIndex].Note[NoteIndex].StartBeat) and
             (beat <= Lines[1].Line[LineIndex].Note[NoteIndex].StartBeat + Lines[1].Line[LineIndex].Note[NoteIndex].Duration) then
           begin
-            Result.CP := 1;
+            Result.track := 1;
             Result.line := LineIndex;
             Result.note := NoteIndex;
             found := true;
@@ -4259,10 +4258,9 @@ var
         diff := abs(Lines[CurrentTrack].Line[LineIndex].Note[NoteIndex].StartBeat - beat);
         if diff < min then
         begin
-          //Result.part := 0;
+          Result.track := 0;
           Result.line := LineIndex;
           Result.note := NoteIndex;
-          Result.CP := 0;
           min := diff;
         end;
       end;
@@ -4277,7 +4275,7 @@ var
           diff := abs(Lines[1].Line[LineIndex].Note[NoteIndex].StartBeat - beat);
           if diff < min then
           begin
-            Result.CP := 1;
+            Result.track := 1;
             Result.line := LineIndex;
             Result.note := NoteIndex;
             min := diff;
