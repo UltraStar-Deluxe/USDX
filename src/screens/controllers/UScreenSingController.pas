@@ -1393,17 +1393,17 @@ begin
   if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
   begin
     for Index := Low(Tracks[1].Lines) to High(Tracks[1].Lines) do
-    if Tracks[1].Lines[Index].TotalNotes = 0 then
+    if Tracks[1].Lines[Index].ScoreValue = 0 then
       Inc(NumEmptySentences[1]);
 
     for Index := Low(Tracks[0].Lines) to High(Tracks[0].Lines) do
-    if Tracks[0].Lines[Index].TotalNotes = 0 then
+    if Tracks[0].Lines[Index].ScoreValue = 0 then
       Inc(NumEmptySentences[0]);
   end
   else
   begin
     for Index := Low(Tracks[0].Lines) to High(Tracks[0].Lines) do
-      if Tracks[0].Lines[Index].TotalNotes = 0 then
+      if Tracks[0].Lines[Index].ScoreValue = 0 then
         Inc(NumEmptySentences[0]);
   end;
 
@@ -1623,7 +1623,7 @@ begin
   Line := @Tracks[Track].Lines[SentenceIndex];
 
   // check for empty sentence
-  if Line.TotalNotes <= 0 then
+  if Line.ScoreValue <= 0 then
     Exit;
 
   // set max song score
@@ -1633,7 +1633,7 @@ begin
     MaxSongScore := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
 
   // Note: ScoreValue is the sum of all note values of the song
-  MaxLineScore := MaxSongScore * (Line.TotalNotes / Tracks[Track].ScoreValue);
+  MaxLineScore := MaxSongScore * (Line.ScoreValue / Tracks[Track].ScoreValue);
 
   for PlayerIndex := 0 to High(Player) do
   begin

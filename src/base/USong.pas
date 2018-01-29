@@ -102,7 +102,7 @@ type
     FileLineNo  : integer;  // line, which is read last, for error reporting
 
     function DecodeFilename(Filename: RawByteString): IPath;
-    procedure ParseNote(LineNumber: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String);
+    procedure ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String);
     procedure NewSentence(LineNumberP: integer; Param1, Param2: integer);
     procedure FindRefrain(); // tries to find a refrain for the medley mode and preview start
 
@@ -181,14 +181,14 @@ type
     OrderTyp:   integer; // type of sorting for this button (0=name)
     CatNumber:  integer; // Count of Songs in Category for Cats and Number of Song in Category for Songs
 
-    Base    : array[0..1] of integer;
-    Rel     : array[0..1] of integer;
-    Mult    : integer;
-    MultBPM : integer;
+    Base:       array[0..1] of integer;
+    Rel:        array[0..1] of integer;
+    Mult:       integer;
+    MultBPM:    integer;
 
-    LastError: AnsiString;
-    function  GetErrorLineNo: integer;
-    property  ErrorLineNo: integer read GetErrorLineNo;
+    LastError:  AnsiString;
+    function    GetErrorLineNo: integer;
+    property    ErrorLineNo: integer read GetErrorLineNo;
 
 
     constructor Create(); overload;
@@ -228,7 +228,7 @@ uses
   UIni,
   UPathUtils,
   USongs,
-  UMusic,  //needed for Lines
+  UMusic,  //needed for Tracks
   UNote;   //needed for Player
 
 const
@@ -484,27 +484,26 @@ end;
 //Load TXT Song
 function TSong.LoadSong(DuetChange: boolean): boolean;
 var
-  CurLine:    RawByteString;
-  LinePos:    integer;
-  TrackIndex: integer;
-  Both:       boolean;
+  CurLine:      RawByteString;
+  LinePos:      integer;
+  TrackIndex:   integer;
+  Both:         boolean;
+  CurrentTrack: integer; // P1: 0, P2: 1, (old duet format with binary player representation P1+P2: 2)
 
-  CP:         integer; // Current Player (0 or 1)
+  Param0:       AnsiChar;
+  Param1:       integer;
+  Param2:       integer;
+  Param3:       integer;
+  ParamLyric:   UTF8String;
 
-  Param0:     AnsiChar;
-  Param1:     integer;
-  Param2:     integer;
-  Param3:     integer;
-  ParamLyric: UTF8String;
-
-  I:          integer;
-  NotesFound: boolean;
-  SongFile:   TTextFileStream;
+  I:            integer;
+  NotesFound:   boolean;
+  SongFile:     TTextFileStream;
   FileNamePath: IPath;
 begin
   Result := false;
   LastError := '';
-  CP:=0;
+  CurrentTrack := 0;
 
   FileNamePath := Path.Append(FileName);
   if not FileNamePath.IsFile() then
@@ -555,7 +554,7 @@ begin
       begin
         CurrentSong.isDuet := true;
         SetLength(Tracks, 2);
-        CP := -1;
+        CurrentTrack := -1;
       end
       else
         SetLength(Tracks, 1);
@@ -577,7 +576,7 @@ begin
         Tracks[TrackIndex].Lines[0].HighNote := -1;
         Tracks[TrackIndex].Lines[0].LastLine := false;
         Tracks[TrackIndex].Lines[0].BaseNote := High(Integer);
-        Tracks[TrackIndex].Lines[0].TotalNotes := 0;
+        Tracks[TrackIndex].Lines[0].ScoreValue := 0;
       end;
 
       while true do
@@ -597,22 +596,22 @@ begin
           if (Param1 = 1) then
           begin
             if not(DuetChange) then
-              CP := 0
+              CurrentTrack := 0
             else
-              CP := 1
+              CurrentTrack := 1
           end
           else
           begin
             if (Param1 = 2) then
             begin
               if not(DuetChange) then
-                CP := 1
+                CurrentTrack := 1
               else
-                CP := 0;
+                CurrentTrack := 0;
             end
             else
               if (Param1 = 3) then
-                CP := 2
+                CurrentTrack := 2
             else
             begin
               Log.LogError('Wrong P-Number in file: "' + FileName.ToNative + '"; Line '+IntToStr(FileLineNo)+' (LoadSong)');
@@ -651,17 +650,17 @@ begin
           end;
 
           // add notes
-          if (CP <> 2) then
+          if (CurrentTrack <> 2) then
           begin
             // P1
-            if (Tracks[CP].High < 0) or (Tracks[CP].High > 5000) then
+            if (Tracks[CurrentTrack].High < 0) or (Tracks[CurrentTrack].High > 5000) then
             begin
               Log.LogError('Found faulty song. Did you forget a P1 or P2 tag? "'+Param0+' '+IntToStr(Param1)+
               ' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamLyric+'" -> '+
               FileNamePath.ToNative+' Line:'+IntToStr(FileLineNo));
               Break;
             end;
-            ParseNote(CP, Param0, (Param1+Rel[CP]) * Mult, Param2 * Mult, Param3, ParamLyric);
+            ParseNote(CurrentTrack, Param0, (Param1+Rel[CurrentTrack]) * Mult, Param2 * Mult, Param3, ParamLyric);
           end
           else
           begin
@@ -682,7 +681,7 @@ begin
           // new sentence
           if not CurrentSong.isDuet then
             // one singer
-            NewSentence(CP, (Param1 + Rel[CP]) * Mult, Param2)
+            NewSentence(CurrentTrack, (Param1 + Rel[CurrentTrack]) * Mult, Param2)
           else
           begin
             // P1 + P2
@@ -807,7 +806,7 @@ begin
     Tracks[TrackIndex].Lines[0].HighNote := -1;
     Tracks[TrackIndex].Lines[0].LastLine := false;
     Tracks[TrackIndex].Lines[0].BaseNote := High(Integer);
-    Tracks[TrackIndex].Lines[0].TotalNotes := 0;
+    Tracks[TrackIndex].Lines[0].ScoreValue := 0;
   end;
 
   //Try to Parse the Song
@@ -1395,16 +1394,16 @@ end;
 
 function  TSong.GetErrorLineNo: integer;
 begin
-  if (LastError='ERROR_CORRUPT_SONG_ERROR_IN_LINE') then
+  if (LastError = 'ERROR_CORRUPT_SONG_ERROR_IN_LINE') then
     Result := FileLineNo
   else
     Result := -1;
 end;
 
-procedure TSong.ParseNote(LineNumber: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String);
+procedure TSong.ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String);
 begin
 
-  with Tracks[LineNumber].Lines[Tracks[LineNumber].High] do
+  with Tracks[Track].Lines[Tracks[Track].High] do
   begin
     SetLength(Notes, Length(Notes) + 1);
     HighNote := High(Notes);
@@ -1412,9 +1411,9 @@ begin
     Notes[HighNote].StartBeat := StartP;
     if HighNote = 0 then
     begin
-      if Tracks[LineNumber].Number = 1 then
-        Start := -100;
-        //Start := Notes[HighNote].Start;
+      if Tracks[Track].Number = 1 then
+        StartBeat := -100;
+        //StartBeat := Notes[HighNote].StartBeat;
     end;
 
     Notes[HighNote].Duration := DurationP;
@@ -1429,15 +1428,13 @@ begin
     end;
 
     //add this notes value ("notes length" * "notes scorefactor") to the current songs entire value
-    Inc(Tracks[LineNumber].ScoreValue, Notes[HighNote].Duration * ScoreFactor[Notes[HighNote].NoteType]);
+    Inc(Tracks[Track].ScoreValue, Notes[HighNote].Duration * ScoreFactor[Notes[HighNote].NoteType]);
 
     //and to the current lines entire value
-    Inc(TotalNotes, Notes[HighNote].Duration * ScoreFactor[Notes[HighNote].NoteType]);
-
-
+    Inc(ScoreValue, Notes[HighNote].Duration * ScoreFactor[Notes[HighNote].NoteType]);
     Notes[HighNote].Tone := NoteP;
 
-    //if a note w/ a deeper pitch then the current basenote is found
+    //if a note w/ a lower pitch then the current basenote is found
     //we replace the basenote w/ the current notes pitch
     if Notes[HighNote].Tone < BaseNote then
       BaseNote := Notes[HighNote].Tone;
@@ -1472,7 +1469,7 @@ begin
 
   //set the current lines value to zero
   //it will be incremented w/ the value of every added note
-  Tracks[LineNumberP].Lines[Tracks[LineNumberP].High].TotalNotes := 0;
+  Tracks[LineNumberP].Lines[Tracks[LineNumberP].High].ScoreValue := 0;
 
   //basenote is the pitch of the deepest note, it is used for note drawing.
   //if a note with a less value than the current sentences basenote is found,
@@ -1669,7 +1666,7 @@ begin
     Tracks[TrackIndex].ScoreValue := 0;
     for LineIndex := 0 to High(Tracks[TrackIndex].Lines) do
     begin
-      Tracks[TrackIndex].Lines[LineIndex].TotalNotes := 0;
+      Tracks[TrackIndex].Lines[LineIndex].ScoreValue := 0;
       for NoteIndex := 0 to High(Tracks[TrackIndex].Lines[LineIndex].Notes) do
       begin
         if Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat < start then      //check start
@@ -1692,7 +1689,7 @@ begin
           //add this notes value ("notes length" * "notes scorefactor") to the current songs entire value
           Inc(Tracks[TrackIndex].ScoreValue, Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration * ScoreFactor[Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].NoteType]);
           //and to the current lines entire value
-          Inc(Tracks[TrackIndex].Lines[LineIndex].TotalNotes, Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration * ScoreFactor[Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].NoteType]);
+          Inc(Tracks[TrackIndex].Lines[LineIndex].ScoreValue, Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration * ScoreFactor[Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].NoteType]);
         end;
       end;
     end;

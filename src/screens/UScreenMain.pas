@@ -131,7 +131,7 @@ begin
         UGraphic.LoadScreens(USDXVersionStr);
       end;
 
-      Ord('S'): begin
+      Ord('T'): begin
         FadeTo(@ScreenStatMain, SoundLib.Start);
         Exit;
       end;
