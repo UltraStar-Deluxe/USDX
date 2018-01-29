@@ -44,7 +44,6 @@ uses
   MD5,
   sdl2,
   SysUtils,
-  UThemes,
   UConfig;
 
 type

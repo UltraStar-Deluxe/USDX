@@ -2967,7 +2967,6 @@ begin
     end;
   end;
 
->>>>>>> 1a6d9265621b3bcb113fd6c8226193c9063919fd
   Refresh;
   Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 2;
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
