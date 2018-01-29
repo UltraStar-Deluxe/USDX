@@ -120,9 +120,9 @@ type
     EndBeat:    integer;
     BaseNote:   integer;
     HighNote:   integer; // index of last note in line (= High(Note)?)
-    TotalNotes: integer; // value of all notes in the line
+    ScoreValue: integer; // value of all notes in the line
     LastLine:   boolean;
-    Notes:       array of TLineFragment;
+    Notes:      array of TLineFragment;
 
     private
     function GetLength(): integer;
