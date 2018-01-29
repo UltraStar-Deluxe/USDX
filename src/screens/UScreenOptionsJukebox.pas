@@ -574,7 +574,7 @@ begin
   Line.Notes[4].Duration := 10;
   Line.Notes[5].Duration := 10;
 
-  Line.TotalNotes := 6;
+  Line.ScoreValue := 6;
   Line.EndBeat := 60;
   Line.StartBeat := 0;
   Line.LastLine := true;

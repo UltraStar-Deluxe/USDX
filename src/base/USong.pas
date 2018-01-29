@@ -576,7 +576,7 @@ begin
         Tracks[TrackIndex].Lines[0].HighNote := -1;
         Tracks[TrackIndex].Lines[0].LastLine := false;
         Tracks[TrackIndex].Lines[0].BaseNote := High(Integer);
-        Tracks[TrackIndex].Lines[0].TotalNotes := 0;
+        Tracks[TrackIndex].Lines[0].ScoreValue := 0;
       end;
 
       while true do
@@ -806,7 +806,7 @@ begin
     Tracks[TrackIndex].Lines[0].HighNote := -1;
     Tracks[TrackIndex].Lines[0].LastLine := false;
     Tracks[TrackIndex].Lines[0].BaseNote := High(Integer);
-    Tracks[TrackIndex].Lines[0].TotalNotes := 0;
+    Tracks[TrackIndex].Lines[0].ScoreValue := 0;
   end;
 
   //Try to Parse the Song
@@ -1431,7 +1431,7 @@ begin
     Inc(Tracks[Track].ScoreValue, Notes[HighNote].Duration * ScoreFactor[Notes[HighNote].NoteType]);
 
     //and to the current lines entire value
-    Inc(TotalNotes, Notes[HighNote].Duration * ScoreFactor[Notes[HighNote].NoteType]);
+    Inc(ScoreValue, Notes[HighNote].Duration * ScoreFactor[Notes[HighNote].NoteType]);
 
     Notes[HighNote].Tone := NoteP;
 
@@ -1470,7 +1470,7 @@ begin
 
   //set the current lines value to zero
   //it will be incremented w/ the value of every added note
-  Tracks[LineNumberP].Lines[Tracks[LineNumberP].High].TotalNotes := 0;
+  Tracks[LineNumberP].Lines[Tracks[LineNumberP].High].ScoreValue := 0;
 
   //basenote is the pitch of the deepest note, it is used for note drawing.
   //if a note with a less value than the current sentences basenote is found,
@@ -1667,7 +1667,7 @@ begin
     Tracks[TrackIndex].ScoreValue := 0;
     for LineIndex := 0 to High(Tracks[TrackIndex].Lines) do
     begin
-      Tracks[TrackIndex].Lines[LineIndex].TotalNotes := 0;
+      Tracks[TrackIndex].Lines[LineIndex].ScoreValue := 0;
       for NoteIndex := 0 to High(Tracks[TrackIndex].Lines[LineIndex].Notes) do
       begin
         if Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat < start then      //check start
@@ -1690,7 +1690,7 @@ begin
           //add this notes value ("notes length" * "notes scorefactor") to the current songs entire value
           Inc(Tracks[TrackIndex].ScoreValue, Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration * ScoreFactor[Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].NoteType]);
           //and to the current lines entire value
-          Inc(Tracks[TrackIndex].Lines[LineIndex].TotalNotes, Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration * ScoreFactor[Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].NoteType]);
+          Inc(Tracks[TrackIndex].Lines[LineIndex].ScoreValue, Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration * ScoreFactor[Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].NoteType]);
         end;
       end;
     end;

@@ -1949,7 +1949,7 @@ begin
   if not Tracks[Track].Lines[Tracks[Track].CurrentLine].HasLength(TempR) then TempR := 0
   else TempR := W / TempR;
 
-  if (Tracks[Track].Lines[Tracks[Track].CurrentLine].TotalNotes > 0) and ( W > 0 ) and ( (Tracks[Track].Lines[Tracks[Track].CurrentLine].EndBeat - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) > 0 ) then
+  if (Tracks[Track].Lines[Tracks[Track].CurrentLine].ScoreValue > 0) and ( W > 0 ) and ( (Tracks[Track].Lines[Tracks[Track].CurrentLine].EndBeat - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) > 0 ) then
       TempR := W / (Tracks[Track].Lines[Tracks[Track].CurrentLine].EndBeat - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat)
     else
       TempR := 0;
