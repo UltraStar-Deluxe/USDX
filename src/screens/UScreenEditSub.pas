@@ -155,6 +155,9 @@ type
       GenreEditMode:           boolean;
       YearEditMode:            boolean;
       CreatorEditMode:         boolean;
+      P1EditMode:              boolean;
+      P2EditMode:              boolean;
+
       // to interactive divide note
       LastClickTime:           integer;
 
@@ -477,7 +480,16 @@ var
 begin
   Result := true;
 
-  if TextEditMode or TitleEditMode or ArtistEditMode or LanguageEditMode or EditionEditMode or GenreEditMode or YearEditMode or CreatorEditMode then
+  if TextEditMode or
+     TitleEditMode or
+     ArtistEditMode or
+     LanguageEditMode or
+     EditionEditMode or
+     GenreEditMode or
+     YearEditMode or
+     CreatorEditMode or
+     P1EditMode or
+     P2EditMode then
   begin
     Result := ParseInputEditText(PressedKey, CharCode, PressedDown);
   end
@@ -1504,10 +1516,29 @@ begin
            // Interaction = 13 // GAPSlideId
            // Interaction = 14 // StartTagSlideId
            // Interaction = 15 // EndTagSlideId
-           // Interaction = 16 // MedleyStartSlideId
-           // Interaction = 17 // MedleyEndSlideId
-           // Interaction = 18 // PreviewSlideId
-           // Interaction = 19 // RelativeSlideId
+           // Interaction = 16 // PreviewSlideId
+           // Interaction = 17 // RelativeSlideId
+
+           if Interaction = MedleyStartSlideId then
+           begin
+             BackupEditText := ifthen(CurrentSong.DuetNames[0] <> '', CurrentSong.DuetNames[0], NOT_SET);
+             CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
+             editLengthText := LengthUTF8(BackupEditText);
+             CurrentSlideId := MedleyStartSlideId;
+             TextPosition := LengthUTF8(BackupEditText);
+             P1EditMode := true;
+           end;
+
+           if Interaction = MedleyEndSlideId then
+           begin
+             BackupEditText := ifthen(CurrentSong.DuetNames[1] <> '', CurrentSong.DuetNames[1], NOT_SET);
+             CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
+             editLengthText := LengthUTF8(BackupEditText);
+             CurrentSlideId := MedleyEndSlideId;
+             TextPosition := LengthUTF8(BackupEditText);
+             P2EditMode := true;
+           end;
+
            // Interaction = 20 // StartSlideId
            // Interaction = 21 // DurationSlideId
            // Interaction = 22 // ToneSlideId
@@ -2079,6 +2110,16 @@ begin
             CurrentSong.Creator := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
             SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
           end;
+          if P1EditMode then
+          begin
+            CurrentSong.DuetNames[0] := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
+            SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
+          end;
+          if P2EditMode then
+          begin
+            CurrentSong.DuetNames[1] := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
+            SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
+          end;
           EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
           EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
           TextEditMode := false;
@@ -2089,6 +2130,8 @@ begin
           GenreEditMode := false;
           YearEditMode := false;
           CreatorEditMode := false;
+          P1EditMode := false;
+          P2EditMode := false;
           editLengthText := 0;
           TextPosition := -1;
         end;
@@ -2169,6 +2212,24 @@ begin
             SelectsS[CreatorSlideId].TextOpt[0].Align := 0;
             SelectsS[CreatorSlideId].TextOpt[0].X := SelectsS[CreatorSlideId].TextureSBG.X + 5;
           end;
+          if P1EditMode then
+          begin
+            CurrentSong.DuetNames[0] := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
+            MedleyStartVal[0] := ifthen(CurrentSong.DuetNames[0] <> '', CurrentSong.DuetNames[0], NOT_SET);
+            SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideMedleyStart,MedleyStartSlideId,MedleyStartVal,SlideMedleyStartIndex);
+            SelectsS[MedleyStartSlideId].TextOpt[0].Align := 0;
+            SelectsS[MedleyStartSlideId].TextOpt[0].X := SelectsS[MedleyStartSlideId].TextureSBG.X + 5;
+          end;
+          if P2EditMode then
+          begin
+            CurrentSong.DuetNames[1] := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
+            MedleyEndVal[0] := ifthen(CurrentSong.DuetNames[1] <> '', CurrentSong.DuetNames[1], NOT_SET);
+            SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideMedleyEnd,MedleyEndSlideId,MedleyEndVal,SlideMedleyEndIndex);
+            SelectsS[MedleyEndSlideId].TextOpt[0].Align := 0;
+            SelectsS[MedleyEndSlideId].TextOpt[0].X := SelectsS[MedleyEndSlideId].TextureSBG.X + 5;
+          end;
           if TextEditMode then
           begin
             Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
@@ -2187,6 +2248,8 @@ begin
           GenreEditMode := false;
           YearEditMode := false;
           CreatorEditMode := false;
+          P1EditMode := false;
+          P2EditMode := false;
           TextEditMode := false;
           editLengthText := 0;
           TextPosition := -1;
@@ -4783,6 +4846,8 @@ begin
   GenreEditMode := false;
   YearEditMode := false;
   CreatorEditMode := false;
+  P1EditMode := false;
+  P2EditMode := false;
 
   editLengthText := 0;
   TextPosition := -1;
@@ -4965,7 +5030,9 @@ begin
   if not (CurrentSong.isDuet) then
   begin
     SelectsS[MedleyStartSlideId].Text.Text := Theme.EditSub.SlideMedleyStart.Text;
+    SelectsS[MedleyStartSlideId].TextOpt[0].Writable := false;
     SelectsS[MedleyEndSlideId].Text.Text := Theme.EditSub.SlideMedleyEnd.Text;
+    SelectsS[MedleyEndSlideId].TextOpt[0].Writable := false;
     if (MedleyNotes.isStart) then
       MedleyStartVal[0] := IntToStr(Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes[MedleyNotes.start.note].StartBeat)
     else
@@ -4983,9 +5050,11 @@ begin
     SelectsS[MedleyStartSlideId].Text.Text := 'P1:';
     MedleyStartVal[0] := CurrentSong.DuetNames[0];
     SelectsS[MedleyStartSlideId].TextOpt[0].Text := MedleyStartVal[0];
+    SelectsS[MedleyStartSlideId].TextOpt[0].Writable := true;
     SelectsS[MedleyEndSlideId].Text.Text := 'P2:';
     MedleyEndVal[0] := CurrentSong.DuetNames[1];
     SelectsS[MedleyEndSlideId].TextOpt[0].Text := MedleyEndVal[0];
+    SelectsS[MedleyEndSlideId].TextOpt[0].Writable := true;
   end;
   // PreviewStart
   if (CurrentSong.HasPreview) then
@@ -5018,7 +5087,16 @@ begin
   end;
 
   // Text Edit Mode
-  if TextEditMode or TitleEditMode or ArtistEditMode or LanguageEditMode or EditionEditMode or GenreEditMode or YearEditMode or CreatorEditMode then
+  if TextEditMode or
+     TitleEditMode or
+     ArtistEditMode or
+     LanguageEditMode or
+     EditionEditMode or
+     GenreEditMode or
+     YearEditMode or
+     CreatorEditMode or
+     P1EditMode or
+     P2EditMode then
   begin
     if TextPosition >= 0 then
     SelectsS[CurrentSlideId].TextOpt[0].Text :=
