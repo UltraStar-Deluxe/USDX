@@ -4962,17 +4962,31 @@ begin
   EndTagVal[0] := ifthen(CurrentSong.Finish > 0.0, FloatToStr(CurrentSong.Finish) + ' ms', NOT_SET);
   SelectsS[EndTagSlideId].TextOpt[0].Text := EndTagVal[0];
   // MedleyStart
-  if (MedleyNotes.isStart) then
-    MedleyStartVal[0] := IntToStr(Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes[MedleyNotes.start.note].StartBeat)
-  else
-    MedleyStartVal[0] := NOT_SET;
-  SelectsS[MedleyStartSlideId].TextOpt[0].Text := MedleyStartVal[0];
-  // MedleyEnd
-  if (MedleyNotes.isEnd) then
-    MedleyEndVal[0] := IntToStr(Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].StartBeat + Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].Duration)
-  else
-    MedleyEndVal[0] := NOT_SET;
-  SelectsS[MedleyEndSlideId].TextOpt[0].Text := MedleyEndVal[0];
+  if not (CurrentSong.isDuet) then
+  begin
+    SelectsS[MedleyStartSlideId].Text.Text := Theme.EditSub.SlideMedleyStart.Text;
+    SelectsS[MedleyEndSlideId].Text.Text := Theme.EditSub.SlideMedleyEnd.Text;
+    if (MedleyNotes.isStart) then
+      MedleyStartVal[0] := IntToStr(Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes[MedleyNotes.start.note].StartBeat)
+    else
+      MedleyStartVal[0] := NOT_SET;
+    SelectsS[MedleyStartSlideId].TextOpt[0].Text := MedleyStartVal[0];
+    // MedleyEnd
+    if (MedleyNotes.isEnd) then
+      MedleyEndVal[0] := IntToStr(Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].StartBeat + Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].Duration)
+    else
+      MedleyEndVal[0] := NOT_SET;
+    SelectsS[MedleyEndSlideId].TextOpt[0].Text := MedleyEndVal[0];
+  end
+  else // reuse for P1/P2 tag
+  begin
+    SelectsS[MedleyStartSlideId].Text.Text := 'P1:';
+    MedleyStartVal[0] := CurrentSong.DuetNames[0];
+    SelectsS[MedleyStartSlideId].TextOpt[0].Text := MedleyStartVal[0];
+    SelectsS[MedleyEndSlideId].Text.Text := 'P2:';
+    MedleyEndVal[0] := CurrentSong.DuetNames[1];
+    SelectsS[MedleyEndSlideId].TextOpt[0].Text := MedleyEndVal[0];
+  end;
   // PreviewStart
   if (CurrentSong.HasPreview) then
     PreviewStartVal[0] := FloatToStr(CurrentSong.PreviewStart) + ' s'
