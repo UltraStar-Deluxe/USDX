@@ -44,7 +44,7 @@ uses
 type
   TNoteType = (ntFreestyle, ntNormal, ntGolden, ntRap, ntRapGolden);
 
-  TPos = record
+  TPos = record // Tracks[track].Lines[line].Notes[note]
     track: integer;
     line:  integer;
     note:  integer;
@@ -414,40 +414,40 @@ type
 
       procedure SetScreen(Screen: integer);
       function GetScreen(): integer;
-      
+
       procedure SetScreenPosition(X, Y: double; Z: double = 0.0);
       procedure GetScreenPosition(var X, Y, Z: double);
 
       procedure  SetWidth(Width: double);
        function GetWidth(): double;
-      
+
       procedure  SetHeight(Height: double);
        function GetHeight(): double;
-      
+
       {**
        * Sub-image of the video frame to draw.
        * This can be used for zooming or similar purposes.
        *}
       procedure SetFrameRange(Range: TRectCoords);
       function GetFrameRange(): TRectCoords;
-      
+
       function GetFrameAspect(): real;
-      
+
       procedure SetAspectCorrection(AspectCorrection: TAspectCorrection);
       function GetAspectCorrection(): TAspectCorrection;
-      
+
 
       procedure SetAlpha(Alpha: double);
       function GetAlpha(): double;
-      
+
       procedure SetReflectionSpacing(Spacing: double);
       function GetReflectionSpacing(): double;
 
       procedure GetFrame(Time: Extended);
       procedure Draw();
       procedure DrawReflection();
-       
-       
+
+
       property Screen: integer read GetScreen;
       property Width: double read GetWidth write SetWidth;
       property Height: double read GetHeight write SetHeight;
@@ -666,6 +666,8 @@ function  AudioDecoders(): TInterfaceList;
 function  MediaManager: TInterfaceList;
 
 procedure DumpMediaInterfaces();
+
+function FindNote(beat: integer): TPos;
 
 implementation
 
@@ -1343,6 +1345,94 @@ end;
 function TLine.GetLength(): integer;
 begin
   Result := ifthen(Length(Notes) < 0, 0, EndBeat - Notes[0].StartBeat);
+end;
+
+function FindNote(beat: integer): TPos;
+var
+  LineIndex: integer;
+  NoteIndex: integer;
+  found:     boolean;
+  min:       integer;
+  diff:      integer;
+
+begin
+  found := false;
+
+  for LineIndex := 0 to High(Tracks[0].Lines) do
+  begin
+    for NoteIndex := 0 to High(Tracks[0].Lines[LineIndex].Notes) do
+    begin
+      if (beat >= Tracks[0].Lines[LineIndex].Notes[NoteIndex].StartBeat) and
+         (beat <= Tracks[0].Lines[LineIndex].Notes[NoteIndex].StartBeat + Tracks[0].Lines[LineIndex].Notes[NoteIndex].Duration) then
+      begin
+        Result.track := 0;
+        Result.line := LineIndex;
+        Result.note := NoteIndex;
+        found := true;
+        break;
+      end;
+    end;
+  end;
+
+  if found then //found exactly
+    exit;
+
+  if CurrentSong.isDuet and (PlayersPlay <> 1) then
+  begin
+    for LineIndex := 0 to High(Tracks[1].Lines) do
+    begin
+      for NoteIndex := 0 to High(Tracks[1].Lines[LineIndex].Notes) do
+      begin
+        if (beat >= Tracks[1].Lines[LineIndex].Notes[NoteIndex].StartBeat) and
+          (beat <= Tracks[1].Lines[LineIndex].Notes[NoteIndex].StartBeat + Tracks[1].Lines[LineIndex].Notes[NoteIndex].Duration) then
+        begin
+          Result.track := 1;
+          Result.line := LineIndex;
+          Result.note := NoteIndex;
+          found := true;
+          break;
+        end;
+      end;
+    end;
+  end;
+
+  if found then //found exactly
+    exit;
+
+  min := high(integer);
+  //second try (approximating)
+  for LineIndex := 0 to High(Tracks[0].Lines) do
+  begin
+    for NoteIndex := 0 to High(Tracks[0].Lines[LineIndex].Notes) do
+    begin
+      diff := abs(Tracks[0].Lines[LineIndex].Notes[NoteIndex].StartBeat - beat);
+      if diff < min then
+      begin
+        Result.track := 0;
+        Result.line := LineIndex;
+        Result.note := NoteIndex;
+        min := diff;
+      end;
+    end;
+  end;
+
+  if CurrentSong.isDuet and (PlayersPlay <> 1) then
+  begin
+    for LineIndex := 0 to High(Tracks[1].Lines) do
+    begin
+      for NoteIndex := 0 to High(Tracks[1].Lines[LineIndex].Notes) do
+      begin
+        diff := abs(Tracks[1].Lines[LineIndex].Notes[NoteIndex].StartBeat - beat);
+        if diff < min then
+        begin
+          Result.track := 1;
+          Result.line := LineIndex;
+          Result.note := NoteIndex;
+          min := diff;
+        end;
+      end;
+    end;
+  end;
 end;
 
 end.

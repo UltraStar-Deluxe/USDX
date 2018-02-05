@@ -57,12 +57,6 @@ uses
   TextGL;
 
 type
-  TPos = record // Tracks[track].Lines[line].Notes[note]
-    track: integer;
-    line:  integer;
-    note:  integer;
-  end;
-
   TLyricsSyncSource = class(TSyncSource)
     function GetClock(): real; override;
   end;
@@ -1061,95 +1055,6 @@ var
   VideoFile:  IPath;
   BgFile:     IPath;
   success:    boolean;
-
-  function FindNote(beat: integer): TPos;
-  var
-    LineIndex: integer;
-    NoteIndex: integer;
-    found:     boolean;
-    min:       integer;
-    diff:      integer;
-
-  begin
-    found := false;
-
-    for LineIndex := 0 to length(Tracks[0].Lines) - 1 do
-    begin
-      for NoteIndex := 0 to length(Tracks[0].Lines[LineIndex].Notes) - 1 do
-      begin
-        if (beat >= Tracks[0].Lines[LineIndex].Notes[NoteIndex].StartBeat) and
-           (beat <= Tracks[0].Lines[LineIndex].Notes[NoteIndex].StartBeat + Tracks[0].Lines[LineIndex].Notes[NoteIndex].Duration) then
-        begin
-          Result.track := 0;
-          Result.line := LineIndex;
-          Result.note := NoteIndex;
-          found := true;
-          break;
-        end;
-      end;
-    end;
-
-    if found then //found exactly
-      exit;
-
-    if CurrentSong.isDuet and (PlayersPlay <> 1) then
-    begin
-      for LineIndex := 0 to length(Tracks[1].Lines) - 1 do
-      begin
-        for NoteIndex := 0 to length(Tracks[1].Lines[LineIndex].Notes) - 1 do
-        begin
-          if (beat>=Tracks[1].Lines[LineIndex].Notes[NoteIndex].StartBeat) and
-            (beat<=Tracks[1].Lines[LineIndex].Notes[NoteIndex].StartBeat + Tracks[1].Lines[LineIndex].Notes[NoteIndex].Duration) then
-          begin
-            Result.track := 1;
-            Result.line := LineIndex;
-            Result.note := NoteIndex;
-            found:=true;
-            break;
-          end;
-        end;
-      end;
-    end;
-
-    if found then //found exactly
-      exit;
-
-    min := high(integer);
-    //second try (approximating)
-    for LineIndex := 0 to length(Tracks[0].Lines) - 1 do
-    begin
-      for NoteIndex := 0 to length(Tracks[0].Lines[LineIndex].Notes) - 1 do
-      begin
-        diff := abs(Tracks[0].Lines[LineIndex].Notes[NoteIndex].StartBeat - beat);
-        if diff < min then
-        begin
-          Result.track := 0;
-          Result.line := LineIndex;
-          Result.note := NoteIndex;
-          min := diff;
-        end;
-      end;
-    end;
-
-    if CurrentSong.isDuet and (PlayersPlay <> 1) then
-    begin
-      for LineIndex := 0 to length(Tracks[1].Lines) - 1 do
-      begin
-        for NoteIndex := 0 to length(Tracks[1].Lines[LineIndex].Notes) - 1 do
-        begin
-          diff := abs(Tracks[1].Lines[LineIndex].Notes[NoteIndex].StartBeat - beat);
-          if diff<min then
-          begin
-            Result.track := 1;
-            Result.line := LineIndex;
-            Result.note := NoteIndex;
-            min := diff;
-          end;
-        end;
-      end;
-    end;
-
-  end;
 
 begin
   // background texture (garbage disposal)
