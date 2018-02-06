@@ -1056,8 +1056,9 @@ type
       SlideVideoGap:       TThemeSelectSlide;
 
       // texts
-      TextDebug:           TThemeText;
+      TextInfo:            TThemeText;
       TextSentence:        TThemeText;
+      TextCurrentTone:     TThemeText;
   end;
 
   //Error- and Check-Popup
@@ -2536,8 +2537,9 @@ begin
       ThemeLoadSelectSlide(EditSub.SelectVolMidi, 'EditSubSelectVolMidi');
       ThemeLoadSelectSlide(EditSub.SelectVolClick, 'EditSubSelectVolClick');
       ThemeLoadSelectSlide(EditSub.SlideVideoGap, 'EditSubVideoGap');
-      ThemeLoadText(EditSub.TextDebug, 'EditSubTextDebug');
+      ThemeLoadText(EditSub.TextInfo, 'EditSubTextInfo');
       ThemeLoadText(EditSub.TextSentence, 'EditSubTextSentence');
+      ThemeLoadText(EditSub.TextCurrentTone, 'EditSubTextCurrentTone');
 
       //error popup
       ThemeLoadBasic (ErrorPopup, 'ErrorPopup');
