@@ -354,8 +354,8 @@ type
       procedure MoveAllToEnd(Move: Integer);
       procedure MoveTextToRight;
       procedure MarkCopySrc;
-      procedure CopySentence(SrcLine, DstLine: Integer; CopyText: boolean = true; CopyNotes: boolean = true; EnforceSrcLength: boolean = false);
-      procedure CopySentences(SrcLine, DstLine, Num: Integer);
+      procedure CopySentence(SrcTrack, SrcLine, DstTrack, DstLine: Integer; CopyText: boolean = true; CopyNotes: boolean = true; EnforceSrcLength: boolean = false);
+      procedure CopySentences(SrcTrack, SrcLine, DstTrack, DstLine, Num: Integer);
       procedure MakeSolo;
       procedure MakeDuet;
       function  DuetCopyLine: boolean;
@@ -460,7 +460,11 @@ var
   SDL_ModState: word;
   R:            real;
   SResult:      TSaveSongResult;
+  DstTrack:     Integer;
+  DstLine:      Integer;
+  NumLines:     Integer;
   LineIndex:    Integer;
+  LineCount:    Integer;
   NoteIndex:    Integer;
   HasPreview:   Boolean;
 begin
@@ -975,7 +979,7 @@ begin
           if SDL_ModState = KMOD_LCTRL then
           begin
             CopyToUndo;
-            CopySentence(CopySrc.line, Tracks[CurrentTrack].CurrentLine, true, true, true);
+            CopySentence(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, true, true, true);
             Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_SENTENCE');
           end;
 
@@ -983,7 +987,7 @@ begin
           if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT then
           begin
             CopyToUndo;
-            CopySentence(CopySrc.line, Tracks[CurrentTrack].CurrentLine, true, false, false);
+            CopySentence(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, true, false, false);
             Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_TEXT');
           end;
 
@@ -991,7 +995,7 @@ begin
           if SDL_ModState = KMOD_LCTRL + KMOD_LALT then
           begin
             CopyToUndo;
-            CopySentence(CopySrc.line, Tracks[CurrentTrack].CurrentLine, false, true, false);
+            CopySentence(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, false, true, false);
             Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_NOTES');
           end;
 
@@ -999,7 +1003,7 @@ begin
           if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then
           begin
             CopyToUndo;
-            CopySentence(CopySrc.line, Tracks[CurrentTrack].CurrentLine, true, true, false);
+            CopySentence(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, true, true, false);
             Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_SENTENCE');
           end;
 
@@ -1215,57 +1219,57 @@ begin
           end;
         end;
 
-      SDLK_4:
+      SDLK_2,
+      SDLK_3,
+      SDLK_4,
+      SDLK_5,
+      SDLK_6:
         begin
-          if (CurrentSong.isDuet) then
-            Exit; // FIXME: implement for duets
+          CopyToUndo;
+          DstTrack := CurrentTrack;
+          DstLine := Tracks[CurrentTrack].CurrentLine;
+          NumLines := PressedKey - SDLK_0;
+          // copy less lines if there are not enough lines available
+          NumLines := Min(NumLines, High(Tracks[CopySrc.track].Lines) - CopySrc.line + 1);
 
-          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT then
+          for LineCount := 0 to NumLines - 1 do
           begin
-            CopyToUndo;
-            CopySentence(CopySrc.line, Tracks[CurrentTrack].CurrentLine);
-            CopySentence(CopySrc.line + 1, Tracks[CurrentTrack].CurrentLine + 1);
-            CopySentence(CopySrc.line + 2, Tracks[CurrentTrack].CurrentLine + 2);
-            CopySentence(CopySrc.line + 3, Tracks[CurrentTrack].CurrentLine + 3);
-            GoldenRec.KillAll;
-            Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_4_SENTENCES');
+            if (SDL_ModState = KMOD_LCTRL) then
+            begin
+              // paste notes + text (use src length, ignore dst length)
+              CopySentence(CopySrc.track, CopySrc.line + LineCount, DstTrack, DstLine + LineCount, true, true, true);
+              Text[TextInfo].Text := Format(Language.Translate('EDIT_INFO_PASTE_SENTENCE_N'), [NumLines]);
+            end;
+            if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT then
+            begin
+              // paste text only (use minimum of src and dst length)
+              CopySentence(CopySrc.track, CopySrc.line + LineCount, DstTrack, DstLine + LineCount, true, false, false);
+              Text[TextInfo].Text := Format(Language.Translate('EDIT_INFO_PASTE_TEXT_N'), [NumLines]);
+            end;
+            if SDL_ModState = KMOD_LCTRL + KMOD_LALT then
+            begin
+              // paste notes only (use minimum of src and dst length)
+              CopySentence(CopySrc.track, CopySrc.line + LineCount, DstTrack, DstLine + LineCount, false, true, false);
+              Text[TextInfo].Text := Format(Language.Translate('EDIT_INFO_PASTE_NOTES_N'), [NumLines]);
+            end;
+            if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then
+            begin
+              // paste notes + text (use minimum of src and dst length)
+              CopySentence(CopySrc.track, CopySrc.line + LineCount, DstTrack, DstLine + LineCount, true, true, false);
+              Text[TextInfo].Text := Format(Language.Translate('EDIT_INFO_PASTE_SENTENCE_N'), [NumLines]);
+            end;
           end;
+          GoldenRec.KillAll;
+          ShowInteractiveBackground;
 
-          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then
+          // does this insert additional 4 lines before the current line?
+          {if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then
           begin
             CopyToUndo;
-            CopySentences(CopySrc.line, Tracks[CurrentTrack].CurrentLine, 4);
+            CopySentences(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, 4);
             GoldenRec.KillAll;
             Text[TextInfo].Text := Language.Translate('EDIT_INFO_COPY_4_SENTENCES');
-          end;
-        ShowInteractiveBackground;
-        end;
-
-      SDLK_5:
-        begin
-          if (CurrentSong.isDuet) then
-            Exit; // FIXME: implement for duets
-
-          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT then
-          begin
-            CopyToUndo;
-            CopySentence(CopySrc.line, Tracks[CurrentTrack].CurrentLine);
-            CopySentence(CopySrc.line + 1, Tracks[CurrentTrack].CurrentLine + 1);
-            CopySentence(CopySrc.line + 2, Tracks[CurrentTrack].CurrentLine + 2);
-            CopySentence(CopySrc.line + 3, Tracks[CurrentTrack].CurrentLine + 3);
-            CopySentence(CopySrc.line + 4, Tracks[CurrentTrack].CurrentLine + 4);
-            GoldenRec.KillAll;
-            Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_5_SENTENCES');
-          end;
-
-          if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then
-          begin
-            CopyToUndo;
-            CopySentences(CopySrc.line, Tracks[CurrentTrack].CurrentLine, 5);
-            Text[TextInfo].Text := Language.Translate('EDIT_INFO_COPY_5_SENTENCES');
-            GoldenRec.KillAll;
-          end;
-        ShowInteractiveBackground;
+          end;}
         end;
 
       SDLK_7:
@@ -3284,50 +3288,50 @@ begin
   CopySrc.note  := CurrentNote[CurrentTrack];
 end;
 
-procedure TScreenEditSub.CopySentence(SrcLine, DstLine: Integer; CopyText, CopyNotes, EnforceSrcLength: boolean);
+procedure TScreenEditSub.CopySentence(SrcTrack, SrcLine, DstTrack, DstLine: Integer; CopyText, CopyNotes, EnforceSrcLength: boolean);
 var
-  NoteIndex:    Integer;
   SrcStartBeat: Integer;
   DstStartBeat: Integer;
   BeatDiff:     Integer;
+  NoteIndex:    Integer;
 begin
-  SrcStartBeat := Tracks[CopySrc.track].Lines[SrcLine].Notes[0].StartBeat;
-  DstStartBeat := Tracks[CurrentTrack].Lines[DstLine].Notes[0].StartBeat;
+  SrcStartBeat := Tracks[SrcTrack].Lines[SrcLine].Notes[0].StartBeat;
+  DstStartBeat := Tracks[DstTrack].Lines[DstLine].Notes[0].StartBeat;
   BeatDiff := DstStartBeat - SrcStartBeat;
 
   if (EnforceSrcLength) then
   begin
     // copy src line as is (even if length of src and dst lines don't match)
-    SetLength(Tracks[CurrentTrack].Lines[DstLine].Notes, Length(Tracks[CopySrc.track].Lines[SrcLine].Notes));
-    Tracks[CurrentTrack].Lines[DstLine].HighNote := Tracks[CopySrc.track].Lines[SrcLine].HighNote;
+    SetLength(Tracks[DstTrack].Lines[DstLine].Notes, Length(Tracks[SrcTrack].Lines[SrcLine].Notes));
+    Tracks[DstTrack].Lines[DstLine].HighNote := Tracks[SrcTrack].Lines[SrcLine].HighNote;
   end;
 
   // if length(src) and length(dst) differ, only copy as many notes as possible (ignoring the rest)
-  for NoteIndex := 0 to Min(Tracks[CopySrc.track].Lines[SrcLine].HighNote, Tracks[CurrentTrack].Lines[DstLine].HighNote) do
+  for NoteIndex := 0 to Min(Tracks[SrcTrack].Lines[SrcLine].HighNote, Tracks[DstTrack].Lines[DstLine].HighNote) do
   begin
     if (CopyText) then // copy text
     begin
-      Tracks[CurrentTrack].Lines[DstLine].Notes[NoteIndex].Text      := Tracks[CopySrc.track].Lines[SrcLine].Notes[NoteIndex].Text;
+      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Text      := Tracks[CopySrc.track].Lines[SrcLine].Notes[NoteIndex].Text;
     end;
     if (CopyNotes) then // copy duration, tone, note type and (shifted) start beat
     begin
-      Tracks[CurrentTrack].Lines[DstLine].Notes[NoteIndex].Duration  := Tracks[CopySrc.track].Lines[SrcLine].Notes[NoteIndex].Duration;
-      Tracks[CurrentTrack].Lines[DstLine].Notes[NoteIndex].Tone      := Tracks[CopySrc.track].Lines[SrcLine].Notes[NoteIndex].Tone;
-      Tracks[CurrentTrack].Lines[DstLine].Notes[NoteIndex].NoteType  := Tracks[CopySrc.track].Lines[SrcLine].Notes[NoteIndex].NoteType;
-      Tracks[CurrentTrack].Lines[DstLine].Notes[NoteIndex].StartBeat := Tracks[CopySrc.track].Lines[SrcLine].Notes[NoteIndex].StartBeat + BeatDiff;
-      Tracks[CurrentTrack].Lines[DstLine].Notes[NoteIndex].Color     := Tracks[CopySrc.track].Lines[SrcLine].Notes[NoteIndex].Color;
+      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Duration  := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].Duration;
+      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Tone      := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].Tone;
+      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].NoteType  := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].NoteType;
+      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].StartBeat := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].StartBeat + BeatDiff;
+      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Color     := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].Color;
     end;
   end;
 
-  NoteIndex := Tracks[CurrentTrack].Lines[DstLine].HighNote;
-  Tracks[CurrentTrack].Lines[DstLine].EndBeat := Tracks[CurrentTrack].Lines[DstLine].Notes[NoteIndex].StartBeat + Tracks[CurrentTrack].Lines[DstLine].Notes[NoteIndex].Duration;
+  NoteIndex := Tracks[DstTrack].Lines[DstLine].HighNote;
+  Tracks[DstTrack].Lines[DstLine].EndBeat := Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].StartBeat + Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Duration;
 
   Refresh;
-  Tracks[CurrentTrack].Lines[DstLine].Notes[CurrentNote[CurrentTrack]].Color := 2;
-  EditorLyrics[CurrentTrack].AddLine(CurrentTrack, DstLine);
+  Tracks[DstTrack].Lines[DstLine].Notes[CurrentNote[DstTrack]].Color := 2;
+  EditorLyrics[DstTrack].AddLine(DstTrack, DstLine);
 end;
 
-procedure TScreenEditSub.CopySentences(SrcLine, DstLine, Num: Integer);
+procedure TScreenEditSub.CopySentences(SrcTrack, SrcLine, DstTrack, DstLine, Num: Integer);
 var
   LineIndex: Integer;
 begin
@@ -3356,8 +3360,8 @@ begin
   Tracks[CurrentTrack].Number := Tracks[CurrentTrack].Number + Num - 1;
   Tracks[CurrentTrack].High := Tracks[CurrentTrack].High + Num - 1;
 
-  for LineIndex := 0 to Num-1 do
-    CopySentence(SrcLine + LineIndex, DstLine + LineIndex);
+  for LineIndex := 0 to Num - 1 do
+    CopySentence(SrcTrack, SrcLine + LineIndex, DstTrack, DstLine + LineIndex);
 end;
 
 procedure TScreenEditSub.MakeSolo;
