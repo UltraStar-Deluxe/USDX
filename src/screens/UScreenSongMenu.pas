@@ -787,7 +787,7 @@ begin
       end;
   end;
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSongMenu)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenSongMenu');
 end;
 
 procedure TScreenSongMenu.HandleReturn;

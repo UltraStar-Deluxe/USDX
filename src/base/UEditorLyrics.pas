@@ -40,8 +40,6 @@ uses
   UTexture;
 
 type
-  TAlignmentType = (atLeft, atCenter, atRight);
-
   TWord = record
     X:         real;
     Y:         real;
@@ -58,7 +56,7 @@ type
 
   TEditorLyrics = class
     private
-      AlignI:     TAlignmentType;
+      AlignI:     integer;
       XR:         real;
       YR:         real;
       SizeR:      real;
@@ -69,7 +67,7 @@ type
       procedure SetX(Value: real);
       procedure SetY(Value: real);
       function GetClientX: real;
-      procedure SetAlign(Value: TAlignmentType);
+      procedure SetAlign(Value: integer);
       function GetSize: real;
       procedure SetSize(Value: real);
       procedure SetSelected(Value: integer);
@@ -77,18 +75,18 @@ type
       procedure AddWord(Text: UTF8String);
       procedure Refresh;
     public
-      ColR:   real;
-      ColG:   real;
-      ColB:   real;
-      ColSR:  real;
-      ColSG:  real;
-      ColSB:  real;
+      DColR:   real;
+      DColG:   real;
+      DColB:   real;
+      ColR:  real;
+      ColG:  real;
+      ColB:  real;
       Italic: boolean;
 
       constructor Create;
       destructor Destroy; override;
 
-      procedure AddLine(NrLine: integer);
+      procedure AddLine(CurrentTrack, CurrentLine: integer);
 
       procedure Clear;
       procedure Draw;
@@ -96,7 +94,7 @@ type
       property X: real write SetX;
       property Y: real write SetY;
       property ClientX: real read GetClientX;
-      property Align: TAlignmentType write SetAlign;
+      property Align: integer write SetAlign;
       property Size: real read GetSize write SetSize;
       property Selected: integer read SelectedI write SetSelected;
       property FontStyle: integer write SetFontStyle;
@@ -137,7 +135,7 @@ begin
   Result := Word[0].X;
 end;
 
-procedure TEditorLyrics.SetAlign(Value: TAlignmentType);
+procedure TEditorLyrics.SetAlign(Value: integer);
 begin
   AlignI := Value;
 end;
@@ -157,18 +155,18 @@ begin
   if (-1 < SelectedI) and (SelectedI <= High(Word)) then
   begin
     Word[SelectedI].Selected := false;
-    Word[SelectedI].ColR := ColR;
-    Word[SelectedI].ColG := ColG;
-    Word[SelectedI].ColB := ColB;
+    Word[SelectedI].ColR := DColR;
+    Word[SelectedI].ColG := DColG;
+    Word[SelectedI].ColB := DColB;
   end;
 
   SelectedI := Value;
   if (-1 < Value) and (Value <= High(Word)) then
   begin
     Word[Value].Selected := true;
-    Word[Value].ColR := ColSR;
-    Word[Value].ColG := ColSG;
-    Word[Value].ColB := ColSB;
+    Word[Value].ColR := ColR;
+    Word[Value].ColG := ColG;
+    Word[Value].ColB := ColB;
   end;
 
   Refresh;
@@ -198,23 +196,31 @@ begin
   SetFontItalic(Italic);
   Word[WordNum].Width := glTextWidth(Text);
   Word[WordNum].Text := Text;
-  Word[WordNum].ColR := ColR;
-  Word[WordNum].ColG := ColG;
-  Word[WordNum].ColB := ColB;
+  Word[WordNum].ColR := DColR;
+  Word[WordNum].ColG := DColG;
+  Word[WordNum].ColB := DColB;
   Word[WordNum].Italic := Italic;
 
   Refresh;
 end;
 
-procedure TEditorLyrics.AddLine(NrLine: integer);
+procedure TEditorLyrics.AddLine(CurrentTrack, CurrentLine: integer);
 var
-  NoteIndex: integer;
+  CurrentNote: integer;
 begin
   Clear;
-  for NoteIndex := 0 to Lines[0].Line[NrLine].HighNote do
+  if (Length(Tracks[CurrentTrack].Lines[CurrentLine].Notes) > 0) then
   begin
-    Italic := Lines[0].Line[NrLine].Note[NoteIndex].NoteType = ntFreestyle;
-    AddWord(Lines[0].Line[NrLine].Note[NoteIndex].Text);
+    for CurrentNote := 0 to Tracks[CurrentTrack].Lines[CurrentLine].HighNote do
+    begin
+      Italic := Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote].NoteType = ntFreestyle;
+      AddWord(Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote].Text);
+    end;
+  {end else
+  begin
+    Italic := false;
+    AddWord(' ', false);
+    Text := ' ';}
   end;
   Selected := -1;
 end;
@@ -230,7 +236,7 @@ var
   WordIndex:  integer;
   TotalWidth: real;
 begin
-  if AlignI = atCenter then
+  if AlignI = 1 then // center
   begin
     TotalWidth := 0;
     for WordIndex := 0 to High(Word) do

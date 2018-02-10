@@ -176,7 +176,7 @@ begin
   Interaction := 0;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsAdvanced)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOptionsAdvanced');
 end;
 
 end.

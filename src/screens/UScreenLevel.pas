@@ -133,7 +133,7 @@ begin
 
   Interaction := Ini.Difficulty;
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenLevel)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenLevel');
 end;
 
 procedure TScreenLevel.SetAnimationProgress(Progress: real);

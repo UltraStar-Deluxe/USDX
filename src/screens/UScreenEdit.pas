@@ -143,7 +143,7 @@ begin
   inherited;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenEdit)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenEdit');
 
   // continue possibly stopped bg-music (stopped in midi import screen)
   SoundLib.StartBgMusic;

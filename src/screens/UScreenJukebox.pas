@@ -2383,8 +2383,8 @@ begin
     (not Lyrics.IsQueueFull) do
   begin
     // add the next line to the queue or a dummy if no more lines are available
-    if (Lyrics.LineCounter <= High(Lines[0].Line)) then
-      Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter])
+    if (Lyrics.LineCounter <= High(Tracks[0].Lines)) then
+      Lyrics.AddLine(@Tracks[0].Lines[Lyrics.LineCounter])
     else
       Lyrics.AddLine(nil);
   end;
@@ -2626,9 +2626,9 @@ begin
 
   // initialize lyrics by filling its queue
   while (not Lyrics.IsQueueFull) and
-        (Lyrics.LineCounter <= High(Lines[0].Line)) do
+        (Lyrics.LineCounter <= High(Tracks[0].Lines)) do
   begin
-    Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
+    Lyrics.AddLine(@Tracks[0].Lines[Lyrics.LineCounter]);
   end;
 
   Max := 9;

@@ -290,7 +290,7 @@ end;
 procedure TLyricEngine.AddLine(Line: PLine);
 var
   LyricLine: TLyricLine;
-  I: integer;
+  NoteIndex: integer;
 begin
   // only add lines, if there is space
   if not IsQueueFull then
@@ -319,27 +319,27 @@ begin
   LyricLine.Reset();
                           
   // check if sentence has notes
-  if (Line <> nil) and (Length(Line.Note) > 0) then
+  if (Line <> nil) and (Length(Line.Notes) > 0) then
   begin
 
     // copy values from SongLine to LyricLine
-    LyricLine.Start     := Line.Start;
-    LyricLine.StartNote := Line.Note[0].Start;
-    LyricLine.Length    := Line.Note[High(Line.Note)].Start +
-                           Line.Note[High(Line.Note)].Length -
-                           Line.Note[0].Start;
+    LyricLine.Start     := Line.StartBeat;
+    LyricLine.StartNote := Line.Notes[0].StartBeat;
+    LyricLine.Length    := Line.Notes[High(Line.Notes)].StartBeat +
+                           Line.Notes[High(Line.Notes)].Duration -
+                           Line.Notes[0].StartBeat;
     LyricLine.LastLine  := Line.LastLine;
 
     // copy words
-    SetLength(LyricLine.Words, Length(Line.Note));
-    for I := 0 to High(Line.Note) do
+    SetLength(LyricLine.Words, Length(Line.Notes));
+    for NoteIndex := 0 to High(Line.Notes) do
     begin
-      LyricLine.Words[I].Start     := Line.Note[I].Start;
-      LyricLine.Words[I].Length    := Line.Note[I].Length;
-      LyricLine.Words[I].Text      := Line.Note[I].Text;
-      LyricLine.Words[I].Freestyle := Line.Note[I].NoteType = ntFreestyle;
+      LyricLine.Words[NoteIndex].Start     := Line.Notes[NoteIndex].StartBeat;
+      LyricLine.Words[NoteIndex].Length    := Line.Notes[NoteIndex].Duration;
+      LyricLine.Words[NoteIndex].Text      := Line.Notes[NoteIndex].Text;
+      LyricLine.Words[NoteIndex].Freestyle := Line.Notes[NoteIndex].NoteType = ntFreestyle;
 
-      LyricLine.Text := LyricLine.Text + LyricLine.Words[I].Text;
+      LyricLine.Text := LyricLine.Text + LyricLine.Words[NoteIndex].Text;
     end;
 
     UpdateLineMetrics(LyricLine);

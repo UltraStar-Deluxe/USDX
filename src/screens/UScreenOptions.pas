@@ -334,7 +334,7 @@ begin
   inherited;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptions)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOptions');
 
   // continue possibly stopped bg-music (stopped in record options)
   SoundLib.StartBgMusic;

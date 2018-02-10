@@ -1004,27 +1004,48 @@ type
   end;
 
   TThemeEditSub = class(TThemeBasic)
-      //in editor - headers
-      BackgroundImage:     TThemeStatic;
+      // statics
+      BackgroundImage:              TThemeStatic;
+      HeaderBackground:             TThemeStatic;
+      CurrentNoteInfoBackground:    TThemeStatic;
+      VolumeSliderBackground:       TThemeStatic;
+      NotesBackground:              TThemeStatic;
+      P1InfoBarBackground:          TThemeStatic;
+      P2InfoBarBackground:          TThemeStatic;
+      SentenceBackground:           TThemeStatic;
+
+      // buttons
       ButtonCurrentLine:   TThemeButton;
       ButtonCurrentNote:   TThemeButton;
-      // buttons
-      PlayOnly:             TThemeButton;
-      PlayWithNote:         TThemeButton;
-      PlayNote:             TThemeButton;
-      previousseq:          TThemeButton;
-      nextseq:              TThemeButton;
-      undo:                 TThemeButton;
-      gold:                 TThemeButton;
-      freestyle:            TThemeButton;
+      PlayOnly:            TThemeButton;
+      PlayWithNote:        TThemeButton;
+      PlayNote:            TThemeButton;
+      previousseq:         TThemeButton;
+      nextseq:             TThemeButton;
+      undo:                TThemeButton;
+      gold:                TThemeButton;
+      freestyle:           TThemeButton;
 
+      // sliders
       SlideTitle:          TThemeSelectSlide;
       SlideArtist:         TThemeSelectSlide;
+      SlideLanguage:       TThemeSelectSlide;
+      SlideEdition:        TThemeSelectSlide;
+      SlideGenre:          TThemeSelectSlide;
+      SlideYear:           TThemeSelectSlide;
+      SlideCreator:        TThemeSelectSlide;
       SlideMP3:            TThemeSelectSlide;
       SlideCover:          TThemeSelectSlide;
       SlideBackground:     TThemeSelectSlide;
+      SlideVideo:          TThemeSelectSlide;
       SlideBPM:            TThemeSelectSlide;
       SlideGAP:            TThemeSelectSlide;
+      SlideStartTag:       TThemeSelectSlide;
+      SlideEndTag:         TThemeSelectSlide;
+      SlideMedleyStart:    TThemeSelectSlide;
+      SlideMedleyEnd:      TThemeSelectSlide;
+      SlidePreviewStart:   TThemeSelectSlide;
+      SlideRelative:       TThemeSelectSlide;
       SlideStart:          TThemeSelectSlide;
       SlideDuration:       TThemeSelectSlide;
       SlideTone:           TThemeSelectSlide;
@@ -1033,6 +1054,11 @@ type
       SelectVolMidi:       TThemeSelectSlide;
       SelectVolClick:      TThemeSelectSlide;
       SlideVideoGap:       TThemeSelectSlide;
+
+      // texts
+      TextInfo:            TThemeText;
+      TextSentence:        TThemeText;
+      TextCurrentTone:     TThemeText;
   end;
 
   //Error- and Check-Popup
@@ -1078,7 +1104,7 @@ type
     DownloadProgressWeb: TThemeStatic;
   end;
 
-  //ScreenSong Menue
+  //ScreenSong Menu
   TThemeSongMenu = class(TThemeBasic)
     Button1: TThemeButton;
     Button2: TThemeButton;
@@ -2466,6 +2492,13 @@ begin
       // editor
       ThemeLoadBasic (EditSub,               'EditSub');
       ThemeLoadStatic(EditSub.BackgroundImage, 'EditSubBackgroundImage');
+      ThemeLoadStatic(EditSub.HeaderBackground, 'EditSubHeaderBackground');
+      ThemeLoadStatic(EditSub.CurrentNoteInfoBackground, 'EditSubCurrentNoteInfoBackground');
+      ThemeLoadStatic(EditSub.VolumeSliderBackground, 'EditSubVolumeSliderBackground');
+      ThemeLoadStatic(EditSub.NotesBackground, 'EditSubNotesBackground');
+      ThemeLoadStatic(EditSub.P1InfoBarBackground, 'EditSubP1InfoBarBackground');
+      ThemeLoadStatic(EditSub.P2InfoBarBackground, 'EditSubP2InfoBarBackground');
+      ThemeLoadStatic(EditSub.SentenceBackground, 'EditSubSentenceBackground');
       // current position in editor
       ThemeLoadButton(EditSub.ButtonCurrentLine, 'EditSubButtonCurrentLine');
       ThemeLoadButton(EditSub.ButtonCurrentNote, 'EditSubButtonCurrentNote');
@@ -2479,11 +2512,23 @@ begin
       ThemeLoadButton(EditSub.undo,    'EditSubBarStatic8');
       ThemeLoadSelectSlide(EditSub.SlideTitle, 'EditSubTitle');
       ThemeLoadSelectSlide(EditSub.SlideArtist, 'EditSubArtist');
+      ThemeLoadSelectSlide(EditSub.SlideLanguage, 'EditSubLanguage');
+      ThemeLoadSelectSlide(EditSub.SlideEdition, 'EditSubEdition');
+      ThemeLoadSelectSlide(EditSub.SlideGenre, 'EditSubGenre');
+      ThemeLoadSelectSlide(EditSub.SlideYear, 'EditSubYear');
+      ThemeLoadSelectSlide(EditSub.SlideCreator, 'EditSubCreator');
       ThemeLoadSelectSlide(EditSub.SlideMP3, 'EditSubMP3');
       ThemeLoadSelectSlide(EditSub.SlideCover, 'EditSubSlideCover');
-      ThemeLoadSelectSlide(EditSub.SlideBackground, 'EditSubSlideBG');
+      ThemeLoadSelectSlide(EditSub.SlideBackground, 'EditSubSlideBackground');
+      ThemeLoadSelectSlide(EditSub.SlideVideo, 'EditSubSlideVideo');
       ThemeLoadSelectSlide(EditSub.SlideBPM, 'EditSubBPM');
       ThemeLoadSelectSlide(EditSub.SlideGAP, 'EditSubGAP');
+      ThemeLoadSelectSlide(EditSub.SlideStartTag, 'EditSubStartTag');
+      ThemeLoadSelectSlide(EditSub.SlideEndTag, 'EditSubEndTag');
+      ThemeLoadSelectSlide(EditSub.SlideMedleyStart, 'EditSubMedleyStart');
+      ThemeLoadSelectSlide(EditSub.SlideMedleyEnd, 'EditSubMedleyEnd');
+      ThemeLoadSelectSlide(EditSub.SlidePreviewStart, 'EditSubPreviewStart');
+      ThemeLoadSelectSlide(EditSub.SlideRelative, 'EditSubRelative');
       ThemeLoadSelectSlide(EditSub.SlideStart, 'EditSubStart');
       ThemeLoadSelectSlide(EditSub.SlideDuration, 'EditSubDuration');
       ThemeLoadSelectSlide(EditSub.SlideTone, 'EditSubTone');
@@ -2492,6 +2537,9 @@ begin
       ThemeLoadSelectSlide(EditSub.SelectVolMidi, 'EditSubSelectVolMidi');
       ThemeLoadSelectSlide(EditSub.SelectVolClick, 'EditSubSelectVolClick');
       ThemeLoadSelectSlide(EditSub.SlideVideoGap, 'EditSubVideoGap');
+      ThemeLoadText(EditSub.TextInfo, 'EditSubTextInfo');
+      ThemeLoadText(EditSub.TextSentence, 'EditSubTextSentence');
+      ThemeLoadText(EditSub.TextCurrentTone, 'EditSubTextCurrentTone');
 
       //error popup
       ThemeLoadBasic (ErrorPopup, 'ErrorPopup');
@@ -4076,7 +4124,7 @@ procedure TTheme.ThemeSaveStatics(ThemeStatic: AThemeStatic; const Name: string)
 var
   S: integer;
 begin
-  for S := 0 to Length(ThemeStatic)-1 do
+  for S := 0 to High(ThemeStatic) do
     ThemeSaveStatic(ThemeStatic[S], Name + {'Static' +} IntToStr(S+1));
 
   ThemeIni.EraseSection(Name + {'Static' + }IntToStr(S+1));

@@ -57,13 +57,6 @@ uses
   TextGL;
 
 type
-  TPos = record // Lines[part].Line[line].Note[note]
-    part: integer;
-    line: integer;
-    note: integer;
-    CP: integer;
-  end;
-
   TLyricsSyncSource = class(TSyncSource)
     function GetClock(): real; override;
   end;
@@ -180,8 +173,8 @@ type
     procedure Finish; virtual;
     procedure Pause; // toggle pause
     procedure UpdateMedleyStats(medley_end: boolean);
-    procedure OnSentenceEnd(CP: integer; SentenceIndex: cardinal);     // for linebonus + singbar
-    procedure OnSentenceChange(CP: integer; SentenceIndex: cardinal);  // for golden notes
+    procedure OnSentenceEnd(Track: integer; SentenceIndex: cardinal);     // for linebonus + singbar
+    procedure OnSentenceChange(Track: integer; SentenceIndex: cardinal);  // for golden notes
   end;
 
 var screenSingViewRef: TScreenSingView;
@@ -908,14 +901,14 @@ end;
 
 procedure TScreenSingController.onShowFinish;
 var
-  I, Index: integer;
+  I, PlayerIndex: integer;
 begin
   // hide cursor on singscreen show
   Display.SetCursor;
 
   // clear the scores of all players
-  for Index := 0 to High(Player) do
-    with Player[Index] do
+  for PlayerIndex := 0 to High(Player) do
+    with Player[PlayerIndex] do
     begin
       Score          := 0;
       ScoreLine      := 0;
@@ -1063,97 +1056,6 @@ var
   BgFile:     IPath;
   success:    boolean;
 
-  function FindNote(beat: integer): TPos;
-  var
-    line:   integer;
-    note:   integer;
-    found:  boolean;
-    min:    integer;
-    diff:   integer;
-
-  begin
-    found := false;
-
-    for line := 0 to length(Lines[0].Line) - 1 do
-    begin
-      for note := 0 to length(Lines[0].Line[line].Note) - 1 do
-      begin
-        if (beat >= Lines[0].Line[line].Note[note].Start) and
-           (beat <= Lines[0].Line[line].Note[note].Start + Lines[0].Line[line].Note[note].Length) then
-        begin
-          Result.part := 0;
-          Result.line := line;
-          Result.note := note;
-          Result.CP := 0;
-          found:=true;
-          break;
-        end;
-      end;
-    end;
-
-    if found then //found exactly
-      exit;
-
-    if CurrentSong.isDuet and (PlayersPlay <> 1) then
-    begin
-      for Line := 0 to length(Lines[1].Line) - 1 do
-      begin
-        for Note := 0 to length(Lines[1].Line[Line].Note) - 1 do
-        begin
-          if (beat>=Lines[1].Line[Line].Note[Note].Start) and
-            (beat<=Lines[1].Line[Line].Note[Note].Start + Lines[1].Line[Line].Note[Note].Length) then
-          begin
-            Result.CP := 1;
-            Result.line := Line;
-            Result.note := Note;
-            found:=true;
-            break;
-          end;
-        end;
-      end;
-    end;
-
-    if found then //found exactly
-      exit;
-
-    min := high(integer);
-    //second try (approximating)
-    for line := 0 to length(Lines[0].Line) - 1 do
-    begin
-      for note := 0 to length(Lines[0].Line[line].Note) - 1 do
-      begin
-        diff := abs(Lines[0].Line[line].Note[note].Start - beat);
-        if diff < min then
-        begin
-          Result.part := 0;
-          Result.line := line;
-          Result.note := note;
-          Result.CP := 0;
-          min := diff;
-        end;
-      end;
-    end;
-
-    if CurrentSong.isDuet and (PlayersPlay <> 1) then
-    begin
-      for Line := 0 to length(Lines[1].Line) - 1 do
-      begin
-        for Note := 0 to length(Lines[1].Line[Line].Note) - 1 do
-        begin
-          diff := abs(Lines[1].Line[Line].Note[Note].Start - beat);
-          if diff<min then
-          begin
-            Result.CP := 1;
-            Result.line := Line;
-            Result.note := Note;
-            min := diff;
-          end;
-        end;
-      end;
-    end;
-
-  end;
-
 begin
   // background texture (garbage disposal)
   if (Tex_Background.TexNum > 0) then
@@ -1231,7 +1133,7 @@ begin
 
     //medley start and end timestamps
     StartNote := FindNote(CurrentSong.Medley.StartBeat - round(CurrentSong.BPM[0].BPM*CurrentSong.Medley.FadeIn_time/60));
-    MedleyStart := GetTimeFromBeat(Lines[0].Line[StartNote.line].Note[0].Start);
+    MedleyStart := GetTimeFromBeat(Tracks[0].Lines[StartNote.line].Notes[0].StartBeat);
 
     //check Medley-Start
     if (MedleyStart+CurrentSong.Medley.FadeIn_time*0.5>GetTimeFromBeat(CurrentSong.Medley.StartBeat)) then
@@ -1361,25 +1263,25 @@ begin
   begin
     // initialize lyrics by filling its queue
     while (not LyricsDuetP1.IsQueueFull) and
-          (LyricsDuetP1.LineCounter <= High(Lines[0].Line)) do
+          (LyricsDuetP1.LineCounter <= High(Tracks[0].Lines)) do
     begin
-      LyricsDuetP1.AddLine(@Lines[0].Line[LyricsDuetP1.LineCounter]);
+      LyricsDuetP1.AddLine(@Tracks[0].Lines[LyricsDuetP1.LineCounter]);
     end;
 
     // initialize lyrics by filling its queue
     while (not LyricsDuetP2.IsQueueFull) and
-          (LyricsDuetP2.LineCounter <= High(Lines[1].Line)) do
+          (LyricsDuetP2.LineCounter <= High(Tracks[1].Lines)) do
     begin
-      LyricsDuetP2.AddLine(@Lines[1].Line[LyricsDuetP2.LineCounter]);
+      LyricsDuetP2.AddLine(@Tracks[1].Lines[LyricsDuetP2.LineCounter]);
     end;
   end
   else
   begin
     // initialize lyrics by filling its queue
     while (not Lyrics.IsQueueFull) and
-          (Lyrics.LineCounter <= High(Lines[0].Line)) do
+          (Lyrics.LineCounter <= High(Tracks[0].Lines)) do
     begin
-      Lyrics.AddLine(@Lines[0].Line[Lyrics.LineCounter]);
+      Lyrics.AddLine(@Tracks[0].Lines[Lyrics.LineCounter]);
     end;
   end;
 
@@ -1395,18 +1297,18 @@ begin
 
   if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
   begin
-    for Index := Low(Lines[1].Line) to High(Lines[1].Line) do
-    if Lines[1].Line[Index].TotalNotes = 0 then
+    for Index := Low(Tracks[1].Lines) to High(Tracks[1].Lines) do
+    if Tracks[1].Lines[Index].ScoreValue = 0 then
       Inc(NumEmptySentences[1]);
 
-    for Index := Low(Lines[0].Line) to High(Lines[0].Line) do
-    if Lines[0].Line[Index].TotalNotes = 0 then
+    for Index := Low(Tracks[0].Lines) to High(Tracks[0].Lines) do
+    if Tracks[0].Lines[Index].ScoreValue = 0 then
       Inc(NumEmptySentences[0]);
   end
   else
   begin
-    for Index := Low(Lines[0].Line) to High(Lines[0].Line) do
-      if Lines[0].Line[Index].TotalNotes = 0 then
+    for Index := Low(Tracks[0].Lines) to High(Tracks[0].Lines) do
+      if Tracks[0].Lines[Index].ScoreValue = 0 then
         Inc(NumEmptySentences[0]);
   end;
 
@@ -1606,7 +1508,7 @@ begin
 
 end;
 
-procedure TScreenSingController.OnSentenceEnd(CP: integer; SentenceIndex: cardinal); //ToDo: split and redo
+procedure TScreenSingController.OnSentenceEnd(Track: integer; SentenceIndex: cardinal); //ToDo: split and redo
 var
   PlayerIndex: byte;
   CurrentPlayer: PPLayer;
@@ -1623,10 +1525,10 @@ const
   // TODO: move this to a better place
   MAX_LINE_RATING = 8;        // max. rating for singing performance
 begin
-  Line := @Lines[CP].Line[SentenceIndex];
+  Line := @Tracks[Track].Lines[SentenceIndex];
 
   // check for empty sentence
-  if Line.TotalNotes <= 0 then
+  if Line.ScoreValue <= 0 then
     Exit;
 
   // set max song score
@@ -1636,13 +1538,13 @@ begin
     MaxSongScore := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
 
   // Note: ScoreValue is the sum of all note values of the song
-  MaxLineScore := MaxSongScore * (Line.TotalNotes / Lines[CP].ScoreValue);
+  MaxLineScore := MaxSongScore * (Line.ScoreValue / Tracks[Track].ScoreValue);
 
   for PlayerIndex := 0 to High(Player) do
   begin
     //PlayerIndex := Index;
 
-    if (not CurrentSong.isDuet) or (PlayerIndex mod 2 = CP) or (PlayersPlay = 1)then
+    if (not CurrentSong.isDuet) or (PlayerIndex mod 2 = Track) or (PlayersPlay = 1)then
     begin
       CurrentPlayer := @Player[PlayerIndex];
       CurrentScore  := CurrentPlayer.Score + CurrentPlayer.ScoreGolden;
@@ -1671,8 +1573,8 @@ begin
       if Ini.LineBonus > 0 then
       begin
         // line-bonus points (same for each line, no matter how long the line is)
-        LineBonus := MAX_SONG_LINE_BONUS / (Length(Lines[CP].Line) -
-          NumEmptySentences[CP]);
+        LineBonus := MAX_SONG_LINE_BONUS / (Length(Tracks[Track].Lines) -
+          NumEmptySentences[Track]);
         // apply line-bonus
         CurrentPlayer.ScoreLine :=
           CurrentPlayer.ScoreLine + LineBonus * LinePerfection;
@@ -1715,16 +1617,16 @@ end;
 
  // Called on sentence change
  // SentenceIndex: index of the new active sentence
-procedure TScreenSingController.OnSentenceChange(CP: integer; SentenceIndex: cardinal);  //ToDo: split and redo
+procedure TScreenSingController.OnSentenceChange(Track: integer; SentenceIndex: cardinal);  //ToDo: split and redo
 var
   tmp_Lyric: TLyricEngine;
 begin
   // goldenstarstwinkle
-  GoldenRec.SentenceChange(CP);
+  GoldenRec.SentenceChange(Track);
 
   if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
   begin
-    if (CP = 1) then
+    if (Track = 1) then
       tmp_Lyric := LyricsDuetP2
     else
       tmp_Lyric := LyricsDuetP1;
@@ -1737,9 +1639,9 @@ begin
     (not tmp_Lyric.IsQueueFull) do
   begin
     // add the next line to the queue or a dummy if no more lines are available
-    if (tmp_Lyric.LineCounter <= High(Lines[CP].Line)) then
+    if (tmp_Lyric.LineCounter <= High(Tracks[Track].Lines)) then
     begin
-      tmp_Lyric.AddLine(@Lines[CP].Line[tmp_Lyric.LineCounter]);
+      tmp_Lyric.AddLine(@Tracks[Track].Lines[tmp_Lyric.LineCounter]);
     end
     else
       tmp_Lyric.AddLine(nil);

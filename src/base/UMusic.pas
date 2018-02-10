@@ -44,10 +44,10 @@ uses
 type
   TNoteType = (ntFreestyle, ntNormal, ntGolden, ntRap, ntRapGolden);
 
-  TPos = record
-    CP:   integer;
-    line: integer;
-    note: integer;
+  TPos = record // Tracks[track].Lines[line].Notes[note]
+    track: integer;
+    line:  integer;
+    note:  integer;
   end;
 
   {**
@@ -87,21 +87,21 @@ type
    *)
   PLineFragment = ^TLineFragment;
   TLineFragment = record
-    Color:      integer;
-    Start:      integer;    // beat the fragment starts at
-    Length:     integer;    // length in beats
-    Tone:       integer;    // full range tone
-    Text:       UTF8String; // text assigned to this fragment (a syllable, word, etc.)
-    NoteType:   TNoteType;  // note-type: golden-note/freestyle etc.
+    Color:          integer;
+    StartBeat:      integer;    // beat the fragment starts at
+    Duration:       integer;    // duration in beats
+    Tone:           integer;    // full range tone
+    Text:           UTF8String; // text assigned to this fragment (a syllable, word, etc.)
+    NoteType:       TNoteType;  // note-type: golden-note/freestyle etc.
 
-    IsMedley:   boolean;     //just for editor
-    IsStartPreview: boolean; //just for editor
+    IsMedley:       boolean; // just for editor
+    IsStartPreview: boolean; // just for editor
 
     private
     function GetEnd:integer;
 
     public
-    property End_:integer read GetEnd;
+    property EndBeat:integer read GetEnd;
 
 
   end;
@@ -112,17 +112,17 @@ type
    *)
   PLine = ^TLine;
   TLine = record
-    Start:      integer; // the start beat of this line (<> start beat of the first note of this line)
+    StartBeat:  integer; // the start beat of this line (<> start beat of the first note of this line)
     Lyric:      UTF8String;
     //LyricWidth: real;    // @deprecated: width of the line in pixels.
                          // Do not use this as the width is not correct.
                          // Use TLyricsEngine.GetUpperLine().Width instead.
-    End_:       integer;
+    EndBeat:    integer;
     BaseNote:   integer;
     HighNote:   integer; // index of last note in line (= High(Note)?)
-    TotalNotes: integer; // value of all notes in the line
+    ScoreValue: integer; // value of all notes in the line
     LastLine:   boolean;
-    Note:       array of TLineFragment;
+    Notes:      array of TLineFragment;
 
     private
     function GetLength(): integer;
@@ -147,13 +147,13 @@ type
    * contain two sets.
    *)
   TLines = record
-    Current:    integer;  // for drawing of current line
-    High:       integer;  // = High(Line)!
-    Number:     integer;
-    Resolution: integer;
-    NotesGAP:   integer;
-    ScoreValue: integer;
-    Line:       array of TLine;
+    CurrentLine: integer;  // for drawing of current line
+    High:        integer;  // = High(Line)!
+    Number:      integer;
+    Resolution:  integer;
+    NotesGAP:    integer;
+    ScoreValue:  integer;
+    Lines:       array of TLine;
   end;
 
 const
@@ -414,40 +414,40 @@ type
 
       procedure SetScreen(Screen: integer);
       function GetScreen(): integer;
-      
+
       procedure SetScreenPosition(X, Y: double; Z: double = 0.0);
       procedure GetScreenPosition(var X, Y, Z: double);
 
       procedure  SetWidth(Width: double);
        function GetWidth(): double;
-      
+
       procedure  SetHeight(Height: double);
        function GetHeight(): double;
-      
+
       {**
        * Sub-image of the video frame to draw.
        * This can be used for zooming or similar purposes.
        *}
       procedure SetFrameRange(Range: TRectCoords);
       function GetFrameRange(): TRectCoords;
-      
+
       function GetFrameAspect(): real;
-      
+
       procedure SetAspectCorrection(AspectCorrection: TAspectCorrection);
       function GetAspectCorrection(): TAspectCorrection;
-      
+
 
       procedure SetAlpha(Alpha: double);
       function GetAlpha(): double;
-      
+
       procedure SetReflectionSpacing(Spacing: double);
       function GetReflectionSpacing(): double;
 
       procedure GetFrame(Time: Extended);
       procedure Draw();
       procedure DrawReflection();
-       
-       
+
+
       property Screen: integer read GetScreen;
       property Width: double read GetWidth write SetWidth;
       property Height: double read GetHeight write SetHeight;
@@ -648,7 +648,7 @@ type
 
 var
   // TODO: JB --- THESE SHOULD NOT BE GLOBAL
-  Lines: array of TLines;
+  Tracks: array of TLines;
   LyricsState: TLyricsState;
   SoundLib: TSoundLibrary;
 
@@ -666,6 +666,8 @@ function  AudioDecoders(): TInterfaceList;
 function  MediaManager: TInterfaceList;
 
 procedure DumpMediaInterfaces();
+
+function FindNote(beat: integer): TPos;
 
 implementation
 
@@ -1305,7 +1307,7 @@ end;
 
 function TLineFragment.GetEnd(): integer;
 begin
-  Result := Start+Length;
+  Result := StartBeat + Duration;
 end;
 
 { TLine }
@@ -1319,10 +1321,10 @@ end;
 function TLine.HasLength(out Len: integer): boolean;
 begin
   Result := false;
-  if Length(Note) >= 0 then
+  if Length(Notes) >= 0 then
   begin
     Result := true;
-    Len := End_ - Note[0].Start;
+    Len := EndBeat - Notes[0].StartBeat;
   end;
 end;
 
@@ -1342,7 +1344,95 @@ end;
 
 function TLine.GetLength(): integer;
 begin
-  Result := ifthen(Length(Note) < 0, 0, End_ - Note[0].Start);
+  Result := ifthen(Length(Notes) < 0, 0, EndBeat - Notes[0].StartBeat);
+end;
+
+function FindNote(beat: integer): TPos;
+var
+  LineIndex: integer;
+  NoteIndex: integer;
+  found:     boolean;
+  min:       integer;
+  diff:      integer;
+
+begin
+  found := false;
+
+  for LineIndex := 0 to High(Tracks[0].Lines) do
+  begin
+    for NoteIndex := 0 to High(Tracks[0].Lines[LineIndex].Notes) do
+    begin
+      if (beat >= Tracks[0].Lines[LineIndex].Notes[NoteIndex].StartBeat) and
+         (beat <= Tracks[0].Lines[LineIndex].Notes[NoteIndex].StartBeat + Tracks[0].Lines[LineIndex].Notes[NoteIndex].Duration) then
+      begin
+        Result.track := 0;
+        Result.line := LineIndex;
+        Result.note := NoteIndex;
+        found := true;
+        break;
+      end;
+    end;
+  end;
+
+  if found then //found exactly
+    exit;
+
+  if CurrentSong.isDuet and (PlayersPlay <> 1) then
+  begin
+    for LineIndex := 0 to High(Tracks[1].Lines) do
+    begin
+      for NoteIndex := 0 to High(Tracks[1].Lines[LineIndex].Notes) do
+      begin
+        if (beat >= Tracks[1].Lines[LineIndex].Notes[NoteIndex].StartBeat) and
+          (beat <= Tracks[1].Lines[LineIndex].Notes[NoteIndex].StartBeat + Tracks[1].Lines[LineIndex].Notes[NoteIndex].Duration) then
+        begin
+          Result.track := 1;
+          Result.line := LineIndex;
+          Result.note := NoteIndex;
+          found := true;
+          break;
+        end;
+      end;
+    end;
+  end;
+
+  if found then //found exactly
+    exit;
+
+  min := high(integer);
+  //second try (approximating)
+  for LineIndex := 0 to High(Tracks[0].Lines) do
+  begin
+    for NoteIndex := 0 to High(Tracks[0].Lines[LineIndex].Notes) do
+    begin
+      diff := abs(Tracks[0].Lines[LineIndex].Notes[NoteIndex].StartBeat - beat);
+      if diff < min then
+      begin
+        Result.track := 0;
+        Result.line := LineIndex;
+        Result.note := NoteIndex;
+        min := diff;
+      end;
+    end;
+  end;
+
+  if CurrentSong.isDuet and (PlayersPlay <> 1) then
+  begin
+    for LineIndex := 0 to High(Tracks[1].Lines) do
+    begin
+      for NoteIndex := 0 to High(Tracks[1].Lines[LineIndex].Notes) do
+      begin
+        diff := abs(Tracks[1].Lines[LineIndex].Notes[NoteIndex].StartBeat - beat);
+        if diff < min then
+        begin
+          Result.track := 1;
+          Result.line := LineIndex;
+          Result.note := NoteIndex;
+          min := diff;
+        end;
+      end;
+    end;
+  end;
 end;
 
 end.

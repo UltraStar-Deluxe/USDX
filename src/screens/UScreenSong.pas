@@ -3165,25 +3165,25 @@ begin
       begin
         ID := 'ID_012';
         if not Help.SetHelpID(ID) then
-          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smNormal)');
+          Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenSong, smNormal');
       end;
     smPartyClassic:
       begin
         ID := 'ID_013';
         if not Help.SetHelpID(ID) then
-          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smPartyClassic)');
+          Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenSong, smPartyClassic');
       end;
     smPartyFree:
       begin
         ID := 'ID_014';
         if not Help.SetHelpID(ID) then
-          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smPartyFree)');
+          Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenSong, smPartyFree');
       end;
     smPartyTournament:
       begin
         ID := 'ID_015';
         if not Help.SetHelpID(ID) then
-          Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSong, smPartyTournament)');
+          Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenSong, smPartyTournament');
       end;
   end;
 
@@ -3362,7 +3362,7 @@ begin
   DrawBG;
 
   // StaticsList
-  for I := 0 to Length(StaticsList) - 1 do
+  for I := 0 to High(StaticsList) do
   begin
     StaticsList[I].Draw;
   end;
@@ -3436,7 +3436,7 @@ begin
 
   //Instead of Draw FG Procedure:
   //We draw Buttons for our own
-  for I := 0 to Length(Button) - 1 do
+  for I := 0 to High(Button) do
   begin
     if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smMosaic, smList]) or (((I<>Interaction) or not Assigned(fCurrentVideo) or (VideoAlpha<1) or FinishedMusic)) then
         Button[I].Draw;
@@ -3489,11 +3489,11 @@ begin
     ColorDuetNameSingers();
 
   // Statics
-  for I := 0 to Length(Statics) - 1 do
+  for I := 0 to High(Statics) do
     Statics[I].Draw;
 
   // and texts
-  for I := 0 to Length(Text) - 1 do
+  for I := 0 to High(Text) do
     Text[I].Draw;
 
   Equalizer.Draw;
@@ -4220,7 +4220,7 @@ begin
   if (Songs.SongList.Count > 0) and
      (not CatSongs.Song[Interaction].Main) and
      // currently, the editor is not suitable to edit duets
-     (not CatSongs.Song[Interaction].isDuet) and
+     //(not CatSongs.Song[Interaction].isDuet) and
      (Mode = smNormal) then
   begin
     StopMusicPreview();
@@ -4228,10 +4228,10 @@ begin
     CurrentSong := CatSongs.Song[Interaction];
     FadeTo(@ScreenEditSub);
   end
-  else if (CatSongs.Song[Interaction].isDuet) then
+  {else if (CatSongs.Song[Interaction].isDuet) then
   begin
     ScreenPopupError.ShowPopup (Language.Translate('ERROR_DUETS_NOT_EDITABLE'));
-  end;
+  end;}
 end;
 
 //Team No of Team (0-5)
@@ -4290,7 +4290,7 @@ procedure TScreenSong.StartMedley(NumSongs: integer; MinSource: TMedleySource);
     skipped :boolean;
   begin
     skipped := false;
-    for i := 0 to Length(PlaylistMedley.Song) - 1 do
+    for i := 0 to High(PlaylistMedley.Song) do
     begin
       if (SongNr=PlaylistMedley.Song[i]) then
       begin
@@ -4314,7 +4314,7 @@ procedure TScreenSong.StartMedley(NumSongs: integer; MinSource: TMedleySource);
   begin
     SetLength(unused_arr, 0);
     visible_arr := getVisibleMedleyArr(MinS);
-    for I := 0 to Length(visible_arr) - 1 do
+    for I := 0 to High(visible_arr) do
     begin
       if (not SongAdded(visible_arr[I])) then
       begin
@@ -4412,7 +4412,7 @@ begin
   SetLength(Result, 0);
   if CatSongs.Song[Interaction].Main then
   begin
-    for I := 0 to Length(CatSongs.Song) - 1 do
+    for I := 0 to High(CatSongs.Song) do
     begin
       if not CatSongs.Song[I].Main and (CatSongs.Song[I].Medley.Source >= MinSource) then
       begin
@@ -4422,7 +4422,7 @@ begin
     end;
   end else
   begin
-    for I := 0 to Length(CatSongs.Song) - 1 do
+    for I := 0 to High(CatSongs.Song) do
     begin
       if CatSongs.Song[I].Visible and (CatSongs.Song[I].Medley.Source >= MinSource) then
       begin
