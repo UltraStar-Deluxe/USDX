@@ -102,6 +102,7 @@ Start with a customs configuration file and score database:
 | :--- | :--- |
 | [F11] | switch on the fly between windowed fullscreen and window mode |
 | [Alt] + [Enter] | switch to real fullscreen (including changing resolution) and window mode |
+| [Tab] | show/hide help |
 
 #### Song
 #### Shortcuts for song selection screen
@@ -221,7 +222,7 @@ Start with a customs configuration file and score database:
 | V | switch between video, visualisation and background |
 | W | if configured and enabled, show webcam video instead as background |
 | T | toggle time displaying between total, remaining and already played time |
-| [Tab] | switch visualization / camera mode |
+| [Ctrl] + [Tab] | switch visualization / camera mode |
 | [Spacebar] | pause / play |
 | [Esc] or [Backspace] | cancel current song or end early |
 
