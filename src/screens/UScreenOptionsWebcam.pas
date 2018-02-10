@@ -47,14 +47,14 @@ type
     private
       PreVisualization: boolean;
 
-      WCID: integer;
+      WebcamID:   integer;
       Resolution: integer;
-      FPS: integer;
-      Flip: integer;
+      FPS:        integer;
+      Flip:       integer;
       Brightness: integer;
       Saturation: integer;
-      Hue: integer;
-      Effect: integer;
+      Hue:        integer;
+      Effect:     integer;
     public
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
@@ -202,7 +202,7 @@ begin
 
   Theme.OptionsWebcam.SelectWebcam.showArrows := true;
   Theme.OptionsWebcam.SelectWebcam.oneItemOnly := true;
-  WCID := AddSelectSlide(Theme.OptionsWebcam.SelectWebcam, Ini.WebCamID, WebcamsIDs);
+  WebcamID := AddSelectSlide(Theme.OptionsWebcam.SelectWebcam, Ini.WebCamID, WebcamsIDs);
 
   Theme.OptionsWebcam.SelectResolution.showArrows := true;
   Theme.OptionsWebcam.SelectResolution.oneItemOnly := true;
@@ -273,7 +273,7 @@ var
   Alpha: real;
 begin
 
-  if (PreVisualization) and (SelectsS[WCID].SelectOptInt > 0) then
+  if (PreVisualization) and (SelectsS[WebcamID].SelectOptInt > 0) then
   begin
     try
 
