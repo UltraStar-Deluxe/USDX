@@ -184,7 +184,7 @@ begin
   inherited;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenTop5)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenTop5');
 
   sung := false;
   Fadeout := false;

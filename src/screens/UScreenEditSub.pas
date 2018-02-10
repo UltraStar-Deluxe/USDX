@@ -4511,7 +4511,7 @@ begin
   {$ENDIF}
 
     if not Help.SetHelpID(ID) then
-      Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenEditSub)');
+      Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenEditSub');
 
     //    Text[TextTitle].Text :=   CurrentSong.Title;
 

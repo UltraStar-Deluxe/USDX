@@ -213,7 +213,7 @@ begin
   inherited;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyScore)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenPartyScore');
 
   // restart time
   //if (ScreenSong.Mode = smPartyTournament) then

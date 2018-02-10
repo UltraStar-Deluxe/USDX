@@ -156,7 +156,7 @@ begin
   inherited;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyWin)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenPartyWin');
 
   // get team ranking
   // Ranking is sorted by score
