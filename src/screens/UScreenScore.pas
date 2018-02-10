@@ -1099,7 +1099,7 @@ var
   ArrayStartModifier: integer;
 begin
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenScore)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenScore');
 
   FinishScreenDraw := false;
 

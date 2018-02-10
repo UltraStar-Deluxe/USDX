@@ -358,7 +358,7 @@ begin
   inherited;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenCredits)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenCredits');
 
  { pause background music }
   SoundLib.PauseBgMusic;

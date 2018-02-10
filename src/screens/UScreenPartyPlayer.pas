@@ -544,7 +544,7 @@ begin
   inherited;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyPlayer)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenPartyPlayer');
 
   for I := 0 to 2 do
     Num[I] := NoRepeatColors(Ini.TeamColor[I], I, 1);

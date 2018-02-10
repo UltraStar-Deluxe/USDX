@@ -288,7 +288,7 @@ begin
   inherited;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyNewRound)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenPartyNewRound');
 
   if (Party.CurrentRound > 0) then
   begin

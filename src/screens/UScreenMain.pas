@@ -324,7 +324,7 @@ begin
   ScreenSong.Mode := smNormal;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenMain)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenMains');
 
  {**
   * Clean up TPartyGame here

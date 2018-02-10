@@ -227,7 +227,7 @@ begin
   inherited;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsThemes)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOptionsThemes');
 
   ActualTheme := Ini.Theme;
   ActualSkin := Ini.SkinNo;
