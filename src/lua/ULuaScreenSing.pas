@@ -426,7 +426,7 @@ function ULuaScreenSing_GetSongLines(L: Plua_State): Integer; cdecl;
     I, J: Integer;
 begin
   Result := 1;
-  if  (Length(Lines) >= 1) then
+  if  (Length(Tracks) >= 1) then
   begin
     lua_ClearStack(L);
 
@@ -434,10 +434,10 @@ begin
       luaL_Error(L, PChar('can''t allocate enough stack space in ULuaScreenSing_GetSongLines'));
 
     // lines array table
-    lua_CreateTable(L, Length(Lines[0].Line), 0);
+    lua_CreateTable(L, Length(Tracks[0].Lines), 0);
 
-    for I := 0 to High(Lines[0].Line) do
-    with Lines[0].Line[I] do
+    for I := 0 to High(Tracks[0].Lines) do
+    with Tracks[0].Lines[I] do
     begin
       lua_pushInteger(L, I+1);
 
@@ -445,7 +445,7 @@ begin
       lua_CreateTable(L, 0, 3);
 
       // line start
-      lua_PushInteger(L, Start);
+      lua_PushInteger(L, StartBeat);
       lua_SetField(L, -2, PChar('Start'));
 
       // line lyric
@@ -453,9 +453,9 @@ begin
       lua_SetField(L, -2, PChar('Lyric'));
 
       //line notes array table
-      lua_CreateTable(L, Length(Note), 0);
+      lua_CreateTable(L, Length(Notes), 0);
 
-      for J := 0 to High(Note) do
+      for J := 0 to High(Notes) do
       begin
         lua_PushInteger(L, J + 1);
 
@@ -463,23 +463,23 @@ begin
         lua_CreateTable(L, 0, 5);
 
         // Notes[J+1].Start
-        lua_PushInteger(L, Note[J].Start);
+        lua_PushInteger(L, Notes[J].StartBeat);
         lua_SetField(L, -2, PChar('Start'));
 
         // Notes[J+1].Length
-        lua_PushInteger(L, Note[J].Length);
+        lua_PushInteger(L, Notes[J].Duration);
         lua_SetField(L, -2, PChar('Length'));
 
         // Notes[J+1].Tone
-        lua_PushInteger(L, Note[J].Tone);
+        lua_PushInteger(L, Notes[J].Tone);
         lua_SetField(L, -2, PChar('Tone'));
 
         // Notes[J+1].NoteType
-        lua_PushInteger(L, Integer(Note[J].NoteType));
+        lua_PushInteger(L, Integer(Notes[J].NoteType));
         lua_SetField(L, -2, PChar('NoteType'));
 
         // Notes[J+1].Text
-        lua_PushString(L, PChar(Note[J].Text));
+        lua_PushString(L, PChar(Notes[J].Text));
         lua_SetField(L, -2, PChar('Text'));
 
         lua_SetTable(L, -3);

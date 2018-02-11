@@ -343,7 +343,6 @@ uses
   UScreenEditSub          in 'screens\UScreenEditSub.pas',
   UScreenEdit             in 'screens\UScreenEdit.pas',
   UScreenEditConvert      in 'screens\UScreenEditConvert.pas',
-  UScreenEditHeader       in 'screens\UScreenEditHeader.pas',
   UScreenOpen             in 'screens\UScreenOpen.pas',
   UScreenTop5             in 'screens\UScreenTop5.pas',
   UScreenSongMenu         in 'screens\UScreenSongMenu.pas',

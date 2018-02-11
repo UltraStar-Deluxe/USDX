@@ -470,7 +470,7 @@ begin
   Interaction := 0;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsRecord)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOptionsRecord');
 
   // create preview sound-buffers
   SetLength(PreviewChannel, MaxChannelCount);

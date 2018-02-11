@@ -186,7 +186,7 @@ begin
   inherited;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOpen)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOpen');
 
   Interaction := 0;
   Button[FileNameID].Text[0].Text := fFilename.ToUTF8();

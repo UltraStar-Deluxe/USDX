@@ -896,7 +896,7 @@ begin
   Interaction := 0;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenName)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenName');
 end;
 
 procedure TScreenName.SetAvatarScroll;
@@ -1083,19 +1083,19 @@ begin
 
   //Instead of Draw FG Procedure:
   //We draw Buttons for our own
-  for I := 0 to Length(Button) - 1 do
+  for I := 0 to High(Button) do
     Button[I].Draw;
 
   // SelectsS
-  for I := 0 to Length(SelectsS) - 1 do
+  for I := 0 to High(SelectsS) do
     SelectsS[I].Draw;
 
   // Statics
-  for I := 0 to Length(Statics) - 1 do
+  for I := 0 to High(Statics) do
     Statics[I].Draw;
 
   // and texts
-  for I := 0 to Length(Text) - 1 do
+  for I := 0 to High(Text) do
     Text[I].Draw;
 
   Result := true;
