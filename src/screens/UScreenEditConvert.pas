@@ -214,9 +214,9 @@ const
 
 
 function TScreenEditConvert.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
-{$IFDEF UseMIDIPort}
 var
   SDL_ModState: word;
+{$IFDEF UseMIDIPort}
   SResult: TSaveSongResult;
   MidiTrack: TMidiTrack;
   Song:  TSong;
