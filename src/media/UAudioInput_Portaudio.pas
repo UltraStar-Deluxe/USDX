@@ -86,7 +86,7 @@ type
 
 function MicrophoneCallback(input: pointer; output: pointer; frameCount: culong;
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-      inputDevice: pointer): cint; cdecl; forward;
+      inputDevice: TAudioInputDevice): cint; cdecl; forward;
 
 function MicrophoneTestCallback(input: pointer; output: pointer; frameCount: culong;
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
@@ -514,9 +514,12 @@ end;
  *}
 function MicrophoneCallback(input: pointer; output: pointer; frameCount: culong;
       timeInfo: PPaStreamCallbackTimeInfo; statusFlags: TPaStreamCallbackFlags;
-      inputDevice: pointer): cint; cdecl;
+      inputDevice: TAudioInputDevice): cint; cdecl;
+var
+  AudioFormat:             TAudioFormatInfo;
 begin
-  AudioInputProcessor.HandleMicrophoneData(input, frameCount*4, inputDevice);
+  AudioFormat := inputDevice.AudioFormat;
+  AudioInputProcessor.HandleMicrophoneData(input, frameCount * AudioFormat.FrameSize, inputDevice);
   result := paContinue;
 end;
 
