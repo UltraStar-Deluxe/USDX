@@ -389,6 +389,7 @@ begin
       Ord('O'):
       begin
         Ini.Oscilloscope := (Ini.Oscilloscope + 1) mod 2;
+        Exit;
       end;
     end;
 
@@ -523,7 +524,7 @@ begin
   Log.LogStatus('Begin', 'OnShow');
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenSingController)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenSingController');
 
   FadeOut := false;
 

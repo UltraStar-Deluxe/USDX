@@ -159,7 +159,7 @@ begin
   inherited;
 
   if not Help.SetHelpID(ID) then
-      Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenAbout)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenAbout');
 
   //Set Overview Text:
   SetOverview;

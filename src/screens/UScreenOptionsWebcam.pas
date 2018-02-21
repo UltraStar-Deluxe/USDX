@@ -256,7 +256,7 @@ begin
   inherited;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsWebcam)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOptionsWebcam');
 
   PreVisualization := false;
 
