@@ -116,6 +116,7 @@ type
     X:      integer;
     Y:      integer;
     W:      integer;
+    H:      integer;
     Z:      real;
     Color:   string;
     DColor:  string;
@@ -2822,6 +2823,7 @@ begin
   ThemeText.X     := ThemeIni.ReadInteger(Name, 'X', 0);
   ThemeText.Y     := ThemeIni.ReadInteger(Name, 'Y', 0);
   ThemeText.W     := ThemeIni.ReadInteger(Name, 'W', 0);
+  ThemeText.H     := ThemeIni.ReadInteger(Name, 'H', 0);
 
   ThemeText.Z     := ThemeIni.ReadFloat(Name, 'Z', 0);
 

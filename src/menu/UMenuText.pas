@@ -57,8 +57,8 @@ type
       Z:      real;
       MoveX:  real;       // some modifier for x - position that don't affect the real Y
       MoveY:  real;       // some modifier for y - position that don't affect the real Y
-      W:      real;       // text wider than W is broken
-//      H:      real;
+      W:      real;       // text wider than W is wrapped
+      H:      real;       // text higher than H is decreased in font size
       Size:   real;
       ColR:   real;
       ColG:   real;
@@ -87,7 +87,7 @@ type
       procedure Draw;
       constructor Create; overload;
       constructor Create(X, Y: real; const Text: UTF8String); overload;
-      constructor Create(ParX, ParY, ParW: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; const ParText: UTF8String; ParReflection: boolean; ParReflectionSpacing: real; ParZ: real; Writable: boolean); overload;
+      constructor Create(ParX, ParY, ParW, ParH: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; const ParText: UTF8String; ParReflection: boolean; ParReflectionSpacing: real; ParZ: real; Writable: boolean); overload;
 
       function GetMouseOverArea: TMouseOverRect;
   end;
@@ -116,12 +116,13 @@ end;
 
 procedure TText.SetText(Value: UTF8String);
 var
-  NextPos:   cardinal;  // next pos of a space etc.
-  LastPos:   cardinal;  // last pos "
-  LastBreak: cardinal;  // last break
-  isBreak:   boolean;   // true if the break is not caused because the text is out of the area
-  FirstWord: word;      // is first word after break?
-  Len:       word;      // length of the tiles array
+  NextPos:     cardinal;  // next pos of a space etc.
+  LastPos:     cardinal;  // last pos "
+  LastBreak:   cardinal;  // last break
+  isBreak:     boolean;   // true if the break is not caused because the text is out of the area
+  FirstWord:   word;      // is first word after break?
+  Len:         word;      // length of the tiles array
+  DecFontSize: boolean = true; // how to handle strings that are too long to fit a given height, either decrease font size or cut off with ellipsis
 
   function GetNextPos: boolean;
   var
@@ -175,7 +176,7 @@ var
   end;
 
 begin
-  isBreak:=false;
+  isBreak := false;
   // set TextString
   TextString := Value;
 
@@ -242,7 +243,7 @@ begin
         // not the first word after break, so we don't have to break within a word
         if (FirstWord > 1) then
         begin
-          // add break before actual position, because there the  text fits the area
+          // add break before actual position, because there the text fits the area
           AddBreak(LastBreak, LastPos);
         end
         else // first word after break -> break within the word
@@ -256,6 +257,25 @@ begin
   end;
   // add ending
   AddBreak(LastBreak, Length(Value)+1);
+
+  // if a height is given, there are only two ugly solutions (but prettier than overlapping text, e.g. artist/title in song menu)
+  // a) decrease font size
+  // b) cut off the last lines
+  // until the text fits within the given height
+  if (H > 0) and (Len * Size > H) then
+  begin
+    if (DecFontSize) then
+    begin
+      Size := Size - 1; // round(Size * 0.95 * 10) / 10;
+      SetText(Value);
+    end
+    else
+    begin
+      Len := trunc(H / Size);
+      SetLength(TextTiles, Len);
+      TextTiles[Len-1] := TextTiles[Len-1] + '...';
+    end;
+  end;
 end;
 
 procedure TText.DeleteLastLetter;
@@ -355,7 +375,7 @@ begin
         if (Style = ftBold) then
           Y2 := Y2 + Size * 0.93
         else
-          Y2 := Y2 + Size * 0.72;
+          Y2 := Y2 + Size * 0.85;
       end;
       SetFontStyle(ftNormal); // reset to default
 
@@ -370,10 +390,10 @@ end;
 
 constructor TText.Create(X, Y: real; const Text: UTF8String);
 begin
-  Create(X, Y, 0, ftNormal, 30, 0, 0, 0, 0, Text, false, 0, 0, false);
+  Create(X, Y, 0, 0, ftNormal, 30, 0, 0, 0, 0, Text, false, 0, 0, false);
 end;
 
-constructor TText.Create(ParX, ParY, ParW: real;
+constructor TText.Create(ParX, ParY, ParW, ParH: real;
                          ParStyle: integer;
                          ParSize, ParColR, ParColG, ParColB: real;
                          ParAlign: integer;
@@ -388,6 +408,7 @@ begin
   X := ParX;
   Y := ParY;
   W := ParW;
+  H := ParH;
   Z := ParZ;
   Style := ParStyle;
   Size := ParSize;
