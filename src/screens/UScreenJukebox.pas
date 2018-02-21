@@ -2051,7 +2051,7 @@ begin
   inherited;
 
   if not Help.SetHelpID(ID) then
-    Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenJukebox)');
+    Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenJukebox');
 
   // songmenu
   if (Ini.JukeboxSongMenu = 1) then
