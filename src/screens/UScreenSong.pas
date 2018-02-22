@@ -2162,7 +2162,9 @@ begin
       Statics[RapIcon].Visible := CatSongs.Song[Interaction].hasRap;
 
       // Set texts
+      Text[TextArtist].Size := Theme.Song.TextArtist.Size; // reset in case it was previously decreased by a too long artist
       Text[TextArtist].Text := CatSongs.Song[Interaction].Artist;
+      Text[TextTitle].Size := Theme.Song.TextTitle.Size; // reset in case it was previously decreased by a too long title
       Text[TextTitle].Text  :=  CatSongs.Song[Interaction].Title;
       if ((Ini.Tabs = 0) or (TSortingType(Ini.Sorting) <> sYear))
         and (CatSongs.Song[Interaction].Year <> 0) then
