@@ -121,12 +121,17 @@ type
     Settings: record
       Finish: Boolean; //< if true, screen will finish on next draw
 
-      LyricsVisible: Boolean; //< shows or hides lyrics
-      NotesVisible: Integer; //< if bit[playernum] is set the notes for the specified player are visible. By default all players notes are visible
+      OscilloscopeVisible: Boolean; //< shows or hides oscilloscope
+      LyricsVisible:       Boolean; //< shows or hides lyrics
+      NotesVisible:        Integer; //< if bit[playernum] is set the notes for the specified player are visible. By default all players notes are visible
+      ScoresVisible:       Boolean; //< shows or hides scores
+      AvatarsVisible:      Boolean; //< shows or hides avatars
+      TimeBarVisible:      Boolean; //< shows or hides timebar
+      InputVisible:        Boolean; //< shows or hides input (sung notes)
 
-      PlayerEnabled: Integer; //< defines whether a player can score atm
+      PlayerEnabled:  Integer; //< defines whether a player can score atm
 
-      SoundEnabled: Boolean; //< mute or unmute sound
+      SoundEnabled:   Boolean; //< mute or unmute sound
     end;
 
     // MIDI
@@ -214,9 +219,9 @@ const
 function TScreenSingController.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
   PressedDown: boolean): boolean;
 var
-  SDL_ModState:  word;
-  i1: integer;
-  Color:      TRGB;
+  SDL_ModState: word;
+  i1:           integer;
+  Color:        TRGB;
 begin
   Result := true;
   if (PressedDown) then
@@ -224,7 +229,6 @@ begin
 
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
-
 
     // check normal keys
     case UCS4UpperCase(CharCode) of
@@ -360,36 +364,136 @@ begin
         Exit;
       end;
 
-      // toggle time display
+      // toggle time display: running time/remaining time/total time / SHIFT: show/hide time bar
       Ord('T'):
       begin
-        if (fTimebarMode = High(TTimebarMode)) then
-          fTimebarMode := Low(TTimebarMode)
-        else
-          Inc(fTimebarMode);
+        if (SDL_ModState = KMOD_LSHIFT) then
+        begin
+          if (ScreenSong.Mode <> smNormal) and (ScreenSong.Mode <> smMedley) then
+            Exit;
 
-        Ini.SingTimebarMode := Ord(fTimebarMode);
-        Ini.SaveSingTimebarMode;
-        Exit;
+          ScreenSing.Settings.TimeBarVisible := not ScreenSing.Settings.TimeBarVisible;
+          Exit;
+        end
+        else
+        begin
+          if (fTimebarMode = High(TTimebarMode)) then
+            fTimebarMode := Low(TTimebarMode)
+          else
+            Inc(fTimebarMode);
+
+          Ini.SingTimebarMode := Ord(fTimebarMode);
+          Ini.SaveSingTimebarMode;
+          Exit;
+        end;
       end;
 
-      // skip intro
+      // skip intro / SHIFT: show/hide score display
       Ord('S'):
       begin
-        if (AudioPlayback.Position < CurrentSong.gap / 1000 - 6) then
+        if (SDL_ModState = KMOD_LSHIFT) then
         begin
-          AudioPlayback.SetPosition(CurrentSong.gap / 1000.0 - 5.0);
-            if (Assigned(fCurrentVideo)) then
-               fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start + (CurrentSong.gap / 1000.0 - 5.0);
+          if (ScreenSong.Mode <> smNormal) and (ScreenSong.Mode <> smMedley) then
+            Exit;
+
+          ScreenSing.Settings.ScoresVisible := not ScreenSing.Settings.ScoresVisible;
+          Exit;
+        end
+        else
+        begin
+          if (AudioPlayback.Position < CurrentSong.gap / 1000 - 6) then
+          begin
+            AudioPlayback.SetPosition(CurrentSong.gap / 1000.0 - 5.0);
+              if (Assigned(fCurrentVideo)) then
+                 fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start + (CurrentSong.gap / 1000.0 - 5.0);
+          end;
+          Exit;
         end;
-        Exit;
       end;
 
-      // toggle oscilloscope
+      // SHIFT: show/hide oscilloscope
       Ord('O'):
       begin
-        Ini.Oscilloscope := (Ini.Oscilloscope + 1) mod 2;
-        Exit;
+        if (SDL_ModState = KMOD_LSHIFT) then
+        begin
+          if (ScreenSong.Mode <> smNormal) and (ScreenSong.Mode <> smMedley) then
+            Exit;
+
+          ScreenSing.Settings.OscilloscopeVisible := not ScreenSing.Settings.OscilloscopeVisible;
+          Exit;
+        end;
+      end;
+
+      // SHIFT: show/hide notes
+      Ord('N'):
+      begin
+        if (SDL_ModState = KMOD_LSHIFT) then
+        begin
+          if (ScreenSong.Mode <> smNormal) and (ScreenSong.Mode <> smMedley) then
+            Exit;
+
+          ScreenSing.Settings.NotesVisible := ifthen(ScreenSing.Settings.NotesVisible = 0, High(Integer), 0);
+          Exit;
+        end;
+      end;
+
+      // SHIFT: show/hide notes
+      Ord('L'):
+      begin
+        if (SDL_ModState = KMOD_LSHIFT) then
+        begin
+          if (ScreenSong.Mode <> smNormal) and (ScreenSong.Mode <> smMedley) then
+            Exit;
+
+          ScreenSing.Settings.LyricsVisible := not ScreenSing.Settings.LyricsVisible;
+          Exit;
+        end;
+      end;
+
+      // SHIFT: show/hide avatars and player names
+      Ord('A'):
+      begin
+        if (SDL_ModState = KMOD_LSHIFT) then
+        begin
+          if (ScreenSong.Mode <> smNormal) and (ScreenSong.Mode <> smMedley) then
+            Exit;
+
+          ScreenSing.Settings.AvatarsVisible := not ScreenSing.Settings.AvatarsVisible;
+          Exit;
+        end;
+      end;
+
+      // SHIFT: show/hide microphone input/sung notes
+      Ord('I'):
+      begin
+        if (SDL_ModState = KMOD_LSHIFT) then
+        begin
+          if (ScreenSong.Mode <> smNormal) and (ScreenSong.Mode <> smMedley) then
+            Exit;
+
+          ScreenSing.Settings.InputVisible := not ScreenSing.Settings.InputVisible;
+          Exit;
+        end;
+      end;
+
+      // SHIFT: show/hide (toggle) all display elements
+      Ord('H'):
+      begin
+        if (SDL_ModState = KMOD_LSHIFT) then
+        begin
+          if (ScreenSong.Mode <> smNormal) and (ScreenSong.Mode <> smMedley) then
+            Exit;
+
+          ScreenSing.Settings.NotesVisible        := ifthen(ScreenSing.Settings.NotesVisible = 0, High(Integer), 0);
+          // synchronize show/hide of all other elements with NotesVisible
+          ScreenSing.Settings.LyricsVisible       := (ScreenSing.Settings.NotesVisible <> 0);
+          ScreenSing.Settings.ScoresVisible       := (ScreenSing.Settings.NotesVisible <> 0);
+          ScreenSing.Settings.AvatarsVisible      := (ScreenSing.Settings.NotesVisible <> 0);
+          ScreenSing.Settings.TimeBarVisible      := (ScreenSing.Settings.NotesVisible <> 0);
+          ScreenSing.Settings.InputVisible        := (ScreenSing.Settings.NotesVisible <> 0);
+          ScreenSing.Settings.OscilloscopeVisible := (ScreenSing.Settings.NotesVisible <> 0);
+          Exit;
+        end;
       end;
     end;
 
@@ -486,35 +590,6 @@ end;
 
 procedure TScreenSingController.OnShow;
 var
-  V1:     boolean;
-  V1TwoP: boolean;   // position of score box in two player mode
-  V1ThreeP: boolean; // position of score box in three player mode
-  V2R:    boolean;
-  V2M:    boolean;
-  V3R:    boolean;
-  VDuet1ThreeP: boolean;
-  VDuet2M:    boolean;
-  VDuet3R:    boolean;
-  V1FourP: boolean;
-  V2FourP: boolean;
-  V3FourP: boolean;
-  V4FourP: boolean;
-  V1SixP: boolean;
-  V2SixP: boolean;
-  V3SixP: boolean;
-  V4SixP: boolean;
-  V5SixP: boolean;
-  V6SixP: boolean;
-  V1DuetFourP: boolean;
-  V2DuetFourP: boolean;
-  V3DuetFourP: boolean;
-  V4DuetFourP: boolean;
-  V1DuetSixP: boolean;
-  V2DuetSixP: boolean;
-  V3DuetSixP: boolean;
-  V4DuetSixP: boolean;
-  V5DuetSixP: boolean;
-  V6DuetSixP: boolean;
   BadPlayer: integer;
   Col, ColP1, ColP2: TRGB;
   I: integer;
@@ -556,167 +631,12 @@ begin
 
   CurrentSong := CatSongs.Song[CatSongs.Selected];
 
-  for I := 0 to High(screenSingViewRef.StaticDuet) do
-    Statics[screenSingViewRef.StaticDuet[I]].Visible := CurrentSong.isDuet and (PlayersPlay > 1);
+  {for I := 0 to High(screenSingViewRef.StaticDuet) do
+    Statics[screenSingViewRef.StaticDuet[I]].Visible := CurrentSong.isDuet and (PlayersPlay > 1);}
+  Statics[screenSingViewRef.StaticLyricsBarDuet].Visible := CurrentSong.isDuet and (PlayersPlay > 1);
 
   Statics[screenSingViewRef.SongNameStatic].Visible := false;
   Text[screenSingViewRef.SongNameText].Visible := false;
-
-  V1     := false;
-  V1TwoP := false;
-  V1ThreeP := false;
-  V2R    := false;
-  V2M    := false;
-  V3R    := false;
-
-  VDuet1ThreeP := false;
-  VDuet2M := false;
-  VDuet3R := false;
-
-  V1FourP := false;
-  V2FourP := false;
-  V3FourP := false;
-  V4FourP := false;
-
-  V1SixP := false;
-  V2SixP := false;
-  V3SixP := false;
-  V4SixP := false;
-  V5SixP := false;
-  V6SixP := false;
-
-  V1DuetFourP := false;
-  V2DuetFourP := false;
-  V3DuetFourP := false;
-  V4DuetFourP := false;
-
-  V1DuetSixP := false;
-  V2DuetSixP := false;
-  V3DuetSixP := false;
-  V4DuetSixP := false;
-  V5DuetSixP := false;
-  V6DuetSixP := false;
-
-  case PlayersPlay of
-    1:
-    begin
-      V1     := true;
-    end;
-    2:
-    begin
-      V1TwoP := true;
-      V2R    := true;
-    end;
-    3:
-    begin
-      if (CurrentSong.isDuet) then
-      begin
-        VDuet1ThreeP := true;
-        VDuet2M := true;
-        VDuet3R := true;
-      end
-      else
-      begin
-        V1ThreeP := true;
-        V2M    := true;
-        V3R    := true;
-      end;
-    end;
-    4:
-    begin // double screen
-      if (Ini.Screens = 1) then
-      begin
-        V1TwoP := true;
-        V2R    := true;
-      end
-      else
-      begin
-        if (CurrentSong.isDuet) then
-        begin
-          V1DuetFourP := true;
-          V2DuetFourP := true;
-          V3DuetFourP := true;
-          V4DuetFourP := true;
-        end
-        else
-        begin
-          V1FourP := true;
-          V2FourP := true;
-          V3FourP := true;
-          V4FourP := true;
-        end;
-      end;
-    end;
-    6:
-    begin // double screen
-      if (Ini.Screens = 1) then
-      begin
-        if (CurrentSong.isDuet) then
-        begin
-          VDuet1ThreeP := true;
-          VDuet2M := true;
-          VDuet3R := true;
-        end
-        else
-        begin
-          V1ThreeP := true;
-          V2M    := true;
-          V3R    := true;
-        end;
-      end
-      else
-      begin
-       if (CurrentSong.isDuet) then
-        begin
-          V1DuetSixP := true;
-          V2DuetSixP := true;
-          V3DuetSixP := true;
-          V4DuetSixP := true;
-          V5DuetSixP := true;
-          V6DuetSixP := true;
-        end
-        else
-        begin
-          V1SixP := true;
-          V2SixP := true;
-          V3SixP := true;
-          V4SixP := true;
-          V5SixP := true;
-          V6SixP := true;
-        end;
-      end;
-    end;
-  end;
-
-  Text[screenSingViewRef.TextP1].Visible       := V1;
-  Text[screenSingViewRef.TextP1TwoP].Visible   := V1TwoP;
-  Text[screenSingViewRef.TextP2R].Visible      := V2R;
-  Text[screenSingViewRef.TextP1ThreeP].Visible := V1ThreeP;
-  Text[screenSingViewRef.TextP2M].Visible      := V2M;
-  Text[screenSingViewRef.TextP3R].Visible      := V3R;
-  Text[screenSingViewRef.TextDuetP1ThreeP].Visible := VDuet1ThreeP;
-  Text[screenSingViewRef.TextDuetP2M].Visible      := VDuet2M;
-  Text[screenSingViewRef.TextDuetP3R].Visible      := VDuet3R;
-  Text[screenSingViewRef.TextP1FourP].Visible   := V1FourP;
-  Text[screenSingViewRef.TextP2FourP].Visible   := V2FourP;
-  Text[screenSingViewRef.TextP3FourP].Visible   := V3FourP;
-  Text[screenSingViewRef.TextP4FourP].Visible   := V4FourP;
-  Text[screenSingViewRef.TextP1SixP].Visible    := V1SixP;
-  Text[screenSingViewRef.TextP2SixP].Visible    := V2SixP;
-  Text[screenSingViewRef.TextP3SixP].Visible    := V3SixP;
-  Text[screenSingViewRef.TextP4SixP].Visible    := V4SixP;
-  Text[screenSingViewRef.TextP5SixP].Visible    := V5SixP;
-  Text[screenSingViewRef.TextP6SixP].Visible    := V6SixP;
-  Text[screenSingViewRef.TextP1DuetFourP].Visible   := V1DuetFourP;
-  Text[screenSingViewRef.TextP2DuetFourP].Visible   := V2DuetFourP;
-  Text[screenSingViewRef.TextP3DuetFourP].Visible   := V3DuetFourP;
-  Text[screenSingViewRef.TextP4DuetFourP].Visible   := V4DuetFourP;
-  Text[screenSingViewRef.TextP1DuetSixP].Visible    := V1DuetSixP;
-  Text[screenSingViewRef.TextP2DuetSixP].Visible    := V2DuetSixP;
-  Text[screenSingViewRef.TextP3DuetSixP].Visible    := V3DuetSixP;
-  Text[screenSingViewRef.TextP4DuetSixP].Visible    := V4DuetSixP;
-  Text[screenSingViewRef.TextP5DuetSixP].Visible    := V5DuetSixP;
-  Text[screenSingViewRef.TextP6DuetSixP].Visible    := V6DuetSixP;
 
   BadPlayer := AudioInputProcessor.CheckPlayersConfig(PlayersPlay);
   if (BadPlayer <> 0) then
@@ -1322,8 +1242,13 @@ end;
 procedure TScreenSingController.ClearSettings;
 begin
   Settings.Finish := False;
+  Settings.OscilloscopeVisible := Boolean(Ini.Oscilloscope);
   Settings.LyricsVisible := True;
   Settings.NotesVisible := high(Integer);
+  Settings.ScoresVisible := True;
+  Settings.AvatarsVisible := True;
+  Settings.TimeBarVisible := True;
+  Settings.InputVisible := True;
   Settings.PlayerEnabled := high(Integer);
   Settings.SoundEnabled := True;
 end;
@@ -1357,7 +1282,193 @@ begin
 end;
 
 function TScreenSingController.Draw: boolean;
+var
+  V1:     boolean;
+  V1TwoP: boolean;   // position of score box in two player mode
+  V1ThreeP: boolean; // position of score box in three player mode
+  V2R:    boolean;
+  V2M:    boolean;
+  V3R:    boolean;
+  VDuet1ThreeP: boolean;
+  VDuet2M:    boolean;
+  VDuet3R:    boolean;
+  V1FourP: boolean;
+  V2FourP: boolean;
+  V3FourP: boolean;
+  V4FourP: boolean;
+  V1SixP: boolean;
+  V2SixP: boolean;
+  V3SixP: boolean;
+  V4SixP: boolean;
+  V5SixP: boolean;
+  V6SixP: boolean;
+  V1DuetFourP: boolean;
+  V2DuetFourP: boolean;
+  V3DuetFourP: boolean;
+  V4DuetFourP: boolean;
+  V1DuetSixP: boolean;
+  V2DuetSixP: boolean;
+  V3DuetSixP: boolean;
+  V4DuetSixP: boolean;
+  V5DuetSixP: boolean;
+  V6DuetSixP: boolean;
 begin
+  V1     := false;
+  V1TwoP := false;
+  V1ThreeP := false;
+  V2R    := false;
+  V2M    := false;
+  V3R    := false;
+
+  VDuet1ThreeP := false;
+  VDuet2M := false;
+  VDuet3R := false;
+
+  V1FourP := false;
+  V2FourP := false;
+  V3FourP := false;
+  V4FourP := false;
+
+  V1SixP := false;
+  V2SixP := false;
+  V3SixP := false;
+  V4SixP := false;
+  V5SixP := false;
+  V6SixP := false;
+
+  V1DuetFourP := false;
+  V2DuetFourP := false;
+  V3DuetFourP := false;
+  V4DuetFourP := false;
+
+  V1DuetSixP := false;
+  V2DuetSixP := false;
+  V3DuetSixP := false;
+  V4DuetSixP := false;
+  V5DuetSixP := false;
+  V6DuetSixP := false;
+
+  case PlayersPlay of
+    1:
+    begin
+      V1     := true;
+    end;
+    2:
+    begin
+      V1TwoP := true;
+      V2R    := true;
+    end;
+    3:
+    begin
+      if (CurrentSong.isDuet) then
+      begin
+        VDuet1ThreeP := true;
+        VDuet2M := true;
+        VDuet3R := true;
+      end
+      else
+      begin
+        V1ThreeP := true;
+        V2M    := true;
+        V3R    := true;
+      end;
+    end;
+    4:
+    begin // double screen
+      if (Ini.Screens = 1) then
+      begin
+        V1TwoP := true;
+        V2R    := true;
+      end
+      else
+      begin
+        if (CurrentSong.isDuet) then
+        begin
+          V1DuetFourP := true;
+          V2DuetFourP := true;
+          V3DuetFourP := true;
+          V4DuetFourP := true;
+        end
+        else
+        begin
+          V1FourP := true;
+          V2FourP := true;
+          V3FourP := true;
+          V4FourP := true;
+        end;
+      end;
+    end;
+    6:
+    begin // double screen
+      if (Ini.Screens = 1) then
+      begin
+        if (CurrentSong.isDuet) then
+        begin
+          VDuet1ThreeP := true;
+          VDuet2M := true;
+          VDuet3R := true;
+        end
+        else
+        begin
+          V1ThreeP := true;
+          V2M    := true;
+          V3R    := true;
+        end;
+      end
+      else
+      begin
+       if (CurrentSong.isDuet) then
+        begin
+          V1DuetSixP := true;
+          V2DuetSixP := true;
+          V3DuetSixP := true;
+          V4DuetSixP := true;
+          V5DuetSixP := true;
+          V6DuetSixP := true;
+        end
+        else
+        begin
+          V1SixP := true;
+          V2SixP := true;
+          V3SixP := true;
+          V4SixP := true;
+          V5SixP := true;
+          V6SixP := true;
+        end;
+      end;
+    end;
+  end;
+
+  Text[screenSingViewRef.TextP1].Visible           := V1 and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP1TwoP].Visible       := V1TwoP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP2R].Visible          := V2R and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP1ThreeP].Visible     := V1ThreeP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP2M].Visible          := V2M and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP3R].Visible          := V3R and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextDuetP1ThreeP].Visible := VDuet1ThreeP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextDuetP2M].Visible      := VDuet2M and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextDuetP3R].Visible      := VDuet3R and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP1FourP].Visible      := V1FourP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP2FourP].Visible      := V2FourP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP3FourP].Visible      := V3FourP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP4FourP].Visible      := V4FourP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP1SixP].Visible       := V1SixP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP2SixP].Visible       := V2SixP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP3SixP].Visible       := V3SixP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP4SixP].Visible       := V4SixP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP5SixP].Visible       := V5SixP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP6SixP].Visible       := V6SixP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP1DuetFourP].Visible  := V1DuetFourP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP2DuetFourP].Visible  := V2DuetFourP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP3DuetFourP].Visible  := V3DuetFourP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP4DuetFourP].Visible  := V4DuetFourP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP1DuetSixP].Visible   := V1DuetSixP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP2DuetSixP].Visible   := V2DuetSixP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP3DuetSixP].Visible   := V3DuetSixP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP4DuetSixP].Visible   := V4DuetSixP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP5DuetSixP].Visible   := V5DuetSixP and ScreenSing.Settings.AvatarsVisible;
+  Text[screenSingViewRef.TextP6DuetSixP].Visible   := V6DuetSixP and ScreenSing.Settings.AvatarsVisible;
+
   Result := screenSingViewRef.Draw();
 end;
 

@@ -436,24 +436,29 @@ type
   end;
 
   TThemeSing = class(TThemeBasic)
+    StaticLyricsBar:       TThemeStatic;
+    StaticLyricsBarDuet:   TThemeStatic;
+
     //TimeBar mod
-    StaticTimeProgress:   TThemeStatic;
-    TextTimeText      :   TThemeText;
+    StaticTimeBar:         TThemeStatic;
+    StaticTimeProgress:    TThemeStatic;
+    TextTimeLabelText:     TThemeText;
+    TextTimeText:          TThemeText;
     //eoa TimeBar mod
 
-    StaticP1:         TThemeStatic;
-    TextP1:           TThemeText;
-    StaticP1ScoreBG:  TThemeStatic; //Static for ScoreBG
-    TextP1Score:      TThemeText;
-    StaticP1Avatar:   TThemeStatic;
+    StaticP1:              TThemeStatic;
+    TextP1:                TThemeText;
+    StaticP1ScoreBG:       TThemeStatic; //Static for ScoreBG
+    TextP1Score:           TThemeText;
+    StaticP1Avatar:        TThemeStatic;
 
     //moveable singbar mod
-    StaticP1SingBar:         TThemeStatic;
-    StaticP1ThreePSingBar:   TThemeStatic;
-    StaticP1TwoPSingBar:     TThemeStatic;
-    StaticP2RSingBar:        TThemeStatic;
-    StaticP2MSingBar:        TThemeStatic;
-    StaticP3SingBar:         TThemeStatic;
+    StaticP1SingBar:       TThemeStatic;
+    StaticP1ThreePSingBar: TThemeStatic;
+    StaticP1TwoPSingBar:   TThemeStatic;
+    StaticP2RSingBar:      TThemeStatic;
+    StaticP2MSingBar:      TThemeStatic;
+    StaticP3SingBar:       TThemeStatic;
     //eoa moveable singbar
 
     //added for ps3 skin
@@ -694,8 +699,6 @@ type
 
     InfoMessageText: TThemeText;
     InfoMessageBG:   TThemeStatic;
-
-    StaticDuet: AThemeStatic;
   end;
 
   TThemeJukebox = class(TThemeBasic)
@@ -1945,17 +1948,23 @@ begin
       // Sing
       ThemeLoadBasic(Sing, 'Sing');
 
-      ThemeLoadStatics (Sing.StaticDuet, 'SingStaticDuet');
+      //ThemeLoadStatics(Sing.StaticDuet, 'SingStaticDuet');
+
+      // lyrics bar
+      ThemeLoadStatic(Sing.StaticLyricsBar, 'SingLyricsBar');
+      ThemeLoadStatic(Sing.StaticLyricsBarDuet, 'SingLyricsBarDuet');
 
       //TimeBar mod
-       ThemeLoadStatic(Sing.StaticTimeProgress, 'SingTimeProgress');
-       ThemeLoadText(Sing.TextTimeText, 'SingTimeText');
+      ThemeLoadStatic(Sing.StaticTimeBar, 'SingTimeBar');
+      ThemeLoadStatic(Sing.StaticTimeProgress, 'SingTimeProgress');
+      ThemeLoadText(Sing.TextTimeLabelText, 'SingTimeLabelText');
+      ThemeLoadText(Sing.TextTimeText, 'SingTimeText');
       //eoa TimeBar mod
 
       ThemeLoadText (Sing.InfoMessageText, 'SingInfoMessageText');
       ThemeLoadStatic (Sing.InfoMessageBG, 'SingInfoMessageBG');
 
-    //moveable singbar mod
+      //moveable singbar mod
       ThemeLoadStatic(Sing.StaticP1SingBar, 'SingP1SingBar');
       ThemeLoadStatic(Sing.StaticP1TwoPSingBar, 'SingP1TwoPSingBar');
       ThemeLoadStatic(Sing.StaticP1ThreePSingBar, 'SingP1ThreePSingBar');
@@ -4023,8 +4032,14 @@ begin
 
   ThemeSaveBasic(Sing, 'Sing');
 
+  // lyrics bar
+  ThemeSaveStatic(Sing.StaticLyricsBar, 'SingLyricsBar');
+  ThemeSaveStatic(Sing.StaticLyricsBarDuet, 'SingLyricsBarDuet');
+
   //TimeBar mod
+  ThemeSaveStatic(Sing.StaticTimeBar, 'SingTimeBar');
   ThemeSaveStatic(Sing.StaticTimeProgress, 'SingTimeProgress');
+  ThemeSaveText(Sing.TextTimeLabelText, 'SingTimeLabelText');
   ThemeSaveText(Sing.TextTimeText, 'SingTimeText');
   //eoa TimeBar mod
 
