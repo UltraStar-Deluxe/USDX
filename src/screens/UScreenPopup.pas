@@ -210,6 +210,7 @@ type
 
   TText = record
     X, Y:   integer;
+    Font:   integer;
     Style:  integer;
     Size:   real;
     Italic: boolean;
@@ -1637,6 +1638,7 @@ var
   SL:       TStringList;
   tempStr:  String;
   KeyEnd:   integer;
+  Font:     integer;
   Style:    integer;
   Size:     real;
   Italic:   boolean;
@@ -1668,6 +1670,7 @@ var
     SetLength(TextsGFX[line].texts, tline+1);
     TextsGFX[line].texts[tline].X := X;
     TextsGFX[line].texts[tline].Y := Y;
+    TextsGFX[line].texts[tline].Font := Font;
     TextsGFX[line].texts[tline].Style := Style;
     TextsGFX[line].texts[tline].Size := Size;
     TextsGFX[line].texts[tline].Italic := Italic;
@@ -1681,10 +1684,12 @@ begin
   line := 0;
   tline := -1;
 
+  Font := 0;
   Style := 1;
   Size := 7;
   Italic := false;
 
+  SetFontFamily(Font);
   SetFontStyle(Style);
   SetFontSize(Size);
   SetFontItalic(Italic);
@@ -1724,6 +1729,8 @@ begin
   AddLine(line, 2, Rect.right, TextsGFX[line].Y, Rect.right, TextsGFX[line].Y + TextsGFX[line].H);
 
   //Description
+  Font := 0;
+  SetFontFamily(Font);
   Style := 1;
   SetFontStyle(Style);
   Size := 24;
@@ -1790,6 +1797,8 @@ begin
   for K := 0 to Length(msg.Subs) - 1 do
   begin
     //Sub title
+    Font := 0;
+    SetFontFamily(Font);
     Style := 1;
     SetFontStyle(Style);
     Size := 24;
@@ -1808,6 +1817,8 @@ begin
     TextsGFX[line].texts[tline].text := msg.Subs[K].title+':';
 
     //text
+    Font := 0;
+    SetFontFamily(Font);
     Style := 1;
     SetFontStyle(Style);
     Size := 20;
@@ -1875,6 +1886,8 @@ begin
   for K := 0 to Length(msg.Sections) - 1 do
   begin
     //Section title
+    Font := 0;
+    SetFontFamily(Font);
     Style := 1;
     SetFontStyle(Style);
     Size := 28;
@@ -1898,6 +1911,8 @@ begin
     AddLine(line, 1, Rect.left, TextsGFX[line].Y, Rect.left, TextsGFX[line].Y + TextsGFX[line].H);
     AddLine(line, 2, Rect.right, TextsGFX[line].Y, Rect.right, TextsGFX[line].Y + TextsGFX[line].H);
 
+    Font := 0;
+    SetFontFamily(0);
     Style := 1;
     SetFontStyle(Style);
     Size := 20;
@@ -2053,6 +2068,7 @@ end;
 procedure TScreenPopupHelp.DrawText(line, index, Y: integer);
 begin
   glColor4f(1, 1, 1, 1);
+  SetFontFamily(TextsGFX[line].texts[index].Font);
   SetFontStyle(TextsGFX[line].texts[index].Style);
   SetFontItalic(TextsGFX[line].texts[index].Italic);
   SetFontSize(TextsGFX[line].texts[index].Size);

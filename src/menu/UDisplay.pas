@@ -821,7 +821,8 @@ begin
   glDisable(GL_BLEND);
 
   // set font specs
-  SetFontStyle(ftNormal);
+  SetFontFamily(0);
+  SetFontStyle(ftRegular);
   SetFontSize(21);
   SetFontItalic(false);
   glColor4f(0, 0, 0, 1);
@@ -932,14 +933,15 @@ begin
   ScrollPad := ScrollPad * ScaleF;
 
   // set font specs
-  SetFontStyle(ftNormal);
+  SetFontFamily(0);
+  SetFontStyle(ftRegular);
   SetFontSize(FontSize);
   SetFontItalic(false);
   SetFontReflection(false, 0);
   glColor4f(1, 1, 1, 1);
 
-  OldStretch := Fonts[ActFont].Font.Stretch;
-  Fonts[ActFont].Font.Stretch := 1.4*ScaleF * Min(1.3, Max(0.8, power((1.0*ScreenW)/800.0, 1.2)));
+  OldStretch := Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Stretch;
+  Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Stretch := 1.4*ScaleF * Min(1.3, Max(0.8, power((1.0*ScreenW)/800.0, 1.2)));
 
   // don't draw anything else if nothing's logged
   if Log.ConsoleCount < 1 then Exit;
@@ -984,7 +986,7 @@ begin
   glEnd;
   glDisable(GL_BLEND);
 
-  Fonts[ActFont].Font.Stretch := OldStretch;
+  Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Stretch := OldStretch;
   glColor4f(1, 1, 1, 1);
 end;
 

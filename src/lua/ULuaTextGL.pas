@@ -94,7 +94,7 @@ begin
   Result := 0;
 end;
 
-{ TextGl.Style(Style: int) : sets font style (from 0 to 3) }
+{ TextGl.Style(Style: int) : sets font style (from 0 to 2) }
 function ULuaTextGL_Style(L: Plua_State): Integer; cdecl;
   var Style: Integer;
 begin

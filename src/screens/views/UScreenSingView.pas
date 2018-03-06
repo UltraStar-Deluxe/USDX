@@ -1563,6 +1563,7 @@ begin
     glColor4f(0.15, 0.30, 0.6, t);
 
     h := 300*t*ScreenH/RenderH;
+    SetFontFamily(0);
     SetFontStyle(ftBoldHighRes);
     SetFontItalic(false);
     SetFontSize(h);

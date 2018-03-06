@@ -123,7 +123,8 @@ type
       LineOColor_act:  TRGBA;      // Color of outline the active word
       }
 
-      FontStyle:      byte;       // Font for the lyric text
+      FontFamily:      byte;       // Font family for the lyric text
+      FontStyle:       byte;       // Font style for the lyric text
 
       { // currently not used
        FadeInEffect:   byte;       // Effect for line fading in: 0: No Effect; 1: Fade Effect; 2: Move Upwards from Bottom to Pos
@@ -451,6 +452,7 @@ begin
   TextSoFar := '';
 
   // setup font
+  SetFontFamily(FontFamily);
   SetFontStyle(FontStyle);
   ResetFont();
 
@@ -549,6 +551,7 @@ begin
   }
 
   // set font size and style
+  SetFontFamily(FontFamily);
   SetFontStyle(FontStyle);
   ResetFont();
 

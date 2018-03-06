@@ -52,20 +52,21 @@ type
       STicks:      cardinal;
       SelectBlink: boolean;
     public
-      X:      real;
-      Y:      real;
-      Z:      real;
-      MoveX:  real;       // some modifier for x - position that don't affect the real Y
-      MoveY:  real;       // some modifier for y - position that don't affect the real Y
-      W:      real;       // text wider than W is wrapped
-      H:      real;       // text higher than H is decreased in font size
-      Size:   real;
-      ColR:   real;
-      ColG:   real;
-      ColB:   real;
+      X:       real;
+      Y:       real;
+      Z:       real;
+      MoveX:   real;       // some modifier for x - position that don't affect the real Y
+      MoveY:   real;       // some modifier for y - position that don't affect the real Y
+      W:       real;       // text wider than W is wrapped
+      H:       real;       // text higher than H is decreased in font size
+      Size:    real;
+      ColR:    real;
+      ColG:    real;
+      ColB:    real;
 
-      Alpha:  real;
-      Int:    real;
+      Alpha:   real;
+      Int:     real;
+      Font:    integer;
       Style:   integer;
       Visible: boolean;
       Align:   integer; // 0 = left, 1 = center, 2 = right
@@ -87,7 +88,7 @@ type
       procedure Draw;
       constructor Create; overload;
       constructor Create(X, Y: real; const Text: UTF8String); overload;
-      constructor Create(ParX, ParY, ParW, ParH: real; ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; const ParText: UTF8String; ParReflection: boolean; ParReflectionSpacing: real; ParZ: real; Writable: boolean); overload;
+      constructor Create(ParX, ParY, ParW, ParH: real; ParFont, ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; const ParText: UTF8String; ParReflection: boolean; ParReflectionSpacing: real; ParZ: real; Writable: boolean); overload;
 
       function GetMouseOverArea: TMouseOverRect;
   end;
@@ -206,6 +207,7 @@ begin
   if (W > 0) then
   begin
     // set font properties
+    SetFontFamily(Font);
     SetFontStyle(Style);
     SetFontSize(Size);
   end;
@@ -296,6 +298,7 @@ var
 begin
   if Visible then
   begin
+    SetFontFamily(Font);
     SetFontStyle(Style);
     SetFontSize(Size);
     SetFontItalic(false);
@@ -377,7 +380,10 @@ begin
         else
           Y2 := Y2 + Size * 0.85;
       end;
-      SetFontStyle(ftNormal); // reset to default
+
+      // reset to default
+      SetFontFamily(0);
+      SetFontStyle(ftRegular);
 
     //end;
   end;
@@ -390,11 +396,11 @@ end;
 
 constructor TText.Create(X, Y: real; const Text: UTF8String);
 begin
-  Create(X, Y, 0, 0, ftNormal, 30, 0, 0, 0, 0, Text, false, 0, 0, false);
+  Create(X, Y, 0, 0, 0, ftRegular, 30, 0, 0, 0, 0, Text, false, 0, 0, false);
 end;
 
 constructor TText.Create(ParX, ParY, ParW, ParH: real;
-                         ParStyle: integer;
+                         ParFont, ParStyle: integer;
                          ParSize, ParColR, ParColG, ParColB: real;
                          ParAlign: integer;
                          const ParText: UTF8String;
@@ -410,6 +416,7 @@ begin
   W := ParW;
   H := ParH;
   Z := ParZ;
+  Font := ParFont;
   Style := ParStyle;
   Size := ParSize;
   Text := ParText;
