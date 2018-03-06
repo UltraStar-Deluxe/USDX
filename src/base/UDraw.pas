@@ -830,6 +830,9 @@ begin
   else
     LyricEngine := ScreenSing.Lyrics;
 
+  LyricEngine.FontFamily := Ini.LyricsFont;
+  LyricEngine.FontStyle  := Ini.LyricsStyle;
+
   // do not draw the lyrics helper if the current line does not contain any note
   if (Length(CurLine.Notes) > 0) then
   begin

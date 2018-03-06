@@ -49,17 +49,26 @@ type
     Outlined: boolean;
     X, Y, Z:  real;
   end;
+  TFont = record
+    FontFamily: integer;
+    FontStyle:  integer;
+  end;
 
 const
-  ftNormal   = 0;
+  ftRegular     = 0;
+  ftBold        = 1;
+  ftOutline     = 2;
+  ftBoldHighRes = 3;
+  {ftNormal   = 0;
   ftBold     = 1;
   ftOutline1 = 2;
   ftOutline2 = 3;
-  ftBoldHighRes = 4;
+  ftBoldHighRes = 4;}
 
 var
-  Fonts:   array of TGLFont;
-  ActFont: integer;
+  Fonts:   array of array of TGLFont; // 1. dimension: font family, 2. dimesion: font style (regular, bold, outline, boldhighres)
+  CurrentFont: TFont;
+  FontFamilyNames: array of UTF8String;
 
 procedure BuildFonts;                         // builds all fonts
 procedure KillFonts;                          // deletes all font
@@ -69,7 +78,10 @@ procedure ResetFont();                        // reset font settings of active f
 procedure SetFontPos(X, Y: real);             // sets X and Y
 procedure SetFontZ(Z: real);                  // sets Z
 procedure SetFontSize(Size: real);
-procedure SetFontStyle(Style: integer);       // sets active font style (normal, bold, etc)
+procedure SetFontFamily(FontFamily: integer); // sets active font family
+procedure SetFontStyle(FontStyle: integer);   // sets active font style (regular, bold, outline, boldhighres)
+procedure SetFont(Family, Style: integer); overload;   // sets active font (family + style)
+procedure SetFont(Font: TFont); overload;              // sets active font (family + style)
 procedure SetFontItalic(Enable: boolean);     // sets italic type letter (works for all fonts)
 procedure SetFontReflection(Enable:boolean;Spacing: real); // enables/disables text reflection
 procedure SetOutlineColor(R, G, B, A: GLFloat); // set outline color
@@ -84,6 +96,11 @@ uses
   UMain,
   UPathUtils;
 
+const
+  FONT_STYLES: array [0..3] of string = (
+    'Regular', 'Bold', 'Outline', 'BoldHighRes'
+  );
+
 {**
  * Returns either Filename if it is absolute or a path relative to FontPath.
  *}
@@ -95,36 +112,9 @@ begin
     Result := Path(Filename);
 end;
 
-procedure AddFontFallbacks(FontIni: TMemIniFile; Font: TFont);
-var
-  FallbackFont: IPath;
-  IdentName: string;
-  I: Integer;
-begin
-  // evaluate the ini-file's 'Fallbacks' section
-  for I := 1 to 10 do
-  begin
-    IdentName := 'File' + IntToStr(I);
-    FallbackFont := FindFontFile(FontIni.ReadString('Fallbacks', IdentName, ''));
-    if (FallbackFont.Equals(PATH_NONE)) then
-      Continue;
-    try
-      Font.AddFallback(FallbackFont);
-    except
-      on E: EFontError do
-        Log.LogError('Setting font fallback ''' + FallbackFont.ToNative() + ''' failed: ' + E.Message);
-    end;
-  end;
-end;
-
-const
-  FONT_NAMES: array [0..4] of string = (
-    'Normal', 'Bold', 'Outline1', 'Outline2', 'BoldHighRes'
-  );
-
 procedure BuildFonts;
 var
-  I: integer;
+  FontNameIndex, FontStyleIndex, FallbackIndex: integer;
   FontIni: TMemIniFile;
   FontFile: IPath;
   FontMaxResolution: Integer;
@@ -133,68 +123,101 @@ var
   Embolden: single;
   OutlineFont: TFTScalableOutlineFont;
   SectionName: string;
+  Sections: TStringList;
 begin
-  ActFont := 0;
-
-  SetLength(Fonts, Length(FONT_NAMES));
+  CurrentFont.FontFamily := 0;
+  CurrentFont.FontStyle := 0;
 
   FontIni := TMemIniFile.Create(FontPath.Append('fonts.ini').ToNative);
 
-  try
-    for I := 0 to High(FONT_NAMES) do
-    begin
-      SectionName := 'Font_'+FONT_NAMES[I];
+  // each section describes one font family
+  Sections := TStringList.Create;
+  FontIni.ReadSections(Sections);
 
-      FontFile := FindFontFile(FontIni.ReadString(SectionName , 'File', ''));
-
-      FontMaxResolution := FontIni.ReadInteger(SectionName, 'MaxResolution', 64);
-      FontPreCache := FontIni.ReadInteger(SectionName, 'PreCache', 1);
-
-      // create either outlined or normal font
-      Outline := FontIni.ReadFloat(SectionName, 'Outline', 0.0);
-      if (Outline > 0.0) then
+  // read font family names into FontFamilyNamesArray (to be used in ScreenOptionsLyrics)
+  SetLength(FontFamilyNames, 0);
+  for FontNameIndex := 0 to Sections.Count-1 do
+  begin
+    if (Sections[FontNameIndex].StartsWith('Font_')) then
       begin
-        // outlined font
-        OutlineFont := TFTScalableOutlineFont.Create(
-          FontFile,
-          FontMaxResolution,
-          Outline,
-          True,
-          (FontPreCache<>0)
-        );
-        OutlineFont.SetOutlineColor(
-          FontIni.ReadFloat(SectionName, 'OutlineColorR',  0.0),
-          FontIni.ReadFloat(SectionName, 'OutlineColorG',  0.0),
-          FontIni.ReadFloat(SectionName, 'OutlineColorB',  0.0),
-          FontIni.ReadFloat(SectionName, 'OutlineColorA', -1.0)
-        );
-        Fonts[I].Font := OutlineFont;
-        Fonts[I].Outlined := true;
-      end
-      else
-      begin
-        // normal font
-        Embolden := FontIni.ReadFloat(SectionName, 'Embolden', 0.0);
-        Fonts[I].Font := TFTScalableFont.Create(
-          FontFile,
-          FontMaxResolution,
-          Embolden,
-          True,
-          (FontPreCache<>0)
-        );
-        Fonts[I].Outlined := false;
+        SetLength(FontFamilyNames, Length(FontFamilyNames) + 1);
+        FontFamilyNames[FontNameIndex] := FontIni.ReadString(Sections[FontNameIndex], 'Name', Sections[FontNameIndex].Remove(0, 5));
       end;
+  end;
 
-      Fonts[I].Font.GlyphSpacing := FontIni.ReadFloat(SectionName, 'GlyphSpacing', 0.0);
-      Fonts[I].Font.Stretch := FontIni.ReadFloat(SectionName, 'Stretch', 1.0);
+  // set font array size: Fonts[available font families (defined in fonts.ini)][possible font styles (fixed, see FONT_STYLES)]
+  SetLength(Fonts, Length(FontFamilyNames), Length(FONT_STYLES));
 
-      AddFontFallbacks(FontIni, Fonts[I].Font);
+  try
+    for FontNameIndex := 0 to Sections.Count-1 do
+    begin
+      for FontStyleIndex := 0 to High(FONT_STYLES) do
+      begin
+        SectionName := Sections[FontNameIndex];
+        FontFile := FindFontFile(FontIni.ReadString(SectionName, FONT_STYLES[FontStyleIndex] + 'File', ''));
+        if (FontFile.Equals(PATH_NONE)) then
+          Continue;
+
+        FontMaxResolution := FontIni.ReadInteger(SectionName, FONT_STYLES[FontStyleIndex] + 'MaxResolution', 64);
+        Embolden := FontIni.ReadFloat(SectionName, FONT_STYLES[FontStyleIndex] + 'Embolden', 0.0);
+        Outline := FontIni.ReadFloat(SectionName, FONT_STYLES[FontStyleIndex] + 'Outline', 0.0);
+        FontPreCache := FontIni.ReadInteger(SectionName, FONT_STYLES[FontStyleIndex] + 'PreCache', 1);
+
+        if (FONT_STYLES[FontStyleIndex] <> 'Outline') then
+        begin
+          // normal (non-outlined) font
+          Fonts[FontNameIndex][FontStyleIndex].Font := TFTScalableFont.Create(
+            FontFile,
+            FontMaxResolution,
+            Embolden,
+            True,
+            (FontPreCache<>0)
+          );
+          Fonts[FontNameIndex][FontStyleIndex].Outlined := false;
+        end
+        else
+        begin
+          // outlined font
+          OutlineFont := TFTScalableOutlineFont.Create(
+            FontFile,
+            FontMaxResolution,
+            Outline,
+            True,
+            (FontPreCache<>0)
+          );
+          OutlineFont.SetOutlineColor(
+            FontIni.ReadFloat(SectionName, 'OutlineColorR',  0.0),
+            FontIni.ReadFloat(SectionName, 'OutlineColorG',  0.0),
+            FontIni.ReadFloat(SectionName, 'OutlineColorB',  0.0),
+            FontIni.ReadFloat(SectionName, 'OutlineColorA', -1.0)
+          );
+          Fonts[FontNameIndex][FontStyleIndex].Font := OutlineFont;
+          Fonts[FontNameIndex][FontStyleIndex].Outlined := true;
+        end;
+
+        Fonts[FontNameIndex][FontStyleIndex].Font.GlyphSpacing := FontIni.ReadFloat(SectionName, FONT_STYLES[FontStyleIndex] + 'GlyphSpacing', 0.0);
+        Fonts[FontNameIndex][FontStyleIndex].Font.Stretch := FontIni.ReadFloat(SectionName, FONT_STYLES[FontStyleIndex] + 'Stretch', 1.0);
+
+        for FallbackIndex := 1 to 25 do
+        begin
+          FontFile := FindFontFile(FontIni.ReadString(SectionName , FONT_STYLES[FontStyleIndex] + 'FallbackFile' + IntToStr(FallbackIndex), ''));
+          if (FontFile.Equals(PATH_NONE)) then
+            Continue;
+          try
+            Fonts[FontNameIndex][FontStyleIndex].Font.AddFallback(FontFile);
+          except
+            on E: EFontError do
+              Log.LogError('Setting font fallback ''' + FontFile.ToNative() + ''' failed: ' + E.Message);
+          end;
+        end;
+      end;
     end;
   except
     on E: EFontError do
       Log.LogCritical(E.Message, 'BuildFont');
   end;
 
+  Sections.Free;
   // close ini-file
   FontIni.Free;
 end;
@@ -203,17 +226,18 @@ end;
 // Deletes the font
 procedure KillFonts;
 var
-  I: integer;
+  I, J: integer;
 begin
   for I := 0 to High(Fonts) do
-    Fonts[I].Font.Free;
+    for J := 0 to High(Fonts[I]) do
+      Fonts[I][J].Font.Free;
 end;
 
 function glTextWidth(const text: UTF8String): real;
 var
   Bounds: TBoundsDbl;
 begin
-  Bounds := Fonts[ActFont].Font.BBox(Text, true);
+  Bounds := Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.BBox(Text, true);
   Result := Bounds.Right - Bounds.Left;
 end;
 
@@ -226,7 +250,7 @@ begin
   if (Text = '') then
     Exit;
 
-  GLFont := @Fonts[ActFont];
+  GLFont := @Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle];
 
   glPushMatrix();
     // set font position
@@ -247,46 +271,63 @@ end;
 
 procedure SetFontPos(X, Y: real);
 begin
-  Fonts[ActFont].X := X;
-  Fonts[ActFont].Y := Y;
+  Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].X := X;
+  Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Y := Y;
 end;
 
 procedure SetFontZ(Z: real);
 begin
-  Fonts[ActFont].Z := Z;
+  Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Z := Z;
 end;
 
 procedure SetFontSize(Size: real);
 begin
-  Fonts[ActFont].Font.Height := Size;
+  Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Height := Size;
 end;
 
-procedure SetFontStyle(Style: integer);
+procedure SetFontFamily(FontFamily: integer);
 begin
-  ActFont := Style;
+  CurrentFont.FontFamily := FontFamily;
+end;
+
+procedure SetFontStyle(FontStyle: integer);
+begin
+  CurrentFont.FontStyle := FontStyle;
+end;
+
+procedure SetFont(Family, Style: integer);
+begin
+  SetFontFamily(Family);
+  SetFontStyle(Style);
+end;
+
+procedure SetFont(Font: TFont);
+begin
+  SetFontFamily(Font.FontFamily);
+  SetFontStyle(Font.FontStyle);
 end;
 
 procedure SetFontItalic(Enable: boolean);
 begin
   if (Enable) then
-    Fonts[ActFont].Font.Style := Fonts[ActFont].Font.Style + [Italic]
+    Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Style := Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Style + [Italic]
   else
-    Fonts[ActFont].Font.Style := Fonts[ActFont].Font.Style - [Italic]
+    Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Style := Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Style - [Italic]
 end;
 
 procedure SetFontReflection(Enable: boolean; Spacing: real);
 begin
   if (Enable) then
-    Fonts[ActFont].Font.Style := Fonts[ActFont].Font.Style + [Reflect]
+    Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Style := Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Style + [Reflect]
   else
-    Fonts[ActFont].Font.Style := Fonts[ActFont].Font.Style - [Reflect];
-  Fonts[ActFont].Font.ReflectionSpacing := Spacing - Fonts[ActFont].Font.Descender;
+    Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Style := Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Style - [Reflect];
+  Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.ReflectionSpacing := Spacing - Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Descender;
 end;
 
 procedure SetOutlineColor(R, G, B, A: GLFloat);
 begin
-  if (ActFont > 1) then
-    TFTScalableOutlineFont(Fonts[ActFont].Font).SetOutlineColor(R, G, B, A);
+  if (Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Outlined) then
+    TFTScalableOutlineFont(Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font).SetOutlineColor(R, G, B, A);
 end;
 
 end.

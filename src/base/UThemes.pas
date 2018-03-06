@@ -113,23 +113,24 @@ type
   AThemeStatic = array of TThemeStatic;
 
   TThemeText = record
-    X:      integer;
-    Y:      integer;
-    W:      integer;
-    H:      integer;
-    Z:      real;
-    Color:   string;
-    DColor:  string;
-    ColR:   real;
-    ColG:   real;
-    ColB:   real;
-    DColR:   real;
-    DColG:   real;
-    DColB:   real;
-    Font:   integer;
-    Size:   integer;
-    Align:  integer;
-    Text:   UTF8String;
+    X:        integer;
+    Y:        integer;
+    W:        integer;
+    H:        integer;
+    Z:        real;
+    Color:    string;
+    DColor:   string;
+    ColR:     real;
+    ColG:     real;
+    ColB:     real;
+    DColR:    real;
+    DColG:    real;
+    DColB:    real;
+    Font:     integer;
+    Style:    integer;
+    Size:     integer;
+    Align:    integer;
+    Text:     UTF8String;
     Writable: boolean; // true -> add a blink char (|) at the end
     //Reflection
     Reflection:           boolean;
@@ -888,10 +889,13 @@ type
 
   TThemeOptionsLyrics = class(TThemeBasic)
     SelectLyricsFont:   TThemeSelectSlide;
+    SelectLyricsStyle:  TThemeSelectSlide;
     SelectLyricsEffect: TThemeSelectSlide;
 //    SelectSolmization:  TThemeSelectSlide;
     SelectNoteLines:    TThemeSelectSlide;
     ButtonExit:         TThemeButton;
+    UpperX, UpperW, UpperY, UpperH,
+    LowerX, LowerW, LowerY, LowerH  : integer;
   end;
 
   TThemeOptionsThemes = class(TThemeBasic)
@@ -953,6 +957,7 @@ type
 
   TThemeOptionsJukebox = class(TThemeBasic)
     SelectLyricsFont:   TThemeSelectSlide;
+    SelectLyricsStyle:  TThemeSelectSlide;
     SelectLyricsEffect: TThemeSelectSlide;
     SelectLyricsAlpha:  TThemeSelectSlide;
     SelectLine:         TThemeSelectSlide;
@@ -2357,9 +2362,20 @@ begin
       ThemeLoadBasic(OptionsLyrics, 'OptionsLyrics');
 
       ThemeLoadSelectSlide(OptionsLyrics.SelectLyricsFont,   'OptionsLyricsSelectLyricsFont');
+      ThemeLoadSelectSlide(OptionsLyrics.SelectLyricsStyle,  'OptionsLyricsSelectLyricsStyle');
       ThemeLoadSelectSlide(OptionsLyrics.SelectLyricsEffect, 'OptionsLyricsSelectLyricsEffect');
-      //ThemeLoadSelectSlide(OptionsLyrics.SelectSolmization,     'OptionsLyricsSelectSolmization');
+      //ThemeLoadSelectSlide(OptionsLyrics.SelectSolmization,  'OptionsLyricsSelectSolmization');
       ThemeLoadSelectSlide(OptionsLyrics.SelectNoteLines,    'OptionsLyricsSelectNoteLines');
+
+      OptionsLyrics.UpperX := ThemeIni.ReadInteger('OptionsLyricsUpperBar', 'X', 0);
+      OptionsLyrics.UpperW := ThemeIni.ReadInteger('OptionsLyricsUpperBar', 'W', 0);
+      OptionsLyrics.UpperY := ThemeIni.ReadInteger('OptionsLyricsUpperBar', 'Y', 0);
+      OptionsLyrics.UpperH := ThemeIni.ReadInteger('OptionsLyricsUpperBar', 'H', 0);
+      OptionsLyrics.LowerX := ThemeIni.ReadInteger('OptionsLyricsLowerBar', 'X', 0);
+      OptionsLyrics.LowerW := ThemeIni.ReadInteger('OptionsLyricsLowerBar', 'W', 0);
+      OptionsLyrics.LowerY := ThemeIni.ReadInteger('OptionsLyricsLowerBar', 'Y', 0);
+      OptionsLyrics.LowerH := ThemeIni.ReadInteger('OptionsLyricsLowerBar', 'H', 0);
+
       ThemeLoadButton(OptionsLyrics.ButtonExit,              'OptionsLyricsButtonExit');
 
       // Options Themes
@@ -2429,6 +2445,7 @@ begin
       ThemeLoadBasic(OptionsJukebox, 'OptionsJukebox');
 
       ThemeLoadSelectSlide(OptionsJukebox.SelectLyricsFont,   'OptionsJukeboxSelectLyricsFont');
+      ThemeLoadSelectSlide(OptionsJukebox.SelectLyricsStyle,   'OptionsJukeboxSelectLyricsStyle');
       ThemeLoadSelectSlide(OptionsJukebox.SelectLyricsEffect, 'OptionsJukeboxSelectLyricsEffect');
       ThemeLoadSelectSlide(OptionsJukebox.SelectLyricsAlpha,   'OptionsJukeboxSelectLyricsAlpha');
       ThemeLoadSelectSlide(OptionsJukebox.SelectLine,         'OptionsJukeboxSelectLine');
@@ -2840,7 +2857,8 @@ begin
   ThemeText.ColG  := ThemeIni.ReadFloat(Name, 'ColG', 0);
   ThemeText.ColB  := ThemeIni.ReadFloat(Name, 'ColB', 0);
 
-  ThemeText.Font  := ThemeIni.ReadInteger(Name, 'Font', ftNormal);
+  ThemeText.Font  := ThemeIni.ReadInteger(Name, 'Font', 0);
+  ThemeText.Style := ThemeIni.ReadInteger(Name, 'Style', ftRegular);
   ThemeText.Size  := ThemeIni.ReadInteger(Name, 'Size', 0);
   ThemeText.Align := ThemeIni.ReadInteger(Name, 'Align', 0);
 
@@ -4153,6 +4171,7 @@ begin
   ThemeIni.WriteInteger(Name, 'Y', ThemeText.Y);
 
   ThemeIni.WriteInteger(Name, 'Font', ThemeText.Font);
+  ThemeIni.WriteInteger(Name, 'Style', ThemeText.Style);
   ThemeIni.WriteInteger(Name, 'Size', ThemeText.Size);
   ThemeIni.WriteInteger(Name, 'Align', ThemeText.Align);
 

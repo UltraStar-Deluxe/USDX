@@ -121,7 +121,7 @@ type
       NameTeam:       array[0..2] of UTF8String;
       NameTemplate:   array[0..(IMaxPlayerCount-1)] of UTF8String;
 
-      //Filename of the opened iniFile
+      // Filename of the opened iniFile
       Filename:       IPath;
 
       // Game
@@ -130,7 +130,7 @@ type
       Language:       integer;
       SongMenu:       integer;
       Tabs:           integer;
-      TabsAtStartup:  integer; //Tabs at Startup fix
+      TabsAtStartup:  integer; // Tabs at Startup fix
       Sorting:        integer;
       ShowScores:     integer;
       ShowWebScore:   integer;
@@ -169,12 +169,13 @@ type
 
       SyncTo: integer;
 
-      //Song Preview
+      // Song Preview
       PreviewVolume:  integer;
       PreviewFading:  integer;
 
       // Lyrics
       LyricsFont:     integer;
+      LyricsStyle:    integer;
       LyricsEffect:   integer;
       NoteLines:      integer;
 
@@ -218,6 +219,7 @@ type
       JukeboxSongMenu: integer;
 
       JukeboxFont:     integer;
+      JukeboxStyle:    integer;
       JukeboxEffect:   integer;
       JukeboxAlpha:    integer;
 
@@ -348,7 +350,7 @@ const
 
   ISingWindow:       array[0..1] of UTF8String  = ('Small', 'Big');
 
-  //SingBar Mod
+  // SingBar Mod
   IOscilloscope:     array[0..1] of UTF8String  = ('Off', 'On');
 
   ISpectrum:         array[0..1] of UTF8String  = ('Off', 'On');
@@ -382,14 +384,14 @@ const
   IAudioInputBufferSize:      array[0..9] of UTF8String  = ('Auto', '256', '512', '1024', '2048', '4096', '8192', '16384', '32768', '65536');
   IAudioInputBufferSizeVals:  array[0..9] of integer     = ( 0,      256,   512 ,  1024 ,  2048 ,  4096 ,  8192 ,  16384 ,  32768 ,  65536 );
 
-  //Song Preview
+  // Song Preview
   IPreviewVolume:             array[0..10] of UTF8String = ('Off', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%');
   IPreviewVolumeVals:         array[0..10] of single     = ( 0,   0.10,  0.20,  0.30,  0.40,  0.50,  0.60,  0.70,  0.80,  0.90,   1.00  );
 
   IPreviewFading:             array[0..5] of UTF8String  = ('Off', '1 Sec', '2 Secs', '3 Secs', '4 Secs', '5 Secs');
   IPreviewFadingVals:         array[0..5] of integer     = ( 0,     1,       2,        3,        4,        5      );
 
-  ILyricsFont:    array[0..2] of UTF8String = ('Plain', 'OLine1', 'OLine2');
+  ILyricsStyle:   array[0..2] of UTF8String = ('Regular', 'Bold', 'Outline');
   ILyricsEffect:  array[0..4] of UTF8String = ('Simple', 'Zoom', 'Slide', 'Ball', 'Shift');
   ILyricsAlpha:   array[0..20] of UTF8String = ('0.00', '0.05', '0.10', '0.15', '0.20', '0.25', '0.30', '0.35', '0.40', '0.45', '0.50',
                                                 '0.55', '0.60', '0.65', '0.70', '0.75', '0.80', '0.85', '0.90', '0.95', '1.00');
@@ -398,13 +400,13 @@ const
 
   INoteLines:     array[0..1] of UTF8String = ('Off', 'On');
 
-  //for lyric colors
+  // for lyric colors
   ILine:             array[0..2] of UTF8String = ('Sing', 'Actual', 'Next');
   IAttribute:        array[0..1] of UTF8String = ('Fill', 'Outline');
   ISingLineColor:    array[0..20] of UTF8String = ('Blue', 'Green', 'Pink', 'Red', 'Violet', 'Orange', 'Yellow', 'Brown', 'Black', 'Turquoise', 'Salmon', 'GreenYellow', 'Lavender', 'Beige', 'Teal', 'Orchid', 'SteelBlue', 'Plum', 'Chocolate', 'Gold', 'Other');
   IActualLineColor:  array[0..9] of UTF8String = ('Black', 'Gray +3', 'Gray +2', 'Gray +1', 'Gray', 'Gray -1', 'Gray -2', 'Gray -3', 'White', 'Other');
   INextLineColor:    array[0..9] of UTF8String = ('Black', 'Gray +3', 'Gray +2', 'Gray +1', 'Gray', 'Gray -1', 'Gray -2', 'Gray -3', 'White', 'Other');
-  //outline
+  // outline
   ISingLineOColor:    array[0..2] of UTF8String = ('Black', 'White', 'Other');
   IActualLineOColor:  array[0..2] of UTF8String = ('Black', 'White', 'Other');
   INextLineOColor:    array[0..2] of UTF8String = ('Black', 'White', 'Other');
@@ -455,7 +457,7 @@ const
 
 var
   ILanguageTranslated:         array of UTF8String;
-
+  ILyricsFont:                 array of UTF8String;
 
   IDifficultyTranslated:       array[0..2] of UTF8String  = ('Easy', 'Medium', 'Hard');
   ITabsTranslated:             array[0..1] of UTF8String  = ('Off', 'On');
@@ -475,7 +477,7 @@ var
   IBackgroundMusicTranslated:  array[0..1] of UTF8String  = ('Off', 'On');
   ISingWindowTranslated:       array[0..1] of UTF8String  = ('Small', 'Big');
 
-  //SingBar Mod
+  // SingBar Mod
   IOscilloscopeTranslated:     array[0..1] of UTF8String  = ('Off', 'On');
 
   ISpectrumTranslated:         array[0..1] of UTF8String  = ('Off', 'On');
@@ -494,7 +496,7 @@ var
 
   ISyncToTranslated:           array[0..2] of UTF8String  = ('Music', 'Lyrics', 'Off');
 
-  //Song Preview
+  // Song Preview
   IPreviewVolumeTranslated:    array[0..10] of UTF8String = ('Off', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%');
 
   IAudioOutputBufferSizeTranslated: array[0..9] of UTF8String  = ('Auto', '256', '512', '1024', '2048', '4096', '8192', '16384', '32768', '65536');
@@ -503,13 +505,14 @@ var
 
   IPreviewFadingTranslated:    array[0..5] of UTF8String  = ('Off', '1 Sec', '2 Secs', '3 Secs', '4 Secs', '5 Secs');
 
-  ILyricsFontTranslated:       array[0..2] of UTF8String = ('Plain', 'OLine1', 'OLine2');
+  ILyricsFontTranslated:       array[0..1] of UTF8String = ('Bla', 'Blub');
+  ILyricsStyleTranslated:      array[0..2] of UTF8String = ('Regular', 'Bold', 'Outline');
   ILyricsEffectTranslated:     array[0..4] of UTF8String = ('Simple', 'Zoom', 'Slide', 'Ball', 'Shift');
   INoteLinesTranslated:        array[0..1] of UTF8String = ('Off', 'On');
   IColorTranslated:            array[0..8] of UTF8String = ('Blue', 'Green', 'Pink', 'Red', 'Violet', 'Orange', 'Yellow', 'Brown', 'Black');
   IPlayerColorTranslated:      array[0..15] of UTF8String = ('Blue', 'Red', 'Green', 'Yellow', 'Orange', 'Pink',  'Violet', 'Brown', 'Gray', 'Dark Blue', 'Sky', 'Cyan', 'Flame', 'Orchid', 'Harlequin', 'Lime');
 
-  //for lyric colors
+  // for lyric colors
   ILineTranslated:             array[0..2] of UTF8String = ('Sing', 'Actual', 'Next');
   IPropertyTranslated:         array[0..1] of UTF8String = ('Fill', 'Outline');
 
@@ -687,9 +690,9 @@ begin
   ISyncToTranslated[Ord(stLyrics)]    := ULanguage.Language.Translate('OPTION_VALUE_LYRICS');
   ISyncToTranslated[Ord(stOff)]       := ULanguage.Language.Translate('OPTION_VALUE_OFF');
 
-  ILyricsFontTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_PLAIN');
-  ILyricsFontTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_OLINE1');
-  ILyricsFontTranslated[2]            := ULanguage.Language.Translate('OPTION_VALUE_OLINE2');
+  ILyricsStyleTranslated[0]           := ULanguage.Language.Translate('OPTION_VALUE_REGULAR');
+  ILyricsStyleTranslated[1]           := ULanguage.Language.Translate('OPTION_VALUE_BOLD');
+  ILyricsStyleTranslated[2]           := ULanguage.Language.Translate('OPTION_VALUE_OUTLINE');
 
   ILyricsEffectTranslated[0]          := ULanguage.Language.Translate('OPTION_VALUE_SIMPLE');
   ILyricsEffectTranslated[1]          := ULanguage.Language.Translate('OPTION_VALUE_ZOOM');
@@ -868,7 +871,7 @@ begin
   IAudioInputBufferSizeTranslated[8]  := '32768';
   IAudioInputBufferSizeTranslated[9]  := '65536';
 
-  //Song Preview
+  // Song Preview
   IPreviewVolumeTranslated[0]         := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IPreviewVolumeTranslated[1]         := '10%';
   IPreviewVolumeTranslated[2]         := '20%';
@@ -1046,7 +1049,7 @@ begin
   begin
     if (Default = IGNORE_INDEX) and (not UCommon.Equals(StrValue, DefaultValue, not CaseInsensitive)) then
     begin
-      // priorite default string value
+      // prioritize default string value
       Result := GetArrayIndex(SearchArray, DefaultValue, CaseInsensitive);
     end;
 
@@ -1503,6 +1506,9 @@ begin
   // Lyrics Font
   LyricsFont := ReadArrayIndex(ILyricsFont, IniFile, 'Lyrics', 'LyricsFont', 2);
 
+  // Lyrics Style
+  LyricsStyle := ReadArrayIndex(ILyricsStyle, IniFile, 'Lyrics', 'LyricsStyle', 2);
+
   // Lyrics Effect
   LyricsEffect := ReadArrayIndex(ILyricsEffect, IniFile, 'Lyrics', 'LyricsEffect', 2);
 
@@ -1589,6 +1595,7 @@ begin
 
   // Jukebox
   JukeboxFont := ReadArrayIndex(ILyricsFont, IniFile, 'Jukebox', 'LyricsFont', 2);
+  JukeboxStyle := ReadArrayIndex(ILyricsStyle, IniFile, 'Jukebox', 'LyricsStyle', 2);
   JukeboxEffect := ReadArrayIndex(ILyricsEffect, IniFile, 'Jukebox', 'LyricsEffect', 1);
   JukeboxAlpha := ReadArrayIndex(ILyricsAlpha, IniFile, 'Jukebox', 'LyricsAlpha', 20);
 
@@ -1805,6 +1812,9 @@ begin
     // Lyrics Font
     IniFile.WriteString('Lyrics', 'LyricsFont', ILyricsFont[LyricsFont]);
 
+    // Lyrics Style
+    IniFile.WriteString('Lyrics', 'LyricsStyle', ILyricsStyle[LyricsStyle]);
+
     // Lyrics Effect
     IniFile.WriteString('Lyrics', 'LyricsEffect', ILyricsEffect[LyricsEffect]);
 
@@ -1877,6 +1887,7 @@ begin
 
     // Jukebox
     IniFile.WriteString('Jukebox', 'LyricsFont', ILyricsFont[JukeboxFont]);
+    IniFile.WriteString('Jukebox', 'LyricsStyle', ILyricsStyle[JukeboxStyle]);
     IniFile.WriteString('Jukebox', 'LyricsEffect', ILyricsEffect[JukeboxEffect]);
     IniFile.WriteString('Jukebox', 'LyricsAlpha', ILyricsAlpha[JukeboxAlpha]);
 

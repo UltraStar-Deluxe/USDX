@@ -112,8 +112,8 @@ type
       // text
       function AddText(ThemeText: TThemeText): integer; overload;
       function AddText(X, Y: real; const Text_: UTF8String): integer; overload;
-      function AddText(X, Y: real; Style: integer; Size, ColR, ColG, ColB: real; const Text: UTF8String): integer; overload;
-      function AddText(X, Y, W, H: real; Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: UTF8String; Reflection_: boolean; ReflectionSpacing_: real; Z : real; Writable: boolean): integer; overload;
+      function AddText(X, Y: real; Font, Style: integer; Size, ColR, ColG, ColB: real; const Text: UTF8String): integer; overload;
+      function AddText(X, Y, W, H: real; Font, Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: UTF8String; Reflection_: boolean; ReflectionSpacing_: real; Z : real; Writable: boolean): integer; overload;
 
       // button
       procedure SetButtonLength(Length: cardinal); //Function that Set Length of Button Array in one Step instead of register new Memory for every Button
@@ -124,8 +124,8 @@ type
       procedure ClearButtons;
       procedure AddButtonText(AddX, AddY: real; const AddText: UTF8String); overload;
       procedure AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; const AddText: UTF8String); overload;
-      procedure AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; Font: integer; Size: integer; Align: integer; const AddText: UTF8String); overload;
-      procedure AddButtonText(CustomButton: TButton; AddX, AddY: real; ColR, ColG, ColB: real; Font: integer; Size: integer; Align: integer; const AddText: UTF8String); overload;
+      procedure AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; Font, Style: integer; Size: integer; Align: integer; const AddText: UTF8String); overload;
+      procedure AddButtonText(CustomButton: TButton; AddX, AddY: real; ColR, ColG, ColB: real; Font, Style: integer; Size: integer; Align: integer; const AddText: UTF8String); overload;
 
       // select slide
       function AddSelectSlide(ThemeSelectS: TThemeSelectSlide; var Data: integer; const Values: array of UTF8String): integer; overload;
@@ -611,8 +611,8 @@ begin
   begin
       AddButtonText(ButtonCollection[Num], ThemeCollection.Style.Text[BT].X, ThemeCollection.Style.Text[BT].Y,
         ThemeCollection.Style.Text[BT].ColR, ThemeCollection.Style.Text[BT].ColG, ThemeCollection.Style.Text[BT].ColB,
-        ThemeCollection.Style.Text[BT].Font, ThemeCollection.Style.Text[BT].Size, ThemeCollection.Style.Text[BT].Align,
-        ThemeCollection.Style.Text[BT].Text);
+        ThemeCollection.Style.Text[BT].Font, ThemeCollection.Style.Text[BT].Style, ThemeCollection.Style.Text[BT].Size,
+        ThemeCollection.Style.Text[BT].Align, ThemeCollection.Style.Text[BT].Text);
   end;
 end;
 
@@ -800,7 +800,7 @@ end;
 
 function TMenu.AddText(ThemeText: TThemeText): integer;
 begin
-  Result := AddText(ThemeText.X, ThemeText.Y, ThemeText.W, ThemeText.H, ThemeText.Font, ThemeText.Size,
+  Result := AddText(ThemeText.X, ThemeText.Y, ThemeText.W, ThemeText.H, ThemeText.Font, ThemeText.Style, ThemeText.Size,
     ThemeText.ColR, ThemeText.ColG, ThemeText.ColB, ThemeText.Align, ThemeText.Text, ThemeText.Reflection, ThemeText.ReflectionSpacing, ThemeText.Z, ThemeText.Writable);
 end;
 
@@ -816,15 +816,15 @@ begin
 end;
 
 function TMenu.AddText(X, Y: real;
-                      Style: integer;
+                      Font, Style: integer;
                       Size, ColR, ColG, ColB: real;
                       const Text: UTF8String): integer;
 begin
-  Result := AddText(X, Y, 0, 0, Style, Size, ColR, ColG, ColB, 0, Text, false, 0, 0, false);
+  Result := AddText(X, Y, 0, 0, Font, Style, Size, ColR, ColG, ColB, 0, Text, false, 0, 0, false);
 end;
 
 function TMenu.AddText(X, Y, W, H: real;
-                       Style: integer;
+                       Font, Style: integer;
                        Size, ColR, ColG, ColB: real;
                        Align: integer;
                        const Text_: UTF8String;
@@ -838,7 +838,7 @@ begin
   // adds text
   TextNum := Length(Text);
   SetLength(Text, TextNum + 1);
-  Text[TextNum] := TText.Create(X, Y, W, H, Style, Size, ColR, ColG, ColB, Align, Text_, Reflection_, ReflectionSpacing_, Z, Writable);
+  Text[TextNum] := TText.Create(X, Y, W, H, Font, Style, Size, ColR, ColG, ColB, Align, Text_, Reflection_, ReflectionSpacing_, Z, Writable);
   Result := TextNum;
 end;
 
@@ -897,11 +897,11 @@ begin
   begin
     AddButtonText(ThemeButton.Text[BT].X, ThemeButton.Text[BT].Y,
       ThemeButton.Text[BT].ColR, ThemeButton.Text[BT].ColG, ThemeButton.Text[BT].ColB,
-      ThemeButton.Text[BT].Font, ThemeButton.Text[BT].Size, ThemeButton.Text[BT].Align,
-      ThemeButton.Text[BT].Text);
+      ThemeButton.Text[BT].Font, ThemeButton.Text[BT].Style, ThemeButton.Text[BT].Size,
+      ThemeButton.Text[BT].Align, ThemeButton.Text[BT].Text);
   end;
 
-  // bautton collection mod
+  // button collection mod
   if (ThemeButton.Parent <> 0) then
   begin
     // if collection exists then change interaction to child button
@@ -1306,7 +1306,7 @@ begin
   end;
 end;
 
-procedure TMenu.AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; Font: integer; Size: integer; Align: integer; const AddText: UTF8String);
+procedure TMenu.AddButtonText(AddX, AddY: real; ColR, ColG, ColB: real; Font, Style: integer; Size: integer; Align: integer; const AddText: UTF8String);
 var
   Il: integer;
 begin
@@ -1319,13 +1319,14 @@ begin
     Text[Il].ColG := ColG;
     Text[Il].ColB := ColB;
     Text[Il].Int := 1;//0.5;
-    Text[Il].Style := Font;
+    Text[Il].Font := Font;
+    Text[Il].Style := Style;
     Text[Il].Size := Size;
     Text[Il].Align := Align;
   end;
 end;
 
-procedure TMenu.AddButtonText(CustomButton: TButton; AddX, AddY: real; ColR, ColG, ColB: real; Font: integer; Size: integer; Align: integer; const AddText: UTF8String);
+procedure TMenu.AddButtonText(CustomButton: TButton; AddX, AddY: real; ColR, ColG, ColB: real; Font, Style: integer; Size: integer; Align: integer; const AddText: UTF8String);
 var
   Il: integer;
 begin
@@ -1338,7 +1339,8 @@ begin
     Text[Il].ColG := ColG;
     Text[Il].ColB := ColB;
     Text[Il].Int := 1;//0.5;
-    Text[Il].Style := Font;
+    Text[Il].Font := Font;
+    Text[Il].Style := Style;
     Text[Il].Size := Size;
     Text[Il].Align := Align;
   end;

@@ -34,20 +34,29 @@ interface
 {$I switches.inc}
 
 uses
+  UCommon,
   UDisplay,
   UFiles,
   UIni,
+  ULyrics,
   UMenu,
   UMusic,
   UThemes,
-  sdl2;
+  sdl2,
+  TextGL;
 
 type
   TScreenOptionsLyrics = class(TMenu)
+    private
+      Lyrics: TLyricEngine;
+      Line: TLine;
+
     public
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
+      function Draw: boolean; override;
+      procedure LyricSample;
   end;
 
 const
@@ -91,7 +100,7 @@ begin
       end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 3 then
+          if SelInteraction = 4 then
           begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
@@ -130,7 +139,11 @@ begin
 
   Theme.OptionsLyrics.SelectLyricsFont.showArrows := true;
   Theme.OptionsLyrics.SelectLyricsFont.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsLyrics.SelectLyricsFont, Ini.LyricsFont, ILyricsFontTranslated);
+  AddSelectSlide(Theme.OptionsLyrics.SelectLyricsFont, Ini.LyricsFont, FontFamilyNames);
+
+  Theme.OptionsLyrics.SelectLyricsStyle.showArrows := true;
+  Theme.OptionsLyrics.SelectLyricsStyle.oneItemOnly := true;
+  AddSelectSlide(Theme.OptionsLyrics.SelectLyricsStyle, Ini.LyricsStyle, ILyricsStyleTranslated);
 
   Theme.OptionsLyrics.SelectLyricsEffect.showArrows := true;
   Theme.OptionsLyrics.SelectLyricsEffect.oneItemOnly := true;
@@ -144,6 +157,83 @@ begin
   if (Length(Button[0].Text)=0) then
     AddButtonText(20, 5, Theme.Options.Description[OPTIONS_DESC_INDEX_BACK]);
 
+  // lyric sample
+  Lyrics := TLyricEngine.Create(
+      Theme.OptionsLyrics.UpperX, Theme.OptionsLyrics.UpperY, Theme.OptionsLyrics.UpperW, Theme.OptionsLyrics.UpperH,
+      Theme.OptionsLyrics.LowerX, Theme.OptionsLyrics.LowerY, Theme.OptionsLyrics.LowerW, Theme.OptionsLyrics.LowerH);
+
+  //Line.Lyric := 'Lorem ipsum dolor sit amet';
+  // 1st line
+  SetLength(Line.Notes, 5);
+  Line.Notes[0].Text := 'Lorem';
+  Line.Notes[1].Text := ' ipsum';
+  Line.Notes[2].Text := ' dolor';
+  Line.Notes[3].Text := ' sit';
+  Line.Notes[4].Text := ' amet';
+
+  Line.Notes[0].StartBeat := 0;
+  Line.Notes[1].StartBeat := 10;
+  Line.Notes[2].StartBeat := 20;
+  Line.Notes[3].StartBeat := 30;
+  Line.Notes[4].StartBeat := 40;
+
+  Line.Notes[0].Duration := 10;
+  Line.Notes[1].Duration := 10;
+  Line.Notes[2].Duration := 10;
+  Line.Notes[3].Duration := 10;
+  Line.Notes[4].Duration := 10;
+
+  Line.ScoreValue := 6;
+  Line.EndBeat := 50;
+  Line.StartBeat := 0;
+  Line.LastLine := true;
+  Lyrics.AddLine(@Line);
+
+  // 2nd line
+  //consectetur adipiscing elit
+  SetLength(Line.Notes, 3);
+
+  Line.Notes[0].Text := 'consectetur';
+  Line.Notes[1].Text := ' adipiscing';
+  Line.Notes[2].Text := ' elit';
+
+  Line.Notes[0].StartBeat := 50;
+  Line.Notes[1].StartBeat := 60;
+  Line.Notes[2].StartBeat := 70;
+
+  Line.Notes[0].Duration := 10;
+  Line.Notes[1].Duration := 10;
+  Line.Notes[2].Duration := 10;
+
+  Line.LastLine := true;
+
+  Lyrics.AddLine(@Line);
+  Lyrics.AddLine(@Line);
+end;
+
+procedure TScreenOptionsLyrics.LyricSample;
+var
+  Col: TRGB;
+begin
+  Lyrics.FontFamily := Ini.LyricsFont;
+  Lyrics.FontStyle  := Ini.LyricsStyle;
+
+  // current lyrics
+  Lyrics.LineColor_act.R := 0;
+  Lyrics.LineColor_act.G := 0.6;
+  Lyrics.LineColor_act.B := 1;
+
+  // current line
+  Lyrics.LineColor_en.R := 1;
+  Lyrics.LineColor_en.G := 1;
+  Lyrics.LineColor_en.B := 1;
+
+  // next line
+  Lyrics.LineColor_dis.R := 1;
+  Lyrics.LineColor_dis.G := 1;
+  Lyrics.LineColor_dis.B := 1;
+
+  Lyrics.Draw(LyricsState.MidBeat);
 end;
 
 procedure TScreenOptionsLyrics.OnShow;
@@ -154,6 +244,16 @@ begin
 
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOptionsLyrics');
+
+  LyricsState.StartTime := 0;
+  LyricsState.UpdateBeats;
+end;
+
+function TScreenOptionsLyrics.Draw: boolean;
+begin
+  Result := inherited Draw;
+
+  LyricSample();
 end;
 
 end.

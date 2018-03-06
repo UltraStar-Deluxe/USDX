@@ -4057,7 +4057,7 @@ var
   Str:   UTF8String;
 
   //PlayerNumber:  Integer;
-  OrgFontStyle:  Integer;
+  OrgFont:  TFont;
 
   GoldenStarPos: real;
 begin
@@ -4076,9 +4076,10 @@ begin
     with Tracks[Track].Lines[Tracks[Track].CurrentLine] do
     begin
 
-      OrgFontStyle := ActFont;
+      OrgFont := CurrentFont;
       glColor4f(0, 0, 0, 1);
-      SetFontStyle(1);
+      SetFontFamily(0);
+      SetFontStyle(ftBold);
       SetFontItalic(False);
       SetFontSize(14);
 
@@ -4131,7 +4132,7 @@ begin
     end; // with
 
     // revert the font to prevent conflicts within drawing the editor lyric line
-    SetFontStyle(OrgFontStyle);
+    SetFont(OrgFont);
 
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
