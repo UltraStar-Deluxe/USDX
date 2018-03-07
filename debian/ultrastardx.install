@@ -1,0 +1,5 @@
+debian/ultrastardx_32x32.xpm usr/share/pixmaps
+debian/ultrastardx.desktop   usr/share/applications
+icons/ultrastardx-icon.svg   usr/share/icons/hicolor/scalable/apps
+game/languages/*.ini         usr/share/games/ultrastardx/languages
+game/plugins/*.usdx          usr/share/games/ultrastardx/plugins

@@ -1,0 +1,18 @@
+[Desktop Entry]
+Version=1.0
+Name=UltraStar Deluxe
+Comment=A karaoke game
+Comment[de]=Ein Karaoke-Spiel
+Comment[es]=Un juego de karaoke
+Comment[fi]=Karaokepeli
+Comment[fr]=Un jeu de Karaoké
+Comment[it]=Un gioco di karaoke
+Comment[ro]=Un joc de tip karaoke
+Comment[se]=Ett karaoke-spel
+Icon=ultrastardx-icon
+Exec=ultrastardx
+StartupNotify=false
+Terminal=false
+Type=Application
+Categories=Game;ArcadeGame;
+Keywords=song;music;karaoke;microphone;sound;singing;
