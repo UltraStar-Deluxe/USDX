@@ -426,10 +426,9 @@ begin
 // BUT this is not implemented yet, all notes are drawn! :D
   if (ScreenSing.settings.NotesVisible and (1 shl Track) <> 0) then
   begin
-
     //PlayerNumber := Track + 1; // Player 1 is 0
 
-  // exploit done
+    // exploit done
 
     glColor3f(1, 1, 1);
     glEnable(GL_TEXTURE_2D);
@@ -440,15 +439,14 @@ begin
     else TempR := (Right-Left) / TempR;
 
 
-  with Tracks[Track].Lines[Tracks[Track].CurrentLine] do
-  begin
-    for Count := 0 to HighNote do
+    with Tracks[Track].Lines[Tracks[Track].CurrentLine] do
     begin
-      with Notes[Count] do
+      for Count := 0 to HighNote do
       begin
-        if NoteType <> ntFreestyle then
-	      begin
-
+        with Notes[Count] do
+        begin
+          if NoteType <> ntFreestyle then
+          begin
             if Ini.EffectSing = 0 then
               // If Golden note Effect of then Change not Color
             begin
@@ -462,25 +460,25 @@ begin
             else
               glColor4f(1, 1, 1, 1);        // We set alpha to 1, cause we can control the transparency through the png itself
 
-          // left part
-          Rec.Left  := (StartBeat - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left + 0.5 + 10*ScreenX;
-          Rec.Right := Rec.Left + NotesW[PlayerNumber - 1];
-          Rec.Top := Top - (Tone-BaseNote)*LineSpacing/2 - NotesH[PlayerNumber - 1];
-          Rec.Bottom := Rec.Top + 2 * NotesH[PlayerNumber - 1];
-          If (NoteType = ntRap) or (NoteType = ntRapGolden) then
-          begin
-            glBindTexture(GL_TEXTURE_2D, Tex_plain_Left_Rap[PlayerNumber].TexNum);
-          end
-          else
-          begin
-            glBindTexture(GL_TEXTURE_2D, Tex_plain_Left[PlayerNumber].TexNum);
-          end;
-          glBegin(GL_QUADS);
-            glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-            glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-            glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-            glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-          glEnd;
+            // left part
+            Rec.Left  := (StartBeat - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left + 0.5 + 10*ScreenX;
+            Rec.Right := Rec.Left + NotesW[PlayerNumber - 1];
+            Rec.Top := Top - (Tone-BaseNote)*LineSpacing/2 - NotesH[PlayerNumber - 1];
+            Rec.Bottom := Rec.Top + 2 * NotesH[PlayerNumber - 1];
+            If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+            begin
+              glBindTexture(GL_TEXTURE_2D, Tex_plain_Left_Rap[PlayerNumber].TexNum);
+            end
+            else
+            begin
+              glBindTexture(GL_TEXTURE_2D, Tex_plain_Left[PlayerNumber].TexNum);
+            end;
+            glBegin(GL_QUADS);
+              glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+              glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+              glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+              glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+            glEnd;
 
             //We keep the postion of the top left corner b4 it's overwritten
             GoldenStarPos := Rec.Left;
@@ -511,12 +509,12 @@ begin
               glTexCoord2f(round((Rec.Right-Rec.Left)/32), 0); glVertex2f(Rec.Right, Rec.Top);
             glEnd;
 
-        // right part
-        Rec.Left  := Rec.Right;
-        Rec.Right := Rec.Right + NotesW[PlayerNumber - 1];
+            // right part
+            Rec.Left  := Rec.Right;
+            Rec.Right := Rec.Right + NotesW[PlayerNumber - 1];
 
 
-            If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+            if (NoteType = ntRap) or (NoteType = ntRapGolden) then
             begin
               glBindTexture(GL_TEXTURE_2D, Tex_plain_Right_Rap[PlayerNumber].TexNum);
             end
@@ -531,17 +529,15 @@ begin
               glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
             glEnd;
 
-          // Golden Star Patch
-          if ((NoteType = ntGolden) or (NoteType = ntRapGolden)) and (Ini.EffectSing=1) then
-          begin
-            GoldenRec.SaveGoldenStarsRec(GoldenStarPos, Rec.Top, Rec.Right, Rec.Bottom);
-          end;
-
+            // Golden Star Patch
+            if ((NoteType = ntGolden) or (NoteType = ntRapGolden)) and (Ini.EffectSing=1) then
+            begin
+              GoldenRec.SaveGoldenStarsRec(GoldenStarPos, Rec.Top, Rec.Right, Rec.Bottom);
+            end;
           end; // if not FreeStyle
         end; // with
       end; // for
     end; // with
-
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
   end;
@@ -556,136 +552,130 @@ var
 //  R, G, B, A: real;
   NotesH2:    real;
 begin
-  //Log.LogStatus('Player notes', 'SingDraw');
-{
-  if NrGracza = 0 then
-    LoadColor(R, G, B, 'P1Light')
-  else
-    LoadColor(R, G, B, 'P2Light');
-}
-  //R :=  71/255;
-  //G := 175/255;
-  //B := 247/255;
-
-  glColor3f(1, 1, 1);
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  //if Player[NrGracza].LengthNote > 0 then
+  if (ScreenSing.Settings.InputVisible) then
   begin
-    if not Tracks[Track].Lines[Tracks[Track].CurrentLine].HasLength(TempR) then TempR := 0
-    else TempR := W / TempR;
+    //Log.LogStatus('Player notes', 'SingDraw');
 
-    for N := 0 to Player[PlayerIndex].HighNote do
+    glColor3f(1, 1, 1);
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    //if Player[NrGracza].LengthNote > 0 then
     begin
-      with Player[PlayerIndex].Note[N] do
+      if not Tracks[Track].Lines[Tracks[Track].CurrentLine].HasLength(TempR) then TempR := 0
+      else TempR := W / TempR;
+
+      for N := 0 to Player[PlayerIndex].HighNote do
       begin
-        // Left part of note
-        Rec.Left  := X + (Start - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + 0.5 + 10*ScreenX;
-        Rec.Right := Rec.Left + NotesW[PlayerIndex];
-
-        // Draw it in half size, if not hit
-        if Hit then
+        with Player[PlayerIndex].Note[N] do
         begin
-          NotesH2 := NotesH[PlayerIndex]
-        end
-        else
-        begin
-          NotesH2 := int(NotesH[PlayerIndex] * 0.65);
-        end;
+          // Left part of note
+          Rec.Left  := X + (Start - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + 0.5 + 10*ScreenX;
+          Rec.Right := Rec.Left + NotesW[PlayerIndex];
 
-        Rec.Top    := Y - (Tone-Tracks[Track].Lines[Tracks[Track].CurrentLine].BaseNote)*LineSpacing/2 - NotesH2;
-        Rec.Bottom := Rec.Top + 2 * NotesH2;
-
-        // draw the left part
-        glColor3f(1, 1, 1);
-        If (NoteType = ntRap) or (NoteType = ntRapGolden) then
-        begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap[PlayerIndex+1].TexNum);
-        end
-        else
-        begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Left[PlayerIndex+1].TexNum);
-        end;
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-        glEnd;
-
-        // Middle part of the note
-        Rec.Left  := Rec.Right;
-        Rec.Right := X + (Start + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR - NotesW[PlayerIndex] - 0.5  + 10*ScreenX;
-
-        // new
-        if (Start + Duration - 1 = LyricsState.CurrentBeatD) then
-          Rec.Right := Rec.Right - (1-Frac(LyricsState.MidBeatD)) * TempR;
-
-        // the left note is more right than the right note itself, sounds weird - so we fix that xD
-        if Rec.Right <= Rec.Left then
-          Rec.Right := Rec.Left;
-
-        // draw the middle part
-        If (NoteType = ntRap) or (NoteType = ntRapGolden) then
-        begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap[PlayerIndex+1].TexNum);
-        end
-        else
-        begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Mid[PlayerIndex+1].TexNum);
-        end;
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(round((Rec.Right-Rec.Left)/32), 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(round((Rec.Right-Rec.Left)/32), 0); glVertex2f(Rec.Right, Rec.Top);
-        glEnd;
-        glColor3f(1, 1, 1);
-
-        // the right part of the note
-        Rec.Left  := Rec.Right;
-        Rec.Right := Rec.Right + NotesW[PlayerIndex];
-
-        If (NoteType = ntRap) or (NoteType = ntRapGolden) then
-        begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap[PlayerIndex+1].TexNum);
-        end
-        else
-        begin
-        glBindTexture(GL_TEXTURE_2D, Tex_Right[PlayerIndex+1].TexNum);
-        end;
-        glBegin(GL_QUADS);
-          glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-          glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-          glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-          glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-        glEnd;
-
-        // Perfect note is stored
-        if Perfect and (Ini.EffectSing=1) then
-        begin
-          //A := 1 - 2*(LyricsState.GetCurrentTime() - GetTimeFromBeat(Start + Duration));
-          if not (Start + Duration - 1 = LyricsState.CurrentBeatD) then
+          // Draw it in half size, if not hit
+          if Hit then
           begin
-            //Star animation counter
-            //inc(Starfr);
-            //Starfr := Starfr mod 128;
-           // if not(CurrentSong.isDuet) or (PlayerIndex mod 2 = Track) then
-              GoldenRec.SavePerfectNotePos(Rec.Left, Rec.Top);
+            NotesH2 := NotesH[PlayerIndex]
+          end
+          else
+          begin
+            NotesH2 := int(NotesH[PlayerIndex] * 0.65);
           end;
-        end;
-      end; // with
-    end; // for
 
-    // actually we need a comparison here, to determine if the singing process
-    // is ahead Rec.Right even if there is no singing
+          Rec.Top    := Y - (Tone-Tracks[Track].Lines[Tracks[Track].CurrentLine].BaseNote)*LineSpacing/2 - NotesH2;
+          Rec.Bottom := Rec.Top + 2 * NotesH2;
 
-    if (Ini.EffectSing = 1) then
-      GoldenRec.GoldenNoteTwinkle(Rec.Top,Rec.Bottom,Rec.Right, PlayerIndex);
+          // draw the left part
+          glColor3f(1, 1, 1);
+          If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+          begin
+            glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap[PlayerIndex+1].TexNum);
+          end
+          else
+          begin
+            glBindTexture(GL_TEXTURE_2D, Tex_Left[PlayerIndex+1].TexNum);
+          end;
+          glBegin(GL_QUADS);
+            glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+            glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+            glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+            glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+          glEnd;
+
+          // Middle part of the note
+          Rec.Left  := Rec.Right;
+          Rec.Right := X + (Start + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR - NotesW[PlayerIndex] - 0.5  + 10*ScreenX;
+
+          // new
+          if (Start + Duration - 1 = LyricsState.CurrentBeatD) then
+            Rec.Right := Rec.Right - (1-Frac(LyricsState.MidBeatD)) * TempR;
+
+          // the left note is more right than the right note itself, sounds weird - so we fix that xD
+          if Rec.Right <= Rec.Left then
+            Rec.Right := Rec.Left;
+
+          // draw the middle part
+          If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+          begin
+            glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap[PlayerIndex+1].TexNum);
+          end
+          else
+          begin
+            glBindTexture(GL_TEXTURE_2D, Tex_Mid[PlayerIndex+1].TexNum);
+          end;
+          glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+          glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+          glBegin(GL_QUADS);
+            glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+            glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+            glTexCoord2f(round((Rec.Right-Rec.Left)/32), 1); glVertex2f(Rec.Right, Rec.Bottom);
+            glTexCoord2f(round((Rec.Right-Rec.Left)/32), 0); glVertex2f(Rec.Right, Rec.Top);
+          glEnd;
+          glColor3f(1, 1, 1);
+
+          // the right part of the note
+          Rec.Left  := Rec.Right;
+          Rec.Right := Rec.Right + NotesW[PlayerIndex];
+
+          If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+          begin
+            glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap[PlayerIndex+1].TexNum);
+          end
+          else
+          begin
+          glBindTexture(GL_TEXTURE_2D, Tex_Right[PlayerIndex+1].TexNum);
+          end;
+          glBegin(GL_QUADS);
+            glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
+            glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
+            glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
+            glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
+          glEnd;
+
+          // Perfect note is stored
+          if Perfect and (Ini.EffectSing=1) then
+          begin
+            //A := 1 - 2*(LyricsState.GetCurrentTime() - GetTimeFromBeat(Start + Duration));
+            if not (Start + Duration - 1 = LyricsState.CurrentBeatD) then
+            begin
+              //Star animation counter
+              //inc(Starfr);
+              //Starfr := Starfr mod 128;
+             // if not(CurrentSong.isDuet) or (PlayerIndex mod 2 = Track) then
+                GoldenRec.SavePerfectNotePos(Rec.Left, Rec.Top);
+            end;
+          end;
+        end; // with
+      end; // for
+
+      // actually we need a comparison here, to determine if the singing process
+      // is ahead Rec.Right even if there is no singing
+
+      if (Ini.EffectSing = 1) then
+        GoldenRec.GoldenNoteTwinkle(Rec.Top,Rec.Bottom,Rec.Right, PlayerIndex);
+    end; // if
   end; // if
 end;
 
@@ -1184,10 +1174,11 @@ begin
     LyricEngine := ScreenSing.Lyrics;
 
   // draw time-bar
-  SingDrawTimeBar();
+  if (ScreenSing.Settings.TimeBarVisible) then
+    SingDrawTimeBar();
 
-  // draw Lyrics
-  if (ScreenSing.settings.LyricsVisible) then
+  // draw lyrics
+  if (ScreenSing.Settings.LyricsVisible) then
   begin
     if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
     begin
@@ -1205,7 +1196,7 @@ begin
   end;
 
   // oscilloscope
-  if Ini.Oscilloscope = 1 then
+  if (ScreenSing.Settings.OscilloscopeVisible) then
   begin
     if PlayersPlay = 1 then
       SingDrawOscilloscope(Theme.Sing.SingP1Oscilloscope.X, Theme.Sing.SingP1Oscilloscope.Y, Theme.Sing.SingP1Oscilloscope.W, Theme.Sing.SingP1Oscilloscope.H, 0);

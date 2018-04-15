@@ -58,11 +58,17 @@ type
   TScreenSingView = class
   public
 
-    StaticDuet: array of cardinal;
+    //StaticDuet: array of cardinal;
     ColPlayer:  array[0..3] of TRGB;
 
+    // lyrics bar fields
+    StaticLyricsBar: integer;
+    StaticLyricsBarDuet: integer;
+
     // timebar fields
+    StaticTimeBar: integer;
     StaticTimeProgress: integer;
+    TextTimeLabelText: integer;
     TextTimeText: integer;
 
     StaticP1: array [0..1] of integer;
@@ -334,16 +340,14 @@ begin
   begin
     if (Screen = 2) then
     begin
-      ScreenSing.Statics[StaticP1[0]].Visible := true;
-
-      ScreenSing.Statics[StaticP1Avatar[0]].Visible := true;
+      ScreenSing.Statics[StaticP1[0]].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP1Avatar[0]].Visible := ScreenSing.Settings.AvatarsVisible;
     end;
 
     if (Screen = 1) then
     begin
-      ScreenSing.Statics[StaticP1[0]].Visible := true;
-
-      ScreenSing.Statics[StaticP1Avatar[0]].Visible := true;
+      ScreenSing.Statics[StaticP1[0]].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP1Avatar[0]].Visible := ScreenSing.Settings.AvatarsVisible;
     end;
   end;
 
@@ -351,20 +355,20 @@ begin
   begin
     if (Screen = 2) then
     begin
-      ScreenSing.Statics[StaticP1TwoP[1]].Visible := true;
-      ScreenSing.Statics[StaticP2R[1]].Visible := true;
+      ScreenSing.Statics[StaticP1TwoP[1]].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP2R[1]].Visible := ScreenSing.Settings.AvatarsVisible;
 
-      ScreenSing.Statics[StaticP1TwoPAvatar[1]].Visible := true;
-      ScreenSing.Statics[StaticP2RAvatar[1]].Visible := true;
+      ScreenSing.Statics[StaticP1TwoPAvatar[1]].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP2RAvatar[1]].Visible := ScreenSing.Settings.AvatarsVisible;
     end;
 
     if (Screen = 1) then
     begin
-      ScreenSing.Statics[StaticP1TwoP[0]].Visible := true;
-      ScreenSing.Statics[StaticP2R[0]].Visible := true;
+      ScreenSing.Statics[StaticP1TwoP[0]].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP2R[0]].Visible := ScreenSing.Settings.AvatarsVisible;
 
-      ScreenSing.Statics[StaticP1TwoPAvatar[0]].Visible := true;
-      ScreenSing.Statics[StaticP2RAvatar[0]].Visible := true;
+      ScreenSing.Statics[StaticP1TwoPAvatar[0]].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP2RAvatar[0]].Visible := ScreenSing.Settings.AvatarsVisible;
     end;
   end;
 
@@ -374,48 +378,48 @@ begin
     begin
       if (Screen = 2) then
       begin
-        ScreenSing.Statics[StaticDuetP1ThreeP[1]].Visible := true;
-        ScreenSing.Statics[StaticDuetP2M[1]].Visible := true;
-        ScreenSing.Statics[StaticDuetP3R[1]].Visible := true;
+        ScreenSing.Statics[StaticDuetP1ThreeP[1]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticDuetP2M[1]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticDuetP3R[1]].Visible := ScreenSing.Settings.AvatarsVisible;
 
-        ScreenSing.Statics[StaticDuetP1ThreePAvatar[1]].Visible := true;
-        ScreenSing.Statics[StaticDuetP2MAvatar[1]].Visible := true;
-        ScreenSing.Statics[StaticDuetP3RAvatar[1]].Visible := true;
+        ScreenSing.Statics[StaticDuetP1ThreePAvatar[1]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticDuetP2MAvatar[1]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticDuetP3RAvatar[1]].Visible := ScreenSing.Settings.AvatarsVisible;
       end;
 
       if (Screen = 1) then
       begin
-        ScreenSing.Statics[StaticDuetP1ThreeP[0]].Visible := true;
-        ScreenSing.Statics[StaticDuetP2M[0]].Visible := true;
-        ScreenSing.Statics[StaticDuetP3R[0]].Visible := true;
+        ScreenSing.Statics[StaticDuetP1ThreeP[0]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticDuetP2M[0]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticDuetP3R[0]].Visible := ScreenSing.Settings.AvatarsVisible;
 
-        ScreenSing.Statics[StaticDuetP1ThreePAvatar[0]].Visible := true;
-        ScreenSing.Statics[StaticDuetP2MAvatar[0]].Visible := true;
-        ScreenSing.Statics[StaticDuetP3RAvatar[0]].Visible := true;
+        ScreenSing.Statics[StaticDuetP1ThreePAvatar[0]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticDuetP2MAvatar[0]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticDuetP3RAvatar[0]].Visible := ScreenSing.Settings.AvatarsVisible;
       end;
     end
     else
     begin
       if (Screen = 2) then
       begin
-        ScreenSing.Statics[StaticP1ThreeP[1]].Visible := true;
-        ScreenSing.Statics[StaticP2M[1]].Visible := true;
-        ScreenSing.Statics[StaticP3R[1]].Visible := true;
+        ScreenSing.Statics[StaticP1ThreeP[1]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticP2M[1]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticP3R[1]].Visible := ScreenSing.Settings.AvatarsVisible;
 
-        ScreenSing.Statics[StaticP1ThreePAvatar[1]].Visible := true;
-        ScreenSing.Statics[StaticP2MAvatar[1]].Visible := true;
-        ScreenSing.Statics[StaticP3RAvatar[1]].Visible := true;
+        ScreenSing.Statics[StaticP1ThreePAvatar[1]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticP2MAvatar[1]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticP3RAvatar[1]].Visible := ScreenSing.Settings.AvatarsVisible;
       end;
 
       if (Screen = 1) then
       begin
-        ScreenSing.Statics[StaticP1ThreeP[0]].Visible := true;
-        ScreenSing.Statics[StaticP2M[0]].Visible := true;
-        ScreenSing.Statics[StaticP3R[0]].Visible := true;
+        ScreenSing.Statics[StaticP1ThreeP[0]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticP2M[0]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticP3R[0]].Visible := ScreenSing.Settings.AvatarsVisible;
 
-        ScreenSing.Statics[StaticP1ThreePAvatar[0]].Visible := true;
-        ScreenSing.Statics[StaticP2MAvatar[0]].Visible := true;
-        ScreenSing.Statics[StaticP3RAvatar[0]].Visible := true;
+        ScreenSing.Statics[StaticP1ThreePAvatar[0]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticP2MAvatar[0]].Visible := ScreenSing.Settings.AvatarsVisible;
+        ScreenSing.Statics[StaticP3RAvatar[0]].Visible := ScreenSing.Settings.AvatarsVisible;
       end;
     end;
   end;
@@ -425,27 +429,27 @@ begin
   begin
     if (CurrentSong.isDuet) then
     begin
-      ScreenSing.Statics[StaticP1DuetFourP].Visible := true;
-      ScreenSing.Statics[StaticP2DuetFourP].Visible := true;
-      ScreenSing.Statics[StaticP3DuetFourP].Visible := true;
-      ScreenSing.Statics[StaticP4DuetFourP].Visible := true;
+      ScreenSing.Statics[StaticP1DuetFourP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP2DuetFourP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP3DuetFourP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP4DuetFourP].Visible := ScreenSing.Settings.AvatarsVisible;
 
-      ScreenSing.Statics[StaticP1DuetFourPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP2DuetFourPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP3DuetFourPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP4DuetFourPAvatar].Visible := true;
+      ScreenSing.Statics[StaticP1DuetFourPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP2DuetFourPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP3DuetFourPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP4DuetFourPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
     end
     else
     begin
-      ScreenSing.Statics[StaticP1FourP].Visible := true;
-      ScreenSing.Statics[StaticP2FourP].Visible := true;
-      ScreenSing.Statics[StaticP3FourP].Visible := true;
-      ScreenSing.Statics[StaticP4FourP].Visible := true;
+      ScreenSing.Statics[StaticP1FourP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP2FourP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP3FourP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP4FourP].Visible := ScreenSing.Settings.AvatarsVisible;
 
-      ScreenSing.Statics[StaticP1FourPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP2FourPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP3FourPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP4FourPAvatar].Visible := true;
+      ScreenSing.Statics[StaticP1FourPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP2FourPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP3FourPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP4FourPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
     end;
   end;
 
@@ -454,35 +458,35 @@ begin
   begin
     if (CurrentSong.isDuet) then
     begin
-      ScreenSing.Statics[StaticP1DuetSixP].Visible := true;
-      ScreenSing.Statics[StaticP2DuetSixP].Visible := true;
-      ScreenSing.Statics[StaticP3DuetSixP].Visible := true;
-      ScreenSing.Statics[StaticP4DuetSixP].Visible := true;
-      ScreenSing.Statics[StaticP5DuetSixP].Visible := true;
-      ScreenSing.Statics[StaticP6DuetSixP].Visible := true;
+      ScreenSing.Statics[StaticP1DuetSixP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP2DuetSixP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP3DuetSixP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP4DuetSixP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP5DuetSixP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP6DuetSixP].Visible := ScreenSing.Settings.AvatarsVisible;
 
-      ScreenSing.Statics[StaticP1DuetSixPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP2DuetSixPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP3DuetSixPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP4DuetSixPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP5DuetSixPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP6DuetSixPAvatar].Visible := true;
+      ScreenSing.Statics[StaticP1DuetSixPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP2DuetSixPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP3DuetSixPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP4DuetSixPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP5DuetSixPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP6DuetSixPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
     end
     else
     begin
-      ScreenSing.Statics[StaticP1SixP].Visible := true;
-      ScreenSing.Statics[StaticP2SixP].Visible := true;
-      ScreenSing.Statics[StaticP3SixP].Visible := true;
-      ScreenSing.Statics[StaticP4SixP].Visible := true;
-      ScreenSing.Statics[StaticP5SixP].Visible := true;
-      ScreenSing.Statics[StaticP6SixP].Visible := true;
+      ScreenSing.Statics[StaticP1SixP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP2SixP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP3SixP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP4SixP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP5SixP].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP6SixP].Visible := ScreenSing.Settings.AvatarsVisible;
 
-      ScreenSing.Statics[StaticP1SixPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP2SixPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP3SixPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP4SixPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP5SixPAvatar].Visible := true;
-      ScreenSing.Statics[StaticP6SixPAvatar].Visible := true;
+      ScreenSing.Statics[StaticP1SixPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP2SixPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP3SixPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP4SixPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP5SixPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
+      ScreenSing.Statics[StaticP6SixPAvatar].Visible := ScreenSing.Settings.AvatarsVisible;
     end;
   end;
 
@@ -510,12 +514,18 @@ begin
 
   ScreenSing.LoadFromTheme(Theme.Sing);
 
-  SetLength(StaticDuet, Length(Theme.Sing.StaticDuet));
+  // lyrics bar
+  StaticLyricsBar := ScreenSing.AddStatic(Theme.Sing.StaticLyricsBar);
+  StaticLyricsBarDuet := ScreenSing.AddStatic(Theme.Sing.StaticLyricsBarDuet);
+
+  {SetLength(StaticDuet, Length(Theme.Sing.StaticDuet));
   for i := 0 to High(StaticDuet) do
-    StaticDuet[i] := ScreenSing.AddStatic(Theme.Sing.StaticDuet[i]);
+    StaticDuet[i] := ScreenSing.AddStatic(Theme.Sing.StaticDuet[i]);}
 
   // timebar
+  StaticTimeBar := ScreenSing.AddStatic(Theme.Sing.StaticTimeBar);
   StaticTimeProgress := ScreenSing.AddStatic(Theme.Sing.StaticTimeProgress);
+  TextTimeLabelText := ScreenSing.AddText(Theme.Sing.TextTimeLabelText);
   TextTimeText := ScreenSing.AddText(Theme.Sing.TextTimeText);
 
   for I := 1 to 6 do
@@ -1231,15 +1241,15 @@ var
   VideoFrameTime:         Extended;
   Line:                   TLyricLine;
   LastWord:               TLyricWord;
-  LineDuet:                   TLyricLine;
-  LastWordDuet:               TLyricWord;
+  LineDuet:               TLyricLine;
+  LastWordDuet:           TLyricWord;
   medley_end:             boolean;
   medley_start_applause:  boolean;
 begin
   ScreenSing.Background.Draw;
 
   // sound enabled/disabled (Party plugins)
-  if not(ScreenSing.settings.SoundEnabled) and not(lastVolume=0) then
+  if not(ScreenSing.Settings.SoundEnabled) and not(lastVolume=0) then
   begin
     AudioPlayback.SetVolume(0);
     lastVolume:=0;
@@ -1266,35 +1276,35 @@ begin
   // set player names (for 2 screens and only singstar skin)
   if ScreenAct = 1 then
   begin
-    ScreenSing.Text[TextP1].Text     := ScreenSing.PlayerNames[1];
-    ScreenSing.Text[TextP1TwoP].Text := ScreenSing.PlayerNames[1];
-    ScreenSing.Text[TextP1ThreeP].Text := ScreenSing.PlayerNames[1];
-    ScreenSing.Text[TextP2R].Text    := ScreenSing.PlayerNames[2];
-    ScreenSing.Text[TextP2M].Text    := ScreenSing.PlayerNames[2];
-    ScreenSing.Text[TextP3R].Text    := ScreenSing.PlayerNames[3];
+    ScreenSing.Text[TextP1].Text           := ScreenSing.PlayerNames[1];
+    ScreenSing.Text[TextP1TwoP].Text       := ScreenSing.PlayerNames[1];
+    ScreenSing.Text[TextP1ThreeP].Text     := ScreenSing.PlayerNames[1];
+    ScreenSing.Text[TextP2R].Text          := ScreenSing.PlayerNames[2];
+    ScreenSing.Text[TextP2M].Text          := ScreenSing.PlayerNames[2];
+    ScreenSing.Text[TextP3R].Text          := ScreenSing.PlayerNames[3];
     ScreenSing.Text[TextDuetP1ThreeP].Text := ScreenSing.PlayerDuetNames[1];
     ScreenSing.Text[TextDuetP2M].Text      := ScreenSing.PlayerDuetNames[2];
     ScreenSing.Text[TextDuetP3R].Text      := ScreenSing.PlayerDuetNames[3];
-    ScreenSing.Text[TextP1FourP].Text     := ScreenSing.PlayerNames[1];
-    ScreenSing.Text[TextP2FourP].Text     := ScreenSing.PlayerNames[2];
-    ScreenSing.Text[TextP3FourP].Text     := ScreenSing.PlayerNames[3];
-    ScreenSing.Text[TextP4FourP].Text     := ScreenSing.PlayerNames[4];
-    ScreenSing.Text[TextP1DuetFourP].Text     := ScreenSing.PlayerDuetNames[1];
-    ScreenSing.Text[TextP2DuetFourP].Text     := ScreenSing.PlayerDuetNames[2];
-    ScreenSing.Text[TextP3DuetFourP].Text     := ScreenSing.PlayerDuetNames[3];
-    ScreenSing.Text[TextP4DuetFourP].Text     := ScreenSing.PlayerDuetNames[4];
-    ScreenSing.Text[TextP1SixP].Text     := ScreenSing.PlayerNames[1];
-    ScreenSing.Text[TextP2SixP].Text     := ScreenSing.PlayerNames[2];
-    ScreenSing.Text[TextP3SixP].Text     := ScreenSing.PlayerNames[3];
-    ScreenSing.Text[TextP4SixP].Text     := ScreenSing.PlayerNames[4];
-    ScreenSing.Text[TextP5SixP].Text     := ScreenSing.PlayerNames[5];
-    ScreenSing.Text[TextP6SixP].Text     := ScreenSing.PlayerNames[6];
-    ScreenSing.Text[TextP1DuetSixP].Text     := ScreenSing.PlayerDuetNames[1];
-    ScreenSing.Text[TextP2DuetSixP].Text     := ScreenSing.PlayerDuetNames[2];
-    ScreenSing.Text[TextP3DuetSixP].Text     := ScreenSing.PlayerDuetNames[3];
-    ScreenSing.Text[TextP4DuetSixP].Text     := ScreenSing.PlayerDuetNames[4];
-    ScreenSing.Text[TextP5DuetSixP].Text     := ScreenSing.PlayerDuetNames[5];
-    ScreenSing.Text[TextP6DuetSixP].Text     := ScreenSing.PlayerDuetNames[6];
+    ScreenSing.Text[TextP1FourP].Text      := ScreenSing.PlayerNames[1];
+    ScreenSing.Text[TextP2FourP].Text      := ScreenSing.PlayerNames[2];
+    ScreenSing.Text[TextP3FourP].Text      := ScreenSing.PlayerNames[3];
+    ScreenSing.Text[TextP4FourP].Text      := ScreenSing.PlayerNames[4];
+    ScreenSing.Text[TextP1DuetFourP].Text  := ScreenSing.PlayerDuetNames[1];
+    ScreenSing.Text[TextP2DuetFourP].Text  := ScreenSing.PlayerDuetNames[2];
+    ScreenSing.Text[TextP3DuetFourP].Text  := ScreenSing.PlayerDuetNames[3];
+    ScreenSing.Text[TextP4DuetFourP].Text  := ScreenSing.PlayerDuetNames[4];
+    ScreenSing.Text[TextP1SixP].Text       := ScreenSing.PlayerNames[1];
+    ScreenSing.Text[TextP2SixP].Text       := ScreenSing.PlayerNames[2];
+    ScreenSing.Text[TextP3SixP].Text       := ScreenSing.PlayerNames[3];
+    ScreenSing.Text[TextP4SixP].Text       := ScreenSing.PlayerNames[4];
+    ScreenSing.Text[TextP5SixP].Text       := ScreenSing.PlayerNames[5];
+    ScreenSing.Text[TextP6SixP].Text       := ScreenSing.PlayerNames[6];
+    ScreenSing.Text[TextP1DuetSixP].Text   := ScreenSing.PlayerDuetNames[1];
+    ScreenSing.Text[TextP2DuetSixP].Text   := ScreenSing.PlayerDuetNames[2];
+    ScreenSing.Text[TextP3DuetSixP].Text   := ScreenSing.PlayerDuetNames[3];
+    ScreenSing.Text[TextP4DuetSixP].Text   := ScreenSing.PlayerDuetNames[4];
+    ScreenSing.Text[TextP5DuetSixP].Text   := ScreenSing.PlayerDuetNames[5];
+    ScreenSing.Text[TextP6DuetSixP].Text   := ScreenSing.PlayerDuetNames[6];
 
     if (CurrentSong.isDuet) then
     begin
@@ -1381,8 +1391,9 @@ begin
   DisplaySec := Round(DisplayTime) mod 60;
 
   // update static menu with time ...
-  ScreenSing.Text[TextTimeText].Text := Format('%s%.2d:%.2d',
-      [DisplayPrefix, DisplayMin, DisplaySec]);
+  ScreenSing.Text[TextTimeLabelText].Visible := ScreenSing.Settings.TimeBarVisible;
+  ScreenSing.Text[TextTimeText].Text := Format('%s%.2d:%.2d', [DisplayPrefix, DisplayMin, DisplaySec]);
+  ScreenSing.Text[TextTimeText].Visible := ScreenSing.Settings.TimeBarVisible;
 
   //the song was sung to the end?
   if not(CurrentSong.isDuet) then
@@ -1454,7 +1465,8 @@ begin
   end;
 
   // draw notes lines
-  SingDrawLines;
+  if (ScreenSing.Settings.NotesVisible <> 0) or (ScreenSing.Settings.InputVisible) then
+    SingDrawLines;
 
   // draw static menu (FG)
   ScreenSing.DrawFG;
@@ -1494,16 +1506,20 @@ begin
   end;
 
   // draw info lyric bar if not medley
-  if ScreenSong.Mode <> smMedley then DrawInfoLyricBar;
+  if (ScreenSong.Mode <> smMedley) and (ScreenSing.Settings.TimeBarVisible) then
+    DrawInfoLyricBar;
 
   // always draw custom items
+  ScreenSing.Statics[StaticLyricsBar].Visible := ScreenSing.Settings.LyricsVisible;
+  ScreenSing.Statics[StaticLyricsBarDuet].Visible := ScreenSing.Settings.LyricsVisible and (CurrentSong.isDuet) and (PlayersPlay <> 1);
+  ScreenSing.Statics[StaticTimeBar].Visible := ScreenSing.Settings.TimeBarVisible;
   SingDraw;
 
   // goldennotestarstwinkle
   GoldenRec.SpawnRec;
 
   // draw scores
-  if (Ini.SingScores = 1) or (Party.bPartyGame) then
+  if (ScreenSing.Settings.ScoresVisible) and ((Ini.SingScores = 1) or (Party.bPartyGame)) then
     ScreenSing.Scores.Draw;
 
   FadeMessage();
