@@ -39,6 +39,7 @@ uses
   Classes,
   IniFiles,
   SysUtils,
+  TextGL,
   UCommon,
   ULog,
   UTextEncoding,
@@ -505,7 +506,6 @@ var
 
   IPreviewFadingTranslated:    array[0..5] of UTF8String  = ('Off', '1 Sec', '2 Secs', '3 Secs', '4 Secs', '5 Secs');
 
-  ILyricsFontTranslated:       array[0..1] of UTF8String = ('Bla', 'Blub');
   ILyricsStyleTranslated:      array[0..2] of UTF8String = ('Regular', 'Bold', 'Outline');
   ILyricsEffectTranslated:     array[0..4] of UTF8String = ('Simple', 'Zoom', 'Slide', 'Ball', 'Shift');
   INoteLinesTranslated:        array[0..1] of UTF8String = ('Off', 'On');
@@ -1504,10 +1504,11 @@ begin
   SoundFont := IniFile.ReadString('Sound', 'SoundFont', '');
 
   // Lyrics Font
-  LyricsFont := ReadArrayIndex(ILyricsFont, IniFile, 'Lyrics', 'LyricsFont', 2);
+  // ILyricsFonts must be initialized with TextGL::FontFamilyNames
+  //LyricsFont := ReadArrayIndex(ILyricsFont, IniFile, 'Lyrics', 'LyricsFont', 0);
 
   // Lyrics Style
-  LyricsStyle := ReadArrayIndex(ILyricsStyle, IniFile, 'Lyrics', 'LyricsStyle', 2);
+  LyricsStyle := ReadArrayIndex(ILyricsStyle, IniFile, 'Lyrics', 'LyricsStyle', 0);
 
   // Lyrics Effect
   LyricsEffect := ReadArrayIndex(ILyricsEffect, IniFile, 'Lyrics', 'LyricsEffect', 2);
@@ -1594,8 +1595,9 @@ begin
   WebCamEffect := IniFile.ReadInteger('Webcam', 'Effect', 0);
 
   // Jukebox
-  JukeboxFont := ReadArrayIndex(ILyricsFont, IniFile, 'Jukebox', 'LyricsFont', 2);
-  JukeboxStyle := ReadArrayIndex(ILyricsStyle, IniFile, 'Jukebox', 'LyricsStyle', 2);
+  // ILyricsFonts must be initialized with TextGL::FontFamilyNames
+  //JukeboxFont := ReadArrayIndex(ILyricsFont, IniFile, 'Jukebox', 'LyricsFont', 0);
+  JukeboxStyle := ReadArrayIndex(ILyricsStyle, IniFile, 'Jukebox', 'LyricsStyle', 0);
   JukeboxEffect := ReadArrayIndex(ILyricsEffect, IniFile, 'Jukebox', 'LyricsEffect', 1);
   JukeboxAlpha := ReadArrayIndex(ILyricsAlpha, IniFile, 'Jukebox', 'LyricsAlpha', 20);
 
@@ -1810,7 +1812,8 @@ begin
     IniFile.WriteString('Sound', 'MusicAutoGain', IMusicAutoGain[MusicAutoGain]);
 
     // Lyrics Font
-    IniFile.WriteString('Lyrics', 'LyricsFont', ILyricsFont[LyricsFont]);
+    //IniFile.WriteString('Lyrics', 'LyricsFont', ILyricsFont[LyricsFont]);
+    IniFile.WriteString('Lyrics', 'LyricsFont', '');
 
     // Lyrics Style
     IniFile.WriteString('Lyrics', 'LyricsStyle', ILyricsStyle[LyricsStyle]);
@@ -1886,7 +1889,8 @@ begin
       IniFile.WriteString('Directories', 'WebScoresDir', ' ');
 
     // Jukebox
-    IniFile.WriteString('Jukebox', 'LyricsFont', ILyricsFont[JukeboxFont]);
+    //IniFile.WriteString('Jukebox', 'LyricsFont', ILyricsFont[JukeboxFont]);
+    IniFile.WriteString('Jukebox', 'LyricsFont', '');
     IniFile.WriteString('Jukebox', 'LyricsStyle', ILyricsStyle[JukeboxStyle]);
     IniFile.WriteString('Jukebox', 'LyricsEffect', ILyricsEffect[JukeboxEffect]);
     IniFile.WriteString('Jukebox', 'LyricsAlpha', ILyricsAlpha[JukeboxAlpha]);
