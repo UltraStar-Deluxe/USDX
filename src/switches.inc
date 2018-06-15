@@ -100,6 +100,7 @@
   {$DEFINE UseFFmpegVideo}
   {$IFDEF HaveSWResample}
     {$DEFINE UseSWResample}
+    {$UNDEF UseFFmpegResample}
   {$ENDIF}
   {$IFDEF HaveSWScale}
     {$DEFINE UseSWScale}
