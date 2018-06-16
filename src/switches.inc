@@ -95,12 +95,9 @@
 // ffmpeg config
 {$IFDEF HaveFFmpeg}
   {$DEFINE UseFFmpegDecoder}
-  {$DEFINE UseFFmpegResample}
-  {$DEFINE FF_API_AVCODEC_RESAMPLE}
   {$DEFINE UseFFmpegVideo}
   {$IFDEF HaveSWResample}
     {$DEFINE UseSWResample}
-    {$UNDEF UseFFmpegResample}
   {$ENDIF}
   {$IFDEF HaveSWScale}
     {$DEFINE UseSWScale}

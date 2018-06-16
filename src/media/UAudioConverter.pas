@@ -40,15 +40,12 @@ uses
   {$IFDEF UseSRCResample}
   samplerate,
   {$ENDIF}
-  {$IFDEF UseFFmpegResample}
+  {$IF Defined(UseFFmpegResample) OR Defined (USESWRESAMPLE)}
   avcodec,
   avutil,
   UMediaCore_FFmpeg,
   {$ENDIF}
   {$IFDEF USESWRESAMPLE}
-  avcodec,
-  avutil,
-  UMediaCore_FFmpeg,
   swresample,
   {$ENDIF}
   UMediaCore_SDL,
@@ -84,7 +81,7 @@ type
   end;
 
   {$IFDEF USESWRESAMPLE}
-  TAudioConverter_FFmpeg = class(TAudioConverter)
+  TAudioConverter_SWResample = class(TAudioConverter)
     private
       SwrContext: PSwrContext;
       Ratio: double;
@@ -223,7 +220,7 @@ begin
 end;
 
 {$IFDEF USESWRESAMPLE}
-function TAudioConverter_FFmpeg.Init(SrcFormatInfo: TAudioFormatInfo;
+function TAudioConverter_SWResample.Init(SrcFormatInfo: TAudioFormatInfo;
                                      DstFormatInfo: TAudioFormatInfo): boolean;
 var
   SrcFormat: TAVSampleFormat;
@@ -265,14 +262,14 @@ begin
   Result := true;
 end;
 
-destructor TAudioConverter_FFmpeg.Destroy();
+destructor TAudioConverter_SWResample.Destroy();
 begin
   if SwrContext <> nil then
     swr_free(@SwrContext);
   inherited;
 end;
 
-function TAudioConverter_FFmpeg.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray;
+function TAudioConverter_SWResample.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray;
                                         var InputSize: integer): integer;
 var
   InputSampleCount: integer;
@@ -314,12 +311,12 @@ begin
   Result := OutputSampleCount * DstFormatInfo.FrameSize;
 end;
 
-function TAudioConverter_FFmpeg.GetOutputBufferSize(InputSize: integer): integer;
+function TAudioConverter_SWResample.GetOutputBufferSize(InputSize: integer): integer;
 begin
   Result := Ceil(InputSize * GetRatio());
 end;
 
-function TAudioConverter_FFmpeg.GetRatio(): double;
+function TAudioConverter_SWResample.GetRatio(): double;
 begin
   Result := Ratio;
 end;
