@@ -84,7 +84,7 @@ type
   end;
 
   {$IFDEF USESWRESAMPLE}
-  TAudioConverter_FFmpeg = class(TAudioConverter)
+  TAudioConverter_SWResample = class(TAudioConverter)
     private
       SwrContext: PSwrContext;
       Ratio: double;
@@ -165,7 +165,6 @@ begin
     Log.LogError('Audio-format not supported by SDL', 'TSoftMixerPlaybackStream.InitFormatConversion');
     Exit;
   end;
-
   if SDL_BuildAudioCVT(@cvt,
     srcFormat, srcFormatInfo.Channels, Round(srcFormatInfo.SampleRate),
     dstFormat, dstFormatInfo.Channels, Round(dstFormatInfo.SampleRate)) = -1 then
@@ -223,7 +222,7 @@ begin
 end;
 
 {$IFDEF USESWRESAMPLE}
-function TAudioConverter_FFmpeg.Init(SrcFormatInfo: TAudioFormatInfo;
+function TAudioConverter_SWResample.Init(SrcFormatInfo: TAudioFormatInfo;
                                      DstFormatInfo: TAudioFormatInfo): boolean;
 var
   SrcFormat: TAVSampleFormat;
@@ -252,27 +251,26 @@ begin
   SwrContext:= swr_alloc();
   av_opt_set_channel_layout(SwrContext, 'in_channel_layout', SrcFormatInfo.Channels, 0);
   av_opt_set_channel_layout(SwrContext, 'out_channel_layout', DstFormatInfo.Channels, 0);
-
-  av_opt_set_int(SwrContext, 'in_sample_rate', Int64(SrcFormatInfo.SampleRate), 0);
-  av_opt_set_int(SwrContext, 'out_sample_rate', Int64(DstFormatInfo.SampleRate), 0);
+  av_opt_set_int(SwrContext, 'in_sample_rate', Round(srcFormatInfo.SampleRate), 0);
+  av_opt_set_int(SwrContext, 'out_sample_rate', Round(dstFormatInfo.SampleRate), 0);
   av_opt_set_sample_fmt(SwrContext, 'in_sample_fmt', SrcFormat, 0);
   av_opt_set_sample_fmt(SwrContext, 'out_sample_fmt', DstFormat, 0);
+
   swr_init(SwrContext);
   // calculate ratio
   Ratio := (dstFormatInfo.Channels / srcFormatInfo.Channels) *
            (dstFormatInfo.SampleRate / srcFormatInfo.SampleRate);
-
   Result := true;
 end;
 
-destructor TAudioConverter_FFmpeg.Destroy();
+destructor TAudioConverter_SWResample.Destroy();
 begin
   if SwrContext <> nil then
     swr_free(@SwrContext);
   inherited;
 end;
 
-function TAudioConverter_FFmpeg.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray;
+function TAudioConverter_SWResample.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray;
                                         var InputSize: integer): integer;
 var
   InputSampleCount: integer;
@@ -289,7 +287,6 @@ begin
       Result := 0;
     Exit;
   end;
-
   if not TMediaCore_FFmpeg.ConvertAudioFormatToFFmpeg(SrcFormatInfo.Format, SrcFormat) then
   begin
     Log.LogError('Unsupported format', 'TAudioConverter_FFmpeg.Init');
@@ -307,19 +304,21 @@ begin
   end;
 
   InputSampleCount := InputSize div SrcFormatInfo.FrameSize;
-  av_samples_alloc(Pcuint8(OutputBuffer), nil, DstFormatInfo.Channels, OutputSampleCount,
-                   DstFormat, 0);
+
+  OutputSampleCount:= swr_get_out_samples(SwrContext, InputSampleCount);
   OutputSampleCount:= swr_convert(SwrContext, Pcuint8(OutputBuffer), OutputSampleCount,
                                   Pcuint8(InputBuffer), InputSampleCount);
-  Result := OutputSampleCount * DstFormatInfo.FrameSize;
+
+  Result := av_samples_get_buffer_size(nil, DstFormatInfo.Channels, OutputSampleCount, DstFormat
+                                       ,1) div 2;
 end;
 
-function TAudioConverter_FFmpeg.GetOutputBufferSize(InputSize: integer): integer;
+function TAudioConverter_SWResample.GetOutputBufferSize(InputSize: integer): integer;
 begin
   Result := Ceil(InputSize * GetRatio());
 end;
 
-function TAudioConverter_FFmpeg.GetRatio(): double;
+function TAudioConverter_SWResample.GetRatio(): double;
 begin
   Result := Ratio;
 end;

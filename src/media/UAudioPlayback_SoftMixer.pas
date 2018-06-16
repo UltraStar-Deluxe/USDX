@@ -444,8 +444,10 @@ begin
   SrcFormatInfo := SourceStream.GetAudioFormatInfo();
   DstFormatInfo := GetAudioFormatInfo();
 
-  // TODO: selection should not be done here, use a factory (TAudioConverterFactory) instead 
-  {$IF Defined(UseFFmpegResample)}
+  // TODO: selection should not be done here, use a factory (TAudioConverterFactory) instead
+  {$IF Defined(USESWRESAMPLE)}
+  Converter := TAudioConverter_SWResample.Create();
+  {$ELSEIF Defined(UseFFmpegResample)}
   Converter := TAudioConverter_FFmpeg.Create();
   {$ELSEIF Defined(UseSRCResample)}
   Converter := TAudioConverter_SRC.Create();
