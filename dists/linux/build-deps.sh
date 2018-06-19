@@ -65,7 +65,7 @@ build_sdl2() {
 	../configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
 		--enable-sdl-dlopen \
 		--disable-arts --disable-esd --disable-nas \
-		--enable-alsa --enable-pulseaudio-shared \
+		--disable-sndio --enable-alsa --enable-pulseaudio-shared \
 		--enable-video-wayland --enable-wayland-shared \
 		--enable-x11-shared --enable-ibus --enable-fcitx --enable-ime \
 		--disable-rpath --disable-input-tslib

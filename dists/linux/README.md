@@ -8,7 +8,7 @@ How to use
 
 First you need to install a few dependencies:
 
-`curl chrpath build-essential fpc lua opencv`
+`curl chrpath cmake build-essential fpc liblua5.3-dev`
 
 To build the game, run `make`.
 
