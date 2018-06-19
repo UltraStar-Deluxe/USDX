@@ -3,16 +3,18 @@
 set -e
 
 declare -a deps
-deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.0.5.tar.gz')
-deps+=('SDL2_image,https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.1.tar.gz')
-deps+=('sqlite,https://sqlite.org/2017/sqlite-autoconf-3170000.tar.gz')
+deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.0.8.tar.gz')
+deps+=('SDL2_image,https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.3.tar.gz')
+deps+=('sqlite,https://www.sqlite.org/2018/sqlite-autoconf-3240000.tar.gz')
 deps+=('yasm,http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz')
-deps+=('ffmpeg,https://ffmpeg.org/releases/ffmpeg-3.2.2.tar.gz')
+deps+=('ffmpeg,https://www.ffmpeg.org/releases/ffmpeg-4.0.1.tar.xz')
 deps+=('portaudio,http://www.portaudio.com/archives/pa_stable_v190600_20161030.tgz')
-deps+=('freetype,http://download.savannah.gnu.org/releases/freetype/freetype-2.7.1.tar.gz')
-deps+=('libpng,https://sourceforge.net/projects/libpng/files/libpng16/older-releases/1.6.28/libpng-1.6.28.tar.gz/download')
+deps+=('freetype,https://download.savannah.gnu.org/releases/freetype/freetype-2.9.1.tar.gz')
+deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.34.tar.xz')
 deps+=('portmidi,https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip/download')
 deps+=('portmidi-debian,http://http.debian.net/debian/pool/main/p/portmidi/portmidi_217-6.debian.tar.xz')
+deps+=('zlib,https://zlib.net/zlib-1.2.11.tar.gz')
+deps+=('libcwrap.h,https://raw.githubusercontent.com/wheybags/glibc_version_header/master/version_headers/force_link_glibc_2.10.2.h')
 
 rm -rf deps
 
@@ -46,7 +48,9 @@ for i in "${deps[@]}"; do
 		;;
 
 	*)
-		echo "Unsupported archive format"
-		false
+		mkdir -p deps
+		curl --progress-bar -L "$url" -o deps/$name
+		chmod +x deps/$name
+		;;
 	esac
 done

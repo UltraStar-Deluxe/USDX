@@ -2,6 +2,7 @@
 ARCH = $(shell uname -m)
 VERSION = $(shell cat ../../VERSION)
 REV = $(shell git rev-parse --short HEAD)
+SHELL := /bin/bash
 
 .PHONY: default build-deps build run-local compress clean distclean upload
 
@@ -10,7 +11,7 @@ default: build
 build-deps: prefix/built_libs
 prefix/built_libs:
 	@./dl.sh
-	./build-deps.sh | tee build-deps.log
+	./build-deps.sh all | tee build-deps.log
 
 run: output/ultrastardx
 	cd output && LD_LIBRARY_PATH=lib ./ultrastardx
