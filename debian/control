@@ -1,0 +1,37 @@
+Source: ultrastardx
+Section: games
+Priority: optional
+Maintainer: Markus Meier <memcopy@epic-bytes.net>
+Build-Depends: debhelper (>= 10),
+ autotools-dev,
+ fpc (>= 3.0.0),
+ libfreetype6-dev,
+ libsqlite3-dev,
+ libsdl2-dev,
+ libsdl2-image-dev,
+ liblua5.3-dev,
+ libavcodec-dev,
+ libavformat-dev,
+ libavutil-dev,
+ portaudio19-dev,
+ libportmidi-dev,
+ libswscale-dev,
+ libprojectm-dev
+Standards-Version: 3.9.8
+Homepage: https://usdx.eu
+
+Package: ultrastardx
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+         fonts-dejavu-core, fonts-freefont-ttf
+Recommends: projectm-data,
+            ttf-bitstream-vera
+Suggests: fonts-wqy-microhei, libopencv-highgui-dev,
+          libopencv-imgproc-dev, libopencv-core-dev
+Description: Free and Open Source karaoke game
+ A karaoke game similar to SingStar™ where one or more players perform a song
+ and the game scores their performances, depending on the pitch of the voice
+ and the rythm of singing. It's a fork of the original UltraStar game with many
+ added features like party mode, theme support and support for more audio and
+ video formats. Supports all microphones, even from SingStar™. Songs are
+ transcribed in its own UltraStar dialect.

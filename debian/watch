@@ -1,0 +1,7 @@
+version=4
+
+# GitHub hosted projects
+opts="filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/@PACKAGE@-$1\.tar\.gz/, \
+      uversionmangle=s%-beta%~beta%" \
+   https://github.com/UltraStar-Deluxe/USDX/releases \
+   .*/v?(\d\S+)\.tar\.gz debian uupdate

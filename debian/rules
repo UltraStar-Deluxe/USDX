@@ -1,0 +1,41 @@
+#!/usr/bin/make -f
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+#export DH_VERBOSE = 1
+
+# use own PLDFLAGS variable for Pascal linker because autotools
+# use LDFLAGS for other checks too and therefore build will fail
+export DEB_LDFLAGS_MAINT_SET =
+export PLDFLAGS = -k"-z relro" -k"--as-needed" -k"-pie"
+export PFLAGS_EXTRA = -Cg
+
+%:
+	dh $@ --with autotools_dev,autoreconf
+
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		--bindir=/usr/games \
+		--datarootdir=/usr/share/games \
+		--with-libprojectM
+
+
+override_dh_auto_clean:
+	dh_auto_clean
+	-rm config.log src/config-linux.inc
+	-rm game/link.res
+
+
+override_dh_install:
+	@# these fonts are substituted by the ones from Debian packages, see ultrastardx.links
+	rm debian/ultrastardx/usr/share/games/ultrastardx/fonts/DejaVu/*
+	rm debian/ultrastardx/usr/share/games/ultrastardx/fonts/FreeSans/*
+	rm debian/ultrastardx/usr/share/games/ultrastardx/fonts/wqy-microhei/*
+	rm debian/ultrastardx/usr/share/games/ultrastardx/visuals/projectM/fonts/*
+	@# delete projectM visuals (the ones from projectm-data are used instead to make lintian happy)
+	rm -rf debian/ultrastardx/usr/share/games/ultrastardx/visuals/projectM/presets
+	rm debian/ultrastardx/usr/share/games/ultrastardx/COPYING.txt
+	@# all needed files are copied manually in ultrastardx.install
+	rm debian/ultrastardx/usr/share/games/ultrastardx/languages/*
+	rm debian/ultrastardx/usr/share/games/ultrastardx/plugins/*
+	dh_install --fail-missing
