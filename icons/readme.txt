@@ -17,4 +17,4 @@ If FPC is used, the path to the FPC bin-dir might have to be adjusted,
 the default is "PATH=C:\Programme\lazarus\fpc\2.2.0\bin\i386-win32\".
 
 To avoid the need to run the resource-compiler, a pre-compiled .res-file
-was added to SVN. Please commit the res-file if the rc-file was changed.
+was added to Git. Please commit the res-file if the rc-file was changed.
