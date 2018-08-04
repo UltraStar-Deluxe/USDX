@@ -419,7 +419,8 @@ var
  *)
 procedure _ConsoleWriteLn(const aString: string); {$IFDEF HasInline}inline;{$ENDIF}
 begin
-  Log.LogConsole(aString);
+  if Log <> nil then
+    Log.LogConsole(aString);
   {$IFDEF MSWINDOWS}
   // sanity check to avoid crashes with writeln()
   if IsConsole and HasConsole then
