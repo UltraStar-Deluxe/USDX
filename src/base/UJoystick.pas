@@ -203,7 +203,6 @@ type
 
       function GetJoystick(): Pointer; override;
 
-    private
       // mapping
       function TranslateAxisToKey(Axis: integer; Direction: integer; out Key: TSDL_KeyCode): boolean; override;
       function TranslateAxisToMouseAxis(Axis: integer; Direction: integer; out MouseAxis: byte): boolean; override;
@@ -224,7 +223,6 @@ type
       function GetJoystick(): Pointer; override;
       function ShouldIgnoreLegacy(): boolean; override;
 
-    private
       // mapping
       function TranslateAxisToKey(Axis: integer; Direction: integer; out Key: TSDL_KeyCode): boolean; override;
       function TranslateAxisToMouseAxis(Axis: integer; Direction: integer; out MouseAxis: byte): boolean; override;
