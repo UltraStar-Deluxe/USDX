@@ -845,15 +845,15 @@ end;
 // TODO: Move to Joystick manager
 function TJoyController.SimulateMouse(Axis: byte; Delta: real): boolean;
 var
-  mouseX, mouseY: PInt;
+  mouseX, mouseY: integer;
 begin
   Result := true;
 
   if not LastMouseState.IsSet then
   begin
     SDL_GetMouseState(@mouseX, @mouseY);
-    LastMouseState.X := integer(mousex);
-    LastMouseState.Y := integer(mousey);
+    LastMouseState.X := mousex;
+    LastMouseState.Y := mousey;
     LastMouseState.Time := SDL_GetTicks();
   end;
 
