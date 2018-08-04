@@ -416,6 +416,7 @@ begin
   inherited;
 
   Controllers := TControllerIDMap.Create;
+  Controllers.Sorted := true;
   Controller := nil;
 
   SDL_InitSubSystem( SDL_INIT_JOYSTICK or SDL_INIT_GAMECONTROLLER );
@@ -717,7 +718,9 @@ begin
   //inherited;
 
   DPadStates := TControllerDPadIDStateMap.Create;
+  DPadStates.Sorted := true;
   AxesStates := TControllerAxisIDStateMap.Create;
+  AxesStates.Sorted := true;
 
   MouseMode := false;
 
