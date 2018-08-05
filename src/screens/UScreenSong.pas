@@ -262,7 +262,7 @@ type
       procedure SelectPrevRow;
       procedure SelectNextListRow;
       procedure SelectPrevListRow;
-      procedure SkipTo(Target: cardinal; TargetInteraction: integer = 0; VS: integer = 0);
+      procedure SkipTo(Target: cardinal; TargetInteraction: integer = -1; VS: integer = -1);
       procedure FixSelected; //Show Wrong Song when Tabs on Fix
       procedure FixSelected2; //Show Wrong Song when Tabs on Fix
       procedure ShowCatTL(Cat: integer);// Show Cat in Top left
@@ -3819,7 +3819,7 @@ begin
   StartVideoPreview();
 end;
 
-procedure TScreenSong.SkipTo(Target: cardinal; TargetInteraction: integer = 0; VS: integer = 0);
+procedure TScreenSong.SkipTo(Target: cardinal; TargetInteraction: integer = -1; VS: integer = -1);
 var
   i: integer;
   MaxLine: real;
@@ -3834,6 +3834,29 @@ begin
       SelectNext;
 
     FixSelected2;
+  end
+  else
+  begin
+    if TargetInteraction = -1 then
+    begin
+      if Target = 0 then
+        TargetInteraction := 0
+      else
+      begin
+        i := 0;
+        for TargetInteraction := 0 to High(CatSongs.Song) do
+        begin
+          if CatSongs.Song[i].Visible then
+          begin
+            Inc(i);
+            if Target = i then
+              break;
+          end;
+        end;
+      end;
+    end;
+    if VS = -1 then
+      VS := CatSongs.VisibleSongs;
   end;
 
   if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smMosaic]) then
