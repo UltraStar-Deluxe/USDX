@@ -78,10 +78,6 @@ type
       LastVisibleSongIndex: integer;
       FirstVisibleSongIndex: integer;
 
-      ListLastVisibleSongIndex: integer;
-      ListFirstVisibleSongIndex: integer;
-      MainListFirstVisibleSongIndex: integer;
-
       LastSelectMouse: integer;
       LastSelectTime: integer;
 
@@ -222,7 +218,6 @@ type
 
       ChessboardMinLine: integer;
       ListMinLine: integer;
-      ListLastMinLine: integer;
 
       SongIndex:    integer; //Index of Song that is playing since UScreenScore...
 
@@ -434,9 +429,7 @@ begin
 
   if (TSongMenuMode(Ini.SongMenu) = smList) then
   begin
-    ListFirstVisibleSongIndex := 0;
     ListMinLine := 0;
-    ListLastMinLine := 0;
 
     SetScrollRefresh;
   end;
@@ -1104,11 +1097,6 @@ begin
 
               ChessboardMinLine := MainChessboardMinLine;
               ListMinLine := MainListMinLine;
-              ListFirstVisibleSongIndex := MainListFirstVisibleSongIndex;
-
-              if (TSongMenuMode(Ini.SongMenu) in [smList]) then
-                ListLastMinLine := -1;
-
             end
             else
             begin
@@ -1179,8 +1167,6 @@ begin
 
               MainListMinLine := ListMinLine;
               ListMinLine := 0;
-
-              ListFirstVisibleSongIndex := 0;
 
               //Show Cat in Top Left Mod
               ShowCatTL (Interaction);
@@ -1830,8 +1816,6 @@ begin
 
   ChessboardMinLine := 0;
   ListMinLine := 0;
-
-  ListFirstVisibleSongIndex := 0;
 
   LastSelectMouse := 0;
   LastSelectTime := 0;
@@ -2884,12 +2868,6 @@ begin
       if (Line >= ListMinLine) then
       begin
 
-        if (First) then
-        begin
-          ListFirstVisibleSongIndex := B;
-          First := false;
-        end;
-
         if (Line - ListMinLine < Theme.Song.ListCover.Rows) then
         begin
           LoadCover(B);
@@ -2961,40 +2939,26 @@ begin
   end;
 
   Count := 0;
-
-  B := ListFirstVisibleSongIndex;
-  VS := CatSongs.VisibleSongs;
-
-  if (ListMinLine <> ListLastMinLine) then //and ((ListMinLine <= VS - Theme.Song.ListCover.Rows)) then// change start
-  begin
-    if (ListLastMinLine < ListMinLine) then
-      B := CatSongs.FindNextVisible(B)
-    else
-      B := CatSongs.FindPreviousVisible(B);
-
-    ListLastMinLine := ListMinLine;
-  end;
-
+  B := 0;
   SetLength(SongID, 0);
 
-  while ((Count <= High(StaticsList)) and (B <= High(CatSongs.Song))) do
+  while ((Count <= High(StaticsList) + ListMinLine) and (B <= High(CatSongs.Song))) do
   begin
     if (CatSongs.Song[B].Visible) then
     begin
-      SetLength(SongID, Length(SongID) + 1);
+      if Count >= ListMinLine then
+      begin
+        SetLength(SongID, Length(SongID) + 1);
 
-      SongID[High(SongID)] := B;
+        SongID[High(SongID)] := B;
+      end;
       Count := Count + 1;
     end;
 
     B := B + 1;
   end;
 
-  // save first category
-  if CatSongs.Song[Interaction].Main then
-    MainListFirstVisibleSongIndex := CatSongs.FindPreviousVisible(SongID[0]);
-
-  for I := 0 to Count - 1 do
+  for I := 0 to High(SongID) do
   begin
     if (SongID[I] = Interaction) then
     begin
@@ -3711,8 +3675,8 @@ begin
 
   if (not Button[Interaction].Visible) then
   begin
-    ListLastMinLine := ListMinLine;
-    ListMinLine := ListMinLine + 1;
+    if ListMinLine + Theme.Song.ListCover.Rows < CatSongs.VisibleSongs then
+      ListMinLine := ListMinLine + 1;
   end;
 end;
 
@@ -3723,8 +3687,8 @@ begin
 
   if (not Button[Interaction].Visible) then
   begin
-    ListLastMinLine := ListMinLine;
-    ListMinLine := ListMinLine - 1;
+    if ListMinLine > 0 then
+      ListMinLine := ListMinLine - 1;
   end;
 end;
 
@@ -3872,7 +3836,7 @@ begin
     FixSelected2;
   end;
 
-  if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList, smMosaic]) then
+  if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smMosaic]) then
   begin
     Interaction := TargetInteraction;
     SongTarget := Interaction;
@@ -3895,6 +3859,31 @@ begin
 
       if (ChessboardMinLine > MaxLine) then
         ChessboardMinLine := Round(MaxLine);
+    end;
+
+    FixSelected;
+    OnSongSelect;
+  end;
+
+  if (TSongMenuMode(Ini.SongMenu) = smList) then
+  begin
+    Interaction := TargetInteraction;
+    SongTarget := Interaction;
+
+    if not (Button[Interaction].Visible) then
+    begin
+      i := CatSongs.VisibleIndex(Interaction);
+      if i > ListMinLine then
+        ListMinLine := i - Theme.Song.ListCover.Rows + 1
+      else
+        ListMinLine := i;
+
+      i := VS - Theme.Song.ListCover.Rows;
+      if (ListMinLine > i) then
+        ListMinLine := i;
+
+      if ListMinLine < 0 then
+        ListMinLine := 0;
     end;
 
     FixSelected;
