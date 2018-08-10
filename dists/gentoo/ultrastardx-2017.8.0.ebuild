@@ -9,10 +9,10 @@ inherit git-r3 eutils autotools flag-o-matic
 DESCRIPTION="An open-source karaoke game"
 HOMEPAGE="http://usdx.eu/"
 EGIT_REPO_URI="https://github.com/UltraStar-Deluxe/USDX/"
-
+EGIT_COMMIT="v${PV}"
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="amd64 ~x86"
 IUSE="projectm debug webcam"
 
 RDEPEND="virtual/opengl
@@ -22,7 +22,7 @@ RDEPEND="virtual/opengl
 	media-libs/freetype
 	media-libs/libpng
 	=media-libs/portaudio-19*
-	media-video/ffmpeg
+	<media-video/ffmpeg-3.4
 	dev-db/sqlite
 	dev-lang/lua
 	projectm? ( media-libs/libprojectm )
