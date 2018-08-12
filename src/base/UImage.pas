@@ -718,25 +718,13 @@ begin
     for PixelIndex := 0 to (ImgSurface^.W * ImgSurface^.H)-1 do
     begin
       PixelColors := PByteArray(Pixel);
-      {$IFDEF FPC_BIG_ENDIAN}
-      GreyReal := 0.299*PixelColors[3] + 0.587*PixelColors[2] + 0.114*PixelColors[1];
-      //       PixelColors[0] is alpha and remains untouched
-      {$ELSE}
       GreyReal := 0.299*PixelColors[0] + 0.587*PixelColors[1] + 0.114*PixelColors[2];
       //       PixelColors[3] is alpha and remains untouched
-      {$ENDIF}
       Grey := round(GreyReal);
-      {$IFDEF FPC_BIG_ENDIAN}
-      PixelColors[3] := Grey;
-      PixelColors[2] := Grey;
-      PixelColors[1] := Grey;
-      //       PixelColors[0] is alpha and remains untouched
-      {$ELSE}
       PixelColors[0] := Grey;
       PixelColors[1] := Grey;
       PixelColors[2] := Grey;
       //       PixelColors[3] is alpha and remains untouched
-      {$ENDIF}
       Inc(Pixel, ImgSurface^.format.BytesPerPixel);
     end;
     exit; // we are done with a greyscale image.
@@ -756,17 +744,10 @@ begin
 
     // get color values
 
-    {$IFDEF FPC_BIG_ENDIAN}
-    Red   := PixelColors[3];
-    Green := PixelColors[2];
-    Blue  := PixelColors[1];
-    //       PixelColors[0] is alpha and remains untouched
-    {$ELSE}
     Red   := PixelColors[0];
     Green := PixelColors[1];
     Blue  := PixelColors[2];
     //       PixelColors[3] is alpha and remains untouched
-    {$ENDIF}
 
     //calculate luminance and saturation from rgb
 
@@ -776,15 +757,9 @@ begin
 
     if (Max = 0) then               // the color is black
     begin
-      {$IFDEF FPC_BIG_ENDIAN}
-      PixelColors[3] := 0;
-      PixelColors[2] := 0;
-      PixelColors[1] := 0;
-      {$ELSE}
       PixelColors[0] := 0;
       PixelColors[1] := 0;
       PixelColors[2] := 0;
-      {$ENDIF}
     end
     else
     begin
@@ -794,15 +769,9 @@ begin
 
       if (Min = 255) then           // the color is white
       begin
-        {$IFDEF FPC_BIG_ENDIAN}
-        PixelColors[3] := 255;
-        PixelColors[2] := 255;
-        PixelColors[1] := 255;
-        {$ELSE}
         PixelColors[0] := 255;
         PixelColors[1] := 255;
         PixelColors[2] := 255;
-        {$ENDIF}
       end
       else                          // all colors except black and white
       begin
@@ -828,15 +797,9 @@ begin
           5: begin Red := Max; Green := p;   Blue := q;   end; // (v,p,q)
         end;
 
-        {$IFDEF FPC_BIG_ENDIAN}
-        PixelColors[3] := byte(Red);
-        PixelColors[2] := byte(Green);
-        PixelColors[1] := byte(Blue);
-        {$ELSE}
         PixelColors[0] := byte(Red);
         PixelColors[1] := byte(Green);
         PixelColors[2] := byte(Blue);
-        {$ENDIF}
 
       end;
     end;
