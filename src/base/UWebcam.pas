@@ -45,6 +45,7 @@ type
 
   TWebcam = class
     private
+      IsEnabled:     Boolean;
       LastTickFrame: integer;
       LastFrame:     PIplImage;
 
@@ -64,7 +65,6 @@ type
 
 var
   Webcam:    TWebcam;
-  IsEnabled: Boolean;
 
 
 implementation
@@ -77,11 +77,12 @@ uses
   UIni;
 
 //----------
-//Create - Construct Class - Dummy for now
+//Create - Construct Class
 //----------
 constructor TWebcam.Create;
 begin
   inherited;
+  IsEnabled := false;
 end;
 
 destructor TWebcam.Destroy;
