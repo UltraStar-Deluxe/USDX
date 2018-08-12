@@ -36,6 +36,7 @@ interface
 uses
   Classes,
   UTexture,
+  sdl2,
   opencv_highgui,
   opencv_core,
   opencv_imgproc,
@@ -46,9 +47,16 @@ type
   TWebcam = class
     private
       IsEnabled:     Boolean;
+      Interval:      integer;
       LastTickFrame: integer;
       LastFrame:     PIplImage;
+      CurrentFrame:  PIplImage;
+      Mutex:         PSDL_Mutex;
+      StopCond:      PSDL_Cond;
+      CaptureThread: PSDL_Thread;
 
+      function CaptureLoop: integer;
+      class function CaptureThreadMain(Data: Pointer): integer; cdecl; static;
     public
       Capture: PCvCapture;
       TextureCam: TTexture;
@@ -72,7 +80,6 @@ implementation
 uses
   dglOpenGL,
   SysUtils,
-  sdl2,
   ULog,
   UIni;
 
@@ -82,12 +89,16 @@ uses
 constructor TWebcam.Create;
 begin
   inherited;
+  Mutex := SDL_CreateMutex();
+  StopCond := SDL_CreateCond();
   IsEnabled := false;
 end;
 
 destructor TWebcam.Destroy;
 begin
   Release;
+  SDL_DestroyCond(StopCond);
+  SDL_DestroyMutex(Mutex);
   inherited;
 end;
 
@@ -116,6 +127,9 @@ begin
 
       cvSetCaptureProperty(Capture, CV_CAP_PROP_FRAME_WIDTH, W);
       cvSetCaptureProperty(Capture, CV_CAP_PROP_FRAME_HEIGHT, H);
+
+      Interval := 1000 div StrToInt(IWebcamFPS[Ini.WebCamFPS]);
+      CaptureThread := SDL_CreateThread(@TWebcam.CaptureThreadMain, nil, Self);
     end;
   end;
 
@@ -123,13 +137,19 @@ end;
 
 procedure TWebcam.Release;
 begin
-  try
   if (IsEnabled = true) and (Capture <> nil) then
-    cvReleaseCapture(@Capture);
-  except
-    ;
+  begin
+    SDL_LockMutex(Mutex);
+    IsEnabled := false;
+    SDL_CondSignal(StopCond);
+    SDL_UnlockMutex(Mutex);
+    SDL_WaitThread(CaptureThread, nil);
+    try
+      cvReleaseCapture(@Capture);
+    except
+      ;
+    end;
   end;
-  IsEnabled:=false;
 end;
 
 procedure TWebcam.Restart;
@@ -142,19 +162,65 @@ begin
   end;
 end;
 
+function TWebcam.CaptureLoop: integer;
+var
+  WebcamFrame: PIplImage;
+  Now: integer;
+begin
+  SDL_LockMutex(Mutex);
+  while IsEnabled do
+  begin
+    SDL_UnlockMutex(Mutex);
+
+    LastTickFrame := SDL_GetTicks();
+    WebcamFrame := cvQueryFrame(Capture);
+
+    if WebcamFrame <> nil then
+      WebcamFrame := cvCloneImage(WebcamFrame);
+
+    SDL_LockMutex(Mutex);
+    if WebcamFrame <> nil then
+    begin
+      cvReleaseImage(@CurrentFrame);
+      CurrentFrame := WebcamFrame;
+    end;
+
+    Now := SDL_GetTicks();
+    if IsEnabled and (Now - LastTickFrame < Interval) then
+    begin
+      SDL_CondWaitTimeout(StopCond, Mutex, Interval - (Now - LastTickFrame));
+    end
+  end;
+  SDL_UnlockMutex(Mutex);
+end;
+
+class function TWebcam.CaptureThreadMain(Data: Pointer): integer; cdecl; static;
+begin
+  Result := TWebcam(Data).CaptureLoop;
+end;
+
 procedure TWebcam.GetWebcamFrame();
 var
   WebcamFrame: PIplImage;
 begin
-  if (IsEnabled = true) and((SDL_GetTicks() - LastTickFrame) >= 1000/StrToInt(IWebcamFPS[Ini.WebCamFPS])) then
+  WebcamFrame := nil;
+
+  if IsEnabled then
+  begin
+    SDL_LockMutex(Mutex);
+    WebcamFrame := CurrentFrame;
+    CurrentFrame := nil;
+    Interval := 1000 div StrToInt(IWebcamFPS[Ini.WebCamFPS]);
+    SDL_UnlockMutex(Mutex);
+  end;
+
+  if WebcamFrame <> nil then
   begin
     if (TextureCam.TexNum > 0) then
     begin
       glDeleteTextures(1, PGLuint(@TextureCam.TexNum));
       TextureCam.TexNum := 0;
     end;
-
-    WebcamFrame := cvQueryFrame(Capture);
 
     if (Ini.WebCamFlip = 0) then
       cvFlip(WebcamFrame, nil, 1);
@@ -165,8 +231,6 @@ begin
     TextureCam := Texture.CreateTexture(WebcamFrame.imageData, nil, WebcamFrame.Width, WebcamFrame.Height, WebcamFrame.depth);
 
     cvReleaseImage(@WebcamFrame);
-
-    LastTickFrame := SDL_GetTicks();
   end;
 
 end;
@@ -313,6 +377,7 @@ begin
   cvReleaseImage(@ImageFrame);
   cvReleaseImage(@DiffFrame);
   cvReleaseImage(@EffectFrame);
+  cvReleaseImage(@Frame);
   Result := RGBFrame;
 
 end;
