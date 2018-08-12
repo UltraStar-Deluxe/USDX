@@ -219,20 +219,17 @@ begin
     1: begin // Grayscale
          cvCvtColor(Frame, EffectFrame, CV_BGR2GRAY);
          cvCvtColor(EffectFrame, RGBFrame, CV_GRAY2RGB);
-         Result := RGBFrame;
        end;
 
     2: begin // Black & White
          cvCvtColor(Frame, ImageFrame, CV_BGR2GRAY );
          cvThreshold(ImageFrame, EffectFrame, 128, 255, CV_THRESH_OTSU);
          cvCvtColor(EffectFrame, RGBFrame, CV_GRAY2RGB);
-         Result := RGBFrame;
        end;
 
     3: begin // Negative
          cvCvtColor(Frame, RGBFrame, CV_BGR2RGB);
          cvNot(RGBFrame, RGBFrame);
-         Result := RGBFrame;
        end;
 
     4: begin // Binary Image
@@ -257,46 +254,39 @@ begin
          LastFrame := cvCloneImage(ImageFrame);
 
          cvCvtColor(EffectFrame, RGBFrame, CV_GRAY2RGB);
-         Result := RGBFrame;
        end;
 
     5: begin // Dilate
          cvDilate(Frame, Frame, nil, CamEffectParam);
          cvCvtColor(Frame, RGBFrame, CV_BGR2RGB);
-         Result := RGBFrame;
        end;
 
     6: begin //threshold
          cvCvtColor(Frame, ImageFrame, CV_BGR2GRAY);
          cvThreshold(ImageFrame, EffectFrame, CamEffectParam, 100, 3);
          cvCvtColor(EffectFrame, RGBFrame, CV_GRAY2RGB);
-         Result := RGBFrame;
        end;
 
     7: begin // Edges
          cvCvtColor(Frame, ImageFrame, CV_BGR2GRAY);
          cvCanny(ImageFrame, EffectFrame, CamEffectParam, CamEffectParam, 3);
          cvCvtColor(EffectFrame, RGBFrame, CV_GRAY2RGB);
-         Result := RGBFrame;
        end;
 
     8: begin // Gaussian Blur
          cvSmooth(Frame, Frame, CV_BLUR, CamEffectParam, CamEffectParam);
          cvCvtColor(Frame, RGBFrame, CV_BGR2RGB);
-         Result := RGBFrame;
        end;
 
     9: begin // Equalized
          cvCvtColor(Frame, ImageFrame, CV_BGR2GRAY);
          cvEqualizeHist(ImageFrame, EffectFrame);
          cvCvtColor(EffectFrame, RGBFrame, CV_GRAY2RGB);
-         Result := RGBFrame;
        end;
 
     10: begin // Erode
          cvErode(Frame, Frame, nil, CamEffectParam);
          cvCvtColor(Frame, RGBFrame, CV_BGR2RGB);
-         Result := RGBFrame;
        end;
     {
     11:begin // Color
@@ -304,7 +294,6 @@ begin
 
          cvAddS(Frame, CV_RGB(255, 0, 0), Frame);
          cvCvtColor(Frame, RGBFrame, CV_BGR2RGB);
-         Result := RGBFrame;
        end;
 
     12:begin // Value
@@ -317,20 +306,19 @@ begin
          // Split hue, saturation and value of hsv on them
          cvSplit(RGBFrame, nil, nil, ImageFrame, 0);
          cvCvtColor(ImageFrame, RGBFrame, CV_GRAY2RGB);
-         Result := RGBFrame;
        end;
        }
     else
     begin
       //normal
       cvCvtColor(Frame, RGBFrame, CV_BGR2RGB);
-      Result := RGBFrame;
     end;
   end;
 
   cvReleaseImage(@ImageFrame);
   cvReleaseImage(@DiffFrame);
   cvReleaseImage(@EffectFrame);
+  Result := RGBFrame;
 
 end;
 
