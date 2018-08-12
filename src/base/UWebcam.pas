@@ -47,7 +47,6 @@ type
     private
       LastTickFrame: integer;
       LastFrame:     PIplImage;
-      RGBFrame:      PIplImage;
 
     public
       Capture: PCvCapture;
@@ -164,9 +163,7 @@ begin
 
     TextureCam := Texture.CreateTexture(WebcamFrame.imageData, nil, WebcamFrame.Width, WebcamFrame.Height, WebcamFrame.depth);
 
-    WebcamFrame := nil;
     cvReleaseImage(@WebcamFrame);
-    cvReleaseImage(@RGBFrame);
 
     LastTickFrame := SDL_GetTicks();
 
@@ -192,7 +189,7 @@ var
   Size: CvSize;
   HalfSize: CvSize;
   CamEffectParam: integer;
-  ImageFrame, EffectFrame, DiffFrame: PIplImage;
+  ImageFrame, EffectFrame, DiffFrame, RGBFrame: PIplImage;
 begin
 
   // params values
