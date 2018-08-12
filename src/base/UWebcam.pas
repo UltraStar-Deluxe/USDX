@@ -167,9 +167,6 @@ begin
     cvReleaseImage(@WebcamFrame);
 
     LastTickFrame := SDL_GetTicks();
-
-    // wait for a key
-    cvWaitKey(0);
   end;
 
 end;
