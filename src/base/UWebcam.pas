@@ -54,6 +54,10 @@ type
       Mutex:         PSDL_Mutex;
       StopCond:      PSDL_Cond;
       CaptureThread: PSDL_Thread;
+      BGR2YUV:       PCvMat;
+      YUV2BGR:       PCvMat;
+      Mat1:          PCvMat;
+      Mat2:          PCvMat;
 
       function CaptureLoop: integer;
       class function CaptureThreadMain(Data: Pointer): integer; cdecl; static;
@@ -92,11 +96,36 @@ begin
   Mutex := SDL_CreateMutex();
   StopCond := SDL_CreateCond();
   IsEnabled := false;
+  if @cvCreateMat <> nil then
+  begin
+    BGR2YUV := cvCreateMat(3, 3, CV_32FC1);
+    YUV2BGR := cvCreateMat(3, 3, CV_32FC1);
+    Mat1 := cvCreateMat(3, 3, CV_32FC1);
+    Mat2 := cvCreateMat(3, 3, CV_32FC1);
+
+    cvSetReal2D(PCvArr(BGR2YUV), 0, 0, 0.114);
+    cvSetReal2D(PCvArr(BGR2YUV), 0, 1, 0.587);
+    cvSetReal2D(PCvArr(BGR2YUV), 0, 2, 0.299);
+    cvSetReal2D(PCvArr(BGR2YUV), 1, 0, 1);
+    cvSetReal2D(PCvArr(BGR2YUV), 1, 1, -0.587/(1-0.114));
+    cvSetReal2D(PCvArr(BGR2YUV), 1, 2, -0.299/(1-0.114));
+    cvSetReal2D(PCvArr(BGR2YUV), 2, 0, -0.114/(1-0.299));
+    cvSetReal2D(PCvArr(BGR2YUV), 2, 1, -0.587/(1-0.299));
+    cvSetReal2D(PCvArr(BGR2YUV), 2, 2, 1);
+    cvInvert(PCvArr(BGR2YUV), PCvArr(YUV2BGR));
+  end;
 end;
 
 destructor TWebcam.Destroy;
 begin
   Release;
+  if @cvReleaseMat <> nil then
+  begin
+    cvReleaseMat(@Mat2);
+    cvReleaseMat(@Mat1);
+    cvReleaseMat(@YUV2BGR);
+    cvReleaseMat(@BGR2YUV);
+  end;
   SDL_DestroyCond(StopCond);
   SDL_DestroyMutex(Mutex);
   inherited;
@@ -384,100 +413,32 @@ end;
 
 function TWebcam.FrameAdjust(Frame: PIplImage): PIplImage;
 var
-  I, J: integer;
-  Size: CvSize;
-  HalfSize: CvSize;
   BrightValue, SaturationValue, HueValue: integer;
-  BrightValueConvt, SaturationValueConvt, HueValueConvt: real;
-  ImageFrame, TmpFrame, HueFrame, SaturationFrame, ValueFrame: PIplImage;
+  M1, M2, M3, M4: PCvMat;
+  C, S: real;
 begin
 
-  Size  := cvSizeV(Frame.width, Frame.height);
-  HalfSize  := cvSizeV(Frame.width/2, Frame.height/2);
-
-  ImageFrame := cvCreateImage(Size, Frame.depth, 1);
-  TmpFrame := cvCreateImage(Size, Frame.depth, 3);
-
-  HueFrame := cvCreateImage(Size, Frame.depth, 1);
-  SaturationFrame := cvCreateImage(Size, Frame.depth, 1);
-  ValueFrame := cvCreateImage(Size, Frame.depth, 1);
-
   BrightValue := Ini.WebcamBrightness;
-
-  // Brightness
-  if (BrightValue <> 100) then
-  begin
-    if (BrightValue > 100) then
-      BrightValueConvt := (BrightValue - 100) * 255/100
-    else
-      BrightValueConvt := -((BrightValue - 100) * -255/100);
-
-    cvAddS(Frame, CV_RGB(BrightValueConvt, BrightValueConvt, BrightValueConvt), Frame);
-  end;
-
   SaturationValue := Ini.WebCamSaturation;
-
-  // Saturation
-  if (SaturationValue <> 100) then
-  begin
-    if (SaturationValue > 100) then
-      SaturationValueConvt := (SaturationValue - 100) * 255/100
-    else
-      SaturationValueConvt := -((SaturationValue - 100) * -255/100);
-
-    // Convert from Red-Green-Blue to Hue-Saturation-Value
-//    cvCvtColor(Frame, TmpFrame, CV_BGR2HSV );
-
-    // Split hue, saturation and value of hsv on them
-  //  cvSplit(TmpFrame, nil, ImageFrame, nil, nil);
-    //cvCvtColor(ImageFrame, Frame, CV_GRAY2RGB);
-
-    cvConvertScale(Frame, Frame, 10);
-    //     cvCvtColor(Frame, RGBFrame, CV_BGR2RGB);
-
-  end;
-
   HueValue := Ini.WebCamHue;
 
-  // Hue
-  if (HueValue <> 180) then
+  if (BrightValue <> 100) or (SaturationValue <> 100) or (HueValue <> 180) then
   begin
-    if (HueValue > 100) then
-      HueValueConvt := (HueValue - 100) * 255/100
-    else
-      HueValueConvt := -((HueValue - 100) * -255/100);
-
-    // Convert from Red-Green-Blue to Hue-Saturation-Value
-    cvCvtColor(Frame, TmpFrame, CV_BGR2RGB );
-
-    // Split hue, saturation and value of hsv on them
-    cvSplit(TmpFrame, HueFrame, SaturationFrame, ValueFrame, nil);
-    //cvCvtColor(ImageFrame, Frame, CV_GRAY2RGB);
-
-    cvMerge(SaturationFrame, HueFrame, ValueFrame, nil, Frame);
-
-    // convert back for displaying
-    //cvCvtColor(TmpFrame, Frame, CV_BGR2RGB);
+    C := (HueValue - 180) * Pi / 180;
+    S := sin(C) * SaturationValue / 100;
+    C := cos(C) * SaturationValue / 100;
+    cvSetZero(PCvArr(Mat1));
+    cvSetReal2D(PCvArr(Mat1), 0, 0, BrightValue / 100);
+    cvSetReal2D(PCvArr(Mat1), 1, 1, C);
+    cvSetReal2D(PCvArr(Mat1), 1, 2, S);
+    cvSetReal2D(PCvArr(Mat1), 2, 1, -S);
+    cvSetReal2D(PCvArr(Mat1), 2, 2, C);
+    cvGEMM(PCvArr(Mat1), PCvArr(BGR2YUV), 1, nil, 0, PCvArr(Mat2));
+    cvGEMM(PCvArr(YUV2BGR), PCvArr(Mat2), 1, nil, 0, PCvArr(Mat1));
+    cvTransform(PCvArr(Frame), PCvArr(Frame), Mat1);
   end;
 
-  cvReleaseImage(@ImageFrame);
-  cvReleaseImage(@TmpFrame);
-
-  cvReleaseImage(@HueFrame);
-  cvReleaseImage(@SaturationFrame);
-  cvReleaseImage(@ValueFrame);
-
   Result := Frame;
-
-  {    11:begin // Contrast
-         RGBFrame := cvCreateImage(Size, Frame.depth, 3);
-
-         cvConvertScale(Frame, Frame, CamEffectParam/10);
-         cvCvtColor(Frame, RGBFrame, CV_BGR2RGB);
-         Result := RGBFrame;
-       end;
-       }
-
 end;
 
 //----------
