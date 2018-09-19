@@ -139,7 +139,7 @@ begin
   for FontNameIndex := 0 to Sections.Count-1 do
   begin
     //if (Sections[FontNameIndex].StartsWith('Font_')) then // .StartsWith() does not compile on Travis-CI
-    if (SameStr(LeftStr(Sections[FontNameIndex], 5), 'Font_')) then
+    if (LeftStr(Sections[FontNameIndex], 5) = 'Font_') then
       begin
         SetLength(FontFamilyNames, Length(FontFamilyNames) + 1);
         //FontFamilyNames[FontNameIndex] := FontIni.ReadString(Sections[FontNameIndex], 'Name', Sections[FontNameIndex].Remove(0, 5)); // .Remove() does not compile on Travis-CI
