@@ -153,7 +153,7 @@ begin
     NeededPixFmt := SDL_PIXELFORMAT_RGB24
   else if (Typ = TEXTURE_TYPE_TRANSPARENT) or
           (Typ = TEXTURE_TYPE_COLORIZED) then
-    NeededPixFmt := SDL_PIXELFORMAT_ABGR8888
+    NeededPixFmt := SDL_PIXELFORMAT_RGBA32
   else
     NeededPixFmt := SDL_PIXELFORMAT_RGB24;
 
@@ -318,19 +318,11 @@ begin
   if (Typ = TEXTURE_TYPE_TRANSPARENT) or
      (Typ = TEXTURE_TYPE_COLORIZED) then
   begin
-    {$IFDEF FPC_BIG_ENDIAN}
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, TexSurface.pixels);
-    {$ELSE}
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, newWidth, newHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, TexSurface.pixels);
-    {$ENDIF}
   end
   else //if Typ = TEXTURE_TYPE_PLAIN then
   begin
-    {$IFDEF FPC_BIG_ENDIAN}
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_BGR, GL_UNSIGNED_BYTE, TexSurface.pixels);
-    {$ELSE}
     glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, TexSurface.pixels);
-    {$ENDIF}
   end;
 
   // setup texture struct
@@ -430,17 +422,12 @@ begin
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  {$IFDEF FPC_BIG_ENDIAN}
-  glTexImage2D(GL_TEXTURE_2D, 0, 3, Width, Height, 0, GL_BGR, GL_UNSIGNED_BYTE, Data);
-  {$ELSE}
   glTexImage2D(GL_TEXTURE_2D, 0, 3, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, Data);
-  {$ENDIF}
 
 {
   if Mipmapping then
   begin
     Error := gluBuild2DMipmaps(GL_TEXTURE_2D, 3, W, H, GL_RGB, GL_UNSIGNED_BYTE, @Data[0]);
-// FPC_BIG_ENDIAN   Error := gluBuild2DMipmaps(GL_TEXTURE_2D, 3, W, H, GL_BGR, GL_UNSIGNED_BYTE, @Data[0]);
     if Error > 0 then
       Log.LogError('gluBuild2DMipmaps() failed', 'TTextureUnit.CreateTexture');
   end;

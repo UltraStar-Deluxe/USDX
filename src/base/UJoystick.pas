@@ -203,7 +203,6 @@ type
 
       function GetJoystick(): Pointer; override;
 
-    private
       // mapping
       function TranslateAxisToKey(Axis: integer; Direction: integer; out Key: TSDL_KeyCode): boolean; override;
       function TranslateAxisToMouseAxis(Axis: integer; Direction: integer; out MouseAxis: byte): boolean; override;
@@ -224,7 +223,6 @@ type
       function GetJoystick(): Pointer; override;
       function ShouldIgnoreLegacy(): boolean; override;
 
-    private
       // mapping
       function TranslateAxisToKey(Axis: integer; Direction: integer; out Key: TSDL_KeyCode): boolean; override;
       function TranslateAxisToMouseAxis(Axis: integer; Direction: integer; out MouseAxis: byte): boolean; override;
@@ -416,6 +414,7 @@ begin
   inherited;
 
   Controllers := TControllerIDMap.Create;
+  Controllers.Sorted := true;
   Controller := nil;
 
   SDL_InitSubSystem( SDL_INIT_JOYSTICK or SDL_INIT_GAMECONTROLLER );
@@ -717,7 +716,9 @@ begin
   //inherited;
 
   DPadStates := TControllerDPadIDStateMap.Create;
+  DPadStates.Sorted := true;
   AxesStates := TControllerAxisIDStateMap.Create;
+  AxesStates.Sorted := true;
 
   MouseMode := false;
 
@@ -842,15 +843,15 @@ end;
 // TODO: Move to Joystick manager
 function TJoyController.SimulateMouse(Axis: byte; Delta: real): boolean;
 var
-  mouseX, mouseY: PInt;
+  mouseX, mouseY: integer;
 begin
   Result := true;
 
   if not LastMouseState.IsSet then
   begin
     SDL_GetMouseState(@mouseX, @mouseY);
-    LastMouseState.X := integer(mousex);
-    LastMouseState.Y := integer(mousey);
+    LastMouseState.X := mousex;
+    LastMouseState.Y := mousey;
     LastMouseState.Time := SDL_GetTicks();
   end;
 

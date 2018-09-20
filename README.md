@@ -255,6 +255,10 @@ For linking and running the game, the following libraries are also required:
     `sudo apt-get update && sudo apt-get install git automake make gcc fpc libsdl2-image-dev libavformat-dev libswscale-dev libsqlite3-dev libfreetype6-dev portaudio19-dev libportmidi-dev liblua5.3-dev libopencv-highgui-dev`
   * if you want to build --with-libprojectM, you also need
     `sudo apt-get install g++ libprojectm-dev`
+  * for Fedora with RPM Fusion:
+    `sudo dnf install git automake make gcc fpc SDL2_image-devel ffmpeg-devel sqlite-devel freetype-devel portaudio-devel portmidi-devel lua-devel opencv-devel`
+    and to be able to use --with-libprojectM:
+    `sudo dnf install gcc-c++ libprojectM-devel`
   * for arch linux there is an aur package called [ultrastardx-git](https://aur.archlinux.org/packages/ultrastardx-git)
 2. `git clone https://github.com/UltraStar-Deluxe/USDX`
 2. `cd USDX`
