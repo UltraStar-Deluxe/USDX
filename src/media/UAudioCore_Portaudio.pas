@@ -266,7 +266,10 @@ begin
   begin
     // we cannot fix the error -> exit
     if (err <> paInvalidSampleRate) then
+    begin
+      Log.LogError('Error checking format: ' + Pa_GetErrorText(err), 'TAudioCore_Portaudio.TestDevice');
       Exit;
+    end;
 
     // try alternative sample-rates to the detected one
     sampleRate := 0;
@@ -286,7 +289,10 @@ begin
     end;
     // no working sample-rate found
     if (sampleRate = 0) then
+    begin
+      Log.LogError('Error checking format: ' + Pa_GetErrorText(err), 'TAudioCore_Portaudio.TestDevice');
       Exit;
+    end;
   end;
 
   // FIXME: for some reason gdb stops after a call of Pa_AbortStream()
@@ -302,6 +308,7 @@ begin
           paNoFlag, @TestCallback, nil);
   if (err <> paNoError) then
   begin
+    Log.LogError('Error opening stream: ' + Pa_GetErrorText(err), 'TAudioCore_Portaudio.TestDevice');
     exit;
   end;
 
@@ -309,6 +316,7 @@ begin
   err := Pa_StartStream(stream);
   if (err <> paNoError) then
   begin
+    Log.LogError('Error starting stream: ' + Pa_GetErrorText(err), 'TAudioCore_Portaudio.TestDevice');
     Pa_CloseStream(stream);
     exit;
   end;
@@ -326,6 +334,9 @@ begin
     // not yet aborted, wait and try (poll) again
     Pa_Sleep(10);
   end;
+
+  if cbWorks = false then
+    Log.LogError('Error: Audio callback is not called', 'TAudioCore_Portaudio.TestDevice');
 
   // finally abort the stream
   Pa_CloseStream(stream);
