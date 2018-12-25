@@ -2081,7 +2081,19 @@ begin
   tmpLyricsUpperY := Lyrics.UpperLineY;
   tmpLyricsLowerY := Lyrics.LowerLineY;
 
-  Lyrics.FontStyle := Ini.JukeboxFont;
+  case Ini.JukeboxFont of
+    0: // normal fonts
+    begin
+      Lyrics.FontStyle := ftNormal;
+    end;
+    1, 2: // outline fonts
+    begin
+      if (Ini.JukeboxFont = 1) then
+        Lyrics.FontStyle := ftOutline1
+      else
+        Lyrics.FontStyle := ftOutline2;
+    end;
+  end; // case
 
   SongMenuVisible := false;
   SongListVisible := true;

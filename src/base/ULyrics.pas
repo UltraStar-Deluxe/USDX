@@ -800,7 +800,7 @@ begin
   end;
 
   // reset
-  SetOutlineColor(0,0,0,1);
+  SetOutlineColor(0,0,0,-1);
 
 end;
 
