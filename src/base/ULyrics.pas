@@ -427,16 +427,15 @@ var
   PosX: real;
   CurWord: PLyricWord;
 begin
-  PosX := X;
+  PosX := X - LyricLine.Words[StartWord].X;
 
   // set word positions and line size and draw the line
   for I := StartWord to EndWord do
   begin
     CurWord := @LyricLine.Words[I];
     SetFontItalic(CurWord.Freestyle);
-    SetFontPos(PosX, Y);
+    SetFontPos(PosX + CurWord.X, Y);
     glPrint(CurWord.Text);
-    PosX := PosX + CurWord.Width;
   end;
 end;
 
@@ -444,10 +443,12 @@ procedure TLyricEngine.UpdateLineMetrics(LyricLine: TLyricLine);
 var
   I: integer;
   PosX: real;
+  TextSoFar: UTF8String;
   CurWord: PLyricWord;
   RequestWidth, RequestHeight: real;
 begin
   PosX := 0;
+  TextSoFar := '';
 
   // setup font
   SetFontStyle(FontStyle);
@@ -492,20 +493,20 @@ begin
 
     // - if current word is italic but not the next word get the width of the
     // italic font to avoid overlapping.
-    // - if two italic words follow each other use the normal style's
-    // width otherwise the spacing between the words will be too big.
-    // - if it is the line's last word use normal width
-    if CurWord.Freestyle and
-       (I+1 < Length(LyricLine.Words)) and
-       (not LyricLine.Words[I+1].Freestyle) then
-    begin
+    if CurWord.Freestyle then
       SetFontItalic(true);
-    end;
 
-    CurWord.X := PosX;
     CurWord.Width := glTextWidth(CurWord.Text);
-    PosX := PosX + CurWord.Width;
+    TextSoFar := TextSoFar + CurWord.Text;
+    CurWord.X := PosX + glTextWidth(TextSoFar) - CurWord.Width;
     SetFontItalic(false);
+
+    if (I+1 < Length(LyricLine.Words)) and
+       (CurWord.Freestyle <> LyricLine.Words[I+1].Freestyle) then
+    begin
+      PosX := CurWord.X + CurWord.Width;
+      TextSoFar := '';
+    end;
   end;
 end;
 
