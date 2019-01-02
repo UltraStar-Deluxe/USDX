@@ -1763,8 +1763,13 @@ begin
   //Reset LineNo
   FileLineNo := 0;
 
-  //Open File and set File Pointer to the beginning
-  SongFile := TMemTextFileStream.Create(Self.Path.Append(Self.FileName), fmOpenRead);
+  try
+    //Open File and set File Pointer to the beginning
+    SongFile := TMemTextFileStream.Create(Self.Path.Append(Self.FileName), fmOpenRead);
+  except
+    Log.LogError('Failed to open ' + Self.Path.Append(Self.FileName).ToUTF8(true));
+    Exit;
+  end;
 
   try
 
