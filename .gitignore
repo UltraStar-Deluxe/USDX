@@ -15,6 +15,7 @@ Thumbs.db
 *.dcu
 
 # intermediates
+/configure
 /build/
 Makefile
 config.log
