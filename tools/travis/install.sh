@@ -17,8 +17,8 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
         fpc portaudio binutils freetype libpng lua libtiff \
         portmidi
 
-    # This is from: https://github.com/Homebrew/homebrew-versions
-    brew install ffmpeg28
+    # This is from: https://github.com/Homebrew/homebrew-core
+    brew install ffmpeg@4
 
 else
     # Linux build
