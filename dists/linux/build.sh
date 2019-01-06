@@ -20,10 +20,10 @@ export CXX="$CXX -U_FORTIFY_SOURCE -D_GLIBCXX_USE_CXX11_ABI=0 -include $PREFIX/l
 echo "Building UltraStar Deluxe"
 cd "$root/../.."
 bash ./autogen.sh
-./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" # --with-libprojectM
+./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" --enable-debug # --with-libprojectM
 sleep 1
 # -rpath \\\$\$ORIGIN/$1
-make LDFLAGS="-O2 --sort-common --as-needed -z relro -shared-libgcc" datadir="./data" prefix="" bindir="" INSTALL_DATADIR="./data"
+make LDFLAGS="-O2 --sort-common --as-needed -z relro" datadir="./data" prefix="" bindir="" INSTALL_DATADIR="./data"
 rm -rf "$OUTPUT"
 sleep 1
 make DESTDIR="$OUTPUT/" datadir="/data" prefix="" bindir="" INSTALL_DATADIR="./data" install
