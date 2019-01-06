@@ -14,7 +14,7 @@ deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.36.tar.xz')
 deps+=('portmidi,https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip/download')
 deps+=('portmidi-debian,http://http.debian.net/debian/pool/main/p/portmidi/portmidi_217-6.debian.tar.xz')
 deps+=('zlib,https://zlib.net/zlib-1.2.11.tar.gz')
-deps+=('libcwrap.h,https://raw.githubusercontent.com/wheybags/glibc_version_header/master/version_headers/force_link_glibc_2.10.2.h')
+# deps+=('libcwrap.h,https://raw.githubusercontent.com/wheybags/glibc_version_header/master/version_headers/force_link_glibc_2.10.2.h')
 
 rm -rf deps
 

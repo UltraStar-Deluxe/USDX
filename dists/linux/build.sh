@@ -14,8 +14,8 @@ PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
 export CC="gcc"
 export CXX="g++"
 
-export CC="$CC -U_FORTIFY_SOURCE -include $PREFIX/libcwrap.h"
-export CXX="$CXX -U_FORTIFY_SOURCE -D_GLIBCXX_USE_CXX11_ABI=0 -include $PREFIX/libcwrap.h"
+# export CC="$CC -U_FORTIFY_SOURCE -include $SRC/libcwrap.h"
+# export CXX="$CXX -U_FORTIFY_SOURCE -D_GLIBCXX_USE_CXX11_ABI=0 -include $SRC/libcwrap.h"
 
 echo "Building UltraStar Deluxe"
 cd "$root/../.."
