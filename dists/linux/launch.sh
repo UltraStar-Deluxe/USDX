@@ -11,8 +11,4 @@ BIN=./ultrastardx
 LIBPATH=./lib
 
 # Run the game, (optionally) with the debugger
-LD_LIBRARY_PATH="$LIBPATH:$LD_LIBRARY_PATH" $DEBUGGER $BIN $@
-
-# Get the game's exit code, and return it.
-e=$?
-exit $e
+LD_LIBRARY_PATH="$LIBPATH:$LD_LIBRARY_PATH" exec $DEBUGGER $BIN $@
