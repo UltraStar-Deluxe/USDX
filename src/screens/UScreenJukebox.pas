@@ -2047,6 +2047,8 @@ begin
 end;
 
 procedure TScreenJukebox.OnShow;
+var
+  Col: TRGB;
 begin
   inherited;
 
@@ -2081,17 +2083,60 @@ begin
   tmpLyricsUpperY := Lyrics.UpperLineY;
   tmpLyricsLowerY := Lyrics.LowerLineY;
 
-  case Ini.JukeboxFont of
-    0: // normal fonts
+  Lyrics.FontFamily := Ini.JukeboxFont;
+  Lyrics.FontStyle := Ini.JukeboxStyle;
+
+  case Ini.JukeboxStyle of
+    0, 1: // regular/bold (non-outline) font
     begin
-      Lyrics.FontStyle := ftNormal;
-    end;
-    1, 2: // outline fonts
-    begin
-      if (Ini.JukeboxFont = 1) then
-        Lyrics.FontStyle := ftOutline1
+      Lyrics.LineColor_en.R := Skin_FontR;
+      Lyrics.LineColor_en.G := Skin_FontG;
+      Lyrics.LineColor_en.B := Skin_FontB;
+      Lyrics.LineColor_en.A := 1;
+
+      Lyrics.LineColor_dis.R := 0.2;
+      Lyrics.LineColor_dis.G := 0.2;
+      Lyrics.LineColor_dis.B := 0.2;
+      Lyrics.LineColor_dis.A := 1;
+
+      if (Ini.JukeboxSingLineColor = High(UIni.ISingLineColor)) then
+        Col := GetJukeboxLyricOtherColor(0)
       else
-        Lyrics.FontStyle := ftOutline2;
+        Col := GetLyricColor(Ini.JukeboxSingLineColor);
+
+      Lyrics.LineColor_act.R := Col.R; //0.02;
+      Lyrics.LineColor_act.G := Col.G; //0.6;
+      Lyrics.LineColor_act.B := Col.B; //0.8;
+      Lyrics.LineColor_act.A := 1;
+    end;
+    2: // outline fonts
+    begin
+      if (Ini.JukeboxSingLineColor = High(UIni.ISingLineColor)) then
+        Col := GetJukeboxLyricOtherColor(0)
+      else
+        Col := GetLyricColor(Ini.JukeboxSingLineColor);
+      Lyrics.LineColor_act.R := Col.R;
+      Lyrics.LineColor_act.G := Col.G;
+      Lyrics.LineColor_act.B := Col.B;
+      Lyrics.LineColor_act.A := 1;
+
+      if (Ini.JukeboxActualLineColor = High(UIni.IActualLineColor)) then
+        Col := GetJukeboxLyricOtherColor(1)
+      else
+        Col := GetLyricGrayColor(Ini.JukeboxActualLineColor);
+      Lyrics.LineColor_en.R := Col.R;
+      Lyrics.LineColor_en.G := Col.G;
+      Lyrics.LineColor_en.B := Col.B;
+      Lyrics.LineColor_en.A := 1;
+
+      if (Ini.JukeboxNextLineColor = High(UIni.INextLineColor)) then
+        Col := GetJukeboxLyricOtherColor(2)
+      else
+        Col := GetLyricGrayColor(Ini.JukeboxNextLineColor);
+      Lyrics.LineColor_dis.R := Col.R;
+      Lyrics.LineColor_dis.G := Col.G;
+      Lyrics.LineColor_dis.B := Col.B;
+      Lyrics.LineColor_dis.A := 1;
     end;
   end; // case
 

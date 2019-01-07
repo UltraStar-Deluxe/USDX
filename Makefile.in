@@ -457,7 +457,7 @@ macosx-dmg: macosx-standalone-app
 	fi
 	$(RM) UltraStarDeluxe.dmg
 	$(RM) UltraStarDeluxe.sparseimage
-	$(HDIUTIL) create -type SPARSE -size 100m -fs HFS+ -volname UltraStarDeluxe -ov UltraStarDeluxe.sparseimage
+	$(HDIUTIL) create -type SPARSE -size 200m -fs HFS+ -volname UltraStarDeluxe -ov UltraStarDeluxe.sparseimage
 	$(HDIUTIL) attach UltraStarDeluxe.sparseimage
 	/bin/ln -s /Applications /Volumes/UltraStarDeluxe/Applications
 	/bin/cp -R UltraStarDeluxe.app /Volumes/UltraStarDeluxe

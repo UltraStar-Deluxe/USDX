@@ -52,6 +52,7 @@ type
       Line: TLine;
 
       FontSelect:      integer;
+      StyleSelect:     integer;
       LineSelect:      integer;
       PropertySelect:  integer;
       LineColorSelect: integer;
@@ -153,7 +154,7 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 9 then
+          if SelInteraction = 10 then
           begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
@@ -166,11 +167,11 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 8) then
+          if (SelInteraction >= 0) and (SelInteraction <= 9) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
 
-            if (SelInteraction >= 6) and (SelInteraction <= 8) then
+            if (SelInteraction >= 7) and (SelInteraction <= 9) then
             begin
               if (SDL_ModState and (KMOD_LSHIFT or KMOD_RSHIFT) <> 0) and (SelectsS[SelInteraction].SelectOptInt <= 245) then
                 Salt_Mod := 9
@@ -221,11 +222,11 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 8) then
+          if (SelInteraction >= 0) and (SelInteraction <= 9) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
 
-            if (SelInteraction >= 6) and (SelInteraction <= 8) then
+            if (SelInteraction >= 7) and (SelInteraction <= 9) then
             begin
               if (SDL_ModState and (KMOD_LSHIFT or KMOD_RSHIFT) <> 0) and (SelectsS[SelInteraction].SelectOptInt >= 10) then
                 Salt_Mod := 9
@@ -283,7 +284,7 @@ var
   I: integer;
 begin
 
-  if (SelectsS[FontSelect].SelectedOption <> 0) then
+  if (SelectsS[StyleSelect].SelectedOption = ftOutline) then
   begin
     SetLength(IProperty, Length(IPropertyTranslated));
     for I := 0 to High(IPropertyTranslated) do
@@ -304,7 +305,7 @@ procedure TScreenOptionsJukebox.InteractInc;
 begin
   inherited InteractInc;
 
-  if (SelInteraction = 0) then
+  if (SelInteraction = 1) then
     UpdatePropertyList;
 
   RefreshSelectsColors;
@@ -314,7 +315,7 @@ procedure TScreenOptionsJukebox.InteractDec;
 begin
   inherited InteractDec;
 
-  if (SelInteraction = 0) then
+  if (SelInteraction = 1) then
     UpdatePropertyList;
 
   RefreshSelectsColors;
@@ -350,7 +351,7 @@ begin
 
   end;
 
-  if (SelInteraction >= 6) and (SelInteraction <= 8) then
+  if (SelInteraction >= 7) and (SelInteraction <= 9) then
   begin
     if (SelectsS[PropertySelect].SelectedOption = 1) then
       ChangeOtherOColor()
@@ -478,7 +479,11 @@ begin
 
   Theme.OptionsJukebox.SelectLyricsFont.showArrows := true;
   Theme.OptionsJukebox.SelectLyricsFont.oneItemOnly := true;
-  FontSelect := AddSelectSlide(Theme.OptionsJukebox.SelectLyricsFont, Ini.JukeboxFont, ILyricsFontTranslated);
+  FontSelect := AddSelectSlide(Theme.OptionsJukebox.SelectLyricsFont, Ini.JukeboxFont, FontFamilyNames);
+
+  Theme.OptionsJukebox.SelectLyricsStyle.showArrows := true;
+  Theme.OptionsJukebox.SelectLyricsStyle.oneItemOnly := true;
+  StyleSelect := AddSelectSlide(Theme.OptionsJukebox.SelectLyricsStyle, Ini.JukeboxStyle, ILyricsStyleTranslated);
 
   Theme.OptionsJukebox.SelectLyricsEffect.showArrows := true;
   Theme.OptionsJukebox.SelectLyricsEffect.oneItemOnly := true;
@@ -599,30 +604,15 @@ begin
   Line.LastLine := true;
 
   Lyrics.AddLine(@Line);
-
-
   Lyrics.AddLine(@Line);
-
 end;
 
 procedure TScreenOptionsJukebox.LyricSample;
 var
   Col: TRGB;
 begin
-
-  case Ini.JukeboxFont of
-    0: // normal fonts
-    begin
-      Lyrics.FontStyle := ftNormal;
-    end;
-    1, 2: // outline fonts
-    begin
-      if (Ini.JukeboxFont = 1) then
-        Lyrics.FontStyle := ftOutline1
-      else
-        Lyrics.FontStyle := ftOutline2;
-    end;
-  end; // case
+  Lyrics.FontFamily := Ini.JukeboxFont;
+  Lyrics.FontStyle  := Ini.JukeboxStyle;
 
   if (Ini.JukeboxSingLineColor = High(ISingLineColor)) then
     Col := GetJukeboxLyricOtherColor(0)

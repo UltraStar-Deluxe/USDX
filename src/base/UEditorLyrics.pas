@@ -41,28 +41,30 @@ uses
 
 type
   TWord = record
-    X:         real;
-    Y:         real;
-    Size:      real;
-    Width:     real;
-    Text:      string;
-    ColR:      real;
-    ColG:      real;
-    ColB:      real;
-    FontStyle: integer;
-    Italic:    boolean;
-    Selected:  boolean;
+    X:          real;
+    Y:          real;
+    Size:       real;
+    Width:      real;
+    Text:       string;
+    ColR:       real;
+    ColG:       real;
+    ColB:       real;
+    FontFamily: integer;
+    FontStyle:  integer;
+    Italic:     boolean;
+    Selected:   boolean;
   end;
 
   TEditorLyrics = class
     private
-      AlignI:     integer;
-      XR:         real;
-      YR:         real;
-      SizeR:      real;
-      SelectedI:  integer;
-      FontStyleI: integer;          // font number
-      Word:       array of TWord;
+      AlignI:      integer;
+      XR:          real;
+      YR:          real;
+      SizeR:       real;
+      SelectedI:   integer;
+      FontFamilyI: integer;         // font number
+      FontStyleI:  integer;         // font style number
+      Word:        array of TWord;
 
       procedure SetX(Value: real);
       procedure SetY(Value: real);
@@ -71,6 +73,7 @@ type
       function GetSize: real;
       procedure SetSize(Value: real);
       procedure SetSelected(Value: integer);
+      procedure SetFontFamily(Value: integer);
       procedure SetFontStyle(Value: integer);
       procedure AddWord(Text: UTF8String);
       procedure Refresh;
@@ -97,6 +100,7 @@ type
       property Align: integer write SetAlign;
       property Size: real read GetSize write SetSize;
       property Selected: integer read SelectedI write SetSelected;
+      property FontFamily: integer write SetFontFamily;
       property FontStyle: integer write SetFontStyle;
   end;
 
@@ -172,6 +176,11 @@ begin
   Refresh;
 end;
 
+procedure TEditorLyrics.SetFontFamily(Value: integer);
+begin
+  FontFamilyI := Value;
+end;
+
 procedure TEditorLyrics.SetFontStyle(Value: integer);
 begin
   FontStyleI := Value;
@@ -191,6 +200,7 @@ begin
   Word[WordNum].Y := YR;
   Word[WordNum].Size := SizeR;
   Word[WordNum].FontStyle := FontStyleI;
+  SetFontFamily(FontFamilyI);
   SetFontStyle(FontStyleI);
   SetFontSize(SizeR);
   SetFontItalic(Italic);
@@ -254,6 +264,7 @@ var
 begin
   for WordIndex := 0 to High(Word) do
   begin
+    SetFontFamily(Word[WordIndex].FontFamily);
     SetFontStyle(Word[WordIndex].FontStyle);
     SetFontPos(Word[WordIndex].X + 10*ScreenX, Word[WordIndex].Y);
     SetFontSize(Word[WordIndex].Size);
