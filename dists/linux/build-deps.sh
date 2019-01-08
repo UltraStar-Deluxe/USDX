@@ -10,6 +10,10 @@ export PREFIX="$root/prefix"
 export PATH="$PREFIX/bin:$PATH"
 export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
 PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
+LDFLAGS="-L$PREFIX/lib"
+CPPFLAGS="-I$PREFIX/include"
+CFLAGS="-I$PREFIX/include"
+
 export CC="gcc"
 export CXX="g++"
 
@@ -38,7 +42,7 @@ build_zlib() {
 build_libpng() {
 	echo "Building libpng"
 	cd "$SRC/libpng"
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
+	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" LDFLAGS="$LDFLAGS" CPPFLAGS="$CPPFLAGS" \
 		--disable-static
 	make $makearg
 	make install
@@ -78,7 +82,7 @@ build_sdl2_image() {
 	cd "$SRC/SDL2_image"
 	bash ./autogen.sh
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
-		--with-sdl-prefix="$PREFIX" --disable-static
+		--disable-static --disable-jpg-shared --disable-png-shared
 	make $makearg
 	make install
 	make distclean
