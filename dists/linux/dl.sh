@@ -11,8 +11,6 @@ deps+=('ffmpeg,https://www.ffmpeg.org/releases/ffmpeg-4.1.tar.xz')
 deps+=('portaudio,http://www.portaudio.com/archives/pa_stable_v190600_20161030.tgz')
 deps+=('freetype,https://download.savannah.gnu.org/releases/freetype/freetype-2.9.1.tar.gz')
 deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.36.tar.xz')
-deps+=('portmidi,https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip/download')
-deps+=('portmidi-debian,http://http.debian.net/debian/pool/main/p/portmidi/portmidi_217-6.debian.tar.xz')
 deps+=('zlib,https://zlib.net/zlib-1.2.11.tar.gz')
 # deps+=('libcwrap.h,https://raw.githubusercontent.com/wheybags/glibc_version_header/master/version_headers/force_link_glibc_2.10.2.h')
 

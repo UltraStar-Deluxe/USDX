@@ -150,50 +150,6 @@ build_ffmpeg() {
 	make distclean
 }
 
-build_portmidi() {
-	echo "Building PortMidi"
-	cd "$SRC"
-	find portmidi/ portmidi-debian/patches/ -type f | while read a ; do
-		tr -d '\r' < "$a" > t
-		cat t >$a
-	done
-	rm t
-	cd portmidi
-	while read a ; do
-		patch -l -p1 < ../portmidi-debian/patches/$a
-	done < ../portmidi-debian/patches/series
-	mkdir -p build
-	cd build
-	cmake \
-		-DCMAKE_CACHEFILE_DIR=$(pwd)/out \
-		-DCMAKE_INSTALL_PREFIX="$PREFIX" \
-		-DCMAKE_BUILD_TYPE="Release" \
-		..
-	make portmidi-dynamic
-	make -C pm_dylib install
-	cd ..
-	rm -R build
-}
-
-# echo "Building projectM"
-# cd "$SRC/projectm"
-# mkdir -p build
-# cd build
-# cmake \
-# 	-Wno-dev \
-# 	-DINCLUDE-PROJECTM-QT=0 \
-# 	-DINCLUDE-PROJECTM-PULSEAUDIO=0 \
-# 	-DINCLUDE-PROJECTM-LIBVISUAL=0 \
-# 	-DINCLUDE-PROJECTM-JACK=0 \
-# 	-DINCLUDE-PROJECTM-TEST=0 \
-# 	-DINCLUDE-PROJECTM-XMMS=0 \
-# 	-DCMAKE_INSTALL_PREFIX="$PREFIX" \
-# 	-DCMAKE_BUILD_TYPE=Release \
-# 	..
-# make
-# make install
-
-
 # START OF BUILD PROCESS
 
 if [ "$1" == "all" ]; then
@@ -213,8 +169,6 @@ if [ "$1" == "all" ]; then
 
 	build_yasm
 	build_ffmpeg
-
-	build_portmidi
 
 elif [ ! -z "$1" ]; then
 	echo "Building dependencies $1"
