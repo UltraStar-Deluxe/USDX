@@ -4,7 +4,7 @@ VERSION = $(shell cat ../../VERSION)
 REV = $(shell git rev-parse --short HEAD)
 SHELL := /bin/bash
 
-.PHONY: default build-deps build run-local compress clean distclean upload
+.PHONY: default build-deps build run compress clean distclean upload
 
 default: build
 
@@ -14,7 +14,7 @@ prefix/built_libs:
 	@bash -eo pipefail -c './build-deps.sh all | tee build-deps.log'
 
 run: output/ultrastardx
-	cd output && LD_LIBRARY_PATH=lib ./ultrastardx
+	output/launch.sh
 
 build: output/ultrastardx
 output/ultrastardx output/VERSION: prefix/built_libs
