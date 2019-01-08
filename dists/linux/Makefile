@@ -11,14 +11,14 @@ default: build
 build-deps: prefix/built_libs
 prefix/built_libs:
 	@./dl.sh
-	./build-deps.sh all | tee build-deps.log
+	@bash -eo pipefail -c './build-deps.sh all | tee build-deps.log'
 
 run: output/ultrastardx
 	cd output && LD_LIBRARY_PATH=lib ./ultrastardx
 
 build: output/ultrastardx
 output/ultrastardx output/VERSION: prefix/built_libs
-	@bash -o pipefail -c './build.sh | tee build.log'
+	@bash -eo pipefail -c './build.sh | tee build.log'
 	@mkdir -p output/data/songs
 	@cp -v launch.sh output/
 	@cp -v ../../LICENSE output/
