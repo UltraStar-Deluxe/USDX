@@ -20,7 +20,7 @@ export CXX="g++"
 echo "Building UltraStar Deluxe"
 cd "$root/../.."
 bash ./autogen.sh
-./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" --enable-debug # --with-libprojectM
+./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" --enable-debug
 sleep 1
 # -rpath \\\$\$ORIGIN/$1
 make LDFLAGS="-O2 --sort-common --as-needed -z relro" datadir="./data" prefix="" bindir="" INSTALL_DATADIR="./data"
@@ -82,11 +82,3 @@ find "$OUTPUT/lib" -type f -name "*.so*" -exec strip -s {} \;
 # remove rpath from libs
 find "$OUTPUT/lib" -type f -name "*.so*" -exec chrpath --delete --keepgoing {} \;
 
-#IFS=$'\n' # make newlines the only separator
-#for file in $(ldd output/usr/local/bin/ultrastardx | awk '{print $3}' | grep -w "so")
-#do
-#	cp -v "$file" output/usr/local/lib/
-#done
-
-#rm -f output/usr/local/lib/libglib*
-#rm -f output/usr/local/lib/libasound*
