@@ -11,6 +11,12 @@ export PREFIX="$root/prefix"
 export PATH="$PREFIX/bin:$PATH"
 export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
 PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
+
+[ "$(uname -m)" == "i686" ] && M32="-m32"
+export CPPFLAGS="-I$PREFIX/include $M32"
+export CFLAGS="-I$PREFIX/include $M32"
+[ -f /.dockerenv ] && export PPC_CONFIG_PATH="$PREFIX/etc"
+
 export CC="gcc"
 export CXX="g++"
 

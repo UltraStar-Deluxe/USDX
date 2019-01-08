@@ -10,9 +10,11 @@ export PREFIX="$root/prefix"
 export PATH="$PREFIX/bin:$PATH"
 export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
 PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
-LDFLAGS="-L$PREFIX/lib"
-CPPFLAGS="-I$PREFIX/include"
-CFLAGS="-I$PREFIX/include"
+
+[ "$(uname -m)" == "i686" ] && M32="-m32"
+export LDFLAGS="-L$PREFIX/lib $M32"
+export CPPFLAGS="-I$PREFIX/include $M32"
+export CFLAGS="-I$PREFIX/include $M32"
 
 export CC="gcc"
 export CXX="g++"
@@ -27,7 +29,7 @@ makearg="-j$(nproc)"
 
 clean_prefix() {
 	rm -rf "$PREFIX"
-	mkdir -pv $PREFIX/{bin,include,lib}
+	mkdir -pv $PREFIX/{etc,bin,include,lib}
 }
 
 build_zlib() {
@@ -42,7 +44,7 @@ build_zlib() {
 build_libpng() {
 	echo "Building libpng"
 	cd "$SRC/libpng"
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" LDFLAGS="$LDFLAGS" CPPFLAGS="$CPPFLAGS" \
+	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
 		--disable-static
 	make $makearg
 	make install
@@ -154,6 +156,14 @@ build_ffmpeg() {
 	make distclean
 }
 
+install_fpc() {
+	arch=$(uname -m)
+	echo "Installing fpc for $arch"
+	cd "$SRC/fpc-$arch"
+	printf "$PREFIX\nn\nn\nn" | ./install.sh
+	"$PREFIX/lib/fpc/3.0.4/samplecfg" "$PREFIX/lib/fpc/3.0.4" "$PREFIX/etc"
+}
+
 # START OF BUILD PROCESS
 
 if [ "$1" == "all" ]; then
@@ -173,6 +183,10 @@ if [ "$1" == "all" ]; then
 
 	build_yasm
 	build_ffmpeg
+
+	if [ -f /.dockerenv ]; then
+		install_fpc
+	fi
 
 elif [ ! -z "$1" ]; then
 	echo "Building dependencies $1"
