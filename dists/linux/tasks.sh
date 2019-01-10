@@ -81,8 +81,8 @@ task_sdl2() {
 	../configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
 		--enable-sdl-dlopen \
 		--disable-arts --disable-esd --disable-nas \
-		--disable-sndio --enable-alsa --enable-pulseaudio-shared \
-		--enable-video-wayland --enable-wayland-shared \
+		--disable-sndio --disable-pulseaudio-shared --disable-pulseaudio \
+		--disable-video-wayland --disable-wayland-shared \
 		--enable-x11-shared --enable-ibus --enable-fcitx --enable-ime \
 		--disable-rpath --disable-input-tslib
 	make $makearg

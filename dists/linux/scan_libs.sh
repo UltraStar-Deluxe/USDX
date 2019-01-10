@@ -17,6 +17,7 @@ systemlibs=(
 
 skiplibs=(
 	'libX11\.'
+	'libasound\.'
 	'libgcc_s\.'
 	'libglib\.'
 	'libstdc\+\+\.'
