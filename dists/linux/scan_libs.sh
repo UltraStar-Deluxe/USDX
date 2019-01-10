@@ -55,8 +55,9 @@ scan_libs() {
 		if [ -z "$includelib" ]; then
 			echo -n "$indent$indentstyle"
 			tput setaf 3
-			echo "$file (skipped)"
+			echo -n "$file (skipped)"
 			tput sgr0
+			echo
 			continue
 		fi
 
@@ -65,13 +66,18 @@ scan_libs() {
 			if [[ ! "${libcache[@]}" =~ "$filepath" ]]; then
 				# only copy if not already copied
 				cp "$filepath" "$libdir/"
-				tput setaf 2 && tput bold
+				tput setaf 2
 			fi
-			echo "$file"
-			tput sgr0
+			echo -n "$file"
 
 			libcache+=("$filepath")
-			scan_libs "$filepath" "$nextindent$indent"
+			if [[ "$3" == *"[$file]"* ]]; then
+				echo " (recursive)"
+			else
+				tput sgr0
+				echo
+				scan_libs "$filepath" "$indent$nextindent" "[$file]$3"
+			fi
 		else
 			tput setaf 1 && tput bold
 			echo "==> Error: $file not found"
@@ -106,4 +112,3 @@ do
 		exit 1
 	fi
 done <<< "$extralibs"
-

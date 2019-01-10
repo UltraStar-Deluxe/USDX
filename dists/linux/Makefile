@@ -7,26 +7,25 @@ ifeq ($(ARCH),i686)
 	POSTFIX = 32
 endif
 
-.PHONY: default build-deps build$(POSTFIX) run compress clean distclean upload
+.PHONY: default build-deps build run compress clean distclean upload
 
-default: build$(POSTFIX)
+default: build
 
 build-deps: prefix$(POSTFIX)/built_libs
-prefix/built_libs:
+prefix$(POSTFIX)/built_libs:
 	@./dl.sh
-	@bash -eo pipefail -c './build-deps.sh all | tee build-deps.log'
+	@echo
+	@bash -eo pipefail -c './tasks.sh all | tee build-deps.log'
+	@sed -r -i "s/\x1B(\[[0-9;]*[JKmsu]|\(B)//g" "build-deps.log" # remove color codes
+	@echo
 
 run: output/ultrastardx
 	output/launch.sh
 
-build$(POSTFIX): output$(POSTFIX)/ultrastardx
+build: output$(POSTFIX)/ultrastardx
 output$(POSTFIX)/ultrastardx output$(POSTFIX)/VERSION: prefix$(POSTFIX)/built_libs
 	@bash -eo pipefail -c './build.sh | tee build.log'
-	@mkdir -p output$(POSTFIX)/data/songs
-	@cp -v launch.sh output$(POSTFIX)/
-	@cp -v ../../LICENSE output$(POSTFIX)/
-	@cp -v ../../game/LICENSE.* output$(POSTFIX)/
-	echo -e "Version: $(VERSION)\nRevison: $(REV)\nBuild date: `date -u +%FT%TZ`" > output$(POSTFIX)/VERSION
+	@sed -r -i "s/\x1B(\[[0-9;]*[JKmsu]|\(B)//g" "build.log" # remove color codes
 
 compress: UltraStarDeluxe-$(REV)-$(ARCH).tar.xz
 UltraStarDeluxe-$(REV)-$(ARCH).tar.xz: output$(POSTFIX)/ultrastardx output$(POSTFIX)/VERSION
@@ -37,7 +36,7 @@ upload: UltraStarDeluxe-$(REV)-$(ARCH).tar.xz
 	curl --upload-file './UltraStarDeluxe-$(REV)-$(ARCH).tar.xz' "https://transfer.sh/UltraStarDeluxe-$(REV)-$(ARCH).tar.xz"
 
 clean:
-	rm -rf output output32 UltraStarDeluxe*.tar.xz
+	rm -rf output output32 prefix prefix32 UltraStarDeluxe*.tar.xz
 
 distclean: clean
-	rm -rf deps prefix prefix32
+	rm -rf deps
