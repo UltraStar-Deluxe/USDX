@@ -19,8 +19,8 @@ prefix$(POSTFIX)/built_libs:
 	@sed -r -i "s/\x1B(\[[0-9;]*[JKmsu]|\(B)//g" "build-deps.log" # remove color codes
 	@echo
 
-run: output/ultrastardx
-	output/launch.sh
+run: output$(POSTFIX)/ultrastardx
+	@output$(POSTFIX)/launch.sh
 
 build: output$(POSTFIX)/ultrastardx
 output$(POSTFIX)/ultrastardx output$(POSTFIX)/VERSION: prefix$(POSTFIX)/built_libs
