@@ -50,7 +50,7 @@ scan_libs() {
 		fi
 		if [ -z "$file" ]; then continue; fi
 
-		local filepath="$(realpath -esq "$(echo "$lddoutput" | grep -F "$file" | head -n1 | awk '{print $3}')" || true)"
+		local filepath="$(realpath -s "$(echo "$lddoutput" | grep -F "$file" | head -n1 | awk '{print $3}')" || true)"
 
 		local includelib=$(echo "$file" | grep -E -vf <(IFS=$'\n'; printf "${skiplibs[*]}"))
 		if [ -z "$includelib" ]; then
@@ -98,7 +98,7 @@ while read -r filepath
 do
 	if [ -z "$filepath" ]; then continue; fi
 	file="$(basename "$filepath")"
-	filepath="$(realpath -esq "$filepath" || echo "$filepath")"
+	filepath="$(realpath -s "$filepath" || echo "$filepath")"
 	if [ -f "$filepath" ]; then
 		echo "$file"
 		if [[ ! "${libcache[@]}" =~ "$filepath" ]]; then
