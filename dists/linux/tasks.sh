@@ -226,7 +226,7 @@ task_usdx() {
 	[ "$(uname -m)" == "i686" ] && OUTPUT="${OUTPUT}32"
 	cd "$root/../.."
 	bash ./autogen.sh
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX"
+	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" --enable-debug
 	sleep 1
 	make LDFLAGS="-O2 --sort-common --as-needed -z relro" datadir="./data" prefix="" bindir="" INSTALL_DATADIR="./data"
 	rm -rf "$OUTPUT"
