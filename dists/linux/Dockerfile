@@ -2,13 +2,26 @@ FROM centos:7
 
 RUN yum upgrade -y && yum install -y --setopt=tsflags=nodocs centos-release-scl
 
+# Base
 RUN yum install -y --setopt=tsflags=nodocs \
-    devtoolset-7 make automake autoconf which file chrpath git unzip \
-    glibc-devel lua-devel alsa-lib-devel mesa-libGL-devel libX11-devel libXext-devel \
+    make automake autoconf cmake patch gcc gcc-c++ \
+    which file chrpath git unzip
+
+# Dependencies
+RUN yum install -y --setopt=tsflags=nodocs \
+	glibc-devel mesa-libGL-devel \
+    lua-devel alsa-lib-devel libX11-devel libXext-devel \
+    libwebp-devel libjpeg-turbo-devel libtiff-devel \
     dbus-devel systemd-devel ibus-devel fcitx-devel \
-    libsamplerate-devel portmidi-devel opencv-devel \
-    glibc-devel.i686 libgcc.i686 libX11-devel.i686 lua-devel.i686 lua.i686
+    libsamplerate-devel opencv-devel
+
+# For 32-bit build
+RUN yum install -y --setopt=tsflags=nodocs \
+    glibc-devel.i686 libgcc.i686 \
+    lua-devel.i686 lua.i686 alsa-lib-devel.i686 libX11-devel.i686 \
+    libwebp-devel.i686 libjpeg-turbo-devel.i686 libtiff-devel.i686
 
 RUN yum clean all -y
 
-ENTRYPOINT ["scl", "enable", "devtoolset-7"]
+# devtoolset-7
+# ENTRYPOINT ["scl", "enable", "devtoolset-7"]

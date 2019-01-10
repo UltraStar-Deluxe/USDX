@@ -9,6 +9,8 @@ deps+=('sqlite,https://www.sqlite.org/2018/sqlite-autoconf-3260000.tar.gz,9af2df
 deps+=('yasm,http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz,b7574e9f0826bedef975d64d3825f75fbaeef55e')
 deps+=('ffmpeg,https://www.ffmpeg.org/releases/ffmpeg-4.1.tar.xz,40bb9002df044514723e9cca7f0a049eee88fed8')
 deps+=('portaudio,http://www.portaudio.com/archives/pa_stable_v190600_20161030.tgz,56c596bba820d90df7d057d8f6a0ec6bf9ab82e8')
+deps+=('portmidi,https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip,f45bf4e247c0d7617deacd6a65d23d9fddae6117')
+deps+=('portmidi-debian,http://http.debian.net/debian/pool/main/p/portmidi/portmidi_217-6.debian.tar.xz,02e4c6dcfbd35a75913de2acd39be8f0cfd0b244')
 deps+=('freetype,https://download.savannah.gnu.org/releases/freetype/freetype-2.9.1.tar.gz,7498739e34e5dca4c61d05efdde6191ba69a2df0')
 deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.36.tar.xz,aec9548c8319104226cc4c31d1f5e524f1b55295')
 deps+=('zlib,https://zlib.net/zlib-1.2.11.tar.gz,e6d119755acdf9104d7ba236b1242696940ed6dd')
@@ -33,7 +35,7 @@ for i in "${deps[@]}"; do
 		hashB="$(sha1sum "deps/dl/$bname" 2> /dev/null | awk '{print $1}')"
 		if [ ! -f "deps/dl/$bname" ] || [ "$hashA" != "$hashB" ]; then
 			echo "Downloading $name from $url"
-			curl --progress-bar -L "$url" -o "deps/dl/$name.zip"
+			curl --progress-bar -L "$url" -o "deps/dl/$bname"
 			hashB="$(sha1sum "deps/dl/$bname" 2> /dev/null | awk '{print $1}')"
 			if [ "$hashA" != "$hashB" ]; then
 				echo "Hashes doesn't match!" "$hashA" "$hashB"
@@ -42,8 +44,8 @@ for i in "${deps[@]}"; do
 		fi
 		mkdir -p "deps/$name.tmp"
 		echo "Extracting $name"
-		unzip -q "deps/dl/$name.zip" -d "deps/$name.tmp"
-		# rm "deps/dl/$name.zip"
+		unzip -q "deps/dl/$bname" -d "deps/$name.tmp"
+		# rm "deps/dl/$bname"
 		rm -rf "deps/$name"
 		mkdir -p "deps/$name"
 		mv "deps/$name.tmp/"* "deps/$name"
