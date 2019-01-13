@@ -23,13 +23,6 @@ mkdir -p "$OUTPUT/lib"
 "$root/scan_libs.sh" "$OUTPUT/ultrastardx" "$OUTPUT/lib" | tee "$OUTPUT/lib/libs.txt"
 sed -r -i "s/\x1B(\[[0-9;]*[JKmsu]|\(B)//g" "$OUTPUT/lib/libs.txt" # remove color codes
 
-tput setaf 3 && tput bold
-echo -n "==> Minimum GLIBC version: "
-tput sgr0
-tput bold
-objdump -T "$OUTPUT/ultrastardx" "$OUTPUT/lib/lib"*.so* | sed -n 's/^.*GLIBC_\([.0-9]*\).*$/\1/p' | sort -u --version-sort | tail -n1
-tput sgr0
-
 # strip executable
 strip -s "$OUTPUT/ultrastardx"
 # strip libs

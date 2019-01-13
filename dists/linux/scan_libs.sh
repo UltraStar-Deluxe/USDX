@@ -23,6 +23,7 @@ skiplibs=(
 	'libstdc\+\+\.'
 )
 
+inputfile="$1"
 libdir="$2"
 extralibs="$3"
 
@@ -64,18 +65,22 @@ scan_libs() {
 
 		if [ -f "$filepath" ]; then
 			echo -n "$indent$indentstyle"
+			local glibcversion=""
 			if [[ ! "${libcache[@]}" =~ "$filepath" ]]; then
 				# only copy if not already copied
 				cp "$filepath" "$libdir/"
+				glibcversion=" ($(readelf -s "$filepath" | sed -n 's/^.*\(GLIBC_[.0-9]*\).*$/\1/p' | sort -u --version-sort | tail -n1))"
 				tput setaf 2
 			fi
 			echo -n "$file"
+
+			tput sgr0
+			echo -n "$glibcversion"
 
 			libcache+=("$filepath")
 			if [[ "$3" == *"[$file]"* ]]; then
 				echo " (recursive)"
 			else
-				tput sgr0
 				echo
 				scan_libs "$filepath" "$indent$nextindent" "[$file]$3"
 			fi
@@ -89,8 +94,8 @@ scan_libs() {
 }
 
 
-basename "$1"
-scan_libs "$1"
+basename "$inputfile"
+scan_libs "$inputfile"
 
 # handle extras
 IFS=' '
@@ -113,3 +118,10 @@ do
 		exit 1
 	fi
 done <<< "$extralibs"
+
+tput setaf 3 && tput bold
+echo -n "==> Minimum GLIBC version: "
+tput sgr0
+tput bold
+readelf -s "$inputfile" "$libdir/"*.so* | sed -n 's/^.*\(GLIBC_[.0-9]*\).*$/\1/p' | sort -u --version-sort | tail -n1
+tput sgr0
