@@ -19,7 +19,7 @@ export PATH="$PREFIX/bin:$PATH"
 mv "$OUTPUT/ultrastardx" "$OUTPUT/$EXE"
 
 # strip executable
-strip -s "$OUTPUT/$EXE"
+# strip -s "$OUTPUT/$EXE"
 
 # set executable rpath
 patchelf --set-rpath "\$ORIGIN/$LIBDIR" "$OUTPUT/$EXE"
