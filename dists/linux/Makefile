@@ -43,7 +43,7 @@ UltraStarDeluxe.tar.xz: output/$(EXE) output/VERSION
 	cd output && XZ_OPT="--threads=0" tar cJf "../UltraStarDeluxe.tar.xz" .
 
 upload: UltraStarDeluxe.tar.xz
-	curl --upload-file './UltraStarDeluxe.tar.xz' "https://transfer.sh/UltraStarDeluxe.tar.xz"
+	curl --upload-file './UltraStarDeluxe.tar.xz' "https://transfer.sh/UltraStarDeluxe.tar.xz" && echo
 
 clean:
 	rm -rf output prefix prefix32 UltraStarDeluxe*.tar.xz
