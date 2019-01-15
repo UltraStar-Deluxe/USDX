@@ -218,25 +218,36 @@ task_fpc() {
 	"$PREFIX/lib/fpc/3.0.4/samplecfg" "$PREFIX/lib/fpc/3.0.4" "$PREFIX/etc"
 }
 
+task_patchelf() {
+	tput setaf 2 && tput bold
+	echo "==> Building PatchELF"
+	tput sgr0
+	cd "$SRC/patchelf"
+	./bootstrap.sh
+	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX"
+	make $makearg
+	make install
+	make distclean
+}
+
 task_usdx() {
 	tput setaf 2 && tput bold
 	echo "==> Building UltraStar Deluxe"
 	tput sgr0
 	local OUTPUT="$root/output"
-	[ "$(uname -m)" == "i686" ] && OUTPUT="${OUTPUT}32"
 	cd "$root/../.."
 	bash ./autogen.sh
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" --enable-debug
 	sleep 1
 	make LDFLAGS="-O2 --sort-common --as-needed -z relro" datadir="./data" prefix="" bindir="" INSTALL_DATADIR="./data"
-	rm -rf "$OUTPUT"
+	rm -rf "$OUTPUT/data" "$OUTPUT/ultrastardx"
 	make DESTDIR="$OUTPUT/" datadir="/data" prefix="" bindir="" INSTALL_DATADIR="./data" install
 	make clean
 }
 
 # START OF BUILD PROCESS
 
-if [ "$1" == "all" ]; then
+if [ "$1" == "all_deps" ]; then
 	tput setaf 2 && tput bold
 	echo "==> Building all dependencies"
 	tput sgr0
@@ -273,6 +284,9 @@ if [ "$1" == "all" ]; then
 		task_fpc
 	fi
 
+	echo
+	task_patchelf
+
 	touch "$PREFIX/built_libs"
 
 elif [ ! -z "$1" ]; then
@@ -280,7 +294,9 @@ elif [ ! -z "$1" ]; then
 		"task_$1"
 	else
 		tput setaf 1 && tput bold
-		echo "Task $1 does not exist"
+		echo "==> Error: Task '$1' does not exist"
 		tput sgr0
 	fi
+else
+	echo "Usage: ./tasks.sh <task|all_deps>"
 fi

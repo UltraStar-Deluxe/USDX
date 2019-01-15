@@ -1,7 +1,5 @@
 deps
-dl
 output
-output32
 prefix
 prefix32
 *.tar.xz

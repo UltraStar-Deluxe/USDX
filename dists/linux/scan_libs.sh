@@ -2,6 +2,9 @@
 
 set -eo pipefail
 
+# TODO: Use list from
+# https://raw.githubusercontent.com/probonopd/AppImages/master/excludelist
+
 systemlibs=(
 	'ld-linux[\.|\-]'
 	'libc\.'
@@ -69,6 +72,8 @@ scan_libs() {
 			if [[ ! "${libcache[@]}" =~ "$filepath" ]]; then
 				# only copy if not already copied
 				cp "$filepath" "$libdir/"
+				strip -s "$libdir/$file"
+				patchelf --set-rpath '$ORIGIN' "$libdir/$file"
 				glibcversion=" ($(readelf -s "$filepath" | sed -n 's/^.*\(GLIBC_[.0-9]*\).*$/\1/p' | sort -u --version-sort | tail -n1))"
 				tput setaf 2
 			fi
@@ -85,14 +90,13 @@ scan_libs() {
 				scan_libs "$filepath" "$indent$nextindent" "[$file]$3"
 			fi
 		else
-			tput setaf 1 && tput bold
-			echo "==> Error: $file not found"
-			tput sgr0
+			>&2 tput setaf 1 && tput bold
+			>&2 echo "==> Error: Library $file not found (required by $(basename "$1"))"
+			>&2 tput sgr0
 			return 1
 		fi
 	done <<< "$libs"
 }
-
 
 basename "$inputfile"
 scan_libs "$inputfile"
@@ -108,18 +112,20 @@ do
 		echo "$file"
 		if [[ ! "${libcache[@]}" =~ "$filepath" ]]; then
 			cp "$filepath" "$libdir/"
+			strip -s "$libdir/$file"
+			patchelf --set-rpath '$ORIGIN' "$libdir/$file"
 		fi
 		libcache+=("$filepath")
 		scan_libs "$filepath"
 	else
-		tput setaf 1 && tput bold
-		echo "==> Error: $file not found"
-		tput sgr0
+		>&2 tput setaf 1 && tput bold
+		>&2 echo "==> Error: Library $file not found"
+		>&2 tput sgr0
 		exit 1
 	fi
 done <<< "$extralibs"
 
-tput setaf 3 && tput bold
+tput setaf 5 && tput bold
 echo -n "==> Minimum GLIBC version: "
 tput sgr0
 tput bold

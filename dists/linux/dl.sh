@@ -15,12 +15,11 @@ deps+=('freetype,https://download.savannah.gnu.org/releases/freetype/freetype-2.
 deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.36.tar.xz,aec9548c8319104226cc4c31d1f5e524f1b55295')
 deps+=('zlib,https://zlib.net/zlib-1.2.11.tar.gz,e6d119755acdf9104d7ba236b1242696940ed6dd')
 # deps+=('libcwrap.h,https://raw.githubusercontent.com/wheybags/glibc_version_header/master/version_headers/force_link_glibc_2.10.2.h,aff0c46cf3005fe15c49688e74df62a9988855a5')
+deps+=('patchelf,https://github.com/NixOS/patchelf/archive/0.9.tar.gz,c068c60a67388fbf9267142516d3a8cd6ffc4397')
 if [ -f /.dockerenv ]; then
 	deps+=('fpc-x86_64,https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.x86_64-linux.tar,0720e428eaea423423e1b76a7267d6749c3399f4')
 	deps+=('fpc-i686,https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.i386-linux.tar,0a51364bd1a37f1e776df5357ab5bfca8cc7ddeb')
 fi
-
-# rm -rf deps
 
 for i in "${deps[@]}"; do
 	IFS=',' read -a dep <<< "$i"
