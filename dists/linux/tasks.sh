@@ -7,19 +7,18 @@ root=$(pwd)
 SRC="$root/deps"
 export SHELL=/bin/bash
 export PREFIX="$root/prefix"
-[ "$(uname -m)" == "i686" ] && export PREFIX="${PREFIX}32"
 export PATH="$PREFIX/bin:$PATH"
 export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
 PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
 [ -f /.dockerenv ] && export PPC_CONFIG_PATH="$PREFIX/etc"
 
-[ "$(uname -m)" == "i686" ] && M32="-m32"
-export LDFLAGS="-L$PREFIX/lib $M32"
-export CPPFLAGS="-I$PREFIX/include $M32"
-export CFLAGS="-I$PREFIX/include $M32"
+# [ "$(uname -m)" == "i686" ] && M32="-m32"
+export LDFLAGS="-Wl,-z,now -Wl,-z,relro -L$PREFIX/lib $M32"
+export CFLAGS="-fPIE -fstack-protector-all -D_FORTIFY_SOURCE=2 -I$PREFIX/include $M32"
+export CPPFLAGS="$CFLAGS"
 
-export CC="gcc -U_FORTIFY_SOURCE"
-export CXX="g++ -U_FORTIFY_SOURCE"
+export CC="gcc"
+export CXX="g++"
 
 # export CC="$CC -include $SRC/libcwrap.h"
 # export CXX="$CXX -D_GLIBCXX_USE_CXX11_ABI=0 -include $SRC/libcwrap.h"
@@ -83,7 +82,7 @@ task_sdl2() {
 		--disable-arts --disable-esd --disable-nas \
 		--disable-sndio --disable-pulseaudio-shared --disable-pulseaudio \
 		--disable-video-wayland --disable-wayland-shared \
-		--enable-x11-shared --enable-ibus --enable-fcitx --enable-ime \
+		--enable-x11-shared --disable-ibus --disable-fcitx --disable-ime \
 		--disable-rpath --disable-input-tslib
 	make $makearg
 	make install
@@ -208,15 +207,15 @@ task_ffmpeg() {
 	make distclean
 }
 
-task_fpc() {
-	arch=$(uname -m)
-	tput setaf 2 && tput bold
-	echo "==> Installing fpc for $arch"
-	cd "$SRC/fpc-$arch"
-	tput sgr0
-	printf "$PREFIX\nn\nn\nn" | ./install.sh
-	"$PREFIX/lib/fpc/3.0.4/samplecfg" "$PREFIX/lib/fpc/3.0.4" "$PREFIX/etc"
-}
+# task_fpc() {
+# 	arch=$(uname -m)
+# 	tput setaf 2 && tput bold
+# 	echo "==> Installing fpc for $arch"
+# 	cd "$SRC/fpc-$arch"
+# 	tput sgr0
+# 	printf "$PREFIX\nn\nn\nn" | ./install.sh
+# 	"$PREFIX/lib/fpc/3.0.4/samplecfg" "$PREFIX/lib/fpc/3.0.4" "$PREFIX/etc"
+# }
 
 task_patchelf() {
 	tput setaf 2 && tput bold
@@ -279,10 +278,10 @@ if [ "$1" == "all_deps" ]; then
 	echo
 	task_ffmpeg
 
-	if [ -f /.dockerenv ]; then
-		echo
-		task_fpc
-	fi
+	# if [ -f /.dockerenv ]; then
+	# 	echo
+	# 	task_fpc
+	# fi
 
 	echo
 	task_patchelf

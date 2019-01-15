@@ -1,6 +1,5 @@
 deps
 output
 prefix
-prefix32
 *.tar.xz
 *.log

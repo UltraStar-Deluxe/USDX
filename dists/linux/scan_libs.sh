@@ -72,7 +72,7 @@ scan_libs() {
 			if [[ ! "${libcache[@]}" =~ "$filepath" ]]; then
 				# only copy if not already copied
 				cp "$filepath" "$libdir/"
-				# strip -s "$libdir/$file"
+				strip -s "$libdir/$file"
 				patchelf --set-rpath '$ORIGIN' "$libdir/$file"
 				glibcversion=" ($(readelf -s "$filepath" | sed -n 's/^.*\(GLIBC_[.0-9]*\).*$/\1/p' | sort -u --version-sort | tail -n1))"
 				tput setaf 2
@@ -112,7 +112,7 @@ do
 		echo "$file"
 		if [[ ! "${libcache[@]}" =~ "$filepath" ]]; then
 			cp "$filepath" "$libdir/"
-			# strip -s "$libdir/$file"
+			strip -s "$libdir/$file"
 			patchelf --set-rpath '$ORIGIN' "$libdir/$file"
 		fi
 		libcache+=("$filepath")
