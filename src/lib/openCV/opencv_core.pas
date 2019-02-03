@@ -83,12 +83,32 @@ var cvCloneImage: function(image:pIplImage):PIplImage;cdecl;
 //   use cvCopy to extract the selected channel and/or put it back */
 //var cvSetImageCOI: procedure(image:PIplImage; coi: integer); cdecl;
 
+///* Allocates and initializes CvMat header and allocates data */
+var cvCreateMat: function(rows: integer; cols: integer; _type: integer): PCvMat; cdecl;
+
+///* Releases CvMat header and deallocates matrix data
+//   (reference counting is used for data) */
+var cvReleaseMat: procedure(mat: PPCvMat); cdecl;
+
+var cvSetReal2D: procedure(arr: PCvArr; idx0: integer; idx1: integer; value: double); cdecl;
+
 ///* Copies source array to destination array */
 //var cvCopy: procedure(src:PIplImage; dst:PIplImage;
 //                  mask: PCvArr = nil); cdecl;
 
+///* Clears all the array elements (sets them to 0) */
+var cvSetZero: procedure(arr: PCvArr); cdecl;
+
+const
+  CV_LU = 0;
+  CV_SVD = 1;
+  CV_SVD_SYM = 2;
+  CV_CHOLESKY = 3;
+  CV_QR = 4;
+  CV_NORMAL = 16;
+
 // Invert
-//var cvInvert: function( const A : PCvArr; B : PCvArr; method : integer ) : double; cdecl;
+var cvInvert: function(A: PCvArr; B: PCvArr; method: integer = CV_LU): double; cdecl;
 
 //var cvAdd: procedure(src1:PIplImage; src2:PIplImage; dst:PIplImage; mask: CvArr = nil);  cdecl;
 var cvAddS: procedure(src:PIplImage; value: CvScalar; dst:PIplImage; mask: CvArr = nil);  cdecl;
@@ -99,6 +119,19 @@ var cvFlip: procedure(src: PIplImage; dst:PIplImage = nil; flipmode: integer = 0
 
 ///* Differences with actual and last image
 var cvAbsDiff: procedure(src1:PIplImage; src2:PIplImage; dst:PIplImage);  cdecl;
+
+const
+ CV_GEMM_A_T = 1;
+ CV_GEMM_B_T = 2;
+ CV_GEMM_C_T = 4;
+
+///* Extended matrix transform:
+//   dst = alpha*op(A)*op(B) + beta*op(C), where op(X) is X or X^T */
+var cvGEMM: procedure(src1: PCvArr; src2: PCvArr; alpha: double; src3: PCvArr; beta: double; dst: PCvArr; tABC: integer = 0); cdecl;
+
+///* Transforms each element of source array and stores
+//   resultant vectors in destination array */
+var cvTransform: procedure(src: PCvArr; dst: PCvArr; transmat: PCvMat; shiftvec: PCvMat = nil); cdecl;
 
 var cvMerge: procedure (src0, src1, src2, src3:PIplImage; dst:PIplImage);  cdecl;
 ///* Adds new element to the end of sequence. Returns pointer to the element */
@@ -197,9 +230,29 @@ begin
     //Assert(@cvSetImageCOI <> nil);
     {$ENDIF}
     //
+    @cvCreateMat := GetProcAddress(DLLHandle,'cvCreateMat');
+    {$IFDEF WIN32}
+    Assert(@cvCreateMat <> nil);
+    {$ENDIF}
+    //
+    @cvReleaseMat := GetProcAddress(DLLHandle,'cvReleaseMat');
+    {$IFDEF WIN32}
+    Assert(@cvReleaseMat <> nil);
+    {$ENDIF}
+    //
+    @cvSetReal2D := GetProcAddress(DLLHandle,'cvSetReal2D');
+    {$IFDEF WIN32}
+    Assert(@cvSetReal2D <> nil);
+    {$ENDIF}
+    //
     //@cvCopy := GetProcAddress(DLLHandle,'cvCopy');
     {$IFDEF WIN32}
     //Assert(@cvCopy <> nil);
+    {$ENDIF}
+    //
+    @cvSetZero := GetProcAddress(DLLHandle,'cvSetZero');
+    {$IFDEF WIN32}
+    Assert(@cvSetZero <> nil);
     {$ENDIF}
     //
     //@cvSeqPush := GetProcAddress(DLLHandle,'cvSeqPush');
@@ -271,10 +324,21 @@ begin
     {$ENDIF}
 
     //
-    //@cvInvert := GetProcAddress(DLLHandle,'cvInvert');
-    //{$IFDEF WIN32}
-    //Assert(@cvInvert <> nil);
-    //{$ENDIF}
+    @cvInvert := GetProcAddress(DLLHandle,'cvInvert');
+    {$IFDEF WIN32}
+    Assert(@cvInvert <> nil);
+    {$ENDIF}
+
+    @cvGEMM := GetProcAddress(DLLHandle,'cvGEMM');
+    {$IFDEF WIN32}
+    Assert(@cvGEMM <> nil);
+    {$ENDIF}
+
+    //
+    @cvTransform := GetProcAddress(DLLHandle,'cvTransform');
+    {$IFDEF WIN32}
+    Assert(@cvTransform <> nil);
+    {$ENDIF}
 
     //
     @cvMerge := GetProcAddress(DLLHandle,'cvMerge');

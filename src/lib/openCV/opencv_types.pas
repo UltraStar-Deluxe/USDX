@@ -186,6 +186,8 @@ IPL_DEPTH_64F = 64;
  CV_64F  =6;
  CV_USRTYPE1 =7;
 
+ CV_MAT_DEPTH_MASK = CV_DEPTH_MAX - 1;
+
 //#define CV_MAKETYPE(depth,cn) ((depth) + (((cn)-1) << CV_CN_SHIFT))
 //#define CV_MAKE_TYPE CV_MAKETYPE
 //
@@ -220,6 +222,7 @@ IPL_DEPTH_64F = 64;
 //#define CV_32SC(n) CV_MAKETYPE(CV_32S,(n))
 //
 //#define CV_32FC1 CV_MAKETYPE(CV_32F,1)
+ CV_32FC1 = ((CV_32F) and CV_MAT_DEPTH_MASK) + (((1)-1) shl CV_CN_SHIFT);
 //#define CV_32FC2 CV_MAKETYPE(CV_32F,2)
 //#define CV_32FC3 CV_MAKETYPE(CV_32F,3)
 //#define CV_32FC4 CV_MAKETYPE(CV_32F,4)
@@ -237,7 +240,6 @@ CV_AUTO_STEP = $7fffffff;
 //
 //#define CV_MAT_CN_MASK          ((CV_CN_MAX - 1) << CV_CN_SHIFT)
 //#define CV_MAT_CN(flags)        ((((flags) & CV_MAT_CN_MASK) >> CV_CN_SHIFT) + 1)
-//#define CV_MAT_DEPTH_MASK       (CV_DEPTH_MAX - 1)
 //#define CV_MAT_DEPTH(flags)     ((flags) & CV_MAT_DEPTH_MASK)
 //#define CV_MAT_TYPE_MASK        (CV_DEPTH_MAX*CV_CN_MAX - 1)
 //#define CV_MAT_TYPE(flags)      ((flags) & CV_MAT_TYPE_MASK)
