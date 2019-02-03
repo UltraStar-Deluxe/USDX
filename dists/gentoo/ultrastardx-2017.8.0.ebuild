@@ -18,13 +18,12 @@ IUSE="projectm debug webcam"
 RDEPEND="virtual/opengl
 	virtual/glu
 	media-libs/libsdl2[opengl]
-	media-libs/sdl2-image
+	media-libs/sdl2-image[png,jpeg]
 	media-libs/freetype
-	media-libs/libpng
 	=media-libs/portaudio-19*
 	<media-video/ffmpeg-3.4
 	dev-db/sqlite
-	dev-lang/lua
+	<dev-lang/lua-5.3
 	projectm? ( media-libs/libprojectm )
 	webcam? ( media-libs/opencv )"
 DEPEND="${RDEPEND}
