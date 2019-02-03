@@ -9,11 +9,11 @@ inherit git-r3 eutils autotools flag-o-matic
 DESCRIPTION="An open-source karaoke game"
 HOMEPAGE="http://usdx.eu/"
 EGIT_REPO_URI="https://github.com/UltraStar-Deluxe/USDX/"
-
+EGIT_COMMIT="v${PV}"
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
-IUSE="midi projectm debug webcam"
+KEYWORDS="amd64 ~x86"
+IUSE="projectm debug webcam"
 
 RDEPEND="virtual/opengl
 	virtual/glu
@@ -21,10 +21,9 @@ RDEPEND="virtual/opengl
 	media-libs/sdl2-image[png,jpeg]
 	media-libs/freetype
 	=media-libs/portaudio-19*
-	media-video/ffmpeg
+	<media-video/ffmpeg-3.4
 	dev-db/sqlite
-	dev-lang/lua
-	midi? ( media-libs/portmidi )
+	<dev-lang/lua-5.3
 	projectm? ( media-libs/libprojectm )
 	webcam? ( media-libs/opencv )"
 DEPEND="${RDEPEND}
@@ -39,7 +38,6 @@ src_prepare() {
 src_configure() {
 	econf \
 		$(use_with projectm libprojectM) \
-		$(use_enable midi portmidi) \
 		$(use_enable debug) \
 		|| die "econf failed"
 }
