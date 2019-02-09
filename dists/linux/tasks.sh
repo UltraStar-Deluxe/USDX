@@ -15,6 +15,7 @@ PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 export LDFLAGS="-Wl,-z,now -Wl,-z,relro -L$PREFIX/lib"
 export CFLAGS="-O2 -fPIE -I$PREFIX/include"
+[ "$ARCH" == "i686" ] && export CFLAGS+=" -mincoming-stack-boundary=2"
 export CPPFLAGS="$CFLAGS"
 
 export CC="gcc"
