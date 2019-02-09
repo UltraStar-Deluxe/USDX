@@ -28,9 +28,11 @@ else
 
     cd dists/linux
     make compress
-    if [ -r "UltraStarDeluxe.tar.xz" ]; then
-        link="$(curl --upload-file './UltraStarDeluxe.tar.xz' "https://transfer.sh/UltraStarDeluxe-$(git rev-parse --short HEAD).tar.xz")"
-        echo "UltraStarDeluxe.tar.xz should be available at:"
+    filename="UltraStarDeluxe-$(uname -m).tar.xz"
+    outfile="UltraStarDeluxe-$(git rev-parse --short HEAD)-$(uname -m).tar.xz"
+    if [ -r "$filename" ]; then
+        link="$(curl --upload-file "$filename" "https://transfer.sh/$outfile")"
+        echo "$outfile should be available at:"
         echo "    $link"
     fi
 fi

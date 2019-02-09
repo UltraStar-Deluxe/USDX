@@ -1,5 +1,6 @@
-deps
-output
-prefix
+deps/
+output/
+prefix/
+build/
 *.tar.xz
 *.log

@@ -9,37 +9,38 @@ EXE = ultrastardx
 
 default: build
 
-build-deps: prefix/built_libs
-prefix/built_libs:
+build-deps: prefix/$(ARCH)/built_libs
+prefix/$(ARCH)/built_libs:
 	@./dl.sh
 	@echo
 	@bash -eo pipefail -c './tasks.sh all_deps | tee build-deps.log'
 	@sed -r -i "s/\x1B(\[[0-9;]*[JKmsu]|\(B)//g" "build-deps.log" # remove color codes
 	@echo
 
-build: output/ultrastardx
-output/ultrastardx output/VERSION: prefix/built_libs
+build: build/$(ARCH)/ultrastardx
+build/$(ARCH)/ultrastardx build/$(ARCH)/VERSION: prefix/$(ARCH)/built_libs
 	@bash -eo pipefail -c './build.sh | tee build.log'
 	@sed -r -i "s/\x1B(\[[0-9;]*[JKmsu]|\(B)//g" "build.log" # remove color codes
 
 # run with Docker:
-# ./dockerenv.sh make
+# ./dockerenv.sh make bundle # x86_64
+# linux32 ./dockerenv.sh make bundle # i386/i686
 bundle: clean compress
 	@echo Complete!
 
-run: output/ultrastardx
-	@output/launch.sh
+run: build/$(ARCH)/ultrastardx
+	@build/$(ARCH)/launch.sh
 
-compress: UltraStarDeluxe.tar.xz
-UltraStarDeluxe.tar.xz: output/ultrastardx output/VERSION
-	rm -f "./UltraStarDeluxe.tar.xz"
-	cd output && XZ_OPT="--threads=0" tar cJf "../UltraStarDeluxe.tar.xz" .
+compress: UltraStarDeluxe-$(ARCH).tar.xz
+UltraStarDeluxe-$(ARCH).tar.xz: build/$(ARCH)/ultrastardx build/$(ARCH)/VERSION
+	rm -f "./UltraStarDeluxe-$(ARCH).tar.xz"
+	cd "build/$(ARCH)" && XZ_OPT="--threads=0" tar cJf "../../UltraStarDeluxe-$(ARCH).tar.xz" .
 
-upload: UltraStarDeluxe.tar.xz
-	curl --upload-file './UltraStarDeluxe.tar.xz' "https://transfer.sh/UltraStarDeluxe.tar.xz" && echo
+upload: UltraStarDeluxe-$(ARCH).tar.xz
+	curl --upload-file './UltraStarDeluxe-$(ARCH).tar.xz' "https://transfer.sh/UltraStarDeluxe-$(ARCH).tar.xz" && echo
 
 clean:
-	rm -rf output prefix UltraStarDeluxe*.tar.xz
+	rm -rf build/$(ARCH) prefix/$(ARCH) UltraStarDeluxe-$(ARCH).tar.xz
 
 distclean: clean
-	rm -rf deps
+	rm -rf deps build prefix UltraStarDeluxe-*.tar.xz

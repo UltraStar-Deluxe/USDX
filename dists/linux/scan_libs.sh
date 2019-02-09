@@ -12,7 +12,6 @@ systemlibs=(
 	'libdl\.'
 	'libcrypt\.'
 	'libmvec\.'
-	'libnsl\.'
 	'libpthread\.'
 	'librt\.'
 	'libutil\.'
@@ -22,7 +21,6 @@ skiplibs=(
 	'libX11\.'
 	'libasound\.'
 	'libgcc_s\.'
-	'libglib\.'
 	'libstdc\+\+\.'
 )
 
@@ -54,8 +52,6 @@ scan_libs() {
 		fi
 		if [ -z "$file" ]; then continue; fi
 
-		local filepath="$(realpath -s "$(echo "$lddoutput" | grep -F "$file" | head -n1 | awk '{print $3}')" || true)"
-
 		local includelib=$(echo "$file" | grep -E -vf <(IFS=$'\n'; printf "${skiplibs[*]}"))
 		if [ -z "$includelib" ]; then
 			echo -n "$indent$indentstyle"
@@ -66,13 +62,15 @@ scan_libs() {
 			continue
 		fi
 
+		local filepath="$(realpath -s "$(echo "$lddoutput" | grep -F "$file" | head -n1 | awk '{print $3}')" || true)"
+
 		if [ -f "$filepath" ]; then
 			echo -n "$indent$indentstyle"
 			local glibcversion=""
 			if [[ ! "${libcache[@]}" =~ "$filepath" ]]; then
 				# only copy if not already copied
-				cp "$filepath" "$libdir/"
-				strip -s "$libdir/$file"
+				cp -u "$filepath" -t "$libdir/"
+				strip -s "$libdir/$file" || true
 				patchelf --set-rpath '$ORIGIN' "$libdir/$file"
 				glibcversion=" ($(readelf -s "$filepath" | sed -n 's/^.*\(GLIBC_[.0-9]*\).*$/\1/p' | sort -u --version-sort | tail -n1))"
 				tput setaf 2
@@ -111,8 +109,8 @@ do
 	if [ -f "$filepath" ]; then
 		echo "$file"
 		if [[ ! "${libcache[@]}" =~ "$filepath" ]]; then
-			cp "$filepath" "$libdir/"
-			strip -s "$libdir/$file"
+			cp -u "$filepath" -t "$libdir/"
+			strip -s "$libdir/$file" || true
 			patchelf --set-rpath '$ORIGIN' "$libdir/$file"
 		fi
 		libcache+=("$filepath")

@@ -6,22 +6,20 @@ root=$(pwd)
 
 SRC="$root/deps"
 export SHELL=/bin/bash
-export PREFIX="$root/prefix"
+ARCH=$(uname -m)
+export PREFIX="$root/prefix/$ARCH"
 export PATH="$PREFIX/bin:$PATH"
 export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
 PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
 [ -f /.dockerenv ] && export PPC_CONFIG_PATH="$PREFIX/etc"
 
-# [ "$(uname -m)" == "i686" ] && M32="-m32"
-export LDFLAGS="-Wl,-z,now -Wl,-z,relro -L$PREFIX/lib $M32"
-export CFLAGS="-fPIE -fstack-protector-all -D_FORTIFY_SOURCE=2 -I$PREFIX/include $M32"
+export LDFLAGS="-Wl,-z,now -Wl,-z,relro -L$PREFIX/lib"
+export CFLAGS="-O2 -fPIE -I$PREFIX/include"
 export CPPFLAGS="$CFLAGS"
 
 export CC="gcc"
 export CXX="g++"
 
-# export CC="$CC -include $SRC/libcwrap.h"
-# export CXX="$CXX -D_GLIBCXX_USE_CXX11_ABI=0 -include $SRC/libcwrap.h"
 
 # multicore compilation
 makearg="-j$(nproc)"
@@ -82,6 +80,7 @@ task_sdl2() {
 		--disable-arts --disable-esd --disable-nas \
 		--disable-sndio --disable-pulseaudio-shared --disable-pulseaudio \
 		--disable-video-wayland --disable-wayland-shared \
+		--disable-video-vulkan \
 		--enable-x11-shared --disable-ibus --disable-fcitx --disable-ime \
 		--disable-rpath --disable-input-tslib
 	make $makearg
@@ -233,7 +232,7 @@ task_usdx() {
 	tput setaf 2 && tput bold
 	echo "==> Building UltraStar Deluxe"
 	tput sgr0
-	local OUTPUT="$root/output"
+	local OUTPUT="$root/build/$ARCH"
 	cd "$root/../.."
 	bash ./autogen.sh
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" --enable-debug
