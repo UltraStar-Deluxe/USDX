@@ -43,11 +43,6 @@ interface
 
 {$I switches.inc}
 
-// use BGR-format for accelerated colorspace conversion with swscale
-{$IFDEF UseSWScale}
-  {$DEFINE PIXEL_FMT_BGR}
-{$ENDIF}
-
 implementation
 
 uses
@@ -75,31 +70,66 @@ uses
   UGraphic,
   UPath;
 
-{$DEFINE PIXEL_FMT_BGR}
+{$IFDEF UseSWScale}
+  {$IF DEFINED(cpui386) OR DEFINED(cpux86_64)}
+    {$IF LIBSWSCALE_VERSION < 0009000}
+      // use BGR-format for accelerated colorspace conversion with swscale
+      // RGB asm was added with 23b0072ad71941c0cf67398b511dfca8ef9b23d8
+      {$DEFINE PIXEL_FMT_BGR}
+    {$ENDIF}
+  {$ELSEIF DEFINED(cpuarm)}
+    {$IF FFMPEG_VERSION_INT >= 3000000}
+      // RGBA asm was added with b32a42295ad7b254f9662082d799c0aae2071c2e
+      // There are no RGB/BGR asm routines yet
+      {$DEFINE PIXEL_FMT_32BITS}
+    {$ENDIF}
+  {$ELSEIF DEFINED(cpuaarch64)}
+    {$IF LIBSWSCALE_VERSION >= 4001100}
+      // RGBA asm was added with f1148390d7ed0444f3204d10277d09cc8d034e65
+      // There are no RGB/BGR asm routines yet
+      {$DEFINE PIXEL_FMT_32BITS}
+    {$ENDIF}
+  {$ENDIF}
+{$ENDIF}
+
+//{$DEFINE PIXEL_FMT_BGR}
+//{$DEFINE PIXEL_FMT_32BITS}
 
 const
-{$IFDEF PIXEL_FMT_BGR}
-  PIXEL_FMT_OPENGL = GL_BGR;
-  {$IF FFMPEG_VERSION_INT < 1001000}
-  PIXEL_FMT_FFMPEG = PIX_FMT_BGR24;
+{$IFDEF PIXEL_FMT_32BITS}
+  PIXEL_FMT_SIZE   = 4;
+  {$IFDEF PIXEL_FMT_BGR}
+  PIXEL_FMT_OPENGL = GL_BGRA;
+    {$IF FFMPEG_VERSION_INT < 1001000}
+  PIXEL_FMT_FFMPEG = PIX_FMT_BGRA;
+    {$ELSE}
+  PIXEL_FMT_FFMPEG = AV_PIX_FMT_BGRA;
+    {$ENDIF}
   {$ELSE}
-  PIXEL_FMT_FFMPEG = AV_PIX_FMT_BGR24;
+  PIXEL_FMT_OPENGL = GL_RGBA;
+    {$IF FFMPEG_VERSION_INT < 1001000}
+  PIXEL_FMT_FFMPEG = PIX_FMT_RGBA;
+    {$ELSE}
+  PIXEL_FMT_FFMPEG = AV_PIX_FMT_RGBA;
+    {$ENDIF}
   {$ENDIF}
-  PIXEL_FMT_SIZE   = 3;
-
-  // looks strange on linux:
-  //PIXEL_FMT_OPENGL = GL_RGBA;
-  //PIXEL_FMT_FFMPEG = PIX_FMT_BGR32;
-  //PIXEL_FMT_SIZE   = 4;
 {$ELSE}
-  // looks strange on linux:
-  PIXEL_FMT_OPENGL = GL_RGB;
-  {$IF FFMPEG_VERSION_INT < 1001000}
-  PIXEL_FMT_FFMPEG = PIX_FMT_BGR24;
-  {$ELSE}
-  PIXEL_FMT_FFMPEG = AV_PIX_FMT_BGR24;
-  {$ENDIF}
   PIXEL_FMT_SIZE   = 3;
+  {$IFDEF PIXEL_FMT_BGR}
+  PIXEL_FMT_OPENGL = GL_BGR;
+    {$IF FFMPEG_VERSION_INT < 1001000}
+  PIXEL_FMT_FFMPEG = PIX_FMT_BGR24;
+    {$ELSE}
+  PIXEL_FMT_FFMPEG = AV_PIX_FMT_BGR24;
+    {$ENDIF}
+  {$ELSE}
+  PIXEL_FMT_OPENGL = GL_RGB;
+    {$IF FFMPEG_VERSION_INT < 1001000}
+  PIXEL_FMT_FFMPEG = PIX_FMT_RGB24;
+    {$ELSE}
+  PIXEL_FMT_FFMPEG = AV_PIX_FMT_RGB24;
+    {$ENDIF}
+  {$ENDIF}
 {$ENDIF}
 
   BUFFER_ALIGN = 32;
