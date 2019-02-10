@@ -3,38 +3,44 @@ ARCH = $(shell uname -m)
 VERSION = $(shell cat ../../VERSION)
 REV = $(shell git rev-parse --short HEAD)
 SHELL := /bin/bash
+EXE = ultrastardx
 
-.PHONY: default build-deps build run-local compress clean distclean upload
+.PHONY: default build-deps build run compress bundle upload clean distclean
 
 default: build
 
-build-deps: prefix/built_libs
-prefix/built_libs:
+build-deps: prefix/$(ARCH)/built_libs
+prefix/$(ARCH)/built_libs:
 	@./dl.sh
-	./build-deps.sh all | tee build-deps.log
+	@echo
+	@bash -eo pipefail -c './tasks.sh all_deps | tee build-deps.log'
+	@sed -r -i "s/\x1B(\[[0-9;]*[JKmsu]|\(B)//g" "build-deps.log" # remove color codes
+	@echo
 
-run: output/ultrastardx
-	cd output && LD_LIBRARY_PATH=lib ./ultrastardx
+build: build/$(ARCH)/ultrastardx
+build/$(ARCH)/ultrastardx build/$(ARCH)/VERSION: prefix/$(ARCH)/built_libs
+	@bash -eo pipefail -c './build.sh | tee build.log'
+	@sed -r -i "s/\x1B(\[[0-9;]*[JKmsu]|\(B)//g" "build.log" # remove color codes
 
-build: output/ultrastardx
-output/ultrastardx output/VERSION: prefix/built_libs
-	@bash -o pipefail -c './build.sh | tee build.log'
-	@mkdir -p output/data/songs
-	@cp -v launch.sh output/
-	@cp -v ../../LICENSE output/
-	@cp -v ../../game/LICENSE.* output/
-	echo -e "Version: $(VERSION)\nRevison: $(REV)\nBuild date: `date -u +%FT%TZ`" > output/VERSION
+# run with Docker:
+# ./dockerenv.sh make bundle # x86_64
+# linux32 ./dockerenv.sh make bundle # i386/i686
+bundle: clean compress
+	@echo Complete!
 
-compress: UltraStarDeluxe-$(REV)-$(ARCH).tar.xz
-UltraStarDeluxe-$(REV)-$(ARCH).tar.xz: output/ultrastardx output/VERSION
-	rm -f "./UltraStarDeluxe-$(REV)-$(ARCH).tar.xz"
-	cd output && tar cJf "../UltraStarDeluxe-$(REV)-$(ARCH).tar.xz" .
+run: build/$(ARCH)/ultrastardx
+	@build/$(ARCH)/launch.sh
 
-upload: UltraStarDeluxe-$(REV)-$(ARCH).tar.xz
-	curl --upload-file './UltraStarDeluxe-$(REV)-$(ARCH).tar.xz' "https://transfer.sh/UltraStarDeluxe-$(REV)-$(ARCH).tar.xz"
+compress: UltraStarDeluxe-$(ARCH).tar.xz
+UltraStarDeluxe-$(ARCH).tar.xz: build/$(ARCH)/ultrastardx build/$(ARCH)/VERSION
+	rm -f "./UltraStarDeluxe-$(ARCH).tar.xz"
+	cd "build/$(ARCH)" && XZ_OPT="--threads=0" tar cJf "../../UltraStarDeluxe-$(ARCH).tar.xz" .
+
+upload: UltraStarDeluxe-$(ARCH).tar.xz
+	curl --upload-file './UltraStarDeluxe-$(ARCH).tar.xz' "https://transfer.sh/UltraStarDeluxe-$(ARCH).tar.xz" && echo
 
 clean:
-	rm -rf output UltraStarDeluxe*.tar.xz
+	rm -rf build/$(ARCH) prefix/$(ARCH) UltraStarDeluxe-$(ARCH).tar.xz
 
 distclean: clean
-	rm -rf deps prefix
+	rm -rf deps build prefix UltraStarDeluxe-*.tar.xz

@@ -22,9 +22,17 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
 else
     # Linux build
 
-    #./autogen.sh
-    #./configure
-    #make
+    # ./autogen.sh
+    # ./configure
+    # make
+
     cd dists/linux
-    make upload
+    make compress
+    filename="UltraStarDeluxe-$(uname -m).tar.xz"
+    outfile="UltraStarDeluxe-$(git rev-parse --short HEAD)-$(uname -m).tar.xz"
+    if [ -r "$filename" ]; then
+        link="$(curl --upload-file "$filename" "https://transfer.sh/$outfile")"
+        echo "$outfile should be available at:"
+        echo "    $link"
+    fi
 fi
