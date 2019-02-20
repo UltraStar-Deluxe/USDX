@@ -109,6 +109,7 @@ begin
   {$IFNDEF Debug}
   try
   {$ENDIF}
+    SetMultiByteConversionCodePage(CP_UTF8);
     WindowTitle := USDXVersionStr;
 
     Platform.Init;
