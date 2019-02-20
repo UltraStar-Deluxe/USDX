@@ -222,6 +222,7 @@ Start with a customs configuration file and score database:
 | V | switch between video, visualisation and background |
 | W | if configured and enabled, show webcam video instead as background |
 | T | toggle time displaying between total, remaining and already played time |
+| [Ctrl] + Arrow Left/Right | seek 5 seconds backward / forward |
 | [Ctrl] + [Tab] | switch visualization / camera mode |
 | [Spacebar] | pause / play |
 | [Esc] or [Backspace] | cancel current song or end early |
