@@ -517,6 +517,55 @@ begin
         Pause;
       end;
 
+      SDLK_RIGHT:
+      begin
+        if (SDL_ModState = KMOD_LCTRL) then // seek 5 seconds forward
+        AudioPlayback.SetPosition(AudioPlayback.Position + 5.0);
+        if (Assigned(fCurrentVideo)) then
+          fCurrentVideo.Position := AudioPlayback.Position + 5.0;
+      end;
+
+      SDLK_LEFT:
+      begin
+        if (SDL_ModState = KMOD_LCTRL) then // seek 5 seconds backward and reset scores to avoid cheating
+	begin
+	if (AudioPlayback.Position < 20.0) then
+	  exit;
+        for i1 := 0 to High(Player) do
+        with Player[i1] do
+        begin
+          Score          := 0;
+          ScoreLine      := 0;
+          ScoreGolden    := 0;
+
+          ScoreInt       := 0;
+          ScoreLineInt   := 0;
+          ScoreGoldenInt := 0;
+          ScoreTotalInt  := 0;
+
+          ScoreLast      := 0;
+
+          LastSentencePerfect := false;
+        end;
+        Scores.KillAllPopUps;
+        // setup score manager
+        Scores.ClearPlayers; // clear old player values
+        // add new players
+        for i1 := 0 to PlayersPlay - 1 do
+        begin
+          Scores.AddPlayer(Tex_ScoreBG[i1], Color);
+        end;
+	Scores.Init;
+
+        AudioPlayback.SetPosition(AudioPlayback.Position - 5.0);
+	LyricsState.SetCurrentTime(AudioPlayback.Position - 5.0);
+	Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
+	LyricsState.UpdateBeats();
+        if (Assigned(fCurrentVideo)) then
+          fCurrentVideo.Position := AudioPlayback.Position - 5.0;
+        end;
+      end;
+
       SDLK_TAB:
       begin
         if (SDL_ModState = KMOD_LCTRL) then // change visualization preset
