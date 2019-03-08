@@ -34,6 +34,7 @@ interface
 {$I switches.inc}
 
 uses
+  UIni,
   UMusic,
   UTime,
   UPath,
@@ -285,7 +286,11 @@ end;
 function TAudioPlaybackBase.GetPosition: real;
 begin
   if assigned(MusicStream) then
-    Result := MusicStream.Position
+  begin
+    Result := MusicStream.Position - Ini.AVDelay / 1000;
+    if Result < 0 then
+      Result := 0;
+  end
   else
     Result := 0;
 end;

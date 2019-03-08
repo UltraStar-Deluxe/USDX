@@ -136,6 +136,8 @@ type
       ShowScores:     integer;
       ShowWebScore:   integer;
       Debug:          integer;
+      AVDelay:        integer;
+      MicDelay:       integer;
 
       // Graphics
       MaxFramerate:   byte;
@@ -472,6 +474,8 @@ var
   IShowScoresTranslated:       array[0..2] of UTF8String  = ('Off', 'WhenExists', 'On');
 
   IDebugTranslated:            array[0..1] of UTF8String  = ('Off', 'On');
+  IAVDelay:                    array of UTF8String;
+  IMicDelay:                   array of UTF8String;
 
   IFullScreenTranslated:       array[0..2] of UTF8String  = ('Off', 'On', 'Borderless');
   IVisualizerTranslated:       array[0..3] of UTF8String  = ('Off', 'WhenNoVideo', 'WhenNoVideoAndImage','On');
@@ -1427,6 +1431,10 @@ begin
   // Show Score
   ShowScores := ReadArrayIndex(IShowScores, IniFile, 'Game', 'ShowScores', IGNORE_INDEX, 'On');
 
+  AVDelay := IniFile.ReadInteger('Game', 'AVDelay', 0);
+
+  MicDelay := IniFile.ReadInteger('Game', 'MicDelay', 140);
+
   // Read Users Info (Network)
   DataBase.ReadUsers;
 
@@ -1740,6 +1748,9 @@ begin
 
     // Debug
     IniFile.WriteString('Game', 'Debug', IDebug[Debug]);
+
+    IniFile.WriteInteger('Game', 'AVDelay', AVDelay);
+    IniFile.WriteInteger('Game', 'MicDelay', MicDelay);
 
     // MaxFramerate
     IniFile.WriteString('Graphics', 'MaxFramerate', IMaxFramerate[MaxFramerate]);

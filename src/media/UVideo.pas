@@ -155,6 +155,7 @@ type
 
     fFrameDuration: extended; //**< duration of a video frame in seconds (= 1/fps)
     fFrameTime: extended; //**< video time position (absolute)
+    fNextFrameTime: extended; //**< video time position (absolute)
     fLoopTime: extended;  //**< start time of the current loop
     fPreferDTS: boolean;
 
@@ -437,8 +438,8 @@ begin
     ', Height='+inttostr(fCodecContext^.height) + sLineBreak +
     '  Aspect    : '+inttostr(fCodecContext^.sample_aspect_ratio.num) + '/' +
                      inttostr(fCodecContext^.sample_aspect_ratio.den) + sLineBreak +
-    '  Framerate : '+inttostr(fCodecContext^.time_base.num) + '/' +
-                     inttostr(fCodecContext^.time_base.den));
+    '  Framerate : '+inttostr(fCodecContext^.framerate.num) + '/' +
+                     inttostr(fCodecContext^.framerate.den));
   {$endif}
 
   // allocate space for decoded frame and rgb frame
@@ -571,6 +572,7 @@ begin
   fPaused := False;
   fFrameDuration := 0;
   fFrameTime := 0;
+  fNextFrameTime := 0;
   fStream := nil;
   fStreamIndex := -1;
   fFrameTexValid := false;
@@ -647,16 +649,27 @@ procedure TVideo_FFmpeg.SynchronizeTime(Frame: PAVFrame; pts: double);
 var
   FrameDelay: double;
 begin
+  fFrameTime := fNextFrameTime;
   if (pts <> 0) then
   begin
     // if we have pts, set video clock to it
     fFrameTime := pts;
   end;
   // update the video clock
+  {$IF LIBAVCODEC_VERSION < 56005000}
   FrameDelay := av_q2d(fCodecContext^.time_base);
+  {$IF LIBAVCODEC_VERSION >= 52020000}
+  FrameDelay := FrameDelay * fCodecContext^.ticks_per_frame;
+  {$ENDIF}
+  {$ELSE}
+  if fCodecContext^.framerate.num = 0 then
+    FrameDelay := 0.04
+  else
+    FrameDelay := av_q2d(av_inv_q(fCodecContext^.framerate));
+  {$ENDIF}
   // if we are repeating a frame, adjust clock accordingly
   FrameDelay := FrameDelay + Frame^.repeat_pict * (FrameDelay * 0.5);
-  fFrameTime := fFrameTime + FrameDelay;
+  fNextFrameTime := fFrameTime + FrameDelay;
 end;
 
 {**

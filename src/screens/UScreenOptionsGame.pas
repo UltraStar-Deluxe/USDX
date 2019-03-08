@@ -51,11 +51,16 @@ type
       old_SongMenu:  integer;
       old_Sorting:   integer;
       old_Tabs:      integer;
+      AVDelayOptInt: integer;
+      MicDelayOptInt:integer;
+      AVDelaySelectNum:  integer;
+      MicDelaySelectNum: integer;
 
       procedure Leave;
       procedure ReloadCurrentScreen;
       procedure ReloadAllScreens;
       procedure ReloadSongMenu;
+      procedure UpdateCalculatedSelectSlides(Init: boolean);
 
     public
       constructor Create; override;
@@ -76,6 +81,10 @@ uses
   ULog,
   UUnicodeUtils,
   SysUtils;
+
+type
+  TGetTextFunc = function(var Param: integer; Offset: integer; Modify: boolean; OptText: PUtf8String): boolean;
+  UTF8StringArray = array of UTF8String;
 
 function TScreenOptionsGame.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
@@ -102,7 +111,7 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 6 then
+          if SelInteraction = 8 then
             Leave;
         end;
       SDLK_DOWN:
@@ -111,11 +120,12 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 5) then
+          if (SelInteraction >= 0) and (SelInteraction <= 7) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
           end;
+          UpdateCalculatedSelectSlides(false);
           if (SelInteraction = 0) then
           begin
             ReloadCurrentScreen;
@@ -123,17 +133,91 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 5) then
+          if (SelInteraction >= 0) and (SelInteraction <= 7) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
           end;
+          UpdateCalculatedSelectSlides(false);
           if (SelInteraction = 0) then
           begin
             ReloadCurrentScreen;
           end;
         end;
     end;
+  end;
+end;
+
+procedure CalculateSelectSlide(Init: boolean; GetText: TGetTextFunc; var Param: integer; var OptInt: integer; var Texts: UTF8StringArray);
+var
+  Idx: integer;
+  NumOpts: integer;
+begin
+  if not GetText(Param, 0, true, nil) then
+  begin
+    SetLength(Texts, 0);
+    Exit;
+  end;
+  if GetText(Param, -1, false, nil) then
+    Idx := 1
+  else
+    Idx := 0;
+  if not Init then
+  begin
+    if OptInt = Idx then
+      Exit;
+    GetText(Param, OptInt - Idx, true, nil);
+    if GetText(Param, -1, false, nil) then
+      Idx := 1
+    else
+      Idx := 0;
+  end;
+  OptInt := Idx;
+  if GetText(Param, 1, false, nil) then
+    NumOpts := Idx + 2
+  else
+    NumOpts := Idx + 1;
+  SetLength(Texts, NumOpts);
+  for Idx := 0 to High(Texts) do
+    GetText(Param, Idx - OptInt, false, @Texts[Idx]);
+end;
+
+function GetAVDelayOptText(var Param: integer; Offset: integer; Modify: boolean; OptText: PUTF8String): boolean;
+begin
+  if OptText <> nil then
+    OptText^ := Format('%d ms', [Param + Offset * 10]);
+  if Modify then
+    Param := Param + Offset * 10;
+  Result := true;
+end;
+
+function GetMicDelayOptText(var Param: integer; Offset: integer; Modify: boolean; OptText: PUTF8String): boolean;
+begin
+  if Param + Offset * 10 < 0 then
+    Result := false
+  else
+  begin
+    if OptText <> nil then
+      OptText^ := Format('%d ms', [Param + Offset * 10]);
+    if Modify then
+      Param := Param + Offset * 10;
+    Result := true;
+  end;
+end;
+
+procedure TScreenOptionsGame.UpdateCalculatedSelectSlides(Init: boolean);
+begin
+  CalculateSelectSlide(Init, @GetAVDelayOptText, Ini.AVDelay, AVDelayOptInt, IAVDelay);
+  CalculateSelectSlide(Init, @GetMicDelayOptText, Ini.MicDelay, MicDelayOptInt, IMicDelay);
+  if Init then
+  begin
+    AVDelaySelectNum := AddSelectSlide(Theme.OptionsGame.SelectAVDelay, AVDelayOptInt, IAVDelay);
+    MicDelaySelectNum := AddSelectSlide(Theme.OptionsGame.SelectMicDelay, MicDelayOptInt, IMicDelay);
+  end
+  else
+  begin
+    UpdateSelectSlideOptions(Theme.OptionsGame.SelectAVDelay, AVDelaySelectNum, IAVDelay, AVDelayOptInt);
+    UpdateSelectSlideOptions(Theme.OptionsGame.SelectMicDelay, MicDelaySelectNum, IMicDelay, MicDelayOptInt);
   end;
 end;
 
@@ -166,6 +250,12 @@ begin
   Theme.OptionsGame.SelectDebug.showArrows  := true;
   Theme.OptionsGame.SelectDebug.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsGame.SelectDebug,      Ini.Debug,      IDebugTranslated);
+
+  Theme.OptionsGame.SelectAVDelay.showArrows  := true;
+  Theme.OptionsGame.SelectAVDelay.oneItemOnly := true;
+  Theme.OptionsGame.SelectMicDelay.showArrows  := true;
+  Theme.OptionsGame.SelectMicDelay.oneItemOnly := true;
+  UpdateCalculatedSelectSlides(true);
 
   AddButton(Theme.OptionsGame.ButtonExit);
   if (Length(Button[0].Text) = 0) then
