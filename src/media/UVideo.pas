@@ -155,6 +155,7 @@ type
 
     fFrameDuration: extended; //**< duration of a video frame in seconds (= 1/fps)
     fFrameTime: extended; //**< video time position (absolute)
+    fNextFrameTime: extended; //**< video time position (absolute)
     fLoopTime: extended;  //**< start time of the current loop
     fPreferDTS: boolean;
 
@@ -571,6 +572,7 @@ begin
   fPaused := False;
   fFrameDuration := 0;
   fFrameTime := 0;
+  fNextFrameTime := 0;
   fStream := nil;
   fStreamIndex := -1;
   fFrameTexValid := false;
@@ -647,6 +649,7 @@ procedure TVideo_FFmpeg.SynchronizeTime(Frame: PAVFrame; pts: double);
 var
   FrameDelay: double;
 begin
+  fFrameTime := fNextFrameTime;
   if (pts <> 0) then
   begin
     // if we have pts, set video clock to it
@@ -659,7 +662,7 @@ begin
   {$ENDIF}
   // if we are repeating a frame, adjust clock accordingly
   FrameDelay := FrameDelay + Frame^.repeat_pict * (FrameDelay * 0.5);
-  fFrameTime := fFrameTime + FrameDelay;
+  fNextFrameTime := fFrameTime + FrameDelay;
 end;
 
 {**
