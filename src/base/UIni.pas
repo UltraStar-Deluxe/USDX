@@ -137,6 +137,7 @@ type
       ShowWebScore:   integer;
       Debug:          integer;
       AVDelay:        integer;
+      MicDelay:       integer;
 
       // Graphics
       MaxFramerate:   byte;
@@ -1430,6 +1431,8 @@ begin
 
   AVDelay := IniFile.ReadInteger('Game', 'AVDelay', 0);
 
+  MicDelay := IniFile.ReadInteger('Game', 'MicDelay', 140);
+
   // Read Users Info (Network)
   DataBase.ReadUsers;
 
@@ -1745,6 +1748,7 @@ begin
     IniFile.WriteString('Game', 'Debug', IDebug[Debug]);
 
     IniFile.WriteInteger('Game', 'AVDelay', AVDelay);
+    IniFile.WriteInteger('Game', 'MicDelay', MicDelay);
 
     // MaxFramerate
     IniFile.WriteString('Graphics', 'MaxFramerate', IMaxFramerate[MaxFramerate]);

@@ -34,6 +34,7 @@ interface
 {$I switches.inc}
 
 uses
+  UIni,
   UTime;
 
 type
@@ -292,7 +293,7 @@ begin
 
   OldBeatD := CurrentBeatD;
   // MidBeatD = MidBeat with additional GAP
-  MidBeatD := -0.5 + GetMidBeat(CurLyricsTime - (StartTime + 120 + 20) / 1000);
+  MidBeatD := -0.5 + GetMidBeat(CurLyricsTime - (StartTime + Ini.MicDelay) / 1000);
   CurrentBeatD := Floor(MidBeatD);
 end;
 
