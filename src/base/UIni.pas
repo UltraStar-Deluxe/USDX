@@ -474,6 +474,8 @@ var
   IShowScoresTranslated:       array[0..2] of UTF8String  = ('Off', 'WhenExists', 'On');
 
   IDebugTranslated:            array[0..1] of UTF8String  = ('Off', 'On');
+  IAVDelay:                    array of UTF8String;
+  IMicDelay:                   array of UTF8String;
 
   IFullScreenTranslated:       array[0..2] of UTF8String  = ('Off', 'On', 'Borderless');
   IVisualizerTranslated:       array[0..3] of UTF8String  = ('Off', 'WhenNoVideo', 'WhenNoVideoAndImage','On');

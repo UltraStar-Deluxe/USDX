@@ -856,6 +856,8 @@ type
     SelectTabs:         TThemeSelectSlide;
     SelectShowScores:   TThemeSelectSlide;
     SelectDebug:        TThemeSelectSlide;
+    SelectAVDelay:      TThemeSelectSlide;
+    SelectMicDelay:     TThemeSelectSlide;
     ButtonExit:         TThemeButton;
   end;
 
@@ -2323,6 +2325,8 @@ begin
       ThemeLoadSelectSlide(OptionsGame.SelectTabs,       'OptionsGameSelectTabs');
       ThemeLoadSelectSlide(OptionsGame.SelectShowScores, 'OptionsGameSelectShowScores');
       ThemeLoadSelectSlide(OptionsGame.SelectDebug,      'OptionsGameSelectDebug');
+      ThemeLoadSelectSlide(OptionsGame.SelectAVDelay,    'OptionsGameSelectAVDelay');
+      ThemeLoadSelectSlide(OptionsGame.SelectMicDelay,   'OptionsGameSelectMicDelay');
       ThemeLoadButton(OptionsGame.ButtonExit,            'OptionsGameButtonExit');
 
       // Options Graphics
