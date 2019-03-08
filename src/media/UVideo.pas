@@ -654,6 +654,9 @@ begin
   end;
   // update the video clock
   FrameDelay := av_q2d(fCodecContext^.time_base);
+  {$IF LIBAVCODEC_VERSION >= 52020000}
+  FrameDelay := FrameDelay * fCodecContext^.ticks_per_frame;
+  {$ENDIF}
   // if we are repeating a frame, adjust clock accordingly
   FrameDelay := FrameDelay + Frame^.repeat_pict * (FrameDelay * 0.5);
   fFrameTime := fFrameTime + FrameDelay;
