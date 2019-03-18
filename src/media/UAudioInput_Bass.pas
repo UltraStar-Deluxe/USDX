@@ -310,7 +310,7 @@ begin
       Exit;
   end;
 
-  if (BASS_RecordGetInput(SourceIndex, PSingle(lVolume)) = DWORD(-1)) then
+  if (BASS_RecordGetInput(SourceIndex, @lVolume) = DWORD(-1)) then
   begin
     Log.LogError('BASS_RecordGetInput: ' + BassCore.ErrorGetString() , 'TBassInputDevice.GetVolume');
     Exit;
