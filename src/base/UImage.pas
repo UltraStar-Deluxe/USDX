@@ -607,8 +607,7 @@ begin
     ImgFmt^.RMask, ImgFmt^.GMask, ImgFmt^.BMask, ImgFmt^.AMask);
 
   // copy image from temp- to new surface
-  SDL_SetSurfaceAlphaMod(ImgSurface, 255);
-  SDL_SetSurfaceAlphaMod(TempSurface, 255);
+  SDL_SetSurfaceBlendMode(TempSurface, SDL_BLENDMODE_NONE);
   SDL_BlitSurface(TempSurface, nil, ImgSurface, nil);
 
   SDL_FreeSurface(TempSurface);
