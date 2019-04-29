@@ -395,6 +395,14 @@ begin
     Result := 0;
 end;
 
+function CompareByYearReversed(Song1, Song2: Pointer): integer;
+begin
+  if (TSong(Song1).Year < TSong(Song2).Year) then
+    Result := 1
+  else
+    Result := 0;
+end;
+
 procedure TSongs.Sort(Order: TSortingType);
 var
   CompareFunc: TListSortCompare;
@@ -417,6 +425,8 @@ begin
       CompareFunc := CompareByLanguage;
     sYear: // by Year
       CompareFunc := CompareByYear;
+    sYearReversed: //by year reversed
+      CompareFunc := CompareByYearReversed;
     sDecade: // by Decade
       CompareFunc := CompareByYear;
     else
@@ -470,6 +480,11 @@ begin
         Songs.Sort(sArtist);
         Songs.Sort(sYear);
       end;
+    sYearReversed: begin
+        Songs.Sort(sTitle);
+        Songs.Sort(sArtist);
+        Songs.Sort(sYearReversed);
+    end;
     sDecade: begin
         Songs.Sort(sTitle);
         Songs.Sort(sArtist);
@@ -655,6 +670,21 @@ begin
         end;
 
         sYear: begin
+           if (CurSong.Year <> 0) then
+             tmpCategory := IntToStr(CurSong.Year)
+           else
+             tmpCategory := 'Unknown';
+
+           if (tmpCategory <> CurCategory) then
+           begin
+             CurCategory := tmpCategory;
+
+             // add Category Button
+             AddCategoryButton(CurCategory);
+           end;
+         end;
+
+        sYearReversed: begin
            if (CurSong.Year <> 0) then
              tmpCategory := IntToStr(CurSong.Year)
            else
