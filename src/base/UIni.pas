@@ -328,11 +328,11 @@ const
   ITabs:        array[0..1] of UTF8String = ('Off', 'On');
 
 const
-  ISorting:      array[0..9] of UTF8String = ('Edition', 'Genre', 'Language', 'Folder', 'Title', 'Artist', 'Artist2', 'Year', 'Decade', 'Playlist');
+  ISorting:      array[0..10] of UTF8String = ('Edition', 'Genre', 'Language', 'Folder', 'Title', 'Artist', 'Artist2', 'Year', 'Year Reversed', 'Decade', 'Playlist');
   ISongMenuMode: array[0..6] of UTF8String = ('Roulette', 'Chessboard', 'Carousel', 'Slot Machine', 'Slide', 'List', 'Mosaic');
 
 type
-  TSortingType = (sEdition, sGenre, sLanguage, sFolder, sTitle, sArtist, sArtist2, sYear, sDecade, sPlaylist);
+  TSortingType = (sEdition, sGenre, sLanguage, sFolder, sTitle, sArtist, sArtist2, sYear, sYearReversed, sDecade, sPlaylist);
 
 const
   IShowScores:       array[0..2] of UTF8String  = ('Off', 'When exists', 'On');
@@ -469,7 +469,7 @@ var
   ISongMenuTranslated:         array[0..6] of UTF8String  = ('Roulette', 'Chessboard', 'Carousel', 'Slot Machine', 'Slide', 'List', 'Mosaic');
 
   //ISortingTranslated:          array[0..9] of UTF8String  = ('Edition', 'Genre', 'Language', 'Folder', 'Title', 'Artist', 'Artist2', 'Year', 'Decade', 'Playlist');
-  ISortingTranslated:          array[0..8] of UTF8String  = ('Edition', 'Genre', 'Language', 'Folder', 'Title', 'Artist', 'Artist2', 'Year', 'Decade');
+  ISortingTranslated:          array[0..9] of UTF8String  = ('Edition', 'Genre', 'Language', 'Folder', 'Title', 'Artist', 'Artist2', 'Year', 'Year Reversed', 'Decade');
 
   IShowScoresTranslated:       array[0..2] of UTF8String  = ('Off', 'WhenExists', 'On');
 
@@ -630,8 +630,9 @@ begin
   ISortingTranslated[5]               := ULanguage.Language.Translate('OPTION_VALUE_ARTIST');
   ISortingTranslated[6]               := ULanguage.Language.Translate('OPTION_VALUE_ARTIST2');
   ISortingTranslated[7]               := ULanguage.Language.Translate('OPTION_VALUE_YEAR');
-  ISortingTranslated[8]               := ULanguage.Language.Translate('OPTION_VALUE_DECADE');
-  //ISortingTranslated[9]               := ULanguage.Language.Translate('OPTION_VALUE_PLAYLIST');
+  ISortingTranslated[8]               := ULanguage.Language.Translate('OPTION_VALUE_YEAR_REVERSED');
+  ISortingTranslated[9]               := ULanguage.Language.Translate('OPTION_VALUE_DECADE');
+  //ISortingTranslated[10]               := ULanguage.Language.Translate('OPTION_VALUE_PLAYLIST');
 
   IShowScoresTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IShowScoresTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_WHENEXIST');
