@@ -43,8 +43,9 @@ uses
   UIni;
 
 const
-  BaseToneFreq = 65.4064; // lowest (half-)tone to analyze (C2 = 65.4064 Hz)
-  NumHalftones = 46;      // C2-A5 (for Whitney and my high voice)
+  BaseToneFreq = 82.406889228217482434; // E2 (82.4069 Hz), lowest pitch that a human voice (bass singer) can phonate
+  NumHalftones = 45;                    // E2 to C6 (1046.5023 Hz), highest pitch a human voice (soprano singer) can phonate
+                                        // cf. https://en.wikipedia.org/wiki/Vocal_range
 
 type
   TCaptureBuffer = class
@@ -61,10 +62,10 @@ type
       procedure StartCapture(Format: TAudioFormatInfo);
       procedure StopCapture();
 
-      // we call it to analyze sound by checking Autocorrelation
-      procedure AnalyzeByAutocorrelation;
-      // use this to check one frequency by Autocorrelation
-      function AnalyzeAutocorrelationFreq(Freq: real): real;
+      // we call it to analyze sound by checking CAMDF
+      procedure AnalyzeByCAMDF;
+      // use this to check one frequency by CAMDF
+      function CircularAverageMagnitudeDifference(Delay: integer): integer;
     public
       AnalysisBuffer:  array[0..4095] of smallint; // newest 4096 samples
       AnalysisBufferSize: integer; // number of samples of BufferArray to analyze
@@ -372,7 +373,7 @@ begin
     if MaxVolume >= Threshold then
     begin
       // analyse the current voice pitch
-      AnalyzeByAutocorrelation;
+      AnalyzeByCAMDF;
       ToneValid := true;
     end;
 
@@ -381,70 +382,64 @@ begin
   end;
 end;
 
-procedure TCaptureBuffer.AnalyzeByAutocorrelation;
+// CAMDF: Circular Average Magnitude Difference Function (similar to autocorrelation function, but without multiplications)
+procedure TCaptureBuffer.AnalyzeByCAMDF;
 var
   ToneIndex: integer;
   CurFreq:   real;
-  CurWeight: real;
-  MaxWeight: real;
-  MaxTone:   integer;
+  CurDelay:  integer;
+  CurCAMD:   integer;
+  MinCAMD:   integer;
+  MinTone:   integer;
 const
-  HalftoneBase = 1.05946309436; // 2^(1/12) -> HalftoneBase^12 = 2 (one octave)
+  HalftoneBase = 1.05946309435929526456; // 2^(1/12) -> HalftoneBase^12 = 2 (one octave)
 begin
   // prepare to analyze
-  MaxWeight := -1;
-  MaxTone := 0; // this is not needed, but it satifies the compiler
+  MinCAMD := AnalysisBufferSize*2*High(smallint); // highest possible CAMD
+  MinTone := 0; // this is not needed, but it satifies the compiler
 
   // analyze halftones
-  // Note: at the lowest tone (~65Hz) and a buffer-size of 4096
-  // at 44.1 (or 48kHz) only 6 (or 5) samples are compared, this might be
+  // Note: at the lowest tone (~65 Hz) and a buffer-size of 4096
+  // at 44.1 (or 48 kHz) only 6 (or 5) samples are compared, this might be
   // too few samples -> use a bigger buffer-size
   for ToneIndex := 0 to NumHalftones-1 do
   begin
-    CurFreq := BaseToneFreq * Power(HalftoneBase, ToneIndex);
-    CurWeight := AnalyzeAutocorrelationFreq(CurFreq);
+    CurFreq  := BaseToneFreq * Power(HalftoneBase, ToneIndex);
+    CurDelay := Round(AudioFormat.SampleRate/CurFreq);
+    CurCAMD  := CircularAverageMagnitudeDifference(CurDelay);
 
-    // TODO: prefer higher frequencies (use >= or use downto)
-    if (CurWeight > MaxWeight) then
+    // prefer higher frequencies (therefore <= instead of <)
+    if (CurCAMD <= MinCAMD) then
     begin
-      // this frequency has a higher weight
-      MaxWeight := CurWeight;
-      MaxTone   := ToneIndex;
+      // current frequency has a lower CAMD (extended average magnitude difference)
+      MinCAMD  := CurCAMD;
+      MinTone := ToneIndex;
     end;
   end;
 
-  ToneAbs := MaxTone;
-  Tone    := MaxTone mod 12;
+  ToneAbs := MinTone;
+  Tone    := MinTone mod 12;
 end;
 
-// result medium difference
-function TCaptureBuffer.AnalyzeAutocorrelationFreq(Freq: real): real;
+// Circular Average Magnitude Difference Function (CAMDF) is defined as
+//   D_C(\tau)=\sum_{n=0}^{N-1}|x(mod(n+\tau, N)) - x(n)|
+// where \tau = Delay, n = SampleIndex, N = AnalysisBufferSize, x = AnalysisBuffer
+// See: Equation (4) in http://www.utdallas.edu/~hxb076000/citing_papers/Muhammad%20Extended%20Average%20Magnitude%20Difference.pdf
+function TCaptureBuffer.CircularAverageMagnitudeDifference(Delay: integer): integer;
 var
-  Dist:                   real;    // distance (0=equal .. 1=totally different) between correlated samples
-  AccumDist:              real;    // accumulated distances
-  SampleIndex:            integer; // index of sample to analyze
-  CorrelatingSampleIndex: integer; // index of sample one period ahead
-  SamplesPerPeriod:       integer; // samples in one period
+  CAMD:        integer; // accumulated magnitude differences over AnalysisBuffer
+  SampleIndex: integer; // index of sample to analyze
 begin
-  SampleIndex := 0;
-  SamplesPerPeriod := Round(AudioFormat.SampleRate/Freq);
-  CorrelatingSampleIndex := SampleIndex + SamplesPerPeriod;
+  CAMD := 0;
 
-  AccumDist := 0;
-
-  // compare correlating samples
-  while (CorrelatingSampleIndex < AnalysisBufferSize) do
+  // accumulate the magnitude differences for samples in AnalysisBuffer
+  for SampleIndex := 0 to (AnalysisBufferSize-1) do
   begin
-    // calc distance (correlation: 1-dist) to corresponding sample in next period
-    Dist := Abs(AnalysisBuffer[SampleIndex] - AnalysisBuffer[CorrelatingSampleIndex]) /
-            High(Word);
-    AccumDist := AccumDist + Dist;
-    Inc(SampleIndex);
-    Inc(CorrelatingSampleIndex);
+    CAMD += Abs(AnalysisBuffer[(SampleIndex+Delay) mod AnalysisBufferSize] - AnalysisBuffer[SampleIndex]);
   end;
 
-  // return "inverse" average distance (=correlation)
-  Result := 1 - AccumDist / AnalysisBufferSize;
+  // return circular average magnitude difference
+  Result := CAMD;
 end;
 
 function TCaptureBuffer.MaxSampleVolume: single;
