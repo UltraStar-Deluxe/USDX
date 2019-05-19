@@ -35,6 +35,6 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>1</string>
+	<string>Need microphone access for pitch analysis of the singer’s voice.</string>
 </dict>
 </plist>
