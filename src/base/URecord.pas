@@ -50,7 +50,8 @@ type
   // pitch detection algorithm (PDA)
   TPDAType = (
     PDA_AMDF,   // average magnitude difference function
-    PDA_CAMDF   // circular average magnitude difference function
+    PDA_CAMDF,  // circular average magnitude difference function
+    PDA_ASDF    // average squared difference function
   );
 
   TCaptureBuffer = class
@@ -75,6 +76,7 @@ type
       // use this to check one frequency by AMDF
       function AverageMagnitudeDifference(Delay: integer): real;
       function CircularAverageMagnitudeDifference(Delay: integer): real;
+      function AverageSquaredDifference(Delay: integer): real;
     public
       AnalysisBuffer:  array[0..4095] of smallint; // newest 4096 samples
       AnalysisBufferSize: integer; // number of samples of BufferArray to analyze
@@ -383,9 +385,11 @@ begin
     begin
       // analyse the current voice pitch
       ToneValid := AnalyzePitch(PDA_AMDF);
-      //Write('AMDF: ',ToneAbs:2,' (f: ',Frequencies[ToneAbs]:7:2,' Hz)');
-      //ToneValid := AnalyzePitch(PDA_CAMDF);
-      //Writeln('   /   CAMDF: ',ToneAbs:2,' (f: ',Frequencies[ToneAbs]:7:2,' Hz)');
+      Write('AMDF: ',ToneAbs:2,' (f: ',Frequencies[ToneAbs]:7:2,' Hz)');
+      ToneValid := AnalyzePitch(PDA_CAMDF);
+      Write('   /   CAMDF: ',ToneAbs:2,' (f: ',Frequencies[ToneAbs]:7:2,' Hz)');
+      ToneValid := AnalyzePitch(PDA_CAMDF);
+      Writeln('   /   ASDF: ',ToneAbs:2,' (f: ',Frequencies[ToneAbs]:7:2,' Hz)');
     end;
 
   finally
@@ -428,6 +432,8 @@ begin
         Weights[ToneIndex] := AverageMagnitudeDifference(Delays[ToneIndex]);
       PDA_CAMDF:
         Weights[ToneIndex] := CircularAverageMagnitudeDifference(Delays[ToneIndex]);
+      PDA_ASDF:
+        Weights[ToneIndex] := AverageSquaredDifference(Delays[ToneIndex]);
       end;
 
     // find minimum weight, prefer higher frequencies (therefore <= instead of <)
@@ -485,6 +491,26 @@ begin
 
   // return circular average magnitude difference
   Result := CAMD/AnalysisBufferSize;
+end;
+
+// Average Squared Difference Function (ASDF) is defined as
+//   D(\tau)=\frac{1}{N-\tau-1}\sum_{n=0}^{N-\tau-1}(x(n) - x(n+\tau))^2
+// where \tau = Delay, n = SampleIndex, N = AnalysisBufferSize, x = AnalysisBuffer
+function TCaptureBuffer.AverageSquaredDifference(Delay: integer): real;
+var
+  ASD:         QWord; // accumulated squared differences over AnalysisBuffer
+  SampleIndex: integer; // index of sample to analyze
+begin
+  ASD := 0;
+
+  // accumulate the magnitude differences for samples in AnalysisBuffer
+  for SampleIndex := 0 to (AnalysisBufferSize-Delay-1) do
+  begin
+    ASD += Sqr(AnalysisBuffer[SampleIndex] - AnalysisBuffer[SampleIndex+Delay]);
+  end;
+
+  // return average magnitude difference
+  Result := ASD/(AnalysisBufferSize-Delay-1);
 end;
 
 function TCaptureBuffer.MaxSampleVolume: single;
