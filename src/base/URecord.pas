@@ -50,17 +50,20 @@ type
   // pitch detection algorithm (PDA)
   TPDAType = (
     PDA_AMDF,   // average magnitude difference function
-    PDA_CAMDF,  // circular average magnitude difference function
-    PDA_ASDF    // average squared difference function
+    PDA_CAMDF  // circular average magnitude difference function
   );
+
+  TFrequencyArray   = array[0..NumHalftones-1] of real;
+  TDelayArray       = array[0..NumHalftones-1] of integer;
+  TCorrelationArray = array[0..NumHalftones-1] of real;
 
   TCaptureBuffer = class
     private
       fVoiceStream: TAudioVoiceStream; // stream for voice passthrough
       fAnalysisBufferLock: PSDL_Mutex;
       fAudioFormat: TAudioFormatInfo;
-      Frequencies: array[0..NumHalftones] of real;
-      Delays: array[0..NumHalftones] of integer;
+      Frequencies: TFrequencyArray;
+      Delays: TDelayArray;
 
       function GetToneString: string; // converts a tone to its string representation;
 
@@ -74,20 +77,20 @@ type
       // we call it to analyze sound by checking AMDF
       function AnalyzePitch(PDA: TPDAType): boolean;
       // use this to check one frequency by AMDF
-      function AverageMagnitudeDifference(Delay: integer): real;
-      function CircularAverageMagnitudeDifference(Delay: integer): real;
-      function AverageSquaredDifference(Delay: integer): real;
+      function AverageMagnitudeDifference(): TCorrelationArray;
+      function CircularAverageMagnitudeDifference(): TCorrelationArray;
+      function ArrayIndexOfMinimum(const AValues: array of real): Integer;
     public
-      AnalysisBuffer:  array[0..4095] of smallint; // newest 4096 samples
+      AnalysisBuffer:  array[0..4095] of smallint; // newest 4096 samples (MUST BE POWER OF TWO!)
       AnalysisBufferSize: integer; // number of samples of BufferArray to analyze
 
       LogBuffer:   TMemoryStream;              // full buffer
 
       // pitch detection
       // TODO: remove ToneValid, set Tone/ToneAbs=-1 if invalid instead
-      ToneValid:    boolean;    // true if Tone contains a valid value (otherwise it contains noise)
-      Tone:         integer;    // tone relative to one octave (e.g. C2=C3=C4). Range: 0-11
-      ToneAbs:      integer;    // absolute (full range) tone (e.g. C2<>C3). Range: 0..NumHalftones-1
+      ToneValid: boolean;    // true if Tone contains a valid value (otherwise it contains noise)
+      Tone:      integer;    // tone relative to one octave (e.g. C2=C3=C4). Range: 0-11
+      ToneAbs:   integer;    // absolute (full range) tone (e.g. C2<>C3). Range: 0..NumHalftones-1
 
       // methods
       constructor Create;
@@ -384,17 +387,31 @@ begin
     if MaxVolume >= Threshold then
     begin
       // analyse the current voice pitch
-      ToneValid := AnalyzePitch(PDA_AMDF);
-      Write('AMDF: ',ToneAbs:2,' (f: ',Frequencies[ToneAbs]:7:2,' Hz)');
+      //ToneValid := AnalyzePitch(PDA_AMDF);
+      //Write('AMDF: ',ToneAbs:2,' (f: ',Frequencies[ToneAbs]:7:2,' Hz)');
+      //Write(Tone:2);
       ToneValid := AnalyzePitch(PDA_CAMDF);
-      Write('   /   CAMDF: ',ToneAbs:2,' (f: ',Frequencies[ToneAbs]:7:2,' Hz)');
-      ToneValid := AnalyzePitch(PDA_CAMDF);
-      Writeln('   /   ASDF: ',ToneAbs:2,' (f: ',Frequencies[ToneAbs]:7:2,' Hz)');
+      //Writeln('   /   CAMDF: ',ToneAbs:2,' (f: ',Frequencies[ToneAbs]:7:2,' Hz)');
+      //Writeln(' ',Tone:2);
     end;
 
   finally
     UnlockAnalysisBuffer();
   end;
+end;
+
+function TCaptureBuffer.ArrayIndexOfMinimum(const AValues: array of real): Integer;
+var
+  LValIdx: Integer;
+  LMinIdx: Integer = 0;
+begin
+  if Length(AValues) = 0 then Exit(-1);
+
+  for LValIdx := 1 to High(AValues) do
+    if AValues[LValIdx] <= AValues[LMinIdx] then
+      LMinIdx := LValIdx;
+
+  Result := LMinIdx;
 end;
 
 procedure TCaptureBuffer.SetFrequenciesAndDelays;
@@ -411,64 +428,55 @@ end;
 
 function TCaptureBuffer.AnalyzePitch(PDA: TPDAType): boolean;
 var
-  ToneIndex:   integer;
-  Weights:     array[0..NumHalftones] of real;
-  MinWeight:   real;
-  MinTone:     integer;
+  Correlation: TCorrelationArray;
 begin
   // prepare to analyze
   SetFrequenciesAndDelays;
-  MinWeight := 2*High(smallint); // initialize with highest possible weight
-  MinTone   := 0; // this is not needed, but it satifies the compiler
 
   // analyze halftones
   // Note: at the lowest tone (~65 Hz) and a buffer-size of 4096
   // at 44.1 (or 48 kHz) only 6 (or 5) samples are compared, this might be
   // too few samples -> use a bigger buffer-size
-  for ToneIndex := 0 to NumHalftones-1 do
-  begin
-    case PDA of
-      PDA_AMDF:
-        Weights[ToneIndex] := AverageMagnitudeDifference(Delays[ToneIndex]);
-      PDA_CAMDF:
-        Weights[ToneIndex] := CircularAverageMagnitudeDifference(Delays[ToneIndex]);
-      PDA_ASDF:
-        Weights[ToneIndex] := AverageSquaredDifference(Delays[ToneIndex]);
+  case PDA of
+    PDA_AMDF:
+      begin
+        Correlation := AverageMagnitudeDifference();
+        ToneAbs := ArrayIndexOfMinimum(Correlation);
       end;
-
-    // find minimum weight, prefer higher frequencies (therefore <= instead of <)
-    if (Weights[ToneIndex] <= MinWeight) then
-    begin
-      // current frequency has a lower weight
-      MinWeight := Weights[ToneIndex];
-      MinTone   := ToneIndex;
-    end;
+    PDA_CAMDF:
+      begin
+        Correlation := CircularAverageMagnitudeDifference();
+        ToneAbs := ArrayIndexOfMinimum(Correlation);
+      end;
   end;
 
-  ToneAbs := MinTone;
-  Tone    := MinTone mod 12;
-  Result  := true;
+  Tone := ToneAbs mod 12;
+  Result := true;
 end;
 
 // Average Magnitude Difference Function (AMDF) is defined as
 //   D(\tau)=\frac{1}{N-\tau-1}\sum_{n=0}^{N-\tau-1}|x(n) - x(n+\tau)|
 // where \tau = Delay, n = SampleIndex, N = AnalysisBufferSize, x = AnalysisBuffer
 // See: Equation (1) in http://www.utdallas.edu/~hxb076000/citing_papers/Muhammad%20Extended%20Average%20Magnitude%20Difference.pdf
-function TCaptureBuffer.AverageMagnitudeDifference(Delay: integer): real;
+function TCaptureBuffer.AverageMagnitudeDifference(): TCorrelationArray;
 var
-  AMD:         integer; // accumulated magnitude differences over AnalysisBuffer
+  ToneIndex:   integer;
+  Correlation: TCorrelationArray;
   SampleIndex: integer; // index of sample to analyze
 begin
-  AMD := 0;
-
   // accumulate the magnitude differences for samples in AnalysisBuffer
-  for SampleIndex := 0 to (AnalysisBufferSize-Delay-1) do
-  begin
-    AMD += Abs(AnalysisBuffer[SampleIndex] - AnalysisBuffer[SampleIndex+Delay]);
-  end;
+  for ToneIndex := 0 to NumHalftones-1 do
+    begin
+      Correlation[ToneIndex] := 0;
+      for SampleIndex := 0 to (AnalysisBufferSize-Delays[ToneIndex]-1) do
+      begin
+        Correlation[ToneIndex] += Abs(AnalysisBuffer[SampleIndex] - AnalysisBuffer[SampleIndex+Delays[ToneIndex]]);
+      end;
+      Correlation[ToneIndex] /= (AnalysisBufferSize-Delays[ToneIndex]-1);
+    end;
 
   // return average magnitude difference
-  Result := AMD/(AnalysisBufferSize-Delay-1);
+  Result := Correlation;
 end;
 
 
@@ -476,41 +484,28 @@ end;
 //   D_C(\tau)=\sum_{n=0}^{N-1}|x(mod(n+\tau, N)) - x(n)|
 // where \tau = Delay, n = SampleIndex, N = AnalysisBufferSize, x = AnalysisBuffer
 // See: Equation (4) in http://www.utdallas.edu/~hxb076000/citing_papers/Muhammad%20Extended%20Average%20Magnitude%20Difference.pdf
-function TCaptureBuffer.CircularAverageMagnitudeDifference(Delay: integer): real;
+function TCaptureBuffer.CircularAverageMagnitudeDifference(): TCorrelationArray;
 var
-  CAMD:        integer; // accumulated magnitude differences over AnalysisBuffer
+  ToneIndex:   integer;
+  Correlation: TCorrelationArray;
   SampleIndex: integer; // index of sample to analyze
 begin
-  CAMD := 0;
-
   // accumulate the magnitude differences for samples in AnalysisBuffer
-  for SampleIndex := 0 to (AnalysisBufferSize-1) do
+  for ToneIndex := 0 to NumHalftones-1 do
   begin
-    CAMD += Abs(AnalysisBuffer[(SampleIndex+Delay) mod AnalysisBufferSize] - AnalysisBuffer[SampleIndex]);
+    Correlation[ToneIndex] := 0;
+    for SampleIndex := 0 to (AnalysisBufferSize-1) do
+    begin
+      // Suggestion for calculation efficiency improvement from deuteragenie:
+      // Replacing 'i mod buffersize' by 'i & (buffersize-1)' when i is positive and buffersize is a power of two should speed the modulo compuation by 5x-10x
+      //Correlation[ToneIndex] += Abs(AnalysisBuffer[(SampleIndex+Delays[ToneIndex]) mod AnalysisBufferSize] - AnalysisBuffer[SampleIndex]);
+      Correlation[ToneIndex] += Abs(AnalysisBuffer[(SampleIndex+Delays[ToneIndex]) and (AnalysisBufferSize-1)] - AnalysisBuffer[SampleIndex]);
+    end;
+    Correlation[ToneIndex] /= AnalysisBufferSize;
   end;
 
   // return circular average magnitude difference
-  Result := CAMD/AnalysisBufferSize;
-end;
-
-// Average Squared Difference Function (ASDF) is defined as
-//   D(\tau)=\frac{1}{N-\tau-1}\sum_{n=0}^{N-\tau-1}(x(n) - x(n+\tau))^2
-// where \tau = Delay, n = SampleIndex, N = AnalysisBufferSize, x = AnalysisBuffer
-function TCaptureBuffer.AverageSquaredDifference(Delay: integer): real;
-var
-  ASD:         QWord; // accumulated squared differences over AnalysisBuffer
-  SampleIndex: integer; // index of sample to analyze
-begin
-  ASD := 0;
-
-  // accumulate the magnitude differences for samples in AnalysisBuffer
-  for SampleIndex := 0 to (AnalysisBufferSize-Delay-1) do
-  begin
-    ASD += Sqr(AnalysisBuffer[SampleIndex] - AnalysisBuffer[SampleIndex+Delay]);
-  end;
-
-  // return average magnitude difference
-  Result := ASD/(AnalysisBufferSize-Delay-1);
+  Result := Correlation;
 end;
 
 function TCaptureBuffer.MaxSampleVolume: single;
