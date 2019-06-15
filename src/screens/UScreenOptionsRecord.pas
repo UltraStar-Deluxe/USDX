@@ -303,13 +303,8 @@ begin
                   Theme.OptionsRecord.SelectSlideInput.H +
                   SourceBarsTotalHeight;
 
-    // find max. channel count of all devices
-    MaxChannelCount := 0;
-    for DeviceIndex := 0 to High(AudioInputProcessor.DeviceList) do
-    begin
-      if (AudioInputProcessor.DeviceList[DeviceIndex].AudioFormat.Channels > MaxChannelCount) then
-        MaxChannelCount := AudioInputProcessor.DeviceList[DeviceIndex].AudioFormat.Channels;
-    end;
+    // TODO: Do not assume that all devices have exactly one channel
+    MaxChannelCount := 1;
 
     // init channel-to-player mapping sliders
     SetLength(SelectSlideChannelID, MaxChannelCount);
@@ -513,6 +508,8 @@ begin
       PreviewChannel[ChannelIndex].Clear();
       Device.LinkCaptureBuffer(ChannelIndex, PreviewChannel[ChannelIndex]);
       FillChar(ChannelPeak[ChannelIndex], SizeOf(TPeakInfo), 0);
+      // TODO
+      break;
     end;
     Device.Start();
     PreviewDeviceIndex := CurrentDeviceIndex;
@@ -852,6 +849,8 @@ begin
 
       DrawVUMeter(State, BarXOffset, BarYOffset, BarWidth, BarHeight);
       DrawPitch(State, BarXOffset, BarYOffset+BarHeight, BarWidth, BarHeight);
+      // TODO
+      break;
     end;
   end;
 
