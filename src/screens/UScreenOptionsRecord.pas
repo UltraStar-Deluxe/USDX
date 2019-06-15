@@ -351,10 +351,13 @@ begin
 
     Theme.OptionsRecord.SelectThreshold.showArrows := true; //basisbit TODO
     Theme.OptionsRecord.SelectThreshold.oneItemOnly := true;
+    Theme.OptionsRecord.SelectThreshold.Y := WidgetYPos;
     SelectThresholdID := AddSelectSlide(Theme.OptionsRecord.SelectThreshold, Ini.ThresholdIndex, IThreshold);
 
     Theme.OptionsRecord.SelectMicBoost.showArrows := true;
     Theme.OptionsRecord.SelectMicBoost.oneItemOnly := true;
+    // TODO: This vertical positioning is less than optimal
+    Theme.OptionsRecord.SelectMicBoost.Y := WidgetYPos + ChannelTheme.H + ChannelBarsTotalHeight;
     AddSelectSlide(Theme.OptionsRecord.SelectMicBoost, Ini.MicBoost, IMicBoostTranslated);
 
   end;

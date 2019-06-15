@@ -373,7 +373,7 @@ begin
     // (e.g. the "default"-device), so we have to detect those
     // fantasy channel counts.
     if (channelCnt > 8) then
-      channelCnt := 2;
+      channelCnt := 4;
 
     paDevice := TPortaudioInputDevice.Create();
     AudioInputProcessor.DeviceList[deviceIndex] := paDevice;
