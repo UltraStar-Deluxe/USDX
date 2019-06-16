@@ -59,7 +59,7 @@ type
       // current input device
       CurrentDeviceIndex: integer;
       PreviewDeviceIndex: integer;
-      CurrentChannel: integer;
+      CurrentChannel: array of integer;
 
       // string arrays for select-slide options
       InputSourceNames: array of UTF8String;
@@ -68,11 +68,13 @@ type
 
       // dynamic generated themes for channel select-sliders
       SelectSlideChannelTheme: array of TThemeSelectSlide;
+      SelectChannelTheme: TThemeSelectSlide;
 
       // indices for widget-updates
       SelectInputSourceID: integer;
       SelectSlideChannelID: array of integer;
       SelectThresholdID: integer;
+      SelectChannelID: integer;
 
       // interaction IDs
       ExitButtonIID: integer;
@@ -253,7 +255,6 @@ var
   InputDevice: TAudioInputDevice;
   InputDeviceCfg: PInputDeviceConfig;
   ChannelTheme: ^TThemeSelectSlide;
-  SelectChannelTheme: TThemeSelectSlide;
   //ButtonTheme: TThemeButton;
   WidgetYPos: integer;
 begin
@@ -274,6 +275,8 @@ begin
   // init sliders if at least one device was detected
   if (Length(AudioInputProcessor.DeviceList) > 0) then
   begin
+    SetLength(CurrentChannel, Length(AudioInputProcessor.DeviceList));
+
     InputDevice := AudioInputProcessor.DeviceList[CurrentDeviceIndex];
     InputDeviceCfg := @Ini.InputDeviceConfig[InputDevice.CfgIndex];
 
@@ -317,7 +320,7 @@ begin
     begin
       SelectChannelOptions[ChannelIndex] := IntToStr(ChannelIndex + 1);
     end;
-    AddSelectSlide(SelectChannelTheme, CurrentChannel, SelectChannelOptions);
+    SelectChannelID := AddSelectSlide(SelectChannelTheme, CurrentChannel[CurrentDeviceIndex], SelectChannelOptions);
 
     WidgetYPos := SelectChannelTheme.Y + SelectChannelTheme.H + 6;
 
@@ -419,6 +422,15 @@ begin
     end;
     UpdateSelectSlideOptions(Theme.OptionsRecord.SelectSlideInput, SelectInputSourceID,
         InputSourceNames, InputDeviceCfg.Input);
+
+    SetLength(SelectChannelOptions, InputDevice.AudioFormat.Channels);
+    for ChannelIndex := 0 to InputDevice.AudioFormat.Channels-1 do
+    begin
+      SelectChannelOptions[ChannelIndex] := IntToStr(ChannelIndex+1);
+    end;
+    UpdateSelectSlideOptions(SelectChannelTheme,
+      SelectChannelID, SelectChannelOptions,
+      CurrentChannel[CurrentDeviceIndex]);
 
     // update channel-to-player mapping sliders
     for ChannelIndex := 0 to MaxChannelCount-1 do
