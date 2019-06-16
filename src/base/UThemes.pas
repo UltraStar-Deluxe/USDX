@@ -910,7 +910,8 @@ type
   TThemeOptionsRecord = class(TThemeBasic)
     SelectSlideCard:       TThemeSelectSlide;
     SelectSlideInput:      TThemeSelectSlide;
-    SelectSlideChannel:    TThemeSelectSlide;
+    SelectChannel:         TThemeSelectSlide;
+    SelectAssignee:        TThemeSelectSlide;
     SelectThreshold:       TThemeSelectSlide;
     SelectMicBoost:        TThemeSelectSlide;
     ButtonExit:            TThemeButton;
@@ -2395,7 +2396,8 @@ begin
 
       ThemeLoadSelectSlide(OptionsRecord.SelectSlideCard,     'OptionsRecordSelectSlideCard');
       ThemeLoadSelectSlide(OptionsRecord.SelectSlideInput,    'OptionsRecordSelectSlideInput');
-      ThemeLoadSelectSlide(OptionsRecord.SelectSlideChannel,  'OptionsRecordSelectSlideChannel');
+      ThemeLoadSelectSlide(OptionsRecord.SelectChannel,       'OptionsRecordSelectChannel');
+      ThemeLoadSelectSlide(OptionsRecord.SelectAssignee,      'OptionsRecordSelectAssignee');
       ThemeLoadSelectSlide(OptionsRecord.SelectThreshold,     'OptionsRecordSelectThreshold'); //basisbit TODO
       ThemeLoadSelectSlide(OptionsRecord.SelectMicBoost,      'OptionsRecordSelectMicBoost');
       ThemeLoadButton(OptionsRecord.ButtonExit,               'OptionsRecordButtonExit');

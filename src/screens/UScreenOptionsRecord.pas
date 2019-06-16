@@ -325,7 +325,7 @@ begin
 
     // TODO: Remove all this indirection
     // copy reference slide
-    SelectSlideChannelTheme := Theme.OptionsRecord.SelectSlideChannel;
+    SelectSlideChannelTheme := Theme.OptionsRecord.SelectAssignee;
     // set current channel-theme
     ChannelTheme := @SelectSlideChannelTheme;
     // adjust vertical position
