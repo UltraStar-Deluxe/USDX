@@ -312,8 +312,8 @@ begin
     SelectChannelTheme.showArrows := true;
     SelectChannelTheme.oneItemOnly := true;
     SelectChannelTheme.Y := WidgetYPos;
-    // TODO: i18n
-    SelectChannelTheme.Text := 'Channel';
+    // TODO: Move to theme
+    SelectChannelTheme.Text := ULanguage.Language.Translate('SING_OPTIONS_RECORD_CHANNEL');
     SetLength(SelectChannelOptions, InputDevice.AudioFormat.Channels);
     for ChannelIndex := 0 to InputDevice.AudioFormat.Channels-1 do
     begin
@@ -332,8 +332,8 @@ begin
     ChannelTheme.Y := WidgetYPos;
     // calc size of next slide (add space for bars)
     WidgetYPos := WidgetYPos + ChannelTheme.H + ChannelBarsTotalHeight;
-    // TODO: i18n
-    ChannelTheme.Text := 'Assigned Player';
+    // TODO: Move to theme
+    ChannelTheme.Text := ULanguage.Language.Translate('SING_OPTIONS_RECORD_ASSIGNEE');
 
     // show/hide widgets depending on whether the channel exists
     if (Length(InputDeviceCfg.ChannelToPlayerMap) > 0) then

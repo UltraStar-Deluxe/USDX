@@ -899,7 +899,7 @@ begin
   IPreviewFadingTranslated[5]         := '5 ' + ULanguage.Language.Translate('OPTION_VALUE_SECS');
 
   // Recording options
-  IChannelPlayerTranslated[0]         := ULanguage.Language.Translate('OPTION_VALUE_OFF');
+  IChannelPlayerTranslated[0]         := ULanguage.Language.Translate('SING_OPTIONS_RECORD_NOONE');
   for I:=1 to IMaxPlayerCount do
   begin
     IChannelPlayerTranslated[I]       :=IntToStr(I);
