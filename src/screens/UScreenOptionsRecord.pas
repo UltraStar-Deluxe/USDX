@@ -59,6 +59,7 @@ type
       // current input device
       CurrentDeviceIndex: integer;
       PreviewDeviceIndex: integer;
+      CurrentChannel: integer;
 
       // string arrays for select-slide options
       InputSourceNames: array of UTF8String;
@@ -251,6 +252,7 @@ var
   InputDevice: TAudioInputDevice;
   InputDeviceCfg: PInputDeviceConfig;
   ChannelTheme: ^TThemeSelectSlide;
+  SelectChannelTheme: TThemeSelectSlide;
   //ButtonTheme: TThemeButton;
   WidgetYPos: integer;
 begin
@@ -303,6 +305,15 @@ begin
                   Theme.OptionsRecord.SelectSlideInput.H +
                   SourceBarsTotalHeight;
 
+    SelectChannelTheme := Theme.OptionsRecord.SelectMicBoost;
+    SelectChannelTheme.showArrows := true;
+    SelectChannelTheme.Y := WidgetYPos;
+    // TODO: i18n
+    SelectChannelTheme.Text := 'Channel';
+    AddSelectSlide(SelectChannelTheme, CurrentChannel, IChannelPlayerTranslated);
+
+    WidgetYPos := SelectChannelTheme.Y + SelectChannelTheme.H + 6;
+
     // TODO: Do not assume that all devices have exactly one channel
     MaxChannelCount := 1;
 
@@ -321,8 +332,8 @@ begin
       ChannelTheme.Y := WidgetYPos;
       // calc size of next slide (add space for bars)
       WidgetYPos := WidgetYPos + ChannelTheme.H + ChannelBarsTotalHeight;
-      // append channel index to name
-      ChannelTheme.Text := ChannelTheme.Text + IntToStr(ChannelIndex+1);
+      // TODO: i18n
+      ChannelTheme.Text := 'Assigned Player';
 
       // show/hide widgets depending on whether the channel exists
       if (ChannelIndex < Length(InputDeviceCfg.ChannelToPlayerMap)) then
@@ -344,6 +355,7 @@ begin
       end;
     end;
 
+    // TODO: Allow the vspacing to be determined by the theme.
     Theme.OptionsRecord.SelectThreshold.showArrows := true; //basisbit TODO
     Theme.OptionsRecord.SelectThreshold.oneItemOnly := true;
     Theme.OptionsRecord.SelectThreshold.Y := WidgetYPos;
