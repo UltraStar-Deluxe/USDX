@@ -53,9 +53,6 @@ type
 
   TScreenOptionsRecord = class(TMenu)
     private
-      // max. count of input-channels determined for all devices
-      MaxChannelCount: integer;
-
       // current input device
       CurrentDeviceIndex: integer;
       PreviewDeviceIndex: integer;
@@ -64,15 +61,17 @@ type
       // string arrays for select-slide options
       InputSourceNames: array of UTF8String;
       InputDeviceNames: array of UTF8String;
+      // TODO: Naming
       SelectChannelOptions: array of UTF8String;
 
       // dynamic generated themes for channel select-sliders
-      SelectSlideChannelTheme: array of TThemeSelectSlide;
+      // TODO: Naming
+      SelectSlideChannelTheme: TThemeSelectSlide;
       SelectChannelTheme: TThemeSelectSlide;
 
       // indices for widget-updates
       SelectInputSourceID: integer;
-      SelectSlideChannelID: array of integer;
+      SelectSlideChannelID: integer;
       SelectThresholdID: integer;
       SelectChannelID: integer;
 
@@ -83,8 +82,8 @@ type
       ChannelToPlayerMapDummy: integer;
 
       // preview channel-buffers
-      PreviewChannel: array of TCaptureBuffer;
-      ChannelPeak: array of TPeakInfo;
+      PreviewChannel: TCaptureBuffer;
+      ChannelPeak: TPeakInfo;
 
       // Device source volume
       SourceVolume: single;
@@ -324,20 +323,13 @@ begin
 
     WidgetYPos := SelectChannelTheme.Y + SelectChannelTheme.H + 6;
 
-    // TODO: Do not assume that all devices have exactly one channel
-    MaxChannelCount := 1;
-
-    // init channel-to-player mapping sliders
-    SetLength(SelectSlideChannelID, MaxChannelCount);
-    SetLength(SelectSlideChannelTheme, MaxChannelCount);
-
-    for ChannelIndex := 0 to MaxChannelCount-1 do
+    for ChannelIndex := 0 to 0 do
     begin
+      // TODO: Remove all this indirection
       // copy reference slide
-      SelectSlideChannelTheme[ChannelIndex] :=
-        Theme.OptionsRecord.SelectSlideChannel;
+      SelectSlideChannelTheme := Theme.OptionsRecord.SelectSlideChannel;
       // set current channel-theme
-      ChannelTheme := @SelectSlideChannelTheme[ChannelIndex];
+      ChannelTheme := @SelectSlideChannelTheme;
       // adjust vertical position
       ChannelTheme.Y := WidgetYPos;
       // calc size of next slide (add space for bars)
@@ -351,17 +343,18 @@ begin
         // current device has this channel
 
         // add slider
-        SelectSlideChannelID[ChannelIndex] := AddSelectSlide(ChannelTheme^,
+        SelectSlideChannelID := AddSelectSlide(ChannelTheme^,
           InputDeviceCfg.ChannelToPlayerMap[ChannelIndex], IChannelPlayerTranslated);
       end
       else
       begin
+        // TODO: Rephrase to „does not have any channels“
         // current device does not have that many channels
 
         // add slider but hide it and assign a dummy variable to it
-        SelectSlideChannelID[ChannelIndex] := AddSelectSlide(ChannelTheme^,
+        SelectSlideChannelID := AddSelectSlide(ChannelTheme^,
           ChannelToPlayerMapDummy, IChannelPlayerTranslated);
-        SelectsS[SelectSlideChannelID[ChannelIndex]].Visible := false;
+        SelectsS[SelectSlideChannelID].Visible := false;
       end;
     end;
 
@@ -385,7 +378,7 @@ begin
     AddButtonText(20, 5, Theme.Options.Description[OPTIONS_DESC_INDEX_BACK]);
   // store InteractionID
   if (Length(AudioInputProcessor.DeviceList) > 0) then
-    ExitButtonIID := MaxChannelCount + 4
+    ExitButtonIID := 1 + 4
   else
     ExitButtonIID := 2;
 
@@ -433,7 +426,7 @@ begin
       CurrentChannel[CurrentDeviceIndex]);
 
     // update channel-to-player mapping sliders
-    for ChannelIndex := 0 to MaxChannelCount-1 do
+    for ChannelIndex := 0 to 0 do
     begin
       // show/hide widgets depending on whether the channel exists
       if (ChannelIndex < Length(InputDeviceCfg.ChannelToPlayerMap)) then
@@ -441,20 +434,21 @@ begin
         // current device has this channel
 
         // show slider
-        UpdateSelectSlideOptions(SelectSlideChannelTheme[ChannelIndex],
-          SelectSlideChannelID[ChannelIndex], IChannelPlayerTranslated,
+        UpdateSelectSlideOptions(SelectSlideChannelTheme,
+          SelectSlideChannelID, IChannelPlayerTranslated,
           InputDeviceCfg.ChannelToPlayerMap[ChannelIndex]);
-        SelectsS[SelectSlideChannelID[ChannelIndex]].Visible := true;
+        SelectsS[SelectSlideChannelID].Visible := true;
       end
       else
       begin
+        // TODO: Rephrase
         // current device does not have that many channels
 
         // hide slider and assign a dummy variable to it
-        UpdateSelectSlideOptions(SelectSlideChannelTheme[ChannelIndex],
-          SelectSlideChannelID[ChannelIndex], IChannelPlayerTranslated,
+        UpdateSelectSlideOptions(SelectSlideChannelTheme,
+          SelectSlideChannelID, IChannelPlayerTranslated,
           ChannelToPlayerMapDummy);
-        SelectsS[SelectSlideChannelID[ChannelIndex]].Visible := false;
+        SelectsS[SelectSlideChannelID].Visible := false;
       end;
     end;
   end;
@@ -501,12 +495,8 @@ begin
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOptionsRecord');
 
-  // create preview sound-buffers
-  SetLength(PreviewChannel, MaxChannelCount);
-  for ChannelIndex := 0 to High(PreviewChannel) do
-    PreviewChannel[ChannelIndex] := TCaptureBuffer.Create();
-
-  SetLength(ChannelPeak, MaxChannelCount);
+  // create preview sound-buffer
+  PreviewChannel := TCaptureBuffer.Create();
 
   UpdateInputDevice();
 end;
@@ -517,11 +507,8 @@ var
 begin
   StopPreview();
 
-  // free preview buffers
-  for ChannelIndex := 0 to High(PreviewChannel) do
-    PreviewChannel[ChannelIndex].Free;
-  SetLength(PreviewChannel, 0);
-  SetLength(ChannelPeak, 0);
+  // free preview buffer
+  PreviewChannel.Free;
 end;
 
 procedure TScreenOptionsRecord.StartPreview;
@@ -536,9 +523,9 @@ begin
     // set preview channel as active capture channel
     for ChannelIndex := 0 to High(Device.CaptureChannel) do
     begin
-      PreviewChannel[ChannelIndex].Clear();
-      Device.LinkCaptureBuffer(ChannelIndex, PreviewChannel[ChannelIndex]);
-      FillChar(ChannelPeak[ChannelIndex], SizeOf(TPeakInfo), 0);
+      PreviewChannel.Clear();
+      Device.LinkCaptureBuffer(ChannelIndex, PreviewChannel);
+      FillChar(ChannelPeak, SizeOf(TPeakInfo), 0);
       // TODO
       break;
     end;
@@ -678,7 +665,7 @@ begin
   x2 := x1 + VolBarInnerWidth;
 
   glBegin(GL_QUADS);
-    Volume := PreviewChannel[State.ChannelIndex].MaxSampleVolume();
+    Volume := PreviewChannel.MaxSampleVolume();
 
     // coordinates for volume bar
     x1 := x + VolBarInnerHSpacing;
@@ -692,15 +679,15 @@ begin
     glVertex2f(x2, y2);
     glVertex2f(x2, y1);
 
-    Delta := (SDL_GetTicks() - ChannelPeak[State.ChannelIndex].Time)/1000;
-    PeakVolume := ChannelPeak[State.ChannelIndex].Volume - Delta*Delta*PeakDecay;
+    Delta := (SDL_GetTicks() - ChannelPeak.Time)/1000;
+    PeakVolume := ChannelPeak.Volume - Delta*Delta*PeakDecay;
 
     // determine new peak-volume
     if (Volume > PeakVolume) then
     begin
       PeakVolume := Volume;
-      ChannelPeak[State.ChannelIndex].Volume := Volume;
-      ChannelPeak[State.ChannelIndex].Time := SDL_GetTicks();
+      ChannelPeak.Volume := Volume;
+      ChannelPeak.Time := SDL_GetTicks();
     end;
 
     x1 := x + VolBarInnerHSpacing + VolBarInnerWidth * PeakVolume;
@@ -741,7 +728,7 @@ const
   PitchBarInnerVSpacing = 1;
 begin
   // calc tone pitch
-  PreviewChannel[State.ChannelIndex].AnalyzeBuffer();
+  PreviewChannel.AnalyzeBuffer();
 
   // coordinates for black rect
   x1 := x;
@@ -774,8 +761,8 @@ begin
       x1 := x + i * ToneBoxWidth + PitchBarInnerHSpacing;
       x2 := x1 + ToneBoxWidth - 2*PitchBarInnerHSpacing;
 
-      if ((PreviewChannel[State.ChannelIndex].ToneValid) and
-          (PreviewChannel[State.ChannelIndex].ToneAbs = i)) then
+      if ((PreviewChannel.ToneValid) and
+          (PreviewChannel.ToneAbs = i)) then
       begin
         // highlight current tone-pitch
         glColor3f(1, i / (NumHalftones-1), 0)
@@ -799,7 +786,7 @@ begin
   // draw the name of the tone
   ///////
 
-  ToneString := PreviewChannel[State.ChannelIndex].ToneString;
+  ToneString := PreviewChannel.ToneString;
   ToneStringHeight := ChannelBarsTotalHeight;
 
   // initialize font
@@ -870,7 +857,7 @@ begin
       State.BD := 0.2 * State.B;
 
       // channel select slide
-      SelectSlide := SelectsS[SelectSlideChannelID[ChannelIndex]];
+      SelectSlide := SelectsS[SelectSlideChannelID];
 
       BarXOffset := SelectSlide.TextureSBG.X;
       BarYOffset := SelectSlide.TextureSBG.Y + SelectSlide.TextureSBG.H + BarUpperSpacing;
