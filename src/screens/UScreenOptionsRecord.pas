@@ -64,12 +64,13 @@ type
       // string arrays for select-slide options
       InputSourceNames: array of UTF8String;
       InputDeviceNames: array of UTF8String;
+      SelectChannelOptions: array of UTF8String;
 
       // dynamic generated themes for channel select-sliders
       SelectSlideChannelTheme: array of TThemeSelectSlide;
 
       // indices for widget-updates
-      SelectInputSourceID:   integer;
+      SelectInputSourceID: integer;
       SelectSlideChannelID: array of integer;
       SelectThresholdID: integer;
 
@@ -307,10 +308,16 @@ begin
 
     SelectChannelTheme := Theme.OptionsRecord.SelectMicBoost;
     SelectChannelTheme.showArrows := true;
+    SelectChannelTheme.oneItemOnly := true;
     SelectChannelTheme.Y := WidgetYPos;
     // TODO: i18n
     SelectChannelTheme.Text := 'Channel';
-    AddSelectSlide(SelectChannelTheme, CurrentChannel, IChannelPlayerTranslated);
+    SetLength(SelectChannelOptions, InputDevice.AudioFormat.Channels);
+    for ChannelIndex := 0 to InputDevice.AudioFormat.Channels-1 do
+    begin
+      SelectChannelOptions[ChannelIndex] := IntToStr(ChannelIndex + 1);
+    end;
+    AddSelectSlide(SelectChannelTheme, CurrentChannel, SelectChannelOptions);
 
     WidgetYPos := SelectChannelTheme.Y + SelectChannelTheme.H + 6;
 
