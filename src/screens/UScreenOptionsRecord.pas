@@ -67,7 +67,6 @@ type
       // dynamic generated themes for channel select-sliders
       // TODO: Naming
       SelectSlideChannelTheme: TThemeSelectSlide;
-      SelectChannelTheme: TThemeSelectSlide;
 
       // indices for widget-updates
       SelectInputSourceID: integer;
@@ -313,12 +312,9 @@ begin
     // add space for source volume bar
     Theme.OptionsRecord.SelectChannel.Y := Theme.OptionsRecord.SelectChannel.Y
         + SourceBarsTotalHeight;
-    SelectChannelTheme := Theme.OptionsRecord.SelectChannel;
 
-    SelectChannelID := AddSelectSlide(SelectChannelTheme,
+    SelectChannelID := AddSelectSlide(Theme.OptionsRecord.SelectChannel,
         CurrentChannel[CurrentDeviceIndex], SelectChannelOptions);
-
-    WidgetYPos := SelectChannelTheme.Y + SelectChannelTheme.H + 6;
 
     // adjust vertical position
     Theme.OptionsRecord.SelectAssignee.Y := Theme.OptionsRecord.SelectAssignee.Y
@@ -413,7 +409,7 @@ begin
     begin
       SelectChannelOptions[ChannelIndex] := IntToStr(ChannelIndex+1);
     end;
-    UpdateSelectSlideOptions(SelectChannelTheme,
+    UpdateSelectSlideOptions(Theme.OptionsRecord.SelectChannel,
       SelectChannelID, SelectChannelOptions,
       CurrentChannel[CurrentDeviceIndex]);
 
