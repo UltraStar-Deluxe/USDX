@@ -61,7 +61,6 @@ type
       // string arrays for select-slide options
       InputSourceNames: array of UTF8String;
       InputDeviceNames: array of UTF8String;
-      // TODO: Naming
       SelectChannelOptions: array of UTF8String;
 
       // indices for widget-updates
@@ -313,8 +312,6 @@ begin
     // adjust vertical position
     Theme.OptionsRecord.SelectAssignee.Y := Theme.OptionsRecord.SelectAssignee.Y
         + SourceBarsTotalHeight;
-    // TODO: Remove all this indirection
-    // copy reference slide
 
     // show/hide widgets depending on whether the channel exists
     if (Length(InputDeviceCfg.ChannelToPlayerMap) > 0) then
@@ -339,7 +336,8 @@ begin
     Theme.OptionsRecord.SelectThreshold.Y := Theme.OptionsRecord.SelectThreshold.Y
         + SourceBarsTotalHeight
         + ChannelBarsTotalHeight;
-    SelectThresholdID := AddSelectSlide(Theme.OptionsRecord.SelectThreshold, Ini.ThresholdIndex, IThreshold);
+    SelectThresholdID := AddSelectSlide(Theme.OptionsRecord.SelectThreshold,
+        Ini.ThresholdIndex, IThreshold);
 
     Theme.OptionsRecord.SelectMicBoost.showArrows := true;
     Theme.OptionsRecord.SelectMicBoost.oneItemOnly := true;
