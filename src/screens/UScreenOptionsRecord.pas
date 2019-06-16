@@ -66,7 +66,6 @@ type
 
       // dynamic generated themes for channel select-sliders
       // TODO: Naming
-      SelectSlideChannelTheme: TThemeSelectSlide;
 
       // indices for widget-updates
       SelectInputSourceID: integer;
@@ -319,21 +318,20 @@ begin
         + SourceBarsTotalHeight;
     // TODO: Remove all this indirection
     // copy reference slide
-    SelectSlideChannelTheme := Theme.OptionsRecord.SelectAssignee;
 
     // show/hide widgets depending on whether the channel exists
     if (Length(InputDeviceCfg.ChannelToPlayerMap) > 0) then
     begin
       // current device has a channel
       // add slider, assign to first channel of the device
-      SelectSlideChannelID := AddSelectSlide(SelectSlideChannelTheme,
+      SelectSlideChannelID := AddSelectSlide(Theme.OptionsRecord.SelectAssignee,
         InputDeviceCfg.ChannelToPlayerMap[0], IChannelPlayerTranslated);
     end
     else
     begin
       // current device does not have any channels
       // add slider but hide it and assign a dummy variable to it
-      SelectSlideChannelID := AddSelectSlide(SelectSlideChannelTheme,
+      SelectSlideChannelID := AddSelectSlide(Theme.OptionsRecord.SelectAssignee,
         ChannelToPlayerMapDummy, IChannelPlayerTranslated);
       SelectsS[SelectSlideChannelID].Visible := false;
     end;
@@ -418,7 +416,7 @@ begin
       // current device has this channel
 
       // show slider
-      UpdateSelectSlideOptions(SelectSlideChannelTheme,
+      UpdateSelectSlideOptions(Theme.OptionsRecord.SelectAssignee,
         SelectSlideChannelID, IChannelPlayerTranslated,
         InputDeviceCfg.ChannelToPlayerMap[ChannelIndex]);
       SelectsS[SelectSlideChannelID].Visible := true;
@@ -430,7 +428,7 @@ begin
       // as we only allow the selection of available channels
 
       // hide slider and assign a dummy variable to it
-      UpdateSelectSlideOptions(SelectSlideChannelTheme,
+      UpdateSelectSlideOptions(Theme.OptionsRecord.SelectAssignee,
         SelectSlideChannelID, IChannelPlayerTranslated,
         ChannelToPlayerMapDummy);
       SelectsS[SelectSlideChannelID].Visible := false;
