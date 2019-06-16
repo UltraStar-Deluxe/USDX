@@ -64,14 +64,11 @@ type
       // TODO: Naming
       SelectChannelOptions: array of UTF8String;
 
-      // dynamic generated themes for channel select-sliders
-      // TODO: Naming
-
       // indices for widget-updates
       SelectInputSourceID: integer;
-      SelectSlideChannelID: integer;
-      SelectThresholdID: integer;
       SelectChannelID: integer;
+      SelectAssigneeID: integer;
+      SelectThresholdID: integer;
 
       // interaction IDs
       ExitButtonIID: integer;
@@ -324,16 +321,16 @@ begin
     begin
       // current device has a channel
       // add slider, assign to first channel of the device
-      SelectSlideChannelID := AddSelectSlide(Theme.OptionsRecord.SelectAssignee,
+      SelectAssigneeID := AddSelectSlide(Theme.OptionsRecord.SelectAssignee,
         InputDeviceCfg.ChannelToPlayerMap[0], IChannelPlayerTranslated);
     end
     else
     begin
       // current device does not have any channels
       // add slider but hide it and assign a dummy variable to it
-      SelectSlideChannelID := AddSelectSlide(Theme.OptionsRecord.SelectAssignee,
+      SelectAssigneeID := AddSelectSlide(Theme.OptionsRecord.SelectAssignee,
         ChannelToPlayerMapDummy, IChannelPlayerTranslated);
-      SelectsS[SelectSlideChannelID].Visible := false;
+      SelectsS[SelectAssigneeID].Visible := false;
     end;
 
     Theme.OptionsRecord.SelectThreshold.showArrows := true; //basisbit TODO
@@ -417,9 +414,9 @@ begin
 
       // show slider
       UpdateSelectSlideOptions(Theme.OptionsRecord.SelectAssignee,
-        SelectSlideChannelID, IChannelPlayerTranslated,
+        SelectAssigneeID, IChannelPlayerTranslated,
         InputDeviceCfg.ChannelToPlayerMap[ChannelIndex]);
-      SelectsS[SelectSlideChannelID].Visible := true;
+      SelectsS[SelectAssigneeID].Visible := true;
     end
     else
     begin
@@ -429,9 +426,9 @@ begin
 
       // hide slider and assign a dummy variable to it
       UpdateSelectSlideOptions(Theme.OptionsRecord.SelectAssignee,
-        SelectSlideChannelID, IChannelPlayerTranslated,
+        SelectAssigneeID, IChannelPlayerTranslated,
         ChannelToPlayerMapDummy);
-      SelectsS[SelectSlideChannelID].Visible := false;
+      SelectsS[SelectAssigneeID].Visible := false;
     end;
   end;
 
@@ -829,8 +826,8 @@ begin
     State.GD := 0.2 * State.G;
     State.BD := 0.2 * State.B;
 
-    // channel select slide
-    SelectSlide := SelectsS[SelectSlideChannelID];
+    // assignment slide
+    SelectSlide := SelectsS[SelectAssigneeID];
 
     BarXOffset := SelectSlide.TextureSBG.X;
     BarYOffset := SelectSlide.TextureSBG.Y + SelectSlide.TextureSBG.H + BarUpperSpacing;
