@@ -323,39 +323,33 @@ begin
 
     WidgetYPos := SelectChannelTheme.Y + SelectChannelTheme.H + 6;
 
-    for ChannelIndex := 0 to 0 do
+    // TODO: Remove all this indirection
+    // copy reference slide
+    SelectSlideChannelTheme := Theme.OptionsRecord.SelectSlideChannel;
+    // set current channel-theme
+    ChannelTheme := @SelectSlideChannelTheme;
+    // adjust vertical position
+    ChannelTheme.Y := WidgetYPos;
+    // calc size of next slide (add space for bars)
+    WidgetYPos := WidgetYPos + ChannelTheme.H + ChannelBarsTotalHeight;
+    // TODO: i18n
+    ChannelTheme.Text := 'Assigned Player';
+
+    // show/hide widgets depending on whether the channel exists
+    if (Length(InputDeviceCfg.ChannelToPlayerMap) > 0) then
     begin
-      // TODO: Remove all this indirection
-      // copy reference slide
-      SelectSlideChannelTheme := Theme.OptionsRecord.SelectSlideChannel;
-      // set current channel-theme
-      ChannelTheme := @SelectSlideChannelTheme;
-      // adjust vertical position
-      ChannelTheme.Y := WidgetYPos;
-      // calc size of next slide (add space for bars)
-      WidgetYPos := WidgetYPos + ChannelTheme.H + ChannelBarsTotalHeight;
-      // TODO: i18n
-      ChannelTheme.Text := 'Assigned Player';
-
-      // show/hide widgets depending on whether the channel exists
-      if (ChannelIndex < Length(InputDeviceCfg.ChannelToPlayerMap)) then
-      begin
-        // current device has this channel
-
-        // add slider
-        SelectSlideChannelID := AddSelectSlide(ChannelTheme^,
-          InputDeviceCfg.ChannelToPlayerMap[ChannelIndex], IChannelPlayerTranslated);
-      end
-      else
-      begin
-        // TODO: Rephrase to „does not have any channels“
-        // current device does not have that many channels
-
-        // add slider but hide it and assign a dummy variable to it
-        SelectSlideChannelID := AddSelectSlide(ChannelTheme^,
-          ChannelToPlayerMapDummy, IChannelPlayerTranslated);
-        SelectsS[SelectSlideChannelID].Visible := false;
-      end;
+      // current device has a channel
+      // add slider, assign to first channel of the device
+      SelectSlideChannelID := AddSelectSlide(ChannelTheme^,
+        InputDeviceCfg.ChannelToPlayerMap[0], IChannelPlayerTranslated);
+    end
+    else
+    begin
+      // current device does not have any channels
+      // add slider but hide it and assign a dummy variable to it
+      SelectSlideChannelID := AddSelectSlide(ChannelTheme^,
+        ChannelToPlayerMapDummy, IChannelPlayerTranslated);
+      SelectsS[SelectSlideChannelID].Visible := false;
     end;
 
     // TODO: Allow the vspacing to be determined by the theme.
@@ -425,31 +419,31 @@ begin
       SelectChannelID, SelectChannelOptions,
       CurrentChannel[CurrentDeviceIndex]);
 
-    // update channel-to-player mapping sliders
-    for ChannelIndex := 0 to 0 do
+    ChannelIndex := CurrentChannel[CurrentDeviceIndex];
+
+    // update channel-to-player mapping slider
+    // show/hide widgets depending on whether the channel exists
+    if (ChannelIndex < Length(InputDeviceCfg.ChannelToPlayerMap)) then
     begin
-      // show/hide widgets depending on whether the channel exists
-      if (ChannelIndex < Length(InputDeviceCfg.ChannelToPlayerMap)) then
-      begin
-        // current device has this channel
+      // current device has this channel
 
-        // show slider
-        UpdateSelectSlideOptions(SelectSlideChannelTheme,
-          SelectSlideChannelID, IChannelPlayerTranslated,
-          InputDeviceCfg.ChannelToPlayerMap[ChannelIndex]);
-        SelectsS[SelectSlideChannelID].Visible := true;
-      end
-      else
-      begin
-        // TODO: Rephrase
-        // current device does not have that many channels
+      // show slider
+      UpdateSelectSlideOptions(SelectSlideChannelTheme,
+        SelectSlideChannelID, IChannelPlayerTranslated,
+        InputDeviceCfg.ChannelToPlayerMap[ChannelIndex]);
+      SelectsS[SelectSlideChannelID].Visible := true;
+    end
+    else
+    begin
+      // current device does not have that many channels,
+      // which is a weird corner case,
+      // as we only allow the selection of available channels
 
-        // hide slider and assign a dummy variable to it
-        UpdateSelectSlideOptions(SelectSlideChannelTheme,
-          SelectSlideChannelID, IChannelPlayerTranslated,
-          ChannelToPlayerMapDummy);
-        SelectsS[SelectSlideChannelID].Visible := false;
-      end;
+      // hide slider and assign a dummy variable to it
+      UpdateSelectSlideOptions(SelectSlideChannelTheme,
+        SelectSlideChannelID, IChannelPlayerTranslated,
+        ChannelToPlayerMapDummy);
+      SelectsS[SelectSlideChannelID].Visible := false;
     end;
   end;
 
@@ -482,8 +476,6 @@ begin
 end;
 
 procedure TScreenOptionsRecord.OnShow;
-var
-  ChannelIndex: integer;
 begin
   inherited;
 
@@ -502,8 +494,6 @@ begin
 end;
 
 procedure TScreenOptionsRecord.OnHide;
-var
-  ChannelIndex: integer;
 begin
   StopPreview();
 
@@ -513,22 +503,17 @@ end;
 
 procedure TScreenOptionsRecord.StartPreview;
 var
-  ChannelIndex: integer;
   Device: TAudioInputDevice;
 begin
   if ((CurrentDeviceIndex >= 0) and
       (CurrentDeviceIndex <= High(AudioInputProcessor.DeviceList))) then
   begin
     Device := AudioInputProcessor.DeviceList[CurrentDeviceIndex];
+
     // set preview channel as active capture channel
-    for ChannelIndex := 0 to High(Device.CaptureChannel) do
-    begin
-      PreviewChannel.Clear();
-      Device.LinkCaptureBuffer(ChannelIndex, PreviewChannel);
-      FillChar(ChannelPeak, SizeOf(TPeakInfo), 0);
-      // TODO
-      break;
-    end;
+    PreviewChannel.Clear();
+    Device.LinkCaptureBuffer(CurrentChannel[CurrentDeviceIndex], PreviewChannel);
+    FillChar(ChannelPeak, SizeOf(TPeakInfo), 0);
     Device.Start();
     PreviewDeviceIndex := CurrentDeviceIndex;
 
@@ -837,39 +822,36 @@ begin
     BarWidth   := SelectSlide.TextureSBG.W;
     DrawVolume(SelectSlide.TextureSBG.X, BarYOffset, BarWidth, BarHeight);
 
-    for ChannelIndex := 0 to High(Device.CaptureChannel) do
+    ChannelIndex := CurrentChannel[CurrentDeviceIndex];
+
+    // load player color mapped to current input channel
+    if (DeviceCfg.ChannelToPlayerMap[ChannelIndex] <> CHANNEL_OFF) then
     begin
-      // load player color mapped to current input channel
-      if (DeviceCfg.ChannelToPlayerMap[ChannelIndex] <> CHANNEL_OFF) then
-      begin
-        // set mapped channel to corresponding player-color
-        LoadColor(State.R, State.G, State.B, 'P'+ IntToStr(DeviceCfg.ChannelToPlayerMap[ChannelIndex]) + 'Dark');
-      end
-      else
-      begin
-        // set non-mapped channel to white
-        State.R := 1; State.G := 1; State.B := 1;
-      end;
-
-      // dark player colors
-      State.RD := 0.2 * State.R;
-      State.GD := 0.2 * State.G;
-      State.BD := 0.2 * State.B;
-
-      // channel select slide
-      SelectSlide := SelectsS[SelectSlideChannelID];
-
-      BarXOffset := SelectSlide.TextureSBG.X;
-      BarYOffset := SelectSlide.TextureSBG.Y + SelectSlide.TextureSBG.H + BarUpperSpacing;
-      BarWidth   := SelectSlide.TextureSBG.W;
-
-      State.ChannelIndex := ChannelIndex;
-
-      DrawVUMeter(State, BarXOffset, BarYOffset, BarWidth, BarHeight);
-      DrawPitch(State, BarXOffset, BarYOffset+BarHeight, BarWidth, BarHeight);
-      // TODO
-      break;
+      // set mapped channel to corresponding player-color
+      LoadColor(State.R, State.G, State.B, 'P'+ IntToStr(DeviceCfg.ChannelToPlayerMap[ChannelIndex]) + 'Dark');
+    end
+    else
+    begin
+      // set non-mapped channel to white
+      State.R := 1; State.G := 1; State.B := 1;
     end;
+
+    // dark player colors
+    State.RD := 0.2 * State.R;
+    State.GD := 0.2 * State.G;
+    State.BD := 0.2 * State.B;
+
+    // channel select slide
+    SelectSlide := SelectsS[SelectSlideChannelID];
+
+    BarXOffset := SelectSlide.TextureSBG.X;
+    BarYOffset := SelectSlide.TextureSBG.Y + SelectSlide.TextureSBG.H + BarUpperSpacing;
+    BarWidth   := SelectSlide.TextureSBG.W;
+
+    State.ChannelIndex := ChannelIndex;
+
+    DrawVUMeter(State, BarXOffset, BarYOffset, BarWidth, BarHeight);
+    DrawPitch(State, BarXOffset, BarYOffset+BarHeight, BarWidth, BarHeight);
   end;
 
   Result := true;
