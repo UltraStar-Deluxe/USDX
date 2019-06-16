@@ -303,37 +303,31 @@ begin
     SelectInputSourceID := AddSelectSlide(Theme.OptionsRecord.SelectSlideInput,
         InputDeviceCfg.Input, InputSourceNames);
 
-    // add space for source volume bar
-    WidgetYPos := Theme.OptionsRecord.SelectSlideInput.Y +
-                  Theme.OptionsRecord.SelectSlideInput.H +
-                  SourceBarsTotalHeight;
-
-    SelectChannelTheme := Theme.OptionsRecord.SelectMicBoost;
-    SelectChannelTheme.showArrows := true;
-    SelectChannelTheme.oneItemOnly := true;
-    SelectChannelTheme.Y := WidgetYPos;
-    // TODO: Move to theme
-    SelectChannelTheme.Text := ULanguage.Language.Translate('SING_OPTIONS_RECORD_CHANNEL');
+    // compute list of selectable channels
     SetLength(SelectChannelOptions, InputDevice.AudioFormat.Channels);
     for ChannelIndex := 0 to InputDevice.AudioFormat.Channels-1 do
     begin
       SelectChannelOptions[ChannelIndex] := IntToStr(ChannelIndex + 1);
     end;
-    SelectChannelID := AddSelectSlide(SelectChannelTheme, CurrentChannel[CurrentDeviceIndex], SelectChannelOptions);
+
+    // add space for source volume bar
+    Theme.OptionsRecord.SelectChannel.Y := Theme.OptionsRecord.SelectChannel.Y
+        + SourceBarsTotalHeight;
+    SelectChannelTheme := Theme.OptionsRecord.SelectChannel;
+
+    SelectChannelID := AddSelectSlide(SelectChannelTheme,
+        CurrentChannel[CurrentDeviceIndex], SelectChannelOptions);
 
     WidgetYPos := SelectChannelTheme.Y + SelectChannelTheme.H + 6;
 
+    // adjust vertical position
+    Theme.OptionsRecord.SelectAssignee.Y := Theme.OptionsRecord.SelectAssignee.Y
+        + SourceBarsTotalHeight;
     // TODO: Remove all this indirection
     // copy reference slide
     SelectSlideChannelTheme := Theme.OptionsRecord.SelectAssignee;
     // set current channel-theme
     ChannelTheme := @SelectSlideChannelTheme;
-    // adjust vertical position
-    ChannelTheme.Y := WidgetYPos;
-    // calc size of next slide (add space for bars)
-    WidgetYPos := WidgetYPos + ChannelTheme.H + ChannelBarsTotalHeight;
-    // TODO: Move to theme
-    ChannelTheme.Text := ULanguage.Language.Translate('SING_OPTIONS_RECORD_ASSIGNEE');
 
     // show/hide widgets depending on whether the channel exists
     if (Length(InputDeviceCfg.ChannelToPlayerMap) > 0) then
@@ -352,16 +346,20 @@ begin
       SelectsS[SelectSlideChannelID].Visible := false;
     end;
 
-    // TODO: Allow the vspacing to be determined by the theme.
     Theme.OptionsRecord.SelectThreshold.showArrows := true; //basisbit TODO
     Theme.OptionsRecord.SelectThreshold.oneItemOnly := true;
-    Theme.OptionsRecord.SelectThreshold.Y := WidgetYPos;
+    // adjust vertical position
+    Theme.OptionsRecord.SelectThreshold.Y := Theme.OptionsRecord.SelectThreshold.Y
+        + SourceBarsTotalHeight
+        + ChannelBarsTotalHeight;
     SelectThresholdID := AddSelectSlide(Theme.OptionsRecord.SelectThreshold, Ini.ThresholdIndex, IThreshold);
 
     Theme.OptionsRecord.SelectMicBoost.showArrows := true;
     Theme.OptionsRecord.SelectMicBoost.oneItemOnly := true;
-    // TODO: This vertical positioning is less than optimal
-    Theme.OptionsRecord.SelectMicBoost.Y := WidgetYPos + ChannelTheme.H + ChannelBarsTotalHeight;
+    // adjust vertical position
+    Theme.OptionsRecord.SelectMicBoost.Y := Theme.OptionsRecord.SelectMicBoost.Y
+        + SourceBarsTotalHeight
+        + ChannelBarsTotalHeight;
     AddSelectSlide(Theme.OptionsRecord.SelectMicBoost, Ini.MicBoost, IMicBoostTranslated);
 
   end;
