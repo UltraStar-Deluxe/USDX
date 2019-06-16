@@ -305,6 +305,8 @@ begin
     // add space for source volume bar
     Theme.OptionsRecord.SelectChannel.Y := Theme.OptionsRecord.SelectChannel.Y
         + SourceBarsTotalHeight;
+    Theme.OptionsRecord.SelectChannel.showArrows := true;
+    Theme.OptionsRecord.SelectChannel.oneItemOnly := true;
 
     SelectChannelID := AddSelectSlide(Theme.OptionsRecord.SelectChannel,
         CurrentChannel[CurrentDeviceIndex], SelectChannelOptions);
