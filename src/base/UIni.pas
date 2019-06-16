@@ -1129,6 +1129,7 @@ procedure TIni.SaveInputDeviceCfg(IniFile: TIniFile);
 var
   DeviceIndex:  integer;
   ChannelIndex: integer;
+  PlayerNumber: integer;
 begin
   for DeviceIndex := 0 to High(InputDeviceConfig) do
   begin
@@ -1143,9 +1144,13 @@ begin
     // Channel-to-Player Mapping
     for ChannelIndex := 0 to High(InputDeviceConfig[DeviceIndex].ChannelToPlayerMap) do
     begin
-      IniFile.WriteInteger('Record',
+      PlayerNumber := InputDeviceConfig[DeviceIndex].ChannelToPlayerMap[ChannelIndex];
+      if PlayerNumber > 0 then
+      begin
+        IniFile.WriteInteger('Record',
                           Format('Channel%d[%d]', [ChannelIndex+1, DeviceIndex+1]),
-                          InputDeviceConfig[DeviceIndex].ChannelToPlayerMap[ChannelIndex]);
+                          PlayerNumber);
+      end;
     end;
   end;
 
