@@ -252,8 +252,6 @@ var
   ChannelIndex: integer;
   InputDevice: TAudioInputDevice;
   InputDeviceCfg: PInputDeviceConfig;
-  ChannelTheme: ^TThemeSelectSlide;
-  //ButtonTheme: TThemeButton;
   WidgetYPos: integer;
 begin
   inherited Create;
@@ -322,22 +320,20 @@ begin
     // TODO: Remove all this indirection
     // copy reference slide
     SelectSlideChannelTheme := Theme.OptionsRecord.SelectAssignee;
-    // set current channel-theme
-    ChannelTheme := @SelectSlideChannelTheme;
 
     // show/hide widgets depending on whether the channel exists
     if (Length(InputDeviceCfg.ChannelToPlayerMap) > 0) then
     begin
       // current device has a channel
       // add slider, assign to first channel of the device
-      SelectSlideChannelID := AddSelectSlide(ChannelTheme^,
+      SelectSlideChannelID := AddSelectSlide(SelectSlideChannelTheme,
         InputDeviceCfg.ChannelToPlayerMap[0], IChannelPlayerTranslated);
     end
     else
     begin
       // current device does not have any channels
       // add slider but hide it and assign a dummy variable to it
-      SelectSlideChannelID := AddSelectSlide(ChannelTheme^,
+      SelectSlideChannelID := AddSelectSlide(SelectSlideChannelTheme,
         ChannelToPlayerMapDummy, IChannelPlayerTranslated);
       SelectsS[SelectSlideChannelID].Visible := false;
     end;
