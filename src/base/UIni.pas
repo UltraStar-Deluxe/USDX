@@ -1148,8 +1148,13 @@ begin
       if PlayerNumber > 0 then
       begin
         IniFile.WriteInteger('Record',
-                          Format('Channel%d[%d]', [ChannelIndex+1, DeviceIndex+1]),
-                          PlayerNumber);
+            Format('Channel%d[%d]', [ChannelIndex+1, DeviceIndex+1]),
+            PlayerNumber);
+      end
+      else
+      begin
+        IniFile.DeleteKey('Record',
+            Format('Channel%d[%d]', [ChannelIndex+1, DeviceIndex+1]));
       end;
     end;
   end;
