@@ -899,7 +899,7 @@ begin
   IPreviewFadingTranslated[5]         := '5 ' + ULanguage.Language.Translate('OPTION_VALUE_SECS');
 
   // Recording options
-  IChannelPlayerTranslated[0]         := ULanguage.Language.Translate('OPTION_VALUE_OFF');
+  IChannelPlayerTranslated[0]         := ULanguage.Language.Translate('SING_OPTIONS_RECORD_NOONE');
   for I:=1 to IMaxPlayerCount do
   begin
     IChannelPlayerTranslated[I]       :=IntToStr(I);
@@ -1129,6 +1129,7 @@ procedure TIni.SaveInputDeviceCfg(IniFile: TIniFile);
 var
   DeviceIndex:  integer;
   ChannelIndex: integer;
+  PlayerNumber: integer;
 begin
   for DeviceIndex := 0 to High(InputDeviceConfig) do
   begin
@@ -1143,9 +1144,18 @@ begin
     // Channel-to-Player Mapping
     for ChannelIndex := 0 to High(InputDeviceConfig[DeviceIndex].ChannelToPlayerMap) do
     begin
-      IniFile.WriteInteger('Record',
-                          Format('Channel%d[%d]', [ChannelIndex+1, DeviceIndex+1]),
-                          InputDeviceConfig[DeviceIndex].ChannelToPlayerMap[ChannelIndex]);
+      PlayerNumber := InputDeviceConfig[DeviceIndex].ChannelToPlayerMap[ChannelIndex];
+      if PlayerNumber > 0 then
+      begin
+        IniFile.WriteInteger('Record',
+            Format('Channel%d[%d]', [ChannelIndex+1, DeviceIndex+1]),
+            PlayerNumber);
+      end
+      else
+      begin
+        IniFile.DeleteKey('Record',
+            Format('Channel%d[%d]', [ChannelIndex+1, DeviceIndex+1]));
+      end;
     end;
   end;
 
