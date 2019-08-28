@@ -386,10 +386,10 @@ begin
 //    Assert(@cvShowImage <> nil);
 ////    {$ENDIF}
 //    //
-    @cvWaitKey := GetProcAddress(DLLHandle,'cvWaitKey');
-    {$IFDEF WIN32}
-    Assert(@cvWaitKey <> nil);
-    {$ENDIF}
+//    @cvWaitKey := GetProcAddress(DLLHandle,'cvWaitKey');
+//    {$IFDEF WIN32}
+//    Assert(@cvWaitKey <> nil);
+//    {$ENDIF}
 //    //
 //    @cvGetWindowHandle := GetProcAddress(DLLHandle,'cvGetWindowHandle');
 //    {$IFDEF WIN32}
