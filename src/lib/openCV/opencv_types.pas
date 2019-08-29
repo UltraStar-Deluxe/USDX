@@ -11,16 +11,18 @@ type
   CvArr = pointer;
 
 
-  Cv32suf = packed record
-    i: integer;
-    u: Cardinal; // unsigned
-    f: single;
+  Cv32suf = record
+  case integer of
+    0: (i: integer);
+    1: (u: Cardinal); // unsigned
+    2: (f: single);
   end;
 
-  Cv64suf = packed record
-    i: Int64;
-    u: UInt64;
-    f: double;
+  Cv64suf = record
+  case integer of
+    0: (i: Int64);
+    1: (u: UInt64);
+    2: (f: double);
   end;
 
 
@@ -41,7 +43,7 @@ const
 
 
 type
-  IplROI =  packed record
+  IplROI = record
       coi: integer;// /* 0 - no COI (all channels are selected), 1 - 0th channel is selected ...*/
       xOffset: integer;//;
       yOffset: integer;//;
@@ -49,7 +51,7 @@ type
       height: integer;//;
   end;
 
-  IplTileInfo = packed  record
+  IplTileInfo = record
   end;
   PIplTileInfo = ^IplTileInfo;
 
@@ -92,7 +94,7 @@ type
   PPIplImage = ^PIplImage;
   PIplImage = ^IplImage;
 
-  IplImage =  packed record
+  IplImage = record
      nSize: integer;               //  /* sizeof(IplImage) */
      ID: integer;                  //  /* version (=0)*/
      nChannels: integer;           //  /* Most of OpenCV functions support 1,2,3 or 4 channels */
@@ -127,7 +129,7 @@ type
   end;
 
   PIplConvKernel = ^IplConvKernel;
-  IplConvKernel =  packed record
+  IplConvKernel = record
     nCols: integer;
     nRows: integer;
     anchorX: integer;
@@ -136,7 +138,7 @@ type
     nShiftR: integer;
   end;
 
-  IplConvKernelFP =  packed record
+  IplConvKernelFP = record
     nCols: integer;
     nRows: integer;
     anchorX: integer;
@@ -257,27 +259,29 @@ CV_TYPE_NAME_MAT = 'opencv-matrix';
 
 
 type
+  _CvMatData = record
+  case integer of
+    0: (ptr: PansiChar);
+    1: (s: pshortint);
+    2: (i: pinteger);
+    3: (fl: Psingle);
+    4: (db: pdouble);
+  end;
   PPPCvMat = ^PPCvMat;
   PPCvMat = ^PCvMat;
   PCvMat = ^CvMat;
-  CvMat =  packed  record
+  CvMat = record
     type_:integer;
     step: integer;
     //* for internal use only */
     refcount: Pinteger;
     hdr_refcount: integer;
-
-    ptr: PansiChar;
-    s: pshortint;
-    i: pinteger;
-    fl: Psingle;
-    db: pdouble;
-
-    rows: integer;
-    height: integer;
-
-    cols: integer;
-    width: integer;
+    data: _CvMatData;
+  case integer of
+    0: (rows: integer;
+        cols: integer);
+    1: (height: integer;
+        width: integer);
   end;
 
 
@@ -450,7 +454,7 @@ CV_TYPE_NAME_SPARSE_MAT = 'opencv-sparse-matrix';
 
 type
   PCvSet = ^CvSet;
-  CvSet =  packed  record
+  CvSet = record
   end;
 
 
@@ -551,7 +555,7 @@ type
  type
 
   PCvRect = ^CvRect;
-  CvRect =  packed record
+  CvRect = record
      x: integer;
      y: integer;
      width: integer;
@@ -570,7 +574,7 @@ const
  CV_TERMCRIT_EPS   =  2;
 //
 type
-CvTermCriteria =  packed record
+CvTermCriteria = record
   type_: integer;  ///* may be combination of
                    //  CV_TERMCRIT_ITER
                    //  CV_TERMCRIT_EPS */
@@ -592,13 +596,13 @@ end;
 type
   PPCvPoint = ^PCvPoint;
   PCvPoint = ^CvPoint;
-  CvPoint =  packed record
+  CvPoint = record
     x,y: integer;
   end;
   function cvPointV(p_x,p_y: integer):CvPoint ;
 
   type
-  CvPoint2D32f =  packed record
+  CvPoint2D32f = record
     x,y: single;
   end;
 
@@ -804,7 +808,7 @@ type
 //
  type
   PCvSize = ^CvSize;
-  CvSize =  packed  record
+  CvSize = record
     width: integer;
     height: integer;
   end;
@@ -860,7 +864,7 @@ type
 //
 ///************************************* CvSlice ******************************************/
 //
-type CvSlice = packed  record
+type CvSlice = record
  start_index, end_index: integer;
 end;
 
@@ -923,7 +927,7 @@ function CV_WHOLE_SEQ :cvSlice;
 
 type
   PCvMemBlock = ^CvMemBlock;
-  CvMemBlock =  packed  record
+  CvMemBlock = record
     prev: PCvMemBlock;
     next: PCvMemBlock;
   end;
@@ -933,7 +937,7 @@ const
 type
 
   PCvMemStorage = ^CvMemStorage;
-  CvMemStorage =  packed   record
+  CvMemStorage = record
     signature: integer;
     bottom:PCvMemBlock;
     top:PCvMemBlock;
@@ -959,7 +963,7 @@ type
 ///*********************************** Sequence *******************************************/
 type
   PCvSeqBlock= ^CvSeqBlock;
-  CvSeqBlock =  packed  record
+  CvSeqBlock = record
     prev: PCvSeqBlock;
     next: PCvSeqBlock;
     start_index: integer;
@@ -970,7 +974,7 @@ type
   PPCvSeq = ^PCvSeq;
   PCvSeq = ^CvSeq;
   //CV_SEQUENCE_FIELDS
-  CvSeq =  packed  record
+  CvSeq = record
     //   CV_TREE_NODE_FIELDS
     flags: integer;
     header_size: integer;
@@ -1115,7 +1119,7 @@ const
 //
 type
 PCvContour = ^CvContour;
-CvContour =  packed  record
+CvContour = record
  // CV_SEQUENCE_FIELDS START
     //   CV_TREE_NODE_FIELDS
     flags: integer;
@@ -1305,7 +1309,7 @@ end;
 //
 //
 PCvSeqReader = ^CvSeqReader;
-CvSeqReader =  packed record
+CvSeqReader = record
 //{
 //    CV_SEQ_READER_FIELDS()
 //}
@@ -1597,7 +1601,7 @@ type
   CvMoments =record
     m00, m10, m01, m20, m11, m02, m30, m21, m12, m03: double;// /* spatial moments */
     mu20, mu11, mu02, mu30, mu21, mu12, mu03: double; ///* central moments */
-    inv_sqrt_m00: integer; ///* m00 != 0 ? 1/sqrt(m00) : 0 */
+    inv_sqrt_m00: double; ///* m00 != 0 ? 1/sqrt(m00) : 0 */
   end;
 
   CvHuMoments = record
@@ -1635,26 +1639,6 @@ CvChainPtReader = record
 //  ??
 end;
 
-
-
-  PCvHaarFeature = ^CvHaarFeature;
-  CvHaarFeature =record
-
-  end;
-
- CvHaarClassifier = record
-   count: integer;
-   haar_feature: PCvHaarFeature;
-   threshold: Psingle;
- end;
-
-
-  PCvHaarClassifierCascade= ^CvHaarClassifierCascade;
-  CvHaarClassifierCascade = record
-    flags: integer;
-    // threshold: float; ??????
- //   classifier: PCvHaarClassifier;
-  end;
 
 
   CvAvgComp = record
