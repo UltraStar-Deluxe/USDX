@@ -402,7 +402,7 @@ begin
        (PixelFmt = ipfRGB) then
     begin
 
-      Result := Texture.CreateTexture(Data, Filename, Width, Height, 24)
+      Result := Texture.CreateTexture(Data, Filename, Width, Height)
     end
     else
     begin

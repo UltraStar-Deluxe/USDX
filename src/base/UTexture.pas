@@ -121,7 +121,7 @@ type
       function GetTexture(const Name: IPath; Typ: TTextureType; Col: LongWord; FromCache: boolean = false): TTexture; overload;
       function LoadTexture(const Identifier: IPath; Typ: TTextureType; Col: LongWord): TTexture; overload;
       function LoadTexture(const Identifier: IPath): TTexture; overload;
-      function CreateTexture(Data: PChar; const Name: IPath; Width, Height: word; BitsPerPixel: byte): TTexture;
+      function CreateTexture(Data: PChar; const Name: IPath; Width, Height: word): TTexture;
       procedure UnloadTexture(const Name: IPath; Typ: TTextureType; FromCache: boolean); overload;
       procedure UnloadTexture(const Name: IPath; Typ: TTextureType; Col: cardinal; FromCache: boolean); overload;
       //procedure FlushTextureDatabase();
@@ -411,7 +411,7 @@ begin
   Result := TextureDatabase.Texture[TextureIndex].Texture;
 end;
 
-function TTextureUnit.CreateTexture(Data: PChar; const Name: IPath; Width, Height: word; BitsPerPixel: byte): TTexture;
+function TTextureUnit.CreateTexture(Data: PChar; const Name: IPath; Width, Height: word): TTexture;
 var
   //Error:     integer;
   ActTex:    GLuint;
