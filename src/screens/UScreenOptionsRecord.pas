@@ -357,7 +357,7 @@ begin
     AddButtonText(20, 5, Theme.Options.Description[OPTIONS_DESC_INDEX_BACK]);
   // store InteractionID
   if (Length(AudioInputProcessor.DeviceList) > 0) then
-    ExitButtonIID := 1 + 4
+    ExitButtonIID := 1 + 5
   else
     ExitButtonIID := 2;
 
