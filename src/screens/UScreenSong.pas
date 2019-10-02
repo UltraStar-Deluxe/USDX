@@ -271,6 +271,7 @@ type
       procedure Refresh;//(GiveStats: boolean); //Refresh Song Sorting
       procedure ChangeSorting(Tabs: integer; Duet: boolean; Sorting: integer);
       procedure ChangeMusic;
+      procedure Randomize;
 
       function FreeListMode: boolean;
 
@@ -3818,6 +3819,60 @@ begin
   StartMusicPreview();
   StartVideoPreview();
 end;
+
+{$ifdef UNIX}
+(**
+	initializes PRNG with data read from /dev/random
+
+	Randomize initializes the pseudo-random number generator
+	by storing a value read from /dev/random to system.randSeed.
+	If reading fails, system.randomize will be used instead.
+*)
+procedure TScreenSong.Randomize;
+const
+  /// file name for random(4) device
+  randomDeviceName = '/dev/random';
+var
+  /// reading buffer
+  // same type as system.randSeed
+  randomNumber: cardinal;
+  /// file handle
+  randomReader: file of cardinal;
+begin
+  assign(randomReader, randomDeviceName);
+  {$push}
+  // turn off run-time error generation
+  {$IOChecks off}
+  reset(randomReader);
+
+  if IOResult() = 0 then
+  begin
+    // will possibly cause the error
+    //   EInOutError: Read past end of file
+    // if /dev/random is depleted
+    read(randomReader, randomNumber);
+
+    if IOResult() = 0 then
+    begin
+	    system.randSeed := randomNumber;
+    end
+    else
+    begin
+	    // do not call one-self => fully qualified identfier
+	    system.randomize;
+    end;
+
+    close(randomReader);
+  end
+  {$pop}
+  else
+  begin
+    // do not call one-self => fully qualified identfier
+    system.randomize;
+  end
+end;
+{$endif}
+
 
 procedure TScreenSong.SkipTo(Target: cardinal; TargetInteraction: integer = -1; VS: integer = -1);
 var
