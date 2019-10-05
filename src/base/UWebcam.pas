@@ -221,6 +221,7 @@ begin
     end
   end;
   SDL_UnlockMutex(Mutex);
+  Result := 0;
 end;
 
 class function TWebcam.CaptureThreadMain(Data: Pointer): integer; cdecl; static;
