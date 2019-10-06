@@ -35,7 +35,7 @@ for i in "${deps[@]}"; do
 		hashB="$(sha1sum "deps/dl/$bname" 2> /dev/null | awk '{print $1}')"
 		if [ ! -f "deps/dl/$bname" ] || [ "$hashA" != "$hashB" ]; then
 			echo "Downloading $name from $url"
-			curl --progress-bar -L "$url" -o "deps/dl/$bname"
+			curl -s -S -L "$url" -o "deps/dl/$bname"
 			hashB="$(sha1sum "deps/dl/$bname" 2> /dev/null | awk '{print $1}')"
 			if [ "$hashA" != "$hashB" ]; then
 				echo "Hashes doesn't match!" "$hashA" "$hashB"
@@ -64,7 +64,7 @@ for i in "${deps[@]}"; do
 		hashB="$(sha1sum "deps/dl/$bname" 2> /dev/null | awk '{print $1}')"
 		if [ ! -f "deps/dl/$bname" ] || [ "$hashA" != "$hashB" ]; then
 			echo "Downloading $name from $url"
-			curl --progress-bar -L "$url" -o "deps/dl/$bname"
+			curl -s -S -L "$url" -o "deps/dl/$bname"
 			hashB="$(sha1sum "deps/dl/$bname" 2> /dev/null | awk '{print $1}')"
 			if [ "$hashA" != "$hashB" ]; then
 				echo "Hashes doesn't match!" "$hashA" "$hashB"
@@ -82,7 +82,7 @@ for i in "${deps[@]}"; do
 		hashB="$(sha1sum "deps/$name" 2> /dev/null | awk '{print $1}')"
 		if [ ! -f "deps/$name" ] || [ "$hashA" != "$hashB" ]; then
 			echo "Downloading $name from $url"
-			curl --progress-bar -L "$url" -o "deps/$name"
+			curl -s -S -L "$url" -o "deps/$name"
 			hashB="$(sha1sum "deps/$name" 2> /dev/null | awk '{print $1}')"
 			if [ "$hashA" != "$hashB" ]; then
 				echo "Hashes doesn't match!" "$hashA" "$hashB"
