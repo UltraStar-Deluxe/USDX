@@ -16,6 +16,7 @@ Build-Depends: debhelper (>= 10),
  portaudio19-dev,
  libportmidi-dev,
  libswscale-dev,
+ libopencv-dev,
  libprojectm-dev
 Standards-Version: 3.9.8
 Homepage: https://usdx.eu
@@ -26,8 +27,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
          fonts-dejavu-core, fonts-freefont-ttf
 Recommends: projectm-data,
             ttf-bitstream-vera
-Suggests: fonts-wqy-microhei, libopencv-highgui-dev,
-          libopencv-imgproc-dev, libopencv-core-dev
+Suggests: fonts-wqy-microhei
 Description: Free and Open Source karaoke game
  A karaoke game similar to SingStar™ where one or more players perform a song
  and the game scores their performances, depending on the pitch of the voice
