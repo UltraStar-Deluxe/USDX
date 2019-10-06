@@ -253,9 +253,11 @@ For linking and running the game, the following libraries are also required:
 #### Compiling on Linux/BSD using make
 1. make sure all required libraries are installed 
   * for current debian / ubuntu: 
-    `sudo apt-get update && sudo apt-get install git automake make gcc fpc libsdl2-image-dev libavformat-dev libswscale-dev libsqlite3-dev libfreetype6-dev portaudio19-dev libportmidi-dev liblua5.3-dev libopencv-highgui-dev`
+    `sudo apt-get update && sudo apt-get install git automake make gcc fpc libsdl2-image-dev libavformat-dev libswscale-dev libsqlite3-dev libfreetype6-dev portaudio19-dev libportmidi-dev liblua5.3-dev libopencv-videoio-dev`
   * if you want to build --with-libprojectM, you also need
     `sudo apt-get install g++ libprojectm-dev`
+  * if you want to build --with-opencv-cxx-api, you also need
+    `sudo apt-get install g++ libopencv-dev`
   * for Fedora with RPM Fusion:
     `sudo dnf install git automake make gcc fpc SDL2_image-devel ffmpeg-devel sqlite-devel freetype-devel portaudio-devel portmidi-devel lua-devel opencv-devel`
     and to be able to use --with-libprojectM:
