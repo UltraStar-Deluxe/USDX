@@ -11,6 +11,7 @@ export PREFIX="$root/prefix/$ARCH"
 export PATH="$PREFIX/bin:$PATH"
 export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
 PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
+CMAKE_PREFIX_PATH="$PREFIX:$CMAKE_PREFIX_PATH"
 [ -f /.dockerenv ] && export PPC_CONFIG_PATH="$PREFIX/etc"
 
 export LDFLAGS="-Wl,-z,now -Wl,-z,relro -L$PREFIX/lib"
@@ -229,6 +230,62 @@ task_patchelf() {
 	make distclean
 }
 
+task_opencv() {
+	tput setaf 2 && tput bold
+	echo "==> Building OpenCV"
+	tput sgr0
+	cd "$SRC/opencv"
+	rm -rf build
+	mkdir -p build
+	cd build
+	cmake \
+		-DCMAKE_CACHEFILE_DIR="$(pwd)/out" \
+		-DCMAKE_INSTALL_PREFIX="$PREFIX" \
+		-DCMAKE_BUILD_TYPE="Release" \
+		-DDCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
+		-DOPENCV_GENERATE_PKGCONFIG=ON \
+		-DBUILD_TESTS=OFF \
+		-DBUILD_opencv_apps=OFF \
+		-DBUILD_opencv_calib3d=OFF \
+		-DBUILD_opencv_dnn=OFF \
+		-DBUILD_opencv_features2d=OFF \
+		-DBUILD_opencv_flann=OFF \
+		-DBUILD_opencv_gapi=OFF \
+		-DBUILD_opencv_highgui=OFF \
+		-DBUILD_opencv_java_bindings_generator=OFF \
+		-DBUILD_opencv_ml=OFF \
+		-DBUILD_opencv_objdetect=OFF \
+		-DBUILD_opencv_photo=OFF \
+		-DBUILD_opencv_python2=OFF \
+		-DBUILD_opencv_python_bindings_generator=OFF \
+		-DBUILD_opencv_python_tests=OFF \
+		-DBUILD_opencv_stitching=OFF \
+		-DBUILD_opencv_ts=OFF \
+		-DBUILD_opencv_video=OFF \
+		-DCV_TRACE=OFF \
+		-DWITH_PROTOBUF=OFF \
+		-DWITH_FFMPEG=OFF \
+		-DWITH_ADE=OFF \
+		-DWITH_QUIRC=OFF \
+		-DWITH_GTK=OFF \
+		-DWITH_TIFF=OFF \
+		-DWITH_WEBP=OFF \
+		-DWITH_JASPER=OFF \
+		-DWITH_PNG=OFF \
+		-DWITH_OPENEXR=OFF \
+		-DWITH_GDAL=OFF \
+		-DWITH_GDCM=OFF \
+		-DWITH_IMGCODEC_HDR=OFF \
+		-DWITH_IMGCODEC_SUNRASTER=OFF \
+		-DWITH_IMGCODEC_PXM=OFF \
+		-DWITH_IMGCODEC_PFM=OFF \
+		..
+	make
+	make install
+	cd ..
+	rm -r build
+}
+
 task_usdx() {
 	tput setaf 2 && tput bold
 	echo "==> Building UltraStar Deluxe"
@@ -236,7 +293,7 @@ task_usdx() {
 	local OUTPUT="$root/build/$ARCH"
 	cd "$root/../.."
 	bash ./autogen.sh
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" --enable-debug
+	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" CC="$CC" CXX="$CXX" --enable-debug --with-opencv-cxx-api
 	sleep 1
 	make LDFLAGS="-O2 --sort-common --as-needed -z relro" datadir="./data" prefix="" bindir="" INSTALL_DATADIR="./data"
 	rm -rf "$OUTPUT/data" "$OUTPUT/ultrastardx"
@@ -285,6 +342,9 @@ if [ "$1" == "all_deps" ]; then
 
 	echo
 	task_patchelf
+
+	echo
+	task_opencv
 
 	touch "$PREFIX/built_libs"
 
