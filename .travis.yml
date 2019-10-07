@@ -14,6 +14,9 @@ env:
     - WINEPREFIX=~/.winelaz
     - DISPLAY=:99.0
 
+services:
+  - xvfb
+
 before_install:
   - tools/travis/before_install.sh
 
