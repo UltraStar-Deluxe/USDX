@@ -189,21 +189,6 @@ var
   cvEqualizeHist: procedure(src: PIplImage; dst: PIplImage);cdecl;
 
 const
- CV_HAAR_DO_CANNY_PRUNING    = 1;
- CV_HAAR_SCALE_IMAGE         = 2;
- CV_HAAR_FIND_BIGGEST_OBJECT = 4;
- CV_HAAR_DO_ROUGH_SEARCH     = 8;
-
-var
-  cvHaarDetectObjects : function( image: pointer;
-                                  cascade: PCvHaarClassifierCascade;
-                                  storage: PCvMemStorage;
-                                  scale_factor: double;
-                                  min_neighbors: integer;
-                                  flags: integer;
-                                  min_size: CvSize  ): PCvSeq;cdecl;
-
-const
   CV_INTER_NN       = 0;
   CV_INTER_LINEAR   = 1;
   CV_INTER_CUBIC    = 2;
@@ -393,11 +378,6 @@ begin
     //@cvResize := GetProcAddress(DLLHandle,'cvResize');
     {$IFDEF WIN32}
     //Assert(@cvResize <> nil);
-    {$ENDIF}
-    //
-    //@cvHaarDetectObjects := GetProcAddress(DLLHandle,'cvHaarDetectObjects');
-    {$IFDEF WIN32}
-    //Assert(@cvHaarDetectObjects <> nil);
     {$ENDIF}
     //
     //@cvPyrDown := GetProcAddress(DLLHandle,'cvPyrDown');

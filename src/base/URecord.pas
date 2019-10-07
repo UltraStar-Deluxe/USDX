@@ -470,9 +470,9 @@ begin
       Correlation[ToneIndex] := 0;
       for SampleIndex := 0 to (AnalysisBufferSize-Delays[ToneIndex]-1) do
       begin
-        Correlation[ToneIndex] += Abs(AnalysisBuffer[SampleIndex] - AnalysisBuffer[SampleIndex+Delays[ToneIndex]]);
+        Correlation[ToneIndex] := Correlation[ToneIndex] + Abs(AnalysisBuffer[SampleIndex] - AnalysisBuffer[SampleIndex+Delays[ToneIndex]]);
       end;
-      Correlation[ToneIndex] /= (AnalysisBufferSize-Delays[ToneIndex]-1);
+      Correlation[ToneIndex] := Correlation[ToneIndex] / (AnalysisBufferSize-Delays[ToneIndex]-1);
     end;
 
   // return average magnitude difference
@@ -499,9 +499,9 @@ begin
       // Suggestion for calculation efficiency improvement from deuteragenie:
       // Replacing 'i mod buffersize' by 'i & (buffersize-1)' when i is positive and buffersize is a power of two should speed the modulo compuation by 5x-10x
       //Correlation[ToneIndex] += Abs(AnalysisBuffer[(SampleIndex+Delays[ToneIndex]) mod AnalysisBufferSize] - AnalysisBuffer[SampleIndex]);
-      Correlation[ToneIndex] += Abs(AnalysisBuffer[(SampleIndex+Delays[ToneIndex]) and (AnalysisBufferSize-1)] - AnalysisBuffer[SampleIndex]);
+      Correlation[ToneIndex] := Correlation[ToneIndex] + Abs(AnalysisBuffer[(SampleIndex+Delays[ToneIndex]) and (AnalysisBufferSize-1)] - AnalysisBuffer[SampleIndex]);
     end;
-    Correlation[ToneIndex] /= AnalysisBufferSize;
+    Correlation[ToneIndex] := Correlation[ToneIndex] / AnalysisBufferSize;
   end;
 
   // return circular average magnitude difference

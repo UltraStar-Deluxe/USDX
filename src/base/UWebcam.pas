@@ -221,6 +221,7 @@ begin
     end
   end;
   SDL_UnlockMutex(Mutex);
+  Result := 0;
 end;
 
 class function TWebcam.CaptureThreadMain(Data: Pointer): integer; cdecl; static;
@@ -257,7 +258,7 @@ begin
     WebcamFrame := FrameAdjust(WebcamFrame);
     WebcamFrame := FrameEffect(Ini.WebCamEffect, WebcamFrame);
 
-    TextureCam := Texture.CreateTexture(WebcamFrame.imageData, nil, WebcamFrame.Width, WebcamFrame.Height, WebcamFrame.depth);
+    TextureCam := Texture.CreateTexture(WebcamFrame.imageData, nil, WebcamFrame.Width, WebcamFrame.Height);
 
     cvReleaseImage(@WebcamFrame);
   end;
@@ -278,7 +279,6 @@ end;
 function TWebcam.FrameEffect(Nr_Effect: integer; Frame: PIplImage): PIplImage;
 var
   Size: CvSize;
-  HalfSize: CvSize;
   CamEffectParam: integer;
   ImageFrame, EffectFrame, DiffFrame, RGBFrame: PIplImage;
 begin
@@ -296,7 +296,6 @@ begin
   end;
 
   Size  := cvSizeV(Frame.width, Frame.height);
-  HalfSize  := cvSizeV(Frame.width/2, Frame.height/2);
 
   ImageFrame := cvCreateImage(Size, Frame.depth, 1);
   EffectFrame := cvCreateImage(Size, Frame.depth, 1);
@@ -414,7 +413,6 @@ end;
 function TWebcam.FrameAdjust(Frame: PIplImage): PIplImage;
 var
   BrightValue, SaturationValue, HueValue: integer;
-  M1, M2, M3, M4: PCvMat;
   C, S: real;
 begin
 

@@ -362,6 +362,7 @@ var
   DeviceInfo: BASS_DEVICEINFO;
   SourceIndex:  integer;
   RecordInfo: BASS_RECORDINFO;
+  NumberOfSupportedChannels: byte;
   SelectedSourceIndex: integer;
 begin
   result := false;
@@ -403,20 +404,25 @@ begin
       // retrieve recording device info
       BASS_RecordGetInfo(RecordInfo);
 
+      // BASS_RECORDINFO.formats is a DWORD that has the number of channels supported by the device
+      // encoded in the high 8 bits (see BASS_RECORDINFO documentation)
+      NumberOfSupportedChannels := hi(hi(RecordInfo.formats));
+      // Now limit this number to sane values (highest number of channels on an interface I could
+      // find was 32) for buggy devices returning fantasy channel counts
+      if (NumberOfSupportedChannels > 32) or (NumberOfSupportedChannels = 0) then
+         NumberOfSupportedChannels := 2;
+
       // check if BASS has capture-freq. info
       if (RecordInfo.freq > 0) then
       begin
         // use current input sample rate (available only on Windows Vista and OSX).
         // Recording at this rate will give the best quality and performance, as no resampling is required.
         // FIXME: does BASS use LSB/MSB or system integer values for 16bit?
-        BassDevice.AudioFormat := TAudioFormatInfo.Create(2, RecordInfo.freq, asfS16)
+        BassDevice.AudioFormat := TAudioFormatInfo.Create(NumberOfSupportedChannels, RecordInfo.freq, asfS16)
       end
       else
       begin
-        // BASS does not provide an explizit input channel count (except BASS_RECORDINFO.formats)
-        // but it doesn't fail if we use stereo input on a mono device
-        // -> use stereo by default
-        BassDevice.AudioFormat := TAudioFormatInfo.Create(2, 44100, asfS16)
+        BassDevice.AudioFormat := TAudioFormatInfo.Create(NumberOfSupportedChannels, 44100, asfS16)
       end;
 
       // get info if multiple input-sources can be selected at once

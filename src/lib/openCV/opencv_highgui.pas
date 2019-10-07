@@ -322,8 +322,10 @@ const
     DLL_HIGHGUI='highgui210.dll';//'opencv_highgui231.dll';
   {$ELSEIF Defined(DARWIN)}
     DLL_HIGHGUI='libopencv_highgui.dylib';
+    DLL_VIDEOIO='libopencv_videoio.dylib';
   {$ELSEIF Defined(UNIX)}
     DLL_HIGHGUI='libopencv_highgui.so';
+    DLL_VIDEOIO='libopencv_videoio.so';
   {$IFEND}
 
 var
@@ -331,7 +333,11 @@ var
 
 procedure LoadDLL;
 begin
-  DLLHandle := LoadLibrary(DLL_HIGHGUI);
+{$IF not Defined(MSWINDOWS)}
+  DLLHandle := LoadLibrary(DLL_VIDEOIO);
+  if DLLHandle < 32 then
+{$ENDIF}
+      DLLHandle := LoadLibrary(DLL_HIGHGUI);
   if DLLHandle >= 32 then
   begin
 
@@ -386,10 +392,10 @@ begin
 //    Assert(@cvShowImage <> nil);
 ////    {$ENDIF}
 //    //
-    @cvWaitKey := GetProcAddress(DLLHandle,'cvWaitKey');
-    {$IFDEF WIN32}
-    Assert(@cvWaitKey <> nil);
-    {$ENDIF}
+//    @cvWaitKey := GetProcAddress(DLLHandle,'cvWaitKey');
+//    {$IFDEF WIN32}
+//    Assert(@cvWaitKey <> nil);
+//    {$ENDIF}
 //    //
 //    @cvGetWindowHandle := GetProcAddress(DLLHandle,'cvGetWindowHandle');
 //    {$IFDEF WIN32}
