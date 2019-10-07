@@ -1169,6 +1169,10 @@ var
   Int: integer;
 begin
   Int := Interaction;
+  if Int < 0 then
+  begin
+       Int := 0;
+  end;
 
   // change interaction as long as it's needed
   repeat
