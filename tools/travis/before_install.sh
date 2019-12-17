@@ -3,8 +3,8 @@
 if [ -n "$LAZ_VER" ]; then
     # Lazarus build (with wine)
 
-    # Start virtual display server - this should now be done in the .travis.yml services area
-    # sh /etc/init.d/xvfb start
+    # Start virtual display server - this should be done in the .travis.yml services area once the Lazarus submodule supports Ubuntu >= Xenial
+    sh /etc/init.d/xvfb start
 	echo "Lazarus build (with wine)"
 
 elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
