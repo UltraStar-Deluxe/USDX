@@ -7,9 +7,28 @@ dest = $(macosx_bundle_path)/MacOS/$(notdir $(1))
 FILES :=
 NEWFILES := $(USDX_BIN)
 
+define processload
+D := $(1)
+ifeq ($$(patsubst @rpath%,,$$(D)),)
+D := $$(firstword $$(foreach rpath,$$(RUNPATH),$$(wildcard $$(patsubst @rpath%,$$(rpath)%,$$(D))) ))
+ifeq ($$(D),)
+$$(error dylib $(1) not found in rpath $$(RUNPATH))
+endif
+endif
+$$(eval RUNPATH_$$(D) := $$$$(RUNPATH))
+NEXTNEWFILES := $(NEXTNEWFILES) $$(filter-out $(FILES) $(NEXTNEWFILES),$$(D))
+endef
+
+define runpathlist
+RUNPATH := $$(RUNPATH_$(1)) $$(filter-out $$(RUNPATH_$(1)),$$(shell $$(OTOOL) -l $(1) | grep -A 2 '\<cmd LC_RPATH\>' | sed -n 's/.* path \(.*\) .offset .*/\1/p'))
+$$(foreach dylib,$$(call getdylibs,$(1)),$$(eval $$(call processload,$$(dylib))))
+endef
+
 define recurse
 FILES := $$(FILES) $$(NEWFILES)
-NEWFILES := $$(filter-out $$(FILES),$$(sort $$(foreach dylib,$$(NEWFILES),$$(call getdylibs,$$(dylib)))))
+NEXTNEWFILES :=
+$$(foreach dylib,$$(NEWFILES),$$(eval $$(call runpathlist,$$(dylib))))
+NEWFILES := $$(strip $$(NEXTNEWFILES))
 ifneq ($$(NEWFILES),)
 $$(eval $$(recurse))
 endif
