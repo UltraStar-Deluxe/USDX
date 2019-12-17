@@ -148,12 +148,24 @@ PROJECTM_CWRAPPER_LIB := $(PROJECTM_CWRAPPER_DIR)/libprojectM-cwrapper.a
 USE_PROJECTM_CWRAPPER := @USE_PROJECTM_CWRAPPER@
 
 #################################################
+# OpenCV
+#################################################
+
+OPENCV_CWRAPPER_DIR := $(USDX_LIB_DIR)/openCV3
+OPENCV_CWRAPPER_LIB := $(OPENCV_CWRAPPER_DIR)/libopenCV-cwrapper.a
+USE_OPENCV_CWRAPPER := @USE_OPENCV_CWRAPPER@
+
+#################################################
 # Static libs
 #################################################
 
 STATIC_LIBS := 
 ifeq ($(USE_PROJECTM_CWRAPPER), yes)
 STATIC_LIBS += $(PROJECTM_CWRAPPER_LIB)
+endif
+
+ifeq ($(USE_OPENCV_CWRAPPER), yes)
+STATIC_LIBS += $(OPENCV_CWRAPPER_LIB)
 endif
 
 #################################################

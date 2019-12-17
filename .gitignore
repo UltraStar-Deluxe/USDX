@@ -23,6 +23,7 @@ config.status
 __history
 aclocal.m4
 /autom4te.cache/
+/CMakeFiles/
 link.res
 ppaslink.sh
 /UltraStarDeluxe.app/*

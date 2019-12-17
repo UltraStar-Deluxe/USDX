@@ -26,7 +26,7 @@ RDEPEND="virtual/opengl
 	dev-lang/lua
 	midi? ( media-libs/portmidi )
 	projectm? ( media-libs/libprojectm )
-	webcam? ( media-libs/opencv )"
+	webcam? ( >=media-libs/opencv-3.0.0 )"
 DEPEND="${RDEPEND}
 	dev-util/pkgconfig
 	>=dev-lang/fpc-3.0.0"
@@ -39,6 +39,7 @@ src_prepare() {
 src_configure() {
 	econf \
 		$(use_with projectm libprojectM) \
+		$(use_with webcam opencv-cxx-api) \
 		$(use_enable midi portmidi) \
 		$(use_enable debug) \
 		|| die "econf failed"

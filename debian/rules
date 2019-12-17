@@ -17,6 +17,7 @@ override_dh_auto_configure:
 	dh_auto_configure -- \
 		--bindir=/usr/games \
 		--datarootdir=/usr/share/games \
+		--with-opencv-cxx-api \
 		--with-libprojectM
 
 

@@ -94,3 +94,8 @@
 {$IF Defined(IncludeConstants)}
   porttime_lib_name = '@porttime_LIB_NAME@';
 {$IFEND}
+
+{$@DEFINE_USE_OPENCV_CWRAPPER@ UseOpenCVWrapper}
+{$@DEFINE_OPENCV_CORE_STANDALONE@ OpenCVCoreStandalone}
+{$@DEFINE_OPENCV_IMGPROC_STANDALONE@ OpenCVImgprocStandalone}
+{$@DEFINE_OPENCV_VIDEOIO_STANDALONE@ OpenCVVideoioStandalone}

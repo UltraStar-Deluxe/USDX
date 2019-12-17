@@ -16,6 +16,7 @@ deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.36.tar.xz,aec9
 deps+=('zlib,https://zlib.net/zlib-1.2.11.tar.gz,e6d119755acdf9104d7ba236b1242696940ed6dd')
 # deps+=('libcwrap.h,https://raw.githubusercontent.com/wheybags/glibc_version_header/master/version_headers/force_link_glibc_2.10.2.h,aff0c46cf3005fe15c49688e74df62a9988855a5')
 deps+=('patchelf,https://github.com/NixOS/patchelf/archive/0.9.tar.gz,c068c60a67388fbf9267142516d3a8cd6ffc4397')
+deps+=('opencv,https://github.com/opencv/opencv/archive/4.1.1.tar.gz,a7beeaada9b6c45a389b9aee391e82c092537819')
 # if [ -f /.dockerenv ]; then
 # 	deps+=('fpc-x86_64,https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.x86_64-linux.tar,0720e428eaea423423e1b76a7267d6749c3399f4')
 # 	deps+=('fpc-i686,https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.i386-linux.tar,0a51364bd1a37f1e776df5357ab5bfca8cc7ddeb')
@@ -34,7 +35,7 @@ for i in "${deps[@]}"; do
 		hashB="$(sha1sum "deps/dl/$bname" 2> /dev/null | awk '{print $1}')"
 		if [ ! -f "deps/dl/$bname" ] || [ "$hashA" != "$hashB" ]; then
 			echo "Downloading $name from $url"
-			curl --progress-bar -L "$url" -o "deps/dl/$bname"
+			curl -s -S -L "$url" -o "deps/dl/$bname"
 			hashB="$(sha1sum "deps/dl/$bname" 2> /dev/null | awk '{print $1}')"
 			if [ "$hashA" != "$hashB" ]; then
 				echo "Hashes doesn't match!" "$hashA" "$hashB"
@@ -63,7 +64,7 @@ for i in "${deps[@]}"; do
 		hashB="$(sha1sum "deps/dl/$bname" 2> /dev/null | awk '{print $1}')"
 		if [ ! -f "deps/dl/$bname" ] || [ "$hashA" != "$hashB" ]; then
 			echo "Downloading $name from $url"
-			curl --progress-bar -L "$url" -o "deps/dl/$bname"
+			curl -s -S -L "$url" -o "deps/dl/$bname"
 			hashB="$(sha1sum "deps/dl/$bname" 2> /dev/null | awk '{print $1}')"
 			if [ "$hashA" != "$hashB" ]; then
 				echo "Hashes doesn't match!" "$hashA" "$hashB"
@@ -81,7 +82,7 @@ for i in "${deps[@]}"; do
 		hashB="$(sha1sum "deps/$name" 2> /dev/null | awk '{print $1}')"
 		if [ ! -f "deps/$name" ] || [ "$hashA" != "$hashB" ]; then
 			echo "Downloading $name from $url"
-			curl --progress-bar -L "$url" -o "deps/$name"
+			curl -s -S -L "$url" -o "deps/$name"
 			hashB="$(sha1sum "deps/$name" 2> /dev/null | awk '{print $1}')"
 			if [ "$hashA" != "$hashB" ]; then
 				echo "Hashes doesn't match!" "$hashA" "$hashB"

@@ -52,6 +52,8 @@ AC_PROG_INSTALL
 AC_PROG_SED
 AC_PROG_GREP
 #AC_PROG_EGREP
+CMAKE_FIND_BINARY
+[[ -n "$CMAKE_BINARY" ]] || CMAKE_BINARY=false
 
 # -----------------------------------------
 # macro declarations
@@ -88,6 +90,12 @@ AC_ARG_WITH([libprojectM],
     [AS_HELP_STRING([--with-libprojectM],
       [enable projectM visualization support @<:@default=no@:>@])],
     [with_libprojectM=$withval], [with_libprojectM="no"])
+
+# add OpenCV option
+AC_ARG_WITH([opencv-cxx-api],
+    [AS_HELP_STRING([--with-opencv-cxx-api],
+      [use current OpenCV C++ API @<:@default=no@:>@])],
+    [with_opencv_cxx_api=$withval], [with_opencv_cxx_api="no"])
 
 # print misc options header
 AC_ARG_WITH([cfg-dummy2], [
@@ -333,6 +341,20 @@ AX_EXTRACT_VERSION(FFMPEG, $FFMPEG_VERSION)
 AC_SUBST(FFMPEG_VERSION)
 AC_MSG_RESULT(@<:@$FFMPEG_VERSION@:>@)
 
+AC_MSG_NOTICE([Checking for C++ compiler])
+AC_PROG_CXX
+AC_LANG_PUSH([C++])
+AC_MSG_CHECKING([if C++ toolchain works])
+cxx_works=no
+use_cxx=no
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
+		  [AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],
+				  [AC_MSG_RESULT([yes])
+				   cxx_works=yes],
+				  [AC_MSG_RESULT([linking C++ programs does not work])])],
+		  [AC_MSG_RESULT([C++ compiler does not work])])
+AC_LANG_POP([C++])
+
 # find projectM version
 libprojectM_PKG="libprojectM >= 0.98"
 PKG_HAVE([libprojectM], [$libprojectM_PKG], no)
@@ -346,25 +368,68 @@ PKG_VALUE([libprojectM], [DATADIR], [variable=pkgdatadir], [$libprojectM_PKG],
           [projectM data-directory for presets etc. (e.g. /usr/share/projectM)])
 # check if we need the c-wrapper
 if [[ "$libprojectM_VERSION_MAJOR" -ge 1 ]]; then
-    libprojectM_USE_CWRAPPER=yes
-    AC_MSG_NOTICE([Need C++ compiler to build libprojectM wrapper])
-    AC_PROG_CXX
-    AC_LANG_PUSH([C++])
-    AC_MSG_CHECKING([if C++ toolchain works])
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],,[AC_MSG_FAILURE([C++ compiler does not work])])
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],,[AC_MSG_FAILURE([linking C++ programs does not work])])
-    AC_MSG_RESULT([yes])
+	if [[ "$cxx_works" = yes ]] ; then
+		libprojectM_USE_CWRAPPER=yes
+		use_cxx=yes
+	else
+		AC_MSG_FAILURE([Need C++ compiler to build libprojectM wrapper])
+	fi
+else
+	libprojectM_USE_CWRAPPER=no
+fi
+AC_SUBST(USE_PROJECTM_CWRAPPER, $libprojectM_USE_CWRAPPER)
+
+opencv_core_standalone=no
+opencv_imgproc_standalone=no
+opencv_videoio_standalone=no
+if [[ "$with_opencv_cxx_api" = yes ]] ; then
+	if [[ "$cxx_works" = yes ]] ; then
+		AX_CXX_COMPILE_STDCXX([11])
+		CMAKE_FIND_PACKAGE([OpenCV], [CXX], [GNU], , [OpenCV_HAVE=yes], [OpenCV_HAVE=no])
+		if [[ "$OpenCV_HAVE" != yes ]] ; then
+			PKG_HAVE([OpenCV], [opencv4], no)
+			if [[ "$OpenCV_HAVE" != yes ]] ; then
+				PKG_HAVE([OpenCV], [opencv >= 3.0.0], yes)
+				OpenCV_CXXFLAGS=`$PKG_CONFIG --cflags "opencv >= 3.0.0"`
+			else
+				OpenCV_CXXFLAGS=`$PKG_CONFIG --cflags opencv4`
+			fi
+		fi
+		opencv_USE_CWRAPPER=yes
+		use_cxx=yes
+		for lib in $OpenCV_LIBS ; do
+			case "${lib##*/}" in
+			*opencv_core*)    opencv_core_standalone=yes ;;
+			*opencv_imgproc*) opencv_imgproc_standalone=yes ;;
+			*opencv_videoio*) opencv_videoio_standalone=yes ;;
+			*) continue ;;
+			esac
+			case "$lib" in
+			-L)  LIBS="$LIBS $lib" ;;
+			*/*) LIBS="$LIBS -L${lib%/*}" ;;
+			esac
+		done
+		AC_SUBST(OpenCV_CXXFLAGS)
+	else
+		AC_MSG_FAILURE([Need C++ compiler to build OpenCV wrapper])
+	fi
+else
+	opencv_USE_CWRAPPER=no
+fi
+AC_SUBST_DEFINE(USE_OPENCV_CWRAPPER, $opencv_USE_CWRAPPER)
+AC_SUBST(USE_OPENCV_CWRAPPER, $opencv_USE_CWRAPPER)
+AC_SUBST_DEFINE(OPENCV_CORE_STANDALONE, $opencv_core_standalone)
+AC_SUBST_DEFINE(OPENCV_IMGPROC_STANDALONE, $opencv_imgproc_standalone)
+AC_SUBST_DEFINE(OPENCV_VIDEOIO_STANDALONE, $opencv_videoio_standalone)
+
+if [[ "$use_cxx" = yes ]] ; then
     # Hack to link to libstdc++ through libprojectM where needed
     # Of course only works if libprojectM is a shared library
     # --no-copy-dt-needed-entries is the default since Binutils 2.22
     if test x$ac_cv_prog_ppc_copy_dt_needed_entries = xyes ; then
         PFLAGS_EXTRA="$PFLAGS_EXTRA -k\"--copy-dt-needed-entries\""
     fi
-    AC_LANG_POP([C++])
-else
-    libprojectM_USE_CWRAPPER=no
 fi
-AC_SUBST(USE_PROJECTM_CWRAPPER, $libprojectM_USE_CWRAPPER)
 
 # find portaudio
 PKG_HAVE([portaudio], [portaudio-2.0], yes)
@@ -420,6 +485,9 @@ AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([src/config-$FPC_PLATFORM.inc:src/config.inc.in])
 if [[ x$libprojectM_USE_CWRAPPER = xyes ]]; then
     AC_CONFIG_FILES([src/lib/projectM/cwrapper/Makefile])
+fi
+if [[ x$opencv_USE_CWRAPPER = xyes ]]; then
+    AC_CONFIG_FILES([src/lib/openCV3/Makefile])
 fi
 AC_OUTPUT
 
