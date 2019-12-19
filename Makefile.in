@@ -271,7 +271,7 @@ install-data:
 	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/webs" \
             RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/themes" \
             install-data-recursive
-	$(INSTALL_DATA) "COPYING.txt" "$(DESTDIR)$(INSTALL_DATADIR)/COPYING.txt"
+	$(INSTALL_DATA) "LICENSE" "$(DESTDIR)$(INSTALL_DATADIR)/LICENSE"
 
 .PHONY: install-data-recursive
 install-data-recursive:

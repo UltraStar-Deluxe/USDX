@@ -35,7 +35,7 @@ override_dh_install:
 	rm debian/ultrastardx/usr/share/games/ultrastardx/visuals/projectM/fonts/*
 	@# delete projectM visuals (the ones from projectm-data are used instead to make lintian happy)
 	rm -rf debian/ultrastardx/usr/share/games/ultrastardx/visuals/projectM/presets
-	rm debian/ultrastardx/usr/share/games/ultrastardx/COPYING.txt
+	rm debian/ultrastardx/usr/share/games/ultrastardx/LICENSE
 	@# all needed files are copied manually in ultrastardx.install
 	rm debian/ultrastardx/usr/share/games/ultrastardx/languages/*
 	rm debian/ultrastardx/usr/share/games/ultrastardx/plugins/*
