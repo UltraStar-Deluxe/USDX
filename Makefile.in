@@ -310,7 +310,7 @@ uninstall-data:
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/themes"
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/visuals"
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/webs"
-	$(RM)     "$(DESTDIR)$(INSTALL_DATADIR)/COPYING.txt"
+	$(RM)     "$(DESTDIR)$(INSTALL_DATADIR)/LICENSE"
 	-rmdir "$(DESTDIR)$(INSTALL_DATADIR)"
 
 .PHONY: uninstall-exec
