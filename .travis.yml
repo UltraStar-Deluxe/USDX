@@ -10,6 +10,10 @@ matrix:
       env: VARIANT=flatpak
       dist: bionic
     - os: linux
+      env: VARIANT=flatpak
+      dist: bionic
+      arch: arm64
+    - os: linux
       dist: trusty
     - os: osx
 
