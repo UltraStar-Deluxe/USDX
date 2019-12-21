@@ -1,0 +1,273 @@
+id: eu.usdx.UltraStarDeluxe
+branch: master
+runtime: org.freedesktop.Platform
+sdk: org.freedesktop.Sdk
+runtime-version: '18.08'
+separate-locales: false
+appstream-compose: true
+rename-appdata-file: ultrastardx.appdata.xml
+rename-desktop-file: ultrastardx.desktop
+rename-icon: ultrastardx
+command: ultrastardx
+
+finish-args:
+- --socket=wayland
+- --socket=fallback-x11
+- --socket=x11
+- --socket=pulseaudio
+- --device=all
+- --persist=.ultrastardx
+# Workaround for SDL2 in 18.08 runtime failing if it can't connect to both busses:
+- --socket=system-bus
+
+cleanup:
+- /include
+- /lib/cmake
+- /lib/pkgconfig
+- "/lib/*.so"
+- "/lib/*.la"
+- setup_vars_opencv4.sh
+
+cleanup-commands:
+- rm -Rf /var/tmp/fpc
+
+add-extensions:
+  eu.usdx.UltraStarDeluxe.Songs:
+    directory: share/ultrastardx/songs
+    subdirectories: true
+    no-autodownload: true
+
+  eu.usdx.UltraStarDeluxe.Themes:
+    directory: theme-extensions
+    merge-dirs: share/ultrastardx/themes
+    subdirectories: true
+    no-autodownload: true
+
+modules:
+- name: opencv
+  sources:
+  - type: archive
+    url: https://github.com/opencv/opencv/archive/4.3.0.tar.gz
+    sha256: 68bc40cbf47fdb8ee73dfaf0d9c6494cd095cf6294d99de445ab64cf853d278a
+  buildsystem: cmake-ninja
+  builddir: true
+  build-options:
+    config-opts:
+    - -DCMAKE_BUILD_TYPE=Release
+    - -DOPENCV_GENERATE_PKGCONFIG=ON
+    - -DBUILD_TESTS=OFF
+    - -DBUILD_opencv_apps=OFF
+    - -DBUILD_opencv_calib3d=OFF
+    - -DBUILD_opencv_dnn=OFF
+    - -DBUILD_opencv_features2d=OFF
+    - -DBUILD_opencv_flann=OFF
+    - -DBUILD_opencv_gapi=OFF
+    - -DBUILD_opencv_highgui=OFF
+    - -DBUILD_opencv_java_bindings_generator=OFF
+    - -DBUILD_opencv_ml=OFF
+    - -DBUILD_opencv_objdetect=OFF
+    - -DBUILD_opencv_photo=OFF
+    - -DBUILD_opencv_python2=OFF
+    - -DBUILD_opencv_python_bindings_generator=OFF
+    - -DBUILD_opencv_python_tests=OFF
+    - -DBUILD_opencv_stitching=OFF
+    - -DBUILD_opencv_ts=OFF
+    - -DBUILD_opencv_video=OFF
+    - -DCV_TRACE=OFF
+    - -DWITH_PROTOBUF=OFF
+    - -DWITH_FFMPEG=OFF
+    - -DWITH_ADE=OFF
+    - -DWITH_QUIRC=OFF
+    - -DWITH_GTK=OFF
+    - -DWITH_TIFF=OFF
+    - -DWITH_WEBP=OFF
+    - -DWITH_JASPER=OFF
+    - -DWITH_PNG=OFF
+    - -DWITH_OPENEXR=OFF
+    - -DWITH_GDAL=OFF
+    - -DWITH_GDCM=OFF
+    - -DWITH_IMGCODEC_HDR=OFF
+    - -DWITH_IMGCODEC_SUNRASTER=OFF
+    - -DWITH_IMGCODEC_PXM=OFF
+    - -DWITH_IMGCODEC_PFM=OFF
+  cleanup:
+  - /share/opencv4/*cascades
+  - /share/opencv4/valgrind*.supp
+
+- name: projectm
+  sources:
+  - type: archive
+    url: https://github.com/projectM-visualizer/projectm/releases/download/v2.2.1/projectM-2.2.1.tar.gz
+    sha256: 9bbb33c5ba048537e97ea5ba2bd9fef76972c881597599a272b0194ec1d5f2a3
+  - type: patch
+    paths:
+    - patches/projectM-2.2.1.patch
+  buildsystem: autotools
+  rm-configure: true
+  config-opts:
+  - --disable-static
+  post-install:
+  - "f=$(fc-match -f '%{file}' sans) ; sed -i \"/Title Font/s:=.*:= $f:\" ${FLATPAK_DEST}/share/projectM/config.inp"
+  - "f=$(fc-match -f '%{file}' monospace) ; sed -i \"/Menu Font/s:=.*:= $f:\" ${FLATPAK_DEST}/share/projectM/config.inp"
+  cleanup:
+  - /share/projectM/fonts
+  - /bin
+
+- name: lua
+  sources:
+  - type: archive
+    url: https://www.lua.org/ftp/lua-5.3.5.tar.gz
+    sha256: 0c2eed3f960446e1a3e4b9a1ca2f3ff893b6ce41942cf54d5dd59ab4b3b058ac
+  - type: shell
+    commands:
+# They forgot to raise the version number in 5.3.5
+    - sed -i '/^R=/s/4/5/' Makefile
+  buildsystem: simple
+  build-commands:
+  - sed -i "s:\(#define LUA_ROOT\>\).*:\1 \"${FLATPAK_DEST}\":" src/luaconf.h
+  - make INSTALL_TOP=${FLATPAK_DEST} MYCFLAGS="-DLUA_COMPAT_5_2 -DLUA_COMPAT_5_1 ${CFLAGS} -fPIC" LUA_A="liblua.so.5.3.5" AR="\$(CC) -shared -ldl -lm -Wl,-soname,liblua.so.5.3 -o" RANLIB=true ALL='$(LUA_A)' linux
+  - make INSTALL_TOP=${FLATPAK_DEST} TO_LIB="liblua.so.5.3.5" INSTALL_EXEC=true INSTALL_BIN= install
+  - ln -s liblua.so.5.3.5 ${FLATPAK_DEST}/lib/liblua.so.5.3
+  - ln -s liblua.so.5.3.5 ${FLATPAK_DEST}/lib/liblua.so
+  - mkdir -p ${FLATPAK_DEST}/lib/pkgconfig
+  - make -s INSTALL_TOP=${FLATPAK_DEST} pc > ${FLATPAK_DEST}/lib/pkgconfig/lua.pc
+  - "echo 'Name: Lua' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
+  - "echo 'Description: An Extensible Language' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
+  - "echo 'Version: ${version}' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
+  - "echo 'Requires:' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
+  - "echo 'Libs: -L${libdir} -llua' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
+  - "echo 'Cflags: -I${includedir}' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
+  cleanup:
+  - /man
+
+- name: portmidi
+  sources:
+  - type: archive
+    url: https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip
+    sha256: 08e9a892bd80bdb1115213fb72dc29a7bf2ff108b378180586aa65f3cfd42e0f
+  - type: shell
+    commands:
+    - find -type f | while read a ; do tr -d '\r' < "$a" > /tmp/t && cat /tmp/t > "$a" ; done
+  - type: patch
+    paths:
+# Patches taken from Debian portmidi 217-6
+    - patches/00_cmake.diff
+    - patches/02_pmlinuxalsa.diff
+    - patches/03_pm_test_Makefile.diff
+    - patches/11-pmlinuxalsa.patch
+    - patches/13-disablejni.patch
+    - patches/20-movetest.diff
+    - patches/21-hardentests.diff
+    - patches/30-porttime_cmake.diff
+    - patches/40-test_sysex.diff
+    - patches/41-pm_linux.diff
+    - patches/50-change_assert.diff
+    - patches/51-remove_assert.diff
+  buildsystem: cmake-ninja
+  config-opts:
+  - -DCMAKE_BUILD_TYPE=Release
+  cleanup:
+  - "*.a"
+  - "libporttime.*"
+
+- name: ffmpeg
+  disabled: false
+  sources:
+  - type: archive
+    url: https://ffmpeg.org/releases/ffmpeg-4.2.2.tar.bz2
+    sha256: b620d187c26f76ca19e74210a0336c3b8380b97730df5cdf45f3e69e89000e5c
+# not really, but close enough:
+  buildsystem: autotools
+  config-opts:
+  - --enable-gpl
+  - --disable-static
+  - --enable-shared
+  - --disable-programs
+  - --disable-doc
+  - --disable-encoders
+  - --disable-xlib
+  - --disable-network
+  - --disable-stripping
+  - --disable-avdevice
+  - --disable-postproc
+  - --disable-muxers
+  - --disable-avfilter
+  - --disable-protocols
+  - --disable-vaapi
+  - --disable-vdpau
+  cleanup:
+  - /share/ffmpeg/examples
+
+- name: freepascal
+  sources:
+# binaries for sparc, mips, and powerpc exist as well
+# aarch64 is supported in SVN trunk and has been backported by Debian
+  - type: archive
+    only-arches:
+    - i386
+    url: https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.i386-linux.tar
+    mirror-urls:
+    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.0.4/i386-linux/fpc-3.0.4.i386-linux.tar
+    - ftp://mirror.freemirror.org/pub/fpc/dist/3.0.4/i386-linux/fpc-3.0.4.i386-linux.tar
+    sha256: aa6da9a58d155bbaa71aaa7f414d64b02b3e450dc23eed7c161eac6d547fae17
+
+  - type: archive
+    only-arches:
+    - arm
+    url: https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.arm-linux-eabihf-raspberry.tar
+    mirror-urls:
+    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.0.4/arm-linux/fpc-3.0.4.arm-linux-eabihf-raspberry.tar
+    - ftp://mirror.freemirror.org/pub/fpc/dist/3.0.4/arm-linux/fpc-3.0.4.arm-linux-eabihf-raspberry.tar
+    sha256: e940df47f6fc80ab7c74cd118eadef5ff50d7aac7abd5e09392578b809400f65
+
+  - type: archive
+    only-arches:
+    - x86_64
+    url: https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.x86_64-linux.tar
+    mirror-urls:
+    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.0.4/x86_64-linux/fpc-3.0.4.x86_64-linux.tar
+    - ftp://mirror.freemirror.org/pub/fpc/dist/3.0.4/x86_64-linux/fpc-3.0.4.x86_64-linux.tar
+    sha256: 7e965baf13c9822a0ff39e7bbfa040bd5599e94d0f3338f1ac4efa989081fd77
+
+  - type: shell
+    commands:
+# We can use neither /etc/fpc.cfg nor ~/.fpc.cfg, but luckily fpc also looks below $PREFIX
+    - sed -i '/\/samplecfg/s%LIBDIR"%& "$PREFIX/lib/fpc/etc"%' install.sh
+  buildsystem: simple
+  build-commands:
+  - ( echo /var/tmp/fpc ; yes N ) | ./install.sh
+# fpcmkcfg tries to determine the GCC directory only on x86-* and ppc*
+  - "set -- `gcc -print-file-name=crtbegin.o` ; echo -Fl${1%/*} >> /var/tmp/fpc/lib/fpc/etc/fpc.cfg"
+# On x86-64 and ppc64 fpc looks in /usr/lib64 instead of /usr/lib
+  - echo -Fl/usr/lib >> /var/tmp/fpc/lib/fpc/etc/fpc.cfg
+
+- name: ultrastardx
+  sources:
+# - type: git
+#   url: https://github.com/UltraStar-Deluxe/USDX.git
+#   branch: master
+  - type: dir
+    path: ../../
+  - type: shell
+    commands:
+# We are passed in some linker flags suitable for gcc, but fpc directly calls ld
+    - sed -i '1iCOMMA=,' src/Makefile.in
+    - sed -i 's/$(LDFLAGS)/$(subst $(COMMA), ,$(patsubst -Wl%,%,&))/' src/Makefile.in
+# Icons and desktop file are not installed automatically
+    - sed -i '/^install-data:/a\\t$(INSTALL_DATA) -D dists/ultrastardx.appdata.xml $(datarootdir)/appdata/ultrastardx.appdata.xml' Makefile.in
+    - sed -i '/^install-data:/a\\t$(INSTALL_DATA) -D dists/ultrastardx.desktop $(datarootdir)/applications/ultrastardx.desktop' Makefile.in
+    - sed -i '/^install-data:/a\\t$(INSTALL_DATA) -D icons/ultrastardx-icon.svg $(datarootdir)/icons/hicolor/scalable/apps/ultrastardx.svg' Makefile.in
+    - sed -i '/^install-data:/a\\t$(INSTALL_DATA) -D icons/ultrastardx-icon_32.png $(datarootdir)/icons/hicolor/32x32/apps/ultrastardx.png' Makefile.in
+    - sed -i '/^install-data:/a\\t$(INSTALL_DATA) -D icons/ultrastardx-icon_256.png $(datarootdir)/icons/hicolor/256x256/apps/ultrastardx.png' Makefile.in
+    - sed -i '/^install-data:/a\\t$(INSTALL_DATA) -D icons/ultrastardx-icon_512.png $(datarootdir)/icons/hicolor/512x512/apps/ultrastardx.png' Makefile.in
+    - "[ ! -e ${FLATPAK_DEST}/lib/pkgconfig/libavcodec.pc ] || sed -i 's:</description>:<p>Note that this flatpak contains a custom build of FFmpeg with patented algorithms enabled. You can rebuild the flatpak with the ffmpeg module disabled if this is a problem for you.</p>&:' dists/ultrastardx.appdata.xml"
+  buildsystem: autotools
+  build-options:
+    prepend-path: /var/tmp/fpc/bin
+  config-opts:
+  - --with-libprojectM
+  - --with-opencv-cxx-api
+  - --enable-debug
+  post-install:
+  - "cd ${FLATPAK_DEST}/share/ultrastardx/fonts ; fc-scan -f '%{file} :fullname=%{fullname}\n' . | while read a b ; do a=${a#./} c=$(fc-list -f '%{file}\n' \"$b\" | head -n 1) ; if [ -n \"$c\" ] ; then sed -i \"s:=$a:=$c:\" fonts.ini ; rm \"$a\" ; fi ; done"
+  - "for i in ${FLATPAK_DEST}/share/ultrastardx/fonts/*/ ; do [ -n \"$(fc-scan -f '%{file}' \"$i\" | head -n 1)\" ] || rm -Rf \"$i\" ; done"
