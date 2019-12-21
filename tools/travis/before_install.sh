@@ -14,6 +14,12 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
     brew tap homebrew/versions
     brew update
 
+elif [ "$VARIANT" = flatpak ]; then
+
+    # flatpak-builder in bionic is too old to understand YAML manifests
+    sudo add-apt-repository -y ppa:alexlarsson/flatpak
+    sudo apt-get update
+
 else
     # Linux build
 

@@ -7,6 +7,9 @@ matrix:
       env: LAZ_VER=1.6 LAZ_ENV=wine WINEARCH=win32 LAZ_OPT="--os=win32 --cpu=i386"
       dist: trusty
     - os: linux
+      env: VARIANT=flatpak
+      dist: bionic
+    - os: linux
       dist: trusty
     - os: osx
 

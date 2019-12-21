@@ -20,6 +20,18 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
     # This is from: https://github.com/Homebrew/homebrew-core
     brew install ffmpeg@4
 
+elif [ "$VARIANT" = flatpak ]; then
+    # Linux build
+
+    sudo apt-get install flatpak flatpak-builder elfutils
+    flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    case "$TRAVIS_CPU_ARCH" in
+    amd64) FLATPAK_ARCH=x86_64 ;;
+    arm64) FLATPAK_ARCH=aarch64 ;;
+    *) FLATPAK_ARCH=$TRAVIS_CPU_ARCH
+    esac
+    flatpak install --user --noninteractive -y flathub org.freedesktop.Platform/${FLATPAK_ARCH}/18.08 org.freedesktop.Sdk/${FLATPAK_ARCH}/18.08
+
 else
     # Linux build
 
