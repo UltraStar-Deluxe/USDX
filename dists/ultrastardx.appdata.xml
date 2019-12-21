@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>eu.usdx.UltraStarDeluxe</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <name>UltraStar Deluxe</name>
+  <summary>Karaoke program that evaluates your performance</summary>
+  <description>
+    <p>UltraStar Deluxe is a free open source karaoke game for your PC. It records the voice of the players and gives points if they hit the notes. Unlike the commercial alternatives, UltraStar Deluxe allows users to add their own songs.</p>
+  </description>
+  <project_license>GPL-2.0</project_license>
+  <url type="homepage">https://usdx.eu/</url>
+  <url type="bugtracker">https://github.com/UltraStar-Deluxe/USDX/issues</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://usdx.eu/images/screenshots/song_6_player_projectm.jpg</image>
+    </screenshot>
+    <screenshot>
+      <image>https://usdx.eu/images/screenshots/main_menu.jpg</image>
+    </screenshot>
+  </screenshots>
+  <launchable type="desktop-id">ultrastardx.desktop</launchable>
+</component>
