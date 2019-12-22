@@ -144,7 +144,7 @@ type
     private
       procedure Init(); override;
     public
-      class function CanEnable(): boolean; override; static;
+      class function CanEnable(): boolean; override;
 
       function GetType: DWORD; override;
       function GetPriority: LongInt; override;
