@@ -36,6 +36,9 @@
 % Mark up file ending consistently
 \newcommand*\fileending[1]{\texorpdfstring{\kern-.16em\texttt{#1}}{#1}}
 
+% Markup for things that do not have proper markup yet but might want some
+\newcommand*\todomu[1]{\textcolor{blue}{#1}}
+
 %%% Metadata %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \hypersetup{pdftitle="UltraStar Deluxe"}
 \title{UltraStar Deluxe}
@@ -76,7 +79,44 @@ the \fileending{.mp3} music file cannot be copied from person to person,
 but a new \fileending{.txt} file usually can,
 as long as the creator of the \fileending{.txt} gives permission, which most do.
 
+\section{Obtaining lyrics files}
+New \fileending{.txt} lyrics files are available
+and can be downloaded from the UltraStar Deluxe Forums
+and are then matched to an \fileending{.mp3} file that you already own.
+
+\section{Creating new lyrics files}
+
+\section{Adding a Song}
+\begin{itemize}
+\item Ensure that UltraStar Deluxe is not running
+\item Under the \todomu{Songs} folder,
+	create a new folder with the name of the artist and song title,
+	e.g.\@ \todomu{Abba – Dancing Queen (ABBA gold CD album track)}
+\item Copy your \fileending{.mp3} file into the new folder
+\item Save the lyrics file alongside the audio file in the same folder
+\item In the new song folder,
+	make sure that the \fileending{.mp3} audio file
+	and the \fileending{.txt} lyric file have the same name
+\end{itemize}
+
 \chapter{Troubleshooting}
+
+\section{New Song}
+
+When a newly acquired song does not work as it should,
+use notepad (or another text editor) to open the \fileending{.txt} lyric file
+and perform the following checks:
+\begin{itemize}
+\item Make sure that the \todomu{\#TITLE}, \todomu{\#ARTIST}, \todomu{\#MP3},
+	\todomu{\#BPM} and \todomu{\#GAP} fields
+	are all there
+	and that there is an \todomu{E}
+	at the very end of the file.
+\item Make sure that the \todomu{\#MP3} value
+	holds the exact filename of the \fileending{.mp3} audio file.
+\end{itemize}
+If you made any changes,
+do not forget to save the file afterwards before retrying.
 
 \appendix
 
