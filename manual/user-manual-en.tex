@@ -1,0 +1,145 @@
+\documentclass{scrreprt}
+
+%%% Sane encodings %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+%%% Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% We're writing in English
+\usepackage[british]{babel}
+
+% Support PDF properly
+\usepackage{hyperref}
+\hypersetup{
+	% Do not draw boxes around links, colour them
+	colorlinks,
+	% Encode PDF strings in Unicode, not ASCII
+	unicode,
+}
+
+% Reducing easily detectable mistakes
+\usepackage[l2tabu, orthodox, experimental]{nag}
+
+% Better typography
+\usepackage{microtype}
+
+% More control over list environments
+\usepackage{enumitem}
+
+%%% Looks %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Do number chapters but not anything beneath
+\setcounter{secnumdepth}{0}
+
+% Display chapters and sections in TOC but not anything beneath
+\setcounter{tocdepth}{1}
+
+% Mark up file ending consistently
+\newcommand*\fileending[1]{\texorpdfstring{\kern-.16em\texttt{#1}}{#1}}
+
+%%% Metadata %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\hypersetup{pdftitle="UltraStar Deluxe"}
+\title{UltraStar Deluxe}
+\subtitle{User Manual}
+\author{P A Harsent, canni, dppes}
+\date{2019-12-23}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\chapter{Introduction}
+
+\chapter{Installation}
+
+\section{Windows}
+
+\section{Linux}
+
+\section{Mac}
+
+\chapter{Building}
+
+\chapter{Configuration}
+
+\chapter{Statistics}
+
+\chapter{Importing Songs}
+
+One of the big advantages of UltraStar Deluxe
+is the ability to add new songs.
+A song contains the music in an \fileending{.mp3} file
+and the lyrics and other settings in a \fileending{.txt} file,
+known as a lyric file.
+For legal copyright reasons,
+the \fileending{.mp3} music file cannot be copied from person to person,
+but a new \fileending{.txt} file usually can,
+as long as the creator of the \fileending{.txt} gives permission, which most do.
+
+\chapter{Troubleshooting}
+
+\appendix
+
+\chapter{Lyric Files: \fileending{.txt} Format}
+
+\chapter{Lyric Files: \fileending{.xml} Format}
+
+\chapter{Advanced Configuration: \fileending{.ini} Format}
+
+\chapter{About this Manual}
+\section{Legal}
+\subsection{Disclaimer}
+The information in this document is provided as is
+and there is no warrant to its completeness or accuracy;
+The developers of UltraStar Deluxe or any associated personnel
+shall not be responsible for any errors, omissions, loss or damage
+whether indirect, special, incidental or consequential
+resulting from the use of the information that contained herein.
+
+\subsection{Acknowledgements}
+All trademarks are acknowledged.
+
+\subsection{Usage}
+This document is licensed for use
+under the GNU Free Documentation License 1.3.3.
+\url{http://www.gnu.org/copyleft/fdl.html}
+
+\section{Versions}
+
+\newenvironment*{version}[2]{%
+	\item[#1] (by #2)
+	\begin{itemize}[nosep, noitemsep]
+}{%
+	\end{itemize}
+}
+\begin{description}
+\begin{version}{2010-09-24}{P A Harsent}
+\item Creation of initial version
+\end{version}
+\begin{version}{2010-10-02}{P A Harsent}
+\item Tidied ambiguity over channel numbers in two player sound set up
+\item Added further solutions to common graphic card problems
+\item Added further solutions for common lyric problems
+\end{version}
+\begin{version}{2010-10-09}{P A Harsent}
+\item Added main index
+\item Added further solutions to common graphic card problems
+\item Added \#GAP section when importing new songs
+\item Added further solutions for common lyric problems
+\item Added section on support for UTF8 layouts
+\item Added .RAW section
+\item Added further Windows 7 \& Vista considerations
+\item Added multiple song directories section
+\item Added alternate cover location section
+\end{version}
+\begin{version}{2010-10-10}{canni}
+\item Corrections in layout and updated information to fit changes in 1.1 final
+\end{version}
+\begin{version}{2019-12-23}{dppes}
+\item Started \LaTeX\ migration
+\end{version}
+\end{description}
+
+\chapter{Index}
+
+\end{document}
