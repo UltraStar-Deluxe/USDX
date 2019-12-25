@@ -26,6 +26,9 @@
 % More control over list environments
 \usepackage{enumitem}
 
+% Additional symbols not otherwise available in T1
+\usepackage{textcomp}
+
 %%% Looks %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Do number chapters but not anything beneath
 \setcounter{secnumdepth}{0}
@@ -35,6 +38,24 @@
 
 % Mark up file ending consistently
 \newcommand*\fileending[1]{\texorpdfstring{\kern-.16em\texttt{#1}}{#1}}
+
+% Entries in menus and navigations
+\newcommand*\menu[1]{\textsf{\textbf{#1}}}
+\makeatletter
+\newenvironment*{menudescription}{%
+	\newcommand*\entry[1]{\item[\menu{##1}]}
+	\begin{description}
+}{%
+	\end{description}
+}
+\makeatother
+
+% Usage: \Path{a}; \Path[a][b][c]{d}
+% Result: a; a -> b -> c -> d
+\makeatletter
+\def\Path{\@ifnextchar[{\@with}{}}
+\def\@with[#1]{#1\allowbreak\thinspace\textrightarrow\thinspace\Path}
+\makeatother
 
 % Markup for things that do not have proper markup yet but might want some
 \newcommand*\todomu[1]{\textcolor{blue}{#1}}
@@ -64,6 +85,83 @@
 \chapter{Building}
 
 \chapter{Configuration}
+
+Most configuration can be accessed via
+\Path[\menu{Tools}]{\menu{Options}},
+which provides us with several sub-pages:
+\begin{menudescription}
+\entry{Game}
+	General game settings.
+\entry{Graphics}
+\entry{Sound}
+\entry{Input}
+\entry{Lyrics}
+\entry{Themes}
+	Change the look of UltraStar Deluxe
+	by choosing themes, skins and colours.
+\entry{Record}
+\entry{Advanced}
+\entry{Network}
+\entry{Webcam}
+\entry{Jukebox}
+\end{menudescription}
+
+\section{Game}
+
+Here, you can configure general settings of the game.
+
+\begin{menudescription}
+\entry{Language}
+	The language in which the game is played.
+	Contrary to what the in-game help claims,
+	the changes go into effect immediately.
+\entry{Song Menu}
+	The type of menu used to display the available songs
+	when choosing what to sing next.
+\entry{Tabs}
+\entry{Sorting}
+\entry{Show Scores}
+\entry{Debug}
+\entry{Audio/Video Delay}
+\entry{Microphone Delay}
+\end{menudescription}
+
+\section{Graphics}
+
+\begin{menudescription}
+\entry{Fullscreen}
+	Disable full screen mode or choose one of two full screen modes.
+	This requires a restart,
+	other than the full screen hot key
+	that immediately toggles between windowed and full screen mode.
+\entry{Resolution}
+	When \menu{Fullscreen} is \todomu{Off},
+	this configures the size of the window.
+	When \menu{Fullscreen} is \todomu{On},
+	it does weird stuff.
+	When \menu{Fullscreen} is \todomu{Borderless},
+	it is unavailable.
+\entry{Depth}
+	The depth option changes the number of colours
+	that are used within UltraStar Deluxe.
+	Allowed options are:
+	\todomu{16 bit} (65\,536 colours)
+	and \todomu{32 bit} (4\,294\,967\,296 colours).
+	On lower powered systems,
+	the higher the colour depth, the slower the performance.
+	So if UltraStar Deluxe does not run smoothly,
+	change this to \todomu{16 bit}.
+\entry{Visualization}
+\entry{Oszilloscope}
+	The Oscilloscope setting reacts to the microphone input
+	and is useful for setting up new songs.
+	Therefore leave this option set to \todomu{Off}
+	unless a new song is being set up.
+	For more information on setting up new songs, see \ref{new_song}.
+\entry{Movie size}
+\end{menudescription}
+
+\chapter{Customization}
 
 \chapter{Statistics}
 
@@ -103,6 +201,8 @@ and are then matched to an \fileending{.mp3} file that you already own.
 
 \section{New Song}
 
+\label{new_song}
+
 When a newly acquired song does not work as it should,
 use notepad (or another text editor) to open the \fileending{.txt} lyric file
 and perform the following checks:
@@ -117,6 +217,14 @@ and perform the following checks:
 \end{itemize}
 If you made any changes,
 do not forget to save the file afterwards before retrying.
+
+\section{Performance}
+
+\subsection{Song Selection}
+
+When the song selection becomes sluggish,
+try to chose a different \menu{Song Menu}
+in \Path[\menu{Tools}][\menu{Options}]{\menu{Game}}.
 
 \appendix
 
