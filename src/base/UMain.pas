@@ -113,14 +113,11 @@ begin
     WindowTitle := USDXVersionStr;
 
     Platform.Init;
+    Log.Title := WindowTitle;
+    Log.FileOutputEnabled := true;
     
     // Commandline Parameter Parser
     Params := TCMDParams.Create;
-
-    // Log + Benchmark
-    Log := TLog.Create;
-    Log.Title := WindowTitle;
-    //Log.FileOutputEnabled := not Params.NoLog;
 
     if Platform.TerminateIfAlreadyRunning(WindowTitle) then
       Exit;
@@ -297,7 +294,6 @@ begin
     SDL_Quit();
 
     Log.LogStatus('Finalize Log', 'Finalization');
-    Log.Free;
   {$IFNDEF Debug}
   end;
   {$ENDIF}

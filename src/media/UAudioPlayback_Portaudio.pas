@@ -370,7 +370,9 @@ end;
 function TAudioPlayback_Portaudio.FinalizeAudioPlaybackEngine(): boolean;
 begin
   StopAudioPlaybackEngine();
-  Result := AudioCore.Terminate();
+  Result := true;
+  if assigned(AudioCore) then
+     Result := AudioCore.Terminate();
 end;
 
 function TAudioPlayback_Portaudio.GetLatency(): double;

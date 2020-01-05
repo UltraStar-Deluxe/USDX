@@ -499,7 +499,8 @@ end;
 function TAudioInput_Portaudio.FinalizeRecord: boolean;
 begin
   CaptureStop;
-  AudioCore.Terminate();
+  if assigned(AudioCore) then
+     AudioCore.Terminate();
   Result := inherited FinalizeRecord();
 end;
 
