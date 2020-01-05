@@ -470,6 +470,7 @@ end;
 
 procedure InitConsoleOutput();
 begin
+  Log := TLog.Create;
   {$IFDEF FPC}
   // init thread-safe output
   MessageList := TStringList.Create();
@@ -496,6 +497,7 @@ begin
   RTLeventDestroy(ConsoleEvent);
   MessageList.Free();
   {$ENDIF}
+  Log.Free;
 end;
 
 {*

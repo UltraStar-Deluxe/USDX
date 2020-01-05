@@ -176,7 +176,7 @@ begin
   inherited;
   LogLevel := LOG_LEVEL_DEFAULT;
   LogFileLevel := LOG_FILE_LEVEL_DEFAULT;
-  FileOutputEnabled := true;
+  FileOutputEnabled := false;
   InitCriticalSection(Lock);
 end;
 
