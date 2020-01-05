@@ -160,7 +160,7 @@ uses
 procedure DebugWriteln(const aString: string);
 begin
   {$IFNDEF DEBUG}
-  if Params.Debug then
+  if not assigned(Params) or Params.Debug then
   begin
   {$ENDIF}
     ConsoleWriteLn(aString);
