@@ -54,6 +54,11 @@
   Load the OpenGL library and query its functions using SDL.
 }
 
+{.$define DGL_LOAD_LIBGLU}
+{
+  Load the OpenGL Utility library
+}
+
 {$define DGL_DEPRECATED}
 {
   This define defines if the header should use deprecated ARB stuff or not.
@@ -11281,6 +11286,7 @@ type
   TglXSwapIntervalEXT = procedure (dpy : PDisplay; drawable : GLXDrawable; interval : GLint); cdecl;
 {$ENDIF}
 
+{$IFDEF DGL_LOAD_LIBGLU}
   // GL utility functions and procedures
   TgluErrorString = function(errCode: GLEnum): PAnsiChar; {$IFDEF DGL_WIN}stdcall; {$ELSE}cdecl; {$ENDIF}
   TgluGetString = function(name: GLEnum): PAnsiChar; {$IFDEF DGL_WIN}stdcall; {$ELSE}cdecl; {$ENDIF}
@@ -11333,6 +11339,7 @@ type
   TgluBeginPolygon = procedure(tess: PGLUtesselator); {$IFDEF DGL_WIN}stdcall; {$ELSE}cdecl; {$ENDIF}
   TgluNextContour = procedure(tess: PGLUtesselator; atype: GLEnum); {$IFDEF DGL_WIN}stdcall; {$ELSE}cdecl; {$ENDIF}
   TgluEndPolygon = procedure(tess: PGLUtesselator); {$IFDEF DGL_WIN}stdcall; {$ELSE}cdecl; {$ENDIF}
+{$ENDIF}
 
 var
   // GL_VERSION_1_0
@@ -14707,6 +14714,7 @@ var
   glXSwapIntervalEXT : TglXSwapIntervalEXT;
 {$ENDIF}
 
+{$IFDEF DGL_LOAD_LIBGLU}
   // GL utility functions and procedures
   gluErrorString: TgluErrorString;
   gluGetString: TgluGetString;
@@ -14759,6 +14767,7 @@ var
   gluBeginPolygon: TgluBeginPolygon;
   gluNextContour: TgluNextContour;
   gluEndPolygon: TgluEndPolygon;
+{$ENDIF}
 
 
 type
@@ -14766,7 +14775,9 @@ type
 
 var
   GL_LibHandle: Pointer = nil;
+{$IFDEF DGL_LOAD_LIBGLU}
   GLU_LibHandle: Pointer = nil;
+{$ENDIF}
 
   LastPixelFormat: Integer;
   ExtensionsRead: Boolean;
@@ -15266,8 +15277,10 @@ begin
   if GL_LibHandle <> nil then
     dglFreeLibrary(GL_LibHandle);
 
+{$IFDEF DGL_LOAD_LIBGLU}
   if GLU_LibHandle <> nil then
     dglFreeLibrary(GLU_LibHandle);
+{$ENDIF}
 
   // load library
 {$IFDEF DGL_USE_SDL}
@@ -15277,7 +15290,9 @@ begin
 {$ELSE}
   GL_LibHandle := dglLoadLibrary(PChar(LibName));
 {$ENDIF}
+{$IFDEF DGL_LOAD_LIBGLU}
   GLU_LibHandle := dglLoadLibrary(PChar(GLULibName));
+{$ENDIF}
 
   // load GL functions
   if (GL_LibHandle <> nil) then begin
@@ -15376,6 +15391,7 @@ begin
     Result := True;
   end;
 
+{$IFDEF DGL_LOAD_LIBGLU}
   // load GLU functions
   if GLU_LibHandle <> nil then begin
     // GLU ========================================================================
@@ -15431,6 +15447,7 @@ begin
     gluTessVertex := dglGetProcAddress('gluTessVertex', GLU_LibHandle {$IFDEF DGL_LINUX}, True{$ENDIF});
     gluUnProject := dglGetProcAddress('gluUnProject', GLU_LibHandle {$IFDEF DGL_LINUX}, True{$ENDIF});
   end;
+{$ENDIF}
 end;
 
 procedure ReadOpenGLCore;
@@ -19719,6 +19736,7 @@ begin
       GL_VERSION_4_5:= True;
   end;
 
+{$IFDEF DGL_LOAD_LIBGLU}
   // GLU
   GLU_VERSION_1_1 := False;
   GLU_VERSION_1_2 := False;
@@ -19738,6 +19756,7 @@ begin
     if MinorVersion >= 3 then
       GLU_VERSION_1_3 := True;
   end;
+{$ENDIF}
 end;
 
 
