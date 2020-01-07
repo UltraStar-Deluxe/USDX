@@ -1223,13 +1223,10 @@ end;
 function TScalableFont.GetMipmapLevel(): integer;
 var
   ModelMatrix, ProjMatrix: TGLMatrixd4;
-  WinCoords: array[0..2, 0..2] of GLdouble;
   ViewPortArray: TGLVectori4;
-  Dist, Dist2, DistSum: double;
+  Dist, Dist2, DistSum, PM15x2: double;
   WidthScale, HeightScale: double;
 const
-  // width/height of square used for determining the scale
-  cTestSize = 10.0;
   // an offset to the mipmap-level to adjust the change-over of two consecutive
   // mipmap levels. If for example the bias is 0.1 and unbiased level is 1.9
   // the result level will be 2. A bias of 0.5 is equal to rounding.
@@ -1241,47 +1238,42 @@ begin
   glGetDoublev(GL_PROJECTION_MATRIX, @ProjMatrix);
   glGetIntegerv(GL_VIEWPORT, @ViewPortArray);
 
-  // 2. project three of the corner points of a square with size cTestSize
-  // to window coordinates (the square is just a dummy for a glyph)
+  // See 6545ededd512ea7c7dc5c08a1ef96397afdcbe49 for the original
+  // code using gluProject() that has been simplified.
+  PM15x2 := 2*abs(ModelMatrix[3,0]*ProjMatrix[0,3]
+                 +ModelMatrix[3,1]*ProjMatrix[1,3]
+                 +ModelMatrix[3,2]*ProjMatrix[2,3]
+                 +ModelMatrix[3,3]*ProjMatrix[3,3]);
 
-  // project point (x1, y1) to window corrdinates
-  gluProject(0, 0, 0,
-             ModelMatrix, ProjMatrix, ViewPortArray,
-             @WinCoords[0][0], @WinCoords[0][1], @WinCoords[0][2]);
-  // project point (x2, y1) to window corrdinates
-  gluProject(cTestSize, 0, 0,
-             ModelMatrix, ProjMatrix, ViewPortArray,
-             @WinCoords[1][0], @WinCoords[1][1], @WinCoords[1][2]);
-  // project point (x1, y2) to window corrdinates
-  gluProject(0, cTestSize, 0,
-             ModelMatrix, ProjMatrix, ViewPortArray,
-             @WinCoords[2][0], @WinCoords[2][1], @WinCoords[2][2]);
-
-  // 3. Lets see how much the width and height of the square changed.
-  // Calculate the width and height as displayed on the screen in window
-  // coordinates and calculate the ratio to the original coordinates in
-  // modelview space so the ratio gives us the scale (minification here).
-
-  // projected width ||(x1, y1) - (x2, y1)||
-  Dist  := (WinCoords[0][0] - WinCoords[1][0]);
-  Dist2 := (WinCoords[0][1] - WinCoords[1][1]);
-
+  Dist  := ViewPortArray[2]*(ModelMatrix[0,0]*ProjMatrix[0,0]
+                            +ModelMatrix[0,1]*ProjMatrix[1,0]
+                            +ModelMatrix[0,2]*ProjMatrix[2,0]
+                            +ModelMatrix[0,3]*ProjMatrix[3,0]);
+  Dist2 := ViewPortArray[3]*(ModelMatrix[0,0]*ProjMatrix[0,1]
+                            +ModelMatrix[0,1]*ProjMatrix[1,1]
+                            +ModelMatrix[0,2]*ProjMatrix[2,1]
+                            +ModelMatrix[0,3]*ProjMatrix[3,1]);
   WidthScale := 1;
   DistSum := Dist*Dist + Dist2*Dist2;
   if (DistSum > 0) then
   begin
-    WidthScale := cTestSize / Sqrt(DistSum);
+    WidthScale := PM15x2 / Sqrt(DistSum);
   end;
 
-  // projected height ||(x1, y1) - (x1, y2)||
-  Dist  := (WinCoords[0][0] - WinCoords[2][0]);
-  Dist2 := (WinCoords[0][1] - WinCoords[2][1]);
+  Dist  := ViewPortArray[2]*(ModelMatrix[1,0]*ProjMatrix[0,0]
+                            +ModelMatrix[1,1]*ProjMatrix[1,0]
+                            +ModelMatrix[1,2]*ProjMatrix[2,0]
+                            +ModelMatrix[1,3]*ProjMatrix[3,0]);
+  Dist2 := ViewPortArray[3]*(ModelMatrix[1,0]*ProjMatrix[0,1]
+                            +ModelMatrix[1,1]*ProjMatrix[1,1]
+                            +ModelMatrix[1,2]*ProjMatrix[2,1]
+                            +ModelMatrix[1,3]*ProjMatrix[3,1]);
 
   HeightScale := 1;
   DistSum := Dist*Dist + Dist2*Dist2;
   if (DistSum > 0) then
   begin
-    HeightScale := cTestSize / Sqrt(DistSum);
+    HeightScale := PM15x2 / Sqrt(DistSum);
   end;
 
   //writeln(Format('Scale %f, %f', [WidthScale, HeightScale]));

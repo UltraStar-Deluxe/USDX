@@ -358,7 +358,7 @@ begin
           if (glError <> GL_NO_ERROR) then
           begin
             FadeFailed := true;
-            Log.LogError('Fading disabled: ' + gluErrorString(glError), 'TDisplay.Draw');
+            Log.LogError('Fading disabled: $' + IntToHex(glError, 4), 'TDisplay.Draw');
           end;
 
           if not BlackScreen and (S = 1) and not DoneOnShow then

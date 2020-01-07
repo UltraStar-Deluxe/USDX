@@ -614,7 +614,7 @@ begin
   // otherwise we would draw the visualization streched over both screens
   // another point is that we draw over the at this time drawn first
   // screen, if Screen = 2
-  gluOrtho2D(0, Screens, 0, 1);
+  glOrtho(0, Screens, 0, 1, -1, 1);
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glLoadIdentity();
