@@ -547,7 +547,7 @@ begin
     if (glErr <> GL_NO_ERROR) then
     begin
       fPboEnabled := false;
-      Log.LogError('PBO initialization failed: ' + gluErrorString(glErr), 'TVideo_FFmpeg.Open');
+      Log.LogError('PBO initialization failed: $' + IntToHex(glErr, 4), 'TVideo_FFmpeg.Open');
     end;
   end;
 
@@ -1018,7 +1018,7 @@ begin
 
     glErr := glGetError();
     if (glErr <> GL_NO_ERROR) then
-      Log.LogError('PBO texture stream error: ' + gluErrorString(glErr), 'TVideo_FFmpeg.GetFrame');
+      Log.LogError('PBO texture stream error: $' + IntToHex(glErr, 4), 'TVideo_FFmpeg.GetFrame');
   end;
 
   // reset to default
