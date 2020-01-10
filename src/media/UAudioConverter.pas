@@ -633,7 +633,7 @@ end;
 function TAudioConverter_SRC.GetRatio(): double;
 begin
   // if we need additional channel/format conversion, use this ratio
-  if assigned(FormatConverter))then
+  if assigned(FormatConverter)then
     Result := FormatConverter.GetRatio()
   else
     Result := 1.0;
