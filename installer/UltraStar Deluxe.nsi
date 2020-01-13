@@ -467,7 +467,8 @@ SectionEnd
 ; OPTIONAL SONGS (Section 2)
 ;------------------------------------
 
-!include "${path_settings}\files_opt_songs.nsh"
+;disabled because of deprecating sourceforge
+;!include "${path_settings}\files_opt_songs.nsh"
 
 ;------------------------------------
 ; OPTIONAL THEMES (Section 3)

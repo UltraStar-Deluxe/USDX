@@ -35,6 +35,20 @@ IfFileExists $INSTDIR\highgui210.dll 0 +2
 Delete "$INSTDIR\highgui210.dll"
 IfFileExists $INSTDIR\avatar.db 0 +2
 Delete "$INSTDIR\avatar.db"
+IfFileExists $INSTDIR\avcodec-56.dll 0 +2
+Delete "$INSTDIR\avcodec-56.dll"
+IfFileExists $INSTDIR\avdevice-56.dll 0 +2
+Delete "$INSTDIR\avdevice-56.dll"
+IfFileExists $INSTDIR\avfilter-5.dll 0 +2
+Delete "$INSTDIR\avfilter-5.dll"
+IfFileExists $INSTDIR\avformat-56.dll 0 +2
+Delete "$INSTDIR\avformat-56.dll"
+IfFileExists $INSTDIR\avutil-54.dll 0 +2
+Delete "$INSTDIR\avutil-54.dll"
+IfFileExists $INSTDIR\postproc-53.dll 0 +2
+Delete "$INSTDIR\postproc-53.dll"
+IfFileExists $INSTDIR\postproc-54.dll 0 +2
+Delete "$INSTDIR\postproc-54.dll"
 
 RMDir /r "$INSTDIR\Themes"
 RMDir /r "$INSTDIR\Skins"
@@ -71,16 +85,16 @@ ${EndIf}
 
 SetOutPath "$INSTDIR"
 
-File /r /x .svn /x .gitignore ..\game\covers
-File /r /x .svn /x .gitignore ..\game\themes
-File /r /x .svn /x .gitignore ..\game\languages
-File /r /x .svn /x .gitignore ..\game\sounds
-File /r /x .svn /x .gitignore ..\game\fonts
-File /r /x .svn /x .gitignore ..\game\resources
-File /r /x .svn /x .gitignore ..\game\visuals
-File /r /x .svn /x .gitignore ..\game\webs
-File /r /x .svn /x .gitignore ..\game\soundfonts
-File /r /x .svn /x .gitignore ..\game\avatars
+File /r /x .git /x .gitignore ..\game\covers
+File /r /x .git /x .gitignore ..\game\themes
+File /r /x .git /x .gitignore ..\game\languages
+File /r /x .git /x .gitignore ..\game\sounds
+File /r /x .git /x .gitignore ..\game\fonts
+File /r /x .git /x .gitignore ..\game\resources
+File /r /x .git /x .gitignore ..\game\visuals
+File /r /x .git /x .gitignore ..\game\webs
+File /r /x .git /x .gitignore ..\game\soundfonts
+File /r /x .git /x .gitignore ..\game\avatars
 
 ; Root dir:
 

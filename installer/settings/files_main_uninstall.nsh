@@ -75,6 +75,14 @@
  Delete "$INSTDIR\swscale-3.dll"
  Delete "$INSTDIR\xinput1_3.dll"
  Delete "$INSTDIR\zlib1.dll"
+ Delete "$INSTDIR\avcodec-58.dll"
+ Delete "$INSTDIR\avdevice-58.dll"
+ Delete "$INSTDIR\avfilter-7.dll"
+ Delete "$INSTDIR\avformat-58.dll"
+ Delete "$INSTDIR\avutil-56.dll"
+ Delete "$INSTDIR\postproc-55.dll"
+ Delete "$INSTDIR\swresample-3.dll"
+ Delete "$INSTDIR\swscale-5.dll"
 
  StrCpy $0 "$INSTDIR\songs"
  Call un.DeleteIfEmpty 
