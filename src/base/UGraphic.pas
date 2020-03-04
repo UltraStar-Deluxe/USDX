@@ -547,6 +547,11 @@ begin
   SDL_SetWindowTitle(Screen, PChar(Title));
   Display.CurrentScreen^.FadeTo( @ScreenMain );
 
+  // work around to force a good screen initialization on MacOS
+  {$IFDEF MACOS}
+  UGraphic.UpdateVideoMode();
+  {$IFEND}
+
   Log.BenchmarkEnd(2);
   Log.LogBenchmark('--> Loading Screens', 2);
 
