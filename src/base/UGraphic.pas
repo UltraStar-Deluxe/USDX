@@ -549,7 +549,7 @@ begin
 
   // work around to force a good screen initialization on MacOS
   {$IFDEF MACOS}
-  UGraphic.UpdateVideoMode();
+  UpdateVideoMode();
   {$IFEND}
 
   Log.BenchmarkEnd(2);
