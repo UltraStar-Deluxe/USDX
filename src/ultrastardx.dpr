@@ -300,6 +300,9 @@ uses
 {$IFDEF UseBASSPlayback}
   UAudioPlayback_Bass       in 'media\UAudioPlayback_Bass.pas',
 {$ENDIF}
+{$IFDEF UseSDLInput}
+  UAudioInput_SDL           in 'media\UAudioInput_SDL.pas',
+{$ENDIF}
 {$IFDEF UseSDLPlayback}
   UAudioPlayback_SDL        in 'media\UAudioPlayback_SDL.pas',
 {$ENDIF}
