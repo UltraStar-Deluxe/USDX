@@ -129,8 +129,8 @@ const
    *)
    USDX_VERSION_MAJOR   = 2020;
    USDX_VERSION_MINOR   = 04;
-   USDX_VERSION_RELEASE = 0;
-   USDX_VERSION_STATE   = 'stable';
+   USDX_VERSION_RELEASE = 1;
+   USDX_VERSION_STATE   = 'dev';
    USDX_STRING = 'UltraStar Deluxe - www.usdx.eu';
 
   (*
