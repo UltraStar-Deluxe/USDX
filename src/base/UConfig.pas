@@ -127,10 +127,10 @@ const
   (*
    * Current version of UltraStar Deluxe
    *)
-   USDX_VERSION_MAJOR   = 2017;
-   USDX_VERSION_MINOR   = 8;
+   USDX_VERSION_MAJOR   = 2020;
+   USDX_VERSION_MINOR   = 04;
    USDX_VERSION_RELEASE = 0;
-   USDX_VERSION_STATE   = 'dev';
+   USDX_VERSION_STATE   = 'stable';
    USDX_STRING = 'UltraStar Deluxe - www.usdx.eu';
 
   (*

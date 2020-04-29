@@ -4,10 +4,10 @@
 
 ; Product Information:
 
-!define VersionStr "2020.1.0"
-!define FullVersion "2020.1.0+dev" ; semver compatible. see semver.org
-!define Release "Dev"
-!define DevBuild true
+!define VersionStr "2020.4.0"
+!define FullVersion "2020.4.0" ; semver compatible. see semver.org
+!define Release "Stable"
+!define DevBuild false
 !define ReleaseMeta "+stable"
 !define ReleaseApp " Stable"
 
