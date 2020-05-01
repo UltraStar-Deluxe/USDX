@@ -50,7 +50,6 @@ var
   CoverPaths:       IInterfaceList;
   LanguagesPath:    IPath;
   PluginPath:       IPath;
-  VisualsPath:      IPath;
   FontPath:         IPath;
   ResourcesPath:    IPath;
   PlaylistPath:     IPath;
@@ -174,7 +173,6 @@ begin
   FindPath(SkinsPath,     SharedPath.Append('themes'),    false);
   FindPath(LanguagesPath, SharedPath.Append('languages'), false);
   FindPath(PluginPath,    SharedPath.Append('plugins'),   false);
-  FindPath(VisualsPath,   SharedPath.Append('visuals'),   false);
   FindPath(FontPath,      SharedPath.Append('fonts'),     false);
   FindPath(ResourcesPath, SharedPath.Append('resources'), false);
   FindPath(WebsitePath,   SharedPath.Append('webs'), false);
