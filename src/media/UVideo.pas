@@ -1427,6 +1427,7 @@ begin
   SeekFlags := AVSEEK_FLAG_BACKWARD;
 
   fFrameTime := Time;
+  fNextFrameTime := Time;
   fEOF := false;
   fFrameTexValid := false;
 
