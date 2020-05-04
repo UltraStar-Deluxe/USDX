@@ -368,6 +368,9 @@ AC_LANG_POP([C++])
 libprojectM_PKG="libprojectM >= 0.98"
 PKG_HAVE([libprojectM], [$libprojectM_PKG], no)
 PKG_VERSION([libprojectM], [$libprojectM_PKG])
+if [[ "$libprojectM_VERSION_MAJOR" -ge 3 ]] ; then
+	AC_MSG_FAILURE([libprojectM >= 3 not yet supported])
+fi
 AC_SUBST_DEFINE(HAVE_PROJECTM, $libprojectM_HAVE)
 # get projectM include-dir
 PKG_VALUE([libprojectM], [INCLUDEDIR], [variable=includedir], [$libprojectM_PKG], 

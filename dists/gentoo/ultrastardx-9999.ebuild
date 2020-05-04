@@ -24,7 +24,7 @@ RDEPEND="virtual/opengl
 	dev-db/sqlite
 	dev-lang/lua
 	midi? ( media-libs/portmidi )
-	projectm? ( media-libs/libprojectm )
+	projectm? ( <media-libs/libprojectm-3.0.0 )
 	webcam? ( >=media-libs/opencv-3.0.0 )"
 DEPEND="${RDEPEND}
 	dev-util/pkgconfig
