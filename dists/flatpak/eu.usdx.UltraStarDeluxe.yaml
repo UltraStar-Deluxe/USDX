@@ -16,6 +16,7 @@ finish-args:
 - --socket=x11
 - --socket=pulseaudio
 - --device=all
+- --filesystem=~/.java/.userPrefs/PortMidi:ro
 - --persist=.ultrastardx
 # Workaround for SDL2 in 18.08 runtime failing if it can't connect to both busses:
 - --socket=system-bus
