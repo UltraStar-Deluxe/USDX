@@ -250,7 +250,7 @@ type
       procedure Init(); virtual; abstract;
       procedure Removed(); virtual; abstract;
 
-      class function CanEnable: boolean; virtual; abstract; static;
+      class function CanEnable: boolean; virtual; abstract;
 
       function GetType: DWORD; virtual; abstract;
       function GetPriority: LongInt; virtual; abstract;

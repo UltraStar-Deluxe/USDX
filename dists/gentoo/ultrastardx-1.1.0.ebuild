@@ -30,7 +30,7 @@ RDEPEND="virtual/opengl
 	=media-libs/portaudio-19*
 	media-video/ffmpeg
 	dev-db/sqlite
-	projectm? ( media-libs/libprojectm )"
+	projectm? ( <media-libs/libprojectm-3.0.0 )"
 DEPEND="${RDEPEND}
 	dev-util/pkgconfig
 	>=dev-lang/fpc-2.2.0"

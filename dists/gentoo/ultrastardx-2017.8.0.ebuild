@@ -24,8 +24,8 @@ RDEPEND="virtual/opengl
 	<media-video/ffmpeg-3.4
 	dev-db/sqlite
 	<dev-lang/lua-5.3
-	projectm? ( media-libs/libprojectm )
-	webcam? ( media-libs/opencv )"
+	projectm? ( <media-libs/libprojectm-3.0.0 )
+	webcam? ( <media-libs/opencv-4.0.0 )"
 DEPEND="${RDEPEND}
 	dev-util/pkgconfig
 	>=dev-lang/fpc-3.0.0"

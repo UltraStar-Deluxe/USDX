@@ -265,9 +265,6 @@ install-data:
 	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/themes" \
             RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/themes" \
             install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/visuals" \
-            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/visuals" \
-            install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/webs" \
             RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/themes" \
             install-data-recursive
@@ -308,7 +305,6 @@ uninstall-data:
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/soundfonts"
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/sounds"
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/themes"
-	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/visuals"
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/webs"
 	$(RM)     "$(DESTDIR)$(INSTALL_DATADIR)/LICENSE"
 	-rmdir "$(DESTDIR)$(INSTALL_DATADIR)"

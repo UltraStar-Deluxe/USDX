@@ -9,10 +9,10 @@ inherit git-r3 eutils autotools flag-o-matic
 DESCRIPTION="An open-source karaoke game"
 HOMEPAGE="http://usdx.eu/"
 EGIT_REPO_URI="https://github.com/UltraStar-Deluxe/USDX/"
-
+EGIT_COMMIT="v${PV}"
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~amd64 ~x86"
+KEYWORDS="amd64 ~x86"
 IUSE="midi projectm debug webcam"
 
 RDEPEND="virtual/opengl

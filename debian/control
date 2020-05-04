@@ -17,7 +17,7 @@ Build-Depends: debhelper (>= 10),
  libportmidi-dev,
  libswscale-dev,
  libopencv-dev,
- libprojectm-dev
+ libprojectm-dev (< 3.0.0)
 Standards-Version: 3.9.8
 Homepage: https://usdx.eu
 
