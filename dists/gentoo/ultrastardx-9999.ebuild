@@ -16,7 +16,6 @@ KEYWORDS="~amd64 ~x86"
 IUSE="midi projectm debug webcam"
 
 RDEPEND="virtual/opengl
-	virtual/glu
 	media-libs/libsdl2[opengl]
 	media-libs/sdl2-image[png,jpeg]
 	media-libs/freetype
