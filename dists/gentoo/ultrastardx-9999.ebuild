@@ -13,13 +13,13 @@ EGIT_REPO_URI="https://github.com/UltraStar-Deluxe/USDX/"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="midi projectm debug webcam"
+IUSE="midi projectm debug webcam portaudio"
 
 RDEPEND="virtual/opengl
 	media-libs/libsdl2[opengl]
 	media-libs/sdl2-image[png,jpeg]
 	media-libs/freetype
-	=media-libs/portaudio-19*
+	portaudio? ( =media-libs/portaudio-19* )
 	media-video/ffmpeg
 	dev-db/sqlite
 	dev-lang/lua
@@ -37,6 +37,7 @@ src_prepare() {
 
 src_configure() {
 	econf \
+		$(use_with portaudio) \
 		$(use_with projectm libprojectM) \
 		$(use_with webcam opencv-cxx-api) \
 		$(use_enable midi portmidi) \
