@@ -162,6 +162,7 @@ type
     fFrameTex:    GLuint; //**< OpenGL texture for FrameBuffer
     fFrameTexValid: boolean; //**< if true, fFrameTex contains the current frame
     fTexWidth, fTexHeight: cardinal;
+    fScaledWidth, fScaledHeight: cardinal;
 
     {$IFDEF UseSWScale}
     fSwScaleContext: PSwsContext;
@@ -571,6 +572,32 @@ var
 {$IF LIBAVCODEC_VERSION >= 58009100}
   CodecIterator: pointer;
 {$IFEND}
+
+  function ReduceSize: boolean;
+  var
+    tex, scale: ^cardinal;
+  begin
+    Result := false;
+{$IFDEF UseSWScale}
+    if fTexWidth >= fAspect * fTexHeight then
+    begin
+      tex := @fTexWidth;
+      scale := @fScaledWidth;
+    end
+    else
+    begin
+      tex := @fTexHeight;
+      scale := @fScaledHeight;
+    end;
+    if tex^ > 64 then
+    begin
+      tex^ := 1 shl BsrDWord(tex^ - 1);
+      scale^ := tex^;
+      Result := true;
+    end;
+{$ENDIF}
+  end;
+
 begin
   Result := false;
   Reset();
@@ -703,33 +730,6 @@ begin
                      inttostr(fCodecContext^.framerate.den));
   {$endif}
 
-  // allocate space for decoded frame and rgb frame
-  {$IF LIBAVCODEC_VERSION >= 57000000}
-  fAVFrame := av_frame_alloc();
-  fAVFrameRGB := av_frame_alloc();
-  {$ELSE}
-  fAVFrame := avcodec_alloc_frame();
-  fAVFrameRGB := avcodec_alloc_frame();
-  {$ENDIF}
-  fFrameBuffer := av_malloc(avpicture_get_size(PIXEL_FMT_FFMPEG,
-      (fCodecContext^.width + BUFFER_ALIGN - 1) and -BUFFER_ALIGN, fCodecContext^.height));
-
-  if ((fAVFrame = nil) or (fAVFrameRGB = nil) or (fFrameBuffer = nil)) then
-  begin
-    Log.LogError('Failed to allocate buffers', 'TVideoPlayback_ffmpeg.Open');
-    Close();
-    Exit;
-  end;
-
-  errnum := avpicture_fill(PAVPicture(fAVFrameRGB), fFrameBuffer, PIXEL_FMT_FFMPEG,
-      (fCodecContext^.width + BUFFER_ALIGN - 1) and -BUFFER_ALIGN, fCodecContext^.height);
-  if (errnum < 0) then
-  begin
-    Log.LogError('avpicture_fill failed: ' + FFmpegCore.GetErrorString(errnum), 'TVideoPlayback_ffmpeg.Open');
-    Close();
-    Exit;
-  end;
-
   // calculate some information for video display
   fAspect := av_q2d(fCodecContext^.sample_aspect_ratio);
   if (fAspect = 0) then
@@ -758,6 +758,66 @@ begin
 
   Log.LogInfo('Framerate: '+inttostr(floor(1/fFrameDuration))+'fps', 'TVideoPlayback_ffmpeg.Open');
 
+  if (SupportsNPOT = false) then
+  begin
+    fTexWidth   := Round(Power(2, Ceil(Log2(fCodecContext^.width))));
+    fTexHeight  := Round(Power(2, Ceil(Log2(fCodecContext^.height))));
+  end
+  else
+  begin
+    fTexWidth   := fCodecContext^.width;
+    fTexHeight  := fCodecContext^.height;
+  end;
+
+  // we retrieve a texture just once with glTexImage2D and update it with glTexSubImage2D later.
+  // Benefits: glTexSubImage2D is faster and supports non-power-of-two widths/height.
+  glBindTexture(GL_TEXTURE_2D, fFrameTex);
+  glGetError();
+  fScaledWidth := fCodecContext^.width;
+  fScaledHeight := fCodecContext^.height;
+  while true do
+  begin
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, fTexWidth, fTexHeight, 0,
+        PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, nil);
+    if glGetError() = GL_NO_ERROR then
+      break;
+    if not ReduceSize then
+    begin
+      Log.LogError('Failed to create video texture', 'TVideoPlayback_ffmpeg.Open');
+      Close();
+      Exit;
+    end;
+  end;
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+  // allocate space for decoded frame and rgb frame
+  {$IF LIBAVCODEC_VERSION >= 57000000}
+  fAVFrame := av_frame_alloc();
+  fAVFrameRGB := av_frame_alloc();
+  {$ELSE}
+  fAVFrame := avcodec_alloc_frame();
+  fAVFrameRGB := avcodec_alloc_frame();
+  {$ENDIF}
+  fFrameBuffer := av_malloc(avpicture_get_size(PIXEL_FMT_FFMPEG,
+      (fScaledWidth + BUFFER_ALIGN - 1) and -BUFFER_ALIGN, fScaledHeight));
+
+  if ((fAVFrame = nil) or (fAVFrameRGB = nil) or (fFrameBuffer = nil)) then
+  begin
+    Log.LogError('Failed to allocate buffers', 'TVideoPlayback_ffmpeg.Open');
+    Close();
+    Exit;
+  end;
+
+  errnum := avpicture_fill(PAVPicture(fAVFrameRGB), fFrameBuffer, PIXEL_FMT_FFMPEG,
+      (fScaledWidth + BUFFER_ALIGN - 1) and -BUFFER_ALIGN, fScaledHeight);
+  if (errnum < 0) then
+  begin
+    Log.LogError('avpicture_fill failed: ' + FFmpegCore.GetErrorString(errnum), 'TVideoPlayback_ffmpeg.Open');
+    Close();
+    Exit;
+  end;
+
   {$IFDEF UseSWScale}
   // if available get a SWScale-context -> faster than the deprecated img_convert().
   // SWScale has accelerated support for PIX_FMT_RGB32/PIX_FMT_BGR24/PIX_FMT_BGR565/PIX_FMT_BGR555.
@@ -768,7 +828,7 @@ begin
   fSwScaleContext := sws_getContext(
       fCodecContext^.width, fCodecContext^.height,
       fCodecContext^.pix_fmt,
-      fCodecContext^.width, fCodecContext^.height,
+      fScaledWidth, fScaledHeight,
       PIXEL_FMT_FFMPEG,
       SWS_FAST_BILINEAR, nil, nil, nil);
   if (fSwScaleContext = nil) then
@@ -779,18 +839,6 @@ begin
   end;
   {$ENDIF}
 
-  if (SupportsNPOT = false) then
-  begin
-  fTexWidth   := Round(Power(2, Ceil(Log2(fCodecContext^.width))));
-  fTexHeight  := Round(Power(2, Ceil(Log2(fCodecContext^.height))));
-  end
-  else
-  begin
-    fTexWidth   := fCodecContext^.width;
-    fTexHeight  := fCodecContext^.height;
-  end;
-
-
   if (fPboEnabled) then
   begin
     glGetError();
@@ -799,7 +847,7 @@ begin
     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, fPboId);
     glBufferDataARB(
         GL_PIXEL_UNPACK_BUFFER_ARB,
-        fCodecContext^.height * fAVFrameRGB.linesize[0],
+        fScaledHeight * fAVFrameRGB.linesize[0],
         nil,
         GL_STREAM_DRAW_ARB);
     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
@@ -811,14 +859,6 @@ begin
       Log.LogError('PBO initialization failed: $' + IntToHex(glErr, 4), 'TVideo_FFmpeg.Open');
     end;
   end;
-
-  // we retrieve a texture just once with glTexImage2D and update it with glTexSubImage2D later.
-  // Benefits: glTexSubImage2D is faster and supports non-power-of-two widths/height.
-  glBindTexture(GL_TEXTURE_2D, fFrameTex);
-  glTexImage2D(GL_TEXTURE_2D, 0, 3, fTexWidth, fTexHeight, 0,
-      PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, nil);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
   fOpened := true;
   Result := true;
@@ -1246,7 +1286,7 @@ begin
   begin
     glBindTexture(GL_TEXTURE_2D, fFrameTex);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
-        fCodecContext^.width, fCodecContext^.height,
+        fScaledWidth, fScaledHeight,
         PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, fAVFrameRGB^.data[0]);
   end
   else // fPboEnabled
@@ -1255,7 +1295,7 @@ begin
 
     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, fPboId);
     glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB,
-        fCodecContext^.height * fAVFrameRGB.linesize[0],
+        fScaledHeight * fAVFrameRGB.linesize[0],
         nil,
         GL_STREAM_DRAW_ARB);
 
@@ -1263,7 +1303,7 @@ begin
     if(bufferPtr <> nil) then
     begin
       Move(fAVFrameRGB^.data[0]^, bufferPtr^,
-           fCodecContext^.height * fAVFrameRGB.linesize[0]);
+           fScaledHeight * fAVFrameRGB.linesize[0]);
 
       // release pointer to mapping buffer
       glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
@@ -1271,7 +1311,7 @@ begin
 
     glBindTexture(GL_TEXTURE_2D, fFrameTex);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
-        fCodecContext^.width, fCodecContext^.height,
+        fScaledWidth, fScaledHeight,
         PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, nil);
 
     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
@@ -1353,10 +1393,10 @@ begin
 
   // texture contains right/lower (power-of-2) padding.
   // Determine the texture coords of the video frame.
-  TexRect.Left  := (fCodecContext^.width / fTexWidth) * fFrameRange.Left;
-  TexRect.Right := (fCodecContext^.width / fTexWidth) * fFrameRange.Right;
-  TexRect.Upper := (fCodecContext^.height / fTexHeight) * fFrameRange.Upper;
-  TexRect.Lower := (fCodecContext^.height / fTexHeight) * fFrameRange.Lower;
+  TexRect.Left  := (fScaledWidth / fTexWidth) * fFrameRange.Left;
+  TexRect.Right := (fScaledWidth / fTexWidth) * fFrameRange.Right;
+  TexRect.Upper := (fScaledHeight / fTexHeight) * fFrameRange.Upper;
+  TexRect.Lower := (fScaledHeight / fTexHeight) * fFrameRange.Lower;
 end;
 
 procedure TVideo_FFmpeg.DrawBorders(ScreenRect: TRectCoords);
