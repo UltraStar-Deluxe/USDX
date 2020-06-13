@@ -548,3 +548,4 @@
 ;TODO: ERROR_NO_EDITOR=This feature is not available on this version.
 ;TODO: ERROR_PLAYER_DEVICE_ASSIGNMENT=Player %d is assigned to multiple microphones. Please check your record options
 ;TODO: ERROR_PLAYER_NO_DEVICE_ASSIGNMENT=Player %d is not assigned to a microphone. Please check your record options
+;TODO: ERROR_SOFTWARE_RENDERING=You appear to be using software rendering OpenGL. Expect bad performance.

@@ -73,6 +73,9 @@ const
   TicksUntilCredits = 5 * 60 * 1000;
   ID = 'ID_001';   //for help system
 
+var
+  WantSoftwareRenderingMsg: boolean;
+
 implementation
 
 uses
@@ -313,6 +316,8 @@ begin
   AddButton(Theme.Main.ButtonExit);
 
   Interaction := 0;
+
+  WantSoftwareRenderingMsg := SoftwareRendering;
 end;
 
 procedure TScreenMain.OnShow;
@@ -339,6 +344,15 @@ end;
 function TScreenMain.Draw: boolean;
 begin
   Result := inherited Draw;
+
+  if not ScreenPopupError.Visible then
+  begin
+    if WantSoftwareRenderingMsg then
+    begin
+      WantSoftwareRenderingMsg := false;
+      ScreenPopupError.ShowPopup(Language.Translate('ERROR_SOFTWARE_RENDERING'));
+    end;
+  end;
 
   { start credits after a period w/o user interaction }
   if (UserInteractionTicks + TicksUntilCredits < SDL_GetTicks) then

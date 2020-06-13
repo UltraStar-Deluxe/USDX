@@ -275,6 +275,7 @@ var
 
 
   PboSupported: boolean;
+  SoftwareRendering: boolean;
 
 const
   Skin_BGColorR = 1;
@@ -719,9 +720,21 @@ NoDoubledResolution:
   begin
     Log.LogInfo('an OpenGL Error happened.', 'UGraphic.InitializeScreen');
   end;
-  Log.LogInfo('OpenGL renderer ' + glGetString(GL_RENDERER), 'UGraphic.InitializeScreen');
+  S := glGetString(GL_RENDERER);
+  Log.LogInfo('OpenGL renderer ' + S, 'UGraphic.InitializeScreen');
   Log.LogInfo('OpenGL version ' + glGetString(GL_VERSION), 'UGraphic.InitializeScreen');
 
+  if (Pos('GDI Generic', S) > 0) or // Microsoft
+     (Pos('Software Renderer', S) > 0) or // Apple
+     (Pos('Software Rasterizer', S) > 0) or // Mesa (-Ddri-drivers=swrast)
+     (Pos('softpipe', S) > 0) or // Mesa (-Dgallium-drivers=swrast -Dllvm=false)
+     (Pos('llvmpipe', S) > 0) or // Mesa (-Dgallium-drivers=swrast -Dllvm=true)
+     (Pos('SWR', S) > 0) or // Mesa (-Dgallium-drivers=swr)
+     (Pos('Mesa X11', S) > 0) or // Mesa (-Dglx=xlib)
+     (Pos('SwiftShader', S) > 0) then // Google; OpenGL ES, D3D9 & Vulkan only so far, but who knows...
+    SoftwareRendering := true
+  else
+    SoftwareRendering := false;
 
   // define virtual (Render) and real (Screen) screen size
   RenderW := 800;
