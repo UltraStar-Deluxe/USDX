@@ -127,6 +127,8 @@ type
     Order:      integer; // order type (0=title)
     CatNumShow: integer; // Category Number being seen
     CatCount:   integer; // Number of Categorys
+    LastVisChecked: integer; // The real index of the last song that had its VisibilityIndex updated
+    LastVisIndex:   integer; // The VisibilityIndex of the last song that had this value updated
 
     procedure SortSongs();
     procedure Refresh;                                      // refreshes arrays by recreating them from Songs array
@@ -745,6 +747,8 @@ begin
     CurSong.Visible := true;
 }
   end;
+  LastVisChecked := 0;
+  LastVisIndex := 0;
 
   // set CatNumber of last category
   if (Ini.TabsAtStartup = 1) and (High(Song) >= 1) then
@@ -775,6 +779,8 @@ begin
 //  KMS: This should be the same, but who knows :-)
     CatSongs.Song[S].Visible := ((CatSongs.Song[S].OrderNum = Index) and (not CatSongs.Song[S].Main));
   end;
+  LastVisChecked := 0;
+  LastVisIndex := 0;
 end;
 
 procedure TCatSongs.HideCategory(Index: integer); // hides all songs in category
@@ -786,6 +792,8 @@ begin
     if not CatSongs.Song[S].Main then
       CatSongs.Song[S].Visible := false // hides all at now
   end;
+  LastVisChecked := 0;
+  LastVisIndex := 0;
 end;
 
 procedure TCatSongs.ClickCategoryButton(Index: integer);
@@ -813,6 +821,8 @@ begin
     CatSongs.Song[S].Visible := CatSongs.Song[S].Main;
   CatSongs.Selected := CatNumShow; //Show last shown Category
   CatNumShow := -1;
+  LastVisChecked := 0;
+  LastVisIndex := 0;
 end;
 //Hide Categorys when in Category Hack End
 
@@ -865,15 +875,10 @@ end;
  * Returns the number of visible songs.
  *)
 function TCatSongs.VisibleSongs: integer;
-var
-  SongIndex: integer;
 begin
-  Result := 0;
-  for SongIndex := 0 to High(CatSongs.Song) do
-  begin
-    if (CatSongs.Song[SongIndex].Visible) then
-      Inc(Result);
-  end;
+  Result := VisibleIndex(High(Song));
+  if Song[High(Song)].Visible then
+    Inc(Result);
 end;
 
 (**
@@ -881,15 +886,15 @@ end;
  * If all songs are visible, the result will be equal to the Index parameter. 
  *)
 function TCatSongs.VisibleIndex(Index: integer): integer;
-var
-  SongIndex: integer;
 begin
-  Result := 0;
-  for SongIndex := 0 to Index - 1 do
+  while LastVisChecked < Index do
   begin
-    if (CatSongs.Song[SongIndex].Visible) then
-      Inc(Result);
+    if Song[LastVisChecked].Visible then
+      Inc(LastVisIndex);
+    Inc(LastVisChecked);
+    Song[LastVisChecked].VisibleIndex := LastVisIndex;
   end;
+  Result := Song[Index].VisibleIndex;
 end;
 
 function TCatSongs.SetFilter(FilterStr: UTF8String; Filter: TSongFilter): cardinal;
@@ -969,6 +974,8 @@ begin
     end;
     Result := 0;
   end;
+  LastVisChecked := 0;
+  LastVisIndex := 0;
 end;
 
 // -----------------------------------------------------------------------------
