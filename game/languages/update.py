@@ -75,6 +75,9 @@ def update(lang):
 		if re.search("\[Text\]", line, re.I):
 			outList.append(xutf8header() + "[Text]")
 			continue
+		# ignore help text sections for now
+		if re.match("\s*\[", line):
+			break
 		# ignore comments
 		elif re.match("\s*[;#]", line):
 			continue
