@@ -40,7 +40,7 @@ Package: flatpak-builder
 Pin: version 0.*
 Pin-Priority: -1
 EOF
-    sudo apt-get install elfutils
+    sudo apt-get install elfutils unzip librsvg2-common
     if ! sudo apt-get install flatpak flatpak-builder ; then
         date +"%c no binaries for the current flatpak tools for this architecture, let's build them"
         sudo apt-get install fakeroot bubblewrap dbus-user-session
