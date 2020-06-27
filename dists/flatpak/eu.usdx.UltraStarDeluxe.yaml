@@ -202,33 +202,42 @@ modules:
 - name: freepascal
   sources:
 # binaries for sparc, mips, and powerpc exist as well
-# aarch64 is supported in SVN trunk and has been backported by Debian
   - type: archive
     only-arches:
     - i386
-    url: https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.i386-linux.tar
+    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.0/fpc-3.2.0.i386-linux.tar
     mirror-urls:
-    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.0.4/i386-linux/fpc-3.0.4.i386-linux.tar
-    - ftp://mirror.freemirror.org/pub/fpc/dist/3.0.4/i386-linux/fpc-3.0.4.i386-linux.tar
-    sha256: aa6da9a58d155bbaa71aaa7f414d64b02b3e450dc23eed7c161eac6d547fae17
+    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.0/i386-linux/fpc-3.2.0.i386-linux.tar
+    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.0/i386-linux/fpc-3.2.0.i386-linux.tar
+    sha256: 2110eb1d7a35311f587694f9b25dc2660e0116eafd9884c4c7ab2f2716080578
 
   - type: archive
     only-arches:
     - arm
-    url: https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.arm-linux-eabihf-raspberry.tar
+    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.0/fpc-3.2.0.arm-linux.tar
     mirror-urls:
-    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.0.4/arm-linux/fpc-3.0.4.arm-linux-eabihf-raspberry.tar
-    - ftp://mirror.freemirror.org/pub/fpc/dist/3.0.4/arm-linux/fpc-3.0.4.arm-linux-eabihf-raspberry.tar
-    sha256: e940df47f6fc80ab7c74cd118eadef5ff50d7aac7abd5e09392578b809400f65
+    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.0/arm-linux/fpc-3.2.0.arm-linux.tar
+    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.0/arm-linux/fpc-3.2.0.arm-linux.tar
+    sha256: b78c72859e1e147e33991e1bb1e937654859799ae2afc145257c834a8d52737e
 
   - type: archive
     only-arches:
     - x86_64
-    url: https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.x86_64-linux.tar
+    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.0/fpc-3.2.0-x86_64-linux.tar
     mirror-urls:
-    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.0.4/x86_64-linux/fpc-3.0.4.x86_64-linux.tar
-    - ftp://mirror.freemirror.org/pub/fpc/dist/3.0.4/x86_64-linux/fpc-3.0.4.x86_64-linux.tar
-    sha256: 7e965baf13c9822a0ff39e7bbfa040bd5599e94d0f3338f1ac4efa989081fd77
+    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.0/x86_64-linux/fpc-3.2.0-x86_64-linux.tar
+    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.0/x86_64-linux/fpc-3.2.0-x86_64-linux.tar
+    sha256: d19252e6cfe52f1217f4822a548ee699eaa7e044807aaf8429a0532cb7e4cb3d
+
+  - type: archive
+    only-arches:
+    - aarch64
+    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.0/fpc-3.2.0.aarch64-linux.tar
+    mirror-urls:
+    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.0/aarch64-linux/fpc-3.2.0.aarch64-linux.tar
+    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.0/aarch64-linux/fpc-3.2.0-aarch64-linux.tar
+    sha256: e16411a8ca6cf7817d5fc95bfc39919a306157c8f9f09a9ea616d5f19e0d88c0
+    sha256: 9bf59ae3d336f0de4624c63e4e892ea95de4be2ca66182d185defc50b69b65f3
 
   - type: shell
     commands:
