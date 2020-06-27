@@ -30,7 +30,8 @@ elif [ "$VARIANT" = flatpak ]; then
     arm64) FLATPAK_ARCH=aarch64 ;;
     *) FLATPAK_ARCH=$TRAVIS_CPU_ARCH
     esac
-    flatpak install --user --noninteractive -y flathub org.freedesktop.Platform/${FLATPAK_ARCH}/18.08 org.freedesktop.Sdk/${FLATPAK_ARCH}/18.08
+    RUNTIME_VERSION=`sed -n "/runtime-version:/s/.*'\([^']*\)'/\1/p" $DIR/../../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml`
+    flatpak install --user --arch=$FLATPAK_ARCH --noninteractive -y flathub org.freedesktop.Platform//$RUNTIME_VERSION org.freedesktop.Sdk//$RUNTIME_VERSION
 
 else
     # Linux build

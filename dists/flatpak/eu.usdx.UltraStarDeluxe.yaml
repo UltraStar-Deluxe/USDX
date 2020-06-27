@@ -2,7 +2,8 @@ id: eu.usdx.UltraStarDeluxe
 branch: master
 runtime: org.freedesktop.Platform
 sdk: org.freedesktop.Sdk
-runtime-version: '18.08'
+# reduce to 18.08 for x86-32:
+runtime-version: '19.08'
 separate-locales: false
 appstream-compose: true
 rename-appdata-file: ultrastardx.appdata.xml
