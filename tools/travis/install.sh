@@ -23,6 +23,23 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
 elif [ "$VARIANT" = flatpak ]; then
     # Linux build
 
+    sudo tee /etc/apt/preferences.d/flatpak <<EOF
+Package: ostree
+Pin: version 2018*
+Pin-Priority: -1
+
+Package: flatpak
+Pin: version 1.0.*
+Pin-Priority: -1
+
+Package: flatpak
+Pin: version 1.1.*
+Pin-Priority: -1
+
+Package: flatpak-builder
+Pin: version 0.*
+Pin-Priority: -1
+EOF
     sudo apt-get install flatpak flatpak-builder elfutils
     case "$TRAVIS_CPU_ARCH" in
     amd64)
