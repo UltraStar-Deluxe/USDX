@@ -14,6 +14,13 @@ matrix:
       dist: bionic
       arch: arm64
     - os: linux
+      env: VARIANT=flatpak BUILD_32BIT=yes
+      dist: bionic
+    - os: linux
+      env: VARIANT=flatpak BUILD_32BIT=yes
+      dist: bionic
+      arch: arm64
+    - os: linux
       env: VARIANT=flatpak
       dist: bionic
       arch: ppc64le

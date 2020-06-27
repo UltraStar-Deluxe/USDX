@@ -25,8 +25,22 @@ elif [ "$VARIANT" = flatpak ]; then
 
     sudo apt-get install flatpak flatpak-builder elfutils
     case "$TRAVIS_CPU_ARCH" in
-    amd64) FLATPAK_ARCH=x86_64 ;;
-    arm64) FLATPAK_ARCH=aarch64 ;;
+    amd64)
+        if [ "$BUILD_32BIT" = yes ] ; then
+            FLATPAK_ARCH=i386
+            # 18.08 was the last runtime to officially support x86-32
+            sed -i "/runtime-version:/s/:.*/: '18.08'/" $DIR/../../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
+        else
+            FLATPAK_ARCH=x86_64
+        fi
+        ;;
+    arm64)
+        if [ "$BUILD_32BIT" = yes ] ; then
+            FLATPAK_ARCH=arm
+        else
+            FLATPAK_ARCH=aarch64
+        fi
+        ;;
     *) FLATPAK_ARCH=$TRAVIS_CPU_ARCH
     esac
     case "$TRAVIS_CPU_ARCH" in

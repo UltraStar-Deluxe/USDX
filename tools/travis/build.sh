@@ -29,6 +29,24 @@ elif [ "$VARIANT" = flatpak ]; then
     mkdir flatpak
     cd flatpak
 
+    case "$TRAVIS_CPU_ARCH" in
+    amd64)
+        if [ "$BUILD_32BIT" = yes ] ; then
+            FLATPAK_ARCH=i386
+        else
+            FLATPAK_ARCH=x86_64
+        fi
+        ;;
+    arm64)
+        if [ "$BUILD_32BIT" = yes ] ; then
+            FLATPAK_ARCH=arm
+        else
+            FLATPAK_ARCH=aarch64
+        fi
+        ;;
+    *) FLATPAK_ARCH=$TRAVIS_CPU_ARCH
+    esac
+
     mkdir -p ../$CACHEDIR/flatpak-builder
 
     for i in downloads cache build checksums ccache rofiles ; do
@@ -41,15 +59,15 @@ elif [ "$VARIANT" = flatpak ]; then
 
     ln -s ../$CACHEDIR/flatpak-builder .flatpak-builder
     rm -Rf .flatpak-builder/build
-    flatpak-builder --user --stop-at=$DONTCACHE build ../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
+    flatpak-builder --arch=$FLATPAK_ARCH --user --stop-at=$DONTCACHE build ../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
     rm -Rf build
     rm .flatpak-builder
     cp -al ../$CACHEDIR/flatpak-builder .flatpak-builder
-    flatpak-builder --user --repo=repo build ../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
+    flatpak-builder --arch=$FLATPAK_ARCH --user --repo=repo build ../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
     date +"%c Creating flatpak bundle"
-    flatpak build-bundle repo UltraStarDeluxe.flatpak eu.usdx.UltraStarDeluxe
+    flatpak build-bundle --arch=$FLATPAK_ARCH repo UltraStarDeluxe.flatpak eu.usdx.UltraStarDeluxe
     filename="UltraStarDeluxe.flatpak"
-    outfile="UltraStarDeluxe-$(git rev-parse --short HEAD)-$(uname -m).flatpak"
+    outfile="UltraStarDeluxe-$(git rev-parse --short HEAD)-${FLATPAK_ARCH}.flatpak"
     if [ -r "$filename" ]; then
         link="$(curl --upload-file "$filename" "https://transfer.sh/$outfile")"
         echo "$outfile should be available at:"
