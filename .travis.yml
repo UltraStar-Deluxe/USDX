@@ -14,6 +14,10 @@ matrix:
       dist: bionic
       arch: arm64
     - os: linux
+      env: VARIANT=flatpak
+      dist: bionic
+      arch: ppc64le
+    - os: linux
       dist: trusty
     - os: osx
 

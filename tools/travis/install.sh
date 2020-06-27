@@ -24,14 +24,24 @@ elif [ "$VARIANT" = flatpak ]; then
     # Linux build
 
     sudo apt-get install flatpak flatpak-builder elfutils
-    flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
     case "$TRAVIS_CPU_ARCH" in
     amd64) FLATPAK_ARCH=x86_64 ;;
     arm64) FLATPAK_ARCH=aarch64 ;;
     *) FLATPAK_ARCH=$TRAVIS_CPU_ARCH
     esac
+    case "$TRAVIS_CPU_ARCH" in
+    ppc64le)
+        FLATPAK_REMOTE=freedesktop-sdk
+        FLATPAK_REMOTE_URL=https://cache.sdk.freedesktop.org/freedesktop-sdk.flatpakrepo
+        ;;
+    *)
+        FLATPAK_REMOTE=flathub
+        FLATPAK_REMOTE_URL=https://flathub.org/repo/flathub.flatpakrepo
+        ;;
+    esac
+    flatpak remote-add --user --if-not-exists $FLATPAK_REMOTE $FLATPAK_REMOTE_URL
     RUNTIME_VERSION=`sed -n "/runtime-version:/s/.*'\([^']*\)'/\1/p" $DIR/../../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml`
-    flatpak install --user --arch=$FLATPAK_ARCH --noninteractive -y flathub org.freedesktop.Platform//$RUNTIME_VERSION org.freedesktop.Sdk//$RUNTIME_VERSION
+    flatpak install --user --arch=$FLATPAK_ARCH --noninteractive -y $FLATPAK_REMOTE org.freedesktop.Platform//$RUNTIME_VERSION org.freedesktop.Sdk//$RUNTIME_VERSION
 
 else
     # Linux build

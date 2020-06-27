@@ -202,7 +202,7 @@ modules:
 
 - name: freepascal
   sources:
-# binaries for sparc, mips, and powerpc exist as well
+# binaries for sparc and mips exist as well
   - type: archive
     only-arches:
     - i386
@@ -238,6 +238,14 @@ modules:
     - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.0/aarch64-linux/fpc-3.2.0.aarch64-linux.tar
     - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.0/aarch64-linux/fpc-3.2.0-aarch64-linux.tar
     sha256: e16411a8ca6cf7817d5fc95bfc39919a306157c8f9f09a9ea616d5f19e0d88c0
+
+  - type: archive
+    only-arches:
+    - ppc64le
+    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.0/fpc-3.2.0.powerpc64le-linux.tar
+    mirror-urls:
+    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.0/powerpc64le-linux/fpc-3.2.0.powerpc64le-linux.tar
+    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.0/powerpc64le-linux/fpc-3.2.0-powerpc64le-linux.tar
     sha256: 9bf59ae3d336f0de4624c63e4e892ea95de4be2ca66182d185defc50b69b65f3
 
   - type: shell
