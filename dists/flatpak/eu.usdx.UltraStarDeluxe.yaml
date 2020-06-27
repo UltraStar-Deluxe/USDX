@@ -175,8 +175,8 @@ modules:
   disabled: false
   sources:
   - type: archive
-    url: https://ffmpeg.org/releases/ffmpeg-4.2.2.tar.bz2
-    sha256: b620d187c26f76ca19e74210a0336c3b8380b97730df5cdf45f3e69e89000e5c
+    url: https://ffmpeg.org/releases/ffmpeg-4.2.3.tar.xz
+    sha256: 9df6c90aed1337634c1fb026fb01c154c29c82a64ea71291ff2da9aacb9aad31
 # not really, but close enough:
   buildsystem: autotools
   config-opts:
