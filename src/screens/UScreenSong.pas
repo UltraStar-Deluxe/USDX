@@ -354,19 +354,14 @@ end;
 //Show Wrong Song when Tabs on Fix
 procedure TScreenSong.FixSelected;
 var
-  I, I2: integer;
+  I2: integer;
 begin
   if (CatSongs.VisibleSongs > 0) then
   begin
-    I2:= 0;
-    for I := Low(CatSongs.Song) to High(Catsongs.Song) do
-    begin
-      if CatSongs.Song[I].Visible then
-        inc(I2);
-
-      if I = Interaction - 1 then
-        break;
-    end;
+    if (Interaction > Low(CatSongs.Song)) and (Interaction <= High(CatSongs.Song)) then
+      I2 := CatSongs.VisibleIndex(Interaction)
+    else
+      I2 := CatSongs.VisibleSongs;
 
     SongCurrent := I2;
     SongTarget  := I2;
@@ -375,19 +370,14 @@ end;
 
 procedure TScreenSong.FixSelected2;
 var
-  I, I2: integer;
+  I2: integer;
 begin
   if (CatSongs.VisibleSongs > 0) then
   begin
-    I2:= 0;
-    for I := Low(CatSongs.Song) to High(Catsongs.Song) do
-    begin
-      if CatSongs.Song[I].Visible then
-        inc(I2);
-
-      if I = Interaction - 1 then
-        break;
-    end;
+    if (Interaction > Low(CatSongs.Song)) and (Interaction <= High(CatSongs.Song)) then
+      I2 := CatSongs.VisibleIndex(Interaction)
+    else
+      I2 := CatSongs.VisibleSongs;
 
     SongTarget  := I2;
   end;

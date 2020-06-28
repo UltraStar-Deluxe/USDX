@@ -180,6 +180,7 @@ type
     OrderNum:   integer; // has a number of category for category buttons and songs
     OrderTyp:   integer; // type of sorting for this button (0=name)
     CatNumber:  integer; // Count of Songs in Category for Cats and Number of Song in Category for Songs
+    VisibleIndex: integer;
 
     Base:       array[0..1] of integer;
     Rel:        array[0..1] of integer;

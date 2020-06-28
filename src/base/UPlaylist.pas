@@ -306,6 +306,9 @@ begin
     CatSongs.Song[PlayLists[Index].Items[I].SongID].Visible := True;
   end;
 
+  CatSongs.LastVisChecked := 0;
+  CatSongs.LastVisIndex := 0;
+
   //Set CatSongsMode + Playlist Mode
   CatSongs.CatNumShow := -3;
   Mode := smPlayList;
