@@ -178,7 +178,7 @@ type
     private
       data: Pointer;
     public
-      {$IF PROJECTM_VERSION < 1000000} // 0.9x
+      {$IF (PROJECTM_VERSION < 1000000) or (PROJECTM_VERSION >= 2000000)} // 0.9x, emulated with 2.x
       constructor Create(gx, gy: integer; fps: integer;
         texsize: integer; width, height: integer;
         const presetsDir, fontsDir: string;

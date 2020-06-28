@@ -82,7 +82,11 @@ uses
   UPlatform,
   ULog;
 
-{$IF PROJECTM_VERSION < 1000000} // < 1.0
+{$IF (PROJECTM_VERSION >= 1000000) and ((PROJECTM_VERSION < 2000000) or not Defined(Relocatable))}
+{$DEFINE UseConfigInp}
+{$IFEND}
+
+{$IFNDEF UseConfigInp}
 // Initialization data used on projectM 0.9x creation.
 // Since projectM 1.0 this data is passed via the config-file.
 const
@@ -523,7 +527,7 @@ begin
   try
 
     try
-      {$IF PROJECTM_VERSION >= 1000000} // >= 1.0
+      {$IFDEF UseConfigInp}
       fPm := TProjectM.Create(fProjectMPath + 'config.inp');
       {$ELSE}
       fPm := TProjectM.Create(

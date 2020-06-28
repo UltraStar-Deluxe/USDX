@@ -34,7 +34,7 @@ type
 
 { projectM.hpp declarations }
 function _projectM_create1(config_file: PChar): _PProjectM; cdecl; external libprojectM_cwrapper name 'projectM_create1';
-{$IF PROJECTM_VERSION < 1000000} // 0.9x
+{$IF (PROJECTM_VERSION < 1000000) or (PROJECTM_VERSION >= 2000000)}
 function _projectM_create2(gx: cint; gy: cint; fps: cint;
   texsize: cint; width: cint; height: cint;
   preset_url: PChar; title_fonturl: PChar; title_menuurl: PChar): _PProjectM; cdecl; external libprojectM_cwrapper name 'projectM_create2';
@@ -66,7 +66,7 @@ procedure _PCM_addPCM8_1024(pm: _PProjectM; pcm_data: PPCM8_1024); cdecl; extern
 
 // This constructor is present in projectM 1.0(1) but does not work with
 // linux because of a bug.
-(*
+{$IF PROJECTM_VERSION >= 2000000} // > 1.01
 constructor TProjectM.Create(gx, gy: integer; fps: integer;
   texsize: integer; width, height: integer;
   const presetsDir, fontsDir: string;
@@ -77,7 +77,7 @@ begin
             PChar(fontsDir + PathDelim + titleFont),
             PChar(fontsDir + PathDelim + menuFont));
 end;
-*)
+{$IFENd}
 
 constructor TProjectM.Create(const configFile: string);
 begin

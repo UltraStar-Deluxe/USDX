@@ -39,7 +39,7 @@ extern "C" {
     typedef void* projectM_ptr;
 
     DLLEXPORT projectM_ptr projectM_create1(char* config_file);
-    #if (PROJECTM_VERSION_INT < 1000000)
+    #if (PROJECTM_VERSION_INT < 1000000 || PROJECTM_VERSION_INT >= 2000000)
     DLLEXPORT projectM_ptr projectM_create2(int gx, int gy, int fps, int texsize, 
 					    int width, int height, char* preset_url, 
 					    char* title_fonturl, char* title_menuurl);
