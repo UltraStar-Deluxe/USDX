@@ -75,6 +75,7 @@ uses
 implementation
 
 uses
+  TextGL,
   UGraphic,
   UMain,
   UConfig,
@@ -521,6 +522,10 @@ begin
 end;
 
 procedure TVideo_ProjectM.InitProjectM;
+{$IFNDEF UseConfigInp}
+var
+  Font: IPath;
+{$IFEND}
 begin
   // the OpenGL state must be saved before TProjectM.Create is called
   SaveOpenGLState();
@@ -530,9 +535,11 @@ begin
       {$IFDEF UseConfigInp}
       fPm := TProjectM.Create(fProjectMPath + 'config.inp');
       {$ELSE}
+      Font := TextGL.Fonts[0][0].Font.Filename;
       fPm := TProjectM.Create(
         meshX, meshY, fps, textureSize, ScreenW, ScreenH,
-        fProjectMPath + 'presets', fProjectMPath + 'fonts');
+        fProjectMPath + 'presets', Font.GetDir.ToNative,
+        Font.GetName.ToNative, Font.GetName.ToNative);
       {$IFEND}
     except on E: Exception do
       begin
