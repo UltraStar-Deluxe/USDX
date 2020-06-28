@@ -376,6 +376,15 @@ PKG_VERSION([libprojectM], [$libprojectM_PKG])
 if [[ "$libprojectM_VERSION_MAJOR" -ge 3 ]] ; then
 	AC_MSG_FAILURE([libprojectM >= 3 not yet supported])
 fi
+if [[ "$libprojectM_VERSION_MAJOR" -eq 1 ]] && [[ "${#libprojectM_VERSION_MAJOR}" -eq 2 ]] ; then
+	# The official releases with major = 1 were 1.00, 1.01, 1.10, and 1.2.0.
+	# So 1.10 is in fact 1.1.0 and also uses 1.1 in the ChangeLog file.
+	# This is probably also true for 0.x, where xmms-projectm went from 0.9.1
+	# to 0.91.2 within three days., but that's still a monotonic increase, so
+	# we don't care.
+	libprojectM_VERSION_RELEASE="${libprojectM_VERSION_MINOR#?}"
+	libprojectM_VERSION_MINOR="${libprojectM_VERSION_MINOR%?}"
+fi
 AC_SUBST_DEFINE(HAVE_PROJECTM, $libprojectM_HAVE)
 # get projectM include-dir
 PKG_VALUE([libprojectM], [INCLUDEDIR], [variable=includedir], [$libprojectM_PKG], 
