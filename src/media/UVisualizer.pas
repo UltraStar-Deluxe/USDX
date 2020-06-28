@@ -79,6 +79,7 @@ uses
   UMain,
   UConfig,
   UPath,
+  UPlatform,
   ULog;
 
 {$IF PROJECTM_VERSION < 1000000} // < 1.0
@@ -216,10 +217,15 @@ end;
 { TVideo_ProjectM }
 
 constructor TVideo_ProjectM.Create;
+var
+  ProjectMPath: IPath;
 begin
   fRndPCMcount := 0;
 
-  fProjectMPath := ProjectM_DataDir + PathDelim;
+  ProjectMPath := Path(ProjectM_DataDir, pdAppend);
+  if not ProjectMPath.IsAbsolute then
+    ProjectMPath := Platform.GetGameSharedPath.Append(ProjectMPath);
+  fProjectMPath := ProjectMPath.ToNative();
 
   fState := pmStop;
 
