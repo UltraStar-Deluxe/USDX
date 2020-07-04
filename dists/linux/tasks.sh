@@ -53,6 +53,7 @@ task_sdl2() {
 	tput sgr0
 	cd "$SRC/SDL2"
 	bash ./autogen.sh
+	sed -i 's/GBM_BO_USE_CURSOR\>/&_64X64/g' src/video/kmsdrm/SDL_kmsdrmmouse.c
 	mkdir -p build
 	cd build
 	../configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
