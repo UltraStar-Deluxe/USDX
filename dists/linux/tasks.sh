@@ -15,9 +15,10 @@ CMAKE_PREFIX_PATH="$PREFIX:$CMAKE_PREFIX_PATH"
 [ -f /.dockerenv ] && export PPC_CONFIG_PATH="$PREFIX/etc"
 
 export LDFLAGS="-Wl,-z,now -Wl,-z,relro -L$PREFIX/lib"
-export CFLAGS="-O2 -fPIE -I$PREFIX/include"
+export CPPFLAGS="-I$PREFIX/include"
+export CFLAGS="-O2 -fPIE $CPPFLAGS"
 [ "$ARCH" == "i686" ] && export CFLAGS+=" -mincoming-stack-boundary=2"
-export CPPFLAGS="$CFLAGS"
+export CXXFLAGS="$CFLAGS"
 
 export CC="gcc"
 export CXX="g++"
@@ -149,7 +150,7 @@ task_portmidi() {
 		-DCMAKE_INSTALL_PREFIX="$PREFIX" \
 		-DCMAKE_BUILD_TYPE="Release" \
 		-DCMAKE_C_FLAGS="$CFLAGS" \
-		-DCMAKE_CXX_FLAGS="$CPPFLAGS" \
+		-DCMAKE_CXX_FLAGS="$CXXFLAGS" \
 		-DDCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
 		..
 	make portmidi-dynamic
