@@ -312,6 +312,9 @@ if [ "$1" == "all_deps" ]; then
 	clean_prefix
 	echo
 
+	task_yasm
+	echo
+
 	task_zlib
 	echo
 
@@ -332,8 +335,6 @@ if [ "$1" == "all_deps" ]; then
 	task_portmidi
 	echo
 
-	task_yasm
-	echo
 	task_ffmpeg
 
 	# if [ -f /.dockerenv ]; then
