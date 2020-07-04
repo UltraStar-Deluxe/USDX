@@ -58,8 +58,10 @@ task_sdl2() {
 	../configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
 		--enable-sdl-dlopen \
 		--disable-arts --disable-esd --disable-nas \
-		--disable-sndio --disable-pulseaudio-shared --disable-pulseaudio \
-		--disable-video-wayland --disable-wayland-shared \
+		--disable-sndio --enable-pulseaudio-shared --enable-pulseaudio \
+		--enable-jack --enable-jack-shared \
+		--enable-video-wayland --enable-wayland-shared \
+		--enable-video-kmsdrm --enable-kmsdrm-shared \
 		--disable-video-vulkan \
 		--enable-x11-shared --disable-ibus --disable-fcitx --disable-ime \
 		--disable-rpath --disable-input-tslib

@@ -85,8 +85,9 @@ else
         libtool libasound2-dev libx11-dev libxext-dev \
         libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxxf86vm-dev \
         libxss-dev libgl1-mesa-dev libdbus-1-dev libudev-dev \
-        libegl1-mesa-dev \
-        libxkbcommon-dev \
+        libjack-jackd2-dev libpulse-dev \
+        libegl1-mesa-dev libgbm-dev libdrm-dev \
+        libxkbcommon-dev libwayland-dev \
         zlib1g-dev libfreetype6-dev \
         curl realpath
 
