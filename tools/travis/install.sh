@@ -87,6 +87,7 @@ else
         libxss-dev libgl1-mesa-dev libdbus-1-dev libudev-dev \
         libgles1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev \
         libsamplerate0-dev libxkbcommon-dev \
+        zlib1g-dev libfreetype6-dev \
         curl realpath
 
 fi

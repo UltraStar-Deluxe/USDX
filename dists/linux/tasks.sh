@@ -35,17 +35,6 @@ clean_prefix() {
 	mkdir -pv $PREFIX/{etc,bin,include,lib}
 }
 
-task_zlib() {
-	tput setaf 2 && tput bold
-	echo "==> Building zlib"
-	tput sgr0
-	cd "$SRC/zlib"
-	./configure --prefix="$PREFIX"
-	make $makearg
-	make install
-	make distclean
-}
-
 task_libpng() {
 	tput setaf 2 && tput bold
 	echo "==> Building libpng"
@@ -53,18 +42,6 @@ task_libpng() {
 	cd "$SRC/libpng"
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
 		--disable-static
-	make $makearg
-	make install
-	make distclean
-}
-
-task_freetype() {
-	tput setaf 2 && tput bold
-	echo "==> Building FreeType"
-	tput sgr0
-	cd "$SRC/freetype"
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
-		--disable-static --with-harfbuzz=no --with-png=yes --with-bzip2=no
 	make $makearg
 	make install
 	make distclean
@@ -294,7 +271,7 @@ task_usdx() {
 	local OUTPUT="$root/build/$ARCH"
 	cd "$root/../.."
 	bash ./autogen.sh
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" CC="$CC" CXX="$CXX" --enable-debug --with-opencv-cxx-api
+	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" CC="$CC" CXX="$CXX" --enable-debug --with-opencv-cxx-api --without-portaudio
 	sleep 1
 	make LDFLAGS="-O2 --sort-common --as-needed -z relro" datadir="./data" prefix="" bindir="" INSTALL_DATADIR="./data"
 	rm -rf "$OUTPUT/data" "$OUTPUT/ultrastardx"
@@ -315,12 +292,7 @@ if [ "$1" == "all_deps" ]; then
 	task_yasm
 	echo
 
-	task_zlib
-	echo
-
 	task_libpng
-	echo
-	task_freetype
 	echo
 
 	task_sdl2
@@ -329,8 +301,6 @@ if [ "$1" == "all_deps" ]; then
 	echo
 
 	task_sqlite
-	echo
-	task_portaudio
 	echo
 	task_portmidi
 	echo
