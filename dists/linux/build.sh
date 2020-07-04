@@ -8,8 +8,8 @@ root=$(pwd)
 export SHELL=/bin/bash
 ARCH=$(uname -m)
 export PREFIX="$root/prefix/$ARCH"
-OUTPUT="$root/build/$ARCH"
-LIBDIR="lib"
+OUTPUT="$root/build/$ARCH/usr/bin"
+LIBDIR="../lib"
 export PATH="$PREFIX/bin:$PATH"
 
 ./tasks.sh usdx

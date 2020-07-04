@@ -329,11 +329,22 @@ task_usdx() {
 	local OUTPUT="$root/build/$ARCH"
 	cd "$root/../.."
 	bash ./autogen.sh
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" CC="$CC" CXX="$CXX" --enable-debug --with-opencv-cxx-api --without-portaudio
+	./configure --prefix=/usr PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" CC="$CC" CXX="$CXX" --enable-debug --with-opencv-cxx-api --without-portaudio
 	sleep 1
-	make LDFLAGS="-O2 --sort-common --as-needed -z relro" datadir="./data" prefix="" bindir="" INSTALL_DATADIR="./data"
-	rm -rf "$OUTPUT/data" "$OUTPUT/ultrastardx"
-	make DESTDIR="$OUTPUT/" datadir="/data" prefix="" bindir="" INSTALL_DATADIR="./data" install
+	make LDFLAGS="-O2 --sort-common --as-needed -z relro" INSTALL_DATADIR="../share/ultrastardx"
+	rm -rf "$OUTPUT"
+	make DESTDIR="$OUTPUT/" install
+	for i in 32 256 512 ; do
+		mkdir -p "$OUTPUT/usr/share/icons/hicolor/${i}x${i}/apps"
+		cp "$root/../../icons/ultrastardx-icon_${i}.png" "$OUTPUT/usr/share/icons/hicolor/${i}x${i}/apps/ultrastardx.png"
+	done
+	ln -s "usr/share/icons/hicolor/256x256/apps/ultrastardx.png" "$OUTPUT/.DirIcon"
+	mkdir -p "$OUTPUT/usr/share/icons/hicolor/scalable/apps"
+	cp "$root/../../icons/ultrastardx-icon.svg" "$OUTPUT/usr/share/icons/hicolor/scalable/apps/ultrastardx.svg"
+	ln -s "usr/share/icons/hicolor/scalable/apps/ultrastardx.svg" "$OUTPUT/ultrastardx.svg"
+	mkdir -p "$OUTPUT/usr/share/applications"
+	cp "$root/../ultrastardx.desktop" "$OUTPUT/usr/share/applications"
+	ln -s "usr/share/applications/ultrastardx.desktop" "$OUTPUT/"
 	make clean
 }
 
