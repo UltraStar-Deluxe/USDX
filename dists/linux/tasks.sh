@@ -103,7 +103,7 @@ task_sdl2_image() {
 	cd "$SRC/SDL2_image"
 	bash ./autogen.sh
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
-		--disable-static --disable-jpg-shared --disable-png-shared --disable-webp-shared
+		--disable-static --disable-jpg-shared --disable-png-shared --disable-webp-shared --disable-webp --disable-tif-shared --disable-tif
 	make $makearg
 	make install
 	make distclean
