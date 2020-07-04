@@ -208,6 +208,7 @@ task_ffmpeg() {
 		--disable-filters \
 		--disable-protocols \
 		--disable-lzma \
+		--disable-lzo \
 		--disable-bzlib \
 		--disable-vaapi \
 		--disable-vdpau
