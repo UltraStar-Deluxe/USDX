@@ -10,6 +10,7 @@ deps+=('yasm,http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz,b75
 deps+=('ffmpeg,https://www.ffmpeg.org/releases/ffmpeg-4.1.tar.xz,40bb9002df044514723e9cca7f0a049eee88fed8')
 deps+=('portmidi,https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip,f45bf4e247c0d7617deacd6a65d23d9fddae6117')
 deps+=('portmidi-debian,http://http.debian.net/debian/pool/main/p/portmidi/portmidi_217-6.debian.tar.xz,02e4c6dcfbd35a75913de2acd39be8f0cfd0b244')
+deps+=('lua,https://www.lua.org/ftp/lua-5.3.5.tar.gz,112eb10ff04d1b4c9898e121d6bdf54a81482447')
 deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.36.tar.xz,aec9548c8319104226cc4c31d1f5e524f1b55295')
 # deps+=('libcwrap.h,https://raw.githubusercontent.com/wheybags/glibc_version_header/master/version_headers/force_link_glibc_2.10.2.h,aff0c46cf3005fe15c49688e74df62a9988855a5')
 deps+=('patchelf,https://github.com/NixOS/patchelf/archive/0.9.tar.gz,c068c60a67388fbf9267142516d3a8cd6ffc4397')

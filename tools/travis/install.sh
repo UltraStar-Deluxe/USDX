@@ -79,7 +79,7 @@ else
     #    libavutil-ffmpeg-dev libswresample-ffmpeg-dev
 
     sudo apt-get install \
-        fpc liblua5.1-dev \
+        fpc \
         cmake \
         build-essential autoconf automake \
         libtool libasound2-dev libx11-dev libxext-dev \

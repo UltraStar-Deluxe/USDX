@@ -208,6 +208,33 @@ task_patchelf() {
 	make distclean
 }
 
+task_lua() {
+	tput setaf 2 && tput bold
+	echo "==> Building Lua"
+	tput sgr0
+	cd "$SRC/lua"
+	if fgrep -q 'This is Lua 5.3.5,' README ; then
+		sed -i '/^R=/s/4/5/' Makefile
+	fi
+	eval `make pc | grep ^version=`
+	patch -p1 < $root/lua-relocatable.patch
+	make INSTALL_TOP="$PREFIX" MYCFLAGS="-DLUA_COMPAT_5_3 -DLUA_COMPAT_5_2 -DLUA_COMPAT_5_1 $CFLAGS -fPIC" LUA_A="liblua.so.$version" AR="\$(CC) -shared -ldl -lm -Wl,-soname,liblua.so.${version%.*} -o" RANLIB=true ALL='$(LUA_A)' linux
+	make INSTALL_TOP="$PREFIX" TO_LIB="liblua.so.$version" INSTALL_EXEC=true INSTALL_BIN= install
+	ln -s liblua.so.$version "$PREFIX/lib/liblua.so.${version%.*}"
+	ln -s liblua.so.$version "$PREFIX/lib/liblua.so"
+	mkdir -p $PREFIX/lib/pkgconfig
+	make -s INSTALL_TOP="$PREFIX" pc > "$PREFIX/lib/pkgconfig/lua.pc"
+	cat >> "$PREFIX/lib/pkgconfig/lua.pc" <<"EOF"
+Name: Lua
+Description: An Extensible Language
+Version: ${version}
+Requires:
+Libs: -L${libdir} -llua
+Cflags: -I${includedir}
+EOF
+	make clean
+}
+
 task_opencv() {
 	tput setaf 2 && tput bold
 	echo "==> Building OpenCV"
@@ -303,6 +330,9 @@ if [ "$1" == "all_deps" ]; then
 	task_sqlite
 	echo
 	task_portmidi
+	echo
+
+	task_lua
 	echo
 
 	task_ffmpeg
