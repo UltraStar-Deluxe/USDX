@@ -68,6 +68,34 @@ task_sdl2() {
 	make distclean
 }
 
+task_libjpeg_turbo() {
+	tput setaf 2 && tput bold
+	echo "==> Building libjpeg-turbo"
+	tput sgr0
+	cd "$SRC/libjpeg-turbo"
+	rm -rf build
+	mkdir -p build
+	cd build
+	cmake \
+		-DCMAKE_CACHEFILE_DIR="$(pwd)/out" \
+		-DCMAKE_INSTALL_PREFIX="$PREFIX" \
+		-DCMAKE_INSTALL_LIBDIR:PATH="lib" \
+		-DCMAKE_BUILD_TYPE="Release" \
+		-DCMAKE_C_FLAGS="$CFLAGS" \
+		-DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
+		-DWITH_TURBOJPEG=OFF \
+		-DWITH_JAVA=OFF \
+		-DWITH_ARITH_ENC=OFF \
+		-DWITH_MEM_SRCDST=OFF \
+		-DENABLE_SHARED=ON \
+		-DENABLE_STATIC=OFF \
+		..
+	make
+	make install
+	cd ..
+	rm -r build
+}
+
 task_sdl2_image() {
 	tput setaf 2 && tput bold
 	echo "==> Building SDL2_image"
@@ -319,6 +347,8 @@ if [ "$1" == "all_deps" ]; then
 	task_yasm
 	echo
 
+	task_libjpeg_turbo
+	echo
 	task_libpng
 	echo
 
