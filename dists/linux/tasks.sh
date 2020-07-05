@@ -388,6 +388,7 @@ task_usdx() {
 			fi
 		fi
 	fi
+	ln -s usr/bin/ultrastardx "$OUTPUT/AppRun"
 	make clean
 }
 
