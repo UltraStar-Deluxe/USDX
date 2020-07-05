@@ -47,6 +47,17 @@ task_libpng() {
 	make distclean
 }
 
+task_wayland() {
+	tput setaf 2 && tput bold
+	echo "==> Building wayland"
+	tput sgr0
+	cd "$SRC/wayland"
+	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --disable-documentation
+	make $makearg
+	make install
+	make distclean
+}
+
 task_sdl2() {
 	tput setaf 2 && tput bold
 	echo "==> Building SDL2"
@@ -367,6 +378,8 @@ if [ "$1" == "all_deps" ]; then
 	task_libpng
 	echo
 
+	task_wayland
+	echo
 	task_sdl2
 	echo
 	task_sdl2_image

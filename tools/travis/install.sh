@@ -87,7 +87,7 @@ else
         libxss-dev libgl1-mesa-dev libdbus-1-dev libudev-dev \
         libjack-jackd2-dev libpulse-dev \
         libegl1-mesa-dev libgbm-dev libdrm-dev \
-        libxkbcommon-dev libwayland-dev \
+        libxkbcommon-dev \
         zlib1g-dev libfreetype6-dev \
         curl realpath
 

@@ -3,6 +3,7 @@
 set -e
 
 declare -a deps
+deps+=('wayland,https://wayland.freedesktop.org/releases/wayland-1.18.0.tar.xz,33e5292b32a115e829458ea627201ed1e4ad4f45')
 deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.0.9.tar.gz,4354c6baad9a48486182656a7506abfb63e9bff5')
 deps+=('SDL2_image,https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.4.tar.gz,aed0c6e5feb5ae933410c150d33c319000ea4cfd')
 deps+=('sqlite,https://www.sqlite.org/2018/sqlite-autoconf-3260000.tar.gz,9af2df1a6da5db6e2ecf3f463625f16740e036e9')
