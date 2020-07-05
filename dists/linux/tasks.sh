@@ -368,6 +368,26 @@ task_usdx() {
 	mkdir -p "$OUTPUT/usr/share/applications"
 	cp "$root/../ultrastardx.desktop" "$OUTPUT/usr/share/applications"
 	ln -s "usr/share/applications/ultrastardx.desktop" "$OUTPUT/"
+	mkdir -p "$OUTPUT/usr/share/metainfo"
+	appdata="$OUTPUT/usr/share/metainfo/ultrastardx.appdata.xml"
+	cp "$root/../ultrastardx.appdata.xml" "$appdata"
+	version=`git describe --tags --match='v*' || true`
+	if [ -n "$version" ] ; then
+		version=${version#v}
+		case "$version" in
+		*-*-g*)	t=development ;;
+		*)      t=stable
+		esac
+		if ! grep -q "version=\"$version\"" "$appdata" ; then
+			set -- `git log -n 1 --pretty=format:%ci`
+			release="<release version=\"$version\" type=\"$t\" date=\"$1T$2${3:0:3}:${3:3}\" />"
+			if grep -q '<releases>' "$appdata" ; then
+				sed -i 's%\([[:space:]]*\)<releases>%&\n\1  '"$release%" "$appdata"
+			else
+				sed -i 's%\([[:space:]]*\)</component>%\1  <releases>'"$release"'</releases>\n&%' "$appdata"
+			fi
+		fi
+	fi
 	make clean
 }
 
