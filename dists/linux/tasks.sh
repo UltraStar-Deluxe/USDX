@@ -58,6 +58,17 @@ task_wayland() {
 	make distclean
 }
 
+task_wayland_protocols() {
+	tput setaf 2 && tput bold
+	echo "==> Building wayland-protocols"
+	tput sgr0
+	cd "$SRC/wayland-protocols"
+	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+	make $makearg
+	make install
+	make distclean
+}
+
 task_sdl2() {
 	tput setaf 2 && tput bold
 	echo "==> Building SDL2"
@@ -379,6 +390,8 @@ if [ "$1" == "all_deps" ]; then
 	echo
 
 	task_wayland
+	echo
+	task_wayland_protocols
 	echo
 	task_sdl2
 	echo
