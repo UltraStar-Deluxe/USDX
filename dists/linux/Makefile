@@ -34,7 +34,7 @@ run: build/$(ARCH)/usr/bin/ultrastardx
 compress: UltraStarDeluxe-$(ARCH).AppImage
 UltraStarDeluxe-$(ARCH).AppImage: build/$(ARCH)/usr/bin/ultrastardx build/$(ARCH)/usr/bin/VERSION
 	rm -f "./UltraStarDeluxe-$(ARCH).AppImage"
-	prefix/$(ARCH)/bin/appimagetool build/$(ARCH) $@
+	prefix/$(ARCH)/bin/appimagetool --comp xz build/$(ARCH) $@
 
 upload: UltraStarDeluxe-$(ARCH).AppImage
 	curl --upload-file './UltraStarDeluxe-$(ARCH).AppImage' "https://transfer.sh/UltraStarDeluxe-$(ARCH).AppImage" && echo
