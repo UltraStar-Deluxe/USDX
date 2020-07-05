@@ -10,7 +10,7 @@ ARCH=$(uname -m)
 export PREFIX="$root/prefix/$ARCH"
 export PATH="$PREFIX/bin:$PATH"
 export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
-PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
+PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PREFIX/share/pkgconfig:$PKG_CONFIG_PATH"
 export CMAKE_PREFIX_PATH="$PREFIX:$CMAKE_PREFIX_PATH"
 [ -f /.dockerenv ] && export PPC_CONFIG_PATH="$PREFIX/etc"
 
