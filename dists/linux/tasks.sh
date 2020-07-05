@@ -11,7 +11,7 @@ export PREFIX="$root/prefix/$ARCH"
 export PATH="$PREFIX/bin:$PATH"
 export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
 PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
-CMAKE_PREFIX_PATH="$PREFIX:$CMAKE_PREFIX_PATH"
+export CMAKE_PREFIX_PATH="$PREFIX:$CMAKE_PREFIX_PATH"
 [ -f /.dockerenv ] && export PPC_CONFIG_PATH="$PREFIX/etc"
 
 export LDFLAGS="-Wl,-z,now -Wl,-z,relro -L$PREFIX/lib"
