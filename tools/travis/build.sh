@@ -84,8 +84,8 @@ else
     git fetch --unshallow --tags
     cd dists/linux
     make compress
-    filename="UltraStarDeluxe-$(uname -m).tar.xz"
-    outfile="UltraStarDeluxe-$(git rev-parse --short HEAD)-$(uname -m).tar.xz"
+    filename="UltraStarDeluxe-$(uname -m).AppImage"
+    outfile="UltraStarDeluxe-$(git rev-parse --short HEAD)-$(uname -m).AppImage"
     if [ -r "$filename" ]; then
         link="$(curl --upload-file "$filename" "https://transfer.sh/$outfile")"
         echo "$outfile should be available at:"
