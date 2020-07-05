@@ -31,13 +31,13 @@ bundle: clean compress
 run: build/$(ARCH)/usr/bin/ultrastardx
 	@build/$(ARCH)/launch.sh
 
-compress: UltraStarDeluxe-$(ARCH).tar.xz
-UltraStarDeluxe-$(ARCH).tar.xz: build/$(ARCH)/usr/bin/ultrastardx build/$(ARCH)/usr/bin/VERSION
-	rm -f "./UltraStarDeluxe-$(ARCH).tar.xz"
-	cd "build/$(ARCH)" && XZ_OPT="--threads=0" tar cJf "../../UltraStarDeluxe-$(ARCH).tar.xz" .
+compress: UltraStarDeluxe-$(ARCH).AppImage
+UltraStarDeluxe-$(ARCH).AppImage: build/$(ARCH)/usr/bin/ultrastardx build/$(ARCH)/usr/bin/VERSION
+	rm -f "./UltraStarDeluxe-$(ARCH).AppImage"
+	prefix/$(ARCH)/bin/appimagetool build/$(ARCH) $@
 
-upload: UltraStarDeluxe-$(ARCH).tar.xz
-	curl --upload-file './UltraStarDeluxe-$(ARCH).tar.xz' "https://transfer.sh/UltraStarDeluxe-$(ARCH).tar.xz" && echo
+upload: UltraStarDeluxe-$(ARCH).AppImage
+	curl --upload-file './UltraStarDeluxe-$(ARCH).AppImage' "https://transfer.sh/UltraStarDeluxe-$(ARCH).AppImage" && echo
 
 clean:
 	rm -rf build/$(ARCH) prefix/$(ARCH) UltraStarDeluxe-$(ARCH).tar.xz
