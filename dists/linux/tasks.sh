@@ -35,6 +35,20 @@ clean_prefix() {
 	mkdir -pv $PREFIX/{etc,bin,include,lib}
 }
 
+task_AppImageKit() {
+	tput setaf 2 && tput bold
+	echo "==> Building AppImageKit"
+	tput sgr0
+	cd "$SRC/AppImageKit"
+	! pkg-config --exists libarchive || export EXTRA_CMAKE_FLAGS="-DUSE_SYSTEM_LIBARCHIVE=ON"
+	./build.sh
+	unset EXTRA_CMAKE_FLAGS
+	cp build/out/appimagetool $PREFIX/bin/
+	mkdir $PREFIX/lib/appimagekit
+	cp build/out/mksquashfs $PREFIX/lib/appimagekit
+	rm -fR build
+}
+
 task_libpng() {
 	tput setaf 2 && tput bold
 	echo "==> Building libpng"
@@ -402,6 +416,8 @@ if [ "$1" == "all_deps" ]; then
 	clean_prefix
 	echo
 
+	task_AppImageKit
+	echo
 	task_yasm
 	echo
 

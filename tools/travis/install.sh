@@ -89,6 +89,8 @@ else
         libegl1-mesa-dev libgbm-dev libdrm-dev \
         libxkbcommon-dev \
         zlib1g-dev libfreetype6-dev \
+        libfuse-dev libcairo2-dev libglib2.0-dev \
+        zsync desktop-file-utils libarchive-dev \
         curl realpath
 
 fi

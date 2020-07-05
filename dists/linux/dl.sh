@@ -95,3 +95,5 @@ for i in "${deps[@]}"; do
 		;;
 	esac
 done
+
+git clone -b 12 --depth 1 --recursive https://github.com/AppImage/AppImageKit deps/AppImageKit
