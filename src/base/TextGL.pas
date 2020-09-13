@@ -38,6 +38,7 @@ uses
   sdl2,
   Classes,
   UTexture,
+  UFilesystem,
   UFont,
   UPath,
   ULog;
@@ -147,6 +148,9 @@ begin
 
   // set font array size: Fonts[available font families (defined in fonts.ini)][possible font styles (fixed, see FONT_STYLES)]
   SetLength(Fonts, Length(FontFamilyNames), Length(FONT_STYLES));
+  Log.LogInfo('Found ' + inttostr(Length(FontFamilyNames)) + ' families in ' + FontPath.Append('fonts.ini').ToNative, 'LoadFontFamilyNames');
+  if not FontPath.IsAbsolute then
+    Log.LogInfo('Current directory is ' + FileSystem.GetCurrentDir.ToNative, 'LoadFontFamilyNames');
 
   // close ini-file
   FontIni.Free;
@@ -174,7 +178,10 @@ begin
         SectionName := FontSections[FontNameIndex];
         FontFile := FindFontFile(FontIni.ReadString(SectionName, FONT_STYLES[FontStyleIndex] + 'File', ''));
         if (FontFile.Equals(PATH_NONE)) then
+        begin
+          Log.LogWarn('No font file for style ' + FONT_STYLES[FontStyleIndex] + ' in family ' + SectionName, 'BuildFonts');
           Continue;
+        end;
 
         FontMaxResolution := FontIni.ReadInteger(SectionName, FONT_STYLES[FontStyleIndex] + 'MaxResolution', 64);
         Embolden := FontIni.ReadFloat(SectionName, FONT_STYLES[FontStyleIndex] + 'Embolden', 0.0);
