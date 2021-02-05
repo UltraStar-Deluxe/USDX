@@ -10,8 +10,7 @@ if [ -n "$LAZ_VER" ]; then
 elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
     # OSX build
 
-    brew tap caskroom/cask
-    brew tap homebrew/versions
+    brew tap homebrew/cask
     brew update
 
 else
