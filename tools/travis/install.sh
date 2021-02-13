@@ -47,7 +47,7 @@ elif [ "$VARIANT" = flatpak ]; then
     case "$TRAVIS_CPU_ARCH" in
     ppc64le)
         FLATPAK_REMOTE=freedesktop-sdk
-        FLATPAK_REMOTE_URL=https://cache.sdk.freedesktop.org/freedesktop-sdk.flatpakrepo
+        FLATPAK_REMOTE_URL=https://releases.freedesktop-sdk.io/freedesktop-sdk.flatpakrepo
         ;;
     *)
         FLATPAK_REMOTE=flathub
