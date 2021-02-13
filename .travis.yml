@@ -8,21 +8,21 @@ matrix:
       dist: trusty
     - os: linux
       env: VARIANT=flatpak
-      dist: bionic
+      dist: focal
     - os: linux
       env: VARIANT=flatpak
-      dist: bionic
+      dist: focal
       arch: arm64
     - os: linux
       env: VARIANT=flatpak BUILD_32BIT=yes
-      dist: bionic
+      dist: focal
     - os: linux
       env: VARIANT=flatpak BUILD_32BIT=yes
-      dist: bionic
+      dist: focal
       arch: arm64
     - os: linux
       env: VARIANT=flatpak
-      dist: bionic
+      dist: focal
       arch: ppc64le
     - os: linux
       dist: trusty

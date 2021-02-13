@@ -23,49 +23,8 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
 elif [ "$VARIANT" = flatpak ]; then
     # Linux build
 
-    sudo tee /etc/apt/preferences.d/flatpak <<EOF
-Package: ostree
-Pin: version 2018*
-Pin-Priority: -1
-
-Package: flatpak
-Pin: version 1.0.*
-Pin-Priority: -1
-
-Package: flatpak
-Pin: version 1.1.*
-Pin-Priority: -1
-
-Package: flatpak-builder
-Pin: version 0.*
-Pin-Priority: -1
-EOF
     sudo apt-get install elfutils unzip librsvg2-common
-    if ! sudo apt-get install flatpak flatpak-builder ; then
-        date +"%c no binaries for the current flatpak tools for this architecture, let's build them"
-        sudo apt-get install fakeroot bubblewrap dbus-user-session
-        for i in ostree flatpak xdg-desktop-portal flatpak-builder ; do
-            date +"%c building and installing $i"
-            mkdir build
-            if ! (
-                set -e
-                cd build
-                sudo apt-get build-dep $i
-                export DEB_BUILD_OPTIONS=nocheck
-                apt-get source --compile $i
-                rm -f *-dbgsym_*.deb *-doc_*.deb *-tests*.deb
-		# flatpak depends on xdg-desktop-portal, which needs libflatpak-dev to build
-		[ $i != flatpak ] || mv flatpak_*.deb ..
-		[ $i != xdg-desktop-portal ] || mv ../flatpak_*.deb .
-                sudo dpkg -i *.deb
-            ) > build.log 2>&1 ; then
-                cat build.log
-                exit 1
-            fi
-            rm -fR build
-        done
-        date +"%c done building flatpak tools"
-    fi
+    sudo apt-get install flatpak flatpak-builder
     case "$TRAVIS_CPU_ARCH" in
     amd64)
         if [ "$BUILD_32BIT" = yes ] ; then

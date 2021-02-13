@@ -16,8 +16,6 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
 
 elif [ "$VARIANT" = flatpak ]; then
 
-    # flatpak-builder in bionic is too old to understand YAML manifests
-    sudo add-apt-repository -s -y ppa:alexlarsson/flatpak
     sudo apt-get update
 
 else
