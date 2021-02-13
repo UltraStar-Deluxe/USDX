@@ -59,11 +59,11 @@ elif [ "$VARIANT" = flatpak ]; then
 
     ln -s ../$CACHEDIR/flatpak-builder .flatpak-builder
     rm -Rf .flatpak-builder/build
-    flatpak-builder --arch=$FLATPAK_ARCH --user --stop-at=$DONTCACHE build ../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
+    flatpak-builder --arch=$FLATPAK_ARCH --jobs=2 --user --stop-at=$DONTCACHE build ../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
     rm -Rf build
     rm .flatpak-builder
     cp -al ../$CACHEDIR/flatpak-builder .flatpak-builder
-    flatpak-builder --arch=$FLATPAK_ARCH --user --repo=repo build ../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
+    flatpak-builder --arch=$FLATPAK_ARCH --jobs=2 --user --repo=repo build ../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
     date +"%c Creating flatpak bundle"
     flatpak build-bundle --arch=$FLATPAK_ARCH repo UltraStarDeluxe.flatpak eu.usdx.UltraStarDeluxe
     filename="UltraStarDeluxe.flatpak"
