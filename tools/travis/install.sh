@@ -38,6 +38,7 @@ elif [ "$VARIANT" = flatpak ]; then
     arm64)
         if [ "$BUILD_32BIT" = yes ] ; then
             FLATPAK_ARCH=arm
+            sed -i "/runtime-version:/s/:.*/: '19.08'/" $DIR/../../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
         else
             FLATPAK_ARCH=aarch64
         fi
