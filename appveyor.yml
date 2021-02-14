@@ -1,29 +1,70 @@
 environment:
   NewPascalVersion: v1.0.50
 
-install:
-  - appveyor AddMessage -Category Information "Downloading NewPascal %NewPascalVersion%..."
-  - appveyor DownloadFile https://github.com/newpascal/newpascal/releases/download/np-%NewPascalVersion%/newpascal.zip
-  - appveyor AddMessage "Unpacking NewPascal %NewPascalVersion%..."
-  - 7z x -y "newpascal.zip" -o"C:\" > nul
-  - appveyor AddMessage -Category Information "Configuring NewPascal..."
-  - c:\newpascal\configure.bat
-  - set FPCDIR=c:\newpascal\fpcsrc
-  - set PATH=c:\newpascal\fpc\bin\i386-win32;c:\newpascal\binw32;C:\Program Files (x86)\NSIS;%path%
+image:
+  - Visual Studio 2015
+  - Ubuntu2004
 
-build_script:
-  - appveyor AddMessage -Category Information "Building UltraStar-Deluxe..."
-  - c:\newpascal\lazarus\lazbuild src\ultrastardx-win.lpi --lazarusdir=c:\newpascal\lazarus
-  - appveyor AddMessage -Category Information "Done."
+for:
+  # Windows
+  -
+    matrix:
+      only:
+        - image: Visual Studio 2015
 
-after_build:
-  - appveyor AddMessage -Category Information "Creating Installer..."
-  - xcopy game\*.dll installer\dependencies\dll /y
-  - makensis "installer\UltraStar Deluxe.nsi"
-  - appveyor AddMessage -Category Information "Done."
+    install:
+      - appveyor AddMessage -Category Information "Downloading NewPascal %NewPascalVersion%..."
+      - appveyor DownloadFile https://github.com/newpascal/newpascal/releases/download/np-%NewPascalVersion%/newpascal.zip
+      - appveyor AddMessage "Unpacking NewPascal %NewPascalVersion%..."
+      - 7z x -y "newpascal.zip" -o"C:\" > nul
+      - appveyor AddMessage -Category Information "Configuring NewPascal..."
+      - c:\newpascal\configure.bat
+      - set FPCDIR=c:\newpascal\fpcsrc
+      - set PATH=c:\newpascal\fpc\bin\i386-win32;c:\newpascal\binw32;C:\Program Files (x86)\NSIS;%path%
 
-artifacts:
-  - path: game
-    name: UltraStar.Deluxe_continuous_portable
-    type: zip
-  - path: installer\dist\UltraStar.Deluxe_*_installer.exe
+    build_script:
+      - appveyor AddMessage -Category Information "Building UltraStar-Deluxe..."
+      - c:\newpascal\lazarus\lazbuild src\ultrastardx-win.lpi --lazarusdir=c:\newpascal\lazarus
+      - appveyor AddMessage -Category Information "Done."
+
+    after_build:
+      - appveyor AddMessage -Category Information "Creating Installer..."
+      - xcopy game\*.dll installer\dependencies\dll /y
+      - makensis "installer\UltraStar Deluxe.nsi"
+      - appveyor AddMessage -Category Information "Done."
+
+    artifacts:
+      - path: game
+        name: UltraStar.Deluxe_continuous_portable
+        type: zip
+      - path: installer\dist\UltraStar.Deluxe_*_installer.exe
+
+  # Ubuntu (Flatpak)
+  -
+    matrix:
+      only:
+        - image: Ubuntu2004
+
+    platform: x64
+
+    install:
+      - ps: $env:package_version = ("$(git describe --tags --always --long)").trim()
+      - ps: Update-AppveyorBuild -Version "$env:package_version-$env:APPVEYOR_BUILD_NUMBER"
+      - sh: sudo apt update -qq
+      - sh: sudo apt install -y elfutils unzip librsvg2-common flatpak flatpak-builder
+      - sh: flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+      - sh: RUNTIME_VERSION=`sed -n "/runtime-version:/s/.*'\([^']*\)'/\1/p" dists/flatpak/eu.usdx.UltraStarDeluxe.yaml`
+      - sh: flatpak install --user --noninteractive -y flathub org.freedesktop.Platform//$RUNTIME_VERSION org.freedesktop.Sdk//$RUNTIME_VERSION
+
+    build_script:
+      - sh: "sed -i 's%^\\([[:space:]]*\\)-\\([[:space:]]*\\)\\(\\<type: dir\\>.*\\)%&\\n\\1 \\2skip:\\n\\1 \\2- flatpak%' dists/flatpak/*.yaml"
+      - sh: mkdir flatpak
+      - sh: cd flatpak
+      - sh: flatpak-builder --user --repo=repo build ../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
+      - sh: flatpak build-bundle repo ../UltraStarDeluxe-$package_version.$(flatpak --default-arch).flatpak eu.usdx.UltraStarDeluxe
+      - sh: cd ..
+      - sh: rm -Rf flatpak
+
+    artifacts:
+      - path: UltraStarDeluxe*.flatpak
+        name: UltraStarDeluxe Flatpak Package
