@@ -14,6 +14,11 @@ interface
   {$LINKLIB opencv_world}
 {$ENDIF}
 
+{$IFDEF CPUAARCH64}
+  // The OpenCV headers make GCC 10 generate calls to __aarch64_ldadd4_acq_rel
+  {$LINKLIB libgcc_s}
+{$ENDIF}
+
 uses
   CTypes;
 
