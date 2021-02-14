@@ -49,8 +49,8 @@ modules:
 - name: opencv
   sources:
   - type: archive
-    url: https://github.com/opencv/opencv/archive/4.3.0.tar.gz
-    sha256: 68bc40cbf47fdb8ee73dfaf0d9c6494cd095cf6294d99de445ab64cf853d278a
+    url: https://github.com/opencv/opencv/archive/4.5.1.tar.gz
+    sha256: e27fe5b168918ab60d58d7ace2bd82dd14a4d0bd1d3ae182952c2113f5637513
   buildsystem: cmake-ninja
   builddir: true
   build-options:
@@ -84,6 +84,7 @@ modules:
     - -DWITH_TIFF=OFF
     - -DWITH_WEBP=OFF
     - -DWITH_JASPER=OFF
+    - -DWITH_OPENJPEG=OFF
     - -DWITH_PNG=OFF
     - -DWITH_OPENEXR=OFF
     - -DWITH_GDAL=OFF
@@ -118,19 +119,15 @@ modules:
 - name: lua
   sources:
   - type: archive
-    url: https://www.lua.org/ftp/lua-5.3.5.tar.gz
-    sha256: 0c2eed3f960446e1a3e4b9a1ca2f3ff893b6ce41942cf54d5dd59ab4b3b058ac
-  - type: shell
-    commands:
-# They forgot to raise the version number in 5.3.5
-    - sed -i '/^R=/s/4/5/' Makefile
+    url: https://www.lua.org/ftp/lua-5.3.6.tar.gz
+    sha256: fc5fd69bb8736323f026672b1b7235da613d7177e72558893a0bdcd320466d60
   buildsystem: simple
   build-commands:
   - sed -i "s:\(#define LUA_ROOT\>\).*:\1 \"${FLATPAK_DEST}\":" src/luaconf.h
-  - make INSTALL_TOP=${FLATPAK_DEST} MYCFLAGS="-DLUA_COMPAT_5_2 -DLUA_COMPAT_5_1 ${CFLAGS} -fPIC" LUA_A="liblua.so.5.3.5" AR="\$(CC) -shared -ldl -lm -Wl,-soname,liblua.so.5.3 -o" RANLIB=true ALL='$(LUA_A)' linux
-  - make INSTALL_TOP=${FLATPAK_DEST} TO_LIB="liblua.so.5.3.5" INSTALL_EXEC=true INSTALL_BIN= install
-  - ln -s liblua.so.5.3.5 ${FLATPAK_DEST}/lib/liblua.so.5.3
-  - ln -s liblua.so.5.3.5 ${FLATPAK_DEST}/lib/liblua.so
+  - make INSTALL_TOP=${FLATPAK_DEST} MYCFLAGS="-DLUA_COMPAT_5_2 -DLUA_COMPAT_5_1 ${CFLAGS} -fPIC" LUA_A="liblua.so.5.3.6" AR="\$(CC) -shared -ldl -lm -Wl,-soname,liblua.so.5.3 -o" RANLIB=true ALL='$(LUA_A)' linux
+  - make INSTALL_TOP=${FLATPAK_DEST} TO_LIB="liblua.so.5.3.6" INSTALL_EXEC=true INSTALL_BIN= install
+  - ln -s liblua.so.5.3.6 ${FLATPAK_DEST}/lib/liblua.so.5.3
+  - ln -s liblua.so.5.3.6 ${FLATPAK_DEST}/lib/liblua.so
   - mkdir -p ${FLATPAK_DEST}/lib/pkgconfig
   - make -s INSTALL_TOP=${FLATPAK_DEST} pc > ${FLATPAK_DEST}/lib/pkgconfig/lua.pc
   - "echo 'Name: Lua' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
@@ -176,8 +173,8 @@ modules:
   disabled: false
   sources:
   - type: archive
-    url: https://ffmpeg.org/releases/ffmpeg-4.2.3.tar.xz
-    sha256: 9df6c90aed1337634c1fb026fb01c154c29c82a64ea71291ff2da9aacb9aad31
+    url: http://ffmpeg.org/releases/ffmpeg-4.2.4.tar.xz
+    sha256: 0d5da81feba073ee78e0f18e0966bcaf91464ae75e18e9a0135186249e3d2a0b
 # not really, but close enough:
   buildsystem: autotools
   config-opts:
