@@ -10,6 +10,7 @@
   <project_license>GPL-2.0</project_license>
   <url type="homepage">https://usdx.eu/</url>
   <url type="bugtracker">https://github.com/UltraStar-Deluxe/USDX/issues</url>
+  <url type="translate">https://www.transifex.com/usdx/usdx</url>
   <screenshots>
     <screenshot type="default">
       <image>https://usdx.eu/images/screenshots/song_6_player_projectm.jpg</image>
