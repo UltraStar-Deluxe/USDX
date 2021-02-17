@@ -169,6 +169,17 @@ modules:
   - "*.a"
   - "libporttime.*"
 
+- name: dav1d
+  disabled: true # set to false for runtime < 19.08 or if you are unhappy with the version in runtime
+  sources:
+  - type: archive
+    url: https://downloads.videolan.org/pub/videolan/dav1d/0.8.1/dav1d-0.8.1.tar.xz
+    sha256: a4b503063d411dd129f5eb43616675e613b36ac0aa1e449976d645c05add21ea
+  buildsystem: meson
+  config-opts:
+  - -Denable_tools=false
+  - -Denable_tests=false
+
 - name: ffmpeg
   disabled: false
   sources:
@@ -194,6 +205,7 @@ modules:
   - --disable-protocols
   - --disable-vaapi
   - --disable-vdpau
+  - --enable-libdav1d
   cleanup:
   - /share/ffmpeg/examples
 

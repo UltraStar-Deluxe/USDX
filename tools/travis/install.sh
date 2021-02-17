@@ -58,6 +58,9 @@ elif [ "$VARIANT" = flatpak ]; then
     flatpak remote-add --user --if-not-exists $FLATPAK_REMOTE $FLATPAK_REMOTE_URL
     RUNTIME_VERSION=`sed -n "/runtime-version:/s/.*'\([^']*\)'/\1/p" $DIR/../../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml`
     flatpak install --user --arch=$FLATPAK_ARCH --noninteractive -y $FLATPAK_REMOTE org.freedesktop.Platform//$RUNTIME_VERSION org.freedesktop.Sdk//$RUNTIME_VERSION
+    if [ ${RUNTIME_VERSION%%.*} -lt 19 ] ; then
+        sed -i "/name: dav1d/,/^-/{/disabled:/s/true/false/}" $DIR/../../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
+    fi
 
 else
     # Linux build
