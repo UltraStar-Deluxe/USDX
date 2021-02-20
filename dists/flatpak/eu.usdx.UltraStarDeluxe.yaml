@@ -124,10 +124,11 @@ modules:
   buildsystem: simple
   build-commands:
   - sed -i "s:\(#define LUA_ROOT\>\).*:\1 \"${FLATPAK_DEST}\":" src/luaconf.h
-  - make INSTALL_TOP=${FLATPAK_DEST} MYCFLAGS="-DLUA_COMPAT_5_2 -DLUA_COMPAT_5_1 ${CFLAGS} -fPIC" LUA_A="liblua.so.5.3.6" AR="\$(CC) -shared -ldl -lm -Wl,-soname,liblua.so.5.3 -o" RANLIB=true ALL='$(LUA_A)' linux
-  - make INSTALL_TOP=${FLATPAK_DEST} TO_LIB="liblua.so.5.3.6" INSTALL_EXEC=true INSTALL_BIN= install
-  - ln -s liblua.so.5.3.6 ${FLATPAK_DEST}/lib/liblua.so.5.3
-  - ln -s liblua.so.5.3.6 ${FLATPAK_DEST}/lib/liblua.so
+  - echo export V R >> Makefile
+  - make INSTALL_TOP=${FLATPAK_DEST} MYCFLAGS="-DLUA_COMPAT_5_2 -DLUA_COMPAT_5_1 ${CFLAGS} -fPIC" LUA_A='liblua.so.$(R)' AR='$(CC) -shared -ldl -lm -Wl,-soname,liblua.so.$(V) -o' RANLIB=true ALL='$(LUA_A)' linux
+  - make INSTALL_TOP=${FLATPAK_DEST} TO_LIB='liblua.so.$(R)' INSTALL_EXEC=true INSTALL_BIN= install
+  - cd ${FLATPAK_DEST}/lib && ln -s liblua.so.* liblua.so
+  - ldconfig -l ${FLATPAK_DEST}/lib/liblua.so.*
   - mkdir -p ${FLATPAK_DEST}/lib/pkgconfig
   - make -s INSTALL_TOP=${FLATPAK_DEST} pc > ${FLATPAK_DEST}/lib/pkgconfig/lua.pc
   - "echo 'Name: Lua' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
