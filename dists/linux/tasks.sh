@@ -278,18 +278,31 @@ task_meson() {
 	pip3 install meson
 }
 
+task_dav1d() {
+	tput setaf 2 && tput bold
+	echo "==> Building dav1d"
+	tput sgr0
+	cd "$SRC/dav1d"
+	CC="$CC" CXX="$CXX" meson setup --prefix "$PREFIX" --libdir=lib -Denable_tools=false -Denable_tests=false build
+	ninja -C build $makearg
+	ninja -C build install
+	rm -Rf build
+}
+
 task_ffmpeg() {
 	tput setaf 2 && tput bold
 	echo "==> Building FFmpeg"
 	tput sgr0
 	cd "$SRC/ffmpeg"
 	# disable vaapi until it can be tested
+	PKG_CONFIG_PATH="$PKG_CONFIG_PATH" \
 	./configure --prefix="$PREFIX" \
 		--cc="$CC" \
 		--cxx="$CXX" \
 		--enable-gpl \
 		--disable-static \
 		--enable-shared \
+		--enable-libdav1d \
 		--disable-programs \
 		--disable-doc \
 		--disable-encoders \
@@ -518,6 +531,8 @@ if [ "$1" == "all_deps" ]; then
 	task_ninja
 	echo
 	task_meson
+	echo
+	task_dav1d
 	echo
 	task_ffmpeg
 
