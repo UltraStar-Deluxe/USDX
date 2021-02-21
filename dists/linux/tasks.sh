@@ -285,7 +285,6 @@ task_patchelf() {
 	echo "==> Building PatchELF"
 	tput sgr0
 	cd "$SRC/patchelf"
-	./bootstrap.sh
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX"
 	make $makearg
 	make install
