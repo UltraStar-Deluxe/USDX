@@ -219,6 +219,17 @@ task_portmidi() {
 	rm -r build
 }
 
+task_nasm() {
+	tput setaf 2 && tput bold
+	echo "==> Building NASM"
+	tput sgr0
+	cd "$SRC/nasm"
+	./configure --prefix="$PREFIX" CC="$CC" CXX="$CXX"
+	hide make $makearg
+	hide make install
+	hide make distclean
+}
+
 task_yasm() {
 	tput setaf 2 && tput bold
 	echo "==> Building Yasm"
@@ -229,6 +240,42 @@ task_yasm() {
 	make $makearg
 	make install
 	make distclean
+}
+
+task_openssl() {
+	tput setaf 2 && tput bold
+	echo "==> Building OpenSSL"
+	tput sgr0
+	cd "$SRC/openssl"
+	CC="$CC" CXX="$CXX" ./config --prefix="$PREFIX" no-hw threads shared zlib-dynamic
+	make $makearg
+	make install
+	make distclean
+}
+
+task_python() {
+	tput setaf 2 && tput bold
+	echo "==> Building Python"
+	tput sgr0
+	cd "$SRC/python"
+	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX"
+	make $makearg
+	make install
+	make distclean
+}
+
+task_ninja() {
+	tput setaf 2 && tput bold
+	echo "==> Building ninja"
+	tput sgr0
+	pip3 install ninja
+}
+
+task_meson() {
+	tput setaf 2 && tput bold
+	echo "==> Building meson"
+	tput sgr0
+	pip3 install meson
 }
 
 task_ffmpeg() {
@@ -437,6 +484,8 @@ if [ "$1" == "all_deps" ]; then
 
 	task_AppImageKit
 	echo
+	task_nasm
+	echo
 	task_yasm
 	echo
 
@@ -462,6 +511,14 @@ if [ "$1" == "all_deps" ]; then
 	task_lua
 	echo
 
+	task_openssl
+	echo
+	task_python
+	echo
+	task_ninja
+	echo
+	task_meson
+	echo
 	task_ffmpeg
 
 	# if [ -f /.dockerenv ]; then

@@ -3,11 +3,14 @@
 set -e
 
 declare -a deps
+deps+=('openssl,https://www.openssl.org/source/openssl-1.1.1j.tar.gz,04c340b086828eecff9df06dceff196790bb9268')
+deps+=('python,https://www.python.org/ftp/python/3.9.2/Python-3.9.2.tar.xz,110ca5bca7989f9558a54ee6762e6774a4b9644a')
 deps+=('wayland,https://wayland.freedesktop.org/releases/wayland-1.19.0.tar.xz,9ae0a89cfe6798250b19c72a987bda734d269060')
 deps+=('wayland-protocols,https://wayland.freedesktop.org/releases/wayland-protocols-1.20.tar.xz,e78c739a3a85477ed524b81e8bb75efe7f8bf4df')
 deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.0.14.tar.gz,212b17d988c417a1a905ab09c50d1845cc48ddb7')
 deps+=('SDL2_image,https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.5.tar.gz,c0aed07994f670a3758f6b8b93d9034a58df5781')
 deps+=('sqlite,https://www.sqlite.org/2021/sqlite-autoconf-3340100.tar.gz,c20286e11fe5c2e3712ce74890e1692417de6890')
+deps+=('nasm,https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.xz,d338409a03fc6d1508102881a675a00275fcb879')
 deps+=('yasm,http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz,b7574e9f0826bedef975d64d3825f75fbaeef55e')
 deps+=('ffmpeg,https://www.ffmpeg.org/releases/ffmpeg-4.2.4.tar.xz,eca62adfdda5cbb5fc3af9dd236c058c046201a1')
 deps+=('portmidi,https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip,f45bf4e247c0d7617deacd6a65d23d9fddae6117')
