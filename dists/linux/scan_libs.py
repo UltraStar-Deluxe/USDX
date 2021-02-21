@@ -31,6 +31,7 @@ system_libs = [
 ]
 
 skip_libs = [
+    'libGL.so.1',
     'libX11.so.6',
     'libasound.so.2',
     'libstdc++.so.6',

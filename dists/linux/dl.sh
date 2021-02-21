@@ -18,6 +18,7 @@ deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.36.tar.xz,aec9
 # deps+=('libcwrap.h,https://raw.githubusercontent.com/wheybags/glibc_version_header/master/version_headers/force_link_glibc_2.10.2.h,aff0c46cf3005fe15c49688e74df62a9988855a5')
 deps+=('patchelf,https://github.com/NixOS/patchelf/archive/0.9.tar.gz,c068c60a67388fbf9267142516d3a8cd6ffc4397')
 deps+=('opencv,https://github.com/opencv/opencv/archive/4.1.1.tar.gz,a7beeaada9b6c45a389b9aee391e82c092537819')
+deps+=('projectm,https://github.com/projectM-visualizer/projectm/releases/download/v2.2.1/projectM-2.2.1.tar.gz,bfd0cb09797384a814c3585b7b0369fc1c8b04fe')
 # if [ -f /.dockerenv ]; then
 # 	deps+=('fpc-x86_64,https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.x86_64-linux.tar,0720e428eaea423423e1b76a7267d6749c3399f4')
 # 	deps+=('fpc-i686,https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.i386-linux.tar,0a51364bd1a37f1e776df5357ab5bfca8cc7ddeb')
