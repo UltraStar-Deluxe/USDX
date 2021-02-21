@@ -97,6 +97,7 @@ task_sdl2() {
 		--disable-arts --disable-esd --disable-nas \
 		--disable-sndio --enable-pulseaudio-shared --enable-pulseaudio \
 		--enable-jack --enable-jack-shared \
+		--enable-video-opengl --disable-video-opengles1 \
 		--enable-video-wayland --enable-wayland-shared \
 		--enable-video-kmsdrm --enable-kmsdrm-shared \
 		--disable-video-vulkan \
@@ -344,6 +345,7 @@ task_opencv() {
 		-DWITH_TIFF=OFF \
 		-DWITH_WEBP=OFF \
 		-DWITH_JASPER=OFF \
+		-DWITH_OPENJPEG=OFF \
 		-DWITH_PNG=OFF \
 		-DWITH_OPENEXR=OFF \
 		-DWITH_GDAL=OFF \
