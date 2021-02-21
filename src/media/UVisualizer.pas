@@ -83,7 +83,7 @@ uses
   UPlatform,
   ULog;
 
-{$IF (PROJECTM_VERSION >= 1000000) and ((PROJECTM_VERSION < 2000000) or not Defined(Relocatable))}
+{$IF (PROJECTM_VERSION >= 1000000) and ((PROJECTM_VERSION < 2000000) or not Defined(UseLocalProjectMPresets))}
 {$DEFINE UseConfigInp}
 {$IFEND}
 

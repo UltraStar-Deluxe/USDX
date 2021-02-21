@@ -70,8 +70,13 @@
 {$IFEND}
 
 {$@DEFINE_HAVE_PROJECTM@ HaveProjectM}
+{$@DEFINE_USE_LOCAL_PROJECTM_PRESETS@ UseLocalProjectMPresets}
 {$IF Defined(HaveProjectM) and Defined(IncludeConstants)}
-  ProjectM_DataDir = '@libprojectM_DATADIR@';
+  {$IF Defined(UseLocalProjectMPresets)}
+    ProjectM_DataDir = 'visuals/projectM';
+  {$ELSE}
+    ProjectM_DataDir = '@libprojectM_DATADIR@';
+  {$IFEND}
   PROJECTM_VERSION_MAJOR   = @libprojectM_VERSION_MAJOR@;
   PROJECTM_VERSION_MINOR   = @libprojectM_VERSION_MINOR@;
   PROJECTM_VERSION_RELEASE = @libprojectM_VERSION_RELEASE@;

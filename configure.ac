@@ -96,6 +96,11 @@ AC_ARG_WITH([libprojectM],
       [enable projectM visualization support @<:@default=no@:>@])],
     [with_libprojectM=$withval], [with_libprojectM="no"])
 
+AC_ARG_WITH([local-projectM-presets],
+    [AS_HELP_STRING([--with-local-projectM-presets],
+		    [use the presets from game/visuals/ @<:@default=no@:>@])],
+    [with_local_projectM_presets=$withval], [with_local_projectM_presets="no"])
+
 # add OpenCV option
 AC_ARG_WITH([opencv-cxx-api],
     [AS_HELP_STRING([--with-opencv-cxx-api],
@@ -404,6 +409,7 @@ else
 	libprojectM_USE_CWRAPPER=no
 fi
 AC_SUBST(USE_PROJECTM_CWRAPPER, $libprojectM_USE_CWRAPPER)
+AC_SUBST_DEFINE(USE_LOCAL_PROJECTM_PRESETS, $with_local_projectM_presets)
 
 opencv_core_standalone=no
 opencv_imgproc_standalone=no
