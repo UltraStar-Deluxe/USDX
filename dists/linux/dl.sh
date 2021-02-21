@@ -80,7 +80,7 @@ for i in "${deps[@]}"; do
 		echo "Extracting $name"
 		rm -rf "deps/$name"
 		mkdir -p "deps/$name"
-		tar -x${compressor}f "deps/dl/$bname" -C "deps/$name" --strip-components=1
+		tar -x${compressor}f "deps/dl/$bname" -C "deps/$name" --strip-components=1 --warning=no-unknown-keyword
 		;;
 
 	*)

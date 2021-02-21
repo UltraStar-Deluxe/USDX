@@ -27,6 +27,14 @@ export CXX="g++"
 # multicore compilation
 makearg="-j$(nproc)"
 
+hide() {
+	echo "Silently executing $@"
+	if ! "$@" > "$SRC/build.log" 2>&1 ; then
+		cat "$SRC/build.log"
+		exit 1
+	fi
+}
+
 clean_prefix() {
 	tput setaf 2 && tput bold
 	echo "==> Cleaning prefix"
@@ -47,7 +55,7 @@ task_projectm() {
 		--disable-static
 	make $makearg
 	make install
-	make distclean
+	hide make distclean
 }
 
 task_AppImageKit() {
@@ -73,7 +81,7 @@ task_libpng() {
 		--disable-static
 	make $makearg
 	make install
-	make distclean
+	hide make distclean
 }
 
 task_wayland() {
@@ -82,9 +90,9 @@ task_wayland() {
 	tput sgr0
 	cd "$SRC/wayland"
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --disable-documentation
-	make $makearg
-	make install
-	make distclean
+	hide make $makearg
+	hide make install
+	hide make distclean
 }
 
 task_wayland_protocols() {
@@ -95,7 +103,7 @@ task_wayland_protocols() {
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
 	make $makearg
 	make install
-	make distclean
+	hide make distclean
 }
 
 task_sdl2() {
@@ -120,7 +128,7 @@ task_sdl2() {
 		--disable-rpath --disable-input-tslib
 	make $makearg
 	make install
-	make distclean
+	hide make distclean
 }
 
 task_libjpeg_turbo() {
@@ -161,7 +169,7 @@ task_sdl2_image() {
 		--disable-static --disable-jpg-shared --disable-png-shared --disable-webp-shared --disable-webp --disable-tif-shared --disable-tif
 	make $makearg
 	make install
-	make distclean
+	hide make distclean
 }
 
 task_sqlite() {
@@ -173,7 +181,7 @@ task_sqlite() {
 		--disable-static
 	make $makearg
 	make install
-	make distclean
+	hide make distclean
 }
 
 task_portaudio() {
@@ -185,7 +193,7 @@ task_portaudio() {
 		--without-jack --disable-static
 	make $makearg
 	make install
-	make distclean
+	hide make distclean
 }
 
 task_portmidi() {
@@ -237,9 +245,9 @@ task_yasm() {
 	cd "$SRC/yasm"
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
 		--disable-static
-	make $makearg
-	make install
-	make distclean
+	hide make $makearg
+	hide make install
+	hide make distclean
 }
 
 task_openssl() {
@@ -248,9 +256,9 @@ task_openssl() {
 	tput sgr0
 	cd "$SRC/openssl"
 	CC="$CC" CXX="$CXX" ./config --prefix="$PREFIX" no-hw threads shared zlib-dynamic
-	make $makearg
-	make install
-	make distclean
+	hide make $makearg
+	hide make install_sw install_ssldirs
+	hide make distclean
 }
 
 task_python() {
@@ -259,9 +267,9 @@ task_python() {
 	tput sgr0
 	cd "$SRC/python"
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX"
-	make $makearg
-	make install
-	make distclean
+	hide make $makearg
+	hide make install
+	hide make distclean
 }
 
 task_ninja() {
@@ -327,7 +335,7 @@ task_ffmpeg() {
 		--disable-vdpau
 	make $makearg
 	make install
-	make distclean
+	hide make distclean
 }
 
 # task_fpc() {
@@ -346,9 +354,9 @@ task_patchelf() {
 	tput sgr0
 	cd "$SRC/patchelf"
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX"
-	make $makearg
-	make install
-	make distclean
+	hide make $makearg
+	hide make install
+	hide make distclean
 }
 
 task_lua() {
