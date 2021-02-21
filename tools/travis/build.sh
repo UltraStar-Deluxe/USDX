@@ -81,6 +81,7 @@ else
     # ./configure
     # make
 
+    git fetch --unshallow --tags
     cd dists/linux
     make compress
     filename="UltraStarDeluxe-$(uname -m).tar.xz"
