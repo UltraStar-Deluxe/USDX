@@ -35,6 +35,17 @@ hide() {
 	fi
 }
 
+start_build() {
+	[ -d "$SRC/$1" ] || return 1
+	cd "$SRC/$1"
+	if [ $# -gt 1 ] ; then
+		shift
+	fi
+	tput setaf 2 && tput bold
+	echo "==> Building $*"
+	tput sgr0
+}
+
 clean_prefix() {
 	tput setaf 2 && tput bold
 	echo "==> Cleaning prefix"
@@ -44,10 +55,7 @@ clean_prefix() {
 }
 
 task_projectm() {
-	tput setaf 2 && tput bold
-	echo "==> Building projectM"
-	tput sgr0
-	cd "$SRC/projectm"
+	start_build projectm projectM || return 0
 	patch -p1 < $root/../flatpak/patches/projectM-2.2.1.patch
 	chmod a+x autogen.sh
 	./autogen.sh
@@ -59,10 +67,7 @@ task_projectm() {
 }
 
 task_AppImageKit() {
-	tput setaf 2 && tput bold
-	echo "==> Building AppImageKit"
-	tput sgr0
-	cd "$SRC/AppImageKit"
+	start_build AppImageKit || return 0
 	! pkg-config --exists libarchive || export EXTRA_CMAKE_FLAGS="-DUSE_SYSTEM_LIBARCHIVE=ON"
 	./build.sh
 	unset EXTRA_CMAKE_FLAGS
@@ -73,10 +78,7 @@ task_AppImageKit() {
 }
 
 task_libpng() {
-	tput setaf 2 && tput bold
-	echo "==> Building libpng"
-	tput sgr0
-	cd "$SRC/libpng"
+	start_build libpng || return 0
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
 		--disable-static
 	make $makearg
@@ -85,10 +87,7 @@ task_libpng() {
 }
 
 task_wayland() {
-	tput setaf 2 && tput bold
-	echo "==> Building wayland"
-	tput sgr0
-	cd "$SRC/wayland"
+	start_build wayland Wayland || return 0
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --disable-documentation
 	hide make $makearg
 	hide make install
@@ -96,10 +95,7 @@ task_wayland() {
 }
 
 task_wayland_protocols() {
-	tput setaf 2 && tput bold
-	echo "==> Building wayland-protocols"
-	tput sgr0
-	cd "$SRC/wayland-protocols"
+	start_build wayland-protocols || return 0
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
 	make $makearg
 	make install
@@ -107,10 +103,7 @@ task_wayland_protocols() {
 }
 
 task_sdl2() {
-	tput setaf 2 && tput bold
-	echo "==> Building SDL2"
-	tput sgr0
-	cd "$SRC/SDL2"
+	start_build SDL2 || return 0
 	bash ./autogen.sh
 	sed -i 's/GBM_BO_USE_CURSOR\>/&_64X64/g' src/video/kmsdrm/SDL_kmsdrmmouse.c
 	mkdir -p build
@@ -132,10 +125,7 @@ task_sdl2() {
 }
 
 task_libjpeg_turbo() {
-	tput setaf 2 && tput bold
-	echo "==> Building libjpeg-turbo"
-	tput sgr0
-	cd "$SRC/libjpeg-turbo"
+	start_build libjpeg-turbo || return 0
 	rm -rf build
 	mkdir -p build
 	cd build
@@ -160,10 +150,7 @@ task_libjpeg_turbo() {
 }
 
 task_sdl2_image() {
-	tput setaf 2 && tput bold
-	echo "==> Building SDL2_image"
-	tput sgr0
-	cd "$SRC/SDL2_image"
+	start_build SDL2_image || return 0
 	bash ./autogen.sh
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
 		--disable-static --disable-jpg-shared --disable-png-shared --disable-webp-shared --disable-webp --disable-tif-shared --disable-tif
@@ -173,10 +160,7 @@ task_sdl2_image() {
 }
 
 task_sqlite() {
-	tput setaf 2 && tput bold
-	echo "==> Building SQLite"
-	tput sgr0
-	cd "$SRC/sqlite"
+	start_build sqlite SQLite || return 0
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
 		--disable-static
 	make $makearg
@@ -185,10 +169,7 @@ task_sqlite() {
 }
 
 task_portaudio() {
-	tput setaf 2 && tput bold
-	echo "==> Building PortAudio"
-	tput sgr0
-	cd "$SRC/portaudio"
+	start_build portaudio PortAudio || return 0
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
 		--without-jack --disable-static
 	make $makearg
@@ -197,9 +178,7 @@ task_portaudio() {
 }
 
 task_portmidi() {
-	tput setaf 2 && tput bold
-	echo "==> Building PortMidi"
-	tput sgr0
+	start_build portmidi PortMidi || return 0
 	cd "$SRC"
 	find portmidi/ portmidi-debian/patches/ -type f | while read a ; do
 		tr -d '\r' < "$a" > t
@@ -228,10 +207,7 @@ task_portmidi() {
 }
 
 task_nasm() {
-	tput setaf 2 && tput bold
-	echo "==> Building NASM"
-	tput sgr0
-	cd "$SRC/nasm"
+	start_build nasm NASM || return 0
 	./configure --prefix="$PREFIX" CC="$CC" CXX="$CXX"
 	hide make $makearg
 	hide make install
@@ -239,10 +215,7 @@ task_nasm() {
 }
 
 task_openssl() {
-	tput setaf 2 && tput bold
-	echo "==> Building OpenSSL"
-	tput sgr0
-	cd "$SRC/openssl"
+	start_build openssl OpenSSL || return 0
 	CC="$CC" CXX="$CXX" ./config --prefix="$PREFIX" no-hw threads shared zlib-dynamic
 	hide make $makearg
 	hide make install_sw install_ssldirs
@@ -250,10 +223,7 @@ task_openssl() {
 }
 
 task_python() {
-	tput setaf 2 && tput bold
-	echo "==> Building Python"
-	tput sgr0
-	cd "$SRC/python"
+	start_build python Python || return 0
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX"
 	hide make $makearg
 	hide make install
@@ -268,18 +238,12 @@ task_ninja() {
 }
 
 task_meson() {
-	tput setaf 2 && tput bold
-	echo "==> Building meson"
-	tput sgr0
-	cd "$SRC/meson"
+	start_build meson || return 0
 	pip3 install .
 }
 
 task_dav1d() {
-	tput setaf 2 && tput bold
-	echo "==> Building dav1d"
-	tput sgr0
-	cd "$SRC/dav1d"
+	start_build dav1d || return 0
 	CC="$CC" CXX="$CXX" meson setup --prefix "$PREFIX" --libdir=lib -Denable_tools=false -Denable_tests=false build
 	ninja -C build $makearg
 	ninja -C build install
@@ -287,10 +251,7 @@ task_dav1d() {
 }
 
 task_ffmpeg() {
-	tput setaf 2 && tput bold
-	echo "==> Building FFmpeg"
-	tput sgr0
-	cd "$SRC/ffmpeg"
+	start_build ffmpeg FFmpeg || return 0
 	# disable vaapi until it can be tested
 	PKG_CONFIG_PATH="$PKG_CONFIG_PATH" \
 	./configure --prefix="$PREFIX" \
@@ -338,10 +299,7 @@ task_ffmpeg() {
 # }
 
 task_patchelf() {
-	tput setaf 2 && tput bold
-	echo "==> Building PatchELF"
-	tput sgr0
-	cd "$SRC/patchelf"
+	start_build patchelf PatchELF || return 0
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX"
 	hide make $makearg
 	hide make install
@@ -349,10 +307,7 @@ task_patchelf() {
 }
 
 task_lua() {
-	tput setaf 2 && tput bold
-	echo "==> Building Lua"
-	tput sgr0
-	cd "$SRC/lua"
+	start_build lua Lua || return 0
 	if fgrep -q 'This is Lua 5.3.5,' README ; then
 		sed -i '/^R=/s/4/5/' Makefile
 	fi
@@ -376,10 +331,7 @@ EOF
 }
 
 task_opencv() {
-	tput setaf 2 && tput bold
-	echo "==> Building OpenCV"
-	tput sgr0
-	cd "$SRC/opencv"
+	start_build opencv OpenCV || return 0
 	rm -rf build
 	mkdir -p build
 	cd build
@@ -433,11 +385,8 @@ task_opencv() {
 }
 
 task_usdx() {
-	tput setaf 2 && tput bold
-	echo "==> Building UltraStar Deluxe"
-	tput sgr0
+	start_build ../../.. UltraStar Deluxe
 	local OUTPUT="$root/build/$ARCH"
-	cd "$root/../.."
 	bash ./autogen.sh
 	./configure --prefix=/usr PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" CC="$CC" CXX="$CXX" --enable-debug --with-opencv-cxx-api --without-portaudio --with-libprojectM --with-local-projectM-presets
 	sleep 1
