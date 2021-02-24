@@ -11,7 +11,6 @@ deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.0.14.tar.gz,212b17d988c417a1a
 deps+=('SDL2_image,https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.5.tar.gz,c0aed07994f670a3758f6b8b93d9034a58df5781')
 deps+=('sqlite,https://www.sqlite.org/2021/sqlite-autoconf-3340100.tar.gz,c20286e11fe5c2e3712ce74890e1692417de6890')
 deps+=('nasm,https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.xz,d338409a03fc6d1508102881a675a00275fcb879')
-deps+=('yasm,http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz,b7574e9f0826bedef975d64d3825f75fbaeef55e')
 deps+=('dav1d,https://downloads.videolan.org/pub/videolan/dav1d/0.8.1/dav1d-0.8.1.tar.xz,508f2314488c6e0f7927a56b2554e760abcd12cd')
 deps+=('ffmpeg,https://www.ffmpeg.org/releases/ffmpeg-4.2.4.tar.xz,eca62adfdda5cbb5fc3af9dd236c058c046201a1')
 deps+=('portmidi,https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip,f45bf4e247c0d7617deacd6a65d23d9fddae6117')

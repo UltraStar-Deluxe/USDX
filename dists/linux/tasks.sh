@@ -238,18 +238,6 @@ task_nasm() {
 	hide make distclean
 }
 
-task_yasm() {
-	tput setaf 2 && tput bold
-	echo "==> Building Yasm"
-	tput sgr0
-	cd "$SRC/yasm"
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
-		--disable-static
-	hide make $makearg
-	hide make install
-	hide make distclean
-}
-
 task_openssl() {
 	tput setaf 2 && tput bold
 	echo "==> Building OpenSSL"
@@ -506,8 +494,6 @@ if [ "$1" == "all_deps" ]; then
 	task_AppImageKit
 	echo
 	task_nasm
-	echo
-	task_yasm
 	echo
 
 	task_libjpeg_turbo
