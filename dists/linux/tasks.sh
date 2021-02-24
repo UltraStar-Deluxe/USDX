@@ -89,6 +89,14 @@ task_projectm() {
 	hide make distclean
 }
 
+task_zsync() {
+	start_build zsync || return 0
+	./configure --prefix="$PREFIX" CC="$CC" CXX="$CXX"
+	hide make $makearg
+	hide make install
+	hide make distclean
+}
+
 task_AppImageKit() {
 	start_build AppImageKit || return 0
 	! pkg-config --exists libarchive || export EXTRA_CMAKE_FLAGS="-DUSE_SYSTEM_LIBARCHIVE=ON"
@@ -479,6 +487,8 @@ if [ "$1" == "all_deps" ]; then
 	task_openssl
 	echo
 	task_cmake
+	echo
+	task_zsync
 	echo
 	task_AppImageKit
 	echo

@@ -30,6 +30,8 @@ deps+=('projectm,https://github.com/projectM-visualizer/projectm/releases/downlo
 # 	deps+=('fpc-i686,https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.i386-linux.tar,0a51364bd1a37f1e776df5357ab5bfca8cc7ddeb')
 # fi
 
+deps+=('zsync,http://zsync.moria.org.uk/download/zsync-0.6.2.tar.bz2,5e69f084c8adaad6a677b68f7388ae0f9507617a')
+
 for i in "${deps[@]}"; do
 	IFS=',' read -a dep <<< "$i"
 	name="${dep[0]}"
