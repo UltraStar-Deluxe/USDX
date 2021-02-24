@@ -54,6 +54,29 @@ clean_prefix() {
 	mkdir -pv $PREFIX/{etc,bin,include,lib}
 }
 
+getver() {
+	set -- `"$@" | tr '\n' ' ' | sed 's/\([^0-9[:space:]][0-9]*\|[[:space:]]\)*\(\<[0-9\.]\+\).*/\2/;s/\./ /g'` 0 0 0
+	echo $(($1 * 1000000 + $2 * 1000 + $3))
+}
+
+
+task_cmake() {
+	if ! start_build cmake ; then
+		if [ `getver cmake3 --version` -gt `getver cmake --version` ] ; then
+			ln -sv `which cmake3` "$PREFIX/bin/cmake"
+		fi
+		return 0
+	fi
+	rm -rf build
+	mkdir -p build
+	cd build
+	hide ../bootstrap --parallel=$(nproc) --prefix="$PREFIX" -- -DCMAKE_INSTALL_LIBDIR:PATH="lib"
+	hide make $makearg
+	hide make install
+	cd ..
+	rm -r build
+}
+
 task_projectm() {
 	start_build projectm projectM || return 0
 	patch -p1 < $root/../flatpak/patches/projectM-2.2.1.patch
@@ -442,6 +465,10 @@ if [ "$1" == "all_deps" ]; then
 	clean_prefix
 	echo
 
+	task_openssl
+	echo
+	task_cmake
+	echo
 	task_AppImageKit
 	echo
 	task_nasm
@@ -469,8 +496,6 @@ if [ "$1" == "all_deps" ]; then
 	task_lua
 	echo
 
-	task_openssl
-	echo
 	task_python
 	echo
 	task_ninja

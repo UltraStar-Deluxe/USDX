@@ -4,6 +4,7 @@ set -e
 
 declare -a deps
 deps+=('openssl,https://www.openssl.org/source/openssl-1.1.1j.tar.gz,04c340b086828eecff9df06dceff196790bb9268')
+deps+=('cmake,https://github.com/Kitware/CMake/releases/download/v3.19.5/cmake-3.19.5.tar.gz,b8b9b9ccd54ceb35dd0e9a4348696d8a127fcd88')
 deps+=('python,https://www.python.org/ftp/python/3.9.2/Python-3.9.2.tar.xz,110ca5bca7989f9558a54ee6762e6774a4b9644a')
 deps+=('meson,https://github.com/mesonbuild/meson/releases/download/0.57.1/meson-0.57.1.tar.gz,eb87a41d4265aec1223c446c344455b674d4538c')
 deps+=('wayland,https://wayland.freedesktop.org/releases/wayland-1.19.0.tar.xz,9ae0a89cfe6798250b19c72a987bda734d269060')
