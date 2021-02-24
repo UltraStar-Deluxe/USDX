@@ -71,9 +71,8 @@ task_AppImageKit() {
 	! pkg-config --exists libarchive || export EXTRA_CMAKE_FLAGS="-DUSE_SYSTEM_LIBARCHIVE=ON"
 	./build.sh
 	unset EXTRA_CMAKE_FLAGS
-	cp build/out/appimagetool $PREFIX/bin/
-	mkdir $PREFIX/lib/appimagekit
-	cp build/out/mksquashfs $PREFIX/lib/appimagekit
+	cp -a build/out/appimagetool.AppDir $PREFIX/bin/
+	ln -s appimagetool.AppDir/AppRun $PREFIX/bin/appimagetool
 	rm -fR build
 }
 
