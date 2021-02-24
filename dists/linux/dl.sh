@@ -3,17 +3,56 @@
 set -e
 
 declare -a deps
-deps+=('openssl,https://www.openssl.org/source/openssl-1.1.1j.tar.gz,04c340b086828eecff9df06dceff196790bb9268')
-deps+=('cmake,https://github.com/Kitware/CMake/releases/download/v3.19.5/cmake-3.19.5.tar.gz,b8b9b9ccd54ceb35dd0e9a4348696d8a127fcd88')
-deps+=('python,https://www.python.org/ftp/python/3.9.2/Python-3.9.2.tar.xz,110ca5bca7989f9558a54ee6762e6774a4b9644a')
-deps+=('meson,https://github.com/mesonbuild/meson/releases/download/0.57.1/meson-0.57.1.tar.gz,eb87a41d4265aec1223c446c344455b674d4538c')
-deps+=('ninja,https://github.com/ninja-build/ninja/archive/v1.10.2.tar.gz,8d2e8c1c070c27fb9dc46b4a6345bbb1de7ccbaf')
-deps+=('wayland,https://wayland.freedesktop.org/releases/wayland-1.19.0.tar.xz,9ae0a89cfe6798250b19c72a987bda734d269060')
+
+older() {
+	local minver=$1
+	shift
+	set -- `"$@" | tr '\n' ' ' | sed 's/\([^0-9[:space:]][0-9]*\|[[:space:]]\)*\(\<[0-9\.]\+\).*/\2/;s/\./ /g'` 0 0 0
+	local toolver=$(($1 * 1000000 + $2 * 1000 + $3))
+	set -- `echo $minver | sed 's/\./ /g'` 0 0 0
+	local minver=$(($1 * 1000000 + $2 * 1000 + $3))
+	[ $toolver -lt $minver ]
+}
+
+needossl=no
+
+if older 3.5.1 cmake --version && older 3.5.1 cmake3 --version ; then
+	deps+=('cmake,https://github.com/Kitware/CMake/releases/download/v3.19.5/cmake-3.19.5.tar.gz,b8b9b9ccd54ceb35dd0e9a4348696d8a127fcd88')
+	needossl=yes
+fi
+
+if older 0.48 meson --version ; then
+	deps+=('meson,https://github.com/mesonbuild/meson/releases/download/0.57.1/meson-0.57.1.tar.gz,eb87a41d4265aec1223c446c344455b674d4538c')
+
+	if older 3.6 python3 --version ; then
+		deps+=('python,https://www.python.org/ftp/python/3.9.2/Python-3.9.2.tar.xz,110ca5bca7989f9558a54ee6762e6774a4b9644a')
+		needossl=yes
+	fi
+
+	if older 1.8.2 ninja --version ; then
+		deps+=('ninja,https://github.com/ninja-build/ninja/archive/v1.10.2.tar.gz,8d2e8c1c070c27fb9dc46b4a6345bbb1de7ccbaf')
+	fi
+fi
+
+if [ $needossl = yes ] ; then
+	if older 1.0.2 pkg-config --modversion libssl ; then
+		deps+=('openssl,https://www.openssl.org/source/openssl-1.1.1j.tar.gz,04c340b086828eecff9df06dceff196790bb9268')
+	fi
+fi
+
+if older 1.8 wayland-scanner --version ; then
+	deps+=('wayland,https://wayland.freedesktop.org/releases/wayland-1.19.0.tar.xz,9ae0a89cfe6798250b19c72a987bda734d269060')
+fi
+
 deps+=('wayland-protocols,https://wayland.freedesktop.org/releases/wayland-protocols-1.20.tar.xz,e78c739a3a85477ed524b81e8bb75efe7f8bf4df')
 deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.0.14.tar.gz,212b17d988c417a1a905ab09c50d1845cc48ddb7')
 deps+=('SDL2_image,https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.5.tar.gz,c0aed07994f670a3758f6b8b93d9034a58df5781')
 deps+=('sqlite,https://www.sqlite.org/2021/sqlite-autoconf-3340100.tar.gz,c20286e11fe5c2e3712ce74890e1692417de6890')
-deps+=('nasm,https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.xz,d338409a03fc6d1508102881a675a00275fcb879')
+
+if older 2.14 nasm --version ; then
+	deps+=('nasm,https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.xz,d338409a03fc6d1508102881a675a00275fcb879')
+fi
+
 deps+=('dav1d,https://downloads.videolan.org/pub/videolan/dav1d/0.8.1/dav1d-0.8.1.tar.xz,508f2314488c6e0f7927a56b2554e760abcd12cd')
 deps+=('ffmpeg,https://www.ffmpeg.org/releases/ffmpeg-4.2.4.tar.xz,eca62adfdda5cbb5fc3af9dd236c058c046201a1')
 deps+=('portmidi,https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip,f45bf4e247c0d7617deacd6a65d23d9fddae6117')
@@ -22,7 +61,11 @@ deps+=('lua,https://www.lua.org/ftp/lua-5.3.6.tar.gz,f27d20d6c81292149bc4308525a
 deps+=('libjpeg-turbo,https://download.sourceforge.net/libjpeg-turbo/libjpeg-turbo-2.0.6.tar.gz,5406c7676d7df89fb4da791ad5af51202910fb25')
 deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.37.tar.xz,3ab93fabbf4c27e1c4724371df408d9a1bd3f656')
 # deps+=('libcwrap.h,https://raw.githubusercontent.com/wheybags/glibc_version_header/master/version_headers/force_link_glibc_2.10.2.h,aff0c46cf3005fe15c49688e74df62a9988855a5')
-deps+=('patchelf,https://github.com/NixOS/patchelf/releases/download/0.12/patchelf-0.12.tar.bz2,58cf949052cc63cdd52e9ab347dcafc6c6c36f33')
+
+if ! patchelf 2>&1 | grep -q syntax ; then
+	deps+=('patchelf,https://github.com/NixOS/patchelf/releases/download/0.12/patchelf-0.12.tar.bz2,58cf949052cc63cdd52e9ab347dcafc6c6c36f33')
+fi
+
 deps+=('opencv,https://github.com/opencv/opencv/archive/4.5.1.tar.gz,3e464886dc9907e879e2fc7097364427e96861f6')
 deps+=('projectm,https://github.com/projectM-visualizer/projectm/releases/download/v2.2.1/projectM-2.2.1.tar.gz,bfd0cb09797384a814c3585b7b0369fc1c8b04fe')
 # if [ -f /.dockerenv ]; then
@@ -30,7 +73,9 @@ deps+=('projectm,https://github.com/projectM-visualizer/projectm/releases/downlo
 # 	deps+=('fpc-i686,https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.i386-linux.tar,0a51364bd1a37f1e776df5357ab5bfca8cc7ddeb')
 # fi
 
-deps+=('zsync,http://zsync.moria.org.uk/download/zsync-0.6.2.tar.bz2,5e69f084c8adaad6a677b68f7388ae0f9507617a')
+if ! true | zsyncmake -V >/dev/null ; then
+	deps+=('zsync,http://zsync.moria.org.uk/download/zsync-0.6.2.tar.bz2,5e69f084c8adaad6a677b68f7388ae0f9507617a')
+fi
 
 for i in "${deps[@]}"; do
 	IFS=',' read -a dep <<< "$i"
