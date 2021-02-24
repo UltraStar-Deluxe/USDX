@@ -2,6 +2,12 @@
 
 set -eo pipefail
 
+SUDO=
+if docker -v > /dev/null && ! docker version >/dev/null 2>&1 ; then
+	echo Assuming sudo has to be used to be able to connect to Docker daemon
+	SUDO=sudo
+fi
+
 targetarch="${ARCH-$(uname -m)}"
 
 if [ "$targetarch" == "x86_64" ]; then
@@ -24,9 +30,9 @@ replacements="
 	s!%%fpcpackage%%!$fpcpackage!g;
 "
 
-sed -r "$replacements" Dockerfile.in | docker build --force-rm=true --rm -t "$imagename" -
+sed -r "$replacements" Dockerfile.in | $SUDO docker build --force-rm=true --rm -t "$imagename" -
 
-docker run --rm -it \
+$SUDO docker run --rm -it \
 	-v "$(realpath ../..):/src" \
 	-v "/etc/passwd:/etc/passwd:ro" \
 	-v "/etc/group:/etc/group:ro" \
