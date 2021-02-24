@@ -271,7 +271,8 @@ task_meson() {
 	tput setaf 2 && tput bold
 	echo "==> Building meson"
 	tput sgr0
-	pip3 install meson
+	cd "$SRC/meson"
+	pip3 install .
 }
 
 task_dav1d() {
