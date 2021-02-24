@@ -7,6 +7,7 @@ deps+=('openssl,https://www.openssl.org/source/openssl-1.1.1j.tar.gz,04c340b0868
 deps+=('cmake,https://github.com/Kitware/CMake/releases/download/v3.19.5/cmake-3.19.5.tar.gz,b8b9b9ccd54ceb35dd0e9a4348696d8a127fcd88')
 deps+=('python,https://www.python.org/ftp/python/3.9.2/Python-3.9.2.tar.xz,110ca5bca7989f9558a54ee6762e6774a4b9644a')
 deps+=('meson,https://github.com/mesonbuild/meson/releases/download/0.57.1/meson-0.57.1.tar.gz,eb87a41d4265aec1223c446c344455b674d4538c')
+deps+=('ninja,https://github.com/ninja-build/ninja/archive/v1.10.2.tar.gz,8d2e8c1c070c27fb9dc46b4a6345bbb1de7ccbaf')
 deps+=('wayland,https://wayland.freedesktop.org/releases/wayland-1.19.0.tar.xz,9ae0a89cfe6798250b19c72a987bda734d269060')
 deps+=('wayland-protocols,https://wayland.freedesktop.org/releases/wayland-protocols-1.20.tar.xz,e78c739a3a85477ed524b81e8bb75efe7f8bf4df')
 deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.0.14.tar.gz,212b17d988c417a1a905ab09c50d1845cc48ddb7')

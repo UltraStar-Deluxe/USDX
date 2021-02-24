@@ -254,10 +254,21 @@ task_python() {
 }
 
 task_ninja() {
-	tput setaf 2 && tput bold
-	echo "==> Building ninja"
-	tput sgr0
-	pip3 install ninja
+	start_build ninja || return 0
+	mkdir -p build
+	cd build
+	cmake \
+		-DCMAKE_CACHEFILE_DIR="$(pwd)/out" \
+		-DCMAKE_INSTALL_PREFIX="$PREFIX" \
+		-DCMAKE_INSTALL_LIBDIR:PATH="lib" \
+		-DCMAKE_BUILD_TYPE="Release" \
+		-DCMAKE_C_FLAGS="$CFLAGS" \
+		-DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
+		..
+	hide make
+	hide make install
+	cd ..
+	rm -r build
 }
 
 task_meson() {
