@@ -46,6 +46,21 @@ start_build() {
 	tput sgr0
 }
 
+activate_python() {
+	if [ -e "$PREFIX/bin/activate" ] && [ -z "$VIRTUAL_ENV" ] ; then
+		source "$PREFIX/bin/activate"
+	fi
+}
+
+activate_python
+
+will_install_python3_module() {
+	if ! [ -x "$PREFIX/bin/python3" ] ; then
+		python3 -m venv "$PREFIX"
+	fi
+	activate_python
+}
+
 clean_prefix() {
 	tput setaf 2 && tput bold
 	echo "==> Cleaning prefix"
@@ -281,6 +296,7 @@ task_ninja() {
 
 task_meson() {
 	start_build meson || return 0
+	will_install_python3_module
 	pip3 install .
 }
 
