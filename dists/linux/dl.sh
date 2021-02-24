@@ -103,4 +103,22 @@ for i in "${deps[@]}"; do
 	esac
 done
 
-git clone -b 12 --depth 1 --recursive https://github.com/AppImage/AppImageKit deps/AppImageKit
+git_source() {
+	if ! [ -d deps/$1 ] ; then
+		git clone -b $3 --depth 1 --recursive $2 deps/$1
+	else
+		(
+			cd deps/$1
+			git checkout -f $3
+			git submodule update --init -f --checkout --recursive
+			find -name .git | while read a ; do
+				export GIT_DIR=$a
+				export GIT_WORK_TREE=${a%/.git}
+				echo cleaning $GIT_WORK_TREE
+				git clean -d -f -x
+			done
+		)
+	fi
+}
+
+git_source AppImageKit https://github.com/AppImage/AppImageKit 12
