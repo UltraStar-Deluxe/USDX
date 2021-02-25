@@ -17,7 +17,6 @@ export CMAKE_PREFIX_PATH="$PREFIX:$CMAKE_PREFIX_PATH"
 export LDFLAGS="-Wl,-z,now -Wl,-z,relro -L$PREFIX/lib"
 export CPPFLAGS="-I$PREFIX/include"
 export CFLAGS="-O2 -fPIE $CPPFLAGS"
-[ "$ARCH" == "i686" ] && export CFLAGS+=" -mincoming-stack-boundary=2"
 export CXXFLAGS="$CFLAGS"
 
 export CC="gcc"

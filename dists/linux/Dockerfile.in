@@ -12,8 +12,10 @@ RUN yum install -y --setopt=tsflags=nodocs \
     dbus-devel systemd-devel zlib-devel libffi-devel expat-devel libxml2-devel libtool \
     wget vim-common desktop-file-utils glib2-devel cairo-devel fuse-devel libarchive-devel %%epelpkgs%%
 
-RUN yum install -y --setopt=tsflags=nodocs \
-	"%%fpcpackage%%"
+RUN mkdir /tmp/fpcinst \
+    && wget --progress=dot:giga -O - %%fpcpackage%% | tar xC /tmp/fpcinst --strip-components=1 \
+    && (echo /usr/local ; echo n ; echo n) | (cd /tmp/fpcinst ; ./install.sh) \
+    && rm -Rf /tmp/fpcinst
 
 RUN yum clean all -y
 

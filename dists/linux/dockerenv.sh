@@ -13,13 +13,13 @@ targetarch="${ARCH-$(uname -m)}"
 if [ "$targetarch" == "x86_64" ]; then
 	imagename="usdx/buildenv:centos7"
 	from="centos:7"
-	fpcpackage="https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4-1.x86_64.rpm"
+	fpcpackage="https://sourceforge.net/projects/freepascal/files/Linux/3.2.0/fpc-3.2.0-x86_64-linux.tar"
 	prefixcmd="linux64"
 	epelpkgs="cmake3 meson ninja-build patchelf"
 elif [ "$targetarch" == "i386" ] || [ "$targetarch" == "i686" ]; then
 	imagename="usdx/buildenv:centos7-i386"
 	from="i386/centos:7"
-	fpcpackage="https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4-1.i686.rpm"
+	fpcpackage="https://sourceforge.net/projects/freepascal/files/Linux/3.2.0/fpc-3.2.0.i386-linux.tar"
 	prefixcmd="linux32"
 	epelpkgs=""
 else
