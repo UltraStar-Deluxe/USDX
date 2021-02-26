@@ -36,6 +36,8 @@ hide() {
 
 start_build() {
 	[ -d "$SRC/$1" ] || return 1
+	du -s "$PREFIX"
+	date
 	cd "$SRC/$1"
 	if [ $# -gt 1 ] ; then
 		shift
