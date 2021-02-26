@@ -5,6 +5,7 @@ set -eo pipefail
 root=$(pwd)
 
 SRC="$root/deps"
+mkdir -p "$SRC"
 export SHELL=/bin/bash
 ARCH=$(uname -m)
 export PREFIX="$root/prefix/$ARCH"
