@@ -5,6 +5,15 @@ image:
   - Visual Studio 2015
   - Ubuntu2004
 
+configuration:
+  - x86-32
+  - x86-64
+
+matrix:
+  exclude:
+    - image: Visual Studio 2015
+      configuration: x86-64
+
 for:
   # Windows
   -
@@ -53,15 +62,26 @@ for:
       - sh: sudo apt update -qq
       - sh: sudo apt install -y elfutils unzip librsvg2-common flatpak flatpak-builder
       - sh: flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+      - sh: |
+            case "$CONFIGURATION" in
+            x86-32)
+                FLATPAK_ARCH=i386
+                sed -i "/runtime-version:/s/:.*/:"" '18.08'/" dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
+                sed -i "/name:"" dav1d/,/^-/{/disabled:/s/true/false/}" dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
+                ;;
+            x86-64)
+                FLATPAK_ARCH=x86_64
+                ;;
+            esac
       - sh: RUNTIME_VERSION=`sed -n "/runtime-version:/s/.*'\([^']*\)'/\1/p" dists/flatpak/eu.usdx.UltraStarDeluxe.yaml`
-      - sh: flatpak install --user --noninteractive -y flathub org.freedesktop.Platform//$RUNTIME_VERSION org.freedesktop.Sdk//$RUNTIME_VERSION
+      - sh: flatpak install --user --noninteractive -y --arch $FLATPAK_ARCH flathub org.freedesktop.Platform//$RUNTIME_VERSION org.freedesktop.Sdk//$RUNTIME_VERSION
 
     build_script:
       - sh: "sed -i 's%^\\([[:space:]]*\\)-\\([[:space:]]*\\)\\(\\<type: dir\\>.*\\)%&\\n\\1 \\2skip:\\n\\1 \\2- flatpak%' dists/flatpak/*.yaml"
       - sh: mkdir flatpak
       - sh: cd flatpak
-      - sh: flatpak-builder --user --repo=repo build ../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
-      - sh: flatpak build-bundle repo ../UltraStarDeluxe-$package_version.$(flatpak --default-arch).flatpak eu.usdx.UltraStarDeluxe
+      - sh: flatpak-builder --user --arch $FLATPAK_ARCH --repo=repo build ../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
+      - sh: flatpak build-bundle --arch $FLATPAK_ARCH repo ../UltraStarDeluxe-$package_version.$FLATPAK_ARCH.flatpak eu.usdx.UltraStarDeluxe
       - sh: cd ..
       - sh: rm -Rf flatpak
 
