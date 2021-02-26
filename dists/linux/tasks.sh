@@ -279,7 +279,7 @@ task_ninja() {
 	start_build ninja || return 0
 	mkdir -p build
 	cd build
-	cmake \
+	if cmake \
 		-DCMAKE_CACHEFILE_DIR="$(pwd)/out" \
 		-DCMAKE_INSTALL_PREFIX="$PREFIX" \
 		-DCMAKE_INSTALL_LIBDIR:PATH="lib" \
@@ -287,9 +287,17 @@ task_ninja() {
 		-DCMAKE_C_FLAGS="$CFLAGS" \
 		-DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
 		..
-	hide make
-	hide make install
-	cd ..
+	then
+		hide make
+		hide make install
+		cd ..
+	else
+		cd ..
+		./configure.py --bootstrap
+		mv ninja "$PREFIX/bin"
+		rm build.ninja
+		find -name '*.pyc' | xargs rm
+	fi
 	rm -r build
 }
 
