@@ -62,7 +62,7 @@ elif [ "$VARIANT" = flatpak ]; then
         sed -i "/name: dav1d/,/^-/{/disabled:/s/true/false/}" $DIR/../../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
     fi
 
-elif [ "$VARIANT" = appimage ]; then
+elif [ "$VARIANT" = appimage ] && [ "$TRAVIS_DIST" = trusty ]; then
     # Linux build
 
     #sudo apt-get install fpc \
@@ -92,5 +92,11 @@ elif [ "$VARIANT" = appimage ]; then
         libfuse-dev libcairo2-dev libglib2.0-dev \
         zsync desktop-file-utils libarchive-dev \
         curl realpath
+
+elif [ "$VARIANT" = appimage ] ; then
+    # Linux build inside docker container
+
+    sudo apt-get install \
+        curl
 
 fi
