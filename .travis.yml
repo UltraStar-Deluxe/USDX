@@ -38,6 +38,7 @@ matrix:
       if: type = pull_request OR branch =~ flatpak
 
     - os: linux
+      env: VARIANT=appimage
       dist: trusty
       arch: amd64
       if: type = pull_request OR branch =~ appimage

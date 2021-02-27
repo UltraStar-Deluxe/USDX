@@ -74,7 +74,7 @@ elif [ "$VARIANT" = flatpak ]; then
         echo "    $link"
     fi
 
-else
+elif [ "$VARIANT" = appimage ] ; then
     # Linux build
 
     # ./autogen.sh

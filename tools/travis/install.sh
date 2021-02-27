@@ -62,7 +62,7 @@ elif [ "$VARIANT" = flatpak ]; then
         sed -i "/name: dav1d/,/^-/{/disabled:/s/true/false/}" $DIR/../../dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
     fi
 
-else
+elif [ "$VARIANT" = appimage ]; then
     # Linux build
 
     #sudo apt-get install fpc \
