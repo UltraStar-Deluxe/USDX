@@ -190,7 +190,7 @@ task_libjpeg_turbo() {
 		-DENABLE_SHARED=ON \
 		-DENABLE_STATIC=OFF \
 		..
-	make
+	make $makearg
 	make install
 	cd ..
 	rm -r build
@@ -248,7 +248,7 @@ task_portmidi() {
 		-DCMAKE_CXX_FLAGS="$CXXFLAGS" \
 		-DDCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
 		..
-	make portmidi-dynamic
+	make $makearg portmidi-dynamic
 	make -C pm_dylib install
 	cd ..
 	rm -r build
@@ -291,7 +291,7 @@ task_ninja() {
 		-DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
 		..
 	then
-		hide make
+		hide make $makearg
 		hide make install
 		cd ..
 	else
@@ -381,7 +381,7 @@ task_lua() {
 	fi
 	eval `make pc | grep ^version=`
 	patch -p1 < $root/lua-relocatable.patch
-	make INSTALL_TOP="$PREFIX" MYCFLAGS="-DLUA_COMPAT_5_3 -DLUA_COMPAT_5_2 -DLUA_COMPAT_5_1 $CFLAGS -fPIC" LUA_A="liblua.so.$version" AR="\$(CC) -shared -ldl -lm -Wl,-soname,liblua.so.${version%.*} -o" RANLIB=true ALL='$(LUA_A)' linux
+	make INSTALL_TOP="$PREFIX" MYCFLAGS="-DLUA_COMPAT_5_3 -DLUA_COMPAT_5_2 -DLUA_COMPAT_5_1 $CFLAGS -fPIC" LUA_A="liblua.so.$version" AR="\$(CC) -shared -ldl -lm -Wl,-soname,liblua.so.${version%.*} -o" RANLIB=true ALL='$(LUA_A)' linux $makearg
 	make INSTALL_TOP="$PREFIX" TO_LIB="liblua.so.$version" INSTALL_EXEC=true INSTALL_BIN= install
 	ln -s liblua.so.$version "$PREFIX/lib/liblua.so.${version%.*}"
 	ln -s liblua.so.$version "$PREFIX/lib/liblua.so"
@@ -447,7 +447,7 @@ task_opencv() {
 		-DWITH_IMGCODEC_PXM=OFF \
 		-DWITH_IMGCODEC_PFM=OFF \
 		..
-	make
+	make $makearg
 	make install
 	cd ..
 	rm -r build
