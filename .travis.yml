@@ -10,6 +10,7 @@ matrix:
     - os: linux
       env: VARIANT=flatpak
       dist: focal
+      arch: amd64
       if: type = pull_request OR branch =~ flatpak
 
     - os: linux
@@ -21,6 +22,7 @@ matrix:
     - os: linux
       env: VARIANT=flatpak BUILD_32BIT=yes
       dist: focal
+      arch: amd64
       if: type = pull_request OR branch =~ flatpak
 
     - os: linux
@@ -37,6 +39,7 @@ matrix:
 
     - os: linux
       dist: trusty
+      arch: amd64
       if: type = pull_request OR branch =~ appimage
 
     - os: osx
