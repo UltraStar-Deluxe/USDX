@@ -65,19 +65,6 @@ elif [ "$VARIANT" = flatpak ]; then
 elif [ "$VARIANT" = appimage ] && [ "$TRAVIS_DIST" = trusty ]; then
     # Linux build
 
-    #sudo apt-get install fpc \
-    #    libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev \
-    #    libsdl2-ttf-dev libsdl2-gfx-dev \
-    #    libavcodec-dev libavformat-dev libswscale-dev \
-    #    portaudio19-dev libprojectm-dev libopencv-highgui-dev \
-    #    libsqlite3-dev liblua5.1-dev libpng-dev \
-    #    ttf-dejavu ttf-freefont
-        
-    # Extra dependencies for ffmpeg from ppa
-    # sudo apt-get install \
-    #    libavcodec-ffmpeg-dev libavformat-ffmpeg-dev libswscale-ffmpeg-dev \
-    #    libavutil-ffmpeg-dev libswresample-ffmpeg-dev
-
     sudo apt-get install \
         fpc \
         cmake \
@@ -98,5 +85,16 @@ elif [ "$VARIANT" = appimage ] ; then
 
     sudo apt-get install \
         curl
+
+else
+    # Linux build
+
+    # Keep list in sync with README.md.
+    # No need for git. The source code has already been downloaded.
+    sudo apt-get install \
+        automake make gcc fpc libsdl2-image-dev libavformat-dev \
+        libswscale-dev libsqlite3-dev libfreetype6-dev portaudio19-dev \
+        libportmidi-dev liblua5.3-dev libopencv-videoio-dev \
+        g++ libprojectm-dev libopencv-dev
 
 fi

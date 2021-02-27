@@ -49,6 +49,10 @@ matrix:
       arch: amd64
       if: type = pull_request OR branch =~ appimage
 
+    - os: linux
+      dist: focal
+      arch: amd64
+
     - os: osx
 
 env:

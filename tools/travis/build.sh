@@ -77,10 +77,6 @@ elif [ "$VARIANT" = flatpak ]; then
 elif [ "$VARIANT" = appimage ] ; then
     # Linux build
 
-    # ./autogen.sh
-    # ./configure
-    # make
-
     git fetch --unshallow --tags
     cd dists/linux
 
@@ -103,4 +99,11 @@ elif [ "$VARIANT" = appimage ] ; then
         echo "$outfile should be available at:"
         echo "    $link"
     fi
+else
+    # Linux build
+
+    ./autogen.sh
+    ./configure --with-opencv-cxx-api --with-libprojectM
+    make
+    make install DESTDIR=out
 fi
