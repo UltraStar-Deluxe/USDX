@@ -3,12 +3,12 @@ environment:
 
 image:
   - Visual Studio 2015
-  - Ubuntu2004
   - Ubuntu
+  - Ubuntu2004
 
 configuration:
-  - x86-32
   - x86-64
+  - x86-32
 
 matrix:
   exclude:
