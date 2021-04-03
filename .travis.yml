@@ -11,7 +11,7 @@ matrix:
       env: VARIANT=flatpak
       dist: focal
       arch: amd64
-      if: type = pull_request OR branch =~ flatpak
+      if: branch =~ flatpak
 
     - os: linux
       env: VARIANT=flatpak
@@ -23,7 +23,7 @@ matrix:
       env: VARIANT=flatpak BUILD_32BIT=yes
       dist: focal
       arch: amd64
-      if: type = pull_request OR branch =~ flatpak
+      if: branch =~ flatpak
 
     - os: linux
       env: VARIANT=flatpak BUILD_32BIT=yes
@@ -41,13 +41,13 @@ matrix:
       env: VARIANT=appimage
       dist: trusty
       arch: amd64
-      if: type = pull_request OR branch =~ appimage
+      if: branch =~ appimage
 
     - os: linux
       env: VARIANT=appimage BUILD_32BIT=yes
       dist: focal
       arch: amd64
-      if: type = pull_request OR branch =~ appimage
+      if: branch =~ appimage
 
     - os: linux
       dist: focal
