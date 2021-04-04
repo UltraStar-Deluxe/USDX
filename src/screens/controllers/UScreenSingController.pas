@@ -460,6 +460,11 @@ begin
 
           ScreenSing.Settings.AvatarsVisible := not ScreenSing.Settings.AvatarsVisible;
           Exit;
+        end
+        else
+        begin
+          if (Assigned(fCurrentVideo)) then
+             fCurrentVideo.SetAspectCorrection(TAspectCorrection((Ord(fCurrentVideo.GetAspectCorrection())+1) mod (Ord(High(TAspectCorrection))+1)));
         end;
       end;
 

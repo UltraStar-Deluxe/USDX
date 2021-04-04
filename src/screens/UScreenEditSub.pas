@@ -5196,7 +5196,7 @@ begin
     fCurrentVideo.Width := theme.EditSub.BackgroundImage.W;
     fCurrentVideo.Height := theme.EditSub.BackgroundImage.H;
     fCurrentVideo.ReflectionSpacing := 1;
-    fCurrentVideo.AspectCorrection := acoCrop;
+    fCurrentVideo.AspectCorrection := acoLetterBox;
     fCurrentVideo.Draw;
   end;
 
