@@ -107,7 +107,7 @@ for:
       - sh: sed -i '/docker/s/-it\>//' dockerenv.sh
       - sh: prepend=""
       - sh: case "$CONFIGURATION" in x86-32) prepend=linux32 ;; esac
-      - sh: $prepend ./dockerenv.sh make bundle
+      - sh: $prepend ./dockerenv.sh make compress
       - sh: for i in *.AppImage ; do mv $i ../../UltraStarDeluxe-$(git describe --tags --always --long).${i#*-} ; done
 
     artifacts:
