@@ -84,8 +84,8 @@
   {$DEFINE UseBASSDecoder}
   {$DEFINE UseBASSInput}
 {$ELSEIF Defined(HavePortaudio)}
-  {$DEFINE UseSDLPlayback}
-  {.$DEFINE UsePortaudioPlayback}
+  {.$DEFINE UseSDLPlayback}
+  {$DEFINE UsePortaudioPlayback}
   {$DEFINE UsePortaudioInput}
   {$IFDEF HavePortmixer}
     {$DEFINE UsePortmixer}
