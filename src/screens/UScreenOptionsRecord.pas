@@ -68,6 +68,7 @@ type
       SelectChannelID: integer;
       SelectAssigneeID: integer;
       SelectThresholdID: integer;
+      SelectMicBoostID: integer;
 
       // interaction IDs
       ExitButtonIID: integer;
@@ -347,7 +348,7 @@ begin
     Theme.OptionsRecord.SelectMicBoost.Y := Theme.OptionsRecord.SelectMicBoost.Y
         + SourceBarsTotalHeight
         + ChannelBarsTotalHeight;
-    AddSelectSlide(Theme.OptionsRecord.SelectMicBoost, Ini.MicBoost, IMicBoostTranslated);
+    SelectMicBoostID:=AddSelectSlide(Theme.OptionsRecord.SelectMicBoost, Ini.MicBoost, IMicBoostTranslated);
 
   end;
 
@@ -431,6 +432,11 @@ begin
       SelectsS[SelectAssigneeID].Visible := false;
     end;
   end;
+
+  // Make sure changes in mic boost level done anywhere else are picked
+  // up, particularly during the onShow procedure
+  UpdateSelectSlideOptions(Theme.OptionsRecord.SelectMicBoost,
+        SelectMicBoostID, IMicBoostTranslated, Ini.MicBoost);
 
   StartPreview();
 end;

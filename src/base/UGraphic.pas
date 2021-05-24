@@ -62,6 +62,8 @@ uses
   UScreenOptionsThemes,
   UScreenOptionsRecord,
   UScreenOptionsAdvanced,
+  UScreenOptionsKeyPlay,
+  UScreenOptionsKeyPlayPeakAnalysis,
   UScreenOptionsNetwork,
   UScreenOptionsWebcam,
   UScreenOptionsJukebox,
@@ -159,6 +161,8 @@ var
   ScreenOptionsThemes:    TScreenOptionsThemes;
   ScreenOptionsRecord:    TScreenOptionsRecord;
   ScreenOptionsAdvanced:  TScreenOptionsAdvanced;
+  ScreenOptionsKeyPlay:   TScreenOptionsKeyPlay;
+  ScreenOptionsKeyPlayPeakAnalysis: TScreenOptionsKeyPlayPeakAnalysis;
   ScreenOptionsNetwork:   TScreenOptionsNetwork;
   ScreenOptionsWebcam:    TScreenOptionsWebcam;
   ScreenOptionsJukebox:   TScreenOptionsJukebox;
@@ -213,6 +217,9 @@ var
   Tex_plain_Mid:   array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_notebg_mid
   Tex_plain_Right: array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_notebg_right
 
+  Tex_Note_Beat_BG:   array[1..UIni.IMaxPlayerCount] of TTexture;   //For showing beat with
+  Tex_Note_Beat:   array[1..UIni.IMaxPlayerCount] of TTexture;      // predefined duration of 1 unit length
+
   Tex_BG_Left:     array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_noteglow_left
   Tex_BG_Mid:      array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_noteglow_mid
   Tex_BG_Right:    array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_noteglow_right
@@ -231,6 +238,8 @@ var
 
   Tex_Note_Star:  TTexture;
   Tex_Note_Perfect_Star: TTexture;
+  Tex_Note_Soupir:  TTexture;  // For the song editing screen (UScreenEditSub) to show the silence notes graphically
+  Tex_Note_Clap: TTexture; // Clap sign (optional)
 
 
   Tex_Ball:       TTexture;
@@ -389,6 +398,10 @@ begin
 
   Tex_Note_Perfect_Star := Texture.LoadTexture(Skin.GetTextureFileName('NotePerfectStar'), TEXTURE_TYPE_TRANSPARENT, 0);
   Tex_Note_Star         := Texture.LoadTexture(Skin.GetTextureFileName('NoteStar') ,       TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
+  // Soupir sign to label silent notes in lyrics editor
+  Tex_Note_Soupir       := Texture.LoadTexture(Skin.GetTextureFileName('soupirtex') ,       TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
+  // Clapping notes can optionally be identified as such
+  Tex_Note_Clap         := Texture.LoadTexture(Skin.GetTextureFileName('BeatClap') ,       TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
   Tex_Ball              := Texture.LoadTexture(Skin.GetTextureFileName('Ball'),            TEXTURE_TYPE_TRANSPARENT, $FF00FF);
   Tex_Lyric_Help_Bar    := Texture.LoadTexture(Skin.GetTextureFileName('LyricHelpBar'),    TEXTURE_TYPE_TRANSPARENT, 0);
 
@@ -959,6 +972,10 @@ begin
   ScreenOptionsRecord   :=    TScreenOptionsRecord.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsAdvanced'));
   ScreenOptionsAdvanced :=    TScreenOptionsAdvanced.Create;
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsKeyPlay')); // Screen with options for tapping
+  ScreenOptionsKeyPlay :=    TScreenOptionsKeyPlay.Create;
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsKeyPlayPeakAnalysis')); // Screen with audio detection options for tapping
+  ScreenOptionsKeyPlayPeakAnalysis :=    TScreenOptionsKeyPlayPeakAnalysis.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsNetwork'));
   ScreenOptionsNetwork :=    TScreenOptionsNetwork.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsWebCam'));
