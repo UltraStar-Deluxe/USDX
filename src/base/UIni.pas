@@ -1763,7 +1763,7 @@ begin
   KeyPlayOn := ReadArrayIndex(IKeyPlayOn, IniFile, 'KeyPlay', 'KeyPlayOn', IGNORE_INDEX, 'Off');
 
   // To show the clap sign or not
-  KeyPlayClapSignOn := ReadArrayIndex(IKeyPlayClapSignOn, IniFile, 'KeyPlay', 'KeyPlayClapSignOn', IGNORE_INDEX, 'On');
+  KeyPlayClapSignOn := ReadArrayIndex(IKeyPlayClapSignOn, IniFile, 'KeyPlay', 'KeyPlayClapSignOn', IGNORE_INDEX, 'Show');
 
 
   setLength(PlayerKeys,High(IKeyPlayPlayers)+1);

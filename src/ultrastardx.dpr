@@ -235,7 +235,6 @@ uses
   UPathUtils        in 'base\UPathUtils.pas',
   UNote             in 'base\UNote.pas',
   UBeatTimer        in 'base\UBeatTimer.pas',
-
   TextGL            in 'base\TextGL.pas',
   UUnicodeUtils     in 'base\UUnicodeUtils.pas',
   UUnicodeStringHelper in 'base\uunicodestringhelper',
@@ -395,6 +394,13 @@ uses
 
   UAvatars                in 'base\UAvatars.pas',
   UScreenAbout            in 'screens\UScreenAbout.pas',
+
+  UKeyboardRecording      in 'beatNote\UKeyboardRecording.pas',
+  UBeatNote               in 'beatNote\UBeatNote.pas',
+  UBeatNoteEdit           in 'beatNote\UBeatNoteEdit.pas',
+  UScreenOptionsKeyPlay   in 'beatNote\UScreenOptionsKeyPlay.pas',
+  UBeatNoteTimer          in 'beatNote\UBeatNoteTimer.pas',
+  UScreenOptionsKeyPlayPeakAnalysis          in 'beatNote\UScreenOptionsKeyPlayPeakAnalysis.pas',
 
   SysUtils;
 
