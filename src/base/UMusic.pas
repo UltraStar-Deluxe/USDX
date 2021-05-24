@@ -42,7 +42,8 @@ uses
   UWebcam;
 
 type
-  TNoteType = (ntFreestyle, ntNormal, ntGolden, ntRap, ntRapGolden);
+  TNoteType = (ntFreestyle, ntNormal, ntGolden, ntRap, ntRapGolden,
+            ntBeat, ntSilence, ntBeatSilence);
 
   TPos = record // Tracks[track].Lines[line].Notes[note]
     track: integer;
@@ -77,7 +78,7 @@ const
   // 0 means this notetype is not rated at all
   // 2 means a hit of this notetype will be rated w/ twice as much
   // points as a hit of a notetype w/ ScoreFactor 1
-  ScoreFactor:         array[TNoteType] of integer = (0, 1, 2, 1, 2);
+  ScoreFactor:         array[TNoteType] of integer = (0, 1, 2, 1, 2, 1, 0, 0);
 
 type
   (**
@@ -146,6 +147,7 @@ type
    * Normally just one set is defined but in duet mode it might for example
    * contain two sets.
    *)
+  PLines = ^TLines;
   TLines = record
     CurrentLine: integer;  // for drawing of current line
     High:        integer;  // = High(Line)!

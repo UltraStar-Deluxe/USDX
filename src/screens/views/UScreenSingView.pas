@@ -497,6 +497,7 @@ var
   Col: array [1..UIni.IMaxPlayerCount] of TRGB;
   I: integer;
   Color: cardinal;
+
 begin
   lastVolume:= -1;
   //too dangerous, a mouse button is quickly pressed by accident
@@ -851,6 +852,10 @@ begin
     Tex_BG_Left_Rap[I]      := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
     Tex_BG_Mid_Rap[I]       := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
     Tex_BG_Right_Rap[I]     := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+
+    Tex_Note_Beat_BG[I]     := Texture.LoadTexture(Skin.GetTextureFileName('NoteBeatBG'), TEXTURE_TYPE_COLORIZED, Color);
+    Tex_Note_Beat[I]     := Texture.LoadTexture(Skin.GetTextureFileName('NoteBeat'), TEXTURE_TYPE_COLORIZED, Color);
+
 
     //## backgrounds for the scores ##
     Tex_ScoreBG[I - 1] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreBG'), TEXTURE_TYPE_COLORIZED, Color);

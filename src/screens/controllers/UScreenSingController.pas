@@ -54,7 +54,8 @@ uses
   dglOpenGL,
   sdl2,
   SysUtils,
-  TextGL;
+  TextGL,
+  UKeyboardRecording;
 
 type
   TLyricsSyncSource = class(TSyncSource)
@@ -188,6 +189,9 @@ var screenSingViewRef: TScreenSingView;
 const
   ID='ID_022';   //for help system
 
+  KeyPlayKeys: array [1..7] of char =
+       ('a','s','d','f','j','k','l'  ) ;
+
 implementation
 
 uses
@@ -208,7 +212,8 @@ uses
   UWebcam,
   UWebSDK,
   Classes,
-  Math;
+  Math,
+  UBeatNoteTimer;
 
 const
   MAX_MESSAGE = 3;
@@ -224,6 +229,11 @@ var
   Color:        TRGB;
 begin
   Result := true;
+  // Ensure sampling for the keyboard at every loop cycle, not just new notes
+  // to capture proper timing
+  KeyBoardRecorder.ParseInput(PressedKey, CharCode,
+  PressedDown);
+
   if (PressedDown) then
   begin // key down
 
@@ -633,7 +643,10 @@ begin
   inherited Create;
   ScreenSing := self;
   screenSingViewRef := TScreenSingView.Create();
-
+  // Make sure the keyboard recorder is running, needed for "singing" by keyboard play
+  createKeyboardRecorder();
+  // Make sure the beat note timing manager is running for singing with beats
+  createTBeatNoteTimerState();
   ClearSettings;
 end;
 

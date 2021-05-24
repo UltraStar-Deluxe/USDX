@@ -535,7 +535,7 @@ begin
       while (SongFile.ReadLine(CurLine)) do
       begin
         Inc(FileLineNo);
-        if (Length(CurLine) > 0) and (CurLine[1] in [':', 'F', '*', 'R', 'G', 'P']) then
+        if (Length(CurLine) > 0) and (CurLine[1] in [':', 'F', '*', 'R', 'G', 'P', '.', 'S', 's']) then
         begin
           NotesFound := true;
           Break;
@@ -625,7 +625,7 @@ begin
         begin
           Break
         end
-        else if (Param0 in [':', '*', 'F', 'R', 'G']) then
+        else if (Param0 in [':', '*', 'F', 'R', 'G', '.', 'S', 's']) then
         begin
           // sets the rap icon if the song has rap notes
           if(Param0 in ['R', 'G']) then
@@ -1425,7 +1425,14 @@ begin
       '*':  Notes[HighNote].NoteType := ntGolden;
       'R':  Notes[HighNote].NoteType := ntRap;
       'G':  Notes[HighNote].NoteType := ntRapGolden;
+      '.':  Notes[HighNote].NoteType := ntBeat;
+      'S':  Notes[HighNote].NoteType := ntSilence;
+      's':  Notes[HighNote].NoteType := ntBeatSilence;
     end;
+
+    // Beats should have a length of 1
+    if(Notes[HighNote].NoteType = ntBeat) then
+        Notes[HighNote].Duration := 1;
 
     //add this notes value ("notes length" * "notes scorefactor") to the current songs entire value
     Inc(Tracks[Track].ScoreValue, Notes[HighNote].Duration * ScoreFactor[Notes[HighNote].NoteType]);
