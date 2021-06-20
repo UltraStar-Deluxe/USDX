@@ -130,12 +130,6 @@ type
 const
   LUA_IDSIZE = 60;
 
-(*
-@@ LUAL_BUFFERSIZE is the buffer size used by the lauxlib buffer system.
-*)
-const
-  LUAL_BUFFERSIZE = 1024;
-
 {$IF LUA_VERSION_NUM = 501}
 (*
 @@ LUA_PROMPT is the default prompt used by stand-alone Lua.
@@ -341,6 +335,17 @@ type
 (* type for continuation-function contexts *)
   lua_KContext = LUA_KCONTEXT_;
 {$IFEND}
+
+(*
+@@ LUAL_BUFFERSIZE is the buffer size used by the lauxlib buffer system.
+*)
+const
+{$IF LUA_VERSION_NUM >= 503}
+  LUAL_BUFFERSIZE = $80 * sizeof(Pointer) * sizeof(lua_Integer);
+{$ELSE}
+  LUAL_BUFFERSIZE = 1024;
+{$IFEND}
+
 (*
 ** state manipulation
 *)
