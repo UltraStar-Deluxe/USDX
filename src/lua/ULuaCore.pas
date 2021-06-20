@@ -475,7 +475,6 @@ procedure TLuaCore.PrepareState(L: Plua_State);
 begin
   // load basic lib functionality
   lual_openLibs(L);
-  lua_pop(L,1);
 
   // get package.searchers (former package.loaders) table
   lua_getglobal (L, PChar('package'));
