@@ -18,6 +18,7 @@ interface
 
 {$IFDEF HaveCONFIG}
 uses
+  ctypes,
   UConfig;
 {$ELSE}
 const
@@ -49,7 +50,7 @@ const
 {$ENDIF}
 
 type
-  size_t   = Cardinal;
+  size_t   = csize_t;
   Psize_t  = ^size_t;
   PPointer = ^Pointer;
   ptrdiff_t = LongInt;
