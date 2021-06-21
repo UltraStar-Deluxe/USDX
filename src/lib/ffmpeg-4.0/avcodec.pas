@@ -305,9 +305,9 @@ type
     debug_mv: cint;
     do_not_instantiate_this_record: incomplete_record;
   end;
-function av_dup_packet(pkt: PAVPacket): cint; cdecl; external av__codec;
-procedure av_init_packet(var pkt: TAVPacket); cdecl; external av__codec;
-procedure av_free_packet(pkt: PAVPacket); cdecl; external av__codec;
+function av_dup_packet(pkt: PAVPacket): cint; cdecl; external av__codec; deprecated;
+procedure av_init_packet(var pkt: TAVPacket); cdecl; external av__codec; deprecated;
+procedure av_free_packet(pkt: PAVPacket); cdecl; external av__codec; deprecated;
 function avcodec_version(): cuint; cdecl; external av__codec;
 function av_codec_is_decoder(codec: PAVCodec): cint; cdecl; external av__codec;
 function av_codec_iterate(opaque: ppointer): PAVCodec; cdecl; external av__codec;
@@ -316,10 +316,10 @@ function avcodec_find_decoder_by_name(name: PAnsiChar): PAVCodec; cdecl; externa
 function avcodec_descriptor_get(id: TAVCodecID): PAVCodecDescriptor; cdecl; external av__codec;
 function avcodec_open2(avctx: PAVCodecContext; codec: PAVCodec; options: PPAVDictionary): cint; cdecl; external av__codec;
 function avcodec_close(avctx: PAVCodecContext): cint; cdecl; external av__codec;
-function avcodec_decode_video2(avctx: PAVCodecContext; picture: PAVFrame; var got_picture: cint; avpkt: PAVPacket): cint; cdecl; external av__codec;
+function avcodec_decode_video2(avctx: PAVCodecContext; picture: PAVFrame; var got_picture: cint; avpkt: PAVPacket): cint; cdecl; external av__codec; deprecated;
 procedure avcodec_flush_buffers(avctx: PAVCodecContext); cdecl; external av__codec;
-function avpicture_fill(picture: PAVPicture; ptr: pcuint8; pix_fmt: TAVPixelFormat; width: cint; height: cint): cint; cdecl; external av__codec;
-function avpicture_get_size(pix_fmt: TAVPixelFormat; width: cint; height: cint): cint; cdecl; external av__codec;
+function avpicture_fill(picture: PAVPicture; ptr: pcuint8; pix_fmt: TAVPixelFormat; width: cint; height: cint): cint; cdecl; external av__codec; deprecated;
+function avpicture_get_size(pix_fmt: TAVPixelFormat; width: cint; height: cint): cint; cdecl; external av__codec; deprecated;
 function avcodec_receive_frame(avctx: PAVCodecContext; frame: PAVFrame): cint; cdecl; external av__codec;
 function avcodec_send_packet(avctx: PAVCodecContext; avpkt: PAVPacket): cint; cdecl; external av__codec;
 function avcodec_alloc_context3(codec: PAVCodec): PAVCodecContext; cdecl; external av__codec;
