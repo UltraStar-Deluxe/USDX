@@ -154,21 +154,21 @@ type
   TAVDictionary = record
     do_not_instantiate_this_record: incomplete_record;
   end;
-procedure av_free(ptr: pointer); cdecl; external 'libavutil';
-procedure av_freep(ptr: pointer); cdecl; external 'libavutil';
-function av_malloc(size: csize_t): pointer; cdecl; external 'libavutil';
-function avutil_version(): cuint; cdecl; external 'libavutil';
-function av_frame_alloc(): PAVFrame; cdecl; external 'libavutil';
-procedure av_frame_free(frame: PPAVFrame); cdecl; external 'libavutil';
-function av_image_alloc(pointers: ppcuint8; linesizes: pcint; w: cint; h: cint; pix_fmt: TAVPixelFormat; align: cint): cint; cdecl; external 'libavutil';
+procedure av_free(ptr: pointer); cdecl; external av__util;
+procedure av_freep(ptr: pointer); cdecl; external av__util;
+function av_malloc(size: csize_t): pointer; cdecl; external av__util;
+function avutil_version(): cuint; cdecl; external av__util;
+function av_frame_alloc(): PAVFrame; cdecl; external av__util;
+procedure av_frame_free(frame: PPAVFrame); cdecl; external av__util;
+function av_image_alloc(pointers: ppcuint8; linesizes: pcint; w: cint; h: cint; pix_fmt: TAVPixelFormat; align: cint): cint; cdecl; external av__util;
 function AVERROR(e: cint): cint; {$IFDEF HasInline}inline;{$ENDIF}
-function av_opt_set_int(obj: pointer; name: PAnsiChar; val: cint64; search_flags: cint): cint; cdecl; external 'libavutil';
-function av_opt_set_channel_layout(obj: pointer; name: PAnsiChar; ch_layout: cint64; search_flags: cint): cint; cdecl; external 'libavutil';
-function av_opt_set_sample_fmt(obj: pointer; name: PAnsiChar; fmt: TAVSampleFormat; search_flags: cint): cint; cdecl; external 'libavutil';
-function av_samples_alloc(var audio_data: pcuint8; linesize: pcint; nb_channels: cint; nb_samples: cint; sample_fmt: TAVSampleFormat; align: cint): cint; cdecl; external 'libavutil';
-function av_get_packed_sample_fmt(sample_fmt: TAVSampleFormat): TAVSampleFormat; cdecl; external 'libavutil';
-function av_get_bytes_per_sample(sample_fmt: TAVSampleFormat): cint; cdecl; external 'libavutil';
-procedure av_log_set_level(level: cint); cdecl; external 'libavutil';
+function av_opt_set_int(obj: pointer; name: PAnsiChar; val: cint64; search_flags: cint): cint; cdecl; external av__util;
+function av_opt_set_channel_layout(obj: pointer; name: PAnsiChar; ch_layout: cint64; search_flags: cint): cint; cdecl; external av__util;
+function av_opt_set_sample_fmt(obj: pointer; name: PAnsiChar; fmt: TAVSampleFormat; search_flags: cint): cint; cdecl; external av__util;
+function av_samples_alloc(var audio_data: pcuint8; linesize: pcint; nb_channels: cint; nb_samples: cint; sample_fmt: TAVSampleFormat; align: cint): cint; cdecl; external av__util;
+function av_get_packed_sample_fmt(sample_fmt: TAVSampleFormat): TAVSampleFormat; cdecl; external av__util;
+function av_get_bytes_per_sample(sample_fmt: TAVSampleFormat): cint; cdecl; external av__util;
+procedure av_log_set_level(level: cint); cdecl; external av__util;
 implementation
 function AVERROR(e: cint): cint; {$IFDEF HasInline}inline;{$ENDIF}
 begin

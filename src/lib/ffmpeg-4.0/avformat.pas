@@ -110,14 +110,14 @@ type
     name: ^AnsiChar;
     do_not_instantiate_this_record: incomplete_record;
   end;
-function avformat_alloc_context(): PAVFormatContext; cdecl; external 'libavformat';
-function avformat_open_input(ps: PPAVFormatContext; url: PAnsiChar; fmt: PAVInputFormat; options: PPAVDictionary): cint; cdecl; external 'libavformat';
-procedure avformat_close_input(s: PPAVFormatContext); cdecl; external 'libavformat';
-function avformat_version(): cuint; cdecl; external 'libavformat';
-procedure av_register_all(); cdecl; external 'libavformat';
-function avformat_find_stream_info(ic: PAVFormatContext; options: PPAVDictionary): cint; cdecl; external 'libavformat';
-function av_stream_get_r_frame_rate(s: PAVStream): TAVRational; cdecl; external 'libavformat';
-function av_read_frame(s: PAVFormatContext; var pkt: TAVPacket): cint; cdecl; external 'libavformat';
-function av_seek_frame(s: PAVFormatContext; stream_index: cint; timestamp: cint64; flags: cint): cint; cdecl; external 'libavformat';
+function avformat_alloc_context(): PAVFormatContext; cdecl; external av__format;
+function avformat_open_input(ps: PPAVFormatContext; url: PAnsiChar; fmt: PAVInputFormat; options: PPAVDictionary): cint; cdecl; external av__format;
+procedure avformat_close_input(s: PPAVFormatContext); cdecl; external av__format;
+function avformat_version(): cuint; cdecl; external av__format;
+procedure av_register_all(); cdecl; external av__format; deprecated;
+function avformat_find_stream_info(ic: PAVFormatContext; options: PPAVDictionary): cint; cdecl; external av__format;
+function av_stream_get_r_frame_rate(s: PAVStream): TAVRational; cdecl; external av__format; deprecated;
+function av_read_frame(s: PAVFormatContext; var pkt: TAVPacket): cint; cdecl; external av__format;
+function av_seek_frame(s: PAVFormatContext; stream_index: cint; timestamp: cint64; flags: cint): cint; cdecl; external av__format;
 implementation
 end.

@@ -17,7 +17,8 @@ interface
 uses
   ctypes,
   avutil,
-  SysUtils;
+  SysUtils,
+  UConfig;
 const
   AVSEEK_SIZE = 65536;
 type
@@ -44,8 +45,8 @@ type
   end;
   TReadWriteFunc = function(opaque: pointer; buf: pbytearray; buf_size: cint): cint; cdecl;
   TSeekFunc = function(opaque: pointer; offset: cint64; whence: cint): cint64; cdecl;
-function avio_alloc_context(buffer: pcuint8; buffer_size: cint; write_flag: cint; opaque: pointer; read_packet: TReadWriteFunc; write_packet: TReadWriteFunc; seek: TSeekFunc): PAVIOContext; cdecl; external 'libavformat';
-function avio_feof(s: PAVIOContext): cint; cdecl; external 'libavformat';
-function avio_size(s: PAVIOContext): cint64; cdecl; external 'libavformat';
+function avio_alloc_context(buffer: pcuint8; buffer_size: cint; write_flag: cint; opaque: pointer; read_packet: TReadWriteFunc; write_packet: TReadWriteFunc; seek: TSeekFunc): PAVIOContext; cdecl; external av__format;
+function avio_feof(s: PAVIOContext): cint; cdecl; external av__format;
+function avio_size(s: PAVIOContext): cint64; cdecl; external av__format;
 implementation
 end.
