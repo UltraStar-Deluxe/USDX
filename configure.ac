@@ -211,26 +211,20 @@ PKG_HAVE([sqlite3], [sqlite3], yes)
 # Mac OS X and other linux distributions use lua.pc
 # Archlinux aur package for 5.3 use lua5.3.pc in order
 # to make it work alongside the 5.2 version.
-PKG_HAVE([lua], [lua5.3], check)
-lua_LIB_NAME="lua5.3"
-if [[ x$lua_HAVE = xyes ]]; then
-	PKG_VERSION([lua], [lua5.3])
-else
-	PKG_HAVE([lua], [lua5.2], check)
-	lua_LIB_NAME="lua5.2"
-	if [[ x$lua_HAVE = xyes ]]; then
-		PKG_VERSION([lua], [lua5.2])
-	else
-		PKG_HAVE([lua], [lua5.1], check)
-		lua_LIB_NAME="lua5.1"
-		if [[ x$lua_HAVE = xyes ]]; then
-			PKG_VERSION([lua], [lua5.1])
-		else
+
+for i in 5.4 5.3 5.2 5.1 ; do
+    PKG_HAVE([lua], [lua$i], check)
+    if [[ x$lua_HAVE = xyes ]]; then
+        lua_LIB_NAME="lua$i"
+        PKG_VERSION([lua], [lua$i])
+        break
+    fi
+done
+
+if [[ x$lua_HAVE != xyes ]]; then
     PKG_HAVE([lua], [lua >= 5.1], yes)
     lua_LIB_NAME="lua"
-			PKG_VERSION([lua], [lua])
-		fi
-	fi
+    PKG_VERSION([lua], [lua])
 fi
 AC_MSG_CHECKING([size of lua_Integer])
 PKG_VALUE([lua],[CFLAGS],[cflags],[$lua_LIB_NAME],[C compiler flags for Lua])
