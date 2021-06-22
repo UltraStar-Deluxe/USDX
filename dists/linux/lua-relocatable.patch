@@ -1,0 +1,71 @@
+diff --git a/src/loadlib.c b/src/loadlib.c
+index 45f44d3..952a974 100644
+--- a/src/loadlib.c
++++ b/src/loadlib.c
+@@ -64,7 +64,9 @@ static const int CLIBS = 0;
+ #define LIB_FAIL	"open"
+ 
+ 
++#ifndef LUA_RELOCATABLE
+ #define setprogdir(L)           ((void)0)
++#endif
+ 
+ 
+ /*
+@@ -136,6 +138,40 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
+   return f;
+ }
+ 
++#ifdef LUA_RELOCATABLE
++/*
++** Replace in the path (on the top of the stack) any occurrence
++** of LUA_EXEC_DIR with the executable's path.
++*/
++static void setprogdir (lua_State *L) {
++  char *buff = NULL;
++  ssize_t n, nsize = 0;
++  char *lb;
++#ifdef LUA_USE_LINUX
++  struct stat st;
++  n = lstat("/proc/self/exe", &st);
++  if (!n && st.st_size > 0) {
++    nsize = st.st_size + 1;
++    buff = luaM_reallocvchar(L, NULL, 0, nsize);
++    n = readlink("/proc/self/exe", buff, nsize);
++    if (n < nsize)
++      buff[n] = '\0';
++  }
++#else
++#error Please implement setprogdir for this system
++#endif
++  if (n <= 0 || n >= nsize || (lb = strrchr(buff, '/')) == NULL) {
++    luaM_reallocvchar(L, buff, nsize, 0);
++    luaL_error(L, "unable to get path of executable");
++  } else {
++    *lb = '\0';  /* cut name on the last '\\' to get the path */
++    luaL_gsub(L, lua_tostring(L, -1), LUA_EXEC_DIR, buff);
++    luaM_reallocvchar(L, buff, nsize, 0);
++    lua_remove(L, -2);  /* remove original string */
++  }
++}
++#endif
++
+ /* }====================================================== */
+ 
+ 
+diff --git a/src/luaconf.h b/src/luaconf.h
+index 9eeeea6..eb07c81 100644
+--- a/src/luaconf.h
++++ b/src/luaconf.h
+@@ -200,7 +200,11 @@
+ 
+ #else			/* }{ */
+ 
++#ifdef LUA_RELOCATABLE
++#define LUA_ROOT	"!/../"
++#else
+ #define LUA_ROOT	"/usr/local/"
++#endif
+ #define LUA_LDIR	LUA_ROOT "share/lua/" LUA_VDIR "/"
+ #define LUA_CDIR	LUA_ROOT "lib/lua/" LUA_VDIR "/"
+ #define LUA_PATH_DEFAULT  \

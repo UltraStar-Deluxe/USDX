@@ -33,6 +33,32 @@ projectM_ptr projectM_create2(int gx, int gy, int fps, int texsize,
     				     preset_url, title_fonturl, title_menuurl));}
 #endif
 
+#if (PROJECTM_VERSION_INT >= 2000000)
+projectM_ptr projectM_create2(int gx, int gy, int fps, int texsize,
+			      int width, int height, char* preset_url,
+			      char* title_fonturl, char* title_menuurl)
+{
+    projectM::Settings settings = {};
+    settings.meshX = gx;
+    settings.meshY = gy;
+    settings.fps = fps;
+    settings.textureSize = texsize;
+    settings.windowWidth = width;
+    settings.windowHeight = height;
+    settings.presetURL = preset_url;
+    settings.titleFontURL = title_fonturl;
+    settings.menuFontURL = title_menuurl;
+    settings.smoothPresetDuration = 5;
+    settings.presetDuration = 30;
+    settings.beatSensitivity = 10;
+    settings.aspectCorrection = true;
+    settings.easterEgg = 1.0;
+    settings.shuffleEnabled = true;
+    settings.softCutRatingsEnabled = false;
+    return projectM_ptr(new projectM(settings));
+}
+#endif
+
 void projectM_resetGL(projectM_ptr pm, int width, int height)
 {
     PM_CLASS(pm)->projectM_resetGL(width, height);

@@ -1,0 +1,17 @@
+Index: portmidi-200/pm_linux/pmlinux.c
+===================================================================
+--- portmidi-200.orig/pm_linux/pmlinux.c	2010-02-14 17:35:40.000000000 -0500
++++ portmidi-200/pm_linux/pmlinux.c	2010-02-14 17:36:17.000000000 -0500
+@@ -34,10 +34,10 @@
+      * devices.
+      */
+     #ifdef PMALSA
+-	pm_linuxalsa_init();
++	return pm_linuxalsa_init();
+     #endif
+     #ifdef PMNULL
+-        pm_linuxnull_init();
++        return pm_linuxnull_init();
+     #endif
+     // this is set when we return to Pm_Initialize, but we need it
+     // now in order to (successfully) call Pm_CountDevices()

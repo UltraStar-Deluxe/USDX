@@ -91,7 +91,7 @@ begin
   // directory of the executable. If so -> local execution.
   LocalDir := GetExecutionDir();
   LanguageDir := LocalDir.Append('languages');
-  UseLocalDirs := LanguageDir.IsDirectory;
+  UseLocalDirs := LanguageDir.IsDirectory and not LocalDir.IsReadonly;
 end;
 
 function TPlatformLinux.GetLogPath: IPath;
@@ -110,7 +110,11 @@ begin
   if UseLocalDirs then
     Result := GetExecutionDir()
   else
+  begin
     Result := Path(INSTALL_DATADIR, pdAppend);
+    if not Result.IsAbsolute then
+      Result := GetExecutionDir.Append(Result);
+  end;
 end;
 
 function TPlatformLinux.GetGameUserPath: IPath;

@@ -1,18 +1,24 @@
 FROM %%from%%
 
+RUN [ -z "%%epelpkgs%%" ] || yum install -y --setopt=tsflags=nodocs \
+    https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
 RUN yum upgrade -y --setopt=tsflags=nodocs
 
 RUN yum install -y --setopt=tsflags=nodocs \
-    make automake autoconf cmake patch which file git unzip gcc gcc-c++\
-    glibc-devel mesa-libGL-devel lua-devel alsa-lib-devel \
+    make automake autoconf patch which file git unzip bzip2 gcc gcc-c++ \
+    glibc-devel mesa-libGL-devel alsa-lib-devel \
     libX11-devel libXext-devel libXcursor-devel libXinerama-devel libXrandr-devel libXi-devel libxkbcommon-devel \
-    libwebp-devel libjpeg-turbo-devel libtiff-devel \
-    dbus-devel systemd-devel \
-    libsamplerate-devel opencv-devel
+    dbus-devel systemd-devel zlib-devel libffi-devel expat-devel libxml2-devel libtool python3-pip \
+    wget vim-common desktop-file-utils glib2-devel cairo-devel fuse-devel libarchive-devel %%epelpkgs%%
 
-RUN yum install -y --setopt=tsflags=nodocs \
-	"%%fpcpackage%%"
+RUN mkdir /tmp/fpcinst \
+    && wget --progress=dot:giga -O - %%fpcpackage%% | tar xC /tmp/fpcinst --strip-components=1 \
+    && (echo /usr/local ; echo n ; echo n) | (cd /tmp/fpcinst ; ./install.sh) \
+    && rm -Rf /tmp/fpcinst
 
 RUN yum clean all -y
+
+ENV LC_CTYPE=en_US.utf8
 
 CMD ["bash"]

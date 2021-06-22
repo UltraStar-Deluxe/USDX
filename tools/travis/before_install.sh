@@ -16,11 +16,13 @@ elif [ "$TRAVIS_OS_NAME" = "osx" ]; then
 else
     # Linux build
 
-    # Adding fpc repository
-    sudo add-apt-repository -y ppa:ok2cqr/lazarus
+    if [ "$TRAVIS_DIST" = trusty ] ; then
+        # Adding fpc repository
+        sudo add-apt-repository -y ppa:ok2cqr/lazarus
 
-    # ffmpeg (2.4) version for trusty
-    # sudo add-apt-repository -y ppa:kirillshkrogalev/ffmpeg-next
+        # ffmpeg (2.4) version for trusty
+        # sudo add-apt-repository -y ppa:kirillshkrogalev/ffmpeg-next
+    fi
 
     sudo apt-get update
 
