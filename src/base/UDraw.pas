@@ -40,6 +40,7 @@ uses
   UGraphicClasses,
   UIni;
 
+
 procedure SingDraw;
 procedure SingDrawLines;
 procedure SingDrawBackground;
@@ -115,7 +116,8 @@ uses
   UScreenJukebox,
   USong,
   UTexture,
-  UWebcam;
+  UWebcam,
+  UBeatNote;
 
 
 procedure SingDrawWebCamFrame;
@@ -412,6 +414,8 @@ begin
 end;
 
 // draw blank Notebars
+// draw blank Notebars
+// draw blank Notebars
 procedure SingDrawLine(Left, Top, Right: real; Track, PlayerNumber: integer; LineSpacing: integer);
 var
   Rec:   TRecR;
@@ -445,8 +449,10 @@ begin
       begin
         with Notes[Count] do
         begin
-          if NoteType <> ntFreestyle then
-          begin
+          if (NoteType <> ntFreestyle) and (NoteType <> ntBeat) and (NoteType <> ntSilence) and (NoteType <> ntBeatSilence) then
+          begin // Drawing is particular with these notes: freestyle (ntFreestyle) and silence (ntSilence) not are not drawn,
+            // The beat and beatSilence (ntBeat, ntBeatSilence) notes are drawn separately via
+            // SingDrawLineBeats below
             if Ini.EffectSing = 0 then
               // If Golden note Effect of then Change not Color
             begin
@@ -541,7 +547,11 @@ begin
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
   end;
+  // Specific drawing of the beat notes (they are shifted -0.5 unit beats to be
+  // on the rythmic beats rather than between
+  SingDrawLineBeats(Left, Top, Right, Track, PlayerNumber, LineSpacing);
 end;
+
 
 // draw sung notes
 procedure SingDrawPlayerLine(X, Y, W: real; Track, PlayerIndex: integer; LineSpacing: integer);
@@ -570,6 +580,13 @@ begin
       begin
         with Player[PlayerIndex].Note[N] do
         begin
+          // the beat and beat silence notes are drawn shifted by 0.5 unit beats as they
+          // are on rather than between rythmic beats
+          // the shifted notes are drawn with SingDrawPlayerLineBeats
+          if (NoteType <> ntBeatSilence) and (NoteType<> ntBeat) then
+          begin
+
+
           // Left part of note
           Rec.Left  := X + (Start - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + 0.5 + 10*ScreenX;
           Rec.Right := Rec.Left + NotesW[PlayerIndex];
@@ -667,16 +684,25 @@ begin
                 GoldenRec.SavePerfectNotePos(Rec.Left, Rec.Top);
             end;
           end;
-        end; // with
-      end; // for
+          end; // not beat notes
+          end; // with
+        end; // for
+
 
       // actually we need a comparison here, to determine if the singing process
       // is ahead Rec.Right even if there is no singing
 
       if (Ini.EffectSing = 1) then
         GoldenRec.GoldenNoteTwinkle(Rec.Top,Rec.Bottom,Rec.Right, PlayerIndex);
+    end;
+
+
+
     end; // if
-  end; // if
+  // Specific drawing of the beat and beat silence notes hit by the player,
+  // with shift by 0.5 elementary beat units to be on the rythmic beats
+  SingDrawPlayerLineBeats(X, Y, W, Track, PlayerIndex, LineSpacing);
+
 end;
 
 //draw Note glow
@@ -703,8 +729,10 @@ begin
       for Count := 0 to HighNote do
       begin
         with Notes[Count] do
-        begin
-          if NoteType <> ntFreestyle then
+        begin  // freestyle and silence not have no predrawn trace and
+          // the beat notes are drawn separately (via SingDrawPlayerBGLineBeats, below)
+          if (NoteType <> ntFreestyle) and (NoteType <> ntBeat) and
+             (NoteType <> ntSilence) and (NoteType <> ntBeatSilence) then
           begin
             // begin: 14, 20
             // easy: 6, 11
@@ -714,7 +742,6 @@ begin
             {
             X2 := (Start-Tracks[Track].Lines[Tracks[Track].Current].Notes[0].Start) * TempR + Left + 0.5 + 10*ScreenX + 4;
             X1 := X2-W;
-
             X3 := (Start+Length-Tracks[Track].Lines[Tracks[Track].Current].Notes[0].Start) * TempR + Left - 0.5 + 10*ScreenX - 4;
             X4 := X3+W;
             }
@@ -790,8 +817,9 @@ begin
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
   end;
+  // Drawing of 0.5-shifted beat notes separately
+  SingDrawPlayerBGLineBeats(Left, Top, Right, Track, PlayerIndex, LineSpacing);
 end;
-
 (**
  * Draws the lyrics helper bar.
  * Left: position the bar starts at
@@ -1840,6 +1868,21 @@ begin
         Rec.Right := Rec.Left + NotesW[0];
         Rec.Top := YBaseNote - (Tone-BaseNote)*Space/2 - NotesH[0];
         Rec.Bottom := Rec.Top + 2 * NotesH[0];
+
+        // For beat notes, this needs to be shifted by 0.5 beats as they are centered on musical beats rather than the intervals
+        // between them
+
+        if (NoteType = ntBeat) or (NoteType = ntBeatSilence) then
+        begin
+          Rec.Left  := (StartBeat - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat-0.5) * TempR + X + 0.5 + 10*ScreenX;
+          Rec.Right := Rec.Left + NotesW[0];
+        end;
+
+
+
+
+
+
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
           glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap[Color].TexNum);
@@ -1856,9 +1899,19 @@ begin
         glEnd;
         GoldenStarPos := Rec.Left;
 
-        // middle part
-        Rec.Left  := Rec.Right;
-        Rec.Right := (StartBeat + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + X - NotesW[0] - 0.5 + 10*ScreenX;
+        // middle part, with shift for beat notes
+
+          if (NoteType = ntBeat) or (NoteType = ntBeatSilence) then
+          begin
+            Rec.Left  := Rec.Right;
+            Rec.Right := (StartBeat + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat-0.5) * TempR + X - NotesW[0] - 0.5 + 10*ScreenX;
+          end else
+          begin
+            Rec.Left  := Rec.Right;
+            Rec.Right := (StartBeat + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + X - NotesW[0] - 0.5 + 10*ScreenX;
+          end;
+
+
 
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
@@ -1874,6 +1927,18 @@ begin
           glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
           glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
         glEnd;
+        // Labelling, in the editor, of the silence / beat silence notes
+        // this happens with a "soupire" image above the notes
+        If (NoteType = ntSilence) or (NoteType = ntBeatSilence) then
+        begin
+           glBindTexture(GL_TEXTURE_2D, Tex_Note_Soupir.TexNum);
+           glBegin(GL_QUADS);
+              glTexCoord2f(0, 0); glVertex2f((Rec.Left+Rec.Right)/2-12,  Rec.Top-24);
+              glTexCoord2f(0, 1); glVertex2f((Rec.Left+Rec.Right)/2-12,  Rec.Top);
+              glTexCoord2f(1, 1); glVertex2f((Rec.Left+Rec.Right)/2+12, Rec.Top);
+              glTexCoord2f(1, 0); glVertex2f((Rec.Left+Rec.Right)/2+12, Rec.Top-24);
+           glEnd;
+        end;
 
         // right part
         Rec.Left  := Rec.Right;

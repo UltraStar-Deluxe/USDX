@@ -196,13 +196,16 @@ begin
           begin
             with Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote] do
             begin
-              //Golden + Freestyle Note Patch
+              //Golden + Freestyle Note Patch (+ beats and silence)
               case Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote].NoteType of
                 ntFreestyle: NoteState := 'F ';
                 ntNormal: NoteState := ': ';
                 ntGolden: NoteState := '* ';
                 ntRap: NoteState:= 'R ';
                 ntRapGolden: NoteState:='G ';
+                ntBeat: NoteState:='.';
+                ntSilence: NoteState:='S';
+                ntBeatSilence: NoteState:='s';
               end; // case
               Line := NoteState + IntToStr(StartBeat - RelativeSubTime) + ' '
                                 + IntToStr(Duration) + ' '

@@ -47,7 +47,9 @@ uses
   UScreenSingController,
   UScreenJukebox,
   USong,
-  UTime;
+  UTime,
+  UKeyboardRecording,
+  UBeatNote;
 
 type
   PPLayerNote = ^TPlayerNote;
@@ -308,6 +310,8 @@ var
 begin
   LyricsState.UpdateBeats();
 
+
+
   PetGr := 0;
   if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
     PetGr := 1;
@@ -341,6 +345,11 @@ begin
   // make some operations when detecting new voice pitch
   if (LyricsState.CurrentBeatD >= 0) and (LyricsState.OldBeatD <> LyricsState.CurrentBeatD) then
     NewBeatDetect(Screen);
+
+  // Beat detection is done at every input handling run (about every 40ms at a screen update frequency
+  // of 25Hz and not just on new beats as for the singing)
+  handleBeatNotes(Screen);
+
 end;
 
 procedure SingJukebox(Screen: TScreenJukebox);
@@ -524,7 +533,9 @@ begin
             // check if line is active
             if ((CurrentLineFragment.StartBeat <= ActualBeat) and
               (CurrentLineFragment.StartBeat + CurrentLineFragment.Duration-1 >= ActualBeat)) and
-              (CurrentLineFragment.NoteType <> ntFreestyle) and       // but ignore FreeStyle notes
+              (CurrentLineFragment.NoteType <> ntFreestyle) and  // but ignore FreeStyle notes
+              (CurrentLineFragment.NoteType <> ntBeat) and // and beat notes
+              (CurrentLineFragment.NoteType <> ntBeatSilence) and // and beat-centered silence notes
               (CurrentLineFragment.Duration > 0) then                   // and make sure the note length is at least 1
             begin
               SentenceDetected := SentenceIndex;
@@ -587,7 +598,9 @@ begin
                 Range := 2 - Ini.Difficulty;
 
               // check if the player hit the correct tone within the tolerated range
-              if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) or (CurrentLineFragment.NoteType = ntRap) or (CurrentLineFragment.NoteType = ntRapGolden) then
+              if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range)
+              or (CurrentLineFragment.NoteType = ntRap) or (CurrentLineFragment.NoteType = ntRapGolden)
+              or (CurrentLineFragment.NoteType = ntSilence) then
               begin
                 // adjust the players tone to the correct one
                 // TODO: do we need to do this?
@@ -610,12 +623,15 @@ begin
                 // CurNotePoints is the amount of points that is meassured
                 // for a hit of the note per full beat
                 CurNotePoints := (MaxSongPoints / Tracks[CP].ScoreValue) * ScoreFactor[CurrentLineFragment.NoteType];
+                if CurrentLineFragment.NoteType = ntSilence then
+                   CurNotePoints := (MaxSongPoints / Tracks[CP].ScoreValue);
 
                 case CurrentLineFragment.NoteType of
                   ntNormal:    CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
                   ntGolden:    CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
                   ntRap:       CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
                   ntRapGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
+                  ntSilence:   CurrentPlayer.Score       := CurrentPlayer.Score       - CurNotePoints/5; // Hit a silence not, this subtracts points
                 end;
 
                 // a problem if we use floor instead of round is that a score of
@@ -651,10 +667,11 @@ begin
             NewNote := true;
 
             // if previous note (if any) was the same, extend previous note
-            if ((CurrentPlayer.LengthNote > 0) and
+            if (CurrentPlayer.LengthNote > 0) and
                 (LastPlayerNote <> nil) and
                 (LastPlayerNote.Tone = ActualTone) and
-                ((LastPlayerNote.Start + LastPlayerNote.Duration) = ActualBeat)) then
+                ((LastPlayerNote.Start + LastPlayerNote.Duration) = ActualBeat)
+                and (LastPlayerNote.NoteType <> ntSilence) then
             begin
               NewNote := false;
             end;

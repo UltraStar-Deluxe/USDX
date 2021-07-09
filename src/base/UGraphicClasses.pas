@@ -43,8 +43,8 @@ const
   DelayBetweenFrames : cardinal = 60;
 
 type
-
- TParticleType = (GoldenNote, PerfectNote, NoteHitTwinkle, PerfectLineTwinkle, ColoredStar, Flare);
+ // Animations during singing for perfect hits of various note types. These animations persist a certain time after the hit
+ TParticleType = (GoldenNote, PerfectNote, NoteHitTwinkle, PerfectLineTwinkle, ColoredStar, Flare, PerfectBeat);
 
  TColour3f = record
    r, g, b: real;
@@ -60,7 +60,7 @@ type
    Tex      : cardinal; //Tex num from Textur Manager
    Live     : byte;     //How many Cycles before Kill
    RecIndex : integer;  //To which rectangle this particle belongs (only GoldenNote)
-   StarType : TParticleType;  // GoldenNote | PerfectNote | NoteHitTwinkle | PerfectLineTwinkle
+   StarType : TParticleType;  // GoldenNote | PerfectNote | NoteHitTwinkle | PerfectLineTwinkle | PerfectBeat
    Alpha    : real;     // used for fading...
    mX, mY   : real;     // movement-vector for PerfectLineTwinkle
    SizeMod  : real;     // experimental size modifier
@@ -73,6 +73,8 @@ type
 		      cRecArrayIndex : integer;
 		      cStarType      : TParticleType;
 		      Player         : cardinal);
+
+   // Constructor with additional array index for textures from array
    destructor Destroy(); override;
    procedure Draw;
    procedure LiveOn;
@@ -96,6 +98,8 @@ type
    RecArray      : array of RectanglePositions;
    TwinkleArray  : array[0..UIni.IMaxPlayerCount-1] of real; // store x-position of last twinkle for every player
    PerfNoteArray : array of PerfectNotePositions;
+   MissedNoteArray : array of PerfectNotePositions;
+   BeatLevel      : integer;
 
    FlareTex: TTexture;
 
@@ -110,14 +114,28 @@ type
                    StarType: TParticleType;
                    Player: cardinal         // for PerfectLineTwinkle
              ): cardinal;
+
+   function  SpawnAlternateTexNum(X, Y: real;
+                   Screen: integer;
+                   Live: byte;
+                   StartFrame: integer;
+                   RecArrayIndex: integer;  // this is only used with GoldenNotes
+                   StarType: TParticleType;
+                   Player: cardinal;         // for PerfectLineTwinkle
+                   TexNum: cardinal    // Supply a specific Texnum instead of the usual one
+             ): cardinal;
    procedure SpawnRec();
    procedure Kill(index: cardinal);
    procedure KillAll();
    procedure SentenceChange(CP: integer);
    procedure SaveGoldenStarsRec(Xtop, Ytop, Xbottom, Ybottom: real);
    procedure SavePerfectNotePos(Xtop, Ytop: real);
+   procedure SavePerfectBeatPos(Xtop, Ytop: real);
+   procedure SaveMissedBeatPos(Xtop, Ytop: real);
    procedure GoldenNoteTwinkle(Top, Bottom, Right: real; Player: integer);
    procedure SpawnPerfectLineTwinkle();
+   procedure IncrementBeatLevel();
+   procedure ResetBeatLevel();
  end;
 
 var
@@ -283,6 +301,18 @@ begin
           Col[3].b := 1;
 
         end;
+        PerfectBeat:
+        begin
+          Tex := Tex_Score_Ratings[1].TexNum;
+          W := 30;
+          H := 30;
+          SetLength(Col,1);
+          Col[0].r := 1;
+          Col[0].g := 1;
+          Col[0].b := 1;
+          mX := 0;
+          mY := 0;
+        end;
     else    // just some random default values
         begin
           Tex := Tex_Note_Star.TexNum;
@@ -296,6 +326,7 @@ begin
         end;
   end;
 end;
+
 
 destructor TParticle.Destroy();
 begin
@@ -350,6 +381,10 @@ begin
           mY := mY+1.8;
 //          mX := mX/2;
         end;
+    PerfectBeat:
+        begin
+          Alpha := (Live/10);
+        end;
   end;
 end;
 
@@ -375,10 +410,22 @@ begin
       glColor4f(Col[L].r, Col[L].g, Col[L].b, Alpha);
 
       glBegin(GL_QUADS);
-	      glTexCoord2f((1/16) * Frame, 0);          glVertex2f(X-W*Scale[L]*SizeMod, Y-H*Scale[L]*SizeMod);
+        if StarType <> perfectBeat then
+        begin
+        glTexCoord2f((1/16) * Frame, 0);          glVertex2f(X-W*Scale[L]*SizeMod, Y-H*Scale[L]*SizeMod);
         glTexCoord2f((1/16) * Frame + (1/16), 0); glVertex2f(X-W*Scale[L]*SizeMod, Y+H*Scale[L]*SizeMod);
         glTexCoord2f((1/16) * Frame + (1/16), 1); glVertex2f(X+W*Scale[L]*SizeMod, Y+H*Scale[L]*SizeMod);
         glTexCoord2f((1/16) * Frame, 1);          glVertex2f(X+W*Scale[L]*SizeMod, Y-H*Scale[L]*SizeMod);
+        end
+        else  // For the beat smileys
+        begin
+        glTexCoord2f(0, 0);          glVertex2f(X-W*Scale[L]*SizeMod, Y-H*Scale[L]*SizeMod);
+        glTexCoord2f(0, 1); glVertex2f(X-W*Scale[L]*SizeMod, Y+H*Scale[L]*SizeMod);
+        glTexCoord2f(1, 1); glVertex2f(X+W*Scale[L]*SizeMod, Y+H*Scale[L]*SizeMod);
+        glTexCoord2f(1, 0);          glVertex2f(X+W*Scale[L]*SizeMod, Y-H*Scale[L]*SizeMod);
+
+        end;
+
       glEnd;
     end;
 	
@@ -402,6 +449,7 @@ begin
   begin
     TwinkleArray[c] := 0;
   end;
+  BeatLevel:=1;
 end;
 
 destructor TEffectManager.Destroy;
@@ -455,6 +503,18 @@ begin
   Result := Length(Particle);
   SetLength(Particle, (Result + 1));
   Particle[Result] := TParticle.Create(X, Y, Screen, Live, StartFrame, RecArrayIndex, StarType, Player);
+end;
+// The idea here is to give additional flexibility in providing different textures with the same behaviour
+// Specifically used for beat notes with different smileys appearing with increasing number of
+// correct beat hits
+function TEffectManager.SpawnAlternateTexNum(X, Y: real; Screen: integer; Live: byte;
+                             StartFrame : integer; RecArrayIndex : integer; StarType : TParticleType;
+                             Player: cardinal; TexNum: cardinal): cardinal;
+begin
+  Result := Length(Particle);
+  SetLength(Particle, (Result + 1));
+  Particle[Result] := TParticle.Create(X, Y, Screen, Live, StartFrame, RecArrayIndex, StarType, Player);
+  Particle[Result].Tex := TexNum;
 end;
 
 // manage Sparkling of GoldenNote Bars
@@ -627,6 +687,74 @@ begin
     RecArray[NewIndex].TotalStarCount := ceil(Xbottom - Xtop) div 12 + 3;
     RecArray[NewIndex].CurrentStarCount := 0;
     RecArray[NewIndex].Screen := ScreenAct;
+end;
+
+procedure TEffectManager.SavePerfectBeatPos(Xtop, Ytop: real);
+var
+  P : integer;   // P like used in Positions
+  NewIndex : integer;
+  RandomFrame : integer;
+begin
+  for P := 0 to high(PerfNoteArray) do  // Do we already have that "new" position?
+  begin
+    with PerfNoteArray[P] do
+    if (ceil(xPos) = ceil(Xtop)) and (ceil(yPos) = ceil(Ytop)) and
+       (Screen = ScreenAct) then
+      exit; // it's already in the array, so we don't have to create a new one
+  end; //for
+
+  // we got a new position, add the new positions to our array
+  NewIndex := Length(PerfNoteArray);
+  SetLength(PerfNoteArray, NewIndex + 1);
+  PerfNoteArray[NewIndex].xPos    := Xtop;
+  PerfNoteArray[NewIndex].yPos    := Ytop;
+  PerfNoteArray[NewIndex].Screen  := ScreenAct;
+  // Launch the smiley animation
+  SpawnAlternateTexNum(ceil(Xtop), ceil(Ytop), ScreenAct, 32, 0, -1,
+  PerfectBeat, 0, Tex_Score_Ratings[BeatLevel].TexNum);
+
+
+
+end;
+// This causes advancingly good smileys (the same as the score levels)
+// to be applied with consecutively hit beat notes
+procedure TEffectManager.IncrementBeatLevel();
+begin
+  if BeatLevel<High(Tex_Score_Ratings) then
+     BeatLevel := BeatLevel+1;
+end;
+// If a beat is detected in a silence beat period
+// we start over with the lowest smiley (above tone deaf)
+procedure TEffectManager.ResetBeatLevel();
+begin
+
+     BeatLevel := 1;
+end;
+
+procedure TEffectManager.SaveMissedBeatPos(Xtop, Ytop: real);
+var
+  P : integer;   // P like used in Positions
+  NewIndex : integer;
+  RandomFrame : integer;
+begin
+  for P := 0 to high(MissedNoteArray) do  // Do we already have that "new" position?
+  begin
+    with MissedNoteArray[P] do
+    if (ceil(xPos) = ceil(Xtop)) and (ceil(yPos) = ceil(Ytop)) and
+       (Screen = ScreenAct) then
+      exit; // it's already in the array, so we don't have to create a new one
+  end; //for
+
+  // we got a new position, add the new positions to our array
+  NewIndex := Length(MissedNoteArray);
+  SetLength(MissedNoteArray, NewIndex + 1);
+  MissedNoteArray[NewIndex].xPos    := Xtop;
+  MissedNoteArray[NewIndex].yPos    := Ytop;
+  MissedNoteArray[NewIndex].Screen  := ScreenAct;
+
+  // At present we don't do any specific animation for these misses
+
+
 end;
 
 procedure TEffectManager.SavePerfectNotePos(Xtop, Ytop: real);

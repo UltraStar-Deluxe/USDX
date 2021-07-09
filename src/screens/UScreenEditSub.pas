@@ -292,6 +292,12 @@ type
       PlayOnlyButtonID:        Integer;
       PlayWithNoteButtonID:    Integer;
       PlayNoteButtonID:        Integer;
+      BeatNoteButtonID:        Integer;
+      SilenceNoteButtonID:     Integer;
+
+      ButtonConvertAllToBeatID:       Integer;
+      ButtonConvertAllToNormalID:     Integer;
+
       // background image & video preview
       BackgroundImageId:       Integer;
       Empty:                   array of UTF8String;   //temporary variable to initialize slide - todo change
@@ -396,6 +402,8 @@ const
 implementation
 
 uses
+  UBeatNoteEdit,
+  UBeatNote,
   UDisplay,
   UDraw,
   UGraphic,
@@ -465,6 +473,8 @@ var
   LineCount:    Integer;
   NoteIndex:    Integer;
   HasPreview:   Boolean;
+
+
 begin
   Result := true;
 
@@ -1623,7 +1633,7 @@ begin
              TextEditMode := true;
            end;
 
-           if Interaction = 24 then // UndoButtonId
+           if Interaction = 29 then // UndoButtonId
            begin
              CopyFromUndo;
              GoldenRec.KillAll;
@@ -1631,17 +1641,17 @@ begin
              ShowInteractiveBackground;
            end;
 
-           if Interaction = 25 then // PreviousSeqButtonID
+           if Interaction = 30 then // PreviousSeqButtonID
            begin
              PreviousSentence;
            end;
 
-           if Interaction = 26 then // NextSeqButtonID
+           if Interaction = 31 then // NextSeqButtonID
            begin
              NextSentence;
            end;
 
-           if Interaction = 27 then // FreestyleButtonID
+           if Interaction = 25 then // FreestyleButtonID
            begin
              CopyToUndo;
              if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntFreestyle) then
@@ -1664,7 +1674,9 @@ begin
              Exit;
            end;
 
-           if Interaction = 28 then // GoldButtonID
+
+
+           if Interaction = 26 then // GoldButtonID
            begin
              CopyToUndo;
              if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntGolden) then
@@ -1683,7 +1695,7 @@ begin
              Exit;
            end;
 
-           if Interaction = 29 then // PlayOnlyButtonID
+           if Interaction = 28 then // PlayOnlyButtonID
            begin
              // Play Sentence
              Click := true;
@@ -1693,10 +1705,26 @@ begin
              Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
              CurrentNote[CurrentTrack] := 0;
              R := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
+             // For the beat/beat silence note, we want to start 0.5 units earler to portray the beats, not the intervals
+             if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].NoteType = ntBeat)
+                or (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].NoteType = ntBeatSilence) then
+                begin
+                   // workaround since GetTimeFromBeat only takes an integer argument
+                   R := GetTimeFromBeatReal(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat-0.5);
+                end;
+
+
              if R <= AudioPlayback.Length then
              begin
                AudioPlayback.Position := R;
                PlayStopTime := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat);
+               // For the beat/beat silence note, we want to also stop 0.5 units earler to portray the beats, not the intervals
+               if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].NoteType = ntBeat)
+                or (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].NoteType = ntBeatSilence) then
+                begin
+                   // workaround since GetTimeFromBeat only takes an integer argument
+                   PlayStopTime := GetTimeFromBeatReal(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat-0.5);
+                end;
                PlaySentence := true;
                AudioPlayback.Play;
                LastClick := -100;
@@ -1704,7 +1732,7 @@ begin
              Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE');
            end;
 
-           if Interaction = 30 then // PlayWithNoteButtonID
+           if Interaction = 27 then // PlayWithNoteButtonID
            begin
              Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
              CurrentNote[CurrentTrack] := 0;
@@ -1721,12 +1749,21 @@ begin
              AudioPlayback.Stop;
              AudioPlayback.Position := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat)+0{-0.10};
              PlayStopTime := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat)+0;
+             // We need to shift by -0.5 beats in case it is beat notes or beat note breaks because they are centered on the beats rather than
+             // the intervals
+             if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].NoteType = ntBeat)
+                or (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].NoteType = ntBeatSilence) then
+             begin
+                 AudioPlayback.Position := GetTimeFromBeatReal(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat-0.5)+0{-0.10};
+                 PlayStopTime := GetTimeFromBeatReal(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat-0.5)+0;
+             end;
+
              AudioPlayback.Play;
              LastClick := -100;
              Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE');
            end;
 
-           if Interaction = 31 then // PlayNoteButtonID
+           if Interaction = 24 then // PlayNoteButtonID
            begin
              Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
              CurrentNote[CurrentTrack] := 0;
@@ -1735,11 +1772,90 @@ begin
              StopVideoPreview;
              {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
              MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
-             MidiStop := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat); {$ENDIF}
+             MidiStop := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat);
+             // Shift by -0.5 for the beat and beat silence notes
+             if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].NoteType = ntBeat)
+                or (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].NoteType = ntBeatSilence) then
+             begin
+                 MidiStart := GetTimeFromBeatReal(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat-0.5);
+                 MidiStop := GetTimeFromBeatReal(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat-0.5);
+             end;
+
+
+
+             {$ENDIF}
 
              LastClick := -100;
              Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE');
            end;
+
+           if Interaction = 32 then // BeatNote button clicked. Change to beatNote if other note Type, and also
+           // ensure that beat notes have a length of 1 while changing
+           begin
+           CopyToUndo;
+             if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntBeat) then
+             begin
+               Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType := ntNormal;
+             end
+             else
+             begin
+               Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType := ntBeat;
+               Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration := 1; // A beat is always minimal duration
+             end;
+           end;
+
+           if Interaction = 33 then // Silence button pushed: Change between notes to detect and corresponding silence notes
+           begin
+           CopyToUndo;
+             if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntSilence) then
+             begin
+               Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType := ntNormal;
+             end
+             else
+               if Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntBeatSilence then
+                 begin
+                   Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType := ntBeat;
+                   Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration := 1;
+                 end
+               else
+                 begin
+                   if Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntBeat then
+                   begin
+                     Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType := ntBeatSilence;
+                   end
+                   else
+                   begin
+                     Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType := ntSilence;
+                   end;
+
+                 end;
+           end;
+
+           if Interaction = 34 then // Convert all normal notes (note type ntNormal, c.f. TNoteType in UMusic.pas)
+             // to beat notes (ntBeat). Beat notes are only 1 beat long, insert beat breaks to account for the length
+             // and also to provide some negative points if clapping is detected where it shouldn't
+           begin
+             CopyToUndo;
+             ConvertTrackToBeats(@Tracks[CurrentTrack]);
+
+
+
+
+
+
+           end;
+
+           if Interaction = 35 then // Convert beat notes to normal notes, by integrating beat breaks for the duration
+           begin
+             CopyToUndo;
+             ConvertTrackToNormal(@Tracks[CurrentTrack]);
+
+           end;
+
+
+
+
+
 
            for LineIndex := 0 to Tracks[CurrentTrack].High do
            begin
@@ -4096,6 +4212,14 @@ begin
           // middle part
           Rec.Left := (StartBeat - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + X + 0.5 + 10*ScreenX + NotesW[0];
           Rec.Right := (StartBeat + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + X - NotesW[0] - 0.5 + 10*ScreenX;
+          // Shift text by half a beat in case this is a rythmic beat or rythmic silence rather than a sung note
+          if (NoteType = ntBeat) or (NoteType = ntBeatSilence) then
+          begin
+             Rec.Left := (StartBeat-0.5 - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + X + 0.5 + 10*ScreenX + NotesW[0];
+             Rec.Right := (StartBeat-0.5 + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + X - NotesW[0] - 0.5 + 10*ScreenX;
+
+          end;
+
           SetFontPos(Rec.Left, Rec.Top);
           glPrint(Text);
           // add info if current note is medley start
@@ -4400,6 +4524,11 @@ begin
   PlayOnlyButtonID     := AddButton(Theme.EditSub.PlayOnly);
   PlayWithNoteButtonID := AddButton(Theme.EditSub.PlayWithNote);
   PlayNoteButtonID     := AddButton(Theme.EditSub.PlayNote);
+  BeatNoteButtonID     := AddButton(Theme.EditSub.ButtonNoteBeat);
+  SilenceNoteButtonID  := AddButton(Theme.EditSub.ButtonNoteSilence);
+  ButtonConvertAllToBeatID:= AddButton(Theme.EditSub.ButtonConvertAllToBeat);
+  ButtonConvertAllToNormalID:= AddButton(Theme.EditSub.ButtonConvertAllToNormal);
+
 
   // current line
   TextSentence := AddButton(Theme.EditSub.ButtonCurrentLine);
@@ -5284,5 +5413,7 @@ begin
   end else
     Result := 0;
 end;
+
+
 
 end.
