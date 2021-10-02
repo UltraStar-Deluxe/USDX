@@ -247,6 +247,14 @@ uses
 
   UHelp             in 'base\UHelp.pas',
 
+
+  //------------------------------
+  //Includes -Beat Playing
+  //------------------------------
+
+  UBeatNote             in 'beatNote\UBeatNote.pas',
+  UBeatNoteTimer        in 'beatNote\UBeatNoteTimer.pas',
+
   //------------------------------
   //Includes - Plugin Support
   //------------------------------
@@ -394,6 +402,11 @@ uses
   UScreenJukeboxPlaylist        in 'screens\UScreenJukeboxPlaylist.pas',
 
   UAvatars                in 'base\UAvatars.pas',
+
+  UScreenOptionsBeatPlay   in 'beatNote\UScreenOptionsBeatPlay.pas',
+  UScreenOptionsBeatPlayPeakAnalysis          in 'beatNote\UScreenOptionsBeatPlayPeakAnalysis.pas',
+
+
   UScreenAbout            in 'screens\UScreenAbout.pas',
 
   SysUtils;
