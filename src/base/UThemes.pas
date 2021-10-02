@@ -79,6 +79,7 @@ const
   OPTIONS_DESC_INDEX_WEBCAM    = 9;
   OPTIONS_DESC_INDEX_JUKEBOX   = 10;
   OPTIONS_DESC_INDEX_INPUT     = 11;
+  OPTIONS_DESC_INDEX_BEAT_PLAYING = 12;
 
 
 type
@@ -843,10 +844,11 @@ type
     ButtonNetwork:    TThemeButton;
     ButtonWebcam:     TThemeButton;
     ButtonJukebox:    TThemeButton;
+    ButtonBeatPlaying: TThemeButton;
     ButtonExit:       TThemeButton;
 
     TextDescription:      TThemeText;
-    Description:          array[0..11] of UTF8String;
+    Description:          array[0..12] of UTF8String;
   end;
 
   TThemeOptionsGame = class(TThemeBasic)
@@ -928,6 +930,23 @@ type
     SelectSingScores:     TThemeSelectSlide;
     SelectTopScores:      TThemeSelectSlide;
     ButtonExit:           TThemeButton;
+  end;
+
+  TThemeOptionsBeatDetect = class(TThemeBasic)
+    SelectSlideCard: TThemeSelectSlide;
+    SelectSlideInput: TThemeSelectSlide;
+    SelectChannel: TThemeSelectSlide;
+    SelectIntensityThreshold: TThemeSelectSlide;
+    SelectMicBoost: TThemeSelectSlide;
+    ButtonExit: TThemeButton;
+  end;
+
+  TThemeOptionsBeatPlay = class(TThemeBasic)
+    SelectBeatPlayClapSign: TThemeSelectSlide;
+    SelectBeatDetectionDelay: TThemeSelectSlide;
+    ButtonExit: TThemeButton;
+    ButtonAudioConfigure: TThemeButton;
+    Description: array[0..0] of UTF8String;
   end;
 
   TThemeOptionsNetwork = class(TThemeBasic)
@@ -1037,6 +1056,7 @@ type
       undo:                TThemeButton;
       gold:                TThemeButton;
       freestyle:           TThemeButton;
+      RapBeatMode:      TThemeButton;
 
       // sliders
       SlideTitle:          TThemeSelectSlide;
@@ -1418,6 +1438,8 @@ type
     OptionsThemes:    TThemeOptionsThemes;
     OptionsRecord:    TThemeOptionsRecord;
     OptionsAdvanced:  TThemeOptionsAdvanced;
+    OptionsBeatPlay:  TThemeOptionsBeatPlay;
+    OptionsBeatDetect: TThemeOptionsBeatDetect;
     OptionsNetwork:   TThemeOptionsNetwork;
     OptionsWebcam:    TThemeOptionsWebcam;
     OptionsJukebox:   TThemeOptionsJukebox;
@@ -1588,6 +1610,8 @@ begin
   OptionsThemes := TThemeOptionsThemes.Create;
   OptionsRecord := TThemeOptionsRecord.Create;
   OptionsAdvanced := TThemeOptionsAdvanced.Create;
+  OptionsBeatPlay := TThemeOptionsBeatPlay.Create;
+  OptionsBeatDetect := TThemeOptionsBeatDetect.Create;
   OptionsNetwork := TThemeOptionsNetwork.Create;
   OptionsWebcam := TThemeOptionsWebcam.Create;
   OptionsJukebox := TThemeOptionsJukebox.Create;
@@ -2298,6 +2322,7 @@ begin
       ThemeLoadButton(Options.ButtonNetwork,  'OptionsButtonNetwork');
       ThemeLoadButton(Options.ButtonWebcam,   'OptionsButtonWebcam');
       ThemeLoadButton(Options.ButtonJukebox,  'OptionsButtonJukebox');
+      ThemeLoadButton(Options.ButtonBeatPlaying, 'OptionsButtonBeatPlaying');
       ThemeLoadButton(Options.ButtonExit,     'OptionsButtonExit');
 
       // Note: always update the indexes constant on top of this unit when changing the order (see OPTIONS_DESC_INDEX_*)
@@ -2313,6 +2338,7 @@ begin
       Options.Description[OPTIONS_DESC_INDEX_NETWORK] := Language.Translate('SING_OPTIONS_NETWORK_DESC');
       Options.Description[OPTIONS_DESC_INDEX_WEBCAM] := Language.Translate('SING_OPTIONS_WEBCAM_DESC');
       Options.Description[OPTIONS_DESC_INDEX_JUKEBOX] := Language.Translate('SING_OPTIONS_JUKEBOX_DESC');
+      Options.Description[OPTIONS_DESC_INDEX_BEAT_PLAYING] := Language.Translate('SING_OPTIONS_BEAT_PLAYING');
 
       ThemeLoadText(Options.TextDescription, 'OptionsTextDescription');
       Options.TextDescription.Text := Options.Description[OPTIONS_DESC_INDEX_GAME]; // Select default first menu button 'Game'
@@ -2415,6 +2441,24 @@ begin
       ThemeLoadSelectSlide(OptionsAdvanced.SelectSingScores,    'OptionsAdvancedSelectSingScores');
       ThemeLoadSelectSlide(OptionsAdvanced.SelectTopScores,     'OptionsAdvancedSelectTopScores');
       ThemeLoadButton     (OptionsAdvanced.ButtonExit,          'OptionsAdvancedButtonExit');
+
+      // Configuration beat playing
+      ThemeLoadBasic      (OptionsBeatPlay, 'OptionsBeatPlay');
+      ThemeLoadSelectSlide(OptionsBeatPlay.SelectBeatPlayClapSign, 'OptionsBeatPlayShowClap');
+      ThemeLoadSelectSlide(OptionsBeatPlay.SelectBeatDetectionDelay, 'OptionsBeatPlaySelectBeatDetectionDelay');
+      ThemeLoadButton (OptionsBeatPlay.ButtonExit, 'OptionsBeatPlayButtonExit');
+      ThemeLoadButton (OptionsBeatPlay.ButtonAudioConfigure, 'OptionsBeatPlayButtonAudioConfigure');
+
+      OptionsBeatPlay.Description[0] := Language.Translate('SING_OPTIONS_BEATPLAY_AUDIO_CONFIGURE');
+
+      // Configuration to use audio beat detection for beat playing
+      ThemeLoadBasic      (OptionsBeatDetect, 'OptionsBeatDetect');
+      ThemeLoadSelectSlide(OptionsBeatDetect.SelectSlideCard,     'OptionsBeatDetectSelectSlideCard');
+      ThemeLoadSelectSlide(OptionsBeatDetect.SelectSlideInput,    'OptionsBeatDetectSelectSlideInput');
+      ThemeLoadSelectSlide(OptionsBeatDetect.SelectChannel,       'OptionsBeatDetectSelectChannel');
+      ThemeLoadSelectSlide(OptionsBeatDetect.SelectIntensityThreshold,       'OptionsBeatDetectSelectThreshold');
+      ThemeLoadSelectSlide(OptionsBeatDetect.SelectMicBoost,      'OptionsBeatDetectSelectMicBoost');
+       ThemeLoadButton(OptionsBeatDetect.ButtonExit,               'OptionsBeatDetectButtonExit');
 
       //Options Network
       ThemeLoadBasic(OptionsNetwork, 'OptionsNetwork');
@@ -2543,6 +2587,7 @@ begin
       ThemeLoadButton(EditSub.gold,    'EditSubBarStatic6');
       ThemeLoadButton(EditSub.freestyle,    'EditSubBarStatic7');
       ThemeLoadButton(EditSub.undo,    'EditSubBarStatic8');
+      ThemeLoadButton(EditSub.RapBeatMode, 'EditSubBarStatic9');
       ThemeLoadSelectSlide(EditSub.SlideTitle, 'EditSubTitle');
       ThemeLoadSelectSlide(EditSub.SlideArtist, 'EditSubArtist');
       ThemeLoadSelectSlide(EditSub.SlideLanguage, 'EditSubLanguage');
