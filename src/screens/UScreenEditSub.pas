@@ -292,6 +292,7 @@ type
       PlayOnlyButtonID:        Integer;
       PlayWithNoteButtonID:    Integer;
       PlayNoteButtonID:        Integer;
+      RapBeatModeButtonID:     Integer;
       // background image & video preview
       BackgroundImageId:       Integer;
       Empty:                   array of UTF8String;   //temporary variable to initialize slide - todo change
@@ -1623,7 +1624,7 @@ begin
              TextEditMode := true;
            end;
 
-           if Interaction = 24 then // UndoButtonId
+           if Interaction = 29 then // UndoButtonId
            begin
              CopyFromUndo;
              GoldenRec.KillAll;
@@ -1631,17 +1632,17 @@ begin
              ShowInteractiveBackground;
            end;
 
-           if Interaction = 25 then // PreviousSeqButtonID
+           if Interaction = 30 then // PreviousSeqButtonID
            begin
              PreviousSentence;
            end;
 
-           if Interaction = 26 then // NextSeqButtonID
+           if Interaction = 31 then // NextSeqButtonID
            begin
              NextSentence;
            end;
 
-           if Interaction = 27 then // FreestyleButtonID
+           if Interaction = 25 then // FreestyleButtonID
            begin
              CopyToUndo;
              if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntFreestyle) then
@@ -1664,7 +1665,7 @@ begin
              Exit;
            end;
 
-           if Interaction = 28 then // GoldButtonID
+           if Interaction = 26 then // GoldButtonID
            begin
              CopyToUndo;
              if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntGolden) then
@@ -1683,7 +1684,7 @@ begin
              Exit;
            end;
 
-           if Interaction = 29 then // PlayOnlyButtonID
+           if Interaction = 28 then // PlayOnlyButtonID
            begin
              // Play Sentence
              Click := true;
@@ -1704,7 +1705,7 @@ begin
              Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE');
            end;
 
-           if Interaction = 30 then // PlayWithNoteButtonID
+           if Interaction = 27 then // PlayWithNoteButtonID
            begin
              Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
              CurrentNote[CurrentTrack] := 0;
@@ -1726,7 +1727,7 @@ begin
              Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE');
            end;
 
-           if Interaction = 31 then // PlayNoteButtonID
+           if Interaction = 24 then // PlayNoteButtonID
            begin
              Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
              CurrentNote[CurrentTrack] := 0;
@@ -1739,6 +1740,11 @@ begin
 
              LastClick := -100;
              Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE');
+           end;
+
+           if Interaction=32 then
+           begin
+               CurrentSong.RapBeat := not CurrentSong.RapBeat;
            end;
 
            for LineIndex := 0 to Tracks[CurrentTrack].High do
@@ -4400,6 +4406,7 @@ begin
   PlayOnlyButtonID     := AddButton(Theme.EditSub.PlayOnly);
   PlayWithNoteButtonID := AddButton(Theme.EditSub.PlayWithNote);
   PlayNoteButtonID     := AddButton(Theme.EditSub.PlayNote);
+  RapBeatModeButtonID  := AddButton(Theme.EditSub.RapBeatMode);
 
   // current line
   TextSentence := AddButton(Theme.EditSub.ButtonCurrentLine);
