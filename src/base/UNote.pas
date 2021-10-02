@@ -47,7 +47,8 @@ uses
   UScreenSingController,
   UScreenJukebox,
   USong,
-  UTime;
+  UTime,
+  UBeatNote;
 
 type
   PPLayerNote = ^TPlayerNote;
@@ -341,6 +342,12 @@ begin
   // make some operations when detecting new voice pitch
   if (LyricsState.CurrentBeatD >= 0) and (LyricsState.OldBeatD <> LyricsState.CurrentBeatD) then
     NewBeatDetect(Screen);
+
+  
+  // Beat detection is done at every input handling run (about every 40ms at a screen update frequency
+  // of 25Hz and not just on new beats as for the singing)
+  handleBeatNotes(Screen);
+
 end;
 
 procedure SingJukebox(Screen: TScreenJukebox);
@@ -524,7 +531,8 @@ begin
             // check if line is active
             if ((CurrentLineFragment.StartBeat <= ActualBeat) and
               (CurrentLineFragment.StartBeat + CurrentLineFragment.Duration-1 >= ActualBeat)) and
-              (CurrentLineFragment.NoteType <> ntFreestyle) and       // but ignore FreeStyle notes
+              (CurrentLineFragment.NoteType <> ntFreestyle) and  // but ignore FreeStyle notes
+              ((CurrentLineFragment.NoteType <> ntRap) or not CurrentSong.RapBeat) and // If beat mode is on, rap notes are handled separately
               (CurrentLineFragment.Duration > 0) then                   // and make sure the note length is at least 1
             begin
               SentenceDetected := SentenceIndex;

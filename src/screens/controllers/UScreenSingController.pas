@@ -208,7 +208,8 @@ uses
   UWebcam,
   UWebSDK,
   Classes,
-  Math;
+  Math,
+  UBeatNoteTimer;
 
 const
   MAX_MESSAGE = 3;
@@ -633,6 +634,8 @@ begin
   inherited Create;
   ScreenSing := self;
   screenSingViewRef := TScreenSingView.Create();
+  // Make sure the beat note timing manager is running for singing with beats
+  createTBeatNoteTimerState();
 
   ClearSettings;
 end;

@@ -81,6 +81,30 @@ const
   IPlayers:     array[0..6] of UTF8String = ('1', '2', '3', '4', '6', '8', '12');
   IPlayersVals: array[0..6] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 ,  8 ,  12);
 
+
+  // Specific beat detection settings, per channel
+  type
+    PChannelBeatDetectionSettings = ^TChannelBeatDetectionSettings;
+    TChannelBeatDetectionSettings = record
+      IntensityThreshold:                 integer; // Primary detection threshold, relative to full scale (in percent)
+      RiseRateFactor:                     integer; // Only from config file, not user interface (for simplicity). Rise rate relative to threshold. This is the index to values in IBeatDetectRiseRateFactorValues
+      MinPeakMillisecond:                 integer; // Only from config file, not user interface (for simplicity). Minimum duration of peak (above threshold)
+      DropAfterPeakPercent:               integer; // Only from config file, not user interface (for simplicity). Fall after peak
+      TestTimeAfterPeak:                  integer; // Only from config file, not user interface (for simplicity). Delta time after peak to assess fall in intensity
+    end;
+
+    PInputDeviceBeatDetectionConfig = ^TInputDeviceBeatDetectionConfig;
+   TInputDeviceBeatDetectionConfig = record
+      Name:               string;  //**< Name of the input device
+      Input:              integer; //**< Index of the input source to use for recording
+
+      // There are 1(mono), two(stereo) or sometimes many channels (software input like SoundFlower) per input
+      // source and so each one has its own beat detection settings
+      ChannelBeatDectectionSettings: array of TChannelBeatDetectionSettings;
+
+
+    end;
+
 type
 
 //Options
@@ -101,8 +125,9 @@ type
 
       procedure LoadInputDeviceCfg(IniFile: TMemIniFile);
       procedure SaveInputDeviceCfg(IniFile: TIniFile);
+      procedure SaveInputDeviceBeatDetectionCfg(IniFile: TIniFile);
       procedure LoadThemes(IniFile: TCustomIniFile);
-
+      procedure LoadInputDeviceBeatDetectionCfg(IniFile: TMemIniFile);
       procedure LoadPaths(IniFile: TCustomIniFile);
       procedure LoadScreenModes(IniFile: TCustomIniFile);
       procedure LoadWebcamSettings(IniFile: TCustomIniFile);
@@ -204,6 +229,15 @@ type
       TopScores:      integer;
       SingTimebarMode:       integer;
       JukeboxTimebarMode:    integer;
+
+      // Beat detection
+      BeatPlayClapSignOn:      integer; // Whether or not to show a little clap sign above the beat notes
+      BeatDetectionDelay:      integer; // Delay in ms. This is typically less than the typical
+        // microphone delays (i.e. field MicDelay) because the sampling is more
+        // frequent and not the entire audio buffer is analyzed. A typical value
+        // is 20-40ms.
+
+      InputDeviceBeatDetectionConfig: array of TInputDeviceBeatDetectionConfig; // Configuration of beat detection for different audio channels
 
       // Controller
       Joypad:         integer;
@@ -437,6 +471,13 @@ const
   sSelectPlayer = 1;
   sOpenMenu = 2;
 
+  IBeatPlayClapSignOn: array[0..1] of UTF8String = ('Hide', 'Show');
+
+  IBeatDetectIntensityThreshold: array[0..10] of UTF8String = ('5%','10%','15%','20%','30%','40%','50%','60%','70%','80%','90%');
+  IBeatDetectIntensityThresholdValues: array[0..10] of Integer = (5,10,15,20,30,40,50,60,70,80,90);
+
+  IBeatDetectRiseRateFactorValues: array[0..5] of real = (1.5,2,2.5,3,4,5);
+
   ILineBonus:     array[0..1] of UTF8String = ('Off', 'On');
   IPartyPopup:    array[0..1] of UTF8String = ('Off', 'On');
 
@@ -477,6 +518,7 @@ var
   IDebugTranslated:            array[0..1] of UTF8String  = ('Off', 'On');
   IAVDelay:                    array of UTF8String;
   IMicDelay:                   array of UTF8String;
+  IBeatDetectionDelay:         array of UTF8String;
 
   IFullScreenTranslated:       array[0..2] of UTF8String  = ('Off', 'On', 'Borderless');
   IVisualizerTranslated:       array[0..3] of UTF8String  = ('Off', 'WhenNoVideo', 'WhenNoVideoAndImage','On');
@@ -1186,6 +1228,151 @@ begin
   PathStrings.Free;
 end;
 
+// Specifically load the beat detection configuration for the various input devices and channels
+procedure TIni.LoadInputDeviceBeatDetectionCfg(IniFile: TMemIniFile);
+var
+  DeviceCfgBeatDetection:    PInputDeviceBeatDetectionConfig;
+  DeviceIndex:  integer;
+  ChannelCount: integer;
+  ChannelIndex: integer;
+  BeatDetectionKeys:   TStringList;
+  i:            integer;
+begin
+  BeatDetectionKeys := TStringList.Create();
+
+  // read all record-keys for filtering
+  IniFile.ReadSection('BeatDetection', BeatDetectionKeys);
+
+  SetLength(InputDeviceBeatDetectionConfig, Length(InputDeviceConfig));
+
+  for DeviceIndex := 0 to Length(InputDeviceConfig)-1 do
+  begin
+    DeviceCfgBeatDetection:= @InputDeviceBeatDetectionConfig[DeviceIndex];
+    ChannelCount := Length(InputDeviceConfig[Deviceindex].ChannelToPlayerMap);
+    SetLength(DeviceCfgBeatDetection.ChannelBeatDectectionSettings, ChannelCount);
+
+    for ChannelIndex := 0 to High(DeviceCfgBeatDetection.ChannelBeatDectectionSettings) do
+      begin
+        DeviceCfgBeatDetection.ChannelBeatDectectionSettings[ChannelIndex].IntensityThreshold :=
+          IniFile.ReadInteger('BeatDetection', Format('IntensityThresholdChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]), 5);
+
+        DeviceCfgBeatDetection.ChannelBeatDectectionSettings[ChannelIndex].RiseRateFactor :=
+          IniFile.ReadInteger('BeatDetection', Format('RiseRateFactorChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]), 2);
+
+        DeviceCfgBeatDetection.ChannelBeatDectectionSettings[ChannelIndex].MinPeakMillisecond :=
+          IniFile.ReadInteger('BeatDetection', Format('MinPeakMillisecondChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]), 2);
+
+        DeviceCfgBeatDetection.ChannelBeatDectectionSettings[ChannelIndex].DropAfterPeakPercent :=
+          IniFile.ReadInteger('BeatDetection', Format('DropAfterPeakPercentChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]), 40);
+
+        DeviceCfgBeatDetection.ChannelBeatDectectionSettings[ChannelIndex].TestTimeAfterPeak :=
+          IniFile.ReadInteger('BeatDetection', Format('TestTimeAfterPeakChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]), 20);
+
+      end;
+  end;
+
+  BeatDetectionKeys.Free();
+
+end;
+
+
+
+procedure TIni.SaveInputDeviceBeatDetectionCfg(IniFile: TIniFile);
+var
+  DeviceIndex:  integer;
+  ChannelIndex: integer;
+  IntensityThreshold: integer;
+  IntensityRiseRateFactor: integer;
+  IntensityMinPeak: integer;
+  IntensityDropAfterPeak: integer;
+  IntensityTestTimeAfterPeakChannel: integer;
+begin
+  for DeviceIndex := 0 to High(InputDeviceConfig) do
+  begin
+    // DeviceName and DeviceInput
+
+
+
+    for ChannelIndex := 0 to High(InputDeviceBeatDetectionConfig[DeviceIndex].ChannelBeatDectectionSettings) do
+    begin
+      IntensityThreshold := InputDeviceBeatDetectionConfig[DeviceIndex].ChannelBeatDectectionSettings[ChannelIndex].IntensityThreshold;
+      if IntensityThreshold >= 0 then
+      begin
+        IniFile.WriteInteger('BeatDetection',
+            Format('IntensityThresholdChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]),
+            IntensityThreshold);
+      end
+      else
+      begin
+        IniFile.DeleteKey('BeatDetection',
+            Format('IntensityThresholdChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]));
+      end;
+
+
+      IntensityRiseRateFactor := InputDeviceBeatDetectionConfig[DeviceIndex].ChannelBeatDectectionSettings[ChannelIndex].RiseRateFactor;
+      if IntensityRiseRateFactor >= 0 then
+      begin
+        IniFile.WriteInteger('BeatDetection',
+            Format('RiseRateFactorChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]),
+            IntensityRiseRateFactor);
+      end
+      else
+      begin
+        IniFile.DeleteKey('BeatDetection',
+            Format('RiseRateFactorChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]));
+      end;
+
+      IntensityMinPeak := InputDeviceBeatDetectionConfig[DeviceIndex].ChannelBeatDectectionSettings[ChannelIndex].MinPeakMillisecond;
+
+      if IntensityMinPeak >= 0 then
+      begin
+      IniFile.WriteInteger('BeatDetection',
+            Format('MinPeakMillisecondChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]),
+           IntensityMinPeak);
+      end
+      else
+      begin
+      IniFile.DeleteKey('BeatDetection',
+           Format('MinPeakMillisecondChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]));
+      end;
+
+
+
+      IntensityDropAfterPeak := InputDeviceBeatDetectionConfig[DeviceIndex].ChannelBeatDectectionSettings[ChannelIndex].DropAfterPeakPercent;
+      if IntensityDropAfterPeak >= 0 then
+      begin
+        IniFile.WriteInteger('BeatDetection',
+            Format('DropAfterPeakPercentChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]),
+           IntensityDropAfterPeak);
+      end
+      else
+      begin
+       IniFile.DeleteKey('BeatDetection',
+            Format('DropAfterPeakPercentChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]));
+      end;
+
+
+
+      IntensityTestTimeAfterPeakChannel := InputDeviceBeatDetectionConfig[DeviceIndex].ChannelBeatDectectionSettings[ChannelIndex].TestTimeAfterPeak;
+      if IntensityTestTimeAfterPeakChannel >= 0 then
+      begin
+        IniFile.WriteInteger('BeatDetection',
+            Format('TestTimeAfterPeakChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]),
+           IntensityTestTimeAfterPeakChannel);
+      end
+      else
+      begin
+       IniFile.DeleteKey('BeatDetection',
+            Format('TestTimeAfterPeakChannel%d[%d]', [ChannelIndex+1, DeviceIndex+1]));
+      end;
+
+
+
+    end;
+  end;
+
+end;
+
 procedure TIni.LoadThemes(IniFile: TCustomIniFile);
 begin
   // No Theme Found
@@ -1548,12 +1735,18 @@ begin
   LoadThemes(IniFile);
 
   LoadInputDeviceCfg(IniFile);
+  LoadInputDeviceBeatDetectionCfg(IniFile);
 
   // LoadAnimation
   LoadAnimation := ReadArrayIndex(ILoadAnimation, IniFile, 'Advanced', 'LoadAnimation', IGNORE_INDEX, 'On');
 
   // ScreenFade
   ScreenFade := ReadArrayIndex(IScreenFade, IniFile, 'Advanced', 'ScreenFade', IGNORE_INDEX, 'On');
+
+  // To show the clap sign or not
+  BeatPlayClapSignOn := ReadArrayIndex(IBeatPlayClapSignOn, IniFile, 'BeatPlay', 'BeatPlayClapSignOn', IGNORE_INDEX, 'Show');
+
+  BeatDetectionDelay := IniFile.ReadInteger('BeatPlay', 'BeatDetectionDelay', 140);
 
   // Visualizations
   // <mog> this could be of use later..
@@ -1864,6 +2057,7 @@ begin
     IniFile.WriteString('Themes', 'Color', IColor[Color]);
 
     SaveInputDeviceCfg(IniFile);
+    SaveInputDeviceBeatDetectionCfg(IniFile);
 
     //LoadAnimation
     IniFile.WriteString('Advanced', 'LoadAnimation', ILoadAnimation[LoadAnimation]);
@@ -1894,6 +2088,9 @@ begin
 
     //SyncTo
     IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);
+
+    IniFile.WriteString('BeatPlay', 'BeatPlayClapSignOn', IBeatPlayClapSignOn[BeatPlayClapSignOn]);
+    IniFile.WriteInteger('BeatPlay', 'BeatDetectionDelay', BeatDetectionDelay);
 
     // Joypad
     IniFile.WriteString('Controller', 'Joypad', IJoypad[Joypad]);

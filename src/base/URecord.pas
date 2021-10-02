@@ -100,6 +100,12 @@ type
 
       // use to analyze sound from buffers to get new pitch
       procedure AnalyzeBuffer;
+
+      // Beat detection: short burst of sound above background noise level, within a short time window back from the
+      // current time point (timeBack parametr, unit seconds, depends on the current time point)
+      procedure AnalyzeBufferBeatOnly(timeBack: real; Threshold: integer; RiseRate: integer;
+                MinPeakDuration: integer; DropAfterPeak: integer; TestTimeAfterPeak: integer);
+
       procedure LockAnalysisBuffer();   {$IFDEF HasInline}inline;{$ENDIF}
       procedure UnlockAnalysisBuffer(); {$IFDEF HasInline}inline;{$ENDIF}
 
@@ -399,6 +405,247 @@ begin
     UnlockAnalysisBuffer();
   end;
 end;
+
+
+
+procedure TCaptureBuffer.AnalyzeBufferBeatOnly(timeBack: real; Threshold: integer; RiseRate: integer; MinPeakDuration: integer;
+                               DropAfterPeak: integer; TestTimeAfterPeak: integer);
+var
+  Volume:      single;
+  MaxVolume:   single;
+  MeanVolume:  single;
+  SampleIndex, SampleInterval, SampleIndexPeak, StartSampleIndex: integer;
+  BaselineStart, BaselineInterval, BaselineSampleIndex: integer; // To compare the peak sample values to baseline
+  SampleLowerLimit, SampleUpperLimit: integer;
+  detected, maximumdetected:    Boolean;
+  RMSVolume, RMSVolumeBaseline, riserate_evaluated:   single;
+  // Four potential criteria for a succesful beat note detetion (this is to discriminate against background noise)
+  passesThreshold: Boolean; // 1) Passing an absolute sound intensity threshold (anyways mandatory)
+  passesRiseRate: Boolean; // 2) Sufficiently quick rise rate (depending on user configuration in Ini variable)
+  passesDuration: Boolean; // 3) Sufficient duration (not just single off measurement, depends on configuration in Ini variable)
+  passesDropAfterPeak: Boolean; // 4) Sufficient quick fall after peak (depending on user configuration in Ini variable)
+
+begin
+
+
+
+  ToneValid := false;
+  ToneAbs := -1;
+  Tone    := -1;
+  detected := false;
+
+
+  passesThreshold:=false;
+  passesRiseRate:=false;
+  passesDuration:=false;
+  passesDropAfterPeak:=false;
+
+  if RiseRate = 0 then
+     passesRiseRate := true; // No rise rate requirement, so passes anyways
+
+  if MinPeakDuration = 0 then
+     passesDuration := true; // No minimal duration, so test passed anyways
+
+  if DropAfterPeak =0 then
+     passesDropAfterPeak:= true;
+
+  LockAnalysisBuffer();
+  try
+
+  StartSampleIndex:=High(AnalysisBuffer)-Round(timeBack*AudioFormat.SampleRate);
+
+    if(StartSampleIndex < 0) then
+      StartSampleIndex := 0;
+
+  for SampleIndex := StartSampleIndex to High(AnalysisBuffer) do
+  begin
+
+       passesThreshold:=false;
+       passesRiseRate:=false;
+       passesDuration:=false;
+       passesDropAfterPeak:=false;
+
+       if RiseRate = 0 then
+          passesRiseRate := true; // No rise rate requirement, so passes anyways
+
+       if MinPeakDuration = 0 then
+          passesDuration := true; // No minimal duration, so test passed anyways
+
+       if DropAfterPeak =0 then
+          passesDropAfterPeak:= true;
+
+      Volume := Abs(AnalysisBuffer[SampleIndex]) / (-Low(smallint)) *100;
+      if  Volume > Threshold then
+      begin
+        passesThreshold:=true;
+      end;
+
+      // Before going further, check whether by any chance we already pass all criteria
+      if passesThreshold and passesRiseRate and passesDuration and passesDropAfterPeak then
+      begin
+           detected:=true;
+           Break;
+      end;
+
+      // First test passed, check for rise rate if necessary
+      if passesThreshold and (not passesRiseRate) then begin
+         BaselineStart:=SampleIndex-Round(0.005*AudioFormat.SampleRate);
+         if BaselineStart >= Low(AnalysisBuffer) then
+           begin
+              BaselineInterval:=Round(0.004*AudioFormat.SampleRate);
+              RMSVolumeBaseline:=0;
+              for BaselineSampleIndex := BaselineStart to BaselineStart+BaselineInterval do
+              begin
+                  RMSVolumeBaseline :=
+                     RMSVolumeBaseline+(AnalysisBuffer[BaselineSampleIndex])*(AnalysisBuffer[BaselineSampleIndex])/(-Low(smallint))/(-Low(smallint));
+              end;
+              RMSVolumeBaseline:=Sqrt(RMSVolumeBaseline/(BaselineInterval+1));
+              BaselineStart:=SampleIndex;
+              BaselineInterval:=Round(0.003*AudioFormat.SampleRate);
+              if BaselineStart+BaselineInterval <= High(AnalysisBuffer) then
+              begin
+
+                RMSVolume:=0;
+                for BaselineSampleIndex := BaselineStart to BaselineStart+BaselineInterval do
+                begin
+                  RMSVolume :=
+                     RMSVolume+(AnalysisBuffer[BaselineSampleIndex])*(AnalysisBuffer[BaselineSampleIndex])/(-Low(smallint))/(-Low(smallint));
+                end;
+                  RMSVolume:=Sqrt(RMSVolume/(BaselineInterval+1));
+
+
+
+                 riserate_evaluated:=(RMSVolume-RMSVolumeBaseline)*100;
+                 // The idea is that we want to have quick rise but then also something that stays a bit constant or continues to rise
+                 if (riserate_evaluated>=RiseRate) and (RMSVolume*100.0 > Volume/2.0) then
+                 begin
+                   passesRiseRate:=true;
+
+                end;
+
+              end; // End we can get the peak RMS
+           end;
+
+      end;
+
+      // Again, check whether by any chance we already pass all criteria
+      if passesThreshold and passesRiseRate and passesDuration and passesDropAfterPeak then
+      begin
+           detected:=true;
+           Break;
+      end;
+
+      // First two tests OK, but not (yet) the third one
+      if passesThreshold and passesRiseRate and (not passesDuration) then
+      begin
+         SampleUpperLimit:=SampleIndex+Round(0.001*AudioFormat.SampleRate*MinPeakDuration*2);
+         if SampleUpperLimit > High(AnalysisBuffer) then
+             SampleUpperLimit := High(AnalysisBuffer);
+         SampleLowerLimit:=SampleIndex+Round(0.001*AudioFormat.SampleRate*MinPeakDuration);
+         if SampleLowerLimit > High(AnalysisBuffer) then
+            SampleLowerLimit := High(AnalysisBuffer);
+         maximumdetected:=false;
+         for BaselineSampleIndex := SampleLowerLimit to SampleUpperLimit do
+         begin
+           if Abs(AnalysisBuffer[BaselineSampleIndex]) / (-Low(smallint)) *100 > Threshold then
+           begin
+                maximumdetected:=true;
+                Break;
+           end;
+         end;
+         if maximumdetected then begin
+            passesDuration:=true;
+         end;
+
+      end;
+
+      // Again, check whether by any chance we already pass all criteria
+      if passesThreshold and passesRiseRate and passesDuration and passesDropAfterPeak then
+      begin
+           detected:=true;
+           Break;
+      end;
+
+      //
+      if passesThreshold and passesRiseRate and passesDuration and (not passesDropAfterPeak) then
+      begin
+
+
+          BaselineStart:=SampleIndex;
+          BaselineInterval:=Round(0.003*AudioFormat.SampleRate);
+          if BaselineStart+BaselineInterval <= High(AnalysisBuffer) then
+           begin
+
+              RMSVolumeBaseline:=0;
+              for BaselineSampleIndex := BaselineStart to BaselineStart+BaselineInterval do
+              begin
+                  RMSVolumeBaseline :=
+                     RMSVolumeBaseline+(AnalysisBuffer[BaselineSampleIndex])*(AnalysisBuffer[BaselineSampleIndex])/(-Low(smallint))/(-Low(smallint));
+              end;
+              RMSVolumeBaseline:=Sqrt(RMSVolumeBaseline/(BaselineInterval+1));
+              SampleUpperLimit:=SampleIndex+Round((TestTimeAfterPeak/1000.0+0.005)*AudioFormat.SampleRate);
+              SampleLowerLimit:=SampleIndex+Round(TestTimeAfterPeak/1000.0*AudioFormat.SampleRate);
+              // Avoid indexing error by accessing non-existent points
+              if SampleUpperLimit <= High(AnalysisBuffer) then
+              begin
+                 RMSVolume:=0;
+                 for BaselineSampleIndex := SampleLowerLimit to SampleUpperLimit do
+                 begin
+                      RMSVolume:=RMSVolume+(AnalysisBuffer[BaselineSampleIndex])*(AnalysisBuffer[BaselineSampleIndex])/(-Low(smallint))/(-Low(smallint));
+                 end;
+                 RMSVolume:=Sqrt(RMSVolume/(SampleUpperLimit-SampleLowerLimit+1));
+
+
+                 // Fall rate is relative to max peak intensity (here, RMSVolumeBaseline taken on 1ms peak from initial detection on)
+                 if ((RMSVolumeBaseline - RMSVolume)/RMSVolumeBaseline)*100.0 >= DropAfterPeak then
+                 begin
+                   passesDropAfterPeak:=true;
+                 end;
+              end;
+
+
+
+           end;
+
+
+
+      end;
+
+      // Final test if everything passes
+      if passesThreshold and passesRiseRate and passesDuration and passesDropAfterPeak then
+      begin
+           detected:=true;
+           Break;
+      end;
+
+
+
+
+  end;
+
+
+
+
+
+
+
+  if detected then
+    begin
+       ToneValid := true;
+       ToneAbs:=48;
+       Tone:=0;
+
+
+
+    end;
+
+  finally
+    UnlockAnalysisBuffer();
+  end;
+
+end;
+
+
 
 function TCaptureBuffer.ArrayIndexOfMinimum(const AValues: array of real): Integer;
 var
