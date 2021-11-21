@@ -17,8 +17,8 @@ prefix/$(ARCH)/built_libs:
 	@sed -r -i "s/\x1B(\[[0-9;]*[JKmsu]|\(B)//g" "build-deps.log" # remove color codes
 	@echo
 
-build: build/$(ARCH)/ultrastardx
-build/$(ARCH)/ultrastardx build/$(ARCH)/VERSION: prefix/$(ARCH)/built_libs
+build: build/$(ARCH)/usr/bin/ultrastardx
+build/$(ARCH)/usr/bin/ultrastardx build/$(ARCH)/usr/bin/VERSION: prefix/$(ARCH)/built_libs
 	@bash -eo pipefail -c './build.sh | tee build.log'
 	@sed -r -i "s/\x1B(\[[0-9;]*[JKmsu]|\(B)//g" "build.log" # remove color codes
 
@@ -28,16 +28,16 @@ build/$(ARCH)/ultrastardx build/$(ARCH)/VERSION: prefix/$(ARCH)/built_libs
 bundle: clean compress
 	@echo Complete!
 
-run: build/$(ARCH)/ultrastardx
+run: build/$(ARCH)/usr/bin/ultrastardx
 	@build/$(ARCH)/launch.sh
 
-compress: UltraStarDeluxe-$(ARCH).tar.xz
-UltraStarDeluxe-$(ARCH).tar.xz: build/$(ARCH)/ultrastardx build/$(ARCH)/VERSION
-	rm -f "./UltraStarDeluxe-$(ARCH).tar.xz"
-	cd "build/$(ARCH)" && XZ_OPT="--threads=0" tar cJf "../../UltraStarDeluxe-$(ARCH).tar.xz" .
+compress: UltraStarDeluxe-$(ARCH).AppImage
+UltraStarDeluxe-$(ARCH).AppImage: build/$(ARCH)/usr/bin/ultrastardx build/$(ARCH)/usr/bin/VERSION
+	rm -f "./UltraStarDeluxe-$(ARCH).AppImage"
+	prefix/$(ARCH)/bin/appimagetool --comp xz build/$(ARCH) $@
 
-upload: UltraStarDeluxe-$(ARCH).tar.xz
-	curl --upload-file './UltraStarDeluxe-$(ARCH).tar.xz' "https://transfer.sh/UltraStarDeluxe-$(ARCH).tar.xz" && echo
+upload: UltraStarDeluxe-$(ARCH).AppImage
+	curl --upload-file './UltraStarDeluxe-$(ARCH).AppImage' "https://transfer.sh/UltraStarDeluxe-$(ARCH).AppImage" && echo
 
 clean:
 	rm -rf build/$(ARCH) prefix/$(ARCH) UltraStarDeluxe-$(ARCH).tar.xz

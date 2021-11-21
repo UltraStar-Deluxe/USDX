@@ -6,8 +6,53 @@ matrix:
     - os: linux
       env: LAZ_VER=1.6 LAZ_ENV=wine WINEARCH=win32 LAZ_OPT="--os=win32 --cpu=i386"
       dist: trusty
+
     - os: linux
+      env: VARIANT=flatpak
+      dist: focal
+      arch: amd64
+      if: branch =~ flatpak
+
+    - os: linux
+      env: VARIANT=flatpak
+      dist: focal
+      arch: arm64
+      if: type = pull_request OR branch =~ flatpak
+
+    - os: linux
+      env: VARIANT=flatpak BUILD_32BIT=yes
+      dist: focal
+      arch: amd64
+      if: branch =~ flatpak
+
+    - os: linux
+      env: VARIANT=flatpak BUILD_32BIT=yes
+      dist: focal
+      arch: arm64
+      if: type = pull_request OR branch =~ flatpak
+
+    - os: linux
+      env: VARIANT=flatpak
+      dist: focal
+      arch: ppc64le
+      if: type = pull_request OR branch =~ flatpak
+
+    - os: linux
+      env: VARIANT=appimage
       dist: trusty
+      arch: amd64
+      if: branch =~ appimage
+
+    - os: linux
+      env: VARIANT=appimage BUILD_32BIT=yes
+      dist: focal
+      arch: amd64
+      if: branch =~ appimage
+
+    - os: linux
+      dist: focal
+      arch: amd64
+
     - os: osx
 
 env:

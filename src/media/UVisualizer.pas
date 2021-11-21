@@ -75,13 +75,19 @@ uses
 implementation
 
 uses
+  TextGL,
   UGraphic,
   UMain,
   UConfig,
   UPath,
+  UPlatform,
   ULog;
 
-{$IF PROJECTM_VERSION < 1000000} // < 1.0
+{$IF (PROJECTM_VERSION >= 1000000) and ((PROJECTM_VERSION < 2000000) or not Defined(UseLocalProjectMPresets))}
+{$DEFINE UseConfigInp}
+{$IFEND}
+
+{$IFNDEF UseConfigInp}
 // Initialization data used on projectM 0.9x creation.
 // Since projectM 1.0 this data is passed via the config-file.
 const
@@ -216,10 +222,15 @@ end;
 { TVideo_ProjectM }
 
 constructor TVideo_ProjectM.Create;
+var
+  ProjectMPath: IPath;
 begin
   fRndPCMcount := 0;
 
-  fProjectMPath := ProjectM_DataDir + PathDelim;
+  ProjectMPath := Path(ProjectM_DataDir, pdAppend);
+  if not ProjectMPath.IsAbsolute then
+    ProjectMPath := Platform.GetGameSharedPath.Append(ProjectMPath);
+  fProjectMPath := ProjectMPath.ToNative();
 
   fState := pmStop;
 
@@ -511,18 +522,24 @@ begin
 end;
 
 procedure TVideo_ProjectM.InitProjectM;
+{$IFNDEF UseConfigInp}
+var
+  Font: IPath;
+{$IFEND}
 begin
   // the OpenGL state must be saved before TProjectM.Create is called
   SaveOpenGLState();
   try
 
     try
-      {$IF PROJECTM_VERSION >= 1000000} // >= 1.0
+      {$IFDEF UseConfigInp}
       fPm := TProjectM.Create(fProjectMPath + 'config.inp');
       {$ELSE}
+      Font := TextGL.Fonts[0][0].Font.Filename;
       fPm := TProjectM.Create(
         meshX, meshY, fps, textureSize, ScreenW, ScreenH,
-        fProjectMPath + 'presets', fProjectMPath + 'fonts');
+        fProjectMPath + 'presets', Font.GetDir.ToNative,
+        Font.GetName.ToNative, Font.GetName.ToNative);
       {$IFEND}
     except on E: Exception do
       begin

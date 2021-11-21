@@ -31,10 +31,13 @@ system_libs = [
 ]
 
 skip_libs = [
+    'libGL.so.1',
     'libX11.so.6',
     'libasound.so.2',
     'libstdc++.so.6',
-    'libgcc_s.so.1'
+    'libgcc_s.so.1',
+    'libz.so.1',
+    'libfreetype.so.6'
 ]
 
 re_match_readelf_dynamic = re.compile(br'0x[0-9a-f]+\s+\((NEEDED|RPATH)\).*: \[(.*)\]$')

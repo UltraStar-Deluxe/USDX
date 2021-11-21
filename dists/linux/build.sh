@@ -8,8 +8,8 @@ root=$(pwd)
 export SHELL=/bin/bash
 ARCH=$(uname -m)
 export PREFIX="$root/prefix/$ARCH"
-OUTPUT="$root/build/$ARCH"
-LIBDIR="lib"
+OUTPUT="$root/build/$ARCH/usr/bin"
+LIBDIR="../lib"
 export PATH="$PREFIX/bin:$PATH"
 
 ./tasks.sh usdx
@@ -29,5 +29,5 @@ strip -s "$OUTPUT/ultrastardx"
 patchelf --set-rpath "\$ORIGIN/$LIBDIR" "$OUTPUT/ultrastardx"
 
 mkdir -p "$OUTPUT/data/songs"
-cp launch.sh ../../LICENSE ../../game/LICENSE.* "$OUTPUT/"
+cp ../../LICENSE ../../game/LICENSE.* "$OUTPUT/"
 echo -e "Version: $(cat ../../VERSION)\nBuild date: `date -u +%FT%TZ`" > "$OUTPUT/VERSION"

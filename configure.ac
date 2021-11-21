@@ -96,6 +96,11 @@ AC_ARG_WITH([libprojectM],
       [enable projectM visualization support @<:@default=no@:>@])],
     [with_libprojectM=$withval], [with_libprojectM="no"])
 
+AC_ARG_WITH([local-projectM-presets],
+    [AS_HELP_STRING([--with-local-projectM-presets],
+		    [use the presets from game/visuals/ @<:@default=no@:>@])],
+    [with_local_projectM_presets=$withval], [with_local_projectM_presets="no"])
+
 # add OpenCV option
 AC_ARG_WITH([opencv-cxx-api],
     [AS_HELP_STRING([--with-opencv-cxx-api],
@@ -370,6 +375,15 @@ PKG_VERSION([libprojectM], [$libprojectM_PKG])
 if [[ "$libprojectM_VERSION_MAJOR" -ge 3 ]] ; then
 	AC_MSG_FAILURE([libprojectM >= 3 not yet supported])
 fi
+if [[ "$libprojectM_VERSION_MAJOR" -eq 1 ]] && [[ "${#libprojectM_VERSION_MAJOR}" -eq 2 ]] ; then
+	# The official releases with major = 1 were 1.00, 1.01, 1.10, and 1.2.0.
+	# So 1.10 is in fact 1.1.0 and also uses 1.1 in the ChangeLog file.
+	# This is probably also true for 0.x, where xmms-projectm went from 0.9.1
+	# to 0.91.2 within three days., but that's still a monotonic increase, so
+	# we don't care.
+	libprojectM_VERSION_RELEASE="${libprojectM_VERSION_MINOR#?}"
+	libprojectM_VERSION_MINOR="${libprojectM_VERSION_MINOR%?}"
+fi
 AC_SUBST_DEFINE(HAVE_PROJECTM, $libprojectM_HAVE)
 # get projectM include-dir
 PKG_VALUE([libprojectM], [INCLUDEDIR], [variable=includedir], [$libprojectM_PKG], 
@@ -389,6 +403,7 @@ else
 	libprojectM_USE_CWRAPPER=no
 fi
 AC_SUBST(USE_PROJECTM_CWRAPPER, $libprojectM_USE_CWRAPPER)
+AC_SUBST_DEFINE(USE_LOCAL_PROJECTM_PRESETS, $with_local_projectM_presets)
 
 opencv_core_standalone=no
 opencv_imgproc_standalone=no
