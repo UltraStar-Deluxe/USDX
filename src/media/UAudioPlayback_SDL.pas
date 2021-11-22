@@ -40,6 +40,7 @@ uses
   sdl2,
   SysUtils,
   UAudioPlayback_SoftMixer,
+  UMediaCore_SDL,
   UMusic,
   ULog,
   UIni,
@@ -90,6 +91,7 @@ end;
 function TAudioPlayback_SDL.InitializeAudioPlaybackEngine(): boolean;
 var
   DesiredAudioSpec, ObtainedAudioSpec: TSDL_AudioSpec;
+  Format: TAudioSampleFormat;
   SampleBufferSize: integer;
 begin
   Result := false;
@@ -132,10 +134,16 @@ begin
     Exit;
   end;
 
+  if(ConvertAudioFormatFromSDL(ObtainedAudioSpec.format, Format) = false) then
+  begin
+    Log.LogStatus('Unknown audio format', 'TAudioPlayback_SDL.InitializeAudioPlaybackEngine');
+    SDL_CloseAudio();
+    Exit;
+  end;
   FormatInfo := TAudioFormatInfo.Create(
     ObtainedAudioSpec.channels,
     ObtainedAudioSpec.freq,
-    asfS16
+    Format
   );
 
   // Note: SDL does not provide info of the internal buffer state.
