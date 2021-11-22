@@ -49,8 +49,8 @@ modules:
 - name: opencv
   sources:
   - type: archive
-    url: https://github.com/opencv/opencv/archive/4.5.1.tar.gz
-    sha256: e27fe5b168918ab60d58d7ace2bd82dd14a4d0bd1d3ae182952c2113f5637513
+    url: https://github.com/opencv/opencv/archive/4.5.4.tar.gz
+    sha256: c20bb83dd790fc69df9f105477e24267706715a9d3c705ca1e7f613c7b3bad3d
   buildsystem: cmake-ninja
   builddir: true
   build-options:
@@ -119,13 +119,13 @@ modules:
 - name: lua
   sources:
   - type: archive
-    url: https://www.lua.org/ftp/lua-5.3.6.tar.gz
-    sha256: fc5fd69bb8736323f026672b1b7235da613d7177e72558893a0bdcd320466d60
+    url: https://www.lua.org/ftp/lua-5.4.3.tar.gz
+    sha256: f8612276169e3bfcbcfb8f226195bfc6e466fe13042f1076cbde92b7ec96bbfb
   buildsystem: simple
   build-commands:
   - sed -i "s:\(#define LUA_ROOT\>\).*:\1 \"${FLATPAK_DEST}\":" src/luaconf.h
   - echo export V R >> Makefile
-  - make INSTALL_TOP=${FLATPAK_DEST} MYCFLAGS="-DLUA_COMPAT_5_2 -DLUA_COMPAT_5_1 ${CFLAGS} -fPIC" LUA_A='liblua.so.$(R)' AR='$(CC) -shared -ldl -lm -Wl,-soname,liblua.so.$(V) -o' RANLIB=true ALL='$(LUA_A)' linux
+  - make INSTALL_TOP=${FLATPAK_DEST} MYCFLAGS="-DLUA_COMPAT_5_3 -DLUA_COMPAT_5_2 -DLUA_COMPAT_5_1 ${CFLAGS} -fPIC" LUA_A='liblua.so.$(R)' AR='$(CC) -shared -ldl -lm -Wl,-soname,liblua.so.$(V) -o' RANLIB=true ALL='$(LUA_A)' linux
   - make INSTALL_TOP=${FLATPAK_DEST} TO_LIB='liblua.so.$(R)' INSTALL_EXEC=true INSTALL_BIN= install
   - cd ${FLATPAK_DEST}/lib && ln -s liblua.so.* liblua.so
   - ldconfig -l ${FLATPAK_DEST}/lib/liblua.so.*
@@ -174,8 +174,8 @@ modules:
   disabled: true # set to false for runtime < 19.08 or if you are unhappy with the version in runtime
   sources:
   - type: archive
-    url: https://downloads.videolan.org/pub/videolan/dav1d/0.8.1/dav1d-0.8.1.tar.xz
-    sha256: a4b503063d411dd129f5eb43616675e613b36ac0aa1e449976d645c05add21ea
+    url: https://downloads.videolan.org/pub/videolan/dav1d/0.9.2/dav1d-0.9.2.tar.xz
+    sha256: e3235ab6c43c0135b0db1d131e1923fad4c84db9d85683e30b91b33a52d61c71
   buildsystem: meson
   config-opts:
   - -Denable_tools=false
@@ -185,8 +185,8 @@ modules:
   disabled: false
   sources:
   - type: archive
-    url: http://ffmpeg.org/releases/ffmpeg-4.2.4.tar.xz
-    sha256: 0d5da81feba073ee78e0f18e0966bcaf91464ae75e18e9a0135186249e3d2a0b
+    url: http://ffmpeg.org/releases/ffmpeg-4.4.1.tar.xz
+    sha256: eadbad9e9ab30b25f5520fbfde99fae4a92a1ae3c0257a8d68569a4651e30e02
 # not really, but close enough:
   buildsystem: autotools
   config-opts:
@@ -216,47 +216,47 @@ modules:
   - type: archive
     only-arches:
     - i386
-    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.0/fpc-3.2.0.i386-linux.tar
+    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.i386-linux.tar
     mirror-urls:
-    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.0/i386-linux/fpc-3.2.0.i386-linux.tar
-    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.0/i386-linux/fpc-3.2.0.i386-linux.tar
-    sha256: 2110eb1d7a35311f587694f9b25dc2660e0116eafd9884c4c7ab2f2716080578
+    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.2/i386-linux/fpc-3.2.2.i386-linux.tar
+    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.2/i386-linux/fpc-3.2.2.i386-linux.tar
+    sha256: f62980ac0b2861221f79fdbff67836aa6912a4256d4192cfa4dfa0ac5b419958
 
   - type: archive
     only-arches:
     - arm
-    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.0/fpc-3.2.0.arm-linux.tar
+    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.arm-linux.tar
     mirror-urls:
-    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.0/arm-linux/fpc-3.2.0.arm-linux.tar
-    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.0/arm-linux/fpc-3.2.0.arm-linux.tar
-    sha256: b78c72859e1e147e33991e1bb1e937654859799ae2afc145257c834a8d52737e
+    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.2/arm-linux/fpc-3.2.2.arm-linux.tar
+    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.2/arm-linux/fpc-3.2.2.arm-linux.tar
+    sha256: 971bbcaa1934286ccdaf3998d338afc19a33235e910f8881c75579ed5d6adefd
 
   - type: archive
     only-arches:
     - x86_64
-    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.0/fpc-3.2.0-x86_64-linux.tar
+    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.x86_64-linux.tar
     mirror-urls:
-    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.0/x86_64-linux/fpc-3.2.0-x86_64-linux.tar
-    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.0/x86_64-linux/fpc-3.2.0-x86_64-linux.tar
-    sha256: d19252e6cfe52f1217f4822a548ee699eaa7e044807aaf8429a0532cb7e4cb3d
+    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.2/x86_64-linux/fpc-3.2.2.x86_64-linux.tar
+    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.2/x86_64-linux/fpc-3.2.2.x86_64-linux.tar
+    sha256: 5adac308a5534b6a76446d8311fc340747cbb7edeaacfe6b651493ff3fe31e83
 
   - type: archive
     only-arches:
     - aarch64
-    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.0/fpc-3.2.0.aarch64-linux.tar
+    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.aarch64-linux.tar
     mirror-urls:
-    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.0/aarch64-linux/fpc-3.2.0.aarch64-linux.tar
-    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.0/aarch64-linux/fpc-3.2.0-aarch64-linux.tar
-    sha256: e16411a8ca6cf7817d5fc95bfc39919a306157c8f9f09a9ea616d5f19e0d88c0
+    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.2/aarch64-linux/fpc-3.2.2.aarch64-linux.tar
+    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.2/aarch64-linux/fpc-3.2.2.aarch64-linux.tar
+    sha256: b39470f9b6b5b82f50fc8680a5da37d2834f2129c65c24c5628a80894d565451
 
   - type: archive
     only-arches:
     - ppc64le
-    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.0/fpc-3.2.0.powerpc64le-linux.tar
+    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.powerpc64le-linux.tar
     mirror-urls:
-    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.0/powerpc64le-linux/fpc-3.2.0.powerpc64le-linux.tar
-    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.0/powerpc64le-linux/fpc-3.2.0-powerpc64le-linux.tar
-    sha256: 9bf59ae3d336f0de4624c63e4e892ea95de4be2ca66182d185defc50b69b65f3
+    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.2/powerpc64le-linux/fpc-3.2.2.powerpc64le-linux.tar
+    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.2/powerpc64le-linux/fpc-3.2.2.powerpc64le-linux.tar
+    sha256: 83c57d7caecfaa69fe817f6d26750aa3a08c5436f7c64bf87dead81d62a5e38a
 
   - type: shell
     commands:

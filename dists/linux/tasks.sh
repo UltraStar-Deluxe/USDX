@@ -165,7 +165,7 @@ task_sdl2() {
 		--enable-video-kmsdrm --enable-kmsdrm-shared \
 		--disable-video-vulkan \
 		--enable-x11-shared --disable-ibus --disable-fcitx --disable-ime \
-		--disable-rpath --disable-input-tslib
+		--disable-rpath
 	make $makearg
 	make install
 	hide make distclean
@@ -376,9 +376,6 @@ task_patchelf() {
 
 task_lua() {
 	start_build lua Lua || return 0
-	if fgrep -q 'This is Lua 5.3.5,' README ; then
-		sed -i '/^R=/s/4/5/' Makefile
-	fi
 	eval `make pc | grep ^version=`
 	patch -p1 < $root/lua-relocatable.patch
 	make INSTALL_TOP="$PREFIX" MYCFLAGS="-DLUA_COMPAT_5_3 -DLUA_COMPAT_5_2 -DLUA_COMPAT_5_1 $CFLAGS -fPIC" LUA_A="liblua.so.$version" AR="\$(CC) -shared -ldl -lm -Wl,-soname,liblua.so.${version%.*} -o" RANLIB=true ALL='$(LUA_A)' linux $makearg

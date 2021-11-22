@@ -1,8 +1,8 @@
 diff --git a/src/loadlib.c b/src/loadlib.c
-index 45f44d3..952a974 100644
+index 6f9fa37..7e210ce 100644
 --- a/src/loadlib.c
 +++ b/src/loadlib.c
-@@ -64,7 +64,9 @@ static const int CLIBS = 0;
+@@ -64,7 +64,9 @@ static const char *const CLIBS = "_CLIBS";
  #define LIB_FAIL	"open"
  
  
@@ -12,7 +12,7 @@ index 45f44d3..952a974 100644
  
  
  /*
-@@ -136,6 +138,40 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
+@@ -145,6 +147,40 @@ static lua_CFunction lsys_sym (lua_State *L, void *lib, const char *sym) {
    return f;
  }
  
@@ -54,10 +54,10 @@ index 45f44d3..952a974 100644
  
  
 diff --git a/src/luaconf.h b/src/luaconf.h
-index 9eeeea6..eb07c81 100644
+index e64d2ee..f56bc88 100644
 --- a/src/luaconf.h
 +++ b/src/luaconf.h
-@@ -200,7 +200,11 @@
+@@ -217,7 +217,11 @@
  
  #else			/* }{ */
  
@@ -68,4 +68,4 @@ index 9eeeea6..eb07c81 100644
 +#endif
  #define LUA_LDIR	LUA_ROOT "share/lua/" LUA_VDIR "/"
  #define LUA_CDIR	LUA_ROOT "lib/lua/" LUA_VDIR "/"
- #define LUA_PATH_DEFAULT  \
+ 
