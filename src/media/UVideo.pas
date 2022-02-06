@@ -1055,7 +1055,7 @@ begin
         fEOF := true;
         Exit;
       end;
-      if (errnum = -541478725) then // LIBAVFORMAT_VERSION >= 56000000 tells us if EOF reached.
+      if (errnum = AVERROR_EOF) then // LIBAVFORMAT_VERSION >= 56000000 tells us if EOF reached.
       begin
         fEOF := true;
         Exit
