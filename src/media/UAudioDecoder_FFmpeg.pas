@@ -1356,7 +1356,9 @@ function TAudioDecoder_FFmpeg.InitializeDecoder: boolean;
 begin
   //Log.LogStatus('InitializeDecoder', 'UAudioDecoder_FFmpeg');
   FFmpegCore := TMediaCore_FFmpeg.GetInstance();
+  {$IF LIBAVFORMAT_VERSION < 58027100}
   av_register_all();
+  {$ENDIF}
 
   // Do not show uninformative error messages by default.
   // FFmpeg prints all error-infos on the console by default what

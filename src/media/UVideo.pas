@@ -526,7 +526,9 @@ begin
 
   FFmpegCore := TMediaCore_FFmpeg.GetInstance();
 
+  {$IF LIBAVFORMAT_VERSION < 58027100}
   av_register_all();
+  {$ENDIF}
 end;
 
 function TVideoPlayback_FFmpeg.Finalize(): boolean;
