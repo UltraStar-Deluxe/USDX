@@ -95,6 +95,7 @@ type
   cenum = cint;
 
 const
+  AVERROR_EOF = -(ord('E') or (ord('O') shl 8) or (ord('F') shl 16) or (ord(' ') shl 24));
   AV_LOG_FATAL = 8;
   AV_NOPTS_VALUE = -9223372036854775808;
   AV_NUM_DATA_POINTERS = 8;
