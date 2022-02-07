@@ -98,6 +98,7 @@ type
       procedure UnlockAVCodec();
       function AVFormatOpenInput(ps: PPAVFormatContext; filename: {const} PAnsiChar): Integer;
       procedure AVFormatCloseInput(ps: PPAVFormatContext);
+      function GetCodecContext(stream: PAVStream; codec: PAVCodec): PAVCodecContext;
   end;
 
 implementation
@@ -564,6 +565,19 @@ begin
   { avformat_close_input frees AVIOContext pb, no avio_close needed }
   { avformat_close_input frees AVFormatContext, no additional avformat_free_context needed }
   avformat_close_input(ps);
+  {$ENDIF}
+end;
+
+function TMediaCore_FFmpeg.GetCodecContext(stream: PAVStream; codec: PAVCodec): PAVCodecContext;
+begin
+  {$IF LIBAVFORMAT_VERSION < 59000000}
+  Result := stream^.codec;
+  {$ELSE}
+  Result := avcodec_alloc_context3(codec);
+  if (Result <> nil) and (avcodec_parameters_to_context(Result, stream^.codecpar) < 0) then
+    avcodec_free_context(@Result);
+  if Result = nil then
+    Log.LogError('Failed to allocate context', 'TMediaCore_FFmpeg.GetCodecContext');
   {$ENDIF}
 end;
 

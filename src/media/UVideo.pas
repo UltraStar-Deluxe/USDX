@@ -657,8 +657,6 @@ begin
   CodecID := fStream^.codecpar^.codec_id;
 {$ENDIF}
 
-  fCodecContext := fStream^.codec;
-
   fPreferDTS := false;
   // workaround for FFmpeg bug #6560
   if (LeftStr(fFormatContext^.iformat^.name, 4) = 'mov,') or (fFormatContext^.iformat^.name = 'mov') then
@@ -673,29 +671,34 @@ begin
     end;
   PossibleCodecs[High(PossibleCodecs)] := avcodec_find_decoder(CodecID);
 
-{$IF LIBAVCODEC_VERSION >= 4008}
-  fCodecContext^.get_format := @SelectFormat;
-{$ENDIF}
-
-  // set debug options
-  fCodecContext^.debug_mv := 0;
-  fCodecContext^.debug := 0;
-
-  // detect bug-workarounds automatically
-  fCodecContext^.workaround_bugs := FF_BUG_AUTODETECT;
-  // error resilience strategy (careful/compliant/agressive/very_aggressive)
-  //fCodecContext^.error_resilience := FF_ER_CAREFUL; //FF_ER_COMPLIANT;
-  // allow non spec compliant speedup tricks.
-
-  //fCodecContext^.flags2 := CODEC_FLAG2_FAST;
-
-  // Note: avcodec_open() and avcodec_close() are not thread-safe and will
-  // fail if called concurrently by different threads.
   errnum := -1;
   for fCodec in PossibleCodecs do
   begin
     if fCodec = nil then
       continue;
+
+    fCodecContext := FFmpegCore.GetCodecContext(fStream, fCodec);
+    if fCodecContext = nil then
+      continue;
+
+    {$IF LIBAVCODEC_VERSION >= 4008}
+    fCodecContext^.get_format := @SelectFormat;
+    {$ENDIF}
+
+    // set debug options
+    fCodecContext^.debug_mv := 0;
+    fCodecContext^.debug := 0;
+
+    // detect bug-workarounds automatically
+    fCodecContext^.workaround_bugs := FF_BUG_AUTODETECT;
+    // error resilience strategy (careful/compliant/agressive/very_aggressive)
+    //fCodecContext^.error_resilience := FF_ER_CAREFUL; //FF_ER_COMPLIANT;
+    // allow non spec compliant speedup tricks.
+
+    //fCodecContext^.flags2 := CODEC_FLAG2_FAST;
+
+    // Note: avcodec_open() and avcodec_close() are not thread-safe and will
+    // fail if called concurrently by different threads.
     FFmpegCore.LockAVCodec();
     try
         {$IF LIBAVCODEC_VERSION >= 53005000}
@@ -709,6 +712,9 @@ begin
     if errnum >= 0 then
       Break;
     Log.LogError('Error ' + IntToStr(errnum) + ' returned by ' + fCodec^.name, 'TVideoPlayback_ffmpeg.Open');
+    {$IF LIBAVFORMAT_VERSION >= 59000000}
+    avcodec_free_context(@fCodecContext);
+    {$ENDIF}
   end;
   if (errnum < 0) then
   begin
@@ -947,7 +953,11 @@ begin
     // avcodec_close() is not thread-safe
     FFmpegCore.LockAVCodec();
     try
+      {$IF LIBAVFORMAT_VERSION < 59000000)}
       avcodec_close(fCodecContext);
+      {$ELSE}
+      avcodec_free_context(@fCodecContext);
+      {$ENDIF}
     finally
       FFmpegCore.UnlockAVCodec();
     end;
@@ -962,7 +972,9 @@ begin
     FFmpegCore.AVFormatCloseInput(@fFormatContext);
     {$IFEND}
 
+  {$IF LIBAVFORMAT_VERSION < 59000000)}
   fCodecContext  := nil;
+  {$ENDIF}
   fFormatContext := nil;
 
   if (fPboId <> 0) then

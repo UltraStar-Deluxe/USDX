@@ -407,7 +407,21 @@ begin
   CodecID := fAudioStream^.codecpar^.codec_id;
 {$ENDIF}
 
-  fCodecCtx := fAudioStream^.codec;
+  fCodec := avcodec_find_decoder(CodecID);
+  if (fCodec = nil) then
+  begin
+    Log.LogError('Unsupported codec!', 'UAudio_FFmpeg');
+    fCodecCtx := nil;
+    Close();
+    Exit;
+  end;
+
+  fCodecCtx := FFmpegCore.GetCodecContext(fAudioStream, fCodec);
+  if fCodecCtx = nil then
+  begin
+    Close();
+    Exit;
+  end;
 
   // TODO: should we use this or not? Should we allow 5.1 channel audio?
 
@@ -419,15 +433,6 @@ begin
   else
     fCodecCtx^.request_channels := 2;
   {$IFEND}
-
-  fCodec := avcodec_find_decoder(CodecID);
-  if (fCodec = nil) then
-  begin
-    Log.LogError('Unsupported codec!', 'UAudio_FFmpeg');
-    fCodecCtx := nil;
-    Close();
-    Exit;
-  end;
 
   // set debug options
   fCodecCtx^.debug_mv := 0;
@@ -559,11 +564,17 @@ begin
     // avcodec_close() is not thread-safe
     FFmpegCore.LockAVCodec();
     try
+      {$IF LIBAVFORMAT_VERSION < 59000000}
       avcodec_close(fCodecCtx);
+      {$ELSE}
+      avcodec_free_context(@fCodecCtx);
+      {$ENDIF}
     finally
       FFmpegCore.UnlockAVCodec();
     end;
+    {$IF LIBAVFORMAT_VERSION < 59000000}
     fCodecCtx := nil;
+    {$ENDIF}
   end;
 
   // Close the video file
@@ -1039,6 +1050,10 @@ begin
 end;
 
 procedure TFFmpegDecodeStream.FlushCodecBuffers();
+{$IF LIBAVFORMAT_VERSION >= 59000000}
+var
+  NewCtx: PAVCodecContext;
+{$ENDIF}
 begin
   // if no flush operation is specified, avcodec_flush_buffers will not do anything.
   if (@fCodecCtx.codec.flush <> nil) then
@@ -1053,12 +1068,24 @@ begin
     // We will just reopen the codec.
     FFmpegCore.LockAVCodec();
     try
+      {$IF LIBAVFORMAT_VERSION < 59000000}
       avcodec_close(fCodecCtx);
       {$IF LIBAVCODEC_VERSION >= 53005000}
       avcodec_open2(fCodecCtx, fCodec, nil);
       {$ELSE}
       avcodec_open(fCodecCtx, fCodec);
       {$IFEND}
+      {$ELSE}
+      NewCtx := FFmpegCore.GetCodecContext(fAudioStream, fCodec);
+      if NewCtx <> nil then
+      begin
+        avcodec_free_context(@fCodecCtx);
+        fCodecCtx := NewCtx;
+        avcodec_open2(fCodecCtx, fCodec, nil);
+      end
+      else
+        avcodec_flush_buffers(fCodecCtx);
+      {$ENDIF}
     finally
       FFmpegCore.UnlockAVCodec();
     end;
