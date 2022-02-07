@@ -464,6 +464,8 @@ begin
   except
     Result := -1;
   end;
+  if Result = 0 then
+    Result := AVERROR_EOF;
 end;
 
 {$IF LIBAVFORMAT_VERSION >= 54029104}
