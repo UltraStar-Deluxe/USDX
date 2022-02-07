@@ -602,17 +602,33 @@ begin
   if (Packet = nil) then
     Exit;
 
-  if (PChar(Packet^.data) <> STATUS_PACKET) then
-  begin
-    if (av_dup_packet(Packet) < 0) then
-      Exit;
-  end;
-
   CurrentListEntry := av_malloc(SizeOf(TAVPacketList));
   if (CurrentListEntry = nil) then
     Exit;
 
-  CurrentListEntry^.pkt  := Packet^;
+  {$IF LIBAVFORMAT_VERSION < 59000000}
+  CurrentListEntry^.pkt := Packet^;
+  if (PChar(Packet^.data) <> STATUS_PACKET) then
+  begin
+    if (av_dup_packet(@(CurrentListEntry^.pkt)) < 0) then
+    begin
+      av_free(CurrentListEntry);
+      Exit;
+    end;
+  end;
+  {$ELSE}
+  if (PChar(Packet^.data) <> STATUS_PACKET) then
+    begin
+      if (av_packet_ref(@CurrentListEntry^.pkt, Packet) < 0) then
+      begin
+        av_free(CurrentListEntry);
+        Exit;
+      end;
+    end
+  else
+    CurrentListEntry^.pkt := Packet^;
+  {$ENDIF}
+
   CurrentListEntry^.next := nil;
 
   SDL_LockMutex(Mutex);
@@ -753,7 +769,12 @@ begin
     if (PChar(CurrentListEntry^.pkt.data) = STATUS_PACKET) then
       FreeStatusInfo(CurrentListEntry^.pkt);
     // free packet data
+    {$IF LIBAVFORMAT_VERSION >= 59000000}
+    if (PChar(CurrentListEntry^.pkt.data) <> STATUS_PACKET) then
+      av_packet_unref(@CurrentListEntry^.pkt);
+    {$ELSE}
     av_free_packet(@CurrentListEntry^.pkt);
+    {$ENDIF}
     // Note: param must be a pointer to a pointer!
     av_freep(@CurrentListEntry);
     CurrentListEntry := TempListEntry;

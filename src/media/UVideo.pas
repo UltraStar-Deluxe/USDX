@@ -1092,7 +1092,11 @@ begin
     end;
 
     // free the packet from av_read_frame
+    {$IF LIBAVCODEC_VERSION < 59000000}
     av_free_packet( @AVPacket );
+    {$ELSE}
+    av_packet_unref(@AVPacket);
+    {$ENDIF}
   end;
 
   // reset opaque data and update pts

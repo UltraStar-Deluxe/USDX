@@ -287,6 +287,10 @@ begin
   fDecoderPauseRequestCount := 0;
 
   FillChar(fAudioPaket, SizeOf(TAVPacket), 0);
+  {$IF (LIBAVFORMAT_VERSION >= 59000000)}
+  // avoid calling av_packet_unref before fetching first frame
+  fAudioPaket.data := Pointer(STATUS_PACKET);
+  {$ENDIF}
 end;
 
 {*
@@ -973,7 +977,11 @@ begin
       if (Packet.stream_index = fAudioStreamIndex) then
         fPacketQueue.Put(@Packet)
       else
+        {$IF (LIBAVFORMAT_VERSION < 59000000)}
         av_free_packet(@Packet);
+        {$ELSE}
+        av_packet_unref(@Packet);
+        {$ENDIF}
 
     finally
       SDL_LockMutex(fStateLock);
@@ -1151,8 +1159,13 @@ begin
     end;
 
     // free old packet data
+    {$IF (LIBAVFORMAT_VERSION < 59000000)}
     if (fAudioPaket.data <> nil) then
       av_free_packet(@fAudioPaket);
+    {$ELSE}
+    if (PAnsiChar(fAudioPaket.data) <> STATUS_PACKET) then
+      av_packet_unref(@fAudioPaket);
+    {$ENDIF}
 
     // do not block queue on seeking (to avoid deadlocks on the DecoderLock)
     if (IsSeeking()) then
@@ -1168,7 +1181,9 @@ begin
     // handle Status-packet
     if (PAnsiChar(fAudioPaket.data) = STATUS_PACKET) then
     begin
+      {$IF (LIBAVFORMAT_VERSION < 59000000)}
       fAudioPaket.data := nil;
+      {$ENDIF}
       fAudioPaketData := nil;
       fAudioPaketSize := 0;
 
