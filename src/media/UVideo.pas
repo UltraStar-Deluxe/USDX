@@ -1059,8 +1059,13 @@ begin
       if (avio_feof(pbIOCtx) <> 0) then
       {$IFEND}
       begin
+        {$IF LIBAVCODEC_VERSION < 57037100}
         fEOF := true;
         Exit;
+        {$ELSE}
+        avcodec_send_packet(fCodecContext, nil);
+        Continue;
+        {$ENDIF}
       end;
 
       // check for errors
@@ -1082,15 +1087,16 @@ begin
       {$ELSE}
       fileSize := fFormatContext^.file_size;
       {$IFEND}
-      if ((fileSize <> 0) and (pbIOCtx^.pos >= fileSize)) then
+      if (((fileSize <> 0) and (pbIOCtx^.pos >= fileSize))
+          or (errnum = AVERROR_EOF)) then // LIBAVFORMAT_VERSION >= 56000000 tells us if EOF reached.
       begin
+        {$IF LIBAVCODEC_VERSION < 57037100}
         fEOF := true;
         Exit;
-      end;
-      if (errnum = AVERROR_EOF) then // LIBAVFORMAT_VERSION >= 56000000 tells us if EOF reached.
-      begin
-        fEOF := true;
-        Exit
+        {$ELSE}
+        avcodec_send_packet(fCodecContext, nil);
+        Continue;
+        {$ENDIF}
       end;
 
       // error occured, log and exit
