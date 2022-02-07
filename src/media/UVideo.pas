@@ -637,7 +637,6 @@ begin
     Close();
     Exit;
   end;
-  Log.LogInfo('VideoStreamIndex : ' + inttostr(fStreamIndex), 'TVideoPlayback_ffmpeg.Open');
 
   // find video stream
   FFmpegCore.FindStreamIDs(fFormatContext, fStreamIndex, AudioStreamIndex);
@@ -647,6 +646,7 @@ begin
     Close();
     Exit;
   end;
+  Log.LogInfo('VideoStreamIndex : ' + inttostr(fStreamIndex), 'TVideoPlayback_ffmpeg.Open');
 
 {$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
   fStream := fFormatContext^.streams[fStreamIndex];
