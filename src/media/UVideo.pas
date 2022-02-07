@@ -1149,8 +1149,10 @@ begin
   {$ELSEIF LIBAVCODEC_VERSION < 51105000}
   fCodecContext^.reordered_opaque := AV_NOPTS_VALUE;
   pts := fAVFrame^.reordered_opaque;
-  {$ELSE}
+  {$ELSEIF LIBAVCODEC_VERSION < 57061100}
   pts := fAVFrame^.pkt_pts;
+  {$ELSE}
+  pts := fAVFrame^.pts;
   {$IFEND}
 
   {$IF LIBAVCODEC_VERSION >= 51106000}
