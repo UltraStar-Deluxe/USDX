@@ -860,7 +860,11 @@ begin
           begin
             // seeking failed
             fErrorState := true;
+            {$IF LIBAVFORMAT_VERSION <= 58007100}
             Log.LogError('Seek Error in "'+fFormatCtx^.filename+'"', 'UAudioDecoder_FFmpeg');
+            {$ELSE}
+            Log.LogError('Seek Error in "'+fFormatCtx^.url+'"', 'UAudioDecoder_FFmpeg');
+            {$ENDIF}
           end
           else
           begin
