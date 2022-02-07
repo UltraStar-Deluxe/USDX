@@ -300,7 +300,7 @@ begin
       FirstAudioStream := i;
     end;
   end;
-{$ELSE}
+{$ELSEIF LIBAVFORMAT_VERSION < 59000000}
     if (Stream.codec.codec_type = AVMEDIA_TYPE_VIDEO) and
        (FirstVideoStream < 0) then
     begin
@@ -308,6 +308,19 @@ begin
     end;
 
     if (Stream.codec.codec_type = AVMEDIA_TYPE_AUDIO) and
+       (FirstAudioStream < 0) then
+    begin
+      FirstAudioStream := i;
+    end;
+  end;
+{$ELSE}
+    if (Stream.codecpar.codec_type = AVMEDIA_TYPE_VIDEO) and
+       (FirstVideoStream < 0) then
+    begin
+      FirstVideoStream := i;
+    end;
+
+    if (Stream.codecpar.codec_type = AVMEDIA_TYPE_AUDIO) and
        (FirstAudioStream < 0) then
     begin
       FirstAudioStream := i;
@@ -339,8 +352,10 @@ begin
 
 {$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
     if (Stream.codec^.codec_type = CODEC_TYPE_AUDIO) then
-{$ELSE}
+{$ELSEIF LIBAVFORMAT_VERSION < 59000000}
     if (Stream.codec^.codec_type = AVMEDIA_TYPE_AUDIO) then
+{$ELSE}
+    if (Stream.codecpar^.codec_type = AVMEDIA_TYPE_AUDIO) then
 {$IFEND}
     begin
       StreamIndex := i;
