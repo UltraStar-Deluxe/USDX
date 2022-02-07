@@ -741,7 +741,7 @@ begin
     fAspect := fAspect * fCodecContext^.width /
                          fCodecContext^.height;
 
-  {$IF LIBAVFORMAT_VERSION_MAJOR >= 55}
+  {$IF (LIBAVFORMAT_VERSION_MAJOR >= 55) and (LIBAVFORMAT_VERSION_MAJOR < 59)}
   r_frame_rate := av_q2d(av_stream_get_r_frame_rate(fStream));
   {$ELSE}
   r_frame_rate := av_q2d(fStream^.r_frame_rate);
