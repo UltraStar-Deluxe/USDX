@@ -801,6 +801,7 @@ begin
   fAVFrame := avcodec_alloc_frame();
   fAVFrameRGB := avcodec_alloc_frame();
   {$ENDIF}
+  {$IF LIBAVCODEC_VERSION < 59000000}
   fFrameBuffer := av_malloc(avpicture_get_size(PIXEL_FMT_FFMPEG,
       (fScaledWidth + BUFFER_ALIGN - 1) and -BUFFER_ALIGN, fScaledHeight));
 
@@ -819,6 +820,24 @@ begin
     Close();
     Exit;
   end;
+  {$ELSE}
+  if ((fAVFrame = nil) or (fAVFrameRGB = nil)) then
+  begin
+    Log.LogError('Failed to allocate buffers', 'TVideoPlayback_ffmpeg.Open');
+    Close();
+    Exit;
+  end;
+
+  errnum := av_image_alloc(@fAVFrameRGB^.data[0], @fAVFrameRGB^.linesize[0],
+                           (fScaledWidth + BUFFER_ALIGN - 1) and -BUFFER_ALIGN, fScaledHeight,
+                           PIXEL_FMT_FFMPEG, BUFFER_ALIGN);
+  if (errnum < 0) then
+  begin
+    Log.LogError('av_image_alloc failed: ' + FFmpegCore.GetErrorString(errnum), 'TVideoPlayback_ffmpeg.Open');
+    Close();
+    Exit;
+  end;
+  {$ENDIF}
 
   {$IFDEF UseSWScale}
   // if available get a SWScale-context -> faster than the deprecated img_convert().
