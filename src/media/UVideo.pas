@@ -1028,6 +1028,19 @@ begin
   // read packets until we have a finished frame (or there are no more packets)
   while (FrameFinished = 0) do
   begin
+    {$IF LIBAVCODEC_VERSION >= 57037100}
+    errnum := avcodec_receive_frame(fCodecContext, fAVFrame);
+    if errnum = 0 then
+      Break;
+    if errnum = AVERROR_EOF then
+    begin
+      fEOF := true;
+      Exit;
+    end;
+    if errnum <> AVERROR(EAGAIN) then
+      Continue;
+    {$ENDIF}
+
     errnum := av_read_frame(fFormatContext, AVPacket);
     if (errnum < 0) then
     begin
@@ -1100,9 +1113,11 @@ begin
       {$IF LIBAVFORMAT_VERSION < 52012200)}
       avcodec_decode_video(fCodecContext, fAVFrame,
           frameFinished, AVPacket.data, AVPacket.size);
-      {$ELSE}
+      {$ELSEIF LIBAVCODEC_VERSION < 57037100}
       avcodec_decode_video2(fCodecContext, fAVFrame,
           frameFinished, @AVPacket);
+      {$ELSE}
+      avcodec_send_packet(fCodecContext, @AVPacket);
       {$IFEND}
 
       {$IF LIBAVCODEC_VERSION < 51106000}
