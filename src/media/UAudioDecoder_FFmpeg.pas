@@ -328,6 +328,7 @@ var
   PackedSampleFormat: TAVSampleFormat;
   TestFrame: TAVPacket;
   AVResult: integer;
+  CodecID: TAVCodecID;
 begin
   Result := false;
 
@@ -399,6 +400,13 @@ begin
   fAudioStream := PPAVStream(PtrUInt(fFormatCtx.streams) + fAudioStreamIndex * Sizeof(pointer))^;
 {$IFEND}
   fAudioStreamPos := 0;
+
+{$IF LIBAVFORMAT_VERSION < 59000000}
+  CodecID := fAudioStream^.codec^.codec_id;
+{$ELSE}
+  CodecID := fAudioStream^.codecpar^.codec_id;
+{$ENDIF}
+
   fCodecCtx := fAudioStream^.codec;
 
   // TODO: should we use this or not? Should we allow 5.1 channel audio?
@@ -412,7 +420,7 @@ begin
     fCodecCtx^.request_channels := 2;
   {$IFEND}
 
-  fCodec := avcodec_find_decoder(fCodecCtx^.codec_id);
+  fCodec := avcodec_find_decoder(CodecID);
   if (fCodec = nil) then
   begin
     Log.LogError('Unsupported codec!', 'UAudio_FFmpeg');

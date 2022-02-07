@@ -571,9 +571,7 @@ var
   AudioStreamIndex: integer;
   r_frame_rate: cdouble;
   PossibleCodecs: array of PAVCodec;
-{$IF LIBAVCODEC_VERSION >= 58009100}
-  CodecIterator: pointer;
-{$IFEND}
+  CodecID: TAVCodecID;
 
   function ReduceSize: boolean;
   var
@@ -653,6 +651,12 @@ begin
 {$ELSE}
   fStream := PPAVStream(PtrUInt(fFormatContext^.streams) + fStreamIndex * Sizeof(pointer))^;
 {$IFEND}
+{$IF LIBAVFORMAT_VERSION < 59000000}
+  CodecID := fStream^.codec^.codec_id;
+{$ELSE}
+  CodecID := fStream^.codecpar^.codec_id;
+{$ENDIF}
+
   fCodecContext := fStream^.codec;
 
   fPreferDTS := false;
@@ -662,12 +666,12 @@ begin
 
   SetLength(PossibleCodecs, 1);
   for fCodec in PreferredCodecs do
-    if fCodec^.id = fCodecContext^.codec_id then
+    if fCodec^.id = CodecID then
     begin
       PossibleCodecs[High(PossibleCodecs)] := fCodec;
       SetLength(PossibleCodecs, Length(PossibleCodecs) + 1);
     end;
-  PossibleCodecs[High(PossibleCodecs)] := avcodec_find_decoder(fCodecContext^.codec_id);
+  PossibleCodecs[High(PossibleCodecs)] := avcodec_find_decoder(CodecID);
 
 {$IF LIBAVCODEC_VERSION >= 4008}
   fCodecContext^.get_format := @SelectFormat;
