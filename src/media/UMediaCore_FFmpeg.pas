@@ -98,6 +98,7 @@ type
       procedure UnlockAVCodec();
       function AVFormatOpenInput(ps: PPAVFormatContext; filename: {const} PAnsiChar): Integer;
       procedure AVFormatCloseInput(ps: PPAVFormatContext);
+      function GetCodecContext(stream: PAVStream; codec: PAVCodec): PAVCodecContext;
   end;
 
 implementation
@@ -300,7 +301,7 @@ begin
       FirstAudioStream := i;
     end;
   end;
-{$ELSE}
+{$ELSEIF LIBAVFORMAT_VERSION < 59000000}
     if (Stream.codec.codec_type = AVMEDIA_TYPE_VIDEO) and
        (FirstVideoStream < 0) then
     begin
@@ -308,6 +309,19 @@ begin
     end;
 
     if (Stream.codec.codec_type = AVMEDIA_TYPE_AUDIO) and
+       (FirstAudioStream < 0) then
+    begin
+      FirstAudioStream := i;
+    end;
+  end;
+{$ELSE}
+    if (Stream.codecpar.codec_type = AVMEDIA_TYPE_VIDEO) and
+       (FirstVideoStream < 0) then
+    begin
+      FirstVideoStream := i;
+    end;
+
+    if (Stream.codecpar.codec_type = AVMEDIA_TYPE_AUDIO) and
        (FirstAudioStream < 0) then
     begin
       FirstAudioStream := i;
@@ -339,8 +353,10 @@ begin
 
 {$IF LIBAVCODEC_VERSION < 52064000} // < 52.64.0
     if (Stream.codec^.codec_type = CODEC_TYPE_AUDIO) then
-{$ELSE}
+{$ELSEIF LIBAVFORMAT_VERSION < 59000000}
     if (Stream.codec^.codec_type = AVMEDIA_TYPE_AUDIO) then
+{$ELSE}
+    if (Stream.codecpar^.codec_type = AVMEDIA_TYPE_AUDIO) then
 {$IFEND}
     begin
       StreamIndex := i;
@@ -448,6 +464,8 @@ begin
   except
     Result := -1;
   end;
+  if Result = 0 then
+    Result := AVERROR_EOF;
 end;
 
 {$IF LIBAVFORMAT_VERSION >= 54029104}
@@ -552,6 +570,19 @@ begin
   {$ENDIF}
 end;
 
+function TMediaCore_FFmpeg.GetCodecContext(stream: PAVStream; codec: PAVCodec): PAVCodecContext;
+begin
+  {$IF LIBAVFORMAT_VERSION < 59000000}
+  Result := stream^.codec;
+  {$ELSE}
+  Result := avcodec_alloc_context3(codec);
+  if (Result <> nil) and (avcodec_parameters_to_context(Result, stream^.codecpar) < 0) then
+    avcodec_free_context(@Result);
+  if Result = nil then
+    Log.LogError('Failed to allocate context', 'TMediaCore_FFmpeg.GetCodecContext');
+  {$ENDIF}
+end;
+
 { TPacketQueue }
 
 constructor TPacketQueue.Create();
@@ -602,17 +633,33 @@ begin
   if (Packet = nil) then
     Exit;
 
-  if (PChar(Packet^.data) <> STATUS_PACKET) then
-  begin
-    if (av_dup_packet(Packet) < 0) then
-      Exit;
-  end;
-
   CurrentListEntry := av_malloc(SizeOf(TAVPacketList));
   if (CurrentListEntry = nil) then
     Exit;
 
-  CurrentListEntry^.pkt  := Packet^;
+  {$IF LIBAVFORMAT_VERSION < 59000000}
+  CurrentListEntry^.pkt := Packet^;
+  if (PChar(Packet^.data) <> STATUS_PACKET) then
+  begin
+    if (av_dup_packet(@(CurrentListEntry^.pkt)) < 0) then
+    begin
+      av_free(CurrentListEntry);
+      Exit;
+    end;
+  end;
+  {$ELSE}
+  if (PChar(Packet^.data) <> STATUS_PACKET) then
+    begin
+      if (av_packet_ref(@CurrentListEntry^.pkt, Packet) < 0) then
+      begin
+        av_free(CurrentListEntry);
+        Exit;
+      end;
+    end
+  else
+    CurrentListEntry^.pkt := Packet^;
+  {$ENDIF}
+
   CurrentListEntry^.next := nil;
 
   SDL_LockMutex(Mutex);
@@ -753,7 +800,12 @@ begin
     if (PChar(CurrentListEntry^.pkt.data) = STATUS_PACKET) then
       FreeStatusInfo(CurrentListEntry^.pkt);
     // free packet data
+    {$IF LIBAVFORMAT_VERSION >= 59000000}
+    if (PChar(CurrentListEntry^.pkt.data) <> STATUS_PACKET) then
+      av_packet_unref(@CurrentListEntry^.pkt);
+    {$ELSE}
     av_free_packet(@CurrentListEntry^.pkt);
+    {$ENDIF}
     // Note: param must be a pointer to a pointer!
     av_freep(@CurrentListEntry);
     CurrentListEntry := TempListEntry;

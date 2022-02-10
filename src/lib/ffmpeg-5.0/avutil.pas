@@ -27,16 +27,16 @@ uses
 
 const
   (* Max. supported version by this header *)
-  LIBAVUTIL_MAX_VERSION_MAJOR   = 56;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 70;
+  LIBAVUTIL_MAX_VERSION_MAJOR   = 57;
+  LIBAVUTIL_MAX_VERSION_MINOR   = 17;
   LIBAVUTIL_MAX_VERSION_RELEASE = 100;
   LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
                           (LIBAVUTIL_MAX_VERSION_RELEASE * VERSION_RELEASE);
 
   (* Min. supported version by this header *)
-  LIBAVUTIL_MIN_VERSION_MAJOR   = 56;
-  LIBAVUTIL_MIN_VERSION_MINOR   = 14;
+  LIBAVUTIL_MIN_VERSION_MAJOR   = 57;
+  LIBAVUTIL_MIN_VERSION_MINOR   = 17;
   LIBAVUTIL_MIN_VERSION_RELEASE = 100;
   LIBAVUTIL_MIN_VERSION = (LIBAVUTIL_MIN_VERSION_MAJOR * VERSION_MAJOR) +
                           (LIBAVUTIL_MIN_VERSION_MINOR * VERSION_MINOR) +
@@ -140,13 +140,12 @@ type
     we_do_not_use_pict_type: cenum;
     we_do_not_use_sample_aspect_ratio: TAVRational;
     pts: cint64;
-    pkt_pts: cint64;
     pkt_dts: cint64;
+    we_do_not_use_time_base: TAVRational;
     we_do_not_use_coded_picture_number: cint;
     we_do_not_use_display_picture_number: cint;
     we_do_not_use_quality: cint;
     we_do_not_use_opaque: pointer;
-    we_do_not_use_error: array [0..AV_NUM_DATA_POINTERS-1] of cuint64;
     repeat_pict: cint;
     do_not_instantiate_this_record: incomplete_record;
   end;

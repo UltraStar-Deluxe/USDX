@@ -287,6 +287,10 @@ begin
   fDecoderPauseRequestCount := 0;
 
   FillChar(fAudioPaket, SizeOf(TAVPacket), 0);
+  {$IF (LIBAVFORMAT_VERSION >= 59000000)}
+  // avoid calling av_packet_unref before fetching first frame
+  fAudioPaket.data := Pointer(STATUS_PACKET);
+  {$ENDIF}
 end;
 
 {*
@@ -324,6 +328,7 @@ var
   PackedSampleFormat: TAVSampleFormat;
   TestFrame: TAVPacket;
   AVResult: integer;
+  CodecID: TAVCodecID;
 begin
   Result := false;
 
@@ -395,7 +400,28 @@ begin
   fAudioStream := PPAVStream(PtrUInt(fFormatCtx.streams) + fAudioStreamIndex * Sizeof(pointer))^;
 {$IFEND}
   fAudioStreamPos := 0;
-  fCodecCtx := fAudioStream^.codec;
+
+{$IF LIBAVFORMAT_VERSION < 59000000}
+  CodecID := fAudioStream^.codec^.codec_id;
+{$ELSE}
+  CodecID := fAudioStream^.codecpar^.codec_id;
+{$ENDIF}
+
+  fCodec := avcodec_find_decoder(CodecID);
+  if (fCodec = nil) then
+  begin
+    Log.LogError('Unsupported codec!', 'UAudio_FFmpeg');
+    fCodecCtx := nil;
+    Close();
+    Exit;
+  end;
+
+  fCodecCtx := FFmpegCore.GetCodecContext(fAudioStream, fCodec);
+  if fCodecCtx = nil then
+  begin
+    Close();
+    Exit;
+  end;
 
   // TODO: should we use this or not? Should we allow 5.1 channel audio?
 
@@ -407,15 +433,6 @@ begin
   else
     fCodecCtx^.request_channels := 2;
   {$IFEND}
-
-  fCodec := avcodec_find_decoder(fCodecCtx^.codec_id);
-  if (fCodec = nil) then
-  begin
-    Log.LogError('Unsupported codec!', 'UAudio_FFmpeg');
-    fCodecCtx := nil;
-    Close();
-    Exit;
-  end;
 
   // set debug options
   fCodecCtx^.debug_mv := 0;
@@ -547,11 +564,17 @@ begin
     // avcodec_close() is not thread-safe
     FFmpegCore.LockAVCodec();
     try
+      {$IF LIBAVFORMAT_VERSION < 59000000}
       avcodec_close(fCodecCtx);
+      {$ELSE}
+      avcodec_free_context(@fCodecCtx);
+      {$ENDIF}
     finally
       FFmpegCore.UnlockAVCodec();
     end;
+    {$IF LIBAVFORMAT_VERSION < 59000000}
     fCodecCtx := nil;
+    {$ENDIF}
   end;
 
   // Close the video file
@@ -856,7 +879,11 @@ begin
           begin
             // seeking failed
             fErrorState := true;
+            {$IF LIBAVFORMAT_VERSION <= 58007100}
             Log.LogError('Seek Error in "'+fFormatCtx^.filename+'"', 'UAudioDecoder_FFmpeg');
+            {$ELSE}
+            Log.LogError('Seek Error in "'+fFormatCtx^.url+'"', 'UAudioDecoder_FFmpeg');
+            {$ENDIF}
           end
           else
           begin
@@ -973,7 +1000,11 @@ begin
       if (Packet.stream_index = fAudioStreamIndex) then
         fPacketQueue.Put(@Packet)
       else
+        {$IF (LIBAVFORMAT_VERSION < 59000000)}
         av_free_packet(@Packet);
+        {$ELSE}
+        av_packet_unref(@Packet);
+        {$ENDIF}
 
     finally
       SDL_LockMutex(fStateLock);
@@ -1019,6 +1050,10 @@ begin
 end;
 
 procedure TFFmpegDecodeStream.FlushCodecBuffers();
+{$IF LIBAVFORMAT_VERSION >= 59000000}
+var
+  NewCtx: PAVCodecContext;
+{$ENDIF}
 begin
   // if no flush operation is specified, avcodec_flush_buffers will not do anything.
   if (@fCodecCtx.codec.flush <> nil) then
@@ -1033,12 +1068,24 @@ begin
     // We will just reopen the codec.
     FFmpegCore.LockAVCodec();
     try
+      {$IF LIBAVFORMAT_VERSION < 59000000}
       avcodec_close(fCodecCtx);
       {$IF LIBAVCODEC_VERSION >= 53005000}
       avcodec_open2(fCodecCtx, fCodec, nil);
       {$ELSE}
       avcodec_open(fCodecCtx, fCodec);
       {$IFEND}
+      {$ELSE}
+      NewCtx := FFmpegCore.GetCodecContext(fAudioStream, fCodec);
+      if NewCtx <> nil then
+      begin
+        avcodec_free_context(@fCodecCtx);
+        fCodecCtx := NewCtx;
+        avcodec_open2(fCodecCtx, fCodec, nil);
+      end
+      else
+        avcodec_flush_buffers(fCodecCtx);
+      {$ENDIF}
     finally
       FFmpegCore.UnlockAVCodec();
     end;
@@ -1151,8 +1198,13 @@ begin
     end;
 
     // free old packet data
+    {$IF (LIBAVFORMAT_VERSION < 59000000)}
     if (fAudioPaket.data <> nil) then
       av_free_packet(@fAudioPaket);
+    {$ELSE}
+    if (PAnsiChar(fAudioPaket.data) <> STATUS_PACKET) then
+      av_packet_unref(@fAudioPaket);
+    {$ENDIF}
 
     // do not block queue on seeking (to avoid deadlocks on the DecoderLock)
     if (IsSeeking()) then
@@ -1168,7 +1220,9 @@ begin
     // handle Status-packet
     if (PAnsiChar(fAudioPaket.data) = STATUS_PACKET) then
     begin
+      {$IF (LIBAVFORMAT_VERSION < 59000000)}
       fAudioPaket.data := nil;
+      {$ENDIF}
       fAudioPaketData := nil;
       fAudioPaketSize := 0;
 
@@ -1356,7 +1410,9 @@ function TAudioDecoder_FFmpeg.InitializeDecoder: boolean;
 begin
   //Log.LogStatus('InitializeDecoder', 'UAudioDecoder_FFmpeg');
   FFmpegCore := TMediaCore_FFmpeg.GetInstance();
+  {$IF LIBAVFORMAT_VERSION < 58027100}
   av_register_all();
+  {$ENDIF}
 
   // Do not show uninformative error messages by default.
   // FFmpeg prints all error-infos on the console by default what
