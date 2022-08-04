@@ -3,7 +3,7 @@ branch: master
 runtime: org.freedesktop.Platform
 sdk: org.freedesktop.Sdk
 # reduce to 18.08 for x86-32 and 19.08 for arm32:
-runtime-version: '20.08'
+runtime-version: '21.08'
 separate-locales: false
 appstream-compose: true
 rename-appdata-file: ultrastardx.appdata.xml
@@ -44,6 +44,17 @@ add-extensions:
     merge-dirs: share/ultrastardx/themes
     subdirectories: true
     no-autodownload: true
+
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.freepascal
+
+build-options:
+  append-path: /usr/lib/sdk/freepascal/bin
+  env:
+   - INSTALL_PREFIX=/usr/lib/sdk/freepascal
+   - PPC_CONFIG_PATH=/usr/lib/sdk/freepascal/etc
+   - FPCDIR=/usr/lib/sdk/freepascal/fpcsrc
+   - FPC_DIR=/usr/lib/sdk/freepascal/fpcsrc
 
 modules:
 - name: opencv
@@ -116,29 +127,7 @@ modules:
   - /share/projectM/fonts
   - /bin
 
-- name: lua
-  sources:
-  - type: archive
-    url: https://www.lua.org/ftp/lua-5.4.3.tar.gz
-    sha256: f8612276169e3bfcbcfb8f226195bfc6e466fe13042f1076cbde92b7ec96bbfb
-  buildsystem: simple
-  build-commands:
-  - sed -i "s:\(#define LUA_ROOT\>\).*:\1 \"${FLATPAK_DEST}\":" src/luaconf.h
-  - echo export V R >> Makefile
-  - make INSTALL_TOP=${FLATPAK_DEST} MYCFLAGS="-DLUA_COMPAT_5_3 -DLUA_COMPAT_5_2 -DLUA_COMPAT_5_1 ${CFLAGS} -fPIC" LUA_A='liblua.so.$(R)' AR='$(CC) -shared -ldl -lm -Wl,-soname,liblua.so.$(V) -o' RANLIB=true ALL='$(LUA_A)' linux
-  - make INSTALL_TOP=${FLATPAK_DEST} TO_LIB='liblua.so.$(R)' INSTALL_EXEC=true INSTALL_BIN= install
-  - cd ${FLATPAK_DEST}/lib && ln -s liblua.so.* liblua.so
-  - ldconfig -l ${FLATPAK_DEST}/lib/liblua.so.*
-  - mkdir -p ${FLATPAK_DEST}/lib/pkgconfig
-  - make -s INSTALL_TOP=${FLATPAK_DEST} pc > ${FLATPAK_DEST}/lib/pkgconfig/lua.pc
-  - "echo 'Name: Lua' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
-  - "echo 'Description: An Extensible Language' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
-  - "echo 'Version: ${version}' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
-  - "echo 'Requires:' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
-  - "echo 'Libs: -L${libdir} -llua' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
-  - "echo 'Cflags: -I${includedir}' >> ${FLATPAK_DEST}/lib/pkgconfig/lua.pc"
-  cleanup:
-  - /man
+- shared-modules/lua5.4/lua-5.4.json
 
 - name: portmidi
   sources:
@@ -209,66 +198,6 @@ modules:
   - --enable-libdav1d
   cleanup:
   - /share/ffmpeg/examples
-
-- name: freepascal
-  sources:
-# binaries for sparc and mips exist as well
-  - type: archive
-    only-arches:
-    - i386
-    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.i386-linux.tar
-    mirror-urls:
-    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.2/i386-linux/fpc-3.2.2.i386-linux.tar
-    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.2/i386-linux/fpc-3.2.2.i386-linux.tar
-    sha256: f62980ac0b2861221f79fdbff67836aa6912a4256d4192cfa4dfa0ac5b419958
-
-  - type: archive
-    only-arches:
-    - arm
-    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.arm-linux.tar
-    mirror-urls:
-    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.2/arm-linux/fpc-3.2.2.arm-linux.tar
-    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.2/arm-linux/fpc-3.2.2.arm-linux.tar
-    sha256: 971bbcaa1934286ccdaf3998d338afc19a33235e910f8881c75579ed5d6adefd
-
-  - type: archive
-    only-arches:
-    - x86_64
-    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.x86_64-linux.tar
-    mirror-urls:
-    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.2/x86_64-linux/fpc-3.2.2.x86_64-linux.tar
-    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.2/x86_64-linux/fpc-3.2.2.x86_64-linux.tar
-    sha256: 5adac308a5534b6a76446d8311fc340747cbb7edeaacfe6b651493ff3fe31e83
-
-  - type: archive
-    only-arches:
-    - aarch64
-    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.aarch64-linux.tar
-    mirror-urls:
-    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.2/aarch64-linux/fpc-3.2.2.aarch64-linux.tar
-    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.2/aarch64-linux/fpc-3.2.2.aarch64-linux.tar
-    sha256: b39470f9b6b5b82f50fc8680a5da37d2834f2129c65c24c5628a80894d565451
-
-  - type: archive
-    only-arches:
-    - ppc64le
-    url: https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.powerpc64le-linux.tar
-    mirror-urls:
-    - ftp://ftp.hu.freepascal.org/pub/fpc/dist/3.2.2/powerpc64le-linux/fpc-3.2.2.powerpc64le-linux.tar
-    - ftp://mirror.freemirror.org/pub/fpc/dist/3.2.2/powerpc64le-linux/fpc-3.2.2.powerpc64le-linux.tar
-    sha256: 83c57d7caecfaa69fe817f6d26750aa3a08c5436f7c64bf87dead81d62a5e38a
-
-  - type: shell
-    commands:
-# We can use neither /etc/fpc.cfg nor ~/.fpc.cfg, but luckily fpc also looks below $PREFIX
-    - sed -i '/\/samplecfg/s%LIBDIR"%& "$PREFIX/lib/fpc/etc"%' install.sh
-  buildsystem: simple
-  build-commands:
-  - ( echo /var/tmp/fpc ; yes N ) | ./install.sh
-# fpcmkcfg tries to determine the GCC directory only on x86-* and ppc*
-  - "set -- `gcc -print-file-name=crtbegin.o` ; echo -Fl${1%/*} >> /var/tmp/fpc/lib/fpc/etc/fpc.cfg"
-# On x86-64 and ppc64 fpc looks in /usr/lib64 instead of /usr/lib
-  - echo -Fl/usr/lib >> /var/tmp/fpc/lib/fpc/etc/fpc.cfg
 
 - name: ultrastardx
   sources:

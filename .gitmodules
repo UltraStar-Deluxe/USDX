@@ -1,3 +1,6 @@
 [submodule "travis-lazarus"]
 	path = tools/travis/lazarus
 	url = https://github.com/nielsAD/travis-lazarus.git
+[submodule "dists/flatpak/shared-modules"]
+	path = dists/flatpak/shared-modules
+	url = https://github.com/flathub/shared-modules
