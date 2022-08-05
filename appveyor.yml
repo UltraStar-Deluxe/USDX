@@ -17,6 +17,8 @@ matrix:
   exclude:
     - image: Visual Studio 2015
       configuration: x86-64
+    - image: Ubuntu2004
+      configuration: x86-32
 
 for:
   # Windows
@@ -68,11 +70,6 @@ for:
       - sh: flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
       - sh: |
             case "$CONFIGURATION" in
-            x86-32)
-                FLATPAK_ARCH=i386
-                sed -i "/runtime-version:/s/:.*/:"" '18.08'/" dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
-                sed -i "/name:"" dav1d/,/^-/{/disabled:/s/true/false/}" dists/flatpak/eu.usdx.UltraStarDeluxe.yaml
-                ;;
             x86-64)
                 FLATPAK_ARCH=x86_64
                 ;;
