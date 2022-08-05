@@ -75,9 +75,10 @@ for:
                 ;;
             esac
       - sh: RUNTIME_VERSION=`sed -n "/runtime-version:/s/.*'\([^']*\)'/\1/p" dists/flatpak/eu.usdx.UltraStarDeluxe.yaml`
-      - sh: flatpak install --user --noninteractive -y --arch $FLATPAK_ARCH flathub org.freedesktop.Platform//$RUNTIME_VERSION org.freedesktop.Sdk//$RUNTIME_VERSION
+      - sh: flatpak install --user --noninteractive -y --arch $FLATPAK_ARCH flathub org.freedesktop.Platform//$RUNTIME_VERSION org.freedesktop.Sdk//$RUNTIME_VERSION org.freedesktop.Sdk.Extension.freepascal//$RUNTIME_VERSION
 
     build_script:
+      - sh: git submodule update --checkout --init
       - sh: "sed -i 's%^\\([[:space:]]*\\)-\\([[:space:]]*\\)\\(\\<type: dir\\>.*\\)%&\\n\\1 \\2skip:\\n\\1 \\2- flatpak%' dists/flatpak/*.yaml"
       - sh: mkdir flatpak
       - sh: cd flatpak
