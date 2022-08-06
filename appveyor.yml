@@ -78,7 +78,8 @@ for:
       - sh: flatpak install --user --noninteractive -y --arch $FLATPAK_ARCH flathub org.freedesktop.Platform//$RUNTIME_VERSION org.freedesktop.Sdk//$RUNTIME_VERSION org.freedesktop.Sdk.Extension.freepascal//$RUNTIME_VERSION
 
     build_script:
-      - sh: git submodule update --checkout --init
+      - sh: git clone https://github.com/flathub/shared-modules dists/flatpak/shared-modules
+      - sh: git -C dists/flatpak/shared-modules reset --hard c937a6608497a990a56a22b444a062f949df5a0c
       - sh: "sed -i 's%^\\([[:space:]]*\\)-\\([[:space:]]*\\)\\(\\<type: dir\\>.*\\)%&\\n\\1 \\2skip:\\n\\1 \\2- flatpak%' dists/flatpak/*.yaml"
       - sh: mkdir flatpak
       - sh: cd flatpak
