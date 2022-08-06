@@ -1,7 +1,7 @@
 # UltraStar Deluxe Development README
 
 [![Travis Build Status](https://travis-ci.org/UltraStar-Deluxe/USDX.svg?branch=master)](https://travis-ci.org/UltraStar-Deluxe/USDX)
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/jbcwa5cmnmnk4609/branch/master?svg=true)](https://ci.appveyor.com/project/bohning/usdx/branch/master)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/UltraStar-Deluxe/USDX?branch=master&svg=true)](https://ci.appveyor.com/project/basisbit/usdx/branch/master)
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](LICENSE)
 
 ```
