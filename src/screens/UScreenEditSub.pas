@@ -144,6 +144,7 @@ type
       CreatorEditMode:         boolean;
       P1EditMode:              boolean;
       P2EditMode:              boolean;
+      BPMEditMode:             boolean;
 
       // to interactive divide note
       LastClickTime:           Integer;
@@ -337,6 +338,7 @@ type
       // medley
       MedleyNotes:             TMedleyNotes;
 
+      procedure ChangeBPM(newBPM: real);
       procedure DivideBPM;
       procedure MultiplyBPM;
       procedure LyricsCapitalize;
@@ -385,6 +387,7 @@ type
       procedure OnShow; override;
       function  ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       function  ParseInputEditText(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+      function  ParseInputEditBPM(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
       function  ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean; override;
       function  Draw: boolean; override;
       procedure OnHide; override;
@@ -480,6 +483,10 @@ begin
      P2EditMode then
   begin
     Result := ParseInputEditText(PressedKey, CharCode, PressedDown);
+  end
+  else if BPMEditMode then
+  begin
+    Result := ParseInputEditBPM(PressedKey, CharCode, PressedDown)
   end
   else
   begin
@@ -1463,6 +1470,17 @@ begin
           TextEditMode := true;
         end;
 
+      SDLK_F5:
+        begin
+          // Enter BPM Edit Mode
+          BackupEditText := FloatToStr(CurrentSong.BPM[0].BPM / 4);
+          CurrentEditText := BackupEditText;
+          CurrentSlideId := BPMSlideId;
+          TextPosition := LengthUTF8(BackupEditText);
+          editLengthText := LengthUTF8(BackupEditText);
+          BPMEditMode := true;
+        end;
+
       SDLK_SPACE:
         begin
           if (SDL_ModState = 0) or (SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL) then
@@ -1582,7 +1600,17 @@ begin
            // Interaction = 9 // BackgroundSlideId
            // Interaction = 10 // VideoSlideId
            // Interaction = 11 // VideoGapSlideId
-           // Interaction = 12 // BPMSlideId
+
+           if Interaction = BPMSlideId then
+           begin
+             BackupEditText := FloatToStr(CurrentSong.BPM[0].BPM / 4);
+             CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
+             editLengthText := LengthUTF8(BackupEditText);
+             CurrentSlideId := BPMSlideId;
+             TextPosition := LengthUTF8(BackupEditText);
+             BPMEditMode := true;
+           end;
+
            // Interaction = 13 // GAPSlideId
            // Interaction = 14 // StartTagSlideId
            // Interaction = 15 // EndTagSlideId
@@ -2391,6 +2419,111 @@ begin
   end; //if (PressedDown)
 end;
 
+function TScreenEditSub.ParseInputEditBPM(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+var
+  SDL_ModState:  word;
+  qBPM:          real;
+begin
+  // used when in Text Edit Mode
+  Result := true;
+
+  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT {+ KMOD_CAPS});
+
+  if (PressedDown) then
+  begin
+    // only allow digits and decimal separators
+    if (CharCode in [48..57, 46]) then    // 48..57 = 0-9, 44 = decimal comma, 46 = decimal point
+    begin
+      CurrentEditText := UTF8Copy(CurrentEditText, 1,TextPosition) + UCS4ToUTF8String(CharCode) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText));
+      Inc(editLengthText);
+      Inc(TextPosition);
+
+      Exit;
+    end;
+
+    // check special keys
+    case PressedKey of
+      SDLK_ESCAPE:
+        begin
+          // exit BPM edit mode, restore previous BPM value
+          SelectsS[CurrentSlideId].TextOpt[0].Text := FloatToStr(CurrentSong.BPM[0].BPM / 4);
+          BPMEditMode := false;
+          editLengthText := 0;
+          TextPosition := -1;
+        end;
+      SDLK_F5, SDLK_RETURN:
+        begin
+          // Exit BPM Edit Mode
+          //CopyToUndo;
+          if (TryStrToFloat(UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition), qBPM)) then
+          begin
+            BPMVal[0] := FloatToStr(qBPM * 4);
+            ChangeBPM(qBPM * 4);
+            SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideBPM,BPMSlideId,BPMVal,SlideBPMIndex);
+            SelectsS[BPMSlideId].TextOpt[0].Align := 0;
+            SelectsS[BPMSlideId].TextOpt[0].X := SelectsS[BPMSlideId].TextureSBG.X + 5;
+          end
+          else
+          begin
+            CurrentSong.BPM[0].BPM := 0;
+            SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
+          end;
+
+          BPMEditMode := false;
+          editLengthText := 0;
+          TextPosition := -1;
+          CurrentSlideId := -1;
+        end;
+
+      SDLK_BACKSPACE:
+        begin
+          if (TextPosition > 0) then
+          begin
+            UTF8Delete(CurrentEditText, TextPosition, 1);
+            dec(TextPosition);
+          end;
+        end;
+
+      SDLK_DELETE:
+        begin
+            UTF8Delete(CurrentEditText, TextPosition+1, 1);
+        end;
+
+      SDLK_RIGHT:
+        begin
+          // right
+          if SDL_ModState = 0 then
+          begin
+            if (TextPosition >= 0) and (TextPosition < editLengthText-1) then
+                TextPosition := TextPosition + 1
+            else
+              begin
+              // todo change to next note
+              TextPosition := 0;
+              end;
+          end;
+        end;
+
+      SDLK_LEFT:
+        begin
+          // left
+          if SDL_ModState = 0 then
+          begin
+            if TextPosition > 0 then
+                TextPosition := TextPosition - 1
+            else
+              begin
+                TextPosition := editLengthText-1;
+              end;
+          end;
+        end;
+
+    end; //case
+  end; //if (PressedDown)
+end;
+
 function TScreenEditSub.ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean;
 var
   nBut:   Integer;
@@ -2693,49 +2826,47 @@ begin
 end;
 }
 
-procedure TScreenEditSub.DivideBPM;
+procedure TScreenEditSub.ChangeBPM(newBPM: real);
 var
   TrackIndex: Integer;
   LineIndex:  Integer;
   NoteIndex:  Integer;
+  factor:     real;
 
 begin
-  CurrentSong.BPM[0].BPM := CurrentSong.BPM[0].BPM / 2;
+  factor := newBPM / CurrentSong.BPM[0].BPM;    // e.g. new/old => 1/2 = 0.5 => * 0.5
+  CurrentSong.BPM[0].BPM := newBPM;
+
   for TrackIndex := 0 to High(Tracks) do
   begin
     for LineIndex := 0 to Tracks[TrackIndex].High do
     begin
-      Tracks[TrackIndex].Lines[LineIndex].StartBeat := Tracks[TrackIndex].Lines[LineIndex].StartBeat div 2;
-      Tracks[TrackIndex].Lines[LineIndex].EndBeat  := Tracks[TrackIndex].Lines[LineIndex].EndBeat div 2;
-      for NoteIndex := 0 to Tracks[TrackIndex].Lines[LineIndex].HighNote do
+      Tracks[TrackIndex].Lines[LineIndex].StartBeat := ceil(Tracks[TrackIndex].Lines[LineIndex].StartBeat * factor);
+      //Tracks[TrackIndex].Lines[LineIndex].EndBeat   := ceil(Tracks[TrackIndex].Lines[LineIndex].EndBeat * factor);
+      if (Length(Tracks[TrackIndex].Lines[LineIndex].Notes) > 0) then
       begin
-        Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat  := Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat div 2;
-        Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration := Round(Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration / 2);
-      end; // NoteIndex
+        for NoteIndex := 0 to Tracks[TrackIndex].Lines[LineIndex].HighNote do
+        begin
+          Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat := ceil(Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat * factor);
+          Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration  := floor(Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration * factor);
+          if (Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration = 0) then
+            Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration := 1;
+        end; // NoteIndex
+        Tracks[TrackIndex].Lines[LineIndex].EndBeat := Tracks[TrackIndex].Lines[LineIndex].Notes[Tracks[TrackIndex].Lines[LineIndex].HighNote].StartBeat + Tracks[TrackIndex].Lines[LineIndex].Notes[Tracks[TrackIndex].Lines[LineIndex].HighNote].Duration;
+      end else
+        Tracks[TrackIndex].Lines[LineIndex].EndBeat := round(Tracks[TrackIndex].Lines[LineIndex].EndBeat * factor)
     end; // LineIndex
   end; // TrackIndex
 end;
 
-procedure TScreenEditSub.MultiplyBPM;
-var
-  TrackIndex: Integer;
-  LineIndex:  Integer;
-  NoteIndex:  Integer;
+procedure TScreenEditSub.DivideBPM;
 begin
-  CurrentSong.BPM[0].BPM := CurrentSong.BPM[0].BPM * 2;
-  for TrackIndex := 0 to High(Tracks) do
-  begin
-    for LineIndex := 0 to Tracks[TrackIndex].High do
-    begin
-      Tracks[TrackIndex].Lines[LineIndex].StartBeat := Tracks[TrackIndex].Lines[LineIndex].StartBeat * 2;
-      Tracks[TrackIndex].Lines[LineIndex].EndBeat := Tracks[TrackIndex].Lines[LineIndex].EndBeat * 2;
-      for NoteIndex := 0 to Tracks[TrackIndex].Lines[LineIndex].HighNote do
-      begin
-        Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat := Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat * 2;
-        Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration := Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration * 2;
-      end; // NoteIndex
-    end; // LineIndex
-  end; // TrackIndex
+  ChangeBPM(CurrentSong.BPM[0].BPM / 2);
+end;
+
+procedure TScreenEditSub.MultiplyBPM;
+begin
+  ChangeBPM(CurrentSong.BPM[0].BPM * 2);
 end;
 
 procedure TScreenEditSub.LyricsCapitalize;
@@ -4443,7 +4574,7 @@ end;
 
 procedure TScreenEditSub.OnShow;
 const
-  SUPPORTED_EXTS_AUDIO: array[0..1]  of string = ('.mp3', '.ogg');
+  SUPPORTED_EXTS_AUDIO: array[0..2]  of string = ('.mp3', '.ogg', '.m4a');
   SUPPORTED_EXTS_IMAGE: array[0..1]  of string = ('.jpg', '.png');
   SUPPORTED_EXTS_VIDEO: array[0..10] of string = ('.avi', '.mov', '.divx', '.mkv', '.mpeg', '.mpg', '.mp4', '.mpeg', '.m2v', '.ts', '.wmv');
 var
@@ -4868,6 +4999,7 @@ begin
   CreatorEditMode := false;
   P1EditMode := false;
   P2EditMode := false;
+  BPMEditMode := false;
 
   editLengthText := 0;
   TextPosition := -1;
@@ -5028,8 +5160,11 @@ begin
   VideoGapVal[0] := ifthen(CurrentSong.VideoGAP <> 0, FloatToStr(CurrentSong.VideoGAP) + ' s', NOT_SET);
   SelectsS[VideoGapSlideId].TextOpt[0].Text := VideoGapVal[0];
   // BPM
-  BPMVal[0] := FloatToStr(CurrentSong.BPM[0].BPM / 4);
-  SelectsS[BPMSlideId].TextOpt[0].Text := BPMVal[0];
+  if not BPMEditMode then
+  begin
+    BPMVal[0] := FloatToStr(CurrentSong.BPM[0].BPM / 4);
+    SelectsS[BPMSlideId].TextOpt[0].Text := BPMVal[0];
+  end;
   // GAP
   GAPVal[0] := FloatToStr(CurrentSong.GAP) + ' ms';
   SelectsS[GAPSlideId].TextOpt[0].Text := GAPVal[0];
@@ -5105,7 +5240,8 @@ begin
      YearEditMode or
      CreatorEditMode or
      P1EditMode or
-     P2EditMode then
+     P2EditMode or
+     BPMEditMode then
   begin
     if TextPosition >= 0 then
     SelectsS[CurrentSlideId].TextOpt[0].Text :=
