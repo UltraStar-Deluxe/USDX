@@ -2963,8 +2963,8 @@ begin
         for NoteIndex := 0 to Tracks[TrackIndex].Lines[LineIndex].HighNote do
           Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat := Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat - FirstBeat;
 
-    // adjust GAP accordingly
-    CurrentSong.GAP := round((CurrentSong.GAP + (FirstBeat * 15000) / CurrentSong.BPM[0].BPM) * 100) / 100;
+    // adjust GAP accordingly, round to nearest integer value (fractional GAPs make no sense)
+    CurrentSong.GAP := round((CurrentSong.GAP + (FirstBeat * 15000) / (CurrentSong.BPM[0].BPM / 4)));
 
     // adjust medley tags accordingly
     if (MedleyNotes.isStart) then
