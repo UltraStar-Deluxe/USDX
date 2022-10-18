@@ -50,9 +50,6 @@ procedure SingDrawLine(Left, Top, Right: real; Track, PlayerNumber: integer; Lin
 procedure SingDrawPlayerLine(X, Y, W: real; Track, PlayerIndex: integer; LineSpacing: integer = 15);
 procedure SingDrawPlayerBGLine(Left, Top, Right: real; Track, PlayerIndex: integer; LineSpacing: integer = 15);
 
-// TimeBar
-procedure SingDrawTimeBar();
-
 //Draw Editor NoteLines
 procedure EditDrawLine(X, YBaseNote, W, H: real; Track: integer; NumLines: integer = 10);
 procedure EditDrawBorderedBox(X, Y, W, H: integer; FillR: real = 0.9; FillG: real = 0.9; FillB: real = 0.9; FillAlpha: real = 0.5);
@@ -1176,10 +1173,6 @@ begin
   else
     LyricEngine := ScreenSing.Lyrics;
 
-  // draw time-bar
-  if (ScreenSing.Settings.TimeBarVisible) then
-    SingDrawTimeBar();
-
   // draw lyrics
   if (ScreenSing.Settings.LyricsVisible) then
   begin
@@ -1960,68 +1953,6 @@ begin
   end;
   glEnd;
   glDisable(GL_BLEND);
-end;
-
-procedure SingDrawTimeBar();
-var
-  x, y:           real;
-  width, height:  real;
-  LyricsProgress: real;
-  CurLyricsTime:  real;
-  TotalTime:      real;
-
-begin
-  x := Theme.Sing.StaticTimeProgress.x;
-  y := Theme.Sing.StaticTimeProgress.y;
-
-  width  := Theme.Sing.StaticTimeProgress.w;
-  height := Theme.Sing.StaticTimeProgress.h;
-
-  glColor4f(Theme.Sing.StaticTimeProgress.ColR,
-            Theme.Sing.StaticTimeProgress.ColG,
-            Theme.Sing.StaticTimeProgress.ColB, 1); //Set Color
-
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-
-  glBindTexture(GL_TEXTURE_2D, Tex_TimeProgress.TexNum);
-
-  glBegin(GL_QUADS);
-    glTexCoord2f(0, 0);
-    glVertex2f(x, y);
-
-    if ScreenSong.Mode = smMedley then
-    begin
-      CurLyricsTime := LyricsState.GetCurrentTime() - ScreenSing.MedleyStart;
-      TotalTime := ScreenSing.MedleyEnd - ScreenSing.MedleyStart;
-    end
-    else
-    begin
-      CurLyricsTime := LyricsState.GetCurrentTime();
-      TotalTime := LyricsState.TotalTime;
-    end;
-
-    if (CurLyricsTime > 0) and
-       (TotalTime > 0) then
-    begin
-      LyricsProgress := CurLyricsTime / TotalTime;
-      // avoid that the bar "overflows" for inaccurate song lengths
-      if LyricsProgress > 1.0 then
-        LyricsProgress := 1.0;
-      glTexCoord2f((width * LyricsProgress) / 8, 0);
-      glVertex2f(x + width * LyricsProgress, y);
-
-      glTexCoord2f((width * LyricsProgress) / 8, 1);
-      glVertex2f(x + width * LyricsProgress, y + height);
-    end;
-
-    glTexCoord2f(0, 1);
-    glVertex2f(x, y + height);
-  glEnd;
-
- glDisable(GL_TEXTURE_2D);
- glDisable(GL_BLEND);
- glcolor4f(1, 1, 1, 1);
 end;
 
 procedure SingDrawJukeboxTimeBar();

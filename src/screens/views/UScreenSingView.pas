@@ -1757,7 +1757,7 @@ procedure TScreenSingView.DrawInfoLyricBar();
 var
   SongStart:       real;
   SongEnd:         real;
-  ww:              real;
+  SongDuration:    real;
 
   pos:             real;
   br:              real;
@@ -1767,7 +1767,6 @@ var
 
   x, y, w, h:      real;
   CurrentTrack:    integer;
-  GAPxStart, GAPw: real;
 begin
   x := Theme.Sing.StaticTimeProgress.x;
   y := Theme.Sing.StaticTimeProgress.y;
@@ -1775,27 +1774,12 @@ begin
   w := Theme.Sing.StaticTimeProgress.w;
   h := Theme.Sing.StaticTimeProgress.h;
 
-  //calculate x (position of song start on the time-bar)
-  GAPxStart := w*((CurrentSong.GAP/1000)/LyricsState.TotalTime);
-  x := x + GAPxStart; //move x to the right by Song-Gap-Seconds
-
-  //width
-  //LastLine := Tracks[0].Lines[Length(Tracks[0].Line) - 1];
-  w := w - GAPxStart;
-
-  //calculate total singing seconds of song
-  SongStart := 99999999999999;
+  //calculate total singing beats of song
+  SongStart := CurrentSong.BPM[0].BPM*CurrentSong.Start/60;
   SongEnd := CurrentSong.BPM[0].BPM*TotalTime/60;
-  for CurrentTrack := 0 to High(Tracks) do //P1 of duet or solo, P2 of duet,..
-  begin
-    numLines := Length(Tracks[CurrentTrack].Lines); //Lyric lines
-    if (numLines < 2) then //catch cases which could cause endless loop
-      Exit;
-    if SongStart > (Tracks[CurrentTrack].Lines[0].Notes[0].StartBeat + (CurrentSong.BPM[0].BPM*CurrentSong.GAP*(1/60/1000))) then
-      SongStart := Tracks[CurrentTrack].Lines[0].Notes[0].StartBeat + (CurrentSong.BPM[0].BPM*CurrentSong.GAP*(1/60/1000));
-  end;
-  ww := SongEnd - SongStart;
+  SongDuration := SongEnd - SongStart;
 
+  // draw sentence boxes
   for CurrentTrack := 0 to High(Tracks) do //for P1 of duet or solo lyrics, P2 of duet,..
   begin
     numLines := Length(Tracks[CurrentTrack].Lines); //Lyric lines
@@ -1810,11 +1794,11 @@ begin
     glbegin(gl_quads);
     for LineIndex := 0 to numLines - 1 do
     begin
-      if (Tracks[CurrentTrack].Lines[LineIndex].Notes = nil) or (ww < Tracks[CurrentTrack].Lines[LineIndex].Notes[Tracks[CurrentTrack].Lines[LineIndex].HighNote].StartBeat) then Continue;
-      pos := (Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat) / ww*w;
+      if (Tracks[CurrentTrack].Lines[LineIndex].Notes = nil) then Continue;
+      pos := (Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat - SongStart) / SongDuration*w;
       br := (Tracks[CurrentTrack].Lines[LineIndex].Notes[Tracks[CurrentTrack].Lines[LineIndex].HighNote].StartBeat +
                 Tracks[CurrentTrack].Lines[LineIndex].Notes[Tracks[CurrentTrack].Lines[LineIndex].HighNote].Duration -
-                Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat) / ww*w; //br = last note of sentence position + its duration - first note of sentence position
+                Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat) / SongDuration*w; //br = last note of sentence position + its duration - first note of sentence position
 
       //draw a square
       glVertex2f(x+pos, y); //left top
@@ -1824,6 +1808,18 @@ begin
     end;
     glEnd;
   end;
+
+  // draw progress indicator
+  br := (LyricsState.CurrentBeat - SongStart) / SongDuration*w;
+  glColor4f(Theme.Sing.StaticTimeProgress.ColR,
+             Theme.Sing.StaticTimeProgress.ColG,
+             Theme.Sing.StaticTimeProgress.ColB, 1); //Set Color
+  glBegin(GL_QUADS);
+  glVertex2f(x, y); // left top
+  glVertex2f(x, y+h); // left bottom
+  glVertex2f(x+br, y+h); // right bottom
+  glVertex2f(x+br, y); // right top
+  glEnd;
 end;
 
 end.
