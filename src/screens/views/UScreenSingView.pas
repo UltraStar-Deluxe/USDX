@@ -1758,6 +1758,7 @@ var
   SongStart:       real;
   SongEnd:         real;
   SongDuration:    real;
+  gapInBeats:      real;
 
   pos:             real;
   br:              real;
@@ -1778,6 +1779,7 @@ begin
   SongStart := CurrentSong.BPM[0].BPM*CurrentSong.Start/60;
   SongEnd := CurrentSong.BPM[0].BPM*TotalTime/60;
   SongDuration := SongEnd - SongStart;
+  gapInBeats := CurrentSong.BPM[0].BPM*CurrentSong.GAP/1000/60;
 
   // draw sentence boxes
   for CurrentTrack := 0 to High(Tracks) do //for P1 of duet or solo lyrics, P2 of duet,..
@@ -1795,7 +1797,7 @@ begin
     for LineIndex := 0 to numLines - 1 do
     begin
       if (Tracks[CurrentTrack].Lines[LineIndex].Notes = nil) then Continue;
-      pos := (Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat - SongStart) / SongDuration*w;
+      pos := (gapInBeats + Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat - SongStart) / SongDuration*w;
       br := (Tracks[CurrentTrack].Lines[LineIndex].Notes[Tracks[CurrentTrack].Lines[LineIndex].HighNote].StartBeat +
                 Tracks[CurrentTrack].Lines[LineIndex].Notes[Tracks[CurrentTrack].Lines[LineIndex].HighNote].Duration -
                 Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat) / SongDuration*w; //br = last note of sentence position + its duration - first note of sentence position
@@ -1810,7 +1812,7 @@ begin
   end;
 
   // draw progress indicator
-  br := (LyricsState.CurrentBeat - SongStart) / SongDuration*w;
+  br := (gapInBeats + LyricsState.CurrentBeat - SongStart) / SongDuration*w;
   glColor4f(Theme.Sing.StaticTimeProgress.ColR,
              Theme.Sing.StaticTimeProgress.ColG,
              Theme.Sing.StaticTimeProgress.ColB, 1); //Set Color
