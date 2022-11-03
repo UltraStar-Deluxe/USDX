@@ -489,17 +489,22 @@ var
   ToneIndex:   integer;
   Correlation: TCorrelationArray;
   SampleIndex: integer; // index of sample to analyze
+const
+  // the value is fairly arbitrarily chosen, but this makes it analyze only 4096/SampleIndexStep samples
+  SampleIndexStep = 16;
 begin
   // accumulate the magnitude differences for samples in AnalysisBuffer
   for ToneIndex := 0 to NumHalftones-1 do
   begin
     Correlation[ToneIndex] := 0;
-    for SampleIndex := 0 to (AnalysisBufferSize-1) do
+    SampleIndex := 0;
+    while SampleIndex < AnalysisBufferSize - 1 do
     begin
       // Suggestion for calculation efficiency improvement from deuteragenie:
       // Replacing 'i mod buffersize' by 'i & (buffersize-1)' when i is positive and buffersize is a power of two should speed the modulo compuation by 5x-10x
       //Correlation[ToneIndex] += Abs(AnalysisBuffer[(SampleIndex+Delays[ToneIndex]) mod AnalysisBufferSize] - AnalysisBuffer[SampleIndex]);
       Correlation[ToneIndex] := Correlation[ToneIndex] + Abs(AnalysisBuffer[(SampleIndex+Delays[ToneIndex]) and (AnalysisBufferSize-1)] - AnalysisBuffer[SampleIndex]);
+      SampleIndex := SampleIndex + SampleIndexStep;
     end;
     Correlation[ToneIndex] := Correlation[ToneIndex] / AnalysisBufferSize;
   end;
