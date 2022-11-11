@@ -797,6 +797,16 @@ begin
     case Ini.LyricsStyle of
       0, 1: // regular/bold (non-outline) font
       begin
+        if (Ini.JukeboxSingLineColor = High(UIni.ISingLineColor)) then
+          Col := GetJukeboxLyricOtherColor(0)
+        else
+          Col := GetLyricColor(Ini.JukeboxSingLineColor);
+
+        Lyrics.LineColor_act.R := Col.R;
+        Lyrics.LineColor_act.G := Col.G;
+        Lyrics.LineColor_act.B := Col.B;
+        Lyrics.LineColor_act.A := 1;
+
         if (Ini.JukeboxActualLineColor = High(UIni.IActualLineColor)) then
           Col := GetJukeboxLyricOtherColor(1)
         else
@@ -816,16 +826,6 @@ begin
         Lyrics.LineColor_dis.G := Col.G;
         Lyrics.LineColor_dis.B := Col.B;
         Lyrics.LineColor_dis.A := 1;
-
-        if (Ini.JukeboxSingLineColor = High(UIni.ISingLineColor)) then
-          Col := GetJukeboxLyricOtherColor(0)
-        else
-          Col := GetLyricColor(Ini.JukeboxSingLineColor);
-
-        Lyrics.LineColor_act.R := Col.R; //0.02;
-        Lyrics.LineColor_act.G := Col.G; //0.6;
-        Lyrics.LineColor_act.B := Col.B; //0.8;
-        Lyrics.LineColor_act.A := 1;
       end;
       2: // outline fonts
       begin
