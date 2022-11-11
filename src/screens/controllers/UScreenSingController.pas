@@ -722,6 +722,16 @@ begin
     case Ini.LyricsStyle of
       0, 1: // regular/bold (non-outline) fonts
       begin
+        LyricsDuetP1.LineColor_act.R := ColP1.R;
+        LyricsDuetP1.LineColor_act.G := ColP1.G;
+        LyricsDuetP1.LineColor_act.B := ColP1.B;
+        LyricsDuetP1.LineColor_act.A := 1;
+
+        LyricsDuetP2.LineColor_act.R := ColP2.R;
+        LyricsDuetP2.LineColor_act.G := ColP2.G;
+        LyricsDuetP2.LineColor_act.B := ColP2.B;
+        LyricsDuetP2.LineColor_act.A := 1;
+
         LyricsDuetP1.LineColor_en.R := Skin_FontR;
         LyricsDuetP1.LineColor_en.G := Skin_FontG;
         LyricsDuetP1.LineColor_en.B := Skin_FontB;
@@ -741,20 +751,19 @@ begin
         LyricsDuetP2.LineColor_dis.G := 0.2;
         LyricsDuetP2.LineColor_dis.B := 0.2;
         LyricsDuetP2.LineColor_dis.A := 1;
-
-        LyricsDuetP1.LineColor_act.R := ColP1.R; //0.02;
-        LyricsDuetP1.LineColor_act.G := ColP1.G; //0.6;
-        LyricsDuetP1.LineColor_act.B := ColP1.B; //0.8;
-        LyricsDuetP1.LineColor_act.A := 1;
-
-        LyricsDuetP2.LineColor_act.R := ColP2.R; //0.02;
-        LyricsDuetP2.LineColor_act.G := ColP2.G; //0.6;
-        LyricsDuetP2.LineColor_act.B := ColP2.B; //0.8;
-        LyricsDuetP2.LineColor_act.A := 1;
-
       end;
       2: // outline font
       begin
+        LyricsDuetP1.LineColor_act.R := ColP1.R;
+        LyricsDuetP1.LineColor_act.G := ColP1.G;
+        LyricsDuetP1.LineColor_act.B := ColP1.B;
+        LyricsDuetP1.LineColor_act.A := 1;
+
+        LyricsDuetP2.LineColor_act.R := ColP2.R;
+        LyricsDuetP2.LineColor_act.G := ColP2.G;
+        LyricsDuetP2.LineColor_act.B := ColP2.B;
+        LyricsDuetP2.LineColor_act.A := 1;
+
         LyricsDuetP1.LineColor_en.R := 0.7;
         LyricsDuetP1.LineColor_en.G := 0.7;
         LyricsDuetP1.LineColor_en.B := 0.7;
@@ -774,16 +783,6 @@ begin
         LyricsDuetP2.LineColor_dis.G := 0.8;
         LyricsDuetP2.LineColor_dis.B := 0.8;
         LyricsDuetP2.LineColor_dis.A := 1;
-
-        LyricsDuetP1.LineColor_act.R := ColP1.R; //0.5;
-        LyricsDuetP1.LineColor_act.G := ColP1.G; //0.5;
-        LyricsDuetP1.LineColor_act.B := ColP1.B; //1;
-        LyricsDuetP1.LineColor_act.A := 1;
-
-        LyricsDuetP2.LineColor_act.R := ColP2.R; //0.5;
-        LyricsDuetP2.LineColor_act.G := ColP2.G; //0.5;
-        LyricsDuetP2.LineColor_act.B := ColP2.B; //1;
-        LyricsDuetP2.LineColor_act.A := 1;
       end;
     end; // case
 
