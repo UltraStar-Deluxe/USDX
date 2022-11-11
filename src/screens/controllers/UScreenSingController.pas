@@ -764,24 +764,32 @@ begin
         LyricsDuetP2.LineColor_act.B := ColP2.B;
         LyricsDuetP2.LineColor_act.A := 1;
 
-        LyricsDuetP1.LineColor_en.R := 0.7;
-        LyricsDuetP1.LineColor_en.G := 0.7;
-        LyricsDuetP1.LineColor_en.B := 0.7;
+        if (Ini.JukeboxActualLineColor = High(UIni.IActualLineColor)) then
+          Col := GetJukeboxLyricOtherColor(1)
+        else
+          Col := GetLyricGrayColor(Ini.JukeboxActualLineColor);
+        LyricsDuetP1.LineColor_en.R := Col.R;
+        LyricsDuetP1.LineColor_en.G := Col.G;
+        LyricsDuetP1.LineColor_en.B := Col.B;
         LyricsDuetP1.LineColor_en.A := 1;
 
-        LyricsDuetP2.LineColor_en.R := 0.7;
-        LyricsDuetP2.LineColor_en.G := 0.7;
-        LyricsDuetP2.LineColor_en.B := 0.7;
+        LyricsDuetP2.LineColor_en.R := Col.R;
+        LyricsDuetP2.LineColor_en.G := Col.G;
+        LyricsDuetP2.LineColor_en.B := Col.B;
         LyricsDuetP2.LineColor_en.A := 1;
 
-        LyricsDuetP1.LineColor_dis.R := 0.8;
-        LyricsDuetP1.LineColor_dis.G := 0.8;
-        LyricsDuetP1.LineColor_dis.B := 0.8;
+        if (Ini.JukeboxNextLineColor = High(UIni.INextLineColor)) then
+          Col := GetJukeboxLyricOtherColor(2)
+        else
+          Col := GetLyricGrayColor(Ini.JukeboxNextLineColor);
+        LyricsDuetP1.LineColor_dis.R := Col.R;
+        LyricsDuetP1.LineColor_dis.G := Col.G;
+        LyricsDuetP1.LineColor_dis.B := Col.B;
         LyricsDuetP1.LineColor_dis.A := 1;
 
-        LyricsDuetP2.LineColor_dis.R := 0.8;
-        LyricsDuetP2.LineColor_dis.G := 0.8;
-        LyricsDuetP2.LineColor_dis.B := 0.8;
+        LyricsDuetP2.LineColor_dis.R := Col.R;
+        LyricsDuetP2.LineColor_dis.G := Col.G;
+        LyricsDuetP2.LineColor_dis.B := Col.B;
         LyricsDuetP2.LineColor_dis.A := 1;
       end;
     end; // case
