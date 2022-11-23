@@ -1553,6 +1553,10 @@ begin
           SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right - 20, 0, 0, 12);
           SingDrawPlayerBGLine(NR.Left + 20, 245+95, NR.Right - 20, 0, 1, 12);
           SingDrawPlayerBGLine(NR.Left + 20, 370+95, NR.Right - 20, 0, 2, 12);
+
+          SingDrawLine(NR.Left + 20, 120+95, NR.Right - 20, 0, 1, 12);
+          SingDrawLine(NR.Left + 20, 245+95, NR.Right - 20, 0, 2, 12);
+          SingDrawLine(NR.Left + 20, 370+95, NR.Right - 20, 0, 3, 12);
         end
         else
         begin
@@ -1563,62 +1567,7 @@ begin
           SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 120+95, NR.Right - 20, 0, 3, 12);
           SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 245+95, NR.Right - 20, 0, 4, 12);
           SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 370+95, NR.Right - 20, 0, 5, 12);
-        end;
-      end
-      else
-      begin
-        if (Ini.Screens = 1) then
-        begin
-          // MULTISCREEN 1 DUET
-          SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right - 20, 0, 0, 12);
-          SingDrawPlayerBGLine(NR.Left + 20, 245+95, NR.Right - 20, 1, 1, 12);
-          SingDrawPlayerBGLine(NR.Left + 20, 370+95, NR.Right - 20, 0, 2, 12);
-        end
-        else
-        begin
-          // SINGLESCREEN DUET
-          SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right/2 - 20, 0, 0, 12);
-          SingDrawPlayerBGLine(NR.Left + 20, 245+95, NR.Right/2 - 20, 1, 1, 12);
-          SingDrawPlayerBGLine(NR.Left + 20, 370+95, NR.Right/2 - 20, 0, 2, 12);
-          SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 120+95, NR.Right - 20, 1, 3, 12);
-          SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 245+95, NR.Right - 20, 0, 4, 12);
-          SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 370+95, NR.Right - 20, 1, 5, 12);
-        end;
-      end;
-    end;
 
-    if ScreenAct = 2 then
-    begin
-      if not(CurrentSong.isDuet) then
-      begin
-        // MULTISCREEN 2 SOLO
-        SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right - 20, 0, 3, 12);
-        SingDrawPlayerBGLine(NR.Left + 20, 245+95, NR.Right - 20, 0, 4, 12);
-        SingDrawPlayerBGLine(NR.Left + 20, 370+95, NR.Right - 20, 0, 5, 12);
-      end
-      else
-      begin
-        // MULTISCREEN 2 DUET
-        SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right - 20, 1, 3, 12);
-        SingDrawPlayerBGLine(NR.Left + 20, 245+95, NR.Right - 20, 0, 4, 12);
-        SingDrawPlayerBGLine(NR.Left + 20, 370+95, NR.Right - 20, 1, 5, 12);
-      end;
-    end;
-
-    if ScreenAct = 1 then
-    begin
-      if not(CurrentSong.isDuet) then
-      begin
-        if (Ini.Screens = 1) then
-        begin
-          // MULTISCREEN 1 SOLO
-          SingDrawLine(NR.Left + 20, 120+95, NR.Right - 20, 0, 1, 12);
-          SingDrawLine(NR.Left + 20, 245+95, NR.Right - 20, 0, 2, 12);
-          SingDrawLine(NR.Left + 20, 370+95, NR.Right - 20, 0, 3, 12);
-        end
-        else
-        begin
-          // SINGLESCREEN SOLO
           SingDrawLine(NR.Left + 20, 120+95, NR.Right/2 - 20, 0, 1, 12);
           SingDrawLine(NR.Left + 20, 245+95, NR.Right/2 - 20, 0, 2, 12);
           SingDrawLine(NR.Left + 20, 370+95, NR.Right/2 - 20, 0, 3, 12);
@@ -1632,6 +1581,10 @@ begin
         if (Ini.Screens = 1) then
         begin
           // MULTISCREEN 1 DUET
+          SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right - 20, 0, 0, 12);
+          SingDrawPlayerBGLine(NR.Left + 20, 245+95, NR.Right - 20, 1, 1, 12);
+          SingDrawPlayerBGLine(NR.Left + 20, 370+95, NR.Right - 20, 0, 2, 12);
+
           SingDrawLine(NR.Left + 20, 120+95, NR.Right - 20, 0, 1, 12);
           SingDrawLine(NR.Left + 20, 245+95, NR.Right - 20, 1, 2, 12);
           SingDrawLine(NR.Left + 20, 370+95, NR.Right - 20, 0, 3, 12);
@@ -1639,6 +1592,13 @@ begin
         else
         begin
           // SINGLESCREEN DUET
+          SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right/2 - 20, 0, 0, 12);
+          SingDrawPlayerBGLine(NR.Left + 20, 245+95, NR.Right/2 - 20, 1, 1, 12);
+          SingDrawPlayerBGLine(NR.Left + 20, 370+95, NR.Right/2 - 20, 0, 2, 12);
+          SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 120+95, NR.Right - 20, 1, 3, 12);
+          SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 245+95, NR.Right - 20, 0, 4, 12);
+          SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 370+95, NR.Right - 20, 1, 5, 12);
+
           SingDrawLine(NR.Left + 20, 120+95, NR.Right/2 - 20, 0, 1, 12);
           SingDrawLine(NR.Left + 20, 245+95, NR.Right/2 - 20, 1, 2, 12);
           SingDrawLine(NR.Left + 20, 370+95, NR.Right/2 - 20, 0, 3, 12);
@@ -1654,6 +1614,10 @@ begin
       if not(CurrentSong.isDuet) then
       begin
         // MULTISCREEN 2 SOLO
+        SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right - 20, 0, 3, 12);
+        SingDrawPlayerBGLine(NR.Left + 20, 245+95, NR.Right - 20, 0, 4, 12);
+        SingDrawPlayerBGLine(NR.Left + 20, 370+95, NR.Right - 20, 0, 5, 12);
+
         SingDrawLine(NR.Left + 20, 120+95, NR.Right - 20, 0, 4, 12);
         SingDrawLine(NR.Left + 20, 245+95, NR.Right - 20, 0, 5, 12);
         SingDrawLine(NR.Left + 20, 370+95, NR.Right - 20, 0, 6, 12);
@@ -1661,6 +1625,10 @@ begin
       else
       begin
         // MULTISCREEN 2 DUET
+        SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right - 20, 1, 3, 12);
+        SingDrawPlayerBGLine(NR.Left + 20, 245+95, NR.Right - 20, 0, 4, 12);
+        SingDrawPlayerBGLine(NR.Left + 20, 370+95, NR.Right - 20, 1, 5, 12);
+
         SingDrawLine(NR.Left + 20, 120+95, NR.Right - 20, 1, 4, 12);
         SingDrawLine(NR.Left + 20, 245+95, NR.Right - 20, 0, 5, 12);
         SingDrawLine(NR.Left + 20, 370+95, NR.Right - 20, 1, 6, 12);
