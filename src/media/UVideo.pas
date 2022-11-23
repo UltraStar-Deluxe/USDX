@@ -701,6 +701,9 @@ begin
     // fail if called concurrently by different threads.
     FFmpegCore.LockAVCodec();
     try
+        // by setting this explicitly to 0, it won't default to a single thread
+        fCodecContext^.thread_count := 0;
+
         {$IF LIBAVCODEC_VERSION >= 53005000}
         errnum := avcodec_open2(fCodecContext, fCodec, nil);
         {$ELSE}
