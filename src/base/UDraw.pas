@@ -1454,6 +1454,9 @@ begin
 
           SingDrawLine(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, 0, 1, 15);
           SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 2, 15);
+
+          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, 0, 0, 15);
+          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 0, 1, 15);
         end
         else
         begin
@@ -1467,6 +1470,11 @@ begin
           SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right/2 - 20, 0, 2, 15);
           SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, 0, 3, 15);
           SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 4, 15);
+
+          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 50, 0, 0, 15);
+          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 50, 0, 1, 15);
+          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 30, 0, 2, 15);
+          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 30, 0, 3, 15);
         end;
       end
       else
@@ -1479,6 +1487,9 @@ begin
 
           SingDrawLine(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, 0, 1, 15);
           SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 1, 2, 15);
+
+          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, 0, 0, 15);
+          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 1, 1, 15);
         end
         else
         begin
@@ -1492,6 +1503,11 @@ begin
           SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right/2 - 20, 1, 2, 15);
           SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, 0, 3, 15);
           SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 1, 4, 15);
+
+          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 50, 0, 0, 15);
+          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 50, 1, 1, 15);
+          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 30, 0, 2, 15);
+          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 30, 1, 3, 15);
         end;
       end;
     end;
@@ -1506,6 +1522,9 @@ begin
 
         SingDrawLine(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, 0, 3, 15);
         SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 0, 4, 15);
+
+        SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, 0, 2, 15);
+        SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 0, 3, 15);
       end
       else
       begin
@@ -1515,58 +1534,7 @@ begin
 
         SingDrawLine(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, 0, 3, 15);
         SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, 1, 4, 15);
-      end;
-    end;
 
-    if ScreenAct = 1 then
-    begin
-      if not(CurrentSong.isDuet) then
-      begin
-        if (Ini.Screens = 1) then
-        begin
-          // MULTISCREEN 1 SOLO
-          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, 0, 0, 15);
-          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 0, 1, 15);
-        end
-        else
-        begin
-          // SINGLESCREEN SOLO
-          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 50, 0, 0, 15);
-          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 50, 0, 1, 15);
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 30, 0, 2, 15);
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 30, 0, 3, 15);
-        end;
-      end
-      else
-      begin
-        if (Ini.Screens = 1) then
-        begin
-          // MULTISCREEN 1 DUET
-          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, 0, 0, 15);
-          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 1, 1, 15);
-        end
-        else
-        begin
-          // SINGLESCREEN DUET
-          SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 50, 0, 0, 15);
-          SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 50, 1, 1, 15);
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 30, 0, 2, 15);
-          SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 30, 1, 3, 15);
-        end;
-      end;
-    end;
-
-    if ScreenAct = 2 then
-    begin
-      if not(CurrentSong.isDuet) then
-      begin
-        // MULTISCREEN 2 SOLO
-        SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, 0, 2, 15);
-        SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 0, 3, 15);
-      end
-      else
-      begin
-        // MULTISCREEN 2 DUET
         SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, 0, 2, 15);
         SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, 1, 3, 15);
       end;
