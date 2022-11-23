@@ -1418,7 +1418,6 @@ begin
 
   if PlayersPlay = 4 then
   begin
-
     if ScreenAct = 1 then
     begin
       if (Ini.Screens = 1) then
