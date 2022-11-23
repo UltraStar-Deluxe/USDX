@@ -1418,9 +1418,10 @@ begin
 
   if PlayersPlay = 4 then
   begin
-    if ScreenAct = 1 then
+    if (Ini.Screens = 1) then
     begin
-      if (Ini.Screens = 1) then
+      // MULTISCREEN
+      if ScreenAct = 1 then
       begin
         // MULTISCREEN 1
         SingDrawPlayerBGLine(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, TrackP1, 0, 15);
@@ -1431,38 +1432,37 @@ begin
 
         SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, TrackP1, 0, 15);
         SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, TrackP2, 1, 15);
-      end
-      else
-      begin
-        // SINGLESCREEN
-        SingDrawPlayerBGLine(NR.Left + 20, Skin_P1_NotesB, NR.Right/2 - 20, TrackP1, 0, 15);
-        SingDrawPlayerBGLine(NR.Left + 20, Skin_P2_NotesB, NR.Right/2 - 20, TrackP2, 1, 15);
-        SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, TrackP3, 2, 15);
-        SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, TrackP4, 3, 15);
-
-        SingDrawLine(NR.Left + 20, Skin_P1_NotesB, NR.Right/2 - 20, TrackP1, 1, 15);
-        SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right/2 - 20, TrackP2, 2, 15);
-        SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, TrackP3, 3, 15);
-        SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, TrackP4, 4, 15);
-
-        SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 50, TrackP1, 0, 15);
-        SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 50, TrackP2, 1, 15);
-        SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 30, TrackP3, 2, 15);
-        SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 30, TrackP4, 3, 15);
       end;
-    end;
+      if ScreenAct = 2 then
+      begin
+        // MULTISCREEN 2
+        SingDrawPlayerBGLine(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, TrackP3, 2, 15);
+        SingDrawPlayerBGLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, TrackP4, 3, 15);
 
-    if ScreenAct = 2 then
+        SingDrawLine(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, TrackP3, 3, 15);
+        SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, TrackP4, 4, 15);
+
+        SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, TrackP3, 2, 15);
+        SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, TrackP4, 3, 15);
+      end;
+    end
+    else
     begin
-      // MULTISCREEN 2
-      SingDrawPlayerBGLine(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, TrackP3, 2, 15);
-      SingDrawPlayerBGLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, TrackP4, 3, 15);
+      // SINGLESCREEN
+      SingDrawPlayerBGLine(NR.Left + 20, Skin_P1_NotesB, NR.Right/2 - 20, TrackP1, 0, 15);
+      SingDrawPlayerBGLine(NR.Left + 20, Skin_P2_NotesB, NR.Right/2 - 20, TrackP2, 1, 15);
+      SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, TrackP3, 2, 15);
+      SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, TrackP4, 3, 15);
 
-      SingDrawLine(NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, TrackP3, 3, 15);
-      SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, TrackP4, 4, 15);
+      SingDrawLine(NR.Left + 20, Skin_P1_NotesB, NR.Right/2 - 20, TrackP1, 1, 15);
+      SingDrawLine(NR.Left + 20, Skin_P2_NotesB, NR.Right/2 - 20, TrackP2, 2, 15);
+      SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, Skin_P1_NotesB, NR.Right - 20, TrackP3, 3, 15);
+      SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, Skin_P2_NotesB, NR.Right - 20, TrackP4, 4, 15);
 
-      SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width - 40, TrackP3, 2, 15);
-      SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width - 40, TrackP4, 3, 15);
+      SingDrawPlayerLine(NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 50, TrackP1, 0, 15);
+      SingDrawPlayerLine(NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 50, TrackP2, 1, 15);
+      SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P1_NotesB, NR.Width/2 - 30, TrackP3, 2, 15);
+      SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, Skin_P2_NotesB, NR.Width/2 - 30, TrackP4, 3, 15);
     end;
   end;
 
