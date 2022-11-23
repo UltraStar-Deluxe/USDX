@@ -1468,9 +1468,10 @@ begin
 
   if PlayersPlay = 6 then
   begin
-    if ScreenAct = 1 then
+    if (Ini.Screens = 1) then
     begin
-      if (Ini.Screens = 1) then
+      // MULTISCREEN
+      if ScreenAct = 1 then
       begin
         // MULTISCREEN 1
         SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right - 20, TrackP1, 0, 12);
@@ -1484,47 +1485,46 @@ begin
         SingDrawPlayerLine(NR.Left + 20, 120+95, NR.Width - 40, TrackP1, 0, 12);
         SingDrawPlayerLine(NR.Left + 20, 245+95, NR.Width - 40, TrackP2, 1, 12);
         SingDrawPlayerLine(NR.Left + 20, 370+95, NR.Width - 40, TrackP3, 2, 12);
-      end
-      else
-      begin
-        // SINGLESCREEN
-        SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right/2 - 20, TrackP1, 0, 12);
-        SingDrawPlayerBGLine(NR.Left + 20, 245+95, NR.Right/2 - 20, TrackP2, 1, 12);
-        SingDrawPlayerBGLine(NR.Left + 20, 370+95, NR.Right/2 - 20, TrackP3, 2, 12);
-        SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 120+95, NR.Right - 20, TrackP4, 3, 12);
-        SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 245+95, NR.Right - 20, TrackP5, 4, 12);
-        SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 370+95, NR.Right - 20, TrackP6, 5, 12);
-
-        SingDrawLine(NR.Left + 20, 120+95, NR.Right/2 - 20, TrackP1, 1, 12);
-        SingDrawLine(NR.Left + 20, 245+95, NR.Right/2 - 20, TrackP2, 2, 12);
-        SingDrawLine(NR.Left + 20, 370+95, NR.Right/2 - 20, TrackP3, 3, 12);
-        SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, 120+95, NR.Right - 20, TrackP4, 4, 12);
-        SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, 245+95, NR.Right - 20, TrackP5, 5, 12);
-        SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, 370+95, NR.Right - 20, TrackP6, 6, 12);
-
-        SingDrawPlayerLine(NR.Left + 20, 120+95, NR.Width/2 - 50, TrackP1, 0, 12);
-        SingDrawPlayerLine(NR.Left + 20, 245+95, NR.Width/2 - 50, TrackP2, 1, 12);
-        SingDrawPlayerLine(NR.Left + 20, 370+95, NR.Width/2 - 50, TrackP3, 2, 12);
-        SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, 120+95, NR.Width/2 - 30, TrackP4, 3, 12);
-        SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, 245+95, NR.Width/2 - 30, TrackP5, 4, 12);
-        SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, 370+95, NR.Width/2 - 30, TrackP6, 5, 12);
       end;
-    end;
+      if ScreenAct = 2 then
+      begin
+        // MULTISCREEN 2
+        SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right - 20, TrackP4, 3, 12);
+        SingDrawPlayerBGLine(NR.Left + 20, 245+95, NR.Right - 20, TrackP5, 4, 12);
+        SingDrawPlayerBGLine(NR.Left + 20, 370+95, NR.Right - 20, TrackP6, 5, 12);
 
-    if ScreenAct = 2 then
+        SingDrawLine(NR.Left + 20, 120+95, NR.Right - 20, TrackP4, 4, 12);
+        SingDrawLine(NR.Left + 20, 245+95, NR.Right - 20, TrackP5, 5, 12);
+        SingDrawLine(NR.Left + 20, 370+95, NR.Right - 20, TrackP6, 6, 12);
+
+        SingDrawPlayerLine(NR.Left + 20, 120+95, NR.Width - 40, TrackP4, 3, 12);
+        SingDrawPlayerLine(NR.Left + 20, 245+95, NR.Width - 40, TrackP5, 4, 12);
+        SingDrawPlayerLine(NR.Left + 20, 370+95, NR.Width - 40, TrackP6, 5, 12);
+      end;
+    end
+    else
     begin
-      // MULTISCREEN 2
-      SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right - 20, TrackP4, 3, 12);
-      SingDrawPlayerBGLine(NR.Left + 20, 245+95, NR.Right - 20, TrackP5, 4, 12);
-      SingDrawPlayerBGLine(NR.Left + 20, 370+95, NR.Right - 20, TrackP6, 5, 12);
+      // SINGLESCREEN
+      SingDrawPlayerBGLine(NR.Left + 20, 120+95, NR.Right/2 - 20, TrackP1, 0, 12);
+      SingDrawPlayerBGLine(NR.Left + 20, 245+95, NR.Right/2 - 20, TrackP2, 1, 12);
+      SingDrawPlayerBGLine(NR.Left + 20, 370+95, NR.Right/2 - 20, TrackP3, 2, 12);
+      SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 120+95, NR.Right - 20, TrackP4, 3, 12);
+      SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 245+95, NR.Right - 20, TrackP5, 4, 12);
+      SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, 370+95, NR.Right - 20, TrackP6, 5, 12);
 
-      SingDrawLine(NR.Left + 20, 120+95, NR.Right - 20, TrackP4, 4, 12);
-      SingDrawLine(NR.Left + 20, 245+95, NR.Right - 20, TrackP5, 5, 12);
-      SingDrawLine(NR.Left + 20, 370+95, NR.Right - 20, TrackP6, 6, 12);
+      SingDrawLine(NR.Left + 20, 120+95, NR.Right/2 - 20, TrackP1, 1, 12);
+      SingDrawLine(NR.Left + 20, 245+95, NR.Right/2 - 20, TrackP2, 2, 12);
+      SingDrawLine(NR.Left + 20, 370+95, NR.Right/2 - 20, TrackP3, 3, 12);
+      SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, 120+95, NR.Right - 20, TrackP4, 4, 12);
+      SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, 245+95, NR.Right - 20, TrackP5, 5, 12);
+      SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, 370+95, NR.Right - 20, TrackP6, 6, 12);
 
-      SingDrawPlayerLine(NR.Left + 20, 120+95, NR.Width - 40, TrackP4, 3, 12);
-      SingDrawPlayerLine(NR.Left + 20, 245+95, NR.Width - 40, TrackP5, 4, 12);
-      SingDrawPlayerLine(NR.Left + 20, 370+95, NR.Width - 40, TrackP6, 5, 12);
+      SingDrawPlayerLine(NR.Left + 20, 120+95, NR.Width/2 - 50, TrackP1, 0, 12);
+      SingDrawPlayerLine(NR.Left + 20, 245+95, NR.Width/2 - 50, TrackP2, 1, 12);
+      SingDrawPlayerLine(NR.Left + 20, 370+95, NR.Width/2 - 50, TrackP3, 2, 12);
+      SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, 120+95, NR.Width/2 - 30, TrackP4, 3, 12);
+      SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, 245+95, NR.Width/2 - 30, TrackP5, 4, 12);
+      SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, 370+95, NR.Width/2 - 30, TrackP6, 5, 12);
     end;
   end;
   glDisable(GL_BLEND);
