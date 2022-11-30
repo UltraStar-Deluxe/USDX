@@ -273,7 +273,7 @@ type
     we_do_not_use_bits_per_raw_sample: cint;
     we_do_not_use_lowres: cint;
     we_do_not_use_coded_frame: PAVFrame;
-    we_do_not_use_thread_count: cint;
+    thread_count: cint;
     we_do_not_use_thread_type: cint;
     we_do_not_use_active_thread_type: cint;
     we_do_not_use_thread_safe_callbacks: cint;
