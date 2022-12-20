@@ -2988,7 +2988,7 @@ begin
           2:    LineStart := MaxLineStart - 1;
           3:    LineStart := MaxLineStart - 2;
           else
-            if ((MaxLineStart - MinLineStart) > 4) then
+            if ((MaxLineStart - MinLineStart) >= 4) then
               LineStart := MinLineStart + 2
             else
               LineStart := MaxLineStart;
