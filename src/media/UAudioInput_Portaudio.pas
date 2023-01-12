@@ -375,6 +375,7 @@ begin
     // retrieve device-name
     deviceName := ConvertPaStringToUTF8(paDeviceInfo^.name);
     paDevice.Name := UnifyDeviceName(deviceName, deviceIndex);
+    Log.LogStatus('Attempting to configure InputDevice "' + paDevice.Name + '"', 'Portaudio.EnumDevices');
     paDevice.PaDeviceIndex := paDeviceIndex;
 
     sampleRate := paDeviceInfo^.defaultSampleRate;
