@@ -398,6 +398,7 @@ begin
       Descr := DecodeStringUTF8(DeviceInfo.name, encAuto);
 
       BassDevice.Name := UnifyDeviceName(Descr, DeviceIndex);
+      Log.LogStatus('Attempting to configure InputDevice "' + BassDevice.Name + '"', 'Bass.EnumDevices');
 
       // zero info-struct as some fields might not be set (e.g. freq is just set on Vista and MacOSX)
       FillChar(RecordInfo, SizeOf(RecordInfo), 0);
@@ -430,6 +431,11 @@ begin
 
       // init list for capture buffers per channel
       SetLength(BassDevice.CaptureChannel, BassDevice.AudioFormat.Channels);
+
+      Log.LogStatus('InputDevice "'+BassDevice.Name+'"@' +
+      IntToStr(BassDevice.AudioFormat.Channels)+'x'+
+      FloatToStr(BassDevice.AudioFormat.SampleRate)+'Hz' ,
+                     'Bass.EnumDevices');
 
       BassDevice.MicSource := -1;
       BassDevice.SourceRestore := -1;
