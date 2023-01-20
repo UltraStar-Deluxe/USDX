@@ -52,10 +52,6 @@ uses
   UThemes,
   UTime,
   UUnicodeStringHelper,
-  {$IFDEF MSWINDOWS}
-  LazUTF8Classes,
-  LazUTF8,
-  {$ENDIF}
   sdl2,
   SysUtils;
 

@@ -45,10 +45,6 @@ interface
 {$DEFINE ENABLE_FT_FACE_CACHE}
 
 uses
-  {$IF Defined(MSWINDOWS)}
-  LazUTF8,
-  LazUTF8Classes,
-  {$IFEND}
   FreeType,
   dglOpenGL,
   sdl2,
@@ -1513,37 +1509,20 @@ end;
 
  constructor TFTFontFace.Create(const Filename: IPath; Size: integer);
  var
-   {$IF Defined(MSWINDOWS)}
-   SourceFile: TFileStreamUTF8;
-   {$IFEND}
    lengthvar: Integer;
    b1: Integer;
    arraylength: Int64;
  begin
    inherited Create();
-   {$IF Defined(MSWINDOWS)}
-   SourceFile := nil;
-   {$IFEND}
    b1:=3;
 
    fFilename := Filename;
    fSize := Size;
    try
-     {$IF Defined(MSWINDOWS)}
-     SourceFile := TFileStreamUTF8.Create(Filename.ToUTF8(true), fmOpenRead);
-     arraylength:=SourceFile.Size;
-     SetLength(byarr1, arraylength+1);
-     SourceFile.Read(byarr1[0], arraylength);
-     b1 := FT_New_Memory_Face(TFreeType.GetLibrary(),@byarr1[0],arraylength,0,fFace);
-     {$ELSE}
      b1 := FT_New_Face(TFreeType.GetLibrary(), PChar(Filename.ToNative), 0, fFace);
-     {$IFEND}
    except
      raise EFontError.Create('FT_New_Face: Error - Could not load font file to memory on Windows '''  + Filename.ToNative + '''');
    end;
-   {$IF Defined(MSWINDOWS)}
-   SourceFile.Destroy;
-   {$IFEND}
    // load font information
    if (b1 <> 0) then
      raise EFontError.Create('FT_New_Face: Could not load font '''  + Filename.ToNative + '''');

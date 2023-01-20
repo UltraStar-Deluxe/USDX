@@ -44,7 +44,6 @@ uses
   Classes,
   {$IFDEF MSWINDOWS}
     Windows,
-    LazUTF8Classes,
   {$ELSE}
     {$IFNDEF DARWIN}
     syscall,
