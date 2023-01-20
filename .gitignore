@@ -39,6 +39,7 @@ ppaslink.sh
 /src/**/*.identcache
 /src/config-darwin.inc
 /src/config-linux.inc
+/src/config-win32.inc
 /src/paths.inc
 /src/ultrastardx-*.lps
 /src/ultrastardx.res
