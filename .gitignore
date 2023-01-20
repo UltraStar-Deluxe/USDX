@@ -27,6 +27,9 @@ aclocal.m4
 link.res
 ppaslink.sh
 /UltraStarDeluxe.app/*
+/dists/autogen/config.guess
+/dists/autogen/config.sub
+/dists/autogen/install-sh
 
 # source intermediates
 #/src/**/*.cfg
