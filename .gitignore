@@ -19,6 +19,7 @@ Thumbs.db
 
 # intermediates
 /configure
+/configure~
 /build/
 Makefile
 config.log
@@ -30,6 +31,9 @@ aclocal.m4
 link.res
 ppaslink.sh
 /UltraStarDeluxe.app/*
+/dists/autogen/config.guess
+/dists/autogen/config.sub
+/dists/autogen/install-sh
 
 # source intermediates
 #/src/**/*.cfg
@@ -38,6 +42,7 @@ ppaslink.sh
 /src/**/*.identcache
 /src/config-darwin.inc
 /src/config-linux.inc
+/src/config-win32.inc
 /src/paths.inc
 /src/ultrastardx-*.lps
 /src/ultrastardx.res
