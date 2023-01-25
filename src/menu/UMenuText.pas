@@ -99,11 +99,7 @@ uses
   UGraphic,
   UDisplay,
   UUnicodeStringHelper,
-  {$IFDEF MSWINDOWS}
-    LazUTF8,
-  {$ELSE}
-    UUnicodeUtils,
-  {$ENDIF}
+  UUnicodeUtils,
   StrUtils;
 
 procedure TText.SetSelect(Value: boolean);
@@ -282,11 +278,7 @@ end;
 
 procedure TText.DeleteLastLetter;
 begin
-  {$IFDEF MSWINDOWS}
-  SetText(UTF8Copy(TextString, 1, UTF8Length(TextString)-1));
-  {$ELSE}
   SetText(UTF8Copy(TextString, 1, LengthUTF8(TextString)-1));
-  {$ENDIF}
 end;
 
 procedure TText.Draw;
