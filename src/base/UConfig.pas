@@ -208,19 +208,11 @@ const
   {$ENDIF}
 
 function USDXVersionStr(): string;
-function USDXShortVersionStr(): string;
 
 implementation
 
 uses
   StrUtils, Math;
-
-function USDXShortVersionStr(): string;
-begin
-  Result :=
-    USDX_STRING +
-    IfThen(USDX_VERSION_STATE <> '', ' '+USDX_VERSION_STATE);
-end;
 
 function USDXVersionStr(): string;
 begin
