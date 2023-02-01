@@ -235,7 +235,7 @@ For linking and running the game, the following libraries are also required:
 - ffmpeg 2.8 or older
 - sqlite
 - [bass](http://www.un4seen.com/bass.html)
-- some fonts like ttf-dejavu and ttf-freefont
+- some fonts like DejaVu
 - portaudio
 - lua 5.1 or 5.2 or 5.3
 - opencv if you want webcam support
@@ -248,32 +248,41 @@ For linking and running the game, the following libraries are also required:
   * If you are running Windows, open the ultrastardx-win.lpi project-file (Preferably use the win32 verison of lazarus, as the included libraries are 32 bit).
   * On Unix-like systems use the ultrastardx-unix.lpi file.
 4. Now you can compile USDX by choosing the menu entry Run → Build or pressing Ctrl+F9.
-8. If you want to compile and/or start USDX directly choose Run → Run or press F9.
+5. If you want to compile and/or start USDX directly choose Run → Run or press F9.
 
-#### Compiling on Linux/BSD using make
-1. make sure all required libraries are installed 
-  * for current debian / ubuntu: 
-    `sudo apt-get update && sudo apt-get install git automake make gcc fpc libsdl2-image-dev libavformat-dev libswscale-dev libsqlite3-dev libfreetype6-dev portaudio19-dev libportmidi-dev liblua5.3-dev libopencv-videoio-dev`
-  * if you want to build --with-libprojectM, you also need
-    `sudo apt-get install g++ libprojectm-dev`
-  * if you want to build --with-opencv-cxx-api, you also need
-    `sudo apt-get install g++ libopencv-dev`
-  * for Fedora with RPM Fusion:
-    `sudo dnf install git automake make gcc fpc SDL2_image-devel ffmpeg-devel sqlite-devel freetype-devel portaudio-devel portmidi-devel lua-devel opencv-devel`
-    and to be able to use --with-libprojectM:
-    `sudo dnf install gcc-c++ libprojectM-devel`
-  * for arch linux there is an aur package called [ultrastardx-git](https://aur.archlinux.org/packages/ultrastardx-git)
-2. `git clone https://github.com/UltraStar-Deluxe/USDX`
-2. `cd USDX`
-4. `./autogen.sh`
-5. `./configure` (or use _autoconf_)
-6. `make`
-7. Play the game, 
-   * install the game and start it
-     - `sudo make install`
-     - `ultrastardx`
-   * or start it directly  
-     `./game/ultrastardx`
+#### Compiling using make
+##### Install prequisites
+###### Linux/BSD
+Required libraries:
+- Debian/Ubuntu: `git automake make gcc fpc libsdl2-image-dev libavformat-dev libswscale-dev libsqlite3-dev libfreetype6-dev portaudio19-dev libportmidi-dev liblua5.3-dev libopencv-videoio-dev fonts-dejavu`
+- Fedora: `git automake make gcc fpc SDL2_image-devel ffmpeg-devel sqlite-devel freetype-devel portaudio-devel portmidi-devel lua-devel opencv-devel`
+- Archlinux: see the dependencies in the [ultrastardx-git](https://aur.archlinux.org/packages/ultrastardx-git) AUR package
+
+Optional libraries:
+- ProjectM visualization: `g++ libprojectm-dev` (Debian/Ubuntu) or `gcc-c++ libprojectM-devel` (Fedora)
+- Webcam: `g++ libopencv-dev` (Debian/Ubuntu)
+
+###### MacOS (High Sierra and above)
+- Install Homebrew. Follow instructions from [brew.sh](http://brew.sh)
+- `brew install fpc` or get it from [freepascal.org](http://www.freepascal.org/down/i386/macosx.var)
+- `xcode-select --install`
+- `brew install sdl2 sdl2_image automake portaudio binutils sqlite freetype lua libtiff pkg-config ffmpeg`
+
+###### Windows using MSYS2
+- Install [MSYS2](https://www.msys2.org)
+- Install [FPC](https://www.freepascal.org). You need at least a custom installation with the Free Pascal Utils (for `fpcres`) and the Units.
+- `pacman -S autoconf-wrapper automake-wrapper gcc git make mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_gfx mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-SDL2_net mingw-w64-x86_64-SDL2_ttf mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-lua51 pkgconf`
+- Add some information to `.bash_profile`:
+  * Path to FPC, something like `PATH="${PATH}:/c/FPC/3.2.2/bin/i386-win32"`
+  * Path to mingw64 libraries, `PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/mingw64/lib/pkgconfig"`
+
+##### Compile and run
+- `git clone https://github.com/UltraStar-Deluxe/USDX`
+- `cd USDX`
+- `./autogen.sh`
+- `./configure`
+- `make` (on MacOS: `make macosx-standalone-app`)
+- `./game/ultrastardx[.exe]` (on MacOS: `open UltraStarDeluxe.app`)
 
 #### Compiling on Linux using flatpak-builder
 - The Flatpak manifest uses the org.freedesktop.Platform 20.08 runtime, which is available for the major architectures on the [Flathub](https://flathub.org/repo/flathub.flatpakrepo) remote. If it isn't available for your architecture, you can lower the version in the manifest. Below 19.08 you either need to enable the dav1d module or disable AV1 support in the ffmpeg module by removing the --enable-libdav1d configure option. For some architectures the runtime is not hosted by Flathub but can be downloaded from the [Freedesktop SDK](https://releases.freedesktop-sdk.io/freedesktop-sdk.flatpakrepo) remote.
@@ -284,25 +293,5 @@ For linking and running the game, the following libraries are also required:
   * `flatpak-builder --user --install-deps-from=flathub --install build $USDX_SOURCE_TREE/dists/flatpak/eu.usdx.UltraStarDeluxe.yaml`
 - The `.flatpak-builder` and `build` directories can be removed afterwards.
 - Songs must be placed in `~/.var/app/eu.usdx.UltraStarDeluxe/.ultrastardx/songs`
-
-#### Compiling on macOS (High Sierra and above)
-- USDX is built using _Homebrew_ and official _FreePascal build_ (using its compiler _FPC_)
-- To install Homebrew, follow instructions from [brew.sh](http://brew.sh)
-- You can get the FPC build from [freepascal.org](http://www.freepascal.org/down/i386/macosx.var) or
-  * `brew install fpc`
-- Make sure the XCode command line tools are installed.
-  * `xcode-select --install`
-- Needed brew libraries can be installed using (ffmpeg up to 4.2.1 is supported):
-  * `brew install sdl2 sdl2_image automake portaudio binutils sqlite freetype lua libtiff pkg-config ffmpeg`
-- Clone repo
-  * `git clone https://github.com/UltraStar-Deluxe/USDX`
-- Generate `configure` file and more
-  * `./autogen.sh`
-- Make sure that you have your build setup right
-  * `./configure`
-- Now build the UltraStar application
-  * `make macosx-standalone-app`
-- Run by clicking UltraStarDeluxe in your build folder or
-  * `open UltraStarDeluxe.app`
 
 Feel free to fork this project, modify it to your hearts content and maybe also do pull requests to this repository for additional features, improvements or clean-ups.
