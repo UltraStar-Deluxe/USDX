@@ -294,4 +294,17 @@ Optional libraries:
 - The `.flatpak-builder` and `build` directories can be removed afterwards.
 - Songs must be placed in `~/.var/app/eu.usdx.UltraStarDeluxe/.ultrastardx/songs`
 
+### 6. Making a release
+- Find and replace the contents of `VERSION` everywhere throughout the code
+  This should be three places:
+  * VERSION
+  * UConfig.pas (also recompile the game after this)
+  * variables.nsh (update both blocks when making the release and swap the comments, then after the release you only have to swap the comments back)
+- Create Windows portable version: zip the contents of the `game` directory
+- Create Windows installer:
+  * Install NSIS (also install the Graphics and Language components during setup)
+  * Copy the DLLs from `game` to `installer/dependencies/dll`
+  * `C:\...\makensis "installer/UltraStar Deluxe.nsi"` (this will take a while)
+  * The .exe will be placed in `installer/dist`
+
 Feel free to fork this project, modify it to your hearts content and maybe also do pull requests to this repository for additional features, improvements or clean-ups.
