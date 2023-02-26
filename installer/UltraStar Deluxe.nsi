@@ -10,7 +10,7 @@
 !include UAC.nsh
 
 ; Build updater first
-!system '"${NSISDIR}\makensis.exe" "Update.nsi"' = 0
+!makensis "Update.nsi"
 
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Variables
