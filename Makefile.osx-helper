@@ -14,6 +14,10 @@ D := $$(firstword $$(foreach rpath,$$(RUNPATH),$$(wildcard $$(patsubst @rpath%,$
 ifeq ($$(D),)
 $$(error dylib $(1) not found in rpath $$(RUNPATH))
 endif
+else
+ifeq ($$(patsubst @loader_path/%,,$$(D)),)
+D := $$(patsubst @loader_path/%,$(2)%,$$(D))
+endif
 endif
 $$(eval RUNPATH_$$(D) := $$$$(RUNPATH))
 NEXTNEWFILES := $(NEXTNEWFILES) $$(filter-out $(FILES) $(NEXTNEWFILES),$$(D))
@@ -21,7 +25,7 @@ endef
 
 define runpathlist
 RUNPATH := $$(RUNPATH_$(1)) $$(filter-out $$(RUNPATH_$(1)),$$(shell $$(OTOOL) -l $(1) | grep -A 2 '\<cmd LC_RPATH\>' | sed -n 's/.* path \(.*\) .offset .*/\1/p'))
-$$(foreach dylib,$$(call getdylibs,$(1)),$$(eval $$(call processload,$$(dylib))))
+$$(foreach dylib,$$(call getdylibs,$(1)),$$(eval $$(call processload,$$(dylib),$$(dir $(1)))))
 endef
 
 define recurse
