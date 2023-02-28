@@ -8,7 +8,7 @@ image:
 
 configuration:
   - x86-64
-  # (commented ot until someone fixes tis) - x86-32
+  - x86-32
 
 cache:
   - dists/linux/prefix -> dists/linux/dl.sh, dists/linux/tasks.sh
@@ -17,6 +17,9 @@ matrix:
   exclude:
     - image: Visual Studio 2015
       configuration: x86-64
+    # originally disabled on 2022-11-26 by basisbit, this just excludes it in a different way
+    - image: Ubuntu2004
+      configuration: x86-32
 
 for:
   # Windows
