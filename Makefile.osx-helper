@@ -1,4 +1,5 @@
-getdylibs = $(shell $(OTOOL) -L $(1) | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib | grep -v executable_path)
+dontcopy = /System/Library/% /usr/lib/% /usr/X11/lib/% /usr/X11R6/lib/% @executable_path/%
+getdylibs = $(filter-out $(dontcopy),$(shell $(OTOOL) -L $(1) | grep version | cut -f 1 -d ' '))
 dest = $(macosx_bundle_path)/MacOS/$(notdir $(1))
 
 # Let's create a list of all libraries used at runtime, starting with the
