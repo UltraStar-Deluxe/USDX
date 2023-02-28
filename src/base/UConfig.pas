@@ -127,11 +127,8 @@ const
   (*
    * Current version of UltraStar Deluxe
    *)
-   USDX_VERSION_MAJOR   = 2020;
-   USDX_VERSION_MINOR   = 04;
-   USDX_VERSION_RELEASE = 1;
-   USDX_VERSION_STATE   = 'dev';
-   USDX_STRING = 'UltraStar Deluxe - www.usdx.eu';
+   // TODO: inline the contents of ../../VERSION instead
+   USDX_VERSION = '2020.4.0+dev';
 
   (*
    * FPC version numbers are already defined as built-in macros:
@@ -208,29 +205,12 @@ const
   {$ENDIF}
 
 function USDXVersionStr(): string;
-function USDXShortVersionStr(): string;
 
 implementation
 
-uses
-  StrUtils, Math;
-
-function USDXShortVersionStr(): string;
-begin
-  Result :=
-    USDX_STRING +
-    IfThen(USDX_VERSION_STATE <> '', ' '+USDX_VERSION_STATE);
-end;
-
 function USDXVersionStr(): string;
 begin
-  Result :=
-    USDX_STRING + ' V ' +
-    IntToStr(USDX_VERSION_MAJOR) + '.' +
-    IntToStr(USDX_VERSION_MINOR) + '.' +
-    IntToStr(USDX_VERSION_RELEASE) +
-    IfThen(USDX_VERSION_STATE <> '', ' '+USDX_VERSION_STATE) +
-    ' Build';
+  Result := 'UltraStar Deluxe - www.usdx.eu - v' + USDX_VERSION;
 end;
 
 end.

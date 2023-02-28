@@ -39,10 +39,15 @@ ${StrRep}
 ; Export Settings
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
-SetCompress Auto
-SetCompressor /SOLID lzma
-SetCompressorDictSize 32
-SetDatablockOptimize On
+; Don't compress in devmode
+!if ${DevBuild} == true
+	SetCompress off
+!else
+	SetCompress Auto
+	SetCompressor /SOLID lzma
+	SetCompressorDictSize 32
+	SetDatablockOptimize On
+!endif
 
 Var /GLOBAL CHECKBOX_CHECKONLINE
 Var /GLOBAL label_update_information

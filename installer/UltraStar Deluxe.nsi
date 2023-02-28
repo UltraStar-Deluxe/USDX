@@ -10,7 +10,7 @@
 !include UAC.nsh
 
 ; Build updater first
-!system '"${NSISDIR}\makensis.exe" "Update.nsi"' = 0
+!makensis "Update.nsi"
 
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 ; Variables
@@ -36,10 +36,15 @@
 ; Export Settings
 ; ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~ ~+~
 
-SetCompress Auto
-SetCompressor lzma
-SetCompressorDictSize 32
-SetDatablockOptimize On
+; Don't compress in devmode
+!if ${DevBuild} == true
+	SetCompress off
+!else
+	SetCompress Auto
+	SetCompressor lzma
+	SetCompressorDictSize 32
+	SetDatablockOptimize On
+!endif
 
 CRCCheck on
 
