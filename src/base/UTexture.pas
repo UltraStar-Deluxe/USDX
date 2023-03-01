@@ -144,6 +144,14 @@ uses
   UThemes,
   UImage;
 
+function RoundPOT(value: integer): integer;
+begin
+  if value < 1 then
+    Result := 0
+  else
+    Result := 1 shl Ceil(Log2(value));
+end;
+
 procedure AdjustPixelFormat(var TexSurface: PSDL_Surface; Typ: TTextureType);
 var
   TempSurface: PSDL_Surface;
@@ -291,8 +299,8 @@ begin
   {if (SupportsNPOT = false) then
   begin}
   // make texture dimensions be powers of 2
-  newWidth  := Round(Power(2, Ceil(Log2(newWidth))));
-  newHeight := Round(Power(2, Ceil(Log2(newHeight))));
+  newWidth  := RoundPOT(newWidth);
+  newHeight := RoundPOT(newHeight);
   if (newHeight <> oldHeight) or (newWidth <> oldWidth) then
     FitImage(TexSurface, newWidth, newHeight);
   {end;}
@@ -415,6 +423,8 @@ function TTextureUnit.CreateTexture(Data: PChar; const Name: IPath; Width, Heigh
 var
   //Error:     integer;
   ActTex:    GLuint;
+  TexWidth:  integer;
+  TexHeight: integer;
 begin
   glGenTextures(1, @ActTex); // ActText = new texture number
   glBindTexture(GL_TEXTURE_2D, ActTex);
@@ -422,7 +432,21 @@ begin
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, 3, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, Data);
+  if SupportsNPOT or (((Width and (Width - 1)) = 0) and ((Height and (Height - 1)) = 0)) then
+  begin
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, Data);
+    Result.TexW := 1;
+    Result.TexH := 1;
+  end
+  else
+  begin
+    TexWidth := RoundPOT(Width);
+    TexHeight := RoundPOT(Height);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, TexWidth, TexHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, nil);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, Width, Height, GL_RGB, GL_UNSIGNED_BYTE, Data);
+    Result.TexW := Width / TexWidth;
+    Result.TexH := Height / TexHeight;
+  end;
 
 {
   if Mipmapping then
@@ -442,8 +466,6 @@ begin
   Result.ScaleH := 1;
   Result.Rot := 0;
   Result.TexNum := ActTex;
-  Result.TexW := 1;
-  Result.TexH := 1;
 
   Result.Int := 1;
   Result.ColR := 1;
