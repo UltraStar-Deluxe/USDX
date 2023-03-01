@@ -410,7 +410,7 @@ opencv_imgproc_standalone=no
 opencv_videoio_standalone=no
 if [[ "$with_opencv_cxx_api" = yes ]] ; then
 	if [[ "$cxx_works" = yes ]] ; then
-		AX_CXX_COMPILE_STDCXX([11])
+		AX_CXX_COMPILE_STDCXX([11], [], [optional])
 		CMAKE_FIND_PACKAGE([OpenCV], [CXX], [GNU], , [OpenCV_HAVE=yes], [OpenCV_HAVE=no])
 		if [[ "$OpenCV_HAVE" != yes ]] ; then
 			PKG_HAVE([OpenCV], [opencv4], no)
