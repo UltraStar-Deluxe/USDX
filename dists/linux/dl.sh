@@ -77,6 +77,10 @@ if ! true | zsyncmake -V >/dev/null ; then
 	deps+=('zsync,http://zsync.moria.org.uk/download/zsync-0.6.2.tar.bz2,5e69f084c8adaad6a677b68f7388ae0f9507617a')
 fi
 
+if ! desktop-file-validate -h >/dev/null ; then
+	deps+=('desktop-file-utils,https://www.freedesktop.org/software/desktop-file-utils/releases/desktop-file-utils-0.26.tar.xz,9fd94cb7de302163015fcbc0e157c61323b1205d')
+fi
+
 for i in "${deps[@]}"; do
 	IFS=',' read -a dep <<< "$i"
 	name="${dep[0]}"

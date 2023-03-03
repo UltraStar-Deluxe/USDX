@@ -114,6 +114,14 @@ task_zsync() {
 	hide make distclean
 }
 
+task_desktop_file_utils() {
+	start_build desktop-file-utils || return 0
+	CC="$CC" CXX="$CXX" meson setup --prefix "$PREFIX" --libdir=lib build
+	ninja -C build $makearg
+	ninja -C build install
+	rm -Rf build
+}
+
 task_AppImageKit() {
 	start_build AppImageKit || return 0
 	! pkg-config --exists libarchive || export EXTRA_CMAKE_FLAGS="-DUSE_SYSTEM_LIBARCHIVE=ON"
@@ -509,9 +517,17 @@ if [ "$1" == "all_deps" ]; then
 
 	task_openssl
 	echo
+	task_python
+	echo
 	task_cmake
 	echo
+	task_ninja
+	echo
+	task_meson
+	echo
 	task_zsync
+	echo
+	task_desktop_file_utils
 	echo
 	task_AppImageKit
 	echo
@@ -540,12 +556,6 @@ if [ "$1" == "all_deps" ]; then
 	task_lua
 	echo
 
-	task_python
-	echo
-	task_ninja
-	echo
-	task_meson
-	echo
 	task_dav1d
 	echo
 	task_ffmpeg
