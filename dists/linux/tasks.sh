@@ -125,11 +125,21 @@ task_desktop_file_utils() {
 
 task_AppImageKit() {
 	start_build AppImageKit || return 0
-	! pkg-config --exists libarchive || export EXTRA_CMAKE_FLAGS="-DUSE_SYSTEM_LIBARCHIVE=ON"
-	./build.sh
+	! pkg-config --exists libarchive || EXTRA_CMAKE_FLAGS="-DUSE_SYSTEM_LIBARCHIVE=ON"
+	rm -rf build
+	mkdir -p build
+	cd build
+	cmake \
+		-DCMAKE_INSTALL_PREFIX="$PREFIX" \
+		-DCMAKE_BUILD_TYPE="Release" \
+		-DBUILD_TESTING=OFF \
+		-DAPPIMAGEKIT_PACKAGE_DEBS=OFF \
+		$EXTRA_CMAKE_FLAGS \
+		..
+	make $makearg
+	make install
+	cd ..
 	unset EXTRA_CMAKE_FLAGS
-	cp -a build/out/appimagetool.AppDir $PREFIX/bin/
-	ln -s appimagetool.AppDir/AppRun $PREFIX/bin/appimagetool
 	rm -fR build
 }
 
@@ -144,18 +154,18 @@ task_libpng() {
 
 task_wayland() {
 	start_build wayland Wayland || return 0
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --disable-documentation
-	hide make $makearg
-	hide make install
-	hide make distclean
+	PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" meson setup --prefix "$PREFIX" --libdir=lib -Ddocumentation=false -Dtests=false -Ddtd_validation=false build
+	ninja -C build $makearg
+	ninja -C build install
+	rm -Rf build
 }
 
 task_wayland_protocols() {
 	start_build wayland-protocols || return 0
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
-	make $makearg
-	make install
-	hide make distclean
+	PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" meson setup --prefix "$PREFIX" --libdir=lib -Dtests=false build
+	ninja -C build $makearg
+	ninja -C build install
+	rm -Rf build
 }
 
 task_sdl2() {
@@ -164,8 +174,7 @@ task_sdl2() {
 	sed -i 's/GBM_BO_USE_CURSOR\>/&_64X64/g' src/video/kmsdrm/SDL_kmsdrmmouse.c
 	mkdir -p build
 	cd build
-	../configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
-		--enable-sdl-dlopen \
+	../configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" CFLAGS="$CFLAGS -std=gnu99" \
 		--disable-arts --disable-esd --disable-nas \
 		--disable-sndio --enable-pulseaudio-shared --enable-pulseaudio \
 		--enable-jack --enable-jack-shared \
@@ -209,7 +218,7 @@ task_sdl2_image() {
 	start_build SDL2_image || return 0
 	bash ./autogen.sh
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
-		--disable-static --disable-jpg-shared --disable-png-shared --disable-webp-shared --disable-webp --disable-tif-shared --disable-tif
+		--disable-static --disable-jpg-shared --disable-png-shared --disable-webp-shared --disable-webp --disable-tif-shared --disable-tif --disable-stb-image
 	make $makearg
 	make install
 	hide make distclean
@@ -356,7 +365,6 @@ task_ffmpeg() {
 		--disable-filters \
 		--disable-protocols \
 		--disable-lzma \
-		--disable-lzo \
 		--disable-bzlib \
 		--disable-vaapi \
 		--disable-vdpau
