@@ -443,7 +443,9 @@ begin
   {$IFEND}
 
   // set debug options
+  {$IF LIBAVCODEC_VERSION < 58000000}
   fCodecCtx^.debug_mv := 0;
+  {$IFEND}
   fCodecCtx^.debug := 0;
 
   {$IF FFMPEG_VERSION_INT >= 1001000}
