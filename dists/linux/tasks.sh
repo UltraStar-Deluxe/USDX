@@ -168,6 +168,52 @@ task_wayland_protocols() {
 	rm -Rf build
 }
 
+task_pulseaudio() {
+	start_build pulseaudio || return 0
+	mkdir -p $PREFIX/include/pulse $PREFIX/lib/pkgconfig
+	cp src/pulse/*.h $PREFIX/include/pulse
+	PA_API_VERSION=$(sed -n 's/^[[:space:]]*pa_api_version[[:space:]]*=[[:space:]]*//p' meson.build)
+	cat > $PREFIX/include/pulse/version.h <<EOF
+#ifndef fooversionhfoo
+#define fooversionhfoo
+#define PA_API_VERSION $PA_API_VERSION
+#endif
+EOF
+	true | $CC -shared -o $PREFIX/lib/libpulse-simple.so.0 -Wl,-soname,libpulse-simple.so.0 -x c -
+	ln -s libpulse-simple.so.0 $PREFIX/lib/libpulse-simple.so
+	PA_VERSION=$(cat .tarball-version)
+	sed -e "s:@prefix@:$PREFIX:;s:@exec_prefix@:$PREFIX:;s:@libdir@:$PREFIX/lib:;s:@includedir@:$PREFIX/include:;s:@PACKAGE_VERSION@:$PA_VERSION:;s:@PTHREAD_LIBS@:-pthread:;/^Libs.private/d" < libpulse-simple.pc.in > $PREFIX/lib/pkgconfig/libpulse-simple.pc
+}
+
+task_pipewire() {
+	start_build pipewire || return 0
+	mkdir -p $PREFIX/include/pipewire/extensions $PREFIX/lib/pkgconfig
+	cp src/pipewire/*.h $PREFIX/include/pipewire
+	cp src/pipewire/extensions/*.h $PREFIX/include/pipewire/extensions
+	cp -r spa/include/spa $PREFIX/include
+	cp -r pipewire-jack/jack $PREFIX/include
+	touch $PREFIX/include/pipewire/version.h
+	true | $CC -shared -o $PREFIX/lib/libpipewire-0.3.so.0 -Wl,-soname,libpipewire-0.3.so.0 -x c -
+	ln -s libpipewire-0.3.so.0 $PREFIX/lib/libpipewire-0.3.so
+	true | $CC -shared -o $PREFIX/lib/libjack.so.0 -Wl,-soname,libjack.so.0 -x c -
+	ln -s libjack.so.0 $PREFIX/lib/libjack.so
+	PW_VERSION=$(sed -n "s/.*version[[:space:]]*:[[:space:]]*'\\([^']*\\)'.*/\1/p" meson.build | head -n1)
+	cat > $PREFIX/lib/pkgconfig/libpipewire-0.3.pc <<EOF
+Name: libpipewire
+Description: stuff
+Version: $PW_VERSION
+Libs: -L$PREFIX/lib -lpipewire-0.3
+Cflags: -I$PREFIX/include -D_REENTRANT
+EOF
+	cat > $PREFIX/lib/pkgconfig/jack.pc <<EOF
+Name: jack
+Description: stuff
+Version: 1.9.17
+Libs: -L$PREFIX/lib -ljack
+Cflags: -I$PREFIX/include -D_REENTRANT
+EOF
+}
+
 task_sdl2() {
 	start_build SDL2 || return 0
 	bash ./autogen.sh
@@ -177,6 +223,7 @@ task_sdl2() {
 	../configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" CFLAGS="$CFLAGS -std=gnu99" \
 		--disable-arts --disable-esd --disable-nas \
 		--disable-sndio --enable-pulseaudio-shared --enable-pulseaudio \
+		--enable-pipewire --enable-pipewire-shared \
 		--enable-jack --enable-jack-shared \
 		--enable-video-opengl --disable-video-opengles1 \
 		--enable-video-wayland --enable-wayland-shared \
@@ -551,6 +598,10 @@ if [ "$1" == "all_deps" ]; then
 	task_wayland
 	echo
 	task_wayland_protocols
+	echo
+	task_pulseaudio
+	echo
+	task_pipewire
 	echo
 	task_sdl2
 	echo
