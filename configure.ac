@@ -298,7 +298,9 @@ AC_SUBST_DEFINE(HAVE_SWRESAMPLE, $libswresample_HAVE)
 # map avutil library version to ffmpeg version
 AC_MSG_CHECKING([version of ffmpeg])
 # the order is ([avutil], [avcodec], [avformat], [swscale], [swresample])
-if   FFMPEG_LIBS_COMPATIBLE([57017100], [59018100], [59016100], [6004100], [4003100]); then
+if   FFMPEG_LIBS_COMPATIBLE([58002100], [60003100], [60003100], [7001100], [4010100]); then
+    FFMPEG_VERSION="6.0"
+elif FFMPEG_LIBS_COMPATIBLE([57017100], [59018100], [59016100], [6004100], [4003100]); then
     FFMPEG_VERSION="5.0"
 elif FFMPEG_LIBS_COMPATIBLE([56014100], [58018100], [58012100], [5001100], [3001100]); then
     FFMPEG_VERSION="4.0"
