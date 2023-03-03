@@ -17,7 +17,7 @@ export CMAKE_PREFIX_PATH="$PREFIX:$CMAKE_PREFIX_PATH"
 
 export LDFLAGS="-Wl,-z,now -Wl,-z,relro -L$PREFIX/lib"
 export CPPFLAGS="-I$PREFIX/include"
-export CFLAGS="-O2 -fPIE $CPPFLAGS"
+export CFLAGS="-O2 $CPPFLAGS"
 export CXXFLAGS="$CFLAGS"
 
 export CC="gcc"
