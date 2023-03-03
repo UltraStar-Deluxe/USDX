@@ -46,6 +46,7 @@ start_build() {
 	tput setaf 2 && tput bold
 	echo "==> Building $*"
 	tput sgr0
+	hash -r
 }
 
 activate_python() {
