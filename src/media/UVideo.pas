@@ -686,7 +686,9 @@ begin
     {$ENDIF}
 
     // set debug options
+    {$IF LIBAVCODEC_VERSION < 58000000}
     fCodecContext^.debug_mv := 0;
+    {$ENDIF}
     fCodecContext^.debug := 0;
 
     // detect bug-workarounds automatically

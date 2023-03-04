@@ -222,6 +222,14 @@ var
 
 function ParseThreadMain(Data: Pointer): integer; cdecl; forward;
 
+function CodecCanFlush(ctx: PAVCodecContext): boolean;
+begin
+{$IF LIBAVCODEC_VERSION < 60000000}
+	Result := @ctx.codec.flush <> nil;
+{$ELSE}
+	Result := true;
+{$ENDIF}
+end;
 
 { TFFmpegDecodeStream }
 
@@ -435,7 +443,9 @@ begin
   {$IFEND}
 
   // set debug options
+  {$IF LIBAVCODEC_VERSION < 58000000}
   fCodecCtx^.debug_mv := 0;
+  {$IFEND}
   fCodecCtx^.debug := 0;
 
   {$IF FFMPEG_VERSION_INT >= 1001000}
@@ -1056,7 +1066,7 @@ var
 {$ENDIF}
 begin
   // if no flush operation is specified, avcodec_flush_buffers will not do anything.
-  if (@fCodecCtx.codec.flush <> nil) then
+  if CodecCanFlush(fCodecCtx) then
   begin
     // flush buffers used by avcodec_decode_audio, etc.
     avcodec_flush_buffers(fCodecCtx);
