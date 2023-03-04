@@ -38,6 +38,7 @@ uses
   SDL2;
 
 function ConvertAudioFormatToSDL(Format: TAudioSampleFormat; out SDLFormat: UInt16): boolean;
+function ConvertAudioFormatFromSDL(SDLFormat: UInt16; out Format: TAudioSampleFormat): boolean;
 
 implementation
 
@@ -50,8 +51,35 @@ begin
     asfS16LSB: SDLFormat := AUDIO_S16LSB;
     asfU16MSB: SDLFormat := AUDIO_U16MSB;
     asfS16MSB: SDLFormat := AUDIO_S16MSB;
-    asfU16:    SDLFormat := AUDIO_U16;
-    asfS16:    SDLFormat := AUDIO_S16;
+    asfU16:    SDLFormat := AUDIO_U16SYS;
+    asfS16:    SDLFormat := AUDIO_S16SYS;
+    asfS32:    SDLFormat := AUDIO_S32SYS;
+    asfFloat:  SDLFormat := AUDIO_F32SYS;
+    else begin
+      Result := false;
+      Exit;
+    end;
+  end;
+  Result := true;
+end;
+
+function ConvertAudioFormatFromSDL(SDLFormat: UInt16; out Format: TAudioSampleFormat): boolean;
+begin
+  case SDLFormat of
+    AUDIO_U8:     Format := asfU8;
+    AUDIO_S8:     Format := asfS8;
+    AUDIO_U16SYS: Format := asfU16;
+    AUDIO_S16SYS: Format := asfS16;
+{$IF AUDIO_U16SYS <> AUDIO_U16LSB}
+    AUDIO_U16LSB: Format := asfU16LSB;
+    AUDIO_S16LSB: Format := asfS16LSB;
+{$ENDIF}
+{$IF AUDIO_U16SYS <> AUDIO_U16MSB}
+    AUDIO_U16MSB: Format := asfU16MSB;
+    AUDIO_S16MSB: Format := asfS16MSB;
+{$ENDIF}
+    AUDIO_S32SYS: Format := asfS32;
+    AUDIO_F32SYS: Format := asfFloat;
     else begin
       Result := false;
       Exit;
