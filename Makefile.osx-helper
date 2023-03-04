@@ -1,4 +1,5 @@
-getdylibs = $(shell $(OTOOL) -L $(1) | grep version | cut -f 1 -d ' ' | grep -v \/System\/Library | grep -v \/usr\/lib | grep -v executable_path)
+dontcopy = /System/Library/% /usr/lib/% /usr/X11/lib/% /usr/X11R6/lib/% @executable_path/%
+getdylibs = $(filter-out $(dontcopy),$(shell $(OTOOL) -L $(1) | grep version | cut -f 1 -d ' '))
 dest = $(macosx_bundle_path)/MacOS/$(notdir $(1))
 
 # Let's create a list of all libraries used at runtime, starting with the
@@ -14,6 +15,10 @@ D := $$(firstword $$(foreach rpath,$$(RUNPATH),$$(wildcard $$(patsubst @rpath%,$
 ifeq ($$(D),)
 $$(error dylib $(1) not found in rpath $$(RUNPATH))
 endif
+else
+ifeq ($$(patsubst @loader_path/%,,$$(D)),)
+D := $$(patsubst @loader_path/%,$(2)%,$$(D))
+endif
 endif
 $$(eval RUNPATH_$$(D) := $$$$(RUNPATH))
 NEXTNEWFILES := $(NEXTNEWFILES) $$(filter-out $(FILES) $(NEXTNEWFILES),$$(D))
@@ -21,7 +26,7 @@ endef
 
 define runpathlist
 RUNPATH := $$(RUNPATH_$(1)) $$(filter-out $$(RUNPATH_$(1)),$$(shell $$(OTOOL) -l $(1) | grep -A 2 '\<cmd LC_RPATH\>' | sed -n 's/.* path \(.*\) .offset .*/\1/p'))
-$$(foreach dylib,$$(call getdylibs,$(1)),$$(eval $$(call processload,$$(dylib))))
+$$(foreach dylib,$$(call getdylibs,$(1)),$$(eval $$(call processload,$$(dylib),$$(dir $(1)))))
 endef
 
 define recurse
