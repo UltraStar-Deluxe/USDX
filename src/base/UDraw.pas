@@ -363,6 +363,9 @@ var
   Sound:       TCaptureBuffer;
   MaxX, MaxY:  real;
   Col: TRGB;
+const
+  // arbitrarily chosen, but this makes it draw only 4096/SampleIndexStep line segments
+  SampleIndexStep = 32;
 begin;
   Sound := AudioInputProcessor.Sound[NrSound];
 
@@ -382,13 +385,16 @@ begin;
   MaxX := W-1;
   MaxY := (H-1) / 2;
 
+  SampleIndex := 0;
+
   Sound.LockAnalysisBuffer();
 
   glBegin(GL_LINE_STRIP);
-    for SampleIndex := 0 to High(Sound.AnalysisBuffer) do
+    while SampleIndex < High(Sound.AnalysisBuffer) do
     begin
       glVertex2f(X + MaxX * SampleIndex/High(Sound.AnalysisBuffer),
                  Y + MaxY * (1 - Sound.AnalysisBuffer[SampleIndex]/-Low(Smallint)));
+      SampleIndex := SampleIndex + SampleIndexStep;
     end;
   glEnd;
 
