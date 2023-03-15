@@ -2297,7 +2297,7 @@ begin
       end;
     end;
 
-    fCurrentVideo.AspectCorrection := acoCrop;
+    fCurrentVideo.AspectCorrection := acoLetterBox;
     fCurrentVideo.SetScreen(ScreenAct);
     fCurrentVideo.Draw;
     //DrawBlackBars();
@@ -2555,7 +2555,7 @@ begin
   fVideoClip := nil;
   fCurrentVideo := nil;
 
-  AspectCorrection := acoCrop;
+  AspectCorrection := acoLetterBox;
 
   fTimebarMode := TTimebarMode(Ini.JukeboxTimebarMode);
 
