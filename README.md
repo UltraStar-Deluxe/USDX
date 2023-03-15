@@ -102,9 +102,13 @@ Optional libraries:
 - `git clone https://github.com/UltraStar-Deluxe/USDX`
 - `cd USDX`
 - `./autogen.sh`
-- `./configure`
+- `./configure` (see optional flags below)
 - `make` (on MacOS: `make macosx-standalone-app`)
 - `./game/ultrastardx[.exe]` (on MacOS: `open UltraStarDeluxe.app`)
+
+###### configure flags
+* `--without-portaudio`: Use SDL audio input (default = Portaudio)
+* `--with-opencv-cxx-api`: Use OpenCV's newer C++ API (default = old C API)
 
 #### Compiling on Linux using flatpak-builder
 - The Flatpak manifest uses the org.freedesktop.Platform 20.08 runtime, which is available for the major architectures on the [Flathub](https://flathub.org/repo/flathub.flatpakrepo) remote. If it isn't available for your architecture, you can lower the version in the manifest. Below 19.08 you either need to enable the dav1d module or disable AV1 support in the ffmpeg module by removing the --enable-libdav1d configure option. For some architectures the runtime is not hosted by Flathub but can be downloaded from the [Freedesktop SDK](https://releases.freedesktop-sdk.io/freedesktop-sdk.flatpakrepo) remote.
