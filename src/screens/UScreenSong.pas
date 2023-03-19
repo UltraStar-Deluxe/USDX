@@ -3823,21 +3823,17 @@ begin
   end
   else
   begin
+    // it's still off by one in certain cases, will select the first or last overall song
     if TargetInteraction = -1 then
     begin
-      if Target = 0 then
-        TargetInteraction := 0
-      else
+      i := 0;
+      for TargetInteraction := 0 to High(CatSongs.Song) do
       begin
-        i := 0;
-        for TargetInteraction := 0 to High(CatSongs.Song) do
+        if CatSongs.Song[TargetInteraction].Visible then
         begin
-          if CatSongs.Song[i].Visible then
-          begin
-            Inc(i);
-            if Target = i then
-              break;
-          end;
+          Inc(i);
+          if Target = i then
+            break;
         end;
       end;
     end;
