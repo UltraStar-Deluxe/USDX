@@ -43,6 +43,7 @@ uses
 procedure SingDraw;
 procedure SingDrawLines;
 procedure SingDrawBackground;
+procedure SingDrawOscilloscopes;
 procedure SingDrawOscilloscope(X, Y, W, H: real; NrSound: integer);
 procedure SingDrawNoteLines(Left, Top, Right: real; LineSpacing: integer = 15);
 procedure SingDrawLyricHelper(CP: integer; Left, LyricsMid: real);
@@ -352,6 +353,127 @@ begin
   glEnd;
   glDisable(GL_TEXTURE_2D);
   //glDisable(GL_BLEND);
+end;
+
+procedure SingDrawOscilloscopes;
+begin;
+  if PlayersPlay = 1 then
+    SingDrawOscilloscope(Theme.Sing.SingP1Oscilloscope.X, Theme.Sing.SingP1Oscilloscope.Y, Theme.Sing.SingP1Oscilloscope.W, Theme.Sing.SingP1Oscilloscope.H, 0);
+
+  if PlayersPlay = 2 then
+  begin
+    SingDrawOscilloscope(Theme.Sing.SingP1TwoPOscilloscope.X, Theme.Sing.SingP1TwoPOscilloscope.Y, Theme.Sing.SingP1TwoPOscilloscope.W, Theme.Sing.SingP1TwoPOscilloscope.H, 0);
+    SingDrawOscilloscope(Theme.Sing.SingP2ROscilloscope.X, Theme.Sing.SingP2ROscilloscope.Y, Theme.Sing.SingP2ROscilloscope.W, Theme.Sing.SingP2ROscilloscope.H, 1);
+  end;
+
+  if PlayersPlay = 3 then
+  begin
+    if (CurrentSong.isDuet) then
+    begin
+      SingDrawOscilloscope(Theme.Sing.SingDuetP1ThreePOscilloscope.X, Theme.Sing.SingDuetP1ThreePOscilloscope.Y, Theme.Sing.SingDuetP1ThreePOscilloscope.W, Theme.Sing.SingDuetP1ThreePOscilloscope.H, 0);
+      SingDrawOscilloscope(Theme.Sing.SingDuetP2MOscilloscope.X, Theme.Sing.SingDuetP2MOscilloscope.Y, Theme.Sing.SingDuetP2MOscilloscope.W, Theme.Sing.SingDuetP2MOscilloscope.H, 1);
+      SingDrawOscilloscope(Theme.Sing.SingDuetP3ROscilloscope.X, Theme.Sing.SingDuetP3ROscilloscope.Y, Theme.Sing.SingDuetP3ROscilloscope.W, Theme.Sing.SingDuetP3ROscilloscope.H, 2);
+    end
+    else
+    begin
+      SingDrawOscilloscope(Theme.Sing.SingP1ThreePOscilloscope.X, Theme.Sing.SingP1ThreePOscilloscope.Y, Theme.Sing.SingP1ThreePOscilloscope.W, Theme.Sing.SingP1ThreePOscilloscope.H, 0);
+      SingDrawOscilloscope(Theme.Sing.SingP2MOscilloscope.X, Theme.Sing.SingP2MOscilloscope.Y, Theme.Sing.SingP2MOscilloscope.W, Theme.Sing.SingP2MOscilloscope.H, 1);
+      SingDrawOscilloscope(Theme.Sing.SingP3ROscilloscope.X, Theme.Sing.SingP3ROscilloscope.Y, Theme.Sing.SingP3ROscilloscope.W, Theme.Sing.SingP3ROscilloscope.H, 2);
+    end;
+  end;
+
+  if PlayersPlay = 4 then
+  begin
+    if (Ini.Screens = 1) then
+    begin
+      if ScreenAct = 1 then
+      begin
+        SingDrawOscilloscope(Theme.Sing.SingP1TwoPOscilloscope.X, Theme.Sing.SingP1TwoPOscilloscope.Y, Theme.Sing.SingP1TwoPOscilloscope.W, Theme.Sing.SingP1TwoPOscilloscope.H, 0);
+        SingDrawOscilloscope(Theme.Sing.SingP2ROscilloscope.X, Theme.Sing.SingP2ROscilloscope.Y, Theme.Sing.SingP2ROscilloscope.W, Theme.Sing.SingP2ROscilloscope.H, 1);
+      end;
+      if ScreenAct = 2 then
+      begin
+        SingDrawOscilloscope(Theme.Sing.SingP1TwoPOscilloscope.X, Theme.Sing.SingP1TwoPOscilloscope.Y, Theme.Sing.SingP1TwoPOscilloscope.W, Theme.Sing.SingP1TwoPOscilloscope.H, 2);
+        SingDrawOscilloscope(Theme.Sing.SingP2ROscilloscope.X, Theme.Sing.SingP2ROscilloscope.Y, Theme.Sing.SingP2ROscilloscope.W, Theme.Sing.SingP2ROscilloscope.H, 3);
+      end;
+    end
+    else
+    begin
+      if (CurrentSong.isDuet) then
+      begin
+        SingDrawOscilloscope(Theme.Sing.SingP1DuetFourPOscilloscope.X, Theme.Sing.SingP1DuetFourPOscilloscope.Y, Theme.Sing.SingP1DuetFourPOscilloscope.W, Theme.Sing.SingP1DuetFourPOscilloscope.H, 0);
+        SingDrawOscilloscope(Theme.Sing.SingP2DuetFourPOscilloscope.X, Theme.Sing.SingP2DuetFourPOscilloscope.Y, Theme.Sing.SingP2DuetFourPOscilloscope.W, Theme.Sing.SingP2DuetFourPOscilloscope.H, 1);
+        SingDrawOscilloscope(Theme.Sing.SingP3DuetFourPOscilloscope.X, Theme.Sing.SingP3DuetFourPOscilloscope.Y, Theme.Sing.SingP3DuetFourPOscilloscope.W, Theme.Sing.SingP3DuetFourPOscilloscope.H, 2);
+        SingDrawOscilloscope(Theme.Sing.SingP4DuetFourPOscilloscope.X, Theme.Sing.SingP4DuetFourPOscilloscope.Y, Theme.Sing.SingP4DuetFourPOscilloscope.W, Theme.Sing.SingP4DuetFourPOscilloscope.H, 3);
+      end
+      else
+      begin
+        SingDrawOscilloscope(Theme.Sing.SingP1FourPOscilloscope.X, Theme.Sing.SingP1FourPOscilloscope.Y, Theme.Sing.SingP1FourPOscilloscope.W, Theme.Sing.SingP1FourPOscilloscope.H, 0);
+        SingDrawOscilloscope(Theme.Sing.SingP2FourPOscilloscope.X, Theme.Sing.SingP2FourPOscilloscope.Y, Theme.Sing.SingP2FourPOscilloscope.W, Theme.Sing.SingP2FourPOscilloscope.H, 1);
+        SingDrawOscilloscope(Theme.Sing.SingP3FourPOscilloscope.X, Theme.Sing.SingP3FourPOscilloscope.Y, Theme.Sing.SingP3FourPOscilloscope.W, Theme.Sing.SingP3FourPOscilloscope.H, 2);
+        SingDrawOscilloscope(Theme.Sing.SingP4FourPOscilloscope.X, Theme.Sing.SingP4FourPOscilloscope.Y, Theme.Sing.SingP4FourPOscilloscope.W, Theme.Sing.SingP4FourPOscilloscope.H, 3);
+      end;
+    end;
+  end;
+
+  if PlayersPlay = 6 then
+  begin
+    if (Ini.Screens = 1) then
+    begin
+      if (CurrentSong.isDuet) then
+      begin
+        if ScreenAct = 1 then
+        begin
+          SingDrawOscilloscope(Theme.Sing.SingDuetP1ThreePOscilloscope.X, Theme.Sing.SingDuetP1ThreePOscilloscope.Y, Theme.Sing.SingDuetP1ThreePOscilloscope.W, Theme.Sing.SingDuetP1ThreePOscilloscope.H, 0);
+          SingDrawOscilloscope(Theme.Sing.SingDuetP2MOscilloscope.X, Theme.Sing.SingDuetP2MOscilloscope.Y, Theme.Sing.SingDuetP2MOscilloscope.W, Theme.Sing.SingDuetP2MOscilloscope.H, 1);
+          SingDrawOscilloscope(Theme.Sing.SingDuetP3ROscilloscope.X, Theme.Sing.SingDuetP3ROscilloscope.Y, Theme.Sing.SingDuetP3ROscilloscope.W, Theme.Sing.SingDuetP3ROscilloscope.H, 2);
+        end;
+        if ScreenAct = 2 then
+        begin
+          SingDrawOscilloscope(Theme.Sing.SingDuetP1ThreePOscilloscope.X, Theme.Sing.SingDuetP1ThreePOscilloscope.Y, Theme.Sing.SingDuetP1ThreePOscilloscope.W, Theme.Sing.SingDuetP1ThreePOscilloscope.H, 3);
+          SingDrawOscilloscope(Theme.Sing.SingDuetP2MOscilloscope.X, Theme.Sing.SingDuetP2MOscilloscope.Y, Theme.Sing.SingDuetP2MOscilloscope.W, Theme.Sing.SingDuetP2MOscilloscope.H, 4);
+          SingDrawOscilloscope(Theme.Sing.SingDuetP3ROscilloscope.X, Theme.Sing.SingDuetP3ROscilloscope.Y, Theme.Sing.SingDuetP3ROscilloscope.W, Theme.Sing.SingDuetP3ROscilloscope.H, 5);
+        end;
+      end
+      else
+      begin
+        if ScreenAct = 1 then
+        begin
+          SingDrawOscilloscope(Theme.Sing.SingP1ThreePOscilloscope.X, Theme.Sing.SingP1ThreePOscilloscope.Y, Theme.Sing.SingP1ThreePOscilloscope.W, Theme.Sing.SingP1ThreePOscilloscope.H, 0);
+          SingDrawOscilloscope(Theme.Sing.SingP2MOscilloscope.X, Theme.Sing.SingP2MOscilloscope.Y, Theme.Sing.SingP2MOscilloscope.W, Theme.Sing.SingP2MOscilloscope.H, 1);
+          SingDrawOscilloscope(Theme.Sing.SingP3ROscilloscope.X, Theme.Sing.SingP3ROscilloscope.Y, Theme.Sing.SingP3ROscilloscope.W, Theme.Sing.SingP3ROscilloscope.H, 2);
+        end;
+
+        if ScreenAct = 2 then
+        begin
+          SingDrawOscilloscope(Theme.Sing.SingP1ThreePOscilloscope.X, Theme.Sing.SingP1ThreePOscilloscope.Y, Theme.Sing.SingP1ThreePOscilloscope.W, Theme.Sing.SingP1ThreePOscilloscope.H, 3);
+          SingDrawOscilloscope(Theme.Sing.SingP2MOscilloscope.X, Theme.Sing.SingP2MOscilloscope.Y, Theme.Sing.SingP2MOscilloscope.W, Theme.Sing.SingP2MOscilloscope.H, 4);
+          SingDrawOscilloscope(Theme.Sing.SingP3ROscilloscope.X, Theme.Sing.SingP3ROscilloscope.Y, Theme.Sing.SingP3ROscilloscope.W, Theme.Sing.SingP3ROscilloscope.H, 5);
+        end;
+      end;
+    end
+    else
+    begin
+      if (CurrentSong.isDuet) then
+      begin
+        SingDrawOscilloscope(Theme.Sing.SingP1DuetSixPOscilloscope.X, Theme.Sing.SingP1DuetSixPOscilloscope.Y, Theme.Sing.SingP1DuetSixPOscilloscope.W, Theme.Sing.SingP1DuetSixPOscilloscope.H, 0);
+        SingDrawOscilloscope(Theme.Sing.SingP2DuetSixPOscilloscope.X, Theme.Sing.SingP2DuetSixPOscilloscope.Y, Theme.Sing.SingP2DuetSixPOscilloscope.W, Theme.Sing.SingP2DuetSixPOscilloscope.H, 1);
+        SingDrawOscilloscope(Theme.Sing.SingP3DuetSixPOscilloscope.X, Theme.Sing.SingP3DuetSixPOscilloscope.Y, Theme.Sing.SingP3DuetSixPOscilloscope.W, Theme.Sing.SingP3DuetSixPOscilloscope.H, 2);
+        SingDrawOscilloscope(Theme.Sing.SingP4DuetSixPOscilloscope.X, Theme.Sing.SingP4DuetSixPOscilloscope.Y, Theme.Sing.SingP4DuetSixPOscilloscope.W, Theme.Sing.SingP4DuetSixPOscilloscope.H, 3);
+        SingDrawOscilloscope(Theme.Sing.SingP5DuetSixPOscilloscope.X, Theme.Sing.SingP5DuetSixPOscilloscope.Y, Theme.Sing.SingP5DuetSixPOscilloscope.W, Theme.Sing.SingP5DuetSixPOscilloscope.H, 4);
+        SingDrawOscilloscope(Theme.Sing.SingP6DuetSixPOscilloscope.X, Theme.Sing.SingP6DuetSixPOscilloscope.Y, Theme.Sing.SingP6DuetSixPOscilloscope.W, Theme.Sing.SingP6DuetSixPOscilloscope.H, 5);
+      end
+      else
+      begin
+        SingDrawOscilloscope(Theme.Sing.SingP1SixPOscilloscope.X, Theme.Sing.SingP1SixPOscilloscope.Y, Theme.Sing.SingP1SixPOscilloscope.W, Theme.Sing.SingP1SixPOscilloscope.H, 0);
+        SingDrawOscilloscope(Theme.Sing.SingP2SixPOscilloscope.X, Theme.Sing.SingP2SixPOscilloscope.Y, Theme.Sing.SingP2SixPOscilloscope.W, Theme.Sing.SingP2SixPOscilloscope.H, 1);
+        SingDrawOscilloscope(Theme.Sing.SingP3SixPOscilloscope.X, Theme.Sing.SingP3SixPOscilloscope.Y, Theme.Sing.SingP3SixPOscilloscope.W, Theme.Sing.SingP3SixPOscilloscope.H, 2);
+        SingDrawOscilloscope(Theme.Sing.SingP4SixPOscilloscope.X, Theme.Sing.SingP4SixPOscilloscope.Y, Theme.Sing.SingP4SixPOscilloscope.W, Theme.Sing.SingP4SixPOscilloscope.H, 3);
+        SingDrawOscilloscope(Theme.Sing.SingP5SixPOscilloscope.X, Theme.Sing.SingP5SixPOscilloscope.Y, Theme.Sing.SingP5SixPOscilloscope.W, Theme.Sing.SingP5SixPOscilloscope.H, 4);
+        SingDrawOscilloscope(Theme.Sing.SingP6SixPOscilloscope.X, Theme.Sing.SingP6SixPOscilloscope.Y, Theme.Sing.SingP6SixPOscilloscope.W, Theme.Sing.SingP6SixPOscilloscope.H, 5);
+      end;
+    end;
+  end;
 end;
 
 procedure SingDrawOscilloscope(X, Y, W, H: real; NrSound: integer);
@@ -1214,123 +1336,7 @@ begin
   // oscilloscope
   if (ScreenSing.Settings.OscilloscopeVisible) then
   begin
-    if PlayersPlay = 1 then
-      SingDrawOscilloscope(Theme.Sing.SingP1Oscilloscope.X, Theme.Sing.SingP1Oscilloscope.Y, Theme.Sing.SingP1Oscilloscope.W, Theme.Sing.SingP1Oscilloscope.H, 0);
-
-    if PlayersPlay = 2 then
-    begin
-      SingDrawOscilloscope(Theme.Sing.SingP1TwoPOscilloscope.X, Theme.Sing.SingP1TwoPOscilloscope.Y, Theme.Sing.SingP1TwoPOscilloscope.W, Theme.Sing.SingP1TwoPOscilloscope.H, 0);
-      SingDrawOscilloscope(Theme.Sing.SingP2ROscilloscope.X, Theme.Sing.SingP2ROscilloscope.Y, Theme.Sing.SingP2ROscilloscope.W, Theme.Sing.SingP2ROscilloscope.H, 1);
-    end;
-
-    if PlayersPlay = 3 then
-    begin
-      if (CurrentSong.isDuet) then
-      begin
-        SingDrawOscilloscope(Theme.Sing.SingDuetP1ThreePOscilloscope.X, Theme.Sing.SingDuetP1ThreePOscilloscope.Y, Theme.Sing.SingDuetP1ThreePOscilloscope.W, Theme.Sing.SingDuetP1ThreePOscilloscope.H, 0);
-        SingDrawOscilloscope(Theme.Sing.SingDuetP2MOscilloscope.X, Theme.Sing.SingDuetP2MOscilloscope.Y, Theme.Sing.SingDuetP2MOscilloscope.W, Theme.Sing.SingDuetP2MOscilloscope.H, 1);
-        SingDrawOscilloscope(Theme.Sing.SingDuetP3ROscilloscope.X, Theme.Sing.SingDuetP3ROscilloscope.Y, Theme.Sing.SingDuetP3ROscilloscope.W, Theme.Sing.SingDuetP3ROscilloscope.H, 2);
-      end
-      else
-      begin
-        SingDrawOscilloscope(Theme.Sing.SingP1ThreePOscilloscope.X, Theme.Sing.SingP1ThreePOscilloscope.Y, Theme.Sing.SingP1ThreePOscilloscope.W, Theme.Sing.SingP1ThreePOscilloscope.H, 0);
-        SingDrawOscilloscope(Theme.Sing.SingP2MOscilloscope.X, Theme.Sing.SingP2MOscilloscope.Y, Theme.Sing.SingP2MOscilloscope.W, Theme.Sing.SingP2MOscilloscope.H, 1);
-        SingDrawOscilloscope(Theme.Sing.SingP3ROscilloscope.X, Theme.Sing.SingP3ROscilloscope.Y, Theme.Sing.SingP3ROscilloscope.W, Theme.Sing.SingP3ROscilloscope.H, 2);
-      end;
-    end;
-
-    if PlayersPlay = 4 then
-    begin
-      if (Ini.Screens = 1) then
-      begin
-        if ScreenAct = 1 then
-        begin
-          SingDrawOscilloscope(Theme.Sing.SingP1TwoPOscilloscope.X, Theme.Sing.SingP1TwoPOscilloscope.Y, Theme.Sing.SingP1TwoPOscilloscope.W, Theme.Sing.SingP1TwoPOscilloscope.H, 0);
-          SingDrawOscilloscope(Theme.Sing.SingP2ROscilloscope.X, Theme.Sing.SingP2ROscilloscope.Y, Theme.Sing.SingP2ROscilloscope.W, Theme.Sing.SingP2ROscilloscope.H, 1);
-        end;
-        if ScreenAct = 2 then
-        begin
-          SingDrawOscilloscope(Theme.Sing.SingP1TwoPOscilloscope.X, Theme.Sing.SingP1TwoPOscilloscope.Y, Theme.Sing.SingP1TwoPOscilloscope.W, Theme.Sing.SingP1TwoPOscilloscope.H, 2);
-          SingDrawOscilloscope(Theme.Sing.SingP2ROscilloscope.X, Theme.Sing.SingP2ROscilloscope.Y, Theme.Sing.SingP2ROscilloscope.W, Theme.Sing.SingP2ROscilloscope.H, 3);
-        end;
-      end
-      else
-      begin
-        if (CurrentSong.isDuet) then
-        begin
-          SingDrawOscilloscope(Theme.Sing.SingP1DuetFourPOscilloscope.X, Theme.Sing.SingP1DuetFourPOscilloscope.Y, Theme.Sing.SingP1DuetFourPOscilloscope.W, Theme.Sing.SingP1DuetFourPOscilloscope.H, 0);
-          SingDrawOscilloscope(Theme.Sing.SingP2DuetFourPOscilloscope.X, Theme.Sing.SingP2DuetFourPOscilloscope.Y, Theme.Sing.SingP2DuetFourPOscilloscope.W, Theme.Sing.SingP2DuetFourPOscilloscope.H, 1);
-          SingDrawOscilloscope(Theme.Sing.SingP3DuetFourPOscilloscope.X, Theme.Sing.SingP3DuetFourPOscilloscope.Y, Theme.Sing.SingP3DuetFourPOscilloscope.W, Theme.Sing.SingP3DuetFourPOscilloscope.H, 2);
-          SingDrawOscilloscope(Theme.Sing.SingP4DuetFourPOscilloscope.X, Theme.Sing.SingP4DuetFourPOscilloscope.Y, Theme.Sing.SingP4DuetFourPOscilloscope.W, Theme.Sing.SingP4DuetFourPOscilloscope.H, 3);
-        end
-        else
-        begin
-          SingDrawOscilloscope(Theme.Sing.SingP1FourPOscilloscope.X, Theme.Sing.SingP1FourPOscilloscope.Y, Theme.Sing.SingP1FourPOscilloscope.W, Theme.Sing.SingP1FourPOscilloscope.H, 0);
-          SingDrawOscilloscope(Theme.Sing.SingP2FourPOscilloscope.X, Theme.Sing.SingP2FourPOscilloscope.Y, Theme.Sing.SingP2FourPOscilloscope.W, Theme.Sing.SingP2FourPOscilloscope.H, 1);
-          SingDrawOscilloscope(Theme.Sing.SingP3FourPOscilloscope.X, Theme.Sing.SingP3FourPOscilloscope.Y, Theme.Sing.SingP3FourPOscilloscope.W, Theme.Sing.SingP3FourPOscilloscope.H, 2);
-          SingDrawOscilloscope(Theme.Sing.SingP4FourPOscilloscope.X, Theme.Sing.SingP4FourPOscilloscope.Y, Theme.Sing.SingP4FourPOscilloscope.W, Theme.Sing.SingP4FourPOscilloscope.H, 3);
-        end;
-      end;
-    end;
-
-    if PlayersPlay = 6 then
-    begin
-      if (Ini.Screens = 1) then
-      begin
-        if (CurrentSong.isDuet) then
-        begin
-          if ScreenAct = 1 then
-          begin
-            SingDrawOscilloscope(Theme.Sing.SingDuetP1ThreePOscilloscope.X, Theme.Sing.SingDuetP1ThreePOscilloscope.Y, Theme.Sing.SingDuetP1ThreePOscilloscope.W, Theme.Sing.SingDuetP1ThreePOscilloscope.H, 0);
-            SingDrawOscilloscope(Theme.Sing.SingDuetP2MOscilloscope.X, Theme.Sing.SingDuetP2MOscilloscope.Y, Theme.Sing.SingDuetP2MOscilloscope.W, Theme.Sing.SingDuetP2MOscilloscope.H, 1);
-            SingDrawOscilloscope(Theme.Sing.SingDuetP3ROscilloscope.X, Theme.Sing.SingDuetP3ROscilloscope.Y, Theme.Sing.SingDuetP3ROscilloscope.W, Theme.Sing.SingDuetP3ROscilloscope.H, 2);
-          end;
-          if ScreenAct = 2 then
-          begin
-            SingDrawOscilloscope(Theme.Sing.SingDuetP1ThreePOscilloscope.X, Theme.Sing.SingDuetP1ThreePOscilloscope.Y, Theme.Sing.SingDuetP1ThreePOscilloscope.W, Theme.Sing.SingDuetP1ThreePOscilloscope.H, 3);
-            SingDrawOscilloscope(Theme.Sing.SingDuetP2MOscilloscope.X, Theme.Sing.SingDuetP2MOscilloscope.Y, Theme.Sing.SingDuetP2MOscilloscope.W, Theme.Sing.SingDuetP2MOscilloscope.H, 4);
-            SingDrawOscilloscope(Theme.Sing.SingDuetP3ROscilloscope.X, Theme.Sing.SingDuetP3ROscilloscope.Y, Theme.Sing.SingDuetP3ROscilloscope.W, Theme.Sing.SingDuetP3ROscilloscope.H, 5);
-          end;
-        end
-        else
-        begin
-          if ScreenAct = 1 then
-          begin
-            SingDrawOscilloscope(Theme.Sing.SingP1ThreePOscilloscope.X, Theme.Sing.SingP1ThreePOscilloscope.Y, Theme.Sing.SingP1ThreePOscilloscope.W, Theme.Sing.SingP1ThreePOscilloscope.H, 0);
-            SingDrawOscilloscope(Theme.Sing.SingP2MOscilloscope.X, Theme.Sing.SingP2MOscilloscope.Y, Theme.Sing.SingP2MOscilloscope.W, Theme.Sing.SingP2MOscilloscope.H, 1);
-            SingDrawOscilloscope(Theme.Sing.SingP3ROscilloscope.X, Theme.Sing.SingP3ROscilloscope.Y, Theme.Sing.SingP3ROscilloscope.W, Theme.Sing.SingP3ROscilloscope.H, 2);
-          end;
-
-          if ScreenAct = 2 then
-          begin
-            SingDrawOscilloscope(Theme.Sing.SingP1ThreePOscilloscope.X, Theme.Sing.SingP1ThreePOscilloscope.Y, Theme.Sing.SingP1ThreePOscilloscope.W, Theme.Sing.SingP1ThreePOscilloscope.H, 3);
-            SingDrawOscilloscope(Theme.Sing.SingP2MOscilloscope.X, Theme.Sing.SingP2MOscilloscope.Y, Theme.Sing.SingP2MOscilloscope.W, Theme.Sing.SingP2MOscilloscope.H, 4);
-            SingDrawOscilloscope(Theme.Sing.SingP3ROscilloscope.X, Theme.Sing.SingP3ROscilloscope.Y, Theme.Sing.SingP3ROscilloscope.W, Theme.Sing.SingP3ROscilloscope.H, 5);
-          end;
-        end;
-      end
-      else
-      begin
-        if (CurrentSong.isDuet) then
-        begin
-          SingDrawOscilloscope(Theme.Sing.SingP1DuetSixPOscilloscope.X, Theme.Sing.SingP1DuetSixPOscilloscope.Y, Theme.Sing.SingP1DuetSixPOscilloscope.W, Theme.Sing.SingP1DuetSixPOscilloscope.H, 0);
-          SingDrawOscilloscope(Theme.Sing.SingP2DuetSixPOscilloscope.X, Theme.Sing.SingP2DuetSixPOscilloscope.Y, Theme.Sing.SingP2DuetSixPOscilloscope.W, Theme.Sing.SingP2DuetSixPOscilloscope.H, 1);
-          SingDrawOscilloscope(Theme.Sing.SingP3DuetSixPOscilloscope.X, Theme.Sing.SingP3DuetSixPOscilloscope.Y, Theme.Sing.SingP3DuetSixPOscilloscope.W, Theme.Sing.SingP3DuetSixPOscilloscope.H, 2);
-          SingDrawOscilloscope(Theme.Sing.SingP4DuetSixPOscilloscope.X, Theme.Sing.SingP4DuetSixPOscilloscope.Y, Theme.Sing.SingP4DuetSixPOscilloscope.W, Theme.Sing.SingP4DuetSixPOscilloscope.H, 3);
-          SingDrawOscilloscope(Theme.Sing.SingP5DuetSixPOscilloscope.X, Theme.Sing.SingP5DuetSixPOscilloscope.Y, Theme.Sing.SingP5DuetSixPOscilloscope.W, Theme.Sing.SingP5DuetSixPOscilloscope.H, 4);
-          SingDrawOscilloscope(Theme.Sing.SingP6DuetSixPOscilloscope.X, Theme.Sing.SingP6DuetSixPOscilloscope.Y, Theme.Sing.SingP6DuetSixPOscilloscope.W, Theme.Sing.SingP6DuetSixPOscilloscope.H, 5);
-        end
-        else
-        begin
-          SingDrawOscilloscope(Theme.Sing.SingP1SixPOscilloscope.X, Theme.Sing.SingP1SixPOscilloscope.Y, Theme.Sing.SingP1SixPOscilloscope.W, Theme.Sing.SingP1SixPOscilloscope.H, 0);
-          SingDrawOscilloscope(Theme.Sing.SingP2SixPOscilloscope.X, Theme.Sing.SingP2SixPOscilloscope.Y, Theme.Sing.SingP2SixPOscilloscope.W, Theme.Sing.SingP2SixPOscilloscope.H, 1);
-          SingDrawOscilloscope(Theme.Sing.SingP3SixPOscilloscope.X, Theme.Sing.SingP3SixPOscilloscope.Y, Theme.Sing.SingP3SixPOscilloscope.W, Theme.Sing.SingP3SixPOscilloscope.H, 2);
-          SingDrawOscilloscope(Theme.Sing.SingP4SixPOscilloscope.X, Theme.Sing.SingP4SixPOscilloscope.Y, Theme.Sing.SingP4SixPOscilloscope.W, Theme.Sing.SingP4SixPOscilloscope.H, 3);
-          SingDrawOscilloscope(Theme.Sing.SingP5SixPOscilloscope.X, Theme.Sing.SingP5SixPOscilloscope.Y, Theme.Sing.SingP5SixPOscilloscope.W, Theme.Sing.SingP5SixPOscilloscope.H, 4);
-          SingDrawOscilloscope(Theme.Sing.SingP6SixPOscilloscope.X, Theme.Sing.SingP6SixPOscilloscope.Y, Theme.Sing.SingP6SixPOscilloscope.W, Theme.Sing.SingP6SixPOscilloscope.H, 5);
-        end;
-      end;
-    end;
+    SingDrawOscilloscopes;
   end;
 
   for I := 1 to PlayersPlay do
