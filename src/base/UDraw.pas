@@ -48,7 +48,7 @@ procedure SingDrawOscilloscope(Position: TThemePosition; NrSound: integer);
 procedure SingDrawNoteLines(Left, Top, Right: real; LineSpacing: integer = 15);
 procedure SingDrawLyricHelper(CP: integer; Left, LyricsMid: real);
 procedure SingDrawLine(Left, Top, Right: real; Track, PlayerIndex: integer; LineSpacing: integer = 15);
-procedure SingDrawPlayerLine(X, Y, W: real; Track, PlayerIndex: integer; LineSpacing: integer = 15);
+procedure SingDrawPlayerLine(Left, Top, W: real; Track, PlayerIndex: integer; LineSpacing: integer = 15);
 procedure SingDrawPlayerBGLine(Left, Top, Right: real; Track, PlayerIndex: integer; LineSpacing: integer = 15);
 
 //Draw Editor NoteLines
@@ -657,7 +657,7 @@ begin
 end;
 
 // draw sung notes
-procedure SingDrawPlayerLine(X, Y, W: real; Track, PlayerIndex: integer; LineSpacing: integer);
+procedure SingDrawPlayerLine(Left, Top, W: real; Track, PlayerIndex: integer; LineSpacing: integer);
 var
   TempR:      real;
   Rec:        TRecR;
@@ -684,7 +684,7 @@ begin
         with Player[PlayerIndex].Note[N] do
         begin
           // Left part of note
-          Rec.Left  := X + (Start - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + 0.5 + 10*ScreenX;
+          Rec.Left  := Left + (Start - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + 0.5 + 10*ScreenX;
           Rec.Right := Rec.Left + NotesW[PlayerIndex];
 
           // Draw it in half size, if not hit
@@ -697,7 +697,7 @@ begin
             NotesH2 := int(NotesH[PlayerIndex] * 0.65);
           end;
 
-          Rec.Top    := Y - (Tone-Tracks[Track].Lines[Tracks[Track].CurrentLine].BaseNote)*LineSpacing/2 - NotesH2;
+          Rec.Top    := Top - (Tone-Tracks[Track].Lines[Tracks[Track].CurrentLine].BaseNote)*LineSpacing/2 - NotesH2;
           Rec.Bottom := Rec.Top + 2 * NotesH2;
 
           // draw the left part
@@ -719,7 +719,7 @@ begin
 
           // Middle part of the note
           Rec.Left  := Rec.Right;
-          Rec.Right := X + (Start + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR - NotesW[PlayerIndex] - 0.5  + 10*ScreenX;
+          Rec.Right := Left + (Start + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR - NotesW[PlayerIndex] - 0.5  + 10*ScreenX;
 
           // new
           if (Start + Duration - 1 = LyricsState.CurrentBeatD) then
