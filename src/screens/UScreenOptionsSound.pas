@@ -136,6 +136,12 @@ begin
       SoundLib.StartBgMusic
     else
       SoundLib.PauseBgMusic;
+  end
+  else if (SelInteraction = 5) then
+  begin
+    // preview volume, restart the background music so it uses the new volume
+    SoundLib.PauseBgMusic;
+    SoundLib.StartBgMusic;
   end;
   
 end;
