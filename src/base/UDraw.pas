@@ -1164,16 +1164,11 @@ var
   LyricEngineDuet: TLyricEngine;
 begin
   // positions
-  if Ini.SingWindow = 0 then
-    NR.Left := 120
-  else
-    NR.Left := 20;
-
+  NR.Left := 20;
   NR.Right := 780;
-
-  NR.Width := NR.Right - NR.Left;
-  NR.WMid  := NR.Width / 2;
-  NR.Mid   := NR.Left + NR.WMid;
+  NR.Width := 760; //NR.Right - NR.Left;
+  NR.WMid  := 380;//NR.Width / 2;
+  NR.Mid   := 400;//NR.Left + NR.WMid;
 
   // draw note-lines
 
@@ -1280,16 +1275,11 @@ const
   TopThreeRows3 = 370+95;
 begin
   // positions
-  if Ini.SingWindow = 0 then
-    NR.Left := 120
-  else
-    NR.Left := 20;
-
+  NR.Left := 20;
   NR.Right := 780;
-
-  NR.Width := NR.Right - NR.Left;
-  NR.WMid  := NR.Width / 2;
-  NR.Mid   := NR.Left + NR.WMid;
+  NR.Width := 760; //NR.Right - NR.Left;
+  NR.WMid  := 380; //NR.Width / 2;
+  NR.Mid   := 400; //NR.Left + NR.WMid;
 
   TrackP1 := 0;
   TrackP2 := 0;
@@ -1541,16 +1531,11 @@ var
   LyricEngine: TLyricEngine;
 begin
   // positions
-  if Ini.SingWindow = 0 then
-    NR.Left := 120
-  else
-    NR.Left := 20;
-
+  NR.Left := 20;
   NR.Right := 780;
-
-  NR.Width := NR.Right - NR.Left;
-  NR.WMid  := NR.Width / 2;
-  NR.Mid   := NR.Left + NR.WMid;
+  NR.Width := 760; //NR.Right - NR.Left;
+  NR.WMid  := 380; //NR.Width / 2;
+  NR.Mid   := 400; //NR.Left + NR.WMid;
 
   // FIXME: accessing ScreenJukebox is not that generic
   LyricEngine := ScreenJukebox.Lyrics;

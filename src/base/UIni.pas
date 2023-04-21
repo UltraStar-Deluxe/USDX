@@ -150,7 +150,6 @@ type
       VisualizerOption: integer;
       FullScreen:     integer;
       TextureSize:    integer;
-      SingWindow:     integer;
       Oscilloscope:   integer;
       // not used
       //Spectrum:       integer;
@@ -352,8 +351,6 @@ const
   ITextureSize:      array[0..3] of UTF8String  = ('64', '128', '256', '512');
   ITextureSizeVals:  array[0..3] of integer     = ( 64,   128,   256,   512);
 
-  ISingWindow:       array[0..1] of UTF8String  = ('Small', 'Big');
-
   // SingBar Mod
   IOscilloscope:     array[0..1] of UTF8String  = ('Off', 'On');
 
@@ -482,7 +479,6 @@ var
   IVisualizerTranslated:       array[0..3] of UTF8String  = ('Off', 'WhenNoVideo', 'WhenNoVideoAndImage','On');
 
   IBackgroundMusicTranslated:  array[0..1] of UTF8String  = ('Off', 'On');
-  ISingWindowTranslated:       array[0..1] of UTF8String  = ('Small', 'Big');
 
   // SingBar Mod
   IOscilloscopeTranslated:     array[0..1] of UTF8String  = ('Off', 'On');
@@ -653,9 +649,6 @@ begin
 
   IBackgroundMusicTranslated[0]       := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IBackgroundMusicTranslated[1]       := ULanguage.Language.Translate('OPTION_VALUE_ON');
-
-  ISingWindowTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_SMALL');
-  ISingWindowTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_BIG');
 
   IOscilloscopeTranslated[0]          := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IOscilloscopeTranslated[1]          := ULanguage.Language.Translate('OPTION_VALUE_ON');
@@ -1479,9 +1472,6 @@ begin
   // TextureSize (aka CachedCoverSize)
   TextureSize := ReadArrayIndex(ITextureSize, IniFile, 'Graphics', 'TextureSize', IGNORE_INDEX, '256');
 
-  // SingWindow
-  SingWindow := ReadArrayIndex(ISingWindow, IniFile, 'Graphics', 'SingWindow', IGNORE_INDEX, 'Big');
-
   // Oscilloscope
   Oscilloscope := ReadArrayIndex(IOscilloscope, IniFile, 'Graphics', 'Oscilloscope', 0);
 
@@ -1790,9 +1780,6 @@ begin
 
     // TextureSize
     IniFile.WriteString('Graphics', 'TextureSize', ITextureSize[TextureSize]);
-
-    // Sing Window
-    IniFile.WriteString('Graphics', 'SingWindow', ISingWindow[SingWindow]);
 
     // Oscilloscope
     IniFile.WriteString('Graphics', 'Oscilloscope', IOscilloscope[Oscilloscope]);
