@@ -25,7 +25,7 @@ NEXTNEWFILES := $(NEXTNEWFILES) $$(filter-out $(FILES) $(NEXTNEWFILES),$$(D))
 endef
 
 define runpathlist
-RUNPATH := $$(RUNPATH_$(1)) $$(filter-out $$(RUNPATH_$(1)),$$(shell $$(OTOOL) -l $(1) | grep -A 2 '\<cmd LC_RPATH\>' | sed -n 's/.* path \(.*\) .offset .*/\1/p'))
+RUNPATH := $$(RUNPATH_$(1)) $$(patsubst @loader_path/%,$$(dir $(1))%,$$(filter-out $$(RUNPATH_$(1)),$$(shell $$(OTOOL) -l $(1) | grep -A 2 '\<cmd LC_RPATH\>' | sed -n 's/.* path \(.*\) .offset .*/\1/p')))
 $$(foreach dylib,$$(call getdylibs,$(1)),$$(eval $$(call processload,$$(dylib),$$(dir $(1)))))
 endef
 
