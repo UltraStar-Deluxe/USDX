@@ -81,7 +81,7 @@ int Get_UMat_depth(UMatWrapper *w)
 const void *Get_UMat_as_8UC3(UMatWrapper *w)
 {
 	if (!w)
-		return nullptr;
+		return NULL;
 	try {
 		if (w->umat.type() == CV_8UC3) {
 			w->mat = w->umat.getMat(cv::ACCESS_READ);
@@ -121,15 +121,15 @@ const void *Get_UMat_as_8UC3(UMatWrapper *w)
 		}
 		return w->mat.data;
 	} catch (...) {
-		return nullptr;
+		return NULL;
 	}
 }
 
 UMatWrapper *USDX_cvCreateImage(int width, int height, int depth, int channels)
 {
-	UMatWrapper *w{nullptr};
+	UMatWrapper *w = NULL;
 	try {
-		cv::UMat umat{height, width, CV_MAKETYPE(depth, channels)};
+		cv::UMat umat(height, width, CV_MAKETYPE(depth, channels));
 		w = new UMatWrapper;
 		w->umat = umat;
 	} catch (...) {
@@ -137,7 +137,7 @@ UMatWrapper *USDX_cvCreateImage(int width, int height, int depth, int channels)
 			try {
 				delete w;
 			} catch (...) {}
-			w = nullptr;
+			w = NULL;
 		}
 	}
 	return w;
@@ -145,7 +145,7 @@ UMatWrapper *USDX_cvCreateImage(int width, int height, int depth, int channels)
 
 UMatWrapper *USDX_cvCloneImage(UMatWrapper *src)
 {
-	UMatWrapper *w{nullptr};
+	UMatWrapper *w = NULL;
 	try {
 		w = new UMatWrapper;
 		w->umat = src->umat.clone();
@@ -154,7 +154,7 @@ UMatWrapper *USDX_cvCloneImage(UMatWrapper *src)
 			try {
 				delete w;
 			} catch(...) {}
-			w = nullptr;
+			w = NULL;
 		}
 	}
 	return w;
@@ -167,7 +167,7 @@ void USDX_cvReleaseImage(UMatWrapper **w)
 	try {
 		delete *w;
 	} catch (...) {}
-	*w = nullptr;
+	*w = NULL;
 }
 
 void USDX_cvNot(UMatWrapper *src, UMatWrapper *dst)
@@ -228,8 +228,8 @@ double USDX_cvThreshold(UMatWrapper *src, UMatWrapper *dst, double threshold, do
 {
 	if (src && dst) {
 		try {
-			cv::UMat dst0{dst->umat};
-			double ret{cv::threshold(src->umat, dst->umat, threshold, max_value, threshold_type)};
+			cv::UMat dst0(dst->umat);
+			double ret = cv::threshold(src->umat, dst->umat, threshold, max_value, threshold_type);
 			if (dst0.type() != dst->umat.type()) {
 				dst->umat.convertTo(dst0, dst0.type());
 				dst->umat = dst0;
@@ -310,7 +310,7 @@ cv::Mat *USDX_cvCreateMat(int rows, int cols, int type)
 	try {
 		return new cv::Mat(rows, cols, type);
 	} catch(...) {
-		return nullptr;
+		return NULL;
 	}
 }
 
@@ -321,7 +321,7 @@ void USDX_cvReleaseMat(cv::Mat **mat)
 	try {
 		delete *mat;
 	} catch(...) {}
-	*mat = nullptr;
+	*mat = NULL;
 }
 
 void USDX_cvSetZero(cv::Mat *mat)
@@ -378,7 +378,7 @@ USDX_CvCapture *USDX_cvCreateCameraCapture(int index)
 			return c;
 		delete c;
 	} catch(...) {}
-	return nullptr;
+	return NULL;
 
 }
 
@@ -389,7 +389,7 @@ void USDX_cvReleaseCapture(USDX_CvCapture **capture)
 	try {
 		delete *capture;
 	} catch(...) {}
-	*capture = nullptr;
+	*capture = NULL;
 }
 
 UMatWrapper* USDX_cvQueryFrame(USDX_CvCapture *capture)
@@ -400,7 +400,7 @@ UMatWrapper* USDX_cvQueryFrame(USDX_CvCapture *capture)
 				return &capture->frame;
 		} catch (...) {}
 	}
-	return nullptr;
+	return NULL;
 }
 
 int USDX_cvSetCaptureProperty(USDX_CvCapture* capture, int property_id, double value)
