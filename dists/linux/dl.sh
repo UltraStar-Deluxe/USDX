@@ -17,56 +17,58 @@ older() {
 needossl=no
 
 if older 3.5.1 cmake --version && older 3.5.1 cmake3 --version ; then
-	deps+=('cmake,https://github.com/Kitware/CMake/releases/download/v3.19.5/cmake-3.19.5.tar.gz,b8b9b9ccd54ceb35dd0e9a4348696d8a127fcd88')
+	deps+=('cmake,https://github.com/Kitware/CMake/releases/download/v3.25.2/cmake-3.25.2.tar.gz,2f444bb9951aad09452b692d8b3b9e33309e1641')
 	needossl=yes
 fi
 
-if older 0.48 meson --version ; then
-	deps+=('meson,https://github.com/mesonbuild/meson/releases/download/0.57.1/meson-0.57.1.tar.gz,eb87a41d4265aec1223c446c344455b674d4538c')
+if older 0.56 meson --version ; then
+	deps+=('meson,https://github.com/mesonbuild/meson/releases/download/1.0.1/meson-1.0.1.tar.gz,a2d102eb6a37307c9b67283e9764ed57cf286223')
 
-	if older 3.6 python3 --version ; then
-		deps+=('python,https://www.python.org/ftp/python/3.9.2/Python-3.9.2.tar.xz,110ca5bca7989f9558a54ee6762e6774a4b9644a')
+	if older 3.7 python3 --version ; then
+		deps+=('python,https://www.python.org/ftp/python/3.11.2/Python-3.11.2.tar.xz,ae1c199ecb7a969588b15354e19e7b60cb65d1b9')
 		needossl=yes
 	fi
 
 	if older 1.8.2 ninja --version ; then
-		deps+=('ninja,https://github.com/ninja-build/ninja/archive/v1.10.2.tar.gz,8d2e8c1c070c27fb9dc46b4a6345bbb1de7ccbaf')
+		deps+=('ninja,https://github.com/ninja-build/ninja/archive/v1.11.1.tar.gz,938723cdfc7a6f7c8f84c83b9a2cecdf1e5e1ad3')
 	fi
 fi
 
 if [ $needossl = yes ] ; then
 	if older 1.0.2 pkg-config --modversion libssl ; then
-		deps+=('openssl,https://www.openssl.org/source/openssl-1.1.1l.tar.gz,f8819dd31642eebea6cc1fa5c256fc9a4f40809b')
+		deps+=('openssl,https://www.openssl.org/source/openssl-1.1.1t.tar.gz,a06b067b7e3bd6a2cb52a06f087ff13346ce7360')
 	fi
 fi
 
 if older 1.8 wayland-scanner --version ; then
-	deps+=('wayland,https://wayland.freedesktop.org/releases/wayland-1.19.0.tar.xz,9ae0a89cfe6798250b19c72a987bda734d269060')
+	deps+=('wayland,https://gitlab.freedesktop.org/wayland/wayland/-/releases/1.21.91/downloads/wayland-1.21.91.tar.xz,d4f5b5e2453d45902016138dae0605cae096e00b')
 fi
 
-deps+=('wayland-protocols,https://wayland.freedesktop.org/releases/wayland-protocols-1.20.tar.xz,e78c739a3a85477ed524b81e8bb75efe7f8bf4df')
-deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.0.16.tar.gz,57825428174adb2ac947e4014080c262505aa972')
-deps+=('SDL2_image,https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.5.tar.gz,c0aed07994f670a3758f6b8b93d9034a58df5781')
-deps+=('sqlite,https://www.sqlite.org/2021/sqlite-autoconf-3360000.tar.gz,a4bcf9e951bfb9745214241ba08476299fc2dc1e')
+deps+=('pulseaudio,https://freedesktop.org/software/pulseaudio/releases/pulseaudio-16.1.tar.xz,7bf3845b522a1da263b6b84a0bc5aa761e49bc87')
+deps+=('pipewire,https://gitlab.freedesktop.org/pipewire/pipewire/-/archive/0.3.66/pipewire-0.3.66.tar.bz2,20c58dd867c33a7d111df69d7ec8d31c45b92a0b')
+deps+=('wayland-protocols,https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/1.31/downloads/wayland-protocols-1.31.tar.xz,5a84628630598027fab1708f822fc399d9e70b02')
+deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.26.5.tar.gz,ca5d89edc537fd819eddab1f1a86f61e45fcb68b')
+deps+=('SDL2_image,https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.6.3.tar.gz,f4f616ccbba2f3b41383edb47b449439aa51d443')
+deps+=('sqlite,https://www.sqlite.org/2023/sqlite-autoconf-3410200.tar.gz,f5a8a9ad5552b19fb5a41cf5536c8ab3b9bce82e')
 
 if older 2.14 nasm --version ; then
-	deps+=('nasm,https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.xz,d338409a03fc6d1508102881a675a00275fcb879')
+	deps+=('nasm,https://www.nasm.us/pub/nasm/releasebuilds/2.16.01/nasm-2.16.01.tar.xz,3ab515b4a7d50b7f8c63406a19070a93dcfdb820')
 fi
 
-deps+=('dav1d,https://downloads.videolan.org/pub/videolan/dav1d/0.9.2/dav1d-0.9.2.tar.xz,869bd31adb740a95a2b8df0317b3bc28f8ffdadd')
-deps+=('ffmpeg,https://ffmpeg.org/releases/ffmpeg-4.4.1.tar.xz,17c3fb69d79163281bb60279f9fe66785b1ce793')
+deps+=('dav1d,https://downloads.videolan.org/pub/videolan/dav1d/1.1.0/dav1d-1.1.0.tar.xz,f042e5e84a55a60ea439e6afd3e18e1dfcdb6d7b')
+deps+=('ffmpeg,http://ffmpeg.org/releases/ffmpeg-6.0.tar.xz,e934c379c99fb02c3cb7bb89c041ea2c028fb66b')
 deps+=('portmidi,https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip,f45bf4e247c0d7617deacd6a65d23d9fddae6117')
 deps+=('portmidi-debian,http://http.debian.net/debian/pool/main/p/portmidi/portmidi_217-6.debian.tar.xz,02e4c6dcfbd35a75913de2acd39be8f0cfd0b244')
-deps+=('lua,https://www.lua.org/ftp/lua-5.4.3.tar.gz,1dda2ef23a9828492b4595c0197766de6e784bc7')
-deps+=('libjpeg-turbo,https://download.sourceforge.net/libjpeg-turbo/libjpeg-turbo-2.1.2.tar.gz,65c51c543b1fbba6db9ff5bee474ccb0b52a929f')
-deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.37.tar.xz,3ab93fabbf4c27e1c4724371df408d9a1bd3f656')
+deps+=('lua,https://www.lua.org/ftp/lua-5.4.5.tar.gz,72e9cd7048f765384ab4c8770e84c5e559e4ec59')
+deps+=('libjpeg-turbo,https://download.sourceforge.net/libjpeg-turbo/libjpeg-turbo-2.1.5.1.tar.gz,3ec9f6a19781a583285d93c2c4653f3dbe845fcc')
+deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.39.tar.xz,3f2386d61eccae211ec4f57899e4ac2ca60d390b')
 # deps+=('libcwrap.h,https://raw.githubusercontent.com/wheybags/glibc_version_header/master/version_headers/force_link_glibc_2.10.2.h,aff0c46cf3005fe15c49688e74df62a9988855a5')
 
 if ! patchelf 2>&1 | grep -q syntax ; then
-	deps+=('patchelf,https://github.com/NixOS/patchelf/releases/download/0.12/patchelf-0.12.tar.bz2,58cf949052cc63cdd52e9ab347dcafc6c6c36f33')
+	deps+=('patchelf,https://github.com/NixOS/patchelf/releases/download/0.13.1/patchelf-0.13.1.tar.bz2,5d9c1690c0fbe70c312f43d597e04b6c1eeffc60')
 fi
 
-deps+=('opencv,https://github.com/opencv/opencv/archive/4.5.4.tar.gz,db7943672bca1baeb08bf3290b1fddd2fd96e5c3')
+deps+=('opencv,https://github.com/opencv/opencv/archive/4.7.0.tar.gz,7865fc2ff7267c26b289cda8b479439694fcfb98')
 deps+=('projectm,https://github.com/projectM-visualizer/projectm/releases/download/v2.2.1/projectM-2.2.1.tar.gz,bfd0cb09797384a814c3585b7b0369fc1c8b04fe')
 # if [ -f /.dockerenv ]; then
 # 	deps+=('fpc-x86_64,https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.x86_64-linux.tar,0720e428eaea423423e1b76a7267d6749c3399f4')
@@ -75,6 +77,10 @@ deps+=('projectm,https://github.com/projectM-visualizer/projectm/releases/downlo
 
 if ! true | zsyncmake -V >/dev/null ; then
 	deps+=('zsync,http://zsync.moria.org.uk/download/zsync-0.6.2.tar.bz2,5e69f084c8adaad6a677b68f7388ae0f9507617a')
+fi
+
+if ! desktop-file-validate -h >/dev/null ; then
+	deps+=('desktop-file-utils,https://www.freedesktop.org/software/desktop-file-utils/releases/desktop-file-utils-0.26.tar.xz,9fd94cb7de302163015fcbc0e157c61323b1205d')
 fi
 
 for i in "${deps[@]}"; do
@@ -168,4 +174,4 @@ git_source() {
 	fi
 }
 
-git_source AppImageKit https://github.com/AppImage/AppImageKit 12
+git_source AppImageKit https://github.com/AppImage/AppImageKit 13

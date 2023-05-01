@@ -17,7 +17,7 @@ export CMAKE_PREFIX_PATH="$PREFIX:$CMAKE_PREFIX_PATH"
 
 export LDFLAGS="-Wl,-z,now -Wl,-z,relro -L$PREFIX/lib"
 export CPPFLAGS="-I$PREFIX/include"
-export CFLAGS="-O2 -fPIE $CPPFLAGS"
+export CFLAGS="-O2 $CPPFLAGS"
 export CXXFLAGS="$CFLAGS"
 
 export CC="gcc"
@@ -46,6 +46,7 @@ start_build() {
 	tput setaf 2 && tput bold
 	echo "==> Building $*"
 	tput sgr0
+	hash -r
 }
 
 activate_python() {
@@ -114,13 +115,31 @@ task_zsync() {
 	hide make distclean
 }
 
+task_desktop_file_utils() {
+	start_build desktop-file-utils || return 0
+	CC="$CC" CXX="$CXX" meson setup --prefix "$PREFIX" --libdir=lib build
+	ninja -C build $makearg
+	ninja -C build install
+	rm -Rf build
+}
+
 task_AppImageKit() {
 	start_build AppImageKit || return 0
-	! pkg-config --exists libarchive || export EXTRA_CMAKE_FLAGS="-DUSE_SYSTEM_LIBARCHIVE=ON"
-	./build.sh
+	! pkg-config --exists libarchive || EXTRA_CMAKE_FLAGS="-DUSE_SYSTEM_LIBARCHIVE=ON"
+	rm -rf build
+	mkdir -p build
+	cd build
+	cmake \
+		-DCMAKE_INSTALL_PREFIX="$PREFIX" \
+		-DCMAKE_BUILD_TYPE="Release" \
+		-DBUILD_TESTING=OFF \
+		-DAPPIMAGEKIT_PACKAGE_DEBS=OFF \
+		$EXTRA_CMAKE_FLAGS \
+		..
+	make $makearg
+	make install
+	cd ..
 	unset EXTRA_CMAKE_FLAGS
-	cp -a build/out/appimagetool.AppDir $PREFIX/bin/
-	ln -s appimagetool.AppDir/AppRun $PREFIX/bin/appimagetool
 	rm -fR build
 }
 
@@ -135,18 +154,64 @@ task_libpng() {
 
 task_wayland() {
 	start_build wayland Wayland || return 0
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" --disable-documentation
-	hide make $makearg
-	hide make install
-	hide make distclean
+	PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" meson setup --prefix "$PREFIX" --libdir=lib -Ddocumentation=false -Dtests=false -Ddtd_validation=false build
+	ninja -C build $makearg
+	ninja -C build install
+	rm -Rf build
 }
 
 task_wayland_protocols() {
 	start_build wayland-protocols || return 0
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
-	make $makearg
-	make install
-	hide make distclean
+	PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" meson setup --prefix "$PREFIX" --libdir=lib -Dtests=false build
+	ninja -C build $makearg
+	ninja -C build install
+	rm -Rf build
+}
+
+task_pulseaudio() {
+	start_build pulseaudio || return 0
+	mkdir -p $PREFIX/include/pulse $PREFIX/lib/pkgconfig
+	cp src/pulse/*.h $PREFIX/include/pulse
+	PA_API_VERSION=$(sed -n 's/^[[:space:]]*pa_api_version[[:space:]]*=[[:space:]]*//p' meson.build)
+	cat > $PREFIX/include/pulse/version.h <<EOF
+#ifndef fooversionhfoo
+#define fooversionhfoo
+#define PA_API_VERSION $PA_API_VERSION
+#endif
+EOF
+	true | $CC -shared -o $PREFIX/lib/libpulse-simple.so.0 -Wl,-soname,libpulse-simple.so.0 -x c -
+	ln -s libpulse-simple.so.0 $PREFIX/lib/libpulse-simple.so
+	PA_VERSION=$(cat .tarball-version)
+	sed -e "s:@prefix@:$PREFIX:;s:@exec_prefix@:$PREFIX:;s:@libdir@:$PREFIX/lib:;s:@includedir@:$PREFIX/include:;s:@PACKAGE_VERSION@:$PA_VERSION:;s:@PTHREAD_LIBS@:-pthread:;/^Libs.private/d" < libpulse-simple.pc.in > $PREFIX/lib/pkgconfig/libpulse-simple.pc
+}
+
+task_pipewire() {
+	start_build pipewire || return 0
+	mkdir -p $PREFIX/include/pipewire/extensions $PREFIX/lib/pkgconfig
+	cp src/pipewire/*.h $PREFIX/include/pipewire
+	cp src/pipewire/extensions/*.h $PREFIX/include/pipewire/extensions
+	cp -r spa/include/spa $PREFIX/include
+	cp -r pipewire-jack/jack $PREFIX/include
+	touch $PREFIX/include/pipewire/version.h
+	true | $CC -shared -o $PREFIX/lib/libpipewire-0.3.so.0 -Wl,-soname,libpipewire-0.3.so.0 -x c -
+	ln -s libpipewire-0.3.so.0 $PREFIX/lib/libpipewire-0.3.so
+	true | $CC -shared -o $PREFIX/lib/libjack.so.0 -Wl,-soname,libjack.so.0 -x c -
+	ln -s libjack.so.0 $PREFIX/lib/libjack.so
+	PW_VERSION=$(sed -n "s/.*version[[:space:]]*:[[:space:]]*'\\([^']*\\)'.*/\1/p" meson.build | head -n1)
+	cat > $PREFIX/lib/pkgconfig/libpipewire-0.3.pc <<EOF
+Name: libpipewire
+Description: stuff
+Version: $PW_VERSION
+Libs: -L$PREFIX/lib -lpipewire-0.3
+Cflags: -I$PREFIX/include -D_REENTRANT
+EOF
+	cat > $PREFIX/lib/pkgconfig/jack.pc <<EOF
+Name: jack
+Description: stuff
+Version: 1.9.17
+Libs: -L$PREFIX/lib -ljack
+Cflags: -I$PREFIX/include -D_REENTRANT
+EOF
 }
 
 task_sdl2() {
@@ -155,10 +220,10 @@ task_sdl2() {
 	sed -i 's/GBM_BO_USE_CURSOR\>/&_64X64/g' src/video/kmsdrm/SDL_kmsdrmmouse.c
 	mkdir -p build
 	cd build
-	../configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
-		--enable-sdl-dlopen \
+	../configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" CFLAGS="$CFLAGS -std=gnu99" \
 		--disable-arts --disable-esd --disable-nas \
 		--disable-sndio --enable-pulseaudio-shared --enable-pulseaudio \
+		--enable-pipewire --enable-pipewire-shared \
 		--enable-jack --enable-jack-shared \
 		--enable-video-opengl --disable-video-opengles1 \
 		--enable-video-wayland --enable-wayland-shared \
@@ -200,7 +265,7 @@ task_sdl2_image() {
 	start_build SDL2_image || return 0
 	bash ./autogen.sh
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
-		--disable-static --disable-jpg-shared --disable-png-shared --disable-webp-shared --disable-webp --disable-tif-shared --disable-tif
+		--disable-static --disable-jpg-shared --disable-png-shared --disable-webp-shared --disable-webp --disable-tif-shared --disable-tif --disable-stb-image
 	make $makearg
 	make install
 	hide make distclean
@@ -347,7 +412,6 @@ task_ffmpeg() {
 		--disable-filters \
 		--disable-protocols \
 		--disable-lzma \
-		--disable-lzo \
 		--disable-bzlib \
 		--disable-vaapi \
 		--disable-vdpau
@@ -509,9 +573,17 @@ if [ "$1" == "all_deps" ]; then
 
 	task_openssl
 	echo
+	task_python
+	echo
 	task_cmake
 	echo
+	task_ninja
+	echo
+	task_meson
+	echo
 	task_zsync
+	echo
+	task_desktop_file_utils
 	echo
 	task_AppImageKit
 	echo
@@ -527,6 +599,10 @@ if [ "$1" == "all_deps" ]; then
 	echo
 	task_wayland_protocols
 	echo
+	task_pulseaudio
+	echo
+	task_pipewire
+	echo
 	task_sdl2
 	echo
 	task_sdl2_image
@@ -540,12 +616,6 @@ if [ "$1" == "all_deps" ]; then
 	task_lua
 	echo
 
-	task_python
-	echo
-	task_ninja
-	echo
-	task_meson
-	echo
 	task_dav1d
 	echo
 	task_ffmpeg
