@@ -688,7 +688,15 @@ var
   Grey: byte;
 begin
 
+  SDL_LockSurface(ImgSurface);
   Pixel := ImgSurface^.Pixels;
+
+  if not assigned(Pixel) then
+  begin
+    Log.LogError('Failed to lock surface', 'ColorizeImage');
+    SDL_UnlockSurface(ImgSurface);
+    Exit;
+  end;
 
   // check of the size of a pixel in bytes.
   // It should be always 4, but this
@@ -805,6 +813,7 @@ begin
 
     Inc(Pixel, ImgSurface^.format.BytesPerPixel);
   end;
+  SDL_UnlockSurface(ImgSurface);
 end;
 
 end.

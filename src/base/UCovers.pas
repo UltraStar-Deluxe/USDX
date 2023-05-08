@@ -336,6 +336,13 @@ begin
   Thumbnail := CreateThumbnail(Filename, Info);
   if not (assigned(Thumbnail)) or (Thumbnail = nil) then
     Exit;
+  SDL_LockSurface(Thumbnail);
+  if not assigned(Thumbnail^.pixels) then
+  begin
+    Log.LogError('Failed to lock surface', 'TCoverDatabase.AddCover');
+    SDL_FreeSurface(Thumbnail);
+    Exit;
+  end;
 
   CoverData := TBlobWrapper.Create;
   CoverData.Write(Thumbnail^.pixels, Thumbnail^.h * Thumbnail^.pitch);
