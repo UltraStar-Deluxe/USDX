@@ -177,7 +177,6 @@ end;
 procedure TScreenTop5.OnShow;
 var
   I:    integer;
-  PMax: integer;
   sung: boolean; //score added? otherwise in wasn't sung!
   Report: string;
 begin
@@ -192,10 +191,7 @@ begin
 
   //ReadScore(CurrentSong);
 
-  PMax := Ini.Players;
-  if PMax = 4 then
-    PMax := 5;
-  for I := 0 to PMax do
+  for I := 0 to PlayersPlay - 1 do
   begin
     if (Round(Player[I].ScoreTotalInt) > 0) and (ScreenSing.SungToEnd) then
     begin
