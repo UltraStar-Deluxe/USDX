@@ -984,6 +984,10 @@ begin
   {$ENDIF}
   fFormatContext := nil;
 
+  {$IFDEF UseSWScale}
+  sws_freeContext(fSwScaleContext);
+  {$ENDIF}
+
   if (fPboId <> 0) then
     glDeleteBuffersARB(1, @fPboId);
 
