@@ -953,7 +953,11 @@ begin
     av_freep(@fAVFrameRGB^.data[0]);
   {$ENDIF}
   av_freep(@fAVFrameRGB);
+  {$IF LIBAVCODEC_VERSION >= 57037100}
+  av_frame_free(@fAVFrame);
+  {$ELSE}
   av_freep(@fAVFrame);
+  {$ENDIF}
 
   if (fCodecContext <> nil) then
   begin
