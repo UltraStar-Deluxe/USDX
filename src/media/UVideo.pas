@@ -944,16 +944,9 @@ end;
 
 procedure TVideo_FFmpeg.Close;
 begin
-  if (fFrameBuffer <> nil) then
-    av_free(fFrameBuffer);
-  if (fAVFrameRGB <> nil) then
-    av_free(fAVFrameRGB);
-  if (fAVFrame <> nil) then
-    av_free(fAVFrame);
-
-  fAVFrame     := nil;
-  fAVFrameRGB  := nil;
-  fFrameBuffer := nil;
+  av_freep(@fFrameBuffer);
+  av_freep(@fAVFrameRGB);
+  av_freep(@fAVFrame);
 
   if (fCodecContext <> nil) then
   begin
