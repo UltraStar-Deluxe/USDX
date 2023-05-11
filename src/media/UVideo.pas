@@ -158,7 +158,9 @@ type
     fAVFrame:     PAVFrame;
     fAVFrameRGB:  PAVFrame;
 
+    {$IF LIBAVCODEC_VERSION < 59000000}
     fFrameBuffer: Pcuint8;  //**< stores a FFmpeg video frame
+    {$ENDIF}
     fFrameTex:    GLuint; //**< OpenGL texture for FrameBuffer
     fFrameTexValid: boolean; //**< if true, fFrameTex contains the current frame
     fTexWidth, fTexHeight: cardinal;
@@ -944,7 +946,12 @@ end;
 
 procedure TVideo_FFmpeg.Close;
 begin
+  {$IF LIBAVCODEC_VERSION < 59000000}
   av_freep(@fFrameBuffer);
+  {$ELSE}
+  if assigned(fAVFrameRGB) then
+    av_freep(@fAVFrameRGB^.data[0]);
+  {$ENDIF}
   av_freep(@fAVFrameRGB);
   av_freep(@fAVFrame);
 
