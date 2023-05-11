@@ -560,13 +560,18 @@ begin
 end;
 
 procedure TMediaCore_FFmpeg.AVFormatCloseInput(ps: PPAVFormatContext);
+{$IF LIBAVFORMAT_VERSION >= 54029104}
+var
+  pb: PAVIOContext;
+{$ENDIF}
 begin
   {$IF LIBAVFORMAT_VERSION >= 54029104}
-  av_free(ps^^.pb.buffer);
-  FFmpegStreamClose(ps^^.pb.opaque);
-  { avformat_close_input frees AVIOContext pb, no avio_close needed }
+  pb := ps^^.pb;
   { avformat_close_input frees AVFormatContext, no additional avformat_free_context needed }
   avformat_close_input(ps);
+  av_free(pb^.buffer);
+  FFmpegStreamClose(pb^.opaque);
+  av_free(pb);
   {$ENDIF}
 end;
 
