@@ -1442,6 +1442,11 @@ begin
       end;
     end;
 
+    acoHalfway: begin
+      ScaledVideoWidth  := (fWidth + fWidth * fAspect/ScreenAspect)/2;
+      ScaledVideoHeight := (fHeight + fHeight * ScreenAspect/fAspect)/2;
+    end;
+
     acoLetterBox: begin
       if (ScreenAspect <= fAspect) then
       begin

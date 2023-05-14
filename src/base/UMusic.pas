@@ -64,7 +64,7 @@ type
    *   - borders at top and bottom
    *   o top/bottom is cropped if width < height (unusual)
    *}
-  TAspectCorrection = (acoStretch, acoCrop, acoLetterBox);
+  TAspectCorrection = (acoStretch, acoLetterBox, acoHalfway, acoCrop);
 
   TRectCoords = record
     Left, Right:  double;
