@@ -1542,15 +1542,15 @@ begin
           if (SDL_ModState = KMOD_LSHIFT) then
           begin
             if (AspectCorrection = acoCrop) then
-              AspectCorrection := acoStretch
+              AspectCorrection := acoLetterBox
             else
             begin
-              if (AspectCorrection = acoStretch) then
-                AspectCorrection := acoLetterBox
+              if (AspectCorrection = acoHalfway) then
+                AspectCorrection := acoCrop
               else
               begin
                 if (AspectCorrection = acoLetterBox) then
-                  AspectCorrection := acoCrop;
+                  AspectCorrection := acoHalfway;
               end;
             end;
           end;

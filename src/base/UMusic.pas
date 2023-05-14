@@ -51,10 +51,6 @@ type
   end;
 
   {**
-   * acoStretch: Stretch to screen width and height
-   *   - ignores aspect
-   *   + no borders
-   *   + no image data loss
    * acoCrop: Stretch to screen width or height, crop the other dimension
    *   + keeps aspect
    *   + no borders
@@ -65,7 +61,7 @@ type
    *   o top/bottom is cropped if width < height (unusual)
    * acoHalfway: a compromise between crop and letterbox
    *}
-  TAspectCorrection = (acoStretch, acoLetterBox, acoHalfway, acoCrop);
+  TAspectCorrection = (acoLetterBox, acoHalfway, acoCrop);
 
   TRectCoords = record
     Left, Right:  double;
