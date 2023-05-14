@@ -63,6 +63,7 @@ type
    *   + keeps aspect
    *   - borders at top and bottom
    *   o top/bottom is cropped if width < height (unusual)
+   * acoHalfway: a compromise between crop and letterbox
    *}
   TAspectCorrection = (acoStretch, acoLetterBox, acoHalfway, acoCrop);
 
