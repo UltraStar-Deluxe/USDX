@@ -600,6 +600,14 @@ begin
     fFormatCtx := nil;
   end;
 
+  {$IF (LIBAVFORMAT_VERSION < 59000000)}
+  if (fAudioPaket.data <> nil) then
+    av_free_packet(@fAudioPaket);
+  {$ELSE}
+  if (PAnsiChar(fAudioPaket.data) <> STATUS_PACKET) then
+    av_packet_unref(@fAudioPaket);
+  {$ENDIF}
+
   PerformOnClose();
   
   FreeAndNil(fPacketQueue);
@@ -1008,13 +1016,12 @@ begin
       end;
 
       if (Packet.stream_index = fAudioStreamIndex) then
-        fPacketQueue.Put(@Packet)
-      else
-        {$IF (LIBAVFORMAT_VERSION < 59000000)}
-        av_free_packet(@Packet);
-        {$ELSE}
-        av_packet_unref(@Packet);
-        {$ENDIF}
+        fPacketQueue.Put(@Packet);
+      {$IF (LIBAVFORMAT_VERSION < 59000000)}
+      av_free_packet(@Packet);
+      {$ELSE}
+      av_packet_unref(@Packet);
+      {$ENDIF}
 
     finally
       SDL_LockMutex(fStateLock);

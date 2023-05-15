@@ -158,7 +158,9 @@ type
     fAVFrame:     PAVFrame;
     fAVFrameRGB:  PAVFrame;
 
+    {$IF LIBAVCODEC_VERSION < 59000000}
     fFrameBuffer: Pcuint8;  //**< stores a FFmpeg video frame
+    {$ENDIF}
     fFrameTex:    GLuint; //**< OpenGL texture for FrameBuffer
     fFrameTexValid: boolean; //**< if true, fFrameTex contains the current frame
     fTexWidth, fTexHeight: cardinal;
@@ -944,16 +946,18 @@ end;
 
 procedure TVideo_FFmpeg.Close;
 begin
-  if (fFrameBuffer <> nil) then
-    av_free(fFrameBuffer);
-  if (fAVFrameRGB <> nil) then
-    av_free(fAVFrameRGB);
-  if (fAVFrame <> nil) then
-    av_free(fAVFrame);
-
-  fAVFrame     := nil;
-  fAVFrameRGB  := nil;
-  fFrameBuffer := nil;
+  {$IF LIBAVCODEC_VERSION < 59000000}
+  av_freep(@fFrameBuffer);
+  {$ELSE}
+  if assigned(fAVFrameRGB) then
+    av_freep(@fAVFrameRGB^.data[0]);
+  {$ENDIF}
+  av_freep(@fAVFrameRGB);
+  {$IF LIBAVCODEC_VERSION >= 57037100}
+  av_frame_free(@fAVFrame);
+  {$ELSE}
+  av_freep(@fAVFrame);
+  {$ENDIF}
 
   if (fCodecContext <> nil) then
   begin
@@ -983,6 +987,10 @@ begin
   fCodecContext  := nil;
   {$ENDIF}
   fFormatContext := nil;
+
+  {$IFDEF UseSWScale}
+  sws_freeContext(fSwScaleContext);
+  {$ENDIF}
 
   if (fPboId <> 0) then
     glDeleteBuffersARB(1, @fPboId);
