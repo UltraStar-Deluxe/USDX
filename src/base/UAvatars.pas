@@ -315,6 +315,13 @@ begin
   Thumbnail := CreateAvatarThumbnail(Filename, Info);
   if (Thumbnail = nil) then
     Exit;
+  SDL_LockSurface(Thumbnail);
+  if not assigned(Thumbnail^.pixels) then
+  begin
+    Log.LogError('Failed to lock surface', 'TAvatarDatabase.AddAvatar');
+    SDL_FreeSurface(Thumbnail);
+    Exit;
+  end;
 
   AvatarData := TBlobWrapper.Create;
   AvatarData.Write(Thumbnail^.pixels, Thumbnail^.h * Thumbnail^.pitch);

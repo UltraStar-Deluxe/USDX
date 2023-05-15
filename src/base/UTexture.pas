@@ -274,6 +274,11 @@ begin
 
   // convert pixel format as needed
   AdjustPixelFormat(TexSurface, Typ);
+  if not assigned(TexSurface) then
+  begin
+    Log.LogError('Could not convert surface', 'TTextureUnit.LoadTexture');
+    Exit;
+  end;
 
   // adjust texture size (scale down, if necessary)
   newWidth   := TexSurface.W;                            //basisbit ToDo make images scale in size and keep ratio?
@@ -302,8 +307,16 @@ begin
   newWidth  := RoundPOT(newWidth);
   newHeight := RoundPOT(newHeight);
   if (newHeight <> oldHeight) or (newWidth <> oldWidth) then
+  begin
     FitImage(TexSurface, newWidth, newHeight);
+    if not assigned(TexSurface) then
+    begin
+      Log.LogError('Could not allocate POT surface', 'TTextureUnit.LoadTexture');
+      Exit;
+    end;
+  end;
   {end;}
+  SDL_LockSurface(TexSurface); // unlocked by SDL_FreeSurface
 
   // at this point we have the image in memory...
   // scaled so that dimensions are powers of 2
@@ -323,6 +336,9 @@ begin
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   // load data into gl texture
+  if not assigned(TexSurface.pixels) then
+    Log.LogError('Failed to lock surface', 'TTextureUnit.LoadTexture')
+  else
   if (Typ = TEXTURE_TYPE_TRANSPARENT) or
      (Typ = TEXTURE_TYPE_COLORIZED) then
   begin
