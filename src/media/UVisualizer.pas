@@ -359,7 +359,7 @@ end;
 
 function TVideo_ProjectM.GetAspectCorrection(): TAspectCorrection;
 begin
-  Result := acoStretch;
+  Result := acoLetterbox;
 end;
 
 procedure TVideo_ProjectM.SetAlpha(Alpha: double);

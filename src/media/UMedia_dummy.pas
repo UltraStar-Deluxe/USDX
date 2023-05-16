@@ -436,7 +436,7 @@ end;
 
 function TVideo_Dummy.GetAspectCorrection(): TAspectCorrection;
 begin
-  Result := acoStretch;
+  Result := acoLetterbox;
 end;
 
 procedure TVideo_Dummy.SetAlpha(Alpha: double);

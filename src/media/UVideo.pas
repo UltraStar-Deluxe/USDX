@@ -1433,11 +1433,6 @@ begin
   ScreenAspect := fWidth*((ScreenW/Screens)/RenderW)/(fHeight*(ScreenH/RenderH));
 
   case fAspectCorrection of
-    acoStretch: begin
-      ScaledVideoWidth  := fWidth;
-      ScaledVideoHeight := fHeight;
-    end;
-
     acoCrop: begin
       if (ScreenAspect >= fAspect) then
       begin
@@ -1448,6 +1443,11 @@ begin
         ScaledVideoHeight := fHeight;
         ScaledVideoWidth  := fWidth * fAspect/ScreenAspect;
       end;
+    end;
+
+    acoHalfway: begin
+      ScaledVideoWidth  := (fWidth + fWidth * fAspect/ScreenAspect)/2;
+      ScaledVideoHeight := (fHeight + fHeight * ScreenAspect/fAspect)/2;
     end;
 
     acoLetterBox: begin
