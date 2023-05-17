@@ -77,3 +77,12 @@ Optional libraries:
   * `flatpak-builder --user --install-deps-from=flathub --install build $USDX_SOURCE_TREE/dists/flatpak/eu.usdx.UltraStarDeluxe.yaml`
 - The `.flatpak-builder` and `build` directories can be removed afterwards.
 - Songs must be placed in `~/.var/app/eu.usdx.UltraStarDeluxe/.ultrastardx/songs`
+
+# Windows installer
+The CI does this for you, but if you need to do it manually:
+- Create Windows portable version: zip the contents of the `game` directory
+- Create Windows installer:
+  * Install NSIS (also install the Graphics and Language components during setup)
+  * Copy the DLLs from `game` to `installer/dependencies/dll`
+  * `C:\...\makensis "installer/UltraStar Deluxe.nsi"` (this will take a while)
+  * The .exe will be placed in `installer/dist`
