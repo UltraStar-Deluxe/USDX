@@ -852,6 +852,10 @@ begin
     Tex_BG_Mid_Rap[I]       := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
     Tex_BG_Right_Rap[I]     := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGRightRap'), TEXTURE_TYPE_COLORIZED, Color);
 
+    Tex_Note_Beat_BG[I]     := Texture.LoadTexture(Skin.GetTextureFileName('NoteBeatBG'), TEXTURE_TYPE_COLORIZED, Color);
+    Tex_Note_Beat[I]        := Texture.LoadTexture(Skin.GetTextureFileName('NoteBeat'), TEXTURE_TYPE_COLORIZED, Color);
+
+
     //## backgrounds for the scores ##
     Tex_ScoreBG[I - 1] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreBG'), TEXTURE_TYPE_COLORIZED, Color);
   end;

@@ -68,6 +68,7 @@ type
       Genre:      UTF8String;
       Year:       UTF8String;
       Language:   UTF8String;
+      RapBeat:    Boolean; // For now, not parsed, false by definition
     end;
     CountSentences: Cardinal;
     Sentences: ASentence;

@@ -174,6 +174,11 @@ begin
         SongFile.WriteLine('#P2:' + EncodeToken(Song.DuetNames[1]));
       end;
 
+      if Song.RapBeat then
+      begin
+         SongFile.WriteLine('#RAP:BEAT');
+      end;
+
       // write custom header tags
       WriteCustomTags;
 

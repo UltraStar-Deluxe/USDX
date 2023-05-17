@@ -143,6 +143,7 @@ type
    * Normally just one set is defined but in duet mode it might for example
    * contain two sets.
    *)
+  PLines = ^TLines;
   TLines = record
     CurrentLine: integer;  // for drawing of current line
     High:        integer;  // = High(Line)!
