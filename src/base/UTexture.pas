@@ -259,6 +259,7 @@ var
   newWidth, newHeight: integer;
   oldWidth, oldHeight: integer;
   ActTex: GLuint;
+  ScaleBy: real;
 begin
   // zero texture data
   FillChar(Result, SizeOf(Result), 0);
@@ -280,15 +281,15 @@ begin
     Exit;
   end;
 
-  // adjust texture size (scale down, if necessary)
-  newWidth   := TexSurface.W;                            //basisbit ToDo make images scale in size and keep ratio?
-  newHeight  := TexSurface.H;
+  // adjust texture size (scale down, if necessary) while keeping aspect ratio
+  ScaleBy := 1;
+  if (Max(TexSurface.W, TexSurface.H) > Limit) then
+  begin
+    ScaleBy := Max(TexSurface.W, TexSurface.H) / Limit;
+  end;
 
-  if (newWidth > Limit) then
-    newWidth := Limit;
-
-  if (newHeight > Limit) then
-    newHeight := Limit;
+  newWidth   := Floor(TexSurface.W / ScaleBy);
+  newHeight  := Floor(TexSurface.H / ScaleBy);
 
   if (TexSurface.W > newWidth) or (TexSurface.H > newHeight) then
     ScaleImage(TexSurface, newWidth, newHeight);
