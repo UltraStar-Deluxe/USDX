@@ -155,6 +155,7 @@ type
     PlayerDuetNames:array [1..IMaxPlayerCount] of UTF8String;
 
     Tex_Background: TTexture;
+    BackgroundAspectCorrection: TAspectCorrection;
     FadeOut: boolean;
 
     procedure ClearSettings;
@@ -464,7 +465,16 @@ begin
         else
         begin
           if (Assigned(fCurrentVideo)) then
+          begin
              fCurrentVideo.SetAspectCorrection(TAspectCorrection((Ord(fCurrentVideo.GetAspectCorrection())+1) mod (Ord(High(TAspectCorrection))+1)));
+          end
+          else
+          begin
+            if (fShowBackground and CurrentSong.Background.IsSet()) then
+            begin
+              BackgroundAspectCorrection := TAspectCorrection((Ord(BackgroundAspectCorrection)+1) mod (Ord(High(TAspectCorrection))+1));
+            end;
+          end;
         end;
       end;
 
@@ -1091,10 +1101,12 @@ begin
     BgFile := CurrentSong.Path.Append(CurrentSong.Background);
     try
       Tex_Background := Texture.LoadTexture(BgFile);
+      fShowBackground := fCurrentVideo = nil;
+      BackgroundAspectCorrection := acoLetterBox;
     except
       Log.LogError('Background could not be loaded: ' + BgFile.ToNative);
       Tex_Background.TexNum := 0;
-    end
+    end;
   end
   else
   begin

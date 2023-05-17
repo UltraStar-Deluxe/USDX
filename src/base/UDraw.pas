@@ -168,7 +168,11 @@ procedure SingDrawBackground;
 var
   Rec:    TRecR;
   TexRec: TRecR;
+  // TODO: these (especially the aspects) should just be precomputed
+  ScreenAspect, TexAspect: double;  // aspect of screen resolution and image
+  ScaledTexWidth, ScaledTexHeight: double;
 begin
+  // TODO: this is also called if a video is playing
   if (ScreenSing.Tex_Background.TexNum > 0) then
   begin
     if (Ini.MovieSize <= 1) then  //HalfSize BG
@@ -222,16 +226,67 @@ begin
     end
     else //Full Size BG
     begin
+      // Three aspects to take into account:
+      //  1. Screen/display resolution (e.g. 1920x1080 -> 16:9)
+      //  2. Render aspect (fWidth x fHeight -> variable)
+      //  3. Movie aspect (video frame aspect stored in fAspect)
+      ScreenAspect := (ScreenW/Screens)/ScreenH;
+      TexAspect := ScreenSing.Tex_Background.W/ScreenSing.Tex_Background.H;
+
+      case ScreenSing.BackgroundAspectCorrection of
+        acoCrop: begin
+          if (ScreenAspect >= TexAspect) then
+          begin
+            ScaledTexWidth  := RenderW;
+            ScaledTexHeight := RenderH * ScreenAspect/TexAspect;
+          end else
+          begin
+            ScaledTexHeight := RenderH;
+            ScaledTexWidth  := RenderW * TexAspect/ScreenAspect;
+          end;
+        end;
+
+        acoHalfway: begin
+          ScaledTexWidth  := (RenderW + RenderW * TexAspect/ScreenAspect)/2;
+          ScaledTexHeight := (RenderH + RenderH * ScreenAspect/TexAspect)/2;
+        end;
+
+        acoLetterBox: begin
+          if (ScreenAspect <= TexAspect) then
+          begin
+            ScaledTexWidth  := RenderW;
+            ScaledTexHeight := RenderH * ScreenAspect/TexAspect;
+          end else
+          begin
+            ScaledTexHeight := RenderH;
+            ScaledTexWidth  := RenderW * TexAspect/ScreenAspect;
+          end;
+        end else
+          raise Exception.Create('Unhandled aspect correction!');
+      end;
+
+      //center video
+      Rec.Left  := (RenderW - ScaledTexWidth) / 2;
+      Rec.Right := Rec.Left + ScaledTexWidth;
+      Rec.Top := (RenderH - ScaledTexHeight) / 2;
+      Rec.Bottom := Rec.Top + ScaledTexHeight;
+
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, ScreenSing.Tex_Background.TexNum);
       //glEnable(GL_BLEND);
       glBegin(GL_QUADS);
-
-        glTexCoord2f(0, 0);   glVertex2f(0,  0);
-        glTexCoord2f(0,  ScreenSing.Tex_Background.TexH);   glVertex2f(0,  600);
-        glTexCoord2f( ScreenSing.Tex_Background.TexW,  ScreenSing.Tex_Background.TexH);   glVertex2f(800, 600);
-        glTexCoord2f( ScreenSing.Tex_Background.TexW, 0);   glVertex2f(800, 0);
-
+      // top left
+      glTexCoord2f(0, 0);
+      glVertex2f(Rec.Left, Rec.Top);
+      // bottom left
+      glTexCoord2f(0, ScreenSing.Tex_Background.TexH);
+      glVertex2f(Rec.Left, Rec.Bottom);
+      // bottom right
+      glTexCoord2f(ScreenSing.Tex_Background.TexW, ScreenSing.Tex_Background.TexH);
+      glVertex2f(Rec.Right, Rec.Bottom);
+      // top right
+      glTexCoord2f(ScreenSing.Tex_Background.TexW, 0);
+      glVertex2f(Rec.Right, Rec.Top);
       glEnd;
       glDisable(GL_TEXTURE_2D);
       //glDisable(GL_BLEND);
