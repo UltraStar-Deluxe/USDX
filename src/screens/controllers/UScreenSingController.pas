@@ -155,6 +155,7 @@ type
     PlayerDuetNames:array [1..IMaxPlayerCount] of UTF8String;
 
     Tex_Background: TTexture;
+    // controls both background image and video
     BackgroundAspectCorrection: TAspectCorrection;
     FadeOut: boolean;
 
@@ -303,7 +304,10 @@ begin
           fShowVisualization := false;
           fCurrentVideo := fVideoClip;
           if (Assigned(fCurrentVideo)) then
-               fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start + AudioPlayback.Position;
+          begin
+            fCurrentVideo.SetAspectCorrection(BackgroundAspectCorrection);
+            fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start + AudioPlayback.Position;
+          end;
           Log.LogStatus('finished switching to video', 'UScreenSing.ParseInput');
         end
         else
@@ -464,16 +468,10 @@ begin
         end
         else
         begin
+          BackgroundAspectCorrection := TAspectCorrection((Ord(BackgroundAspectCorrection)+1) mod (Ord(High(TAspectCorrection))+1));
           if (Assigned(fCurrentVideo)) then
           begin
-             fCurrentVideo.SetAspectCorrection(TAspectCorrection((Ord(fCurrentVideo.GetAspectCorrection())+1) mod (Ord(High(TAspectCorrection))+1)));
-          end
-          else
-          begin
-            if (fShowBackground and CurrentSong.Background.IsSet()) then
-            begin
-              BackgroundAspectCorrection := TAspectCorrection((Ord(BackgroundAspectCorrection)+1) mod (Ord(High(TAspectCorrection))+1));
-            end;
+            fCurrentVideo.SetAspectCorrection(BackgroundAspectCorrection);
           end;
         end;
       end;
@@ -648,6 +646,8 @@ begin
   inherited Create;
   ScreenSing := self;
   screenSingViewRef := TScreenSingView.Create();
+  // for now: default to letterbox but preserve aspect between songs
+  BackgroundAspectCorrection := acoLetterBox;
 
   ClearSettings;
 end;
@@ -1082,6 +1082,7 @@ begin
   begin
     fVideoClip := VideoPlayback.Open(VideoFile);
     fCurrentVideo := fVideoClip;
+    fCurrentVideo.SetAspectCorrection(BackgroundAspectCorrection);
     if (fVideoClip <> nil) then
     begin
       fShowVisualization := false;
@@ -1102,7 +1103,6 @@ begin
     try
       Tex_Background := Texture.LoadTexture(BgFile);
       fShowBackground := fCurrentVideo = nil;
-      BackgroundAspectCorrection := acoLetterBox;
     except
       Log.LogError('Background could not be loaded: ' + BgFile.ToNative);
       Tex_Background.TexNum := 0;

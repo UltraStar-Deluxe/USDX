@@ -925,8 +925,6 @@ begin
 
   fPboId := 0;
 
-  fAspectCorrection := acoLetterBox;
-
   fScreen := 1;
 
   fPosX := 0;
