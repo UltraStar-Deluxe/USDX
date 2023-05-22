@@ -1,24 +1,9 @@
-# UltraStar Deluxe Development README
+# UltraStar Deluxe
 
 [![Travis Build Status](https://travis-ci.org/UltraStar-Deluxe/USDX.svg?branch=master)](https://travis-ci.org/UltraStar-Deluxe/USDX)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/UltraStar-Deluxe/USDX?branch=master&svg=true)](https://ci.appveyor.com/project/basisbit/usdx/branch/master)
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](LICENSE)
 
-```
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                   _______  _________
-            ___   /       \/         \
-           /   \  \      _/    /\____/\__________
-          /   _/  /     / \______      \         \___    _____
-         /   |___/      \     \_/       /          \  \  /     \
-         \              /\             /   |\       \  \/      /
-          \            /  \_____/    |/       /         /
-           \__________/              |_____________/          \
-                                                 /      /\      \
-                                                 \_____/  \_____/  .eu
-                                                                    
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-```
 Official Project Website: https://usdx.eu/
 
 ![UltraStar Deluxe Logo](https://github.com/UltraStar-Deluxe/USDX/blob/master/icons/ultrastardx-icon_256.png)
