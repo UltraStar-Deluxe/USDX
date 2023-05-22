@@ -15,7 +15,13 @@ UltraStar Deluxe is a fork of the original UltraStar (developed by corvus5).
 Many features have been added like party mode, theme support and support for more audio and video formats.
 The improved stability and code quality of USDX enabled ports to Linux and Mac OS X.
 
-### 2. Configuration
+### 2. Installation
+Currently, the following installation channels are offered:
+- installer (or portable version) for [the latest release](https://github.com/UltraStar-Deluxe/USDX/releases/tag/v2023.5.0)
+- flatpak from [flathub](https://flathub.org/apps/eu.usdx.UltraStarDeluxe)
+- Arch Linux [AUR](https://aur.archlinux.org/packages/ultrastardx-git)
+
+### 3. Configuration
 - To set additional song directories change your config.ini like this:
 ```ini
   [Directories]
@@ -28,13 +34,13 @@ The improved stability and code quality of USDX enabled ports to Linux and Mac O
 - The primary folder for songs on OS X is `$HOME/Music/UltraStar Deluxe`, which is created when UltraStar Deluxe is run for the first time.
 - On OS X, by default the `config.ini` file is created in `$HOME/Library/Application Support/UltraStarDeluxe` when UltraStar Deluxe is run for the first time.
 
-### 3. Command-Line Parameters
+### 4. Command-Line Parameters
 See https://github.com/UltraStar-Deluxe/USDX/wiki/Command-Line-Parameters
 
-### 4. Controls
+### 5. Controls
 See https://github.com/UltraStar-Deluxe/USDX/wiki/Controls
 
-### 5. Compiling
+### 6. Compiling
 There are two main ways to compile the game:
 
 1. Lazarus IDE
@@ -44,7 +50,7 @@ The executable will be `game/ultrastardx[.exe]`.
 
 For extended information, dependencies, OS-specific notes and configure flags, see [COMPILING.md](COMPILING.md).
 
-### 6. Making a release
+### 7. Making a release
 1. Find the contents of `VERSION` (strip the `+dev`) throughout the code.
     This should result in four places:
     * VERSION
