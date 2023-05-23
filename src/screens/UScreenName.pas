@@ -871,6 +871,12 @@ begin
     PlayerNames[I] := Ini.Name[I];
     PlayerLevel[I] := Ini.PlayerLevel[I];
     PlayerAvatars[I] := GetArrayIndex(PlayerAvatarButtonMD5, Ini.PlayerAvatar[I]);
+    // if it is -1 then the current saved md5 does not exist anymore (file has changed or was deleted entirely)
+    // setting it to 0 just resets it to the colorized default avatar
+    if (PlayerAvatars[I] = -1) then
+    begin
+      PlayerAvatars[I] := 0;
+    end;
   end;
 
   AvatarTarget := PlayerAvatars[PlayerIndex];
