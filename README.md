@@ -1,24 +1,9 @@
-# UltraStar Deluxe Development README
+# UltraStar Deluxe
 
 [![Travis Build Status](https://travis-ci.org/UltraStar-Deluxe/USDX.svg?branch=master)](https://travis-ci.org/UltraStar-Deluxe/USDX)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/UltraStar-Deluxe/USDX?branch=master&svg=true)](https://ci.appveyor.com/project/basisbit/usdx/branch/master)
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](LICENSE)
 
-```
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                   _______  _________
-            ___   /       \/         \
-           /   \  \      _/    /\____/\__________
-          /   _/  /     / \______      \         \___    _____
-         /   |___/      \     \_/       /          \  \  /     \
-         \              /\             /   |\       \  \/      /
-          \            /  \_____/    |/       /         /
-           \__________/              |_____________/          \
-                                                 /      /\      \
-                                                 \_____/  \_____/  .eu
-                                                                    
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-```
 Official Project Website: https://usdx.eu/
 
 ![UltraStar Deluxe Logo](https://github.com/UltraStar-Deluxe/USDX/blob/master/icons/ultrastardx-icon_256.png)
@@ -30,7 +15,13 @@ UltraStar Deluxe is a fork of the original UltraStar (developed by corvus5).
 Many features have been added like party mode, theme support and support for more audio and video formats.
 The improved stability and code quality of USDX enabled ports to Linux and Mac OS X.
 
-### 2. Configuration
+### 2. Installation
+Currently, the following installation channels are offered:
+- installer (or portable version) for [the latest release](https://github.com/UltraStar-Deluxe/USDX/releases/tag/v2023.5.0)
+- flatpak from [flathub](https://flathub.org/apps/eu.usdx.UltraStarDeluxe)
+- Arch Linux [AUR](https://aur.archlinux.org/packages/ultrastardx-git)
+
+### 3. Configuration
 - To set additional song directories change your config.ini like this:
 ```ini
   [Directories]
@@ -43,13 +34,13 @@ The improved stability and code quality of USDX enabled ports to Linux and Mac O
 - The primary folder for songs on OS X is `$HOME/Music/UltraStar Deluxe`, which is created when UltraStar Deluxe is run for the first time.
 - On OS X, by default the `config.ini` file is created in `$HOME/Library/Application Support/UltraStarDeluxe` when UltraStar Deluxe is run for the first time.
 
-### 3. Command-Line Parameters
+### 4. Command-Line Parameters
 See https://github.com/UltraStar-Deluxe/USDX/wiki/Command-Line-Parameters
 
-### 4. Controls
+### 5. Controls
 See https://github.com/UltraStar-Deluxe/USDX/wiki/Controls
 
-### 5. Compiling
+### 6. Compiling
 There are two main ways to compile the game:
 
 1. Lazarus IDE
@@ -59,23 +50,5 @@ The executable will be `game/ultrastardx[.exe]`.
 
 For extended information, dependencies, OS-specific notes and configure flags, see [COMPILING.md](COMPILING.md).
 
-### 6. Making a release
-1. Find the contents of `VERSION` (strip the `+dev`) throughout the code.
-    This should result in four places:
-    * VERSION
-    * UConfig.pas
-    * variables.nsh
-    * ultrastardx.appdata.xml
-2. Make the release:
-    * in the first two files, update it to the new version _without_ the `+dev` bit
-    * in `variables.nsh` update both blocks immediately and swap the comments
-    * in `ultrastardx.appdata.xml` add a new entry
-3. Commit, `git tag v<the-new-version>` and then `git push origin master v<the-new-version>`\
-    __It is important that these two get pushed together__ otherwise Flatpak gets confused.
-4. Wait and get the artifacts from the CI.
-    If any of them fail, just add an extra `;` on one of the already commented lines in `variables.nsh`, commit, and then push only `master`.
-5. Add `+dev` to the version in the first two files and swap the comments in `variables.nsh` again, commit, push.
-    This is just to set the dev version again.
-6. Attach the artifacts to the release page and publish it.
-    Don't forget to also create a PR for this release in
-    https://github.com/UltraStar-Deluxe/ultrastar-deluxe.github.io
+### 7. Making a release
+See [RELEASING.md](RELEASING.md)
