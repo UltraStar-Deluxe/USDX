@@ -3391,7 +3391,12 @@ begin
   for I := 0 to High(Button) do
   begin
     if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smMosaic, smList]) or (((I<>Interaction) or not Assigned(fCurrentVideo) or (VideoAlpha<1) or FinishedMusic)) then
+    begin
+        // todo: there's probably a better way to set the selected one
+        //  but it's better than every not-yet-selected button being rendered as selected
+        Button[I].SetSelect(I = Interaction);
         Button[I].Draw;
+    end;
   end;
 
   //  StopVideoPreview;
