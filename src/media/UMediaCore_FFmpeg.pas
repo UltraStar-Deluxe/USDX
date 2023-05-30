@@ -642,27 +642,17 @@ begin
   if (CurrentListEntry = nil) then
     Exit;
 
-  {$IF LIBAVFORMAT_VERSION < 59000000}
   CurrentListEntry^.pkt := Packet^;
+  {$IF LIBAVFORMAT_VERSION < 59000000}
   if (PChar(Packet^.data) <> STATUS_PACKET) then
   begin
+    // duplicate data if not valid beyond next av_read_frame
     if (av_dup_packet(@(CurrentListEntry^.pkt)) < 0) then
     begin
       av_free(CurrentListEntry);
       Exit;
     end;
   end;
-  {$ELSE}
-  if (PChar(Packet^.data) <> STATUS_PACKET) then
-    begin
-      if (av_packet_ref(@CurrentListEntry^.pkt, Packet) < 0) then
-      begin
-        av_free(CurrentListEntry);
-        Exit;
-      end;
-    end
-  else
-    CurrentListEntry^.pkt := Packet^;
   {$ENDIF}
 
   CurrentListEntry^.next := nil;
