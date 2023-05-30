@@ -482,7 +482,10 @@ begin
   // load icon image (must be 32x32 for win32)
   Icon := LoadImage(ResourcesPath.Append(WINDOW_ICON));
   if (Icon <> nil) then
+  begin
     SDL_SetWindowIcon(Screen, Icon);
+    SDL_FreeSurface(Icon);
+  end;
 
   SDL_SetWindowTitle(Screen, PChar(Title));
 
