@@ -31,6 +31,7 @@
  
  ; delete third party licenses
  Delete "$INSTDIR\LICENSE*"
+ Delete "$INSTDIR\README.ijg"
 
  Delete "$INSTDIR\Error.log"
  Delete "$INSTDIR\Benchmark.log"
@@ -83,6 +84,9 @@
  Delete "$INSTDIR\postproc-55.dll"
  Delete "$INSTDIR\swresample-3.dll"
  Delete "$INSTDIR\swscale-5.dll"
+ Delete "$INSTDIR\libjpeg-8.dll"
+ Delete "$INSTDIR\libtiff-6.dll"
+ Delete "$INSTDIR\libwebp-7.dll"
 
  StrCpy $0 "$INSTDIR\songs"
  Call un.DeleteIfEmpty 

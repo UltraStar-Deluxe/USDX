@@ -49,6 +49,12 @@ IfFileExists $INSTDIR\postproc-53.dll 0 +2
 Delete "$INSTDIR\postproc-53.dll"
 IfFileExists $INSTDIR\postproc-54.dll 0 +2
 Delete "$INSTDIR\postproc-54.dll"
+IfFileExists $INSTDIR\libjpeg-9.dll 0 +2
+Delete "$INSTDIR\libjpeg-9.dll"
+IfFileExists $INSTDIR\libtiff-5.dll 0 +2
+Delete "$INSTDIR\libtiff-5.dll"
+IfFileExists $INSTDIR\libwebp-4.dll 0 +2
+Delete "$INSTDIR\libwebp-4.dll"
 
 RMDir /r "$INSTDIR\Themes"
 RMDir /r "$INSTDIR\Skins"
