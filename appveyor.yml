@@ -44,6 +44,7 @@ for:
       - appveyor AddMessage -Category Information "Done."
 
     after_build:
+      - del game\*.debug
       - appveyor AddMessage -Category Information "Creating Installer..."
       - xcopy game\*.dll installer\dependencies\dll /y
       - makensis "installer\UltraStar Deluxe.nsi"
