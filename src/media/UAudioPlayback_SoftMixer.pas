@@ -1128,8 +1128,13 @@ begin
 end;
 
 procedure TAudioPlayback_SoftMixer.AudioCallback(Buffer: PByteArray; Size: integer);
+var
+  OldMask: TFPUExceptionMask;
 begin
+  OldMask := GetExceptionMask;
+  SetExceptionMask([exInvalidOp, exDenormalized, exZeroDivide, exOverflow, exUnderflow, exPrecision]);
   MixerStream.ReadData(Buffer, Size);
+  SetExceptionMask(OldMask);
 end;
 
 function TAudioPlayback_SoftMixer.GetMixer(): TAudioMixerStream;
