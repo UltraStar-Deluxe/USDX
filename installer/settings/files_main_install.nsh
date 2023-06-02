@@ -65,6 +65,12 @@ IfFileExists $INSTDIR\avfilter-7.dll 0 +2
 Delete "$INSTDIR\avfilter-7.dll"
 IfFileExists $INSTDIR\postproc-55.dll 0 +2
 Delete "$INSTDIR\postproc-55.dll"
+IfFileExists $INSTDIR\libfreetype6.dll 0 +2
+Delete "$INSTDIR\libfreetype6.dll"
+IfFileExists $INSTDIR\portmixer.dll 0 +2
+Delete "$INSTDIR\portmixer.dll"
+IfFileExists $INSTDIR\libprojectM2.dll 0 +2
+Delete "$INSTDIR\libprojectM2.dll"
 IfFileExists $INSTDIR\lua5.1.dll 0 +2
 Delete "$INSTDIR\lua5.1.dll"
 IfFileExists $INSTDIR\libjpeg-9.dll 0 +2
