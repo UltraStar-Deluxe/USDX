@@ -6,12 +6,12 @@
 
 {$IF Defined(IncludeConstants)}
   LUA_LIB_NAME        = 'lua';
-  LUA_VERSION_INT     = 5001005;
-  LUA_VERSION_RELEASE = '5';
-  LUA_VERSION_MINOR   = '1';
+  LUA_VERSION_INT     = 5004006;
+  LUA_VERSION_RELEASE = '6';
+  LUA_VERSION_MINOR   = '4';
   LUA_VERSION_MAJOR   = '5';
-  LUA_VERSION         = '5.1.5';
-  LUA_INTEGER_BITS    = 32;
+  LUA_VERSION         = '5.4.6';
+  LUA_INTEGER_BITS    = 64;
 {$IFEND}
 
 {$DEFINE HaveFFmpeg}

@@ -49,6 +49,8 @@ IfFileExists $INSTDIR\postproc-53.dll 0 +2
 Delete "$INSTDIR\postproc-53.dll"
 IfFileExists $INSTDIR\postproc-54.dll 0 +2
 Delete "$INSTDIR\postproc-54.dll"
+IfFileExists $INSTDIR\lua5.1.dll 0 +2
+Delete "$INSTDIR\lua5.1.dll"
 IfFileExists $INSTDIR\libjpeg-9.dll 0 +2
 Delete "$INSTDIR\libjpeg-9.dll"
 IfFileExists $INSTDIR\libtiff-5.dll 0 +2
