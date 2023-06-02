@@ -49,6 +49,22 @@ IfFileExists $INSTDIR\postproc-53.dll 0 +2
 Delete "$INSTDIR\postproc-53.dll"
 IfFileExists $INSTDIR\postproc-54.dll 0 +2
 Delete "$INSTDIR\postproc-54.dll"
+IfFileExists $INSTDIR\avcodec-58.dll 0 +2
+Delete "$INSTDIR\avcodec-58.dll"
+IfFileExists $INSTDIR\avformat-58.dll 0 +2
+Delete "$INSTDIR\avformat-58.dll"
+IfFileExists $INSTDIR\avutil-56.dll 0 +2
+Delete "$INSTDIR\avutil-56.dll"
+IfFileExists $INSTDIR\swscale-5.dll 0 +2
+Delete "$INSTDIR\swscale-5.dll"
+IfFileExists $INSTDIR\swresample-3.dll 0 +2
+Delete "$INSTDIR\swresample-3.dll"
+IfFileExists $INSTDIR\avdevice-58.dll 0 +2
+Delete "$INSTDIR\avdevice-58.dll"
+IfFileExists $INSTDIR\avfilter-7.dll 0 +2
+Delete "$INSTDIR\avfilter-7.dll"
+IfFileExists $INSTDIR\postproc-55.dll 0 +2
+Delete "$INSTDIR\postproc-55.dll"
 IfFileExists $INSTDIR\lua5.1.dll 0 +2
 Delete "$INSTDIR\lua5.1.dll"
 IfFileExists $INSTDIR\libjpeg-9.dll 0 +2
