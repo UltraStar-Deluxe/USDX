@@ -49,6 +49,16 @@ IfFileExists $INSTDIR\postproc-53.dll 0 +2
 Delete "$INSTDIR\postproc-53.dll"
 IfFileExists $INSTDIR\postproc-54.dll 0 +2
 Delete "$INSTDIR\postproc-54.dll"
+IfFileExists $INSTDIR\libcurl-3.dll 0 +2
+Delete "$INSTDIR\libcurl-3.dll"
+IfFileExists $INSTDIR\libssl32.dll 0 +2
+Delete "$INSTDIR\libssl32.dll"
+IfFileExists $INSTDIR\ssleay32.dll 0 +2
+Delete "$INSTDIR\ssleay32.dll"
+IfFileExists $INSTDIR\libeay32.dll 0 +2
+Delete "$INSTDIR\libeay32.dll"
+IfFileExists $INSTDIR\libidn-11.dll 0 +2
+Delete "$INSTDIR\libidn-11.dll"
 IfFileExists $INSTDIR\avcodec-58.dll 0 +2
 Delete "$INSTDIR\avcodec-58.dll"
 IfFileExists $INSTDIR\avformat-58.dll 0 +2
