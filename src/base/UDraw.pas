@@ -556,17 +556,23 @@ begin;
   MaxX := Position.W-1;
   MaxY := (Position.H-1) / 2;
 
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glTranslatef(Position.X, Position.Y + MaxY, 0);
+  glScalef(MaxX/High(Sound.AnalysisBuffer), MaxY/Low(Smallint), 1);
+
   Sound.LockAnalysisBuffer();
 
   glBegin(GL_LINE_STRIP);
     for SampleIndex := 0 to High(Sound.AnalysisBuffer) do
     begin
-      glVertex2f(Position.X + MaxX * SampleIndex/High(Sound.AnalysisBuffer),
-                 Position.Y + MaxY * (1 - Sound.AnalysisBuffer[SampleIndex]/-Low(Smallint)));
+      glVertex2s(SampleIndex, Sound.AnalysisBuffer[SampleIndex]);
     end;
   glEnd;
 
   Sound.UnlockAnalysisBuffer();
+
+  glPopMatrix();
 end;
 
 procedure SingDrawNoteLines(Left, Top, Right: real; LineSpacing: integer);
