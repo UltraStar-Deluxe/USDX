@@ -49,6 +49,46 @@ IfFileExists $INSTDIR\postproc-53.dll 0 +2
 Delete "$INSTDIR\postproc-53.dll"
 IfFileExists $INSTDIR\postproc-54.dll 0 +2
 Delete "$INSTDIR\postproc-54.dll"
+IfFileExists $INSTDIR\libcurl-3.dll 0 +2
+Delete "$INSTDIR\libcurl-3.dll"
+IfFileExists $INSTDIR\libssl32.dll 0 +2
+Delete "$INSTDIR\libssl32.dll"
+IfFileExists $INSTDIR\ssleay32.dll 0 +2
+Delete "$INSTDIR\ssleay32.dll"
+IfFileExists $INSTDIR\libeay32.dll 0 +2
+Delete "$INSTDIR\libeay32.dll"
+IfFileExists $INSTDIR\libidn-11.dll 0 +2
+Delete "$INSTDIR\libidn-11.dll"
+IfFileExists $INSTDIR\avcodec-58.dll 0 +2
+Delete "$INSTDIR\avcodec-58.dll"
+IfFileExists $INSTDIR\avformat-58.dll 0 +2
+Delete "$INSTDIR\avformat-58.dll"
+IfFileExists $INSTDIR\avutil-56.dll 0 +2
+Delete "$INSTDIR\avutil-56.dll"
+IfFileExists $INSTDIR\swscale-5.dll 0 +2
+Delete "$INSTDIR\swscale-5.dll"
+IfFileExists $INSTDIR\swresample-3.dll 0 +2
+Delete "$INSTDIR\swresample-3.dll"
+IfFileExists $INSTDIR\avdevice-58.dll 0 +2
+Delete "$INSTDIR\avdevice-58.dll"
+IfFileExists $INSTDIR\avfilter-7.dll 0 +2
+Delete "$INSTDIR\avfilter-7.dll"
+IfFileExists $INSTDIR\postproc-55.dll 0 +2
+Delete "$INSTDIR\postproc-55.dll"
+IfFileExists $INSTDIR\libfreetype6.dll 0 +2
+Delete "$INSTDIR\libfreetype6.dll"
+IfFileExists $INSTDIR\portmixer.dll 0 +2
+Delete "$INSTDIR\portmixer.dll"
+IfFileExists $INSTDIR\libprojectM2.dll 0 +2
+Delete "$INSTDIR\libprojectM2.dll"
+IfFileExists $INSTDIR\lua5.1.dll 0 +2
+Delete "$INSTDIR\lua5.1.dll"
+IfFileExists $INSTDIR\libjpeg-9.dll 0 +2
+Delete "$INSTDIR\libjpeg-9.dll"
+IfFileExists $INSTDIR\libtiff-5.dll 0 +2
+Delete "$INSTDIR\libtiff-5.dll"
+IfFileExists $INSTDIR\libwebp-4.dll 0 +2
+Delete "$INSTDIR\libwebp-4.dll"
 
 RMDir /r "$INSTDIR\Themes"
 RMDir /r "$INSTDIR\Skins"

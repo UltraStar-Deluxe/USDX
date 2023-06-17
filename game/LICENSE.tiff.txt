@@ -1,5 +1,5 @@
 The source code to this library used with SDL_image can be found here:
-http://www.libsdl.org/projects/SDL_image/libs/
+http://simplesystems.org/libtiff/
 ---
 
 Copyright (c) 1988-1997 Sam Leffler
