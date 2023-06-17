@@ -734,6 +734,7 @@ begin
       //       PixelColors[3] is alpha and remains untouched
       Inc(Pixel, ImgSurface^.format.BytesPerPixel);
     end;
+    SDL_UnlockSurface(ImgSurface);
     exit; // we are done with a greyscale image.
   end;
 
