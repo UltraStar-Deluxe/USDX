@@ -17,7 +17,7 @@ The improved stability and code quality of USDX enabled ports to Linux and Mac O
 
 ### 2. Installation
 Currently, the following installation channels are offered:
-- installer (or portable version) for [the latest release](https://github.com/UltraStar-Deluxe/USDX/releases/tag/v2023.5.0)
+- installer (or portable version) for [the latest release](https://github.com/UltraStar-Deluxe/USDX/releases/latest)
 - flatpak from [flathub](https://flathub.org/apps/eu.usdx.UltraStarDeluxe)
 - Arch Linux [AUR](https://aur.archlinux.org/packages/ultrastardx-git)
 
