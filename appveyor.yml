@@ -67,7 +67,7 @@ for:
     install:
       - ps: $env:package_version = ("$(git describe --tags --always --long)").trim()
       - ps: Update-AppveyorBuild -Version "$env:package_version-$env:APPVEYOR_BUILD_NUMBER"
-      - sh: sudo apt update -qq
+      - sh: sudo apt update -qq --allow-releaseinfo-change
       - sh: sudo apt install -y elfutils unzip librsvg2-common flatpak flatpak-builder
       - sh: flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
       - sh: |
