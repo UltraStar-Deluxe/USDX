@@ -514,12 +514,15 @@ begin
   TableData := nil;
   try
     // Search Song in DB
+    // TODO: isn't the whole filter completely unnecessary with the GROUP BY?
+    //   if yes, why not just do a much simpler query for each difficulty? can also add LIMIT that way?
     TableData := ScoreDB.GetUniTable(
       'SELECT [Difficulty], [Player], [Score], [Date] FROM [' + cUS_Scores + '] ' +
       'WHERE [SongID] = (' +
         'SELECT [ID] FROM [' + cUS_Songs + '] ' +
         'WHERE [Artist] = ? AND [Title] = ? ' +
         'LIMIT 1) ' +
+      'GROUP BY [Difficulty], [Player] HAVING MAX([Score]) ' +
       'ORDER BY [Score] DESC;', //no LIMIT! see filter below!
       [Song.Artist, Song.Title]);
 
