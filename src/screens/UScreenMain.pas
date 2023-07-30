@@ -49,11 +49,6 @@ uses
 type
 
   TScreenMain = class(TMenu)
-  private
-    { ticks when the user interacted, used to start credits
-      after a period of time w/o user interaction }
-    UserInteractionTicks: cardinal;
-
   public
     TextDescription:     integer;
     TextDescriptionLong: integer;
@@ -69,8 +64,6 @@ type
   end;
 
 const
-  { start credits after 60 seconds w/o interaction }
-  TicksUntilCredits = 5 * 60 * 1000;
   ID = 'ID_001';   //for help system
 
 var
@@ -86,7 +79,6 @@ uses
   ULog,
   UNote,
   UParty,
-  UScreenCredits,
   USkins,
   USongs,
   UTexture,
@@ -98,9 +90,6 @@ var
   SDL_ModState: word;
 begin
   Result := true;
-
-  { reset user interaction timer }
-  UserInteractionTicks := SDL_GetTicks;
 
   SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT +
     KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT);
@@ -285,9 +274,6 @@ function TScreenMain.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: in
 begin
   // default mouse behaviour
   Result := inherited ParseMouse(MouseButton, BtnDown, X, Y);
-
-  { reset user interaction timer }
-  UserInteractionTicks := SDL_GetTicks;
 end;
 
 constructor TScreenMain.Create;
@@ -336,9 +322,6 @@ begin
   * at the moment there is no better place for this
   *}
   Party.Clear;
-
-  { reset user interaction timer }
-  UserInteractionTicks := SDL_GetTicks;
 end;
 
 function TScreenMain.Draw: boolean;
@@ -352,12 +335,6 @@ begin
       WantSoftwareRenderingMsg := false;
       ScreenPopupError.ShowPopup(Language.Translate('ERROR_SOFTWARE_RENDERING'));
     end;
-  end;
-
-  { start credits after a period w/o user interaction }
-  if (UserInteractionTicks + TicksUntilCredits < SDL_GetTicks) then
-  begin
-    FadeTo(@ScreenCredits, SoundLib.Start);
   end;
 end;
 
