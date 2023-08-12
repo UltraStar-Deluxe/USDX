@@ -35,13 +35,13 @@ Currently, the following installation channels are offered:
 - On OS X, by default the `config.ini` file is created in `$HOME/Library/Application Support/UltraStarDeluxe` when UltraStar Deluxe is run for the first time.
 - When running in borderless fullscreen mode, the monitor it runs on can be configured by setting `Graphics.PositionX/Y` to an offset in pixels.
 
-### 4. Command-Line Parameters
-See https://github.com/UltraStar-Deluxe/USDX/wiki/Command-Line-Parameters
+### 4. Further documentation
+The [wiki](https://github.com/UltraStar-Deluxe/USDX/wiki) contains more information on:
+* [Command-line parameters](https://github.com/UltraStar-Deluxe/USDX/wiki/Command-Line-Parameters)
+* [Controls](https://github.com/UltraStar-Deluxe/USDX/wiki/Controls)
+* [Customization](https://github.com/UltraStar-Deluxe/USDX/wiki/Customization)
 
-### 5. Controls
-See https://github.com/UltraStar-Deluxe/USDX/wiki/Controls
-
-### 6. Compiling
+### 5. Compiling
 There are two main ways to compile the game:
 
 1. Lazarus IDE
@@ -51,5 +51,5 @@ The executable will be `game/ultrastardx[.exe]`.
 
 For extended information, dependencies, OS-specific notes and configure flags, see [COMPILING.md](COMPILING.md).
 
-### 7. Making a release
+### 6. Making a release
 See [RELEASING.md](RELEASING.md)
