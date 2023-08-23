@@ -409,6 +409,8 @@ begin
 
           if GoTo_SingScreen then
           begin
+            // if we've been in the player screen, we need to show the warning again
+            ScreenSing.CheckPlayerConfigOnNextSong := true;
             FadeTo(@ScreenSing);
             GoTo_SingScreen := false;
           end
