@@ -1267,6 +1267,10 @@ end;
 
 procedure TScreenSingController.OnHide;
 begin
+  // close video files
+  fVideoClip := nil;
+  fCurrentVideo := nil;
+
   // background texture
   if Tex_Background.TexNum > 0 then
   begin
@@ -1496,10 +1500,6 @@ begin
 
   LyricsState.Stop();
   LyricsState.SetSyncSource(nil);
-
-  // close video files
-  fVideoClip := nil;
-  fCurrentVideo := nil;
 
   // kill all stars and effects
   GoldenRec.KillAll;
