@@ -1011,6 +1011,10 @@ function TMenu.DrawFG: boolean;
 var
   J: integer;
 begin
+  //  Draw all ButtonCollections
+  for J := 0 to High(ButtonCollection) do
+    ButtonCollection[J].Draw;
+
   // We don't forget about newly implemented static for nice skin ...
   for J := 0 to High(Statics) do
     Statics[J].Draw;
@@ -1018,10 +1022,6 @@ begin
   // ... and slightly implemented menutext unit
   for J := 0 to High(Text) do
     Text[J].Draw;
-
-  //  Draw all ButtonCollections
-  for J := 0 to High(ButtonCollection) do
-    ButtonCollection[J].Draw;
 
   // Second, we draw all of our buttons
   for J := 0 to High(Button) do
