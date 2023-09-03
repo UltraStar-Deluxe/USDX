@@ -33,6 +33,7 @@
     <control>keyboard</control>
   </recommended>
   <releases>
+    <release version="2023.9.0" date="2023-9-3" />
     <release version="2023.6.0" date="2023-6-18" />
     <release version="2023.5.0" date="2023-5-2" />
     <release version="2023.4.0" date="2023-4-1" />
