@@ -2971,7 +2971,6 @@ begin
   ThemeStatic.W := ThemeIni.ReadInteger(Name, 'W', 0);
   ThemeStatic.H := ThemeIni.ReadInteger(Name, 'H', 0);
   ThemeStatic.Alpha := ThemeIni.ReadFloat(Name, 'Alpha', 1);
-  if ThemeIni.ReadString(Name, 'Type', '') = '' then Log.LogError('no texture type for ' + Name + ' found.', 'TTheme.ThemeLoadStatic');
   ThemeStatic.Typ   := ParseTextureType(ThemeIni.ReadString(Name, 'Type', ''), TEXTURE_TYPE_PLAIN);
   ThemeStatic.Color := ThemeIni.ReadString(Name, 'Color', '');
 
