@@ -98,6 +98,10 @@ type
 
       // static
       function AddStatic(ThemeStatic: TThemeStatic): integer; overload;
+      function AddStaticRectangle(static: TThemeStaticRectangle): integer;
+      function AddStaticAlphaRectangle(static: TThemeStaticAlphaRectangle): integer;
+      function AddStaticColorRectangle(static: TThemeStaticColorRectangle): integer;
+      function AddStaticPosition(static: TThemePosition): integer;
       function AddStatic(X, Y, W, H: real; const TexName: IPath): integer; overload;
       function AddStatic(X, Y, W, H: real; const TexName: IPath; Typ: TTextureType): integer; overload;
       function AddStatic(X, Y, W, H: real; ColR, ColG, ColB: real; const TexName: IPath; Typ: TTextureType): integer; overload;
@@ -623,6 +627,66 @@ begin
     ThemeStatic.TexX1, ThemeStatic.TexY1, ThemeStatic.TexX2, ThemeStatic.TexY2, ThemeStatic.Alpha,
     Skin.GetTextureFileName(ThemeStatic.Tex),
     ThemeStatic.Typ, $FFFFFF, ThemeStatic.Reflection, ThemeStatic.Reflectionspacing);
+end;
+
+function TMenu.AddStaticPosition(static: TThemePosition): integer;
+begin
+  Result := AddStatic(
+    static.X,
+    static.Y,
+    static.W,
+    static.H,
+    PATH_NONE
+  );
+end;
+
+function TMenu.AddStaticRectangle(static: TThemeStaticRectangle): integer;
+begin
+  Result := AddStatic(
+    static.X,
+    static.Y,
+    static.W,
+    static.H,
+    PATH_NONE
+  );
+end;
+
+function TMenu.AddStaticAlphaRectangle(static: TThemeStaticAlphaRectangle): integer;
+begin
+  Result := AddStatic(
+    static.X,
+    static.Y,
+    static.W,
+    static.H,
+    static.Z,
+    // Color R G B
+    0, 0, 0,
+    // TexX/Y
+    0, 0, 0, 0,
+    static.Alpha,
+    PATH_NONE,
+    TEXTURE_TYPE_PLAIN,
+    // Color
+    1,
+    // Reflection, reflection spacing
+    false, 0
+  );
+end;
+
+function TMenu.AddStaticColorRectangle(static: TThemeStaticColorRectangle): integer;
+begin
+  Result := AddStatic(
+    static.X,
+    static.Y,
+    static.W,
+    static.H,
+    static.Z,
+    static.ColR,
+    static.ColG,
+    static.ColB,
+    PATH_NONE,
+    TEXTURE_TYPE_PLAIN
+  );
 end;
 
 function TMenu.AddStatic(X, Y, W, H: real; const TexName: IPath): integer;
