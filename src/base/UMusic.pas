@@ -230,12 +230,6 @@ type
   end;
 
 type
-  TSoundEffect = class
-    public
-      EngineData: Pointer; // can be used for engine-specific data
-      procedure Callback(Buffer: PByteArray; BufSize: integer); virtual; abstract;
-  end;
-
   TSoundFX = class
     public
       EngineData: Pointer; // can be used for engine-specific data
@@ -341,9 +335,6 @@ type
 
       procedure GetFFTData(var data: TFFTData);          virtual; abstract;
       function GetPCMData(var data: TPCMData): Cardinal; virtual; abstract;
-
-      procedure AddSoundEffect(Effect: TSoundEffect);    virtual; abstract;
-      procedure RemoveSoundEffect(Effect: TSoundEffect); virtual; abstract;
 
       procedure AddSoundFX(FX: TSoundFX);    virtual; abstract;
       procedure RemoveSoundFX(FX: TSoundFX); virtual; abstract;
