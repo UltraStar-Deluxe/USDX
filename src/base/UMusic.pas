@@ -236,11 +236,6 @@ type
       procedure Callback(Buffer: PByteArray; BufSize: integer); virtual; abstract;
   end;
 
-  TVoiceRemoval = class(TSoundEffect)
-    public
-      procedure Callback(Buffer: PByteArray; BufSize: integer); override;
-  end;
-
   TSoundFX = class
     public
       EngineData: Pointer; // can be used for engine-specific data
@@ -1050,33 +1045,6 @@ begin
   If (Soundlib.BGMusic <> nil) then
   begin
     Soundlib.BGMusic.Pause;
-  end;
-end;
-
-{ TVoiceRemoval }
-
-procedure TVoiceRemoval.Callback(Buffer: PByteArray; BufSize: integer);
-var
-  FrameIndex, FrameSize: integer;
-  Value: integer;
-  Sample: PPCMStereoSample;
-begin
-  FrameSize := 2 * SizeOf(SmallInt);
-  for FrameIndex := 0 to (BufSize div FrameSize)-1 do
-  begin
-    Sample := PPCMStereoSample(Buffer);
-    // channel difference
-    Value := Sample[0] - Sample[1];
-    // clip
-    if (Value > High(SmallInt)) then
-      Value := High(SmallInt)
-    else if (Value < Low(SmallInt)) then
-      Value := Low(SmallInt);
-    // assign result
-    Sample[0] := Value;
-    Sample[1] := Value;
-    // increase to next frame
-    Inc(PByte(Buffer), FrameSize);
   end;
 end;
 
