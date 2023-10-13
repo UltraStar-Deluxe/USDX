@@ -1,10 +1,10 @@
 # Making a release
 1. Find the contents of `VERSION` (strip the `+dev`) throughout the code.
     This should result in four places:
-    * VERSION
-    * UConfig.pas
-    * variables.nsh
-    * ultrastardx.appdata.xml
+    * [VERSION](VERSION)
+    * [UConfig.pas](src/base/UConfig.pas)
+    * [variables.nsh](installer/settings/variables.nsh)
+    * [ultrastardx.appdata.xml](dists/ultrastardx.appdata.xml)
 2. Make the release:
     * in the first two files, update it to the new version _without_ the `+dev` bit
     * in `variables.nsh` update both blocks immediately and swap the comments
