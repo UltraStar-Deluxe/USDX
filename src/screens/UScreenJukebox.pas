@@ -1962,7 +1962,7 @@ begin
   fMusicSync := TMusicSyncSource.Create();
 
   //Jukebox Items
-  JukeboxStaticTimeProgress       := AddStatic(Theme.Jukebox.StaticTimeProgress);
+  JukeboxStaticTimeProgress       := AddStaticColorRectangle(Theme.Jukebox.StaticTimeProgress);
   JukeboxStaticTimeBackground     := AddStatic(Theme.Jukebox.StaticTimeBackground);
   JukeboxStaticSongBackground     := AddStatic(Theme.Jukebox.StaticSongBackground);
   JukeboxStaticSongListBackground := AddStatic(Theme.Jukebox.StaticSongListBackground);
@@ -2012,7 +2012,7 @@ begin
   JukeboxListText  := AddText(Theme.Jukebox.TextListText);
   JukeboxCountText := AddText(Theme.Jukebox.TextCountText);
 
-  StaticCover := AddStatic(Theme.Jukebox.SongCover);
+  StaticCover := AddStaticPosition(Theme.Jukebox.SongCover);
 
   SetLength(JukeboxStaticActualSongStatic, Length(Theme.Jukebox.StaticActualSongStatics));
   for I := 0 to High(Theme.Jukebox.StaticActualSongStatics) do
@@ -2020,7 +2020,7 @@ begin
     JukeboxStaticActualSongStatic[I] := AddStatic(Theme.Jukebox.StaticActualSongStatics[i]);
   end;
 
-  JukeboxStaticActualSongCover := AddStatic(Theme.Jukebox.StaticActualSongCover);
+  JukeboxStaticActualSongCover := AddStaticPosition(Theme.Jukebox.StaticActualSongCover);
   JukeboxTextActualSongArtist := AddText(Theme.Jukebox.TextActualSongArtist);
   JukeboxTextActualSongTitle := AddText(Theme.Jukebox.TextActualSongTitle);
 
@@ -2040,7 +2040,7 @@ begin
   Button[JukeboxSongMenuPlaylist].Selectable := false;
   Button[JukeboxSongMenuOptions].Selectable := false;
 
-  JukeboxStaticSongMenuTimeProgress   := AddStatic(Theme.Jukebox.StaticSongMenuTimeProgress);
+  JukeboxStaticSongMenuTimeProgress   := AddStaticColorRectangle(Theme.Jukebox.StaticSongMenuTimeProgress);
   JukeboxStaticSongMenuTimeBackground := AddStatic(Theme.Jukebox.StaticSongMenuTimeBackground);
   JukeboxTextSongMenuTimeText         := AddText(Theme.Jukebox.SongMenuTextTime);
   JukeboxStaticSongMenuBackground     := AddStatic(Theme.Jukebox.StaticSongMenuBackground);

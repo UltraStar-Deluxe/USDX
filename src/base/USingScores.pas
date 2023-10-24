@@ -363,7 +363,7 @@ end;
 procedure TSingScores.LoadfromTheme;
 var
   I: integer;
-  procedure AddbyStatics(const PC: byte; const ScoreStatic, SingBarStatic: TThemeStatic; ScoreText: TThemeText);
+  procedure AddbyStatics(const PC: byte; const ScoreStatic: TThemePosition; const SingBarStatic: TThemePosition; ScoreText: TThemeText);
   var
     nPosition: TScorePosition;
   begin
