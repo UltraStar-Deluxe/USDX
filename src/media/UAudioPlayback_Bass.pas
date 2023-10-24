@@ -85,9 +85,6 @@ type
       procedure FadeIn(Time: real; TargetVolume: single); override;
       procedure Fade(Time: real; TargetVolume: single); override;
 
-      procedure AddSoundEffect(Effect: TSoundEffect);    override;
-      procedure RemoveSoundEffect(Effect: TSoundEffect); override;
-
       procedure AddSoundFX(FX: TSoundFX);    override;
       procedure RemoveSoundFX(FX: TSoundFX); override;
 
@@ -507,53 +504,10 @@ begin
     SourceStream.Loop := Enabled;
 end;
 
+// This is an empty handler because we need to implement it but never use it
 procedure DSPProcHandler(handle: HDSP; channel: DWORD; buffer: Pointer; length: DWORD; user: Pointer);
 {$IFDEF MSWINDOWS}stdcall;{$ELSE}cdecl;{$ENDIF}
-var
-  Effect: TSoundEffect;
 begin
-  Effect := TSoundEffect(user);
-  if assigned(Effect) then
-    Effect.Callback(buffer, length);
-end;
-
-procedure TBassPlaybackStream.AddSoundEffect(Effect: TSoundEffect);
-var
-  DspHandle: HDSP;
-begin
-  if assigned(Effect.engineData) then
-  begin
-    Log.LogError('TSoundEffect.engineData already set', 'TBassPlaybackStream.AddSoundEffect');
-    Exit;
-  end;
-
-  DspHandle := BASS_ChannelSetDSP(Handle, @DSPProcHandler, Effect, 0);
-  if (DspHandle = 0) then
-  begin
-    Log.LogError(BassCore.ErrorGetString(), 'TBassPlaybackStream.AddSoundEffect');
-    Exit;
-  end;
-
-  GetMem(Effect.EngineData, SizeOf(HDSP));
-  PHDSP(Effect.EngineData)^ := DspHandle;
-end;
-
-procedure TBassPlaybackStream.RemoveSoundEffect(Effect: TSoundEffect);
-begin
-  if not assigned(Effect.EngineData) then
-  begin
-    Log.LogError('TSoundEffect.engineData invalid', 'TBassPlaybackStream.RemoveSoundEffect');
-    Exit;
-  end;
-
-  if not BASS_ChannelRemoveDSP(Handle, PHDSP(Effect.EngineData)^) then
-  begin
-    Log.LogError(BassCore.ErrorGetString(), 'TBassPlaybackStream.RemoveSoundEffect');
-    Exit;
-  end;
-
-  FreeMem(Effect.EngineData);
-  Effect.EngineData := nil;
 end;
 
 procedure TBassPlaybackStream.AddSoundFX(FX: TSoundFX);
@@ -782,11 +736,6 @@ begin
   // config playing buffer
   //BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 10);
   //BASS_SetConfig(BASS_CONFIG_BUFFER, 100);
-
-  // Using floating-point DSP config converts the passed data to 32bit sample data
-  // some used effects doesn't expect this kind of data, therefore they are bugging
-  // (see Voice removal; UMusic TVoiceRemoval.Callback)
-  //BASS_SetConfig(BASS_CONFIG_FLOATDSP, 1); // enable floating-point DSP
 
   Result := true;
 end;

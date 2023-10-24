@@ -127,23 +127,14 @@ type
       procedure Close(); override;
   end;
 
-procedure ToggleVoiceRemoval();
-
 implementation
 
 uses
   ULog;
 
-var doVoiceRemoval: boolean;
-
 constructor TAudioPlaybackBase.Create();
 begin
   inherited;
-end;
-
-procedure ToggleVoiceRemoval();
-begin
-  doVoiceRemoval:=not(doVoiceRemoval);
 end;
 
 { TAudioPlaybackBase }
@@ -167,7 +158,6 @@ begin
     Exit;
   end;
 
-  if doVoiceRemoval then MusicStream.AddSoundEffect(TVoiceRemoval.Create());
   if assigned(IReplayGain) and IReplayGain.CanEnable then MusicStream.AddSoundFX(IReplayGain.Create());
 
   Result := true;
