@@ -278,6 +278,15 @@ type
     H: integer;
   end;
 
+  TThemeSingPlayer = record
+    Name: TThemeText;
+    Score: TThemeText;
+    ScoreBackground: TThemePosition;
+    AvatarFrame: TThemeStatic; // TODO: is this actually the frame?
+    Avatar: TThemeStaticAlphaRectangle;
+    SingBar: TThemePosition;
+  end;
+
   TThemeLoading = class(TThemeBasic)
     StaticAnimation:  TThemeStatic;
     TextLoading:      TThemeText;
@@ -1512,6 +1521,7 @@ type
     procedure ThemeLoadStaticRectangle(var ThemeStaticRectangle: TThemeStaticRectangle; const Name: string);
     procedure ThemeLoadStaticAlphaRectangle(var static: TThemeStaticAlphaRectangle; const Name: string);
     procedure ThemeLoadStaticColorRectangle(var ThemeStaticColorRectangle: TThemeStaticColorRectangle; const Name: string);
+    procedure ThemeLoadSingPlayerStatics(var ThemeSingPlayer: TThemeSingPlayer; const Name: string);
 
     procedure ThemeLoadButton(var ThemeButton: TThemeButton; const Name: string; Collections: PAThemeButtonCollection = nil);
     procedure ThemeLoadButtonCollection(var Collection: TThemeButtonCollection; const Name: string);
@@ -3282,6 +3292,16 @@ begin
   ThemePosition.Y := ThemeIni.ReadInteger(Name, 'Y', 0);
   ThemePosition.H := ThemeIni.ReadInteger(Name, 'H', 0);
   ThemePosition.W := ThemeIni.ReadInteger(Name, 'W', 0);
+end;
+
+procedure TTheme.ThemeLoadSingPlayerStatics(var ThemeSingPlayer: TThemeSingPlayer; const Name: string);
+begin
+  ThemeLoadText(ThemeSingPlayer.Name, 'Sing' + Name + 'Text');
+  ThemeLoadText(ThemeSingPlayer.Score, 'Sing' + Name + 'TextScore');
+  ThemeLoadPosition(ThemeSingPlayer.ScoreBackground, 'Sing' + Name + 'Static2');
+  ThemeLoadStatic(ThemeSingPlayer.AvatarFrame, 'Sing' + Name + 'Static');
+  ThemeLoadStaticAlphaRectangle(ThemeSingPlayer.Avatar, 'Sing' + Name + 'Avatar');
+  ThemeLoadPosition(ThemeSingPlayer.SingBar, 'Sing' + Name + 'SingBar');
 end;
 
 procedure TTheme.LoadColors;
