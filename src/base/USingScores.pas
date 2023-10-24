@@ -899,14 +899,14 @@ begin
                     end;
                   1:
                     begin
-                      aPositions[PIndex].PUW := Theme.Sing.StaticP2FourPScoreBG.W;
-                      aPositions[PIndex].PUH := Theme.Sing.StaticP2FourPScoreBG.H;
+                      aPositions[PIndex].PUW := Theme.Sing.Solo4PP2.ScoreBackground.W;
+                      aPositions[PIndex].PUH := Theme.Sing.Solo4PP2.ScoreBackground.H;
 
-                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP2FourPScoreBG.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.TextP2FourPScore.Y + 65;
+                      aPositions[PIndex].PUStartX := Theme.Sing.Solo4PP2.ScoreBackground.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.Solo4PP2.Score.Y + 65;
 
-                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP2FourPScoreBG.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP2FourPScore.Y;
+                      aPositions[PIndex].PUTargetX := Theme.Sing.Solo4PP2.ScoreBackground.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.Solo4PP2.Score.Y;
                     end;
                   2:
                     begin
@@ -1416,16 +1416,16 @@ begin
                Position.TextSize  := Theme.Sing.Solo4PP1.Score.Size;
              end;
           1: begin
-               Position.BGX := Theme.Sing.StaticP2FourPScoreBG.X;
-               Position.BGY := Theme.Sing.StaticP2FourPScoreBG.Y;
-               Position.BGW := Theme.Sing.StaticP2FourPScoreBG.W;
-               Position.BGH := Theme.Sing.StaticP2FourPScoreBG.H;
+               Position.BGX := Theme.Sing.Solo4PP2.ScoreBackground.X;
+               Position.BGY := Theme.Sing.Solo4PP2.ScoreBackground.Y;
+               Position.BGW := Theme.Sing.Solo4PP2.ScoreBackground.W;
+               Position.BGH := Theme.Sing.Solo4PP2.ScoreBackground.H;
 
-               Position.TextX     := Theme.Sing.TextP2FourPScore.X;
-               Position.TextY     := Theme.Sing.TextP2FourPScore.Y;
-               Position.TextFont  := Theme.Sing.TextP2FourPScore.Font;
-               Position.TextStyle := Theme.Sing.TextP2FourPScore.Style;
-               Position.TextSize  := Theme.Sing.TextP2FourPScore.Size;
+               Position.TextX     := Theme.Sing.Solo4PP2.Score.X;
+               Position.TextY     := Theme.Sing.Solo4PP2.Score.Y;
+               Position.TextFont  := Theme.Sing.Solo4PP2.Score.Font;
+               Position.TextStyle := Theme.Sing.Solo4PP2.Score.Style;
+               Position.TextSize  := Theme.Sing.Solo4PP2.Score.Size;
              end;
           2: begin
                Position.BGX := Theme.Sing.StaticP3FourPScoreBG.X;
@@ -1769,10 +1769,10 @@ begin
                Position.RBH := Theme.Sing.Solo4PP1.SingBar.H;
              end;
           1: begin
-               Position.RBX := Theme.Sing.StaticP2FourPSingBar.X;
-               Position.RBY := Theme.Sing.StaticP2FourPSingBar.Y;
-               Position.RBW := Theme.Sing.StaticP2FourPSingBar.W;
-               Position.RBH := Theme.Sing.StaticP2FourPSingBar.H;
+               Position.RBX := Theme.Sing.Solo4PP2.SingBar.X;
+               Position.RBY := Theme.Sing.Solo4PP2.SingBar.Y;
+               Position.RBW := Theme.Sing.Solo4PP2.SingBar.W;
+               Position.RBH := Theme.Sing.Solo4PP2.SingBar.H;
              end;
           2: begin
                Position.RBX := Theme.Sing.StaticP3FourPSingBar.X;
