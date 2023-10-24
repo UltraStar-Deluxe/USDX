@@ -921,14 +921,14 @@ begin
                     end;
                   3:
                     begin
-                      aPositions[PIndex].PUW := Theme.Sing.StaticP4FourPScoreBG.W;
-                      aPositions[PIndex].PUH := Theme.Sing.StaticP4FourPScoreBG.H;
+                      aPositions[PIndex].PUW := Theme.Sing.Solo4PP4.ScoreBackground.W;
+                      aPositions[PIndex].PUH := Theme.Sing.Solo4PP4.ScoreBackground.H;
 
-                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP4FourPScoreBG.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.TextP4FourPScore.Y + 65;
+                      aPositions[PIndex].PUStartX := Theme.Sing.Solo4PP4.ScoreBackground.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.Solo4PP4.Score.Y + 65;
 
-                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP4FourPScoreBG.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP4FourPScore.Y;
+                      aPositions[PIndex].PUTargetX := Theme.Sing.Solo4PP4.ScoreBackground.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.Solo4PP4.Score.Y;
                     end;
                 end;
             end;
@@ -1440,16 +1440,16 @@ begin
                Position.TextSize  := Theme.Sing.Solo4PP3.Score.Size;
              end;
           3: begin
-               Position.BGX := Theme.Sing.StaticP4FourPScoreBG.X;
-               Position.BGY := Theme.Sing.StaticP4FourPScoreBG.Y;
-               Position.BGW := Theme.Sing.StaticP4FourPScoreBG.W;
-               Position.BGH := Theme.Sing.StaticP4FourPScoreBG.H;
+               Position.BGX := Theme.Sing.Solo4PP4.ScoreBackground.X;
+               Position.BGY := Theme.Sing.Solo4PP4.ScoreBackground.Y;
+               Position.BGW := Theme.Sing.Solo4PP4.ScoreBackground.W;
+               Position.BGH := Theme.Sing.Solo4PP4.ScoreBackground.H;
 
-               Position.TextX     := Theme.Sing.TextP4FourPScore.X;
-               Position.TextY     := Theme.Sing.TextP4FourPScore.Y;
-               Position.TextFont  := Theme.Sing.TextP4FourPScore.Font;
-               Position.TextStyle := Theme.Sing.TextP4FourPScore.Style;
-               Position.TextSize  := Theme.Sing.TextP4FourPScore.Size;
+               Position.TextX     := Theme.Sing.Solo4PP4.Score.X;
+               Position.TextY     := Theme.Sing.Solo4PP4.Score.Y;
+               Position.TextFont  := Theme.Sing.Solo4PP4.Score.Font;
+               Position.TextStyle := Theme.Sing.Solo4PP4.Score.Style;
+               Position.TextSize  := Theme.Sing.Solo4PP4.Score.Size;
              end;
         end;
       end;
@@ -1781,10 +1781,10 @@ begin
                Position.RBH := Theme.Sing.Solo4PP3.SingBar.H;
              end;
           3: begin
-               Position.RBX := Theme.Sing.StaticP4FourPSingBar.X;
-               Position.RBY := Theme.Sing.StaticP4FourPSingBar.Y;
-               Position.RBW := Theme.Sing.StaticP4FourPSingBar.W;
-               Position.RBH := Theme.Sing.StaticP4FourPSingBar.H;
+               Position.RBX := Theme.Sing.Solo4PP4.SingBar.X;
+               Position.RBY := Theme.Sing.Solo4PP4.SingBar.Y;
+               Position.RBW := Theme.Sing.Solo4PP4.SingBar.W;
+               Position.RBH := Theme.Sing.Solo4PP4.SingBar.H;
              end;
         end;
       end;
