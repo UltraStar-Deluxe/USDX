@@ -571,13 +571,7 @@ type
     // duet 4/6 players in one screen
     Duet4PP1: TThemeSingPlayer;
     Duet4PP2: TThemeSingPlayer;
-
-    StaticP3DuetFourPSingBar: TThemePosition;
-    StaticP3DuetFourP:        TThemeStatic;
-    StaticP3DuetFourPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP3DuetFourPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP3DuetFourP:          TThemeText;
-    TextP3DuetFourPScore:     TThemeText;
+    Duet4PP3: TThemeSingPlayer;
 
     StaticP4DuetFourPSingBar: TThemePosition;
     StaticP4DuetFourP:        TThemeStatic;
@@ -2066,13 +2060,7 @@ begin
       // duet 4/6 players in one screen
       ThemeLoadSingPlayerStatics(Sing.Duet4PP1, 'P1DuetFourP');
       ThemeLoadSingPlayerStatics(Sing.Duet4PP2, 'P2DuetFourP');
-
-      ThemeLoadPosition(Sing.StaticP3DuetFourPSingBar, 'SingP3DuetFourPSingBar');
-      ThemeLoadStatic(Sing.StaticP3DuetFourP, 'SingP3DuetFourPStatic');
-      ThemeLoadText(Sing.TextP3DuetFourP, 'SingP3DuetFourPText');
-      ThemeLoadPosition(Sing.StaticP3DuetFourPScoreBG, 'SingP3DuetFourPStatic2');
-      ThemeLoadText(Sing.TextP3DuetFourPScore, 'SingP3DuetFourPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP3DuetFourPAvatar, 'SingP3DuetFourPAvatar');
+      ThemeLoadSingPlayerStatics(Sing.Duet4PP3, 'P3DuetFourP');
 
       ThemeLoadPosition(Sing.StaticP4DuetFourPSingBar, 'SingP4DuetFourPSingBar');
       ThemeLoadStatic(Sing.StaticP4DuetFourP, 'SingP4DuetFourPStatic');
