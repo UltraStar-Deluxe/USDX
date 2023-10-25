@@ -545,15 +545,10 @@ type
     StaticDuetP2MScoreBG: TThemePosition;
     TextDuetP2MScore:     TThemeText;
 
-    StaticDuetP3R:        TThemeStatic;
-    StaticDuetP3RAvatar:  TThemeStaticAlphaRectangle;
-    TextDuetP3R:          TThemeText;
-    StaticDuetP3RScoreBG: TThemePosition;
-    TextDuetP3RScore:     TThemeText;
+    Duet3PP3: TThemeSingPlayer;
 
     StaticDuetP1ThreePSingBar: TThemePosition;
     StaticDuetP2MSingBar:      TThemePosition;
-    StaticDuetP3RSingBar:       TThemePosition;
 
     //game in 4/6 player modi in 1 Screen
     Solo4PP1: TThemeSingPlayer;
@@ -1993,15 +1988,10 @@ begin
       ThemeLoadText(Sing.TextDuetP2MScore, 'SingDuetP2MTextScore');
       ThemeLoadStaticAlphaRectangle(Sing.StaticDuetP2MAvatar, 'SingDuetP2MAvatar');
 
-      ThemeLoadStatic(Sing.StaticDuetP3R, 'SingDuetP3RStatic');
-      ThemeLoadText(Sing.TextDuetP3R, 'SingDuetP3RText');
-      ThemeLoadPosition(Sing.StaticDuetP3RScoreBG, 'SingDuetP3RStatic2');
-      ThemeLoadText(Sing.TextDuetP3RScore, 'SingDuetP3RTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticDuetP3RAvatar, 'SingDuetP3RAvatar');
+      ThemeLoadSingPlayerStatics(Sing.Duet3PP3, 'DuetP3R');
 
       ThemeLoadPosition(Sing.StaticDuetP1ThreePSingBar, 'SingDuetP1ThreePSingBar');
       ThemeLoadPosition(Sing.StaticDuetP2MSingBar, 'SingDuetP2MSingBar');
-      ThemeLoadPosition(Sing.StaticDuetP3RSingBar, 'SingDuetP3RSingBar');
 
       //4P/6P mode in 1 Screen
       ThemeLoadSingPlayerStatics(Sing.Solo4PP1, 'P1FourP');

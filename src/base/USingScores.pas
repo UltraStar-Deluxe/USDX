@@ -1118,14 +1118,14 @@ begin
                   end;
                 2, 5, 8:
                   begin
-                    aPositions[PIndex].PUW := Theme.Sing.StaticDuetP3RScoreBG.W;
-                    aPositions[PIndex].PUH := Theme.Sing.StaticDuetP3RScoreBG.H;
+                    aPositions[PIndex].PUW := Theme.Sing.Duet3PP3.ScoreBackground.W;
+                    aPositions[PIndex].PUH := Theme.Sing.Duet3PP3.ScoreBackground.H;
 
-                    aPositions[PIndex].PUStartX := Theme.Sing.StaticDuetP3RScoreBG.X;
-                    aPositions[PIndex].PUStartY := Theme.Sing.TextDuetP3RScore.Y + 40;
+                    aPositions[PIndex].PUStartX := Theme.Sing.Duet3PP3.ScoreBackground.X;
+                    aPositions[PIndex].PUStartY := Theme.Sing.Duet3PP3.Score.Y + 40;
 
-                    aPositions[PIndex].PUTargetX := Theme.Sing.StaticDuetP3RScoreBG.X;
-                    aPositions[PIndex].PUTargetY := Theme.Sing.TextDuetP3RScore.Y;
+                    aPositions[PIndex].PUTargetX := Theme.Sing.Duet3PP3.ScoreBackground.X;
+                    aPositions[PIndex].PUTargetY := Theme.Sing.Duet3PP3.Score.Y;
                   end;
               end;
             end;
@@ -1652,15 +1652,15 @@ begin
                  Position.TextSize := Theme.Sing.TextDuetP2MScore.Size;
                end;
             2, 5, 8: begin
-                 Position.BGX := Theme.Sing.StaticDuetP3RScoreBG.X;
-                 Position.BGY := Theme.Sing.StaticDuetP3RScoreBG.Y;
-                 Position.BGW := Theme.Sing.StaticDuetP3RScoreBG.W;
-                 Position.BGH := Theme.Sing.StaticDuetP3RScoreBG.H;
+                 Position.BGX := Theme.Sing.Duet3PP3.ScoreBackground.X;
+                 Position.BGY := Theme.Sing.Duet3PP3.ScoreBackground.Y;
+                 Position.BGW := Theme.Sing.Duet3PP3.ScoreBackground.W;
+                 Position.BGH := Theme.Sing.Duet3PP3.ScoreBackground.H;
 
-                 Position.TextX := Theme.Sing.TextDuetP3RScore.X;
-                 Position.TextY := Theme.Sing.TextDuetP3RScore.Y;
-                 Position.TextFont := Theme.Sing.TextDuetP3RScore.Font;
-                 Position.TextSize := Theme.Sing.TextDuetP3RScore.Size;
+                 Position.TextX := Theme.Sing.Duet3PP3.Score.X;
+                 Position.TextY := Theme.Sing.Duet3PP3.Score.Y;
+                 Position.TextFont := Theme.Sing.Duet3PP3.Score.Font;
+                 Position.TextSize := Theme.Sing.Duet3PP3.Score.Size;
                end;
           end;
       end;
@@ -1911,10 +1911,10 @@ begin
                  Position.RBH := Theme.Sing.StaticDuetP2MSingBar.H;
                end;
             2, 5, 8: begin
-                 Position.RBX := Theme.Sing.StaticDuetP3RSingBar.X;
-                 Position.RBY := Theme.Sing.StaticDuetP3RSingBar.Y;
-                 Position.RBW := Theme.Sing.StaticDuetP3RSingBar.W;
-                 Position.RBH := Theme.Sing.StaticDuetP3RSingBar.H;
+                 Position.RBX := Theme.Sing.Duet3PP3.SingBar.X;
+                 Position.RBY := Theme.Sing.Duet3PP3.SingBar.Y;
+                 Position.RBW := Theme.Sing.Duet3PP3.SingBar.W;
+                 Position.RBH := Theme.Sing.Duet3PP3.SingBar.H;
                end;
           end;
         end;
