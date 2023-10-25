@@ -710,9 +710,9 @@ begin
   Theme.Sing.Solo6PP2.AvatarFrame.ColB := Col[2].B;
 
   // P3
-  Theme.Sing.StaticP3SixP.ColR := Col[3].R;
-  Theme.Sing.StaticP3SixP.ColG := Col[3].G;
-  Theme.Sing.StaticP3SixP.ColB := Col[3].B;
+  Theme.Sing.Solo6PP3.AvatarFrame.ColR := Col[3].R;
+  Theme.Sing.Solo6PP3.AvatarFrame.ColG := Col[3].G;
+  Theme.Sing.Solo6PP3.AvatarFrame.ColB := Col[3].B;
 
   // P4
   Theme.Sing.StaticP4SixP.ColR := Col[4].R;
@@ -731,14 +731,14 @@ begin
 
   StaticP1SixP  := ScreenSing.AddStatic(Theme.Sing.Solo6PP1.AvatarFrame);
   StaticP2SixP  := ScreenSing.AddStatic(Theme.Sing.Solo6PP2.AvatarFrame);
-  StaticP3SixP  := ScreenSing.AddStatic(Theme.Sing.StaticP3SixP);
+  StaticP3SixP  := ScreenSing.AddStatic(Theme.Sing.Solo6PP3.AvatarFrame);
   StaticP4SixP  := ScreenSing.AddStatic(Theme.Sing.StaticP4SixP);
   StaticP5SixP  := ScreenSing.AddStatic(Theme.Sing.StaticP5SixP);
   StaticP6SixP  := ScreenSing.AddStatic(Theme.Sing.StaticP6SixP);
 
   TextP1SixP   := ScreenSing.AddText(Theme.Sing.Solo6PP1.Name);
   TextP2SixP   := ScreenSing.AddText(Theme.Sing.Solo6PP2.Name);
-  TextP3SixP   := ScreenSing.AddText(Theme.Sing.TextP3SixP);
+  TextP3SixP   := ScreenSing.AddText(Theme.Sing.Solo6PP3.Name);
   TextP4SixP   := ScreenSing.AddText(Theme.Sing.TextP4SixP);
   TextP5SixP   := ScreenSing.AddText(Theme.Sing.TextP5SixP);
   TextP6SixP   := ScreenSing.AddText(Theme.Sing.TextP6SixP);
@@ -1138,14 +1138,14 @@ begin
   ScreenSing.Statics[StaticP2SixPAvatar].Texture.Z := Theme.Sing.Solo6PP2.Avatar.Z;
   ScreenSing.Statics[StaticP2SixPAvatar].Texture.Alpha := Theme.Sing.Solo6PP2.Avatar.Alpha;
 
-  StaticP3SixPAvatar := ScreenSing.AddStaticAlphaRectangle(Theme.Sing.StaticP3SixPAvatar);
+  StaticP3SixPAvatar := ScreenSing.AddStaticAlphaRectangle(Theme.Sing.Solo6PP3.Avatar);
   ScreenSing.Statics[StaticP3SixPAvatar].Texture := AvatarPlayerTextures[3];
-  ScreenSing.Statics[StaticP3SixPAvatar].Texture.X  := Theme.Sing.StaticP3SixPAvatar.X;
-  ScreenSing.Statics[StaticP3SixPAvatar].Texture.Y  := Theme.Sing.StaticP3SixPAvatar.Y;
-  ScreenSing.Statics[StaticP3SixPAvatar].Texture.H  := Theme.Sing.StaticP3SixPAvatar.H;
-  ScreenSing.Statics[StaticP3SixPAvatar].Texture.W  := Theme.Sing.StaticP3SixPAvatar.W;
-  ScreenSing.Statics[StaticP3SixPAvatar].Texture.Z := Theme.Sing.StaticP3SixPAvatar.Z;
-  ScreenSing.Statics[StaticP3SixPAvatar].Texture.Alpha := Theme.Sing.StaticP3SixPAvatar.Alpha;
+  ScreenSing.Statics[StaticP3SixPAvatar].Texture.X  := Theme.Sing.Solo6PP3.Avatar.X;
+  ScreenSing.Statics[StaticP3SixPAvatar].Texture.Y  := Theme.Sing.Solo6PP3.Avatar.Y;
+  ScreenSing.Statics[StaticP3SixPAvatar].Texture.H  := Theme.Sing.Solo6PP3.Avatar.H;
+  ScreenSing.Statics[StaticP3SixPAvatar].Texture.W  := Theme.Sing.Solo6PP3.Avatar.W;
+  ScreenSing.Statics[StaticP3SixPAvatar].Texture.Z := Theme.Sing.Solo6PP3.Avatar.Z;
+  ScreenSing.Statics[StaticP3SixPAvatar].Texture.Alpha := Theme.Sing.Solo6PP3.Avatar.Alpha;
 
   StaticP4SixPAvatar := ScreenSing.AddStaticAlphaRectangle(Theme.Sing.StaticP4SixPAvatar);
   ScreenSing.Statics[StaticP4SixPAvatar].Texture := AvatarPlayerTextures[4];
