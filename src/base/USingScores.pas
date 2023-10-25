@@ -1096,14 +1096,14 @@ begin
               case (PopUp.Player) of
                 0, 3, 6:
                   begin
-                    aPositions[PIndex].PUW := Theme.Sing.StaticDuetP1ThreePScoreBG.W;
-                    aPositions[PIndex].PUH := Theme.Sing.StaticDuetP1ThreePScoreBG.H;
+                    aPositions[PIndex].PUW := Theme.Sing.Duet3PP1.ScoreBackground.W;
+                    aPositions[PIndex].PUH := Theme.Sing.Duet3PP1.ScoreBackground.H;
 
-                    aPositions[PIndex].PUStartX := Theme.Sing.StaticDuetP1ThreePScoreBG.X;
-                    aPositions[PIndex].PUStartY := Theme.Sing.TextDuetP1ThreePScore.Y + 40;
+                    aPositions[PIndex].PUStartX := Theme.Sing.Duet3PP1.ScoreBackground.X;
+                    aPositions[PIndex].PUStartY := Theme.Sing.Duet3PP1.Score.Y + 40;
 
-                    aPositions[PIndex].PUTargetX := Theme.Sing.StaticDuetP1ThreePScoreBG.X;
-                    aPositions[PIndex].PUTargetY := Theme.Sing.TextDuetP1ThreePScore.Y;
+                    aPositions[PIndex].PUTargetX := Theme.Sing.Duet3PP1.ScoreBackground.X;
+                    aPositions[PIndex].PUTargetY := Theme.Sing.Duet3PP1.Score.Y;
                   end;
                 1, 4, 7:
                   begin
@@ -1630,15 +1630,15 @@ begin
         begin
           case Index of
             0, 3, 6: begin
-                 Position.BGX := Theme.Sing.StaticDuetP1ThreePScoreBG.X;
-                 Position.BGY := Theme.Sing.StaticDuetP1ThreePScoreBG.Y;
-                 Position.BGW := Theme.Sing.StaticDuetP1ThreePScoreBG.W;
-                 Position.BGH := Theme.Sing.StaticDuetP1ThreePScoreBG.H;
+                 Position.BGX := Theme.Sing.Duet3PP1.ScoreBackground.X;
+                 Position.BGY := Theme.Sing.Duet3PP1.ScoreBackground.Y;
+                 Position.BGW := Theme.Sing.Duet3PP1.ScoreBackground.W;
+                 Position.BGH := Theme.Sing.Duet3PP1.ScoreBackground.H;
 
-                 Position.TextX := Theme.Sing.TextDuetP1ThreePScore.X;
-                 Position.TextY := Theme.Sing.TextDuetP1ThreePScore.Y;
-                 Position.TextFont := Theme.Sing.TextDuetP1ThreePScore.Font;
-                 Position.TextSize := Theme.Sing.TextDuetP1ThreePScore.Size;
+                 Position.TextX := Theme.Sing.Duet3PP1.Score.X;
+                 Position.TextY := Theme.Sing.Duet3PP1.Score.Y;
+                 Position.TextFont := Theme.Sing.Duet3PP1.Score.Font;
+                 Position.TextSize := Theme.Sing.Duet3PP1.Score.Size;
                end;
             1, 4, 7: begin
                  Position.BGX := Theme.Sing.Duet3PP2.ScoreBackground.X;
@@ -1899,10 +1899,10 @@ begin
           case Index of
             0, 3, 6:
                begin
-                 Position.RBX := Theme.Sing.StaticDuetP1ThreePSingBar.X;
-                 Position.RBY := Theme.Sing.StaticDuetP1ThreePSingBar.Y;
-                 Position.RBW := Theme.Sing.StaticDuetP1ThreePSingBar.W;
-                 Position.RBH := Theme.Sing.StaticDuetP1ThreePSingBar.H;
+                 Position.RBX := Theme.Sing.Duet3PP1.SingBar.X;
+                 Position.RBY := Theme.Sing.Duet3PP1.SingBar.Y;
+                 Position.RBW := Theme.Sing.Duet3PP1.SingBar.W;
+                 Position.RBH := Theme.Sing.Duet3PP1.SingBar.H;
                end;
             1, 4, 7: begin
                  Position.RBX := Theme.Sing.Duet3PP2.SingBar.X;
