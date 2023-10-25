@@ -987,14 +987,14 @@ begin
                     end;
                   4:
                     begin
-                      aPositions[PIndex].PUW := Theme.Sing.StaticP5DuetSixPScoreBG.W;
-                      aPositions[PIndex].PUH := Theme.Sing.StaticP5DuetSixPScoreBG.H;
+                      aPositions[PIndex].PUW := Theme.Sing.Duet6PP5.ScoreBackground.W;
+                      aPositions[PIndex].PUH := Theme.Sing.Duet6PP5.ScoreBackground.H;
 
-                      aPositions[PIndex].PUStartX := Theme.Sing.StaticP5DuetSixPScoreBG.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.TextP5DuetSixPScore.Y + 40;
+                      aPositions[PIndex].PUStartX := Theme.Sing.Duet6PP5.ScoreBackground.X;
+                      aPositions[PIndex].PUStartY := Theme.Sing.Duet6PP5.Score.Y + 40;
 
-                      aPositions[PIndex].PUTargetX := Theme.Sing.StaticP5DuetSixPScoreBG.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.TextP5DuetSixPScore.Y;
+                      aPositions[PIndex].PUTargetX := Theme.Sing.Duet6PP5.ScoreBackground.X;
+                      aPositions[PIndex].PUTargetY := Theme.Sing.Duet6PP5.Score.Y;
                     end;
                   5:
                     begin
@@ -1509,16 +1509,16 @@ begin
                Position.TextSize  := Theme.Sing.Duet6PP4.Score.Size;
              end;
           4: begin
-               Position.BGX := Theme.Sing.StaticP5DuetSixPScoreBG.X;
-               Position.BGY := Theme.Sing.StaticP5DuetSixPScoreBG.Y;
-               Position.BGW := Theme.Sing.StaticP5DuetSixPScoreBG.W;
-               Position.BGH := Theme.Sing.StaticP5DuetSixPScoreBG.H;
+               Position.BGX := Theme.Sing.Duet6PP5.ScoreBackground.X;
+               Position.BGY := Theme.Sing.Duet6PP5.ScoreBackground.Y;
+               Position.BGW := Theme.Sing.Duet6PP5.ScoreBackground.W;
+               Position.BGH := Theme.Sing.Duet6PP5.ScoreBackground.H;
 
-               Position.TextX     := Theme.Sing.TextP5DuetSixPScore.X;
-               Position.TextY     := Theme.Sing.TextP5DuetSixPScore.Y;
-               Position.TextFont  := Theme.Sing.TextP5DuetSixPScore.Font;
-               Position.TextStyle := Theme.Sing.TextP5DuetSixPScore.Style;
-               Position.TextSize  := Theme.Sing.TextP5DuetSixPScore.Size;
+               Position.TextX     := Theme.Sing.Duet6PP5.Score.X;
+               Position.TextY     := Theme.Sing.Duet6PP5.Score.Y;
+               Position.TextFont  := Theme.Sing.Duet6PP5.Score.Font;
+               Position.TextStyle := Theme.Sing.Duet6PP5.Score.Style;
+               Position.TextSize  := Theme.Sing.Duet6PP5.Score.Size;
              end;
           5: begin
                Position.BGX := Theme.Sing.StaticP6DuetSixPScoreBG.X;
@@ -1821,10 +1821,10 @@ begin
                Position.RBH := Theme.Sing.Duet6PP4.SingBar.H;
              end;
           4: begin
-               Position.RBX := Theme.Sing.StaticP5DuetSixPSingBar.X;
-               Position.RBY := Theme.Sing.StaticP5DuetSixPSingBar.Y;
-               Position.RBW := Theme.Sing.StaticP5DuetSixPSingBar.W;
-               Position.RBH := Theme.Sing.StaticP5DuetSixPSingBar.H;
+               Position.RBX := Theme.Sing.Duet6PP5.SingBar.X;
+               Position.RBY := Theme.Sing.Duet6PP5.SingBar.Y;
+               Position.RBW := Theme.Sing.Duet6PP5.SingBar.W;
+               Position.RBH := Theme.Sing.Duet6PP5.SingBar.H;
              end;
           5: begin
                Position.RBX := Theme.Sing.StaticP6DuetSixPSingBar.X;
