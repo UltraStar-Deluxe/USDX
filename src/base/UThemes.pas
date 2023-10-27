@@ -493,18 +493,9 @@ type
 
     //moveable singbar mod
     StaticP1SingBar:       TThemePosition;
-    StaticP1TwoPSingBar:   TThemePosition;
     //eoa moveable singbar
 
-    //added for ps3 skin
-    //game in 2/4 player modi
-    StaticP1TwoP:         TThemeStatic;
-    StaticP1TwoPAvatar:   TThemeStaticAlphaRectangle;
-    StaticP1TwoPScoreBG:  TThemePosition; //Static for ScoreBG
-    TextP1TwoP:           TThemeText;
-    TextP1TwoPScore:      TThemeText;
-    //eoa
-
+    Solo2PP1: TThemeSingPlayer;
     Solo2PP2: TThemeSingPlayer;
 
     Solo3PP1: TThemeSingPlayer;
@@ -1866,7 +1857,6 @@ begin
 
       //moveable singbar mod
       ThemeLoadPosition(Sing.StaticP1SingBar, 'SingP1SingBar');
-      ThemeLoadPosition(Sing.StaticP1TwoPSingBar, 'SingP1TwoPSingBar');
     //eoa moveable singbar
 
       ThemeLoadStatic(Sing.StaticP1, 'SingP1Static');
@@ -1875,12 +1865,7 @@ begin
       ThemeLoadText(Sing.TextP1Score, 'SingP1TextScore');
       ThemeLoadStaticAlphaRectangle(Sing.StaticP1Avatar, 'SingP1Avatar');
 
-      ThemeLoadStatic(Sing.StaticP1TwoP, 'SingP1TwoPStatic');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP1TwoPAvatar, 'SingP1TwoPAvatar');
-      ThemeLoadText(Sing.TextP1TwoP, 'SingP1TwoPText');
-      ThemeLoadPosition(Sing.StaticP1TwoPScoreBG, 'SingP1TwoPStatic2');
-      ThemeLoadText(Sing.TextP1TwoPScore, 'SingP1TwoPTextScore');
-
+      ThemeLoadSingPlayerStatics(Sing.Solo2PP1, 'P1TwoP');
       ThemeLoadSingPlayerStatics(Sing.Solo2PP2, 'P2R');
 
       ThemeLoadSingPlayerStatics(Sing.Solo3PP1, 'P1ThreeP');
@@ -3882,15 +3867,15 @@ begin
 
   //moveable singbar mod
   ThemeSavePosition(Sing.StaticP1SingBar, 'SingP1SingBar');
-  ThemeSavePosition(Sing.StaticP1TwoPSingBar, 'SingP1TwoPSingBar');
   //eoa moveable singbar
 
   //Added for ps3 skin
   //This one is shown in 2/4P mode
-  ThemeSaveStatic(Sing.StaticP1TwoP, 'SingP1TwoPStatic');
-  ThemeSaveText(Sing.TextP1TwoP, 'SingP1TwoPText');
-  ThemeSavePosition(Sing.StaticP1TwoPScoreBG, 'SingP1TwoPStatic2');
-  ThemeSaveText(Sing.TextP1TwoPScore, 'SingP1TwoPTextScore');
+  ThemeSaveText(Sing.Solo2PP1.Name, 'SingP1TwoPText');
+  ThemeSaveText(Sing.Solo2PP1.Score, 'SingP1TwoPTextScore');
+  ThemeSavePosition(Sing.Solo2PP1.ScoreBackground, 'SingP1TwoPStatic2');
+  ThemeSaveStatic(Sing.Solo2PP1.AvatarFrame, 'SingP1TwoPStatic');
+  ThemeSavePosition(Sing.Solo2PP1.SingBar, 'SingP1TwoPSingBar');
 
   //This one is shown in 3/6P mode
   ThemeSaveText(Sing.Solo3PP1.Name, 'SingP1ThreePText');
