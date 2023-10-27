@@ -285,6 +285,7 @@ type
     AvatarFrame: TThemeStatic; // TODO: is this actually the frame?
     Avatar: TThemeStaticAlphaRectangle;
     SingBar: TThemePosition;
+    Oscilloscope: TThemePosition;
   end;
 
   TThemeLoading = class(TThemeBasic)
@@ -523,36 +524,6 @@ type
     Duet6PP4: TThemeSingPlayer;
     Duet6PP5: TThemeSingPlayer;
     Duet6PP6: TThemeSingPlayer;
-
-    SingP1Oscilloscope:           TThemePosition;
-    SingP1TwoPOscilloscope:       TThemePosition;
-    SingP2ROscilloscope:          TThemePosition;
-    SingP1ThreePOscilloscope:     TThemePosition;
-    SingP2MOscilloscope:          TThemePosition;
-    SingP3ROscilloscope:          TThemePosition;
-    SingDuetP1ThreePOscilloscope: TThemePosition;
-    SingDuetP2MOscilloscope:      TThemePosition;
-    SingDuetP3ROscilloscope:      TThemePosition;
-    SingP1FourPOscilloscope:      TThemePosition;
-    SingP2FourPOscilloscope:      TThemePosition;
-    SingP3FourPOscilloscope:      TThemePosition;
-    SingP4FourPOscilloscope:      TThemePosition;
-    SingP1SixPOscilloscope:       TThemePosition;
-    SingP2SixPOscilloscope:       TThemePosition;
-    SingP3SixPOscilloscope:       TThemePosition;
-    SingP4SixPOscilloscope:       TThemePosition;
-    SingP5SixPOscilloscope:       TThemePosition;
-    SingP6SixPOscilloscope:       TThemePosition;
-    SingP1DuetFourPOscilloscope:  TThemePosition;
-    SingP2DuetFourPOscilloscope:  TThemePosition;
-    SingP3DuetFourPOscilloscope:  TThemePosition;
-    SingP4DuetFourPOscilloscope:  TThemePosition;
-    SingP1DuetSixPOscilloscope:   TThemePosition;
-    SingP2DuetSixPOscilloscope:   TThemePosition;
-    SingP3DuetSixPOscilloscope:   TThemePosition;
-    SingP4DuetSixPOscilloscope:   TThemePosition;
-    SingP5DuetSixPOscilloscope:   TThemePosition;
-    SingP6DuetSixPOscilloscope:   TThemePosition;
 
     StaticSongName:   TThemeStatic;
     TextSongName:     TThemeText;
@@ -1862,6 +1833,7 @@ begin
       ThemeLoadStaticAlphaRectangle(Sing.Solo3PP3.Avatar, 'SingP3RAvatar');
       // TODO: SingBar uses non-consistent naming in theme
       ThemeLoadPosition(Sing.Solo3PP3.SingBar, 'SingP3SingBar');
+      ThemeLoadPosition(Sing.Solo3PP3.Oscilloscope, 'SingP3ROscilloscope');
 
       ThemeLoadStatic(Sing.StaticSongName, 'SingSongNameStatic');
       ThemeLoadText(Sing.TextSongName, 'SingSongNameText');
@@ -1896,37 +1868,6 @@ begin
       ThemeLoadSingPlayerStatics(Sing.Duet6PP4, 'P4DuetSixP');
       ThemeLoadSingPlayerStatics(Sing.Duet6PP5, 'P5DuetSixP');
       ThemeLoadSingPlayerStatics(Sing.Duet6PP6, 'P6DuetSixP');
-
-      // Oscilloscope Position
-      ThemeLoadPosition(Sing.SingP1Oscilloscope, 'SingP1Oscilloscope');
-      ThemeLoadPosition(Sing.SingP1TwoPOscilloscope, 'SingP1TwoPOscilloscope');
-      ThemeLoadPosition(Sing.SingP2ROscilloscope, 'SingP2ROscilloscope');
-      ThemeLoadPosition(Sing.SingP1ThreePOscilloscope, 'SingP1ThreePOscilloscope');
-      ThemeLoadPosition(Sing.SingP2MOscilloscope, 'SingP2MOscilloscope');
-      ThemeLoadPosition(Sing.SingP3ROscilloscope, 'SingP3ROscilloscope');
-      ThemeLoadPosition(Sing.SingDuetP1ThreePOscilloscope, 'SingDuetP1ThreePOscilloscope');
-      ThemeLoadPosition(Sing.SingDuetP2MOscilloscope, 'SingDuetP2MOscilloscope');
-      ThemeLoadPosition(Sing.SingDuetP3ROscilloscope, 'SingDuetP3ROscilloscope');
-      ThemeLoadPosition(Sing.SingP1FourPOscilloscope, 'SingP1FourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP2FourPOscilloscope, 'SingP2FourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP3FourPOscilloscope, 'SingP3FourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP4FourPOscilloscope, 'SingP4FourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP1SixPOscilloscope, 'SingP1SixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP2SixPOscilloscope, 'SingP2SixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP3SixPOscilloscope, 'SingP3SixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP4SixPOscilloscope, 'SingP4SixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP5SixPOscilloscope, 'SingP5SixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP6SixPOscilloscope, 'SingP6SixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP1DuetFourPOscilloscope, 'SingP1DuetFourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP2DuetFourPOscilloscope, 'SingP2DuetFourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP3DuetFourPOscilloscope, 'SingP3DuetFourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP4DuetFourPOscilloscope, 'SingP4DuetFourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP1DuetSixPOscilloscope, 'SingP1DuetSixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP2DuetSixPOscilloscope, 'SingP2DuetSixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP3DuetSixPOscilloscope, 'SingP3DuetSixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP4DuetSixPOscilloscope, 'SingP4DuetSixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP5DuetSixPOscilloscope, 'SingP5DuetSixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP6DuetSixPOscilloscope, 'SingP6DuetSixPOscilloscope');
 
       //Line Bonus Texts
       Sing.LineBonusText[0] := Language.Translate('POPUP_AWFUL');
@@ -2937,6 +2878,7 @@ begin
   ThemeLoadStatic(ThemeSingPlayer.AvatarFrame, 'Sing' + Name + 'Static');
   ThemeLoadStaticAlphaRectangle(ThemeSingPlayer.Avatar, 'Sing' + Name + 'Avatar');
   ThemeLoadPosition(ThemeSingPlayer.SingBar, 'Sing' + Name + 'SingBar');
+  ThemeLoadPosition(ThemeSingPlayer.Oscilloscope, 'Sing' + Name + 'Oscilloscope');
 end;
 
 procedure TTheme.LoadColors;
