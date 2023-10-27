@@ -1882,26 +1882,11 @@ begin
       ThemeLoadText(Sing.TextP1Score, 'SingP1TextScore');
       ThemeLoadStaticAlphaRectangle(Sing.StaticP1Avatar, 'SingP1Avatar');
 
-
-  //Added for ps3 skin
-  //This one is shown in 2/4P mode
-  //if it exists, otherwise the one Player equivaltents are used
-      if (ThemeIni.SectionExists('SingP1TwoPTextScore')) then
-      begin
-        ThemeLoadStatic(Sing.StaticP1TwoP, 'SingP1TwoPStatic');
-        ThemeLoadStaticAlphaRectangle(Sing.StaticP1TwoPAvatar, 'SingP1TwoPAvatar');
-        ThemeLoadText(Sing.TextP1TwoP, 'SingP1TwoPText');
-        ThemeLoadPosition(Sing.StaticP1TwoPScoreBG, 'SingP1TwoPStatic2');
-        ThemeLoadText(Sing.TextP1TwoPScore, 'SingP1TwoPTextScore');
-      end
-      else
-      begin
-        Sing.StaticP1TwoP := Sing.StaticP1;
-        Sing.StaticP1TwoPAvatar := Sing.StaticP1Avatar;
-        Sing.TextP1TwoP := Sing.TextP1;
-        Sing.StaticP1TwoPScoreBG := Sing.StaticP1ScoreBG;
-        Sing.TextP1TwoPScore := Sing.TextP1Score;
-      end;
+      ThemeLoadStatic(Sing.StaticP1TwoP, 'SingP1TwoPStatic');
+      ThemeLoadStaticAlphaRectangle(Sing.StaticP1TwoPAvatar, 'SingP1TwoPAvatar');
+      ThemeLoadText(Sing.TextP1TwoP, 'SingP1TwoPText');
+      ThemeLoadPosition(Sing.StaticP1TwoPScoreBG, 'SingP1TwoPStatic2');
+      ThemeLoadText(Sing.TextP1TwoPScore, 'SingP1TwoPTextScore');
 
   //This one is shown in 3/6P mode
   //if it exists, otherwise the one Player equivaltents are used
