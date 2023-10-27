@@ -495,7 +495,6 @@ type
     StaticP1SingBar:       TThemePosition;
     StaticP1ThreePSingBar: TThemePosition;
     StaticP1TwoPSingBar:   TThemePosition;
-    StaticP2RSingBar:      TThemePosition;
     //eoa moveable singbar
 
     //added for ps3 skin
@@ -513,11 +512,7 @@ type
     TextP1ThreePScore:      TThemeText;
     //eoa
 
-    StaticP2R:        TThemeStatic;
-    StaticP2RAvatar:  TThemeStaticAlphaRectangle;
-    StaticP2RScoreBG: TThemePosition; //Static for ScoreBG
-    TextP2R:          TThemeText;
-    TextP2RScore:     TThemeText;
+    Solo2PP2: TThemeSingPlayer;
 
     Solo3PP2: TThemeSingPlayer;
     Solo3PP3: TThemeSingPlayer;
@@ -1879,7 +1874,6 @@ begin
       ThemeLoadPosition(Sing.StaticP1SingBar, 'SingP1SingBar');
       ThemeLoadPosition(Sing.StaticP1TwoPSingBar, 'SingP1TwoPSingBar');
       ThemeLoadPosition(Sing.StaticP1ThreePSingBar, 'SingP1ThreePSingBar');
-      ThemeLoadPosition(Sing.StaticP2RSingBar, 'SingP2RSingBar');
     //eoa moveable singbar
 
       ThemeLoadStatic(Sing.StaticP1, 'SingP1Static');
@@ -1928,11 +1922,7 @@ begin
         Sing.TextP1ThreePScore := Sing.TextP1Score;
       end;
   //eoa
-      ThemeLoadStatic(Sing.StaticP2R, 'SingP2RStatic');
-      ThemeLoadText(Sing.TextP2R, 'SingP2RText');
-      ThemeLoadPosition(Sing.StaticP2RScoreBG, 'SingP2RStatic2');
-      ThemeLoadText(Sing.TextP2RScore, 'SingP2RTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP2RAvatar, 'SingP2RAvatar');
+      ThemeLoadSingPlayerStatics(Sing.Solo2PP2, 'P2R');
 
       ThemeLoadSingPlayerStatics(Sing.Solo3PP2, 'P2M');
       // TODO: we have to load Solo3PP3 manually because the SingBar uses a different name
@@ -3934,7 +3924,6 @@ begin
   ThemeSavePosition(Sing.StaticP1SingBar, 'SingP1SingBar');
   ThemeSavePosition(Sing.StaticP1TwoPSingBar, 'SingP1TwoPSingBar');
   ThemeSavePosition(Sing.StaticP1ThreePSingBar, 'SingP1ThreePSingBar');
-  ThemeSavePosition(Sing.StaticP2RSingBar, 'SingP2RSingBar');
   //eoa moveable singbar
 
   //Added for ps3 skin
@@ -3951,10 +3940,11 @@ begin
   ThemeSaveText(Sing.TextP1ThreePScore, 'SingP1ThreePTextScore');
   //eoa
 
-  ThemeSaveStatic(Sing.StaticP2R, 'SingP2RStatic');
-  ThemeSaveText(Sing.TextP2R, 'SingP2RText');
-  ThemeSavePosition(Sing.StaticP2RScoreBG, 'SingP2RStatic2');
-  ThemeSaveText(Sing.TextP2RScore, 'SingP2RTextScore');
+  ThemeSaveText(Sing.Solo2PP2.Name, 'SingP2RText');
+  ThemeSaveText(Sing.Solo2PP2.Score, 'SingP2RTextScore');
+  ThemeSavePosition(Sing.Solo2PP2.ScoreBackground, 'SingP2RStatic2');
+  ThemeSaveStatic(Sing.Solo2PP2.AvatarFrame, 'SingP2RStatic');
+  ThemeSavePosition(Sing.Solo2PP2.SingBar, 'SingP2RSingBar');
 
   ThemeSaveText(Sing.Solo3PP2.Name, 'SingP2MText');
   ThemeSaveText(Sing.Solo3PP2.Score, 'SingP2MTextScore');

@@ -421,7 +421,7 @@ begin
   AddByStatics(4, Theme.Sing.StaticP1ThreePScoreBG, Theme.Sing.StaticP1ThreePSingBar, Theme.Sing.TextP1ThreePScore);
 
   // player 2:
-  AddByStatics(2, Theme.Sing.StaticP2RScoreBG, Theme.Sing.StaticP2RSingBar, Theme.Sing.TextP2RScore);
+  AddByStatics(2, Theme.Sing.Solo2PP2.ScoreBackground, Theme.Sing.Solo2PP2.SingBar, Theme.Sing.Solo2PP2.Score);
   AddByStatics(4, Theme.Sing.Solo3PP2.ScoreBackground, Theme.Sing.Solo3PP2.SingBar, Theme.Sing.Solo3PP2.Score);
 
   // player 3:
