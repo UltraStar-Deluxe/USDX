@@ -422,7 +422,7 @@ begin
 
   // player 2:
   AddByStatics(2, Theme.Sing.StaticP2RScoreBG, Theme.Sing.StaticP2RSingBar, Theme.Sing.TextP2RScore);
-  AddByStatics(4, Theme.Sing.StaticP2MScoreBG, Theme.Sing.StaticP2MSingBar, Theme.Sing.TextP2MScore);
+  AddByStatics(4, Theme.Sing.Solo3PP2.ScoreBackground, Theme.Sing.Solo3PP2.SingBar, Theme.Sing.Solo3PP2.Score);
 
   // player 3:
   AddByStatics(4, Theme.Sing.Solo3PP3.ScoreBackground, Theme.Sing.Solo3PP3.SingBar, Theme.Sing.Solo3PP3.Score);
@@ -1150,14 +1150,14 @@ begin
                   end;
                 1, 4, 7:
                   begin
-                    aPositions[PIndex].PUW := Theme.Sing.StaticP2MScoreBG.W;
-                    aPositions[PIndex].PUH := Theme.Sing.StaticP2MScoreBG.H;
+                    aPositions[PIndex].PUW := Theme.Sing.Solo3PP2.ScoreBackground.W;
+                    aPositions[PIndex].PUH := Theme.Sing.Solo3PP2.ScoreBackground.H;
 
-                    aPositions[PIndex].PUStartX := Theme.Sing.StaticP2MScoreBG.X;
-                    aPositions[PIndex].PUStartY := Theme.Sing.TextP2MScore.Y + 65;
+                    aPositions[PIndex].PUStartX := Theme.Sing.Solo3PP2.ScoreBackground.X;
+                    aPositions[PIndex].PUStartY := Theme.Sing.Solo3PP2.Score.Y + 65;
 
-                    aPositions[PIndex].PUTargetX := Theme.Sing.StaticP2MScoreBG.X;
-                    aPositions[PIndex].PUTargetY := Theme.Sing.TextP2MScore.Y;
+                    aPositions[PIndex].PUTargetX := Theme.Sing.Solo3PP2.ScoreBackground.X;
+                    aPositions[PIndex].PUTargetY := Theme.Sing.Solo3PP2.Score.Y;
                   end;
                 2, 5, 8:
                   begin
