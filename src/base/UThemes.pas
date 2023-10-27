@@ -485,15 +485,7 @@ type
     TextTimeText:          TThemeText;
     //eoa TimeBar mod
 
-    StaticP1:              TThemeStatic;
-    TextP1:                TThemeText;
-    StaticP1ScoreBG:       TThemePosition; //Static for ScoreBG
-    TextP1Score:           TThemeText;
-    StaticP1Avatar:        TThemeStaticAlphaRectangle;
-
-    //moveable singbar mod
-    StaticP1SingBar:       TThemePosition;
-    //eoa moveable singbar
+    Solo1PP1: TThemeSingPlayer;
 
     Solo2PP1: TThemeSingPlayer;
     Solo2PP2: TThemeSingPlayer;
@@ -1855,15 +1847,7 @@ begin
       ThemeLoadText (Sing.InfoMessageText, 'SingInfoMessageText');
       ThemeLoadStatic (Sing.InfoMessageBG, 'SingInfoMessageBG');
 
-      //moveable singbar mod
-      ThemeLoadPosition(Sing.StaticP1SingBar, 'SingP1SingBar');
-    //eoa moveable singbar
-
-      ThemeLoadStatic(Sing.StaticP1, 'SingP1Static');
-      ThemeLoadText(Sing.TextP1, 'SingP1Text');
-      ThemeLoadPosition(Sing.StaticP1ScoreBG, 'SingP1Static2');
-      ThemeLoadText(Sing.TextP1Score, 'SingP1TextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP1Avatar, 'SingP1Avatar');
+      ThemeLoadSingPlayerStatics(Sing.Solo1PP1, 'P1');
 
       ThemeLoadSingPlayerStatics(Sing.Solo2PP1, 'P1TwoP');
       ThemeLoadSingPlayerStatics(Sing.Solo2PP2, 'P2R');
@@ -3860,14 +3844,11 @@ begin
   ThemeSaveText(Sing.TextTimeText, 'SingTimeText');
   //eoa TimeBar mod
 
-  ThemeSaveStatic(Sing.StaticP1, 'SingP1Static');
-  ThemeSaveText(Sing.TextP1, 'SingP1Text');
-  ThemeSavePosition(Sing.StaticP1ScoreBG, 'SingP1Static2');
-  ThemeSaveText(Sing.TextP1Score, 'SingP1TextScore');
-
-  //moveable singbar mod
-  ThemeSavePosition(Sing.StaticP1SingBar, 'SingP1SingBar');
-  //eoa moveable singbar
+  ThemeSaveText(Sing.Solo1PP1.Name, 'SingP1Text');
+  ThemeSaveText(Sing.Solo1PP1.Score, 'SingP1TextScore');
+  ThemeSavePosition(Sing.Solo1PP1.ScoreBackground, 'SingP1Static2');
+  ThemeSaveStatic(Sing.Solo1PP1.AvatarFrame, 'SingP1Static');
+  ThemeSavePosition(Sing.Solo1PP1.SingBar, 'SingP1SingBar');
 
   //Added for ps3 skin
   //This one is shown in 2/4P mode

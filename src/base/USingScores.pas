@@ -416,7 +416,7 @@ begin
   // load positions from theme
 
   // player 1:
-  AddByStatics(1, Theme.Sing.StaticP1ScoreBG, Theme.Sing.StaticP1SingBar, Theme.Sing.TextP1Score);
+  AddByStatics(1, Theme.Sing.Solo1PP1.ScoreBackground, Theme.Sing.Solo1PP1.SingBar, Theme.Sing.Solo1PP1.Score);
   AddByStatics(2, Theme.Sing.Solo2PP1.ScoreBackground, Theme.Sing.Solo2PP1.SingBar, Theme.Sing.Solo2PP1.Score);
   AddByStatics(4, Theme.Sing.Solo3PP1.ScoreBackground, Theme.Sing.Solo3PP1.SingBar, Theme.Sing.Solo3PP1.Score);
 
