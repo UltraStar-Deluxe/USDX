@@ -418,7 +418,7 @@ begin
   // player 1:
   AddByStatics(1, Theme.Sing.StaticP1ScoreBG, Theme.Sing.StaticP1SingBar, Theme.Sing.TextP1Score);
   AddByStatics(2, Theme.Sing.StaticP1TwoPScoreBG, Theme.Sing.StaticP1TwoPSingBar, Theme.Sing.TextP1TwoPScore);
-  AddByStatics(4, Theme.Sing.StaticP1ThreePScoreBG, Theme.Sing.StaticP1ThreePSingBar, Theme.Sing.TextP1ThreePScore);
+  AddByStatics(4, Theme.Sing.Solo3PP1.ScoreBackground, Theme.Sing.Solo3PP1.SingBar, Theme.Sing.Solo3PP1.Score);
 
   // player 2:
   AddByStatics(2, Theme.Sing.Solo2PP2.ScoreBackground, Theme.Sing.Solo2PP2.SingBar, Theme.Sing.Solo2PP2.Score);
@@ -1139,14 +1139,14 @@ begin
               case (PopUp.Player) of
                 0, 3, 6:
                   begin
-                    aPositions[PIndex].PUW := Theme.Sing.StaticP1ThreePScoreBG.W;
-                    aPositions[PIndex].PUH := Theme.Sing.StaticP1ThreePScoreBG.H;
+                    aPositions[PIndex].PUW := Theme.Sing.Solo3PP1.ScoreBackground.W;
+                    aPositions[PIndex].PUH := Theme.Sing.Solo3PP1.ScoreBackground.H;
 
-                    aPositions[PIndex].PUStartX := Theme.Sing.StaticP1ThreePScoreBG.X;
-                    aPositions[PIndex].PUStartY := Theme.Sing.TextP1ThreePScore.Y + 65;
+                    aPositions[PIndex].PUStartX := Theme.Sing.Solo3PP1.ScoreBackground.X;
+                    aPositions[PIndex].PUStartY := Theme.Sing.Solo3PP1.Score.Y + 65;
 
-                    aPositions[PIndex].PUTargetX := Theme.Sing.StaticP1ThreePScoreBG.X;
-                    aPositions[PIndex].PUTargetY := Theme.Sing.TextP1ThreePScore.Y;
+                    aPositions[PIndex].PUTargetX := Theme.Sing.Solo3PP1.ScoreBackground.X;
+                    aPositions[PIndex].PUTargetY := Theme.Sing.Solo3PP1.Score.Y;
                   end;
                 1, 4, 7:
                   begin

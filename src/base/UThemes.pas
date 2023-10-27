@@ -493,7 +493,6 @@ type
 
     //moveable singbar mod
     StaticP1SingBar:       TThemePosition;
-    StaticP1ThreePSingBar: TThemePosition;
     StaticP1TwoPSingBar:   TThemePosition;
     //eoa moveable singbar
 
@@ -504,16 +503,11 @@ type
     StaticP1TwoPScoreBG:  TThemePosition; //Static for ScoreBG
     TextP1TwoP:           TThemeText;
     TextP1TwoPScore:      TThemeText;
-    //game in 3/6 player modi
-    StaticP1ThreeP:         TThemeStatic;
-    StaticP1ThreePAvatar:   TThemeStaticAlphaRectangle;
-    StaticP1ThreePScoreBG:  TThemePosition; //Static for ScoreBG
-    TextP1ThreeP:           TThemeText;
-    TextP1ThreePScore:      TThemeText;
     //eoa
 
     Solo2PP2: TThemeSingPlayer;
 
+    Solo3PP1: TThemeSingPlayer;
     Solo3PP2: TThemeSingPlayer;
     Solo3PP3: TThemeSingPlayer;
 
@@ -1873,7 +1867,6 @@ begin
       //moveable singbar mod
       ThemeLoadPosition(Sing.StaticP1SingBar, 'SingP1SingBar');
       ThemeLoadPosition(Sing.StaticP1TwoPSingBar, 'SingP1TwoPSingBar');
-      ThemeLoadPosition(Sing.StaticP1ThreePSingBar, 'SingP1ThreePSingBar');
     //eoa moveable singbar
 
       ThemeLoadStatic(Sing.StaticP1, 'SingP1Static');
@@ -1888,14 +1881,9 @@ begin
       ThemeLoadPosition(Sing.StaticP1TwoPScoreBG, 'SingP1TwoPStatic2');
       ThemeLoadText(Sing.TextP1TwoPScore, 'SingP1TwoPTextScore');
 
-      ThemeLoadStatic(Sing.StaticP1ThreeP, 'SingP1ThreePStatic');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP1ThreePAvatar, 'SingP1ThreePAvatar');
-      ThemeLoadText(Sing.TextP1ThreeP, 'SingP1ThreePText');
-      ThemeLoadPosition(Sing.StaticP1ThreePScoreBG, 'SingP1ThreePStatic2');
-      ThemeLoadText(Sing.TextP1ThreePScore, 'SingP1ThreePTextScore');
-
       ThemeLoadSingPlayerStatics(Sing.Solo2PP2, 'P2R');
 
+      ThemeLoadSingPlayerStatics(Sing.Solo3PP1, 'P1ThreeP');
       ThemeLoadSingPlayerStatics(Sing.Solo3PP2, 'P2M');
       // TODO: we have to load Solo3PP3 manually because the SingBar uses a different name
       ThemeLoadText(Sing.Solo3PP3.Name, 'SingP3RText');
@@ -3895,7 +3883,6 @@ begin
   //moveable singbar mod
   ThemeSavePosition(Sing.StaticP1SingBar, 'SingP1SingBar');
   ThemeSavePosition(Sing.StaticP1TwoPSingBar, 'SingP1TwoPSingBar');
-  ThemeSavePosition(Sing.StaticP1ThreePSingBar, 'SingP1ThreePSingBar');
   //eoa moveable singbar
 
   //Added for ps3 skin
@@ -3906,10 +3893,11 @@ begin
   ThemeSaveText(Sing.TextP1TwoPScore, 'SingP1TwoPTextScore');
 
   //This one is shown in 3/6P mode
-  ThemeSaveStatic(Sing.StaticP1ThreeP, 'SingP1ThreePStatic');
-  ThemeSaveText(Sing.TextP1ThreeP, 'SingP1ThreePText');
-  ThemeSavePosition(Sing.StaticP1ThreePScoreBG, 'SingP1ThreePStatic2');
-  ThemeSaveText(Sing.TextP1ThreePScore, 'SingP1ThreePTextScore');
+  ThemeSaveText(Sing.Solo3PP1.Name, 'SingP1ThreePText');
+  ThemeSaveText(Sing.Solo3PP1.Score, 'SingP1ThreePTextScore');
+  ThemeSavePosition(Sing.Solo3PP1.ScoreBackground, 'SingP1ThreePStatic2');
+  ThemeSaveStatic(Sing.Solo3PP1.AvatarFrame, 'SingP1ThreePStatic');
+  ThemeSavePosition(Sing.Solo3PP1.SingBar, 'SingP1ThreePSingBar');
   //eoa
 
   ThemeSaveText(Sing.Solo2PP2.Name, 'SingP2RText');
