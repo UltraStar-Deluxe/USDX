@@ -1888,25 +1888,12 @@ begin
       ThemeLoadPosition(Sing.StaticP1TwoPScoreBG, 'SingP1TwoPStatic2');
       ThemeLoadText(Sing.TextP1TwoPScore, 'SingP1TwoPTextScore');
 
-  //This one is shown in 3/6P mode
-  //if it exists, otherwise the one Player equivaltents are used
-      if (ThemeIni.SectionExists('SingP1TwoPTextScore')) then
-      begin
-        ThemeLoadStatic(Sing.StaticP1ThreeP, 'SingP1ThreePStatic');
-        ThemeLoadStaticAlphaRectangle(Sing.StaticP1ThreePAvatar, 'SingP1ThreePAvatar');
-        ThemeLoadText(Sing.TextP1ThreeP, 'SingP1ThreePText');
-        ThemeLoadPosition(Sing.StaticP1ThreePScoreBG, 'SingP1ThreePStatic2');
-        ThemeLoadText(Sing.TextP1ThreePScore, 'SingP1ThreePTextScore');
-      end
-      else
-      begin
-        Sing.StaticP1ThreeP := Sing.StaticP1;
-        Sing.StaticP1ThreePAvatar := Sing.StaticP1Avatar;
-        Sing.TextP1ThreeP := Sing.TextP1;
-        Sing.StaticP1ThreePScoreBG := Sing.StaticP1ScoreBG;
-        Sing.TextP1ThreePScore := Sing.TextP1Score;
-      end;
-  //eoa
+      ThemeLoadStatic(Sing.StaticP1ThreeP, 'SingP1ThreePStatic');
+      ThemeLoadStaticAlphaRectangle(Sing.StaticP1ThreePAvatar, 'SingP1ThreePAvatar');
+      ThemeLoadText(Sing.TextP1ThreeP, 'SingP1ThreePText');
+      ThemeLoadPosition(Sing.StaticP1ThreePScoreBG, 'SingP1ThreePStatic2');
+      ThemeLoadText(Sing.TextP1ThreePScore, 'SingP1ThreePTextScore');
+
       ThemeLoadSingPlayerStatics(Sing.Solo2PP2, 'P2R');
 
       ThemeLoadSingPlayerStatics(Sing.Solo3PP2, 'P2M');
