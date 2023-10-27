@@ -497,7 +497,6 @@ type
     StaticP1TwoPSingBar:   TThemePosition;
     StaticP2RSingBar:      TThemePosition;
     StaticP2MSingBar:      TThemePosition;
-    StaticP3SingBar:       TThemePosition;
     //eoa moveable singbar
 
     //added for ps3 skin
@@ -527,11 +526,7 @@ type
     TextP2M:          TThemeText;
     TextP2MScore:     TThemeText;
 
-    StaticP3R:        TThemeStatic;
-    StaticP3RAvatar:  TThemeStaticAlphaRectangle;
-    StaticP3RScoreBG: TThemePosition; //Static for ScoreBG
-    TextP3R:          TThemeText;
-    TextP3RScore:     TThemeText;
+    Solo3PP3: TThemeSingPlayer;
 
     Duet3PP1: TThemeSingPlayer;
     Duet3PP2: TThemeSingPlayer;
@@ -1892,7 +1887,6 @@ begin
       ThemeLoadPosition(Sing.StaticP1ThreePSingBar, 'SingP1ThreePSingBar');
       ThemeLoadPosition(Sing.StaticP2RSingBar, 'SingP2RSingBar');
       ThemeLoadPosition(Sing.StaticP2MSingBar, 'SingP2MSingBar');
-      ThemeLoadPosition(Sing.StaticP3SingBar, 'SingP3SingBar');
     //eoa moveable singbar
 
       ThemeLoadStatic(Sing.StaticP1, 'SingP1Static');
@@ -1953,11 +1947,14 @@ begin
       ThemeLoadText(Sing.TextP2MScore, 'SingP2MTextScore');
       ThemeLoadStaticAlphaRectangle(Sing.StaticP2MAvatar, 'SingP2MAvatar');
 
-      ThemeLoadStatic(Sing.StaticP3R, 'SingP3RStatic');
-      ThemeLoadText(Sing.TextP3R, 'SingP3RText');
-      ThemeLoadPosition(Sing.StaticP3RScoreBG, 'SingP3RStatic2');
-      ThemeLoadText(Sing.TextP3RScore, 'SingP3RTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP3RAvatar, 'SingP3RAvatar');
+      // TODO: we have to load Solo3PP3 manually because the SingBar uses a different name
+      ThemeLoadText(Sing.Solo3PP3.Name, 'SingP3RText');
+      ThemeLoadText(Sing.Solo3PP3.Score, 'SingP3RTextScore');
+      ThemeLoadPosition(Sing.Solo3PP3.ScoreBackground, 'SingP3RStatic2');
+      ThemeLoadStatic(Sing.Solo3PP3.AvatarFrame, 'SingP3RStatic');
+      ThemeLoadStaticAlphaRectangle(Sing.Solo3PP3.Avatar, 'SingP3RAvatar');
+      // TODO: SingBar uses non-consistent naming in theme
+      ThemeLoadPosition(Sing.Solo3PP3.SingBar, 'SingP3SingBar');
 
       ThemeLoadStatic(Sing.StaticSongName, 'SingSongNameStatic');
       ThemeLoadText(Sing.TextSongName, 'SingSongNameText');
@@ -3951,7 +3948,6 @@ begin
   ThemeSavePosition(Sing.StaticP1ThreePSingBar, 'SingP1ThreePSingBar');
   ThemeSavePosition(Sing.StaticP2RSingBar, 'SingP2RSingBar');
   ThemeSavePosition(Sing.StaticP2MSingBar, 'SingP2MSingBar');
-  ThemeSavePosition(Sing.StaticP3SingBar, 'SingP3SingBar');
   //eoa moveable singbar
 
   //Added for ps3 skin
@@ -3978,10 +3974,12 @@ begin
   ThemeSavePosition(Sing.StaticP2MScoreBG, 'SingP2MStatic2');
   ThemeSaveText(Sing.TextP2MScore, 'SingP2MTextScore');
 
-  ThemeSaveStatic(Sing.StaticP3R, 'SingP3RStatic');
-  ThemeSaveText(Sing.TextP3R, 'SingP3RText');
-  ThemeSavePosition(Sing.StaticP3RScoreBG, 'SingP3RStatic2');
-  ThemeSaveText(Sing.TextP3RScore, 'SingP3RTextScore');
+  ThemeSaveText(Sing.Solo3PP3.Name, 'SingP3RText');
+  ThemeSaveText(Sing.Solo3PP3.Score, 'SingP3RTextScore');
+  ThemeSavePosition(Sing.Solo3PP3.ScoreBackground, 'SingP3RStatic2');
+  ThemeSaveStatic(Sing.Solo3PP3.AvatarFrame, 'SingP3RStatic');
+  // TODO: inconsistent naming!
+  ThemeSavePosition(Sing.Solo3PP3.SingBar, 'SingP3SingBar');
 
   ThemeSaveBasic(Score, 'Score');
   ThemeSaveText(Score.TextArtist, 'ScoreTextArtist');
