@@ -413,27 +413,27 @@ end;
 procedure SingDrawOscilloscopes;
 begin;
   if PlayersPlay = 1 then
-    SingDrawOscilloscope(Theme.Sing.SingP1Oscilloscope, 0);
+    SingDrawOscilloscope(Theme.Sing.Solo1PP1.Oscilloscope, 0);
 
   if PlayersPlay = 2 then
   begin
-    SingDrawOscilloscope(Theme.Sing.SingP1TwoPOscilloscope, 0);
-    SingDrawOscilloscope(Theme.Sing.SingP2ROscilloscope, 1);
+    SingDrawOscilloscope(Theme.Sing.Solo2PP1.Oscilloscope, 0);
+    SingDrawOscilloscope(Theme.Sing.Solo2PP2.Oscilloscope, 1);
   end;
 
   if PlayersPlay = 3 then
   begin
     if (CurrentSong.isDuet) then
     begin
-      SingDrawOscilloscope(Theme.Sing.SingDuetP1ThreePOscilloscope, 0);
-      SingDrawOscilloscope(Theme.Sing.SingDuetP2MOscilloscope, 1);
-      SingDrawOscilloscope(Theme.Sing.SingDuetP3ROscilloscope, 2);
+      SingDrawOscilloscope(Theme.Sing.Duet3PP1.Oscilloscope, 0);
+      SingDrawOscilloscope(Theme.Sing.Duet3PP2.Oscilloscope, 1);
+      SingDrawOscilloscope(Theme.Sing.Duet3PP3.Oscilloscope, 2);
     end
     else
     begin
-      SingDrawOscilloscope(Theme.Sing.SingP1ThreePOscilloscope, 0);
-      SingDrawOscilloscope(Theme.Sing.SingP2MOscilloscope, 1);
-      SingDrawOscilloscope(Theme.Sing.SingP3ROscilloscope, 2);
+      SingDrawOscilloscope(Theme.Sing.Solo3PP1.Oscilloscope, 0);
+      SingDrawOscilloscope(Theme.Sing.Solo3PP2.Oscilloscope, 1);
+      SingDrawOscilloscope(Theme.Sing.Solo3PP3.Oscilloscope, 2);
     end;
   end;
 
@@ -443,30 +443,30 @@ begin;
     begin
       if ScreenAct = 1 then
       begin
-        SingDrawOscilloscope(Theme.Sing.SingP1TwoPOscilloscope, 0);
-        SingDrawOscilloscope(Theme.Sing.SingP2ROscilloscope, 1);
+        SingDrawOscilloscope(Theme.Sing.Solo2PP1.Oscilloscope, 0);
+        SingDrawOscilloscope(Theme.Sing.Solo2PP2.Oscilloscope, 1);
       end;
       if ScreenAct = 2 then
       begin
-        SingDrawOscilloscope(Theme.Sing.SingP1TwoPOscilloscope, 2);
-        SingDrawOscilloscope(Theme.Sing.SingP2ROscilloscope, 3);
+        SingDrawOscilloscope(Theme.Sing.Solo2PP1.Oscilloscope, 2);
+        SingDrawOscilloscope(Theme.Sing.Solo2PP2.Oscilloscope, 3);
       end;
     end
     else
     begin
       if (CurrentSong.isDuet) then
       begin
-        SingDrawOscilloscope(Theme.Sing.SingP1DuetFourPOscilloscope, 0);
-        SingDrawOscilloscope(Theme.Sing.SingP2DuetFourPOscilloscope, 1);
-        SingDrawOscilloscope(Theme.Sing.SingP3DuetFourPOscilloscope, 2);
-        SingDrawOscilloscope(Theme.Sing.SingP4DuetFourPOscilloscope, 3);
+        SingDrawOscilloscope(Theme.Sing.Duet4PP1.Oscilloscope, 0);
+        SingDrawOscilloscope(Theme.Sing.Duet4PP2.Oscilloscope, 1);
+        SingDrawOscilloscope(Theme.Sing.Duet4PP3.Oscilloscope, 2);
+        SingDrawOscilloscope(Theme.Sing.Duet4PP4.Oscilloscope, 3);
       end
       else
       begin
-        SingDrawOscilloscope(Theme.Sing.SingP1FourPOscilloscope, 0);
-        SingDrawOscilloscope(Theme.Sing.SingP2FourPOscilloscope, 1);
-        SingDrawOscilloscope(Theme.Sing.SingP3FourPOscilloscope, 2);
-        SingDrawOscilloscope(Theme.Sing.SingP4FourPOscilloscope, 3);
+        SingDrawOscilloscope(Theme.Sing.Solo4PP1.Oscilloscope, 0);
+        SingDrawOscilloscope(Theme.Sing.Solo4PP2.Oscilloscope, 1);
+        SingDrawOscilloscope(Theme.Sing.Solo4PP3.Oscilloscope, 2);
+        SingDrawOscilloscope(Theme.Sing.Solo4PP4.Oscilloscope, 3);
       end;
     end;
   end;
@@ -479,31 +479,31 @@ begin;
       begin
         if ScreenAct = 1 then
         begin
-          SingDrawOscilloscope(Theme.Sing.SingDuetP1ThreePOscilloscope, 0);
-          SingDrawOscilloscope(Theme.Sing.SingDuetP2MOscilloscope, 1);
-          SingDrawOscilloscope(Theme.Sing.SingDuetP3ROscilloscope, 2);
+          SingDrawOscilloscope(Theme.Sing.Duet3PP1.Oscilloscope, 0);
+          SingDrawOscilloscope(Theme.Sing.Duet3PP2.Oscilloscope, 1);
+          SingDrawOscilloscope(Theme.Sing.Duet3PP3.Oscilloscope, 2);
         end;
         if ScreenAct = 2 then
         begin
-          SingDrawOscilloscope(Theme.Sing.SingDuetP1ThreePOscilloscope, 3);
-          SingDrawOscilloscope(Theme.Sing.SingDuetP2MOscilloscope, 4);
-          SingDrawOscilloscope(Theme.Sing.SingDuetP3ROscilloscope, 5);
+          SingDrawOscilloscope(Theme.Sing.Duet3PP1.Oscilloscope, 3);
+          SingDrawOscilloscope(Theme.Sing.Duet3PP2.Oscilloscope, 4);
+          SingDrawOscilloscope(Theme.Sing.Duet3PP3.Oscilloscope, 5);
         end;
       end
       else
       begin
         if ScreenAct = 1 then
         begin
-          SingDrawOscilloscope(Theme.Sing.SingP1ThreePOscilloscope, 0);
-          SingDrawOscilloscope(Theme.Sing.SingP2MOscilloscope, 1);
-          SingDrawOscilloscope(Theme.Sing.SingP3ROscilloscope, 2);
+          SingDrawOscilloscope(Theme.Sing.Solo3PP1.Oscilloscope, 0);
+          SingDrawOscilloscope(Theme.Sing.Solo3PP2.Oscilloscope, 1);
+          SingDrawOscilloscope(Theme.Sing.Solo3PP3.Oscilloscope, 2);
         end;
 
         if ScreenAct = 2 then
         begin
-          SingDrawOscilloscope(Theme.Sing.SingP1ThreePOscilloscope, 3);
-          SingDrawOscilloscope(Theme.Sing.SingP2MOscilloscope, 4);
-          SingDrawOscilloscope(Theme.Sing.SingP3ROscilloscope, 5);
+          SingDrawOscilloscope(Theme.Sing.Solo3PP1.Oscilloscope, 3);
+          SingDrawOscilloscope(Theme.Sing.Solo3PP2.Oscilloscope, 4);
+          SingDrawOscilloscope(Theme.Sing.Solo3PP3.Oscilloscope, 5);
         end;
       end;
     end
@@ -511,21 +511,21 @@ begin;
     begin
       if (CurrentSong.isDuet) then
       begin
-        SingDrawOscilloscope(Theme.Sing.SingP1DuetSixPOscilloscope, 0);
-        SingDrawOscilloscope(Theme.Sing.SingP2DuetSixPOscilloscope, 1);
-        SingDrawOscilloscope(Theme.Sing.SingP3DuetSixPOscilloscope, 2);
-        SingDrawOscilloscope(Theme.Sing.SingP4DuetSixPOscilloscope, 3);
-        SingDrawOscilloscope(Theme.Sing.SingP5DuetSixPOscilloscope, 4);
-        SingDrawOscilloscope(Theme.Sing.SingP6DuetSixPOscilloscope, 5);
+        SingDrawOscilloscope(Theme.Sing.Duet6PP1.Oscilloscope, 0);
+        SingDrawOscilloscope(Theme.Sing.Duet6PP2.Oscilloscope, 1);
+        SingDrawOscilloscope(Theme.Sing.Duet6PP3.Oscilloscope, 2);
+        SingDrawOscilloscope(Theme.Sing.Duet6PP4.Oscilloscope, 3);
+        SingDrawOscilloscope(Theme.Sing.Duet6PP5.Oscilloscope, 4);
+        SingDrawOscilloscope(Theme.Sing.Duet6PP6.Oscilloscope, 5);
       end
       else
       begin
-        SingDrawOscilloscope(Theme.Sing.SingP1SixPOscilloscope, 0);
-        SingDrawOscilloscope(Theme.Sing.SingP2SixPOscilloscope, 1);
-        SingDrawOscilloscope(Theme.Sing.SingP3SixPOscilloscope, 2);
-        SingDrawOscilloscope(Theme.Sing.SingP4SixPOscilloscope, 3);
-        SingDrawOscilloscope(Theme.Sing.SingP5SixPOscilloscope, 4);
-        SingDrawOscilloscope(Theme.Sing.SingP6SixPOscilloscope, 5);
+        SingDrawOscilloscope(Theme.Sing.Solo6PP1.Oscilloscope, 0);
+        SingDrawOscilloscope(Theme.Sing.Solo6PP2.Oscilloscope, 1);
+        SingDrawOscilloscope(Theme.Sing.Solo6PP3.Oscilloscope, 2);
+        SingDrawOscilloscope(Theme.Sing.Solo6PP4.Oscilloscope, 3);
+        SingDrawOscilloscope(Theme.Sing.Solo6PP5.Oscilloscope, 4);
+        SingDrawOscilloscope(Theme.Sing.Solo6PP6.Oscilloscope, 5);
       end;
     end;
   end;

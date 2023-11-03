@@ -278,6 +278,16 @@ type
     H: integer;
   end;
 
+  TThemeSingPlayer = record
+    Name: TThemeText;
+    Score: TThemeText;
+    ScoreBackground: TThemePosition;
+    AvatarFrame: TThemeStatic; // TODO: is this actually the frame?
+    Avatar: TThemeStaticAlphaRectangle;
+    SingBar: TThemePosition;
+    Oscilloscope: TThemePosition;
+  end;
+
   TThemeLoading = class(TThemeBasic)
     StaticAnimation:  TThemeStatic;
     TextLoading:      TThemeText;
@@ -476,247 +486,44 @@ type
     TextTimeText:          TThemeText;
     //eoa TimeBar mod
 
-    StaticP1:              TThemeStatic;
-    TextP1:                TThemeText;
-    StaticP1ScoreBG:       TThemePosition; //Static for ScoreBG
-    TextP1Score:           TThemeText;
-    StaticP1Avatar:        TThemeStaticAlphaRectangle;
+    Solo1PP1: TThemeSingPlayer;
 
-    //moveable singbar mod
-    StaticP1SingBar:       TThemePosition;
-    StaticP1ThreePSingBar: TThemePosition;
-    StaticP1TwoPSingBar:   TThemePosition;
-    StaticP2RSingBar:      TThemePosition;
-    StaticP2MSingBar:      TThemePosition;
-    StaticP3SingBar:       TThemePosition;
-    //eoa moveable singbar
+    Solo2PP1: TThemeSingPlayer;
+    Solo2PP2: TThemeSingPlayer;
 
-    //added for ps3 skin
-    //game in 2/4 player modi
-    StaticP1TwoP:         TThemeStatic;
-    StaticP1TwoPAvatar:   TThemeStaticAlphaRectangle;
-    StaticP1TwoPScoreBG:  TThemePosition; //Static for ScoreBG
-    TextP1TwoP:           TThemeText;
-    TextP1TwoPScore:      TThemeText;
-    //game in 3/6 player modi
-    StaticP1ThreeP:         TThemeStatic;
-    StaticP1ThreePAvatar:   TThemeStaticAlphaRectangle;
-    StaticP1ThreePScoreBG:  TThemePosition; //Static for ScoreBG
-    TextP1ThreeP:           TThemeText;
-    TextP1ThreePScore:      TThemeText;
-    //eoa
+    Solo3PP1: TThemeSingPlayer;
+    Solo3PP2: TThemeSingPlayer;
+    Solo3PP3: TThemeSingPlayer;
 
-    StaticP2R:        TThemeStatic;
-    StaticP2RAvatar:  TThemeStaticAlphaRectangle;
-    StaticP2RScoreBG: TThemePosition; //Static for ScoreBG
-    TextP2R:          TThemeText;
-    TextP2RScore:     TThemeText;
-
-    StaticP2M:        TThemeStatic;
-    StaticP2MAvatar:  TThemeStaticAlphaRectangle;
-    StaticP2MScoreBG: TThemePosition; //Static for ScoreBG
-    TextP2M:          TThemeText;
-    TextP2MScore:     TThemeText;
-
-    StaticP3R:        TThemeStatic;
-    StaticP3RAvatar:  TThemeStaticAlphaRectangle;
-    StaticP3RScoreBG: TThemePosition; //Static for ScoreBG
-    TextP3R:          TThemeText;
-    TextP3RScore:     TThemeText;
-
-    StaticDuetP1ThreeP:        TThemeStatic;
-    StaticDuetP1ThreePAvatar:  TThemeStaticAlphaRectangle;
-    TextDuetP1ThreeP:          TThemeText;
-    StaticDuetP1ThreePScoreBG: TThemePosition;
-    TextDuetP1ThreePScore:     TThemeText;
-
-    StaticDuetP2M:        TThemeStatic;
-    StaticDuetP2MAvatar:  TThemeStaticAlphaRectangle;
-    TextDuetP2M:          TThemeText;
-    StaticDuetP2MScoreBG: TThemePosition;
-    TextDuetP2MScore:     TThemeText;
-
-    StaticDuetP3R:        TThemeStatic;
-    StaticDuetP3RAvatar:  TThemeStaticAlphaRectangle;
-    TextDuetP3R:          TThemeText;
-    StaticDuetP3RScoreBG: TThemePosition;
-    TextDuetP3RScore:     TThemeText;
-
-    StaticDuetP1ThreePSingBar: TThemePosition;
-    StaticDuetP2MSingBar:      TThemePosition;
-    StaticDuetP3RSingBar:       TThemePosition;
+    Duet3PP1: TThemeSingPlayer;
+    Duet3PP2: TThemeSingPlayer;
+    Duet3PP3: TThemeSingPlayer;
 
     //game in 4/6 player modi in 1 Screen
-    StaticP1FourPSingBar: TThemePosition;
-    StaticP1FourP:        TThemeStatic;
-    StaticP1FourPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP1FourPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP1FourP:          TThemeText;
-    TextP1FourPScore:     TThemeText;
+    Solo4PP1: TThemeSingPlayer;
+    Solo4PP2: TThemeSingPlayer;
+    Solo4PP3: TThemeSingPlayer;
+    Solo4PP4: TThemeSingPlayer;
 
-    StaticP2FourPSingBar: TThemePosition;
-    StaticP2FourP:        TThemeStatic;
-    StaticP2FourPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP2FourPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP2FourP:          TThemeText;
-    TextP2FourPScore:     TThemeText;
-
-    StaticP3FourPSingBar: TThemePosition;
-    StaticP3FourP:        TThemeStatic;
-    StaticP3FourPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP3FourPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP3FourP:          TThemeText;
-    TextP3FourPScore:     TThemeText;
-
-    StaticP4FourPSingBar: TThemePosition;
-    StaticP4FourP:        TThemeStatic;
-    StaticP4FourPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP4FourPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP4FourP:          TThemeText;
-    TextP4FourPScore:     TThemeText;
-
-    StaticP1SixPSingBar: TThemePosition;
-    StaticP1SixP:        TThemeStatic;
-    StaticP1SixPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP1SixPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP1SixP:          TThemeText;
-    TextP1SixPScore:     TThemeText;
-
-    StaticP2SixPSingBar: TThemePosition;
-    StaticP2SixP:        TThemeStatic;
-    StaticP2SixPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP2SixPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP2SixP:          TThemeText;
-    TextP2SixPScore:     TThemeText;
-
-    StaticP3SixPSingBar: TThemePosition;
-    StaticP3SixP:        TThemeStatic;
-    StaticP3SixPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP3SixPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP3SixP:          TThemeText;
-    TextP3SixPScore:     TThemeText;
-
-    StaticP4SixPSingBar: TThemePosition;
-    StaticP4SixP:        TThemeStatic;
-    StaticP4SixPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP4SixPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP4SixP:          TThemeText;
-    TextP4SixPScore:     TThemeText;
-
-    StaticP5SixPSingBar: TThemePosition;
-    StaticP5SixP:        TThemeStatic;
-    StaticP5SixPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP5SixPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP5SixP:          TThemeText;
-    TextP5SixPScore:     TThemeText;
-
-    StaticP6SixPSingBar: TThemePosition;
-    StaticP6SixP:        TThemeStatic;
-    StaticP6SixPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP6SixPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP6SixP:          TThemeText;
-    TextP6SixPScore:     TThemeText;
+    Solo6PP1: TThemeSingPlayer;
+    Solo6PP2: TThemeSingPlayer;
+    Solo6PP3: TThemeSingPlayer;
+    Solo6PP4: TThemeSingPlayer;
+    Solo6PP5: TThemeSingPlayer;
+    Solo6PP6: TThemeSingPlayer;
 
     // duet 4/6 players in one screen
-    StaticP1DuetFourPSingBar: TThemePosition;
-    StaticP1DuetFourP:        TThemeStatic;
-    StaticP1DuetFourPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP1DuetFourPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP1DuetFourP:          TThemeText;
-    TextP1DuetFourPScore:     TThemeText;
+    Duet4PP1: TThemeSingPlayer;
+    Duet4PP2: TThemeSingPlayer;
+    Duet4PP3: TThemeSingPlayer;
+    Duet4PP4: TThemeSingPlayer;
 
-    StaticP2DuetFourPSingBar: TThemePosition;
-    StaticP2DuetFourP:        TThemeStatic;
-    StaticP2DuetFourPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP2DuetFourPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP2DuetFourP:          TThemeText;
-    TextP2DuetFourPScore:     TThemeText;
-
-    StaticP3DuetFourPSingBar: TThemePosition;
-    StaticP3DuetFourP:        TThemeStatic;
-    StaticP3DuetFourPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP3DuetFourPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP3DuetFourP:          TThemeText;
-    TextP3DuetFourPScore:     TThemeText;
-
-    StaticP4DuetFourPSingBar: TThemePosition;
-    StaticP4DuetFourP:        TThemeStatic;
-    StaticP4DuetFourPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP4DuetFourPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP4DuetFourP:          TThemeText;
-    TextP4DuetFourPScore:     TThemeText;
-
-    StaticP1DuetSixPSingBar: TThemePosition;
-    StaticP1DuetSixP:        TThemeStatic;
-    StaticP1DuetSixPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP1DuetSixPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP1DuetSixP:          TThemeText;
-    TextP1DuetSixPScore:     TThemeText;
-
-    StaticP2DuetSixPSingBar: TThemePosition;
-    StaticP2DuetSixP:        TThemeStatic;
-    StaticP2DuetSixPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP2DuetSixPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP2DuetSixP:          TThemeText;
-    TextP2DuetSixPScore:     TThemeText;
-
-    StaticP3DuetSixPSingBar: TThemePosition;
-    StaticP3DuetSixP:        TThemeStatic;
-    StaticP3DuetSixPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP3DuetSixPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP3DuetSixP:          TThemeText;
-    TextP3DuetSixPScore:     TThemeText;
-
-    StaticP4DuetSixPSingBar: TThemePosition;
-    StaticP4DuetSixP:        TThemeStatic;
-    StaticP4DuetSixPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP4DuetSixPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP4DuetSixP:          TThemeText;
-    TextP4DuetSixPScore:     TThemeText;
-
-    StaticP5DuetSixPSingBar: TThemePosition;
-    StaticP5DuetSixP:        TThemeStatic;
-    StaticP5DuetSixPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP5DuetSixPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP5DuetSixP:          TThemeText;
-    TextP5DuetSixPScore:     TThemeText;
-
-    StaticP6DuetSixPSingBar: TThemePosition;
-    StaticP6DuetSixP:        TThemeStatic;
-    StaticP6DuetSixPAvatar:  TThemeStaticAlphaRectangle;
-    StaticP6DuetSixPScoreBG: TThemePosition; //Static for ScoreBG
-    TextP6DuetSixP:          TThemeText;
-    TextP6DuetSixPScore:     TThemeText;
-
-    SingP1Oscilloscope:           TThemePosition;
-    SingP1TwoPOscilloscope:       TThemePosition;
-    SingP2ROscilloscope:          TThemePosition;
-    SingP1ThreePOscilloscope:     TThemePosition;
-    SingP2MOscilloscope:          TThemePosition;
-    SingP3ROscilloscope:          TThemePosition;
-    SingDuetP1ThreePOscilloscope: TThemePosition;
-    SingDuetP2MOscilloscope:      TThemePosition;
-    SingDuetP3ROscilloscope:      TThemePosition;
-    SingP1FourPOscilloscope:      TThemePosition;
-    SingP2FourPOscilloscope:      TThemePosition;
-    SingP3FourPOscilloscope:      TThemePosition;
-    SingP4FourPOscilloscope:      TThemePosition;
-    SingP1SixPOscilloscope:       TThemePosition;
-    SingP2SixPOscilloscope:       TThemePosition;
-    SingP3SixPOscilloscope:       TThemePosition;
-    SingP4SixPOscilloscope:       TThemePosition;
-    SingP5SixPOscilloscope:       TThemePosition;
-    SingP6SixPOscilloscope:       TThemePosition;
-    SingP1DuetFourPOscilloscope:  TThemePosition;
-    SingP2DuetFourPOscilloscope:  TThemePosition;
-    SingP3DuetFourPOscilloscope:  TThemePosition;
-    SingP4DuetFourPOscilloscope:  TThemePosition;
-    SingP1DuetSixPOscilloscope:   TThemePosition;
-    SingP2DuetSixPOscilloscope:   TThemePosition;
-    SingP3DuetSixPOscilloscope:   TThemePosition;
-    SingP4DuetSixPOscilloscope:   TThemePosition;
-    SingP5DuetSixPOscilloscope:   TThemePosition;
-    SingP6DuetSixPOscilloscope:   TThemePosition;
+    Duet6PP1: TThemeSingPlayer;
+    Duet6PP2: TThemeSingPlayer;
+    Duet6PP3: TThemeSingPlayer;
+    Duet6PP4: TThemeSingPlayer;
+    Duet6PP5: TThemeSingPlayer;
+    Duet6PP6: TThemeSingPlayer;
 
     StaticSongName:   TThemeStatic;
     TextSongName:     TThemeText;
@@ -1512,6 +1319,7 @@ type
     procedure ThemeLoadStaticRectangle(var ThemeStaticRectangle: TThemeStaticRectangle; const Name: string);
     procedure ThemeLoadStaticAlphaRectangle(var static: TThemeStaticAlphaRectangle; const Name: string);
     procedure ThemeLoadStaticColorRectangle(var ThemeStaticColorRectangle: TThemeStaticColorRectangle; const Name: string);
+    procedure ThemeLoadSingPlayerStatics(var ThemeSingPlayer: TThemeSingPlayer; const Name: string);
 
     procedure ThemeLoadButton(var ThemeButton: TThemeButton; const Name: string; Collections: PAThemeButtonCollection = nil);
     procedure ThemeLoadButtonCollection(var Collection: TThemeButtonCollection; const Name: string);
@@ -2010,278 +1818,56 @@ begin
       ThemeLoadText (Sing.InfoMessageText, 'SingInfoMessageText');
       ThemeLoadStatic (Sing.InfoMessageBG, 'SingInfoMessageBG');
 
-      //moveable singbar mod
-      ThemeLoadPosition(Sing.StaticP1SingBar, 'SingP1SingBar');
-      ThemeLoadPosition(Sing.StaticP1TwoPSingBar, 'SingP1TwoPSingBar');
-      ThemeLoadPosition(Sing.StaticP1ThreePSingBar, 'SingP1ThreePSingBar');
-      ThemeLoadPosition(Sing.StaticP2RSingBar, 'SingP2RSingBar');
-      ThemeLoadPosition(Sing.StaticP2MSingBar, 'SingP2MSingBar');
-      ThemeLoadPosition(Sing.StaticP3SingBar, 'SingP3SingBar');
-    //eoa moveable singbar
+      ThemeLoadSingPlayerStatics(Sing.Solo1PP1, 'P1');
 
-      ThemeLoadStatic(Sing.StaticP1, 'SingP1Static');
-      ThemeLoadText(Sing.TextP1, 'SingP1Text');
-      ThemeLoadPosition(Sing.StaticP1ScoreBG, 'SingP1Static2');
-      ThemeLoadText(Sing.TextP1Score, 'SingP1TextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP1Avatar, 'SingP1Avatar');
+      ThemeLoadSingPlayerStatics(Sing.Solo2PP1, 'P1TwoP');
+      ThemeLoadSingPlayerStatics(Sing.Solo2PP2, 'P2R');
 
-
-  //Added for ps3 skin
-  //This one is shown in 2/4P mode
-  //if it exists, otherwise the one Player equivaltents are used
-      if (ThemeIni.SectionExists('SingP1TwoPTextScore')) then
-      begin
-        ThemeLoadStatic(Sing.StaticP1TwoP, 'SingP1TwoPStatic');
-        ThemeLoadStaticAlphaRectangle(Sing.StaticP1TwoPAvatar, 'SingP1TwoPAvatar');
-        ThemeLoadText(Sing.TextP1TwoP, 'SingP1TwoPText');
-        ThemeLoadPosition(Sing.StaticP1TwoPScoreBG, 'SingP1TwoPStatic2');
-        ThemeLoadText(Sing.TextP1TwoPScore, 'SingP1TwoPTextScore');
-      end
-      else
-      begin
-        Sing.StaticP1TwoP := Sing.StaticP1;
-        Sing.StaticP1TwoPAvatar := Sing.StaticP1Avatar;
-        Sing.TextP1TwoP := Sing.TextP1;
-        Sing.StaticP1TwoPScoreBG := Sing.StaticP1ScoreBG;
-        Sing.TextP1TwoPScore := Sing.TextP1Score;
-      end;
-
-  //This one is shown in 3/6P mode
-  //if it exists, otherwise the one Player equivaltents are used
-      if (ThemeIni.SectionExists('SingP1TwoPTextScore')) then
-      begin
-        ThemeLoadStatic(Sing.StaticP1ThreeP, 'SingP1ThreePStatic');
-        ThemeLoadStaticAlphaRectangle(Sing.StaticP1ThreePAvatar, 'SingP1ThreePAvatar');
-        ThemeLoadText(Sing.TextP1ThreeP, 'SingP1ThreePText');
-        ThemeLoadPosition(Sing.StaticP1ThreePScoreBG, 'SingP1ThreePStatic2');
-        ThemeLoadText(Sing.TextP1ThreePScore, 'SingP1ThreePTextScore');
-      end
-      else
-      begin
-        Sing.StaticP1ThreeP := Sing.StaticP1;
-        Sing.StaticP1ThreePAvatar := Sing.StaticP1Avatar;
-        Sing.TextP1ThreeP := Sing.TextP1;
-        Sing.StaticP1ThreePScoreBG := Sing.StaticP1ScoreBG;
-        Sing.TextP1ThreePScore := Sing.TextP1Score;
-      end;
-  //eoa
-      ThemeLoadStatic(Sing.StaticP2R, 'SingP2RStatic');
-      ThemeLoadText(Sing.TextP2R, 'SingP2RText');
-      ThemeLoadPosition(Sing.StaticP2RScoreBG, 'SingP2RStatic2');
-      ThemeLoadText(Sing.TextP2RScore, 'SingP2RTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP2RAvatar, 'SingP2RAvatar');
-
-      ThemeLoadStatic(Sing.StaticP2M, 'SingP2MStatic');
-      ThemeLoadText(Sing.TextP2M, 'SingP2MText');
-      ThemeLoadPosition(Sing.StaticP2MScoreBG, 'SingP2MStatic2');
-      ThemeLoadText(Sing.TextP2MScore, 'SingP2MTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP2MAvatar, 'SingP2MAvatar');
-
-      ThemeLoadStatic(Sing.StaticP3R, 'SingP3RStatic');
-      ThemeLoadText(Sing.TextP3R, 'SingP3RText');
-      ThemeLoadPosition(Sing.StaticP3RScoreBG, 'SingP3RStatic2');
-      ThemeLoadText(Sing.TextP3RScore, 'SingP3RTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP3RAvatar, 'SingP3RAvatar');
+      ThemeLoadSingPlayerStatics(Sing.Solo3PP1, 'P1ThreeP');
+      ThemeLoadSingPlayerStatics(Sing.Solo3PP2, 'P2M');
+      // TODO: we have to load Solo3PP3 manually because the SingBar uses a different name
+      ThemeLoadText(Sing.Solo3PP3.Name, 'SingP3RText');
+      ThemeLoadText(Sing.Solo3PP3.Score, 'SingP3RTextScore');
+      ThemeLoadPosition(Sing.Solo3PP3.ScoreBackground, 'SingP3RStatic2');
+      ThemeLoadStatic(Sing.Solo3PP3.AvatarFrame, 'SingP3RStatic');
+      ThemeLoadStaticAlphaRectangle(Sing.Solo3PP3.Avatar, 'SingP3RAvatar');
+      // TODO: SingBar uses non-consistent naming in theme
+      ThemeLoadPosition(Sing.Solo3PP3.SingBar, 'SingP3SingBar');
+      ThemeLoadPosition(Sing.Solo3PP3.Oscilloscope, 'SingP3ROscilloscope');
 
       ThemeLoadStatic(Sing.StaticSongName, 'SingSongNameStatic');
       ThemeLoadText(Sing.TextSongName, 'SingSongNameText');
 
       // 3/6 players duet
-      ThemeLoadStatic(Sing.StaticDuetP1ThreeP, 'SingDuetP1ThreePStatic');
-      ThemeLoadText(Sing.TextDuetP1ThreeP, 'SingDuetP1ThreePText');
-      ThemeLoadPosition(Sing.StaticDuetP1ThreePScoreBG, 'SingDuetP1ThreePStatic2');
-      ThemeLoadText(Sing.TextDuetP1ThreePScore, 'SingDuetP1ThreePTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticDuetP1ThreePAvatar, 'SingDuetP1ThreePAvatar');
-
-      ThemeLoadStatic(Sing.StaticDuetP2M, 'SingDuetP2MStatic');
-      ThemeLoadText(Sing.TextDuetP2M, 'SingDuetP2MText');
-      ThemeLoadPosition(Sing.StaticDuetP2MScoreBG, 'SingDuetP2MStatic2');
-      ThemeLoadText(Sing.TextDuetP2MScore, 'SingDuetP2MTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticDuetP2MAvatar, 'SingDuetP2MAvatar');
-
-      ThemeLoadStatic(Sing.StaticDuetP3R, 'SingDuetP3RStatic');
-      ThemeLoadText(Sing.TextDuetP3R, 'SingDuetP3RText');
-      ThemeLoadPosition(Sing.StaticDuetP3RScoreBG, 'SingDuetP3RStatic2');
-      ThemeLoadText(Sing.TextDuetP3RScore, 'SingDuetP3RTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticDuetP3RAvatar, 'SingDuetP3RAvatar');
-
-      ThemeLoadPosition(Sing.StaticDuetP1ThreePSingBar, 'SingDuetP1ThreePSingBar');
-      ThemeLoadPosition(Sing.StaticDuetP2MSingBar, 'SingDuetP2MSingBar');
-      ThemeLoadPosition(Sing.StaticDuetP3RSingBar, 'SingDuetP3RSingBar');
+      ThemeLoadSingPlayerStatics(Sing.Duet3PP1, 'DuetP1ThreeP');
+      ThemeLoadSingPlayerStatics(Sing.Duet3PP2, 'DuetP2M');
+      ThemeLoadSingPlayerStatics(Sing.Duet3PP3, 'DuetP3R');
 
       //4P/6P mode in 1 Screen
-      ThemeLoadPosition(Sing.StaticP1FourPSingBar, 'SingP1FourPSingBar');
-      ThemeLoadStatic(Sing.StaticP1FourP, 'SingP1FourPStatic');
-      ThemeLoadText(Sing.TextP1FourP, 'SingP1FourPText');
-      ThemeLoadPosition(Sing.StaticP1FourPScoreBG, 'SingP1FourPStatic2');
-      ThemeLoadText(Sing.TextP1FourPScore, 'SingP1FourPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP1FourPAvatar, 'SingP1FourPAvatar');
+      ThemeLoadSingPlayerStatics(Sing.Solo4PP1, 'P1FourP');
+      ThemeLoadSingPlayerStatics(Sing.Solo4PP2, 'P2FourP');
+      ThemeLoadSingPlayerStatics(Sing.Solo4PP3, 'P3FourP');
+      ThemeLoadSingPlayerStatics(Sing.Solo4PP4, 'P4FourP');
 
-      ThemeLoadPosition(Sing.StaticP2FourPSingBar, 'SingP2FourPSingBar');
-      ThemeLoadStatic(Sing.StaticP2FourP, 'SingP2FourPStatic');
-      ThemeLoadText(Sing.TextP2FourP, 'SingP2FourPText');
-      ThemeLoadPosition(Sing.StaticP2FourPScoreBG, 'SingP2FourPStatic2');
-      ThemeLoadText(Sing.TextP2FourPScore, 'SingP2FourPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP2FourPAvatar, 'SingP2FourPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP3FourPSingBar, 'SingP3FourPSingBar');
-      ThemeLoadStatic(Sing.StaticP3FourP, 'SingP3FourPStatic');
-      ThemeLoadText(Sing.TextP3FourP, 'SingP3FourPText');
-      ThemeLoadPosition(Sing.StaticP3FourPScoreBG, 'SingP3FourPStatic2');
-      ThemeLoadText(Sing.TextP3FourPScore, 'SingP3FourPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP3FourPAvatar, 'SingP3FourPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP4FourPSingBar, 'SingP4FourPSingBar');
-      ThemeLoadStatic(Sing.StaticP4FourP, 'SingP4FourPStatic');
-      ThemeLoadText(Sing.TextP4FourP, 'SingP4FourPText');
-      ThemeLoadPosition(Sing.StaticP4FourPScoreBG, 'SingP4FourPStatic2');
-      ThemeLoadText(Sing.TextP4FourPScore, 'SingP4FourPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP4FourPAvatar, 'SingP4FourPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP1SixPSingBar, 'SingP1SixPSingBar');
-      ThemeLoadStatic(Sing.StaticP1SixP, 'SingP1SixPStatic');
-      ThemeLoadText(Sing.TextP1SixP, 'SingP1SixPText');
-      ThemeLoadPosition(Sing.StaticP1SixPScoreBG, 'SingP1SixPStatic2');
-      ThemeLoadText(Sing.TextP1SixPScore, 'SingP1SixPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP1SixPAvatar, 'SingP1SixPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP2SixPSingBar, 'SingP2SixPSingBar');
-      ThemeLoadStatic(Sing.StaticP2SixP, 'SingP2SixPStatic');
-      ThemeLoadText(Sing.TextP2SixP, 'SingP2SixPText');
-      ThemeLoadPosition(Sing.StaticP2SixPScoreBG, 'SingP2SixPStatic2');
-      ThemeLoadText(Sing.TextP2SixPScore, 'SingP2SixPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP2SixPAvatar, 'SingP2SixPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP3SixPSingBar, 'SingP3SixPSingBar');
-      ThemeLoadStatic(Sing.StaticP3SixP, 'SingP3SixPStatic');
-      ThemeLoadText(Sing.TextP3SixP, 'SingP3SixPText');
-      ThemeLoadPosition(Sing.StaticP3SixPScoreBG, 'SingP3SixPStatic2');
-      ThemeLoadText(Sing.TextP3SixPScore, 'SingP3SixPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP3SixPAvatar, 'SingP3SixPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP4SixPSingBar, 'SingP4SixPSingBar');
-      ThemeLoadStatic(Sing.StaticP4SixP, 'SingP4SixPStatic');
-      ThemeLoadText(Sing.TextP4SixP, 'SingP4SixPText');
-      ThemeLoadPosition(Sing.StaticP4SixPScoreBG, 'SingP4SixPStatic2');
-      ThemeLoadText(Sing.TextP4SixPScore, 'SingP4SixPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP4SixPAvatar, 'SingP4SixPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP5SixPSingBar, 'SingP5SixPSingBar');
-      ThemeLoadStatic(Sing.StaticP5SixP, 'SingP5SixPStatic');
-      ThemeLoadText(Sing.TextP5SixP, 'SingP5SixPText');
-      ThemeLoadPosition(Sing.StaticP5SixPScoreBG, 'SingP5SixPStatic2');
-      ThemeLoadText(Sing.TextP5SixPScore, 'SingP5SixPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP5SixPAvatar, 'SingP5SixPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP6SixPSingBar, 'SingP6SixPSingBar');
-      ThemeLoadStatic(Sing.StaticP6SixP, 'SingP6SixPStatic');
-      ThemeLoadText(Sing.TextP6SixP, 'SingP6SixPText');
-      ThemeLoadPosition(Sing.StaticP6SixPScoreBG, 'SingP6SixPStatic2');
-      ThemeLoadText(Sing.TextP6SixPScore, 'SingP6SixPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP6SixPAvatar, 'SingP6SixPAvatar');
+      ThemeLoadSingPlayerStatics(Sing.Solo6PP1, 'P1SixP');
+      ThemeLoadSingPlayerStatics(Sing.Solo6PP2, 'P2SixP');
+      ThemeLoadSingPlayerStatics(Sing.Solo6PP3, 'P3SixP');
+      ThemeLoadSingPlayerStatics(Sing.Solo6PP4, 'P4SixP');
+      ThemeLoadSingPlayerStatics(Sing.Solo6PP5, 'P5SixP');
+      ThemeLoadSingPlayerStatics(Sing.Solo6PP6, 'P6SixP');
 
       // duet 4/6 players in one screen
-      ThemeLoadPosition(Sing.StaticP1DuetFourPSingBar, 'SingP1DuetFourPSingBar');
-      ThemeLoadStatic(Sing.StaticP1DuetFourP, 'SingP1DuetFourPStatic');
-      ThemeLoadText(Sing.TextP1DuetFourP, 'SingP1DuetFourPText');
-      ThemeLoadPosition(Sing.StaticP1DuetFourPScoreBG, 'SingP1DuetFourPStatic2');
-      ThemeLoadText(Sing.TextP1DuetFourPScore, 'SingP1DuetFourPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP1DuetFourPAvatar, 'SingP1DuetFourPAvatar');
+      ThemeLoadSingPlayerStatics(Sing.Duet4PP1, 'P1DuetFourP');
+      ThemeLoadSingPlayerStatics(Sing.Duet4PP2, 'P2DuetFourP');
+      ThemeLoadSingPlayerStatics(Sing.Duet4PP3, 'P3DuetFourP');
+      ThemeLoadSingPlayerStatics(Sing.Duet4PP4, 'P4DuetFourP');
 
-      ThemeLoadPosition(Sing.StaticP2DuetFourPSingBar, 'SingP2DuetFourPSingBar');
-      ThemeLoadStatic(Sing.StaticP2DuetFourP, 'SingP2DuetFourPStatic');
-      ThemeLoadText(Sing.TextP2DuetFourP, 'SingP2DuetFourPText');
-      ThemeLoadPosition(Sing.StaticP2DuetFourPScoreBG, 'SingP2DuetFourPStatic2');
-      ThemeLoadText(Sing.TextP2DuetFourPScore, 'SingP2DuetFourPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP2DuetFourPAvatar, 'SingP2DuetFourPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP3DuetFourPSingBar, 'SingP3DuetFourPSingBar');
-      ThemeLoadStatic(Sing.StaticP3DuetFourP, 'SingP3DuetFourPStatic');
-      ThemeLoadText(Sing.TextP3DuetFourP, 'SingP3DuetFourPText');
-      ThemeLoadPosition(Sing.StaticP3DuetFourPScoreBG, 'SingP3DuetFourPStatic2');
-      ThemeLoadText(Sing.TextP3DuetFourPScore, 'SingP3DuetFourPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP3DuetFourPAvatar, 'SingP3DuetFourPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP4DuetFourPSingBar, 'SingP4DuetFourPSingBar');
-      ThemeLoadStatic(Sing.StaticP4DuetFourP, 'SingP4DuetFourPStatic');
-      ThemeLoadText(Sing.TextP4DuetFourP, 'SingP4DuetFourPText');
-      ThemeLoadPosition(Sing.StaticP4DuetFourPScoreBG, 'SingP4DuetFourPStatic2');
-      ThemeLoadText(Sing.TextP4DuetFourPScore, 'SingP4DuetFourPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP4DuetFourPAvatar, 'SingP4DuetFourPAvatar');
-
-
-      ThemeLoadPosition(Sing.StaticP1DuetSixPSingBar, 'SingP1DuetSixPSingBar');
-      ThemeLoadStatic(Sing.StaticP1DuetSixP, 'SingP1DuetSixPStatic');
-      ThemeLoadText(Sing.TextP1DuetSixP, 'SingP1DuetSixPText');
-      ThemeLoadPosition(Sing.StaticP1DuetSixPScoreBG, 'SingP1DuetSixPStatic2');
-      ThemeLoadText(Sing.TextP1DuetSixPScore, 'SingP1DuetSixPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP1DuetSixPAvatar, 'SingP1DuetSixPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP2DuetSixPSingBar, 'SingP2DuetSixPSingBar');
-      ThemeLoadStatic(Sing.StaticP2DuetSixP, 'SingP2DuetSixPStatic');
-      ThemeLoadText(Sing.TextP2DuetSixP, 'SingP2DuetSixPText');
-      ThemeLoadPosition(Sing.StaticP2DuetSixPScoreBG, 'SingP2DuetSixPStatic2');
-      ThemeLoadText(Sing.TextP2DuetSixPScore, 'SingP2DuetSixPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP2DuetSixPAvatar, 'SingP2DuetSixPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP3DuetSixPSingBar, 'SingP3DuetSixPSingBar');
-      ThemeLoadStatic(Sing.StaticP3DuetSixP, 'SingP3DuetSixPStatic');
-      ThemeLoadText(Sing.TextP3DuetSixP, 'SingP3DuetSixPText');
-      ThemeLoadPosition(Sing.StaticP3DuetSixPScoreBG, 'SingP3DuetSixPStatic2');
-      ThemeLoadText(Sing.TextP3DuetSixPScore, 'SingP3DuetSixPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP3DuetSixPAvatar, 'SingP3DuetSixPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP4DuetSixPSingBar, 'SingP4DuetSixPSingBar');
-      ThemeLoadStatic(Sing.StaticP4DuetSixP, 'SingP4DuetSixPStatic');
-      ThemeLoadText(Sing.TextP4DuetSixP, 'SingP4DuetSixPText');
-      ThemeLoadPosition(Sing.StaticP4DuetSixPScoreBG, 'SingP4DuetSixPStatic2');
-      ThemeLoadText(Sing.TextP4DuetSixPScore, 'SingP4DuetSixPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP4DuetSixPAvatar, 'SingP4DuetSixPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP5DuetSixPSingBar, 'SingP5DuetSixPSingBar');
-      ThemeLoadStatic(Sing.StaticP5DuetSixP, 'SingP5DuetSixPStatic');
-      ThemeLoadText(Sing.TextP5DuetSixP, 'SingP5DuetSixPText');
-      ThemeLoadPosition(Sing.StaticP5DuetSixPScoreBG, 'SingP5DuetSixPStatic2');
-      ThemeLoadText(Sing.TextP5DuetSixPScore, 'SingP5DuetSixPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP5DuetSixPAvatar, 'SingP5DuetSixPAvatar');
-
-      ThemeLoadPosition(Sing.StaticP6DuetSixPSingBar, 'SingP6DuetSixPSingBar');
-      ThemeLoadStatic(Sing.StaticP6DuetSixP, 'SingP6DuetSixPStatic');
-      ThemeLoadText(Sing.TextP6DuetSixP, 'SingP6DuetSixPText');
-      ThemeLoadPosition(Sing.StaticP6DuetSixPScoreBG, 'SingP6DuetSixPStatic2');
-      ThemeLoadText(Sing.TextP6DuetSixPScore, 'SingP6DuetSixPTextScore');
-      ThemeLoadStaticAlphaRectangle(Sing.StaticP6DuetSixPAvatar, 'SingP6DuetSixPAvatar');
-
-      // Oscilloscope Position
-      ThemeLoadPosition(Sing.SingP1Oscilloscope, 'SingP1Oscilloscope');
-      ThemeLoadPosition(Sing.SingP1TwoPOscilloscope, 'SingP1TwoPOscilloscope');
-      ThemeLoadPosition(Sing.SingP2ROscilloscope, 'SingP2ROscilloscope');
-      ThemeLoadPosition(Sing.SingP1ThreePOscilloscope, 'SingP1ThreePOscilloscope');
-      ThemeLoadPosition(Sing.SingP2MOscilloscope, 'SingP2MOscilloscope');
-      ThemeLoadPosition(Sing.SingP3ROscilloscope, 'SingP3ROscilloscope');
-      ThemeLoadPosition(Sing.SingDuetP1ThreePOscilloscope, 'SingDuetP1ThreePOscilloscope');
-      ThemeLoadPosition(Sing.SingDuetP2MOscilloscope, 'SingDuetP2MOscilloscope');
-      ThemeLoadPosition(Sing.SingDuetP3ROscilloscope, 'SingDuetP3ROscilloscope');
-      ThemeLoadPosition(Sing.SingP1FourPOscilloscope, 'SingP1FourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP2FourPOscilloscope, 'SingP2FourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP3FourPOscilloscope, 'SingP3FourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP4FourPOscilloscope, 'SingP4FourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP1SixPOscilloscope, 'SingP1SixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP2SixPOscilloscope, 'SingP2SixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP3SixPOscilloscope, 'SingP3SixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP4SixPOscilloscope, 'SingP4SixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP5SixPOscilloscope, 'SingP5SixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP6SixPOscilloscope, 'SingP6SixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP1DuetFourPOscilloscope, 'SingP1DuetFourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP2DuetFourPOscilloscope, 'SingP2DuetFourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP3DuetFourPOscilloscope, 'SingP3DuetFourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP4DuetFourPOscilloscope, 'SingP4DuetFourPOscilloscope');
-      ThemeLoadPosition(Sing.SingP1DuetSixPOscilloscope, 'SingP1DuetSixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP2DuetSixPOscilloscope, 'SingP2DuetSixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP3DuetSixPOscilloscope, 'SingP3DuetSixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP4DuetSixPOscilloscope, 'SingP4DuetSixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP5DuetSixPOscilloscope, 'SingP5DuetSixPOscilloscope');
-      ThemeLoadPosition(Sing.SingP6DuetSixPOscilloscope, 'SingP6DuetSixPOscilloscope');
+      ThemeLoadSingPlayerStatics(Sing.Duet6PP1, 'P1DuetSixP');
+      ThemeLoadSingPlayerStatics(Sing.Duet6PP2, 'P2DuetSixP');
+      ThemeLoadSingPlayerStatics(Sing.Duet6PP3, 'P3DuetSixP');
+      ThemeLoadSingPlayerStatics(Sing.Duet6PP4, 'P4DuetSixP');
+      ThemeLoadSingPlayerStatics(Sing.Duet6PP5, 'P5DuetSixP');
+      ThemeLoadSingPlayerStatics(Sing.Duet6PP6, 'P6DuetSixP');
 
       //Line Bonus Texts
       Sing.LineBonusText[0] := Language.Translate('POPUP_AWFUL');
@@ -3284,6 +2870,17 @@ begin
   ThemePosition.W := ThemeIni.ReadInteger(Name, 'W', 0);
 end;
 
+procedure TTheme.ThemeLoadSingPlayerStatics(var ThemeSingPlayer: TThemeSingPlayer; const Name: string);
+begin
+  ThemeLoadText(ThemeSingPlayer.Name, 'Sing' + Name + 'Text');
+  ThemeLoadText(ThemeSingPlayer.Score, 'Sing' + Name + 'TextScore');
+  ThemeLoadPosition(ThemeSingPlayer.ScoreBackground, 'Sing' + Name + 'Static2');
+  ThemeLoadStatic(ThemeSingPlayer.AvatarFrame, 'Sing' + Name + 'Static');
+  ThemeLoadStaticAlphaRectangle(ThemeSingPlayer.Avatar, 'Sing' + Name + 'Avatar');
+  ThemeLoadPosition(ThemeSingPlayer.SingBar, 'Sing' + Name + 'SingBar');
+  ThemeLoadPosition(ThemeSingPlayer.Oscilloscope, 'Sing' + Name + 'Oscilloscope');
+end;
+
 procedure TTheme.LoadColors;
 var
   SL:     TStringList;
@@ -4189,48 +3786,46 @@ begin
   ThemeSaveText(Sing.TextTimeText, 'SingTimeText');
   //eoa TimeBar mod
 
-  ThemeSaveStatic(Sing.StaticP1, 'SingP1Static');
-  ThemeSaveText(Sing.TextP1, 'SingP1Text');
-  ThemeSavePosition(Sing.StaticP1ScoreBG, 'SingP1Static2');
-  ThemeSaveText(Sing.TextP1Score, 'SingP1TextScore');
-
-  //moveable singbar mod
-  ThemeSavePosition(Sing.StaticP1SingBar, 'SingP1SingBar');
-  ThemeSavePosition(Sing.StaticP1TwoPSingBar, 'SingP1TwoPSingBar');
-  ThemeSavePosition(Sing.StaticP1ThreePSingBar, 'SingP1ThreePSingBar');
-  ThemeSavePosition(Sing.StaticP2RSingBar, 'SingP2RSingBar');
-  ThemeSavePosition(Sing.StaticP2MSingBar, 'SingP2MSingBar');
-  ThemeSavePosition(Sing.StaticP3SingBar, 'SingP3SingBar');
-  //eoa moveable singbar
+  ThemeSaveText(Sing.Solo1PP1.Name, 'SingP1Text');
+  ThemeSaveText(Sing.Solo1PP1.Score, 'SingP1TextScore');
+  ThemeSavePosition(Sing.Solo1PP1.ScoreBackground, 'SingP1Static2');
+  ThemeSaveStatic(Sing.Solo1PP1.AvatarFrame, 'SingP1Static');
+  ThemeSavePosition(Sing.Solo1PP1.SingBar, 'SingP1SingBar');
 
   //Added for ps3 skin
   //This one is shown in 2/4P mode
-  ThemeSaveStatic(Sing.StaticP1TwoP, 'SingP1TwoPStatic');
-  ThemeSaveText(Sing.TextP1TwoP, 'SingP1TwoPText');
-  ThemeSavePosition(Sing.StaticP1TwoPScoreBG, 'SingP1TwoPStatic2');
-  ThemeSaveText(Sing.TextP1TwoPScore, 'SingP1TwoPTextScore');
+  ThemeSaveText(Sing.Solo2PP1.Name, 'SingP1TwoPText');
+  ThemeSaveText(Sing.Solo2PP1.Score, 'SingP1TwoPTextScore');
+  ThemeSavePosition(Sing.Solo2PP1.ScoreBackground, 'SingP1TwoPStatic2');
+  ThemeSaveStatic(Sing.Solo2PP1.AvatarFrame, 'SingP1TwoPStatic');
+  ThemeSavePosition(Sing.Solo2PP1.SingBar, 'SingP1TwoPSingBar');
 
   //This one is shown in 3/6P mode
-  ThemeSaveStatic(Sing.StaticP1ThreeP, 'SingP1ThreePStatic');
-  ThemeSaveText(Sing.TextP1ThreeP, 'SingP1ThreePText');
-  ThemeSavePosition(Sing.StaticP1ThreePScoreBG, 'SingP1ThreePStatic2');
-  ThemeSaveText(Sing.TextP1ThreePScore, 'SingP1ThreePTextScore');
+  ThemeSaveText(Sing.Solo3PP1.Name, 'SingP1ThreePText');
+  ThemeSaveText(Sing.Solo3PP1.Score, 'SingP1ThreePTextScore');
+  ThemeSavePosition(Sing.Solo3PP1.ScoreBackground, 'SingP1ThreePStatic2');
+  ThemeSaveStatic(Sing.Solo3PP1.AvatarFrame, 'SingP1ThreePStatic');
+  ThemeSavePosition(Sing.Solo3PP1.SingBar, 'SingP1ThreePSingBar');
   //eoa
 
-  ThemeSaveStatic(Sing.StaticP2R, 'SingP2RStatic');
-  ThemeSaveText(Sing.TextP2R, 'SingP2RText');
-  ThemeSavePosition(Sing.StaticP2RScoreBG, 'SingP2RStatic2');
-  ThemeSaveText(Sing.TextP2RScore, 'SingP2RTextScore');
+  ThemeSaveText(Sing.Solo2PP2.Name, 'SingP2RText');
+  ThemeSaveText(Sing.Solo2PP2.Score, 'SingP2RTextScore');
+  ThemeSavePosition(Sing.Solo2PP2.ScoreBackground, 'SingP2RStatic2');
+  ThemeSaveStatic(Sing.Solo2PP2.AvatarFrame, 'SingP2RStatic');
+  ThemeSavePosition(Sing.Solo2PP2.SingBar, 'SingP2RSingBar');
 
-  ThemeSaveStatic(Sing.StaticP2M, 'SingP2MStatic');
-  ThemeSaveText(Sing.TextP2M, 'SingP2MText');
-  ThemeSavePosition(Sing.StaticP2MScoreBG, 'SingP2MStatic2');
-  ThemeSaveText(Sing.TextP2MScore, 'SingP2MTextScore');
+  ThemeSaveText(Sing.Solo3PP2.Name, 'SingP2MText');
+  ThemeSaveText(Sing.Solo3PP2.Score, 'SingP2MTextScore');
+  ThemeSavePosition(Sing.Solo3PP2.ScoreBackground, 'SingP2MStatic2');
+  ThemeSaveStatic(Sing.Solo3PP2.AvatarFrame, 'SingP2MStatic');
+  ThemeSavePosition(Sing.Solo3PP2.SingBar, 'SingP2MSingBar');
 
-  ThemeSaveStatic(Sing.StaticP3R, 'SingP3RStatic');
-  ThemeSaveText(Sing.TextP3R, 'SingP3RText');
-  ThemeSavePosition(Sing.StaticP3RScoreBG, 'SingP3RStatic2');
-  ThemeSaveText(Sing.TextP3RScore, 'SingP3RTextScore');
+  ThemeSaveText(Sing.Solo3PP3.Name, 'SingP3RText');
+  ThemeSaveText(Sing.Solo3PP3.Score, 'SingP3RTextScore');
+  ThemeSavePosition(Sing.Solo3PP3.ScoreBackground, 'SingP3RStatic2');
+  ThemeSaveStatic(Sing.Solo3PP3.AvatarFrame, 'SingP3RStatic');
+  // TODO: inconsistent naming!
+  ThemeSavePosition(Sing.Solo3PP3.SingBar, 'SingP3SingBar');
 
   ThemeSaveBasic(Score, 'Score');
   ThemeSaveText(Score.TextArtist, 'ScoreTextArtist');
