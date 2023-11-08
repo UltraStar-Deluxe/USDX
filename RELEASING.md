@@ -11,8 +11,7 @@
     * in `variables.nsh` update both blocks immediately and swap the comments
     * in `ultrastardx.appdata.xml` add a new entry
     * in `Info.plist` update the version number
-3. Commit, `git tag v<the-new-version>` and then `git push origin master v<the-new-version> master:release`\
-    __It is important that master and the version get pushed together__ otherwise Flatpak gets confused.
+3. Commit, `git tag v<the-new-version>` and then `git push origin master v<the-new-version> master:release`
 4. Wait and get the artifacts from the CI.
     If any of them fail, just add an extra `;` on one of the already commented lines in `variables.nsh`, commit, and then push only `master`.
 5. Add `+dev` to the version in the first two files and swap the comments in `variables.nsh` again, commit, push.
