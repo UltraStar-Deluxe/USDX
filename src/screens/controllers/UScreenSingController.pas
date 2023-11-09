@@ -1087,10 +1087,10 @@ begin
   if (Ini.VideoEnabled = 1) and CurrentSong.Video.IsSet() and VideoFile.IsFile then
   begin
     fVideoClip := VideoPlayback.Open(VideoFile);
-    fCurrentVideo := fVideoClip;
-    fCurrentVideo.SetAspectCorrection(BackgroundAspectCorrection);
     if (fVideoClip <> nil) then
     begin
+      fCurrentVideo := fVideoClip;
+      fCurrentVideo.SetAspectCorrection(BackgroundAspectCorrection);
       fShowVisualization := false;
       if ScreenSong.Mode = smMedley then
         fCurrentVideo.Position := CurrentSong.VideoGAP + MedleyStart
