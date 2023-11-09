@@ -69,12 +69,14 @@ Optional libraries:
   Required for webcam support under Linux, but requires OpenCV to be present at both build time as well as runtime.
 
 ## Compiling on Linux using flatpak-builder
-- The Flatpak manifest uses the org.freedesktop.Platform 20.08 runtime, which is available for the major architectures on the [Flathub](https://flathub.org/repo/flathub.flatpakrepo) remote. If it isn't available for your architecture, you can lower the version in the manifest. Below 19.08 you either need to enable the dav1d module or disable AV1 support in the ffmpeg module by removing the --enable-libdav1d configure option. For some architectures the runtime is not hosted by Flathub but can be downloaded from the [Freedesktop SDK](https://releases.freedesktop-sdk.io/freedesktop-sdk.flatpakrepo) remote.
-- The build has to be done outside of the USDX source code tree since flatpak-builder will to copy the whole source tree into the build directory. Also note that flatpak-builder will create a hidden directory `.flatpak-builder` in the directory it was called in where downloads and build results are cached.
+- The manifest for our Flathub releases is in a different repository:
+  *  `git clone --recurse-submodules https://github.com/flathub/eu.usdx.UltraStarDeluxe manifest-dir`
+- The Flatpak manifest uses the org.freedesktop.Platform 23.08 runtime, which is available for the major architectures on the [Flathub](https://flathub.org/repo/flathub.flatpakrepo) remote. If it isn't available for your architecture, you can lower the version in the manifest. Below 23.08 you might want to add your own build of FFmpeg and dav1d for better file format support. For some architectures the runtime is not hosted by Flathub but can be downloaded from the [Freedesktop SDK](https://releases.freedesktop-sdk.io/freedesktop-sdk.flatpakrepo) remote.
+- If you change the manifest to use a USDX source tree from your hard disk, the build has to be done outside of that tree since flatpak-builder will try to copy the whole source tree into the build directory. Also note that flatpak-builder will create a hidden directory `.flatpak-builder` in the directory it was called in where downloads and build results are cached.
 - Assuming you can use the Flathub remote and you didn't already add it to your flatpak configuration, you can do it with
   * `flatpak remote-add --user flathub https://flathub.org/repo/flathub.flatpakrepo`
 - Then building and installing the USDX flatpak is just a matter of
-  * `flatpak-builder --user --install-deps-from=flathub --install build $USDX_SOURCE_TREE/dists/flatpak/eu.usdx.UltraStarDeluxe.yaml`
+  * `flatpak-builder --user --install-deps-from=flathub --install build manifest-dir/eu.usdx.UltraStarDeluxe.yaml`
 - The `.flatpak-builder` and `build` directories can be removed afterwards.
 - Songs must be placed in `~/.var/app/eu.usdx.UltraStarDeluxe/.ultrastardx/songs`
 
