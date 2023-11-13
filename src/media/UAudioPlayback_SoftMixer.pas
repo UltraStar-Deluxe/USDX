@@ -1058,15 +1058,17 @@ function TAudioPlayback_SoftMixer.InitializePlayback: boolean;
 begin
   Result := false;
 
-  //Log.LogStatus('InitializePlayback', 'UAudioPlayback_SoftMixer');
-
   if (not InitializeAudioPlaybackEngine()) then
+    Log.LogError('Could not initialize audio playback engine', 'UAudioPlayback_SoftMixer.InitializePlayback');
     Exit;
 
   MixerStream := TAudioMixerStream.Create(Self);
 
   if (not StartAudioPlaybackEngine()) then
+    Log.LogError('Could not start audio playback engine', 'UAudioPlayback_SoftMixer.InitializePlayback');
     Exit;
+
+  Log.LogStatus('Opened audio device', 'UAudioPlayback_SoftMixer.InitializePlayback');
 
   Result := true;
 end;
