@@ -97,13 +97,13 @@ begin
   if (PressedDown) then
   begin // Key Down
         // check normal keys
-    case UCS4UpperCase(CharCode) of
-      Ord('S'): begin
+    case PressedKey of
+      SDLK_S: begin
         FadeTo(@ScreenName, SoundLib.Start);
         Exit;
       end;
 
-      Ord('P'): begin
+      SDLK_P: begin
         if (Ini.Players >= 1) and (Party.ModesAvailable) then
         begin
           FadeTo(@ScreenPartyOptions, SoundLib.Start);
@@ -111,43 +111,43 @@ begin
         end;
       end;
 
-      Ord('J'): begin
+      SDLK_J: begin
         FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start);
         Exit;
       end;
 
-      Ord('R'): begin
+      SDLK_R: begin
         UGraphic.UnLoadScreens();
         Theme.LoadTheme(Ini.Theme, Ini.Color);
         UGraphic.LoadScreens(USDXVersionStr);
       end;
 
-      Ord('T'): begin
+      SDLK_T: begin
         FadeTo(@ScreenStatMain, SoundLib.Start);
         Exit;
       end;
 
-      Ord('E'): begin
+      SDLK_E: begin
         FadeTo(@ScreenEdit, SoundLib.Start);
         Exit;
       end;
 
-      Ord('O'): begin
+      SDLK_O: begin
         FadeTo(@ScreenOptions, SoundLib.Start);
         Exit;
       end;
 
-      Ord('A'): begin
+      SDLK_A: begin
         FadeTo(@ScreenAbout, SoundLib.Start);
         Exit;
       end;
 
-      Ord('C'): begin
+      SDLK_C: begin
          FadeTo(@ScreenCredits, SoundLib.Start);
          Exit;
       end;
 
-      Ord('Q'): begin
+      SDLK_Q: begin
         Result := false;
         Exit;
       end;

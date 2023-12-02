@@ -1371,8 +1371,8 @@ begin
     end
     else
     begin
-      case UCS4UpperCase(CharCode) of
-        Ord('Q'):
+      case PressedKey of
+        SDLK_Q:
         begin
           // when not ask before exit then finish now
           if (Ini.AskbeforeDel <> 1) then
@@ -1386,7 +1386,7 @@ begin
         end;
 
         // show visualization
-        Ord('V'):
+        SDLK_V:
         begin
           if fShowWebcam then
           begin
@@ -1431,7 +1431,7 @@ begin
         end;
 
         // show Webcam
-      Ord('W'):
+      SDLK_W:
       begin
         if (fShowWebCam = false) then
         begin
@@ -1461,7 +1461,7 @@ begin
       end;
 
         // allow search for songs
-        Ord('J'):
+        SDLK_J:
         begin
           if (SongListVisible) then
           begin
@@ -1490,7 +1490,7 @@ begin
         end;
 
         // skip intro
-        Ord('S'):
+        SDLK_S:
         begin
           if (AudioPlayback.Position < CurrentSong.gap / 1000 - 6) then
           begin
@@ -1502,13 +1502,13 @@ begin
         end;
 
         // pause
-        Ord('P'):
+        SDLK_P:
         begin
           Pause;
           Exit;
         end;
 
-        Ord('R'):
+        SDLK_R:
         begin
           if (SongListVisible) then
           begin
@@ -1517,7 +1517,7 @@ begin
         end;
 
         // toggle time display
-        Ord('T'):
+        SDLK_T:
         begin
           LastTick := SDL_GetTicks();
 

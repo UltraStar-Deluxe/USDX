@@ -77,14 +77,14 @@ begin
   if (PressedDown) then
   begin // Key Down
     // check normal keys
-    case UCS4UpperCase(CharCode) of
-      Ord('C'):
+    case PressedKey of
+      SDLK_C:
         begin
           FadeTo(@ScreenCredits, SoundLib.Start);
           Exit;
         end;
 
-      Ord('Q'):
+      SDLK_Q:
         begin
           Result := false;
           Exit;

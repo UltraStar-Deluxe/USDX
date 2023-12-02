@@ -139,25 +139,25 @@ begin
   if (PressedDown) then
   begin // Key Down
     // check normal keys
-    case UCS4UpperCase(CharCode) of
-      Ord('Q'):
+    case PressedKey of
+      SDLK_Q:
         begin
           Result := false;
           Exit;
         end;
-      Ord('+'):
+      SDLK_PLUS:
         begin
           // FIXME: add a nice volume-slider instead
           // or at least provide visualization and acceleration if the user holds the key pressed.
           ChangeVolume(0.02);
         end;
-      Ord('-'):
+      SDLK_MINUS:
         begin
           // FIXME: add a nice volume-slider instead
           // or at least provide visualization and acceleration if the user holds the key pressed.
           ChangeVolume(-0.02);
         end;
-      Ord('T'):
+      SDLK_T:
         begin
           if ((SDL_GetModState() and KMOD_SHIFT) <> 0) then
             Ini.ThresholdIndex := (Ini.ThresholdIndex + Length(IThresholdVals) - 1) mod Length(IThresholdVals)
