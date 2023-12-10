@@ -148,6 +148,7 @@ begin
   Result := true;
 
   inherited ParseMouse(MouseButton, BtnDown, X, Y);
+  SetTextInput(Button[PlayerName].Selected);
 
   // transfer mousecords to the 800x600 raster we use to draw
   X := Round((X / (ScreenW / Screens)) * RenderW);
