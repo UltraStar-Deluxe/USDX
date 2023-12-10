@@ -464,6 +464,7 @@ begin
   end;
 end;
 
+// TODO: this function does nothing?
 procedure TScreenJukebox.GoToSongList(UpperLetter: UCS4Char);
 var
   SongDesc: UTF8String;
