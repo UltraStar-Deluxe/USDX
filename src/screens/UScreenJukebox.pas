@@ -495,7 +495,6 @@ begin
   end;
 
   // page songsid
-  {
         SetLength(JukeboxSongsListCurrentPage, 0);
 
 
