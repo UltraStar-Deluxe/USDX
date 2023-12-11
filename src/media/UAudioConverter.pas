@@ -247,11 +247,10 @@ begin
   end;
 
   SwrContext:= swr_alloc();
-  av_opt_set_channel_layout(SwrContext, 'in_channel_layout', SrcFormatInfo.Channels, 0);
-  av_opt_set_channel_layout(SwrContext, 'out_channel_layout', DstFormatInfo.Channels, 0);
-
-  av_opt_set_int(SwrContext, 'in_sample_rate', Int64(SrcFormatInfo.SampleRate), 0);
-  av_opt_set_int(SwrContext, 'out_sample_rate', Int64(DstFormatInfo.SampleRate), 0);
+  av_opt_set_int(SwrContext, 'in_channel_count', SrcFormatInfo.Channels, 0);
+  av_opt_set_int(SwrContext, 'out_channel_count', DstFormatInfo.Channels, 0);
+  av_opt_set_int(SwrContext, 'in_sample_rate', Round(SrcFormatInfo.SampleRate), 0);
+  av_opt_set_int(SwrContext, 'out_sample_rate', Round(DstFormatInfo.SampleRate), 0);
   av_opt_set_sample_fmt(SwrContext, 'in_sample_fmt', SrcFormat, 0);
   av_opt_set_sample_fmt(SwrContext, 'out_sample_fmt', DstFormat, 0);
   swr_init(SwrContext);
@@ -276,6 +275,8 @@ var
   OutputSampleCount: integer;
   SrcFormat: TAVSampleFormat;
   DstFormat: TAVSampleFormat;
+  InBufPtr: PCuint8;
+  OutBufPtr: PCuint8;
 begin
   Result := -1;
 
@@ -304,10 +305,16 @@ begin
   end;
 
   InputSampleCount := InputSize div SrcFormatInfo.FrameSize;
-  av_samples_alloc(Pcuint8(OutputBuffer), nil, DstFormatInfo.Channels, OutputSampleCount,
-                   DstFormat, 0);
-  OutputSampleCount:= swr_convert(SwrContext, Pcuint8(OutputBuffer), OutputSampleCount,
-                                  Pcuint8(InputBuffer), InputSampleCount);
+  OutputSampleCount := GetOutputBufferSize(InputSampleCount);
+  InBufPtr := Pcuint8(@InputBuffer[0]);
+  OutBufPtr := Pcuint8(@OutputBuffer[0]);
+  OutputSampleCount:= swr_convert(SwrContext, OutBufPtr, OutputSampleCount,
+                                  InBufPtr, InputSampleCount);
+  if (OutputSampleCount < 0) then
+  begin
+    Log.LogError('swr_convert failed ' + inttostr(OutputSampleCount), 'TAudioConverter_SWResample.Init');
+    OutputSampleCount := GetOutputBufferSize(InputSampleCount);
+  end;
   Result := OutputSampleCount * DstFormatInfo.FrameSize;
 end;
 
