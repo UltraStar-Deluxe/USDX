@@ -737,6 +737,8 @@ begin
   //BASS_SetConfig(BASS_CONFIG_UPDATEPERIOD, 10);
   //BASS_SetConfig(BASS_CONFIG_BUFFER, 100);
 
+  Log.LogStatus('Opened audio device', 'TAudioPlayback_Bass.InitializePlayback');
+
   Result := true;
 end;
 
