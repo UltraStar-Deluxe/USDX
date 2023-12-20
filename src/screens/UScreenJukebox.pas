@@ -278,6 +278,7 @@ uses
   UHelp,
   ULanguage,
   ULog,
+  UMain,
   UMenuButton,
   UMenuInteract,
   UNote,
@@ -692,6 +693,7 @@ begin
   Button[JukeboxRandomSongList].SetSelect(false);
   Button[JukeboxRepeatSongList].SetSelect(false);
   Button[JukeboxFindSong].SetSelect(false);
+  StopTextInput;
   Button[JukeboxPlayPause].SetSelect(false);
   Button[JukeboxFindSong].Text[0].Selected := false;
 end;
@@ -759,6 +761,7 @@ begin
 
   if (SongListVisible) then
   begin
+    // SetTextInput(Button[JukeboxFindSong].Selected);
 
     if (BtnDown) then //and (MouseButton = SDL_BUTTON_LEFT) then
     begin
@@ -968,6 +971,7 @@ begin
             end;
 
             Button[JukeboxFindSong].SetSelect(FindSongList);
+            SetTextInput(FindSongList);
 
             if not (FindSongList) and (Length(JukeboxSongsList) <> Length(JukeboxVisibleSongs)) then
             begin
@@ -990,6 +994,7 @@ begin
           begin
             SongMenuVisible := false;
             SongListVisible := false;
+            StopTextInput;
 
             Button[JukeboxOptions].SetSelect(false);
             ScreenJukeboxOptions.Visible := true;
@@ -1098,9 +1103,15 @@ begin
         Button[JukeboxOptions].SetSelect(false);
 
       if InRegion(X, Y, Button[JukeboxFindSong].GetMouseOverArea) then
-        Button[JukeboxFindSong].SetSelect(true)
+      begin
+        Button[JukeboxFindSong].SetSelect(true);
+        StartTextInput;
+      end
       else
+      begin
         Button[JukeboxFindSong].SetSelect(FindSongList);
+        SetTextInput(FindSongList);
+      end;
 
     end;
   end;
@@ -1150,6 +1161,7 @@ begin
       begin
         SongMenuVisible := false;
         SongListVisible := false;
+        StopTextInput;
 
         Button[JukeboxSongMenuOptions].SetSelect(false);
 
@@ -1371,8 +1383,8 @@ begin
     end
     else
     begin
-      case UCS4UpperCase(CharCode) of
-        Ord('Q'):
+      case PressedKey of
+        SDLK_Q:
         begin
           // when not ask before exit then finish now
           if (Ini.AskbeforeDel <> 1) then
@@ -1386,7 +1398,7 @@ begin
         end;
 
         // show visualization
-        Ord('V'):
+        SDLK_V:
         begin
           if fShowWebcam then
           begin
@@ -1431,7 +1443,7 @@ begin
         end;
 
         // show Webcam
-      Ord('W'):
+      SDLK_W:
       begin
         if (fShowWebCam = false) then
         begin
@@ -1461,7 +1473,7 @@ begin
       end;
 
         // allow search for songs
-        Ord('J'):
+        SDLK_J:
         begin
           if (SongListVisible) then
           begin
@@ -1470,6 +1482,7 @@ begin
             if (Filter = '') and (FindSongList) then
                 Button[JukeboxFindSong].Text[0].Text := '';
             Button[JukeboxFindSong].SetSelect(FindSongList);
+            SetTextInput(FindSongList);
             if FindSongList then
               FilterSongList(Filter)
             else
@@ -1484,13 +1497,14 @@ begin
             if (Filter = '') then
                 Button[JukeboxFindSong].Text[0].Text := '';
             Button[JukeboxFindSong].SetSelect(FindSongList);
+            SetTextInput(FindSongList);
             FilterSongList(Filter);
             Exit;
           end;
         end;
 
         // skip intro
-        Ord('S'):
+        SDLK_S:
         begin
           if (AudioPlayback.Position < CurrentSong.gap / 1000 - 6) then
           begin
@@ -1502,13 +1516,13 @@ begin
         end;
 
         // pause
-        Ord('P'):
+        SDLK_P:
         begin
           Pause;
           Exit;
         end;
 
-        Ord('R'):
+        SDLK_R:
         begin
           if (SongListVisible) then
           begin
@@ -1517,7 +1531,7 @@ begin
         end;
 
         // toggle time display
-        Ord('T'):
+        SDLK_T:
         begin
           LastTick := SDL_GetTicks();
 
@@ -1618,6 +1632,7 @@ begin
             end;
 
             Button[JukeboxFindSong].SetSelect(FindSongList);
+            SetTextInput(FindSongList);
 
             if not (FindSongList) then
             begin
@@ -1661,6 +1676,7 @@ begin
             begin
               FindSongList:=false;
               Button[JukeboxFindSong].SetSelect(FindSongList);
+              SetTextInput(FindSongList);
               Exit;
             end;
             Button[JukeboxFindSong].Text[0].DeleteLastLetter();
@@ -1707,6 +1723,7 @@ begin
             begin
               FindSongList:=false;
               Button[JukeboxFindSong].SetSelect(FindSongList);
+              SetTextInput(FindSongList);
             end;
             if (High(JukeboxVisibleSongs) < 0) then
             begin

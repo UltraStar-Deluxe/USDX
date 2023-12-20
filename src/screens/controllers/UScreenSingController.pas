@@ -234,8 +234,8 @@ begin
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
     // check normal keys
-    case UCS4UpperCase(CharCode) of
-      Ord('Q'):
+    case PressedKey of
+      SDLK_Q:
       begin
         // when not ask before exit then finish now
         if (Ini.AskbeforeDel <> 1) then
@@ -249,7 +249,7 @@ begin
       end;
 
       //Restart and pause song
-      Ord('R'):
+      SDLK_R:
       begin
         if ScreenSong.Mode = smMedley then Exit;
         for i1 := 0 to High(Player) do
@@ -289,7 +289,7 @@ begin
       end;
 
       // show visualization
-      Ord('V'):
+      SDLK_V:
       begin
         if fShowWebcam then
         begin
@@ -334,7 +334,7 @@ begin
       end;
 
       // show Webcam
-      Ord('W'):
+      SDLK_W:
       begin
         if (fShowWebCam = false) then
         begin
@@ -364,14 +364,14 @@ begin
       end;
 
       // pause
-      Ord('P'):
+      SDLK_P:
       begin
         Pause;
         Exit;
       end;
 
       // toggle time display: running time/remaining time/total time / SHIFT: show/hide time bar
-      Ord('T'):
+      SDLK_T:
       begin
         if (SDL_ModState = KMOD_LSHIFT) then
         begin
@@ -395,7 +395,7 @@ begin
       end;
 
       // skip intro / SHIFT: show/hide score display
-      Ord('S'):
+      SDLK_S:
       begin
         if (SDL_ModState = KMOD_LSHIFT) then
         begin
@@ -420,7 +420,7 @@ begin
       end;
 
       // SHIFT: show/hide oscilloscope
-      Ord('O'):
+      SDLK_O:
       begin
         if (SDL_ModState = KMOD_LSHIFT) then
         begin
@@ -433,7 +433,7 @@ begin
       end;
 
       // SHIFT: show/hide notes
-      Ord('N'):
+      SDLK_N:
       begin
         if (SDL_ModState = KMOD_LSHIFT) then
         begin
@@ -446,7 +446,7 @@ begin
       end;
 
       // SHIFT: show/hide notes
-      Ord('L'):
+      SDLK_L:
       begin
         if (SDL_ModState = KMOD_LSHIFT) then
         begin
@@ -459,7 +459,7 @@ begin
       end;
 
       // SHIFT: show/hide avatars and player names
-      Ord('A'):
+      SDLK_A:
       begin
         if (SDL_ModState = KMOD_LSHIFT) then
         begin
@@ -480,7 +480,7 @@ begin
       end;
 
       // SHIFT: show/hide microphone input/sung notes
-      Ord('I'):
+      SDLK_I:
       begin
         if (SDL_ModState = KMOD_LSHIFT) then
         begin
@@ -493,7 +493,7 @@ begin
       end;
 
       // SHIFT: show/hide (toggle) all display elements
-      Ord('H'):
+      SDLK_H:
       begin
         if (SDL_ModState = KMOD_LSHIFT) then
         begin

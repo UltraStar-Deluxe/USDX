@@ -45,6 +45,9 @@ var
 procedure Main;
 procedure MainLoop;
 procedure CheckEvents;
+procedure StartTextInput;
+procedure StopTextInput;
+procedure SetTextInput(enabled: boolean);
 
 type
   TMainThreadExecProc = procedure(Data: Pointer);
@@ -299,6 +302,21 @@ begin
   {$ENDIF}
 end;
 
+procedure StartTextInput;
+begin
+  SDL_StartTextInput;
+end;
+
+procedure StopTextInput;
+begin
+  SDL_StopTextInput;
+end;
+
+procedure SetTextInput(enabled: boolean);
+begin
+  if enabled then StartTextInput else StopTextInput;
+end;
+
 procedure MainLoop;
 var
   Delay:            integer;
@@ -309,7 +327,8 @@ var
   I,J: Integer;
 begin
   Max_FPS := Ini.MaxFramerateGet;
-  SDL_StartTextInput;
+  // need to explicitly stop this because it appears to be started by default
+  SDL_StopTextInput;
   Done := false;
   J := 1;
   CountSkipTime();

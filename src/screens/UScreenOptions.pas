@@ -93,56 +93,56 @@ begin
   if (PressedDown) then
   begin // Key Down
     // check normal keys
-    case UCS4UpperCase(CharCode) of
-      Ord('G'):
+    case PressedKey of
+      SDLK_G:
         begin
           FadeTo(@ScreenOptionsGame, SoundLib.Start);
           Exit;
         end;
 
-      Ord('H'):
+      SDLK_H:
         begin
           FadeTo(@ScreenOptionsGraphics, SoundLib.Start);
           Exit;
         end;
 
-      Ord('S'):
+      SDLK_S:
         begin
           FadeTo(@ScreenOptionsSound, SoundLib.Start);
           Exit;
         end;
 
-      Ord('I'):
+      SDLK_I:
         begin
           FadeTo(@ScreenOptionsInput, SoundLib.Start);
           Exit;
         end;
 
-      Ord('L'):
+      SDLK_L:
         begin
           FadeTo(@ScreenOptionsLyrics, SoundLib.Start);
           Exit;
         end;
 
-      Ord('T'):
+      SDLK_T:
         begin
           FadeTo(@ScreenOptionsThemes, SoundLib.Start);
           Exit;
         end;
 
-      Ord('R'):
+      SDLK_R:
         begin
           FadeTo(@ScreenOptionsRecord, SoundLib.Start);
           Exit;
         end;
 
-      Ord('A'):
+      SDLK_A:
         begin
           FadeTo(@ScreenOptionsAdvanced, SoundLib.Start);
           Exit;
         end;
 
-      Ord('N'):
+      SDLK_N:
         begin
           if (High(DataBase.NetworkUser) = -1) then
             ScreenPopupError.ShowPopup(Language.Translate('SING_OPTIONS_NETWORK_NO_DLL'))
@@ -154,19 +154,19 @@ begin
           Exit;
         end;
 
-      Ord('W'):
+      SDLK_W:
         begin
           FadeTo(@ScreenOptionsWebcam, SoundLib.Start);
           Exit;
         end;
 
-      Ord('J'):
+      SDLK_J:
         begin
           FadeTo(@ScreenOptionsJukebox, SoundLib.Start);
           Exit;
         end;
 
-      Ord('Q'):
+      SDLK_Q:
         begin
           Result := false;
           Exit;

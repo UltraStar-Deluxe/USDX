@@ -80,6 +80,7 @@ type
       constructor Create; override;
       function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       procedure OnShow; override;
       
       procedure SetAnimationProgress(Progress: real); override;
@@ -250,6 +251,7 @@ function TScreenPartyPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
     until ((Interactions[Interaction].Typ = iSelectS) and
       SelectsS[Interactions[Interaction].Num].Visible) or
       (Button[Interactions[Interaction].Num].Visible);
+    SetTextInput(Interactions[Interaction].Typ = iButton);
   end;
   procedure IntPrev;
   begin
@@ -258,6 +260,7 @@ function TScreenPartyPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
     until ((Interactions[Interaction].Typ = iSelectS) and
       SelectsS[Interactions[Interaction].Num].Visible) or
       (Button[Interactions[Interaction].Num].Visible);
+    SetTextInput(Interactions[Interaction].Typ = iButton);
   end;
   procedure HandleNameTemplate(const index: integer);
   var
@@ -316,8 +319,8 @@ begin
   else
   begin
     // check normal keys
-    case UCS4UpperCase(CharCode) of
-      Ord('Q'):
+    case PressedKey of
+      SDLK_Q:
         begin
           Result := false;
           Exit;
@@ -455,6 +458,13 @@ begin
         end;
       end;
   end;
+end;
+
+function TScreenPartyPlayer.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+begin
+  Result := true;
+  inherited ParseMouse(MouseButton, BtnDown, X, Y);
+  SetTextInput(Interactions[Interaction].Typ = iButton);
 end;
 
 constructor TScreenPartyPlayer.Create;
