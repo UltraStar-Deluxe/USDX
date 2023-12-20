@@ -1124,8 +1124,8 @@ begin
         Done := Done or 2;
       end
 
-      //MP3 File
-      else if (Identifier = 'MP3') then
+      //Audio File (MP3 is deprecated in favor of AUDIO)
+      else if (Identifier = 'AUDIO') or (Identifier = 'MP3') then
       begin
         EncFile := DecodeFilename(Value);
         if (Self.Path.Append(EncFile).IsFile) then
