@@ -66,7 +66,7 @@ type
       function IsEOF(): boolean;             override;
       function IsError(): boolean;           override;
 
-      function ReadData(Buffer: PByteArray; BufSize: integer): integer; override;
+      function ReadData(Buffer: PByte; BufSize: integer): integer; override;
   end;
 
 type
@@ -194,7 +194,7 @@ begin
   Result := Error;
 end;
 
-function TBassDecodeStream.ReadData(Buffer: PByteArray; BufSize: integer): integer;
+function TBassDecodeStream.ReadData(Buffer: PByte; BufSize: integer): integer;
 var
   Report: string;
   I: Integer;

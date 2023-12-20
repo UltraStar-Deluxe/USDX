@@ -285,7 +285,7 @@ type
       function IsEOF(): boolean;            virtual; abstract;
       function IsError(): boolean;          virtual; abstract;
     public
-      function ReadData(Buffer: PByteArray; BufferSize: integer): integer; virtual; abstract;
+      function ReadData(Buffer: PByte; BufferSize: integer): integer; virtual; abstract;
 
       property EOF: boolean read IsEOF;
       property Error: boolean read IsError;

@@ -204,7 +204,7 @@ type
       function IsEOF(): boolean;             override;
       function IsError(): boolean;           override;
 
-      function ReadData(Buffer: PByteArray; BufferSize: integer): integer; override;
+      function ReadData(Buffer: PByte; BufferSize: integer): integer; override;
   end;
 
 type
@@ -1302,7 +1302,7 @@ begin
   end;
 end;
 
-function TFFmpegDecodeStream.ReadData(Buffer: PByteArray; BufferSize: integer): integer;
+function TFFmpegDecodeStream.ReadData(Buffer: PByte; BufferSize: integer): integer;
 var
   CopyByteCount:   integer; // number of bytes to copy
   RemainByteCount: integer; // number of bytes left (remain) to read
