@@ -284,7 +284,7 @@ function IsPunctuationChar(ch: WideChar): boolean;
 begin
   // TODO: add chars > 255 (or replace with libxml2 functions?)
   case ch of
-    ' '..'/',':'..'@','['..'`','{'..'~',
+    ' '..'/',':'..'@','['..'`','{'..'~',widechar($2019),
     #160..#191,#215,#247:
       Result := true;
     else
