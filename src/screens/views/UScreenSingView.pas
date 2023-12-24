@@ -528,7 +528,7 @@ begin
   TextTimeLabelText := ScreenSing.AddText(Theme.Sing.TextTimeLabelText);
   TextTimeText := ScreenSing.AddText(Theme.Sing.TextTimeText);
 
-  for I := 1 to 6 do
+  for I := 1 to UIni.IMaxPlayerCount do
     Col[I] := GetPlayerColor(Ini.SingColor[I - 1]);
 
   // SCREEN 1
