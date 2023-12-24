@@ -122,7 +122,7 @@ type
       procedure SetLoop(Enabled: boolean); override;
     public
       constructor Create(Buffer: TStream; Format: TAudioFormatInfo);
-      function ReadData(Buffer: PByteArray; BufferSize: integer): integer; override;
+      function ReadData(Buffer: PByte; BufferSize: integer): integer; override;
       function GetAudioFormatInfo(): TAudioFormatInfo; override;
       procedure Close(); override;
   end;
@@ -432,7 +432,7 @@ begin
   fLoop := Enabled;
 end;
 
-function TAudioBufferSourceStream.ReadData(Buffer: PByteArray; BufferSize: integer): integer;
+function TAudioBufferSourceStream.ReadData(Buffer: PByte; BufferSize: integer): integer;
 var
   BufSizeLeft: integer;
   NumRead: integer;

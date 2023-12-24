@@ -285,7 +285,7 @@ type
       function IsEOF(): boolean;            virtual; abstract;
       function IsError(): boolean;          virtual; abstract;
     public
-      function ReadData(Buffer: PByteArray; BufferSize: integer): integer; virtual; abstract;
+      function ReadData(Buffer: PByte; BufferSize: integer): integer; virtual; abstract;
 
       property EOF: boolean read IsEOF;
       property Error: boolean read IsError;
@@ -790,7 +790,7 @@ begin
     CurrentAudioDecoder := InterfaceList[i] as IAudioDecoder;
     if (not CurrentAudioDecoder.InitializeDecoder()) then
     begin
-      Log.LogError('Initialize failed, Removing - '+ CurrentAudioDecoder.GetName);
+      Log.LogError('Initialize failed, Removing decoder: '+ CurrentAudioDecoder.GetName);
       MediaManager.Remove(CurrentAudioDecoder);
     end;
   end;
@@ -810,7 +810,7 @@ begin
       DefaultAudioPlayback := CurrentAudioPlayback;
       break;
     end;
-    Log.LogError('Initialize failed, Removing - '+ CurrentAudioPlayback.GetName);
+    Log.LogError('Initialize failed, Removing playback: '+ CurrentAudioPlayback.GetName);
     MediaManager.Remove(CurrentAudioPlayback);
   end;
 
@@ -825,7 +825,7 @@ begin
       DefaultAudioInput := CurrentAudioInput;
       break;
     end;
-    Log.LogError('Initialize failed, Removing - '+ CurrentAudioInput.GetName);
+    Log.LogError('Initialize failed, Removing input: '+ CurrentAudioInput.GetName);
     MediaManager.Remove(CurrentAudioInput);
   end;
 
