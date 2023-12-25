@@ -798,6 +798,30 @@ var
   TextLen:           real;
   ScoretoAdd:        word;
   PosDiff:           real;
+  procedure aPositionsInternal(index: integer; themeElements: TThemeSingPlayer);
+  var
+    yOffset: integer;
+    puSize: integer;
+  begin
+    if (CurrentSong.isDuet) then begin
+      yOffset := 40;
+      puSize := 14;
+    end else begin
+      yOffset := 65;
+      puSize := 18;
+    end;
+    aPositions[PIndex].PUSize := puSize;
+
+    aPositions[PIndex].PUW := themeElements.ScoreBackground.W;
+    aPositions[PIndex].PUH := themeElements.ScoreBackground.H;
+
+    aPositions[PIndex].PUStartX := themeElements.ScoreBackground.X;
+    aPositions[PIndex].PUStartY := themeElements.Score.Y + yOffset;
+
+    aPositions[PIndex].PUTargetX := themeElements.ScoreBackground.X;
+    aPositions[PIndex].PUTargetY := themeElements.Score.Y;
+
+  end;
 begin
 { if screens = 2 and playerplay <= 3 the 2nd screen shows the
    textures of screen 1 }
@@ -832,104 +856,20 @@ begin
           begin
             if (CurrentSong.isDuet) then
             begin
-              aPositions[PIndex].PUSize := 14;
-
               case (PopUp.Player) of
-                  0:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Duet4PP1.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Duet4PP1.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Duet4PP1.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Duet4PP1.Score.Y + 40;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Duet4PP1.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Duet4PP1.Score.Y;
-                    end;
-                  1:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Duet4PP2.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Duet4PP2.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Duet4PP2.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Duet4PP2.Score.Y + 40;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Duet4PP2.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Duet4PP2.Score.Y;
-                    end;
-                  2:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Duet4PP3.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Duet4PP3.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Duet4PP3.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Duet4PP3.Score.Y + 40;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Duet4PP3.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Duet4PP3.Score.Y;
-                    end;
-                  3:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Duet4PP4.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Duet4PP4.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Duet4PP4.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Duet4PP4.Score.Y + 40;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Duet4PP4.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Duet4PP4.Score.Y;
-                    end;
+                  0: aPositionsInternal(PIndex, Theme.Sing.Duet4PP1);
+                  1: aPositionsInternal(PIndex, Theme.Sing.Duet4PP2);
+                  2: aPositionsInternal(PIndex, Theme.Sing.Duet4PP3);
+                  3: aPositionsInternal(PIndex, Theme.Sing.Duet4PP4);
                 end;
             end
             else
             begin
-              aPositions[PIndex].PUSize := 18;
-
               case (PopUp.Player) of
-                  0:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Solo4PP1.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Solo4PP1.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Solo4PP1.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Solo4PP1.Score.Y + 65;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Solo4PP1.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Solo4PP1.Score.Y;
-                    end;
-                  1:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Solo4PP2.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Solo4PP2.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Solo4PP2.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Solo4PP2.Score.Y + 65;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Solo4PP2.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Solo4PP2.Score.Y;
-                    end;
-                  2:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Solo4PP3.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Solo4PP3.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Solo4PP3.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Solo4PP3.Score.Y + 65;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Solo4PP3.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Solo4PP3.Score.Y;
-                    end;
-                  3:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Solo4PP4.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Solo4PP4.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Solo4PP4.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Solo4PP4.Score.Y + 65;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Solo4PP4.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Solo4PP4.Score.Y;
-                    end;
+                  0: aPositionsInternal(PIndex, Theme.Sing.Solo4PP1);
+                  1: aPositionsInternal(PIndex, Theme.Sing.Solo4PP2);
+                  2: aPositionsInternal(PIndex, Theme.Sing.Solo4PP3);
+                  3: aPositionsInternal(PIndex, Theme.Sing.Solo4PP4);
                 end;
             end;
           end;
@@ -938,148 +878,24 @@ begin
           begin
             if (CurrentSong.isDuet) then
             begin
-              aPositions[PIndex].PUSize := 14;
-
               case (PopUp.Player) of
-                  0:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Duet6PP1.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Duet6PP1.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Duet6PP1.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Duet6PP1.Score.Y + 40;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Duet6PP1.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Duet6PP1.Score.Y;
-                    end;
-                  1:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Duet6PP2.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Duet6PP2.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Duet6PP2.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Duet6PP2.Score.Y + 40;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Duet6PP2.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Duet6PP2.Score.Y;
-                    end;
-                  2:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Duet6PP3.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Duet6PP3.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Duet6PP3.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Duet6PP3.Score.Y + 40;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Duet6PP3.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Duet6PP3.Score.Y;
-                    end;
-                  3:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Duet6PP4.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Duet6PP4.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Duet6PP4.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Duet6PP4.Score.Y + 40;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Duet6PP4.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Duet6PP4.Score.Y;
-                    end;
-                  4:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Duet6PP5.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Duet6PP5.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Duet6PP5.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Duet6PP5.Score.Y + 40;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Duet6PP5.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Duet6PP5.Score.Y;
-                    end;
-                  5:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Duet6PP6.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Duet6PP6.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Duet6PP6.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Duet6PP6.Score.Y + 40;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Duet6PP6.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Duet6PP6.Score.Y;
-                    end;
+                  0: aPositionsInternal(PIndex, Theme.Sing.Duet6PP1);
+                  1: aPositionsInternal(PIndex, Theme.Sing.Duet6PP2);
+                  2: aPositionsInternal(PIndex, Theme.Sing.Duet6PP3);
+                  3: aPositionsInternal(PIndex, Theme.Sing.Duet6PP4);
+                  4: aPositionsInternal(PIndex, Theme.Sing.Duet6PP5);
+                  5: aPositionsInternal(PIndex, Theme.Sing.Duet6PP6);
                 end;
             end
             else
             begin
-              aPositions[PIndex].PUSize := 18;
-
               case (PopUp.Player) of
-                  0:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Solo6PP1.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Solo6PP1.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Solo6PP1.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Solo6PP1.Score.Y + 65;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Solo6PP1.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Solo6PP1.Score.Y;
-                    end;
-                  1:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Solo6PP2.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Solo6PP2.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Solo6PP2.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Solo6PP2.Score.Y + 65;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Solo6PP2.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Solo6PP2.Score.Y;
-                    end;
-                  2:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Solo6PP3.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Solo6PP3.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Solo6PP3.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Solo6PP3.Score.Y + 65;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Solo6PP3.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Solo6PP3.Score.Y;
-                    end;
-                  3:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Solo6PP4.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Solo6PP4.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Solo6PP4.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Solo6PP4.Score.Y + 65;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Solo6PP4.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Solo6PP4.Score.Y;
-                    end;
-                  4:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Solo6PP5.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Solo6PP5.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Solo6PP5.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Solo6PP5.Score.Y + 65;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Solo6PP5.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Solo6PP5.Score.Y;
-                    end;
-                  5:
-                    begin
-                      aPositions[PIndex].PUW := Theme.Sing.Solo6PP6.ScoreBackground.W;
-                      aPositions[PIndex].PUH := Theme.Sing.Solo6PP6.ScoreBackground.H;
-
-                      aPositions[PIndex].PUStartX := Theme.Sing.Solo6PP6.ScoreBackground.X;
-                      aPositions[PIndex].PUStartY := Theme.Sing.Solo6PP6.Score.Y + 65;
-
-                      aPositions[PIndex].PUTargetX := Theme.Sing.Solo6PP6.ScoreBackground.X;
-                      aPositions[PIndex].PUTargetY := Theme.Sing.Solo6PP6.Score.Y;
-                    end;
+                  0: aPositionsInternal(0, Theme.Sing.Solo6PP1);
+                  1: aPositionsInternal(1, Theme.Sing.Solo6PP2);
+                  2: aPositionsInternal(2, Theme.Sing.Solo6PP3);
+                  3: aPositionsInternal(3, Theme.Sing.Solo6PP4);
+                  4: aPositionsInternal(4, Theme.Sing.Solo6PP5);
+                  5: aPositionsInternal(5, Theme.Sing.Solo6PP6);
                 end;
             end;
           end;
@@ -1089,44 +905,12 @@ begin
 
           if (CurrentSong.isDuet) then
           begin
-            aPositions[PIndex].PUSize := 14;
-
             if ((PlayersPlay = 3) or (PlayersPlay = 6)) then
             begin
               case (PopUp.Player) of
-                0, 3, 6:
-                  begin
-                    aPositions[PIndex].PUW := Theme.Sing.Duet3PP1.ScoreBackground.W;
-                    aPositions[PIndex].PUH := Theme.Sing.Duet3PP1.ScoreBackground.H;
-
-                    aPositions[PIndex].PUStartX := Theme.Sing.Duet3PP1.ScoreBackground.X;
-                    aPositions[PIndex].PUStartY := Theme.Sing.Duet3PP1.Score.Y + 40;
-
-                    aPositions[PIndex].PUTargetX := Theme.Sing.Duet3PP1.ScoreBackground.X;
-                    aPositions[PIndex].PUTargetY := Theme.Sing.Duet3PP1.Score.Y;
-                  end;
-                1, 4, 7:
-                  begin
-                    aPositions[PIndex].PUW := Theme.Sing.Duet3PP2.ScoreBackground.W;
-                    aPositions[PIndex].PUH := Theme.Sing.Duet3PP2.ScoreBackground.H;
-
-                    aPositions[PIndex].PUStartX := Theme.Sing.Duet3PP2.ScoreBackground.X;
-                    aPositions[PIndex].PUStartY := Theme.Sing.Duet3PP2.Score.Y + 40;
-
-                    aPositions[PIndex].PUTargetX := Theme.Sing.Duet3PP2.ScoreBackground.X;
-                    aPositions[PIndex].PUTargetY := Theme.Sing.Duet3PP2.Score.Y;
-                  end;
-                2, 5, 8:
-                  begin
-                    aPositions[PIndex].PUW := Theme.Sing.Duet3PP3.ScoreBackground.W;
-                    aPositions[PIndex].PUH := Theme.Sing.Duet3PP3.ScoreBackground.H;
-
-                    aPositions[PIndex].PUStartX := Theme.Sing.Duet3PP3.ScoreBackground.X;
-                    aPositions[PIndex].PUStartY := Theme.Sing.Duet3PP3.Score.Y + 40;
-
-                    aPositions[PIndex].PUTargetX := Theme.Sing.Duet3PP3.ScoreBackground.X;
-                    aPositions[PIndex].PUTargetY := Theme.Sing.Duet3PP3.Score.Y;
-                  end;
+                0, 3, 6: aPositionsInternal(PIndex, Theme.Sing.Duet3PP1);
+                1, 4, 7: aPositionsInternal(PIndex, Theme.Sing.Duet3PP2);
+                2, 5, 8: aPositionsInternal(PIndex, Theme.Sing.Duet3PP3);
               end;
             end;
           end
@@ -1134,42 +918,10 @@ begin
           begin
           if ((PlayersPlay = 3) or (PlayersPlay = 6)) then
             begin
-              aPositions[PIndex].PUSize := 18;
-
               case (PopUp.Player) of
-                0, 3, 6:
-                  begin
-                    aPositions[PIndex].PUW := Theme.Sing.Solo3PP1.ScoreBackground.W;
-                    aPositions[PIndex].PUH := Theme.Sing.Solo3PP1.ScoreBackground.H;
-
-                    aPositions[PIndex].PUStartX := Theme.Sing.Solo3PP1.ScoreBackground.X;
-                    aPositions[PIndex].PUStartY := Theme.Sing.Solo3PP1.Score.Y + 65;
-
-                    aPositions[PIndex].PUTargetX := Theme.Sing.Solo3PP1.ScoreBackground.X;
-                    aPositions[PIndex].PUTargetY := Theme.Sing.Solo3PP1.Score.Y;
-                  end;
-                1, 4, 7:
-                  begin
-                    aPositions[PIndex].PUW := Theme.Sing.Solo3PP2.ScoreBackground.W;
-                    aPositions[PIndex].PUH := Theme.Sing.Solo3PP2.ScoreBackground.H;
-
-                    aPositions[PIndex].PUStartX := Theme.Sing.Solo3PP2.ScoreBackground.X;
-                    aPositions[PIndex].PUStartY := Theme.Sing.Solo3PP2.Score.Y + 65;
-
-                    aPositions[PIndex].PUTargetX := Theme.Sing.Solo3PP2.ScoreBackground.X;
-                    aPositions[PIndex].PUTargetY := Theme.Sing.Solo3PP2.Score.Y;
-                  end;
-                2, 5, 8:
-                  begin
-                    aPositions[PIndex].PUW := Theme.Sing.Solo3PP3.ScoreBackground.W;
-                    aPositions[PIndex].PUH := Theme.Sing.Solo3PP3.ScoreBackground.H;
-
-                    aPositions[PIndex].PUStartX := Theme.Sing.Solo3PP3.ScoreBackground.X;
-                    aPositions[PIndex].PUStartY := Theme.Sing.Solo3PP3.Score.Y + 65;
-
-                    aPositions[PIndex].PUTargetX := Theme.Sing.Solo3PP3.ScoreBackground.X;
-                    aPositions[PIndex].PUTargetY := Theme.Sing.Solo3PP3.Score.Y;
-                  end;
+                0, 3, 6: aPositionsInternal(PIndex, Theme.Sing.Solo3PP1);
+                1, 4, 7: aPositionsInternal(PIndex, Theme.Sing.Solo3PP2);
+                2, 5, 8: aPositionsInternal(PIndex, Theme.Sing.Solo3PP3);
               end;
             end;
           end;
