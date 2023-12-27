@@ -34,6 +34,9 @@ interface
 uses
 {$IFDEF MSWINDOWS}
   Windows,
+  iconvenc_windows,
+{$ELSE}
+  iconvenc,
 {$ENDIF}
   StrUtils,
   SysUtils;
@@ -187,6 +190,11 @@ function WideStringLowerCase(const str: WideString): WideString; overload;
 function WideStringLowerCase(ch: WideChar): WideString; overload;
 
 function WideStringReplaceChar(const text: WideString; search, rep: WideChar): WideString;
+
+(*
+ * Transliterates a UTF8 string to ASCII, by utilizing the GNU iconv utility
+ *)
+function TransliterateToASCII(const str: UTF8String) : string;
 
 implementation
 
@@ -673,6 +681,11 @@ begin
     if result[iPos] = search then
       result[iPos] := rep;
   end;
+end;
+
+function TransliterateToASCII(const str: UTF8String) : string;
+begin
+  IConvert(str, result, 'UTF-8', 'ASCII//TRANSLIT');
 end;
 
 initialization
