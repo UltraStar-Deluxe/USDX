@@ -151,6 +151,7 @@ uses
   {$ENDIF}
 
   {$IFDEF MSWINDOWS}
+  iconvenc_windows    in 'lib\iconvenc\iconvenc_windows.pas',
   {$IFDEF FPC}
   // FPC compatibility file for Allocate/DeallocateHWnd
   WinAllocation in 'lib\other\WinAllocation.pas',

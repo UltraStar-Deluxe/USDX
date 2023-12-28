@@ -94,6 +94,7 @@
  Delete "$INSTDIR\libtiff-6.dll"
  Delete "$INSTDIR\libwebp-7.dll"
  Delete "$INSTDIR\libdav1d.dll"
+ Delete "$INSTDIR\libiconv-2.dll"
 
  StrCpy $0 "$INSTDIR\songs"
  Call un.DeleteIfEmpty 
