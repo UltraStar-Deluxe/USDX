@@ -248,7 +248,7 @@ begin
         Exit;
       end;
 
-      //Restart and pause song
+      // restart song
       SDLK_R:
       begin
         if ScreenSong.Mode = smMedley then Exit;
@@ -283,9 +283,13 @@ begin
         begin
           Scores.AddPlayer(Tex_ScoreBG[i1], Color);
         end;
+
         LyricsState.SetCurrentTime(CurrentSong.Start);
         Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
-        LyricsState.UpdateBeats;
+        LyricsState.UpdateBeats();
+        OnSentenceChange(0, 0);
+        Tracks[0].CurrentLine := 0;
+
         Scores.Init;
         Exit;
       end;
