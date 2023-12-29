@@ -284,6 +284,8 @@ begin
           Scores.AddPlayer(Tex_ScoreBG[i1], Color);
         end;
         LyricsState.SetCurrentTime(CurrentSong.Start);
+        Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
+        LyricsState.UpdateBeats;
         Scores.Init;
         Exit;
       end;
