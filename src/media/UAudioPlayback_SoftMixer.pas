@@ -441,8 +441,8 @@ begin
   Converter := TAudioConverter_FFmpeg.Create();
   {$ELSEIF Defined(UseSRCResample)}
   Converter := TAudioConverter_SRC.Create();
-//  {$ELSEIF Defined(UseSWResample)}
-//  Converter := TAudioConverter_SWResample.Create();
+  {$ELSEIF Defined(UseSWResample)}
+  Converter := TAudioConverter_SWResample.Create();
   {$ELSE}
   Converter := TAudioConverter_SDL.Create();
   {$IFEND}
