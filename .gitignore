@@ -28,7 +28,7 @@ __history
 aclocal.m4
 /autom4te.cache/
 /CMakeFiles/
-link.res
+link*.res
 ppaslink.sh
 /UltraStarDeluxe.app/*
 /dists/autogen/config.guess
