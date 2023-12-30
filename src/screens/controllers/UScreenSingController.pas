@@ -74,11 +74,9 @@ type
 type
   TScreenSingController = class(TMenu)
   private
-
     StartNote, EndNote:     TPos;
 
     procedure LoadNextSong();
-
     procedure SongError();
   public
     CheckPlayerConfigOnNextSong: boolean;
@@ -542,7 +540,7 @@ begin
       SDLK_RIGHT:
       begin
         if (SDL_ModState = KMOD_LCTRL) then // seek 5 seconds forward
-        AudioPlayback.SetPosition(AudioPlayback.Position + 5.0);
+          AudioPlayback.SetPosition(AudioPlayback.Position + 5.0);
         if (Assigned(fCurrentVideo)) then
           fCurrentVideo.Position := AudioPlayback.Position + 5.0;
       end;
@@ -550,9 +548,9 @@ begin
       SDLK_LEFT:
       begin
         if (SDL_ModState = KMOD_LCTRL) then // seek 5 seconds backward and reset scores to avoid cheating
-	begin
-	if (AudioPlayback.Position < 20.0) then
-	  exit;
+        begin
+          if (AudioPlayback.Position < 20.0) then
+          exit;
         for i1 := 0 to High(Player) do
         with Player[i1] do
         begin
@@ -577,7 +575,7 @@ begin
         begin
           Scores.AddPlayer(Tex_ScoreBG[i1], Color);
         end;
-	Scores.Init;
+        Scores.Init;
 
         AudioPlayback.SetPosition(AudioPlayback.Position - 5.0);
 	LyricsState.SetCurrentTime(AudioPlayback.Position - 5.0);
