@@ -78,6 +78,8 @@ type
 
     procedure LoadNextSong();
     procedure SongError();
+    procedure ResetLinesAndLyrics();
+    procedure ClearLyricEngines();
   public
     CheckPlayerConfigOnNextSong: boolean;
     eSongLoaded: THookableEvent; //< event is called after lyrics of a song are loaded on OnShow
@@ -283,10 +285,9 @@ begin
         end;
 
         LyricsState.SetCurrentTime(CurrentSong.Start);
-        Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
         LyricsState.UpdateBeats();
-        OnSentenceChange(0, 0);
-        Tracks[0].CurrentLine := 0;
+        ClearLyricEngines;
+        ResetLinesAndLyrics;
 
         Scores.Init;
         Exit;
@@ -578,9 +579,9 @@ begin
         Scores.Init;
 
         AudioPlayback.SetPosition(AudioPlayback.Position - 5.0);
-	LyricsState.SetCurrentTime(AudioPlayback.Position - 5.0);
-	Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
-	LyricsState.UpdateBeats();
+        LyricsState.SetCurrentTime(AudioPlayback.Position - 5.0);
+        ClearLyricEngines;
+        LyricsState.UpdateBeats();
         if (Assigned(fCurrentVideo)) then
           fCurrentVideo.Position := AudioPlayback.Position - 5.0;
         end;
@@ -1183,9 +1184,7 @@ begin
   AudioInput.CaptureStart;
 
   // main text
-  Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
-  LyricsDuetP1.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
-  LyricsDuetP2.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
+  ClearLyricEngines;
 
   if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
   begin
@@ -1244,6 +1243,26 @@ begin
 
   if (ScreenSong.Mode = smMedley) and (PlaylistMedley.CurrentMedleySong>1) then
     onShowFinish;
+end;
+
+// Forces the notes (lines) and lyrics to reset to the start of the song
+procedure TScreenSingController.ResetLinesAndLyrics();
+var
+  i1: integer;
+
+begin
+  for i1 := 0 to PlayersPlay - 1 do
+  begin
+    Tracks[i1].CurrentLine := 0;
+    OnSentenceChange(i1, 0);
+  end;
+end;
+
+procedure TScreenSingController.ClearLyricEngines();
+begin
+    Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
+    LyricsDuetP1.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
+    LyricsDuetP2.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
 end;
 
 procedure TScreenSingController.ClearSettings;
