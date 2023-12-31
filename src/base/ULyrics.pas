@@ -248,6 +248,7 @@ end;
  *}
 procedure TLyricEngine.Clear(cBPM: real; cResolution: integer);
 begin
+  UpperLine.CurWord := -1;
   BPM := cBPM;
   Resolution := cResolution;
   LCounter := 0;

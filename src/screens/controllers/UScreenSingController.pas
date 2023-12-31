@@ -74,12 +74,12 @@ type
 type
   TScreenSingController = class(TMenu)
   private
-
     StartNote, EndNote:     TPos;
 
     procedure LoadNextSong();
-
     procedure SongError();
+    procedure ResetLinesAndLyrics();
+    procedure ClearLyricEngines();
   public
     CheckPlayerConfigOnNextSong: boolean;
     eSongLoaded: THookableEvent; //< event is called after lyrics of a song are loaded on OnShow
@@ -248,7 +248,7 @@ begin
         Exit;
       end;
 
-      //Restart and pause song
+      // restart song
       SDLK_R:
       begin
         if ScreenSong.Mode = smMedley then Exit;
@@ -283,7 +283,12 @@ begin
         begin
           Scores.AddPlayer(Tex_ScoreBG[i1], Color);
         end;
+
         LyricsState.SetCurrentTime(CurrentSong.Start);
+        LyricsState.UpdateBeats();
+        ClearLyricEngines;
+        ResetLinesAndLyrics;
+
         Scores.Init;
         Exit;
       end;
@@ -536,7 +541,7 @@ begin
       SDLK_RIGHT:
       begin
         if (SDL_ModState = KMOD_LCTRL) then // seek 5 seconds forward
-        AudioPlayback.SetPosition(AudioPlayback.Position + 5.0);
+          AudioPlayback.SetPosition(AudioPlayback.Position + 5.0);
         if (Assigned(fCurrentVideo)) then
           fCurrentVideo.Position := AudioPlayback.Position + 5.0;
       end;
@@ -544,9 +549,9 @@ begin
       SDLK_LEFT:
       begin
         if (SDL_ModState = KMOD_LCTRL) then // seek 5 seconds backward and reset scores to avoid cheating
-	begin
-	if (AudioPlayback.Position < 20.0) then
-	  exit;
+        begin
+          if (AudioPlayback.Position < 20.0) then
+          exit;
         for i1 := 0 to High(Player) do
         with Player[i1] do
         begin
@@ -571,12 +576,12 @@ begin
         begin
           Scores.AddPlayer(Tex_ScoreBG[i1], Color);
         end;
-	Scores.Init;
+        Scores.Init;
 
         AudioPlayback.SetPosition(AudioPlayback.Position - 5.0);
-	LyricsState.SetCurrentTime(AudioPlayback.Position - 5.0);
-	Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
-	LyricsState.UpdateBeats();
+        LyricsState.SetCurrentTime(AudioPlayback.Position - 5.0);
+        ClearLyricEngines;
+        LyricsState.UpdateBeats();
         if (Assigned(fCurrentVideo)) then
           fCurrentVideo.Position := AudioPlayback.Position - 5.0;
         end;
@@ -1179,9 +1184,7 @@ begin
   AudioInput.CaptureStart;
 
   // main text
-  Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
-  LyricsDuetP1.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
-  LyricsDuetP2.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
+  ClearLyricEngines;
 
   if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
   begin
@@ -1240,6 +1243,26 @@ begin
 
   if (ScreenSong.Mode = smMedley) and (PlaylistMedley.CurrentMedleySong>1) then
     onShowFinish;
+end;
+
+// Forces the notes (lines) and lyrics to reset to the start of the song
+procedure TScreenSingController.ResetLinesAndLyrics();
+var
+  i1: integer;
+
+begin
+  for i1 := 0 to PlayersPlay - 1 do
+  begin
+    Tracks[i1].CurrentLine := 0;
+    OnSentenceChange(i1, 0);
+  end;
+end;
+
+procedure TScreenSingController.ClearLyricEngines();
+begin
+    Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
+    LyricsDuetP1.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
+    LyricsDuetP2.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
 end;
 
 procedure TScreenSingController.ClearSettings;
