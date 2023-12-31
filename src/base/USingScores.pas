@@ -1081,6 +1081,19 @@ var
   Position: TScorePosition;
   ScoreStr: String;
   Drawing: boolean;
+  procedure updatePosition(themeElements: TThemeSingPlayer);
+  begin
+    Position.BGX := themeElements.ScoreBackground.X;
+    Position.BGY := themeElements.ScoreBackground.Y;
+    Position.BGW := themeElements.ScoreBackground.W;
+    Position.BGH := themeElements.ScoreBackground.H;
+
+    Position.TextX     := themeElements.Score.X;
+    Position.TextY     := themeElements.Score.Y;
+    Position.TextFont  := themeElements.Score.Font;
+    Position.TextStyle := themeElements.Score.Style;
+    Position.TextSize  := themeElements.Score.Size;
+  end;
 begin
   Drawing := false;
 
@@ -1102,107 +1115,19 @@ begin
       if (CurrentSong.isDuet) then
       begin
         case Index of
-          0: begin
-               Position.BGX := Theme.Sing.Duet4PP1.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Duet4PP1.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Duet4PP1.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Duet4PP1.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Duet4PP1.Score.X;
-               Position.TextY     := Theme.Sing.Duet4PP1.Score.Y;
-               Position.TextFont  := Theme.Sing.Duet4PP1.Score.Font;
-               Position.TextStyle := Theme.Sing.Duet4PP1.Score.Style;
-               Position.TextSize  := Theme.Sing.Duet4PP1.Score.Size;
-             end;
-          1: begin
-               Position.BGX := Theme.Sing.Duet4PP2.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Duet4PP2.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Duet4PP2.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Duet4PP2.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Duet4PP2.Score.X;
-               Position.TextY     := Theme.Sing.Duet4PP2.Score.Y;
-               Position.TextFont  := Theme.Sing.Duet4PP2.Score.Font;
-               Position.TextStyle := Theme.Sing.Duet4PP2.Score.Style;
-               Position.TextSize  := Theme.Sing.Duet4PP2.Score.Size;
-             end;
-          2: begin
-               Position.BGX := Theme.Sing.Duet4PP3.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Duet4PP3.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Duet4PP3.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Duet4PP3.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Duet4PP3.Score.X;
-               Position.TextY     := Theme.Sing.Duet4PP3.Score.Y;
-               Position.TextFont  := Theme.Sing.Duet4PP3.Score.Font;
-               Position.TextStyle := Theme.Sing.Duet4PP3.Score.Style;
-               Position.TextSize  := Theme.Sing.Duet4PP3.Score.Size;
-             end;
-          3: begin
-               Position.BGX := Theme.Sing.Duet4PP4.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Duet4PP4.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Duet4PP4.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Duet4PP4.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Duet4PP4.Score.X;
-               Position.TextY     := Theme.Sing.Duet4PP4.Score.Y;
-               Position.TextFont  := Theme.Sing.Duet4PP4.Score.Font;
-               Position.TextStyle := Theme.Sing.Duet4PP4.Score.Style;
-               Position.TextSize  := Theme.Sing.Duet4PP4.Score.Size;
-             end;
+          0: updatePosition(Theme.Sing.Duet4PP1);
+          1: updatePosition(Theme.Sing.Duet4PP2);
+          2: updatePosition(Theme.Sing.Duet4PP3);
+          3: updatePosition(Theme.Sing.Duet4PP4);
         end;
       end
       else
       begin
         case Index of
-          0: begin
-               Position.BGX := Theme.Sing.Solo4PP1.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Solo4PP1.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Solo4PP1.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Solo4PP1.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Solo4PP1.Score.X;
-               Position.TextY     := Theme.Sing.Solo4PP1.Score.Y;
-               Position.TextFont  := Theme.Sing.Solo4PP1.Score.Font;
-               Position.TextStyle := Theme.Sing.Solo4PP1.Score.Style;
-               Position.TextSize  := Theme.Sing.Solo4PP1.Score.Size;
-             end;
-          1: begin
-               Position.BGX := Theme.Sing.Solo4PP2.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Solo4PP2.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Solo4PP2.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Solo4PP2.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Solo4PP2.Score.X;
-               Position.TextY     := Theme.Sing.Solo4PP2.Score.Y;
-               Position.TextFont  := Theme.Sing.Solo4PP2.Score.Font;
-               Position.TextStyle := Theme.Sing.Solo4PP2.Score.Style;
-               Position.TextSize  := Theme.Sing.Solo4PP2.Score.Size;
-             end;
-          2: begin
-               Position.BGX := Theme.Sing.Solo4PP3.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Solo4PP3.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Solo4PP3.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Solo4PP3.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Solo4PP3.Score.X;
-               Position.TextY     := Theme.Sing.Solo4PP3.Score.Y;
-               Position.TextFont  := Theme.Sing.Solo4PP3.Score.Font;
-               Position.TextStyle := Theme.Sing.Solo4PP3.Score.Style;
-               Position.TextSize  := Theme.Sing.Solo4PP3.Score.Size;
-             end;
-          3: begin
-               Position.BGX := Theme.Sing.Solo4PP4.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Solo4PP4.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Solo4PP4.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Solo4PP4.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Solo4PP4.Score.X;
-               Position.TextY     := Theme.Sing.Solo4PP4.Score.Y;
-               Position.TextFont  := Theme.Sing.Solo4PP4.Score.Font;
-               Position.TextStyle := Theme.Sing.Solo4PP4.Score.Style;
-               Position.TextSize  := Theme.Sing.Solo4PP4.Score.Size;
-             end;
+          0: updatePosition(Theme.Sing.Solo4PP1);
+          1: updatePosition(Theme.Sing.Solo4PP2);
+          2: updatePosition(Theme.Sing.Solo4PP3);
+          3: updatePosition(Theme.Sing.Solo4PP4);
         end;
       end;
     end
@@ -1212,155 +1137,23 @@ begin
       if (CurrentSong.isDuet) then
       begin
         case Index of
-          0: begin
-               Position.BGX := Theme.Sing.Duet6PP1.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Duet6PP1.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Duet6PP1.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Duet6PP1.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Duet6PP1.Score.X;
-               Position.TextY     := Theme.Sing.Duet6PP1.Score.Y;
-               Position.TextFont  := Theme.Sing.Duet6PP1.Score.Font;
-               Position.TextStyle := Theme.Sing.Duet6PP1.Score.Style;
-               Position.TextSize  := Theme.Sing.Duet6PP1.Score.Size;
-             end;
-          1: begin
-               Position.BGX := Theme.Sing.Duet6PP2.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Duet6PP2.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Duet6PP2.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Duet6PP2.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Duet6PP2.Score.X;
-               Position.TextY     := Theme.Sing.Duet6PP2.Score.Y;
-               Position.TextFont  := Theme.Sing.Duet6PP2.Score.Font;
-               Position.TextStyle := Theme.Sing.Duet6PP2.Score.Style;
-               Position.TextSize  := Theme.Sing.Duet6PP2.Score.Size;
-             end;
-          2: begin
-               Position.BGX := Theme.Sing.Duet6PP3.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Duet6PP3.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Duet6PP3.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Duet6PP3.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Duet6PP3.Score.X;
-               Position.TextY     := Theme.Sing.Duet6PP3.Score.Y;
-               Position.TextFont  := Theme.Sing.Duet6PP3.Score.Font;
-               Position.TextStyle := Theme.Sing.Duet6PP3.Score.Style;
-               Position.TextSize  := Theme.Sing.Duet6PP3.Score.Size;
-             end;
-          3: begin
-               Position.BGX := Theme.Sing.Duet6PP4.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Duet6PP4.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Duet6PP4.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Duet6PP4.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Duet6PP4.Score.X;
-               Position.TextY     := Theme.Sing.Duet6PP4.Score.Y;
-               Position.TextFont  := Theme.Sing.Duet6PP4.Score.Font;
-               Position.TextStyle := Theme.Sing.Duet6PP4.Score.Style;
-               Position.TextSize  := Theme.Sing.Duet6PP4.Score.Size;
-             end;
-          4: begin
-               Position.BGX := Theme.Sing.Duet6PP5.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Duet6PP5.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Duet6PP5.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Duet6PP5.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Duet6PP5.Score.X;
-               Position.TextY     := Theme.Sing.Duet6PP5.Score.Y;
-               Position.TextFont  := Theme.Sing.Duet6PP5.Score.Font;
-               Position.TextStyle := Theme.Sing.Duet6PP5.Score.Style;
-               Position.TextSize  := Theme.Sing.Duet6PP5.Score.Size;
-             end;
-          5: begin
-               Position.BGX := Theme.Sing.Duet6PP6.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Duet6PP6.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Duet6PP6.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Duet6PP6.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Duet6PP6.Score.X;
-               Position.TextY     := Theme.Sing.Duet6PP6.Score.Y;
-               Position.TextFont  := Theme.Sing.Duet6PP6.Score.Font;
-               Position.TextStyle := Theme.Sing.Duet6PP6.Score.Style;
-               Position.TextSize  := Theme.Sing.Duet6PP6.Score.Size;
-             end;
+          0: updatePosition(Theme.Sing.Duet6PP1);
+          1: updatePosition(Theme.Sing.Duet6PP2);
+          2: updatePosition(Theme.Sing.Duet6PP3);
+          3: updatePosition(Theme.Sing.Duet6PP4);
+          4: updatePosition(Theme.Sing.Duet6PP5);
+          5: updatePosition(Theme.Sing.Duet6PP6);
         end;
       end
       else
       begin
         case Index of
-          0: begin
-               Position.BGX := Theme.Sing.Solo6PP1.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Solo6PP1.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Solo6PP1.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Solo6PP1.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Solo6PP1.Score.X;
-               Position.TextY     := Theme.Sing.Solo6PP1.Score.Y;
-               Position.TextFont  := Theme.Sing.Solo6PP1.Score.Font;
-               Position.TextStyle := Theme.Sing.Solo6PP1.Score.Style;
-               Position.TextSize  := Theme.Sing.Solo6PP1.Score.Size;
-             end;
-          1: begin
-               Position.BGX := Theme.Sing.Solo6PP2.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Solo6PP2.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Solo6PP2.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Solo6PP2.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Solo6PP2.Score.X;
-               Position.TextY     := Theme.Sing.Solo6PP2.Score.Y;
-               Position.TextFont  := Theme.Sing.Solo6PP2.Score.Font;
-               Position.TextStyle  := Theme.Sing.Solo6PP2.Score.Style;
-               Position.TextSize  := Theme.Sing.Solo6PP2.Score.Size;
-             end;
-          2: begin
-               Position.BGX := Theme.Sing.Solo6PP3.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Solo6PP3.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Solo6PP3.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Solo6PP3.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Solo6PP3.Score.X;
-               Position.TextY     := Theme.Sing.Solo6PP3.Score.Y;
-               Position.TextFont  := Theme.Sing.Solo6PP3.Score.Font;
-               Position.TextStyle := Theme.Sing.Solo6PP3.Score.Style;
-               Position.TextSize  := Theme.Sing.Solo6PP3.Score.Size;
-             end;
-          3: begin
-               Position.BGX := Theme.Sing.Solo6PP4.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Solo6PP4.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Solo6PP4.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Solo6PP4.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Solo6PP4.Score.X;
-               Position.TextY     := Theme.Sing.Solo6PP4.Score.Y;
-               Position.TextFont  := Theme.Sing.Solo6PP4.Score.Font;
-               Position.TextStyle := Theme.Sing.Solo6PP4.Score.Style;
-               Position.TextSize  := Theme.Sing.Solo6PP4.Score.Size;
-             end;
-          4: begin
-               Position.BGX := Theme.Sing.Solo6PP5.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Solo6PP5.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Solo6PP5.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Solo6PP5.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Solo6PP5.Score.X;
-               Position.TextY     := Theme.Sing.Solo6PP5.Score.Y;
-               Position.TextFont  := Theme.Sing.Solo6PP5.Score.Font;
-               Position.TextStyle := Theme.Sing.Solo6PP5.Score.Style;
-               Position.TextSize  := Theme.Sing.Solo6PP5.Score.Size;
-             end;
-          5: begin
-               Position.BGX := Theme.Sing.Solo6PP6.ScoreBackground.X;
-               Position.BGY := Theme.Sing.Solo6PP6.ScoreBackground.Y;
-               Position.BGW := Theme.Sing.Solo6PP6.ScoreBackground.W;
-               Position.BGH := Theme.Sing.Solo6PP6.ScoreBackground.H;
-
-               Position.TextX     := Theme.Sing.Solo6PP6.Score.X;
-               Position.TextY     := Theme.Sing.Solo6PP6.Score.Y;
-               Position.TextFont  := Theme.Sing.Solo6PP6.Score.Font;
-               Position.TextStyle := Theme.Sing.Solo6PP6.Score.Style;
-               Position.TextSize  := Theme.Sing.Solo6PP6.Score.Size;
-             end;
+          0: updatePosition(Theme.Sing.Solo6PP1);
+          1: updatePosition(Theme.Sing.Solo6PP2);
+          2: updatePosition(Theme.Sing.Solo6PP3);
+          3: updatePosition(Theme.Sing.Solo6PP4);
+          4: updatePosition(Theme.Sing.Solo6PP5);
+          5: updatePosition(Theme.Sing.Solo6PP6);
         end;
       end;
     end;
@@ -1381,39 +1174,9 @@ begin
         if (CurrentSong.isDuet) and ((PlayersPlay = 3) or (PlayersPlay = 6)) then
         begin
           case Index of
-            0, 3, 6: begin
-                 Position.BGX := Theme.Sing.Duet3PP1.ScoreBackground.X;
-                 Position.BGY := Theme.Sing.Duet3PP1.ScoreBackground.Y;
-                 Position.BGW := Theme.Sing.Duet3PP1.ScoreBackground.W;
-                 Position.BGH := Theme.Sing.Duet3PP1.ScoreBackground.H;
-
-                 Position.TextX := Theme.Sing.Duet3PP1.Score.X;
-                 Position.TextY := Theme.Sing.Duet3PP1.Score.Y;
-                 Position.TextFont := Theme.Sing.Duet3PP1.Score.Font;
-                 Position.TextSize := Theme.Sing.Duet3PP1.Score.Size;
-               end;
-            1, 4, 7: begin
-                 Position.BGX := Theme.Sing.Duet3PP2.ScoreBackground.X;
-                 Position.BGY := Theme.Sing.Duet3PP2.ScoreBackground.Y;
-                 Position.BGW := Theme.Sing.Duet3PP2.ScoreBackground.W;
-                 Position.BGH := Theme.Sing.Duet3PP2.ScoreBackground.H;
-
-                 Position.TextX := Theme.Sing.Duet3PP2.Score.X;
-                 Position.TextY := Theme.Sing.Duet3PP2.Score.Y;
-                 Position.TextFont := Theme.Sing.Duet3PP2.Score.Font;
-                 Position.TextSize := Theme.Sing.Duet3PP2.Score.Size;
-               end;
-            2, 5, 8: begin
-                 Position.BGX := Theme.Sing.Duet3PP3.ScoreBackground.X;
-                 Position.BGY := Theme.Sing.Duet3PP3.ScoreBackground.Y;
-                 Position.BGW := Theme.Sing.Duet3PP3.ScoreBackground.W;
-                 Position.BGH := Theme.Sing.Duet3PP3.ScoreBackground.H;
-
-                 Position.TextX := Theme.Sing.Duet3PP3.Score.X;
-                 Position.TextY := Theme.Sing.Duet3PP3.Score.Y;
-                 Position.TextFont := Theme.Sing.Duet3PP3.Score.Font;
-                 Position.TextSize := Theme.Sing.Duet3PP3.Score.Size;
-               end;
+            0, 3, 6: updatePosition(Theme.Sing.Duet3PP1);
+            1, 4, 7: updatePosition(Theme.Sing.Duet3PP2);
+            2, 5, 8: updatePosition(Theme.Sing.Duet3PP3);
           end;
       end;
   end;
