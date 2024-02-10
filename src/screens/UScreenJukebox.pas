@@ -538,12 +538,12 @@ begin
 
   if (Filter <> '') then
   begin
-    Filter := GetStringWithNoAccents(UTF8Decode(UTF8LowerCase(Filter)));
+    Filter := LowerCase(TransliterateToASCII(UTF8Decode(Filter)));
 
     SetLength(JukeboxVisibleSongs, 0);
     for I := 0 to High(JukeboxSongsList) do
     begin
-      SongD := CatSongs.Song[JukeboxSongsList[I]].ArtistNoAccent + ' - ' + CatSongs.Song[JukeboxSongsList[I]].TitleNoAccent;
+      SongD := CatSongs.Song[JukeboxSongsList[I]].ArtistASCII + ' - ' + CatSongs.Song[JukeboxSongsList[I]].TitleASCII;
 
       if (UTF8ContainsStr(SongD, Filter)) then
       begin

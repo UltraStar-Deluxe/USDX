@@ -903,8 +903,7 @@ var
   WordArray: array of UTF8String;
 begin
 
-  FilterStr := Trim(LowerCase(FilterStr));
-  FilterStr := GetStringWithNoAccents(FilterStr);
+  FilterStr := Trim(LowerCase(TransliterateToASCII(FilterStr)));
 
   if (FilterStr <> '') then
   begin
@@ -933,21 +932,21 @@ begin
       begin
         case Filter of
           fltAll:
-            TmpString := Song[I].ArtistNoAccent + ' ' + Song[i].TitleNoAccent + ' ' + Song[i].LanguageNoAccent + ' ' + Song[i].EditionNoAccent + ' ' + Song[i].GenreNoAccent + ' ' + IntToStr(Song[i].Year) + ' ' + Song[i].CreatorNoAccent; //+ ' ' + Song[i].Folder;
+            TmpString := Song[I].ArtistASCII + ' ' + Song[i].TitleASCII + ' ' + Song[i].LanguageASCII + ' ' + Song[i].EditionASCII + ' ' + Song[i].GenreASCII + ' ' + IntToStr(Song[i].Year) + ' ' + Song[i].CreatorASCII; //+ ' ' + Song[i].Folder;
           fltTitle:
-            TmpString := Song[I].TitleNoAccent;
+            TmpString := Song[I].TitleASCII;
           fltArtist:
-            TmpString := Song[I].ArtistNoAccent;
+            TmpString := Song[I].ArtistASCII;
           fltLanguage:
-            TmpString := Song[I].LanguageNoAccent;
+            TmpString := Song[I].LanguageASCII;
           fltEdition:
-            TmpString := Song[I].EditionNoAccent;
+            TmpString := Song[I].EditionASCII;
           fltGenre:
-            TmpString := Song[I].GenreNoAccent;
+            TmpString := Song[I].GenreASCII;
           fltYear:
             TmpString := IntToStr(Song[I].Year);
           fltCreator:
-            TmpString := Song[I].CreatorNoAccent;
+            TmpString := Song[I].CreatorASCII;
         end;
         Song[i].Visible := true;
         // Look for every searched word
