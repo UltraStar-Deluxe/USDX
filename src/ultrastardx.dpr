@@ -61,6 +61,7 @@ uses
   //------------------------------
   //Includes - 3rd Party Libraries
   //------------------------------
+  AnyAscii               in 'lib\anyascii\anyascii.pas',
   SQLiteTable3  in 'lib\SQLite\SQLiteTable3.pas',
   SQLite3       in 'lib\SQLite\SQLite3.pas',
   sdl2                   in 'lib\SDL2\sdl2.pas',

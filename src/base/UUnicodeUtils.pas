@@ -35,6 +35,7 @@ uses
 {$IFDEF MSWINDOWS}
   Windows,
 {$ENDIF}
+  anyascii,
   StrUtils,
   SysUtils;
 
@@ -187,6 +188,12 @@ function WideStringLowerCase(const str: WideString): WideString; overload;
 function WideStringLowerCase(ch: WideChar): WideString; overload;
 
 function WideStringReplaceChar(const text: WideString; search, rep: WideChar): WideString;
+
+(*
+ * Transliterates a UTF8 string to ASCII, utilizing AnyASCII
+ *)
+function TransliterateToASCII(const str: UTF8String) : UTF8String;
+
 
 implementation
 
@@ -673,6 +680,11 @@ begin
     if result[iPos] = search then
       result[iPos] := rep;
   end;
+end;
+
+function TransliterateToASCII(const str: UTF8String) : UTF8String;
+begin
+  Result := UCS4ToUTF8String(transliterate(UTF8ToUCS4String(str)));
 end;
 
 initialization

@@ -52,7 +52,6 @@ uses
     PseudoThread,
   {$ENDIF}
   UCatCovers,
-  UCommon,
   UFilesystem,
   ULog,
   UPath,
@@ -139,12 +138,12 @@ type
     Artist:     UTF8String;
 
     // use in search
-    TitleNoAccent:    UTF8String;
-    ArtistNoAccent:   UTF8String;
-    LanguageNoAccent: UTF8String;
-    EditionNoAccent:  UTF8String;
-    GenreNoAccent:    UTF8String;
-    CreatorNoAccent:  UTF8String;
+    TitleASCII:    UTF8String;
+    ArtistASCII:   UTF8String;
+    LanguageASCII: UTF8String;
+    EditionASCII:  UTF8String;
+    GenreASCII:    UTF8String;
+    CreatorASCII:  UTF8String;
 
     Creator:    UTF8String;
 
@@ -915,14 +914,14 @@ begin
 
     //Title
     self.Title := Parser.SongInfo.Header.Title;
-    self.TitleNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(Parser.SongInfo.Header.Title)));
+    self.TitleASCII := LowerCase(TransliterateToASCII(UTF8Decode(self.Title)));
 
     //Add Title Flag to Done
     Done := Done or 1;
 
     //Artist
     self.Artist := Parser.SongInfo.Header.Artist;
-    self.ArtistNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(Parser.SongInfo.Header.Artist)));
+    self.ArtistASCII := LowerCase(TransliterateToASCII(UTF8Decode(self.Artist)));
 
     //Add Artist Flag to Done
     Done := Done or 2;
@@ -964,18 +963,18 @@ begin
 
     //Genre Sorting
     self.Genre := Parser.SongInfo.Header.Genre;
-    self.GenreNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(self.Genre)));
+    self.GenreASCII := LowerCase(TransliterateToASCII(UTF8Decode(self.Genre)));
 
     //Edition Sorting
     self.Edition := Parser.SongInfo.Header.Edition;
-    self.EditionNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(self.Edition)));
+    self.EditionASCII := LowerCase(TransliterateToASCII(UTF8Decode(self.Edition)));
 
     //Year Sorting
     //self.Year := Parser.SongInfo.Header.Year
 
     //Language Sorting
     self.Language := Parser.SongInfo.Header.Language;
-    self.LanguageNoAccent := LowerCase(GetStringWithNoAccents(UTF8Decode(self.Language)));
+    self.LanguageASCII := LowerCase(TransliterateToASCII(UTF8Decode(self.Language)));
   end
   else
     Log.LogError('File incomplete or not SingStar XML (A): ' + aFileName.ToNative);
@@ -1110,7 +1109,7 @@ begin
       if (Identifier = 'TITLE') then
       begin
         self.Title := DecodeStringUTF8(Value, Encoding);
-        self.TitleNoAccent := LowerCase(GetStringWithNoAccents(DecodeStringUTF8(Value, Encoding)));
+        self.TitleASCII := LowerCase(TransliterateToASCII(self.Title));
         //Add Title Flag to Done
         Done := Done or 1;
       end
@@ -1118,7 +1117,7 @@ begin
       else if (Identifier = 'ARTIST') then
       begin
         self.Artist := DecodeStringUTF8(Value, Encoding);
-        self.ArtistNoAccent := LowerCase(GetStringWithNoAccents(DecodeStringUTF8(Artist, Encoding)));
+        self.ArtistASCII := LowerCase(TransliterateToASCII(self.Artist));
 
         //Add Artist Flag to Done
         Done := Done or 2;
@@ -1200,28 +1199,28 @@ begin
       else if (Identifier = 'GENRE') then
       begin
         DecodeStringUTF8(Value, Genre, Encoding);
-        self.GenreNoAccent := LowerCase(GetStringWithNoAccents(Genre));
+        self.GenreASCII := LowerCase(TransliterateToASCII(Genre));
       end
 
       //Edition Sorting
       else if (Identifier = 'EDITION') then
       begin
         DecodeStringUTF8(Value, Edition, Encoding);
-        self.EditionNoAccent := LowerCase(GetStringWithNoAccents(Edition));
+        self.EditionASCII := LowerCase(TransliterateToASCII(Edition));
       end
 
       //Creator Tag
       else if (Identifier = 'CREATOR') then
       begin
         DecodeStringUTF8(Value, Creator, Encoding);
-        self.CreatorNoAccent := LowerCase(GetStringWithNoAccents(Creator));
+        self.CreatorASCII := LowerCase(TransliterateToASCII(Creator));
       end
 
       //Language Sorting
       else if (Identifier = 'LANGUAGE') then
       begin
         DecodeStringUTF8(Value, Language, Encoding);
-        self.LanguageNoAccent := LowerCase(GetStringWithNoAccents(Language));
+        self.LanguageASCII := LowerCase(TransliterateToASCII(Language));
       end
 
       //Year Sorting

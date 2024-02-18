@@ -74,8 +74,6 @@ function StringDeleteFromArray(var InArray: TIntegerDynArray; const InIndex: int
 function StringDeleteFromArray(var InStrings: TStringDynArray; const InIndex: integer): Boolean; overload;
 function StringDeleteFromArray(var InStrings: TUTF8StringDynArray; const InIndex: integer): Boolean; overload;
 
-function GetStringWithNoAccents(str: String):String;
-
 type
   TRGB = record
     R: single;
@@ -224,24 +222,6 @@ begin
     AddSplit(Start+1, Length(Str)+1);
 end;
 
-const
-  Accents: array [0..42] of String = ('ç', 'á', 'é', 'í', 'ó', 'ú', 'ý', 'à', 'è', 'ì', 'ò', 'ù', 'ã', 'õ', 'ñ', 'ä', 'ë', 'ï', 'ö', 'ü', 'ÿ', 'â', 'ê', 'î', 'ô', 'û', 'ą', 'ć', 'ł', 'ś', 'ź', '!', '¡', '"', '&', '(', ')', '?', '¿', ',', '.', ':', ';');
-  NoAccents: array [0..42] of String = ('c', 'a', 'e', 'i', 'o', 'u', 'y', 'a', 'e', 'i', 'o', 'u', 'a', 'o', 'n', 'a', 'e', 'i', 'o', 'u', 'y', 'a', 'e', 'i', 'o', 'u', 'a', 'c', 'l', 's', 'z', '', '', '', '', '', '', '', '', '', '', '', '');
-
-function GetStringWithNoAccents(str: String):String;
-var
-  i: integer;
-  tmp: string;
-begin
-  tmp := str;//Utf8ToAnsi(str);
-
-  for i := 0 to High(Accents) do
-  begin
-    str := StringReplace(str, Accents[i], NoAccents[i], [rfReplaceAll, rfIgnoreCase]);
-  end;
-
-  Result := str;
-end;
 
 function RGBToHex(R, G, B: integer): string;
 begin
