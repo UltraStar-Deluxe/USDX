@@ -92,7 +92,7 @@ begin
 				Inc(n);
 				Inc(a);
 				Dec(l);
-				
+
 			end
 		else
 		begin

@@ -76,7 +76,7 @@ int main(void)
 			else if (l == 1) {
 				pc(b[i * 3 + 1], 1, 1, 0);
 				printf("N1%s", i + 1 < entries ? "," : "");
-			} else 
+			} else
 				for (j = 0; j < 3; j++)
 					pc(b[i * 3 + 1 + j], l < 4, j < 2 || i + 1 < entries, j == 2);
 			putchar('\n');
