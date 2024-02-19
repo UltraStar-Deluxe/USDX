@@ -518,6 +518,11 @@ begin
   setColor(Theme.Sing.Solo3PP2.AvatarFrame, Col[5]);
   setColor(Theme.Sing.Solo3PP3.AvatarFrame, Col[6]);
 
+  // 3 or 6 players duet
+  setColor(Theme.Sing.Duet3PP1.AvatarFrame, Col[4]);
+  setColor(Theme.Sing.Duet3PP2.AvatarFrame, Col[5]);
+  setColor(Theme.Sing.Duet3PP3.AvatarFrame, Col[6]);
+
   StaticP1[1]       := ScreenSing.AddStatic(Theme.Sing.Solo1PP1.AvatarFrame);
   StaticP1TwoP[1]   := ScreenSing.AddStatic(Theme.Sing.Solo2PP1.AvatarFrame);
   StaticP2R[1]      := ScreenSing.AddStatic(Theme.Sing.Solo2PP2.AvatarFrame);
