@@ -447,6 +447,12 @@ var
     avatarFrame.ColG := color.G;
     avatarFrame.ColB := color.B;
   end;
+  // passing the integer for the static by reference is deliberate
+  procedure setColorAndAssignAvatarFrameStatic(var avatarFrame: TThemeStatic; var static: integer; color: TRGB);
+  begin
+    setColor(avatarFrame, color);
+    static := ScreenSing.AddStatic(avatarFrame);
+  end;
 begin
   lastVolume:= -1;
   //too dangerous, a mouse button is quickly pressed by accident
@@ -483,31 +489,21 @@ begin
 
   // SCREEN 1
   // 1 player
-  setColor(Theme.Sing.Solo1PP1.AvatarFrame, Col[1]);
+  setColorAndAssignAvatarFrameStatic(Theme.Sing.Solo1PP1.AvatarFrame, StaticP1[0], Col[1]);
 
   // 2 or 4 players
-  setColor(Theme.Sing.Solo2PP1.AvatarFrame, Col[1]);
-  setColor(Theme.Sing.Solo2PP2.AvatarFrame, Col[2]);
+  setColorAndAssignAvatarFrameStatic(Theme.Sing.Solo2PP1.AvatarFrame, StaticP1TwoP[0], Col[1]);
+  setColorAndAssignAvatarFrameStatic(Theme.Sing.Solo2PP2.AvatarFrame, StaticP2R[0]   , Col[2]);
 
   // 3 or 6 players
-  setColor(Theme.Sing.Solo3PP1.AvatarFrame, Col[1]);
-  setColor(Theme.Sing.Solo3PP2.AvatarFrame, Col[2]);
-  setColor(Theme.Sing.Solo3PP3.AvatarFrame, Col[3]);
+  setColorAndAssignAvatarFrameStatic(Theme.Sing.Solo3PP1.AvatarFrame, StaticP1ThreeP[0], Col[1]);
+  setColorAndAssignAvatarFrameStatic(Theme.Sing.Solo3PP2.AvatarFrame, StaticP2M[0]     , Col[2]);
+  setColorAndAssignAvatarFrameStatic(Theme.Sing.Solo3PP3.AvatarFrame, StaticP3R[0]     , Col[3]);
 
   // 3 or 6 players duet
-  setColor(Theme.Sing.Duet3PP1.AvatarFrame, Col[1]);
-  setColor(Theme.Sing.Duet3PP2.AvatarFrame, Col[2]);
-  setColor(Theme.Sing.Duet3PP3.AvatarFrame, Col[3]);
-
-  StaticP1[0]       := ScreenSing.AddStatic(Theme.Sing.Solo1PP1.AvatarFrame);
-  StaticP1TwoP[0]   := ScreenSing.AddStatic(Theme.Sing.Solo2PP1.AvatarFrame);
-  StaticP2R[0]      := ScreenSing.AddStatic(Theme.Sing.Solo2PP2.AvatarFrame);
-  StaticP1ThreeP[0] := ScreenSing.AddStatic(Theme.Sing.Solo3PP1.AvatarFrame);
-  StaticP2M[0]      := ScreenSing.AddStatic(Theme.Sing.Solo3PP2.AvatarFrame);
-  StaticP3R[0]      := ScreenSing.AddStatic(Theme.Sing.Solo3PP3.AvatarFrame);
-  StaticDuetP1ThreeP[0] := ScreenSing.AddStatic(Theme.Sing.Duet3PP1.AvatarFrame);
-  StaticDuetP2M[0]      := ScreenSing.AddStatic(Theme.Sing.Duet3PP2.AvatarFrame);
-  StaticDuetP3R[0]      := ScreenSing.AddStatic(Theme.Sing.Duet3PP3.AvatarFrame);
+  setColorAndAssignAvatarFrameStatic(Theme.Sing.Duet3PP1.AvatarFrame, StaticDuetP1ThreeP[0], Col[1]);
+  setColorAndAssignAvatarFrameStatic(Theme.Sing.Duet3PP2.AvatarFrame, StaticDuetP2M[0]     , Col[2]);
+  setColorAndAssignAvatarFrameStatic(Theme.Sing.Duet3PP3.AvatarFrame, StaticDuetP3R[0]     , Col[3]);
 
   // SCREEN 2
   // 1 player
