@@ -453,6 +453,12 @@ var
     setColor(avatarFrame, color);
     static := ScreenSing.AddStatic(avatarFrame);
   end;
+  // passing the integers for the statics by reference is deliberate
+  procedure setColorAndAssignStatics(var singPlayer: TThemeSingPlayer; var avatarFrameStatic: integer; var nameStatic: integer; color: TRGB);
+  begin
+    setColorAndAssignAvatarFrameStatic(singPlayer.AvatarFrame, avatarFrameStatic, color);
+    nameStatic := ScreenSing.AddText(singPlayer.Name);
+  end;
 begin
   lastVolume:= -1;
   //too dangerous, a mouse button is quickly pressed by accident
@@ -507,41 +513,21 @@ begin
 
   // SCREEN 2
   // 1 player
-  setColor(Theme.Sing.Solo1PP1.AvatarFrame, Col[1]);
+  setColorAndAssignStatics(Theme.Sing.Solo1PP1, StaticP1[1], TextP1, Col[1]);
 
   // 2 or 4 players
-  setColor(Theme.Sing.Solo2PP1.AvatarFrame, Col[3]);
-  setColor(Theme.Sing.Solo2PP2.AvatarFrame, Col[4]);
+  setColorAndAssignStatics(Theme.Sing.Solo2PP1, StaticP1TwoP[1], TextP1TwoP, Col[3]);
+  setColorAndAssignStatics(Theme.Sing.Solo2PP2, StaticP2R[1]   , TextP2R   , Col[4]);
 
   // 3 or 6 players
-  setColor(Theme.Sing.Solo3PP1.AvatarFrame, Col[4]);
-  setColor(Theme.Sing.Solo3PP2.AvatarFrame, Col[5]);
-  setColor(Theme.Sing.Solo3PP3.AvatarFrame, Col[6]);
+  setColorAndAssignStatics(Theme.Sing.Solo3PP1, StaticP1ThreeP[1], TextP1ThreeP, Col[4]);
+  setColorAndAssignStatics(Theme.Sing.Solo3PP2, StaticP2M[1]     , TextP2M     , Col[5]);
+  setColorAndAssignStatics(Theme.Sing.Solo3PP3, StaticP3R[1]     , TextP3R     , Col[6]);
 
   // 3 or 6 players duet
-  setColor(Theme.Sing.Duet3PP1.AvatarFrame, Col[4]);
-  setColor(Theme.Sing.Duet3PP2.AvatarFrame, Col[5]);
-  setColor(Theme.Sing.Duet3PP3.AvatarFrame, Col[6]);
-
-  StaticP1[1]       := ScreenSing.AddStatic(Theme.Sing.Solo1PP1.AvatarFrame);
-  StaticP1TwoP[1]   := ScreenSing.AddStatic(Theme.Sing.Solo2PP1.AvatarFrame);
-  StaticP2R[1]      := ScreenSing.AddStatic(Theme.Sing.Solo2PP2.AvatarFrame);
-  StaticP1ThreeP[1] := ScreenSing.AddStatic(Theme.Sing.Solo3PP1.AvatarFrame);
-  StaticP2M[1]      := ScreenSing.AddStatic(Theme.Sing.Solo3PP2.AvatarFrame);
-  StaticP3R[1]      := ScreenSing.AddStatic(Theme.Sing.Solo3PP3.AvatarFrame);
-  StaticDuetP1ThreeP[1] := ScreenSing.AddStatic(Theme.Sing.Duet3PP1.AvatarFrame);
-  StaticDuetP2M[1]      := ScreenSing.AddStatic(Theme.Sing.Duet3PP2.AvatarFrame);
-  StaticDuetP3R[1]      := ScreenSing.AddStatic(Theme.Sing.Duet3PP3.AvatarFrame);
-
-  TextP1   := ScreenSing.AddText(Theme.Sing.Solo1PP1.Name);
-  TextP1TwoP   := ScreenSing.AddText(Theme.Sing.Solo2PP1.Name);
-  TextP2R   := ScreenSing.AddText(Theme.Sing.Solo2PP2.Name);
-  TextP1ThreeP   := ScreenSing.AddText(Theme.Sing.Solo3PP1.Name);
-  TextP2M   := ScreenSing.AddText(Theme.Sing.Solo3PP2.Name);
-  TextP3R   := ScreenSing.AddText(Theme.Sing.Solo3PP3.Name);
-  TextDuetP1ThreeP   := ScreenSing.AddText(Theme.Sing.Duet3PP1.Name);
-  TextDuetP2M   := ScreenSing.AddText(Theme.Sing.Duet3PP2.Name);
-  TextDuetP3R   := ScreenSing.AddText(Theme.Sing.Duet3PP3.Name);
+  setColorAndAssignStatics(Theme.Sing.Duet3PP1, StaticDuetP1ThreeP[1], TextDuetP1ThreeP, Col[4]);
+  setColorAndAssignStatics(Theme.Sing.Duet3PP2, StaticDuetP2M[1]     , TextDuetP2M     , Col[5]);
+  setColorAndAssignStatics(Theme.Sing.Duet3PP3, StaticDuetP3R[1]     , TextDuetP3R     , Col[6]);
 
   for I := 1 to PlayersPlay do
   begin
@@ -557,81 +543,33 @@ begin
   end;
 
   // 4 players in 1 screen
-  setColor(Theme.Sing.Solo4PP1.AvatarFrame, Col[1]);
-  setColor(Theme.Sing.Solo4PP2.AvatarFrame, Col[2]);
-  setColor(Theme.Sing.Solo4PP3.AvatarFrame, Col[3]);
-  setColor(Theme.Sing.Solo4PP4.AvatarFrame, Col[4]);
-
-  StaticP1FourP   := ScreenSing.AddStatic(Theme.Sing.Solo4PP1.AvatarFrame);
-  StaticP2FourP   := ScreenSing.AddStatic(Theme.Sing.Solo4PP2.AvatarFrame);
-  StaticP3FourP   := ScreenSing.AddStatic(Theme.Sing.Solo4PP3.AvatarFrame);
-  StaticP4FourP   := ScreenSing.AddStatic(Theme.Sing.Solo4PP4.AvatarFrame);
-
-  TextP1FourP   := ScreenSing.AddText(Theme.Sing.Solo4PP1.Name);
-  TextP2FourP   := ScreenSing.AddText(Theme.Sing.Solo4PP2.Name);
-  TextP3FourP   := ScreenSing.AddText(Theme.Sing.Solo4PP3.Name);
-  TextP4FourP   := ScreenSing.AddText(Theme.Sing.Solo4PP4.Name);
+  setColorAndAssignStatics(Theme.Sing.Solo4PP1, StaticP1FourP, TextP1FourP, Col[1]);
+  setColorAndAssignStatics(Theme.Sing.Solo4PP2, StaticP2FourP, TextP2FourP, Col[2]);
+  setColorAndAssignStatics(Theme.Sing.Solo4PP3, StaticP3FourP, TextP3FourP, Col[3]);
+  setColorAndAssignStatics(Theme.Sing.Solo4PP4, StaticP4FourP, TextP4FourP, Col[4]);
 
   // 6 players in 1 screen
-  setColor(Theme.Sing.Solo6PP1.AvatarFrame, Col[1]);
-  setColor(Theme.Sing.Solo6PP2.AvatarFrame, Col[2]);
-  setColor(Theme.Sing.Solo6PP3.AvatarFrame, Col[3]);
-  setColor(Theme.Sing.Solo6PP4.AvatarFrame, Col[4]);
-  setColor(Theme.Sing.Solo6PP5.AvatarFrame, Col[5]);
-  setColor(Theme.Sing.Solo6PP6.AvatarFrame, Col[6]);
-
-  StaticP1SixP  := ScreenSing.AddStatic(Theme.Sing.Solo6PP1.AvatarFrame);
-  StaticP2SixP  := ScreenSing.AddStatic(Theme.Sing.Solo6PP2.AvatarFrame);
-  StaticP3SixP  := ScreenSing.AddStatic(Theme.Sing.Solo6PP3.AvatarFrame);
-  StaticP4SixP  := ScreenSing.AddStatic(Theme.Sing.Solo6PP4.AvatarFrame);
-  StaticP5SixP  := ScreenSing.AddStatic(Theme.Sing.Solo6PP5.AvatarFrame);
-  StaticP6SixP  := ScreenSing.AddStatic(Theme.Sing.Solo6PP6.AvatarFrame);
-
-  TextP1SixP   := ScreenSing.AddText(Theme.Sing.Solo6PP1.Name);
-  TextP2SixP   := ScreenSing.AddText(Theme.Sing.Solo6PP2.Name);
-  TextP3SixP   := ScreenSing.AddText(Theme.Sing.Solo6PP3.Name);
-  TextP4SixP   := ScreenSing.AddText(Theme.Sing.Solo6PP4.Name);
-  TextP5SixP   := ScreenSing.AddText(Theme.Sing.Solo6PP5.Name);
-  TextP6SixP   := ScreenSing.AddText(Theme.Sing.Solo6PP6.Name);
+  setColorAndAssignStatics(Theme.Sing.Solo6PP1, StaticP1SixP, TextP1SixP, Col[1]);
+  setColorAndAssignStatics(Theme.Sing.Solo6PP2, StaticP2SixP, TextP2SixP, Col[2]);
+  setColorAndAssignStatics(Theme.Sing.Solo6PP3, StaticP3SixP, TextP3SixP, Col[3]);
+  setColorAndAssignStatics(Theme.Sing.Solo6PP4, StaticP4SixP, TextP4SixP, Col[4]);
+  setColorAndAssignStatics(Theme.Sing.Solo6PP5, StaticP5SixP, TextP5SixP, Col[5]);
+  setColorAndAssignStatics(Theme.Sing.Solo6PP6, StaticP6SixP, TextP6SixP, Col[6]);
 
 
   // 4 players duet in 1 screen
-  setColor(Theme.Sing.Duet4PP1.AvatarFrame, Col[1]);
-  setColor(Theme.Sing.Duet4PP2.AvatarFrame, Col[2]);
-  setColor(Theme.Sing.Duet4PP3.AvatarFrame, Col[3]);
-  setColor(Theme.Sing.Duet4PP4.AvatarFrame, Col[4]);
-
-  StaticP1DuetFourP   := ScreenSing.AddStatic(Theme.Sing.Duet4PP1.AvatarFrame);
-  StaticP2DuetFourP   := ScreenSing.AddStatic(Theme.Sing.Duet4PP2.AvatarFrame);
-  StaticP3DuetFourP   := ScreenSing.AddStatic(Theme.Sing.Duet4PP3.AvatarFrame);
-  StaticP4DuetFourP   := ScreenSing.AddStatic(Theme.Sing.Duet4PP4.AvatarFrame);
-
-  TextP1DuetFourP   := ScreenSing.AddText(Theme.Sing.Duet4PP1.Name);
-  TextP2DuetFourP   := ScreenSing.AddText(Theme.Sing.Duet4PP2.Name);
-  TextP3DuetFourP   := ScreenSing.AddText(Theme.Sing.Duet4PP3.Name);
-  TextP4DuetFourP   := ScreenSing.AddText(Theme.Sing.Duet4PP4.Name);
+  setColorAndAssignStatics(Theme.Sing.Duet4PP1, StaticP1DuetFourP, TextP1DuetFourP, Col[1]);
+  setColorAndAssignStatics(Theme.Sing.Duet4PP2, StaticP2DuetFourP, TextP2DuetFourP, Col[2]);
+  setColorAndAssignStatics(Theme.Sing.Duet4PP3, StaticP3DuetFourP, TextP3DuetFourP, Col[3]);
+  setColorAndAssignStatics(Theme.Sing.Duet4PP4, StaticP4DuetFourP, TextP4DuetFourP, Col[4]);
 
   // 6 players duet in 1 screen
-  setColor(Theme.Sing.Duet6PP1.AvatarFrame, Col[1]);
-  setColor(Theme.Sing.Duet6PP2.AvatarFrame, Col[2]);
-  setColor(Theme.Sing.Duet6PP3.AvatarFrame, Col[3]);
-  setColor(Theme.Sing.Duet6PP4.AvatarFrame, Col[4]);
-  setColor(Theme.Sing.Duet6PP5.AvatarFrame, Col[5]);
-  setColor(Theme.Sing.Duet6PP6.AvatarFrame, Col[6]);
-
-  StaticP1DuetSixP  := ScreenSing.AddStatic(Theme.Sing.Duet6PP1.AvatarFrame);
-  StaticP2DuetSixP  := ScreenSing.AddStatic(Theme.Sing.Duet6PP2.AvatarFrame);
-  StaticP3DuetSixP  := ScreenSing.AddStatic(Theme.Sing.Duet6PP3.AvatarFrame);
-  StaticP4DuetSixP  := ScreenSing.AddStatic(Theme.Sing.Duet6PP4.AvatarFrame);
-  StaticP5DuetSixP  := ScreenSing.AddStatic(Theme.Sing.Duet6PP5.AvatarFrame);
-  StaticP6DuetSixP  := ScreenSing.AddStatic(Theme.Sing.Duet6PP6.AvatarFrame);
-
-  TextP1DuetSixP   := ScreenSing.AddText(Theme.Sing.Duet6PP1.Name);
-  TextP2DuetSixP   := ScreenSing.AddText(Theme.Sing.Duet6PP2.Name);
-  TextP3DuetSixP   := ScreenSing.AddText(Theme.Sing.Duet6PP3.Name);
-  TextP4DuetSixP   := ScreenSing.AddText(Theme.Sing.Duet6PP4.Name);
-  TextP5DuetSixP   := ScreenSing.AddText(Theme.Sing.Duet6PP5.Name);
-  TextP6DuetSixP   := ScreenSing.AddText(Theme.Sing.Duet6PP6.Name);
+  setColorAndAssignStatics(Theme.Sing.Duet6PP1, StaticP1DuetSixP, TextP1DuetSixP, Col[1]);
+  setColorAndAssignStatics(Theme.Sing.Duet6PP2, StaticP2DuetSixP, TextP2DuetSixP, Col[2]);
+  setColorAndAssignStatics(Theme.Sing.Duet6PP3, StaticP3DuetSixP, TextP3DuetSixP, Col[3]);
+  setColorAndAssignStatics(Theme.Sing.Duet6PP4, StaticP4DuetSixP, TextP4DuetSixP, Col[4]);
+  setColorAndAssignStatics(Theme.Sing.Duet6PP5, StaticP5DuetSixP, TextP5DuetSixP, Col[5]);
+  setColorAndAssignStatics(Theme.Sing.Duet6PP6, StaticP6DuetSixP, TextP6DuetSixP, Col[6]);
 
   // Sing Bars
   // P1-6
