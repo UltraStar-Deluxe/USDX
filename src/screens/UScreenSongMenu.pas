@@ -159,6 +159,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE:
         begin
+          StopTextInput;
           AudioPlayback.PlaySound(SoundLib.Back);
           Visible := false;
         end;
@@ -171,11 +172,21 @@ begin
 
       SDLK_RETURN:
         begin
+          StopTextInput;
           HandleReturn;
         end;
 
-      SDLK_DOWN: InteractNext;
-      SDLK_UP:   InteractPrev;
+      SDLK_DOWN:
+        begin
+          InteractNext;
+          SetTextInput((CurMenu = SM_Playlist_New) and (Button[1].Selected));
+        end;
+
+      SDLK_UP:
+        begin
+          InteractPrev;
+          SetTextInput((CurMenu = SM_Playlist_New) and (Button[1].Selected));
+        end;
 
       SDLK_RIGHT:
         begin
@@ -534,6 +545,9 @@ begin
         Button[4].Text[0].Text := Language.Translate('SONG_MENU_CANCEL');
 
         Interaction := 1;
+        // button 1 = a text field and pre-selected
+        // it's necessary to start text input manually because it doesn't get here by Up/Down keypresses
+        StartTextInput;
       end;
 
     SM_Playlist_DelItem:
