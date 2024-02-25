@@ -4629,19 +4629,12 @@ begin
   SetLength(Undoheader, 0);
 
   try
-    //Check if File is XML
-    FileExt := CurrentSong.FileName.GetExtension;
-    if FileExt.ToUTF8 = '.xml' then
-      Error := not CurrentSong.LoadXMLSong()
-    else
-    begin
-      // reread header with custom tags
-      Error := not CurrentSong.Analyse(true, false);
+    // reread header with custom tags
+    Error := not CurrentSong.Analyse(true, false);
 
-      // with the duet/medley code, TSong.Analyse is already loading the song
-      //if not Error then
-      //  Error := not CurrentSong.LoadSong(false);
-    end;
+    // with the duet/medley code, TSong.Analyse is already loading the song
+    //if not Error then
+    //  Error := not CurrentSong.LoadSong(false);
   except
     Error := true;
   end;

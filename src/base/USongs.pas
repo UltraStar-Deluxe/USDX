@@ -113,7 +113,6 @@ type
     procedure FindFilesByExtension(const Dir: IPath; const Ext: IPath; Recursive: Boolean; var Files: TPathDynArray);
     procedure BrowseDir(Dir: IPath); // should return number of songs in the future
     procedure BrowseTXTFiles(Dir: IPath);
-    procedure BrowseXMLFiles(Dir: IPath);
     procedure Sort(Order: TSortingType);
     property  Processing: boolean read fProcessing;
   end;
@@ -267,7 +266,6 @@ end;
 procedure TSongs.BrowseDir(Dir: IPath);
 begin
   BrowseTXTFiles(Dir);
-  BrowseXMLFiles(Dir);
 end;
 
 procedure TSongs.FindFilesByExtension(const Dir: IPath; const Ext: IPath; Recursive: Boolean; var Files: TPathDynArray);
@@ -316,33 +314,6 @@ begin
     Song := TSong.Create(Files[I]);
 
     if Song.Analyse then
-      SongList.Add(Song)
-    else
-    begin
-      Log.LogError('AnalyseFile failed for "' + Files[I].ToNative + '".');
-      FreeAndNil(Song);
-    end;
-  end;
-
-  SetLength(Files, 0);
-end;
-
-procedure TSongs.BrowseXMLFiles(Dir: IPath);
-var
-  I: integer;
-  Files: TPathDynArray;
-  Song: TSong;
-  Extension: IPath;
-begin
-  SetLength(Files, 0);
-  Extension := Path('.xml');
-  FindFilesByExtension(Dir, Extension, true, Files);
-
-  for I := 0 to High(Files) do
-  begin
-    Song := TSong.Create(Files[I]);
-
-    if Song.AnalyseXML then
       SongList.Add(Song)
     else
     begin

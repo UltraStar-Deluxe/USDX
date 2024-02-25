@@ -1031,11 +1031,7 @@ begin
   success := false;
   // FIXME: bad style, put the try-except into loadsong() and not here
   try
-    // check if file is xml
-    if CurrentSong.FileName.GetExtension.ToUTF8 = '.xml' then
-      success := CurrentSong.AnalyseXML and CurrentSong.LoadXMLSong()
-    else
-      success := CurrentSong.Analyse(false, ScreenSong.DuetChange); // and CurrentSong.LoadSong();
+    success := CurrentSong.Analyse(false, ScreenSong.DuetChange); // and CurrentSong.LoadSong();
   except
     on E: EInOutError do Log.LogWarn(E.Message, 'TScreenSing.LoadNextSong');
   end;
