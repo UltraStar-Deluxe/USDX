@@ -44,13 +44,13 @@
         <PackageName Value="LazUtils"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="131">
+    <Units Count="130">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="base\UXMLSong.pas"/>
+        <Filename Value="screens\controllers\UScreenSingController.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit1>
       <Unit2>
@@ -568,10 +568,6 @@
         <Filename Value="screens\views\UScreenSingView.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit129>
-      <Unit130>
-        <Filename Value="screens\controllers\UScreenSingController.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit130>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

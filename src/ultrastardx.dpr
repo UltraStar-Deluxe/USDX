@@ -213,7 +213,6 @@ uses
   URecord           in 'base\URecord.pas',
   UTime             in 'base\UTime.pas',
   USong             in 'base\USong.pas',
-  UXMLSong          in 'base\UXMLSong.pas',
   USongs            in 'base\USongs.pas',
   UIni              in 'base\UIni.pas',
   UImage            in 'base\UImage.pas',

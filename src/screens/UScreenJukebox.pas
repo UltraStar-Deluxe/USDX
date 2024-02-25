@@ -2578,11 +2578,7 @@ begin
 
   // FIXME: bad style, put the try-except into loadsong() and not here
   try
-    // check if file is xml
-    if CurrentSong.FileName.GetExtension.ToUTF8 = '.xml' then
-      success := CurrentSong.AnalyseXML and CurrentSong.LoadXMLSong()
-    else
-      success := CurrentSong.Analyse and CurrentSong.LoadSong(false);
+    success := CurrentSong.Analyse and CurrentSong.LoadSong(false);
   except
     success := false;
   end;
