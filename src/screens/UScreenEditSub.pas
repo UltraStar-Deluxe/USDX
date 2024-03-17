@@ -146,6 +146,7 @@ type
       P1EditMode:              boolean;
       P2EditMode:              boolean;
       BPMEditMode:             boolean;
+      PianoEditMode:           boolean;
 
       // to interactive divide note
       LastClickTime:           Integer;
@@ -389,6 +390,7 @@ type
       function  ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       function  ParseInputEditText(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
       function  ParseInputEditBPM(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+      function  ParseInputEditPiano(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
       function  ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean; override;
       function  Draw: boolean; override;
       procedure OnHide; override;
@@ -472,6 +474,24 @@ var
 begin
   Result := true;
 
+  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT {+ KMOD_CAPS});
+
+  if PianoEditMode then
+  begin
+    Result := ParseInputEditPiano(PressedKey, CharCode, PressedDown);
+    if (Result = true) then
+    begin
+      SDL_ModState := KMOD_LSHIFT or KMOD_LCTRL;
+      PressedKey := SDLK_SPACE;
+    end;
+    if (PressedKey = SDLK_RETURN) then
+    begin
+      PressedKey := SDLK_P;
+    end;
+      Result := true;
+  end;
+
   if TextEditMode or
      TitleEditMode or
      ArtistEditMode or
@@ -489,11 +509,8 @@ begin
   begin
     Result := ParseInputEditBPM(PressedKey, CharCode, PressedDown)
   end
-  else
+  else 
   begin
-
-  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
-    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT {+ KMOD_CAPS});
 
   if (PressedDown) then  // Key Down
   begin
@@ -1484,6 +1501,12 @@ begin
           StartTextInput;
         end;
 
+      SDLK_F6:
+        begin
+          // Enter Piano Edit Mode
+          PianoEditMode := true;
+        end;
+
       SDLK_SPACE:
         begin
           if (SDL_ModState = 0) or (SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL) then
@@ -2146,7 +2169,7 @@ begin
         end;
 
       end; // case
-    end;
+  end;
   end; // if
 end;
 
@@ -2539,6 +2562,105 @@ begin
           end;
         end;
 
+    end; //case
+  end; //if (PressedDown)
+end;
+
+function TScreenEditSub.ParseInputEditPiano(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+var
+  SDL_ModState:  word;
+  Shift: Integer;
+  NewNote: Integer;
+begin
+  // used when in Piano Edit Mode
+  Result := true;
+  NewNote := -1000;
+  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT {+ KMOD_CAPS});
+
+  Shift := 0;
+  if SDL_ModState = KMOD_LSHIFT then
+  begin
+    Shift := 12;
+  end;
+
+  if (PressedDown) then
+  begin
+    // check special keys
+    case PressedKey of
+      SDLK_ESCAPE, SDLK_F6:
+        begin
+          PianoEditMode := false;
+        end;
+      else
+        // check normal keys
+        case PressedKey of
+          SDLK_LESS:      NewNote := -7 + Shift;
+          SDLK_A:         NewNote := -6 + Shift;
+          SDLK_Y:         NewNote := -5 + Shift;
+          SDLK_S:         NewNote := -4 + Shift;
+          SDLK_X:         NewNote := -3 + Shift;
+          SDLK_D:         NewNote := -2 + Shift;
+          SDLK_C:         NewNote := -1 + Shift;
+          SDLK_F:                              ;
+          SDLK_V:         NewNote :=  0 + Shift;
+          SDLK_G:         NewNote :=  1 + Shift;
+          SDLK_B:         NewNote :=  2 + Shift;
+          SDLK_H:         NewNote :=  3 + Shift;
+          SDLK_N:         NewNote :=  4 + Shift;
+          SDLK_J:                              ;
+          SDLK_M:         NewNote :=  5 + Shift;
+          SDLK_K:         NewNote :=  6 + Shift;
+          SDLK_COMMA:     NewNote :=  7 + Shift;
+          SDLK_L:         NewNote :=  8 + Shift;
+          SDLK_PERIOD:    NewNote :=  9 + Shift;
+          246:            NewNote := 10 + Shift;
+          SDLK_MINUS:     NewNote := 11 + Shift;
+          228:                                 ;
+          SDLK_1:         NewNote :=  6 + Shift;
+          SDLK_Q:         NewNote :=  7 + Shift;
+          SDLK_2:         NewNote :=  8 + Shift;
+          SDLK_W:         NewNote :=  9 + Shift;
+          SDLK_3:         NewNote := 10 + Shift;
+          SDLK_E:         NewNote := 11 + Shift;
+          SDLK_4:                              ;
+          SDLK_R:         NewNote := 12 + Shift;
+          SDLK_5:         NewNote := 13 + Shift;
+          SDLK_T:         NewNote := 14 + Shift;
+          SDLK_6:         NewNote := 15 + Shift;
+          SDLK_Z:         NewNote := 16 + Shift;
+          SDLK_7:                              ;
+          SDLK_U:         NewNote := 17 + Shift;
+          SDLK_8:         NewNote := 18 + Shift;
+          SDLK_I:         NewNote := 19 + Shift;
+          SDLK_9:         NewNote := 20 + Shift;
+          SDLK_O:         NewNote := 21 + Shift;
+          SDLK_0:         NewNote := 22 + Shift;
+          SDLK_P:         NewNote := 23 + Shift;
+          223:                                 ;
+          252:            NewNote := 24 + Shift;
+          SDLK_BACKQUOTE: NewNote := 25 + Shift;
+          SDLK_PLUS:      NewNote := 26 + Shift;
+          else
+            Result := false;
+        end; //case
+        if (NewNote <> -1000) then
+        begin
+          Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone := NewNote;
+          // Play Midi
+          PlaySentenceMidi := false;
+          PlayVideo := false;
+          midinotefound := false;
+          PlayOne := true;
+          PlayOneMidi := true;
+          StopVideoPreview();
+          {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
+          MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
+          MidiStop := GetTimeFromBeat(
+            Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
+            Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration); {$ENDIF}
+          LastClick := -100;
+        end; //if (NewNote != -1000)
     end; //case
   end; //if (PressedDown)
 end;
