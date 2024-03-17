@@ -388,6 +388,13 @@ uses
   UTextEncoding,
   UFilesystem;
 
+// FileExists() returned true for directories on unix until FPC 3.2.0
+{$IF FPC_VERSION_INT < 3002000}
+{$IFNDEF MSWINDOWS}
+  {$DEFINE HAVE_FILEEXISTSBUG}
+{$ENDIF}
+{$ENDIF}
+
 {*
  * Due to a compiler bug in FPC <= 2.2.4 reference counting does not work
  * properly with interfaces (see http://bugs.freepascal.org/view.php?id=14019).
@@ -1010,22 +1017,23 @@ end;
 
 function TPathImpl.Exists(): boolean;
 begin
-  // note the different specifications of FileExists() on Win32 <> Unix
-  {$IFDEF MSWINDOWS}
-  Result := IsFile() or IsDirectory();
-  {$ELSE}
   Result := FileSystem.FileExists(Self);
+  {$IFNDEF HAVE_FILEEXISTSBUG}
+  if not Result then
+    Result := IsDirectory();
   {$ENDIF}
 end;
 
 function TPathImpl.IsFile(): boolean;
 begin
-  // note the different specifications of FileExists() on Win32 <> Unix
-  {$IFDEF MSWINDOWS}
-  Result:= FileSystem.FileExists(Self);
-  {$ELSE}
-  Result := Exists() and not IsDirectory();
+  {$IFDEF HAVE_FILEEXISTSBUG}
+  if IsDirectory() then
+  begin
+    Result := false;
+    Exit;
+  end;
   {$ENDIF}
+  Result:= FileSystem.FileExists(Self);
 end;
 
 function TPathImpl.IsDirectory(): boolean;
