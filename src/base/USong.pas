@@ -114,6 +114,7 @@ type
 
     function GetFolderCategory(const aFileName: IPath): UTF8String;
     function FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
+    function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean): boolean;
   public
     Path:         IPath; // kust path component of file (only set if file was found)
     Folder:       UTF8String; // for sorting by folder (only set if file was found)
@@ -480,6 +481,25 @@ end;
 //Load TXT Song
 function TSong.LoadSong(DuetChange: boolean): boolean;
 var
+  SongFile:     TTextFileStream;
+  FileNamePath: IPath;
+begin
+  FileNamePath := Path.Append(FileName);
+  try
+    // Open song file for reading.....
+    SongFile := TMemTextFileStream.Create(FileNamePath, fmOpenRead);
+  except
+    LastError := 'ERROR_CORRUPT_SONG_FILE_NOT_FOUND';
+    Log.LogError('File not found: "' + FileNamePath.ToNative + '"', 'TSong.LoadSong()');
+    Exit;
+  end;
+
+  Result := LoadOpenedSong(SongFile, FileNamePath, DuetChange);
+  SongFile.Free;
+end;
+
+function TSong.LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean): boolean;
+var
   CurLine:      RawByteString;
   LinePos:      integer;
   TrackIndex:   integer;
@@ -494,20 +514,10 @@ var
 
   I:            integer;
   NotesFound:   boolean;
-  SongFile:     TTextFileStream;
-  FileNamePath: IPath;
 begin
   Result := false;
   LastError := '';
   CurrentTrack := 0;
-
-  FileNamePath := Path.Append(FileName);
-  if not FileNamePath.IsFile() then
-  begin
-    LastError := 'ERROR_CORRUPT_SONG_FILE_NOT_FOUND';
-    Log.LogError('File not found: "' + FileNamePath.ToNative + '"', 'TSong.LoadSong()');
-    Exit;
-  end;
 
   MultBPM           := 4; // multiply beat-count of note by 4
   Mult              := 1; // accuracy of measurement of note
@@ -519,12 +529,9 @@ begin
     Both := true;
 
   try
-    // Open song file for reading.....
-    SongFile := TMemTextFileStream.Create(FileNamePath, fmOpenRead);
     MD5 := MD5SongFile(SongFile);
     SongFile.Position := 0;
 
-    try
       //Search for Note Beginning
       FileLineNo := 0;
       NotesFound := false;
@@ -701,9 +708,6 @@ begin
 
         Inc(FileLineNo);
       end; // while
-    finally
-      SongFile.Free;
-    end;
   except
     on E: Exception do
     begin
@@ -1503,17 +1507,19 @@ end;
 function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean): boolean;
 var
   SongFile: TTextFileStream;
+  FileNamePath: IPath;
 begin
   Result := false;
 
   //Reset LineNo
   FileLineNo := 0;
 
+  FileNamePath := Path.Append(FileName);
   try
     //Open File and set File Pointer to the beginning
-    SongFile := TMemTextFileStream.Create(Self.Path.Append(Self.FileName), fmOpenRead);
+    SongFile := TMemTextFileStream.Create(FileNamePath, fmOpenRead);
   except
-    Log.LogError('Failed to open ' + Self.Path.Append(Self.FileName).ToUTF8(true));
+    Log.LogError('Failed to open ' + FileNamePath.ToUTF8(true));
     Exit;
   end;
 
@@ -1527,7 +1533,7 @@ begin
 
     //Load Song for Medley Tags
     CurrentSong := self;
-    Result := Result and LoadSong(DuetChange);
+    Result := Result and LoadOpenedSong(SongFile, FileNamePath, DuetChange);
 
     if Result then
     begin
@@ -1538,7 +1544,7 @@ begin
         Self.Medley.Source := msNone;
     end;
   except
-    Log.LogError('Reading headers from file failed. File incomplete or not Ultrastar txt?: ' + Self.Path.Append(Self.FileName).ToUTF8(true));
+    Log.LogError('Reading headers from file failed. File incomplete or not Ultrastar txt?: ' + FileNamePath.ToUTF8(true));
   end;
   SongFile.Free;
 end;
