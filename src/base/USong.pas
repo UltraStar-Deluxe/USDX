@@ -613,9 +613,6 @@ begin
                 CurrentTrack := 0;
             end
             else
-              if (Param1 = 3) then
-                CurrentTrack := 2
-            else
             begin
               Log.LogError('Wrong P-Number in file: "' + FileName.ToNative + '"; Line '+IntToStr(FileLineNo)+' (LoadSong)');
               Result := False;
@@ -653,24 +650,14 @@ begin
           end;
 
           // add notes
-          if (CurrentTrack <> 2) then
+          if (Tracks[CurrentTrack].High < 0) or (Tracks[CurrentTrack].High > 5000) then
           begin
-            // P1
-            if (Tracks[CurrentTrack].High < 0) or (Tracks[CurrentTrack].High > 5000) then
-            begin
-              Log.LogError('Found faulty song. Did you forget a P1 or P2 tag? "'+Param0+' '+IntToStr(Param1)+
-              ' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamLyric+'" -> '+
-              FileNamePath.ToNative+' Line:'+IntToStr(FileLineNo));
-              Break;
-            end;
-            ParseNote(CurrentTrack, Param0, (Param1+Rel[CurrentTrack]) * Mult, Param2 * Mult, Param3, ParamLyric);
-          end
-          else
-          begin
-            // P1 + P2
-            ParseNote(0, Param0, (Param1+Rel[0]) * Mult, Param2 * Mult, Param3, ParamLyric);
-            ParseNote(1, Param0, (Param1+Rel[1]) * Mult, Param2 * Mult, Param3, ParamLyric);
+            Log.LogError('Found faulty song. Did you forget a P1 or P2 tag? "'+Param0+' '+IntToStr(Param1)+
+            ' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamLyric+'" -> '+
+            FileNamePath.ToNative+' Line:'+IntToStr(FileLineNo));
+            Break;
           end;
+          ParseNote(CurrentTrack, Param0, (Param1+Rel[CurrentTrack]) * Mult, Param2 * Mult, Param3, ParamLyric);
         end // if
 
         else
@@ -680,17 +667,7 @@ begin
           Param1 := ParseLyricIntParam(CurLine, LinePos);
           if self.Relative then
             Param2 := ParseLyricIntParam(CurLine, LinePos); // read one more data for relative system
-
-          // new sentence
-          if not CurrentSong.isDuet then
-            // one singer
-            NewSentence(CurrentTrack, (Param1 + Rel[CurrentTrack]) * Mult, Param2)
-          else
-          begin
-            // P1 + P2
-            NewSentence(0, (Param1 + Rel[0]) * Mult, Param2);
-            NewSentence(1, (Param1 + Rel[1]) * Mult, Param2);
-          end;
+          NewSentence(CurrentTrack, (Param1 + Rel[CurrentTrack]) * Mult, Param2);
         end // if
         else if Param0 = 'B' then
         begin
