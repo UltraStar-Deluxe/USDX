@@ -366,8 +366,8 @@ const
   IBeatClick:        array[0..1] of UTF8String  = ('Off', 'On');
   ISavePlayback:     array[0..1] of UTF8String  = ('Off', 'On');
 
-  IThreshold:        array[0..3] of UTF8String  = ('5%', '10%', '15%', '20%');
-  IThresholdVals:    array[0..3] of single  = (0.05, 0.10,  0.15,  0.20);
+  IThreshold:        array[0..13] of UTF8String  = ('5%', '10%', '15%', '20%', '25%', '30%', '35%', '40%', '45%', '50%', '55%', '60%', '65%', '70%');
+  IThresholdVals:    array[0..13] of single      = (0.05, 0.10, 0.15,  0.20,  0.25,  0.30,  0.35,  0.40,  0.45,  0.50,  0.55,  0.60,  0.65,  0.70);
 
   IVoicePassthrough: array[0..1] of UTF8String  = ('Off', 'On');
   
