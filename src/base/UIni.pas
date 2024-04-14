@@ -388,8 +388,8 @@ const
   IAudioInputBufferSizeVals:  array[0..9] of integer     = ( 0,      256,   512 ,  1024 ,  2048 ,  4096 ,  8192 ,  16384 ,  32768 ,  65536 );
 
   // Song Preview
-  IPreviewVolume:             array[0..10] of UTF8String = ('Off', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%');
-  IPreviewVolumeVals:         array[0..10] of single     = ( 0,   0.10,  0.20,  0.30,  0.40,  0.50,  0.60,  0.70,  0.80,  0.90,   1.00  );
+  IPreviewVolume:             array[0..12] of UTF8String = ('Off', '3%', '5%', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%');
+  IPreviewVolumeVals:         array[0..12] of single     = ( 0,  0.03,  0.05,  0.10,  0.20,  0.30,  0.40,  0.50,  0.60,  0.70,  0.80,  0.90,   1.00  );
 
   IPreviewFading:             array[0..5] of UTF8String  = ('Off', '1 Sec', '2 Secs', '3 Secs', '4 Secs', '5 Secs');
   IPreviewFadingVals:         array[0..5] of integer     = ( 0,     1,       2,        3,        4,        5      );
@@ -502,7 +502,7 @@ var
   ISyncToTranslated:           array[0..2] of UTF8String  = ('Music', 'Lyrics', 'Off');
 
   // Song Preview
-  IPreviewVolumeTranslated:    array[0..10] of UTF8String = ('Off', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%');
+  IPreviewVolumeTranslated:    array[0..12] of UTF8String = ('Off', '3%', '5%', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%');
 
   IAudioOutputBufferSizeTranslated: array[0..9] of UTF8String  = ('Auto', '256', '512', '1024', '2048', '4096', '8192', '16384', '32768', '65536');
 
@@ -875,16 +875,18 @@ begin
 
   // Song Preview
   IPreviewVolumeTranslated[0]         := ULanguage.Language.Translate('OPTION_VALUE_OFF');
-  IPreviewVolumeTranslated[1]         := '10%';
-  IPreviewVolumeTranslated[2]         := '20%';
-  IPreviewVolumeTranslated[3]         := '30%';
-  IPreviewVolumeTranslated[4]         := '40%';
-  IPreviewVolumeTranslated[5]         := '50%';
-  IPreviewVolumeTranslated[6]         := '60%';
-  IPreviewVolumeTranslated[7]         := '70%';
-  IPreviewVolumeTranslated[8]         := '80%';
-  IPreviewVolumeTranslated[9]         := '90%';
-  IPreviewVolumeTranslated[10]        := '100%';
+  IPreviewVolumeTranslated[1]         := '3%';
+  IPreviewVolumeTranslated[2]         := '5%';
+  IPreviewVolumeTranslated[3]         := '10%';
+  IPreviewVolumeTranslated[4]         := '20%';
+  IPreviewVolumeTranslated[5]         := '30%';
+  IPreviewVolumeTranslated[6]         := '40%';
+  IPreviewVolumeTranslated[7]         := '50%';
+  IPreviewVolumeTranslated[8]         := '60%';
+  IPreviewVolumeTranslated[9]         := '70%';
+  IPreviewVolumeTranslated[10]        := '80%';
+  IPreviewVolumeTranslated[11]        := '90%';
+  IPreviewVolumeTranslated[12]        := '100%';
 
 
   IPreviewFadingTranslated[0]         :=        ULanguage.Language.Translate('OPTION_VALUE_OFF');
