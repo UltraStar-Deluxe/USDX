@@ -337,6 +337,10 @@ var
   TestFrame: TAVPacket;
   AVResult: integer;
   CodecID: TAVCodecID;
+  NumChannels: cint;
+  {$IF LIBAVUTIL_VERSION >= 59000000}
+  RequestChannelLayout: TAVChannelLayout;
+  {$ENDIF}
 begin
   Result := false;
 
@@ -431,13 +435,21 @@ begin
     Exit;
   end;
 
-  // TODO: should we use this or not? Should we allow 5.1 channel audio?
+  {$IF LIBAVUTIL_VERSION >= 59000000}
+  NumChannels := fCodecCtx^.ch_layout.nb_channels;
+  {$ELSE}
+  NumChannels := fCodecCtx^.channels;
+  {$IFEND}
 
-  {$IF LIBAVCODEC_VERSION >= 56042000}
+  // TODO: should we use this or not? Should we allow 5.1 channel audio?
+  {$IF LIBAVUTIL_VERSION >= 59000000}
+  if av_channel_layout_from_string(@RequestChannelLayout, 'downmix') = 0 then
+    av_opt_set_chlayout(fCodecCtx, 'downmix', @RequestChannelLayout, 0); // ignore errors, few codecs support downmix
+  {$ELSEIF LIBAVCODEC_VERSION >= 56042000}
   fCodecCtx^.request_channel_layout := ($20000000 or $40000000); //avcodec.c AV_CH_LAYOUT_STEREO_DOWNMIX;
   {$ELSEIF LIBAVCODEC_VERSION >= 51042000}
-  if (fCodecCtx^.channels > 0) then
-    fCodecCtx^.request_channels := Min(2, fCodecCtx^.channels)
+  if (NumChannels > 0) then
+    fCodecCtx^.request_channels := Min(2, NumChannels)
   else
     fCodecCtx^.request_channels := 2;
   {$IFEND}
@@ -492,14 +504,23 @@ begin
     // convert to AV_SAMPLE_FMT_S16 anyway and most architectures have assembly
     // optimized conversion routines from AV_SAMPLE_FMT_FLTP to AV_SAMPLE_FMT_S16.
     PackedSampleFormat := AV_SAMPLE_FMT_S16;
+    {$IF LIBAVUTIL_VERSION >= 59000000}
+    fSwrContext := nil;
+    swr_alloc_set_opts2(@fSwrContext, @fCodecCtx^.ch_layout, PackedSampleFormat, fCodecCtx^.sample_rate,
+                        @fCodecCtx^.ch_layout, fCodecCtx^.sample_fmt, fCodecCtx^.sample_rate, 0, nil);
+    {$ELSE}
     fSwrContext := swr_alloc_set_opts(nil, fCodecCtx^.channel_layout, PackedSampleFormat, fCodecCtx^.sample_rate,
                                       fCodecCtx^.channel_layout, fCodecCtx^.sample_fmt, fCodecCtx^.sample_rate, 0, nil);
+    {$IFEND}
     if (fSwrContext = nil) then
       Log.LogStatus('Error: Failed to create SwrContext', 'TFFmpegDecodeStream.Open')
     else
     begin
-      av_opt_set_int(fSwrContext, 'ich', fCodecCtx^.channels, 0);
-      av_opt_set_int(fSwrContext, 'och', fCodecCtx^.channels, 0);
+      {$IF LIBAVUTIL_VERSION < 59000000}
+      // Not necessary when channel_layout has been set correctly
+      av_opt_set_int(fSwrContext, 'ich', NumChannels, 0);
+      av_opt_set_int(fSwrContext, 'och', NumChannels, 0);
+      {$IFEND}
       if (swr_init(fSwrContext) < 0) then
       begin
         swr_free(@fSwrContext);
@@ -516,15 +537,15 @@ begin
     // try standard format
     SampleFormat := asfS16;
   end;
-  if fCodecCtx^.channels > 255 then
-    Log.LogStatus('Error: CodecCtx^.channels > 255', 'TFFmpegDecodeStream.Open');
+  if NumChannels > 255 then
+    Log.LogStatus('Error: Number of channels > 255', 'TFFmpegDecodeStream.Open');
   fFormatInfo := TAudioFormatInfo.Create(
-    byte(fCodecCtx^.channels),
+    byte(NumChannels),
     fCodecCtx^.sample_rate,
     SampleFormat
   );
   {$IFDEF UseFrameDecoderAPI}
-  fBytesPerSample := av_get_bytes_per_sample(PackedSampleFormat) * fCodecCtx^.channels;
+  fBytesPerSample := av_get_bytes_per_sample(PackedSampleFormat) * NumChannels;
   {$IFEND}
 
   fPacketQueue := TPacketQueue.Create();
