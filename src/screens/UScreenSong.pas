@@ -104,6 +104,7 @@ type
 
       //Rap Icon
       RapIcon:     cardinal;
+      RapToFreestyle: boolean;
 
       TextCat:   integer;
       StaticCat: integer;
@@ -986,6 +987,8 @@ begin
           end;
           Exit;
         end;
+
+      SDLK_T: RapToFreestyle := not RapToFreestyle;
 
       SDLK_W:
         begin
