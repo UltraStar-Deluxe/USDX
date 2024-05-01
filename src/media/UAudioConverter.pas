@@ -220,6 +220,16 @@ begin
 end;
 
 {$IFDEF USESWRESAMPLE}
+{$IF LIBAVUTIL_VERSION >= 59000000}
+procedure SetDefaultChannelLayout(Ctx: PSwrContext; Option: PAnsiChar; Channels: cint);
+var
+  Layout: TAVChannelLayout;
+begin
+  av_channel_layout_default(@Layout, Channels);
+  av_opt_set_chlayout(Ctx, Option, @Layout, 0);
+end;
+{$ENDIF}
+
 function TAudioConverter_SWResample.Init(SrcFormatInfo: TAudioFormatInfo;
                                      DstFormatInfo: TAudioFormatInfo): boolean;
 var
@@ -247,8 +257,13 @@ begin
   end;
 
   SwrContext:= swr_alloc();
+  {$IF LIBAVUTIL_VERSION >= 59000000}
+  SetDefaultChannelLayout(SwrContext, 'in_chlayout', SrcFormatInfo.Channels);
+  SetDefaultChannelLayout(SwrContext, 'out_chlayout', DstFormatInfo.Channels);
+  {$ELSE}
   av_opt_set_int(SwrContext, 'in_channel_count', SrcFormatInfo.Channels, 0);
   av_opt_set_int(SwrContext, 'out_channel_count', DstFormatInfo.Channels, 0);
+  {$ENDIF}
   av_opt_set_int(SwrContext, 'in_sample_rate', Round(SrcFormatInfo.SampleRate), 0);
   av_opt_set_int(SwrContext, 'out_sample_rate', Round(DstFormatInfo.SampleRate), 0);
   av_opt_set_sample_fmt(SwrContext, 'in_sample_fmt', SrcFormat, 0);
