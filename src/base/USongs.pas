@@ -484,7 +484,7 @@ var
   StringIndex: integer;
   MainArtist:  UTF8String;
 
-  procedure AddCategoryButton(const CategoryName: UTF8String);
+  procedure AddCategoryButton(const CategoryName: UTF8String; const cover: IPath = nil);
   var
     PrevCatBtnIndex: integer;
   begin
@@ -496,7 +496,10 @@ var
     Song[CatIndex].Main     := true;
     Song[CatIndex].OrderTyp := 0;
     Song[CatIndex].OrderNum := Order;
-    Song[CatIndex].Cover    := CatCovers.GetCover(TSortingType(Ini.Sorting), CategoryName);
+    if (cover <> nil) then
+       Song[CatIndex].Cover := cover
+    else
+       Song[CatIndex].Cover := CatCovers.GetCover(TSortingType(Ini.Sorting), CategoryName);
     Song[CatIndex].Visible  := true;
 
     // set number of songs in previous category
@@ -636,8 +639,8 @@ begin
           if (UTF8CompareText(CurCategory, MainArtist) <> 0) then
           begin
             CurCategory := MainArtist;
-            // add folder tab
-            AddCategoryButton(CurCategory);
+            // add folder tab with first song cover
+            AddCategoryButton(CurCategory, CurSong.Path.Append(CurSong.Cover));
           end;
         end;
 
