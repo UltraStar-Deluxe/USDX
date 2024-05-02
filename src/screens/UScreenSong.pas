@@ -102,8 +102,9 @@ type
       DuetIcon:     cardinal;
       DuetChange:   boolean;
 
-      //Rap Icon
+      //Rap Icons
       RapIcon:     cardinal;
+      RapToFreestyleIcon: cardinal;
       RapToFreestyle: boolean;
 
       TextCat:   integer;
@@ -177,6 +178,7 @@ type
       ListCalcMedleyIcon: array of integer;
       ListDuetIcon:       array of integer;
       ListRapIcon:        array of integer;
+      ListRapToFreestyleIcon: array of integer;
 
       PlayMidi: boolean;
       MidiFadeIn: boolean;
@@ -988,7 +990,9 @@ begin
           Exit;
         end;
 
-      SDLK_T: RapToFreestyle := not RapToFreestyle;
+      SDLK_T:
+        if CatSongs.Song[Interaction].hasRap then
+          RapToFreestyle := not RapToFreestyle;
 
       SDLK_W:
         begin
@@ -1577,7 +1581,7 @@ constructor TScreenSong.Create;
 var
   I, Num, Padding: integer;
   TextArtistY, TextTitleY, TextYearY, StaticMedCY,
-  StaticMedMY, StaticVideoY, StaticDuetY, StaticRapY: integer;
+  StaticMedMY, StaticVideoY, StaticDuetY, StaticRapY, StaticRapToFreestyleY: integer;
   StaticY: real;
 begin
   inherited Create;
@@ -1603,8 +1607,9 @@ begin
   //Duet Icon
   DuetIcon := AddStatic(Theme.Song.DuetIcon);
 
-  //Rap Icon
+  //Rap Icons
   RapIcon := AddStatic(Theme.Song.RapIcon);
+  RapToFreestyleIcon := AddStatic(Theme.Song.RapToFreestyleIcon);
 
   //Show Scores
   TextScore       := AddText(Theme.Song.TextScore);
@@ -1749,6 +1754,7 @@ begin
   SetLength(ListCalcMedleyIcon, Num);
   SetLength(ListDuetIcon, Num);
   SetLength(ListRapIcon, Num);
+  SetLength(ListRapToFreestyleIcon, Num);
 
   TextArtistY := Theme.Song.TextArtist.Y;
   TextTitleY := Theme.Song.TextTitle.Y;
@@ -1759,6 +1765,7 @@ begin
   StaticMedCY := Theme.Song.CalculatedMedleyIcon.Y;
   StaticDuetY := Theme.Song.DuetIcon.Y;
   StaticRapY := Theme.Song.RapIcon.Y;
+  StaticRapToFreestyleY := Theme.Song.RapToFreestyleIcon.Y;
 
   for I := 0 to Num - 1 do
   begin
@@ -1788,6 +1795,9 @@ begin
 
     Theme.Song.RapIcon.Y  := StaticRapY + Padding;
     ListRapIcon[I] := AddStatic(Theme.Song.RapIcon);
+
+    Theme.Song.RapToFreestyleIcon.Y  := StaticRapToFreestyleY + Padding;
+    ListRapToFreestyleIcon[I] := AddStatic(Theme.Song.RapToFreestyleIcon);
   end;
 
   MainChessboardMinLine := 0;
@@ -2060,6 +2070,7 @@ end;
 procedure TScreenSong.OnSongDeSelect;
 begin
   DuetChange := false;
+  RapToFreestyle := false;
 
   CoverTime := 10;
   //UnloadCover(Interaction);
@@ -2121,8 +2132,9 @@ begin
       //Set Visibility of Duet Icon
       Statics[DuetIcon].Visible := CatSongs.Song[Interaction].isDuet;
 
-      //Set Visibility of Rap Icon
-      Statics[RapIcon].Visible := CatSongs.Song[Interaction].hasRap;
+      //Set Visibility of Rap Icons
+      Statics[RapIcon].Visible := CatSongs.Song[Interaction].hasRap and not RapToFreestyle;
+      Statics[RapToFreestyleIcon].Visible := CatSongs.Song[Interaction].hasRap and RapToFreestyle;
 
       // Set texts
       Text[TextArtist].Size := Theme.Song.TextArtist.Size; // reset in case it was previously decreased by a too long artist
@@ -2909,6 +2921,7 @@ begin
     Statics[ListCalcMedleyIcon[I]].Visible := false;
     Statics[ListDuetIcon[I]].Visible := false;
     Statics[ListRapIcon[I]].Visible := false;
+    Statics[ListRapToFreestyleIcon[I]].Visible := false;
 
     //reset
     StaticsList[I].Texture.TexNum := StaticsList[I].TextureDeSelect.TexNum;
@@ -2962,9 +2975,12 @@ begin
     Statics[ListDuetIcon[I]].Texture.Alpha := Alpha;
     Statics[ListDuetIcon[I]].Visible := CatSongs.Song[SongID[I]].isDuet;
 
-    //Set Visibility of Rap Icon
+    //Set Visibility of Rap Icons
     Statics[ListRapIcon[I]].Texture.Alpha := Alpha;
-    Statics[ListRapIcon[I]].Visible := CatSongs.Song[SongID[I]].hasRap;
+    Statics[ListRapIcon[I]].Visible := CatSongs.Song[SongID[I]].hasRap and not RapToFreestyle;
+
+    Statics[ListRapToFreestyleIcon[I]].Texture.Alpha := Alpha;
+    Statics[ListRapToFreestyleIcon[I]].Visible := CatSongs.Song[SongID[I]].hasRap and RapToFreestyle;
 
     // Set texts
     Text[ListTextArtist[I]].Alpha := Alpha;
@@ -3025,6 +3041,7 @@ begin
       Statics[ListCalcMedleyIcon[I]].Visible := false;
       Statics[ListDuetIcon[I]].Visible := false;
       Statics[ListRapIcon[I]].Visible := false;
+      Statics[ListRapToFreestyleIcon[I]].Visible := false;
     end;
 
     Text[TextArtist].Visible := true;
@@ -3035,6 +3052,7 @@ begin
     Statics[CalcMedleyIcon].Visible := true;
     Statics[DuetIcon].Visible := true;
     Statics[RapIcon].Visible := true;
+    Statics[RapToFreestyleIcon].Visible := true;
   end
   else
   begin
@@ -3050,6 +3068,7 @@ begin
       Statics[ListCalcMedleyIcon[I]].Visible := true;
       Statics[ListDuetIcon[I]].Visible := true;
       Statics[ListRapIcon[I]].Visible := true;
+      Statics[ListRapToFreestyleIcon[I]].Visible := true;
     end;
 
     Text[TextArtist].Visible := false;
@@ -3060,6 +3079,7 @@ begin
     Statics[CalcMedleyIcon].Visible := false;
     Statics[DuetIcon].Visible := false;
     Statics[RapIcon].Visible := false;
+    Statics[RapToFreestyleIcon].Visible := false;
   end;
 
   // for duet names
@@ -3164,6 +3184,7 @@ end;
 procedure TScreenSong.OnShowFinish;
 begin
   DuetChange := false;
+  RapToFreestyle := false;
 
   isScrolling := true;
   CoverTime := 10;
@@ -4430,7 +4451,7 @@ end;
 procedure TScreenSong.SongScore;
 begin
 
-  if (CatSongs.Song[Interaction].isDuet) or ((Mode <> smNormal) or (Ini.ShowScores = 0) or (CatSongs.Song[Interaction].Edition = '') or ((Ini.ShowScores = 1) and ((Text[TextMaxScore2].Text = '0') and (Text[TextMaxScoreLocal].Text = '0')))) then
+  if (CatSongs.Song[Interaction].isDuet) or (RapToFreestyle) or ((Mode <> smNormal) or (Ini.ShowScores = 0) or (CatSongs.Song[Interaction].Edition = '') or ((Ini.ShowScores = 1) and ((Text[TextMaxScore2].Text = '0') and (Text[TextMaxScoreLocal].Text = '0')))) then
   begin
     Text[TextScore].Visible           := false;
     Text[TextMaxScore].Visible        := false;
