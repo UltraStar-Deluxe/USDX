@@ -713,7 +713,7 @@ begin
   end;
 
   ILineTranslated[0] := ULanguage.Language.Translate('OPTION_VALUE_TO_SING');
-  ILineTranslated[1] := ULanguage.Language.Translate('OPTION_VALUE_ACTUAL');
+  ILineTranslated[1] := ULanguage.Language.Translate('OPTION_VALUE_CURRENT');
   ILineTranslated[2] := ULanguage.Language.Translate('OPTION_VALUE_NEXT');
 
   IPropertyTranslated[0] := ULanguage.Language.Translate('OPTION_VALUE_FILL');
