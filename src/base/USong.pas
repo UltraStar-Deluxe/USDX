@@ -100,7 +100,7 @@ type
     FileLineNo  : integer;  // line, which is read last, for error reporting
 
     function DecodeFilename(Filename: RawByteString): IPath;
-    procedure ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String);
+    procedure ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String; RapToFreestyle: boolean);
     procedure NewSentence(LineNumberP: integer; Param1, Param2: integer);
     procedure FindRefrain(); // tries to find a refrain for the medley mode and preview start
 
@@ -114,7 +114,7 @@ type
 
     function GetFolderCategory(const aFileName: IPath): UTF8String;
     function FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
-    function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean): boolean;
+    function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean): boolean;
   public
     Path:         IPath; // kust path component of file (only set if file was found)
     Folder:       UTF8String; // for sorting by folder (only set if file was found)
@@ -193,7 +193,7 @@ type
     constructor Create(); overload;
     constructor Create(const aFileName : IPath); overload;
     function    LoadSong(DuetChange: boolean): boolean;
-    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false): boolean;
+    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false): boolean;
     procedure   SetMedleyMode();
     procedure   Clear();
     function    MD5SongFile(SongFileR: TTextFileStream): string;
@@ -494,11 +494,11 @@ begin
     Exit;
   end;
 
-  Result := LoadOpenedSong(SongFile, FileNamePath, DuetChange);
+  Result := LoadOpenedSong(SongFile, FileNamePath, DuetChange, false);
   SongFile.Free;
 end;
 
-function TSong.LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean): boolean;
+function TSong.LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean): boolean;
 var
   CurLine:      RawByteString;
   LinePos:      integer;
@@ -657,7 +657,7 @@ begin
             FileNamePath.ToNative+' Line:'+IntToStr(FileLineNo));
             Break;
           end;
-          ParseNote(CurrentTrack, Param0, (Param1+Rel[CurrentTrack]) * Mult, Param2 * Mult, Param3, ParamLyric);
+          ParseNote(CurrentTrack, Param0, (Param1+Rel[CurrentTrack]) * Mult, Param2 * Mult, Param3, ParamLyric, RapToFreestyle);
         end // if
 
         else
@@ -1127,7 +1127,7 @@ begin
     Result := -1;
 end;
 
-procedure TSong.ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String);
+procedure TSong.ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String; RapToFreestyle: boolean);
 begin
 
   with Tracks[Track].Lines[Tracks[Track].High] do
@@ -1150,7 +1150,13 @@ begin
       'F':  Notes[HighNote].NoteType := ntFreestyle;
       ':':  Notes[HighNote].NoteType := ntNormal;
       '*':  Notes[HighNote].NoteType := ntGolden;
-      'R':  Notes[HighNote].NoteType := ntRap;
+      'R':
+        begin
+          if RapToFreestyle then
+            Notes[HighNote].NoteType := ntFreestyle
+          else
+            Notes[HighNote].NoteType := ntRap;
+        end;
       'G':  Notes[HighNote].NoteType := ntRapGolden;
     end;
 
@@ -1481,7 +1487,7 @@ begin
   Relative := false;
 end;
 
-function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean): boolean;
+function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean; RapToFreestyle: boolean): boolean;
 var
   SongFile: TTextFileStream;
   FileNamePath: IPath;
@@ -1510,7 +1516,7 @@ begin
 
     //Load Song for Medley Tags
     CurrentSong := self;
-    Result := Result and LoadOpenedSong(SongFile, FileNamePath, DuetChange);
+    Result := Result and LoadOpenedSong(SongFile, FileNamePath, DuetChange, RapToFreestyle);
 
     if Result then
     begin

@@ -871,7 +871,7 @@ begin
   ScreenSing.Text[TextTimeText].Visible := ScreenSing.Settings.TimeBarVisible;
 
   //the song was sung to the end?
-  if not(CurrentSong.isDuet) then
+  if not(CurrentSong.isDuet) and not(ScreenSong.RapToFreestyle) then
   begin
     Line := ScreenSing.Lyrics.GetUpperLine();
     if Line.LastLine then
