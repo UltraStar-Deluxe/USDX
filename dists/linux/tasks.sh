@@ -97,7 +97,7 @@ task_cmake() {
 
 task_projectm() {
 	start_build projectm projectM || return 0
-	patch -p1 < $root/../flatpak/patches/projectM-2.2.1.patch
+	patch -p1 < $root/projectM-2.2.1.patch
 	chmod a+x autogen.sh
 	./autogen.sh
 	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
