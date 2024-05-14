@@ -1,0 +1,100 @@
+name: Build
+
+on: [push]
+jobs:
+  build_windows:
+    name: Build for Windows
+    runs-on: windows-2019
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Determine version
+        run: |
+          $VNAME=$(cat VERSION | sed "s/+dev$/+dev-$(git rev-parse --short HEAD)/")
+          echo "versionName=$VNAME" >> $env:GITHUB_ENV
+      - name: Install Dependencies
+        run: |
+          choco install wget --no-progress
+          wget -q https://github.com/newpascal/newpascal/releases/download/np-v1.0.50/newpascal.zip
+          7z x -y "newpascal.zip" -o"C:\" > nul
+          wget "https://netcologne.dl.sourceforge.net/project/nsis/NSIS%203/3.04/nsis-3.04-setup.exe"
+          ./nsis-3.04-setup.exe /S
+      - name: Build
+        run: |
+          c:\newpascal\configure.bat
+          $Env:FPCDIR = "c:\newpascal\fpcsrc"
+          $Env:PATH = "c:\newpascal\fpc\bin\i386-win32;c:\newpascal\binw32;$Env:PATH"
+          c:\newpascal\lazarus\lazbuild src\ultrastardx-win.lpi --lazarusdir=c:\newpascal\lazarus
+      - name: Create installer
+        run: |
+          del game\*.debug
+          xcopy game\*.dll installer\dependencies\dll /y
+          & 'C:\Program Files (x86)\NSIS\makensis.exe' "installer/UltraStar Deluxe.nsi"
+          mv installer\dist\UltraStar.Deluxe_*_installer.exe UltraStarDeluxe-installer-${{ env.versionName }}.exe
+      - name: Upload Installer Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WIN-UltraStarDeluxe-installer-${{ env.versionName }}
+          path: UltraStarDeluxe-installer-${{ env.versionName }}.exe
+          if-no-files-found: error
+      - name: Upload Portable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WIN-UltraStarDeluxe-portable-${{ env.versionName }}
+          path: game
+          if-no-files-found: error
+
+  build_mac:
+    name: Build for MacOS
+    runs-on: macos-13
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Determine version
+        run: |
+          VNAME=$(cat VERSION | sed "s/+dev$/+dev-$(git rev-parse --short HEAD)/")
+          echo "versionName=$VNAME" >> $GITHUB_ENV
+      - name: Install Dependencies
+        run: |
+          brew install fpc sdl2 sdl2_image automake portaudio lua ffmpeg
+      - name: Build
+        run: |
+          ./autogen.sh
+          ./configure
+          make macosx-dmg
+          mv UltraStarDeluxe.dmg UltraStarDeluxe-${{ env.versionName }}.dmg
+      - name: Upload Image Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MAC-UltraStarDeluxe-image-${{ env.versionName }}
+          path: UltraStarDeluxe-${{ env.versionName }}.dmg
+          if-no-files-found: error
+
+  build_linux:
+    name: Build for Linux
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Determine version
+        run: |
+          VNAME=$(cat VERSION | sed "s/+dev$/+dev-$(git rev-parse --short HEAD)/")
+          echo "versionName=$VNAME" >> $GITHUB_ENV
+      - name: Cache build
+        uses: actions/cache@v4
+        with:
+          key: linux-docker-${{ hashFiles('dists/linux/dl.sh', 'dists/linux/tasks.sh') }}
+          path: |
+            dists/linux/prefix
+      - name: Build
+        run: |
+          cd dists/linux
+          sed -i '/docker/s/-it\>//' dockerenv.sh
+          ./dockerenv.sh make compress
+          mv UltraStar*.AppImage ../../UltraStarDeluxe-${{ env.versionName }}.AppImage
+      - name: Upload Image Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LIN-UltraStarDeluxe-appimage-${{ env.versionName }}
+          path: UltraStarDeluxe-${{ env.versionName }}.AppImage
+          if-no-files-found: error
