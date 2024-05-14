@@ -2,6 +2,10 @@
 
 set -eo pipefail
 
+if ! tput setaf 1 || ! tput bold || ! tput sgr0 ; then
+	tput() { return 0 ; }
+fi >/dev/null 2>/dev/null
+
 root=$(pwd)
 
 SRC="$root/deps"
