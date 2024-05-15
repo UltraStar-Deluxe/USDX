@@ -268,6 +268,8 @@ type
       JukeboxNextLineOtherOColorG: integer;
       JukeboxNextLineOtherOColorB: integer;
 
+      PianoKeysLow: TPianoKeyArray;
+      PianoKeysHigh: TPianoKeyArray;
 
       // default encoding for texts (lyrics, song-name, ...)
       DefaultEncoding: TEncoding;
@@ -1383,6 +1385,10 @@ var
   IShowWebScore: array of UTF8String;
   HexColor: string;
   Col: TRGB;
+  KeysLow: string;
+  KeysHigh: string;
+  ReadPianoKeysLow: TPianoKeyArray;
+  ReadPianoKeysHigh: TPianoKeyArray;
 begin
   LoadFontFamilyNames;
   ILyricsFont := FontFamilyNames;
@@ -1712,6 +1718,20 @@ begin
     Ini.JukeboxNextLineOtherOColorG := Round(Col.G);
     Ini.JukeboxNextLineOtherOColorB := Round(Col.B);
   end;
+
+  KeysLow := IniFile.ReadString('KeyBindings', 'PianoKeysLow', '');
+  KeysHigh := IniFile.ReadString('KeyBindings', 'PianoKeysHigh', '');
+  PianoKeysLow := [60, 97, 121, 115, 120, 100, 99, 118, 103, 98, 104, 110, 109, 107, 44, 108, 46, 246, 45];
+  PianoKeysHigh := [49, 113, 50, 119, 51, 101, 114, 53, 116, 54, 122, 117, 56, 105, 57, 111, 48, 112, 252, 96, 43];
+  ReadPianoKeysLow := SplitStringToIntArray(KeysLow);
+  ReadPianoKeysHigh := SplitStringToIntArray(KeysHigh);
+  Log.LogWarn('Got ' + IntToStr(Length(ReadPianoKeysLow)) + ' Low keys', 'ScreenEditSub');
+  Log.LogWarn('Got ' + IntToStr(Length(ReadPianoKeysHigh)) + ' high keys', 'ScreenEditSub');
+
+  if Length(ReadPianoKeysLow) = 19 then
+    PianoKeysLow := ReadPianoKeysLow;
+  if Length(ReadPianoKeysHigh) = 21 then
+    PianoKeysHigh := ReadPianoKeysHigh;
 
   LoadPaths(IniFile);
 

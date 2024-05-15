@@ -147,6 +147,9 @@ type
       P2EditMode:              boolean;
       BPMEditMode:             boolean;
       PianoEditMode:           boolean;
+      
+      PianoKeysLow: TPianoKeyArray;
+      PianoKeysHigh: TPianoKeyArray;
 
       // to interactive divide note
       LastClickTime:           Integer;
@@ -1440,7 +1443,7 @@ begin
           ShowInteractiveBackground;
         end;
 
-      SDLK_SLASH, SDLK_HASH:
+      SDLK_SLASH, SDLK_HASH, SDLK_KP_DIVIDE:
         begin
           CopyToUndo;
           if SDL_ModState = 0 then
@@ -2439,7 +2442,7 @@ begin
               end;
           end;
         end;
-      SDLK_SLASH:
+      SDLK_SLASH, SDLK_KP_DIVIDE:
         begin
           CopyToUndo;
           if SDL_ModState = KMOD_LCTRL then
@@ -2571,6 +2574,7 @@ var
   SDL_ModState:  word;
   Shift: Integer;
   NewNote: Integer;
+  i: Integer;
 begin
   // used when in Piano Edit Mode
   Result := true;
@@ -2584,8 +2588,10 @@ begin
     Shift := 12;
   end;
 
-  if (PressedDown) then
+
+  if PressedDown then
   begin
+    Log.LogWarn('Pressed Key' + IntToStr(PressedKey), 'ScreenEditSub');
     // check special keys
     case PressedKey of
       SDLK_ESCAPE, SDLK_F6:
@@ -2593,74 +2599,43 @@ begin
           PianoEditMode := false;
         end;
       else
-        // check normal keys
-        case PressedKey of
-          SDLK_LESS:      NewNote := -7 + Shift;
-          SDLK_A:         NewNote := -6 + Shift;
-          SDLK_Y:         NewNote := -5 + Shift;
-          SDLK_S:         NewNote := -4 + Shift;
-          SDLK_X:         NewNote := -3 + Shift;
-          SDLK_D:         NewNote := -2 + Shift;
-          SDLK_C:         NewNote := -1 + Shift;
-          SDLK_F:                              ;
-          SDLK_V:         NewNote :=  0 + Shift;
-          SDLK_G:         NewNote :=  1 + Shift;
-          SDLK_B:         NewNote :=  2 + Shift;
-          SDLK_H:         NewNote :=  3 + Shift;
-          SDLK_N:         NewNote :=  4 + Shift;
-          SDLK_J:                              ;
-          SDLK_M:         NewNote :=  5 + Shift;
-          SDLK_K:         NewNote :=  6 + Shift;
-          SDLK_COMMA:     NewNote :=  7 + Shift;
-          SDLK_L:         NewNote :=  8 + Shift;
-          SDLK_PERIOD:    NewNote :=  9 + Shift;
-          246:            NewNote := 10 + Shift;
-          SDLK_MINUS:     NewNote := 11 + Shift;
-          228:                                 ;
-          SDLK_1:         NewNote :=  6 + Shift;
-          SDLK_Q:         NewNote :=  7 + Shift;
-          SDLK_2:         NewNote :=  8 + Shift;
-          SDLK_W:         NewNote :=  9 + Shift;
-          SDLK_3:         NewNote := 10 + Shift;
-          SDLK_E:         NewNote := 11 + Shift;
-          SDLK_4:                              ;
-          SDLK_R:         NewNote := 12 + Shift;
-          SDLK_5:         NewNote := 13 + Shift;
-          SDLK_T:         NewNote := 14 + Shift;
-          SDLK_6:         NewNote := 15 + Shift;
-          SDLK_Z:         NewNote := 16 + Shift;
-          SDLK_7:                              ;
-          SDLK_U:         NewNote := 17 + Shift;
-          SDLK_8:         NewNote := 18 + Shift;
-          SDLK_I:         NewNote := 19 + Shift;
-          SDLK_9:         NewNote := 20 + Shift;
-          SDLK_O:         NewNote := 21 + Shift;
-          SDLK_0:         NewNote := 22 + Shift;
-          SDLK_P:         NewNote := 23 + Shift;
-          223:                                 ;
-          252:            NewNote := 24 + Shift;
-          SDLK_BACKQUOTE: NewNote := 25 + Shift;
-          SDLK_PLUS:      NewNote := 26 + Shift;
-          else
-            Result := false;
-        end; //case
-        if (NewNote <> -1000) then
+      for i := Low(PianoKeysLow) to High(PianoKeysLow) do
+      begin
+        if PressedKey = PianoKeysLow[i] then
         begin
-          Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone := NewNote;
-          // Play Midi
-          PlaySentenceMidi := false;
-          PlayVideo := false;
-          midinotefound := false;
-          PlayOne := true;
-          PlayOneMidi := true;
-          StopVideoPreview();
-          {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
-          MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
-          MidiStop := GetTimeFromBeat(
-            Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
-            Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration); {$ENDIF}
-          LastClick := -100;
-        end; //if (NewNote != -1000)
+          NewNote := i - 7 + Shift; // Adjusted index to match existing logic
+          Break;
+        end;
+      end;
+      if NewNote = -1000 then // If not found in PianoKeysLow, check PianoKeysHigh
+      begin
+        for i := Low(PianoKeysHigh) to High(PianoKeysHigh) do
+        begin
+          if PressedKey = PianoKeysHigh[i] then
+          begin
+            NewNote := i + 6 + Shift; // Adjusted index to match existing logic
+            Break;
+          end;
+        end;
+      end;
+
+      if (NewNote <> -1000) then
+      begin
+        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone := NewNote;
+        // Play Midi
+        PlaySentenceMidi := false;
+        PlayVideo := false;
+        midinotefound := false;
+        PlayOne := true;
+        PlayOneMidi := true;
+        StopVideoPreview();
+        {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
+        MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
+        MidiStop := GetTimeFromBeat(
+          Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
+          Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration); {$ENDIF}
+        LastClick := -100;
+      end; //if (NewNote != -1000)
     end; //case
   end; //if (PressedDown)
 end;
@@ -4711,6 +4686,11 @@ begin
 
   // in notes place -> for move notes by mouse
   //NotesBackgroundId := AddSelectSlide(Theme.EditSub.NotesBackground, i, Empty);
+
+  // Initialize Piano Keys to default values
+  PianoKeysLow := Ini.PianoKeysLow;
+  PianoKeysHigh := Ini.PianoKeysHigh;
+
 end;
 
 procedure TScreenEditSub.OnShow;
