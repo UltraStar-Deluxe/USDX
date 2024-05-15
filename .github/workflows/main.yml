@@ -45,8 +45,11 @@ jobs:
           if-no-files-found: error
 
   build_mac:
-    name: Build for MacOS
-    runs-on: macos-13
+    name: Build for MacOS (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-13, macos-14]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -54,6 +57,13 @@ jobs:
         run: |
           VNAME=$(cat VERSION | sed "s/+dev$/+dev-$(git rev-parse --short HEAD)/")
           echo "versionName=$VNAME" >> $GITHUB_ENV
+      - name: Determine Arch
+        run: |
+          if [ "${{ matrix.os }}" = "macos-13" ]; then
+            echo "arch=x86" >> $GITHUB_ENV
+          else
+            echo "arch=ARM" >> $GITHUB_ENV
+          fi
       - name: Install Dependencies
         run: |
           brew install fpc sdl2 sdl2_image automake portaudio lua ffmpeg
@@ -62,12 +72,12 @@ jobs:
           ./autogen.sh
           ./configure
           make macosx-dmg
-          mv UltraStarDeluxe.dmg UltraStarDeluxe-${{ env.versionName }}.dmg
+          mv UltraStarDeluxe.dmg UltraStarDeluxe-${{ env.arch }}-${{ env.versionName }}.dmg
       - name: Upload Image Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MAC-UltraStarDeluxe-image-${{ env.versionName }}
-          path: UltraStarDeluxe-${{ env.versionName }}.dmg
+          name: MAC-${{ env.arch }}-UltraStarDeluxe-image-${{ env.versionName }}
+          path: UltraStarDeluxe-${{ env.arch }}-${{ env.versionName }}.dmg
           if-no-files-found: error
 
   build_linux:
