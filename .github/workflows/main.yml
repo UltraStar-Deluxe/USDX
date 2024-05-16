@@ -17,8 +17,8 @@ jobs:
           choco install wget --no-progress
           wget -q https://github.com/newpascal/newpascal/releases/download/np-v1.0.50/newpascal.zip
           7z x -y "newpascal.zip" -o"C:\" > nul
-          wget "https://netcologne.dl.sourceforge.net/project/nsis/NSIS%203/3.04/nsis-3.04-setup.exe"
-          ./nsis-3.04-setup.exe /S
+          wget "https://netcologne.dl.sourceforge.net/project/nsis/NSIS%203/3.05/nsis-3.05-setup.exe"
+          ./nsis-3.05-setup.exe /S
       - name: Build
         run: |
           c:\newpascal\configure.bat
