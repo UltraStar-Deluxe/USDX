@@ -2591,14 +2591,15 @@ begin
 
   if PressedDown then
   begin
-    Log.LogWarn('Pressed Key' + IntToStr(PressedKey), 'ScreenEditSub');
     // check special keys
     case PressedKey of
       SDLK_ESCAPE, SDLK_F6:
         begin
           PianoEditMode := false;
         end;
-      else
+    end;
+    if PianoEditMode = true then
+    begin
       for i := Low(PianoKeysLow) to High(PianoKeysLow) do
       begin
         if PressedKey = PianoKeysLow[i] then
@@ -2619,7 +2620,7 @@ begin
         end;
       end;
 
-      if (NewNote <> -1000) then
+      if NewNote <> -1000 then
       begin
         Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone := NewNote;
         // Play Midi
@@ -2635,8 +2636,10 @@ begin
           Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
           Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration); {$ENDIF}
         LastClick := -100;
-      end; //if (NewNote != -1000)
-    end; //case
+      end
+      else
+        Result := False;
+    end; //if (PianoEditMode)
   end; //if (PressedDown)
 end;
 
