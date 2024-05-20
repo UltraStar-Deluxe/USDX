@@ -938,7 +938,7 @@ begin
       end
 
       // Karaoke Mp3
-      else if (Identifier = 'INSTRUMENTALS') or (Identifier = 'KARAOKE') then
+      else if Identifier = 'INSTRUMENTAL' then
       begin
         EncFile := DecodeFilename(Value);
         if (self.Path.Append(EncFile).IsFile) then
