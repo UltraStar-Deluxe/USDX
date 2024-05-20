@@ -368,7 +368,7 @@ begin
   Credits_X      := 580;
 
   { open credits tune, we play it after initial delay }
-  AudioPlayback.Open(soundpath.Append('wome-credits-tune.mp3')); // thank you wetue
+  AudioPlayback.Open(soundpath.Append('wome-credits-tune.mp3'),nil); // thank you wetue
 
   { reset twinkling stars }
   GoldenRec.KillAll;
@@ -893,7 +893,7 @@ begin
   begin
     CTime_hold := 0;
     AudioPlayback.Stop;
-    AudioPlayback.Open(SoundPath.Append('credits-outro-tune.mp3'));
+    AudioPlayback.Open(SoundPath.Append('credits-outro-tune.mp3'),nil);
     AudioPlayback.SetVolume(0.2);
     AudioPlayback.SetLoop(true);
     AudioPlayback.Play;
@@ -1267,10 +1267,6 @@ begin
   GoldenRec.Spawn(NameX + RandomRange(-NameW div 2, NameW div 2), NameY - NameH/2 + (1 - Progress) * NameH, 1, 16, 0, -1, PerfectLineTwinkle, 1);
   GoldenRec.Spawn(NameX + RandomRange(-NameW div 2, NameW div 2), NameY - NameH/2 + (1 - Progress) * NameH, 1, 16, 0, -1, PerfectLineTwinkle, 5);
 end;
-
-{ beat detection algorithm
-  based on a tutorial from Frédéric Patin on gamedev.net
-  http://www.gamedev.net/reference/programming/features/beatdetection/default.asp }
 
 { calculates average value of a history buffer }
 function Average(History: TEnergyHistory): single;
