@@ -551,6 +551,11 @@ begin
         Pause;
       end;
 
+      SDLK_K:
+      begin
+        AudioPlayback.ToggleKaraoke;
+      end;
+
       SDLK_RIGHT:
       begin
         if (SDL_ModState = KMOD_LCTRL) then // seek 5 seconds forward
@@ -870,7 +875,7 @@ begin
   PlayMidi := false;
   MidiFadeIn := false;
 
-  AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio));
+  AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio),CurrentSong.Path.Append(CurrentSong.Karaoke));
   if ScreenSong.Mode = smMedley then
     AudioPlayback.SetVolume(0.1)
   else
