@@ -2174,7 +2174,7 @@ procedure TScreenJukebox.Play();
 var
   I: integer;
 begin
-    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3),nil);
     AudioPlayback.SetVolume(1.0);
 
     //AudioPlayback.Position := CurrentSong.Start;

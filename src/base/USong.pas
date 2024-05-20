@@ -125,6 +125,7 @@ type
     Mp3:        IPath;
     Background: IPath;
     Video:      IPath;
+    Karaoke:    IPath;
 
     // sorting methods
     Genre:      UTF8String;
@@ -876,6 +877,7 @@ begin
         if (Self.Path.Append(EncFile).IsFile) then
         begin
           self.Mp3 := EncFile;
+          self.Karaoke := EncFile;
           
           //Add Mp3 Flag to Done
           Done := Done or 4;
@@ -933,6 +935,14 @@ begin
           self.Video := EncFile
         else
           Log.LogError('Can''t find video file in song: ' + FullFileName);
+      end
+
+      // Karaoke Mp3
+      else if (Identifier = 'INSTRUMENTALS' or Identifier = 'KARAOKE') then
+      begin
+        EncFile := DecodeFilename(Value);
+        if (self.Path.Append(EncFile).IsFile) then
+          self.Karaoke := EncFile
       end
 
       // Video Gap

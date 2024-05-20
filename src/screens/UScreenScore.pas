@@ -1827,7 +1827,7 @@ begin
     begin
       AudioPlayback.Close;
 
-      if AudioPlayback.Open(CatSongs.Song[select].Path.Append(CatSongs.Song[select].Mp3)) then
+      if AudioPlayback.Open(CatSongs.Song[select].Path.Append(CatSongs.Song[select].Mp3),nil) then
       begin
         if (CatSongs.Song[select].PreviewStart > 0) then
           AudioPlayback.Position := CatSongs.Song[select].PreviewStart
