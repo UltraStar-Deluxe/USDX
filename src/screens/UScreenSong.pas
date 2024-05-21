@@ -57,6 +57,7 @@ uses
 
 type
   TVisArr = array of integer;
+  CardinalArray = array of cardinal;
 
   TScreenSong = class(TMenu)
     private
@@ -76,6 +77,9 @@ type
 
       LastSelectMouse: integer;
       LastSelectTime: integer;
+
+      RandomSongOrder: CardinalArray;
+      NextRandomSongIdx: cardinal;
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
@@ -645,6 +649,24 @@ var
   VerifySong, WebList: string;
   Fix: boolean;
   VS: integer;
+
+  function RandomPermute(Num: integer): CardinalArray;
+  var
+    Ordered: array of cardinal;
+    Idx, i: cardinal;
+  begin
+    SetLength(Ordered, Num);
+    SetLength(Result, Num);
+    for i := 0 to Num-1 do Ordered[i] := i;
+    for i := 0 to Num-1 do
+    begin
+      Idx := Random(Num);
+      Result[i] := Ordered[Idx];
+      Delete(Ordered, Idx, 1);
+      Dec(Num);
+    end;
+  end;
+
 begin
   Result := true;
 
@@ -919,7 +941,6 @@ begin
 
       SDLK_R:
         begin
-          Randomize;
           if (Songs.SongList.Count > 0) and
              (FreeListMode) then
           begin
@@ -987,7 +1008,13 @@ begin
             end
             else // random in one category
             begin
-              SkipTo(Random(CatSongs.VisibleSongs));
+              if NextRandomSongIdx >= CatSongs.VisibleSongs then
+              begin
+                NextRandomSongIdx := 0;
+                RandomSongOrder := RandomPermute(CatSongs.VisibleSongs);
+              end;
+              SkipTo(RandomSongOrder[NextRandomSongIdx]);
+              Inc(NextRandomSongIdx);
             end;
             AudioPlayback.PlaySound(SoundLib.Change);
 
@@ -1814,6 +1841,8 @@ begin
 
   LastSelectMouse := 0;
   LastSelectTime := 0;
+
+  NextRandomSongIdx := CatSongs.VisibleSongs
 
 end;
 
