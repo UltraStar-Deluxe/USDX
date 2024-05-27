@@ -1,39 +1,41 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <PathDelim Value="/"/>
-    <Version Value="7"/>
+    <Version Value="12"/>
     <General>
       <Flags>
         <MainUnitHasCreateFormStatements Value="False"/>
         <MainUnitHasTitleStatement Value="False"/>
+        <MainUnitHasScaledStatement Value="False"/>
         <LRSInOutputDirectory Value="False"/>
+        <CompatibilityMode Value="True"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <MainUnit Value="0"/>
-      <TargetFileExt Value=""/>
       <Title Value="ultrastardx"/>
     </General>
-    <VersionInfo>
-      <ProjectVersion Value=""/>
-    </VersionInfo>
+    <BuildModes Count="1">
+      <Item1 Name="default" Default="True"/>
+    </BuildModes>
     <PublishOptions>
       <Version Value="2"/>
-      <IgnoreBinaries Value="False"/>
-      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
-      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
     </PublishOptions>
     <RunParams>
       <local>
-        <FormatVersion Value="1"/>
-        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T &apos;Lazarus Run Output&apos; -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
+      <FormatVersion Value="2"/>
+      <Modes Count="1">
+        <Mode0 Name="default">
+          <local>
+            <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T &apos;Lazarus Run Output&apos; -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+          </local>
+        </Mode0>
+      </Modes>
     </RunParams>
-    <Units Count="125">
+    <Units Count="172">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ultrastardx"/>
       </Unit0>
       <Unit1>
         <Filename Value="base/TextGL.pas"/>
@@ -130,7 +132,6 @@
       <Unit24>
         <Filename Value="base/UMain.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UMain"/>
       </Unit24>
       <Unit25>
         <Filename Value="base/UMusic.pas"/>
@@ -211,17 +212,14 @@
       <Unit44>
         <Filename Value="base/UThemes.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UThemes"/>
       </Unit44>
       <Unit45>
         <Filename Value="base/UTime.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UTime"/>
       </Unit45>
       <Unit46>
         <Filename Value="lua/ULuaUtils.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULuaUtils"/>
       </Unit46>
       <Unit47>
         <Filename Value="menu/UDisplay.pas"/>
@@ -290,7 +288,6 @@
       <Unit63>
         <Filename Value="screens/UScreenCredits.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UScreenCredits"/>
       </Unit63>
       <Unit64>
         <Filename Value="screens/UScreenEdit.pas"/>
@@ -488,12 +485,10 @@
       <Unit112>
         <Filename Value="media/UVideo.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UVideo"/>
       </Unit112>
       <Unit113>
         <Filename Value="media/UVisualizer.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UVisualizer"/>
       </Unit113>
       <Unit114>
         <Filename Value="config-linux.inc"/>
@@ -510,64 +505,245 @@
       <Unit117>
         <Filename Value="lua/UHookableEvent.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UHookableEvent"/>
       </Unit117>
       <Unit118>
         <Filename Value="lua/ULuaCore.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULuaCore"/>
       </Unit118>
       <Unit119>
         <Filename Value="lua/ULuaGl.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULuaGl"/>
       </Unit119>
       <Unit120>
         <Filename Value="lua/ULuaLog.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULuaLog"/>
       </Unit120>
       <Unit121>
         <Filename Value="lua/ULuaParty.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULuaParty"/>
       </Unit121>
       <Unit122>
         <Filename Value="lua/ULuaScreenSing.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULuaScreenSing"/>
       </Unit122>
       <Unit123>
         <Filename Value="lua/ULuaTextGL.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULuaTextGL"/>
       </Unit123>
       <Unit124>
         <Filename Value="lua/ULuaTexture.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULuaTexture"/>
       </Unit124>
+      <Unit125>
+        <Filename Value="lua/ULuaUsdx.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit125>
+      <Unit126>
+        <Filename Value="base/UFilesystem.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit126>
+      <Unit127>
+        <Filename Value="lib/ctypes/ctypes.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit127>
+      <Unit128>
+        <Filename Value="lib/anyascii/anyascii.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit128>
+      <Unit129>
+        <Filename Value="lib/SQLite/SQLiteTable3.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit129>
+      <Unit130>
+        <Filename Value="lib/SQLite/SQLite3.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit130>
+      <Unit131>
+        <Filename Value="lib/SDL2/sdl2.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit131>
+      <Unit132>
+        <Filename Value="lib/SDL2/SDL2_image.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit132>
+      <Unit133>
+        <Filename Value="lib/dglOpenGL/dglOpenGL.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit133>
+      <Unit134>
+        <Filename Value="lib/zlib/zlib.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit134>
+      <Unit135>
+        <Filename Value="lib/freetype/freetype.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit135>
+      <Unit136>
+        <Filename Value="lib/Lua/ULua.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit136>
+      <Unit137>
+        <Filename Value="base/UPathUtils.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit137>
+      <Unit138>
+        <Filename Value="base/UNote.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit138>
+      <Unit139>
+        <Filename Value="base/UBeatTimer.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit139>
+      <Unit140>
+        <Filename Value="base/UUnicodeUtils.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit140>
+      <Unit141>
+        <Filename Value="base/uunicodestringhelper.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit141>
+      <Unit142>
+        <Filename Value="base/UTextEncoding.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit142>
+      <Unit143>
+        <Filename Value="base/UPath.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit143>
+      <Unit144>
+        <Filename Value="base/UHelp.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit144>
+      <Unit145>
+        <Filename Value="lib/fft/UFFT.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit145>
+      <Unit146>
+        <Filename Value="media/UAudioInput_SDL.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit146>
+      <Unit147>
+        <Filename Value="screens/controllers/UScreenSingController.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit147>
+      <Unit148>
+        <Filename Value="screens/views/UScreenSingView.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit148>
+      <Unit149>
+        <Filename Value="screens/UScreenJukebox.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit149>
+      <Unit150>
+        <Filename Value="screens/UScreenOptionsInput.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit150>
+      <Unit151>
+        <Filename Value="screens/UScreenOptionsNetwork.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit151>
+      <Unit152>
+        <Filename Value="screens/UScreenOptionsWebcam.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit152>
+      <Unit153>
+        <Filename Value="screens/UScreenOptionsJukebox.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit153>
+      <Unit154>
+        <Filename Value="screens/UScreenPartyRounds.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit154>
+      <Unit155>
+        <Filename Value="webSDK/UWebSDK.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit155>
+      <Unit156>
+        <Filename Value="lib/openCV/opencv_highgui.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit156>
+      <Unit157>
+        <Filename Value="lib/openCV/opencv_core.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit157>
+      <Unit158>
+        <Filename Value="lib/openCV/opencv_imgproc.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit158>
+      <Unit159>
+        <Filename Value="lib/openCV/opencv_types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit159>
+      <Unit160>
+        <Filename Value="menu/UMenuStaticList.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit160>
+      <Unit161>
+        <Filename Value="base/UWebcam.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit161>
+      <Unit162>
+        <Filename Value="base/UPartyTournament.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit162>
+      <Unit163>
+        <Filename Value="screens/UScreenPartyTournamentRounds.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit163>
+      <Unit164>
+        <Filename Value="screens/UScreenPartyTournamentPlayer.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit164>
+      <Unit165>
+        <Filename Value="screens/UScreenPartyTournamentOptions.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit165>
+      <Unit166>
+        <Filename Value="screens/UScreenPartyTournamentWin.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit166>
+      <Unit167>
+        <Filename Value="screens/UScreenJukeboxOptions.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit167>
+      <Unit168>
+        <Filename Value="screens/UScreenJukeboxPlaylist.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit168>
+      <Unit169>
+        <Filename Value="base/UAvatars.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit169>
+      <Unit170>
+        <Filename Value="screens/UScreenAbout.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit170>
+      <Unit171>
+        <Filename Value="base/UWebServer.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit171>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
-    <Version Value="8"/>
+    <Version Value="11"/>
     <Target>
       <Filename Value="../game/ultrastardx"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="lib/JEDI-SDL/SDL/Pas/"/>
-      <OtherUnitFiles Value="base/;menu/;screens/;media/;lib/;lua/"/>
+      <IncludeFiles Value="lib/JEDI-SDL/SDL/Pas"/>
+      <OtherUnitFiles Value="base;menu;screens;media;lib;lua"/>
       <UnitOutputDirectory Value="../build/fpc-$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
       <SyntaxOptions>
         <CStyleOperator Value="False"/>
         <AllowLabel Value="False"/>
+        <UseAnsiStrings Value="False"/>
       </SyntaxOptions>
     </Parsing>
     <Linking>
       <Debugging>
-        <GenerateDebugInfo Value="True"/>
+        <DebugInfoType Value="dsDwarf3"/>
       </Debugging>
     </Linking>
     <Other>
@@ -575,7 +751,6 @@
         <ShowNotes Value="False"/>
         <ShowHints Value="False"/>
       </Verbosity>
-      <CompilerPath Value="$(CompPath)"/>
       <ExecuteBefore>
         <Command Value="/usr/bin/make"/>
         <ScanForFPCMsgs Value="True"/>
