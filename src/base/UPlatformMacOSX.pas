@@ -38,7 +38,8 @@ uses
   ULog,
   UPlatform,
   UFilesystem,
-  UPath;
+  UPath,
+  UConfig;
 
 type
   {**
@@ -62,7 +63,7 @@ type
    * However, this requires USDX to offer the handling of the resources. Until
    * this is implemented, the second best solution is as follows:
    *
-   * According to Aple guidelines handling of resources and folders should follow
+   * According to Apple guidelines handling of resources and folders should follow
    * these lines:
    *
    * Acceptable places for files are folders named UltraStarDeluxe either in
@@ -72,21 +73,21 @@ type
    *
    * So
    * GetGameSharedPath could return
-   *   /Library/Application Support/UltraStarDeluxe1.3/.
+   *   /Library/Application Support/UltraStarDeluxe_{USDX_VERSION}/.
    * GetGameUserPath could return
-   *   ~/Library/Application Support/UltraStarDeluxe1.3/.
+   *   ~/Library/Application Support/UltraStarDeluxe_{USDX_VERSION}/.
    *
-   * Right now, only $HOME/Library/Application Support/UltraStarDeluxe1.3
+   * Right now, only $HOME/Library/Application Support/UltraStarDeluxe_{USDX_VERSION}
    * is used. So every user needs the complete set of files and folders.
    * Future versions may also use shared resources in
-   * /Library/Application Support/UltraStarDeluxe1.3. However, this is
+   * /Library/Application Support/UltraStarDeluxe_{USDX_VERSION}. However, this is
    * not treated yet in the code outside this unit.
    *
    * USDX checks, whether GetGameUserPath exists. If not, USDX creates it.
    * The existence of needed files is then checked and if a file is missing
    * it is copied to there from within the folder Contents in the Application
    * bundle, which contains the default files. USDX should not delete files or
-   * folders in Application Support/UltraStarDeluxe1.3 automatically or without
+   * folders in Application Support/UltraStarDeluxe_{USDX_VERSION} automatically or without
    * user confirmation.
    *
    * The log and benchmark files are stored in
@@ -94,7 +95,7 @@ type
    * 
    * Music should go into ~/Music/UltraStar Deluxe/
    *
-   * ~/Library/Application Support/UltraStarDeluxe1.3/songs is also used.
+   * ~/Library/Application Support/UltraStarDeluxe_{USDX_VERSION}/songs is also used.
    * The idea is to remove this at some time.
    *
    *}
@@ -108,7 +109,7 @@ type
 
       {**
        * GetApplicationSupportPath returns the path to
-       * $HOME/Library/Application Support/UltraStarDeluxe1.3.
+       * $HOME/Library/Application Support/UltraStarDeluxe_{USDX_VERSION}.
        *}
       function GetApplicationSupportPath: IPath;
 
@@ -126,7 +127,7 @@ type
       {**
        * Init simply calls @link(CreateUserFolders), which in turn scans the
        * folder UltraStarDeluxe.app/Contents for all files and
-       * folders. $HOME/Library/Application Support/UltraStarDeluxe1.3
+       * folders. $HOME/Library/Application Support/UltraStarDeluxe_{USDX_VERSION}
        * is then checked for their presence and missing ones are copied.
        *}
       procedure Init; override;
@@ -145,14 +146,14 @@ type
 
       {**
        * GetGameSharedPath returns the path for shared resources. Currently it
-       * is also set to $HOME/Library/Application Support/UltraStarDeluxe1.3.
+       * is also set to $HOME/Library/Application Support/UltraStarDeluxe_{USDX_VERSION}.
        * However it is not used.
        *}
       function  GetGameSharedPath: IPath; override;
 
       {**
        * GetGameUserPath returns the path for user resources. Currently it is
-       * set to $HOME/Library/Application Support/UltraStarDeluxe1.3.
+       * set to $HOME/Library/Application Support/UltraStarDeluxe_{USDX_VERSION}.
        * This is where a user can add themes, ....
        *}
       function  GetGameUserPath:   IPath; override;
@@ -233,7 +234,7 @@ begin
   BaseDir := BaseDir.Append('Contents');
   FileSystem.SetCurrentDir(BaseDir);
 
-  // Right now, only $HOME/Library/Application Support/UltraStarDeluxe1.3 is used.
+  // Right now, only $HOME/Library/Application Support/UltraStarDeluxe_{USDX_VERSION} is used.
   UserPath := GetGameUserPath();
   if LogSwitch = On then
     writeln('User path: ' + UserPath.ToNative);
@@ -322,7 +323,7 @@ end;
 function TPlatformMacOSX.GetApplicationSupportPath: IPath;
 begin
 // append the version for conflict resolution
-  Result := GetHomeDir.Append('Library/Application Support/UltraStarDeluxe1.3', pdAppend);
+  Result := GetHomeDir.Append('Library/Application Support/UltraStarDeluxe' + USDX_VERSION, pdAppend);
 end;
 
 function TPlatformMacOSX.GetLogPath: IPath;
