@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Song List</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f8ff; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #add8e6; cursor: pointer; }
+        tr:hover { background-color: #d1e7f3; }
+        input { margin-bottom: 12px; padding: 8px; width: 100%; }
+    </style>
+    <script>
+        function filterSongs() {
+            var input, filter, table, tr, td, i, j, txtValue;
+            input = document.getElementById("songFilter");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("songTable");
+            tr = table.getElementsByTagName("tr");
+            for (i = 1; i < tr.length; i++) {
+                tr[i].style.display = "none";
+                td = tr[i].getElementsByTagName("td");
+                for (j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            tr[i].style.display = "";
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        function sortTable(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("songTable");
+            switching = true;
+            dir = "asc";
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i+1].getElementsByTagName("TD")[n];
+                    if (dir == "asc") {
+                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount ++;
+                } else {
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Song List</h1>
+    <input type="text" id="songFilter" onkeyup="filterSongs()" placeholder="Search for songs...">
+    <table id="songTable">
+        <tr>
+            <th onclick="sortTable(0)">Artist</th>
+            <th onclick="sortTable(1)">Title</th>
+            <th onclick="sortTable(2)">Edition</th>
+            <th onclick="sortTable(3)">Genre</th>
+            <th onclick="sortTable(4)">Year</th>
+        </tr>
+        <!--SONG_ROWS-->
+    </table>
+</body>
+</html>
