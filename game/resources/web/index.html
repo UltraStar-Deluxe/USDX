@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Song List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #add8e6;
+        }
+        input {
+            margin-bottom: 12px;
+            padding: 8px;
+            width: 100%;
+        }
+    </style>
+
+    <link rel="stylesheet" href="/datatables.min.css" />
+ 
+    <script src="/jquery.min.js"></script>
+    <script src="/datatables.min.js"></script>
+</head>
+<body>
+    <h1>Song List</h1>
+    <table id="songTable" class="hover stripe">
+        <thead>
+            <tr>
+                <th>Artist</th>
+                <th>Title</th>
+                <th>Edition</th>
+                <th>Genre</th>
+                <th>Year</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!--SONG_ROWS-->
+        </tbody>
+    </table>
+
+    <script>
+        let table = new DataTable('#songTable', {
+            // default entries per page
+            pageLength: 25,
+            layout: {
+                top: {
+                    search: {
+                        text: '',
+                        placeholder: 'Search for songs…'
+                    }
+                },
+                topStart: null,
+                topEnd: null,
+                bottomStart: [
+                    {
+                        pageLength: {
+                            menu: [ 10, 25, 50, 100 ]
+                        }
+                    },
+                ],
+                bottom2: {
+                    info: {
+                        text: 'Showing _START_ to _END_ of _TOTAL_ songs'
+                    }
+                },
+                bottomEnd: {
+                    paging: {
+                        // numbers: 6
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

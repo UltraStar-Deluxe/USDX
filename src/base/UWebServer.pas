@@ -28,17 +28,20 @@ unit UWebServer;
 interface
 
 uses
-  Classes, SysUtils, fphttpserver, HTTPDefs, USongs, USong, UPlatform, UPath;
+  Classes, SysUtils, fphttpserver, httproute, HTTPDefs, USongs, USong, UPlatform, UPath;
 
 type
   TWebServer = class(TThread)
   private
     FServer: TFPHTTPServer;
+    FRouter: THTTPRouter;
     FPort: Integer;
   protected
     procedure Execute; override;
     procedure HandleRequest(Sender: TObject; var ARequest: TFPHTTPConnectionRequest;
                              var AResponse: TFPHTTPConnectionResponse);
+    procedure routeSongList(ARequest: TRequest; AResponse: TResponse);
+    procedure routeFile(ARequest: TRequest; AResponse: TResponse);
     function GenerateHTMLWithSongs: string;
     function LoadTemplate: string;
   public
@@ -60,9 +63,66 @@ begin
   inherited Destroy;
 end;
 
+procedure TWebServer.routeSongList(ARequest: TRequest; AResponse: TResponse);
+  var ResponseHTML: String;
+begin
+  AResponse.ContentType := 'text/html; charset=UTF-8';
+  ResponseHTML := GenerateHTMLWithSongs;
+  AResponse.Content := ResponseHTML;
+  AResponse.Code := 200;
+end;
+
+procedure TWebServer.routeFile(ARequest: TRequest; AResponse: TResponse);
+var
+  FileName: string;
+  WebFilePath: IPath;
+  WebFile: TStringList;
+begin
+  FileName := ARequest.URI;
+  while FileName.StartsWith('/') do
+    Delete(FileName, 1, 1);
+  
+  WebFile := TStringList.Create;
+
+  try
+    try
+      WebFilePath := Platform.GetGameUserPath.Append('resources\web\').Append(FileName);
+      WebFile.LoadFromFile(WebFilePath.toNative);
+
+      // MIME type
+      // see https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+      if (FileName.EndsWith('.html')) then
+        AResponse.ContentType := 'text/html; charset=UTF-8'
+      else if (FileName.EndsWith('.js')) then
+        AResponse.ContentType := 'text/javascript; charset=UTF-8'
+      else if (FileName.EndsWith('.css')) then
+        AResponse.ContentType := 'text/css; charset=UTF-8'
+      else if (FileName.EndsWith('.min.map')) then
+        AResponse.ContentType := 'application/json; charset=UTF-8';
+      
+      AResponse.Content := WebFile.Text;
+      AResponse.Code := 200;
+    except
+      on E: Exception do begin
+        AResponse.ContentType := 'text/html; charset=UTF-8';
+        AResponse.Content := '<html><body><h1>404 - File not found</h1></body></html>';
+        AResponse.Code := 404;
+      end;
+    end;
+  finally
+    WebFile.Free;
+  end;
+end;
+
 procedure TWebServer.Execute;
 begin
   FServer := TFPHTTPServer.Create(nil);
+  FRouter := THTTPRouter.Create(nil);
+  FRouter.RegisterRoute('/', rmGET, @routeSongList);
+  FRouter.RegisterRoute('/jquery.min.js', rmGET, @routeFile);
+  FRouter.RegisterRoute('/jquery.min.map', rmGET, @routeFile);
+  FRouter.RegisterRoute('/datatables.min.js', rmGET, @routeFile);
+  FRouter.RegisterRoute('/datatables.min.css', rmGET, @routeFile);
   try
     FServer.OnRequest := @HandleRequest;
     FServer.Port := FPort;
@@ -77,24 +137,8 @@ end;
 
 procedure TWebServer.HandleRequest(Sender: TObject; var ARequest: TFPHTTPConnectionRequest;
                                    var AResponse: TFPHTTPConnectionResponse);
-var
-  ResponseHTML: string;
 begin
-  if ARequest.Method = 'GET' then
-  begin
-    // Serve the HTML page with the list of songs
-    AResponse.ContentType := 'text/html; charset=UTF-8';
-    ResponseHTML := GenerateHTMLWithSongs;
-    AResponse.Content := ResponseHTML;
-    AResponse.Code := 200;
-  end
-  else
-  begin
-    // Method not allowed
-    AResponse.Content := '<h1>Method Not Allowed</h1>';
-    AResponse.ContentType := 'text/html; charset=UTF-8';
-    AResponse.Code := 405;
-  end;
+  FRouter.RouteRequest(ARequest, AResponse);
 end;
 
 function TWebServer.LoadTemplate: string;
@@ -104,7 +148,7 @@ var
 begin
   TemplateFile := TStringList.Create;
   try
-    TemplateFilePath := Platform.GetGameUserPath.Append('resources\songlist_template.html');
+    TemplateFilePath := Platform.GetGameUserPath.Append('resources\web\index.html');
     TemplateFile.LoadFromFile(TemplateFilePath.toNative);
     Result := TemplateFile.Text;
   finally
