@@ -718,6 +718,10 @@ begin
       lua_setfield (State, LUA_REGISTRYINDEX, '_USDX_STATE_ID');
       lua_pop(State, Lua_GetTop(State));
 
+      // make current plugin filename (with absolute path) available to the plugin
+      lua_pushstring(State, PChar(Filename.ToNative));
+      lua_setglobal(State, PChar('current_filename'));
+
       // now run the plugin_init function
       // plugin_init() if false or nothing is returned plugin init is aborted
       if (CallFunctionByName('plugin_init', 0, 1)) then
