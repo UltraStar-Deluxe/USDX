@@ -600,8 +600,7 @@ const
 type
   TSoundLibrary = class
     private
-      // TODO
-      //Sounds: array of TAudioPlaybackStream;
+      Sounds: array of TAudioPlaybackStream;
     public
       // TODO: move sounds to the private section
       // and provide IDs instead.
@@ -622,11 +621,12 @@ type
 
       procedure StartBgMusic();
       procedure PauseBgMusic();
+      
+      function AddSound(Filename: IPath): integer;
       // TODO
-      //function AddSound(Filename: IPath): integer;
       //procedure RemoveSound(ID: integer);
-      //function GetSound(ID: integer): TAudioPlaybackStream;
-      //property Sound[ID: integer]: TAudioPlaybackStream read GetSound; default;
+      function GetSound(ID: integer): TAudioPlaybackStream;
+      property Sound[ID: integer]: TAudioPlaybackStream read GetSound; default;
   end;
 
 var
@@ -1000,7 +1000,16 @@ begin
 end;
 
 procedure TSoundLibrary.UnloadSounds();
+var
+  i: integer;
 begin
+  for i := Low(Sounds) to High(Sounds)do
+  begin
+    FreeAndNil(Sounds[i]);
+  end;
+  SetLength(Sounds, 0); // sounds is now considered empty
+
+  // TODO: put all these into the library via AddSound, then explicit unloading is not neccessary
   FreeAndNil(Start);
   FreeAndNil(Back);
   FreeAndNil(Swoosh);
@@ -1011,7 +1020,25 @@ begin
   FreeAndNil(BGMusic);
 end;
 
-(* TODO
+{
+  loads a file into the sound library
+  returns -1 if loading file fails
+  otherwise returns index for access via GetSound
+}
+function TSoundLibrary.AddSound(Filename: IPath): integer;
+var
+  PlaybackStream: TAudioPlaybackStream;
+begin
+  PlaybackStream := AudioPlayback.OpenSound(Filename);
+  if PlaybackStream <> nil then begin
+    SetLength(Sounds, Length(Sounds) + 1);
+    Sounds[High(Sounds)] := PlaybackStream;
+    result := High(Sounds);
+  end else begin
+    result := -1; // indicate failure to load sound
+  end;
+end;
+
 function TSoundLibrary.GetSound(ID: integer): TAudioPlaybackStream;
 begin
   if ((ID >= 0) and (ID < Length(Sounds))) then
@@ -1019,7 +1046,6 @@ begin
   else
     Result := nil;
 end;
-*)
 
 procedure TSoundLibrary.StartBgMusic();
 begin

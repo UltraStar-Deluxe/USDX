@@ -568,6 +568,10 @@
         <Filename Value="screens\views\UScreenSingView.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit129>
+      <Unit130>
+        <Filename Value="lua\ULuaMusic.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit130>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
