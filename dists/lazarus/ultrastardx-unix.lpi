@@ -555,6 +555,10 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="ULuaUtils"/>
       </Unit126>
+      <Unit127>
+        <Filename Value="lua/ULuaMusic.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit127>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

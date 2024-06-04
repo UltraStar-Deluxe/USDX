@@ -124,7 +124,7 @@ begin
       SDLK_ESCAPE:
         begin
           Visible := false;
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           if (fVisSongs = 0) and (Length(Button[0].Text[0].Text) > 0) then
           begin
             //ScreenSong.UnLoadDetailedCover;

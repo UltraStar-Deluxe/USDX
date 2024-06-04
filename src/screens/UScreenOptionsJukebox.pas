@@ -145,7 +145,7 @@ begin
       SDLK_BACKSPACE :
         begin
           Ini.Save;
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           FadeTo(@ScreenOptions);
         end;
       SDLK_TAB:
@@ -157,7 +157,7 @@ begin
           if SelInteraction = 10 then
           begin
             Ini.Save;
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
             FadeTo(@ScreenOptions);
           end;
         end;
@@ -169,7 +169,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 9) then
           begin
-            AudioPlayback.PlaySound(SoundLib.Option);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
 
             if (SelInteraction >= 7) and (SelInteraction <= 9) then
             begin
@@ -224,7 +224,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 9) then
           begin
-            AudioPlayback.PlaySound(SoundLib.Option);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
 
             if (SelInteraction >= 7) and (SelInteraction <= 9) then
             begin

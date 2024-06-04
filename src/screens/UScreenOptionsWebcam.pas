@@ -101,7 +101,7 @@ begin
         begin
           if (PreVisualization) then Webcam.Release;
           //Ini.Save;
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           FadeTo(@ScreenOptions);
           Ini.SaveWebcamSettings;
         end;
@@ -142,7 +142,7 @@ begin
 
           if SelInteraction = 9 then
           begin
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
             FadeTo(@ScreenOptions);
             Ini.SaveWebcamSettings;
             if (PreVisualization) then Webcam.Release;
@@ -156,7 +156,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 7) then
           begin
-            AudioPlayback.PlaySound(SoundLib.Option);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
             InteractInc;
           end;
 
@@ -172,7 +172,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 7) then
           begin
-            AudioPlayback.PlaySound(SoundLib.Option);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
             InteractDec;
           end;
 

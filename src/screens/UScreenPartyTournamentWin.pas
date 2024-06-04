@@ -98,7 +98,7 @@ begin
       SDLK_BACKSPACE,
       SDLK_RETURN :
         begin
-          AudioPlayback.PlaySound(SoundLib.Start);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
 
           if ((StrToInt(Text[TextScorePlayer1].Text) > PartyTournament.Rounds[PartyTournament.Phase] / 2) or (StrToInt(Text[TextScorePlayer2].Text) > PartyTournament.Rounds[PartyTournament.Phase] / 2)) then
           begin

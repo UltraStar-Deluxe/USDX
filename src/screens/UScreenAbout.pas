@@ -80,7 +80,7 @@ begin
     case PressedKey of
       SDLK_C:
         begin
-          FadeTo(@ScreenCredits, SoundLib.Start);
+          FadeTo(@ScreenCredits, SoundLib.GetSound(SOUNDNAME_START));
           Exit;
         end;
 
@@ -97,7 +97,7 @@ begin
       SDLK_BACKSPACE :
         begin
           Ini.Save;
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           FadeTo(@ScreenMain);
         end;
       SDLK_TAB:
@@ -109,14 +109,14 @@ begin
           //Exit Button Pressed
           if Interaction = 1 then
           begin
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
             FadeTo(@ScreenMain);
           end;
 
           // ultrastar deluxe team credits
           if Interaction = 0 then
           begin
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
             FadeTo(@ScreenCredits);
           end;
         end;

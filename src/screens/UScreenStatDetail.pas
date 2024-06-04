@@ -96,7 +96,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           FadeTo(@ScreenStatMain);
         end;
       SDLK_TAB:
@@ -127,7 +127,7 @@ begin
 
           if Interaction = 3 then
           begin
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
             FadeTo(@ScreenStatMain);
           end;
         end;

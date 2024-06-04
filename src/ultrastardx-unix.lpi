@@ -551,6 +551,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="ULuaUsdx"/>
       </Unit125>
+      <Unit125>
+        <Filename Value="lua/ULuaMusic.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaMusic"/>
+      </Unit125>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

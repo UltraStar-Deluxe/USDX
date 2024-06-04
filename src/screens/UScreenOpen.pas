@@ -118,7 +118,7 @@ begin
         begin
           //Empty Filename and go to last Screen
           fFileName := PATH_NONE;
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           FadeTo(fBackScreen);
         end;
 
@@ -132,14 +132,14 @@ begin
           begin
             //Update Filename and go to last Screen
             fFileName := Path(Button[0].Text[0].Text);
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
             FadeTo(fBackScreen);
           end
           else if (Interaction = 2) then
           begin
             //Empty Filename and go to last Screen
             fFileName := PATH_NONE;
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
             FadeTo(fBackScreen);
           end;
         end;

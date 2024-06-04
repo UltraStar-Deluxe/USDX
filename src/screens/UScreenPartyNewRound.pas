@@ -126,7 +126,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           CheckFadeTo(@ScreenMain,'MSG_END_PARTY');
         end;
 
@@ -137,7 +137,7 @@ begin
 
       SDLK_RETURN:
         begin
-          AudioPlayback.PlaySound(SoundLib.Start);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
           Party.CallBeforeSongSelect;
         end;
 

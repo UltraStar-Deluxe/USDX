@@ -219,6 +219,7 @@ begin
     FreeAndNil(DecodeStream);
     Exit;
   end;
+  PlaybackStream.SourceName := Filename.ToNative;
 
   PlaybackStream.AddOnCloseHandler(OnClosePlaybackStream);
 

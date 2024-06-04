@@ -157,7 +157,7 @@ begin
   // start party game
   if (Party.StartGame(GameRounds)) then
   begin
-    FadeTo(@ScreenPartyNewRound, SoundLib.Start);
+    FadeTo(@ScreenPartyNewRound, SoundLib.GetSound(SOUNDNAME_START));
   end
   else
   begin
@@ -185,7 +185,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE:
         begin
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           FadeTo(@ScreenPartyPlayer);
         end;
 
@@ -203,7 +203,7 @@ begin
       SDLK_UP:      InteractPrev;
       SDLK_RIGHT:
         begin
-          AudioPlayback.PlaySound(SoundLib.Option);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
           InteractInc;
 
           if Interaction = 0 then
@@ -213,7 +213,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          AudioPlayback.PlaySound(SoundLib.Option);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
           InteractDec;
 
           if Interaction = 0 then

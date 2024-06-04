@@ -101,7 +101,7 @@ begin
       SDLK_BACKSPACE,
       SDLK_RETURN:
         begin
-          AudioPlayback.PlaySound(SoundLib.Start);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
           FadeTo(@ScreenMain);
         end;
       SDLK_TAB:

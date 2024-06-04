@@ -106,7 +106,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           FadeTo(@ScreenMain);
         end;
 
@@ -149,7 +149,7 @@ begin
       SDLK_UP:      InteractPrev;
       SDLK_RIGHT:
         begin
-          AudioPlayback.PlaySound(SoundLib.Option);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
           InteractInc;
 
           //Change Playlist2 if Playlist is Changed
@@ -161,7 +161,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          AudioPlayback.PlaySound(SoundLib.Option);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
           InteractDec;
 
           //Change Playlist2 if Playlist is Changed
@@ -274,7 +274,7 @@ var
   I, J: integer;
 begin
   ScreenSong.Mode := smJukebox;
-  AudioPlayback.PlaySound(SoundLib.Start);
+  AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
 
   SetLength(ScreenJukebox.JukeboxSongsList, 0);
   SetLength(ScreenJukebox.JukeboxVisibleSongs, 0);

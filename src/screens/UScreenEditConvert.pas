@@ -249,7 +249,7 @@ begin
           if (MidiFile <> nil) then
             MidiFile.StopPlaying;
           {$ENDIF}
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           FadeTo(@ScreenEdit);
         end;
 
@@ -258,7 +258,7 @@ begin
           if Interaction = 0 then // open
           begin
             IsFileOpen := true;
-            AudioPlayback.PlaySound(SoundLib.Start);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
             ScreenOpen.Filename := GamePath.Append('file.mid');
             ScreenOpen.BackScreen := @ScreenEditConvert;
             FadeTo(@ScreenOpen);

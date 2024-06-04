@@ -96,49 +96,49 @@ begin
     case PressedKey of
       SDLK_G:
         begin
-          FadeTo(@ScreenOptionsGame, SoundLib.Start);
+          FadeTo(@ScreenOptionsGame, SoundLib.GetSound(SOUNDNAME_START));
           Exit;
         end;
 
       SDLK_H:
         begin
-          FadeTo(@ScreenOptionsGraphics, SoundLib.Start);
+          FadeTo(@ScreenOptionsGraphics, SoundLib.GetSound(SOUNDNAME_START));
           Exit;
         end;
 
       SDLK_S:
         begin
-          FadeTo(@ScreenOptionsSound, SoundLib.Start);
+          FadeTo(@ScreenOptionsSound, SoundLib.GetSound(SOUNDNAME_START));
           Exit;
         end;
 
       SDLK_I:
         begin
-          FadeTo(@ScreenOptionsInput, SoundLib.Start);
+          FadeTo(@ScreenOptionsInput, SoundLib.GetSound(SOUNDNAME_START));
           Exit;
         end;
 
       SDLK_L:
         begin
-          FadeTo(@ScreenOptionsLyrics, SoundLib.Start);
+          FadeTo(@ScreenOptionsLyrics, SoundLib.GetSound(SOUNDNAME_START));
           Exit;
         end;
 
       SDLK_T:
         begin
-          FadeTo(@ScreenOptionsThemes, SoundLib.Start);
+          FadeTo(@ScreenOptionsThemes, SoundLib.GetSound(SOUNDNAME_START));
           Exit;
         end;
 
       SDLK_R:
         begin
-          FadeTo(@ScreenOptionsRecord, SoundLib.Start);
+          FadeTo(@ScreenOptionsRecord, SoundLib.GetSound(SOUNDNAME_START));
           Exit;
         end;
 
       SDLK_A:
         begin
-          FadeTo(@ScreenOptionsAdvanced, SoundLib.Start);
+          FadeTo(@ScreenOptionsAdvanced, SoundLib.GetSound(SOUNDNAME_START));
           Exit;
         end;
 
@@ -148,7 +148,7 @@ begin
             ScreenPopupError.ShowPopup(Language.Translate('SING_OPTIONS_NETWORK_NO_DLL'))
           else
           begin
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
             FadeTo(@ScreenOptionsNetwork);
           end;
           Exit;
@@ -156,13 +156,13 @@ begin
 
       SDLK_W:
         begin
-          FadeTo(@ScreenOptionsWebcam, SoundLib.Start);
+          FadeTo(@ScreenOptionsWebcam, SoundLib.GetSound(SOUNDNAME_START));
           Exit;
         end;
 
       SDLK_J:
         begin
-          FadeTo(@ScreenOptionsJukebox, SoundLib.Start);
+          FadeTo(@ScreenOptionsJukebox, SoundLib.GetSound(SOUNDNAME_START));
           Exit;
         end;
 
@@ -179,7 +179,7 @@ begin
       SDLK_BACKSPACE :
         begin
           Ini.Save;
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           FadeTo(@ScreenMain);
         end;
 
@@ -192,49 +192,49 @@ begin
         begin
           if Interaction = ButtonGameIID then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
             FadeTo(@ScreenOptionsGame);
           end;
 
           if Interaction = ButtonGraphicsIID then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
             FadeTo(@ScreenOptionsGraphics);
           end;
 
           if Interaction = ButtonSoundIID then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
             FadeTo(@ScreenOptionsSound);
           end;
 
           if Interaction = ButtonInputIID then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
             FadeTo(@ScreenOptionsInput);
           end;
 
           if Interaction = ButtonLyricsIID then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
             FadeTo(@ScreenOptionsLyrics);
           end;
 
           if Interaction = ButtonThemesIID then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
             FadeTo(@ScreenOptionsThemes);
           end;
 
           if Interaction = ButtonRecordIID then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
             FadeTo(@ScreenOptionsRecord);
           end;
 
           if Interaction = ButtonAdvancedIID then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
             FadeTo(@ScreenOptionsAdvanced);
           end;
 
@@ -244,14 +244,14 @@ begin
               ScreenPopupError.ShowPopup(Language.Translate('SING_OPTIONS_NETWORK_NO_DLL'))
             else
             begin
-              AudioPlayback.PlaySound(SoundLib.Back);
+              AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
               FadeTo(@ScreenOptionsNetwork);
             end;
           end;
 
           if Interaction = ButtonWebcamIID then
           begin
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
             FadeTo(@ScreenOptionsWebcam);
           end;
 
@@ -259,7 +259,7 @@ begin
           begin
             if (Songs.SongList.Count >= 1) then
             begin
-              AudioPlayback.PlaySound(SoundLib.Start);
+              AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
               FadeTo(@ScreenOptionsJukebox);
             end
             else //show error message, No Songs Loaded
@@ -269,7 +269,7 @@ begin
           if Interaction = ButtonExitIID then
           begin
             Ini.Save;
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
             FadeTo(@ScreenMain);
           end;
         end;

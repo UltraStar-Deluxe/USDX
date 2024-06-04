@@ -399,7 +399,7 @@ begin
     if ((Ini.BeatClick = 1) and
         ((LyricsState.CurrentBeatC + Tracks[0].Resolution + Tracks[0].NotesGAP) mod Tracks[0].Resolution = 0)) then
     begin
-      AudioPlayback.PlaySound(SoundLib.Click);
+      AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_CLICK));
     end;
 
     for Count := 0 to Tracks[0].Lines[Tracks[0].CurrentLine].HighNote do
@@ -409,7 +409,7 @@ begin
       begin
         // click assist
         if Ini.ClickAssist = 1 then
-          AudioPlayback.PlaySound(SoundLib.Click);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_CLICK));
 
         // drum machine
         (*

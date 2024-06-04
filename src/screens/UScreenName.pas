@@ -351,7 +351,7 @@ begin
         begin
           StopTextInput;
           Ini.SaveNames;
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           if GoTo_SingScreen then
             FadeTo(@ScreenSong)
           else
@@ -409,7 +409,7 @@ begin
           ScreenSing  := TScreenSingController.Create;
           //
 
-          AudioPlayback.PlaySound(SoundLib.Start);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
 
           if GoTo_SingScreen then
           begin
@@ -442,7 +442,7 @@ begin
 
       SDLK_RIGHT:
         begin
-          AudioPlayback.PlaySound(SoundLib.Change);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_CHANGE));
 
           if (Interaction in [0, 4, 5]) then
             InteractInc;
@@ -485,7 +485,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          AudioPlayback.PlaySound(SoundLib.Change);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_CHANGE));
 
           if (Interaction in [0, 4, 5]) then
             InteractDec;
