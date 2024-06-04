@@ -39,24 +39,31 @@ function luaopen_Music (L: Plua_State): Integer; cdecl;
 
 function ULuaMusic_OpenSound(L: Plua_State): Integer; cdecl;
 function ULuaMusic_PlaySound(L: Plua_State): Integer; cdecl;
+function ULuaMusic_UnloadSound(L: Plua_State): Integer; cdecl;
 
 const
-  ULuaMusic_Lib_f: array [0..2] of lual_reg = (
+  ULuaMusic_Lib_f: array [0..3] of lual_reg = (
    (name:'OpenSound';func:ULuaMusic_OpenSound),
    (name:'PlaySound';func:ULuaMusic_PlaySound),
+   (name:'UnloadSound';func:ULuaMusic_UnloadSound),
    (name:nil;func:nil)
    );
 
 implementation
 
+{
+  Add a sound to the game's sound library, obtaining the sound ID to use with PlaySound.
+  The sound should be a short sound-effect.
+  In case the sound ID is -1, loading the sound file has failed.
+}
 function ULuaMusic_OpenSound(L: Plua_State): Integer; cdecl;
   var
     SoundId: integer;
 begin
   if (lua_IsString(L, 1)) then begin
-    // add sound to library, obtaining the sound id
+    // add the sound
     SoundId := SoundLib.AddSound(lua_toString(L, 1));
-    // return the sound id (index) for use with PlaySound
+    // return the sound id (index)
     lua_pushinteger(L, SoundId);
     result := 1;
   end else begin
@@ -65,12 +72,15 @@ begin
   end;
 end;
 
+{
+  Play a game sound once.
+  Expects a sound ID obtained by OpenSound.
+}
 function ULuaMusic_PlaySound(L: Plua_State): Integer; cdecl;
   var
     PlaybackStream: TAudioPlaybackStream;
 begin
   result := 0; // never return anything to lua
-  // expect a sound id (index) obtained by OpenSound
   if lua_IsInteger(L, 1) then begin
     PlaybackStream := SoundLib.GetSound(lua_tointeger(L, 1));
     if PlaybackStream <> nil then begin
@@ -83,7 +93,22 @@ begin
   end;
 end;
 
-// TODO: add RemoveSound
+{ 
+  Unloads a sound. 
+  Only use this function with an ID you previously obtained via OpenSound. 
+  Only then it is "your" sound. Removing a sound that is not yours can induce unexpected behaviour.
+}
+function ULuaMusic_UnloadSound(L: Plua_State): Integer; cdecl;
+  var
+    PlaybackStream: TAudioPlaybackStream;
+begin
+  result := 0; // never return anything to lua
+  if lua_IsInteger(L, 1) then begin
+    SoundLib.RemoveSound(lua_tointeger(L, 1));
+  end else begin
+    luaL_argerror(L, 1, PChar('sound id expected'));
+  end;
+end;
 
 function luaopen_Music (L: Plua_State): Integer; cdecl;
 begin

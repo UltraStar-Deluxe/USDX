@@ -590,7 +590,7 @@ type
       
       function SoundFilenameToPath(Filename: string): IPath;
     public
-      // background music is a special case
+      // the background music is a special case since it loops and is referenced by specific procedures 
       BGMusic: TAudioPlaybackStream;
       procedure StartBgMusic();
       procedure PauseBgMusic();
@@ -601,13 +601,11 @@ type
       procedure LoadSounds();
       procedure UnloadSounds();
       
-      function AddSound(Filepath: IPath): integer overload;
+      function AddSound(Soundname: string): integer;
       function GetSound(ID: integer): TAudioPlaybackStream overload;
-      //procedure RemoveSound(ID: integer); // TODO
-      
-      // convenience functions
-      function AddSound(Filename: string): integer overload;
       function GetSound(Soundname: string): TAudioPlaybackStream overload;
+      procedure RemoveSound(ID: integer);
+      function LookupSoundID(Soundname: string): integer;
 
       property Sound[ID: integer]: TAudioPlaybackStream read GetSound; default;
   end;
@@ -969,15 +967,15 @@ begin
   UnloadSounds();
 
   // load common "one-shot" sounds
-  GetSound(SOUNDNAME_START);
-  GetSound(SOUNDNAME_BACK);
-  GetSound(SOUNDNAME_SWOOSH);
-  GetSound(SOUNDNAME_CHANGE);
-  GetSound(SOUNDNAME_OPTION);
-  GetSound(SOUNDNAME_CLICK);
-  GetSound(SOUNDNAME_APPLAUSE);
+  AddSound(SOUNDNAME_START);
+  AddSound(SOUNDNAME_BACK);
+  AddSound(SOUNDNAME_SWOOSH);
+  AddSound(SOUNDNAME_CHANGE);
+  AddSound(SOUNDNAME_OPTION);
+  AddSound(SOUNDNAME_CLICK);
+  AddSound(SOUNDNAME_APPLAUSE);
 
-  // the background music is a special case
+  // the background music is a special case since it loops and is referenced by specific procedures 
   BGMusic := AudioPlayback.OpenSound(SoundPath.Append('background track.mp3'));
   if (BGMusic <> nil) then
     BGMusic.Loop := True;
@@ -987,25 +985,36 @@ procedure TSoundLibrary.UnloadSounds();
 var
   i: integer;
 begin
-  for i := Low(Sounds) to High(Sounds)do
+  for i := High(Sounds) downto Low(Sounds) do
   begin
-    FreeAndNil(Sounds[i]);
+    RemoveSound(i);
   end;
-  SetLength(Sounds, 0); // sounds is now considered empty
 
+  // the background music is a special case since it loops and is referenced by specific procedures 
   FreeAndNil(BGMusic);
 end;
 
+procedure TSoundLibrary.RemoveSound(ID: integer);
+begin
+  if ((ID >= 0) and (ID < Length(Sounds))) then begin
+    FreeAndNil(Sounds[ID]);
+    Delete(Sounds, ID, 1);
+  end else begin
+    Log.LogStatus('RemoveSound called with ID out of range.', 'TSoundLibrary');
+  end;
+end;
+
 {
-  loads a file given by full path into the sound library
-  returns -1 if loading file fails
-  otherwise returns index for access via GetSound
+  Adds a sound file to the library.
+  See SoundFilenameToPath on how the Soundname parameter is handled.
+  Returns -1 if loading file fails
+  Otherwise returns index for access via GetSound
 }
-function TSoundLibrary.AddSound(Filepath: IPath): integer;
+function TSoundLibrary.AddSound(Soundname: string): integer;
 var
   PlaybackStream: TAudioPlaybackStream;
 begin
-  PlaybackStream := AudioPlayback.OpenSound(Filepath);
+  PlaybackStream := AudioPlayback.OpenSound(SoundFilenameToPath(Soundname));
   if PlaybackStream <> nil then begin
     SetLength(Sounds, Length(Sounds) + 1);
     Sounds[High(Sounds)] := PlaybackStream;
@@ -1016,19 +1025,16 @@ begin
 end;
 
 {
-  convenience function for AddSound
-  this one expects a sound file's name (relative to the game's sounds directory)
-  a string with a separator will be treated as apath relative to the working directory
-  an absolute path works, too
+  Takes a string which may represent a file name (this plays nice with Lua).
+  In case the string contains no path delimiter (\ on Windows, / on unixoid systems),
+  the string is assumed to be a plain name of a file in the game's "sounds" directory
+  (such as 'menu swoosh.mp3').
+  In case the string contains a path delimiter, it is converted to a Path. 
+  './…' will be a path relative to the working directory. Absolute paths are possible, too.
 }
-function TSoundLibrary.AddSound(Filename: string): integer;
-begin
-    Result := AddSound(SoundFilenameToPath(Filename));
-end;
-
 function TSoundLibrary.SoundFilenameToPath(Filename: string): IPath;
 begin
-    Result := SoundPath.Append(Filename); // assume plain filename (relative to sound path)
+    Result := SoundPath.Append(Filename); // assume plain filename (relative to sound directory)
     if pos(SysUtils.PathDelim, Filename) > 0 then begin
       // user already seems to be using a file path (relative or absolute), let him do that
       Result := Path(Filename);
@@ -1036,7 +1042,7 @@ begin
 end;
 
 {
-  get a sound by id (index)
+  Gets a sound by id (index).
 }
 function TSoundLibrary.GetSound(ID: integer): TAudioPlaybackStream;
 begin
@@ -1047,28 +1053,45 @@ begin
 end;
 
 {
-  look-up a sound by file name
-  in case the sound file is not yet loaded, the function automatically adds the sound to the library, see AddSound
+  Looks up a sound by file name, giving the ID (index).
+  Returns -1 in case there is no matching sound in the library.
+  Otherwise returns index of the sound in the library.
+  Can be used to check whether a sound is in the library.
 }
-function TSoundLibrary.GetSound(Soundname: string): TAudioPlaybackStream;
+function TSoundLibrary.LookupSoundID(Soundname: string): integer;
 var
-  i : integer;
+  i: integer;
   FilePath: string;
 begin
-  Result := nil;
+  Result := -1;
   FilePath := SoundFilenameToPath(Soundname).ToNative;
-  for i := Low(Sounds) to High(Sounds)do
+  for i := Low(Sounds) to High(Sounds) do
   begin
     if Sounds[i].SourceName = FilePath then
     begin
-      Result := Sounds[i];
+      Result := i;
       break;
     end;
   end;
-  if Result = nil then
+end;
+
+{
+  Convenience function for GetSound.
+  In case the sound file is not yet in the library, 
+  the function tries to add the sound to the library automatically, see AddSound.
+  In case of failure, result may be nil.
+}
+function TSoundLibrary.GetSound(Soundname: string): TAudioPlaybackStream;
+var
+  ID: integer;
+begin
+  Result := nil;
+  ID := LookupSoundID(Soundname);
+  if ID = -1 then
   begin
-    Result := GetSound(AddSound(FilePath));
+    ID := AddSound(Soundname)
   end;
+  Result := GetSound(ID);
 end;
 
 procedure TSoundLibrary.StartBgMusic();
