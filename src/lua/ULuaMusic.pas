@@ -60,15 +60,19 @@ function ULuaMusic_OpenSound(L: Plua_State): Integer; cdecl;
   var
     SoundId: integer;
 begin
+  // do not return anything to lua by default
+  result := 0;
   if (lua_IsString(L, 1)) then begin
     // add the sound
     SoundId := SoundLib.AddSound(lua_toString(L, 1));
+    if SoundId = -1 then begin
+      luaL_error(L, PChar('Unable to open sound file.'));
+    end;
     // return the sound id (index)
-    lua_pushinteger(L, SoundId);
     result := 1;
+    lua_pushinteger(L, SoundId);
   end else begin
-    luaL_argerror(L, 1, PChar('filename (as string) expected'));
-    result := 0;
+    luaL_argerror(L, 1, PChar('Filename (string) expected.'));
   end;
 end;
 
@@ -86,10 +90,10 @@ begin
     if PlaybackStream <> nil then begin
       AudioPlayback.PlaySound(PlaybackStream);
     end else begin
-      luaL_argerror(L, 1, PChar('failed to get sound by id'));
+      luaL_argerror(L, 1, PChar('Failed to get sound by ID.'));
     end;
   end else begin
-    luaL_argerror(L, 1, PChar('sound id expected'));
+    luaL_argerror(L, 1, PChar('Sound ID (integer) expected.'));
   end;
 end;
 
@@ -106,7 +110,7 @@ begin
   if lua_IsInteger(L, 1) then begin
     SoundLib.RemoveSound(lua_tointeger(L, 1));
   end else begin
-    luaL_argerror(L, 1, PChar('sound id expected'));
+    luaL_argerror(L, 1, PChar('Sound ID (integer) expected.'));
   end;
 end;
 
