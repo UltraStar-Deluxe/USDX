@@ -728,7 +728,7 @@ begin
     ScreenJukebox.Finish;
     ScreenJukebox.FadeOut := true;
 
-    AudioPlayback.PlaySound(SoundLib.Back);
+    AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
 
   end;
 end;

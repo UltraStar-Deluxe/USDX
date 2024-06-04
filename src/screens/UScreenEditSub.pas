@@ -5120,8 +5120,8 @@ begin
         for NoteIndex := 0 to Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].HighNote do
           if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].StartBeat = CurrentBeat) then
           begin
-            SoundLib.Click.Volume := SelectsS[VolumeClickSlideId].SelectedOption / 100;
-            AudioPlayback.PlaySound(SoundLib.Click);
+            SoundLib.GetSound(SOUNDNAME_CLICK).Volume := SelectsS[VolumeClickSlideId].SelectedOption / 100;
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_CLICK));
             LastClick := CurrentBeat;
           end;
       end;

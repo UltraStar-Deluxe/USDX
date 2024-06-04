@@ -210,7 +210,7 @@ begin
 
   if (Party.ModesAvailable) then
   begin //mode for current playersetup available
-    FadeTo(@ScreenPartyRounds, SoundLib.Start);
+    FadeTo(@ScreenPartyRounds, SoundLib.GetSound(SOUNDNAME_START));
   end
   else
   begin
@@ -332,7 +332,7 @@ begin
     SDLK_ESCAPE:
       begin
         Ini.SaveNames;
-        AudioPlayback.PlaySound(SoundLib.Back);
+        AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
         FadeTo(@ScreenPartyOptions);
       end;
 
@@ -388,7 +388,7 @@ begin
       begin
         if (Interaction in [0,2,8,14]) then
         begin
-          AudioPlayback.PlaySound(SoundLib.Option);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
           InteractInc;
           UpdateInterface;
 
@@ -411,7 +411,7 @@ begin
       begin
         if (Interaction in [0,2,8,14]) then
         begin
-          AudioPlayback.PlaySound(SoundLib.Option);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
           InteractDec;
           UpdateInterface;
         end;
@@ -428,7 +428,7 @@ begin
       begin
         if (SDL_ModState = KMOD_LCTRL) then
         begin
-          AudioPlayback.PlaySound(SoundLib.Option);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
           //InteractDec;
           //UpdateInterface;
 

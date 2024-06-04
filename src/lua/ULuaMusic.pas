@@ -51,18 +51,11 @@ implementation
 
 function ULuaMusic_OpenSound(L: Plua_State): Integer; cdecl;
   var
-    Name: string;
-    FilePath: IPath;
     SoundId: integer;
 begin
   if (lua_IsString(L, 1)) then begin
-    Name := lua_toString(L, 1);
-    FilePath := SoundPath.Append(Name); // assume filename (relative to sound path) by default
-    if pos(SysUtils.PathDelim, Name) > 0 then begin
-      // user seems to be using a file path, let him do that
-      FilePath := Path(Name);
-    end;
-    SoundId := SoundLib.AddSound(FilePath);
+    // add sound to library, obtaining the sound id
+    SoundId := SoundLib.AddSound(lua_toString(L, 1));
     // return the sound id (index) for use with PlaySound
     lua_pushinteger(L, SoundId);
     result := 1;

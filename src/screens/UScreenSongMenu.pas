@@ -160,7 +160,7 @@ begin
       SDLK_BACKSPACE:
         begin
           StopTextInput;
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           Visible := false;
         end;
 
@@ -198,7 +198,7 @@ begin
           end
           else
           begin
-            AudioPlayback.PlaySound(SoundLib.Change);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_CHANGE));
             ScreenSong.SelectNext;
             ScreenSong.SetScrollRefresh;
           end;
@@ -213,7 +213,7 @@ begin
           end
           else
           begin
-            AudioPlayback.PlaySound(SoundLib.Change);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_CHANGE));
             ScreenSong.SelectPrev;
             ScreenSong.SetScrollRefresh;
           end;

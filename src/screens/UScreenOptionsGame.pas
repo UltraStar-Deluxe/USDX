@@ -122,7 +122,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 7) then
           begin
-            AudioPlayback.PlaySound(SoundLib.Option);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
             InteractInc;
           end;
           UpdateCalculatedSelectSlides(false);
@@ -135,7 +135,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 7) then
           begin
-            AudioPlayback.PlaySound(SoundLib.Option);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
             InteractDec;
           end;
           UpdateCalculatedSelectSlides(false);
@@ -285,7 +285,7 @@ begin
   ReloadAllScreens;
   ReloadSongMenu;
 
-  AudioPlayback.PlaySound(SoundLib.Back);
+  AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
   FadeTo(@ScreenOptions);
 end;
 

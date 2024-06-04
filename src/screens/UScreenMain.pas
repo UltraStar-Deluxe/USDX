@@ -99,20 +99,20 @@ begin
         // check normal keys
     case PressedKey of
       SDLK_S: begin
-        FadeTo(@ScreenName, SoundLib.Start);
+        FadeTo(@ScreenName, SoundLib.GetSound(SOUNDNAME_START));
         Exit;
       end;
 
       SDLK_P: begin
         if (Ini.Players >= 1) and (Party.ModesAvailable) then
         begin
-          FadeTo(@ScreenPartyOptions, SoundLib.Start);
+          FadeTo(@ScreenPartyOptions, SoundLib.GetSound(SOUNDNAME_START));
           Exit;
         end;
       end;
 
       SDLK_J: begin
-        FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start);
+        FadeTo(@ScreenJukeboxPlaylist, SoundLib.GetSound(SOUNDNAME_START));
         Exit;
       end;
 
@@ -123,27 +123,27 @@ begin
       end;
 
       SDLK_T: begin
-        FadeTo(@ScreenStatMain, SoundLib.Start);
+        FadeTo(@ScreenStatMain, SoundLib.GetSound(SOUNDNAME_START));
         Exit;
       end;
 
       SDLK_E: begin
-        FadeTo(@ScreenEdit, SoundLib.Start);
+        FadeTo(@ScreenEdit, SoundLib.GetSound(SOUNDNAME_START));
         Exit;
       end;
 
       SDLK_O: begin
-        FadeTo(@ScreenOptions, SoundLib.Start);
+        FadeTo(@ScreenOptions, SoundLib.GetSound(SOUNDNAME_START));
         Exit;
       end;
 
       SDLK_A: begin
-        FadeTo(@ScreenAbout, SoundLib.Start);
+        FadeTo(@ScreenAbout, SoundLib.GetSound(SOUNDNAME_START));
         Exit;
       end;
 
       SDLK_C: begin
-         FadeTo(@ScreenCredits, SoundLib.Start);
+         FadeTo(@ScreenCredits, SoundLib.GetSound(SOUNDNAME_START));
          Exit;
       end;
 
@@ -186,7 +186,7 @@ begin
             else
             begin
               ScreenName.Goto_SingScreen := false;
-              FadeTo(@ScreenName, SoundLib.Start);
+              FadeTo(@ScreenName, SoundLib.GetSound(SOUNDNAME_START));
             end;
           end
           else //show error message
@@ -200,7 +200,7 @@ begin
           begin
             Party.bPartyGame := true;
 
-            FadeTo(@ScreenPartyOptions, SoundLib.Start);
+            FadeTo(@ScreenPartyOptions, SoundLib.GetSound(SOUNDNAME_START));
           end
           else //show error message, No Songs Loaded
             ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
@@ -211,7 +211,7 @@ begin
         begin
           if (Songs.SongList.Count >= 1) then
           begin
-            FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start);
+            FadeTo(@ScreenJukeboxPlaylist, SoundLib.GetSound(SOUNDNAME_START));
           end
           else //show error message, No Songs Loaded
             ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
@@ -220,14 +220,14 @@ begin
         //Stats
         if Interaction = 3 then
         begin
-          FadeTo(@ScreenStatMain, SoundLib.Start);
+          FadeTo(@ScreenStatMain, SoundLib.GetSound(SOUNDNAME_START));
         end;
 
         //Editor
         if Interaction = 4 then
         begin
           {$IFDEF UseMIDIPort}
-          FadeTo(@ScreenEdit, SoundLib.Start);
+          FadeTo(@ScreenEdit, SoundLib.GetSound(SOUNDNAME_START));
           {$ELSE}
           ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_EDITOR'));
           {$ENDIF}
@@ -236,13 +236,13 @@ begin
         //Options
         if Interaction = 5 then
         begin
-          FadeTo(@ScreenOptions, SoundLib.Start);
+          FadeTo(@ScreenOptions, SoundLib.GetSound(SOUNDNAME_START));
         end;
 
         //About
         if Interaction = 6 then
         begin
-          FadeTo(@ScreenAbout, SoundLib.Start);
+          FadeTo(@ScreenAbout, SoundLib.GetSound(SOUNDNAME_START));
         end;
 
         //Exit

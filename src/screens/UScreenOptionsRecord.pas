@@ -176,7 +176,7 @@ begin
           if (ValidateSettings()) then
           begin
             Ini.Save;
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
             FadeTo(@ScreenOptions);
           end;
         end;
@@ -191,7 +191,7 @@ begin
             if (ValidateSettings()) then
             begin
               Ini.Save;
-              AudioPlayback.PlaySound(SoundLib.Back);
+              AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
               FadeTo(@ScreenOptions);
             end;
           end;
@@ -204,7 +204,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction < ExitButtonIID) then
           begin
-            AudioPlayback.PlaySound(SoundLib.Option);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
             InteractInc;
           end;
           UpdateInputDevice;
@@ -213,7 +213,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction < ExitButtonIID) then
           begin
-            AudioPlayback.PlaySound(SoundLib.Option);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
             InteractDec;
           end;
           UpdateInputDevice;

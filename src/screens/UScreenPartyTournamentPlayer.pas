@@ -346,7 +346,7 @@ begin
     SDLK_ESCAPE:
       begin
         Ini.SaveNames;
-        AudioPlayback.PlaySound(SoundLib.Back);
+        AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
         FadeTo(@ScreenPartyOptions);
       end;
 
@@ -358,7 +358,7 @@ begin
     SDLK_RETURN:
       begin
         UpdatePartyTournament;
-        FadeTo(@ScreenPartyTournamentOptions, SoundLib.Start);
+        FadeTo(@ScreenPartyTournamentOptions, SoundLib.GetSound(SOUNDNAME_START));
       end;
     // Up and Down could be done at the same time,
     // but I don't want to declare variables inside
@@ -367,14 +367,14 @@ begin
     SDLK_UP:      IntPrev;
     SDLK_RIGHT:
       begin
-        AudioPlayback.PlaySound(SoundLib.Option);
+        AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
         InteractInc;
 
         UpdateInterface;
       end;
     SDLK_LEFT:
       begin
-        AudioPlayback.PlaySound(SoundLib.Option);
+        AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
         InteractDec;
 
         UpdateInterface;

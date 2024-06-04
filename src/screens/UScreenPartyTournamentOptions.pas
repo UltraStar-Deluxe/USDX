@@ -121,7 +121,7 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           FadeTo(@ScreenPartyTournamentPlayer);
         end;
 
@@ -133,7 +133,7 @@ begin
       SDLK_RETURN:
       begin
         UpdateTournament;
-        FadeTo(@ScreenPartyTournamentRounds, SoundLib.Start);
+        FadeTo(@ScreenPartyTournamentRounds, SoundLib.GetSound(SOUNDNAME_START));
       end;
 
       // Up and Down could be done at the same time,
@@ -143,12 +143,12 @@ begin
       SDLK_UP:      InteractPrev;
       SDLK_RIGHT:
         begin
-          AudioPlayback.PlaySound(SoundLib.Option);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
           InteractInc;
         end;
       SDLK_LEFT:
         begin
-          AudioPlayback.PlaySound(SoundLib.Option);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
           InteractDec;
         end;
     end;

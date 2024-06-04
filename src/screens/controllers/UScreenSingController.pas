@@ -530,7 +530,7 @@ begin
 
         Finish;
         FadeOut := true;
-        AudioPlayback.PlaySound(SoundLib.Back);
+        AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
       end;
 
       SDLK_SPACE:
@@ -1821,7 +1821,7 @@ begin
     PlaylistMedley.ApplausePlayed:=true;
 
     AudioPlayback.Fade(CurrentSong.Medley.FadeOut_time, 0.1);
-    AudioPlayback.PlaySound(SoundLib.Applause);
+    AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_APPLAUSE));
   end;
 end;
 

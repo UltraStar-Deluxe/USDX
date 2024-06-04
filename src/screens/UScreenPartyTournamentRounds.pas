@@ -133,7 +133,7 @@ procedure OnFinish(Value: boolean; Data: Pointer);
 begin
   if (Value) then
   begin
-    AudioPlayback.PlaySound(SoundLib.Start);
+    AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
     Display.FadeTo(@ScreenMain);
   end;
 end;
@@ -188,7 +188,7 @@ begin
             freeandnil(ScreenSing);
             ScreenSing  := TScreenSingController.Create;
 
-            AudioPlayback.PlaySound(SoundLib.Start);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_START));
             FadeTo(@ScreenSong);
 
           end;

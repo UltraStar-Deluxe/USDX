@@ -317,6 +317,8 @@ type
       function Synchronize(BufferSize: integer; FormatInfo: TAudioFormatInfo): integer;
       procedure FillBufferWithFrame(Buffer: PByteArray; BufferSize: integer; Frame: PByteArray; FrameSize: integer);
     public
+      SourceName: string; // identifier (usually the source file path)
+      
       (**
        * Opens a SourceStream for playback.
        * Note that the caller (not the TAudioPlaybackStream) is responsible to
@@ -571,61 +573,42 @@ type
       property DstFormatInfo: TAudioFormatInfo read fDstFormatInfo;
   end;
 
-(* TODO
+// list of sound file names which are going to be used in the library for "one-shot" playbacks
 const
-  SOUNDID_START    = 0;
-  SOUNDID_BACK     = 1;
-  SOUNDID_SWOOSH   = 2;
-  SOUNDID_CHANGE   = 3;
-  SOUNDID_OPTION   = 4;
-  SOUNDID_CLICK    = 5;
-  LAST_SOUNDID = SOUNDID_CLICK;
-
-  BaseSoundFilenames: array[0..LAST_SOUNDID] of IPath = (
-    '%SOUNDPATH%/Common start.mp3',                 // Start
-    '%SOUNDPATH%/Common back.mp3',                  // Back
-    '%SOUNDPATH%/menu swoosh.mp3',                  // Swoosh
-    '%SOUNDPATH%/select music change music 50.mp3', // Change
-    '%SOUNDPATH%/option change col.mp3',            // Option
-    '%SOUNDPATH%/rimshot022b.mp3'                   // Click
-    {
-    '%SOUNDPATH%/bassdrumhard076b.mp3',             // Drum (unused)
-    '%SOUNDPATH%/hihatclosed068b.mp3',              // Hihat (unused)
-    '%SOUNDPATH%/claps050b.mp3',                    // Clap (unused)
-    '%SOUNDPATH%/Shuffle.mp3'                       // Shuffle (unused)
-    }
-  );
-*)
+  SOUNDNAME_START    = 'Common start.mp3';
+  SOUNDNAME_BACK     = 'Common back.mp3';
+  SOUNDNAME_SWOOSH   = 'menu swoosh.mp3';
+  SOUNDNAME_CHANGE   = 'select music change music 50.mp3';
+  SOUNDNAME_OPTION   = 'option change col.mp3';
+  SOUNDNAME_CLICK    = 'rimshot022b.mp3';
+  SOUNDNAME_APPLAUSE = 'Applause.mp3';
 
 type
   TSoundLibrary = class
     private
       Sounds: array of TAudioPlaybackStream;
+      
+      function SoundFilenameToPath(Filename: string): IPath;
     public
-      // TODO: move sounds to the private section
-      // and provide IDs instead.
-      Start:   TAudioPlaybackStream;
-      Back:    TAudioPlaybackStream;
-      Swoosh:  TAudioPlaybackStream;
-      Change:  TAudioPlaybackStream;
-      Option:  TAudioPlaybackStream;
-      Click:   TAudioPlaybackStream;
-      Applause:TAudioPlaybackStream;
+      // background music is a special case
       BGMusic: TAudioPlaybackStream;
+      procedure StartBgMusic();
+      procedure PauseBgMusic();
 
       constructor Create();
       destructor Destroy(); override;
 
       procedure LoadSounds();
       procedure UnloadSounds();
-
-      procedure StartBgMusic();
-      procedure PauseBgMusic();
       
-      function AddSound(Filename: IPath): integer;
-      // TODO
-      //procedure RemoveSound(ID: integer);
-      function GetSound(ID: integer): TAudioPlaybackStream;
+      function AddSound(Filepath: IPath): integer overload;
+      function GetSound(ID: integer): TAudioPlaybackStream overload;
+      //procedure RemoveSound(ID: integer); // TODO
+      
+      // convenience functions
+      function AddSound(Filename: string): integer overload;
+      function GetSound(Soundname: string): TAudioPlaybackStream overload;
+
       property Sound[ID: integer]: TAudioPlaybackStream read GetSound; default;
   end;
 
@@ -985,16 +968,17 @@ procedure TSoundLibrary.LoadSounds();
 begin
   UnloadSounds();
 
-  Start   := AudioPlayback.OpenSound(SoundPath.Append('Common start.mp3'));
-  Back    := AudioPlayback.OpenSound(SoundPath.Append('Common back.mp3'));
-  Swoosh  := AudioPlayback.OpenSound(SoundPath.Append('menu swoosh.mp3'));
-  Change  := AudioPlayback.OpenSound(SoundPath.Append('select music change music 50.mp3'));
-  Option  := AudioPlayback.OpenSound(SoundPath.Append('option change col.mp3'));
-  Click   := AudioPlayback.OpenSound(SoundPath.Append('rimshot022b.mp3'));
-  Applause:= AudioPlayback.OpenSound(SoundPath.Append('Applause.mp3'));
+  // load common "one-shot" sounds
+  GetSound(SOUNDNAME_START);
+  GetSound(SOUNDNAME_BACK);
+  GetSound(SOUNDNAME_SWOOSH);
+  GetSound(SOUNDNAME_CHANGE);
+  GetSound(SOUNDNAME_OPTION);
+  GetSound(SOUNDNAME_CLICK);
+  GetSound(SOUNDNAME_APPLAUSE);
 
+  // the background music is a special case
   BGMusic := AudioPlayback.OpenSound(SoundPath.Append('background track.mp3'));
-
   if (BGMusic <> nil) then
     BGMusic.Loop := True;
 end;
@@ -1009,27 +993,19 @@ begin
   end;
   SetLength(Sounds, 0); // sounds is now considered empty
 
-  // TODO: put all these into the library via AddSound, then explicit unloading is not neccessary
-  FreeAndNil(Start);
-  FreeAndNil(Back);
-  FreeAndNil(Swoosh);
-  FreeAndNil(Change);
-  FreeAndNil(Option);
-  FreeAndNil(Click);
-  FreeAndNil(Applause);
   FreeAndNil(BGMusic);
 end;
 
 {
-  loads a file into the sound library
+  loads a file given by full path into the sound library
   returns -1 if loading file fails
   otherwise returns index for access via GetSound
 }
-function TSoundLibrary.AddSound(Filename: IPath): integer;
+function TSoundLibrary.AddSound(Filepath: IPath): integer;
 var
   PlaybackStream: TAudioPlaybackStream;
 begin
-  PlaybackStream := AudioPlayback.OpenSound(Filename);
+  PlaybackStream := AudioPlayback.OpenSound(Filepath);
   if PlaybackStream <> nil then begin
     SetLength(Sounds, Length(Sounds) + 1);
     Sounds[High(Sounds)] := PlaybackStream;
@@ -1039,12 +1015,60 @@ begin
   end;
 end;
 
+{
+  convenience function for AddSound
+  this one expects a sound file's name (relative to the game's sounds directory)
+  a string with a separator will be treated as apath relative to the working directory
+  an absolute path works, too
+}
+function TSoundLibrary.AddSound(Filename: string): integer;
+begin
+    Result := AddSound(SoundFilenameToPath(Filename));
+end;
+
+function TSoundLibrary.SoundFilenameToPath(Filename: string): IPath;
+begin
+    Result := SoundPath.Append(Filename); // assume plain filename (relative to sound path)
+    if pos(SysUtils.PathDelim, Filename) > 0 then begin
+      // user already seems to be using a file path (relative or absolute), let him do that
+      Result := Path(Filename);
+    end;
+end;
+
+{
+  get a sound by id (index)
+}
 function TSoundLibrary.GetSound(ID: integer): TAudioPlaybackStream;
 begin
   if ((ID >= 0) and (ID < Length(Sounds))) then
     Result := Sounds[ID]
   else
     Result := nil;
+end;
+
+{
+  look-up a sound by file name
+  in case the sound file is not yet loaded, the function automatically adds the sound to the library, see AddSound
+}
+function TSoundLibrary.GetSound(Soundname: string): TAudioPlaybackStream;
+var
+  i : integer;
+  FilePath: string;
+begin
+  Result := nil;
+  FilePath := SoundFilenameToPath(Soundname).ToNative;
+  for i := Low(Sounds) to High(Sounds)do
+  begin
+    if Sounds[i].SourceName = FilePath then
+    begin
+      Result := Sounds[i];
+      break;
+    end;
+  end;
+  if Result = nil then
+  begin
+    Result := GetSound(AddSound(FilePath));
+  end;
 end;
 
 procedure TSoundLibrary.StartBgMusic();

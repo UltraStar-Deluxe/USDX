@@ -101,7 +101,7 @@ begin
 
           ReloadScreens;
 
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
 
           // select theme button in new created options screen
           ScreenOptions.Interaction := 4;
@@ -120,7 +120,7 @@ begin
 
             ReloadScreens;
 
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
 
             // select theme button in new created options screen
             ScreenOptions.Interaction := 4;
@@ -136,7 +136,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 2) then
           begin
-            AudioPlayback.PlaySound(SoundLib.Option);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
             InteractInc;
           end;
         end;
@@ -144,7 +144,7 @@ begin
         begin
           if (SelInteraction >= 0) and (SelInteraction <= 2) then
           begin
-            AudioPlayback.PlaySound(SoundLib.Option);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_OPTION));
             InteractDec;
           end;
         end;

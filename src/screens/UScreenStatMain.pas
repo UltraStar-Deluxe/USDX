@@ -97,7 +97,7 @@ begin
       SDLK_BACKSPACE :
         begin
           Ini.Save;
-          AudioPlayback.PlaySound(SoundLib.Back);
+          AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
           FadeTo(@ScreenMain);
         end;
       SDLK_TAB:
@@ -109,12 +109,12 @@ begin
           //Exit Button Pressed
           if Interaction = 4 then
           begin
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
             FadeTo(@ScreenMain);
           end
           else //One of the Stats Buttons Pressed
           begin
-            AudioPlayback.PlaySound(SoundLib.Back);
+            AudioPlayback.PlaySound(SoundLib.GetSound(SOUNDNAME_BACK));
             ScreenStatDetail.Typ := TStatType(Interaction);
             FadeTo(@ScreenStatDetail);
           end;
