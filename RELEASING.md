@@ -19,3 +19,5 @@
 6. Attach the artifacts to the release page and publish it.
     Don't forget to also create a PR for this release in
     https://github.com/UltraStar-Deluxe/ultrastar-deluxe.github.io
+7. Create a PR in [the FlatHub repository](https://github.com/flathub/eu.usdx.UltraStarDeluxe) that updates the tag and commit values
+    See this PR for an example: https://github.com/flathub/eu.usdx.UltraStarDeluxe/pull/7/files
