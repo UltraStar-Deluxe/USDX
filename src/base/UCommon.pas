@@ -69,10 +69,14 @@ const
 function SplitString(const Str: string; MaxCount: integer = 0; Separators: TSysCharSet = SepWhitespace; RemoveEmpty: boolean = true): TStringDynArray;
 
 function StringInArray(const Value: string; Strings: array of string): Boolean;
+function SplitStringToIntArray(const S: string): TArray<Cardinal>;
 
 function StringDeleteFromArray(var InArray: TIntegerDynArray; const InIndex: integer): Boolean; overload;
 function StringDeleteFromArray(var InStrings: TStringDynArray; const InIndex: integer): Boolean; overload;
 function StringDeleteFromArray(var InStrings: TUTF8StringDynArray; const InIndex: integer): Boolean; overload;
+
+type
+  TPianoKeyArray = array of Cardinal;
 
 type
   TRGB = record
@@ -133,6 +137,22 @@ uses
   UFilesystem,
   UMain,
   UUnicodeUtils;
+
+function SplitStringToIntArray(const S: string): TArray<Cardinal>;
+var
+  StrList: TStringList;
+  I: Integer;
+begin
+  StrList := TStringList.Create;
+  try
+    StrList.CommaText := S;
+    SetLength(Result, StrList.Count);
+    for I := 0 to StrList.Count - 1 do
+      Result[I] := StrToInt(StrList[I]);
+  finally
+    StrList.Free;
+  end;
+end;
 
 function StringInArray(const Value: string; Strings: array of string): Boolean;
 var I: Integer;
