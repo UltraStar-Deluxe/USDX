@@ -261,6 +261,7 @@ begin
   Self.FileName := PATH_NONE();
   Self.Cover    := PATH_NONE();
   Self.Mp3      := PATH_NONE();
+  Self.Karaoke  := PATH_NONE();
   Self.Background:= PATH_NONE();
   Self.Video    := PATH_NONE();
 end;
@@ -877,7 +878,8 @@ begin
         if (Self.Path.Append(EncFile).IsFile) then
         begin
           self.Mp3 := EncFile;
-          self.Karaoke := EncFile;
+          if self.Karaoke = PATH_NONE() then
+            self.Karaoke := EncFile;
           
           //Add Mp3 Flag to Done
           Done := Done or 4;
