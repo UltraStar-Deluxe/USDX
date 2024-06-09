@@ -173,6 +173,11 @@ begin
       KaraokeMusicStream.AddSoundFX(IReplayGain.Create());
   end;
 
+  KaraokeMode := false;
+  if assigned(KaraokeMusicStream) then begin
+    KaraokeMusicStream.Volume := 0;
+  end;
+
   Result := true;
 end;
 
@@ -296,6 +301,7 @@ begin
     MusicStream.Stop();
   if assigned(KaraokeMusicStream) then
     KaraokeMusicStream.Stop();
+  KaraokeMode := false;
 end;
 
 function TAudioPlaybackBase.Length: real;
