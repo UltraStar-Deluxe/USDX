@@ -54,10 +54,11 @@ type
       function Init(): boolean;
       function Finalize(): boolean;
 
-      function Open(const aFileName: IPath): boolean; // true if succeed
+      function Open(const aFileName: IPath; const aFileNameKaraoke: IPath): boolean; // true if succeed
       procedure Close;
 
       procedure Play;
+      procedure ToggleKaraoke;
       procedure Pause;
       procedure Stop;
 
@@ -187,7 +188,7 @@ begin
   Result := true;
 end;
 
-function TAudio_Dummy.Open(const aFileName : IPath): boolean; // true if succeed
+function TAudio_Dummy.Open(const aFileName : IPath; const aFileNameKaraoke : IPath): boolean; // true if succeed
 begin
   Result := false;
 end;
@@ -197,6 +198,10 @@ begin
 end;
 
 procedure TAudio_Dummy.Play;
+begin
+end;
+
+procedure TAudio_Dummy.ToggleKaraoke;
 begin
 end;
 
