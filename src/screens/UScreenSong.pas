@@ -57,6 +57,7 @@ uses
 
 type
   TVisArr = array of integer;
+  CardinalArray = array of cardinal;
 
   TScreenSong = class(TMenu)
     private
@@ -76,6 +77,10 @@ type
 
       LastSelectMouse: integer;
       LastSelectTime: integer;
+
+      RandomSongOrder: CardinalArray;
+      NextRandomSongIdx: cardinal;
+      RandomSearchOrder: CardinalArray;
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
@@ -219,6 +224,8 @@ type
       ListMinLine: integer;
 
       SongIndex:    integer; //Index of Song that is playing since UScreenScore...
+
+      NextRandomSearchIdx: cardinal;
 
       constructor Create; override;
       procedure SetScroll;
@@ -645,6 +652,24 @@ var
   VerifySong, WebList: string;
   Fix: boolean;
   VS: integer;
+
+  function RandomPermute(Num: integer): CardinalArray;
+  var
+    Ordered: array of cardinal;
+    Idx, i: cardinal;
+  begin
+    SetLength(Ordered, Num);
+    SetLength(Result, Num);
+    for i := 0 to Num-1 do Ordered[i] := i;
+    for i := 0 to Num-1 do
+    begin
+      Idx := Random(Num);
+      Result[i] := Ordered[Idx];
+      Delete(Ordered, Idx, 1);
+      Dec(Num);
+    end;
+  end;
+
 begin
   Result := true;
 
@@ -919,7 +944,6 @@ begin
 
       SDLK_R:
         begin
-          Randomize;
           if (Songs.SongList.Count > 0) and
              (FreeListMode) then
           begin
@@ -987,7 +1011,26 @@ begin
             end
             else // random in one category
             begin
-              SkipTo(Random(CatSongs.VisibleSongs));
+              if CatSongs.CatNumShow = -2 then
+              begin
+                if NextRandomSearchIdx >= CatSongs.VisibleSongs then
+                begin
+                  NextRandomSearchIdx := 0;
+                  RandomSearchOrder := RandomPermute(CatSongs.VisibleSongs);
+                end;
+                SkipTo(RandomSearchOrder[NextRandomSearchIdx]);
+                Inc(NextRandomSearchIdx);
+              end
+              else
+              begin
+                if NextRandomSongIdx >= CatSongs.VisibleSongs then
+                begin
+                  NextRandomSongIdx := 0;
+                  RandomSongOrder := RandomPermute(CatSongs.VisibleSongs);
+                end;
+                SkipTo(RandomSongOrder[NextRandomSongIdx]);
+                Inc(NextRandomSongIdx);
+              end
             end;
             AudioPlayback.PlaySound(SoundLib.Change);
 
@@ -1095,6 +1138,7 @@ begin
               begin
                 //Atm: Set Empty Filter
                 CatSongs.SetFilter('', fltAll);
+                NextRandomSearchIdx := CatSongs.VisibleSongs;
 
                 //Show Cat in Top Left Mod
                 HideCatTL;
@@ -1814,6 +1858,9 @@ begin
 
   LastSelectMouse := 0;
   LastSelectTime := 0;
+
+  NextRandomSongIdx := CatSongs.VisibleSongs;
+  NextRandomSearchIdx := CatSongs.VisibleSongs;
 
 end;
 
