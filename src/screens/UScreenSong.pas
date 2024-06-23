@@ -80,6 +80,7 @@ type
 
       RandomSongOrder: CardinalArray;
       NextRandomSongIdx: cardinal;
+      RandomSearchOrder: CardinalArray;
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
@@ -223,6 +224,8 @@ type
       ListMinLine: integer;
 
       SongIndex:    integer; //Index of Song that is playing since UScreenScore...
+
+      NextRandomSearchIdx: cardinal;
 
       constructor Create; override;
       procedure SetScroll;
@@ -1008,13 +1011,26 @@ begin
             end
             else // random in one category
             begin
-              if NextRandomSongIdx >= CatSongs.VisibleSongs then
+              if CatSongs.CatNumShow = -2 then
               begin
-                NextRandomSongIdx := 0;
-                RandomSongOrder := RandomPermute(CatSongs.VisibleSongs);
-              end;
-              SkipTo(RandomSongOrder[NextRandomSongIdx]);
-              Inc(NextRandomSongIdx);
+                if NextRandomSearchIdx >= CatSongs.VisibleSongs then
+                begin
+                  NextRandomSearchIdx := 0;
+                  RandomSearchOrder := RandomPermute(CatSongs.VisibleSongs);
+                end;
+                SkipTo(RandomSearchOrder[NextRandomSearchIdx]);
+                Inc(NextRandomSearchIdx);
+              end
+              else
+              begin
+                if NextRandomSongIdx >= CatSongs.VisibleSongs then
+                begin
+                  NextRandomSongIdx := 0;
+                  RandomSongOrder := RandomPermute(CatSongs.VisibleSongs);
+                end;
+                SkipTo(RandomSongOrder[NextRandomSongIdx]);
+                Inc(NextRandomSongIdx);
+              end
             end;
             AudioPlayback.PlaySound(SoundLib.Change);
 
@@ -1122,6 +1138,7 @@ begin
               begin
                 //Atm: Set Empty Filter
                 CatSongs.SetFilter('', fltAll);
+                NextRandomSearchIdx := CatSongs.VisibleSongs;
 
                 //Show Cat in Top Left Mod
                 HideCatTL;
@@ -1842,7 +1859,8 @@ begin
   LastSelectMouse := 0;
   LastSelectTime := 0;
 
-  NextRandomSongIdx := CatSongs.VisibleSongs
+  NextRandomSongIdx := CatSongs.VisibleSongs;
+  NextRandomSearchIdx := CatSongs.VisibleSongs;
 
 end;
 
