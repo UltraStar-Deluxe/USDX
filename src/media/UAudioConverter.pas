@@ -270,8 +270,7 @@ begin
   av_opt_set_sample_fmt(SwrContext, 'out_sample_fmt', DstFormat, 0);
   swr_init(SwrContext);
   // calculate ratio
-  Ratio := (dstFormatInfo.Channels / srcFormatInfo.Channels) *
-           (dstFormatInfo.SampleRate / srcFormatInfo.SampleRate);
+  Ratio := srcFormatInfo.GetRatio(dstFormatInfo);
 
   Result := true;
 end;
@@ -320,7 +319,7 @@ begin
   end;
 
   InputSampleCount := InputSize div SrcFormatInfo.FrameSize;
-  OutputSampleCount := GetOutputBufferSize(InputSampleCount);
+  OutputSampleCount := GetOutputBufferSize(InputSize) div DstFormatInfo.FrameSize;
   InBufPtr := Pcuint8(@InputBuffer[0]);
   OutBufPtr := Pcuint8(@OutputBuffer[0]);
   OutputSampleCount:= swr_convert(SwrContext, OutBufPtr, OutputSampleCount,
@@ -328,7 +327,7 @@ begin
   if (OutputSampleCount < 0) then
   begin
     Log.LogError('swr_convert failed ' + inttostr(OutputSampleCount), 'TAudioConverter_SWResample.Init');
-    OutputSampleCount := GetOutputBufferSize(InputSampleCount);
+    OutputSampleCount := GetOutputBufferSize(InputSize) div DstFormatInfo.FrameSize;
   end;
   Result := OutputSampleCount * DstFormatInfo.FrameSize;
 end;
@@ -410,8 +409,7 @@ begin
   end;
 
   // calculate ratio
-  Ratio := (dstFormatInfo.Channels / srcFormatInfo.Channels) *
-           (dstFormatInfo.SampleRate / srcFormatInfo.SampleRate);
+  Ratio := srcFormatInfo.GetRatio(dstFormatInfo);
 
   Result := true;
 end;
