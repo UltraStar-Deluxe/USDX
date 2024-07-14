@@ -971,7 +971,12 @@ begin
       // Resolution
       else if (Identifier = 'RESOLUTION') then
       begin
-        TryStrtoInt(Value, self.Resolution)
+        TryStrtoInt(Value, self.Resolution);
+        if (self.Resolution < 1) then begin
+          // TODO: this hardcoded default also appears in Clear and UFiles.SaveSong
+          Log.LogError('Ignoring invalid resolution in song: ' + FullFileName);
+          self.Resolution := 4;
+        end
       end
 
       // Notes Gap
@@ -1472,6 +1477,7 @@ begin
   Video      := PATH_NONE;
   VideoGAP   := 0;
   NotesGAP   := 0;
+  // TODO: this default also appears in ReadTXTHeader and UFiles.SaveSong
   Resolution := 4;
   Creator    := '';
   PreviewStart := 0;
