@@ -1661,11 +1661,17 @@ begin
         Rec.Bottom := Rec.Top + 2 * NotesH[0];
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap[Color].TexNum);
+          If Color = 99 then
+            glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap_Inv.TexNum)
+          else
+            glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap[Color].TexNum)
         end
         else
         begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Left[Color].TexNum);
+          If Color = 99 then
+            glBindTexture(GL_TEXTURE_2D, Tex_Left_Inv.TexNum)
+          else
+            glBindTexture(GL_TEXTURE_2D, Tex_Left[Color].TexNum)
         end;
         glBegin(GL_QUADS);
           glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
@@ -1681,11 +1687,17 @@ begin
 
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap[Color].TexNum);
+          If Color = 99 then
+            glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap_Inv.TexNum)
+          else
+            glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap[Color].TexNum)
         end
         else
         begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum);
+          If Color = 99 then
+            glBindTexture(GL_TEXTURE_2D, Tex_Mid_Inv.TexNum)
+          else
+            glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum)
         end;
         glBegin(GL_QUADS);
           glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
@@ -1700,11 +1712,19 @@ begin
 
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap[Color].TexNum);
+          If Color = 99 then
+            glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap_Inv.TexNum)
+          else
+            glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap[Color].TexNum)
         end
         else
         begin
-          glBindTexture(GL_TEXTURE_2D, Tex_Right[Color].TexNum);
+          If Color = 99 then
+          begin
+            glBindTexture(GL_TEXTURE_2D, Tex_Right_Inv.TexNum);
+          end
+          else
+            glBindTexture(GL_TEXTURE_2D, Tex_Right[Color].TexNum)
         end;
         glBegin(GL_QUADS);
           glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
