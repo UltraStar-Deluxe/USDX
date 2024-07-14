@@ -150,8 +150,7 @@ begin
       if Song.Video.IsSet              then    SongFile.WriteLine('#VIDEO:'       + EncodeToken(Song.Video.ToUTF8));
 
       if Song.VideoGAP    <> 0.0       then    SongFile.WriteLine('#VIDEOGAP:'    + FloatToStr(Song.VideoGAP));
-      // TODO: this default also appears in USong.ReadTXTHeader and USong.Clear
-      if Song.Resolution  <> 4         then    SongFile.WriteLine('#RESOLUTION:'  + IntToStr(Song.Resolution));
+      if Song.Resolution  <> USong.DEFAULT_RESOLUTION then    SongFile.WriteLine('#RESOLUTION:'  + IntToStr(Song.Resolution));
       if Song.NotesGAP    <> 0         then    SongFile.WriteLine('#NOTESGAP:'    + IntToStr(Song.NotesGAP));
       if Song.Start       <> 0.0       then    SongFile.WriteLine('#START:'       + FloatToStr(Song.Start));
       if Song.Finish      <> 0         then    SongFile.WriteLine('#END:'         + IntToStr(Song.Finish));

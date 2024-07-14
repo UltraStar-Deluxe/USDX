@@ -61,6 +61,9 @@ uses
   UUnicodeStringHelper,
   UUnicodeUtils;
 
+const
+  DEFAULT_RESOLUTION = 4; // default #RESOLUTION
+
 type
 
   TSingMode = ( smNormal, smPartyClassic, smPartyFree, smPartyChallenge, smPartyTournament, smJukebox, smPlaylistRandom , smMedley );
@@ -973,9 +976,8 @@ begin
       begin
         TryStrtoInt(Value, self.Resolution);
         if (self.Resolution < 1) then begin
-          // TODO: this hardcoded default also appears in Clear and UFiles.SaveSong
           Log.LogError('Ignoring invalid resolution in song: ' + FullFileName);
-          self.Resolution := 4;
+          self.Resolution := DEFAULT_RESOLUTION;
         end
       end
 
@@ -1477,8 +1479,7 @@ begin
   Video      := PATH_NONE;
   VideoGAP   := 0;
   NotesGAP   := 0;
-  // TODO: this default also appears in ReadTXTHeader and UFiles.SaveSong
-  Resolution := 4;
+  Resolution := DEFAULT_RESOLUTION;
   Creator    := '';
   PreviewStart := 0;
   CalcMedley := true;
