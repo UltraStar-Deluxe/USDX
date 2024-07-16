@@ -19,8 +19,8 @@
 {$IF Defined(HaveFFmpeg)}
   {$MACRO ON}
   {$IFNDEF FFMPEG_DIR}
-    {$IF (0 > 0) or (6 > 0)}
-      {$DEFINE FFMPEG_DIR := 'ffmpeg-6.0'}
+    {$IF (0 > 0) or (7 > 0)}
+      {$DEFINE FFMPEG_DIR := 'ffmpeg-7.0'}
       {$DEFINE FF_API_OLD_DECODE_AUDIO}
     {$ELSE}
       {$DEFINE FFMPEG_DIR := 'ffmpeg'}
@@ -28,36 +28,36 @@
     {$IFEND}
   {$ENDIF}
   {$IF Defined(IncludeConstants)}
-    FFMPEG_VERSION_INT = 6000000;
-    av__codec = 'avcodec-60';
-    LIBAVCODEC_VERSION_MAJOR   = 60;
+    FFMPEG_VERSION_INT = 7000000;
+    av__codec = 'avcodec-61';
+    LIBAVCODEC_VERSION_MAJOR   = 61;
     LIBAVCODEC_VERSION_MINOR   = 3;
     LIBAVCODEC_VERSION_RELEASE = 100;
 
-    av__format = 'avformat-60';
-    LIBAVFORMAT_VERSION_MAJOR   = 60;
-    LIBAVFORMAT_VERSION_MINOR   = 3;
+    av__format = 'avformat-61';
+    LIBAVFORMAT_VERSION_MAJOR   = 61;
+    LIBAVFORMAT_VERSION_MINOR   = 1;
     LIBAVFORMAT_VERSION_RELEASE = 100;
 
-    av__util = 'avutil-58';
-    LIBAVUTIL_VERSION_MAJOR   = 58;
-    LIBAVUTIL_VERSION_MINOR   = 2;
+    av__util = 'avutil-59';
+    LIBAVUTIL_VERSION_MAJOR   = 59;
+    LIBAVUTIL_VERSION_MINOR   = 8;
     LIBAVUTIL_VERSION_RELEASE = 100;
   {$IFEND}
 {$IFEND}
 
 {$DEFINE HaveSWResample}
 {$IF Defined(HaveSWScale) and Defined(IncludeConstants)}
-  sw__resample = 'swresample-4';
-  LIBSWRESAMPLE_VERSION_MAJOR   = 4;
-  LIBSWRESAMPLE_VERSION_MINOR   = 10;
+  sw__resample = 'swresample-5';
+  LIBSWRESAMPLE_VERSION_MAJOR   = 5;
+  LIBSWRESAMPLE_VERSION_MINOR   = 1;
   LIBSWRESAMPLE_VERSION_RELEASE = 100;
 {$IFEND}
 
 {$DEFINE HaveSWScale}
 {$IF Defined(HaveSWScale) and Defined(IncludeConstants)}
-  sw__scale = 'swscale-7';
-  LIBSWSCALE_VERSION_MAJOR   = 7;
+  sw__scale = 'swscale-8';
+  LIBSWSCALE_VERSION_MAJOR   = 8;
   LIBSWSCALE_VERSION_MINOR   = 1;
   LIBSWSCALE_VERSION_RELEASE = 100;
 {$IFEND}
