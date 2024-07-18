@@ -80,6 +80,9 @@ type
     Mid:    real;
   end;
 
+const
+P1_INVERTED = 99;
+
 var
   NotesW:   array [0..UIni.IMaxPlayerCount-1] of real;
   NotesH:   array [0..UIni.IMaxPlayerCount-1] of real;
@@ -1661,14 +1664,14 @@ begin
         Rec.Bottom := Rec.Top + 2 * NotesH[0];
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
-          If Color = 99 then
+          If Color = P1_INVERTED then
             glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap_Inv.TexNum)
           else
             glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap[Color].TexNum)
         end
         else
         begin
-          If Color = 99 then
+          If Color = P1_INVERTED then
             glBindTexture(GL_TEXTURE_2D, Tex_Left_Inv.TexNum)
           else
             glBindTexture(GL_TEXTURE_2D, Tex_Left[Color].TexNum)
@@ -1687,14 +1690,14 @@ begin
 
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
-          If Color = 99 then
+          If Color = P1_INVERTED then
             glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap_Inv.TexNum)
           else
             glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap[Color].TexNum)
         end
         else
         begin
-          If Color = 99 then
+          If Color = P1_INVERTED then
             glBindTexture(GL_TEXTURE_2D, Tex_Mid_Inv.TexNum)
           else
             glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum)
@@ -1712,14 +1715,14 @@ begin
 
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
-          If Color = 99 then
+          If Color = P1_INVERTED then
             glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap_Inv.TexNum)
           else
             glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap[Color].TexNum)
         end
         else
         begin
-          If Color = 99 then
+          If Color = P1_INVERTED then
           begin
             glBindTexture(GL_TEXTURE_2D, Tex_Right_Inv.TexNum);
           end

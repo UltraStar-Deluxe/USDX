@@ -687,7 +687,7 @@ begin
                 while (CurrentNote[CurrentTrack] <= Tracks[CurrentTrack].Lines[LineIndex].HighNote) and (CurrentBeat > Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentNote[CurrentTrack]].EndBeat) do
                   Inc(CurrentNote[CurrentTrack]);
 
-                Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+                Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
                 EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
                 EditorLyrics[CurrentTrack].Selected := 0;
 
@@ -826,7 +826,7 @@ begin
               begin
                 Tracks[CurrentTrack].CurrentLine := MedleyNotes.end_.line;
                 CurrentNote[CurrentTrack] := MedleyNotes.end_.note;
-                Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+                Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
 
                 EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
                 EditorLyrics[CurrentTrack].Selected := 0;
@@ -849,7 +849,7 @@ begin
               begin
                 Tracks[CurrentTrack].CurrentLine := MedleyNotes.start.line;
                 CurrentNote[CurrentTrack] := MedleyNotes.start.note;
-                Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+                Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
 
                 EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
                 EditorLyrics[CurrentTrack].Selected := 0;
@@ -1793,7 +1793,7 @@ begin
                 Tracks[CurrentTrack].CurrentLine := LineIndex;
                 ShowInteractiveBackground;
                 CurrentNote[CurrentTrack] := 0;
-                Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+                Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
                 EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
                 EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
               end;
@@ -1817,7 +1817,7 @@ begin
 
                 Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
                 CurrentNote[CurrentTrack] := NoteIndex;
-                Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+                Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
                 EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
                 //play current note playonewithmidi
                 PlaySentenceMidi := false;
@@ -1898,7 +1898,7 @@ begin
             Inc(CurrentNote[CurrentTrack]);
             if CurrentNote[CurrentTrack] > Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].HighNote then
               CurrentNote[CurrentTrack] := 0;
-            Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+            Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
             EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
           end;
 
@@ -1976,7 +1976,7 @@ begin
             Dec(CurrentNote[CurrentTrack]);
             if CurrentNote[CurrentTrack] = -1 then
               CurrentNote[CurrentTrack] := Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].HighNote;
-            Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+            Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
             EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
           end;
 
@@ -3115,7 +3115,7 @@ begin
   end;
 
   Refresh;
-  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
   EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
 end;
@@ -3187,7 +3187,7 @@ begin
   end;
 
   Refresh;
-  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
   EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
 end;
@@ -3205,7 +3205,7 @@ begin
   CurrentNote[CurrentTrack] := 0;
   if Tracks[CurrentTrack].CurrentLine > Tracks[CurrentTrack].High then
     Tracks[CurrentTrack].CurrentLine := 0;
-  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
 
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
   EditorLyrics[CurrentTrack].Selected := 0;
@@ -3232,7 +3232,7 @@ begin
   CurrentNote[CurrentTrack] := 0;
   if Tracks[CurrentTrack].CurrentLine = -1 then
     Tracks[CurrentTrack].CurrentLine := Tracks[CurrentTrack].High;
-  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
 
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
   EditorLyrics[CurrentTrack].Selected := 0;
@@ -3340,7 +3340,7 @@ begin
         EndBeat := Notes[HighNote].StartBeat + Notes[HighNote].Duration;
     end;
 
-    Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+    Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
   end
   // Last Note of current Sentence Deleted - > Delete Sentence
   // if there are more than two left
@@ -3362,7 +3362,7 @@ begin
     else
       Tracks[CurrentTrack].CurrentLine := 0;
 
-    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
   end;
 
   // update lyric display
@@ -3396,7 +3396,7 @@ begin
   Refresh;
   //SelectPrevNote();
   //SelectNextNote();
-  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
 end;
 
@@ -3511,7 +3511,7 @@ begin
   Tracks[DstTrack].Lines[DstLine].EndBeat := Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].StartBeat + Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Duration;
 
   Refresh;
-  Tracks[DstTrack].Lines[DstLine].Notes[CurrentNote[DstTrack]].Color := 99;
+  Tracks[DstTrack].Lines[DstLine].Notes[CurrentNote[DstTrack]].Color := P1_INVERTED;
   EditorLyrics[DstTrack].AddLine(DstTrack, Tracks[DstTrack].CurrentLine);
 end;
 
@@ -3563,7 +3563,7 @@ begin
   CurrentTrack := 0;
   Refresh;
   CurrentNote[CurrentTrack] := 0;
-  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
 
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
 end;
@@ -3710,7 +3710,7 @@ begin
   EditorLyrics[DstTrack].AddLine(DstTrack, Tracks[DstTrack].CurrentLine);
   EditorLyrics[DstTrack].Selected := 0;
   CurrentNote[DstTrack] := 0;
-  Tracks[SrcTrack].Lines[SrcLine].Notes[CurrentNote[SrcTrack]].Color := 99;
+  Tracks[SrcTrack].Lines[SrcLine].Notes[CurrentNote[SrcTrack]].Color := P1_INVERTED;
   Result := true;
 end;
 
@@ -4930,7 +4930,7 @@ begin
     begin
       Tracks[TrackIndex].CurrentLine := 0;
       CurrentNote[TrackIndex] := 0;
-      Tracks[TrackIndex].Lines[0].Notes[0].Color := 99;
+      Tracks[TrackIndex].Lines[0].Notes[0].Color := P1_INVERTED;
     end;
 
     AudioPlayBack.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
@@ -5090,7 +5090,7 @@ begin
         Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
         CurrentNote[CurrentTrack] := NoteIndex;
         EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 99;
+        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
       end; //if
     end; //for NoteIndex}
   end; //end move cursor
