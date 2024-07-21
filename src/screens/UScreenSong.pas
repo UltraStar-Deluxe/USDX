@@ -275,7 +275,6 @@ type
       procedure ShowCatTLCustom(Caption: UTF8String);// Show Custom Text in Top left
       procedure HideCatTL;// Show Cat in Tob left
       procedure Refresh;//(GiveStats: boolean); //Refresh Song Sorting
-      procedure ChangeSorting(Tabs: integer; Duet: boolean; Sorting: integer);
       procedure ChangeMusic;
 
       function FreeListMode: boolean;
@@ -4615,34 +4614,6 @@ procedure TScreenSong.CloseMessage();
 begin
   Statics[InfoMessageBG].Visible := false;
   Text[InfoMessageText].Visible := false;
-end;
-
-procedure TScreenSong.ChangeSorting(Tabs: integer; Duet: boolean; Sorting: integer);
-var
-  I, Count:      integer;
-begin
-  Ini.Sorting := Sorting;
-  Ini.TabsAtStartup := Tabs;
-
-  //ClearButtons();
-  CatSongs.Refresh;
-  Interaction := 0;
-  HideCatTL;
-  FixSelected2;
-  ChangeMusic;
-
-  Count := 0;
-  for I := 0 to High(Button) do
-  begin
-    //while (CatSongs.Song[Count].Main) do
-    //  Count := Count + 1;
-
-    if (CatSongs.Song[I].CoverTex.TexNum > 0) then
-      Button[I].Texture := CatSongs.Song[I].CoverTex;
-    //else
-    //Count := Count + 1;
-  end;
-
 end;
 
 end.
