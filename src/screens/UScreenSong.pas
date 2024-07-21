@@ -1858,8 +1858,8 @@ begin
   LastSelectMouse := 0;
   LastSelectTime := 0;
 
-  NextRandomSongIdx := CatSongs.VisibleSongs;
-  NextRandomSearchIdx := CatSongs.VisibleSongs;
+  NextRandomSongIdx := High(cardinal);
+  NextRandomSearchIdx := High(cardinal);
 
 end;
 
