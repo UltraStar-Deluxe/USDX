@@ -61,6 +61,9 @@ uses
   UUnicodeStringHelper,
   UUnicodeUtils;
 
+const
+  DEFAULT_RESOLUTION = 4; // default #RESOLUTION
+
 type
 
   TSingMode = ( smNormal, smPartyClassic, smPartyFree, smPartyChallenge, smPartyTournament, smJukebox, smPlaylistRandom , smMedley );
@@ -971,7 +974,11 @@ begin
       // Resolution
       else if (Identifier = 'RESOLUTION') then
       begin
-        TryStrtoInt(Value, self.Resolution)
+        TryStrtoInt(Value, self.Resolution);
+        if (self.Resolution < 1) then begin
+          Log.LogError('Ignoring invalid resolution in song: ' + FullFileName);
+          self.Resolution := DEFAULT_RESOLUTION;
+        end
       end
 
       // Notes Gap
@@ -1472,7 +1479,7 @@ begin
   Video      := PATH_NONE;
   VideoGAP   := 0;
   NotesGAP   := 0;
-  Resolution := 4;
+  Resolution := DEFAULT_RESOLUTION;
   Creator    := '';
   PreviewStart := 0;
   CalcMedley := true;
