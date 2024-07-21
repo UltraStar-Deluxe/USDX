@@ -56,6 +56,7 @@ Optional libraries:
 - `./game/ultrastardx[.exe]` (on MacOS: `open UltraStarDeluxe.app`)
 
 #### configure flags
+* `--enable-debug`: Outputs warnings and errors from Error.log also to the console, and prints stacktraces when an EAccessViolation occurs.
 * `--with-portaudio`: This is the default.
 * `--without-portaudio`: Use SDL audio input instead.
   This should support newer platforms like PulseAudio and PipeWire.
