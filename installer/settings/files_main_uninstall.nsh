@@ -94,6 +94,11 @@
  Delete "$INSTDIR\libtiff-6.dll"
  Delete "$INSTDIR\libwebp-7.dll"
  Delete "$INSTDIR\libdav1d.dll"
+ Delete "$INSTDIR\avcodec-61.dll"
+ Delete "$INSTDIR\avformat-61.dll"
+ Delete "$INSTDIR\avutil-59.dll"
+ Delete "$INSTDIR\swresample-5.dll"
+ Delete "$INSTDIR\swscale-8.dll"
 
  StrCpy $0 "$INSTDIR\songs"
  Call un.DeleteIfEmpty 

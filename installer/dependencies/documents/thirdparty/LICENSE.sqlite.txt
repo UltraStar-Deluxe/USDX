@@ -41,7 +41,7 @@ Warranty of Title
 
 SQLite is in the public domain and does not require a license. Even so, some
 organizations want legal proof of their right to use SQLite. Circumstances
-where this might occurs include the following:
+where this might occur include the following:
 
   • Your company desires indemnity against claims of copyright infringement.
   • You are using SQLite in a jurisdiction that does not recognize the public
@@ -56,10 +56,10 @@ If any of the above circumstances apply to you, Hwaci, the company that employs
 all the developers of SQLite, will sell you a Warranty of Title for SQLite. A
 Warranty of Title is a legal document that asserts that the claimed authors of
 SQLite are the true authors, and that the authors have the legal right to
-dedicate the SQLite to the public domain, and that Hwaci will vigorously defend
-against challenges to those claims. All proceeds from the sale of SQLite
-Warranties of Title are used to fund continuing improvement and support of
-SQLite.
+dedicate the SQLite library into the public domain, and that Hwaci will
+vigorously defend against challenges to those claims. All proceeds from the
+sale of SQLite Warranties of Title are used to fund continuing improvement and
+support of SQLite.
 
 Contributed Code
 

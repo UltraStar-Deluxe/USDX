@@ -6,7 +6,7 @@ import json
 import sys
 import os
 
-sha = '97b88f326c429bccab263f809a16798c3e1ec6b5'
+sha = '67f6a4f9305a2ee1508215ad4a861f23f7b8e3da'
 filename = 'usdx-dlls-i686'
 urlbase = 'https://api.github.com/repos/UltraStar-Deluxe/mxe/'
 headers = {
