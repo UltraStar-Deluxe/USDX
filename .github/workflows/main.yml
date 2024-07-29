@@ -8,6 +8,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: Determine version
         run: |
           $VNAME=$(cat VERSION | sed "s/+dev$/+dev-$(git rev-parse --short HEAD)/")
@@ -53,6 +55,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: Determine version
         run: |
           VNAME=$(cat VERSION | sed "s/+dev$/+dev-$(git rev-parse --short HEAD)/")
@@ -86,6 +90,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: Determine version
         run: |
           VNAME=$(cat VERSION | sed "s/+dev$/+dev-$(git rev-parse --short HEAD)/")
