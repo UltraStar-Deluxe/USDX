@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/UltraStar-Deluxe/USDX.svg?branch=master)](https://travis-ci.org/UltraStar-Deluxe/USDX)
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](LICENSE)
 
 # Welcome to UltraStar Deluxe (USDX) development!
@@ -11,7 +10,7 @@ The intention of this document is to introduce you to USDX development.
 - Please use CamelCase naming. Classes/Units/Types/Functions should start with a capital letter and constants/values/instances should start with small letters
 - You can use Windows or Linux or OS X for development just fine. See readme.md for linux / OS X install instructions.
 - As soon as whatever you changed works somewhat and doesn't break much of general gameplay, please commit it to the  git code repository. If you work on bigger parts, please use a separate branch and commit your changes there often, so that your work in progress is visible. No one will judge you on work-in-progress code quality - we don't get paid for this so screw the other people if they complain ;-) .
-- There is travis continuous integration set up. It will email project members if build of the master branch or some other branch is broken. This is quite helpful because linux users and other more tech savy users tend to run the most recent code so that they can use all the neat new features. Please keep them happy by not breaking too much of general singstar-like karaoke gameplay on the master branch. 
+- There is Github Actions continuous integration set up. It will email project members if build of the master branch or some other branch is broken. This is quite helpful because linux users and other more tech savy users tend to run the most recent code so that they can use all the neat new features. Please keep them happy by not breaking too much of general singstar-like karaoke gameplay on the master branch. 
 - If you start working on something that is more then just a small code change, please create an issue in the git repository issue tracker for that and assign it to yourself, so the other developers don't touch it in the mean time.
 - Please write somewhat reusable code and split big problems into smaller functions. :)
 - If you have questions, feel free to ask them in the irc channel or on the issue tracker.
