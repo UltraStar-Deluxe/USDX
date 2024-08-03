@@ -4532,28 +4532,28 @@ begin
 
     if (Ini.ShowScores = 1) and (Text[TextMaxScore2].Text = '0') then
     begin
+      Text[TextScoreUser].Visible       := false;
       Text[TextMaxScore2].Visible       := false;
       Text[TextMediaScore2].Visible     := false;
-      Text[TextScoreUser].Visible       := false;
     end
     else
     begin
+      Text[TextScoreUser].Visible       := true;
       Text[TextMaxScore2].Visible       := true;
       Text[TextMediaScore2].Visible     := true;
-      Text[TextScoreUser].Visible       := true;
     end;
 
     if (Ini.ShowScores = 1) and (Text[TextMaxScoreLocal].Text = '0') then
     begin
+      Text[TextScoreUserLocal].Visible  := false;
       Text[TextMaxScoreLocal].Visible   := false;
       Text[TextMediaScoreLocal].Visible := false;
-      Text[TextScoreUserLocal].Visible  := false;
     end
     else
     begin
+      Text[TextScoreUserLocal].Visible  := true;
       Text[TextMaxScoreLocal].Visible   := true;
       Text[TextMediaScoreLocal].Visible := true;
-      Text[TextScoreUserLocal].Visible  := true;
     end;
 
   end;
