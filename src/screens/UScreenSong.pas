@@ -1866,87 +1866,54 @@ end;
 procedure TScreenSong.ColorDuetNameSingers();
 var
   Col: TRGB;
+  procedure setColor(static: integer; color: TRGB);
+  begin
+    Statics[static].Texture.ColR := color.R;
+    Statics[static].Texture.ColG := color.G;
+    Statics[static].Texture.ColB := color.B;
+  end;
 begin
   if (PlayersPlay = 1) then
   begin
-    Statics[Static2PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-    Statics[Static2PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-    Statics[Static2PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-    Col := GetPlayerLightColor(Ini.SingColor[0]);
-    Statics[Static2PlayersDuetSingerP2].Texture.ColR := Col.R;
-    Statics[Static2PlayersDuetSingerP2].Texture.ColG := Col.G;
-    Statics[Static2PlayersDuetSingerP2].Texture.ColB := Col.B;
+    setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
+    // this one is different from all the others
+    setColor(Static2PlayersDuetSingerP2, GetPlayerLightColor(Ini.SingColor[0]));
   end;
 
   if (PlayersPlay = 2) then
   begin
-    Statics[Static2PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-    Statics[Static2PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-    Statics[Static2PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-    Statics[Static2PlayersDuetSingerP2].Texture.ColR := ColPlayer[1].R;
-    Statics[Static2PlayersDuetSingerP2].Texture.ColG := ColPlayer[1].G;
-    Statics[Static2PlayersDuetSingerP2].Texture.ColB := ColPlayer[1].B;
+    setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
+    setColor(Static2PlayersDuetSingerP2, ColPlayer[1]);
   end;
 
   if (PlayersPlay = 3) then
   begin
-    Statics[Static3PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-    Statics[Static3PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-    Statics[Static3PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-    Statics[Static3PlayersDuetSingerP2].Texture.ColR := ColPlayer[1].R;
-    Statics[Static3PlayersDuetSingerP2].Texture.ColG := ColPlayer[1].G;
-    Statics[Static3PlayersDuetSingerP2].Texture.ColB := ColPlayer[1].B;
-
-    Statics[Static3PlayersDuetSingerP3].Texture.ColR := ColPlayer[2].R;
-    Statics[Static3PlayersDuetSingerP3].Texture.ColG := ColPlayer[2].G;
-    Statics[Static3PlayersDuetSingerP3].Texture.ColB := ColPlayer[2].B;
+    setColor(Static3PlayersDuetSingerP1, ColPlayer[0]);
+    setColor(Static3PlayersDuetSingerP2, ColPlayer[1]);
+    setColor(Static3PlayersDuetSingerP3, ColPlayer[2]);
   end;
 
   if (PlayersPlay = 4) then
   begin
     if (Screens = 1) then
     begin
-      Statics[Static2PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-      Statics[Static2PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-      Statics[Static2PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-      Statics[Static2PlayersDuetSingerP2].Texture.ColR := ColPlayer[1].R;
-      Statics[Static2PlayersDuetSingerP2].Texture.ColG := ColPlayer[1].G;
-      Statics[Static2PlayersDuetSingerP2].Texture.ColB := ColPlayer[1].B;
-
-      Statics[Static4PlayersDuetSingerP3].Texture.ColR := ColPlayer[2].R;
-      Statics[Static4PlayersDuetSingerP3].Texture.ColG := ColPlayer[2].G;
-      Statics[Static4PlayersDuetSingerP3].Texture.ColB := ColPlayer[2].B;
-
-      Statics[Static4PlayersDuetSingerP4].Texture.ColR := ColPlayer[3].R;
-      Statics[Static4PlayersDuetSingerP4].Texture.ColG := ColPlayer[3].G;
-      Statics[Static4PlayersDuetSingerP4].Texture.ColB := ColPlayer[3].B;
+      setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
+      setColor(Static2PlayersDuetSingerP2, ColPlayer[1]);
+      setColor(Static4PlayersDuetSingerP3, ColPlayer[2]);
+      setColor(Static4PlayersDuetSingerP4, ColPlayer[3]);
     end
     else
     begin
       if (ScreenAct = 1) then
       begin
-        Statics[Static2PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-        Statics[Static2PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-        Statics[Static2PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-        Statics[Static2PlayersDuetSingerP2].Texture.ColR := ColPlayer[1].R;
-        Statics[Static2PlayersDuetSingerP2].Texture.ColG := ColPlayer[1].G;
-        Statics[Static2PlayersDuetSingerP2].Texture.ColB := ColPlayer[1].B;
+        setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
+        setColor(Static2PlayersDuetSingerP2, ColPlayer[1]);
       end;
 
       if (ScreenAct = 2) then
       begin
-        Statics[Static2PlayersDuetSingerP1].Texture.ColR := ColPlayer[2].R;
-        Statics[Static2PlayersDuetSingerP1].Texture.ColG := ColPlayer[2].G;
-        Statics[Static2PlayersDuetSingerP1].Texture.ColB := ColPlayer[2].B;
-
-        Statics[Static2PlayersDuetSingerP2].Texture.ColR := ColPlayer[3].R;
-        Statics[Static2PlayersDuetSingerP2].Texture.ColG := ColPlayer[3].G;
-        Statics[Static2PlayersDuetSingerP2].Texture.ColB := ColPlayer[3].B;
+        setColor(Static2PlayersDuetSingerP1, ColPlayer[2]);
+        setColor(Static2PlayersDuetSingerP2, ColPlayer[3]);
       end;
     end;
   end;
@@ -1955,60 +1922,27 @@ begin
   begin
     if (Screens = 1) then
     begin
-        Statics[Static3PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-        Statics[Static3PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-        Statics[Static3PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-        Statics[Static3PlayersDuetSingerP2].Texture.ColR := ColPlayer[1].R;
-        Statics[Static3PlayersDuetSingerP2].Texture.ColG := ColPlayer[1].G;
-        Statics[Static3PlayersDuetSingerP2].Texture.ColB := ColPlayer[1].B;
-
-        Statics[Static3PlayersDuetSingerP3].Texture.ColR := ColPlayer[2].R;
-        Statics[Static3PlayersDuetSingerP3].Texture.ColG := ColPlayer[2].G;
-        Statics[Static3PlayersDuetSingerP3].Texture.ColB := ColPlayer[2].B;
-
-        Statics[Static6PlayersDuetSingerP4].Texture.ColR := ColPlayer[3].R;
-        Statics[Static6PlayersDuetSingerP4].Texture.ColG := ColPlayer[3].G;
-        Statics[Static6PlayersDuetSingerP4].Texture.ColB := ColPlayer[3].B;
-
-        Statics[Static6PlayersDuetSingerP5].Texture.ColR := ColPlayer[4].R;
-        Statics[Static6PlayersDuetSingerP5].Texture.ColG := ColPlayer[4].G;
-        Statics[Static6PlayersDuetSingerP5].Texture.ColB := ColPlayer[4].B;
-
-        Statics[Static6PlayersDuetSingerP6].Texture.ColR := ColPlayer[5].R;
-        Statics[Static6PlayersDuetSingerP6].Texture.ColG := ColPlayer[5].G;
-        Statics[Static6PlayersDuetSingerP6].Texture.ColB := ColPlayer[5].B;
+      setColor(Static3PlayersDuetSingerP1, ColPlayer[0]);
+      setColor(Static3PlayersDuetSingerP2, ColPlayer[1]);
+      setColor(Static3PlayersDuetSingerP3, ColPlayer[2]);
+      setColor(Static6PlayersDuetSingerP4, ColPlayer[3]);
+      setColor(Static6PlayersDuetSingerP5, ColPlayer[4]);
+      setColor(Static6PlayersDuetSingerP6, ColPlayer[5]);
     end
     else
     begin
       if (ScreenAct = 1) then
       begin
-        Statics[Static3PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-        Statics[Static3PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-        Statics[Static3PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-        Statics[Static3PlayersDuetSingerP2].Texture.ColR := ColPlayer[1].R;
-        Statics[Static3PlayersDuetSingerP2].Texture.ColG := ColPlayer[1].G;
-        Statics[Static3PlayersDuetSingerP2].Texture.ColB := ColPlayer[1].B;
-
-        Statics[Static3PlayersDuetSingerP3].Texture.ColR := ColPlayer[2].R;
-        Statics[Static3PlayersDuetSingerP3].Texture.ColG := ColPlayer[2].G;
-        Statics[Static3PlayersDuetSingerP3].Texture.ColB := ColPlayer[2].B;
+        setColor(Static3PlayersDuetSingerP1, ColPlayer[0]);
+        setColor(Static3PlayersDuetSingerP2, ColPlayer[1]);
+        setColor(Static3PlayersDuetSingerP3, ColPlayer[2]);
       end;
 
       if (ScreenAct = 2) then
       begin
-        Statics[Static3PlayersDuetSingerP1].Texture.ColR := ColPlayer[3].R;
-        Statics[Static3PlayersDuetSingerP1].Texture.ColG := ColPlayer[3].G;
-        Statics[Static3PlayersDuetSingerP1].Texture.ColB := ColPlayer[3].B;
-
-        Statics[Static3PlayersDuetSingerP2].Texture.ColR := ColPlayer[4].R;
-        Statics[Static3PlayersDuetSingerP2].Texture.ColG := ColPlayer[4].G;
-        Statics[Static3PlayersDuetSingerP2].Texture.ColB := ColPlayer[4].B;
-
-        Statics[Static3PlayersDuetSingerP3].Texture.ColR := ColPlayer[5].R;
-        Statics[Static3PlayersDuetSingerP3].Texture.ColG := ColPlayer[5].G;
-        Statics[Static3PlayersDuetSingerP3].Texture.ColB := ColPlayer[5].B;
+        setColor(Static3PlayersDuetSingerP1, ColPlayer[3]);
+        setColor(Static3PlayersDuetSingerP2, ColPlayer[4]);
+        setColor(Static3PlayersDuetSingerP3, ColPlayer[5]);
       end;
     end;
   end;
