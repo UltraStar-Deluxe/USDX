@@ -4501,59 +4501,59 @@ begin
 end;
 
 procedure TScreenSong.SongScore;
+  procedure setVisible(elements: array of integer; visible: boolean);
+  var
+    J: integer;
+  begin
+    for J := 0 to High(elements) do
+      Text[elements[J]].Visible := visible;
+  end;
+  procedure hide(elements: array of integer);
+  begin
+    setVisible(elements, false);
+  end;
+  procedure show(elements: array of integer);
+  begin
+    setVisible(elements, true);
+  end;
 begin
 
   if (CatSongs.Song[Interaction].isDuet) or (RapToFreestyle) or ((Mode <> smNormal) or (Ini.ShowScores = 0) or (CatSongs.Song[Interaction].Edition = '') or ((Ini.ShowScores = 1) and ((Text[TextMaxScore2].Text = '0') and (Text[TextMaxScoreLocal].Text = '0')))) then
   begin
-    Text[TextScore].Visible           := false;
-    Text[TextMaxScore].Visible        := false;
-    Text[TextMediaScore].Visible      := false;
-    Text[TextMaxScore2].Visible       := false;
-    Text[TextMediaScore2].Visible     := false;
-    Text[TextMaxScoreLocal].Visible   := false;
-    Text[TextMediaScoreLocal].Visible := false;
-    Text[TextScoreUserLocal].Visible  := false;
-    Text[TextScoreUser].Visible       := false;
+    hide([
+      TextScore, TextMaxScore, TextMediaScore,
+      TextScoreUser, TextMaxScore2, TextMediaScore2,
+      TextScoreUserLocal, TextMaxScoreLocal, TextMediaScoreLocal
+    ]);
   end
   else
   begin
+    // TODO: some of these if statements don't feel right? Like, unless ShowScores is inverted, most of these will still show them if there already is a score?
     if (Ini.ShowScores = 1) and (Text[TextMaxScoreLocal].Text = '0') and (High(DLLMan.Websites) < 0) then
     begin
-      Text[TextScore].Visible           := false;
-      Text[TextMaxScore].Visible        := false;
-      Text[TextMediaScore].Visible      := false;
+      hide([TextScore, TextMaxScore, TextMediaScore]);
     end
     else
     begin
-      Text[TextScore].Visible           := true;
-      Text[TextMaxScore].Visible        := true;
-      Text[TextMediaScore].Visible      := true;
+      show([TextScore, TextMaxScore, TextMediaScore]);
     end;
 
     if (Ini.ShowScores = 1) and (Text[TextMaxScore2].Text = '0') then
     begin
-      Text[TextScoreUser].Visible       := false;
-      Text[TextMaxScore2].Visible       := false;
-      Text[TextMediaScore2].Visible     := false;
+      hide([TextScoreUser, TextMaxScore2, TextMediaScore2]);
     end
     else
     begin
-      Text[TextScoreUser].Visible       := true;
-      Text[TextMaxScore2].Visible       := true;
-      Text[TextMediaScore2].Visible     := true;
+      show([TextScoreUser, TextMaxScore2, TextMediaScore2]);
     end;
 
     if (Ini.ShowScores = 1) and (Text[TextMaxScoreLocal].Text = '0') then
     begin
-      Text[TextScoreUserLocal].Visible  := false;
-      Text[TextMaxScoreLocal].Visible   := false;
-      Text[TextMediaScoreLocal].Visible := false;
+      hide([TextScoreUserLocal, TextMaxScoreLocal, TextMediaScoreLocal]);
     end
     else
     begin
-      Text[TextScoreUserLocal].Visible  := true;
-      Text[TextMaxScoreLocal].Visible   := true;
-      Text[TextMediaScoreLocal].Visible := true;
+      show([TextScoreUserLocal, TextMaxScoreLocal, TextMediaScoreLocal]);
     end;
 
   end;
