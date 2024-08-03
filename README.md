@@ -45,7 +45,7 @@ The [wiki](https://github.com/UltraStar-Deluxe/USDX/wiki) contains more informat
 There are two main ways to compile the game:
 
 1. Lazarus IDE
-2. `./autogen.sh && ./configure && make`
+2. `./autogen.sh && ./configure [--enable-debug] && make`
 
 The executable will be `game/ultrastardx[.exe]`.
 
