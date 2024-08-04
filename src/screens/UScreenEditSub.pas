@@ -2792,7 +2792,7 @@ begin
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
     CurrentSong.Mp3 := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
     AudioPlayback.Close;
-    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3),nil);
   end;
 
   if ((Mp3SlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
@@ -2801,7 +2801,7 @@ begin
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
     CurrentSong.Mp3 := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
     AudioPlayback.Close();
-    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3),nil);
   end;
 
   if (((VolumeAudioSlideId = Interactions[nBut].Num) or (VolumeMidiSlideId = Interactions[nBut].Num) or (VolumeClickSlideId = Interactions[nBut].Num))
@@ -4933,7 +4933,7 @@ begin
       Tracks[TrackIndex].Lines[0].Notes[0].Color := P1_INVERTED;
     end;
 
-    AudioPlayBack.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+    AudioPlayBack.Open(CurrentSong.Path.Append(CurrentSong.Mp3),nil);
     //Set Down Music Volume for Better hearability of Midi Sounds
     //Music.SetVolume(0.4);
 

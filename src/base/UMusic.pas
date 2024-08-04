@@ -473,10 +473,11 @@ type
       function  Finished: boolean;
       function  Length: real;
 
-      function Open(const Filename: IPath): boolean; // true if succeed
+      function Open(const Filename: IPath; const FilenameKaraoke: IPath): boolean; // true if succeed
       procedure Close;
 
       procedure Play;
+      procedure ToggleKaraoke;
       procedure Pause;
       procedure Stop;
 
