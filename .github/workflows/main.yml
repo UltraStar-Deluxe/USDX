@@ -25,6 +25,10 @@ jobs:
           $Env:FPCDIR = "c:\newpascal\fpcsrc"
           $Env:PATH = "c:\newpascal\fpc\bin\i386-win32;c:\newpascal\binw32;$Env:PATH"
           c:\newpascal\lazarus\lazbuild src\ultrastardx-win.lpi --lazarusdir=c:\newpascal\lazarus
+      - name: Add prebuilt DLLs
+        run: |
+          wget -q -O usdx-dlls.zip https://github.com/UltraStar-Deluxe/mxe/releases/download/USDX-v2023.12.0/usdx-dlls-i686-v2023.12.0.zip
+          7z x -y usdx-dlls.zip -ogame "*.dll"
       - name: Create installer
         run: |
           del game\*.debug
