@@ -1,16 +1,18 @@
 # Compiling
-[Freepascal](http://freepascal.org/) 3.0.0 or newer is required to compile UltraStar Deluxe. If you had some older version of fpc installed before, make sure to remove everything of it correctly before trying to install freepascal (otherwise compiling will fail with various weird error messages). Also, using the 3.0-development branch with current fixes is suggested.
+[Free Pascal](http://freepascal.org/) 3.0.0 or newer is required to compile UltraStar Deluxe. If you had some older version of fpc installed before, make sure to remove everything of it correctly before trying to install Free Pascal (otherwise compiling will fail with various weird error messages). Also, using the newest version is suggested.
 If you want to help the project by coding patches, we suggest you to use the [Lazarus 1.6](http://www.lazarus-ide.org/) or newer integrated development environment.
 For linking and running the game, the following libraries are also required:
 - SDL2, SDL2_image
-- ffmpeg 2.8 or older
-- sqlite
-- [bass](http://www.un4seen.com/bass.html)
+- FFmpeg 7.0 or older
+- SQLite 3
+- [BASS](http://www.un4seen.com/bass.html)
 - some fonts like DejaVu
-- portaudio
-- lua 5.1 or 5.2 or 5.3
-- opencv if you want webcam support
-- projectM if you want audio visualisation support
+- PortAudio
+- Lua 5.1, 5.2, 5.3 or 5.4
+- OpenCV if you want webcam support
+- projectM 2,x if you want audio visualisation support
+
+Prebuilt DLLs for SDL2, SDL2_image, FFmpeg, SQLite, PortAudio, and Lua can be found in the releases section of [our MXE fork](https://github.com/UltraStar-Deluxe/mxe). You can use the dldlls.py script to download the DLLs for the checked out code. The remaining DLLs needed for Windows builds are part of this repository.
 
 ## Compiling using Lazarus
 1. Start Lazarus.
@@ -83,6 +85,7 @@ Optional libraries:
 
 # Windows installer
 The CI does this for you, but if you need to do it manually:
+- Complete the set of DLLs in the `game` directory using a matching release from [here](https://github.com/UltraStar-Deluxe/mxe).
 - Create Windows portable version: zip the contents of the `game` directory
 - Create Windows installer:
   * Install NSIS (also install the Graphics and Language components during setup)
