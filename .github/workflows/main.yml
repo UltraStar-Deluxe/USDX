@@ -25,6 +25,12 @@ jobs:
           $Env:FPCDIR = "c:\newpascal\fpcsrc"
           $Env:PATH = "c:\newpascal\fpc\bin\i386-win32;c:\newpascal\binw32;$Env:PATH"
           c:\newpascal\lazarus\lazbuild src\ultrastardx-win.lpi --lazarusdir=c:\newpascal\lazarus
+      - name: Add prebuilt DLLs
+        run: |
+          python dldlls.py
+          7z x -y usdx-dlls-i686.zip -ogame "*.dll"
+        env:
+          ARTIFACT_ACCESS_TOKEN: ${{ secrets.MxeActionsReadAccessToken }}
       - name: Create installer
         run: |
           del game\*.debug
