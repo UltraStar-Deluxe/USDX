@@ -34,6 +34,8 @@ interface
 uses
 {$IFDEF MSWINDOWS}
   Windows,
+{$ELSE}
+  Character, // Include the Character unit for non-Windows platforms
 {$ENDIF}
   anyascii,
   StrUtils,
@@ -238,20 +240,11 @@ end;
 function IsAlphaChar(ch: WideChar): boolean;
 begin
   {$IFDEF MSWINDOWS}
+    // On Windows, IsCharAlphaW() handles Unicode characters correctly for all languages.
     Result := IsCharAlphaW(ch);
   {$ELSE}
-    // TODO: add chars > 255 (or replace with libxml2 functions?)
-    case ch of
-      'A'..'Z',  // A-Z
-      'a'..'z',  // a-z
-      #170,#181,#186,
-      #192..#214,
-      #216..#246,
-      #248..#255:
-        Result := true;
-      else
-        Result := false;
-    end;
+    // Use the TCharacter helper to check for any alphabetic character in Unicode
+    Result := TCharacter.IsLetter(ch);
   {$ENDIF}
 end;
 
