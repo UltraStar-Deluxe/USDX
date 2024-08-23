@@ -1,0 +1,20 @@
+Copyright, Disclaimer, and all that other jazz
+==============================================
+The BASS_FX library is free, so if anyone tries to charge you
+for it, kick 'em where it hurts.
+
+This software is provided "as is", without warranty of ANY KIND,
+either expressed or implied, including but not limited to the
+implied warranties of merchantability and/or fitness for a
+particular purpose. The author shall NOT be held liable for
+ANY damage to you, your computer, or to anyone or anything else,
+that may result from its use, or misuse. Basically, you use it
+at YOUR OWN RISK.
+
+Usage of BASS_FX indicates that you agree to the above conditions.
+
+You may freely distribute the BASS_FX package as long as NO FEE is
+charged and all the files remain INTACT AND UNMODIFIED.
+
+All trademarks and other registered names contained in the BASS_FX
+package are the property of their respective owners.
