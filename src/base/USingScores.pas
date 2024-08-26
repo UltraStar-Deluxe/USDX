@@ -1226,6 +1226,13 @@ var
   R, G, B:    real;
   Size, Diff: real;
   Drawing: boolean;
+  procedure updatePosition(themeElements: TThemeSingPlayer);
+  begin
+    Position.RBX := themeElements.SingBar.X;
+    Position.RBY := themeElements.SingBar.Y;
+    Position.RBW := themeElements.SingBar.W;
+    Position.RBH := themeElements.SingBar.H;
+  end;
 begin
   { if screens = 2 and playerplay <= 3 the 2nd screen shows the
    textures of screen 1 }
@@ -1246,61 +1253,19 @@ begin
       if (CurrentSong.isDuet) then
       begin
         case Index of
-          0:
-             begin
-               Position.RBX := Theme.Sing.Duet4PP1.SingBar.X;
-               Position.RBY := Theme.Sing.Duet4PP1.SingBar.Y;
-               Position.RBW := Theme.Sing.Duet4PP1.SingBar.W;
-               Position.RBH := Theme.Sing.Duet4PP1.SingBar.H;
-             end;
-          1: begin
-               Position.RBX := Theme.Sing.Duet4PP2.SingBar.X;
-               Position.RBY := Theme.Sing.Duet4PP2.SingBar.Y;
-               Position.RBW := Theme.Sing.Duet4PP2.SingBar.W;
-               Position.RBH := Theme.Sing.Duet4PP2.SingBar.H;
-             end;
-          2: begin
-               Position.RBX := Theme.Sing.Duet4PP3.SingBar.X;
-               Position.RBY := Theme.Sing.Duet4PP3.SingBar.Y;
-               Position.RBW := Theme.Sing.Duet4PP3.SingBar.W;
-               Position.RBH := Theme.Sing.Duet4PP3.SingBar.H;
-             end;
-          3: begin
-               Position.RBX := Theme.Sing.Duet4PP4.SingBar.X;
-               Position.RBY := Theme.Sing.Duet4PP4.SingBar.Y;
-               Position.RBW := Theme.Sing.Duet4PP4.SingBar.W;
-               Position.RBH := Theme.Sing.Duet4PP4.SingBar.H;
-             end;
+          0: updatePosition(Theme.Sing.Duet4PP1);
+          1: updatePosition(Theme.Sing.Duet4PP2);
+          2: updatePosition(Theme.Sing.Duet4PP3);
+          3: updatePosition(Theme.Sing.Duet4PP4);
         end;
       end
       else
       begin
         case Index of
-          0:
-             begin
-               Position.RBX := Theme.Sing.Solo4PP1.SingBar.X;
-               Position.RBY := Theme.Sing.Solo4PP1.SingBar.Y;
-               Position.RBW := Theme.Sing.Solo4PP1.SingBar.W;
-               Position.RBH := Theme.Sing.Solo4PP1.SingBar.H;
-             end;
-          1: begin
-               Position.RBX := Theme.Sing.Solo4PP2.SingBar.X;
-               Position.RBY := Theme.Sing.Solo4PP2.SingBar.Y;
-               Position.RBW := Theme.Sing.Solo4PP2.SingBar.W;
-               Position.RBH := Theme.Sing.Solo4PP2.SingBar.H;
-             end;
-          2: begin
-               Position.RBX := Theme.Sing.Solo4PP3.SingBar.X;
-               Position.RBY := Theme.Sing.Solo4PP3.SingBar.Y;
-               Position.RBW := Theme.Sing.Solo4PP3.SingBar.W;
-               Position.RBH := Theme.Sing.Solo4PP3.SingBar.H;
-             end;
-          3: begin
-               Position.RBX := Theme.Sing.Solo4PP4.SingBar.X;
-               Position.RBY := Theme.Sing.Solo4PP4.SingBar.Y;
-               Position.RBW := Theme.Sing.Solo4PP4.SingBar.W;
-               Position.RBH := Theme.Sing.Solo4PP4.SingBar.H;
-             end;
+          0: updatePosition(Theme.Sing.Solo4PP1);
+          1: updatePosition(Theme.Sing.Solo4PP2);
+          2: updatePosition(Theme.Sing.Solo4PP3);
+          3: updatePosition(Theme.Sing.Solo4PP4);
         end;
       end;
     end
@@ -1310,85 +1275,23 @@ begin
       if (CurrentSong.isDuet) then
       begin
         case Index of
-          0:
-             begin
-               Position.RBX := Theme.Sing.Duet6PP1.SingBar.X;
-               Position.RBY := Theme.Sing.Duet6PP1.SingBar.Y;
-               Position.RBW := Theme.Sing.Duet6PP1.SingBar.W;
-               Position.RBH := Theme.Sing.Duet6PP1.SingBar.H;
-             end;
-          1: begin
-               Position.RBX := Theme.Sing.Duet6PP2.SingBar.X;
-               Position.RBY := Theme.Sing.Duet6PP2.SingBar.Y;
-               Position.RBW := Theme.Sing.Duet6PP2.SingBar.W;
-               Position.RBH := Theme.Sing.Duet6PP2.SingBar.H;
-             end;
-          2: begin
-               Position.RBX := Theme.Sing.Duet6PP3.SingBar.X;
-               Position.RBY := Theme.Sing.Duet6PP3.SingBar.Y;
-               Position.RBW := Theme.Sing.Duet6PP3.SingBar.W;
-               Position.RBH := Theme.Sing.Duet6PP3.SingBar.H;
-             end;
-          3: begin
-               Position.RBX := Theme.Sing.Duet6PP4.SingBar.X;
-               Position.RBY := Theme.Sing.Duet6PP4.SingBar.Y;
-               Position.RBW := Theme.Sing.Duet6PP4.SingBar.W;
-               Position.RBH := Theme.Sing.Duet6PP4.SingBar.H;
-             end;
-          4: begin
-               Position.RBX := Theme.Sing.Duet6PP5.SingBar.X;
-               Position.RBY := Theme.Sing.Duet6PP5.SingBar.Y;
-               Position.RBW := Theme.Sing.Duet6PP5.SingBar.W;
-               Position.RBH := Theme.Sing.Duet6PP5.SingBar.H;
-             end;
-          5: begin
-               Position.RBX := Theme.Sing.Duet6PP6.SingBar.X;
-               Position.RBY := Theme.Sing.Duet6PP6.SingBar.Y;
-               Position.RBW := Theme.Sing.Duet6PP6.SingBar.W;
-               Position.RBH := Theme.Sing.Duet6PP6.SingBar.H;
-             end;
+          0: updatePosition(Theme.Sing.Duet6PP1);
+          1: updatePosition(Theme.Sing.Duet6PP2);
+          2: updatePosition(Theme.Sing.Duet6PP3);
+          3: updatePosition(Theme.Sing.Duet6PP4);
+          4: updatePosition(Theme.Sing.Duet6PP5);
+          5: updatePosition(Theme.Sing.Duet6PP6);
         end;
       end
       else
       begin
         case Index of
-          0:
-             begin
-               Position.RBX := Theme.Sing.Solo6PP1.SingBar.X;
-               Position.RBY := Theme.Sing.Solo6PP1.SingBar.Y;
-               Position.RBW := Theme.Sing.Solo6PP1.SingBar.W;
-               Position.RBH := Theme.Sing.Solo6PP1.SingBar.H;
-             end;
-          1: begin
-               Position.RBX := Theme.Sing.Solo6PP2.SingBar.X;
-               Position.RBY := Theme.Sing.Solo6PP2.SingBar.Y;
-               Position.RBW := Theme.Sing.Solo6PP2.SingBar.W;
-               Position.RBH := Theme.Sing.Solo6PP2.SingBar.H;
-             end;
-          2: begin
-               Position.RBX := Theme.Sing.Solo6PP3.SingBar.X;
-               Position.RBY := Theme.Sing.Solo6PP3.SingBar.Y;
-               Position.RBW := Theme.Sing.Solo6PP3.SingBar.W;
-               Position.RBH := Theme.Sing.Solo6PP3.SingBar.H;
-             end;
-          3: begin
-               Position.RBX := Theme.Sing.Solo6PP4.SingBar.X;
-               Position.RBY := Theme.Sing.Solo6PP4.SingBar.Y;
-               Position.RBW := Theme.Sing.Solo6PP4.SingBar.W;
-               Position.RBH := Theme.Sing.Solo6PP4.SingBar.H;
-             end;
-          4: begin
-               Position.RBX := Theme.Sing.Solo6PP5.SingBar.X;
-               Position.RBY := Theme.Sing.Solo6PP5.SingBar.Y;
-               Position.RBW := Theme.Sing.Solo6PP5.SingBar.W;
-               Position.RBH := Theme.Sing.Solo6PP5.SingBar.H;
-             end;
-          5: begin
-               Position.RBX := Theme.Sing.Solo6PP6.SingBar.X;
-               Position.RBY := Theme.Sing.Solo6PP6.SingBar.Y;
-               Position.RBW := Theme.Sing.Solo6PP6.SingBar.W;
-               Position.RBH := Theme.Sing.Solo6PP6.SingBar.H;
-             end;
+          0: updatePosition(Theme.Sing.Solo6PP1);
+          1: updatePosition(Theme.Sing.Solo6PP2);
+          2: updatePosition(Theme.Sing.Solo6PP3);
+          3: updatePosition(Theme.Sing.Solo6PP4);
+          4: updatePosition(Theme.Sing.Solo6PP5);
+          5: updatePosition(Theme.Sing.Solo6PP6);
         end;
       end;
     end;
@@ -1412,25 +1315,9 @@ begin
         if (CurrentSong.isDuet) and ((PlayersPlay = 3) or (PlayersPlay = 6)) then
         begin
           case Index of
-            0, 3, 6:
-               begin
-                 Position.RBX := Theme.Sing.Duet3PP1.SingBar.X;
-                 Position.RBY := Theme.Sing.Duet3PP1.SingBar.Y;
-                 Position.RBW := Theme.Sing.Duet3PP1.SingBar.W;
-                 Position.RBH := Theme.Sing.Duet3PP1.SingBar.H;
-               end;
-            1, 4, 7: begin
-                 Position.RBX := Theme.Sing.Duet3PP2.SingBar.X;
-                 Position.RBY := Theme.Sing.Duet3PP2.SingBar.Y;
-                 Position.RBW := Theme.Sing.Duet3PP2.SingBar.W;
-                 Position.RBH := Theme.Sing.Duet3PP2.SingBar.H;
-               end;
-            2, 5, 8: begin
-                 Position.RBX := Theme.Sing.Duet3PP3.SingBar.X;
-                 Position.RBY := Theme.Sing.Duet3PP3.SingBar.Y;
-                 Position.RBW := Theme.Sing.Duet3PP3.SingBar.W;
-                 Position.RBH := Theme.Sing.Duet3PP3.SingBar.H;
-               end;
+            0, 3, 6: updatePosition(Theme.Sing.Duet3PP1);
+            1, 4, 7: updatePosition(Theme.Sing.Duet3PP2);
+            2, 5, 8: updatePosition(Theme.Sing.Duet3PP3);
           end;
         end;
       end;
