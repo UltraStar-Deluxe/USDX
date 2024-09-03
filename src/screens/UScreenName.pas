@@ -732,7 +732,7 @@ var
   Col, DesCol: TRGB;
 begin
 
-  Col := GetPlayerLightColorV2(K);
+  Col := GetPlayerLightColor(K);
 
   Button[PlayerName].SelectColR:= Col.R;
   Button[PlayerName].SelectColG:= Col.G;
