@@ -1,4 +1,9 @@
 # Making a release
+## Check for DLL updates
+The draft release notes probably already mention them, but check the [mxe releases](https://github.com/UltraStar-Deluxe/mxe/releases) for any pre-release versions.
+If there are any pre-releases present, you probably need to check [UPDATING-DLLS.md](UPDATING-DLLS.md).
+
+## Releasing USDX
 1. Find the contents of `VERSION` (strip the `+dev`) throughout the code.
     This should result in six places:
     * [VERSION](VERSION)
