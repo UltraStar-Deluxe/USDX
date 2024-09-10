@@ -15,7 +15,9 @@ headers = {
     }
 
 token = os.environ.get('ARTIFACT_ACCESS_TOKEN')
-if token != None:
+if token == None or token.strip() == '':
+    token = os.environ.get('GITHUB_TOKEN')
+if token != None and token.strip() != '':
     headers['Authorization'] = 'Bearer ' + token
 
 print('Searching for binaries built from commit ' + sha)
