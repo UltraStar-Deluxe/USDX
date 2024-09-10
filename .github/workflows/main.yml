@@ -35,6 +35,7 @@ jobs:
           7z x -y usdx-dlls-i686.zip -ogame "*.dll"
         env:
           ARTIFACT_ACCESS_TOKEN: ${{ secrets.MxeActionsReadAccessToken }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create installer
         run: |
           del game\*.debug
