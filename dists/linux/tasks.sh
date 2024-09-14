@@ -390,6 +390,7 @@ task_dav1d() {
 task_ffmpeg() {
 	start_build ffmpeg FFmpeg || return 0
 	# disable vaapi until it can be tested
+	# disable libdrm, currently only useful on devices that can use Rockchip MPP codecs
 	PKG_CONFIG_PATH="$PKG_CONFIG_PATH" \
 	./configure --prefix="$PREFIX" \
 		--cc="$CC" \
@@ -406,6 +407,7 @@ task_ffmpeg() {
 		--disable-libxcb-shm \
 		--disable-libx264 \
 		--disable-libx265 \
+		--disable-libdrm \
 		--disable-network \
 		--disable-debug \
 		--disable-indevs \
