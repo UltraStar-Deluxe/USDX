@@ -1,12 +1,12 @@
 /* Default colors */
 :root {
-    --text-color: #181a1b;
+    --text-color: #121212;
     --bkg-color: #fff;
     --accent-color: #add8e6;
 }
 /* Dark theme colors */
 [data-theme="dark"] {
-    --text-color: #e8e6e3;
+    --text-color: #fff;
     --bkg-color: #181a1b;
     --accent-color: rgb(27, 73, 88);
 }
