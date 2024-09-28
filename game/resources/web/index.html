@@ -39,9 +39,17 @@
     </table>
 
     <script>
+        const defaultPageLength = 25;
+        const PAGE_LENGTH = "pageLength";
+        
+        let pageLength = localStorage.getItem(PAGE_LENGTH);
+        if (!pageLength || pageLength < 10 || pageLength > 100) {
+            pageLength = defaultPageLength;
+        }
+
         let table = new DataTable('#songTable', {
             // default entries per page
-            pageLength: 25,
+            pageLength: pageLength,
             layout: {
                 top: {
                     search: {
@@ -69,6 +77,9 @@
                     }
                 }
             }
+        });
+        table.on('length.dt', function (e, settings, len) {
+            localStorage.setItem(PAGE_LENGTH, len);
         });
     </script>
 </body>
