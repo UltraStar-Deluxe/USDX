@@ -119,6 +119,9 @@ begin
   FServer := TFPHTTPServer.Create(nil);
   FRouter := THTTPRouter.Create(nil);
   FRouter.RegisterRoute('/', rmGET, @routeSongList);
+  FRouter.RegisterRoute('/style.css', rmGET, @routeFile);
+  FRouter.RegisterRoute('/theme.js', rmGET, @routeFile);
+  FRouter.RegisterRoute('/songs.json', rmGET, @routeSongsJSON);
   FRouter.RegisterRoute('/jquery.min.js', rmGET, @routeFile);
   FRouter.RegisterRoute('/jquery.min.map', rmGET, @routeFile);
   FRouter.RegisterRoute('/datatables.min.js', rmGET, @routeFile);
