@@ -3,34 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <title>Song List</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        table {
-            width: 100% !important;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #add8e6;
-        }
-        input {
-            margin-bottom: 12px;
-            padding: 8px;
-            width: 100%;
-        }
-    </style>
-
+    
+    <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="/datatables.min.css" />
  
+    <script src="/theme.js"></script>
     <script src="/jquery.min.js"></script>
     <script src="/datatables.min.js"></script>
 </head>
 <body>
     <h1>Song List</h1>
+
+    <div class="controls">
+        <div class="toggle-switch">
+            <label>
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
     <table id="songTable" class="hover stripe">
         <thead>
             <tr>
