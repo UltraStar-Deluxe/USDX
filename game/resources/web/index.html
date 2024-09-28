@@ -42,7 +42,7 @@
         const defaultPageLength = 25;
         const PAGE_LENGTH = "pageLength";
 
-        let pageLength = localStorage.getItem(PAGE_LENGTH);
+        let pageLength = parseInt(localStorage.getItem(PAGE_LENGTH), 10);
         if (!pageLength || pageLength < 10 || pageLength > 100) {
             pageLength = defaultPageLength;
         }
