@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <title>Song List</title>
     
+    <script src="/theme.js" fetchpriority="high" blocking="render"></script>
     <link rel="stylesheet" href="/style.css" />
-    <link rel="stylesheet" href="/datatables.min.css" />
  
-    <script src="/theme.js"></script>
     <script src="/jquery.min.js"></script>
     <script src="/datatables.min.js"></script>
+    <link rel="stylesheet" href="/datatables.min.css" />
 </head>
 <body>
     <h1>Song List</h1>
@@ -41,7 +41,7 @@
     <script>
         const defaultPageLength = 25;
         const PAGE_LENGTH = "pageLength";
-        
+
         let pageLength = localStorage.getItem(PAGE_LENGTH);
         if (!pageLength || pageLength < 10 || pageLength > 100) {
             pageLength = defaultPageLength;
