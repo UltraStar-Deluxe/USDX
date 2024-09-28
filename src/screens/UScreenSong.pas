@@ -57,6 +57,7 @@ uses
 
 type
   TVisArr = array of integer;
+  CardinalArray = array of cardinal;
 
   TScreenSong = class(TMenu)
     private
@@ -76,6 +77,10 @@ type
 
       LastSelectMouse: integer;
       LastSelectTime: integer;
+
+      RandomSongOrder: CardinalArray;
+      NextRandomSongIdx: cardinal;
+      RandomSearchOrder: CardinalArray;
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
@@ -220,6 +225,8 @@ type
 
       SongIndex:    integer; //Index of Song that is playing since UScreenScore...
 
+      NextRandomSearchIdx: cardinal;
+
       constructor Create; override;
       procedure SetScroll;
       procedure SetScrollRefresh;
@@ -268,7 +275,6 @@ type
       procedure ShowCatTLCustom(Caption: UTF8String);// Show Custom Text in Top left
       procedure HideCatTL;// Show Cat in Tob left
       procedure Refresh;//(GiveStats: boolean); //Refresh Song Sorting
-      procedure ChangeSorting(Tabs: integer; Duet: boolean; Sorting: integer);
       procedure ChangeMusic;
 
       function FreeListMode: boolean;
@@ -645,6 +651,24 @@ var
   VerifySong, WebList: string;
   Fix: boolean;
   VS: integer;
+
+  function RandomPermute(Num: integer): CardinalArray;
+  var
+    Ordered: array of cardinal;
+    Idx, i: cardinal;
+  begin
+    SetLength(Ordered, Num);
+    SetLength(Result, Num);
+    for i := 0 to Num-1 do Ordered[i] := i;
+    for i := 0 to Num-1 do
+    begin
+      Idx := Random(Num);
+      Result[i] := Ordered[Idx];
+      Delete(Ordered, Idx, 1);
+      Dec(Num);
+    end;
+  end;
+
 begin
   Result := true;
 
@@ -919,7 +943,6 @@ begin
 
       SDLK_R:
         begin
-          Randomize;
           if (Songs.SongList.Count > 0) and
              (FreeListMode) then
           begin
@@ -987,7 +1010,26 @@ begin
             end
             else // random in one category
             begin
-              SkipTo(Random(CatSongs.VisibleSongs));
+              if CatSongs.CatNumShow = -2 then
+              begin
+                if NextRandomSearchIdx >= CatSongs.VisibleSongs then
+                begin
+                  NextRandomSearchIdx := 0;
+                  RandomSearchOrder := RandomPermute(CatSongs.VisibleSongs);
+                end;
+                SkipTo(RandomSearchOrder[NextRandomSearchIdx]);
+                Inc(NextRandomSearchIdx);
+              end
+              else
+              begin
+                if NextRandomSongIdx >= CatSongs.VisibleSongs then
+                begin
+                  NextRandomSongIdx := 0;
+                  RandomSongOrder := RandomPermute(CatSongs.VisibleSongs);
+                end;
+                SkipTo(RandomSongOrder[NextRandomSongIdx]);
+                Inc(NextRandomSongIdx);
+              end
             end;
             AudioPlayback.PlaySound(SoundLib.Change);
 
@@ -1095,6 +1137,7 @@ begin
               begin
                 //Atm: Set Empty Filter
                 CatSongs.SetFilter('', fltAll);
+                NextRandomSearchIdx := CatSongs.VisibleSongs;
 
                 //Show Cat in Top Left Mod
                 HideCatTL;
@@ -1815,92 +1858,62 @@ begin
   LastSelectMouse := 0;
   LastSelectTime := 0;
 
+  NextRandomSongIdx := High(cardinal);
+  NextRandomSearchIdx := High(cardinal);
+
 end;
 
 procedure TScreenSong.ColorDuetNameSingers();
 var
   Col: TRGB;
+  procedure setColor(static: integer; color: TRGB);
+  begin
+    Statics[static].Texture.ColR := color.R;
+    Statics[static].Texture.ColG := color.G;
+    Statics[static].Texture.ColB := color.B;
+  end;
 begin
   if (PlayersPlay = 1) then
   begin
-    Statics[Static2PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-    Statics[Static2PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-    Statics[Static2PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-    Col := GetPlayerLightColor(Ini.SingColor[0]);
-    Statics[Static2PlayersDuetSingerP2].Texture.ColR := Col.R;
-    Statics[Static2PlayersDuetSingerP2].Texture.ColG := Col.G;
-    Statics[Static2PlayersDuetSingerP2].Texture.ColB := Col.B;
+    setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
+    // this one is different from all the others
+    setColor(Static2PlayersDuetSingerP2, GetPlayerLightColor(Ini.SingColor[0]));
   end;
 
   if (PlayersPlay = 2) then
   begin
-    Statics[Static2PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-    Statics[Static2PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-    Statics[Static2PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-    Statics[Static2PlayersDuetSingerP2].Texture.ColR := ColPlayer[1].R;
-    Statics[Static2PlayersDuetSingerP2].Texture.ColG := ColPlayer[1].G;
-    Statics[Static2PlayersDuetSingerP2].Texture.ColB := ColPlayer[1].B;
+    setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
+    setColor(Static2PlayersDuetSingerP2, ColPlayer[1]);
   end;
 
   if (PlayersPlay = 3) then
   begin
-    Statics[Static3PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-    Statics[Static3PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-    Statics[Static3PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-    Statics[Static3PlayersDuetSingerP2].Texture.ColR := ColPlayer[1].R;
-    Statics[Static3PlayersDuetSingerP2].Texture.ColG := ColPlayer[1].G;
-    Statics[Static3PlayersDuetSingerP2].Texture.ColB := ColPlayer[1].B;
-
-    Statics[Static3PlayersDuetSingerP3].Texture.ColR := ColPlayer[2].R;
-    Statics[Static3PlayersDuetSingerP3].Texture.ColG := ColPlayer[2].G;
-    Statics[Static3PlayersDuetSingerP3].Texture.ColB := ColPlayer[2].B;
+    setColor(Static3PlayersDuetSingerP1, ColPlayer[0]);
+    setColor(Static3PlayersDuetSingerP2, ColPlayer[1]);
+    setColor(Static3PlayersDuetSingerP3, ColPlayer[2]);
   end;
 
   if (PlayersPlay = 4) then
   begin
     if (Screens = 1) then
     begin
-      Statics[Static2PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-      Statics[Static2PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-      Statics[Static2PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-      Statics[Static2PlayersDuetSingerP2].Texture.ColR := ColPlayer[1].R;
-      Statics[Static2PlayersDuetSingerP2].Texture.ColG := ColPlayer[1].G;
-      Statics[Static2PlayersDuetSingerP2].Texture.ColB := ColPlayer[1].B;
-
-      Statics[Static4PlayersDuetSingerP3].Texture.ColR := ColPlayer[2].R;
-      Statics[Static4PlayersDuetSingerP3].Texture.ColG := ColPlayer[2].G;
-      Statics[Static4PlayersDuetSingerP3].Texture.ColB := ColPlayer[2].B;
-
-      Statics[Static4PlayersDuetSingerP4].Texture.ColR := ColPlayer[3].R;
-      Statics[Static4PlayersDuetSingerP4].Texture.ColG := ColPlayer[3].G;
-      Statics[Static4PlayersDuetSingerP4].Texture.ColB := ColPlayer[3].B;
+      setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
+      setColor(Static2PlayersDuetSingerP2, ColPlayer[1]);
+      setColor(Static4PlayersDuetSingerP3, ColPlayer[2]);
+      setColor(Static4PlayersDuetSingerP4, ColPlayer[3]);
     end
     else
     begin
       if (ScreenAct = 1) then
       begin
-        Statics[Static2PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-        Statics[Static2PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-        Statics[Static2PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-        Statics[Static2PlayersDuetSingerP2].Texture.ColR := ColPlayer[1].R;
-        Statics[Static2PlayersDuetSingerP2].Texture.ColG := ColPlayer[1].G;
-        Statics[Static2PlayersDuetSingerP2].Texture.ColB := ColPlayer[1].B;
+        setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
+        setColor(Static2PlayersDuetSingerP2, ColPlayer[1]);
       end;
 
       if (ScreenAct = 2) then
       begin
-        Statics[Static2PlayersDuetSingerP1].Texture.ColR := ColPlayer[2].R;
-        Statics[Static2PlayersDuetSingerP1].Texture.ColG := ColPlayer[2].G;
-        Statics[Static2PlayersDuetSingerP1].Texture.ColB := ColPlayer[2].B;
-
-        Statics[Static2PlayersDuetSingerP2].Texture.ColR := ColPlayer[3].R;
-        Statics[Static2PlayersDuetSingerP2].Texture.ColG := ColPlayer[3].G;
-        Statics[Static2PlayersDuetSingerP2].Texture.ColB := ColPlayer[3].B;
+        setColor(Static2PlayersDuetSingerP1, ColPlayer[2]);
+        setColor(Static2PlayersDuetSingerP2, ColPlayer[3]);
       end;
     end;
   end;
@@ -1909,60 +1922,27 @@ begin
   begin
     if (Screens = 1) then
     begin
-        Statics[Static3PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-        Statics[Static3PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-        Statics[Static3PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-        Statics[Static3PlayersDuetSingerP2].Texture.ColR := ColPlayer[1].R;
-        Statics[Static3PlayersDuetSingerP2].Texture.ColG := ColPlayer[1].G;
-        Statics[Static3PlayersDuetSingerP2].Texture.ColB := ColPlayer[1].B;
-
-        Statics[Static3PlayersDuetSingerP3].Texture.ColR := ColPlayer[2].R;
-        Statics[Static3PlayersDuetSingerP3].Texture.ColG := ColPlayer[2].G;
-        Statics[Static3PlayersDuetSingerP3].Texture.ColB := ColPlayer[2].B;
-
-        Statics[Static6PlayersDuetSingerP4].Texture.ColR := ColPlayer[3].R;
-        Statics[Static6PlayersDuetSingerP4].Texture.ColG := ColPlayer[3].G;
-        Statics[Static6PlayersDuetSingerP4].Texture.ColB := ColPlayer[3].B;
-
-        Statics[Static6PlayersDuetSingerP5].Texture.ColR := ColPlayer[4].R;
-        Statics[Static6PlayersDuetSingerP5].Texture.ColG := ColPlayer[4].G;
-        Statics[Static6PlayersDuetSingerP5].Texture.ColB := ColPlayer[4].B;
-
-        Statics[Static6PlayersDuetSingerP6].Texture.ColR := ColPlayer[5].R;
-        Statics[Static6PlayersDuetSingerP6].Texture.ColG := ColPlayer[5].G;
-        Statics[Static6PlayersDuetSingerP6].Texture.ColB := ColPlayer[5].B;
+      setColor(Static3PlayersDuetSingerP1, ColPlayer[0]);
+      setColor(Static3PlayersDuetSingerP2, ColPlayer[1]);
+      setColor(Static3PlayersDuetSingerP3, ColPlayer[2]);
+      setColor(Static6PlayersDuetSingerP4, ColPlayer[3]);
+      setColor(Static6PlayersDuetSingerP5, ColPlayer[4]);
+      setColor(Static6PlayersDuetSingerP6, ColPlayer[5]);
     end
     else
     begin
       if (ScreenAct = 1) then
       begin
-        Statics[Static3PlayersDuetSingerP1].Texture.ColR := ColPlayer[0].R;
-        Statics[Static3PlayersDuetSingerP1].Texture.ColG := ColPlayer[0].G;
-        Statics[Static3PlayersDuetSingerP1].Texture.ColB := ColPlayer[0].B;
-
-        Statics[Static3PlayersDuetSingerP2].Texture.ColR := ColPlayer[1].R;
-        Statics[Static3PlayersDuetSingerP2].Texture.ColG := ColPlayer[1].G;
-        Statics[Static3PlayersDuetSingerP2].Texture.ColB := ColPlayer[1].B;
-
-        Statics[Static3PlayersDuetSingerP3].Texture.ColR := ColPlayer[2].R;
-        Statics[Static3PlayersDuetSingerP3].Texture.ColG := ColPlayer[2].G;
-        Statics[Static3PlayersDuetSingerP3].Texture.ColB := ColPlayer[2].B;
+        setColor(Static3PlayersDuetSingerP1, ColPlayer[0]);
+        setColor(Static3PlayersDuetSingerP2, ColPlayer[1]);
+        setColor(Static3PlayersDuetSingerP3, ColPlayer[2]);
       end;
 
       if (ScreenAct = 2) then
       begin
-        Statics[Static3PlayersDuetSingerP1].Texture.ColR := ColPlayer[3].R;
-        Statics[Static3PlayersDuetSingerP1].Texture.ColG := ColPlayer[3].G;
-        Statics[Static3PlayersDuetSingerP1].Texture.ColB := ColPlayer[3].B;
-
-        Statics[Static3PlayersDuetSingerP2].Texture.ColR := ColPlayer[4].R;
-        Statics[Static3PlayersDuetSingerP2].Texture.ColG := ColPlayer[4].G;
-        Statics[Static3PlayersDuetSingerP2].Texture.ColB := ColPlayer[4].B;
-
-        Statics[Static3PlayersDuetSingerP3].Texture.ColR := ColPlayer[5].R;
-        Statics[Static3PlayersDuetSingerP3].Texture.ColG := ColPlayer[5].G;
-        Statics[Static3PlayersDuetSingerP3].Texture.ColB := ColPlayer[5].B;
+        setColor(Static3PlayersDuetSingerP1, ColPlayer[3]);
+        setColor(Static3PlayersDuetSingerP2, ColPlayer[4]);
+        setColor(Static3PlayersDuetSingerP3, ColPlayer[5]);
       end;
     end;
   end;
@@ -4455,59 +4435,59 @@ begin
 end;
 
 procedure TScreenSong.SongScore;
+  procedure setVisible(elements: array of integer; visible: boolean);
+  var
+    J: integer;
+  begin
+    for J := 0 to High(elements) do
+      Text[elements[J]].Visible := visible;
+  end;
+  procedure hide(elements: array of integer);
+  begin
+    setVisible(elements, false);
+  end;
+  procedure show(elements: array of integer);
+  begin
+    setVisible(elements, true);
+  end;
 begin
 
   if (CatSongs.Song[Interaction].isDuet) or (RapToFreestyle) or ((Mode <> smNormal) or (Ini.ShowScores = 0) or (CatSongs.Song[Interaction].Edition = '') or ((Ini.ShowScores = 1) and ((Text[TextMaxScore2].Text = '0') and (Text[TextMaxScoreLocal].Text = '0')))) then
   begin
-    Text[TextScore].Visible           := false;
-    Text[TextMaxScore].Visible        := false;
-    Text[TextMediaScore].Visible      := false;
-    Text[TextMaxScore2].Visible       := false;
-    Text[TextMediaScore2].Visible     := false;
-    Text[TextMaxScoreLocal].Visible   := false;
-    Text[TextMediaScoreLocal].Visible := false;
-    Text[TextScoreUserLocal].Visible  := false;
-    Text[TextScoreUser].Visible       := false;
+    hide([
+      TextScore, TextMaxScore, TextMediaScore,
+      TextScoreUser, TextMaxScore2, TextMediaScore2,
+      TextScoreUserLocal, TextMaxScoreLocal, TextMediaScoreLocal
+    ]);
   end
   else
   begin
+    // TODO: some of these if statements don't feel right? Like, unless ShowScores is inverted, most of these will still show them if there already is a score?
     if (Ini.ShowScores = 1) and (Text[TextMaxScoreLocal].Text = '0') and (High(DLLMan.Websites) < 0) then
     begin
-      Text[TextScore].Visible           := false;
-      Text[TextMaxScore].Visible        := false;
-      Text[TextMediaScore].Visible      := false;
+      hide([TextScore, TextMaxScore, TextMediaScore]);
     end
     else
     begin
-      Text[TextScore].Visible           := true;
-      Text[TextMaxScore].Visible        := true;
-      Text[TextMediaScore].Visible      := true;
+      show([TextScore, TextMaxScore, TextMediaScore]);
     end;
 
     if (Ini.ShowScores = 1) and (Text[TextMaxScore2].Text = '0') then
     begin
-      Text[TextMaxScore2].Visible       := false;
-      Text[TextMediaScore2].Visible     := false;
-      Text[TextScoreUser].Visible       := false;
+      hide([TextScoreUser, TextMaxScore2, TextMediaScore2]);
     end
     else
     begin
-      Text[TextMaxScore2].Visible       := true;
-      Text[TextMediaScore2].Visible     := true;
-      Text[TextScoreUser].Visible       := true;
+      show([TextScoreUser, TextMaxScore2, TextMediaScore2]);
     end;
 
     if (Ini.ShowScores = 1) and (Text[TextMaxScoreLocal].Text = '0') then
     begin
-      Text[TextMaxScoreLocal].Visible   := false;
-      Text[TextMediaScoreLocal].Visible := false;
-      Text[TextScoreUserLocal].Visible  := false;
+      hide([TextScoreUserLocal, TextMaxScoreLocal, TextMediaScoreLocal]);
     end
     else
     begin
-      Text[TextMaxScoreLocal].Visible   := true;
-      Text[TextMediaScoreLocal].Visible := true;
-      Text[TextScoreUserLocal].Visible  := true;
+      show([TextScoreUserLocal, TextMaxScoreLocal, TextMediaScoreLocal]);
     end;
 
   end;
@@ -4568,34 +4548,6 @@ procedure TScreenSong.CloseMessage();
 begin
   Statics[InfoMessageBG].Visible := false;
   Text[InfoMessageText].Visible := false;
-end;
-
-procedure TScreenSong.ChangeSorting(Tabs: integer; Duet: boolean; Sorting: integer);
-var
-  I, Count:      integer;
-begin
-  Ini.Sorting := Sorting;
-  Ini.TabsAtStartup := Tabs;
-
-  //ClearButtons();
-  CatSongs.Refresh;
-  Interaction := 0;
-  HideCatTL;
-  FixSelected2;
-  ChangeMusic;
-
-  Count := 0;
-  for I := 0 to High(Button) do
-  begin
-    //while (CatSongs.Song[Count].Main) do
-    //  Count := Count + 1;
-
-    if (CatSongs.Song[I].CoverTex.TexNum > 0) then
-      Button[I].Texture := CatSongs.Song[I].CoverTex;
-    //else
-    //Count := Count + 1;
-  end;
-
 end;
 
 end.

@@ -229,6 +229,14 @@ var
   Tex_BG_Mid_Rap:      array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_noteglow_mid
   Tex_BG_Right_Rap:    array[1..UIni.IMaxPlayerCount] of TTexture;   //rename to tex_noteglow_right
 
+  // Inversions of first player colors used to mark selected note in editor
+  Tex_Left_Inv: TTexture;
+  Tex_Mid_Inv: TTexture;
+  Tex_Right_Inv: TTexture;
+  Tex_Left_Rap_Inv: TTexture;
+  Tex_Mid_Rap_Inv: TTexture;
+  Tex_Right_Rap_Inv: TTexture;
+
   Tex_Note_Star:  TTexture;
   Tex_Note_Perfect_Star: TTexture;
 

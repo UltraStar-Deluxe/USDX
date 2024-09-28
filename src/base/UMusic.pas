@@ -1280,8 +1280,8 @@ begin
   Result := false;
   if Length(Notes) >= 0 then
   begin
-    Result := true;
     Len := EndBeat - Notes[0].StartBeat;
+    Result := (Len > 0);
   end;
 end;
 

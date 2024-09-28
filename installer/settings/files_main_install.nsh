@@ -89,6 +89,16 @@ IfFileExists $INSTDIR\libtiff-5.dll 0 +2
 Delete "$INSTDIR\libtiff-5.dll"
 IfFileExists $INSTDIR\libwebp-4.dll 0 +2
 Delete "$INSTDIR\libwebp-4.dll"
+IfFileExists $INSTDIR\avcodec-60.dll 0 +2
+Delete "$INSTDIR\avcodec-60.dll"
+IfFileExists $INSTDIR\avformat-60.dll 0 +2
+Delete "$INSTDIR\avformat-60.dll"
+IfFileExists $INSTDIR\avutil-58.dll 0 +2
+Delete "$INSTDIR\avutil-58.dll"
+IfFileExists $INSTDIR\swresample-4.dll 0 +2
+Delete "$INSTDIR\swresample-4.dll"
+IfFileExists $INSTDIR\swscale-7.dll 0 +2
+Delete "$INSTDIR\swscale-7.dll"
 
 RMDir /r "$INSTDIR\Themes"
 RMDir /r "$INSTDIR\Skins"

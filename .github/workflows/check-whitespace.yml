@@ -1,0 +1,18 @@
+# Credit: https://github.com/zlib-ng/zlib-ng/blob/develop/.github/workflows/lint.yml
+name: Lint
+on: [pull_request]
+
+jobs:
+  lint:
+    name: Check trailing whitespace
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Whitespace errors
+      run: |
+        git config core.whitespace blank-at-eol
+        git diff --color --check ${{ github.event.pull_request.base.sha }} -- './src' ':!./src/lib' ':!./src/webSDK'

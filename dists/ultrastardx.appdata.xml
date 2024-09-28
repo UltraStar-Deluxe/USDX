@@ -3,20 +3,25 @@
   <id>eu.usdx.UltraStarDeluxe</id>
   <metadata_license>CC0-1.0</metadata_license>
   <name>UltraStar Deluxe</name>
-  <summary>Karaoke program that evaluates your performance</summary>
+  <summary>Karaoke for your PC</summary>
   <description>
     <p>UltraStar Deluxe is a free open source karaoke game for your PC. It records the voice of the players and gives points if they hit the notes. Unlike the commercial alternatives, UltraStar Deluxe allows users to add their own songs.</p>
   </description>
   <project_license>GPL-2.0</project_license>
+  <developer id="eu.usdx">
+    <name>UltraStar Karaoke</name>
+  </developer>
   <url type="homepage">https://usdx.eu/</url>
   <url type="bugtracker">https://github.com/UltraStar-Deluxe/USDX/issues</url>
   <url type="translate">https://www.transifex.com/usdx/usdx</url>
   <screenshots>
     <screenshot type="default">
       <image>https://usdx.eu/images/screenshots/song_6_player_projectm.jpg</image>
+      <caption>A karaoke session with six players</caption>
     </screenshot>
     <screenshot>
       <image>https://usdx.eu/images/screenshots/main_menu.jpg</image>
+      <caption>The main menu</caption>
     </screenshot>
   </screenshots>
   <launchable type="desktop-id">ultrastardx.desktop</launchable>
@@ -24,15 +29,15 @@
   <requires>
     <control>voice</control>
   </requires>
-  <supports>
+  <recommends>
     <control>keyboard</control>
+  </recommends>
+  <supports>
     <control>pointing</control>
     <control>gamepad</control>
   </supports>
-  <recommended>
-    <control>keyboard</control>
-  </recommended>
   <releases>
+    <release version="2024.8.0" date="2024-8-4" />
     <release version="2024.5.1" date="2024-5-18" />
     <release version="2024.3.0" date="2024-3-2" />
     <release version="2024.1.0" date="2024-1-1" />

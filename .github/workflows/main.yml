@@ -1,6 +1,10 @@
 name: Build
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 jobs:
   build_windows:
     name: Build for Windows
@@ -15,9 +19,9 @@ jobs:
       - name: Install Dependencies
         run: |
           choco install wget --no-progress
-          wget -q https://github.com/newpascal/newpascal/releases/download/np-v1.0.50/newpascal.zip
-          7z x -y "newpascal.zip" -o"C:\" > nul
-          wget "https://netcologne.dl.sourceforge.net/project/nsis/NSIS%203/3.05/nsis-3.05-setup.exe"
+          wget https://github.com/newpascal/newpascal/releases/download/np-v1.0.50/newpascal.zip --timeout 60 --progress=dot:giga
+          7z x -y "newpascal.zip" -o"C:\"
+          wget "https://sourceforge.net/projects/nsis/files/NSIS%203/3.05/nsis-3.05-setup.exe/download" -O nsis-3.05-setup.exe --timeout 60
           ./nsis-3.05-setup.exe /S
       - name: Build
         run: |
@@ -25,6 +29,13 @@ jobs:
           $Env:FPCDIR = "c:\newpascal\fpcsrc"
           $Env:PATH = "c:\newpascal\fpc\bin\i386-win32;c:\newpascal\binw32;$Env:PATH"
           c:\newpascal\lazarus\lazbuild src\ultrastardx-win.lpi --lazarusdir=c:\newpascal\lazarus
+      - name: Add prebuilt DLLs
+        run: |
+          python dldlls.py
+          7z x -y usdx-dlls-i686.zip -ogame "*.dll"
+        env:
+          ARTIFACT_ACCESS_TOKEN: ${{ secrets.MxeActionsReadAccessToken }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create installer
         run: |
           del game\*.debug

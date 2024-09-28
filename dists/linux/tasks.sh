@@ -186,7 +186,7 @@ EOF
 	true | $CC -shared -o $PREFIX/lib/libpulse-simple.so.0 -Wl,-soname,libpulse-simple.so.0 -x c -
 	ln -s libpulse-simple.so.0 $PREFIX/lib/libpulse-simple.so
 	PA_VERSION=$(cat .tarball-version)
-	sed -e "s:@prefix@:$PREFIX:;s:@exec_prefix@:$PREFIX:;s:@libdir@:$PREFIX/lib:;s:@includedir@:$PREFIX/include:;s:@PACKAGE_VERSION@:$PA_VERSION:;s:@PTHREAD_LIBS@:-pthread:;/^Libs.private/d" < libpulse-simple.pc.in > $PREFIX/lib/pkgconfig/libpulse-simple.pc
+	sed -e "s:@prefix@:$PREFIX:;s:@exec_prefix@:$PREFIX:;s:@libdir@:$PREFIX/lib:;s:@includedir@:$PREFIX/include:;s:@PACKAGE_VERSION@:$PA_VERSION:;s:@PTHREAD_LIBS@:-pthread:;/^Libs.private/d;/^Requires:/d" < libpulse-simple.pc.in > $PREFIX/lib/pkgconfig/libpulse-simple.pc
 }
 
 task_pipewire() {

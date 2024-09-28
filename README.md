@@ -1,7 +1,6 @@
 # UltraStar Deluxe
 
-[![Travis Build Status](https://travis-ci.org/UltraStar-Deluxe/USDX.svg?branch=master)](https://travis-ci.org/UltraStar-Deluxe/USDX)
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/UltraStar-Deluxe/USDX?branch=master&svg=true)](https://ci.appveyor.com/project/basisbit/usdx/branch/master)
+[![Build Status](https://github.com/UltraStar-Deluxe/USDX/actions/workflows/main.yml/badge.svg)](https://github.com/UltraStar-Deluxe/USDX/actions/workflows/main.yml)
 [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](LICENSE)
 
 Official Project Website: https://usdx.eu/
@@ -46,7 +45,7 @@ The [wiki](https://github.com/UltraStar-Deluxe/USDX/wiki) contains more informat
 There are two main ways to compile the game:
 
 1. Lazarus IDE
-2. `./autogen.sh && ./configure && make`
+2. `./autogen.sh && ./configure [--enable-debug] && make`
 
 The executable will be `game/ultrastardx[.exe]`.
 

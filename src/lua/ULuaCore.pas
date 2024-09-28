@@ -192,7 +192,7 @@ function TLua_CustomPanic (L: Plua_State): integer; cdecl;
   can be called with more than one parameter to require
   some modules at once. e.g.: require('math', 'Usdx.Log')
   modules are loaded from right to left
-  unlike standard require the module tables are not returned
+  the module table of the last module is returned
   the standard require function in _require is called by
   this function }
 function TLua_CustomRequire(L: PLua_State): integer; cdecl;
@@ -718,6 +718,10 @@ begin
       lua_setfield (State, LUA_REGISTRYINDEX, '_USDX_STATE_ID');
       lua_pop(State, Lua_GetTop(State));
 
+      // make current plugin filename (with absolute path) available to the plugin
+      lua_pushstring(State, PChar(Filename.ToNative));
+      lua_setglobal(State, PChar('current_filename'));
+
       // now run the plugin_init function
       // plugin_init() if false or nothing is returned plugin init is aborted
       if (CallFunctionByName('plugin_init', 0, 1)) then
@@ -957,18 +961,27 @@ end;
   can be called with more than one parameter to require
   some modules at once. e.g.: require('math', 'Usdx.Log')
   modules are loaded from right to left
-  unlike standard require the module tables are not returned
+  the module table of the last module is returned
   the standard require function in _require is called by
   this function }
 function TLua_CustomRequire(L: PLua_State): integer; cdecl;
 begin
-  // no results
+  // how many values to return (this is to become 1 for the last iteration)
   Result := 0;
 
   // move through parameters
-  while (lua_getTop(L) >= 1) do
+  while ((lua_getTop(L) >= 1) and (Result = 0)) do
   begin
+    if lua_getTop(L) = 1 then
+    begin
+      // this is the last in the list of modules to be loaded
+      // prepare to return its table
+      Result := 1;
+    end;
+
+    // make sure there is room on the stack for the require function
     lua_checkstack(L,1);
+
     // get luas require function
     lua_getglobal(L, PChar('_require'));
 
@@ -976,7 +989,8 @@ begin
     lua_insert(L, -2);
 
     // call it with next param (function + param are poped from stack)
-    lua_call(L, 1, 0);
+    // all return values are ignored (Result is set to 0) except for the last iteration (Result is set to 1)
+    lua_call(L, 1, Result);
   end;
 end;
 
