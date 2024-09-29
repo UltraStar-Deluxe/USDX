@@ -295,10 +295,18 @@ begin
     Item.Add('artist', UTF8Encode(Song.Artist));
     Item.Add('title', UTF8Encode(Song.Title));
     Item.Add('lang', UTF8Encode(Song.Language));
-    // Item.Add('cover', Song.Path.Append(Song.Cover).ToUTF8);
     Item.Add('edition', Edition);
     Item.Add('genre', Genre);
     Item.Add('year', Year);
+
+    if Song.Creator <> '' then
+      Item.Add('creator', UTF8Encode(Song.Creator));
+
+    if Song.isDuet then
+      Item.Add('duet', True);
+    
+    if Song.hasRap then
+      Item.Add('hasRap', True);
 
     JSONSongs.Add(Item);
   end;
