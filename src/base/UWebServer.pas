@@ -294,18 +294,32 @@ end;
 
 function TWebServer.ContentTypeForExt(Ext: IPath): string;
 begin
-  // MIME type
+  // MIME types
   // see https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
   if Ext.Equals('.html', true) then
     Result := 'text/html; charset=UTF-8'
   else if Ext.Equals('.txt', true) then
     Result := 'text/plain; charset=UTF-8'
-  else if Ext.Equals('.js', true) then
+  else if Ext.Equals('.js', true) or Ext.Equals('.mjs', true) then
     Result := 'text/javascript; charset=UTF-8'
   else if Ext.Equals('.css', true) then
     Result := 'text/css; charset=UTF-8'
-  else if Ext.Equals('.min.map', true) then
+  else if Ext.Equals('.json', true) then
     Result := 'application/json; charset=UTF-8'
+  else if Ext.Equals('.min.map', true) or Ext.Equals('.map', true) then
+    Result := 'application/json; charset=UTF-8'
+  else if Ext.Equals('.csv', true) then
+    Result := 'text/csv; charset=UTF-8'
+  else if Ext.Equals('.ttf', true) then
+    Result := 'font/ttf'
+  else if Ext.Equals('.woff', true) then
+    Result := 'font/woff'
+  else if Ext.Equals('.woff2', true) then
+    Result := 'font/woff2'
+  else if Ext.Equals('.otf', true) then
+    Result := 'font/otf'
+  else if Ext.Equals('.ico', true) then
+    Result := 'image/vnd.microsoft.icon'
   else if Ext.Equals('.jpg', true) or Ext.Equals('.jpeg', true) then
     Result := 'image/jpeg'
   else if Ext.Equals('.png', true) then
@@ -324,6 +338,38 @@ begin
     Result := 'image/tiff'
   else if Ext.Equals('.webp', true) then
     Result := 'image/webp'
+  else if Ext.Equals('.aac', true) then
+    Result := 'audio/aac'
+  else if Ext.Equals('.mp3', true) then
+    Result := 'audio/mpeg'
+  else if Ext.Equals('.wav', true) then
+    Result := 'audio/wav'
+  else if Ext.Equals('.weba', true) then
+    Result := 'audio/webm'
+  else if Ext.Equals('.oga', true) or Ext.Equals('.opus', true) then
+    Result := 'audio/ogg'
+  else if Ext.Equals('.avi', true) then
+    Result := 'video/x-msvideo'
+  else if Ext.Equals('.mp4', true) then
+    Result := 'video/mp4'
+  else if Ext.Equals('.mpeg', true) then
+    Result := 'video/mpeg'
+  else if Ext.Equals('.ogv', true) then
+    Result := 'video/ogg'
+  else if Ext.Equals('.ts', true) then
+    Result := 'video/mp2t'
+  else if Ext.Equals('.webm', true) then
+    Result := 'video/webm'
+  else if Ext.Equals('.3gp', true) then
+    Result := 'video/3gpp'
+  else if Ext.Equals('.3g2', true) then
+    Result := 'video/3gpp2'
+  else if Ext.Equals('.ogx', true) then
+    Result := 'application/ogg'
+  else if Ext.Equals('.pdf', true) then
+    Result := 'application/pdf'
+  else if Ext.Equals('.xml', true) then
+    Result := 'application/xml'
   else
     Result := 'Application/octet-stream';
 end;
