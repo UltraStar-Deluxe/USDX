@@ -28,7 +28,7 @@ unit UWebServer;
 interface
 
 uses
-  Classes, SysUtils, fphttpserver, httproute, HTTPDefs, USongs, USong, UPlatform, UPath;
+  Classes, SysUtils, fphttpserver, httproute, HTTPDefs, USongs, USong, UPlatform, UPath, fpjson, jsonparser;
 
 type
   TWebServer = class(TThread)
@@ -41,8 +41,10 @@ type
     procedure HandleRequest(Sender: TObject; var ARequest: TFPHTTPConnectionRequest;
                              var AResponse: TFPHTTPConnectionResponse);
     procedure routeSongList(ARequest: TRequest; AResponse: TResponse);
+    procedure routeSongsJSON(ARequest: TRequest; AResponse: TResponse);
     procedure routeFile(ARequest: TRequest; AResponse: TResponse);
     function GenerateHTMLWithSongs: string;
+    function GenerateJSONWithSongs: string;
     function LoadTemplate: string;
   public
     constructor Create(APort: Integer);
@@ -69,6 +71,15 @@ begin
   AResponse.ContentType := 'text/html; charset=UTF-8';
   ResponseHTML := GenerateHTMLWithSongs;
   AResponse.Content := ResponseHTML;
+  AResponse.Code := 200;
+end;
+
+procedure TWebServer.routeSongsJSON(ARequest: TRequest; AResponse: TResponse);
+  var ResponseJSON: String;
+begin
+  AResponse.ContentType := 'application/json; charset=UTF-8';
+  ResponseJSON := GenerateJSONWithSongs;
+  AResponse.Content := ResponseJSON;
   AResponse.Code := 200;
 end;
 
@@ -172,7 +183,7 @@ begin
     Genre := UTF8Encode(TSong(Songs.SongList[I]).Genre);
     Year := IntToStr(TSong(Songs.SongList[I]).Year);
 
-    if Edition = 'Unknown' then
+    if (Edition = 'Unknown') or (Edition = 'None') then
       Edition := '';
     if Genre = 'Unknown' then
       Genre := '';
@@ -190,6 +201,47 @@ begin
 
   Result := LoadTemplate;
   Result := StringReplace(Result, '<!--SONG_ROWS-->', SongRows, []);
+end;
+
+function TWebServer.GenerateJSONWithSongs: string;
+var
+  I: Integer;
+  Song: TSong;
+  JSONRoot, Item: TJSONObject;
+  JSONSongs: TJSONArray;
+  Edition, Genre, Year: string;
+begin
+  JSONRoot := TJSONObject.Create;
+  JSONSongs := TJSONArray.Create;
+  JSONRoot.Add('songs', JSONSongs);
+
+  for I := 0 to Songs.SongList.Count - 1 do
+  begin
+    Song := TSong(Songs.SongList[I]);
+    Edition := UTF8Encode(Song.Edition);
+    Genre := UTF8Encode(Song.Genre);
+    Year := IntToStr(Song.Year);
+
+    if (Edition = 'Unknown') or (Edition = 'None') then
+      Edition := '';
+    if Genre = 'Unknown' then
+      Genre := '';
+    if Year = '0' then
+      Year := '';
+
+    Item := TJSONObject.Create;
+    Item.Add('artist', UTF8Encode(Song.Artist));
+    Item.Add('title', UTF8Encode(Song.Title));
+    Item.Add('lang', UTF8Encode(Song.Language));
+    // Item.Add('cover', Song.Path.Append(Song.Cover).ToUTF8);
+    Item.Add('edition', Edition);
+    Item.Add('genre', Genre);
+    Item.Add('year', Year);
+
+    JSONSongs.Add(Item);
+  end;
+
+  Result := JSONRoot.AsJSON;
 end;
 
 end.
