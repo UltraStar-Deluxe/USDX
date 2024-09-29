@@ -43,6 +43,7 @@ type
     procedure routeSongList(ARequest: TRequest; AResponse: TResponse);
     procedure routeSongsJSON(ARequest: TRequest; AResponse: TResponse);
     procedure routeFile(ARequest: TRequest; AResponse: TResponse);
+    procedure routeCover(ARequest: TRequest; AResponse: TResponse);
     procedure route404(ARequest: TRequest; AResponse: TResponse);
     function GenerateHTMLWithSongs: string;
     function GenerateJSONWithSongs: string;
@@ -142,6 +143,66 @@ begin
   end;
 end;
 
+procedure TWebServer.routeCover(ARequest: TRequest; AResponse: TResponse);
+var
+  Id: LongInt;
+  Song: TSong;
+  Ext: IPath;
+  CoverPath: IPath;
+  FileStream : TFileStream;
+begin
+  try
+    try
+      Id := StrToInt(ARequest.RouteParams['id']);
+
+      if (Id < 0) or (Id >= Songs.SongList.Count) then
+        raise Exception.Create('ID is out of bounds');
+      
+      Song := TSong(Songs.SongList[Id]);
+      CoverPath := Song.Path.Append(Song.Cover);
+
+      // MIME type
+      // see https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+      Ext := CoverPath.GetExtension;
+      if Ext.Equals('.jpg', true) or Ext.Equals('.jpeg', true) then
+        AResponse.ContentType := 'image/jpeg'
+      else if Ext.Equals('.png', true) then
+        AResponse.ContentType := 'image/png'
+      else if Ext.Equals('.apng', true) then
+        AResponse.ContentType := 'image/apng'
+      else if Ext.Equals('.avif', true) then
+        AResponse.ContentType := 'image/avif'
+      else if Ext.Equals('.bmp', true) then
+        AResponse.ContentType := 'image/bmp'
+      else if Ext.Equals('.gif', true) then
+        AResponse.ContentType := 'image/gif'
+      else if Ext.Equals('.svg', true) then
+        AResponse.ContentType := 'image/svg+xml'
+      else if Ext.Equals('.tif', true) or Ext.Equals('.tiff', true) then
+        AResponse.ContentType := 'image/tiff'
+      else if Ext.Equals('.webp', true) then
+        AResponse.ContentType := 'image/webp'
+      else
+        AResponse.ContentType := 'Application/octet-stream';
+      
+      FileStream := TFileStream.Create(CoverPath.ToNative, fmOpenRead or fmShareDenyWrite);
+      AResponse.ContentLength := FileStream.Size;
+      AResponse.ContentStream := FileStream;
+      AResponse.SendContent;
+      AResponse.ContentStream:=Nil;
+      
+    except
+      on E: Exception do begin
+        AResponse.ContentType := 'text/html; charset=UTF-8';
+        AResponse.Content := '<html><body><h1>404 - File not found</h1></body></html>';
+        AResponse.Code := 404;
+      end;
+    end;
+  finally
+    FileStream.Free;
+  end;
+end;
+
 procedure TWebServer.Execute;
 begin
   FServer := TFPHTTPServer.Create(nil);
@@ -154,6 +215,7 @@ begin
   FRouter.RegisterRoute('/jquery.min.map', rmGET, @routeFile);
   FRouter.RegisterRoute('/datatables.min.js', rmGET, @routeFile);
   FRouter.RegisterRoute('/datatables.min.css', rmGET, @routeFile);
+  FRouter.RegisterRoute('/cover/:id', rmGET, @routeCover);
   FRouter.RegisterRoute('/404', @route404, true);
   try
     FServer.OnRequest := @HandleRequest;
