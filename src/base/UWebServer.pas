@@ -45,6 +45,7 @@ type
     procedure routeFile(ARequest: TRequest; AResponse: TResponse);
     procedure routeCover(ARequest: TRequest; AResponse: TResponse);
     procedure route404(ARequest: TRequest; AResponse: TResponse);
+    function ContentTypeForExt(Ext: IPath): string;
     function GenerateHTMLWithSongs: string;
     function GenerateJSONWithSongs: string;
     function LoadTemplate: string;
@@ -105,32 +106,22 @@ procedure TWebServer.routeFile(ARequest: TRequest; AResponse: TResponse);
 var
   FileName: string;
   WebFilePath: IPath;
-  WebFile: TStringList;
+  FileStream : TFileStream;
 begin
   FileName := ARequest.URI;
   while FileName.StartsWith('/') do
     Delete(FileName, 1, 1);
-  
-  WebFile := TStringList.Create;
 
   try
     try
       WebFilePath := Platform.GetGameUserPath.Append('resources\web\').Append(FileName);
-      WebFile.LoadFromFile(WebFilePath.toNative);
+      FileStream := TFileStream.Create(WebFilePath.ToNative, fmOpenRead or fmShareDenyWrite);
 
-      // MIME type
-      // see https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-      if (FileName.EndsWith('.html')) then
-        AResponse.ContentType := 'text/html; charset=UTF-8'
-      else if (FileName.EndsWith('.js')) then
-        AResponse.ContentType := 'text/javascript; charset=UTF-8'
-      else if (FileName.EndsWith('.css')) then
-        AResponse.ContentType := 'text/css; charset=UTF-8'
-      else if (FileName.EndsWith('.min.map')) then
-        AResponse.ContentType := 'application/json; charset=UTF-8';
-      
-      AResponse.Content := WebFile.Text;
-      AResponse.Code := 200;
+      AResponse.ContentType := ContentTypeForExt(WebFilePath.GetExtension);
+      AResponse.ContentLength := FileStream.Size;
+      AResponse.ContentStream := FileStream;
+      AResponse.SendContent;
+      AResponse.ContentStream:=Nil;
     except
       on E: Exception do begin
         AResponse.ContentType := 'text/html; charset=UTF-8';
@@ -139,7 +130,7 @@ begin
       end;
     end;
   finally
-    WebFile.Free;
+    FileStream.Free;
   end;
 end;
 
@@ -147,7 +138,6 @@ procedure TWebServer.routeCover(ARequest: TRequest; AResponse: TResponse);
 var
   Id: LongInt;
   Song: TSong;
-  Ext: IPath;
   CoverPath: IPath;
   FileStream : TFileStream;
 begin
@@ -160,32 +150,10 @@ begin
       
       Song := TSong(Songs.SongList[Id]);
       CoverPath := Song.Path.Append(Song.Cover);
-
-      // MIME type
-      // see https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
-      Ext := CoverPath.GetExtension;
-      if Ext.Equals('.jpg', true) or Ext.Equals('.jpeg', true) then
-        AResponse.ContentType := 'image/jpeg'
-      else if Ext.Equals('.png', true) then
-        AResponse.ContentType := 'image/png'
-      else if Ext.Equals('.apng', true) then
-        AResponse.ContentType := 'image/apng'
-      else if Ext.Equals('.avif', true) then
-        AResponse.ContentType := 'image/avif'
-      else if Ext.Equals('.bmp', true) then
-        AResponse.ContentType := 'image/bmp'
-      else if Ext.Equals('.gif', true) then
-        AResponse.ContentType := 'image/gif'
-      else if Ext.Equals('.svg', true) then
-        AResponse.ContentType := 'image/svg+xml'
-      else if Ext.Equals('.tif', true) or Ext.Equals('.tiff', true) then
-        AResponse.ContentType := 'image/tiff'
-      else if Ext.Equals('.webp', true) then
-        AResponse.ContentType := 'image/webp'
-      else
-        AResponse.ContentType := 'Application/octet-stream';
       
       FileStream := TFileStream.Create(CoverPath.ToNative, fmOpenRead or fmShareDenyWrite);
+
+      AResponse.ContentType := ContentTypeForExt(CoverPath.GetExtension);
       AResponse.ContentLength := FileStream.Size;
       AResponse.ContentStream := FileStream;
       AResponse.SendContent;
@@ -322,6 +290,42 @@ begin
   end;
 
   Result := JSONRoot.AsJSON;
+end;
+
+function TWebServer.ContentTypeForExt(Ext: IPath): string;
+begin
+  // MIME type
+  // see https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+  if Ext.Equals('.html', true) then
+    Result := 'text/html; charset=UTF-8'
+  else if Ext.Equals('.txt', true) then
+    Result := 'text/plain; charset=UTF-8'
+  else if Ext.Equals('.js', true) then
+    Result := 'text/javascript; charset=UTF-8'
+  else if Ext.Equals('.css', true) then
+    Result := 'text/css; charset=UTF-8'
+  else if Ext.Equals('.min.map', true) then
+    Result := 'application/json; charset=UTF-8'
+  else if Ext.Equals('.jpg', true) or Ext.Equals('.jpeg', true) then
+    Result := 'image/jpeg'
+  else if Ext.Equals('.png', true) then
+    Result := 'image/png'
+  else if Ext.Equals('.apng', true) then
+    Result := 'image/apng'
+  else if Ext.Equals('.avif', true) then
+    Result := 'image/avif'
+  else if Ext.Equals('.bmp', true) then
+    Result := 'image/bmp'
+  else if Ext.Equals('.gif', true) then
+    Result := 'image/gif'
+  else if Ext.Equals('.svg', true) then
+    Result := 'image/svg+xml'
+  else if Ext.Equals('.tif', true) or Ext.Equals('.tiff', true) then
+    Result := 'image/tiff'
+  else if Ext.Equals('.webp', true) then
+    Result := 'image/webp'
+  else
+    Result := 'Application/octet-stream';
 end;
 
 end.
