@@ -43,7 +43,7 @@ type
     procedure routeSongList(ARequest: TRequest; AResponse: TResponse);
     procedure routeSongsJSON(ARequest: TRequest; AResponse: TResponse);
     procedure routeFile(ARequest: TRequest; AResponse: TResponse);
-    procedure routeCover(ARequest: TRequest; AResponse: TResponse);
+    procedure routeSongFile(ARequest: TRequest; AResponse: TResponse);
     procedure route404(ARequest: TRequest; AResponse: TResponse);
     function ContentTypeForExt(Ext: IPath): string;
     function GenerateHTMLWithSongs: string;
@@ -106,7 +106,7 @@ procedure TWebServer.routeFile(ARequest: TRequest; AResponse: TResponse);
 var
   FileName: string;
   WebFilePath: IPath;
-  FileStream : TFileStream;
+  FileStream: TFileStream;
 begin
   FileName := ARequest.URI;
   while FileName.StartsWith('/') do
@@ -121,7 +121,7 @@ begin
       AResponse.ContentLength := FileStream.Size;
       AResponse.ContentStream := FileStream;
       AResponse.SendContent;
-      AResponse.ContentStream:=Nil;
+      AResponse.ContentStream := Nil;
     except
       on E: Exception do begin
         AResponse.ContentType := 'text/html; charset=UTF-8';
@@ -134,30 +134,44 @@ begin
   end;
 end;
 
-procedure TWebServer.routeCover(ARequest: TRequest; AResponse: TResponse);
+procedure TWebServer.routeSongFile(ARequest: TRequest; AResponse: TResponse);
 var
+  RequestedFile: string;
   Id: LongInt;
   Song: TSong;
-  CoverPath: IPath;
-  FileStream : TFileStream;
+  FilePath: IPath;
+  FileStream: TFileStream;
 begin
   try
     try
+      RequestedFile := ARequest.RouteParams['file'];
       Id := StrToInt(ARequest.RouteParams['id']);
 
       if (Id < 0) or (Id >= Songs.SongList.Count) then
         raise Exception.Create('ID is out of bounds');
       
       Song := TSong(Songs.SongList[Id]);
-      CoverPath := Song.Path.Append(Song.Cover);
-      
-      FileStream := TFileStream.Create(CoverPath.ToNative, fmOpenRead or fmShareDenyWrite);
 
-      AResponse.ContentType := ContentTypeForExt(CoverPath.GetExtension);
+      if RequestedFile = 'cover' then
+        FilePath := Song.Path.Append(Song.Cover)
+      else if RequestedFile = 'background' then
+        FilePath := Song.Path.Append(Song.Background)
+      else if RequestedFile = 'audio' then
+        FilePath := Song.Path.Append(Song.Mp3)
+      else if RequestedFile = 'video' then
+        FilePath := Song.Path.Append(Song.Video)
+      else if RequestedFile = 'file' then
+        FilePath := Song.Path.Append(Song.FileName)
+      else
+        raise Exception.Create('Invalid file');
+      
+      FileStream := TFileStream.Create(FilePath.ToNative, fmOpenRead or fmShareDenyWrite);
+
+      AResponse.ContentType := ContentTypeForExt(FilePath.GetExtension);
       AResponse.ContentLength := FileStream.Size;
       AResponse.ContentStream := FileStream;
       AResponse.SendContent;
-      AResponse.ContentStream:=Nil;
+      AResponse.ContentStream := Nil;
       
     except
       on E: Exception do begin
@@ -183,7 +197,7 @@ begin
   FRouter.RegisterRoute('/jquery.min.map', rmGET, @routeFile);
   FRouter.RegisterRoute('/datatables.min.js', rmGET, @routeFile);
   FRouter.RegisterRoute('/datatables.min.css', rmGET, @routeFile);
-  FRouter.RegisterRoute('/cover/:id', rmGET, @routeCover);
+  FRouter.RegisterRoute('/song/:id/:file', rmGET, @routeSongFile);
   FRouter.RegisterRoute('/404', @route404, true);
   try
     FServer.OnRequest := @HandleRequest;
