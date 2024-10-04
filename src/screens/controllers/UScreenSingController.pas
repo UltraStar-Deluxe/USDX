@@ -256,7 +256,7 @@ begin
         with Player[i1] do
         begin
           Score          := 0;
-          ScoreLine      := 0;
+          PerfectLines   := 0;
           ScoreGolden    := 0;
 
           ScoreInt       := 0;
@@ -556,7 +556,7 @@ begin
         with Player[i1] do
         begin
           Score          := 0;
-          ScoreLine      := 0;
+          PerfectLines   := 0;
           ScoreGolden    := 0;
 
           ScoreInt       := 0;
@@ -838,7 +838,7 @@ begin
     with Player[PlayerIndex] do
     begin
       Score          := 0;
-      ScoreLine      := 0;
+      PerfectLines   := 0;
       ScoreGolden    := 0;
 
       ScoreInt       := 0;
@@ -1568,9 +1568,9 @@ begin
               PlaylistMedley.Stats[len].Player[I].Score +
               PlaylistMedley.Stats[J].Player[I].Score;
 
-            PlaylistMedley.Stats[len].Player[I].ScoreLine :=
-              PlaylistMedley.Stats[len].Player[I].ScoreLine +
-              PlaylistMedley.Stats[J].Player[I].ScoreLine;
+            PlaylistMedley.Stats[len].Player[I].PerfectLines :=
+              PlaylistMedley.Stats[len].Player[I].PerfectLines +
+              PlaylistMedley.Stats[J].Player[I].PerfectLines;
 
             PlaylistMedley.Stats[len].Player[I].ScoreGolden :=
               PlaylistMedley.Stats[len].Player[I].ScoreGolden +
@@ -1600,8 +1600,8 @@ begin
           PlaylistMedley.Stats[len].Player[I].Score := round(
             PlaylistMedley.Stats[len].Player[I].Score / len);
 
-          PlaylistMedley.Stats[len].Player[I].ScoreLine := round(
-            PlaylistMedley.Stats[len].Player[I].ScoreLine / len);
+          PlaylistMedley.Stats[len].Player[I].PerfectLines := round(
+            PlaylistMedley.Stats[len].Player[I].PerfectLines / len);
 
           PlaylistMedley.Stats[len].Player[I].ScoreGolden := round(
             PlaylistMedley.Stats[len].Player[I].ScoreGolden / len);
@@ -1710,9 +1710,9 @@ begin
         LineBonus := MAX_SONG_LINE_BONUS / (Length(Tracks[Track].Lines) -
           NumEmptySentences[Track]);
         // apply line-bonus
-        CurrentPlayer.ScoreLine :=
-          CurrentPlayer.ScoreLine + LineBonus * LinePerfection;
-        CurrentPlayer.ScoreLineInt := Floor(CurrentPlayer.ScoreLine / 10) * 10;
+        CurrentPlayer.PerfectLines :=
+          CurrentPlayer.PerfectLines + LinePerfection;
+        CurrentPlayer.ScoreLineInt := Floor(CurrentPlayer.PerfectLines * LineBonus / 10) * 10;
         // update total score
         CurrentPlayer.ScoreTotalInt :=
           CurrentPlayer.ScoreInt +

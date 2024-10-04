@@ -71,7 +71,7 @@ type
 
     // Scores
     Score:          real;
-    ScoreLine:      real;
+    PerfectLines: real;
     ScoreGolden:    real;
 
     ScoreInt:       integer;
