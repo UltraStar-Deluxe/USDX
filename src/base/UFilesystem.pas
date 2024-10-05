@@ -42,7 +42,7 @@ uses
   UPath;
 
 type
-  TSytemSearchRec = TSearchRec;
+  TSytemSearchRec = TUnicodeSearchRec;
 
   TFileInfo = record
     Time: integer;  // timestamp
