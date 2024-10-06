@@ -367,7 +367,7 @@ type
       procedure Refresh;
       procedure CopyToUndo; //copy current lines, mouse position and headers
       procedure CopyFromUndo; //undo last lines, mouse position and headers
-      procedure DrawPlayerTrack(X, Y, W: real; Space: Integer; CurrentTone: Integer; Count: Integer; CurrentNote: Integer);
+      procedure DrawPlayerTrack(CurrentTone: Integer; Count: Integer; CurrentNote: Integer);
       procedure DrawInfoBar(X, Y, W, H: Integer; ColR, ColG, ColB, Alpha: real; Track: Integer);
       procedure DrawText(X, Y, W, H: real; Track: Integer; NumLines: Integer = 10);
       //video view
@@ -3983,46 +3983,29 @@ begin
 end; //if CurrentUndoLines
 end;
 
-procedure TScreenEditSub.DrawPlayerTrack(X, Y, W: real; Space: Integer; CurrentTone: Integer; Count: Integer; CurrentNote: Integer);
+procedure TScreenEditSub.DrawPlayerTrack(CurrentTone: Integer; Count: Integer; CurrentNote: Integer);
 var
-  TempR:   real;
   Rec:     TRecR;
-  N:       Integer;
   scale:   Integer;
-  NotesH2: real;
-  W1:      real;
-  H1:      real;
-  X1:      real;
-  X2:      real;
+  HalfToneHeight: real;
+  BarWidth: real;
+  BarHeight: real;
 begin
   glColor3f(1, 1, 1);
   glEnable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  TempR := W / (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat - Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
+  BarWidth := 16;
+  BarHeight := 16;
+  HalfToneHeight := 7.5;
+  Rec.Right := 40 + 0.5 + 10 * ScreenX + Count;
+  Rec.Left  := Rec.Right - BarWidth;
 
-  NotesH2 := int(NotesH[0] * 0.65);
-  W1 := NotesW[0] * 2 + 2;
-  H1 := NotesH[0] * 1.5;// + 3.5;
-  X2 := 40 + 0.5 + 10 * ScreenX + Count;
-  X1 := X2 - W1 - 2;
+  scale := Round((CurrentTone - Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote].Tone) / 12);
 
-  Rec.Left  := X1;
-  Rec.Right := X2;
-  scale := 0;
-  repeat
-    if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote].Tone + 12 * scale > CurrentTone) then
-      Dec(scale)
-    else
-      Inc(scale);
-
-  until (
-    (((Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote].Tone + 12 * scale) / 12) <  1) and
-    (((Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote].Tone + 12 * scale) / 12) >= 0));
-
-  Rec.Top := 410 - (CurrentTone - 12*scale - Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].BaseNote) * Space/2 - H1;
-  Rec.Bottom := Rec.Top + 2 * H1;
+  Rec.Top := 429 - (CurrentTone - 12*scale - Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].BaseNote) * HalfToneHeight - 0.5 * BarHeight;
+  Rec.Bottom := Rec.Top + BarHeight;
 
   glColor3f(1, 1, 1);
   glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
@@ -5327,7 +5310,7 @@ begin
   if (CurrentSound.ToneString <> '-') then
   begin
     Count := trunc((720 / (GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat) - GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat)))*(AudioPlayback.Position - GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat)));
-    DrawPlayerTrack(0, 16, 32, 15, CurrentSound.Tone, Count, CurrentNote[CurrentTrack]);
+    DrawPlayerTrack(CurrentSound.Tone, Count, CurrentNote[CurrentTrack]);
   end;
 
   GoldenRec.SpawnRec;
