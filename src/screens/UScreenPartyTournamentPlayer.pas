@@ -179,6 +179,7 @@ var
     until ((Interactions[Interaction].Typ = iSelectS) and
       SelectsS[Interactions[Interaction].Num].Visible) or
       (Button[Interactions[Interaction].Num].Visible);
+    SetTextInput(Interactions[Interaction].Typ = iButton);
   end;
   procedure IntPrev;
   begin
@@ -187,6 +188,7 @@ var
     until ((Interactions[Interaction].Typ = iSelectS) and
       SelectsS[Interactions[Interaction].Num].Visible) or
       (Button[Interactions[Interaction].Num].Visible);
+    SetTextInput(Interactions[Interaction].Typ = iButton);
   end;
 begin
   Result := true;
