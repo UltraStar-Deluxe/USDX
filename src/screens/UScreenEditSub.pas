@@ -1880,7 +1880,6 @@ begin
       SDLK_RIGHT:
         begin
           // right
-          CopyToUndo;
           if SDL_ModState = 0 then
           begin
             // clear debug text
@@ -1905,6 +1904,7 @@ begin
           // ctrl + right
           if SDL_ModState = KMOD_LCTRL then
           begin
+            CopyToUndo;
             if Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration > 1 then
             begin
               Dec(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration);
@@ -1921,6 +1921,7 @@ begin
           // shift + right
           if SDL_ModState = KMOD_LSHIFT then
           begin
+            CopyToUndo;
             Inc(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
             if CurrentNote[CurrentTrack] = 0 then
             begin
@@ -1935,6 +1936,7 @@ begin
           // alt + right
           if SDL_ModState = KMOD_LALT then
           begin
+            CopyToUndo;
             Inc(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration);
             if CurrentNote[CurrentTrack] = Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].HighNote then
             begin
@@ -1947,6 +1949,7 @@ begin
           // alt + ctrl + shift + right = move all from cursor to right
           if SDL_ModState = KMOD_LALT + KMOD_LCTRL + KMOD_LSHIFT then
           begin
+            CopyToUndo;
             MoveAllToEnd(1);
             Text[TextInfo].Text := Language.Translate('EDIT_INFO_NOTES_SHIFTED_RIGHT');
             GoldenRec.KillAll;
@@ -1957,7 +1960,6 @@ begin
       SDLK_LEFT:
         begin
           // left
-          CopyToUndo;
           if SDL_ModState = 0 then
           begin
             // clear debug text
@@ -1983,6 +1985,7 @@ begin
           // ctrl + left
           if SDL_ModState = KMOD_LCTRL then
           begin
+            CopyToUndo;
             Dec(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
             Inc(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration);
             if CurrentNote[CurrentTrack] = 0 then
@@ -1994,6 +1997,7 @@ begin
           // shift + left
           if SDL_ModState = KMOD_LSHIFT then
           begin
+            CopyToUndo;
             Dec(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
 
             // resizing sentences
@@ -2011,6 +2015,7 @@ begin
           // alt + left
           if SDL_ModState = KMOD_LALT then
           begin
+            CopyToUndo;
             if Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration > 1 then
             begin
               Dec(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration);
@@ -2026,6 +2031,7 @@ begin
           // alt + ctrl + shift + right = move all from cursor to left
           if SDL_ModState = KMOD_LALT + KMOD_LCTRL + KMOD_LSHIFT then
           begin
+            CopyToUndo;
             MoveAllToEnd(-1);
             Text[TextInfo].Text := Language.Translate('EDIT_INFO_NOTES_SHIFTED_LEFT');
             GoldenRec.KillAll;
