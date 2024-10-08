@@ -1712,7 +1712,7 @@ begin
         // apply line-bonus
         CurrentPlayer.ScoreLine :=
           CurrentPlayer.ScoreLine + LineBonus * LinePerfection;
-        CurrentPlayer.ScoreLineInt := Floor(CurrentPlayer.ScoreLine / 10) * 10;
+        CurrentPlayer.ScoreLineInt := Floor(Round(CurrentPlayer.ScoreLine) / 10) * 10;
         // update total score
         CurrentPlayer.ScoreTotalInt :=
           CurrentPlayer.ScoreInt +
