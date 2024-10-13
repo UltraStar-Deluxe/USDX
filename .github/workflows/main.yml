@@ -59,6 +59,7 @@ jobs:
     name: Build for MacOS (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-13, macos-14]
     steps:
