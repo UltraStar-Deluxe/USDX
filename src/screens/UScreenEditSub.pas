@@ -146,6 +146,10 @@ type
       P1EditMode:              boolean;
       P2EditMode:              boolean;
       BPMEditMode:             boolean;
+      PianoEditMode:           boolean;
+      
+      PianoKeysLow: TPianoKeyArray;
+      PianoKeysHigh: TPianoKeyArray;
 
       // to interactive divide note
       LastClickTime:           Integer;
@@ -389,6 +393,7 @@ type
       function  ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       function  ParseInputEditText(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
       function  ParseInputEditBPM(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+      function  ParseInputEditPiano(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
       function  ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean; override;
       function  Draw: boolean; override;
       procedure OnHide; override;
@@ -472,6 +477,24 @@ var
 begin
   Result := true;
 
+  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT {+ KMOD_CAPS});
+
+  if PianoEditMode then
+  begin
+    Result := ParseInputEditPiano(PressedKey, CharCode, PressedDown);
+    if (Result = true) then
+    begin
+      SDL_ModState := KMOD_LSHIFT or KMOD_LCTRL;
+      PressedKey := SDLK_SPACE;
+    end;
+    if (PressedKey = SDLK_RETURN) then
+    begin
+      PressedKey := SDLK_P;
+    end;
+      Result := true;
+  end;
+
   if TextEditMode or
      TitleEditMode or
      ArtistEditMode or
@@ -489,11 +512,8 @@ begin
   begin
     Result := ParseInputEditBPM(PressedKey, CharCode, PressedDown)
   end
-  else
+  else 
   begin
-
-  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
-    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT {+ KMOD_CAPS});
 
   if (PressedDown) then  // Key Down
   begin
@@ -1423,7 +1443,7 @@ begin
           ShowInteractiveBackground;
         end;
 
-      SDLK_SLASH, SDLK_HASH:
+      SDLK_SLASH, SDLK_HASH, SDLK_KP_DIVIDE:
         begin
           CopyToUndo;
           if SDL_ModState = 0 then
@@ -1482,6 +1502,12 @@ begin
           editLengthText := LengthUTF8(BackupEditText);
           BPMEditMode := true;
           StartTextInput;
+        end;
+
+      SDLK_F6:
+        begin
+          // Enter Piano Edit Mode
+          PianoEditMode := true;
         end;
 
       SDLK_SPACE:
@@ -2152,7 +2178,7 @@ begin
         end;
 
       end; // case
-    end;
+  end;
   end; // if
 end;
 
@@ -2422,7 +2448,7 @@ begin
               end;
           end;
         end;
-      SDLK_SLASH:
+      SDLK_SLASH, SDLK_KP_DIVIDE:
         begin
           CopyToUndo;
           if SDL_ModState = KMOD_LCTRL then
@@ -2546,6 +2572,80 @@ begin
         end;
 
     end; //case
+  end; //if (PressedDown)
+end;
+
+function TScreenEditSub.ParseInputEditPiano(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+var
+  SDL_ModState:  word;
+  Shift: Integer;
+  NewNote: Integer;
+  i: Integer;
+begin
+  // used when in Piano Edit Mode
+  Result := true;
+  NewNote := -1000;
+  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT {+ KMOD_CAPS});
+
+  Shift := 0;
+  if SDL_ModState = KMOD_LSHIFT then
+  begin
+    Shift := 12;
+  end;
+
+
+  if PressedDown then
+  begin
+    // check special keys
+    case PressedKey of
+      SDLK_ESCAPE, SDLK_F6:
+        begin
+          PianoEditMode := false;
+        end;
+    end;
+    if PianoEditMode = true then
+    begin
+      for i := Low(PianoKeysLow) to High(PianoKeysLow) do
+      begin
+        if PressedKey = PianoKeysLow[i] then
+        begin
+          NewNote := i - 7 + Shift; // Adjusted index to match existing logic
+          Break;
+        end;
+      end;
+      if NewNote = -1000 then // If not found in PianoKeysLow, check PianoKeysHigh
+      begin
+        for i := Low(PianoKeysHigh) to High(PianoKeysHigh) do
+        begin
+          if PressedKey = PianoKeysHigh[i] then
+          begin
+            NewNote := i + 6 + Shift; // Adjusted index to match existing logic
+            Break;
+          end;
+        end;
+      end;
+
+      if NewNote <> -1000 then
+      begin
+        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone := NewNote;
+        // Play Midi
+        PlaySentenceMidi := false;
+        PlayVideo := false;
+        midinotefound := false;
+        PlayOne := true;
+        PlayOneMidi := true;
+        StopVideoPreview();
+        {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
+        MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
+        MidiStop := GetTimeFromBeat(
+          Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
+          Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration); {$ENDIF}
+        LastClick := -100;
+      end
+      else
+        Result := False;
+    end; //if (PianoEditMode)
   end; //if (PressedDown)
 end;
 
@@ -4578,6 +4678,11 @@ begin
 
   // in notes place -> for move notes by mouse
   //NotesBackgroundId := AddSelectSlide(Theme.EditSub.NotesBackground, i, Empty);
+
+  // Initialize Piano Keys to default values
+  PianoKeysLow := Ini.PianoKeysLow;
+  PianoKeysHigh := Ini.PianoKeysHigh;
+
 end;
 
 procedure TScreenEditSub.OnShow;
