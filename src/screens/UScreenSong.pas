@@ -1079,7 +1079,7 @@ begin
             Fix := true;
 
             //On Escape goto Cat-List Hack
-            if (Ini.TabsAtStartup = 1) and (CatSongs.CatNumShow <> -1) then
+            if (Ini.Tabs = 1) and (CatSongs.CatNumShow <> -1) then
             begin
 
               //Find Category
