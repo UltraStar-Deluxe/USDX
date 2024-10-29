@@ -1236,7 +1236,7 @@ begin
   Split := ReadArrayIndex(ISplit, IniFile, 'Graphics', 'Split', 0);
 
   // FullScreen
-  FullScreen := ReadArrayIndex(IFullScreen, IniFile, 'Graphics', 'FullScreen', IGNORE_INDEX, 'Off');
+  FullScreen := ReadArrayIndex(IFullScreen, IniFile, 'Graphics', 'FullScreen', IGNORE_INDEX, 'Borderless');
 
   // PositionX
   PositionX := StrToInt(IniFile.ReadString('Graphics', 'PositionX', '0'));
