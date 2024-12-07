@@ -41,17 +41,17 @@ jobs:
           del game\*.debug
           xcopy game\*.dll installer\dependencies\dll /y
           & 'C:\Program Files (x86)\NSIS\makensis.exe' "installer/UltraStar Deluxe.nsi"
-          mv installer\dist\UltraStar.Deluxe_*_installer.exe UltraStarDeluxe-installer-${{ env.versionName }}.exe
+          mv installer\dist\UltraStar.Deluxe_*_installer.exe UltraStarDeluxe-windows-installer-${{ env.versionName }}.exe
       - name: Upload Installer Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: WIN-UltraStarDeluxe-installer-${{ env.versionName }}
-          path: UltraStarDeluxe-installer-${{ env.versionName }}.exe
+          name: UltraStarDeluxe-windows-installer-${{ env.versionName }}
+          path: UltraStarDeluxe-windows-installer-${{ env.versionName }}.exe
           if-no-files-found: error
       - name: Upload Portable Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: WIN-UltraStarDeluxe-portable-${{ env.versionName }}
+          name: UltraStarDeluxe-windows-portable-${{ env.versionName }}
           path: game
           if-no-files-found: error
 
@@ -84,12 +84,12 @@ jobs:
           ./autogen.sh
           ./configure
           make macosx-dmg
-          mv UltraStarDeluxe.dmg UltraStarDeluxe-${{ env.arch }}-${{ env.versionName }}.dmg
+          mv UltraStarDeluxe.dmg UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}.dmg
       - name: Upload Image Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MAC-${{ env.arch }}-UltraStarDeluxe-image-${{ env.versionName }}
-          path: UltraStarDeluxe-${{ env.arch }}-${{ env.versionName }}.dmg
+          name: UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}
+          path: UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}.dmg
           if-no-files-found: error
 
   build_linux:
@@ -113,10 +113,10 @@ jobs:
           cd dists/linux
           sed -i '/docker/s/-it\>//' dockerenv.sh
           ./dockerenv.sh make compress
-          mv UltraStar*.AppImage ../../UltraStarDeluxe-${{ env.versionName }}.AppImage
+          mv UltraStar*.AppImage ../../UltraStarDeluxe-linux-${{ env.versionName }}.AppImage
       - name: Upload Image Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: LIN-UltraStarDeluxe-appimage-${{ env.versionName }}
-          path: UltraStarDeluxe-${{ env.versionName }}.AppImage
+          name: UltraStarDeluxe-linux-${{ env.versionName }}
+          path: UltraStarDeluxe-linux-${{ env.versionName }}.AppImage
           if-no-files-found: error
