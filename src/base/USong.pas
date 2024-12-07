@@ -44,6 +44,8 @@ uses
   {$ENDIF}
   MD5,
   SysUtils,
+  types,
+  fgl,
   Classes,
   {$IFDEF DARWIN}
     cthreads,
@@ -753,6 +755,7 @@ var
   EncFile: IPath; // encoded filename
   FullFileName: string;
   I, P: integer;
+  TagMap: TFPGMap<string, string>;
 
   { adds a custom header tag to the song
     if there is no ':' in the read line, Tag should be empty
@@ -796,281 +799,328 @@ begin
   else
     Encoding := encAuto;
 
-  //Read Lines while Line starts with # or its empty
-  //Log.LogDebug(Line,'TSong.ReadTXTHeader');
-  while (Length(Line) > 0) and (Line[1] = '#') do
-  begin
-    //Increase Line Number
-    Inc (FileLineNo);
-    SepPos := Pos(':', Line);
+  TagMap := TFPGMap<string, string>.Create;
+  try //Try - Finally to make sure TagMap is freed in the end
+    TagMap.OnKeyCompare := CompareStr;
+    TagMap.Sorted := TRUE;
+    TagMap.Duplicates := TDuplicates.dupError;
 
-    //Line has no Seperator, ignore non header field
-    if (SepPos = 0) then
+    //Read Lines while Line starts with # or its empty
+    //Store all read tags into the TagMap for later use
+    //Log.LogDebug(Line,'TSong.ReadTXTHeader');
+    while (Length(Line) > 0) and (Line[1] = '#') do
     begin
-      AddCustomTag('', Copy(Line, 2, Length(Line) - 1));
+      //Increase Line Number
+      Inc (FileLineNo);
+      SepPos := Pos(':', Line);
+
+      //Line has no Seperator, ignore non header field
+      if (SepPos = 0) then
+      begin
+        AddCustomTag('', Copy(Line, 2, Length(Line) - 1));
+        // read next line
+        if (not SongFile.ReadLine(Line)) then
+        begin
+          Result := false;
+          Log.LogError('File incomplete or not Ultrastar txt (A): ' + FullFileName);
+          Break;
+        end;
+        Continue;
+      end;
+
+      //Read Identifier and Value
+      Identifier  := UpperCase(Trim(Copy(Line, 2, SepPos - 2))); //Uppercase is for Case Insensitive Checks
+      Value       := Trim(Copy(Line, SepPos + 1, Length(Line) - SepPos));
+
+      //Check the Identifier (If Value is given)
+      if (Length(Value) = 0) then
+      begin
+        Log.LogInfo('Empty field "'+Identifier+'" in file ' + FullFileName,
+                     'TSong.ReadTXTHeader');
+        AddCustomTag(Identifier, '');
+      end
+      else
+      begin
+        try
+          TagMap.Add(Identifier, Value);
+        except
+          on E: EListError do
+            Log.LogInfo('Duplicate Tag "'+Identifier+'" in file ' + FullFileName + ' will be ignored.',
+                        'TSong.ReadTXTHeader');
+        end;
+      end; // End check for non-empty Value
+
       // read next line
-      if (not SongFile.ReadLine(Line)) then
+      if not SongFile.ReadLine(Line) then
       begin
         Result := false;
         Log.LogError('File incomplete or not Ultrastar txt (A): ' + FullFileName);
         Break;
       end;
-      Continue;
+    end; // while
+    
+    //Read the songs attributes stored in the TagMap
+    
+    //-----------
+    //Required Attributes
+    //-----------
+
+    if (TagMap.TryGetData('TITLE', Value)) then
+    begin
+      TagMap.Remove('TITLE');
+      self.Title := DecodeStringUTF8(Value, Encoding);
+      self.TitleASCII := LowerCase(TransliterateToASCII(self.Title));
+      //Add Title Flag to Done
+      Done := Done or 1;
     end;
-
-    //Read Identifier and Value
-    Identifier  := UpperCase(Trim(Copy(Line, 2, SepPos - 2))); //Uppercase is for Case Insensitive Checks
-    Value       := Trim(Copy(Line, SepPos + 1, Length(Line) - SepPos));
-
-    //Check the Identifier (If Value is given)
-    if (Length(Value) = 0) then
+    
+    if (TagMap.TryGetData('ARTIST', Value)) then
     begin
-      Log.LogInfo('Empty field "'+Identifier+'" in file ' + FullFileName,
-                   'TSong.ReadTXTHeader');
-      AddCustomTag(Identifier, '');
-    end
-    else
+      TagMap.Remove('ARTIST');
+      self.Artist := DecodeStringUTF8(Value, Encoding);
+      self.ArtistASCII := LowerCase(TransliterateToASCII(self.Artist));
+      //Add Artist Flag to Done
+      Done := Done or 2;
+    end;
+    
+    //MP3 File
+    if (TagMap.TryGetData('MP3', Value)) then
     begin
-
-      //-----------
-      //Required Attributes
-      //-----------
-
-      if (Identifier = 'TITLE') then
+      TagMap.Remove('MP3');
+      EncFile := DecodeFilename(Value);
+      if (Self.Path.Append(EncFile).IsFile) then
       begin
-        self.Title := DecodeStringUTF8(Value, Encoding);
-        self.TitleASCII := LowerCase(TransliterateToASCII(self.Title));
-        //Add Title Flag to Done
-        Done := Done or 1;
+        self.Mp3 := EncFile;
+        //Add Mp3 Flag to Done
+        Done := Done or 4;
       end
-
-      else if (Identifier = 'ARTIST') then
-      begin
-        self.Artist := DecodeStringUTF8(Value, Encoding);
-        self.ArtistASCII := LowerCase(TransliterateToASCII(self.Artist));
-
-        //Add Artist Flag to Done
-        Done := Done or 2;
-      end
-
-      //MP3 File
-      else if (Identifier = 'MP3') then
-      begin
-        EncFile := DecodeFilename(Value);
-        if (Self.Path.Append(EncFile).IsFile) then
-        begin
-          self.Mp3 := EncFile;
-          
-          //Add Mp3 Flag to Done
-          Done := Done or 4;
-        end
-        else
-        begin
-          Log.LogError('Can''t find audio file in song: ' + DecodeStringUTF8(FullFileName, Encoding));
-        end;
-      end
-
-      //Beats per Minute
-      else if (Identifier = 'BPM') then
-      begin
-        SetLength(self.BPM, 1);
-        self.BPM[0].StartBeat := 0;
-        StringReplace(Value, ',', '.', [rfReplaceAll]);
-        self.BPM[0].BPM := StrToFloatI18n(Value ) * Mult * MultBPM;
-
-        if self.BPM[0].BPM <> 0 then
-        begin
-          //Add BPM Flag to Done
-          Done := Done or 8
-        end
-        else
-            Log.LogError('Was not able to convert String ' + FullFileName + '"' + Value + '" to number.');
-      end
-
-      //---------
-      //Additional Header Information
-      //---------
-
-      // Gap
-      else if (Identifier = 'GAP') then
-      begin
-        self.GAP := StrToFloatI18n(Value);
-      end
-
-      //Cover Picture
-      else if (Identifier = 'COVER') then
-      begin
-        self.Cover := DecodeFilename(Value);
-      end
-
-      //Background Picture
-      else if (Identifier = 'BACKGROUND') then
-      begin
-        self.Background := DecodeFilename(Value);
-      end
-
-      // Video File
-      else if (Identifier = 'VIDEO') then
-      begin
-        EncFile := DecodeFilename(Value);
-        if (self.Path.Append(EncFile).IsFile) then
-          self.Video := EncFile
-        else
-          Log.LogError('Can''t find video file in song: ' + FullFileName);
-      end
-
-      // Video Gap
-      else if (Identifier = 'VIDEOGAP') then
-      begin
-        self.VideoGAP := StrToFloatI18n( Value )
-      end
-
-      //Genre Sorting
-      else if (Identifier = 'GENRE') then
-      begin
-        DecodeStringUTF8(Value, Genre, Encoding);
-        self.GenreASCII := LowerCase(TransliterateToASCII(Genre));
-      end
-
-      //Edition Sorting
-      else if (Identifier = 'EDITION') then
-      begin
-        DecodeStringUTF8(Value, Edition, Encoding);
-        self.EditionASCII := LowerCase(TransliterateToASCII(Edition));
-      end
-
-      //Creator Tag
-      else if (Identifier = 'CREATOR') then
-      begin
-        DecodeStringUTF8(Value, Creator, Encoding);
-        self.CreatorASCII := LowerCase(TransliterateToASCII(Creator));
-      end
-
-      //Language Sorting
-      else if (Identifier = 'LANGUAGE') then
-      begin
-        DecodeStringUTF8(Value, Language, Encoding);
-        self.LanguageASCII := LowerCase(TransliterateToASCII(Language));
-      end
-
-      //Year Sorting
-      else if (Identifier = 'YEAR') then
-      begin
-        TryStrtoInt(Value, self.Year)
-      end
-
-      // Song Start
-      else if (Identifier = 'START') then
-      begin
-        self.Start := StrToFloatI18n( Value )
-      end
-
-      // Song Ending
-      else if (Identifier = 'END') then
-      begin
-        TryStrtoInt(Value, self.Finish)
-      end
-
-      // Resolution
-      else if (Identifier = 'RESOLUTION') then
-      begin
-        TryStrtoInt(Value, self.Resolution);
-        if (self.Resolution < 1) then begin
-          Log.LogError('Ignoring invalid resolution in song: ' + FullFileName);
-          self.Resolution := DEFAULT_RESOLUTION;
-        end
-      end
-
-      // Notes Gap
-      else if (Identifier = 'NOTESGAP') then
-      begin
-        TryStrtoInt(Value, self.NotesGAP)
-      end
-
-      // Relative Notes
-      else if (Identifier = 'RELATIVE') then
-      begin
-        if (UpperCase(Value) = 'YES') then
-          self.Relative := true;
-      end
-
-      // File encoding
-      else if (Identifier = 'ENCODING') then
-      begin
-        self.Encoding := ParseEncoding(Value, Ini.DefaultEncoding);
-      end
-
-      // PreviewStart
-      else if (Identifier = 'PREVIEWSTART') then
-      begin
-        self.PreviewStart := StrToFloatI18n( Value );
-        if (self.PreviewStart>0) then
-        begin
-          MedleyFlags := MedleyFlags or 1;
-          HasPreview := true;
-        end;
-      end
-
-      // MedleyStartBeat
-      else if (Identifier = 'MEDLEYSTARTBEAT') and not self.Relative then
-      begin
-        if TryStrtoInt(Value, self.Medley.StartBeat) then
-          MedleyFlags := MedleyFlags or 2;
-      end
-
-      // MedleyEndBeat
-      else if (Identifier = 'MEDLEYENDBEAT') and not self.Relative then
-      begin
-        if TryStrtoInt(Value, self.Medley.EndBeat) then
-          MedleyFlags := MedleyFlags or 4;
-      end
-
-      // Medley
-      else if (Identifier = 'CALCMEDLEY') then
-      begin
-        if Uppercase(Value) = 'OFF' then
-          self.CalcMedley := false;
-      end
-
-      // Duet Singer Name P1
-      else if (Identifier = 'DUETSINGERP1') then
-      begin
-        DecodeStringUTF8(Value, DuetNames[0], Encoding);
-      end
-
-      // Duet Singer Name P2
-      else if (Identifier = 'DUETSINGERP2') then
-      begin
-        DecodeStringUTF8(Value, DuetNames[1], Encoding);
-      end
-
-      // Duet Singer Name P1
-      else if (Identifier = 'P1') then
-      begin
-        DecodeStringUTF8(Value, DuetNames[0], Encoding);
-      end
-
-      // Duet Singer Name P2
-      else if (Identifier = 'P2') then
-      begin
-        DecodeStringUTF8(Value, DuetNames[1], Encoding);
-      end
-
-      // unsupported tag
       else
       begin
-        AddCustomTag(Identifier, Value);
+        Log.LogError('Can''t find audio file in song: ' + DecodeStringUTF8(FullFileName, Encoding));
       end;
-    end; // End check for non-empty Value
-
-    // read next line
-    if not SongFile.ReadLine(Line) then
-    begin
-      Result := false;
-      Log.LogError('File incomplete or not Ultrastar txt (A): ' + FullFileName);
-      Break;
     end;
-  end; // while
+    
+    //Beats per Minute
+    if (TagMap.TryGetData('BPM', Value)) then
+    begin
+      TagMap.Remove('BPM');
+      SetLength(self.BPM, 1);
+      self.BPM[0].StartBeat := 0;
+      StringReplace(Value, ',', '.', [rfReplaceAll]);
+      self.BPM[0].BPM := StrToFloatI18n(Value ) * Mult * MultBPM;
+
+      if self.BPM[0].BPM <> 0 then
+      begin
+        //Add BPM Flag to Done
+        Done := Done or 8
+      end
+      else
+          Log.LogError('Was not able to convert String ' + FullFileName + '"' + Value + '" to number.');
+    end;
+    
+    //---------
+    //Additional Header Information
+    //---------
+    
+    // Gap
+    if (TagMap.TryGetData('GAP', Value)) then
+    begin
+      TagMap.Remove('GAP');
+      self.GAP := StrToFloatI18n(Value);
+    end;
+    
+    //Cover Picture
+    if (TagMap.TryGetData('COVER', Value)) then
+    begin
+      TagMap.Remove('COVER');
+      self.Cover := DecodeFilename(Value);
+    end;
+    
+    //Background Picture
+    if (TagMap.TryGetData('BACKGROUND', Value)) then
+    begin
+      TagMap.Remove('BACKGROUND');
+      self.Background := DecodeFilename(Value);
+    end;
+    
+    // Video File
+    if (TagMap.TryGetData('VIDEO', Value)) then
+    begin
+      TagMap.Remove('VIDEO');
+      EncFile := DecodeFilename(Value);
+      if (self.Path.Append(EncFile).IsFile) then
+        self.Video := EncFile
+      else
+        Log.LogError('Can''t find video file in song: ' + FullFileName);
+    end;
+    
+    // Video Gap
+    if (TagMap.TryGetData('VIDEOGAP', Value)) then
+    begin
+      TagMap.Remove('VIDEOGAP');
+      self.VideoGAP := StrToFloatI18n( Value )
+    end;
+    
+    //Genre Sorting
+    if (TagMap.TryGetData('GENRE', Value)) then
+    begin
+      TagMap.Remove('GENRE');
+      DecodeStringUTF8(Value, Genre, Encoding);
+      self.GenreASCII := LowerCase(TransliterateToASCII(Genre));
+    end;
+    
+    //Edition Sorting
+    if (TagMap.TryGetData('EDITION', Value)) then
+    begin
+      TagMap.Remove('EDITION');
+      DecodeStringUTF8(Value, Edition, Encoding);
+      self.EditionASCII := LowerCase(TransliterateToASCII(Edition));
+    end;
+    
+    //Creator Tag
+    if (TagMap.TryGetData('CREATOR', Value)) then
+    begin
+      TagMap.Remove('CREATOR');
+      DecodeStringUTF8(Value, Creator, Encoding);
+      self.CreatorASCII := LowerCase(TransliterateToASCII(Creator));
+    end;
+    
+    //Language Sorting
+    if (TagMap.TryGetData('LANGUAGE', Value)) then
+    begin
+      TagMap.Remove('LANGUAGE');
+      DecodeStringUTF8(Value, Language, Encoding);
+      self.LanguageASCII := LowerCase(TransliterateToASCII(Language));
+    end;
+    
+    //Year Sorting
+    if (TagMap.TryGetData('YEAR', Value)) then
+    begin
+      TagMap.Remove('YEAR');
+      TryStrtoInt(Value, self.Year)
+    end;
+    
+    // Song Start
+    if (TagMap.TryGetData('START', Value)) then
+    begin
+      TagMap.Remove('START');
+      self.Start := StrToFloatI18n( Value )
+    end;
+    
+    // Song Ending
+    if (TagMap.TryGetData('END', Value)) then
+    begin
+      TagMap.Remove('END');
+      TryStrtoInt(Value, self.Finish)
+    end;
+    
+    // Resolution
+    if (TagMap.TryGetData('RESOLUTION', Value)) then
+    begin
+      TagMap.Remove('RESOLUTION');
+      TryStrtoInt(Value, self.Resolution);
+      if (self.Resolution < 1) then
+      begin
+        Log.LogError('Ignoring invalid resolution in song: ' + FullFileName);
+        self.Resolution := DEFAULT_RESOLUTION;
+      end;
+    end;
+    
+    // Notes Gap
+    if (TagMap.TryGetData('NOTESGAP', Value)) then
+    begin
+      TagMap.Remove('NOTESGAP');
+      TryStrtoInt(Value, self.NotesGAP)
+    end;
+    
+    // Relative Notes
+    if (TagMap.TryGetData('RELATIVE', Value)) then
+    begin
+      TagMap.Remove('RELATIVE');
+      if (UpperCase(Value) = 'YES') then
+        self.Relative := true;
+    end;
+    
+    // File encoding
+    if (TagMap.TryGetData('ENCODING', Value)) then
+    begin
+      TagMap.Remove('ENCODING');
+      self.Encoding := ParseEncoding(Value, Ini.DefaultEncoding);
+    end;
+    
+    // PreviewStart
+    if (TagMap.TryGetData('PREVIEWSTART', Value)) then
+    begin
+      TagMap.Remove('PREVIEWSTART');
+      self.PreviewStart := StrToFloatI18n( Value );
+      if (self.PreviewStart>0) then
+      begin
+        MedleyFlags := MedleyFlags or 1;
+        HasPreview := true;
+      end;
+    end;
+    
+    // MedleyStartBeat
+    if TagMap.TryGetData('MEDLEYSTARTBEAT', Value) and not self.Relative then
+    begin
+      TagMap.Remove('MEDLEYSTARTBEAT');
+      if TryStrtoInt(Value, self.Medley.StartBeat) then
+        MedleyFlags := MedleyFlags or 2;
+    end;
+    
+    // MedleyEndBeat
+    if TagMap.TryGetData('MEDLEYENDBEAT', Value) and not self.Relative then
+    begin
+      TagMap.Remove('MEDLEYENDBEAT');
+      if TryStrtoInt(Value, self.Medley.EndBeat) then
+        MedleyFlags := MedleyFlags or 4;
+    end;
+    
+    // Medley
+    if (TagMap.TryGetData('CALCMEDLEY', Value)) then
+    begin
+      TagMap.Remove('CALCMEDLEY');
+      if Uppercase(Value) = 'OFF' then
+        self.CalcMedley := false;
+    end;
+    
+    // Duet Singer Name P1
+    if (TagMap.TryGetData('DUETSINGERP1', Value)) then
+    begin
+      TagMap.Remove('DUETSINGERP1');
+      DecodeStringUTF8(Value, DuetNames[0], Encoding);
+    end;
+    
+    // Duet Singer Name P2
+    if (TagMap.TryGetData('DUETSINGERP2', Value)) then
+    begin
+      TagMap.Remove('DUETSINGERP2');
+      DecodeStringUTF8(Value, DuetNames[1], Encoding);
+    end;
+    
+    // Duet Singer Name P1
+    if (TagMap.TryGetData('P1', Value)) then
+    begin
+      TagMap.Remove('P1');
+      DecodeStringUTF8(Value, DuetNames[0], Encoding);
+    end;
+    
+    // Duet Singer Name P2
+    if (TagMap.TryGetData('P2', Value)) then
+    begin
+      TagMap.Remove('P2');
+      DecodeStringUTF8(Value, DuetNames[1], Encoding);
+    end;
+    
+    // Unsupported Tags
+    for I := 0 to TagMap.Count - 1 do
+    begin
+      AddCustomTag(TagMap.Keys[I], TagMap.Data[I]);
+    end;
+    
+  finally
+    TagMap.Free;
+  end;
 
   //MD5 of File
   self.MD5 := MD5SongFile(SongFile);
