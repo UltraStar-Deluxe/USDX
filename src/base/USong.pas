@@ -103,6 +103,7 @@ type
     FileLineNo  : integer;  // line, which is read last, for error reporting
 
     function DecodeFilename(Filename: RawByteString): IPath;
+    function CheckForCachedVideoFile(Value: string): Boolean; // looks for a local copy of a video from an online source (v=xyzabc,…)
     procedure ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String; RapToFreestyle: boolean);
     procedure NewSentence(LineNumberP: integer; Param1, Param2: integer);
     procedure FindRefrain(); // tries to find a refrain for the medley mode and preview start
@@ -743,6 +744,37 @@ begin
   Result := StrToFloatDef(TempValue, 0);
 end;
 
+{
+If the Value starts with 'v=', that may refer to a video that is being hosted on a popular platform.
+There might be a locally cached copy of this video. The filename should containing the video ID.
+The extension must be mp4 (not m4v).
+}
+function TSong.CheckForCachedVideoFile(Value: string): Boolean;
+var
+  Needle: string;
+  CommaPos: Integer;
+  Iter: IFileIterator;
+  FileInfo: TFileInfo;
+begin
+  Result := False;
+  if Copy(Value, 1, 2) = 'v=' then
+  begin
+    CommaPos := Pos(',', Value);
+    if CommaPos > 0 then
+      Needle := Copy(Value, 3, CommaPos - 3)
+    else
+      Needle := Copy(Value, 3, Length(Value) - 2);
+    Log.LogInfo('Reference to online video '+Needle+' found. Looking for local mp4 copy...', 'TSong.CheckForCachedVideoFile');
+    Iter := FileSystem.FileFind(self.Path.Append('*'+Needle+'*.mp4'), faAnyFile);
+    while (Iter.HasNext and not Result) do
+    begin
+      FileInfo := Iter.Next;
+      self.Video := FileInfo.Name;
+      Result := True;
+    end;
+  end
+end;
+
 function TSong.ReadTXTHeader(SongFile: TTextFileStream; ReadCustomTags: Boolean): boolean;
 var
   Line, Identifier: string;
@@ -915,7 +947,7 @@ begin
         EncFile := DecodeFilename(Value);
         if (self.Path.Append(EncFile).IsFile) then
           self.Video := EncFile
-        else
+        else if not CheckForCachedVideoFile(Value) then
           Log.LogError('Can''t find video file in song: ' + FullFileName);
       end
 
