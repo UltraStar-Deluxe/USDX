@@ -771,6 +771,27 @@ var
       CustomTags[Len].Content := DecodeStringUTF8(Content, Encoding);
     end;
   end;
+
+  { Removes all entries for a given header-tag from the TagMap
+    If TagMap contains multiple entries for the given tag,
+    a informative message about the duplicate tags is logged }
+  procedure RemoveTagsFromTagMap(const tag: string);
+  var
+    count: Integer;
+  begin
+    count := 0;
+    while TagMap.IndexOf(tag) <> -1 do
+    begin
+      TagMap.Remove(tag);
+      count := count + 1;
+    end;
+    if count > 1 then
+    begin
+      Log.LogInfo('Duplicate Tag "'+ tag +'" found in file ' + FullFileName + '. Only the last value will be used.',
+                  'TSong.ReadTXTHeader.RemoveTagsFromTagMap');
+    end;
+  end;
+
 begin
   Result := true;
   Done   := 0;
@@ -803,7 +824,7 @@ begin
   try //Try - Finally to make sure TagMap is freed in the end
     TagMap.OnKeyCompare := CompareStr;
     TagMap.Sorted := TRUE;
-    TagMap.Duplicates := TDuplicates.dupError;
+    TagMap.Duplicates := TDuplicates.dupAccept;
 
     //Read Lines while Line starts with # or its empty
     //Store all read tags into the TagMap for later use
@@ -841,13 +862,7 @@ begin
       end
       else
       begin
-        try
-          TagMap.Add(Identifier, Value);
-        except
-          on E: fgl.EListError do
-            Log.LogInfo('Duplicate Tag "'+Identifier+'" in file ' + FullFileName + ' will be ignored.',
-                        'TSong.ReadTXTHeader');
-        end;
+        TagMap.Add(Identifier, Value);
       end; // End check for non-empty Value
 
       // read next line
@@ -867,7 +882,7 @@ begin
 
     if (TagMap.TryGetData('TITLE', Value)) then
     begin
-      TagMap.Remove('TITLE');
+      RemoveTagsFromTagMap('TITLE');
       self.Title := DecodeStringUTF8(Value, Encoding);
       self.TitleASCII := LowerCase(TransliterateToASCII(self.Title));
       //Add Title Flag to Done
@@ -876,7 +891,7 @@ begin
     
     if (TagMap.TryGetData('ARTIST', Value)) then
     begin
-      TagMap.Remove('ARTIST');
+      RemoveTagsFromTagMap('ARTIST');
       self.Artist := DecodeStringUTF8(Value, Encoding);
       self.ArtistASCII := LowerCase(TransliterateToASCII(self.Artist));
       //Add Artist Flag to Done
@@ -886,7 +901,7 @@ begin
     //MP3 File
     if (TagMap.TryGetData('MP3', Value)) then
     begin
-      TagMap.Remove('MP3');
+      RemoveTagsFromTagMap('MP3');
       EncFile := DecodeFilename(Value);
       if (Self.Path.Append(EncFile).IsFile) then
       begin
@@ -903,7 +918,7 @@ begin
     //Beats per Minute
     if (TagMap.TryGetData('BPM', Value)) then
     begin
-      TagMap.Remove('BPM');
+      RemoveTagsFromTagMap('BPM');
       SetLength(self.BPM, 1);
       self.BPM[0].StartBeat := 0;
       StringReplace(Value, ',', '.', [rfReplaceAll]);
@@ -925,28 +940,28 @@ begin
     // Gap
     if (TagMap.TryGetData('GAP', Value)) then
     begin
-      TagMap.Remove('GAP');
+      RemoveTagsFromTagMap('GAP');
       self.GAP := StrToFloatI18n(Value);
     end;
     
     //Cover Picture
     if (TagMap.TryGetData('COVER', Value)) then
     begin
-      TagMap.Remove('COVER');
+      RemoveTagsFromTagMap('COVER');
       self.Cover := DecodeFilename(Value);
     end;
     
     //Background Picture
     if (TagMap.TryGetData('BACKGROUND', Value)) then
     begin
-      TagMap.Remove('BACKGROUND');
+      RemoveTagsFromTagMap('BACKGROUND');
       self.Background := DecodeFilename(Value);
     end;
     
     // Video File
     if (TagMap.TryGetData('VIDEO', Value)) then
     begin
-      TagMap.Remove('VIDEO');
+      RemoveTagsFromTagMap('VIDEO');
       EncFile := DecodeFilename(Value);
       if (self.Path.Append(EncFile).IsFile) then
         self.Video := EncFile
@@ -957,14 +972,14 @@ begin
     // Video Gap
     if (TagMap.TryGetData('VIDEOGAP', Value)) then
     begin
-      TagMap.Remove('VIDEOGAP');
+      RemoveTagsFromTagMap('VIDEOGAP');
       self.VideoGAP := StrToFloatI18n( Value )
     end;
     
     //Genre Sorting
     if (TagMap.TryGetData('GENRE', Value)) then
     begin
-      TagMap.Remove('GENRE');
+      RemoveTagsFromTagMap('GENRE');
       DecodeStringUTF8(Value, Genre, Encoding);
       self.GenreASCII := LowerCase(TransliterateToASCII(Genre));
     end;
@@ -972,7 +987,7 @@ begin
     //Edition Sorting
     if (TagMap.TryGetData('EDITION', Value)) then
     begin
-      TagMap.Remove('EDITION');
+      RemoveTagsFromTagMap('EDITION');
       DecodeStringUTF8(Value, Edition, Encoding);
       self.EditionASCII := LowerCase(TransliterateToASCII(Edition));
     end;
@@ -980,7 +995,7 @@ begin
     //Creator Tag
     if (TagMap.TryGetData('CREATOR', Value)) then
     begin
-      TagMap.Remove('CREATOR');
+      RemoveTagsFromTagMap('CREATOR');
       DecodeStringUTF8(Value, Creator, Encoding);
       self.CreatorASCII := LowerCase(TransliterateToASCII(Creator));
     end;
@@ -988,7 +1003,7 @@ begin
     //Language Sorting
     if (TagMap.TryGetData('LANGUAGE', Value)) then
     begin
-      TagMap.Remove('LANGUAGE');
+      RemoveTagsFromTagMap('LANGUAGE');
       DecodeStringUTF8(Value, Language, Encoding);
       self.LanguageASCII := LowerCase(TransliterateToASCII(Language));
     end;
@@ -996,28 +1011,28 @@ begin
     //Year Sorting
     if (TagMap.TryGetData('YEAR', Value)) then
     begin
-      TagMap.Remove('YEAR');
+      RemoveTagsFromTagMap('YEAR');
       TryStrtoInt(Value, self.Year)
     end;
     
     // Song Start
     if (TagMap.TryGetData('START', Value)) then
     begin
-      TagMap.Remove('START');
+      RemoveTagsFromTagMap('START');
       self.Start := StrToFloatI18n( Value )
     end;
     
     // Song Ending
     if (TagMap.TryGetData('END', Value)) then
     begin
-      TagMap.Remove('END');
+      RemoveTagsFromTagMap('END');
       TryStrtoInt(Value, self.Finish)
     end;
     
     // Resolution
     if (TagMap.TryGetData('RESOLUTION', Value)) then
     begin
-      TagMap.Remove('RESOLUTION');
+      RemoveTagsFromTagMap('RESOLUTION');
       TryStrtoInt(Value, self.Resolution);
       if (self.Resolution < 1) then
       begin
@@ -1029,14 +1044,14 @@ begin
     // Notes Gap
     if (TagMap.TryGetData('NOTESGAP', Value)) then
     begin
-      TagMap.Remove('NOTESGAP');
+      RemoveTagsFromTagMap('NOTESGAP');
       TryStrtoInt(Value, self.NotesGAP)
     end;
     
     // Relative Notes
     if (TagMap.TryGetData('RELATIVE', Value)) then
     begin
-      TagMap.Remove('RELATIVE');
+      RemoveTagsFromTagMap('RELATIVE');
       if (UpperCase(Value) = 'YES') then
         self.Relative := true;
     end;
@@ -1044,14 +1059,14 @@ begin
     // File encoding
     if (TagMap.TryGetData('ENCODING', Value)) then
     begin
-      TagMap.Remove('ENCODING');
+      RemoveTagsFromTagMap('ENCODING');
       self.Encoding := ParseEncoding(Value, Ini.DefaultEncoding);
     end;
     
     // PreviewStart
     if (TagMap.TryGetData('PREVIEWSTART', Value)) then
     begin
-      TagMap.Remove('PREVIEWSTART');
+      RemoveTagsFromTagMap('PREVIEWSTART');
       self.PreviewStart := StrToFloatI18n( Value );
       if (self.PreviewStart>0) then
       begin
@@ -1063,7 +1078,7 @@ begin
     // MedleyStartBeat
     if TagMap.TryGetData('MEDLEYSTARTBEAT', Value) and not self.Relative then
     begin
-      TagMap.Remove('MEDLEYSTARTBEAT');
+      RemoveTagsFromTagMap('MEDLEYSTARTBEAT');
       if TryStrtoInt(Value, self.Medley.StartBeat) then
         MedleyFlags := MedleyFlags or 2;
     end;
@@ -1071,7 +1086,7 @@ begin
     // MedleyEndBeat
     if TagMap.TryGetData('MEDLEYENDBEAT', Value) and not self.Relative then
     begin
-      TagMap.Remove('MEDLEYENDBEAT');
+      RemoveTagsFromTagMap('MEDLEYENDBEAT');
       if TryStrtoInt(Value, self.Medley.EndBeat) then
         MedleyFlags := MedleyFlags or 4;
     end;
@@ -1079,7 +1094,7 @@ begin
     // Medley
     if (TagMap.TryGetData('CALCMEDLEY', Value)) then
     begin
-      TagMap.Remove('CALCMEDLEY');
+      RemoveTagsFromTagMap('CALCMEDLEY');
       if Uppercase(Value) = 'OFF' then
         self.CalcMedley := false;
     end;
@@ -1087,33 +1102,34 @@ begin
     // Duet Singer Name P1
     if (TagMap.TryGetData('DUETSINGERP1', Value)) then
     begin
-      TagMap.Remove('DUETSINGERP1');
+      RemoveTagsFromTagMap('DUETSINGERP1');
       DecodeStringUTF8(Value, DuetNames[0], Encoding);
     end;
     
     // Duet Singer Name P2
     if (TagMap.TryGetData('DUETSINGERP2', Value)) then
     begin
-      TagMap.Remove('DUETSINGERP2');
+      RemoveTagsFromTagMap('DUETSINGERP2');
       DecodeStringUTF8(Value, DuetNames[1], Encoding);
     end;
     
     // Duet Singer Name P1
     if (TagMap.TryGetData('P1', Value)) then
     begin
-      TagMap.Remove('P1');
+      RemoveTagsFromTagMap('P1');
       DecodeStringUTF8(Value, DuetNames[0], Encoding);
     end;
     
     // Duet Singer Name P2
     if (TagMap.TryGetData('P2', Value)) then
     begin
-      TagMap.Remove('P2');
+      RemoveTagsFromTagMap('P2');
       DecodeStringUTF8(Value, DuetNames[1], Encoding);
     end;
     
     // Unsupported Tags
-    for I := 0 to TagMap.Count - 1 do
+    // Use downto loop to keep the order of identical (multi-value) custom tags
+    for I := TagMap.Count - 1 downto 0 do
     begin
       AddCustomTag(TagMap.Keys[I], TagMap.Data[I]);
     end;
