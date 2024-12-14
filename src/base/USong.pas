@@ -844,7 +844,7 @@ begin
         try
           TagMap.Add(Identifier, Value);
         except
-          on E: EListError do
+          on E: fgl.EListError do
             Log.LogInfo('Duplicate Tag "'+Identifier+'" in file ' + FullFileName + ' will be ignored.',
                         'TSong.ReadTXTHeader');
         end;
