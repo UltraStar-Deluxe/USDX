@@ -873,9 +873,9 @@ begin
         Break;
       end;
     end; // while
-    
+
     //Read the songs attributes stored in the TagMap
-    
+
     //-----------
     //Required Attributes
     //-----------
@@ -888,7 +888,7 @@ begin
       //Add Title Flag to Done
       Done := Done or 1;
     end;
-    
+
     if (TagMap.TryGetData('ARTIST', Value)) then
     begin
       RemoveTagsFromTagMap('ARTIST');
@@ -897,7 +897,7 @@ begin
       //Add Artist Flag to Done
       Done := Done or 2;
     end;
-    
+
     //MP3 File
     if (TagMap.TryGetData('MP3', Value)) then
     begin
@@ -914,7 +914,7 @@ begin
         Log.LogError('Can''t find audio file in song: ' + DecodeStringUTF8(FullFileName, Encoding));
       end;
     end;
-    
+
     //Beats per Minute
     if (TagMap.TryGetData('BPM', Value)) then
     begin
@@ -932,32 +932,32 @@ begin
       else
           Log.LogError('Was not able to convert String ' + FullFileName + '"' + Value + '" to number.');
     end;
-    
+
     //---------
     //Additional Header Information
     //---------
-    
+
     // Gap
     if (TagMap.TryGetData('GAP', Value)) then
     begin
       RemoveTagsFromTagMap('GAP');
       self.GAP := StrToFloatI18n(Value);
     end;
-    
+
     //Cover Picture
     if (TagMap.TryGetData('COVER', Value)) then
     begin
       RemoveTagsFromTagMap('COVER');
       self.Cover := DecodeFilename(Value);
     end;
-    
+
     //Background Picture
     if (TagMap.TryGetData('BACKGROUND', Value)) then
     begin
       RemoveTagsFromTagMap('BACKGROUND');
       self.Background := DecodeFilename(Value);
     end;
-    
+
     // Video File
     if (TagMap.TryGetData('VIDEO', Value)) then
     begin
@@ -968,14 +968,14 @@ begin
       else
         Log.LogError('Can''t find video file in song: ' + FullFileName);
     end;
-    
+
     // Video Gap
     if (TagMap.TryGetData('VIDEOGAP', Value)) then
     begin
       RemoveTagsFromTagMap('VIDEOGAP');
       self.VideoGAP := StrToFloatI18n( Value )
     end;
-    
+
     //Genre Sorting
     if (TagMap.TryGetData('GENRE', Value)) then
     begin
@@ -983,7 +983,7 @@ begin
       DecodeStringUTF8(Value, Genre, Encoding);
       self.GenreASCII := LowerCase(TransliterateToASCII(Genre));
     end;
-    
+
     //Edition Sorting
     if (TagMap.TryGetData('EDITION', Value)) then
     begin
@@ -991,7 +991,7 @@ begin
       DecodeStringUTF8(Value, Edition, Encoding);
       self.EditionASCII := LowerCase(TransliterateToASCII(Edition));
     end;
-    
+
     //Creator Tag
     if (TagMap.TryGetData('CREATOR', Value)) then
     begin
@@ -999,7 +999,7 @@ begin
       DecodeStringUTF8(Value, Creator, Encoding);
       self.CreatorASCII := LowerCase(TransliterateToASCII(Creator));
     end;
-    
+
     //Language Sorting
     if (TagMap.TryGetData('LANGUAGE', Value)) then
     begin
@@ -1007,28 +1007,28 @@ begin
       DecodeStringUTF8(Value, Language, Encoding);
       self.LanguageASCII := LowerCase(TransliterateToASCII(Language));
     end;
-    
+
     //Year Sorting
     if (TagMap.TryGetData('YEAR', Value)) then
     begin
       RemoveTagsFromTagMap('YEAR');
       TryStrtoInt(Value, self.Year)
     end;
-    
+
     // Song Start
     if (TagMap.TryGetData('START', Value)) then
     begin
       RemoveTagsFromTagMap('START');
       self.Start := StrToFloatI18n( Value )
     end;
-    
+
     // Song Ending
     if (TagMap.TryGetData('END', Value)) then
     begin
       RemoveTagsFromTagMap('END');
       TryStrtoInt(Value, self.Finish)
     end;
-    
+
     // Resolution
     if (TagMap.TryGetData('RESOLUTION', Value)) then
     begin
@@ -1040,14 +1040,14 @@ begin
         self.Resolution := DEFAULT_RESOLUTION;
       end;
     end;
-    
+
     // Notes Gap
     if (TagMap.TryGetData('NOTESGAP', Value)) then
     begin
       RemoveTagsFromTagMap('NOTESGAP');
       TryStrtoInt(Value, self.NotesGAP)
     end;
-    
+
     // Relative Notes
     if (TagMap.TryGetData('RELATIVE', Value)) then
     begin
@@ -1055,14 +1055,14 @@ begin
       if (UpperCase(Value) = 'YES') then
         self.Relative := true;
     end;
-    
+
     // File encoding
     if (TagMap.TryGetData('ENCODING', Value)) then
     begin
       RemoveTagsFromTagMap('ENCODING');
       self.Encoding := ParseEncoding(Value, Ini.DefaultEncoding);
     end;
-    
+
     // PreviewStart
     if (TagMap.TryGetData('PREVIEWSTART', Value)) then
     begin
@@ -1074,7 +1074,7 @@ begin
         HasPreview := true;
       end;
     end;
-    
+
     // MedleyStartBeat
     if TagMap.TryGetData('MEDLEYSTARTBEAT', Value) and not self.Relative then
     begin
@@ -1082,7 +1082,7 @@ begin
       if TryStrtoInt(Value, self.Medley.StartBeat) then
         MedleyFlags := MedleyFlags or 2;
     end;
-    
+
     // MedleyEndBeat
     if TagMap.TryGetData('MEDLEYENDBEAT', Value) and not self.Relative then
     begin
@@ -1090,7 +1090,7 @@ begin
       if TryStrtoInt(Value, self.Medley.EndBeat) then
         MedleyFlags := MedleyFlags or 4;
     end;
-    
+
     // Medley
     if (TagMap.TryGetData('CALCMEDLEY', Value)) then
     begin
@@ -1098,42 +1098,42 @@ begin
       if Uppercase(Value) = 'OFF' then
         self.CalcMedley := false;
     end;
-    
+
     // Duet Singer Name P1
     if (TagMap.TryGetData('DUETSINGERP1', Value)) then
     begin
       RemoveTagsFromTagMap('DUETSINGERP1');
       DecodeStringUTF8(Value, DuetNames[0], Encoding);
     end;
-    
+
     // Duet Singer Name P2
     if (TagMap.TryGetData('DUETSINGERP2', Value)) then
     begin
       RemoveTagsFromTagMap('DUETSINGERP2');
       DecodeStringUTF8(Value, DuetNames[1], Encoding);
     end;
-    
+
     // Duet Singer Name P1
     if (TagMap.TryGetData('P1', Value)) then
     begin
       RemoveTagsFromTagMap('P1');
       DecodeStringUTF8(Value, DuetNames[0], Encoding);
     end;
-    
+
     // Duet Singer Name P2
     if (TagMap.TryGetData('P2', Value)) then
     begin
       RemoveTagsFromTagMap('P2');
       DecodeStringUTF8(Value, DuetNames[1], Encoding);
     end;
-    
+
     // Unsupported Tags
     // Use downto loop to keep the order of identical (multi-value) custom tags
     for I := TagMap.Count - 1 downto 0 do
     begin
       AddCustomTag(TagMap.Keys[I], TagMap.Data[I]);
     end;
-    
+
   finally
     TagMap.Free;
   end;
