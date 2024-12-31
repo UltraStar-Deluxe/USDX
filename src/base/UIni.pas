@@ -77,9 +77,18 @@ const
   LATENCY_AUTODETECT = -1; // for field Latency
   DEFAULT_RESOLUTION = '800x600';
   DEFAULT_THEME = 'Modern';
+  // TODO: the menu options only go up to 6, but there are internals that still go up to 12
+  //  IMaxPlayerCount is untouched because lowering (or raising) it causes very strange behaviour, such as:
+  //  * the game starts in a completely different language than the config specifies
+  //  * the game crashes randomly
+  //  8 and 12 players have never worked at any point in history
+  //  it all needs refactoring at some point anyway because:
+  //  * a lot of code works with the _index_ of IPlayers (instead of just the number of actual players)
+  //  * it should be possible to play with 5 players [without duplicating a lot of code]
+  //  * there might be a valid usecase for 0 players
   IMaxPlayerCount = 12;
-  IPlayers:     array[0..6] of UTF8String = ('1', '2', '3', '4', '6', '8', '12');
-  IPlayersVals: array[0..6] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 ,  8 ,  12);
+  IPlayers:     array[0..4] of UTF8String = ('1', '2', '3', '4', '6');
+  IPlayersVals: array[0..4] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 );
 
 type
 
