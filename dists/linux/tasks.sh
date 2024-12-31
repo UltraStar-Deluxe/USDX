@@ -111,14 +111,6 @@ task_projectm() {
 	hide make distclean
 }
 
-task_zsync() {
-	start_build zsync || return 0
-	./configure --prefix="$PREFIX" CC="$CC" CXX="$CXX"
-	hide make $makearg
-	hide make install
-	hide make distclean
-}
-
 task_desktop_file_utils() {
 	start_build desktop-file-utils || return 0
 	CC="$CC" CXX="$CXX" meson setup --prefix "$PREFIX" --libdir=lib build
@@ -586,8 +578,6 @@ if [ "$1" == "all_deps" ]; then
 	task_ninja
 	echo
 	task_meson
-	echo
-	task_zsync
 	echo
 	task_desktop_file_utils
 	echo
