@@ -99,7 +99,7 @@ function ULuaScreenSing_SetSettings(L: Plua_State): Integer; cdecl;
 function ULuaScreenSing_GetSongLines(L: Plua_State): Integer; cdecl;
 
 const
-  ULuaScreenSing_Lib_f: array [0..UIni.IMaxPlayerCount-1] of lual_reg = (
+  ULuaScreenSing_Lib_f: array [0..11] of lual_reg = (
     (name:'GetScores';func:ULuaScreenSing_GetScores),
     (name:'GetRating';func:ULuaScreenSing_GetRating),
     (name:'GetBPM';func:ULuaScreenSing_GetBPM),
