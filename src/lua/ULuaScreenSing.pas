@@ -42,6 +42,30 @@ uses
 function ULuaScreenSing_GetScores(L: Plua_State): Integer; cdecl;
 
 { returns a table with following structure:
+    t[1..playercount] = note score of player i }
+function ULuaScreenSing_GetNoteScores(L: Plua_State): Integer; cdecl;
+
+{ returns a table with following structure:
+    t[1..playercount] = golden score of player i }
+function ULuaScreenSing_GetGoldenScores(L: Plua_State): Integer; cdecl;
+
+{ returns a table with following structure:
+    t[1..playercount] = line score of player i }
+function ULuaScreenSing_GetLineScores(L: Plua_State): Integer; cdecl;
+
+{ returns a table with following structure:
+    t[1..playercount] = name of player i }
+function ULuaScreenSing_GetPlayerNames(L: Plua_State): Integer; cdecl;
+
+{ returns a table with following structure:
+    t[1..playercount] = color of player i }
+function ULuaScreenSing_GetPlayerColors(L: Plua_State): Integer; cdecl;
+
+{ returns a table with following structure:
+    t[1..playercount] = level of player i }
+function ULuaScreenSing_GetPlayerLevels(L: Plua_State): Integer; cdecl;
+
+{ returns a table with following structure:
     t[1..playercount] = rating of player i range: [0..1] }
 function ULuaScreenSing_GetRating(L: Plua_State): Integer; cdecl;
 
@@ -56,6 +80,34 @@ function ULuaScreenSing_GetRBRect(L: Plua_State): Integer; cdecl;
 { ScreenSing.GetBPM - no arguments
   returns the beats per minutes of the current song in quarts }
 function ULuaScreenSing_GetBPM(L: Plua_State): Integer; cdecl;
+
+{ ScreenSing.GetTotalBeats - no arguments
+  returns the total beats of the current song in quarts }
+function ULuaScreenSing_GetTotalBeats(L: Plua_State): Integer; cdecl;
+
+{ ScreenSing.GetBackground - no arguments
+  returns the background image path of the current song }
+function ULuaScreenSing_GetBackground(L: Plua_State): Integer; cdecl;
+
+{ ScreenSing.GetArtist - no arguments
+  returns the artist of the current song }
+function ULuaScreenSing_GetArtist(L: Plua_State): Integer; cdecl;
+
+{ ScreenSing.GetTitle - no arguments
+  returns the title of the current song }
+function ULuaScreenSing_GetTitle(L: Plua_State): Integer; cdecl;
+
+{ ScreenSing.GetMD5 - no arguments
+  returns the md5 of the current song }
+function ULuaScreenSing_GetMD5(L: Plua_State): Integer; cdecl;
+
+{ ScreenSing.GetSungToEndWithoutPausing - no arguments
+  returns whether the current/last song was sung without pausing and to the end}
+function ULuaScreenSing_GetSungToEndWithoutPausing(L: Plua_State): Integer; cdecl;
+
+{ ScreenSing.GetCurrentScreen - no arguments
+  returns the name of the current screen }
+function ULuaScreenSing_GetCurrentScreen(L: Plua_State): Integer; cdecl;
 
 { ScreenSing.BeatsToSeconds(Beats: float)
   returns the time in seconds that the given number of beats (in quarts) last }
@@ -98,11 +150,41 @@ function ULuaScreenSing_SetSettings(L: Plua_State): Integer; cdecl;
       | Text: string      - text of this fragment }
 function ULuaScreenSing_GetSongLines(L: Plua_State): Integer; cdecl;
 
+function ULuaScreenSing_GetPlayerNotes(L: Plua_State): Integer; cdecl;
+
+{ THESE SHOULD BE IN ULuaScreenSong INSTEAD }
+
+{ ScreenSong.GetVisibleSongs - no arguments
+  returns number of visible songs }
+  function ULuaScreenSong_GetVisibleSongs(L: Plua_State): Integer; cdecl;
+{ ScreenSong.GetSelectedIndex - no arguments
+  returns index of currently selected song [0...visible songs -1] }
+  function ULuaScreenSong_GetSelectedIndex(L: Plua_State): Integer; cdecl;
+{ ScreenSong.GetSongNumbers - no arguments
+  returns "<selected> / <total>" }
+  function ULuaScreenSong_GetSongNumbers(L: Plua_State): Integer; cdecl;
+{ ScreenSong.GetSelectedSong - no arguments
+  returns Artist,Title,Year of currently selected song }
+  function ULuaScreenSong_GetSelectedSong(L: Plua_State): Integer; cdecl;
+
 const
-  ULuaScreenSing_Lib_f: array [0..UIni.IMaxPlayerCount-1] of lual_reg = (
+  ULuaScreenSing_Lib_f: array [0..29] of lual_reg = (
     (name:'GetScores';func:ULuaScreenSing_GetScores),
+    (name:'GetNoteScores';func:ULuaScreenSing_GetNoteScores),
+    (name:'GetGoldenScores';func:ULuaScreenSing_GetGoldenScores),
+    (name:'GetLineScores';func:ULuaScreenSing_GetLineScores),
+    (name:'GetPlayerNames';func:ULuaScreenSing_GetPlayerNames),
+    (name:'GetPlayerColors';func:ULuaScreenSing_GetPlayerColors),
+    (name:'GetPlayerLevels';func:ULuaScreenSing_GetPlayerLevels),
     (name:'GetRating';func:ULuaScreenSing_GetRating),
     (name:'GetBPM';func:ULuaScreenSing_GetBPM),
+    (name:'GetTotalBeats';func:ULuaScreenSing_GetTotalBeats),
+    (name:'GetBackground';func:ULuaScreenSing_GetBackground),
+    (name:'GetArtist';func:ULuaScreenSing_GetArtist),
+    (name:'GetTitle';func:ULuaScreenSing_GetTitle),
+    (name:'GetMD5';func:ULuaScreenSing_GetMD5),
+    (name:'GetSungToEndWithoutPausing';func:ULuaScreenSing_GetSungToEndWithoutPausing),
+    (name:'GetCurrentScreen';func:ULuaScreenSing_GetCurrentScreen),
     (name:'BeatsToSeconds';func:ULuaScreenSing_BeatsToSeconds),
     (name:'SecondsToBeats';func:ULuaScreenSing_SecondsToBeats),
     (name:'GetBeat';func:ULuaScreenSing_GetBeat),
@@ -111,7 +193,14 @@ const
     (name:'Finish';func:ULuaScreenSing_Finish),
     (name:'GetSettings';func:ULuaScreenSing_GetSettings),
     (name:'SetSettings';func:ULuaScreenSing_SetSettings),
-    (name:'GetSongLines';func:ULuaScreenSing_GetSongLines)
+    (name:'GetSongLines';func:ULuaScreenSing_GetSongLines),
+    (name:'GetPlayerNotes';func:ULuaScreenSing_GetPlayerNotes),
+    {next ones are for ULuaScreenSong instead}
+    {TODO: most of these do not actually work}
+    (name:'GetVisibleSongs';func:ULuaScreenSong_GetVisibleSongs),
+    (name:'GetSelectedIndex';func:ULuaScreenSong_GetSelectedIndex),
+    (name:'GetSongNumbers';func:ULuaScreenSong_GetSongNumbers),
+    (name:'GetSelectedSong';func:ULuaScreenSong_GetSelectedSong)
   );
 
 implementation
@@ -122,6 +211,11 @@ uses
   UGraphic,
   UMusic,
   ULuaUtils,
+  {next imports are for ULuaScreenSong instead}
+  USong,
+  USongs,
+  UThemes,
+  {this was always here}
   SysUtils;
 
 { returns a table with following structure:
@@ -146,6 +240,180 @@ begin
   begin
     lua_pushInteger(L, I + 1);
     lua_pushInteger(L, Player[I].ScoreTotalInt);
+
+    lua_settable(L, -3);
+  end;
+
+  // leave table on stack, it is our result
+end;
+
+{ returns a table with following structure:
+    t[1..playercount] = note score of player i }
+function ULuaScreenSing_GetNoteScores(L: Plua_State): Integer; cdecl;
+  var
+    Top: Integer;
+    I: Integer;
+begin
+  Result := 1;
+
+  // pop arguments
+  Top := lua_getTop(L);
+  if (Top > 0) then
+    lua_pop(L, Top);
+
+  // create table
+  lua_createtable(L, Length(Player), 0);
+
+  // fill w/ values
+  for I := 0 to High(Player) do
+  begin
+    lua_pushInteger(L, I + 1);
+    lua_pushInteger(L, Player[I].ScoreInt);
+
+    lua_settable(L, -3);
+  end;
+
+  // leave table on stack, it is our result
+end;
+
+{ returns a table with following structure:
+    t[1..playercount] = golden score of player i }
+function ULuaScreenSing_GetGoldenScores(L: Plua_State): Integer; cdecl;
+  var
+    Top: Integer;
+    I: Integer;
+begin
+  Result := 1;
+
+  // pop arguments
+  Top := lua_getTop(L);
+  if (Top > 0) then
+    lua_pop(L, Top);
+
+  // create table
+  lua_createtable(L, Length(Player), 0);
+
+  // fill w/ values
+  for I := 0 to High(Player) do
+  begin
+    lua_pushInteger(L, I + 1);
+    lua_pushInteger(L, Player[I].ScoreGoldenInt);
+
+    lua_settable(L, -3);
+  end;
+
+  // leave table on stack, it is our result
+end;
+
+{ returns a table with following structure:
+    t[1..playercount] = line score of player i }
+function ULuaScreenSing_GetLineScores(L: Plua_State): Integer; cdecl;
+  var
+    Top: Integer;
+    I: Integer;
+begin
+  Result := 1;
+
+  // pop arguments
+  Top := lua_getTop(L);
+  if (Top > 0) then
+    lua_pop(L, Top);
+
+  // create table
+  lua_createtable(L, Length(Player), 0);
+
+  // fill w/ values
+  for I := 0 to High(Player) do
+  begin
+    lua_pushInteger(L, I + 1);
+    lua_pushInteger(L, Player[I].ScoreLineInt);
+
+    lua_settable(L, -3);
+  end;
+
+  // leave table on stack, it is our result
+end;
+
+{ returns a table with following structure:
+    t[1..playercount] = name of player i }
+function ULuaScreenSing_GetPlayerNames(L: Plua_State): Integer; cdecl;
+  var
+    Top: Integer;
+    I: Integer;
+begin
+  Result := 1;
+
+  // pop arguments
+  Top := lua_getTop(L);
+  if (Top > 0) then
+    lua_pop(L, Top);
+
+  // create table
+  lua_createtable(L, Length(Player), 0);
+
+  // fill w/ values
+  for I := 0 to High(Player) do
+  begin
+    lua_pushInteger(L, I + 1);
+    lua_pushstring(L, PChar(Ini.Name[I]));
+
+    lua_settable(L, -3);
+  end;
+
+  // leave table on stack, it is our result
+end;
+
+{ returns a table with following structure:
+    t[1..playercount] = color of player i }
+function ULuaScreenSing_GetPlayerColors(L: Plua_State): Integer; cdecl;
+  var
+    Top: Integer;
+    I: Integer;
+begin
+  Result := 1;
+
+  // pop arguments
+  Top := lua_getTop(L);
+  if (Top > 0) then
+    lua_pop(L, Top);
+
+  // create table
+  lua_createtable(L, Length(Player), 0);
+
+  // fill w/ values
+  for I := 0 to High(Player) do
+  begin
+    lua_pushInteger(L, I + 1);
+    lua_pushInteger(L, Ini.PlayerColor[I]);
+
+    lua_settable(L, -3);
+  end;
+
+  // leave table on stack, it is our result
+end;
+
+{ returns a table with following structure:
+    t[1..playercount] = level of player i }
+function ULuaScreenSing_GetPlayerLevels(L: Plua_State): Integer; cdecl;
+  var
+    Top: Integer;
+    I: Integer;
+begin
+  Result := 1;
+
+  // pop arguments
+  Top := lua_getTop(L);
+  if (Top > 0) then
+    lua_pop(L, Top);
+
+  // create table
+  lua_createtable(L, Length(Player), 0);
+
+  // fill w/ values
+  for I := 0 to High(Player) do
+  begin
+    lua_pushInteger(L, I + 1);
+    lua_pushInteger(L, Ini.PlayerLevel[I]);
 
     lua_settable(L, -3);
   end;
@@ -197,6 +465,112 @@ begin
   begin
     // to-do: do this for songs w/ BPM changes
     //        or drop support for BPM changes?!
+  end;
+end;
+
+{ ScreenSing.GetTotalBeats - no arguments
+  returns the total beats minutes of the current song in quarts }
+function ULuaScreenSing_GetTotalBeats(L: Plua_State): Integer; cdecl;
+begin
+  lua_ClearStack(L);
+  Result := 1;
+
+  if (CurrentSong = nil) or (Length(CurrentSong.BPM) = 0) or (Display.CurrentScreen <> @ScreenSing) then
+    lua_PushNumber(L, 0) // in case of error
+  else if (Length(CurrentSong.BPM) = 1) then
+    lua_PushNumber(L, CurrentSong.BPM[0].BPM*TotalTime/60)
+  else
+  begin
+    // to-do: do this for songs w/ BPM changes
+    //        or drop support for BPM changes?!
+  end;
+end;
+
+{ ScreenSing.GetBackground - no arguments
+  returns background image path of the current song, or empty string if unset }
+function ULuaScreenSing_GetBackground(L: Plua_State): Integer; cdecl;
+begin
+  lua_ClearStack(L);
+  Result := 1;
+
+  if (CurrentSong = nil) or (CurrentSong.Background = nil) or (CurrentSong.Background.ToNative() = '') or (Display.CurrentScreen <> @ScreenSing) then
+    lua_PushString(L, PChar('')) // in case of error
+  else begin
+    lua_PushString(L, PChar(CurrentSong.Path.GetAbsolutePath().ToNative()+CurrentSong.Background.ToNative()))
+  end;
+end;
+
+{ ScreenSing.GetArtist - no arguments
+  returns artist of the current/last song, or '' if unset }
+function ULuaScreenSing_GetArtist(L: Plua_State): Integer; cdecl;
+begin
+  lua_ClearStack(L);
+  Result := 1;
+
+  if (CurrentSong = nil) then
+    lua_PushString(L, PChar('')) // in case of error
+  else begin
+    lua_PushString(L, PChar(CurrentSong.Artist))
+  end;
+end;
+
+{ ScreenSing.GetTitle - no arguments
+  returns title of the current/last song, or '' if unset }
+function ULuaScreenSing_GetTitle(L: Plua_State): Integer; cdecl;
+begin
+  lua_ClearStack(L);
+  Result := 1;
+
+  if (CurrentSong = nil) then
+    lua_PushString(L, PChar('')) // in case of error
+  else begin
+    lua_PushString(L, PChar(CurrentSong.Title))
+  end;
+end;
+
+{ ScreenSing.GetMD5 - no arguments
+  returns md5 of the current/last song, or '' if unset }
+function ULuaScreenSing_GetMD5(L: Plua_State): Integer; cdecl;
+begin
+  lua_ClearStack(L);
+  Result := 1;
+
+  if (CurrentSong = nil) then
+    lua_PushString(L, PChar('')) // in case of error
+  else begin
+    lua_PushString(L, PChar(CurrentSong.MD5))
+  end;
+end;
+
+{ ScreenSing.GetSungToEndWithoutPausing - no arguments
+  returns whether the current/last song was sung without pausing and to the end}
+function ULuaScreenSing_GetSungToEndWithoutPausing(L: Plua_State): Integer; cdecl;
+begin
+  lua_ClearStack(L);
+  Result := 1;
+
+  if (CurrentSong = nil) then
+    lua_pushboolean(L, false) // in case of error
+  else begin
+    lua_pushboolean(L, ScreenSing.SungToEnd and not ScreenSing.SungPaused)
+  end;
+end;
+
+{ ScreenSing.GetCurrentScreen - no arguments
+  returns name of current screen, or 'unknown' if this particular screen is not coded }
+function ULuaScreenSing_GetCurrentScreen(L: Plua_State): Integer; cdecl;
+begin
+  lua_ClearStack(L);
+  Result := 1;
+
+  if (Display.CurrentScreen = @ScreenScore) then
+    lua_PushString(L, PChar('score'))
+  else if (Display.CurrentScreen = @ScreenSing) then
+    lua_PushString(L, PChar('sing'))
+  else if (Display.CurrentScreen = @ScreenSong) then
+    lua_PushString(L, PChar('song'))
+  else begin
+    lua_PushString(L, PChar('unknown'))
   end;
 end;
 
@@ -496,6 +870,124 @@ begin
     lua_ClearStack(L);
     lua_pushNil(L);
   end;
+end;
+
+    { ScreenSing.GetPlayerNotes - no arguments
+    returns a table filled with lines of the loaded song or
+    nil if no song is loaded (singscreen is not displayed)
+    structure of returned table:
+      array [1.."count of players"]
+       \
+       | Notes: array [1.."count notes of this line"]
+       \
+        | Start: integer    - beat the note starts at
+        | Length: integer   - length in beats
+        | Tone: integer     - pitch that was sung, full range }
+function ULuaScreenSing_GetPlayerNotes(L: Plua_State): Integer; cdecl;
+  var
+    I, J: Integer;
+begin
+  // TODO: get rid of the useless 'Notes' object
+  Result := 1;
+  if  (Length(Player) >= 1) then
+  begin
+    lua_ClearStack(L);
+
+    if not lua_CheckStack(L, 7) then
+      luaL_Error(L, PChar('can''t allocate enough stack space in ULuaScreenSing_GetPlayerNotes'));
+
+    // lines array table
+    lua_CreateTable(L, Length(Player), 0);
+
+    for I := 0 to High(Player) do
+      with Player[I] do
+      begin
+        lua_pushInteger(L, I+1);
+
+        // line struct table
+        lua_CreateTable(L, 0, 1);
+
+        //line notes array table
+        lua_CreateTable(L, Length(Player[I].Note), 0);
+
+        for J := 0 to High(Player[I].Note) do
+        begin
+          lua_PushInteger(L, J + 1);
+
+          // note struct table
+          lua_CreateTable(L, 0, 3);
+
+          // Notes[J+1].Start
+          lua_PushInteger(L, Player[I].Note[J].Start);
+          lua_SetField(L, -2, PChar('Start'));
+
+          // Notes[J+1].Length
+          lua_PushInteger(L, Player[I].Note[J].Duration);
+          lua_SetField(L, -2, PChar('Length'));
+
+          // Notes[J+1].Tone
+          lua_PushInteger(L, Round(Player[I].Note[J].Tone));
+          lua_SetField(L, -2, PChar('Tone'));
+
+          lua_SetTable(L, -3);
+        end;
+
+        lua_SetField(L, -2, PChar('Notes'));
+
+        // save line to array table
+        lua_setTable(L, -3);
+      end;
+  end
+  else
+  begin
+    lua_ClearStack(L);
+    lua_pushNil(L);
+  end;
+end;
+
+  {TODO: these should be in ULuaScreenSong instead? }
+function ULuaScreenSong_GetVisibleSongs(L: Plua_State): Integer; cdecl;
+begin
+  Result := 1;
+  lua_pushinteger(L, CatSongs.VisibleSongs())
+end;
+
+function ULuaScreenSong_GetSelectedIndex(L: Plua_State): Integer; cdecl;
+begin
+  Result := 1;
+  lua_pushinteger(L, CatSongs.Selected)
+end;
+
+function ULuaScreenSong_GetSongNumbers(L: Plua_State): Integer; cdecl;
+begin
+  Result := 1;
+  lua_pushstring(L, PChar(Theme.Song.TextNumber.Text))
+end;
+
+function ULuaScreenSong_GetSelectedSong(L: Plua_State): Integer; cdecl;
+var Top: Integer;
+var Song: TSong;
+begin
+  // pop arguments
+  Top := lua_getTop(L);
+  if (Top > 0) then
+    lua_pop(L, Top);
+
+  Song := CatSongs.Song[CatSongs.Selected];
+
+  lua_createtable(L, 0, 2);
+
+  //fill table w/ info
+  lua_pushstring(L, PChar(Song.Artist));
+  lua_setField(L, -2, 'Artist');
+
+  lua_pushstring(L, PChar(Song.Title));
+  lua_setField(L, -2, 'Title');
+
+  lua_pushinteger(L, Song.Year);
+  lua_setField(L, -2, 'Year');
+
+  Result := 1;
 end;
 
 end.
