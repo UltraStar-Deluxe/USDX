@@ -34,6 +34,7 @@ run: build/$(ARCH)/usr/bin/ultrastardx
 compress: UltraStarDeluxe-$(ARCH).AppImage
 UltraStarDeluxe-$(ARCH).AppImage: build/$(ARCH)/usr/bin/ultrastardx build/$(ARCH)/usr/bin/VERSION
 	rm -f "./UltraStarDeluxe-$(ARCH).AppImage"
+	echo "INFO: Any warnings about zsync and binary delta updates can be ignored, since we don't use them."
 	PATH="prefix/$(ARCH)/bin:$$PATH" prefix/$(ARCH)/bin/appimagetool --comp xz build/$(ARCH) $@
 
 upload: UltraStarDeluxe-$(ARCH).AppImage
