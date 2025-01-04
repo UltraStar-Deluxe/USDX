@@ -59,9 +59,11 @@ type
       Handle: HSTREAM;
       NeedsRewind: boolean;
       PausedSeek: boolean; // true if a seek was performed in pause state
+      fVolume: single;
 
       procedure Reset();
       function IsEOF(): boolean;
+      procedure SetVolumeBASS();
     protected
       function GetLatency(): double;        override;
       function GetLoop(): boolean;          override;
@@ -94,6 +96,8 @@ type
       function GetAudioFormatInfo(): TAudioFormatInfo; override;
 
       function ReadData(Buffer: PByte; BufferSize: integer): integer;
+      procedure EnableReplayGain() override;
+      procedure DisableReplayGain() override;
 
       property EOF: boolean READ IsEOF;
   end;
@@ -137,7 +141,7 @@ type
       BassDeviceID: DWORD; // DeviceID used by BASS
   end;
 
-  TReplayGain_Bass = class(TReplayGain)
+  TAutoGain_Bass = class(TAutoGain)
     private
       procedure Init(); override;
     public
@@ -155,7 +159,7 @@ constructor TAudioPlayback_Bass.Create();
 begin
   inherited;
 
-  IReplayGain := TReplayGain_Bass;
+  IAutoGain := TAutoGain_Bass;
 end;
 
 { TBassPlaybackStream }
@@ -250,6 +254,18 @@ begin
   end;
 end;
 
+procedure TBassPlaybackStream.EnableReplayGain();
+begin
+  inherited;
+  SetVolumeBASS();
+end;
+
+procedure TBassPlaybackStream.DisableReplayGain();
+begin
+  inherited;
+  SetVolumeBASS();
+end;
+
 constructor TBassPlaybackStream.Create();
 begin
   inherited;
@@ -293,6 +309,7 @@ begin
                  'TBassPlaybackStream.Open');
     Exit;
   end;
+  inherited;
 
   Result := true;
 end;
@@ -317,6 +334,7 @@ begin
   Close();
   NeedsRewind := false;
   PausedSeek := false;
+  fVolume := 1.0;
 end;
 
 procedure TBassPlaybackStream.Play();
@@ -356,13 +374,15 @@ begin
   // start stream
   Play();
   // start fade-in: slide from fadeStart- to fadeEnd-volume in FadeInTime
-  BASS_ChannelSlideAttribute(Handle, BASS_ATTRIB_VOL, TargetVolume, Trunc(Time * 1000));
+  BASS_ChannelSlideAttribute(Handle, BASS_ATTRIB_VOL, TargetVolume * RGAdjustment, Trunc(Time * 1000));
+  fVolume := TargetVolume;
 end;
 
 procedure TBassPlaybackStream.Fade(Time: real; TargetVolume: single);
 begin
   // start fade-in: slide from fadeStart- to fadeEnd-volume in FadeInTime
-  BASS_ChannelSlideAttribute(Handle, BASS_ATTRIB_VOL, TargetVolume, Trunc(Time * 1000));
+  BASS_ChannelSlideAttribute(Handle, BASS_ATTRIB_VOL, TargetVolume * RGAdjustment, Trunc(Time * 1000));
+  fVolume := TargetVolume;
 end;
 
 procedure TBassPlaybackStream.Pause();
@@ -394,17 +414,8 @@ begin
 end;
 
 function TBassPlaybackStream.GetVolume(): single;
-var
-  lVolume: single;
 begin
-  if (not BASS_ChannelGetAttribute(Handle, BASS_ATTRIB_VOL, lVolume)) then
-  begin
-    Log.LogError('BASS_ChannelGetAttribute: ' + BassCore.ErrorGetString(),
-      'TBassPlaybackStream.GetVolume');
-    Result := 0;
-    Exit;
-  end;
-  Result := Round(lVolume);
+  Result := fVolume;
 end;
 
 procedure TBassPlaybackStream.SetVolume(Volume: single);
@@ -414,8 +425,13 @@ begin
     Volume := 0;
   if Volume > 1.0 then
     Volume := 1.0;
-  // set volume
-  BASS_ChannelSetAttribute(Handle, BASS_ATTRIB_VOL, Volume);
+  fVolume := Volume;
+  SetVolumeBASS();
+end;
+
+procedure TBassPlaybackStream.SetVolumeBASS();
+begin
+  BASS_ChannelSetAttribute(Handle, BASS_ATTRIB_VOL, fVolume * RGAdjustment);
 end;
 
 function TBassPlaybackStream.GetPosition: real;
@@ -787,23 +803,23 @@ begin
   Result := 0;
 end;
 
-{ TReplayGain }
+{ TAutoGain }
 
-class function TReplayGain_Bass.CanEnable(): boolean;
+class function TAutoGain_Bass.CanEnable(): boolean;
 begin
-  Result := (Ini.MusicAutoGain > 0);
+  Result := (TMusicAutoGainOption(Ini.MusicAutoGain) in [magSoft, magMedium, magHard]);
 end;
 
-procedure TReplayGain_Bass.Init();
+procedure TAutoGain_Bass.Init();
   var
     FxGain: BASS_BFX_DAMP;
-    I: integer;
+    I: TMusicAutoGainOption;
 begin
 
-  if Ini.MusicAutoGain < 0 then Exit;
-  I := IMusicAutoGainVals[Ini.MusicAutoGain];
+  if (not CanEnable()) then Exit;
+  I := TMusicAutoGainOption(Ini.MusicAutoGain);
   case I of
-    0: // soft preset
+    magSoft: // soft preset
       begin
         FxGain.fTarget := 0.92; // target volume level [0<......1] linear
         FxGain.fQuiet := 0.02;  // quiet  volume level [0.......1] linear
@@ -812,7 +828,7 @@ begin
         FxGain.fDelay := 0.5;  // delay in seconds before increasing level
         FxGain.lChannel := BASS_BFX_CHANALL;
       end;
-    1: // medium preset
+    magMedium: // medium preset
       begin
         FxGain.fTarget := 0.94; // target volume level [0<......1] linear
         FxGain.fQuiet := 0.03;  // quiet  volume level [0.......1] linear
@@ -821,7 +837,7 @@ begin
         FxGain.fDelay := 0.35;  // delay in seconds before increasing level
         FxGain.lChannel := BASS_BFX_CHANALL;
       end;
-    2: // hard preset
+    magHard: // hard preset
       begin
         FxGain.fTarget := 0.98; // target volume level [0<......1] linear
         FxGain.fQuiet := 0.04;  // quiet  volume level [0.......1] linear
@@ -835,17 +851,17 @@ begin
   BASS_FXSetParameters(DWORD(EngineData), @FxGain);
 end;
 
-function TReplayGain_Bass.GetName: String;
+function TAutoGain_Bass.GetName: String;
 begin
   result := 'BASS_FX Dynamic Amplification';
 end;
 
-function TReplayGain_Bass.GetType(): DWORD;
+function TAutoGain_Bass.GetType(): DWORD;
 begin
   Result := BASS_FX_BFX_DAMP;
 end;
 
-function TReplayGain_Bass.GetPriority(): LongInt;
+function TAutoGain_Bass.GetPriority(): LongInt;
 begin
   Result := 3;
 end;

@@ -88,6 +88,7 @@ type
   TVisualizerOption      = (voOff, voWhenNoVideo, voWhenNoVideoAndImage, voOn);
   TBackgroundMusicOption = (bmoOff, bmoOn);
   TSongMenuMode = ( smRoulette, smChessboard, smCarousel, smSlotMachine, smSlide, smList, smMosaic);
+  TMusicAutoGainOption = (magOff, {$IFDEF HaveBASS} magSoft, magMedium, magHard, {$ENDIF} magReplayGain);
 
   TIni = class
     private
@@ -371,9 +372,7 @@ const
 
   IVoicePassthrough: array[0..1] of UTF8String  = ('Off', 'On');
   
-  IMusicAutoGain:        array[0..3] of UTF8String  = ('Off', 'Soft', 'Medium', 'Hard');
-  IMusicAutoGainVals:    array[0..3] of integer  = (-1, 0, 1, 2);
-
+  IMusicAutoGain:    array[0..{$IFDEF HaveBASS}4{$ELSE}1{$ENDIF}] of UTF8String  = ('Off', {$IFDEF HaveBASS} 'Soft', 'Medium', 'Hard', {$ENDIF} 'ReplayGain');
 
 const
   ISyncTo: array[0..2] of UTF8String  = ('Music', 'Lyrics', 'Off');
@@ -497,7 +496,7 @@ var
 
   IVoicePassthroughTranslated: array[0..1] of UTF8String  = ('Off', 'On');
   
-  IMusicAutoGainTranslated: array[0..3] of UTF8String  = ('Off', 'Soft', 'Medium', 'Hard');
+  IMusicAutoGainTranslated:    array[0..{$IFDEF HaveBASS}4{$ELSE}1{$ENDIF}] of UTF8String  = ('Off', {$IFDEF HaveBASS} 'Soft', 'Medium', 'Hard', {$ENDIF} 'ReplayGain');
 
   ISyncToTranslated:           array[0..2] of UTF8String  = ('Music', 'Lyrics', 'Off');
 
@@ -684,9 +683,12 @@ begin
   IVoicePassthroughTranslated[1]      := ULanguage.Language.Translate('OPTION_VALUE_ON');
 
   IMusicAutoGainTranslated[0]      := ULanguage.Language.Translate('OPTION_VALUE_OFF');
+  {$IFDEF HaveBass}
   IMusicAutoGainTranslated[1]      := ULanguage.Language.Translate('OPTION_VALUE_GAIN_SOFT');
   IMusicAutoGainTranslated[2]      := ULanguage.Language.Translate('OPTION_VALUE_GAIN_MEDIUM');
   IMusicAutoGainTranslated[3]      := ULanguage.Language.Translate('OPTION_VALUE_GAIN_HARD');
+  {$ENDIF}
+  IMusicAutoGainTranslated[{$IFDEF HaveBass}4{$ELSE}1{$ENDIF}] := ULanguage.Language.Translate('OPTION_VALUE_GAIN_REPLAYGAIN');
 
   ISyncToTranslated[Ord(stMusic)]     := ULanguage.Language.Translate('OPTION_VALUE_MUSIC');
   ISyncToTranslated[Ord(stLyrics)]    := ULanguage.Language.Translate('OPTION_VALUE_LYRICS');

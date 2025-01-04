@@ -42,7 +42,7 @@ uses
   SysUtils;
 
 type
-  FReplayGain = class of TReplayGain;
+  FAutoGain = class of TAutoGain;
 
   TAudioPlaybackBase = class(TInterfacedObject, IAudioPlayback)
     protected
@@ -50,7 +50,7 @@ type
       OutputDeviceList: TAudioOutputDeviceList;
       MusicStream: TAudioPlaybackStream;
 
-      IReplayGain: FReplayGain;
+      IAutoGain: FAutoGain;
 
       function CreatePlaybackStream(): TAudioPlaybackStream; virtual; abstract;
       procedure ClearOutputDeviceList();
@@ -157,8 +157,9 @@ begin
     Result := false;
     Exit;
   end;
-
-  if assigned(IReplayGain) and IReplayGain.CanEnable then MusicStream.AddSoundFX(IReplayGain.Create());
+  if (Ini.MusicAutoGain = ord(magReplayGain)) then
+    MusicStream.EnableReplayGain();
+  if assigned(IAutoGain) and IAutoGain.CanEnable then MusicStream.AddSoundFX(IAutoGain.Create());
 
   Result := true;
 end;
