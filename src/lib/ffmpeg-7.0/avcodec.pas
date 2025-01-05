@@ -48,6 +48,10 @@ const
   {$MESSAGE Error 'Linked version of libavcodec is not yet supported!'}
 {$IFEND}
 
+{$IF LIBAVCODEC_VERSION_MAJOR < 61}
+  {$DEFINE OldAVPacketAPI}
+{$ENDIF}
+
 const
   FF_BUG_AUTODETECT = 1;
 type
@@ -55,6 +59,7 @@ type
     AV_CODEC_ID_NONE
   );
   PAVPacket = ^TAVPacket;
+  PPAVPacket = ^PAVPacket;
   TAVPacket = record
     we_do_not_use_buf: pointer;
     pts: cint64;
@@ -70,12 +75,18 @@ type
     we_do_not_use_opaque: pointer;
     we_do_not_use_opaque_ref: pointer;
     we_do_not_use_time_base: TAVRational;
+  (* According to the FFmpeg documentation, sizeof(AVPacket) is
+   * deprecated for the public ABI. However, TAVPacket is still a member of
+   * TAVStream. So we can't put the incomplete record member because that will
+   * change the memory layout of TAVStream *)
   end;
+  {$IFDEF OldAVPacketAPI}
   PAVPacketList = ^TAVPacketList;
   TAVPacketList = record
     pkt: TAVPacket;
     next: ^TAVPacketList;
   end;
+  {$ENDIF}
   PAVCodecDescriptor = ^TAVCodecDescriptor;
   TAVCodecDescriptor = record
     we_do_not_use_id: TAVCodecID;
@@ -241,5 +252,7 @@ function avcodec_send_packet(avctx: PAVCodecContext; avpkt: PAVPacket): cint; cd
 function avcodec_alloc_context3(codec: PAVCodec): PAVCodecContext; cdecl; external av__codec;
 procedure avcodec_free_context(avctx: PPAVCodecContext); cdecl; external av__codec;
 function avcodec_parameters_to_context(codec: PAVCodecContext; par: PAVCodecParameters): cint; cdecl; external av__codec;
+function av_packet_alloc(): PAVPacket; cdecl; external av__codec;
+procedure av_packet_free(pkt: PPAVPacket); cdecl; external av__codec;
 implementation
 end.
