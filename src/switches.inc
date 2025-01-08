@@ -107,10 +107,6 @@
   {$ENDIF}
 {$ENDIF}
 
-{$IFDEF HaveLibsamplerate}
-  {$DEFINE UseSRCResample}
-{$ENDIF}
-
 // projectM config
 {$IF Defined(HaveProjectM)}
   {$DEFINE UseProjectM}
