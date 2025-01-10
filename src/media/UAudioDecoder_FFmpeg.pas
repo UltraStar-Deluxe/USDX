@@ -88,6 +88,9 @@ uses
     {$DEFINE UseFrameDecoderAPI}
   {$ENDIF}
 {$ENDIF}
+{$IF LIBAVCODEC_VERSION_MAJOR >= 59}
+  {$DEFINE HaveMetadata}
+{$ENDIF}
 
 const
   MAX_AUDIOQ_SIZE = (5 * 16 * 1024);
@@ -188,6 +191,9 @@ type
       procedure ResumeDecoderUnlocked();
       procedure PauseDecoder();
       procedure ResumeDecoder();
+      {$IFDEF HaveMetadata}
+      function GetReplayGain(): single;    override;
+      {$IFEND}
     public
       constructor Create();
       destructor Destroy(); override;
@@ -1087,6 +1093,79 @@ begin
   ResumeDecoderUnlocked();
   SDL_UnlockMutex(fStateLock);
 end;
+
+{$IFDEF HaveMetadata}
+function TFFMpegDecodeStream.GetReplayGain(): single;
+var
+  Metadata: PAVDictionary;
+  DictEntry: PAVDictionaryEntry;
+  TagStr: AnsiString;
+  DecibelVal: Extended;
+  Tokens: TStringDynArray;
+  IsOpus: boolean;
+begin
+  Result := 1.0;
+
+  (*  FFmpeg stores metadata at the stream level for the Ogg container, and
+   *  at the container level for all other containers *)
+  if (CompareStr(AnsiString(fFormatCtx^.iformat^.name), 'ogg') = 0) then
+  begin
+    if (fAudioStream = nil) then
+      Exit;
+    Metadata := fAudioStream^.metadata;
+  end
+  else
+  begin
+    if (fFormatCtx = nil) then
+      Exit;
+    Metadata := fFormatCtx^.metadata;
+  end;
+  if (Metadata = nil) then
+    Exit;
+
+  DictEntry := av_dict_get(Metadata, 'REPLAYGAIN_TRACK_GAIN', nil, 0);
+  if (DictEntry <> nil) then
+  begin
+    TagStr := DictEntry^.value;
+    Tokens := SplitString(TagStr, 0);
+    if (System.Length(Tokens) > 0) then
+    begin
+      try
+        DecibelVal := StrToFloat(Tokens[0]);
+        Result := power(10.0,(DecibelVal / 20.0));
+        Log.LogInfo('Parsed ReplayGain tag: ' + floatToStr(DecibelVal)
+                    + ' dB (' + floatToStr(Result) + ')', 'UAudio_FFmpeg');
+      except
+        Log.LogError('Failed to parse ReplayGain tag: ' + TagStr);
+      end;
+    end;
+  end
+
+ (*  Opus files support another loudness normalization scheme that is completely
+  *  separate from ReplayGain. Values are stored in the 'R128_TRACK_GAIN' tag,
+  *  encoded as a Q7.8 fixed-point number. To obtain the gain in decibels,
+  *  divide by 256. See RFC 7845 for more information:
+  *
+  *  https://datatracker.ietf.org/doc/html/rfc7845
+  *)
+  else if (CompareStr(fFilename.GetExtension.ToUTF8, '.opus') = 0) then
+  begin
+    DictEntry := av_dict_get(Metadata, 'R128_TRACK_GAIN', nil, 0);
+    if (DictEntry <> nil) then
+    begin
+      TagStr := DictEntry^.value;
+      try
+        DecibelVal := StrToFloat(TagStr) / 256.0;
+        Result := power(10.0,(DecibelVal / 20.0));
+        Log.LogInfo('Parsed R128 tag ' + floatToStr(DecibelVal)
+                    + ' dB (' + floatToStr(Result) + ')', 'UAudio_FFmpeg');
+      except
+        Log.LogError('Failed to parse R128 tag: ' + TagStr);
+      end;
+    end;
+  end;
+end;
+{$IFEND}
 
 procedure TFFmpegDecodeStream.FlushCodecBuffers();
 {$IF LIBAVFORMAT_VERSION >= 59000000}

@@ -244,7 +244,7 @@ type
 
   end;
   
-  TReplayGain = class(TSoundFX)
+  TAutoGain = class(TSoundFX)
   end;
 
 type
@@ -286,6 +286,7 @@ type
       function IsError(): boolean;          virtual; abstract;
     public
       function ReadData(Buffer: PByte; BufferSize: integer): integer; virtual; abstract;
+      function GetReplayGain(): single; virtual;
 
       property EOF: boolean read IsEOF;
       property Error: boolean read IsError;
@@ -309,6 +310,8 @@ type
       AvgSyncDiff: double;  //** average difference between stream and sync clock
       SyncSource: TSyncSource;
       SourceStream: TAudioSourceStream;
+      RG: single;
+      RGEnabled: boolean;
 
       function GetLatency(): double; virtual; abstract;
       function GetStatus(): TStreamStatus;  virtual; abstract;
@@ -317,6 +320,8 @@ type
       function Synchronize(BufferSize: integer; FormatInfo: TAudioFormatInfo): integer;
       procedure FillBufferWithFrame(Buffer: PByteArray; BufferSize: integer; Frame: PByteArray; FrameSize: integer);
     public
+      constructor Create();
+
       (**
        * Opens a SourceStream for playback.
        * Note that the caller (not the TAudioPlaybackStream) is responsible to
@@ -325,7 +330,7 @@ type
        * guarantees to deliver this method's SourceStream parameter to
        * the OnClose-handler. Freeing SourceStream at OnClose is allowed.
        *)
-      function Open(SourceStream: TAudioSourceStream): boolean; virtual; abstract;
+      function Open(SourceStream: TAudioSourceStream): boolean; virtual;
 
       procedure Play();                     virtual; abstract;
       procedure Pause();                    virtual; abstract;
@@ -342,8 +347,14 @@ type
       procedure SetSyncSource(SyncSource: TSyncSource);
       function GetSourceStream(): TAudioSourceStream;
 
+      function GetRGAdjustment(): single;
+      procedure SetRGAdjustment(Adjustment: single);
+      procedure EnableReplayGain() virtual;
+      procedure DisableReplayGain() virtual;
+
       property Status: TStreamStatus read GetStatus;
       property Volume: single read GetVolume write SetVolume;
+      property RGAdjustment: single read GetRGAdjustment write SetRGAdjustment;
   end;
 
   TAudioDecodeStream = class(TAudioSourceStream)
@@ -1075,8 +1086,28 @@ begin
   end;
 end;
 
+{ TAudioSourceStream }
+
+function TAudioSourceStream.GetReplayGain(): single;
+begin
+  Result := 1.0;
+end;
 
 { TAudioPlaybackStream }
+
+constructor TAudioPlaybackStream.Create();
+begin
+  RG := 1.0;
+  RGEnabled := false;
+  inherited;
+end;
+
+function TAudioPlaybackStream.Open(SourceStream: TAudioSourceStream): boolean;
+begin
+  if (Ini.MusicAutoGain = ord(magReplayGain)) then
+    RGAdjustment := SourceStream.GetReplayGain();
+  Result := true;
+end;
 
 function TAudioPlaybackStream.GetSourceStream(): TAudioSourceStream;
 begin
@@ -1207,6 +1238,32 @@ begin
   // insert as many copies of frame into the buffer as possible
   for i := 0 to FrameCopyCount-1 do
     Move(Frame[0], Buffer[i*FrameSize], FrameSize);
+end;
+
+procedure TAudioPlaybackStream.SetRGAdjustment(Adjustment: single);
+begin
+  if ((Adjustment > 0.0) AND (Adjustment <= 1.0)) then
+  begin
+    RG := Adjustment;
+  end;
+end;
+
+function TAudioPlaybackStream.GetRGAdjustment(): single;
+begin
+  if (RGEnabled) then
+    Result := RG
+  else
+    Result := 1.0;
+end;
+
+procedure TAudioPlaybackStream.EnableReplayGain();
+begin
+  RGEnabled := true;
+end;
+
+procedure TAudioPlaybackStream.DisableReplayGain();
+begin
+  RGEnabled := false;
 end;
 
 { TAudioVoiceStream }
