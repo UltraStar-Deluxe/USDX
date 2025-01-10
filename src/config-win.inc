@@ -78,10 +78,4 @@
 
 {$UNDEF HavePortmixer}
 
-{$UNDEF HaveLibsamplerate}
-{$IF Defined(HaveLibsamplerate) and Defined(IncludeConstants)}
-  LIBSAMPLERATE_VERSION_MAJOR   = 0;
-  LIBSAMPLERATE_VERSION_MINOR   = 1;
-  LIBSAMPLERATE_VERSION_RELEASE = 3;
-{$IFEND}
 {$DEFINE UseMIDIPort}

@@ -125,10 +125,6 @@ uses
     UMediaCore_FFmpeg    in 'media\UMediaCore_FFmpeg.pas',
   {$ENDIF}  // UseFFmpeg
 
-  {$IFDEF UseSRCResample}
-  samplerate             in 'lib\samplerate\samplerate.pas',
-  {$ENDIF}
-
   {$IFDEF UseProjectM}
   projectM      in 'lib\projectM\projectM.pas',
   {$ENDIF}

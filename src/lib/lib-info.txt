@@ -48,9 +48,6 @@ translation of the (patched) audacity C headers by hennymcc.
 projectM:
 translation of the original C++ headers and C-wrapper by hennymcc
 
-samplerate:
-translation of the original C headers by profoX/hennymcc
-
 sqlite:
 taken from http://www.itwriting.com/blog/a-simple-delphi-wrapper-for-sqlite-3
 - slightly patched: see *.patch files for what has been patched (e.g. Binding)
