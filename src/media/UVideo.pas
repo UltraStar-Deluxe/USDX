@@ -91,7 +91,9 @@ uses
     {$ENDIF}
   {$ENDIF}
 {$ENDIF}
-
+{$IF LIBAVCODEC_VERSION_MAJOR < 61}
+  {$DEFINE OldAVPacketAPI}
+{$IFEND}
 //{$DEFINE PIXEL_FMT_BGR}
 //{$DEFINE PIXEL_FMT_32BITS}
 
@@ -1042,7 +1044,11 @@ var
   pbIOCtx: PAVIOContext;
   {$ENDIF}
   errnum: integer;
+  {$IFDEF OldAVPacketAPI}
   AVPacket: TAVPacket;
+  {$ELSE}
+  AVPacket: PAVPacket;
+  {$ENDIF}
   pts: int64;
   dts: int64;
   fileSize: int64;
@@ -1050,6 +1056,9 @@ var
 begin
   Result := false;
   FrameFinished := 0;
+  {$IFNDEF OldAVPacketAPI}
+  AVPacket := nil;
+  {$ENDIF}
 
   if fEOF then
     Exit;
@@ -1070,7 +1079,14 @@ begin
       Continue;
     {$ENDIF}
 
+    {$IFNDEF OldAVPacketAPI}
+    if (AVPacket = nil) then
+      AVPacket := av_packet_alloc();
     errnum := av_read_frame(fFormatContext, AVPacket);
+    {$ELSE}
+    errnum := av_read_frame(fFormatContext, @AVPacket);
+
+    {$ENDIF}
     if (errnum < 0) then
     begin
       // failed to read a frame, check reason
@@ -1106,6 +1122,9 @@ begin
       if (urlError <> 0) then
       begin
         Log.LogError('Video decoding file error', 'TVideoPlayback_FFmpeg.DecodeFrame');
+        {$IFNDEF OldAVPacketAPI}
+        av_packet_free(@AVPacket);
+        {$ENDIF}
         Exit;
       end;
 
@@ -1130,11 +1149,18 @@ begin
 
       // error occured, log and exit
       Log.LogError('Video decoding error: ' + IntToStr(errnum), 'TVideoPlayback_FFmpeg.DecodeFrame');
+      {$IFNDEF OldAVPacketAPI}
+      av_packet_free(@AVPacket);
+      {$ENDIF}
       Exit;
     end;
 
     // if we got a packet from the video stream, then decode it
+    {$IFDEF OldAVPacketAPI}
     if (AVPacket.stream_index = fStreamIndex) then
+    {$ELSE}
+    if (AVPacket^.stream_index = fStreamIndex) then
+    {$ENDIF}
     begin
       {$IF LIBAVCODEC_VERSION < 51068000}
       // save pts to be stored in pFrame in first call of PtsGetBuffer()
@@ -1152,7 +1178,11 @@ begin
       avcodec_decode_video2(fCodecContext, fAVFrame,
           frameFinished, @AVPacket);
       {$ELSE}
+      {$IFDEF OldAVPacketAPI}
       avcodec_send_packet(fCodecContext, @AVPacket);
+      {$ELSE}
+      avcodec_send_packet(fCodecContext, AVPacket);
+      {$IFEND}
       {$IFEND}
 
       {$IF LIBAVCODEC_VERSION < 51106000}
@@ -1164,7 +1194,11 @@ begin
     {$IF LIBAVCODEC_VERSION < 59000000}
     av_free_packet( @AVPacket );
     {$ELSE}
+    {$IFDEF OldAVPacketAPI}
     av_packet_unref(@AVPacket);
+    {$ELSE}
+    av_packet_free(@AVPacket);
+    {$ENDIF}
     {$ENDIF}
   end;
 

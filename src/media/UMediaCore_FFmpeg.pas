@@ -44,14 +44,32 @@ uses
   swscale,
   UMusic,
   ULog,
-  UPath;
+  UPath,
+  SysUtils,
+  UConfig;
+
+{$IF LIBAVCODEC_VERSION_MAJOR < 61}
+  {$DEFINE OldAVPacketAPI}
+{$ENDIF}
 
 type
+  {$IFNDEF OldAVPacketAPI}
+  PPacketList = ^TPacketList;
+  TPacketList = record
+    pkt: PAVPacket;
+    next: ^TPacketList;
+  end;
+  {$ENDIF}
   PPacketQueue = ^TPacketQueue;
   TPacketQueue = class
     private
+      {$IFDEF OldAVPacketAPI}
       FirstListEntry: PAVPacketList;
       LastListEntry:  PAVPacketList;
+      {$ELSE}
+      FirstListEntry: PPacketList;
+      LastListEntry:  PPacketList;
+      {$ENDIF}
       PacketCount: integer;
       Mutex:     PSDL_Mutex;
       Condition: PSDL_Cond;
@@ -65,7 +83,11 @@ type
       function PutStatus(StatusFlag: integer; StatusInfo: Pointer): integer;
       procedure FreeStatusInfo(var Packet: TAVPacket);
       function GetStatusInfo(var Packet: TAVPacket): Pointer;
+      {$IFDEF OldAVPacketAPI}
       function Get(var Packet: TAVPacket; Blocking: boolean): integer;
+      {$ELSE}
+      function Get(var Packet: PAVPacket; Blocking: boolean): integer;
+      {$ENDIF}
       function GetSize(): integer;
       procedure Flush();
       procedure Abort();
@@ -102,10 +124,6 @@ type
   end;
 
 implementation
-
-uses
-  SysUtils,
-  UConfig;
 
 {$IF LIBAVFORMAT_VERSION >= 54029104}
 { redeclaration of constants with the same names as deprecated
@@ -629,20 +647,35 @@ begin
   SDL_UnlockMutex(Mutex);
 end;
 
+// For new AVPacket API, the queue will take over memory management
+// of Packet (should not be freed by caller)
 function TPacketQueue.Put(Packet : PAVPacket): integer;
 var
+  {$IFDEF OldAVPacketAPI}
   CurrentListEntry : PAVPacketList;
+  {$ELSE}
+  CurrentListEntry : PPacketList;
+  {$ENDIF}
+
 begin
   Result := -1;
 
   if (Packet = nil) then
     Exit;
 
+  {$IFDEF OldAVPacketAPI}
   CurrentListEntry := av_malloc(SizeOf(TAVPacketList));
+  {$ELSE}
+  New(CurrentListEntry);
+  {$ENDIF}
   if (CurrentListEntry = nil) then
     Exit;
 
+  {$IFDEF OldAVPacketAPI}
   CurrentListEntry^.pkt := Packet^;
+  {$ELSE}
+  CurrentListEntry^.pkt := Packet;
+  {$ENDIF}
   {$IF LIBAVFORMAT_VERSION < 59000000}
   if (PChar(Packet^.data) <> STATUS_PACKET) then
   begin
@@ -667,7 +700,11 @@ begin
     LastListEntry := CurrentListEntry;
     Inc(PacketCount);
 
+    {$IFDEF OldAVPacketAPI}
     Size := Size + CurrentListEntry^.pkt.size;
+    {$ELSE}
+    Size := Size + CurrentListEntry^.pkt^.size;
+    {$ENDIF}
     SDL_CondSignal(Condition);
   finally
     SDL_UnlockMutex(Mutex);
@@ -689,14 +726,20 @@ var
   TempPacket: PAVPacket;
 begin
   // create temp. package
+  {$IFDEF OldAVPacketAPI}
   TempPacket := av_malloc(SizeOf(TAVPacket));
+  {$ELSE}
+  TempPacket := av_packet_alloc();
+  {$ENDIF}
   if (TempPacket = nil) then
   begin
     Result := -1;
     Exit;
   end;
   // init package
+  {$IFDEF OldAVPacketAPI}
   av_init_packet(TempPacket^);
+  {$ENDIF}
   TempPacket^.data  := Pointer(STATUS_PACKET);
   TempPacket^.flags := StatusFlag;
 {$IF FFMPEG_VERSION_INT < 2000000}
@@ -705,7 +748,9 @@ begin
   // put a copy of the package into the queue
   Result := Put(TempPacket);
   // data has been copied -> delete temp. package
+  {$IFDEF OldAVPacketAPI}
   av_free(TempPacket);
+  {$ENDIF}
 end;
 
 procedure TPacketQueue.FreeStatusInfo(var Packet: TAVPacket);
@@ -723,9 +768,19 @@ begin
 {$ENDIF}
 end;
 
+{$IFDEF OldAVPacketAPI}
 function TPacketQueue.Get(var Packet: TAVPacket; Blocking: boolean): integer;
+{$ELSE}
+
+// For the new AVPacket API, the caller takes over memory management of Packet
+function TPacketQueue.Get(var Packet: PAVPacket; Blocking: boolean): integer;
+{$ENDIF}
 var
+  {$IFDEF OldAVPacketAPI}
   CurrentListEntry: PAVPacketList;
+  {$ELSE}
+  CurrentListEntry: PPacketList;
+  {$ENDIF}
 const
   WAIT_TIMEOUT = 10; // timeout in ms
 begin
@@ -746,9 +801,15 @@ begin
           LastListEntry := nil;
         Dec(PacketCount);
 
+        {$IFDEF OldAVPacketAPI}
         Size := Size - CurrentListEntry^.pkt.size;
         Packet := CurrentListEntry^.pkt;
         av_free(CurrentListEntry);
+        {$ELSE}
+        Size := Size - CurrentListEntry^.pkt^.size;
+        Packet := CurrentListEntry^.pkt;
+        Dispose(CurrentListEntry);
+        {$ENDIF}
 
         Result := 1;
         Break;
@@ -783,7 +844,11 @@ end;
 
 procedure TPacketQueue.Flush();
 var
+  {$IFDEF OldAVPacketAPI}
   CurrentListEntry, TempListEntry: PAVPacketList;
+  {$ELSE}
+  CurrentListEntry, TempListEntry: PPacketList;
+  {$ENDIF}
 begin
   SDL_LockMutex(Mutex);
 
@@ -792,17 +857,28 @@ begin
   begin
     TempListEntry := CurrentListEntry^.next;
     // free status data
+    {$IF FFMPEG_VERSION_INT < 2000000}
     if (PChar(CurrentListEntry^.pkt.data) = STATUS_PACKET) then
       FreeStatusInfo(CurrentListEntry^.pkt);
+    {$ENDIF}
+
     // free packet data
     {$IF LIBAVFORMAT_VERSION >= 59000000}
+    {$IFDEF OldAVPacketAPI}
     if (PChar(CurrentListEntry^.pkt.data) <> STATUS_PACKET) then
       av_packet_unref(@CurrentListEntry^.pkt);
+    {$ELSE}
+    av_packet_free(@(CurrentListEntry^.pkt));
+    {$ENDIF}
     {$ELSE}
     av_free_packet(@CurrentListEntry^.pkt);
     {$ENDIF}
     // Note: param must be a pointer to a pointer!
+    {$IFDEF OldAVPacketAPI}
     av_freep(@CurrentListEntry);
+    {$ELSE}
+    Dispose(CurrentListEntry);
+    {$ENDIF}
     CurrentListEntry := TempListEntry;
   end;
   LastListEntry := nil;

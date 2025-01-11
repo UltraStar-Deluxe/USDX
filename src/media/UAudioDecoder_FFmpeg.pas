@@ -88,6 +88,9 @@ uses
     {$DEFINE UseFrameDecoderAPI}
   {$ENDIF}
 {$ENDIF}
+{$IF LIBAVCODEC_VERSION_MAJOR < 61}
+  {$DEFINE OldAVPacketAPI}
+{$IFEND}
 
 const
   MAX_AUDIOQ_SIZE = (5 * 16 * 1024);
@@ -153,8 +156,14 @@ type
       fDecoderResumeCond:        PSDL_Cond;
 
       // state-vars for DecodeFrame (locked by DecoderLock)
+      {$IFDEF OldAVPacketAPI}
       fAudioPaket:        TAVPacket;
+      {$ELSE}
+      fAudioPaket:        PAVPacket;
+      {$ENDIF}
+      {$IFNDEF UseFrameDecoderAPI}
       fAudioPaketData:    PByteArray;
+      {$ENDIF}
       fAudioPaketSize:    integer;
       fAudioPaketSilence: integer; // number of bytes of silence to return
 
@@ -282,7 +291,12 @@ begin
   fLoop := false;
   fQuitRequest := false;
 
+  {$IFNDEF UseFrameDecoderAPI}
   fAudioPaketData := nil;
+  {$ENDIF}
+  {$IFNDEF OldAVPacketAPI}
+  fAudioPaket := nil;
+  {$ENDIF}
   fAudioPaketSize := 0;
   fAudioPaketSilence := 0;
 
@@ -293,11 +307,8 @@ begin
   fParserPauseRequestCount := 0;
   fDecoderLocked := false;
   fDecoderPauseRequestCount := 0;
-
+  {$IFDEF OldAVPacketAPI}
   FillChar(fAudioPaket, SizeOf(TAVPacket), 0);
-  {$IF (LIBAVFORMAT_VERSION >= 59000000)}
-  // avoid calling av_packet_unref before fetching first frame
-  fAudioPaket.data := Pointer(STATUS_PACKET);
   {$ENDIF}
 end;
 
@@ -334,7 +345,6 @@ function TFFmpegDecodeStream.Open(const Filename: IPath): boolean;
 var
   SampleFormat: TAudioSampleFormat;
   PackedSampleFormat: TAVSampleFormat;
-  TestFrame: TAVPacket;
   AVResult: integer;
   CodecID: TAVCodecID;
   NumChannels: cint;
@@ -371,11 +381,6 @@ begin
 
   // generate PTS values if they do not exist
   fFormatCtx^.flags := fFormatCtx^.flags or AVFMT_FLAG_GENPTS;
-
-  // retrieve stream information
-  //{$IF LIBAVFORMAT_VERSION >= 54006000)}
-  // av_find_stream_info is deprecated and should be replaced by av_read_frame. Untested.
-  //AVResult := av_read_frame(fFormatCtx, TestFrame);
 
   {$IF LIBAVFORMAT_VERSION >= 53002000)}
   AVResult := avformat_find_stream_info(fFormatCtx, nil);
@@ -625,8 +630,13 @@ begin
   if (fAudioPaket.data <> nil) then
     av_free_packet(@fAudioPaket);
   {$ELSE}
+  {$IFDEF OldAVPacketAPI}
   if (PAnsiChar(fAudioPaket.data) <> STATUS_PACKET) then
     av_packet_unref(@fAudioPaket);
+  {$ELSE}
+  if (fAudioPaket <> nil) then
+    av_packet_free(@fAudioPaket);
+  {$ENDIF}
   {$ENDIF}
 
   PerformOnClose();
@@ -847,7 +857,11 @@ end;
  *)
 function TFFmpegDecodeStream.ParseLoop(): boolean;
 var
+  {$IFDEF OldAVPacketAPI}
   Packet: TAVPacket;
+  {$ELSE}
+  Packet: PAVPacket;
+  {$ENDIF}
   SeekTarget: int64;
   {$IF FFMPEG_VERSION_INT < 1001000}
   ByteIOCtx: PByteIOContext;
@@ -859,6 +873,7 @@ var
   StartSilencePtr: PDouble;  // pointer for the EMPTY status packet 
   fileSize: integer;
   urlError: integer;
+  errnum: cint;
 
   // Note: pthreads wakes threads waiting on a mutex in the order of their
   // priority and not in FIFO order. SDL does not provide any option to
@@ -883,6 +898,9 @@ var
 
 begin
   Result := true;
+  {$IFNDEF OldAVPacketAPI}
+  Packet := nil;
+  {$ENDIF}
 
   while LockParser() do
   begin
@@ -972,7 +990,14 @@ begin
         Continue;
       end;
 
-      if (av_read_frame(fFormatCtx, Packet) < 0) then
+      {$IFNDEF OldAVPacketAPI}
+      if (Packet = nil) then
+        Packet := av_packet_alloc();
+      errnum := av_read_frame(fFormatCtx, Packet);
+      {$ELSE}
+      errnum := av_read_frame(fFormatCtx, @Packet);
+      {$ENDIF}
+      if (errnum < 0) then
       begin
         // failed to read a frame, check reason
         {$IF (LIBAVFORMAT_VERSION_MAJOR >= 52)}
@@ -985,7 +1010,7 @@ begin
         {$IF (LIBAVFORMAT_VERSION_MAJOR < 56)}
         if (url_feof(ByteIOCtx) <> 0) then
         {$ELSE}
-        if (avio_feof(ByteIOCtx) <> 0) then
+        if (errnum = AVERROR_EOF) then
         {$IFEND}
         begin
           SDL_LockMutex(fStateLock);
@@ -1036,13 +1061,25 @@ begin
         Break;
       end;
 
+      {$IFDEF OldAVPacketAPI}
       if (Packet.stream_index = fAudioStreamIndex) then
         fPacketQueue.Put(@Packet)
+      {$ELSE}
+      if (Packet^.stream_index = fAudioStreamIndex) then
+      begin;
+        fPacketQueue.Put(Packet);
+        Packet := nil;
+      end
+      {$ENDIF}
       else
         {$IF (LIBAVFORMAT_VERSION < 59000000)}
         av_free_packet(@Packet);
         {$ELSE}
+        {$IFDEF OldAVPacketAPI}
         av_packet_unref(@Packet);
+        {$ELSE}
+        av_packet_unref(Packet);
+        {$ENDIF}
         {$ENDIF}
 
     finally
@@ -1221,7 +1258,9 @@ begin
         Break;
       end;
 
+      {$IFNDEF UseFrameDecoderAPI}
       Inc(PByte(fAudioPaketData), PaketDecodedSize);
+      {$ENDIF}
       Dec(fAudioPaketSize, PaketDecodedSize);
 
       // check if avcodec_decode_audio returned data, otherwise fetch more frames
@@ -1241,8 +1280,13 @@ begin
     if (fAudioPaket.data <> nil) then
       av_free_packet(@fAudioPaket);
     {$ELSE}
+    {$IFDEF OldAVPacketAPI}
     if (PAnsiChar(fAudioPaket.data) <> STATUS_PACKET) then
       av_packet_unref(@fAudioPaket);
+    {$ELSE}
+    if ((fAudioPaket <> nil) and (PAnsiChar(fAudioPaket^.data) <> STATUS_PACKET)) then
+      av_packet_free(@fAudioPaket);
+    {$ENDIF}
     {$ENDIF}
 
     // do not block queue on seeking (to avoid deadlocks on the DecoderLock)
@@ -1257,15 +1301,25 @@ begin
       Exit;
 
     // handle Status-packet
+    {$IFDEF OldAVPacketAPI}
     if (PAnsiChar(fAudioPaket.data) = STATUS_PACKET) then
+    {$ELSE}
+    if (PAnsiChar(fAudioPaket^.data) = STATUS_PACKET) then
+    {$ENDIF}
     begin
       {$IF (LIBAVFORMAT_VERSION < 59000000)}
       fAudioPaket.data := nil;
       {$ENDIF}
+      {$IFNDEF UseFrameDecoderAPI}
       fAudioPaketData := nil;
+      {$ENDIF}
       fAudioPaketSize := 0;
 
+      {$IFDEF OldAVPacketAPI}
       case (fAudioPaket.flags) of
+      {$ELSE}
+      case (fAudioPaket^.flags) of
+      {$ENDIF}
         PKT_STATUS_FLAG_FLUSH:
         begin
           // just used if SetPositionIntern was called without the flush flag.
@@ -1287,9 +1341,15 @@ begin
         end;
         PKT_STATUS_FLAG_EMPTY:
         begin
+          {$IFDEF OldAVPacketAPI}
           SilenceDuration := PDouble(fPacketQueue.GetStatusInfo(fAudioPaket))^;
           fAudioPaketSilence := Round(SilenceDuration * fFormatInfo.SampleRate) * fFormatInfo.FrameSize;
           fPacketQueue.FreeStatusInfo(fAudioPaket);
+          {$ELSE}
+          SilenceDuration := PDouble(fPacketQueue.GetStatusInfo(fAudioPaket^))^;
+          fAudioPaketSilence := Round(SilenceDuration * fFormatInfo.SampleRate) * fFormatInfo.FrameSize;
+          fPacketQueue.FreeStatusInfo(fAudioPaket^);
+          {$ENDIF}
         end
         else
         begin
@@ -1297,29 +1357,54 @@ begin
         end;
       end;
 
+      {$IFNDEF OldAVPacketAPI}
+      av_packet_free(@fAudioPaket);
+      {$ENDIF}
       Continue;
     end;
 
+    {$IFDEF OldAVPacketAPI}
+    {$IFNDEF UseFrameDecoderAPI}
     fAudioPaketData := fAudioPaket.data;
+    {$ENDIF}
     fAudioPaketSize := fAudioPaket.size;
+    {$ELSE}
+    fAudioPaketSize := fAudioPaket^.size;
+    {$ENDIF}
 
     {$IF LIBAVCODEC_VERSION >= 57037100}
+    {$IFDEF OldAVPacketAPI}
     avcodec_send_packet(fCodecCtx, @fAudioPaket);
+    {$ELSE}
+    avcodec_send_packet(fCodecCtx, fAudioPaket);
+    {$IFEND}
     {$IFEND}
 
     // if available, update the stream position to the presentation time of this package
+    {$IFDEF OldAVPacketAPI}
     if(fAudioPaket.pts <> AV_NOPTS_VALUE) then
+    {$ELSE}
+    if(fAudioPaket^.pts <> AV_NOPTS_VALUE) then
+    {$ENDIF}
     begin
       {$IFDEF DebugFFmpegDecode}
       TmpPos := fAudioStreamPos;
       {$ENDIF}
+      {$IFDEF OldAVPacketAPI}
       fAudioStreamPos := av_q2d(fAudioStream^.time_base) * fAudioPaket.pts;
+      {$ELSE}
+      fAudioStreamPos := av_q2d(fAudioStream^.time_base) * fAudioPaket^.pts;
+      {$ENDIF}
       {$IFDEF DebugFFmpegDecode}
       DebugWriteln('Timestamp: ' + floattostrf(fAudioStreamPos, ffFixed, 15, 3) + ' ' +
                    '(Calc: ' + floattostrf(TmpPos, ffFixed, 15, 3) + '), ' +
                    'Diff: ' + floattostrf(fAudioStreamPos-TmpPos, ffFixed, 15, 3));
       {$ENDIF}
     end;
+
+    {$IFNDEF OldAVPacketAPI}
+    av_packet_free(@fAudioPaket);
+    {$ENDIF}
   end;
 end;
 
