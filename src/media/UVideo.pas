@@ -68,24 +68,14 @@ uses
   UGraphic,
   UPath;
 
-{$IF DEFINED(cpui386) OR DEFINED(cpux86_64)}
-  {$IF LIBSWSCALE_VERSION < 0009000}
-    // use BGR-format for accelerated colorspace conversion with swscale
-    // RGB asm was added with 23b0072ad71941c0cf67398b511dfca8ef9b23d8
-    {$DEFINE PIXEL_FMT_BGR}
-  {$ENDIF}
-{$ELSEIF DEFINED(cpuarm)}
-  {$IF FFMPEG_VERSION_INT >= 3000000}
+{$IF DEFINED(cpuarm)}
     // RGBA asm was added with b32a42295ad7b254f9662082d799c0aae2071c2e
     // There are no RGB/BGR asm routines yet
     {$DEFINE PIXEL_FMT_32BITS}
-  {$ENDIF}
 {$ELSEIF DEFINED(cpuaarch64)}
-  {$IF LIBSWSCALE_VERSION >= 4001100}
     // RGBA asm was added with f1148390d7ed0444f3204d10277d09cc8d034e65
     // There are no RGB/BGR asm routines yet
     {$DEFINE PIXEL_FMT_32BITS}
-  {$ENDIF}
 {$ENDIF}
 
 //{$DEFINE PIXEL_FMT_BGR}
@@ -252,32 +242,8 @@ var
 function IsSupportedScalingInput(Fmt: TAVPixelFormat): boolean;
 begin
   Result := false;
-  {$IF LIBSWSCALE_VERSION >= 8000}
   if sws_isSupportedInput(Fmt) > 0 then
     Result := true;
-  {$ELSE}
-  case Fmt of
-    {$IF LIBSWSCALE_VERSION >= 7002}
-  PIX_FMT_RGB48BE, PIX_FMT_RGB48LE,
-  PIX_FMT_YUV420P16LE, PIX_FMT_YUV420P16BE,
-  PIX_FMT_YUV422P16LE, PIX_FMT_YUV422P16BE,
-  PIX_FMT_YUV444P16LE, PIX_FMT_YUV444P16BE,
-    {$ENDIF}
-    {$IF LIBSWSCALE_VERSION >= 6002}
-  PIX_FMT_RGB32_1, PIX_FMT_BGR32_1,
-  PIX_FMT_MONOWHITE, PIX_FMT_MONOBLACK,
-    {$ENDIF}
-  PIX_FMT_BGR32, PIX_FMT_BGR24, PIX_FMT_BGR565, PIX_FMT_BGR555,
-  PIX_FMT_RGB32, PIX_FMT_RGB24, PIX_FMT_RGB565, PIX_FMT_RGB555,
-  PIX_FMT_YUV440P, PIX_FMT_YUV420P, PIX_FMT_YUV410P, PIX_FMT_YUVA420P,
-  PIX_FMT_YUV444P, PIX_FMT_YUV422P, PIX_FMT_YUV411P,
-  PIX_FMT_YUYV422, PIX_FMT_UYVY422,
-  PIX_FMT_GRAY8, PIX_FMT_GRAY16BE, PIX_FMT_GRAY16LE,
-  PIX_FMT_PAL8, PIX_FMT_BGR8, PIX_FMT_RGB8,
-  PIX_FMT_BGR4_BYTE, PIX_FMT_RGB4_BYTE:
-    Result := true;
-  end;
-  {$ENDIF}
 end;
 
 function SelectFormat(CodecCtx: PAVCodecContext; Formats: PAVPixelFormat): TAVPixelFormat; cdecl;
