@@ -66,9 +66,7 @@ uses
   avio,
 	ctypes,
   rational,
-{$IFDEF UseSWResample}
   swresample,
-{$ENDIF}
   UMusic,
   UIni,
   UMain,
@@ -78,28 +76,13 @@ uses
   UConfig,
   UPath;
 
-{$IFDEF UseSWResample}
-  {$IF LIBAVCODEC_VERSION >= 54041100}
-    {$DEFINE UseFrameDecoderAPI}
-    {$DEFINE ConvertPlanar}
-  {$ENDIF}
-{$ELSE}
-  {$IF LIBAVCODEC_VERSION >= 57000000}
-    {$DEFINE UseFrameDecoderAPI}
-  {$ENDIF}
-{$ENDIF}
-
 const
   MAX_AUDIOQ_SIZE = (5 * 16 * 1024);
 
 const
   // TODO: The factor 3/2 might not be necessary as we do not need extra
   // space for synchronizing as in the tutorial.
-{$IF FFMPEG_VERSION_INT >= 2000000}
   AUDIO_BUFFER_SIZE = (192000 * 3) div 2;
-{$ELSE}
-  AUDIO_BUFFER_SIZE = (AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) div 2;
-{$ENDIF}
 
 type
   TFFmpegDecodeStream = class(TAudioDecodeStream)
@@ -130,12 +113,8 @@ type
       fPacketQueue: TPacketQueue;
 
       fFormatInfo: TAudioFormatInfo;
-      {$IFDEF UseFrameDecoderAPI}
       fBytesPerSample: integer;
-      {$IFEND}
-      {$IFDEF ConvertPlanar}
       fSwrContext: PSwrContext;
-      {$IFEND}
 
       // FFmpeg specific data
       fFormatCtx: PAVFormatContext;
@@ -154,7 +133,6 @@ type
 
       // state-vars for DecodeFrame (locked by DecoderLock)
       fAudioPaket:        TAVPacket;
-      fAudioPaketData:    PByteArray;
       fAudioPaketSize:    integer;
       fAudioPaketSilence: integer; // number of bytes of silence to return
 
@@ -162,9 +140,7 @@ type
       fAudioBufferPos:  integer;
       fAudioBufferSize: integer;
       fAudioBuffer:     PByteArray;
-      {$IFDEF UseFrameDecoderAPI}
       fAudioBufferFrame: PAVFrame;
-      {$IFEND}
 
       fFilename: IPath;
 
@@ -244,31 +220,7 @@ begin
   SeekFinishedCond := SDL_CreateCond();
   fDecoderUnlockedCond := SDL_CreateCond();
   fDecoderResumeCond := SDL_CreateCond();
-
-  {$IFDEF UseFrameDecoderAPI}
-    {$IF LIBAVUTIL_VERSION >= 52019101}
   fAudioBufferFrame := av_frame_alloc();
-    {$ELSE}
-  fAudioBufferFrame := avcodec_alloc_frame();
-    {$IFEND}
-  {$ELSE}
-  // according to the documentation of avcodec_decode_audio(2), sample-data
-  // should be aligned on a 16 byte boundary. Otherwise internal calls
-  // (e.g. to SSE or Altivec operations) might fail or lack performance on some
-  // CPUs. Although GetMem() in Delphi and FPC seems to use a 16 byte or higher
-  // alignment for buffers of this size (alignment depends on the size of the
-  // requested buffer), we will set the alignment explicitly as the minimum
-  // alignment used by Delphi and FPC is on an 8 byte boundary.
-  // 
-  // Note: AudioBuffer was previously defined as a field of type TAudioBuffer
-  // (array[0..AUDIO_BUFFER_SIZE-1] of byte) and hence statically allocated.
-  // Fields of records are aligned different to memory allocated with GetMem(),
-  // aligning depending on the type but will be at least 2 bytes.
-  // AudioBuffer was not aligned to a 16 byte boundary. The {$ALIGN x} directive
-  // was not applicable as Delphi in contrast to FPC provides at most 8 byte
-  // alignment ({$ALIGN 16} is not supported) by this directive.
-  fAudioBuffer := GetAlignedMem(AUDIO_BUFFER_SIZE, 16);
-  {$IFEND}
 
   Reset();
 end;
@@ -282,7 +234,6 @@ begin
   fLoop := false;
   fQuitRequest := false;
 
-  fAudioPaketData := nil;
   fAudioPaketSize := 0;
   fAudioPaketSilence := 0;
 
@@ -316,16 +267,7 @@ begin
   SDL_DestroyCond(SeekFinishedCond);
   SDL_DestroyCond(fDecoderUnlockedCond);
   SDL_DestroyCond(fDecoderResumeCond);
-
-  {$IFDEF UseFrameDecoderAPI}
-    {$IF LIBAVUTIL_VERSION >= 52019101}
   av_frame_free(@fAudioBufferFrame);
-    {$ELSE}
-  avcodec_free_frame(@fAudioBufferFrame);
-    {$IFEND}
-  {$ELSE}
-  FreeAlignedMem(fAudioBuffer);
-  {$IFEND}
 
   inherited;
 end;
@@ -334,7 +276,6 @@ function TFFmpegDecodeStream.Open(const Filename: IPath): boolean;
 var
   SampleFormat: TAudioSampleFormat;
   PackedSampleFormat: TAVSampleFormat;
-  TestFrame: TAVPacket;
   AVResult: integer;
   CodecID: TAVCodecID;
   NumChannels: cint;
@@ -356,13 +297,7 @@ begin
   Self.fFilename := Filename;
 
   // use custom 'ufile' protocol for UTF-8 support
-  {$IF LIBAVFORMAT_VERSION < 53001003}
-  AVResult := av_open_input_file(fFormatCtx, PAnsiChar('ufile:'+FileName.ToUTF8), nil, 0, nil);
-  {$ELSEIF LIBAVFORMAT_VERSION < 54029104}
-  AVResult := avformat_open_input(@fFormatCtx, PAnsiChar('ufile:'+FileName.ToUTF8), nil, nil);
-  {$ELSE}
   AVResult := FFmpegCore.AVFormatOpenInput(@fFormatCtx, PAnsiChar('ufile:'+FileName.ToUTF8));
-  {$IFEND}
   if (AVResult <> 0) then
   begin
     Log.LogError('Failed to open file "' + Filename.ToNative + '" ('+FFmpegCore.GetErrorString(AVResult)+')', 'UAudio_FFmpeg');
@@ -373,15 +308,7 @@ begin
   fFormatCtx^.flags := fFormatCtx^.flags or AVFMT_FLAG_GENPTS;
 
   // retrieve stream information
-  //{$IF LIBAVFORMAT_VERSION >= 54006000)}
-  // av_find_stream_info is deprecated and should be replaced by av_read_frame. Untested.
-  //AVResult := av_read_frame(fFormatCtx, TestFrame);
-
-  {$IF LIBAVFORMAT_VERSION >= 53002000)}
   AVResult := avformat_find_stream_info(fFormatCtx, nil);
-  {$ELSE}
-  AVResult := av_find_stream_info(fFormatCtx);
-  {$IFEND}
   if (AVResult < 0) then
   begin
     Log.LogError('No stream info found: "' + Filename.ToNative + '"', 'UAudio_FFmpeg');
@@ -406,11 +333,7 @@ begin
 
   //Log.LogStatus('AudioStreamIndex is: '+ inttostr(ffmpegStreamID), 'UAudio_FFmpeg');
 
-{$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
-  fAudioStream := fFormatCtx.streams[fAudioStreamIndex];
-{$ELSE}
   fAudioStream := PPAVStream(PtrUInt(fFormatCtx.streams) + fAudioStreamIndex * Sizeof(pointer))^;
-{$IFEND}
   fAudioStreamPos := 0;
 
 {$IF LIBAVFORMAT_VERSION < 59000000}
@@ -445,28 +368,18 @@ begin
   {$IF LIBAVUTIL_VERSION >= 59000000}
   if av_channel_layout_from_string(@RequestChannelLayout, 'downmix') = 0 then
     av_opt_set_chlayout(fCodecCtx, 'downmix', @RequestChannelLayout, 0); // ignore errors, few codecs support downmix
-  {$ELSEIF LIBAVCODEC_VERSION >= 56042000}
+  {$ELSE}
   fCodecCtx^.request_channel_layout := ($20000000 or $40000000); //avcodec.c AV_CH_LAYOUT_STEREO_DOWNMIX;
-  {$ELSEIF LIBAVCODEC_VERSION >= 51042000}
-  if (NumChannels > 0) then
-    fCodecCtx^.request_channels := Min(2, NumChannels)
-  else
-    fCodecCtx^.request_channels := 2;
   {$IFEND}
 
   // set debug options
-  {$IF LIBAVCODEC_VERSION < 58000000}
-  fCodecCtx^.debug_mv := 0;
-  {$IFEND}
   fCodecCtx^.debug := 0;
 
-  {$IF FFMPEG_VERSION_INT >= 1001000}
   // request required sample format
   // reference:
   // http://stackoverflow.com/questions/16479662/ffmpeg-1-0-causing-audio-playback-issues
   // without this avcodec_open2 returns AV_SAMPLE_FMT_S16P
   fCodecCtx^.request_sample_fmt := AV_SAMPLE_FMT_S16;
-  {$IFEND}
 
   // detect bug-workarounds automatically
   fCodecCtx^.workaround_bugs := FF_BUG_AUTODETECT;
@@ -479,11 +392,7 @@ begin
   // fail if called concurrently by different threads.
   FFmpegCore.LockAVCodec();
   try
-    {$IF LIBAVCODEC_VERSION >= 53005000}
     AVResult := avcodec_open2(fCodecCtx, fCodec, nil);
-    {$ELSE}
-    AVResult := avcodec_open(fCodecCtx, fCodec);
-    {$IFEND}
   finally
     FFmpegCore.UnlockAVCodec();
   end;
@@ -495,7 +404,6 @@ begin
   end;
 
   // now initialize the audio-format
-  {$IFDEF ConvertPlanar}
   PackedSampleFormat := av_get_packed_sample_fmt(fCodecCtx^.sample_fmt);
   if (PackedSampleFormat <> fCodecCtx^.sample_fmt) then
   begin
@@ -528,9 +436,6 @@ begin
       end;
     end;
   end;
-  {$ELSE}
-  PackedSampleFormat := fCodecCtx^.sample_fmt;
-  {$IFEND}
 
   if (not FFmpegCore.ConvertFFmpegToAudioFormat(PackedSampleFormat, SampleFormat)) then
   begin
@@ -544,10 +449,7 @@ begin
     fCodecCtx^.sample_rate,
     SampleFormat
   );
-  {$IFDEF UseFrameDecoderAPI}
   fBytesPerSample := av_get_bytes_per_sample(PackedSampleFormat) * NumChannels;
-  {$IFEND}
-
   fPacketQueue := TPacketQueue.Create();
 
   // finally start the decode thread
@@ -583,11 +485,9 @@ begin
     SDL_UnlockMutex(fStateLock);
   end;
 
-  {$IFDEF ConvertPlanar}
   // Free the swresample context
   if (fSwrContext <> nil) then
     swr_free(@fSwrContext);
-  {$IFEND}
 
   // Close the codec
   if (fCodecCtx <> nil) then
@@ -611,13 +511,7 @@ begin
   // Close the video file
   if (fFormatCtx <> nil) then
   begin
-    {$IF LIBAVFORMAT_VERSION < 53024002}
-    av_close_input_file(fFormatCtx);
-    {$ELSEIF LIBAVFORMAT_VERSION < 54029104}
-    avformat_close_input(@fFormatCtx);
-    {$ELSE}
     FFmpegCore.AVFormatCloseInput(@fFormatCtx);
-    {$IFEND}
     fFormatCtx := nil;
   end;
 
@@ -849,11 +743,7 @@ function TFFmpegDecodeStream.ParseLoop(): boolean;
 var
   Packet: TAVPacket;
   SeekTarget: int64;
-  {$IF FFMPEG_VERSION_INT < 1001000}
-  ByteIOCtx: PByteIOContext;
-  {$ELSE}
   ByteIOCtx: PAVIOContext;
-  {$ENDIF}
   ErrorCode: integer;
   StartSilence: double;       // duration of silence at start of stream
   StartSilencePtr: PDouble;  // pointer for the EMPTY status packet 
@@ -918,11 +808,7 @@ begin
           begin
             // seeking failed
             fErrorState := true;
-            {$IF LIBAVFORMAT_VERSION <= 58007100}
-            Log.LogError('Seek Error in "'+fFormatCtx^.filename+'"', 'UAudioDecoder_FFmpeg');
-            {$ELSE}
             Log.LogError('Seek Error in "'+fFormatCtx^.url+'"', 'UAudioDecoder_FFmpeg');
-            {$ENDIF}
           end
           else
           begin
@@ -975,18 +861,10 @@ begin
       if (av_read_frame(fFormatCtx, Packet) < 0) then
       begin
         // failed to read a frame, check reason
-        {$IF (LIBAVFORMAT_VERSION_MAJOR >= 52)}
         ByteIOCtx := fFormatCtx^.pb;
-        {$ELSE}
-        ByteIOCtx := @fFormatCtx^.pb;
-        {$IFEND}
 
         // check for end-of-file (eof is not an error)
-        {$IF (LIBAVFORMAT_VERSION_MAJOR < 56)}
-        if (url_feof(ByteIOCtx) <> 0) then
-        {$ELSE}
         if (avio_feof(ByteIOCtx) <> 0) then
-        {$IFEND}
         begin
           SDL_LockMutex(fStateLock);
           if (GetLoopInternal()) then
@@ -1006,11 +884,7 @@ begin
         end;
 
         // check for errors
-        {$IF (LIBAVFORMAT_VERSION >= 52103000)}
         urlError := ByteIOCtx^.error;
-        {$ELSE}
-        urlError := url_ferror(ByteIOCtx);
-        {$IFEND}
         if (urlError <> 0) then
         begin
           // an error occured -> abort and wait for repositioning or termination
@@ -1020,11 +894,7 @@ begin
 
         // url_feof() does not detect an EOF for some files
         // so we have to do it this way.
-        {$IF (LIBAVFORMAT_VERSION >= 53009000)}
         fileSize := avio_size(fFormatCtx^.pb);
-        {$ELSE}
-        fileSize := fFormatCtx^.file_size;
-        {$IFEND}
         if ((fileSize <> 0) and (ByteIOCtx^.pos >= fileSize)) then
         begin
           fPacketQueue.PutStatus(PKT_STATUS_FLAG_EOF, nil);
@@ -1109,11 +979,7 @@ begin
     try
       {$IF LIBAVFORMAT_VERSION < 59000000}
       avcodec_close(fCodecCtx);
-      {$IF LIBAVCODEC_VERSION >= 53005000}
       avcodec_open2(fCodecCtx, fCodec, nil);
-      {$ELSE}
-      avcodec_open(fCodecCtx, fCodec);
-      {$IFEND}
       {$ELSE}
       NewCtx := FFmpegCore.GetCodecContext(fAudioStream, fCodec);
       if NewCtx <> nil then
@@ -1137,12 +1003,7 @@ var
   DataSize: integer;         // size of output data decoded by FFmpeg
   BlockQueue: boolean;
   SilenceDuration: double;
-  {$IF (LIBAVCODEC_VERSION >= 52122000) and (LIBAVCODEC_VERSION < 57037100)}
-  AVPacket: TAVPacket;
-  {$IFEND}
-  {$IFDEF UseFrameDecoderAPI}
   got_frame_ptr: integer;
-  {$IFEND}
   {$IFDEF DebugFFmpegDecode}
   TmpPos: double;
   {$ENDIF}
@@ -1154,9 +1015,6 @@ begin
 
   while(true) do
   begin
-    {$IF (LIBAVCODEC_VERSION >= 52122000) and (LIBAVCODEC_VERSION < 57037100)}
-    AVPacket := fAudioPaket;
-    {$IFEND}
 
     // for titles with start_time > 0 we have to generate silence
     // until we reach the pts of the first data packet.
@@ -1174,23 +1032,13 @@ begin
     while (fAudioPaketSize > 0) do
     begin
       DataSize := AUDIO_BUFFER_SIZE;
-      {$IF (LIBAVCODEC_VERSION >= 52122000) and (LIBAVCODEC_VERSION < 57037100)}
-      AVPacket.data := fAudioPaketData;
-      AVPacket.size := fAudioPaketSize;
-      {$IFEND}
 
-      {$IFDEF UseFrameDecoderAPI}
-        {$IF LIBAVCODEC_VERSION >= 57037100}
       got_frame_ptr := avcodec_receive_frame(fCodecCtx, fAudioBufferFrame);
       if (got_frame_ptr = AVERROR(EAGAIN)) then
         PaketDecodedSize := fAudioPaketSize
       else
         PaketDecodedSize := 0;
       got_frame_ptr := ord(got_frame_ptr = 0);
-        {$ELSE}
-      PaketDecodedSize := avcodec_decode_audio4(fCodecCtx, fAudioBufferFrame,
-            @got_frame_ptr, @AVPacket);
-        {$IFEND}
       if(got_frame_ptr <> 0) then
       begin
         DataSize := fAudioBufferFrame.nb_samples * fBytesPerSample;
@@ -1198,18 +1046,6 @@ begin
       end
       else
         DataSize := 0;
-      {$ELSE}
-        {$IF LIBAVCODEC_VERSION >= 52122000} // 52.122.0
-      PaketDecodedSize := avcodec_decode_audio3(fCodecCtx, PSmallint(fAudioBuffer),
-                  DataSize, @AVPacket);
-        {$ELSEIF LIBAVCODEC_VERSION >= 51030000} // 51.30.0
-      PaketDecodedSize := avcodec_decode_audio2(fCodecCtx, PSmallint(fAudioBuffer),
-                  DataSize, fAudioPaketData, fAudioPaketSize);
-        {$ELSE}
-      PaketDecodedSize := avcodec_decode_audio(fCodecCtx, PSmallint(fAudioBuffer),
-                  DataSize, fAudioPaketData, fAudioPaketSize);
-        {$IFEND}
-      {$IFEND}
 
       if(PaketDecodedSize < 0) then
       begin
@@ -1221,7 +1057,6 @@ begin
         Break;
       end;
 
-      Inc(PByte(fAudioPaketData), PaketDecodedSize);
       Dec(fAudioPaketSize, PaketDecodedSize);
 
       // check if avcodec_decode_audio returned data, otherwise fetch more frames
@@ -1262,7 +1097,6 @@ begin
       {$IF (LIBAVFORMAT_VERSION < 59000000)}
       fAudioPaket.data := nil;
       {$ENDIF}
-      fAudioPaketData := nil;
       fAudioPaketSize := 0;
 
       case (fAudioPaket.flags) of
@@ -1300,12 +1134,9 @@ begin
       Continue;
     end;
 
-    fAudioPaketData := fAudioPaket.data;
     fAudioPaketSize := fAudioPaket.size;
 
-    {$IF LIBAVCODEC_VERSION >= 57037100}
     avcodec_send_packet(fCodecCtx, @fAudioPaket);
-    {$IFEND}
 
     // if available, update the stream position to the presentation time of this package
     if(fAudioPaket.pts <> AV_NOPTS_VALUE) then
@@ -1354,13 +1185,11 @@ begin
   // set number of bytes to copy to the output buffer
   BufferPos := 0;
 
-  {$IFDEF ConvertPlanar}
   if (fSwrContext <> nil) then
   begin
     RemainByteCount := BufferSize mod fBytesPerSample;
     BufferSize := BufferSize - RemainByteCount;
   end;
-  {$IFEND}
 
   LockDecoder();
   try
@@ -1369,7 +1198,6 @@ begin
       Exit;
 
     BufferPtr := nil;
-    {$IFDEF ConvertPlanar}
     if ((fSwrContext <> nil) and (fAudioBufferSize > 0)) then
     begin
       BufferPtr := @Buffer[0];
@@ -1380,7 +1208,6 @@ begin
       BufferPos := BufferPos * fBytesPerSample;
       Inc(fAudioBufferPos, BufferPos);
     end;
-    {$IFEND}
 
     // copy data to output buffer
     while (BufferPos < BufferSize) do
@@ -1403,7 +1230,6 @@ begin
 
       RemainByteCount := BufferSize - BufferPos;
 
-      {$IFDEF ConvertPlanar}
       if (fSwrContext <> nil) then
       begin
         BufferPtr := @Buffer[BufferPos];
@@ -1417,7 +1243,6 @@ begin
         Inc(fAudioBufferPos, CopyByteCount);
         continue;
       end;
-      {$IFEND}
 
       // calc number of new bytes in the decode-buffer
       CopyByteCount := fAudioBufferSize - fAudioBufferPos;
@@ -1449,9 +1274,6 @@ function TAudioDecoder_FFmpeg.InitializeDecoder: boolean;
 begin
   //Log.LogStatus('InitializeDecoder', 'UAudioDecoder_FFmpeg');
   FFmpegCore := TMediaCore_FFmpeg.GetInstance();
-  {$IF LIBAVFORMAT_VERSION < 58027100}
-  av_register_all();
-  {$ENDIF}
 
   // Do not show uninformative error messages by default.
   // FFmpeg prints all error-infos on the console by default what
@@ -1460,12 +1282,7 @@ begin
   // by the FFmpeg guys only and do not provide any useful information in
   // respect to USDX.
   {$IFNDEF EnableFFmpegErrorOutput}
-    {$IF LIBAVUTIL_VERSION_MAJOR >= 50}
     av_log_set_level(AV_LOG_FATAL);
-    {$ELSE}
-    // FATAL and ERROR share one log-level, so we have to use QUIET
-    av_log_set_level(AV_LOG_QUIET);
-    {$IFEND}
   {$ENDIF}
 
   Result := true;

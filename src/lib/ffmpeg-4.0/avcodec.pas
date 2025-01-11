@@ -67,7 +67,7 @@ type
     size: cint;
     stream_index: cint;
     flags: cint;
-    we_do_not_use_side_data: pointer;
+    side_data: pointer;
     we_do_not_use_side_data_elems: cint;
     we_do_not_use_duration: cint64;
     we_do_not_use_pos: cint64;

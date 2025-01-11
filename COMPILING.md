@@ -3,7 +3,7 @@
 If you want to help the project by coding patches, we suggest you to use the [Lazarus 1.6](http://www.lazarus-ide.org/) or newer integrated development environment.
 For linking and running the game, the following libraries are also required:
 - SDL2, SDL2_image
-- FFmpeg 7.0 or older
+- FFmpeg 4.0-7.1
 - SQLite 3
 - [BASS](http://www.un4seen.com/bass.html)
 - some fonts like DejaVu
@@ -27,7 +27,7 @@ Prebuilt DLLs for SDL2, SDL2_image, FFmpeg, SQLite, PortAudio, and Lua can be fo
 ### Install prequisites
 #### Linux/BSD
 Required libraries:
-- Debian/Ubuntu: `git automake make gcc fpc libsdl2-image-dev libavformat-dev libswscale-dev libsqlite3-dev libfreetype6-dev portaudio19-dev libportmidi-dev liblua5.3-dev libopencv-videoio-dev fonts-dejavu`
+- Debian/Ubuntu: `git automake make gcc fpc libsdl2-image-dev libavformat-dev libavcodec-dev libavutil-dev libswresample-dev libswscale-dev libsqlite3-dev libfreetype6-dev portaudio19-dev libportmidi-dev liblua5.3-dev libopencv-videoio-dev fonts-dejavu`
 - Fedora: `git automake make gcc fpc SDL2_image-devel ffmpeg-devel sqlite-devel freetype-devel portaudio-devel portmidi-devel lua-devel opencv-devel`
 - Archlinux: see the dependencies in the [ultrastardx-git](https://aur.archlinux.org/packages/ultrastardx-git) AUR package
 

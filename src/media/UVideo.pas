@@ -55,9 +55,7 @@ uses
   avutil,
   avio,
   rational,
-  {$IFDEF UseSWScale}
   swscale,
-  {$ENDIF}
   dglOpenGL,
   StrUtils,
   UMediaCore_FFmpeg,
@@ -70,25 +68,23 @@ uses
   UGraphic,
   UPath;
 
-{$IFDEF UseSWScale}
-  {$IF DEFINED(cpui386) OR DEFINED(cpux86_64)}
-    {$IF LIBSWSCALE_VERSION < 0009000}
-      // use BGR-format for accelerated colorspace conversion with swscale
-      // RGB asm was added with 23b0072ad71941c0cf67398b511dfca8ef9b23d8
-      {$DEFINE PIXEL_FMT_BGR}
-    {$ENDIF}
-  {$ELSEIF DEFINED(cpuarm)}
-    {$IF FFMPEG_VERSION_INT >= 3000000}
-      // RGBA asm was added with b32a42295ad7b254f9662082d799c0aae2071c2e
-      // There are no RGB/BGR asm routines yet
-      {$DEFINE PIXEL_FMT_32BITS}
-    {$ENDIF}
-  {$ELSEIF DEFINED(cpuaarch64)}
-    {$IF LIBSWSCALE_VERSION >= 4001100}
-      // RGBA asm was added with f1148390d7ed0444f3204d10277d09cc8d034e65
-      // There are no RGB/BGR asm routines yet
-      {$DEFINE PIXEL_FMT_32BITS}
-    {$ENDIF}
+{$IF DEFINED(cpui386) OR DEFINED(cpux86_64)}
+  {$IF LIBSWSCALE_VERSION < 0009000}
+    // use BGR-format for accelerated colorspace conversion with swscale
+    // RGB asm was added with 23b0072ad71941c0cf67398b511dfca8ef9b23d8
+    {$DEFINE PIXEL_FMT_BGR}
+  {$ENDIF}
+{$ELSEIF DEFINED(cpuarm)}
+  {$IF FFMPEG_VERSION_INT >= 3000000}
+    // RGBA asm was added with b32a42295ad7b254f9662082d799c0aae2071c2e
+    // There are no RGB/BGR asm routines yet
+    {$DEFINE PIXEL_FMT_32BITS}
+  {$ENDIF}
+{$ELSEIF DEFINED(cpuaarch64)}
+  {$IF LIBSWSCALE_VERSION >= 4001100}
+    // RGBA asm was added with f1148390d7ed0444f3204d10277d09cc8d034e65
+    // There are no RGB/BGR asm routines yet
+    {$DEFINE PIXEL_FMT_32BITS}
   {$ENDIF}
 {$ENDIF}
 
@@ -100,35 +96,19 @@ const
   PIXEL_FMT_SIZE   = 4;
   {$IFDEF PIXEL_FMT_BGR}
   PIXEL_FMT_OPENGL = GL_BGRA;
-    {$IF FFMPEG_VERSION_INT < 1001000}
-  PIXEL_FMT_FFMPEG = PIX_FMT_BGRA;
-    {$ELSE}
   PIXEL_FMT_FFMPEG = AV_PIX_FMT_BGRA;
-    {$ENDIF}
   {$ELSE}
   PIXEL_FMT_OPENGL = GL_RGBA;
-    {$IF FFMPEG_VERSION_INT < 1001000}
-  PIXEL_FMT_FFMPEG = PIX_FMT_RGBA;
-    {$ELSE}
   PIXEL_FMT_FFMPEG = AV_PIX_FMT_RGBA;
-    {$ENDIF}
   {$ENDIF}
 {$ELSE}
   PIXEL_FMT_SIZE   = 3;
   {$IFDEF PIXEL_FMT_BGR}
   PIXEL_FMT_OPENGL = GL_BGR;
-    {$IF FFMPEG_VERSION_INT < 1001000}
-  PIXEL_FMT_FFMPEG = PIX_FMT_BGR24;
-    {$ELSE}
   PIXEL_FMT_FFMPEG = AV_PIX_FMT_BGR24;
-    {$ENDIF}
   {$ELSE}
   PIXEL_FMT_OPENGL = GL_RGB;
-    {$IF FFMPEG_VERSION_INT < 1001000}
-  PIXEL_FMT_FFMPEG = PIX_FMT_RGB24;
-    {$ELSE}
   PIXEL_FMT_FFMPEG = AV_PIX_FMT_RGB24;
-    {$ENDIF}
   {$ENDIF}
 {$ENDIF}
 
@@ -158,18 +138,11 @@ type
     fAVFrame:     PAVFrame;
     fAVFrameRGB:  PAVFrame;
 
-    {$IF LIBAVCODEC_VERSION < 59000000}
-    fFrameBuffer: Pcuint8;  //**< stores a FFmpeg video frame
-    {$ENDIF}
     fFrameTex:    GLuint; //**< OpenGL texture for FrameBuffer
     fFrameTexValid: boolean; //**< if true, fFrameTex contains the current frame
     fTexWidth, fTexHeight: cardinal;
     fScaledWidth, fScaledHeight: cardinal;
-
-    {$IFDEF UseSWScale}
     fSwScaleContext: PSwsContext;
-    {$ENDIF}
-
     fScreen:          integer; //actual screen to draw on
 
     fPosX:    double;
@@ -276,39 +249,9 @@ var
   PreferredCodecs: array of PAVCodec;
   PreferredCodecsParsed: boolean = false;
 
-
-{$IF LIBAVCODEC_VERSION < 51068000}
-// These are called whenever we allocate a frame buffer.
-// We use this to store the global_pts in a frame at the time it is allocated.
-function PtsGetBuffer(CodecCtx: PAVCodecContext; Frame: PAVFrame): integer; cdecl;
-var
-  pts: Pint64;
-  VideoPktPts: Pint64;
-begin
-  Result := avcodec_default_get_buffer(CodecCtx, Frame);
-  VideoPktPts := CodecCtx^.opaque;
-  if (VideoPktPts <> nil) then
-  begin
-    // Note: we must copy the pts instead of passing a pointer, because the packet
-    // (and with it the pts) might change before a frame is returned by av_decode_video.
-    pts := av_malloc(sizeof(int64));
-    pts^ := VideoPktPts^;
-    Frame^.opaque := pts;
-  end;
-end;
-
-procedure PtsReleaseBuffer(CodecCtx: PAVCodecContext; Frame: PAVFrame); cdecl;
-begin
-  if (Frame <> nil) then
-    av_freep(@Frame^.opaque);
-  avcodec_default_release_buffer(CodecCtx, Frame);
-end;
-{$ENDIF}
-
 function IsSupportedScalingInput(Fmt: TAVPixelFormat): boolean;
 begin
   Result := false;
-{$IFDEF UseSWScale}
   {$IF LIBSWSCALE_VERSION >= 8000}
   if sws_isSupportedInput(Fmt) > 0 then
     Result := true;
@@ -335,43 +278,8 @@ begin
     Result := true;
   end;
   {$ENDIF}
-{$ELSE}
-  {$IF LIBAVCODEC_VERSION > 4006}
-  {$IF LIBAVCODEC_VERSION >= 51045000}
-  PIX_FMT_YUVA420P,
-  {$ENDIF}
-  {$IF LIBAVCODEC_VERSION >= 51041000}
-  PIX_FMT_YUV440P, PIX_FMT_YUVJ440P,
-  {$ENDIF}
-  {$IF LIBAVCODEC_VERSION >= 51022000}
-  PIX_FMT_GRAY16BE, PIX_FMT_GRAY16LE,
-  {$ENDIF}
-  {$IF LIBAVCODEC_VERSION >= 49000000}
-  PIX_FMT_UYVY411, PIX_FMT_UYVY422,
-  {$ENDIF}
-  PIX_FMT_YUV420P, PIX_FMT_YUVJ420P,
-  PIX_FMT_YUV422, PIX_FMT_YUV422P, PIX_FMT_YUVJ422P,
-  PIX_FMT_YUV410P, PIX_FMT_YUV411P,
-  PIX_FMT_YUV444P, PIX_FMT_YUVJ444P,
-  PIX_FMT_GRAY8, PIX_FMT_MONOWHITE, PIX_FMT_MONOBLACK,
-  PIX_FMT_RGBA32, PIX_FMT_RGB24, PIX_FMT_BGR24,
-  PIX_FMT_RGB555, PIX_FMT_RGB565, PIX_FMT_PAL8:
-    Result := true;
-  {$ELSE}
-  PIX_FMT_YUV420P:
-    case PIXEL_FMT_FFMPEG of
-    PIX_FMT_RGB24, PIX_FMT_RGBA32, PIX_FMT_BGRA32:
-      Result := true
-    end;
-  PIX_FMT_YUV422P:
-    Result := (PIXEL_FMT_FFMPEG = PIX_FMT_RGB24);
-  PIXEL_FMT_FFMPEG:
-    Result := true
-  {$ENDIF}
-{$ENDIF}
 end;
 
-{$IF LIBAVCODEC_VERSION >= 4008}
 function SelectFormat(CodecCtx: PAVCodecContext; Formats: PAVPixelFormat): TAVPixelFormat; cdecl;
 begin
   while ord(Formats^) <> -1 do
@@ -382,7 +290,6 @@ begin
   end;
   Result := Formats^;
 end;
-{$ENDIF}
 
 function IsCodecUsable(Codec: PAVCodec): boolean;
 var
@@ -393,11 +300,7 @@ begin
     Result := false;
 
   if Result and (
-     {$IF LIBAVCODEC_VERSION >= 54007000}
      av_codec_is_decoder(Codec) = 0
-     {$ELSE}
-     Codec^.decode = nil
-     {$IFEND}
      ) then
     Result := false;
 
@@ -424,15 +327,12 @@ var
   NumCodecs: integer;
   ListCodecs: boolean;
   CodecName: ansistring;
-{$IF LIBAVCODEC_VERSION >= 54052100}
   FormatDesc: PAVCodecDescriptor;
-{$ENDIF}
   FormatName: PAnsiChar;
   Codec: PAVCodec;
   Codec2: PAVCodec;
-{$IF LIBAVCODEC_VERSION >= 58009100}
   CodecIterator: pointer;
-{$IFEND}
+
 const
   CodecDelims = [' ', ','];
 begin
@@ -464,14 +364,8 @@ begin
   if ListCodecs then
   begin
     Log.LogInfo('Valid non-default codecs are:', 'TVideo_FFmpeg');
-    {$IF LIBAVCODEC_VERSION >= 58009100}
     CodecIterator := nil;
     Codec := av_codec_iterate(@CodecIterator);
-    {$ELSEIF LIBAVCODEC_VERSION >= 51049000}
-    Codec := av_codec_next(nil);
-    {$ELSE}
-    Codec := first_avcodec;
-    {$IFEND}
 
     while Codec <> nil do
     begin
@@ -481,7 +375,6 @@ begin
         if strcomp(Codec2^.name, Codec^.name) <> 0 then
         begin
             FormatName := nil;
-            {$IF LIBAVCODEC_VERSION >= 54052100}
             FormatDesc := avcodec_descriptor_get(Codec^.id);
             if FormatDesc <> nil then
             begin
@@ -489,20 +382,13 @@ begin
               if FormatName = nil then
                 FormatName := FormatDesc^.name;
             end;
-            {$ENDIF}
             if FormatName <> nil then
               Log.LogInfo('    ' + Codec^.name, FormatName)
             else
               Log.LogInfo('    ' + Codec^.name, 'ID ' + inttostr(ord(Codec^.id)));
         end;
       end;
-      {$IF LIBAVCODEC_VERSION >= 58009100}
       Codec := av_codec_iterate(@CodecIterator);
-      {$ELSEIF LIBAVCODEC_VERSION >= 51049000}
-      Codec := av_codec_next(Codec);
-      {$ELSE}
-      Codec := Codec^.next;
-      {$IFEND}
     end;
   end;
   PreferredCodecsParsed := true;
@@ -528,9 +414,6 @@ begin
 
   FFmpegCore := TMediaCore_FFmpeg.GetInstance();
 
-  {$IF LIBAVFORMAT_VERSION < 58027100}
-  av_register_all();
-  {$ENDIF}
 end;
 
 function TVideoPlayback_FFmpeg.Finalize(): boolean;
@@ -580,7 +463,6 @@ var
     tex, scale: ^cardinal;
   begin
     Result := false;
-{$IFDEF UseSWScale}
     if fTexWidth >= fAspect * fTexHeight then
     begin
       tex := @fTexWidth;
@@ -597,7 +479,6 @@ var
       scale^ := tex^;
       Result := true;
     end;
-{$ENDIF}
   end;
 
 begin
@@ -612,13 +493,7 @@ begin
   fPboEnabled := PboSupported;
 
   // use custom 'ufile' protocol for UTF-8 support
-  {$IF LIBAVFORMAT_VERSION < 53001003}
-  errnum := av_open_input_file(fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8), nil, 0, nil);
-  {$ELSEIF LIBAVFORMAT_VERSION < 54029104}
-  errnum := avformat_open_input(@fFormatContext, PAnsiChar('ufile:'+FileName.ToUTF8), nil, nil);
-  {$ELSE}
   errnum := FFmpegCore.AVFormatOpenInput(@fFormatContext, PAnsiChar(UTF8ToAnsi(FileName.ToUTF8)));//'ufile:'+FileName.ToUTF8));
-  {$IFEND}
   if (errnum <> 0) then
   begin
     Log.LogError('Failed to open file "'+ FileName.ToNative +'" ('+FFmpegCore.GetErrorString(errnum)+'::'+IntToStr(errnum)+')');
@@ -626,11 +501,7 @@ begin
   end;
 
   // update video info
-  {$IF LIBAVFORMAT_VERSION >= 53002000)}
   errnum := avformat_find_stream_info(fFormatContext, nil);
-  {$ELSE}
-  errnum := av_find_stream_info(fFormatContext);
-  {$IFEND}
   if (errnum < 0) then
   begin
     Log.LogError('No stream info found', 'TVideoPlayback_ffmpeg.Open');
@@ -648,11 +519,7 @@ begin
   end;
   Log.LogInfo('VideoStreamIndex : ' + inttostr(fStreamIndex), 'TVideoPlayback_ffmpeg.Open');
 
-{$IF LIBAVFORMAT_VERSION <= 52111000} // <= 52.111.0
-  fStream := fFormatContext^.streams[fStreamIndex];
-{$ELSE}
   fStream := PPAVStream(PtrUInt(fFormatContext^.streams) + fStreamIndex * Sizeof(pointer))^;
-{$IFEND}
 {$IF LIBAVFORMAT_VERSION < 59000000}
   CodecID := fStream^.codec^.codec_id;
 {$ELSE}
@@ -683,14 +550,9 @@ begin
     if fCodecContext = nil then
       continue;
 
-    {$IF LIBAVCODEC_VERSION >= 4008}
     fCodecContext^.get_format := @SelectFormat;
-    {$ENDIF}
 
     // set debug options
-    {$IF LIBAVCODEC_VERSION < 58000000}
-    fCodecContext^.debug_mv := 0;
-    {$ENDIF}
     fCodecContext^.debug := 0;
 
     // detect bug-workarounds automatically
@@ -705,16 +567,10 @@ begin
     // fail if called concurrently by different threads.
     FFmpegCore.LockAVCodec();
     try
-        {$IF LIBAVCODEC_VERSION >= 54023000}
         // by setting this explicitly to 0, it won't default to a single thread
         fCodecContext^.thread_count := 0;
-        {$IFEND}
 
-        {$IF LIBAVCODEC_VERSION >= 53005000}
         errnum := avcodec_open2(fCodecContext, fCodec, nil);
-        {$ELSE}
-        errnum := avcodec_open(fCodecContext, fCodec);
-        {$IFEND}
     finally
       FFmpegCore.UnlockAVCodec();
     end;
@@ -733,12 +589,6 @@ begin
   end
   else
     Log.LogInfo('Using ' + fCodec^.name + ' codec', 'TVideoPlayback_ffmpeg.Open');
-
-  // register custom callbacks for pts-determination
-  {$IF LIBAVCODEC_VERSION < 51068000}
-    fCodecContext^.get_buffer := PtsGetBuffer;
-    fCodecContext^.release_buffer := PtsReleaseBuffer;
-  {$IFEND}
 
   {$ifdef DebugDisplay}
   DebugWriteln('Found a matching Codec: '+ fCodecContext^.Codec.Name + sLineBreak +
@@ -760,11 +610,7 @@ begin
     fAspect := fAspect * fCodecContext^.width /
                          fCodecContext^.height;
 
-  {$IF (LIBAVFORMAT_VERSION_MAJOR >= 55) and (LIBAVFORMAT_VERSION_MAJOR < 59)}
-  r_frame_rate := av_q2d(av_stream_get_r_frame_rate(fStream));
-  {$ELSE}
   r_frame_rate := av_q2d(fStream^.r_frame_rate);
-  {$ENDIF}
 
   fFrameDuration := 1/r_frame_rate;
 
@@ -813,33 +659,8 @@ begin
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
   // allocate space for decoded frame and rgb frame
-  {$IF LIBAVCODEC_VERSION >= 57000000}
   fAVFrame := av_frame_alloc();
   fAVFrameRGB := av_frame_alloc();
-  {$ELSE}
-  fAVFrame := avcodec_alloc_frame();
-  fAVFrameRGB := avcodec_alloc_frame();
-  {$ENDIF}
-  {$IF LIBAVCODEC_VERSION < 59000000}
-  fFrameBuffer := av_malloc(avpicture_get_size(PIXEL_FMT_FFMPEG,
-      (fScaledWidth + BUFFER_ALIGN - 1) and -BUFFER_ALIGN, fScaledHeight));
-
-  if ((fAVFrame = nil) or (fAVFrameRGB = nil) or (fFrameBuffer = nil)) then
-  begin
-    Log.LogError('Failed to allocate buffers', 'TVideoPlayback_ffmpeg.Open');
-    Close();
-    Exit;
-  end;
-
-  errnum := avpicture_fill(PAVPicture(fAVFrameRGB), fFrameBuffer, PIXEL_FMT_FFMPEG,
-      (fScaledWidth + BUFFER_ALIGN - 1) and -BUFFER_ALIGN, fScaledHeight);
-  if (errnum < 0) then
-  begin
-    Log.LogError('avpicture_fill failed: ' + FFmpegCore.GetErrorString(errnum), 'TVideoPlayback_ffmpeg.Open');
-    Close();
-    Exit;
-  end;
-  {$ELSE}
   if ((fAVFrame = nil) or (fAVFrameRGB = nil)) then
   begin
     Log.LogError('Failed to allocate buffers', 'TVideoPlayback_ffmpeg.Open');
@@ -856,9 +677,7 @@ begin
     Close();
     Exit;
   end;
-  {$ENDIF}
 
-  {$IFDEF UseSWScale}
   // if available get a SWScale-context -> faster than the deprecated img_convert().
   // SWScale has accelerated support for PIX_FMT_RGB32/PIX_FMT_BGR24/PIX_FMT_BGR565/PIX_FMT_BGR555.
   // Note: PIX_FMT_RGB32 is a BGR- and not an RGB-format (maybe a bug)!!!
@@ -877,7 +696,6 @@ begin
     Close();
     Exit;
   end;
-  {$ENDIF}
 
   if (fPboEnabled) then
   begin
@@ -944,18 +762,10 @@ end;
 
 procedure TVideo_FFmpeg.Close;
 begin
-  {$IF LIBAVCODEC_VERSION < 59000000}
-  av_freep(@fFrameBuffer);
-  {$ELSE}
   if assigned(fAVFrameRGB) then
     av_freep(@fAVFrameRGB^.data[0]);
-  {$ENDIF}
   av_freep(@fAVFrameRGB);
-  {$IF LIBAVCODEC_VERSION >= 57037100}
   av_frame_free(@fAVFrame);
-  {$ELSE}
-  av_freep(@fAVFrame);
-  {$ENDIF}
 
   if (fCodecContext <> nil) then
   begin
@@ -973,22 +783,14 @@ begin
   end;
 
   if (fFormatContext <> nil) then
-    {$IF LIBAVFORMAT_VERSION < 53024002)}
-    av_close_input_file(fFormatContext);
-    {$ELSEIF LIBAVFORMAT_VERSION < 54029104}
-    avformat_close_input(@fFormatContext);
-    {$ELSE}
     FFmpegCore.AVFormatCloseInput(@fFormatContext);
-    {$IFEND}
 
   {$IF LIBAVFORMAT_VERSION < 59000000)}
   fCodecContext  := nil;
   {$ENDIF}
   fFormatContext := nil;
 
-  {$IFDEF UseSWScale}
   sws_freeContext(fSwScaleContext);
-  {$ENDIF}
 
   if (fPboId <> 0) then
     glDeleteBuffersARB(1, @fPboId);
@@ -1007,17 +809,10 @@ begin
     fFrameTime := pts;
   end;
   // update the video clock
-  {$IF LIBAVCODEC_VERSION < 56005000}
-  FrameDelay := av_q2d(fCodecContext^.time_base);
-  {$IF LIBAVCODEC_VERSION >= 52020000}
-  FrameDelay := FrameDelay * fCodecContext^.ticks_per_frame;
-  {$ENDIF}
-  {$ELSE}
   if fCodecContext^.framerate.num = 0 then
     FrameDelay := 0.04
   else
     FrameDelay := av_q2d(av_inv_q(fCodecContext^.framerate));
-  {$ENDIF}
   // if we are repeating a frame, adjust clock accordingly
   FrameDelay := FrameDelay + Frame^.repeat_pict * (FrameDelay * 0.5);
   fNextFrameTime := fFrameTime + FrameDelay;
@@ -1033,14 +828,7 @@ end;
 function TVideo_FFmpeg.DecodeFrame(): boolean;
 var
   FrameFinished: Integer;
-  {$IF LIBAVCODEC_VERSION < 51068000}
-  VideoPktPts: int64;
-  {$ENDIF}
-  {$IF FFMPEG_VERSION_INT < 1001000}
-  pbIOCtx: PByteIOContext;
-  {$ELSE}
   pbIOCtx: PAVIOContext;
-  {$ENDIF}
   errnum: integer;
   AVPacket: TAVPacket;
   pts: int64;
@@ -1057,7 +845,6 @@ begin
   // read packets until we have a finished frame (or there are no more packets)
   while (FrameFinished = 0) do
   begin
-    {$IF LIBAVCODEC_VERSION >= 57037100}
     errnum := avcodec_receive_frame(fCodecContext, fAVFrame);
     if errnum = 0 then
       Break;
@@ -1068,41 +855,23 @@ begin
     end;
     if errnum <> AVERROR(EAGAIN) then
       Continue;
-    {$ENDIF}
 
     errnum := av_read_frame(fFormatContext, AVPacket);
     if (errnum < 0) then
     begin
       // failed to read a frame, check reason
 
-      {$IF (LIBAVFORMAT_VERSION_MAJOR >= 52)}
       pbIOCtx := fFormatContext^.pb;
-      {$ELSE}
-      pbIOCtx := @fFormatContext^.pb;
-      {$IFEND}
 
       // check for end-of-file (EOF is not an error)
-      {$IF (LIBAVFORMAT_VERSION_MAJOR < 56)}
-      if (url_feof(pbIOCtx) <> 0) then
-      {$ELSE}
       if (avio_feof(pbIOCtx) <> 0) then
-      {$IFEND}
       begin
-        {$IF LIBAVCODEC_VERSION < 57037100}
-        fEOF := true;
-        Exit;
-        {$ELSE}
         avcodec_send_packet(fCodecContext, nil);
         Continue;
-        {$ENDIF}
       end;
 
       // check for errors
-      {$IF (LIBAVFORMAT_VERSION >= 52103000)}
       urlError := pbIOCtx^.error;
-      {$ELSE}
-      urlError := url_ferror(pbIOCtx);
-      {$IFEND}
       if (urlError <> 0) then
       begin
         Log.LogError('Video decoding file error', 'TVideoPlayback_FFmpeg.DecodeFrame');
@@ -1111,21 +880,12 @@ begin
 
       // url_feof() does not detect an EOF for some mov-files (e.g. deluxe.mov)
       // so we have to do it this way.
-      {$IF (LIBAVFORMAT_VERSION >= 53009000)}
       fileSize := avio_size(fFormatContext^.pb);
-      {$ELSE}
-      fileSize := fFormatContext^.file_size;
-      {$IFEND}
       if (((fileSize <> 0) and (pbIOCtx^.pos >= fileSize))
           or (errnum = AVERROR_EOF)) then // LIBAVFORMAT_VERSION >= 56000000 tells us if EOF reached.
       begin
-        {$IF LIBAVCODEC_VERSION < 57037100}
-        fEOF := true;
-        Exit;
-        {$ELSE}
         avcodec_send_packet(fCodecContext, nil);
         Continue;
-        {$ENDIF}
       end;
 
       // error occured, log and exit
@@ -1136,28 +896,10 @@ begin
     // if we got a packet from the video stream, then decode it
     if (AVPacket.stream_index = fStreamIndex) then
     begin
-      {$IF LIBAVCODEC_VERSION < 51068000}
-      // save pts to be stored in pFrame in first call of PtsGetBuffer()
-      VideoPktPts := AVPacket.pts;
-      fCodecContext^.opaque := @VideoPktPts;
-      {$ELSEIF LIBAVCODEC_VERSION < 51105000}
-      fCodecContext^.reordered_opaque := AVPacket.pts;
-      {$IFEND}
 
       // decode packet
-      {$IF LIBAVFORMAT_VERSION < 52012200)}
-      avcodec_decode_video(fCodecContext, fAVFrame,
-          frameFinished, AVPacket.data, AVPacket.size);
-      {$ELSEIF LIBAVCODEC_VERSION < 57037100}
-      avcodec_decode_video2(fCodecContext, fAVFrame,
-          frameFinished, @AVPacket);
-      {$ELSE}
       avcodec_send_packet(fCodecContext, @AVPacket);
-      {$IFEND}
 
-      {$IF LIBAVCODEC_VERSION < 51106000}
-      dts := AVPacket.dts
-      {$IFEND}
     end;
 
     // free the packet from av_read_frame
@@ -1169,24 +911,8 @@ begin
   end;
 
   // reset opaque data and update pts
-  {$IF LIBAVCODEC_VERSION < 51068000}
-  fCodecContext^.opaque := nil;
-  if fAVFrame^.opaque <> nil then
-    pts := Pint64(fAVFrame^.opaque)^
-  else
-    pts := AV_NOPTS_VALUE;
-  {$ELSEIF LIBAVCODEC_VERSION < 51105000}
-  fCodecContext^.reordered_opaque := AV_NOPTS_VALUE;
-  pts := fAVFrame^.reordered_opaque;
-  {$ELSEIF LIBAVCODEC_VERSION < 57061100}
-  pts := fAVFrame^.pkt_pts;
-  {$ELSE}
   pts := fAVFrame^.pts;
-  {$IFEND}
-
-  {$IF LIBAVCODEC_VERSION >= 51106000}
   dts := fAVFrame^.pkt_dts;
-  {$IFEND}
 
   if (pts = AV_NOPTS_VALUE) or (fPreferDTS and (dts <> AV_NOPTS_VALUE)) then
     pts := dts;
@@ -1323,7 +1049,6 @@ begin
   //end;
 
   // otherwise we convert the pixeldata from YUV to RGB
-  {$IFDEF UseSWScale}
   try
 
   errnum := sws_scale(fSwScaleContext, @fAVFrame.data, @fAVFrame.linesize,
@@ -1332,17 +1057,6 @@ begin
   except
     ;
   end;
-  {$ELSE}
-  // img_convert from lib/ffmpeg/avcodec.pas is actually deprecated.
-  // If ./configure does not find SWScale then this gives the error
-  // that the identifier img_convert is not known or similar.
-  // I think this should be removed, but am not sure whether there should
-  // be some other replacement or a warning, Therefore, I leave it for now.
-  // April 2009, mischi
-  errnum := img_convert(PAVPicture(fAVFrameRGB), PIXEL_FMT_FFMPEG,
-            PAVPicture(fAVFrame), fCodecContext^.pix_fmt,
-            fCodecContext^.width, fCodecContext^.height);
-  {$ENDIF}
 
   if (errnum < 0) then
   begin

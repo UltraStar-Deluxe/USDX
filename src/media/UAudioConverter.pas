@@ -37,14 +37,10 @@ uses
   UMusic,
   ULog,
   ctypes,
-  {$IF Defined(UseFFmpegResample) OR Defined (USESWRESAMPLE)}
   avcodec,
   avutil,
   UMediaCore_FFmpeg,
-  {$ENDIF}
-  {$IFDEF USESWRESAMPLE}
   swresample,
-  {$ENDIF}
   UMediaCore_SDL,
   sdl2,
   SysUtils,
@@ -77,7 +73,6 @@ type
       function GetRatio(): double; override;
   end;
 
-  {$IFDEF USESWRESAMPLE}
   TAudioConverter_SWResample = class(TAudioConverter)
     private
       SwrContext: PSwrContext;
@@ -90,25 +85,6 @@ type
       function GetOutputBufferSize(InputSize: integer): integer; override;
       function GetRatio(): double; override;
   end;
-  {$ENDIF}
-
-  {$IFDEF UseFFmpegResample}
-  // Note: FFmpeg seems to be using "kaiser windowed sinc" for resampling, so
-  // the quality should be good.
-  TAudioConverter_FFmpeg = class(TAudioConverter)
-    private
-      // TODO: use SDL for multi-channel->stereo and format conversion
-      ResampleContext: PReSampleContext;
-      Ratio: double;
-    public
-      function Init(SrcFormatInfo: TAudioFormatInfo; DstFormatInfo: TAudioFormatInfo): boolean; override;
-      destructor Destroy(); override;
-
-      function Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray; var InputSize: integer): integer; override;
-      function GetOutputBufferSize(InputSize: integer): integer; override;
-      function GetRatio(): double; override;
-  end;
-  {$ENDIF}
 
 implementation
 
@@ -187,7 +163,6 @@ begin
   Result := cvt.len_cvt;
 end;
 
-{$IFDEF USESWRESAMPLE}
 {$IF LIBAVUTIL_VERSION >= 59000000}
 procedure SetDefaultChannelLayout(Ctx: PSwrContext; Option: PAnsiChar; Channels: cint);
 var
@@ -309,124 +284,5 @@ function TAudioConverter_SWResample.GetRatio(): double;
 begin
   Result := Ratio;
 end;
-
-{$ENDIF}
-
-{$IFDEF UseFFmpegResample}
-
-function TAudioConverter_FFmpeg.Init(SrcFormatInfo: TAudioFormatInfo;
-                                     DstFormatInfo: TAudioFormatInfo): boolean;
-var
-  SrcFormat: TAVSampleFormat;
-  DstFormat: TAVSampleFormat;
-begin
-  inherited Init(SrcFormatInfo, DstFormatInfo);
-
-  Result := false;
-
-  {$IF LIBAVCODEC_VERSION < 52015000} // 52.15.0
-  // Note: ffmpeg does not support resampling for more than 2 input channels
-
-  if srcFormatInfo.Format <> asfS16 then
-  begin
-    Log.LogError('Unsupported format', 'TAudioConverter_FFmpeg.Init');
-    Log.LogError('asfS16: ' + intToStr(integer(asfS16))
-		             + ' (should be 7)', 'TAudioConverter_FFmpeg.Init');
-    Log.LogError('srcFormatInfo.Format: ' + intToStr(integer(srcFormatInfo.Format))
-		             + ' (exit because <> asfS16)', 'TAudioConverter_FFmpeg.Init');
-    Exit;
-  end;
-
-  // TODO: use SDL here
-  if srcFormatInfo.Format <> dstFormatInfo.Format then
-  begin
-    Log.LogError('Incompatible formats', 'TAudioConverter_FFmpeg.Init');
-    Exit;
-  end;
-
-  ResampleContext := audio_resample_init(
-      dstFormatInfo.Channels, srcFormatInfo.Channels,
-      Round(dstFormatInfo.SampleRate), Round(srcFormatInfo.SampleRate));
-  {$ELSE}
-  if not TMediaCore_FFmpeg.ConvertAudioFormatToFFmpeg(srcFormatInfo.Format, SrcFormat) then
-  begin
-    Log.LogError('Unsupported format', 'TAudioConverter_FFmpeg.Init');
-    Log.LogError('srcFormatInfo.Format: ' + intToStr(integer(srcFormatInfo.Format)),
-                 'TAudioConverter_FFmpeg.Init');
-    Exit;
-  end;
-
-  if not TMediaCore_FFmpeg.ConvertAudioFormatToFFmpeg(DstFormatInfo.Format, DstFormat) then
-  begin
-    Log.LogError('Unsupported format', 'TAudioConverter_FFmpeg.Init');
-    Log.LogError('dstFormatInfo.Format: ' + intToStr(integer(dstFormatInfo.Format)),
-                 'TAudioConverter_FFmpeg.Init');
-    Exit;
-  end;
-
-  ResampleContext := av_audio_resample_init(
-      dstFormatInfo.Channels, srcFormatInfo.Channels,
-      Round(dstFormatInfo.SampleRate), Round(srcFormatInfo.SampleRate),
-      DstFormat, SrcFormat,
-      16, 10, 0, 0.8);
-  {$IFEND}
-  if ResampleContext = nil then
-  begin
-    Log.LogError('audio_resample_init() failed', 'TAudioConverter_FFmpeg.Init');
-    Exit;
-  end;
-
-  // calculate ratio
-  Ratio := srcFormatInfo.GetRatio(dstFormatInfo);
-
-  Result := true;
-end;
-
-destructor TAudioConverter_FFmpeg.Destroy();
-begin
-  if ResampleContext <> nil then
-    audio_resample_close(ResampleContext);
-  inherited;
-end;
-
-function TAudioConverter_FFmpeg.Convert(InputBuffer: PByteArray; OutputBuffer: PByteArray;
-                                        var InputSize: integer): integer;
-var
-  InputSampleCount: integer;
-  OutputSampleCount: integer;
-begin
-  Result := -1;
-
-  if InputSize <= 0 then
-  begin
-    // avoid div-by-zero in audio_resample()
-    if InputSize = 0 then
-      Result := 0;
-    Exit;
-  end;
-
-  InputSampleCount := InputSize div SrcFormatInfo.FrameSize;
-  OutputSampleCount := audio_resample(
-      ResampleContext, PSmallInt(OutputBuffer), PSmallInt(InputBuffer),
-      InputSampleCount);
-  if OutputSampleCount = -1 then
-  begin
-    Log.LogError('audio_resample() failed', 'TAudioConverter_FFmpeg.Convert');
-    Exit;
-  end;
-  Result := OutputSampleCount * DstFormatInfo.FrameSize;
-end;
-
-function TAudioConverter_FFmpeg.GetOutputBufferSize(InputSize: integer): integer;
-begin
-  Result := Ceil(InputSize * GetRatio());
-end;
-
-function TAudioConverter_FFmpeg.GetRatio(): double;
-begin
-  Result := Ratio;
-end;
-
-{$ENDIF}
 
 end.

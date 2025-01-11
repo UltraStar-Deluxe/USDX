@@ -1,1 +1,0 @@
-ffmpeg -version | grep ffmpeg |cut -f2 -d\

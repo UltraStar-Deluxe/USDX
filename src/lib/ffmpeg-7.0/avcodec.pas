@@ -67,7 +67,7 @@ type
     we_do_not_use_side_data_elems: cint;
     we_do_not_use_duration: cint64;
     we_do_not_use_pos: cint64;
-    we_do_not_use_opaque: pointer;
+    opaque: pointer;
     we_do_not_use_opaque_ref: pointer;
     we_do_not_use_time_base: TAVRational;
   end;

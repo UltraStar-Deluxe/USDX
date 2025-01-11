@@ -170,6 +170,7 @@ function av_samples_alloc(var audio_data: pcuint8; linesize: pcint; nb_channels:
 function av_get_packed_sample_fmt(sample_fmt: TAVSampleFormat): TAVSampleFormat; cdecl; external av__util;
 function av_get_bytes_per_sample(sample_fmt: TAVSampleFormat): cint; cdecl; external av__util;
 procedure av_log_set_level(level: cint); cdecl; external av__util;
+function av_strerror(errnum: cint; errbuf: pcchar; errbuf_size: csize_t): cint; cdecl; external av__util;
 implementation
 function AVERROR(e: cint): cint; {$IFDEF HasInline}inline;{$ENDIF}
 begin
