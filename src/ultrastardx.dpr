@@ -93,36 +93,14 @@ uses
   {$ENDIF}
 
   {$IFDEF UseFFmpeg}
-    {$IFDEF FPC} // This solution is not very elegant, but working
-      avcodec             in 'lib\' + FFMPEG_DIR + '\avcodec.pas',
-      avformat            in 'lib\' + FFMPEG_DIR + '\avformat.pas',
-      avutil              in 'lib\' + FFMPEG_DIR + '\avutil.pas',
-      rational            in 'lib\' + FFMPEG_DIR + '\rational.pas',
-      avio                in 'lib\' + FFMPEG_DIR + '\avio.pas',
-      {$IFDEF UseSWResample}
-      swresample          in 'lib\' + FFMPEG_DIR + '\swresample.pas',
-      {$ENDIF}
-      {$IFDEF useOLD_FFMPEG}
-        mathematics       in 'lib\' + FFMPEG_DIR + '\mathematics.pas',
-        opt               in 'lib\' + FFMPEG_DIR + '\opt.pas',
-      {$ENDIF}
-      {$IFDEF UseSWScale}
-        swscale           in 'lib\' + FFMPEG_DIR + '\swscale.pas',
-      {$ENDIF}
-    {$ELSE} // speak: This is for Delphi. Change version as needed!
-      avcodec            in 'lib\ffmpeg-0.10\avcodec.pas',
-      avformat           in 'lib\ffmpeg-0.10\avformat.pas',
-      avutil             in 'lib\ffmpeg-0.10\avutil.pas',
-      rational           in 'lib\ffmpeg-0.10\rational.pas',
-      avio               in 'lib\ffmpeg-0.10\avio.pas',
-      {$IFDEF UseSWResample}
-      swresample         in 'lib\ffmpeg-0.10\swresample.pas',
-      {$ENDIF}
-      {$IFDEF UseSWScale}
-        swscale          in 'lib\ffmpeg-0.10\swscale.pas',
-      {$ENDIF}
-    {$ENDIF}
-    UMediaCore_FFmpeg    in 'media\UMediaCore_FFmpeg.pas',
+    avcodec             in 'lib\' + FFMPEG_DIR + '\avcodec.pas',
+    avformat            in 'lib\' + FFMPEG_DIR + '\avformat.pas',
+    avutil              in 'lib\' + FFMPEG_DIR + '\avutil.pas',
+    rational            in 'lib\' + FFMPEG_DIR + '\rational.pas',
+    avio                in 'lib\' + FFMPEG_DIR + '\avio.pas',
+    swresample          in 'lib\' + FFMPEG_DIR + '\swresample.pas',
+    swscale             in 'lib\' + FFMPEG_DIR + '\swscale.pas',
+    UMediaCore_FFmpeg   in 'media\UMediaCore_FFmpeg.pas',
   {$ENDIF}  // UseFFmpeg
 
   {$IFDEF UseProjectM}

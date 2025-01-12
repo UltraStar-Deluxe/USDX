@@ -19,55 +19,38 @@
 {$IF Defined(HaveFFmpeg)}
   {$MACRO ON}
   {$IFNDEF FFMPEG_DIR}
-    {$IF (@FFMPEG_VERSION_MINOR@ > 0) or (@FFMPEG_VERSION_MAJOR@ > 0)}
-      {$DEFINE FFMPEG_DIR := 'ffmpeg-@FFMPEG_VERSION_MAJOR@.@FFMPEG_VERSION_MINOR@'}
-      {$DEFINE FF_API_OLD_DECODE_AUDIO}
-    {$ELSE}
-      {$DEFINE FFMPEG_DIR := 'ffmpeg'}
-      {$DEFINE useOLD_FFMPEG}
-    {$IFEND}
+    {$DEFINE FFMPEG_DIR := 'ffmpeg-@FFMPEG_VERSION_MAJOR@.@FFMPEG_VERSION_MINOR@'}
   {$ENDIF}
   {$IF Defined(IncludeConstants)}
     FFMPEG_VERSION_INT = @FFMPEG_VERSION_INT@;
 
-  av__codec = 'libavcodec';
-  LIBAVCODEC_VERSION_MAJOR   = @libavcodec_VERSION_MAJOR@;
-  LIBAVCODEC_VERSION_MINOR   = @libavcodec_VERSION_MINOR@;
-  LIBAVCODEC_VERSION_RELEASE = @libavcodec_VERSION_RELEASE@;
+    av__codec = 'libavcodec';
+    LIBAVCODEC_VERSION_MAJOR   = @libavcodec_VERSION_MAJOR@;
+    LIBAVCODEC_VERSION_MINOR   = @libavcodec_VERSION_MINOR@;
+    LIBAVCODEC_VERSION_RELEASE = @libavcodec_VERSION_RELEASE@;
 
-  av__format = 'libavformat';
-  LIBAVFORMAT_VERSION_MAJOR   = @libavformat_VERSION_MAJOR@;
-  LIBAVFORMAT_VERSION_MINOR   = @libavformat_VERSION_MINOR@;
-  LIBAVFORMAT_VERSION_RELEASE = @libavformat_VERSION_RELEASE@;
+    av__format = 'libavformat';
+    LIBAVFORMAT_VERSION_MAJOR   = @libavformat_VERSION_MAJOR@;
+    LIBAVFORMAT_VERSION_MINOR   = @libavformat_VERSION_MINOR@;
+    LIBAVFORMAT_VERSION_RELEASE = @libavformat_VERSION_RELEASE@;
 
-  av__util = 'libavutil';
-  LIBAVUTIL_VERSION_MAJOR   = @libavutil_VERSION_MAJOR@;
-  LIBAVUTIL_VERSION_MINOR   = @libavutil_VERSION_MINOR@;
-  LIBAVUTIL_VERSION_RELEASE = @libavutil_VERSION_RELEASE@;
+    av__util = 'libavutil';
+    LIBAVUTIL_VERSION_MAJOR   = @libavutil_VERSION_MAJOR@;
+    LIBAVUTIL_VERSION_MINOR   = @libavutil_VERSION_MINOR@;
+    LIBAVUTIL_VERSION_RELEASE = @libavutil_VERSION_RELEASE@;
+
+    sw__scale = 'libswscale';
+    LIBSWSCALE_VERSION_MAJOR   = @libswscale_VERSION_MAJOR@;
+    LIBSWSCALE_VERSION_MINOR   = @libswscale_VERSION_MINOR@;
+    LIBSWSCALE_VERSION_RELEASE = @libswscale_VERSION_RELEASE@;
+
+    sw__resample = 'libswresample';
+    LIBSWRESAMPLE_VERSION_MAJOR   = @libswresample_VERSION_MAJOR@;
+    LIBSWRESAMPLE_VERSION_MINOR   = @libswresample_VERSION_MINOR@;
+    LIBSWRESAMPLE_VERSION_RELEASE = @libswresample_VERSION_RELEASE@;
   {$IFEND}
-
-  {$IF (@FFMPEG_VERSION_MAJOR@ < 4)}
-    {$DEFINE UseFFmpegResample}
-  {$IFEND}
-
 {$IFEND}
 
-{$@DEFINE_HAVE_SWSCALE@ HaveSWScale}
-{$IF Defined(HaveSWScale) and Defined(IncludeConstants)}
-  sw__scale = 'libswscale';
-  LIBSWSCALE_VERSION_MAJOR   = @libswscale_VERSION_MAJOR@;
-  LIBSWSCALE_VERSION_MINOR   = @libswscale_VERSION_MINOR@;
-  LIBSWSCALE_VERSION_RELEASE = @libswscale_VERSION_RELEASE@;
-{$IFEND}
-
-{* libswresample was introduced with FFmpeg 0.9 *}
-{$@DEFINE_HAVE_SWRESAMPLE@ HaveSWResample}
-{$IF Defined(HaveSWResample) and Defined(IncludeConstants)}
-  sw__resample = 'libswresample';
-  LIBSWRESAMPLE_VERSION_MAJOR   = @libswresample_VERSION_MAJOR@;
-  LIBSWRESAMPLE_VERSION_MINOR   = @libswresample_VERSION_MINOR@;
-  LIBSWRESAMPLE_VERSION_RELEASE = @libswresample_VERSION_RELEASE@;
-{$IFEND}
 
 {$@DEFINE_HAVE_PROJECTM@ HaveProjectM}
 {$@DEFINE_USE_LOCAL_PROJECTM_PRESETS@ UseLocalProjectMPresets}

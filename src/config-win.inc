@@ -19,12 +19,7 @@
 {$IF Defined(HaveFFmpeg)}
   {$MACRO ON}
   {$IFNDEF FFMPEG_DIR}
-    {$IF (0 > 0) or (7 > 0)}
-      {$DEFINE FFMPEG_DIR := 'ffmpeg-7.0'}
-    {$ELSE}
-      {$DEFINE FFMPEG_DIR := 'ffmpeg'}
-      {$DEFINE useOLD_FFMPEG}
-    {$IFEND}
+    {$DEFINE FFMPEG_DIR := 'ffmpeg-7.0'}
   {$ENDIF}
   {$IF Defined(IncludeConstants)}
     FFMPEG_VERSION_INT = 7000000;

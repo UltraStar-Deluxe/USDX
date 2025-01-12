@@ -99,12 +99,6 @@
 {$IFDEF HaveFFmpeg}
   {$DEFINE UseFFmpegDecoder}
   {$DEFINE UseFFmpegVideo}
-  {$IFDEF HaveSWResample}
-    {$DEFINE UseSWResample}
-  {$ENDIF}
-  {$IFDEF HaveSWScale}
-    {$DEFINE UseSWScale}
-  {$ENDIF}
 {$ENDIF}
 
 // projectM config
