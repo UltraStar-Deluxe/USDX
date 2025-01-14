@@ -743,12 +743,12 @@ function TFFmpegDecodeStream.ParseLoop(): boolean;
 var
   Packet: TAVPacket;
   SeekTarget: int64;
-  ByteIOCtx: PAVIOContext;
   ErrorCode: integer;
   StartSilence: double;       // duration of silence at start of stream
   StartSilencePtr: PDouble;  // pointer for the EMPTY status packet 
   fileSize: integer;
   urlError: integer;
+  errnum: integer;
 
   // Note: pthreads wakes threads waiting on a mutex in the order of their
   // priority and not in FIFO order. SDL does not provide any option to
@@ -858,13 +858,12 @@ begin
         Continue;
       end;
 
-      if (av_read_frame(fFormatCtx, Packet) < 0) then
+      errnum := av_read_frame(fFormatCtx, Packet);
+      if (errnum < 0) then
       begin
-        // failed to read a frame, check reason
-        ByteIOCtx := fFormatCtx^.pb;
 
         // check for end-of-file (eof is not an error)
-        if (avio_feof(ByteIOCtx) <> 0) then
+        if (errnum = AVERROR_EOF) then
         begin
           SDL_LockMutex(fStateLock);
           if (GetLoopInternal()) then
@@ -884,20 +883,11 @@ begin
         end;
 
         // check for errors
-        urlError := ByteIOCtx^.error;
+        urlError := fFormatCtx^.pb^.error;
         if (urlError <> 0) then
         begin
           // an error occured -> abort and wait for repositioning or termination
           fPacketQueue.PutStatus(PKT_STATUS_FLAG_ERROR, nil);
-          Break;
-        end;
-
-        // url_feof() does not detect an EOF for some files
-        // so we have to do it this way.
-        fileSize := avio_size(fFormatCtx^.pb);
-        if ((fileSize <> 0) and (ByteIOCtx^.pos >= fileSize)) then
-        begin
-          fPacketQueue.PutStatus(PKT_STATUS_FLAG_EOF, nil);
           Break;
         end;
 

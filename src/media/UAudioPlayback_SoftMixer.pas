@@ -663,6 +663,16 @@ begin
 
       SourceSize := SourceStream.ReadData(
           @SourceBuffer[SourceBufferCount], SourceBufferSize-SourceBufferCount);
+
+      // end-of-file reached -> stop playback
+      if (SourceStream.EOF) then
+      begin
+        if (Loop) then
+          SourceStream.Position := 0
+        else
+          Stop();
+      end;
+
       // break on error (-1) or if no data is available (0), e.g. while seeking
       if (SourceSize <= 0) then
       begin
@@ -678,15 +688,6 @@ begin
       end;
 
       SourceBufferCount := SourceBufferCount + SourceSize;
-
-      // end-of-file reached -> stop playback
-      if (SourceStream.EOF) then
-      begin
-        if (Loop) then
-          SourceStream.Position := 0
-        else
-          Stop();
-      end;
 
       if (SkipSourceCount > 0) then
       begin
