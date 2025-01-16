@@ -47,11 +47,16 @@ uses
   UPath;
 
 type
+  PPacketList = ^TPacketList;
+  TPacketList = record
+    pkt: PAVPacket;
+    next: ^TPacketList;
+  end;
   PPacketQueue = ^TPacketQueue;
   TPacketQueue = class
     private
-      FirstListEntry: PAVPacketList;
-      LastListEntry:  PAVPacketList;
+      FirstListEntry: PPacketList;
+      LastListEntry:  PPacketList;
       PacketCount: integer;
       Mutex:     PSDL_Mutex;
       Condition: PSDL_Cond;
@@ -63,9 +68,9 @@ type
 
       function Put(Packet : PAVPacket): integer;
       function PutStatus(StatusFlag: integer; StatusInfo: Pointer): integer;
-      procedure FreeStatusInfo(var Packet: TAVPacket);
-      function GetStatusInfo(var Packet: TAVPacket): Pointer;
-      function Get(var Packet: TAVPacket; Blocking: boolean): integer;
+      procedure FreeStatusInfo(Packet: PAVPacket);
+      function GetStatusInfo(Packet: PAVPacket): Pointer;
+      function Get(var Packet: PAVPacket; Blocking: boolean): integer;
       function GetSize(): integer;
       procedure Flush();
       procedure Abort();
@@ -511,20 +516,21 @@ begin
   SDL_UnlockMutex(Mutex);
 end;
 
+// The queue will take over memory management of Packet (should not be freed by caller)
 function TPacketQueue.Put(Packet : PAVPacket): integer;
 var
-  CurrentListEntry : PAVPacketList;
+  CurrentListEntry : PPacketList;
 begin
   Result := -1;
 
   if (Packet = nil) then
     Exit;
 
-  CurrentListEntry := av_malloc(SizeOf(TAVPacketList));
+  New(CurrentListEntry);
   if (CurrentListEntry = nil) then
     Exit;
 
-  CurrentListEntry^.pkt := Packet^;
+  CurrentListEntry^.pkt := Packet;
   {$IF LIBAVFORMAT_VERSION < 59000000}
   if (PChar(Packet^.data) <> STATUS_PACKET) then
   begin
@@ -549,7 +555,7 @@ begin
     LastListEntry := CurrentListEntry;
     Inc(PacketCount);
 
-    Size := Size + CurrentListEntry^.pkt.size;
+    Size := Size + CurrentListEntry^.pkt^.size;
     SDL_CondSignal(Condition);
   finally
     SDL_UnlockMutex(Mutex);
@@ -568,54 +574,53 @@ end;
  *)
 function TPacketQueue.PutStatus(StatusFlag: integer; StatusInfo: Pointer): integer;
 var
-  TempPacket: PAVPacket;
+  Packet: PAVPacket;
 begin
-  // create temp. package
-  TempPacket := av_malloc(SizeOf(TAVPacket));
-  if (TempPacket = nil) then
+  Packet := av_packet_alloc();
+  if (Packet = nil) then
   begin
     Result := -1;
     Exit;
   end;
-  // init package
-  av_init_packet(TempPacket^);
-  TempPacket^.data  := Pointer(STATUS_PACKET);
-  TempPacket^.flags := StatusFlag;
+
+  Packet^.data  := Pointer(STATUS_PACKET);
+  Packet^.flags := StatusFlag;
   {$IF LIBAVCODEC_VERSION_MAJOR >= 59}
-  TempPacket^.opaque  := StatusInfo;
+  Packet^.opaque  := StatusInfo;
   {$ELSE}
-  TempPacket^.side_data := StatusInfo;
+  Packet^.side_data := StatusInfo;
   {$ENDIF}
-  // put a copy of the package into the queue
-  Result := Put(TempPacket);
-  // data has been copied -> delete temp. package
-  av_free(TempPacket);
+
+  Result := Put(Packet);
 end;
 
-procedure TPacketQueue.FreeStatusInfo(var Packet: TAVPacket);
+procedure TPacketQueue.FreeStatusInfo(Packet: PAVPacket);
 begin
   {$IF LIBAVCODEC_VERSION_MAJOR >= 59}
-  if (Packet.opaque <> nil) then
-    FreeMem(Packet.opaque);
+  if (Packet^.opaque <> nil) then
+  begin
+    FreeMemAndNil(Packet^.opaque);
+  end;
   {$ELSE}
-  if (Packet.side_data <> nil) then
-    FreeMem(Packet.side_data);
+  if (Packet^.side_data <> nil) then
+    FreeMemAndNil(Packet^.side_data);
   {$ENDIF}
 
 end;
 
-function TPacketQueue.GetStatusInfo(var Packet: TAVPacket): Pointer;
+function TPacketQueue.GetStatusInfo(Packet: PAVPacket): Pointer;
 begin
   {$IF LIBAVCODEC_VERSION_MAJOR >= 59}
-  Result := Packet.opaque;
+  Result := Packet^.opaque;
   {$ELSE}
-  Result := Packet.side_data;
+  Result := Packet^.side_data;
   {$ENDIF}
 end;
 
-function TPacketQueue.Get(var Packet: TAVPacket; Blocking: boolean): integer;
+// The caller takes over memory management of Packet
+function TPacketQueue.Get(var Packet: PAVPacket; Blocking: boolean): integer;
 var
-  CurrentListEntry: PAVPacketList;
+  CurrentListEntry: PPacketList;
 const
   WAIT_TIMEOUT = 10; // timeout in ms
 begin
@@ -636,9 +641,9 @@ begin
           LastListEntry := nil;
         Dec(PacketCount);
 
-        Size := Size - CurrentListEntry^.pkt.size;
+        Size := Size - CurrentListEntry^.pkt^.size;
         Packet := CurrentListEntry^.pkt;
-        av_free(CurrentListEntry);
+        Dispose(CurrentListEntry);
 
         Result := 1;
         Break;
@@ -673,7 +678,7 @@ end;
 
 procedure TPacketQueue.Flush();
 var
-  CurrentListEntry, TempListEntry: PAVPacketList;
+  CurrentListEntry, TempListEntry: PPacketList;
 begin
   SDL_LockMutex(Mutex);
 
@@ -682,17 +687,13 @@ begin
   begin
     TempListEntry := CurrentListEntry^.next;
     // free status data
-    if (PChar(CurrentListEntry^.pkt.data) = STATUS_PACKET) then
+    if (PChar(CurrentListEntry^.pkt^.data) = STATUS_PACKET) then
       FreeStatusInfo(CurrentListEntry^.pkt);
+
     // free packet data
-    {$IF LIBAVFORMAT_VERSION >= 59000000}
-    if (PChar(CurrentListEntry^.pkt.data) <> STATUS_PACKET) then
-      av_packet_unref(@CurrentListEntry^.pkt);
-    {$ELSE}
-    av_free_packet(@CurrentListEntry^.pkt);
-    {$ENDIF}
-    // Note: param must be a pointer to a pointer!
-    av_freep(@CurrentListEntry);
+    av_packet_free(@(CurrentListEntry^.pkt));
+
+    Dispose(CurrentListEntry);
     CurrentListEntry := TempListEntry;
   end;
   LastListEntry := nil;

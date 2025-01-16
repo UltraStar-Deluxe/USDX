@@ -796,7 +796,7 @@ var
   FrameFinished: Integer;
   pbIOCtx: PAVIOContext;
   errnum: integer;
-  AVPacket: TAVPacket;
+  AVPacket: PAVPacket;
   pts: int64;
   dts: int64;
   fileSize: int64;
@@ -804,6 +804,7 @@ var
 begin
   Result := false;
   FrameFinished := 0;
+  AVPacket := nil;
 
   if fEOF then
     Exit;
@@ -822,6 +823,8 @@ begin
     if errnum <> AVERROR(EAGAIN) then
       Continue;
 
+    if (AVPacket = nil) then
+      AVPacket := av_packet_alloc();
     errnum := av_read_frame(fFormatContext, AVPacket);
     if (errnum < 0) then
     begin
@@ -841,6 +844,7 @@ begin
       if (urlError <> 0) then
       begin
         Log.LogError('Video decoding file error', 'TVideoPlayback_FFmpeg.DecodeFrame');
+        av_packet_free(@AVPacket);
         Exit;
       end;
 
@@ -856,24 +860,21 @@ begin
 
       // error occured, log and exit
       Log.LogError('Video decoding error: ' + IntToStr(errnum), 'TVideoPlayback_FFmpeg.DecodeFrame');
+      av_packet_free(@AVPacket);
       Exit;
     end;
 
     // if we got a packet from the video stream, then decode it
-    if (AVPacket.stream_index = fStreamIndex) then
+    if (AVPacket^.stream_index = fStreamIndex) then
     begin
 
       // decode packet
-      avcodec_send_packet(fCodecContext, @AVPacket);
+      avcodec_send_packet(fCodecContext, AVPacket);
 
     end;
 
     // free the packet from av_read_frame
-    {$IF LIBAVCODEC_VERSION < 59000000}
-    av_free_packet( @AVPacket );
-    {$ELSE}
-    av_packet_unref(@AVPacket);
-    {$ENDIF}
+    av_packet_free(@AVPacket);
   end;
 
   // reset opaque data and update pts
