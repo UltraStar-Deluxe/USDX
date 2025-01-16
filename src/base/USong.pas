@@ -100,6 +100,17 @@ type
     Content: UTF8String;
   end;
 
+  TVersion = class
+  private
+    Major, Minor, Patch: integer;
+  public
+    constructor Create(); overload;
+    constructor Create(const VersionString: string); overload;
+    function MinVersion(Major, Minor, Patch: integer; Inclusive: boolean = true): boolean;
+    function MaxVersion(Major, Minor, Patch: integer; Inclusive: boolean = false): boolean;
+    function VersionString: string;
+  end;
+
   TSong = class
   private
     FileLineNo  : integer;  // line, which is read last, for error reporting
@@ -125,6 +136,8 @@ type
     Folder:       UTF8String; // for sorting by folder (only set if file was found)
     FileName:     IPath; // just name component of file (only set if file was found)
     MD5:          string; //MD5 Hash of Current Song
+
+    FormatVersion: TVersion;
 
     // filenames
     Cover:      IPath;
@@ -197,6 +210,7 @@ type
 
     constructor Create(); overload;
     constructor Create(const aFileName : IPath); overload;
+    destructor  Destroy; override;
     function    LoadSong(DuetChange: boolean): boolean;
     function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false): boolean;
     procedure   SetMedleyMode();
@@ -254,6 +268,105 @@ begin
   LyricActualOutlineColor := ActualOutlineColor;
   LyricNextOutlineColor := NextOutlineColor;
 
+end;
+
+constructor TVersion.Create();
+begin
+  inherited;
+
+  Self.Major := 0;
+  Self.Minor := 3;
+  Self.Patch := 0;
+end;
+
+constructor TVersion.Create(const VersionString: string);
+var
+  SepPos: integer;
+  SubVersion: string;
+begin
+  inherited Create();
+
+  SepPos := Pos('.', VersionString);
+  // If Version does not contain periods it is invalid
+  if (SepPos = 0) then
+    raise Exception.Create('Invalid VERSION "' + VersionString +'"');
+  // Read the major version as section in front of (first) period
+  try
+    Self.Major := StrToInt(Trim(Copy(VersionString, 1, SepPos - 1)));
+  except
+    on E : EConvertError do
+      raise Exception.Create('Invalid VERSION Header "' + VersionString + '"');
+  end;
+  // The minor and patch version number "x.x" is the SubVersion
+  SubVersion := Trim(Copy(VersionString, SepPos + 1, Length(VersionString) - SepPos));
+  SepPos := Pos('.', SubVersion);
+  // The Version must contain a second period or otherwise it is invalid
+  if (SepPos = 0) then
+  begin
+    raise Exception.Create('Invalid VERSION "' + VersionString +'"');
+  end;
+  // Read the minor version as section in between first and second period
+  // and the patch version as section after the second period
+  try
+    Self.Minor := StrToInt(Trim(Copy(SubVersion, 1, SepPos - 1)));
+    Self.Patch := StrToInt(Trim(Copy(SubVersion, SepPos + 1, Length(VersionString) - SepPos)));
+  except
+    on E : EConvertError do
+      raise Exception.Create('Invalid VERSION "' + VersionString +'"');
+  end;
+end;
+
+function TVersion.MinVersion(Major, Minor, Patch: integer; Inclusive: boolean = true): boolean;
+begin
+  if (Self.Major > Major) then
+    Result := true
+  else if (Self.Major = Major) then
+  begin
+    if (Self.Minor > Minor) then
+      Result := true
+    else if (Self.Minor = Minor) then
+    begin
+      if (Self.Patch > Patch) then
+        Result := true
+      else if (Inclusive and (Self.Patch = Patch)) then
+        Result := true
+      else
+        Result := false;
+    end
+    else
+      Result := false;
+  end
+  else
+    Result := false;
+end;
+
+function TVersion.MaxVersion(Major, Minor, Patch: integer; Inclusive: boolean = false): boolean;
+begin
+  if (Self.Major < Major) then
+    Result := true
+  else if (Self.Major = Major) then
+  begin
+    if (Self.Minor < Minor) then
+      Result := true
+    else if (Self.Minor = Minor) then
+    begin
+      if (Self.Patch < Patch) then
+        Result := true
+      else if (Inclusive and (Self.Patch = Patch)) then
+        Result := true
+      else
+        Result := false;
+    end
+    else
+      Result := false;
+  end
+  else
+    Result := false;
+end;
+
+function TVersion.VersionString: string;
+begin
+  Result := IntToStr(Self.Major) + '.' + IntToStr(Self.Minor) + '.' + IntToStr(Self.Patch);
 end;
 
 constructor TSong.Create();
@@ -335,6 +448,12 @@ begin
     end;
   end;
   *)
+end;
+
+destructor TSong.Destroy;
+begin
+  FreeAndNil(Self.FormatVersion);
+  inherited;
 end;
 
 function TSong.FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
@@ -875,6 +994,29 @@ begin
     end; // while
 
     //Read the songs attributes stored in the TagMap
+
+    //First: Read the format version
+    if (TagMap.TryGetData('VERSION', Value)) then
+    begin
+      try
+        self.FormatVersion := TVersion.Create(Value);
+      except
+        on E: Exception do
+        begin
+          Result := false;
+          Log.LogError(E.Message + ' in Song File: ' + FullFileName);
+          Exit;
+        end
+      end;
+      if not self.FormatVersion.MaxVersion(2,0,0,false) then
+      begin
+        Result := false;
+        Log.LogError('Unsupported format version ' + self.FormatVersion.VersionString + '; Maximum supported version is 1.X.X: ' + FullFileName);
+        Exit;
+      end;
+    end
+    else
+      self.FormatVersion := TVersion.Create; //Default legacy version 0.3.0
 
     //-----------
     //Required Attributes
