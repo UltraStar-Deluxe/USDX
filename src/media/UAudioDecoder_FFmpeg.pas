@@ -132,7 +132,6 @@ type
       fDecoderResumeCond:        PSDL_Cond;
 
       // state-vars for DecodeFrame (locked by DecoderLock)
-      fAudioPaket:        PAVPacket;
       fAudioPaketSize:    integer;
       fAudioPaketSilence: integer; // number of bytes of silence to return
 
@@ -234,7 +233,6 @@ begin
   fLoop := false;
   fQuitRequest := false;
 
-  fAudioPaket := nil;
   fAudioPaketSize := 0;
   fAudioPaketSilence := 0;
 
@@ -509,8 +507,6 @@ begin
     FFmpegCore.AVFormatCloseInput(@fFormatCtx);
     fFormatCtx := nil;
   end;
-
-  av_packet_free(@fAudioPaket);
 
   PerformOnClose();
   
@@ -889,11 +885,10 @@ begin
       end;
 
       if (Packet^.stream_index = fAudioStreamIndex) then
-      begin;
+      begin
         fPacketQueue.Put(Packet);
         Packet := nil;
       end
-
       else
         av_packet_unref(Packet);
 
@@ -982,6 +977,7 @@ end;
 
 function TFFmpegDecodeStream.DecodeFrame(): integer;
 var
+  Packet: PAVPacket;
   PaketDecodedSize: integer; // size of packet data used for decoding
   DataSize: integer;         // size of output data decoded by FFmpeg
   BlockQueue: boolean;
@@ -992,6 +988,7 @@ var
   {$ENDIF}
 begin
   Result := -1;
+  Packet := nil;
 
   if (EOF) then
     Exit;
@@ -1062,15 +1059,15 @@ begin
 
     // request a new packet and block if none available.
     // If this fails, the queue was aborted.
-    if (fPacketQueue.Get(fAudioPaket, BlockQueue) <= 0) then
+    if (fPacketQueue.Get(Packet, BlockQueue) <= 0) then
       Exit;
 
     // handle Status-packet
-    if (PAnsiChar(fAudioPaket^.data) = STATUS_PACKET) then
+    if (PAnsiChar(Packet^.data) = STATUS_PACKET) then
     begin
       fAudioPaketSize := 0;
 
-      case (fAudioPaket^.flags) of
+      case (Packet^.flags) of
         PKT_STATUS_FLAG_FLUSH:
         begin
           // just used if SetPositionIntern was called without the flush flag.
@@ -1082,21 +1079,21 @@ begin
           if (not IsSeeking()) then
             SetEOF(true);
           // buffer contains no data -> result = -1
-          av_packet_free(@fAudioPaket);
+          av_packet_free(@Packet);
           Exit;
         end;
         PKT_STATUS_FLAG_ERROR:
         begin
           SetError(true);
           Log.LogStatus('I/O Error', 'TFFmpegDecodeStream.DecodeFrame');
-          av_packet_free(@fAudioPaket);
+          av_packet_free(@Packet);
           Exit;
         end;
         PKT_STATUS_FLAG_EMPTY:
         begin
-          SilenceDuration := PDouble(fPacketQueue.GetStatusInfo(fAudioPaket))^;
+          SilenceDuration := PDouble(fPacketQueue.GetStatusInfo(Packet))^;
           fAudioPaketSilence := Round(SilenceDuration * fFormatInfo.SampleRate) * fFormatInfo.FrameSize;
-          fPacketQueue.FreeStatusInfo(fAudioPaket);
+          fPacketQueue.FreeStatusInfo(Packet);
         end
         else
         begin
@@ -1104,21 +1101,21 @@ begin
         end;
       end;
 
-      av_packet_free(@fAudioPaket);
+      av_packet_free(@Packet);
       Continue;
     end;
 
-    fAudioPaketSize := fAudioPaket^.size;
+    fAudioPaketSize := Packet^.size;
 
-    avcodec_send_packet(fCodecCtx, fAudioPaket);
+    avcodec_send_packet(fCodecCtx, Packet);
 
     // if available, update the stream position to the presentation time of this package
-    if(fAudioPaket^.pts <> AV_NOPTS_VALUE) then
+    if(Packet^.pts <> AV_NOPTS_VALUE) then
     begin
       {$IFDEF DebugFFmpegDecode}
       TmpPos := fAudioStreamPos;
       {$ENDIF}
-      fAudioStreamPos := av_q2d(fAudioStream^.time_base) * fAudioPaket^.pts;
+      fAudioStreamPos := av_q2d(fAudioStream^.time_base) * Packet^.pts;
       {$IFDEF DebugFFmpegDecode}
       DebugWriteln('Timestamp: ' + floattostrf(fAudioStreamPos, ffFixed, 15, 3) + ' ' +
                    '(Calc: ' + floattostrf(TmpPos, ffFixed, 15, 3) + '), ' +
@@ -1126,7 +1123,7 @@ begin
       {$ENDIF}
     end;
 
-    av_packet_free(@fAudioPaket);
+    av_packet_free(@Packet);
   end;
 end;
 
