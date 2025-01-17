@@ -597,12 +597,8 @@ end;
 procedure TPacketQueue.FreeStatusInfo(Packet: PAVPacket);
 begin
   {$IF LIBAVCODEC_VERSION_MAJOR >= 59}
-  if (Packet^.opaque <> nil) then
-  begin
     FreeMemAndNil(Packet^.opaque);
-  end;
   {$ELSE}
-  if (Packet^.side_data <> nil) then
     FreeMemAndNil(Packet^.side_data);
   {$ENDIF}
 
