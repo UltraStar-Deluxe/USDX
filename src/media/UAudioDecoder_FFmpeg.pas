@@ -902,6 +902,7 @@ begin
       UnlockParser();
     end;
   end;
+  av_packet_free(@Packet);
   if (IsQuit()) then
   begin
     Result := false;
