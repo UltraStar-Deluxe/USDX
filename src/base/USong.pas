@@ -998,6 +998,7 @@ begin
     //First: Read the format version
     if (TagMap.TryGetData('VERSION', Value)) then
     begin
+      RemoveTagsFromTagMap('VERSION');
       try
         self.FormatVersion := TVersion.Create(Value);
       except

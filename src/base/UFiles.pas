@@ -132,9 +132,20 @@ begin
       if (Song.Encoding = encUTF8) then
         SongFile.WriteString(UTF8_BOM);
 
-      // do not save "auto" encoding tag
-      if (Song.Encoding <> encAuto) then
-        SongFile.WriteLine('#ENCODING:' + EncodingName(Song.Encoding));
+      if Song.FormatVersion.MinVersion(1,0,0,true) then
+      begin
+        // Only save version if it is at least 1.0.0
+        SongFile.WriteLine('#VERSION:' + EncodeToken(Song.FormatVersion.VersionString));
+        // RELATIVE was removed in format 1.0.0
+        Relative := False;
+      end
+      else
+      begin
+        // Only save Encoding if Version is below 1.0.0
+        // do not save "auto" encoding tag
+        if (Song.Encoding <> encAuto) then
+          SongFile.WriteLine('#ENCODING:' + EncodingName(Song.Encoding));
+      end;
       SongFile.WriteLine('#TITLE:'    + EncodeToken(Song.Title));
       SongFile.WriteLine('#ARTIST:'   + EncodeToken(Song.Artist));
 
