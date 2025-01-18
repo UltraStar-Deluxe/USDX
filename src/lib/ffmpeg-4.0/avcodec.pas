@@ -59,6 +59,7 @@ type
     do_not_instantiate_this_record: incomplete_record;
   end;
   PAVPacket = ^TAVPacket;
+  PPAVPacket = ^PAVPacket;
   TAVPacket = record
     we_do_not_use_buf: pointer;
     pts: cint64;
@@ -306,7 +307,6 @@ type
     do_not_instantiate_this_record: incomplete_record;
   end;
 function av_dup_packet(pkt: PAVPacket): cint; cdecl; external av__codec; deprecated;
-procedure av_init_packet(var pkt: TAVPacket); cdecl; external av__codec; deprecated;
 procedure av_free_packet(pkt: PAVPacket); cdecl; external av__codec; deprecated;
 function avcodec_version(): cuint; cdecl; external av__codec;
 function av_codec_is_decoder(codec: PAVCodec): cint; cdecl; external av__codec;
@@ -325,5 +325,8 @@ function avcodec_send_packet(avctx: PAVCodecContext; avpkt: PAVPacket): cint; cd
 function avcodec_alloc_context3(codec: PAVCodec): PAVCodecContext; cdecl; external av__codec;
 procedure avcodec_free_context(avctx: PPAVCodecContext); cdecl; external av__codec;
 function avcodec_parameters_to_context(codec: PAVCodecContext; par: PAVCodecParameters): cint; cdecl; external av__codec;
+function av_packet_alloc(): PAVPacket; cdecl; external av__codec;
+procedure av_packet_free(pkt: PPAVPacket); cdecl; external av__codec;
+procedure av_packet_unref(pkt: PAVPacket); cdecl; external av__codec;
 implementation
 end.

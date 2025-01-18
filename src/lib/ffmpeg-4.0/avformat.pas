@@ -54,11 +54,6 @@ const
   AVSEEK_FLAG_ANY = 4;
   AVSEEK_FLAG_BACKWARD = 1;
 type
-  PAVPacketList = ^TAVPacketList;
-  TAVPacketList = record
-    pkt: TAVPacket;
-    next: ^TAVPacketList;
-  end;
   PAVInputFormat = ^TAVInputFormat;
   PAVStream = ^TAVStream;
   PPAVStream = ^PAVStream;
@@ -117,7 +112,7 @@ function avformat_version(): cuint; cdecl; external av__format;
 procedure av_register_all(); cdecl; external av__format; deprecated;
 function avformat_find_stream_info(ic: PAVFormatContext; options: PPAVDictionary): cint; cdecl; external av__format;
 function av_stream_get_r_frame_rate(s: PAVStream): TAVRational; cdecl; external av__format; deprecated;
-function av_read_frame(s: PAVFormatContext; var pkt: TAVPacket): cint; cdecl; external av__format;
+function av_read_frame(s: PAVFormatContext; pkt: PAVPacket): cint; cdecl; external av__format;
 function av_seek_frame(s: PAVFormatContext; stream_index: cint; timestamp: cint64; flags: cint): cint; cdecl; external av__format;
 implementation
 end.

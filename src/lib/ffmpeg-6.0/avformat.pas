@@ -108,7 +108,7 @@ function avformat_open_input(ps: PPAVFormatContext; url: PAnsiChar; fmt: PAVInpu
 procedure avformat_close_input(s: PPAVFormatContext); cdecl; external av__format;
 function avformat_version(): cuint; cdecl; external av__format;
 function avformat_find_stream_info(ic: PAVFormatContext; options: PPAVDictionary): cint; cdecl; external av__format;
-function av_read_frame(s: PAVFormatContext; var pkt: TAVPacket): cint; cdecl; external av__format;
+function av_read_frame(s: PAVFormatContext; pkt: PAVPacket): cint; cdecl; external av__format;
 function av_seek_frame(s: PAVFormatContext; stream_index: cint; timestamp: cint64; flags: cint): cint; cdecl; external av__format;
 implementation
 end.
