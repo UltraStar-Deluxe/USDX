@@ -894,7 +894,7 @@ var
   { Removes all entries for a given header-tag from the TagMap
     If TagMap contains multiple entries for the given tag,
     a informative message about the duplicate tags is logged }
-  procedure RemoveTagsFromTagMap(const tag: string);
+  procedure RemoveTagsFromTagMap(const tag: string; logDuplicateMsg: boolean = true);
   var
     count: Integer;
   begin
@@ -904,7 +904,7 @@ var
       TagMap.Remove(tag);
       count := count + 1;
     end;
-    if count > 1 then
+    if logDuplicateMsg and (count > 1) then
     begin
       Log.LogInfo('Duplicate Tag "'+ tag +'" found in file ' + FullFileName + '. Only the last value will be used.',
                   'TSong.ReadTXTHeader.RemoveTagsFromTagMap');
@@ -1017,6 +1017,26 @@ begin
     end
     else
       self.FormatVersion := TVersion.Create; //Default legacy version 0.3.0
+
+    // For Version >=1.0.0 Encoding is always UTF-8
+    // For Version <1.0.0 read Encoding from ENCODING header
+    if Self.FormatVersion.MinVersion(1,0,0,true) then
+    begin
+      self.Encoding := encUTF8;
+      if TagMap.IndexOf('ENCODING') > -1 then
+      begin
+        Log.LogInfo('Ignoring ENCODING header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        RemoveTagsFromTagMap('ENCODING', false);
+      end;
+    end
+    else
+    begin
+      if TagMap.TryGetData('ENCODING', Value) then
+      begin
+        RemoveTagsFromTagMap('ENCODING');
+        self.Encoding := ParseEncoding(Value, Ini.DefaultEncoding);
+      end;
+    end;
 
     //-----------
     //Required Attributes
@@ -1174,35 +1194,53 @@ begin
     // Resolution
     if (TagMap.TryGetData('RESOLUTION', Value)) then
     begin
-      RemoveTagsFromTagMap('RESOLUTION');
-      TryStrtoInt(Value, self.Resolution);
-      if (self.Resolution < 1) then
+      if FormatVersion.MaxVersion(1,0,0,false) then
       begin
-        Log.LogError('Ignoring invalid resolution in song: ' + FullFileName);
-        self.Resolution := DEFAULT_RESOLUTION;
+        RemoveTagsFromTagMap('RESOLUTION');
+        TryStrtoInt(Value, self.Resolution);
+        if (self.Resolution < 1) then
+        begin
+          Log.LogError('Ignoring invalid resolution in song: ' + FullFileName);
+          self.Resolution := DEFAULT_RESOLUTION;
+        end;
+      end
+      else
+      begin
+        Log.LogInfo('Ignoring RESOLUTION header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        RemoveTagsFromTagMap('RESOLUTION', false);
       end;
     end;
 
     // Notes Gap
     if (TagMap.TryGetData('NOTESGAP', Value)) then
     begin
-      RemoveTagsFromTagMap('NOTESGAP');
-      TryStrtoInt(Value, self.NotesGAP)
+      if FormatVersion.MaxVersion(1,0,0,false) then
+      begin
+        RemoveTagsFromTagMap('NOTESGAP');
+        TryStrtoInt(Value, self.NotesGAP)
+      end
+      else
+      begin
+        Log.LogInfo('Ignoring NOTESGAP header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        RemoveTagsFromTagMap('NOTESGAP', false);
+      end;
     end;
 
     // Relative Notes
     if (TagMap.TryGetData('RELATIVE', Value)) then
     begin
-      RemoveTagsFromTagMap('RELATIVE');
-      if (UpperCase(Value) = 'YES') then
-        self.Relative := true;
-    end;
-
-    // File encoding
-    if (TagMap.TryGetData('ENCODING', Value)) then
-    begin
-      RemoveTagsFromTagMap('ENCODING');
-      self.Encoding := ParseEncoding(Value, Ini.DefaultEncoding);
+      if FormatVersion.MaxVersion(1,0,0,false) then
+      begin
+        RemoveTagsFromTagMap('RELATIVE');
+        if (UpperCase(Value) = 'YES') then
+          self.Relative := true;
+      end
+      else
+      begin
+        Result := false;
+        Log.LogError('Relative Mode was removed for format >=1.0.0. The song will not be loaded. ' + FullFileName);
+        Exit;
+      end;
     end;
 
     // PreviewStart
@@ -1244,15 +1282,31 @@ begin
     // Duet Singer Name P1
     if (TagMap.TryGetData('DUETSINGERP1', Value)) then
     begin
-      RemoveTagsFromTagMap('DUETSINGERP1');
-      DecodeStringUTF8(Value, DuetNames[0], Encoding);
+      if FormatVersion.MaxVersion(1,0,0,false) then
+      begin
+        RemoveTagsFromTagMap('DUETSINGERP1');
+        DecodeStringUTF8(Value, DuetNames[0], Encoding);
+      end
+      else
+      begin
+        Log.LogInfo('Ignoring DUETSINGERP1 header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        RemoveTagsFromTagMap('DUETSINGERP1', false);
+      end;
     end;
 
     // Duet Singer Name P2
     if (TagMap.TryGetData('DUETSINGERP2', Value)) then
     begin
-      RemoveTagsFromTagMap('DUETSINGERP2');
-      DecodeStringUTF8(Value, DuetNames[1], Encoding);
+      if FormatVersion.MaxVersion(1,0,0,false) then
+      begin
+        RemoveTagsFromTagMap('DUETSINGERP2');
+        DecodeStringUTF8(Value, DuetNames[1], Encoding);
+      end
+      else
+      begin
+        Log.LogInfo('Ignoring DUETSINGERP2 header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        RemoveTagsFromTagMap('DUETSINGERP2', false);
+      end;
     end;
 
     // Duet Singer Name P1
