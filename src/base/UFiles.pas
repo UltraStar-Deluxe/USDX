@@ -126,12 +126,6 @@ begin
   try
     SongFile := TMemTextFileStream.Create(Name, fmCreate);
     try
-      // to-do: should we really write the BOM?
-      //        it causes problems w/ older versions
-      //        e.g. usdx 1.0.1a or ultrastar < 0.7.0
-      if (Song.Encoding = encUTF8) then
-        SongFile.WriteString(UTF8_BOM);
-
       if Song.FormatVersion.MinVersion(1,0,0,true) then
       begin
         // Only save version if it is at least 1.0.0
