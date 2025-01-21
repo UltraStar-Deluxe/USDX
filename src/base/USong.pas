@@ -911,6 +911,28 @@ var
     end;
   end;
 
+  {**
+   * Updates the Audio file of the song (MP3 field) to a file witn given filename.
+   * Updates the Done flags to identify that the audio resource is set.
+   * If no file with the given name exists, an error is logged.
+   *}
+  procedure CheckAndSetAudioFile(const filename: string);
+  var
+    filePath: IPath;
+  begin
+    filePath := DecodeFilename(filename);
+    if (Self.Path.Append(filePath).IsFile) then
+    begin
+      self.Mp3 := filePath;
+      //Add Audio Flag to Done
+      Done := Done or 4;
+    end
+    else
+    begin
+      Log.LogError('Can''t find audio file in song: ' + DecodeStringUTF8(FullFileName, Encoding));
+    end;
+  end;
+
 begin
   Result := true;
   Done   := 0;
@@ -1061,20 +1083,35 @@ begin
       Done := Done or 2;
     end;
 
-    //MP3 File
-    if (TagMap.TryGetData('MP3', Value)) then
+    // Audio File
+    // The new AUDIO header was introduced in format 1.1.0 and replaces MP3 (deprecated)
+    // For older format versions the audio file is found in the MP3 header
+    if self.FormatVersion.MinVersion(1,1,0) then
     begin
-      RemoveTagsFromTagMap('MP3');
-      EncFile := DecodeFilename(Value);
-      if (Self.Path.Append(EncFile).IsFile) then
+      if TagMap.TryGetData('AUDIO', Value) then
       begin
-        self.Mp3 := EncFile;
-        //Add Mp3 Flag to Done
-        Done := Done or 4;
+        RemoveTagsFromTagMap('AUDIO');
+        // If AUDIO is present MP3 should be ignored
+        if TagMap.IndexOf('MP3') > -1 then
+        begin
+          Log.LogInfo('The AUDIO header overwrites the MP3 header in file ' + FullFileName, 'TSong.ReadTXTHeader');
+          RemoveTagsFromTagMap('MP3', false);
+        end;
+        CheckAndSetAudioFile(Value);
       end
       else
       begin
-        Log.LogError('Can''t find audio file in song: ' + DecodeStringUTF8(FullFileName, Encoding));
+        Result := false;
+        Log.LogError('Missing AUDIO header (mandatory for format >= 1.1.0) ' + FullFileName);
+        Exit;
+      end;
+    end
+    else
+    begin
+      if TagMap.TryGetData('MP3', Value) then
+      begin
+        RemoveTagsFromTagMap('MP3');
+        CheckAndSetAudioFile(Value);
       end;
     end;
 
