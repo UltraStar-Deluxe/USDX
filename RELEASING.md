@@ -18,7 +18,10 @@
 6. Add `+dev` to the version in the first two files and swap the comments in `variables.nsh` again, commit, push.
     This is just to set the dev version again.
 7. Attach the artifacts to the release page and publish it.
-    Don't forget to also create a PR for this release in
-    https://github.com/UltraStar-Deluxe/ultrastar-deluxe.github.io
 8. Create a PR in [the FlatHub repository](https://github.com/flathub/eu.usdx.UltraStarDeluxe) that updates the tag and commit values.
     See this PR for an example: https://github.com/flathub/eu.usdx.UltraStarDeluxe/pull/7/files
+9. Create a PR in [the github.io repository](https://github.com/UltraStar-Deluxe/ultrastar-deluxe.github.io)
+10. By now the FlatHub build will probably have completed.
+    If it builds successfully, merge it using the _Rebase and Merge_ option.
+11. Merge the github.io PR.
+12. Close the USDX Draft Release Notes issue and make an announcement in Discord.
