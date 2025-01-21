@@ -149,7 +149,11 @@ begin
       if Song.Year        <> 0         then    SongFile.WriteLine('#YEAR:'      + IntToStr(Song.Year));
       if Song.Creator     <> ''        then    SongFile.WriteLine('#CREATOR:'   + EncodeToken(Song.Creator));
 
-      SongFile.WriteLine('#MP3:' + EncodeToken(Song.Mp3.ToUTF8));
+      if Song.FormatVersion.MinVersion(1,1,0) then
+        SongFile.WriteLine('#AUDIO:' + EncodeToken(Song.Mp3.ToUTF8));
+      if Song.FormatVersion.MaxVersion(2,0,0) then
+         SongFile.WriteLine('#MP3:' + EncodeToken(Song.Mp3.ToUTF8));
+
       if Song.Cover.IsSet              then    SongFile.WriteLine('#COVER:'       + EncodeToken(Song.Cover.ToUTF8));
       if Song.Background.IsSet         then    SongFile.WriteLine('#BACKGROUND:'  + EncodeToken(Song.Background.ToUTF8));
       if Song.Video.IsSet              then    SongFile.WriteLine('#VIDEO:'       + EncodeToken(Song.Video.ToUTF8));
