@@ -4091,7 +4091,7 @@ begin
   else
     EditDrawBorderedBox(X, Y, W, H, ColR, ColG, ColB, Alpha);
 
-  if(numLines = 1) then
+  if(numLines < 1) then
     Exit;
 
   SongStart := FindStartBeat;
