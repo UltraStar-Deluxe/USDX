@@ -250,7 +250,8 @@ begin
 
 {$IF LIBAVFORMAT_VERSION < 59000000}
     if (Stream.codec.codec_type = AVMEDIA_TYPE_VIDEO) and
-       (FirstVideoStream < 0) then
+       (FirstVideoStream < 0) and
+       ((Stream.disposition and AV_DISPOSITION_ATTACHED_PIC) <> AV_DISPOSITION_ATTACHED_PIC) then
     begin
       FirstVideoStream := i;
     end;
@@ -263,7 +264,8 @@ begin
   end;
 {$ELSE}
     if (Stream.codecpar.codec_type = AVMEDIA_TYPE_VIDEO) and
-       (FirstVideoStream < 0) then
+       (FirstVideoStream < 0) and
+       ((Stream.disposition and AV_DISPOSITION_ATTACHED_PIC) <> AV_DISPOSITION_ATTACHED_PIC) then
     begin
       FirstVideoStream := i;
     end;

@@ -53,6 +53,7 @@ const
   AVFMT_FLAG_GENPTS = 1;
   AVSEEK_FLAG_ANY = 4;
   AVSEEK_FLAG_BACKWARD = 1;
+  AV_DISPOSITION_ATTACHED_PIC = 1024;
 type
   PAVInputFormat = ^TAVInputFormat;
   PAVStream = ^TAVStream;
@@ -91,7 +92,7 @@ type
     start_time: cint64;
     we_do_not_use_duration: cint64;
     we_do_not_use_nb_frames: cint64;
-    we_do_not_use_disposition: cint;
+    disposition: cint;
     we_do_not_use_discard: cenum;
     we_do_not_use_sample_aspect_ratio: TAVRational;
     we_do_not_use_metadata: PAVDictionary;
