@@ -100,6 +100,17 @@ type
     Content: UTF8String;
   end;
 
+  TVersion = class
+  private
+    Major, Minor, Patch: integer;
+  public
+    constructor Create(); overload;
+    constructor Create(const VersionString: string); overload;
+    function MinVersion(Major, Minor, Patch: integer; Inclusive: boolean = true): boolean;
+    function MaxVersion(Major, Minor, Patch: integer; Inclusive: boolean = false): boolean;
+    function VersionString: string;
+  end;
+
   TSong = class
   private
     FileLineNo  : integer;  // line, which is read last, for error reporting
@@ -125,6 +136,8 @@ type
     Folder:       UTF8String; // for sorting by folder (only set if file was found)
     FileName:     IPath; // just name component of file (only set if file was found)
     MD5:          string; //MD5 Hash of Current Song
+
+    FormatVersion: TVersion;
 
     // filenames
     Cover:      IPath;
@@ -197,6 +210,7 @@ type
 
     constructor Create(); overload;
     constructor Create(const aFileName : IPath); overload;
+    destructor  Destroy; override;
     function    LoadSong(DuetChange: boolean): boolean;
     function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false): boolean;
     procedure   SetMedleyMode();
@@ -254,6 +268,105 @@ begin
   LyricActualOutlineColor := ActualOutlineColor;
   LyricNextOutlineColor := NextOutlineColor;
 
+end;
+
+constructor TVersion.Create();
+begin
+  inherited;
+
+  Self.Major := 0;
+  Self.Minor := 3;
+  Self.Patch := 0;
+end;
+
+constructor TVersion.Create(const VersionString: string);
+var
+  SepPos: integer;
+  SubVersion: string;
+begin
+  inherited Create();
+
+  SepPos := Pos('.', VersionString);
+  // If Version does not contain periods it is invalid
+  if (SepPos = 0) then
+    raise Exception.Create('Invalid VERSION "' + VersionString +'"');
+  // Read the major version as section in front of (first) period
+  try
+    Self.Major := StrToInt(Trim(Copy(VersionString, 1, SepPos - 1)));
+  except
+    on E : EConvertError do
+      raise Exception.Create('Invalid VERSION Header "' + VersionString + '"');
+  end;
+  // The minor and patch version number "x.x" is the SubVersion
+  SubVersion := Trim(Copy(VersionString, SepPos + 1, Length(VersionString) - SepPos));
+  SepPos := Pos('.', SubVersion);
+  // The Version must contain a second period or otherwise it is invalid
+  if (SepPos = 0) then
+  begin
+    raise Exception.Create('Invalid VERSION "' + VersionString +'"');
+  end;
+  // Read the minor version as section in between first and second period
+  // and the patch version as section after the second period
+  try
+    Self.Minor := StrToInt(Trim(Copy(SubVersion, 1, SepPos - 1)));
+    Self.Patch := StrToInt(Trim(Copy(SubVersion, SepPos + 1, Length(VersionString) - SepPos)));
+  except
+    on E : EConvertError do
+      raise Exception.Create('Invalid VERSION "' + VersionString +'"');
+  end;
+end;
+
+function TVersion.MinVersion(Major, Minor, Patch: integer; Inclusive: boolean = true): boolean;
+begin
+  if (Self.Major > Major) then
+    Result := true
+  else if (Self.Major = Major) then
+  begin
+    if (Self.Minor > Minor) then
+      Result := true
+    else if (Self.Minor = Minor) then
+    begin
+      if (Self.Patch > Patch) then
+        Result := true
+      else if (Inclusive and (Self.Patch = Patch)) then
+        Result := true
+      else
+        Result := false;
+    end
+    else
+      Result := false;
+  end
+  else
+    Result := false;
+end;
+
+function TVersion.MaxVersion(Major, Minor, Patch: integer; Inclusive: boolean = false): boolean;
+begin
+  if (Self.Major < Major) then
+    Result := true
+  else if (Self.Major = Major) then
+  begin
+    if (Self.Minor < Minor) then
+      Result := true
+    else if (Self.Minor = Minor) then
+    begin
+      if (Self.Patch < Patch) then
+        Result := true
+      else if (Inclusive and (Self.Patch = Patch)) then
+        Result := true
+      else
+        Result := false;
+    end
+    else
+      Result := false;
+  end
+  else
+    Result := false;
+end;
+
+function TVersion.VersionString: string;
+begin
+  Result := IntToStr(Self.Major) + '.' + IntToStr(Self.Minor) + '.' + IntToStr(Self.Patch);
 end;
 
 constructor TSong.Create();
@@ -335,6 +448,12 @@ begin
     end;
   end;
   *)
+end;
+
+destructor TSong.Destroy;
+begin
+  FreeAndNil(Self.FormatVersion);
+  inherited;
 end;
 
 function TSong.FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
@@ -775,7 +894,7 @@ var
   { Removes all entries for a given header-tag from the TagMap
     If TagMap contains multiple entries for the given tag,
     a informative message about the duplicate tags is logged }
-  procedure RemoveTagsFromTagMap(const tag: string);
+  procedure RemoveTagsFromTagMap(const tag: string; logDuplicateMsg: boolean = true);
   var
     count: Integer;
   begin
@@ -785,7 +904,7 @@ var
       TagMap.Remove(tag);
       count := count + 1;
     end;
-    if count > 1 then
+    if logDuplicateMsg and (count > 1) then
     begin
       Log.LogInfo('Duplicate Tag "'+ tag +'" found in file ' + FullFileName + '. Only the last value will be used.',
                   'TSong.ReadTXTHeader.RemoveTagsFromTagMap');
@@ -875,6 +994,50 @@ begin
     end; // while
 
     //Read the songs attributes stored in the TagMap
+
+    //First: Read the format version
+    if (TagMap.TryGetData('VERSION', Value)) then
+    begin
+      RemoveTagsFromTagMap('VERSION');
+      try
+        self.FormatVersion := TVersion.Create(Value);
+      except
+        on E: Exception do
+        begin
+          Result := false;
+          Log.LogError(E.Message + ' in Song File: ' + FullFileName);
+          Exit;
+        end
+      end;
+      if not self.FormatVersion.MaxVersion(2,0,0,false) then
+      begin
+        Result := false;
+        Log.LogError('Unsupported format version ' + self.FormatVersion.VersionString + '; Maximum supported version is 1.X.X: ' + FullFileName);
+        Exit;
+      end;
+    end
+    else
+      self.FormatVersion := TVersion.Create; //Default legacy version 0.3.0
+
+    // For Version >=1.0.0 Encoding is always UTF-8
+    // For Version <1.0.0 read Encoding from ENCODING header
+    if Self.FormatVersion.MinVersion(1,0,0,true) then
+    begin
+      self.Encoding := encUTF8;
+      if TagMap.IndexOf('ENCODING') > -1 then
+      begin
+        Log.LogInfo('Ignoring ENCODING header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        RemoveTagsFromTagMap('ENCODING', false);
+      end;
+    end
+    else
+    begin
+      if TagMap.TryGetData('ENCODING', Value) then
+      begin
+        RemoveTagsFromTagMap('ENCODING');
+        self.Encoding := ParseEncoding(Value, Ini.DefaultEncoding);
+      end;
+    end;
 
     //-----------
     //Required Attributes
@@ -1032,35 +1195,53 @@ begin
     // Resolution
     if (TagMap.TryGetData('RESOLUTION', Value)) then
     begin
-      RemoveTagsFromTagMap('RESOLUTION');
-      TryStrtoInt(Value, self.Resolution);
-      if (self.Resolution < 1) then
+      if FormatVersion.MaxVersion(1,0,0,false) then
       begin
-        Log.LogError('Ignoring invalid resolution in song: ' + FullFileName);
-        self.Resolution := DEFAULT_RESOLUTION;
+        RemoveTagsFromTagMap('RESOLUTION');
+        TryStrtoInt(Value, self.Resolution);
+        if (self.Resolution < 1) then
+        begin
+          Log.LogError('Ignoring invalid resolution in song: ' + FullFileName);
+          self.Resolution := DEFAULT_RESOLUTION;
+        end;
+      end
+      else
+      begin
+        Log.LogInfo('Ignoring RESOLUTION header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        RemoveTagsFromTagMap('RESOLUTION', false);
       end;
     end;
 
     // Notes Gap
     if (TagMap.TryGetData('NOTESGAP', Value)) then
     begin
-      RemoveTagsFromTagMap('NOTESGAP');
-      TryStrtoInt(Value, self.NotesGAP)
+      if FormatVersion.MaxVersion(1,0,0,false) then
+      begin
+        RemoveTagsFromTagMap('NOTESGAP');
+        TryStrtoInt(Value, self.NotesGAP)
+      end
+      else
+      begin
+        Log.LogInfo('Ignoring NOTESGAP header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        RemoveTagsFromTagMap('NOTESGAP', false);
+      end;
     end;
 
     // Relative Notes
     if (TagMap.TryGetData('RELATIVE', Value)) then
     begin
-      RemoveTagsFromTagMap('RELATIVE');
-      if (UpperCase(Value) = 'YES') then
-        self.Relative := true;
-    end;
-
-    // File encoding
-    if (TagMap.TryGetData('ENCODING', Value)) then
-    begin
-      RemoveTagsFromTagMap('ENCODING');
-      self.Encoding := ParseEncoding(Value, Ini.DefaultEncoding);
+      if FormatVersion.MaxVersion(1,0,0,false) then
+      begin
+        RemoveTagsFromTagMap('RELATIVE');
+        if (UpperCase(Value) = 'YES') then
+          self.Relative := true;
+      end
+      else
+      begin
+        Result := false;
+        Log.LogError('Relative Mode was removed for format >=1.0.0. The song will not be loaded. ' + FullFileName);
+        Exit;
+      end;
     end;
 
     // PreviewStart
@@ -1102,15 +1283,31 @@ begin
     // Duet Singer Name P1
     if (TagMap.TryGetData('DUETSINGERP1', Value)) then
     begin
-      RemoveTagsFromTagMap('DUETSINGERP1');
-      DecodeStringUTF8(Value, DuetNames[0], Encoding);
+      if FormatVersion.MaxVersion(1,0,0,false) then
+      begin
+        RemoveTagsFromTagMap('DUETSINGERP1');
+        DecodeStringUTF8(Value, DuetNames[0], Encoding);
+      end
+      else
+      begin
+        Log.LogInfo('Ignoring DUETSINGERP1 header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        RemoveTagsFromTagMap('DUETSINGERP1', false);
+      end;
     end;
 
     // Duet Singer Name P2
     if (TagMap.TryGetData('DUETSINGERP2', Value)) then
     begin
-      RemoveTagsFromTagMap('DUETSINGERP2');
-      DecodeStringUTF8(Value, DuetNames[1], Encoding);
+      if FormatVersion.MaxVersion(1,0,0,false) then
+      begin
+        RemoveTagsFromTagMap('DUETSINGERP2');
+        DecodeStringUTF8(Value, DuetNames[1], Encoding);
+      end
+      else
+      begin
+        Log.LogInfo('Ignoring DUETSINGERP2 header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        RemoveTagsFromTagMap('DUETSINGERP2', false);
+      end;
     end;
 
     // Duet Singer Name P1
