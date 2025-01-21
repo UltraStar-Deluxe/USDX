@@ -1281,8 +1281,6 @@ begin
   for CurrentTrack := 0 to High(Tracks) do //for P1 of duet or solo lyrics, P2 of duet,..
   begin
     numLines := Length(Tracks[CurrentTrack].Lines); //Lyric lines
-    if (numLines < 2) then //catch cases which could cause endless loop
-      Exit;
     //set color to player.color
     if (CurrentTrack = 0) then
       glColor4f(GetLyricColor(Ini.SingColor[0]).R, GetLyricColor(Ini.SingColor[0]).G, GetLyricColor(Ini.SingColor[0]).B, 0.6)

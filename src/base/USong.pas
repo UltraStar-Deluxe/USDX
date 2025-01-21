@@ -822,7 +822,7 @@ begin
   begin
     if ((Both) or (TrackIndex = 0)) then
     begin
-      if (Length(Tracks[TrackIndex].Lines) < 2) then
+      if (Length(Tracks[TrackIndex].Lines) < 1) then
       begin
         LastError := 'ERROR_CORRUPT_SONG_NO_BREAKS';
         Log.LogError('Error loading file: Can''t find any linebreaks in "' + FileNamePath.ToNative + '"');
