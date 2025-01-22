@@ -857,7 +857,7 @@ begin
   PlayMidi := false;
   MidiFadeIn := false;
 
-  AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+  AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio));
   if ScreenSong.Mode = smMedley then
     AudioPlayback.SetVolume(0.1)
   else
@@ -1018,7 +1018,6 @@ begin
     if length(PlaylistMedley.Song) >= PlaylistMedley.CurrentMedleySong then
     begin
       CatSongs.Selected := PlaylistMedley.Song[PlaylistMedley.CurrentMedleySong-1];
-      //Music.Open(CatSongs.Song[CatSongs.Selected].Path + CatSongs.Song[CatSongs.Selected].Mp3);
     end
     else
     begin

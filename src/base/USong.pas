@@ -141,7 +141,7 @@ type
 
     // filenames
     Cover:      IPath;
-    Mp3:        IPath;
+    Audio:      IPath;
     Background: IPath;
     Video:      IPath;
 
@@ -378,7 +378,7 @@ begin
   Self.Path     := PATH_NONE();
   Self.FileName := PATH_NONE();
   Self.Cover    := PATH_NONE();
-  Self.Mp3      := PATH_NONE();
+  Self.Audio    := PATH_NONE();
   Self.Background:= PATH_NONE();
   Self.Video    := PATH_NONE();
 end;
@@ -912,7 +912,7 @@ var
   end;
 
   {**
-   * Updates the Audio file of the song (MP3 field) to a file witn given filename.
+   * Updates the Audio file of the song to a file with given filename.
    * Updates the Done flags to identify that the audio resource is set.
    * If no file with the given name exists, an error is logged.
    *}
@@ -923,7 +923,7 @@ var
     filePath := DecodeFilename(filename);
     if (Self.Path.Append(filePath).IsFile) then
     begin
-      self.Mp3 := filePath;
+      self.Audio := filePath;
       //Add Audio Flag to Done
       Done := Done or 4;
     end
@@ -1084,7 +1084,7 @@ begin
     end;
 
     // Audio File
-    // The new AUDIO header was introduced in format 1.1.0 and replaces MP3 (deprecated)
+    // The AUDIO header was introduced in format 1.1.0 and replaces MP3 (deprecated)
     // For older format versions the audio file is found in the MP3 header
     if self.FormatVersion.MinVersion(1,1,0) then
     begin
@@ -1387,8 +1387,8 @@ begin
     Result := false;
     if (Done and 8) = 0 then      //No BPM Flag
       Log.LogError('File contains empty lines or BPM tag missing: ' + FullFileName)
-    else if (Done and 4) = 0 then //No MP3 Flag
-      Log.LogError('MP3 tag/file missing: ' + FullFileName)
+    else if (Done and 4) = 0 then //No Audio Flag
+      Log.LogError('Audio/MP3 tag/file missing: ' + FullFileName)
     else if (Done and 2) = 0 then //No Artist Flag
       Log.LogError('Artist tag missing: ' + FullFileName)
     else if (Done and 1) = 0 then //No Title Flag
@@ -1766,7 +1766,7 @@ begin
   SetLength(CustomTags, 0);
 
   //Required Information
-  Mp3    := PATH_NONE;
+  Audio    := PATH_NONE;
   SetLength(BPM, 0);
 
   GAP    := 0;
