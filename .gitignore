@@ -48,7 +48,7 @@ ppaslink.sh
 /src/ultrastardx.res
 
 # dev files
-**/backup/
+/backup/
 /[Tt]o[Dd]o/
 /installer/dependencies/dll/*.dll
 
