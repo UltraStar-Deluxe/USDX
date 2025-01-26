@@ -2174,7 +2174,7 @@ procedure TScreenJukebox.Play();
 var
   I: integer;
 begin
-    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio));
     AudioPlayback.SetVolume(1.0);
 
     //AudioPlayback.Position := CurrentSong.Start;
@@ -2825,21 +2825,6 @@ begin
             SongDesc := Title + ' - ' + Artist
           else
             SongDesc := Artist + ' - ' + Title;
-
-            {
-          if (CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Finish <> 0) then
-            Time := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Finish/1000
-          else
-          begin
-            AudioPlayback.Open(CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].Mp3);
-            Time := AudioPlayback.Length;
-            AudioPlayback.Close();
-          //  Time := CatSongs.Song[JukeboxVisibleSongs[I + ListMin]].MP3Length;
-
-          end;
-
-          TimeString := IntToStr(Round(Time) div 60) + ':' + Format('%.*d', [2, Round(Time) mod 60]);
-          }
         end
         else
         begin

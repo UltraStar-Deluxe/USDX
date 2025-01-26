@@ -2796,18 +2796,18 @@ begin
   begin
     CopyToUndo;
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
-    CurrentSong.Mp3 := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
+    CurrentSong.Audio := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
     AudioPlayback.Close;
-    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio));
   end;
 
   if ((Mp3SlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
   begin
     CopyToUndo;
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
-    CurrentSong.Mp3 := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
+    CurrentSong.Audio := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
     AudioPlayback.Close();
-    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio));
   end;
 
   if (((VolumeAudioSlideId = Interactions[nBut].Num) or (VolumeMidiSlideId = Interactions[nBut].Num) or (VolumeClickSlideId = Interactions[nBut].Num))
@@ -3752,7 +3752,7 @@ begin
   UndoHeader[CurrentUndoLines].Genre := CurrentSong.Genre;
   UndoHeader[CurrentUndoLines].Year := CurrentSong.Year;
   UndoHeader[CurrentUndoLines].Creator := CurrentSong.Creator;
-  UndoHeader[CurrentUndoLines].Mp3 := CurrentSong.Mp3;
+  UndoHeader[CurrentUndoLines].Mp3 := CurrentSong.Audio;
   UndoHeader[CurrentUndoLines].Mp3Id := SelectsS[Mp3SlideId].SelectedOption;
   UndoHeader[CurrentUndoLines].Cover := CurrentSong.Cover;
   UndoHeader[CurrentUndoLines].CoverId := SelectsS[CoverSlideId].SelectedOption;
@@ -3913,7 +3913,7 @@ begin
   CurrentSong.Genre        := Undoheader[CurrentUndoLines].Genre;
   CurrentSong.Year         := Undoheader[CurrentUndoLines].Year;
   CurrentSong.Creator      := Undoheader[CurrentUndoLines].Creator;
-  CurrentSong.Mp3          := Undoheader[CurrentUndoLines].Mp3;
+  CurrentSong.Audio          := Undoheader[CurrentUndoLines].Mp3;
   SelectsS[Mp3SlideId].SelectedOption := Undoheader[CurrentUndoLines].Mp3Id;
   CurrentSong.Cover        := Undoheader[CurrentUndoLines].Cover;
   SelectsS[CoverSlideId].SelectedOption := Undoheader[CurrentUndoLines].CoverId;
@@ -4703,8 +4703,7 @@ begin
     SelectsS[CreatorSlideId].TextOpt[0].Align := 0;
     SelectsS[CreatorSlideId].TextOpt[0].X := SelectsS[CreatorSlideId].TextureSBG.X + 5;
 
-    //Text[TextMp3].Text :=     CurrentSong.Mp3.ToUTF8;
-    // Header MP3
+    // Header MP3 / AUDIO
     SetLength(MP3Val, 0);
     SetLength(Files, 0);
     SlideMP3Index := -1;
@@ -4716,7 +4715,7 @@ begin
     begin
       SetLength(MP3Val, High(MP3Val) + 2);
       MP3Val[FileIndex] := filesystem.ExtractFileName(Files[FileIndex]).ToUTF8;
-      if (UTF8CompareText(MP3Val[FileIndex],CurrentSong.Mp3.ToUTF8) = 0) then
+      if (UTF8CompareText(MP3Val[FileIndex],CurrentSong.Audio.ToUTF8) = 0) then
             SlideMP3Index := FileIndex;
     end;
     UpdateSelectSlideOptions(Theme.EditSub.SlideMP3,MP3SlideId,MP3Val,SlideMP3Index);
@@ -4922,7 +4921,7 @@ begin
       Tracks[TrackIndex].Lines[0].Notes[0].Color := P1_INVERTED;
     end;
 
-    AudioPlayBack.Open(CurrentSong.Path.Append(CurrentSong.Mp3));
+    AudioPlayBack.Open(CurrentSong.Path.Append(CurrentSong.Audio));
     //Set Down Music Volume for Better hearability of Midi Sounds
     //Music.SetVolume(0.4);
 
@@ -5084,7 +5083,7 @@ begin
     end; //for NoteIndex}
   end; //end move cursor
 
-  // mp3 music
+  // music
   if (PlaySentence or PlayVideo or PlayOne) then
   begin
     // stop the music
