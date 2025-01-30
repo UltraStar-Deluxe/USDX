@@ -81,7 +81,6 @@
 // audio config
 {$IF Defined(HaveBASS)}
   {$DEFINE UseBASSPlayback}
-  {$DEFINE UseBASSDecoder}
   {$DEFINE UseBASSInput}
 {$ELSEIF Defined(HavePortaudio)}
   {$DEFINE UseSDLPlayback}
@@ -112,7 +111,7 @@
   {$DEFINE UseFFmpeg}
 {$IFEND}
 
-{$IF Defined(UseBASSInput) or Defined(UseBASSPlayback) or Defined(UseBASSDecoder)}
+{$IF Defined(UseBASSInput) or Defined(UseBASSPlayback)}
   {$DEFINE UseBASS}
 {$IFEND}
 

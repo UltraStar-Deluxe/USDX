@@ -44,7 +44,7 @@
         <PackageName Value="LazUtils"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="130">
+    <Units Count="129">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -406,7 +406,7 @@
         <IsPartOfProject Value="True"/>
       </Unit89>
       <Unit90>
-        <Filename Value="media\UAudioDecoder_Bass.pas"/>
+        <Filename Value="screens\views\UScreenSingView.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit90>
       <Unit91>
@@ -564,10 +564,6 @@
         <Filename Value="base\UConfig.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit128>
-      <Unit129>
-        <Filename Value="screens\views\UScreenSingView.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit129>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
