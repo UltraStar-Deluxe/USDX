@@ -413,6 +413,7 @@ macosx-app: all
 # Must be done BEFORE info.plist is created.
 	$(MKDIR) $(macosx_bundle_path)/resources
 	$(INSTALL_DATA) icons/ultrastardx.icns $(macosx_bundle_path)/resources/
+	$(INSTALL_DATA) game/resources/songlist_template.html $(macosx_bundle_path)/resources/
 
 # the info.plist file
 	$(INSTALL_DATA) $(USDX_SRC_DIR)/macosx/Info.plist $(macosx_bundle_path)/
