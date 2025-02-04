@@ -50,6 +50,7 @@ const
 
 const
   FF_BUG_AUTODETECT = 1;
+  AV_PKT_DATA_SKIP_SAMPLES = 11;
 type
   TAVCodecID = (
     AV_CODEC_ID_NONE
@@ -58,6 +59,7 @@ type
   TAVPicture = record
     do_not_instantiate_this_record: incomplete_record;
   end;
+  TAVPacketSideDataType = cenum;
   PAVPacket = ^TAVPacket;
   PPAVPacket = ^PAVPacket;
   TAVPacket = record
@@ -69,7 +71,7 @@ type
     stream_index: cint;
     flags: cint;
     side_data: pointer;
-    we_do_not_use_side_data_elems: cint;
+    side_data_elems: cint;
     we_do_not_use_duration: cint64;
     we_do_not_use_pos: cint64;
     we_do_not_use_convergence_duration: cint64;
@@ -328,5 +330,7 @@ function avcodec_parameters_to_context(codec: PAVCodecContext; par: PAVCodecPara
 function av_packet_alloc(): PAVPacket; cdecl; external av__codec;
 procedure av_packet_free(pkt: PPAVPacket); cdecl; external av__codec;
 procedure av_packet_unref(pkt: PAVPacket); cdecl; external av__codec;
+function av_packet_new_side_data(pkt: PAVPacket; type_data: TAVPacketSideDataType; size: csize_t): pcuint8; cdecl; external av__codec;
+function av_packet_get_side_data(const pkt: PAVPacket; type_data: TAVPacketSideDataType; size: pcsize_t): pcuint8; cdecl; external av__codec;
 implementation
 end.
