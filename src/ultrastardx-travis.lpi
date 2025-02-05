@@ -44,7 +44,7 @@
         <PackageName Value="LazUtils"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="129">
+    <Units Count="128">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -410,7 +410,7 @@
         <IsPartOfProject Value="True"/>
       </Unit90>
       <Unit91>
-        <Filename Value="media\UAudioDecoder_Bass.pas"/>
+        <Filename Value="base\UFilesystem.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit91>
       <Unit92>
@@ -560,10 +560,6 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UUnicodeStringHelper"/>
       </Unit127>
-      <Unit128>
-        <Filename Value="base\UFilesystem.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit128>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

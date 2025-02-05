@@ -29,7 +29,7 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="126">
+    <Units Count="125">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -437,8 +437,9 @@
         <IsPartOfProject Value="True"/>
       </Unit99>
       <Unit100>
-        <Filename Value="media/UAudioDecoder_Bass.pas"/>
+        <Filename Value="lua/ULuaUsdx.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaUsdx"/>
       </Unit100>
       <Unit101>
         <Filename Value="media/UAudioDecoder_FFmpeg.pas"/>
@@ -546,11 +547,6 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="ULuaTexture"/>
       </Unit124>
-      <Unit125>
-        <Filename Value="lua/ULuaUsdx.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="ULuaUsdx"/>
-      </Unit125>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
