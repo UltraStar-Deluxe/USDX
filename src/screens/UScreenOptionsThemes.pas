@@ -74,6 +74,7 @@ uses
   ULog,
   UMain,
   UPathUtils,
+  URecord,
   USkins,
   UUnicodeUtils,
   SysUtils;
@@ -267,6 +268,7 @@ begin
     UGraphic.UnLoadScreens();
     UGraphic.LoadScreens(USDXVersionStr);
     Ini.Load;
+    AudioInputProcessor.UpdateInputDeviceConfig();
   end;
 end;
 
