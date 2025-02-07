@@ -87,6 +87,9 @@ const
   //  * it should be possible to play with 5 players [without duplicating a lot of code]
   //  * there might be a valid usecase for 0 players
   IMaxPlayerCount = 12;
+  // Switch colors for players 2 and 4, since player 2 line color is used
+  // for the second part in duet, and yellow (4) looks better than red (2)
+  DefaultPlayerColors: array[0..IMaxPlayerCount-1] of integer = (1, 4, 3, 2, 5, 6, 7, 8, 9, 10, 11, 12);
   IPlayers:     array[0..4] of UTF8String = ('1', '2', '3', '4', '6');
   IPlayersVals: array[0..4] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 );
 
@@ -1414,17 +1417,12 @@ begin
     // Name
     Name[I] := IniFile.ReadString('Name', 'P'+IntToStr(I+1), 'Player'+IntToStr(I+1));
     // Color Player
-    PlayerColor[I] := IniFile.ReadInteger('PlayerColor', 'P'+IntToStr(I+1), I + 1);
+    PlayerColor[I] := IniFile.ReadInteger('PlayerColor', 'P'+IntToStr(I+1), DefaultPlayerColors[I]);
     // Avatar Player
     PlayerAvatar[I] := IniFile.ReadString('PlayerAvatar', 'P'+IntToStr(I+1), '');
     // Level Player
     PlayerLevel[I] := IniFile.ReadInteger('PlayerLevel', 'P'+IntToStr(I+1), 0);
   end;
-
-  // Switch colors for players 2 and 4, since player 2 line color is used
-  // for the second part in duet, and yellow (4) looks better than red (2)
-  PlayerColor[1] := IniFile.ReadInteger('PlayerColor', 'P'+IntToStr(I+1), 4);
-  PlayerColor[3] := IniFile.ReadInteger('PlayerColor', 'P'+IntToStr(I+1), 2);
 
   // Color Team
   for I := 0 to 2 do
