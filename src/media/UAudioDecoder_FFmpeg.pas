@@ -400,7 +400,10 @@ begin
 
   // now initialize the audio-format
   PackedSampleFormat := av_get_packed_sample_fmt(fCodecCtx^.sample_fmt);
-  if (PackedSampleFormat <> fCodecCtx^.sample_fmt) then
+  if ((PackedSampleFormat <> fCodecCtx^.sample_fmt)
+
+    // BASS expects the audio provided by the decoder to be in 16 bit signed integer or 32 bit float format
+    {$IFDEF UseBASSPlayback} or (not ((fCodecCtx^.sample_fmt = AV_SAMPLE_FMT_S16) or (fCodecCtx^.sample_fmt = AV_SAMPLE_FMT_FLT))){$ENDIF}) then
   begin
     // There is no point in leaving PackedSampleFormat as is.
     // av_audio_resample_init as used by TAudioConverter_FFmpeg will internally
