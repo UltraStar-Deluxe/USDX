@@ -149,6 +149,7 @@ type
     Genre:      UTF8String;
     Edition:    UTF8String;
     Language:   UTF8String;
+    Tags:       UTF8String;
     Year:       Integer;
 
     Title:      UTF8String;
@@ -160,6 +161,7 @@ type
     LanguageASCII: UTF8String;
     EditionASCII:  UTF8String;
     GenreASCII:    UTF8String;
+    TagsASCII:     UTF8String;
     CreatorASCII:  UTF8String;
 
     Creator:    UTF8String;
@@ -1211,6 +1213,12 @@ begin
     //Language Sorting
     ParseMultivaluedFilterHeaders('LANGUAGE', self.Language, self.LanguageASCII);
 
+    //Tags Sorting
+    if FormatVersion.MinVersion(1,1,0) then
+    begin
+      ParseMultivaluedFilterHeaders('TAGS', self.Tags, self.TagsASCII);
+    end;
+
     //Year Sorting
     if (TagMap.TryGetData('YEAR', Value)) then
     begin
@@ -1761,6 +1769,7 @@ begin
   Edition  := 'Unknown';
   Language := 'Unknown';
   Year := 0;
+  Tags := '';
 
   // set to default encoding
   Encoding := Ini.DefaultEncoding;
