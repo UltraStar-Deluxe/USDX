@@ -181,7 +181,6 @@ type
 
       procedure MapPlayersToPosition;
 
-      procedure FillPlayer(Item, P: integer);
       procedure FillPlayerItems(PlayerNumber: integer);
 
       procedure UpdateAnimation;
@@ -1756,40 +1755,6 @@ begin
     if (ScoreType = sbtGolden) then
       TextGolden_ActualValue[PlayerNumber]   := ScoreReached;
   end;
-end;
-
-procedure TScreenScore.FillPlayer(Item, P: integer);
-var
-  S:    string;
-begin
-  Text[TextName[Item]].Text := Ini.Name[P];
-
-  S := IntToStr((Round(Player[P].Score) div 10) * 10);
-  while (Length(S)<4) do
-    S := '0' + S;
-  Text[TextNotesScore[Item]].Text := S;
-
-  //  while (Length(S)<5) do S := '0' + S;
-  //  Text[TextTotalScore[Item]].Text := S;
-
-  //fixed: line bonus and golden notes don't show up,
-  //       another bug: total score was shown without added golden-, linebonus
-  S := IntToStr(Player[P].ScoreTotalInt);
-  while (Length(S)<5) do
-    S := '0' + S;
-  Text[TextTotalScore[Item]].Text := S;
-
-  S := IntToStr(Player[P].ScoreLineInt);
-  while (Length(S)<4) do
-    S := '0' + S;
-  Text[TextLineBonusScore[Item]].Text := S;
-
-  S := IntToStr(Player[P].ScoreGoldenInt);
-  while (Length(S)<4) do
-    S := '0' + S;
-  Text[TextGoldenNotesScore[Item]].Text := S;
-  //end of fix
-
 end;
 
 //Procedure Change current played Preview
