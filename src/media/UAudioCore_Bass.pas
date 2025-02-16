@@ -37,8 +37,7 @@ uses
   Classes,
   SysUtils,
   UMusic,
-  BASS,     // (Note: DWORD is defined here)
-  BASS_FX;
+  BASS;     // (Note: DWORD is defined here)
 
 type
   TAudioCore_Bass = class
@@ -64,7 +63,6 @@ const
   // BASS 2.4.2 is not ABI compatible with older versions
   // as (BASS_RECORDINFO.driver was removed)
   BASS_MIN_REQUIRED_VERSION = $02040201;
-  BASS_FX_MIN_REQUIRED_VERSION = $02040201;
 
 var
   Instance: TAudioCore_Bass;
@@ -98,13 +96,6 @@ begin
   if (not Result) then
   begin
     Log.LogWarn('Could not init BASS audio library. ''bass.dll'' version is ' + DecodeVersion(BASS_GetVersion()) + ' but ' + DecodeVersion(BASS_MIN_REQUIRED_VERSION) + ' or higher is required.',
-        'TAudioCore_Bass.CheckVersion');
-  end;
-
-  Result := BASS_FX_GetVersion() >= BASS_FX_MIN_REQUIRED_VERSION;
-  if (not Result) then
-  begin
-    Log.LogWarn('Could not init BASS_FX audio library. ''bass_fx.dll'' version is ' + DecodeVersion(BASS_FX_GetVersion()) + ' but ' + DecodeVersion(BASS_FX_MIN_REQUIRED_VERSION) + ' or higher is required.',
         'TAudioCore_Bass.CheckVersion');
   end;
 end;

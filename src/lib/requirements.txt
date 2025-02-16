@@ -10,8 +10,6 @@ pngImage
 
 BASS.pas
   http://www.un4seen.com/download.php?bass24
-BASS_FX.pas
-  www.un4seen.com/download.php?z/0/bass_fx24
 
 ffmpeg
   http://www.iversenit.dk/dev/ffmpeg-headers/

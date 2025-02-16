@@ -75,7 +75,6 @@ uses
 
   {$IFDEF UseBass}
   BASS                   in 'lib\bass\delphi\bass.pas',
-  BASS_FX                in 'lib\bass_fx\bass_fx.pas',
   UAudioCore_Bass        in 'media\UAudioCore_Bass.pas',
   {$ENDIF}
   {$IFDEF UsePortaudio}

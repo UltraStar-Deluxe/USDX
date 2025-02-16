@@ -230,24 +230,6 @@ type
   end;
 
 type
-  TSoundFX = class
-    public
-      EngineData: Pointer; // can be used for engine-specific data
-      procedure Init(); virtual; abstract;
-      procedure Removed(); virtual; abstract;
-
-      class function CanEnable: boolean; virtual; abstract;
-
-      function GetType: DWORD; virtual; abstract;
-      function GetPriority: LongInt; virtual; abstract;
-      function GetName: string; virtual; abstract;
-
-  end;
-  
-  TReplayGain = class(TSoundFX)
-  end;
-
-type
   TAudioProcessingStream = class;
   TOnCloseHandler = procedure(Stream: TAudioProcessingStream);
 
@@ -335,9 +317,6 @@ type
 
       procedure GetFFTData(var data: TFFTData);          virtual; abstract;
       function GetPCMData(var data: TPCMData): Cardinal; virtual; abstract;
-
-      procedure AddSoundFX(FX: TSoundFX);    virtual; abstract;
-      procedure RemoveSoundFX(FX: TSoundFX); virtual; abstract;
 
       procedure SetSyncSource(SyncSource: TSyncSource);
       function GetSourceStream(): TAudioSourceStream;
