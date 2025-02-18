@@ -284,51 +284,7 @@ begin
 end;
 
 function TScreenTop5.Draw: boolean;
-//var
-{
-  Min:     real;
-  Max:     real;
-  Factor:  real;
-  Factor2: real;
-
-  Item:    integer;
-  P:       integer;
-  C:       integer;
-}
 begin
-  // Singstar - let it be...... with 6 statics
-(*
-  if PlayersPlay = 6 then
-  begin
-    for Item := 4 to 6 do
-    begin
-      if ScreenAct = 1 then P := Item-4;
-      if ScreenAct = 2 then P := Item-1;
-
-      FillPlayer(Item, P);
-{
-      if ScreenAct = 1 then
-      begin
-        LoadColor(
-          Statics[StaticBoxLightest[Item]].Texture.ColR,
-          Statics[StaticBoxLightest[Item]].Texture.ColG,
-          Statics[StaticBoxLightest[Item]].Texture.ColB,
-          'P1Dark');
-      end;
-
-      if ScreenAct = 2 then
-      begin
-        LoadColor(
-          Statics[StaticBoxLightest[Item]].Texture.ColR,
-          Statics[StaticBoxLightest[Item]].Texture.ColG,
-          Statics[StaticBoxLightest[Item]].Texture.ColB,
-          'P4Dark');
-      end;
-}
-    end;
-  end;
-*)
-
   Result := inherited Draw;
 end;
 
