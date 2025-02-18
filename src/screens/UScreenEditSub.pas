@@ -5089,7 +5089,6 @@ begin
     // stop the music
     if (AudioPlayback.Position > PlayStopTime) then
     begin
-      Log.LogError('STOP');
       AudioPlayback.Stop;
       PlaySentence := false;
       PlayOne := false;
