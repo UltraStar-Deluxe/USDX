@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # UltraStar Deluxe - Karaoke Game
 #
@@ -28,31 +28,9 @@ import sys
 import os
 import codecs
 
-def xopen(file, mode, encoding):
-	if sys.version_info[0] > 2:
-		return open(file=file, mode=mode, encoding=encoding)
-	else:
-		return open(name=file, mode=mode)
-		
-def xwriteline(file, content):
-	if sys.version_info[0] > 2:
-		# line endings should be handled by the file writer in newer python version
-		file.write(content + u"\n")
-	else:
-		# binary mode does not convert "\n" to the os specific line-ending.
-		# Use os.linesep instead.
-		file.write(content + os.linesep)
-		
-def xutf8header():
-	if sys.version_info[0] > 2:
-		return u'\ufeff';
-	else:
-		return codecs.BOM_UTF8;
-
-
-# buffer english file (always open binary, handle newline uniformly as "\n")
+# buffer english file
 english = []
-with xopen("English.ini", "rU", encoding="utf8") as f:
+with open("English.ini", "r", encoding="utf8") as f:
 	for line in f:
 		english.append(line.strip())
 
@@ -62,9 +40,9 @@ transPattern = re.compile("\s*(\w+)\s*=(.+)$")
 def update(lang):
 	print("\nUpdate " +  lang)
 
-	# buffer translation file (always open binary, handle newline uniformly)
+	# buffer translation file
 	translation = []
-	with xopen(lang, "rU", encoding="utf8") as f:
+	with open(lang, "r", encoding="utf8") as f:
 		for line in f:
 			translation.append(line.strip())
 
@@ -73,7 +51,7 @@ def update(lang):
 	for line in english:
 		# header
 		if re.search("\[Text\]", line, re.I):
-			outList.append(xutf8header() + "[Text]")
+			outList.append("[Text]")
 			continue
 		# ignore help text sections for now
 		if re.match("\s*\[", line):
@@ -152,9 +130,11 @@ def update(lang):
 			os.remove(oldLang)
 		os.rename(lang, oldLang)
 
-		with xopen(lang, 'w', encoding='utf-8') as f:
+		with open(lang, 'wb') as f:
+			f.write(codecs.BOM_UTF8)
+		with open(lang, 'a', encoding='utf-8', newline='\n') as f:
 			for line in outList:
-				xwriteline(f, line)
+				f.write(line + "\n")
 
 if len(sys.argv) >= 2:
 	# update specific language file passed as command-line argument
