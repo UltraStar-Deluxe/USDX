@@ -149,6 +149,7 @@ type
     Genre:      UTF8String;
     Edition:    UTF8String;
     Language:   UTF8String;
+    Tags:       UTF8String;
     Year:       Integer;
 
     Title:      UTF8String;
@@ -160,6 +161,7 @@ type
     LanguageASCII: UTF8String;
     EditionASCII:  UTF8String;
     GenreASCII:    UTF8String;
+    TagsASCII:     UTF8String;
     CreatorASCII:  UTF8String;
 
     Creator:    UTF8String;
@@ -933,6 +935,29 @@ var
     end;
   end;
 
+  {**
+   * Reads all instances of a specified header and
+   * sets the variables for song filtering accordingly.
+   *}
+  procedure ParseMultivaluedFilterHeaders(const header: string; var field, asciiField: UTF8String);
+  var
+    value: string;
+    tempUtf8String: UTF8String;
+  begin
+    if (TagMap.TryGetData(header, value)) then
+    begin
+      TagMap.Remove(header);
+      DecodeStringUTF8(value, field, Encoding);
+      while TagMap.TryGetData(header, value) do
+      begin
+        TagMap.Remove(header);
+        DecodeStringUTF8(value, tempUtf8String, Encoding);
+        field := tempUtf8String + ',' + field;
+      end;
+      asciiField := LowerCase(TransliterateToASCII(field));
+    end;
+  end;
+
 begin
   Result := true;
   Done   := 0;
@@ -1177,35 +1202,21 @@ begin
     end;
 
     //Genre Sorting
-    if (TagMap.TryGetData('GENRE', Value)) then
-    begin
-      RemoveTagsFromTagMap('GENRE');
-      DecodeStringUTF8(Value, Genre, Encoding);
-      self.GenreASCII := LowerCase(TransliterateToASCII(Genre));
-    end;
+    ParseMultivaluedFilterHeaders('GENRE', self.Genre, self.GenreASCII);
 
     //Edition Sorting
-    if (TagMap.TryGetData('EDITION', Value)) then
-    begin
-      RemoveTagsFromTagMap('EDITION');
-      DecodeStringUTF8(Value, Edition, Encoding);
-      self.EditionASCII := LowerCase(TransliterateToASCII(Edition));
-    end;
+    ParseMultivaluedFilterHeaders('EDITION', self.Edition, self.EditionASCII);
 
     //Creator Tag
-    if (TagMap.TryGetData('CREATOR', Value)) then
-    begin
-      RemoveTagsFromTagMap('CREATOR');
-      DecodeStringUTF8(Value, Creator, Encoding);
-      self.CreatorASCII := LowerCase(TransliterateToASCII(Creator));
-    end;
+    ParseMultivaluedFilterHeaders('CREATOR', self.Creator, self.CreatorASCII);
 
     //Language Sorting
-    if (TagMap.TryGetData('LANGUAGE', Value)) then
+    ParseMultivaluedFilterHeaders('LANGUAGE', self.Language, self.LanguageASCII);
+
+    //Tags Sorting
+    if FormatVersion.MinVersion(1,1,0) then
     begin
-      RemoveTagsFromTagMap('LANGUAGE');
-      DecodeStringUTF8(Value, Language, Encoding);
-      self.LanguageASCII := LowerCase(TransliterateToASCII(Language));
+      ParseMultivaluedFilterHeaders('TAGS', self.Tags, self.TagsASCII);
     end;
 
     //Year Sorting
@@ -1758,6 +1769,7 @@ begin
   Edition  := 'Unknown';
   Language := 'Unknown';
   Year := 0;
+  Tags := '';
 
   // set to default encoding
   Encoding := Ini.DefaultEncoding;

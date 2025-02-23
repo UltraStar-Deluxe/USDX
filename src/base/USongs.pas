@@ -73,7 +73,8 @@ type
     fltEdition,
     fltGenre,
     fltYear,
-    fltCreator
+    fltCreator,
+    fltTags
   );
 
   TBPM = record
@@ -906,7 +907,7 @@ begin
       begin
         case Filter of
           fltAll:
-            TmpString := Song[I].ArtistASCII + ' ' + Song[i].TitleASCII + ' ' + Song[i].LanguageASCII + ' ' + Song[i].EditionASCII + ' ' + Song[i].GenreASCII + ' ' + IntToStr(Song[i].Year) + ' ' + Song[i].CreatorASCII; //+ ' ' + Song[i].Folder;
+            TmpString := Song[I].ArtistASCII + ' ' + Song[i].TitleASCII + ' ' + Song[i].LanguageASCII + ' ' + Song[i].EditionASCII + ' ' + Song[i].GenreASCII + ' ' + IntToStr(Song[i].Year) + ' ' + Song[i].CreatorASCII + ' ' + Song[i].TagsASCII; //+ ' ' + Song[i].Folder;
           fltTitle:
             TmpString := Song[I].TitleASCII;
           fltArtist:
@@ -921,6 +922,8 @@ begin
             TmpString := IntToStr(Song[I].Year);
           fltCreator:
             TmpString := Song[I].CreatorASCII;
+          fltTags:
+            TmpString := Song[i].TagsASCII;
         end;
         Song[i].Visible := true;
         // Look for every searched word
