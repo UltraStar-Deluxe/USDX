@@ -93,7 +93,7 @@ begin
       end;
       SDLK_RETURN:
       begin
-        if SelInteraction = 7 then
+        if SelInteraction = 6 then
         begin
           Ini.Save;
           AudioPlayback.PlaySound(SoundLib.Back);
@@ -168,9 +168,9 @@ begin
   Theme.OptionsSound.SelectBeatClick.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsSound.SelectBeatClick, Ini.BeatClick, IBeatClickTranslated);
 
-  Theme.OptionsSound.SelectSlideMusicAutoGain.showArrows := true;
-  Theme.OptionsSound.SelectSlideMusicAutoGain.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsSound.SelectSlideMusicAutoGain, Ini.MusicAutoGain, IMusicAutoGainTranslated);
+  //Theme.OptionsSound.SelectSlideMusicAutoGain.showArrows := true;
+  //Theme.OptionsSound.SelectSlideMusicAutoGain.oneItemOnly := true;
+  //AddSelectSlide(Theme.OptionsSound.SelectSlideMusicAutoGain, Ini.MusicAutoGain, IMusicAutoGainTranslated);
 
   Theme.OptionsSound.SelectSlidePreviewVolume.showArrows := true;
   Theme.OptionsSound.SelectSlidePreviewVolume.oneItemOnly := true;

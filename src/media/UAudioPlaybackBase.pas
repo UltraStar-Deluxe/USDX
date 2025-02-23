@@ -42,15 +42,12 @@ uses
   SysUtils;
 
 type
-  FReplayGain = class of TReplayGain;
 
   TAudioPlaybackBase = class(TInterfacedObject, IAudioPlayback)
     protected
 
       OutputDeviceList: TAudioOutputDeviceList;
       MusicStream: TAudioPlaybackStream;
-
-      IReplayGain: FReplayGain;
 
       function CreatePlaybackStream(): TAudioPlaybackStream; virtual; abstract;
       procedure ClearOutputDeviceList();
@@ -157,8 +154,6 @@ begin
     Result := false;
     Exit;
   end;
-
-  if assigned(IReplayGain) and IReplayGain.CanEnable then MusicStream.AddSoundFX(IReplayGain.Create());
 
   Result := true;
 end;
