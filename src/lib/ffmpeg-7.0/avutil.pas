@@ -163,6 +163,11 @@ type
   TAVDictionary = record
     do_not_instantiate_this_record: incomplete_record;
   end;
+  PAVDictionaryEntry = ^TAVDictionaryEntry;
+  TAVDictionaryEntry = record
+    key: PAnsiChar;
+    value: PAnsiChar;
+  end;
 procedure av_channel_layout_default(ch_layout: PAVChannelLayout; nb_channels: cint); cdecl; external av__util;
 function av_channel_layout_from_string(channel_layout: PAVChannelLayout; str: PAnsiChar): cint; cdecl; external av__util;
 procedure av_free(ptr: pointer); cdecl; external av__util;
@@ -180,6 +185,7 @@ function av_get_packed_sample_fmt(sample_fmt: TAVSampleFormat): TAVSampleFormat;
 function av_get_bytes_per_sample(sample_fmt: TAVSampleFormat): cint; cdecl; external av__util;
 procedure av_log_set_level(level: cint); cdecl; external av__util;
 function av_strerror(errnum: cint; errbuf: pcchar; errbuf_size: csize_t): cint; cdecl; external av__util;
+function av_dict_get(m: PAVDictionary; const key: PAnsiChar; prev: PAVDictionaryEntry; flags: cint): PAVDictionaryEntry; cdecl; external av__util;
 implementation
 function AVERROR(e: cint): cint; {$IFDEF HasInline}inline;{$ENDIF}
 begin

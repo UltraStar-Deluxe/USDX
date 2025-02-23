@@ -317,7 +317,7 @@ begin
     begin
       // mix stream-data with mixer-buffer
       // Note: use Self.appVolume instead of Self.Volume to prevent recursive locking
-      Engine.MixBuffers(Buffer, MixerBuffer, Size, AppVolume * Stream.Volume);
+      Engine.MixBuffers(Buffer, MixerBuffer, Size, AppVolume * Stream.Volume * Stream.ReplayGainAdjustment);
     end;
   end;
 
@@ -402,6 +402,7 @@ begin
   GetMem(SourceBuffer, SourceBufferSize);
   fVolume := 1.0;
 
+  inherited;
   Result := true;
 end;
 

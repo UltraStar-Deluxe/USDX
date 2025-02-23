@@ -57,9 +57,11 @@ type
       Handle: HSTREAM;
       NeedsRewind: boolean;
       PausedSeek: boolean; // true if a seek was performed in pause state
+      fVolume: single;
 
       procedure Reset();
       function IsEOF(): boolean;
+      procedure SetVolumeBASS();
     protected
       function GetLatency(): double;        override;
       function GetLoop(): boolean;          override;
@@ -89,6 +91,7 @@ type
       function GetAudioFormatInfo(): TAudioFormatInfo; override;
 
       function ReadData(Buffer: PByte; BufferSize: integer): integer;
+      procedure SetReplayGainEnabled(RGEnabled: boolean); override;
 
       property EOF: boolean READ IsEOF;
   end;
@@ -232,6 +235,12 @@ begin
   end;
 end;
 
+procedure TBassPlaybackStream.SetReplayGainEnabled(RGEnabled: boolean);
+begin
+  inherited;
+  SetVolumeBASS();
+end;
+
 constructor TBassPlaybackStream.Create();
 begin
   inherited;
@@ -275,6 +284,7 @@ begin
                  'TBassPlaybackStream.Open');
     Exit;
   end;
+  inherited;
 
   Result := true;
 end;
@@ -299,6 +309,7 @@ begin
   Close();
   NeedsRewind := false;
   PausedSeek := false;
+  fVolume := 1.0;
 end;
 
 procedure TBassPlaybackStream.Play();
@@ -338,13 +349,15 @@ begin
   // start stream
   Play();
   // start fade-in: slide from fadeStart- to fadeEnd-volume in FadeInTime
-  BASS_ChannelSlideAttribute(Handle, BASS_ATTRIB_VOL, TargetVolume, Trunc(Time * 1000));
+  BASS_ChannelSlideAttribute(Handle, BASS_ATTRIB_VOL, TargetVolume * ReplayGainAdjustment, Trunc(Time * 1000));
+  fVolume := TargetVolume;
 end;
 
 procedure TBassPlaybackStream.Fade(Time: real; TargetVolume: single);
 begin
   // start fade-in: slide from fadeStart- to fadeEnd-volume in FadeInTime
-  BASS_ChannelSlideAttribute(Handle, BASS_ATTRIB_VOL, TargetVolume, Trunc(Time * 1000));
+  BASS_ChannelSlideAttribute(Handle, BASS_ATTRIB_VOL, TargetVolume * ReplayGainAdjustment, Trunc(Time * 1000));
+  fVolume := TargetVolume;
 end;
 
 procedure TBassPlaybackStream.Pause();
@@ -376,17 +389,8 @@ begin
 end;
 
 function TBassPlaybackStream.GetVolume(): single;
-var
-  lVolume: single;
 begin
-  if (not BASS_ChannelGetAttribute(Handle, BASS_ATTRIB_VOL, lVolume)) then
-  begin
-    Log.LogError('BASS_ChannelGetAttribute: ' + BassCore.ErrorGetString(),
-      'TBassPlaybackStream.GetVolume');
-    Result := 0;
-    Exit;
-  end;
-  Result := Round(lVolume);
+  Result := fVolume;
 end;
 
 procedure TBassPlaybackStream.SetVolume(Volume: single);
@@ -396,8 +400,13 @@ begin
     Volume := 0;
   if Volume > 1.0 then
     Volume := 1.0;
-  // set volume
-  BASS_ChannelSetAttribute(Handle, BASS_ATTRIB_VOL, Volume);
+  fVolume := Volume;
+  SetVolumeBASS();
+end;
+
+procedure TBassPlaybackStream.SetVolumeBASS();
+begin
+  BASS_ChannelSetAttribute(Handle, BASS_ATTRIB_VOL, fVolume * ReplayGainAdjustment);
 end;
 
 function TBassPlaybackStream.GetPosition: real;
