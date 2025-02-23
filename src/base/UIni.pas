@@ -182,6 +182,7 @@ type
       AudioOutputBufferSizeIndex: integer;
       VoicePassthrough: integer;
       SoundFont:      string;
+      ReplayGain:     integer;
 
       SyncTo: integer;
 
@@ -376,6 +377,7 @@ const
   IClickAssist:      array[0..1] of UTF8String  = ('Off', 'On');
   IBeatClick:        array[0..1] of UTF8String  = ('Off', 'On');
   ISavePlayback:     array[0..1] of UTF8String  = ('Off', 'On');
+  IReplayGain:       array[0..1] of UTF8String  = ('Off', 'On');
 
   IThreshold:        array[0..7] of UTF8String  = ('5%', '10%', '15%', '20%', '25%', '30%', '40%', '60%');
   IThresholdVals:    array[0..7] of single      = (0.05, 0.10, 0.15,  0.20,  0.25,  0.30,  0.40,  0.60);
@@ -500,6 +502,8 @@ var
 
   IClickAssistTranslated:      array[0..1] of UTF8String  = ('Off', 'On');
   IBeatClickTranslated:        array[0..1] of UTF8String  = ('Off', 'On');
+  IReplayGainTranslated:       array[0..1] of UTF8String  = ('Off', 'On');
+
   ISavePlaybackTranslated:     array[0..1] of UTF8String  = ('Off', 'On');
 
   IVoicePassthroughTranslated: array[0..1] of UTF8String  = ('Off', 'On');
@@ -681,6 +685,9 @@ begin
 
   IBeatClickTranslated[0]             := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IBeatClickTranslated[1]             := ULanguage.Language.Translate('OPTION_VALUE_ON');
+
+  IReplayGainTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_OFF');
+  IReplayGainTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_ON');
 
   ISavePlaybackTranslated[0]          := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   ISavePlaybackTranslated[1]          := ULanguage.Language.Translate('OPTION_VALUE_ON');
@@ -1517,6 +1524,9 @@ begin
   //Preview Volume
   PreviewVolume := ReadArrayIndex(IPreviewVolume, IniFile, 'Sound', 'PreviewVolume', 5);
 
+  // ReplayGain
+  ReplayGain := ReadArrayIndex(IReplayGain, IniFile, 'Sound', 'ReplayGain', 0);
+
   //Preview Fading
   PreviewFading := ReadArrayIndex(IPreviewFading, IniFile, 'Sound', 'PreviewFading', 3);
 
@@ -1815,6 +1825,9 @@ begin
 
     // BeatClick
     IniFile.WriteString('Sound', 'BeatClick', IBeatClick[BeatClick]);
+
+    // ReplayGain
+    IniFile.WriteString('Sound', 'ReplayGain', IReplayGain[ReplayGain]);
 
     // AudioOutputBufferSize
     IniFile.WriteString('Sound', 'AudioOutputBufferSize', IAudioOutputBufferSize[AudioOutputBufferSizeIndex]);
