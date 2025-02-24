@@ -36,7 +36,6 @@ with open("English.ini", "r", encoding="utf8") as f:
 
 transPattern = re.compile("\s*(\w+)\s*=(.+)$")
 
-	
 def update(lang):
 	print("\nUpdate " +  lang)
 
@@ -130,8 +129,6 @@ def update(lang):
 			os.remove(oldLang)
 		os.rename(lang, oldLang)
 
-		with open(lang, 'wb') as f:
-			f.write(codecs.BOM_UTF8)
 		with open(lang, 'a', encoding='utf-8', newline='\n') as f:
 			for line in outList:
 				f.write(line + "\n")
