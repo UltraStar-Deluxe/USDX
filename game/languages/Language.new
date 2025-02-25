@@ -1,4 +1,4 @@
-﻿[Text]
+[Text]
 ;TODO: LANGUAGE=English
 
 ;TODO: OPTION_VALUE_EASY=Easy
@@ -447,11 +447,11 @@
 ;TODO: STAT_MAIN_DESC=General
 ;TODO: STAT_MAIN_WHEREAMI=Tools » Statistics
 
-;TODO: STAT_OVERVIEW_INTRO=%0:s Statistics.  \n Last Reset at %1:.2d.%2:.2d.%3:d
+;TODO: STAT_OVERVIEW_INTRO=%0:s Statistics.  \n Last Reset at %3:d-%2:.2d-%1:.2d
 ;TODO: STAT_OVERVIEW_SONG=%0:d Songs(%3:d with Video), whereof %1:d already were played  and %2:d were not played yet.\n The most popular Song is %5:s from %4:s.
 ;TODO: STAT_OVERVIEW_PLAYER=Since the last Reset there were/was %0:d different Player(s).\n The best Player is %1:s with an average Score of %2:d Points.\n %3:s did the highest Score with %4:d Points.
 
-;TODO: STAT_FORMAT_DATE=%0:.2d.%1:.2d.%2:d
+;TODO: STAT_FORMAT_DATE=%2:d-%1:.2d-%0:.2d
 
 ;TODO: STAT_DETAIL=Statistics
 ;TODO: STAT_DETAIL_WHEREAMI=Tools » Statistics » Details
@@ -616,7 +616,7 @@
 ;TODO: EDIT_GENRE=Genre:
 ;TODO: EDIT_YEAR=Year:
 ;TODO: EDIT_CREATOR=Creator:
-;TODO: EDIT_MP3=MP3:
+;TODO: EDIT_MP3=Audio:
 ;TODO: EDIT_COVER=Cover:
 ;TODO: EDIT_BACKGROUND=Background:
 ;TODO: EDIT_VIDEO=Video:
