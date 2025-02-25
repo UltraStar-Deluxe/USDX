@@ -383,7 +383,7 @@ begin
       Log.LogStatus('Failed to initialize BASS Capture-Device['+inttostr(BassDeviceID)+']',
                     'TAudioInput_Bass.InitializeRecord');
     end
-    else
+    else if ((DeviceInfo.flags and BASS_DEVICE_TYPE_MASK) <> BASS_DEVICE_TYPE_SPEAKERS) then
     begin
       SetLength(AudioInputProcessor.DeviceList, DeviceIndex+1);
 

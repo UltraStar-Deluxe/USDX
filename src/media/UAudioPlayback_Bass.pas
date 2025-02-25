@@ -657,6 +657,7 @@ begin
   BassCore := TAudioCore_Bass.GetInstance();
   if not BassCore.CheckVersion then
     Exit;
+  BASS_SetConfig(BASS_CONFIG_REC_DEFAULT, 0);
 
   EnumDevices();
 
