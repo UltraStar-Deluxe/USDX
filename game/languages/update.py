@@ -129,7 +129,7 @@ def update(lang):
 			os.remove(oldLang)
 		os.rename(lang, oldLang)
 
-		with open(lang, 'a', encoding='utf-8', newline='\n') as f:
+		with open(lang, 'w', encoding='utf-8', newline='\n') as f:
 			for line in outList:
 				f.write(line + "\n")
 
