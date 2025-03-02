@@ -1584,7 +1584,7 @@ begin
   SingScores := ReadArrayIndex(ISingScores, IniFile, 'Advanced', 'SingScores', IGNORE_INDEX, 'On');
 
   // TopScores
-  TopScores := ReadArrayIndex(ITopScores, IniFile, 'Advanced', 'TopScores', IGNORE_INDEX, 'All');
+  TopScores := ReadArrayIndex(ITopScores, IniFile, 'Advanced', 'TopScores', IGNORE_INDEX, 'Player');
 
   // SyncTo
   SyncTo := ReadArrayIndex(ISyncTo, IniFile, 'Advanced', 'SyncTo', Ord(stMusic));
