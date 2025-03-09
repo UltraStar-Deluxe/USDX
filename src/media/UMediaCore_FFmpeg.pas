@@ -223,10 +223,10 @@ end;
 
 function TMediaCore_FFmpeg.GetErrorString(ErrorNum: integer): string;
 var
-  ErrorBuf: array[0..255] of cchar;
+  ErrorBuf: array[0..255] of AnsiChar;
 begin
   av_strerror(ErrorNum, @ErrorBuf[0], SizeOf(ErrorBuf));
-  Result := string(@ErrorBuf[0]);
+  Result := ErrorBuf;
 end;
 
 {
