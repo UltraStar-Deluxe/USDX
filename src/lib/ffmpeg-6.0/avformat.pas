@@ -76,6 +76,20 @@ type
     we_do_not_use_packet_size: cuint;
     we_do_not_use_max_delay: cint;
     flags: cint;
+    we_do_not_use_probesize: cint64;
+    we_do_not_use_max_analyze_duration: cint64;
+    we_do_not_use_key: pointer;
+    we_do_not_use_keylen: cint;
+    we_do_not_use_nb_programs: cuint;
+    we_do_not_use_programs: pointer;
+    we_do_not_use_video_codec_id: cenum;
+    we_do_not_use_audio_codec_id: cenum;
+    we_do_not_use_subtitle_codec_id: cenum;
+    we_do_not_use_max_index_size: cuint;
+    we_do_not_use_max_picture_buffer: cuint;
+    we_do_not_use_nb_chapters: cuint;
+    we_do_not_use_chapters: pointer;
+    metadata: PAVDictionary;
     do_not_instantiate_this_record: incomplete_record;
   end;
   TAVStream = record
@@ -91,7 +105,7 @@ type
     disposition: cint;
     we_do_not_use_discard: cenum;
     we_do_not_use_sample_aspect_ratio: TAVRational;
-    we_do_not_use_metadata: PAVDictionary;
+    metadata: PAVDictionary;
     we_do_not_use_avg_frame_rate: TAVRational;
     we_do_not_use_attached_pic: TAVPacket;
     we_do_not_use_side_data: pointer;
