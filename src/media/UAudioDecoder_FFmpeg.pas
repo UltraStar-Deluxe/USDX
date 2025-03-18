@@ -1048,20 +1048,14 @@ begin
   if (EOF) then
     Exit;
 
+  if (fAudioPaketSilence > 0) then
+  begin
+    Result := 0;
+    Exit;
+  end;
+
   while(true) do
   begin
-
-    // for titles with start_time > 0 we have to generate silence
-    // until we reach the pts of the first data packet.
-    if (fAudioPaketSilence > 0) then
-    begin
-      DataSize := Min(fAudioPaketSilence, AUDIO_BUFFER_SIZE);
-      FillChar(fAudioBuffer[0], DataSize, 0);
-      Dec(fAudioPaketSilence, DataSize);
-      fAudioStreamPos := fAudioStreamPos + DataSize / fFormatInfo.BytesPerSec;
-      Result := DataSize;
-      Exit;
-    end;
 
     // read packet data
     while (fAudioPaketSize > 0) do
@@ -1149,6 +1143,9 @@ begin
           SilenceDuration := PDouble(fPacketQueue.GetStatusInfo(Packet))^;
           fAudioPaketSilence := Round(SilenceDuration * fFormatInfo.SampleRate) * fFormatInfo.FrameSize;
           fPacketQueue.FreeStatusInfo(Packet);
+          av_packet_free(@Packet);
+          Result := 0;
+          Exit;
         end
         else
         begin
@@ -1263,6 +1260,18 @@ begin
       end;
 
       RemainByteCount := BufferSize - BufferPos;
+
+      // for titles with start_time > 0 we have to generate silence
+      // until we reach the pts of the first data packet.
+      if (fAudioPaketSilence > 0) then
+      begin
+        CopyByteCount := Min(fAudioPaketSilence, RemainByteCount);
+        FillChar(Buffer[BufferPos], CopyByteCount, 0);
+        Dec(fAudioPaketSilence, CopyByteCount);
+        Inc(BufferPos, CopyByteCount);
+        fAudioStreamPos := fAudioStreamPos + CopyByteCount / fFormatInfo.BytesPerSec;
+        continue;
+      end;
 
       if (fSwrContext <> nil) then
       begin
