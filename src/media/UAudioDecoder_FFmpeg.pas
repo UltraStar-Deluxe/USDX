@@ -79,11 +79,6 @@ uses
 const
   MAX_AUDIOQ_SIZE = (5 * 16 * 1024);
 
-const
-  // TODO: The factor 3/2 might not be necessary as we do not need extra
-  // space for synchronizing as in the tutorial.
-  AUDIO_BUFFER_SIZE = (192000 * 3) div 2;
-
 type
   TFFmpegDecodeStream = class(TAudioDecodeStream)
     private
@@ -1060,8 +1055,6 @@ begin
     // read packet data
     while (fAudioPaketSize > 0) do
     begin
-      DataSize := AUDIO_BUFFER_SIZE;
-
       got_frame_ptr := avcodec_receive_frame(fCodecCtx, fAudioBufferFrame);
       if (got_frame_ptr = AVERROR(EAGAIN)) then
         PaketDecodedSize := fAudioPaketSize
