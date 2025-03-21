@@ -597,6 +597,7 @@ var
   W, H:   integer;
   X, Y:   integer; // offset for re-positioning
   Depth:  Integer;
+  ActualW, ActualH: integer;
   Borderless, Fullscreen: boolean;
   Split: boolean;
   Disp: TSDL_DisplayMode;
@@ -704,8 +705,9 @@ NoDoubledResolution:
         Ini.SetResolution(Disp.w, Disp.h, false, true);
       end;
 
-      X := Disp.w - Screen.w;
-      Y := Disp.h - Screen.h;
+      SDL_GetWindowSize(Screen, @ActualW, @ActualH);
+      X := Disp.w - ActualW;
+      Y := Disp.h - ActualH;
     end;
 
     // if screen is out of the visisble desktop area, move it back
@@ -750,8 +752,8 @@ NoDoubledResolution:
   // define virtual (Render) and real (Screen) screen size
   RenderW := 800;
   RenderH := 600;
-  ScreenW := Screen.w;
-  ScreenH := Screen.h;
+  ScreenW := ActualW;
+  ScreenH := ActualH;
   // Ausganswerte für die State-Machine setzen
   SDL_GL_SetSwapInterval(1); // VSYNC (currently Windows only)
 
