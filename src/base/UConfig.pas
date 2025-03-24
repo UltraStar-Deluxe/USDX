@@ -128,7 +128,7 @@ const
    * Current version of UltraStar Deluxe
    *)
    // TODO: inline the contents of ../../VERSION instead
-   USDX_VERSION = '2025.2.1+dev';
+   USDX_VERSION = '2025.3.0';
 
   (*
    * FPC version numbers are already defined as built-in macros:

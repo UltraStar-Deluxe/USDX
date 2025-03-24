@@ -37,6 +37,7 @@
     <control>gamepad</control>
   </supports>
   <releases>
+    <release version="2025.3.0" date="2025-3-24" />
     <release version="2025.2.1" date="2025-2-9" />
     <release version="2025.2.0" date="2025-2-1" />
     <release version="2025.1.0" date="2025-1-5" />
