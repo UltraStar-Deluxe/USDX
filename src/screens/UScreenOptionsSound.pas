@@ -65,6 +65,8 @@ uses
 
 function TScreenOptionsSound.ParseInput(PressedKey: cardinal;
   CharCode: UCS4Char; PressedDown: boolean): boolean;
+var
+  J: integer;
 begin
   Result := true;
   if (PressedDown) then
@@ -93,7 +95,7 @@ begin
       end;
       SDLK_RETURN:
       begin
-        if SelInteraction = 6 then
+        if SelInteraction = 11 then
         begin
           Ini.Save;
           AudioPlayback.PlaySound(SoundLib.Back);
@@ -106,7 +108,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
       begin
-        if (SelInteraction >= 0) and (SelInteraction < 8) then
+        if (SelInteraction >= 0) and (SelInteraction < 11) then
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractInc;
@@ -114,11 +116,21 @@ begin
       end;
       SDLK_LEFT:
       begin
-        if (SelInteraction >= 0) and (SelInteraction < 8) then
+        if (SelInteraction >= 0) and (SelInteraction < 11) then
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractDec;
         end;
+      end;
+      SDLK_PAGEDOWN:
+      begin
+        for J := 0 to High(SelectsS) do
+          SelectsS[J].Y := SelectsS[J].Y - 5.0;
+      end;
+      SDLK_PAGEUP:
+      begin
+        for J := 0 to High(SelectsS) do
+          SelectsS[J].Y := SelectsS[J].Y + 5.0;
       end;
     end;
   end;
@@ -149,8 +161,7 @@ end;
 constructor TScreenOptionsSound.Create;
 begin
   inherited Create;
-
-  LoadFromTheme(Theme.OptionsSound);
+  LoadFromThemeSubOptions(Theme.OptionsSound);
 
   Theme.OptionsSound.SelectSlideVoicePassthrough.showArrows := true;
   Theme.OptionsSound.SelectSlideVoicePassthrough.oneItemOnly := true;
@@ -180,10 +191,32 @@ begin
   Theme.OptionsSound.SelectSlidePreviewFading.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsSound.SelectSlidePreviewFading, Ini.PreviewFading, IPreviewFadingTranslated);
 
+  Theme.OptionsSound.SelectSlideTest1.showArrows := true;
+  Theme.OptionsSound.SelectSlideTest1.oneItemOnly := true;
+  AddSelectSlide(Theme.OptionsSound.SelectSlideTest1, Ini.VoicePassthrough, IVoicePassthroughTranslated);
+
+  Theme.OptionsSound.SelectSlideTest2.showArrows := true;
+  Theme.OptionsSound.SelectSlideTest2.oneItemOnly := true;
+  AddSelectSlide(Theme.OptionsSound.SelectSlideTest2, Ini.VoicePassthrough, IVoicePassthroughTranslated);
+
+  Theme.OptionsSound.SelectSlideTest3.showArrows := true;
+  Theme.OptionsSound.SelectSlideTest3.oneItemOnly := true;
+  AddSelectSlide(Theme.OptionsSound.SelectSlideTest3, Ini.VoicePassthrough, IVoicePassthroughTranslated);
+
+  Theme.OptionsSound.SelectSlideTest4.showArrows := true;
+  Theme.OptionsSound.SelectSlideTest4.oneItemOnly := true;
+  AddSelectSlide(Theme.OptionsSound.SelectSlideTest4, Ini.VoicePassthrough, IVoicePassthroughTranslated);
+
+  Theme.OptionsSound.SelectSlideTest5.showArrows := true;
+  Theme.OptionsSound.SelectSlideTest5.oneItemOnly := true;
+  AddSelectSlide(Theme.OptionsSound.SelectSlideTest5, Ini.VoicePassthrough, IVoicePassthroughTranslated);
+
   AddButton(Theme.OptionsSound.ButtonExit);
   if (Length(Button[0].Text) = 0) then
     AddButtonText(20, 5, Theme.Options.Description[OPTIONS_DESC_INDEX_BACK]);
 
+  if (Scrollable) then
+    InitScrollBar(Theme.OptionsSound);
   Interaction := 0;
 end;
 

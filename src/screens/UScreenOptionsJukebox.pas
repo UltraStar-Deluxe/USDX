@@ -605,6 +605,8 @@ begin
 
   Lyrics.AddLine(@Line);
   Lyrics.AddLine(@Line);
+  if (Scrollable) then
+    InitScrollBar(Theme.OptionsJukebox);
 end;
 
 procedure TScreenOptionsJukebox.LyricSample;

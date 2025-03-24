@@ -188,6 +188,7 @@ type
     Typ:    TTextureType;
 
     Visible: boolean;
+    Scrollable: boolean;
 
     //Reflection Mod
     Reflection:           boolean;
@@ -231,6 +232,7 @@ type
 
     showArrows:boolean;
     oneItemOnly:boolean;
+    Scrollable: boolean;
 
     Text:   UTF8String;
     ColR,  ColG,  ColB,  Int:     real;
@@ -259,6 +261,19 @@ type
     ColR, ColG, ColB: real;
     Reflection:           boolean;
     Reflectionspacing:    real;
+  end;
+
+  TThemeScroll = record
+    Area: TThemePosition;
+    Tex: string;
+    ScrollBarHSpacing: integer;
+    ScrollBarW: integer;
+    ColR: real;
+    ColG: real;
+    ColB: real;
+    DColR: real;
+    DColG: real;
+    DColB: real;
   end;
 
   PThemeBasic = ^TThemeBasic;
@@ -686,7 +701,12 @@ type
     Description:          array[0..11] of UTF8String;
   end;
 
-  TThemeOptionsGame = class(TThemeBasic)
+  TThemeSubOptions = class(TThemeBasic)
+    Scrollable: boolean;
+    Scroll: TThemeScroll;
+  end;
+
+  TThemeOptionsGame = class(TThemeSubOptions)
     SelectLanguage:     TThemeSelectSlide;
     SelectSongMenu:     TThemeSelectSlide;
     SelectSorting:      TThemeSelectSlide;
@@ -698,7 +718,7 @@ type
     ButtonExit:         TThemeButton;
   end;
 
-  TThemeOptionsGraphics = class(TThemeBasic)
+  TThemeOptionsGraphics = class(TThemeSubOptions)
     SelectFullscreen:       TThemeSelectSlide;
     SelectResolution:       TThemeSelectSlide;
     SelectDepth:            TThemeSelectSlide;
@@ -709,7 +729,7 @@ type
     ButtonExit:             TThemeButton;
   end;
 
-  TThemeOptionsSound = class(TThemeBasic)
+  TThemeOptionsSound = class(TThemeSubOptions)
     SelectBackgroundMusic:       TThemeSelectSlide;
     SelectClickAssist:           TThemeSelectSlide;
     SelectBeatClick:             TThemeSelectSlide;
@@ -717,16 +737,21 @@ type
     SelectSlidePreviewFading:    TThemeSelectSlide;
     SelectSlideVoicePassthrough: TThemeSelectSlide;
     //SelectSlideMusicAutoGain:    TThemeSelectSlide;
+    SelectSlideTest1:            TThemeSelectSlide;
+    SelectSlideTest2:            TThemeSelectSlide;
+    SelectSlideTest3:            TThemeSelectSlide;
+    SelectSlideTest4:            TThemeSelectSlide;
+    SelectSlideTest5:            TThemeSelectSlide;
     ButtonExit:                  TThemeButton;
   end;
 
-  TThemeOptionsInput = class(TThemeBasic)
+  TThemeOptionsInput = class(TThemeSubOptions)
     SelectMouse:        TThemeSelectSlide;
     SelectJoypad:       TThemeSelectSlide;
     ButtonExit:         TThemeButton;
   end;
 
-  TThemeOptionsLyrics = class(TThemeBasic)
+  TThemeOptionsLyrics = class(TThemeSubOptions)
     SelectLyricsFont:   TThemeSelectSlide;
     SelectLyricsStyle:  TThemeSelectSlide;
     SelectLyricsEffect: TThemeSelectSlide;
@@ -737,14 +762,14 @@ type
     LowerX, LowerW, LowerY, LowerH  : integer;
   end;
 
-  TThemeOptionsThemes = class(TThemeBasic)
+  TThemeOptionsThemes = class(TThemeSubOptions)
     SelectTheme:        TThemeSelectSlide;
     SelectSkin:         TThemeSelectSlide;
     SelectColor:        TThemeSelectSlide;
     ButtonExit:         TThemeButton;
   end;
 
-  TThemeOptionsRecord = class(TThemeBasic)
+  TThemeOptionsRecord = class(TThemeSubOptions)
     SelectSlideCard:       TThemeSelectSlide;
     SelectSlideInput:      TThemeSelectSlide;
     SelectChannel:         TThemeSelectSlide;
@@ -754,7 +779,7 @@ type
     ButtonExit:            TThemeButton;
   end;
 
-  TThemeOptionsAdvanced = class(TThemeBasic)
+  TThemeOptionsAdvanced = class(TThemeSubOptions)
     SelectLoadAnimation:  TThemeSelectSlide;
     SelectEffectSing:     TThemeSelectSlide;
     SelectScreenFade:     TThemeSelectSlide;
@@ -767,7 +792,7 @@ type
     ButtonExit:           TThemeButton;
   end;
 
-  TThemeOptionsNetwork = class(TThemeBasic)
+  TThemeOptionsNetwork = class(TThemeSubOptions)
     SelectWebsite:        TThemeSelectSlide;
     SelectUsername:       TThemeSelectSlide;
     SelectSendName:       TThemeSelectSlide;
@@ -781,7 +806,7 @@ type
     ButtonExit:           TThemeButton;
   end;
 
-  TThemeOptionsWebcam = class(TThemeBasic)
+  TThemeOptionsWebcam = class(TThemeSubOptions)
     SelectWebcam:         TThemeSelectSlide;
     SelectResolution:     TThemeSelectSlide;
     SelectFPS:            TThemeSelectSlide;
@@ -795,7 +820,7 @@ type
     ButtonExit:           TThemeButton;
   end;
 
-  TThemeOptionsJukebox = class(TThemeBasic)
+  TThemeOptionsJukebox = class(TThemeSubOptions)
     SelectLyricsFont:   TThemeSelectSlide;
     SelectLyricsStyle:  TThemeSelectSlide;
     SelectLyricsEffect: TThemeSelectSlide;
@@ -1309,6 +1334,8 @@ type
     procedure LoadColors;
 
     procedure ThemeLoadBasic(Theme: TThemeBasic; const Name: string);
+    procedure ThemeLoadSubOptions(Theme: TThemeSubOptions; const Name: string);
+    function  ThemeLoadSubOptionsScroll(Theme: TThemeSubOptions; const Name: string): boolean;
     procedure ThemeLoadBackground(var ThemeBackground: TThemeBackground; const Name: string);
     procedure ThemeLoadText(var ThemeText: TThemeText; const Name: string);
     procedure ThemeLoadTexts(var ThemeText: AThemeText; const Name: string);
@@ -1327,7 +1354,7 @@ type
     procedure ThemeLoadButtonCollections(var Collections: AThemeButtonCollection; const Name: string);
     procedure ThemeLoadSelectSlide(var ThemeSelectS: TThemeSelectSlide; const Name: string);
     procedure ThemeLoadEqualizer(var ThemeEqualizer: TThemeEqualizer; const Name: string);
-    procedure ThemeLoadPosition(var ThemePosition: TThemePosition; const Name: string);
+    procedure ThemeLoadPosition(var ThemePosition: TThemePosition; const Name: string; DefaultValue: integer = 0);
 
     procedure ThemeSave(const FileName: string);
     procedure ThemeSaveBasic(Theme: TThemeBasic; const Name: string);
@@ -1942,7 +1969,7 @@ begin
       Options.TextDescription.Text := Options.Description[OPTIONS_DESC_INDEX_GAME]; // Select default first menu button 'Game'
 
       // Options Game
-      ThemeLoadBasic(OptionsGame, 'OptionsGame');
+      ThemeLoadSubOptions(OptionsGame, 'OptionsGame');
 
       ThemeLoadSelectSlide(OptionsGame.SelectLanguage,   'OptionsGameSelectSlideLanguage');
       ThemeLoadSelectSlide(OptionsGame.SelectSongMenu,   'OptionsGameSelectSongMenu');
@@ -1955,7 +1982,7 @@ begin
       ThemeLoadButton(OptionsGame.ButtonExit,            'OptionsGameButtonExit');
 
       // Options Graphics
-      ThemeLoadBasic(OptionsGraphics, 'OptionsGraphics');
+      ThemeLoadSubOptions(OptionsGraphics, 'OptionsGraphics');
 
       ThemeLoadSelectSlide(OptionsGraphics.SelectFullscreen,   'OptionsGraphicsSelectFullscreen');
       ThemeLoadSelectSlide(OptionsGraphics.SelectResolution,   'OptionsGraphicsSelectSlideResolution');
@@ -1967,7 +1994,7 @@ begin
       ThemeLoadButton(OptionsGraphics.ButtonExit,              'OptionsGraphicsButtonExit');
 
       // Options Sound
-      ThemeLoadBasic(OptionsSound, 'OptionsSound');
+      ThemeLoadSubOptions(OptionsSound, 'OptionsSound');
 
       ThemeLoadSelectSlide(OptionsSound.SelectBackgroundMusic,       'OptionsSoundSelectBackgroundMusic');
       ThemeLoadSelectSlide(OptionsSound.SelectClickAssist,           'OptionsSoundSelectClickAssist');
@@ -1977,18 +2004,24 @@ begin
       ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewFading,    'OptionsSoundSelectSlidePreviewFading');
       ThemeLoadSelectSlide(OptionsSound.SelectSlideVoicePassthrough, 'OptionsSoundSelectVoicePassthrough');
       //ThemeLoadSelectSlide(OptionsSound.SelectSlideMusicAutoGain,    'OptionsSoundSelectSlideMusicAutoGain');
+      ThemeLoadSelectSlide(OptionsSound.SelectSlideTest1,    'OptionsSoundSelectSlideTest1');
+      ThemeLoadSelectSlide(OptionsSound.SelectSlideTest2,    'OptionsSoundSelectSlideTest2');
+      ThemeLoadSelectSlide(OptionsSound.SelectSlideTest3,    'OptionsSoundSelectSlideTest3');
+      ThemeLoadSelectSlide(OptionsSound.SelectSlideTest4,    'OptionsSoundSelectSlideTest4');
+      ThemeLoadSelectSlide(OptionsSound.SelectSlideTest5,    'OptionsSoundSelectSlideTest5');
+
 
       ThemeLoadButton(OptionsSound.ButtonExit, 'OptionsSoundButtonExit');
 
       // Options Input
-      ThemeLoadBasic(OptionsInput, 'OptionsInput');
+      ThemeLoadSubOptions(OptionsInput, 'OptionsInput');
 
       ThemeLoadSelectSlide(OptionsInput.SelectMouse,     'OptionsInputSelectMouse');
       ThemeLoadSelectSlide(OptionsInput.SelectJoypad,    'OptionsInputSelectJoypad');
       ThemeLoadButton(OptionsInput.ButtonExit, 'OptionsInputButtonExit');
 
       // Options Lyrics
-      ThemeLoadBasic(OptionsLyrics, 'OptionsLyrics');
+      ThemeLoadSubOptions(OptionsLyrics, 'OptionsLyrics');
 
       ThemeLoadSelectSlide(OptionsLyrics.SelectLyricsFont,   'OptionsLyricsSelectLyricsFont');
       ThemeLoadSelectSlide(OptionsLyrics.SelectLyricsStyle,  'OptionsLyricsSelectLyricsStyle');
@@ -2008,7 +2041,7 @@ begin
       ThemeLoadButton(OptionsLyrics.ButtonExit,              'OptionsLyricsButtonExit');
 
       // Options Themes
-      ThemeLoadBasic(OptionsThemes, 'OptionsThemes');
+      ThemeLoadSubOptions(OptionsThemes, 'OptionsThemes');
 
       ThemeLoadSelectSlide(OptionsThemes.SelectTheme, 'OptionsThemesSelectTheme');
       ThemeLoadSelectSlide(OptionsThemes.SelectSkin,  'OptionsThemesSelectSkin');
@@ -2016,7 +2049,7 @@ begin
       ThemeLoadButton(OptionsThemes.ButtonExit,       'OptionsThemesButtonExit');
 
       // Options Record
-      ThemeLoadBasic(OptionsRecord, 'OptionsRecord');
+      ThemeLoadSubOptions(OptionsRecord, 'OptionsRecord');
 
       ThemeLoadSelectSlide(OptionsRecord.SelectSlideCard,     'OptionsRecordSelectSlideCard');
       ThemeLoadSelectSlide(OptionsRecord.SelectSlideInput,    'OptionsRecordSelectSlideInput');
@@ -2027,7 +2060,7 @@ begin
       ThemeLoadButton(OptionsRecord.ButtonExit,               'OptionsRecordButtonExit');
 
       //Options Advanced
-      ThemeLoadBasic(OptionsAdvanced, 'OptionsAdvanced');
+      ThemeLoadSubOptions(OptionsAdvanced, 'OptionsAdvanced');
 
       ThemeLoadSelectSlide(OptionsAdvanced.SelectLoadAnimation, 'OptionsAdvancedSelectLoadAnimation');
       ThemeLoadSelectSlide(OptionsAdvanced.SelectScreenFade,    'OptionsAdvancedSelectScreenFade');
@@ -2041,7 +2074,7 @@ begin
       ThemeLoadButton     (OptionsAdvanced.ButtonExit,          'OptionsAdvancedButtonExit');
 
       //Options Network
-      ThemeLoadBasic(OptionsNetwork, 'OptionsNetwork');
+      ThemeLoadSubOptions(OptionsNetwork, 'OptionsNetwork');
 
       ThemeLoadSelectSlide(OptionsNetwork.SelectWebsite,       'OptionsNetworkSelectWebsite');
       ThemeLoadSelectSlide(OptionsNetwork.SelectUsername,      'OptionsNetworkSelectUsername');
@@ -2057,7 +2090,7 @@ begin
       ThemeLoadButton(OptionsNetwork.ButtonExit,          'OptionsNetworkButtonExit');
 
       //Options Webcam
-      ThemeLoadBasic(OptionsWebcam, 'OptionsWebcam');
+      ThemeLoadSubOptions(OptionsWebcam, 'OptionsWebcam');
 
       ThemeLoadSelectSlide(OptionsWebcam.SelectWebcam,     'OptionsWebcamSelectWebcam');
       ThemeLoadSelectSlide(OptionsWebcam.SelectResolution, 'OptionsWebcamSelectResolution');
@@ -2072,7 +2105,7 @@ begin
       ThemeLoadButton(OptionsWebcam.ButtonExit,          'OptionsWebcamButtonExit');
 
       // Options Jukebox
-      ThemeLoadBasic(OptionsJukebox, 'OptionsJukebox');
+      ThemeLoadSubOptions(OptionsJukebox, 'OptionsJukebox');
 
       ThemeLoadSelectSlide(OptionsJukebox.SelectLyricsFont,   'OptionsJukeboxSelectLyricsFont');
       ThemeLoadSelectSlide(OptionsJukebox.SelectLyricsStyle,   'OptionsJukeboxSelectLyricsStyle');
@@ -2447,6 +2480,38 @@ begin
   ThemeLoadButtonCollections(Theme.ButtonCollection, Name + 'ButtonCollection');
 
   LastThemeBasic := Theme;
+end;
+
+procedure TTheme.ThemeLoadSubOptions(Theme: TThemeSubOptions; const Name: string);
+begin
+  ThemeLoadBasic(Theme, Name);
+  Theme.Scrollable := ThemeIni.ReadBool(Name, 'Scrollable', False);
+  if (Theme.Scrollable) then
+  begin
+    Theme.Scrollable := ThemeLoadSubOptionsScroll(Theme, Name + 'Scroll');
+  end;
+end;
+
+function  TTheme.ThemeLoadSubOptionsScroll(Theme: TThemeSubOptions; const Name: string): boolean;
+begin
+  Result := false;
+  ThemeLoadPosition(Theme.Scroll.Area, Name + 'Area', -1);
+  if ((Theme.Scroll.Area.X < 0) or (Theme.Scroll.Area.Y < 0) or (Theme.Scroll.Area.W <= 0) or (Theme.Scroll.Area.H < 0)) then
+  begin
+    Log.LogError('Section ' + Name + 'Area' + ' missing or has invalid values', 'TTheme.ThemeLoadSubOptionsScroll');
+    Exit;
+  end;
+  Theme.Scroll.ScrollBarHSpacing := ThemeIni.ReadInteger(Name + 'Bar', 'HSpacing', -1);
+  if (Theme.Scroll.ScrollBarHSpacing < 0) then
+    Exit;
+  Theme.Scroll.ScrollBarW := ThemeIni.ReadInteger(Name + 'Bar', 'W', -1);
+  if (Theme.Scroll.ScrollBarW < 0) then
+    Exit;
+
+  Theme.Scroll.Tex := ThemeIni.ReadString(Name + 'Bar', 'Tex', 'MainBar');
+  LoadColor(Theme.Scroll.ColR, Theme.Scroll.ColG,  Theme.Scroll.ColB, ThemeIni.ReadString(Name + 'Bar', 'Color', ''));
+  LoadColor(Theme.Scroll.DColR, Theme.Scroll.DColG,  Theme.Scroll.DColB, ThemeIni.ReadString(Name + 'Bar', 'DColor', ''));
+  Result := true;
 end;
 
 procedure TTheme.ThemeLoadBackground(var ThemeBackground: TThemeBackground; const Name: string);
@@ -2824,6 +2889,7 @@ begin
 
   ThemeSelectS.showArrows := (ThemeIni.ReadInteger(Name, 'ShowArrows', 0) = 1);
   ThemeSelectS.oneItemOnly := (ThemeIni.ReadInteger(Name, 'OneItemOnly', 0) = 1);
+  ThemeSelectS.Scrollable := ThemeIni.ReadBool(Name, 'Scrollable', False);
 end;
 
 procedure TTheme.ThemeLoadEqualizer(var ThemeEqualizer: TThemeEqualizer; const Name: string);
@@ -2859,16 +2925,16 @@ begin
   end;
 end;
 
-procedure TTheme.ThemeLoadPosition(var ThemePosition: TThemePosition; const Name: string);
+procedure TTheme.ThemeLoadPosition(var ThemePosition: TThemePosition; const Name: string; DefaultValue: integer);
 begin
   if not ThemeIni.SectionExists(Name) then
   begin
     Log.LogWarn('Required theme section ' + Name + '(position) does not exist.', 'TTheme.ThemeLoadPosition');
   end;
-  ThemePosition.X := ThemeIni.ReadInteger(Name, 'X', 0);
-  ThemePosition.Y := ThemeIni.ReadInteger(Name, 'Y', 0);
-  ThemePosition.H := ThemeIni.ReadInteger(Name, 'H', 0);
-  ThemePosition.W := ThemeIni.ReadInteger(Name, 'W', 0);
+  ThemePosition.X := ThemeIni.ReadInteger(Name, 'X', DefaultValue);
+  ThemePosition.Y := ThemeIni.ReadInteger(Name, 'Y', DefaultValue);
+  ThemePosition.H := ThemeIni.ReadInteger(Name, 'H', DefaultValue);
+  ThemePosition.W := ThemeIni.ReadInteger(Name, 'W', DefaultValue);
 end;
 
 procedure TTheme.ThemeLoadSingPlayerStatics(var ThemeSingPlayer: TThemeSingPlayer; const Name: string);

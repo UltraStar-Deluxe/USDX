@@ -361,6 +361,9 @@ begin
   else
     ExitButtonIID := 2;
 
+  if (Scrollable) then
+    InitScrollBar(Theme.OptionsRecord);
+
   // set focus
   Interaction := 0;
 end;

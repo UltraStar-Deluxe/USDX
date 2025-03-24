@@ -209,6 +209,8 @@ begin
 
   Lyrics.AddLine(@Line);
   Lyrics.AddLine(@Line);
+  if (Scrollable) then
+    InitScrollBar(Theme.OptionsLyrics);
 end;
 
 procedure TScreenOptionsLyrics.LyricSample;

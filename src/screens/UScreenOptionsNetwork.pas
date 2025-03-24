@@ -500,6 +500,8 @@ begin
 
     InsertButton := AddButton(Theme.OptionsNetwork.ButtonInsert);
 
+    if (Scrollable) then
+      InitScrollBar(Theme.OptionsNetwork);
     Interaction := 0;
   end;
 end;
