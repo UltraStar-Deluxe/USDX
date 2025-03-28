@@ -160,6 +160,7 @@ type
       procedure ResumeDecoderUnlocked();
       procedure PauseDecoder();
       procedure ResumeDecoder();
+      procedure ParseReplayGain();
     public
       constructor Create();
       destructor Destroy(); override;
@@ -443,6 +444,8 @@ begin
     SampleFormat
   );
   fBytesPerSample := av_get_bytes_per_sample(PackedSampleFormat) * NumChannels;
+  if (Ini.ReplayGain = 1) then
+    ParseReplayGain();
   fPacketQueue := TPacketQueue.Create();
 
   // finally start the decode thread
@@ -983,6 +986,57 @@ begin
   SDL_LockMutex(fStateLock);
   ResumeDecoderUnlocked();
   SDL_UnlockMutex(fStateLock);
+end;
+
+procedure TFFMpegDecodeStream.ParseReplayGain();
+var
+  Metadata: PAVDictionary;
+  DictEntry: PAVDictionaryEntry;
+  IsOgg: boolean;
+  GainTag: AnsiString;
+  PeakTag: AnsiString;
+begin
+
+  (*  FFmpeg stores metadata at the stream level for the Ogg container, and
+   *  at the container level for all other containers *)
+  IsOgg := CompareStr(fFormatCtx^.iformat^.name, 'ogg') = 0;
+  if (IsOgg) then
+  begin
+    if (fAudioStream = nil) then
+      Exit;
+    Metadata := fAudioStream^.metadata;
+  end
+  else
+  begin
+    if (fFormatCtx = nil) then
+      Exit;
+    Metadata := fFormatCtx^.metadata;
+  end;
+  if (Metadata = nil) then
+    Exit;
+
+  DictEntry := av_dict_get(Metadata, 'REPLAYGAIN_TRACK_GAIN', nil, 0);
+  if (DictEntry <> nil) then
+  begin
+    GainTag := DictEntry^.value;
+
+    DictEntry := av_dict_get(Metadata, 'REPLAYGAIN_TRACK_PEAK', nil, 0);
+    if (DictEntry <> nil) then
+      PeakTag := DictEntry^.value;
+    SetReplayGain(GainTag, PeakTag);
+  end
+
+  // Also support R128_TRACK_GAIN tag for Opus files
+  {$IF LIBAVFORMAT_VERSION < 59000000}
+  else if (IsOgg and (fAudioStream^.codec^.codec_id = AV_CODEC_ID_OPUS)) then
+  {$ELSE}
+  else if (IsOgg and (fAudioStream^.codecpar^.codec_id = AV_CODEC_ID_OPUS)) then
+  {$ENDIF}
+  begin
+    DictEntry := av_dict_get(Metadata, 'R128_TRACK_GAIN', nil, 0);
+    if (DictEntry <> nil) then
+      SetReplayGainR128(DictEntry^.value);
+  end;
 end;
 
 procedure TFFmpegDecodeStream.FlushCodecBuffers();

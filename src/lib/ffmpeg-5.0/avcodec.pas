@@ -53,7 +53,8 @@ const
   AV_PKT_DATA_SKIP_SAMPLES = 11;
 type
   TAVCodecID = (
-    AV_CODEC_ID_NONE
+    AV_CODEC_ID_NONE,
+    AV_CODEC_ID_OPUS = $1503c
   );
   TAVPacketSideDataType = cenum;
   PAVPacket = ^TAVPacket;

@@ -154,6 +154,8 @@ begin
     Result := false;
     Exit;
   end;
+  if (Ini.ReplayGain = 1) then
+    MusicStream.ReplayGainEnabled := true;
 
   Result := true;
 end;
