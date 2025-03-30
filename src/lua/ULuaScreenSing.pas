@@ -116,6 +116,7 @@ const
 
 implementation
 uses
+  math,
   UScreenSingController,
   UNote,
   UDisplay,
@@ -345,7 +346,16 @@ end;
   returns a table filled with the data of TScreenSing }
 function ULuaScreenSing_GetSettings(L: Plua_State): Integer; cdecl;
   var Top: Integer;
+  var I: Integer;
+  var NotesVisibleAsInt: integer;
 begin
+  NotesVisibleAsInt := 0;
+  for I := 0 to high(ScreenSing.Settings.NotesVisible) do begin
+    if (ScreenSing.Settings.NotesVisible[I]) then begin
+      NotesVisibleAsInt := NotesVisibleAsInt + (2 ** I);
+    end;
+  end;
+
   // pop arguments
   Top := lua_getTop(L);
   if (Top > 0) then
@@ -357,7 +367,7 @@ begin
   lua_pushBoolean(L, ScreenSing.Settings.LyricsVisible);
   lua_setField(L, -2, 'LyricsVisible');
 
-  lua_pushBinInt(L, ScreenSing.Settings.NotesVisible);
+  lua_pushBinInt(L, NotesVisibleAsInt);
   lua_setField(L, -2, 'NotesVisible');
 
   lua_pushBinInt(L, ScreenSing.Settings.PlayerEnabled);
@@ -375,8 +385,10 @@ end;
 function ULuaScreenSing_SetSettings(L: Plua_State): Integer; cdecl;
   var
     Key: String;
+    I, NotesVisibleAsInt: integer;
 begin
   Result := 0;
+  NotesVisibleAsInt := 0;
 
   // check for table on stack
   luaL_checkType(L, 1, LUA_TTABLE);
@@ -389,9 +401,12 @@ begin
 
     if (Key = 'lyricsvisible') and (lua_isBoolean(L, -1)) then
       ScreenSing.settings.LyricsVisible := lua_toBoolean(L, -1)
-    else if (Key = 'notesvisible') and (lua_isTable(L, -1)) then
-      ScreenSing.settings.NotesVisible := lua_toBinInt(L, -1)
-    else if (Key = 'playerenabled') and (lua_isTable(L, -1)) then
+    else if (Key = 'notesvisible') and (lua_isTable(L, -1)) then begin
+      NotesVisibleAsInt := lua_toBinInt(L, -1);
+      for I := 0 to high(ScreenSing.settings.NotesVisible) do begin
+        ScreenSing.settings.NotesVisible[I] := NotesVisibleAsInt and (1 shl I) <> 0;
+      end;
+    end else if (Key = 'playerenabled') and (lua_isTable(L, -1)) then
       ScreenSing.settings.PlayerEnabled := lua_toBinInt(L, -1)
     else if (Key = 'soundenabled') and (lua_isBoolean(L, -1)) then
       ScreenSing.settings.SoundEnabled := lua_toBoolean(L, -1);
