@@ -15,6 +15,10 @@ unit BASS;
 
 interface
 
+{$IFDEF FPC}
+  {$MODE Delphi}
+{$ENDIF}
+
 {$IFDEF MSWINDOWS}
 uses
   Windows;
