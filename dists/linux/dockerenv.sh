@@ -25,7 +25,7 @@ elif [ "$targetarch" == "i386" ] || [ "$targetarch" == "i686" ]; then
 elif [ "$targetarch" == "aarch64" ]; then
 	imagename="usdx/buildenv:centos7-aarch64"
 	from="centos:7"
-	fpcpackage="https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.i386-linux.tar"
+	fpcpackage="https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.aarch64-linux.tar/download"
 	prefixcmd=""
 	epelpkgs=""
 else
