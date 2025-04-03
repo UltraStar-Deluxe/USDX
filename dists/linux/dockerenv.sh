@@ -30,7 +30,7 @@ elif [ "$targetarch" == "aarch64" ]; then
 	imagename="usdx/buildenv:centos7-aarch64"
 	from="centos:7"
 	fpcpackage="https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.aarch64-linux.tar/download"
-	prefixcmd=""
+	prefixcmd="aarch64"
 	epelpkgs=""
 else
 	echo "Unsupported architecture: $targetarch"
