@@ -96,8 +96,12 @@ jobs:
           if-no-files-found: error
 
   build_linux:
-    name: Build for Linux
-    runs-on: ubuntu-22.04
+    name: Build for Linux (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-22.04-arm]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -105,6 +109,13 @@ jobs:
         run: |
           VNAME=$(cat VERSION | sed "s/+dev$/+dev-$(git rev-parse --short HEAD)/")
           echo "versionName=$VNAME" >> $GITHUB_ENV
+      - name: Determine Arch
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-22.04" ]; then
+            echo "arch=x86" >> $GITHUB_ENV
+          else
+            echo "arch=ARM" >> $GITHUB_ENV
+          fi
       - name: Cache build
         uses: actions/cache@v4
         with:
@@ -116,10 +127,10 @@ jobs:
           cd dists/linux
           sed -i '/docker/s/-it\>//' dockerenv.sh
           ./dockerenv.sh make compress
-          mv UltraStar*.AppImage ../../UltraStarDeluxe-linux-${{ env.versionName }}.AppImage
+          mv UltraStar*.AppImage ../../UltraStarDeluxe-linux-${{ env.arch }}-${{ env.versionName }}.AppImage
       - name: Upload Image Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: UltraStarDeluxe-linux-${{ env.versionName }}
-          path: UltraStarDeluxe-linux-${{ env.versionName }}.AppImage
+          name: UltraStarDeluxe-linux-${{ env.arch }}-${{ env.versionName }}
+          path: UltraStarDeluxe-linux-${{ env.arch }}-${{ env.versionName }}.AppImage
           if-no-files-found: error
