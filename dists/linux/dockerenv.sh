@@ -27,7 +27,7 @@ elif [ "$targetarch" == "aarch64" ]; then
 	from="centos:7"
 	fpcpackage="https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.i386-linux.tar"
 	prefixcmd=""
-	epelpkgs="
+	epelpkgs=""
 else
 	echo "Unsupported architecture: $targetarch"
 	exit 1
