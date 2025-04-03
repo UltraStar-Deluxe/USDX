@@ -690,6 +690,7 @@ NoDoubledResolution:
   else
   begin
     X:=0; Y:=0;
+    SDL_GetWindowSize(Screen, @ActualW, @ActualH);
 
     // check if created window has the desired size, otherwise override the config resolution value
     if SDL_GetWindowDisplayMode(screen, @Disp) = 0 then
@@ -705,7 +706,6 @@ NoDoubledResolution:
         Ini.SetResolution(Disp.w, Disp.h, false, true);
       end;
 
-      SDL_GetWindowSize(Screen, @ActualW, @ActualH);
       X := Disp.w - ActualW;
       Y := Disp.h - ActualH;
     end;
