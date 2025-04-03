@@ -37,6 +37,8 @@ else
 	exit 1
 fi
 
+setarch --list
+
 replacements="
 	s!%%from%%!$from!g;
 	s!%%fpcpackage%%!$fpcpackage!g;
