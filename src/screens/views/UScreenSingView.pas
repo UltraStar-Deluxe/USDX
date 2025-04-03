@@ -949,7 +949,7 @@ begin
   end;
 
   // draw notes lines
-  if (ScreenSing.Settings.NotesVisible <> 0) or (ScreenSing.Settings.InputVisible) then
+  if (ScreenSing.Settings.InputVisible) then
     SingDrawLines;
 
   // draw static menu (FG)

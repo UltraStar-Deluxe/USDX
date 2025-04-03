@@ -604,7 +604,7 @@ var
 
   GoldenStarPos: real;
 begin
-  if (ScreenSing.settings.NotesVisible and (1 shl Track) <> 0) then
+  if (ScreenSing.settings.NotesVisible[Track]) then
   begin
     // the textures start counting at 1, but everything else just starts at 0
     PlayerNumber := PlayerIndex + 1;
@@ -864,7 +864,7 @@ var
   TempR:          real;
   W, H:           real;
 begin
-  if (ScreenSing.settings.NotesVisible and (1 shl PlayerIndex) <> 0) then
+  if (ScreenSing.settings.NotesVisible[PlayerIndex]) then
   begin
     //glColor4f(1, 1, 1, sqrt((1+sin( AudioPlayback.Position * 3))/4)/ 2 + 0.5 );
     glColor4f(1, 1, 1, sqrt((1 + sin(AudioPlayback.Position * 3)))/2 + 0.05);
@@ -1237,20 +1237,20 @@ begin
   // draw note-lines
 
   // to-do : needs fix when party mode works w/ 2 screens
-  if (PlayersPlay = 1) and (Ini.NoteLines = 1) and (ScreenSing.settings.NotesVisible and (1) <> 0) then
+  if (PlayersPlay = 1) and (Ini.NoteLines = 1) and (ScreenSing.settings.NotesVisible[0]) then
     SingDrawNoteLines(NR.Left + 10*ScreenX, Skin_P2_NotesB - 105, NR.Right + 10*ScreenX, 15);
 
   if (PlayersPlay = 2) and (Ini.NoteLines = 1) then
   begin
-    if (ScreenSing.settings.NotesVisible and (1 shl 0) <> 0) then
+    if (ScreenSing.settings.NotesVisible[0]) then
       SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right + 10*ScreenX, 15);
-    if (ScreenSing.settings.NotesVisible and (1 shl 1) <> 0) then
+    if (ScreenSing.settings.NotesVisible[1]) then
       SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15);
   end;
 
   if (PlayersPlay = 4) and (Ini.NoteLines = 1) then
   begin
-    if (ScreenSing.settings.NotesVisible and (1 shl 0) <> 0) then
+    if (ScreenSing.settings.NotesVisible[0]) then
     begin
       if (Ini.Screens = 1) then
         SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right + 10*ScreenX, 15)
@@ -1261,7 +1261,7 @@ begin
       end;
     end;
 
-    if (ScreenSing.settings.NotesVisible and (1 shl 1) <> 0) then
+    if (ScreenSing.settings.NotesVisible[1]) then
     begin
       if (Ini.Screens = 1) then
         SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15)
@@ -1274,16 +1274,16 @@ begin
   end;
 
   if (PlayersPlay = 3) and (Ini.NoteLines = 1) then begin
-    if (ScreenSing.settings.NotesVisible and (1 shl 0) <> 0) then
+    if (ScreenSing.settings.NotesVisible[0]) then
       SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, Nr.Right + 10*ScreenX, 12);
-    if (ScreenSing.settings.NotesVisible and (1 shl 1) <> 0) then
+    if (ScreenSing.settings.NotesVisible[1]) then
       SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, Nr.Right + 10*ScreenX, 12);
-    if (ScreenSing.settings.NotesVisible and (1 shl 2) <> 0) then
+    if (ScreenSing.settings.NotesVisible[2]) then
       SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12);
   end;
 
   if (PlayersPlay = 6) and (Ini.NoteLines = 1) then begin
-    if (ScreenSing.settings.NotesVisible and (1 shl 0) <> 0) then
+    if (ScreenSing.settings.NotesVisible[0]) then
     begin
       if (Ini.Screens = 1) then
         SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, Nr.Right + 10*ScreenX, 12)
@@ -1294,7 +1294,7 @@ begin
       end;
     end;
 
-    if (ScreenSing.settings.NotesVisible and (1 shl 1) <> 0) then
+    if (ScreenSing.settings.NotesVisible[1]) then
     begin
       if (Ini.Screens = 1) then
         SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, Nr.Right + 10*ScreenX, 12)
@@ -1305,7 +1305,7 @@ begin
       end;
     end;
 
-    if (ScreenSing.settings.NotesVisible and (1 shl 2) <> 0) then
+    if (ScreenSing.settings.NotesVisible[2]) then
     begin
       if (Ini.Screens = 1) then
         SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12)
