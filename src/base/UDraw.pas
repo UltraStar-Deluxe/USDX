@@ -1249,6 +1249,15 @@ begin
       SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15);
   end;
 
+  if (PlayersPlay = 3) and (Ini.NoteLines = 1) then begin
+    if (ScreenSing.settings.NotesVisible[0]) then
+      SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, Nr.Right + 10*ScreenX, 12);
+    if (ScreenSing.settings.NotesVisible[1]) then
+      SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, Nr.Right + 10*ScreenX, 12);
+    if (ScreenSing.settings.NotesVisible[2]) then
+      SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12);
+  end;
+
   if (PlayersPlay = 4) and (Ini.NoteLines = 1) then
   begin
     if (ScreenSing.settings.NotesVisible[0]) then
@@ -1272,15 +1281,6 @@ begin
         SingDrawNoteLines(Nr.Right/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15)
       end;
     end;
-  end;
-
-  if (PlayersPlay = 3) and (Ini.NoteLines = 1) then begin
-    if (ScreenSing.settings.NotesVisible[0]) then
-      SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, Nr.Right + 10*ScreenX, 12);
-    if (ScreenSing.settings.NotesVisible[1]) then
-      SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, Nr.Right + 10*ScreenX, 12);
-    if (ScreenSing.settings.NotesVisible[2]) then
-      SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12);
   end;
 
   if (PlayersPlay = 6) and (Ini.NoteLines = 1) then begin
