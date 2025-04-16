@@ -1109,6 +1109,7 @@ begin
         glTexCoord2f(1, 1); glVertex2f(Bounds.Right, Bounds.Bottom);
         glTexCoord2f(1, 0); glVertex2f(Bounds.Right, Bounds.Top);
       glEnd;
+      glDisable(GL_TEXTURE_2D);
       glDisable(GL_BLEND);
     end;
   end;
