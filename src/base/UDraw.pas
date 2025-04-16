@@ -1332,6 +1332,7 @@ const
   LineSpacingOneRow = 15;
   LineSpacingTwoRows = 15;
   LineSpacingThreeRows = 12;
+  // TODO: it looks like all these TopXRowsY constants are actually referring to the bottom. But all the functions they call have historically called it Top.
   TopOneRow1 = Skin_P2_NotesB;
   TopTwoRows1 = Skin_P1_NotesB;
   TopTwoRows2 = Skin_P2_NotesB;
