@@ -948,10 +948,6 @@ begin
     ScreenSing.fCurrentVideo.Draw;
   end;
 
-  // draw notes lines
-  if (ScreenSing.Settings.InputVisible) then
-    SingDrawLines;
-
   // draw static menu (FG)
   ScreenSing.DrawFG;
 

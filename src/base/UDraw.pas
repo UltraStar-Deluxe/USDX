@@ -1436,6 +1436,9 @@ begin
 
   end;
 
+  // draw notes lines
+  if (ScreenSing.Settings.InputVisible) then
+    SingDrawLines;
   // Draw the Notes
   if PlayersPlay = 1 then
   begin
