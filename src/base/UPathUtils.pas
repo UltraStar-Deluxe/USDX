@@ -80,7 +80,10 @@ begin
     PathList := TInterfaceList.Create;
 
   if Path.Equals(PATH_NONE) or not Path.CreateDirectory(true) then
+  begin
+    Log.LogWarn('Path "'+ Path.ToNative +'" not available', 'UPathUtils.AddSpecialPath');
     Exit;
+  end;
 
   PathTmp := Path.GetAbsolutePath();
   PathAbs := PathTmp.AppendPathDelim();
@@ -97,6 +100,7 @@ begin
     if (OldPathAbs.IsChildOf(PathAbs, false) or OldPathAbs.Equals(PathAbs)) then
     begin
       // ignore the new path
+      Log.LogInfo('Path "'+ PathAbs.ToNative +'" is already added, ignoring duplicate', 'UPathUtils.AddSpecialPath');
       Exit;
     end;
 
@@ -110,6 +114,7 @@ begin
   end;
 
   PathList.Add(PathAbs);
+  Log.LogInfo('Path "'+ PathAbs.ToNative +'" added', 'UPathUtils.AddSpecialPath');
 end;
 
 procedure AddSongPath(const Path: IPath);
@@ -162,7 +167,7 @@ begin
   if (not FindPath(LogPath, Platform.GetLogPath, true)) then
   begin
     Log.FileOutputEnabled := false;
-    Log.LogWarn('Log directory "'+ Platform.GetLogPath.ToNative +'" not available', 'InitializePaths');
+    Log.LogWarn('Log directory "'+ Platform.GetLogPath.ToNative +'" not available', 'UPathUtils.InitializePaths');
   end;
 
   SharedPath := Platform.GetGameSharedPath;
@@ -185,7 +190,7 @@ begin
   // Screenshot directory (must be writable)
   if (not FindPath(ScreenshotsPath, UserPath.Append('screenshots'), true)) then
   begin
-    Log.LogWarn('Screenshot directory "'+ UserPath.ToNative +'" not available', 'InitializePaths');
+    Log.LogWarn('Screenshot directory "'+ UserPath.ToNative +'" not available', 'UPathUtils.InitializePaths');
   end;
 
   // Add song paths
