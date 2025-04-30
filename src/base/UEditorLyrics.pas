@@ -266,7 +266,7 @@ begin
   begin
     SetFontFamily(Word[WordIndex].FontFamily);
     SetFontStyle(Word[WordIndex].FontStyle);
-    SetFontPos(Word[WordIndex].X + 10*ScreenX, Word[WordIndex].Y);
+    SetFontPos(Word[WordIndex].X, Word[WordIndex].Y);
     SetFontSize(Word[WordIndex].Size);
     SetFontItalic(Word[WordIndex].Italic);
     glColor3f(Word[WordIndex].ColR, Word[WordIndex].ColG, Word[WordIndex].ColB);

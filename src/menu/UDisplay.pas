@@ -265,12 +265,6 @@ begin
   for S := 1 to Screens do
   begin
     ScreenAct := S;
-
-    //if Screens = 1 then ScreenX := 0;
-    //if (Screens = 2) and (S = 1) then ScreenX := -1;
-    //if (Screens = 2) and (S = 2) then ScreenX := 1;
-    ScreenX := 0;
-
     glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
 
     // popup check was successful... move on
