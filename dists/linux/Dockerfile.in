@@ -25,4 +25,6 @@ RUN yum clean all -y
 
 ENV LC_CTYPE=en_US.utf8
 
-CMD bash
+RUN setarch --list
+
+CMD ["bash"]
