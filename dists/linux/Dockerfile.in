@@ -27,4 +27,6 @@ ENV LC_CTYPE=en_US.utf8
 
 RUN setarch --list
 
+RUN uname -m
+
 CMD ["bash"]
