@@ -55,4 +55,4 @@ $SUDO docker run --rm -it \
 	-h "usdxbuilder" \
 	-w /src/dists/linux \
 	"$imagename" \
-	"$prefixcmd" "$@"
+	$prefixcmd "$@"
