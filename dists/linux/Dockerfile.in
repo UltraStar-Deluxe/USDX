@@ -2,6 +2,8 @@ FROM %%from%%
 
 RUN sed -i 's;^.*baseurl=http://mirror;baseurl=https://vault;g' /etc/yum.repos.d/*.repo
 
+RUN yum -y install util-linux
+
 RUN [ -z "%%epelpkgs%%" ] || yum install -y --setopt=tsflags=nodocs \
     https://archives.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
 
