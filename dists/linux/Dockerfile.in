@@ -16,6 +16,14 @@ RUN yum install -y --setopt=tsflags=nodocs \
     dbus-devel systemd-devel zlib-devel libffi-devel expat-devel libxml2-devel libtool python3-pip \
     wget vim-common desktop-file-utils glib2-devel cairo-devel fuse-devel libarchive-devel %%epelpkgs%%
 
+RUN yum install -y --setopt=tsflags=nodocs centos-release-scl
+
+RUN yum install -y --setopt=tsflags=nodocs devtoolset-7-gcc*
+
+RUN scl enable devtoolset-7 bash
+
+RUN gcc --version
+
 RUN mkdir /tmp/fpcinst \
     && wget --progress=dot:giga -O - %%fpcpackage%% | tar xC /tmp/fpcinst --strip-components=1 \
     && (echo /usr/local ; echo n ; echo n) | (cd /tmp/fpcinst ; ./install.sh) \
