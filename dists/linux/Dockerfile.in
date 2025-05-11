@@ -14,15 +14,7 @@ RUN yum install -y --setopt=tsflags=nodocs \
     glibc-devel mesa-libGL-devel mesa-libgbm-devel alsa-lib-devel \
     libX11-devel libXext-devel libXcursor-devel libXinerama-devel libXrandr-devel libXi-devel libxkbcommon-devel \
     dbus-devel systemd-devel zlib-devel libffi-devel expat-devel libxml2-devel libtool python3-pip \
-    wget vim-common desktop-file-utils glib2-devel cairo-devel fuse-devel libarchive-devel %%epelpkgs%%
-
-RUN yum install -y --setopt=tsflags=nodocs centos-release-scl
-
-RUN yum install -y --setopt=tsflags=nodocs devtoolset-7-gcc*
-
-RUN scl enable devtoolset-7 bash
-
-RUN gcc --version
+    wget vim-common desktop-file-utils glib2-devel cairo-devel fuse-devel libwebp-1.5.0 libarchive-devel %%epelpkgs%%
 
 RUN mkdir /tmp/fpcinst \
     && wget --progress=dot:giga -O - %%fpcpackage%% | tar xC /tmp/fpcinst --strip-components=1 \

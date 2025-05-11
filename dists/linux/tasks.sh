@@ -148,16 +148,6 @@ task_libpng() {
 	hide make distclean
 }
 
-task_libwebp() {
-	start_build libwebp || return 0
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
-		--disable-static --disable-libwebpmux --disable-gl --disable-sdl \
-		--disable-png --disable-jpeg --disable-tiff --disable-gif --disable-wic
-	make $makearg
-	make install
-	hide make distclean
-}
-
 task_wayland() {
 	start_build wayland Wayland || return 0
 	PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" meson setup --prefix "$PREFIX" --libdir=lib -Ddocumentation=false -Dtests=false -Ddtd_validation=false build
@@ -599,8 +589,6 @@ if [ "$1" == "all_deps" ]; then
 	task_libjpeg_turbo
 	echo
 	task_libpng
-	echo
-	task_libwebp
 	echo
 
 	task_wayland

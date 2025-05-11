@@ -14,8 +14,6 @@ older() {
 	[ $toolver -lt $minver ]
 }
 
-targetarch="${ARCH-$(uname -m)}"
-
 needossl=no
 
 if older 3.5.1 cmake --version && older 3.5.1 cmake3 --version ; then
@@ -64,11 +62,6 @@ deps+=('portmidi-debian,http://http.debian.net/debian/pool/main/p/portmidi/portm
 deps+=('lua,https://www.lua.org/ftp/lua-5.4.7.tar.gz,29b54f97dab8631f52ee21a44871622eaefbe235')
 deps+=('libjpeg-turbo,https://download.sourceforge.net/libjpeg-turbo/libjpeg-turbo-2.1.5.1.tar.gz,3ec9f6a19781a583285d93c2c4653f3dbe845fcc')
 deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.43.tar.xz,ad9f087b73acf01e2c252920810b005ee69d3e0e')
-if [ "$targetarch" == "aarch64" ]; then
-	deps+=('libwebp,https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.5.0-linux-aarch64.tar.gz,9948af46e93b8476ed31d49adbdc56d3523ecea9')
-else
-	deps+=('libwebp,https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.5.0.tar.gz,b21aa842136dc59a72a38776a5aa73f4d0b00ac5')
-fi
 # deps+=('libcwrap.h,https://raw.githubusercontent.com/wheybags/glibc_version_header/master/version_headers/force_link_glibc_2.10.2.h,aff0c46cf3005fe15c49688e74df62a9988855a5')
 
 if ! patchelf 2>&1 | grep -q syntax ; then
