@@ -55,6 +55,7 @@ uses
   {$IFDEF UseMIDIPort}
   MidiOut,
   MidiCons,
+  UMidiInput,
   {$ENDIF}
   sdl2,
   strutils,
@@ -355,6 +356,7 @@ type
       procedure PreviousSentence;
       procedure DivideNote(doubleclick: boolean);
       procedure DeleteNote;
+      procedure OnMidiNote(Note: Byte);
       procedure DeleteSentence;
       procedure TransposeNote(Transpose: Integer);
       procedure ChangeWholeTone(Tone: Integer);
@@ -389,11 +391,13 @@ type
       FadeOut:                 boolean;
 
       constructor Create; override;
+      destructor Destroy; override;
       procedure OnShow; override;
       function  ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       function  ParseInputEditText(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
       function  ParseInputEditBPM(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
       function  ParseInputEditPiano(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+      procedure ApplyTone(NewTone: Integer);
       function  ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean; override;
       function  Draw: boolean; override;
       procedure OnHide; override;
@@ -485,8 +489,7 @@ begin
     Result := ParseInputEditPiano(PressedKey, CharCode, PressedDown);
     if (Result = true) then
     begin
-      SDL_ModState := KMOD_LSHIFT or KMOD_LCTRL;
-      PressedKey := SDLK_SPACE;
+      Exit;
     end;
     if (PressedKey = SDLK_RETURN) then
     begin
@@ -2577,6 +2580,38 @@ begin
   end; //if (PressedDown)
 end;
 
+procedure TScreenEditSub.ApplyTone(NewTone: Integer);
+begin
+  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone := NewTone;
+
+  PlaySentenceMidi := False;
+  PlayVideo        := False;
+  midinotefound    := False;
+  PlayOne          := True;
+  PlayOneMidi      := True;
+  Click            := False;
+  AudioPlayback.Stop;
+  StopVideoPreview;
+  // Play Midi
+  {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
+  MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
+  MidiStop := GetTimeFromBeat(
+    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
+    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration); {$ENDIF}
+  AudioPlayback.Position := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
+  PlayStopTime := (GetTimeFromBeat(
+    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
+    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration));
+  AudioPlayback.Play;
+  LastClick := -100;
+end;
+
+procedure TScreenEditSub.OnMidiNote(Note: Byte);
+begin
+  ApplyTone(Note - 48);
+  // Play current note
+end;
+
 function TScreenEditSub.ParseInputEditPiano(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
   SDL_ModState:  word;
@@ -2612,7 +2647,7 @@ begin
       begin
         if PressedKey = PianoKeysLow[i] then
         begin
-          NewNote := i - 7 + Shift; // Adjusted index to match existing logic
+          NewNote := i - 7 + Shift;
           Break;
         end;
       end;
@@ -2622,29 +2657,14 @@ begin
         begin
           if PressedKey = PianoKeysHigh[i] then
           begin
-            NewNote := i + 6 + Shift; // Adjusted index to match existing logic
+            NewNote := i + 6 + Shift;
             Break;
           end;
         end;
       end;
 
       if NewNote <> -1000 then
-      begin
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone := NewNote;
-        // Play Midi
-        PlaySentenceMidi := false;
-        PlayVideo := false;
-        midinotefound := false;
-        PlayOne := true;
-        PlayOneMidi := true;
-        StopVideoPreview();
-        {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
-        MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
-        MidiStop := GetTimeFromBeat(
-          Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
-          Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration); {$ENDIF}
-        LastClick := -100;
-      end
+        ApplyTone(NewNote)
       else
         Result := False;
     end; //if (PianoEditMode)
@@ -4694,6 +4714,13 @@ begin
   PianoKeysLow := Ini.PianoKeysLow;
   PianoKeysHigh := Ini.PianoKeysHigh;
 
+  OpenMidiIn(OnMidiNote);
+end;
+
+destructor TScreenEditSub.Destroy;
+begin
+  CloseMidiIn;
+  inherited;
 end;
 
 procedure TScreenEditSub.OnShow;
