@@ -70,6 +70,7 @@ function SplitString(const Str: string; MaxCount: integer = 0; Separators: TSysC
 
 function StringInArray(const Value: string; Strings: array of string): Boolean;
 function SplitStringToIntArray(const S: string): TArray<Cardinal>;
+function MergeIntArrayToString(const A: TArray<Cardinal>): string;
 
 function StringDeleteFromArray(var InArray: TIntegerDynArray; const InIndex: integer): Boolean; overload;
 function StringDeleteFromArray(var InStrings: TStringDynArray; const InIndex: integer): Boolean; overload;
@@ -149,6 +150,21 @@ begin
     SetLength(Result, StrList.Count);
     for I := 0 to StrList.Count - 1 do
       Result[I] := StrToInt(StrList[I]);
+  finally
+    StrList.Free;
+  end;
+end;
+
+function MergeIntArrayToString(const A: TArray<Cardinal>): string;
+var
+  StrList: TStringList;
+  I: Integer;
+begin
+  StrList := TStringList.Create;
+  try
+    for I := 0 to High(A) do
+      StrList.Add(A[I].ToString);
+    Result := StrList.CommaText;
   finally
     StrList.Free;
   end;

@@ -147,7 +147,7 @@ type
       P2EditMode:              boolean;
       BPMEditMode:             boolean;
       PianoEditMode:           boolean;
-      
+
       PianoKeysLow: TPianoKeyArray;
       PianoKeysHigh: TPianoKeyArray;
 
@@ -512,7 +512,7 @@ begin
   begin
     Result := ParseInputEditBPM(PressedKey, CharCode, PressedDown)
   end
-  else 
+  else
   begin
 
   if (PressedDown) then  // Key Down
@@ -2178,7 +2178,7 @@ begin
         end;
 
       end; // case
-  end;
+    end;
   end; // if
 end;
 

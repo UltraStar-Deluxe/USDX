@@ -1738,15 +1738,15 @@ begin
     Ini.JukeboxNextLineOtherOColorB := Round(Col.B);
   end;
 
-  KeysLow := IniFile.ReadString('KeyBindings', 'PianoKeysLow', '');
-  KeysHigh := IniFile.ReadString('KeyBindings', 'PianoKeysHigh', '');
+  // default values
   PianoKeysLow := InitializePianoKeyArray([60, 97, 121, 115, 120, 100, 99, 118, 103, 98, 104, 110, 109, 107, 44, 108, 46, 246, 45]);
   PianoKeysHigh := InitializePianoKeyArray([49, 113, 50, 119, 51, 101, 114, 53, 116, 54, 122, 117, 56, 105, 57, 111, 48, 112, 252, 96, 43]);
+  // read from config if available
+  KeysLow := IniFile.ReadString('KeyBindings', 'PianoKeysLow', '');
+  KeysHigh := IniFile.ReadString('KeyBindings', 'PianoKeysHigh', '');
   ReadPianoKeysLow := SplitStringToIntArray(KeysLow);
   ReadPianoKeysHigh := SplitStringToIntArray(KeysHigh);
-  Log.LogWarn('Got ' + IntToStr(Length(ReadPianoKeysLow)) + ' Low keys', 'ScreenEditSub');
-  Log.LogWarn('Got ' + IntToStr(Length(ReadPianoKeysHigh)) + ' high keys', 'ScreenEditSub');
-
+  // only use config if it matches the expected lengths
   if Length(ReadPianoKeysLow) = 19 then
     PianoKeysLow := ReadPianoKeysLow;
   if Length(ReadPianoKeysHigh) = 21 then
@@ -2018,6 +2018,9 @@ begin
       HexColor := RGBToHex(JukeboxNextLineOtherOColorR, JukeboxNextLineOtherOColorG, JukeboxNextLineOtherOColorB);
 
     IniFile.WriteString('Jukebox', 'NextLineOColor', HexColor);
+
+    IniFile.WriteString('KeyBindings', 'PianoKeysLow', MergeIntArrayToString(PianoKeysLow));
+    IniFile.WriteString('KeyBindings', 'PianoKeysHigh', MergeIntArrayToString(PianoKeysHigh));
 
     IniFile.Free;
 
