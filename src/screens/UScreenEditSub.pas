@@ -1443,7 +1443,7 @@ begin
           ShowInteractiveBackground;
         end;
 
-      SDLK_SLASH, SDLK_HASH, SDLK_KP_DIVIDE:
+      SDLK_SLASH, SDLK_HASH:
         begin
           CopyToUndo;
           if SDL_ModState = 0 then
@@ -2448,7 +2448,7 @@ begin
               end;
           end;
         end;
-      SDLK_SLASH, SDLK_KP_DIVIDE:
+      SDLK_SLASH:
         begin
           CopyToUndo;
           if SDL_ModState = KMOD_LCTRL then
