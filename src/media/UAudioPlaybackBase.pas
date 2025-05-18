@@ -283,12 +283,10 @@ begin
   if KaraokeMode and assigned(KaraokeMusicStream) and assigned(MusicStream) then begin
     KaraokeMusicStream.Volume := MusicStream.Volume;
     MusicStream.Volume := 0;
-    Log.LogStatus('Music now at zero!!!', 'TAudioPlayback_Base.ToggleKaraoke');
   end;
   if (not KaraokeMode) and assigned(KaraokeMusicStream) and assigned(MusicStream) then begin
     MusicStream.Volume := KaraokeMusicStream.Volume;
     KaraokeMusicStream.Volume := 0;
-    Log.LogStatus('Karaoke now at zero!!!', 'TAudioPlayback_Base.ToggleKaraoke');
   end;
 end;
 
