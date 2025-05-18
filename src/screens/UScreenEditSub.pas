@@ -3275,7 +3275,10 @@ begin
 
     // Notes[CurrentNote[CurrentTrack]] and Notes[CurrentNote[CurrentTrack] + 1] is identical at this point
     // modify first note
-    Notes[CurrentNote[CurrentTrack]].Duration := CutPosition;
+    if (doubleclick) then
+      Notes[CurrentNote[CurrentTrack]].Duration := CutPosition
+    else
+      Notes[CurrentNote[CurrentTrack]].Duration := Round(Notes[CurrentNote[CurrentTrack]].Duration / 2);
 
     // 2nd note
     Notes[CurrentNote[CurrentTrack]+1].StartBeat := Notes[CurrentNote[CurrentTrack]].StartBeat + Notes[CurrentNote[CurrentTrack]].Duration;
