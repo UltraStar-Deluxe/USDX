@@ -3710,7 +3710,7 @@ begin
     Exit;
 
   PlayMidi := false;
-  if AudioPlayback.Open(Song.Path.Append(Song.Audio)) then
+  if AudioPlayback.Open(Song.Path.Append(Song.Audio),nil) then
   begin
     PreviewOpened := Interaction;
 
