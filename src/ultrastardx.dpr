@@ -107,6 +107,7 @@ uses
   {$ENDIF}
 
   {$IFDEF UseMIDIPort}
+    UMidiInput        in 'media\UMidiInput.pas',
     MidiCons          in 'lib\midi\MidiCons.pas',
     MidiFile          in 'lib\midi\MidiFile.pas',
 
@@ -117,6 +118,7 @@ uses
       MidiDefs        in 'lib\midi\MidiDefs.pas',
       MidiType        in 'lib\midi\MidiType.pas',
       MidiOut         in 'lib\midi\MidiOut.pas',
+      MidiIn          in 'lib\midi\MidiIn.pas',
     {$ELSE}
       {$IFDEF UsePortMidi}
         MidiOut       in 'lib\portmidi\MidiOut.pas',

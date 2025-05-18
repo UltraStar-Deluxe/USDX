@@ -110,6 +110,7 @@ type
           IniSection: string; IniProperty: string; Default: integer; CaseInsensitive: boolean = false): integer; overload;
       function ReadArrayIndex(const SearchArray: array of UTF8String; IniFile: TCustomIniFile;
           IniSection: string; IniProperty: string; Default: integer; DefaultValue: UTF8String; CaseInsensitive: boolean = false): integer; overload;
+      function InitializePianoKeyArray(const Values: array of Cardinal): TPianoKeyArray;
 
       procedure LoadInputDeviceCfg(IniFile: TMemIniFile);
       procedure SaveInputDeviceCfg(IniFile: TIniFile);
@@ -280,6 +281,8 @@ type
       JukeboxNextLineOtherOColorG: integer;
       JukeboxNextLineOtherOColorB: integer;
 
+      PianoKeysLow: TPianoKeyArray;
+      PianoKeysHigh: TPianoKeyArray;
 
       // default encoding for texts (lyrics, song-name, ...)
       DefaultEncoding: TEncoding;
@@ -1385,6 +1388,15 @@ begin
   Depth := ReadArrayIndex(IDepth, IniFile, 'Graphics', 'Depth', IGNORE_INDEX, '32 bit');
 end;
 
+function TIni.InitializePianoKeyArray(const Values: array of Cardinal): TPianoKeyArray;
+var
+  i: Integer;
+begin
+  SetLength(Result, Length(Values));
+  for i := Low(Values) to High(Values) do
+    Result[i] := Values[i];
+end;
+
 procedure TIni.Load();
 var
   IniFile: TMemIniFile;
@@ -1392,6 +1404,10 @@ var
   IShowWebScore: array of UTF8String;
   HexColor: string;
   Col: TRGB;
+  KeysLow: string;
+  KeysHigh: string;
+  ReadPianoKeysLow: TPianoKeyArray;
+  ReadPianoKeysHigh: TPianoKeyArray;
 begin
   LoadFontFamilyNames;
   ILyricsFont := FontFamilyNames;
@@ -1721,6 +1737,20 @@ begin
     Ini.JukeboxNextLineOtherOColorG := Round(Col.G);
     Ini.JukeboxNextLineOtherOColorB := Round(Col.B);
   end;
+
+  KeysLow := IniFile.ReadString('KeyBindings', 'PianoKeysLow', '');
+  KeysHigh := IniFile.ReadString('KeyBindings', 'PianoKeysHigh', '');
+  PianoKeysLow := InitializePianoKeyArray([60, 97, 121, 115, 120, 100, 99, 118, 103, 98, 104, 110, 109, 107, 44, 108, 46, 246, 45]);
+  PianoKeysHigh := InitializePianoKeyArray([49, 113, 50, 119, 51, 101, 114, 53, 116, 54, 122, 117, 56, 105, 57, 111, 48, 112, 252, 96, 43]);
+  ReadPianoKeysLow := SplitStringToIntArray(KeysLow);
+  ReadPianoKeysHigh := SplitStringToIntArray(KeysHigh);
+  Log.LogWarn('Got ' + IntToStr(Length(ReadPianoKeysLow)) + ' Low keys', 'ScreenEditSub');
+  Log.LogWarn('Got ' + IntToStr(Length(ReadPianoKeysHigh)) + ' high keys', 'ScreenEditSub');
+
+  if Length(ReadPianoKeysLow) = 19 then
+    PianoKeysLow := ReadPianoKeysLow;
+  if Length(ReadPianoKeysHigh) = 21 then
+    PianoKeysHigh := ReadPianoKeysHigh;
 
   LoadPaths(IniFile);
 
