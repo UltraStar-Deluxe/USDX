@@ -131,7 +131,6 @@ var
   ScreenH:    integer;
   Screens:    integer;
   ScreenAct:  integer;
-  ScreenX:    integer;
   LastX, LastY:    integer;
   LastW, LastH:    integer;
   HasValidPosition:     boolean;

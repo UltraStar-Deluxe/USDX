@@ -638,7 +638,7 @@ begin
               glColor4f(1, 1, 1, 1);        // We set alpha to 1, cause we can control the transparency through the png itself
 
             // left part
-            Rec.Left  := (StartBeat - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left + 0.5 + 10*ScreenX;
+            Rec.Left  := (StartBeat - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left + 0.5;
             Rec.Right := Rec.Left + NotesW[PlayerIndex];
             Rec.Top := Top - (Tone-BaseNote)*LineSpacing/2 - NotesH[PlayerIndex];
             Rec.Bottom := Rec.Top + 2 * NotesH[PlayerIndex];
@@ -663,7 +663,7 @@ begin
 
             // middle part
             Rec.Left := Rec.Right;
-            Rec.Right := (StartBeat + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left - NotesW[PlayerIndex] - 0.5 + 10*ScreenX;
+            Rec.Right := (StartBeat + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left - NotesW[PlayerIndex] - 0.5;
 
             // the left note is more right than the right note itself, sounds weird - so we fix that xD
             if Rec.Right <= Rec.Left then
@@ -748,7 +748,7 @@ begin
         with Player[PlayerIndex].Note[N] do
         begin
           // Left part of note
-          Rec.Left  := Left + (Start - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + 0.5 + 10*ScreenX;
+          Rec.Left  := Left + (Start - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + 0.5;
           Rec.Right := Rec.Left + NotesW[PlayerIndex];
 
           // Draw it in half size, if not hit
@@ -783,7 +783,7 @@ begin
 
           // Middle part of the note
           Rec.Left  := Rec.Right;
-          Rec.Right := Left + (Start + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR - NotesW[PlayerIndex] - 0.5  + 10*ScreenX;
+          Rec.Right := Left + (Start + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR - NotesW[PlayerIndex] - 0.5;
 
           // new
           if (Start + Duration - 1 = LyricsState.CurrentBeatD) then
@@ -889,15 +889,15 @@ begin
             H := NotesH[PlayerIndex] * 1.5 + 3.5;
 
             {
-            X2 := (Start-Tracks[Track].Lines[Tracks[Track].Current].Notes[0].Start) * TempR + Left + 0.5 + 10*ScreenX + 4;
+            X2 := (Start-Tracks[Track].Lines[Tracks[Track].Current].Notes[0].Start) * TempR + Left + 0.5 + 4;
             X1 := X2-W;
 
-            X3 := (Start+Length-Tracks[Track].Lines[Tracks[Track].Current].Notes[0].Start) * TempR + Left - 0.5 + 10*ScreenX - 4;
+            X3 := (Start+Length-Tracks[Track].Lines[Tracks[Track].Current].Notes[0].Start) * TempR + Left - 0.5 - 4;
             X4 := X3+W;
             }
 
             // left
-            Rec.Right := (StartBeat - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left + 0.5 + 10*ScreenX + 4;
+            Rec.Right := (StartBeat - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left + 0.5 + 4;
             Rec.Left  := Rec.Right - W;
             Rec.Top := Top - (Tone-BaseNote)*LineSpacing/2 - H;
             Rec.Bottom := Rec.Top + 2 * H;
@@ -919,7 +919,7 @@ begin
 
             // middle part
             Rec.Left  := Rec.Right;
-            Rec.Right := (StartBeat + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left - 0.5 + 10*ScreenX - 4;
+            Rec.Right := (StartBeat + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left - 0.5 - 4;
 
             // the left note is more right than the right note itself, sounds weird - so we fix that xD
             if Rec.Right <= Rec.Left then
@@ -1109,6 +1109,7 @@ begin
         glTexCoord2f(1, 1); glVertex2f(Bounds.Right, Bounds.Bottom);
         glTexCoord2f(1, 0); glVertex2f(Bounds.Right, Bounds.Top);
       glEnd;
+      glDisable(GL_TEXTURE_2D);
       glDisable(GL_BLEND);
     end;
   end;
@@ -1238,14 +1239,23 @@ begin
 
   // to-do : needs fix when party mode works w/ 2 screens
   if (PlayersPlay = 1) and (Ini.NoteLines = 1) and (ScreenSing.settings.NotesVisible[0]) then
-    SingDrawNoteLines(NR.Left + 10*ScreenX, Skin_P2_NotesB - 105, NR.Right + 10*ScreenX, 15);
+    SingDrawNoteLines(NR.Left, Skin_P2_NotesB - 105, NR.Right, 15);
 
   if (PlayersPlay = 2) and (Ini.NoteLines = 1) then
   begin
     if (ScreenSing.settings.NotesVisible[0]) then
-      SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right + 10*ScreenX, 15);
+      SingDrawNoteLines(Nr.Left, Skin_P1_NotesB - 105, Nr.Right, 15);
     if (ScreenSing.settings.NotesVisible[1]) then
-      SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15);
+      SingDrawNoteLines(Nr.Left, Skin_P2_NotesB - 105, Nr.Right, 15);
+  end;
+
+  if (PlayersPlay = 3) and (Ini.NoteLines = 1) then begin
+    if (ScreenSing.settings.NotesVisible[0]) then
+      SingDrawNoteLines(Nr.Left, 120, Nr.Right, 12);
+    if (ScreenSing.settings.NotesVisible[1]) then
+      SingDrawNoteLines(Nr.Left, 245, Nr.Right, 12);
+    if (ScreenSing.settings.NotesVisible[2]) then
+      SingDrawNoteLines(Nr.Left, 370, Nr.Right, 12);
   end;
 
   if (PlayersPlay = 4) and (Ini.NoteLines = 1) then
@@ -1253,66 +1263,57 @@ begin
     if (ScreenSing.settings.NotesVisible[0]) then
     begin
       if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right + 10*ScreenX, 15)
+        SingDrawNoteLines(Nr.Left, Skin_P1_NotesB - 105, Nr.Right, 15)
       else
       begin
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right/2 - 5 + 10*ScreenX, 15);
-        SingDrawNoteLines(Nr.Right/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, Skin_P1_NotesB - 105, Nr.Right + 10*ScreenX, 15)
+        SingDrawNoteLines(Nr.Left, Skin_P1_NotesB - 105, Nr.Right/2 - 5, 15);
+        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, Skin_P1_NotesB - 105, Nr.Right, 15)
       end;
     end;
 
     if (ScreenSing.settings.NotesVisible[1]) then
     begin
       if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15)
+        SingDrawNoteLines(Nr.Left, Skin_P2_NotesB - 105, Nr.Right, 15)
       else
       begin
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right/2 - 5 + 10*ScreenX, 15);
-        SingDrawNoteLines(Nr.Right/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, Skin_P2_NotesB - 105, Nr.Right + 10*ScreenX, 15)
+        SingDrawNoteLines(Nr.Left, Skin_P2_NotesB - 105, Nr.Right/2 - 5, 15);
+        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, Skin_P2_NotesB - 105, Nr.Right, 15)
       end;
     end;
-  end;
-
-  if (PlayersPlay = 3) and (Ini.NoteLines = 1) then begin
-    if (ScreenSing.settings.NotesVisible[0]) then
-      SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, Nr.Right + 10*ScreenX, 12);
-    if (ScreenSing.settings.NotesVisible[1]) then
-      SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, Nr.Right + 10*ScreenX, 12);
-    if (ScreenSing.settings.NotesVisible[2]) then
-      SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12);
   end;
 
   if (PlayersPlay = 6) and (Ini.NoteLines = 1) then begin
     if (ScreenSing.settings.NotesVisible[0]) then
     begin
       if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, Nr.Right + 10*ScreenX, 12)
+        SingDrawNoteLines(Nr.Left, 120, Nr.Right, 12)
       else
       begin
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, 120, Nr.Right/2 - 5 + 10*ScreenX, 12);
-        SingDrawNoteLines(Nr.Right/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, 120, Nr.Right + 10*ScreenX, 12);
+        SingDrawNoteLines(Nr.Left, 120, Nr.Right/2 - 5, 12);
+        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, 120, Nr.Right, 12);
       end;
     end;
 
     if (ScreenSing.settings.NotesVisible[1]) then
     begin
       if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, Nr.Right + 10*ScreenX, 12)
+        SingDrawNoteLines(Nr.Left, 245, Nr.Right, 12)
       else
       begin
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, 245, Nr.Right/2 - 5 + 10*ScreenX, 12);
-        SingDrawNoteLines(Nr.Right/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, 245, Nr.Right + 10*ScreenX, 12);
+        SingDrawNoteLines(Nr.Left, 245, Nr.Right/2 - 5, 12);
+        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, 245, Nr.Right, 12);
       end;
     end;
 
     if (ScreenSing.settings.NotesVisible[2]) then
     begin
       if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12)
+        SingDrawNoteLines(Nr.Left, 370, Nr.Right, 12)
       else
       begin
-        SingDrawNoteLines(Nr.Left + 10*ScreenX, 370, Nr.Right/2 - 5 + 10*ScreenX, 12);
-        SingDrawNoteLines(Nr.Right/2 - 20 + 10*ScreenX + Nr.Left + 10*ScreenX, 370, Nr.Right + 10*ScreenX, 12);
+        SingDrawNoteLines(Nr.Left, 370, Nr.Right/2 - 5, 12);
+        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, 370, Nr.Right, 12);
       end;
     end;
   end;
@@ -1331,6 +1332,7 @@ const
   LineSpacingOneRow = 15;
   LineSpacingTwoRows = 15;
   LineSpacingThreeRows = 12;
+  // TODO: it looks like all these TopXRowsY constants are actually referring to the bottom. But all the functions they call have historically called it Top.
   TopOneRow1 = Skin_P2_NotesB;
   TopTwoRows1 = Skin_P1_NotesB;
   TopTwoRows2 = Skin_P2_NotesB;
@@ -1435,6 +1437,9 @@ begin
 
   end;
 
+  // draw notes lines
+  if (ScreenSing.Settings.InputVisible) then
+    SingDrawLines;
   // Draw the Notes
   if PlayersPlay = 1 then
   begin
@@ -1658,7 +1663,7 @@ begin
         end; // case
 
         // left part
-        Rec.Left  := (StartBeat - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + X + 0.5 + 10*ScreenX;
+        Rec.Left  := (StartBeat - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + X + 0.5;
         Rec.Right := Rec.Left + NotesW[0];
         Rec.Top := YBaseNote - (Tone-BaseNote)*Space/2 - NotesH[0];
         Rec.Bottom := Rec.Top + 2 * NotesH[0];
@@ -1686,7 +1691,7 @@ begin
 
         // middle part
         Rec.Left  := Rec.Right;
-        Rec.Right := (StartBeat + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + X - NotesW[0] - 0.5 + 10*ScreenX;
+        Rec.Right := (StartBeat + Duration - Tracks[Track].Lines[Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + X - NotesW[0] - 0.5;
 
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
