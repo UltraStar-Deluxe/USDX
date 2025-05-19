@@ -1443,6 +1443,7 @@ begin
           ShowInteractiveBackground;
         end;
 
+      // SDLK_KP_DIVIDE is a temporary workaround for German keyboards
       SDLK_SLASH, SDLK_HASH, SDLK_KP_DIVIDE:
         begin
           CopyToUndo;
@@ -2448,6 +2449,7 @@ begin
               end;
           end;
         end;
+      // SDLK_KP_DIVIDE is a temporary workaround for German keyboards
       SDLK_SLASH, SDLK_KP_DIVIDE:
         begin
           CopyToUndo;
