@@ -403,7 +403,7 @@ begin
            begin
 
              if (CurrentSong.isDuet and (Ini.DuetScores = 0)) or (ScreenSong.RapToFreestyle) or (ScreenSong.Mode = smMedley) then
-               FadeTo(@ScreenSong);
+               FadeTo(@ScreenSong)
              else
                FadeTo(@ScreenTop5);
 
