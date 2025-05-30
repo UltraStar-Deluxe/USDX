@@ -215,7 +215,9 @@ type
       LineBonus:      integer;
       PartyPopup:     integer;
       SingScores:     integer;
+      DuetScores:     integer;
       TopScores:      integer;
+      TopScreenSize:  integer;
       SingTimebarMode:       integer;
       JukeboxTimebarMode:    integer;
 
@@ -442,7 +444,8 @@ const
   IScreenFade:    array[0..1] of UTF8String = ('Off', 'On');
   IAskbeforeDel:  array[0..1] of UTF8String = ('Off', 'On');
   ISingScores:    array[0..1] of UTF8String = ('Off', 'On');
-  ITopScores:    array[0..1] of UTF8String = ('All', 'Player');
+  IDuetScores:    array[0..3] of UTF8String = ('Off', 'Separate', 'Combined', 'Both');
+  ITopScores:     array[0..1] of UTF8String = ('All', 'Player');
   IOnSongClick:   array[0..2] of UTF8String = ('Sing', 'Select Players', 'Open Menu');
   sStartSing = 0;
   sSelectPlayer = 1;
@@ -548,7 +551,9 @@ var
   ILineBonusTranslated:        array[0..1] of UTF8String = ('Off', 'On');
   IPartyPopupTranslated:       array[0..1] of UTF8String = ('Off', 'On');
   ISingScoresTranslated:       array[0..1] of UTF8String = ('Off', 'On');
+  IDuetScoresTranslated:       array[0..3] of UTF8String = ('Off', 'Separate', 'Combined', 'Both');
   ITopScoresTranslated:        array[0..1] of UTF8String = ('All', 'Player');
+  ITopScreenSize:              array of UTF8String;
 
   IJoypadTranslated:           array[0..1] of UTF8String = ('Off', 'On');
   IMouseTranslated:            array[0..2] of UTF8String = ('Off', 'On [System Cursor]', 'On [Game Cursor]');
@@ -837,6 +842,11 @@ begin
 
   ISingScoresTranslated[0]          := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   ISingScoresTranslated[1]          := ULanguage.Language.Translate('OPTION_VALUE_ON');
+
+  IDuetScoresTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_OFF');
+  IDuetScoresTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_SEPARATE');
+  IDuetScoresTranslated[2]            := ULanguage.Language.Translate('OPTION_VALUE_COMBINED');
+  IDuetScoresTranslated[3]            := ULanguage.Language.Translate('OPTION_VALUE_BOTH');
 
   ITopScoresTranslated[0]          := ULanguage.Language.Translate('OPTION_VALUE_ALL');
   ITopScoresTranslated[1]          := ULanguage.Language.Translate('OPTION_VALUE_PLAYER');
@@ -1609,8 +1619,14 @@ begin
   // SingScores
   SingScores := ReadArrayIndex(ISingScores, IniFile, 'Advanced', 'SingScores', IGNORE_INDEX, 'On');
 
+  // DuetScores
+  DuetScores := ReadArrayIndex(IDuetScores, IniFile, 'Advanced', 'DuetScores', IGNORE_INDEX, 'Off');
+
   // TopScores
   TopScores := ReadArrayIndex(ITopScores, IniFile, 'Advanced', 'TopScores', IGNORE_INDEX, 'Player');
+
+  // TopScreenSize
+  TopScreenSize := IniFile.ReadInteger('Advanced', 'TopScreenSize', 5);
 
   // SyncTo
   SyncTo := ReadArrayIndex(ISyncTo, IniFile, 'Advanced', 'SyncTo', Ord(stMusic));
@@ -1927,8 +1943,14 @@ begin
     //SingScores
     IniFile.WriteString('Advanced', 'SingScores', ISingScores[SingScores]);
 
+    //DuetScores
+    IniFile.WriteString('Advanced', 'DuetScores', IDuetScores[DuetScores]);
+
     //TopScores
     IniFile.WriteString('Advanced', 'TopScores', ITopScores[TopScores]);
+
+    //TopScreenSize
+    IniFile.WriteInteger('Advanced', 'TopScreenSize', TopScreenSize);
 
     //SyncTo
     IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);
