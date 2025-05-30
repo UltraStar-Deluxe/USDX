@@ -162,7 +162,6 @@ var
   DeltaTextDateX, DeltaTextDateY: integer;
 begin
   inherited Create;
-  Log.LogInfo('Creating Top5 screen with size ' + IntToStr(Ini.TopScreenSize), 'ScreenTop5');
   SetLength(StaticNumber, Ini.TopScreenSize + 1);
   SetLength(TextNumber, Ini.TopScreenSize + 1);
   SetLength(TextName, Ini.TopScreenSize + 1);
