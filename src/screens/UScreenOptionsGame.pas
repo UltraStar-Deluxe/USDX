@@ -53,8 +53,10 @@ type
       old_Tabs:      integer;
       AVDelayOptInt: integer;
       MicDelayOptInt:integer;
+      MicDelayPerPlayerOptInt:integer;
       AVDelaySelectNum:  integer;
       MicDelaySelectNum: integer;
+      MicDelayPerPlayerSelectNum: integer;
 
       procedure Leave;
       procedure ReloadCurrentScreen;
@@ -120,7 +122,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 7) then
+          if (SelInteraction >= 0) and (SelInteraction <= 8) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
@@ -137,6 +139,11 @@ begin
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
+          end;
+          if (SelInteraction = 8) then
+          begin
+            AudioPlayback.PlaySound(SoundLib.Option);
+            InteractDecNegative;
           end;
           UpdateCalculatedSelectSlides(false);
           if (SelInteraction = 0) then
@@ -205,19 +212,31 @@ begin
   end;
 end;
 
+function GetMicDelayPerPlayerOptText(var Param: integer; Offset: integer; Modify: boolean; OptText: PUTF8String): boolean;
+begin
+  if OptText <> nil then
+    OptText^ := Format('%d ms', [Param + Offset]);
+  if Modify then
+    Param := Param + Offset;
+  Result := true;
+end;
+
 procedure TScreenOptionsGame.UpdateCalculatedSelectSlides(Init: boolean);
 begin
   CalculateSelectSlide(Init, @GetAVDelayOptText, Ini.AVDelay, AVDelayOptInt, IAVDelay);
   CalculateSelectSlide(Init, @GetMicDelayOptText, Ini.MicDelay, MicDelayOptInt, IMicDelay);
+  CalculateSelectSlide(Init, @GetMicDelayPerPlayerOptText, Ini.MicDelayPerPlayer, MicDelayPerPlayerOptInt, IMicDelayPerPlayer);
   if Init then
   begin
     AVDelaySelectNum := AddSelectSlide(Theme.OptionsGame.SelectAVDelay, AVDelayOptInt, IAVDelay);
     MicDelaySelectNum := AddSelectSlide(Theme.OptionsGame.SelectMicDelay, MicDelayOptInt, IMicDelay);
+    MicDelayPerPlayerSelectNum := AddSelectSlide(Theme.OptionsGame.SelectMicDelayPerPlayer, MicDelayPerPlayerOptInt, IMicDelayPerPlayer);
   end
   else
   begin
     UpdateSelectSlideOptions(Theme.OptionsGame.SelectAVDelay, AVDelaySelectNum, IAVDelay, AVDelayOptInt);
     UpdateSelectSlideOptions(Theme.OptionsGame.SelectMicDelay, MicDelaySelectNum, IMicDelay, MicDelayOptInt);
+    UpdateSelectSlideOptions(Theme.OptionsGame.SelectMicDelayPerPlayer, MicDelayPerPlayerSelectNum, IMicDelayPerPlayer, MicDelayPerPlayerOptInt);
   end;
 end;
 
@@ -255,6 +274,8 @@ begin
   Theme.OptionsGame.SelectAVDelay.oneItemOnly := true;
   Theme.OptionsGame.SelectMicDelay.showArrows  := true;
   Theme.OptionsGame.SelectMicDelay.oneItemOnly := true;
+  Theme.OptionsGame.SelectMicDelayPerPlayer.showArrows  := true;
+  Theme.OptionsGame.SelectMicDelayPerPlayer.oneItemOnly := true;
   UpdateCalculatedSelectSlides(true);
 
   AddButton(Theme.OptionsGame.ButtonExit);

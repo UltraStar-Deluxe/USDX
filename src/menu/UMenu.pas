@@ -176,6 +176,7 @@ type
       procedure InteractPrev; virtual;
       procedure InteractInc; virtual;
       procedure InteractDec; virtual;
+      procedure InteractDecNegative; virtual;
       procedure InteractNextRow; virtual; // this is for the options screen, so button down makes sense
       procedure InteractPrevRow; virtual; // this is for the options screen, so button up makes sense
       procedure AddBox(X, Y, W, H: real);
@@ -1689,6 +1690,17 @@ begin
     //interact Next if there is Nothing to Change
     else InteractNext;
   end;
+end;
+
+procedure TMenu.InteractDecNegative;
+var
+  Num:   integer;
+  Value: integer;
+begin
+  Num := Interactions[Interaction].Num;
+  Value := SelectsS[Num].SelectedOption;
+  Value := Value - 1;
+  SelectsS[Num].SelectedOption := Value;
 end;
 
 procedure TMenu.InteractDec;
