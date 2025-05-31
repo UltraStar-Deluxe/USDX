@@ -306,7 +306,7 @@ var
   TrackIndex: integer;
   PetGr:      integer;
 begin
-  LyricsState.UpdateBeats();
+  LyricsState.UpdateBeats(PlayersPlay);
 
   PetGr := 0;
   if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
@@ -349,7 +349,7 @@ var
   CountGr: integer;
   CP:      integer;
 begin
-  LyricsState.UpdateBeats();
+  LyricsState.UpdateBeats(PlayersPlay);
 
   // sentences routines
   for CountGr := 0 to 0 do //High(Tracks)

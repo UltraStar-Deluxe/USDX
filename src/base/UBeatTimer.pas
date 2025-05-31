@@ -83,7 +83,7 @@ type
        *}
       procedure Reset();
 
-      procedure UpdateBeats();
+      procedure UpdateBeats(PlayersPlay: integer = 1);
 
       {**
        * Sets a master clock for this LyricsState. If no sync-source is set
@@ -277,7 +277,7 @@ end;
  * Updates the beat information (CurrentBeat/MidBeat/...) according to the
  * current lyric time.
  *)
-procedure TLyricsState.UpdateBeats();
+procedure TLyricsState.UpdateBeats(PlayersPlay: integer);
 var
   CurLyricsTime: real;
 begin
@@ -293,7 +293,7 @@ begin
 
   OldBeatD := CurrentBeatD;
   // MidBeatD = MidBeat with additional GAP
-  MidBeatD := -0.5 + GetMidBeat(CurLyricsTime - (StartTime + Ini.MicDelay + Ini.MicDelayPerPlayer) / 1000);
+  MidBeatD := -0.5 + GetMidBeat(CurLyricsTime - (StartTime + Ini.MicDelay + Ini.MicDelayPerPlayer * PlayersPlay) / 1000);
   CurrentBeatD := Floor(MidBeatD);
 end;
 
