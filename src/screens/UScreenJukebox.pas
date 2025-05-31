@@ -2188,7 +2188,7 @@ begin
       LyricsState.TotalTime := AudioPlayback.Length;
   end;
 
-  LyricsState.UpdateBeats(PlayersPlay);
+  LyricsState.UpdateBeats();
 
   // synchronize music
     if (Ini.SyncTo = Ord(stLyrics)) then
@@ -2689,7 +2689,7 @@ begin
     LyricsState.TotalTime := AudioPlayback.Length;
   end;
 
-  LyricsState.UpdateBeats(PlayersPlay);
+  LyricsState.UpdateBeats();
 
   // main text
   Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);

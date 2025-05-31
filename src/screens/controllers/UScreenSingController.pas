@@ -286,7 +286,7 @@ begin
         end;
 
         LyricsState.SetCurrentTime(CurrentSong.Start);
-        LyricsState.UpdateBeats(PlayersPlay);
+        LyricsState.UpdateBeats();
         ClearLyricEngines;
         ResetLinesAndLyrics;
 
@@ -599,7 +599,7 @@ begin
         AudioPlayback.SetPosition(AudioPlayback.Position - 5.0);
         LyricsState.SetCurrentTime(AudioPlayback.Position - 5.0);
         ClearLyricEngines;
-        LyricsState.UpdateBeats(PlayersPlay);
+        LyricsState.UpdateBeats();
         if (Assigned(fCurrentVideo)) then
           fCurrentVideo.Position := AudioPlayback.Position - 5.0;
         end;
@@ -892,7 +892,7 @@ begin
     LyricsState.TotalTime := AudioPlayback.Length;
   end;
 
-  LyricsState.UpdateBeats(PlayersPlay);
+  LyricsState.UpdateBeats();
 
   // synchronize music
   if Ini.SyncTo = Ord(stLyrics) then
@@ -1191,7 +1191,7 @@ begin
       LyricsState.TotalTime := AudioPlayback.Length;
   end;
 
-  LyricsState.UpdateBeats(PlayersPlay);
+  LyricsState.UpdateBeats();
 
   // prepare and start voice-capture
   AudioInput.CaptureStart;

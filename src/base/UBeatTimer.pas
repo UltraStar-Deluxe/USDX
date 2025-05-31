@@ -83,7 +83,7 @@ type
        *}
       procedure Reset();
 
-      procedure UpdateBeats(PlayersPlay: integer = 1);
+      procedure UpdateBeats();
 
       {**
        * Sets a master clock for this LyricsState. If no sync-source is set
@@ -277,7 +277,7 @@ end;
  * Updates the beat information (CurrentBeat/MidBeat/...) according to the
  * current lyric time.
  *)
-procedure TLyricsState.UpdateBeats(PlayersPlay: integer);
+procedure TLyricsState.UpdateBeats();
 var
   CurLyricsTime: real;
 begin
