@@ -1927,7 +1927,7 @@ begin
     //OnSongClick
     IniFile.WriteString('Advanced', 'OnSongClick', IOnSongClick[OnSongClick]);
 
-    //OnSongClick
+    //DefaultSingMode
     IniFile.WriteString('Advanced', 'DefaultSingMode', IDefaultSingMode[DefaultSingMode]);
 
     //Line Bonus
