@@ -4,6 +4,17 @@
 
 The intention of this document is to introduce you to USDX development.
 
+### Commits older than 2016
+In 2016 the project was moved from SourceForge (SVN) to Github (git).
+Generally, you don't need to look at commits that aren't in the git history, but sometimes you'll want to check something.
+The easiest way is just checking out the [svn repository](https://sourceforge.net/p/ultrastardx/svn/HEAD/tree/) somewhere separate.
+
+Alternatively, you can use the [trunk browser](https://sourceforge.net/p/ultrastardx/svn/HEAD/tree/trunk/src/).
+Find the file you want the history of, then click History.
+It does not have a blame view, the easiest way is to View the oldest entry on a page and see if the bit of code you want to find is now different.
+If it is, start checking commits on the current page.
+If it's still unchanged, just go to the next/Older page.
+
 ### General information:
 - Freepascal 3 and Lazarus 1.6 are strongly suggested for development
 - Yes, Lazarus is not a good integrated development environment, but it is the best you get which also supports debugging and trial&error development for objective pascal. After some time you get used to it and you'll start to eventually even like it. Add buttons for compile, run and stop to the toolbar of the code window. Project -> Project Inspector is what shows you the various files of the project. Enable "show directory hierarchy" in the Project Inspector window. General usage is quite similar to eclipse (hold ctrl + click on a word to go to ist declaration; right click menu for jumping to certain places,…)
