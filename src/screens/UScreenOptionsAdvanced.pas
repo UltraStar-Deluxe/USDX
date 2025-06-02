@@ -158,6 +158,10 @@ begin
   Theme.OptionsAdvanced.SelectSingScores.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsAdvanced.SelectSingScores, Ini.SingScores, ISingScoresTranslated);
 
+  Theme.OptionsAdvanced.SelectDuetScores.showArrows := true;
+  Theme.OptionsAdvanced.SelectDuetScores.oneItemOnly := true;
+  AddSelectSlide(Theme.OptionsAdvanced.SelectDuetScores, Ini.DuetScores, IDuetScoresTranslated);
+
   Theme.OptionsAdvanced.SelectTopScores.showArrows := true;
   Theme.OptionsAdvanced.SelectTopScores.oneItemOnly := true;
   AddSelectSlide(Theme.OptionsAdvanced.SelectTopScores, Ini.TopScores, ITopScoresTranslated);
