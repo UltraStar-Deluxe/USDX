@@ -1,0 +1,293 @@
+\documentclass{scrreprt}
+
+%%% Sane encodings %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+%%% Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% We're writing in English
+\usepackage[british]{babel}
+
+% Support PDF properly
+\usepackage{hyperref}
+\hypersetup{
+	% Do not draw boxes around links, colour them
+	colorlinks,
+	% Encode PDF strings in Unicode, not ASCII
+	unicode,
+}
+
+% Reducing easily detectable mistakes
+\usepackage[l2tabu, orthodox, experimental]{nag}
+
+% Better typography
+\usepackage{microtype}
+
+% More control over list environments
+\usepackage{enumitem}
+
+% Additional symbols not otherwise available in T1
+\usepackage{textcomp}
+
+%%% Looks %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Do number chapters but not anything beneath
+\setcounter{secnumdepth}{0}
+
+% Display chapters and sections in TOC but not anything beneath
+\setcounter{tocdepth}{1}
+
+% Mark up file ending consistently
+\newcommand*\fileending[1]{\texorpdfstring{\kern-.16em\texttt{#1}}{#1}}
+
+% Entries in menus and navigations
+\newcommand*\menu[1]{\textsf{\textbf{#1}}}
+\makeatletter
+\newenvironment*{menudescription}{%
+	\newcommand*\entry[1]{\item[\menu{##1}]}
+	\begin{description}
+}{%
+	\end{description}
+}
+\makeatother
+
+% Usage: \Path{a}; \Path[a][b][c]{d}
+% Result: a; a -> b -> c -> d
+\makeatletter
+\def\Path{\@ifnextchar[{\@with}{}}
+\def\@with[#1]{#1\allowbreak\thinspace\textrightarrow\thinspace\Path}
+\makeatother
+
+% Markup for things that do not have proper markup yet but might want some
+\newcommand*\todomu[1]{\textcolor{blue}{#1}}
+
+%%% Metadata %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\hypersetup{pdftitle="UltraStar Deluxe"}
+\title{UltraStar Deluxe}
+\subtitle{User Manual}
+\author{P A Harsent, canni, dppes}
+\date{2019-12-23}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\chapter{Introduction}
+
+\chapter{Installation}
+
+\section{Windows}
+
+\section{Linux}
+
+\section{Mac}
+
+\chapter{Building}
+
+\chapter{Configuration}
+
+Most configuration can be accessed via
+\Path[\menu{Tools}]{\menu{Options}},
+which provides us with several sub-pages:
+\begin{menudescription}
+\entry{Game}
+	General game settings.
+\entry{Graphics}
+\entry{Sound}
+\entry{Input}
+\entry{Lyrics}
+\entry{Themes}
+	Change the look of UltraStar Deluxe
+	by choosing themes, skins and colours.
+\entry{Record}
+\entry{Advanced}
+\entry{Network}
+\entry{Webcam}
+\entry{Jukebox}
+\end{menudescription}
+
+\section{Game}
+
+Here, you can configure general settings of the game.
+
+\begin{menudescription}
+\entry{Language}
+	The language in which the game is played.
+	Contrary to what the in-game help claims,
+	the changes go into effect immediately.
+\entry{Song Menu}
+	The type of menu used to display the available songs
+	when choosing what to sing next.
+\entry{Tabs}
+\entry{Sorting}
+\entry{Show Scores}
+\entry{Debug}
+\entry{Audio/Video Delay}
+\entry{Microphone Delay}
+\end{menudescription}
+
+\section{Graphics}
+
+\begin{menudescription}
+\entry{Fullscreen}
+	Disable full screen mode or choose one of two full screen modes.
+	This requires a restart,
+	other than the full screen hot key
+	that immediately toggles between windowed and full screen mode.
+\entry{Resolution}
+	When \menu{Fullscreen} is \todomu{Off},
+	this configures the size of the window.
+	When \menu{Fullscreen} is \todomu{On},
+	it does weird stuff.
+	When \menu{Fullscreen} is \todomu{Borderless},
+	it is unavailable.
+\entry{Depth}
+	The depth option changes the number of colours
+	that are used within UltraStar Deluxe.
+	Allowed options are:
+	\todomu{16 bit} (65\,536 colours)
+	and \todomu{32 bit} (4\,294\,967\,296 colours).
+	On lower powered systems,
+	the higher the colour depth, the slower the performance.
+	So if UltraStar Deluxe does not run smoothly,
+	change this to \todomu{16 bit}.
+\entry{Visualization}
+\entry{Oszilloscope}
+	The Oscilloscope setting reacts to the microphone input
+	and is useful for setting up new songs.
+	Therefore leave this option set to \todomu{Off}
+	unless a new song is being set up.
+	For more information on setting up new songs, see \ref{new_song}.
+\entry{Movie size}
+\end{menudescription}
+
+\chapter{Customization}
+
+\chapter{Statistics}
+
+\chapter{Importing Songs}
+
+One of the big advantages of UltraStar Deluxe
+is the ability to add new songs.
+A song contains the music in an \fileending{.mp3} file
+and the lyrics and other settings in a \fileending{.txt} file,
+known as a lyric file.
+For legal copyright reasons,
+the \fileending{.mp3} music file cannot be copied from person to person,
+but a new \fileending{.txt} file usually can,
+as long as the creator of the \fileending{.txt} gives permission, which most do.
+
+\section{Obtaining lyrics files}
+New \fileending{.txt} lyrics files are available
+and can be downloaded from the UltraStar Deluxe Forums
+and are then matched to an \fileending{.mp3} file that you already own.
+
+\section{Creating new lyrics files}
+
+\section{Adding a Song}
+\begin{itemize}
+\item Ensure that UltraStar Deluxe is not running
+\item Under the \todomu{Songs} folder,
+	create a new folder with the name of the artist and song title,
+	e.g.\@ \todomu{Abba – Dancing Queen (ABBA gold CD album track)}
+\item Copy your \fileending{.mp3} file into the new folder
+\item Save the lyrics file alongside the audio file in the same folder
+\item In the new song folder,
+	make sure that the \fileending{.mp3} audio file
+	and the \fileending{.txt} lyric file have the same name
+\end{itemize}
+
+\chapter{Troubleshooting}
+
+\section{New Song}
+
+\label{new_song}
+
+When a newly acquired song does not work as it should,
+use notepad (or another text editor) to open the \fileending{.txt} lyric file
+and perform the following checks:
+\begin{itemize}
+\item Make sure that the \todomu{\#TITLE}, \todomu{\#ARTIST}, \todomu{\#MP3},
+	\todomu{\#BPM} and \todomu{\#GAP} fields
+	are all there
+	and that there is an \todomu{E}
+	at the very end of the file.
+\item Make sure that the \todomu{\#MP3} value
+	holds the exact filename of the \fileending{.mp3} audio file.
+\end{itemize}
+If you made any changes,
+do not forget to save the file afterwards before retrying.
+
+\section{Performance}
+
+\subsection{Song Selection}
+
+When the song selection becomes sluggish,
+try to chose a different \menu{Song Menu}
+in \Path[\menu{Tools}][\menu{Options}]{\menu{Game}}.
+
+\appendix
+
+\chapter{Lyric Files: \fileending{.txt} Format}
+
+\chapter{Lyric Files: \fileending{.xml} Format}
+
+\chapter{Advanced Configuration: \fileending{.ini} Format}
+
+\chapter{About this Manual}
+\section{Legal}
+\subsection{Disclaimer}
+The information in this document is provided as is
+and there is no warrant to its completeness or accuracy;
+The developers of UltraStar Deluxe or any associated personnel
+shall not be responsible for any errors, omissions, loss or damage
+whether indirect, special, incidental or consequential
+resulting from the use of the information that contained herein.
+
+\subsection{Acknowledgements}
+All trademarks are acknowledged.
+
+\subsection{Usage}
+This document is licensed for use
+under the GNU Free Documentation License 1.3.3.
+\url{http://www.gnu.org/copyleft/fdl.html}
+
+\section{Versions}
+
+\newenvironment*{version}[2]{%
+	\item[#1] (by #2)
+	\begin{itemize}[nosep, noitemsep]
+}{%
+	\end{itemize}
+}
+\begin{description}
+\begin{version}{2010-09-24}{P A Harsent}
+\item Creation of initial version
+\end{version}
+\begin{version}{2010-10-02}{P A Harsent}
+\item Tidied ambiguity over channel numbers in two player sound set up
+\item Added further solutions to common graphic card problems
+\item Added further solutions for common lyric problems
+\end{version}
+\begin{version}{2010-10-09}{P A Harsent}
+\item Added main index
+\item Added further solutions to common graphic card problems
+\item Added \#GAP section when importing new songs
+\item Added further solutions for common lyric problems
+\item Added section on support for UTF8 layouts
+\item Added .RAW section
+\item Added further Windows 7 \& Vista considerations
+\item Added multiple song directories section
+\item Added alternate cover location section
+\end{version}
+\begin{version}{2010-10-10}{canni}
+\item Corrections in layout and updated information to fit changes in 1.1 final
+\end{version}
+\begin{version}{2019-12-23}{dppes}
+\item Started \LaTeX\ migration
+\end{version}
+\end{description}
+
+\chapter{Index}
+
+\end{document}
