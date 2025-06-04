@@ -150,7 +150,7 @@ begin
       if Song.Creator     <> ''        then    SongFile.WriteLine('#CREATOR:'   + EncodeToken(Song.Creator));
       if Song.Tags        <> ''        then    SongFile.WriteLine('#TAGS:'      + EncodeToken(Song.Tags));
 
-      if Song.FormatVersion.MinVersion(1,1,0) then
+      if Song.FormatVersion.MinVersion(1,0,0) then
         SongFile.WriteLine('#AUDIO:' + EncodeToken(Song.Audio.ToUTF8));
       if Song.FormatVersion.MaxVersion(2,0,0) then
          SongFile.WriteLine('#MP3:' + EncodeToken(Song.Audio.ToUTF8));
