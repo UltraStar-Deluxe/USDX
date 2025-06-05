@@ -39,9 +39,13 @@ uses
   UFiles,
   UMenu,
   UMusic,
+  URecord,
   UScreenSong,
   USong,
   UThemes,
+  MidiOut,
+  MidiCons,
+  Math,
   MD5,
   sdl2,
   SysUtils;
@@ -52,6 +56,10 @@ type
   public
     TextDescription:     integer;
     TextDescriptionLong: integer;
+    PingTime:            integer;
+    PingResponse:        integer;
+    CurrentSound:        TCaptureBuffer;
+    MidiOut:             TMidiOutput;
 
     constructor Create; override;
     function ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
@@ -109,6 +117,24 @@ begin
           FadeTo(@ScreenPartyOptions, SoundLib.Start);
           Exit;
         end;
+      end;
+
+      SDLK_W: begin
+        SoundLib.Ping.Volume := 1.0;
+        PingResponse := 0;
+        PingTime := SDL_GetTicks;
+        SoundLib.Ping.Play;
+        Exit;
+      end;
+
+      SDLK_M: begin
+        SoundLib.Ping.Volume := 1.0;
+        PingResponse := 0;
+        PingTime := SDL_GetTicks;
+        MidiOut.PutShort($B1, $7, 127);
+        MidiOut.PutShort($81, 24 + 60, 127);
+        MidiOut.PutShort($91, 24 + 60, 127);
+        Exit;
       end;
 
       SDLK_J: begin
@@ -304,6 +330,12 @@ begin
   Interaction := 0;
 
   WantSoftwareRenderingMsg := SoftwareRendering;
+
+  PingTime := 0;
+  PingResponse := 0;
+
+  MidiOut := TMidiOutput.Create(nil);
+  MidiOut.Open;
 end;
 
 procedure TScreenMain.OnShow;
@@ -322,6 +354,8 @@ begin
   * at the moment there is no better place for this
   *}
   Party.Clear;
+
+  AudioInput.CaptureStart;
 end;
 
 function TScreenMain.Draw: boolean;
@@ -336,6 +370,18 @@ begin
       ScreenPopupError.ShowPopup(Language.Translate('ERROR_SOFTWARE_RENDERING'));
     end;
   end;
+
+  CurrentSound := AudioInputProcessor.Sound[0];
+  CurrentSound.AnalyzeBuffer;
+
+  if (CurrentSound.ToneAbs = 48) and (PingResponse = 0) then
+  begin
+    PingResponse := SDL_GetTicks - PingTime;
+    MidiOut.PutShort($B1, $7, 127);
+    MidiOut.PutShort($81, 24 + 60, 127);
+    MidiOut.PutShort(MIDI_STOP, 0, 0);
+  end;
+  Display.DrawDelay(PingResponse);
 end;
 
 procedure TScreenMain.SetInteraction(Num: integer);
