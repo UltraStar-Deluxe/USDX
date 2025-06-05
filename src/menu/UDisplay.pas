@@ -113,6 +113,8 @@ type
       
       procedure SaveScreenShot;
 
+      procedure DrawDelay(Delay: Integer);
+
       function  Draw: boolean;
 
       // TODO rewrite ParseInput to include handling/suppressing input as return, use KeepGoing as by-reference
@@ -888,6 +890,19 @@ begin
       otherwise Result := false;
     end;
   end;
+end;
+
+procedure TDisplay.DrawDelay(Delay: Integer);
+begin
+  // set font specs using UDisplay methods
+  SetFontFamily(0);
+  SetFontStyle(ftRegular);
+  SetFontSize(21);
+  SetFontItalic(false);
+  glColor4f(0, 0, 0, 1);
+  SetFontPos(605, 0);
+  glPrint('Delay measured: ' + IntToStr(Delay) + ' ms');
+  glColor4f(1, 1, 1, 1);
 end;
 
 //------------
