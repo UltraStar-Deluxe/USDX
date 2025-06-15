@@ -860,8 +860,8 @@ begin
       for NoteIndex := System.High(Tracks[Trackindex].Lines[LinePos].Notes) downto 0 do
         if Tracks[Trackindex].Lines[LinePos].Notes[NoteIndex].NoteType <> ntFreestyle then
         begin
-          Tracks[Trackindex].Lines[LinePos].LastLine := True;
           Tracks[Trackindex].Lines[0].LastLine := False; // reset the fallback as we found the last line with a non-freestyle note
+          Tracks[Trackindex].Lines[LinePos].LastLine := True;
           goto NextTrack;
         end;
 
