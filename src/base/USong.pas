@@ -631,7 +631,7 @@ var
   CurLine:      RawByteString;
   LinePos:      integer;
   TrackIndex:   integer;
-  FragIndex:    integer;
+  NoteIndex:    integer;
   Both:         boolean;
   CurrentTrack: integer; // P1: 0, P2: 1, (old duet format with binary player representation P1+P2: 2)
 
@@ -855,16 +855,15 @@ begin
 
     Tracks[Trackindex].Lines[0].LastLine := True; // fallback to make sure at least one line is marked last line
 
-    with Tracks[Trackindex] do
-      // search backwards until we find the last line with a non-freestyle note
-      for LinePos := System.High(Tracks[Trackindex].Lines) downto 0 do
-        for FragIndex := System.High(Tracks[Trackindex].Lines[LinePos].Notes) downto 0 do
-          if Tracks[Trackindex].Lines[LinePos].Notes[FragIndex].NoteType <> ntFreestyle then
-          begin
-            Tracks[Trackindex].Lines[LinePos].LastLine := True;
-            Tracks[Trackindex].Lines[0].LastLine := False; // reset the fallback as we found the last line with a non-freestyle note
-            goto NextTrack;
-          end;
+    // search backwards until we find the last line with a non-freestyle note
+    for LinePos := System.High(Tracks[Trackindex].Lines) downto 0 do
+      for NoteIndex := System.High(Tracks[Trackindex].Lines[LinePos].Notes) downto 0 do
+        if Tracks[Trackindex].Lines[LinePos].Notes[NoteIndex].NoteType <> ntFreestyle then
+        begin
+          Tracks[Trackindex].Lines[LinePos].LastLine := True;
+          Tracks[Trackindex].Lines[0].LastLine := False; // reset the fallback as we found the last line with a non-freestyle note
+          goto NextTrack;
+        end;
 
     NextTrack: ;
   end;
