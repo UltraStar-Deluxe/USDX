@@ -631,6 +631,7 @@ var
   CurLine:      RawByteString;
   LinePos:      integer;
   TrackIndex:   integer;
+  NoteIndex:    integer;
   Both:         boolean;
   CurrentTrack: integer; // P1: 0, P2: 1, (old duet format with binary player representation P1+P2: 2)
 
@@ -642,6 +643,8 @@ var
 
   I:            integer;
   NotesFound:   boolean;
+label
+  NextTrack;
 begin
   Result := false;
   LastError := '';
@@ -847,8 +850,22 @@ begin
 
   for TrackIndex := 0 to High(Tracks) do
   begin
-    if (High(Tracks[TrackIndex].Lines) >= 0) then
-      Tracks[TrackIndex].Lines[High(Tracks[TrackIndex].Lines)].LastLine := true;
+    if High(Tracks[Trackindex].Lines) < 0 then
+      continue;  // no lines in this track
+
+    Tracks[Trackindex].Lines[0].LastLine := True; // fallback to make sure at least one line is marked last line
+
+    // search backwards until we find the last line with a non-freestyle note
+    for LinePos := System.High(Tracks[Trackindex].Lines) downto 0 do
+      for NoteIndex := System.High(Tracks[Trackindex].Lines[LinePos].Notes) downto 0 do
+        if Tracks[Trackindex].Lines[LinePos].Notes[NoteIndex].NoteType <> ntFreestyle then
+        begin
+          Tracks[Trackindex].Lines[0].LastLine := False; // reset the fallback as we found the last line with a non-freestyle note
+          Tracks[Trackindex].Lines[LinePos].LastLine := True;
+          goto NextTrack;
+        end;
+
+    NextTrack: ;
   end;
 
   Result := true;
