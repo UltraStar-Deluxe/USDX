@@ -99,7 +99,7 @@ PFLAGS_EXTRA   += @PFLAGS_EXTRA@
 # - Do we need -Coi?
 PFLAGS_BASE_DEFAULT    := -Si -Sg- -Sc- -v0Binwe -gl
 PFLAGS_DEBUG_DEFAULT   := -Xs- -g -dDEBUG_MODE
-PFLAGS_RELEASE_DEFAULT := -Xs- -O2
+PFLAGS_RELEASE_DEFAULT := -Xs- -O2 -OoNOSTACKFRAME
 PFLAGS_EXTRA_DEFAULT   :=
 
 # Debug/Release mode flags
