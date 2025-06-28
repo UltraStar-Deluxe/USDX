@@ -44,6 +44,7 @@ uses
   {$ENDIF}
   MD5,
   SysUtils,
+  Math,
   types,
   fgl,
   Classes,
@@ -130,7 +131,7 @@ type
 
     function GetFolderCategory(const aFileName: IPath): UTF8String;
     function FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
-    function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean): boolean;
+    function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; AudioLength: real): boolean;
   public
     Path:         IPath; // kust path component of file (only set if file was found)
     Folder:       UTF8String; // for sorting by folder (only set if file was found)
@@ -215,8 +216,7 @@ type
     constructor Create(const aFileName : IPath); overload;
     destructor  Destroy; override;
     function    LoadSong(DuetChange: boolean): boolean;
-    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false): boolean;
-    procedure    TrimToAudioLength(AudioLength: real);
+    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false; AudioLength: real = 0): boolean;
     procedure   SetMedleyMode();
     procedure   Clear();
     function    MD5SongFile(SongFileR: TTextFileStream): string;
@@ -623,44 +623,11 @@ begin
     Exit;
   end;
 
-  Result := LoadOpenedSong(SongFile, FileNamePath, DuetChange, false);
+  Result := LoadOpenedSong(SongFile, FileNamePath, DuetChange, false, 0);
   SongFile.Free;
 end;
 
-procedure TSong.TrimToAudioLength(AudioLength: real);
-var
-  TrackIndex: Integer;
-  LineIndex:  Integer;
-  NoteIndex:  Integer;
-begin
-  Log.LogInfo(Format('Trimming song "%s" to audio length %f seconds.', [FileName.ToNative, AudioLength]), 'TSong.TrimToAudioLength');
-  for TrackIndex := 0 to High(Tracks) do
-  begin
-    for LineIndex := 0 to Tracks[TrackIndex].High do
-    begin
-      // iterate over all notes in the line
-      for NoteIndex := 0 to Tracks[TrackIndex].Lines[LineIndex].HighNote do
-      begin
-        // if the note is longer than the audio length, freestyle it
-        if (GetTimeFromBeat(Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat +
-            Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration, Self) >= AudioLength) then
-        begin
-          Tracks[TrackIndex].Lines[LineIndex].LastLine := true;
-          // convert to freestyle note
-          Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].NoteType := ntFreestyle;
-          Log.LogWarn(
-            Format('Note at %f seconds in song "%s" is longer than audio length %f seconds. Converted to freestyle note.',
-              [GetTimeFromBeat(Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat, Self),
-               FileName.ToNative, AudioLength]),
-            'TSong.TrimToAudioLength'
-          );
-        end;
-      end;
-    end;
-  end;
-end;
-
-function TSong.LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean): boolean;
+function TSong.LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; AudioLength: real): boolean;
 var
   CurLine:      RawByteString;
   LinePos:      integer;
@@ -814,6 +781,17 @@ begin
             Param0 := 'F';
           end;
 
+          if (GetTimeFromBeat(Param1 + Param3, Self) >= AudioLength) then
+          begin
+            // convert to freestyle note
+            Param0 := 'F';
+            Log.LogWarn(
+              Format('Note at "%s %d %d %d %s" exceeds audio length of %.2f seconds. Converted to freestyle note.',
+              [Param0, Param1, Param2, Param3, ParamLyric, AudioLength]),
+              'TSong.LoadSong'
+            );
+          end;
+
           // add notes
           if (Tracks[CurrentTrack].High < 0) or (Tracks[CurrentTrack].High > 5000) then
           begin
@@ -850,7 +828,6 @@ begin
 
         Inc(FileLineNo);
       end; // while
-    
   except
     on E: Exception do
     begin
@@ -1873,7 +1850,7 @@ begin
   Relative := false;
 end;
 
-function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean; RapToFreestyle: boolean): boolean;
+function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean; RapToFreestyle: boolean; AudioLength: real): boolean;
 var
   SongFile: TTextFileStream;
   FileNamePath: IPath;
@@ -1902,7 +1879,7 @@ begin
 
     //Load Song for Medley Tags
     CurrentSong := self;
-    Result := Result and LoadOpenedSong(SongFile, FileNamePath, DuetChange, RapToFreestyle);
+    Result := Result and LoadOpenedSong(SongFile, FileNamePath, DuetChange, RapToFreestyle, AudioLength);
 
     if Result then
     begin
