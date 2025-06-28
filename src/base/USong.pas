@@ -216,6 +216,7 @@ type
     destructor  Destroy; override;
     function    LoadSong(DuetChange: boolean): boolean;
     function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false): boolean;
+    procedure    TrimToAudioLength(AudioLength: real);
     procedure   SetMedleyMode();
     procedure   Clear();
     function    MD5SongFile(SongFileR: TTextFileStream): string;
@@ -626,6 +627,39 @@ begin
   SongFile.Free;
 end;
 
+procedure TSong.TrimToAudioLength(AudioLength: real);
+var
+  TrackIndex: Integer;
+  LineIndex:  Integer;
+  NoteIndex:  Integer;
+begin
+  Log.LogInfo(Format('Trimming song "%s" to audio length %f seconds.', [FileName.ToNative, AudioLength]), 'TSong.TrimToAudioLength');
+  for TrackIndex := 0 to High(Tracks) do
+  begin
+    for LineIndex := 0 to Tracks[TrackIndex].High do
+    begin
+      // iterate over all notes in the line
+      for NoteIndex := 0 to Tracks[TrackIndex].Lines[LineIndex].HighNote do
+      begin
+        // if the note is longer than the audio length, freestyle it
+        if (GetTimeFromBeat(Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat +
+            Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration, Self) >= AudioLength) then
+        begin
+          Tracks[TrackIndex].Lines[LineIndex].LastLine := true;
+          // convert to freestyle note
+          Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].NoteType := ntFreestyle;
+          Log.LogWarn(
+            Format('Note at %f seconds in song "%s" is longer than audio length %f seconds. Converted to freestyle note.',
+              [GetTimeFromBeat(Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat, Self),
+               FileName.ToNative, AudioLength]),
+            'TSong.TrimToAudioLength'
+          );
+        end;
+      end;
+    end;
+  end;
+end;
+
 function TSong.LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean): boolean;
 var
   CurLine:      RawByteString;
@@ -816,6 +850,7 @@ begin
 
         Inc(FileLineNo);
       end; // while
+    
   except
     on E: Exception do
     begin

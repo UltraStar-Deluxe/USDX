@@ -1000,6 +1000,7 @@ var
   VideoFile:  IPath;
   BgFile:     IPath;
   success:    boolean;
+  AudioEnd:   real;
 
 begin
   // background texture (garbage disposal)
@@ -1058,6 +1059,19 @@ begin
     SongError();
     Exit;
   end;
+
+  // debug AudioEnd
+  Log.LogInfo('AudioEnd: ' + FloatToStr(CurrentSong.Finish / 1000), 'TScreenSing.LoadNextSong');
+  Log.LogInfo('AudioLength: ' + FloatToStr(AudioPlayback.Length), 'TScreenSing.LoadNextSong');
+  if Assigned(AudioPlayback) then
+    AudioEnd := AudioPlayback.Length
+  else if CurrentSong.Finish > 0 then
+    AudioEnd := CurrentSong.Finish / 1000
+  else
+    AudioEnd := 0;
+
+  if AudioEnd > 0 then
+    CurrentSong.TrimToAudioLength(AudioEnd);
 
   // Set up Medley timings
   if ScreenSong.Mode = smMedley then
