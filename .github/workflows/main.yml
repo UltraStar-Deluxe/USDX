@@ -11,7 +11,7 @@ on:
 jobs:
   build_windows:
     name: Build for Windows
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
