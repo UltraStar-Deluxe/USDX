@@ -1258,21 +1258,16 @@ begin
   //calculate total singing beats of song
   if ScreenSong.Mode = smMedley then
   begin
-    SongStart := CurrentSong.Medley.StartBeat - CurrentSong.BPM[0].BPM*CurrentSong.Medley.FadeIn_time/60;
-    if SongStart < 0 then
-      SongStart := 0;
-    SongEnd := CurrentSong.Medley.EndBeat + CurrentSong.BPM[0].BPM*CurrentSong.Medley.FadeOut_time/60;
-    SongDuration := SongEnd - SongStart;
-    gapInBeats := 0;
+    SongStart := ScreenSing.MedleyStart * CurrentSong.BPM[0].BPM / 60;
+    SongEnd := ScreenSing.MedleyEnd * CurrentSong.BPM[0].BPM / 60;
   end
   else
   begin
     SongStart := CurrentSong.BPM[0].BPM*CurrentSong.Start/60;
     SongEnd := CurrentSong.BPM[0].BPM*TotalTime/60;
-    SongDuration := SongEnd - SongStart;
-    gapInBeats := CurrentSong.BPM[0].BPM*CurrentSong.GAP/1000/60;
   end;
-
+  SongDuration := SongEnd - SongStart;
+  gapInBeats := CurrentSong.BPM[0].BPM*CurrentSong.GAP/1000/60;
   // draw sentence boxes
   for CurrentTrack := 0 to High(Tracks) do //for P1 of duet or solo lyrics, P2 of duet,..
   begin
@@ -1287,7 +1282,7 @@ begin
     for LineIndex := 0 to numLines - 1 do
     begin
       if (Tracks[CurrentTrack].Lines[LineIndex].Notes = nil) then Continue;
-      if (ScreenSong.Mode = smMedley) and (Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat < SongStart) then Continue;
+      if (ScreenSong.Mode = smMedley) and (Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat < CurrentSong.Medley.StartBeat) then Continue;
       pos := (gapInBeats + Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat - SongStart) / SongDuration*w;
       br := (Tracks[CurrentTrack].Lines[LineIndex].Notes[Tracks[CurrentTrack].Lines[LineIndex].HighNote].StartBeat +
                 Tracks[CurrentTrack].Lines[LineIndex].Notes[Tracks[CurrentTrack].Lines[LineIndex].HighNote].Duration -
