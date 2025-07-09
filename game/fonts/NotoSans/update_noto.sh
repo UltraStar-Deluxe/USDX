@@ -52,7 +52,10 @@ for font in "${fonts[@]}"; do
   family="${font%%-*}"
   url="https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/${family}/hinted/ttf/${font}"
 
-  if curl -fSL "$url" -o "$font"; then
+  # --fail  Fail silently (no output) on server errors (e.g. 404)
+  # --location  Follow redirects (e.g. from GitHub or CDN URLs)
+  # --silent  Silent mode (no progress bar or error messages)
+  if curl --fail --location --silent "$url" --output "$font"; then
     ((count++))
   else
     echo "❌ Failed to download: $font"
