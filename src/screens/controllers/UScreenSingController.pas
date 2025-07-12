@@ -875,8 +875,8 @@ begin
   PlayMidi := false;
   MidiFadeIn := false;
 
-  if (not Assigned(self.Karaoke)) or (self.Karaoke = PATH_NONE) then
-    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Karaoke), CurrentSong.Path.Append(CurrentSong.Audio))
+  if (not Assigned(CurrentSong.Karaoke)) or (CurrentSong.Karaoke = PATH_NONE) then
+    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio), nil)
   else
     AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio), CurrentSong.Path.Append(CurrentSong.Karaoke));
 
