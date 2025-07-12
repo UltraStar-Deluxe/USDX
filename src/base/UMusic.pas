@@ -585,7 +585,7 @@ const
     '%SOUNDPATH%/menu swoosh.mp3',                  // Swoosh
     '%SOUNDPATH%/select music change music 50.mp3', // Change
     '%SOUNDPATH%/option change col.mp3',            // Option
-    '%SOUNDPATH%/rimshot022b.mp3'                   // Click
+    '%SOUNDPATH%/rimshot022b.wav'                   // Click
     {
     '%SOUNDPATH%/bassdrumhard076b.mp3',             // Drum (unused)
     '%SOUNDPATH%/hihatclosed068b.mp3',              // Hihat (unused)
@@ -989,7 +989,7 @@ begin
   Swoosh  := AudioPlayback.OpenSound(SoundPath.Append('menu swoosh.mp3'));
   Change  := AudioPlayback.OpenSound(SoundPath.Append('select music change music 50.mp3'));
   Option  := AudioPlayback.OpenSound(SoundPath.Append('option change col.mp3'));
-  Click   := AudioPlayback.OpenSound(SoundPath.Append('rimshot022b.mp3'));
+  Click   := AudioPlayback.OpenSound(SoundPath.Append('rimshot022b.wav'));
   Applause:= AudioPlayback.OpenSound(SoundPath.Append('Applause.mp3'));
 
   BGMusic := AudioPlayback.OpenSound(SoundPath.Append('background track.mp3'));
