@@ -609,6 +609,7 @@ type
       Change:  TAudioPlaybackStream;
       Option:  TAudioPlaybackStream;
       Click:   TAudioPlaybackStream;
+      Ping:   TAudioPlaybackStream;
       Applause:TAudioPlaybackStream;
       BGMusic: TAudioPlaybackStream;
 
@@ -990,6 +991,7 @@ begin
   Change  := AudioPlayback.OpenSound(SoundPath.Append('select music change music 50.mp3'));
   Option  := AudioPlayback.OpenSound(SoundPath.Append('option change col.mp3'));
   Click   := AudioPlayback.OpenSound(SoundPath.Append('rimshot022b.mp3'));
+  Ping    := AudioPlayback.OpenSound(SoundPath.Append('ping.wav'));
   Applause:= AudioPlayback.OpenSound(SoundPath.Append('Applause.mp3'));
 
   BGMusic := AudioPlayback.OpenSound(SoundPath.Append('background track.mp3'));
@@ -1006,6 +1008,7 @@ begin
   FreeAndNil(Change);
   FreeAndNil(Option);
   FreeAndNil(Click);
+  FreeAndNil(Ping);
   FreeAndNil(Applause);
   FreeAndNil(BGMusic);
 end;
