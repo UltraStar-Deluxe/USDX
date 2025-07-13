@@ -947,10 +947,6 @@ var
       self.Audio := filePath;
       //Add Audio Flag to Done
       Done := Done or 4;
-      if (not Assigned(self.Karaoke)) or (self.Karaoke = PATH_NONE) then
-      begin
-        self.Karaoke := filePath;
-      end;
     end
     else
     begin
