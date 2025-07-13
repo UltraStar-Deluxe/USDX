@@ -1589,6 +1589,8 @@ begin
 
         SetLength(PlaylistMedley.Stats, len + 1);
         SetLength(PlaylistMedley.Stats[len].Player, num);
+        for I := 0 to num - 1 do
+          PlaylistMedley.Stats[len].Player[I].HighNote := -1;
 
         for J := 0 to len - 1 do
         begin
