@@ -7,13 +7,7 @@ The intention of this document is to introduce you to USDX development.
 ### Commits older than 2016
 In 2016 the project was moved from SourceForge (SVN) to Github (git).
 Generally, you don't need to look at commits that aren't in the git history, but sometimes you'll want to check something.
-The easiest way is just checking out the [svn repository](https://sourceforge.net/p/ultrastardx/svn/HEAD/tree/) somewhere separate.
-
-Alternatively, you can use the [trunk browser](https://sourceforge.net/p/ultrastardx/svn/HEAD/tree/trunk/src/).
-Find the file you want the history of, then click History.
-It does not have a blame view, the easiest way is to View the oldest entry on a page and see if the bit of code you want to find is now different.
-If it is, start checking commits on the current page.
-If it's still unchanged, just go to the next/Older page.
+A git version of this SVN can be found in the [legacy-sourceforge-svn-mirror](https://github.com/UltraStar-Deluxe/legacy-sourceforge-svn-mirror) repository.
 
 ### General information:
 - Freepascal 3 and Lazarus 1.6 are strongly suggested for development
