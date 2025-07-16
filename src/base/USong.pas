@@ -1128,9 +1128,9 @@ begin
     end;
 
     // Audio File
-    // The AUDIO header was introduced in format 1.1.0 and replaces MP3 (deprecated)
+    // The optional AUDIO header was introduced in format 1.0.0 and takes precendence over MP3 if it exists
     // For older format versions the audio file is found in the MP3 header
-    if self.FormatVersion.MinVersion(1,1,0) then
+    if self.FormatVersion.MinVersion(1,0,0) then
     begin
       if TagMap.TryGetData('AUDIO', Value) then
       begin
@@ -1142,21 +1142,13 @@ begin
           RemoveTagsFromTagMap('MP3', false);
         end;
         CheckAndSetAudioFile(Value);
-      end
-      else
-      begin
-        Result := false;
-        Log.LogError('Missing AUDIO header (mandatory for format >= 1.1.0) ' + FullFileName);
-        Exit;
       end;
-    end
-    else
+    end;
+
+    if TagMap.TryGetData('MP3', Value) then
     begin
-      if TagMap.TryGetData('MP3', Value) then
-      begin
-        RemoveTagsFromTagMap('MP3');
-        CheckAndSetAudioFile(Value);
-      end;
+      RemoveTagsFromTagMap('MP3');
+      CheckAndSetAudioFile(Value);
     end;
 
     //Beats per Minute
@@ -1242,7 +1234,7 @@ begin
     ParseMultivaluedFilterHeaders('LANGUAGE', self.Language, self.LanguageASCII);
 
     //Tags Sorting
-    if FormatVersion.MinVersion(1,1,0) then
+    if FormatVersion.MinVersion(1,0,0) then
     begin
       ParseMultivaluedFilterHeaders('TAGS', self.Tags, self.TagsASCII);
     end;
