@@ -1047,17 +1047,17 @@ begin
 
   CurrentSong := CatSongs.Song[CatSongs.Selected];
 
+  AudioEnd := 0;
   if Assigned(AudioPlayback) then
-    AudioEnd := AudioPlayback.Length // unfortunately only works when the song is already playing
-  else if CurrentSong.Finish > 0 then
-    AudioEnd := CurrentSong.Finish / 1000
-  else
-    AudioEnd := 0;
+    AudioEnd := AudioPlayback.Length; // unfortunately only works when the song is already playing
+
+  if (CurrentSong.Finish > 0) and (CurrentSong.Finish / 1000 < AudioEnd) then
+    AudioEnd := CurrentSong.Finish / 1000;
 
   success := false;
   // FIXME: bad style, put the try-except into loadsong() and not here
   try
-    success := CurrentSong.Analyse(false, ScreenSong.DuetChange, ScreenSong.RapToFreestyle, AudioEnd); // and CurrentSong.LoadSong();
+    success := CurrentSong.Analyse(false, ScreenSong.DuetChange, ScreenSong.RapToFreestyle, true, AudioEnd); // and CurrentSong.LoadSong();
   except
     on E: EInOutError do Log.LogWarn(E.Message, 'TScreenSing.LoadNextSong');
   end;

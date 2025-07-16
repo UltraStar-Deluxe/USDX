@@ -131,7 +131,7 @@ type
 
     function GetFolderCategory(const aFileName: IPath): UTF8String;
     function FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
-    function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; AudioLength: real): boolean;
+    function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
   public
     Path:         IPath; // kust path component of file (only set if file was found)
     Folder:       UTF8String; // for sorting by folder (only set if file was found)
@@ -216,7 +216,7 @@ type
     constructor Create(const aFileName : IPath); overload;
     destructor  Destroy; override;
     function    LoadSong(DuetChange: boolean): boolean;
-    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false; AudioLength: real = 0): boolean;
+    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false; OutOfBoundsToFreestyle: boolean = false; AudioLength: real = 0): boolean;
     procedure   SetMedleyMode();
     procedure   Clear();
     function    MD5SongFile(SongFileR: TTextFileStream): string;
@@ -623,11 +623,11 @@ begin
     Exit;
   end;
 
-  Result := LoadOpenedSong(SongFile, FileNamePath, DuetChange, false, 0);
+  Result := LoadOpenedSong(SongFile, FileNamePath, DuetChange, false, false, 0);
   SongFile.Free;
 end;
 
-function TSong.LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; AudioLength: real): boolean;
+function TSong.LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
 var
   CurLine:      RawByteString;
   LinePos:      integer;
@@ -781,13 +781,21 @@ begin
             Param0 := 'F';
           end;
 
-          if (GetTimeFromBeat(Param1 + Param3, Self) >= AudioLength) then
+          if (OutOfBoundsToFreestyle and (((CurrentSong.Start > 0) and (GetTimeFromBeat(Param1, Self) < CurrentSong.Start)) or ((AudioLength > 0) and (GetTimeFromBeat(Param1 + Param3, Self) >= AudioLength)))) then
           begin
             // convert to freestyle note
             Param0 := 'F';
             Log.LogWarn(
-              Format('Note at "%s %d %d %d %s" exceeds audio length of %.2f seconds. Converted to freestyle note.',
-              [Param0, Param1, Param2, Param3, ParamLyric, AudioLength]),
+              Format('Note at "%s %d %d %d %s" is before audio start (%.2f < %.2f) or after audio end (%.2f >= %.2f) -> converted to freestyle note',
+              [Param0, Param1, Param2, Param3, ParamLyric, GetTimeFromBeat(Param1, Self), CurrentSong.Start, GetTimeFromBeat(Param1 + Param3, Self), AudioLength]),
+              'TSong.LoadSong'
+            );
+          end
+          else
+          begin
+            Log.LogWarn(
+              Format('Note at "%s %d %d %d %s" is within audio range (%.2f >= %.2f and %.2f < %.2f)',
+              [Param0, Param1, Param2, Param3, ParamLyric, GetTimeFromBeat(Param1, Self), CurrentSong.Start, GetTimeFromBeat(Param1 + Param3, Self), AudioLength]),
               'TSong.LoadSong'
             );
           end;
@@ -1850,7 +1858,7 @@ begin
   Relative := false;
 end;
 
-function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean; RapToFreestyle: boolean; AudioLength: real): boolean;
+function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
 var
   SongFile: TTextFileStream;
   FileNamePath: IPath;
@@ -1879,7 +1887,7 @@ begin
 
     //Load Song for Medley Tags
     CurrentSong := self;
-    Result := Result and LoadOpenedSong(SongFile, FileNamePath, DuetChange, RapToFreestyle, AudioLength);
+    Result := Result and LoadOpenedSong(SongFile, FileNamePath, DuetChange, RapToFreestyle, OutOfBoundsToFreestyle, AudioLength);
 
     if Result then
     begin
