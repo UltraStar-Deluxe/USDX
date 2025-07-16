@@ -1046,6 +1046,8 @@ begin
   end;
 
   CurrentSong := CatSongs.Song[CatSongs.Selected];
+  if (not Assigned(AudioPlayback)) or (AudioPlayback.Length = 0) then
+    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio),CurrentSong.Path.Append(CurrentSong.Karaoke));
 
   AudioEnd := 0;
   if Assigned(AudioPlayback) then
