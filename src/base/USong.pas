@@ -790,14 +790,6 @@ begin
               [Param0, Param1, Param2, Param3, ParamLyric, GetTimeFromBeat(Param1, Self), CurrentSong.Start, GetTimeFromBeat(Param1 + Param3, Self), AudioLength]),
               'TSong.LoadSong'
             );
-          end
-          else
-          begin
-            Log.LogWarn(
-              Format('Note at "%s %d %d %d %s" is within audio range (%.2f >= %.2f and %.2f < %.2f)',
-              [Param0, Param1, Param2, Param3, ParamLyric, GetTimeFromBeat(Param1, Self), CurrentSong.Start, GetTimeFromBeat(Param1 + Param3, Self), AudioLength]),
-              'TSong.LoadSong'
-            );
           end;
 
           // add notes
