@@ -1134,7 +1134,7 @@ begin
 end;
 
       // SDLK_T: HandleFixTimings;
-procedure TScreenEditSub.HandleFixTimings(SDL_ModState: word);  
+procedure TScreenEditSub.HandleFixTimings(SDL_ModState: word);
 begin
   // Fixes timings between sentences
   CopyToUndo;
@@ -1192,7 +1192,7 @@ begin
     {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
     MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
     MidiStop  := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat); {$ENDIF}
-    
+
     LastClick := -100;
 
     PlaySentence := true;
