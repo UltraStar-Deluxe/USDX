@@ -34,7 +34,6 @@ interface
 
 uses
   Classes,
-  MMSystem,
   SysUtils,
   MidiIn,
   MidiType,
