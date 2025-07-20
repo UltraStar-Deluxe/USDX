@@ -53,9 +53,11 @@ uses
   dglOpenGL,
   Math,
   {$IFDEF UseMIDIPort}
-  MidiOut,
-  MidiCons,
-  UMidiInput,
+    MidiOut,
+    MidiCons,
+    {$IFDEF MSWINDOWS}
+    UMidiInput,
+    {$ENDIF}
   {$ENDIF}
   sdl2,
   strutils,
@@ -4715,14 +4717,18 @@ begin
   PianoKeysHigh := Ini.PianoKeysHigh;
 
   {$IFDEF UseMIDIPort}
-  OpenMidiIn(OnMidiNote);
+    {$IFDEF MSWINDOWS}
+    OpenMidiIn(OnMidiNote);
+    {$ENDIF}
   {$ENDIF}
 end;
 
 destructor TScreenEditSub.Destroy;
 begin
   {$IFDEF UseMIDIPort}
-  CloseMidiIn;
+    {$IFDEF MSWINDOWS}
+    CloseMidiIn;
+    {$ENDIF}
   {$ENDIF}
   inherited;
 end;

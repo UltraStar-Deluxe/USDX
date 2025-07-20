@@ -36,13 +36,13 @@ uses
   Classes,
   {$IFDEF MSWINDOWS}
   MMSystem,
+  MidiIn,
+  MidiType,
   {$ENDIF}
   {$IFDEF UsePortTime}
   PortTime,
   {$ENDIF}
   SysUtils,
-  MidiIn,
-  MidiType,
   ULog;
 
 type
