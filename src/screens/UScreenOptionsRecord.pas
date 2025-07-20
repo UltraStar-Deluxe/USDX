@@ -83,6 +83,10 @@ type
       SourceVolume: single;
       NextVolumePollTime: cardinal;
 
+      // Mic Delay measurement
+      PingTime:            integer;
+      PingResponse:        integer;
+
       procedure StartPreview;
       procedure StopPreview;
       procedure UpdateInputDevice;
@@ -91,6 +95,7 @@ type
       procedure DrawVolume(x, y, Width, Height: single);
       procedure DrawVUMeter(const State: TDrawState; x, y, Width, Height: single);
       procedure DrawPitch(const State: TDrawState; x, y, Width, Height: single);
+      procedure DrawDelay(const State: TDrawState; x, y, Width, Height: single);
     public
       constructor Create; override;
       function    Draw: boolean; override;
@@ -169,6 +174,14 @@ begin
 
     // check special keys
     case PressedKey of
+      SDLK_W:
+        begin
+          SoundLib.Ping.Volume := 1.0;
+          PingResponse := 0;
+          PingTime := SDL_GetTicks;
+          SoundLib.Ping.Play;
+          Exit;
+        end;
       SDLK_ESCAPE,
       SDLK_BACKSPACE:
         begin
@@ -250,6 +263,9 @@ var
   WidgetYPos: integer;
 begin
   inherited Create;
+
+  PingTime := 0;
+  PingResponse := 0;
 
   LoadFromTheme(Theme.OptionsRecord);
 
@@ -775,6 +791,30 @@ begin
   glPrint(ToneString);
 end;
 
+procedure TScreenOptionsRecord.DrawDelay(const State: TDrawState; x, y, Width, Height: single);
+var
+  DelayString: string;
+  DelayStringWidth, DelayStringMaxWidth, DelayStringCenterXOffset: real;
+begin
+  PreviewChannel.AnalyzeBuffer();
+
+  if (PreviewChannel.ToneAbs = 48) and (PingResponse = 0) then
+    PingResponse := SDL_GetTicks - PingTime - 5; // 5 ms delay in the wav file
+  DelayString := 'Delay: ' + IntToStr(PingResponse) + ' ms';
+
+  SetFontSize(Height*2);
+
+  // center
+  DelayStringWidth := glTextWidth(DelayString);
+  DelayStringMaxWidth := glTextWidth('Delay: 999999 ms');
+  DelayStringCenterXOffset := (DelayStringMaxWidth-DelayStringWidth) / 2;
+
+  // draw
+  SetFontPos(x-DelayStringWidth-DelayStringCenterXOffset, y-Height/2);
+  glColor3f(0, 0, 0);
+  glPrint(DelayString);
+end;
+
 function TScreenOptionsRecord.Draw: boolean;
 var
   Device: TAudioInputDevice;
@@ -783,6 +823,7 @@ var
   BarXOffset, BarYOffset, BarWidth: real;
   ChannelIndex: integer;
   State: TDrawState;
+  ToneStringMaxWidth: real;
 begin
   DrawBG;
   DrawFG;
@@ -837,6 +878,8 @@ begin
 
     DrawVUMeter(State, BarXOffset, BarYOffset, BarWidth, BarHeight);
     DrawPitch(State, BarXOffset, BarYOffset+BarHeight, BarWidth, BarHeight);
+    ToneStringMaxWidth := glTextWidth('G#4');
+    DrawDelay(State, BarXOffset - 2 * ToneStringMaxWidth, BarYOffset+BarHeight, BarWidth, BarHeight);
   end;
 
   Result := true;
