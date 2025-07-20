@@ -34,6 +34,12 @@ interface
 
 uses
   Classes,
+  {$IFDEF MSWINDOWS}
+  MMSystem,
+  {$ENDIF}
+  {$IFDEF UsePortTime}
+  PortTime,
+  {$ENDIF}
   SysUtils,
   MidiIn,
   MidiType,
