@@ -4714,12 +4714,16 @@ begin
   PianoKeysLow := Ini.PianoKeysLow;
   PianoKeysHigh := Ini.PianoKeysHigh;
 
+  {$IFDEF UseMIDIPort}
   OpenMidiIn(OnMidiNote);
+  {$ENDIF}
 end;
 
 destructor TScreenEditSub.Destroy;
 begin
+  {$IFDEF UseMIDIPort}
   CloseMidiIn;
+  {$ENDIF}
   inherited;
 end;
 
