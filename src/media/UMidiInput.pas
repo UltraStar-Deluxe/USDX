@@ -33,8 +33,12 @@ interface
 {$I switches.inc}
 
 uses
-  Classes, Windows, MMSystem, SysUtils,
-  MidiIn, MidiType, ULog;
+  Classes,
+  MMSystem,
+  SysUtils,
+  MidiIn,
+  MidiType,
+  ULog;
 
 type
   TMidiNoteProc = procedure (Note : Byte) of object;
@@ -86,11 +90,18 @@ end;
 
 procedure OpenMidiIn(CB : TMidiNoteProc);
 var caps: TMidiInCaps;
-    dev : Integer;
+    dev, numDevs : Integer;
 begin
   if Assigned(InDev) then Exit;
 
   ListDevices;
+
+  numDevs := midiInGetNumDevs;
+  if numDevs = 0 then
+  begin
+    Log.LogWarn('No MIDI input devices found. MIDI-IN will not be opened.','UMidiInput.OpenMidiIn');
+    Exit;
+  end;
 
   dev := 0;
   InDev := TMidiInput.Create(nil);
