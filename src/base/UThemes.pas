@@ -1909,6 +1909,9 @@ begin
       ThemeLoadTexts(Top5.TextScore,      'Top5TextScore');
       ThemeLoadTexts(Top5.TextDate,       'Top5TextDate');
 
+      for I := 0 to Length(Top5.Text) - 1 do
+        Theme.Top5.Text[I].Text := StringReplace(Theme.Top5.Text[I].Text, '<N>', IntToStr(Ini.TopScreenSize), [rfReplaceAll]);
+
       // Options
       ThemeLoadBasic(Options, 'Options');
 
