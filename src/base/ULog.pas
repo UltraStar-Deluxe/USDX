@@ -145,6 +145,7 @@ implementation
 uses
   SysUtils,
   DateUtils,
+  UIni,
   URecord,
   UMain,
   UMusic,  
@@ -395,7 +396,9 @@ end;
 
 procedure TLog.LogDebug(const Msg, Context: string);
 begin
-  LogMsg(Msg, Context, LOG_LEVEL_DEBUG);
+  if {$IFDEF DEBUG_MODE}true or {$ENDIF}boolean(Ini.Debug) then begin
+    LogMsg(Msg, Context, LOG_LEVEL_DEBUG);
+  end
 end;
 
 procedure TLog.LogInfo(const Msg, Context: string);
