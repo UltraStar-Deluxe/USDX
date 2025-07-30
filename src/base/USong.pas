@@ -1122,13 +1122,17 @@ begin
       if TagMap.TryGetData('AUDIO', Value) then
       begin
         RemoveTagsFromTagMap('AUDIO');
+        CheckAndSetAudioFile(Value);
         // If AUDIO is present MP3 should be ignored
-        if TagMap.IndexOf('MP3') > -1 then
+        if TagMap.TryGetData('MP3', Value) then
         begin
-          Log.LogInfo('The AUDIO header overwrites the MP3 header in file ' + FullFileName, 'TSong.ReadTXTHeader');
+          // If MP3 has a different value than AUDIO add an info message to logs
+          if not self.Audio.Equals(Value) then
+          begin
+             Log.LogInfo('The AUDIO header overwrites the MP3 header in file ' + FullFileName, 'TSong.ReadTXTHeader');
+          end;
           RemoveTagsFromTagMap('MP3', false);
         end;
-        CheckAndSetAudioFile(Value);
       end;
     end;
 
