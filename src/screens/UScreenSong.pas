@@ -249,6 +249,7 @@ type
 
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       function ParseMouseRoulette(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+      function ParseMouseList(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
       function ParseMouseChessboard(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 
       function Draw: boolean; override;
@@ -1408,10 +1409,50 @@ begin
     case TSongMenuMode(Ini.SongMenu) of
       smChessboard: Result := ParseMouseChessboard(MouseButton, BtnDown, X, Y);
       smMosaic: Result := ParseMouseChessboard(MouseButton, BtnDown, X, Y);
+      smList: Result := ParseMouseList(MouseButton, BtnDown, X, Y);
       else
         Result := ParseMouseRoulette(MouseButton, BtnDown, X, Y);
     end;
 
+  end;
+end;
+
+function TScreenSong.ParseMouseList(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+var
+  B: integer;
+begin
+  Result := true;
+  if (BtnDown) then begin
+    if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) then begin
+      //if RightMbESC is set, send ESC keypress
+      Result:=ParseInput(SDLK_ESCAPE, 0, true);
+    end else if (MouseButton = SDL_BUTTON_WHEELDOWN) then begin
+      //song scrolling with mousewheel
+      ParseInput(SDLK_DOWN, 0, true);
+    end else if (MouseButton = SDL_BUTTON_WHEELUP) then begin
+      ParseInput(SDLK_UP, 0, true);
+    end else if (MouseButton = SDL_BUTTON_LEFT) then begin
+      // LMB clicking anywhere starts whatever song is selected
+      ParseInput(SDLK_RETURN, 0, true);
+    end;
+  end else begin
+    // hover cover
+    for B := 0 to High(Button) do begin
+      if (Button[B].Visible) then begin
+        // TODO: you have to specifically hover the cover image. see SetListScroll
+        if InRegion(X, Y, Button[B].GetMouseOverArea) then begin
+          if (Interaction <> B) then begin
+            // play current hover
+            isScrolling := false;
+            OnSongDeSelect;
+            Interaction := B;
+            SetScrollRefresh;
+            LastSelectMouse := SDL_GetTicks;
+            LastSelectTime := SDL_GetTicks;
+          end;
+        end;
+      end;
+    end;
   end;
 end;
 
@@ -2850,6 +2891,9 @@ begin
           LoadCover(B);
           Button[B].Z := 1;
 
+          // TODO: these should be using Theme.Song.ListCover instead of Theme.Song.Cover
+          //  but then the cover also gets stretched to the entire list background element...
+          //  this only affects selecting by hover
           Button[B].X := Theme.Song.Cover.X;
           Button[B].Y := Theme.Song.Cover.Y + (Line - ListMinLine) * (Theme.Song.Cover.H + Theme.Song.Cover.Padding);
           Button[B].W := Theme.Song.Cover.W;
