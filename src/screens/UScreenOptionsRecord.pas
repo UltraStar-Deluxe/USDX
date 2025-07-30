@@ -840,22 +840,18 @@ begin
   // calculate response time: the file is 0.5s per note, so PingResponse = actual mic delay + 0 for C4, actual mic delay + 0.5s for G4, actual mic delay + 1s for E5, and the notes end at actual mic delay + 1.5s this should give us 4 timestamps, and 4 different mic delays. let's print them all
   if (PingNoteEnded[2] > 0) then
   begin
-    Log.LogInfo('PingNoteStarted: ' + IntToStr(PingNoteStarted[0] - PingTime) + ' instead of 0ms', 'TScreenOptionsRecord.DrawDelay');
-    Log.LogInfo('PingNoteStarted: ' + IntToStr(PingNoteStarted[1] - PingTime) + ' instead of 900ms', 'TScreenOptionsRecord.DrawDelay');
-    Log.LogInfo('PingNoteStarted: ' + IntToStr(PingNoteStarted[2] - PingTime) + ' instead of 1800ms', 'TScreenOptionsRecord.DrawDelay');
-    Log.LogInfo('PingNoteEnded: ' + IntToStr(PingNoteEnded[0] - PingTime) + ' instead of 900ms', 'TScreenOptionsRecord.DrawDelay');
-    Log.LogInfo('PingNoteEnded: ' + IntToStr(PingNoteEnded[1] - PingTime) + ' instead of 1800ms', 'TScreenOptionsRecord.DrawDelay');
-    Log.LogInfo('PingNoteEnded: ' + IntToStr(PingNoteEnded[2] - PingTime) + ' instead of 2700ms', 'TScreenOptionsRecord.DrawDelay');
+    Log.LogInfo('Ping Notes Measured vs. Ideal:','TScreenOptionsRecord.DrawDelay');
+    Log.LogInfo('1. [' + IntToStr(PingNoteStarted[0] - PingTime) + ' - ' + IntToStr(PingNoteEnded[0] - PingTime) + '] ms instead of [0 - 900] ms', 'TScreenOptionsRecord.DrawDelay');
+    Log.LogInfo('2. [' + IntToStr(PingNoteStarted[1] - PingTime) + ' - ' + IntToStr(PingNoteEnded[1] - PingTime) + '] ms instead of [900 - 1800] ms', 'TScreenOptionsRecord.DrawDelay');
+    Log.LogInfo('3. [' + IntToStr(PingNoteStarted[2] - PingTime) + ' - ' + IntToStr(PingNoteEnded[2] - PingTime) + '] ms instead of [1800 - 2700] ms', 'TScreenOptionsRecord.DrawDelay');
     for i := Low(PingNoteStarted) to High(PingNoteStarted) do
     begin
       PingNoteStarted[i] := -1;
       PingNoteEnded[i] := -1;
     end;
   end;
-
-  //if (PreviewChannel.ToneAbs = 48) and (PingResponse = 0) then
-  //  PingResponse := SDL_GetTicks - PingTime - 5; // 5 ms delay in the wav file
-  //DelayString := 'Delay: ' + IntToStr(PingResponse) + ' ms';
+  if (PingTime > 0) and (PingNoteEnded[0] > 0) and (PingNoteEnded[1] > 0) then
+    DelayString := 'Mic Delay: ' + IntToStr((Max(0, PingNoteEnded[0] - PingTime - 900) + Max(0, PingNoteEnded[1] - PingTime - 1800)) div 2) + ' ms';
 
   SetFontSize(Height*2);
 
