@@ -838,10 +838,9 @@ begin
   SetFontPos(695, 0);
   glPrint ('FPS: ' + InttoStr(LastFPS));
 
-  // muffins
   SetFontPos(695, 13);
   glColor4f(0.8, 0.5, 0.2, 1);
-  glPrint ('Muffins!');
+  glPrint ('Game.Debug');
 
   glColor4f(1, 1, 1, 1);
 end;
