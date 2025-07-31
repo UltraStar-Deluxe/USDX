@@ -98,6 +98,7 @@ type
 
       // static
       function AddStatic(ThemeStatic: TThemeStatic): integer; overload;
+      function AddStatic(X, Y: real; ThemeStatic: TThemeStatic): integer; overload;
       function AddStaticRectangle(static: TThemeStaticRectangle): integer;
       function AddStaticAlphaRectangle(static: TThemeStaticAlphaRectangle): integer;
       function AddStaticColorRectangle(static: TThemeStaticColorRectangle): integer;
@@ -115,6 +116,7 @@ type
 
       // text
       function AddText(ThemeText: TThemeText): integer; overload;
+      function AddText(X, Y: real; ThemeText: TThemeText; Replacement: string = ''): integer; overload;
       function AddText(X, Y: real; const Text_: UTF8String): integer; overload;
       function AddText(X, Y: real; Font, Style: integer; Size, ColR, ColG, ColB: real; const Text: UTF8String): integer; overload;
       function AddText(X, Y, W, H: real; Font, Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: UTF8String; Reflection_: boolean; ReflectionSpacing_: real; Z : real; Writable: boolean): integer; overload;
@@ -629,6 +631,15 @@ begin
     ThemeStatic.Typ, $FFFFFF, ThemeStatic.Reflection, ThemeStatic.Reflectionspacing);
 end;
 
+function TMenu.AddStatic(X,Y: real; ThemeStatic: TThemeStatic): integer;
+begin
+  Result := AddStatic(X, Y, ThemeStatic.W, ThemeStatic.H, ThemeStatic.Z,
+    ThemeStatic.ColR, ThemeStatic.ColG, ThemeStatic.ColB,
+    ThemeStatic.TexX1, ThemeStatic.TexY1, ThemeStatic.TexX2, ThemeStatic.TexY2, ThemeStatic.Alpha,
+    Skin.GetTextureFileName(ThemeStatic.Tex),
+    ThemeStatic.Typ, $FFFFFF, ThemeStatic.Reflection, ThemeStatic.Reflectionspacing);
+end;
+
 function TMenu.AddStaticPosition(static: TThemePosition): integer;
 begin
   Result := AddStatic(
@@ -866,6 +877,14 @@ function TMenu.AddText(ThemeText: TThemeText): integer;
 begin
   Result := AddText(ThemeText.X, ThemeText.Y, ThemeText.W, ThemeText.H, ThemeText.Font, ThemeText.Style, ThemeText.Size,
     ThemeText.ColR, ThemeText.ColG, ThemeText.ColB, ThemeText.Align, ThemeText.Text, ThemeText.Reflection, ThemeText.ReflectionSpacing, ThemeText.Z, ThemeText.Writable);
+end;
+
+function TMenu.AddText(X, Y: real; ThemeText: TThemeText; Replacement: string): integer;
+begin
+  if (Replacement = '') then
+    Replacement := ThemeText.Text;
+  Result := AddText(X, Y, ThemeText.W, ThemeText.H, ThemeText.Font, ThemeText.Style, ThemeText.Size,
+    ThemeText.ColR, ThemeText.ColG, ThemeText.ColB, ThemeText.Align, Replacement, ThemeText.Reflection, ThemeText.ReflectionSpacing, ThemeText.Z, ThemeText.Writable);
 end;
 
 function TMenu.AddText(X, Y: real; const Text_: UTF8String): integer;
