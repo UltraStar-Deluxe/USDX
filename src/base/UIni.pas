@@ -218,6 +218,7 @@ type
       TopScores:      integer;
       SingTimebarMode:       integer;
       JukeboxTimebarMode:    integer;
+      DefaultSingMode:       integer;
 
       // Controller
       Joypad:         integer;
@@ -447,6 +448,7 @@ const
   sStartSing = 0;
   sSelectPlayer = 1;
   sOpenMenu = 2;
+  IDefaultSingMode: array[0..1] of UTF8String = ('Regular', 'Instrumental');
 
   ILineBonus:     array[0..1] of UTF8String = ('Off', 'On');
   IPartyPopup:    array[0..1] of UTF8String = ('Off', 'On');
@@ -549,6 +551,7 @@ var
   IPartyPopupTranslated:       array[0..1] of UTF8String = ('Off', 'On');
   ISingScoresTranslated:       array[0..1] of UTF8String = ('Off', 'On');
   ITopScoresTranslated:        array[0..1] of UTF8String = ('All', 'Player');
+  IDefaultSingModeTranslated:  array[0..1] of UTF8String = ('Regular', 'Instrumental');
 
   IJoypadTranslated:           array[0..1] of UTF8String = ('Off', 'On');
   IMouseTranslated:            array[0..2] of UTF8String = ('Off', 'On [System Cursor]', 'On [Game Cursor]');
@@ -828,6 +831,9 @@ begin
   IOnSongClickTranslated[0]           := ULanguage.Language.Translate('OPTION_VALUE_SING');
   IOnSongClickTranslated[1]           := ULanguage.Language.Translate('OPTION_VALUE_SELECT_PLAYERS');
   IOnSongClickTranslated[2]           := ULanguage.Language.Translate('OPTION_VALUE_OPEN_MENU');
+
+  IDefaultSingModeTranslated[0]       := ULanguage.Language.Translate('OPTION_VALUE_REGULAR');
+  IDefaultSingModeTranslated[1]       := ULanguage.Language.Translate('OPTION_VALUE_INSTRUMENTAL');
 
   ILineBonusTranslated[0]             := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   ILineBonusTranslated[1]             := ULanguage.Language.Translate('OPTION_VALUE_ON');
@@ -1600,6 +1606,9 @@ begin
   // OnSongClick
   OnSongClick := ReadArrayIndex(IOnSongClick, IniFile, 'Advanced', 'OnSongClick', IGNORE_INDEX, 'Sing');
 
+  // DefaultSingMode
+  DefaultSingMode := ReadArrayIndex(IDefaultSingMode, IniFile, 'Advanced', 'DefaultSingMode', IGNORE_INDEX, 'Regular');
+
   // Linebonus
   LineBonus := ReadArrayIndex(ILineBonus, IniFile, 'Advanced', 'LineBonus', 1);
 
@@ -1917,6 +1926,9 @@ begin
 
     //OnSongClick
     IniFile.WriteString('Advanced', 'OnSongClick', IOnSongClick[OnSongClick]);
+
+    //DefaultSingMode
+    IniFile.WriteString('Advanced', 'DefaultSingMode', IDefaultSingMode[DefaultSingMode]);
 
     //Line Bonus
     IniFile.WriteString('Advanced', 'LineBonus', ILineBonus[LineBonus]);
