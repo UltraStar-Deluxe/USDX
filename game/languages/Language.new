@@ -463,19 +463,19 @@
 
 ;TODO: STAT_DESC_SCORES=HighScores
 ;TODO: STAT_DESC_SCORES_REVERSED=LowScores
-;TODO: STAT_FORMAT_SCORES=%0:s - %1:d  [%2:s]  %5:s \n (%3:s - %4:s)
+;TODO: STAT_FORMAT_SCORES=%1:5d - %0:s - %5:s\n%3:s - %4:s [%2:s]
 
 ;TODO: STAT_DESC_SINGERS=Best Singers
 ;TODO: STAT_DESC_SINGERS_REVERSED=Worst Singers
-;TODO: STAT_FORMAT_SINGERS=%0:s \n Average Score: %1:d
+;TODO: STAT_FORMAT_SINGERS=Average Score: %1:5d - %0:s (%2:5dx)
 
 ;TODO: STAT_DESC_SONGS=Most popular Songs
 ;TODO: STAT_DESC_SONGS_REVERSED=Least popular Songs
-;TODO: STAT_FORMAT_SONGS=%0:s - %1:s \n %2:dx sung
+;TODO: STAT_FORMAT_SONGS=%2:5dx sung (Average Score: %3:5d): %0:s - %1:s
 
 ;TODO: STAT_DESC_BANDS=Most popular Bands
 ;TODO: STAT_DESC_BANDS_REVERSED=Least popular Bands
-;TODO: STAT_FORMAT_BANDS=%0:s \n %1:dx Sung
+;TODO: STAT_FORMAT_BANDS=%1:5dx sung (Average Score: %2:5d): %0:s
 
 ;TODO: SCREENSHOT_SAVED=Screenshot saved
 ;TODO: SCREENSHOT_FAILED=Couldn''t save screenshot
