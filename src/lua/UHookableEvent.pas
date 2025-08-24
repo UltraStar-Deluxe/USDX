@@ -353,7 +353,7 @@ begin
   Result := 0;
 
   if not lua_isTable(L, 1) then
-    LuaL_Error(L, 'Can''t find hook table in LuaHook_Unhook. Please call Unhook with method seperator (colon) instead of a point.');
+    LuaL_Error(L, 'Can''t find hook table in LuaHook_Unhook. Please call Unhook with method separator (colon) instead of a point.');
 
   // get event name
   Lua_GetField(L, 1, 'Event');
