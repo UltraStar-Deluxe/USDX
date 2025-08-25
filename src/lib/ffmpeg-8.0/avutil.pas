@@ -24,33 +24,6 @@ uses
   SysUtils,
   UConfig;
 
-
-const
-  (* Max. supported version by this header *)
-  LIBAVUTIL_MAX_VERSION_MAJOR   = 60;
-  LIBAVUTIL_MAX_VERSION_MINOR   = 999;
-  LIBAVUTIL_MAX_VERSION_RELEASE = 999;
-  LIBAVUTIL_MAX_VERSION = (LIBAVUTIL_MAX_VERSION_MAJOR * VERSION_MAJOR) +
-                          (LIBAVUTIL_MAX_VERSION_MINOR * VERSION_MINOR) +
-                          (LIBAVUTIL_MAX_VERSION_RELEASE * VERSION_RELEASE);
-
-  (* Min. supported version by this header *)
-  LIBAVUTIL_MIN_VERSION_MAJOR   = 60;
-  LIBAVUTIL_MIN_VERSION_MINOR   = 8;
-  LIBAVUTIL_MIN_VERSION_RELEASE = 100;
-  LIBAVUTIL_MIN_VERSION = (LIBAVUTIL_MIN_VERSION_MAJOR * VERSION_MAJOR) +
-                          (LIBAVUTIL_MIN_VERSION_MINOR * VERSION_MINOR) +
-                          (LIBAVUTIL_MIN_VERSION_RELEASE * VERSION_RELEASE);
-
-(* Check if linked versions are supported *)
-{$IF (LIBAVUTIL_VERSION < LIBAVUTIL_MIN_VERSION)}
-  {$MESSAGE Error 'Linked version of libavutil is too old!'}
-{$IFEND}
-
-{$IF (LIBAVUTIL_VERSION > LIBAVUTIL_MAX_VERSION)}
-  {$MESSAGE Error 'Linked version of libavutil is not yet supported!'}
-{$IFEND}
-
 type
   (*
    * We use this record as the last element of records that are not supposed

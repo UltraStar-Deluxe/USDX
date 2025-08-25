@@ -20,21 +20,6 @@ uses
   UConfig;
 
 const
-  (* Max. supported version by this header *)
-  LIBSWSCALE_MAX_VERSION_MAJOR   =  9;
-  LIBSWSCALE_MAX_VERSION_MINOR   =  999;
-  LIBSWSCALE_MAX_VERSION_RELEASE =  999;
-  LIBSWSCALE_MAX_VERSION = (LIBSWSCALE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
-                           (LIBSWSCALE_MAX_VERSION_MINOR * VERSION_MINOR) +
-                           (LIBSWSCALE_MAX_VERSION_RELEASE * VERSION_RELEASE);
-
-(* Check if linked versions are supported *)
-{$IF (LIBSWSCALE_VERSION > LIBSWSCALE_MAX_VERSION)}
-  {$MESSAGE Error 'Linked version of libswscale is not yet supported!'}
-{$IFEND}
-
-
-const
   SWS_FAST_BILINEAR = 1;
 type
   PSwsContext = ^TSwsContext;

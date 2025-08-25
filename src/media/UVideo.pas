@@ -280,6 +280,7 @@ begin
     {$ENDIF}
     begin
       Result := false;
+      // -1 is the value of AV_PIX_FMT_NONE, which terminates the pixel format list
       while ord(Fmt^) <> -1 do
       begin
         if IsSupportedScalingInput(Fmt^) then

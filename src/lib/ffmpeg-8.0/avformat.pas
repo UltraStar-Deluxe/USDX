@@ -23,33 +23,6 @@ uses
   UConfig;
 
 const
-  (* Max. supported version by this header *)
-  LIBAVFORMAT_MAX_VERSION_MAJOR   = 62;
-  LIBAVFORMAT_MAX_VERSION_MINOR   = 999;
-  LIBAVFORMAT_MAX_VERSION_RELEASE = 999;
-  LIBAVFORMAT_MAX_VERSION = (LIBAVFORMAT_MAX_VERSION_MAJOR * VERSION_MAJOR) +
-                            (LIBAVFORMAT_MAX_VERSION_MINOR * VERSION_MINOR) +
-                            (LIBAVFORMAT_MAX_VERSION_RELEASE * VERSION_RELEASE);
-
-  (* Min. supported version by this header *)
-  LIBAVFORMAT_MIN_VERSION_MAJOR   = 62;
-  LIBAVFORMAT_MIN_VERSION_MINOR   = 3;
-  LIBAVFORMAT_MIN_VERSION_RELEASE = 100;
-  LIBAVFORMAT_MIN_VERSION = (LIBAVFORMAT_MIN_VERSION_MAJOR * VERSION_MAJOR) +
-                            (LIBAVFORMAT_MIN_VERSION_MINOR * VERSION_MINOR) +
-                            (LIBAVFORMAT_MIN_VERSION_RELEASE * VERSION_RELEASE);
-
-(* Check if linked versions are supported *)
-{$IF (LIBAVFORMAT_VERSION < LIBAVFORMAT_MIN_VERSION)}
-  {$MESSAGE Error 'Linked version of libavformat is too old!'}
-{$IFEND}
-
-(* Check if linked versions are supported *)
-{$IF (LIBAVFORMAT_VERSION > LIBAVFORMAT_MAX_VERSION)}
-  {$MESSAGE Error 'Linked version of libavformat is not yet supported!'}
-{$IFEND}
-
-const
   AVFMT_FLAG_GENPTS = 1;
   AVSEEK_FLAG_ANY = 4;
   AVSEEK_FLAG_BACKWARD = 1;

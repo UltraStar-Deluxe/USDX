@@ -22,33 +22,6 @@ uses
   UConfig;
 
 const
-  (* Supported version by this header *)
-  LIBAVCODEC_MAX_VERSION_MAJOR   = 62;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 999;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 999;
-  LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
-                           (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
-                           (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
-
-  (* Min. supported version by this header *)
-  LIBAVCODEC_MIN_VERSION_MAJOR   = 62;
-  LIBAVCODEC_MIN_VERSION_MINOR   = 11;
-  LIBAVCODEC_MIN_VERSION_RELEASE = 100;
-  LIBAVCODEC_MIN_VERSION = (LIBAVCODEC_MIN_VERSION_MAJOR * VERSION_MAJOR) +
-                            (LIBAVCODEC_MIN_VERSION_MINOR * VERSION_MINOR) +
-                            (LIBAVCODEC_MIN_VERSION_RELEASE * VERSION_RELEASE);
-
-(* Check if linked versions are supported *)
-{$IF (LIBAVCODEC_VERSION < LIBAVCODEC_MIN_VERSION)}
-  {$MESSAGE Error 'Linked version of libavcodec is too old!'}
-{$IFEND}
-
-(* Check if linked version is supported *)
-{$IF (LIBAVCODEC_VERSION > LIBAVCODEC_MAX_VERSION)}
-  {$MESSAGE Error 'Linked version of libavcodec is not yet supported!'}
-{$IFEND}
-
-const
   FF_BUG_AUTODETECT = 1;
   AV_PKT_DATA_SKIP_SAMPLES = 11;
 type
@@ -104,11 +77,6 @@ type
     we_do_not_use_long_name: ^AnsiChar;
     type_: TAVMediaType;
     id: TAVCodecID;
-    we_do_not_use_capabilities: cint;
-    we_do_not_use_max_lowres: cuint8;
-    we_do_not_use_supported_framerates: ^TAVRational;
-    // TODO: replace deprecated
-    pix_fmts: ^TAVPixelFormat;
     do_not_instantiate_this_record: incomplete_record;
   end;
   TAVCodecContext = record
@@ -250,7 +218,7 @@ function av_packet_alloc(): PAVPacket; cdecl; external av__codec;
 procedure av_packet_free(pkt: PPAVPacket); cdecl; external av__codec;
 function av_packet_new_side_data(pkt: PAVPacket; type_data: TAVPacketSideDataType; size: csize_t): pcuint8; cdecl; external av__codec;
 function av_packet_get_side_data(const pkt: PAVPacket; type_data: TAVPacketSideDataType; size: pcsize_t): pcuint8; cdecl; external av__codec;
-function avcodec_get_supported_config(const avctx: PAVCodecContext; const Codec: PAVCodec; config: TAVCodecConfig; flags: cuint; out_configs: Pointer; out_num_configs: pcint): cint; cdecl; external av__codec;
+function avcodec_get_supported_config(const avctx: PAVCodecContext; const Codec: PAVCodec; config: TAVCodecConfig; flags: cuint; out_configs: PPointer; out_num_configs: pcint): cint; cdecl; external av__codec;
 
 implementation
 end.

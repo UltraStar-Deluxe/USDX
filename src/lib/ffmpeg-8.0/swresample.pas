@@ -19,33 +19,6 @@ uses
   avutil,
   UConfig;
 
-const
-  (* Supported version by this header *)
-  LIBSWRESAMPLE_MAX_VERSION_MAJOR   = 6;
-  LIBSWRESAMPLE_MAX_VERSION_MINOR   = 999;
-  LIBSWRESAMPLE_MAX_VERSION_RELEASE = 999;
-  LIBSWRESAMPLE_MAX_VERSION = (LIBSWRESAMPLE_MAX_VERSION_MAJOR * VERSION_MAJOR) +
-                           (LIBSWRESAMPLE_MAX_VERSION_MINOR * VERSION_MINOR) +
-                           (LIBSWRESAMPLE_MAX_VERSION_RELEASE * VERSION_RELEASE);
-
-  (* Min. supported version by this header *)
-  LIBSWRESAMPLE_MIN_VERSION_MAJOR   = 6;
-  LIBSWRESAMPLE_MIN_VERSION_MINOR   = 1;
-  LIBSWRESAMPLE_MIN_VERSION_RELEASE = 100;
-  LIBSWRESAMPLE_MIN_VERSION = (LIBSWRESAMPLE_MIN_VERSION_MAJOR * VERSION_MAJOR) +
-                            (LIBSWRESAMPLE_MIN_VERSION_MINOR * VERSION_MINOR) +
-                            (LIBSWRESAMPLE_MIN_VERSION_RELEASE * VERSION_RELEASE);
-
-(* Check if linked versions are supported *)
-{$IF (LIBSWRESAMPLE_VERSION < LIBSWRESAMPLE_MIN_VERSION)}
-  {$MESSAGE Error 'Linked version of libswresample is too old!'}
-{$IFEND}
-
-(* Check if linked version is supported *)
-{$IF (LIBSWRESAMPLE_VERSION > LIBSWRESAMPLE_MAX_VERSION)}
-  {$MESSAGE Error 'Linked version of libswresample is not yet supported!'}
-{$IFEND}
-
 type
   PSwrContext = ^TSwrContext;
   PPSwrContext = ^PSwrContext;
