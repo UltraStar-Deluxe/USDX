@@ -3,7 +3,7 @@
 If you want to help the project by coding patches, we suggest you to use the [Lazarus 1.6](http://www.lazarus-ide.org/) or newer integrated development environment.
 For linking and running the game, the following libraries are also required:
 - SDL2, SDL2_image
-- FFmpeg 4.0-7.1
+- FFmpeg 4.0-8.0
 - SQLite 3
 - [BASS](http://www.un4seen.com/bass.html)
 - some fonts like DejaVu
