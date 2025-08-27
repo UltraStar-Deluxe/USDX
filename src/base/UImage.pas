@@ -95,7 +95,6 @@ uses
     jdatadst, jcapimin, jcapistd,
     {$ENDIF}
   {$ENDIF}
-  zlib,
   SDL2_image,
   UCommon,
   ULog;

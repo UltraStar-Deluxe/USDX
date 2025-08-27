@@ -51,7 +51,3 @@ translation of the original C++ headers and C-wrapper by hennymcc
 sqlite:
 taken from http://www.itwriting.com/blog/a-simple-delphi-wrapper-for-sqlite-3
 - slightly patched: see *.patch files for what has been patched (e.g. Binding)
-
-zlib:
-taken from freepascal (slightly patched)
-- delphi compatibility
