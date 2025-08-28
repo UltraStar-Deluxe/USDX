@@ -270,18 +270,26 @@ begin
      ) then
     Result := false;
 
-  if Result and (Codec^.pix_fmts <> nil) then
+  if Result then
   begin
-    Result := false;
+    {$IF LIBAVCODEC_VERSION_MAJOR >= 62}
+    if (avcodec_get_supported_config(nil, codec, AV_CODEC_CONFIG_PIX_FORMAT, 0, @Fmt, nil) = 0) and (Fmt <> nil) then
+    {$ELSE}
     Fmt := Codec^.pix_fmts;
-    while ord(Fmt^) <> -1 do
+    if (Fmt <> nil) then
+    {$ENDIF}
     begin
-      if IsSupportedScalingInput(Fmt^) then
+      Result := false;
+      // -1 is the value of AV_PIX_FMT_NONE, which terminates the pixel format list
+      while ord(Fmt^) <> -1 do
       begin
-        Result := true;
-        break;
+        if IsSupportedScalingInput(Fmt^) then
+        begin
+          Result := true;
+          break;
+        end;
+        Inc(Fmt);
       end;
-      Inc(Fmt);
     end;
   end;
 end;
