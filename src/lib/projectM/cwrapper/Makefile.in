@@ -12,6 +12,7 @@ OBJECTS	= projectM-cwrapper.o
 LIBRARY = libprojectM-cwrapper.a
 
 CXX      = @CXX@
+CPPFLAGS = @CPPFLAGS@
 CXXFLAGS += @CXXFLAGS@
 INCLUDES = -I@libprojectM_INCLUDEDIR@/libprojectM
 DEFINES  = -DPROJECTM_VERSION_INT=@libprojectM_VERSION_INT@
@@ -26,7 +27,7 @@ $(LIBRARY): $(OBJECTS)
 	$(RANLIB) $(LIBRARY)
 
 %.o : %.cpp
-	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDES) -c $(<) -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(DEFINES) $(INCLUDES) -c $(<) -o $@
 
 clean : 
 	rm -f $(LIBRARY)
