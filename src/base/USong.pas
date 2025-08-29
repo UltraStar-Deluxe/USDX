@@ -172,11 +172,11 @@ type
     VideoGAP:   real;
     NotesGAP:   integer;
     Start:      real; // in seconds
-    Finish:     integer; // in miliseconds
+    Finish:     integer; // in milliseconds
     Relative:   boolean;
     Resolution: integer;
     BPM:        array of TBPM;
-    GAP:        real; // in miliseconds
+    GAP:        real; // in milliseconds
     
     Encoding:   TEncoding;
     PreviewStart: real;   // in seconds

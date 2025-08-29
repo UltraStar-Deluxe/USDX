@@ -10622,7 +10622,7 @@ type
   TglProgramUniformui64vNV = procedure(_program: GLuint; location: GLint; count: GLsizei; const value: PGLuint64EXT); {$IFDEF DGL_WIN}stdcall; {$ELSE}cdecl; {$ENDIF}
 
   // GL_NV_vertex_buffer_unified_memory
-  TglBufferAddressRangeNV = procedure(pname: GLenum; index: GLuint; adress: GLuint64EXT; length: GLsizeiptr); {$IFDEF DGL_WIN}stdcall; {$ELSE}cdecl; {$ENDIF}
+  TglBufferAddressRangeNV = procedure(pname: GLenum; index: GLuint; address: GLuint64EXT; length: GLsizeiptr); {$IFDEF DGL_WIN}stdcall; {$ELSE}cdecl; {$ENDIF}
   TglVertexFormatNV = procedure(size: GLint; _type: GLenum; stride: GLsizei); {$IFDEF DGL_WIN}stdcall; {$ELSE}cdecl; {$ENDIF}
   TglNormalFormatNV = procedure(_type: GLenum; stride: GLsizei); {$IFDEF DGL_WIN}stdcall; {$ELSE}cdecl; {$ENDIF}
   TglColorFormatNV = procedure(size: GLint; _type: GLenum; stride: GLsizei); {$IFDEF DGL_WIN}stdcall; {$ELSE}cdecl; {$ENDIF}
@@ -20605,7 +20605,7 @@ begin
 
   if not Assigned(wglCreateContextAttribsARB) then
     begin
-      raise Exception.Create('Could not get function pointer adress for wglCreateContextAttribsARB - OpenGL 3.x and above not supported!');
+      raise Exception.Create('Could not get function pointer address for wglCreateContextAttribsARB - OpenGL 3.x and above not supported!');
       wglDeleteContext(LegacyRC);
       exit;
     end;

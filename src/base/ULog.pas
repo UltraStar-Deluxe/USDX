@@ -258,7 +258,7 @@ begin
 
       if (Minutes = 0) and (Seconds = 0) then begin
         MilisecondsS := IntToStr(Miliseconds);
-        ValueText := MilisecondsS + ' miliseconds';
+        ValueText := MilisecondsS + ' milliseconds';
       end;
 
       if (Minutes = 0) and (Seconds >= 1) then begin

@@ -123,14 +123,14 @@ type
     like self unload or hook getting}
   TLuaCore = class
     private
-      EventList:         PEventListItem;  //< pointer to first registred Event, ordered by name
-      EventHandles:      array of string; //< Index is Events handle, value is events name. if length(value) is 0 handle is considered unregistred
+      EventList:         PEventListItem;  //< pointer to first registered Event, ordered by name
+      EventHandles:      array of string; //< Index is Events handle, value is events name. if length(value) is 0 handle is considered unregistered
 
       Plugins:           array of TLuaPlugin;
 
       eLoadingFinished: THookableEvent;
     protected
-      Modules: array of TLuaModule; //< modules that has been registred, has to be proctected because fucntions of this unit need to get access
+      Modules: array of TLuaModule; //< modules that has been registered, has to be proctected because fucntions of this unit need to get access
 
       function GetModuleIdByName(Name: string): integer; // returns id of given module, or -1 if module is not found
     public
@@ -245,7 +245,7 @@ end;
 procedure TLuaCore.LoadPlugins;
 begin
   // we have to create event here, because in create it can
-  // not be registred, because LuaCore is no assigned
+  // not be registered, because LuaCore is no assigned
   if (not Assigned(eLoadingFinished)) then
     eLoadingFinished := THookableEvent.Create('Usdx.LoadingFinished');
 
@@ -669,7 +669,7 @@ begin
   // set some default attributes
   Self.bPaused    := false;
   Self.ErrorCount := 0;
-  Self.sName      := 'not registred';
+  Self.sName      := 'not registered';
   Self.sStatus    := psNone;
   Self.ShutDown   := false;
 
@@ -770,7 +770,7 @@ end;
 { returns true if plugin has called register }
 function TLuaPlugin.HasRegistered: boolean;
 begin
-  Result := (Self.sName <> 'not registred');
+  Result := (Self.sName <> 'not registered');
 end;
 
 procedure TLuaPlugin.PausePlugin(doPause: boolean);

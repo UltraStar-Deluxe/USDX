@@ -169,7 +169,7 @@ begin
     FreeLibrary (hLibg);
   end
   else
-    Log.LogError('Could not load website "' + Filename.ToNative + '": Libary not loaded');
+    Log.LogError('Could not load website "' + Filename.ToNative + '": Library not loaded');
 end;
 
 function TDLLMan.LoadWebsite(No: cardinal): boolean;
@@ -202,7 +202,7 @@ begin
     end;
   end
   else
-    Log.LogError('Could not load website "' + WebsitePaths[No].ToNative + '": Libary not loaded');
+    Log.LogError('Could not load website "' + WebsitePaths[No].ToNative + '": Library not loaded');
 end;
 
 procedure TDLLMan.UnLoadWebsite;
