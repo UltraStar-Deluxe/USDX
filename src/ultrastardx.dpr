@@ -70,7 +70,6 @@ uses
   dglOpenGL              in 'lib\dglOpenGL\dglOpenGL.pas',
   UMediaCore_SDL         in 'media\UMediaCore_SDL.pas',
 
-  zlib                   in 'lib\zlib\zlib.pas',
   freetype               in 'lib\freetype\freetype.pas',
 
   {$IFDEF UseBass}
