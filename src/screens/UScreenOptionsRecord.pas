@@ -83,6 +83,14 @@ type
       SourceVolume: single;
       NextVolumePollTime: cardinal;
 
+      // Mic Delay measurement
+      PingTime:             integer;
+      PingNoteStarted: array[0..2] of integer;
+      PingNoteEnded:   array[0..2] of integer;
+      PingLastValue:        integer;
+      PingLastValueStarted: integer;
+      PingSustained:        integer;
+
       procedure StartPreview;
       procedure StopPreview;
       procedure UpdateInputDevice;
@@ -91,6 +99,7 @@ type
       procedure DrawVolume(x, y, Width, Height: single);
       procedure DrawVUMeter(const State: TDrawState; x, y, Width, Height: single);
       procedure DrawPitch(const State: TDrawState; x, y, Width, Height: single);
+      procedure DrawDelay(const State: TDrawState; x, y, Width, Height: single);
     public
       constructor Create; override;
       function    Draw: boolean; override;
@@ -134,6 +143,7 @@ uses
   TextGL;
 
 function TScreenOptionsRecord.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+var i: integer;
 begin
   Result := true;
   if (PressedDown) then
@@ -169,6 +179,18 @@ begin
 
     // check special keys
     case PressedKey of
+      SDLK_W:
+        begin
+          SoundLib.Ping.Volume := 1.0;
+          for i := Low(PingNoteStarted) to High(PingNoteStarted) do
+          begin
+            PingNoteStarted[i] := 0;
+            PingNoteEnded[i] := 0;
+          end;
+          PingTime := SDL_GetTicks;
+          SoundLib.Ping.Play;
+          Exit;
+        end;
       SDLK_ESCAPE,
       SDLK_BACKSPACE:
         begin
@@ -248,8 +270,16 @@ var
   InputDevice: TAudioInputDevice;
   InputDeviceCfg: PInputDeviceConfig;
   WidgetYPos: integer;
+  i: integer;
 begin
   inherited Create;
+
+  PingTime := 0;
+  for i := Low(PingNoteStarted) to High(PingNoteStarted) do
+  begin
+    PingNoteStarted[i] := -1;
+    PingNoteEnded[i] := -1;
+  end;
 
   LoadFromTheme(Theme.OptionsRecord);
 
@@ -775,6 +805,67 @@ begin
   glPrint(ToneString);
 end;
 
+procedure TScreenOptionsRecord.DrawDelay(const State: TDrawState; x, y, Width, Height: single);
+var
+  DelayString: string;
+  DelayStringWidth, DelayStringMaxWidth, DelayStringCenterXOffset: real;
+  i: integer;
+begin
+  PreviewChannel.AnalyzeBuffer();
+
+  if (PreviewChannel.ToneAbs = PingLastValue) then
+  begin
+    Inc(PingSustained);
+    if (PingSustained > 5) then
+      if (PingLastValue = 24) and (PingNoteStarted[0] = 0) then
+        PingNoteStarted[0] := PingLastValueStarted
+      else if (PingNoteStarted[0] > 0) and (PingLastValue = 31) and (PingNoteStarted[1] = 0) then
+        PingNoteStarted[1] := PingLastValueStarted
+      else if (PingNoteStarted[0] > 0) and (PingNoteStarted[1] > 0) and (PingLastValue = 40) and (PingNoteStarted[2] = 0) then
+        PingNoteStarted[2] := PingLastValueStarted;
+      if (PingNoteStarted[0] > 0) and (PingLastValue <> 24) and (PingNoteEnded[0] = 0) then
+        PingNoteEnded[0] := PingLastValueStarted
+      else if (PingNoteStarted[0] > 0) and (PingNoteStarted[1] > 0) and (PingLastValue <> 31) and (PingNoteEnded[1] = 0) then
+        PingNoteEnded[1] := PingLastValueStarted
+      else if (PingNoteStarted[0] > 0) and (PingNoteStarted[2] > 0) and (PingNoteStarted[3] > 0) and (PingLastValue <> 40) and (PingNoteEnded[2] = 0) then
+        PingNoteEnded[2] := PingLastValueStarted;
+  end
+  else
+  begin
+    PingSustained := 0;
+    PingLastValue := PreviewChannel.ToneAbs;
+    PingLastValueStarted := SDL_GetTicks;
+  end;
+
+  // calculate response time: the file is 0.5s per note, so PingResponse = actual mic delay + 0 for C4, actual mic delay + 0.5s for G4, actual mic delay + 1s for E5, and the notes end at actual mic delay + 1.5s this should give us 4 timestamps, and 4 different mic delays. let's print them all
+  if (PingNoteEnded[2] > 0) then
+  begin
+    Log.LogInfo('Ping Notes Measured vs. Ideal:','TScreenOptionsRecord.DrawDelay');
+    Log.LogInfo('1. [' + IntToStr(PingNoteStarted[0] - PingTime) + ' - ' + IntToStr(PingNoteEnded[0] - PingTime) + '] ms instead of [0 - 900] ms', 'TScreenOptionsRecord.DrawDelay');
+    Log.LogInfo('2. [' + IntToStr(PingNoteStarted[1] - PingTime) + ' - ' + IntToStr(PingNoteEnded[1] - PingTime) + '] ms instead of [900 - 1800] ms', 'TScreenOptionsRecord.DrawDelay');
+    Log.LogInfo('3. [' + IntToStr(PingNoteStarted[2] - PingTime) + ' - ' + IntToStr(PingNoteEnded[2] - PingTime) + '] ms instead of [1800 - 2700] ms', 'TScreenOptionsRecord.DrawDelay');
+    for i := Low(PingNoteStarted) to High(PingNoteStarted) do
+    begin
+      PingNoteStarted[i] := -1;
+      PingNoteEnded[i] := -1;
+    end;
+  end;
+  if (PingTime > 0) and (PingNoteEnded[0] > 0) and (PingNoteEnded[1] > 0) then
+    DelayString := 'Mic Delay: ' + IntToStr((Max(0, PingNoteEnded[0] - PingTime - 900) + Max(0, PingNoteEnded[1] - PingTime - 1800)) div 2) + ' ms';
+
+  SetFontSize(Height*2);
+
+  // center
+  DelayStringWidth := glTextWidth(DelayString);
+  DelayStringMaxWidth := glTextWidth('Delay: 999999 ms');
+  DelayStringCenterXOffset := (DelayStringMaxWidth-DelayStringWidth) / 2;
+
+  // draw
+  SetFontPos(x-DelayStringWidth-DelayStringCenterXOffset, y-Height/2);
+  glColor3f(0, 0, 0);
+  glPrint(DelayString);
+end;
+
 function TScreenOptionsRecord.Draw: boolean;
 var
   Device: TAudioInputDevice;
@@ -783,6 +874,7 @@ var
   BarXOffset, BarYOffset, BarWidth: real;
   ChannelIndex: integer;
   State: TDrawState;
+  ToneStringMaxWidth: real;
 begin
   DrawBG;
   DrawFG;
@@ -837,6 +929,8 @@ begin
 
     DrawVUMeter(State, BarXOffset, BarYOffset, BarWidth, BarHeight);
     DrawPitch(State, BarXOffset, BarYOffset+BarHeight, BarWidth, BarHeight);
+    ToneStringMaxWidth := glTextWidth('G#4');
+    DrawDelay(State, BarXOffset - 2 * ToneStringMaxWidth, BarYOffset+BarHeight, BarWidth, BarHeight);
   end;
 
   Result := true;
