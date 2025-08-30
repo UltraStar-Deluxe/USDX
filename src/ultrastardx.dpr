@@ -116,6 +116,8 @@ uses
       MidiDefs        in 'lib\midi\MidiDefs.pas',
       MidiType        in 'lib\midi\MidiType.pas',
       MidiOut         in 'lib\midi\MidiOut.pas',
+      MidiIn          in 'lib\midi\MidiIn.pas',
+      UMidiInput      in 'media\UMidiInput.pas',
     {$ELSE}
       {$IFDEF UsePortMidi}
         MidiOut       in 'lib\portmidi\MidiOut.pas',

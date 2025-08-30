@@ -229,10 +229,6 @@ procedure Register;
 {====================================================================}
 implementation
 
-uses
-  Controls,
-  Graphics;
-
 (* Not used in Delphi 3
 { This is the callback procedure in the external DLL.
   It's used when midiInOpen is called by the Open method.
