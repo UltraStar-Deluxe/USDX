@@ -115,6 +115,7 @@ type
 
       // text
       function AddText(ThemeText: TThemeText): integer; overload;
+      function AddText(X, Y: real; ThemeText: TThemeText; Replacement: string = ''): integer; overload;
       function AddText(X, Y: real; const Text_: UTF8String): integer; overload;
       function AddText(X, Y: real; Font, Style: integer; Size, ColR, ColG, ColB: real; const Text: UTF8String): integer; overload;
       function AddText(X, Y, W, H: real; Font, Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: UTF8String; Reflection_: boolean; ReflectionSpacing_: real; Z : real; Writable: boolean): integer; overload;
@@ -866,6 +867,14 @@ function TMenu.AddText(ThemeText: TThemeText): integer;
 begin
   Result := AddText(ThemeText.X, ThemeText.Y, ThemeText.W, ThemeText.H, ThemeText.Font, ThemeText.Style, ThemeText.Size,
     ThemeText.ColR, ThemeText.ColG, ThemeText.ColB, ThemeText.Align, ThemeText.Text, ThemeText.Reflection, ThemeText.ReflectionSpacing, ThemeText.Z, ThemeText.Writable);
+end;
+
+function TMenu.AddText(X, Y: real; ThemeText: TThemeText; Replacement: string): integer;
+begin
+  if (Replacement = '') then
+    Replacement := ThemeText.Text;
+  Result := AddText(X, Y, ThemeText.W, ThemeText.H, ThemeText.Font, ThemeText.Style, ThemeText.Size,
+    ThemeText.ColR, ThemeText.ColG, ThemeText.ColB, ThemeText.Align, Replacement, ThemeText.Reflection, ThemeText.ReflectionSpacing, ThemeText.Z, ThemeText.Writable);
 end;
 
 function TMenu.AddText(X, Y: real; const Text_: UTF8String): integer;
