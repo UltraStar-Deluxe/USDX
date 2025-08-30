@@ -725,8 +725,6 @@ var
   VideoFrameTime:         Extended;
   Line:                   TLyricLine;
   LastWord:               TLyricWord;
-  LineDuet:               TLyricLine;
-  LastWordDuet:           TLyricWord;
   medley_end:             boolean;
   medley_start_applause:  boolean;
 begin
@@ -880,7 +878,7 @@ begin
   ScreenSing.Text[TextTimeText].Visible := ScreenSing.Settings.TimeBarVisible;
 
   //the song was sung to the end?
-  if not(CurrentSong.isDuet) and not(ScreenSong.RapToFreestyle) then
+  if not(ScreenSing.SungToEnd) and not(ScreenSong.RapToFreestyle) then
   begin
     Line := ScreenSing.Lyrics.GetUpperLine();
     if Line.LastLine then
@@ -889,21 +887,24 @@ begin
       if CurLyricsTime >= GetTimeFromBeat(LastWord.Start + LastWord.Length) then
         ScreenSing.SungToEnd := true;
     end;
-  end
-  else
+  end;
+
+  if not(ScreenSing.SungToEnd) and CurrentSong.isDuet and not(ScreenSong.RapToFreestyle) then
   begin
-  {  Line := Lyrics.GetUpperLine();
-    LineDuet := LyricsDuet.GetUpperLine();
-    if Line.LastLine and (LineDuet.LastLine) then
+    Line := ScreenSing.LyricsDuetP1.GetUpperLine();
+    if Line.LastLine then
     begin
       LastWord := Line.Words[Length(Line.Words)-1];
-      LastWordDuet := LineDuet.Words[Length(Line.Words)-1];
-      if (CurLyricsTime >= GetTimeFromBeat(LastWord.Start+LastWord.Length)) and (CurLyricsTime >= GetTimeFromBeat(LastWordDuet.Start+LastWordDuet.Length)) then
-        // TODO SAVE DUET SCORES
-        SungToEnd := false;
-        //SungToEnd := true;
+      if CurLyricsTime >= GetTimeFromBeat(LastWord.Start + LastWord.Length) then
+        ScreenSing.SungToEnd := true;
     end;
-    }
+    Line := ScreenSing.LyricsDuetP2.GetUpperLine();
+    if Line.LastLine then
+    begin
+      LastWord := Line.Words[Length(Line.Words)-1];
+      if CurLyricsTime >= GetTimeFromBeat(LastWord.Start + LastWord.Length) then
+        ScreenSing.SungToEnd := true;
+    end;
   end;
 
   // for medley-mode:
