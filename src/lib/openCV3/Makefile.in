@@ -1,5 +1,5 @@
 #################################################
-# projectM C-wrapper
+# OpenCV C-wrapper
 # @configure_input@
 #################################################
 
@@ -12,6 +12,7 @@ OBJECTS	= ApiWrapper.o
 LIBRARY = libopenCV-cwrapper.a
 
 CXX      = @CXX@
+CPPFLAGS = @CPPFLAGS@
 CXXFLAGS += @CXXFLAGS@ @OpenCV_CXXFLAGS@
 RANLIB   = @RANLIB@
 
@@ -24,7 +25,7 @@ $(LIBRARY): $(OBJECTS)
 	$(RANLIB) $(LIBRARY)
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $(<) -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(<) -o $@
 
 clean:
 	rm -f $(LIBRARY)
