@@ -872,6 +872,7 @@ var
 begin
   inherited;
 
+  Ini.ReloadNames;
   CountIndex := Ini.Players;
 
   for I := 0 to UIni.IMaxPlayerCount-1 do
@@ -1072,6 +1073,11 @@ begin
   //This should cause no Problems because all Buttons on this screen
   //Has Z Position.
   DrawBG;
+
+  if Ini.ReloadNames then
+  begin
+    OnShow;
+  end;
 
   if isScrolling then
   begin
