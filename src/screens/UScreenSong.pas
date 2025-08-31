@@ -4064,6 +4064,7 @@ begin
         end;
       smPlaylist:  // playlist: select playlist and select random song
         begin
+          PlaylistMan.ReloadPlayList(PlaylistMan.CurPlayList);
           PlaylistMan.SetPlayList(PlaylistMan.CurPlayList);
 
           // duets not playable

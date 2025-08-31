@@ -73,6 +73,7 @@ type
       constructor Create;
       procedure   LoadPlayLists;
       function    LoadPlayList(Index: Cardinal; const Filename: IPath): Boolean;
+      function    ReloadPlayList(Index: Cardinal): Boolean;
       procedure   SavePlayList(Index: Cardinal);
 
       procedure   SetPlayList(Index: Cardinal);
@@ -214,6 +215,94 @@ begin
           if (Uppercase(Trim(copy(Line, 2, PosDelimiter - 2))) = 'NAME') then
             PlayLists[Index].Name := Trim(copy(Line, PosDelimiter + 1,Length(Line) - PosDelimiter))
             
+        end
+        //Song Entry
+        else
+        begin
+          SongID := FindSong(Trim(copy(Line, 1, PosDelimiter - 1)), Trim(copy(Line, PosDelimiter + 1, Length(Line) - PosDelimiter)));
+          if (SongID <> -1) then
+          begin
+            Len := Length(PlayLists[Index].Items);
+            SetLength(PlayLists[Index].Items, Len + 1);
+
+            PlayLists[Index].Items[Len].SongID := SongID;
+
+            PlayLists[Index].Items[Len].Artist := Trim(copy(Line, 1, PosDelimiter - 1));
+            PlayLists[Index].Items[Len].Title  := Trim(copy(Line, PosDelimiter + 1, Length(Line) - PosDelimiter));
+          end
+          else Log.LogError('Could not find Song in Playlist: ' + PlayLists[Index].Filename.ToNative + ', ' + Line);
+        end;
+      end;
+    end;
+  end;
+
+  //If no special name is given, use Filename
+  if PlayLists[Index].Name = '' then
+  begin
+    PlayLists[Index].Name := FileName.SetExtension('').ToUTF8;
+  end;
+
+  //Finish (Close File)
+  TextStream.Free;
+end;
+
+//----------
+//ReloadPlayList - Load a Playlist in the Array
+//----------
+function TPlayListManager.ReloadPlayList(Index: Cardinal): Boolean;
+
+  function FindSong(Artist, Title: UTF8String): Integer;
+  var I: Integer;
+  begin
+    Result := -1;
+
+    For I := low(CatSongs.Song) to high(CatSongs.Song) do
+    begin
+      if (CatSongs.Song[I].Title = Title) and (CatSongs.Song[I].Artist = Artist) then
+      begin
+        Result := I;
+        Break;
+      end;
+    end;
+  end;
+
+var
+  TextStream: TTextFileStream;
+  Line: UTF8String;
+  PosDelimiter: Integer;
+  SongID: Integer;
+  Len: Integer;
+  FilenameAbs: IPath;
+  Filename: IPath;
+begin
+  Filename := Playlists[Index].Filename;
+  try
+    FilenameAbs := PlaylistPath.Append(Filename);
+    TextStream := TMemTextFileStream.Create(FilenameAbs, fmOpenRead);
+  except
+    begin
+      Log.LogError('Could not load Playlist: ' + FilenameAbs.ToNative);
+      Result := False;
+      Exit;
+    end;
+  end;
+  Result := True;
+
+  //Read Until End of File
+  while TextStream.ReadLine(Line) do
+  begin
+    if (Length(Line) > 0) then
+    begin
+      PosDelimiter := UTF8Pos(':', Line);
+      if (PosDelimiter <> 0) then
+      begin
+        //Comment or Name String
+        if (Line[1] = '#') then
+        begin
+          //Found Name Value
+          if (Uppercase(Trim(copy(Line, 2, PosDelimiter - 2))) = 'NAME') then
+            PlayLists[Index].Name := Trim(copy(Line, PosDelimiter + 1,Length(Line) - PosDelimiter))
+
         end
         //Song Entry
         else
