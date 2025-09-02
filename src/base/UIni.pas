@@ -286,7 +286,7 @@ type
 
       // default encoding for texts (lyrics, song-name, ...)
       DefaultEncoding: TEncoding;
-      LastReadNames: TDateTime;
+      LastReadNames: LongInt;
 
       procedure Load();
       procedure Save();
@@ -2061,14 +2061,13 @@ var
   IniFile: TIniFile;
   I:       integer;
 begin
-  // check if ini file has newer date than LastReadNames, otherwise return false
   if not FileExists(Filename.ToNative) or (FileAge(Filename.ToNative) <= LastReadNames) then
   begin
     Result := false;
     Exit;
   end;
+  LastReadNames := FileAge(Filename.ToNative);
 
-  LastReadNames := Now;
   IniFile := TIniFile.Create(Filename.ToNative);
 
   //Name Templates for Names Mod
@@ -2079,6 +2078,7 @@ begin
   Players := ReadArrayIndex(IPlayers, IniFile, 'Game', 'Players', 0);
 
   IniFile.Free;
+
   Result := true;
 end;
 
