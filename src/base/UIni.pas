@@ -151,6 +151,7 @@ type
       Debug:          integer;
       AVDelay:        integer;
       MicDelay:       integer;
+      MicDelayPerPlayer: integer;
 
       // Graphics
       MaxFramerate:   byte;
@@ -488,6 +489,7 @@ var
   IDebugTranslated:            array[0..1] of UTF8String  = ('Off', 'On');
   IAVDelay:                    array of UTF8String;
   IMicDelay:                   array of UTF8String;
+  IMicDelayPerPlayer:          array of UTF8String;
 
   IFullScreenTranslated:       array[0..2] of UTF8String  = ('Off', 'On', 'Borderless');
   IVisualizerTranslated:       array[0..3] of UTF8String  = ('Off', 'WhenNoVideo', 'WhenNoVideoAndImage','On');
@@ -1473,6 +1475,8 @@ begin
 
   MicDelay := IniFile.ReadInteger('Game', 'MicDelay', 140);
 
+  MicDelayPerPlayer := IniFile.ReadInteger('Game', 'MicDelayPerPlayer', 0);
+
   // Read Users Info (Network)
   DataBase.ReadUsers;
 
@@ -1802,6 +1806,7 @@ begin
 
     IniFile.WriteInteger('Game', 'AVDelay', AVDelay);
     IniFile.WriteInteger('Game', 'MicDelay', MicDelay);
+    IniFile.WriteInteger('Game', 'MicDelayPerPlayer', MicDelayPerPlayer);
 
     // MaxFramerate
     IniFile.WriteString('Graphics', 'MaxFramerate', IMaxFramerate[MaxFramerate]);
