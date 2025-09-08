@@ -1079,6 +1079,7 @@ begin
   if Ini.ReloadNames then
   begin
     OnShow;
+    Ini.ReloadDelays;
   end;
 
   if isScrolling then
