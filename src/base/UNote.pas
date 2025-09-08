@@ -426,20 +426,14 @@ end;
 
 procedure NewBeatDetect(Screen: TScreenSingController);
   var
-    MaxCP, CP, SentenceEnd: integer;
+    MaxCP, CP, SentenceEnd, StartLine, EndLine: integer;
     I, J: cardinal;
 begin
   // check for sentence end
-  // we check all lines here because a new sentence may
-  // have been started even before the old one finishes
-  // due to corrupt lien breaks
-  // checking only current line works to, but may lead to
-  // weird ratings for the song files w/ the mentioned
-  // errors
-  // To-Do Philipp : check current and last line should
-  // do it for most corrupt txt and for lines in
-  // non-corrupt txts that start immediatly after the prev.
-  // line ends
+  // we check three lines (previous, current, next)
+  // here because a new sentence may have started
+  // before the old one finished due to corrupt line breaks
+
   MaxCP := 0;
   if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
     MaxCP := 1;
@@ -450,9 +444,16 @@ begin
     begin
       CP := J;
 
+      StartLine := Tracks[CP].CurrentLine - 1;
+      if StartLine < 0 then
+        StartLine := 0;
+      EndLine := StartLine + 1;
+      if EndLine > Tracks[CP].High then
+        EndLine := Tracks[CP].High;
+
       NewNote(CP, Screen);
 
-      for I := 0 to Tracks[CP].High do
+      for I := StartLine to EndLine do
       begin
         with Tracks[CP].Lines[I] do
         begin
