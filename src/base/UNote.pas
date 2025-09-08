@@ -331,6 +331,8 @@ begin
       SetLength(Player[I].Note, 0);
     end;
   end;
+  
+  Ini.ReloadDelays;
 
   Ini.ReloadDelays;
 
