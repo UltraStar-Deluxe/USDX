@@ -289,12 +289,14 @@ type
       // default encoding for texts (lyrics, song-name, ...)
       DefaultEncoding: TEncoding;
       LastReadNames: LongInt;
+      LastReadDelays: LongInt;
 
       procedure Load();
       procedure Save();
       procedure SaveNames;
       procedure SaveDelays;
-      function ReloadNames: boolean;
+      procedure ReloadDelays;
+      function  ReloadNames: boolean;
       procedure SaveLevel;
       procedure SavePlayerColors;
       procedure SavePlayerAvatars;
@@ -2089,6 +2091,25 @@ begin
   end;
 end;
 
+
+procedure TIni.ReloadDelays;
+var
+  IniFile: TIniFile;
+  I:       integer;
+begin
+  if not FileExists(Filename.ToNative) or (FileAge(Filename.ToNative) <= LastReadDelays) then
+  begin
+    Exit;
+  end;
+  LastReadDelays := FileAge(Filename.ToNative);
+
+  IniFile := TIniFile.Create(Filename.ToNative);
+
+  for I := 0 to IMaxPlayerCount-1 do
+    PlayerDelay[I] := IniFile.ReadInteger('PlayerDelay', 'P'+IntToStr(I+1), 0);
+
+  IniFile.Free;
+end;
 
 function TIni.ReloadNames: boolean;
 var
