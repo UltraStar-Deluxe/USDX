@@ -577,11 +577,11 @@ var
   MaxSongPoints:       integer; // max. points for the song (without line bonus)
   CurNotePoints:       real;    // Points for the cur. Note (PointsperNote * ScoreFactor[CurNote])
   CurrentNoteType:     TNoteType;
-  SongTimeUs:          int64;
-  RemoteTone:          TRemoteToneSample;
   DelayBeats:          real;
   PlayerOldBeat:       integer;
   PlayerCurBeat:       integer;
+  SongTimeUs:          int64;
+  RemoteTone:          TRemoteToneSample;
 begin
   ActualTone := 0;
   NoteHit := false;

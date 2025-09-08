@@ -2128,7 +2128,6 @@ begin
   end;
 end;
 
-
 procedure TIni.ReloadDelays;
 var
   IniFile: TIniFile;
