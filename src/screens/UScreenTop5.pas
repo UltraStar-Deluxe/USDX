@@ -202,7 +202,6 @@ begin
         Score1 := Round(Player[I].ScoreTotalInt);
         if Score1 > 0 then
         begin
-          Log.LogInfo(Format('Adding score: Level: %d, Track: %d, Name: %s, Score: %d', [Player[I].Level, Player[I].Track, UTF8ToString(Player[I].Name), Score1]), 'UScreenTop5.OnShow');
           DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Track, Player[I].Name, Score1);
           sung := True;
         end;
@@ -228,7 +227,6 @@ begin
           CombinedScore := (Score1 + Score2) div 2;
           if CombinedScore > 0 then
           begin
-            Log.LogInfo(Format('Adding score: Level: %d, Track: %d, Name: %s, Score: %d', [Player[I].Level, 3, UTF8ToString(CombinedName), CombinedScore]), 'UScreenTop5.OnShow');
             DataBase.AddScore(CurrentSong, Player[I].Level, 3, CombinedName, CombinedScore);
             sung := True;
           end;
