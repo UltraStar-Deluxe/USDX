@@ -195,50 +195,41 @@ begin
 
   if ScreenSing.SungToEnd then
   begin
-    if not(CurrentSong.isDuet) then
+    if not(CurrentSong.isDuet) or (Ini.DuetScores = 1) or (Ini.DuetScores = 3) then
     begin
       for I := 0 to PlayersPlay - 1 do
       begin
         Score1 := Round(Player[I].ScoreTotalInt);
         if Score1 > 0 then
         begin
-          DataBase.AddScore(CurrentSong, Ini.PlayerLevel[I], 0, Ini.Name[I], Score1);
+          Log.LogInfo(Format('Adding score: Level: %d, Track: %d, Name: %s, Score: %d', [Player[I].Level, Player[I].Track, UTF8ToString(Player[I].Name), Score1]), 'UScreenTop5.OnShow');
+          DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Track, Player[I].Name, Score1);
           sung := True;
         end;
       end;
-    end
-    else if (Ini.DuetScores > 0) then
+    end;
+    if (Ini.DuetScores >= 2) then
     begin
       I := 0;
       while I < PlayersPlay - 1 do
       begin
-        Name1  := Ini.Name[I];
-        Name2  := Ini.Name[I+1];
+        Name1  := Player[I].Name;
+        Name2  := Player[I+1].Name;
         Score1 := Round(Player[I].ScoreTotalInt);
         Score2 := Round(Player[I+1].ScoreTotalInt);
 
-        if (Ini.DuetScores = 1) or (Ini.DuetScores = 3) then
+        if (Player[I].Level = Player[I+1].Level) then
         begin
-          if Score1 > 0 then
-          begin
-            DataBase.AddScore(CurrentSong, Ini.PlayerLevel[I], 1, Name1, Score1);
-            sung := True;
-          end;
-          if Score2 > 0 then
-          begin
-            DataBase.AddScore(CurrentSong, Ini.PlayerLevel[I+1], 2, Name2, Score2);
-            sung := True;
-          end;
-        end;
-
-        if ((Ini.DuetScores = 2) or (Ini.DuetScores = 3)) and (Ini.PlayerLevel[I] = Ini.PlayerLevel[I+1]) then
-        begin
-          CombinedName := Format('%s & %s', [Name1, Name2]);
+          if UTF8CompareStr(Name1, Name2) <= 0 then
+            CombinedName := Format('%s & %s', [Name1, Name2])
+          else
+            CombinedName := Format('%s & %s', [Name2, Name1]);
 
           CombinedScore := (Score1 + Score2) div 2;
           if CombinedScore > 0 then
           begin
-            DataBase.AddScore(CurrentSong, Ini.PlayerLevel[I], 3, CombinedName, CombinedScore);
+            Log.LogInfo(Format('Adding score: Level: %d, Track: %d, Name: %s, Score: %d', [Player[I].Level, 3, UTF8ToString(CombinedName), CombinedScore]), 'UScreenTop5.OnShow');
+            DataBase.AddScore(CurrentSong, Player[I].Level, 3, CombinedName, CombinedScore);
             sung := True;
           end;
         end;
