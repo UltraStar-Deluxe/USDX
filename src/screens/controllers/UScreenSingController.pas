@@ -1004,6 +1004,7 @@ var
   VideoFile:  IPath;
   BgFile:     IPath;
   success:    boolean;
+  AudioEnd:   real;
 
 begin
   // background texture (garbage disposal)
@@ -1049,10 +1050,25 @@ begin
   end;
 
   CurrentSong := CatSongs.Song[CatSongs.Selected];
+  if (not Assigned(AudioPlayback)) or (AudioPlayback.Length = 0) then
+  begin
+    if (not Assigned(CurrentSong.Karaoke)) or (CurrentSong.Karaoke = PATH_NONE) then
+      AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio), nil)
+    else
+      AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio), CurrentSong.Path.Append(CurrentSong.Karaoke));
+  end;
+
+  AudioEnd := 0;
+  if Assigned(AudioPlayback) then
+    AudioEnd := AudioPlayback.Length; // unfortunately only works when the song is already playing
+
+  if (CurrentSong.Finish > 0) and (CurrentSong.Finish / 1000 < AudioEnd) then
+    AudioEnd := CurrentSong.Finish / 1000;
+
   success := false;
   // FIXME: bad style, put the try-except into loadsong() and not here
   try
-    success := CurrentSong.Analyse(false, ScreenSong.DuetChange, ScreenSong.RapToFreestyle); // and CurrentSong.LoadSong();
+    success := CurrentSong.Analyse(false, ScreenSong.DuetChange, ScreenSong.RapToFreestyle, true, AudioEnd); // and CurrentSong.LoadSong();
   except
     on E: EInOutError do Log.LogWarn(E.Message, 'TScreenSing.LoadNextSong');
   end;
