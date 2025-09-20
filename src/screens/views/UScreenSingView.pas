@@ -885,9 +885,13 @@ begin
     Line := ScreenSing.Lyrics.GetUpperLine();
     if Line.LastLine then
     begin
-      LastWord := Line.Words[Length(Line.Words)-1];
-      if CurLyricsTime >= GetTimeFromBeat(LastWord.Start + LastWord.Length) then
-        ScreenSing.SungToEnd := true;
+      ScreenSing.SungToEnd := true;
+      for T := 0 to High(Line.Words) do
+      begin
+        if (CurLyricsTime < GetTimeFromBeat(Line.Words[T].Start + Line.Words[T].Length)) and
+           (not Line.Words[T].Freestyle) then
+          ScreenSing.SungToEnd := false;
+      end;
     end;
   end
   else
