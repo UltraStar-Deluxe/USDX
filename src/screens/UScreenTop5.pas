@@ -207,7 +207,7 @@ begin
         end;
       end;
     end;
-    if (Ini.DuetScores >= 2) then
+    if (CurrentSong.isDuet) and (Ini.DuetScores >= 2) then
     begin
       I := 0;
       while I < PlayersPlay - 1 do
