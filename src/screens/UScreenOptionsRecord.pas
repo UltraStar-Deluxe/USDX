@@ -37,7 +37,8 @@ uses
   UMenu,
   UMusic,
   URecord,
-  UThemes;
+  UThemes,
+  UTime;
 
 type
   TDrawState = record
@@ -90,6 +91,8 @@ type
       PingLastValue:        integer;
       PingLastValueStarted: integer;
       PingSustained:        integer;
+
+      fTimer: TRelativeTimer;
 
       procedure StartPreview;
       procedure StopPreview;
@@ -187,7 +190,7 @@ begin
             PingNoteStarted[i] := 0;
             PingNoteEnded[i] := 0;
           end;
-          PingTime := SDL_GetTicks;
+          PingTime := Round(fTimer.GetTime() * 1000);
           SoundLib.Ping.Play;
           Exit;
         end;
@@ -282,6 +285,8 @@ begin
   end;
 
   LoadFromTheme(Theme.OptionsRecord);
+
+  fTimer := TRelativeTimer.Create;
 
   // set CurrentDeviceIndex to a valid device
   if (Length(AudioInputProcessor.DeviceList) > 0) then
@@ -505,12 +510,19 @@ begin
   // create preview sound-buffer
   PreviewChannel := TCaptureBuffer.Create();
 
+  // Start timer for mic delay measurement
+  fTimer.Start();
+
   UpdateInputDevice();
 end;
 
 procedure TScreenOptionsRecord.OnHide;
 begin
   StopPreview();
+
+  // Stop timer for mic delay measurement
+  fTimer.Stop();
+  fTimer.Free;
 
   // free preview buffer
   PreviewChannel.Free;
@@ -810,31 +822,49 @@ var
   DelayString: string;
   DelayStringWidth, DelayStringMaxWidth, DelayStringCenterXOffset: real;
   i: integer;
+  CurrentTime: real;
 begin
   PreviewChannel.AnalyzeBuffer();
+
+  CurrentTime := fTimer.GetTime();
 
   if (PreviewChannel.ToneAbs = PingLastValue) then
   begin
     Inc(PingSustained);
     if (PingSustained > 5) then
+    begin
       if (PingLastValue = 24) and (PingNoteStarted[0] = 0) then
         PingNoteStarted[0] := PingLastValueStarted
       else if (PingNoteStarted[0] > 0) and (PingLastValue = 31) and (PingNoteStarted[1] = 0) then
         PingNoteStarted[1] := PingLastValueStarted
       else if (PingNoteStarted[0] > 0) and (PingNoteStarted[1] > 0) and (PingLastValue = 40) and (PingNoteStarted[2] = 0) then
         PingNoteStarted[2] := PingLastValueStarted;
+
       if (PingNoteStarted[0] > 0) and (PingLastValue <> 24) and (PingNoteEnded[0] = 0) then
         PingNoteEnded[0] := PingLastValueStarted
       else if (PingNoteStarted[0] > 0) and (PingNoteStarted[1] > 0) and (PingLastValue <> 31) and (PingNoteEnded[1] = 0) then
         PingNoteEnded[1] := PingLastValueStarted
       else if (PingNoteStarted[0] > 0) and (PingNoteStarted[2] > 0) and (PingNoteStarted[3] > 0) and (PingLastValue <> 40) and (PingNoteEnded[2] = 0) then
         PingNoteEnded[2] := PingLastValueStarted;
+    end;
   end
   else
   begin
     PingSustained := 0;
     PingLastValue := PreviewChannel.ToneAbs;
-    PingLastValueStarted := SDL_GetTicks;
+    if (PingLastValue in [23,24,25]) then
+    begin
+      PingLastValue := 24;
+    end
+    else if (PingLastValue in [30,31,32]) then
+    begin
+      PingLastValue := 31;
+    end
+    else if (PingLastValue in [39,40,41]) then
+    begin
+      PingLastValue := 40;
+    end;
+    PingLastValueStarted := Round(CurrentTime * 1000);
   end;
 
   // calculate response time: the file is 0.5s per note, so PingResponse = actual mic delay + 0 for C4, actual mic delay + 0.5s for G4, actual mic delay + 1s for E5, and the notes end at actual mic delay + 1.5s this should give us 4 timestamps, and 4 different mic delays. let's print them all
@@ -844,11 +874,7 @@ begin
     Log.LogInfo('1. [' + IntToStr(PingNoteStarted[0] - PingTime) + ' - ' + IntToStr(PingNoteEnded[0] - PingTime) + '] ms instead of [0 - 900] ms', 'TScreenOptionsRecord.DrawDelay');
     Log.LogInfo('2. [' + IntToStr(PingNoteStarted[1] - PingTime) + ' - ' + IntToStr(PingNoteEnded[1] - PingTime) + '] ms instead of [900 - 1800] ms', 'TScreenOptionsRecord.DrawDelay');
     Log.LogInfo('3. [' + IntToStr(PingNoteStarted[2] - PingTime) + ' - ' + IntToStr(PingNoteEnded[2] - PingTime) + '] ms instead of [1800 - 2700] ms', 'TScreenOptionsRecord.DrawDelay');
-    for i := Low(PingNoteStarted) to High(PingNoteStarted) do
-    begin
-      PingNoteStarted[i] := -1;
-      PingNoteEnded[i] := -1;
-    end;
+    PingNoteEnded[2] := -1;
   end;
   if (PingTime > 0) and (PingNoteEnded[0] > 0) and (PingNoteEnded[1] > 0) then
     DelayString := 'Mic Delay: ' + IntToStr((Max(0, PingNoteEnded[0] - PingTime - 900) + Max(0, PingNoteEnded[1] - PingTime - 1800)) div 2) + ' ms';
