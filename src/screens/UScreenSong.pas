@@ -1144,8 +1144,11 @@ begin
                 HideCatTL;
                 Interaction := 0;
 
+                PlaylistMan.UnsetPlaylist;
+
                 //Show Wrong Song when Tabs on Fix
                 SelectNext;
+                SelectPrev;
                 FixSelected;
               end
               else
@@ -3219,6 +3222,12 @@ begin
   isScrolling := true;
   CoverTime := 10;
 
+  if (PlaylistMan.CurPlayList <> -1) then
+  begin
+    if PlaylistMan.ReloadPlayList(PlaylistMan.CurPlayList) then
+      PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, SongIndex);
+  end;
+
   SetScrollRefresh;
 
   //if (Mode = smPartyTournament) then
@@ -4064,7 +4073,11 @@ begin
         end;
       smPlaylist:  // playlist: select playlist and select random song
         begin
-          PlaylistMan.SetPlayList(PlaylistMan.CurPlayList);
+          if (PlaylistMan.CurPlayList <> -1) then
+          begin
+            PlaylistMan.ReloadPlayList(PlaylistMan.CurPlayList);
+            PlaylistMan.SetPlayList(PlaylistMan.CurPlayList);
+          end;
 
           // duets not playable
           if (Mode = smPartyClassic) then
