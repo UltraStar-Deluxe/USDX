@@ -136,6 +136,9 @@ uses
   {$ENDIF}
   sdl2,
   UFilesystem,
+  {$IFNDEF MSWINDOWS}
+  UGraphic,
+  {$ENDIF}
   UMain,
   UUnicodeUtils;
 
@@ -542,6 +545,8 @@ end;
 procedure ShowMessage(const msg: String; msgType: TMessageType);
 {$IFDEF MSWINDOWS}
 var Flags: cardinal;
+{$ELSE}
+var Flags: UInt32;
 {$ENDIF}
 begin
 {$IF Defined(MSWINDOWS)}
@@ -553,6 +558,11 @@ begin
   MessageBox(0, PChar(msg), PChar(USDXVersionStr()), Flags);
 {$ELSE}
   ConsoleWriteln(msg);
+  case msgType of
+    mtInfo:  Flags := SDL_MESSAGEBOX_INFORMATION;
+    mtError: Flags := SDL_MESSAGEBOX_ERROR;
+  end;
+  SDL_ShowSimpleMessageBox(Flags, PChar(USDXVersionStr()), PChar(msg), Screen);
 {$IFEND}
 end;
 
