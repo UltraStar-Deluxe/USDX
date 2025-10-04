@@ -3186,9 +3186,11 @@ var
   LineIndex:    Integer;
   NoteIndex:    Integer;
   LineStart:    Integer;
-  MinLineStart: Integer;
-  MaxLineStart: Integer;
   FirstBeat:    Integer;
+  LastLineIndex:Integer;
+  EndBeat:      Integer;
+  GapBeats:     Integer;
+  GapSeconds:   Double;
 begin
   FirstBeat := High(Integer);
 
@@ -3217,28 +3219,40 @@ begin
   // adjust line break timings
   for TrackIndex := 0 to High(Tracks) do
   begin
-    for LineIndex := 1 to Tracks[TrackIndex].High do
+    LastLineIndex := -1;
+    for LineIndex := 0 to Tracks[TrackIndex].High do
     begin
-      with Tracks[TrackIndex].Lines[LineIndex-1] do
+      if (LastLineIndex <> -1) then
       begin
-        MinLineStart := Notes[HighNote].StartBeat + Notes[HighNote].Duration;
-        MaxLineStart := Tracks[TrackIndex].Lines[LineIndex].Notes[0].StartBeat;
-        case (MaxLineStart - MinLineStart) of
-          0:    LineStart := MaxLineStart;
-          1:    LineStart := MaxLineStart;
-          2:    LineStart := MaxLineStart - 1;
-          3:    LineStart := MaxLineStart - 2;
-          else
-            if ((MaxLineStart - MinLineStart) >= 4) then
-              LineStart := MinLineStart + 2
-            else
-              LineStart := MaxLineStart;
-        end; // case
+        EndBeat := Tracks[TrackIndex].Lines[LastLineIndex].Notes[Tracks[TrackIndex].Lines[LastLineIndex].HighNote].StartBeat +
+                       Tracks[TrackIndex].Lines[LastLineIndex].Notes[Tracks[TrackIndex].Lines[LastLineIndex].HighNote].Duration;
+        FirstBeat := Tracks[TrackIndex].Lines[LineIndex].Notes[0].StartBeat;
+        GapBeats := FirstBeat - EndBeat;
+        GapSeconds := GetTimeFromBeat(FirstBeat) - GetTimeFromBeat(EndBeat);
+
+        if GapSeconds >= 4.0 then
+          LineStart := EndBeat + Round(2.0 * CurrentSong.BPM[0].BPM / 60.0)
+        else if GapSeconds >= 2.0 then
+          LineStart := EndBeat + Round(1.0 * CurrentSong.BPM[0].BPM / 60.0)
+        else if (GapBeats >= 0) and (GapBeats <= 1) then
+          LineStart := EndBeat
+        else if (GapBeats >= 2) and (GapBeats <= 8) then
+          LineStart := FirstBeat - 2
+        else if (GapBeats >= 9) and (GapBeats <= 12) then
+          LineStart := FirstBeat - 3
+        else if (GapBeats >= 13) and (GapBeats <= 16) then
+          LineStart := FirstBeat - 4
+        else if (GapBeats > 16) then
+          LineStart := EndBeat + 10
+        else
+          LineStart := FirstBeat;
 
         Tracks[TrackIndex].Lines[LineIndex].StartBeat := LineStart;
-      end; // with
-    end; // LineIndex
-  end; // TrackIndex
+      end;
+
+      LastLineIndex := LineIndex;
+    end;
+  end;
 end;
 
 procedure TScreenEditSub.DivideSentence;
