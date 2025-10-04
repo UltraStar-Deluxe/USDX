@@ -173,7 +173,7 @@ begin
       KaraokeMusicStream.ReplayGainEnabled := true;
   end;
 
-  if Ini.DefaultSingMode = 1 then
+  if (Ini.DefaultSingMode = 1) and assigned(KaraokeMusicStream) then
     ToggleKaraoke;
 
   Result := true;
