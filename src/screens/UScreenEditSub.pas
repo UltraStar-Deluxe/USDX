@@ -3231,9 +3231,9 @@ begin
         GapSeconds := GetTimeFromBeat(FirstBeat) - GetTimeFromBeat(EndBeat);
 
         if GapSeconds >= 4.0 then
-          LineStart := EndBeat + Round(2.0 * CurrentSong.BPM[0].BPM / 60.0)
+          LineStart := EndBeat + Trunc(2.0 * CurrentSong.BPM[0].BPM / 60.0)
         else if GapSeconds >= 2.0 then
-          LineStart := EndBeat + Round(1.0 * CurrentSong.BPM[0].BPM / 60.0)
+          LineStart := EndBeat + Trunc(1.0 * CurrentSong.BPM[0].BPM / 60.0)
         else if (GapBeats >= 0) and (GapBeats <= 1) then
           LineStart := EndBeat
         else if (GapBeats >= 2) and (GapBeats <= 8) then
