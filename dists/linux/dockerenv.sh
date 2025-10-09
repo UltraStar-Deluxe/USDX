@@ -2,6 +2,10 @@
 
 set -eo pipefail
 
+if ! tput setaf 6 || ! tput bold || ! tput sgr0 ; then
+	tput() { return 0 ; }
+fi >/dev/null 2>/dev/null
+
 SUDO=
 if docker -v > /dev/null && ! docker version >/dev/null 2>&1 ; then
 	echo Assuming sudo has to be used to be able to connect to Docker daemon
@@ -21,6 +25,12 @@ elif [ "$targetarch" == "i386" ] || [ "$targetarch" == "i686" ]; then
 	from="i386/centos:7"
 	fpcpackage="https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.i386-linux.tar"
 	prefixcmd="linux32"
+	epelpkgs=""
+elif [ "$targetarch" == "aarch64" ]; then
+	imagename="usdx/buildenv:centos7-aarch64"
+	from="--platform=linux/aarch64 centos:7"
+	fpcpackage="https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.aarch64-linux.tar/download"
+	prefixcmd=""
 	epelpkgs=""
 else
 	echo "Unsupported architecture: $targetarch"
@@ -45,4 +55,4 @@ $SUDO docker run --rm -it \
 	-h "usdxbuilder" \
 	-w /src/dists/linux \
 	"$imagename" \
-	"$prefixcmd" "$@"
+	$prefixcmd "$@"
