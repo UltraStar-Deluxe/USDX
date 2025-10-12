@@ -729,6 +729,7 @@ var
   LastWordDuet:           TLyricWord;
   medley_end:             boolean;
   medley_start_applause:  boolean;
+  LastLineSungToEnd:      boolean;
 begin
   ScreenSing.Background.Draw;
 
@@ -880,19 +881,21 @@ begin
   ScreenSing.Text[TextTimeText].Visible := ScreenSing.Settings.TimeBarVisible;
 
   //the song was sung to the end?
-  if not(CurrentSong.isDuet) and not(ScreenSong.RapToFreestyle) then
+  if not (ScreenSing.SungToEnd) and not(CurrentSong.isDuet) and not(ScreenSong.RapToFreestyle) then
   begin
     Line := ScreenSing.Lyrics.GetUpperLine();
     if Line.LastLine then
     begin
-      ScreenSing.SungToEnd := true;
+      LastLineSungToEnd := true;
       for T := 0 to High(Line.Words) do
       begin
         if (CurLyricsTime < GetTimeFromBeat(Line.Words[T].Start + Line.Words[T].Length)) and
            (not Line.Words[T].Freestyle) then
-          ScreenSing.SungToEnd := false;
+          LastLineSungToEnd := false;
       end;
     end;
+    if LastLineSungToEnd then
+      ScreenSing.SungToEnd := true;
   end
   else
   begin
