@@ -121,11 +121,6 @@ begin
         Exit;
       end;
 
-      SDLK_E: begin
-        FadeTo(@ScreenEdit, SoundLib.Start);
-        Exit;
-      end;
-
       SDLK_O: begin
         FadeTo(@ScreenOptions, SoundLib.Start);
         Exit;
@@ -218,30 +213,20 @@ begin
           FadeTo(@ScreenStatMain, SoundLib.Start);
         end;
 
-        //Editor
-        if Interaction = 4 then
-        begin
-          {$IFDEF UseMIDIPort}
-          FadeTo(@ScreenEdit, SoundLib.Start);
-          {$ELSE}
-          ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_EDITOR'));
-          {$ENDIF}
-        end;
-
         //Options
-        if Interaction = 5 then
+        if Interaction = 4 then
         begin
           FadeTo(@ScreenOptions, SoundLib.Start);
         end;
 
         //About
-        if Interaction = 6 then
+        if Interaction = 5 then
         begin
           FadeTo(@ScreenAbout, SoundLib.Start);
         end;
 
         //Exit
-        if Interaction = 7 then
+        if Interaction = 6 then
         begin
           Result := false;
         end;
@@ -291,7 +276,6 @@ begin
   AddButton(Theme.Main.ButtonMulti);
   AddButton(Theme.Main.ButtonJukebox);
   AddButton(Theme.Main.ButtonStat);
-  AddButton(Theme.Main.ButtonEditor);
   AddButton(Theme.Main.ButtonOptions);
   AddButton(Theme.Main.ButtonAbout);
   AddButton(Theme.Main.ButtonExit);
