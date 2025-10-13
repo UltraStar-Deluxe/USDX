@@ -298,7 +298,6 @@ type
     ButtonMulti:      TThemeButton;
     ButtonJukebox:    TThemeButton;
     ButtonStat:       TThemeButton;
-    ButtonEditor:     TThemeButton;
     ButtonOptions:    TThemeButton;
     ButtonAbout:      TThemeButton;
     ButtonExit:       TThemeButton;
@@ -819,40 +818,6 @@ type
     LowerX, LowerW, LowerY, LowerH  : integer;
   end;
 
-  TThemeEdit = class(TThemeBasic)
-    ButtonConvert:        TThemeButton;
-    ButtonExit:           TThemeButton;
-
-    TextDescription:      TThemeText;
-    TextDescriptionLong:  TThemeText;
-    Description:          array[0..5] of UTF8string;
-    DescriptionLong:      array[0..5] of UTF8string;
-  end;
-
-  TThemeEditConvert = class(TThemeBasic)
-    ButtonOpen:           TThemeButton;
-    ButtonPlay:           TThemeButton;
-    ButtonPlaySelected:   TThemeButton;
-    ButtonStop:           TThemeButton;
-    ButtonSave:           TThemeButton;
-
-    TextDescription:      TThemeText;
-    TextDescriptionLong:  TThemeText;
-    Description:          array[0..5] of UTF8string;
-    DescriptionLong:      array[0..5] of UTF8string;
-  end;
-
-  TThemeEditOpen = class(TThemeBasic)
-    ButtonFileName:       TThemeButton;
-    ButtonLoad:           TThemeButton;
-    ButtonBack:           TThemeButton;
-
-    TextDescription:      TThemeText;
-    TextDescriptionLong:  TThemeText;
-    Description:          array[0..5] of UTF8string;
-    DescriptionLong:      array[0..5] of UTF8string;
-  end;
-
   TThemeEditSub = class(TThemeBasic)
       // statics
       BackgroundImage:              TThemeStatic;
@@ -1260,9 +1225,6 @@ type
     OptionsWebcam:    TThemeOptionsWebcam;
     OptionsJukebox:   TThemeOptionsJukebox;
     //edit
-    Edit:             TThemeEdit;
-    EditConvert:      TThemeEditConvert;
-    EditOpen:         TThemeEditOpen;
     EditSub:          TThemeEditSub;
     //error and check popup
     ErrorPopup:         TThemeError;
@@ -1439,9 +1401,6 @@ begin
   OptionsWebcam := TThemeOptionsWebcam.Create;
   OptionsJukebox := TThemeOptionsJukebox.Create;
 
-  Edit := TThemeEdit.Create;
-  EditConvert := TThemeEditConvert.Create;
-  EditOpen := TThemeEditOpen.Create;
   EditSub := TThemeEditSub.Create;
 
   ErrorPopup := TThemeError.Create;
@@ -1607,7 +1566,6 @@ begin
       ThemeLoadButton(Main.ButtonMulti, 'MainButtonMulti');
       ThemeLoadButton(Main.ButtonJukebox, 'MainButtonJukebox');
       ThemeLoadButton(Main.ButtonStat, 'MainButtonStats');
-      ThemeLoadButton(Main.ButtonEditor, 'MainButtonEditor');
       ThemeLoadButton(Main.ButtonOptions, 'MainButtonOptions');
       ThemeLoadButton(Main.ButtonAbout, 'MainButtonAbout');
       ThemeLoadButton(Main.ButtonExit, 'MainButtonExit');
@@ -1622,14 +1580,12 @@ begin
       Main.DescriptionLong[2] := Language.Translate('SING_JUKEBOX_DESC');
       Main.Description[3] := Language.Translate('SING_STATS');
       Main.DescriptionLong[3] := Language.Translate('SING_STATS_DESC');
-      Main.Description[4] := Language.Translate('SING_EDITOR');
-      Main.DescriptionLong[4] := Language.Translate('SING_EDITOR_DESC');
-      Main.Description[5] := Language.Translate('SING_GAME_OPTIONS');
-      Main.DescriptionLong[5] := Language.Translate('SING_GAME_OPTIONS_DESC');
-      Main.Description[6] := Language.Translate('SING_ABOUT');
-      Main.DescriptionLong[6] := Language.Translate('SING_ABOUT_DESC');
-      Main.Description[7] := Language.Translate('SING_EXIT');
-      Main.DescriptionLong[7] := Language.Translate('SING_EXIT_DESC');
+      Main.Description[4] := Language.Translate('SING_GAME_OPTIONS');
+      Main.DescriptionLong[4] := Language.Translate('SING_GAME_OPTIONS_DESC');
+      Main.Description[5] := Language.Translate('SING_ABOUT');
+      Main.DescriptionLong[5] := Language.Translate('SING_ABOUT_DESC');
+      Main.Description[6] := Language.Translate('SING_EXIT');
+      Main.DescriptionLong[6] := Language.Translate('SING_EXIT_DESC');
 
       //Main Desc Text Translation End
 
@@ -2104,49 +2060,6 @@ begin
       OptionsJukebox.LowerH := ThemeIni.ReadInteger('OptionsJukeboxLowerBar', 'H', 0);
 
       ThemeLoadButton(OptionsJukebox.ButtonExit,              'OptionsJukeboxButtonExit');
-
-      //Edit Menu
-      ThemeLoadBasic (Edit,               'Edit');
-
-      ThemeLoadButton(Edit.ButtonConvert, 'EditButtonConvert');
-      ThemeLoadButton(Edit.ButtonExit,    'EditButtonExit');
-
-      Edit.Description[0] := Language.Translate('SING_EDIT_BUTTON_DESCRIPTION_CONVERT');
-      Edit.Description[1] := Language.Translate('SING_EDIT_BUTTON_DESCRIPTION_EXIT');
-
-      ThemeLoadText(Edit.TextDescription, 'EditTextDescription');
-      Edit.TextDescription.Text := Edit.Description[0];
-
-      //Edit Convert Menu
-      ThemeLoadBasic (EditConvert,        'EditConvert');
-
-      ThemeLoadButton(EditConvert.ButtonOpen,         'EditConvertButtonOpen');
-      ThemeLoadButton(EditConvert.ButtonPlay,         'EditConvertButtonPlay');
-      ThemeLoadButton(EditConvert.ButtonPlaySelected, 'EditConvertButtonPlaySelected');
-      ThemeLoadButton(EditConvert.ButtonStop,         'EditConvertButtonStop');
-      ThemeLoadButton(EditConvert.ButtonSave,         'EditConvertButtonSave');
-
-      EditConvert.Description[0] := Language.Translate('SING_EDIT_CONVERT_BUTTON_DESCRIPTION_OPEN');
-      EditConvert.Description[1] := Language.Translate('SING_EDIT_CONVERT_BUTTON_DESCRIPTION_PLAY');
-      EditConvert.Description[2] := Language.Translate('SING_EDIT_CONVERT_BUTTON_DESCRIPTION_PLAYSELECTED');
-      EditConvert.Description[3] := Language.Translate('SING_EDIT_CONVERT_BUTTON_DESCRIPTION_STOP');
-      EditConvert.Description[4] := Language.Translate('SING_EDIT_CONVERT_BUTTON_DESCRIPTION_SAVE');
-
-      ThemeLoadText(EditConvert.TextDescription, 'EditConvertTextDescription');
-      EditConvert.TextDescription.Text := EditConvert.Description[0];
-
-      //Edit Open Menu
-      ThemeLoadBasic (EditOpen,           'EditOpen');
-
-      ThemeLoadButton(EditOpen.ButtonFileName, 'EditOpenButtonFileName');
-      ThemeLoadButton(EditOpen.ButtonLoad,     'EditOpenButtonLoad');
-      ThemeLoadButton(EditOpen.ButtonBack,     'EditOpenButtonBack');
-
-      //EditOpen.Description[0] := Language.Translate('SING_EDIT_OPEN_BUTTON_DESCRIPTION_LOAD');
-      //EditOpen.Description[1] := Language.Translate('SING_EDIT_OPEN_BUTTON_DESCRIPTION_BACK');
-
-      ThemeLoadText(EditOpen.TextDescription, 'EditOpenTextDescription');
-      EditOpen.TextDescription.Text := EditOpen.Description[0];
 
       // editor
       ThemeLoadBasic (EditSub,               'EditSub');
@@ -3688,7 +3601,6 @@ begin
   ThemeSaveText(Main.TextDescriptionLong, 'MainTextDescriptionLong');
   ThemeSaveButton(Main.ButtonSolo, 'MainButtonSolo');
 
-  ThemeSaveButton(Main.ButtonEditor, 'MainButtonEditor');
   ThemeSaveButton(Main.ButtonOptions, 'MainButtonOptions');
   ThemeSaveButton(Main.ButtonExit, 'MainButtonExit');
 
@@ -4370,9 +4282,6 @@ begin
 
   freeandnil(OptionsJukebox);
   OptionsJukebox := TThemeOptionsJukebox.Create;
-
-  freeandnil(Edit);
-  Edit := TThemeEdit.Create;
 
   freeandnil(EditSub);
   EditSub := TThemeEditSub.Create;

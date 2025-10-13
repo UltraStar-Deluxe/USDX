@@ -39,10 +39,6 @@
 050  UScreenStatMain
 051  UScreenStatDetail
 
-060  UScreenEdit
-061  UScreenEditConvert
-062  UScreenOpen
-063  UScreenEditHeader
 064  UScreenEditSub
 
 070  UScreenOptions

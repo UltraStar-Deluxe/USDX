@@ -73,9 +73,6 @@ uses
   UScreenScore,
   UScreenTop5,
   UScreenEditSub,
-  UScreenEdit,
-  UScreenEditConvert,
-  UScreenOpen,
   UScreenAbout,
   USkins,
   UScreenSongMenu,
@@ -162,9 +159,6 @@ var
   ScreenOptionsWebcam:    TScreenOptionsWebcam;
   ScreenOptionsJukebox:   TScreenOptionsJukebox;
   ScreenEditSub:      TScreenEditSub;
-  ScreenEdit:         TScreenEdit;
-  ScreenEditConvert:  TScreenEditConvert;
-  ScreenOpen:         TScreenOpen;
   ScreenAbout:        TScreenAbout;
 
   ScreenSongMenu:     TScreenSongMenu;
@@ -977,12 +971,8 @@ begin
   ScreenOptionsWebcam  :=    TScreenOptionsWebcam.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsJukebox'));
   ScreenOptionsJukebox :=    TScreenOptionsJukebox.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenEditConvert & ScreenEditSub & ScreenEdit'));
-  ScreenEditConvert :=      TScreenEditConvert.Create;
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenEditSub'));
   ScreenEditSub :=          TScreenEditSub.Create;
-  ScreenEdit :=             TScreenEdit.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOpen'));
-  ScreenOpen :=             TScreenOpen.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenAbout'));
   ScreenAbout :=             TScreenAbout.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen About', 3); Log.BenchmarkStart(3);
@@ -1045,13 +1035,10 @@ begin
   ScreenOptionsWebcam.Free;
   ScreenOptionsJukebox.Free;
   ScreenEditSub.Free;
-  ScreenEdit.Free;
-  ScreenEditConvert.Free;
   ScreenJukebox.Free;
   ScreenJukeboxOptions.Free;
   ScreenJukeboxPlaylist.Free;
   ScreenTop5.Free;
-  ScreenOpen.Free;
   ScreenAbout.Free;
   //ScreenSingModi.Free;
   ScreenSongMenu.Free;

@@ -264,18 +264,6 @@
         <Filename Value="screens\UScreenCredits.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit55>
-      <Unit56>
-        <Filename Value="screens\UScreenEdit.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit56>
-      <Unit57>
-        <Filename Value="screens\UScreenEditConvert.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit57>
-      <Unit58>
-        <Filename Value="screens\UScreenEditHeader.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit58>
       <Unit59>
         <Filename Value="screens\UScreenEditSub.pas"/>
         <IsPartOfProject Value="True"/>
@@ -296,10 +284,6 @@
         <Filename Value="screens\UScreenName.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit63>
-      <Unit64>
-        <Filename Value="screens\UScreenOpen.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit64>
       <Unit65>
         <Filename Value="screens\UScreenOptions.pas"/>
         <IsPartOfProject Value="True"/>

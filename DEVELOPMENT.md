@@ -40,7 +40,7 @@ The logic code about how to handle key pressed events for each screen can be fou
 - `UMain`: main game loop, fps limiter, game initialization, mouse + keyboard handling (which is then passed to the specific game screen UScreen...)
 - `UGraphic`: initializes graphics stuff + much of the game initialization, gets OpenGL handle, sets up SDL window
 - `UDraw`: draws the notes, lyrics, ...
-- `UScreenEdit` + `UScreenEditSub`: songs editor stuff
+- `UScreenEditSub`: songs editor stuff
 - `USong`: reads + parses single song xml or txt files
 - `USongs`: scans folders for song files to load, provides song filtering, category and sorting
 - `UIni`: reads + writes settings form the config.ini file
