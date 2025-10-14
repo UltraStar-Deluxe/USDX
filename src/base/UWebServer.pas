@@ -157,7 +157,7 @@ begin
       else if RequestedFile = 'background' then
         FilePath := Song.Path.Append(Song.Background)
       else if RequestedFile = 'audio' then
-        FilePath := Song.Path.Append(Song.Mp3)
+        FilePath := Song.Path.Append(Song.Audio)
       else if RequestedFile = 'video' then
         FilePath := Song.Path.Append(Song.Video)
       else if RequestedFile = 'file' then
