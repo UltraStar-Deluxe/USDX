@@ -208,6 +208,8 @@ type
     function GetLyricColor(Color: integer): TRGB;
 
     procedure DrawInfoLyricBar();
+
+    function SungToEndCheck(Line: TLyricLine): boolean;
   end;
 var
   lastVolume: single;
@@ -714,22 +716,32 @@ begin
   assignAvatarStatic(Theme.Sing.Duet3PP3, StaticDuetP3RAvatar[1]     , AvatarPlayerTextures[6]);
 end;
 
+function TScreenSingView.SungToEndCheck(CurLyricsTime: real, Line: TLyricLine): boolean;
+var
+  T: integer;
+begin
+    if Line.LastLine then
+    begin
+      Result := true;
+      for T := 0 to High(Line.Words) do
+      begin
+        if (CurLyricsTime < GetTimeFromBeat(Line.Words[T].Start + Line.Words[T].Length)) and
+           (not Line.Words[T].Freestyle) then
+          Result := false;
+      end;
+    end;
+end;
+
 function TScreenSingView.Draw: boolean;
 var
   DisplayTime:            real;
   DisplayPrefix:          string;
   DisplayMin:             integer;
   DisplaySec:             integer;
-  T:                      integer;
   CurLyricsTime:          real;
   VideoFrameTime:         Extended;
-  Line:                   TLyricLine;
-  LastWord:               TLyricWord;
-  LineDuet:               TLyricLine;
-  LastWordDuet:           TLyricWord;
   medley_end:             boolean;
   medley_start_applause:  boolean;
-  LastLineSungToEnd:      boolean;
 begin
   ScreenSing.Background.Draw;
 
@@ -882,35 +894,11 @@ begin
 
   //the song was sung to the end?
   if not (ScreenSing.SungToEnd) and not(CurrentSong.isDuet) and not(ScreenSong.RapToFreestyle) then
+    SungToEndCheck(ScreenSing.Lyrics.GetUpperLine());
+  if not(ScreenSing.SungToEnd) and CurrentSong.isDuet and not(ScreenSong.RapToFreestyle) then
   begin
-    Line := ScreenSing.Lyrics.GetUpperLine();
-    if Line.LastLine then
-    begin
-      LastLineSungToEnd := true;
-      for T := 0 to High(Line.Words) do
-      begin
-        if (CurLyricsTime < GetTimeFromBeat(Line.Words[T].Start + Line.Words[T].Length)) and
-           (not Line.Words[T].Freestyle) then
-          LastLineSungToEnd := false;
-      end;
-    end;
-    if LastLineSungToEnd then
-      ScreenSing.SungToEnd := true;
-  end
-  else
-  begin
-  {  Line := Lyrics.GetUpperLine();
-    LineDuet := LyricsDuet.GetUpperLine();
-    if Line.LastLine and (LineDuet.LastLine) then
-    begin
-      LastWord := Line.Words[Length(Line.Words)-1];
-      LastWordDuet := LineDuet.Words[Length(Line.Words)-1];
-      if (CurLyricsTime >= GetTimeFromBeat(LastWord.Start+LastWord.Length)) and (CurLyricsTime >= GetTimeFromBeat(LastWordDuet.Start+LastWordDuet.Length)) then
-        // TODO SAVE DUET SCORES
-        SungToEnd := false;
-        //SungToEnd := true;
-    end;
-    }
+    SungToEndCheck(ScreenSing.LyricsDuetP1.GetUpperLine());
+    SungToEndCheck(ScreenSing.LyricsDuetP2.GetUpperLine());
   end;
 
   // for medley-mode:
