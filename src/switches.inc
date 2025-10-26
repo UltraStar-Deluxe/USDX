@@ -11,7 +11,8 @@
     {$DEFINE DEBUG}
   {$ENDIF}
 
-  {$DEFINE HasInline}
+  // {$DEFINE HasInline} // disabled as it generates a lot of warnings on current fpc versions
+  {$WARN 6058 OFF}
 {$ELSE}
   {$DEFINE Delphi}
 
