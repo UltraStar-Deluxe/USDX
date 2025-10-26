@@ -22,16 +22,13 @@ jobs:
       - name: Install Dependencies
         run: |
           choco install wget --no-progress
-          wget https://github.com/newpascal/newpascal/releases/download/np-v1.0.50/newpascal.zip --timeout 60 --progress=dot:giga
-          7z x -y "newpascal.zip" -o"C:\"
+          wget https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2032%20bits/Lazarus%204.2/lazarus-4.2-fpc-3.2.2-win32.exe/download -O lazarus-installer.exe --timeout 60 --progress=dot:giga
+          Start-Process -FilePath "./lazarus-installer.exe" -ArgumentList "/verysilent" -Wait
           wget "https://sourceforge.net/projects/nsis/files/NSIS%203/3.05/nsis-3.05-setup.exe/download" -O nsis-3.05-setup.exe --timeout 60
           ./nsis-3.05-setup.exe /S
       - name: Build
         run: |
-          c:\newpascal\configure.bat
-          $Env:FPCDIR = "c:\newpascal\fpcsrc"
-          $Env:PATH = "c:\newpascal\fpc\bin\i386-win32;c:\newpascal\binw32;$Env:PATH"
-          c:\newpascal\lazarus\lazbuild src\ultrastardx-win.lpi --lazarusdir=c:\newpascal\lazarus
+          c:\lazarus\lazbuild src\ultrastardx-win.lpi  --lazarusdir=c:\lazarus
       - name: Add prebuilt DLLs
         run: |
           python dldlls.py
