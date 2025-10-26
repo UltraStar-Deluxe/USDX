@@ -56,6 +56,7 @@ type
 
       function Open(const aFileName: IPath; const aFileNameKaraoke: IPath): boolean; // true if succeed
       procedure Close;
+      function  GetFileName: string;
 
       procedure Play;
       procedure ToggleKaraoke;
@@ -195,6 +196,11 @@ end;
 
 procedure TAudio_Dummy.Close;
 begin
+end;
+
+function TAudio_Dummy.GetFileName: string;
+begin
+  Result := '';
 end;
 
 procedure TAudio_Dummy.Play;
