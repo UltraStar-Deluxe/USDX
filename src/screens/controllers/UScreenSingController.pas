@@ -1284,7 +1284,7 @@ var
   i1: integer;
 
 begin
-  for i1 := 0 to PlayersPlay - 1 do
+  for i1 := 0 to High(Tracks) do
   begin
     Tracks[i1].CurrentLine := 0;
     OnSentenceChange(i1, 0);
