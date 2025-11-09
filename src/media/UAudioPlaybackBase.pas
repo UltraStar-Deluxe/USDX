@@ -50,6 +50,7 @@ type
       MusicStream: TAudioPlaybackStream;
       KaraokeMusicStream: TAudioPlaybackStream;
       KaraokeMode: boolean;
+      CurrentFileName: string;
 
       function CreatePlaybackStream(): TAudioPlaybackStream; virtual; abstract;
       procedure ClearOutputDeviceList();
@@ -62,6 +63,7 @@ type
     public
       constructor Create(); virtual;
       function GetName: string; virtual; abstract;
+      function GetFileName: string;
 
       function Open(const Filename: IPath; const FilenameKaraoke: IPath): boolean; // true if succeed
       procedure Close;
@@ -148,11 +150,20 @@ begin
   Result := true;
 end;
 
+function TAudioPlaybackBase.GetFileName: string;
+begin
+  if assigned(MusicStream) then
+    Result := CurrentFileName
+  else
+    Result := '';
+end;
+
 function TAudioPlaybackBase.Open(const Filename: IPath; const FilenameKaraoke: IPath): boolean;
 begin
   // free old MusicStream
   MusicStream.Free;
   KaraokeMusicStream.Free;
+  CurrentFileName := Filename.ToNative;
 
   MusicStream := OpenStream(Filename);
   if not assigned(MusicStream) then

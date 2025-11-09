@@ -1050,7 +1050,7 @@ begin
   end;
 
   CurrentSong := CatSongs.Song[CatSongs.Selected];
-  if (not Assigned(AudioPlayback)) or (AudioPlayback.Length = 0) then
+  if (not Assigned(AudioPlayback)) or (AudioPlayback.Length = 0) or (CurrentSong.Path.Append(CurrentSong.Audio).ToNative <> AudioPlayback.GetFileName) then
   begin
     if (not Assigned(CurrentSong.Karaoke)) or (CurrentSong.Karaoke = PATH_NONE) then
       AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio), nil)

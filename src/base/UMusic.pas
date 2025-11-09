@@ -469,6 +469,7 @@ type
       procedure Rewind;
       function  Finished: boolean;
       function  Length: real;
+      function  GetFileName: string;
 
       function Open(const Filename: IPath; const FilenameKaraoke: IPath): boolean; // true if succeed
       procedure Close;
