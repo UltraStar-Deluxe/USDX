@@ -2083,7 +2083,7 @@ begin
   if SDL_ModState = KMOD_LALT + KMOD_LCTRL + KMOD_LSHIFT then
   begin
     CopyToUndo;
-    MoveAllToEnd(Floor(1+(Log10(RepeatCounter))*(Log10(RepeatCounter)-1)));
+    MoveAllToEnd(Floor(1+(RepeatCounter/20)));
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_NOTES_SHIFTED_RIGHT');
     GoldenRec.KillAll;
   end;
@@ -2166,7 +2166,7 @@ begin
   if SDL_ModState = KMOD_LALT + KMOD_LCTRL + KMOD_LSHIFT then
   begin
     CopyToUndo;
-    MoveAllToEnd(-Floor(1+(Log10(RepeatCounter))*(Log10(RepeatCounter)-1)));
+    MoveAllToEnd(-Floor(1+(RepeatCounter/20)));
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_NOTES_SHIFTED_LEFT');
     GoldenRec.KillAll;
   end;
