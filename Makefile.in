@@ -282,7 +282,6 @@ install-data-recursive:
 	@for file in "$(RECURSIVE_SRC_DIR)"/*; do \
 	  if test -f "$$file"; then \
 	    filename=`basename "$$file"`; \
-	    echo "$(INSTALL_DATA) \"$$file\" \"$(RECURSIVE_DST_DIR)/$$filename\""; \
 	    $(INSTALL_DATA) "$$file" "$(RECURSIVE_DST_DIR)/$$filename" || exit 1; \
 	  fi; \
 	  if test -d "$$file"; then \
