@@ -28,7 +28,7 @@ unit UWebServer;
 interface
 
 uses
-  Classes, SysUtils, fphttpserver, httproute, HTTPDefs, USongs, USong, UPlatform, UPath, fpjson, jsonparser;
+  Classes, SysUtils, fphttpserver, httproute, HTTPDefs, USongs, USong, UPlatform, UPath, fpjson, jsonparser, UDisplay, UNote, UGraphic;
 
 type
   TWebServer = class(TThread)
@@ -42,12 +42,14 @@ type
                              var AResponse: TFPHTTPConnectionResponse);
     procedure routeSongList(ARequest: TRequest; AResponse: TResponse);
     procedure routeSongsJSON(ARequest: TRequest; AResponse: TResponse);
+    procedure routeCurrentSongJSON(ARequest: TRequest; AResponse: TResponse);
     procedure routeFile(ARequest: TRequest; AResponse: TResponse);
     procedure routeSongFile(ARequest: TRequest; AResponse: TResponse);
     procedure route404(ARequest: TRequest; AResponse: TResponse);
     function ContentTypeForExt(Ext: IPath): string;
     function GenerateHTMLWithSongs: string;
     function GenerateJSONWithSongs: string;
+    function GenerateJSONWithCurrentSong: string;
     function LoadTemplate: string;
   public
     constructor Create(APort: Integer);
@@ -82,6 +84,15 @@ procedure TWebServer.routeSongsJSON(ARequest: TRequest; AResponse: TResponse);
 begin
   AResponse.ContentType := 'application/json; charset=UTF-8';
   ResponseJSON := GenerateJSONWithSongs;
+  AResponse.Content := ResponseJSON;
+  AResponse.Code := 200;
+end;
+
+procedure TWebServer.routeCurrentSongJSON(ARequest: TRequest; AResponse: TResponse);
+  var ResponseJSON: String;
+begin
+  AResponse.ContentType := 'application/json; charset=UTF-8';
+  ResponseJSON := GenerateJSONWithCurrentSong;
   AResponse.Content := ResponseJSON;
   AResponse.Code := 200;
 end;
@@ -192,6 +203,7 @@ begin
   FRouter.RegisterRoute('/', rmGET, @routeSongList);
   FRouter.RegisterRoute('/style.css', rmGET, @routeFile);
   FRouter.RegisterRoute('/theme.js', rmGET, @routeFile);
+  FRouter.RegisterRoute('/currentSong.json', rmGET, @routeCurrentSongJSON);
   FRouter.RegisterRoute('/songs.json', rmGET, @routeSongsJSON);
   FRouter.RegisterRoute('/jquery.min.js', rmGET, @routeFile);
   FRouter.RegisterRoute('/jquery.min.map', rmGET, @routeFile);
@@ -311,6 +323,42 @@ begin
     JSONSongs.Add(Item);
   end;
 
+  Result := JSONRoot.AsJSON;
+end;
+
+function TWebServer.GenerateJSONWithCurrentSong: string;
+var
+  SongDetails: TJSONObject;
+  JSONRoot: TJSONObject;
+begin
+  JSONRoot := TJSONObject.Create;
+  if Assigned(CurrentSong) and (Display.CurrentScreen = @ScreenSing) then
+  begin
+    JSONRoot.Add('playing', true);
+    SongDetails := TJSONObject.Create;
+    SongDetails.Add('artist', UTF8Encode(CurrentSong.Artist));
+    SongDetails.Add('title', UTF8Encode(CurrentSong.Title));
+    SongDetails.Add('genre', UTF8Encode(CurrentSong.Genre));
+    SongDetails.Add('year', CurrentSong.Year);
+    SongDetails.Add('language', UTF8Encode(CurrentSong.Language));
+    SongDetails.Add('edition', UTF8Encode(CurrentSong.Edition));
+    SongDetails.Add('lang', UTF8Encode(CurrentSong.Language));
+
+    if CurrentSong.Creator <> '' then
+      SongDetails.Add('creator', UTF8Encode(CurrentSong.Creator))
+    else
+      SongDetails.Nulls['creator'] := True;
+
+    SongDetails.Add('duet', CurrentSong.isDuet);
+    SongDetails.Add('hasRap', CurrentSong.hasRap);
+
+    JSONRoot.Add('song', SongDetails);
+  end
+  else
+  begin
+    JSONRoot.Add('playing', false);
+    JSONRoot.Nulls['song'] := True;
+  end;
   Result := JSONRoot.AsJSON;
 end;
 
