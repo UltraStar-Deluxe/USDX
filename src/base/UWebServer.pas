@@ -160,7 +160,7 @@ begin
 
       if (Id < 0) or (Id >= Songs.SongList.Count) then
         raise Exception.Create('ID is out of bounds');
-      
+
       Song := TSong(Songs.SongList[Id]);
 
       if RequestedFile = 'cover' then
@@ -175,7 +175,7 @@ begin
         FilePath := Song.Path.Append(Song.FileName)
       else
         raise Exception.Create('Invalid file');
-      
+
       FileStream := TFileStream.Create(FilePath.ToNative, fmOpenRead or fmShareDenyWrite);
 
       AResponse.ContentType := ContentTypeForExt(FilePath.GetExtension);
@@ -183,7 +183,7 @@ begin
       AResponse.ContentStream := FileStream;
       AResponse.SendContent;
       AResponse.ContentStream := Nil;
-      
+
     except
       on E: Exception do begin
         AResponse.ContentType := 'text/html; charset=UTF-8';
@@ -316,7 +316,7 @@ begin
 
     if Song.isDuet then
       Item.Add('duet', True);
-    
+
     if Song.hasRap then
       Item.Add('hasRap', True);
 
@@ -445,4 +445,3 @@ begin
 end;
 
 end.
-
