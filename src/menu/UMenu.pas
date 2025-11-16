@@ -77,6 +77,10 @@ type
       ShowFinish: boolean; // true if there is no fade
       RightMbESC: boolean; // true to simulate ESC keypress when RMB is pressed
 
+  // Key binding context identifier used by dynamic help/translation.
+  // Default implementation returns an empty string which disables translation.
+  function GetKeyBindingContext: UTF8String; virtual;
+
       destructor Destroy; override;
       constructor Create; overload; virtual;
       //constructor Create(Back: string); overload; virtual; // Back is a JPG resource name for background
@@ -254,6 +258,11 @@ begin
   Background := nil;
 
   RightMbESC := true;
+end;
+
+function TMenu.GetKeyBindingContext: UTF8String;
+begin
+  Result := '';
 end;
 {
 constructor TMenu.Create(Back: string);
