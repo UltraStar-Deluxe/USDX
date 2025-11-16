@@ -390,7 +390,7 @@ type
       procedure SetGoldenNote(SDL_ModState: word);
       procedure ShowPopupHelp(SDL_ModState: word);
       procedure ToggleDuet(SDL_ModState: word);
-  procedure RegisterKeyBindings;
+      procedure RegisterKeyBindings;
       procedure DivideBPM;
       procedure MultiplyBPM;
       procedure LyricsCapitalize;
@@ -1065,6 +1065,7 @@ begin
   AddBinding('SEC_001', 'TAB', false, false, false, SDLK_TAB, SDLK_TAB);
   AddBinding('SEC_001', 'ESC', false, false, false, SDLK_ESCAPE, SDLK_ESCAPE);
   AddBinding('SEC_001', 'Q', false, false, false, SDLK_Q, SDLK_Q);
+  AddBinding('SEC_001', 'EDIT_INFO_UNDO', false, true, false, SDLK_Z, SDLK_Z);
 
   // Save
   AddBinding('SEC_010', 'R', false, false, false, SDLK_R, SDLK_R);
@@ -1121,10 +1122,13 @@ begin
   AddBinding('SEC_043', 'SHIFT_DELETE', true, false, false, SDLK_DELETE, SDLK_DELETE);
   AddBinding('SEC_043', 'CTRL_DELETE', false, true, false, SDLK_DELETE, SDLK_DELETE);
   AddBinding('SEC_043', 'CTRL_SLASH', false, true, false, SDLK_SLASH, SDLK_SLASH);
+  AddBinding('SEC_043', 'CTRL_SLASH', false, true, false, SDLK_HASH, SDLK_HASH);
+  AddBinding('SEC_043', 'CTRL_SLASH', false, true, false, SDLK_KP_DIVIDE, SDLK_KP_DIVIDE);
   AddBinding('SEC_043', 'SHIFT_LEFT', true, false, false, SDLK_LEFT, SDLK_LEFT);
   AddBinding('SEC_043', 'SHIFT_RIGHT', true, false, false, SDLK_RIGHT, SDLK_RIGHT);
   AddBinding('SEC_043', 'CTRL_LEFT', false, true, false, SDLK_LEFT, SDLK_LEFT);
   AddBinding('SEC_043', 'CTRL_RIGHT', false, true, false, SDLK_RIGHT, SDLK_RIGHT);
+  AddBinding('SEC_043', 'CTRL_RIGHT', false, false, false, SDLK_BACKQUOTE, SDLK_BACKQUOTE);
   AddBinding('SEC_043', 'ALT_LEFT', false, false, true, SDLK_LEFT, SDLK_LEFT);
   AddBinding('SEC_043', 'ALT_RIGHT', false, false, true, SDLK_RIGHT, SDLK_RIGHT);
   AddBinding('SEC_043', 'CTRL_ALT_SHIFT_LEFT', true, true, true, SDLK_LEFT, SDLK_LEFT);
@@ -1139,7 +1143,11 @@ begin
   AddBinding('SEC_045', 'C', false, false, false, SDLK_C, SDLK_C);
   AddBinding('SEC_045', 'SHIFT_C', true, false, false, SDLK_C, SDLK_C);
   AddBinding('SEC_045', 'SLASH', false, false, false, SDLK_SLASH, SDLK_SLASH);
+  AddBinding('SEC_045', 'SLASH', false, false, false, SDLK_HASH, SDLK_HASH);
+  AddBinding('SEC_045', 'SLASH', false, false, false, SDLK_KP_DIVIDE, SDLK_KP_DIVIDE);
   AddBinding('SEC_045', 'SHIFT_SLASH', true, false, false, SDLK_SLASH, SDLK_SLASH);
+  AddBinding('SEC_045', 'SHIFT_SLASH', true, false, false, SDLK_HASH, SDLK_HASH);
+  AddBinding('SEC_045', 'SHIFT_SLASH', true, false, false, SDLK_KP_DIVIDE, SDLK_KP_DIVIDE);
 
   // Preview Tags
   AddBinding('SEC_050', 'SHIFT_I', true, false, false, SDLK_I, SDLK_I);
@@ -1176,10 +1184,13 @@ begin
 
   // BPM
   AddBinding('SEC_085', 'CTRL_EQUALS', false, true, false, SDLK_EQUALS, SDLK_EQUALS);
+  AddBinding('SEC_085', 'CTRL_EQUALS', false, true, false, SDLK_PLUS, SDLK_PLUS);
   AddBinding('SEC_085', 'CTRL_MINUS', false, true, false, SDLK_MINUS, SDLK_MINUS);
+  AddBinding('SEC_085', 'EQUALS', false, false, false, SDLK_PLUS, SDLK_PLUS);
   AddBinding('SEC_085', 'EQUALS', false, false, false, SDLK_EQUALS, SDLK_EQUALS);
   AddBinding('SEC_085', 'MINUS', false, false, false, SDLK_MINUS, SDLK_MINUS);
   AddBinding('SEC_085', 'SHIFT_EQUALS', true, false, false, SDLK_EQUALS, SDLK_EQUALS);
+  AddBinding('SEC_085', 'SHIFT_EQUALS', true, false, false, SDLK_PLUS, SDLK_PLUS);
   AddBinding('SEC_085', 'SHIFT_MINUS', true, false, false, SDLK_MINUS, SDLK_MINUS);
   AddBinding('SEC_085', 'SHIFT_M', true, false, false, SDLK_M, SDLK_M);
   AddBinding('SEC_085', 'SHIFT_D', true, false, false, SDLK_D, SDLK_D);
@@ -1190,6 +1201,10 @@ begin
   AddBinding('SEC_090', 'CTRL_V', false, true, false, SDLK_V, SDLK_V);
   AddBinding('SEC_090', 'CTRL_SHIFT_V', true, true, false, SDLK_V, SDLK_V);
   AddBinding('SEC_090', 'CTRL_ALT_V', false, true, true, SDLK_V, SDLK_V);
+  AddBinding('SEC_090', 'CTRL_SHIFT_2', true, true, false, SDLK_2, SDLK_2);
+  AddBinding('SEC_090', 'CTRL_SHIFT_ALT_2', true, true, true, SDLK_2, SDLK_2);
+  AddBinding('SEC_090', 'CTRL_SHIFT_3', true, true, false, SDLK_3, SDLK_3);
+  AddBinding('SEC_090', 'CTRL_SHIFT_ALT_3', true, true, true, SDLK_3, SDLK_3);
   AddBinding('SEC_090', 'CTRL_SHIFT_4', true, true, false, SDLK_4, SDLK_4);
   AddBinding('SEC_090', 'CTRL_SHIFT_ALT_4', true, true, true, SDLK_4, SDLK_4);
   AddBinding('SEC_090', 'CTRL_SHIFT_5', true, true, false, SDLK_5, SDLK_5);

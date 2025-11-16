@@ -21,7 +21,6 @@ const
 
 type
   TKeymap = record
-    Key:    array of string; //key-combination translated
     Text:   string;   //description text
     Id:     string;
   end;
@@ -327,9 +326,6 @@ begin
               Entry[I-1].Sections[ActSection].Keys[ActKey].Text := S.ValueFromIndex[E];
               Entry[I-1].Sections[ActSection].Keys[ActKey].Id := tempStr;
 
-              SetLength(Entry[I-1].Sections[ActSection].Keys[ActKey].Key, SL.Count);
-              for J := 0 to SL.Count-1 do
-                Entry[I-1].Sections[ActSection].Keys[ActKey].Key[J] := GetKeyTranslation(SL[J]);
             end;
 
           Finally
@@ -455,6 +451,7 @@ var
   end;
 
 begin
+  FillChar(TextResult, SizeOf(TextResult), 0);
   if (KeyBindings <> nil) and KeyBindings.HasContext(actualID) then
     Bindings := KeyBindings.EnumerateContext(actualID)
   else

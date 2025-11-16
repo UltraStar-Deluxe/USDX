@@ -51,6 +51,7 @@ type
       CategoryId: UTF8String;
       CategoryOrder: integer;
       HelpToken: UTF8String;
+      DuplicateIndex: integer;
       ModifierMask: word;
       DefaultInput: cardinal;
       CurrentInput: cardinal;
@@ -58,25 +59,28 @@ type
       EntryOrder: integer;
     end;
   private
-    FContexts: array of TContextInfo;
-    FEntries: array of TEntry;
-    FOverrides: TStringList;
-    FNextHandle: integer;
+  FContexts: array of TContextInfo;
+  FEntries: array of TEntry;
+  FOverrides: TStringList;
+  FHelpTokenCounts: TStringList;
+  FNextHandle: integer;
     function GetContextIndex(const ContextId: UTF8String): integer;
     function EnsureContext(const ContextId: UTF8String): integer;
     function EnsureCategory(ContextIdx: integer; const CategoryId: UTF8String): integer;
+    function NextDuplicateIndex(ContextIdx: integer; const HelpToken: UTF8String): integer;
     function BuildOverrideKey(const ContextId, HelpToken: UTF8String;
-      ModifierMask: word; DefaultInput: cardinal): UTF8String;
+      ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer): UTF8String;
     function LookupOverride(const ContextId, HelpToken: UTF8String;
-      ModifierMask: word; DefaultInput: cardinal): cardinal;
+      ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer;
+      out KeyCode: cardinal): boolean;
     function KeyNameToCode(const KeyName: UTF8String): cardinal;
     function KeyCodeToName(KeyCode: cardinal): UTF8String;
   function NormalizeModifiers(ModState: word): word;
     procedure SetCurrentInput(var Entry: TEntry; NewInput: cardinal);
     procedure RemoveOverride(const ContextId, HelpToken: UTF8String;
-      ModifierMask: word; DefaultInput: cardinal);
+      ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer);
     procedure StoreOverride(const ContextId, HelpToken: UTF8String;
-      ModifierMask: word; DefaultInput: cardinal; KeyCode: cardinal);
+      ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer; KeyCode: cardinal);
     procedure ResolveConflicts(const Entry: TEntry; NewInput: cardinal);
   public
     constructor Create;
@@ -112,6 +116,7 @@ uses
 
 const
   IGNORE_KEYCODE = 0;
+  UNBOUND_OVERRIDE_VALUE = 'UNBOUND'; // persisted marker meaning the binding was explicitly cleared
 
 { Helper functions }
 
@@ -214,12 +219,16 @@ begin
   FOverrides.CaseSensitive := false;
   FOverrides.NameValueSeparator := '=';
   FOverrides.Duplicates := dupIgnore;
+  FHelpTokenCounts := TStringList.Create;
+  FHelpTokenCounts.CaseSensitive := false;
+  FHelpTokenCounts.NameValueSeparator := '=';
   FNextHandle := 1;
 end;
 
 destructor TKeyBindingRegistry.Destroy;
 begin
   FOverrides.Free;
+  FHelpTokenCounts.Free;
   inherited Destroy;
 end;
 
@@ -228,6 +237,7 @@ begin
   SetLength(FEntries, 0);
   SetLength(FContexts, 0);
   FOverrides.Clear;
+  FHelpTokenCounts.Clear;
   FNextHandle := 1;
 end;
 
@@ -278,28 +288,57 @@ begin
   Result := Len;
 end;
 
-function TKeyBindingRegistry.BuildOverrideKey(const ContextId, HelpToken: UTF8String;
-  ModifierMask: word; DefaultInput: cardinal): UTF8String;
+function TKeyBindingRegistry.NextDuplicateIndex(ContextIdx: integer; const HelpToken: UTF8String): integer;
+var
+  Key: UTF8String;
+  Count: integer;
 begin
+  if (ContextIdx < 0) or (ContextIdx > High(FContexts)) then
+    Exit(1);
+
+  Key := UTF8UpperCase(FContexts[ContextIdx].Id + '.' + HelpToken);
+  Count := StrToIntDef(FHelpTokenCounts.Values[Key], 0) + 1;
+  FHelpTokenCounts.Values[Key] := IntToStr(Count);
+  Result := Count;
+end;
+
+function TKeyBindingRegistry.BuildOverrideKey(const ContextId, HelpToken: UTF8String;
+  ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer): UTF8String;
+var
+  TokenWithIndex: UTF8String;
+begin
+  TokenWithIndex := HelpToken;
+  if DuplicateIndex > 1 then
+    TokenWithIndex := TokenWithIndex + IntToStr(DuplicateIndex);
+
   Result := UTF8UpperCase(Format('%s.%s.%d.%d',
-    [ContextId, HelpToken, ModifierMask, DefaultInput]));
+    [ContextId, TokenWithIndex, ModifierMask, DefaultInput]));
 end;
 
 function TKeyBindingRegistry.LookupOverride(const ContextId, HelpToken: UTF8String;
-  ModifierMask: word; DefaultInput: cardinal): cardinal;
+  ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer;
+  out KeyCode: cardinal): boolean;
 var
   Key: UTF8String;
   Name: UTF8String;
   Code: integer;
 begin
-  Result := IGNORE_KEYCODE;
-  Key := BuildOverrideKey(ContextId, HelpToken, ModifierMask, DefaultInput);
+  Result := false;
+  KeyCode := IGNORE_KEYCODE;
+  Key := BuildOverrideKey(ContextId, HelpToken, ModifierMask, DefaultInput, DuplicateIndex);
   Name := UTF8String(FOverrides.Values[Key]);
   if Name = '' then
     Exit;
+
+  if SameText(Name, UNBOUND_OVERRIDE_VALUE) then
+    Exit(true);
+
   Code := KeyNameToCode(Name);
-  if Code <> SDLK_UNKNOWN then
-    Result := Code;
+  if Code = SDLK_UNKNOWN then
+    Exit(false);
+
+  KeyCode := Code;
+  Result := true;
 end;
 
 function TKeyBindingRegistry.KeyNameToCode(const KeyName: UTF8String): cardinal;
@@ -329,29 +368,33 @@ begin
 end;
 
 procedure TKeyBindingRegistry.RemoveOverride(const ContextId, HelpToken: UTF8String;
-  ModifierMask: word; DefaultInput: cardinal);
+  ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer);
 var
   Key: UTF8String;
   Idx: integer;
 begin
-  Key := BuildOverrideKey(ContextId, HelpToken, ModifierMask, DefaultInput);
+  Key := BuildOverrideKey(ContextId, HelpToken, ModifierMask, DefaultInput, DuplicateIndex);
   Idx := FOverrides.IndexOfName(Key);
   if Idx >= 0 then
     FOverrides.Delete(Idx);
 end;
 
 procedure TKeyBindingRegistry.StoreOverride(const ContextId, HelpToken: UTF8String;
-  ModifierMask: word; DefaultInput: cardinal; KeyCode: cardinal);
+  ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer; KeyCode: cardinal);
 var
   Key: UTF8String;
   Value: UTF8String;
 begin
-  Key := BuildOverrideKey(ContextId, HelpToken, ModifierMask, DefaultInput);
-  Value := KeyCodeToName(KeyCode);
-  if Value = '' then
-    RemoveOverride(ContextId, HelpToken, ModifierMask, DefaultInput)
+  Key := BuildOverrideKey(ContextId, HelpToken, ModifierMask, DefaultInput, DuplicateIndex);
+  if KeyCode = IGNORE_KEYCODE then
+    Value := UNBOUND_OVERRIDE_VALUE
   else
-    FOverrides.Values[Key] := Value;
+    Value := KeyCodeToName(KeyCode);
+
+  if Value = '' then
+    RemoveOverride(ContextId, HelpToken, ModifierMask, DefaultInput, DuplicateIndex)
+  else
+    FOverrides.Values[Key] := UTF8UpperCase(Value);
 end;
 
 procedure TKeyBindingRegistry.ResolveConflicts(const Entry: TEntry; NewInput: cardinal);
@@ -380,10 +423,11 @@ begin
 
     if FEntries[I].CurrentInput = FEntries[I].DefaultInput then
       RemoveOverride(FContexts[FEntries[I].ContextIdx].Id, FEntries[I].HelpToken,
-        FEntries[I].ModifierMask, FEntries[I].DefaultInput)
-    else if FEntries[I].CurrentInput <> IGNORE_KEYCODE then
+        FEntries[I].ModifierMask, FEntries[I].DefaultInput, FEntries[I].DuplicateIndex)
+    else
       StoreOverride(FContexts[FEntries[I].ContextIdx].Id, FEntries[I].HelpToken,
-        FEntries[I].ModifierMask, FEntries[I].DefaultInput, FEntries[I].CurrentInput);
+        FEntries[I].ModifierMask, FEntries[I].DefaultInput, FEntries[I].DuplicateIndex,
+        FEntries[I].CurrentInput);
   end;
 end;
 
@@ -405,6 +449,7 @@ begin
   Entry.CategoryId := CategoryId;
   Entry.CategoryOrder := EnsureCategory(ContextIdx, CategoryId);
   Entry.HelpToken := HelpToken;
+  Entry.DuplicateIndex := NextDuplicateIndex(ContextIdx, HelpToken);
   Entry.ModifierMask := NormalizeModifiers(ModifierMask);
   Entry.DefaultInput := DefaultInput;
   Entry.CurrentInput := DefaultInput;
@@ -412,8 +457,8 @@ begin
   Entry.EntryOrder := FContexts[ContextIdx].RegistrationCount;
   Inc(FContexts[ContextIdx].RegistrationCount);
 
-  OverrideKey := LookupOverride(ContextId, HelpToken, Entry.ModifierMask, Entry.DefaultInput);
-  if OverrideKey <> IGNORE_KEYCODE then
+  if LookupOverride(ContextId, HelpToken, Entry.ModifierMask,
+    Entry.DefaultInput, Entry.DuplicateIndex, OverrideKey) then
     Entry.CurrentInput := OverrideKey;
 
   FEntries[EntryIdx] := Entry;
@@ -426,22 +471,32 @@ var
   ContextIdx: integer;
   I: integer;
   NormMods: word;
+  Suppress: boolean;
 begin
   Result := PressedKey;
   ContextIdx := GetContextIndex(ContextId);
   if ContextIdx = -1 then
     Exit;
   NormMods := NormalizeModifiers(ModState);
+  Suppress := false;
   for I := 0 to High(FEntries) do
   begin
     if FEntries[I].ContextIdx <> ContextIdx then
       Continue;
     if FEntries[I].ModifierMask <> NormMods then
       Continue;
-    if FEntries[I].CurrentInput <> PressedKey then
-      Continue;
-    Exit(FEntries[I].OutputKey);
+
+    if (FEntries[I].CurrentInput <> IGNORE_KEYCODE) and
+       (FEntries[I].CurrentInput = PressedKey) then
+      Exit(FEntries[I].OutputKey);
+
+    if (FEntries[I].DefaultInput = PressedKey) and
+       (FEntries[I].CurrentInput <> FEntries[I].DefaultInput) then
+      Suppress := true;
   end;
+
+  if Suppress then
+    Result := IGNORE_KEYCODE;
 end;
 
 procedure TKeyBindingRegistry.UpdateBinding(Handle: TKeyBindingHandle; NewInput: cardinal);
@@ -449,9 +504,6 @@ var
   I: integer;
   ContextId: UTF8String;
 begin
-  if NewInput = IGNORE_KEYCODE then
-    Exit;
-
   for I := 0 to High(FEntries) do
   begin
     if FEntries[I].Handle <> Handle then
@@ -463,10 +515,11 @@ begin
     ContextId := FContexts[FEntries[I].ContextIdx].Id;
     if FEntries[I].CurrentInput = FEntries[I].DefaultInput then
       RemoveOverride(ContextId, FEntries[I].HelpToken,
-        FEntries[I].ModifierMask, FEntries[I].DefaultInput)
+        FEntries[I].ModifierMask, FEntries[I].DefaultInput, FEntries[I].DuplicateIndex)
     else
       StoreOverride(ContextId, FEntries[I].HelpToken,
-        FEntries[I].ModifierMask, FEntries[I].DefaultInput, FEntries[I].CurrentInput);
+        FEntries[I].ModifierMask, FEntries[I].DefaultInput, FEntries[I].DuplicateIndex,
+        FEntries[I].CurrentInput);
     Exit;
   end;
 end;
@@ -483,7 +536,7 @@ begin
     FEntries[I].CurrentInput := FEntries[I].DefaultInput;
     ContextId := FContexts[FEntries[I].ContextIdx].Id;
     RemoveOverride(ContextId, FEntries[I].HelpToken,
-      FEntries[I].ModifierMask, FEntries[I].DefaultInput);
+      FEntries[I].ModifierMask, FEntries[I].DefaultInput, FEntries[I].DuplicateIndex);
     Exit;
   end;
 end;
@@ -570,6 +623,7 @@ var
   I: integer;
   Name, Value: UTF8String;
 begin
+  IniFile.EraseSection('KeyBindings');
   for I := 0 to FOverrides.Count - 1 do
   begin
     Name := UTF8String(FOverrides.Names[I]);

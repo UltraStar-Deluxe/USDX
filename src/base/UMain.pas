@@ -572,6 +572,9 @@ begin
             if SimKey <> 0 then
               SimKey := Display.TranslateKeyForActiveScreen(SimKey, word(SDL_GetModState));
 
+            if SimKey = 0 then
+              Continue;
+
             // if print is pressed -> make screenshot and save to screenshot path
             if (SimKey = SDLK_SYSREQ) or (SimKey = SDLK_PRINTSCREEN) then
               Display.SaveScreenShot
