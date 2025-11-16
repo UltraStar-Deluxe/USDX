@@ -228,10 +228,12 @@ type
 
   TBindingHit = record
     Bounds: TRect;
+    EditableBounds: TRect;
     SectionIndex: integer;
     EntryIndex: integer;
     Handle: TKeyBindingHandle;
     HelpToken: UTF8String;
+    HasEditableBounds: boolean;
   end;
 
   TScreenPopupHelp = class(TMenu)
@@ -251,7 +253,11 @@ type
     PromptPressKey: UTF8String;
     PromptCancel: UTF8String;
     PromptActionFormat: UTF8String;
+  PromptEditableFormat: UTF8String;
+  PromptModifiersFormat: UTF8String;
     CurrentActionPrompt: UTF8String;
+  CurrentEditableKeyPrompt: UTF8String;
+  CurrentModifiersPrompt: UTF8String;
 
     max_high:   real;
     step:       double;
@@ -264,10 +270,15 @@ type
     function    GetScrollOffset: integer;
     procedure   ClearBindingHits;
     procedure   AddBindingHit(const Bounds: TRect; SectionIndex, EntryIndex: integer;
-      Handle: TKeyBindingHandle; const HelpToken: UTF8String);
+      Handle: TKeyBindingHandle; const HelpToken: UTF8String;
+      const EditableBounds: TRect; HasEditableBounds: boolean);
     procedure   StartCapture(Index: integer);
     procedure   CancelCapture;
   procedure   FinishCapture(NewKey: cardinal);
+    function    IsModifierKeyCode(KeyCode: cardinal): boolean;
+    function    GetEditableTokenIndex(const Keys: TKeyNames): integer;
+    procedure   UpdateCapturePrompts;
+    function    StripTokenBrackets(const Token: UTF8String): UTF8String;
   public
     Visible:    Boolean; //Whether the Menu should be Drawn
 
@@ -1752,9 +1763,31 @@ begin
       glEnd;
       glDisable(GL_BLEND);
       glEnable(GL_TEXTURE_2D);
+
+      if Hit.HasEditableBounds then
+      begin
+        glEnable(GL_BLEND);
+        glDisable(GL_TEXTURE_2D);
+        glColor4f(0.0, 0.6, 1.0, 0.35);
+        glBegin(GL_QUADS);
+          glVertex2f(Hit.EditableBounds.Left, Hit.EditableBounds.Top - Offset + 1);
+          glVertex2f(Hit.EditableBounds.Right, Hit.EditableBounds.Top - Offset + 1);
+          glVertex2f(Hit.EditableBounds.Right, Hit.EditableBounds.Bottom - Offset + 5);
+          glVertex2f(Hit.EditableBounds.Left, Hit.EditableBounds.Bottom - Offset + 5);
+        glEnd;
+        glColor4f(0.0, 0.6, 1.0, 1.0);
+        glBegin(GL_LINE_LOOP);
+          glVertex2f(Hit.EditableBounds.Left, Hit.EditableBounds.Top - Offset + 1);
+          glVertex2f(Hit.EditableBounds.Right, Hit.EditableBounds.Top - Offset + 1);
+          glVertex2f(Hit.EditableBounds.Right, Hit.EditableBounds.Bottom - Offset + 5);
+          glVertex2f(Hit.EditableBounds.Left, Hit.EditableBounds.Bottom - Offset + 5);
+        glEnd;
+        glDisable(GL_BLEND);
+        glEnable(GL_TEXTURE_2D);
+      end;
     end;
 
-    OverlayHeight := 80;
+  OverlayHeight := 110;
     glEnable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
     glColor4f(0.0, 0.0, 0.0, 0.8);
@@ -1785,6 +1818,18 @@ begin
     TextY := TextY + 22;
     SetFontPos(Rect.left + 10, TextY);
     glPrint(PChar(PromptCancel));
+    TextY := TextY + 22;
+    if CurrentEditableKeyPrompt <> '' then
+    begin
+      SetFontPos(Rect.left + 10, TextY);
+      glPrint(PChar(CurrentEditableKeyPrompt));
+      TextY := TextY + 22;
+    end;
+    if CurrentModifiersPrompt <> '' then
+    begin
+      SetFontPos(Rect.left + 10, TextY);
+      glPrint(PChar(CurrentModifiersPrompt));
+    end;
   end;
 end;
 
@@ -1817,6 +1862,9 @@ var
   EntryKeyTopLine: integer;
   KeyToken: UTF8String;
   Candidate: UTF8String;
+  EditableBounds: TRect;
+  HasEditableBounds: boolean;
+  EditableTokenIndex: integer;
 
   procedure AddLine(l, i, fX, fY, tX, tY: integer);
   begin
@@ -1848,6 +1896,24 @@ var
     TextsGFX[line].texts[tline].Italic := Italic;
   end;
 
+  procedure MarkEditableBoundsForLine(const FullText, TokenText: UTF8String; LineIndex: integer);
+  var
+    TokenWidth: integer;
+    PrefixWidth: integer;
+    FullWidth: integer;
+  begin
+    HasEditableBounds := true;
+    TokenWidth := Round(glTextWidth(PChar(TokenText)));
+    FullWidth := Round(glTextWidth(PChar(FullText)));
+    PrefixWidth := FullWidth - TokenWidth;
+    if PrefixWidth < 0 then
+      PrefixWidth := 0;
+    EditableBounds.Left := Rect.left + 5 + PrefixWidth;
+    EditableBounds.Right := EditableBounds.Left + TokenWidth;
+    EditableBounds.Top := TextsGFX[LineIndex].Y;
+    EditableBounds.Bottom := EditableBounds.Top + fieldh;
+  end;
+
 begin
   Interaction := 0; //Reset Interaction
   Visible := True;  //Set Visible
@@ -1860,13 +1926,21 @@ begin
   PromptPressKey := Language.Translate('HELP_PROMPT_PRESS_KEY');
   PromptCancel := Language.Translate('HELP_PROMPT_CANCEL');
   PromptActionFormat := Language.Translate('HELP_PROMPT_ACTION');
+  PromptEditableFormat := Language.Translate('HELP_PROMPT_EDITABLE_KEY');
+  PromptModifiersFormat := Language.Translate('HELP_PROMPT_LOCKED_MODIFIERS');
   if PromptPressKey = 'HELP_PROMPT_PRESS_KEY' then
     PromptPressKey := 'Please press a key';
   if PromptCancel = 'HELP_PROMPT_CANCEL' then
     PromptCancel := 'Press ESC to cancel';
   if PromptActionFormat = 'HELP_PROMPT_ACTION' then
     PromptActionFormat := 'Rebinding: %s';
+  if PromptEditableFormat = 'HELP_PROMPT_EDITABLE_KEY' then
+    PromptEditableFormat := 'Key being changed: %s';
+  if PromptModifiersFormat = 'HELP_PROMPT_LOCKED_MODIFIERS' then
+    PromptModifiersFormat := 'Locked modifiers: %s';
   CurrentActionPrompt := '';
+  CurrentEditableKeyPrompt := '';
+  CurrentModifiersPrompt := '';
 
   Font := 0;
   Style := 1;
@@ -2115,6 +2189,9 @@ begin
       countline := 1;
       NewText(Rect.left + 5, TextsGFX[line].Y + 2);
       tempStr := '';
+      HasEditableBounds := false;
+      FillChar(EditableBounds, SizeOf(EditableBounds), 0);
+      EditableTokenIndex := GetEditableTokenIndex(msg.Sections[K].Keys[J]);
       for I := 0 to Length(msg.Sections[K].Keys[J].Key) - 1 do
       begin
         KeyToken := msg.Sections[K].Keys[J].Key[I];
@@ -2141,6 +2218,8 @@ begin
         begin
           tempStr := Candidate;
           TextsGFX[line].texts[tline].text := tempStr;
+          if (I = EditableTokenIndex) and (EditableTokenIndex <> -1) then
+            MarkEditableBoundsForLine(tempStr, KeyToken, line);
         end else
         begin
           TextsGFX[line].texts[tline].text := tempStr;
@@ -2152,6 +2231,8 @@ begin
           NewText(Rect.left + 5, TextsGFX[line].Y + 2);
           tempStr := KeyToken;
           TextsGFX[line].texts[tline].text := tempStr;
+          if (I = EditableTokenIndex) and (EditableTokenIndex <> -1) then
+            MarkEditableBoundsForLine(tempStr, KeyToken, line);
           inc(countline);
         end;
       end;
@@ -2209,7 +2290,8 @@ begin
         EntryRect.Top := TextsGFX[EntryLineIndex].Y;
         EntryRect.Bottom := EntryRect.Top + countline * fieldh;
         AddBindingHit(EntryRect, K, J,
-          msg.Sections[K].BindingHandles[J], msg.Sections[K].HelpTokens[J]);
+          msg.Sections[K].BindingHandles[J], msg.Sections[K].HelpTokens[J],
+          EditableBounds, HasEditableBounds);
         line := line + countline - 1;
         NewLine(round(fieldh/4), 4);
         AddLine(line, 0, Rect.left, TextsGFX[line].Y, Rect.left, TextsGFX[line].Y + TextsGFX[line].H);
@@ -2329,17 +2411,91 @@ begin
 end;
 
 procedure TScreenPopupHelp.AddBindingHit(const Bounds: TRect; SectionIndex, EntryIndex: integer;
-  Handle: TKeyBindingHandle; const HelpToken: UTF8String);
+  Handle: TKeyBindingHandle; const HelpToken: UTF8String;
+  const EditableBounds: TRect; HasEditableBounds: boolean);
 var
   Len: integer;
 begin
   Len := Length(BindingHits);
   SetLength(BindingHits, Len + 1);
   BindingHits[Len].Bounds := Bounds;
+  BindingHits[Len].EditableBounds := EditableBounds;
   BindingHits[Len].SectionIndex := SectionIndex;
   BindingHits[Len].EntryIndex := EntryIndex;
   BindingHits[Len].Handle := Handle;
   BindingHits[Len].HelpToken := HelpToken;
+  BindingHits[Len].HasEditableBounds := HasEditableBounds;
+end;
+
+function TScreenPopupHelp.GetEditableTokenIndex(const Keys: TKeyNames): integer;
+var
+  I: integer;
+begin
+  Result := -1;
+  if Length(Keys.Key) = 0 then
+    Exit;
+  for I := High(Keys.Key) downto 0 do
+  begin
+    if Keys.Key[I] = KEY_BINDING_BREAK then
+      Continue;
+    Exit(I);
+  end;
+end;
+
+function TScreenPopupHelp.StripTokenBrackets(const Token: UTF8String): UTF8String;
+begin
+  Result := Token;
+  if (Length(Result) > 0) and (Result[1] = '[') then
+    Delete(Result, 1, 1);
+  if (Length(Result) > 0) and (Result[Length(Result)] = ']') then
+    Delete(Result, Length(Result), 1);
+end;
+
+procedure TScreenPopupHelp.UpdateCapturePrompts;
+var
+  Keys: TKeyNames;
+  BaseIdx, I: integer;
+  EditableToken: UTF8String;
+  Modifiers: TStringList;
+  Builder: UTF8String;
+begin
+  CurrentEditableKeyPrompt := '';
+  CurrentModifiersPrompt := '';
+  if (CaptureSection < 0) or (CaptureSection > High(msg.Sections)) then
+    Exit;
+  if (CaptureEntry < 0) or (CaptureEntry > High(msg.Sections[CaptureSection].Keys)) then
+    Exit;
+
+  Keys := msg.Sections[CaptureSection].Keys[CaptureEntry];
+  BaseIdx := GetEditableTokenIndex(Keys);
+  if BaseIdx = -1 then
+    Exit;
+
+  EditableToken := StripTokenBrackets(UTF8String(Keys.Key[BaseIdx]));
+  if (EditableToken <> '') and (PromptEditableFormat <> '') then
+    CurrentEditableKeyPrompt := UTF8String(Format(string(PromptEditableFormat),
+      [string(EditableToken)]));
+
+  Modifiers := TStringList.Create;
+  try
+    for I := 0 to BaseIdx - 1 do
+    begin
+      if Keys.Key[I] = KEY_BINDING_BREAK then
+        Continue;
+      Modifiers.Add(string(StripTokenBrackets(UTF8String(Keys.Key[I]))));
+    end;
+
+    if (Modifiers.Count > 0) and (PromptModifiersFormat <> '') then
+    begin
+      Builder := UTF8String(Modifiers[0]);
+      for I := 1 to Modifiers.Count - 1 do
+        Builder := Builder + ', ' + UTF8String(Modifiers[I]);
+      CurrentModifiersPrompt := UTF8String(Format(string(PromptModifiersFormat),
+        [string(Builder)]));
+    end;
+  finally
+    Modifiers.Free;
+  end;
 end;
 
 procedure TScreenPopupHelp.StartCapture(Index: integer);
@@ -2365,6 +2521,7 @@ begin
     CurrentActionPrompt := UTF8String(Format(string(PromptActionFormat),
       [string(msg.Sections[CaptureSection].KeyDescription[CaptureEntry])]))
   ;
+  UpdateCapturePrompts;
 end;
 
 procedure TScreenPopupHelp.CancelCapture;
@@ -2376,6 +2533,8 @@ begin
   CaptureHelpToken := '';
   ActiveBindingIndex := -1;
   CurrentActionPrompt := '';
+  CurrentEditableKeyPrompt := '';
+  CurrentModifiersPrompt := '';
 end;
 
 procedure TScreenPopupHelp.FinishCapture(NewKey: cardinal);
@@ -2402,8 +2561,26 @@ begin
     Exit;
   if PressedKey = SDLK_ESCAPE then
     CancelCapture
+  else if IsModifierKeyCode(PressedKey) then
+    Exit
   else
     FinishCapture(PressedKey);
+end;
+
+function TScreenPopupHelp.IsModifierKeyCode(KeyCode: cardinal): boolean;
+begin
+  case KeyCode of
+    SDLK_LSHIFT,
+    SDLK_RSHIFT,
+    SDLK_LCTRL,
+    SDLK_RCTRL,
+    SDLK_LALT,
+    SDLK_RALT,
+    SDLK_LGUI,
+    SDLK_RGUI:
+      Exit(true);
+  end;
+  Result := false;
 end;
 
 end.
