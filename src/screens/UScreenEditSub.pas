@@ -50,6 +50,7 @@ uses
   UTexture,
   UThemes,
   UTime,
+  UKeyBindings,
   dglOpenGL,
   Math,
   {$IFDEF UseMIDIPort}
@@ -150,6 +151,8 @@ type
       P2EditMode:              boolean;
       BPMEditMode:             boolean;
       PianoEditMode:           boolean;
+
+  FKeyBindingsInitialized: boolean;
 
       PianoKeysLow: TPianoKeyArray;
       PianoKeysHigh: TPianoKeyArray;
@@ -387,6 +390,7 @@ type
       procedure SetGoldenNote(SDL_ModState: word);
       procedure ShowPopupHelp(SDL_ModState: word);
       procedure ToggleDuet(SDL_ModState: word);
+  procedure RegisterKeyBindings;
       procedure DivideBPM;
       procedure MultiplyBPM;
       procedure LyricsCapitalize;
@@ -443,6 +447,7 @@ type
       function  ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean; override;
       function  Draw: boolean; override;
       procedure OnHide; override;
+    function GetKeyBindingContext: UTF8String; override;
   end;
 
 const
@@ -504,6 +509,11 @@ begin
     AudioPlayback.Stop;
     Display.FadeTo(@ScreenSong);
   end;
+end;
+
+function TScreenEditSub.GetKeyBindingContext: UTF8String;
+begin
+  Result := ID;
 end;
 
 // Method for input parsing. If false is returned, GetNextWindow
@@ -1018,6 +1028,175 @@ begin
       Text[TextInfo].Text := Language.Translate('EDIT_INFO_CONVERTED_TO_DUET');
     end;
   end;
+end;
+
+procedure TScreenEditSub.RegisterKeyBindings;
+const
+  CONTEXT_ID = 'ID_064';
+
+  function ComposeMask(const Shift, Ctrl, Alt: boolean): word;
+  var
+    Mask: word;
+  begin
+    Mask := 0;
+    if Shift then
+      Mask := Mask or KMOD_SHIFT;
+    if Ctrl then
+      Mask := Mask or KMOD_CTRL;
+    if Alt then
+      Mask := Mask or KMOD_ALT;
+    Result := Mask;
+  end;
+
+  procedure AddBinding(const Category, Token: UTF8String;
+    Shift, Ctrl, Alt: boolean; DefaultKey, OutputKey: cardinal);
+  begin
+    if KeyBindings = nil then
+      Exit;
+    KeyBindings.RegisterBinding(CONTEXT_ID, Category, Token,
+      ComposeMask(Shift, Ctrl, Alt), DefaultKey, OutputKey);
+  end;
+
+begin
+  if FKeyBindingsInitialized or (KeyBindings = nil) then
+    Exit;
+
+  // General
+  AddBinding('SEC_001', 'TAB', false, false, false, SDLK_TAB, SDLK_TAB);
+  AddBinding('SEC_001', 'ESC', false, false, false, SDLK_ESCAPE, SDLK_ESCAPE);
+  AddBinding('SEC_001', 'Q', false, false, false, SDLK_Q, SDLK_Q);
+
+  // Save
+  AddBinding('SEC_010', 'R', false, false, false, SDLK_R, SDLK_R);
+  AddBinding('SEC_010', 'S', false, false, false, SDLK_S, SDLK_S);
+  AddBinding('SEC_010', 'SHIFT_S', true, false, false, SDLK_S, SDLK_S);
+
+  // Basic Navigation
+  AddBinding('SEC_020', 'UPDOWN', false, false, false, SDLK_UP, SDLK_UP);
+  AddBinding('SEC_020', 'UPDOWN', false, false, false, SDLK_DOWN, SDLK_DOWN);
+  AddBinding('SEC_020', 'LEFTRIGHT', false, false, false, SDLK_LEFT, SDLK_LEFT);
+  AddBinding('SEC_020', 'LEFTRIGHT', false, false, false, SDLK_RIGHT, SDLK_RIGHT);
+
+  // Playback
+  AddBinding('SEC_030', 'PAGEUPDOWN', false, false, false, SDLK_PAGEUP, SDLK_PAGEUP);
+  AddBinding('SEC_030', 'PAGEUPDOWN', false, false, false, SDLK_PAGEDOWN, SDLK_PAGEDOWN);
+  AddBinding('SEC_030', 'SPACE', false, false, false, SDLK_SPACE, SDLK_SPACE);
+  AddBinding('SEC_030', 'SHIFT_SPACE', true, false, false, SDLK_SPACE, SDLK_SPACE);
+  AddBinding('SEC_030', 'CTRL_SHIFT_SPACE', true, true, false, SDLK_SPACE, SDLK_SPACE);
+  AddBinding('SEC_030', 'P', false, false, false, SDLK_P, SDLK_P);
+  AddBinding('SEC_030', 'SHIFT_P', true, false, false, SDLK_P, SDLK_P);
+  AddBinding('SEC_030', 'CTRL_SHIFT_P', true, true, false, SDLK_P, SDLK_P);
+  AddBinding('SEC_030', 'ALT_P', false, false, true, SDLK_P, SDLK_P);
+  AddBinding('SEC_030', 'SHIFT_ALT_P', true, false, true, SDLK_P, SDLK_P);
+  AddBinding('SEC_030', 'CTRL_SHIFT_ALT_P', true, true, true, SDLK_P, SDLK_P);
+  AddBinding('SEC_030', 'V', false, false, false, SDLK_V, SDLK_V);
+  AddBinding('SEC_030', 'SHIFT_V', true, false, false, SDLK_V, SDLK_V);
+
+  // Note Type
+  AddBinding('SEC_040', 'G', false, false, false, SDLK_G, SDLK_G);
+  AddBinding('SEC_040', 'F', false, false, false, SDLK_F, SDLK_F);
+
+  // Note Pitch
+  AddBinding('SEC_041', 'SHIFT_UP', true, false, false, SDLK_UP, SDLK_UP);
+  AddBinding('SEC_041', 'SHIFT_DOWN', true, false, false, SDLK_DOWN, SDLK_DOWN);
+  AddBinding('SEC_041', 'KPPLUS', false, false, false, SDLK_KP_PLUS, SDLK_KP_PLUS);
+  AddBinding('SEC_041', 'KPMINUS', false, false, false, SDLK_KP_MINUS, SDLK_KP_MINUS);
+  AddBinding('SEC_041', 'SHIFT_KPPLUS', true, false, false, SDLK_KP_PLUS, SDLK_KP_PLUS);
+  AddBinding('SEC_041', 'SHIFT_KPMINUS', true, false, false, SDLK_KP_MINUS, SDLK_KP_MINUS);
+  AddBinding('SEC_041', 'CTRL_ALT_PAGEUP', false, true, true, SDLK_PAGEUP, SDLK_PAGEUP);
+  AddBinding('SEC_041', 'CTRL_ALT_PAGEDOWN', false, true, true, SDLK_PAGEDOWN, SDLK_PAGEDOWN);
+  AddBinding('SEC_041', 'CTRL_SHIFT_ALT_PAGEUP', true, true, true, SDLK_PAGEUP, SDLK_PAGEUP);
+  AddBinding('SEC_041', 'CTRL_SHIFT_ALT_PAGEDOWN', true, true, true, SDLK_PAGEDOWN, SDLK_PAGEDOWN);
+  AddBinding('SEC_041', 'CTRL_PAGEUP', false, true, false, SDLK_PAGEUP, SDLK_PAGEUP);
+  AddBinding('SEC_041', 'CTRL_PAGEDOWN', false, true, false, SDLK_PAGEDOWN, SDLK_PAGEDOWN);
+  AddBinding('SEC_041', 'CTRL_SHIFT_PAGEUP', true, true, false, SDLK_PAGEUP, SDLK_PAGEUP);
+  AddBinding('SEC_041', 'CTRL_SHIFT_PAGEDOWN', true, true, false, SDLK_PAGEDOWN, SDLK_PAGEDOWN);
+
+  // Voice Pitch Recording
+  AddBinding('SEC_042', 'N', false, false, false, SDLK_N, SDLK_N);
+  AddBinding('SEC_042', 'SHIFT_N', true, false, false, SDLK_N, SDLK_N);
+  AddBinding('SEC_042', 'ALT_N', false, false, true, SDLK_N, SDLK_N);
+
+  // Note Position
+  AddBinding('SEC_043', 'SHIFT_DELETE', true, false, false, SDLK_DELETE, SDLK_DELETE);
+  AddBinding('SEC_043', 'CTRL_DELETE', false, true, false, SDLK_DELETE, SDLK_DELETE);
+  AddBinding('SEC_043', 'CTRL_SLASH', false, true, false, SDLK_SLASH, SDLK_SLASH);
+  AddBinding('SEC_043', 'SHIFT_LEFT', true, false, false, SDLK_LEFT, SDLK_LEFT);
+  AddBinding('SEC_043', 'SHIFT_RIGHT', true, false, false, SDLK_RIGHT, SDLK_RIGHT);
+  AddBinding('SEC_043', 'CTRL_LEFT', false, true, false, SDLK_LEFT, SDLK_LEFT);
+  AddBinding('SEC_043', 'CTRL_RIGHT', false, true, false, SDLK_RIGHT, SDLK_RIGHT);
+  AddBinding('SEC_043', 'ALT_LEFT', false, false, true, SDLK_LEFT, SDLK_LEFT);
+  AddBinding('SEC_043', 'ALT_RIGHT', false, false, true, SDLK_RIGHT, SDLK_RIGHT);
+  AddBinding('SEC_043', 'CTRL_ALT_SHIFT_LEFT', true, true, true, SDLK_LEFT, SDLK_LEFT);
+  AddBinding('SEC_043', 'CTRL_ALT_SHIFT_RIGHT', true, true, true, SDLK_RIGHT, SDLK_RIGHT);
+
+  // Lyrics
+  AddBinding('SEC_045', 'F4', false, false, false, SDLK_F4, SDLK_F4);
+  AddBinding('SEC_045', 'RETURN', false, false, false, SDLK_RETURN, SDLK_RETURN);
+  AddBinding('SEC_045', 'BACKSPACE', false, false, false, SDLK_BACKSPACE, SDLK_BACKSPACE);
+  AddBinding('SEC_045', 'PERIOD', false, false, false, SDLK_PERIOD, SDLK_PERIOD);
+  AddBinding('SEC_045', 'T', false, false, false, SDLK_T, SDLK_T);
+  AddBinding('SEC_045', 'C', false, false, false, SDLK_C, SDLK_C);
+  AddBinding('SEC_045', 'SHIFT_C', true, false, false, SDLK_C, SDLK_C);
+  AddBinding('SEC_045', 'SLASH', false, false, false, SDLK_SLASH, SDLK_SLASH);
+  AddBinding('SEC_045', 'SHIFT_SLASH', true, false, false, SDLK_SLASH, SDLK_SLASH);
+
+  // Preview Tags
+  AddBinding('SEC_050', 'SHIFT_I', true, false, false, SDLK_I, SDLK_I);
+  AddBinding('SEC_050', 'I', false, false, false, SDLK_I, SDLK_I);
+  AddBinding('SEC_050', 'ALT_I', false, false, true, SDLK_I, SDLK_I);
+
+  // Medley Tags
+  AddBinding('SEC_060', 'A', false, false, false, SDLK_A, SDLK_A);
+  AddBinding('SEC_060', 'SHIFT_A', true, false, false, SDLK_A, SDLK_A);
+  AddBinding('SEC_060', 'J', false, false, false, SDLK_J, SDLK_J);
+  AddBinding('SEC_060', 'SHIFT_J', true, false, false, SDLK_J, SDLK_J);
+  AddBinding('SEC_060', 'ALT_J', false, false, true, SDLK_J, SDLK_J);
+
+  // Duet Songs
+  AddBinding('SEC_070', 'CTRL_SHIFT_D', true, true, false, SDLK_D, SDLK_D);
+  AddBinding('SEC_070', 'CTRL_UP', false, true, false, SDLK_UP, SDLK_UP);
+  AddBinding('SEC_070', 'CTRL_DOWN', false, true, false, SDLK_DOWN, SDLK_DOWN);
+  AddBinding('SEC_070', 'CTRL_SHIFT_DOWN', true, true, false, SDLK_DOWN, SDLK_DOWN);
+  AddBinding('SEC_070', 'CTRL_SHIFT_UP', true, true, false, SDLK_UP, SDLK_UP);
+  AddBinding('SEC_070', 'CTRL_ALT_SHIFT_DOWN', true, true, true, SDLK_DOWN, SDLK_DOWN);
+  AddBinding('SEC_070', 'CTRL_ALT_SHIFT_UP', true, true, true, SDLK_UP, SDLK_UP);
+
+  // Gap & VideoGap
+  AddBinding('SEC_080', '0', false, false, false, SDLK_0, SDLK_0);
+  AddBinding('SEC_080', 'SHIFT_0', true, false, false, SDLK_0, SDLK_0);
+  AddBinding('SEC_080', '9', false, false, false, SDLK_9, SDLK_9);
+  AddBinding('SEC_080', 'SHIFT_9', true, false, false, SDLK_9, SDLK_9);
+  AddBinding('SEC_080', '8', false, false, false, SDLK_8, SDLK_8);
+  AddBinding('SEC_080', 'SHIFT_8', true, false, false, SDLK_8, SDLK_8);
+  AddBinding('SEC_080', 'CTRL_8', false, true, false, SDLK_8, SDLK_8);
+  AddBinding('SEC_080', '7', false, false, false, SDLK_7, SDLK_7);
+  AddBinding('SEC_080', 'SHIFT_7', true, false, false, SDLK_7, SDLK_7);
+  AddBinding('SEC_080', 'CTRL_7', false, true, false, SDLK_7, SDLK_7);
+
+  // BPM
+  AddBinding('SEC_085', 'CTRL_EQUALS', false, true, false, SDLK_EQUALS, SDLK_EQUALS);
+  AddBinding('SEC_085', 'CTRL_MINUS', false, true, false, SDLK_MINUS, SDLK_MINUS);
+  AddBinding('SEC_085', 'EQUALS', false, false, false, SDLK_EQUALS, SDLK_EQUALS);
+  AddBinding('SEC_085', 'MINUS', false, false, false, SDLK_MINUS, SDLK_MINUS);
+  AddBinding('SEC_085', 'SHIFT_EQUALS', true, false, false, SDLK_EQUALS, SDLK_EQUALS);
+  AddBinding('SEC_085', 'SHIFT_MINUS', true, false, false, SDLK_MINUS, SDLK_MINUS);
+  AddBinding('SEC_085', 'SHIFT_M', true, false, false, SDLK_M, SDLK_M);
+  AddBinding('SEC_085', 'SHIFT_D', true, false, false, SDLK_D, SDLK_D);
+  AddBinding('SEC_085', 'F5', false, false, false, SDLK_F5, SDLK_F5);
+
+  // Other
+  AddBinding('SEC_090', 'CTRL_C', false, true, false, SDLK_C, SDLK_C);
+  AddBinding('SEC_090', 'CTRL_V', false, true, false, SDLK_V, SDLK_V);
+  AddBinding('SEC_090', 'CTRL_SHIFT_V', true, true, false, SDLK_V, SDLK_V);
+  AddBinding('SEC_090', 'CTRL_ALT_V', false, true, true, SDLK_V, SDLK_V);
+  AddBinding('SEC_090', 'CTRL_SHIFT_4', true, true, false, SDLK_4, SDLK_4);
+  AddBinding('SEC_090', 'CTRL_SHIFT_ALT_4', true, true, true, SDLK_4, SDLK_4);
+  AddBinding('SEC_090', 'CTRL_SHIFT_5', true, true, false, SDLK_5, SDLK_5);
+  AddBinding('SEC_090', 'CTRL_SHIFT_ALT_5', true, true, true, SDLK_5, SDLK_5);
+  AddBinding('SEC_090', 'F6', false, false, false, SDLK_F6, SDLK_F6);
+
+  FKeyBindingsInitialized := true;
 end;
 
       // SDLK_M: HandleMultiplyBPM;
@@ -5136,6 +5315,8 @@ begin
     LyricVal[0] := '';
     SlideLyricIndex := 1;
     UpdateSelectSlideOptions(Theme.EditSub.SlideLyric,LyricSlideId,LyricVal,SlideLyricIndex);
+    RegisterKeyBindings;
+
     SelectsS[LyricSlideId].TextOpt[0].Align := 0;
     SelectsS[LyricSlideId].TextOpt[0].X := SelectsS[LyricSlideId].TextureSBG.X + 5;
 

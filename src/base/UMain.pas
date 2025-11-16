@@ -492,6 +492,8 @@ begin
               KeepGoing := ScreenPopupSendScore.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else if (ScreenPopupScoreDownload <> nil) and (ScreenPopupScoreDownload.Visible) then
               KeepGoing := ScreenPopupScoreDownload.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+            else if (ScreenPopupHelp <> nil) and (ScreenPopupHelp.Visible) then
+              KeepGoing := ScreenPopupHelp.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else
             begin
               KeepGoing := Display.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y);
@@ -545,6 +547,14 @@ begin
 
           if not Assigned(Display.NextScreen) then
           begin //drop input when changing screens
+            if (Event.type_ = SDL_KEYDOWN) and
+               (ScreenPopupHelp <> nil) and ScreenPopupHelp.Visible and
+               ScreenPopupHelp.IsCapturing then
+            begin
+              if ScreenPopupHelp.HandleCapturedKey(Event.key.keysym.sym) then
+                Continue;
+            end;
+
             KeyCharUnicode:=0;
             if (Event.type_ = SDL_TEXTINPUT) and (Event.text.text <> '') then
             try
@@ -558,6 +568,9 @@ begin
             begin
               SimKey := Event.key.keysym.sym;
             end;
+
+            if SimKey <> 0 then
+              SimKey := Display.TranslateKeyForActiveScreen(SimKey, word(SDL_GetModState));
 
             // if print is pressed -> make screenshot and save to screenshot path
             if (SimKey = SDLK_SYSREQ) or (SimKey = SDLK_PRINTSCREEN) then

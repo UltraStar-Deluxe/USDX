@@ -88,8 +88,9 @@ type
        { Handles parsing of inputs when console is opened. Called from ParseMouse }
       function ConsoleParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 
-      { called by MoveCursor and OnMouseButton to update last move and start fade in }
-      procedure UpdateCursorFade;
+    { called by MoveCursor and OnMouseButton to update last move and start fade in }
+    procedure UpdateCursorFade;
+    function GetInputTarget: PMenu;
 
     public
       Cursor_HiddenByScreen: boolean; // hides software cursor and deactivate auto fade in, must be public for access in UMenuButton
@@ -124,6 +125,10 @@ type
 
       { calls ParseMouse of cur or next Screen if assigned }
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+
+      { resolves the active screen's keyboard context }
+      function GetActiveKeyBindingContext: UTF8String;
+      function TranslateKeyForActiveScreen(PressedKey: cardinal; ModState: word): cardinal;
 
       { sets SDL_ShowCursor depending on options set in Ini }
       procedure SetCursor;
@@ -182,6 +187,7 @@ uses
   UTexture,
   UTime,
   ULanguage,
+  UKeyBindings,
   UPathUtils;
 
 constructor TDisplay.Create;
@@ -640,6 +646,40 @@ begin
     end;
   end;
 end;
+
+    function TDisplay.GetInputTarget: PMenu;
+    begin
+      if assigned(NextScreen) then
+        Result := NextScreen
+      else
+        Result := CurrentScreen;
+    end;
+
+    function TDisplay.GetActiveKeyBindingContext: UTF8String;
+    var
+      Target: PMenu;
+    begin
+      Target := GetInputTarget;
+      if Target <> nil then
+        Result := Target^.GetKeyBindingContext
+      else
+        Result := '';
+    end;
+
+    function TDisplay.TranslateKeyForActiveScreen(PressedKey: cardinal; ModState: word): cardinal;
+    var
+      ContextId: UTF8String;
+    begin
+      Result := PressedKey;
+      if KeyBindings = nil then
+        Exit;
+
+      ContextId := GetActiveKeyBindingContext;
+      if ContextId = '' then
+        Exit;
+
+      Result := KeyBindings.TranslateKey(ContextId, ModState, PressedKey);
+    end;
 
 function TDisplay.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean;
 begin

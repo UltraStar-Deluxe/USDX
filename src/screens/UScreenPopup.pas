@@ -51,6 +51,8 @@ uses
   UThemes,
   UWebSDK,
   UHelp,
+  UKeyBindings,
+  Types,
   TextGL,
   Classes;
 
@@ -224,11 +226,32 @@ type
     texts:  array of TText;
   end;
 
+  TBindingHit = record
+    Bounds: TRect;
+    SectionIndex: integer;
+    EntryIndex: integer;
+    Handle: TKeyBindingHandle;
+    HelpToken: UTF8String;
+  end;
+
   TScreenPopupHelp = class(TMenu)
   private
+
     TextsGFX:   array of TResLine;
     msg:        TTextResult;
     Rect:       TRect;
+    BindingHits: array of TBindingHit;
+    KeyColumnRight: integer;
+    CaptureActive: boolean;
+    CaptureHandle: TKeyBindingHandle;
+    CaptureSection: integer;
+    CaptureEntry: integer;
+    CaptureHelpToken: UTF8String;
+    ActiveBindingIndex: integer;
+    PromptPressKey: UTF8String;
+    PromptCancel: UTF8String;
+    PromptActionFormat: UTF8String;
+    CurrentActionPrompt: UTF8String;
 
     max_high:   real;
     step:       double;
@@ -238,11 +261,21 @@ type
     procedure   DrawLine(line, index, Y: integer);
     procedure   DrawText(line, index, Y: integer);
     procedure   DrawScroll(X, Y, W, H: integer; pos, len: double);
+    function    GetScrollOffset: integer;
+    procedure   ClearBindingHits;
+    procedure   AddBindingHit(const Bounds: TRect; SectionIndex, EntryIndex: integer;
+      Handle: TKeyBindingHandle; const HelpToken: UTF8String);
+    procedure   StartCapture(Index: integer);
+    procedure   CancelCapture;
+  procedure   FinishCapture(NewKey: cardinal);
   public
     Visible:    Boolean; //Whether the Menu should be Drawn
 
     constructor Create; override;
     function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+    function ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean; override;
+    function IsCapturing: boolean;
+  function HandleCapturedKey(PressedKey: cardinal): boolean;
     procedure onShow; override;
     procedure onHide; override;
     procedure ShowPopup();
@@ -1545,6 +1578,10 @@ var
   pos:  double;
 begin
   Result := true;
+  if CaptureActive then
+  begin
+    Exit;
+  end;
   If (PressedDown) Then
   begin // Key Down
     pos := Help.GetScrollPos();
@@ -1598,11 +1635,79 @@ begin
     AddButtonText(14, 20, 'Button 1');
   Button[0].Visible := false;
   Interaction := 0;
+
+  SetLength(BindingHits, 0);
+  CaptureActive := false;
+  CaptureHandle := 0;
+  CaptureSection := -1;
+  CaptureEntry := -1;
+  ActiveBindingIndex := -1;
+  KeyColumnRight := 0;
+end;
+
+function TScreenPopupHelp.ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean;
+var
+  Offset: integer;
+  ContentY: integer;
+  I: integer;
+  Hit: TBindingHit;
+  RawX: integer;
+  RawY: integer;
+begin
+  Result := inherited ParseMouse(MouseButton, BtnDown, X, Y);
+  RawX := X;
+  RawY := Y;
+
+  if (ScreenW > 0) and (Screens > 0) then
+  begin
+    X := Round((RawX / (ScreenW / Screens)) * RenderW);
+    while X < 0 do
+      X := X + RenderW;
+    while X > RenderW do
+      X := X - RenderW;
+  end;
+
+  if ScreenH > 0 then
+  begin
+    Y := Round((RawY / ScreenH) * RenderH);
+    if Y < 0 then
+      Y := 0
+    else if Y > RenderH then
+      Y := RenderH;
+  end;
+
+  if not Visible then
+    Exit;
+  if (MouseButton <> SDL_BUTTON_LEFT) or (not BtnDown) then
+    Exit;
+  if (KeyColumnRight <= Rect.left) then
+    Exit;
+  if (X < Rect.left) or (X > KeyColumnRight) or (Y < Rect.top) or (Y > Rect.bottom) then
+    Exit;
+
+  Offset := GetScrollOffset;
+  ContentY := Y + Offset;
+  for I := 0 to High(BindingHits) do
+  begin
+    Hit := BindingHits[I];
+    if Hit.Handle = 0 then
+      Continue;
+    if (ContentY >= Hit.Bounds.Top) and (ContentY <= Hit.Bounds.Bottom) then
+    begin
+      StartCapture(I);
+      Result := true;
+      Exit;
+    end;
+  end;
 end;
 
 function TScreenPopupHelp.Draw: boolean;
 var
   abs:  real;
+  Offset: integer;
+  Hit: TBindingHit;
+  OverlayHeight: integer;
+  TextY: integer;
 begin
 //inherited Draw; TODO: FIX
   if step<1 then
@@ -1629,14 +1734,68 @@ begin
   glDisable(GL_SCISSOR_TEST);
   if step<1 then
     DrawScroll(Rect.right+5, Rect.top, 10, Rect.bottom-Rect.top, Help.GetScrollPos(), barH);
+
+  if CaptureActive then
+  begin
+    Offset := GetScrollOffset;
+    if (ActiveBindingIndex >= 0) and (ActiveBindingIndex <= High(BindingHits)) then
+    begin
+      Hit := BindingHits[ActiveBindingIndex];
+      glEnable(GL_BLEND);
+      glDisable(GL_TEXTURE_2D);
+      glColor4f(1.0, 1.0, 0.0, 0.25);
+      glBegin(GL_QUADS);
+        glVertex2f(Hit.Bounds.Left, Hit.Bounds.Top - Offset);
+        glVertex2f(Hit.Bounds.Right, Hit.Bounds.Top - Offset);
+        glVertex2f(Hit.Bounds.Right, Hit.Bounds.Bottom + 5 - Offset);
+        glVertex2f(Hit.Bounds.Left, Hit.Bounds.Bottom + 5 - Offset);
+      glEnd;
+      glDisable(GL_BLEND);
+      glEnable(GL_TEXTURE_2D);
+    end;
+
+    OverlayHeight := 80;
+    glEnable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
+    glColor4f(0.0, 0.0, 0.0, 0.8);
+    glBegin(GL_QUADS);
+      glVertex2f(Rect.left - 5, Rect.bottom - OverlayHeight);
+      glVertex2f(Rect.right + 5, Rect.bottom - OverlayHeight);
+      glVertex2f(Rect.right + 5, Rect.bottom + 5);
+      glVertex2f(Rect.left - 5, Rect.bottom + 5);
+    glEnd;
+    glDisable(GL_BLEND);
+    glEnable(GL_TEXTURE_2D);
+
+    glColor4f(1, 1, 1, 1);
+    SetFontFamily(0);
+    SetFontStyle(1);
+    SetFontSize(22);
+    TextY := Rect.bottom - OverlayHeight + 15;
+    SetFontPos(Rect.left + 10, TextY);
+    if CurrentActionPrompt <> '' then
+    begin
+      glPrint(PChar(CurrentActionPrompt));
+      TextY := TextY + 25;
+    end;
+
+    SetFontSize(18);
+    SetFontPos(Rect.left + 10, TextY);
+    glPrint(PChar(PromptPressKey));
+    TextY := TextY + 22;
+    SetFontPos(Rect.left + 10, TextY);
+    glPrint(PChar(PromptCancel));
+  end;
 end;
 
 procedure TScreenPopupHelp.onShow;
 begin
+  CancelCapture;
 end;
 
 procedure TScreenPopupHelp.onHide;
 begin
+  CancelCapture;
 end;
 
 procedure TScreenPopupHelp.ShowPopup();
@@ -1653,6 +1812,11 @@ var
   fieldh:   integer;
   tline:    integer;
   countline:integer;
+  EntryRect: TRect;
+  EntryLineIndex: integer;
+  EntryKeyTopLine: integer;
+  KeyToken: UTF8String;
+  Candidate: UTF8String;
 
   procedure AddLine(l, i, fX, fY, tX, tY: integer);
   begin
@@ -1687,10 +1851,22 @@ var
 begin
   Interaction := 0; //Reset Interaction
   Visible := True;  //Set Visible
+  CancelCapture;
 
   SetLength(TextsGFX, 0);
   line := 0;
   tline := -1;
+  ClearBindingHits;
+  PromptPressKey := Language.Translate('HELP_PROMPT_PRESS_KEY');
+  PromptCancel := Language.Translate('HELP_PROMPT_CANCEL');
+  PromptActionFormat := Language.Translate('HELP_PROMPT_ACTION');
+  if PromptPressKey = 'HELP_PROMPT_PRESS_KEY' then
+    PromptPressKey := 'Please press a key';
+  if PromptCancel = 'HELP_PROMPT_CANCEL' then
+    PromptCancel := 'Press ESC to cancel';
+  if PromptActionFormat = 'HELP_PROMPT_ACTION' then
+    PromptActionFormat := 'Rebinding: %s';
+  CurrentActionPrompt := '';
 
   Font := 0;
   Style := 1;
@@ -1709,6 +1885,7 @@ begin
   Rect.bottom := 575;
 
   KeyEnd := round((Rect.right - Rect.left)*0.4);
+  KeyColumnRight := KeyEnd;
   fieldh := 22;
 
   msg := Help.GetHelpStr();
@@ -1928,22 +2105,41 @@ begin
     //keys
     for J := 0 to Length(msg.Sections[K].Keys) - 1 do
     begin
+      EntryKeyTopLine := -1;
       NewLine(fieldh, 3);
       AddLine(line, 0, Rect.left, TextsGFX[line].Y, Rect.left, TextsGFX[line].Y + TextsGFX[line].H);
       AddLine(line, 1, KeyEnd, TextsGFX[line].Y, KeyEnd, TextsGFX[line].Y + TextsGFX[line].H);
       AddLine(line, 2, Rect.right, TextsGFX[line].Y, Rect.right, TextsGFX[line].Y + TextsGFX[line].H);
+      EntryKeyTopLine := line;
 
       countline := 1;
       NewText(Rect.left + 5, TextsGFX[line].Y + 2);
       tempStr := '';
       for I := 0 to Length(msg.Sections[K].Keys[J].Key) - 1 do
       begin
-        if glTextWidth(PChar(tempStr + msg.Sections[K].Keys[J].Key[I] + '+')) <= (KeyEnd - Rect.left - 10) then
+        KeyToken := msg.Sections[K].Keys[J].Key[I];
+        if KeyToken = KEY_BINDING_BREAK then
         begin
-          if I<Length(msg.Sections[K].Keys[J].Key)-1 then
-            tempStr := tempStr + msg.Sections[K].Keys[J].Key[I] + '+'
-          else
-            tempStr := tempStr + msg.Sections[K].Keys[J].Key[I];
+          TextsGFX[line].texts[tline].text := tempStr;
+          tempStr := '';
+          NewLine(fieldh, 3);
+          AddLine(line, 0, Rect.left, TextsGFX[line].Y, Rect.left, TextsGFX[line].Y + TextsGFX[line].H);
+          AddLine(line, 1, KeyEnd, TextsGFX[line].Y, KeyEnd, TextsGFX[line].Y + TextsGFX[line].H);
+          AddLine(line, 2, Rect.right, TextsGFX[line].Y, Rect.right, TextsGFX[line].Y + TextsGFX[line].H);
+          NewText(Rect.left + 5, TextsGFX[line].Y + 2);
+          inc(countline);
+          inc(countline);
+          Continue;
+        end;
+
+        if tempStr = '' then
+          Candidate := KeyToken
+        else
+          Candidate := tempStr + '+' + KeyToken;
+
+        if glTextWidth(PChar(Candidate)) <= (KeyEnd - Rect.left - 10) then
+        begin
+          tempStr := Candidate;
           TextsGFX[line].texts[tline].text := tempStr;
         end else
         begin
@@ -1954,11 +2150,7 @@ begin
           AddLine(line, 2, Rect.right, TextsGFX[line].Y, Rect.right, TextsGFX[line].Y + TextsGFX[line].H);
 
           NewText(Rect.left + 5, TextsGFX[line].Y + 2);
-
-          if I<Length(msg.Sections[K].Keys[J].Key)-1 then
-            tempStr := msg.Sections[K].Keys[J].Key[I] + '+'
-          else
-            tempStr := msg.Sections[K].Keys[J].Key[I];
+          tempStr := KeyToken;
           TextsGFX[line].texts[tline].text := tempStr;
           inc(countline);
         end;
@@ -2009,7 +2201,16 @@ begin
         end;
       Finally
         SL.Free;
-        line := line + countline -1;
+        EntryLineIndex := EntryKeyTopLine;
+        if EntryLineIndex < 0 then
+          EntryLineIndex := 0;
+        EntryRect.Left := Rect.left;
+        EntryRect.Right := KeyEnd;
+        EntryRect.Top := TextsGFX[EntryLineIndex].Y;
+        EntryRect.Bottom := EntryRect.Top + countline * fieldh;
+        AddBindingHit(EntryRect, K, J,
+          msg.Sections[K].BindingHandles[J], msg.Sections[K].HelpTokens[J]);
+        line := line + countline - 1;
         NewLine(round(fieldh/4), 4);
         AddLine(line, 0, Rect.left, TextsGFX[line].Y, Rect.left, TextsGFX[line].Y + TextsGFX[line].H);
         AddLine(line, 1, KeyEnd, TextsGFX[line].Y, KeyEnd, TextsGFX[line].Y + TextsGFX[line].H);
@@ -2109,6 +2310,100 @@ begin
     glVertex2f(X+W, tY);
     glVertex2f(X, tY);
   glEnd;
+end;
+
+function TScreenPopupHelp.GetScrollOffset: integer;
+var
+  ScrollRange: integer;
+begin
+  ScrollRange := Round(max_high - Rect.Bottom);
+  if ScrollRange <= 0 then
+    Exit(0);
+  Result := Round(Help.GetScrollPos() * ScrollRange);
+end;
+
+procedure TScreenPopupHelp.ClearBindingHits;
+begin
+  SetLength(BindingHits, 0);
+  ActiveBindingIndex := -1;
+end;
+
+procedure TScreenPopupHelp.AddBindingHit(const Bounds: TRect; SectionIndex, EntryIndex: integer;
+  Handle: TKeyBindingHandle; const HelpToken: UTF8String);
+var
+  Len: integer;
+begin
+  Len := Length(BindingHits);
+  SetLength(BindingHits, Len + 1);
+  BindingHits[Len].Bounds := Bounds;
+  BindingHits[Len].SectionIndex := SectionIndex;
+  BindingHits[Len].EntryIndex := EntryIndex;
+  BindingHits[Len].Handle := Handle;
+  BindingHits[Len].HelpToken := HelpToken;
+end;
+
+procedure TScreenPopupHelp.StartCapture(Index: integer);
+begin
+  if (Index < 0) or (Index > High(BindingHits)) then
+    Exit;
+  if BindingHits[Index].Handle = 0 then
+    Exit;
+
+  if CaptureActive then
+    CancelCapture;
+
+  CaptureActive := true;
+  CaptureHandle := BindingHits[Index].Handle;
+  CaptureSection := BindingHits[Index].SectionIndex;
+  CaptureEntry := BindingHits[Index].EntryIndex;
+  CaptureHelpToken := BindingHits[Index].HelpToken;
+  ActiveBindingIndex := Index;
+
+  if (PromptActionFormat = '') or (PromptActionFormat = 'HELP_PROMPT_ACTION') then
+    CurrentActionPrompt := msg.Sections[CaptureSection].KeyDescription[CaptureEntry]
+  else
+    CurrentActionPrompt := UTF8String(Format(string(PromptActionFormat),
+      [string(msg.Sections[CaptureSection].KeyDescription[CaptureEntry])]))
+  ;
+end;
+
+procedure TScreenPopupHelp.CancelCapture;
+begin
+  CaptureActive := false;
+  CaptureHandle := 0;
+  CaptureSection := -1;
+  CaptureEntry := -1;
+  CaptureHelpToken := '';
+  ActiveBindingIndex := -1;
+  CurrentActionPrompt := '';
+end;
+
+procedure TScreenPopupHelp.FinishCapture(NewKey: cardinal);
+begin
+  if (KeyBindings <> nil) and (CaptureHandle <> 0) then
+  begin
+    KeyBindings.UpdateBinding(CaptureHandle, NewKey);
+    if Ini <> nil then
+      Ini.SaveKeyBindings;
+  end;
+  CancelCapture;
+  ShowPopup;
+end;
+
+function TScreenPopupHelp.IsCapturing: boolean;
+begin
+  Result := CaptureActive;
+end;
+
+function TScreenPopupHelp.HandleCapturedKey(PressedKey: cardinal): boolean;
+begin
+  Result := CaptureActive;
+  if not CaptureActive then
+    Exit;
+  if PressedKey = SDLK_ESCAPE then
+    CancelCapture
+  else
+    FinishCapture(PressedKey);
 end;
 
 end.
