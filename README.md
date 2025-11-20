@@ -53,3 +53,5 @@ For extended information, dependencies, OS-specific notes and configure flags, s
 
 ### 6. Making a release
 See [RELEASING.md](RELEASING.md)
+
+Other useful documents for maintainers: [pipeline info](PIPELINE.md).
