@@ -77,7 +77,7 @@ type
       function    ReloadPlayList(Index: Cardinal): Boolean;
       procedure   SavePlayList(Index: Cardinal);
 
-      procedure   SetPlayList(Index: Cardinal; SongID: Cardinal = -1);
+      procedure   SetPlayList(Index: Integer; SongID: Integer = -1);
       procedure   UnsetPlaylist;
 
       function    AddPlaylist(const Name: UTF8String): Cardinal;
@@ -319,12 +319,12 @@ end;
 {**
  * Display a Playlist in CatSongs
  *}
-procedure TPlayListManager.SetPlayList(Index: Cardinal; SongID: Cardinal = -1);
+procedure TPlayListManager.SetPlayList(Index: Integer; SongID: Integer = -1);
 var
   I: Integer;
   Found: Boolean;
 begin
-  if (Index > High(PlayLists)) then
+  if (Index < 0) or (Index > High(PlayLists)) then
     exit;
 
   //Hide all Songs
