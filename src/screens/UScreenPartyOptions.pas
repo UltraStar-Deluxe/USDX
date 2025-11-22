@@ -373,7 +373,7 @@ begin
 
   //Save Playlist
   PlaylistMan.Mode := TSongMode(Playlist);
-  PlaylistMan.CurPlayList := High(cardinal);
+  PlaylistMan.CurPlayList := -1;
 
   //if Category Selected Search Category ID
   if Playlist = 1 then
@@ -393,7 +393,7 @@ begin
     end;
 
     //No Categorys or Invalid Entry
-    if PlaylistMan.CurPlayList = High(cardinal) then
+    if PlaylistMan.CurPlayList = -1 then
       Exit;
   end
   else
