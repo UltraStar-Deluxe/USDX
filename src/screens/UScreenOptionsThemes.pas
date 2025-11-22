@@ -105,7 +105,7 @@ begin
           AudioPlayback.PlaySound(SoundLib.Back);
 
           // select theme button in new created options screen
-          ScreenOptions.Interaction := 4;
+          ScreenOptions.Interaction := 5;
 
           FadeTo(@ScreenOptions);
         end;
@@ -124,7 +124,7 @@ begin
             AudioPlayback.PlaySound(SoundLib.Back);
 
             // select theme button in new created options screen
-            ScreenOptions.Interaction := 4;
+            ScreenOptions.Interaction := 5;
 
             FadeTo(@ScreenOptions);
           end;
