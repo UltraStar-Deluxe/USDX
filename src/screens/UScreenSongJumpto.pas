@@ -73,6 +73,7 @@ const
 implementation
 
 uses
+  dglOpenGL,
   UGraphic,
   UHelp,
   UIni,
@@ -234,6 +235,7 @@ end;
 
 function TScreenSongJumpto.Draw: boolean;
 begin
+  glClear(GL_DEPTH_BUFFER_BIT);
   Result := inherited Draw;
 end;
 
