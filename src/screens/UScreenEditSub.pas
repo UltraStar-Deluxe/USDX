@@ -381,6 +381,7 @@ type
       procedure HandleDownKey(SDL_ModState: word);
       procedure HandleUpKey(SDL_ModState: word);
       procedure EnterTextEditMode(SDL_ModState: word);
+      function  SwitchLyricsEditToAdjacentNote(Forward: boolean; CursorAtStart: boolean): boolean;
       procedure EnterBPMEditMode(SDL_ModState: word);
       procedure EnterPianoEditMode(SDL_ModState: word);
       procedure ToggleTextEditMode(SDL_ModState: word);
@@ -1605,6 +1606,46 @@ begin
   StartTextInput;
 end;
 
+function TScreenEditSub.SwitchLyricsEditToAdjacentNote(Forward: boolean; CursorAtStart: boolean): boolean;
+var
+  PreviousNote: Integer;
+begin
+  Result := false;
+
+  if not TextEditMode then
+    Exit;
+
+  PreviousNote := CurrentNote[CurrentTrack];
+
+  if Forward then
+    HandleMoveRight(0)
+  else
+    HandleMoveLeft(0);
+
+  if CurrentNote[CurrentTrack] = PreviousNote then
+    Exit;
+
+  BackupEditText := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
+  CurrentEditText := BackupEditText;
+  editLengthText := LengthUTF8(CurrentEditText);
+
+  if CursorAtStart then
+    TextPosition := 0
+  else
+    TextPosition := editLengthText;
+
+  CurrentSlideId := LyricSlideId;
+  LyricVal[0] := CurrentEditText;
+  SelectsS[LyricSlideId].TextOpt[0].Text := CurrentEditText;
+  UpdateSelectSlideOptions(LyricSlideId,LyricVal,SlideLyricIndex);
+  SelectsS[LyricSlideId].TextOpt[0].Align := 0;
+  SelectsS[LyricSlideId].TextOpt[0].X := SelectsS[LyricSlideId].TextureSBG.X + 5;
+  EditorLyrics[CurrentTrack].AddLine(CurrentTrack, CurrentSong.Tracks[CurrentTrack].CurrentLine);
+  EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+
+  Result := true;
+end;
+
       // SDLK_F5: EnterBPMEditMode
 procedure TScreenEditSub.EnterBPMEditMode(SDL_ModState: word);
 begin
@@ -2340,8 +2381,10 @@ begin
       CurrentEditText :=
       UTF8Copy(CurrentEditText, 1,TextPosition) + UCS4ToUTF8String(CharCode) +
       UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText));
-      Inc(editLengthText);
       Inc(TextPosition);
+      editLengthText := LengthUTF8(CurrentEditText);
+      if TextPosition > editLengthText then
+        TextPosition := editLengthText;
 
       if TextEditMode then
         begin
@@ -2547,6 +2590,11 @@ begin
           begin
             UTF8Delete(CurrentEditText, TextPosition, 1);
             dec(TextPosition);
+            if TextPosition < 0 then
+              TextPosition := 0;
+            editLengthText := LengthUTF8(CurrentEditText);
+            if TextPosition > editLengthText then
+              TextPosition := editLengthText;
             if TextEditMode then
             begin
               CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
@@ -2558,6 +2606,9 @@ begin
       SDLK_DELETE:
         begin
             UTF8Delete(CurrentEditText, TextPosition+1, 1);
+            editLengthText := LengthUTF8(CurrentEditText);
+            if TextPosition > editLengthText then
+              TextPosition := editLengthText;
         end;
 
       SDLK_RIGHT:
@@ -2565,13 +2616,18 @@ begin
           // right
           if SDL_ModState = 0 then
           begin
-            if (TextPosition >= 0) and (TextPosition < editLengthText-1) then
-                TextPosition := TextPosition + 1
+            editLengthText := LengthUTF8(CurrentEditText);
+            if TextPosition < editLengthText then
+            begin
+              Inc(TextPosition);
+              if TextPosition > editLengthText then
+                TextPosition := editLengthText;
+            end
             else
-              begin
-              // todo change to next note
-              TextPosition := 0;
-              end;
+            begin
+              if not (TextEditMode and SwitchLyricsEditToAdjacentNote(true, true)) then
+                TextPosition := editLengthText;
+            end;
           end;
         end;
       SDLK_LEFT:
@@ -2579,13 +2635,31 @@ begin
           // left
           if SDL_ModState = 0 then
           begin
+            editLengthText := LengthUTF8(CurrentEditText);
             if TextPosition > 0 then
-                TextPosition := TextPosition - 1
+            begin
+              Dec(TextPosition);
+              if TextPosition < 0 then
+                TextPosition := 0;
+            end
             else
-              begin
-                // todo change to next note
-                TextPosition := editLengthText-1;
-              end;
+            begin
+              if not (TextEditMode and SwitchLyricsEditToAdjacentNote(false, false)) then
+                TextPosition := 0;
+            end;
+          end;
+        end;
+      SDLK_HOME:
+        begin
+          if SDL_ModState = 0 then
+            TextPosition := 0;
+        end;
+      SDLK_END:
+        begin
+          if SDL_ModState = 0 then
+          begin
+            editLengthText := LengthUTF8(CurrentEditText);
+            TextPosition := editLengthText;
           end;
         end;
       // SDLK_KP_DIVIDE is a temporary workaround for German keyboards
