@@ -300,6 +300,7 @@ type
       procedure SaveTeamColors;
       procedure SaveShowWebScore;
       procedure SaveJukeboxSongMenu;
+  procedure SaveKeyBindings;
 
       procedure SaveSoundFont(Name: string);
       procedure SaveWebcamSettings();
@@ -594,6 +595,7 @@ implementation
 uses
   StrUtils,
   sdl2,
+  UKeyBindings,
   UCommandLine,
   UDataBase,
   UDllManager,
@@ -1763,6 +1765,9 @@ begin
   if Length(ReadPianoKeysHigh) = 21 then
     PianoKeysHigh := ReadPianoKeysHigh;
 
+  if Assigned(KeyBindings) then
+    KeyBindings.LoadOverrides(IniFile);
+
   LoadPaths(IniFile);
 
   TranslateOptionValues;
@@ -2033,6 +2038,9 @@ begin
 
     IniFile.WriteString('Jukebox', 'NextLineOColor', HexColor);
 
+    if Assigned(KeyBindings) then
+      KeyBindings.SaveOverrides(IniFile);
+
     IniFile.WriteString('KeyBindings', 'PianoKeysLow', MergeIntArrayToString(PianoKeysLow));
     IniFile.WriteString('KeyBindings', 'PianoKeysHigh', MergeIntArrayToString(PianoKeysHigh));
 
@@ -2043,6 +2051,27 @@ begin
     On e :Exception do begin
       Log.LogWarn('Saving InputDeviceConfig failed: ' + e.Message, 'UIni.Save');
     end;
+  end;
+end;
+
+procedure TIni.SaveKeyBindings;
+var
+  IniFile: TIniFile;
+begin
+  if Filename.IsReadOnly() then
+  begin
+    Log.LogWarn('Config-file is read-only', 'TIni.SaveKeyBindings');
+    Exit;
+  end;
+
+  IniFile := TIniFile.Create(Filename.ToNative);
+  try
+    if Assigned(KeyBindings) then
+      KeyBindings.SaveOverrides(IniFile);
+    IniFile.WriteString('KeyBindings', 'PianoKeysLow', MergeIntArrayToString(PianoKeysLow));
+    IniFile.WriteString('KeyBindings', 'PianoKeysHigh', MergeIntArrayToString(PianoKeysHigh));
+  finally
+    IniFile.Free;
   end;
 end;
 

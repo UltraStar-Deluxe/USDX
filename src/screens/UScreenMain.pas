@@ -44,18 +44,39 @@ uses
   UThemes,
   MD5,
   sdl2,
-  SysUtils;
+  SysUtils,
+  UKeyBindings;
 
 type
 
   TScreenMain = class(TMenu)
+  private
+    FKeyBindingsInitialized: boolean;
+    procedure RegisterKeyBindings;
+    function HandleShowHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleExitScreen(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleShortcutSolo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleShortcutParty(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleShortcutJukebox(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleReloadTheme(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleShortcutStats(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleShortcutEditor(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleShortcutOptions(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleShortcutAbout(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleShortcutCredits(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleShortcutQuit(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleConfirmSelection(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleNavigateDown(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleNavigateUp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleNavigateRight(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+    function HandleNavigateLeft(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+  protected
+    function GetKeyBindingContext: UTF8String; override;
   public
     TextDescription:     integer;
     TextDescriptionLong: integer;
 
     constructor Create; override;
-    function ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-      PressedDown: boolean): boolean; override;
     function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
     procedure OnShow; override;
     procedure SetInteraction(Num: integer); override;
@@ -84,196 +105,273 @@ uses
   UTexture,
   UUnicodeUtils;
 
-function TScreenMain.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
-var
-  SDL_ModState: word;
+function TScreenMain.GetKeyBindingContext: UTF8String;
 begin
-  Result := true;
+  Result := ID;
+end;
 
-  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT +
-    KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT);
+procedure TScreenMain.RegisterKeyBindings;
 
-  if (PressedDown) then
-  begin // Key Down
-        // check normal keys
-    case PressedKey of
-      SDLK_S: begin
-        FadeTo(@ScreenName, SoundLib.Start);
-        Exit;
-      end;
+  procedure RegisterKeyBinding(const Category, Token: UTF8String; CombinedKey: UInt64;
+    Handler: TMenuKeyBindingHandler = nil);
+  begin
+    RegisterKeyBinding(Category, Token, CombinedKey, Handler);
+  end;
 
-      SDLK_P: begin
-        if (Ini.Players >= 1) and (Party.ModesAvailable) then
-        begin
-          FadeTo(@ScreenPartyOptions, SoundLib.Start);
-          Exit;
-        end;
-      end;
+begin
+  if FKeyBindingsInitialized then
+    Exit;
 
-      SDLK_J: begin
-        FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start);
-        Exit;
-      end;
+  ClearKeyBindings;
 
-      SDLK_R: begin
-        UGraphic.UnLoadScreens();
-        Theme.LoadTheme(Ini.Theme, Ini.Color);
-        UGraphic.LoadScreens(USDXVersionStr);
-      end;
+  // General
+  RegisterKeyBinding('SEC_001', 'RETURN', SDLK_RETURN, HandleConfirmSelection);
+  RegisterKeyBinding('SEC_001', 'TAB', SDLK_TAB, HandleShowHelp);
+  RegisterKeyBinding('SEC_001', 'PRINT', SDLK_PRINTSCREEN);
+  RegisterKeyBinding('SEC_001', 'F11', SDLK_F11);
+  RegisterKeyBinding('SEC_001', 'ALT_RETURN', SDLK_RETURN or MOD_LALT);
+  RegisterKeyBinding('SEC_001', 'BACKSPACE', SDLK_BACKSPACE, HandleExitScreen);
+  RegisterKeyBinding('SEC_001', 'ESC', SDLK_ESCAPE, HandleExitScreen);
 
-      SDLK_T: begin
-        FadeTo(@ScreenStatMain, SoundLib.Start);
-        Exit;
-      end;
+  // Navigation
+  RegisterKeyBinding('SEC_010', 'ARROWKEYS', SDLK_UP, HandleNavigateUp);
+  RegisterKeyBinding('SEC_010', 'ARROWKEYS', SDLK_DOWN, HandleNavigateDown);
+  RegisterKeyBinding('SEC_010', 'ARROWKEYS', SDLK_LEFT, HandleNavigateLeft);
+  RegisterKeyBinding('SEC_010', 'ARROWKEYS', SDLK_RIGHT, HandleNavigateRight);
 
-      SDLK_E: begin
-        FadeTo(@ScreenEdit, SoundLib.Start);
-        Exit;
-      end;
+  // Shortcuts
+  RegisterKeyBinding('SEC_020', 'S', SDLK_S, HandleShortcutSolo);
+  RegisterKeyBinding('SEC_020', 'P', SDLK_P, HandleShortcutParty);
+  RegisterKeyBinding('SEC_020', 'J', SDLK_J, HandleShortcutJukebox);
+  RegisterKeyBinding('SEC_020', 'T', SDLK_T, HandleShortcutStats);
+  RegisterKeyBinding('SEC_020', 'E', SDLK_E, HandleShortcutEditor);
+  RegisterKeyBinding('SEC_020', 'O', SDLK_O, HandleShortcutOptions);
+  RegisterKeyBinding('SEC_020', 'A', SDLK_A, HandleShortcutAbout);
+  RegisterKeyBinding('SEC_020', 'C', SDLK_C, HandleShortcutCredits);
+  RegisterKeyBinding('SEC_020', 'Q', SDLK_Q, HandleShortcutQuit);
 
-      SDLK_O: begin
-        FadeTo(@ScreenOptions, SoundLib.Start);
-        Exit;
-      end;
+  // Maintenance shortcuts not exposed via help
+  RegisterKeyBinding('', '', SDLK_R, HandleReloadTheme);
 
-      SDLK_A: begin
-        FadeTo(@ScreenAbout, SoundLib.Start);
-        Exit;
-      end;
-
-      SDLK_C: begin
-         FadeTo(@ScreenCredits, SoundLib.Start);
-         Exit;
-      end;
-
-      SDLK_Q: begin
-        Result := false;
-        Exit;
-      end;
-    end;
-
-    // check special keys
-    case PressedKey of
-      SDLK_ESCAPE,
-      SDLK_BACKSPACE:
-      begin
-        Result := false;
-      end;
-
-      SDLK_TAB:
-      begin
-        ScreenPopupHelp.ShowPopup();
-      end;
-
-      SDLK_RETURN:
-      begin
-        // reset
-        Party.bPartyGame := false;
-
-        //Solo
-        if (Interaction = 0) then
-        begin
-          if (Songs.SongList.Count >= 1) then
-          begin
-            if (Ini.Players >= 0) and (Ini.Players <= 3) then
-              PlayersPlay := Ini.Players + 1;
-            if (Ini.Players = 4) then
-              PlayersPlay := 6;
-
-            if Ini.OnSongClick = sSelectPlayer then
-              FadeTo(@ScreenSong)
-            else
-            begin
-              ScreenName.Goto_SingScreen := false;
-              FadeTo(@ScreenName, SoundLib.Start);
-            end;
-          end
-          else //show error message
-            ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
-        end;
-
-        //Party
-        if Interaction = 1 then
-        begin
-          if (Songs.SongList.Count >= 1) then
-          begin
-            Party.bPartyGame := true;
-
-            FadeTo(@ScreenPartyOptions, SoundLib.Start);
-          end
-          else //show error message, No Songs Loaded
-            ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
-        end;
-
-        //Jukebox
-        if Interaction = 2 then
-        begin
-          if (Songs.SongList.Count >= 1) then
-          begin
-            FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start);
-          end
-          else //show error message, No Songs Loaded
-            ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
-        end;
-
-        //Stats
-        if Interaction = 3 then
-        begin
-          FadeTo(@ScreenStatMain, SoundLib.Start);
-        end;
-
-        //Editor
-        if Interaction = 4 then
-        begin
-          {$IFDEF UseMIDIPort}
-          FadeTo(@ScreenEdit, SoundLib.Start);
-          {$ELSE}
-          ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_EDITOR'));
-          {$ENDIF}
-        end;
-
-        //Options
-        if Interaction = 5 then
-        begin
-          FadeTo(@ScreenOptions, SoundLib.Start);
-        end;
-
-        //About
-        if Interaction = 6 then
-        begin
-          FadeTo(@ScreenAbout, SoundLib.Start);
-        end;
-
-        //Exit
-        if Interaction = 7 then
-        begin
-          Result := false;
-        end;
-      end;
-      {**
-       * Up and Down could be done at the same time,
-       * but I don't want to declare variables inside
-       * functions like this one, called so many times
-       *}
-      SDLK_DOWN: InteractInc;
-      SDLK_UP: InteractDec;
-      SDLK_RIGHT: InteractNext;
-      SDLK_LEFT: InteractPrev;
-    end;
-  end
-  else // Key Up
-    case PressedKey of
-      SDLK_RETURN:
-      begin
-      end;
-    end;
+  FKeyBindingsInitialized := true;
+  EnsureKeyBindingsPublished;
 end;
 
 function TScreenMain.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 begin
   // default mouse behaviour
   Result := inherited ParseMouse(MouseButton, BtnDown, X, Y);
+end;
+
+function TScreenMain.HandleShowHelp(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  ScreenPopupHelp.ShowPopup;
+end;
+
+function TScreenMain.HandleExitScreen(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  if not PressedDown then
+    Exit(true);
+  Result := false;
+end;
+
+function TScreenMain.HandleShortcutSolo(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  FadeTo(@ScreenName, SoundLib.Start);
+end;
+
+function TScreenMain.HandleShortcutParty(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  if (Ini.Players >= 1) and (Party.ModesAvailable) then
+    FadeTo(@ScreenPartyOptions, SoundLib.Start);
+end;
+
+function TScreenMain.HandleShortcutJukebox(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start);
+end;
+
+function TScreenMain.HandleReloadTheme(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  UGraphic.UnLoadScreens();
+  Theme.LoadTheme(Ini.Theme, Ini.Color);
+  UGraphic.LoadScreens(USDXVersionStr);
+end;
+
+function TScreenMain.HandleShortcutStats(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  FadeTo(@ScreenStatMain, SoundLib.Start);
+end;
+
+function TScreenMain.HandleShortcutEditor(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  FadeTo(@ScreenEdit, SoundLib.Start);
+end;
+
+function TScreenMain.HandleShortcutOptions(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  FadeTo(@ScreenOptions, SoundLib.Start);
+end;
+
+function TScreenMain.HandleShortcutAbout(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  FadeTo(@ScreenAbout, SoundLib.Start);
+end;
+
+function TScreenMain.HandleShortcutCredits(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  FadeTo(@ScreenCredits, SoundLib.Start);
+end;
+
+function TScreenMain.HandleShortcutQuit(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  if not PressedDown then
+    Exit(true);
+  Result := false;
+end;
+
+function TScreenMain.HandleConfirmSelection(PressedKey: QWord;
+  CharCode: UCS4Char; PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+
+  Party.bPartyGame := false;
+
+  case Interaction of
+    0: begin
+         if (Songs.SongList.Count >= 1) then
+         begin
+           if (Ini.Players >= 0) and (Ini.Players <= 3) then
+             PlayersPlay := Ini.Players + 1
+           else if (Ini.Players = 4) then
+             PlayersPlay := 6;
+
+           if Ini.OnSongClick = sSelectPlayer then
+             FadeTo(@ScreenSong)
+           else
+           begin
+             ScreenName.Goto_SingScreen := false;
+             FadeTo(@ScreenName, SoundLib.Start);
+           end;
+         end
+         else
+           ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
+       end;
+
+    1: begin
+         if (Songs.SongList.Count >= 1) then
+         begin
+           Party.bPartyGame := true;
+           FadeTo(@ScreenPartyOptions, SoundLib.Start);
+         end
+         else
+           ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
+       end;
+
+    2: begin
+         if (Songs.SongList.Count >= 1) then
+           FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start)
+         else
+           ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
+       end;
+
+    3: FadeTo(@ScreenStatMain, SoundLib.Start);
+
+    4: begin
+         {$IFDEF UseMIDIPort}
+         FadeTo(@ScreenEdit, SoundLib.Start);
+         {$ELSE}
+         ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_EDITOR'));
+         {$ENDIF}
+       end;
+
+    5: FadeTo(@ScreenOptions, SoundLib.Start);
+    6: FadeTo(@ScreenAbout, SoundLib.Start);
+    7: begin
+         Result := false;
+         Exit;
+       end;
+  end;
+end;
+
+function TScreenMain.HandleNavigateDown(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  InteractInc;
+end;
+
+function TScreenMain.HandleNavigateUp(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  InteractDec;
+end;
+
+function TScreenMain.HandleNavigateRight(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  InteractNext;
+end;
+
+function TScreenMain.HandleNavigateLeft(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+  InteractPrev;
 end;
 
 constructor TScreenMain.Create;
@@ -301,6 +399,7 @@ begin
   AddButton(Theme.Main.ButtonAbout);
   AddButton(Theme.Main.ButtonExit);
 
+  RegisterKeyBindings;
   Interaction := 0;
 
   WantSoftwareRenderingMsg := SoftwareRendering;
@@ -308,6 +407,7 @@ end;
 
 procedure TScreenMain.OnShow;
 begin
+  RegisterKeyBindings;
   inherited;
 
   SoundLib.StartBgMusic;

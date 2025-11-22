@@ -72,8 +72,8 @@ type
       Player16Name: cardinal;
 
       constructor Create; override;
-      function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ShouldHandleInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; override;
+      function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       procedure OnShow; override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
@@ -149,7 +149,7 @@ begin
 
 end;
 
-function TScreenPartyTournamentPlayer.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
+function TScreenPartyTournamentPlayer.ShouldHandleInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
 begin
   Result := inherited;
   // only suppress special keys for now
@@ -167,7 +167,7 @@ begin
   end;
 end;
 
-function TScreenPartyTournamentPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPartyTournamentPlayer.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   SDL_ModState:  word;
   I:  integer;

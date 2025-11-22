@@ -46,8 +46,7 @@ type
   TScreenOptionsSound = class(TMenu)
   public
     constructor Create; override;
-    function ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-      PressedDown: boolean): boolean; override;
+    function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
     procedure OnShow; override;
   end;
 
@@ -63,7 +62,7 @@ uses
   UUnicodeUtils,
   SysUtils;
 
-function TScreenOptionsSound.ParseInput(PressedKey: cardinal;
+function TScreenOptionsSound.ParseInput(PressedKey: QWord;
   CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;

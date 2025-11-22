@@ -171,8 +171,7 @@ type
     procedure OnHide; override;
     function Draw: boolean; override;
 
-    function ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
-      PressedDown: boolean): boolean; override;
+    function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
 
     function FinishedMusic: boolean;
 
@@ -220,7 +219,7 @@ const
 // method for input parsing. if false is returned, getnextwindow
 // should be checked to know the next window to load;
 
-function TScreenSingController.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
+function TScreenSingController.ParseInput(PressedKey: QWord; CharCode: UCS4Char;
   PressedDown: boolean): boolean;
 var
   SDL_ModState: word;

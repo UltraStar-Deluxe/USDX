@@ -84,12 +84,13 @@ type
       procedure DrawDebugConsole;
 
       { Handles parsing of inputs when console is opened. Called from ParseInput }
-      function ConsoleParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
+      function ConsoleParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
        { Handles parsing of inputs when console is opened. Called from ParseMouse }
       function ConsoleParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 
-      { called by MoveCursor and OnMouseButton to update last move and start fade in }
-      procedure UpdateCursorFade;
+    { called by MoveCursor and OnMouseButton to update last move and start fade in }
+    procedure UpdateCursorFade;
+    function GetInputTarget: PMenu;
 
     public
       Cursor_HiddenByScreen: boolean; // hides software cursor and deactivate auto fade in, must be public for access in UMenuButton
@@ -117,13 +118,17 @@ type
 
       // TODO rewrite ParseInput to include handling/suppressing input as return, use KeepGoing as by-reference
       { checks if display is handling the passed key in ParseInput. calls HandleInput of cur or next Screen if assigned }
-      function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean;
+      function ShouldHandleInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean;
 
       { calls ParseInput of cur or next Screen if assigned }
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
+      function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 
       { calls ParseMouse of cur or next Screen if assigned }
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+
+      { resolves the active screen's keyboard context }
+      function GetActiveKeyBindingContext: UTF8String;
+      function TranslateKeyForActiveScreen(PressedKey: QWord; ModState: word): cardinal;
 
       { sets SDL_ShowCursor depending on options set in Ini }
       procedure SetCursor;
@@ -182,6 +187,7 @@ uses
   UTexture,
   UTime,
   ULanguage,
+  UKeyBindings,
   UPathUtils;
 
 constructor TDisplay.Create;
@@ -641,7 +647,41 @@ begin
   end;
 end;
 
-function TDisplay.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean;
+    function TDisplay.GetInputTarget: PMenu;
+    begin
+      if assigned(NextScreen) then
+        Result := NextScreen
+      else
+        Result := CurrentScreen;
+    end;
+
+    function TDisplay.GetActiveKeyBindingContext: UTF8String;
+    var
+      Target: PMenu;
+    begin
+      Target := GetInputTarget;
+      if Target <> nil then
+        Result := Target^.GetKeyBindingContext
+      else
+        Result := '';
+    end;
+
+    function TDisplay.TranslateKeyForActiveScreen(PressedKey: QWord; ModState: word): cardinal;
+    var
+      ContextId: UTF8String;
+    begin
+      Result := PressedKey;
+      if KeyBindings = nil then
+        Exit;
+
+      ContextId := GetActiveKeyBindingContext;
+      if ContextId = '' then
+        Exit;
+
+      Result := KeyBindings.TranslateKey(ContextId, ModState, PressedKey);
+    end;
+
+function TDisplay.ShouldHandleInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean;
 begin
   if Console_Draw then
   begin
@@ -658,7 +698,7 @@ begin
     Result := True;
 end;
 
-function TDisplay.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
+function TDisplay.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   if Console_Draw and ConsoleParseInput(PressedKey, CharCode, PressedDown) then Exit;
 
@@ -851,7 +891,7 @@ begin
   Console_ScrollOffset := 0;
 end;
 
-function TDisplay.ConsoleParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
+function TDisplay.ConsoleParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   SDL_ModState:  word;
 begin

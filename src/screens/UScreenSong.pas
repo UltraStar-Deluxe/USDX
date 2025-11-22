@@ -245,7 +245,7 @@ type
       procedure SetSlideScrollRefresh;
       procedure SetListScrollRefresh;
 
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
 
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       function ParseMouseRoulette(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
@@ -314,11 +314,11 @@ type
       procedure StopMusicPreview();
       procedure StopVideoPreview();
 
-      procedure ParseInputNextHorizontal(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
-      procedure ParseInputPrevHorizontal(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
+      procedure ParseInputNextHorizontal(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
+      procedure ParseInputPrevHorizontal(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 
-      procedure ParseInputNextVertical(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
-      procedure ParseInputPrevVertical(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
+      procedure ParseInputNextVertical(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
+      procedure ParseInputPrevVertical(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 
       procedure ResetScrollList;
   end;
@@ -432,7 +432,7 @@ begin
 
 end;
 
-procedure TScreenSong.ParseInputNextHorizontal(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
+procedure TScreenSong.ParseInputNextHorizontal(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 var
   SDL_ModState: word;
 begin
@@ -470,7 +470,7 @@ begin
   end;
 end;
 
-procedure TScreenSong.ParseInputPrevHorizontal(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
+procedure TScreenSong.ParseInputPrevHorizontal(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 var
   SDL_ModState: word;
 begin
@@ -508,7 +508,7 @@ begin
   end;
 end;
 
-procedure TScreenSong.ParseInputNextVertical(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
+procedure TScreenSong.ParseInputNextVertical(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 var
   I: integer;
 begin
@@ -572,7 +572,7 @@ begin
   end;
 end;
 
-procedure TScreenSong.ParseInputPrevVertical(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
+procedure TScreenSong.ParseInputPrevVertical(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 var
   I, I2: integer;
 begin
@@ -641,7 +641,7 @@ end;
 
 // Method for input parsing. If false is returned, GetNextWindow
 // should be checked to know the next window to load;
-function TScreenSong.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenSong.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   I:      integer;
   I2:     integer;

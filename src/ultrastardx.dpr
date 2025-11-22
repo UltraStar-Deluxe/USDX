@@ -220,6 +220,7 @@ uses
   UFilesystem       in 'base\UFilesystem.pas',
 
   UHelp             in 'base\UHelp.pas',
+  UKeyBindings      in 'base\UKeyBindings.pas',
 
   //------------------------------
   //Includes - Plugin Support

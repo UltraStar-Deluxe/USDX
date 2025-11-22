@@ -219,8 +219,7 @@ type
     procedure OnShowFinish; override;
     procedure OnHide; override;
 
-    function ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
-      PressedDown: boolean): boolean; override;
+    function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
     function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; override;
 
     function Draw: boolean; override;
@@ -1331,7 +1330,7 @@ end;
 // method for input parsing. if false is returned, getnextwindow
 // should be checked to know the next window to load;
 
-function TScreenJukebox.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
+function TScreenJukebox.ParseInput(PressedKey: QWord; CharCode: UCS4Char;
   PressedDown: boolean): boolean;
 var
   SDL_ModState: word;
