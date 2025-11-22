@@ -38,7 +38,8 @@ uses
   UThemes,
   sdl2,
   UGraphicClasses,
-  UIni;
+  UIni,
+  UTexture;
 
 procedure SingDraw;
 procedure SingDrawLines;
@@ -80,6 +81,22 @@ type
     Mid:    real;
   end;
 
+  PNoteTextureBundle = ^TNoteTextureBundle;
+  TNoteTextureBundle = record
+    NoteLeft:      TTexture;
+    NoteMid:       TTexture;
+    NoteRight:     TTexture;
+    RapLeft:       TTexture;
+    RapMid:        TTexture;
+    RapRight:      TTexture;
+    NoteLeftInv:   TTexture;
+    NoteMidInv:    TTexture;
+    NoteRightInv:  TTexture;
+    RapLeftInv:    TTexture;
+    RapMidInv:     TTexture;
+    RapRightInv:   TTexture;
+  end;
+procedure SetEditNoteTextures(const Textures: PNoteTextureBundle);
 const
 P1_INVERTED = 99;
 
@@ -88,6 +105,8 @@ var
   NotesH:   array [0..UIni.IMaxPlayerCount-1] of real;
   Starfr:   integer;
   StarfrG:  integer;
+
+  GEditNoteTextures: PNoteTextureBundle = nil;
 
   //SingBar
   TickOld:  cardinal;
@@ -115,8 +134,12 @@ uses
   UScreenSingController,
   UScreenJukebox,
   USong,
-  UTexture,
   UWebcam;
+
+procedure SetEditNoteTextures(const Textures: PNoteTextureBundle);
+begin
+  GEditNoteTextures := Textures;
+end;
 
 
 procedure SingDrawWebCamFrame;
@@ -1630,6 +1653,8 @@ var
   TempR: real;
   GoldenStarPos: real;
   Space: real;
+  Bundle: PNoteTextureBundle;
+  TexNum: GLuint;
 begin
   Space := H / (NumLines - 1);
   glColor3f(1, 1, 1);
@@ -1639,6 +1664,8 @@ begin
 
   if not CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].HasLength(TempR) then TempR := 0
   else TempR := W / TempR;
+
+  Bundle := GEditNoteTextures;
 
   with CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine] do
   begin
@@ -1663,17 +1690,39 @@ begin
         Rec.Bottom := Rec.Top + 2 * NotesH[0];
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
-          If Color = P1_INVERTED then
-            glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap_Inv.TexNum)
+          if Assigned(Bundle) then
+          begin
+            if Color = P1_INVERTED then
+              TexNum := Bundle^.RapLeftInv.TexNum
+            else
+              TexNum := Bundle^.RapLeft.TexNum;
+            glBindTexture(GL_TEXTURE_2D, TexNum);
+          end
           else
-            glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap[Color].TexNum)
+          begin
+            If Color = P1_INVERTED then
+              glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap_Inv.TexNum)
+            else
+              glBindTexture(GL_TEXTURE_2D, Tex_Left_Rap[Color].TexNum)
+          end
         end
         else
         begin
-          If Color = P1_INVERTED then
-            glBindTexture(GL_TEXTURE_2D, Tex_Left_Inv.TexNum)
+          if Assigned(Bundle) then
+          begin
+            if Color = P1_INVERTED then
+              TexNum := Bundle^.NoteLeftInv.TexNum
+            else
+              TexNum := Bundle^.NoteLeft.TexNum;
+            glBindTexture(GL_TEXTURE_2D, TexNum);
+          end
           else
-            glBindTexture(GL_TEXTURE_2D, Tex_Left[Color].TexNum)
+          begin
+            If Color = P1_INVERTED then
+              glBindTexture(GL_TEXTURE_2D, Tex_Left_Inv.TexNum)
+            else
+              glBindTexture(GL_TEXTURE_2D, Tex_Left[Color].TexNum)
+          end;
         end;
         glBegin(GL_QUADS);
           glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
@@ -1689,17 +1738,39 @@ begin
 
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
-          If Color = P1_INVERTED then
-            glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap_Inv.TexNum)
+          if Assigned(Bundle) then
+          begin
+            if Color = P1_INVERTED then
+              TexNum := Bundle^.RapMidInv.TexNum
+            else
+              TexNum := Bundle^.RapMid.TexNum;
+            glBindTexture(GL_TEXTURE_2D, TexNum);
+          end
           else
-            glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap[Color].TexNum)
+          begin
+            If Color = P1_INVERTED then
+              glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap_Inv.TexNum)
+            else
+              glBindTexture(GL_TEXTURE_2D, Tex_Mid_Rap[Color].TexNum)
+          end
         end
         else
         begin
-          If Color = P1_INVERTED then
-            glBindTexture(GL_TEXTURE_2D, Tex_Mid_Inv.TexNum)
+          if Assigned(Bundle) then
+          begin
+            if Color = P1_INVERTED then
+              TexNum := Bundle^.NoteMidInv.TexNum
+            else
+              TexNum := Bundle^.NoteMid.TexNum;
+            glBindTexture(GL_TEXTURE_2D, TexNum);
+          end
           else
-            glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum)
+          begin
+            If Color = P1_INVERTED then
+              glBindTexture(GL_TEXTURE_2D, Tex_Mid_Inv.TexNum)
+            else
+              glBindTexture(GL_TEXTURE_2D, Tex_Mid[Color].TexNum)
+          end;
         end;
         glBegin(GL_QUADS);
           glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
@@ -1714,19 +1785,41 @@ begin
 
         If (NoteType = ntRap) or (NoteType = ntRapGolden) then
         begin
-          If Color = P1_INVERTED then
-            glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap_Inv.TexNum)
+          if Assigned(Bundle) then
+          begin
+            if Color = P1_INVERTED then
+              TexNum := Bundle^.RapRightInv.TexNum
+            else
+              TexNum := Bundle^.RapRight.TexNum;
+            glBindTexture(GL_TEXTURE_2D, TexNum);
+          end
           else
-            glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap[Color].TexNum)
+          begin
+            If Color = P1_INVERTED then
+              glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap_Inv.TexNum)
+            else
+              glBindTexture(GL_TEXTURE_2D, Tex_Right_Rap[Color].TexNum)
+          end
         end
         else
         begin
-          If Color = P1_INVERTED then
+          if Assigned(Bundle) then
           begin
-            glBindTexture(GL_TEXTURE_2D, Tex_Right_Inv.TexNum);
+            if Color = P1_INVERTED then
+              TexNum := Bundle^.NoteRightInv.TexNum
+            else
+              TexNum := Bundle^.NoteRight.TexNum;
+            glBindTexture(GL_TEXTURE_2D, TexNum);
           end
           else
-            glBindTexture(GL_TEXTURE_2D, Tex_Right[Color].TexNum)
+          begin
+            If Color = P1_INVERTED then
+            begin
+              glBindTexture(GL_TEXTURE_2D, Tex_Right_Inv.TexNum);
+            end
+            else
+              glBindTexture(GL_TEXTURE_2D, Tex_Right[Color].TexNum)
+          end;
         end;
         glBegin(GL_QUADS);
           glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
