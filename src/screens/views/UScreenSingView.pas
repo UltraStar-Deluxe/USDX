@@ -880,6 +880,7 @@ begin
   ScreenSing.Text[TextTimeText].Text := Format('%s%.2d:%.2d', [DisplayPrefix, DisplayMin, DisplaySec]);
   ScreenSing.Text[TextTimeText].Visible := ScreenSing.Settings.TimeBarVisible;
 
+  LastLineSungToEnd := false;
   //the song was sung to the end?
   if not (ScreenSing.SungToEnd) and not(CurrentSong.isDuet) and not(ScreenSong.RapToFreestyle) then
   begin
