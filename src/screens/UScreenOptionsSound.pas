@@ -47,7 +47,7 @@ type
   public
     constructor Create; override;
     function ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-      PressedDown: boolean): boolean; override;
+      PressedDown: boolean; Repeated: boolean = false): boolean; override;
     procedure OnShow; override;
   end;
 
@@ -64,7 +64,7 @@ uses
   SysUtils;
 
 function TScreenOptionsSound.ParseInput(PressedKey: cardinal;
-  CharCode: UCS4Char; PressedDown: boolean): boolean;
+  CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if (PressedDown) then
