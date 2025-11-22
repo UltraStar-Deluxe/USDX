@@ -14,6 +14,15 @@ uses
   IniFiles,
   sdl2;
 
+// High-bit modifier constants for packed key
+const
+  MOD_LSHIFT  = QWord(KMOD_LSHIFT) shl 32;
+  MOD_RSHIFT  = QWord(KMOD_RSHIFT) shl 32;
+  MOD_LCTRL   = QWord(KMOD_LCTRL)  shl 32;
+  MOD_RCTRL   = QWord(KMOD_RCTRL)  shl 32;
+  MOD_LALT    = QWord(KMOD_LALT)   shl 32;
+  MOD_RALT    = QWord(KMOD_RALT)   shl 32;
+
 type
   TKeyBindingHandle = type integer;
 
@@ -91,7 +100,7 @@ type
       ModifierMask: word; DefaultInput, OutputKey: cardinal): TKeyBindingHandle;
 
     function TranslateKey(const ContextId: UTF8String; ModState: word;
-      PressedKey: cardinal): cardinal;
+      PressedKey: QWord): cardinal;
 
     procedure UpdateBinding(Handle: TKeyBindingHandle; NewInput: cardinal);
     procedure ResetBinding(Handle: TKeyBindingHandle);
@@ -466,7 +475,7 @@ begin
 end;
 
 function TKeyBindingRegistry.TranslateKey(const ContextId: UTF8String; ModState: word;
-  PressedKey: cardinal): cardinal;
+  PressedKey: QWord): cardinal;
 var
   ContextIdx: integer;
   I: integer;

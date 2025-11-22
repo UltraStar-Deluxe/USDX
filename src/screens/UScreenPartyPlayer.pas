@@ -78,8 +78,8 @@ type
       Player12Name: cardinal;
 
       constructor Create; override;
-      function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ShouldHandleInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; override;
+      function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       procedure OnShow; override;
       
@@ -220,7 +220,7 @@ begin
   end;
 end;
 
-function TScreenPartyPlayer.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
+function TScreenPartyPlayer.ShouldHandleInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
 begin
   Result := inherited;
   // only suppress special keys for now
@@ -238,7 +238,7 @@ begin
   end;
 end;
 
-function TScreenPartyPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPartyPlayer.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
   var
     SDL_ModState:  word;
     Team: integer;

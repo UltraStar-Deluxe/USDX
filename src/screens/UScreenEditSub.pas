@@ -350,47 +350,30 @@ type
       MedleyNotes:             TMedleyNotes;
 
       procedure ChangeBPM(newBPM: real);
-      procedure HandleSaveSong(SDL_ModState: word);
-      procedure SetPreviewStart(SDL_ModState: word);
-      procedure SetMedleyTags(SDL_ModState: word);
-      procedure Jump(SDL_ModState: word);
-      procedure ReloadSong(SDL_ModState: word);
-      procedure HandleDivideBPM(SDL_ModState: word);
-      procedure HandleMultiplyBPM(SDL_ModState: word);
-      procedure HandleVideo(SDL_ModState: word);
-      procedure HandlePaste(SDL_ModState: word);
-      procedure HandleFixTimings(SDL_ModState: word);
-      procedure HandleBPMIncrease(SDL_ModState: word);
-      procedure HandleBPMDecrease(SDL_ModState: word);
-      procedure HandleExtendedCopyPaste(SDL_ModState: word; PressedKey: Integer);
-      procedure HandleMoveTextRight(SDL_ModState: word);
-      procedure HandleMoveRight(SDL_ModState: word);
-      procedure HandleMoveLeft(SDL_ModState: word);
-      procedure HandleDownKey(SDL_ModState: word);
-      procedure HandleUpKey(SDL_ModState: word);
-      procedure EnterTextEditMode(SDL_ModState: word);
-      procedure EnterBPMEditMode(SDL_ModState: word);
-      procedure EnterPianoEditMode(SDL_ModState: word);
-      procedure ToggleTextEditMode(SDL_ModState: word);
-      procedure HandlePlaySentence(SDL_ModState: word);
-      procedure PlayNote(SDL_ModState: word);
-      procedure IncreaseNoteLength(SDL_ModState: word);
-      procedure CapitalizeLyrics(SDL_ModState: word);
-      procedure Undo(SDL_ModState: word);
-      procedure LeaveScope(SDL_ModState: word);
-      procedure IncreaseAllNoteTones(SDL_ModState: word);
-      procedure DecreaseAllNoteTones(SDL_ModState: word);
-      procedure DivideOrJoinNotes(SDL_ModState: word);
-      procedure DeleteNotes(SDL_ModState: word);
-      procedure IncreaseGAP(SDL_ModState: word);
-      procedure DecreaseGAP(SDL_ModState: word);
-      procedure DecreaseVideoGap(SDL_ModState: word);
-      procedure IncreaseVideoGap(SDL_ModState: word);
-      procedure SetFreestyleNote(SDL_ModState: word);
-      procedure SetGoldenNote(SDL_ModState: word);
-      procedure ShowPopupHelp(SDL_ModState: word);
-      procedure ToggleDuet(SDL_ModState: word);
+      procedure HandleSaveSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
+      procedure SetPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
+      procedure ShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
+      procedure ToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
       procedure RegisterKeyBindings;
+      // Keybinding handlers for new pipeline
+      function HandleSaveSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleSetPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function SetMedleyTags(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleJump(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleReloadSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleDivideBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleMultiplyBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleCapitalizeLyrics(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleVideo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandlePaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleFixTimings(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandlePlaySentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleSetGoldenNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleSetFreestyleNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleUndo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleLeaveScope(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       procedure DivideBPM;
       procedure MultiplyBPM;
       procedure LyricsCapitalize;
@@ -439,10 +422,10 @@ type
       constructor Create; override;
       destructor Destroy; override;
       procedure OnShow; override;
-      function  ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
-      function  ParseInputEditText(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
-      function  ParseInputEditBPM(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
-      function  ParseInputEditPiano(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+  function  ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
+  function  ParseInputEditText(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
+  function  ParseInputEditBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
+  function  ParseInputEditPiano(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
       procedure ApplyTone(NewTone: Integer);
       function  ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean; override;
       function  Draw: boolean; override;
@@ -452,6 +435,8 @@ type
 
 const
   ID='ID_064';   //for help system
+  SelectAudio = 1;
+  SelectMIDI = 2;
 
 implementation
 
@@ -518,14 +503,9 @@ end;
 
 // Method for input parsing. If false is returned, GetNextWindow
 // should be checked to know the next window to load;
-function TScreenEditSub.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
-var
-  SDL_ModState: word;
+function TScreenEditSub.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-
-  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
-    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT {+ KMOD_CAPS});
 
   if PianoEditMode then
   begin
@@ -566,58 +546,13 @@ begin
     // check normal keys
     case PressedKey of
       SDLK_Q: Result := false;
-      SDLK_S: HandleSaveSong(SDL_ModState);
-      SDLK_I: SetPreviewStart(SDL_ModState);
-      SDLK_A: SetMedleyTags(SDL_ModState);
-      SDLK_J: Jump(SDL_ModState);
-      SDLK_R: ReloadSong(SDL_ModState);
-      SDLK_D:
-        begin
-          if (SDL_ModState = KMOD_LSHIFT) then HandleDivideBPM(SDL_ModState);
-          if (SDL_ModState = KMOD_LCTRL or KMOD_LSHIFT) then ToggleDuet(SDL_ModState);
-        end;
-      SDLK_M: HandleMultiplyBPM(SDL_ModState);
-      SDLK_C: CapitalizeLyrics(SDL_ModState);
-      SDLK_V:
-        if (SDL_ModState = 0) or (SDL_ModState = KMOD_LALT) then HandleVideo(SDL_ModState)
-        else HandlePaste(SDL_ModState);
-      SDLK_T: HandleFixTimings(SDL_ModState);
-      SDLK_P: HandlePlaySentence(SDL_ModState);
-      SDLK_G: SetGoldenNote(SDL_ModState);
-      SDLK_F: SetFreestyleNote(SDL_ModState);
-      SDLK_Z: Undo(SDL_ModState);
-      SDLK_ESCAPE: LeaveScope(SDL_ModState);
-      SDLK_TAB: ShowPopupHelp(SDL_ModState);
-      SDLK_BACKQUOTE: IncreaseNoteLength(SDL_ModState);
-      SDLK_EQUALS, // for keyboards which produce the EQUALS symbol without SHIFT modifier
-        SDLK_PLUS: HandleBPMIncrease(SDL_ModState); // for keyboards which produce the PLUS symbol without SHIFT modifier
-      SDLK_MINUS: HandleBPMDecrease(SDL_ModState);
-      SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_6: HandleExtendedCopyPaste(SDL_ModState, PressedKey);
-      SDLK_7: DecreaseVideoGap(SDL_ModState);
-      SDLK_8: IncreaseVideoGap(SDL_ModState);
-      SDLK_9: DecreaseGAP(SDL_ModState);
-      SDLK_0: IncreaseGAP(SDL_ModState);
-      SDLK_KP_PLUS: IncreaseAllNoteTones(SDL_ModState);
-      SDLK_KP_MINUS: DecreaseAllNoteTones(SDL_ModState);
-      SDLK_SLASH, SDLK_HASH, SDLK_KP_DIVIDE: DivideOrJoinNotes(SDL_ModState);
-      SDLK_F4: EnterTextEditMode(SDL_ModState);
-      SDLK_F5: EnterBPMEditMode(SDL_ModState);
-      SDLK_F6: EnterPianoEditMode(SDL_ModState);
-      SDLK_SPACE: PlayNote(SDL_ModState);
-      SDLK_RETURN: ToggleTextEditMode(SDL_ModState);
-      SDLK_DELETE: DeleteNotes(SDL_ModState);
-      SDLK_PERIOD: HandleMoveTextRight(SDL_ModState);
-      SDLK_RIGHT: HandleMoveRight(SDL_ModState);
-      SDLK_LEFT: HandleMoveLeft(SDL_ModState);
-      SDLK_DOWN: HandleDownKey(SDL_ModState);
-      SDLK_UP: HandleUpKey(SDL_ModState);
       end; // case
     end;
   end; // if
 end;
 
       // SDLK_S: HandleSaveSong
-procedure TScreenEditSub.HandleSaveSong(SDL_ModState: word);
+procedure TScreenEditSub.HandleSaveSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 var
   SResult: TSaveSongResult;
 begin
@@ -648,7 +583,7 @@ begin
   end;
 
   // Save Song (SHIFT = relative)
-  if SDL_ModState = KMOD_LSHIFT then
+  if PressedKey and MOD_LSHIFT <> 0 then
   begin
     if (CurrentSong.isDuet) then
     begin
@@ -690,7 +625,7 @@ end;
 
 
       // SDLK_I: SetPreviewStart
-procedure TScreenEditSub.SetPreviewStart(SDL_ModState: word);
+procedure TScreenEditSub.SetPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 // set PreviewStart tag
 var
   LineIndex: Integer;
@@ -784,7 +719,7 @@ begin
 end;
 
       // SDLK_A: SetMedleyTags
-procedure TScreenEditSub.SetMedleyTags(SDL_ModState: word);
+procedure TScreenEditSub.SetMedleyTags(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 // set Medley tags
 begin
   CopyToUndo;
@@ -884,10 +819,11 @@ begin
 end;
 
       // SDLK_J: Jump
-procedure TScreenEditSub.Jump(SDL_ModState: word);
+procedure TScreenEditSub.Jump(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer);
 // jump to Medley tags
 var
   R: real;
+  SelectedLine: Integer;
 begin
   if CurrentSong.Relative then
   begin
@@ -901,90 +837,91 @@ begin
     Exit;
   end;
 
-  //Medley End Note
-  if (SDL_ModState = KMOD_LSHIFT) then
+  if EndNote = 1 then
   begin
-    if (MedleyNotes.IsEnd) then
+    if not MedleyNotes.isEnd then
     begin
-      // simulate sentence switch to clear props
-      PreviousSentence;
-
-      if (Length(Tracks[CurrentTrack].Lines) > MedleyNotes.end_.line) and
-          (Length(Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes) > MedleyNotes.end_.note) then
-      begin
-        Tracks[CurrentTrack].CurrentLine := MedleyNotes.end_.line;
-        CurrentNote[CurrentTrack] := MedleyNotes.end_.note;
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
-
-        EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-        EditorLyrics[CurrentTrack].Selected := 0;
-        Text[TextInfo].Text := Language.Translate('EDIT_INFO_JUMPTO_MEDLEY_END') + ' (' + Language.Translate('EDIT_DURATION') + ' ' + FloatToStr(GetMedleyLength) + ' s)';
-      end;
-    end
-    else
       Text[TextInfo].Text := Language.Translate('EDIT_INFO_NO_MEDLEY_END');
-  end;
-
-  if (SDL_ModState = 0) then
+      Exit;
+    end;
+    SelectedLine := MedleyNotes.end_;
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_JUMPTO_MEDLEY_END') + ' (' + Language.Translate('EDIT_DURATION') + ' ' + FloatToStr(GetMedleyLength) + ' s)';
+  end
+  else
   begin
-    if (MedleyNotes.IsStart) then
+    if not MedleyNotes.isStart then
     begin
-      // simulate sentence switch to clear props
-      PreviousSentence;
-
-      if (Length(Tracks[CurrentTrack].Lines)> MedleyNotes.start.line) and
-          (Length(Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes) > MedleyNotes.start.note) then
-      begin
-        Tracks[CurrentTrack].CurrentLine := MedleyNotes.start.line;
-        CurrentNote[CurrentTrack] := MedleyNotes.start.note;
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
-
-        EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-        EditorLyrics[CurrentTrack].Selected := 0;
-        Text[TextInfo].Text := Language.Translate('EDIT_INFO_JUMPTO_MEDLEY_START') + ' (' + Language.Translate('EDIT_DURATION') + ' ' + FloatToStr(GetMedleyLength) + ' s)';
-      end;
-    end
-    else
       Text[TextInfo].Text := Language.Translate('EDIT_INFO_NO_MEDLEY_START');
+      Exit;
+    end;
+    SelectedLine := MedleyNotes.start;
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_JUMPTO_MEDLEY_START') + ' (' + Language.Translate('EDIT_DURATION') + ' ' + FloatToStr(GetMedleyLength) + ' s)';
   end;
+  
+  // simulate sentence switch to clear props
+  PreviousSentence;
 
-  if (SDL_ModState = KMOD_LALT) then
+  if (Length(Tracks[CurrentTrack].Lines) > SelectedLine.line) and
+      (Length(Tracks[CurrentTrack].Lines[SelectedLine.line].Notes) > SelectedLine.note) then
   begin
-    Writeln('ALT+J');
-    // simulate sentence switch to clear props
-    PreviousSentence;
+    Tracks[CurrentTrack].CurrentLine := SelectedLine.line;
+    CurrentNote[CurrentTrack] := SelectedLine.note;
+    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
 
-    if (MedleyNotes.isStart and MedleyNotes.isEnd) and
-      (MedleyNotes.start.line < MedleyNotes.end_.line) and
-      (Length(Tracks[CurrentTrack].Lines) > MedleyNotes.end_.line) and
-      (Length(Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes) > MedleyNotes.end_.note) and
-      (Length(Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes) > MedleyNotes.start.note) then
-    begin
-      R := GetTimeFromBeat(Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes[MedleyNotes.start.note].StartBeat);
-      if InRange(R, 0.0, AudioPlayback.Length) then
-      begin
-        AudioPlayback.Position:= R;
-        PlayStopTime := GetTimeFromBeat(
-          Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].StartBeat +
-          Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].Duration);
-        PlaySentence := true;
-        Click := false;
-        AudioPlayback.Play;
+    EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
+    EditorLyrics[CurrentTrack].Selected := 0;
+  end;
+end;
 
-        // play video in sync if visible
-        if (fCurrentVideo <> nil) then UpdateVideoPosition(AudioPlayback.Position);
-        Text[TextInfo].Text := Language.Translate('EDIT_INFO_JUMPTO_MEDLEY_AND_PLAY');
-      end;
-    end
-    else
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_NO_MEDLEY_SECTION');
+procedure TScreenEditSub.JumpAndPlay(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer);
+// jump to Medley tags
+var
+  R: real;
+  SelectedLine: Integer;
+begin
+  if CurrentSong.Relative then
+  begin
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_MEDLEY_RELATIVE_UNSUPPORTED');
+    Exit;
   end;
 
-  Exit;
+  if CurrentSong.isDuet then
+  begin
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_MEDLEY_DUET_UNSUPPORTED');
+    Exit;
+  end;
+
+  // simulate sentence switch to clear props
+  PreviousSentence;
+
+  if (MedleyNotes.isStart and MedleyNotes.isEnd) and
+    (MedleyNotes.start.line < MedleyNotes.end_.line) and
+    (Length(Tracks[CurrentTrack].Lines) > MedleyNotes.end_.line) and
+    (Length(Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes) > MedleyNotes.end_.note) and
+    (Length(Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes) > MedleyNotes.start.note) then
+  begin
+    R := GetTimeFromBeat(Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes[MedleyNotes.start.note].StartBeat);
+    if InRange(R, 0.0, AudioPlayback.Length) then
+    begin
+      AudioPlayback.Position:= R;
+      PlayStopTime := GetTimeFromBeat(
+        Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].StartBeat +
+        Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].Duration);
+      PlaySentence := true;
+      Click := false;
+      AudioPlayback.Play;
+
+      // play video in sync if visible
+      if (fCurrentVideo <> nil) then UpdateVideoPosition(AudioPlayback.Position);
+      Text[TextInfo].Text := Language.Translate('EDIT_INFO_JUMPTO_MEDLEY_AND_PLAY');
+    end;
+  end
+  else
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_NO_MEDLEY_SECTION');
 end;
 
       // SDLK_R: ReloadSong
-procedure TScreenEditSub.ReloadSong(SDL_ModState: word);
+procedure TScreenEditSub.ReloadSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 //reload
 begin
   AudioPlayback.Stop;
@@ -998,243 +935,129 @@ begin
 end;
 
       // SDLK_D: HandleDivideBPM; or ToggleDuet;
-procedure TScreenEditSub.HandleDivideBPM(SDL_ModState: word);
+procedure TScreenEditSub.HandleDivideBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // Divide lengths by 2
-  if (SDL_ModState = KMOD_LSHIFT) then
-  begin
-    CopyToUndo;
-    DivideBPM;
-    ShowInteractiveBackground;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_DIVIDED_BPM');
-    Exit;
-  end;
+  CopyToUndo;
+  DivideBPM;
+  ShowInteractiveBackground;
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_DIVIDED_BPM');
+  Exit;
 end;
 
-procedure TScreenEditSub.ToggleDuet(SDL_ModState: word);
+procedure TScreenEditSub.ToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
-  // create duet or convert duet to normal song
-  if (SDL_ModState = KMOD_LCTRL or KMOD_LSHIFT) then
-  begin
-    if (CurrentSong.isDuet) then
-    begin
-      MakeSolo;
-      FixTimings;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_CONVERTED_TO_SOLO');
-    end
-    else
-    begin
-      MakeDuet;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_CONVERTED_TO_DUET');
-    end;
-  end;
+  if (CurrentSong.isDuet) then
+    MakeSolo
+  else
+    MakeDuet;
 end;
+
 
 procedure TScreenEditSub.RegisterKeyBindings;
-const
-  CONTEXT_ID = 'ID_064';
-
-  function ComposeMask(const Shift, Ctrl, Alt: boolean): word;
-  var
-    Mask: word;
-  begin
-    Mask := 0;
-    if Shift then
-      Mask := Mask or KMOD_SHIFT;
-    if Ctrl then
-      Mask := Mask or KMOD_CTRL;
-    if Alt then
-      Mask := Mask or KMOD_ALT;
-    Result := Mask;
-  end;
-
-  procedure AddBinding(const Category, Token: UTF8String;
-    Shift, Ctrl, Alt: boolean; DefaultKey, OutputKey: cardinal);
-  begin
-    if KeyBindings = nil then
-      Exit;
-    KeyBindings.RegisterBinding(CONTEXT_ID, Category, Token,
-      ComposeMask(Shift, Ctrl, Alt), DefaultKey, OutputKey);
-  end;
-
 begin
-  if FKeyBindingsInitialized or (KeyBindings = nil) then
+  if FKeyBindingsInitialized then
     Exit;
 
-  // General
-  AddBinding('SEC_001', 'TAB', false, false, false, SDLK_TAB, SDLK_TAB);
-  AddBinding('SEC_001', 'ESC', false, false, false, SDLK_ESCAPE, SDLK_ESCAPE);
-  AddBinding('SEC_001', 'Q', false, false, false, SDLK_Q, SDLK_Q);
-  AddBinding('SEC_001', 'EDIT_INFO_UNDO', false, true, false, SDLK_Z, SDLK_Z);
+  ClearKeyBindings;
 
-  // Save
-  AddBinding('SEC_010', 'R', false, false, false, SDLK_R, SDLK_R);
-  AddBinding('SEC_010', 'S', false, false, false, SDLK_S, SDLK_S);
-  AddBinding('SEC_010', 'SHIFT_S', true, false, false, SDLK_S, SDLK_S);
 
-  // Basic Navigation
-  AddBinding('SEC_020', 'UPDOWN', false, false, false, SDLK_UP, SDLK_UP);
-  AddBinding('SEC_020', 'UPDOWN', false, false, false, SDLK_DOWN, SDLK_DOWN);
-  AddBinding('SEC_020', 'LEFTRIGHT', false, false, false, SDLK_LEFT, SDLK_LEFT);
-  AddBinding('SEC_020', 'LEFTRIGHT', false, false, false, SDLK_RIGHT, SDLK_RIGHT);
+  // Register all keybinding handler functions
+  RegisterKeyBinding('SEC_001', 'TAB', SDLK_TAB, @HandleShowPopupHelp);
+  RegisterKeyBinding('SEC_001', 'ESC', SDLK_ESCAPE, @HandleLeaveScope);
+  RegisterKeyBinding('SEC_001', 'Q', SDLK_Q);
+  RegisterKeyBinding('SEC_001', 'EDIT_INFO_UNDO', SDLK_Z + MOD_LCTRL, @HandleUndo);
 
-  // Playback
-  AddBinding('SEC_030', 'PAGEUPDOWN', false, false, false, SDLK_PAGEUP, SDLK_PAGEUP);
-  AddBinding('SEC_030', 'PAGEUPDOWN', false, false, false, SDLK_PAGEDOWN, SDLK_PAGEDOWN);
-  AddBinding('SEC_030', 'SPACE', false, false, false, SDLK_SPACE, SDLK_SPACE);
-  AddBinding('SEC_030', 'SHIFT_SPACE', true, false, false, SDLK_SPACE, SDLK_SPACE);
-  AddBinding('SEC_030', 'CTRL_SHIFT_SPACE', true, true, false, SDLK_SPACE, SDLK_SPACE);
-  AddBinding('SEC_030', 'P', false, false, false, SDLK_P, SDLK_P);
-  AddBinding('SEC_030', 'SHIFT_P', true, false, false, SDLK_P, SDLK_P);
-  AddBinding('SEC_030', 'CTRL_SHIFT_P', true, true, false, SDLK_P, SDLK_P);
-  AddBinding('SEC_030', 'ALT_P', false, false, true, SDLK_P, SDLK_P);
-  AddBinding('SEC_030', 'SHIFT_ALT_P', true, false, true, SDLK_P, SDLK_P);
-  AddBinding('SEC_030', 'CTRL_SHIFT_ALT_P', true, true, true, SDLK_P, SDLK_P);
-  AddBinding('SEC_030', 'V', false, false, false, SDLK_V, SDLK_V);
-  AddBinding('SEC_030', 'SHIFT_V', true, false, false, SDLK_V, SDLK_V);
+  RegisterKeyBinding('SEC_010', 'R', SDLK_R, @HandleReloadSong);
+  RegisterKeyBinding('SEC_010', 'S', SDLK_S, @HandleSaveSong);
+  RegisterKeyBinding('SEC_010', 'SHIFT_S', SDLK_S + MOD_LSHIFT, @HandleSaveSong);
 
-  // Note Type
-  AddBinding('SEC_040', 'G', false, false, false, SDLK_G, SDLK_G);
-  AddBinding('SEC_040', 'F', false, false, false, SDLK_F, SDLK_F);
+  RegisterKeyBinding('SEC_050', 'I', SDLK_I, @HandleSetPreviewStart);
+  RegisterKeyBinding('SEC_060', 'A', SDLK_A, @HandleSetMedleyTags);
+  RegisterKeyBinding('SEC_060', 'J', SDLK_J, @HandleJump, 0);
+  RegisterKeyBinding('SEC_060', 'SHIFT_J', SDLK_J + MOD_LSHIFT, @HandleJump,1);
+  RegisterKeyBinding('SEC_060', 'CTRL_J', SDLK_J + MOD_LCTRL, @HandleJump,);
+  RegisterKeyBinding('SEC_060', 'ALT_J', SDLK_J + MOD_LALT, @HandleJumpAndPlay);
 
-  // Note Pitch
-  AddBinding('SEC_041', 'SHIFT_UP', true, false, false, SDLK_UP, SDLK_UP);
-  AddBinding('SEC_041', 'SHIFT_DOWN', true, false, false, SDLK_DOWN, SDLK_DOWN);
-  AddBinding('SEC_041', 'KPPLUS', false, false, false, SDLK_KP_PLUS, SDLK_KP_PLUS);
-  AddBinding('SEC_041', 'KPMINUS', false, false, false, SDLK_KP_MINUS, SDLK_KP_MINUS);
-  AddBinding('SEC_041', 'SHIFT_KPPLUS', true, false, false, SDLK_KP_PLUS, SDLK_KP_PLUS);
-  AddBinding('SEC_041', 'SHIFT_KPMINUS', true, false, false, SDLK_KP_MINUS, SDLK_KP_MINUS);
-  AddBinding('SEC_041', 'CTRL_ALT_PAGEUP', false, true, true, SDLK_PAGEUP, SDLK_PAGEUP);
-  AddBinding('SEC_041', 'CTRL_ALT_PAGEDOWN', false, true, true, SDLK_PAGEDOWN, SDLK_PAGEDOWN);
-  AddBinding('SEC_041', 'CTRL_SHIFT_ALT_PAGEUP', true, true, true, SDLK_PAGEUP, SDLK_PAGEUP);
-  AddBinding('SEC_041', 'CTRL_SHIFT_ALT_PAGEDOWN', true, true, true, SDLK_PAGEDOWN, SDLK_PAGEDOWN);
-  AddBinding('SEC_041', 'CTRL_PAGEUP', false, true, false, SDLK_PAGEUP, SDLK_PAGEUP);
-  AddBinding('SEC_041', 'CTRL_PAGEDOWN', false, true, false, SDLK_PAGEDOWN, SDLK_PAGEDOWN);
-  AddBinding('SEC_041', 'CTRL_SHIFT_PAGEUP', true, true, false, SDLK_PAGEUP, SDLK_PAGEUP);
-  AddBinding('SEC_041', 'CTRL_SHIFT_PAGEDOWN', true, true, false, SDLK_PAGEDOWN, SDLK_PAGEDOWN);
+  RegisterKeyBinding('SEC_085', 'SHIFT_D', SDLK_D + MOD_LSHIFT, @HandleDivideBPM);
+  RegisterKeyBinding('SEC_070', 'CTRL_SHIFT_D', SDLK_D + MOD_LCTRL + MOD_LSHIFT, @HandleToggleDuet);
+  RegisterKeyBinding('SEC_085', 'SHIFT_M', SDLK_M + MOD_LSHIFT, @HandleMultiplyBPM);
 
-  // Voice Pitch Recording
-  AddBinding('SEC_042', 'N', false, false, false, SDLK_N, SDLK_N);
-  AddBinding('SEC_042', 'SHIFT_N', true, false, false, SDLK_N, SDLK_N);
-  AddBinding('SEC_042', 'ALT_N', false, false, true, SDLK_N, SDLK_N);
+  RegisterKeyBinding('SEC_045', 'C', SDLK_C, @HandleCapitalizeLyrics);
 
-  // Note Position
-  AddBinding('SEC_043', 'SHIFT_DELETE', true, false, false, SDLK_DELETE, SDLK_DELETE);
-  AddBinding('SEC_043', 'CTRL_DELETE', false, true, false, SDLK_DELETE, SDLK_DELETE);
-  AddBinding('SEC_043', 'CTRL_SLASH', false, true, false, SDLK_SLASH, SDLK_SLASH);
-  AddBinding('SEC_043', 'CTRL_SLASH', false, true, false, SDLK_HASH, SDLK_HASH);
-  AddBinding('SEC_043', 'CTRL_SLASH', false, true, false, SDLK_KP_DIVIDE, SDLK_KP_DIVIDE);
-  AddBinding('SEC_043', 'SHIFT_LEFT', true, false, false, SDLK_LEFT, SDLK_LEFT);
-  AddBinding('SEC_043', 'SHIFT_RIGHT', true, false, false, SDLK_RIGHT, SDLK_RIGHT);
-  AddBinding('SEC_043', 'CTRL_LEFT', false, true, false, SDLK_LEFT, SDLK_LEFT);
-  AddBinding('SEC_043', 'CTRL_RIGHT', false, true, false, SDLK_RIGHT, SDLK_RIGHT);
-  AddBinding('SEC_043', 'CTRL_RIGHT', false, false, false, SDLK_BACKQUOTE, SDLK_BACKQUOTE);
-  AddBinding('SEC_043', 'ALT_LEFT', false, false, true, SDLK_LEFT, SDLK_LEFT);
-  AddBinding('SEC_043', 'ALT_RIGHT', false, false, true, SDLK_RIGHT, SDLK_RIGHT);
-  AddBinding('SEC_043', 'CTRL_ALT_SHIFT_LEFT', true, true, true, SDLK_LEFT, SDLK_LEFT);
-  AddBinding('SEC_043', 'CTRL_ALT_SHIFT_RIGHT', true, true, true, SDLK_RIGHT, SDLK_RIGHT);
+  RegisterKeyBinding('SEC_030', 'V', SDLK_V, @HandleVideo);
+  RegisterKeyBinding('SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL, @HandlePaste);
 
-  // Lyrics
-  AddBinding('SEC_045', 'F4', false, false, false, SDLK_F4, SDLK_F4);
-  AddBinding('SEC_045', 'RETURN', false, false, false, SDLK_RETURN, SDLK_RETURN);
-  AddBinding('SEC_045', 'BACKSPACE', false, false, false, SDLK_BACKSPACE, SDLK_BACKSPACE);
-  AddBinding('SEC_045', 'PERIOD', false, false, false, SDLK_PERIOD, SDLK_PERIOD);
-  AddBinding('SEC_045', 'T', false, false, false, SDLK_T, SDLK_T);
-  AddBinding('SEC_045', 'C', false, false, false, SDLK_C, SDLK_C);
-  AddBinding('SEC_045', 'SHIFT_C', true, false, false, SDLK_C, SDLK_C);
-  AddBinding('SEC_045', 'SLASH', false, false, false, SDLK_SLASH, SDLK_SLASH);
-  AddBinding('SEC_045', 'SLASH', false, false, false, SDLK_HASH, SDLK_HASH);
-  AddBinding('SEC_045', 'SLASH', false, false, false, SDLK_KP_DIVIDE, SDLK_KP_DIVIDE);
-  AddBinding('SEC_045', 'SHIFT_SLASH', true, false, false, SDLK_SLASH, SDLK_SLASH);
-  AddBinding('SEC_045', 'SHIFT_SLASH', true, false, false, SDLK_HASH, SDLK_HASH);
-  AddBinding('SEC_045', 'SHIFT_SLASH', true, false, false, SDLK_KP_DIVIDE, SDLK_KP_DIVIDE);
+  RegisterKeyBinding('SEC_045', 'T', SDLK_T, @HandleFixTimings);
 
-  // Preview Tags
-  AddBinding('SEC_050', 'SHIFT_I', true, false, false, SDLK_I, SDLK_I);
-  AddBinding('SEC_050', 'I', false, false, false, SDLK_I, SDLK_I);
-  AddBinding('SEC_050', 'ALT_I', false, false, true, SDLK_I, SDLK_I);
+  RegisterKeyBinding('SEC_030', 'P', SDLK_P, @HandlePlaySentence,SelectAudio);
+  RegisterKeyBinding('SEC_030', 'SHIFT_P', SDLK_P + MOD_LSHIFT, @HandlePlaySentence,SelectMIDI);
+  RegisterKeyBinding('SEC_030', 'CTRL_SHIFT_P', SDLK_P + MOD_LCTRL + MOD_LSHIFT, @HandlePlaySentence,SelectAudio + SelectMIDI);
 
-  // Medley Tags
-  AddBinding('SEC_060', 'A', false, false, false, SDLK_A, SDLK_A);
-  AddBinding('SEC_060', 'SHIFT_A', true, false, false, SDLK_A, SDLK_A);
-  AddBinding('SEC_060', 'J', false, false, false, SDLK_J, SDLK_J);
-  AddBinding('SEC_060', 'SHIFT_J', true, false, false, SDLK_J, SDLK_J);
-  AddBinding('SEC_060', 'ALT_J', false, false, true, SDLK_J, SDLK_J);
+  RegisterKeyBinding('SEC_040', 'G', SDLK_G, @HandleSetGoldenNote);
+  RegisterKeyBinding('SEC_040', 'F', SDLK_F, @HandleSetFreestyleNote);
 
-  // Duet Songs
-  AddBinding('SEC_070', 'CTRL_SHIFT_D', true, true, false, SDLK_D, SDLK_D);
-  AddBinding('SEC_070', 'CTRL_UP', false, true, false, SDLK_UP, SDLK_UP);
-  AddBinding('SEC_070', 'CTRL_DOWN', false, true, false, SDLK_DOWN, SDLK_DOWN);
-  AddBinding('SEC_070', 'CTRL_SHIFT_DOWN', true, true, false, SDLK_DOWN, SDLK_DOWN);
-  AddBinding('SEC_070', 'CTRL_SHIFT_UP', true, true, false, SDLK_UP, SDLK_UP);
-  AddBinding('SEC_070', 'CTRL_ALT_SHIFT_DOWN', true, true, true, SDLK_DOWN, SDLK_DOWN);
-  AddBinding('SEC_070', 'CTRL_ALT_SHIFT_UP', true, true, true, SDLK_UP, SDLK_UP);
-
-  // Gap & VideoGap
-  AddBinding('SEC_080', '0', false, false, false, SDLK_0, SDLK_0);
-  AddBinding('SEC_080', 'SHIFT_0', true, false, false, SDLK_0, SDLK_0);
-  AddBinding('SEC_080', '9', false, false, false, SDLK_9, SDLK_9);
-  AddBinding('SEC_080', 'SHIFT_9', true, false, false, SDLK_9, SDLK_9);
-  AddBinding('SEC_080', '8', false, false, false, SDLK_8, SDLK_8);
-  AddBinding('SEC_080', 'SHIFT_8', true, false, false, SDLK_8, SDLK_8);
-  AddBinding('SEC_080', 'CTRL_8', false, true, false, SDLK_8, SDLK_8);
-  AddBinding('SEC_080', '7', false, false, false, SDLK_7, SDLK_7);
-  AddBinding('SEC_080', 'SHIFT_7', true, false, false, SDLK_7, SDLK_7);
-  AddBinding('SEC_080', 'CTRL_7', false, true, false, SDLK_7, SDLK_7);
-
-  // BPM
-  AddBinding('SEC_085', 'CTRL_EQUALS', false, true, false, SDLK_EQUALS, SDLK_EQUALS);
-  AddBinding('SEC_085', 'CTRL_EQUALS', false, true, false, SDLK_PLUS, SDLK_PLUS);
-  AddBinding('SEC_085', 'CTRL_MINUS', false, true, false, SDLK_MINUS, SDLK_MINUS);
-  AddBinding('SEC_085', 'EQUALS', false, false, false, SDLK_PLUS, SDLK_PLUS);
-  AddBinding('SEC_085', 'EQUALS', false, false, false, SDLK_EQUALS, SDLK_EQUALS);
-  AddBinding('SEC_085', 'MINUS', false, false, false, SDLK_MINUS, SDLK_MINUS);
-  AddBinding('SEC_085', 'SHIFT_EQUALS', true, false, false, SDLK_EQUALS, SDLK_EQUALS);
-  AddBinding('SEC_085', 'SHIFT_EQUALS', true, false, false, SDLK_PLUS, SDLK_PLUS);
-  AddBinding('SEC_085', 'SHIFT_MINUS', true, false, false, SDLK_MINUS, SDLK_MINUS);
-  AddBinding('SEC_085', 'SHIFT_M', true, false, false, SDLK_M, SDLK_M);
-  AddBinding('SEC_085', 'SHIFT_D', true, false, false, SDLK_D, SDLK_D);
-  AddBinding('SEC_085', 'F5', false, false, false, SDLK_F5, SDLK_F5);
-
-  // Other
-  AddBinding('SEC_090', 'CTRL_C', false, true, false, SDLK_C, SDLK_C);
-  AddBinding('SEC_090', 'CTRL_V', false, true, false, SDLK_V, SDLK_V);
-  AddBinding('SEC_090', 'CTRL_SHIFT_V', true, true, false, SDLK_V, SDLK_V);
-  AddBinding('SEC_090', 'CTRL_ALT_V', false, true, true, SDLK_V, SDLK_V);
-  AddBinding('SEC_090', 'CTRL_SHIFT_2', true, true, false, SDLK_2, SDLK_2);
-  AddBinding('SEC_090', 'CTRL_SHIFT_ALT_2', true, true, true, SDLK_2, SDLK_2);
-  AddBinding('SEC_090', 'CTRL_SHIFT_3', true, true, false, SDLK_3, SDLK_3);
-  AddBinding('SEC_090', 'CTRL_SHIFT_ALT_3', true, true, true, SDLK_3, SDLK_3);
-  AddBinding('SEC_090', 'CTRL_SHIFT_4', true, true, false, SDLK_4, SDLK_4);
-  AddBinding('SEC_090', 'CTRL_SHIFT_ALT_4', true, true, true, SDLK_4, SDLK_4);
-  AddBinding('SEC_090', 'CTRL_SHIFT_5', true, true, false, SDLK_5, SDLK_5);
-  AddBinding('SEC_090', 'CTRL_SHIFT_ALT_5', true, true, true, SDLK_5, SDLK_5);
-  AddBinding('SEC_090', 'F6', false, false, false, SDLK_F6, SDLK_F6);
+  // Register additional handlers for all legacy case statement actions
+  RegisterKeyBinding('SEC_001', 'BACKQUOTE', SDLK_BACKQUOTE, @IncreaseNoteLength);
+  RegisterKeyBinding('SEC_085', 'EQUALS', SDLK_EQUALS, @HandleChangeBPM, 50);
+  RegisterKeyBinding('SEC_085', 'PLUS', SDLK_PLUS, @HandleChangeBPM, 50);
+  RegisterKeyBinding('SEC_085', 'EQUALS', SDLK_EQUALS + MOD_LSHIFT, @HandleChangeBPM, 1000);
+  RegisterKeyBinding('SEC_085', 'PLUS', SDLK_PLUS + MOD_LSHIFT, @HandleChangeBPM, 1000);
+  RegisterKeyBinding('SEC_085', 'EQUALS', SDLK_EQUALS + MOD_LCTRL, @HandleChangeBPM, 10);
+  RegisterKeyBinding('SEC_085', 'PLUS', SDLK_PLUS + MOD_LCTRL, @HandleChangeBPM, 10);
+  RegisterKeyBinding('SEC_085', 'MINUS', SDLK_MINUS, @HandleChangeBPM, -50);
+  RegisterKeyBinding('SEC_085', 'MINUS', SDLK_MINUS + MOD_LSHIFT, @HandleChangeBPM, -1000);
+  RegisterKeyBinding('SEC_085', 'MINUS', SDLK_MINUS + MOD_LCTRL, @HandleChangeBPM, -10);
+  RegisterKeyBinding('SEC_090', '2', SDLK_2, @HandleExtendedCopyPaste);
+  RegisterKeyBinding('SEC_090', '3', SDLK_3, @HandleExtendedCopyPaste);
+  RegisterKeyBinding('SEC_090', '4', SDLK_4, @HandleExtendedCopyPaste);
+  RegisterKeyBinding('SEC_090', '5', SDLK_5, @HandleExtendedCopyPaste);
+  RegisterKeyBinding('SEC_090', '6', SDLK_6, @HandleExtendedCopyPaste);
+  RegisterKeyBinding('SEC_080', '7', SDLK_7, @DecreaseVideoGap);
+  RegisterKeyBinding('SEC_080', '8', SDLK_8, @IncreaseVideoGap);
+  RegisterKeyBinding('SEC_080', '9', SDLK_9, @DecreaseGAP);
+  RegisterKeyBinding('SEC_080', '0', SDLK_0, @IncreaseGAP);
+  RegisterKeyBinding('SEC_041', 'KP_PLUS', SDLK_KP_PLUS, @IncreaseAllNoteTones);
+  RegisterKeyBinding('SEC_041', 'KP_MINUS', SDLK_KP_MINUS, @DecreaseAllNoteTones);
+  RegisterKeyBinding('SEC_043', 'SLASH', SDLK_SLASH, @DivideOrJoinNotes);
+  RegisterKeyBinding('SEC_043', 'HASH', SDLK_HASH, @DivideOrJoinNotes);
+  RegisterKeyBinding('SEC_043', 'KP_DIVIDE', SDLK_KP_DIVIDE, @DivideOrJoinNotes);
+  RegisterKeyBinding('SEC_045', 'F4', SDLK_F4, @EnterTextEditMode);
+  RegisterKeyBinding('SEC_045', 'F5', SDLK_F5, @EnterBPMEditMode);
+  RegisterKeyBinding('SEC_045', 'F6', SDLK_F6, @EnterPianoEditMode);
+  RegisterKeyBinding('SEC_030', 'SPACE', SDLK_SPACE, @PlayNote);
+  RegisterKeyBinding('SEC_045', 'DELETE', SDLK_DELETE, @DeleteNotes);
+  RegisterKeyBinding('SEC_045', 'PERIOD', SDLK_PERIOD, @HandleMoveTextRight);
+  RegisterKeyBinding('SEC_020', 'RIGHT', SDLK_RIGHT, @HandleMoveRight);
+  RegisterKeyBinding('SEC_020', 'LEFT', SDLK_LEFT, @HandleMoveLeft);
+  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN, @HandleDownKey);
+  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP, @HandleUpKey);
 
   FKeyBindingsInitialized := true;
+  EnsureKeyBindingsPublished;
+
+  FKeyBindingsInitialized := true;
+  EnsureKeyBindingsPublished;
 end;
 
       // SDLK_M: HandleMultiplyBPM;
-procedure TScreenEditSub.HandleMultiplyBPM(SDL_ModState: word);
+procedure TScreenEditSub.HandleMultiplyBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // Multiply lengths by 2
-  if (SDL_ModState = KMOD_LSHIFT) then
-  begin
-    CopyToUndo;
-    MultiplyBPM;
-    ShowInteractiveBackground;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_MULTIPLIED_BPM');
-    Exit;
-  end;
+  CopyToUndo;
+  MultiplyBPM;
+  ShowInteractiveBackground;
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_MULTIPLIED_BPM');
+  Exit;
 end;
 
       // SDLK_C: CapitalizeLyrics;
-procedure TScreenEditSub.CapitalizeLyrics(SDL_ModState: word);
+procedure TScreenEditSub.CapitalizeLyrics(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
+  CopyToUndo;
   // Capitalize letter at the beginning of line
   if SDL_ModState = 0 then
     begin
-    CopyToUndo;
     LyricsCapitalize;
     EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
     EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
@@ -1244,7 +1067,6 @@ begin
   // Correct spaces
   if SDL_ModState = KMOD_LSHIFT then
     begin
-      CopyToUndo;
       LyricsCorrectSpaces;
       Text[TextInfo].Text := Language.Translate('EDIT_INFO_SPACES_CORRECTED');
     end;
@@ -1260,41 +1082,38 @@ begin
 end;
 
       // SDLK_V: HandleVideo; HandlePaste;
-procedure TScreenEditSub.HandleVideo(SDL_ModState: word);
+procedure TScreenEditSub.HandleVideo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; PlayMidi: integer);
 begin
-  if (SDL_ModState = 0) or (SDL_ModState = KMOD_LALT) then // play current line/remainder of song with video
+  StopVideoPreview;
+  AudioPlayback.Stop;
+  PlayVideo := true;
+  PlaySentenceMidi := false;
+  StopVideoPreview();
+  Click := true;
+  with Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine] do
   begin
-    StopVideoPreview;
-    AudioPlayback.Stop;
-    PlayVideo := true;
-    PlaySentenceMidi := false;
-    StopVideoPreview();
-    Click := true;
-    with Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine] do
-    begin
-      Notes[CurrentNote[CurrentTrack]].Color := 1;
-      CurrentNote[CurrentTrack] := 0;
-      AudioPlayback.Position := GetTimeFromBeat(Notes[0].StartBeat);
-      PlayStopTime := ifthen(SDL_ModState = KMOD_LALT,
-                            GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].High].EndBeat),
-                            GetTimeFromBeat(Notes[High(Notes)].EndBeat));
-    end;
-    if (SDL_ModState = KMOD_LALT) then
-    begin
-      PlaySentenceMidi := true;
-      {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
-      MidiStart := AudioPlayback.Position;
-      MidiStop  := PlayStopTime; {$ENDIF}
-    end;
-    PlaySentence := true;
-    AudioPlayback.Play;
-    LastClick := -100;
-    StartVideoPreview();
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SONG');
+    Notes[CurrentNote[CurrentTrack]].Color := 1;
+    CurrentNote[CurrentTrack] := 0;
+    AudioPlayback.Position := GetTimeFromBeat(Notes[0].StartBeat);
+    PlayStopTime := ifthen(SDL_ModState = KMOD_LALT,
+                          GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].High].EndBeat),
+                          GetTimeFromBeat(Notes[High(Notes)].EndBeat));
   end;
+  if (PlayMidi <> 0) then
+  begin
+    PlaySentenceMidi := true;
+    {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
+    MidiStart := AudioPlayback.Position;
+    MidiStop  := PlayStopTime; {$ENDIF}
+  end;
+  PlaySentence := true;
+  AudioPlayback.Play;
+  LastClick := -100;
+  StartVideoPreview();
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SONG');
 end;
 
-procedure TScreenEditSub.HandlePaste(SDL_ModState: word);
+procedure TScreenEditSub.HandlePaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // paste notes + text (enforce length of src line)
   if SDL_ModState = KMOD_LCTRL then
@@ -1333,7 +1152,7 @@ begin
 end;
 
       // SDLK_T: HandleFixTimings;
-procedure TScreenEditSub.HandleFixTimings(SDL_ModState: word);
+procedure TScreenEditSub.HandleFixTimings;
 begin
   // Fixes timings between sentences
   CopyToUndo;
@@ -1342,20 +1161,20 @@ begin
   Exit;
 end;
 
-      // SDLK_P: PlaySentence;
-procedure TScreenEditSub.HandlePlaySentence(SDL_ModState: word);
+procedure TScreenEditSub.HandlePlaySentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; AudioMidiSelector: integer);
 var
   R: real;
 begin
-  if SDL_ModState = 0 then
+  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
+  CurrentNote[CurrentTrack] := 0;
+  PlayVideo := false;
+  StopVideoPreview;
+  LastClick := -100;
+  if (AudioMidiSelector and SelectAudio) <> 0 then
   begin
     // Play Sentence
     Click := true;
     AudioPlayback.Stop;
-    PlayVideo := false;
-    StopVideoPreview;
-    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
-    CurrentNote[CurrentTrack] := 0;
     R := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
     if R <= AudioPlayback.Length then
     begin
@@ -1363,51 +1182,25 @@ begin
       PlayStopTime := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat);
       PlaySentence := true;
       AudioPlayback.Play;
-      LastClick := -100;
     end;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO');
-  end
-  else if SDL_ModState = KMOD_LSHIFT then
+  end;
+  if (AudioMidiSelector and SelectMIDI) <> 0 then
   begin
-    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
-    CurrentNote[CurrentTrack] := 0;
     PlaySentenceMidi := true;
-    PlayVideo := false;
-    StopVideoPreview;
     {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
     MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
     MidiStop := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat); {$ENDIF}
-
-    LastClick := -100;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_MIDI');
-  end
-  else if SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL then
-  begin
-    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
-    CurrentNote[CurrentTrack] := 0;
-    PlaySentenceMidi := true;
-    PlayVideo := false;
-    StopVideoPreview;
-    {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
-    MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
-    MidiStop  := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat); {$ENDIF}
-
-    LastClick := -100;
-
-    PlaySentence := true;
-    Click := true;
-    AudioPlayback.Stop;
-    AudioPlayback.Position := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat)+0{-0.10};
-    PlayStopTime := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat)+0;
-    AudioPlayback.Play;
-    LastClick := -100;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO_AND_MIDI');
   end;
-  Exit;
+
+  case AudioMidiSelector of
+    SelectAudio: Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO');
+    SelectMIDI: Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_MIDI');
+    SelectAudio + SelectMIDI: Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO_AND_MIDI');
+  end;
 end;
 
       // SDLK_G: SetGoldenNote;
-procedure TScreenEditSub.SetGoldenNote(SDL_ModState: word);
+procedure TScreenEditSub.SetGoldenNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 // Golden Note
 begin
   CopyToUndo;
@@ -1427,11 +1220,15 @@ begin
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_NOTE_SET_TO_GOLDEN');
   end;
   GoldenRec.KillAll;
+
+  // update lyrics
+  EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
+  EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
   Exit;
 end;
 
       // SDLK_F: SetFreestyleNote;
-procedure TScreenEditSub.SetFreestyleNote(SDL_ModState: word);
+procedure TScreenEditSub.SetFreestyleNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 // Freestyle Note
 begin
   CopyToUndo;
@@ -1459,7 +1256,7 @@ begin
 end;
 
       // SDLK_Z: Undo;
-procedure TScreenEditSub.Undo(SDL_ModState: word);
+procedure TScreenEditSub.Undo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 // undo
 begin
   if SDL_ModState = KMOD_LCTRL then
@@ -1472,7 +1269,7 @@ begin
 end;
 
     // SDLK_ESCAPE: LeaveScope
-procedure TScreenEditSub.LeaveScope(SDL_ModState: word);
+procedure TScreenEditSub.LeaveScope(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   if length(UndoLines) > 0 then
     ScreenPopupcheck.ShowPopup(Language.Translate('EDIT_INFO_EXIT'), OnExit, nil, false)
@@ -1481,13 +1278,13 @@ begin
 end;
 
       // SDLK_TAB: ShowPopupHelp;
-procedure TScreenEditSub.ShowPopupHelp(SDL_ModState: word);
+procedure TScreenEditSub.ShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   ScreenPopupHelp.ShowPopup();
 end;
 
       // SDLK_BACKQUOTE: IncreaseNoteLength;
-procedure TScreenEditSub.IncreaseNoteLength(SDL_ModState: word);
+procedure TScreenEditSub.IncreaseNoteLength(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // Increase Note Length (same as Alt + Right)
   CopyToUndo;
@@ -1501,49 +1298,14 @@ begin
   ShowInteractiveBackground;
 end;
 
-      // SDLK_EQUALS, HandleBPMIncrease; // for keyboards which produce the EQUALS symbol without SHIFT modifier
-      // SDLK_PLUS: HandleBPMIncrease; // for keyboards which produce the PLUS symbol without SHIFT modifier
-procedure TScreenEditSub.HandleBPMIncrease(SDL_ModState: word);
+procedure TScreenEditSub.HandleChangeBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Delta: integer);
 begin
-  // Increase BPM
   CopyToUndo;
-  if SDL_ModState = 0 then
-  begin
-    CurrentSong.BPM[0].BPM := Round((CurrentSong.BPM[0].BPM * 5) + 1) / 5; // (1/20)
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_INCREASED_BY') + ' 0.05';
-  end;
-  if SDL_ModState = KMOD_LSHIFT then
-  begin
-    CurrentSong.BPM[0].BPM := CurrentSong.BPM[0].BPM + 4; // (1/1)
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_INCREASED_BY') + ' 1.0';
-  end;
-  if SDL_ModState = KMOD_LCTRL then
-  begin
-    CurrentSong.BPM[0].BPM := Round((CurrentSong.BPM[0].BPM * 25) + 1) / 25; // (1/100)
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_INCREASED_BY') + ' 0.01';
-  end;
-end;
-
-      // SDLK_MINUS: HandleBPMDecrease;
-procedure TScreenEditSub.HandleBPMDecrease(SDL_ModState: word);
-begin
-  // Decrease BPM
-  CopyToUndo;
-  if SDL_ModState = 0 then
-  begin
-    CurrentSong.BPM[0].BPM := Round((CurrentSong.BPM[0].BPM * 5) - 1) / 5;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_DECREASED_BY') + ' 0.05';
-  end;
-  if SDL_ModState = KMOD_LSHIFT then
-  begin
-    CurrentSong.BPM[0].BPM := CurrentSong.BPM[0].BPM - 4;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_DECREASED_BY') + ' 1.0';
-  end;
-  if SDL_ModState = KMOD_LCTRL then
-  begin
-    CurrentSong.BPM[0].BPM := Round((CurrentSong.BPM[0].BPM * 25) - 1) / 25;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_DECREASED_BY') + ' 0.01';
-  end;
+  CurrentSong.BPM[0].BPM := CurrentSong.BPM[0].BPM + Delta / 1000.0;
+  if Delta >= 0 then
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_INCREASED_BY') + ' ' + FloatToStr(Delta / 1000.0)
+  else
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_DECREASED_BY') + ' ' + FloatToStr(-Delta / 1000.0);
 end;
 
       // SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_6: HandleExtendedCopyPaste;
@@ -1607,7 +1369,7 @@ begin
 end;
 
       // SDLK_7: DecreaseVideoGap
-procedure TScreenEditSub.DecreaseVideoGap(SDL_ModState: word);
+procedure TScreenEditSub.DecreaseVideoGap(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // Decrease VideoGap
   CopyToUndo;
@@ -1629,7 +1391,7 @@ begin
 end;
 
       // SDLK_8: IncreaseVideoGap;
-procedure TScreenEditSub.IncreaseVideoGap(SDL_ModState: word);
+procedure TScreenEditSub.IncreaseVideoGap(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // Increase VideoGap
   CopyToUndo;
@@ -1651,7 +1413,7 @@ begin
 end;
 
       // SDLK_9: DecreaseGAP
-procedure TScreenEditSub.DecreaseGAP(SDL_ModState: word);
+procedure TScreenEditSub.DecreaseGAP(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // Decrease GAP
   CopyToUndo;
@@ -1668,7 +1430,7 @@ begin
 end;
 
       // SDLK_0: IncreaseGAP
-procedure TScreenEditSub.IncreaseGAP(SDL_ModState: word);
+procedure TScreenEditSub.IncreaseGAP(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // Increase GAP
   CopyToUndo;
@@ -1685,7 +1447,7 @@ begin
 end;
 
       // SDLK_KP_PLUS: IncreaseAllNoteTones
-procedure TScreenEditSub.IncreaseAllNoteTones(SDL_ModState: word);
+procedure TScreenEditSub.IncreaseAllNoteTones(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // Increase tone of all notes
   CopyToUndo;
@@ -1704,7 +1466,7 @@ begin
 end;
 
       // SDLK_KP_MINUS: DecreaseAllNoteTones
-procedure TScreenEditSub.DecreaseAllNoteTones(SDL_ModState: word);
+procedure TScreenEditSub.DecreaseAllNoteTones(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // Decrease tone of all notes
   CopyToUndo;
@@ -1724,7 +1486,7 @@ end;
 
       // SDLK_KP_DIVIDE is a temporary workaround for German keyboards
       //SDLK_SLASH, SDLK_HASH, SDLK_KP_DIVIDE: DivideOrJoinNotes;
-procedure TScreenEditSub.DivideOrJoinNotes(SDL_ModState: word);
+procedure TScreenEditSub.DivideOrJoinNotes(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   CopyToUndo;
   if SDL_ModState = 0 then
@@ -1762,7 +1524,7 @@ ShowInteractiveBackground;
 end;
 
       // SDLK_F4: EnterTextEditMode
-procedure TScreenEditSub.EnterTextEditMode(SDL_ModState: word);
+procedure TScreenEditSub.EnterTextEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // Enter Text Edit Mode
   BackupEditText := Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
@@ -1775,7 +1537,7 @@ begin
 end;
 
       // SDLK_F5: EnterBPMEditMode
-procedure TScreenEditSub.EnterBPMEditMode(SDL_ModState: word);
+procedure TScreenEditSub.EnterBPMEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // Enter BPM Edit Mode
   BackupEditText := FloatToStr(CurrentSong.BPM[0].BPM / 4);
@@ -1788,14 +1550,14 @@ begin
 end;
 
       // SDLK_F6: EnterPianoEditMode
-procedure TScreenEditSub.EnterPianoEditMode(SDL_ModState: word);
+procedure TScreenEditSub.EnterPianoEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // Enter Piano Edit Mode
   PianoEditMode := true;
 end;
 
       // SDLK_SPACE: PlayNote
-procedure TScreenEditSub.PlayNote(SDL_ModState: word);
+procedure TScreenEditSub.PlayNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   if (SDL_ModState = 0) or (SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL) then
   begin
@@ -1838,7 +1600,7 @@ begin
 end;
 
       // SDLK_RETURN: ToggleTextEditMode
-procedure TScreenEditSub.ToggleTextEditMode(SDL_ModState: word);
+procedure TScreenEditSub.ToggleTextEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 var
   R: real;
   LineIndex:    Integer;
@@ -2164,7 +1926,7 @@ begin
 end;
 
       // SDLK_DELETE: DeleteNotes
-procedure TScreenEditSub.DeleteNotes(SDL_ModState: word);
+procedure TScreenEditSub.DeleteNotes(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   if SDL_ModState = KMOD_LCTRL then
   begin
@@ -2188,7 +1950,7 @@ begin
 end;
 
       // SDLK_PERIOD: HandleMoveTextRight
-procedure TScreenEditSub.HandleMoveTextRight(SDL_ModState: word);
+procedure TScreenEditSub.HandleMoveTextRight(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // moves text to right in current sentence
   CopyToUndo;
@@ -2197,7 +1959,7 @@ begin
 end;
 
       // SDLK_RIGHT: HandleMoveRight
-procedure TScreenEditSub.HandleMoveRight(SDL_ModState: word);
+procedure TScreenEditSub.HandleMoveRight(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // right
   if SDL_ModState = 0 then
@@ -2278,7 +2040,7 @@ begin
 end;
 
       // SDLK_LEFT: HandleMoveLeft
-procedure TScreenEditSub.HandleMoveLeft(SDL_ModState: word);
+procedure TScreenEditSub.HandleMoveLeft(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
   // left
   if SDL_ModState = 0 then
@@ -2361,7 +2123,7 @@ begin
 end;
 
       // SDLK_DOWN: HandleDownKey
-procedure TScreenEditSub.HandleDownKey(SDL_ModState: word);
+procedure TScreenEditSub.HandleDownPressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean;
 begin
   // skip to next sentence
   if SDL_ModState = 0 then
@@ -2418,7 +2180,7 @@ begin
 end;
 
       // SDLK_UP: HandleUpKey
-procedure TScreenEditSub.HandleUpKey(SDL_ModState: word);
+procedure TScreenEditSub.HandleUpPressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean;
 begin
   // skip to previous sentence
   if SDL_ModState = 0 then
@@ -2474,7 +2236,7 @@ begin
   ShowInteractiveBackground;
 end;
 
-function TScreenEditSub.ParseInputEditText(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenEditSub.ParseInputEditText(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   SDL_ModState:  word;
 begin
@@ -2761,7 +2523,7 @@ begin
   end; //if (PressedDown)
 end;
 
-function TScreenEditSub.ParseInputEditBPM(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenEditSub.ParseInputEditBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   SDL_ModState:  word;
   qBPM:          real;
@@ -2900,7 +2662,7 @@ begin
   // Play current note
 end;
 
-function TScreenEditSub.ParseInputEditPiano(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenEditSub.ParseInputEditPiano(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
   SDL_ModState:  word;
   Shift: Integer;
@@ -3991,6 +3753,9 @@ begin
   Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
 
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
+  
+  FixTimings;
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_CONVERTED_TO_SOLO');
 end;
 
 procedure TScreenEditSub.MakeDuet;
@@ -4026,6 +3791,8 @@ begin
   MedleyNotes.isStart := false;
   MedleyNotes.isEnd := false;
   CurrentSong.Medley.Source := msNone;
+  
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_CONVERTED_TO_DUET');
 end;
 
 function TScreenEditSub.DuetCopyLine: boolean;

@@ -402,7 +402,7 @@ var
   Event:     TSDL_event;
   SimEvent:  TSDL_event;
   KeyCharUnicode: UCS4Char;
-  SimKey: LongWord;
+  SimKey: QWord;
   s1: UTF8String;
   mouseDown: boolean;
   mouseBtn:  integer;
@@ -563,14 +563,12 @@ begin
             except
             end;
 
-            SimKey :=0;
+            SimKey := 0;
             if((Event.key.keysym.sym > Low(LongWord)) and (Event.key.keysym.sym < High(LongWord))) then
             begin
-              SimKey := Event.key.keysym.sym;
+              // Pack keycode (lower 32 bits) and modifiers (upper 32 bits)
+              SimKey := QWord(Event.key.keysym.sym) or ((QWord(SDL_GetModState) shl 32) and $3FF00000000);
             end;
-
-            if SimKey <> 0 then
-              SimKey := Display.TranslateKeyForActiveScreen(SimKey, word(SDL_GetModState));
 
             if SimKey = 0 then
               Continue;
@@ -594,7 +592,7 @@ begin
               KeepGoing := ScreenPopupScoreDownload.ParseInput(SimKey, KeyCharUnicode, true)
             else if (ScreenPopupHelp <> nil) and (ScreenPopupHelp.Visible) then
               KeepGoing := ScreenPopupHelp.ParseInput(SimKey, KeyCharUnicode, true)
-            else if (Display.ShouldHandleInput(LongWord(SimKey), KeyCharUnicode, true, SuppressKey)) then
+            else if (Display.ShouldHandleInput(QWord(SimKey), KeyCharUnicode, true, SuppressKey)) then
             begin
               // check if screen wants to exit
               KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true);

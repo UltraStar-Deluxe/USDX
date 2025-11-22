@@ -68,7 +68,7 @@ type
       Visible: boolean; // whether the menu should be drawn
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+  function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       procedure OnShow; override;
       procedure ShowPopup(const Msg: UTF8String; Handler: TPopupCheckHandler;
           HandlerData: Pointer; DefaultValue: boolean = false);
@@ -90,7 +90,7 @@ type
       InteractionTmp: integer;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+  function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       procedure OnShow; override;
       procedure ShowPopup(const Title: UTF8String; Msg: UTF8String; Handler: TPopupInsertUserHandler;
           HandlerData: Pointer);
@@ -126,7 +126,7 @@ type
       SelectValueU: integer;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+  function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       procedure OnShow; override;
       procedure ShowPopup(const Title: UTF8String; Handler: TPopupSendScoreHandler;
           HandlerData: Pointer);
@@ -143,7 +143,7 @@ type
       Visible: boolean; //Whether the Menu should be Drawn
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+  function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       procedure OnShow; override;
       procedure OnHide; override;
       procedure ShowPopup(const Msg: UTF8String);
@@ -187,7 +187,7 @@ type
       Position_Receive_List: array[0..2] of integer;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+  function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       procedure OnShow; override;
       procedure ShowPopup(optmode: integer; optsong: integer; optweb: integer);
       procedure DownloadTimeBarSong();
@@ -269,7 +269,7 @@ type
     procedure   DrawScroll(X, Y, W, H: integer; pos, len: double);
     function    GetScrollOffset: integer;
     procedure   ClearBindingHits;
-    procedure   AddBindingHit(const Bounds: TRect; SectionIndex, EntryIndex: integer;
+    procedure   RegisterKeyBindingHit(const Bounds: TRect; SectionIndex, EntryIndex: integer;
       Handle: TKeyBindingHandle; const HelpToken: UTF8String;
       const EditableBounds: TRect; HasEditableBounds: boolean);
     procedure   StartCapture(Index: integer);
@@ -283,10 +283,10 @@ type
     Visible:    Boolean; //Whether the Menu should be Drawn
 
     constructor Create; override;
-    function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+    function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
     function ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean; override;
     function IsCapturing: boolean;
-  function HandleCapturedKey(PressedKey: cardinal): boolean;
+  function HandleCapturedKey(PressedKey: QWord): boolean;
     procedure onShow; override;
     procedure onHide; override;
     procedure ShowPopup();
@@ -314,7 +314,7 @@ uses
 
 { TScreenPopupCheck }
 
-function TScreenPopupCheck.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPopupCheck.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   Value: boolean;
 begin
@@ -409,7 +409,7 @@ end;
 
 { TScreenPopupInsertUser }
 
-function TScreenPopupInsertUser.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPopupInsertUser.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   Value: boolean;
   I: integer;
@@ -571,7 +571,7 @@ end;
 
 { TScreenPopupSendScore }
 
-function TScreenPopupSendScore.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPopupSendScore.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   New_User: boolean;
   I, Value: integer;
@@ -923,7 +923,7 @@ end;
 
 { TScreenPopupScoreDownload }
 
-function TScreenPopupScoreDownload.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPopupScoreDownload.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   Value: boolean;
 begin
@@ -1478,7 +1478,7 @@ end;
 
 { TScreenPopup }
 
-function TScreenPopup.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPopup.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -1584,7 +1584,7 @@ end;
 
 // Help popup
 
-function TScreenPopupHelp.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPopupHelp.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   pos:  double;
 begin
@@ -1915,9 +1915,8 @@ var
   end;
 
 begin
-  Interaction := 0; //Reset Interaction
-  Visible := True;  //Set Visible
   CancelCapture;
+  Interaction := 0; //Reset Interaction
 
   SetLength(TextsGFX, 0);
   line := 0;
@@ -2289,7 +2288,7 @@ begin
         EntryRect.Right := KeyEnd;
         EntryRect.Top := TextsGFX[EntryLineIndex].Y;
         EntryRect.Bottom := EntryRect.Top + countline * fieldh;
-        AddBindingHit(EntryRect, K, J,
+        RegisterKeyBindingHit(EntryRect, K, J,
           msg.Sections[K].BindingHandles[J], msg.Sections[K].HelpTokens[J],
           EditableBounds, HasEditableBounds);
         line := line + countline - 1;
@@ -2316,6 +2315,7 @@ begin
     barH := (Rect.bottom-Rect.top)/max_high;
     step := barH/(1/barH);
   end;
+  Visible := True;  //Set Visible
 end;
 
 procedure TScreenPopupHelp.DrawTable();
@@ -2410,7 +2410,7 @@ begin
   ActiveBindingIndex := -1;
 end;
 
-procedure TScreenPopupHelp.AddBindingHit(const Bounds: TRect; SectionIndex, EntryIndex: integer;
+procedure TScreenPopupHelp.RegisterKeyBindingHit(const Bounds: TRect; SectionIndex, EntryIndex: integer;
   Handle: TKeyBindingHandle; const HelpToken: UTF8String;
   const EditableBounds: TRect; HasEditableBounds: boolean);
 var
@@ -2519,8 +2519,7 @@ begin
     CurrentActionPrompt := msg.Sections[CaptureSection].KeyDescription[CaptureEntry]
   else
     CurrentActionPrompt := UTF8String(Format(string(PromptActionFormat),
-      [string(msg.Sections[CaptureSection].KeyDescription[CaptureEntry])]))
-  ;
+      [string(msg.Sections[CaptureSection].KeyDescription[CaptureEntry])]));
   UpdateCapturePrompts;
 end;
 
@@ -2554,7 +2553,7 @@ begin
   Result := CaptureActive;
 end;
 
-function TScreenPopupHelp.HandleCapturedKey(PressedKey: cardinal): boolean;
+function TScreenPopupHelp.HandleCapturedKey(PressedKey: QWord): boolean;
 begin
   Result := CaptureActive;
   if not CaptureActive then
