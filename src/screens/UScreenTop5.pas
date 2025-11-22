@@ -179,6 +179,10 @@ var
   I:    integer;
   sung: boolean; //score added? otherwise in wasn't sung!
   Report: string;
+  Name1, Name2:   UTF8String;
+  Score1, Score2: Integer;
+  CombinedName:   UTF8String;
+  CombinedScore:  Integer;
 begin
   inherited;
 
@@ -189,16 +193,49 @@ begin
   Fadeout := false;
   DifficultyShow := Ini.PlayerLevel[0];
 
-  //ReadScore(CurrentSong);
-
-  for I := 0 to PlayersPlay - 1 do
+  if ScreenSing.SungToEnd then
   begin
-    if (Round(Player[I].ScoreTotalInt) > 0) and (ScreenSing.SungToEnd) then
+    if not(CurrentSong.isDuet) or (Ini.DuetScores = 1) or (Ini.DuetScores = 3) then
     begin
-      DataBase.AddScore(CurrentSong, Ini.PlayerLevel[I], Ini.Name[I], Round(Player[I].ScoreTotalInt));
-      sung:=true;
+      for I := 0 to PlayersPlay - 1 do
+      begin
+        Score1 := Round(Player[I].ScoreTotalInt);
+        if Score1 > 0 then
+        begin
+          DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Track, Player[I].Name, Score1);
+          sung := True;
+        end;
+      end;
     end;
-  end;
+    if (CurrentSong.isDuet) and (Ini.DuetScores >= 2) then
+    begin
+      I := 0;
+      while I < PlayersPlay - 1 do
+      begin
+        Name1  := Player[I].Name;
+        Name2  := Player[I+1].Name;
+        Score1 := Round(Player[I].ScoreTotalInt);
+        Score2 := Round(Player[I+1].ScoreTotalInt);
+
+        if (Player[I].Level = Player[I+1].Level) then
+        begin
+          if UTF8CompareStr(Name1, Name2) <= 0 then
+            CombinedName := Format('%s & %s', [Name1, Name2])
+          else
+            CombinedName := Format('%s & %s', [Name2, Name1]);
+
+          CombinedScore := (Score1 + Score2) div 2;
+          if CombinedScore > 0 then
+          begin
+            DataBase.AddScore(CurrentSong, Player[I].Level, 3, CombinedName, CombinedScore);
+            sung := True;
+          end;
+        end;
+
+        Inc(I, 2);
+      end;
+    end;
+  end;  // if SungToEnd
 
   try
     if sung then
@@ -236,6 +273,8 @@ begin
     Text[TextDate[I]].Visible := true;
 
     Text[TextName[I]].Text := CurrentSong.Score[Ini.PlayerLevel[0], I-1].Name;
+    if (CurrentSong.IsDuet) and (CurrentSong.Score[Ini.PlayerLevel[0], I-1].Track < 2) then
+      Text[TextName[I]].Text := Text[TextName[I]].Text + ' (P' + IntToStr(CurrentSong.Score[Ini.PlayerLevel[0], I-1].Track + 1) + ')';
     Text[TextScore[I]].Text := IntToStr(CurrentSong.Score[Ini.PlayerLevel[0], I-1].Score);
     Text[TextDate[I]].Text := CurrentSong.Score[Ini.PlayerLevel[0], I-1].Date;
   end;
@@ -267,6 +306,8 @@ begin
     Text[TextDate[I]].Visible := true;
 
     Text[TextName[I]].Text := CurrentSong.Score[difficulty, I-1].Name;
+    if (CurrentSong.IsDuet) and (CurrentSong.Score[difficulty, I-1].Track < 2) then
+      Text[TextName[I]].Text := Text[TextName[I]].Text + ' (P' + IntToStr(CurrentSong.Score[difficulty, I-1].Track + 1) + ')';
     Text[TextScore[I]].Text := IntToStr(CurrentSong.Score[difficulty, I-1].Score);
     Text[TextDate[I]].Text := CurrentSong.Score[difficulty, I-1].Date;
   end;
