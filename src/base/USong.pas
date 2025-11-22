@@ -633,7 +633,6 @@ var
   LinePos:      integer;
   TrackIndex:   integer;
   NoteIndex:    integer;
-  Both:         boolean;
   CurrentTrack: integer; // P1: 0, P2: 1, (old duet format with binary player representation P1+P2: 2)
 
   Param0:       AnsiChar;
@@ -644,6 +643,29 @@ var
 
   I:            integer;
   NotesFound:   boolean;
+
+  procedure RemoveEmptyLinesFromTrack(const TrackIdx: integer);
+  var
+    LinePos, WritePos: integer;
+  begin
+    WritePos := 0;
+    for LinePos := 0 to High(Tracks[TrackIdx].Lines) do
+    begin
+      if Tracks[TrackIdx].Lines[LinePos].HighNote >= 0 then
+      begin
+        if WritePos <> LinePos then
+          Tracks[TrackIdx].Lines[WritePos] := Tracks[TrackIdx].Lines[LinePos];
+        Inc(WritePos);
+      end;
+    end;
+
+    SetLength(Tracks[TrackIdx].Lines, WritePos);
+    Tracks[TrackIdx].Number := WritePos;
+    Tracks[TrackIdx].High := WritePos - 1;
+
+    if (Tracks[TrackIdx].High >= 0) and (Tracks[TrackIdx].CurrentLine > Tracks[TrackIdx].High) then
+      Tracks[TrackIdx].CurrentLine := Tracks[TrackIdx].High;
+  end;
 label
   NextTrack;
 begin
@@ -655,10 +677,6 @@ begin
   Mult              := 1; // accuracy of measurement of note
   Rel[0]            := 0;
   Rel[1]            := 0;
-  Both              := false;
-
-  if Length(Player) = 2 then
-    Both := true;
 
   try
     MD5 := MD5SongFile(SongFile);
@@ -839,24 +857,20 @@ begin
 
   for TrackIndex := 0 to High(Tracks) do
   begin
-    if ((Both) or (TrackIndex = 0)) then
+    if (Length(Tracks[TrackIndex].Lines) < 1) then
     begin
-      if (Length(Tracks[TrackIndex].Lines) < 1) then
-      begin
-        LastError := 'ERROR_CORRUPT_SONG_NO_BREAKS';
-        Log.LogError('Error loading file: Can''t find any linebreaks in "' + FileNamePath.ToNative + '"');
-        exit;
-      end;
+      LastError := 'ERROR_CORRUPT_SONG_NO_BREAKS';
+      Log.LogError('Error loading file: Can''t find any linebreaks in "' + FileNamePath.ToNative + '"');
+      exit;
+    end;
 
-      if (Tracks[TrackIndex].Lines[Tracks[TrackIndex].High].HighNote < 0) then
-      begin
-        SetLength(Tracks[TrackIndex].Lines, Tracks[TrackIndex].Number - 1);
-        Tracks[TrackIndex].High := Tracks[TrackIndex].High - 1;
-        Tracks[TrackIndex].Number := Tracks[TrackIndex].Number - 1;
-        // HACK DUET ERROR
-        if not (CurrentSong.isDuet) then
-          Log.LogError('Error loading Song, sentence w/o note found in last line before E: ' + FileNamePath.ToNative);
-      end;
+    RemoveEmptyLinesFromTrack(TrackIndex);
+
+    if (Length(Tracks[TrackIndex].Lines) < 1) then
+    begin
+      LastError := 'ERROR_CORRUPT_SONG_NO_NOTES';
+      Log.LogError('Error loading file: No notes found after removing empty sentences in "' + FileNamePath.ToNative + '"');
+      exit;
     end;
   end;
 
