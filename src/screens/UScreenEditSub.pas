@@ -2178,7 +2178,9 @@ begin
   end;
 
   // decrease tone
-  if SDL_ModState = KMOD_LSHIFT then
+  if (SDL_ModState = KMOD_LSHIFT) or
+     (not CurrentSong.isDuet and
+      ((SDL_ModState = KMOD_LCTRL) or (SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT))) then
   begin
     CopyToUndo;
     TransposeNote(-1);
@@ -2235,7 +2237,9 @@ begin
   end;
 
   // increase tone
-  if SDL_ModState = KMOD_LSHIFT then
+  if (SDL_ModState = KMOD_LSHIFT) or
+     (not CurrentSong.isDuet and
+      ((SDL_ModState = KMOD_LCTRL) or (SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT))) then
   begin
     CopyToUndo;
     TransposeNote(1);
