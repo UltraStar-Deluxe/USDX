@@ -2233,13 +2233,13 @@ begin
       ThemeLoadButton(SendScorePopup.Button1, 'SendScorePopupButton1');
       ThemeLoadButton(SendScorePopup.Button2, 'SendScorePopupButton2');
 
-  // help popup
-  ThemeLoadBasic (HelpPopup, 'HelpPopup');
-  ThemeLoadButton(HelpPopup.Button1, 'HelpPopupButton1');
-  ThemeLoadSelectSlide(HelpPopup.SelectVolAudio, 'HelpPopupSelectVolAudio');
-  ThemeLoadSelectSlide(HelpPopup.SelectVolVocals, 'HelpPopupSelectVolVocals');
-  ThemeLoadSelectSlide(HelpPopup.SelectVolSfx, 'HelpPopupSelectVolSfx');
-  ThemeLoadSelectSlide(HelpPopup.SelectVolPreview, 'HelpPopupSelectVolPreview');
+      // help popup
+      ThemeLoadBasic (HelpPopup, 'HelpPopup');
+      ThemeLoadButton(HelpPopup.Button1, 'HelpPopupButton1');
+      ThemeLoadSelectSlide(HelpPopup.SelectVolAudio, 'HelpPopupSelectVolAudio');
+      ThemeLoadSelectSlide(HelpPopup.SelectVolVocals, 'HelpPopupSelectVolVocals');
+      ThemeLoadSelectSlide(HelpPopup.SelectVolSfx, 'HelpPopupSelectVolSfx');
+      ThemeLoadSelectSlide(HelpPopup.SelectVolPreview, 'HelpPopupSelectVolPreview');
 
       // download score popup
       ThemeLoadBasic (ScoreDownloadPopup, 'ScoreDownloadPopup');

@@ -185,9 +185,9 @@ type
       SoundFont:      string;
       ReplayGain:     integer;
 
-  AudioVolume:    integer;
-  VocalsVolume:   integer;
-  SfxVolume:      integer;
+      AudioVolume:    integer;
+      VocalsVolume:   integer;
+      SfxVolume:      integer;
 
       SyncTo: integer;
 

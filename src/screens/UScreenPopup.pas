@@ -254,10 +254,10 @@ type
     procedure   SyncVolumeSliders;
     procedure   ApplyVolumeChanges(const PrevAudio, PrevVocals, PrevSfx, PrevPreview: integer);
     procedure   DrawVolumeControls;
-  procedure   ConfigureVolumeSlider(SelectId: integer);
-  procedure   DrawVolumeBarFill(SelectId, Value: integer);
-  procedure   DrawVolumeLabel(SelectId: integer);
-  function    HasVolumeSlider(SelectId: integer): boolean;
+    procedure   ConfigureVolumeSlider(SelectId: integer);
+    procedure   DrawVolumeBarFill(SelectId, Value: integer);
+    procedure   DrawVolumeLabel(SelectId: integer);
+    function    HasVolumeSlider(SelectId: integer): boolean;
     function    VolumeSliderAtPosition(X, Y: integer): integer;
     procedure   UpdateVolumeSliderFromPointer(SelectId, X: integer);
     function    HandleVolumeSliderDrag(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
