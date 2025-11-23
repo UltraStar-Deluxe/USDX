@@ -247,6 +247,8 @@ type
     VolumePreviewSelectId: Integer;
     CursorForcedVisible: boolean;
   ResumeSingAfterPopup: boolean;
+  VolumeSettingsDirty: boolean;
+  DraggingVolumeSelectId: integer;
 
     procedure   BuildVolumeOptions;
     procedure   SyncVolumeSliders;
@@ -256,6 +258,10 @@ type
   procedure   DrawVolumeBarFill(SelectId, Value: integer);
   procedure   DrawVolumeLabel(SelectId: integer);
   function    HasVolumeSlider(SelectId: integer): boolean;
+    function    VolumeSliderAtPosition(X, Y: integer): integer;
+    procedure   UpdateVolumeSliderFromPointer(SelectId, X: integer);
+    function    HandleVolumeSliderDrag(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+    procedure   ConvertMouseToRenderCoords(X, Y: integer; out RenderX, RenderY: integer);
     procedure   FocusVolumeSlider;
     function    IsVolumeSelectInteraction(Index: integer): boolean;
     procedure   ForceCursorVisibleForSing;
@@ -1691,6 +1697,8 @@ begin
   PrevSfx := VolumeSfxIndex;
   PrevPreview := VolumePreviewIndex;
 
+  HandleVolumeSliderDrag(MouseButton, BtnDown, X, Y);
+
   Result := inherited ParseMouse(MouseButton, BtnDown, X, Y);
 
   ApplyVolumeChanges(PrevAudio, PrevVocals, PrevSfx, PrevPreview);
@@ -1706,6 +1714,8 @@ begin
   VolumePreviewSelectId := -1;
   CursorForcedVisible := false;
   ResumeSingAfterPopup := false;
+  VolumeSettingsDirty := false;
+  DraggingVolumeSelectId := -1;
 
   BuildVolumeOptions;
 
@@ -1833,19 +1843,151 @@ begin
   Result := (SelectId >= 0) and (SelectId <= High(SelectsS));
 end;
 
-procedure TScreenPopupHelp.ApplyVolumeChanges(const PrevAudio, PrevVocals, PrevSfx, PrevPreview: integer);
+procedure TScreenPopupHelp.ConvertMouseToRenderCoords(X, Y: integer; out RenderX, RenderY: integer);
 begin
+  RenderX := Round((X / (ScreenW / Screens)) * RenderW);
+  if (RenderX > RenderW) then
+    RenderX := RenderX - RenderW;
+  RenderY := Round((Y / ScreenH) * RenderH);
+end;
+
+function TScreenPopupHelp.VolumeSliderAtPosition(X, Y: integer): integer;
+var
+  Candidates: array[0..3] of integer;
+  Index: integer;
+  SelectId: integer;
+  Slider: TSelectSlide;
+begin
+  Candidates[0] := VolumeAudioSelectId;
+  Candidates[1] := VolumeVocalsSelectId;
+  Candidates[2] := VolumeSfxSelectId;
+  Candidates[3] := VolumePreviewSelectId;
+
+  Result := -1;
+  for Index := Low(Candidates) to High(Candidates) do
+  begin
+    SelectId := Candidates[Index];
+    if not HasVolumeSlider(SelectId) then
+      Continue;
+
+    Slider := SelectsS[SelectId];
+    if (not Slider.Visible) or (Slider.TextureSBG.W <= 0) or (Slider.TextureSBG.H <= 0) then
+      Continue;
+
+    if (X >= Slider.TextureSBG.X) and (X <= Slider.TextureSBG.X + Slider.TextureSBG.W) and
+       (Y >= Slider.TextureSBG.Y) and (Y <= Slider.TextureSBG.Y + Slider.TextureSBG.H) then
+    begin
+      Exit(SelectId);
+    end;
+  end;
+end;
+
+procedure TScreenPopupHelp.UpdateVolumeSliderFromPointer(SelectId, X: integer);
+var
+  Slider: TSelectSlide;
+  Ratio: double;
+  NewIndex: integer;
+  MaxIndex: integer;
+begin
+  if not HasVolumeSlider(SelectId) then
+    Exit;
+
+  Slider := SelectsS[SelectId];
+  if (not Slider.Visible) or (Slider.TextureSBG.W <= 0) or (Length(Slider.TextOptT) = 0) then
+    Exit;
+
+  MaxIndex := High(Slider.TextOptT);
+  if MaxIndex < 0 then
+    Exit;
+
+  Ratio := (X - Slider.TextureSBG.X) / Slider.TextureSBG.W;
+  if Ratio < 0 then
+    Ratio := 0
+  else if Ratio > 1 then
+    Ratio := 1;
+
+  NewIndex := Round(Ratio * MaxIndex);
+  Slider.SetSelectOpt(NewIndex);
+end;
+
+function TScreenPopupHelp.HandleVolumeSliderDrag(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+var
+  RenderX, RenderY: integer;
+  TargetSelect: integer;
+begin
+  Result := false;
+
+  ConvertMouseToRenderCoords(X, Y, RenderX, RenderY);
+
+  if (MouseButton = SDL_BUTTON_LEFT) and BtnDown then
+  begin
+    TargetSelect := VolumeSliderAtPosition(RenderX, RenderY);
+    if TargetSelect >= 0 then
+    begin
+      DraggingVolumeSelectId := TargetSelect;
+      UpdateVolumeSliderFromPointer(TargetSelect, RenderX);
+      Result := true;
+    end;
+    Exit;
+  end;
+
+  if (MouseButton = 0) and BtnDown then
+  begin
+    if DraggingVolumeSelectId >= 0 then
+    begin
+      UpdateVolumeSliderFromPointer(DraggingVolumeSelectId, RenderX);
+      Result := true;
+    end;
+    Exit;
+  end;
+
+  if (not BtnDown) and (MouseButton = SDL_BUTTON_LEFT) then
+  begin
+    if DraggingVolumeSelectId >= 0 then
+    begin
+      UpdateVolumeSliderFromPointer(DraggingVolumeSelectId, RenderX);
+      DraggingVolumeSelectId := -1;
+      Result := true;
+    end;
+    Exit;
+  end;
+
+  if not BtnDown then
+    DraggingVolumeSelectId := -1;
+end;
+
+procedure TScreenPopupHelp.ApplyVolumeChanges(const PrevAudio, PrevVocals, PrevSfx, PrevPreview: integer);
+var
+  VolumeChanged: boolean;
+begin
+  VolumeChanged := false;
+
   if VolumeAudioIndex <> PrevAudio then
+  begin
     SetAudioVolumePercent(EnsureRange(VolumeAudioIndex, 0, 100));
+    VolumeChanged := true;
+  end;
 
   if VolumeVocalsIndex <> PrevVocals then
+  begin
     SetVocalsVolumePercent(EnsureRange(VolumeVocalsIndex, 0, 100));
+    VolumeChanged := true;
+  end;
 
   if VolumeSfxIndex <> PrevSfx then
+  begin
     SetSfxVolumePercent(EnsureRange(VolumeSfxIndex, 0, 100));
+    VolumeChanged := true;
+  end;
 
   if VolumePreviewIndex <> PrevPreview then
+  begin
     SetPreviewVolumePercent(EnsureRange(VolumePreviewIndex, 0, 100));
+    VolumeChanged := true;
+  end;
+
+  if VolumeChanged then
+    VolumeSettingsDirty := true;
 end;
 
 procedure TScreenPopupHelp.DrawVolumeControls;
@@ -2056,6 +2198,12 @@ begin
   Visible := False;
   RestoreCursorAfterPopup;
 
+  if VolumeSettingsDirty then
+  begin
+    Ini.Save;
+    VolumeSettingsDirty := false;
+  end;
+
   if ResumeSingAfterPopup and (ScreenSing <> nil) then
   begin
     if ScreenSing.Paused then
@@ -2115,9 +2263,14 @@ var
     TextsGFX[line].texts[tline].Italic := Italic;
   end;
 
+var
+  WasVisible: boolean;
 begin
+  WasVisible := Visible;
   ResumeSingAfterPopup := ResumeSingAfterClose;
   Interaction := 0; //Reset Interaction
+  if not WasVisible then
+    VolumeSettingsDirty := false;
   Visible := True;  //Set Visible
 
   SyncVolumeSliders;
