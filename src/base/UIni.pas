@@ -185,6 +185,10 @@ type
       SoundFont:      string;
       ReplayGain:     integer;
 
+  AudioVolume:    integer;
+  VocalsVolume:   integer;
+  SfxVolume:      integer;
+
       SyncTo: integer;
 
       // Song Preview
@@ -1416,6 +1420,43 @@ var
   KeysHigh: string;
   ReadPianoKeysLow: TPianoKeyArray;
   ReadPianoKeysHigh: TPianoKeyArray;
+
+  function ReadVolumePercent(const Section, Key: string; DefaultValue: integer): integer;
+  var
+    RawValue: UTF8String;
+    NumericValue: integer;
+    Parsed: boolean;
+    OldIndex: integer;
+  begin
+    Result := DefaultValue;
+
+    if not IniFile.ValueExists(Section, Key) then
+      Exit;
+
+    RawValue := Trim(IniFile.ReadString(Section, Key, IntToStr(DefaultValue)));
+    Parsed := TryStrToInt(RawValue, NumericValue);
+    if (not Parsed) and (Length(RawValue) > 0) and (RawValue[Length(RawValue)] = '%') then
+    begin
+      Delete(RawValue, Length(RawValue), 1);
+      Parsed := TryStrToInt(RawValue, NumericValue);
+    end;
+
+    if Parsed then
+      Result := NumericValue
+    else
+    begin
+      OldIndex := ReadArrayIndex(IPreviewVolume, IniFile, Section, Key, -1);
+      if OldIndex >= 0 then
+        Result := Round(IPreviewVolumeVals[OldIndex] * 100)
+      else
+        Result := DefaultValue;
+    end;
+
+    if Result < 0 then
+      Result := 0
+    else if Result > 100 then
+      Result := 100;
+  end;
 begin
   LoadFontFamilyNames;
   ILyricsFont := FontFamilyNames;
@@ -1545,8 +1586,10 @@ begin
   // AudioOutputBufferSize
   AudioOutputBufferSizeIndex := ReadArrayIndex(IAudioOutputBufferSize, IniFile, 'Sound', 'AudioOutputBufferSize', 0);
 
-  //Preview Volume
-  PreviewVolume := ReadArrayIndex(IPreviewVolume, IniFile, 'Sound', 'PreviewVolume', 5);
+  AudioVolume  := ReadVolumePercent('Sound', 'AudioVolume', 100);
+  VocalsVolume := ReadVolumePercent('Sound', 'VocalsVolume', 100);
+  SfxVolume    := ReadVolumePercent('Sound', 'SfxVolume', 100);
+  PreviewVolume := ReadVolumePercent('Sound', 'PreviewVolume', 30);
 
   // ReplayGain
   ReplayGain := ReadArrayIndex(IReplayGain, IniFile, 'Sound', 'ReplayGain', 0);
@@ -1873,11 +1916,15 @@ begin
     // AudioOutputBufferSize
     IniFile.WriteString('Sound', 'AudioOutputBufferSize', IAudioOutputBufferSize[AudioOutputBufferSizeIndex]);
 
-    // Background music
-    IniFile.WriteString('Sound', 'BackgroundMusic', IBackgroundMusic[BackgroundMusicOption]);
+  // Background music
+  IniFile.WriteString('Sound', 'BackgroundMusic', IBackgroundMusic[BackgroundMusicOption]);
 
-    // Song Preview
-    IniFile.WriteString('Sound', 'PreviewVolume', IPreviewVolume[PreviewVolume]);
+  IniFile.WriteInteger('Sound', 'AudioVolume', AudioVolume);
+  IniFile.WriteInteger('Sound', 'VocalsVolume', VocalsVolume);
+  IniFile.WriteInteger('Sound', 'SfxVolume', SfxVolume);
+
+  // Song Preview
+  IniFile.WriteInteger('Sound', 'PreviewVolume', PreviewVolume);
 
     // PreviewFading
     IniFile.WriteString('Sound', 'PreviewFading', IPreviewFading[PreviewFading]);
