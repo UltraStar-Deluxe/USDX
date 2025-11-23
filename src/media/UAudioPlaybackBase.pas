@@ -90,11 +90,11 @@ type
 
       procedure SetAppVolume(Volume: single); virtual; abstract;
       procedure SetVolume(Volume: single);
-  procedure SetLoop(Enabled: boolean);
-  procedure SetVocalsBalance(Balance: single);
-  function GetVocalsBalance: single;
-  function HasInstrumentalTrack: boolean;
-  function GetOverallVolume: single;
+      procedure SetLoop(Enabled: boolean);
+      procedure SetVocalsBalance(Balance: single);
+      function GetVocalsBalance: single;
+      function HasInstrumentalTrack: boolean;
+      function GetOverallVolume: single;
 
       procedure Rewind;
       function  Finished: boolean;

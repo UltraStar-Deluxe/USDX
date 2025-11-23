@@ -85,10 +85,10 @@ type
       procedure Fade(Time: real; TargetVolume: single);
       procedure SetAppVolume(Volume: single);
       procedure SetVolume(Volume: single);
-  procedure SetVocalsBalance(Balance: single);
-  function GetVocalsBalance: single;
-  function HasInstrumentalTrack: boolean;
-  function GetOverallVolume: single;
+      procedure SetVocalsBalance(Balance: single);
+      function GetVocalsBalance: single;
+      function HasInstrumentalTrack: boolean;
+      function GetOverallVolume: single;
       procedure Rewind;
 
       procedure SetLoop(Enabled: boolean);

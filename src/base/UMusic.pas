@@ -460,10 +460,10 @@ type
 
       procedure SetAppVolume(Volume: single);
       procedure SetVolume(Volume: single);
-  procedure SetVocalsBalance(Balance: single);
-  function GetVocalsBalance: single;
-  function HasInstrumentalTrack: boolean;
-  function GetOverallVolume: single;
+      procedure SetVocalsBalance(Balance: single);
+      function GetVocalsBalance: single;
+      function HasInstrumentalTrack: boolean;
+      function GetOverallVolume: single;
       procedure SetLoop(Enabled: boolean);
 
       procedure FadeIn(Time: real; TargetVolume: single);
@@ -625,7 +625,7 @@ type
 
       procedure StartBgMusic();
       procedure PauseBgMusic();
-  procedure ApplySfxVolume(Volume: single);
+      procedure ApplySfxVolume(Volume: single);
       // TODO
       //function AddSound(Filename: IPath): integer;
       //procedure RemoveSound(ID: integer);

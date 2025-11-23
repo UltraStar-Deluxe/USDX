@@ -287,8 +287,8 @@ type
       VolumeClickSlideId:      Integer;
       VolumeAudioIndex:        Integer;
       VolumeMidiIndex:         Integer;
-  VolumeClickIndex:        Integer; //for update slide
-  VolumeDragSlideId:       Integer;
+      VolumeClickIndex:        Integer; //for update slide
+      VolumeDragSlideId:       Integer;
 
       VolumeAudio:             array of UTF8String;
       VolumeMidi:              array of UTF8String;
@@ -5170,9 +5170,9 @@ begin
       VolumeMidi[VolumeIndex]  := IntToStr(VolumeIndex);
       VolumeClick[VolumeIndex] := IntToStr(VolumeIndex);
     end;
-  VolumeAudioIndex := EnsureRange(Ini.AudioVolume, 0, 100);
-  VolumeMidiIndex  := 100;
-  VolumeClickIndex := EnsureRange(Ini.SfxVolume, 0, 100);
+    VolumeAudioIndex := EnsureRange(Ini.AudioVolume, 0, 100);
+    VolumeMidiIndex  := 100;
+    VolumeClickIndex := EnsureRange(Ini.SfxVolume, 0, 100);
     UpdateSelectSlideOptions(Theme.EditSub.SelectVolAudio, VolumeAudioSlideId, VolumeAudio, VolumeAudioIndex);
     UpdateSelectSlideOptions(Theme.EditSub.SelectVolMidi,  VolumeMidiSlideId,  VolumeMidi,  VolumeMidiIndex);
     UpdateSelectSlideOptions(Theme.EditSub.SelectVolClick, VolumeClickSlideId, VolumeClick, VolumeClickIndex);

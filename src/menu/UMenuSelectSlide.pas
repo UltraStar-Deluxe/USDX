@@ -79,7 +79,7 @@ type
       //Visibility
       Visible: boolean;
 
-  ClickSelectsPosition: boolean;
+      ClickSelectsPosition: boolean;
 
       // for selection and deselection
       // main static

@@ -1907,15 +1907,15 @@ begin
     // AudioOutputBufferSize
     IniFile.WriteString('Sound', 'AudioOutputBufferSize', IAudioOutputBufferSize[AudioOutputBufferSizeIndex]);
 
-  // Background music
-  IniFile.WriteString('Sound', 'BackgroundMusic', IBackgroundMusic[BackgroundMusicOption]);
+    // Background music
+    IniFile.WriteString('Sound', 'BackgroundMusic', IBackgroundMusic[BackgroundMusicOption]);
 
-  IniFile.WriteInteger('Sound', 'AudioVolume', AudioVolume);
-  IniFile.WriteInteger('Sound', 'VocalsVolume', VocalsVolume);
-  IniFile.WriteInteger('Sound', 'SfxVolume', SfxVolume);
+    IniFile.WriteInteger('Sound', 'AudioVolume', AudioVolume);
+    IniFile.WriteInteger('Sound', 'VocalsVolume', VocalsVolume);
+    IniFile.WriteInteger('Sound', 'SfxVolume', SfxVolume);
 
-  // Song Preview
-  IniFile.WriteInteger('Sound', 'PreviewVolume', PreviewVolume);
+    // Song Preview
+    IniFile.WriteInteger('Sound', 'PreviewVolume', PreviewVolume);
 
     // PreviewFading
     IniFile.WriteString('Sound', 'PreviewFading', IPreviewFading[PreviewFading]);

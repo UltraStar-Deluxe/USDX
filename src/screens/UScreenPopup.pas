@@ -246,9 +246,9 @@ type
     VolumeSfxSelectId: Integer;
     VolumePreviewSelectId: Integer;
     CursorForcedVisible: boolean;
-  ResumeSingAfterPopup: boolean;
-  VolumeSettingsDirty: boolean;
-  DraggingVolumeSelectId: integer;
+    ResumeSingAfterPopup: boolean;
+    VolumeSettingsDirty: boolean;
+    DraggingVolumeSelectId: integer;
 
     procedure   BuildVolumeOptions;
     procedure   SyncVolumeSliders;
