@@ -1041,6 +1041,20 @@ begin
           Exit;
         end;
 
+      SDLK_O: // O for Ordering
+        begin
+          // Only applicable in playlist view
+          if (CatSongs.CatNumShow = -3) and (Length(PlayListMan.Playlists) > 0) then
+          begin
+            PlayListMan.Playlists[PlayListMan.CurPlaylist].SortingEnabled :=
+              not PlayListMan.Playlists[PlayListMan.CurPlaylist].SortingEnabled;
+            // Persist change
+            PlayListMan.SavePlayList(PlayListMan.CurPlaylist);
+            // Refresh top-left label
+            PlayListMan.SetPlayList(PlayListMan.CurPlaylist);
+          end;
+        end;
+
       SDLK_T:
         if CatSongs.Song[Interaction].hasRap then
           RapToFreestyle := not RapToFreestyle;
@@ -1758,11 +1772,8 @@ begin
   // Song List
   //Songs.LoadSongList; // moved to the UltraStar unit
 
-  if (TSortingType(Ini.Sorting) <> sPlaylist) then
-  begin
-    CatSongs.Refresh;
-    GenerateThumbnails();
-  end;
+  CatSongs.Refresh;
+  GenerateThumbnails();
 
   // Randomize Patch
   Randomize;
