@@ -260,6 +260,7 @@ type
       procedure CloseMessage();
 
       procedure GenerateThumbnails();
+      procedure SyncCoversToSongs();
       procedure OnShow; override;
       procedure OnShowFinish; override;
       procedure OnHide; override;
@@ -1041,6 +1042,19 @@ begin
           Exit;
         end;
 
+      SDLK_O: // O for Ordering
+        begin
+          // Only applicable in playlist view
+          if (CatSongs.CatNumShow = -3) and (Length(PlayListMan.Playlists) > 0) then
+          begin
+            PlayListMan.Playlists[PlayListMan.CurPlaylist].FixedOrder :=
+              not PlayListMan.Playlists[PlayListMan.CurPlaylist].FixedOrder;
+            PlayListMan.SavePlayList(PlayListMan.CurPlaylist);
+            PlayListMan.SetPlayList(PlayListMan.CurPlaylist);
+            SetScrollRefresh;
+          end;
+        end;
+
       SDLK_T:
         if CatSongs.Song[Interaction].hasRap then
           RapToFreestyle := not RapToFreestyle;
@@ -1758,11 +1772,8 @@ begin
   // Song List
   //Songs.LoadSongList; // moved to the UltraStar unit
 
-  if (TSortingType(Ini.Sorting) <> sPlaylist) then
-  begin
-    CatSongs.Refresh;
-    GenerateThumbnails();
-  end;
+  CatSongs.Refresh;
+  GenerateThumbnails();
 
   // Randomize Patch
   Randomize;
@@ -2077,6 +2088,25 @@ begin
   // reset selection
   if (Length(CatSongs.Song) > 0) then
     Interaction := 0;
+end;
+
+procedure TScreenSong.SyncCoversToSongs();
+var
+  B: integer;
+begin
+  if (Length(Button) = 0) or (Length(CatSongs.Song) = 0) then
+    Exit;
+
+  for B := 0 to High(Button) do
+  begin
+    if B > High(CatSongs.Song) then
+      Break;
+
+    UnloadCover(B);
+
+    Button[B].Texture := CatSongs.Song[B].CoverTex;
+    Button[B].Selected := False;
+  end;
 end;
 
 { called when song flows movement stops at a song }
