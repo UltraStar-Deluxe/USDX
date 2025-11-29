@@ -42,6 +42,7 @@ interface
 uses
   SysUtils,
   Classes,
+  SyncObjs,
   {$IFDEF MSWINDOWS}
     Windows,
   {$ELSE}
@@ -89,6 +90,7 @@ type
   end;
 
   TPathDynArray = array of IPath;
+  TThreadDynArray = array of TThread;
 
   {$IFDEF USE_PSEUDO_THREAD}
   TSongs = class(TPseudoThread)
@@ -104,12 +106,28 @@ type
     fLoadingBaseTemplate: UTF8String;
     fLoadingBaseText:    UTF8String;
     fLastProgressRedrawTicks: cardinal;
-    function CollectSongFiles: TPathDynArray;
+    fSongQueue:          TInterfaceList;
+    fQueueLock:          TCriticalSection;
+    fDirQueue:           TInterfaceList;
+    fDirQueueLock:       TCriticalSection;
+    fSongListLock:       TCriticalSection;
+    fProgressLock:       TCriticalSection;
+    fQueueEvent:         TEvent;
+    fDiscoveryFinished:  boolean;
     procedure int_LoadSongList;
     procedure DoDirChanged(Sender: TObject);
-    procedure LoadSongFromFile(const FilePath: IPath);
     procedure UpdateLoadingProgress;
     procedure RedrawLoadingScreen;
+    procedure ResetSongQueue;
+    procedure EnqueueSongFile(const FilePath: IPath);
+    function TryDequeueSongFile(out FilePath: IPath): boolean;
+    function HasPendingWork: boolean;
+    procedure WaitForWork(const TimeoutMs: cardinal = 50);
+    procedure MarkDiscoveryFinished;
+    procedure DiscoverFilesInDirectoryQueue(const Ext: IPath; CancelThread: TThread = nil);
+    procedure IncrementTotalSongs(const Delta: integer);
+    procedure IncrementSongsLoaded(const Delta: integer = 1);
+    procedure WaitForWorkerThreads(var Workers: array of TThread);
   protected
     procedure Execute; override;
   public
@@ -184,6 +202,120 @@ uses
   UFilesystem,
   UUnicodeUtils;
 
+type
+  TSongDiscoveryThread = class(TThread)
+  private
+    FOwner: TSongs;
+    FThreadID: integer;
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(AOwner: TSongs; ThreadID: integer);
+  end;
+
+  TSongLoaderWorker = class(TThread)
+  private
+    FOwner: TSongs;
+    procedure LoadSongFromFile(const FilePath: IPath);
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(AOwner: TSongs);
+  end;
+
+{ TSongDiscoveryThread }
+
+constructor TSongDiscoveryThread.Create(AOwner: TSongs; ThreadID: integer);
+begin
+  inherited Create(false);
+  FreeOnTerminate := false;
+  FOwner := AOwner;
+  FThreadID := ThreadID;
+
+end;
+
+procedure TSongDiscoveryThread.Execute;
+var
+  Extension: IPath;
+begin
+  Extension := Path('.txt');
+  FOwner.DiscoverFilesInDirectoryQueue(Extension, Self);
+end;
+
+{ TSongLoaderWorker }
+
+constructor TSongLoaderWorker.Create(AOwner: TSongs);
+begin
+  inherited Create(false);
+  FreeOnTerminate := false;
+  FOwner := AOwner;
+end;
+
+procedure TSongLoaderWorker.Execute;
+var
+  FilePath: IPath;
+  exitReason: string;
+begin
+{$IFNDEF USE_PSEUDO_THREAD}
+  while not Terminated do
+{$ELSE}
+  while true do
+{$ENDIF}
+  begin
+    if not FOwner.TryDequeueSongFile(FilePath) then
+    begin
+      // Only exit if queue is empty AND discovery is finished
+      if (not FOwner.HasPendingWork) and FOwner.fDiscoveryFinished then
+      begin
+        exitReason := 'queue empty and discovery finished';
+        Break;
+      end;
+      FOwner.WaitForWork(50);
+      Continue;
+    end;
+
+    try
+      LoadSongFromFile(FilePath);
+    except
+      on E: Exception do
+      begin
+        if FilePath <> nil then
+          Log.LogError('Unhandled exception while loading "' + FilePath.ToNative + '": ' + E.Message + '; Addr=' + IntToHex(LongWord(ExceptAddr), 8) + '; Trace=' + BackTraceStrFunc(ExceptAddr), 'TSongLoaderWorker')
+        else
+          Log.LogError('Unhandled exception while loading song: ' + E.Message + '; Addr=' + IntToHex(LongWord(ExceptAddr), 8) + '; Trace=' + BackTraceStrFunc(ExceptAddr), 'TSongLoaderWorker');
+      end;
+      on E: TObject do
+        Log.LogError('Unhandled non-exception error while loading song.', 'TSongLoaderWorker');
+    end;
+
+    FOwner.IncrementSongsLoaded(1);
+    FilePath := nil;
+  end;
+end;
+
+
+procedure TSongLoaderWorker.LoadSongFromFile(const FilePath: IPath);
+var
+  Song: TSong;
+  Loaded: boolean;
+begin
+  Song := TSong.Create(FilePath);
+  Loaded := Song.Analyse;
+  if Loaded then
+  begin
+    FOwner.fSongListLock.Enter;
+    try
+      FOwner.SongList.Add(Song);
+    finally
+      FOwner.fSongListLock.Leave;
+    end;
+  end
+  else
+    Log.LogError('AnalyseFile failed for "' + FilePath.ToNative + '".');
+  if not Loaded then
+    FreeAndNil(Song);
+end;
+
 constructor TSongs.Create();
 begin
   // do not start thread BEFORE initialization (suspended = true)
@@ -191,6 +323,13 @@ begin
   Self.FreeOnTerminate := true;
 
   SongList           := TList.Create();
+  fSongQueue         := TInterfaceList.Create;
+  fQueueLock         := TCriticalSection.Create;
+  fDirQueue          := TInterfaceList.Create;
+  fDirQueueLock      := TCriticalSection.Create;
+  fSongListLock      := TCriticalSection.Create;
+  fProgressLock      := TCriticalSection.Create;
+  fQueueEvent        := TEvent.Create(nil, true, false, '');
 
   // until it is fixed, simply load the song-list
   int_LoadSongList();
@@ -198,9 +337,231 @@ end;
 
 destructor TSongs.Destroy();
 begin
+  if assigned(fQueueEvent) then
+    fQueueEvent.Free;
+  FreeAndNil(fProgressLock);
+  FreeAndNil(fSongListLock);
+  FreeAndNil(fQueueLock);
+  FreeAndNil(fSongQueue);
   FreeAndNil(SongList);
 
   inherited;
+end;
+
+procedure TSongs.ResetSongQueue;
+begin
+  fQueueLock.Enter;
+  try
+    if assigned(fSongQueue) then
+      fSongQueue.Clear;
+    fDiscoveryFinished := false;
+    if assigned(fQueueEvent) then
+      fQueueEvent.ResetEvent;
+  finally
+    fQueueLock.Leave;
+  end;
+  fDirQueueLock.Enter;
+  try
+    if assigned(fDirQueue) then
+      fDirQueue.Clear;
+  finally
+    fDirQueueLock.Leave;
+  end;
+end;
+
+procedure TSongs.EnqueueSongFile(const FilePath: IPath);
+var
+  FilePathStr: UTF8String;
+  FilePathCopy: IPath;
+begin
+  if FilePath = nil then
+    Exit;
+
+  FilePathStr := FilePath.ToUTF8();
+  FilePathCopy := Path(FilePathStr);
+  fQueueLock.Enter;
+  try
+    fSongQueue.Add(FilePathCopy);
+    if assigned(fQueueEvent) then
+      fQueueEvent.SetEvent;
+  finally
+    fQueueLock.Leave;
+  end;
+
+  IncrementTotalSongs(1);
+end;
+
+function TSongs.TryDequeueSongFile(out FilePath: IPath): boolean;
+var
+  OrigPath: IPath;
+  FilePathStr: UTF8String;
+begin
+  FilePath := nil;
+  Result := false;
+
+  fQueueLock.Enter;
+  try
+    if (fSongQueue <> nil) and (fSongQueue.Count > 0) then
+    begin
+      OrigPath := fSongQueue[0] as IPath;
+      FilePathStr := OrigPath.ToUTF8();
+      FilePath := Path(FilePathStr);
+      fSongQueue.Delete(0);
+      Result := true;
+      if (fSongQueue.Count = 0) and assigned(fQueueEvent) then
+        fQueueEvent.ResetEvent;
+    end
+  finally
+    fQueueLock.Leave;
+  end;
+end;
+
+function TSongs.HasPendingWork: boolean;
+begin
+  fQueueLock.Enter;
+  try
+    Result := (not fDiscoveryFinished) or
+              ((fSongQueue <> nil) and (fSongQueue.Count > 0));
+  finally
+    fQueueLock.Leave;
+  end;
+end;
+
+procedure TSongs.WaitForWork(const TimeoutMs: cardinal);
+begin
+  if assigned(fQueueEvent) then
+    fQueueEvent.WaitFor(TimeoutMs)
+  else
+    TThread.Sleep(TimeoutMs);
+end;
+
+procedure TSongs.MarkDiscoveryFinished;
+begin
+  fQueueLock.Enter;
+  try
+    fDiscoveryFinished := true;
+    if assigned(fQueueEvent) then
+      fQueueEvent.SetEvent;
+  finally
+    fQueueLock.Leave;
+  end;
+end;
+
+procedure TSongs.DiscoverFilesInDirectoryQueue(const Ext: IPath; CancelThread: TThread);
+var
+  Dir: IPath;
+  Iter: IFileIterator;
+  FileInfo: TFileInfo;
+  FileName: IPath;
+  FilePathStr: UTF8String;
+  FilePathCopy: IPath;
+begin
+  while true do
+  begin
+    // Dequeue a directory
+    fDirQueueLock.Enter;
+    try
+      if (fDirQueue = nil) or (fDirQueue.Count = 0) then
+        Exit;
+      Dir := fDirQueue[0] as IPath;
+      fDirQueue.Delete(0);
+    finally
+      fDirQueueLock.Leave;
+    end;
+
+    if Dir = nil then
+      Continue;
+
+    Iter := FileSystem.FileFind(Dir.Append('*'), faAnyFile);
+    while (Iter <> nil) and Iter.HasNext do
+    begin
+      FileInfo := Iter.Next;
+      FileName := FileInfo.Name;
+      if ((FileInfo.Attr and faDirectory) <> 0) then
+      begin
+        if (not FileName.Equals('.')) and (not FileName.Equals('..')) and (not FileName.Equals('')) then
+        begin
+          // Enqueue subdirectory
+          fDirQueueLock.Enter;
+          try
+            fDirQueue.Add(Dir.Append(FileName));
+          finally
+            fDirQueueLock.Leave;
+          end;
+        end;
+      end
+      else if (Ext.Equals(FileName.GetExtension(), true) and not (FileName.ToUTF8()[1] = '.')) then
+      begin
+        FilePathStr := Dir.Append(FileName).ToUTF8();
+        FilePathCopy := Path(FilePathStr);
+        EnqueueSongFile(FilePathCopy);
+      end;
+    end;
+  end;
+end;
+
+procedure TSongs.IncrementTotalSongs(const Delta: integer);
+begin
+  if Delta = 0 then
+    Exit;
+
+  if assigned(fProgressLock) then
+  begin
+    fProgressLock.Enter;
+    try
+      Inc(fTotalSongsToLoad, Delta);
+    finally
+      fProgressLock.Leave;
+    end;
+  end
+  else
+    Inc(fTotalSongsToLoad, Delta);
+end;
+
+procedure TSongs.IncrementSongsLoaded(const Delta: integer);
+begin
+  if Delta = 0 then
+    Exit;
+
+  if assigned(fProgressLock) then
+  begin
+    fProgressLock.Enter;
+    try
+      Inc(fSongsLoaded, Delta);
+    finally
+      fProgressLock.Leave;
+    end;
+  end
+  else
+    Inc(fSongsLoaded, Delta);
+end;
+
+procedure TSongs.WaitForWorkerThreads(var Workers: array of TThread);
+var
+  Remaining, I: integer;
+begin
+  Remaining := Length(Workers);
+  while Remaining > 0 do
+  begin
+    for I := 0 to High(Workers) do
+    begin
+      if Workers[I] = nil then
+        Continue;
+
+      if Workers[I].Finished then
+      begin
+        Workers[I].WaitFor;
+        FreeAndNil(Workers[I]);
+        Dec(Remaining);
+      end;
+    end;
+
+    if Remaining > 0 then
+    begin
+      UpdateLoadingProgress;
+      TThread.Sleep(10);
+    end;
+  end;
 end;
 
 procedure TSongs.DoDirChanged(Sender: TObject);
@@ -212,53 +573,63 @@ procedure TSongs.Execute();
 var
   fChangeNotify: THandle;
 begin
-{$IFDEF USE_PSEUDO_THREAD}
-  int_LoadSongList();
-{$ELSE}
-  fParseSongDirectory := true;
-
-  while not terminated do
-  begin
-
-    if fParseSongDirectory then
-    begin
-      Log.LogStatus('Calling int_LoadSongList', 'TSongs.Execute');
-      int_LoadSongList();
-    end;
-
-    Suspend();
-  end;
-{$ENDIF}
 end;
 
 procedure TSongs.int_LoadSongList;
 var
   I: integer;
-  SongFiles: TPathDynArray;
+  WorkerCount: integer;
+  WorkerThreads: TThreadDynArray;
+  DiscoveryThreads: TThreadDynArray;
 begin
-  SetLength(SongFiles, 0);
   try
     fProcessing := true;
 
     Log.LogStatus('Searching For Songs', 'SongList');
 
-    fSongsLoaded := 0;
-    fTotalSongsToLoad := 0;
+    fProgressLock.Enter;
+    try
+      fSongsLoaded := 0;
+      fTotalSongsToLoad := 0;
+    finally
+      fProgressLock.Leave;
+    end;
     fLoadingBaseTemplate := '';
     fLoadingBaseText := '';
-    UpdateLoadingProgress;
-
-    SongFiles := CollectSongFiles;
-
-    fTotalSongsToLoad := Length(SongFiles);
-    UpdateLoadingProgress;
-
-    for I := 0 to High(SongFiles) do
-    begin
-      LoadSongFromFile(SongFiles[I]);
-      Inc(fSongsLoaded);
-      UpdateLoadingProgress;
+    fLastProgressRedrawTicks := 0;
+    ResetSongQueue;
+    // Initialize directory queue with root song paths
+    fDirQueueLock.Enter;
+    try
+      if assigned(fDirQueue) then
+        fDirQueue.Clear;
+      if (SongPaths <> nil) and (SongPaths.Count > 0) then
+        for I := 0 to SongPaths.Count - 1 do
+          fDirQueue.Add(SongPaths[I]);
+    finally
+      fDirQueueLock.Leave;
     end;
+    UpdateLoadingProgress;
+
+    WorkerCount := Ini.GameThreads;
+    if WorkerCount < 1 then
+      WorkerCount := 1;
+
+    SetLength(DiscoveryThreads, WorkerCount);
+    for I := 0 to WorkerCount - 1 do
+      DiscoveryThreads[I] := TSongDiscoveryThread.Create(Self, I);
+
+    SetLength(WorkerThreads, WorkerCount);
+    for I := 0 to WorkerCount - 1 do
+      WorkerThreads[I] := TSongLoaderWorker.Create(Self);
+
+    WaitForWorkerThreads(DiscoveryThreads);
+
+    MarkDiscoveryFinished;
+
+    WaitForWorkerThreads(WorkerThreads);
+
+    UpdateLoadingProgress;
 
     if assigned(CatSongs) then
       CatSongs.Refresh;
@@ -276,7 +647,6 @@ begin
     end;
 
   finally
-    SetLength(SongFiles, 0);
     Log.LogStatus('Search Complete', 'SongList');
 
     fParseSongDirectory := false;
@@ -319,70 +689,17 @@ begin
         Log.LogDebug('Found file ' + Dir.Append(FileName).ToWide, 'TSongs.FindFilesByExtension');
         SetLength(Files, Length(Files)+1);
         Files[High(Files)] := Dir.Append(FileName);
-        fTotalSongsToLoad := fTotalSongsToLoad + 1;
-        UpdateLoadingProgress;
       end;
     end;
   end;
 end;
 
-function TSongs.CollectSongFiles: TPathDynArray;
-var
-  DirIndex, FileIndex, AppendIndex, AdditionalCount: integer;
-  DirFiles: TPathDynArray;
-  Extension: IPath;
-  DirPath: IPath;
-begin
-  SetLength(Result, 0);
-
-  if SongPaths = nil then
-    Exit;
-
-  Extension := Path('.txt');
-
-  for DirIndex := 0 to SongPaths.Count - 1 do
-  begin
-    DirPath := SongPaths[DirIndex] as IPath;
-    Log.LogDebug('Searching directory ' + DirPath.ToWide + ' for txt files', 'TSongs.CollectSongFiles');
-    SetLength(DirFiles, 0);
-    FindFilesByExtension(DirPath, Extension, true, DirFiles);
-    AdditionalCount := Length(DirFiles);
-    if AdditionalCount = 0 then
-      Continue;
-
-    AppendIndex := Length(Result);
-    SetLength(Result, AppendIndex + AdditionalCount);
-    for FileIndex := 0 to AdditionalCount - 1 do begin
-      Result[AppendIndex + FileIndex] := DirFiles[FileIndex];
-      fTotalSongsToLoad := Length(Result);
-      UpdateLoadingProgress;
-    end;
-
-    SetLength(DirFiles, 0);
-  end;
-end;
-
-procedure TSongs.LoadSongFromFile(const FilePath: IPath);
-var
-  Song: TSong;
-begin
-  Song := TSong.Create(FilePath);
-
-  if Song.Analyse then
-    SongList.Add(Song)
-  else
-  begin
-    Log.LogError('AnalyseFile failed for "' + FilePath.ToNative + '".');
-    FreeAndNil(Song);
-  end;
-end;
-
 procedure TSongs.UpdateLoadingProgress;
 var
-  Percent: integer;
   ProgressText: UTF8String;
   LoadingText: TText;
   NowTicks: cardinal;
+  LoadedValue, TotalValue: integer;
 begin
   if (ScreenLoading = nil) or (Length(ScreenLoading.Text) = 0) then
     Exit;
@@ -390,6 +707,22 @@ begin
   NowTicks := SDL_GetTicks();
   if (NowTicks - fLastProgressRedrawTicks < 100) and (fLastProgressRedrawTicks <> 0) then
     Exit;
+
+  if assigned(fProgressLock) then
+  begin
+    fProgressLock.Enter;
+    try
+      LoadedValue := fSongsLoaded;
+      TotalValue := fTotalSongsToLoad;
+    finally
+      fProgressLock.Leave;
+    end;
+  end
+  else
+  begin
+    LoadedValue := fSongsLoaded;
+    TotalValue := fTotalSongsToLoad;
+  end;
 
   LoadingText := ScreenLoading.Text[0];
   if LoadingText = nil then
@@ -401,7 +734,7 @@ begin
   if fLoadingBaseText = '' then
     fLoadingBaseText := fLoadingBaseTemplate;
 
-  ProgressText := fLoadingBaseText + UTF8String(' [' + IntToStr(fSongsLoaded) + '/' + IntToStr(fTotalSongsToLoad) + ']');
+  ProgressText := fLoadingBaseText + UTF8String(' [' + IntToStr(LoadedValue) + '/' + IntToStr(TotalValue) + ']');
 
   LoadingText.Text := ProgressText;
 

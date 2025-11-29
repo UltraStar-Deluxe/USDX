@@ -43,6 +43,7 @@ uses
     UnixType,
   {$ENDIF}
   MD5,
+  SyncObjs,
   SysUtils,
   Math,
   types,
@@ -62,7 +63,9 @@ uses
   UTexture,
   UTextEncoding,
   UUnicodeStringHelper,
-  UUnicodeUtils;
+
+  UUnicodeUtils,
+  UMusic; // for TLines
 
 const
   DEFAULT_RESOLUTION = 4; // default #RESOLUTION
@@ -132,6 +135,8 @@ type
     function GetFolderCategory(const aFileName: IPath): UTF8String;
     function FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
     function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
+  public
+    Tracks: array of TLines; // Per-song track storage
   public
     Path:         IPath; // kust path component of file (only set if file was found)
     Folder:       UTF8String; // for sorting by folder (only set if file was found)
@@ -248,7 +253,6 @@ uses
   UIni,
   UPathUtils,
   USongs,
-  UMusic,  //needed for Tracks
   UNote;   //needed for Player
 
 const
@@ -687,7 +691,7 @@ begin
       SetLength(Tracks, 0);
       if (CurLine[1] = 'P') then
       begin
-        CurrentSong.isDuet := true;
+        Self.isDuet := true;
         SetLength(Tracks, 2);
         CurrentTrack := -1;
       end
@@ -762,7 +766,7 @@ begin
           // sets the rap icon if the song has rap notes
           if(Param0 in ['R', 'G']) then
           begin
-            CurrentSong.hasRap := true;
+            Self.hasRap := true;
           end;
           // read notes
           Param1 := ParseLyricIntParam(CurLine, LinePos);
@@ -781,13 +785,13 @@ begin
             Param0 := 'F';
           end;
 
-          if (OutOfBoundsToFreestyle and (((CurrentSong.Start > 0) and (GetTimeFromBeat(Param1, Self) < CurrentSong.Start)) or ((AudioLength > 0) and (GetTimeFromBeat(Param1 + Param3, Self) >= AudioLength)))) then
+          if (OutOfBoundsToFreestyle and (((Self.Start > 0) and (GetTimeFromBeat(Param1, Self) < Self.Start)) or ((AudioLength > 0) and (GetTimeFromBeat(Param1 + Param3, Self) >= AudioLength)))) then
           begin
             // convert to freestyle note
             Param0 := 'F';
             Log.LogWarn(
               Format('Note at "%s %d %d %d %s" is before audio start (%.2f < %.2f) or after audio end (%.2f >= %.2f) -> converted to freestyle note',
-              [Param0, Param1, Param2, Param3, ParamLyric, GetTimeFromBeat(Param1, Self), CurrentSong.Start, GetTimeFromBeat(Param1 + Param3, Self), AudioLength]),
+              [Param0, Param1, Param2, Param3, ParamLyric, GetTimeFromBeat(Param1, Self), Self.Start, GetTimeFromBeat(Param1 + Param3, Self), AudioLength]),
               'TSong.LoadSong'
             );
           end;
@@ -841,7 +845,7 @@ begin
   begin
     if ((Both) or (TrackIndex = 0)) then
     begin
-      if (Length(Tracks[TrackIndex].Lines) < 1) then
+  if (Length(Tracks[TrackIndex].Lines) < 1) then
       begin
         LastError := 'ERROR_CORRUPT_SONG_NO_BREAKS';
         Log.LogError('Error loading file: Can''t find any linebreaks in "' + FileNamePath.ToNative + '"');
@@ -854,7 +858,7 @@ begin
         Tracks[TrackIndex].High := Tracks[TrackIndex].High - 1;
         Tracks[TrackIndex].Number := Tracks[TrackIndex].Number - 1;
         // HACK DUET ERROR
-        if not (CurrentSong.isDuet) then
+        if not Self.isDuet then
           Log.LogError('Error loading Song, sentence w/o note found in last line before E: ' + FileNamePath.ToNative);
       end;
     end;
@@ -1548,7 +1552,7 @@ begin
   else
   begin //use old line if it there were no notes added since last call of NewSentence
     // HACK DUET ERROR
-    if not (CurrentSong.isDuet) then
+    if not Self.isDuet then
       Log.LogError('Error loading Song, sentence w/o note found in line ' +
                  InttoStr(FileLineNo) + ': ' + Filename.ToNative);
   end;
@@ -1682,8 +1686,8 @@ begin
     found_end := false;
 
     //set end if duration > MEDLEY_MIN_DURATION
-    if GetTimeFromBeat(self.Medley.StartBeat) + MEDLEY_MIN_DURATION >
-      GetTimeFromBeat(self.Medley.EndBeat) then
+    if GetTimeFromBeat(self.Medley.StartBeat, self) + MEDLEY_MIN_DURATION >
+      GetTimeFromBeat(self.Medley.EndBeat, self) then
     begin
       found_end := true;
     end;
@@ -1697,9 +1701,9 @@ begin
         len_notes := length(Tracks[0].Lines[I].Notes);
         for J := 0 to len_notes - 1 do
         begin
-          if GetTimeFromBeat(self.Medley.StartBeat) + MEDLEY_MIN_DURATION >
+          if GetTimeFromBeat(self.Medley.StartBeat, self) + MEDLEY_MIN_DURATION >
             GetTimeFromBeat(Tracks[0].Lines[I].Notes[J].StartBeat +
-            Tracks[0].Lines[I].Notes[J].Duration) then
+            Tracks[0].Lines[I].Notes[J].Duration, self) then
           begin
             found_end := true;
             self.Medley.EndBeat := Tracks[0].Lines[I].Notes[len_notes-1].StartBeat +
@@ -1724,7 +1728,7 @@ begin
   if self.PreviewStart = 0 then
   begin
     if self.Medley.Source = msCalculated then
-      self.PreviewStart := GetTimeFromBeat(self.Medley.StartBeat);
+      self.PreviewStart := GetTimeFromBeat(self.Medley.StartBeat, self);
   end;
 end;
 
@@ -1870,7 +1874,7 @@ begin
     Result := Self.ReadTxTHeader(SongFile, ReadCustomTags);
 
     //Load Song for Medley Tags
-    CurrentSong := self;
+    CurrentSong := Self;
     Result := Result and LoadOpenedSong(SongFile, FileNamePath, DuetChange, RapToFreestyle, OutOfBoundsToFreestyle, AudioLength);
 
     if Result then
@@ -1882,7 +1886,15 @@ begin
         Self.Medley.Source := msNone;
     end;
   except
-    Log.LogError('Reading headers from file failed. File incomplete or not Ultrastar txt?: ' + FileNamePath.ToUTF8(true));
+    on E: Exception do
+    begin
+      Log.LogError(Format('Reading headers from file failed (%s: %s) in line %d: %s',
+        [E.ClassName, E.Message, FileLineNo, FileNamePath.ToUTF8(true)]));
+    end;
+    on E: TObject do
+    begin
+      Log.LogError('Reading headers from file failed with non-exception object: ' + FileNamePath.ToUTF8(true));
+    end;
   end;
   SongFile.Free;
 end;

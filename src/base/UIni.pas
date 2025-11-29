@@ -151,6 +151,7 @@ type
       Debug:          integer;
       AVDelay:        integer;
       MicDelay:       integer;
+      GameThreads:    integer;
 
       // Graphics
       MaxFramerate:   byte;
@@ -1480,6 +1481,9 @@ begin
   AVDelay := IniFile.ReadInteger('Game', 'AVDelay', 0);
 
   MicDelay := IniFile.ReadInteger('Game', 'MicDelay', 140);
+  GameThreads := IniFile.ReadInteger('Game', 'Threads', 4);
+  if GameThreads < 1 then
+    GameThreads := 1;
 
   // Read Users Info (Network)
   DataBase.ReadUsers;
@@ -1813,6 +1817,7 @@ begin
 
     IniFile.WriteInteger('Game', 'AVDelay', AVDelay);
     IniFile.WriteInteger('Game', 'MicDelay', MicDelay);
+    IniFile.WriteInteger('Game', 'Threads', GameThreads);
 
     // MaxFramerate
     IniFile.WriteString('Graphics', 'MaxFramerate', IMaxFramerate[MaxFramerate]);

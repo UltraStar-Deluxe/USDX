@@ -37,6 +37,7 @@ uses
   SysUtils,
   dglOpenGL,
   UMusic,
+  UNote,
   UTexture;
 
 type
@@ -219,12 +220,12 @@ var
   CurrentNote: integer;
 begin
   Clear;
-  if (Length(Tracks[CurrentTrack].Lines[CurrentLine].Notes) > 0) then
+  if (Length(CurrentSong.Tracks[CurrentTrack].Lines[CurrentLine].Notes) > 0) then
   begin
-    for CurrentNote := 0 to Tracks[CurrentTrack].Lines[CurrentLine].HighNote do
+    for CurrentNote := 0 to CurrentSong.Tracks[CurrentTrack].Lines[CurrentLine].HighNote do
     begin
-      Italic := Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote].NoteType = ntFreestyle;
-      AddWord(Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote].Text);
+      Italic := CurrentSong.Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote].NoteType = ntFreestyle;
+      AddWord(CurrentSong.Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote].Text);
     end;
   {end else
   begin
