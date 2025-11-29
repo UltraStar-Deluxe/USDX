@@ -53,6 +53,7 @@ type
     Name:     UTF8String;
     Filename: IPath;
     Items:    APlaylistItem;
+    LastRead: LongInt;
   end;
 
   APlaylist = array of TPlaylist;
@@ -65,7 +66,7 @@ type
 
     public
       Mode:         TSongMode;     //Current Playlist Mode for SongScreen
-      CurPlayList:  Cardinal;
+      CurPlayList:  Integer;
       CurItem:      Cardinal;
 
       Playlists:    APlaylist;
@@ -73,9 +74,11 @@ type
       constructor Create;
       procedure   LoadPlayLists;
       function    LoadPlayList(Index: Cardinal; const Filename: IPath): Boolean;
+      function    ReloadPlayList(Index: Cardinal): Boolean;
       procedure   SavePlayList(Index: Cardinal);
 
-      procedure   SetPlayList(Index: Cardinal);
+      procedure   SetPlayList(Index: Integer; SongID: Integer = -1);
+      procedure   UnsetPlaylist;
 
       function    AddPlaylist(const Name: UTF8String): Cardinal;
       procedure   DelPlaylist(const Index: Cardinal);
@@ -115,6 +118,7 @@ constructor TPlayListManager.Create;
 begin
   inherited;
   LoadPlayLists;
+  CurPlayList := -1;
 end;
 
 //----------
@@ -198,6 +202,7 @@ begin
   //Set Filename
   Playlists[Index].Filename := Filename;
   Playlists[Index].Name := '';
+  Playlists[Index].LastRead := FileAge(Filename.ToNative);
 
   //Read Until End of File
   while TextStream.ReadLine(Line) do
@@ -245,6 +250,31 @@ begin
   TextStream.Free;
 end;
 
+//----------
+//ReloadPlayList - Reload a Playlist in the Array
+//----------
+function TPlayListManager.ReloadPlayList(Index: Cardinal): Boolean;
+var
+  PlaylistFile: IPath;
+begin
+  if (Int(Index) > High(PlayLists)) then
+  begin
+    Result := False;
+    Exit;
+  end;
+
+  PlaylistFile := PlaylistPath.Append(Playlists[Index].Filename);
+  if not FileExists(PlaylistFile.ToNative) or (FileAge(PlaylistFile.ToNative) <= Playlists[Index].LastRead) then
+  begin
+    Result := false;
+    Exit;
+  end;
+
+  SetLength(PlayLists[Index].Items, 0);
+
+  Result := LoadPlayList(Index, PlayLists[Index].Filename);
+end;
+
 {**
  * Saves the specified Playlist
  *}
@@ -289,11 +319,12 @@ end;
 {**
  * Display a Playlist in CatSongs
  *}
-procedure TPlayListManager.SetPlayList(Index: Cardinal);
+procedure TPlayListManager.SetPlayList(Index: Integer; SongID: Integer = -1);
 var
   I: Integer;
+  Found: Boolean;
 begin
-  if (Int(Index) > High(PlayLists)) then
+  if (Index < 0) or (Index > High(PlayLists)) then
     exit;
 
   //Hide all Songs
@@ -321,12 +352,36 @@ begin
 
   //Fix SongSelection
   ScreenSong.Interaction := 0;
-  ScreenSong.SelectNext;
+  Found := False;
+  if (SongID <> -1) then
+  begin
+    for I := 0 to high(PlayLists[Index].Items) do
+    begin
+      ScreenSong.SelectNext;
+      if (PlayLists[Index].Items[I].SongID = Int(SongID)) then
+      begin
+        Found := True;
+        Break;
+      end;
+    end;
+  end;
+  if (not Found) then
+    ScreenSong.Interaction := 0;
+  if (ScreenSong.Interaction = 0) then
+    ScreenSong.SelectNext;
   ScreenSong.FixSelected;
 
   //Play correct Music
   //ScreenSong.ChangeMusic;
 
+end;
+
+{**
+ * Unset Playlist for CatSongs
+ *}
+procedure TPlayListManager.UnsetPlayList;
+begin
+  CurPlayList := -1; // no playlist selected
 end;
 
 //----------
