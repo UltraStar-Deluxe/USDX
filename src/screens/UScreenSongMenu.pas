@@ -41,6 +41,7 @@ uses
   UMusic,
   UThemes,
   sdl2,
+  dglOpenGL,
   SysUtils;
 
 type
@@ -299,6 +300,7 @@ end;
 
 function TScreenSongMenu.Draw: boolean;
 begin
+  glClear(GL_DEPTH_BUFFER_BIT);
   Result := inherited Draw;
 end;
 
