@@ -69,11 +69,11 @@ procedure ResetSingTemp;
 var
   Count:  integer;
 begin
-  SetLength(Tracks, Length(Player));
+  SetLength(CurrentSong.Tracks, Length(Player));
   for Count := 0 to High(Player) do begin
-    SetLength(Tracks[Count].Lines, 1);
-    SetLength(Tracks[Count].Lines[0].Notes, 0);
-    Tracks[Count].Lines[0].Lyric := '';
+    SetLength(CurrentSong.Tracks[Count].Lines, 1);
+    SetLength(CurrentSong.Tracks[Count].Lines[0].Notes, 0);
+    CurrentSong.Tracks[Count].Lines[0].Lyric := '';
     Player[Count].Score := 0;
     Player[Count].LengthNote := 0;
     Player[Count].HighNote := -1;
