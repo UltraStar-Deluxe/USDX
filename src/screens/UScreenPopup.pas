@@ -333,6 +333,7 @@ end;
 
 function TScreenPopupCheck.Draw: boolean;
 begin
+  glClear(GL_DEPTH_BUFFER_BIT);
   Result := inherited Draw;
 end;
 
@@ -487,6 +488,7 @@ end;
 
 function TScreenPopupInsertUser.Draw: boolean;
 begin
+  glClear(GL_DEPTH_BUFFER_BIT);
   Result := inherited Draw;
 end;
 
@@ -784,6 +786,7 @@ end;
 
 function TScreenPopupSendScore.Draw: boolean;
 begin
+  glClear(GL_DEPTH_BUFFER_BIT);
   Result := inherited Draw;
 end;
 
@@ -1162,6 +1165,7 @@ function TScreenPopupScoreDownload.Draw: boolean;
 var
   I: integer;
 begin
+  glClear(GL_DEPTH_BUFFER_BIT);
   inherited Draw;
 
   Text[0].Text := Text_SongSituation;
@@ -1485,7 +1489,8 @@ end;
 
 function TScreenPopup.Draw: boolean;
 begin
-  Draw := inherited Draw;
+  glClear(GL_DEPTH_BUFFER_BIT);
+  Result := inherited Draw;
 end;
 
 procedure TScreenPopup.OnShow;
@@ -1605,6 +1610,7 @@ var
   abs:  real;
 begin
 //inherited Draw; TODO: FIX
+  glClear(GL_DEPTH_BUFFER_BIT);
   if step<1 then
     abs := 20
   else
