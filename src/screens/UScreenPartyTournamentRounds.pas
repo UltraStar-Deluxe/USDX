@@ -89,7 +89,7 @@ type
       Num: array[0..1]of integer;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       procedure OnShow; override;
       function Draw: boolean; override;
       procedure SetAnimationProgress(Progress: real); override;
@@ -138,7 +138,7 @@ begin
   end;
 end;
 
-function TScreenPartyTournamentRounds.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPartyTournamentRounds.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   p, I: integer;
   SDL_ModState: word;

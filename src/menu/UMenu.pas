@@ -48,13 +48,30 @@ uses
   UMenuText,
   UMusic,
   UTexture,
-  UThemes;
+  UThemes,
+  UKeyBindings;
 
 type
 {  Int16 = SmallInt;}
 
+  TMenuKeyBindingHandler = function(PressedKey: QWord; CharCode: UCS4Char;
+    PressedDown: boolean): boolean of object;
+
+  TMenuKeyBindingEntry = record
+    CategoryId: UTF8String;
+    Token: UTF8String;
+    KeyCode: cardinal;
+    ModifierMask: word;
+    DefaultKey: cardinal;
+    OutputKey: cardinal;
+    Handler: TMenuKeyBindingHandler;
+    HelpRegistered: boolean;
+  end;
+
   PMenu = ^TMenu;
   TMenu = class
+    private
+      FKeyBindingEntries: array of TMenuKeyBindingEntry;
     protected
 
       Interactions:     array of TInteract;
@@ -76,6 +93,19 @@ type
       Fade:       integer; // fade type
       ShowFinish: boolean; // true if there is no fade
       RightMbESC: boolean; // true to simulate ESC keypress when RMB is pressed
+
+  // Key binding context identifier used by dynamic help/translation.
+  // Default implementation returns an empty string which disables translation.
+  function GetKeyBindingContext: UTF8String; virtual;
+  class function BuildModifierMask(const Shift, Ctrl, Alt: boolean): word; static; inline;
+      class function NormalizeModifierMask(ModMask: word): word; static; inline;
+      procedure ClearKeyBindings; virtual;
+      procedure EnsureKeyBindingsPublished; virtual;
+      class procedure DecodeCombinedKey(CombinedKey: UInt64; out KeyCode: cardinal;
+        out ModifierMask: word); static; inline;
+      procedure RegisterKeyBinding(const CategoryId, Token: UTF8String;
+        CombinedKey: UInt64; Handler: TMenuKeyBindingHandler = nil;
+        DefaultKey: cardinal = 0; OutputKey: cardinal = 0);
 
       destructor Destroy; override;
       constructor Create; overload; virtual;
@@ -153,8 +183,8 @@ type
       function DrawBG: boolean; virtual;
       function DrawFG: boolean; virtual;
       function Draw: boolean; virtual;
-      function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean; virtual;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean; virtual;
+      function ShouldHandleInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; virtual;
+      function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; virtual;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; virtual;
       function InRegion(X, Y: real; A: TMouseOverRect): boolean;
       function InRegionX(X: real; A: TMouseOverRect): boolean;
@@ -179,6 +209,9 @@ type
       procedure InteractNextRow; virtual; // this is for the options screen, so button down makes sense
       procedure InteractPrevRow; virtual; // this is for the options screen, so button up makes sense
       procedure AddBox(X, Y, W, H: real);
+
+    class function CombineKey(KeyCode: cardinal; Shift, Ctrl, Alt: boolean): UInt64; overload; static; inline;
+    class function CombineKey(KeyCode: cardinal; ModifierMask: word): UInt64; overload; static; inline;
   end;
 
 function RGBFloatToInt(R, G, B: double): cardinal;
@@ -233,6 +266,7 @@ begin
   for I := 0 to High(Statics) do
     Statics[I].Free;
 
+  ClearKeyBindings;
   Background.Free;
 
   //Log.LogError('Unloaded Succesful: ' + ClassName);
@@ -254,6 +288,125 @@ begin
   Background := nil;
 
   RightMbESC := true;
+end;
+
+function TMenu.GetKeyBindingContext: UTF8String;
+begin
+  Result := '';
+end;
+
+class function TMenu.BuildModifierMask(const Shift, Ctrl, Alt: boolean): word;
+begin
+  Result := 0;
+  if Shift then
+    Result := Result or KMOD_SHIFT;
+  if Ctrl then
+    Result := Result or KMOD_CTRL;
+  if Alt then
+    Result := Result or KMOD_ALT;
+end;
+
+class function TMenu.NormalizeModifierMask(ModMask: word): word;
+begin
+  Result := 0;
+  if (ModMask and (KMOD_LSHIFT or KMOD_RSHIFT or KMOD_SHIFT)) <> 0 then
+    Result := Result or KMOD_SHIFT;
+  if (ModMask and (KMOD_LCTRL or KMOD_RCTRL or KMOD_CTRL)) <> 0 then
+    Result := Result or KMOD_CTRL;
+  if (ModMask and (KMOD_LALT or KMOD_RALT or KMOD_ALT)) <> 0 then
+    Result := Result or KMOD_ALT;
+end;
+
+class procedure TMenu.DecodeCombinedKey(CombinedKey: UInt64; out KeyCode: cardinal;
+  out ModifierMask: word);
+begin
+  KeyCode := cardinal(CombinedKey and $FFFFFFFF);
+  ModifierMask := word((CombinedKey shr 32) and $FFFF);
+end;
+
+procedure TMenu.ClearKeyBindings;
+begin
+  SetLength(FKeyBindingEntries, 0);
+end;
+
+procedure TMenu.EnsureKeyBindingsPublished;
+var
+  I: integer;
+  ContextId: UTF8String;
+begin
+  if (KeyBindings = nil) or (Length(FKeyBindingEntries) = 0) then
+    Exit;
+
+  ContextId := GetKeyBindingContext;
+  if ContextId = '' then
+    Exit;
+
+  for I := 0 to High(FKeyBindingEntries) do
+  begin
+    if FKeyBindingEntries[I].HelpRegistered then
+      Continue;
+
+    if (FKeyBindingEntries[I].CategoryId = '') or (FKeyBindingEntries[I].Token = '') then
+    begin
+      FKeyBindingEntries[I].HelpRegistered := true;
+      Continue;
+    end;
+
+    KeyBindings.RegisterBinding(ContextId,
+      FKeyBindingEntries[I].CategoryId,
+      FKeyBindingEntries[I].Token,
+      FKeyBindingEntries[I].ModifierMask,
+      FKeyBindingEntries[I].DefaultKey,
+      FKeyBindingEntries[I].OutputKey);
+
+    FKeyBindingEntries[I].HelpRegistered := true;
+  end;
+end;
+
+procedure TMenu.RegisterKeyBinding(const CategoryId, Token: UTF8String;
+  CombinedKey: UInt64; Handler: TMenuKeyBindingHandler; DefaultKey,
+  OutputKey: cardinal);
+var
+  Entry: TMenuKeyBindingEntry;
+  KeyCode: cardinal;
+  ModifierMask: word;
+  Index: integer;
+begin
+  DecodeCombinedKey(CombinedKey, KeyCode, ModifierMask);
+
+  Entry.CategoryId := CategoryId;
+  Entry.Token := Token;
+  Entry.KeyCode := KeyCode;
+  Entry.ModifierMask := ModifierMask;
+
+  if DefaultKey = 0 then
+    Entry.DefaultKey := KeyCode
+  else
+    Entry.DefaultKey := DefaultKey;
+
+  if OutputKey = 0 then
+    Entry.OutputKey := KeyCode
+  else
+    Entry.OutputKey := OutputKey;
+
+  Entry.Handler := Handler;
+  Entry.HelpRegistered := false;
+
+  Index := Length(FKeyBindingEntries);
+  SetLength(FKeyBindingEntries, Index + 1);
+  FKeyBindingEntries[Index] := Entry;
+
+  EnsureKeyBindingsPublished;
+end;
+
+class function TMenu.CombineKey(KeyCode: cardinal; Shift, Ctrl, Alt: boolean): UInt64;
+begin
+  Result := CombineKey(KeyCode, BuildModifierMask(Shift, Ctrl, Alt));
+end;
+
+class function TMenu.CombineKey(KeyCode: cardinal; ModifierMask: word): UInt64;
+begin
+  Result := (UInt64(ModifierMask) shl 32) or UInt64(KeyCode);
 end;
 {
 constructor TMenu.Create(Back: string);
@@ -1756,6 +1909,7 @@ end;
 
 procedure TMenu.OnShow;
 begin
+  EnsureKeyBindingsPublished;
   // FIXME: this needs some work. First, there should be a variable like
   // VideoBackground so we can check whether a video-background is enabled or not.
   // Second, a video should be stopped if the screen is hidden, but the Video.Stop()
@@ -1799,16 +1953,44 @@ begin
   // nothing
 end;
 
-function TMenu.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
+function TMenu.ShouldHandleInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
 begin
   // nothing
   Result := true;
 end;
 
-function TMenu.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TMenu.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+var
+  ModState: word;
+  I: integer;
 begin
-  // nothing
   Result := true;
+
+  ModState := SDL_GetModState;
+
+  Log.LogInfo('ParseInput: PressedKey=' + IntToHex(PressedKey, 16) + ' CharCode=' + IntToHex(CharCode, 8) + ' ModState=' + IntToHex(ModState, 8) + ' PressedDown=' + BoolToStr(PressedDown, true), 'TMenu.ParseInput');
+  for I := 0 to High(FKeyBindingEntries) do
+  begin
+    Log.LogInfo('  Entry[' + IntToStr(I) + ']: KeyCode=' + IntToHex(FKeyBindingEntries[I].KeyCode, 8) + ' ModifierMask=' + IntToHex(FKeyBindingEntries[I].ModifierMask, 8), 'TMenu.ParseInput');
+    if (FKeyBindingEntries[I].KeyCode <> PressedKey) then
+    begin
+      Log.LogInfo('    KeyCode mismatch: ' + IntToHex(FKeyBindingEntries[I].KeyCode, 8) + ' <> ' + IntToHex(PressedKey, 8), 'TMenu.ParseInput');
+      Continue;
+    end;
+    Log.LogInfo('    Match found, checking handler...', 'TMenu.ParseInput');
+    if Assigned(FKeyBindingEntries[I].Handler) then
+    begin
+      Log.LogInfo('    Handler assigned, calling handler.', 'TMenu.ParseInput');
+      Result := FKeyBindingEntries[I].Handler(PressedKey, CharCode, PressedDown);
+      Log.LogInfo('    Handler returned: ' + BoolToStr(Result, true), 'TMenu.ParseInput');
+      Exit;
+    end
+    else
+    begin
+      Log.LogInfo('    No handler assigned.', 'TMenu.ParseInput');
+    end;
+  end;
+  Log.LogInfo('ParseInput: No matching keybinding found.', 'TMenu.ParseInput');
 end;
 
 function TMenu.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;

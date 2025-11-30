@@ -92,7 +92,7 @@ type
 
     public
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       procedure OnShow; override;
       function Draw: boolean; override;
       procedure InteractInc; override;
@@ -119,7 +119,7 @@ uses
   UUnicodeUtils,
   SysUtils;
 
-function TScreenOptionsJukebox.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenOptionsJukebox.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   SDL_ModState:  word;
   Salt_Mod:      integer;

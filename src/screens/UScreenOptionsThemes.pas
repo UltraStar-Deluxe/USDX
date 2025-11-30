@@ -57,7 +57,7 @@ type
       SkinSelect: integer;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       procedure OnShow; override;
       procedure InteractInc; override;
       procedure InteractDec; override;
@@ -79,7 +79,7 @@ uses
   UUnicodeUtils,
   SysUtils;
 
-function TScreenOptionsThemes.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenOptionsThemes.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if (PressedDown) then

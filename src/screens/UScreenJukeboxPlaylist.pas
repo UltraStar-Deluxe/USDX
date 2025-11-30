@@ -58,7 +58,7 @@ type
       procedure SetPlaylists;
     public
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       procedure OnShow; override;
       procedure SetAnimationProgress(Progress: real); override;
 
@@ -84,7 +84,7 @@ uses
   USongs,
   UUnicodeUtils;
 
-function TScreenJukeboxPlaylist.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenJukeboxPlaylist.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   Report: string;
   I: Integer;

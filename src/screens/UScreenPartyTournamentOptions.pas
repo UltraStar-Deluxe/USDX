@@ -58,7 +58,7 @@ type
     public
       constructor Create; override;
       procedure UpdateTournament;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       procedure OnShow; override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
@@ -100,7 +100,7 @@ begin
 
 end;
 
-function TScreenPartyTournamentOptions.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPartyTournamentOptions.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   I, J : integer;
 begin

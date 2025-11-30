@@ -92,8 +92,8 @@ type
       Goto_SingScreen: boolean; //If true then next Screen in SingScreen
       
       constructor Create; override;
-      function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ShouldHandleInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; override;
+      function ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
 
       procedure OnShow; override;
@@ -243,7 +243,7 @@ begin
   end;
 end;
 
-function TScreenName.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
+function TScreenName.ShouldHandleInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
 begin
   Result := inherited;
   // only suppress special keys for now
@@ -261,7 +261,7 @@ begin
   end;
 end;
 
-function TScreenName.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenName.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
   var
     I: integer;
     SDL_ModState: word;
