@@ -107,11 +107,11 @@ type
     fLoadingBaseText:    UTF8String;
     fLastProgressRedrawTicks: cardinal;
     fSongQueue:          TInterfaceList;
-    fQueueLock:          TCriticalSection;
+    fQueueLock:          TRTLCriticalSection;
     fDirQueue:           TInterfaceList;
-    fDirQueueLock:       TCriticalSection;
-    fSongListLock:       TCriticalSection;
-    fProgressLock:       TCriticalSection;
+    fDirQueueLock:       TRTLCriticalSection;
+    fSongListLock:       TRTLCriticalSection;
+    fProgressLock:       TRTLCriticalSection;
     fQueueEvent:         TEvent;
     fDiscoveryFinished:  boolean;
     procedure int_LoadSongList;
@@ -303,11 +303,11 @@ begin
   Loaded := Song.Analyse;
   if Loaded then
   begin
-    FOwner.fSongListLock.Enter;
+    System.EnterCriticalSection(FOwner.fSongListLock);
     try
       FOwner.SongList.Add(Song);
     finally
-      FOwner.fSongListLock.Leave;
+      System.LeaveCriticalSection(FOwner.fSongListLock);
     end;
   end
   else
@@ -324,11 +324,11 @@ begin
 
   SongList           := TList.Create();
   fSongQueue         := TInterfaceList.Create;
-  fQueueLock         := TCriticalSection.Create;
   fDirQueue          := TInterfaceList.Create;
-  fDirQueueLock      := TCriticalSection.Create;
-  fSongListLock      := TCriticalSection.Create;
-  fProgressLock      := TCriticalSection.Create;
+  InitCriticalSection(fQueueLock);
+  InitCriticalSection(fDirQueueLock);
+  InitCriticalSection(fSongListLock);
+  InitCriticalSection(fProgressLock);
   fQueueEvent        := TEvent.Create(nil, true, false, '');
 
   // until it is fixed, simply load the song-list
@@ -339,9 +339,10 @@ destructor TSongs.Destroy();
 begin
   if assigned(fQueueEvent) then
     fQueueEvent.Free;
-  FreeAndNil(fProgressLock);
-  FreeAndNil(fSongListLock);
-  FreeAndNil(fQueueLock);
+  DoneCriticalSection(fProgressLock);
+  DoneCriticalSection(fSongListLock);
+  DoneCriticalSection(fQueueLock);
+  DoneCriticalSection(fDirQueueLock);
   FreeAndNil(fSongQueue);
   FreeAndNil(SongList);
 
@@ -350,7 +351,7 @@ end;
 
 procedure TSongs.ResetSongQueue;
 begin
-  fQueueLock.Enter;
+  System.EnterCriticalSection(fQueueLock);
   try
     if assigned(fSongQueue) then
       fSongQueue.Clear;
@@ -358,14 +359,14 @@ begin
     if assigned(fQueueEvent) then
       fQueueEvent.ResetEvent;
   finally
-    fQueueLock.Leave;
+    System.LeaveCriticalSection(fQueueLock);
   end;
-  fDirQueueLock.Enter;
+  System.EnterCriticalSection(fDirQueueLock);
   try
     if assigned(fDirQueue) then
       fDirQueue.Clear;
   finally
-    fDirQueueLock.Leave;
+    System.LeaveCriticalSection(fDirQueueLock);
   end;
 end;
 
@@ -379,13 +380,13 @@ begin
 
   FilePathStr := FilePath.ToUTF8();
   FilePathCopy := Path(FilePathStr);
-  fQueueLock.Enter;
+  System.EnterCriticalSection(fQueueLock);
   try
     fSongQueue.Add(FilePathCopy);
     if assigned(fQueueEvent) then
       fQueueEvent.SetEvent;
   finally
-    fQueueLock.Leave;
+    System.LeaveCriticalSection(fQueueLock);
   end;
 
   IncrementTotalSongs(1);
@@ -399,7 +400,7 @@ begin
   FilePath := nil;
   Result := false;
 
-  fQueueLock.Enter;
+  System.EnterCriticalSection(fQueueLock);
   try
     if (fSongQueue <> nil) and (fSongQueue.Count > 0) then
     begin
@@ -412,18 +413,18 @@ begin
         fQueueEvent.ResetEvent;
     end
   finally
-    fQueueLock.Leave;
+    System.LeaveCriticalSection(fQueueLock);
   end;
 end;
 
 function TSongs.HasPendingWork: boolean;
 begin
-  fQueueLock.Enter;
+  System.EnterCriticalSection(fQueueLock);
   try
     Result := (not fDiscoveryFinished) or
               ((fSongQueue <> nil) and (fSongQueue.Count > 0));
   finally
-    fQueueLock.Leave;
+    System.LeaveCriticalSection(fQueueLock);
   end;
 end;
 
@@ -437,13 +438,13 @@ end;
 
 procedure TSongs.MarkDiscoveryFinished;
 begin
-  fQueueLock.Enter;
+  System.EnterCriticalSection(fQueueLock);
   try
     fDiscoveryFinished := true;
     if assigned(fQueueEvent) then
       fQueueEvent.SetEvent;
   finally
-    fQueueLock.Leave;
+    System.LeaveCriticalSection(fQueueLock);
   end;
 end;
 
@@ -459,14 +460,14 @@ begin
   while true do
   begin
     // Dequeue a directory
-    fDirQueueLock.Enter;
+    System.EnterCriticalSection(fDirQueueLock);
     try
       if (fDirQueue = nil) or (fDirQueue.Count = 0) then
         Exit;
       Dir := fDirQueue[0] as IPath;
       fDirQueue.Delete(0);
     finally
-      fDirQueueLock.Leave;
+      System.LeaveCriticalSection(fDirQueueLock);
     end;
 
     if Dir = nil then
@@ -482,11 +483,11 @@ begin
         if (not FileName.Equals('.')) and (not FileName.Equals('..')) and (not FileName.Equals('')) then
         begin
           // Enqueue subdirectory
-          fDirQueueLock.Enter;
+          System.EnterCriticalSection(fDirQueueLock);
           try
             fDirQueue.Add(Dir.Append(FileName));
           finally
-            fDirQueueLock.Leave;
+            System.LeaveCriticalSection(fDirQueueLock);
           end;
         end;
       end
@@ -505,17 +506,12 @@ begin
   if Delta = 0 then
     Exit;
 
-  if assigned(fProgressLock) then
-  begin
-    fProgressLock.Enter;
-    try
-      Inc(fTotalSongsToLoad, Delta);
-    finally
-      fProgressLock.Leave;
-    end;
-  end
-  else
+  System.EnterCriticalSection(fProgressLock);
+  try
     Inc(fTotalSongsToLoad, Delta);
+  finally
+    System.LeaveCriticalSection(fProgressLock);
+  end;
 end;
 
 procedure TSongs.IncrementSongsLoaded(const Delta: integer);
@@ -523,17 +519,12 @@ begin
   if Delta = 0 then
     Exit;
 
-  if assigned(fProgressLock) then
-  begin
-    fProgressLock.Enter;
-    try
-      Inc(fSongsLoaded, Delta);
-    finally
-      fProgressLock.Leave;
-    end;
-  end
-  else
+  System.EnterCriticalSection(fProgressLock);
+  try
     Inc(fSongsLoaded, Delta);
+  finally
+    System.LeaveCriticalSection(fProgressLock);
+  end;
 end;
 
 procedure TSongs.WaitForWorkerThreads(var Workers: array of TThread);
@@ -587,19 +578,19 @@ begin
 
     Log.LogStatus('Searching For Songs', 'SongList');
 
-    fProgressLock.Enter;
+    System.EnterCriticalSection(fProgressLock);
     try
       fSongsLoaded := 0;
       fTotalSongsToLoad := 0;
     finally
-      fProgressLock.Leave;
+      System.LeaveCriticalSection(fProgressLock);
     end;
     fLoadingBaseTemplate := '';
     fLoadingBaseText := '';
     fLastProgressRedrawTicks := 0;
     ResetSongQueue;
     // Initialize directory queue with root song paths
-    fDirQueueLock.Enter;
+    System.EnterCriticalSection(fDirQueueLock);
     try
       if assigned(fDirQueue) then
         fDirQueue.Clear;
@@ -607,7 +598,7 @@ begin
         for I := 0 to SongPaths.Count - 1 do
           fDirQueue.Add(SongPaths[I]);
     finally
-      fDirQueueLock.Leave;
+      System.LeaveCriticalSection(fDirQueueLock);
     end;
     UpdateLoadingProgress;
 
@@ -708,20 +699,12 @@ begin
   if (NowTicks - fLastProgressRedrawTicks < 100) and (fLastProgressRedrawTicks <> 0) then
     Exit;
 
-  if assigned(fProgressLock) then
-  begin
-    fProgressLock.Enter;
-    try
-      LoadedValue := fSongsLoaded;
-      TotalValue := fTotalSongsToLoad;
-    finally
-      fProgressLock.Leave;
-    end;
-  end
-  else
-  begin
+  System.EnterCriticalSection(fProgressLock);
+  try
     LoadedValue := fSongsLoaded;
     TotalValue := fTotalSongsToLoad;
+  finally
+    System.LeaveCriticalSection(fProgressLock);
   end;
 
   LoadingText := ScreenLoading.Text[0];
