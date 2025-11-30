@@ -41,6 +41,7 @@ uses
   ULyrics,
   UMenu,
   UMusic,
+  UNote,
   UThemes,
   sdl2,
   TextGL;

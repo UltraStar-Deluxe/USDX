@@ -1277,9 +1277,9 @@ begin
   SongDuration := SongEnd - SongStart;
   gapInBeats := CurrentSong.BPM[0].BPM*CurrentSong.GAP/1000/60;
   // draw sentence boxes
-  for CurrentTrack := 0 to High(Tracks) do //for P1 of duet or solo lyrics, P2 of duet,..
+  for CurrentTrack := 0 to High(CurrentSong.Tracks) do //for P1 of duet or solo lyrics, P2 of duet,..
   begin
-    numLines := Length(Tracks[CurrentTrack].Lines); //Lyric lines
+    numLines := Length(CurrentSong.Tracks[CurrentTrack].Lines); //Lyric lines
     //set color to player.color
     if (CurrentTrack = 0) then
       glColor4f(GetLyricColor(Ini.SingColor[0]).R, GetLyricColor(Ini.SingColor[0]).G, GetLyricColor(Ini.SingColor[0]).B, 0.6)
@@ -1289,12 +1289,12 @@ begin
     glbegin(gl_quads);
     for LineIndex := 0 to numLines - 1 do
     begin
-      if (Tracks[CurrentTrack].Lines[LineIndex].Notes = nil) then Continue;
-      if (ScreenSong.Mode = smMedley) and (Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat < CurrentSong.Medley.StartBeat) then Continue;
-      pos := (gapInBeats + Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat - SongStart) / SongDuration*w;
-      br := (Tracks[CurrentTrack].Lines[LineIndex].Notes[Tracks[CurrentTrack].Lines[LineIndex].HighNote].StartBeat +
-                Tracks[CurrentTrack].Lines[LineIndex].Notes[Tracks[CurrentTrack].Lines[LineIndex].HighNote].Duration -
-                Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat) / SongDuration*w; //br = last note of sentence position + its duration - first note of sentence position
+      if (CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes = nil) then Continue;
+      if (ScreenSong.Mode = smMedley) and (CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat < CurrentSong.Medley.StartBeat) then Continue;
+      pos := (gapInBeats + CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat - SongStart) / SongDuration*w;
+      br := (CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].HighNote].StartBeat +
+                CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].HighNote].Duration -
+                CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat) / SongDuration*w;  //br = last note of sentence position + its duration - first note of sentence position
 
       //draw a square
       glVertex2f(x+pos, y); //left top
