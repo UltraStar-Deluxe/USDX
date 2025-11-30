@@ -47,7 +47,7 @@ uses
   sdl2;
 
 type
-  TScreenOptionsNetwork = class(TMenu)
+  TScreenOptionsNetwork = class(TOptionsMenu)
     CurrentUserIndex: integer;
     CurrentWebsiteIndex: integer;
     CurrentUserSendNameIndex: integer;
@@ -75,6 +75,10 @@ type
       procedure UpdateUsernameSettings;
       procedure UpdateSettings;
       procedure DeleteUser;
+
+    protected
+      procedure LoadLegend; override;
+      procedure LoadWidgets; override;
   end;
 
 const
@@ -414,10 +418,11 @@ end;
 
 constructor TScreenOptionsNetwork.Create;
 var
-  I:  integer;
+  But: TThemeButton;
 begin
   inherited Create;
-
+  Description := Language.Translate('SING_OPTIONS_NETWORK_DESC');
+  WhereAmI := Language.Translate('SING_OPTIONS_NETWORK_WHEREAMI');
   CurrentUserIndex := 0;
   CurrentWebsiteIndex := 0;
   CurrentUserSendNameIndex := 0;
@@ -426,82 +431,32 @@ begin
   CurrentUserScoreEasyIndex := 0;
   CurrentUserScoreMediumIndex := 0;
   CurrentUserScoreHardIndex := 0;
+  Load;
 
-  LoadFromTheme(Theme.OptionsNetwork);
-
-  if (High(DataBase.NetworkUser) = -1) then
+  But := Theme.OptionsSub.Button;
+  with But do
   begin
-    // No Exist Compatible Dll's
-    No_Dll := true;
-  end
-  else
-  begin
-    No_Dll := false;
-
-    SetLength(IWebsite, Length(DataBase.NetworkUser));
-
-    for I := 0 to High(DataBase.NetworkUser) do
-      IWebsite[I] := DataBase.NetworkUser[I].Website;
-
-    SetLength(IUsername, Length(DataBase.NetworkUser[CurrentWebsiteIndex].UserList));
-    //SetLength(IPassword, Length(DataBase.NetworkUser[CurrentWebsiteIndex].UserList));
-
-    for I := 0 to High(DataBase.NetworkUser[CurrentWebsiteIndex].UserList) do
-    begin
-      IUsername[I] := DataBase.NetworkUser[CurrentWebsiteIndex].UserList[I].Username;
-      //IPassword[I] := DataBase.NetworkUser[CurrentWebsiteIndex].UserList[I].Password;
-    end;
-
-    if (High(IWebsite) > 0) then
-      Theme.OptionsNetwork.SelectWebsite.showArrows := true
-    else
-      Theme.OptionsNetwork.SelectWebsite.showArrows := false;
-
-    Theme.OptionsNetwork.SelectWebsite.oneItemOnly := true;
-    AddSelectSlide(Theme.OptionsNetwork.SelectWebsite, CurrentWebsiteIndex, IWebsite);
-
-    if (High(IUsername) > 0) then
-      Theme.OptionsNetwork.SelectUsername.showArrows := true
-    else
-      Theme.OptionsNetwork.SelectUsername.showArrows := false;
-    Theme.OptionsNetwork.SelectUsername.oneItemOnly := true;
-    AddSelectSlide(Theme.OptionsNetwork.SelectUsername, CurrentUserIndex, IUsername);
-
-    Theme.OptionsNetwork.SelectSendName.showArrows := true;
-    Theme.OptionsNetwork.SelectSendName.oneItemOnly := true;
-    AddSelectSlide(Theme.OptionsNetwork.SelectSendName, CurrentUserSendNameIndex, ISendNameTranslated);
-
-    Theme.OptionsNetwork.SelectAutoMode.showArrows := true;
-    Theme.OptionsNetwork.SelectAutoMode.oneItemOnly := true;
-    AddSelectSlide(Theme.OptionsNetwork.SelectAutoMode, CurrentUserModeIndex, IAutoModeTranslated);
-
-    Theme.OptionsNetwork.SelectAutoPlayer.showArrows := true;
-    Theme.OptionsNetwork.SelectAutoPlayer.oneItemOnly := true;
-    AddSelectSlide(Theme.OptionsNetwork.SelectAutoPlayer, CurrentUserPlayerIndex, IAutoPlayerTranslated);
-
-    Theme.OptionsNetwork.SelectAutoScoreEasy.showArrows := true;
-    Theme.OptionsNetwork.SelectAutoScoreEasy.oneItemOnly := true;
-    AddSelectSlide(Theme.OptionsNetwork.SelectAutoScoreEasy, CurrentUserScoreEasyIndex, IAutoScoreEasyTranslated);
-
-    Theme.OptionsNetwork.SelectAutoScoreMedium.showArrows := true;
-    Theme.OptionsNetwork.SelectAutoScoreMedium.oneItemOnly := true;
-    AddSelectSlide(Theme.OptionsNetwork.SelectAutoScoreMedium, CurrentUserScoreMediumIndex, IAutoScoreMediumTranslated);
-
-    Theme.OptionsNetwork.SelectAutoScoreHard.showArrows := true;
-    Theme.OptionsNetwork.SelectAutoScoreHard.oneItemOnly := true;
-    AddSelectSlide(Theme.OptionsNetwork.SelectAutoScoreHard, CurrentUserScoreHardIndex, IAutoScoreHardTranslated);
-
-    Theme.OptionsNetwork.TextInsertUser.Text := Language.Translate('SING_OPTIONS_NETWORK_INSERT_USER_INFO');
-    TextInsertUser_Warning := AddText(Theme.OptionsNetwork.TextInsertUser);
-
-    AddButton(Theme.OptionsNetwork.ButtonExit);
-    if (Length(Button[0].Text)=0) then
-      AddButtonText(20, 5, Theme.Options.Description[OPTIONS_DESC_INDEX_BACK]);
-
-    InsertButton := AddButton(Theme.OptionsNetwork.ButtonInsert);
-
-    Interaction := 0;
+    X := 550;
+    Y := Round(Button[High(Button)].Y);
+    W := 180;
+    SelectW := 180;
   end;
+  SetLength(But.Text, 1);
+  with But.Text[0] do
+  begin
+    X := 90;
+    Y := 3;
+    Align := 1;
+    ColR := 1;
+    ColG := 1;
+    ColG := 1;
+    Size := 30;
+    Text := Language.Translate('SING_OPTIONS_NETWORK_LEGEND_INSERT');
+  end;
+  AddButton(But);
+  TextInsertUser_Warning := AddText(400, 215, 380, 0, 0, 0, 24, 1, 1, 1, 1, Language.Translate('SING_OPTIONS_NETWORK_INSERT_USER_INFO'), false, 0, 1, false);
+
+  Interaction := 0;
 end;
 
 procedure TScreenOptionsNetwork.OnShow;
@@ -569,8 +524,8 @@ begin
     SelectsS[1].ShowArrows := true
   else
     SelectsS[1].ShowArrows := false;
-  UpdateSelectSlideOptions(Theme.OptionsNetwork.SelectUsername, 1, IUsername, CurrentUserIndex);
-//  UpdateSelectSlideOptions(Theme.OptionsNetwork.SelectPassword, 2, IPassword, CurrentUserIndex);
+  UpdateSelectSlideOptions(1, IUsername, CurrentUserIndex);
+  //UpdateSelectSlideOptions(2, IPassword, CurrentUserIndex);
 
   if (High(IUsername) > -1) then
   begin
@@ -663,8 +618,8 @@ begin
     if (High(IUsername) = 0) then
       SelectsS[1].ShowArrows := false;
 
-    UpdateSelectSlideOptions(Theme.OptionsNetwork.SelectUsername, 1, IUsername, CurrentUserIndex);
-    //UpdateSelectSlideOptions(Theme.OptionsNetwork.SelectPassword, 2, IPassword, CurrentUserIndex);
+    UpdateSelectSlideOptions(1, IUsername, CurrentUserIndex);
+    //UpdateSelectSlideOptions(2, IPassword, CurrentUserIndex);
     UpdateUsernameSettings;
   end
   else
@@ -678,6 +633,65 @@ begin
     Interaction := 0;
   end;
 
+end;
+
+procedure TScreenOptionsNetwork.LoadLegend;
+var
+  I: integer;
+begin
+  for I := Low(Theme.OptionsNetworkLegendStatic) to High(Theme.OptionsNetworkLegendStatic) do
+    AddStatic(Theme.OptionsNetworkLegendStatic[I]);
+
+  for I := Low(Theme.OptionsNetworkLegendText) to High(Theme.OptionsNetworkLegendText) do
+    AddText(Theme.OptionsNetworkLegendText[I]);
+end;
+
+procedure TScreenOptionsNetwork.LoadWidgets;
+var
+  I:  integer;
+begin
+  if (High(DataBase.NetworkUser) = -1) then
+  begin
+    // No Exist Compatible Dll's
+    No_Dll := true;
+  end
+  else
+  begin
+    No_Dll := false;
+    SetLength(IWebsite, Length(DataBase.NetworkUser));
+
+    for I := 0 to High(DataBase.NetworkUser) do
+      IWebsite[I] := DataBase.NetworkUser[I].Website;
+
+    SetLength(IUsername, Length(DataBase.NetworkUser[CurrentWebsiteIndex].UserList));
+    //SetLength(IPassword, Length(DataBase.NetworkUser[CurrentWebsiteIndex].UserList));
+
+    for I := 0 to High(DataBase.NetworkUser[CurrentWebsiteIndex].UserList) do
+    begin
+      IUsername[I] := DataBase.NetworkUser[CurrentWebsiteIndex].UserList[I].Username;
+      //IPassword[I] := DataBase.NetworkUser[CurrentWebsiteIndex].UserList[I].Password;
+    end;
+
+    AddSelectSlide('SING_OPTIONS_NETWORK_WEBSITE', CurrentWebsiteIndex, IWebsite);
+    if (High(IWebsite) > 0) then
+      SelectsS[High(SelectsS)].showArrows := true
+    else
+      SelectsS[High(SelectsS)].showArrows := false;
+
+    AddSelectSlide('SING_OPTIONS_NETWORK_USERNAME', CurrentUserIndex, IUsername);
+    if (High(IUsername) > 0) then
+      SelectsS[High(SelectsS)].showArrows := true
+    else
+      SelectsS[High(SelectsS)].showArrows := false;
+
+    AddSelectSlide('SING_OPTIONS_NETWORK_SEND_SAVE_PLAYER_NAME', CurrentUserSendNameIndex, ISendNameTranslated);
+    AddSelectSlide('SING_OPTIONS_NETWORK_AUTO_MODE', CurrentUserModeIndex, IAutoModeTranslated);
+    AddSelectSlide('SING_OPTIONS_NETWORK_AUTO_PLAYER', CurrentUserPlayerIndex, IAutoPlayerTranslated);
+    AddSelectSlide('SING_OPTIONS_NETWORK_AUTO_SCORE_EASY', CurrentUserScoreEasyIndex, IAutoScoreEasyTranslated);
+    AddSelectSlide('SING_OPTIONS_NETWORK_AUTO_SCORE_MEDIUM', CurrentUserScoreMediumIndex, IAutoScoreMediumTranslated);
+    AddSelectSlide('SING_OPTIONS_NETWORK_AUTO_SCORE_HARD', CurrentUserScoreHardIndex, IAutoScoreHardTranslated);
+
+  end;
 end;
 
 end.

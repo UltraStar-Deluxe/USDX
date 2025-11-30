@@ -43,7 +43,7 @@ uses
   sdl2;
 
 type
-  TScreenOptionsGraphics = class(TMenu)
+  TScreenOptionsGraphics = class(TOptionsMenu)
     private
       SelectWindowMode:    cardinal;
       SelectResolution:    cardinal;
@@ -62,6 +62,9 @@ type
       procedure OnShow; override;
       procedure OnHide; override;
       procedure OnWindowResized; override;
+
+    protected
+      procedure LoadWidgets; override;
   end;
 
 const
@@ -72,6 +75,7 @@ implementation
 uses
   UGraphic,
   UHelp,
+  ULanguage,
   ULog,
   UUnicodeUtils,
   SysUtils;
@@ -154,41 +158,12 @@ end;
 constructor TScreenOptionsGraphics.Create;
 begin
   inherited Create;
-  LoadFromTheme(Theme.OptionsGraphics);
-
   ResolutionEmpty := 0;
   SetLength(IResolutionEmpty, 1);
   IResolutionEmpty[0] := '---';
-
-  Theme.OptionsGraphics.SelectFullscreen.showArrows := true;
-  Theme.OptionsGraphics.SelectFullscreen.oneItemOnly := true;
-  SelectWindowMode := AddSelectSlide(Theme.OptionsGraphics.SelectFullscreen,   Ini.Fullscreen, IFullScreenTranslated);
-
-  Theme.OptionsGraphics.SelectResolution.showArrows := true;
-  Theme.OptionsGraphics.SelectResolution.oneItemOnly := true;
-  SelectResolution := AddSelectSlide(Theme.OptionsGraphics.SelectResolution,   Ini.Resolution, IResolution);
-
-  Theme.OptionsGraphics.SelectDepth.showArrows := true;
-  Theme.OptionsGraphics.SelectDepth.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsGraphics.SelectDepth,        Ini.Depth, IDepth);
-
-  Theme.OptionsGraphics.SelectVisualizer.showArrows := true;
-  Theme.OptionsGraphics.SelectVisualizer.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsGraphics.SelectVisualizer,   Ini.VisualizerOption, IVisualizerTranslated);
-
-  Theme.OptionsGraphics.SelectOscilloscope.showArrows := true;
-  Theme.OptionsGraphics.SelectOscilloscope.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsGraphics.SelectOscilloscope, Ini.Oscilloscope, IOscilloscopeTranslated);
-
-  Theme.OptionsGraphics.SelectMovieSize.showArrows := true;
-  Theme.OptionsGraphics.SelectMovieSize.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsGraphics.SelectMovieSize,    Ini.MovieSize, IMovieSizeTranslated);
-
-  // TODO: Add apply button
-  AddButton(Theme.OptionsGraphics.ButtonExit);
-  if (Length(Button[0].Text)=0) then
-    AddButtonText(20, 5, Theme.Options.Description[OPTIONS_DESC_INDEX_BACK]);
-
+  Description := Language.Translate('SING_OPTIONS_GRAPHICS_DESC');
+  WhereAmI := Language.Translate('SING_OPTIONS_GRAPHICS_WHEREAMI');
+  Load;
 end;
 
 procedure TScreenOptionsGraphics.OnShow;
@@ -228,7 +203,7 @@ end;
 procedure TScreenOptionsGraphics.UpdateWindowMode;
 begin
 
-  UpdateSelectSlideOptions(Theme.OptionsGraphics.SelectFullscreen, SelectWindowMode, IFullScreenTranslated, Ini.FullScreen);
+  UpdateSelectSlideOptions(SelectWindowMode, IFullScreenTranslated, Ini.FullScreen);
   OldWindowMode := integer(Ini.FullScreen);
 end;
 
@@ -236,12 +211,22 @@ procedure TScreenOptionsGraphics.UpdateResolution;
 begin
 
   if Ini.Fullscreen = 2 then
-    UpdateSelectSlideOptions(Theme.OptionsGraphics.SelectResolution, SelectResolution, IResolutionEmpty, ResolutionEmpty)
+    UpdateSelectSlideOptions(SelectResolution, IResolutionEmpty, ResolutionEmpty)
   else if Ini.Fullscreen = 1 then
-    UpdateSelectSlideOptions(Theme.OptionsGraphics.SelectResolution, SelectResolution, IResolutionFullScreen, Ini.ResolutionFullscreen)
+    UpdateSelectSlideOptions(SelectResolution, IResolutionFullScreen, Ini.ResolutionFullscreen)
   else
-    UpdateSelectSlideOptions(Theme.OptionsGraphics.SelectResolution, SelectResolution, IResolution, Ini.Resolution);
+    UpdateSelectSlideOptions(SelectResolution, IResolution, Ini.Resolution);
 
+end;
+
+procedure TScreenOptionsGraphics.LoadWidgets;
+begin
+  SelectWindowMode := AddSelectSlide('SING_OPTIONS_GRAPHICS_FULLSCREEN', Ini.Fullscreen, IFullScreenTranslated);
+  SelectResolution := AddSelectSlide('SING_OPTIONS_GRAPHICS_RESOLUTION', Ini.Resolution, IResolution);
+  AddSelectSlide('SING_OPTIONS_GRAPHICS_DEPTH', Ini.Depth, IDepth);
+  AddSelectSlide('SING_OPTIONS_GRAPHICS_VISUALIZER', Ini.VisualizerOption, IVisualizerTranslated);
+  AddSelectSlide('SING_OPTIONS_GRAPHICS_OSCILLOSCOPE', Ini.Oscilloscope, IOscilloscopeTranslated);
+  AddSelectSlide('SING_OPTIONS_GRAPHICS_MOVIE_SIZE', Ini.MovieSize, IMovieSizeTranslated);
 end;
 
 end.

@@ -43,11 +43,13 @@ uses
   sdl2;
 
 type
-  TScreenOptionsAdvanced = class(TMenu)
+  TScreenOptionsAdvanced = class(TOptionsMenu)
     public
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
+    protected
+      procedure LoadWidgets; override;
   end;
 
 const
@@ -58,6 +60,7 @@ implementation
 uses
   UGraphic,
   UHelp,
+  ULanguage,
   ULog,
   UUnicodeUtils,
   SysUtils;
@@ -125,47 +128,9 @@ end;
 constructor TScreenOptionsAdvanced.Create;
 begin
   inherited Create;
-
-  LoadFromTheme(Theme.OptionsAdvanced);
-
-  //SelectLoadAnimation Hidden because it is useless atm
-  //AddSelect(Theme.OptionsAdvanced.SelectLoadAnimation, Ini.LoadAnimation, ILoadAnimationTranslated);
-  Theme.OptionsAdvanced.SelectScreenFade.showArrows := true;
-  Theme.OptionsAdvanced.SelectScreenFade.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectScreenFade, Ini.ScreenFade, IScreenFadeTranslated);
-
-  Theme.OptionsAdvanced.SelectEffectSing.showArrows := true;
-  Theme.OptionsAdvanced.SelectEffectSing.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectEffectSing, Ini.EffectSing, IEffectSingTranslated);
-
-  Theme.OptionsAdvanced.SelectLineBonus.showArrows := true;
-  Theme.OptionsAdvanced.SelectLineBonus.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectLineBonus, Ini.LineBonus, ILineBonusTranslated);
-
-  Theme.OptionsAdvanced.SelectOnSongClick.showArrows := true;
-  Theme.OptionsAdvanced.SelectOnSongClick.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectOnSongClick, Ini.OnSongClick, IOnSongClickTranslated);
-
-  Theme.OptionsAdvanced.SelectAskbeforeDel.showArrows := true;
-  Theme.OptionsAdvanced.SelectAskbeforeDel.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectAskbeforeDel, Ini.AskBeforeDel, IAskbeforeDelTranslated);
-
-  Theme.OptionsAdvanced.SelectPartyPopup.showArrows := true;
-  Theme.OptionsAdvanced.SelectPartyPopup.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectPartyPopup, Ini.PartyPopup, IPartyPopupTranslated);
-
-  Theme.OptionsAdvanced.SelectSingScores.showArrows := true;
-  Theme.OptionsAdvanced.SelectSingScores.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectSingScores, Ini.SingScores, ISingScoresTranslated);
-
-  Theme.OptionsAdvanced.SelectTopScores.showArrows := true;
-  Theme.OptionsAdvanced.SelectTopScores.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsAdvanced.SelectTopScores, Ini.TopScores, ITopScoresTranslated);
-
-  AddButton(Theme.OptionsAdvanced.ButtonExit);
-  if (Length(Button[0].Text)=0) then
-    AddButtonText(20, 5, Theme.Options.Description[OPTIONS_DESC_INDEX_BACK]);
-
+  Description := Language.Translate('SING_OPTIONS_ADVANCED_DESC');
+  WhereAmI := Language.Translate('SING_OPTIONS_ADVANCED_WHEREAMI');
+  Load;
   Interaction := 0;
 end;
 
@@ -177,6 +142,18 @@ begin
 
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOptionsAdvanced');
+end;
+
+procedure TScreenOptionsAdvanced.LoadWidgets;
+begin
+  AddSelectSlide('SING_OPTIONS_ADVANCED_SCREENFADE', Ini.ScreenFade, IScreenFadeTranslated);
+  AddSelectSlide('SING_OPTIONS_ADVANCED_EFFECTSING', Ini.EffectSing, IEffectSingTranslated);
+  AddSelectSlide('SING_OPTIONS_GRAPHICS_LINEBONUS', Ini.LineBonus, ILineBonusTranslated);
+  AddSelectSlide('SING_OPTIONS_ADVANCED_ONSONGCLICK', Ini.OnSongClick, IOnSongClickTranslated);
+  AddSelectSlide('SING_OPTIONS_ADVANCED_ASKBEFOREDEL', Ini.AskBeforeDel, IAskbeforeDelTranslated);
+  AddSelectSlide('SING_OPTIONS_ADVANCED_PARTYPOPUP', Ini.PartyPopup, IPartyPopupTranslated);
+  AddSelectSlide('SING_OPTIONS_ADVANCED_SINGSCORES', Ini.SingScores, ISingScoresTranslated);
+  AddSelectSlide('SING_OPTIONS_ADVANCED_TOPSCORES', Ini.TopScores, ITopScoresTranslated);
 end;
 
 end.

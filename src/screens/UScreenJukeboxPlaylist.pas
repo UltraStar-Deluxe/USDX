@@ -257,7 +257,7 @@ begin
   end;
 
   Playlist2 := 0;
-  UpdateSelectSlideOptions(Theme.PartyOptions.SelectPlayList2, SelectPlayList2, IPlaylist2, Playlist2);
+  UpdateSelectSlideOptions(SelectPlayList2, IPlaylist2, Playlist2);
 end;
 
 procedure TScreenJukeboxPlaylist.OnShow;

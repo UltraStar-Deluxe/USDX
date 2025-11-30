@@ -641,7 +641,7 @@ begin
             if (New_User = true) then
               SelectValueU := High(IUsername);
 
-            UpdateSelectSlideOptions(Theme.SendScorePopup.SelectSlide3, 2, IUsername, SelectValueU);
+            UpdateSelectSlideOptions(2, IUsername, SelectValueU);
           end;
 
           if (SelectValueU = High(IUsername)) then
@@ -697,7 +697,7 @@ begin
             if (New_User = true) then
               SelectValueU := High(IUsername);
 
-            UpdateSelectSlideOptions(Theme.SendScorePopup.SelectSlide3, 2, IUsername, SelectValueU);
+            UpdateSelectSlideOptions(2, IUsername, SelectValueU);
           end;
 
           if (SelectValueU = High(IUsername)) then
@@ -827,9 +827,9 @@ begin
   for I := 0 to PlayersPlay - 1 do
     IPlayersPlay[I] := Ini.Name[I];
 
-  UpdateSelectSlideOptions(Theme.SendScorePopup.SelectSlide1, 0, IPlayersPlay, SelectValueP);
+  UpdateSelectSlideOptions(0, IPlayersPlay, SelectValueP);
 
-  //UpdateSelectSlideOptions(Theme.SendScorePopup.SelectSlide2, 1, IWebsite, SelectValueW);
+  UpdateSelectSlideOptions(1, IWebsite, SelectValueW);
 
   SetLength(IUsername, Length(DataBase.NetworkUser[SelectValueW].UserList));
 
@@ -839,7 +839,7 @@ begin
   SetLength(IUsername, Length(IUsername) + 1);
   IUsername[High(IUsername)] := Language.Translate('SCORE_SEND_OTHER_USER');
 
-  UpdateSelectSlideOptions(Theme.SendScorePopup.SelectSlide3, 2, IUsername, SelectValueU);
+  UpdateSelectSlideOptions(2, IUsername, SelectValueU);
 
   if (SelectValueU = High(IUsername)) then
   begin

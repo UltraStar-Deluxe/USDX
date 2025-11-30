@@ -464,7 +464,7 @@ begin
 
         if (Length(ISelections3)>=1) then
         begin
-          UpdateSelectSlideOptions(Theme.SongMenu.SelectSlide3, 2, ISelections3, SelectValue3);
+          UpdateSelectSlideOptions(2, ISelections3, SelectValue3);
         end
         else
         begin
@@ -549,7 +549,7 @@ begin
 
         if (Length(ISelections3)>=1) then
         begin
-          UpdateSelectSlideOptions(Theme.SongMenu.SelectSlide3, 2, ISelections3, SelectValue3);
+          UpdateSelectSlideOptions(2, ISelections3, SelectValue3);
           Interaction := 3;
         end
         else
@@ -683,9 +683,9 @@ begin
               ISelections3[I] := DataBase.NetworkUser[I].Website;
           end;
 
-          UpdateSelectSlideOptions(Theme.SongMenu.SelectSlide1, 0, [Language.Translate('SONG_MENU_REFRESH_SCORES_ONLINE'), Language.Translate('SONG_MENU_REFRESH_SCORES_FILE')], SelectValue1);
-          UpdateSelectSlideOptions(Theme.SongMenu.SelectSlide2, 1, [Language.Translate('SONG_MENU_REFRESH_SCORES_ONLY_SONG'), Language.Translate('SONG_MENU_REFRESH_SCORES_ALL_SONGS')], SelectValue2);
-          UpdateSelectSlideOptions(Theme.SongMenu.SelectSlide3, 2, ISelections3, SelectValue3);
+          UpdateSelectSlideOptions(0, [Language.Translate('SONG_MENU_REFRESH_SCORES_ONLINE'), Language.Translate('SONG_MENU_REFRESH_SCORES_FILE')], SelectValue1);
+          UpdateSelectSlideOptions(1, [Language.Translate('SONG_MENU_REFRESH_SCORES_ONLY_SONG'), Language.Translate('SONG_MENU_REFRESH_SCORES_ALL_SONGS')], SelectValue2);
+          UpdateSelectSlideOptions(2, ISelections3, SelectValue3);
 
           Interaction := 3;
         end
