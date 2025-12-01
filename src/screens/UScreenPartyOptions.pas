@@ -275,17 +275,17 @@ begin
     Playlist  := 0;
     Playlist2 := 0;
 
-    UpdateSelectSlideOptions(Theme.PartyOptions.SelectLevel, SelectLevel, ILevel, Level);
-    UpdateSelectSlideOptions(Theme.PartyOptions.SelectPlayList, SelectPlayList, IPlaylist, Playlist);
-    UpdateSelectSlideOptions(Theme.PartyOptions.SelectPlayList2, SelectPlayList2, IPlaylist2, Playlist2);
+    UpdateSelectSlideOptions(SelectLevel, ILevel, Level);
+    UpdateSelectSlideOptions(SelectPlayList, IPlaylist, Playlist);
+    UpdateSelectSlideOptions(SelectPlayList2, IPlaylist2, Playlist2);
   end
   else
   begin
-    UpdateSelectSlideOptions(Theme.PartyOptions.SelectLevel, SelectLevel, ILevel, Level);
+    UpdateSelectSlideOptions(SelectLevel, ILevel, Level);
 
     FillPlaylist;
 
-    UpdateSelectSlideOptions(Theme.PartyOptions.SelectPlayList, SelectPlayList, IPlaylist, Playlist);
+    UpdateSelectSlideOptions(SelectPlayList, IPlaylist, Playlist);
 
     SetPlaylist2;
   end;
@@ -341,7 +341,7 @@ begin
   end;
 
   Playlist2 := 0;
-  UpdateSelectSlideOptions(Theme.PartyOptions.SelectPlayList2, SelectPlayList2, IPlaylist2, Playlist2);
+  UpdateSelectSlideOptions(SelectPlayList2, IPlaylist2, Playlist2);
 end;
 
 procedure TScreenPartyOptions.OnShow;

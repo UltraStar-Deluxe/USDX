@@ -38,11 +38,13 @@ uses
   TextGL,
   UMenuText,
   UTexture,
-  UMenuInteract;
+  UMenuInteract,
+  UMenuWidget,
+  UPath;
 
 type
   PSelectSlide = ^TSelectSlide;
-  TSelectSlide = class
+  TSelectSlide = class(IMenuWidget)
     private
       SelectBool:       boolean;
 
@@ -78,6 +80,9 @@ type
 
       //Visibility
       Visible: boolean;
+
+      // Size and position
+      PosX, PosY, W, H, SkipX: real;
 
       // for selection and deselection
       // main static
@@ -121,10 +126,18 @@ type
       STDInt:     real;
       
       // position and size
-      property X: real read Texture.x write Texture.x;
-      property Y: real read Texture.y write Texture.y;
-      property W: real read Texture.w write Texture.w;
-      property H: real read Texture.h write Texture.h;
+      procedure SetX(PosX: real); override;
+      function GetX(): real; override;
+      procedure SetY(PosY: real); override;
+      function GetY(): real; override;
+      function GetW(): real; override;
+      function GetH(): real; override;
+
+      procedure SetScrollOffset(ScrollOffset: real); override;
+      function GetScrollOffset(): real; override;
+
+      //property W: real read Texture.w write Texture.w;
+      //property H: real read Texture.h write Texture.h;
 //      property X2: real read Texture2.x write Texture2.x;
 //      property Y2: real read Texture2.y write Texture2.y;
 //      property W2: real read Texture2.w write Texture2.w;
@@ -137,11 +150,19 @@ type
       property Selected: boolean read SelectBool write SetSelect;
       procedure SetSelectOpt(Value: integer);
       property SelectedOption: integer read SelectOptInt write SetSelectOpt;
-      procedure Draw;
-      constructor Create;
+      procedure Draw; override;
+      constructor Create(PosX, PosY, W, H, SkipX, SBGW, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
+  TColR, TColG, TColB, TInt, TDColR, TDColG, TDColB, TDInt,
+  SBGColR, SBGColG, SBGColB, SBGInt, SBGDColR, SBGDColG, SBGDColB, SBGDInt,
+  STColR, STColG, STColB, STInt, STDColR, STDColG, STDColB, STDInt: real;
+  const TexName: IPath; Typ: TTextureType; const SBGName: IPath; SBGTyp: TTextureType;
+  const Caption: UTF8String; var Data: integer);
+
+      destructor Destroy;
 
       //Automatically Generate Lines (Texts)
       procedure genLines;
+      procedure genLinesPositionY(TextOption: TText);
 
       function GetMouseOverArea: TMouseOverRect;
       function OnClick(X, Y: Real): TMouseClickAction;
@@ -159,36 +180,165 @@ uses
   math,
   SysUtils,
   UDrawTexture,
-  ULog;
+  UGraphic,
+  ULog,
+  UMenu;
 
 // ------------ Select
-constructor TSelectSlide.Create;
+constructor TSelectSlide.Create(PosX, PosY, W, H, SkipX, SBGW, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
+  TColR, TColG, TColB, TInt, TDColR, TDColG, TDColB, TDInt,
+  SBGColR, SBGColG, SBGColB, SBGInt, SBGDColR, SBGDColG, SBGDColB, SBGDInt,
+  STColR, STColG, STColB, STInt, STDColR, STDColG, STDColB, STDInt: real;
+  const TexName: IPath; Typ: TTextureType; const SBGName: IPath; SBGTyp: TTextureType;
+  const Caption: UTF8String; var Data: integer);
 begin
   inherited Create;
   Text := TText.Create;
   SetLength(TextOpt, 1);
   TextOpt[0] := TText.Create;
   Visible := true;
+  self.W := W;
+  self.H := H;
+  self.SkipX := SkipX;
 
-  Colorized := false;
-  ColorizedSBG := false;
-  ColR := 1;
-  ColG := 1;
-  ColB := 1;
-  Int := 1;
-  DColR := 1;
-  DColG := 1;
-  DColB := 1;
-  DInt := 1;
+  if (Typ = TEXTURE_TYPE_COLORIZED) then
+  begin
+    Colorized := true;
+    Texture := UTexture.Texture.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB));
+    DeselectTexture := UTexture.Texture.GetTexture(TexName, Typ, RGBFloatToInt(DColR, DColG, DColB));
+  end
+  else
+  begin
+    Colorized := false;
+    Texture := UTexture.Texture.GetTexture(TexName, Typ);
 
-  SBGColR := 1;
-  SBGColG := 1;
-  SBGColB := 1;
-  SBGInt := 1;
-  SBGDColR := 1;
-  SBGDColG := 1;
-  SBGDColB := 1;
-  SBGDInt := 1;
+    self.ColR := ColR;
+    self.ColG := ColG;
+    self.ColB := ColB;
+
+    self.DColR := DColR;
+    self.DColG := DColG;
+    self.DColB := DColB;
+  end;
+  Texture.W := W;
+  Texture.H := H;
+
+  self.Int := Int;
+  self.DInt := DInt;
+
+  //SelectsS[S].X := X;
+  //SelectsS[S].Y := Y;
+  //SelectsS[S].W := W;
+  //SelectsS[S].H := H;
+
+  if (SBGTyp = TEXTURE_TYPE_COLORIZED) then
+  begin
+    ColorizedSBG := true;
+    TextureSBG := UTexture.Texture.GetTexture(SBGName, SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB));
+    DeselectTextureSBG := UTexture.Texture.GetTexture(SBGName, SBGTyp, RGBFloatToInt(SBGDColR, SBGDColG, SBGDColB));
+  end
+  else
+  begin
+    ColorizedSBG := false;
+    TextureSBG := UTexture.Texture.GetTexture(SBGName, SBGTyp);
+
+    self.SBGColR := SBGColR;
+    self.SBGColG := SBGColG;
+    self.SBGColB := SBGColB;
+
+    self.SBGDColR := SBGDColR;
+    self.SBGDColG := SBGDColG;
+    self.SBGDColB := SBGDColB;
+  end;
+
+
+  self.SBGInt := SBGInt;
+  self.SBGDInt := SBGDInt;
+
+  self.Tex_SelectS_ArrowL   := UGraphic.Tex_SelectS_ArrowL;
+  //self.Tex_SelectS_ArrowL.W := Tex_SelectS_ArrowL.W;
+  //self.Tex_SelectS_ArrowL.H := Tex_SelectS_ArrowL.H;
+
+
+  self.Tex_SelectS_ArrowR   := UGraphic.Tex_SelectS_ArrowR;
+  //self.Tex_SelectS_ArrowR.W := Tex_SelectS_ArrowR.W;
+  //self.Tex_SelectS_ArrowR.H := Tex_SelectS_ArrowR.H;
+
+
+  self.SBGW := SBGW;
+  self.TextureSBG.H := H;
+
+  self.Text.Text := Caption;
+  self.Text.Size := 30;
+  self.Text.Visible := true;
+  self.TColR := TColR;
+  self.TColG := TColG;
+  self.TColB := TColB;
+  self.TInt := TInt;
+  self.TDColR := TDColR;
+  self.TDColG := TDColG;
+  self.TDColB := TDColB;
+  self.TDInt := TDInt;
+
+  self.STColR := STColR;
+  self.STColG := STColG;
+  self.STColB := STColB;
+  self.STInt := STInt;
+  self.STDColR := STDColR;
+  self.STDColG := STDColG;
+  self.STDColB := STDColB;
+  self.STDInt := STDInt;
+
+  // new
+  Texture.TexX1 := 0;
+  Texture.TexY1 := 0;
+  Texture.TexX2 := 1;
+  Texture.TexY2 := 1;
+  TextureSBG.TexX1 := 0;
+  TextureSBG.TexY1 := 0;
+  TextureSBG.TexX2 := 1;
+  TextureSBG.TexY2 := 1;
+
+  // Sets Data to copy the value of selectops to global value;
+  PData := @Data;
+
+  TextOpt[0].Visible := true;
+
+  // Sets default value of selectopt from Data;
+  SelectedOption := Data;
+
+  // Disables default selection
+  SetSelect(false);
+
+  //ColorizedSBG := false;
+  //ColR := 1;
+  //ColG := 1;
+  //ColB := 1;
+  //Int := 1;
+
+  //DInt := 1;
+
+  //SBGColR := 1;
+  //SBGColG := 1;
+  //SBGColB := 1;
+  //SBGInt := 1;
+  //SBGDColR := 1;
+  //SBGDColG := 1;
+  //SBGDColB := 1;
+  //SBGDInt := 1;
+
+  X := PosX;
+  Y := PosY;
+  PosYInit := PosY;
+end;
+
+destructor TSelectSlide.Destroy;
+var
+  I: integer;
+begin
+  text.Free;
+  for I := Low(TextOpt) to High(TextOpt) do
+    TextOpt[I].Free;
 end;
 
 procedure TSelectSlide.SetSelect(Value: boolean);
@@ -282,11 +432,11 @@ begin
     begin
       Value := 0;
 
-      Tex_SelectS_ArrowL.alpha := ArrowAlphaNoOptionsLeft;
+      self.Tex_SelectS_ArrowL.alpha := ArrowAlphaNoOptionsLeft;
       if (Length(TextOptT) > 1) then
-        Tex_SelectS_ArrowR.alpha := ArrowAlphaOptionsLeft
+        self.Tex_SelectS_ArrowR.alpha := ArrowAlphaOptionsLeft
       else
-        Tex_SelectS_ArrowR.alpha := ArrowAlphaNoOptionsLeft;
+        self.Tex_SelectS_ArrowR.alpha := ArrowAlphaNoOptionsLeft;
 
       for SO := Low(TextOpt) to High(TextOpt) do
       begin
@@ -301,8 +451,8 @@ begin
     begin
       Value := High(TextOptT);
 
-      Tex_SelectS_ArrowL.alpha := ArrowAlphaOptionsLeft;
-      Tex_SelectS_ArrowR.alpha := ArrowAlphaNoOptionsLeft;
+      self.Tex_SelectS_ArrowL.alpha := ArrowAlphaOptionsLeft;
+      self.Tex_SelectS_ArrowR.alpha := ArrowAlphaNoOptionsLeft;
 
       for SO := High(TextOpt) downto Low(TextOpt) do
       begin
@@ -314,8 +464,8 @@ begin
     //in between first and last
     else
     begin
-      Tex_SelectS_ArrowL.alpha := ArrowAlphaOptionsLeft;
-      Tex_SelectS_ArrowR.alpha := ArrowAlphaOptionsLeft;
+      self.Tex_SelectS_ArrowL.alpha := ArrowAlphaOptionsLeft;
+      self.Tex_SelectS_ArrowR.alpha := ArrowAlphaOptionsLeft;
 
       HalfL := Ceil((Lines - 1) / 2);
       HalfR := Lines - 1 - HalfL;
@@ -358,6 +508,52 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TSelectSlide.SetX(PosX: real);
+begin
+  Texture.X := PosX;
+  self.Tex_SelectS_ArrowL.X := PosX + Texture.W + SkipX;
+  self.Tex_SelectS_ArrowR.X := PosX + Texture.W + SkipX + SBGW - self.Tex_SelectS_ArrowR.W;
+
+  TextureSBG.X := PosX + Texture.W + SkipX;
+  Text.X := PosX + 20;
+  self.PosX := PosX;
+end;
+
+function TSelectSlide.GetX(): real;
+begin
+  Result := PosX;
+end;
+
+procedure TSelectSlide.SetY(PosY: real);
+var
+  I: integer;
+begin
+  Texture.Y := PosY;
+  self.Tex_SelectS_ArrowL.Y := PosY + (TextureSBG.H - self.Tex_SelectS_ArrowL.H) / 2;
+  self.Tex_SelectS_ArrowR.Y := PosY + (TextureSBG.H - self.Tex_SelectS_ArrowR.H) / 2;
+
+  TextureSBG.Y := PosY;
+  self.Text.Y := PosY + (TextureSBG.H / 2) - self.Text.Size / 2;
+  for I := Low(TextOpt) to High(TextOpt) do
+    genLinesPositionY(TextOpt[I]);
+  self.PosY := PosY;
+end;
+
+function TSelectSlide.GetY(): real;
+begin
+  Result := PosY;
+end;
+
+function TSelectSlide.GetW(): real;
+begin
+  Result := TextureSBG.X + TextureSBG.W - Texture.X;
+end;
+
+function TSelectSlide.GetH(): real;
+begin
+  Result := Texture.H;
 end;
 
 { cuts the text if it is too long to fit on the selectbg }
@@ -432,8 +628,8 @@ begin
 
     if showArrows then
     begin
-      DrawTexture(Tex_SelectS_ArrowL);
-      DrawTexture(Tex_SelectS_ArrowR);
+      DrawTexture(self.Tex_SelectS_ArrowL);
+      DrawTexture(self.Tex_SelectS_ArrowR);
     end;
 
     Text.Draw;
@@ -495,6 +691,7 @@ begin
     TextOpt[I].Int := STDInt;
 
     // generate positions
+    genLinesPositionY(TextOpt[I]);
     TextOpt[I].Y := TextureSBG.Y + (TextureSBG.H - Text.Size) / 2;
 
     // better look with 2 options and a single option
@@ -516,6 +713,12 @@ begin
   end;
 end;
 
+procedure TSelectSlide.genLinesPositionY(TextOption: TText);
+begin
+  TextOption.Y := TextureSBG.Y + (TextureSBG.H - Text.Size) / 2;
+end;
+
+
 function TSelectSlide.GetMouseOverArea: TMouseOverRect;
 begin
   Result.X := Texture.X;
@@ -530,9 +733,8 @@ function TSelectSlide.OnClick(X, Y: Real): TMouseClickAction;
 begin
   // default: press return on click 
   Result := maReturn;
-
   // use left sides to inc or dec selection by click
-  AreaW := Tex_SelectS_ArrowL.W;
+  AreaW := self.Tex_SelectS_ArrowL.W;
 
   if (Y >= TextureSBG.Y) and (Y <= TextureSBG.Y + TextureSBG.H) then
   begin
@@ -541,6 +743,17 @@ begin
     else if (X >= TextureSBG.X + TextureSBG.W - AreaW) and (X <= TextureSBG.X + TextureSBG.W) then
       Result := maRight; // hit right area
   end;
+end;
+
+function TSelectSlide.GetScrollOffset(): real;
+begin
+  Result := Y - PosYInit;
+end;
+
+procedure TSelectSlide.SetScrollOffset(ScrollOffset: real);
+begin
+  if (ScrollOffset >= 0.0) then
+    Y := PosYInit + ScrollOffset;
 end;
 
 end.

@@ -686,138 +686,28 @@ type
     Description:          array[0..11] of UTF8String;
   end;
 
-  TThemeOptionsGame = class(TThemeBasic)
-    SelectLanguage:     TThemeSelectSlide;
-    SelectSongMenu:     TThemeSelectSlide;
-    SelectSorting:      TThemeSelectSlide;
-    SelectTabs:         TThemeSelectSlide;
-    SelectShowScores:   TThemeSelectSlide;
-    SelectDebug:        TThemeSelectSlide;
-    SelectAVDelay:      TThemeSelectSlide;
-    SelectMicDelay:     TThemeSelectSlide;
-    ButtonExit:         TThemeButton;
+  TThemeScrollBar = record
+    HSpacing: integer;
+    W: integer;
+    ColR, ColG, ColB: real; // Default color
+    HColR, HColG, HColB: real; // Color when hovered with mouse
+    CColR, CColG, CColB: real; // Color when clicked and scrolling
   end;
 
-  TThemeOptionsGraphics = class(TThemeBasic)
-    SelectFullscreen:       TThemeSelectSlide;
-    SelectResolution:       TThemeSelectSlide;
-    SelectDepth:            TThemeSelectSlide;
-    SelectVisualizer:       TThemeSelectSlide;
-    SelectOscilloscope:     TThemeSelectSlide;
-    SelectLineBonus:        TThemeSelectSlide;
-    SelectMovieSize:        TThemeSelectSlide;
-    ButtonExit:             TThemeButton;
+  TThemeOptionsSub = class(TThemeBasic)
+    Area:               TThemePosition;
+    WidgetVSpacing:     integer;
+    ScrollBar:          TThemeScrollBar;
+    SelectS:            TThemeSelectSlide;
+    Button:             TThemeButton;
+    ButtonBack:         TThemeButton;
+    ButtonBackVSpacing: integer;
+    TextDescription:    TThemeText;
+    TextWhereAmI:       TThemeText;
+    LegendStatic:       array of TThemeStatic;
+    LegendText:         array of TThemeText;
   end;
 
-  TThemeOptionsSound = class(TThemeBasic)
-    SelectBackgroundMusic:       TThemeSelectSlide;
-    SelectClickAssist:           TThemeSelectSlide;
-    SelectBeatClick:             TThemeSelectSlide;
-    SelectSlidePreviewVolume:    TThemeSelectSlide;
-    SelectSlidePreviewFading:    TThemeSelectSlide;
-    SelectSlideVoicePassthrough: TThemeSelectSlide;
-    // ReplayGain
-    SelectSlideMusicAutoGain:    TThemeSelectSlide;
-    ButtonExit:                  TThemeButton;
-  end;
-
-  TThemeOptionsInput = class(TThemeBasic)
-    SelectMouse:        TThemeSelectSlide;
-    SelectJoypad:       TThemeSelectSlide;
-    ButtonExit:         TThemeButton;
-  end;
-
-  TThemeOptionsLyrics = class(TThemeBasic)
-    SelectLyricsFont:   TThemeSelectSlide;
-    SelectLyricsStyle:  TThemeSelectSlide;
-    SelectLyricsEffect: TThemeSelectSlide;
-//    SelectSolmization:  TThemeSelectSlide;
-    SelectNoteLines:    TThemeSelectSlide;
-    ButtonExit:         TThemeButton;
-    UpperX, UpperW, UpperY, UpperH,
-    LowerX, LowerW, LowerY, LowerH  : integer;
-  end;
-
-  TThemeOptionsThemes = class(TThemeBasic)
-    SelectTheme:        TThemeSelectSlide;
-    SelectSkin:         TThemeSelectSlide;
-    SelectColor:        TThemeSelectSlide;
-    ButtonExit:         TThemeButton;
-  end;
-
-  TThemeOptionsRecord = class(TThemeBasic)
-    SelectSlideCard:       TThemeSelectSlide;
-    SelectSlideInput:      TThemeSelectSlide;
-    SelectChannel:         TThemeSelectSlide;
-    SelectAssignee:        TThemeSelectSlide;
-    SelectThreshold:       TThemeSelectSlide;
-    SelectMicBoost:        TThemeSelectSlide;
-    ButtonExit:            TThemeButton;
-  end;
-
-  TThemeOptionsAdvanced = class(TThemeBasic)
-    SelectLoadAnimation:  TThemeSelectSlide;
-    SelectEffectSing:     TThemeSelectSlide;
-    SelectScreenFade:     TThemeSelectSlide;
-    SelectLineBonus:      TThemeSelectSlide;
-    SelectAskbeforeDel:   TThemeSelectSlide;
-    SelectOnSongClick:    TThemeSelectSlide;
-    SelectPartyPopup:     TThemeSelectSlide;
-    SelectSingScores:     TThemeSelectSlide;
-    SelectTopScores:      TThemeSelectSlide;
-    ButtonExit:           TThemeButton;
-  end;
-
-  TThemeOptionsNetwork = class(TThemeBasic)
-    SelectWebsite:        TThemeSelectSlide;
-    SelectUsername:       TThemeSelectSlide;
-    SelectSendName:       TThemeSelectSlide;
-    SelectAutoMode:       TThemeSelectSlide;
-    SelectAutoPlayer:     TThemeSelectSlide;
-    SelectAutoScoreEasy:   TThemeSelectSlide;
-    SelectAutoScoreMedium: TThemeSelectSlide;
-    SelectAutoScoreHard:   TThemeSelectSlide;
-    TextInsertUser:       TThemeText;
-    ButtonInsert:         TThemeButton;
-    ButtonExit:           TThemeButton;
-  end;
-
-  TThemeOptionsWebcam = class(TThemeBasic)
-    SelectWebcam:         TThemeSelectSlide;
-    SelectResolution:     TThemeSelectSlide;
-    SelectFPS:            TThemeSelectSlide;
-    SelectFlip:           TThemeSelectSlide;
-    SelectBrightness:     TThemeSelectSlide;
-    SelectSaturation:     TThemeSelectSlide;
-    SelectHue:            TThemeSelectSlide;
-    SelectEffect:         TThemeSelectSlide;
-
-    ButtonPreVisualization: TThemeButton;
-    ButtonExit:           TThemeButton;
-  end;
-
-  TThemeOptionsJukebox = class(TThemeBasic)
-    SelectLyricsFont:   TThemeSelectSlide;
-    SelectLyricsStyle:  TThemeSelectSlide;
-    SelectLyricsEffect: TThemeSelectSlide;
-    SelectLyricsAlpha:  TThemeSelectSlide;
-    SelectLine:         TThemeSelectSlide;
-    SelectProperty:     TThemeSelectSlide;
-    SelectColor:        TThemeSelectSlide;
-    SelectR:            TThemeSelectSlide;
-    SelectG:            TThemeSelectSlide;
-    SelectB:            TThemeSelectSlide;
-    TexR:               TThemeStatic;
-    TexG:               TThemeStatic;
-    TexB:               TThemeStatic;
-    TexColor:           TThemeStatic;
-    PointerR:           TThemeStatic;
-    PointerG:           TThemeStatic;
-    PointerB:           TThemeStatic;
-    ButtonExit:         TThemeButton;
-    UpperX, UpperW, UpperY, UpperH,
-    LowerX, LowerW, LowerY, LowerH  : integer;
-  end;
 
   TThemeEdit = class(TThemeBasic)
     ButtonConvert:        TThemeButton;
@@ -1248,17 +1138,8 @@ type
     Score:            TThemeScore;
     Top5:             TThemeTop5;
     Options:          TThemeOptions;
-    OptionsGame:      TThemeOptionsGame;
-    OptionsGraphics:  TThemeOptionsGraphics;
-    OptionsSound:     TThemeOptionsSound;
-    OptionsInput:     TThemeOptionsInput;
-    OptionsLyrics:    TThemeOptionsLyrics;
-    OptionsThemes:    TThemeOptionsThemes;
-    OptionsRecord:    TThemeOptionsRecord;
-    OptionsAdvanced:  TThemeOptionsAdvanced;
-    OptionsNetwork:   TThemeOptionsNetwork;
-    OptionsWebcam:    TThemeOptionsWebcam;
-    OptionsJukebox:   TThemeOptionsJukebox;
+    OptionsSub:       TThemeOptionsSub;
+
     //edit
     Edit:             TThemeEdit;
     EditConvert:      TThemeEditConvert;
@@ -1300,6 +1181,8 @@ type
 
     ILevel: array[0..2] of UTF8String;
     IMode:  array[0..3] of UTF8String;
+    OptionsNetworkLegendStatic: array of TThemeStatic;
+    OptionsNetworkLegendText: array of TThemeText;
 
     constructor Create;
 
@@ -1310,6 +1193,7 @@ type
     procedure LoadColors;
 
     procedure ThemeLoadBasic(Theme: TThemeBasic; const Name: string);
+    procedure ThemeLoadOptionsSub;
     procedure ThemeLoadBackground(var ThemeBackground: TThemeBackground; const Name: string);
     procedure ThemeLoadText(var ThemeText: TThemeText; const Name: string);
     procedure ThemeLoadTexts(var ThemeText: AThemeText; const Name: string);
@@ -1427,17 +1311,7 @@ begin
   Score := TThemeScore.Create;
   Top5 := TThemeTop5.Create;
   Options := TThemeOptions.Create;
-  OptionsGame := TThemeOptionsGame.Create;
-  OptionsGraphics := TThemeOptionsGraphics.Create;
-  OptionsSound := TThemeOptionsSound.Create;
-  OptionsInput := TThemeOptionsInput.Create;
-  OptionsLyrics := TThemeOptionsLyrics.Create;
-  OptionsThemes := TThemeOptionsThemes.Create;
-  OptionsRecord := TThemeOptionsRecord.Create;
-  OptionsAdvanced := TThemeOptionsAdvanced.Create;
-  OptionsNetwork := TThemeOptionsNetwork.Create;
-  OptionsWebcam := TThemeOptionsWebcam.Create;
-  OptionsJukebox := TThemeOptionsJukebox.Create;
+  OptionsSub := TThemeOptionsSub.Create;
 
   Edit := TThemeEdit.Create;
   EditConvert := TThemeEditConvert.Create;
@@ -1942,168 +1816,9 @@ begin
       ThemeLoadText(Options.TextDescription, 'OptionsTextDescription');
       Options.TextDescription.Text := Options.Description[OPTIONS_DESC_INDEX_GAME]; // Select default first menu button 'Game'
 
-      // Options Game
-      ThemeLoadBasic(OptionsGame, 'OptionsGame');
-
-      ThemeLoadSelectSlide(OptionsGame.SelectLanguage,   'OptionsGameSelectSlideLanguage');
-      ThemeLoadSelectSlide(OptionsGame.SelectSongMenu,   'OptionsGameSelectSongMenu');
-      ThemeLoadSelectSlide(OptionsGame.SelectSorting,    'OptionsGameSelectSlideSorting');
-      ThemeLoadSelectSlide(OptionsGame.SelectTabs,       'OptionsGameSelectTabs');
-      ThemeLoadSelectSlide(OptionsGame.SelectShowScores, 'OptionsGameSelectShowScores');
-      ThemeLoadSelectSlide(OptionsGame.SelectDebug,      'OptionsGameSelectDebug');
-      ThemeLoadSelectSlide(OptionsGame.SelectAVDelay,    'OptionsGameSelectAVDelay');
-      ThemeLoadSelectSlide(OptionsGame.SelectMicDelay,   'OptionsGameSelectMicDelay');
-      ThemeLoadButton(OptionsGame.ButtonExit,            'OptionsGameButtonExit');
-
-      // Options Graphics
-      ThemeLoadBasic(OptionsGraphics, 'OptionsGraphics');
-
-      ThemeLoadSelectSlide(OptionsGraphics.SelectFullscreen,   'OptionsGraphicsSelectFullscreen');
-      ThemeLoadSelectSlide(OptionsGraphics.SelectResolution,   'OptionsGraphicsSelectSlideResolution');
-      ThemeLoadSelectSlide(OptionsGraphics.SelectDepth,        'OptionsGraphicsSelectDepth');
-      ThemeLoadSelectSlide(OptionsGraphics.SelectVisualizer,   'OptionsGraphicsSelectVisualizer');
-      ThemeLoadSelectSlide(OptionsGraphics.SelectOscilloscope, 'OptionsGraphicsSelectOscilloscope');
-      ThemeLoadSelectSlide(OptionsGraphics.SelectLineBonus,    'OptionsGraphicsSelectLineBonus');
-      ThemeLoadSelectSlide(OptionsGraphics.SelectMovieSize,    'OptionsGraphicsSelectMovieSize');
-      ThemeLoadButton(OptionsGraphics.ButtonExit,              'OptionsGraphicsButtonExit');
-
-      // Options Sound
-      ThemeLoadBasic(OptionsSound, 'OptionsSound');
-
-      ThemeLoadSelectSlide(OptionsSound.SelectBackgroundMusic,       'OptionsSoundSelectBackgroundMusic');
-      ThemeLoadSelectSlide(OptionsSound.SelectClickAssist,           'OptionsSoundSelectClickAssist');
-      ThemeLoadSelectSlide(OptionsSound.SelectBeatClick,             'OptionsSoundSelectBeatClick');
-      //Song Preview
-      ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewVolume,    'OptionsSoundSelectSlidePreviewVolume');
-      ThemeLoadSelectSlide(OptionsSound.SelectSlidePreviewFading,    'OptionsSoundSelectSlidePreviewFading');
-      ThemeLoadSelectSlide(OptionsSound.SelectSlideVoicePassthrough, 'OptionsSoundSelectVoicePassthrough');
-      // ReplayGain
-      ThemeLoadSelectSlide(OptionsSound.SelectSlideMusicAutoGain,    'OptionsSoundSelectSlideMusicAutoGain');
-
-      ThemeLoadButton(OptionsSound.ButtonExit, 'OptionsSoundButtonExit');
-
-      // Options Input
-      ThemeLoadBasic(OptionsInput, 'OptionsInput');
-
-      ThemeLoadSelectSlide(OptionsInput.SelectMouse,     'OptionsInputSelectMouse');
-      ThemeLoadSelectSlide(OptionsInput.SelectJoypad,    'OptionsInputSelectJoypad');
-      ThemeLoadButton(OptionsInput.ButtonExit, 'OptionsInputButtonExit');
-
-      // Options Lyrics
-      ThemeLoadBasic(OptionsLyrics, 'OptionsLyrics');
-
-      ThemeLoadSelectSlide(OptionsLyrics.SelectLyricsFont,   'OptionsLyricsSelectLyricsFont');
-      ThemeLoadSelectSlide(OptionsLyrics.SelectLyricsStyle,  'OptionsLyricsSelectLyricsStyle');
-      ThemeLoadSelectSlide(OptionsLyrics.SelectLyricsEffect, 'OptionsLyricsSelectLyricsEffect');
-      //ThemeLoadSelectSlide(OptionsLyrics.SelectSolmization,  'OptionsLyricsSelectSolmization');
-      ThemeLoadSelectSlide(OptionsLyrics.SelectNoteLines,    'OptionsLyricsSelectNoteLines');
-
-      OptionsLyrics.UpperX := ThemeIni.ReadInteger('OptionsLyricsUpperBar', 'X', 0);
-      OptionsLyrics.UpperW := ThemeIni.ReadInteger('OptionsLyricsUpperBar', 'W', 0);
-      OptionsLyrics.UpperY := ThemeIni.ReadInteger('OptionsLyricsUpperBar', 'Y', 0);
-      OptionsLyrics.UpperH := ThemeIni.ReadInteger('OptionsLyricsUpperBar', 'H', 0);
-      OptionsLyrics.LowerX := ThemeIni.ReadInteger('OptionsLyricsLowerBar', 'X', 0);
-      OptionsLyrics.LowerW := ThemeIni.ReadInteger('OptionsLyricsLowerBar', 'W', 0);
-      OptionsLyrics.LowerY := ThemeIni.ReadInteger('OptionsLyricsLowerBar', 'Y', 0);
-      OptionsLyrics.LowerH := ThemeIni.ReadInteger('OptionsLyricsLowerBar', 'H', 0);
-
-      ThemeLoadButton(OptionsLyrics.ButtonExit,              'OptionsLyricsButtonExit');
-
-      // Options Themes
-      ThemeLoadBasic(OptionsThemes, 'OptionsThemes');
-
-      ThemeLoadSelectSlide(OptionsThemes.SelectTheme, 'OptionsThemesSelectTheme');
-      ThemeLoadSelectSlide(OptionsThemes.SelectSkin,  'OptionsThemesSelectSkin');
-      ThemeLoadSelectSlide(OptionsThemes.SelectColor, 'OptionsThemesSelectColor');
-      ThemeLoadButton(OptionsThemes.ButtonExit,       'OptionsThemesButtonExit');
-
-      // Options Record
-      ThemeLoadBasic(OptionsRecord, 'OptionsRecord');
-
-      ThemeLoadSelectSlide(OptionsRecord.SelectSlideCard,     'OptionsRecordSelectSlideCard');
-      ThemeLoadSelectSlide(OptionsRecord.SelectSlideInput,    'OptionsRecordSelectSlideInput');
-      ThemeLoadSelectSlide(OptionsRecord.SelectChannel,       'OptionsRecordSelectChannel');
-      ThemeLoadSelectSlide(OptionsRecord.SelectAssignee,      'OptionsRecordSelectAssignee');
-      ThemeLoadSelectSlide(OptionsRecord.SelectThreshold,     'OptionsRecordSelectThreshold'); //basisbit TODO
-      ThemeLoadSelectSlide(OptionsRecord.SelectMicBoost,      'OptionsRecordSelectMicBoost');
-      ThemeLoadButton(OptionsRecord.ButtonExit,               'OptionsRecordButtonExit');
-
-      //Options Advanced
-      ThemeLoadBasic(OptionsAdvanced, 'OptionsAdvanced');
-
-      ThemeLoadSelectSlide(OptionsAdvanced.SelectLoadAnimation, 'OptionsAdvancedSelectLoadAnimation');
-      ThemeLoadSelectSlide(OptionsAdvanced.SelectScreenFade,    'OptionsAdvancedSelectScreenFade');
-      ThemeLoadSelectSlide(OptionsAdvanced.SelectEffectSing,    'OptionsAdvancedSelectEffectSing');
-      ThemeLoadSelectSlide(OptionsAdvanced.SelectLineBonus,     'OptionsAdvancedSelectLineBonus');
-      ThemeLoadSelectSlide(OptionsAdvanced.SelectOnSongClick,   'OptionsAdvancedSelectSlideOnSongClick');
-      ThemeLoadSelectSlide(OptionsAdvanced.SelectAskbeforeDel,  'OptionsAdvancedSelectAskbeforeDel');
-      ThemeLoadSelectSlide(OptionsAdvanced.SelectPartyPopup,    'OptionsAdvancedSelectPartyPopup');
-      ThemeLoadSelectSlide(OptionsAdvanced.SelectSingScores,    'OptionsAdvancedSelectSingScores');
-      ThemeLoadSelectSlide(OptionsAdvanced.SelectTopScores,     'OptionsAdvancedSelectTopScores');
-      ThemeLoadButton     (OptionsAdvanced.ButtonExit,          'OptionsAdvancedButtonExit');
-
-      //Options Network
-      ThemeLoadBasic(OptionsNetwork, 'OptionsNetwork');
-
-      ThemeLoadSelectSlide(OptionsNetwork.SelectWebsite,       'OptionsNetworkSelectWebsite');
-      ThemeLoadSelectSlide(OptionsNetwork.SelectUsername,      'OptionsNetworkSelectUsername');
-      ThemeLoadSelectSlide(OptionsNetwork.SelectSendName,      'OptionsNetworkSelectSendSaveName');
-      ThemeLoadSelectSlide(OptionsNetwork.SelectAutoMode,      'OptionsNetworkSelectAutoMode');
-      ThemeLoadSelectSlide(OptionsNetwork.SelectAutoPlayer,      'OptionsNetworkSelectAutoPlayer');
-      ThemeLoadSelectSlide(OptionsNetwork.SelectAutoScoreEasy,   'OptionsNetworkSelectAutoScoreEasy');
-      ThemeLoadSelectSlide(OptionsNetwork.SelectAutoScoreMedium, 'OptionsNetworkSelectAutoScoreMedium');
-      ThemeLoadSelectSlide(OptionsNetwork.SelectAutoScoreHard,   'OptionsNetworkSelectAutoScoreHard');
-      ThemeLoadText(OptionsNetwork.TextInsertUser, 'OptionsNetworkTextInsertUser');
-
-      ThemeLoadButton(OptionsNetwork.ButtonInsert,          'OptionsNetworkButtonInsert');
-      ThemeLoadButton(OptionsNetwork.ButtonExit,          'OptionsNetworkButtonExit');
-
-      //Options Webcam
-      ThemeLoadBasic(OptionsWebcam, 'OptionsWebcam');
-
-      ThemeLoadSelectSlide(OptionsWebcam.SelectWebcam,     'OptionsWebcamSelectWebcam');
-      ThemeLoadSelectSlide(OptionsWebcam.SelectResolution, 'OptionsWebcamSelectResolution');
-      ThemeLoadSelectSlide(OptionsWebcam.SelectFPS,        'OptionsWebcamSelectFPS');
-      ThemeLoadSelectSlide(OptionsWebcam.SelectFlip,       'OptionsWebcamSelectFlip');
-      ThemeLoadSelectSlide(OptionsWebcam.SelectBrightness, 'OptionsWebcamSelectBrightness');
-      ThemeLoadSelectSlide(OptionsWebcam.SelectSaturation, 'OptionsWebcamSelectSaturation');
-      ThemeLoadSelectSlide(OptionsWebcam.SelectHue,        'OptionsWebcamSelectHue');
-      ThemeLoadSelectSlide(OptionsWebcam.SelectEffect,     'OptionsWebcamSelectEffect');
-
-      ThemeLoadButton(OptionsWebcam.ButtonPreVisualization,          'OptionsWebcamButtonPreVisualization');
-      ThemeLoadButton(OptionsWebcam.ButtonExit,          'OptionsWebcamButtonExit');
-
-      // Options Jukebox
-      ThemeLoadBasic(OptionsJukebox, 'OptionsJukebox');
-
-      ThemeLoadSelectSlide(OptionsJukebox.SelectLyricsFont,   'OptionsJukeboxSelectLyricsFont');
-      ThemeLoadSelectSlide(OptionsJukebox.SelectLyricsStyle,   'OptionsJukeboxSelectLyricsStyle');
-      ThemeLoadSelectSlide(OptionsJukebox.SelectLyricsEffect, 'OptionsJukeboxSelectLyricsEffect');
-      ThemeLoadSelectSlide(OptionsJukebox.SelectLyricsAlpha,   'OptionsJukeboxSelectLyricsAlpha');
-      ThemeLoadSelectSlide(OptionsJukebox.SelectLine,         'OptionsJukeboxSelectLine');
-      ThemeLoadSelectSlide(OptionsJukebox.SelectProperty,    'OptionsJukeboxSelectProperty');
-      ThemeLoadSelectSlide(OptionsJukebox.SelectColor,        'OptionsJukeboxSelectColor');
-      ThemeLoadSelectSlide(OptionsJukebox.SelectR,    'OptionsJukeboxSelectR');
-      ThemeLoadSelectSlide(OptionsJukebox.SelectG,    'OptionsJukeboxSelectG');
-      ThemeLoadSelectSlide(OptionsJukebox.SelectB,    'OptionsJukeboxSelectB');
-      ThemeLoadStatic(OptionsJukebox.PointerR,        'OptionsJukeboxPointerR');
-      ThemeLoadStatic(OptionsJukebox.PointerG,        'OptionsJukeboxPointerG');
-      ThemeLoadStatic(OptionsJukebox.PointerB,        'OptionsJukeboxPointerB');
-      ThemeLoadStatic(OptionsJukebox.TexR,            'OptionsJukeboxRed');
-      ThemeLoadStatic(OptionsJukebox.TexG,            'OptionsJukeboxGreen');
-      ThemeLoadStatic(OptionsJukebox.TexB,            'OptionsJukeboxBlue');
-      ThemeLoadStatic(OptionsJukebox.TexColor,        'OptionsJukeboxColor');
-
-      OptionsJukebox.UpperX := ThemeIni.ReadInteger('OptionsJukeboxUpperBar', 'X', 0);
-      OptionsJukebox.UpperW := ThemeIni.ReadInteger('OptionsJukeboxUpperBar', 'W', 0);
-      OptionsJukebox.UpperY := ThemeIni.ReadInteger('OptionsJukeboxUpperBar', 'Y', 0);
-      OptionsJukebox.UpperH := ThemeIni.ReadInteger('OptionsJukeboxUpperBar', 'H', 0);
-      OptionsJukebox.LowerX := ThemeIni.ReadInteger('OptionsJukeboxLowerBar', 'X', 0);
-      OptionsJukebox.LowerW := ThemeIni.ReadInteger('OptionsJukeboxLowerBar', 'W', 0);
-      OptionsJukebox.LowerY := ThemeIni.ReadInteger('OptionsJukeboxLowerBar', 'Y', 0);
-      OptionsJukebox.LowerH := ThemeIni.ReadInteger('OptionsJukeboxLowerBar', 'H', 0);
-
-      ThemeLoadButton(OptionsJukebox.ButtonExit,              'OptionsJukeboxButtonExit');
+      ThemeLoadOptionsSub;
+      ThemeLoadStatics(OptionsNetworkLegendStatic, 'OptionsNetworkLegendStatic');
+      ThemeLoadTexts(OptionsNetworkLegendText, 'OptionsNetworkLegendText');
 
       //Edit Menu
       ThemeLoadBasic (Edit,               'Edit');
@@ -2449,6 +2164,28 @@ begin
   ThemeLoadButtonCollections(Theme.ButtonCollection, Name + 'ButtonCollection');
 
   LastThemeBasic := Theme;
+end;
+
+procedure TTheme.ThemeLoadOptionsSub;
+begin
+  ThemeLoadBasic(OptionsSub, 'OptionsSub');
+  ThemeLoadPosition(OptionsSub.Area, 'OptionsSubArea');
+  OptionsSub.WidgetVSpacing := ThemeIni.ReadInteger('OptionsSubArea', 'WidgetVSpacing', 1);
+  OptionsSub.ButtonBackVSpacing := ThemeIni.ReadInteger('OptionsSubArea', 'ButtonBackVSpacing', 1);
+  OptionsSub.ScrollBar.HSpacing := ThemeIni.ReadInteger('OptionsSubScrollBar', 'HSpacing', -1);
+  OptionsSub.ScrollBar.W := ThemeIni.ReadInteger('OptionsSubScrollBar', 'W', -1);
+  LoadColor(OptionsSub.ScrollBar.ColR, OptionsSub.ScrollBar.ColG,  OptionsSub.ScrollBar.ColB, ThemeIni.ReadString('OptionsSubScrollBar', 'Color', ''));
+  LoadColor(OptionsSub.ScrollBar.HColR, OptionsSub.ScrollBar.HColG,  OptionsSub.ScrollBar.HColB, ThemeIni.ReadString('OptionsSubScrollBar', 'HColor', ''));
+  LoadColor(OptionsSub.ScrollBar.CColR, OptionsSub.ScrollBar.CColG,  OptionsSub.ScrollBar.CColB, ThemeIni.ReadString('OptionsSubScrollBar', 'CColor', ''));
+  ThemeLoadSelectSlide(OptionsSub.SelectS, 'OptionsSubSelectSlide');
+  OptionsSub.SelectS.showArrows := true;
+  OptionsSub.SelectS.oneItemOnly := true;
+  ThemeLoadText(OptionsSub.TextDescription, 'OptionsSubTextDescription');
+  ThemeLoadtext(OptionsSub.TextWhereAmI, 'OptionsSubTextWhereAmI');
+  ThemeLoadButton(OptionsSub.Button, 'OptionsSubButton');
+  ThemeLoadButton(OptionsSub.ButtonBack, 'OptionsSubButtonExit');
+  ThemeLoadStatics(OptionsSub.LegendStatic, 'OptionsSubLegendStatic');
+  ThemeLoadTexts(OptionsSub.LegendText, 'OptionsSubLegendText');
 end;
 
 procedure TTheme.ThemeLoadBackground(var ThemeBackground: TThemeBackground; const Name: string);
@@ -4338,38 +4075,8 @@ begin
   freeandnil(Options);
   Options := TThemeOptions.Create;
 
-  freeandnil(OptionsGame);
-  OptionsGame := TThemeOptionsGame.Create;
-
-  freeandnil(OptionsGraphics);
-  OptionsGraphics := TThemeOptionsGraphics.Create;
-
-  freeandnil(OptionsSound);
-  OptionsSound := TThemeOptionsSound.Create;
-
-  freeandnil(OptionsInput);
-  OptionsInput := TThemeOptionsInput.Create;
-
-  freeandnil(OptionsLyrics);
-  OptionsLyrics := TThemeOptionsLyrics.Create;
-
-  freeandnil(OptionsThemes);
-  OptionsThemes := TThemeOptionsThemes.Create;
-
-  freeandnil(OptionsRecord);
-  OptionsRecord := TThemeOptionsRecord.Create;
-
-  freeandnil(OptionsAdvanced);
-  OptionsAdvanced := TThemeOptionsAdvanced.Create;
-
-  freeandnil(OptionsNetwork);
-  OptionsNetwork := TThemeOptionsNetwork.Create;
-
-  freeandnil(OptionsWebcam);
-  OptionsWebcam := TThemeOptionsWebcam.Create;
-
-  freeandnil(OptionsJukebox);
-  OptionsJukebox := TThemeOptionsJukebox.Create;
+  freeandnil(OptionsSub);
+  OptionsSub := TThemeOptionsSub.Create;
 
   freeandnil(Edit);
   Edit := TThemeEdit.Create;
