@@ -92,7 +92,7 @@ type
    *
    * The log and benchmark files are stored in
    * $HOME/Library/Log/UltraStar Deluxe/
-   * 
+   *
    * Music should go into ~/Music/UltraStar Deluxe/
    *
    * ~/Library/Application Support/UltraStarDeluxe_[USDX_VERSION]/songs is also used.
@@ -276,7 +276,7 @@ begin
     RelativePath := (DirectoryList[DirectoryIsFinished] as IPath);
     FileSystem.SetCurrentDir(BaseDir.Append(RelativePath));
     Iter := FileSystem.FileFind(Path('*'), faAnyFile);
-    while (Iter.HasNext) do    
+    while (Iter.HasNext) do
     begin
       FileInfo := Iter.Next;
       CurPath := FileInfo.Name;
@@ -284,8 +284,8 @@ begin
         writeln('Current path: ' + CurPath.ToNative);
       if CurPath.IsDirectory() then
       begin
-        if (not CurPath.Equals('.')) and 
-	   (not CurPath.Equals('..')) and 
+        if (not CurPath.Equals('.')) and
+	   (not CurPath.Equals('..')) and
 	   (not CurPath.Equals('MacOS')) then
           DirectoryList.Add(RelativePath.Append(CurPath));
       end
