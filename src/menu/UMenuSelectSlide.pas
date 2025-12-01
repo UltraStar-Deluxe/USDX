@@ -70,7 +70,7 @@ type
       PData:            ^integer;
 
       //For automatically Setting LineCount
-      Lines: byte;
+      Lines: integer;
 
       //Arrows on/off
       showArrows: boolean;      //default is false
