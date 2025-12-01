@@ -204,34 +204,60 @@ var
   mainBundle:       CFBundleRef;
   resourcesURL:     CFURLRef;
   bundlePath:       AnsiString;
+  bundleName:       AnsiString;
   success:          boolean;
   Position:         integer;
 const
   PATH_MAX = 500;
 
 begin
-  // Get the current folder and save it in OldBaseDir for returning to it, when
-  // finished.
+  // Get the current folder and save it in OldBaseDir for returning to it, when finished.
   OldBaseDir := FileSystem.GetCurrentDir();
   if LogSwitch = On then
     writeln('Old base directory: ' + OldBaseDir.ToNative);
 
-  // UltraStarDeluxe.app/Contents contains all the default files and folders.
+  // Try to get bundle path - UltraStarDeluxe.app/Contents contains all the default files and folders.
+  bundleName := 'UltraStarDeluxe.app';
   mainBundle := CFBundleGetMainBundle();
   resourcesURL := CFBundleCopyResourcesDirectoryURL(mainBundle);
   SetLength(bundlePath, PATH_MAX);
   success := CFURLGetFileSystemRepresentation(resourcesURL, TRUE, PChar(bundlePath), PATH_MAX);
-  if not success then
-    writeln('CreateUserFolders:CFURLGetFileSystemRepresentation unexpectedly failed.');
-  CFRelease(resourcesURL);
-  if LogSwitch = On then
-    writeln('BundlePath: ', bundlePath);
-  Position := pos('UltraStarDeluxe.app', bundlePath);
-  setlength(bundlePath, Position + 19);
+  if resourcesURL <> nil then
+    CFRelease(resourcesURL);
+  
   if success then
-    chdir(bundlePath);
-  BaseDir := FileSystem.GetCurrentDir();
-  BaseDir := BaseDir.Append('Contents');
+  begin
+    if LogSwitch = On then
+      writeln('BundlePath: ', bundlePath);
+    Position := pos(bundleName, bundlePath);
+    success := Position > 0;  // Only consider it a success if we found the bundle marker
+    
+    if success then
+    begin
+      setlength(bundlePath, Position + Length(bundleName) - 1);
+      success := DirectoryExists(bundlePath);  // Verify the path exists
+      
+      if success then
+      begin
+        chdir(bundlePath);
+        BaseDir := FileSystem.GetCurrentDir();
+        BaseDir := BaseDir.Append('Contents');
+        
+        if LogSwitch = On then
+          writeln('Running from app bundle');
+      end;
+    end;
+  end;
+
+  // Fallback: Use executable directory
+  if not success then
+  begin
+    writeln('Warning: Not running from app bundle, using executable directory');
+    BaseDir := GetExecutionDir();
+    if LogSwitch = On then
+      writeln('Using base directory: ' + BaseDir.ToNative);
+  end;
+
   FileSystem.SetCurrentDir(BaseDir);
 
   // Right now, only $HOME/Library/Application Support/UltraStarDeluxe_[USDX_VERSION] is used.
