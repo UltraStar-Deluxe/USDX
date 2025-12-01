@@ -224,25 +224,25 @@ begin
   success := CFURLGetFileSystemRepresentation(resourcesURL, TRUE, PChar(bundlePath), PATH_MAX);
   if resourcesURL <> nil then
     CFRelease(resourcesURL);
-  
+
   if success then
   begin
     if LogSwitch = On then
       writeln('BundlePath: ', bundlePath);
     Position := pos(bundleName, bundlePath);
     success := Position > 0;  // Only consider it a success if we found the bundle marker
-    
+
     if success then
     begin
       setlength(bundlePath, Position + Length(bundleName) - 1);
       success := DirectoryExists(bundlePath);  // Verify the path exists
-      
+
       if success then
       begin
         chdir(bundlePath);
         BaseDir := FileSystem.GetCurrentDir();
         BaseDir := BaseDir.Append('Contents');
-        
+
         if LogSwitch = On then
           writeln('Running from app bundle');
       end;
