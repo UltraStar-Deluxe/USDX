@@ -1400,6 +1400,7 @@ function TIni.InitializePianoKeyArray(const Values: array of Cardinal): TPianoKe
 var
   i: Integer;
 begin
+  Result := nil;
   SetLength(Result, Length(Values));
   for i := Low(Values) to High(Values) do
     Result[i] := Values[i];

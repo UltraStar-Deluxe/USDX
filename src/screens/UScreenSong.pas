@@ -658,6 +658,7 @@ var
     Ordered: array of cardinal;
     Idx, i: cardinal;
   begin
+    Result := nil;
     SetLength(Ordered, Num);
     SetLength(Result, Num);
     for i := 0 to Num-1 do Ordered[i] := i;
@@ -4457,6 +4458,7 @@ var
   I:      integer;
 
 begin
+  Result := nil;
   SetLength(Result, 0);
   if CatSongs.Song[Interaction].Main then
   begin

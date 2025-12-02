@@ -157,14 +157,15 @@ end;
 
 function TCover.GetEmptyTexture(): TTexture;
 begin
-  if not (Assigned(Filename)) or (Filename = nil) then Exit;
-  FillChar(Result, SizeOf(TTexture), 0);
+  Result := Default(TTexture);
+  if not Assigned(Filename) then Exit;
   Result.Name:= Filename;
 end;
 
 function TCover.GetTexture(): TTexture;
 begin
-  if not (Assigned(Filename)) or (Filename = nil) then Exit;
+  Result := Default(TTexture);
+  if not Assigned(Filename) then Exit;
   Result := Texture.LoadTexture(Filename);
 end;
 

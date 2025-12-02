@@ -400,10 +400,10 @@ function TTextureUnit.GetTexture(const Name: IPath; Typ: TTextureType; Col: Long
 var
   TextureIndex: integer;
 begin
+  // zero texture data
+  FillChar(Result, SizeOf(Result), 0);
   if (Name = nil) or(Name.IsUnset) then
   begin
-    // zero texture data
-    FillChar(Result, SizeOf(Result), 0);
     Exit;
   end;
 
