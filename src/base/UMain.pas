@@ -101,7 +101,8 @@ uses
   ULuaParty,
   ULuaScreenSing,
   UTime,
-  UWebcam;
+  UWebcam,
+  UAudioWorker;
   //UVideoAcinerella;
 
 procedure Main;
@@ -198,6 +199,9 @@ begin
     // Sound
     InitializeSound();
 
+    Log.LogStatus('Audio Worker', 'Initialization');
+    InitAudioWorker;
+
     // Lyrics-engine with media reference timer
     LyricsState := TLyricsState.Create();
 
@@ -284,6 +288,9 @@ begin
     begin
          DataBase.Destroy();
     end;
+
+        Log.LogStatus('Audio Worker', 'Finalization');
+        FinalizeAudioWorker;
 
     Log.LogStatus('Finalize Media', 'Finalization');
     FinalizeMedia();

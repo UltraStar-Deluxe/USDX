@@ -196,6 +196,7 @@ type
 
     procedure DrawMedleyCountdown();
     function Draw: boolean;
+    procedure ProcessAudio;
 
     procedure SwapToScreen(Screen: integer);
 
@@ -712,6 +713,63 @@ begin
   assignAvatarStatic(Theme.Sing.Duet3PP3, StaticDuetP3RAvatar[1]     , AvatarPlayerTextures[6]);
 end;
 
+procedure TScreenSingView.ProcessAudio;
+var
+  CurLyricsTime: real;
+  MedleyEnd: boolean;
+  MedleyStartApplause: boolean;
+begin
+  if (not ScreenSing.Settings.SoundEnabled) and (lastVolume <> 0) then
+  begin
+    AudioPlayback.SetVolume(0);
+    lastVolume := 0;
+  end
+  else if (lastVolume <> 1) and (lastVolume <> 0) then
+  begin
+    AudioPlayback.SetVolume(1);
+    lastVolume := 1;
+  end;
+
+  CurLyricsTime := LyricsState.GetCurrentTime();
+  if ScreenSong.Mode = smMedley then
+  begin
+    MedleyEnd := CurLyricsTime > ScreenSing.MedleyEnd;
+    MedleyStartApplause := CurLyricsTime > GetTimeFromBeat(CurrentSong.Medley.EndBeat);
+  end
+  else
+  begin
+    MedleyEnd := false;
+    MedleyStartApplause := false;
+  end;
+
+  if ScreenSing.ShowFinish then
+  begin
+    if (not ScreenSing.FinishedMusic) and
+       ((not MedleyEnd) or (ScreenSong.Mode <> smMedley)) and
+       ((CurrentSong.Finish = 0) or
+        (LyricsState.GetCurrentTime() * 1000 <= CurrentSong.Finish)) and
+       (not ScreenSing.Settings.Finish) then
+    begin
+      if not ScreenSing.Paused then
+      begin
+        Sing(ScreenSing);
+
+        if (ScreenSong.Mode = smMedley) and not ScreenSing.FadeOut then
+          ScreenSing.UpdateMedleyStats(MedleyStartApplause);
+
+        Party.CallOnSing;
+      end;
+    end
+    else
+    begin
+      if ((not ScreenSing.FadeOut) and (Screens = 1)) or (ScreenAct = 2) then
+      begin
+        ScreenSing.Finish;
+      end;
+    end;
+  end;
+end;
+
 function TScreenSingView.Draw: boolean;
 var
   DisplayTime:            real;
@@ -727,18 +785,6 @@ var
   LastLineSungToEnd:      boolean;
 begin
   ScreenSing.Background.Draw;
-
-  // sound enabled/disabled (Party plugins)
-  if not(ScreenSing.Settings.SoundEnabled) and not(lastVolume=0) then
-  begin
-    AudioPlayback.SetVolume(0);
-    lastVolume:=0;
-  end
-  else if not(lastVolume=1) and not(lastVolume=0) then
-  begin //changing volume is slow, so do not reset volume every frame
-    AudioPlayback.SetVolume(1);
-    lastVolume:=1;
-  end;
 
   // swap static textures to current screen ones
   SwapToScreen(ScreenAct);
@@ -909,19 +955,6 @@ begin
     }
   end;
 
-  // for medley-mode:
-  CurLyricsTime := LyricsState.GetCurrentTime();
-  if (ScreenSong.Mode = smMedley) and (CurLyricsTime > ScreenSing.MedleyEnd) then
-    medley_end := true
-  else
-    medley_end := false;
-
-  if (ScreenSong.Mode = smMedley) and (CurLyricsTime >
-    GetTimeFromBeat(CurrentSong.Medley.EndBeat)) then
-    medley_start_applause := true
-  else
-    medley_start_applause := false;
-
   // update and draw movie
   // USE FFMPEG
   if Assigned(ScreenSing.fCurrentVideo) and (not ScreenSing.fShowWebcam) then
@@ -957,36 +990,6 @@ begin
   //Medley Countdown
   if ScreenSong.Mode = smMedley then
     DrawMedleyCountdown;
-
-  // check for music finish
-  //Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(LyricsState.CurrentTime*1000) + ' ' + IntToStr(CurrentSong.Finish));
-  if ScreenSing.ShowFinish then
-  begin
-    if (not ScreenSing.FinishedMusic) and (not medley_end or (ScreenSong.Mode <> smMedley)) and
-       ((CurrentSong.Finish = 0) or
-        (LyricsState.GetCurrentTime() * 1000 <= CurrentSong.Finish)) and
-       (not ScreenSing.Settings.Finish) then
-    begin
-      // analyze song if not paused
-      if (not ScreenSing.Paused) then
-      begin
-        Sing(ScreenSing);
-
-        //Update Medley Stats
-        if (ScreenSong.Mode = smMedley) and not ScreenSing.FadeOut then
-          ScreenSing.UpdateMedleyStats(medley_start_applause);
-
-        Party.CallOnSing;
-      end;
-    end
-    else
-    begin
-      if (not ScreenSing.FadeOut) and (Screens=1) or (ScreenAct=2) then
-      begin
-        ScreenSing.Finish;
-      end;
-    end;
-  end;
 
   // draw info lyric bar if not medley
   if (ScreenSing.Settings.TimeBarVisible) then
