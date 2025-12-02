@@ -113,6 +113,7 @@ type
     FPlayerIndex: integer;
     function BuildPlayerState(out State: TAudioPlayerState): boolean;
     procedure PublishPlayerState(const State: TAudioPlayerState);
+    function WaitForPlayerData(TimeoutMs: Cardinal): TWaitResult;
   protected
     procedure Execute; override;
   public
@@ -574,16 +575,58 @@ begin
   end;
 end;
 
+function TAudioPlayerWorker.WaitForPlayerData(TimeoutMs: Cardinal): TWaitResult;
+var
+  Processor: TAudioInputProcessor;
+  Buffer: TCaptureBuffer;
+begin
+  Result := wrTimeout;
+  Processor := URecord.AudioInputProcessor();
+  if Processor = nil then
+  begin
+    if TimeoutMs > 0 then
+      SDL_Delay(TimeoutMs);
+    Exit;
+  end;
+
+  if (FPlayerIndex < 0) or (FPlayerIndex > High(Processor.Sound)) then
+  begin
+    if TimeoutMs > 0 then
+      SDL_Delay(TimeoutMs);
+    Exit;
+  end;
+
+  Buffer := Processor.Sound[FPlayerIndex];
+  if Buffer = nil then
+  begin
+    if TimeoutMs > 0 then
+      SDL_Delay(TimeoutMs);
+    Exit;
+  end;
+
+  Result := Buffer.WaitForData(TimeoutMs);
+end;
+
 procedure TAudioPlayerWorker.Execute;
 var
   PlayerState: TAudioPlayerState;
+  WaitResult: TWaitResult;
+  WaitTimeout: Cardinal;
 begin
   while not Terminated do
   begin
-    if BuildPlayerState(PlayerState) then
-      PublishPlayerState(PlayerState);
+    WaitTimeout := Ini.WorkerIntervalMs;
+    WaitResult := WaitForPlayerData(WaitTimeout);
+    if Terminated then
+      Break;
 
-    SDL_Delay(Ini.WorkerIntervalMs);
+    if (WaitResult = wrSignaled) or (WaitResult = wrTimeout) then
+    begin
+      if BuildPlayerState(PlayerState) then
+        PublishPlayerState(PlayerState);
+    end
+    else if (WaitResult = wrError) and (WaitTimeout > 0) then
+      SDL_Delay(WaitTimeout);
   end;
 end;
 

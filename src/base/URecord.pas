@@ -38,6 +38,7 @@ uses
   Math,
   sdl2,
   SysUtils,
+  SyncObjs,
   UCommon,
   UMusic,
   UIni;
@@ -62,6 +63,7 @@ type
       fVoiceStream: TAudioVoiceStream; // stream for voice passthrough
       fAnalysisBufferLock: PSDL_Mutex;
       fAudioFormat: TAudioFormatInfo;
+      fDataReadyEvent: TEvent;
       Frequencies: TFrequencyArray;
       Delays: TDelayArray;
 
@@ -69,6 +71,7 @@ type
 
       procedure BoostBuffer(Buffer: PByteArray; Size: integer);
       procedure ProcessNewBuffer(Buffer: PByteArray; BufferSize: integer);
+      procedure SignalDataReady;
 
       procedure StartCapture(Format: TAudioFormatInfo);
       procedure StopCapture();
@@ -102,6 +105,7 @@ type
       procedure AnalyzeBuffer;
       procedure LockAnalysisBuffer();
       procedure UnlockAnalysisBuffer();
+      function WaitForData(TimeoutMs: Cardinal): TWaitResult;
 
       function MaxSampleVolume: single;
       property ToneString: string READ GetToneString;
@@ -269,6 +273,7 @@ begin
   LogBuffer := TMemoryStream.Create;
   fAnalysisBufferLock := SDL_CreateMutex();
   AnalysisBufferSize := Length(AnalysisBuffer);
+  fDataReadyEvent := TEvent.Create(nil, false, true, '');
 end;
 
 destructor TCaptureBuffer.Destroy;
@@ -276,6 +281,7 @@ begin
   FreeAndNil(LogBuffer);
   FreeAndNil(fVoiceStream);
   FreeAndNil(fAudioFormat);
+  FreeAndNil(fDataReadyEvent);
   SDL_UnlockMutex(fAnalysisBufferLock);
   SDL_DestroyMutex(fAnalysisBufferLock);
   fAnalysisBufferLock:=nil;
@@ -299,6 +305,7 @@ begin
   LockAnalysisBuffer();
   FillChar(AnalysisBuffer[0], Length(AnalysisBuffer) * SizeOf(SmallInt), 0);
   UnlockAnalysisBuffer();
+  SignalDataReady;
 end;
 
 procedure TCaptureBuffer.ProcessNewBuffer(Buffer: PByteArray; BufferSize: integer);
@@ -356,6 +363,23 @@ begin
     // Or we could use a faster but not that efficient lossless compression.
     LogBuffer.Write(Buffer^, BufferSize);
   end;
+
+  SignalDataReady;
+end;
+
+procedure TCaptureBuffer.SignalDataReady;
+begin
+  if fDataReadyEvent <> nil then
+    fDataReadyEvent.SetEvent;
+end;
+
+function TCaptureBuffer.WaitForData(TimeoutMs: Cardinal): TWaitResult;
+begin
+  Result := wrTimeout;
+  if fDataReadyEvent <> nil then
+    Result := fDataReadyEvent.WaitFor(TimeoutMs)
+  else if TimeoutMs > 0 then
+    SDL_Delay(TimeoutMs);
 end;
 
 procedure TCaptureBuffer.AnalyzeBuffer;
