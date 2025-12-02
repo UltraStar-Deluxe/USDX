@@ -347,6 +347,9 @@ begin
       // keyboard/mouse/joystick events
       CheckEvents;
 
+      // process audio callbacks on main thread
+      AudioWorkerDispatchExternalAudioCallback;
+
       // display
       Done := not Display.Draw;
       SwapBuffers;
