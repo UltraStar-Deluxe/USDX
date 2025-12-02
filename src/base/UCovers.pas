@@ -163,11 +163,8 @@ begin
 end;
 
 function TCover.GetTexture(): TTexture;
-var
-  debughelper: UTF8String;
 begin
   if not (Assigned(Filename)) or (Filename = nil) then Exit;
-  debughelper:=Filename.ToUTF8(true);
   Result := Texture.LoadTexture(Filename);
 end;
 

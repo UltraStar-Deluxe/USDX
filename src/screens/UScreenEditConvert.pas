@@ -992,7 +992,6 @@ var
   Height:   real;
   YSkip:    real;
   TrackPos: real;
-  TrackPadding:  real;
   TrackWidth: real;
   NoteDiff, TrackDiff, TrackDiffSel, TrackDiffOther: integer;
   YSelected: real;
@@ -1028,7 +1027,6 @@ begin
     YSelected := Min(Max(YSkip, Height - Length(MTracks)*YSkip), 6*YSkip);
   end;
 
-  TrackPadding := 0.15 * YSkip;
   TrackDiffSel := (HighNote-OffsetHighNote) - (LowNote+OffsetLowNote);
   TrackDiffOther := HighNote - LowNote;
   TrackWidth := InWidth - XTrack - 5 - Padding;
@@ -1155,7 +1153,6 @@ end;
 procedure TScreenEditConvert.DrawChannels(InWidth: real; Offset: real = 0.5);
 var
   Count:    integer;
-  Count2:   integer;
 
   Top:      real;
   Padding:  real;

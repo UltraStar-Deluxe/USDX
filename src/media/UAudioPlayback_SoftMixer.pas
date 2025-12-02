@@ -156,7 +156,7 @@ type
 
       function CreateVoiceStream(ChannelMap: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream; override;
 
-      function GetMixer(): TAudioMixerStream; {$IFDEF HasInline}inline;{$ENDIF}
+      function GetMixer(): TAudioMixerStream;
       function GetAudioFormatInfo(): TAudioFormatInfo;
 
       procedure MixBuffers(DstBuffer, SrcBuffer: PByteArray; Size: cardinal; Volume: single); virtual;

@@ -664,10 +664,6 @@ begin
 end;
 
 constructor TScreenSingController.Create;
-var
-  Col: array [1..6] of TRGB;
-  I: integer;
-  Color: cardinal;
 begin
   inherited Create;
   ScreenSing := self;
@@ -683,7 +679,6 @@ procedure TScreenSingController.OnShow;
 var
   BadPlayer: integer;
   Col, ColP1, ColP2: TRGB;
-  I: integer;
 begin
   inherited;
 
@@ -846,7 +841,7 @@ end;
 
 procedure TScreenSingController.onShowFinish;
 var
-  I, PlayerIndex: integer;
+  PlayerIndex: integer;
 begin
   // hide cursor on singscreen show
   Display.SetCursor;

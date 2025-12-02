@@ -68,8 +68,6 @@ uses
 
 function TScreenOptionsSound.ParseInput(PressedKey: cardinal;
   CharCode: UCS4Char; PressedDown: boolean): boolean;
-var
-  J: integer;
 begin
   Result := true;
   if (PressedDown) then

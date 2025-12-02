@@ -1908,8 +1908,6 @@ begin
 end;
 
 procedure TScreenSong.ColorDuetNameSingers();
-var
-  Col: TRGB;
   procedure setColor(static: integer; color: TRGB);
   begin
     Statics[static].Texture.ColR := color.R;
@@ -2874,10 +2872,8 @@ end;
 procedure TScreenSong.SetListScroll;
 var
   B, Line:  integer;
-  First: boolean;
 begin
   Line := 0;
-  First := true;
 
   // line
   for B := 0 to High(Button) do
@@ -2923,7 +2919,7 @@ end;
 
 procedure TScreenSong.SetListScrollRefresh;
 var
-  B, Count, I, VS:  integer;
+  B, Count, I:  integer;
   SongID: array of integer;
   Alpha: real;
 begin
@@ -3709,10 +3705,6 @@ begin
 end;
 
 procedure TScreenSong.SelectNextListRow;
-var
-  VS, MaxListLine: integer;
-  NrMiddleSong: integer;
-  MaxListLineTmp: real;
 begin
   AudioPlayback.PlaySound(SoundLib.Change);
   SelectNext;
@@ -3740,8 +3732,6 @@ procedure TScreenSong.StartMusicPreview();
 var
   Song: TSong;
   PreviewPos: real;
-  I: integer;
-  Vol: cardinal;
 begin
   if SongIndex <> -1 then
   begin

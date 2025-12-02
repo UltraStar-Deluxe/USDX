@@ -100,8 +100,8 @@ type
 
       // use to analyze sound from buffers to get new pitch
       procedure AnalyzeBuffer;
-      procedure LockAnalysisBuffer();   {$IFDEF HasInline}inline;{$ENDIF}
-      procedure UnlockAnalysisBuffer(); {$IFDEF HasInline}inline;{$ENDIF}
+      procedure LockAnalysisBuffer();
+      procedure UnlockAnalysisBuffer();
 
       function MaxSampleVolume: single;
       property ToneString: string READ GetToneString;

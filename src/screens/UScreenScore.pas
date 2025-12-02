@@ -161,7 +161,6 @@ type
       StaticLevel:          array[1..UIni.IMaxPlayerCount] of integer;
       StaticLevelRound:     array[1..UIni.IMaxPlayerCount] of integer;
 
-      Animation:            real;
       Voice:                integer;
 
       TextScore_ActualValue:  array[1..UIni.IMaxPlayerCount] of integer;
@@ -478,7 +477,6 @@ end;
 
 function TScreenScore.ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean;
 var
-  min_y, max_y, min_x, max_x: real;
   button_s: integer;
 begin
   Result := True;
@@ -491,11 +489,6 @@ begin
   else
     button_s := ButtonSend[3];
   end;
-
-  min_x := Button[button_s].X;
-  min_y := Button[button_s].Y;
-  max_x := Button[button_s].X + Button[button_s].W;
-  max_y := Button[button_s].Y + Button[button_s].H;
 
   // transfer mousecords to the 800x600 raster we use to draw
   X := Round((X / (ScreenW / Screens)) * RenderW);
@@ -698,7 +691,7 @@ end;
 //TODO: adapt for players 7 to 12
 procedure TScreenScore.SwapToScreen(Screen: integer);
 var
-  P, I, J, Max: integer;
+  P, I, Max: integer;
   Col: TRGB;
 begin
 
@@ -830,7 +823,6 @@ var
   Player:  integer;
   Counter: integer;
   I: integer;
-  Col: TRGB;
   R, G, B: real;
   Col2: integer;
   ArrayStartModifier: integer;
@@ -1095,7 +1087,6 @@ var
   P: integer;  // player
   I: integer;
   V: array[1..UIni.IMaxPlayerCount] of boolean; // visibility array
-  ArrayStartModifier: integer;
 begin
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenScore');
@@ -1818,15 +1809,10 @@ begin
 end;
 
 procedure TScreenScore.StartVoice;
-var
-  changed:  boolean;
-  files:    array of string;
-  I:        integer;
-
 begin
   //Music.Close;
   //ScreenSong.SongIndex := -1;
-  changed := false;
+  //changed := false;
 
   // not implement voice yet
   {

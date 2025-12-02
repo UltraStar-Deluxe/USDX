@@ -524,7 +524,6 @@ end;
 procedure TEffectManager.SentenceChange(CP: integer);
 var
   c: cardinal;
-  p: integer;
 begin
 
   c := 0;

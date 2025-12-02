@@ -1774,7 +1774,6 @@ procedure TIni.Save;
 var
   IniFile: TIniFile;
   HexColor: string;
-  I: integer;
   C: TRGB;
 begin
   try
@@ -2212,7 +2211,6 @@ end;
 procedure TIni.SaveSoundFont(Name: string);
 var
   IniFile: TIniFile;
-  I: integer;
 begin
   if not Filename.IsReadOnly() then
   begin
@@ -2251,7 +2249,6 @@ end;
 procedure TIni.SaveNumberOfPlayers;
 var
   IniFile: TIniFile;
-  I: integer;
 begin
   if not Filename.IsReadOnly() then
   begin
@@ -2267,7 +2264,6 @@ end;
 procedure TIni.SaveSingTimebarMode;
 var
   IniFile: TIniFile;
-  I: integer;
 begin
   if not Filename.IsReadOnly() then
   begin
@@ -2283,7 +2279,6 @@ end;
 procedure TIni.SaveJukeboxTimebarMode;
 var
   IniFile: TIniFile;
-  I: integer;
 begin
   if not Filename.IsReadOnly() then
   begin

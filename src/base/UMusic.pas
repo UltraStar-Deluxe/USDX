@@ -1200,9 +1200,7 @@ end;
 function TAudioPlaybackStream.Synchronize(BufferSize: integer; FormatInfo: TAudioFormatInfo): integer;
 var
   TimeDiff: double;
-  FrameDiff: double;
   FrameSkip: integer;
-  ReqFrames: integer;
   MasterClock: real;
   CurPosition: real;
 const

@@ -96,7 +96,6 @@ type
   TSongs = class(TThread)
   {$ENDIF}
   private
-    fNotify, fWatch:     longint;
     fParseSongDirectory: boolean;
     fProcessing:         boolean;
     procedure int_LoadSongList;
@@ -199,8 +198,6 @@ begin
 end;
 
 procedure TSongs.Execute();
-var
-  fChangeNotify: THandle;
 begin
 {$IFDEF USE_PSEUDO_THREAD}
   int_LoadSongList();
@@ -304,7 +301,7 @@ end;
 
 procedure TSongs.BrowseTXTFiles(Dir: IPath);
 var
-  I, C: integer;
+  I: integer;
   Files: TPathDynArray;
   Song: TSong;
   //CloneSong: TSong;
@@ -486,7 +483,6 @@ var
   LetterTmp:   UCS4Char;
   CatNumber:   integer;    // Number of Song in Category
   tmpCategory: UTF8String; //
-  I, J:        integer;
   StringIndex: integer;
   MainArtist:  UTF8String;
 

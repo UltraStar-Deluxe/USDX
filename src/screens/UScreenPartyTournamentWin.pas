@@ -194,8 +194,6 @@ begin
 end;
 
 procedure TScreenPartyTournamentWin.UpdateRounds;
-var
-  p: integer;
 begin
   if (PartyTournament.ResultPlayer[PartyTournament.Phase, PartyTournament.Next.Player1].Text = '') then
     PartyTournament.ResultPlayer[PartyTournament.Phase, PartyTournament.Next.Player1].Text := '0';

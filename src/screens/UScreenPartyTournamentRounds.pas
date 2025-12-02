@@ -140,7 +140,6 @@ end;
 
 function TScreenPartyTournamentRounds.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
-  p, I: integer;
   SDL_ModState: word;
   Player: integer;
 begin
@@ -646,7 +645,7 @@ end;
 
 function TScreenPartyTournamentRounds.GetPlayers8Final(): NextPlayers;
 var
-  I, Count: integer;
+  Count: integer;
   _Next: NextPlayers;
   Find: boolean;
 begin
@@ -949,8 +948,6 @@ begin
 end;
 
 function TScreenPartyTournamentRounds.Draw: boolean;
-var
-  I, J, Count: integer;
 begin
   DrawBG;
   DrawGrid();
@@ -960,7 +957,6 @@ end;
 procedure TScreenPartyTournamentRounds.DrawGrid();
 var
   I, J: integer;
-  CurrentTick: cardinal;
   MaxPhase: integer;
 begin
   DrawGridBlock1();
@@ -1001,8 +997,8 @@ end;
 procedure TScreenPartyTournamentRounds.DrawGridBlock1();
 var
   X, Y, W, H, Y1, Y2,
-  YQ1, YQ2, YQ3, YQ4, YQ5, YQ6, YQ7, YQ8,
-  YS1, YS2, YS3, YS4, YF1, YF2: real;
+  YQ1, YQ2, YQ3, YQ4,
+  YS1, YS2, YF1: real;
   I: integer;
 begin
   H := 5;
@@ -1015,18 +1011,11 @@ begin
   YQ2 := 0;
   YQ3 := 0;
   YQ4 := 0;
-  YQ5 := 0;
-  YQ6 := 0;
-  YQ7 := 0;
-  YQ8 := 0;
 
   YS1 := 0;
   YS2 := 0;
-  YS3 := 0;
-  YS4 := 0;
 
   YF1 := 0;
-  YF2 := 0;
 
   // left players block
   for I := 0 to 7 do
@@ -1355,8 +1344,8 @@ end;
 procedure TScreenPartyTournamentRounds.DrawGridBlock2();
 var
   X, Y, W, H, Y1, Y2,
-  YQ1, YQ2, YQ3, YQ4, YQ5, YQ6, YQ7, YQ8,
-  YS1, YS2, YS3, YS4, YF1, YF2: real;
+  YQ1, YQ2, YQ3, YQ4,
+  YS1, YS2, YF1: real;
   I: integer;
 begin
 
@@ -1370,18 +1359,11 @@ begin
   YQ2 := 0;
   YQ3 := 0;
   YQ4 := 0;
-  YQ5 := 0;
-  YQ6 := 0;
-  YQ7 := 0;
-  YQ8 := 0;
 
   YS1 := 0;
   YS2 := 0;
-  YS3 := 0;
-  YS4 := 0;
 
   YF1 := 0;
-  YF2 := 0;
 
   // right players block
   for I := 0 to 7 do
