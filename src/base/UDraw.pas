@@ -534,7 +534,7 @@ end;
 procedure SingDrawOscilloscope(Position: TThemePosition; NrSound: integer);
 var
   SampleIndex: integer;
-  Snapshot:    TAudioPlayerSnapshot;
+  State:       TAudioPlayerState;
   MaxX, MaxY:  real;
   Col: TRGB;
 begin
@@ -543,7 +543,7 @@ begin
   else
     Col := GetPlayerColor(Ini.PlayerColor[NrSound]);
 
-  if not AudioWorkerTryGetPlayerSnapshot(NrSound, Snapshot) then
+  if not AudioWorkerCopyPlayerState(NrSound, State) then
   begin
     // Draw nothing until the audio thread publishes data
     Exit;
@@ -568,7 +568,7 @@ begin
   glBegin(GL_LINE_STRIP);
     for SampleIndex := 0 to AUDIO_WORKER_OSCILLOSCOPE_SAMPLES-1 do
     begin
-      glVertex2s(SampleIndex, Snapshot.Oscilloscope[SampleIndex]);
+      glVertex2s(SampleIndex, State.Oscilloscope[SampleIndex]);
     end;
   glEnd;
 

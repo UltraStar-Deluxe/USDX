@@ -205,6 +205,7 @@ type
 
       // Record
       InputDeviceConfig: array of TInputDeviceConfig;
+      WorkerIntervalMs: integer;
 
       // Advanced
       LoadAnimation:  integer;
@@ -1139,6 +1140,9 @@ begin
   MicBoost := ReadArrayIndex(IMicBoost, IniFile, 'Record', 'MicBoost', IGNORE_INDEX, 'Off');
   // Threshold
   ThresholdIndex := ReadArrayIndex(IThreshold, IniFile, 'Record', 'Threshold', 1);
+  WorkerIntervalMs := IniFile.ReadInteger('Record', 'WorkerInterval', 5);
+  if WorkerIntervalMs < 0 then
+    WorkerIntervalMs := 5;
 end;
 
 procedure TIni.SaveInputDeviceCfg(IniFile: TIniFile);
@@ -1179,6 +1183,8 @@ begin
   IniFile.WriteString('Record', 'MicBoost', IMicBoost[MicBoost]);
   // Threshold
   IniFile.WriteString('Record', 'Threshold', IThreshold[ThresholdIndex]);
+  // Worker interval
+  IniFile.WriteInteger('Record', 'WorkerInterval', WorkerIntervalMs);
 end;
 
 procedure TIni.LoadPaths(IniFile: TCustomIniFile);
