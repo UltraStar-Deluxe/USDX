@@ -965,7 +965,7 @@ begin
   RegisterKeyBinding('SEC_001', 'TAB', SDLK_TAB, @HandleShowPopupHelp);
   RegisterKeyBinding('SEC_001', 'ESC', SDLK_ESCAPE, @HandleLeaveScope);
   RegisterKeyBinding('SEC_001', 'Q', SDLK_Q);
-  RegisterKeyBinding('SEC_001', 'EDIT_INFO_UNDO', SDLK_Z + MOD_LCTRL, @HandleUndo);
+  RegisterKeyBinding('SEC_001', 'EDIT_INFO_UNDO', SDLK_Z + MOD_LCTRL, @Undo);
 
   RegisterKeyBinding('SEC_010', 'R', SDLK_R, @HandleReloadSong);
   RegisterKeyBinding('SEC_010', 'S', SDLK_S, @HandleSaveSong);
@@ -1226,16 +1226,12 @@ begin
   Exit;
 end;
 
-      // SDLK_Z: Undo;
 procedure TScreenEditSub.Undo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 // undo
 begin
-  if SDL_ModState = KMOD_LCTRL then
-  begin
-      CopyFromUndo;
-      GoldenRec.KillAll;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_UNDO');
-  end;
+  CopyFromUndo;
+  GoldenRec.KillAll;
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_UNDO');
   ShowInteractiveBackground;
 end;
 
