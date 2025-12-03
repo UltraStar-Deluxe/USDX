@@ -364,7 +364,6 @@ type
       function HandleDivideBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleMultiplyBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function HandleCapitalizeLyrics(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleVideo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandlePaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleFixTimings(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
@@ -983,7 +982,9 @@ begin
   RegisterKeyBinding('SEC_070', 'CTRL_SHIFT_D', SDLK_D + MOD_LCTRL + MOD_LSHIFT, @HandleToggleDuet);
   RegisterKeyBinding('SEC_085', 'SHIFT_M', SDLK_M + MOD_LSHIFT, @HandleMultiplyBPM);
 
-  RegisterKeyBinding('SEC_045', 'C', SDLK_C, @HandleCapitalizeLyrics);
+  RegisterKeyBinding('SEC_045', 'C', SDLK_C, @LyricsCapitalize);
+  RegisterKeyBinding('SEC_045', 'C', SDLK_C + MOD_LSHIFT, @LyricsCorrectSpaces);
+  RegisterKeyBinding('SEC_045', 'C', SDLK_C + MOD_LCTRL, @MarkCopySrc);
 
   RegisterKeyBinding('SEC_030', 'V', SDLK_V, @HandleVideo);
   RegisterKeyBinding('SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL, @HandlePaste);
@@ -1048,36 +1049,6 @@ begin
   MultiplyBPM;
   ShowInteractiveBackground;
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_MULTIPLIED_BPM');
-  Exit;
-end;
-
-      // SDLK_C: CapitalizeLyrics;
-procedure TScreenEditSub.CapitalizeLyrics(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
-begin
-  CopyToUndo;
-  // Capitalize letter at the beginning of line
-  if SDL_ModState = 0 then
-    begin
-    LyricsCapitalize;
-    EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-    EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_CAPITALIZATION_CORRECTED');
-    end;
-
-  // Correct spaces
-  if SDL_ModState = KMOD_LSHIFT then
-    begin
-      LyricsCorrectSpaces;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_SPACES_CORRECTED');
-    end;
-
-  // Copy sentence
-  if SDL_ModState = KMOD_LCTRL then
-  begin
-    MarkCopySrc;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_MARKED_FOR_COPY');
-  end;
-
   Exit;
 end;
 
@@ -3072,6 +3043,7 @@ var
   LineIndex:    Integer;
   Str:          UTF8String;
 begin
+  CopyToUndo;
   for TrackIndex := 0 to High(Tracks) do
   begin
     for LineIndex := 0 to Tracks[TrackIndex].High do
@@ -3081,6 +3053,9 @@ begin
       Tracks[TrackIndex].Lines[LineIndex].Notes[0].Text := Str;
     end; // LineIndex
   end; // TrackIndex
+  EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
+  EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_CAPITALIZATION_CORRECTED');
 end;
 
 procedure TScreenEditSub.LyricsCorrectSpaces;
@@ -3089,6 +3064,7 @@ var
   LineIndex:    Integer;
   NoteIndex:    Integer;
 begin
+  CopyToUndo;
   for TrackIndex := 0 to High(Tracks) do
   begin
     for LineIndex := 0 to Tracks[TrackIndex].High do
@@ -3134,6 +3110,7 @@ begin
         Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Text := Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Text + ' ';
     end; // LineIndex
   end; // TrackIndex
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_SPACES_CORRECTED');
 end;
 
 procedure TScreenEditSub.FixTimings;
@@ -3654,9 +3631,11 @@ end;
 
 procedure TScreenEditSub.MarkCopySrc;
 begin
+  CopyToUndo;
   CopySrc.track := CurrentTrack;
   CopySrc.line  := Tracks[CurrentTrack].CurrentLine;
   CopySrc.note  := CurrentNote[CurrentTrack];
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_MARKED_FOR_COPY');
 end;
 
 procedure TScreenEditSub.CopySentence(SrcTrack, SrcLine, DstTrack, DstLine: Integer; CopyText, CopyNotes, EnforceSrcLength: boolean);
