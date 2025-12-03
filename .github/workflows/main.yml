@@ -71,7 +71,7 @@ jobs:
           echo "versionName=$VNAME" >> $GITHUB_ENV
       - name: Determine Arch
         run: |
-          if [ "${{ matrix.os }}" = "macos-13" ]; then
+          if [ "${{ matrix.os }}" = "macos-15-intel" ]; then
             echo "arch=x86" >> $GITHUB_ENV
           else
             echo "arch=ARM" >> $GITHUB_ENV
