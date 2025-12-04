@@ -434,8 +434,13 @@ type
 
 const
   ID='ID_064';   //for help system
-  SelectAudio = 1;
-  SelectMIDI = 2;
+  SelectAudio = 0x1;
+  SelectMIDI = 0x2;
+  SelectFull = 0x4;
+  SelectText = 0x8;
+  SelectNotes = 0x10;
+  EnforceLength = 0x20;
+  SelectMove = 0x40;
 
 implementation
 
@@ -717,8 +722,7 @@ begin
   Exit;
 end;
 
-      // SDLK_A: SetMedleyTags
-procedure TScreenEditSub.SetMedleyTags(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
+procedure TScreenEditSub.SetMedleyTags(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer);
 // set Medley tags
 begin
   CopyToUndo;
@@ -736,7 +740,7 @@ begin
 
   MedleyNotes.isCustom := true;
   CurrentSong.Medley.Source := msTag;
-  if SDL_ModState = KMOD_LSHIFT then // medley end note
+  if EndNote = 1 then // medley end note
   begin
     if MedleyNotes.isEnd then // if end is already set
     begin
@@ -973,6 +977,7 @@ begin
 
   RegisterKeyBinding('SEC_050', 'I', SDLK_I, @HandleSetPreviewStart);
   RegisterKeyBinding('SEC_060', 'A', SDLK_A, @HandleSetMedleyTags);
+  RegisterKeyBinding('SEC_060', 'A', SDLK_A + MOD_LSHIFT, @HandleSetMedleyTags, 1);
   RegisterKeyBinding('SEC_060', 'J', SDLK_J, @HandleJump, 0);
   RegisterKeyBinding('SEC_060', 'SHIFT_J', SDLK_J + MOD_LSHIFT, @HandleJump,1);
   RegisterKeyBinding('SEC_060', 'CTRL_J', SDLK_J + MOD_LCTRL, @HandleJump,);
@@ -987,7 +992,10 @@ begin
   RegisterKeyBinding('SEC_045', 'C', SDLK_C + MOD_LCTRL, @MarkCopySrc);
 
   RegisterKeyBinding('SEC_030', 'V', SDLK_V, @HandleVideo);
-  RegisterKeyBinding('SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL, @HandlePaste);
+  RegisterKeyBinding('SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL, @HandlePaste, SelectText + SelectNotes + EnforceLength);
+  RegisterKeyBinding('SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL + MOD_LSHIFT, @HandlePaste, SelectText);
+  RegisterKeyBinding('SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL + MOD_LALT, @HandlePaste, SelectNotes);
+  RegisterKeyBinding('SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL + MOD_LALT + MOD_LSHIFT, @HandlePaste, SelectText + SelectNotes);
 
   RegisterKeyBinding('SEC_045', 'T', SDLK_T, @HandleFixTimings);
 
@@ -1031,8 +1039,16 @@ begin
   RegisterKeyBinding('SEC_045', 'PERIOD', SDLK_PERIOD, @HandleMoveTextRight);
   RegisterKeyBinding('SEC_020', 'RIGHT', SDLK_RIGHT, @HandleMoveRight);
   RegisterKeyBinding('SEC_020', 'LEFT', SDLK_LEFT, @HandleMoveLeft);
-  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN, @HandleDownKey);
-  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP, @HandleUpKey);
+  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN, @NextSentence);
+  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN + MOD_LSHIFT, @DecreaseTone);
+  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LALT, @SwitchTrack, 1);
+  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LSHIFT, @CopyMoveLine, 1);
+  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LSHIFT + MOD_LALT, @CopyMoveLine, 1 and SelectMove);
+  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP, @PreviousSentence);
+  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP + MOD_LSHIFT, @IncreaseTone);
+  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP + MOD_LCTRL + MOD_LALT, @SwitchTrack, 0);
+  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP + MOD_LCTRL + MOD_LSHIFT, @CopyMoveLine, 0);
+  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP + MOD_LCTRL + MOD_LSHIFT + MOD_LALT, @CopyMoveLine, 0 and SelectMove);
 
   FKeyBindingsInitialized := true;
   EnsureKeyBindingsPublished;
@@ -1052,8 +1068,7 @@ begin
   Exit;
 end;
 
-      // SDLK_V: HandleVideo; HandlePaste;
-procedure TScreenEditSub.HandleVideo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; PlayMidi: integer);
+procedure TScreenEditSub.HandleVideo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; PlayMidiFull: integer);
 begin
   StopVideoPreview;
   AudioPlayback.Stop;
@@ -1066,11 +1081,11 @@ begin
     Notes[CurrentNote[CurrentTrack]].Color := 1;
     CurrentNote[CurrentTrack] := 0;
     AudioPlayback.Position := GetTimeFromBeat(Notes[0].StartBeat);
-    PlayStopTime := ifthen(SDL_ModState = KMOD_LALT,
+    PlayStopTime := ifthen(PlayMidiFull and SelectFull <> 0,
                           GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].High].EndBeat),
                           GetTimeFromBeat(Notes[High(Notes)].EndBeat));
   end;
-  if (PlayMidi <> 0) then
+  if (PlayMidiFull and SelectMIDI <> 0) then
   begin
     PlaySentenceMidi := true;
     {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
@@ -1084,39 +1099,17 @@ begin
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SONG');
 end;
 
-procedure TScreenEditSub.HandlePaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
+procedure TScreenEditSub.HandlePaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; PasteSelection: integer);
 begin
-  // paste notes + text (enforce length of src line)
-  if SDL_ModState = KMOD_LCTRL then
-  begin
-    CopyToUndo;
-    CopySentence(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, true, true, true);
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_SENTENCE');
-  end;
-
-  // paste text only (use minimum of src and dst length)
-  if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT then
-  begin
-    CopyToUndo;
-    CopySentence(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, true, false, false);
+  CopyToUndo;
+  CopySentence(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, PasteSelection and SelectText <> 0,  PasteSelection and SelectNotes <> 0,  PasteSelection and EnforceLength <> 0);
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_SENTENCE');
+  if PasteSelection = SelectText then
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_TEXT');
-  end;
-
-  // paste notes only (use minimum of src and dst length)
-  if SDL_ModState = KMOD_LCTRL + KMOD_LALT then
-  begin
-    CopyToUndo;
-    CopySentence(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, false, true, false);
+  if PasteSelection = SelectNotes then
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_NOTES');
-  end;
-
-  // paste notes + text (use minimum of src and dst length)
-  if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then
-  begin
-    CopyToUndo;
-    CopySentence(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, true, true, false);
+  if PasteSelection = SelectText + SelectNotes then
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_TEXT_NOTES');
-  end;
 
   GoldenRec.KillAll;
   ShowInteractiveBackground;
@@ -2089,115 +2082,56 @@ begin
   ShowInteractiveBackground;
 end;
 
-      // SDLK_DOWN: HandleDownKey
-procedure TScreenEditSub.HandleDownPressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean;
+procedure TScreenEditSub.DecreaseTone(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
-  // skip to next sentence
-  if SDL_ModState = 0 then
-  begin
-    // clear debug text
-    Text[TextInfo].Text := '';
-    NextSentence;
-  end;
-
-  // decrease tone
-  if SDL_ModState = KMOD_LSHIFT then
-  begin
-    CopyToUndo;
-    TransposeNote(-1);
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_NOTE_PITCH_DECREASED');
-    GoldenRec.KillAll;
-  end;
-
-  // switch to second track, if possible
-  if ((SDL_ModState = KMOD_LCTRL) or (SDL_ModState = KMOD_LALT)) and (CurrentSong.isDuet) then
-  begin
-    if (Length(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes) > 0) then
-    begin
-      Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 0;
-      CurrentTrack := 1;
-      Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
-      EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-      EditorLyrics[CurrentTrack].Selected := 0;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_SWITCHED_TO_TRACK') + ' 2 (' + CurrentSong.DuetNames[CurrentTrack] + ')';
-    end;
-  end;
-
-  // copy line from first to second track
-  if (CurrentSong.isDuet) and (CurrentTrack = 0) and (SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL) then
-  begin
-    CopyToUndo;
-    if (DuetCopyLine) then
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_COPIED_TO_TRACK') + ' 2'
-    else
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_NOT_COPIED');
-  end;
-
-  // move line from first to second track
-  if (CurrentSong.isDuet) and (CurrentTrack = 0) and (SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL or KMOD_LALT) then
-  begin
-    CopyToUndo;
-    if (DuetMoveLine) then
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_MOVED_TO_TRACK') + ' 2'
-    else
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_NOT_MOVED');
-  end;
-
-  ShowInteractiveBackground;
+  CopyToUndo;
+  TransposeNote(-1);
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_NOTE_PITCH_DECREASED');
+  GoldenRec.KillAll;
 end;
 
       // SDLK_UP: HandleUpKey
-procedure TScreenEditSub.HandleUpPressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean;
+procedure TScreenEditSub.IncreaseTone(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
 begin
-  // skip to previous sentence
-  if SDL_ModState = 0 then
-  begin
-    // clear debug text
-    Text[TextInfo].Text := '';
-    PreviousSentence;
-  end;
+  CopyToUndo;
+  TransposeNote(1);
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_NOTE_PITCH_INCREASED');
+  GoldenRec.KillAll;
+end;
 
-  // increase tone
-  if SDL_ModState = KMOD_LSHIFT then
-  begin
-    CopyToUndo;
-    TransposeNote(1);
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_NOTE_PITCH_INCREASED');
-    GoldenRec.KillAll;
-  end;
-
+procedure TScreenEditSub.SwitchTrack(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Direction: integer);
+begin
   // switch to first track, if possible
-  if ((SDL_ModState = KMOD_LCTRL) or (SDL_ModState = KMOD_LALT)) and (CurrentSong.isDuet) then
+  if (CurrentSong.isDuet) then
   begin
     if (Length(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes) > 0) then
     begin
       Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 0;
-      CurrentTrack := 0;
+      CurrentTrack := Direction;
       Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
       EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
       EditorLyrics[CurrentTrack].Selected := 0;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_SWITCHED_TO_TRACK') + ' 1 (' + CurrentSong.DuetNames[CurrentTrack] + ')';
+      Text[TextInfo].Text := Language.Translate('EDIT_INFO_SWITCHED_TO_TRACK') + ' ' + CurrentTrack + ' (' + CurrentSong.DuetNames[CurrentTrack] + ')';
     end;
   end;
+end;
 
+procedure TScreenEditSub.CopyMoveLine(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameters: integer);
+begin
   // copy line from second to first track
-  if (CurrentSong.isDuet) and (CurrentTrack = 1) and (SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL) then
+  if (CurrentSong.isDuet) and (CurrentTrack = (Parameters and 1)) then
   begin
     CopyToUndo;
-    if (DuetCopyLine) then
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_COPIED_TO_TRACK') + ' 1'
+    if Parameters and SelectMove <> 0 then 
+      if (DuetMoveLine) then
+        Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_MOVED_TO_TRACK') + ' ' + IntToStr(1 + (Parameters and 1))
+      else
+        Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_NOT_MOVED');
     else
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_NOT_COPIED');
-  end;
-
-  // move line from second to first track
-  if (CurrentSong.isDuet) and (CurrentTrack = 1) and (SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL or KMOD_LALT) then
-  begin
-    CopyToUndo;
-    if (DuetMoveLine) then
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_MOVED_TO_TRACK') + ' 1'
-    else
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_NOT_MOVED');
+      if DuetCopyLine then
+        Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_COPIED_TO_TRACK') + ' ' + IntToStr(1 + (Parameters and 1))
+      else
+        Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_NOT_COPIED');
   end;
 
   ShowInteractiveBackground;
@@ -3345,6 +3279,7 @@ end;
 
 procedure TScreenEditSub.NextSentence;
 begin
+  Text[TextInfo].Text := '';
   {$IFDEF UseMIDIPort}
   //MidiOut.PutShort($B1, $7, Floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
   //MidiOut.PutShort(MIDI_NOTEOFF or 1, Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].Current].Notes[MidiLastNote].Tone + 60, 127);
@@ -3368,6 +3303,7 @@ end;
 
 procedure TScreenEditSub.PreviousSentence;
 begin
+  Text[TextInfo].Text := '';
   AudioPlayback.Stop();
   PlayVideo := false;
   PlaySentence := false;
