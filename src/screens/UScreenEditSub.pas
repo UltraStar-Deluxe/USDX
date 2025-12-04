@@ -409,6 +409,7 @@ type
       function  DuetCopyLine: boolean;
       function  DuetMoveLine: boolean;
       procedure CopyLine(SrcTrack, SrcLine, DstTrack, DstLine: Integer);
+      function  CheckTimingSyntaxErrors(out ErrorMessages: UTF8String): boolean;
       procedure Refresh;
       procedure CopyToUndo; //copy current lines, mouse position and headers
       procedure CopyFromUndo; //undo last lines, mouse position and headers
@@ -607,7 +608,16 @@ end;
 procedure TScreenEditSub.HandleSaveSong(SDL_ModState: word);
 var
   SResult: TSaveSongResult;
+  TimingErrors: UTF8String;
 begin
+  // run timing checks before saving and abort on serious problems
+  if CheckTimingSyntaxErrors(TimingErrors) then
+  begin
+    if TimingErrors <> '' then
+      ScreenPopupError.ShowPopup(TimingErrors);
+    Exit;
+  end;
+
   // handle medley tags first
   if CurrentSong.isDuet then
   begin
@@ -4589,6 +4599,125 @@ begin
   end;
 end;
 
+function TScreenEditSub.CheckTimingSyntaxErrors(out ErrorMessages: UTF8String): boolean;
+var
+  TrackIndex, LineIndex, NoteIndex: Integer;
+  LineEndBeat: Integer;
+  NoteStart, NoteEnd: Integer;
+  PrevNoteEnd: Integer;
+  Messages: UTF8String;
+  OtherLine: Integer;
+
+
+  procedure AppendMsg(const Msg: UTF8String);
+  begin
+    if Messages <> '' then
+      Messages := Messages + ' ' + Msg
+    else
+      Messages := Msg;
+  end;
+begin
+  Messages := '';
+
+  for TrackIndex := 0 to High(CurrentSong.Tracks) do
+  begin
+    if Length(CurrentSong.Tracks[TrackIndex].Lines) = 0 then
+      Continue;
+
+    // compute linebreak positions and note overlaps for this track
+    for LineIndex := 0 to CurrentSong.Tracks[TrackIndex].High do
+    begin
+      if (CurrentSong.Tracks[TrackIndex].Lines[LineIndex].HighNote < 0) then
+        Continue;
+
+      // line end beat based on last note in the line
+      NoteIndex := CurrentSong.Tracks[TrackIndex].Lines[LineIndex].HighNote;
+      LineEndBeat := CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat +
+                     CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration;
+
+      // 1) note vs note overlaps on this track (global, not limited to the line)
+      // we still walk line by line but carry PrevNoteEnd across lines
+      if LineIndex = 0 then
+        PrevNoteEnd := -MaxInt;
+
+      for NoteIndex := 0 to CurrentSong.Tracks[TrackIndex].Lines[LineIndex].HighNote do
+      begin
+        NoteStart := CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat;
+        NoteEnd   := NoteStart + CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration;
+
+        // any later note starting before previous note ended is an overlap
+        if NoteStart < PrevNoteEnd then
+        begin
+          AppendMsg(Format(Language.Translate('EDIT_INFO_TIMING_NOTE_OVERLAP'),
+                           [TrackIndex + 1, LineIndex + 1, NoteIndex + 1,
+                            NoteStart, NoteEnd - 1, PrevNoteEnd - 1]));
+        end;
+
+        if NoteEnd > PrevNoteEnd then
+          PrevNoteEnd := NoteEnd;
+      end;
+
+      // 2) linebreak vs note overlaps: no note on this track may cross this linebreak
+      for NoteIndex := 0 to CurrentSong.Tracks[TrackIndex].Lines[LineIndex].HighNote do
+      begin
+        NoteStart := CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat;
+        NoteEnd   := NoteStart + CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration;
+
+        // allowed: linebreak at note start (LineEndBeat = NoteStart)
+        // forbidden: NoteStart < LineEndBeat < NoteEnd
+        if (NoteStart < LineEndBeat) and (LineEndBeat < NoteEnd) then
+        begin
+          AppendMsg(Format(Language.Translate('EDIT_INFO_TIMING_LINEBREAK_OVERLAP'),
+                           [TrackIndex + 1, LineIndex + 1, LineEndBeat,
+                            NoteIndex + 1, NoteStart, NoteEnd - 1]));
+        end;
+      end;
+    end;
+
+    // additionally check each linebreak against notes in OTHER lines of the same track
+    for LineIndex := 0 to CurrentSong.Tracks[TrackIndex].High do
+    begin
+      if (CurrentSong.Tracks[TrackIndex].Lines[LineIndex].HighNote < 0) then
+        Continue;
+
+      NoteIndex := CurrentSong.Tracks[TrackIndex].Lines[LineIndex].HighNote;
+      LineEndBeat := CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat +
+                     CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration;
+
+      // check all notes on this track, all lines
+      for OtherLine := 0 to CurrentSong.Tracks[TrackIndex].High do
+      begin
+        if CurrentSong.Tracks[TrackIndex].Lines[OtherLine].HighNote < 0 then
+          Continue;
+
+        for NoteIndex := 0 to CurrentSong.Tracks[TrackIndex].Lines[OtherLine].HighNote do
+        begin
+          NoteStart := CurrentSong.Tracks[TrackIndex].Lines[OtherLine].Notes[NoteIndex].StartBeat;
+          NoteEnd   := NoteStart + CurrentSong.Tracks[TrackIndex].Lines[OtherLine].Notes[NoteIndex].Duration;
+
+          if (NoteStart < LineEndBeat) and (LineEndBeat < NoteEnd) then
+          begin
+            AppendMsg(Format(Language.Translate('EDIT_INFO_TIMING_LINEBREAK_OVERLAP'),
+                             [TrackIndex + 1, LineIndex + 1, LineEndBeat,
+                              NoteIndex + 1, NoteStart, NoteEnd - 1]));
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  if Messages <> '' then
+  begin
+    ErrorMessages := Language.Translate('EDIT_INFO_SYNTAX_ERRORS_TIMING_HEADER') + ' ' + Messages;
+    Result := true;
+  end
+  else
+  begin
+    ErrorMessages := '';
+    Result := false;
+  end;
+end;
+
 constructor TScreenEditSub.Create;
 begin
   inherited Create;
@@ -4843,6 +4972,7 @@ var
   TrackIndex:  Integer;
   VolumeIndex: Integer;
   Ext:         string;
+  TimingErrors: UTF8String;
 
   function IsBeatMatchingNote(beat: Integer; Note: TLineFragment): boolean;
   begin
@@ -4888,8 +5018,23 @@ begin
   end
   else
   begin
+    // run additional timing checks (note/linebreak overlaps)
+    // if there are problems, show them in a popup but still allow editing
+    // the function returns false if no errors were found
+    if CheckTimingSyntaxErrors(TimingErrors) then
+    begin
+      if TimingErrors <> '' then
+        ScreenPopupError.ShowPopup(TimingErrors);
+    end;
   {$IFDEF UseMIDIPort}
     MidiOut := TMidiOutput.Create(nil);
+      // run additional timing checks (note/linebreak overlaps)
+      // if there are problems, show them in a popup but still allow editing
+      if CheckTimingSyntaxErrors(TimingErrors) then
+      begin
+        if TimingErrors <> '' then
+          ScreenPopupError.ShowPopup(TimingErrors);
+      end;
     MidiOut.Open;
   {$ENDIF}
 
