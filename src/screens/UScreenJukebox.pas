@@ -834,10 +834,10 @@ begin
       begin
         //song scrolling with mousewheel
         if (MouseButton = SDL_BUTTON_WHEELDOWN) then
-          Result := ParseInput(SDLK_PAGEDOWN, 0, true)
+          Result := ParseInput(SDLK_PAGEDOWN, 0, true, 0)
 
         else if (MouseButton = SDL_BUTTON_WHEELUP) then
-          Result := ParseInput(SDLK_PAGEUP, 0, true)
+          Result := ParseInput(SDLK_PAGEUP, 0, true, 0)
 
         else
         begin
@@ -892,7 +892,7 @@ begin
                 if (MouseButton = SDL_BUTTON_LEFT) then
                 begin
                   if (SDL_GetTicks() - DoubleClickTime <= 500) then
-                    Result := ParseInput(SDLK_RETURN, 0, true);
+                    Result := ParseInput(SDLK_RETURN, 0, true, 0);
 
                   DoubleClickTime := SDL_GetTicks();
                 end;
@@ -904,7 +904,7 @@ begin
           // close songlist
           if InRegion(X, Y, Button[JukeboxSongListClose].GetMouseOverArea)then
           begin
-            Result := ParseInput(SDLK_ESCAPE, 0, true);
+            Result := ParseInput(SDLK_ESCAPE, 0, true, 0);
             CloseClickTime := SDL_GetTicks();
             Button[JukeboxSongListClose].SetSelect(false);
           end;
@@ -1121,13 +1121,13 @@ begin
     if (BtnDown) and (MouseButton = SDL_BUTTON_LEFT) then
     begin
       if InRegion(X, Y, Button[JukeboxSongMenuPlayPause].GetMouseOverArea) then
-        Result := ParseInput(SDLK_SPACE, 0, true);
+        Result := ParseInput(SDLK_SPACE, 0, true, 0);
 
       if InRegion(X, Y, Button[JukeboxSongMenuPrevious].GetMouseOverArea) then
-        Result := ParseInput(SDLK_LEFT, 0, true);
+        Result := ParseInput(SDLK_LEFT, 0, true, 0);
 
       if InRegion(X, Y, Button[JukeboxSongMenuNext].GetMouseOverArea) then
-        Result := ParseInput(SDLK_RIGHT, 0, true);
+        Result := ParseInput(SDLK_RIGHT, 0, true, 0);
 
       if InRegion(X, Y, Button[JukeboxSongMenuPlaylist].GetMouseOverArea) then
       begin
@@ -1331,7 +1331,7 @@ end;
 // should be checked to know the next window to load;
 
 function TScreenJukebox.ParseInput(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 var
   SDL_ModState: word;
   I, RValueI, RValueE: integer;
@@ -1344,7 +1344,7 @@ begin
   //Jukebox Screen Extensions (Options)
   if (ScreenJukeboxOptions.Visible) then
   begin
-    Result := ScreenJukeboxOptions.ParseInput(PressedKey, CharCode, PressedDown);
+    Result := ScreenJukeboxOptions.ParseInput(PressedKey, CharCode, PressedDown, Parameter);
     Exit;
   end;
 

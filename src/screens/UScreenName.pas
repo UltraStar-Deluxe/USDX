@@ -159,19 +159,19 @@ begin
   if (BtnDown) then
   begin
      //if RightMbESC is set, send ESC keypress
-    if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) then
-      Result:=ParseInput(SDLK_ESCAPE, 0, true);
+      if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) then
+        Result:=ParseInput(SDLK_ESCAPE, 0, true, 0);
 
     //scrolling avatars with mousewheel
     if (MouseButton = SDL_BUTTON_WHEELDOWN) then
     begin
       if (Interaction = PlayerAvatarIID) then
-        ParseInput(SDLK_RIGHT, 0, true);
+          ParseInput(SDLK_RIGHT, 0, true, 0);
     end
     else if (MouseButton = SDL_BUTTON_WHEELUP) then
     begin
       if (Interaction = PlayerAvatarIID) then
-        ParseInput(SDLK_LEFT, 0, true);
+          ParseInput(SDLK_LEFT, 0, true, 0);
     end
     else
     begin
@@ -185,8 +185,8 @@ begin
       begin
         Interaction := 2;
 
-        ParseInput(SDLK_LEFT, 0, true);
-        ParseInput(SDLK_LEFT, 0, true);
+          ParseInput(SDLK_LEFT, 0, true, 0);
+          ParseInput(SDLK_LEFT, 0, true, 0);
       end;
 
       // 2nd left
@@ -198,7 +198,7 @@ begin
       begin
         Interaction := 2;
 
-        ParseInput(SDLK_LEFT, 0, true);
+          ParseInput(SDLK_LEFT, 0, true, 0);
       end;
 
       // 1st right
@@ -210,7 +210,7 @@ begin
       begin
         Interaction := 2;
 
-        ParseInput(SDLK_RIGHT, 0, true);
+          ParseInput(SDLK_RIGHT, 0, true, 0);
       end;
 
       // 2nd right
@@ -222,8 +222,8 @@ begin
       begin
         Interaction := 2;
 
-        ParseInput(SDLK_RIGHT, 0, true);
-        ParseInput(SDLK_RIGHT, 0, true);
+          ParseInput(SDLK_RIGHT, 0, true, 0);
+          ParseInput(SDLK_RIGHT, 0, true, 0);
       end;
 
       // click for change player profile
@@ -339,7 +339,7 @@ begin
             PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
           end
           else
-            ParseInput(SDLK_ESCAPE, CharCode, PressedDown);
+            ParseInput(SDLK_ESCAPE, CharCode, PressedDown, Parameter);
         end;
 
       SDLK_TAB:

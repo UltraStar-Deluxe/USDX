@@ -111,13 +111,6 @@ begin
 end;
 
 procedure TScreenMain.RegisterKeyBindings;
-
-  procedure RegisterKeyBinding(const Category, Token: UTF8String; CombinedKey: UInt64;
-    Handler: TMenuKeyBindingHandler = nil);
-  begin
-    RegisterKeyBinding(Category, Token, CombinedKey, Handler);
-  end;
-
 begin
   if FKeyBindingsInitialized then
     Exit;
@@ -164,7 +157,7 @@ begin
 end;
 
 function TScreenMain.HandleShowHelp(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -173,7 +166,7 @@ begin
 end;
 
 function TScreenMain.HandleExitScreen(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   if not PressedDown then
     Exit(true);
@@ -181,7 +174,7 @@ begin
 end;
 
 function TScreenMain.HandleShortcutSolo(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -190,7 +183,7 @@ begin
 end;
 
 function TScreenMain.HandleShortcutParty(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -200,7 +193,7 @@ begin
 end;
 
 function TScreenMain.HandleShortcutJukebox(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -209,7 +202,7 @@ begin
 end;
 
 function TScreenMain.HandleReloadTheme(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -220,7 +213,7 @@ begin
 end;
 
 function TScreenMain.HandleShortcutStats(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -229,7 +222,7 @@ begin
 end;
 
 function TScreenMain.HandleShortcutEditor(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -238,7 +231,7 @@ begin
 end;
 
 function TScreenMain.HandleShortcutOptions(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -247,7 +240,7 @@ begin
 end;
 
 function TScreenMain.HandleShortcutAbout(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -256,7 +249,7 @@ begin
 end;
 
 function TScreenMain.HandleShortcutCredits(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -265,7 +258,7 @@ begin
 end;
 
 function TScreenMain.HandleShortcutQuit(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   if not PressedDown then
     Exit(true);
@@ -273,7 +266,7 @@ begin
 end;
 
 function TScreenMain.HandleConfirmSelection(PressedKey: QWord;
-  CharCode: UCS4Char; PressedDown: boolean): boolean;
+  CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -339,7 +332,7 @@ begin
 end;
 
 function TScreenMain.HandleNavigateDown(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -348,7 +341,7 @@ begin
 end;
 
 function TScreenMain.HandleNavigateUp(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -357,7 +350,7 @@ begin
 end;
 
 function TScreenMain.HandleNavigateRight(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then
@@ -366,7 +359,7 @@ begin
 end;
 
 function TScreenMain.HandleNavigateLeft(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if not PressedDown then

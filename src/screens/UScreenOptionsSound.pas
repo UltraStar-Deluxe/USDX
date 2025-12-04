@@ -63,7 +63,7 @@ uses
   SysUtils;
 
 function TScreenOptionsSound.ParseInput(PressedKey: QWord;
-  CharCode: UCS4Char; PressedDown: boolean): boolean;
+  CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
   if (PressedDown) then

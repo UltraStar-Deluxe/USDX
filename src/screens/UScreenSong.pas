@@ -678,12 +678,12 @@ begin
   //Song Screen Extensions (Jumpto + Menu)
   if (ScreenSongMenu.Visible) then
   begin
-    Result := ScreenSongMenu.ParseInput(PressedKey, CharCode, PressedDown);
+    Result := ScreenSongMenu.ParseInput(PressedKey, CharCode, PressedDown, Parameter);
     Exit;
   end
   else if (ScreenSongJumpto.Visible) then
   begin
-    Result := ScreenSongJumpto.ParseInput(PressedKey, CharCode, PressedDown);
+    Result := ScreenSongJumpto.ParseInput(PressedKey, CharCode, PressedDown, Parameter);
     Exit;
   end;
 
@@ -1293,9 +1293,9 @@ begin
           LastSelectTime := SDL_GetTicks;
 
           if (TSongMenuMode(Ini.SongMenu) in [smSlotMachine, smList]) then
-            ParseInputNextHorizontal(PressedKey, CharCode, PressedDown)
+            ParseInputNextHorizontal(PressedKey, CharCode, PressedDown, Parameter)
           else
-            ParseInputNextVertical(PressedKey, CharCode, PressedDown);
+            ParseInputNextVertical(PressedKey, CharCode, PressedDown, Parameter);
         end;
 
       SDLK_UP:
@@ -1303,9 +1303,9 @@ begin
           LastSelectTime := SDL_GetTicks;
 
           if (TSongMenuMode(Ini.SongMenu) in [smSlotMachine, smList]) then
-            ParseInputPrevHorizontal(PressedKey, CharCode, PressedDown)
+            ParseInputPrevHorizontal(PressedKey, CharCode, PressedDown, Parameter)
           else
-            ParseInputPrevVertical(PressedKey, CharCode, PressedDown);
+            ParseInputPrevVertical(PressedKey, CharCode, PressedDown, Parameter);
         end;
 
       SDLK_RIGHT:
@@ -1313,9 +1313,9 @@ begin
           LastSelectTime := SDL_GetTicks;
 
           if (TSongMenuMode(Ini.SongMenu) in [smSlotMachine, smList]) then
-            ParseInputNextVertical(PressedKey, CharCode, PressedDown)
+            ParseInputNextVertical(PressedKey, CharCode, PressedDown, Parameter)
           else
-            ParseInputNextHorizontal(PressedKey, CharCode, PressedDown);
+            ParseInputNextHorizontal(PressedKey, CharCode, PressedDown, Parameter);
         end;
 
       SDLK_LEFT:
@@ -1323,9 +1323,9 @@ begin
           LastSelectTime := SDL_GetTicks;
 
           if (TSongMenuMode(Ini.SongMenu) in [smSlotMachine, smList]) then
-            ParseInputPrevVertical(PressedKey, CharCode, PressedDown)
+            ParseInputPrevVertical(PressedKey, CharCode, PressedDown, Parameter)
           else
-            ParseInputPrevHorizontal(PressedKey, CharCode, PressedDown);
+            ParseInputPrevHorizontal(PressedKey, CharCode, PressedDown, Parameter);
         end;
       SDLK_SPACE:
         begin
@@ -1425,15 +1425,15 @@ begin
   if (BtnDown) then begin
     if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) then begin
       //if RightMbESC is set, send ESC keypress
-      Result:=ParseInput(SDLK_ESCAPE, 0, true);
+      Result:=ParseInput(SDLK_ESCAPE, 0, true, 0);
     end else if (MouseButton = SDL_BUTTON_WHEELDOWN) then begin
       //song scrolling with mousewheel
-      ParseInput(SDLK_DOWN, 0, true);
+      ParseInput(SDLK_DOWN, 0, true, 0);
     end else if (MouseButton = SDL_BUTTON_WHEELUP) then begin
-      ParseInput(SDLK_UP, 0, true);
+      ParseInput(SDLK_UP, 0, true, 0);
     end else if (MouseButton = SDL_BUTTON_LEFT) then begin
       // LMB clicking anywhere starts whatever song is selected
-      ParseInput(SDLK_RETURN, 0, true);
+      ParseInput(SDLK_RETURN, 0, true, 0);
     end;
   end else begin
     // hover cover
@@ -1466,14 +1466,14 @@ begin
   begin
     //if RightMbESC is set, send ESC keypress
     if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) then
-      Result:=ParseInput(SDLK_ESCAPE, 0, true)
+      Result:=ParseInput(SDLK_ESCAPE, 0, true, 0)
 
     //song scrolling with mousewheel
     else if (MouseButton = SDL_BUTTON_WHEELDOWN) then
-      ParseInput(SDLK_DOWN, 0, true)
+      ParseInput(SDLK_DOWN, 0, true, 0)
 
     else if (MouseButton = SDL_BUTTON_WHEELUP) then
-      ParseInput(SDLK_UP, 0, true)
+      ParseInput(SDLK_UP, 0, true, 0)
 
     else
     begin
@@ -1485,7 +1485,7 @@ begin
         begin
           if InRegion(X, Y, Button[B].GetMouseOverArea) then
           begin
-            ParseInput(SDLK_RETURN, 0, true)
+            ParseInput(SDLK_RETURN, 0, true, 0)
           end;
         end;
       end;
@@ -1530,14 +1530,14 @@ begin
   begin
     //if RightMbESC is set, send ESC keypress
     if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) then
-      Result:=ParseInput(SDLK_ESCAPE, 0, true)
+      Result:=ParseInput(SDLK_ESCAPE, 0, true, 0)
 
     //song scrolling with mousewheel
     else if (MouseButton = SDL_BUTTON_WHEELDOWN) then
-      ParseInput(SDLK_RIGHT, 0, true)
+      ParseInput(SDLK_RIGHT, 0, true, 0)
 
     else if (MouseButton = SDL_BUTTON_WHEELUP) then
-      ParseInput(SDLK_LEFT, 0, true)
+      ParseInput(SDLK_LEFT, 0, true, 0)
 
     //LMB anywhere starts
     else if (MouseButton = SDL_BUTTON_LEFT) then
@@ -1565,20 +1565,20 @@ begin
             // song cover clicked
             if (I = 1) then
             begin // Selected Song clicked -> start singing
-              ParseInput(SDLK_RETURN, 0, true);
+              ParseInput(SDLK_RETURN, 0, true, 0);
             end
             else
             begin // one of the other 4 covers in the front clicked -> select it
               J := I - 1;
               while (J < 0) do
               begin
-                ParseInput(SDLK_LEFT, 0, true);
+                ParseInput(SDLK_LEFT, 0, true, 0);
                 Inc(J);
               end;
 
               while (J > 0) do
               begin
-                ParseInput(SDLK_RIGHT, 0, true);
+                ParseInput(SDLK_RIGHT, 0, true, 0);
                 Dec(J);
               end;
             end;
@@ -1614,20 +1614,20 @@ begin
             // song cover clicked
             if (I = 2) then
             begin // Selected Song clicked -> start singing
-              ParseInput(SDLK_RETURN, 0, true);
+              ParseInput(SDLK_RETURN, 0, true, 0);
             end
             else
             begin // one of the other 4 covers in the front clicked -> select it
               J := I - 2;
               while (J < 0) do
               begin
-                ParseInput(SDLK_LEFT, 0, true);
+                ParseInput(SDLK_LEFT, 0, true, 0);
                 Inc(J);
               end;
 
               while (J > 0) do
               begin
-                ParseInput(SDLK_RIGHT, 0, true);
+                ParseInput(SDLK_RIGHT, 0, true, 0);
                 Dec(J);
               end;
             end;
@@ -1640,7 +1640,7 @@ begin
         end;
       end
       else
-        ParseInput(SDLK_RETURN, 0, true);
+        ParseInput(SDLK_RETURN, 0, true, 0);
     end;
   end;
 end;

@@ -55,7 +55,7 @@ type
 {  Int16 = SmallInt;}
 
   TMenuKeyBindingHandler = function(PressedKey: QWord; CharCode: UCS4Char;
-    PressedDown: boolean): boolean of object;
+    PressedDown: boolean; Parameter: integer): boolean of object;
 
   TMenuKeyBindingEntry = record
     CategoryId: UTF8String;
@@ -104,8 +104,9 @@ type
       class procedure DecodeCombinedKey(CombinedKey: UInt64; out KeyCode: cardinal;
         out ModifierMask: word); static; inline;
       procedure RegisterKeyBinding(const CategoryId, Token: UTF8String;
-        CombinedKey: UInt64; Handler: TMenuKeyBindingHandler = nil;
-        DefaultKey: cardinal = 0; OutputKey: cardinal = 0);
+        CombinedKey: UInt64; Handler: TMenuKeyBindingHandler = nil; Parameter: integer = 0);
+      function TryHandleKeyBinding(PressedKey: QWord; CharCode: UCS4Char;
+        PressedDown: boolean; Parameter: integer; out HandlerResult: boolean): boolean; virtual;
 
       destructor Destroy; override;
       constructor Create; overload; virtual;
@@ -364,8 +365,7 @@ begin
 end;
 
 procedure TMenu.RegisterKeyBinding(const CategoryId, Token: UTF8String;
-  CombinedKey: UInt64; Handler: TMenuKeyBindingHandler; DefaultKey,
-  OutputKey: cardinal);
+  CombinedKey: UInt64; Handler: TMenuKeyBindingHandler; Parameter: integer = 0);
 var
   Entry: TMenuKeyBindingEntry;
   KeyCode: cardinal;
@@ -378,16 +378,8 @@ begin
   Entry.Token := Token;
   Entry.KeyCode := KeyCode;
   Entry.ModifierMask := ModifierMask;
-
-  if DefaultKey = 0 then
-    Entry.DefaultKey := KeyCode
-  else
-    Entry.DefaultKey := DefaultKey;
-
-  if OutputKey = 0 then
-    Entry.OutputKey := KeyCode
-  else
-    Entry.OutputKey := OutputKey;
+  Entry.DefaultKey := KeyCode;
+  Entry.OutputKey := KeyCode;
 
   Entry.Handler := Handler;
   Entry.HelpRegistered := false;
@@ -1959,12 +1951,14 @@ begin
   Result := true;
 end;
 
-function TMenu.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+function TMenu.TryHandleKeyBinding(PressedKey: QWord; CharCode: UCS4Char;
+  PressedDown: boolean; Parameter: integer; out HandlerResult: boolean): boolean;
 var
   ModState: word;
   I: integer;
 begin
-  Result := true;
+  Result := false;
+  HandlerResult := true;
 
   ModState := SDL_GetModState;
 
@@ -1981,8 +1975,9 @@ begin
     if Assigned(FKeyBindingEntries[I].Handler) then
     begin
       Log.LogInfo('    Handler assigned, calling handler.', 'TMenu.ParseInput');
-      Result := FKeyBindingEntries[I].Handler(PressedKey, CharCode, PressedDown);
-      Log.LogInfo('    Handler returned: ' + BoolToStr(Result, true), 'TMenu.ParseInput');
+      HandlerResult := FKeyBindingEntries[I].Handler(PressedKey, CharCode, PressedDown, Parameter);
+      Log.LogInfo('    Handler returned: ' + BoolToStr(HandlerResult, true), 'TMenu.ParseInput');
+      Result := true;
       Exit;
     end
     else
@@ -1991,6 +1986,13 @@ begin
     end;
   end;
   Log.LogInfo('ParseInput: No matching keybinding found.', 'TMenu.ParseInput');
+end;
+
+function TMenu.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+begin
+  if TryHandleKeyBinding(PressedKey, CharCode, PressedDown, Parameter, Result) then
+    Exit;
+  Result := true;
 end;
 
 function TMenu.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
@@ -2006,7 +2008,7 @@ begin
   if RightMbESC and (MouseButton = SDL_BUTTON_RIGHT) and BtnDown then
   begin
     //if RightMbESC is set, send ESC keypress
-    Result:=ParseInput(SDLK_ESCAPE, 0, true);
+    Result:=ParseInput(SDLK_ESCAPE, 0, true, 0);
   end;
 
   // transfer mousecords to the 800x600 raster we use to draw
@@ -2019,7 +2021,7 @@ begin
   if Length(Interactions) = 0 then
   begin
     if (BtnDown) and (MouseButton = SDL_BUTTON_LEFT) then
-      Result := ParseInput(SDLK_RETURN, 0, true);
+      Result := ParseInput(SDLK_RETURN, 0, true, 0);
   end
   else
   begin
@@ -2056,9 +2058,9 @@ begin
 
         // do the action we have to do ;)
       case Action of
-        maReturn: Result := ParseInput(SDLK_RETURN, 0, true);
-        maLeft:   Result := ParseInput(SDLK_LEFT, 0, true);
-        maRight:  Result := ParseInput(SDLK_RIGHT, 0, true);
+        maReturn: Result := ParseInput(SDLK_RETURN, 0, true, 0);
+        maLeft:   Result := ParseInput(SDLK_LEFT, 0, true, 0);
+        maRight:  Result := ParseInput(SDLK_RIGHT, 0, true, 0);
       end;
     end
     else

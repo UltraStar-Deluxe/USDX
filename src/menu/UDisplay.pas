@@ -700,12 +700,12 @@ end;
 
 function TDisplay.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
-  if Console_Draw and ConsoleParseInput(PressedKey, CharCode, PressedDown) then Exit;
+  if Console_Draw and ConsoleParseInput(PressedKey, CharCode, PressedDown, Parameter) then Exit;
 
   if (assigned(NextScreen)) then
-    Result := NextScreen^.ParseInput(PressedKey, CharCode, PressedDown)
+    Result := NextScreen^.ParseInput(PressedKey, CharCode, PressedDown, Parameter)
   else if (assigned(CurrentScreen)) then
-    Result := CurrentScreen^.ParseInput(PressedKey, CharCode, PressedDown)
+    Result := CurrentScreen^.ParseInput(PressedKey, CharCode, PressedDown, Parameter)
   else
     Result := True;
 end;

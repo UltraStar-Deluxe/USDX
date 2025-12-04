@@ -579,23 +579,23 @@ begin
             // if there is a visible popup then let it handle input instead of underlying screen
             // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
             else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
-              KeepGoing := ScreenPopupError.ParseInput(SimKey, KeyCharUnicode, true)
+              KeepGoing := ScreenPopupError.ParseInput(SimKey, KeyCharUnicode, true, 0)
             else if (ScreenPopupInfo <> nil) and (ScreenPopupInfo.Visible) then
-              KeepGoing := ScreenPopupInfo.ParseInput(SimKey, KeyCharUnicode, true)
+              KeepGoing := ScreenPopupInfo.ParseInput(SimKey, KeyCharUnicode, true, 0)
             else if (ScreenPopupCheck <> nil) and (ScreenPopupCheck.Visible) then
-              KeepGoing := ScreenPopupCheck.ParseInput(SimKey, KeyCharUnicode, true)
+              KeepGoing := ScreenPopupCheck.ParseInput(SimKey, KeyCharUnicode, true, 0)
             else if (ScreenPopupInsertUser <> nil) and (ScreenPopupInsertUser.Visible) then
-              KeepGoing := ScreenPopupInsertUser.ParseInput(SimKey, KeyCharUnicode, true)
+              KeepGoing := ScreenPopupInsertUser.ParseInput(SimKey, KeyCharUnicode, true, 0)
             else if (ScreenPopupSendScore <> nil) and (ScreenPopupSendScore.Visible) then
-              KeepGoing := ScreenPopupSendScore.ParseInput(SimKey, KeyCharUnicode, true)
+              KeepGoing := ScreenPopupSendScore.ParseInput(SimKey, KeyCharUnicode, true, 0)
             else if (ScreenPopupScoreDownload <> nil) and (ScreenPopupScoreDownload.Visible) then
-              KeepGoing := ScreenPopupScoreDownload.ParseInput(SimKey, KeyCharUnicode, true)
+              KeepGoing := ScreenPopupScoreDownload.ParseInput(SimKey, KeyCharUnicode, true, 0)
             else if (ScreenPopupHelp <> nil) and (ScreenPopupHelp.Visible) then
-              KeepGoing := ScreenPopupHelp.ParseInput(SimKey, KeyCharUnicode, true)
+              KeepGoing := ScreenPopupHelp.ParseInput(SimKey, KeyCharUnicode, true, 0)
             else if (Display.ShouldHandleInput(QWord(SimKey), KeyCharUnicode, true, SuppressKey)) then
             begin
               // check if screen wants to exit
-              KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true);
+              KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true, 0);
 
               // if screen wants to exit
               if not KeepGoing then

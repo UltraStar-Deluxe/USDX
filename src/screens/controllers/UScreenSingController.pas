@@ -220,7 +220,7 @@ const
 // should be checked to know the next window to load;
 
 function TScreenSingController.ParseInput(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Parameter: integer): boolean;
 var
   SDL_ModState: word;
   i1:           integer;
