@@ -111,7 +111,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
       begin
-        if (SelInteraction >= 0) and (SelInteraction < 6) then
+        if (SelInteraction >= 0) and (SelInteraction <= 6) then
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractInc;
@@ -119,7 +119,7 @@ begin
       end;
       SDLK_LEFT:
       begin
-        if (SelInteraction >= 0) and (SelInteraction < 6) then
+        if (SelInteraction >= 0) and (SelInteraction <= 6) then
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractDec;
