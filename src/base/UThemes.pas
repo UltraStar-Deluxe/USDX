@@ -785,6 +785,8 @@ type
       SelectVolAudio:      TThemeSelectSlide;
       SelectVolMidi:       TThemeSelectSlide;
       SelectVolClick:      TThemeSelectSlide;
+      SelectPrerollAudio:  TThemeSelectSlide;
+      SelectPrerollMidi:   TThemeSelectSlide;
       SlideVideoGap:       TThemeSelectSlide;
 
       // texts
@@ -1905,6 +1907,8 @@ begin
       ThemeLoadSelectSlide(EditSub.SelectVolAudio, 'EditSubSelectVolAudio');
       ThemeLoadSelectSlide(EditSub.SelectVolMidi, 'EditSubSelectVolMidi');
       ThemeLoadSelectSlide(EditSub.SelectVolClick, 'EditSubSelectVolClick');
+      ThemeLoadSelectSlide(EditSub.SelectPrerollAudio, 'EditSubSelectPrerollAudio');
+      ThemeLoadSelectSlide(EditSub.SelectPrerollMidi, 'EditSubSelectPrerollMidi');
       ThemeLoadSelectSlide(EditSub.SlideVideoGap, 'EditSubVideoGap');
       ThemeLoadText(EditSub.TextInfo, 'EditSubTextInfo');
       ThemeLoadText(EditSub.TextSentence, 'EditSubTextSentence');
