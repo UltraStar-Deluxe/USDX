@@ -399,8 +399,7 @@ type
       function IncreaseTone(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function SwitchTrack(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Direction: integer): boolean;
       function CopyMoveLine(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameters: integer): boolean;
-      function HandleNextSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function HandlePreviousSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleSwitchSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       procedure LyricsCapitalize;
       procedure LyricsCorrectSpaces;
       procedure FixTimings;
@@ -1084,12 +1083,12 @@ begin
   RegisterKeyBinding('SEC_045', 'PERIOD', SDLK_PERIOD, HandleMoveTextRight);
   RegisterKeyBinding('SEC_020', 'RIGHT', SDLK_RIGHT, HandleMoveRight);
   RegisterKeyBinding('SEC_020', 'LEFT', SDLK_LEFT, HandleMoveLeft);
-  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN, HandleNextSentence);
+  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN, HandleSwitchSentence, 1);
   RegisterKeyBinding('SEC_020', 'SHIFT_DOWN', SDLK_DOWN + MOD_LSHIFT, DecreaseTone);
   RegisterKeyBinding('SEC_020', 'CTRL_ALT_DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LALT, SwitchTrack, 1);
   RegisterKeyBinding('SEC_020', 'CTRL_SHIFT_DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LSHIFT, CopyMoveLine, 1);
   RegisterKeyBinding('SEC_020', 'CTRL_ALT_SHIFT_DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LSHIFT + MOD_LALT, CopyMoveLine, 1 and SelectMove);
-  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP, HandlePreviousSentence);
+  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP, HandleSwitchSentence, -1);
   RegisterKeyBinding('SEC_020', 'SHIFT_UP', SDLK_UP + MOD_LSHIFT, IncreaseTone);
   RegisterKeyBinding('SEC_020', 'CTRL_ALT_UP', SDLK_UP + MOD_LCTRL + MOD_LALT, SwitchTrack, 0);
   RegisterKeyBinding('SEC_020', 'CTRL_SHIFT_UP', SDLK_UP + MOD_LCTRL + MOD_LSHIFT, CopyMoveLine, 0);
@@ -1413,18 +1412,11 @@ begin
   ExtendedCopyPaste(ModState, Integer(PressedKey));
 end;
 
-function TScreenEditSub.HandleNextSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+function TScreenEditSub.HandleSwitchSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
 
-  SwitchSentence(1);
-end;
-
-function TScreenEditSub.HandlePreviousSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-begin
-  Result := true;
-
-  SwitchSentence(-1);
+  SwitchSentence(Parameter);
 end;
 
       // SDLK_7: DecreaseVideoGap
