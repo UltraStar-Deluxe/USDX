@@ -594,8 +594,6 @@ var
   ModState: word;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   ModState := SDL_GetModState;
 
@@ -769,8 +767,6 @@ end;
 function TScreenEditSub.HandleSetPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
   SetPreviewStart(PressedKey, CharCode, PressedDown, Parameter);
 end;
 
@@ -778,8 +774,6 @@ function TScreenEditSub.SetMedleyTags(PressedKey: QWord; CharCode: UCS4Char; Pre
 // set Medley tags
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   CopyToUndo;
   if CurrentSong.Relative then
@@ -883,8 +877,6 @@ var
   SelectedLine: TPos;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   if CurrentSong.Relative then
   begin
@@ -940,8 +932,6 @@ var
   R: real;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   if CurrentSong.Relative then
   begin
@@ -989,8 +979,6 @@ function TScreenEditSub.ReloadSong(PressedKey: QWord; CharCode: UCS4Char; Presse
 //reload
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   AudioPlayback.Stop;
   {$IFDEF UseMIDIPort}
@@ -1000,21 +988,6 @@ begin
 
   OnShow;
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_SONG_RELOADED');
-end;
-
-      // SDLK_D: HandleDivideBPM; or ToggleDuet;
-function TScreenEditSub.HandleDivideBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-begin
-  Result := true;
-  if not PressedDown then
-    Exit;
-
-  // Divide lengths by 2
-  CopyToUndo;
-  ChangeBPM(CurrentSong.BPM[0].BPM / 2);
-  ShowInteractiveBackground;
-  Text[TextInfo].Text := Language.Translate('EDIT_INFO_DIVIDED_BPM');
-  Exit;
 end;
 
 procedure TScreenEditSub.ToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
@@ -1028,8 +1001,6 @@ end;
 function TScreenEditSub.HandleToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
   ToggleDuet(PressedKey, CharCode, PressedDown, Parameter);
 end;
 
@@ -1059,9 +1030,9 @@ begin
   RegisterKeyBinding('SEC_060', 'SHIFT_J', SDLK_J + MOD_LSHIFT, Jump,1);
   RegisterKeyBinding('SEC_060', 'ALT_J', SDLK_J + MOD_LALT, JumpAndPlay);
 
-  RegisterKeyBinding('SEC_085', 'SHIFT_D', SDLK_D + MOD_LSHIFT, HandleDivideBPM);
+  RegisterKeyBinding('SEC_085', 'SHIFT_D', SDLK_D + MOD_LSHIFT, HandleMultiplyBPM,-2);
   RegisterKeyBinding('SEC_070', 'CTRL_SHIFT_D', SDLK_D + MOD_LCTRL + MOD_LSHIFT, HandleToggleDuet);
-  RegisterKeyBinding('SEC_085', 'SHIFT_M', SDLK_M + MOD_LSHIFT, HandleMultiplyBPM);
+  RegisterKeyBinding('SEC_085', 'SHIFT_M', SDLK_M + MOD_LSHIFT, HandleMultiplyBPM,2);
 
   RegisterKeyBinding('SEC_045', 'C', SDLK_C, HandleLyricsCapitalize);
   RegisterKeyBinding('SEC_045', 'C', SDLK_C + MOD_LSHIFT, HandleLyricsCorrectSpaces);
@@ -1130,23 +1101,29 @@ begin
   EnsureKeyBindingsPublished;
 end;
 
-      // SDLK_M: HandleMultiplyBPM;
 function TScreenEditSub.HandleMultiplyBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+var
+  Factor: real;
 begin
   Result := true;
-  // Multiply lengths by 2
+  if Parameter > 0 then
+  begin
+    Factor := Parameter;
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_MULTIPLIED_BPM');
+  end
+  else
+  begin
+    Factor := 1 / Abs(Parameter);
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_DIVIDED_BPM');
+  end;
   CopyToUndo;
-  ChangeBPM(CurrentSong.BPM[0].BPM * 2);
+  ChangeBPM(CurrentSong.BPM[0].BPM * Factor);
   ShowInteractiveBackground;
-  Text[TextInfo].Text := Language.Translate('EDIT_INFO_MULTIPLIED_BPM');
-  Exit;
 end;
 
 function TScreenEditSub.HandleVideo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; PlayMidiFull: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   StopVideoPreview;
   AudioPlayback.Stop;
@@ -1180,8 +1157,6 @@ end;
 function TScreenEditSub.HandlePaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; PasteSelection: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   CopyToUndo;
   CopySentence(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, PasteSelection and SelectText <> 0,  PasteSelection and SelectNotes <> 0,  PasteSelection and EnforceLength <> 0);
@@ -1201,8 +1176,6 @@ end;
 function TScreenEditSub.HandleFixTimings(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   // Fixes timings between sentences
   CopyToUndo;
@@ -1216,8 +1189,6 @@ var
   R: real;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
   CurrentNote[CurrentTrack] := 0;
@@ -1258,8 +1229,6 @@ function TScreenEditSub.HandleSetGoldenNote(PressedKey: QWord; CharCode: UCS4Cha
 // Golden Note
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   CopyToUndo;
   if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntGolden) then
@@ -1289,8 +1258,6 @@ function TScreenEditSub.HandleSetFreestyleNote(PressedKey: QWord; CharCode: UCS4
 // Freestyle Note
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   CopyToUndo;
   if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntFreestyle) then
@@ -1318,8 +1285,6 @@ end;
 function TScreenEditSub.HandleUndo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
   CopyFromUndo;
   GoldenRec.KillAll;
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_UNDO');
@@ -1338,8 +1303,6 @@ end;
 function TScreenEditSub.HandleLeaveScope(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
   LeaveScope(PressedKey, CharCode, PressedDown, Parameter);
 end;
 
@@ -1352,8 +1315,6 @@ end;
 function TScreenEditSub.HandleShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
   ShowPopupHelp(PressedKey, CharCode, PressedDown, Parameter);
 end;
 
@@ -1361,8 +1322,6 @@ end;
 function TScreenEditSub.IncreaseNoteLength(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   // Increase Note Length (same as Alt + Right)
   CopyToUndo;
@@ -1451,8 +1410,6 @@ var
   ModState: word;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT);
   ExtendedCopyPaste(ModState, Integer(PressedKey));
@@ -1461,8 +1418,6 @@ end;
 function TScreenEditSub.HandleNextSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   NextSentence;
 end;
@@ -1470,8 +1425,6 @@ end;
 function TScreenEditSub.HandlePreviousSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   PreviousSentence;
 end;
@@ -1482,8 +1435,6 @@ var
   ModState: word;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL);
 
@@ -1512,8 +1463,6 @@ var
   ModState: word;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL);
 
@@ -1542,8 +1491,6 @@ var
   ModState: word;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT);
 
@@ -1567,8 +1514,6 @@ var
   ModState: word;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT);
 
@@ -1592,8 +1537,6 @@ var
   ModState: word;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT);
 
@@ -1619,8 +1562,6 @@ var
   ModState: word;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT);
 
@@ -1647,8 +1588,6 @@ var
   ModState: word;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL);
 
@@ -1691,8 +1630,6 @@ end;
 function TScreenEditSub.EnterTextEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   // Enter Text Edit Mode
   BackupEditText := Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
@@ -1708,8 +1645,6 @@ end;
 function TScreenEditSub.EnterBPMEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   // Enter BPM Edit Mode
   BackupEditText := FloatToStr(CurrentSong.BPM[0].BPM / 4);
@@ -1725,8 +1660,6 @@ end;
 function TScreenEditSub.EnterPianoEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   // Enter Piano Edit Mode
   PianoEditMode := true;
@@ -1738,8 +1671,6 @@ var
   ModState: word;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL);
 
@@ -2115,8 +2046,6 @@ var
   ModState: word;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL);
 
@@ -2145,8 +2074,6 @@ end;
 function TScreenEditSub.HandleMoveTextRight(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   // moves text to right in current sentence
   CopyToUndo;
@@ -2160,8 +2087,6 @@ var
   ModState: word;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT);
 
@@ -2249,8 +2174,6 @@ var
   ModState: word;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT);
 
@@ -2337,8 +2260,6 @@ end;
 function TScreenEditSub.DecreaseTone(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   CopyToUndo;
   TransposeNote(-1);
@@ -2350,8 +2271,6 @@ end;
 function TScreenEditSub.IncreaseTone(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   CopyToUndo;
   TransposeNote(1);
@@ -2362,8 +2281,6 @@ end;
 function TScreenEditSub.SwitchTrack(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Direction: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   // switch to first track, if possible
   if (CurrentSong.isDuet) then
@@ -2383,8 +2300,6 @@ end;
 function TScreenEditSub.CopyMoveLine(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameters: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
 
   // copy line from second to first track
   if (CurrentSong.isDuet) and (CurrentTrack = (Parameters and 1)) then
@@ -3253,8 +3168,6 @@ end;
 function TScreenEditSub.HandleLyricsCapitalize(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
   LyricsCapitalize;
 end;
 
@@ -3377,8 +3290,6 @@ end;
 function TScreenEditSub.HandleLyricsCorrectSpaces(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
   LyricsCorrectSpaces;
 end;
 
@@ -3851,8 +3762,6 @@ end;
 function TScreenEditSub.HandleMarkCopySrc(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  if not PressedDown then
-    Exit;
   MarkCopySrc;
 end;
 
