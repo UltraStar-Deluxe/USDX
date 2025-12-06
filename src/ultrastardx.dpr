@@ -196,6 +196,7 @@ uses
   USkins            in 'base\USkins.pas',
   UThemes           in 'base\UThemes.pas',
   ULog              in 'base\ULog.pas',
+  UAudioWorker      in 'base\UAudioWorker.pas',
   UJoystick         in 'base\UJoystick.pas',
   UDataBase         in 'base\UDataBase.pas',
   UCovers           in 'base\UCovers.pas',
