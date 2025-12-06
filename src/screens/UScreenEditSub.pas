@@ -406,8 +406,7 @@ type
       procedure FixTimings;
       procedure DivideSentence;
       procedure JoinSentence;
-      procedure NextSentence;
-      procedure PreviousSentence;
+      procedure SwitchSentence(Steps: Integer);
       procedure DivideNote(doubleclick: boolean);
       procedure DeleteNote;
       procedure OnMidiNote(Note: Byte);
@@ -717,7 +716,7 @@ begin
     if ModState = KMOD_LALT then
     begin // jump and play
       // simulate sentence switch to clear props
-      PreviousSentence;
+      SwitchSentence(-1);
 
       Tracks[CurrentTrack].CurrentLine := 0; // update lyric
 
@@ -734,7 +733,7 @@ begin
     else if ModState = 0 then
     begin // jump to preview start
       // simulate sentence switch to clear props
-      PreviousSentence;
+      SwitchSentence(-1);
 
       CurrentBeat := Floor(GetMidBeat(CurrentSong.PreviewStart - (CurrentSong.GAP) / 1000));
       LineIndex := 0;
@@ -911,7 +910,7 @@ begin
   end;
   
   // simulate sentence switch to clear props
-  PreviousSentence;
+  SwitchSentence(-1);
 
   if (Length(Tracks[CurrentTrack].Lines) > SelectedLine.line) and
       (Length(Tracks[CurrentTrack].Lines[SelectedLine.line].Notes) > SelectedLine.note) then
@@ -945,7 +944,7 @@ begin
   end;
 
   // simulate sentence switch to clear props
-  PreviousSentence;
+  SwitchSentence(-1);
 
   if (MedleyNotes.isStart and MedleyNotes.isEnd) and
     (MedleyNotes.start.line < MedleyNotes.end_.line) and
@@ -1418,14 +1417,14 @@ function TScreenEditSub.HandleNextSentence(PressedKey: QWord; CharCode: UCS4Char
 begin
   Result := true;
 
-  NextSentence;
+  SwitchSentence(1);
 end;
 
 function TScreenEditSub.HandlePreviousSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
 
-  PreviousSentence;
+  SwitchSentence(-1);
 end;
 
       // SDLK_7: DecreaseVideoGap
@@ -1868,12 +1867,12 @@ begin
 
     if Interaction = 25 then // PreviousSeqButtonID
     begin
-      PreviousSentence;
+      SwitchSentence(-1);
     end;
 
     if Interaction = 26 then // NextSeqButtonID
     begin
-      NextSentence;
+      SwitchSentence(1);
     end;
 
     if Interaction = 27 then // FreestyleButtonID
@@ -2977,13 +2976,13 @@ begin
     begin
       if CurrentX - LastX > 120 then
       begin
-        PreviousSentence;
+        SwitchSentence(-1);
         LastX := CurrentX;
         showInteractiveBackground;
       end;
       if CurrentX - LastX < -120 then
       begin
-        NextSentence;
+        SwitchSentence(1);
         LastX := CurrentX;
         showInteractiveBackground;
       end;
@@ -3465,7 +3464,7 @@ begin
   EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
 end;
 
-procedure TScreenEditSub.NextSentence;
+procedure TScreenEditSub.SwitchSentence(Steps: Integer);
 begin
   Text[TextInfo].Text := '';
   {$IFDEF UseMIDIPort}
@@ -3475,7 +3474,7 @@ begin
   PlayOne := false;
   {$ENDIF}
   Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
-  Inc(Tracks[CurrentTrack].CurrentLine);
+  Tracks[CurrentTrack].CurrentLine := Tracks[CurrentTrack].CurrentLine + Steps;
   CurrentNote[CurrentTrack] := 0;
   if Tracks[CurrentTrack].CurrentLine > Tracks[CurrentTrack].High then
     Tracks[CurrentTrack].CurrentLine := 0;
@@ -3486,31 +3485,6 @@ begin
   AudioPlayback.Stop();
   PlaySentence := false;
   PlayVideo := false;
-  GoldenRec.KillAll;
-end;
-
-procedure TScreenEditSub.PreviousSentence;
-begin
-  Text[TextInfo].Text := '';
-  AudioPlayback.Stop();
-  PlayVideo := false;
-  PlaySentence := false;
-  PlayOne := false;
-  {$IFDEF UseMIDIPort}
-  //MidiOut.PutShort(MIDI_NOTEOFF or 1, $7, Floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
-  //MidiOut.PutShort($81, Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].Current].Notes[MidiLastNote].Tone + 60, 127);
-  PlaySentenceMidi := false;
-  {$endif}
-
-  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
-  Dec(Tracks[CurrentTrack].CurrentLine);
-  CurrentNote[CurrentTrack] := 0;
-  if Tracks[CurrentTrack].CurrentLine = -1 then
-    Tracks[CurrentTrack].CurrentLine := Tracks[CurrentTrack].High;
-  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
-
-  EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-  EditorLyrics[CurrentTrack].Selected := 0;
   GoldenRec.KillAll;
 end;
 
