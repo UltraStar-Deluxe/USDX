@@ -100,8 +100,6 @@ begin
 end;
 
 function TEncoderAuto.Decode(const InStr: AnsiString; out OutStr: UCS4String): boolean;
-var
-  RegexResults: Integer;
 begin
   if IsUtf8(InStr) then
     Result := UTF8Encoder.Decode(InStr, OutStr)

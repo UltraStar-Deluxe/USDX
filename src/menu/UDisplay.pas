@@ -896,7 +896,7 @@ procedure TDisplay.DrawDebugConsole;
 var
   I, LineCount: integer;
   YOffset, ScaleF, FontSize: real;
-  PosX, PosY: real;
+  PosY: real;
   W, H: real;
   ScrollPad, ScrollW: real;
   OldStretch: real;

@@ -164,11 +164,9 @@ end;
 
 procedure TScreenPartyNewRound.Refresh;
 var
-  N, R, I: Integer;
+  N, I: Integer;
   NumRounds: Integer;
 begin
-  R := Party.CurrentRound;
-
   //Set Visibility of Round Infos
   NumRounds := Length(Party.Rounds);
 
@@ -266,8 +264,6 @@ begin
 end;
 
 procedure TScreenPartyNewRound.OnShow;
-var
-  I: integer;
   function GetTeamPlayers(const Num: integer): UTF8String;
   var
     Players: array of UTF8String;

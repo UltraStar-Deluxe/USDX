@@ -46,7 +46,6 @@ type
     private
       AbsoluteTime: int64;      // system-clock reference time for calculation of CurrentTime
       RelativeTime: real;
-      TriggerMode: boolean;
       State: TRelativeTimerState;
     public
       constructor Create();

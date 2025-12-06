@@ -239,8 +239,6 @@ const
 //ToDo basisbit: check this again
 // Dirty HacK
 procedure TScreenSingView.SwapToScreen(Screen: integer);
-var
-  P, I: integer;
   procedure setVisible(elements: array of integer; visible: boolean);
   var
     J: integer;
@@ -724,9 +722,6 @@ var
   CurLyricsTime:          real;
   VideoFrameTime:         Extended;
   Line:                   TLyricLine;
-  LastWord:               TLyricWord;
-  LineDuet:               TLyricLine;
-  LastWordDuet:           TLyricWord;
   medley_end:             boolean;
   medley_start_applause:  boolean;
   LastLineSungToEnd:      boolean;
@@ -1033,7 +1028,6 @@ var
   timeDiff:       real;
   t:              real;
   CountDownText:  UTF8String;
-  Position:       real;
 begin
   if AudioPlayback.Position < GetTimeFromBeat(CurrentSong.Medley.StartBeat) then
   begin
@@ -1113,7 +1107,6 @@ end;
 
 procedure TScreenSingView.MedleyTitleFadeOut();
 var
-  I: integer;
   Alpha: real;
   CTime: cardinal;
 begin

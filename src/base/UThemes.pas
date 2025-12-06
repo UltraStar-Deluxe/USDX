@@ -3409,8 +3409,6 @@ begin
 end;
 
 procedure TTheme.ThemeSave(const FileName: string);
-var
-  I: integer;
 begin
   {$IFDEF THEMESAVE}
   ThemeIni := TIniFile.Create(FileName);

@@ -167,8 +167,6 @@ begin
 end;
 
 procedure TScreenOptionsGraphics.OnShow;
-var
-  i: integer;
 begin
   inherited;
 

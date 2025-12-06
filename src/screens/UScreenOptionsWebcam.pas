@@ -337,7 +337,6 @@ end;
 procedure TScreenOptionsWebcam.LoadWidgets;
 var
   WebcamsIDs: array[0..2] of UTF8String;
-  SelectWebcam: integer;
 begin
   WebcamsIDs[0] := Language.Translate('OPTION_VALUE_OFF');
   WebcamsIDs[1] := '0';

@@ -1400,6 +1400,7 @@ function TIni.InitializePianoKeyArray(const Values: array of Cardinal): TPianoKe
 var
   i: Integer;
 begin
+  Result := nil;
   SetLength(Result, Length(Values));
   for i := Low(Values) to High(Values) do
     Result[i] := Values[i];
@@ -1774,7 +1775,6 @@ procedure TIni.Save;
 var
   IniFile: TIniFile;
   HexColor: string;
-  I: integer;
   C: TRGB;
 begin
   try
@@ -2212,7 +2212,6 @@ end;
 procedure TIni.SaveSoundFont(Name: string);
 var
   IniFile: TIniFile;
-  I: integer;
 begin
   if not Filename.IsReadOnly() then
   begin
@@ -2251,7 +2250,6 @@ end;
 procedure TIni.SaveNumberOfPlayers;
 var
   IniFile: TIniFile;
-  I: integer;
 begin
   if not Filename.IsReadOnly() then
   begin
@@ -2267,7 +2265,6 @@ end;
 procedure TIni.SaveSingTimebarMode;
 var
   IniFile: TIniFile;
-  I: integer;
 begin
   if not Filename.IsReadOnly() then
   begin
@@ -2283,7 +2280,6 @@ end;
 procedure TIni.SaveJukeboxTimebarMode;
 var
   IniFile: TIniFile;
-  I: integer;
 begin
   if not Filename.IsReadOnly() then
   begin
