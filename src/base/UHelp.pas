@@ -394,6 +394,7 @@ var
   var
     BaseToken: UTF8String;
     UnboundText: UTF8String;
+    ModMask: word;
 
     procedure AppendToken(const Token: UTF8String);
     var
@@ -410,7 +411,7 @@ var
 
   begin
     SetLength(Result.Key, 0);
-    if Binding.CurrentInput = 0 then
+    if Binding.CurrentInput = IGNORE_KEY then
     begin
       UnboundText := Language.Translate('HELP_KEY_UNBOUND');
       if UnboundText = 'HELP_KEY_UNBOUND' then
@@ -420,14 +421,15 @@ var
       Exit;
     end;
 
-    if (Binding.ModifierMask and KMOD_CTRL) <> 0 then
+    ModMask := CombinedKeyToModifierMask(Binding.CurrentInput);
+    if (ModMask and KMOD_CTRL) <> 0 then
       AppendToken('CTRL');
-    if (Binding.ModifierMask and KMOD_ALT) <> 0 then
+    if (ModMask and KMOD_ALT) <> 0 then
       AppendToken('ALT');
-    if (Binding.ModifierMask and KMOD_SHIFT) <> 0 then
+    if (ModMask and KMOD_SHIFT) <> 0 then
       AppendToken('SHIFT');
 
-    BaseToken := KeyCodeToToken(Binding.CurrentInput);
+    BaseToken := KeyCodeToToken(CombinedKeyToKeyCode(Binding.CurrentInput));
     AppendToken(BaseToken);
   end;
 

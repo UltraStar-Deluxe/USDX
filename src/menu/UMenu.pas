@@ -60,10 +60,8 @@ type
   TMenuKeyBindingEntry = record
     CategoryId: UTF8String;
     Token: UTF8String;
-    KeyCode: cardinal;
-    ModifierMask: word;
-    DefaultKey: cardinal;
-    OutputKey: cardinal;
+    DefaultKey: TCombinedKey;
+    OutputKey: TCombinedKey;
     Handler: TMenuKeyBindingHandler;
     HelpRegistered: boolean;
   end;
@@ -98,11 +96,8 @@ type
   // Default implementation returns an empty string which disables translation.
   function GetKeyBindingContext: UTF8String; virtual;
   class function BuildModifierMask(const Shift, Ctrl, Alt: boolean): word; static; inline;
-      class function NormalizeModifierMask(ModMask: word): word; static; inline;
       procedure ClearKeyBindings; virtual;
       procedure EnsureKeyBindingsPublished; virtual;
-      class procedure DecodeCombinedKey(CombinedKey: UInt64; out KeyCode: cardinal;
-        out ModifierMask: word); static; inline;
       procedure RegisterKeyBinding(const CategoryId, Token: UTF8String;
         CombinedKey: UInt64; Handler: TMenuKeyBindingHandler = nil; Parameter: integer = 0);
       function TryHandleKeyBinding(PressedKey: QWord; CharCode: UCS4Char;
@@ -242,6 +237,7 @@ uses
   UDrawTexture,
   UGraphic,
   ULog,
+  UUnicodeUtils,
   UMain,
   USkins,
   UTime,
@@ -307,23 +303,6 @@ begin
     Result := Result or KMOD_ALT;
 end;
 
-class function TMenu.NormalizeModifierMask(ModMask: word): word;
-begin
-  Result := 0;
-  if (ModMask and (KMOD_LSHIFT or KMOD_RSHIFT or KMOD_SHIFT)) <> 0 then
-    Result := Result or KMOD_SHIFT;
-  if (ModMask and (KMOD_LCTRL or KMOD_RCTRL or KMOD_CTRL)) <> 0 then
-    Result := Result or KMOD_CTRL;
-  if (ModMask and (KMOD_LALT or KMOD_RALT or KMOD_ALT)) <> 0 then
-    Result := Result or KMOD_ALT;
-end;
-
-class procedure TMenu.DecodeCombinedKey(CombinedKey: UInt64; out KeyCode: cardinal;
-  out ModifierMask: word);
-begin
-  KeyCode := cardinal(CombinedKey and $FFFFFFFF);
-  ModifierMask := word((CombinedKey shr 32) and $FFFF);
-end;
 
 procedure TMenu.ClearKeyBindings;
 begin
@@ -356,7 +335,6 @@ begin
     KeyBindings.RegisterBinding(ContextId,
       FKeyBindingEntries[I].CategoryId,
       FKeyBindingEntries[I].Token,
-      FKeyBindingEntries[I].ModifierMask,
       FKeyBindingEntries[I].DefaultKey,
       FKeyBindingEntries[I].OutputKey);
 
@@ -368,18 +346,15 @@ procedure TMenu.RegisterKeyBinding(const CategoryId, Token: UTF8String;
   CombinedKey: UInt64; Handler: TMenuKeyBindingHandler; Parameter: integer = 0);
 var
   Entry: TMenuKeyBindingEntry;
-  KeyCode: cardinal;
-  ModifierMask: word;
   Index: integer;
+  Normalized: TCombinedKey;
 begin
-  DecodeCombinedKey(CombinedKey, KeyCode, ModifierMask);
+  Normalized := NormalizeCombinedKey(CombinedKey);
 
   Entry.CategoryId := CategoryId;
   Entry.Token := Token;
-  Entry.KeyCode := KeyCode;
-  Entry.ModifierMask := ModifierMask;
-  Entry.DefaultKey := KeyCode;
-  Entry.OutputKey := KeyCode;
+  Entry.DefaultKey := Normalized;
+  Entry.OutputKey := Normalized;
 
   Entry.Handler := Handler;
   Entry.HelpRegistered := false;
@@ -393,12 +368,12 @@ end;
 
 class function TMenu.CombineKey(KeyCode: cardinal; Shift, Ctrl, Alt: boolean): UInt64;
 begin
-  Result := CombineKey(KeyCode, BuildModifierMask(Shift, Ctrl, Alt));
+  Result := MakeCombinedKey(BuildModifierMask(Shift, Ctrl, Alt), KeyCode);
 end;
 
 class function TMenu.CombineKey(KeyCode: cardinal; ModifierMask: word): UInt64;
 begin
-  Result := (UInt64(ModifierMask) shl 32) or UInt64(KeyCode);
+  Result := MakeCombinedKey(ModifierMask, KeyCode);
 end;
 {
 constructor TMenu.Create(Back: string);
@@ -1954,28 +1929,36 @@ end;
 function TMenu.TryHandleKeyBinding(PressedKey: QWord; CharCode: UCS4Char;
   PressedDown: boolean; Parameter: integer; out HandlerResult: boolean): boolean;
 var
-  ModState: word;
+  NormalizedKey: TCombinedKey;
   I: integer;
+  PressedToken: UTF8String;
 begin
   Result := false;
   HandlerResult := true;
 
-  ModState := SDL_GetModState;
+  NormalizedKey := NormalizeCombinedKey(PressedKey);
+  PressedToken := CombinedKeyToTokenString(NormalizedKey);
 
-  Log.LogInfo('ParseInput: PressedKey=' + IntToHex(PressedKey, 16) + ' CharCode=' + IntToHex(CharCode, 8) + ' ModState=' + IntToHex(ModState, 8) + ' PressedDown=' + BoolToStr(PressedDown, true), 'TMenu.ParseInput');
+  Log.LogInfo('ParseInput: PressedKey=' + IntToHex(NormalizedKey, 16) +
+    ' Token=' + UTF8ToString(PressedToken) +
+    ' CharCode=' + IntToHex(CharCode, 8) +
+    ' PressedDown=' + BoolToStr(PressedDown, true), 'TMenu.ParseInput');
   for I := 0 to High(FKeyBindingEntries) do
   begin
-    Log.LogInfo('  Entry[' + IntToStr(I) + ']: KeyCode=' + IntToHex(FKeyBindingEntries[I].KeyCode, 8) + ' ModifierMask=' + IntToHex(FKeyBindingEntries[I].ModifierMask, 8), 'TMenu.ParseInput');
-    if (FKeyBindingEntries[I].KeyCode <> PressedKey) then
+    Log.LogInfo('  Entry[' + IntToStr(I) + ']: DefaultKey=' + IntToHex(FKeyBindingEntries[I].DefaultKey, 16),
+      'TMenu.ParseInput');
+    if FKeyBindingEntries[I].OutputKey <> NormalizedKey then
     begin
-      Log.LogInfo('    KeyCode mismatch: ' + IntToHex(FKeyBindingEntries[I].KeyCode, 8) + ' <> ' + IntToHex(PressedKey, 8), 'TMenu.ParseInput');
+      Log.LogInfo('    Key mismatch: ' + IntToHex(FKeyBindingEntries[I].OutputKey, 16) +
+        ' <> ' + IntToHex(NormalizedKey, 16), 'TMenu.ParseInput');
       Continue;
     end;
+
     Log.LogInfo('    Match found, checking handler...', 'TMenu.ParseInput');
     if Assigned(FKeyBindingEntries[I].Handler) then
     begin
       Log.LogInfo('    Handler assigned, calling handler.', 'TMenu.ParseInput');
-      HandlerResult := FKeyBindingEntries[I].Handler(PressedKey, CharCode, PressedDown, Parameter);
+      HandlerResult := FKeyBindingEntries[I].Handler(NormalizedKey, CharCode, PressedDown, Parameter);
       Log.LogInfo('    Handler returned: ' + BoolToStr(HandlerResult, true), 'TMenu.ParseInput');
       Result := true;
       Exit;

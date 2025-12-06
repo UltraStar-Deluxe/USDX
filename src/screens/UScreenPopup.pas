@@ -274,8 +274,8 @@ type
       const EditableBounds: TRect; HasEditableBounds: boolean);
     procedure   StartCapture(Index: integer);
     procedure   CancelCapture;
-  procedure   FinishCapture(NewKey: cardinal);
-    function    IsModifierKeyCode(KeyCode: cardinal): boolean;
+    procedure   FinishCapture(NewKey: TCombinedKey);
+    function    IsModifierKey(KeyValue: TCombinedKey): boolean;
     function    GetEditableTokenIndex(const Keys: TKeyNames): integer;
     procedure   UpdateCapturePrompts;
     function    StripTokenBrackets(const Token: UTF8String): UTF8String;
@@ -1668,6 +1668,8 @@ begin
   Result := inherited ParseMouse(MouseButton, BtnDown, X, Y);
   RawX := X;
   RawY := Y;
+  Log.LogInfo(Format('HelpPopup.ParseMouse raw input button=%d down=%s raw=(%d,%d)',
+    [MouseButton, BoolToStr(BtnDown, true), RawX, RawY]), 'UScreenPopupHelp.ParseMouse');
 
   if (ScreenW > 0) and (Screens > 0) then
   begin
@@ -1687,29 +1689,53 @@ begin
       Y := RenderH;
   end;
 
+  Log.LogInfo(Format('HelpPopup.ParseMouse normalized coords=(%d,%d) visible=%s keyColumnRight=%d rect=[%d,%d,%d,%d]',
+    [X, Y, BoolToStr(Visible, true), KeyColumnRight, Rect.left, Rect.top, Rect.right, Rect.bottom]), 'UScreenPopupHelp.ParseMouse');
+
   if not Visible then
+  begin
+    Log.LogInfo('HelpPopup.ParseMouse exit: popup not visible', 'UScreenPopupHelp.ParseMouse');
     Exit;
+  end;
   if (MouseButton <> SDL_BUTTON_LEFT) or (not BtnDown) then
+  begin
+    Log.LogInfo('HelpPopup.ParseMouse exit: not a left-button down event', 'UScreenPopupHelp.ParseMouse');
     Exit;
+  end;
   if (KeyColumnRight <= Rect.left) then
+  begin
+    Log.LogInfo(Format('HelpPopup.ParseMouse exit: invalid column bounds right=%d left=%d',
+      [KeyColumnRight, Rect.left]), 'UScreenPopupHelp.ParseMouse');
     Exit;
+  end;
   if (X < Rect.left) or (X > KeyColumnRight) or (Y < Rect.top) or (Y > Rect.bottom) then
+  begin
+    Log.LogInfo(Format('HelpPopup.ParseMouse exit: click outside key column (x=%d y=%d)', [X, Y]), 'UScreenPopupHelp.ParseMouse');
     Exit;
+  end;
 
   Offset := GetScrollOffset;
   ContentY := Y + Offset;
+  Log.LogInfo(Format('HelpPopup.ParseMouse search ContentY=%d Offset=%d bindingCount=%d',
+    [ContentY, Offset, Length(BindingHits)]), 'UScreenPopupHelp.ParseMouse');
   for I := 0 to High(BindingHits) do
   begin
     Hit := BindingHits[I];
+    Log.LogInfo(Format('HelpPopup.ParseMouse candidate idx=%d section=%d entry=%d bounds=[%d,%d] handle=%d token=%s',
+      [I, Hit.SectionIndex, Hit.EntryIndex, Hit.Bounds.Top, Hit.Bounds.Bottom,
+       Hit.Handle, string(Hit.HelpToken)]), 'UScreenPopupHelp.ParseMouse');
     if Hit.Handle = 0 then
       Continue;
     if (ContentY >= Hit.Bounds.Top) and (ContentY <= Hit.Bounds.Bottom) then
     begin
       StartCapture(I);
       Result := true;
+      Log.LogInfo(Format('HelpPopup.ParseMouse hit idx=%d', [I]), 'UScreenPopupHelp.ParseMouse');
       Exit;
     end;
   end;
+
+  Log.LogInfo('HelpPopup.ParseMouse exit: no binding hit detected', 'UScreenPopupHelp.ParseMouse');
 end;
 
 function TScreenPopupHelp.Draw: boolean;
@@ -2425,6 +2451,9 @@ begin
   BindingHits[Len].Handle := Handle;
   BindingHits[Len].HelpToken := HelpToken;
   BindingHits[Len].HasEditableBounds := HasEditableBounds;
+  Log.LogInfo(Format('HelpPopup.RegisterKeyBindingHit idx=%d section=%d entry=%d bounds=[%d,%d] handle=%d token=%s editable=%s',
+    [Len, SectionIndex, EntryIndex, Bounds.Top, Bounds.Bottom, Handle, string(HelpToken),
+     BoolToStr(HasEditableBounds, true)]), 'UScreenPopupHelp.RegisterKeyBindingHit');
 end;
 
 function TScreenPopupHelp.GetEditableTokenIndex(const Keys: TKeyNames): integer;
@@ -2501,9 +2530,15 @@ end;
 procedure TScreenPopupHelp.StartCapture(Index: integer);
 begin
   if (Index < 0) or (Index > High(BindingHits)) then
-    Exit;
+    begin
+      Log.LogInfo(Format('HelpPopup.StartCapture invalid index=%d', [Index]), 'UScreenPopupHelp.StartCapture');
+      Exit;
+    end;
   if BindingHits[Index].Handle = 0 then
-    Exit;
+    begin
+      Log.LogInfo(Format('HelpPopup.StartCapture missing handle for index=%d', [Index]), 'UScreenPopupHelp.StartCapture');
+      Exit;
+    end;
 
   if CaptureActive then
     CancelCapture;
@@ -2515,6 +2550,8 @@ begin
   CaptureHelpToken := BindingHits[Index].HelpToken;
   ActiveBindingIndex := Index;
 
+    Log.LogInfo(Format('HelpPopup.StartCapture index=%d section=%d entry=%d handle=%d token=%s',
+      [Index, CaptureSection, CaptureEntry, CaptureHandle, string(CaptureHelpToken)]), 'UScreenPopupHelp.StartCapture');
   if (PromptActionFormat = '') or (PromptActionFormat = 'HELP_PROMPT_ACTION') then
     CurrentActionPrompt := msg.Sections[CaptureSection].KeyDescription[CaptureEntry]
   else
@@ -2525,6 +2562,11 @@ end;
 
 procedure TScreenPopupHelp.CancelCapture;
 begin
+    if CaptureActive then
+      Log.LogInfo(Format('HelpPopup.CancelCapture handle=%d section=%d entry=%d',
+        [CaptureHandle, CaptureSection, CaptureEntry]), 'UScreenPopupHelp.CancelCapture')
+    else
+      Log.LogInfo('HelpPopup.CancelCapture noop (inactive)', 'UScreenPopupHelp.CancelCapture');
   CaptureActive := false;
   CaptureHandle := 0;
   CaptureSection := -1;
@@ -2536,16 +2578,22 @@ begin
   CurrentModifiersPrompt := '';
 end;
 
-procedure TScreenPopupHelp.FinishCapture(NewKey: cardinal);
+procedure TScreenPopupHelp.FinishCapture(NewKey: TCombinedKey);
+var
+  Normalized: TCombinedKey;
 begin
+  Normalized := NormalizeCombinedKey(NewKey);
   if (KeyBindings <> nil) and (CaptureHandle <> 0) then
   begin
-    KeyBindings.UpdateBinding(CaptureHandle, NewKey);
+    KeyBindings.UpdateBinding(CaptureHandle, Normalized);
     if Ini <> nil then
       Ini.SaveKeyBindings;
   end;
   CancelCapture;
   ShowPopup;
+  Log.LogInfo(Format('HelpPopup.FinishCapture handle=%d newKey=%s',
+    [CaptureHandle, UTF8ToString(CombinedKeyToTokenString(Normalized))]),
+    'UScreenPopupHelp.CancelCapture');
 end;
 
 function TScreenPopupHelp.IsCapturing: boolean;
@@ -2554,20 +2602,32 @@ begin
 end;
 
 function TScreenPopupHelp.HandleCapturedKey(PressedKey: QWord): boolean;
+var
+  Combined: TCombinedKey;
+  KeyCode: cardinal;
 begin
+  Log.LogInfo(Format('HelpPopup.HandleCapturedKey key=%s active=%s',
+    [UTF8ToString(CombinedKeyToTokenString(NormalizeCombinedKey(PressedKey))),
+     BoolToStr(CaptureActive, true)]),
+    'UScreenPopupHelp.HandleCapturedKey');
   Result := CaptureActive;
   if not CaptureActive then
     Exit;
-  if PressedKey = SDLK_ESCAPE then
+  Combined := NormalizeCombinedKey(PressedKey);
+  KeyCode := CombinedKeyToKeyCode(Combined);
+  if KeyCode = SDLK_ESCAPE then
     CancelCapture
-  else if IsModifierKeyCode(PressedKey) then
+  else if IsModifierKey(Combined) then
     Exit
   else
-    FinishCapture(PressedKey);
+    FinishCapture(Combined);
 end;
 
-function TScreenPopupHelp.IsModifierKeyCode(KeyCode: cardinal): boolean;
+function TScreenPopupHelp.IsModifierKey(KeyValue: TCombinedKey): boolean;
+var
+  KeyCode: cardinal;
 begin
+  KeyCode := CombinedKeyToKeyCode(KeyValue);
   case KeyCode of
     SDLK_LSHIFT,
     SDLK_RSHIFT,

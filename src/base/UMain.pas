@@ -79,6 +79,7 @@ uses
   UGraphic,
   UGraphicClasses,
   UHelp,
+  UKeyBindings,
   UIni,
   UJoystick,
   ULanguage,
@@ -402,7 +403,10 @@ var
   Event:     TSDL_event;
   SimEvent:  TSDL_event;
   KeyCharUnicode: UCS4Char;
-  SimKey: QWord;
+  SimKey: TCombinedKey;
+  RawKey: cardinal;
+  RawCombined: TCombinedKey;
+  ModState: LongWord;
   s1: UTF8String;
   mouseDown: boolean;
   mouseBtn:  integer;
@@ -410,6 +414,7 @@ var
   KeepGoing: boolean;
   SuppressKey: boolean;
   UpdateMouse: boolean;
+  MouseHandling: boolean;
 begin
   KeepGoing := true;
   SuppressKey := false;
@@ -425,16 +430,18 @@ begin
 
       SDL_MOUSEMOTION, SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP, SDL_MOUSEWHEEL:
       begin
-        if (Ini.Mouse > 0) then
+        MouseHandling := (Ini.Mouse > 0) or
+          ((ScreenPopupHelp <> nil) and ScreenPopupHelp.Visible);
+        if MouseHandling then
         begin
-          UpdateMouse := true;
+          UpdateMouse := (Ini.Mouse > 0);
           case Event.type_ of
             SDL_MOUSEBUTTONDOWN:
             begin
               mouseDown := true;
               mouseBtn  := Event.button.button;
               CheckMouseButton := true;
-              if (mouseBtn = SDL_BUTTON_LEFT) or (mouseBtn = SDL_BUTTON_RIGHT) then
+              if (Ini.Mouse > 0) and ((mouseBtn = SDL_BUTTON_LEFT) or (mouseBtn = SDL_BUTTON_RIGHT)) then
                 Display.OnMouseButton(true);
             end;
             SDL_MOUSEBUTTONUP:
@@ -442,7 +449,7 @@ begin
               mouseDown := false;
               mouseBtn  := Event.button.button;
               CheckMouseButton := false;
-              if (mouseBtn = SDL_BUTTON_LEFT) or (mouseBtn = SDL_BUTTON_RIGHT) then
+              if (Ini.Mouse > 0) and ((mouseBtn = SDL_BUTTON_LEFT) or (mouseBtn = SDL_BUTTON_RIGHT)) then
                 Display.OnMouseButton(false);
             end;
             SDL_MOUSEMOTION:
@@ -468,7 +475,7 @@ begin
             end;
           end;
 
-          if UpdateMouse then
+          if UpdateMouse and (Ini.Mouse > 0) then
           begin
             // used to update mouse coords and allow the relative mouse emulated by joystick axis motion
             if assigned(Joy) then Joy.OnMouseMove(EnsureRange(Event.button.X, 0, 799),
@@ -551,7 +558,8 @@ begin
                (ScreenPopupHelp <> nil) and ScreenPopupHelp.Visible and
                ScreenPopupHelp.IsCapturing then
             begin
-              if ScreenPopupHelp.HandleCapturedKey(Event.key.keysym.sym) then
+              if ScreenPopupHelp.HandleCapturedKey(
+                   MakeCombinedKey(word(SDL_GetModState), cardinal(Event.key.keysym.sym))) then
                 Continue;
             end;
 
@@ -563,18 +571,30 @@ begin
             except
             end;
 
-            SimKey := 0;
-            if((Event.key.keysym.sym > Low(LongWord)) and (Event.key.keysym.sym < High(LongWord))) then
-            begin
-              // Pack keycode (lower 32 bits) and modifiers (upper 32 bits)
-              SimKey := QWord(Event.key.keysym.sym) or ((QWord(SDL_GetModState) shl 32) and $3FF00000000);
-            end;
+            RawKey := cardinal(Event.key.keysym.sym);
+            ModState := SDL_GetModState;
+            RawCombined := MakeCombinedKey(word(ModState), RawKey);
 
-            if SimKey = 0 then
+            if RawCombined = IGNORE_KEY then
+              Continue;
+
+            if Event.type_ = SDL_KEYDOWN then
+            begin
+              if Display <> nil then
+                SimKey := Display.TranslateKeyForActiveScreen(RawCombined)
+              else
+                SimKey := RawCombined;
+            end
+            else
+              SimKey := RawCombined;
+
+            SimKey := NormalizeCombinedKey(SimKey);
+            if SimKey = IGNORE_KEY then
               Continue;
 
             // if print is pressed -> make screenshot and save to screenshot path
-            if (SimKey = SDLK_SYSREQ) or (SimKey = SDLK_PRINTSCREEN) then
+            if (CombinedKeyToKeyCode(SimKey) = SDLK_SYSREQ) or
+              (CombinedKeyToKeyCode(SimKey) = SDLK_PRINTSCREEN) then
               Display.SaveScreenShot
             // if there is a visible popup then let it handle input instead of underlying screen
             // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)

@@ -14,6 +14,9 @@ uses
   IniFiles,
   sdl2;
 
+type
+  TCombinedKey = QWord;
+
 // High-bit modifier constants for packed key
 const
   MOD_LSHIFT  = QWord(KMOD_LSHIFT) shl 32;
@@ -22,6 +25,7 @@ const
   MOD_RCTRL   = QWord(KMOD_RCTRL)  shl 32;
   MOD_LALT    = QWord(KMOD_LALT)   shl 32;
   MOD_RALT    = QWord(KMOD_RALT)   shl 32;
+  IGNORE_KEY: TCombinedKey = 0;
 
 type
   TKeyBindingHandle = type integer;
@@ -32,10 +36,9 @@ type
     CategoryId: UTF8String;
     CategoryOrder: integer;
     HelpToken: UTF8String;
-    ModifierMask: word;
-    DefaultInput: cardinal;
-    CurrentInput: cardinal;
-    OutputKey: cardinal;
+    DefaultInput: TCombinedKey;
+    CurrentInput: TCombinedKey;
+    OutputKey: TCombinedKey;
     EntryOrder: integer;
     IsModified: boolean;
   end;
@@ -61,10 +64,9 @@ type
       CategoryOrder: integer;
       HelpToken: UTF8String;
       DuplicateIndex: integer;
-      ModifierMask: word;
-      DefaultInput: cardinal;
-      CurrentInput: cardinal;
-      OutputKey: cardinal;
+      DefaultInput: TCombinedKey;
+      CurrentInput: TCombinedKey;
+      OutputKey: TCombinedKey;
       EntryOrder: integer;
     end;
   private
@@ -78,31 +80,31 @@ type
     function EnsureCategory(ContextIdx: integer; const CategoryId: UTF8String): integer;
     function NextDuplicateIndex(ContextIdx: integer; const HelpToken: UTF8String): integer;
     function BuildOverrideKey(const ContextId, HelpToken: UTF8String;
-      ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer): UTF8String;
+      DefaultInput: TCombinedKey; DuplicateIndex: integer): UTF8String;
     function LookupOverride(const ContextId, HelpToken: UTF8String;
-      ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer;
-      out KeyCode: cardinal): boolean;
+      DefaultInput: TCombinedKey; DuplicateIndex: integer;
+      out Key: TCombinedKey): boolean;
     function KeyNameToCode(const KeyName: UTF8String): cardinal;
     function KeyCodeToName(KeyCode: cardinal): UTF8String;
-  function NormalizeModifiers(ModState: word): word;
-    procedure SetCurrentInput(var Entry: TEntry; NewInput: cardinal);
+    function NormalizeModifiers(ModState: word): word;
+    procedure SetCurrentInput(var Entry: TEntry; NewInput: TCombinedKey);
     procedure RemoveOverride(const ContextId, HelpToken: UTF8String;
-      ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer);
+      DefaultInput: TCombinedKey; DuplicateIndex: integer);
     procedure StoreOverride(const ContextId, HelpToken: UTF8String;
-      ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer; KeyCode: cardinal);
-    procedure ResolveConflicts(const Entry: TEntry; NewInput: cardinal);
+      DefaultInput: TCombinedKey; DuplicateIndex: integer; KeyValue: TCombinedKey);
+    procedure ResolveConflicts(const Entry: TEntry; NewInput: TCombinedKey);
   public
     constructor Create;
     destructor Destroy; override;
     procedure Clear;
 
     function RegisterBinding(const ContextId, CategoryId, HelpToken: UTF8String;
-      ModifierMask: word; DefaultInput, OutputKey: cardinal): TKeyBindingHandle;
+      DefaultInput, OutputKey: TCombinedKey): TKeyBindingHandle;
 
-    function TranslateKey(const ContextId: UTF8String; ModState: word;
-      PressedKey: QWord): cardinal;
+    function TranslateKey(const ContextId: UTF8String;
+      PressedKey: TCombinedKey): TCombinedKey;
 
-    procedure UpdateBinding(Handle: TKeyBindingHandle; NewInput: cardinal);
+    procedure UpdateBinding(Handle: TKeyBindingHandle; NewInput: TCombinedKey);
     procedure ResetBinding(Handle: TKeyBindingHandle);
 
     function EnumerateContext(const ContextId: UTF8String): TKeyBindingEntryViewArray;
@@ -117,6 +119,12 @@ var
 
 function NormalizeModifierState(ModState: word): word;
 function KeyCodeToToken(KeyCode: cardinal): UTF8String;
+function CombinedKeyToModifierMask(Key: TCombinedKey): word;
+function CombinedKeyToKeyCode(Key: TCombinedKey): cardinal;
+function NormalizeCombinedKey(Key: TCombinedKey): TCombinedKey;
+function MakeCombinedKey(ModState: word; KeyCode: cardinal): TCombinedKey;
+function CombinedKeyToTokenString(Key: TCombinedKey): UTF8String;
+function ParseCombinedKeyToken(const Value: UTF8String; out Key: TCombinedKey): boolean;
 
 implementation
 
@@ -124,8 +132,8 @@ uses
   UUnicodeUtils;
 
 const
-  IGNORE_KEYCODE = 0;
   UNBOUND_OVERRIDE_VALUE = 'UNBOUND'; // persisted marker meaning the binding was explicitly cleared
+  
 
 { Helper functions }
 
@@ -217,6 +225,132 @@ begin
 
   if Result = '' then
     Result := IntToStr(KeyCode);
+end;
+
+function CombinedKeyToModifierMask(Key: TCombinedKey): word;
+begin
+  Result := NormalizeModifierState(word(Key shr 32));
+end;
+
+function CombinedKeyToKeyCode(Key: TCombinedKey): cardinal;
+begin
+  Result := cardinal(Key and $FFFFFFFF);
+end;
+
+function NormalizeCombinedKey(Key: TCombinedKey): TCombinedKey;
+var
+  Code: cardinal;
+  Mods: word;
+begin
+  if Key = IGNORE_KEY then
+    Exit(IGNORE_KEY);
+  Code := CombinedKeyToKeyCode(Key);
+  Mods := CombinedKeyToModifierMask(Key);
+  Result := (QWord(Mods) shl 32) or (QWord(Code) and $FFFFFFFF);
+end;
+
+function MakeCombinedKey(ModState: word; KeyCode: cardinal): TCombinedKey;
+begin
+  if (KeyCode = SDLK_UNKNOWN) or (KeyCode = 0) then
+    Exit(IGNORE_KEY);
+  Result := (QWord(NormalizeModifierState(ModState)) shl 32) or QWord(KeyCode);
+end;
+
+function CombinedKeyToTokenString(Key: TCombinedKey): UTF8String;
+var
+  Parts: UTF8String;
+  Mods: word;
+  KeyName: UTF8String;
+begin
+  if Key = IGNORE_KEY then
+    Exit('');
+
+  Mods := CombinedKeyToModifierMask(Key);
+  KeyName := KeyCodeToToken(CombinedKeyToKeyCode(Key));
+  Parts := '';
+  if (Mods and KMOD_CTRL) <> 0 then
+  begin
+    if Parts <> '' then
+      Parts := Parts + '+';
+    Parts := Parts + 'CTRL';
+  end;
+  if (Mods and KMOD_ALT) <> 0 then
+  begin
+    if Parts <> '' then
+      Parts := Parts + '+';
+    Parts := Parts + 'ALT';
+  end;
+  if (Mods and KMOD_SHIFT) <> 0 then
+  begin
+    if Parts <> '' then
+      Parts := Parts + '+';
+    Parts := Parts + 'SHIFT';
+  end;
+  if KeyName <> '' then
+  begin
+    if Parts <> '' then
+      Parts := Parts + '+';
+    Parts := Parts + KeyName;
+  end;
+  Result := Parts;
+end;
+
+function ParseCombinedKeyToken(const Value: UTF8String; out Key: TCombinedKey): boolean;
+var
+  Remaining: UTF8String;
+  Segment: UTF8String;
+  Sep: SizeInt;
+  Mods: word;
+  KeyCode: cardinal;
+begin
+  Key := IGNORE_KEY;
+  if Value = '' then
+    Exit(false);
+
+  Remaining := UTF8UpperCase(Trim(Value));
+  Mods := 0;
+  KeyCode := SDLK_UNKNOWN;
+
+  while Remaining <> '' do
+  begin
+    Sep := Pos('+', Remaining);
+    if Sep > 0 then
+    begin
+      Segment := Trim(Copy(Remaining, 1, Sep - 1));
+      Delete(Remaining, 1, Sep);
+    end
+    else
+    begin
+      Segment := Trim(Remaining);
+      Remaining := '';
+    end;
+
+    if Segment = '' then
+      Continue;
+
+    if (Segment = 'CTRL') or (Segment = 'CONTROL') then
+      Mods := Mods or KMOD_CTRL
+    else if Segment = 'ALT' then
+      Mods := Mods or KMOD_ALT
+    else if Segment = 'SHIFT' then
+      Mods := Mods or KMOD_SHIFT
+    else
+    begin
+      if Assigned(KeyBindings) then
+        KeyCode := KeyBindings.KeyNameToCode(Segment)
+      else
+        KeyCode := SDL_GetKeyFromName(PAnsiChar(AnsiString(Segment)));
+
+      if KeyCode = SDLK_UNKNOWN then
+        Exit(false);
+    end;
+  end;
+
+  if KeyCode = SDLK_UNKNOWN then
+    Exit(false);
+
+  Key := MakeCombinedKey(Mods, KeyCode);
+  Result := true;
 end;
 
 { TKeyBindingRegistry }
@@ -312,42 +446,46 @@ begin
 end;
 
 function TKeyBindingRegistry.BuildOverrideKey(const ContextId, HelpToken: UTF8String;
-  ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer): UTF8String;
+  DefaultInput: TCombinedKey; DuplicateIndex: integer): UTF8String;
 var
   TokenWithIndex: UTF8String;
+  DefaultToken: UTF8String;
 begin
   TokenWithIndex := HelpToken;
   if DuplicateIndex > 1 then
     TokenWithIndex := TokenWithIndex + IntToStr(DuplicateIndex);
-
-  Result := UTF8UpperCase(Format('%s.%s.%d.%d',
-    [ContextId, TokenWithIndex, ModifierMask, DefaultInput]));
+  DefaultToken := CombinedKeyToTokenString(DefaultInput);
+  if DefaultToken = '' then
+    DefaultToken := 'NONE';
+  Result := UTF8UpperCase(Format('%s.%s.%s',
+    [ContextId, TokenWithIndex, DefaultToken]));
 end;
 
 function TKeyBindingRegistry.LookupOverride(const ContextId, HelpToken: UTF8String;
-  ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer;
-  out KeyCode: cardinal): boolean;
+  DefaultInput: TCombinedKey; DuplicateIndex: integer;
+  out Key: TCombinedKey): boolean;
 var
-  Key: UTF8String;
+  OverrideKey: UTF8String;
   Name: UTF8String;
-  Code: integer;
 begin
   Result := false;
-  KeyCode := IGNORE_KEYCODE;
-  Key := BuildOverrideKey(ContextId, HelpToken, ModifierMask, DefaultInput, DuplicateIndex);
-  Name := UTF8String(FOverrides.Values[Key]);
+  Key := IGNORE_KEY;
+  OverrideKey := BuildOverrideKey(ContextId, HelpToken, DefaultInput, DuplicateIndex);
+  Name := UTF8String(FOverrides.Values[OverrideKey]);
   if Name = '' then
     Exit;
 
   if SameText(Name, UNBOUND_OVERRIDE_VALUE) then
+  begin
+    Key := IGNORE_KEY;
     Exit(true);
+  end;
 
-  Code := KeyNameToCode(Name);
-  if Code = SDLK_UNKNOWN then
-    Exit(false);
-
-  KeyCode := Code;
-  Result := true;
+  if ParseCombinedKeyToken(Name, Key) then
+  begin
+    Result := true;
+    Exit;
+  end;
 end;
 
 function TKeyBindingRegistry.KeyNameToCode(const KeyName: UTF8String): cardinal;
@@ -356,6 +494,72 @@ var
   Upper: UTF8String;
 begin
   Upper := UTF8UpperCase(KeyName);
+  if Upper = 'SLASH' then
+    Exit(SDLK_SLASH)
+  else if Upper = 'BACKSLASH' then
+    Exit(SDLK_BACKSLASH)
+  else if Upper = 'BACKQUOTE' then
+    Exit(SDLK_BACKQUOTE)
+  else if Upper = 'EQUALS' then
+    Exit(SDLK_EQUALS)
+  else if Upper = 'MINUS' then
+    Exit(SDLK_MINUS)
+  else if Upper = 'PERIOD' then
+    Exit(SDLK_PERIOD)
+  else if Upper = 'COMMA' then
+    Exit(SDLK_COMMA)
+  else if Upper = 'SEMICOLON' then
+    Exit(SDLK_SEMICOLON)
+  else if Upper = 'QUOTE' then
+    Exit(SDLK_QUOTE)
+  else if Upper = 'LEFTBRACKET' then
+    Exit(SDLK_LEFTBRACKET)
+  else if Upper = 'RIGHTBRACKET' then
+    Exit(SDLK_RIGHTBRACKET)
+  else if Upper = 'PAGEUP' then
+    Exit(SDLK_PAGEUP)
+  else if Upper = 'PAGEDOWN' then
+    Exit(SDLK_PAGEDOWN)
+  else if Upper = 'DELETE' then
+    Exit(SDLK_DELETE)
+  else if Upper = 'BACKSPACE' then
+    Exit(SDLK_BACKSPACE)
+  else if Upper = 'ESC' then
+    Exit(SDLK_ESCAPE)
+  else if Upper = 'RETURN' then
+    Exit(SDLK_RETURN)
+  else if Upper = 'TAB' then
+    Exit(SDLK_TAB)
+  else if Upper = 'UP' then
+    Exit(SDLK_UP)
+  else if Upper = 'DOWN' then
+    Exit(SDLK_DOWN)
+  else if Upper = 'LEFT' then
+    Exit(SDLK_LEFT)
+  else if Upper = 'RIGHT' then
+    Exit(SDLK_RIGHT)
+  else if Upper = 'SPACE' then
+    Exit(SDLK_SPACE)
+  else if Upper = 'KPPLUS' then
+    Exit(SDLK_KP_PLUS)
+  else if Upper = 'KPMINUS' then
+    Exit(SDLK_KP_MINUS)
+  else if Upper = 'KPENTER' then
+    Exit(SDLK_KP_ENTER)
+  else if Upper = 'KPMULTIPLY' then
+    Exit(SDLK_KP_MULTIPLY)
+  else if Upper = 'KPDIVIDE' then
+    Exit(SDLK_KP_DIVIDE)
+  else if (Copy(Upper, 1, 1) = 'F') and TryStrToInt(Copy(Upper, 2, Length(Upper) - 1), Code) and
+          (Code >= 1) and (Code <= 24) then
+    Exit(SDLK_F1 + (Code - 1))
+  else if (Length(Upper) = 1) and (Upper[1] in ['0'..'9']) then
+    Exit(SDLK_0 + Ord(Upper[1]) - Ord('0'))
+  else if (Length(Upper) = 1) and (Upper[1] in ['A'..'Z']) then
+    Exit(SDLK_a + Ord(Upper[1]) - Ord('A'))
+  else if (Copy(Upper, 1, 2) = 'KP') and (Length(Upper) = 3) and (Upper[3] in ['0'..'9']) then
+    Exit(SDLK_KP_0 + Ord(Upper[3]) - Ord('0'));
+
   Code := SDL_GetKeyFromName(PAnsiChar(AnsiString(Upper)));
   if Code = SDLK_UNKNOWN then
     Code := SDL_GetKeyFromName(PAnsiChar(AnsiString(KeyName)));
@@ -364,49 +568,49 @@ end;
 
 function TKeyBindingRegistry.KeyCodeToName(KeyCode: cardinal): UTF8String;
 begin
-  if KeyCode = IGNORE_KEYCODE then
+  if KeyCode = IGNORE_KEY then
     Exit('');
   Result := UTF8UpperCase(UTF8String(SDL_GetKeyName(KeyCode)));
   if Result = '' then
     Result := IntToStr(KeyCode);
 end;
 
-procedure TKeyBindingRegistry.SetCurrentInput(var Entry: TEntry; NewInput: cardinal);
+procedure TKeyBindingRegistry.SetCurrentInput(var Entry: TEntry; NewInput: TCombinedKey);
 begin
-  Entry.CurrentInput := NewInput;
+  Entry.CurrentInput := NormalizeCombinedKey(NewInput);
 end;
 
 procedure TKeyBindingRegistry.RemoveOverride(const ContextId, HelpToken: UTF8String;
-  ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer);
+  DefaultInput: TCombinedKey; DuplicateIndex: integer);
 var
   Key: UTF8String;
   Idx: integer;
 begin
-  Key := BuildOverrideKey(ContextId, HelpToken, ModifierMask, DefaultInput, DuplicateIndex);
+  Key := BuildOverrideKey(ContextId, HelpToken, DefaultInput, DuplicateIndex);
   Idx := FOverrides.IndexOfName(Key);
   if Idx >= 0 then
     FOverrides.Delete(Idx);
 end;
 
 procedure TKeyBindingRegistry.StoreOverride(const ContextId, HelpToken: UTF8String;
-  ModifierMask: word; DefaultInput: cardinal; DuplicateIndex: integer; KeyCode: cardinal);
+  DefaultInput: TCombinedKey; DuplicateIndex: integer; KeyValue: TCombinedKey);
 var
   Key: UTF8String;
   Value: UTF8String;
 begin
-  Key := BuildOverrideKey(ContextId, HelpToken, ModifierMask, DefaultInput, DuplicateIndex);
-  if KeyCode = IGNORE_KEYCODE then
+  Key := BuildOverrideKey(ContextId, HelpToken, DefaultInput, DuplicateIndex);
+  if KeyValue = IGNORE_KEY then
     Value := UNBOUND_OVERRIDE_VALUE
   else
-    Value := KeyCodeToName(KeyCode);
+    Value := CombinedKeyToTokenString(KeyValue);
 
   if Value = '' then
-    RemoveOverride(ContextId, HelpToken, ModifierMask, DefaultInput, DuplicateIndex)
+    RemoveOverride(ContextId, HelpToken, DefaultInput, DuplicateIndex)
   else
     FOverrides.Values[Key] := UTF8UpperCase(Value);
 end;
 
-procedure TKeyBindingRegistry.ResolveConflicts(const Entry: TEntry; NewInput: cardinal);
+procedure TKeyBindingRegistry.ResolveConflicts(const Entry: TEntry; NewInput: TCombinedKey);
 var
   I: integer;
 begin
@@ -415,8 +619,6 @@ begin
     if (FEntries[I].Handle = Entry.Handle) then
       Continue;
     if FEntries[I].ContextIdx <> Entry.ContextIdx then
-      Continue;
-    if FEntries[I].ModifierMask <> Entry.ModifierMask then
       Continue;
     if FEntries[I].CurrentInput <> NewInput then
       Continue;
@@ -427,25 +629,25 @@ begin
     end
     else
     begin
-      FEntries[I].CurrentInput := IGNORE_KEYCODE;
+      FEntries[I].CurrentInput := IGNORE_KEY;
     end;
 
     if FEntries[I].CurrentInput = FEntries[I].DefaultInput then
       RemoveOverride(FContexts[FEntries[I].ContextIdx].Id, FEntries[I].HelpToken,
-        FEntries[I].ModifierMask, FEntries[I].DefaultInput, FEntries[I].DuplicateIndex)
+        FEntries[I].DefaultInput, FEntries[I].DuplicateIndex)
     else
       StoreOverride(FContexts[FEntries[I].ContextIdx].Id, FEntries[I].HelpToken,
-        FEntries[I].ModifierMask, FEntries[I].DefaultInput, FEntries[I].DuplicateIndex,
+        FEntries[I].DefaultInput, FEntries[I].DuplicateIndex,
         FEntries[I].CurrentInput);
   end;
 end;
 
 function TKeyBindingRegistry.RegisterBinding(const ContextId, CategoryId, HelpToken: UTF8String;
-  ModifierMask: word; DefaultInput, OutputKey: cardinal): TKeyBindingHandle;
+  DefaultInput, OutputKey: TCombinedKey): TKeyBindingHandle;
 var
   ContextIdx: integer;
   EntryIdx: integer;
-  OverrideKey: cardinal;
+  OverrideKey: TCombinedKey;
   Entry: TEntry;
 begin
   ContextIdx := EnsureContext(ContextId);
@@ -459,14 +661,13 @@ begin
   Entry.CategoryOrder := EnsureCategory(ContextIdx, CategoryId);
   Entry.HelpToken := HelpToken;
   Entry.DuplicateIndex := NextDuplicateIndex(ContextIdx, HelpToken);
-  Entry.ModifierMask := NormalizeModifiers(ModifierMask);
-  Entry.DefaultInput := DefaultInput;
-  Entry.CurrentInput := DefaultInput;
-  Entry.OutputKey := OutputKey;
+  Entry.DefaultInput := NormalizeCombinedKey(DefaultInput);
+  Entry.CurrentInput := Entry.DefaultInput;
+  Entry.OutputKey := NormalizeCombinedKey(OutputKey);
   Entry.EntryOrder := FContexts[ContextIdx].RegistrationCount;
   Inc(FContexts[ContextIdx].RegistrationCount);
 
-  if LookupOverride(ContextId, HelpToken, Entry.ModifierMask,
+  if LookupOverride(ContextId, HelpToken,
     Entry.DefaultInput, Entry.DuplicateIndex, OverrideKey) then
     Entry.CurrentInput := OverrideKey;
 
@@ -474,60 +675,61 @@ begin
   Result := Entry.Handle;
 end;
 
-function TKeyBindingRegistry.TranslateKey(const ContextId: UTF8String; ModState: word;
-  PressedKey: QWord): cardinal;
+function TKeyBindingRegistry.TranslateKey(const ContextId: UTF8String;
+  PressedKey: TCombinedKey): TCombinedKey;
 var
   ContextIdx: integer;
   I: integer;
-  NormMods: word;
   Suppress: boolean;
+  Key: TCombinedKey;
 begin
-  Result := PressedKey;
+  Key := NormalizeCombinedKey(PressedKey);
+  Result := Key;
   ContextIdx := GetContextIndex(ContextId);
   if ContextIdx = -1 then
     Exit;
-  NormMods := NormalizeModifiers(ModState);
+
   Suppress := false;
   for I := 0 to High(FEntries) do
   begin
     if FEntries[I].ContextIdx <> ContextIdx then
       Continue;
-    if FEntries[I].ModifierMask <> NormMods then
-      Continue;
 
-    if (FEntries[I].CurrentInput <> IGNORE_KEYCODE) and
-       (FEntries[I].CurrentInput = PressedKey) then
+    if (FEntries[I].CurrentInput <> IGNORE_KEY) and
+       (FEntries[I].CurrentInput = Key) then
       Exit(FEntries[I].OutputKey);
 
-    if (FEntries[I].DefaultInput = PressedKey) and
+    if (FEntries[I].DefaultInput = Key) and
        (FEntries[I].CurrentInput <> FEntries[I].DefaultInput) then
       Suppress := true;
   end;
 
   if Suppress then
-    Result := IGNORE_KEYCODE;
+    Result := IGNORE_KEY;
 end;
 
-procedure TKeyBindingRegistry.UpdateBinding(Handle: TKeyBindingHandle; NewInput: cardinal);
+procedure TKeyBindingRegistry.UpdateBinding(Handle: TKeyBindingHandle; NewInput: TCombinedKey);
 var
   I: integer;
   ContextId: UTF8String;
+  Value: TCombinedKey;
 begin
+  Value := NormalizeCombinedKey(NewInput);
   for I := 0 to High(FEntries) do
   begin
     if FEntries[I].Handle <> Handle then
       Continue;
 
-    ResolveConflicts(FEntries[I], NewInput);
-    FEntries[I].CurrentInput := NewInput;
+    ResolveConflicts(FEntries[I], Value);
+    FEntries[I].CurrentInput := Value;
 
     ContextId := FContexts[FEntries[I].ContextIdx].Id;
     if FEntries[I].CurrentInput = FEntries[I].DefaultInput then
       RemoveOverride(ContextId, FEntries[I].HelpToken,
-        FEntries[I].ModifierMask, FEntries[I].DefaultInput, FEntries[I].DuplicateIndex)
+        FEntries[I].DefaultInput, FEntries[I].DuplicateIndex)
     else
       StoreOverride(ContextId, FEntries[I].HelpToken,
-        FEntries[I].ModifierMask, FEntries[I].DefaultInput, FEntries[I].DuplicateIndex,
+        FEntries[I].DefaultInput, FEntries[I].DuplicateIndex,
         FEntries[I].CurrentInput);
     Exit;
   end;
@@ -545,7 +747,7 @@ begin
     FEntries[I].CurrentInput := FEntries[I].DefaultInput;
     ContextId := FContexts[FEntries[I].ContextIdx].Id;
     RemoveOverride(ContextId, FEntries[I].HelpToken,
-      FEntries[I].ModifierMask, FEntries[I].DefaultInput, FEntries[I].DuplicateIndex);
+      FEntries[I].DefaultInput, FEntries[I].DuplicateIndex);
     Exit;
   end;
 end;
@@ -572,7 +774,6 @@ begin
       Result[Count].CategoryId := FEntries[I].CategoryId;
       Result[Count].CategoryOrder := FEntries[I].CategoryOrder;
       Result[Count].HelpToken := FEntries[I].HelpToken;
-      Result[Count].ModifierMask := FEntries[I].ModifierMask;
       Result[Count].DefaultInput := FEntries[I].DefaultInput;
       Result[Count].CurrentInput := FEntries[I].CurrentInput;
       Result[Count].OutputKey := FEntries[I].OutputKey;
@@ -606,7 +807,8 @@ end;
 procedure TKeyBindingRegistry.LoadOverrides(IniFile: TCustomIniFile);
 var
   SectionValues: TStringList;
-  I: integer;
+  I, J: integer;
+  DotCount: integer;
   Name, Value: UTF8String;
 begin
   FOverrides.Clear;
@@ -619,7 +821,11 @@ begin
       if SameText(Name, 'PianoKeysLow') or SameText(Name, 'PianoKeysHigh') then
         Continue;
       Value := UTF8String(SectionValues.ValueFromIndex[I]);
-      if Pos('.', Name) > 0 then
+      DotCount := 0;
+      for J := 1 to Length(Name) do
+        if Name[J] = '.' then
+          Inc(DotCount);
+      if (Length(Name) > 0) and (DotCount = 2) then
         FOverrides.Values[UTF8UpperCase(Name)] := UTF8UpperCase(Value);
     end;
   finally

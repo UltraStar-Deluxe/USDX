@@ -42,7 +42,8 @@ uses
   UMenu,
   UPath,
   UMusic,
-  UHookableEvent;
+  UHookableEvent,
+  UKeyBindings;
 
 type
   TDisplay = class
@@ -128,7 +129,7 @@ type
 
       { resolves the active screen's keyboard context }
       function GetActiveKeyBindingContext: UTF8String;
-      function TranslateKeyForActiveScreen(PressedKey: QWord; ModState: word): cardinal;
+      function TranslateKeyForActiveScreen(PressedKey: QWord): TCombinedKey;
 
       { sets SDL_ShowCursor depending on options set in Ini }
       procedure SetCursor;
@@ -187,7 +188,6 @@ uses
   UTexture,
   UTime,
   ULanguage,
-  UKeyBindings,
   UPathUtils;
 
 constructor TDisplay.Create;
@@ -666,11 +666,11 @@ end;
         Result := '';
     end;
 
-    function TDisplay.TranslateKeyForActiveScreen(PressedKey: QWord; ModState: word): cardinal;
+    function TDisplay.TranslateKeyForActiveScreen(PressedKey: QWord): TCombinedKey;
     var
       ContextId: UTF8String;
     begin
-      Result := PressedKey;
+      Result := NormalizeCombinedKey(PressedKey);
       if KeyBindings = nil then
         Exit;
 
@@ -678,7 +678,7 @@ end;
       if ContextId = '' then
         Exit;
 
-      Result := KeyBindings.TranslateKey(ContextId, ModState, PressedKey);
+      Result := KeyBindings.TranslateKey(ContextId, Result);
     end;
 
 function TDisplay.ShouldHandleInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean;
