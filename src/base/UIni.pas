@@ -151,6 +151,8 @@ type
       Debug:          integer;
       AVDelay:        integer;
       MicDelay:       integer;
+      EditorMidiLeadMs: integer;
+      EditorClickLeadMs: integer;
 
       // Graphics
       MaxFramerate:   byte;
@@ -181,6 +183,7 @@ type
       SavePlayback:   integer;
       ThresholdIndex: integer;
       AudioOutputBufferSizeIndex: integer;
+      AudioInputBufferSizeIndex: integer;
       VoicePassthrough: integer;
       SoundFont:      string;
       ReplayGain:     integer;
@@ -1526,6 +1529,8 @@ begin
   AVDelay := IniFile.ReadInteger('Game', 'AVDelay', 0);
 
   MicDelay := IniFile.ReadInteger('Game', 'MicDelay', 140);
+  EditorMidiLeadMs := IniFile.ReadInteger('Editor', 'MidiPreviewLeadMs', 0);
+  EditorClickLeadMs := IniFile.ReadInteger('Editor', 'ClickLeadMs', 0);
 
   // Read Users Info (Network)
   DataBase.ReadUsers;
@@ -1862,6 +1867,8 @@ begin
 
     IniFile.WriteInteger('Game', 'AVDelay', AVDelay);
     IniFile.WriteInteger('Game', 'MicDelay', MicDelay);
+    IniFile.WriteInteger('Editor', 'MidiPreviewLeadMs', EditorMidiLeadMs);
+    IniFile.WriteInteger('Editor', 'ClickLeadMs', EditorClickLeadMs);
 
     // MaxFramerate
     IniFile.WriteString('Graphics', 'MaxFramerate', IMaxFramerate[MaxFramerate]);
