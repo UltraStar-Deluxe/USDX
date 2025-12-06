@@ -363,7 +363,6 @@ type
       function Jump(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer): boolean;
       function JumpAndPlay(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer): boolean;
       function ReloadSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function HandleDivideBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleMultiplyBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleVideo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; PlayMidiFull: integer): boolean;
@@ -1017,7 +1016,7 @@ begin
   RegisterKeyBinding('SEC_001', 'TAB', SDLK_TAB, HandleShowPopupHelp);
   RegisterKeyBinding('SEC_001', 'ESC', SDLK_ESCAPE, HandleLeaveScope);
   RegisterKeyBinding('SEC_001', 'Q', SDLK_Q);
-  RegisterKeyBinding('SEC_001', 'EDIT_INFO_UNDO', SDLK_Z + MOD_LCTRL, HandleUndo);
+  RegisterKeyBinding('SEC_001', 'CTRL_Z', SDLK_Z + MOD_LCTRL, HandleUndo);
 
   RegisterKeyBinding('SEC_010', 'R', SDLK_R, ReloadSong);
   RegisterKeyBinding('SEC_010', 'S', SDLK_S, HandleSaveSong);
@@ -1040,9 +1039,9 @@ begin
 
   RegisterKeyBinding('SEC_030', 'V', SDLK_V, HandleVideo);
   RegisterKeyBinding('SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL, HandlePaste, SelectText + SelectNotes + EnforceLength);
-  RegisterKeyBinding('SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL + MOD_LSHIFT, HandlePaste, SelectText);
-  RegisterKeyBinding('SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL + MOD_LALT, HandlePaste, SelectNotes);
-  RegisterKeyBinding('SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL + MOD_LALT + MOD_LSHIFT, HandlePaste, SelectText + SelectNotes);
+  RegisterKeyBinding('SEC_090', 'CTRL_SHIFT_V', SDLK_V + MOD_LCTRL + MOD_LSHIFT, HandlePaste, SelectText);
+  RegisterKeyBinding('SEC_090', 'CTRL_ALT_V', SDLK_V + MOD_LCTRL + MOD_LALT, HandlePaste, SelectNotes);
+  RegisterKeyBinding('SEC_090', 'CTRL_ALT_SHIFT_V', SDLK_V + MOD_LCTRL + MOD_LALT + MOD_LSHIFT, HandlePaste, SelectText + SelectNotes);
 
   RegisterKeyBinding('SEC_045', 'T', SDLK_T, HandleFixTimings);
 
@@ -1056,14 +1055,14 @@ begin
   // Register additional handlers for all legacy case statement actions
   RegisterKeyBinding('SEC_001', 'BACKQUOTE', SDLK_BACKQUOTE, IncreaseNoteLength);
   RegisterKeyBinding('SEC_085', 'EQUALS', SDLK_EQUALS, HandleChangeBPM, 50);
-  RegisterKeyBinding('SEC_085', 'PLUS', SDLK_PLUS, HandleChangeBPM, 50);
-  RegisterKeyBinding('SEC_085', 'EQUALS', SDLK_EQUALS + MOD_LSHIFT, HandleChangeBPM, 1000);
-  RegisterKeyBinding('SEC_085', 'PLUS', SDLK_PLUS + MOD_LSHIFT, HandleChangeBPM, 1000);
-  RegisterKeyBinding('SEC_085', 'EQUALS', SDLK_EQUALS + MOD_LCTRL, HandleChangeBPM, 10);
-  RegisterKeyBinding('SEC_085', 'PLUS', SDLK_PLUS + MOD_LCTRL, HandleChangeBPM, 10);
+  RegisterKeyBinding('SEC_085', 'EQUALS', SDLK_PLUS, HandleChangeBPM, 50);
+  RegisterKeyBinding('SEC_085', 'SHIFT_EQUALS', SDLK_EQUALS + MOD_LSHIFT, HandleChangeBPM, 1000);
+  RegisterKeyBinding('SEC_085', 'SHIFT_EQUALS', SDLK_PLUS + MOD_LSHIFT, HandleChangeBPM, 1000);
+  RegisterKeyBinding('SEC_085', 'CTRL_EQUALS', SDLK_EQUALS + MOD_LCTRL, HandleChangeBPM, 10);
+  RegisterKeyBinding('SEC_085', 'CTRL_EQUALS', SDLK_PLUS + MOD_LCTRL, HandleChangeBPM, 10);
   RegisterKeyBinding('SEC_085', 'MINUS', SDLK_MINUS, HandleChangeBPM, -50);
-  RegisterKeyBinding('SEC_085', 'MINUS', SDLK_MINUS + MOD_LSHIFT, HandleChangeBPM, -1000);
-  RegisterKeyBinding('SEC_085', 'MINUS', SDLK_MINUS + MOD_LCTRL, HandleChangeBPM, -10);
+  RegisterKeyBinding('SEC_085', 'SHIFT_MINUS', SDLK_MINUS + MOD_LSHIFT, HandleChangeBPM, -1000);
+  RegisterKeyBinding('SEC_085', 'CTRL_MINUS', SDLK_MINUS + MOD_LCTRL, HandleChangeBPM, -10);
   RegisterKeyBinding('SEC_090', '2', SDLK_2, HandleExtendedCopyPaste);
   RegisterKeyBinding('SEC_090', '3', SDLK_3, HandleExtendedCopyPaste);
   RegisterKeyBinding('SEC_090', '4', SDLK_4, HandleExtendedCopyPaste);
@@ -1073,11 +1072,11 @@ begin
   RegisterKeyBinding('SEC_080', '8', SDLK_8, IncreaseVideoGap);
   RegisterKeyBinding('SEC_080', '9', SDLK_9, DecreaseGAP);
   RegisterKeyBinding('SEC_080', '0', SDLK_0, IncreaseGAP);
-  RegisterKeyBinding('SEC_041', 'KP_PLUS', SDLK_KP_PLUS, IncreaseAllNoteTones);
-  RegisterKeyBinding('SEC_041', 'KP_MINUS', SDLK_KP_MINUS, DecreaseAllNoteTones);
+  RegisterKeyBinding('SEC_041', 'KPPLUS', SDLK_KP_PLUS, IncreaseAllNoteTones);
+  RegisterKeyBinding('SEC_041', 'KPMINUS', SDLK_KP_MINUS, DecreaseAllNoteTones);
   RegisterKeyBinding('SEC_043', 'SLASH', SDLK_SLASH, DivideOrJoinNotes);
   RegisterKeyBinding('SEC_043', 'HASH', SDLK_HASH, DivideOrJoinNotes);
-  RegisterKeyBinding('SEC_043', 'KP_DIVIDE', SDLK_KP_DIVIDE, DivideOrJoinNotes);
+  RegisterKeyBinding('SEC_043', 'KPDIVIDE', SDLK_KP_DIVIDE, DivideOrJoinNotes);
   RegisterKeyBinding('SEC_045', 'F4', SDLK_F4, EnterTextEditMode);
   RegisterKeyBinding('SEC_045', 'F5', SDLK_F5, EnterBPMEditMode);
   RegisterKeyBinding('SEC_045', 'F6', SDLK_F6, EnterPianoEditMode);
@@ -1087,15 +1086,15 @@ begin
   RegisterKeyBinding('SEC_020', 'RIGHT', SDLK_RIGHT, HandleMoveRight);
   RegisterKeyBinding('SEC_020', 'LEFT', SDLK_LEFT, HandleMoveLeft);
   RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN, HandleNextSentence);
-  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN + MOD_LSHIFT, DecreaseTone);
-  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LALT, SwitchTrack, 1);
-  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LSHIFT, CopyMoveLine, 1);
-  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LSHIFT + MOD_LALT, CopyMoveLine, 1 and SelectMove);
+  RegisterKeyBinding('SEC_020', 'SHIFT_DOWN', SDLK_DOWN + MOD_LSHIFT, DecreaseTone);
+  RegisterKeyBinding('SEC_020', 'CTRL_ALT_DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LALT, SwitchTrack, 1);
+  RegisterKeyBinding('SEC_020', 'CTRL_SHIFT_DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LSHIFT, CopyMoveLine, 1);
+  RegisterKeyBinding('SEC_020', 'CTRL_ALT_SHIFT_DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LSHIFT + MOD_LALT, CopyMoveLine, 1 and SelectMove);
   RegisterKeyBinding('SEC_020', 'UP', SDLK_UP, HandlePreviousSentence);
-  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP + MOD_LSHIFT, IncreaseTone);
-  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP + MOD_LCTRL + MOD_LALT, SwitchTrack, 0);
-  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP + MOD_LCTRL + MOD_LSHIFT, CopyMoveLine, 0);
-  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP + MOD_LCTRL + MOD_LSHIFT + MOD_LALT, CopyMoveLine, 0 and SelectMove);
+  RegisterKeyBinding('SEC_020', 'SHIFT_UP', SDLK_UP + MOD_LSHIFT, IncreaseTone);
+  RegisterKeyBinding('SEC_020', 'CTRL_ALT_UP', SDLK_UP + MOD_LCTRL + MOD_LALT, SwitchTrack, 0);
+  RegisterKeyBinding('SEC_020', 'CTRL_SHIFT_UP', SDLK_UP + MOD_LCTRL + MOD_LSHIFT, CopyMoveLine, 0);
+  RegisterKeyBinding('SEC_020', 'CTRL_ALT_SHIFT_UP', SDLK_UP + MOD_LCTRL + MOD_LSHIFT + MOD_LALT, CopyMoveLine, 0 and SelectMove);
 
   FKeyBindingsInitialized := true;
   EnsureKeyBindingsPublished;
