@@ -350,20 +350,18 @@ type
       MedleyNotes:             TMedleyNotes;
 
       procedure ChangeBPM(newBPM: real);
-      procedure SetPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
-      procedure LeaveScope(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
-      procedure ShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
-      procedure ToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
+      function SetPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function LeaveScope(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function ShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function ToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       procedure ToggleTextEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
       procedure RegisterKeyBindings;
       // Keybinding handlers for new pipeline
       function HandleSaveSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function HandleSetPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function SetMedleyTags(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer): boolean;
       function Jump(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer): boolean;
       function JumpAndPlay(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer): boolean;
       function ReloadSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function HandleToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleMultiplyBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleVideo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; PlayMidiFull: integer): boolean;
       function HandlePaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; PasteSelection: integer): boolean;
@@ -371,14 +369,9 @@ type
       function HandlePlaySentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; AudioMidiSelector: integer): boolean;
       function HandleSetGoldenNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleSetFreestyleNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function HandleLyricsCapitalize(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleLyricsCorrectSpaces(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function HandleMarkCopySrc(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleUndo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function HandleLeaveScope(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function HandleShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleChangeBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Delta: integer): boolean;
-      function HandleExtendedCopyPaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function IncreaseNoteLength(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function DecreaseVideoGap(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function IncreaseVideoGap(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
@@ -392,7 +385,6 @@ type
       function EnterPianoEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function PlayNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function DeleteNotes(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function HandleMoveTextRight(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleMoveRight(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleMoveLeft(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function DecreaseTone(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
@@ -400,7 +392,7 @@ type
       function SwitchTrack(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Direction: integer): boolean;
       function CopyMoveLine(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameters: integer): boolean;
       function HandleSwitchSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      procedure LyricsCapitalize;
+      function LyricsCapitalize(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       procedure LyricsCorrectSpaces;
       procedure FixTimings;
       procedure DivideSentence;
@@ -413,9 +405,9 @@ type
       procedure TransposeNote(Transpose: Integer);
       procedure ChangeWholeTone(Tone: Integer);
       procedure MoveAllToEnd(Move: Integer);
-      procedure MoveTextToRight;
-      procedure MarkCopySrc;
-      procedure ExtendedCopyPaste(SDL_ModState: word; PressedKey: Integer);
+      function MoveTextToRight(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function MarkCopySrc(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function ExtendedCopyPaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       procedure CopySentence(SrcTrack, SrcLine, DstTrack, DstLine: Integer; CopyText: boolean = true; CopyNotes: boolean = true; EnforceSrcLength: boolean = false);
       procedure CopySentences(SrcTrack, SrcLine, DstTrack, DstLine, Num: Integer);
       procedure MakeSolo;
@@ -666,12 +658,13 @@ end;
 
 
       // SDLK_I: SetPreviewStart
-procedure TScreenEditSub.SetPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
+function TScreenEditSub.SetPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 // set PreviewStart tag
 var
   LineIndex: Integer;
   ModState: word;
 begin
+  Result := true;
   ModState := SDL_GetModState;
   CopyToUndo;
   if ModState and KMOD_SHIFT <> 0 then
@@ -759,12 +752,6 @@ begin
   end
   else Text[TextInfo].Text := Language.Translate('EDIT_INFO_NO_PREVIEW');
   Exit;
-end;
-
-function TScreenEditSub.HandleSetPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-begin
-  Result := true;
-  SetPreviewStart(PressedKey, CharCode, PressedDown, Parameter);
 end;
 
 function TScreenEditSub.SetMedleyTags(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer): boolean;
@@ -987,18 +974,13 @@ begin
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_SONG_RELOADED');
 end;
 
-procedure TScreenEditSub.ToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
+function TScreenEditSub.ToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
+  Result := true;
   if (CurrentSong.isDuet) then
     MakeSolo
   else
     MakeDuet;
-end;
-
-function TScreenEditSub.HandleToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-begin
-  Result := true;
-  ToggleDuet(PressedKey, CharCode, PressedDown, Parameter);
 end;
 
 
@@ -1011,8 +993,8 @@ begin
 
 
   // Register all keybinding handler functions
-  RegisterKeyBinding('SEC_001', 'TAB', SDLK_TAB, HandleShowPopupHelp);
-  RegisterKeyBinding('SEC_001', 'ESC', SDLK_ESCAPE, HandleLeaveScope);
+  RegisterKeyBinding('SEC_001', 'TAB', SDLK_TAB, ShowPopupHelp);
+  RegisterKeyBinding('SEC_001', 'ESC', SDLK_ESCAPE, LeaveScope);
   RegisterKeyBinding('SEC_001', 'Q', SDLK_Q);
   RegisterKeyBinding('SEC_001', 'CTRL_Z', SDLK_Z + MOD_LCTRL, HandleUndo);
 
@@ -1020,7 +1002,7 @@ begin
   RegisterKeyBinding('SEC_010', 'S', SDLK_S, HandleSaveSong);
   RegisterKeyBinding('SEC_010', 'SHIFT_S', SDLK_S + MOD_LSHIFT, HandleSaveSong);
 
-  RegisterKeyBinding('SEC_050', 'I', SDLK_I, HandleSetPreviewStart);
+  RegisterKeyBinding('SEC_050', 'I', SDLK_I, SetPreviewStart);
   RegisterKeyBinding('SEC_060', 'A', SDLK_A, SetMedleyTags);
   RegisterKeyBinding('SEC_060', 'A', SDLK_A + MOD_LSHIFT, SetMedleyTags, 1);
   RegisterKeyBinding('SEC_060', 'J', SDLK_J, Jump, 0);
@@ -1028,12 +1010,12 @@ begin
   RegisterKeyBinding('SEC_060', 'ALT_J', SDLK_J + MOD_LALT, JumpAndPlay);
 
   RegisterKeyBinding('SEC_085', 'SHIFT_D', SDLK_D + MOD_LSHIFT, HandleMultiplyBPM,-2);
-  RegisterKeyBinding('SEC_070', 'CTRL_SHIFT_D', SDLK_D + MOD_LCTRL + MOD_LSHIFT, HandleToggleDuet);
+  RegisterKeyBinding('SEC_070', 'CTRL_SHIFT_D', SDLK_D + MOD_LCTRL + MOD_LSHIFT, ToggleDuet);
   RegisterKeyBinding('SEC_085', 'SHIFT_M', SDLK_M + MOD_LSHIFT, HandleMultiplyBPM,2);
 
-  RegisterKeyBinding('SEC_045', 'C', SDLK_C, HandleLyricsCapitalize);
+  RegisterKeyBinding('SEC_045', 'C', SDLK_C, LyricsCapitalize);
   RegisterKeyBinding('SEC_045', 'C', SDLK_C + MOD_LSHIFT, HandleLyricsCorrectSpaces);
-  RegisterKeyBinding('SEC_045', 'C', SDLK_C + MOD_LCTRL, HandleMarkCopySrc);
+  RegisterKeyBinding('SEC_045', 'C', SDLK_C + MOD_LCTRL, MarkCopySrc);
 
   RegisterKeyBinding('SEC_030', 'V', SDLK_V, HandleVideo);
   RegisterKeyBinding('SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL, HandlePaste, SelectText + SelectNotes + EnforceLength);
@@ -1061,11 +1043,11 @@ begin
   RegisterKeyBinding('SEC_085', 'MINUS', SDLK_MINUS, HandleChangeBPM, -50);
   RegisterKeyBinding('SEC_085', 'SHIFT_MINUS', SDLK_MINUS + MOD_LSHIFT, HandleChangeBPM, -1000);
   RegisterKeyBinding('SEC_085', 'CTRL_MINUS', SDLK_MINUS + MOD_LCTRL, HandleChangeBPM, -10);
-  RegisterKeyBinding('SEC_090', '2', SDLK_2, HandleExtendedCopyPaste);
-  RegisterKeyBinding('SEC_090', '3', SDLK_3, HandleExtendedCopyPaste);
-  RegisterKeyBinding('SEC_090', '4', SDLK_4, HandleExtendedCopyPaste);
-  RegisterKeyBinding('SEC_090', '5', SDLK_5, HandleExtendedCopyPaste);
-  RegisterKeyBinding('SEC_090', '6', SDLK_6, HandleExtendedCopyPaste);
+  RegisterKeyBinding('SEC_090', '2', SDLK_2, ExtendedCopyPaste);
+  RegisterKeyBinding('SEC_090', '3', SDLK_3, ExtendedCopyPaste);
+  RegisterKeyBinding('SEC_090', '4', SDLK_4, ExtendedCopyPaste);
+  RegisterKeyBinding('SEC_090', '5', SDLK_5, ExtendedCopyPaste);
+  RegisterKeyBinding('SEC_090', '6', SDLK_6, ExtendedCopyPaste);
   RegisterKeyBinding('SEC_080', '7', SDLK_7, DecreaseVideoGap);
   RegisterKeyBinding('SEC_080', '8', SDLK_8, IncreaseVideoGap);
   RegisterKeyBinding('SEC_080', '9', SDLK_9, DecreaseGAP);
@@ -1080,7 +1062,7 @@ begin
   RegisterKeyBinding('SEC_045', 'F6', SDLK_F6, EnterPianoEditMode);
   RegisterKeyBinding('SEC_030', 'SPACE', SDLK_SPACE, PlayNote);
   RegisterKeyBinding('SEC_045', 'DELETE', SDLK_DELETE, DeleteNotes);
-  RegisterKeyBinding('SEC_045', 'PERIOD', SDLK_PERIOD, HandleMoveTextRight);
+  RegisterKeyBinding('SEC_045', 'PERIOD', SDLK_PERIOD, MoveTextToRight);
   RegisterKeyBinding('SEC_020', 'RIGHT', SDLK_RIGHT, HandleMoveRight);
   RegisterKeyBinding('SEC_020', 'LEFT', SDLK_LEFT, HandleMoveLeft);
   RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN, HandleSwitchSentence, 1);
@@ -1289,30 +1271,20 @@ begin
 end;
 
     // SDLK_ESCAPE: LeaveScope
-procedure TScreenEditSub.LeaveScope(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
+function TScreenEditSub.LeaveScope(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
+  Result := true;
   if length(UndoLines) > 0 then
     ScreenPopupcheck.ShowPopup(Language.Translate('EDIT_INFO_EXIT'), OnExit, nil, false)
   else
     FadeTo(@ScreenSong);
 end;
 
-function TScreenEditSub.HandleLeaveScope(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-begin
-  Result := true;
-  LeaveScope(PressedKey, CharCode, PressedDown, Parameter);
-end;
-
       // SDLK_TAB: ShowPopupHelp;
-procedure TScreenEditSub.ShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
-begin
-  ScreenPopupHelp.ShowPopup();
-end;
-
-function TScreenEditSub.HandleShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+function TScreenEditSub.ShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  ShowPopupHelp(PressedKey, CharCode, PressedDown, Parameter);
+  ScreenPopupHelp.ShowPopup();
 end;
 
       // SDLK_BACKQUOTE: IncreaseNoteLength;
@@ -1343,16 +1315,19 @@ begin
 end;
 
       // SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_6: ExtendedCopyPaste;
-    procedure TScreenEditSub.ExtendedCopyPaste(SDL_ModState: word; PressedKey: Integer);
+    function TScreenEditSub.ExtendedCopyPaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   DstTrack:     Integer;
   DstLine:      Integer;
   NumLines:     Integer;
   LineCount:    Integer;
+  ModState:     word;
 begin
+  Result := true;
+  ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT);
   DstTrack := CurrentTrack;
   DstLine := Tracks[CurrentTrack].CurrentLine;
-  NumLines := PressedKey - SDLK_0;
+  NumLines := Integer(PressedKey) - SDLK_0; // TODO: ignores modifiers!
   // copy less lines if there are not enough src lines available
   NumLines := Min(NumLines, High(Tracks[CopySrc.track].Lines) - CopySrc.line + 1);
   // copy less lines if there are not enough dst lines available
@@ -1360,28 +1335,28 @@ begin
 
   for LineCount := 0 to NumLines - 1 do
   begin
-    if (SDL_ModState = KMOD_LCTRL) then
+    if (ModState = KMOD_LCTRL) then
     begin
       CopyToUndo;
       // paste notes + text (use src length, ignore dst length)
       CopySentence(CopySrc.track, CopySrc.line + LineCount, DstTrack, DstLine + LineCount, true, true, true);
       Text[TextInfo].Text := Format(Language.Translate('EDIT_INFO_PASTE_SENTENCE_N'), [NumLines]);
     end;
-    if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT then
+    if ModState = KMOD_LCTRL + KMOD_LSHIFT then
     begin
       CopyToUndo;
       // paste text only (use minimum of src and dst length)
       CopySentence(CopySrc.track, CopySrc.line + LineCount, DstTrack, DstLine + LineCount, true, false, false);
       Text[TextInfo].Text := Format(Language.Translate('EDIT_INFO_PASTE_TEXT_N'), [NumLines]);
     end;
-    if SDL_ModState = KMOD_LCTRL + KMOD_LALT then
+    if ModState = KMOD_LCTRL + KMOD_LALT then
     begin
       CopyToUndo;
       // paste notes only (use minimum of src and dst length)
       CopySentence(CopySrc.track, CopySrc.line + LineCount, DstTrack, DstLine + LineCount, false, true, false);
       Text[TextInfo].Text := Format(Language.Translate('EDIT_INFO_PASTE_NOTES_N'), [NumLines]);
     end;
-    if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then
+    if ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then
     begin
       CopyToUndo;
       // paste notes + text (use minimum of src and dst length)
@@ -1393,23 +1368,13 @@ begin
   ShowInteractiveBackground;
 
   // does this insert additional 4 lines before the current line?
-  {if SDL_ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then
+  {if ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then
   begin
     CopyToUndo;
     CopySentences(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, 4);
     GoldenRec.KillAll;
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_COPY_4_SENTENCES');
   end;}
-end;
-
-function TScreenEditSub.HandleExtendedCopyPaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-var
-  ModState: word;
-begin
-  Result := true;
-
-  ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT);
-  ExtendedCopyPaste(ModState, Integer(PressedKey));
 end;
 
 function TScreenEditSub.HandleSwitchSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
@@ -2060,14 +2025,33 @@ begin
   end;
 end;
 
-      // SDLK_PERIOD: HandleMoveTextRight
-function TScreenEditSub.HandleMoveTextRight(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      // SDLK_PERIOD: MoveTextToRight
+function TScreenEditSub.MoveTextToRight(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+var
+  LineIndex: Integer;
+  NoteIndex: Integer;
+  NoteHigh:  Integer;
 begin
   Result := true;
 
   // moves text to right in current sentence
   CopyToUndo;
-  MoveTextToRight;
+  LineIndex := Tracks[CurrentTrack].CurrentLine;
+  NoteHigh := Tracks[CurrentTrack].Lines[LineIndex].HighNote;
+
+  // last word
+  Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteHigh].Text :=
+    Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteHigh-1].Text +
+    Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteHigh].Text;
+
+  // other words
+  for NoteIndex := NoteHigh - 1 downto CurrentNote[CurrentTrack] + 1 do
+  begin
+    Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteIndex].Text :=
+      Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteIndex-1].Text;
+  end;
+  Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentNote[CurrentTrack]].Text := '- ';
+
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_MOVE_TEXT_RIGHT');
 end;
 
@@ -3134,12 +3118,13 @@ begin
   end; // TrackIndex
 end;
 
-procedure TScreenEditSub.LyricsCapitalize;
+function TScreenEditSub.LyricsCapitalize(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   TrackIndex:   Integer;
   LineIndex:    Integer;
   Str:          UTF8String;
 begin
+  Result := true;
   CopyToUndo;
   for TrackIndex := 0 to High(Tracks) do
   begin
@@ -3153,12 +3138,6 @@ begin
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
   EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_CAPITALIZATION_CORRECTED');
-end;
-
-function TScreenEditSub.HandleLyricsCapitalize(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-begin
-  Result := true;
-  LyricsCapitalize;
 end;
 
 procedure TScreenEditSub.LyricsCorrectSpaces;
@@ -3695,39 +3674,15 @@ begin
   end; // for LineIndex
 end;
 
-procedure TScreenEditSub.MoveTextToRight;
-var
-  LineIndex: Integer;
-  NoteIndex: Integer;
-  NoteHigh:  Integer;
+
+function TScreenEditSub.MarkCopySrc(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
-  LineIndex := Tracks[CurrentTrack].CurrentLine;
-  NoteHigh := Tracks[CurrentTrack].Lines[LineIndex].HighNote;
-
-  // last word
-  Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteHigh].Text := Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteHigh-1].Text + Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteHigh].Text;
-
-  // other words
-  for NoteIndex := NoteHigh - 1 downto CurrentNote[CurrentTrack] + 1 do
-  begin
-    Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteIndex].Text := Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteIndex-1].Text;
-  end; // for
-  Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentNote[CurrentTrack]].Text := '- ';
-end;
-
-procedure TScreenEditSub.MarkCopySrc;
-begin
+  Result := true;
   CopyToUndo;
   CopySrc.track := CurrentTrack;
   CopySrc.line  := Tracks[CurrentTrack].CurrentLine;
   CopySrc.note  := CurrentNote[CurrentTrack];
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_MARKED_FOR_COPY');
-end;
-
-function TScreenEditSub.HandleMarkCopySrc(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-begin
-  Result := true;
-  MarkCopySrc;
 end;
 
 procedure TScreenEditSub.CopySentence(SrcTrack, SrcLine, DstTrack, DstLine: Integer; CopyText, CopyNotes, EnforceSrcLength: boolean);
