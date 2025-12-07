@@ -63,6 +63,7 @@ type
     DefaultKey: TCombinedKey;
     OutputKey: TCombinedKey;
     Handler: TMenuKeyBindingHandler;
+    HandlerParameter: integer;
     HelpRegistered: boolean;
   end;
 
@@ -101,7 +102,7 @@ type
       procedure RegisterKeyBinding(const CategoryId, Token: UTF8String;
         CombinedKey: UInt64; Handler: TMenuKeyBindingHandler = nil; Parameter: integer = 0);
       function TryHandleKeyBinding(PressedKey: QWord; CharCode: UCS4Char;
-        PressedDown: boolean; Parameter: integer; out HandlerResult: boolean): boolean; virtual;
+        PressedDown: boolean; out HandlerResult: boolean): boolean; virtual;
 
       destructor Destroy; override;
       constructor Create; overload; virtual;
@@ -357,6 +358,7 @@ begin
   Entry.OutputKey := Normalized;
 
   Entry.Handler := Handler;
+  Entry.HandlerParameter := Parameter;
   Entry.HelpRegistered := false;
 
   Index := Length(FKeyBindingEntries);
@@ -1927,7 +1929,7 @@ begin
 end;
 
 function TMenu.TryHandleKeyBinding(PressedKey: QWord; CharCode: UCS4Char;
-  PressedDown: boolean; Parameter: integer; out HandlerResult: boolean): boolean;
+  PressedDown: boolean; out HandlerResult: boolean): boolean;
 var
   NormalizedKey: TCombinedKey;
   I: integer;
@@ -1958,7 +1960,8 @@ begin
     if Assigned(FKeyBindingEntries[I].Handler) then
     begin
       Log.LogInfo('    Handler assigned, calling handler.', 'TMenu.ParseInput');
-      HandlerResult := FKeyBindingEntries[I].Handler(NormalizedKey, CharCode, PressedDown, Parameter);
+      HandlerResult := FKeyBindingEntries[I].Handler(NormalizedKey, CharCode, PressedDown,
+        FKeyBindingEntries[I].HandlerParameter);
       Log.LogInfo('    Handler returned: ' + BoolToStr(HandlerResult, true), 'TMenu.ParseInput');
       Result := true;
       Exit;
@@ -1973,7 +1976,7 @@ end;
 
 function TMenu.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
-  if TryHandleKeyBinding(PressedKey, CharCode, PressedDown, Parameter, Result) then
+  if TryHandleKeyBinding(PressedKey, CharCode, PressedDown, Result) then
     Exit;
   Result := true;
 end;

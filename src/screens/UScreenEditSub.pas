@@ -75,6 +75,13 @@ type
     isCustom:     boolean;
   end;
 
+  THeader = record
+    SlideId:      Integer;
+    Data:         Integer;
+    Val:          array of UTF8String;
+    SlideIndex:   Integer;
+  end;
+
   TVisibleHeaders = record
     Title:        UTF8String;
     Artist:       UTF8String;
@@ -164,126 +171,30 @@ type
       CurrentEditText:         UTF8String; // current edit text
       editLengthText:          Integer;
       CurrentSlideId:          Integer;
-      //title header
-      TitleSlideId:            Integer;
-      TitleData:               Integer;
-      TitleVal:                array of UTF8String;
-      SlideTitleIndex:         Integer;
-      // artist header
-      ArtistSlideId:           Integer;
-      ArtistData:              Integer;
-      ArtistVal:               array of UTF8String;
-      SlideArtistIndex:        Integer;
-      // language header
-      LanguageSlideId:         Integer;
-      LanguageData:            Integer;
-      LanguageVal:             array of UTF8String;
-      SlideLanguageIndex:      Integer;
-      // edition header
-      EditionSlideId:          Integer;
-      EditionData:             Integer;
-      EditionVal:              array of UTF8String;
-      SlideEditionIndex:       Integer;
-      // genre header
-      GenreSlideId:            Integer;
-      GenreData:               Integer;
-      GenreVal:                array of UTF8String;
-      SlideGenreIndex:         Integer;
-      // year header
-      YearSlideId:             Integer;
-      YearData:                Integer;
-      YearVal:                 array of UTF8String;
-      SlideYearIndex:          Integer;
-      // creator header
-      CreatorSlideId:          Integer;
-      CreatorData:             Integer;
-      CreatorVal:              array of UTF8String;
-      SlideCreatorIndex:       Integer;
-      // mp3 header
-      MP3SlideId:              Integer;
-      MP3Data:                 Integer;
-      MP3Val:                  array of UTF8String;
-      SlideMP3Index:           Integer;
-      // Cover header
-      CoverSlideId:            Integer;
-      CoverData:               Integer;
-      CoverVal:                array of UTF8String;
-      SlideCoverIndex:         Integer;
-      // Background header
-      BackgroundSlideId:       Integer;
-      BackgroundData:          Integer;
-      BackgroundVal:           array of UTF8String;
-      SlideBackgroundIndex:    Integer;
-      // Video header
-      VideoSlideId:            Integer;
-      VideoData:               Integer;
-      VideoVal:                array of UTF8String;
-      SlideVideoIndex:         Integer;
-      // VideoGap header
-      VideoGapSlideId:         Integer;
-      VideoGapData:            Integer;
-      VideoGapVal:             array of UTF8String;
-      SlideVideoGapIndex:      Integer;
-      // BPM header
-      BPMSlideId:              Integer;
-      BPMData:                 Integer;
-      BPMVal:                  array of UTF8String;
-      SlideBPMIndex:           Integer;
-      // GAP header
-      GAPSlideId:              Integer;
-      GAPData:                 Integer;
-      GAPVal:                  array of UTF8String;
-      SlideGAPIndex:           Integer;
-      // StartTag header
-      StartTagSlideId:         Integer;
-      StartTagData:            Integer;
-      StartTagVal:             array of UTF8String;
-      SlideStartTagIndex:      Integer;
-      // EndTag header
-      EndTagSlideId:           Integer;
-      EndTagData:              Integer;
-      EndTagVal:               array of UTF8String;
-      SlideEndTagIndex:        Integer;
-      // MedleyStart header
-      MedleyStartSlideId:      Integer;
-      MedleyStartData:         Integer;
-      MedleyStartVal:          array of UTF8String;
-      SlideMedleyStartIndex:   Integer;
-      // MedleyEnd header
-      MedleyEndSlideId:        Integer;
-      MedleyEndData:           Integer;
-      MedleyEndVal:            array of UTF8String;
-      SlideMedleyEndIndex:     Integer;
-      // PreviewStart header
-      PreviewStartSlideId:     Integer;
-      PreviewStartData:        Integer;
-      PreviewStartVal:         array of UTF8String;
-      SlidePreviewStartIndex:  Integer;
-      // Relative header
-      RelativeSlideId:         Integer;
-      RelativeData:            Integer;
-      RelativeVal:             array of UTF8String;
-      SlideRelativeIndex:      Integer;
-      // Start header
-      StartSlideId:            Integer;
-      StartData:               Integer;
-      StartVal:                array of UTF8String;
-      SlideStartIndex:         Integer;
-      // Duration header
-      DurationSlideId:         Integer;
-      DurationData:            Integer;
-      DurationVal:             array of UTF8String;
-      SlideDurationIndex:      Integer;
-      // Tone header
-      ToneSlideId:             Integer;
-      ToneData:                Integer;
-      ToneVal:                 array of UTF8String;
-      SlideToneIndex:          Integer;
-      // Text header
-      LyricSlideId:            Integer;
-      LyricData:               Integer;
-      LyricVal:                array of UTF8String;
-      SlideLyricIndex:         Integer;
+      Title:                   THeader;
+      Artist:                  THeader;
+      LanguageTag:             THeader;
+      Edition:                 THeader;
+      Genre:                   THeader;
+      Year:                    THeader;
+      Creator:                 THeader;
+      MP3:                     THeader;
+      Cover:                   THeader;
+      Background:              THeader;
+      Video:                   THeader;
+      VideoGap:                THeader;
+      BPM:                     THeader;
+      GAP:                     THeader;
+      StartTag:                THeader;
+      EndTag:                  THeader;
+      MedleyStart:             THeader;
+      MedleyEnd:               THeader;
+      PreviewStart:            THeader;
+      Relative:                THeader;
+      Start:                   THeader;
+      Duration:                THeader;
+      Tone:                    THeader;
+      LyricHeader:            THeader;
       // Volume Slide
       VolumeAudioSlideId:      Integer;
       VolumeMidiSlideId:       Integer;
@@ -561,19 +472,7 @@ begin
     Result := ParseInputEditBPM(PressedKey, CharCode, PressedDown)
   end
   else
-  begin
-
-  if TryHandleKeyBinding(PressedKey, CharCode, PressedDown, Parameter, Result) then
-    Exit;
-
-  if (PressedDown) then  // Key Down
-  begin
-    // check normal keys
-    case PressedKey of
-      SDLK_Q: Result := false;
-      end; // case
-    end;
-  end; // if
+    TryHandleKeyBinding(PressedKey, CharCode, PressedDown, Result);
 end;
 
       // SDLK_S: HandleSaveSong
@@ -1589,7 +1488,7 @@ begin
   // Enter Text Edit Mode
   BackupEditText := Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
   CurrentEditText := BackupEditText;
-  CurrentSlideId := LyricSlideId;
+  CurrentSlideId := LyricHeader.SlideId;
   TextPosition := LengthUTF8(BackupEditText);
   editLengthText := LengthUTF8(BackupEditText);
   TextEditMode := true;
@@ -1604,7 +1503,7 @@ begin
   // Enter BPM Edit Mode
   BackupEditText := FloatToStr(CurrentSong.BPM[0].BPM / 4);
   CurrentEditText := BackupEditText;
-  CurrentSlideId := BPMSlideId;
+  CurrentSlideId := BPM.SlideId;
   TextPosition := LengthUTF8(BackupEditText);
   editLengthText := LengthUTF8(BackupEditText);
   BPMEditMode := true;
@@ -1677,138 +1576,138 @@ var
   NoteIndex:    Integer;
   HasPreview:   Boolean;
 begin
-    if Interaction =  TitleSlideId then
+    if Interaction =  Title.SlideId then
     begin
       BackupEditText := CurrentSong.Title;
       CurrentEditText := BackupEditText;
       editLengthText := LengthUTF8(BackupEditText);
-      CurrentSlideId := TitleSlideId;
+      CurrentSlideId := Title.SlideId;
       TextPosition := LengthUTF8(BackupEditText);
       TitleEditMode := true;
       StartTextInput;
     end;
 
-    if Interaction = ArtistSlideId then
+    if Interaction = Artist.SlideId then
     begin
       BackupEditText := CurrentSong.Artist;
       CurrentEditText := BackupEditText;
       editLengthText := LengthUTF8(BackupEditText);
-      CurrentSlideId := ArtistSlideId;
+      CurrentSlideId := Artist.SlideId;
       TextPosition := LengthUTF8(BackupEditText);
       ArtistEditMode := true;
       StartTextInput;
     end;
 
-    if Interaction = LanguageSlideId then
+    if Interaction = LanguageTag.SlideId then
     begin
       BackupEditText := ifthen(CurrentSong.Language <> 'Unknown', CurrentSong.Language, NOT_SET);
       CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
       editLengthText := LengthUTF8(BackupEditText);
-      CurrentSlideId := LanguageSlideId;
+      CurrentSlideId := LanguageTag.SlideId;
       TextPosition := LengthUTF8(BackupEditText);
       LanguageEditMode := true;
       StartTextInput;
     end;
 
-    if Interaction = EditionSlideId then
+    if Interaction = Edition.SlideId then
     begin
       BackupEditText := ifthen(CurrentSong.Edition <> 'Unknown', CurrentSong.Edition, NOT_SET);
       CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
       editLengthText := LengthUTF8(BackupEditText);
-      CurrentSlideId := EditionSlideId;
+      CurrentSlideId := Edition.SlideId;
       TextPosition := LengthUTF8(BackupEditText);
       EditionEditMode := true;
       StartTextInput;
     end;
 
-    if Interaction = GenreSlideId then
+    if Interaction = Genre.SlideId then
     begin
       BackupEditText := ifthen(CurrentSong.Genre <> 'Unknown', CurrentSong.Genre, NOT_SET);
       CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
       editLengthText := LengthUTF8(BackupEditText);
-      CurrentSlideId := GenreSlideId;
+      CurrentSlideId := Genre.SlideId;
       TextPosition := LengthUTF8(BackupEditText);
       GenreEditMode := true;
       StartTextInput;
     end;
 
-    if Interaction = YearSlideId then
+    if Interaction = Year.SlideId then
     begin
       BackupEditText := ifthen(CurrentSong.Year <> 0, IntToStr(CurrentSong.Year), NOT_SET);
       CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
       editLengthText := LengthUTF8(BackupEditText);
-      CurrentSlideId := YearSlideId;
+      CurrentSlideId := Year.SlideId;
       TextPosition := LengthUTF8(BackupEditText);
       YearEditMode := true;
       StartTextInput;
     end;
 
-    if Interaction = CreatorSlideId then
+    if Interaction = Creator.SlideId then
     begin
       BackupEditText := ifthen(CurrentSong.Creator <> '', CurrentSong.Creator, NOT_SET);
       CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
       editLengthText := LengthUTF8(BackupEditText);
-      CurrentSlideId := CreatorSlideId;
+      CurrentSlideId := Creator.SlideId;
       TextPosition := LengthUTF8(BackupEditText);
       CreatorEditMode := true;
       StartTextInput;
     end;
 
-    // Interaction = 7 // Mp3SlideId
-    // Interaction = 8 // CoverSlideId
-    // Interaction = 9 // BackgroundSlideId
-    // Interaction = 10 // VideoSlideId
-    // Interaction = 11 // VideoGapSlideId
+    // Interaction = 7 // Mp3.SlideId
+    // Interaction = 8 // Cover.SlideId
+    // Interaction = 9 // Background.SlideId
+    // Interaction = 10 // Video.SlideId
+    // Interaction = 11 // VideoGap.SlideId
 
-    if Interaction = BPMSlideId then
+    if Interaction = BPM.SlideId then
     begin
       BackupEditText := FloatToStr(CurrentSong.BPM[0].BPM / 4);
       CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
       editLengthText := LengthUTF8(BackupEditText);
-      CurrentSlideId := BPMSlideId;
+      CurrentSlideId := BPM.SlideId;
       TextPosition := LengthUTF8(BackupEditText);
       BPMEditMode := true;
       StartTextInput;
     end;
 
-    // Interaction = 13 // GAPSlideId
-    // Interaction = 14 // StartTagSlideId
-    // Interaction = 15 // EndTagSlideId
-    // Interaction = 16 // PreviewSlideId
-    // Interaction = 17 // RelativeSlideId
+    // Interaction = 13 // GAP.SlideId
+    // Interaction = 14 // StartTag.SlideId
+    // Interaction = 15 // EndTag.SlideId
+    // Interaction = 16 // Preview.SlideId
+    // Interaction = 17 // Relative.SlideId
 
-    if Interaction = MedleyStartSlideId then
+    if Interaction = MedleyStart.SlideId then
     begin
       BackupEditText := ifthen(CurrentSong.DuetNames[0] <> '', CurrentSong.DuetNames[0], NOT_SET);
       CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
       editLengthText := LengthUTF8(BackupEditText);
-      CurrentSlideId := MedleyStartSlideId;
+      CurrentSlideId := MedleyStart.SlideId;
       TextPosition := LengthUTF8(BackupEditText);
       P1EditMode := true;
       StartTextInput;
     end;
 
-    if Interaction = MedleyEndSlideId then
+    if Interaction = MedleyEnd.SlideId then
     begin
       BackupEditText := ifthen(CurrentSong.DuetNames[1] <> '', CurrentSong.DuetNames[1], NOT_SET);
       CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
       editLengthText := LengthUTF8(BackupEditText);
-      CurrentSlideId := MedleyEndSlideId;
+      CurrentSlideId := MedleyEnd.SlideId;
       TextPosition := LengthUTF8(BackupEditText);
       P2EditMode := true;
       StartTextInput;
     end;
 
-    // Interaction = 20 // StartSlideId
-    // Interaction = 21 // DurationSlideId
-    // Interaction = 22 // ToneSlideId
+    // Interaction = 20 // Start.SlideId
+    // Interaction = 21 // Duration.SlideId
+    // Interaction = 22 // Tone.SlideId
 
-    if Interaction = LyricSlideId then
+    if Interaction = LyricHeader.SlideId then
     begin
       BackupEditText := Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
       CurrentEditText := BackupEditText;
       editLengthText := LengthUTF8(BackupEditText);
-      CurrentSlideId := LyricSlideId;
+      CurrentSlideId := LyricHeader.SlideId;
       TextPosition := LengthUTF8(BackupEditText);
       TextEditMode := true;
       StartTextInput;
@@ -2403,60 +2302,60 @@ begin
           if TitleEditMode then
           begin
             CurrentSong.Title := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
-            TitleVal[0] := CurrentSong.Title;
+            Title.Val[0] := CurrentSong.Title;
             SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-            UpdateSelectSlideOptions(Theme.EditSub.SlideTitle,TitleSlideId,TitleVal,SlideTitleIndex);
-            SelectsS[TitleSlideId].TextOpt[0].Align := 0;
-            SelectsS[TitleSlideId].TextOpt[0].X := SelectsS[TitleSlideId].TextureSBG.X + 5;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideTitle,Title.SlideId,Title.Val,Title.SlideIndex);
+            SelectsS[Title.SlideId].TextOpt[0].Align := 0;
+            SelectsS[Title.SlideId].TextOpt[0].X := SelectsS[Title.SlideId].TextureSBG.X + 5;
           end;
           if ArtistEditMode then
           begin
             CurrentSong.Artist := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
-            ArtistVal[0] := CurrentSong.Artist;
+            Artist.Val[0] := CurrentSong.Artist;
             SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-            UpdateSelectSlideOptions(Theme.EditSub.SlideArtist,ArtistSlideId,ArtistVal,SlideArtistIndex);
-            SelectsS[ArtistSlideId].TextOpt[0].Align := 0;
-            SelectsS[ArtistSlideId].TextOpt[0].X := SelectsS[ArtistSlideId].TextureSBG.X + 5;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideArtist,Artist.SlideId,Artist.Val,Artist.SlideIndex);
+            SelectsS[Artist.SlideId].TextOpt[0].Align := 0;
+            SelectsS[Artist.SlideId].TextOpt[0].X := SelectsS[Artist.SlideId].TextureSBG.X + 5;
           end;
           if LanguageEditMode then
           begin
             CurrentSong.Language := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
             CurrentSong.Language := ifthen(CurrentSong.Language <> '', CurrentSong.Language, 'Unknown');
-            LanguageVal[0] := ifthen(CurrentSong.Language <> 'Unknown', CurrentSong.Language, NOT_SET);
+            LanguageTag.Val[0] := ifthen(CurrentSong.Language <> 'Unknown', CurrentSong.Language, NOT_SET);
             SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-            UpdateSelectSlideOptions(Theme.EditSub.SlideLanguage,LanguageSlideId,LanguageVal,SlideLanguageIndex);
-            SelectsS[LanguageSlideId].TextOpt[0].Align := 0;
-            SelectsS[LanguageSlideId].TextOpt[0].X := SelectsS[LanguageSlideId].TextureSBG.X + 5;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideLanguage,LanguageTag.SlideId,LanguageTag.Val,LanguageTag.SlideIndex);
+            SelectsS[LanguageTag.SlideId].TextOpt[0].Align := 0;
+            SelectsS[LanguageTag.SlideId].TextOpt[0].X := SelectsS[LanguageTag.SlideId].TextureSBG.X + 5;
           end;
           if EditionEditMode then
           begin
             CurrentSong.Edition := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
             CurrentSong.Edition := ifthen(CurrentSong.Edition <> '', CurrentSong.Edition, 'Unknown');
-            EditionVal[0] := ifthen(CurrentSong.Edition <> 'Unknown', CurrentSong.Edition, NOT_SET);
+            Edition.Val[0] := ifthen(CurrentSong.Edition <> 'Unknown', CurrentSong.Edition, NOT_SET);
             SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-            UpdateSelectSlideOptions(Theme.EditSub.SlideEdition,EditionSlideId,EditionVal,SlideEditionIndex);
-            SelectsS[EditionSlideId].TextOpt[0].Align := 0;
-            SelectsS[EditionSlideId].TextOpt[0].X := SelectsS[EditionSlideId].TextureSBG.X + 5;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideEdition,Edition.SlideId,Edition.Val,Edition.SlideIndex);
+            SelectsS[Edition.SlideId].TextOpt[0].Align := 0;
+            SelectsS[Edition.SlideId].TextOpt[0].X := SelectsS[Edition.SlideId].TextureSBG.X + 5;
           end;
           if GenreEditMode then
           begin
             CurrentSong.Genre := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
             CurrentSong.Genre := ifthen(CurrentSong.Genre <> '', CurrentSong.Genre, 'Unknown');
-            GenreVal[0] := ifthen(CurrentSong.Genre <> 'Unknown', CurrentSong.Genre, NOT_SET);
+            Genre.Val[0] := ifthen(CurrentSong.Genre <> 'Unknown', CurrentSong.Genre, NOT_SET);
             SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-            UpdateSelectSlideOptions(Theme.EditSub.SlideGenre,GenreSlideId,GenreVal,SlideGenreIndex);
-            SelectsS[GenreSlideId].TextOpt[0].Align := 0;
-            SelectsS[GenreSlideId].TextOpt[0].X := SelectsS[GenreSlideId].TextureSBG.X + 5;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideGenre,Genre.SlideId,Genre.Val,Genre.SlideIndex);
+            SelectsS[Genre.SlideId].TextOpt[0].Align := 0;
+            SelectsS[Genre.SlideId].TextOpt[0].X := SelectsS[Genre.SlideId].TextureSBG.X + 5;
           end;
           if YearEditMode then
           begin
             if (TryStrToInt(UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition), CurrentSong.Year)) and (CurrentSong.Year <= 2100) and (CurrentSong.Year >= 1900) then
             begin
-              YearVal[0] := IntToStr(CurrentSong.Year);
+              Year.Val[0] := IntToStr(CurrentSong.Year);
               SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-              UpdateSelectSlideOptions(Theme.EditSub.SlideYear,YearSlideId,YearVal,SlideYearIndex);
-              SelectsS[YearSlideId].TextOpt[0].Align := 0;
-              SelectsS[YearSlideId].TextOpt[0].X := SelectsS[YearSlideId].TextureSBG.X + 5;
+              UpdateSelectSlideOptions(Theme.EditSub.SlideYear,Year.SlideId,Year.Val,Year.SlideIndex);
+              SelectsS[Year.SlideId].TextOpt[0].Align := 0;
+              SelectsS[Year.SlideId].TextOpt[0].X := SelectsS[Year.SlideId].TextureSBG.X + 5;
             end
             else
             begin
@@ -2467,38 +2366,38 @@ begin
           if CreatorEditMode then
           begin
             CurrentSong.Creator := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
-            CreatorVal[0] := ifthen(CurrentSong.Creator <> '', CurrentSong.Creator, NOT_SET);
+            Creator.Val[0] := ifthen(CurrentSong.Creator <> '', CurrentSong.Creator, NOT_SET);
             SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-            UpdateSelectSlideOptions(Theme.EditSub.SlideCreator,CreatorSlideId,CreatorVal,SlideCreatorIndex);
-            SelectsS[CreatorSlideId].TextOpt[0].Align := 0;
-            SelectsS[CreatorSlideId].TextOpt[0].X := SelectsS[CreatorSlideId].TextureSBG.X + 5;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideCreator,Creator.SlideId,Creator.Val,Creator.SlideIndex);
+            SelectsS[Creator.SlideId].TextOpt[0].Align := 0;
+            SelectsS[Creator.SlideId].TextOpt[0].X := SelectsS[Creator.SlideId].TextureSBG.X + 5;
           end;
           if P1EditMode then
           begin
             CurrentSong.DuetNames[0] := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
-            MedleyStartVal[0] := ifthen(CurrentSong.DuetNames[0] <> '', CurrentSong.DuetNames[0], NOT_SET);
+            MedleyStart.Val[0] := ifthen(CurrentSong.DuetNames[0] <> '', CurrentSong.DuetNames[0], NOT_SET);
             SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-            UpdateSelectSlideOptions(Theme.EditSub.SlideMedleyStart,MedleyStartSlideId,MedleyStartVal,SlideMedleyStartIndex);
-            SelectsS[MedleyStartSlideId].TextOpt[0].Align := 0;
-            SelectsS[MedleyStartSlideId].TextOpt[0].X := SelectsS[MedleyStartSlideId].TextureSBG.X + 5;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideMedleyStart,MedleyStart.SlideId,MedleyStart.Val,MedleyStart.SlideIndex);
+            SelectsS[MedleyStart.SlideId].TextOpt[0].Align := 0;
+            SelectsS[MedleyStart.SlideId].TextOpt[0].X := SelectsS[MedleyStart.SlideId].TextureSBG.X + 5;
           end;
           if P2EditMode then
           begin
             CurrentSong.DuetNames[1] := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
-            MedleyEndVal[0] := ifthen(CurrentSong.DuetNames[1] <> '', CurrentSong.DuetNames[1], NOT_SET);
+            MedleyEnd.Val[0] := ifthen(CurrentSong.DuetNames[1] <> '', CurrentSong.DuetNames[1], NOT_SET);
             SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-            UpdateSelectSlideOptions(Theme.EditSub.SlideMedleyEnd,MedleyEndSlideId,MedleyEndVal,SlideMedleyEndIndex);
-            SelectsS[MedleyEndSlideId].TextOpt[0].Align := 0;
-            SelectsS[MedleyEndSlideId].TextOpt[0].X := SelectsS[MedleyEndSlideId].TextureSBG.X + 5;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideMedleyEnd,MedleyEnd.SlideId,MedleyEnd.Val,MedleyEnd.SlideIndex);
+            SelectsS[MedleyEnd.SlideId].TextOpt[0].Align := 0;
+            SelectsS[MedleyEnd.SlideId].TextOpt[0].X := SelectsS[MedleyEnd.SlideId].TextureSBG.X + 5;
           end;
           if TextEditMode then
           begin
             Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
-            LyricVal[0] := Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
+            LyricHeader.Val[0] := Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
             SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-            UpdateSelectSlideOptions(Theme.EditSub.SlideLyric,LyricSlideId,LyricVal,SlideLyricIndex);
-            SelectsS[LyricSlideId].TextOpt[0].Align := 0;
-            SelectsS[LyricSlideId].TextOpt[0].X := SelectsS[LyricSlideId].TextureSBG.X + 5;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideLyric,LyricHeader.SlideId,LyricHeader.Val,LyricHeader.SlideIndex);
+            SelectsS[LyricHeader.SlideId].TextOpt[0].Align := 0;
+            SelectsS[LyricHeader.SlideId].TextOpt[0].X := SelectsS[LyricHeader.SlideId].TextureSBG.X + 5;
             EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
           end;
           EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
@@ -2625,12 +2524,12 @@ begin
           //CopyToUndo;
           if (TryStrToFloat(UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition), qBPM)) then
           begin
-            BPMVal[0] := FloatToStr(qBPM * 4);
+            BPM.Val[0] := FloatToStr(qBPM * 4);
             ChangeBPM(qBPM * 4);
             SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-            UpdateSelectSlideOptions(Theme.EditSub.SlideBPM,BPMSlideId,BPMVal,SlideBPMIndex);
-            SelectsS[BPMSlideId].TextOpt[0].Align := 0;
-            SelectsS[BPMSlideId].TextOpt[0].X := SelectsS[BPMSlideId].TextureSBG.X + 5;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideBPM,BPM.SlideId,BPM.Val,BPM.SlideIndex);
+            SelectsS[BPM.SlideId].TextOpt[0].Align := 0;
+            SelectsS[BPM.SlideId].TextOpt[0].X := SelectsS[BPM.SlideId].TextureSBG.X + 5;
           end
           else
           begin
@@ -2968,14 +2867,14 @@ begin
   end;
 
   // changed cover
-  if ((CoverSlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
+  if ((Cover.SlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
   begin
     CopyToUndo;
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
     CurrentSong.Cover := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
   end;
 
-  if ((CoverSlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
+  if ((Cover.SlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
   begin
     CopyToUndo;
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
@@ -2983,7 +2882,7 @@ begin
   end;
 
   // changed background picture
-  if ((BackgroundSlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
+  if ((Background.SlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
   begin
     CopyToUndo;
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
@@ -2997,7 +2896,7 @@ begin
     Statics[BackgroundImageId].Texture.H := theme.EditSub.BackgroundImage.H;
   end;
 
-  if ((BackgroundSlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
+  if ((Background.SlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
   begin
     CopyToUndo;
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
@@ -3012,21 +2911,21 @@ begin
   end;
 
   // changed video
-  if ((VideoSlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
+  if ((Video.SlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
   begin
     CopyToUndo;
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
     CurrentSong.Video := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
   end;
 
-  if ((VideoSlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
+  if ((Video.SlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
   begin
     CopyToUndo;
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
     CurrentSong.Video := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
   end;
 
-  if ((Mp3SlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
+  if ((Mp3.SlideId = Interactions[nBut].Num) and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
   begin
     CopyToUndo;
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
@@ -3035,7 +2934,7 @@ begin
     AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio),nil);
   end;
 
-  if ((Mp3SlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
+  if ((Mp3.SlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
   begin
     CopyToUndo;
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
@@ -3435,8 +3334,9 @@ begin
   EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
 end;
 
-procedure TScreenEditSub.SwitchSentence(Steps: Integer);
+procedure TScreenEditSub.SwitchSentence(Steps: integer);
 begin
+  Log.LogInfo('Switching sentence by ' + IntToStr(Steps) + ' steps', 'TScreenEditSub.SwitchSentence');
   Text[TextInfo].Text := '';
   {$IFDEF UseMIDIPort}
   //MidiOut.PutShort($B1, $7, Floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
@@ -3447,6 +3347,8 @@ begin
   Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
   Tracks[CurrentTrack].CurrentLine := Tracks[CurrentTrack].CurrentLine + Steps;
   CurrentNote[CurrentTrack] := 0;
+  if Tracks[CurrentTrack].CurrentLine < 0 then
+    Tracks[CurrentTrack].CurrentLine := Tracks[CurrentTrack].High;
   if Tracks[CurrentTrack].CurrentLine > Tracks[CurrentTrack].High then
     Tracks[CurrentTrack].CurrentLine := 0;
   Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
@@ -3516,9 +3418,9 @@ begin
     else
     if ((TextPosition >= 0) and (TextPosition < Length(Notes[CurrentNote[CurrentTrack]].Text))) then
     begin
-      Notes[CurrentNote[CurrentTrack]+1].Text := UTF8Copy(SelectsS[LyricSlideId].TextOpt[0].Text, TextPosition + 2, LengthUTF8(SelectsS[LyricSlideId].TextOpt[0].Text));
-      Notes[CurrentNote[CurrentTrack]].Text := UTF8Copy(SelectsS[LyricSlideId].TextOpt[0].Text, 1, TextPosition);
-      SelectsS[LyricSlideId].TextOpt[0].Text := Notes[CurrentNote[CurrentTrack]].Text;
+      Notes[CurrentNote[CurrentTrack]+1].Text := UTF8Copy(SelectsS[LyricHeader.SlideId].TextOpt[0].Text, TextPosition + 2, LengthUTF8(SelectsS[LyricHeader.SlideId].TextOpt[0].Text));
+      Notes[CurrentNote[CurrentTrack]].Text := UTF8Copy(SelectsS[LyricHeader.SlideId].TextOpt[0].Text, 1, TextPosition);
+      SelectsS[LyricHeader.SlideId].TextOpt[0].Text := Notes[CurrentNote[CurrentTrack]].Text;
       TextPosition := -1;
     end
     else
@@ -3965,13 +3867,13 @@ begin
   UndoHeader[CurrentUndoLines].Year := CurrentSong.Year;
   UndoHeader[CurrentUndoLines].Creator := CurrentSong.Creator;
   UndoHeader[CurrentUndoLines].Mp3 := CurrentSong.Audio;
-  UndoHeader[CurrentUndoLines].Mp3Id := SelectsS[Mp3SlideId].SelectedOption;
+  UndoHeader[CurrentUndoLines].Mp3Id := SelectsS[Mp3.SlideId].SelectedOption;
   UndoHeader[CurrentUndoLines].Cover := CurrentSong.Cover;
-  UndoHeader[CurrentUndoLines].CoverId := SelectsS[CoverSlideId].SelectedOption;
+  UndoHeader[CurrentUndoLines].CoverId := SelectsS[Cover.SlideId].SelectedOption;
   UndoHeader[CurrentUndoLines].Background := CurrentSong.Background;
-  UndoHeader[CurrentUndoLines].BackgroundId := SelectsS[BackgroundSlideId].SelectedOption;
+  UndoHeader[CurrentUndoLines].BackgroundId := SelectsS[Background.SlideId].SelectedOption;
   UndoHeader[CurrentUndoLines].Video := CurrentSong.Video;
-  UndoHeader[CurrentUndoLines].VideoId := SelectsS[VideoSlideId].SelectedOption;
+  UndoHeader[CurrentUndoLines].VideoId := SelectsS[Video.SlideId].SelectedOption;
   UndoHeader[CurrentUndoLines].VideoGAP := CurrentSong.VideoGAP;
   SetLength(UndoHeader[CurrentUndoLines].BPM, length(CurrentSong.BPM));
   for BPMIndex := 0 to High(CurrentSong.BPM) do
@@ -4126,13 +4028,13 @@ begin
   CurrentSong.Year         := Undoheader[CurrentUndoLines].Year;
   CurrentSong.Creator      := Undoheader[CurrentUndoLines].Creator;
   CurrentSong.Audio          := Undoheader[CurrentUndoLines].Mp3;
-  SelectsS[Mp3SlideId].SelectedOption := Undoheader[CurrentUndoLines].Mp3Id;
+  SelectsS[Mp3.SlideId].SelectedOption := Undoheader[CurrentUndoLines].Mp3Id;
   CurrentSong.Cover        := Undoheader[CurrentUndoLines].Cover;
-  SelectsS[CoverSlideId].SelectedOption := Undoheader[CurrentUndoLines].CoverId;
+  SelectsS[Cover.SlideId].SelectedOption := Undoheader[CurrentUndoLines].CoverId;
   CurrentSong.Background   := Undoheader[CurrentUndoLines].Background;
-  SelectsS[BackgroundSlideId].SelectedOption := Undoheader[CurrentUndoLines].BackgroundId;
+  SelectsS[Background.SlideId].SelectedOption := Undoheader[CurrentUndoLines].BackgroundId;
   CurrentSong.Video        := Undoheader[CurrentUndoLines].Video;
-  SelectsS[VideoSlideId].SelectedOption := Undoheader[CurrentUndoLines].VideoId;
+  SelectsS[Video.SlideId].SelectedOption := Undoheader[CurrentUndoLines].VideoId;
   CurrentSong.VideoGAP     := Undoheader[CurrentUndoLines].VideoGAP;
   SetLength(CurrentSong.BPM, length(Undoheader[CurrentUndoLines].BPM));
   for BPMIndex := 0 to High(Undoheader[CurrentUndoLines].BPM) do
@@ -4188,14 +4090,14 @@ begin
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_UNDO');
 
   // to refresh all headers
-  SelectsS[TitleSlideId].TextOpt[0].Text    := CurrentSong.Title;
-  SelectsS[ArtistSlideId].TextOpt[0].Text   := CurrentSong.Artist;
-  SelectsS[LanguageSlideId].TextOpt[0].Text := CurrentSong.Language;
-  SelectsS[EditionSlideId].TextOpt[0].Text  := CurrentSong.Edition;
-  SelectsS[GenreSlideId].TextOpt[0].Text    := CurrentSong.Genre;
-  SelectsS[YearSlideId].TextOpt[0].Text     := IntToStr(CurrentSong.Year);
-  SelectsS[CreatorSlideId].TextOpt[0].Text  := CurrentSong.Creator;
-  SelectsS[LyricSlideId].TextOpt[0].Text    := Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
+  SelectsS[Title.SlideId].TextOpt[0].Text    := CurrentSong.Title;
+  SelectsS[Artist.SlideId].TextOpt[0].Text   := CurrentSong.Artist;
+  SelectsS[LanguageTag.SlideId].TextOpt[0].Text := CurrentSong.Language;
+  SelectsS[Edition.SlideId].TextOpt[0].Text  := CurrentSong.Edition;
+  SelectsS[Genre.SlideId].TextOpt[0].Text    := CurrentSong.Genre;
+  SelectsS[Year.SlideId].TextOpt[0].Text     := IntToStr(CurrentSong.Year);
+  SelectsS[Creator.SlideId].TextOpt[0].Text  := CurrentSong.Creator;
+  SelectsS[LyricHeader.SlideId].TextOpt[0].Text    := Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
   EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
 end; //if CurrentUndoLines
@@ -4570,6 +4472,12 @@ begin
 end;
 
 constructor TScreenEditSub.Create;
+  procedure InitHeader(var Header: THeader; const Slide: TThemeSelectSlide);
+  begin
+    Header.SlideId := AddSelectSlide(Slide, Header.Data, Header.Val);
+    SelectsS[Header.SlideId].Text.Align := 0;
+    SelectsS[Header.SlideId].Text.X := SelectsS[Header.SlideId].Texture.X + 3;
+  end;
 begin
   inherited Create;
   LoadFromTheme(Theme.EditSub);
@@ -4581,30 +4489,30 @@ begin
   EditorLyrics[1] := TEditorLyrics.Create;
 
   SetLength(Player, 1);
-  SetLength(TitleVal, 0);
-  SetLength(ArtistVal, 0);
-  SetLength(LanguageVal, 0);
-  SetLength(EditionVal, 0);
-  SetLength(GenreVal, 0);
-  SetLength(YearVal, 0);
-  SetLength(CreatorVal, 0);
-  SetLength(MP3Val, 0);
-  SetLength(CoverVal, 0);
-  SetLength(BackgroundVal, 0);
-  SetLength(VideoVal, 0);
-  SetLength(VideoGapVal, 0);
-  SetLength(BPMVal, 0);
-  SetLength(GAPVal, 0);
-  SetLength(StartTagVal, 0);
-  SetLength(EndTagVal, 0);
-  SetLength(MedleyStartVal, 0);
-  SetLength(MedleyEndVal, 0);
-  SetLength(PreviewStartVal, 0);
-  SetLength(RelativeVal, 0);
-  SetLength(StartVal, 0);
-  SetLength(ToneVal, 0);
-  SetLength(DurationVal, 0);
-  SetLength(LyricVal, 0);
+  SetLength(Title.Val, 0);
+  SetLength(Artist.Val, 0);
+  SetLength(LanguageTag.Val, 0);
+  SetLength(Edition.Val, 0);
+  SetLength(Genre.Val, 0);
+  SetLength(Year.Val, 0);
+  SetLength(Creator.Val, 0);
+  SetLength(MP3.Val, 0);
+  SetLength(Cover.Val, 0);
+  SetLength(Background.Val, 0);
+  SetLength(Video.Val, 0);
+  SetLength(VideoGap.Val, 0);
+  SetLength(BPM.Val, 0);
+  SetLength(GAP.Val, 0);
+  SetLength(StartTag.Val, 0);
+  SetLength(EndTag.Val, 0);
+  SetLength(MedleyStart.Val, 0);
+  SetLength(MedleyEnd.Val, 0);
+  SetLength(PreviewStart.Val, 0);
+  SetLength(Relative.Val, 0);
+  SetLength(Start.Val, 0);
+  SetLength(Tone.Val, 0);
+  SetLength(Duration.Val, 0);
+  SetLength(LyricHeader.Val, 0);
 
   //volume
   SetLength(VolumeAudio,0);
@@ -4618,129 +4526,35 @@ begin
   SetLength(TransparentLineButtonId, 0);
 
   // file info
-  // title header
-  TitleSlideId := AddSelectSlide(Theme.EditSub.SlideTitle, TitleData, TitleVal);
-  SelectsS[TitleSlideId].Text.Align := 0;
-  SelectsS[TitleSlideId].Text.X := SelectsS[TitleSlideId].Texture.X + 3;
-
-  // artist header
-  ArtistSlideId := AddSelectSlide(Theme.EditSub.SlideArtist, ArtistData, ArtistVal);
-  SelectsS[ArtistSlideId].Text.Align := 0;
-  SelectsS[ArtistSlideId].Text.X := SelectsS[ArtistSlideId].Texture.X + 3;
-
-  // language header
-  LanguageSlideId := AddSelectSlide(Theme.EditSub.SlideLanguage, LanguageData, LanguageVal);
-  SelectsS[LanguageSlideId].Text.Align := 0;
-  SelectsS[LanguageSlideId].Text.X := SelectsS[LanguageSlideId].Texture.X + 3;
-
-  // edition header
-  EditionSlideId := AddSelectSlide(Theme.EditSub.SlideEdition, EditionData, EditionVal);
-  SelectsS[EditionSlideId].Text.Align := 0;
-  SelectsS[EditionSlideId].Text.X := SelectsS[EditionSlideId].Texture.X + 3;
-
-  // genre header
-  GenreSlideId := AddSelectSlide(Theme.EditSub.SlideGenre, GenreData, GenreVal);
-  SelectsS[GenreSlideId].Text.Align := 0;
-  SelectsS[GenreSlideId].Text.X := SelectsS[GenreSlideId].Texture.X + 3;
-
-  // year header
-  YearSlideId := AddSelectSlide(Theme.EditSub.SlideYear, YearData, YearVal);
-  SelectsS[YearSlideId].Text.Align := 0;
-  SelectsS[YearSlideId].Text.X := SelectsS[YearSlideId].Texture.X + 3;
-
-  // creator header
-  CreatorSlideId := AddSelectSlide(Theme.EditSub.SlideCreator, CreatorData, CreatorVal);
-  SelectsS[CreatorSlideId].Text.Align := 0;
-  SelectsS[CreatorSlideId].Text.X := SelectsS[CreatorSlideId].Texture.X + 3;
-
-  // MP3 header
-  MP3SlideId := AddSelectSlide(Theme.EditSub.SlideMP3, MP3Data, MP3Val);
-  SelectsS[MP3SlideId].Text.Align := 0;
-  SelectsS[MP3SlideId].Text.X := SelectsS[MP3SlideId].Texture.X + 3;
-
-  // cover header
-  CoverSlideId := AddSelectSlide(Theme.EditSub.SlideCover, CoverData, CoverVal);
-  SelectsS[CoverSlideId].Text.Align := 0;
-  SelectsS[CoverSlideId].Text.X := SelectsS[CoverSlideId].Texture.X + 3;
-
-  // background header
-  BackgroundSlideId := AddSelectSlide(Theme.EditSub.SlideBackground, BackgroundData, BackgroundVal);
-  SelectsS[BackgroundSlideId].Text.Align := 0;
-  SelectsS[BackgroundSlideId].Text.X := SelectsS[BackgroundSlideId].Texture.X + 3;
-
-  // video header
-  VideoSlideId := AddSelectSlide(Theme.EditSub.SlideVideo, VideoData, VideoVal);
-  SelectsS[VideoSlideId].Text.Align := 0;
-  SelectsS[VideoSlideId].Text.X := SelectsS[VideoSlideId].Texture.X + 3;
-
-  // videogap header
-  VideoGapSlideId := AddSelectSlide(Theme.EditSub.SlideVideoGap, VideoGapData, VideoGapVal);
-  SelectsS[VideoGapSlideId].Text.Align := 0;
-  SelectsS[VideoGapSlideId].Text.X := SelectsS[VideoGapSlideId].Texture.X + 3;
-
-  // BPM header
-  BPMSlideId := AddSelectSlide(Theme.EditSub.SlideBPM, BPMData, BPMVal);
-  SelectsS[BPMSlideId].Text.Align := 0;
-  SelectsS[BPMSlideId].Text.X := SelectsS[BPMSlideId].Texture.X + 3;
-
-  // GAP header
-  GAPSlideId := AddSelectSlide(Theme.EditSub.SlideGAP, GAPData, GAPVal);
-  SelectsS[GAPSlideId].Text.Align := 0;
-  SelectsS[GAPSlideId].Text.X := SelectsS[GAPSlideId].Texture.X + 3;
-
-  // StartTag header
-  StartTagSlideId := AddSelectSlide(Theme.EditSub.SlideStartTag, StartTagData, StartTagVal);
-  SelectsS[StartTagSlideId].Text.Align := 0;
-  SelectsS[StartTagSlideId].Text.X := SelectsS[StartTagSlideId].Texture.X + 3;
-
-  // EndTag header
-  EndTagSlideId := AddSelectSlide(Theme.EditSub.SlideEndTag, EndTagData, EndTagVal);
-  SelectsS[EndTagSlideId].Text.Align := 0;
-  SelectsS[EndTagSlideId].Text.X := SelectsS[EndTagSlideId].Texture.X + 3;
-
-  // MedleyStart header
-  MedleyStartSlideId := AddSelectSlide(Theme.EditSub.SlideMedleyStart, MedleyStartData, MedleyStartVal);
-  SelectsS[MedleyStartSlideId].Text.Align := 0;
-  SelectsS[MedleyStartSlideId].Text.X := SelectsS[MedleyStartSlideId].Texture.X + 3;
-
-  // MedleyEnd header
-  MedleyEndSlideId := AddSelectSlide(Theme.EditSub.SlideMedleyEnd, MedleyEndData, MedleyEndVal);
-  SelectsS[MedleyEndSlideId].Text.Align := 0;
-  SelectsS[MedleyEndSlideId].Text.X := SelectsS[MedleyEndSlideId].Texture.X + 3;
-
-  // PreviewStart header
-  PreviewStartSlideId := AddSelectSlide(Theme.EditSub.SlidePreviewStart, PreviewStartData, PreviewStartVal);
-  SelectsS[PreviewStartSlideId].Text.Align := 0;
-  SelectsS[PreviewStartSlideId].Text.X := SelectsS[PreviewStartSlideId].Texture.X + 3;
-
-  // Relative header
-  RelativeSlideId := AddSelectSlide(Theme.EditSub.SlideRelative, RelativeData, RelativeVal);
-  SelectsS[RelativeSlideId].Text.Align := 0;
-  SelectsS[RelativeSlideId].Text.X := SelectsS[RelativeSlideId].Texture.X + 3;
+  InitHeader(Title, Theme.EditSub.SlideTitle);
+  InitHeader(Artist, Theme.EditSub.SlideArtist);
+  InitHeader(LanguageTag, Theme.EditSub.SlideLanguage);
+  InitHeader(Edition, Theme.EditSub.SlideEdition);
+  InitHeader(Genre, Theme.EditSub.SlideGenre);
+  InitHeader(Year, Theme.EditSub.SlideYear);
+  InitHeader(Creator, Theme.EditSub.SlideCreator);
+  InitHeader(MP3, Theme.EditSub.SlideMP3);
+  InitHeader(Cover, Theme.EditSub.SlideCover);
+  InitHeader(Background, Theme.EditSub.SlideBackground);
+  InitHeader(Video, Theme.EditSub.SlideVideo);
+  InitHeader(VideoGap, Theme.EditSub.SlideVideoGap);
+  InitHeader(BPM, Theme.EditSub.SlideBPM);
+  InitHeader(GAP, Theme.EditSub.SlideGAP);
+  InitHeader(StartTag, Theme.EditSub.SlideStartTag);
+  InitHeader(EndTag, Theme.EditSub.SlideEndTag);
+  InitHeader(MedleyStart, Theme.EditSub.SlideMedleyStart);
+  InitHeader(MedleyEnd, Theme.EditSub.SlideMedleyEnd);
+  InitHeader(PreviewStart, Theme.EditSub.SlidePreviewStart);
+  InitHeader(Relative, Theme.EditSub.SlideRelative);
 
   // background image & preview
   BackgroundImageId := AddStatic(Theme.EditSub.BackgroundImage);
 
   // note info
-  // start header
-  StartSlideId := AddSelectSlide(Theme.EditSub.SlideStart, StartData, StartVal);
-  SelectsS[StartSlideId].Text.Align := 0;
-  SelectsS[StartSlideId].Text.X := SelectsS[StartSlideId].Texture.X + 3;
-
-  // duration header
-  DurationSlideId := AddSelectSlide(Theme.EditSub.SlideDuration, DurationData, DurationVal);
-  SelectsS[DurationSlideId].Text.Align := 0;
-  SelectsS[DurationSlideId].Text.X := SelectsS[DurationSlideId].Texture.X + 3;
-
-  // tone header
-  ToneSlideId := AddSelectSlide(Theme.EditSub.SlideTone, ToneData, ToneVal);
-  SelectsS[ToneSlideId].Text.Align := 0;
-  SelectsS[ToneSlideId].Text.X := SelectsS[ToneSlideId].Texture.X + 3;
-
-  // lyrics header
-  LyricSlideId := AddSelectSlide(Theme.EditSub.SlideLyric, LyricData, LyricVal);
-  SelectsS[LyricSlideId].Text.Align := 0;
-  SelectsS[LyricSlideId].Text.X := SelectsS[LyricSlideId].Texture.X + 3;
+  InitHeader(Start, Theme.EditSub.SlideStart);
+  InitHeader(Duration, Theme.EditSub.SlideDuration);
+  InitHeader(Tone, Theme.EditSub.SlideTone);
+  InitHeader(LyricHeader, Theme.EditSub.SlideLyric);
 
   // control buttons
   UndoButtonId         := AddButton(Theme.EditSub.undo);
@@ -4829,6 +4643,16 @@ var
   begin
     Result := InRange(beat, Note.StartBeat, Note.StartBeat + Note.Duration);
   end;
+
+  procedure OnShowHeader(const Slide: TThemeSelectSlide; var Header: THeader; const Val: UTF8String);
+  begin
+    SetLength(Header.Val, 1);
+    Header.Val[0] := Val;
+    Header.SlideIndex := 1;
+    UpdateSelectSlideOptions(Slide,Header.SlideId,Header.Val,Header.SlideIndex);
+    SelectsS[Header.SlideId].TextOpt[0].Align := 0;
+    SelectsS[Header.SlideId].TextOpt[0].X := SelectsS[Header.SlideId].TextureSBG.X + 5;
+  end;
 begin
   inherited;
   // reset video playback engine
@@ -4877,256 +4701,117 @@ begin
     if not Help.SetHelpID(ID) then
       Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenEditSub');
 
-    //    Text[TextTitle].Text :=   CurrentSong.Title;
-
-    // Header Title
-    SetLength(TitleVal, 1);
-    TitleVal[0] := CurrentSong.Title;
-    SlideTitleIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideTitle,TitleSlideId,TitleVal,SlideTitleIndex);
-    SelectsS[TitleSlideId].TextOpt[0].Align := 0;
-    SelectsS[TitleSlideId].TextOpt[0].X := SelectsS[TitleSlideId].TextureSBG.X + 5;
-
-    // Header Artist
-    SetLength(ArtistVal, 1);
-    ArtistVal[0] := CurrentSong.Artist;
-    SlideArtistIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideArtist,ArtistSlideId,ArtistVal,SlideArtistIndex);
-    SelectsS[ArtistSlideId].TextOpt[0].Align := 0;
-    SelectsS[ArtistSlideId].TextOpt[0].X := SelectsS[ArtistSlideId].TextureSBG.X + 5;
-
-    // Header Language
-    SetLength(LanguageVal, 1);
-    LanguageVal[0] := ifthen(CurrentSong.Language <> 'Unknown', CurrentSong.Language, NOT_SET);
-    SlideLanguageIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideLanguage,LanguageSlideId,LanguageVal,SlideLanguageIndex);
-    SelectsS[LanguageSlideId].TextOpt[0].Align := 0;
-    SelectsS[LanguageSlideId].TextOpt[0].X := SelectsS[LanguageSlideId].TextureSBG.X + 5;
-
-    // Header Edition
-    SetLength(EditionVal, 1);
-    EditionVal[0] := ifthen(CurrentSong.Edition <> 'Unknown', CurrentSong.Edition, NOT_SET);
-    SlideEditionIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideEdition,EditionSlideId,EditionVal,SlideEditionIndex);
-    SelectsS[EditionSlideId].TextOpt[0].Align := 0;
-    SelectsS[EditionSlideId].TextOpt[0].X := SelectsS[EditionSlideId].TextureSBG.X + 5;
-
-    // Header Genre
-    SetLength(GenreVal, 1);
-    GenreVal[0] := ifthen(CurrentSong.Genre <> 'Unknown', CurrentSong.Genre, NOT_SET);
-    SlideGenreIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideGenre,GenreSlideId,GenreVal,SlideGenreIndex);
-    SelectsS[GenreSlideId].TextOpt[0].Align := 0;
-    SelectsS[GenreSlideId].TextOpt[0].X := SelectsS[GenreSlideId].TextureSBG.X + 5;
-
-    // Header Year
-    SetLength(YearVal, 1);
-    YearVal[0] := ifthen(CurrentSong.Year <> 0, IntToStr(CurrentSong.Year), NOT_SET);
-    SlideYearIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideYear,YearSlideId,YearVal,SlideYearIndex);
-    SelectsS[YearSlideId].TextOpt[0].Align := 0;
-    SelectsS[YearSlideId].TextOpt[0].X := SelectsS[YearSlideId].TextureSBG.X + 5;
-
-    // Header Creator
-    SetLength(CreatorVal, 1);
-    CreatorVal[0] := ifthen(CurrentSong.Creator <> '', CurrentSong.Creator, NOT_SET);
-    SlideCreatorIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideCreator,CreatorSlideId,CreatorVal,SlideCreatorIndex);
-    SelectsS[CreatorSlideId].TextOpt[0].Align := 0;
-    SelectsS[CreatorSlideId].TextOpt[0].X := SelectsS[CreatorSlideId].TextureSBG.X + 5;
+    OnShowHeader(Theme.EditSub.SlideTitle, Title, CurrentSong.Title);
+    OnShowHeader(Theme.EditSub.SlideArtist, Artist, CurrentSong.Artist);
+    OnShowHeader(Theme.EditSub.SlideLanguage, LanguageTag, ifthen(CurrentSong.Language <> 'Unknown', CurrentSong.Language, NOT_SET));
+    OnShowHeader(Theme.EditSub.SlideEdition, Edition, ifthen(CurrentSong.Edition <> 'Unknown', CurrentSong.Edition, NOT_SET));
+    OnShowHeader(Theme.EditSub.SlideGenre, Genre, ifthen(CurrentSong.Genre <> 'Unknown', CurrentSong.Genre, NOT_SET));
+    OnShowHeader(Theme.EditSub.SlideYear, Year, ifthen(CurrentSong.Year <> 0, IntToStr(CurrentSong.Year), NOT_SET));
+    OnShowHeader(Theme.EditSub.SlideCreator, Creator, ifthen(CurrentSong.Creator <> '', CurrentSong.Creator, NOT_SET));
 
     // Header MP3 / AUDIO
-    SetLength(MP3Val, 0);
+    SetLength(MP3.Val, 0);
     SetLength(Files, 0);
-    SlideMP3Index := -1;
+    MP3.SlideIndex := -1;
 
     for Ext in SUPPORTED_EXTS_AUDIO do
       Songs.FindFilesByExtension(Path(includeTrailingPathDelimiter(CurrentSong.Path.ToNative)), Path(Ext), true, Files);
 
     for FileIndex := 0 to High(Files) do
     begin
-      SetLength(MP3Val, High(MP3Val) + 2);
-      MP3Val[FileIndex] := filesystem.ExtractFileName(Files[FileIndex]).ToUTF8;
-      if (UTF8CompareText(MP3Val[FileIndex],CurrentSong.Audio.ToUTF8) = 0) then
-            SlideMP3Index := FileIndex;
+      SetLength(MP3.Val, High(MP3.Val) + 2);
+      MP3.Val[FileIndex] := filesystem.ExtractFileName(Files[FileIndex]).ToUTF8;
+      if (UTF8CompareText(MP3.Val[FileIndex],CurrentSong.Audio.ToUTF8) = 0) then
+        MP3.SlideIndex := FileIndex;
     end;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideMP3,MP3SlideId,MP3Val,SlideMP3Index);
+        UpdateSelectSlideOptions(Theme.EditSub.SlideMP3,MP3.SlideId,MP3.Val,MP3.SlideIndex);
 
     // Header Cover
     SetLength(Files, 0);
-    SetLength(CoverVal, 0);
-    SlideCoverIndex := -1;
+    SetLength(Cover.Val, 0);
+    Cover.SlideIndex := -1;
 
     for Ext in SUPPORTED_EXTS_IMAGE do
       Songs.FindFilesByExtension(Path(includeTrailingPathDelimiter(CurrentSong.Path.ToNative)), Path(Ext), true, Files);
 
     for FileIndex := 0 to High(Files) do
     begin
-      SetLength(CoverVal, High(CoverVal) + 2);
-      CoverVal[FileIndex] := ExtractFileName(Files[FileIndex].ToUTF8());
-      if UTF8CompareText(CoverVal[FileIndex], CurrentSong.Cover.ToUTF8) = 0 then
-            SlideCoverIndex := FileIndex;
+      SetLength(Cover.Val, High(Cover.Val) + 2);
+      Cover.Val[FileIndex] := ExtractFileName(Files[FileIndex].ToUTF8());
+      if UTF8CompareText(Cover.Val[FileIndex], CurrentSong.Cover.ToUTF8) = 0 then
+            Cover.SlideIndex := FileIndex;
     end;
 
     if High(Files) < 0 then
     begin
-      SetLength(CoverVal, 1);
-      CoverVal[0] := CurrentSong.Cover.ToUTF8;
-      SlideCoverIndex := 0;
+      SetLength(Cover.Val, 1);
+      Cover.Val[0] := CurrentSong.Cover.ToUTF8;
+      Cover.SlideIndex := 0;
     end;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideCover,CoverSlideId,CoverVal,SlideCoverIndex);
+    UpdateSelectSlideOptions(Theme.EditSub.SlideCover,Cover.SlideId,Cover.Val,Cover.SlideIndex);
 
     // Header Background
     SetLength(Files, 0);
-    SetLength(BackgroundVal, 0);
-    SlideBackgroundIndex := -1;
+    SetLength(Background.Val, 0);
+    Background.SlideIndex := -1;
 
     for Ext in SUPPORTED_EXTS_IMAGE do
       Songs.FindFilesByExtension(Path(includeTrailingPathDelimiter(CurrentSong.Path.ToNative)), Path(Ext), true, Files);
 
     for FileIndex := 0 to High(Files) do
     begin
-      SetLength(BackgroundVal, High(BackgroundVal) + 2);
-      BackgroundVal[FileIndex] := ExtractFileName(Files[FileIndex].ToUTF8());
-      if UTF8CompareText(BackgroundVal[FileIndex], CurrentSong.Background.ToUTF8) = 0 then
-            SlideBackgroundIndex := FileIndex;
+      SetLength(Background.Val, High(Background.Val) + 2);
+      Background.Val[FileIndex] := ExtractFileName(Files[FileIndex].ToUTF8());
+      if UTF8CompareText(Background.Val[FileIndex], CurrentSong.Background.ToUTF8) = 0 then
+            Background.SlideIndex := FileIndex;
     end;
 
     if High(Files) < 0 then
     begin
-      SetLength(BackgroundVal, 1);
-      BackgroundVal[0] := CurrentSong.Background.ToUTF8;
-      SlideBackgroundIndex := 0;
+      SetLength(Background.Val, 1);
+      Background.Val[0] := CurrentSong.Background.ToUTF8;
+      Background.SlideIndex := 0;
     end;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideBackground,BackgroundSlideId,BackgroundVal,SlideBackgroundIndex);
+    UpdateSelectSlideOptions(Theme.EditSub.SlideBackground,Background.SlideId,Background.Val,Background.SlideIndex);
 
     // Header Video
     SetLength(Files, 0);
-    SetLength(VideoVal, 0);
-    SlideVideoIndex := -1;
+    SetLength(Video.Val, 0);
+    Video.SlideIndex := -1;
     for Ext in SUPPORTED_EXTS_VIDEO do
       Songs.FindFilesByExtension(Path(includeTrailingPathDelimiter(CurrentSong.Path.ToNative)), Path(Ext), true, Files);
 
     for FileIndex := 0 to High(Files) do
     begin
-      SetLength(VideoVal, High(VideoVal) + 2);
-      VideoVal[FileIndex] := ExtractFileName(Files[FileIndex].ToUTF8());
-      if UTF8CompareText(VideoVal[FileIndex], CurrentSong.Video.ToUTF8) = 0 then
-            SlideVideoIndex := FileIndex;
+      SetLength(Video.Val, High(Video.Val) + 2);
+      Video.Val[FileIndex] := ExtractFileName(Files[FileIndex].ToUTF8());
+      if UTF8CompareText(Video.Val[FileIndex], CurrentSong.Video.ToUTF8) = 0 then
+            Video.SlideIndex := FileIndex;
     end;
 
     if High(Files) < 0 then
     begin
-      SetLength(VideoVal, 1);
-      VideoVal[0] := CurrentSong.Video.ToUTF8;
-      SlideVideoIndex := 0;
+      SetLength(Video.Val, 1);
+      Video.Val[0] := CurrentSong.Video.ToUTF8;
+      Video.SlideIndex := 0;
     end;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideVideo,VideoSlideId,VideoVal,SlideVideoIndex);
+    UpdateSelectSlideOptions(Theme.EditSub.SlideVideo,Video.SlideId,Video.Val,Video.SlideIndex);
 
-    // Header VideoGap
-    SetLength(VideoGapVal, 1);
-    VideoGapVal[0] := '';
-    SlideVideoGapIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideVideoGap,VideoGapSlideId,VideoGapVal,SlideVideoGapIndex);
-    SelectsS[VideoGapSlideId].TextOpt[0].Align := 0;
-    SelectsS[VideoGapSlideId].TextOpt[0].X := SelectsS[VideoGapSlideId].TextureSBG.X + 5;
+    OnShowHeader(Theme.EditSub.SlideVideoGap, VideoGap, '');
+    OnShowHeader(Theme.EditSub.SlideBPM, BPM, '');
+    OnShowHeader(Theme.EditSub.SlideGAP, GAP, '');
+    OnShowHeader(Theme.EditSub.SlideStartTag, StartTag, '');
+    OnShowHeader(Theme.EditSub.SlideEndTag, EndTag, '');
+    OnShowHeader(Theme.EditSub.SlideMedleyStart, MedleyStart, '');
+    OnShowHeader(Theme.EditSub.SlideMedleyEnd, MedleyEnd, '');
+    OnShowHeader(Theme.EditSub.SlidePreviewStart, PreviewStart, '');
+    OnShowHeader(Theme.EditSub.SlideRelative, Relative, '');
+    OnShowHeader(Theme.EditSub.SlideStart, Start, '');
+    OnShowHeader(Theme.EditSub.SlideDuration, Duration, '');
+    OnShowHeader(Theme.EditSub.SlideTone, Tone, '');
+    OnShowHeader(Theme.EditSub.SlideLyric, LyricHeader, '');
 
-    // Header BPM
-    SetLength(BPMVal, 1);
-    BPMVal[0] := '';
-    SlideBPMIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideBPM,BPMSlideId,BPMVal,SlideBPMIndex);
-    SelectsS[BPMSlideId].TextOpt[0].Align := 0;
-    SelectsS[BPMSlideId].TextOpt[0].X := SelectsS[BPMSlideId].TextureSBG.X + 5;
-
-    // Header GAP
-    SetLength(GAPVal, 1);
-    GAPVal[0] := '';
-    SlideGAPIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideGAP,GAPSlideId,GAPVal,SlideGAPIndex);
-    SelectsS[GAPSlideId].TextOpt[0].Align := 0;
-    SelectsS[GAPSlideId].TextOpt[0].X := SelectsS[GAPSlideId].TextureSBG.X + 5;
-
-    // Header StartTag
-    SetLength(StartTagVal, 1);
-    StartTagVal[0] := '';
-    SlideStartTagIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideStartTag,StartTagSlideId,StartTagVal,SlideStartTagIndex);
-    SelectsS[StartTagSlideId].TextOpt[0].Align := 0;
-    SelectsS[StartTagSlideId].TextOpt[0].X := SelectsS[StartTagSlideId].TextureSBG.X + 5;
-
-    // Header EndTag
-    SetLength(EndTagVal, 1);
-    EndTagVal[0] := '';
-    SlideEndTagIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideEndTag,EndTagSlideId,EndTagVal,SlideEndTagIndex);
-    SelectsS[EndTagSlideId].TextOpt[0].Align := 0;
-    SelectsS[EndTagSlideId].TextOpt[0].X := SelectsS[EndTagSlideId].TextureSBG.X + 5;
-
-    // Header MedleyStart
-    SetLength(MedleyStartVal, 1);
-    MedleyStartVal[0] := '';
-    SlideMedleyStartIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideMedleyStart,MedleyStartSlideId,MedleyStartVal,SlideMedleyStartIndex);
-    SelectsS[MedleyStartSlideId].TextOpt[0].Align := 0;
-    SelectsS[MedleyStartSlideId].TextOpt[0].X := SelectsS[MedleyStartSlideId].TextureSBG.X + 5;
-
-    // Header MedleyEnd
-    SetLength(MedleyEndVal, 1);
-    MedleyEndVal[0] := '';
-    SlideMedleyEndIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideMedleyEnd,MedleyEndSlideId,MedleyEndVal,SlideMedleyEndIndex);
-    SelectsS[MedleyEndSlideId].TextOpt[0].Align := 0;
-    SelectsS[MedleyEndSlideId].TextOpt[0].X := SelectsS[MedleyEndSlideId].TextureSBG.X + 5;
-
-    // Header PreviewStart
-    SetLength(PreviewStartVal, 1);
-    PreviewStartVal[0] := '';
-    SlidePreviewStartIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlidePreviewStart,PreviewStartSlideId,PreviewStartVal,SlidePreviewStartIndex);
-    SelectsS[PreviewStartSlideId].TextOpt[0].Align := 0;
-    SelectsS[PreviewStartSlideId].TextOpt[0].X := SelectsS[PreviewStartSlideId].TextureSBG.X + 5;
-
-    // Header Relative
-    SetLength(RelativeVal, 1);
-    RelativeVal[0] := '';
-    UpdateSelectSlideOptions(Theme.EditSub.SlideRelative,RelativeSlideId,RelativeVal,SlideRelativeIndex);
-    SelectsS[RelativeSlideId].TextOpt[0].Align := 0;
-    SelectsS[RelativeSlideId].TextOpt[0].X := SelectsS[RelativeSlideId].TextureSBG.X + 5;
-
-    // Header Start
-    SetLength(StartVal, 1);
-    StartVal[0] := '';
-    SlideStartIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideStart,StartSlideId,StartVal,SlideStartIndex);
-    SelectsS[StartSlideId].TextOpt[0].Align := 0;
-    SelectsS[StartSlideId].TextOpt[0].X := SelectsS[StartSlideId].TextureSBG.X + 5;
-
-    // Header Duration
-    SetLength(DurationVal, 1);
-    DurationVal[0] := '';
-    SlideDurationIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideDuration,DurationSlideId,DurationVal,SlideDurationIndex);
-    SelectsS[DurationSlideId].TextOpt[0].Align := 0;
-    SelectsS[DurationSlideId].TextOpt[0].X := SelectsS[DurationSlideId].TextureSBG.X + 5;
-
-    // Header Tone
-    SetLength(ToneVal, 1);
-    ToneVal[0] := '';
-    SlideDurationIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideTone,ToneSlideId,ToneVal,SlideToneIndex);
-    SelectsS[ToneSlideId].TextOpt[0].Align := 0;
-    SelectsS[ToneSlideId].TextOpt[0].X := SelectsS[ToneSlideId].TextureSBG.X + 5;
-
-    // Header Lyric
-    SetLength(LyricVal, 1);
-    LyricVal[0] := '';
-    SlideLyricIndex := 1;
-    UpdateSelectSlideOptions(Theme.EditSub.SlideLyric,LyricSlideId,LyricVal,SlideLyricIndex);
     RegisterKeyBindings;
-
-    SelectsS[LyricSlideId].TextOpt[0].Align := 0;
-    SelectsS[LyricSlideId].TextOpt[0].X := SelectsS[LyricSlideId].TextureSBG.X + 5;
 
     // volume slides
     SetLength(VolumeAudio, 0);
@@ -5391,77 +5076,77 @@ begin
 
   // Song info
   // VideoGap
-  VideoGapVal[0] := ifthen(CurrentSong.VideoGAP <> 0, FloatToStr(CurrentSong.VideoGAP) + ' s', NOT_SET);
-  SelectsS[VideoGapSlideId].TextOpt[0].Text := VideoGapVal[0];
+  VideoGap.Val[0] := ifthen(CurrentSong.VideoGAP <> 0, FloatToStr(CurrentSong.VideoGAP) + ' s', NOT_SET);
+  SelectsS[VideoGap.SlideId].TextOpt[0].Text := VideoGap.Val[0];
   // BPM
   if not BPMEditMode then
   begin
-    BPMVal[0] := FloatToStr(CurrentSong.BPM[0].BPM / 4);
-    SelectsS[BPMSlideId].TextOpt[0].Text := BPMVal[0];
+    BPM.Val[0] := FloatToStr(CurrentSong.BPM[0].BPM / 4);
+    SelectsS[BPM.SlideId].TextOpt[0].Text := BPM.Val[0];
   end;
   // GAP
-  GAPVal[0] := FloatToStr(CurrentSong.GAP) + ' ms';
-  SelectsS[GAPSlideId].TextOpt[0].Text := GAPVal[0];
+  GAP.Val[0] := FloatToStr(CurrentSong.GAP) + ' ms';
+  SelectsS[GAP.SlideId].TextOpt[0].Text := GAP.Val[0];
   // StartTag
-  StartTagVal[0] := ifthen(CurrentSong.Start <> 0.0, FloatToStr(CurrentSong.Start) + ' s', NOT_SET);
-  SelectsS[StartTagSlideId].TextOpt[0].Text := StartTagVal[0];
+  StartTag.Val[0] := ifthen(CurrentSong.Start <> 0.0, FloatToStr(CurrentSong.Start) + ' s', NOT_SET);
+  SelectsS[StartTag.SlideId].TextOpt[0].Text := StartTag.Val[0];
   // EndTag
-  EndTagVal[0] := ifthen(CurrentSong.Finish > 0.0, FloatToStr(CurrentSong.Finish) + ' ms', NOT_SET);
-  SelectsS[EndTagSlideId].TextOpt[0].Text := EndTagVal[0];
+  EndTag.Val[0] := ifthen(CurrentSong.Finish > 0.0, FloatToStr(CurrentSong.Finish) + ' ms', NOT_SET);
+  SelectsS[EndTag.SlideId].TextOpt[0].Text := EndTag.Val[0];
   // MedleyStart
   if not (CurrentSong.isDuet) then
   begin
-    SelectsS[MedleyStartSlideId].Text.Text := Theme.EditSub.SlideMedleyStart.Text;
-    SelectsS[MedleyStartSlideId].TextOpt[0].Writable := false;
-    SelectsS[MedleyEndSlideId].Text.Text := Theme.EditSub.SlideMedleyEnd.Text;
-    SelectsS[MedleyEndSlideId].TextOpt[0].Writable := false;
+    SelectsS[MedleyStart.SlideId].Text.Text := Theme.EditSub.SlideMedleyStart.Text;
+    SelectsS[MedleyStart.SlideId].TextOpt[0].Writable := false;
+    SelectsS[MedleyEnd.SlideId].Text.Text := Theme.EditSub.SlideMedleyEnd.Text;
+    SelectsS[MedleyEnd.SlideId].TextOpt[0].Writable := false;
     if (MedleyNotes.isStart) then
-      MedleyStartVal[0] := IntToStr(Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes[MedleyNotes.start.note].StartBeat)
+      MedleyStart.Val[0] := IntToStr(Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes[MedleyNotes.start.note].StartBeat)
     else
-      MedleyStartVal[0] := NOT_SET;
-    SelectsS[MedleyStartSlideId].TextOpt[0].Text := MedleyStartVal[0];
+      MedleyStart.Val[0] := NOT_SET;
+    SelectsS[MedleyStart.SlideId].TextOpt[0].Text := MedleyStart.Val[0];
     // MedleyEnd
     if (MedleyNotes.isEnd) then
-      MedleyEndVal[0] := IntToStr(Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].StartBeat + Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].Duration)
+      MedleyEnd.Val[0] := IntToStr(Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].StartBeat + Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].Duration)
     else
-      MedleyEndVal[0] := NOT_SET;
-    SelectsS[MedleyEndSlideId].TextOpt[0].Text := MedleyEndVal[0];
+      MedleyEnd.Val[0] := NOT_SET;
+    SelectsS[MedleyEnd.SlideId].TextOpt[0].Text := MedleyEnd.Val[0];
   end
   else // reuse for P1/P2 tag
   begin
-    SelectsS[MedleyStartSlideId].Text.Text := 'P1:';
-    MedleyStartVal[0] := CurrentSong.DuetNames[0];
-    SelectsS[MedleyStartSlideId].TextOpt[0].Text := MedleyStartVal[0];
-    SelectsS[MedleyStartSlideId].TextOpt[0].Writable := true;
-    SelectsS[MedleyEndSlideId].Text.Text := 'P2:';
-    MedleyEndVal[0] := CurrentSong.DuetNames[1];
-    SelectsS[MedleyEndSlideId].TextOpt[0].Text := MedleyEndVal[0];
-    SelectsS[MedleyEndSlideId].TextOpt[0].Writable := true;
+    SelectsS[MedleyStart.SlideId].Text.Text := 'P1:';
+    MedleyStart.Val[0] := CurrentSong.DuetNames[0];
+    SelectsS[MedleyStart.SlideId].TextOpt[0].Text := MedleyStart.Val[0];
+    SelectsS[MedleyStart.SlideId].TextOpt[0].Writable := true;
+    SelectsS[MedleyEnd.SlideId].Text.Text := 'P2:';
+    MedleyEnd.Val[0] := CurrentSong.DuetNames[1];
+    SelectsS[MedleyEnd.SlideId].TextOpt[0].Text := MedleyEnd.Val[0];
+    SelectsS[MedleyEnd.SlideId].TextOpt[0].Writable := true;
   end;
   // PreviewStart
   if (CurrentSong.HasPreview) then
-    PreviewStartVal[0] := FloatToStr(CurrentSong.PreviewStart) + ' s'
+    PreviewStart.Val[0] := FloatToStr(CurrentSong.PreviewStart) + ' s'
   else
-    PreviewStartVal[0] := NOT_SET;
-  SelectsS[PreviewStartSlideId].TextOpt[0].Text := PreviewStartVal[0];
+    PreviewStart.Val[0] := NOT_SET;
+  SelectsS[PreviewStart.SlideId].TextOpt[0].Text := PreviewStart.Val[0];
   if (CurrentSong.Relative) then
-    RelativeVal[0] := Language.Translate('SONG_MENU_YES')
+    Relative.Val[0] := Language.Translate('SONG_MENU_YES')
   else
-    RelativeVal[0] := NOT_SET + ' (' + Language.Translate('SONG_MENU_NO') + ')';
-  SelectsS[RelativeSlideId].TextOpt[0].Text := RelativeVal[0];
+    Relative.Val[0] := NOT_SET + ' (' + Language.Translate('SONG_MENU_NO') + ')';
+  SelectsS[Relative.SlideId].TextOpt[0].Text := Relative.Val[0];
 
   //Error reading variables when no song is loaded
   if not (Error or TitleEditMode or TextEditMode) then
   begin
     // Note info
-    StartVal[0] := IntToStr(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
-    SelectsS[StartSlideId].TextOpt[0].Text := StartVal[0];
-    DurationVal[0] := IntToStr(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration);
-    SelectsS[DurationSlideId].TextOpt[0].Text := DurationVal[0];
-    ToneVal[0] := IntToStr(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone) + ' (' + GetNoteName(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone) + ')';
-    SelectsS[ToneSlideId].TextOpt[0].Text := ToneVal[0];
-    LyricVal[0] := Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
-    SelectsS[LyricSlideId].TextOpt[0].Text := LyricVal[0];
+    Start.Val[0] := IntToStr(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
+    SelectsS[Start.SlideId].TextOpt[0].Text := Start.Val[0];
+    Duration.Val[0] := IntToStr(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration);
+    SelectsS[Duration.SlideId].TextOpt[0].Text := Duration.Val[0];
+    Tone.Val[0] := IntToStr(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone) + ' (' + GetNoteName(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone) + ')';
+    SelectsS[Tone.SlideId].TextOpt[0].Text := Tone.Val[0];
+    LyricHeader.Val[0] := Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
+    SelectsS[LyricHeader.SlideId].TextOpt[0].Text := LyricHeader.Val[0];
   end;
 
   // Text Edit Mode
