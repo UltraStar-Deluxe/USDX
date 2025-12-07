@@ -288,7 +288,6 @@ type
       function ShiftVideoGap(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function ShiftGAP(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function ShiftAllNoteTones(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function DivideOrJoinNotes(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function EnterTextEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function EnterBPMEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function EnterPianoEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
@@ -302,8 +301,9 @@ type
       function CopyMoveLine(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameters: integer): boolean;
       function HandleSwitchSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function LyricsCapitalize(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      procedure DivideSentence;
-      procedure JoinSentence;
+      function DivideNotes(PressedKey: QWord = 0; CharCode: UCS4Char = 0; PressedDown: boolean = true; Parameter: integer = 0): boolean;
+      function JoinSentence(PressedKey: QWord = 0; CharCode: UCS4Char = 0; PressedDown: boolean = true; Parameter: integer = 0): boolean;
+      function DivideSentence(PressedKey: QWord = 0; CharCode: UCS4Char = 0; PressedDown: boolean = true; Parameter: integer = 0): boolean;
       procedure SwitchSentence(Steps: Integer);
       procedure DivideNote(doubleclick: boolean);
       procedure DeleteNote;
@@ -844,7 +844,7 @@ begin
       Click := false;
       AudioPlayback.Play;
 
-      // play video in sync if visible
+      // play video in sync if visibleDivideSentence
       if (fCurrentVideo <> nil) then UpdateVideoPosition(AudioPlayback.Position);
       Text[TextInfo].Text := Language.Translate('EDIT_INFO_JUMPTO_MEDLEY_AND_PLAY');
     end;
@@ -963,9 +963,17 @@ begin
   RegisterKeyBinding('SEC_041', 'SHIFT-KPPLUS', SDLK_KP_PLUS, ShiftAllNoteTones, 12);
   RegisterKeyBinding('SEC_041', 'KPMINUS', SDLK_KP_MINUS, ShiftAllNoteTones, -1);
   RegisterKeyBinding('SEC_041', 'SHIFT_KPMINUS', SDLK_KP_MINUS, ShiftAllNoteTones, -12);
-  RegisterKeyBinding('SEC_043', 'SLASH', SDLK_SLASH, DivideOrJoinNotes);
-  RegisterKeyBinding('SEC_043', 'HASH', SDLK_HASH, DivideOrJoinNotes);
-  RegisterKeyBinding('SEC_043', 'KPDIVIDE', SDLK_KP_DIVIDE, DivideOrJoinNotes);
+
+  RegisterKeyBinding('SEC_043', 'SLASH', SDLK_SLASH, DivideSentence);
+  RegisterKeyBinding('SEC_043', 'HASH', SDLK_HASH, DivideSentence);
+  RegisterKeyBinding('SEC_043', 'KPDIVIDE', SDLK_KP_DIVIDE, DivideSentence);
+  RegisterKeyBinding('SEC_043', 'CTRL_SLASH', SDLK_SLASH, DivideNotes);
+  RegisterKeyBinding('SEC_043', 'CTRL_HASH', SDLK_HASH, DivideNotes);
+  RegisterKeyBinding('SEC_043', 'CTRL_KPDIVIDE', SDLK_KP_DIVIDE, DivideNotes);
+  RegisterKeyBinding('SEC_043', 'SHIFT_SLASH', SDLK_SLASH, JoinSentence);
+  RegisterKeyBinding('SEC_043', 'SHIFT_HASH', SDLK_HASH, JoinSentence);
+  RegisterKeyBinding('SEC_043', 'SHIFT_KPDIVIDE', SDLK_KP_DIVIDE, JoinSentence);
+
   RegisterKeyBinding('SEC_045', 'F4', SDLK_F4, EnterTextEditMode);
   RegisterKeyBinding('SEC_045', 'F5', SDLK_F5, EnterBPMEditMode);
   RegisterKeyBinding('SEC_045', 'F6', SDLK_F6, EnterPianoEditMode);
@@ -1321,49 +1329,14 @@ begin
   ShowInteractiveBackground;
 end;
 
-      // SDLK_KP_DIVIDE is a temporary workaround for German keyboards
-      //SDLK_SLASH, SDLK_HASH, SDLK_KP_DIVIDE: DivideOrJoinNotes;
-function TScreenEditSub.DivideOrJoinNotes(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-var
-  ModState: word;
-begin
-  Result := true;
-
-  ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL);
-
+function TScreenEditSub.DivideNotes(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+begin;
   CopyToUndo;
-  if ModState = 0 then
-  begin
-    // Start a new sentence with currently selected note
-    if CurrentNote[CurrentTrack] > 0 then
-    begin
-      DivideSentence;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_DIVIDED');
-    end;
-    GoldenRec.KillAll;
-  end;
-
-  if ModState = KMOD_LSHIFT then
-  begin
-    // Join current with subsequent sentence
-    if Tracks[CurrentTrack].CurrentLine < Tracks[CurrentTrack].High then
-    begin
-      JoinSentence;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINES_JOINED');
-    end;
-    GoldenRec.KillAll;
-  end;
-
-  if ModState = KMOD_LCTRL then
-  begin
-    // divide note
-    DivideNote(false);
-    EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-    EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_NOTE_DIVIDED');
-    GoldenRec.KillAll;
-  end;
-  ShowInteractiveBackground;
+  DivideNote(false);
+  EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
+  EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_NOTE_DIVIDED');
+  GoldenRec.KillAll;
 end;
 
       // SDLK_F4: EnterTextEditMode
@@ -3033,7 +3006,7 @@ begin
   Result := true;
 end;
 
-procedure TScreenEditSub.DivideSentence;
+function TScreenEditSub.DivideSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   LineIndex:  Integer;
   LineStart:  Integer;
@@ -3043,6 +3016,9 @@ var
   NoteStart:  Integer;
   NoteHigh:   Integer;
 begin
+  if CurrentNote[CurrentTrack] <= 0 then
+    Exit; // cannot divide sentence at first note
+  CopyToUndo;
   // increase sentence length by 1
   LineLength := Length(Tracks[CurrentTrack].Lines);
   SetLength(Tracks[CurrentTrack].Lines, LineLength + 1);
@@ -3132,15 +3108,21 @@ begin
   Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
   EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINE_DIVIDED');
+  GoldenRec.KillAll;
+  ShowInteractiveBackground;
 end;
 
-procedure TScreenEditSub.JoinSentence;
+function TScreenEditSub.JoinSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   LineIndex: Integer;
   NoteIndex: Integer;
   StartNote: Integer;
   DstNote:   Integer;
 begin
+  if Tracks[CurrentTrack].CurrentLine >= Tracks[CurrentTrack].High then
+    Exit; // cannot join last sentence with next one
+  CopyToUndo;
   LineIndex := Tracks[CurrentTrack].CurrentLine;
 
   // add space to last note's syllable
@@ -3204,6 +3186,9 @@ begin
   Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
   EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_LINES_JOINED');
+  GoldenRec.KillAll;
+  ShowInteractiveBackground;
 end;
 
 procedure TScreenEditSub.SwitchSentence(Steps: integer);
