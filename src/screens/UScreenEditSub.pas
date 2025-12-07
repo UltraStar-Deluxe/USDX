@@ -285,12 +285,9 @@ type
       function HandleUndo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleChangeBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Delta: integer): boolean;
       function IncreaseNoteLength(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function DecreaseVideoGap(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function IncreaseVideoGap(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function DecreaseGAP(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function IncreaseGAP(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function IncreaseAllNoteTones(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function DecreaseAllNoteTones(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function ShiftVideoGap(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function ShiftGAP(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function ShiftAllNoteTones(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function DivideOrJoinNotes(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function EnterTextEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function EnterBPMEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
@@ -952,12 +949,20 @@ begin
   RegisterKeyBinding('SEC_090', '4', SDLK_4, ExtendedCopyPaste);
   RegisterKeyBinding('SEC_090', '5', SDLK_5, ExtendedCopyPaste);
   RegisterKeyBinding('SEC_090', '6', SDLK_6, ExtendedCopyPaste);
-  RegisterKeyBinding('SEC_080', '7', SDLK_7, DecreaseVideoGap);
-  RegisterKeyBinding('SEC_080', '8', SDLK_8, IncreaseVideoGap);
-  RegisterKeyBinding('SEC_080', '9', SDLK_9, DecreaseGAP);
-  RegisterKeyBinding('SEC_080', '0', SDLK_0, IncreaseGAP);
-  RegisterKeyBinding('SEC_041', 'KPPLUS', SDLK_KP_PLUS, IncreaseAllNoteTones);
-  RegisterKeyBinding('SEC_041', 'KPMINUS', SDLK_KP_MINUS, DecreaseAllNoteTones);
+  RegisterKeyBinding('SEC_080', '7', SDLK_7, ShiftVideoGap, -10);
+  RegisterKeyBinding('SEC_080', 'SHIFT_7', SDLK_7 + MOD_LSHIFT, ShiftVideoGap, -100);
+  RegisterKeyBinding('SEC_080', 'CTRL_7', SDLK_7 + MOD_LCTRL, ShiftVideoGap, -1000);
+  RegisterKeyBinding('SEC_080', '8', SDLK_8, ShiftVideoGap, 10);
+  RegisterKeyBinding('SEC_080', 'SHIFT_8', SDLK_8 + MOD_LSHIFT, ShiftVideoGap, 100);
+  RegisterKeyBinding('SEC_080', 'CTRL_8', SDLK_8 + MOD_LCTRL, ShiftVideoGap, 1000);
+  RegisterKeyBinding('SEC_080', '9', SDLK_9, ShiftGAP, -10);
+  RegisterKeyBinding('SEC_080', 'SHIFT_9', SDLK_9 + MOD_LSHIFT, ShiftGAP, -1000);
+  RegisterKeyBinding('SEC_080', '0', SDLK_0, ShiftGAP, 10);
+  RegisterKeyBinding('SEC_080', 'SHIFT_0', SDLK_0 + MOD_LSHIFT, ShiftGAP, 1000);
+  RegisterKeyBinding('SEC_041', 'KPPLUS', SDLK_KP_PLUS, ShiftAllNoteTones, 1);
+  RegisterKeyBinding('SEC_041', 'SHIFT-KPPLUS', SDLK_KP_PLUS, ShiftAllNoteTones, 12);
+  RegisterKeyBinding('SEC_041', 'KPMINUS', SDLK_KP_MINUS, ShiftAllNoteTones, -1);
+  RegisterKeyBinding('SEC_041', 'SHIFT_KPMINUS', SDLK_KP_MINUS, ShiftAllNoteTones, -12);
   RegisterKeyBinding('SEC_043', 'SLASH', SDLK_SLASH, DivideOrJoinNotes);
   RegisterKeyBinding('SEC_043', 'HASH', SDLK_HASH, DivideOrJoinNotes);
   RegisterKeyBinding('SEC_043', 'KPDIVIDE', SDLK_KP_DIVIDE, DivideOrJoinNotes);
@@ -1277,154 +1282,41 @@ begin
   SwitchSentence(Parameter);
 end;
 
-      // SDLK_7: DecreaseVideoGap
-function TScreenEditSub.DecreaseVideoGap(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-var
-  ModState: word;
+function TScreenEditSub.ShiftVideoGap(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-
-  ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL);
-
-  // Decrease VideoGap
   CopyToUndo;
-  if ModState = 0 then
-  begin
-    CurrentSong.VideoGAP := (round(CurrentSong.VideoGAP*100) - 1) / 100;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_VIDEOGAP_DECREASED_BY') + ' 0.01';
-  end;
-  if ModState = KMOD_LSHIFT then
-  begin
-    CurrentSong.VideoGAP := (round(CurrentSong.VideoGAP*100) - 10) / 100;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_VIDEOGAP_DECREASED_BY') + ' 0.1';
-  end;
-  if ModState = KMOD_LCTRL then
-  begin
-    CurrentSong.VideoGAP := (round(CurrentSong.VideoGAP*100) - 100) / 100;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_VIDEOGAP_DECREASED_BY') + ' 1.0';
-  end;
+  CurrentSong.VideoGAP := (round(CurrentSong.VideoGAP*1000) + Parameter) / 1000;
+  if Parameter < 0 then
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_VIDEOGAP_DECREASED_BY')
+  else
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_VIDEOGAP_INCREASED_BY');
+  Text[TextInfo].Text := Text[TextInfo].Text + ' ' + FormatFloat('0.0##', Abs(Parameter) / 1000) + ' s';
 end;
 
-      // SDLK_8: IncreaseVideoGap;
-function TScreenEditSub.IncreaseVideoGap(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-var
-  ModState: word;
+function TScreenEditSub.ShiftGAP(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-
-  ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL);
-
-  // Increase VideoGap
   CopyToUndo;
-  if ModState = 0 then
-  begin
-    CurrentSong.VideoGAP := (round(CurrentSong.VideoGAP*100) + 1) / 100;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_VIDEOGAP_INCREASED_BY') + ' 0.01 s';
-  end;
-  if ModState = KMOD_LSHIFT then
-  begin
-    CurrentSong.VideoGAP := (round(CurrentSong.VideoGAP*100) + 10) / 100;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_VIDEOGAP_INCREASED_BY') + ' 0.1 s';
-  end;
-  if ModState = KMOD_LCTRL then
-  begin
-    CurrentSong.VideoGAP := (round(CurrentSong.VideoGAP*100) + 100) / 100;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_VIDEOGAP_INCREASED_BY') + ' 1.0 s';
-  end;
+  CurrentSong.GAP :=  (round(CurrentSong.GAP*1000) + Parameter) / 1000;
+  if Parameter < 0 then
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_GAP_DECREASED_BY')
+  else
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_GAP_INCREASED_BY');
+  Text[TextInfo].Text := Text[TextInfo].Text + ' ' + FormatFloat('0.0##', Abs(Parameter) / 1000) + ' s';
 end;
 
-      // SDLK_9: DecreaseGAP
-function TScreenEditSub.DecreaseGAP(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-var
-  ModState: word;
+function TScreenEditSub.ShiftAllNoteTones(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-
-  ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT);
-
-  // Decrease GAP
   CopyToUndo;
-  if ModState = 0 then
-  begin
-    CurrentSong.GAP := CurrentSong.GAP - 10;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_GAP_DECREASED_BY') + ' 10 ms';
+  case Abs(Parameter) of
+    -12: Text[TextInfo].Text := Language.Translate('EDIT_INFO_ALL_TONES_DECREASED_BY_OCTAVE');
+     -1: Text[TextInfo].Text := Language.Translate('EDIT_INFO_ALL_TONES_DECREASED_BY_SEMITONE');
+      1: Text[TextInfo].Text := Language.Translate('EDIT_INFO_ALL_TONES_INCREASED_BY_SEMITONE');
+    12: Text[TextInfo].Text := Language.Translate('EDIT_INFO_ALL_TONES_INCREASED_BY_OCTAVE');
   end;
-  if ModState = KMOD_LSHIFT then
-  begin
-    CurrentSong.GAP := CurrentSong.GAP - 1000;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_GAP_DECREASED_BY') + ' 1000 ms';
-  end;
-end;
-
-      // SDLK_0: IncreaseGAP
-function TScreenEditSub.IncreaseGAP(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-var
-  ModState: word;
-begin
-  Result := true;
-
-  ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT);
-
-  // Increase GAP
-  CopyToUndo;
-  if ModState = 0 then
-  begin
-    CurrentSong.GAP := CurrentSong.GAP + 10;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_GAP_INCREASED_BY') + ' 10 ms';
-  end;
-  if ModState = KMOD_LSHIFT then
-  begin
-    CurrentSong.GAP := CurrentSong.GAP + 1000;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_GAP_INCREASED_BY') + ' 1000 ms';
-  end;
-end;
-
-      // SDLK_KP_PLUS: IncreaseAllNoteTones
-function TScreenEditSub.IncreaseAllNoteTones(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-var
-  ModState: word;
-begin
-  Result := true;
-
-  ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT);
-
-  // Increase tone of all notes
-  CopyToUndo;
-  if ModState = 0 then
-  begin
-    ChangeWholeTone(1);
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_ALL_TONES_INCREASED_BY_SEMITONE');
-  end;
-  if ModState = KMOD_LSHIFT then
-  begin
-    ChangeWholeTone(12);
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_ALL_TONES_INCREASED_BY_OCTAVE');
-  end;
-  GoldenRec.KillAll;
-  ShowInteractiveBackground;
-end;
-
-      // SDLK_KP_MINUS: DecreaseAllNoteTones
-function TScreenEditSub.DecreaseAllNoteTones(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-var
-  ModState: word;
-begin
-  Result := true;
-
-  ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT);
-
-  // Decrease tone of all notes
-  CopyToUndo;
-  if ModState = 0 then
-  begin
-    ChangeWholeTone(-1);
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_ALL_TONES_DECREASED_BY_SEMITONE');
-  end;
-  if ModState = KMOD_LSHIFT then
-  begin
-    ChangeWholeTone(-12);
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_ALL_TONES_DECREASED_BY_OCTAVE');
-  end;
+  ChangeWholeTone(Parameter);
   GoldenRec.KillAll;
   ShowInteractiveBackground;
 end;
