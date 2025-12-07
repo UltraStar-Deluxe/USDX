@@ -135,6 +135,8 @@ type
       MidiActive:              boolean;
       MidiTone:                Integer;
       MidiStopBeat:            Integer;
+      MidiLastLine:            Integer;
+      MidiLastTrack:           Integer;
       {$ENDIF}
 
       //for mouse move
@@ -3153,6 +3155,8 @@ begin
   LastMidiBeatValid := false;
   LastMidiBeat := 0;
   MidiLastNote := -1;
+  MidiLastLine  := -1;
+  MidiLastTrack := -1;
   MidiStopBeat := Low(Integer);
   {$ENDIF}
 end;
@@ -5600,9 +5604,20 @@ begin
     // stop the music
     if (MidiPos > MidiStop) then
     begin
-      StopMidi;
-      MidiLastNote := -1;
+      MidiOut.PutShort($B1, $7, Floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
+      if (MidiLastTrack >= Low(CurrentSong.Tracks)) and
+         (MidiLastTrack <= High(CurrentSong.Tracks)) and
+         (MidiLastLine >= 0) and
+         (MidiLastLine <= High(CurrentSong.Tracks[MidiLastTrack].Lines)) and
+         (MidiLastNote >= 0) and
+         (MidiLastNote <= CurrentSong.Tracks[MidiLastTrack].Lines[MidiLastLine].HighNote) then
+      begin
+        StopMidi;
+      end;
       PlaySentenceMidi := false;
+      MidiLastTrack := -1;
+      MidiLastLine  := -1;
+      MidiLastNote  := -1;
       LastMidiBeatValid := false;
     end
     else
@@ -5625,7 +5640,9 @@ begin
             PlayMidiTone(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].Tone);
             MidiStopBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].StartBeat +
               CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].Duration;
-            MidiLastNote := NoteIndex;
+            MidiLastTrack := CurrentTrack;
+            MidiLastLine  := CurrentSong.Tracks[CurrentTrack].CurrentLine;
+            MidiLastNote  := NoteIndex;
             Break;
           end;
       end;
@@ -5742,7 +5759,9 @@ begin
           PlayMidiTone(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone);
           MidiStopBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
             CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration;
-          MidiLastNote := CurrentNote[CurrentTrack];
+          MidiLastTrack := CurrentTrack;
+          MidiLastLine  := CurrentSong.Tracks[CurrentTrack].CurrentLine;
+          MidiLastNote  := CurrentNote[CurrentTrack];
         end;
 //      end;
     end;
