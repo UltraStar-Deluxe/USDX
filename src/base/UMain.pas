@@ -48,6 +48,7 @@ procedure CheckEvents;
 procedure StartTextInput;
 procedure StopTextInput;
 procedure SetTextInput(enabled: boolean);
+procedure Quit;
 
 type
   TMainThreadExecProc = procedure(Data: Pointer);
@@ -104,6 +105,14 @@ uses
   UTime,
   UWebcam;
   //UVideoAcinerella;
+
+var
+  KeepGoing: boolean = true;
+
+procedure Quit;
+begin
+  KeepGoing := false;
+end;
 
 procedure Main;
 var
@@ -411,12 +420,10 @@ var
   mouseDown: boolean;
   mouseBtn:  integer;
   mouseX, mouseY: PInt;
-  KeepGoing: boolean;
   SuppressKey: boolean;
   UpdateMouse: boolean;
   MouseHandling: boolean;
 begin
-  KeepGoing := true;
   SuppressKey := false;
   while (SDL_PollEvent(@Event) <> 0) do
   begin

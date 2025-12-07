@@ -265,6 +265,7 @@ type
       function LeaveScope(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function ShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function ToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleQuitShortcut(PressedKey: QWord = 0; CharCode: UCS4Char = 0; PressedDown: boolean = true; Parameter: integer = 0): boolean;
       procedure ToggleTextEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer);
       procedure RegisterKeyBindings;
       // Keybinding handlers for new pipeline
@@ -881,6 +882,12 @@ begin
 end;
 
 
+function TScreenEditSub.HandleQuitShortcut(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+begin
+  Quit;
+  Result := false;
+end;
+
 procedure TScreenEditSub.RegisterKeyBindings;
 begin
   if FKeyBindingsInitialized then
@@ -892,7 +899,7 @@ begin
   // Register all keybinding handler functions
   RegisterKeyBinding('SEC_001', 'TAB', SDLK_TAB, ShowPopupHelp);
   RegisterKeyBinding('SEC_001', 'ESC', SDLK_ESCAPE, LeaveScope);
-  RegisterKeyBinding('SEC_001', 'Q', SDLK_Q);
+  RegisterKeyBinding('SEC_001', 'Q', SDLK_Q, HandleQuitShortcut);
   RegisterKeyBinding('SEC_001', 'CTRL_Z', SDLK_Z + MOD_LCTRL, HandleUndo);
 
   RegisterKeyBinding('SEC_010', 'R', SDLK_R, ReloadSong);
@@ -958,7 +965,8 @@ begin
   RegisterKeyBinding('SEC_045', 'F5', SDLK_F5, EnterBPMEditMode);
   RegisterKeyBinding('SEC_045', 'F6', SDLK_F6, EnterPianoEditMode);
   RegisterKeyBinding('SEC_030', 'SPACE', SDLK_SPACE, PlayNote);
-  RegisterKeyBinding('SEC_045', 'DELETE', SDLK_DELETE, DeleteNotes);
+  RegisterKeyBinding('SEC_045', 'CTRL_DELETE', SDLK_DELETE + MOD_LCTRL, DeleteNotes);
+  RegisterKeyBinding('SEC_045', 'CTRL_SHIFT_DELETE', SDLK_DELETE + MOD_LCTRL + MOD_LSHIFT, DeleteNotes, SelectFull);
   RegisterKeyBinding('SEC_045', 'PERIOD', SDLK_PERIOD, MoveTextToRight);
   RegisterKeyBinding('SEC_020', 'RIGHT', SDLK_RIGHT, HandleMoveRight);
   RegisterKeyBinding('SEC_020', 'LEFT', SDLK_LEFT, HandleMoveLeft);
@@ -1880,34 +1888,23 @@ begin
     end;
 end;
 
-      // SDLK_DELETE: DeleteNotes
 function TScreenEditSub.DeleteNotes(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-var
-  ModState: word;
 begin
   Result := true;
-
-  ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL);
-
-  if ModState = KMOD_LCTRL then
+  // deletes current note
+  CopyToUndo;
+  if Parameter = SelectFull then
   begin
-    // deletes current note
-    CopyToUndo;
-    DeleteNote;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_DELETE_NOTE');
-    GoldenRec.KillAll;
-    ShowInteractiveBackground;
-  end;
-
-  if (ModState = (KMOD_LCTRL or KMOD_LSHIFT)) then
-  begin
-    // deletes current sentence
-    CopyToUndo;
     DeleteSentence;
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_DELETE_SENTENCE');
-    GoldenRec.KillAll;
-    ShowInteractiveBackground;
+  end
+  else
+  begin
+    DeleteNote;
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_DELETE_NOTE');
   end;
+  GoldenRec.KillAll;
+  ShowInteractiveBackground;
 end;
 
       // SDLK_PERIOD: MoveTextToRight
@@ -3141,6 +3138,7 @@ begin
     end; // LineIndex
   end; // TrackIndex
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_FIX_TIMINGS');
+  Result := true;
 end;
 
 procedure TScreenEditSub.DivideSentence;
