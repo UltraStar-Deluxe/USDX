@@ -129,6 +129,8 @@ type
       MidiTime:                real;
       MidiPos:                 real;
       MidiLastNote:            Integer;
+      MidiLastLine:            Integer;
+      MidiLastTrack:           Integer;
       {$ENDIF}
 
       //for mouse move
@@ -4726,6 +4728,12 @@ begin
   //video
   fCurrentVideo := nil;
 
+  {$IFDEF UseMIDIPort}
+  MidiLastNote  := -1;
+  MidiLastLine  := -1;
+  MidiLastTrack := -1;
+  {$ENDIF}
+
   EditorLyrics[0] := TEditorLyrics.Create;
   EditorLyrics[1] := TEditorLyrics.Create;
 
@@ -5417,8 +5425,22 @@ begin
     if (MidiPos > MidiStop) then
     begin
       MidiOut.PutShort($B1, $7, Floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
-      MidiOut.PutShort(MIDI_NOTEOFF or 1, CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[MidiLastNote].Tone + 60, 127);
+      if (MidiLastTrack >= Low(CurrentSong.Tracks)) and
+         (MidiLastTrack <= High(CurrentSong.Tracks)) and
+         (MidiLastLine >= 0) and
+         (MidiLastLine <= High(CurrentSong.Tracks[MidiLastTrack].Lines)) and
+         (MidiLastNote >= 0) and
+         (MidiLastNote <= CurrentSong.Tracks[MidiLastTrack].Lines[MidiLastLine].HighNote) then
+      begin
+        MidiOut.PutShort(
+          MIDI_NOTEOFF or 1,
+          CurrentSong.Tracks[MidiLastTrack].Lines[MidiLastLine].Notes[MidiLastNote].Tone + 60,
+          127);
+      end;
       PlaySentenceMidi := false;
+      MidiLastTrack := -1;
+      MidiLastLine  := -1;
+      MidiLastNote  := -1;
     end;
 
     // click
@@ -5435,7 +5457,9 @@ begin
           if NoteIndex > 0 then
             MidiOut.PutShort(MIDI_NOTEOFF or 1, CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex-1].Tone + 60, 127);
           MidiOut.PutShort($91, CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].Tone + 60, 127);
-          MidiLastNote := NoteIndex;
+            MidiLastTrack := CurrentTrack;
+            MidiLastLine  := CurrentSong.Tracks[CurrentTrack].CurrentLine;
+            MidiLastNote  := NoteIndex;
         end;
     end;
   end; // if PlaySentenceMidi
@@ -5541,7 +5565,9 @@ begin
             MidiOut.PutShort($81, CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone + 60, 127);
           MidiOut.PutShort($91, CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone + 60, 127);
 
-          MidiLastNote := NoteIndex;
+          MidiLastTrack := CurrentTrack;
+          MidiLastLine  := CurrentSong.Tracks[CurrentTrack].CurrentLine;
+          MidiLastNote  := CurrentNote[CurrentTrack];
         end;
 //      end;
     end;
