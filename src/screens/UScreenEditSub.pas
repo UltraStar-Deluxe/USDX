@@ -276,11 +276,11 @@ type
       function HandleMultiplyBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleVideo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; PlayMidiFull: integer): boolean;
       function HandlePaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; PasteSelection: integer): boolean;
-      function HandleFixTimings(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function FixTimings(PressedKey: QWord = 0; CharCode: UCS4Char = 0; PressedDown: boolean = true; Parameter: integer = 0): boolean;
       function HandlePlaySentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; AudioMidiSelector: integer): boolean;
       function HandleSetGoldenNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleSetFreestyleNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function HandleLyricsCorrectSpaces(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function LyricsCorrectSpaces(PressedKey: QWord = 0; CharCode: UCS4Char = 0; PressedDown: boolean = true; Parameter: integer = 0): boolean;
       function HandleUndo(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function HandleChangeBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Delta: integer): boolean;
       function IncreaseNoteLength(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
@@ -304,8 +304,6 @@ type
       function CopyMoveLine(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameters: integer): boolean;
       function HandleSwitchSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function LyricsCapitalize(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      procedure LyricsCorrectSpaces;
-      procedure FixTimings;
       procedure DivideSentence;
       procedure JoinSentence;
       procedure SwitchSentence(Steps: Integer);
@@ -913,7 +911,7 @@ begin
   RegisterKeyBinding('SEC_085', 'SHIFT_M', SDLK_M + MOD_LSHIFT, HandleMultiplyBPM,2);
 
   RegisterKeyBinding('SEC_045', 'C', SDLK_C, LyricsCapitalize);
-  RegisterKeyBinding('SEC_045', 'C', SDLK_C + MOD_LSHIFT, HandleLyricsCorrectSpaces);
+  RegisterKeyBinding('SEC_045', 'C', SDLK_C + MOD_LSHIFT, LyricsCorrectSpaces);
   RegisterKeyBinding('SEC_045', 'C', SDLK_C + MOD_LCTRL, MarkCopySrc);
 
   RegisterKeyBinding('SEC_030', 'V', SDLK_V, HandleVideo);
@@ -922,7 +920,7 @@ begin
   RegisterKeyBinding('SEC_090', 'CTRL_ALT_V', SDLK_V + MOD_LCTRL + MOD_LALT, HandlePaste, SelectNotes);
   RegisterKeyBinding('SEC_090', 'CTRL_ALT_SHIFT_V', SDLK_V + MOD_LCTRL + MOD_LALT + MOD_LSHIFT, HandlePaste, SelectText + SelectNotes);
 
-  RegisterKeyBinding('SEC_045', 'T', SDLK_T, HandleFixTimings);
+  RegisterKeyBinding('SEC_045', 'T', SDLK_T, FixTimings);
 
   RegisterKeyBinding('SEC_030', 'P', SDLK_P, HandlePlaySentence,SelectAudio);
   RegisterKeyBinding('SEC_030', 'SHIFT_P', SDLK_P + MOD_LSHIFT, HandlePlaySentence,SelectMIDI);
@@ -1048,18 +1046,6 @@ begin
 
   GoldenRec.KillAll;
   ShowInteractiveBackground;
-end;
-
-      // SDLK_T: HandleFixTimings;
-function TScreenEditSub.HandleFixTimings(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-begin
-  Result := true;
-
-  // Fixes timings between sentences
-  CopyToUndo;
-  FixTimings;
-  Text[TextInfo].Text := Language.Translate('EDIT_INFO_FIX_TIMINGS');
-  Exit;
 end;
 
 function TScreenEditSub.HandlePlaySentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; AudioMidiSelector: integer): boolean;
@@ -3039,7 +3025,7 @@ begin
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_CAPITALIZATION_CORRECTED');
 end;
 
-procedure TScreenEditSub.LyricsCorrectSpaces;
+function TScreenEditSub.LyricsCorrectSpaces(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   TrackIndex:   Integer;
   LineIndex:    Integer;
@@ -3094,7 +3080,7 @@ begin
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_SPACES_CORRECTED');
 end;
 
-procedure TScreenEditSub.FixTimings;
+function TScreenEditSub.FixTimings(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   TrackIndex:   Integer;
   LineIndex:    Integer;
@@ -3104,6 +3090,7 @@ var
   MaxLineStart: Integer;
   FirstBeat:    Integer;
 begin
+  CopyToUndo;
   FirstBeat := High(Integer);
 
   for TrackIndex := 0 to High(Tracks) do
@@ -3153,12 +3140,7 @@ begin
       end; // with
     end; // LineIndex
   end; // TrackIndex
-end;
-
-function TScreenEditSub.HandleLyricsCorrectSpaces(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-begin
-  Result := true;
-  LyricsCorrectSpaces;
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_FIX_TIMINGS');
 end;
 
 procedure TScreenEditSub.DivideSentence;
