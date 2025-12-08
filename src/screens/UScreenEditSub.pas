@@ -172,10 +172,10 @@ type
       TextPosition:            Integer;
         CurrentEditMode:         TEditMode;
 
-  FKeyBindingsInitialized: boolean;
-  FTextModeBindingsRegistered: boolean;
-  FPianoModeBindingsRegistered: boolean;
-  FTextModeKeyBindingEntries: array of TEditModeKeyBindingEntry;
+      FKeyBindingsInitialized: boolean;
+      FTextModeBindingsRegistered: boolean;
+      FPianoModeBindingsRegistered: boolean;
+      FTextModeKeyBindingEntries: array of TEditModeKeyBindingEntry;
 
       PianoKeysLow: TPianoKeyArray;
       PianoKeysHigh: TPianoKeyArray;
@@ -315,7 +315,6 @@ type
       function ShiftNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function ShiftAllNotes(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function ChangePitch(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function PlayNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function DeleteNotes(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function SwitchTrack(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Direction: integer): boolean;
       function CopyMoveLine(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameters: integer): boolean;
@@ -365,18 +364,17 @@ type
       constructor Create; override;
       destructor Destroy; override;
       procedure OnShow; override;
-  function  ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
-  function  ParseInputEditText(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
-  function  ParseInputEditBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
-  function  ParseInputEditPiano(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
-  function  HandleTextEditCancel(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-  function  HandleTextEditCommit(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-  function  HandleTextEditBackspace(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-  function  HandleTextEditDelete(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-  function  HandleTextEditMoveCursor(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Direction: integer): boolean;
-  function  GetEditedTextValue: UTF8String;
-  procedure RestoreCurrentEditValue;
-  procedure CommitCurrentEditValue;
+      function  ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
+      function  ParseInputEditText(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
+      function  ParseInputEditPiano(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
+      function  HandleTextEditCancel(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function  HandleTextEditCommit(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function  HandleTextEditBackspace(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function  HandleTextEditDelete(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function  HandleTextEditMoveCursor(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Direction: integer): boolean;
+      function  GetEditedTextValue: UTF8String;
+      procedure RestoreCurrentEditValue;
+      procedure CommitCurrentEditValue;
       procedure ApplyTone(NewTone: Integer);
       function  ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean; override;
       function  Draw: boolean; override;
@@ -392,6 +390,7 @@ const
     emLyric,
     emTitle,
     emArtist,
+    emBPM,
     emLanguage,
     emEdition,
     emGenre,
@@ -472,10 +471,10 @@ end;
 
 function TScreenEditSub.GetKeyBindingContext: UTF8String;
 begin
-  if (CurrentEditMode in TextInputModes) or (CurrentEditMode = emBPM) then
-    Exit(TextModeContextId)
+  if CurrentEditMode in TextInputModes then
+    Result := TextModeContextId
   else if CurrentEditMode = emPiano then
-    Exit(PianoModeContextId)
+    Result := PianoModeContextId
   else
     Result := ID;
 end;
@@ -501,15 +500,7 @@ begin
   end;
 
   if CurrentEditMode in TextInputModes then
-  begin
-    Result := ParseInputEditText(PressedKey, CharCode, PressedDown);
-    Exit;
-  end
-  else if CurrentEditMode = emBPM then
-  begin
-    Result := ParseInputEditBPM(PressedKey, CharCode, PressedDown);
-    Exit;
-  end
+    Result := ParseInputEditText(PressedKey, CharCode, PressedDown)
   else
     TryHandleKeyBinding(PressedKey, CharCode, PressedDown, Result);
 end;
@@ -1903,29 +1894,24 @@ begin
   Result := true;
   EnsureTextModeKeyBindingsRegistered;
 
-  if (PressedDown) then
+  // check normal keys
+  if (IsPrintableChar(CharCode)) then
   begin
-    // check normal keys
-    if (IsPrintableChar(CharCode)) then
+    CurrentEditText := UTF8Copy(CurrentEditText, 1,TextPosition) + UCS4ToUTF8String(CharCode) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText));
+    Inc(editLengthText);
+    Inc(TextPosition);
+
+    if CurrentEditMode = emLyric then
     begin
-      CurrentEditText :=
-      UTF8Copy(CurrentEditText, 1,TextPosition) + UCS4ToUTF8String(CharCode) +
-      UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText));
-      Inc(editLengthText);
-      Inc(TextPosition);
-
-      if CurrentEditMode = emLyric then
-      begin
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text := CurrentEditText;
-        EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-        EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
-      end;
-      Exit;
+      Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text := CurrentEditText;
+      EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
+      EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
     end;
-
-    if TryHandleTextModeKeyBinding(PressedKey, CharCode, PressedDown, Result) then
-      Exit;
+    Exit;
   end;
+
+  if TryHandleTextModeKeyBinding(PressedKey, CharCode, PressedDown, Result) then
+    Exit;
 end;
 
 function TScreenEditSub.GetEditedTextValue: UTF8String;
@@ -1953,6 +1939,11 @@ begin
           SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
         Exit;
       end;
+    emBPM:
+      begin
+        SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
+        Exit;
+      end;
     emTitle:
       CurrentSong.Title := BackupEditText;
     emArtist:
@@ -1978,6 +1969,7 @@ procedure TScreenEditSub.CommitCurrentEditValue;
 var
   Value: UTF8String;
   UpdatedYear: Integer;
+  UpdatedBPM: Double;
 
   procedure CommitEdit(var Field: UTF8String; const NewValue: UTF8String; const SlideTheme: TThemeSelectSlide; var Header: THeader; AllowEmpty: boolean = true; SetUnknown: boolean = false);
   begin
@@ -2008,11 +2000,7 @@ var
           begin
             CurrentSong.Year := UpdatedYear;
             CurrentEditText := IntToStr(UpdatedYear);
-            Year.Val[0] := CurrentEditText;
-            SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-            UpdateSelectSlideOptions(Theme.EditSub.SlideYear, Year.SlideId, Year.Val, Year.SlideIndex);
-            SelectsS[Year.SlideId].TextOpt[0].Align := 0;
-            SelectsS[Year.SlideId].TextOpt[0].X := SelectsS[Year.SlideId].TextureSBG.X + 5;
+            CommitEdit(CurrentEditText, CurrentEditText, Theme.EditSub.SlideYear, Year);
           end
           else
           begin
@@ -2023,6 +2011,18 @@ var
       emCreator: CommitEdit(CurrentSong.Creator, Value, Theme.EditSub.SlideCreator, Creator);
       emDuetP1: CommitEdit(CurrentSong.DuetNames[0], Value, Theme.EditSub.SlideMedleyStart, MedleyStart, false, false);
       emDuetP2: CommitEdit(CurrentSong.DuetNames[1], Value, Theme.EditSub.SlideMedleyEnd, MedleyEnd, false, false);
+      emBPM:
+        begin
+          if (TryStrToFloat(Value, UpdatedBPM)) and (UpdatedBPM > 0) then
+          begin
+            ChangeBPM(UpdatedBPM * 4);
+            CurrentEditText := FloatToStr(UpdatedBPM * 4);
+            BPM.Val[0] := CurrentEditText;
+            CommitEdit(CurrentEditText, CurrentEditText, Theme.EditSub.SlideBPM, BPM);
+          end
+          else
+            SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
+        end;
       emLyric:
         begin
           CommitEdit(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text, Value, Theme.EditSub.SlideLyric, LyricHeader);
@@ -2114,118 +2114,6 @@ begin
     else
       TextPosition := editLengthText-1;
   end;
-end;
-
-function TScreenEditSub.ParseInputEditBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
-var
-  SDL_ModState:  word;
-  qBPM:          real;
-begin
-  // used when in Text Edit Mode
-  Result := true;
-
-  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
-    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT {+ KMOD_CAPS});
-
-  if (PressedDown) then
-  begin
-    // only allow digits and decimal separators
-    if (CharCode in [48..57, 46]) then    // 48..57 = 0-9, 44 = decimal comma, 46 = decimal point
-    begin
-      CurrentEditText := UTF8Copy(CurrentEditText, 1,TextPosition) + UCS4ToUTF8String(CharCode) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText));
-      Inc(editLengthText);
-      Inc(TextPosition);
-
-      Exit;
-    end;
-
-    // check special keys
-    case PressedKey of
-      SDLK_TAB:
-        begin
-          ShowPopupHelp(PressedKey, CharCode, PressedDown, 0);
-          Exit;
-        end;
-      SDLK_ESCAPE:
-        begin
-          // exit BPM edit mode, restore previous BPM value
-          SelectsS[CurrentSlideId].TextOpt[0].Text := FloatToStr(CurrentSong.BPM[0].BPM / 4);
-          CurrentEditMode := emNone;
-          StopTextInput;
-          editLengthText := 0;
-          TextPosition := -1;
-        end;
-      SDLK_F5, SDLK_RETURN:
-        begin
-          // Exit BPM Edit Mode
-          //CopyToUndo;
-          if (TryStrToFloat(UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition), qBPM)) then
-          begin
-            BPM.Val[0] := FloatToStr(qBPM * 4);
-            ChangeBPM(qBPM * 4);
-            SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-            UpdateSelectSlideOptions(Theme.EditSub.SlideBPM,BPM.SlideId,BPM.Val,BPM.SlideIndex);
-            SelectsS[BPM.SlideId].TextOpt[0].Align := 0;
-            SelectsS[BPM.SlideId].TextOpt[0].X := SelectsS[BPM.SlideId].TextureSBG.X + 5;
-          end
-          else
-          begin
-            CurrentSong.BPM[0].BPM := 0;
-            SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
-          end;
-
-          CurrentEditMode := emNone;
-          StopTextInput;
-          editLengthText := 0;
-          TextPosition := -1;
-          CurrentSlideId := -1;
-        end;
-
-      SDLK_BACKSPACE:
-        begin
-          if (TextPosition > 0) then
-          begin
-            UTF8Delete(CurrentEditText, TextPosition, 1);
-            dec(TextPosition);
-          end;
-        end;
-
-      SDLK_DELETE:
-        begin
-            UTF8Delete(CurrentEditText, TextPosition+1, 1);
-        end;
-
-      SDLK_RIGHT:
-        begin
-          // right
-          if SDL_ModState = 0 then
-          begin
-            if (TextPosition >= 0) and (TextPosition < editLengthText-1) then
-                TextPosition := TextPosition + 1
-            else
-              begin
-              // todo change to next note
-              TextPosition := 0;
-              end;
-          end;
-        end;
-
-      SDLK_LEFT:
-        begin
-          // left
-          if SDL_ModState = 0 then
-          begin
-            if TextPosition > 0 then
-                TextPosition := TextPosition - 1
-            else
-              begin
-                TextPosition := editLengthText-1;
-              end;
-          end;
-        end;
-
-    end; //case
-  end; //if (PressedDown)
 end;
 
 procedure TScreenEditSub.ApplyTone(NewTone: Integer);
