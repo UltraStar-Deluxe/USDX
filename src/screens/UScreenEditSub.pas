@@ -1496,124 +1496,17 @@ begin
   CheckField(MedleyEnd.SlideId, ifthen(CurrentSong.DuetNames[1] <> '', CurrentSong.DuetNames[1], NOT_SET), emDuetP2);
   CheckField(LyricHeader.SlideId, Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text, emLyric);
     
-    if Interaction = 24 then // UndoButtonId
-    begin
-      CopyFromUndo;
-      GoldenRec.KillAll;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_UNDO');
-      ShowInteractiveBackground;
+    case Interaction of
+      24: HandlePlaySentence(0, 0, true, SelectMIDI);
+      27: HandlePlaySentence(0, 0, true, SelectMIDI + SelectAudio);
+      28: HandlePlaySentence(0, 0, true, SelectAudio);
+      25: HandleSetFreestyleNote(0, 0, true, 0);
+      26: HandleSetGoldenNote(0, 0, true, 0);
+      29: HandleUndo(0, 0, true, 0);
+      30: SwitchSentence(-1);
+      31: SwitchSentence(1);
     end;
-
-    if Interaction = 25 then // PreviousSeqButtonID
-    begin
-      SwitchSentence(-1);
-    end;
-
-    if Interaction = 26 then // NextSeqButtonID
-    begin
-      SwitchSentence(1);
-    end;
-
-    if Interaction = 27 then // FreestyleButtonID
-    begin
-      CopyToUndo;
-      if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntFreestyle) then
-      begin
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType := ntRap;
-      end
-      else if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntRap) then
-      begin
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType := ntNormal;
-      end
-      else
-      begin
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType := ntFreestyle;
-      end;
-      GoldenRec.KillAll;
-
-      // update lyrics
-      EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-      EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
-      Exit;
-    end;
-
-    if Interaction = 28 then // GoldButtonID
-    begin
-      CopyToUndo;
-      if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntGolden) then
-      begin
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType := ntRapGolden;
-      end
-      else if (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntRapGolden) then
-      begin
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType := ntNormal;
-      end
-      else
-      begin
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType := ntGolden;
-      end;
-      GoldenRec.KillAll;
-      Exit;
-    end;
-
-    if Interaction = 29 then // PlayOnlyButtonID
-    begin
-      // Play Sentence
-      Click := true;
-      AudioPlayback.Stop;
-      PlayVideo := false;
-      StopVideoPreview;
-      Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
-      CurrentNote[CurrentTrack] := 0;
-      R := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
-      if R <= AudioPlayback.Length then
-      begin
-        AudioPlayback.Position := R;
-        PlayStopTime := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat);
-        PlaySentence := true;
-        AudioPlayback.Play;
-        LastClick := -100;
-      end;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE');
-    end;
-
-    if Interaction = 30 then // PlayWithNoteButtonID
-    begin
-      Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
-      CurrentNote[CurrentTrack] := 0;
-      PlaySentenceMidi := true;
-      PlayVideo := false;
-      StopVideoPreview;
-      {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
-      MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
-      MidiStop  := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat); {$ENDIF}
-      LastClick := -100;
-
-      PlaySentence := true;
-      Click := true;
-      AudioPlayback.Stop;
-      AudioPlayback.Position := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat)+0{-0.10};
-      PlayStopTime := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat)+0;
-      AudioPlayback.Play;
-      LastClick := -100;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE');
-    end;
-
-    if Interaction = 31 then // PlayNoteButtonID
-    begin
-      Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
-      CurrentNote[CurrentTrack] := 0;
-      PlaySentenceMidi := true;
-      PlayVideo := false;
-      StopVideoPreview;
-      {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
-      MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
-      MidiStop := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat); {$ENDIF}
-
-      LastClick := -100;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE');
-    end;
-
+    
     for LineIndex := 0 to Tracks[CurrentTrack].High do
     begin
       if Interaction = InteractiveLineId[LineIndex] then
