@@ -177,9 +177,6 @@ type
       FPianoModeBindingsRegistered: boolean;
       FTextModeKeyBindingEntries: array of TEditModeKeyBindingEntry;
 
-      PianoKeysLow: TPianoKeyArray;
-      PianoKeysHigh: TPianoKeyArray;
-
       // to interactive divide note
       LastClickTime:           Integer;
 
@@ -333,6 +330,7 @@ type
       procedure ChangeWholeTone(Tone: Integer);
       procedure MoveAllToEnd(Move: Integer);
       function MoveTextToRight(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandlePianoModeExit(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function MarkCopySrc(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       procedure CopySentence(SrcTrack, SrcLine, DstTrack, DstLine, BeatOffset: Integer; CopyText: boolean = true; CopyNotes: boolean = true; EnforceSrcLength: boolean = false);
       procedure MakeSolo;
@@ -366,7 +364,6 @@ type
       procedure OnShow; override;
       function  ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean; override;
       function  ParseInputEditText(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
-      function  ParseInputEditPiano(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
       function  HandleTextEditCancel(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function  HandleTextEditCommit(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function  HandleTextEditBackspace(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
@@ -375,7 +372,7 @@ type
       function  GetEditedTextValue: UTF8String;
       procedure RestoreCurrentEditValue;
       procedure CommitCurrentEditValue;
-      procedure ApplyTone(NewTone: Integer);
+      function ApplyTone(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; NewTone: integer): boolean;
       function  ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean; override;
       function  Draw: boolean; override;
       procedure OnHide; override;
@@ -410,6 +407,19 @@ const
   SelectAny     = $1000;
   SelectBPM     = $2000;
   SelectSingle  = $4000;
+  PianoKeyCategoryId = 'SEC_PIANO';
+  PianoLowTokenPrefix = 'PIANO_LOW_';
+  PianoHighTokenPrefix = 'PIANO_HIGH_';
+  PianoLowBaseOffset = -7;
+  PianoHighBaseOffset = 6;
+  PianoLowDefaults: array[0..18] of cardinal = (
+    60, 97, 121, 115, 120, 100, 99, 118, 103, 98,
+    104, 110, 109, 107, 44, 108, 46, 246, 45
+  );
+  PianoHighDefaults: array[0..20] of cardinal = (
+    49, 113, 50, 119, 51, 101, 114, 53, 116, 54,
+    122, 117, 56, 105, 57, 111, 48, 112, 252, 96, 43
+  );
 
 implementation
 
@@ -484,20 +494,6 @@ end;
 function TScreenEditSub.ParseInput(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-
-  if CurrentEditMode = emPiano then
-  begin
-    Result := ParseInputEditPiano(PressedKey, CharCode, PressedDown);
-    if (Result = true) then
-    begin
-      Exit;
-    end;
-    if (PressedKey = SDLK_RETURN) then
-    begin
-      PressedKey := SDLK_P;
-    end;
-      Result := true;
-  end;
 
   if CurrentEditMode in TextInputModes then
     Result := ParseInputEditText(PressedKey, CharCode, PressedDown)
@@ -1044,6 +1040,13 @@ begin
 end;
 
 procedure TScreenEditSub.EnsureEditModeKeyBindingsRegistered;
+const
+  PianoKeysLow: array[0..18] of QWord = (60,97,121,115,120,100,99,118,103,98,104,110,109,107,44,108,46,246,45);
+  PianoKeysHigh: array[0..20] of QWord = (49,113,50,119,51,101,114,53,116,54,122,117,56,105,57,111,48,112,252,96,43);
+  PianoKeysLowStrings: array[0..18] of UTF8String = ('A','Y','S','X','D','C','V','G','B','H','N','M','K',',','L','.','Ö','-','Ä');
+  PianoKeysHighStrings: array[0..20] of UTF8String = ('1','Q','2','W','3','E','R','5','T','6','Z','U','8','I','9','O','0','P','Ü','´','+');
+var
+  I: Integer;
 begin
   if KeyBindings = nil then
     Exit;
@@ -1052,7 +1055,7 @@ begin
 
   if not FPianoModeBindingsRegistered then
   begin
-    RegisterKeyBinding(PianoModeContextId,'SEC_001', 'ESC', SDLK_ESCAPE);
+    RegisterKeyBinding(PianoModeContextId,'SEC_001', 'ESC', SDLK_ESCAPE, HandlePianoModeExit);
     RegisterKeyBinding(PianoModeContextId,'SEC_001', 'TAB', SDLK_TAB, ShowPopupHelp);
     RegisterKeyBinding(PianoModeContextId,'SEC_030', 'P', SDLK_RETURN, HandlePlaySentence,SelectAudio);
     RegisterKeyBinding(PianoModeContextId,'SEC_030', 'SHIFT_P', SDLK_RETURN + MOD_LSHIFT, HandlePlaySentence,SelectMIDI);
@@ -1061,11 +1064,22 @@ begin
     RegisterKeyBinding(PianoModeContextId,'SEC_030', 'SHIFT_SPACE', SDLK_SPACE + MOD_LSHIFT, HandlePlaySentence,SelectMIDI + SelectSingle);
     RegisterKeyBinding(PianoModeContextId,'SEC_030', 'CTRL_SHIFT_SPACE', SDLK_SPACE + MOD_LCTRL + MOD_LSHIFT, HandlePlaySentence,SelectAudio + SelectMIDI + SelectSingle);
 
-    RegisterKeyBinding(PianoModeContextId,'SEC_045', 'F6', SDLK_F6, EnterPianoEditMode);
+    RegisterKeyBinding(PianoModeContextId,'SEC_045', 'F6', SDLK_F6, HandlePianoModeExit);
     RegisterKeyBinding(PianoModeContextId,'SEC_020', 'RIGHT', SDLK_RIGHT, HandleMove, 1);
     RegisterKeyBinding(PianoModeContextId,'SEC_020', 'LEFT', SDLK_LEFT, HandleMove, -1);
     RegisterKeyBinding(PianoModeContextId,'SEC_020', 'DOWN', SDLK_DOWN, HandleSwitchSentence, 1);
     RegisterKeyBinding(PianoModeContextId,'SEC_020', 'UP', SDLK_UP, HandleSwitchSentence, -1);
+    // define an array with A,Y,S,X,D,C,V,G,B,H,N,M,K,COMMA,L
+    for I := 0 to High(PianoKeysLow) do
+    begin
+      RegisterKeyBinding(PianoModeContextId,'SEC_041', PianoKeysLowStrings[I], PianoKeysLow[I], ApplyTone, I - 8);
+      RegisterKeyBinding(PianoModeContextId,'SEC_041', 'SHIFT_' + PianoKeysLowStrings[I], MOD_LSHIFT + PianoKeysLow[I], ApplyTone, I + 4);
+    end;
+    for I := 0 to High(PianoKeysHigh) do
+    begin
+      RegisterKeyBinding(PianoModeContextId,'SEC_041', PianoKeysHighStrings[I], PianoKeysHigh[I], ApplyTone, I + 5);
+      RegisterKeyBinding(PianoModeContextId,'SEC_041', 'SHIFT_' + PianoKeysHighStrings[I], MOD_LSHIFT + PianoKeysHigh[I], ApplyTone, I + 17);
+    end;
     FPianoModeBindingsRegistered := true;
   end;
 end;
@@ -1255,13 +1269,15 @@ begin
         PlayStopTime := (GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat + Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration))
       else
         PlayStopTime := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat);
-      PlaySentence := true;
+      PlaySentence := AudioMidiSelector and SelectSingle = 0;
+      PlayOne := AudioMidiSelector and SelectSingle <> 0;
       AudioPlayback.Play;
     end;
   end;
   if (AudioMidiSelector and SelectMIDI) <> 0 then
   begin
-    PlaySentenceMidi := true;
+    PlaySentenceMidi := AudioMidiSelector and SelectSingle = 0;
+    PlayOneMidi := AudioMidiSelector and SelectSingle <> 0;
     {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
     MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
     MidiStop := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat); {$ENDIF}
@@ -1807,6 +1823,12 @@ begin
     Exit;
 end;
 
+function TScreenEditSub.HandlePianoModeExit(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+begin
+  Result := true;
+  CurrentEditMode := emNone;
+end;
+
 function TScreenEditSub.GetEditedTextValue: UTF8String;
 begin
   Result := UTF8Copy(CurrentEditText, 1, TextPosition) +
@@ -2009,101 +2031,19 @@ begin
   end;
 end;
 
-procedure TScreenEditSub.ApplyTone(NewTone: Integer);
+function TScreenEditSub.ApplyTone(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; NewTone: integer): boolean;
 begin
+  Result := true;
   Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone := NewTone;
-
-  PlaySentenceMidi := False;
-  PlayVideo        := False;
-  midinotefound    := False;
-  PlayOne          := True;
-  PlayOneMidi      := True;
-  Click            := False;
-  AudioPlayback.Stop;
-  StopVideoPreview;
-  // Play Midi
-  {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
-  MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
-  MidiStop := GetTimeFromBeat(
-    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
-    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration); {$ENDIF}
-  AudioPlayback.Position := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
-  PlayStopTime := (GetTimeFromBeat(
-    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
-    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration));
-  AudioPlayback.Play;
-  LastClick := -100;
+  HandlePlaySentence(0, 0, true, SelectAudio + SelectMIDI + SelectSingle);
 end;
 
 procedure TScreenEditSub.OnMidiNote(Note: Byte);
 begin
-  ApplyTone(Note - 48);
-  // Play current note
+  ApplyTone(0, 0, true, Note - 48);
 end;
 
-function TScreenEditSub.ParseInputEditPiano(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
-var
-  SDL_ModState:  word;
-  Shift: Integer;
-  NewNote: Integer;
-  i: Integer;
-begin
-  // used when in Piano Edit Mode
-  Result := true;
-  NewNote := -1000;
-  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
-    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT {+ KMOD_CAPS});
 
-  Shift := 0;
-  if SDL_ModState = KMOD_LSHIFT then
-  begin
-    Shift := 12;
-  end;
-
-
-  if PressedDown then
-  begin
-    // check special keys
-    case PressedKey of
-      SDLK_TAB:
-        begin
-          ShowPopupHelp(PressedKey, CharCode, PressedDown, 0);
-          Exit;
-        end;
-      SDLK_ESCAPE, SDLK_F6:
-        begin
-          CurrentEditMode := emNone;
-        end;
-    end;
-    if CurrentEditMode = emPiano then
-    begin
-      for i := Low(PianoKeysLow) to High(PianoKeysLow) do
-      begin
-        if PressedKey = PianoKeysLow[i] then
-        begin
-          NewNote := i - 7 + Shift;
-          Break;
-        end;
-      end;
-      if NewNote = -1000 then // If not found in PianoKeysLow, check PianoKeysHigh
-      begin
-        for i := Low(PianoKeysHigh) to High(PianoKeysHigh) do
-        begin
-          if PressedKey = PianoKeysHigh[i] then
-          begin
-            NewNote := i + 6 + Shift;
-            Break;
-          end;
-        end;
-      end;
-
-      if NewNote <> -1000 then
-        ApplyTone(NewNote)
-      else
-        Result := False;
-    end; //if (CurrentEditMode = emPiano)
-  end; //if (PressedDown)
-end;
 
 function TScreenEditSub.ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean;
 var
@@ -4125,10 +4065,6 @@ begin
 
   // in notes place -> for move notes by mouse
   //NotesBackgroundId := AddSelectSlide(Theme.EditSub.NotesBackground, i, Empty);
-
-  // Initialize Piano Keys to default values
-  PianoKeysLow := Ini.PianoKeysLow;
-  PianoKeysHigh := Ini.PianoKeysHigh;
 
   {$IFDEF UseMIDIPort}
     {$IFDEF MSWINDOWS}

@@ -1954,12 +1954,14 @@ var
   NormalizedKey: TCombinedKey;
   I: integer;
   PressedToken: UTF8String;
+  ContextId: UTF8String;
 begin
   Result := false;
   HandlerResult := true;
 
   NormalizedKey := NormalizeCombinedKey(PressedKey);
   PressedToken := CombinedKeyToTokenString(NormalizedKey);
+  ContextId := GetKeyBindingContext;
 
   Log.LogInfo('ParseInput: PressedKey=' + IntToHex(NormalizedKey, 16) +
     ' Token=' + UTF8ToString(PressedToken) +
@@ -1967,6 +1969,10 @@ begin
     ' PressedDown=' + BoolToStr(PressedDown, true), 'TMenu.ParseInput');
   for I := 0 to High(FKeyBindingEntries) do
   begin
+    if (ContextId <> '') and (FKeyBindingEntries[I].ContextId <> '') and
+       (FKeyBindingEntries[I].ContextId <> ContextId) then
+      Continue;
+
     Log.LogInfo('  Entry[' + IntToStr(I) + ']: DefaultKey=' + IntToHex(FKeyBindingEntries[I].DefaultKey, 16),
       'TMenu.ParseInput');
     if FKeyBindingEntries[I].OutputKey <> NormalizedKey then
