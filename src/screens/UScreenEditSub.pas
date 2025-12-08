@@ -410,6 +410,7 @@ const
   SelectEnd     =  $800;
   SelectAny     = $1000;
   SelectBPM     = $2000;
+  SelectSingle  = $4000;
 
 implementation
 
@@ -975,6 +976,9 @@ begin
   RegisterKeyBinding(ID,'SEC_030', 'P', SDLK_P, HandlePlaySentence,SelectAudio);
   RegisterKeyBinding(ID,'SEC_030', 'SHIFT_P', SDLK_P + MOD_LSHIFT, HandlePlaySentence,SelectMIDI);
   RegisterKeyBinding(ID,'SEC_030', 'CTRL_SHIFT_P', SDLK_P + MOD_LCTRL + MOD_LSHIFT, HandlePlaySentence,SelectAudio + SelectMIDI);
+  RegisterKeyBinding(ID,'SEC_030', 'SPACE', SDLK_SPACE, HandlePlaySentence,SelectAudio + SelectSingle);
+  RegisterKeyBinding(ID,'SEC_030', 'SHIFT_SPACE', SDLK_SPACE + MOD_LSHIFT, HandlePlaySentence,SelectMIDI + SelectSingle);
+  RegisterKeyBinding(ID,'SEC_030', 'CTRL_SHIFT_SPACE', SDLK_SPACE + MOD_LCTRL + MOD_LSHIFT, HandlePlaySentence,SelectAudio + SelectMIDI + SelectSingle);
 
   RegisterKeyBinding(ID,'SEC_040', 'G', SDLK_G, HandleSetGoldenNote);
   RegisterKeyBinding(ID,'SEC_040', 'F', SDLK_F, HandleSetFreestyleNote);
@@ -1019,7 +1023,6 @@ begin
   RegisterKeyBinding(ID,'SEC_045', 'F5', SDLK_F5, ToggleTextEditMode, BPM.SlideId);
   RegisterKeyBinding(ID,'SEC_045', 'F6', SDLK_F6, EnterPianoEditMode);
   RegisterKeyBinding(ID,'SEC_045', 'RETURN', SDLK_RETURN, ToggleTextEditMode, -1);
-  RegisterKeyBinding(ID,'SEC_030', 'SPACE', SDLK_SPACE, PlayNote);
   RegisterKeyBinding(ID,'SEC_045', 'CTRL_DELETE', SDLK_DELETE + MOD_LCTRL, DeleteNotes);
   RegisterKeyBinding(ID,'SEC_045', 'CTRL_SHIFT_DELETE', SDLK_DELETE + MOD_LCTRL + MOD_LSHIFT, DeleteNotes, SelectFull);
   RegisterKeyBinding(ID,'SEC_045', 'PERIOD', SDLK_PERIOD, MoveTextToRight);
@@ -1063,7 +1066,10 @@ begin
     RegisterKeyBinding(PianoModeContextId,'SEC_030', 'P', SDLK_RETURN, HandlePlaySentence,SelectAudio);
     RegisterKeyBinding(PianoModeContextId,'SEC_030', 'SHIFT_P', SDLK_RETURN + MOD_LSHIFT, HandlePlaySentence,SelectMIDI);
     RegisterKeyBinding(PianoModeContextId,'SEC_030', 'CTRL_SHIFT_P', SDLK_RETURN + MOD_LCTRL + MOD_LSHIFT, HandlePlaySentence,SelectAudio + SelectMIDI);
-    RegisterKeyBinding(PianoModeContextId,'SEC_030', 'SPACE', SDLK_SPACE, PlayNote);
+    RegisterKeyBinding(PianoModeContextId,'SEC_030', 'SPACE', SDLK_SPACE, HandlePlaySentence,SelectAudio + SelectSingle);
+    RegisterKeyBinding(PianoModeContextId,'SEC_030', 'SHIFT_SPACE', SDLK_SPACE + MOD_LSHIFT, HandlePlaySentence,SelectMIDI + SelectSingle);
+    RegisterKeyBinding(PianoModeContextId,'SEC_030', 'CTRL_SHIFT_SPACE', SDLK_SPACE + MOD_LCTRL + MOD_LSHIFT, HandlePlaySentence,SelectAudio + SelectMIDI + SelectSingle);
+
     RegisterKeyBinding(PianoModeContextId,'SEC_045', 'F6', SDLK_F6, EnterPianoEditMode);
     RegisterKeyBinding(PianoModeContextId,'SEC_020', 'RIGHT', SDLK_RIGHT, HandleMove, 1);
     RegisterKeyBinding(PianoModeContextId,'SEC_020', 'LEFT', SDLK_LEFT, HandleMove, -1);
@@ -1235,24 +1241,29 @@ end;
 function TScreenEditSub.HandlePlaySentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; AudioMidiSelector: integer): boolean;
 var
   R: real;
+  Info: string;
 begin
   Result := true;
 
   Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
-  CurrentNote[CurrentTrack] := 0;
+  if AudioMidiSelector and SelectSingle = 0 then
+    CurrentNote[CurrentTrack] := 0;
   PlayVideo := false;
   StopVideoPreview;
   LastClick := -100;
   if (AudioMidiSelector and SelectAudio) <> 0 then
   begin
     // Play Sentence
-    Click := true;
+    Click := AudioMidiSelector and SelectSingle = 0;
     AudioPlayback.Stop;
-    R := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
+    R := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
     if R <= AudioPlayback.Length then
     begin
       AudioPlayback.Position := R;
-      PlayStopTime := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat);
+      if AudioMidiSelector and SelectSingle <> 0 then
+        PlayStopTime := (GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat + Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration))
+      else
+        PlayStopTime := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat);
       PlaySentence := true;
       AudioPlayback.Play;
     end;
@@ -1261,14 +1272,16 @@ begin
   begin
     PlaySentenceMidi := true;
     {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
-    MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
+    MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
     MidiStop := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].EndBeat); {$ENDIF}
   end;
-
+  Info := 'EDIT_INFO_PLAY_SENTENCE';
+  if AudioMidiSelector and SelectSingle <> 0 then
+    Info := 'EDIT_INFO_PLAY_NOTE';
   case AudioMidiSelector of
-    SelectAudio: Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO');
-    SelectMIDI: Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_MIDI');
-    SelectAudio + SelectMIDI: Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO_AND_MIDI');
+    SelectAudio: Text[TextInfo].Text := Language.Translate(Info + '_AUDIO');
+    SelectMIDI: Text[TextInfo].Text := Language.Translate(Info + '_MIDI');
+    SelectAudio + SelectMIDI: Text[TextInfo].Text := Language.Translate(Info + '_AUDIO_AND_MIDI');
   end;
 end;
 
@@ -1456,55 +1469,6 @@ begin
 
   // Enter Piano Edit Mode
   CurrentEditMode := emPiano;
-end;
-
-      // SDLK_SPACE: PlayNote
-function TScreenEditSub.PlayNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-var
-  ModState: word;
-begin
-  Result := true;
-
-  ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL);
-
-  if (ModState = 0) or (ModState = (KMOD_LSHIFT or KMOD_LCTRL)) then
-  begin
-    // Play current note
-    PlaySentenceMidi := false; // stop midi
-    PlaySentence := false;
-    midinotefound := false;
-    PlayOne := true;
-    PlayOneMidi := false;
-    PlayVideo := false;
-    StopVideoPreview;
-    Click := false;
-    AudioPlayback.Stop;
-    AudioPlayback.Position := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
-    PlayStopTime := (GetTimeFromBeat(
-      Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
-      Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration));
-    AudioPlayback.Play;
-    LastClick := -100;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_NOTE_AUDIO');
-  end;
-
-  if (ModState = KMOD_LSHIFT) or (ModState = (KMOD_LSHIFT or KMOD_LCTRL)) then
-  begin
-    // Play Midi
-    PlaySentenceMidi := false;
-    PlayVideo := false;
-    midinotefound := false;
-    PlayOne := true;
-    PlayOneMidi := true;
-    StopVideoPreview();
-    {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
-    MidiStart := GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
-    MidiStop := GetTimeFromBeat(
-      Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
-      Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration); {$ENDIF}
-    LastClick := -100;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_NOTE_MIDI');
-  end;
 end;
 
 function TScreenEditSub.ToggleTextEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
