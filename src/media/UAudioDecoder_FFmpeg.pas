@@ -133,7 +133,7 @@ type
       // state-vars for AudioCallback (locked by DecoderLock)
       fAudioBufferPos:  integer;
       fAudioBufferSize: integer;
-      fAudioBuffer:     PByteArray;
+      fAudioBuffer:     PByte;
       fAudioBufferFrame: PAVFrame;
 
       fFilename: IPath;
@@ -1118,7 +1118,7 @@ begin
       if(got_frame_ptr <> 0) then
       begin
         DataSize := fAudioBufferFrame.nb_samples * fBytesPerSample;
-        fAudioBuffer := PByteArray(fAudioBufferFrame.data[0]);
+        fAudioBuffer := fAudioBufferFrame.data[0];
       end
       else
         DataSize := 0;
