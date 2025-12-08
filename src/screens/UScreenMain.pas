@@ -118,33 +118,33 @@ begin
   ClearKeyBindings;
 
   // General
-  RegisterKeyBinding('SEC_001', 'RETURN', SDLK_RETURN, HandleConfirmSelection);
-  RegisterKeyBinding('SEC_001', 'TAB', SDLK_TAB, HandleShowHelp);
-  RegisterKeyBinding('SEC_001', 'PRINT', SDLK_PRINTSCREEN);
-  RegisterKeyBinding('SEC_001', 'F11', SDLK_F11);
-  RegisterKeyBinding('SEC_001', 'ALT_RETURN', SDLK_RETURN or MOD_LALT);
-  RegisterKeyBinding('SEC_001', 'BACKSPACE', SDLK_BACKSPACE, HandleExitScreen);
-  RegisterKeyBinding('SEC_001', 'ESC', SDLK_ESCAPE, HandleExitScreen);
+  RegisterKeyBinding(ID,'SEC_001', 'RETURN', SDLK_RETURN, HandleConfirmSelection);
+  RegisterKeyBinding(ID,'SEC_001', 'TAB', SDLK_TAB, HandleShowHelp);
+  RegisterKeyBinding(ID,'SEC_001', 'PRINT', SDLK_PRINTSCREEN);
+  RegisterKeyBinding(ID,'SEC_001', 'F11', SDLK_F11);
+  RegisterKeyBinding(ID,'SEC_001', 'ALT_RETURN', SDLK_RETURN or MOD_LALT);
+  RegisterKeyBinding(ID,'SEC_001', 'BACKSPACE', SDLK_BACKSPACE, HandleExitScreen);
+  RegisterKeyBinding(ID,'SEC_001', 'ESC', SDLK_ESCAPE, HandleExitScreen);
 
   // Navigation
-  RegisterKeyBinding('SEC_010', 'ARROWKEYS', SDLK_UP, HandleNavigateUp);
-  RegisterKeyBinding('SEC_010', 'ARROWKEYS', SDLK_DOWN, HandleNavigateDown);
-  RegisterKeyBinding('SEC_010', 'ARROWKEYS', SDLK_LEFT, HandleNavigateLeft);
-  RegisterKeyBinding('SEC_010', 'ARROWKEYS', SDLK_RIGHT, HandleNavigateRight);
+  RegisterKeyBinding(ID,'SEC_010', 'ARROWKEYS', SDLK_UP, HandleNavigateUp);
+  RegisterKeyBinding(ID,'SEC_010', 'ARROWKEYS', SDLK_DOWN, HandleNavigateDown);
+  RegisterKeyBinding(ID,'SEC_010', 'ARROWKEYS', SDLK_LEFT, HandleNavigateLeft);
+  RegisterKeyBinding(ID,'SEC_010', 'ARROWKEYS', SDLK_RIGHT, HandleNavigateRight);
 
   // Shortcuts
-  RegisterKeyBinding('SEC_020', 'S', SDLK_S, HandleShortcutSolo);
-  RegisterKeyBinding('SEC_020', 'P', SDLK_P, HandleShortcutParty);
-  RegisterKeyBinding('SEC_020', 'J', SDLK_J, HandleShortcutJukebox);
-  RegisterKeyBinding('SEC_020', 'T', SDLK_T, HandleShortcutStats);
-  RegisterKeyBinding('SEC_020', 'E', SDLK_E, HandleShortcutEditor);
-  RegisterKeyBinding('SEC_020', 'O', SDLK_O, HandleShortcutOptions);
-  RegisterKeyBinding('SEC_020', 'A', SDLK_A, HandleShortcutAbout);
-  RegisterKeyBinding('SEC_020', 'C', SDLK_C, HandleShortcutCredits);
-  RegisterKeyBinding('SEC_020', 'Q', SDLK_Q, HandleShortcutQuit);
+  RegisterKeyBinding(ID,'SEC_020', 'S', SDLK_S, HandleShortcutSolo);
+  RegisterKeyBinding(ID,'SEC_020', 'P', SDLK_P, HandleShortcutParty);
+  RegisterKeyBinding(ID,'SEC_020', 'J', SDLK_J, HandleShortcutJukebox);
+  RegisterKeyBinding(ID,'SEC_020', 'T', SDLK_T, HandleShortcutStats);
+  RegisterKeyBinding(ID,'SEC_020', 'E', SDLK_E, HandleShortcutEditor);
+  RegisterKeyBinding(ID,'SEC_020', 'O', SDLK_O, HandleShortcutOptions);
+  RegisterKeyBinding(ID,'SEC_020', 'A', SDLK_A, HandleShortcutAbout);
+  RegisterKeyBinding(ID,'SEC_020', 'C', SDLK_C, HandleShortcutCredits);
+  RegisterKeyBinding(ID,'SEC_020', 'Q', SDLK_Q, HandleShortcutQuit);
 
   // Maintenance shortcuts not exposed via help
-  RegisterKeyBinding('', '', SDLK_R, HandleReloadTheme);
+  RegisterKeyBinding(ID,'', '', SDLK_R, HandleReloadTheme);
 
   FKeyBindingsInitialized := true;
   EnsureKeyBindingsPublished;

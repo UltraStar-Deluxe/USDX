@@ -70,6 +70,7 @@ type
   THelp = class
     private
       actualID:     string;
+      BindingContextOverride: UTF8String;
       ScrollPos:    double;
       Entry:        array of TEntry;
       SEntry:       array of TEntry;
@@ -93,6 +94,7 @@ type
       function SetHelpID(ID: String):boolean;
       function GetHelpID(): string;
       function GetHelpStr(): TTextResult;
+      procedure SetBindingContextOverride(const ContextId: UTF8String);
       function TranslateKeyTokenPublic(const Token: string): UTF8String;
       procedure SetScrollPos(pos: double);
       function GetScrollPos(): double;
@@ -163,6 +165,7 @@ begin
   end;
 
   actualID := '';
+  BindingContextOverride := '';
   //Standard Language END
 
 end;
@@ -389,6 +392,7 @@ var
   MapIdx: integer;
   KeyNames: TKeyNames;
   TextResult: TTextResult;
+  ActiveContextId: UTF8String;
 
   function BuildKeyNames(const Binding: TKeyBindingEntryView): TKeyNames;
   var
@@ -454,8 +458,12 @@ var
 
 begin
   FillChar(TextResult, SizeOf(TextResult), 0);
-  if (KeyBindings <> nil) and KeyBindings.HasContext(actualID) then
-    Bindings := KeyBindings.EnumerateContext(actualID)
+  ActiveContextId := actualID;
+  if BindingContextOverride <> '' then
+    ActiveContextId := BindingContextOverride;
+
+  if (KeyBindings <> nil) and KeyBindings.HasContext(ActiveContextId) then
+    Bindings := KeyBindings.EnumerateContext(ActiveContextId)
   else
     SetLength(Bindings, 0);
 
@@ -498,6 +506,11 @@ begin
   TextResult.Title := AEntry.Title;
   TextResult.Description := AEntry.Description;
   Result := TextResult;
+end;
+
+procedure THelp.SetBindingContextOverride(const ContextId: UTF8String);
+begin
+  BindingContextOverride := ContextId;
 end;
 
 function THelp.TranslateKeyToken(const Token: string): UTF8String;

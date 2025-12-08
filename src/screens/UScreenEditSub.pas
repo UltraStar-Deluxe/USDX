@@ -126,6 +126,12 @@ type
 
   TEditModeSet = set of TEditMode;
 
+  TEditModeKeyBindingEntry = record
+    Key: TCombinedKey;
+    Handler: TMenuKeyBindingHandler;
+    HandlerParameter: integer;
+  end;
+
   TScreenEditSub = class(TMenu)
     private
 
@@ -167,6 +173,9 @@ type
         CurrentEditMode:         TEditMode;
 
   FKeyBindingsInitialized: boolean;
+  FTextModeBindingsRegistered: boolean;
+  FPianoModeBindingsRegistered: boolean;
+  FTextModeKeyBindingEntries: array of TEditModeKeyBindingEntry;
 
       PianoKeysLow: TPianoKeyArray;
       PianoKeysHigh: TPianoKeyArray;
@@ -276,6 +285,10 @@ type
       function ToggleTextEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function EnterPianoEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       procedure RegisterKeyBindings;
+      procedure EnsureEditModeKeyBindingsRegistered;
+      procedure EnsureTextModeKeyBindingsRegistered;
+      procedure RegisterTextModeKeyBinding(const SectionId, BindingId: string; Key: TCombinedKey; Handler: TMenuKeyBindingHandler; Parameter: integer = 0);
+      function TryHandleTextModeKeyBinding(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; out HandlerResult: boolean): boolean;
       // Keybinding handlers for new pipeline
       function HandleSaveSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function SetMedleyTags(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer): boolean;
@@ -357,6 +370,14 @@ type
   function  ParseInputEditText(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
   function  ParseInputEditBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
   function  ParseInputEditPiano(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
+  function  HandleTextEditCancel(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+  function  HandleTextEditCommit(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+  function  HandleTextEditBackspace(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+  function  HandleTextEditDelete(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+  function  HandleTextEditMoveCursor(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Direction: integer): boolean;
+  function  GetEditedTextValue: UTF8String;
+  procedure RestoreCurrentEditValue;
+  procedure CommitCurrentEditValue;
       procedure ApplyTone(NewTone: Integer);
       function  ParseMouse(MouseButton: Integer; BtnDown: boolean; X, Y: Integer): boolean; override;
       function  Draw: boolean; override;
@@ -366,6 +387,8 @@ type
 
 const
   ID='ID_064';   //for help system
+  TextModeContextId: UTF8String = ID + '.TEXT';
+  PianoModeContextId: UTF8String = ID + '.PIANO';
   TextInputModes: TEditModeSet = [
     emLyric,
     emTitle,
@@ -386,6 +409,8 @@ const
   EnforceLength = $20;
   SelectMove = $40;
   SelectEnd = $80;
+  SelectAny = $100;
+  SelectBPM = $200;
 
 implementation
 
@@ -447,7 +472,12 @@ end;
 
 function TScreenEditSub.GetKeyBindingContext: UTF8String;
 begin
-  Result := ID;
+  if (CurrentEditMode in TextInputModes) or (CurrentEditMode = emBPM) then
+    Exit(TextModeContextId)
+  else if CurrentEditMode = emPiano then
+    Exit(PianoModeContextId)
+  else
+    Result := ID;
 end;
 
 // Method for input parsing. If false is returned, GetNextWindow
@@ -907,117 +937,191 @@ begin
 
 
   // Register all keybinding handler functions
-  RegisterKeyBinding('SEC_001', 'TAB', SDLK_TAB, ShowPopupHelp);
-  RegisterKeyBinding('SEC_001', 'ESC', SDLK_ESCAPE, LeaveScope);
-  RegisterKeyBinding('SEC_001', 'Q', SDLK_Q, HandleQuitShortcut);
-  RegisterKeyBinding('SEC_001', 'CTRL_Z', SDLK_Z + MOD_LCTRL, HandleUndo);
+  RegisterKeyBinding(ID,'SEC_001', 'TAB', SDLK_TAB, ShowPopupHelp);
+  RegisterKeyBinding(ID,'SEC_001', 'ESC', SDLK_ESCAPE, LeaveScope);
+  RegisterKeyBinding(ID,'SEC_001', 'Q', SDLK_Q, HandleQuitShortcut);
+  RegisterKeyBinding(ID,'SEC_001', 'CTRL_Z', SDLK_Z + MOD_LCTRL, HandleUndo);
 
-  RegisterKeyBinding('SEC_010', 'R', SDLK_R, ReloadSong);
-  RegisterKeyBinding('SEC_010', 'S', SDLK_S, HandleSaveSong);
-  RegisterKeyBinding('SEC_010', 'SHIFT_S', SDLK_S + MOD_LSHIFT, HandleSaveSong);
+  RegisterKeyBinding(ID,'SEC_010', 'R', SDLK_R, ReloadSong);
+  RegisterKeyBinding(ID,'SEC_010', 'S', SDLK_S, HandleSaveSong);
+  RegisterKeyBinding(ID,'SEC_010', 'SHIFT_S', SDLK_S + MOD_LSHIFT, HandleSaveSong);
 
-  RegisterKeyBinding('SEC_050', 'I', SDLK_I, SetPreviewStart);
-  RegisterKeyBinding('SEC_060', 'A', SDLK_A, SetMedleyTags);
-  RegisterKeyBinding('SEC_060', 'A', SDLK_A + MOD_LSHIFT, SetMedleyTags, 1);
-  RegisterKeyBinding('SEC_060', 'J', SDLK_J, Jump, 0);
-  RegisterKeyBinding('SEC_060', 'SHIFT_J', SDLK_J + MOD_LSHIFT, Jump,1);
-  RegisterKeyBinding('SEC_060', 'ALT_J', SDLK_J + MOD_LALT, JumpAndPlay);
+  RegisterKeyBinding(ID,'SEC_050', 'I', SDLK_I, SetPreviewStart);
+  RegisterKeyBinding(ID,'SEC_060', 'A', SDLK_A, SetMedleyTags);
+  RegisterKeyBinding(ID,'SEC_060', 'A', SDLK_A + MOD_LSHIFT, SetMedleyTags, 1);
+  RegisterKeyBinding(ID,'SEC_060', 'J', SDLK_J, Jump, 0);
+  RegisterKeyBinding(ID,'SEC_060', 'SHIFT_J', SDLK_J + MOD_LSHIFT, Jump,1);
+  RegisterKeyBinding(ID,'SEC_060', 'ALT_J', SDLK_J + MOD_LALT, JumpAndPlay);
 
-  RegisterKeyBinding('SEC_085', 'SHIFT_D', SDLK_D + MOD_LSHIFT, HandleMultiplyBPM,-2);
-  RegisterKeyBinding('SEC_070', 'CTRL_SHIFT_D', SDLK_D + MOD_LCTRL + MOD_LSHIFT, ToggleDuet);
-  RegisterKeyBinding('SEC_085', 'SHIFT_M', SDLK_M + MOD_LSHIFT, HandleMultiplyBPM,2);
+  RegisterKeyBinding(ID,'SEC_085', 'SHIFT_D', SDLK_D + MOD_LSHIFT, HandleMultiplyBPM,-2);
+  RegisterKeyBinding(ID,'SEC_070', 'CTRL_SHIFT_D', SDLK_D + MOD_LCTRL + MOD_LSHIFT, ToggleDuet);
+  RegisterKeyBinding(ID,'SEC_085', 'SHIFT_M', SDLK_M + MOD_LSHIFT, HandleMultiplyBPM,2);
 
-  RegisterKeyBinding('SEC_045', 'C', SDLK_C, LyricsCapitalize);
-  RegisterKeyBinding('SEC_045', 'C', SDLK_C + MOD_LSHIFT, LyricsCorrectSpaces);
-  RegisterKeyBinding('SEC_045', 'C', SDLK_C + MOD_LCTRL, MarkCopySrc);
+  RegisterKeyBinding(ID,'SEC_045', 'C', SDLK_C, LyricsCapitalize);
+  RegisterKeyBinding(ID,'SEC_045', 'C', SDLK_C + MOD_LSHIFT, LyricsCorrectSpaces);
+  RegisterKeyBinding(ID,'SEC_045', 'C', SDLK_C + MOD_LCTRL, MarkCopySrc);
 
-  RegisterKeyBinding('SEC_030', 'V', SDLK_V, HandleVideo);
-  RegisterKeyBinding('SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL, HandlePaste, SelectText + SelectNotes + EnforceLength);
-  RegisterKeyBinding('SEC_090', 'CTRL_SHIFT_V', SDLK_V + MOD_LCTRL + MOD_LSHIFT, HandlePaste, SelectText);
-  RegisterKeyBinding('SEC_090', 'CTRL_ALT_V', SDLK_V + MOD_LCTRL + MOD_LALT, HandlePaste, SelectNotes);
-  RegisterKeyBinding('SEC_090', 'CTRL_ALT_SHIFT_V', SDLK_V + MOD_LCTRL + MOD_LALT + MOD_LSHIFT, HandlePaste, SelectText + SelectNotes);
+  RegisterKeyBinding(ID,'SEC_030', 'V', SDLK_V, HandleVideo);
+  RegisterKeyBinding(ID,'SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL, HandlePaste, SelectText + SelectNotes + EnforceLength);
+  RegisterKeyBinding(ID,'SEC_090', 'CTRL_SHIFT_V', SDLK_V + MOD_LCTRL + MOD_LSHIFT, HandlePaste, SelectText);
+  RegisterKeyBinding(ID,'SEC_090', 'CTRL_ALT_V', SDLK_V + MOD_LCTRL + MOD_LALT, HandlePaste, SelectNotes);
+  RegisterKeyBinding(ID,'SEC_090', 'CTRL_ALT_SHIFT_V', SDLK_V + MOD_LCTRL + MOD_LALT + MOD_LSHIFT, HandlePaste, SelectText + SelectNotes);
 
-  RegisterKeyBinding('SEC_045', 'T', SDLK_T, FixTimings);
+  RegisterKeyBinding(ID,'SEC_045', 'T', SDLK_T, FixTimings);
 
-  RegisterKeyBinding('SEC_030', 'P', SDLK_P, HandlePlaySentence,SelectAudio);
-  RegisterKeyBinding('SEC_030', 'SHIFT_P', SDLK_P + MOD_LSHIFT, HandlePlaySentence,SelectMIDI);
-  RegisterKeyBinding('SEC_030', 'CTRL_SHIFT_P', SDLK_P + MOD_LCTRL + MOD_LSHIFT, HandlePlaySentence,SelectAudio + SelectMIDI);
+  RegisterKeyBinding(ID,'SEC_030', 'P', SDLK_P, HandlePlaySentence,SelectAudio);
+  RegisterKeyBinding(ID,'SEC_030', 'SHIFT_P', SDLK_P + MOD_LSHIFT, HandlePlaySentence,SelectMIDI);
+  RegisterKeyBinding(ID,'SEC_030', 'CTRL_SHIFT_P', SDLK_P + MOD_LCTRL + MOD_LSHIFT, HandlePlaySentence,SelectAudio + SelectMIDI);
 
-  RegisterKeyBinding('SEC_040', 'G', SDLK_G, HandleSetGoldenNote);
-  RegisterKeyBinding('SEC_040', 'F', SDLK_F, HandleSetFreestyleNote);
+  RegisterKeyBinding(ID,'SEC_040', 'G', SDLK_G, HandleSetGoldenNote);
+  RegisterKeyBinding(ID,'SEC_040', 'F', SDLK_F, HandleSetFreestyleNote);
 
   // Register additional handlers for all legacy case statement actions
-  RegisterKeyBinding('SEC_001', 'BACKQUOTE', SDLK_BACKQUOTE, IncreaseNoteLength);
-  RegisterKeyBinding('SEC_085', 'EQUALS', SDLK_EQUALS, HandleChangeBPM, 50);
-  RegisterKeyBinding('SEC_085', 'EQUALS', SDLK_PLUS, HandleChangeBPM, 50);
-  RegisterKeyBinding('SEC_085', 'SHIFT_EQUALS', SDLK_EQUALS + MOD_LSHIFT, HandleChangeBPM, 1000);
-  RegisterKeyBinding('SEC_085', 'SHIFT_EQUALS', SDLK_PLUS + MOD_LSHIFT, HandleChangeBPM, 1000);
-  RegisterKeyBinding('SEC_085', 'CTRL_EQUALS', SDLK_EQUALS + MOD_LCTRL, HandleChangeBPM, 10);
-  RegisterKeyBinding('SEC_085', 'CTRL_EQUALS', SDLK_PLUS + MOD_LCTRL, HandleChangeBPM, 10);
-  RegisterKeyBinding('SEC_085', 'MINUS', SDLK_MINUS, HandleChangeBPM, -50);
-  RegisterKeyBinding('SEC_085', 'SHIFT_MINUS', SDLK_MINUS + MOD_LSHIFT, HandleChangeBPM, -1000);
-  RegisterKeyBinding('SEC_085', 'CTRL_MINUS', SDLK_MINUS + MOD_LCTRL, HandleChangeBPM, -10);
-  RegisterKeyBinding('SEC_090', '2', SDLK_2, ExtendedCopyPaste);
-  RegisterKeyBinding('SEC_090', '3', SDLK_3, ExtendedCopyPaste);
-  RegisterKeyBinding('SEC_090', '4', SDLK_4, ExtendedCopyPaste);
-  RegisterKeyBinding('SEC_090', '5', SDLK_5, ExtendedCopyPaste);
-  RegisterKeyBinding('SEC_090', '6', SDLK_6, ExtendedCopyPaste);
-  RegisterKeyBinding('SEC_080', '7', SDLK_7, ShiftVideoGap, -10);
-  RegisterKeyBinding('SEC_080', 'SHIFT_7', SDLK_7 + MOD_LSHIFT, ShiftVideoGap, -100);
-  RegisterKeyBinding('SEC_080', 'CTRL_7', SDLK_7 + MOD_LCTRL, ShiftVideoGap, -1000);
-  RegisterKeyBinding('SEC_080', '8', SDLK_8, ShiftVideoGap, 10);
-  RegisterKeyBinding('SEC_080', 'SHIFT_8', SDLK_8 + MOD_LSHIFT, ShiftVideoGap, 100);
-  RegisterKeyBinding('SEC_080', 'CTRL_8', SDLK_8 + MOD_LCTRL, ShiftVideoGap, 1000);
-  RegisterKeyBinding('SEC_080', '9', SDLK_9, ShiftGAP, -10);
-  RegisterKeyBinding('SEC_080', 'SHIFT_9', SDLK_9 + MOD_LSHIFT, ShiftGAP, -1000);
-  RegisterKeyBinding('SEC_080', '0', SDLK_0, ShiftGAP, 10);
-  RegisterKeyBinding('SEC_080', 'SHIFT_0', SDLK_0 + MOD_LSHIFT, ShiftGAP, 1000);
-  RegisterKeyBinding('SEC_041', 'KPPLUS', SDLK_KP_PLUS, ShiftAllNoteTones, 1);
-  RegisterKeyBinding('SEC_041', 'SHIFT-KPPLUS', SDLK_KP_PLUS, ShiftAllNoteTones, 12);
-  RegisterKeyBinding('SEC_041', 'KPMINUS', SDLK_KP_MINUS, ShiftAllNoteTones, -1);
-  RegisterKeyBinding('SEC_041', 'SHIFT_KPMINUS', SDLK_KP_MINUS, ShiftAllNoteTones, -12);
+  RegisterKeyBinding(ID,'SEC_001', 'BACKQUOTE', SDLK_BACKQUOTE, IncreaseNoteLength);
+  RegisterKeyBinding(ID,'SEC_085', 'EQUALS', SDLK_EQUALS, HandleChangeBPM, 50);
+  RegisterKeyBinding(ID,'SEC_085', 'EQUALS', SDLK_PLUS, HandleChangeBPM, 50);
+  RegisterKeyBinding(ID,'SEC_085', 'SHIFT_EQUALS', SDLK_EQUALS + MOD_LSHIFT, HandleChangeBPM, 1000);
+  RegisterKeyBinding(ID,'SEC_085', 'SHIFT_EQUALS', SDLK_PLUS + MOD_LSHIFT, HandleChangeBPM, 1000);
+  RegisterKeyBinding(ID,'SEC_085', 'CTRL_EQUALS', SDLK_EQUALS + MOD_LCTRL, HandleChangeBPM, 10);
+  RegisterKeyBinding(ID,'SEC_085', 'CTRL_EQUALS', SDLK_PLUS + MOD_LCTRL, HandleChangeBPM, 10);
+  RegisterKeyBinding(ID,'SEC_085', 'MINUS', SDLK_MINUS, HandleChangeBPM, -50);
+  RegisterKeyBinding(ID,'SEC_085', 'SHIFT_MINUS', SDLK_MINUS + MOD_LSHIFT, HandleChangeBPM, -1000);
+  RegisterKeyBinding(ID,'SEC_085', 'CTRL_MINUS', SDLK_MINUS + MOD_LCTRL, HandleChangeBPM, -10);
+  RegisterKeyBinding(ID,'SEC_090', '2', SDLK_2, ExtendedCopyPaste);
+  RegisterKeyBinding(ID,'SEC_090', '3', SDLK_3, ExtendedCopyPaste);
+  RegisterKeyBinding(ID,'SEC_090', '4', SDLK_4, ExtendedCopyPaste);
+  RegisterKeyBinding(ID,'SEC_090', '5', SDLK_5, ExtendedCopyPaste);
+  RegisterKeyBinding(ID,'SEC_090', '6', SDLK_6, ExtendedCopyPaste);
+  RegisterKeyBinding(ID,'SEC_080', '7', SDLK_7, ShiftVideoGap, -10);
+  RegisterKeyBinding(ID,'SEC_080', 'SHIFT_7', SDLK_7 + MOD_LSHIFT, ShiftVideoGap, -100);
+  RegisterKeyBinding(ID,'SEC_080', 'CTRL_7', SDLK_7 + MOD_LCTRL, ShiftVideoGap, -1000);
+  RegisterKeyBinding(ID,'SEC_080', '8', SDLK_8, ShiftVideoGap, 10);
+  RegisterKeyBinding(ID,'SEC_080', 'SHIFT_8', SDLK_8 + MOD_LSHIFT, ShiftVideoGap, 100);
+  RegisterKeyBinding(ID,'SEC_080', 'CTRL_8', SDLK_8 + MOD_LCTRL, ShiftVideoGap, 1000);
+  RegisterKeyBinding(ID,'SEC_080', '9', SDLK_9, ShiftGAP, -10);
+  RegisterKeyBinding(ID,'SEC_080', 'SHIFT_9', SDLK_9 + MOD_LSHIFT, ShiftGAP, -1000);
+  RegisterKeyBinding(ID,'SEC_080', '0', SDLK_0, ShiftGAP, 10);
+  RegisterKeyBinding(ID,'SEC_080', 'SHIFT_0', SDLK_0 + MOD_LSHIFT, ShiftGAP, 1000);
+  RegisterKeyBinding(ID,'SEC_041', 'KPPLUS', SDLK_KP_PLUS, ShiftAllNoteTones, 1);
+  RegisterKeyBinding(ID,'SEC_041', 'SHIFT-KPPLUS', SDLK_KP_PLUS, ShiftAllNoteTones, 12);
+  RegisterKeyBinding(ID,'SEC_041', 'KPMINUS', SDLK_KP_MINUS, ShiftAllNoteTones, -1);
+  RegisterKeyBinding(ID,'SEC_041', 'SHIFT_KPMINUS', SDLK_KP_MINUS, ShiftAllNoteTones, -12);
 
-  RegisterKeyBinding('SEC_043', 'SLASH', SDLK_SLASH, DivideSentence);
-  RegisterKeyBinding('SEC_043', 'HASH', SDLK_HASH, DivideSentence);
-  RegisterKeyBinding('SEC_043', 'KPDIVIDE', SDLK_KP_DIVIDE, DivideSentence);
-  RegisterKeyBinding('SEC_043', 'CTRL_SLASH', SDLK_SLASH, DivideNotes);
-  RegisterKeyBinding('SEC_043', 'CTRL_HASH', SDLK_HASH, DivideNotes);
-  RegisterKeyBinding('SEC_043', 'CTRL_KPDIVIDE', SDLK_KP_DIVIDE, DivideNotes);
-  RegisterKeyBinding('SEC_043', 'SHIFT_SLASH', SDLK_SLASH, JoinSentence);
-  RegisterKeyBinding('SEC_043', 'SHIFT_HASH', SDLK_HASH, JoinSentence);
-  RegisterKeyBinding('SEC_043', 'SHIFT_KPDIVIDE', SDLK_KP_DIVIDE, JoinSentence);
+  RegisterKeyBinding(ID,'SEC_043', 'SLASH', SDLK_SLASH, DivideSentence);
+  RegisterKeyBinding(ID,'SEC_043', 'HASH', SDLK_HASH, DivideSentence);
+  RegisterKeyBinding(ID,'SEC_043', 'KPDIVIDE', SDLK_KP_DIVIDE, DivideSentence);
+  RegisterKeyBinding(ID,'SEC_043', 'CTRL_SLASH', SDLK_SLASH, DivideNotes);
+  RegisterKeyBinding(ID,'SEC_043', 'CTRL_HASH', SDLK_HASH, DivideNotes);
+  RegisterKeyBinding(ID,'SEC_043', 'CTRL_KPDIVIDE', SDLK_KP_DIVIDE, DivideNotes);
+  RegisterKeyBinding(ID,'SEC_043', 'SHIFT_SLASH', SDLK_SLASH, JoinSentence);
+  RegisterKeyBinding(ID,'SEC_043', 'SHIFT_HASH', SDLK_HASH, JoinSentence);
+  RegisterKeyBinding(ID,'SEC_043', 'SHIFT_KPDIVIDE', SDLK_KP_DIVIDE, JoinSentence);
 
-  RegisterKeyBinding('SEC_045', 'F4', SDLK_F4, ToggleTextEditMode, LyricHeader.SlideId);
-  RegisterKeyBinding('SEC_045', 'F5', SDLK_F5, ToggleTextEditMode, BPM.SlideId);
-  RegisterKeyBinding('SEC_045', 'F6', SDLK_F6, EnterPianoEditMode);
-  RegisterKeyBinding('SEC_045', 'RETURN', SDLK_RETURN, ToggleTextEditMode, -1);
-  RegisterKeyBinding('SEC_030', 'SPACE', SDLK_SPACE, PlayNote);
-  RegisterKeyBinding('SEC_045', 'CTRL_DELETE', SDLK_DELETE + MOD_LCTRL, DeleteNotes);
-  RegisterKeyBinding('SEC_045', 'CTRL_SHIFT_DELETE', SDLK_DELETE + MOD_LCTRL + MOD_LSHIFT, DeleteNotes, SelectFull);
-  RegisterKeyBinding('SEC_045', 'PERIOD', SDLK_PERIOD, MoveTextToRight);
-  RegisterKeyBinding('SEC_020', 'RIGHT', SDLK_RIGHT, HandleMove, 1);
-  RegisterKeyBinding('SEC_020', 'LEFT', SDLK_LEFT, HandleMove, -1);
-  RegisterKeyBinding('SEC_020', 'SHIFT_RIGHT', SDLK_RIGHT + MOD_LSHIFT, ShiftNote, 1);
-  RegisterKeyBinding('SEC_020', 'SHIFT_LEFT', SDLK_LEFT + MOD_LSHIFT, ShiftNote, -1);
-  RegisterKeyBinding('SEC_020', 'CTRL_RIGHT', SDLK_RIGHT + MOD_LCTRL, ChangeNoteStart, 1);
-  RegisterKeyBinding('SEC_020', 'CTRL_LEFT', SDLK_LEFT + MOD_LCTRL, ChangeNoteStart, -1);
-  RegisterKeyBinding('SEC_020', 'ALT_RIGHT', SDLK_RIGHT + MOD_LALT, ChangeNoteEnd, 1);
-  RegisterKeyBinding('SEC_020', 'ALT_LEFT', SDLK_LEFT + MOD_LALT, ChangeNoteEnd, -1);
-  RegisterKeyBinding('SEC_020', 'CTRL_ALT_SHIFT_RIGHT', SDLK_RIGHT + MOD_LCTRL + MOD_LALT + MOD_LSHIFT, ShiftAllNotes, 1);
-  RegisterKeyBinding('SEC_020', 'CTRL_ALT_SHIFT_LEFT', SDLK_LEFT + MOD_LCTRL + MOD_LALT + MOD_LSHIFT, ShiftAllNotes, -1);
-  RegisterKeyBinding('SEC_020', 'DOWN', SDLK_DOWN, HandleSwitchSentence, 1);
-  RegisterKeyBinding('SEC_020', 'SHIFT_DOWN', SDLK_DOWN + MOD_LSHIFT, ChangePitch, -1);
-  RegisterKeyBinding('SEC_020', 'CTRL_ALT_DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LALT, SwitchTrack, 1);
-  RegisterKeyBinding('SEC_020', 'CTRL_SHIFT_DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LSHIFT, CopyMoveLine, 1);
-  RegisterKeyBinding('SEC_020', 'CTRL_ALT_SHIFT_DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LSHIFT + MOD_LALT, CopyMoveLine, 1 and SelectMove);
-  RegisterKeyBinding('SEC_020', 'UP', SDLK_UP, HandleSwitchSentence, -1);
-  RegisterKeyBinding('SEC_020', 'SHIFT_UP', SDLK_UP + MOD_LSHIFT, ChangePitch, 1);
-  RegisterKeyBinding('SEC_020', 'CTRL_ALT_UP', SDLK_UP + MOD_LCTRL + MOD_LALT, SwitchTrack, 0);
-  RegisterKeyBinding('SEC_020', 'CTRL_SHIFT_UP', SDLK_UP + MOD_LCTRL + MOD_LSHIFT, CopyMoveLine, 0);
-  RegisterKeyBinding('SEC_020', 'CTRL_ALT_SHIFT_UP', SDLK_UP + MOD_LCTRL + MOD_LSHIFT + MOD_LALT, CopyMoveLine, 0 and SelectMove);
+  RegisterKeyBinding(ID,'SEC_045', 'F4', SDLK_F4, ToggleTextEditMode, LyricHeader.SlideId);
+  RegisterKeyBinding(ID,'SEC_045', 'F5', SDLK_F5, ToggleTextEditMode, BPM.SlideId);
+  RegisterKeyBinding(ID,'SEC_045', 'F6', SDLK_F6, EnterPianoEditMode);
+  RegisterKeyBinding(ID,'SEC_045', 'RETURN', SDLK_RETURN, ToggleTextEditMode, -1);
+  RegisterKeyBinding(ID,'SEC_030', 'SPACE', SDLK_SPACE, PlayNote);
+  RegisterKeyBinding(ID,'SEC_045', 'CTRL_DELETE', SDLK_DELETE + MOD_LCTRL, DeleteNotes);
+  RegisterKeyBinding(ID,'SEC_045', 'CTRL_SHIFT_DELETE', SDLK_DELETE + MOD_LCTRL + MOD_LSHIFT, DeleteNotes, SelectFull);
+  RegisterKeyBinding(ID,'SEC_045', 'PERIOD', SDLK_PERIOD, MoveTextToRight);
+  RegisterKeyBinding(ID,'SEC_020', 'RIGHT', SDLK_RIGHT, HandleMove, 1);
+  RegisterKeyBinding(ID,'SEC_020', 'LEFT', SDLK_LEFT, HandleMove, -1);
+  RegisterKeyBinding(ID,'SEC_020', 'SHIFT_RIGHT', SDLK_RIGHT + MOD_LSHIFT, ShiftNote, 1);
+  RegisterKeyBinding(ID,'SEC_020', 'SHIFT_LEFT', SDLK_LEFT + MOD_LSHIFT, ShiftNote, -1);
+  RegisterKeyBinding(ID,'SEC_020', 'CTRL_RIGHT', SDLK_RIGHT + MOD_LCTRL, ChangeNoteStart, 1);
+  RegisterKeyBinding(ID,'SEC_020', 'CTRL_LEFT', SDLK_LEFT + MOD_LCTRL, ChangeNoteStart, -1);
+  RegisterKeyBinding(ID,'SEC_020', 'ALT_RIGHT', SDLK_RIGHT + MOD_LALT, ChangeNoteEnd, 1);
+  RegisterKeyBinding(ID,'SEC_020', 'ALT_LEFT', SDLK_LEFT + MOD_LALT, ChangeNoteEnd, -1);
+  RegisterKeyBinding(ID,'SEC_020', 'CTRL_ALT_SHIFT_RIGHT', SDLK_RIGHT + MOD_LCTRL + MOD_LALT + MOD_LSHIFT, ShiftAllNotes, 1);
+  RegisterKeyBinding(ID,'SEC_020', 'CTRL_ALT_SHIFT_LEFT', SDLK_LEFT + MOD_LCTRL + MOD_LALT + MOD_LSHIFT, ShiftAllNotes, -1);
+  RegisterKeyBinding(ID,'SEC_020', 'DOWN', SDLK_DOWN, HandleSwitchSentence, 1);
+  RegisterKeyBinding(ID,'SEC_020', 'SHIFT_DOWN', SDLK_DOWN + MOD_LSHIFT, ChangePitch, -1);
+  RegisterKeyBinding(ID,'SEC_020', 'CTRL_ALT_DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LALT, SwitchTrack, 1);
+  RegisterKeyBinding(ID,'SEC_020', 'CTRL_SHIFT_DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LSHIFT, CopyMoveLine, 1);
+  RegisterKeyBinding(ID,'SEC_020', 'CTRL_ALT_SHIFT_DOWN', SDLK_DOWN + MOD_LCTRL + MOD_LSHIFT + MOD_LALT, CopyMoveLine, 1 and SelectMove);
+  RegisterKeyBinding(ID,'SEC_020', 'UP', SDLK_UP, HandleSwitchSentence, -1);
+  RegisterKeyBinding(ID,'SEC_020', 'SHIFT_UP', SDLK_UP + MOD_LSHIFT, ChangePitch, 1);
+  RegisterKeyBinding(ID,'SEC_020', 'CTRL_ALT_UP', SDLK_UP + MOD_LCTRL + MOD_LALT, SwitchTrack, 0);
+  RegisterKeyBinding(ID,'SEC_020', 'CTRL_SHIFT_UP', SDLK_UP + MOD_LCTRL + MOD_LSHIFT, CopyMoveLine, 0);
+  RegisterKeyBinding(ID,'SEC_020', 'CTRL_ALT_SHIFT_UP', SDLK_UP + MOD_LCTRL + MOD_LSHIFT + MOD_LALT, CopyMoveLine, 0 and SelectMove);
 
+  EnsureEditModeKeyBindingsRegistered;
   FKeyBindingsInitialized := true;
   EnsureKeyBindingsPublished;
+end;
+
+  procedure TScreenEditSub.EnsureEditModeKeyBindingsRegistered;
+  begin
+    if KeyBindings = nil then
+      Exit;
+
+    EnsureTextModeKeyBindingsRegistered;
+
+    if not FPianoModeBindingsRegistered then
+    begin
+      RegisterKeyBinding(PianoModeContextId,'SEC_001', 'ESC', SDLK_ESCAPE);
+      RegisterKeyBinding(PianoModeContextId,'SEC_001', 'TAB', SDLK_TAB, ShowPopupHelp);
+      RegisterKeyBinding(PianoModeContextId,'SEC_030', 'P', SDLK_RETURN, HandlePlaySentence,SelectAudio);
+      RegisterKeyBinding(PianoModeContextId,'SEC_030', 'SHIFT_P', SDLK_RETURN + MOD_LSHIFT, HandlePlaySentence,SelectMIDI);
+      RegisterKeyBinding(PianoModeContextId,'SEC_030', 'CTRL_SHIFT_P', SDLK_RETURN + MOD_LCTRL + MOD_LSHIFT, HandlePlaySentence,SelectAudio + SelectMIDI);
+      RegisterKeyBinding(PianoModeContextId,'SEC_030', 'SPACE', SDLK_SPACE, PlayNote);
+      RegisterKeyBinding(PianoModeContextId,'SEC_045', 'F6', SDLK_F6, EnterPianoEditMode);
+      RegisterKeyBinding(PianoModeContextId,'SEC_020', 'RIGHT', SDLK_RIGHT, HandleMove, 1);
+      RegisterKeyBinding(PianoModeContextId,'SEC_020', 'LEFT', SDLK_LEFT, HandleMove, -1);
+      RegisterKeyBinding(PianoModeContextId,'SEC_020', 'DOWN', SDLK_DOWN, HandleSwitchSentence, 1);
+      RegisterKeyBinding(PianoModeContextId,'SEC_020', 'UP', SDLK_UP, HandleSwitchSentence, -1);
+      FPianoModeBindingsRegistered := true;
+    end;
+  end;
+
+procedure TScreenEditSub.EnsureTextModeKeyBindingsRegistered;
+begin
+  if (KeyBindings = nil) or FTextModeBindingsRegistered then
+    Exit;
+
+  SetLength(FTextModeKeyBindingEntries, 0);
+  RegisterTextModeKeyBinding('SEC_001', 'TAB', SDLK_TAB, ShowPopupHelp);
+  RegisterTextModeKeyBinding('SEC_001', 'ESC', SDLK_ESCAPE, HandleTextEditCancel);
+  RegisterTextModeKeyBinding('SEC_045', 'F4', SDLK_F4, HandleTextEditCommit);
+  RegisterKeyBinding(TextModeContextId, 'SEC_045', 'F5', SDLK_F5, ToggleTextEditMode, BPM.SlideId);
+  RegisterTextModeKeyBinding('SEC_045', 'RETURN', SDLK_RETURN, HandleTextEditCommit);
+  RegisterTextModeKeyBinding('SEC_045', 'BACKSPACE', SDLK_BACKSPACE, HandleTextEditBackspace);
+  RegisterTextModeKeyBinding('SEC_045', 'DELETE', SDLK_DELETE, HandleTextEditDelete);
+  RegisterTextModeKeyBinding('SEC_020', 'LEFT', SDLK_LEFT, HandleTextEditMoveCursor, -1);
+  RegisterTextModeKeyBinding('SEC_020', 'RIGHT', SDLK_RIGHT, HandleTextEditMoveCursor, 1);
+  FTextModeBindingsRegistered := true;
+end;
+
+procedure TScreenEditSub.RegisterTextModeKeyBinding(const SectionId, BindingId: string; Key: TCombinedKey; Handler: TMenuKeyBindingHandler; Parameter: integer);
+var
+  EntryIndex: integer;
+begin
+  RegisterKeyBinding(TextModeContextId, SectionId, BindingId, Key, Handler, Parameter);
+  EntryIndex := Length(FTextModeKeyBindingEntries);
+  SetLength(FTextModeKeyBindingEntries, EntryIndex + 1);
+  FTextModeKeyBindingEntries[EntryIndex].Key := Key;
+  FTextModeKeyBindingEntries[EntryIndex].Handler := Handler;
+  FTextModeKeyBindingEntries[EntryIndex].HandlerParameter := Parameter;
+end;
+
+function TScreenEditSub.TryHandleTextModeKeyBinding(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; out HandlerResult: boolean): boolean;
+var
+  Entry: TEditModeKeyBindingEntry;
+begin
+  Result := false;
+  if not FTextModeBindingsRegistered then
+    Exit;
+
+  for Entry in FTextModeKeyBindingEntries do
+  begin
+    if Entry.Key = PressedKey then
+    begin
+      HandlerResult := Entry.Handler(PressedKey, CharCode, PressedDown, Entry.HandlerParameter);
+      Result := true;
+      Exit;
+    end;
+  end;
 end;
 
 function TScreenEditSub.HandleMultiplyBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
@@ -1210,9 +1314,17 @@ end;
 
       // SDLK_TAB: ShowPopupHelp;
 function TScreenEditSub.ShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+var
+  ContextId: UTF8String;
 begin
   Result := true;
-  ScreenPopupHelp.ShowPopup();
+  ContextId := GetKeyBindingContext;
+  Help.SetBindingContextOverride(ContextId);
+  try
+    ScreenPopupHelp.ShowPopup();
+  finally
+    Help.SetBindingContextOverride('');
+  end;
 end;
 
       // SDLK_BACKQUOTE: IncreaseNoteLength;
@@ -1848,136 +1960,10 @@ begin
 end;
 
 function TScreenEditSub.ParseInputEditText(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
-var
-  SDL_ModState:  word;
-
-  function EditedValue: UTF8String;
-  begin
-    Result := UTF8Copy(CurrentEditText, 1, TextPosition) +
-      UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
-  end;
-
-  procedure RestoreCurrentEditValue;
-  begin
-    case CurrentEditMode of
-      emLyric:
-        begin
-          Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text := BackupEditText;
-          EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-          EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
-          SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
-          Exit;
-        end;
-      emYear:
-        begin
-          if (TryStrToInt(BackupEditText, CurrentSong.Year)) then
-            SelectsS[CurrentSlideId].TextOpt[0].Text := IntToStr(CurrentSong.Year)
-          else
-            SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
-          Exit;
-        end;
-      emTitle:
-        CurrentSong.Title := BackupEditText;
-      emArtist:
-        CurrentSong.Artist := BackupEditText;
-      emLanguage:
-        CurrentSong.Language := ifthen(BackupEditText <> NOT_SET, BackupEditText, 'Unknown');
-      emEdition:
-        CurrentSong.Edition := ifthen(BackupEditText <> NOT_SET, BackupEditText, 'Unknown');
-      emGenre:
-        CurrentSong.Genre := ifthen(BackupEditText <> NOT_SET, BackupEditText, 'Unknown');
-      emCreator:
-        CurrentSong.Creator := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
-      emDuetP1:
-        CurrentSong.DuetNames[0] := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
-      emDuetP2:
-        CurrentSong.DuetNames[1] := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
-    end;
-    if CurrentSlideId <> -1 then
-      SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
-  end;
-
-    procedure CommitCurrentEditValue;
-  var
-    Value: UTF8String;
-    UpdatedYear: Integer;
-      procedure CommitEdit(var Field: UTF8String; const Value: UTF8String; const SlideTheme: TThemeSelectSlide; var Header: THeader; AllowEmpty: boolean = true);
-    begin
-      Field := Value;
-      if (Field = '') and (not AllowEmpty) then
-        Field := 'Unknown';
-
-      Header.Val[0] := Field;
-      if (Header.Val[0] = '') and (not AllowEmpty) then
-        Header.Val[0] := NOT_SET;
-
-      SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-      UpdateSelectSlideOptions(SlideTheme, Header.SlideId, Header.Val, Header.SlideIndex);
-      SelectsS[Header.SlideId].TextOpt[0].Align := 0;
-      SelectsS[Header.SlideId].TextOpt[0].X := SelectsS[Header.SlideId].TextureSBG.X + 5;
-    end;
-  begin
-    Value := EditedValue;
-    case CurrentEditMode of
-      emTitle: CommitEdit(CurrentSong.Title, Value, Theme.EditSub.SlideTitle, Title);
-      emArtist: CommitEdit(CurrentSong.Artist, Value, Theme.EditSub.SlideArtist, Artist);
-      emLanguage: CommitEdit(CurrentSong.Language, Value, Theme.EditSub.SlideLanguage, LanguageTag, false);
-      emEdition: CommitEdit(CurrentSong.Edition, Value, Theme.EditSub.SlideEdition, Edition, false);
-      emGenre: CommitEdit(CurrentSong.Genre, Value, Theme.EditSub.SlideGenre, Genre, false);
-      emYear:
-        begin
-          if (TryStrToInt(Value, UpdatedYear)) and (UpdatedYear <= 2100) and (UpdatedYear >= 1900) then
-          begin
-            CurrentSong.Year := UpdatedYear;
-            Year.Val[0] := IntToStr(CurrentSong.Year);
-            SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-            UpdateSelectSlideOptions(Theme.EditSub.SlideYear,Year.SlideId,Year.Val,Year.SlideIndex);
-            SelectsS[Year.SlideId].TextOpt[0].Align := 0;
-            SelectsS[Year.SlideId].TextOpt[0].X := SelectsS[Year.SlideId].TextureSBG.X + 5;
-          end
-          else
-          begin
-            CurrentSong.Year := 0;
-            SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
-          end;
-        end;
-      emCreator: CommitEdit(CurrentSong.Creator, Value, Theme.EditSub.SlideCreator, Creator);
-      emDuetP1:
-        begin
-          CurrentSong.DuetNames[0] := Value;
-          MedleyStart.Val[0] := ifthen(CurrentSong.DuetNames[0] <> '', CurrentSong.DuetNames[0], NOT_SET);
-          SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-          UpdateSelectSlideOptions(Theme.EditSub.SlideMedleyStart,MedleyStart.SlideId,MedleyStart.Val,MedleyStart.SlideIndex);
-          SelectsS[MedleyStart.SlideId].TextOpt[0].Align := 0;
-          SelectsS[MedleyStart.SlideId].TextOpt[0].X := SelectsS[MedleyStart.SlideId].TextureSBG.X + 5;
-        end;
-      emDuetP2:
-        begin
-          CurrentSong.DuetNames[1] := Value;
-          MedleyEnd.Val[0] := ifthen(CurrentSong.DuetNames[1] <> '', CurrentSong.DuetNames[1], NOT_SET);
-          SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-          UpdateSelectSlideOptions(Theme.EditSub.SlideMedleyEnd,MedleyEnd.SlideId,MedleyEnd.Val,MedleyEnd.SlideIndex);
-          SelectsS[MedleyEnd.SlideId].TextOpt[0].Align := 0;
-          SelectsS[MedleyEnd.SlideId].TextOpt[0].X := SelectsS[MedleyEnd.SlideId].TextureSBG.X + 5;
-        end;
-      emLyric:
-        begin
-          Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text := Value;
-          LyricHeader.Val[0] := Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
-          SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
-          UpdateSelectSlideOptions(Theme.EditSub.SlideLyric,LyricHeader.SlideId,LyricHeader.Val,LyricHeader.SlideIndex);
-          SelectsS[LyricHeader.SlideId].TextOpt[0].Align := 0;
-          SelectsS[LyricHeader.SlideId].TextOpt[0].X := SelectsS[LyricHeader.SlideId].TextureSBG.X + 5;
-          EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-        end;
-    end;
-  end;
 begin
   // used when in Text Edit Mode
   Result := true;
-
-  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
-    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT {+ KMOD_CAPS});
+  EnsureTextModeKeyBindingsRegistered;
 
   if (PressedDown) then
   begin
@@ -1999,96 +1985,197 @@ begin
       Exit;
     end;
 
-    // check special keys
-    case PressedKey of
-      SDLK_ESCAPE:
+    if TryHandleTextModeKeyBinding(PressedKey, CharCode, PressedDown, Result) then
+      Exit;
+  end;
+end;
+
+function TScreenEditSub.GetEditedTextValue: UTF8String;
+begin
+  Result := UTF8Copy(CurrentEditText, 1, TextPosition) +
+    UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
+end;
+
+procedure TScreenEditSub.RestoreCurrentEditValue;
+begin
+  case CurrentEditMode of
+    emLyric:
+      begin
+        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text := BackupEditText;
+        EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
+        EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+        SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
+        Exit;
+      end;
+    emYear:
+      begin
+        if (TryStrToInt(BackupEditText, CurrentSong.Year)) then
+          SelectsS[CurrentSlideId].TextOpt[0].Text := IntToStr(CurrentSong.Year)
+        else
+          SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
+        Exit;
+      end;
+    emTitle:
+      CurrentSong.Title := BackupEditText;
+    emArtist:
+      CurrentSong.Artist := BackupEditText;
+    emLanguage:
+      CurrentSong.Language := ifthen(BackupEditText <> NOT_SET, BackupEditText, 'Unknown');
+    emEdition:
+      CurrentSong.Edition := ifthen(BackupEditText <> NOT_SET, BackupEditText, 'Unknown');
+    emGenre:
+      CurrentSong.Genre := ifthen(BackupEditText <> NOT_SET, BackupEditText, 'Unknown');
+    emCreator:
+      CurrentSong.Creator := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
+    emDuetP1:
+      CurrentSong.DuetNames[0] := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
+    emDuetP2:
+      CurrentSong.DuetNames[1] := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
+  end;
+  if CurrentSlideId <> -1 then
+    SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
+end;
+
+procedure TScreenEditSub.CommitCurrentEditValue;
+var
+  Value: UTF8String;
+  UpdatedYear: Integer;
+
+  procedure CommitEdit(var Field: UTF8String; const NewValue: UTF8String; const SlideTheme: TThemeSelectSlide; var Header: THeader; AllowEmpty: boolean = true; SetUnknown: boolean = false);
+  begin
+    Field := NewValue;
+    if (Field = '') and (not AllowEmpty) and (SetUnknown) then
+      Field := 'Unknown';
+
+      Header.Val[0] := Field;
+      if ((not AllowEmpty) and ((Header.Val[0] = '') or ((Header.Val[0] = 'Unknown') and SetUnknown))) then
+        Header.Val[0] := NOT_SET;
+
+      SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
+      UpdateSelectSlideOptions(SlideTheme, Header.SlideId, Header.Val, Header.SlideIndex);
+      SelectsS[Header.SlideId].TextOpt[0].Align := 0;
+      SelectsS[Header.SlideId].TextOpt[0].X := SelectsS[Header.SlideId].TextureSBG.X + 5;
+    end;
+  begin
+    Value := GetEditedTextValue;
+    case CurrentEditMode of
+      emTitle: CommitEdit(CurrentSong.Title, Value, Theme.EditSub.SlideTitle, Title);
+      emArtist: CommitEdit(CurrentSong.Artist, Value, Theme.EditSub.SlideArtist, Artist);
+      emLanguage: CommitEdit(CurrentSong.Language, Value, Theme.EditSub.SlideLanguage, LanguageTag, false);
+      emEdition: CommitEdit(CurrentSong.Edition, Value, Theme.EditSub.SlideEdition, Edition, false);
+      emGenre: CommitEdit(CurrentSong.Genre, Value, Theme.EditSub.SlideGenre, Genre, false);
+      emYear:
         begin
-          RestoreCurrentEditValue;
+          if (TryStrToInt(Value, UpdatedYear)) and (UpdatedYear <= 2100) and (UpdatedYear >= 1900) then
+          begin
+            CurrentSong.Year := UpdatedYear;
+            CurrentEditText := IntToStr(UpdatedYear);
+            Year.Val[0] := CurrentEditText;
+            SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
+            UpdateSelectSlideOptions(Theme.EditSub.SlideYear, Year.SlideId, Year.Val, Year.SlideIndex);
+            SelectsS[Year.SlideId].TextOpt[0].Align := 0;
+            SelectsS[Year.SlideId].TextOpt[0].X := SelectsS[Year.SlideId].TextureSBG.X + 5;
+          end
+          else
+          begin
+            CurrentSong.Year := 0;
+            SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
+          end;
+        end;
+      emCreator: CommitEdit(CurrentSong.Creator, Value, Theme.EditSub.SlideCreator, Creator);
+      emDuetP1: CommitEdit(CurrentSong.DuetNames[0], Value, Theme.EditSub.SlideMedleyStart, MedleyStart, false, false);
+      emDuetP2: CommitEdit(CurrentSong.DuetNames[1], Value, Theme.EditSub.SlideMedleyEnd, MedleyEnd, false, false);
+      emLyric:
+        begin
+          CommitEdit(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text, Value, Theme.EditSub.SlideLyric, LyricHeader);
           EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-          EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
-          CurrentEditMode := emNone;
-          StopTextInput;
-          editLengthText := 0;
-          TextPosition := -1;
         end;
-      SDLK_F4, SDLK_RETURN:
-        begin
-          // Exit Text Edit Mode
-          CopyToUndo;
-          CommitCurrentEditValue;
-          EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
-          CurrentEditMode := emNone;
-          StopTextInput;
-          editLengthText := 0;
-          TextPosition := -1;
-          CurrentSlideId := -1;
-        end;
-      SDLK_BACKSPACE:
-        begin
-          if (TextPosition > 0) then
-          begin
-            UTF8Delete(CurrentEditText, TextPosition, 1);
-            dec(TextPosition);
-            if CurrentEditMode = emLyric then
-            begin
-              Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text := EditedValue;
-              EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-              EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
-            end;
-          end;
-        end;
-      SDLK_DELETE:
-        begin
-            UTF8Delete(CurrentEditText, TextPosition+1, 1);
-        end;
+    end;
+  end;
 
-      SDLK_RIGHT:
-        begin
-          // right
-          if SDL_ModState = 0 then
-          begin
-            if (TextPosition >= 0) and (TextPosition < editLengthText-1) then
-                TextPosition := TextPosition + 1
-            else
-              begin
-              // todo change to next note
-              TextPosition := 0;
-              end;
-          end;
-        end;
-      SDLK_LEFT:
-        begin
-          // left
-          if SDL_ModState = 0 then
-          begin
-            if TextPosition > 0 then
-                TextPosition := TextPosition - 1
-            else
-              begin
-                // todo change to next note
-                TextPosition := editLengthText-1;
-              end;
-          end;
-        end;
-      // SDLK_KP_DIVIDE is a temporary workaround for German keyboards
-      SDLK_SLASH, SDLK_KP_DIVIDE:
-        begin
-          CopyToUndo;
-          if SDL_ModState = KMOD_LCTRL then
-          begin
-            // divide note
-            DivideNote(false);
-            CurrentEditMode := emNone;
-            StopTextInput;
-            EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-            EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
-            GoldenRec.KillAll;
-          end;
-          ShowInteractiveBackground;
-        end;
+function TScreenEditSub.HandleTextEditCancel(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
 
-    end; //case
-  end; //if (PressedDown)
+  RestoreCurrentEditValue;
+  EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
+  EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+  CurrentEditMode := emNone;
+  StopTextInput;
+  editLengthText := 0;
+  TextPosition := -1;
+end;
+
+function TScreenEditSub.HandleTextEditCommit(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+
+  CopyToUndo;
+  CommitCurrentEditValue;
+  EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+  CurrentEditMode := emNone;
+  StopTextInput;
+  editLengthText := 0;
+  TextPosition := -1;
+  CurrentSlideId := -1;
+end;
+
+function TScreenEditSub.HandleTextEditBackspace(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+
+  if (TextPosition > 0) then
+  begin
+    UTF8Delete(CurrentEditText, TextPosition, 1);
+    Dec(TextPosition);
+    if CurrentEditMode = emLyric then
+    begin
+      Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text := GetEditedTextValue;
+      EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
+      EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+    end;
+  end;
+end;
+
+function TScreenEditSub.HandleTextEditDelete(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+
+  if editLengthText > 0 then
+    UTF8Delete(CurrentEditText, TextPosition+1, 1);
+end;
+
+function TScreenEditSub.HandleTextEditMoveCursor(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Direction: integer): boolean;
+begin
+  Result := true;
+  if not PressedDown then
+    Exit;
+
+  if editLengthText <= 0 then
+    Exit;
+
+  if Direction > 0 then
+  begin
+    if (TextPosition >= 0) and (TextPosition < editLengthText-1) then
+      Inc(TextPosition)
+    else
+      TextPosition := 0;
+  end
+  else
+  begin
+    if TextPosition > 0 then
+      Dec(TextPosition)
+    else
+      TextPosition := editLengthText-1;
+  end;
 end;
 
 function TScreenEditSub.ParseInputEditBPM(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -2116,6 +2203,11 @@ begin
 
     // check special keys
     case PressedKey of
+      SDLK_TAB:
+        begin
+          ShowPopupHelp(PressedKey, CharCode, PressedDown, 0);
+          Exit;
+        end;
       SDLK_ESCAPE:
         begin
           // exit BPM edit mode, restore previous BPM value
@@ -2254,6 +2346,11 @@ begin
   begin
     // check special keys
     case PressedKey of
+      SDLK_TAB:
+        begin
+          ShowPopupHelp(PressedKey, CharCode, PressedDown, 0);
+          Exit;
+        end;
       SDLK_ESCAPE, SDLK_F6:
         begin
           CurrentEditMode := emNone;

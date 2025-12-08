@@ -58,6 +58,7 @@ type
     PressedDown: boolean; Parameter: integer): boolean of object;
 
   TMenuKeyBindingEntry = record
+    ContextId: UTF8String;
     CategoryId: UTF8String;
     Token: UTF8String;
     DefaultKey: TCombinedKey;
@@ -99,7 +100,8 @@ type
   class function BuildModifierMask(const Shift, Ctrl, Alt: boolean): word; static; inline;
       procedure ClearKeyBindings; virtual;
       procedure EnsureKeyBindingsPublished; virtual;
-      procedure RegisterKeyBinding(const CategoryId, Token: UTF8String;
+      procedure PublishKeyBindingsToContext(const SourceContextId, TargetContextId: UTF8String);
+      procedure RegisterKeyBinding(const ContextId, CategoryId, Token: UTF8String;
         CombinedKey: UInt64; Handler: TMenuKeyBindingHandler = nil; Parameter: integer = 0);
       function TryHandleKeyBinding(PressedKey: QWord; CharCode: UCS4Char;
         PressedDown: boolean; out HandlerResult: boolean): boolean; virtual;
@@ -313,13 +315,8 @@ end;
 procedure TMenu.EnsureKeyBindingsPublished;
 var
   I: integer;
-  ContextId: UTF8String;
 begin
   if (KeyBindings = nil) or (Length(FKeyBindingEntries) = 0) then
-    Exit;
-
-  ContextId := GetKeyBindingContext;
-  if ContextId = '' then
     Exit;
 
   for I := 0 to High(FKeyBindingEntries) do
@@ -327,13 +324,13 @@ begin
     if FKeyBindingEntries[I].HelpRegistered then
       Continue;
 
-    if (FKeyBindingEntries[I].CategoryId = '') or (FKeyBindingEntries[I].Token = '') then
+    if (FKeyBindingEntries[I].ContextId = '') or (FKeyBindingEntries[I].CategoryId = '') or (FKeyBindingEntries[I].Token = '') then
     begin
       FKeyBindingEntries[I].HelpRegistered := true;
       Continue;
     end;
 
-    KeyBindings.RegisterBinding(ContextId,
+    KeyBindings.RegisterBinding(FKeyBindingEntries[I].ContextId,
       FKeyBindingEntries[I].CategoryId,
       FKeyBindingEntries[I].Token,
       FKeyBindingEntries[I].DefaultKey,
@@ -343,7 +340,29 @@ begin
   end;
 end;
 
-procedure TMenu.RegisterKeyBinding(const CategoryId, Token: UTF8String;
+procedure TMenu.PublishKeyBindingsToContext(const SourceContextId, TargetContextId: UTF8String);
+var
+  I: integer;
+begin
+  if (KeyBindings = nil) or (SourceContextId = '') or (TargetContextId = '') then
+    Exit;
+
+  for I := 0 to High(FKeyBindingEntries) do
+  begin
+    if (FKeyBindingEntries[I].ContextId <> SourceContextId) or
+       (FKeyBindingEntries[I].CategoryId = '') or
+       (FKeyBindingEntries[I].Token = '') then
+      Continue;
+
+    KeyBindings.RegisterBinding(TargetContextId,
+      FKeyBindingEntries[I].CategoryId,
+      FKeyBindingEntries[I].Token,
+      FKeyBindingEntries[I].DefaultKey,
+      FKeyBindingEntries[I].OutputKey);
+  end;
+end;
+
+procedure TMenu.RegisterKeyBinding(const ContextId, CategoryId, Token: UTF8String;
   CombinedKey: UInt64; Handler: TMenuKeyBindingHandler; Parameter: integer = 0);
 var
   Entry: TMenuKeyBindingEntry;
@@ -352,6 +371,7 @@ var
 begin
   Normalized := NormalizeCombinedKey(CombinedKey);
 
+  Entry.ContextId := ContextId;
   Entry.CategoryId := CategoryId;
   Entry.Token := Token;
   Entry.DefaultKey := Normalized;
