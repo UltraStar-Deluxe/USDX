@@ -290,7 +290,7 @@ type
       procedure RegisterTextModeKeyBinding(const SectionId, BindingId: string; Key: TCombinedKey; Handler: TMenuKeyBindingHandler; Parameter: integer = 0);
       function TryHandleTextModeKeyBinding(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; out HandlerResult: boolean): boolean;
       // Keybinding handlers for new pipeline
-      function HandleSaveSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function HandleSaveSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Relative: integer = 0): boolean;
       function SetMedleyTags(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer): boolean;
       function Jump(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer): boolean;
       function JumpAndPlay(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer): boolean;
@@ -334,9 +334,7 @@ type
       procedure MoveAllToEnd(Move: Integer);
       function MoveTextToRight(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function MarkCopySrc(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      function ExtendedCopyPaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-      procedure CopySentence(SrcTrack, SrcLine, DstTrack, DstLine: Integer; CopyText: boolean = true; CopyNotes: boolean = true; EnforceSrcLength: boolean = false);
-      procedure CopySentences(SrcTrack, SrcLine, DstTrack, DstLine, Num: Integer);
+      procedure CopySentence(SrcTrack, SrcLine, DstTrack, DstLine, BeatOffset: Integer; CopyText: boolean = true; CopyNotes: boolean = true; EnforceSrcLength: boolean = false);
       procedure MakeSolo;
       procedure MakeDuet;
       function  DuetCopyLine: boolean;
@@ -401,16 +399,16 @@ const
     emDuetP1,
     emDuetP2
   ];
-  SelectAudio = $1;
-  SelectMIDI = $2;
-  SelectFull = $4;
-  SelectText = $8;
-  SelectNotes = $10;
-  EnforceLength = $20;
-  SelectMove = $40;
-  SelectEnd = $80;
-  SelectAny = $100;
-  SelectBPM = $200;
+  SelectAudio   =   $10;
+  SelectMIDI    =   $20;
+  SelectFull    =   $40;
+  SelectText    =   $80;
+  SelectNotes   =  $100;
+  EnforceLength =  $200;
+  SelectMove    =  $400;
+  SelectEnd     =  $800;
+  SelectAny     = $1000;
+  SelectBPM     = $2000;
 
 implementation
 
@@ -514,15 +512,11 @@ begin
     TryHandleKeyBinding(PressedKey, CharCode, PressedDown, Result);
 end;
 
-      // SDLK_S: HandleSaveSong
-function TScreenEditSub.HandleSaveSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+function TScreenEditSub.HandleSaveSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Relative: integer): boolean;
 var
   SResult: TSaveSongResult;
-  ModState: word;
 begin
   Result := true;
-
-  ModState := SDL_GetModState;
 
   // handle medley tags first
   if CurrentSong.isDuet then
@@ -551,7 +545,7 @@ begin
   end;
 
   // Save Song (SHIFT = relative)
-  if (ModState and (KMOD_LSHIFT or KMOD_RSHIFT)) <> 0 then
+  if (Relative <> 0) then
   begin
     if (CurrentSong.isDuet) then
     begin
@@ -929,6 +923,15 @@ begin
 end;
 
 procedure TScreenEditSub.RegisterKeyBindings;
+var
+  I: Integer;
+  procedure RegisterPasteKeys(Key: UTF8String; SdlKey: QWord; Count: integer);
+  begin
+    RegisterKeyBinding(ID,'SEC_090', 'CTRL_' + Key, SdlKey + MOD_LCTRL, HandlePaste, SelectText + SelectNotes + EnforceLength + Count);
+    RegisterKeyBinding(ID,'SEC_090', 'CTRL_SHIFT_' + Key, SdlKey + MOD_LCTRL + MOD_LSHIFT, HandlePaste, SelectText + Count);
+    RegisterKeyBinding(ID,'SEC_090', 'CTRL_ALT_' + Key, SdlKey + MOD_LCTRL + MOD_LALT, HandlePaste, SelectNotes + Count);
+    RegisterKeyBinding(ID,'SEC_090', 'CTRL_ALT_SHIFT_' + Key, SdlKey + MOD_LCTRL + MOD_LALT + MOD_LSHIFT, HandlePaste, SelectText + SelectNotes + Count);
+  end;
 begin
   if FKeyBindingsInitialized then
     Exit;
@@ -944,7 +947,7 @@ begin
 
   RegisterKeyBinding(ID,'SEC_010', 'R', SDLK_R, ReloadSong);
   RegisterKeyBinding(ID,'SEC_010', 'S', SDLK_S, HandleSaveSong);
-  RegisterKeyBinding(ID,'SEC_010', 'SHIFT_S', SDLK_S + MOD_LSHIFT, HandleSaveSong);
+  RegisterKeyBinding(ID,'SEC_010', 'SHIFT_S', SDLK_S + MOD_LSHIFT, HandleSaveSong, 1);
 
   RegisterKeyBinding(ID,'SEC_050', 'I', SDLK_I, SetPreviewStart);
   RegisterKeyBinding(ID,'SEC_060', 'A', SDLK_A, SetMedleyTags);
@@ -961,14 +964,13 @@ begin
   RegisterKeyBinding(ID,'SEC_045', 'C', SDLK_C + MOD_LSHIFT, LyricsCorrectSpaces);
   RegisterKeyBinding(ID,'SEC_045', 'C', SDLK_C + MOD_LCTRL, MarkCopySrc);
 
-  RegisterKeyBinding(ID,'SEC_030', 'V', SDLK_V, HandleVideo);
-  RegisterKeyBinding(ID,'SEC_090', 'CTRL_V', SDLK_V + MOD_LCTRL, HandlePaste, SelectText + SelectNotes + EnforceLength);
-  RegisterKeyBinding(ID,'SEC_090', 'CTRL_SHIFT_V', SDLK_V + MOD_LCTRL + MOD_LSHIFT, HandlePaste, SelectText);
-  RegisterKeyBinding(ID,'SEC_090', 'CTRL_ALT_V', SDLK_V + MOD_LCTRL + MOD_LALT, HandlePaste, SelectNotes);
-  RegisterKeyBinding(ID,'SEC_090', 'CTRL_ALT_SHIFT_V', SDLK_V + MOD_LCTRL + MOD_LALT + MOD_LSHIFT, HandlePaste, SelectText + SelectNotes);
+  RegisterPasteKeys('V', SDLK_V, 1);
+  for I := 2 to 6 do
+    RegisterPasteKeys(IntToStr(I),SDLK_0 + I, I);
 
   RegisterKeyBinding(ID,'SEC_045', 'T', SDLK_T, FixTimings);
 
+  RegisterKeyBinding(ID,'SEC_030', 'V', SDLK_V, HandleVideo);
   RegisterKeyBinding(ID,'SEC_030', 'P', SDLK_P, HandlePlaySentence,SelectAudio);
   RegisterKeyBinding(ID,'SEC_030', 'SHIFT_P', SDLK_P + MOD_LSHIFT, HandlePlaySentence,SelectMIDI);
   RegisterKeyBinding(ID,'SEC_030', 'CTRL_SHIFT_P', SDLK_P + MOD_LCTRL + MOD_LSHIFT, HandlePlaySentence,SelectAudio + SelectMIDI);
@@ -987,11 +989,6 @@ begin
   RegisterKeyBinding(ID,'SEC_085', 'MINUS', SDLK_MINUS, HandleChangeBPM, -50);
   RegisterKeyBinding(ID,'SEC_085', 'SHIFT_MINUS', SDLK_MINUS + MOD_LSHIFT, HandleChangeBPM, -1000);
   RegisterKeyBinding(ID,'SEC_085', 'CTRL_MINUS', SDLK_MINUS + MOD_LCTRL, HandleChangeBPM, -10);
-  RegisterKeyBinding(ID,'SEC_090', '2', SDLK_2, ExtendedCopyPaste);
-  RegisterKeyBinding(ID,'SEC_090', '3', SDLK_3, ExtendedCopyPaste);
-  RegisterKeyBinding(ID,'SEC_090', '4', SDLK_4, ExtendedCopyPaste);
-  RegisterKeyBinding(ID,'SEC_090', '5', SDLK_5, ExtendedCopyPaste);
-  RegisterKeyBinding(ID,'SEC_090', '6', SDLK_6, ExtendedCopyPaste);
   RegisterKeyBinding(ID,'SEC_080', '7', SDLK_7, ShiftVideoGap, -10);
   RegisterKeyBinding(ID,'SEC_080', 'SHIFT_7', SDLK_7 + MOD_LSHIFT, ShiftVideoGap, -100);
   RegisterKeyBinding(ID,'SEC_080', 'CTRL_7', SDLK_7 + MOD_LCTRL, ShiftVideoGap, -1000);
@@ -1051,29 +1048,29 @@ begin
   EnsureKeyBindingsPublished;
 end;
 
-  procedure TScreenEditSub.EnsureEditModeKeyBindingsRegistered;
+procedure TScreenEditSub.EnsureEditModeKeyBindingsRegistered;
+begin
+  if KeyBindings = nil then
+    Exit;
+
+  EnsureTextModeKeyBindingsRegistered;
+
+  if not FPianoModeBindingsRegistered then
   begin
-    if KeyBindings = nil then
-      Exit;
-
-    EnsureTextModeKeyBindingsRegistered;
-
-    if not FPianoModeBindingsRegistered then
-    begin
-      RegisterKeyBinding(PianoModeContextId,'SEC_001', 'ESC', SDLK_ESCAPE);
-      RegisterKeyBinding(PianoModeContextId,'SEC_001', 'TAB', SDLK_TAB, ShowPopupHelp);
-      RegisterKeyBinding(PianoModeContextId,'SEC_030', 'P', SDLK_RETURN, HandlePlaySentence,SelectAudio);
-      RegisterKeyBinding(PianoModeContextId,'SEC_030', 'SHIFT_P', SDLK_RETURN + MOD_LSHIFT, HandlePlaySentence,SelectMIDI);
-      RegisterKeyBinding(PianoModeContextId,'SEC_030', 'CTRL_SHIFT_P', SDLK_RETURN + MOD_LCTRL + MOD_LSHIFT, HandlePlaySentence,SelectAudio + SelectMIDI);
-      RegisterKeyBinding(PianoModeContextId,'SEC_030', 'SPACE', SDLK_SPACE, PlayNote);
-      RegisterKeyBinding(PianoModeContextId,'SEC_045', 'F6', SDLK_F6, EnterPianoEditMode);
-      RegisterKeyBinding(PianoModeContextId,'SEC_020', 'RIGHT', SDLK_RIGHT, HandleMove, 1);
-      RegisterKeyBinding(PianoModeContextId,'SEC_020', 'LEFT', SDLK_LEFT, HandleMove, -1);
-      RegisterKeyBinding(PianoModeContextId,'SEC_020', 'DOWN', SDLK_DOWN, HandleSwitchSentence, 1);
-      RegisterKeyBinding(PianoModeContextId,'SEC_020', 'UP', SDLK_UP, HandleSwitchSentence, -1);
-      FPianoModeBindingsRegistered := true;
-    end;
+    RegisterKeyBinding(PianoModeContextId,'SEC_001', 'ESC', SDLK_ESCAPE);
+    RegisterKeyBinding(PianoModeContextId,'SEC_001', 'TAB', SDLK_TAB, ShowPopupHelp);
+    RegisterKeyBinding(PianoModeContextId,'SEC_030', 'P', SDLK_RETURN, HandlePlaySentence,SelectAudio);
+    RegisterKeyBinding(PianoModeContextId,'SEC_030', 'SHIFT_P', SDLK_RETURN + MOD_LSHIFT, HandlePlaySentence,SelectMIDI);
+    RegisterKeyBinding(PianoModeContextId,'SEC_030', 'CTRL_SHIFT_P', SDLK_RETURN + MOD_LCTRL + MOD_LSHIFT, HandlePlaySentence,SelectAudio + SelectMIDI);
+    RegisterKeyBinding(PianoModeContextId,'SEC_030', 'SPACE', SDLK_SPACE, PlayNote);
+    RegisterKeyBinding(PianoModeContextId,'SEC_045', 'F6', SDLK_F6, EnterPianoEditMode);
+    RegisterKeyBinding(PianoModeContextId,'SEC_020', 'RIGHT', SDLK_RIGHT, HandleMove, 1);
+    RegisterKeyBinding(PianoModeContextId,'SEC_020', 'LEFT', SDLK_LEFT, HandleMove, -1);
+    RegisterKeyBinding(PianoModeContextId,'SEC_020', 'DOWN', SDLK_DOWN, HandleSwitchSentence, 1);
+    RegisterKeyBinding(PianoModeContextId,'SEC_020', 'UP', SDLK_UP, HandleSwitchSentence, -1);
+    FPianoModeBindingsRegistered := true;
   end;
+end;
 
 procedure TScreenEditSub.EnsureTextModeKeyBindingsRegistered;
 begin
@@ -1178,19 +1175,59 @@ begin
 end;
 
 function TScreenEditSub.HandlePaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; PasteSelection: integer): boolean;
+var
+  FormatString: string;
+  NumLines, LineCount: integer;
+  OldLineCount: integer;
+  BaseBeatOffset: integer;
 begin
   Result := true;
+  NumLines := PasteSelection and $F;
+  if NumLines <= 0 then
+    Exit;
 
-  CopyToUndo;
-  CopySentence(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, PasteSelection and SelectText <> 0,  PasteSelection and SelectNotes <> 0,  PasteSelection and EnforceLength <> 0);
-  Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_SENTENCE');
-  if PasteSelection = SelectText then
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_TEXT');
-  if PasteSelection = SelectNotes then
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_NOTES');
-  if PasteSelection = SelectText + SelectNotes then
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PASTE_TEXT_NOTES');
+  // copy less lines if there are not enough src lines available
+  NumLines := Min(NumLines, High(Tracks[CopySrc.track].Lines) - CopySrc.line + 1);
+  if NumLines <= 0 then
+    Exit;
+  // copy less lines if there are not enough dst lines available
+  SetLength(Tracks[CurrentTrack].Lines, Tracks[CurrentTrack].Number + NumLines - 1);
+  NumLines := Min(NumLines, High(Tracks[CurrentTrack].Lines) - Tracks[CurrentTrack].CurrentLine + 1);
+  if NumLines <= 0 then
+    Exit;
 
+  OldLineCount := Tracks[CurrentTrack].Number;
+  for LineCount := OldLineCount to OldLineCount + NumLines - 2 do
+  begin
+    Tracks[CurrentTrack].Lines[LineCount].StartBeat := Tracks[CurrentTrack].Lines[LineCount - 1].Notes[0].StartBeat;
+    SetLength(Tracks[CurrentTrack].Lines[LineCount].Notes, 1);
+    Tracks[CurrentTrack].Lines[LineCount].HighNote := 0;
+    Tracks[CurrentTrack].Lines[LineCount].Notes[0].StartBeat := Tracks[CurrentTrack].Lines[LineCount].StartBeat;
+    Tracks[CurrentTrack].Lines[LineCount].Notes[0].Duration := 1;
+    Tracks[CurrentTrack].Lines[LineCount].EndBeat := Tracks[CurrentTrack].Lines[LineCount].StartBeat + 1;
+  end;
+
+  Tracks[CurrentTrack].Number := OldLineCount + NumLines - 1;
+  Tracks[CurrentTrack].High := Tracks[CurrentTrack].Number - 1;
+
+  BaseBeatOffset := Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat -
+                    Tracks[CopySrc.track].Lines[CopySrc.line].Notes[0].StartBeat;
+
+  for LineCount := 0 to NumLines - 1 do
+  begin
+    CopyToUndo;
+    CopySentence(CopySrc.track, CopySrc.line + LineCount, CurrentTrack, Tracks[CurrentTrack].CurrentLine + LineCount, BaseBeatOffset, PasteSelection and SelectText <> 0, PasteSelection and SelectNotes <> 0, PasteSelection and EnforceLength <> 0);
+  end;
+
+  case PasteSelection and (SelectText + SelectNotes) of
+    0: FormatString := 'EDIT_INFO_PASTE_SENTENCE';
+    SelectText: FormatString := 'EDIT_INFO_PASTE_TEXT';
+    SelectNotes: FormatString := 'EDIT_INFO_PASTE_NOTES';
+    SelectText + SelectNotes: FormatString := 'EDIT_INFO_PASTE_TEXT_NOTES';
+  end;
+  if NumLines > 1 then
+    FormatString := FormatString + '_N';
+  Text[TextInfo].Text := Format(Language.Translate(FormatString), [NumLines]);
   GoldenRec.KillAll;
   ShowInteractiveBackground;
 end;
@@ -1353,69 +1390,6 @@ begin
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_INCREASED_BY') + ' ' + FloatToStr(Delta / 1000.0)
   else
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_DECREASED_BY') + ' ' + FloatToStr(-Delta / 1000.0);
-end;
-
-      // SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_6: ExtendedCopyPaste;
-    function TScreenEditSub.ExtendedCopyPaste(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-var
-  DstTrack:     Integer;
-  DstLine:      Integer;
-  NumLines:     Integer;
-  LineCount:    Integer;
-  ModState:     word;
-begin
-  Result := true;
-  ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT);
-  DstTrack := CurrentTrack;
-  DstLine := Tracks[CurrentTrack].CurrentLine;
-  NumLines := Integer(PressedKey) - SDLK_0; // TODO: ignores modifiers!
-  // copy less lines if there are not enough src lines available
-  NumLines := Min(NumLines, High(Tracks[CopySrc.track].Lines) - CopySrc.line + 1);
-  // copy less lines if there are not enough dst lines available
-  NumLines := Min(NumLines, High(Tracks[CurrentTrack].Lines) - DstLine + 1);
-
-  for LineCount := 0 to NumLines - 1 do
-  begin
-    if (ModState = KMOD_LCTRL) then
-    begin
-      CopyToUndo;
-      // paste notes + text (use src length, ignore dst length)
-      CopySentence(CopySrc.track, CopySrc.line + LineCount, DstTrack, DstLine + LineCount, true, true, true);
-      Text[TextInfo].Text := Format(Language.Translate('EDIT_INFO_PASTE_SENTENCE_N'), [NumLines]);
-    end;
-    if ModState = KMOD_LCTRL + KMOD_LSHIFT then
-    begin
-      CopyToUndo;
-      // paste text only (use minimum of src and dst length)
-      CopySentence(CopySrc.track, CopySrc.line + LineCount, DstTrack, DstLine + LineCount, true, false, false);
-      Text[TextInfo].Text := Format(Language.Translate('EDIT_INFO_PASTE_TEXT_N'), [NumLines]);
-    end;
-    if ModState = KMOD_LCTRL + KMOD_LALT then
-    begin
-      CopyToUndo;
-      // paste notes only (use minimum of src and dst length)
-      CopySentence(CopySrc.track, CopySrc.line + LineCount, DstTrack, DstLine + LineCount, false, true, false);
-      Text[TextInfo].Text := Format(Language.Translate('EDIT_INFO_PASTE_NOTES_N'), [NumLines]);
-    end;
-    if ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then
-    begin
-      CopyToUndo;
-      // paste notes + text (use minimum of src and dst length)
-      CopySentence(CopySrc.track, CopySrc.line + LineCount, DstTrack, DstLine + LineCount, true, true, false);
-      Text[TextInfo].Text := Format(Language.Translate('EDIT_INFO_PASTE_TEXT_NOTES_N'), [NumLines]);
-    end;
-  end;
-  GoldenRec.KillAll;
-  ShowInteractiveBackground;
-
-  // does this insert additional 4 lines before the current line?
-  {if ModState = KMOD_LCTRL + KMOD_LSHIFT + KMOD_LALT then
-  begin
-    CopyToUndo;
-    CopySentences(CopySrc.track, CopySrc.line, CurrentTrack, Tracks[CurrentTrack].CurrentLine, 4);
-    GoldenRec.KillAll;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_COPY_4_SENTENCES');
-  end;}
 end;
 
 function TScreenEditSub.HandleSwitchSentence(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
@@ -2808,14 +2782,26 @@ var
   MinLineStart: Integer;
   MaxLineStart: Integer;
   FirstBeat:    Integer;
+  HasNotes:     boolean;
 begin
   Result := true;
   CopyToUndo;
   FirstBeat := High(Integer);
+  HasNotes := false;
 
   for TrackIndex := 0 to High(Tracks) do
-    if (Tracks[TrackIndex].Lines[0].Notes[0].StartBeat < FirstBeat) then
-    FirstBeat := Tracks[TrackIndex].Lines[0].Notes[0].StartBeat;
+    if (Length(Tracks[TrackIndex].Lines) > 0) and (Tracks[TrackIndex].Lines[0].HighNote >= 0) then
+    begin
+      HasNotes := true;
+      if (Tracks[TrackIndex].Lines[0].Notes[0].StartBeat < FirstBeat) then
+        FirstBeat := Tracks[TrackIndex].Lines[0].Notes[0].StartBeat;
+    end;
+
+  if not HasNotes then
+  begin
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_FIX_TIMINGS');
+    Exit;
+  end;
 
   // set first note to start at beat 0 (common practice)
   if (FirstBeat <> 0) then
@@ -2840,6 +2826,10 @@ begin
   begin
     for LineIndex := 1 to Tracks[TrackIndex].High do
     begin
+      if (Tracks[TrackIndex].Lines[LineIndex-1].HighNote < 0) or
+         (Tracks[TrackIndex].Lines[LineIndex].HighNote < 0) then
+        Continue;
+
       with Tracks[TrackIndex].Lines[LineIndex-1] do
       begin
         MinLineStart := Notes[HighNote].StartBeat + Notes[HighNote].Duration;
@@ -3305,17 +3295,10 @@ begin
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_MARKED_FOR_COPY');
 end;
 
-procedure TScreenEditSub.CopySentence(SrcTrack, SrcLine, DstTrack, DstLine: Integer; CopyText, CopyNotes, EnforceSrcLength: boolean);
+procedure TScreenEditSub.CopySentence(SrcTrack, SrcLine, DstTrack, DstLine, BeatOffset: Integer; CopyText, CopyNotes, EnforceSrcLength: Boolean);
 var
-  SrcStartBeat: Integer;
-  DstStartBeat: Integer;
-  BeatDiff:     Integer;
-  NoteIndex:    Integer;
+  NoteIndex: Integer;
 begin
-  SrcStartBeat := Tracks[SrcTrack].Lines[SrcLine].Notes[0].StartBeat;
-  DstStartBeat := Tracks[DstTrack].Lines[DstLine].Notes[0].StartBeat;
-  BeatDiff := DstStartBeat - SrcStartBeat;
-
   if (EnforceSrcLength) then
   begin
     // copy src line as is (even if length of src and dst lines don't match)
@@ -3328,57 +3311,28 @@ begin
   begin
     if (CopyText) then // copy text
     begin
-      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Text      := Tracks[CopySrc.track].Lines[SrcLine].Notes[NoteIndex].Text;
+      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Text := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].Text;
     end;
     if (CopyNotes) then // copy duration, tone, note type and (shifted) start beat
     begin
-      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Duration  := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].Duration;
-      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Tone      := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].Tone;
-      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].NoteType  := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].NoteType;
-      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].StartBeat := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].StartBeat + BeatDiff;
-      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Color     := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].Color;
+      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Duration := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].Duration;
+      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Tone := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].Tone;
+      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].NoteType := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].NoteType;
+      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].StartBeat := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].StartBeat + BeatOffset;
+      Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Color := Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].Color;
     end;
   end;
 
-  NoteIndex := Tracks[DstTrack].Lines[DstLine].HighNote;
-  Tracks[DstTrack].Lines[DstLine].EndBeat := Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].StartBeat + Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Duration;
+  if (Tracks[DstTrack].Lines[DstLine].HighNote >= 0) then
+  begin
+    NoteIndex := Tracks[DstTrack].Lines[DstLine].HighNote;
+    Tracks[DstTrack].Lines[DstLine].StartBeat := Tracks[DstTrack].Lines[DstLine].Notes[0].StartBeat;
+    Tracks[DstTrack].Lines[DstLine].EndBeat := Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].StartBeat + Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Duration;
+  end;
 
   Refresh;
   Tracks[DstTrack].Lines[DstLine].Notes[CurrentNote[DstTrack]].Color := P1_INVERTED;
   EditorLyrics[DstTrack].AddLine(DstTrack, Tracks[DstTrack].CurrentLine);
-end;
-
-procedure TScreenEditSub.CopySentences(SrcTrack, SrcLine, DstTrack, DstLine, Num: Integer);
-var
-  LineIndex: Integer;
-begin
-  // create place for new sentences
-  SetLength(Tracks[CurrentTrack].Lines, Tracks[CurrentTrack].Number + Num - 1);
-
-  // moves sentences next to the destination
-  for LineIndex := Tracks[CurrentTrack].High downto DstLine + 1 do
-  begin
-    Tracks[CurrentTrack].Lines[LineIndex + Num - 1] := Tracks[CurrentTrack].Lines[LineIndex];
-  end;
-
-  // prepares new sentences: sets sentence start and create first note
-  for LineIndex := 1 to Num-1 do
-  begin
-    Tracks[CurrentTrack].Lines[DstLine + LineIndex].StartBeat := Tracks[CurrentTrack].Lines[DstLine + LineIndex - 1].Notes[0].StartBeat +
-      (Tracks[CurrentTrack].Lines[SrcLine + LineIndex].Notes[0].StartBeat - Tracks[CurrentTrack].Lines[SrcLine + LineIndex - 1].Notes[0].StartBeat);
-    SetLength(Tracks[CurrentTrack].Lines[DstLine + LineIndex].Notes, 1);
-    Tracks[CurrentTrack].Lines[DstLine + LineIndex].HighNote := 0;
-    Tracks[CurrentTrack].Lines[DstLine + LineIndex].Notes[0].StartBeat := Tracks[CurrentTrack].Lines[DstLine + LineIndex].StartBeat;
-    Tracks[CurrentTrack].Lines[DstLine + LineIndex].Notes[0].Duration := 1;
-    Tracks[CurrentTrack].Lines[DstLine + LineIndex].EndBeat := Tracks[CurrentTrack].Lines[DstLine + LineIndex].StartBeat + 1;
-  end;
-
-  // increase counters
-  Tracks[CurrentTrack].Number := Tracks[CurrentTrack].Number + Num - 1;
-  Tracks[CurrentTrack].High := Tracks[CurrentTrack].High + Num - 1;
-
-  for LineIndex := 0 to Num - 1 do
-    CopySentence(SrcTrack, SrcLine + LineIndex, DstTrack, DstLine + LineIndex);
 end;
 
 procedure TScreenEditSub.MakeSolo;
