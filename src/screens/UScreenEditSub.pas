@@ -274,7 +274,9 @@ type
       MedleyNotes:             TMedleyNotes;
 
       procedure ChangeBPM(newBPM: real);
-      function SetPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function TogglePreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function JumpToPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+      function PlayFromPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function LeaveScope(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function ShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
       function ToggleDuet(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
@@ -325,6 +327,7 @@ type
       procedure DeleteNote;
       procedure OnMidiNote(Note: Byte);
       procedure DeleteSentence;
+      procedure ClearExistingPreviewMarker;
       procedure TransposeNote(Transpose: Integer);
       procedure UpdateLineBaseNote(const TrackIndex, LineIndex: Integer);
       procedure ChangeWholeTone(Tone: Integer);
@@ -578,101 +581,110 @@ begin
 end;
 
 
-      // SDLK_I: SetPreviewStart
-function TScreenEditSub.SetPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
-// set PreviewStart tag
-var
-  LineIndex: Integer;
-  ModState: word;
+      // SHIFT+I: Toggle preview marker at current note
+function TScreenEditSub.TogglePreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
-  ModState := SDL_GetModState;
   CopyToUndo;
-  if ModState and KMOD_SHIFT <> 0 then
+
+  if (CurrentSong.HasPreview) and
+     (CurrentTrack = MedleyNotes.Preview.track) and
+     (Tracks[CurrentTrack].CurrentLine = MedleyNotes.Preview.line) and
+     (CurrentNote[CurrentTrack] = MedleyNotes.Preview.note) and
+     (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].IsStartPreview) then
   begin
-    if (CurrentSong.HasPreview) and
-        (CurrentTrack = MedleyNotes.Preview.track) and
-        (Tracks[CurrentTrack].CurrentLine = MedleyNotes.Preview.line) and
-        (CurrentNote[CurrentTrack] = MedleyNotes.Preview.note) and
-        (Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].IsStartPreview) then
-    begin
-      Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].IsStartPreview := false;
-      CurrentSong.PreviewStart := 0;
-      CurrentSong.HasPreview := false;
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_PREVIEW_CLEARED');
-    end
-    else
-    begin
-      // clear old IsStartPreview flag
-      Tracks[MedleyNotes.Preview.track].Lines[MedleyNotes.Preview.line].Notes[MedleyNotes.Preview.note].IsStartPreview := false;
+    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].IsStartPreview := false;
+    CurrentSong.PreviewStart := 0;
+    CurrentSong.HasPreview := false;
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PREVIEW_CLEARED');
+    Exit;
+  end;
 
-      // set preview start
-      CurrentSong.PreviewStart := Round(GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat) * 100) / 100;
-      CurrentSong.HasPreview := CurrentSong.PreviewStart >= 0.0;
-      if (CurrentSong.HasPreview) then
-      begin
-        MedleyNotes.Preview.track := CurrentTrack;
-        MedleyNotes.Preview.line := Tracks[CurrentTrack].CurrentLine;
-        MedleyNotes.Preview.note := CurrentNote[CurrentTrack];
-        Tracks[MedleyNotes.Preview.track].Lines[MedleyNotes.Preview.line].Notes[MedleyNotes.Preview.note].IsStartPreview := true;
-        Text[TextInfo].Text := Format(Language.Translate('EDIT_INFO_PREVIEW_SET'), [CurrentSong.PreviewStart]);
-      end
-      else
-      begin
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].IsStartPreview := false;
+  ClearExistingPreviewMarker;
 
-      end;
-    end;
-  end
-  else if InRange(CurrentSong.PreviewStart, 0.0, AudioPlayback.Length) then
+  CurrentSong.PreviewStart := Round(
+    GetTimeFromBeat(Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat) * 100
+  ) / 100;
+  CurrentSong.HasPreview := CurrentSong.PreviewStart >= 0.0;
+
+  if (CurrentSong.HasPreview) then
   begin
-    if ModState = KMOD_LALT then
-    begin // jump and play
-      // simulate sentence switch to clear props
-      SwitchSentence(-1);
-
-      Tracks[CurrentTrack].CurrentLine := 0; // update lyric
-
-      Text[TextInfo].Text := Language.Translate('EDIT_INFO_JUMPTO_PREVIEW_AND_PLAY') + ' (' + FloatToStr(CurrentSong.PreviewStart) + ' s)';
-      PlayStopTime := AudioPlayback.Length;
-      PlaySentence := true;
-      Click := false;
-      AudioPlayback.Position := CurrentSong.PreviewStart;
-      AudioPlayback.Play;
-
-      // play video in sync if visible
-      if (fCurrentVideo <> nil) then UpdateVideoPosition(AudioPlayback.Position);
-    end
-    else if ModState = 0 then
-    begin // jump to preview start
-      // simulate sentence switch to clear props
-      SwitchSentence(-1);
-
-      CurrentBeat := Floor(GetMidBeat(CurrentSong.PreviewStart - (CurrentSong.GAP) / 1000));
-      LineIndex := 0;
-      while (LineIndex <= Tracks[CurrentTrack].High) and (CurrentBeat > Tracks[CurrentTrack].Lines[LineIndex].EndBeat) do
-        Inc(LineIndex);
-
-      if LineIndex <= High(Tracks[CurrentTrack].Lines) then
-      begin
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
-        Tracks[CurrentTrack].CurrentLine := LineIndex;
-
-        // finding the right note
-        CurrentNote[CurrentTrack] := 0;
-        while (CurrentNote[CurrentTrack] <= Tracks[CurrentTrack].Lines[LineIndex].HighNote) and (CurrentBeat > Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentNote[CurrentTrack]].EndBeat) do
-          Inc(CurrentNote[CurrentTrack]);
-
-        Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
-        EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
-        EditorLyrics[CurrentTrack].Selected := 0;
-
-        Text[TextInfo].Text := Language.Translate('EDIT_INFO_JUMPTO_PREVIEW') + ' (' + FloatToStr(CurrentSong.PreviewStart) + ' s)';
-      end;
-    end;
+    MedleyNotes.Preview.track := CurrentTrack;
+    MedleyNotes.Preview.line := Tracks[CurrentTrack].CurrentLine;
+    MedleyNotes.Preview.note := CurrentNote[CurrentTrack];
+    Tracks[MedleyNotes.Preview.track].Lines[MedleyNotes.Preview.line].Notes[MedleyNotes.Preview.note].IsStartPreview := true;
+    Text[TextInfo].Text := Format(Language.Translate('EDIT_INFO_PREVIEW_SET'), [CurrentSong.PreviewStart]);
   end
-  else Text[TextInfo].Text := Language.Translate('EDIT_INFO_NO_PREVIEW');
-  Exit;
+  else
+  begin
+    Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].IsStartPreview := false;
+  end;
+end;
+
+      // ALT+I: Jump to preview marker and start playback
+function TScreenEditSub.PlayFromPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+begin
+  Result := true;
+
+  if not InRange(CurrentSong.PreviewStart, 0.0, AudioPlayback.Length) then
+  begin
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_NO_PREVIEW');
+    Exit;
+  end;
+
+  SwitchSentence(-1);
+  Tracks[CurrentTrack].CurrentLine := 0;
+
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_JUMPTO_PREVIEW_AND_PLAY') +
+    ' (' + FloatToStr(CurrentSong.PreviewStart) + ' s)';
+  PlayStopTime := AudioPlayback.Length;
+  PlaySentence := true;
+  Click := false;
+  AudioPlayback.Position := CurrentSong.PreviewStart;
+  AudioPlayback.Play;
+
+  if (fCurrentVideo <> nil) then
+    UpdateVideoPosition(AudioPlayback.Position);
+end;
+
+      // I: Jump to preview marker without playing
+function TScreenEditSub.JumpToPreviewStart(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
+var
+  LineIndex: Integer;
+begin
+  Result := true;
+
+  if not InRange(CurrentSong.PreviewStart, 0.0, AudioPlayback.Length) then
+  begin
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_NO_PREVIEW');
+    Exit;
+  end;
+
+  SwitchSentence(-1);
+
+  CurrentBeat := Floor(GetMidBeat(CurrentSong.PreviewStart - (CurrentSong.GAP) / 1000));
+  LineIndex := 0;
+  while (LineIndex <= Tracks[CurrentTrack].High) and
+        (CurrentBeat > Tracks[CurrentTrack].Lines[LineIndex].EndBeat) do
+    Inc(LineIndex);
+
+  if LineIndex > High(Tracks[CurrentTrack].Lines) then
+    Exit;
+
+  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
+  Tracks[CurrentTrack].CurrentLine := LineIndex;
+
+  CurrentNote[CurrentTrack] := 0;
+  while (CurrentNote[CurrentTrack] <= Tracks[CurrentTrack].Lines[LineIndex].HighNote) and
+        (CurrentBeat > Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentNote[CurrentTrack]].EndBeat) do
+    Inc(CurrentNote[CurrentTrack]);
+
+  Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
+  EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
+  EditorLyrics[CurrentTrack].Selected := 0;
+
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_JUMPTO_PREVIEW') +
+    ' (' + FloatToStr(CurrentSong.PreviewStart) + ' s)';
 end;
 
 function TScreenEditSub.SetMedleyTags(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; EndNote: integer): boolean;
@@ -879,7 +891,6 @@ begin
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_NO_MEDLEY_SECTION');
 end;
 
-      // SDLK_R: ReloadSong
 function TScreenEditSub.ReloadSong(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 //reload
 begin
@@ -938,7 +949,9 @@ begin
   RegisterKeyBinding(ID,'SEC_010', 'S', SDLK_S, HandleSaveSong);
   RegisterKeyBinding(ID,'SEC_010', 'SHIFT_S', SDLK_S + MOD_LSHIFT, HandleSaveSong, 1);
 
-  RegisterKeyBinding(ID,'SEC_050', 'I', SDLK_I, SetPreviewStart);
+  RegisterKeyBinding(ID,'SEC_050', 'SHIFT_I', SDLK_I + MOD_LSHIFT, TogglePreviewStart);
+  RegisterKeyBinding(ID,'SEC_050', 'I', SDLK_I, JumpToPreviewStart);
+  RegisterKeyBinding(ID,'SEC_050', 'ALT_I', SDLK_I + MOD_LALT, PlayFromPreviewStart);
   RegisterKeyBinding(ID,'SEC_060', 'A', SDLK_A, SetMedleyTags);
   RegisterKeyBinding(ID,'SEC_060', 'A', SDLK_A + MOD_LSHIFT, SetMedleyTags, 1);
   RegisterKeyBinding(ID,'SEC_060', 'J', SDLK_J, Jump, 0);
@@ -1292,7 +1305,6 @@ begin
   end;
 end;
 
-      // SDLK_G: SetGoldenNote;
 function TScreenEditSub.HandleSetGoldenNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 // Golden Note
 begin
@@ -1321,7 +1333,6 @@ begin
   EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
 end;
 
-      // SDLK_F: SetFreestyleNote;
 function TScreenEditSub.HandleSetFreestyleNote(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 // Freestyle Note
 begin
@@ -1359,7 +1370,6 @@ begin
   ShowInteractiveBackground;
 end;
 
-    // SDLK_ESCAPE: LeaveScope
 function TScreenEditSub.LeaveScope(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
@@ -1369,7 +1379,6 @@ begin
     FadeTo(@ScreenSong);
 end;
 
-      // SDLK_TAB: ShowPopupHelp;
 function TScreenEditSub.ShowPopupHelp(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   ContextId: UTF8String;
@@ -1384,7 +1393,6 @@ begin
   end;
 end;
 
-      // SDLK_BACKQUOTE: IncreaseNoteLength;
 function TScreenEditSub.IncreaseNoteLength(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
@@ -1469,7 +1477,6 @@ begin;
   GoldenRec.KillAll;
 end;
 
-      // SDLK_F6: EnterPianoEditMode
 function TScreenEditSub.EnterPianoEditMode(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 begin
   Result := true;
@@ -1605,7 +1612,6 @@ begin
   ShowInteractiveBackground;
 end;
 
-      // SDLK_PERIOD: MoveTextToRight
 function TScreenEditSub.MoveTextToRight(PressedKey: QWord; CharCode: UCS4Char; PressedDown: boolean; Parameter: integer): boolean;
 var
   LineIndex: Integer;
@@ -2924,6 +2930,29 @@ begin
   //SelectNextNote();
   Tracks[CurrentTrack].Lines[Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, Tracks[CurrentTrack].CurrentLine);
+end;
+
+procedure TScreenEditSub.ClearExistingPreviewMarker;
+var
+  TrackIdx: Integer;
+  LineIdx: Integer;
+  NoteIdx: Integer;
+begin
+  if Length(Tracks) = 0 then
+    Exit;
+
+  TrackIdx := MedleyNotes.Preview.track;
+  LineIdx := MedleyNotes.Preview.line;
+  NoteIdx := MedleyNotes.Preview.note;
+
+  if (TrackIdx < 0) or (TrackIdx > High(Tracks)) then
+    Exit;
+  if (LineIdx < 0) or (LineIdx > Tracks[TrackIdx].High) then
+    Exit;
+  if (NoteIdx < 0) or (NoteIdx > Tracks[TrackIdx].Lines[LineIdx].HighNote) then
+    Exit;
+
+  Tracks[TrackIdx].Lines[LineIdx].Notes[NoteIdx].IsStartPreview := false;
 end;
 
 procedure TScreenEditSub.TransposeNote(Transpose: Integer);
