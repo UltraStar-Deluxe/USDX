@@ -597,6 +597,7 @@ uses
   UCommandLine,
   UDataBase,
   UDllManager,
+  UHelp,
   ULanguage,
   UPlatform,
   UMain,
@@ -616,12 +617,20 @@ procedure TIni.TranslateOptionValues;
 var
   I: integer;
   Zeros: string;
+  SelectedLanguage: integer;
 begin
-  // Load language file, fallback to config language if param is invalid
+  // Determine which language index should be active
   if (Params.Language > -1) and (Params.Language < Length(ILanguage)) then
-    ULanguage.Language.ChangeLanguage(ILanguage[Params.Language])
+    SelectedLanguage := Params.Language
   else
-    ULanguage.Language.ChangeLanguage(ILanguage[Language]);
+    SelectedLanguage := Language;
+
+  // Load UI strings for the selected language
+  ULanguage.Language.ChangeLanguage(ILanguage[SelectedLanguage]);
+
+  // Keep help overlays in sync as well (if initialized already)
+  if Assigned(Help) and (SelectedLanguage >= 0) and (SelectedLanguage < Length(ILanguage)) then
+    Help.ChangeLanguage(ILanguage[SelectedLanguage]);
 
   IDifficultyTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_EASY');
   IDifficultyTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_MEDIUM');
