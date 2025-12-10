@@ -262,6 +262,8 @@ procedure TScreenOptionsGame.ReloadCurrentScreen;
 begin
   ScreenOptionsGame.Free;
   Language.ChangeLanguage(ILanguage[Ini.Language]);
+  if Assigned(Help) and (Ini.Language >= 0) and (Ini.Language < Length(ILanguage)) then
+    Help.ChangeLanguage(ILanguage[Ini.Language]);
   Ini.TranslateOptionValues;
   Theme.LoadTheme(Ini.Theme, Ini.Color);
   ScreenOptionsGame := TScreenOptionsGame.Create;
