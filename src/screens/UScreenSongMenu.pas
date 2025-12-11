@@ -142,13 +142,16 @@ begin
       end;
     end;
 
-    // check normal keys
-    case PressedKey of
-      SDLK_Q:
-        begin
-          Result := false;
-          Exit;
-        end;
+    // check normal keys unless a text field is actively selected
+    if not ((CurMenu = SM_Playlist_New) and Button[1].Selected) then
+    begin
+      case PressedKey of
+        SDLK_Q:
+          begin
+            Result := false;
+            Exit;
+          end;
+      end;
     end;
 
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
