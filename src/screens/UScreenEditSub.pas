@@ -3206,6 +3206,13 @@ begin
         for NoteIndex := 0 to Tracks[TrackIndex].Lines[LineIndex].HighNote do
           Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat := Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat - FirstBeat;
 
+    for TrackIndex := 0 to High(Tracks) do
+      for LineIndex := 0 to Tracks[TrackIndex].High do
+      begin
+        Tracks[TrackIndex].Lines[LineIndex].StartBeat := Tracks[TrackIndex].Lines[LineIndex].StartBeat - FirstBeat;
+        Tracks[TrackIndex].Lines[LineIndex].EndBeat   := Tracks[TrackIndex].Lines[LineIndex].EndBeat   - FirstBeat;
+      end;
+
     // adjust GAP accordingly, round to nearest integer value (fractional GAPs make no sense)
     CurrentSong.GAP := round((CurrentSong.GAP + (FirstBeat * 15000) / (CurrentSong.BPM[0].BPM / 4)));
 
