@@ -274,6 +274,7 @@ begin
   AddSelectSlide('SING_OPTIONS_THEMES_THEME', Ini.Theme, ITheme);
   SkinSelect := AddSelectSlide('SING_OPTIONS_THEMES_SKIN', Ini.SkinNo, ISkin);
   AddSelectSlide('SING_OPTIONS_THEMES_COLOR', Ini.Color, IColorTranslated);
+  AddSelectSlide('SING_OPTIONS_THEMES_EDITOR_NOTE_COLOR', Ini.EditorNoteColor, IPlayerColorTranslated);
 end;
 
 end.
