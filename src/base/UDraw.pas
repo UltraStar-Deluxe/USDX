@@ -83,18 +83,18 @@ type
 
   PNoteTextureBundle = ^TNoteTextureBundle;
   TNoteTextureBundle = record
-    NoteLeft:      TTexture;
-    NoteMid:       TTexture;
-    NoteRight:     TTexture;
-    RapLeft:       TTexture;
-    RapMid:        TTexture;
-    RapRight:      TTexture;
-    NoteLeftInv:   TTexture;
-    NoteMidInv:    TTexture;
-    NoteRightInv:  TTexture;
-    RapLeftInv:    TTexture;
-    RapMidInv:     TTexture;
-    RapRightInv:   TTexture;
+    ActiveNoteLeft:      TTexture;
+    ActiveNoteMid:       TTexture;
+    ActiveNoteRight:     TTexture;
+    ActiveRapLeft:       TTexture;
+    ActiveRapMid:        TTexture;
+    ActiveRapRight:      TTexture;
+    InactiveNoteLeft:    TTexture;
+    InactiveNoteMid:     TTexture;
+    InactiveNoteRight:   TTexture;
+    InactiveRapLeft:     TTexture;
+    InactiveRapMid:      TTexture;
+    InactiveRapRight:    TTexture;
   end;
 procedure SetEditNoteTextures(const Textures: PNoteTextureBundle);
 const
@@ -1691,9 +1691,9 @@ begin
           if Assigned(Bundle) then
           begin
             if Color = P1_INVERTED then
-              TexNum := Bundle^.RapLeftInv.TexNum
+              TexNum := Bundle^.ActiveRapLeft.TexNum
             else
-              TexNum := Bundle^.RapLeft.TexNum;
+              TexNum := Bundle^.InactiveRapLeft.TexNum;
             glBindTexture(GL_TEXTURE_2D, TexNum);
           end
           else
@@ -1709,9 +1709,9 @@ begin
           if Assigned(Bundle) then
           begin
             if Color = P1_INVERTED then
-              TexNum := Bundle^.NoteLeftInv.TexNum
+              TexNum := Bundle^.ActiveNoteLeft.TexNum
             else
-              TexNum := Bundle^.NoteLeft.TexNum;
+              TexNum := Bundle^.InactiveNoteLeft.TexNum;
             glBindTexture(GL_TEXTURE_2D, TexNum);
           end
           else
@@ -1739,9 +1739,9 @@ begin
           if Assigned(Bundle) then
           begin
             if Color = P1_INVERTED then
-              TexNum := Bundle^.RapMidInv.TexNum
+              TexNum := Bundle^.ActiveRapMid.TexNum
             else
-              TexNum := Bundle^.RapMid.TexNum;
+              TexNum := Bundle^.InactiveRapMid.TexNum;
             glBindTexture(GL_TEXTURE_2D, TexNum);
           end
           else
@@ -1757,9 +1757,9 @@ begin
           if Assigned(Bundle) then
           begin
             if Color = P1_INVERTED then
-              TexNum := Bundle^.NoteMidInv.TexNum
+              TexNum := Bundle^.ActiveNoteMid.TexNum
             else
-              TexNum := Bundle^.NoteMid.TexNum;
+              TexNum := Bundle^.InactiveNoteMid.TexNum;
             glBindTexture(GL_TEXTURE_2D, TexNum);
           end
           else
@@ -1786,9 +1786,9 @@ begin
           if Assigned(Bundle) then
           begin
             if Color = P1_INVERTED then
-              TexNum := Bundle^.RapRightInv.TexNum
+              TexNum := Bundle^.ActiveRapRight.TexNum
             else
-              TexNum := Bundle^.RapRight.TexNum;
+              TexNum := Bundle^.InactiveRapRight.TexNum;
             glBindTexture(GL_TEXTURE_2D, TexNum);
           end
           else
@@ -1804,9 +1804,9 @@ begin
           if Assigned(Bundle) then
           begin
             if Color = P1_INVERTED then
-              TexNum := Bundle^.NoteRightInv.TexNum
+              TexNum := Bundle^.ActiveNoteRight.TexNum
             else
-              TexNum := Bundle^.NoteRight.TexNum;
+              TexNum := Bundle^.InactiveNoteRight.TexNum;
             glBindTexture(GL_TEXTURE_2D, TexNum);
           end
           else
