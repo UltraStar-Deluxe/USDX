@@ -44,7 +44,7 @@
         <PackageName Value="LazUtils"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="128">
+    <Units Count="129">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -560,6 +560,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UUnicodeStringHelper"/>
       </Unit127>
+      <Unit128>
+        <Filename Value="base\UAudioWorker.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UAudioWorker"/>
+      </Unit128>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
