@@ -173,11 +173,8 @@ begin
 end;
 
 function TDLLMan.LoadWebsite(No: cardinal): boolean;
-var
-  functions_error : string;
 begin
   Result := true;
-  functions_error := '';
   // load libary
   hLibW := LoadLibrary(PChar(WebsitePath.Append(WebsitePaths[No]).ToNative));
   // if loaded

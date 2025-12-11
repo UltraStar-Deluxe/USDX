@@ -170,7 +170,6 @@ end;
 function TScreenPartyTournamentPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
   SDL_ModState:  word;
-  I:  integer;
   isAlternate: boolean;
   procedure IntNext;
   begin
@@ -438,8 +437,6 @@ begin
 end;
 
 procedure TScreenPartyTournamentPlayer.SetAnimationProgress(Progress: real);
-var
-  I:    integer;
 begin
   {for I := 0 to high(Button) do
     Button[I].Texture.ScaleW := Progress;   }

@@ -594,7 +594,7 @@ end;
 procedure TScreenName.RefreshPlayers();
 var
   Count, I: integer;
-  Col, DesCol: TRGB;
+  DesCol: TRGB;
 begin
 
   Count := UIni.IPlayersVals[CountIndex];
@@ -868,7 +868,6 @@ end;
 procedure TScreenName.OnShow;
 var
   I: integer;
-  Col: TRGB;
 begin
   inherited;
 

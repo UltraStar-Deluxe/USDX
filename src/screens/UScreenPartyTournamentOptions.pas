@@ -101,8 +101,6 @@ begin
 end;
 
 function TScreenPartyTournamentOptions.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
-var
-  I, J : integer;
 begin
   Result := true;
   if (PressedDown) then
@@ -156,8 +154,6 @@ begin
 end;
 
 constructor TScreenPartyTournamentOptions.Create;
-  var
-    I: integer;
 begin
   inherited Create;
 

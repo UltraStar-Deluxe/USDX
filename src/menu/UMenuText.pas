@@ -425,8 +425,6 @@ begin
 end;
 
 function TText.GetMouseOverArea: TMouseOverRect;
-var
-  W1: real;
 begin
   if not(Display.Cursor_HiddenByScreen) then
   begin

@@ -883,8 +883,6 @@ end;
 { TScreenPopupScoreDownload }
 
 function TScreenPopupScoreDownload.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
-var
-  Value: boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -894,7 +892,6 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          Value := false;
           Visible := false;
           Result := false;
           Text[0].Text := Language.Translate('SCORE_DOWNLOAD_RECEIVE_LIST');
@@ -903,7 +900,6 @@ begin
 
       SDLK_RETURN:
         begin
-          Value := (Interaction = 0);
           if (Interaction = 0) then
           begin
             Visible := false;
@@ -964,7 +960,7 @@ end;
 procedure TScreenPopupScoreDownload.SaveScoreSong();
 var
   String_Text, User_Score, Max_Score, Media_Score: string;
-  I, J, Update: integer;
+  J, Update: integer;
   DeleteSongLevel: array [0..2] of boolean;
 begin
 

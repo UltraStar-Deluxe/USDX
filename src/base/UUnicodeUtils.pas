@@ -535,6 +535,7 @@ end;
 
 function UCS4CharToString(ch: UCS4Char): UCS4String;
 begin
+  Result := nil;
   SetLength(Result, 2);
   Result[0] := ch;
   Result[1] := 0;
@@ -555,6 +556,7 @@ var
   I: integer;
   MaxCount: integer;
 begin
+  Result := nil;
   // calculate max. copy count
   MaxCount := LengthUCS4(str)-Index;
   if (MaxCount < 0) then

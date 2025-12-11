@@ -120,9 +120,6 @@ uses
 
 
 procedure SingDrawWebCamFrame;
-var
-  status: integer;
-  TextureCam2: PTexture;
 begin
 
   Webcam.GetWebcamFrame;
@@ -393,9 +390,6 @@ begin
 end;
 
 procedure SingDrawJukeboxBlackBackground;
-var
-  Rec:    TRecR;
-  TexRec: TRecR;
 begin
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, ScreenJukebox.Tex_Background.TexNum);
@@ -1225,8 +1219,6 @@ end;
 procedure SingDrawLines;
 var
   NR: TRecR;         // lyrics area bounds (NR = NoteRec?)
-  LyricEngine: TLyricEngine;
-  LyricEngineDuet: TLyricEngine;
 begin
   // positions
   NR.Left := 20;
