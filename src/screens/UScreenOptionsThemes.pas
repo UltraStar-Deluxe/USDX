@@ -119,7 +119,7 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 3 then
+          if SelInteraction = 4 then
           begin
             Ini.Save;
 
@@ -139,7 +139,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 2) then
+          if (SelInteraction >= 0) and (SelInteraction <= 3) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
@@ -147,7 +147,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 2) then
+          if (SelInteraction >= 0) and (SelInteraction <= 3) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
@@ -265,6 +265,7 @@ begin
   AddSelectSlide('SING_OPTIONS_THEMES_THEME', Ini.Theme, ITheme);
   SkinSelect := AddSelectSlide('SING_OPTIONS_THEMES_SKIN', Ini.SkinNo, ISkin);
   AddSelectSlide('SING_OPTIONS_THEMES_COLOR', Ini.Color, IColorTranslated);
+  AddSelectSlide('SING_OPTIONS_THEMES_EDITOR_NOTE_COLOR', Ini.EditorNoteColor, IPlayerColorTranslated);
 end;
 
 end.

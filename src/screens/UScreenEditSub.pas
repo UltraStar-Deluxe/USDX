@@ -5015,31 +5015,40 @@ end;
 
 procedure TScreenEditSub.LoadEditorNoteTextures;
 const
-  BLUE_COLOR_ID = 1;
+  DEFAULT_ACTIVE_COLOR_ID = 1;
+  INACTIVE_COLOR_ID = 9;
+  MAX_ACTIVE_COLOR_INDEX = 15;
 var
-  PlayerColor: TRGB;
+  ActiveColor: TRGB;
+  InactiveColor: TRGB;
   Color: Cardinal;
+  ActiveIndex: integer;
 begin
-  PlayerColor := GetPlayerColor(BLUE_COLOR_ID);
-  Color := RGBFloatToInt(PlayerColor.R, PlayerColor.G, PlayerColor.B);
+  ActiveIndex := EnsureRange(Ini.EditorNoteColor, 0, MAX_ACTIVE_COLOR_INDEX) + 1;
+  if ActiveIndex < 1 then
+    ActiveIndex := DEFAULT_ACTIVE_COLOR_ID;
 
-  EditorNoteTextures.NoteLeft      := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),  TEXTURE_TYPE_COLORIZED, Color);
-  EditorNoteTextures.NoteMid       := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'),   TEXTURE_TYPE_COLORIZED, Color);
-  EditorNoteTextures.NoteRight     := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_COLORIZED, Color);
+  ActiveColor := GetPlayerColor(ActiveIndex);
+  Color := RGBFloatToInt(ActiveColor.R, ActiveColor.G, ActiveColor.B);
 
-  EditorNoteTextures.RapLeft       := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
-  EditorNoteTextures.RapMid        := Texture.LoadTexture(Skin.GetTextureFileName('GrayMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
-  EditorNoteTextures.RapRight      := Texture.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.ActiveNoteLeft   := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),     TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.ActiveNoteMid    := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'),      TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.ActiveNoteRight  := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'),    TEXTURE_TYPE_COLORIZED, Color);
 
-  Color := RGBFloatToInt(1 - PlayerColor.R, 1 - PlayerColor.G, 1 - PlayerColor.B);
+  EditorNoteTextures.ActiveRapLeft    := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.ActiveRapMid     := Texture.LoadTexture(Skin.GetTextureFileName('GrayMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.ActiveRapRight   := Texture.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
 
-  EditorNoteTextures.NoteLeftInv   := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),  TEXTURE_TYPE_COLORIZED, Color);
-  EditorNoteTextures.NoteMidInv    := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'),   TEXTURE_TYPE_COLORIZED, Color);
-  EditorNoteTextures.NoteRightInv  := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_COLORIZED, Color);
+  InactiveColor := GetPlayerColor(INACTIVE_COLOR_ID);
+  Color := RGBFloatToInt(InactiveColor.R, InactiveColor.G, InactiveColor.B);
 
-  EditorNoteTextures.RapLeftInv    := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
-  EditorNoteTextures.RapMidInv     := Texture.LoadTexture(Skin.GetTextureFileName('GrayMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
-  EditorNoteTextures.RapRightInv   := Texture.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.InactiveNoteLeft  := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),     TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.InactiveNoteMid   := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'),      TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.InactiveNoteRight := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'),    TEXTURE_TYPE_COLORIZED, Color);
+
+  EditorNoteTextures.InactiveRapLeft   := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.InactiveRapMid    := Texture.LoadTexture(Skin.GetTextureFileName('GrayMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.InactiveRapRight  := Texture.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
 end;
 
 procedure TScreenEditSub.OnShow;
