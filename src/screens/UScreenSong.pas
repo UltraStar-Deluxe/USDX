@@ -2134,6 +2134,29 @@ end;
 procedure TScreenSong.SetScroll;
 var
   VS, B, SongsInCat: integer;
+  procedure HideDuetElements;
+  begin
+    Text[Text2PlayersDuetSingerP1].Visible := false;
+    Text[Text2PlayersDuetSingerP2].Visible := false;
+
+    Statics[Static2PlayersDuetSingerP1].Visible := false;
+    Statics[Static2PlayersDuetSingerP2].Visible := false;
+
+    Text[Text3PlayersDuetSingerP1].Visible := false;
+    Text[Text3PlayersDuetSingerP2].Visible := false;
+    Text[Text3PlayersDuetSingerP3].Visible := false;
+
+    Statics[Static3PlayersDuetSingerP1].Visible := false;
+    Statics[Static3PlayersDuetSingerP2].Visible := false;
+    Statics[Static3PlayersDuetSingerP3].Visible := false;
+
+    Statics[Static4PlayersDuetSingerP3].Visible := false;
+    Statics[Static4PlayersDuetSingerP4].Visible := false;
+
+    Statics[Static6PlayersDuetSingerP4].Visible := false;
+    Statics[Static6PlayersDuetSingerP5].Visible := false;
+    Statics[Static6PlayersDuetSingerP6].Visible := false;
+  end;
 begin
   VS := CatSongs.VisibleSongs;
   if VS > 0 then
@@ -2176,6 +2199,8 @@ begin
       else
         Text[TextYear].Text  :=  '';
     end;
+
+    HideDuetElements;
 
     // Duet Singers
     if (CatSongs.Song[Interaction].isDuet) then
@@ -2277,32 +2302,7 @@ begin
           Text[Text2PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[1];
         end;
       end;
-    end
-    else
-    begin
-      Text[Text2PlayersDuetSingerP1].Visible := false;
-      Text[Text2PlayersDuetSingerP2].Visible := false;
-
-      Statics[Static2PlayersDuetSingerP1].Visible := false;
-      Statics[Static2PlayersDuetSingerP2].Visible := false;
-
-      Text[Text3PlayersDuetSingerP1].Visible := false;
-      Text[Text3PlayersDuetSingerP2].Visible := false;
-      Text[Text3PlayersDuetSingerP3].Visible := false;
-
-      Statics[Static3PlayersDuetSingerP1].Visible := false;
-      Statics[Static3PlayersDuetSingerP2].Visible := false;
-      Statics[Static3PlayersDuetSingerP3].Visible := false;
-
-      Statics[Static4PlayersDuetSingerP3].Visible := false;
-      Statics[Static4PlayersDuetSingerP4].Visible := false;
-
-      Statics[Static6PlayersDuetSingerP4].Visible := false;
-      Statics[Static6PlayersDuetSingerP5].Visible := false;
-      Statics[Static6PlayersDuetSingerP6].Visible := false;
-
     end;
-
     //Set Song Score
     SongScore;
 
@@ -2335,6 +2335,8 @@ begin
     Text[TextYear].Text  := '';
 
     Statics[VideoIcon].Visible := false;
+
+    HideDuetElements;
 
     for B := 0 to High(Button) do
       Button[B].Visible := false;
