@@ -407,7 +407,6 @@ begin
 
 end;
 
-function TScreenOptionsRecord.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 function TScreenOptionsRecord.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
