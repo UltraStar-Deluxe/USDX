@@ -46,7 +46,7 @@ type
 
   TByteSet = set of byte;
 
-  TScreenOptionsInput = class(TMenu)
+  TScreenOptionsInput = class(TOptionsMenu)
     protected
       // interaction IDs
       ButtonExitIID: integer;
@@ -63,6 +63,7 @@ type
 
     protected
       procedure CheckOption;
+      procedure LoadWidgets; override;
 
     public
       constructor Create; override;
@@ -82,6 +83,7 @@ uses
   UDisplay,
   UGraphic,
   UHelp,
+  ULanguage,
   ULog,
   UUnicodeUtils,
   SysUtils;
@@ -152,24 +154,10 @@ constructor TScreenOptionsInput.Create;
 begin
   inherited Create;
   SoundInteractions := [];
-
-  LoadFromTheme(Theme.OptionsInput);
-
-  Theme.OptionsInput.SelectMouse.showArrows := true;
-  Theme.OptionsInput.SelectMouse.oneItemOnly := true;
-  SelectMouse := AddSelectSlide(Theme.OptionsInput.SelectMouse, ActualMouse, IMouseTranslated);
-  Include(SoundInteractions, SelectMouse);
-
-  Theme.OptionsInput.SelectJoypad.showArrows := true;
-  Theme.OptionsInput.SelectJoypad.oneItemOnly := true;
-  SelectJoyPad := AddSelectSlide(Theme.OptionsInput.SelectJoypad, Ini.Joypad, IJoypad);
-  Include(SoundInteractions, SelectJoyPad);
-
-
-  AddButton(Theme.OptionsInput.ButtonExit);
+  Description := Language.Translate('SING_OPTIONS_INPUT_DESC');
+  WhereAmI := Language.Translate('SING_OPTIONS_INPUT_WHEREAMI');
+  Load;
   ButtonExitIID := High(Interactions);
-  if (Length(Button[0].Text)=0) then
-    AddButtonText(20, 5, Theme.Options.Description[OPTIONS_DESC_INDEX_BACK]);
 
 end;
 
@@ -181,7 +169,7 @@ begin
     Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenOptionsInput)');
 
   ActualMouse := Ini.Mouse;
-  UpdateSelectSlideOptions(Theme.OptionsInput.SelectMouse, SelectMouse, IMouseTranslated, ActualMouse);
+  UpdateSelectSlideOptions(SelectMouse, IMouseTranslated, ActualMouse);
 
   WasMouse := Ini.Mouse > 0;
   WasJoy := HasJoyStick;
@@ -221,5 +209,12 @@ begin
 
 end;
 
+procedure TScreenOptionsInput.LoadWidgets;
+begin
+  SelectMouse := AddSelectSlide('SING_OPTIONS_INPUT_MOUSE', ActualMouse, IMouseTranslated);
+  Include(SoundInteractions, SelectMouse);
+  SelectJoyPad := AddSelectSlide('SING_OPTIONS_INPUT_JOYPAD_SUPPORT', Ini.Joypad, IJoypad);
+  Include(SoundInteractions, SelectJoyPad);
+end;
 
 end.

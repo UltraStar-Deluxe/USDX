@@ -498,10 +498,10 @@ begin
   max_y := Button[button_s].Y + Button[button_s].H;
 
   // transfer mousecords to the 800x600 raster we use to draw
-  X := Round((X / (Screen^.w / Screens)) * RenderW);
+  X := Round((X / (ScreenW / Screens)) * RenderW);
   if (X > RenderW) then
     X := X - RenderW;
-  Y := Round((Y / Screen^.h) * RenderH);
+  Y := Round((Y / ScreenH) * RenderH);
 
   if (Button[button_s].Visible) and (InRegion(X, Y, Button[button_s].GetMouseOverArea)) then
     SetInteraction(button_s)

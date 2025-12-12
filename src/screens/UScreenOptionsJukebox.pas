@@ -40,16 +40,52 @@ uses
   UIni,
   ULyrics,
   UMenu,
+  UMenuWidget,
+  UMenuSelectSlide,
+  UMenuStatic,
+  UMenuText,
   UMusic,
+  UPath,
   UThemes,
   sdl2,
   TextGL;
 
 type
-  TScreenOptionsJukebox = class(TMenu)
+
+  TColor = (colRed, colGreen, ColBlue);
+
+  TLyricsColorPicker = class(IMenuWidget)
+    private
+      SelectR, SelectG, SelectB: TSelectSlide; // Owned by the menu, only used for drawing and changing position
+      TexR, TexG, TexB: integer;
+      StaticR, StaticG, StaticB: TStatic;
+      PointerR, PointerG, PointerB: TStatic;
+      Sample: TStatic;
+      RGBSalt: real;
+      Red, Green, Blue: integer;
+
+      function CreateStatic(X, Y, W, H, Z, ColR, ColG, ColB: real; const TexName: IPath): TStatic;
+
+    public
+      constructor Create(PosX, PosY: real; SelectR, SelectG, SelectB: TSelectSlide; Red, Green, Blue: integer);
+      destructor Destroy; override;
+
+      procedure SetX(PosX: real); override;
+      function GetX(): real; override;
+      procedure SetY(PosY: real); override;
+      function GetY(): real; override;
+      function GetW(): real; override;
+      function GetH(): real; override;
+      procedure Draw; override;
+      procedure SetColor(Color: TColor; Value: integer);
+
+  end;
+
+  TScreenOptionsJukebox = class(TOptionsMenu)
     private
       Lyrics: TLyricEngine;
       Line: TLine;
+      ColorPicker: TLyricsColorPicker;
 
       FontSelect:      integer;
       StyleSelect:     integer;
@@ -59,15 +95,7 @@ type
       RedSelect:       integer;
       GreenSelect:     integer;
       BlueSelect:      integer;
-
-      PointerR: integer;
-      PointerG: integer;
-      PointerB: integer;
-
-      TexR:   integer;
-      TexG:  integer;
-      TexB:  integer;
-      TexColor:  integer;
+      TexR, TexG, TexB: integer;
 
       Red:   integer;
       Green: integer;
@@ -76,10 +104,6 @@ type
       RSalt: real;
       GSalt: real;
       BSalt: real;
-
-      StartR: real;
-      StartG: real;
-      StartB: real;
 
       SingColor: array [0..2] of TRGB;
       SingOutlineColor: array [0..2] of TRGB;
@@ -90,11 +114,15 @@ type
       ActualColor: array [0..2] of TRGB;
       ActualOutlineColor: array [0..2] of TRGB;
 
+      procedure AddColorPicker;
+      function AddColorPickerSelectSlide(const Text: UTF8String; var Data: integer; const Values: array of UTF8String): integer;
+
     public
       constructor Create; override;
+      destructor Destroy; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
-      function Draw: boolean; override;
+      function DrawFG: boolean; override;
       procedure InteractInc; override;
       procedure InteractDec; override;
 
@@ -105,6 +133,9 @@ type
 
       procedure UpdatePropertyList;
       procedure LyricSample;
+
+    protected
+      procedure LoadWidgets; override;
   end;
 
 const
@@ -115,9 +146,176 @@ implementation
 uses
   UGraphic,
   UHelp,
+  ULanguage,
   ULog,
+  UMenuButton,
+  USkins,
+  UTexture,
   UUnicodeUtils,
   SysUtils;
+
+constructor TLyricsColorPicker.Create(PosX, PosY: real; SelectR, SelectG, SelectB: TSelectSlide; Red, Green, Blue: integer);
+begin
+  self.SelectR := SelectR;
+  self.SelectG := SelectG;
+  self.SelectB := SelectB;
+
+  StaticR := CreateStatic(360, SelectR.Y + 3, 340, 10, 1, 1, 0, 0, Skin.GetTextureFileName('Picker'));
+  StaticG := CreateStatic(360, SelectG.Y + 3, 340, 10, 1, 0, 1, 0, Skin.GetTextureFileName('Picker'));
+  StaticB := CreateStatic(360, SelectB.Y + 3, 340, 10, 1, 0, 0, 1, Skin.GetTextureFileName('Picker'));
+  PointerR := CreateStatic(StaticR.Texture.X, StaticR.Texture.Y - 1, 1, 12, 1, 0, 0, 0, Skin.GetTextureFileName('Picker'));
+  PointerG := CreateStatic(StaticG.Texture.X, StaticG.Texture.Y - 1, 1, 12, 1, 0, 0, 0, Skin.GetTextureFileName('Picker'));
+  PointerB := CreateStatic(StaticB.Texture.X, StaticB.Texture.Y - 1, 1, 12, 1, 0, 0, 0, Skin.GetTextureFileName('Picker'));
+
+
+  Sample := CreateStatic(PosX, PosY, 145, 55, 1, 1, 1, 1, Skin.GetTextureFileName('Picker'));
+
+  RGBSalt := StaticR.Texture.W/255;
+  X := PosX;
+  Y := PosY;
+  PosYInit := PosY;
+  SetColor(colRed, Red);
+  SetColor(colGreen, Green);
+  SetColor(colBlue, Blue);
+
+end;
+
+destructor TLyricsColorPicker.Destroy;
+begin
+  Sample.Free;
+  StaticR.Free;
+  StaticG.Free;
+  StaticB.Free;
+  PointerR.Free;
+  PointerG.Free;
+  PointerB.Free;
+  // Select slides are owned by the menu
+  inherited;
+end;
+
+procedure TLyricsColorPicker.SetX(PosX: real);
+var
+  SelectX: real;
+  StaticX: real;
+begin
+  Sample.Texture.X := PosX;
+  SelectX := PosX + 150;
+  SelectR.X := SelectX;
+  SelectG.X := SelectX;
+  SelectB.X := SelectX;
+  StaticX := PosX + 290;
+  StaticR.Texture.X := StaticX;
+  StaticG.Texture.X := StaticX;
+  StaticB.Texture.X := StaticX;
+  PointerR.Texture.X := StaticX;
+  PointerG.Texture.X := StaticX;
+  PointerB.Texture.X := StaticX;
+end;
+
+function TLyricsColorPicker.GetX(): real;
+begin
+  Result := Sample.Texture.X;
+end;
+
+procedure TLyricsColorPicker.SetY(PosY: real);
+begin
+  Sample.Texture.Y := PosY;
+  SelectR.Y := PosY;
+  SelectG.Y := SelectR.Y + SelectR.H + Theme.OptionsSub.WidgetVSpacing;
+  SelectB.Y := SelectG.Y + SelectG.H + Theme.OptionsSub.WidgetVSpacing;
+  StaticR.Texture.Y := SelectR.Y + 3;
+  StaticG.Texture.Y := SelectG.Y + 3;
+  StaticB.Texture.Y := SelectB.Y + 3;
+  PointerR.Texture.Y := StaticR.Texture.Y - 1;
+  PointerG.Texture.Y := StaticG.Texture.Y - 1;
+  PointerB.Texture.Y := StaticB.Texture.Y - 1;
+
+end;
+
+function TLyricsColorPicker.GetY(): real;
+begin
+  Result := SelectR.Y;
+end;
+
+function TLyricsColorPicker.GetW(): real;
+begin
+  Result := SelectR.X + SelectR.W - Sample.Texture.X;
+end;
+
+function TLyricsColorPicker.GetH(): real;
+begin
+  Result := Sample.Texture.H;
+end;
+
+function TLyricsColorPicker.CreateStatic(X, Y, W, H, Z, ColR, ColG, ColB: real; const TexName: IPath): TStatic;
+begin
+  Result := TStatic.Create(Texture.GetTexture(TexName, TEXTURE_TYPE_TRANSPARENT, 0));
+
+  // configures static
+  Result.Texture.X := X;
+  Result.Texture.Y := Y;
+  Result.Texture.H := H;
+  Result.Texture.W := W;
+  Result.Texture.Z := Z;
+  Result.Texture.ColR := ColR;
+  Result.Texture.ColG := ColG;
+  Result.Texture.ColB := ColB;
+  Result.Texture.TexX1 := 0.0;
+  Result.Texture.TexY1 := 0.0;
+  Result.Texture.TexX2 := 1.0;
+  Result.Texture.TexY2 := 1.0;
+  Result.Texture.Alpha := 1.0;
+  Result.Visible := true;
+end;
+
+procedure TLyricsColorPicker.Draw;
+begin
+  StaticR.Draw;
+  StaticG.Draw;
+  StaticB.Draw;
+  PointerR.Draw;
+  PointerG.Draw;
+  PointerB.Draw;
+  SelectR.Draw;
+  SelectG.Draw;
+  SelectB.Draw;
+  Sample.Draw;
+end;
+
+procedure TLyricsColorPicker.SetColor(Color: TColor; Value: integer);
+var
+  Stat: TStatic;
+  Point: TStatic;
+  Col: ^integer;
+  TexCol: ^real;
+begin
+  case Color of
+    colRed:
+      begin
+        Stat := StaticR;
+        Point := PointerR;
+        Col := @Red;
+        TexCol := @Sample.Texture.ColR;
+      end;
+    colGreen:
+      begin
+        Stat := StaticG;
+        Point := PointerG;
+        Col := @Green;
+        TexCol := @Sample.Texture.ColG;
+      end;
+    colBlue:
+      begin
+        Stat := StaticB;
+        Point := PointerB;
+        Col := @Blue;
+        TexCol := @Sample.Texture.ColB;
+      end;
+  end;
+  Point.Texture.X := Stat.Texture.X + RGBSalt * Value;
+  Col^ := Value;
+  TexCol^ := Value / 255;
+end;
 
 function TScreenOptionsJukebox.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
@@ -196,27 +394,22 @@ begin
             begin
               Red := Red + Salt_Mod;
               SelectsS[SelInteraction].SelectOptInt := Red;
-              Statics[PointerR].Texture.X := Statics[PointerR].Texture.X + RSalt * (Salt_Mod + 1);
+              ColorPicker.SetColor(colRed, Red);
             end;
 
             if (SelInteraction = GreenSelect) and (Green < 255) then
             begin
               Green := Green + Salt_Mod;
               SelectsS[SelInteraction].SelectOptInt := Green;
-              Statics[PointerG].Texture.X := Statics[PointerG].Texture.X + GSalt * (Salt_Mod + 1);
+              ColorPicker.SetColor(colGreen, Green);
             end;
 
             if (SelInteraction = BlueSelect) and (Blue < 255) then
             begin
               Blue := Blue + Salt_Mod;
               SelectsS[SelInteraction].SelectOptInt := Blue;
-              Statics[PointerB].Texture.X := Statics[PointerB].Texture.X + BSalt * (Salt_Mod + 1);
+              ColorPicker.SetColor(colBlue, Blue);
             end;
-
-            Statics[TexColor].Texture.ColR := Red/255;
-            Statics[Texcolor].Texture.ColG := Green/255;
-            Statics[TexColor].Texture.ColB := Blue/255;
-
             InteractInc;
           end;
         end;
@@ -246,31 +439,26 @@ begin
                 SelectsS[LineColorSelect].SetSelectOpt(2);
             end;
 
-            if (SelInteraction = RedSelect) and (Red > 0) then
+            if (SelInteraction = RedSelect) and (Red < 255) then
             begin
               Red := Red - Salt_Mod;
               SelectsS[SelInteraction].SelectOptInt := Red;
-              Statics[PointerR].Texture.X := Statics[PointerR].Texture.X - RSalt * (Salt_Mod + 1);
+              ColorPicker.SetColor(colRed, Red);
             end;
 
-            if (SelInteraction = GreenSelect) and (Green > 0) then
+            if (SelInteraction = GreenSelect) and (Green < 255) then
             begin
               Green := Green - Salt_Mod;
               SelectsS[SelInteraction].SelectOptInt := Green;
-              Statics[PointerG].Texture.X := Statics[PointerG].Texture.X - GSalt * (Salt_Mod + 1);
+              ColorPicker.SetColor(colGreen, Green);
             end;
 
-            if (SelInteraction = BlueSelect) and (Blue > 0) then
+            if (SelInteraction = BlueSelect) and (Blue < 255) then
             begin
               Blue := Blue - Salt_Mod;
               SelectsS[SelInteraction].SelectOptInt := Blue;
-              Statics[PointerB].Texture.X := Statics[PointerB].Texture.X - BSalt * (Salt_Mod + 1);
+              ColorPicker.SetColor(colBlue, Blue);
             end;
-
-            Statics[TexColor].Texture.ColR := Red/255;
-            Statics[TexColor].Texture.ColG := Green/255;
-            Statics[TexColor].Texture.ColB := Blue/255;
-
             InteractDec;
           end;
         end;
@@ -298,7 +486,7 @@ begin
     Ini.JukeboxProperty := 0;
   end;
 
-  UpdateSelectSlideOptions(Theme.OptionsJukebox.SelectProperty, PropertySelect, IProperty, Ini.JukeboxProperty);
+  UpdateSelectSlideOptions(PropertySelect, IProperty, Ini.JukeboxProperty);
 end;
 
 procedure TScreenOptionsJukebox.InteractInc;
@@ -328,26 +516,26 @@ begin
   begin
 
     if (SelectsS[LineSelect].SelectedOption = 0) then
-      UpdateSelectSlideOptions(Theme.OptionsJukebox.SelectColor, LineColorSelect, ISingLineOColorTranslated, Ini.JukeboxSingLineOutlineColor);
+      UpdateSelectSlideOptions(LineColorSelect, ISingLineOColorTranslated, Ini.JukeboxSingLineOutlineColor);
 
     if (SelectsS[LineSelect].SelectedOption = 1) then
-      UpdateSelectSlideOptions(Theme.OptionsJukebox.SelectColor, LineColorSelect, IActualLineOColorTranslated, Ini.JukeboxActualLineOutlineColor);
+      UpdateSelectSlideOptions(LineColorSelect, IActualLineOColorTranslated, Ini.JukeboxActualLineOutlineColor);
 
     if (SelectsS[LineSelect].SelectedOption = 2) then
-      UpdateSelectSlideOptions(Theme.OptionsJukebox.SelectColor, LineColorSelect, INextLineOColorTranslated, Ini.JukeboxNextLineOutlineColor);
+      UpdateSelectSlideOptions(LineColorSelect, INextLineOColorTranslated, Ini.JukeboxNextLineOutlineColor);
 
   end
   else
   begin
 
     if (SelectsS[LineSelect].SelectedOption = 0) then
-      UpdateSelectSlideOptions(Theme.OptionsJukebox.SelectColor, LineColorSelect, ISingLineColorTranslated, Ini.JukeboxSingLineColor);
+      UpdateSelectSlideOptions(LineColorSelect, ISingLineColorTranslated, Ini.JukeboxSingLineColor);
 
     if (SelectsS[LineSelect].SelectedOption = 1) then
-      UpdateSelectSlideOptions(Theme.OptionsJukebox.SelectColor, LineColorSelect, IActualLineColorTranslated, Ini.JukeboxActualLineColor);
+      UpdateSelectSlideOptions(LineColorSelect, IActualLineColorTranslated, Ini.JukeboxActualLineColor);
 
     if (SelectsS[LineSelect].SelectedOption = 2) then
-      UpdateSelectSlideOptions(Theme.OptionsJukebox.SelectColor, LineColorSelect, INextLineColorTranslated, Ini.JukeboxNextLineColor);
+      UpdateSelectSlideOptions(LineColorSelect, INextLineColorTranslated, Ini.JukeboxNextLineColor);
 
   end;
 
@@ -454,17 +642,13 @@ begin
   Green := Round(Col.G * 255);
   Blue := Round(Col.B * 255);
 
-  Statics[PointerR].Texture.X := StartR + RSalt * Red;
-  Statics[PointerG].Texture.X := StartG + GSalt * Green;
-  Statics[PointerB].Texture.X := StartB + BSalt * Blue;
-
   SelectsS[RedSelect].SetSelectOpt(Red);
   SelectsS[GreenSelect].SetSelectOpt(Green);
   SelectsS[BlueSelect].SetSelectOpt(Blue);
+  ColorPicker.SetColor(colRed, Red);
+  ColorPicker.SetColor(colGreen, Green);
+  ColorPicker.SetColor(colBlue, Blue);
 
-  Statics[TexColor].Texture.ColR := Red/255;
-  Statics[TexColor].Texture.ColG := Green/255;
-  Statics[TexColor].Texture.ColB := Blue/255;
 
   Ini.CurrentJukeboxSingLineOutlineColor := Ini.JukeboxSingLineOutlineColor;
   Ini.CurrentJukeboxActualLineOutlineColor := Ini.JukeboxActualLineOutlineColor;
@@ -472,88 +656,19 @@ begin
 end;
 
 constructor TScreenOptionsJukebox.Create;
+var
+  ButtonExit: TButton;
 begin
   inherited Create;
-
-  LoadFromTheme(Theme.OptionsJukebox);
-
-  Theme.OptionsJukebox.SelectLyricsFont.showArrows := true;
-  Theme.OptionsJukebox.SelectLyricsFont.oneItemOnly := true;
-  FontSelect := AddSelectSlide(Theme.OptionsJukebox.SelectLyricsFont, Ini.JukeboxFont, FontFamilyNames);
-
-  Theme.OptionsJukebox.SelectLyricsStyle.showArrows := true;
-  Theme.OptionsJukebox.SelectLyricsStyle.oneItemOnly := true;
-  StyleSelect := AddSelectSlide(Theme.OptionsJukebox.SelectLyricsStyle, Ini.JukeboxStyle, ILyricsStyleTranslated);
-
-  Theme.OptionsJukebox.SelectLyricsEffect.showArrows := true;
-  Theme.OptionsJukebox.SelectLyricsEffect.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsJukebox.SelectLyricsEffect, Ini.JukeboxEffect, ILyricsEffectTranslated);
-
-  Theme.OptionsJukebox.SelectLyricsAlpha.showArrows := true;
-  Theme.OptionsJukebox.SelectLyricsAlpha.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsJukebox.SelectLyricsAlpha, Ini.JukeboxAlpha, ILyricsAlpha);
-
-  Theme.OptionsJukebox.SelectLine.showArrows := true;
-  Theme.OptionsJukebox.SelectLine.oneItemOnly := true;
-  LineSelect := AddSelectSlide(Theme.OptionsJukebox.SelectLine, Ini.JukeboxLine, ILineTranslated);
-
-  Theme.OptionsJukebox.SelectProperty.showArrows := true;
-  Theme.OptionsJukebox.SelectProperty.oneItemOnly := true;
-  PropertySelect := AddSelectSlide(Theme.OptionsJukebox.SelectProperty, Ini.JukeboxProperty, IPropertyTranslated);
-
-  Theme.OptionsJukebox.SelectColor.showArrows := true;
-  Theme.OptionsJukebox.SelectColor.oneItemOnly := true;
-  LineColorSelect := AddSelectSlide(Theme.OptionsJukebox.SelectColor, Ini.JukeboxSingLineColor, ISingLineColorTranslated);
-
-  Theme.OptionsJukebox.SelectR.showArrows := false;
-  Theme.OptionsJukebox.SelectR.oneItemOnly := true;
-  RedSelect := AddSelectSlide(Theme.OptionsJukebox.SelectR, Red, IRed);
-
-  Theme.OptionsJukebox.SelectG.showArrows := false;
-  Theme.OptionsJukebox.SelectG.oneItemOnly := true;
-  GreenSelect := AddSelectSlide(Theme.OptionsJukebox.SelectG, Green, IGreen);
-
-  Theme.OptionsJukebox.SelectB.showArrows := false;
-  Theme.OptionsJukebox.SelectB.oneItemOnly := true;
-  BlueSelect := AddSelectSlide(Theme.OptionsJukebox.SelectB, Blue, IBlue);
-
-  TexR := AddStatic(Theme.OptionsJukebox.TexR);
-  TexG := AddStatic(Theme.OptionsJukebox.TexG);
-  TexB := AddStatic(Theme.OptionsJukebox.TexB);
-  TexColor := AddStatic(Theme.OptionsJukebox.TexColor);
-
-  PointerR := AddStatic(Theme.OptionsJukebox.PointerR);
-  PointerG := AddStatic(Theme.OptionsJukebox.PointerG);
-  PointerB := AddStatic(Theme.OptionsJukebox.PointerB);
-
-  RSalt := Statics[TexR].Texture.W/255;
-  GSalt := Statics[TexR].Texture.W/255;
-  BSalt := Statics[TexR].Texture.W/255;
-
-  StartR := Statics[PointerR].Texture.X;
-  StartG := Statics[PointerG].Texture.X;
-  StartB := Statics[PointerB].Texture.X;
-
-  Statics[TexR].Texture.ColR := 1;
-  Statics[TexR].Texture.ColG := 0;
-  Statics[TexR].Texture.ColB := 0;
-
-  Statics[TexG].Texture.ColR := 0;
-  Statics[TexG].Texture.ColG := 1;
-  Statics[TexG].Texture.ColB := 0;
-
-  Statics[TexB].Texture.ColR := 0;
-  Statics[TexB].Texture.ColG := 0;
-  Statics[TexB].Texture.ColB := 1;
-
-  AddButton(Theme.OptionsJukebox.ButtonExit);
-  if (Length(Button[0].Text)=0) then
-    AddButtonText(20, 5, Theme.Options.Description[OPTIONS_DESC_INDEX_BACK]);
+  Description := Language.Translate('SING_OPTIONS_JUKEBOX_DESC');
+  WhereAmI := Language.Translate('SING_OPTIONS_JUKEBOX_WHEREAMI');
+  Load;
 
   // lyric sample
+  ButtonExit := Button[High(Button)];
   Lyrics := TLyricEngine.Create(
-      Theme.OptionsJukebox.UpperX, Theme.OptionsJukebox.UpperY, Theme.OptionsJukebox.UpperW, Theme.OptionsJukebox.UpperH,
-      Theme.OptionsJukebox.LowerX, Theme.OptionsJukebox.LowerY, Theme.OptionsJukebox.LowerW, Theme.OptionsJukebox.LowerH);
+      ButtonExit.X + ButtonExit.W + 20, ButtonExit.Y - 5 , 400, 40,
+      ButtonExit.X + ButtonExit.W + 20, ButtonExit.Y + 25, 400, 40);
 
   //Line.Lyric := 'Lorem ipsum dolor sit amet';
   // 1st line
@@ -605,6 +720,12 @@ begin
 
   Lyrics.AddLine(@Line);
   Lyrics.AddLine(@Line);
+end;
+
+destructor TScreenOptionsJukebox.Destroy;
+begin
+  ColorPicker.Free;
+  inherited;
 end;
 
 procedure TScreenOptionsJukebox.LyricSample;
@@ -660,11 +781,60 @@ begin
   LyricsState.UpdateBeats;
 end;
 
-function TScreenOptionsJukebox.Draw: boolean;
+function TScreenOptionsJukebox.DrawFG: boolean;
 begin
-  Result := inherited Draw;
+  Result := inherited;
 
   LyricSample();
+end;
+
+function TScreenOptionsJukebox.AddColorPickerSelectSlide(const Text: UTF8String; var Data: integer; const Values: array of UTF8String): integer;
+var
+  SelectS: TSelectSlide;
+  ThemeSelect: TThemeSelectSlide;
+begin
+  ThemeSelect := Theme.OptionsSub.SelectS;
+  with ThemeSelect do
+  begin
+    X := 220;
+    Y := YNextWidget;
+    W := 100;
+    H := 15;
+    TextSize := 16;
+  end;
+  ThemeSelect.Text := Language.Translate(Text);
+  Result := AddSelectSlide(ThemeSelect, Data, Values);
+  SelectS := SelectsS[High(SelectsS)];
+  SelectS.showArrows := False;
+  SelectS.Scrollable := True;
+  Inc(YNextWidget, Round(SelectS.H) + Theme.OptionsSub.WidgetVSpacing);
+end;
+
+procedure TScreenOptionsJukebox.AddColorPicker;
+var
+  ThemeSelect: TThemeSelectSlide;
+  NumWidgets: integer;
+begin
+  RedSelect := AddColorPickerSelectSlide('JUKEBOX_SONGOPTIONS_LYRIC_RGB_RED', Red, IRed);
+  GreenSelect := AddColorPickerSelectSlide('JUKEBOX_SONGOPTIONS_LYRIC_RGB_GREEN', Green, IGreen);
+  BlueSelect := AddColorPickerSelectSlide('JUKEBOX_SONGOPTIONS_LYRIC_RGB_BLUE', Blue, IBlue);
+  ColorPicker := TLyricsColorPicker.Create(70, SelectsS[RedSelect].Y, SelectsS[RedSelect], SelectsS[GreenSelect], SelectsS[BlueSelect], Red, Green, Blue);
+  NumWidgets := Length(Widgets);
+  SetLength(Widgets, NumWidgets + 1);
+  Widgets[NumWidgets] := ColorPicker;
+  YNextWidget := Round(ColorPicker.Y + ColorPicker.H + Theme.OptionsSub.WidgetVSpacing);
+end;
+
+procedure TScreenOptionsJukebox.LoadWidgets;
+begin
+  FontSelect := AddSelectSlide('SING_OPTIONS_LYRICS_FONT', Ini.JukeboxFont, FontFamilyNames);
+  StyleSelect := AddSelectSlide('SING_OPTIONS_LYRICS_STYLE', Ini.JukeboxStyle, ILyricsStyleTranslated);
+  AddSelectSlide('SING_OPTIONS_LYRICS_EFFECT', Ini.JukeboxEffect, ILyricsEffectTranslated);
+  AddSelectSlide('JUKEBOX_SONGOPTIONS_LYRIC_ALPHA', Ini.JukeboxAlpha, ILyricsAlpha);
+  LineSelect := AddSelectSlide('JUKEBOX_SONGOPTIONS_LYRIC_LINE', Ini.JukeboxLine, ILineTranslated);
+  PropertySelect := AddSelectSlide('JUKEBOX_SONGOPTIONS_LYRIC_PROPERTY', Ini.JukeboxProperty, IPropertyTranslated);
+  LineColorSelect := AddSelectSlide('JUKEBOX_SONGOPTIONS_LYRIC_COLOR', Ini.JukeboxSingLineColor, ISingLineColorTranslated);
+  AddColorPicker;
 end;
 
 end.

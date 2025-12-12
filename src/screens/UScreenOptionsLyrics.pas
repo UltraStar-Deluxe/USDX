@@ -46,7 +46,7 @@ uses
   TextGL;
 
 type
-  TScreenOptionsLyrics = class(TMenu)
+  TScreenOptionsLyrics = class(TOptionsMenu)
     private
       Lyrics: TLyricEngine;
       Line: TLine;
@@ -57,6 +57,9 @@ type
       procedure OnShow; override;
       function Draw: boolean; override;
       procedure LyricSample;
+
+    protected
+      procedure LoadWidgets; override;
   end;
 
 const
@@ -67,7 +70,9 @@ implementation
 uses
   UGraphic,
   UHelp,
+  ULanguage,
   ULog,
+  UMenuButton,
   UUnicodeUtils,
   SysUtils;
 
@@ -132,35 +137,19 @@ begin
 end;
 
 constructor TScreenOptionsLyrics.Create;
+var
+  ExitButton: TButton;
 begin
   inherited Create;
+  Description := Language.Translate('SING_OPTIONS_LYRICS_DESC');
+  WhereAmI := Language.Translate('SING_OPTIONS_LYRICS_WHEREAMI');
+  Load;
 
-  LoadFromTheme(Theme.OptionsLyrics);
-
-  Theme.OptionsLyrics.SelectLyricsFont.showArrows := true;
-  Theme.OptionsLyrics.SelectLyricsFont.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsLyrics.SelectLyricsFont, Ini.LyricsFont, FontFamilyNames);
-
-  Theme.OptionsLyrics.SelectLyricsStyle.showArrows := true;
-  Theme.OptionsLyrics.SelectLyricsStyle.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsLyrics.SelectLyricsStyle, Ini.LyricsStyle, ILyricsStyleTranslated);
-
-  Theme.OptionsLyrics.SelectLyricsEffect.showArrows := true;
-  Theme.OptionsLyrics.SelectLyricsEffect.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsLyrics.SelectLyricsEffect, Ini.LyricsEffect, ILyricsEffectTranslated);
-
-  Theme.OptionsLyrics.SelectNoteLines.showArrows := true;
-  Theme.OptionsLyrics.SelectNoteLines.oneItemOnly := true;
-  AddSelectSlide(Theme.OptionsLyrics.SelectNoteLines, Ini.NoteLines, INoteLinesTranslated);
-
-  AddButton(Theme.OptionsLyrics.ButtonExit);
-  if (Length(Button[0].Text)=0) then
-    AddButtonText(20, 5, Theme.Options.Description[OPTIONS_DESC_INDEX_BACK]);
-
+  ExitButton := Button[High(Button)];
   // lyric sample
   Lyrics := TLyricEngine.Create(
-      Theme.OptionsLyrics.UpperX, Theme.OptionsLyrics.UpperY, Theme.OptionsLyrics.UpperW, Theme.OptionsLyrics.UpperH,
-      Theme.OptionsLyrics.LowerX, Theme.OptionsLyrics.LowerY, Theme.OptionsLyrics.LowerW, Theme.OptionsLyrics.LowerH);
+      ExitButton.X + ExitButton.W + 5.0, ExitButton.Y - 10.0, 400.0, 40.0,
+      ExitButton.X + ExitButton.W + 5.0, ExitButton.Y + 20.0, 400.0, 40.0);
 
   //Line.Lyric := 'Lorem ipsum dolor sit amet';
   // 1st line
@@ -254,6 +243,14 @@ begin
   Result := inherited Draw;
 
   LyricSample();
+end;
+
+procedure TScreenOptionsLyrics.LoadWidgets;
+begin
+  AddSelectSlide('SING_OPTIONS_LYRICS_FONT', Ini.LyricsFont, FontFamilyNames);
+  AddSelectSlide('SING_OPTIONS_LYRICS_STYLE', Ini.LyricsStyle, ILyricsStyleTranslated);
+  AddSelectSlide('SING_OPTIONS_LYRICS_EFFECT', Ini.LyricsEffect, ILyricsEffectTranslated);
+  AddSelectSlide('SING_OPTIONS_LYRICS_NOTELINES', Ini.NoteLines, INoteLinesTranslated);
 end;
 
 end.

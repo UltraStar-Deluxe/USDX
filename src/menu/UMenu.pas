@@ -46,12 +46,35 @@ uses
   UMenuSelectSlide,
   UMenuStatic,
   UMenuText,
+  UMenuWidget,
   UMusic,
   UTexture,
   UThemes;
 
 type
 {  Int16 = SmallInt;}
+  TMenuScrollBarState = (sbsDefault, sbsHovered, sbsClicked);
+
+  TMenuScrollBar = class
+    private
+      PosX, PosY, PosYMax, PosYInit, Width, Height: real;
+      ColR, ColG, ColB: real;
+      HColR, HColG, HColB: real;
+      CColR, CColG, CColB: real;
+
+    public
+      State: TMenuScrollBarState;
+
+      constructor Create(const ThemeScrollBar: TThemeScrollBar; PosXInit: real; PosYInit: real; ScrollBarH: real; PosYMax: real);
+      procedure Draw();
+      function Move(Offset: real): real;
+      function GetMouseOverArea: TMouseOverRect;
+      property X: real read PosX;
+      property Y: real read PosY write PosY;
+      property YInit: real read PosYInit;
+      property W: real read Width;
+      property H: real read Height;
+  end;
 
   PMenu = ^TMenu;
   TMenu = class
@@ -65,6 +88,20 @@ type
 
       SelectsS:         array of TSelectSlide;
       ButtonCollection: array of TButtonCollection;
+      Widgets: array of IMenuWidget;
+      Scrollable: boolean;
+      ScrollArea: TMouseOverRect;
+      ScrollBar: TMenuScrollBar;
+
+      ScrollRatio: real; // Ratio of total height of all widgets to the scroll area height
+      Scrolling: boolean; // Whether the user is clicking the scrollbar
+      ScrollYInit: real; // Y coordinate of the mouse when the user first clicked the scrollbar
+      ScrollYPrev: real; // Y coordinate of the mouse on the last call to ParseInput
+      ScrollMouseYMax, ScrollMouseYMin: real; // Y coordinates of the mouse between which the menu should scroll
+
+      procedure InitScrollBar;
+      procedure ResetScroll();
+
     public
       Background:       TMenuBackground;
       Text:        array of TText;
@@ -141,7 +178,7 @@ type
         const Caption: UTF8String; var Data: integer): integer; overload;
       procedure AddSelectSlideOption(const AddText: UTF8String); overload;
       procedure AddSelectSlideOption(SelectNo: cardinal; const AddText: UTF8String); overload;
-      procedure UpdateSelectSlideOptions(ThemeSelectSlide: TThemeSelectSlide; SelectNum: integer; const Values: array of UTF8String; var Data: integer);
+      procedure UpdateSelectSlideOptions(SelectNum: integer; const Values: array of UTF8String; var Data: integer);
 
 //      function AddWidget(X, Y : UInt16; WidgetSrc : PSDL_Surface): Int16;
 //      procedure ClearWidgets(MinNumber : Int16);
@@ -179,7 +216,28 @@ type
       procedure InteractNextRow; virtual; // this is for the options screen, so button down makes sense
       procedure InteractPrevRow; virtual; // this is for the options screen, so button up makes sense
       procedure AddBox(X, Y, W, H: real);
+      procedure UpdateScrollPosition();
+      procedure ScrollMenu(Offset: real);
+      procedure ScrollMenuInc(ScrollAmount: real);
+      function InteractionIsScrollable(): boolean;
   end;
+
+TOptionsMenu = class(TMenu)
+  protected
+    YNextWidget: integer; // Y coordinate of the next settings widget in the menu
+    Description: AnsiString;
+    WhereAmI:    AnsiString;
+    procedure Load;
+    procedure LoadWidgets; virtual; abstract;
+    procedure LoadLegend; virtual;
+    function AddSelectSlide(const Text: UTF8String; var Data: integer; const Values: array of UTF8String): integer; overload;
+    function AddButton(const Text: UTF8String): integer; overload;
+
+  public
+    destructor Destroy; override;
+    constructor Create; overload; virtual;
+    function DrawFG: boolean; override;
+end;
 
 function RGBFloatToInt(R, G, B: double): cardinal;
 
@@ -207,6 +265,7 @@ uses
   UDisplay,
   UDrawTexture,
   UGraphic,
+  ULanguage,
   ULog,
   UMain,
   USkins,
@@ -234,6 +293,7 @@ begin
     Statics[I].Free;
 
   Background.Free;
+  ScrollBar.Free;
 
   //Log.LogError('Unloaded Succesful: ' + ClassName);
   inherited;
@@ -1028,6 +1088,7 @@ begin
   // configures button
   Button[Result].X := X;
   Button[Result].Y := Y;
+  Button[Result].YInit := Y;
   Button[Result].W := W;
   Button[Result].H := H;
   if (Typ <> TEXTURE_TYPE_COLORIZED) then
@@ -1075,7 +1136,7 @@ function TMenu.DrawFG: boolean;
 var
   J: integer;
 begin
-  //  Draw all ButtonCollections
+  // Draw all ButtonCollections
   for J := 0 to High(ButtonCollection) do
     ButtonCollection[J].Draw;
 
@@ -1094,10 +1155,35 @@ begin
   for J := 0 to High(SelectsS) do
     SelectsS[J].Draw;
 
-  // Third, we draw all our widgets
-  //  for J := 0 to High(WidgetsSrc) do
-  //    SDL_BlitSurface(WidgetsSrc[J], nil, ParentBackBuf, WidgetsRect[J]);
   Result := true;
+end;
+
+procedure TMenu.InitScrollBar;
+var
+  MaxY2, ScrollBarH: real;
+  J: integer;
+begin
+  MaxY2 := 0.0;
+  for J := Low(Widgets) to High(Widgets) do
+    MaxY2 := Max(MaxY2, Widgets[J].Y + Widgets[J].H);
+  ScrollRatio := (MaxY2 - ScrollArea.Y) / ScrollArea.H;
+  ScrollBarH := ScrollArea.H / ScrollRatio;
+  if (ScrollBarH > ScrollArea.H) then
+    ScrollBarH := ScrollArea.H;
+  ScrollBar := TMenuScrollBar.Create(Theme.OptionsSub.ScrollBar,
+                                     ScrollArea.X + ScrollArea.W + Theme.OptionsSub.ScrollBar.HSpacing,
+                                     ScrollArea.Y,
+                                     ScrollBarH,
+                                     ScrollArea.Y + ScrollArea.H - ScrollBarH);
+end;
+
+procedure TMenu.ResetScroll();
+var
+  J: integer;
+begin
+  for J := Low(Widgets) to High(Widgets) do
+    Widgets[J].ScrollOffset := 0.0;
+  ScrollBar.Y := ScrollArea.Y;
 end;
 
 function TMenu.Draw: boolean;
@@ -1226,6 +1312,9 @@ begin
 
   //Set Interaction
   Interaction := Int;
+  if (Scrollable and InteractionIsScrollable) then
+    UpdateScrollPosition;
+
 end;
 
 procedure TMenu.InteractPrev;
@@ -1250,7 +1339,87 @@ begin
   until IsSelectable(Int);
 
   //Set Interaction
-  Interaction := Int
+  Interaction := Int;
+  if (Scrollable and InteractionIsScrollable) then
+    UpdateScrollPosition;
+end;
+
+procedure TMenu.UpdateScrollPosition();
+var
+  Y1, Y2, YInit: real;
+  TopVisible, BottomVisible: boolean;
+  ScrollOffset: real;
+begin
+  case Interactions[Interaction].Typ of
+    //Button
+    iButton:
+    begin
+      Y1 := Button[Interactions[Interaction].Num].Y;
+      Y2 := Button[Interactions[Interaction].Num].Y + Button[Interactions[Interaction].Num].H;
+      YInit := Button[Interactions[Interaction].Num].YInit;
+    end;
+
+    //Select Slide
+    iSelectS:
+    begin
+      Y1 := SelectsS[Interactions[Interaction].Num].Y;
+      Y2 := SelectsS[Interactions[Interaction].Num].Y + SelectsS[Interactions[Interaction].Num].H;
+      YInit := SelectsS[Interactions[Interaction].Num].YInit;
+    end;
+  end;
+  TopVisible := (Y1 > ScrollArea.Y) and (Y1 < (ScrollArea.Y + ScrollArea.H));
+  BottomVisible := Y2 < (ScrollArea.Y + ScrollArea.H);
+  if (TopVisible and BottomVisible) then
+  begin
+    Exit;
+  end;
+
+  // item is below the scroll area
+  if (Y2 > (ScrollArea.Y + ScrollArea.H)) then
+  begin
+    // New Y = (ScrollArea.Y + ScrollArea.H) - margin - item.h
+    // diff = new Y - item.y
+    //ScrollAmount := ScrollArea.Y + ScrollArea.H - Y2;
+    ScrollOffset := ScrollArea.Y + ScrollArea.H - (Y2 - Y1) - YInit;
+    ScrollMenu(ScrollOffset);
+    ScrollBar.Move(-1 * ScrollOffset / ScrollRatio);
+  end
+  else if (Y1 < (ScrollArea.Y)) then
+  begin
+    //ScrollAmount := (ScrollArea.Y) - Y1;
+    ScrollOffset := ScrollArea.Y - YInit;
+    ScrollMenu(ScrollOffset);
+    ScrollBar.Move(-1 * ScrollOffset / ScrollRatio);
+  end;
+end;
+
+function TMenu.InteractionIsScrollable(): boolean;
+begin
+  case Interactions[Interaction].Typ of
+    iButton:  Result := Button[Interactions[Interaction].Num].Scrollable;
+    iSelectS: Result := SelectsS[Interactions[Interaction].Num].Scrollable;
+  else
+    Result := false;
+  end;
+end;
+
+procedure TMenu.ScrollMenu(Offset: real);
+var
+  J: integer;
+begin
+  for J := Low(Widgets) to High(Widgets) do
+    Widgets[J].Y := Widgets[J].YInit + Offset;
+end;
+
+procedure TMenu.ScrollMenuInc(ScrollAmount: real);
+var
+  J: integer;
+  WidgetScrollAmount: real;
+begin
+  ScrollAmount := ScrollBar.Move(ScrollBar.Y - ScrollBar.YInit + ScrollAmount);
+  WidgetScrollAmount := -1 * ScrollAmount * ScrollRatio;
+  for J := Low(Widgets) to High(Widgets) do
+    Widgets[J].Y := Widgets[J].Y + WidgetScrollAmount;
 end;
 
 procedure TMenu.InteractCustom(CustomSwitch: integer);
@@ -1366,7 +1535,10 @@ begin
   begin
     Il := Length(Text);
     SetLength(Text, Il+1);
+    SetLength(TextOffset, Il+1);
     Text[Il] := TText.Create(X + AddX, Y + AddY, AddText);
+    TextOffset[Il].X := AddX;
+    TextOffset[Il].Y := AddY;
     Text[Il].ColR := ColR;
     Text[Il].ColG := ColG;
     Text[Il].ColB := ColB;
@@ -1382,7 +1554,10 @@ begin
   begin
     Il := Length(Text);
     SetLength(Text, Il+1);
+    SetLength(TextOffset, Il+1);
     Text[Il] := TText.Create(X + AddX, Y + AddY, AddText);
+    TextOffset[Il].X := AddX;
+    TextOffset[Il].Y := AddY;
     Text[Il].ColR := ColR;
     Text[Il].ColG := ColG;
     Text[Il].ColB := ColB;
@@ -1458,149 +1633,14 @@ function TMenu.AddSelectSlide(X, Y, W, H, SkipX, SBGW, ColR, ColG, ColB, Int, DC
   const Caption: UTF8String; var Data: integer): integer;
 var
   S: integer;
-  I: integer;
 begin
   S := Length(SelectsS);
   SetLength(SelectsS, S + 1);
-  SelectsS[S] := TSelectSlide.Create;
-
-  if (Typ = TEXTURE_TYPE_COLORIZED) then
-  begin
-    SelectsS[S].Colorized := true;
-    SelectsS[S].Texture := Texture.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB));
-    SelectsS[S].DeselectTexture := Texture.GetTexture(TexName, Typ, RGBFloatToInt(DColR, DColG, DColB));
-  end
-  else
-  begin
-    SelectsS[S].Colorized := false;
-    SelectsS[S].Texture := Texture.GetTexture(TexName, Typ);
-    
-    SelectsS[S].ColR := ColR;
-    SelectsS[S].ColG := ColG;
-    SelectsS[S].ColB := ColB;
-
-    SelectsS[S].DColR := DColR;
-    SelectsS[S].DColG := DColG;
-    SelectsS[S].DColB := DColB;
-  end;
-  
-  SelectsS[S].Int := Int;
-  SelectsS[S].DInt := DInt; 
-
-  SelectsS[S].X := X;
-  SelectsS[S].Y := Y;
-  SelectsS[S].W := W;
-  SelectsS[S].H := H;  
-
-  if (SBGTyp = TEXTURE_TYPE_COLORIZED) then
-  begin
-    SelectsS[S].ColorizedSBG := true;
-    SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp, RGBFloatToInt(SBGColR, SBGColG, SBGColB));
-    SelectsS[S].DeselectTextureSBG := Texture.GetTexture(SBGName, SBGTyp, RGBFloatToInt(SBGDColR, SBGDColG, SBGDColB));
-  end
-  else
-  begin
-    SelectsS[S].ColorizedSBG := false;
-    SelectsS[S].TextureSBG := Texture.GetTexture(SBGName, SBGTyp);
-
-    SelectsS[S].SBGColR := SBGColR;
-    SelectsS[S].SBGColG := SBGColG;
-    SelectsS[S].SBGColB := SBGColB;
-
-    SelectsS[S].SBGDColR := SBGDColR;
-    SelectsS[S].SBGDColG := SBGDColG;
-    SelectsS[S].SBGDColB := SBGDColB;
-  end;
-
-
-  SelectsS[S].SBGInt := SBGInt;
-  SelectsS[S].SBGDInt := SBGDInt;
-  
-  SelectsS[High(SelectsS)].Tex_SelectS_ArrowL   := Tex_SelectS_ArrowL;
-  SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.X := X + W + SkipX;
-  SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.Y := Y + (H - Tex_SelectS_ArrowL.H) / 2;
-  SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.W := Tex_SelectS_ArrowL.W;
-  SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.H := Tex_SelectS_ArrowL.H;
-
-
-  SelectsS[High(SelectsS)].Tex_SelectS_ArrowR   := Tex_SelectS_ArrowR;
-  SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.X := X + W + SkipX + SBGW - Tex_SelectS_ArrowR.W;
-  SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.Y := Y + (H - Tex_SelectS_ArrowR.H) / 2;
-  SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.W := Tex_SelectS_ArrowR.W;
-  SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.H := Tex_SelectS_ArrowR.H;
-
-  SelectsS[S].TextureSBG.X := X + W + SkipX;
-  SelectsS[S].TextureSBG.Y := Y;
-  SelectsS[S].SBGW := SBGW;
-  SelectsS[S].TextureSBG.H := H;
-
-  SelectsS[S].Text.X := X + 20;
-  SelectsS[S].Text.Y := Y + (SelectsS[S].TextureSBG.H / 2) - 15;
-  SelectsS[S].Text.Text := Caption;
-  SelectsS[S].Text.Size := 30;
-  SelectsS[S].Text.Visible := true;
-  SelectsS[S].TColR := TColR;
-  SelectsS[S].TColG := TColG;
-  SelectsS[S].TColB := TColB;
-  SelectsS[S].TInt := TInt;
-  SelectsS[S].TDColR := TDColR;
-  SelectsS[S].TDColG := TDColG;
-  SelectsS[S].TDColB := TDColB;
-  SelectsS[S].TDInt := TDInt;
-
-  SelectsS[S].STColR := STColR;
-  SelectsS[S].STColG := STColG;
-  SelectsS[S].STColB := STColB;
-  SelectsS[S].STInt := STInt;
-  SelectsS[S].STDColR := STDColR;
-  SelectsS[S].STDColG := STDColG;
-  SelectsS[S].STDColB := STDColB;
-  SelectsS[S].STDInt := STDInt;
-
-  // new
-  SelectsS[S].Texture.TexX1 := 0;
-  SelectsS[S].Texture.TexY1 := 0;
-  SelectsS[S].Texture.TexX2 := 1;
-  SelectsS[S].Texture.TexY2 := 1;
-  SelectsS[S].TextureSBG.TexX1 := 0;
-  SelectsS[S].TextureSBG.TexY1 := 0;
-  SelectsS[S].TextureSBG.TexX2 := 1;
-  SelectsS[S].TextureSBG.TexY2 := 1;
-
-  // Sets Data to copy the value of selectops to global value;
-  SelectsS[S].PData := @Data;
-  // Configures Select options
-  {//SelectsS[S].TextOpt[0].Text := IntToStr(I+1);
-  SelectsS[S].TextOpt[0].Size := 30;
-  SelectsS[S].TextOpt[0].Align := 1;
-
-  SelectsS[S].TextOpt[0].ColR := SelectsS[S].STDColR;
-  SelectsS[S].TextOpt[0].ColG := SelectsS[S].STDColG;
-  SelectsS[S].TextOpt[0].ColB := SelectsS[S].STDColB;
-  SelectsS[S].TextOpt[0].Int := SelectsS[S].STDInt;
-  SelectsS[S].TextOpt[0].Visible := true; }
-
-  // Sets default value of selectopt from Data;
-  SelectsS[S].SelectedOption := Data;
-
-  // Disables default selection
-  SelectsS[S].SetSelect(false);
-
-  {// Configures 3 select options
-  for I := 0 to 2 do
-  begin
-    SelectsS[S].TextOpt[I].X := SelectsS[S].TextureSBG.X + 20 + (50 + 20) + (150 - 20) * I;
-    SelectsS[S].TextOpt[I].Y := SelectsS[S].TextureSBG.Y + 20;
-    SelectsS[S].TextOpt[I].Text := IntToStr(I+1);
-    SelectsS[S].TextOpt[I].Size := 30;
-    SelectsS[S].TextOpt[I].Align := 1;
-
-    SelectsS[S].TextOpt[I].ColR := SelectsS[S].STDColR;
-    SelectsS[S].TextOpt[I].ColG := SelectsS[S].STDColG;
-    SelectsS[S].TextOpt[I].ColB := SelectsS[S].STDColB;
-    SelectsS[S].TextOpt[I].Int := SelectsS[S].STDInt;
-    SelectsS[S].TextOpt[I].Visible := true;
-  end;}
+  SelectsS[S] := TSelectSlide.Create(X, Y, W, H, SkipX, SBGW, ColR, ColG, ColB, Int, DColR, DColG, DColB, DInt,
+  TColR, TColG, TColB, TInt, TDColR, TDColG, TDColB, TDInt,
+  SBGColR, SBGColG, SBGColB, SBGInt, SBGDColR, SBGDColG, SBGDColB, SBGDInt,
+  STColR, STColG, STColB, STInt, STDColR, STDColG, STDColB, STDInt,
+  TexName, Typ, SBGName, SBGTyp, Caption, Data);
 
   // adds interaction
   AddInteraction(iSelectS, S);
@@ -1628,8 +1668,7 @@ begin
 }
 end;
 
-procedure TMenu.UpdateSelectSlideOptions(ThemeSelectSlide: TThemeSelectSlide;
-  SelectNum: integer; const Values: array of UTF8String; var Data: integer);
+procedure TMenu.UpdateSelectSlideOptions(SelectNum: integer; const Values: array of UTF8String; var Data: integer);
 var
   SO: integer;
 begin
@@ -1780,6 +1819,8 @@ begin
   if (Background = nil) then
     AddBackground(DEFAULT_BACKGROUND);
 
+  if Scrollable then
+    ResetScroll;
   Background.OnShow;
 end;
 
@@ -1815,9 +1856,10 @@ function TMenu.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer)
 var
   nBut: integer;
   Action: TMouseClickAction;
+  ScrollY: real;
+  InRegionScrollBar: boolean;
 begin
   //default mouse parsing: clicking generates return keypress,
-  //  mousewheel selects in select slide
   //override ParseMouse to customize
   Result := true;
 
@@ -1842,10 +1884,10 @@ begin
   else
   begin
     nBut := InteractAt(X, Y);
-    if nBut >= 0 then
+    if (nBut >= 0) and (not Scrolling) then
     begin
       //select on mouse-over
-      if nBut <> Interaction then
+      if (nBut <> Interaction) and ((not Scrollable) or ((mX <> X) or (mY <> Y))) then
         SetInteraction(nBut);
 
       Action := maNone;
@@ -1859,16 +1901,6 @@ begin
             Action := SelectsS[Interactions[nBut].Num].OnClick(X, Y)
           else
             Action := maReturn;
-        end
-        else if (MouseButton = SDL_BUTTON_WHEELDOWN) then
-        begin //forward on select slide with mousewheel
-          if (Interactions[nBut].Typ = iSelectS) then
-            Action := maRight;
-        end
-        else if (MouseButton = SDL_BUTTON_WHEELUP) then
-        begin //backward on select slide with mousewheel
-          if (Interactions[nBut].Typ = iSelectS) then
-            Action := maLeft;
         end;
       end;
 
@@ -1882,7 +1914,7 @@ begin
     else
     begin
       nBut := CollectionAt(X, Y);
-      if (nBut >= 0) and (not ButtonCollection[nBut].Selected) then
+      if (nBut >= 0) and (not ButtonCollection[nBut].Selected) and (not Scrolling) then
       begin
         // if over button collection, that is not already selected
         // -> select first child but don't allow click
@@ -1890,8 +1922,58 @@ begin
         if nBut <> Interaction then
           SetInteraction(nBut);
       end;
+      if (Scrollable) then
+      begin
+        InRegionScrollBar := InRegion(X,Y, ScrollBar.GetMouseOverArea);
+        if (not BtnDown) then
+          Scrolling := False
+
+        // User has clicked the scroll bar
+        else if ((not Scrolling) and InRegionScrollBar) then
+        begin
+          Scrolling := True;
+          ScrollYInit := Y;
+          ScrollYPrev := Y;
+          ScrollMouseYMin := Y - (ScrollBar.Y - ScrollArea.Y);
+          ScrollMouseYMax := Y + ((ScrollArea.Y + ScrollArea.H) - (ScrollBar.Y + ScrollBar.H ));
+        end;
+
+        // Set scroll bar state
+        if (Scrolling) then
+          ScrollBar.State := sbsClicked
+        else if InRegionScrollBar then
+          ScrollBar.State := sbsHovered
+        else
+          ScrollBar.State := sbsDefault;
+
+        // If scrollbar's position changed since the last call, scroll the menu
+        if (Scrolling and (Y <> ScrollYPrev)) then
+        begin
+          if (Y > ScrollMouseYMax) then
+            ScrollY := ScrollMouseYMax
+          else if (Y < ScrollMouseYMin) then
+            ScrollY := ScrollMouseYMin
+          else
+            ScrollY := Y;
+
+          ScrollBar.Move(ScrollY - ScrollMouseYMin);
+          ScrollMenu(-1 * (ScrollY - ScrollMouseYMin) * ScrollRatio);
+          ScrollYPrev := Y;
+        end;
+      end;
+    end;
+
+    // Scroll with mouse scroll wheel
+    if Scrollable and (not Scrolling) and InRegion(X,Y, ScrollArea) then
+    begin
+      if (MouseButton = SDL_BUTTON_WHEELDOWN) then
+        ScrollMenuInc(5.0)
+      else if (MouseButton = SDL_BUTTON_WHEELUP) then
+        ScrollMenuInc(-5.0);
     end;
   end;
+  mX := X;
+  mY := Y;
 end;
 
 function TMenu.InRegion(X, Y: real; A: TMouseOverRect): boolean;
@@ -1924,7 +2006,8 @@ begin
     case Interactions[i].Typ of
       iButton:
         if InRegion(X, Y, Button[Interactions[i].Num].GetMouseOverArea) and
-           Button[Interactions[i].Num].Visible and Button[Interactions[i].Num].Selectable then
+           Button[Interactions[i].Num].Visible and Button[Interactions[i].Num].Selectable and
+           ((not Button[Interactions[i].Num].Scrollable) or InRegion(X, Y, ScrollArea)) then
         begin
           Result:=i;
           exit;
@@ -1936,7 +2019,7 @@ begin
           exit;
         end;
       iSelectS:
-        if InRegion(X, Y, SelectSs[Interactions[i].Num].GetMouseOverArea)  then
+        if InRegion(X, Y, SelectSs[Interactions[i].Num].GetMouseOverArea) and ((not SelectSs[Interactions[i].Num].Scrollable) or InRegion(X, Y, ScrollArea))  then
       	begin
           Result:=i;
           exit;
@@ -1965,6 +2048,198 @@ end;
 procedure TMenu.SetAnimationProgress(Progress: real);
 begin
   // nothing
+end;
+
+constructor TMenuScrollBar.Create(const ThemeScrollBar: TThemeScrollBar; PosXInit: real; PosYInit: real; ScrollBarH: real; PosYMax: real);
+begin
+  PosX := PosXInit;
+  PosY := PosYInit;
+  self.PosYInit := PosYInit;
+  self.PosYMax := PosYMax;
+  Width := ThemeScrollBar.W;
+  Height := ScrollBarH;
+  State := sbsDefault;
+  ColR := ThemeScrollBar.ColR;
+  ColG := ThemeScrollBar.ColG;
+  ColB := ThemeScrollBar.ColB;
+  HColR := ThemeScrollBar.HColR;
+  HColG := ThemeScrollBar.HColG;
+  HColB := ThemeScrollBar.HColB;
+  CColR := ThemeScrollBar.CColR;
+  CColG := ThemeScrollBar.CColG;
+  CColB := ThemeScrollBar.CColB;
+end;
+
+procedure TMenuScrollBar.Draw;
+begin
+  case State of
+    sbsClicked: glColor4f(CColR, CColG, CColB, 1.0);
+    sbsHovered: glColor4f(HColR, HColG, HColB, 1.0);
+    sbsDefault: glColor4f(ColR, ColG, ColB, 1.0);
+  end;
+  glBegin(GL_QUADS);
+  glVertex2f(PosX, PosY); // top left
+  glVertex2f(PosX, PosY + Height); // bottom left
+  glVertex2f(PosX + Width, PosY + Height); // bottom right
+  glVertex2f(PosX + Width, PosY); // top right
+  glEnd;
+
+end;
+
+function TMenuScrollBar.Move(Offset: real): real;
+var
+  Y0: real;
+begin
+  Y0 := Y;
+  Y := PosYInit + Offset;
+  if (Y < (PosYInit)) then
+    Y := PosYInit
+  else if (Y > PosYMax) then
+    Y := PosYMax;
+  Result := Y - Y0;
+end;
+
+function TMenuScrollBar.GetMouseOverArea: TMouseOverRect;
+begin
+  Result.X := PosX;
+  Result.Y := PosY;
+  Result.W := Width;
+  Result.H := Height;
+end;
+
+constructor TOptionsMenu.Create;
+begin
+  inherited;
+end;
+
+destructor TOptionsMenu.Destroy;
+begin
+  inherited;
+end;
+
+procedure TOptionsMenu.LoadLegend;
+var
+  I: integer;
+begin
+  for I := Low(Theme.OptionsSub.LegendStatic) to High(Theme.OptionsSub.LegendStatic) do
+    AddStatic(Theme.OptionsSub.LegendStatic[I]);
+
+  for I := Low(Theme.OptionsSub.LegendText) to High(Theme.OptionsSub.LegendText) do
+    AddText(Theme.OptionsSub.LegendText[I]);
+end;
+
+procedure TOptionsMenu.Load;
+var
+  MenuHeight: integer;
+  ThemeText: TThemeText;
+  ThemeButtonBack: TThemeButton;
+begin
+  LoadFromTheme(Theme.OptionsSub);
+  LoadLegend;
+  // Add Description and WhereAmI texts (customized per subclass)
+  ThemeText := Theme.OptionsSub.TextDescription;
+  ThemeText.Text := Description;
+  AddText(ThemeText);
+  ThemeText := Theme.OptionsSub.TextWhereAmI;
+  ThemeText.Text := WhereAmI;
+  AddText(ThemeText);
+  Description := '';
+  WhereAmI := '';
+
+  // Load widgets from the subclass
+  YNextWidget := Theme.OptionsSub.Area.Y;
+  LoadWidgets;
+
+  // Initialize scrolling if neesssary
+  if (Length(Widgets) > 0) then
+  begin
+    MenuHeight := Round(Widgets[High(Widgets)].Y + Widgets[High(Widgets)].H - Widgets[0].Y);
+    with ScrollArea do
+      begin
+        X := Theme.OptionsSub.Area.X;
+        Y := Theme.OptionsSub.Area.Y;
+        W := Theme.OptionsSub.Area.W;
+        H := Min(MenuHeight, Theme.OptionsSub.Area.H);
+      end;
+
+    // Initialize scrolling if the height of all widgets exceeds the defined area
+    if (MenuHeight > Theme.OptionsSub.Area.H) then
+    begin
+      Scrollable := True;
+      InitScrollBar;
+    end;
+  end;
+
+  ThemeButtonBack := Theme.OptionsSub.ButtonBack;
+  ThemeButtonBack.Y := Round(ScrollArea.Y + ScrollArea.H + Theme.OptionsSub.ButtonBackVSpacing);
+  AddButton(ThemeButtonBack);
+  AddButtonText(20, 3, Theme.Options.Description[OPTIONS_DESC_INDEX_BACK]);
+  Interaction := 0;
+
+end;
+
+function TOptionsMenu.AddSelectSlide(const Text: UTF8String; var Data: integer; const Values: array of UTF8String): integer;
+var
+  NumWidgets: integer;
+  SelectS: TSelectSlide;
+  ThemeSelect: TThemeSelectSlide;
+begin
+  ThemeSelect := Theme.OptionsSub.SelectS;
+  ThemeSelect.Text := Language.Translate(Text);
+  ThemeSelect.Y := YNextWidget;
+  Result := AddSelectSlide(ThemeSelect, Data, Values);
+  SelectS := SelectsS[High(SelectsS)];
+  SelectS.Scrollable := True;
+  Inc(YNextWidget, Round(SelectS.H) + Theme.OptionsSub.WidgetVSpacing);
+  NumWidgets := Length(Widgets);
+  SetLength(Widgets, NumWidgets + 1);
+  Widgets[NumWidgets] := SelectS;
+end;
+
+function TOptionsMenu.AddButton(const Text: UTF8String): integer;
+var
+  But: TThemeButton;
+  NumWidgets: integer;
+begin
+  But := Theme.OptionsSub.Button;
+  But.Y := YNextWidget;
+  if (Length(But.Text) > 0) then
+    But.Text[0].Text := Language.Translate(Text);
+  Result := AddButton(But);
+  Button[Result].Scrollable := True;
+  Inc(YNextWidget, Round(But.H) + Theme.OptionsSub.WidgetVSpacing);
+  NumWidgets := Length(Widgets);
+  SetLength(Widgets, NumWidgets + 1);
+  Widgets[NumWidgets] := Button[Result];
+end;
+
+function TOptionsMenu.DrawFG;
+var
+  J: integer;
+begin
+  for J := 0 to High(Statics) do
+    Statics[J].Draw;
+  for J := 0 to High(Text) do
+    Text[J].Draw;
+  for J := 0 to High(Button) do
+  begin
+    if (not Button[J].Scrollable) then
+      Button[J].Draw;
+  end;
+
+  glScissor(
+    Round(ScrollArea.X * ((ScreenW/RenderW) / Screens) + ((ScreenAct - 1) * (ScreenW / 2))),
+    Round((RenderH - (ScrollArea.Y + ScrollArea.H))*(ScreenH/RenderH)),
+    Round(ScrollArea.W*ScreenW/RenderW),
+    Round(ScrollArea.H*ScreenH/RenderH)
+  );
+  glEnable(GL_SCISSOR_TEST);
+  for J := 0 to High(Widgets) do
+    Widgets[J].Draw;
+  glDisable(GL_SCISSOR_TEST);
+  if (Scrollable) then
+    ScrollBar.Draw;
+  Result := true;
 end;
 
 end.
