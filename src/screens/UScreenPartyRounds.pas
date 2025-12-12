@@ -301,7 +301,7 @@ begin
     end;
 
     for I := 0 to High(SelectRound) do
-      UpdateSelectSlideOptions(Theme.PartyRounds.SelectRound[I] , SelectRound[I], IModeNames, Round[I]);
+      UpdateSelectSlideOptions(SelectRound[I], IModeNames, Round[I]);
   end
   else
   begin

@@ -97,7 +97,7 @@ PFLAGS_EXTRA   += @PFLAGS_EXTRA@
 # - Note that fpc.cfg already defines -vinw, so add -v0 first
 # - The stack check (-Ct) might not work with enabled threading
 # - Do we need -Coi?
-PFLAGS_BASE_DEFAULT    := -Si -Sg- -Sc- -v0Binwe -gl
+PFLAGS_BASE_DEFAULT    := -Si -Sg- -Sc- -v0Binwe -Ciro -gl
 PFLAGS_DEBUG_DEFAULT   := -Xs- -g -dDEBUG_MODE
 PFLAGS_RELEASE_DEFAULT := -Xs- -O2 -OoNOSTACKFRAME
 PFLAGS_EXTRA_DEFAULT   :=

@@ -39,12 +39,17 @@ uses
   dglOpenGL,
   UMenuText,
   sdl2,
-  UMenuInteract;
+  UMenuInteract,
+  UMenuWidget;
 
 type
   CButton = class of TButton;
 
-  TButton = class
+  TTextOffset = record
+    X, Y: real;
+  end;
+
+  TButton = class(IMenuWidget)
     protected
       SelectBool:   boolean;
 
@@ -59,6 +64,7 @@ type
 
     public
       Text:                      array of TText;
+      TextOffset:                array of TTextOffset;
       Texture:                   TTexture; // Button Screen position and size
       Texture2:                  TTexture; // second texture only used for fading full resolution covers
 
@@ -98,20 +104,22 @@ type
       DeselectInt,
       DeselectTInt: real;
 
-      procedure SetY(Value: real);
-      procedure SetX(Value: real);
+      function GetX(): real; override;
+      procedure SetX(Value: real) override;
+      function GetY(): real; override;
+      procedure SetY(Value: real) override;
+      function GetW(): real; override;
+      function GetH(): real; override;
       procedure SetW(Value: real);
       procedure SetH(Value: real);
 
       procedure SetSelect(Value: boolean); virtual;
-      property X: real read PosX write SetX;
-      property Y: real read PosY write SetY;
       property Z: real read Texture.z write Texture.z;
-      property W: real read DeSelectW write SetW;
-      property H: real read DeSelectH write SetH;
+      property W: real read GetW write SetW;
+      property H: real read GetH write SetH;
       property Selected: boolean read SelectBool write SetSelect;
 
-      procedure   Draw; virtual;
+      procedure   Draw; override;
 
       constructor Create(); overload;
       constructor Create(Textura: TTexture); overload;
@@ -128,38 +136,48 @@ uses
   UDisplay,
   UDrawTexture;
 
-procedure TButton.SetX(Value: real);
-{var
-  dx:   real;
-  T:    integer;    // text}
+function TButton.GetX(): real;
 begin
-  {dY := Value - Texture.y;
+  Result := PosX;
+end;
 
-  Texture.X := Value;
-
-  for T := 0 to High(Text) do
-    Text[T].X := Text[T].X + dY;}
-
+procedure TButton.SetX(Value: real);
+var
+  I: integer;
+begin
   PosX := Value;
   if (FadeTex.TexNum = 0) then
+  begin
     Texture.X := Value;
+    DeSelectTexture.X := Value;
+    for I:= Low(Text) to High(Text) do
+      Text[I].X := PosX + TextOffset[I].X;
+  end;
 
 end;
 
-procedure TButton.SetY(Value: real);
-{var
-  dY: real;
-  T:  integer;    // text}
+function TButton.GetY(): real;
 begin
-  {dY := Value - PosY;
+  Result := PosY;
+end;
 
-
-  for T := 0 to High(Text) do
-    Text[T].Y := Text[T].Y + dY;}
-
+procedure TButton.SetY(Value: real);
+var
+  I: integer;
+begin
   PosY := Value;
   if (FadeTex.TexNum = 0) then
+  begin
     Texture.y := Value;
+    DeSelectTexture.Y := Value;
+    for I:= Low(Text) to High(Text) do
+      Text[I].Y := PosY + TextOffset[I].Y;
+  end;
+end;
+
+function TButton.GetW(): real;
+begin
+  Result := DeSelectW;
 end;
 
 procedure TButton.SetW(Value: real);
@@ -176,6 +194,11 @@ begin
     else
       Texture.W := DeSelectW;
   end;
+end;
+
+function TButton.GetH(): real;
+begin
+  Result := DeSelectH;
 end;
 
 procedure TButton.SetH(Value: real);

@@ -111,16 +111,16 @@ type
     function GetLogFileLevel(): integer;
 
     procedure LogMsg(const Text: string; Level: integer); overload;
-    procedure LogMsg(const Msg, Context: string; Level: integer); overload; {$IFDEF HasInline}inline;{$ENDIF}
-    procedure LogDebug(const Msg, Context: string); {$IFDEF HasInline}inline;{$ENDIF}
-    procedure LogInfo(const Msg, Context: string); {$IFDEF HasInline}inline;{$ENDIF}
-    procedure LogStatus(const Msg, Context: string); {$IFDEF HasInline}inline;{$ENDIF}
-    procedure LogWarn(const Msg, Context: string); {$IFDEF HasInline}inline;{$ENDIF}
-    procedure LogError(const Text: string); overload; {$IFDEF HasInline}inline;{$ENDIF}
-    procedure LogError(const Msg, Context: string); overload; {$IFDEF HasInline}inline;{$ENDIF}
+    procedure LogMsg(const Msg, Context: string; Level: integer); overload;
+    procedure LogDebug(const Msg, Context: string);
+    procedure LogInfo(const Msg, Context: string);
+    procedure LogStatus(const Msg, Context: string);
+    procedure LogWarn(const Msg, Context: string);
+    procedure LogError(const Text: string); overload;
+    procedure LogError(const Msg, Context: string); overload;
     //Critical Error (Halt + MessageBox)
-    procedure LogCritical(const Msg, Context: string); {$IFDEF HasInline}inline;{$ENDIF}
-    procedure CriticalError(const Text: string); {$IFDEF HasInline}inline;{$ENDIF}
+    procedure LogCritical(const Msg, Context: string);
+    procedure CriticalError(const Text: string);
 
     // voice
     procedure LogVoice(SoundNr: integer);

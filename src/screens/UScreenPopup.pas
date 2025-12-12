@@ -333,6 +333,7 @@ end;
 
 function TScreenPopupCheck.Draw: boolean;
 begin
+  glClear(GL_DEPTH_BUFFER_BIT);
   Result := inherited Draw;
 end;
 
@@ -487,6 +488,7 @@ end;
 
 function TScreenPopupInsertUser.Draw: boolean;
 begin
+  glClear(GL_DEPTH_BUFFER_BIT);
   Result := inherited Draw;
 end;
 
@@ -641,7 +643,7 @@ begin
             if (New_User = true) then
               SelectValueU := High(IUsername);
 
-            UpdateSelectSlideOptions(Theme.SendScorePopup.SelectSlide3, 2, IUsername, SelectValueU);
+            UpdateSelectSlideOptions(2, IUsername, SelectValueU);
           end;
 
           if (SelectValueU = High(IUsername)) then
@@ -697,7 +699,7 @@ begin
             if (New_User = true) then
               SelectValueU := High(IUsername);
 
-            UpdateSelectSlideOptions(Theme.SendScorePopup.SelectSlide3, 2, IUsername, SelectValueU);
+            UpdateSelectSlideOptions(2, IUsername, SelectValueU);
           end;
 
           if (SelectValueU = High(IUsername)) then
@@ -784,6 +786,7 @@ end;
 
 function TScreenPopupSendScore.Draw: boolean;
 begin
+  glClear(GL_DEPTH_BUFFER_BIT);
   Result := inherited Draw;
 end;
 
@@ -827,9 +830,9 @@ begin
   for I := 0 to PlayersPlay - 1 do
     IPlayersPlay[I] := Ini.Name[I];
 
-  UpdateSelectSlideOptions(Theme.SendScorePopup.SelectSlide1, 0, IPlayersPlay, SelectValueP);
+  UpdateSelectSlideOptions(0, IPlayersPlay, SelectValueP);
 
-  //UpdateSelectSlideOptions(Theme.SendScorePopup.SelectSlide2, 1, IWebsite, SelectValueW);
+  UpdateSelectSlideOptions(1, IWebsite, SelectValueW);
 
   SetLength(IUsername, Length(DataBase.NetworkUser[SelectValueW].UserList));
 
@@ -839,7 +842,7 @@ begin
   SetLength(IUsername, Length(IUsername) + 1);
   IUsername[High(IUsername)] := Language.Translate('SCORE_SEND_OTHER_USER');
 
-  UpdateSelectSlideOptions(Theme.SendScorePopup.SelectSlide3, 2, IUsername, SelectValueU);
+  UpdateSelectSlideOptions(2, IUsername, SelectValueU);
 
   if (SelectValueU = High(IUsername)) then
   begin
@@ -1162,6 +1165,7 @@ function TScreenPopupScoreDownload.Draw: boolean;
 var
   I: integer;
 begin
+  glClear(GL_DEPTH_BUFFER_BIT);
   inherited Draw;
 
   Text[0].Text := Text_SongSituation;
@@ -1485,7 +1489,8 @@ end;
 
 function TScreenPopup.Draw: boolean;
 begin
-  Draw := inherited Draw;
+  glClear(GL_DEPTH_BUFFER_BIT);
+  Result := inherited Draw;
 end;
 
 procedure TScreenPopup.OnShow;
@@ -1605,6 +1610,7 @@ var
   abs:  real;
 begin
 //inherited Draw; TODO: FIX
+  glClear(GL_DEPTH_BUFFER_BIT);
   if step<1 then
     abs := 20
   else

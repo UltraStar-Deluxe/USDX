@@ -41,6 +41,7 @@ uses
   UMusic,
   UThemes,
   sdl2,
+  dglOpenGL,
   SysUtils;
 
 type
@@ -299,6 +300,7 @@ end;
 
 function TScreenSongMenu.Draw: boolean;
 begin
+  glClear(GL_DEPTH_BUFFER_BIT);
   Result := inherited Draw;
 end;
 
@@ -464,7 +466,7 @@ begin
 
         if (Length(ISelections3)>=1) then
         begin
-          UpdateSelectSlideOptions(Theme.SongMenu.SelectSlide3, 2, ISelections3, SelectValue3);
+          UpdateSelectSlideOptions(2, ISelections3, SelectValue3);
         end
         else
         begin
@@ -549,7 +551,7 @@ begin
 
         if (Length(ISelections3)>=1) then
         begin
-          UpdateSelectSlideOptions(Theme.SongMenu.SelectSlide3, 2, ISelections3, SelectValue3);
+          UpdateSelectSlideOptions(2, ISelections3, SelectValue3);
           Interaction := 3;
         end
         else
@@ -683,9 +685,9 @@ begin
               ISelections3[I] := DataBase.NetworkUser[I].Website;
           end;
 
-          UpdateSelectSlideOptions(Theme.SongMenu.SelectSlide1, 0, [Language.Translate('SONG_MENU_REFRESH_SCORES_ONLINE'), Language.Translate('SONG_MENU_REFRESH_SCORES_FILE')], SelectValue1);
-          UpdateSelectSlideOptions(Theme.SongMenu.SelectSlide2, 1, [Language.Translate('SONG_MENU_REFRESH_SCORES_ONLY_SONG'), Language.Translate('SONG_MENU_REFRESH_SCORES_ALL_SONGS')], SelectValue2);
-          UpdateSelectSlideOptions(Theme.SongMenu.SelectSlide3, 2, ISelections3, SelectValue3);
+          UpdateSelectSlideOptions(0, [Language.Translate('SONG_MENU_REFRESH_SCORES_ONLINE'), Language.Translate('SONG_MENU_REFRESH_SCORES_FILE')], SelectValue1);
+          UpdateSelectSlideOptions(1, [Language.Translate('SONG_MENU_REFRESH_SCORES_ONLY_SONG'), Language.Translate('SONG_MENU_REFRESH_SCORES_ALL_SONGS')], SelectValue2);
+          UpdateSelectSlideOptions(2, ISelections3, SelectValue3);
 
           Interaction := 3;
         end
@@ -1057,8 +1059,11 @@ begin
           6: // button 4
             begin
               // load playlist
+              PlaylistMan.ReloadPlaylist(SelectValue3);
               PlaylistMan.SetPlayList(SelectValue3);
               Visible := false;
+              ScreenSong.SelectNext(false);
+              ScreenSong.SetScrollRefresh;
             end;
         end;
       end;

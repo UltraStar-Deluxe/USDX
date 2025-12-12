@@ -685,7 +685,7 @@ begin
     end;
   end;
 
-  UpdateSelectSlideOptions(Theme.Name.SelectPlayerColor, PlayerColor, ITmp, ColorIndex);
+  UpdateSelectSlideOptions(PlayerColor, ITmp, ColorIndex);
 
   for I := 0 to High(APlayerColor) do
   begin
