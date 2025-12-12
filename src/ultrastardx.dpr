@@ -162,6 +162,7 @@ uses
   UMenuButton            in 'menu\UMenuButton.pas',
   UMenuInteract          in 'menu\UMenuInteract.pas',
   UMenuSelectSlide       in 'menu\UMenuSelectSlide.pas',
+  UMenuWidget            in 'menu\UMenuWidget.pas',
   UMenuEqualizer         in 'menu\UMenuEqualizer.pas',
   UDrawTexture           in 'menu\UDrawTexture.pas',
   UMenuButtonCollection  in 'menu\UMenuButtonCollection.pas',

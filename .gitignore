@@ -16,6 +16,7 @@ Thumbs.db
 
 # other editors
 /.idea/
+/.vscode/
 
 # intermediates
 /configure

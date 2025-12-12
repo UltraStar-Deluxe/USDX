@@ -43,7 +43,7 @@ uses
   sdl2;
 
 type
-  TScreenOptionsWebcam = class(TMenu)
+  TScreenOptionsWebcam = class(TOptionsMenu)
     private
       PreVisualization: boolean;
 
@@ -55,6 +55,10 @@ type
       Saturation: integer;
       Hue:        integer;
       Effect:     integer;
+
+    protected
+      procedure LoadWidgets; override;
+
     public
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
@@ -188,67 +192,18 @@ begin
 end;
 
 constructor TScreenOptionsWebcam.Create;
-var
-  WebcamsIDs: array[0..2] of UTF8String;
-  SelectWebcam: integer;
 begin
   inherited Create;
-
-  LoadFromTheme(Theme.OptionsWebcam);
-
-  WebcamsIDs[0] := Language.Translate('OPTION_VALUE_OFF');
-  WebcamsIDs[1] := '0';
-  WebcamsIDs[2] := '1';
-
-  Theme.OptionsWebcam.SelectWebcam.showArrows := true;
-  Theme.OptionsWebcam.SelectWebcam.oneItemOnly := true;
-  WebcamID := AddSelectSlide(Theme.OptionsWebcam.SelectWebcam, Ini.WebCamID, WebcamsIDs);
-
-  Theme.OptionsWebcam.SelectResolution.showArrows := true;
-  Theme.OptionsWebcam.SelectResolution.oneItemOnly := true;
-  Resolution := AddSelectSlide(Theme.OptionsWebcam.SelectResolution, Ini.WebcamResolution, IWebcamResolution);
-
-  Theme.OptionsWebcam.SelectFPS.showArrows := true;
-  Theme.OptionsWebcam.SelectFPS.oneItemOnly := true;
-  FPS := AddSelectSlide(Theme.OptionsWebcam.SelectFPS, Ini.WebCamFPS, IWebcamFPS);
-
-  Theme.OptionsWebcam.SelectFlip.showArrows := true;
-  Theme.OptionsWebcam.SelectFlip.oneItemOnly := true;
-  Flip := AddSelectSlide(Theme.OptionsWebcam.SelectFlip, Ini.WebCamFlip, IWebcamFlipTranslated);
-
-  Theme.OptionsWebcam.SelectBrightness.showArrows := true;
-  Theme.OptionsWebcam.SelectBrightness.oneItemOnly := true;
-  Brightness := AddSelectSlide(Theme.OptionsWebcam.SelectBrightness, Ini.WebCamBrightness, IWebcamBrightness);
-
-  Theme.OptionsWebcam.SelectSaturation.showArrows := true;
-  Theme.OptionsWebcam.SelectSaturation.oneItemOnly := true;
-  Saturation := AddSelectSlide(Theme.OptionsWebcam.SelectSaturation, Ini.WebCamSaturation, IWebcamSaturation);
-
-  Theme.OptionsWebcam.SelectHue.showArrows := true;
-  Theme.OptionsWebcam.SelectHue.oneItemOnly := true;
-  Hue := AddSelectSlide(Theme.OptionsWebcam.SelectHue, Ini.WebCamHue, IWebcamHue);
-
-  Theme.OptionsWebcam.SelectEffect.showArrows := true;
-  Theme.OptionsWebcam.SelectEffect.oneItemOnly := true;
-  Effect := AddSelectSlide(Theme.OptionsWebcam.SelectEffect, Ini.WebCamEffect, IWebcamEffectTranslated);
-
-  AddButton(Theme.OptionsWebcam.ButtonPreVisualization);
-
-  AddButton(Theme.OptionsWebcam.ButtonExit);
-  if (Length(Button[1].Text)=0) then
-    AddButtonText(20, 5, Theme.Options.Description[OPTIONS_DESC_INDEX_BACK]);
-
+  Description := Language.Translate('SING_OPTIONS_WEBCAM_DESC');
+  WhereAmI := Language.Translate('SING_OPTIONS_WEBCAM_WHEREAMI');
+  Load;
   Interaction := 0;
 
   // new tests
   Ini.WebCamSaturation := 100;
   Ini.WebCamHue := 180;
   Ini.WebCamEffect := 0;
-  {
-  SelectsS[Saturation].Visible := false;
-  SelectsS[Hue].Visible := false;
-  SelectsS[Effect].Visible := false;
-  }
+
 end;
 
 procedure TScreenOptionsWebcam.OnShow;
@@ -377,6 +332,25 @@ begin
 
   end;
 
+end;
+
+procedure TScreenOptionsWebcam.LoadWidgets;
+var
+  WebcamsIDs: array[0..2] of UTF8String;
+  SelectWebcam: integer;
+begin
+  WebcamsIDs[0] := Language.Translate('OPTION_VALUE_OFF');
+  WebcamsIDs[1] := '0';
+  WebcamsIDs[2] := '1';
+  WebcamID := AddSelectSlide('SING_OPTIONS_WEBCAM_ID', Ini.WebCamID, WebcamsIDs);
+  Resolution := AddSelectSlide('SING_OPTIONS_WEBCAM_RESOLUTION', Ini.WebcamResolution, IWebcamResolution);
+  FPS := AddSelectSlide('SING_OPTIONS_WEBCAM_FPS', Ini.WebCamFPS, IWebcamFPS);
+  Flip := AddSelectSlide('SING_OPTIONS_WEBCAM_FLIP', Ini.WebCamFlip, IWebcamFlipTranslated);
+  Brightness := AddSelectSlide('SING_OPTIONS_WEBCAM_BRIGHTNESS', Ini.WebCamBrightness, IWebcamBrightness);
+  Saturation := AddSelectSlide('SING_OPTIONS_WEBCAM_SATURATION', Ini.WebCamSaturation, IWebcamSaturation);
+  Hue := AddSelectSlide('SING_OPTIONS_WEBCAM_HUE', Ini.WebCamHue, IWebcamHue);
+  Effect := AddSelectSlide('SING_OPTIONS_WEBCAM_EFFECT', Ini.WebCamEffect, IWebcamEffectTranslated);
+  AddButton('SING_OPTIONS_WEBCAM_ENABLE_PREVIEW');
 end;
 
 end.
