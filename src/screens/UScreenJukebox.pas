@@ -220,7 +220,7 @@ type
     procedure OnHide; override;
 
     function ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
-      PressedDown: boolean): boolean; override;
+      PressedDown: boolean; Repeated: boolean = false): boolean; override;
     function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; override;
 
     function Draw: boolean; override;
@@ -1332,7 +1332,7 @@ end;
 // should be checked to know the next window to load;
 
 function TScreenJukebox.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   SDL_ModState: word;
   I, RValueI, RValueE: integer;

@@ -47,7 +47,7 @@ type
   public
     constructor Create; override;
     function ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-      PressedDown: boolean): boolean; override;
+      PressedDown: boolean; Repeated: boolean = false): boolean; override;
     procedure OnShow; override;
   protected
     procedure LoadWidgets; override;
@@ -66,8 +66,7 @@ uses
   UUnicodeUtils,
   SysUtils;
 
-function TScreenOptionsSound.ParseInput(PressedKey: cardinal;
-  CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenOptionsSound.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   J: integer;
 begin
