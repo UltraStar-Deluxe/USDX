@@ -226,6 +226,7 @@ var
   SDL_ModState: word;
   i1:           integer;
   Color:        TRGB;
+  NewPosition:  real;
 begin
   Result := true;
   if (PressedDown) then
@@ -558,10 +559,13 @@ begin
 
       SDLK_RIGHT:
       begin
-        if (SDL_ModState = KMOD_LCTRL) then // seek 5 seconds forward
-          AudioPlayback.SetPosition(AudioPlayback.Position + 5.0);
-        if (Assigned(fCurrentVideo)) then
-          fCurrentVideo.Position := AudioPlayback.Position + 5.0;
+        if ((SDL_ModState and (KMOD_LCTRL or KMOD_RCTRL)) <> 0) then
+        begin
+          NewPosition := AudioPlayback.Position + 5.0;
+          AudioPlayback.SetPosition(NewPosition);
+          if (Assigned(fCurrentVideo)) then
+            fCurrentVideo.Position := CurrentSong.VideoGAP + NewPosition;
+        end;
       end;
 
       SDLK_LEFT:
@@ -596,12 +600,13 @@ begin
         end;
         Scores.Init;
 
-        AudioPlayback.SetPosition(AudioPlayback.Position - 5.0);
-        LyricsState.SetCurrentTime(AudioPlayback.Position - 5.0);
+        NewPosition := AudioPlayback.Position - 5.0;
+        AudioPlayback.SetPosition(NewPosition);
+        LyricsState.SetCurrentTime(NewPosition);
         ClearLyricEngines;
         LyricsState.UpdateBeats();
         if (Assigned(fCurrentVideo)) then
-          fCurrentVideo.Position := AudioPlayback.Position - 5.0;
+          fCurrentVideo.Position := CurrentSong.VideoGAP + NewPosition;
         end;
       end;
 
