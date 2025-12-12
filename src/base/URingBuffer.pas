@@ -39,7 +39,7 @@ uses
 type
   TRingBuffer = class
     private
-      RingBuffer: PByteArray;
+      RingBuffer: PByte;
       BufferCount: integer;
       BufferSize: integer;
       WritePos: integer;
@@ -47,8 +47,8 @@ type
     public
       constructor Create(Size: integer);
       destructor Destroy; override;
-      function Read(Buffer: PByte; Count: integer): integer;
-      function Write(Buffer: PByteArray; Count: integer): integer;
+      function Read(Buffer: Pointer; Count: integer): integer;
+      function Write(Buffer: Pointer; Count: integer): integer;
       function Size(): integer;
       function Available(): integer;
       procedure Flush();
@@ -73,14 +73,14 @@ begin
   FreeMem(RingBuffer);
 end;
 
-function TRingBuffer.Read(Buffer: PByte; Count: integer): integer;
+function TRingBuffer.Read(Buffer: Pointer; Count: integer): integer;
 var
   PartCount: integer;
+  Src, Dst: PByte;
 begin
   // adjust output count
   if (Count > BufferCount) then
   begin
-    //DebugWriteln('Read too much: ' + inttostr(count) +',count:'+ inttostr(BufferCount) + '/size:' + inttostr(BufferSize));
     Count := BufferCount;
   end;
 
@@ -92,14 +92,20 @@ begin
   end;
 
   // copy data to output buffer
-
   // first step: copy from the area between the read-position and the end of the buffer
   PartCount := Min(Count, BufferSize - ReadPos);
-  Move(RingBuffer[ReadPos], Buffer[0], PartCount);
+  Src := RingBuffer;
+  Inc(Src, ReadPos);
+  Dst := PByte(Buffer);
+  Move(Src^, Dst^, PartCount);
 
   // second step: if we need more data, copy from the beginning of the buffer
   if (PartCount < Count) then
-    Move(RingBuffer[0], Buffer[0], Count-PartCount);
+  begin
+    Src := RingBuffer;
+    Inc(Dst, PartCount);
+    Move(Src^, Dst^, Count-PartCount);
+  end;
 
   // mark the copied part of the buffer as free
   BufferCount := BufferCount - Count;
@@ -108,9 +114,10 @@ begin
   Result := Count;
 end;
 
-function TRingBuffer.Write(Buffer: PByteArray; Count: integer): integer;
+function TRingBuffer.Write(Buffer: Pointer; Count: integer): integer;
 var
   PartCount: integer;
+  Src, Dst: PByte;
 begin
   // check for a reasonable request
   if (Count <= 0) then
@@ -120,20 +127,27 @@ begin
   end;
 
   // skip input data if the input buffer is bigger than the ring-buffer
+  Src := PByte(Buffer);
   if (Count > BufferSize) then
   begin
-    //DebugWriteln('Write skip data:' + inttostr(count) +',count:'+ inttostr(BufferCount) + '/size:' + inttostr(BufferSize));
-    Buffer := @Buffer[Count - BufferSize];
+    // adjust source pointer to the last BufferSize bytes
+    Inc(Src, Count - BufferSize);
     Count := BufferSize;
   end;
 
   // first step: copy to the area between the write-position and the end of the buffer
   PartCount := Min(Count, BufferSize - WritePos);
-  Move(Buffer[0], RingBuffer[WritePos], PartCount);
+  Dst := RingBuffer;
+  Inc(Dst, WritePos);
+  Move(Src^, Dst^, PartCount);
 
   // second step: copy data to front of buffer
   if (PartCount < Count) then
-    Move(Buffer[PartCount], RingBuffer[0], Count-PartCount);
+  begin
+    Inc(Src, PartCount);
+    Dst := RingBuffer;
+    Move(Src^, Dst^, Count-PartCount);
+  end;
 
   // update info
   BufferCount := Min(BufferCount + Count, BufferSize);
