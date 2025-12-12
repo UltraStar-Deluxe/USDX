@@ -45,6 +45,7 @@ uses
   UMenuStatic,
   UMenuText,
   UMusic,
+  UNote,
   UPath,
   UThemes,
   sdl2,
