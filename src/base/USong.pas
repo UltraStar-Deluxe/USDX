@@ -223,7 +223,7 @@ type
     constructor Create(const aFileName : IPath); overload;
     destructor  Destroy; override;
     function    LoadSong(DuetChange: boolean): boolean;
-    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false; OutOfBoundsToFreestyle: boolean = false; AudioLength: real = 0): boolean;
+    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false; OutOfBoundsToFreestyle: boolean = false; AudioLength: real = 0; ForceLoadNotes: boolean = false): boolean;
     procedure   SetMedleyMode();
     procedure   Clear();
     function    MD5SongFile(SongFileR: TTextFileStream): string;
@@ -651,6 +651,7 @@ begin
     Exit;
   end;
 
+  CurrentSong := self;
   Result := LoadOpenedSong(SongFile, FileNamePath, DuetChange, false, false, 0);
   SongFile.Free;
 end;
@@ -1918,12 +1919,14 @@ begin
   Relative := false;
 end;
 
-function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
+function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real; ForceLoadNotes: boolean): boolean;
 var
   SongFile: TTextFileStream;
   FileNamePath: IPath;
+  NotesLoaded: boolean;
 begin
   Result := false;
+  NotesLoaded := false;
 
   //Reset LineNo
   FileLineNo := 0;
@@ -1945,11 +1948,15 @@ begin
     //Read Header
     Result := Self.ReadTxTHeader(SongFile, ReadCustomTags);
 
-    //Load Song for Medley Tags
-    CurrentSong := Self;
-    Result := Result and LoadOpenedSong(SongFile, FileNamePath, DuetChange, RapToFreestyle, OutOfBoundsToFreestyle, AudioLength);
+    if Result and (ForceLoadNotes or (Ini = nil) or (Ini.PreloadSongNotes <> 0)) then
+    begin
+      //Load Song for Medley Tags
+      CurrentSong := Self;
+      NotesLoaded := LoadOpenedSong(SongFile, FileNamePath, DuetChange, RapToFreestyle, OutOfBoundsToFreestyle, AudioLength);
+      Result := Result and NotesLoaded;
+    end;
 
-    if Result then
+    if Result and NotesLoaded then
     begin
       //Medley and Duet - is it possible? Perhaps later...
       if not Self.isDuet then
