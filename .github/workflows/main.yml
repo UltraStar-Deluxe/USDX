@@ -117,11 +117,25 @@ jobs:
           key: linux-docker-${{ hashFiles('dists/linux/dl.sh', 'dists/linux/tasks.sh') }}
           path: |
             dists/linux/prefix
+      - name: Start container builder
+        uses: docker/setup-buildx-action@v3
+      - name: Generate Dockerfile
+        run: |
+          cd dists/linux
+          ./dockerenv.sh --dockerfile > Dockerfile
+      - name: Build container
+        uses: docker/build-push-action@v6
+        with:
+          context: dists/linux
+          cache-from: type=gha
+          cache-to: type=gha,mode=max,ignore-error=true
+          load: true
+          tags: usdx/buildenv:latest
       - name: Build
         run: |
           cd dists/linux
           sed -i '/docker/s/-it\>//' dockerenv.sh
-          ./dockerenv.sh make compress
+          ./dockerenv.sh --use-existing=usdx/buildenv:latest make compress
           mv UltraStar*.AppImage ../../UltraStarDeluxe-linux-${{ env.versionName }}.AppImage
       - name: Upload Image Artifact
         uses: actions/upload-artifact@v4

@@ -2,11 +2,21 @@
 
 set -eo pipefail
 
-SUDO=
-if docker -v > /dev/null && ! docker version >/dev/null 2>&1 ; then
-	echo Assuming sudo has to be used to be able to connect to Docker daemon
-	SUDO=sudo
-fi
+while true ; do
+	case "$1" in
+	--dockerfile)
+		only_dockerfile=1
+		shift
+		;;
+	--use-existing=*)
+		use_existing="${1#*=}"
+		shift
+		;;
+	*)
+		break
+		;;
+	esac
+done
 
 targetarch="${ARCH-$(uname -m)}"
 
@@ -33,7 +43,22 @@ replacements="
 	s!%%epelpkgs%%!$epelpkgs!g;
 "
 
-sed -r "$replacements" Dockerfile.in | $SUDO docker build --force-rm=true --rm -t "$imagename" -
+if [ "$only_dockerfile" = 1 ] ; then
+	sed -r "$replacements" Dockerfile.in
+	exit 0
+fi
+
+SUDO=
+if docker -v > /dev/null && ! docker version >/dev/null 2>&1 ; then
+	echo Assuming sudo has to be used to be able to connect to Docker daemon
+	SUDO=sudo
+fi
+
+if [ -z "$use_existing" ] ; then
+	sed -r "$replacements" Dockerfile.in | $SUDO docker build --force-rm=true --rm -t "$imagename" -
+else
+	imagename="$use_existing"
+fi
 
 $SUDO docker run --rm -it \
 	-v "$(realpath ../..):/src" \
