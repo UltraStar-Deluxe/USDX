@@ -70,6 +70,7 @@ Optional libraries:
   Current Linux distributions do not offer the C API.
 * `--with-opencv-cxx-api`: Use OpenCV's newer C++ API.
   Required for webcam support under Linux, but requires OpenCV to be present at both build time as well as runtime.
+* `--with-fpc-debug-dir=/path/to/debug`: Change into the specified directory when running a system-wide installation so Free Pascal's backtrace helper can discover separate debug symbols. This is mainly useful for distribution/Flatpak builds that store `.debug` files outside of `/usr/bin`. You can override the directory at runtime with the `USDX_FPC_DEBUGDIR` (or legacy `USDX_DEBUG_DIR`) environment variable.
 
 ## Compiling on Linux using flatpak-builder
 - The manifest for our Flathub releases is in a different repository:
