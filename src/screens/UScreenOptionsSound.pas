@@ -44,10 +44,14 @@ uses
 
 type
   TScreenOptionsSound = class(TOptionsMenu)
+  private
+    function AddVolumeSlider(const Text: UTF8String; var Data: integer): integer;
+    procedure ApplyRealtimeSoundSettings;
   public
     constructor Create; override;
     function ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
       PressedDown: boolean): boolean; override;
+    function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
     procedure OnShow; override;
   protected
     procedure LoadWidgets; override;
@@ -64,17 +68,30 @@ uses
   ULanguage,
   ULog,
   UUnicodeUtils,
-  SysUtils;
+  SysUtils,
+  Math;
+
+var
+  VolumePercentOptions: array of UTF8String;
+
+procedure EnsureVolumePercentOptions;
+var
+  I: integer;
+begin
+  if Length(VolumePercentOptions) > 0 then
+    Exit;
+
+  SetLength(VolumePercentOptions, 101);
+  for I := 0 to High(VolumePercentOptions) do
+    VolumePercentOptions[I] := IntToStr(I) + '%';
+end;
 
 function TScreenOptionsSound.ParseInput(PressedKey: cardinal;
   CharCode: UCS4Char; PressedDown: boolean): boolean;
-var
-  J: integer;
 begin
   Result := true;
   if (PressedDown) then
   begin // Key Down
-        // check normal keys
     case PressedKey of
       SDLK_Q:
       begin
@@ -83,7 +100,6 @@ begin
       end;
     end;
 
-    // check special keys
     case PressedKey of
       SDLK_ESCAPE,
       SDLK_BACKSPACE:
@@ -98,7 +114,8 @@ begin
       end;
       SDLK_RETURN:
       begin
-        if SelInteraction = 7 then
+        if (SelInteraction >= 0) and (SelInteraction <= High(Interactions)) and
+           (Interactions[SelInteraction].Typ = iButton) then
         begin
           Ini.Save;
           AudioPlayback.PlaySound(SoundLib.Back);
@@ -111,7 +128,8 @@ begin
         InteractPrev;
       SDLK_RIGHT:
       begin
-        if (SelInteraction >= 0) and (SelInteraction <= 6) then
+        if (SelInteraction >= 0) and (SelInteraction <= High(Interactions)) and
+            (Interactions[SelInteraction].Typ = iSelectS) then
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractInc;
@@ -119,7 +137,8 @@ begin
       end;
       SDLK_LEFT:
       begin
-        if (SelInteraction >= 0) and (SelInteraction <= 6) then
+        if (SelInteraction >= 0) and (SelInteraction <= High(Interactions)) and
+            (Interactions[SelInteraction].Typ = iSelectS) then
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractDec;
@@ -128,27 +147,13 @@ begin
     end;
   end;
 
-{**
- * Actually this one isn't pretty - but it does the trick of
- * turning the background music on/off in "real time"
- * bgm = background music
- * TODO: - Fetching the SelectInteraction via something more descriptive
- *       - Obtaining the current value of a select is imho ugly
- *}
-  if (SelInteraction = 1) then
-  begin
-    if TBackgroundMusicOption(SelectsS[1].SelectedOption) = bmoOn then
-      SoundLib.StartBgMusic
-    else
-      SoundLib.PauseBgMusic;
-  end
-  else if (SelInteraction = 5) then
-  begin
-    // preview volume, restart the background music so it uses the new volume
-    SoundLib.PauseBgMusic;
-    SoundLib.StartBgMusic;
-  end;
-  
+  ApplyRealtimeSoundSettings;
+end;
+
+function TScreenOptionsSound.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+begin
+  Result := inherited ParseMouse(MouseButton, BtnDown, X, Y);
+  ApplyRealtimeSoundSettings;
 end;
 
 constructor TScreenOptionsSound.Create;
@@ -163,6 +168,7 @@ procedure TScreenOptionsSound.OnShow;
 begin
   inherited;
   Interaction := 0;
+  ApplyRealtimeSoundSettings;
 
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOptionsSound');
@@ -172,11 +178,44 @@ procedure TScreenOptionsSound.LoadWidgets;
 begin
   AddSelectSlide('SING_OPTIONS_SOUND_VOICEPASSTHROUGH', Ini.VoicePassthrough, IVoicePassthroughTranslated);
   AddSelectSlide('SING_OPTIONS_SOUND_BACKGROUNDMUSIC', Ini.BackgroundMusicOption, IBackgroundMusicTranslated);
+  AddVolumeSlider('SING_OPTIONS_SOUND_BACKGROUNDMUSICVOLUME', Ini.BackgroundMusicVolume);
   AddSelectSlide('SING_OPTIONS_SOUND_CLICK_ASSIST', Ini.ClickAssist, IClickAssistTranslated);
   AddSelectSlide('SING_OPTIONS_SOUND_BEAT_CLICK', Ini.BeatClick, IBeatClickTranslated);
   AddSelectSlide('SING_OPTIONS_SOUND_MUSICAUTOGAIN', Ini.ReplayGain, IReplayGainTranslated);
-  AddSelectSlide('SING_OPTIONS_SOUND_PREVIEWVOLUME', Ini.PreviewVolume, IPreviewVolumeTranslated);
+  AddVolumeSlider('SING_OPTIONS_SOUND_AUDIOVOLUME', Ini.AudioVolume);
+  AddVolumeSlider('SING_OPTIONS_SOUND_VOCALSVOLUME', Ini.VocalsVolume);
+  AddVolumeSlider('SING_OPTIONS_SOUND_SFXVOLUME', Ini.SfxVolume);
+  AddVolumeSlider('SING_OPTIONS_SOUND_PREVIEWVOLUME', Ini.PreviewVolume);
   AddSelectSlide('SING_OPTIONS_SOUND_PREVIEWFADING', Ini.PreviewFading, IPreviewFadingTranslated);
+end;
+
+function TScreenOptionsSound.AddVolumeSlider(const Text: UTF8String; var Data: integer): integer;
+begin
+  EnsureVolumePercentOptions;
+  Data := EnsureRange(Data, 0, High(VolumePercentOptions));
+  Result := AddSelectSlide(Text, Data, VolumePercentOptions);
+end;
+
+procedure TScreenOptionsSound.ApplyRealtimeSoundSettings;
+var
+  MusicOptionValue: integer;
+begin
+  SetAudioVolumePercent(Ini.AudioVolume);
+
+  SetVocalsVolumePercent(Ini.VocalsVolume);
+
+  SetSfxVolumePercent(Ini.SfxVolume);
+
+  SetBackgroundMusicVolumePercent(Ini.BackgroundMusicVolume);
+
+  SetPreviewVolumePercent(Ini.PreviewVolume);
+
+  MusicOptionValue := EnsureRange(Ini.BackgroundMusicOption,
+    Ord(Low(TBackgroundMusicOption)), Ord(High(TBackgroundMusicOption)));
+  if TBackgroundMusicOption(MusicOptionValue) = bmoOn then
+    SoundLib.StartBgMusic
+  else
+    SoundLib.PauseBgMusic;
 end;
 
 end.

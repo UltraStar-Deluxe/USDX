@@ -188,6 +188,7 @@ type
       AudioVolume:    integer;
       VocalsVolume:   integer;
       SfxVolume:      integer;
+      BackgroundMusicVolume: integer;
 
       SyncTo: integer;
 
@@ -1584,6 +1585,7 @@ begin
   VocalsVolume := ReadVolumePercent('Sound', 'VocalsVolume', 100);
   SfxVolume    := ReadVolumePercent('Sound', 'SfxVolume', 100);
   PreviewVolume := ReadVolumePercent('Sound', 'PreviewVolume', 30);
+  BackgroundMusicVolume := ReadVolumePercent('Sound', 'BackgroundMusicVolume', 40);
 
   // ReplayGain
   ReplayGain := ReadArrayIndex(IReplayGain, IniFile, 'Sound', 'ReplayGain', 0);
@@ -1910,11 +1912,11 @@ begin
     // Background music
     IniFile.WriteString('Sound', 'BackgroundMusic', IBackgroundMusic[BackgroundMusicOption]);
 
+    // Volume Settings
     IniFile.WriteInteger('Sound', 'AudioVolume', AudioVolume);
     IniFile.WriteInteger('Sound', 'VocalsVolume', VocalsVolume);
     IniFile.WriteInteger('Sound', 'SfxVolume', SfxVolume);
-
-    // Song Preview
+    IniFile.WriteInteger('Sound', 'BackgroundMusicVolume', BackgroundMusicVolume);
     IniFile.WriteInteger('Sound', 'PreviewVolume', PreviewVolume);
 
     // PreviewFading
