@@ -116,6 +116,8 @@ type
   TSong = class
   private
     FileLineNo  : integer;  // line, which is read last, for error reporting
+    FMD5        : string;
+    FMD5Cached  : boolean;
 
     function DecodeFilename(Filename: RawByteString): IPath;
     procedure ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String; RapToFreestyle: boolean);
@@ -133,13 +135,14 @@ type
     function GetFolderCategory(const aFileName: IPath): UTF8String;
     function FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
     function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
+    function GetMD5: string;
+    procedure SetMD5(const Value: string);
   public
     Tracks: array of TLines; // Per-song track storage
   public
     Path:         IPath; // kust path component of file (only set if file was found)
     Folder:       UTF8String; // for sorting by folder (only set if file was found)
     FileName:     IPath; // just name component of file (only set if file was found)
-    MD5:          string; //MD5 Hash of Current Song
 
     FormatVersion: TVersion;
 
@@ -213,6 +216,7 @@ type
     LastError:  AnsiString;
     function    GetErrorLineNo: integer;
     property    ErrorLineNo: integer read GetErrorLineNo;
+    property    MD5: string read GetMD5 write SetMD5; //MD5 Hash of Current Song
 
 
     constructor Create(); overload;
@@ -382,6 +386,9 @@ constructor TSong.Create();
 begin
   inherited;
 
+  FMD5 := '';
+  FMD5Cached := false;
+
   // to-do : special create for category "songs"
   //dirty fix to fix folders=on
   Self.Path     := PATH_NONE();
@@ -434,6 +441,9 @@ end;
 constructor TSong.Create(const aFileName: IPath);
 begin
   inherited Create();
+
+  FMD5 := '';
+  FMD5Cached := false;
 
   Mult    := 1;
   MultBPM := 4;
@@ -696,7 +706,6 @@ begin
   Rel[1]            := 0;
 
   try
-    MD5 := MD5SongFile(SongFile);
     SongFile.Position := 0;
 
       //Search for Note Beginning
@@ -1450,9 +1459,6 @@ begin
     TagMap.Free;
   end;
 
-  //MD5 of File
-  self.MD5 := MD5SongFile(SongFile);
-
   if self.Cover.IsUnset then
     self.Cover := FindSongFile(Path, '*[CO].jpg');
 
@@ -1510,6 +1516,42 @@ begin
     Result := FileLineNo
   else
     Result := -1;
+end;
+
+function TSong.GetMD5: string;
+var
+  SongFile: TMemTextFileStream;
+  FileNamePath: IPath;
+begin
+  if not FMD5Cached then
+  begin
+    FMD5Cached := true;
+    FMD5 := '';
+
+    if Assigned(Path) and Assigned(FileName) and not Path.IsUnset and not FileName.IsUnset then
+    begin
+      FileNamePath := Path.Append(FileName);
+      try
+        SongFile := TMemTextFileStream.Create(FileNamePath, fmOpenRead);
+        try
+          FMD5 := MD5SongFile(SongFile);
+        finally
+          SongFile.Free;
+        end;
+      except
+        on E: Exception do
+          Log.LogWarn('Failed to compute MD5 for ' + FileNamePath.ToUTF8(true) + ': ' + E.Message, 'TSong.GetMD5');
+      end;
+    end;
+  end;
+
+  Result := FMD5;
+end;
+
+procedure TSong.SetMD5(const Value: string);
+begin
+  FMD5 := Value;
+  FMD5Cached := Value <> '';
 end;
 
 procedure TSong.ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String; RapToFreestyle: boolean);
@@ -1827,6 +1869,9 @@ end;
 
 procedure TSong.Clear();
 begin
+  FMD5 := '';
+  FMD5Cached := false;
+
   //Main Information
   Title  := '';
   Artist := '';
