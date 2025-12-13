@@ -264,6 +264,7 @@ type
     procedure   ConvertMouseToRenderCoords(X, Y: integer; out RenderX, RenderY: integer);
     procedure   FocusVolumeSlider;
     function    IsVolumeSelectInteraction(Index: integer): boolean;
+  function    StepVolumeSliderFromKeyboard(Delta: integer): boolean;
     procedure   ForceCursorVisibleForSing;
     procedure   RestoreCursorAfterPopup;
 
@@ -1673,14 +1674,20 @@ begin
       SDLK_RIGHT:
         begin
           if IsVolumeSelectInteraction(Interaction) then
-            InteractInc
+          begin
+            if not StepVolumeSliderFromKeyboard(1) then
+              InteractInc;
+          end
           else
             InteractNext;
         end;
       SDLK_LEFT:
         begin
           if IsVolumeSelectInteraction(Interaction) then
-            InteractDec
+          begin
+            if not StepVolumeSliderFromKeyboard(-1) then
+              InteractDec;
+          end
           else
             InteractPrev;
         end;
@@ -1992,7 +1999,11 @@ begin
   end;
 
   if VolumeChanged then
+  begin
     VolumeSettingsDirty := true;
+    if ScreenOptionsSound <> nil then
+      ScreenOptionsSound.SyncVolumeSlidersFromIni;
+  end;
 end;
 
 procedure TScreenPopupHelp.DrawVolumeControls;
@@ -2126,6 +2137,61 @@ begin
             (InteractionNum = VolumeVocalsSelectId) or
             (InteractionNum = VolumeSfxSelectId) or
             (InteractionNum = VolumePreviewSelectId);
+end;
+
+function TScreenPopupHelp.StepVolumeSliderFromKeyboard(Delta: integer): boolean;
+const
+  StepSize = 10;
+var
+  SelectId: integer;
+  Slider: TSelectSlide;
+  Current: integer;
+  Target: integer;
+  MaxIndex: integer;
+begin
+  Result := false;
+  if Delta = 0 then
+    Exit;
+
+  if (Interaction < 0) or (Interaction > High(Interactions)) then
+    Exit;
+
+  if not IsVolumeSelectInteraction(Interaction) then
+    Exit;
+
+  SelectId := Interactions[Interaction].Num;
+  if not HasVolumeSlider(SelectId) then
+    Exit;
+
+  Slider := SelectsS[SelectId];
+  if Slider = nil then
+    Exit;
+
+  MaxIndex := High(Slider.TextOptT);
+  if MaxIndex < 0 then
+    Exit;
+
+  Current := Slider.SelectedOption;
+
+  if Delta > 0 then
+  begin
+    Target := ((Current + StepSize - 1) div StepSize) * StepSize;
+    if Target <= Current then
+      Target := Target + StepSize;
+  end
+  else
+  begin
+    Target := (Current div StepSize) * StepSize;
+    if Target >= Current then
+      Target := Target - StepSize;
+  end;
+
+  Target := EnsureRange(Target, 0, MaxIndex);
+  if Target = Current then
+    Exit;
+
+  Slider.SetSelectOpt(Target);
+  Result := true;
 end;
 
 function TScreenPopupHelp.Draw: boolean;
