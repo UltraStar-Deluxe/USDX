@@ -288,6 +288,7 @@ type
       VolumeAudioIndex:        Integer;
       VolumeMidiIndex:         Integer;
       VolumeClickIndex:        Integer; //for update slide
+      VolumeDragSlideId:       Integer;
 
       VolumeAudio:             array of UTF8String;
       VolumeMidi:              array of UTF8String;
@@ -427,6 +428,7 @@ type
       // show transparent background note for interactions
       procedure ShowInteractiveBackground;
       function  GetMedleyLength: real; //if available returns the length of the medley in seconds, otherwise 0
+      procedure SyncVolumeSlidersFromIni;
 
     public
       Tex_PrevBackground:      TTexture;
@@ -2771,6 +2773,8 @@ var
   Action: TMouseClickAction;
   TempR:  real;
   i:      Integer;
+  PrevAudioIndex: Integer;
+  PrevClickIndex: Integer;
 begin
   // transfer mousecords to the 800x600 raster we use to draw
   X := Round((X / (ScreenW / Screens)) * RenderW);
@@ -2780,6 +2784,9 @@ begin
 
   CurrentX := X;
   CurrentY := Y;
+
+  PrevAudioIndex := VolumeAudioIndex;
+  PrevClickIndex := VolumeClickIndex;
 
   Result := true;
   nBut := InteractAt(X, Y);
@@ -3037,6 +3044,12 @@ begin
   begin
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
   end;
+
+  if (VolumeAudioSlideId = Interactions[nBut].Num) and (VolumeAudioIndex <> PrevAudioIndex) then
+    SetAudioVolumePercent(EnsureRange(VolumeAudioIndex, 0, 100));
+
+  if (VolumeClickSlideId = Interactions[nBut].Num) and (VolumeClickIndex <> PrevClickIndex) then
+    SetSfxVolumePercent(EnsureRange(VolumeClickIndex, 0, 100));
   end
   else if (MouseButton = SDL_BUTTON_RIGHT) then
   begin
@@ -4637,6 +4650,7 @@ begin
   SetLength(VolumeAudio,0);
   SetLength(VolumeMidi,0);
   SetLength(VolumeClick,0);
+  VolumeDragSlideId := -1;
 
   // interactive
   SetLength(InteractiveNoteId, 0);
@@ -4787,12 +4801,15 @@ begin
 
   // Audio Volume
   VolumeAudioSlideId := AddSelectSlide(Theme.EditSub.SelectVolAudio, VolumeAudioIndex, VolumeAudio);
+  SelectsS[VolumeAudioSlideId].ClickSelectsPosition := true;
 
   // Midi Volume
   VolumeMidiSlideId := AddSelectSlide(Theme.EditSub.SelectVolMidi, VolumeMidiIndex, VolumeMidi);
+  SelectsS[VolumeMidiSlideId].ClickSelectsPosition := true;
 
   // Click Volume
   VolumeClickSlideId := AddSelectSlide(Theme.EditSub.SelectVolClick, VolumeClickIndex, VolumeClick);
+  SelectsS[VolumeClickSlideId].ClickSelectsPosition := true;
 
   {
   playerIconId[1] := AddStatic(Theme.Score.StaticPlayerIdBox[1]);
@@ -4868,6 +4885,7 @@ begin
   Text[TextInfo].Text := '';
   Log.LogStatus('Initializing', 'TEditScreen.OnShow');
   Xmouse := 0;
+  VolumeDragSlideId := -1;
 
   ResetSingTemp;
   GoldenRec.KillAll;
@@ -5166,9 +5184,9 @@ begin
       VolumeMidi[VolumeIndex]  := IntToStr(VolumeIndex);
       VolumeClick[VolumeIndex] := IntToStr(VolumeIndex);
     end;
-    VolumeAudioIndex := 100;
+    VolumeAudioIndex := EnsureRange(Ini.AudioVolume, 0, 100);
     VolumeMidiIndex  := 100;
-    VolumeClickIndex := 100;
+    VolumeClickIndex := EnsureRange(Ini.SfxVolume, 0, 100);
     UpdateSelectSlideOptions(VolumeAudioSlideId, VolumeAudio, VolumeAudioIndex);
     UpdateSelectSlideOptions(VolumeMidiSlideId,  VolumeMidi,  VolumeMidiIndex);
     UpdateSelectSlideOptions(VolumeClickSlideId, VolumeClick, VolumeClickIndex);
@@ -5265,12 +5283,36 @@ begin
   TextPosition := -1;
 end;
 
+procedure TScreenEditSub.SyncVolumeSlidersFromIni;
+var
+  NewAudio: Integer;
+  NewClick: Integer;
+begin
+  NewAudio := EnsureRange(Ini.AudioVolume, 0, 100);
+  if (VolumeAudioIndex <> NewAudio) and
+     (VolumeAudioSlideId >= 0) and (VolumeAudioSlideId <= High(SelectsS)) then
+  begin
+    VolumeAudioIndex := NewAudio;
+    SelectsS[VolumeAudioSlideId].SelectedOption := VolumeAudioIndex;
+  end;
+
+  NewClick := EnsureRange(Ini.SfxVolume, 0, 100);
+  if (VolumeClickIndex <> NewClick) and
+     (VolumeClickSlideId >= 0) and (VolumeClickSlideId <= High(SelectsS)) then
+  begin
+    VolumeClickIndex := NewClick;
+    SelectsS[VolumeClickSlideId].SelectedOption := VolumeClickIndex;
+  end;
+end;
+
 function TScreenEditSub.Draw: boolean;
 var
   LastLine:  Integer;
   NoteIndex: Integer;
   Count:     Integer;
 begin
+  SyncVolumeSlidersFromIni;
+
   {$IFDEF UseMIDIPort} // midi music
   if PlaySentenceMidi and Not (PlayOneMidi) then
   begin

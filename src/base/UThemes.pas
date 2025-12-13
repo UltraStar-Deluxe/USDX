@@ -816,6 +816,10 @@ type
   //Help-Popup
   TThemeHelp = class(TThemeBasic)
     Button1:    TThemeButton;
+    SelectVolAudio:    TThemeSelectSlide;
+    SelectVolVocals:   TThemeSelectSlide;
+    SelectVolSfx:      TThemeSelectSlide;
+    SelectVolPreview:  TThemeSelectSlide;
   end;
 
   TThemeInsertUser = class(TThemeBasic)
@@ -1943,6 +1947,14 @@ begin
       ThemeLoadButton(SendScorePopup.ButtonPassword, 'SendScorePopupButtonPassword');
       ThemeLoadButton(SendScorePopup.Button1, 'SendScorePopupButton1');
       ThemeLoadButton(SendScorePopup.Button2, 'SendScorePopupButton2');
+
+      // help popup
+      ThemeLoadBasic (HelpPopup, 'HelpPopup');
+      ThemeLoadButton(HelpPopup.Button1, 'HelpPopupButton1');
+      ThemeLoadSelectSlide(HelpPopup.SelectVolAudio, 'HelpPopupSelectVolAudio');
+      ThemeLoadSelectSlide(HelpPopup.SelectVolVocals, 'HelpPopupSelectVolVocals');
+      ThemeLoadSelectSlide(HelpPopup.SelectVolSfx, 'HelpPopupSelectVolSfx');
+      ThemeLoadSelectSlide(HelpPopup.SelectVolPreview, 'HelpPopupSelectVolPreview');
 
       // download score popup
       ThemeLoadBasic (ScoreDownloadPopup, 'ScoreDownloadPopup');
