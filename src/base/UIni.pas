@@ -556,6 +556,7 @@ var
   ITopScoresTranslated:        array[0..1] of UTF8String = ('All', 'Player');
   IDefaultSingModeTranslated:  array[0..1] of UTF8String = ('Regular', 'Instrumental');
   IPreloadSongNotesTranslated: array[0..1] of UTF8String = ('Off', 'On');
+  IAutoSongFileSearchTranslated: array[0..1] of UTF8String = ('Off', 'On');
 
   IJoypadTranslated:           array[0..1] of UTF8String = ('Off', 'On');
   IMouseTranslated:            array[0..2] of UTF8String = ('Off', 'On [System Cursor]', 'On [Game Cursor]');
@@ -837,6 +838,9 @@ begin
 
   IPreloadSongNotesTranslated[0]      := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IPreloadSongNotesTranslated[1]      := ULanguage.Language.Translate('OPTION_VALUE_ON');
+
+  IAutoSongFileSearchTranslated[0]    := ULanguage.Language.Translate('OPTION_VALUE_OFF');
+  IAutoSongFileSearchTranslated[1]    := ULanguage.Language.Translate('OPTION_VALUE_ON');
 
   IPartyPopupTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IPartyPopupTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_ON');
