@@ -257,6 +257,9 @@ const
   DEFAULT_FADE_IN_TIME = 8;   // for medley fade-in
   DEFAULT_FADE_OUT_TIME = 2;  // for medley fade-out
 
+var
+  GFindSongFileCache: TFPGMap<UTF8String, IPath>;
+
 constructor TSongOptions.Create(RatioAspect, Width, Height, Position, Alpha: integer;
                 SingFillColor, ActualFillColor, NextFillColor, SingOutlineColor, ActualOutlineColor, NextOutlineColor: string);
 begin
@@ -466,12 +469,27 @@ end;
 function TSong.FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
 var
   Iter: IFileIterator;
+  CacheKey: UTF8String;
+  CacheIndex: integer;
+  SearchPath: IPath;
 begin
-  Iter := FileSystem.FileFind(Dir.Append(Mask), faDirectory);
+  if (Ini <> nil) and (Ini.AutoSongFileSearch = 0) then
+    Exit(PATH_NONE);
+
+  SearchPath := Dir.Append(Mask);
+  CacheKey := SearchPath.ToUTF8(false);
+
+  if Assigned(GFindSongFileCache) and GFindSongFileCache.Find(CacheKey, CacheIndex) then
+    Exit(GFindSongFileCache.Data[CacheIndex]);
+
+  Iter := FileSystem.FileFind(SearchPath, faDirectory);
   if (Iter.HasNext) then
     Result := Iter.Next.Name
   else
     Result := PATH_NONE;
+
+  if Assigned(GFindSongFileCache) then
+    GFindSongFileCache.Add(CacheKey, Result);
 end;
 
 function TSong.DecodeFilename(Filename: RawByteString): IPath;
@@ -1927,6 +1945,14 @@ begin
     Result := 'unknown';
   {$ENDIF}
 end;
+
+initialization
+  GFindSongFileCache := TFPGMap<UTF8String, IPath>.Create;
+  GFindSongFileCache.Sorted := true;
+  GFindSongFileCache.Duplicates := dupIgnore;
+
+finalization
+  FreeAndNil(GFindSongFileCache);
 
 end.
 
