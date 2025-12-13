@@ -215,6 +215,7 @@ type
       PartyPopup:     integer;
       SingScores:     integer;
       TopScores:      integer;
+      AutoSongFileSearch: integer;
       SingTimebarMode:       integer;
       JukeboxTimebarMode:    integer;
       DefaultSingMode:       integer;
@@ -452,6 +453,7 @@ const
   IDefaultSingMode: array[0..1] of UTF8String = ('Regular', 'Instrumental');
 
   IPartyPopup:    array[0..1] of UTF8String = ('Off', 'On');
+  IAutoSongFileSearch: array[0..1] of UTF8String = ('Off', 'On');
 
   IJoypad:        array[0..1] of UTF8String = ('Off', 'On');
   IMouse:         array[0..2] of UTF8String = ('Off', 'System', 'Game');
@@ -1613,6 +1615,11 @@ begin
   // TopScores
   TopScores := ReadArrayIndex(ITopScores, IniFile, 'Advanced', 'TopScores', IGNORE_INDEX, 'Player');
 
+  // AutoSongFileSearch
+  AutoSongFileSearch := ReadArrayIndex(IAutoSongFileSearch, IniFile, 'Advanced', 'AutoSongFileSearch', IGNORE_INDEX, 'On');
+  if (AutoSongFileSearch < 0) or (AutoSongFileSearch > High(IAutoSongFileSearch)) then
+    AutoSongFileSearch := 1;
+
   // SyncTo
   SyncTo := ReadArrayIndex(ISyncTo, IniFile, 'Advanced', 'SyncTo', Ord(stMusic));
 
@@ -1929,6 +1936,9 @@ begin
 
     //TopScores
     IniFile.WriteString('Advanced', 'TopScores', ITopScores[TopScores]);
+
+    // AutoSongFileSearch
+    IniFile.WriteString('Advanced', 'AutoSongFileSearch', IAutoSongFileSearch[AutoSongFileSearch]);
 
     //SyncTo
     IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);
