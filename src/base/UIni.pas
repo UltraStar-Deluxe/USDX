@@ -1627,7 +1627,7 @@ begin
   DefaultSingMode := ReadArrayIndex(IDefaultSingMode, IniFile, 'Advanced', 'DefaultSingMode', IGNORE_INDEX, 'Regular');
 
   // PreloadSongNotes
-  PreloadSongNotes := ReadArrayIndex(IPreloadSongNotes, IniFile, 'Advanced', 'PreloadSongNotes', IGNORE_INDEX, 'On');
+  PreloadSongNotes := ReadArrayIndex(IPreloadSongNotes, IniFile, 'Advanced', 'PreloadSongNotes', IGNORE_INDEX, 'Off');
 
   // Linebonus
   LineBonus := ReadArrayIndex(ILineBonus, IniFile, 'Advanced', 'LineBonus', 1);
@@ -1642,7 +1642,7 @@ begin
   TopScores := ReadArrayIndex(ITopScores, IniFile, 'Advanced', 'TopScores', IGNORE_INDEX, 'Player');
 
   // AutoSongFileSearch
-  AutoSongFileSearch := ReadArrayIndex(IAutoSongFileSearch, IniFile, 'Advanced', 'AutoSongFileSearch', IGNORE_INDEX, 'On');
+  AutoSongFileSearch := ReadArrayIndex(IAutoSongFileSearch, IniFile, 'Advanced', 'AutoSongFileSearch', IGNORE_INDEX, 'Off');
   if (AutoSongFileSearch < 0) or (AutoSongFileSearch > High(IAutoSongFileSearch)) then
     AutoSongFileSearch := 1;
 
