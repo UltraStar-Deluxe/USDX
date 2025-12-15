@@ -133,7 +133,6 @@ type
     function ReadTXTHeader(SongFile: TTextFileStream; ReadCustomTags: Boolean): boolean;
 
     function GetFolderCategory(const aFileName: IPath): UTF8String;
-    function FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
     function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
     function GetMD5: string;
     procedure SetMD5(const Value: string);
@@ -260,9 +259,6 @@ uses
 const
   DEFAULT_FADE_IN_TIME = 8;   // for medley fade-in
   DEFAULT_FADE_OUT_TIME = 2;  // for medley fade-out
-
-var
-  GFindSongFileCache: TFPGMap<UTF8String, IPath>;
 
 constructor TSongOptions.Create(RatioAspect, Width, Height, Position, Alpha: integer;
                 SingFillColor, ActualFillColor, NextFillColor, SingOutlineColor, ActualOutlineColor, NextOutlineColor: string);
@@ -474,32 +470,6 @@ destructor TSong.Destroy;
 begin
   FreeAndNil(Self.FormatVersion);
   inherited;
-end;
-
-function TSong.FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
-var
-  Iter: IFileIterator;
-  CacheKey: UTF8String;
-  CacheIndex: integer;
-  SearchPath: IPath;
-begin
-  if (Ini <> nil) and (Ini.AutoSongFileSearch = 0) then
-    Exit(PATH_NONE);
-
-  SearchPath := Dir.Append(Mask);
-  CacheKey := SearchPath.ToUTF8(false);
-
-  if Assigned(GFindSongFileCache) and GFindSongFileCache.Find(CacheKey, CacheIndex) then
-    Exit(GFindSongFileCache.Data[CacheIndex]);
-
-  Iter := FileSystem.FileFind(SearchPath, faDirectory);
-  if (Iter.HasNext) then
-    Result := Iter.Next.Name
-  else
-    Result := PATH_NONE;
-
-  if Assigned(GFindSongFileCache) then
-    GFindSongFileCache.Add(CacheKey, Result);
 end;
 
 function TSong.DecodeFilename(Filename: RawByteString): IPath;
@@ -1460,12 +1430,6 @@ begin
     TagMap.Free;
   end;
 
-  if self.Cover.IsUnset then
-    self.Cover := FindSongFile(Path, '*[CO].jpg');
-
-  if self.Background.IsUnset then
-    self.Background := FindSongFile(Path, '*[BG].jpg');
-
   //Check if all Required Values are given
   if (Done <> 15) then
   begin
@@ -1997,14 +1961,6 @@ begin
     Result := 'unknown';
   {$ENDIF}
 end;
-
-initialization
-  GFindSongFileCache := TFPGMap<UTF8String, IPath>.Create;
-  GFindSongFileCache.Sorted := true;
-  GFindSongFileCache.Duplicates := dupIgnore;
-
-finalization
-  FreeAndNil(GFindSongFileCache);
 
 end.
 
