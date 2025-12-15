@@ -290,34 +290,69 @@ end;
 
 procedure TSongs.FindFilesByExtension(const Dir: IPath; const Ext: IPath; Recursive: Boolean; var Files: TPathDynArray);
 var
+  DirList: TPathDynArray;
+  DirCount, DirIdx: Integer;
   Iter: IFileIterator;
   FileInfo: TFileInfo;
   FileName: IPath;
-begin
-  // search for all files and directories
-  Iter := FileSystem.FileFind(Dir.Append('*'), faAnyFile);
-  while (Iter.HasNext) do
+  function CollectDirectories(const StartDir: IPath): TPathDynArray;
+  var
+    LocalDirs: TPathDynArray;
+    LocalIter: IFileIterator;
+    LocalFileInfo: TFileInfo;
+    LocalFileName: IPath;
+    SubDirs: TPathDynArray;
+    SubDirCount, SubDirIdx: Integer;
   begin
-    // the debug statements in this function have exactly the same message length before it prints the path
-    FileInfo := Iter.Next;
-    FileName := FileInfo.Name;
-    if ((FileInfo.Attr and faDirectory) <> 0) then
+    SetLength(LocalDirs, 1);
+    LocalDirs[0] := StartDir;
+    if not Recursive then
+      Exit(LocalDirs);
+
+    // Only search for directories
+    LocalIter := FileSystem.FileFind(StartDir.Append('*'), faDirectory);
+    while (LocalIter.HasNext) do
     begin
-      if Recursive and (not FileName.Equals('.')) and (not FileName.Equals('..')) and (not FileName.Equals('')) then begin
-        Log.LogDebug('Recursing: ' + Dir.Append(FileName).ToWide, 'TSongs.FindFilesByExtension');
-        FindFilesByExtension(Dir.Append(FileName), Ext, true, Files);
-      end;
-    end
-    else
-    begin
-      // do not load files which either have wrong extension or start with a point
-      if (Ext.Equals(FileName.GetExtension(), true) and not (FileName.ToUTF8()[1] = '.')) then
+      LocalFileInfo := LocalIter.Next;
+      LocalFileName := LocalFileInfo.Name;
+      if ((LocalFileInfo.Attr and faDirectory) <> 0) and
+         (not LocalFileName.Equals('.')) and (not LocalFileName.Equals('..')) and (not LocalFileName.Equals('')) then
       begin
-        Log.LogDebug('Found file ' + Dir.Append(FileName).ToWide, 'TSongs.FindFilesByExtension');
-        SetLength(Files, Length(Files)+1);
-        Files[High(Files)] := Dir.Append(FileName);
-        fTotalSongsToLoad := fTotalSongsToLoad + 1;
-        UpdateLoadingProgress;
+        // Add subdirectory and recurse
+        SubDirs := CollectDirectories(StartDir.Append(LocalFileName));
+        SubDirCount := Length(SubDirs);
+        if SubDirCount > 0 then
+        begin
+          SetLength(LocalDirs, Length(LocalDirs) + SubDirCount);
+          for SubDirIdx := 0 to SubDirCount - 1 do
+            LocalDirs[High(LocalDirs) - SubDirCount + 1 + SubDirIdx] := SubDirs[SubDirIdx];
+        end;
+      end;
+    end;
+    Exit(LocalDirs);
+  end;
+begin
+  // First, collect all directories (including Dir itself)
+  DirList := CollectDirectories(Dir);
+  DirCount := Length(DirList);
+
+  for DirIdx := 0 to DirCount - 1 do
+  begin
+    Iter := FileSystem.FileFind(DirList[DirIdx].Append('*.txt'), 0);
+    while (Iter.HasNext) do
+    begin
+      FileInfo := Iter.Next;
+      FileName := FileInfo.Name;
+      if ((FileInfo.Attr and faDirectory) = 0) then
+      begin
+        if (Ext.Equals(FileName.GetExtension(), true)) then
+        begin
+          Log.LogDebug('Found file ' + DirList[DirIdx].Append(FileName).ToWide, 'TSongs.FindFilesByExtension');
+          SetLength(Files, Length(Files)+1);
+          Files[High(Files)] := DirList[DirIdx].Append(FileName);
+          fTotalSongsToLoad := fTotalSongsToLoad + 1;
+          UpdateLoadingProgress;
+        end;
       end;
     end;
   end;
