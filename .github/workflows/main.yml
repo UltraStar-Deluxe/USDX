@@ -19,7 +19,16 @@ jobs:
         run: |
           $VNAME=$(cat VERSION | sed "s/+dev$/+dev-$(git rev-parse --short HEAD)/")
           echo "versionName=$VNAME" >> $env:GITHUB_ENV
-      - name: Install Dependencies
+      - name: Cache deps
+        id: cache-deps
+        uses: actions/cache@v4
+        with:
+          key: lazarus-4.2-nsis-3.05
+          path: |
+            c:\lazarus
+            c:\Program Files (x86)\NSIS
+      - if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
+        name: Install Dependencies
         run: |
           choco install wget --no-progress
           wget https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2032%20bits/Lazarus%204.2/lazarus-4.2-fpc-3.2.2-win32.exe/download -O lazarus-installer.exe --timeout 60 --progress=dot:giga
@@ -108,11 +117,25 @@ jobs:
           key: linux-docker-${{ hashFiles('dists/linux/dl.sh', 'dists/linux/tasks.sh') }}
           path: |
             dists/linux/prefix
+      - name: Start container builder
+        uses: docker/setup-buildx-action@v3
+      - name: Generate Dockerfile
+        run: |
+          cd dists/linux
+          ./dockerenv.sh --dockerfile > Dockerfile
+      - name: Build container
+        uses: docker/build-push-action@v6
+        with:
+          context: dists/linux
+          cache-from: type=gha
+          cache-to: type=gha,mode=max,ignore-error=true
+          load: true
+          tags: usdx/buildenv:latest
       - name: Build
         run: |
           cd dists/linux
           sed -i '/docker/s/-it\>//' dockerenv.sh
-          ./dockerenv.sh make compress
+          ./dockerenv.sh --use-existing=usdx/buildenv:latest make compress
           mv UltraStar*.AppImage ../../UltraStarDeluxe-linux-${{ env.versionName }}.AppImage
       - name: Upload Image Artifact
         uses: actions/upload-artifact@v4
