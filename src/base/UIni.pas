@@ -216,7 +216,6 @@ type
       PartyPopup:     integer;
       SingScores:     integer;
       TopScores:      integer;
-      AutoSongFileSearch: integer;
       SingTimebarMode:       integer;
       JukeboxTimebarMode:    integer;
       DefaultSingMode:       integer;
@@ -457,7 +456,6 @@ const
 
   ILineBonus:     array[0..1] of UTF8String = ('Off', 'On');
   IPartyPopup:    array[0..1] of UTF8String = ('Off', 'On');
-  IAutoSongFileSearch: array[0..1] of UTF8String = ('Off', 'On');
 
   IJoypad:        array[0..1] of UTF8String = ('Off', 'On');
   IMouse:         array[0..2] of UTF8String = ('Off', 'System', 'Game');
@@ -559,7 +557,6 @@ var
   ITopScoresTranslated:        array[0..1] of UTF8String = ('All', 'Player');
   IDefaultSingModeTranslated:  array[0..1] of UTF8String = ('Regular', 'Instrumental');
   IPreloadSongNotesTranslated: array[0..1] of UTF8String = ('Off', 'On');
-  IAutoSongFileSearchTranslated: array[0..1] of UTF8String = ('Off', 'On');
 
   IJoypadTranslated:           array[0..1] of UTF8String = ('Off', 'On');
   IMouseTranslated:            array[0..2] of UTF8String = ('Off', 'On [System Cursor]', 'On [Game Cursor]');
@@ -846,8 +843,6 @@ begin
   IPreloadSongNotesTranslated[0]      := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IPreloadSongNotesTranslated[1]      := ULanguage.Language.Translate('OPTION_VALUE_ON');
 
-  IAutoSongFileSearchTranslated[0]    := ULanguage.Language.Translate('OPTION_VALUE_OFF');
-  IAutoSongFileSearchTranslated[1]    := ULanguage.Language.Translate('OPTION_VALUE_ON');
 
   ILineBonusTranslated[0]             := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   ILineBonusTranslated[1]             := ULanguage.Language.Translate('OPTION_VALUE_ON');
@@ -1641,10 +1636,6 @@ begin
   // TopScores
   TopScores := ReadArrayIndex(ITopScores, IniFile, 'Advanced', 'TopScores', IGNORE_INDEX, 'Player');
 
-  // AutoSongFileSearch
-  AutoSongFileSearch := ReadArrayIndex(IAutoSongFileSearch, IniFile, 'Advanced', 'AutoSongFileSearch', IGNORE_INDEX, 'Off');
-  if (AutoSongFileSearch < 0) or (AutoSongFileSearch > High(IAutoSongFileSearch)) then
-    AutoSongFileSearch := 1;
 
   // SyncTo
   SyncTo := ReadArrayIndex(ISyncTo, IniFile, 'Advanced', 'SyncTo', Ord(stMusic));
@@ -1969,8 +1960,6 @@ begin
     //TopScores
     IniFile.WriteString('Advanced', 'TopScores', ITopScores[TopScores]);
 
-    // AutoSongFileSearch
-    IniFile.WriteString('Advanced', 'AutoSongFileSearch', IAutoSongFileSearch[AutoSongFileSearch]);
 
     //SyncTo
     IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);
