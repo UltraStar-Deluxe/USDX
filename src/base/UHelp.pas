@@ -368,6 +368,7 @@ var
   K, I, J:   Integer;
 
 begin
+  Result := Default(TTextResult);
   SetLength(Result.Sections, Length(AEntry.Sections));
   for K := 0 to Length(AEntry.Sections) - 1 do
   begin

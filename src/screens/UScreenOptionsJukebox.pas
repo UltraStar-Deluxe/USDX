@@ -58,7 +58,6 @@ type
   TLyricsColorPicker = class(IMenuWidget)
     private
       SelectR, SelectG, SelectB: TSelectSlide; // Owned by the menu, only used for drawing and changing position
-      TexR, TexG, TexB: integer;
       StaticR, StaticG, StaticB: TStatic;
       PointerR, PointerG, PointerB: TStatic;
       Sample: TStatic;
@@ -96,24 +95,11 @@ type
       RedSelect:       integer;
       GreenSelect:     integer;
       BlueSelect:      integer;
-      TexR, TexG, TexB: integer;
 
       Red:   integer;
       Green: integer;
       Blue:  integer;
 
-      RSalt: real;
-      GSalt: real;
-      BSalt: real;
-
-      SingColor: array [0..2] of TRGB;
-      SingOutlineColor: array [0..2] of TRGB;
-
-      NextColor: array [0..2] of TRGB;
-      NextOutlineColor: array [0..2] of TRGB;
-
-      ActualColor: array [0..2] of TRGB;
-      ActualOutlineColor: array [0..2] of TRGB;
 
       procedure AddColorPicker;
       function AddColorPickerSelectSlide(const Text: UTF8String; var Data: integer; const Values: array of UTF8String): integer;
@@ -576,8 +562,6 @@ begin
 end;
 
 procedure TScreenOptionsJukebox.ChangeOtherOColor;
-var
-  Line: integer;
 begin
 
   case SelectsS[LineSelect].SelectedOption of
@@ -813,7 +797,6 @@ end;
 
 procedure TScreenOptionsJukebox.AddColorPicker;
 var
-  ThemeSelect: TThemeSelectSlide;
   NumWidgets: integer;
 begin
   RedSelect := AddColorPickerSelectSlide('JUKEBOX_SONGOPTIONS_LYRIC_RGB_RED', Red, IRed);

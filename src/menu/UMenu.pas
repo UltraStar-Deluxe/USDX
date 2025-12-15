@@ -1998,7 +1998,7 @@ end;
 //of the control at this position
 function TMenu.InteractAt(X, Y: real): integer;
 var
-  i, nBut: integer;
+  i: integer;
 begin
   Result := -1;
   for i := Low(Interactions) to High(Interactions) do
@@ -2031,7 +2031,7 @@ end;
 //takes x,y coordinates and returns the button collection id
 function TMenu.CollectionAt(X, Y: real): integer;
 var
-  i, nBut: integer;
+  i: integer;
 begin
   Result := -1;
   for i:= Low(ButtonCollection) to High(ButtonCollection) do

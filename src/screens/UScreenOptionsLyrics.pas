@@ -201,8 +201,6 @@ begin
 end;
 
 procedure TScreenOptionsLyrics.LyricSample;
-var
-  Col: TRGB;
 begin
   Lyrics.FontFamily := Ini.LyricsFont;
   Lyrics.FontStyle  := Ini.LyricsStyle;

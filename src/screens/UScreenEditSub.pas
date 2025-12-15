@@ -134,7 +134,6 @@ type
       //for mouse move
       LastPressedMouseButton:  boolean;
       LastPressedMouseType:    Integer;
-      LastPressedNote:         Integer;
       PressedNoteId:           Integer;
 
       TextPosition:            Integer;
@@ -303,8 +302,6 @@ type
       PlayNoteButtonID:        Integer;
       // background image & video preview
       BackgroundImageId:       Integer;
-      Empty:                   array of UTF8String;   //temporary variable to initialize slide - todo change
-      // background for notes to posibility move note
       //NotesBackgroundId:       Integer;
       // player static picture
       playerIconId:            array[1..2] of Integer;
@@ -1648,7 +1645,6 @@ var
   R: real;
   LineIndex:    Integer;
   NoteIndex:    Integer;
-  HasPreview:   Boolean;
 begin
     if Interaction =  TitleSlideId then
     begin
@@ -3814,7 +3810,6 @@ end;
 
 procedure TScreenEditSub.MakeDuet;
 var
-  TrackIndex: Integer;
   LineIndex:  Integer;
 
 begin
@@ -4436,7 +4431,6 @@ var
   //PlayerNumber:  Integer;
   OrgFont:  TFont;
 
-  GoldenStarPos: real;
 begin
   if ((1 shl Track) <> 0) then
   begin
@@ -4844,7 +4838,6 @@ const
   SUPPORTED_EXTS_IMAGE: array[0..1]  of string = ('.jpg', '.png');
   SUPPORTED_EXTS_VIDEO: array[0..11] of string = ('.avi', '.mov', '.divx', '.mkv', '.mpeg', '.mpg', '.mp4', '.mpeg', '.m2v', '.ts', '.webm', '.wmv');
 var
-  FileExt:     IPath;
   Files:       TPathDynArray;
   FileIndex:   Integer;
   TrackIndex:  Integer;

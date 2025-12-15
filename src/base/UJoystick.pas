@@ -286,8 +286,8 @@ function HasJoyStick: boolean;
 
 procedure OnJoystickPollEvent(Event: TSDL_event);
 
-function ifthen(val:boolean;const iftrue:TJoyButtonState; const iffalse:TJoyButtonState = bsReleased): TJoyButtonState; inline; overload;
-function ifthen(val:boolean;const iftrue:TSDL_KeyCode; const iffalse:TSDL_KeyCode = 0): TSDL_KeyCode; inline; overload;
+function ifthen(val:boolean;const iftrue:TJoyButtonState; const iffalse:TJoyButtonState = bsReleased): TJoyButtonState; overload;
+function ifthen(val:boolean;const iftrue:TSDL_KeyCode; const iffalse:TSDL_KeyCode = 0): TSDL_KeyCode; overload;
 
 function MouseRepeatHandlerFunc(Data: Pointer): integer; cdecl;// forward;
 
@@ -505,7 +505,6 @@ end;
 destructor TJoy.Destroy;
 var
   i, index: integer;
-  Controller: TJoyController;
 begin
   inherited;
 
@@ -681,7 +680,6 @@ end;
 procedure TJoy.OnControllerButton(id: integer; ButtonId: integer; State: TJoyButtonState; Legacy: boolean);
 var
   Controller: TJoyController;
-  i, index: integer;
 begin
 
   // ignore unknown or disabled input
@@ -782,7 +780,6 @@ end;
 function TJoyController.SimulateKeyboard(Key: TSDL_KeyCode; Pressed: boolean; NoMouseOverride: boolean): boolean;
 var
   JoyEvent: TSDL_Event;
-  TempName: string;
 begin
   Result := true;
 

@@ -147,6 +147,7 @@ var
   StrList: TStringList;
   I: Integer;
 begin
+  Result := nil;
   StrList := TStringList.Create;
   try
     StrList.CommaText := S;

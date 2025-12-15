@@ -859,8 +859,6 @@ begin
 end;
 
 procedure TScreenJukeboxOptions.ChangeOtherOColor;
-var
-  Line: integer;
 begin
 
   case SelectsS[LineSelect].SelectedOption of
@@ -1036,7 +1034,6 @@ end;
 procedure TScreenJukeboxOptions.LoadSongOptions(Opts: TSongOptions);
 var
   Color: TRGB;
-  Alpha: real;
 begin
 
   ScreenJukebox.AspectCorrection := TAspectCorrection(Opts.VideoRatioAspect);

@@ -466,8 +466,6 @@ end;
 function TSong.FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
 var
   Iter: IFileIterator;
-  FileInfo: TFileInfo;
-  FileName: IPath;
 begin
   Iter := FileSystem.FileFind(Dir.Append(Mask), faDirectory);
   if (Iter.HasNext) then
@@ -644,7 +642,6 @@ var
   Param3:       integer;
   ParamLyric:   UTF8String;
 
-  I:            integer;
   NotesFound:   boolean;
 label
   NextTrack;
@@ -908,7 +905,7 @@ var
   MedleyFlags: byte; //bit-vector for medley/preview tags
   EncFile: IPath; // encoded filename
   FullFileName: string;
-  I, P: integer;
+  I: integer;
   TagMap: TFPGMap<string, string>;
 
   { adds a custom header tag to the song

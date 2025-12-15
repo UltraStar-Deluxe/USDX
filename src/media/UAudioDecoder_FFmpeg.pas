@@ -770,7 +770,6 @@ var
   ErrorCode: integer;
   StartSilence: double;       // duration of silence at start of stream
   StartSilencePtr: PDouble;  // pointer for the EMPTY status packet 
-  fileSize: integer;
   urlError: integer;
   errnum: integer;
   SeekCheckPTS: boolean;

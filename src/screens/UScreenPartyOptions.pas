@@ -50,7 +50,6 @@ type
       SelectLevel:     cardinal;
       SelectPlayList:  cardinal;
       SelectPlayList2: cardinal;
-      SelectRounds:    cardinal;
 
       ILevel:     array of UTF8String;
       IPlaylist:  array of UTF8String;
@@ -261,8 +260,6 @@ begin
 end;
 
 procedure TScreenPartyOptions.SetPlaylists;
-var
-  I: integer;
 begin
   if (Mode = 1) or (Mode = 2) or (Mode = 3) then
   begin

@@ -519,6 +519,7 @@ function TPartyGame.GetAvailableModes: AParty_ModeList;
     I: integer;
     Len: integer;
 begin
+  Result := nil;
   Len := 0;
   SetLength(Result, Len + 1);
   Result[Len].Index := Party_Round_Random;
@@ -962,6 +963,7 @@ function TPartyGame.GetTeamRanking: AParty_TeamRanking;
     Temp: TParty_TeamRanking;
     Rank: Integer;
 begin
+  Result := nil;
   SetLength(Result, Length(Teams));
 
   // fill ranking array

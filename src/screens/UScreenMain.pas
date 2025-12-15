@@ -86,13 +86,8 @@ uses
 
 function TScreenMain.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
   PressedDown: boolean): boolean;
-var
-  SDL_ModState: word;
 begin
   Result := true;
-
-  SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT +
-    KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT);
 
   if (PressedDown) then
   begin // Key Down
