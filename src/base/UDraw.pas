@@ -273,7 +273,9 @@ begin
 
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, ScreenSing.Tex_Background.TexNum);
-      //glEnable(GL_BLEND);
+      // Ensure color and blending state is set so the texture is drawn correctly
+      glColor4f(1, 1, 1, 1);
+      glEnable(GL_BLEND);
       glBegin(GL_QUADS);
       // top left
       glTexCoord2f(0, 0);
@@ -289,7 +291,7 @@ begin
       glVertex2f(Rec.Right, Rec.Top);
       glEnd;
       glDisable(GL_TEXTURE_2D);
-      //glDisable(GL_BLEND);
+      glDisable(GL_BLEND);
     end;
   end;
 end;
