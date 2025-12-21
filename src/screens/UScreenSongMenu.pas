@@ -917,7 +917,7 @@ begin
               Visible := False;
 
             end;
-            
+
           6: //Button 4
             begin
               ScreenSong.StartMedley(5, msCalculated);
