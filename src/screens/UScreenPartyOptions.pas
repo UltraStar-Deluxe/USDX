@@ -131,7 +131,7 @@ begin
           //  ScreenSong.CurrentPartyTime := 0;
 
           //Don't start when Playlist is Selected and there are no Playlists
-          if (Playlist = 3) and (Length(PlaylistMan.Playlists) = 0) then
+          if (Playlist = 2) and (Length(PlaylistMan.Playlists) = 0) then
             Exit;
 
           //Save Difficulty
@@ -393,12 +393,18 @@ begin
     if PlaylistMan.CurPlayList = -1 then
       Exit;
   end
+  else if Playlist = 2 then
+  begin
+    // Playlist selected: ensure there is at least one playlist and the selected index is valid
+    if (Length(PlaylistMan.Playlists) = 0) or (Playlist2 < 0) or (Playlist2 > High(PlaylistMan.Playlists)) then
+      Exit
+    else
+      PlaylistMan.CurPlayList := Playlist2;
+  end
   else
   begin
-    //if Playlist = 2 then
-    //  PlayListMan.SetPlayList(Playlist2)
-    //else
-      PlaylistMan.CurPlayList := Playlist2;
+    // All selected: no specific playlist
+    PlaylistMan.CurPlayList := -1;
   end;
 
   ScreenSong.Mode := smPartyClassic;

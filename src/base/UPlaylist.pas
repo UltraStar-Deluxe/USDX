@@ -340,6 +340,9 @@ begin
   CatSongs.LastVisChecked := 0;
   CatSongs.LastVisIndex := 0;
 
+  if Assigned(ScreenSong) then
+    ScreenSong.FilterDuets; // in party mode
+
   //Set CatSongsMode + Playlist Mode
   CatSongs.CatNumShow := -3;
   Mode := smPlayList;
