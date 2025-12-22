@@ -491,6 +491,8 @@ begin
               KeepGoing := ScreenPopupSendScore.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else if (ScreenPopupScoreDownload <> nil) and (ScreenPopupScoreDownload.Visible) then
               KeepGoing := ScreenPopupScoreDownload.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+            else if (ScreenPopupHelp <> nil) and (ScreenPopupHelp.Visible) then
+              KeepGoing := ScreenPopupHelp.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else
             begin
               KeepGoing := Display.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y);
