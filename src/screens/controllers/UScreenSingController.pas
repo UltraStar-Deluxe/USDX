@@ -226,6 +226,7 @@ var
   SDL_ModState: word;
   i1:           integer;
   Color:        TRGB;
+  ResumeAfterHelp: boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -622,9 +623,10 @@ begin
         end
         else // show help popup
         begin
-          if not paused then
+          ResumeAfterHelp := not Paused;
+          if ResumeAfterHelp then
             Pause;
-          ScreenPopupHelp.ShowPopup();
+          ScreenPopupHelp.ShowPopup(ResumeAfterHelp);
         end;
       end;
     end;
