@@ -226,6 +226,7 @@ type
       SingScores:     integer;
       DuetScores:     integer;
       TopScores:      integer;
+      TopScreenSize:  integer;
       SingTimebarMode:       integer;
       JukeboxTimebarMode:    integer;
       PreloadSongNotes: integer;
@@ -1703,6 +1704,8 @@ begin
   // TopScores
   TopScores := ReadArrayIndex(ITopScores, IniFile, 'Advanced', 'TopScores', IGNORE_INDEX, 'Player');
 
+  // TopScreenSize
+  TopScreenSize := IniFile.ReadInteger('Advanced', 'TopScreenSize', 5);
 
   // SyncTo
   SyncTo := ReadArrayIndex(ISyncTo, IniFile, 'Advanced', 'SyncTo', Ord(stMusic));
@@ -2033,6 +2036,8 @@ begin
     //TopScores
     IniFile.WriteString('Advanced', 'TopScores', ITopScores[TopScores]);
 
+    //TopScreenSize
+    IniFile.WriteInteger('Advanced', 'TopScreenSize', TopScreenSize);
 
     //SyncTo
     IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);
