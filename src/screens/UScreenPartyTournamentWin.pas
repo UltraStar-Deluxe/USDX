@@ -56,7 +56,7 @@ type
       StaticBGPlayer2:     cardinal;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       procedure UpdateRounds;
       procedure SetAnimationProgress(Progress: real); override;
@@ -78,7 +78,7 @@ uses
   UScreenPartyTournamentRounds,
   UUnicodeUtils;
 
-function TScreenPartyTournamentWin.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPartyTournamentWin.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if (PressedDown) then

@@ -55,7 +55,7 @@ type
 
     constructor Create; override;
     function ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-      PressedDown: boolean): boolean; override;
+      PressedDown: boolean; Repeated: boolean = false): boolean; override;
     function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
     procedure OnShow; override;
     procedure SetInteraction(Num: integer); override;
@@ -85,7 +85,9 @@ uses
   UUnicodeUtils;
 
 function TScreenMain.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Repeated: boolean = false): boolean;
+var
+  SDL_ModState: word;
 begin
   Result := true;
 
