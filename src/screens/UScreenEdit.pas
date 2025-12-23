@@ -46,7 +46,7 @@ type
 
       constructor Create; override;
       procedure OnShow; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure SetInteraction(Num: integer); override;
       procedure SetAnimationProgress(Progress: real); override;
   end;
@@ -65,7 +65,9 @@ uses
   UUnicodeUtils,
   SysUtils;
 
-function TScreenEdit.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenEdit.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
+var
+  SDL_ModState: word;
 begin
   Result := true;
 
