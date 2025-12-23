@@ -74,19 +74,22 @@ type
     public
       Player:       UTF8String;
       AverageScore: word;
+      Count:        integer;
   end;
 
   TStatResultMostSungSong = class(TStatResult)
     public
       Artist:       UTF8String;
       Title:        UTF8String;
-      TimesSung:    word;
+      TimesSung:    integer;
+      AverageScore: word;
   end;
 
   TStatResultMostPopBand = class(TStatResult)
     public
       ArtistName:   UTF8String;
-      TimesSungTot: word;
+      TimesSungTot: integer;
+      AverageScore: word;
   end;
 
   PUserInfo = ^TUserInfo;
@@ -1347,16 +1350,23 @@ begin
                'INNER JOIN [' + cUS_Songs + '] ON ([SongID] = [ID]) ORDER BY [Score]';
     end;
     stBestSingers: begin
-      Query := 'SELECT [Player], ROUND(AVG([Score])) FROM [' + cUS_Scores + '] ' +
+      Query := 'SELECT [Player], ROUND(AVG([Score])), COUNT(*) as [Count] FROM [' + cUS_Scores + '] ' +
                'GROUP BY [Player] ORDER BY AVG([Score])';
     end;
     stMostSungSong: begin
-      Query := 'SELECT [Artist], [Title], [TimesPlayed] FROM [' + cUS_Songs + '] ' +
-               'ORDER BY [TimesPlayed]';
+      Query := 'SELECT [Artist], [Title], [TimesPlayed], ROUND(AVG([SCORE])) FROM [' + cUS_Scores + '] ' + 'INNER JOIN [' + cUS_Songs + '] ON ([SongID] = [ID]) GROUP BY [Artist], [Title], [TimesPlayed] ORDER BY [TimesPlayed]';
     end;
     stMostPopBand: begin
-      Query := 'SELECT [Artist], SUM([TimesPlayed]) FROM [' + cUS_Songs + '] ' +
-               'GROUP BY [Artist] ORDER BY SUM([TimesPlayed])';
+      Query := 'SELECT s.[Artist], SUM(s.[TimesPlayed]), ' +
+           'ROUND(AVG(sub.AvgScore)) ' +
+           'FROM [' + cUS_Songs + '] s ' +
+           'LEFT JOIN ( ' +
+           '  SELECT sc.[SongID], AVG(sc.[Score]) AS AvgScore ' +
+           '  FROM [' + cUS_Scores + '] sc ' +
+           '  GROUP BY sc.[SongID] ' +
+           ') sub ON sub.[SongID] = s.[ID] ' +
+           'GROUP BY s.[Artist] ' +
+           'ORDER BY SUM(s.[TimesPlayed])';
     end;
   end;
 
@@ -1402,6 +1412,7 @@ begin
         begin
           Player := TableData.Fields[0];
           AverageScore := TableData.FieldAsInteger(1);
+          Count := TableData.FieldAsInteger(2);
         end;
       end;
       stMostSungSong: begin
@@ -1411,6 +1422,7 @@ begin
           Artist := TableData.Fields[0];
           Title  := TableData.Fields[1];
           TimesSung  := TableData.FieldAsInteger(2);
+          AverageScore := TableData.FieldAsInteger(3);
         end;
       end;
       stMostPopBand: begin
@@ -1419,6 +1431,7 @@ begin
         begin
           ArtistName := TableData.Fields[0];
           TimesSungTot := TableData.FieldAsInteger(1);
+          AverageScore := TableData.FieldAsInteger(2);
         end;
       end
       else
