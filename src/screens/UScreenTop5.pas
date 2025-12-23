@@ -220,6 +220,8 @@ begin
     Text[TextDate[I]].Visible := true;
 
     Text[TextName[I]].Text := CurrentSong.Score[Player[0].Level, I-1].Name;
+    if (CurrentSong.IsDuet) and (CurrentSong.Score[Player[0].Level, I-1].Track < 2) then
+      Text[TextName[I]].Text := Text[TextName[I]].Text + ' (P' + IntToStr(CurrentSong.Score[Player[0].Level, I-1].Track + 1) + ')';
     Text[TextScore[I]].Text := IntToStr(CurrentSong.Score[Player[0].Level, I-1].Score);
     Text[TextDate[I]].Text := CurrentSong.Score[Player[0].Level, I-1].Date;
   end;
@@ -251,6 +253,8 @@ begin
     Text[TextDate[I]].Visible := true;
 
     Text[TextName[I]].Text := CurrentSong.Score[difficulty, I-1].Name;
+    if (CurrentSong.IsDuet) and (CurrentSong.Score[difficulty, I-1].Track < 2) then
+      Text[TextName[I]].Text := Text[TextName[I]].Text + ' (P' + IntToStr(CurrentSong.Score[difficulty, I-1].Track + 1) + ')';
     Text[TextScore[I]].Text := IntToStr(CurrentSong.Score[difficulty, I-1].Score);
     Text[TextDate[I]].Text := CurrentSong.Score[difficulty, I-1].Date;
   end;
