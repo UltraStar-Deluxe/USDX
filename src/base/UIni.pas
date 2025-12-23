@@ -227,6 +227,7 @@ type
       DuetScores:     integer;
       TopScores:      integer;
       TopScreenSize:  integer;
+      StatDetailCount:       integer;
       SingTimebarMode:       integer;
       JukeboxTimebarMode:    integer;
       PreloadSongNotes: integer;
@@ -570,6 +571,8 @@ var
   IDuetScoresTranslated:       array[0..3] of UTF8String = ('Off', 'Separate', 'Combined', 'Both');
   ITopScoresTranslated:        array[0..1] of UTF8String = ('All', 'Player');
   IPreloadSongNotesTranslated: array[0..1] of UTF8String = ('Off', 'On');
+
+  IStatDetailCount:            array of UTF8String;
 
   IJoypadTranslated:           array[0..1] of UTF8String = ('Off', 'On');
   IMouseTranslated:            array[0..2] of UTF8String = ('Off', 'On [System Cursor]', 'On [Game Cursor]');
@@ -1707,6 +1710,9 @@ begin
   // TopScreenSize
   TopScreenSize := IniFile.ReadInteger('Advanced', 'TopScreenSize', 5);
 
+  // StatDetailCount
+  StatDetailCount := IniFile.ReadInteger('Advanced', 'StatDetailCount', 20);
+
   // SyncTo
   SyncTo := ReadArrayIndex(ISyncTo, IniFile, 'Advanced', 'SyncTo', Ord(stMusic));
 
@@ -2038,6 +2044,9 @@ begin
 
     //TopScreenSize
     IniFile.WriteInteger('Advanced', 'TopScreenSize', TopScreenSize);
+
+    //StatDetailCount
+    IniFile.WriteInteger('Advanced', 'StatDetailCount', StatDetailCount);
 
     //SyncTo
     IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);
