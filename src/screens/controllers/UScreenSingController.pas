@@ -869,6 +869,17 @@ begin
       ScoreLast      := 0;
 
       LastSentencePerfect := false;
+
+      Name           := PlayerNames[PlayerIndex + 1];
+      Level          := Ini.PlayerLevel[PlayerIndex];
+      Track          := 0;
+      if CurrentSong.isDuet then
+      begin
+        if ScreenSong.DuetChange then
+          Track := (PlayerIndex + 1) mod 2
+        else
+          Track := PlayerIndex mod 2;
+      end;
     end;
 
   // prepare music
