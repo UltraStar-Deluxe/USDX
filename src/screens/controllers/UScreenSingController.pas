@@ -172,7 +172,7 @@ type
     function Draw: boolean; override;
 
     function ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
-      PressedDown: boolean): boolean; override;
+      PressedDown: boolean; Repeated: boolean = false): boolean; override;
 
     function FinishedMusic: boolean;
 
@@ -221,7 +221,7 @@ const
 // should be checked to know the next window to load;
 
 function TScreenSingController.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   SDL_ModState: word;
   i1:           integer;

@@ -120,7 +120,7 @@ type
       function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean;
 
       { calls ParseInput of cur or next Screen if assigned }
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; Repeated : boolean = false): boolean;
 
       { calls ParseMouse of cur or next Screen if assigned }
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
@@ -658,14 +658,14 @@ begin
     Result := True;
 end;
 
-function TDisplay.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
+function TDisplay.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; Repeated : boolean = false): boolean;
 begin
   if Console_Draw and ConsoleParseInput(PressedKey, CharCode, PressedDown) then Exit;
 
   if (assigned(NextScreen)) then
-    Result := NextScreen^.ParseInput(PressedKey, CharCode, PressedDown)
+    Result := NextScreen^.ParseInput(PressedKey, CharCode, PressedDown, Repeated)
   else if (assigned(CurrentScreen)) then
-    Result := CurrentScreen^.ParseInput(PressedKey, CharCode, PressedDown)
+    Result := CurrentScreen^.ParseInput(PressedKey, CharCode, PressedDown, Repeated)
   else
     Result := True;
 end;
