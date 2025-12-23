@@ -589,7 +589,7 @@ begin
             else if (Display.ShouldHandleInput(LongWord(SimKey), KeyCharUnicode, true, SuppressKey)) then
             begin
               // check if screen wants to exit
-              KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true);
+              KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true, Event.key._repeat > 0);
 
               // if screen wants to exit
               if not KeepGoing then
