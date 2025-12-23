@@ -534,7 +534,7 @@ begin
       // Add one Entry to Array
       Difficulty := TableData.FieldAsInteger(TableData.FieldIndex['Difficulty']);
       if ((Difficulty >= 0) and (Difficulty <= 2)) and
-         (Length(Song.Score[Difficulty]) < 5) then
+         (Length(Song.Score[Difficulty]) < Ini.TopScreenSize) then
       begin
         //filter player
         PlayerListed:=false;
