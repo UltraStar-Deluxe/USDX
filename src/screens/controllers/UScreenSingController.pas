@@ -207,6 +207,7 @@ uses
   URecord,
   UParty,
   UPathUtils,
+  UAudioWorker,
   USong,
   UUnicodeUtils,
   UWebcam,
@@ -690,6 +691,7 @@ begin
   FadeOut := false;
 
   screenSingViewRef.CloseMessage();
+  AudioWorkerSetExternalAudioCallback(screenSingViewRef.ProcessAudio);
 
   //the song was sung to the end
   SungToEnd := false;
@@ -1329,6 +1331,8 @@ end;
 
 procedure TScreenSingController.OnHide;
 begin
+  AudioWorkerSetExternalAudioCallback(nil);
+
   // close video files
   fVideoClip := nil;
   fCurrentVideo := nil;

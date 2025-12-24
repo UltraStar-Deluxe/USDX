@@ -37,7 +37,8 @@ uses
   UTexture,
   ULog,
   UIni,
-  SDL2;
+  SDL2,
+  SyncObjs;
 
 const
   DelayBetweenFrames : cardinal = 60;
@@ -91,6 +92,12 @@ type
  end;
 
  TEffectManager = class
+ private
+   ParticleLock  : TCriticalSection;
+   procedure LockParticles; inline;
+   procedure UnlockParticles; inline;
+   procedure InternalKill(Index: cardinal);
+ public
    Particle      : array of TParticle;
    LastTime      : cardinal;
    RecArray      : array of RectanglePositions;
@@ -392,11 +399,24 @@ end;
 
 // TEffectManager
 
+procedure TEffectManager.LockParticles;
+begin
+  if ParticleLock <> nil then
+    ParticleLock.Enter;
+end;
+
+procedure TEffectManager.UnlockParticles;
+begin
+  if ParticleLock <> nil then
+    ParticleLock.Leave;
+end;
+
 constructor TEffectManager.Create;
 var
   c: cardinal;
 begin
   inherited;
+  ParticleLock := TCriticalSection.Create;
   LastTime := SDL_GetTicks();
   for c := 0 to 5 do
   begin
@@ -407,7 +427,23 @@ end;
 destructor TEffectManager.Destroy;
 begin
   Killall;
+  FreeAndNil(ParticleLock);
   inherited;
+end;
+
+procedure TEffectManager.InternalKill(Index: cardinal);
+var
+  LastParticleIndex : integer;
+begin
+  LastParticleIndex := High(Particle);
+  if LastParticleIndex = -1 then
+    Exit;
+
+  if not(Particle[Index].RecIndex = -1) then
+    dec(RecArray[Particle[Index].RecIndex].CurrentStarCount);
+  Particle[Index].Destroy;
+  Particle[Index] := Particle[LastParticleIndex];
+  SetLength(Particle, LastParticleIndex);
 end;
 
 
@@ -418,43 +454,52 @@ var
 //const
 //  DelayBetweenFrames : cardinal = 100;
 begin
-
-  CurrentTime := SDL_GetTicks();
-  //Manage particle life
-  if (CurrentTime - LastTime) > DelayBetweenFrames then
-  begin
-    LastTime := CurrentTime;
-    for I := 0 to high(Particle) do
-      Particle[I].LiveOn;
-  end;
-
-  I := 0;
-  //Kill dead particles
-  while (I <= High(Particle)) do
-  begin
-    if (Particle[I].Live <= 0) then
+  LockParticles;
+  try
+    CurrentTime := SDL_GetTicks();
+    //Manage particle life
+    if (CurrentTime - LastTime) > DelayBetweenFrames then
     begin
-      kill(I);
-    end
-    else
-    begin
-      inc(I);
+      LastTime := CurrentTime;
+      for I := 0 to high(Particle) do
+        Particle[I].LiveOn;
     end;
-  end;
 
- //Draw
-  for I := 0 to high(Particle) do
-  begin
-    Particle[I].Draw;
+    I := 0;
+    //Kill dead particles
+    while (I <= High(Particle)) do
+    begin
+      if (Particle[I].Live <= 0) then
+      begin
+        InternalKill(I);
+      end
+      else
+      begin
+        inc(I);
+      end;
+    end;
+
+   //Draw
+    for I := 0 to high(Particle) do
+    begin
+      Particle[I].Draw;
+    end;
+  finally
+    UnlockParticles;
   end;
 end;
 
 // this method creates just one particle
 function TEffectManager.Spawn(X, Y: real; Screen: integer; Live: byte; StartFrame : integer; RecArrayIndex : integer; StarType : TParticleType; Player: cardinal): cardinal;
 begin
-  Result := Length(Particle);
-  SetLength(Particle, (Result + 1));
-  Particle[Result] := TParticle.Create(X, Y, Screen, Live, StartFrame, RecArrayIndex, StarType, Player);
+  LockParticles;
+  try
+    Result := Length(Particle);
+    SetLength(Particle, (Result + 1));
+    Particle[Result] := TParticle.Create(X, Y, Screen, Live, StartFrame, RecArrayIndex, StarType, Player);
+  finally
+    UnlockParticles;
+  end;
 end;
 
 // manage Sparkling of GoldenNote Bars
@@ -487,21 +532,12 @@ end;
 
 // kill one particle (with given index in our particle array)
 procedure TEffectManager.Kill(Index: cardinal);
-var
-  LastParticleIndex : integer;
 begin
-// delete particle indexed by Index,
-// overwrite it's place in our particle-array with the particle stored at the last array index,
-// shorten array
-  LastParticleIndex := high(Particle);
-  if not(LastParticleIndex = -1) then  // is there still a particle to delete?
-  begin
-    if not(Particle[Index].RecIndex = -1) then  // if it is a GoldenNote particle...
-      dec(RecArray[Particle[Index].RecIndex].CurrentStarCount); // take care of its associated GoldenRec
-    // now get rid of that particle
-    Particle[Index].Destroy;
-    Particle[Index] := Particle[LastParticleIndex];
-    SetLength(Particle, LastParticleIndex);
+  LockParticles;
+  try
+    InternalKill(Index);
+  finally
+    UnlockParticles;
   end;
 end;
 
@@ -510,14 +546,19 @@ procedure TEffectManager.KillAll();
 var
   c: cardinal;
 begin
-//It's the kill all kennies rotuine
-  while Length(Particle) > 0 do  // kill all existing particles
-    Kill(0);
-  SetLength(RecArray,0);  // remove GoldenRec positions
-  SetLength(PerfNoteArray,0); // remove PerfectNote positions
-  for c := 0 to 5 do
-  begin
-    TwinkleArray[c] := 0; // reset GoldenNoteHit memory
+//It's the kill all kennies routine
+  LockParticles;
+  try
+    while Length(Particle) > 0 do  // kill all existing particles
+      InternalKill(0);
+    SetLength(RecArray,0);  // remove GoldenRec positions
+    SetLength(PerfNoteArray,0); // remove PerfectNote positions
+    for c := 0 to 5 do
+    begin
+      TwinkleArray[c] := 0; // reset GoldenNoteHit memory
+    end;
+  finally
+    UnlockParticles;
   end;
 end;
 
@@ -525,22 +566,26 @@ procedure TEffectManager.SentenceChange(CP: integer);
 var
   c: cardinal;
 begin
+  LockParticles;
+  try
+    c := 0;
+    while c <= High(Particle) do
+    begin
+      if Particle[c].SurviveSentenceChange then
+        inc(c)
+      else
+        InternalKill(c);
+    end;
 
-  c := 0;
-  while c <= High(Particle) do
-  begin
-    if Particle[c].SurviveSentenceChange then
-      inc(c)
-    else
-      Kill(c);
-  end;
-
-  SetLength(RecArray,0);  // remove GoldenRec positions
-  SetLength(PerfNoteArray,0); // remove PerfectNote positions
-  for c := 0 to 5 do
-  begin
-    if not CurrentSong.isDuet or ((c mod 2) = CP)  then
-      TwinkleArray[c] := 0; // reset GoldenNoteHit memory
+    SetLength(RecArray,0);  // remove GoldenRec positions
+    SetLength(PerfNoteArray,0); // remove PerfectNote positions
+    for c := 0 to 5 do
+    begin
+      if not CurrentSong.isDuet or ((c mod 2) = CP)  then
+        TwinkleArray[c] := 0; // reset GoldenNoteHit memory
+    end;
+  finally
+    UnlockParticles;
   end;
 end;
 
