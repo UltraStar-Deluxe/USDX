@@ -1438,6 +1438,8 @@ begin
     Name[I] := IniFile.ReadString('Name', 'P'+IntToStr(I+1), 'Player'+IntToStr(I+1));
     // Color Player
     PlayerColor[I] := IniFile.ReadInteger('PlayerColor', 'P'+IntToStr(I+1), DefaultPlayerColors[I]);
+    // Initialize session sing colors from the saved player colors so they are usable before the first song
+    SingColor[I] := PlayerColor[I];
     // Avatar Player
     PlayerAvatar[I] := IniFile.ReadString('PlayerAvatar', 'P'+IntToStr(I+1), '');
     // Level Player
