@@ -559,7 +559,7 @@ begin
 
       SDLK_RIGHT:
       begin
-        if ((SDL_ModState and (KMOD_LCTRL or KMOD_RCTRL)) <> 0) then
+        if ((SDL_ModState and KMOD_LCTRL) <> 0) then
         begin
           NewPosition := AudioPlayback.Position + 5.0;
           AudioPlayback.SetPosition(NewPosition);
