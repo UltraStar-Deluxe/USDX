@@ -400,6 +400,7 @@ type
       procedure OnMidiNote(Note: Byte);
       procedure DeleteSentence;
       procedure TransposeNote(Transpose: Integer);
+      procedure UpdateLineBaseNote(const TrackIndex, LineIndex: Integer);
       procedure ChangeWholeTone(Tone: Integer);
       procedure MoveAllToEnd(Move: Integer);
       procedure MoveTextToRight;
@@ -3448,6 +3449,7 @@ begin
   CurrentNote[CurrentTrack] := 0;
   if CurrentSong.Tracks[CurrentTrack].CurrentLine > CurrentSong.Tracks[CurrentTrack].High then
     CurrentSong.Tracks[CurrentTrack].CurrentLine := 0;
+  UpdateLineBaseNote(CurrentTrack, CurrentSong.Tracks[CurrentTrack].CurrentLine);
   CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
 
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, CurrentSong.Tracks[CurrentTrack].CurrentLine);
@@ -3475,6 +3477,7 @@ begin
   CurrentNote[CurrentTrack] := 0;
   if CurrentSong.Tracks[CurrentTrack].CurrentLine = -1 then
     CurrentSong.Tracks[CurrentTrack].CurrentLine := CurrentSong.Tracks[CurrentTrack].High;
+  UpdateLineBaseNote(CurrentTrack, CurrentSong.Tracks[CurrentTrack].CurrentLine);
   CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
 
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, CurrentSong.Tracks[CurrentTrack].CurrentLine);
@@ -3655,6 +3658,39 @@ end;
 procedure TScreenEditSub.TransposeNote(Transpose: Integer);
 begin
   Inc(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone, Transpose);
+end;
+
+procedure TScreenEditSub.UpdateLineBaseNote(const TrackIndex, LineIndex: Integer);
+var
+  NoteIndex: Integer;
+  MinTone: Integer;
+  MaxTone: Integer;
+begin
+  if (TrackIndex < 0) or (TrackIndex > High(CurrentSong.Tracks)) then
+    Exit;
+  if (LineIndex < 0) or (LineIndex > High(CurrentSong.Tracks[TrackIndex].Lines)) then
+    Exit;
+
+  with CurrentSong.Tracks[TrackIndex].Lines[LineIndex] do
+  begin
+    if HighNote < 0 then
+    begin
+      BaseNote := 0;
+      Exit;
+    end;
+
+    MinTone := Notes[0].Tone;
+    MaxTone := Notes[0].Tone;
+    for NoteIndex := 1 to HighNote do
+    begin
+      if Notes[NoteIndex].Tone < MinTone then
+        MinTone := Notes[NoteIndex].Tone;
+      if Notes[NoteIndex].Tone > MaxTone then
+        MaxTone := Notes[NoteIndex].Tone;
+    end;
+
+    BaseNote := Round((MinTone + MaxTone) / 2) - 5;
+  end;
 end;
 
 procedure TScreenEditSub.ChangeWholeTone(Tone: Integer);
@@ -4096,7 +4132,6 @@ begin
       begin
         HighNote := Length(Notes) - 1;
         ScoreValue := 0;
-        BaseNote := High(Integer);
 
         if (Length(Notes) > 0) then
         begin
@@ -4123,12 +4158,10 @@ begin
 
             CurrentSong.Tracks[TrackIndex].ScoreValue := CurrentSong.Tracks[TrackIndex].ScoreValue + Notes[NoteIndex].Duration * ScoreFactor[Notes[NoteIndex].NoteType];
             ScoreValue := ScoreValue + Notes[NoteIndex].Duration * ScoreFactor[Notes[NoteIndex].NoteType];
-
-            if (Notes[NoteIndex].Tone < BaseNote) then
-              BaseNote := Notes[NoteIndex].Tone;
           end;
-        end else
-          BaseNote := 0;
+        end;
+
+        UpdateLineBaseNote(TrackIndex, LineIndex);
       end;
     end;
   end;
