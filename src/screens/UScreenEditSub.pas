@@ -5487,6 +5487,15 @@ begin
     CurrentBeat := Floor(GetMidBeat(MidiPos - CurrentSong.GAP / 1000));
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_CURRENT_BEAT') + ' ' + IntToStr(CurrentBeat);
 
+    if (MidiLastNote >= 0) and (MidiLastTrack = CurrentTrack) and (MidiLastLine = CurrentSong.Tracks[CurrentTrack].CurrentLine) then
+    begin
+      if (CurrentBeat >= CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[MidiLastNote].StartBeat + CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[MidiLastNote].Duration) then
+      begin
+        MidiOut.PutShort(MIDI_NOTEOFF or 1, CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[MidiLastNote].Tone + 60, 127);
+        MidiLastNote := -1;
+      end;
+    end;
+
     if CurrentBeat <> LastClick then
     begin
       for NoteIndex := 0 to CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].HighNote do

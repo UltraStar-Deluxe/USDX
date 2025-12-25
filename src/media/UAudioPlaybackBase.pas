@@ -107,6 +107,7 @@ type
       function GetPCMData(var Data: TPCMData): Cardinal;
 
       function CreateVoiceStream(Channel: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream; virtual; abstract;
+      function CreatePlaybackStreamForSource(SourceStream: TAudioSourceStream): TAudioPlaybackStream;
   end;
 
   TAudioBufferSourceStream = class(TAudioSourceStream)
@@ -200,6 +201,22 @@ function TAudioPlaybackBase.OpenDecodeStream(const Filename: IPath): TAudioDecod
 var
   i: integer;
 begin
+  // If MIDI emulation is enabled, avoid letting generic audio decoders
+  // open .mid/.midi files as PCM. These files should be handled by the
+  // MIDI subsystem (MidiFile/MidiOut) so that our MidiEmu receives events.
+  {$IFDEF UseMidiEmu}
+  try
+    if (LowerCase(ExtractFileExt(Filename.ToNative)) = '.mid') or
+       (LowerCase(ExtractFileExt(Filename.ToNative)) = '.midi') then
+    begin
+      Log.LogInfo('Skipping generic audio decoder for MIDI file (using MidiEmu): ' + Filename.ToNative, 'TAudioPlaybackBase.OpenDecodeStream');
+      Result := nil;
+      Exit;
+    end;
+  except
+    // ignore any exception from ExtractFileExt and continue
+  end;
+  {$ENDIF}
   for i := 0 to AudioDecoders.Count-1 do
   begin
     Result := IAudioDecoder(AudioDecoders[i]).Open(Filename);
@@ -522,6 +539,17 @@ procedure TAudioBufferSourceStream.Close();
 begin
   FreeAndNil(fFormat);
   fStream := nil;
+end;
+
+function TAudioPlaybackBase.CreatePlaybackStreamForSource(SourceStream: TAudioSourceStream): TAudioPlaybackStream;
+begin
+  Result := CreatePlaybackStream();
+  if not Assigned(Result) then
+    Exit;
+  if not Result.Open(SourceStream) then
+  begin
+    FreeAndNil(Result);
+  end;
 end;
 
 end.
