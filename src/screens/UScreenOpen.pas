@@ -61,7 +61,7 @@ type
     public
       constructor Create; override;
       procedure OnShow; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
 
       {**
        * Set by the caller to provide a default filename.
@@ -88,7 +88,7 @@ uses
   USkins,
   UUnicodeUtils;
 
-function TScreenOpen.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenOpen.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
 

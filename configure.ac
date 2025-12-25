@@ -129,6 +129,13 @@ AC_ARG_ENABLE(debug,
   [test $enableval = "yes" && ENABLE_DEBUG="yes"], [])
 AC_SUBST(ENABLE_DEBUG)
 
+AC_ARG_WITH([fpc-debug-dir],
+    [AS_HELP_STRING([--with-fpc-debug-dir=DIR],
+        [Directory that contains Free Pascal debug symbols for runtime backtraces])],
+    [FPC_DEBUG_DIR="$withval"],
+    [FPC_DEBUG_DIR=""])
+AC_SUBST(FPC_DEBUG_DIR)
+
 # OSX Packaging
 AC_ARG_ENABLE(osx-fink, [AS_HELP_STRING([--enable-osx-fink], [Enable fink packaging for OSX])])
 AC_ARG_ENABLE(osx-brew, [AS_HELP_STRING([--enable-osx-brew], [Enable homebrew packaging for OSX])])
