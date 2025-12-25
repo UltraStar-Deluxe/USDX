@@ -73,4 +73,14 @@
 
 {$UNDEF HavePortmixer}
 
-{$DEFINE UseMIDIPort}
+{$DEFINE UsePortMidi}
+{$IF Defined(UsePortMidi)}
+  {$DEFINE UseMIDIPort}
+{$IFEND}
+{$IF Defined(UseMidiEmu)}
+  {$DEFINE UseMidiEmu}
+  {$DEFINE UseMIDIPort}
+  // Avoid platform MIDI backends with system synths if built-in MIDI emulation is enabled
+  {$UNDEF UsePortMidi}
+  {$UNDEF UsePortTime}
+{$IFEND}
