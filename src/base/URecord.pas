@@ -808,35 +808,55 @@ var
   SampleSize:              integer;
   SamplesPerChannel:       integer;
   i:                       integer;
+  SourcePtr:               PByte;
+  DestPtr:                 PByte;
 begin
   AudioFormat := InputDevice.AudioFormat;
+  if (AudioFormat = nil) then
+    Exit;
+
   SampleSize := AudioSampleSize[AudioFormat.Format];
+  if (SampleSize <= 0) or (AudioFormat.FrameSize <= 0) then
+    Exit;
+
   SamplesPerChannel := Size div AudioFormat.FrameSize;
+  if (SamplesPerChannel <= 0) then
+    Exit;
 
   SingleChannelBufferSize := SamplesPerChannel * SampleSize;
+  if (SingleChannelBufferSize <= 0) then
+    Exit;
+
   GetMem(SingleChannelBuffer, SingleChannelBufferSize);
-
-  // process channels
-  for ChannelIndex := 0 to High(InputDevice.CaptureChannel) do
-  begin
-    CaptureChannel := InputDevice.CaptureChannel[ChannelIndex];
-    // check if a capture buffer was assigned, otherwise there is nothing to do
-    if (CaptureChannel <> nil) then
+  try
+    // process channels
+    for ChannelIndex := 0 to High(InputDevice.CaptureChannel) do
     begin
-      // set offset according to channel index
-      MultiChannelBuffer := @Buffer[ChannelIndex * SampleSize];
-      // separate channel-data from interleaved multi-channel (e.g. stereo) data
-      for i := 0 to SamplesPerChannel-1 do
+      CaptureChannel := InputDevice.CaptureChannel[ChannelIndex];
+      // check if a capture buffer was assigned, otherwise there is nothing to do
+      if (CaptureChannel <> nil) then
       begin
-        Move(MultiChannelBuffer[i*AudioFormat.FrameSize],
-             SingleChannelBuffer[i*SampleSize],
-             SampleSize);
-      end;
-      CaptureChannel.ProcessNewBuffer(SingleChannelBuffer, SingleChannelBufferSize);
-    end;
-  end;
+        // Use pointer arithmetic instead of open-array indexing to avoid range
+        // checks on bogus channel layouts reported by some devices.
+        MultiChannelBuffer := Buffer;
+        SourcePtr := PByte(MultiChannelBuffer);
+        Inc(SourcePtr, ChannelIndex * SampleSize);
 
-  FreeMem(SingleChannelBuffer);
+        DestPtr := PByte(SingleChannelBuffer);
+
+        // separate channel-data from interleaved multi-channel (e.g. stereo) data
+        for i := 0 to SamplesPerChannel-1 do
+        begin
+          Move(SourcePtr^, DestPtr^, SampleSize);
+          Inc(SourcePtr, AudioFormat.FrameSize);
+          Inc(DestPtr, SampleSize);
+        end;
+        CaptureChannel.ProcessNewBuffer(SingleChannelBuffer, SingleChannelBufferSize);
+      end;
+    end;
+  finally
+    FreeMem(SingleChannelBuffer);
+  end;
 end;
 
 { TAudioInputBase }
