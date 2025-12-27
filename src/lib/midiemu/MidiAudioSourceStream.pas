@@ -164,13 +164,6 @@ begin
         Inc(s);
       end;
     end;
-
-    // If envelope is finished, deactivate
-    if (FEnvLevel <= 0) then
-    begin
-      FActive := False;
-      FRelease := False;
-    end;
   finally
     FLock.Leave;
   end;
