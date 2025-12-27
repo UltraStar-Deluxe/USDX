@@ -34,7 +34,6 @@ type
     FRelease: Boolean;
     FEnvLevel: Double;
     FOvertoneLevel: Double;
-    FOvertonePhase: Double;
     FLock: TCriticalSection;
   protected
     function IsEOF: boolean; override;
@@ -66,7 +65,6 @@ begin
   FFreq := 440.0;
   FVel := 0.0;
   FOvertoneLevel := 0.0;
-  FOvertonePhase := 0.0;
   FLock := TCriticalSection.Create;
   Log.LogDebug('MidiAudioSourceStream: Created', 'MidiSynth');
 end;
@@ -104,7 +102,7 @@ var
   Frames: Integer;
   s: PSmallInt;
   i, j: Integer;
-  phaseInc, overtoneInc, sample, overtone: Double;
+  phaseInc, sample, overtone: Double;
   attackStep, releaseStep: Double;
   outSample: SmallInt;
   tempSample: Int64;
@@ -116,7 +114,6 @@ begin
   attackStep := 1.0 / (0.005 * SampleRate);  // 5ms attack
   releaseStep := 1.0 / (0.005 * SampleRate); // 5ms release
   phaseInc := 2 * Pi * FFreq / SampleRate;
-  overtoneInc := 4 * Pi * FFreq / SampleRate; // 2nd harmonic
 
   FLock.Enter;
   try
@@ -142,7 +139,7 @@ begin
       begin
         sample := Sin(FPhase) * FVel * FEnvLevel;
         // Add overtone with exponential decay for note restart detection
-        overtone := Sin(FOvertonePhase) * FOvertoneLevel * FEnvLevel;
+        overtone := Sin(2 * FPhase) * FOvertoneLevel * FEnvLevel;
         sample := sample + overtone;
         // Decay overtone
         FOvertoneLevel := FOvertoneLevel * 0.995;
@@ -150,9 +147,6 @@ begin
         FPhase := FPhase + phaseInc;
         if FPhase > Pi then FPhase := FPhase - 2 * Pi;
         if FPhase < -Pi then FPhase := FPhase + 2 * Pi;
-        FOvertonePhase := FOvertonePhase + overtoneInc;
-        if FOvertonePhase > Pi then FOvertonePhase := FOvertonePhase - 2 * Pi;
-        if FOvertonePhase < -Pi then FOvertonePhase := FOvertonePhase + 2 * Pi;
       end
       else
         sample := 0;
@@ -212,7 +206,6 @@ begin
       FEnvLevel := 0;
       // Add overtone for note restart detection
       FOvertoneLevel := 0.5 * FVel; // Start overtone at half velocity
-      FOvertonePhase := 0;
       Exit;
     end;
     // NOTE OFF
