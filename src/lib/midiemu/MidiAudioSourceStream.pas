@@ -200,7 +200,7 @@ begin
       Exit;
     end;
     // NOTE OFF
-    if (((MidiMessage and $F0) = $90) and (Data2 = 0)) or ((MidiMessage and $F0) = $80) then
+    if ((((MidiMessage and $F0) = $90) and (Data2 = 0)) or ((MidiMessage and $F0) = $80)) and (FNote = Data1) then
     begin
       FRelease := True;
     end;
