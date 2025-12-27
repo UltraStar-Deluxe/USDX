@@ -118,6 +118,11 @@ begin
   if ((MidiMessage and $F0) = $90) and (Data2 <> 0) then
   begin
     Play;
+  end
+  else if ((MidiMessage and $F0) = $B0) and (Data1 = 7) then
+  begin
+    if Assigned(FPlaybackStream) then
+       FPlaybackStream.Volume := Sqr(Data2 / 127);
   end;
   
   if Assigned(FSourceStream) then
