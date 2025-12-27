@@ -195,7 +195,6 @@ begin
       FVel := Sqr(Data2 / 127.0);
       FActive := True;
       FRelease := False;
-      FEnvLevel := 0;
       // Add overtone for note restart detection
       FOvertoneLevel := 0.5 * FVel; // Start overtone at half velocity
       Exit;
