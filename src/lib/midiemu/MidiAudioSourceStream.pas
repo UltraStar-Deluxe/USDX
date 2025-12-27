@@ -34,6 +34,7 @@ type
     FRelease: Boolean;
     FEnvLevel: Double;
     FOvertoneLevel: Double;
+    FOvertoneDecay: Double;
     FLock: TCriticalSection;
   protected
     function IsEOF: boolean; override;
@@ -65,6 +66,7 @@ begin
   FFreq := 440.0;
   FVel := 0.0;
   FOvertoneLevel := 0.0;
+  FOvertoneDecay := Power(3e-10, 1 / FFormat.SampleRate); // after 1s amplitude has fallen to 3e-10
   FLock := TCriticalSection.Create;
   Log.LogDebug('MidiAudioSourceStream: Created', 'MidiSynth');
 end;
@@ -142,7 +144,7 @@ begin
         overtone := Sin(2 * FPhase) * FOvertoneLevel * FEnvLevel;
         sample := sample + overtone;
         // Decay overtone
-        FOvertoneLevel := FOvertoneLevel * 0.995;
+        FOvertoneLevel := FOvertoneLevel * FOvertoneDecay;
         // FPhase handling: keep between -Pi and +Pi
         FPhase := FPhase + phaseInc;
         if FPhase > Pi then FPhase := FPhase - 2 * Pi;
