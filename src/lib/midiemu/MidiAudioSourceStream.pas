@@ -113,10 +113,10 @@ begin
   s := PSmallInt(Buffer);
   attackStep := 1.0 / (0.005 * SampleRate);  // 5ms attack
   releaseStep := 1.0 / (0.005 * SampleRate); // 5ms release
-  phaseInc := 2 * Pi * FFreq / SampleRate;
 
   FLock.Enter;
   try
+    phaseInc := 2 * Pi * FFreq / SampleRate;
     for i := 0 to Frames - 1 do
     begin
       // Envelope
