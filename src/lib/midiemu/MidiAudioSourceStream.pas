@@ -146,7 +146,6 @@ begin
         // FPhase handling: keep between -Pi and +Pi
         FPhase := FPhase + phaseInc;
         if FPhase > Pi then FPhase := FPhase - 2 * Pi;
-        if FPhase < -Pi then FPhase := FPhase + 2 * Pi;
       end
       else
         sample := 0;
