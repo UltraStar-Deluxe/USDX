@@ -96,7 +96,7 @@ begin
   if not UseLocalDirs then begin
     try
       // try to cd to the ExecutionDir -- this makes the stacktraces work when started from PATH
-      chdir(LocalDir.ToWide());
+      chdir(LocalDir.ToNative());
     except
       // this log statement is too early to be logged to the Error.log file, it'll only show up in stdout
       // Log.LogWarn('Cannot chdir to '+LocalDir.ToNative()+', stacktraces might be broken', 'TPlatformLinux.DetectLocalExecution');
