@@ -115,13 +115,19 @@ uses
       DelphiMcb       in 'lib\midi\DelphiMcb.pas',
       MidiDefs        in 'lib\midi\MidiDefs.pas',
       MidiType        in 'lib\midi\MidiType.pas',
-      MidiOut         in 'lib\midi\MidiOut.pas',
+      {$IFNDEF UseMidiEmu}
+        MidiOut       in 'lib\midi\MidiOut.pas',
+      {$ENDIF}
       MidiIn          in 'lib\midi\MidiIn.pas',
       UMidiInput      in 'media\UMidiInput.pas',
     {$ELSE}
       {$IFDEF UsePortMidi}
         MidiOut       in 'lib\portmidi\MidiOut.pas',
       {$ENDIF}
+    {$ENDIF}
+    {$IFDEF UseMidiEmu}
+      MidiOut               in 'lib\midiemu\MidiOut.pas',
+      MidiAudioSourceStream in 'lib\midiemu\MidiAudioSourceStream.pas',
     {$ENDIF}
   {$ENDIF}
 
