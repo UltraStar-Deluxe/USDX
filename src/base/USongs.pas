@@ -231,19 +231,34 @@ begin
     for I := 0 to SongPaths.Count-1 do
       BrowseDir(SongPaths[I] as IPath);
 
-    if assigned(CatSongs) then
-      CatSongs.Refresh;
+    Log.LogStatus('I AM DONE WITH BROWSING DIRECTORIES', 'SongList');
 
-    if assigned(CatCovers) then
+    Log.LogStatus('I AM GOING TO MAYBE CatSongs.Refresh', 'SongList');
+    if assigned(CatSongs) then begin
+      Log.LogStatus('I AM GOING TO CatSongs.Refresh', 'SongList');
+      CatSongs.Refresh;
+      Log.LogStatus('I AM DONE WITH CatSongs.Refresh', 'SongList');
+    end;
+
+    Log.LogStatus('I AM GOING TO MAYBE CatCovers.Load', 'SongList');
+    if assigned(CatCovers) then begin
+      Log.LogStatus('I AM GOING TO CatCovers.Load', 'SongList');
       CatCovers.Load;
+      Log.LogStatus('I AM DONE WITH CatCovers.Load', 'SongList');
+    end;
 
     //if assigned(Covers) then
     //  Covers.Load;
 
+    Log.LogStatus('I AM GOING TO MAYBE do something with ScreenSong', 'SongList');
     if assigned(ScreenSong)  then
     begin
+      Log.LogStatus('I AM GOING TO ScreenSong.GenerateThumbnails', 'SongList');
       ScreenSong.GenerateThumbnails();
+      Log.LogStatus('I AM GOING DONE WITH ScreenSong.GenerateThumbnails', 'SongList');
+      Log.LogStatus('I AM GOING TO ScreenSong.OnShow', 'SongList');
       ScreenSong.OnShow; // refresh ScreenSong
+      Log.LogStatus('I AM DONE WITH ScreenSong.OnShow', 'SongList');
     end;
 
   finally
