@@ -288,8 +288,7 @@ procedure TScreenOptionsGame.ReloadSongMenu;
 begin
   if (Ini.Sorting <> old_Sorting) or (Ini.Tabs <> old_Tabs) or (old_SongMenu <> Ini.SongMenu) then
   begin
-    Theme.ThemeSongLoad;
-
+    Theme.ThemeSongReload;
     ScreenSong.Free;
     ScreenSong := TScreenSong.Create;
   end;

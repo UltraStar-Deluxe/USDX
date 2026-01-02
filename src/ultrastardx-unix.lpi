@@ -29,7 +29,7 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="126">
+    <Units Count="125">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -308,10 +308,6 @@
         <Filename Value="screens/UScreenEditSub.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit67>
-      <Unit68>
-        <Filename Value="screens/UScreenLevel.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit68>
       <Unit69>
         <Filename Value="screens/UScreenLoading.pas"/>
         <IsPartOfProject Value="True"/>

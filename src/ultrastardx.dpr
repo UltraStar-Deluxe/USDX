@@ -296,7 +296,6 @@ uses
   UScreenLoading          in 'screens\UScreenLoading.pas',
   UScreenMain             in 'screens\UScreenMain.pas',
   UScreenName             in 'screens\UScreenName.pas',
-  UScreenLevel            in 'screens\UScreenLevel.pas',
   UScreenSong             in 'screens\UScreenSong.pas',
   UScreenSingController   in 'screens\controllers\UScreenSingController.pas',
   UScreenSingView         in 'screens\views\UScreenSingView.pas',
