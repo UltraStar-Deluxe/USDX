@@ -52,7 +52,6 @@ uses
   UScreenLoading,
   UScreenMain,
   UScreenName,
-  UScreenLevel,
   UScreenOptions,
   UScreenOptionsGame,
   UScreenOptionsGraphics,
@@ -139,7 +138,6 @@ var
   ScreenLoading:      TScreenLoading;
   ScreenMain:         TScreenMain;
   ScreenName:         TScreenName;
-  ScreenLevel:        TScreenLevel;
   ScreenSong:         TScreenSong;
   ScreenSing:         TScreenSingController;
 
@@ -942,8 +940,7 @@ begin
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenMain & ScreenName'));
   ScreenMain :=             TScreenMain.Create;
   ScreenName :=             TScreenName.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenLevel & ScreenSong'));
-  ScreenLevel :=            TScreenLevel.Create;
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenSong'));
   ScreenSong :=             TScreenSong.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenSongMenu & ScreenJukebox'));
   ScreenSongMenu :=             TScreenSongMenu.Create;
@@ -1025,7 +1022,6 @@ procedure UnloadScreens;
 begin
   FreeAndNil(ScreenMain);
   FreeAndNil(ScreenName);
-  FreeAndNil(ScreenLevel);
   FreeAndNil(ScreenSong);
   //ScreenSing.Free;
   FreeAndNil(ScreenScore);
