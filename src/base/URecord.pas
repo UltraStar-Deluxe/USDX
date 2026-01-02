@@ -45,6 +45,9 @@ uses
 const
   BaseToneFreq = 440; // A4 concert pitch of 440 Hz
   NumHalftones = 49;  // C2 to C6 (1046.5023 Hz)
+  NAMDFEpsilon = 1.0e-6;
+  ToneStringOctaveOffset = 2;
+  MaxToneCandidates = 5;
 
 type
   // pitch detection algorithm (PDA)
@@ -57,6 +60,13 @@ type
   TDelayArray       = array[0..NumHalftones-1] of integer;
   TCorrelationArray = array[0..NumHalftones-1] of real;
 
+  TToneCandidate = record
+    ToneAbs: integer;
+    Confidence: single;
+    Correlation: real;
+    Frequency: real;
+  end;
+
   TCaptureBuffer = class
     private
       fVoiceStream: TAudioVoiceStream; // stream for voice passthrough
@@ -64,8 +74,12 @@ type
       fAudioFormat: TAudioFormatInfo;
       Frequencies: TFrequencyArray;
       Delays: TDelayArray;
+      fToneCandidates: array[0..MaxToneCandidates-1] of TToneCandidate;
+      fToneCandidateCount: integer;
 
       function GetToneString: string; // converts a tone to its string representation;
+      function GetToneCandidate(Index: integer): TToneCandidate;
+      function ComputeMaxWindowedRMS(): single;
 
       procedure BoostBuffer(Buffer: PByteArray; Size: integer);
       procedure ProcessNewBuffer(Buffer: PByteArray; BufferSize: integer);
@@ -73,6 +87,7 @@ type
       procedure StartCapture(Format: TAudioFormatInfo);
       procedure StopCapture();
 
+      procedure ResetToneDiagnostics;
       procedure SetFrequenciesAndDelays;
       // we call it to analyze sound by checking AMDF
       function AnalyzePitch(PDA: TPDAType): boolean;
@@ -80,6 +95,7 @@ type
       function AverageMagnitudeDifference(): TCorrelationArray;
       function CircularAverageMagnitudeDifference(): TCorrelationArray;
       function ArrayIndexOfMinimum(const AValues: array of real): Integer;
+      procedure UpdateToneCandidatesSimple(const Correlation: TCorrelationArray);
     public
       AnalysisBuffer:  array[0..4095] of smallint; // newest 4096 samples (MUST BE POWER OF TWO!)
       AnalysisBufferSize: integer; // number of samples of BufferArray to analyze
@@ -91,6 +107,9 @@ type
       ToneValid: boolean;    // true if Tone contains a valid value (otherwise it contains noise)
       Tone:      integer;    // tone relative to one octave (e.g. C2=C3=C4). Range: 0-11
       ToneAbs:   integer;    // absolute (full range) tone (e.g. C2<>C3). Range: 0..NumHalftones-1
+      RawToneValid: boolean;
+      RawTone:      integer;
+      RawToneAbs:   integer;
 
       // methods
       constructor Create;
@@ -105,6 +124,8 @@ type
 
       function MaxSampleVolume: single;
       property ToneString: string READ GetToneString;
+      property ToneCandidateCount: integer read fToneCandidateCount;
+      property ToneCandidates[Index: integer]: TToneCandidate read GetToneCandidate;
       property AudioFormat: TAudioFormatInfo READ fAudioFormat;
   end;
 
@@ -205,6 +226,7 @@ type
   PSmallIntArray = ^TSmallIntArray;
 
   function AudioInputProcessor(): TAudioInputProcessor;
+  function ToneAbsToString(const ToneAbs: integer): string;
 
 implementation
 
@@ -269,6 +291,7 @@ begin
   LogBuffer := TMemoryStream.Create;
   fAnalysisBufferLock := SDL_CreateMutex();
   AnalysisBufferSize := Length(AnalysisBuffer);
+  ResetToneDiagnostics;
 end;
 
 destructor TCaptureBuffer.Destroy;
@@ -292,6 +315,73 @@ begin
   SDL_UnlockMutex(fAnalysisBufferLock);
 end;
 
+procedure TCaptureBuffer.ResetToneDiagnostics;
+begin
+  fToneCandidateCount := 0;
+  FillChar(fToneCandidates, SizeOf(fToneCandidates), 0);
+  RawToneValid := false;
+  RawTone := -1;
+  RawToneAbs := -1;
+end;
+
+function TCaptureBuffer.GetToneCandidate(Index: integer): TToneCandidate;
+begin
+  if (Index >= 0) and (Index < fToneCandidateCount) then
+    Result := fToneCandidates[Index]
+  else
+  begin
+    Result.ToneAbs := -1;
+    Result.Confidence := 0;
+    Result.Correlation := 0;
+    Result.Frequency := 0;
+  end;
+end;
+
+function TCaptureBuffer.ComputeMaxWindowedRMS(): single;
+const
+  WindowSize = 512;
+  WindowStep = WindowSize div 2;
+var
+  SampleIndex: integer;
+  WindowEnd: integer;
+  WindowLength: integer;
+  SumSq: Int64;
+  Value: integer;
+  WindowVolume: single;
+  idx: integer;
+begin
+  Result := 0;
+  if AnalysisBufferSize <= 0 then
+    Exit;
+
+  SampleIndex := 0;
+  while SampleIndex < AnalysisBufferSize do
+  begin
+    WindowEnd := SampleIndex + WindowSize - 1;
+    if WindowEnd >= AnalysisBufferSize then
+      WindowEnd := AnalysisBufferSize - 1;
+    if WindowEnd < SampleIndex then
+      Break;
+
+    SumSq := 0;
+    for idx := SampleIndex to WindowEnd do
+    begin
+      Value := AnalysisBuffer[idx];
+      SumSq := SumSq + Int64(Value) * Int64(Value);
+    end;
+
+    WindowLength := WindowEnd - SampleIndex + 1;
+    if WindowLength > 0 then
+    begin
+      WindowVolume := Sqrt(SumSq / WindowLength) / -Low(Smallint);
+      if WindowVolume > Result then
+        Result := WindowVolume;
+    end;
+
+    Inc(SampleIndex, WindowStep);
+  end;
+end;
+
 procedure TCaptureBuffer.Clear;
 begin
   if assigned(LogBuffer) then
@@ -299,6 +389,7 @@ begin
   LockAnalysisBuffer();
   FillChar(AnalysisBuffer[0], Length(AnalysisBuffer) * SizeOf(SmallInt), 0);
   UnlockAnalysisBuffer();
+  ResetToneDiagnostics;
 end;
 
 procedure TCaptureBuffer.ProcessNewBuffer(Buffer: PByteArray; BufferSize: integer);
@@ -360,27 +451,17 @@ end;
 
 procedure TCaptureBuffer.AnalyzeBuffer;
 var
-  Volume:      single;
   MaxVolume:   single;
-  SampleIndex: integer;
   Threshold:   single;
 begin
   ToneValid := false;
   ToneAbs := -1;
   Tone    := -1;
+  ResetToneDiagnostics;
 
   LockAnalysisBuffer();
   try
-
-    // find maximum volume of first 1024 samples
-    MaxVolume := 0;
-    for SampleIndex := 0 to 1023 do
-    begin
-      Volume := Abs(AnalysisBuffer[SampleIndex]) / -Low(Smallint);
-      if Volume > MaxVolume then
-         MaxVolume := Volume;
-    end;
-
+    MaxVolume := ComputeMaxWindowedRMS();
     Threshold := IThresholdVals[Ini.ThresholdIndex];
 
     // check if signal has an acceptable volume (ignore background-noise)
@@ -412,6 +493,67 @@ begin
       LMinIdx := LValIdx;
 
   Result := LMinIdx;
+end;
+
+procedure TCaptureBuffer.UpdateToneCandidatesSimple(const Correlation: TCorrelationArray);
+const
+  WeightEpsilon = 1.0e-9;
+var
+  Weights: array[0..NumHalftones-1] of double;
+  idx: integer;
+  candidateIdx: integer;
+  bestIdx: integer;
+  totalWeight: double;
+begin
+  fToneCandidateCount := 0;
+  FillChar(fToneCandidates, SizeOf(fToneCandidates), 0);
+
+  for idx := 0 to NumHalftones-1 do
+  begin
+    if Correlation[idx] > 0 then
+      Weights[idx] := 1.0 / (Correlation[idx] + WeightEpsilon)
+    else if Correlation[idx] < 0 then
+      Weights[idx] := 1.0 / (Abs(Correlation[idx]) + WeightEpsilon)
+    else
+      Weights[idx] := 0;
+  end;
+
+  for candidateIdx := 0 to MaxToneCandidates-1 do
+  begin
+    bestIdx := -1;
+    for idx := 0 to NumHalftones-1 do
+    begin
+      if Weights[idx] <= 0 then
+        Continue;
+      if (bestIdx = -1) or (Weights[idx] > Weights[bestIdx]) then
+        bestIdx := idx;
+    end;
+    if bestIdx < 0 then
+      Break;
+
+    fToneCandidates[fToneCandidateCount].ToneAbs := bestIdx;
+    fToneCandidates[fToneCandidateCount].Frequency := Frequencies[bestIdx];
+    fToneCandidates[fToneCandidateCount].Correlation := Correlation[bestIdx];
+    fToneCandidates[fToneCandidateCount].Confidence := Weights[bestIdx];
+    Weights[bestIdx] := -1;
+    Inc(fToneCandidateCount);
+  end;
+
+  if (fToneCandidateCount = 0) and (ToneAbs >= 0) then
+  begin
+    fToneCandidates[0].ToneAbs := ToneAbs;
+    fToneCandidates[0].Frequency := Frequencies[ToneAbs];
+    fToneCandidates[0].Correlation := 0;
+    fToneCandidates[0].Confidence := 1;
+    fToneCandidateCount := 1;
+  end;
+
+  totalWeight := 0;
+  for idx := 0 to fToneCandidateCount-1 do
+    totalWeight := totalWeight + fToneCandidates[idx].Confidence;
+  if (totalWeight > 0) and (fToneCandidateCount > 0) then
+    for idx := 0 to fToneCandidateCount-1 do
+      fToneCandidates[idx].Confidence := fToneCandidates[idx].Confidence / totalWeight;
 end;
 
 procedure TCaptureBuffer.SetFrequenciesAndDelays;
@@ -450,7 +592,21 @@ begin
       end;
   end;
 
+  if ToneAbs < 0 then
+  begin
+    RawToneValid := false;
+    RawTone := -1;
+    RawToneAbs := -1;
+    UpdateToneCandidatesSimple(Correlation);
+    Result := false;
+    Exit;
+  end;
+
   Tone := ToneAbs mod 12;
+  RawToneValid := true;
+  RawTone := Tone;
+  RawToneAbs := ToneAbs;
+  UpdateToneCandidatesSimple(Correlation);
   Result := true;
 end;
 
@@ -489,19 +645,38 @@ var
   ToneIndex:   integer;
   Correlation: TCorrelationArray;
   SampleIndex: integer; // index of sample to analyze
+  DiffSum: double;
+  EnergySum: double;
+  EnergyNorm: double;
+  SampleA, SampleB: integer;
+  BufferMask: integer;
 begin
+  if AnalysisBufferSize <= 0 then
+  begin
+    FillChar(Correlation, SizeOf(Correlation), 0);
+    Result := Correlation;
+    Exit;
+  end;
+
+  BufferMask := AnalysisBufferSize - 1;
   // accumulate the magnitude differences for samples in AnalysisBuffer
   for ToneIndex := 0 to NumHalftones-1 do
   begin
-    Correlation[ToneIndex] := 0;
+    DiffSum := 0;
+    EnergySum := 0;
     for SampleIndex := 0 to (AnalysisBufferSize-1) do
     begin
       // Suggestion for calculation efficiency improvement from deuteragenie:
       // Replacing 'i mod buffersize' by 'i & (buffersize-1)' when i is positive and buffersize is a power of two should speed the modulo compuation by 5x-10x
       //Correlation[ToneIndex] += Abs(AnalysisBuffer[(SampleIndex+Delays[ToneIndex]) mod AnalysisBufferSize] - AnalysisBuffer[SampleIndex]);
-      Correlation[ToneIndex] := Correlation[ToneIndex] + Abs(AnalysisBuffer[(SampleIndex+Delays[ToneIndex]) and (AnalysisBufferSize-1)] - AnalysisBuffer[SampleIndex]);
+      SampleA := AnalysisBuffer[SampleIndex];
+      SampleB := AnalysisBuffer[(SampleIndex+Delays[ToneIndex]) and BufferMask];
+      DiffSum := DiffSum + Abs(SampleA - SampleB);
+      EnergySum := EnergySum + Int64(SampleA) * SampleA + Int64(SampleB) * SampleB;
     end;
-    Correlation[ToneIndex] := Correlation[ToneIndex] / AnalysisBufferSize;
+    EnergySum := EnergySum / (2 * AnalysisBufferSize);
+    EnergyNorm := Sqrt(EnergySum) + NAMDFEpsilon;
+    Correlation[ToneIndex] := DiffSum / EnergyNorm;
   end;
 
   // return circular average magnitude difference
@@ -533,10 +708,17 @@ const
     'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'
   );
 
+function ToneAbsToString(const ToneAbs: integer): string;
+begin
+  if ToneAbs < 0 then
+    Exit('-');
+  Result := ToneStrings[ToneAbs mod 12] + IntToStr(ToneAbs div 12 + ToneStringOctaveOffset);
+end;
+
 function TCaptureBuffer.GetToneString: string;
 begin
   if (ToneValid) then
-    Result := ToneStrings[Tone] + IntToStr(ToneAbs div 12 + 2)
+    Result := ToneAbsToString(ToneAbs)
   else
     Result := '-';
 end;
