@@ -266,6 +266,7 @@ begin
           ScoreLineInt   := 0;
           ScoreGoldenInt := 0;
           ScoreTotalInt  := 0;
+          ScorePerfectRemaining := MAX_SONG_SCORE;
 
           ScoreLast      := 0;
 
@@ -586,6 +587,7 @@ begin
           ScoreLineInt   := 0;
           ScoreGoldenInt := 0;
           ScoreTotalInt  := 0;
+          ScorePerfectRemaining := MAX_SONG_SCORE;
 
           ScoreLast      := 0;
 
@@ -877,6 +879,7 @@ begin
       ScoreLineInt   := 0;
       ScoreGoldenInt := 0;
       ScoreTotalInt  := 0;
+      ScorePerfectRemaining := MAX_SONG_SCORE;
 
       ScoreLast      := 0;
 
@@ -1768,9 +1771,19 @@ begin
         CurrentPlayer.ScoreGoldenInt
         + CurrentPlayer.ScoreLineInt;
 
+      // remove this line's potential after awarding its bonus
+      CurrentPlayer.ScorePerfectRemaining := CurrentPlayer.ScorePerfectRemaining - LineBonus;
+      if (CurrentPlayer.ScorePerfectRemaining < 0) then
+        CurrentPlayer.ScorePerfectRemaining := 0;
+
       // spawn rating pop-up
       Rating := Round(LinePerfection * MAX_LINE_RATING);
       Scores.SpawnPopUp(PlayerIndex, Rating, CurrentPlayer.ScoreTotalInt);
+
+      if (Scores <> nil) then
+        Scores.SetRemainingScore(PlayerIndex,
+          CurrentPlayer.ScorePerfectRemaining / MAX_SONG_SCORE,
+          CurrentPlayer.Score + CurrentPlayer.ScoreGolden + CurrentPlayer.ScoreLine);
 
       // PerfectLineTwinkle (effect), part 1
       if Ini.EffectSing = 1 then
