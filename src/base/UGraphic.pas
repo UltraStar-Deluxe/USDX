@@ -245,7 +245,6 @@ var
   //Sing Bar Mod
   Tex_SingBar_Back:  TTexture;
   Tex_SingBar_Bar:  TTexture;
-  Tex_SingBar_Front:  TTexture;
   //end Singbar Mod
 
   //PhrasenBonus - Line Bonus Mod
