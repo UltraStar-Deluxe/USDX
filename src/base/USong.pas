@@ -94,6 +94,13 @@ type
     Date:       UTF8String;
   end;
 
+  TAgeComparator = (acEqual, acLess, acLessOrEqual, acGreater, acGreaterOrEqual);
+
+  TAgeCondition = record
+    Comparator: TAgeComparator;
+    Value: integer;
+  end;
+
   { used to hold header tags that are not supported by this version of
     usdx (e.g. some tags from ultrastar 0.7.0) when songs are loaded in
     songeditor. They will be written the end of the song header }
@@ -170,6 +177,7 @@ type
     CreatorASCII:  UTF8String;
 
     Creator:    UTF8String;
+    Age:        Integer;
 
     CoverTex:   TTexture;
 
@@ -242,6 +250,10 @@ type
       constructor Create(RatioAspect, Width, Height, Position, Alpha: integer;
                 SingFillColor, ActualFillColor, NextFillColor, SingOutlineColor, ActualOutlineColor, NextOutlineColor: string);
   end;
+
+function ParseAgeCondition(const Input: UTF8String; out Condition: TAgeCondition): boolean;
+
+
 
 implementation
 
@@ -910,6 +922,58 @@ begin
   Result := StrToFloatDef(TempValue, 0);
 end;
 
+function ParseAgeCondition(const Input: UTF8String; out Condition: TAgeCondition): boolean;
+var
+  Normalized: UTF8String;
+  OperatorPart: UTF8String;
+  ValuePart: UTF8String;
+  Value: integer;
+begin
+  Result := false;
+
+  Normalized := Trim(Input);
+  if Normalized = '' then
+    Exit;
+
+  OperatorPart := '';
+  if (Length(Normalized) > 0) and (Normalized[1] in ['<', '>']) then
+  begin
+    OperatorPart := Normalized[1];
+    Delete(Normalized, 1, 1);
+    if (Length(Normalized) > 0) and (Normalized[1] = '=') then
+    begin
+      OperatorPart := OperatorPart + '=';
+      Delete(Normalized, 1, 1);
+    end;
+  end;
+
+  if OperatorPart = '' then
+    OperatorPart := '=';
+
+  ValuePart := Trim(Normalized);
+  if (ValuePart = '') or (not TryStrToInt(string(ValuePart), Value)) then
+    Exit;
+
+  if Value < 0 then
+    Exit;
+
+  if OperatorPart = '=' then
+    Condition.Comparator := acEqual
+  else if OperatorPart = '<' then
+    Condition.Comparator := acLess
+  else if OperatorPart = '<=' then
+    Condition.Comparator := acLessOrEqual
+  else if OperatorPart = '>' then
+    Condition.Comparator := acGreater
+  else if OperatorPart = '>=' then
+    Condition.Comparator := acGreaterOrEqual
+  else
+    Exit;
+
+  Condition.Value := Value;
+  Result := true;
+end;
+
 function TSong.ReadTXTHeader(SongFile: TTextFileStream; ReadCustomTags: Boolean): boolean;
 var
   Line, Identifier: string;
@@ -1261,6 +1325,15 @@ begin
 
     //Language Sorting
     ParseMultivaluedFilterHeaders('LANGUAGE', self.Language, self.LanguageASCII);
+
+    //Age metadata
+    self.Age := -1;
+    if (TagMap.TryGetData('AGE', Value)) then
+    begin
+      RemoveTagsFromTagMap('AGE');
+      if not TryStrtoInt(Value, self.Age) then
+        self.Age := -1;
+    end;
 
     //Tags Sorting
     if FormatVersion.MinVersion(1,0,0) then
@@ -1819,6 +1892,7 @@ begin
   Language := 'Unknown';
   Year := 0;
   Tags := '';
+  Age := 18;
 
   // set to default encoding
   Encoding := Ini.DefaultEncoding;
