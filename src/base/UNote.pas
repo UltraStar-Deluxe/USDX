@@ -85,6 +85,8 @@ type
     TeamID:         byte;
     PlayerID:       byte;
 
+    ScorePerfectRemaining: real;
+
     // LineBonus
     ScoreLast:      real;    // Last Line Score
 
@@ -228,6 +230,7 @@ begin
   _ScoreLineInt := 0;
   _ScoreGoldenInt := 0;
   _ScoreTotalInt := 0;
+  ScorePerfectRemaining := MAX_SONG_SCORE;
 end;
 
 function GetTimeForBeats(BPM, Beats: real): real;
@@ -394,6 +397,139 @@ begin
   end;
 end;
 
+procedure ConsumePerfectScorePotential(CP, OldBeat, CurrentBeat: integer; Screen: TScreenSingController);
+var
+  FirstBeat: integer;
+  LastBeat: integer;
+  LineIndex: integer;
+  NoteIndex: integer;
+  PlayerIndex: integer;
+  NoteFirstBeat: integer;
+  NoteLastBeat: integer;
+  OverlapFirstBeat: integer;
+  OverlapLastBeat: integer;
+  OverlapBeats: integer;
+  SentenceEnd: integer;
+  NonEmptySentenceCount: integer;
+  MaxSongPoints: integer;
+  NotePotential: real;
+  LinePotential: real;
+  PotentialPassed: real;
+  LineBonus: real;
+  Line: PLine;
+  Note: PLineFragment;
+begin
+  if (CP < 0) or (CP > High(CurrentSong.Tracks)) then
+    Exit;
+
+  FirstBeat := OldBeat + 1;
+  LastBeat := CurrentBeat;
+  if LastBeat < FirstBeat then
+    Exit;
+
+  NotePotential := 0;
+  if CurrentSong.Tracks[CP].ScoreValue > 0 then
+  begin
+    MaxSongPoints := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
+
+    for LineIndex := 0 to CurrentSong.Tracks[CP].High do
+    begin
+      Line := @CurrentSong.Tracks[CP].Lines[LineIndex];
+      if (Line.HighNote < 0) then
+        Continue;
+
+      if (Line.Notes[Line.HighNote].StartBeat + Line.Notes[Line.HighNote].Duration - 1 < FirstBeat) then
+        Continue;
+      if (Line.Notes[0].StartBeat > LastBeat) then
+        Break;
+
+      for NoteIndex := 0 to Line.HighNote do
+      begin
+        Note := @Line.Notes[NoteIndex];
+        if (Note.Duration <= 0) or (Note.NoteType = ntFreestyle) then
+          Continue;
+
+        NoteFirstBeat := Note.StartBeat;
+        NoteLastBeat := Note.StartBeat + Note.Duration - 1;
+        if NoteLastBeat < FirstBeat then
+          Continue;
+        if NoteFirstBeat > LastBeat then
+          Break;
+
+        OverlapFirstBeat := Max(NoteFirstBeat, FirstBeat);
+        OverlapLastBeat := Min(NoteLastBeat, LastBeat);
+        OverlapBeats := OverlapLastBeat - OverlapFirstBeat + 1;
+
+        if OverlapBeats > 0 then
+          NotePotential := NotePotential +
+            OverlapBeats *
+            (MaxSongPoints / CurrentSong.Tracks[CP].ScoreValue) *
+            ScoreFactor[Note.NoteType];
+      end;
+    end;
+  end;
+
+  LinePotential := 0;
+  NonEmptySentenceCount := Length(CurrentSong.Tracks[CP].Lines) - Screen.NumEmptySentences[CP];
+  if NonEmptySentenceCount > 0 then
+  begin
+    LineBonus := MAX_SONG_LINE_BONUS / NonEmptySentenceCount;
+
+    for LineIndex := 0 to CurrentSong.Tracks[CP].High do
+    begin
+      Line := @CurrentSong.Tracks[CP].Lines[LineIndex];
+      if (Line.HighNote < 0) or (Line.ScoreValue <= 0) then
+        Continue;
+
+      SentenceEnd := Line.Notes[Line.HighNote].StartBeat +
+        Line.Notes[Line.HighNote].Duration;
+
+      if SentenceEnd <= OldBeat then
+        Continue;
+      if Line.Notes[0].StartBeat > CurrentBeat then
+        Break;
+
+      if (OldBeat < SentenceEnd) and (CurrentBeat >= SentenceEnd) then
+        LinePotential := LinePotential + LineBonus;
+    end;
+  end;
+
+  PotentialPassed := NotePotential + LinePotential;
+  if PotentialPassed <= 0 then
+    Exit;
+
+  for PlayerIndex := 0 to PlayersPlay - 1 do
+  begin
+    if (not CurrentSong.isDuet) or (PlayerIndex mod 2 = CP) or (PlayersPlay = 1) then
+    begin
+      Player[PlayerIndex].ScorePerfectRemaining :=
+        Player[PlayerIndex].ScorePerfectRemaining - PotentialPassed;
+      if Player[PlayerIndex].ScorePerfectRemaining < 0 then
+        Player[PlayerIndex].ScorePerfectRemaining := 0;
+    end;
+  end;
+end;
+
+procedure UpdateRemainingScoreBar(CP: integer; Screen: TScreenSingController);
+var
+  PlayerIndex: integer;
+begin
+  if (Screen = nil) or (Screen.Scores = nil) then
+    Exit;
+
+  for PlayerIndex := 0 to High(Player) do
+  begin
+    if (not CurrentSong.isDuet) or (PlayerIndex mod 2 = CP) or (PlayersPlay = 1) then
+    begin
+      Screen.Scores.SetRemainingScore(
+        byte(PlayerIndex),
+        Player[PlayerIndex].ScorePerfectRemaining / MAX_SONG_SCORE,
+        Player[PlayerIndex].Score + Player[PlayerIndex].ScoreGolden + Player[PlayerIndex].ScoreLine
+      );
+    end;
+  end;
+end;
+
 procedure NewBeatDetect(Screen: TScreenSingController);
   var
     MaxCP, CP, SentenceEnd, StartLine, EndLine: integer;
@@ -422,6 +558,7 @@ begin
         EndLine := CurrentSong.Tracks[CP].High;
 
       NewNote(CP, Screen);
+      ConsumePerfectScorePotential(CP, LyricsState.OldBeatD, LyricsState.CurrentBeatD, Screen);
 
       for I := StartLine to EndLine do
       begin
@@ -436,6 +573,8 @@ begin
           end;
         end;
       end;
+
+      UpdateRemainingScoreBar(CP, Screen);
     end;
   end;
 end;
@@ -530,6 +669,39 @@ begin
         else
           LastPlayerNote := nil;
 
+        Line := nil;
+        CurrentLineFragment := nil;
+        CurrentNoteType := ntNormal;
+
+        if NoteAvailable then
+        begin
+          Line := @CurrentSong.Tracks[CP].Lines[SentenceDetected];
+          for LineFragmentIndex := 0 to Line.HighNote do
+          begin
+            if (Line.Notes[LineFragmentIndex].StartBeat <= ActualBeat) and
+               (Line.Notes[LineFragmentIndex].StartBeat + Line.Notes[LineFragmentIndex].Duration > ActualBeat) then
+            begin
+              CurrentLineFragment := @Line.Notes[LineFragmentIndex];
+              CurrentNoteType := CurrentLineFragment.NoteType;
+              Break;
+            end;
+          end;
+        end;
+
+        CurNotePoints := 0;
+        if (CurrentLineFragment <> nil) and (CurrentSong.Tracks[CP].ScoreValue > 0) then
+        begin
+          MaxSongPoints := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
+
+          // Note: ScoreValue is the sum of all note values of the song
+          // (MaxSongPoints / ScoreValue) is the points that a player
+          // gets for a hit of one beat of a normal note
+          // CurNotePoints is the amount of points that is meassured
+          // for a hit of the note per full beat
+          CurNotePoints := (MaxSongPoints / CurrentSong.Tracks[CP].ScoreValue) *
+            ScoreFactor[CurrentLineFragment.NoteType];
+        end;
+
         // analyze buffer
         CurrentSound.AnalyzeBuffer;
 
@@ -538,67 +710,43 @@ begin
         //LyricsState.Tone := LyricsState.Tone + Round(Random(3)) - 1;
 
         // add note if possible
-        if (CurrentSound.ToneValid and NoteAvailable) then
+        if (CurrentSound.ToneValid and (CurrentLineFragment <> nil)) then
         begin
-          CurrentNoteType := ntNormal;
-          Line := @CurrentSong.Tracks[CP].Lines[SentenceDetected];
-          // process until last note
-          for LineFragmentIndex := 0 to Line.HighNote do
+          // move players tone to proper octave
+          while (CurrentSound.Tone - CurrentLineFragment.Tone > 6) do
+            CurrentSound.Tone := CurrentSound.Tone - 12;
+
+          while (CurrentSound.Tone - CurrentLineFragment.Tone < -6) do
+            CurrentSound.Tone := CurrentSound.Tone + 12;
+
+          // half size notes patch
+          NoteHit := false;
+          ActualTone := CurrentSound.Tone;
+          if (ScreenSong.Mode = smNormal) or (ScreenSong.Mode = smMedley) then
+            Range := 2 - Player[PlayerIndex].Level
+          else
+            Range := 2 - Ini.Difficulty;
+
+          // check if the player hit the correct tone within the tolerated range
+          if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) or (CurrentLineFragment.NoteType = ntRap) or (CurrentLineFragment.NoteType = ntRapGolden) then
           begin
-            CurrentLineFragment := @Line.Notes[LineFragmentIndex];
-            if (CurrentLineFragment.StartBeat <= ActualBeat) and
-              (CurrentLineFragment.StartBeat + CurrentLineFragment.Duration > ActualBeat) then
-            begin
-              // set the current note type
-              CurrentNoteType := CurrentLineFragment.NoteType;
-              // compare notes (from song-file and from player)
+            // adjust the players tone to the correct one
+            // TODO: do we need to do this?
+            // Philipp: I think we do, at least when we draw the notes.
+            //          Otherwise the notehit thing would be shifted to the
+            //          correct unhit note. I think this will look kind of strange.
+            ActualTone := CurrentLineFragment.Tone;
 
-              // move players tone to proper octave
-              while (CurrentSound.Tone - CurrentLineFragment.Tone > 6) do
-                CurrentSound.Tone := CurrentSound.Tone - 12;
+            // half size notes patch
+            NoteHit := true;
 
-              while (CurrentSound.Tone - CurrentLineFragment.Tone < -6) do
-                CurrentSound.Tone := CurrentSound.Tone + 12;
-
-              // half size notes patch
-              NoteHit := false;
-              ActualTone := CurrentSound.Tone;
-              if (ScreenSong.Mode = smNormal) or (ScreenSong.Mode = smMedley) then
-                Range := 2 - Player[PlayerIndex].Level
-              else
-                Range := 2 - Ini.Difficulty;
-
-              // check if the player hit the correct tone within the tolerated range
-              if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) or (CurrentLineFragment.NoteType = ntRap) or (CurrentLineFragment.NoteType = ntRapGolden) then
-              begin
-                // adjust the players tone to the correct one
-                // TODO: do we need to do this?
-                // Philipp: I think we do, at least when we draw the notes.
-                //          Otherwise the notehit thing would be shifted to the
-                //          correct unhit note. I think this will look kind of strange.
-                ActualTone := CurrentLineFragment.Tone;
-
-                // half size notes patch
-                NoteHit := true;
-
-                MaxSongPoints := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
-
-                // Note: ScoreValue is the sum of all note values of the song
-                // (MaxSongPoints / ScoreValue) is the points that a player
-                // gets for a hit of one beat of a normal note
-                // CurNotePoints is the amount of points that is meassured
-                // for a hit of the note per full beat
-                CurNotePoints := (MaxSongPoints / CurrentSong.Tracks[CP].ScoreValue) * ScoreFactor[CurrentLineFragment.NoteType];
-
-                case CurrentLineFragment.NoteType of
-                  ntNormal:    CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
-                  ntGolden:    CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
-                  ntRap:       CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
-                  ntRapGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
-                end;
-              end;
-            end; // operation
-          end; // for
+            case CurrentLineFragment.NoteType of
+              ntNormal:    CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
+              ntGolden:    CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
+              ntRap:       CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
+              ntRapGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
+            end;
+          end; // operation
 
           // check if we have to add a new note or extend the note's length
           if (SentenceDetected = SentenceMax) then
