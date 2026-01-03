@@ -725,6 +725,7 @@ var
   medley_end:             boolean;
   medley_start_applause:  boolean;
   LastLineSungToEnd:      boolean;
+  ScoreMode:              TSingInfoBarMode;
 begin
   ScreenSing.Background.Draw;
 
@@ -1001,9 +1002,16 @@ begin
   // goldennotestarstwinkle
   GoldenRec.SpawnRec;
 
-  // draw scores
-  if (ScreenSing.Settings.ScoresVisible) and ((Ini.SingScores = 1) or (Party.bPartyGame)) then
+  // draw scores / info bars
+  ScoreMode := TSingInfoBarMode(EnsureRange(Ini.SingScores, 0, Ord(High(TSingInfoBarMode))));
+  if Party.bPartyGame and (ScoreMode = sibOff) then
+    ScoreMode := sibRatingOnly;
+
+  if (ScreenSing.Settings.ScoresVisible) and (ScoreMode <> sibOff) then
+  begin
+    ScreenSing.Scores.SetInfoBarMode(ScoreMode);
     ScreenSing.Scores.Draw;
+  end;
 
   FadeMessage();
 
