@@ -74,7 +74,8 @@ type
     fltGenre,
     fltYear,
     fltCreator,
-    fltTags
+    fltTags,
+    fltAge
   );
 
   TBPM = record
@@ -877,9 +878,37 @@ var
   I, J:      integer;
   TmpString: UTF8String;
   WordArray: array of UTF8String;
+  FilterCopy: UTF8String;
+  AgeFilterActive: boolean;
+  AgeFilterCondition: TAgeCondition;
+
+  function MatchesAgeCondition(SongAge: integer; const Condition: TAgeCondition): boolean;
+  begin
+    if SongAge = -1 then
+      SongAge := 18;
+
+    case Condition.Comparator of
+      acEqual:           Result := SongAge = Condition.Value;
+      acLess:            Result := SongAge < Condition.Value;
+      acLessOrEqual:     Result := SongAge <= Condition.Value;
+      acGreater:         Result := SongAge > Condition.Value;
+      acGreaterOrEqual:  Result := SongAge >= Condition.Value;
+    else
+      Result := false;
+    end;
+  end;
 begin
 
   FilterStr := Trim(LowerCase(TransliterateToASCII(FilterStr)));
+  FilterCopy := FilterStr;
+
+  AgeFilterActive := false;
+  if (Filter = fltAge) and (FilterStr <> '') then
+  begin
+    AgeFilterActive := ParseAgeCondition(FilterCopy, AgeFilterCondition);
+    if not AgeFilterActive then
+      FilterStr := '';
+  end;
 
   if (FilterStr <> '') then
   begin
@@ -904,40 +933,50 @@ begin
 
     for I := 0 to High(Song) do
     begin
-      if not Song[i].Main then
+      if Song[i].Main then
       begin
-        case Filter of
-          fltAll:
-            TmpString := Song[I].ArtistASCII + ' ' + Song[i].TitleASCII + ' ' + Song[i].LanguageASCII + ' ' + Song[i].EditionASCII + ' ' + Song[i].GenreASCII + ' ' + IntToStr(Song[i].Year) + ' ' + Song[i].CreatorASCII + ' ' + Song[i].TagsASCII; //+ ' ' + Song[i].Folder;
-          fltTitle:
-            TmpString := Song[I].TitleASCII;
-          fltArtist:
-            TmpString := Song[I].ArtistASCII;
-          fltLanguage:
-            TmpString := Song[I].LanguageASCII;
-          fltEdition:
-            TmpString := Song[I].EditionASCII;
-          fltGenre:
-            TmpString := Song[I].GenreASCII;
-          fltYear:
-            TmpString := IntToStr(Song[I].Year);
-          fltCreator:
-            TmpString := Song[I].CreatorASCII;
-          fltTags:
-            TmpString := Song[i].TagsASCII;
-        end;
-        Song[i].Visible := true;
-        // Look for every searched word
-        for J := 0 to High(WordArray) do
-        begin
-          Song[i].Visible := Song[i].Visible and
-                             UTF8ContainsStr(TmpString, WordArray[J])
-        end;
+        Song[i].Visible := false;
+        Continue;
+      end;
+
+      if Filter = fltAge then
+      begin
+        Song[i].Visible := AgeFilterActive and MatchesAgeCondition(Song[i].Age, AgeFilterCondition);
         if Song[i].Visible then
           Inc(Result);
-      end
-      else
-        Song[i].Visible := false;
+        Continue;
+      end;
+
+      case Filter of
+        fltAll:
+          TmpString := Song[I].ArtistASCII + ' ' + Song[i].TitleASCII + ' ' + Song[i].LanguageASCII + ' ' + Song[i].EditionASCII + ' ' + Song[i].GenreASCII + ' ' + IntToStr(Song[i].Year) + ' ' + Song[i].CreatorASCII + ' ' + Song[i].TagsASCII; //+ ' ' + Song[i].Folder;
+        fltTitle:
+          TmpString := Song[I].TitleASCII;
+        fltArtist:
+          TmpString := Song[I].ArtistASCII;
+        fltLanguage:
+          TmpString := Song[I].LanguageASCII;
+        fltEdition:
+          TmpString := Song[I].EditionASCII;
+        fltGenre:
+          TmpString := Song[I].GenreASCII;
+        fltYear:
+          TmpString := IntToStr(Song[I].Year);
+        fltCreator:
+          TmpString := Song[I].CreatorASCII;
+        fltTags:
+          TmpString := Song[i].TagsASCII;
+      end;
+
+      Song[i].Visible := true;
+      // Look for every searched word
+      for J := 0 to High(WordArray) do
+      begin
+        Song[i].Visible := Song[i].Visible and
+                           UTF8ContainsStr(TmpString, WordArray[J])
+      end;
+      if Song[i].Visible then
+        Inc(Result);
     end;
     CatNumShow := -2;
   end
