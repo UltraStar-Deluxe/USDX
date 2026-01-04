@@ -76,6 +76,8 @@ uses
   UScreenEditConvert,
   UScreenOpen,
   UScreenAbout,
+  UScreenKiosk,
+  UKioskMode,
   USkins,
   UScreenSongMenu,
   UScreenSongJumpto,
@@ -123,6 +125,8 @@ var
 
   CurrentWindowMode:      FullscreenModes;
   WindowModeDirty:        boolean;
+  KioskWindowModeOverridden: boolean;
+  KioskWindowModeRestore: FullscreenModes;
 
   RenderW:    integer;
   RenderH:    integer;
@@ -351,6 +355,7 @@ function LoadingThreadFunction: integer;
 
 procedure UpdateResolution;
 procedure UpdateVideoMode;
+procedure UpdateKioskWindowLock;
 
 procedure SetVideoMode(Mode: FullscreenModes);
 function SwitchVideoMode(Mode: FullscreenModes): FullscreenModes;
@@ -810,6 +815,42 @@ begin
   SetVideoMode(Mode);
 end;
 
+procedure UpdateKioskWindowLock;
+begin
+  if Screen = nil then
+    Exit;
+
+  if KioskMode.Active then
+  begin
+    if (CurrentWindowMode = Mode_Fullscreen) then
+    begin
+      if not KioskWindowModeOverridden then
+      begin
+        KioskWindowModeRestore := CurrentWindowMode;
+        KioskWindowModeOverridden := true;
+      end;
+      SetVideoMode(Mode_Borderless);
+    end;
+
+    SDL_SetHint(SDL_HINT_GRAB_KEYBOARD, '1');
+    SDL_SetWindowGrab(Screen, SDL_TRUE);
+  end
+  else
+  begin
+    if KioskWindowModeOverridden then
+    begin
+      KioskWindowModeOverridden := false;
+      if (CurrentWindowMode <> KioskWindowModeRestore) and (KioskWindowModeRestore >= Mode_Fullscreen) then
+        SetVideoMode(KioskWindowModeRestore)
+      else if (KioskWindowModeRestore = Mode_Windowed) and (CurrentWindowMode <> Mode_Windowed) then
+        SetVideoMode(Mode_Windowed);
+    end;
+
+    SDL_SetHint(SDL_HINT_GRAB_KEYBOARD, '0');
+    SDL_SetWindowGrab(Screen, SDL_FALSE);
+  end;
+end;
+
 procedure SetVideoMode(Mode: FullscreenModes);
   var
     Disp: TSDL_DisplayMode;
@@ -979,6 +1020,8 @@ begin
   ScreenOpen :=             TScreenOpen.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenAbout'));
   ScreenAbout :=             TScreenAbout.Create;
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenKiosk'));
+  ScreenKiosk :=            TScreenKiosk.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen About', 3); Log.BenchmarkStart(3);
   //ScreenSingModi :=         TScreenSingModi.Create;
   //Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Sing with Modi support', 3); Log.BenchmarkStart(3);
@@ -1010,6 +1053,7 @@ begin
   ScreenStatDetail :=       TScreenStatDetail.Create;
   ScreenCredits    :=       TScreenCredits.Create;
   SDL_SetWindowTitle(Screen, PChar(Title));
+  UpdateKioskWindowLock;
 end;
 
 function LoadingThreadFunction: integer;
@@ -1046,6 +1090,7 @@ begin
   FreeAndNil(ScreenTop5);
   FreeAndNil(ScreenOpen);
   FreeAndNil(ScreenAbout);
+  FreeAndNil(ScreenKiosk);
   //ScreenSingModi.Free;
   FreeAndNil(ScreenSongMenu);
   FreeAndNil(ScreenSongJumpto);

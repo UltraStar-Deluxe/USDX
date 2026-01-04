@@ -40,6 +40,7 @@ uses
 var
   CheckMouseButton: boolean; // for checking mouse motion
   MAX_FPS: Byte; // 0 to 255 is enough
+  KioskQuitAuthorized: boolean = false;
 
 
 procedure Main;
@@ -101,7 +102,8 @@ uses
   ULuaParty,
   ULuaScreenSing,
   UTime,
-  UWebcam;
+  UWebcam,
+  UKioskMode;
   //UVideoAcinerella;
 
 procedure Main;
@@ -382,8 +384,42 @@ begin
 
 end;
 
+procedure DoQuit; forward;
+
+procedure HandleKioskQuitPassword(Value: boolean; Data: Pointer);
+begin
+  if not Value then
+    Exit;
+
+  if not KioskMode.CheckPassword(ScreenPopupInsertUser.Password) then
+  begin
+    ScreenPopupError.ShowPopup(Language.Translate('SING_KIOSK_PASSWORD_INVALID'));
+    Exit;
+  end;
+
+  KioskQuitAuthorized := true;
+  DoQuit;
+end;
+
+procedure PromptKioskQuit;
+begin
+  ScreenPopupInsertUser.ShowPasswordPrompt(
+    Language.Translate('SING_KIOSK_EXIT_TITLE'),
+    Language.Translate('SING_KIOSK_EXIT_DESC'),
+    @HandleKioskQuitPassword,
+    nil);
+end;
+
 procedure DoQuit;
 begin
+  if KioskMode.Active and KioskMode.HasPassword and not KioskQuitAuthorized then
+  begin
+    PromptKioskQuit;
+    Exit;
+  end;
+
+  KioskQuitAuthorized := false;
+
   // if question option is enabled then show exit popup
   if (Ini.AskbeforeDel = 1) then
   begin
@@ -417,9 +453,7 @@ begin
     case Event.type_ of
       SDL_QUITEV:
       begin
-        Display.Fade := 0;
-        Display.NextScreenWithCheck := nil;
-        Display.CheckOK := true;
+        DoQuit;
       end;
 
       SDL_MOUSEMOTION, SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP, SDL_MOUSEWHEEL:
@@ -507,6 +541,14 @@ begin
         case Event.window.event of
           SDL_WINDOWEVENT_MOVED: OnWindowMoved(Event.window.data1, Event.window.data2);
           SDL_WINDOWEVENT_RESIZED: OnWindowResized(Event.window.data1, Event.window.data2);
+          SDL_WINDOWEVENT_FOCUS_LOST:
+            if KioskMode.Active then
+            begin
+              SDL_RaiseWindow(Screen);
+              UpdateKioskWindowLock;
+              if (ScreenPopupInfo <> nil) and (not ScreenPopupInfo.Visible) then
+                ScreenPopupInfo.ShowPopup(Language.Translate('SING_KIOSK_FOCUS_WARNING'));
+            end;
         end
       end;
       SDL_KEYDOWN, SDL_TEXTINPUT:
@@ -531,9 +573,16 @@ begin
           begin
             if (SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT) = KMOD_LALT) then
             begin
-              if SwitchVideoMode(Mode_Fullscreen) = Mode_Fullscreen then Ini.FullScreen := 1
-              else Ini.FullScreen := 0;
-              Ini.Save();
+              if KioskMode.Active then
+              begin
+                ScreenPopupError.ShowPopup(Language.Translate('SING_KIOSK_FULLSCREEN_LOCKED'));
+              end
+              else
+              begin
+                if SwitchVideoMode(Mode_Fullscreen) = Mode_Fullscreen then Ini.FullScreen := 1
+                else Ini.FullScreen := 0;
+                Ini.Save();
+              end;
 
               Break;
             end;
@@ -590,6 +639,11 @@ begin
 
             if (not SuppressKey and (Event.key.keysym.sym = SDLK_F11)) then // toggle full screen
             begin
+              if KioskMode.Active then
+              begin
+                ScreenPopupError.ShowPopup(Language.Translate('SING_KIOSK_FULLSCREEN_LOCKED'));
+                Break;
+              end;
               if (CurrentWindowMode <> Mode_Fullscreen) then // only switch borderless fullscreen in windowed mode
               begin
                 if SwitchVideoMode(Mode_Borderless) = Mode_Borderless then

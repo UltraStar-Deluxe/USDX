@@ -190,6 +190,7 @@ uses
   USong             in 'base\USong.pas',
   USongs            in 'base\USongs.pas',
   UIni              in 'base\UIni.pas',
+  UKioskMode        in 'base\UKioskMode.pas',
   UImage            in 'base\UImage.pas',
   ULyrics           in 'base\ULyrics.pas',
   UEditorLyrics     in 'base\UEditorLyrics.pas',
@@ -295,6 +296,7 @@ uses
   //------------------------------
   UScreenLoading          in 'screens\UScreenLoading.pas',
   UScreenMain             in 'screens\UScreenMain.pas',
+  UScreenKiosk            in 'screens\UScreenKiosk.pas',
   UScreenName             in 'screens\UScreenName.pas',
   UScreenSong             in 'screens\UScreenSong.pas',
   UScreenSingController   in 'screens\controllers\UScreenSingController.pas',

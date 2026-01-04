@@ -300,13 +300,14 @@ type
     ButtonStat:       TThemeButton;
     ButtonEditor:     TThemeButton;
     ButtonOptions:    TThemeButton;
+    ButtonKiosk:      TThemeButton;
     ButtonAbout:      TThemeButton;
     ButtonExit:       TThemeButton;
 
     TextDescription:      TThemeText;
     TextDescriptionLong:  TThemeText;
-    Description:          array[0..7] of UTF8String;
-    DescriptionLong:      array[0..7] of UTF8String;
+    Description:          array[0..8] of UTF8String;
+    DescriptionLong:      array[0..8] of UTF8String;
   end;
 
   TThemeName = class(TThemeBasic)
@@ -1504,6 +1505,7 @@ begin
       ThemeLoadButton(Main.ButtonStat, 'MainButtonStats');
       ThemeLoadButton(Main.ButtonEditor, 'MainButtonEditor');
       ThemeLoadButton(Main.ButtonOptions, 'MainButtonOptions');
+      ThemeLoadButton(Main.ButtonKiosk, 'MainButtonKiosk');
       ThemeLoadButton(Main.ButtonAbout, 'MainButtonAbout');
       ThemeLoadButton(Main.ButtonExit, 'MainButtonExit');
 
@@ -1521,10 +1523,12 @@ begin
       Main.DescriptionLong[4] := Language.Translate('SING_EDITOR_DESC');
       Main.Description[5] := Language.Translate('SING_GAME_OPTIONS');
       Main.DescriptionLong[5] := Language.Translate('SING_GAME_OPTIONS_DESC');
-      Main.Description[6] := Language.Translate('SING_ABOUT');
-      Main.DescriptionLong[6] := Language.Translate('SING_ABOUT_DESC');
-      Main.Description[7] := Language.Translate('SING_EXIT');
-      Main.DescriptionLong[7] := Language.Translate('SING_EXIT_DESC');
+      Main.Description[6] := Language.Translate('SING_KIOSK');
+      Main.DescriptionLong[6] := Language.Translate('SING_KIOSK_DESC');
+      Main.Description[7] := Language.Translate('SING_ABOUT');
+      Main.DescriptionLong[7] := Language.Translate('SING_ABOUT_DESC');
+      Main.Description[8] := Language.Translate('SING_EXIT');
+      Main.DescriptionLong[8] := Language.Translate('SING_EXIT_DESC');
 
       //Main Desc Text Translation End
 

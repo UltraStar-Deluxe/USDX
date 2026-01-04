@@ -172,7 +172,8 @@ uses
   UPathUtils,
   UNote,
   UFilesystem,
-  UUnicodeUtils;
+  UUnicodeUtils,
+  UKioskMode;
 
 constructor TSongs.Create();
 begin
@@ -541,6 +542,8 @@ begin
   for SongIndex := 0 to Songs.SongList.Count - 1 do
   begin
     CurSong := TSong(Songs.SongList[SongIndex]);
+    if not KioskMode.AllowsAge(CurSong.Age) then
+      Continue;
     // if tabs are on, add section buttons for each new section
     if (Ini.Tabs = 1) then
     begin
