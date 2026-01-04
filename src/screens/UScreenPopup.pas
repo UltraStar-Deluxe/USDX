@@ -80,6 +80,7 @@ type
     private
       fHandler: TPopupInsertUserHandler;
       fHandlerData: Pointer;
+      fPasswordOnly: boolean;
 
     public
       Visible: boolean; // whether the menu should be drawn
@@ -89,9 +90,12 @@ type
 
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      procedure SetInteraction(Num: integer); override;
       procedure OnShow; override;
       procedure ShowPopup(const Title: UTF8String; Msg: UTF8String; Handler: TPopupInsertUserHandler;
           HandlerData: Pointer);
+      procedure ShowPasswordPrompt(const Title: UTF8String; Msg: UTF8String; Handler: TPopupInsertUserHandler;
+        HandlerData: Pointer; const ConfirmKey: UTF8String = 'SING_KIOSK_UNLOCK');
       function Draw: boolean; override;
   end;
 
@@ -371,16 +375,21 @@ var
   Value: boolean;
   I: integer;
   Password_TMP: UTF8String;
+  ActiveField: integer;
 begin
   Result := true;
   if (PressedDown) then
   begin // Key Down
+    ActiveField := Interaction;
+    if fPasswordOnly and (ActiveField = 0) then
+      ActiveField := 1;
+
     // check normal keys
     if (IsPrintableChar(CharCode)) then
     begin
-      if (Interaction = 0) or (Interaction = 1) then
+      if ((ActiveField = 0) and (not fPasswordOnly)) or (ActiveField = 1) then
       begin
-        if (Interaction = 0) then
+        if (ActiveField = 0) then
         begin
           Button[0].Text[0].Text := Button[0].Text[0].Text + UCS4ToUTF8String(CharCode);
           Username := Username + UCS4ToUTF8String(CharCode);
@@ -405,14 +414,14 @@ begin
 
       SDLK_BACKSPACE :
       begin
-        if (Interaction = 0) or (Interaction = 1) then
+        if ((ActiveField = 0) and (not fPasswordOnly)) or (ActiveField = 1) then
         begin
-          Button[Interaction].Text[0].DeleteLastLetter();
+          Button[ActiveField].Text[0].DeleteLastLetter();
 
-          if (Interaction = 0) then
-            Username := Button[Interaction].Text[0].Text;
+          if (ActiveField = 0) then
+            Username := Button[0].Text[0].Text;
 
-          if (Interaction = 1) then
+          if (ActiveField = 1) then
           begin
             Password_TMP := '';
             for I := 1 to High(Password) do
@@ -430,9 +439,11 @@ begin
             Interaction := 2;
 
           Value := (Interaction = 2);
-          if (Interaction = 3) then
+          if (Interaction = 2) or (Interaction = 3) then
+          begin
             Visible := false;
             StopTextInput;
+          end;
           Result := false;
         end;
 
@@ -459,6 +470,7 @@ begin
 
   fHandler := nil;
   fHandlerData := nil;
+  fPasswordOnly := false;
 
   AddText(Theme.InsertUserPopup.TextInsertUser);
 
@@ -486,6 +498,14 @@ begin
   Interaction := 0;
 end;
 
+procedure TScreenPopupInsertUser.SetInteraction(Num: integer);
+begin
+  if fPasswordOnly and (Num = 0) then
+    inherited SetInteraction(1)
+  else
+    inherited SetInteraction(Num);
+end;
+
 function TScreenPopupInsertUser.Draw: boolean;
 begin
   glClear(GL_DEPTH_BUFFER_BIT);
@@ -505,6 +525,7 @@ begin
   StartTextInput;
   fHandler := Handler;
   fHandlerData := HandlerData;
+  fPasswordOnly := false;
 
   Text[0].Text := Language.Translate(Msg);
   Text[1].Text := Title;
@@ -525,6 +546,35 @@ begin
   Interaction := 0;
 
   Background.OnShow
+end;
+
+procedure TScreenPopupInsertUser.ShowPasswordPrompt(const Title: UTF8String; Msg: UTF8String;
+  Handler: TPopupInsertUserHandler; HandlerData: Pointer; const ConfirmKey: UTF8String = 'SING_KIOSK_UNLOCK');
+begin
+  Visible := true;
+  StartTextInput;
+  fHandler := Handler;
+  fHandlerData := HandlerData;
+  fPasswordOnly := true;
+
+  Text[0].Text := Language.Translate(Msg);
+  Text[1].Text := Title;
+
+  Button[0].Visible := false;
+  Button[1].Visible := true;
+  Button[2].Visible := true;
+  Button[3].Visible := true;
+
+  Password := '';
+  Username := '';
+
+  Button[1].Text[0].Text := '';
+  Button[2].Text[0].Text := Language.Translate(ConfirmKey);
+  Button[3].Text[0].Text := Language.Translate('MSG_INSERT_USER_CANCEL');
+
+  Interaction := 1;
+
+  Background.OnShow;
 end;
 
 { TScreenPopupSendScore }

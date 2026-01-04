@@ -265,6 +265,8 @@ uses
   UDisplay,
   UDrawTexture,
   UGraphic,
+  UKioskMode,
+  UScreenKiosk,
   ULanguage,
   ULog,
   UMain,
@@ -276,6 +278,16 @@ uses
   UMenuBackgroundTexture,
   UMenuBackgroundVideo,
   UMenuBackgroundFade;
+
+type
+  TKioskGuardAction = (kgaOptions, kgaKiosk);
+
+  PKioskGuardContext = ^TKioskGuardContext;
+  TKioskGuardContext = record
+    Target: PMenu;
+    Sound: TAudioPlaybackStream;
+    Action: TKioskGuardAction;
+  end;
 
 destructor TMenu.Destroy;
 var
@@ -1481,16 +1493,99 @@ begin
     end     }
 end;
 
-procedure TMenu.FadeTo(Screen: PMenu);
+procedure HandleKioskGuardPassword(Value: boolean; Data: Pointer); forward;
+
+function RequireKioskGuard(Screen: PMenu; out Action: TKioskGuardAction): boolean;
+begin
+  Result := KioskMode.Active and KioskMode.HasPassword and Assigned(Screen);
+  if not Result then
+    Exit;
+
+  if Screen = @ScreenOptions then
+    Action := kgaOptions
+  else if Screen = @ScreenKiosk then
+    Action := kgaKiosk
+  else
+    Result := false;
+end;
+
+procedure ShowKioskGuardPrompt(Context: PKioskGuardContext);
+var
+  MessageKey: UTF8String;
+begin
+  case Context^.Action of
+    kgaOptions: MessageKey := 'SING_KIOSK_PROMPT_OPTIONS';
+    kgaKiosk: MessageKey := 'SING_KIOSK_PROMPT_KIOSK';
+  end;
+
+  ScreenPopupInsertUser.ShowPasswordPrompt(
+    Language.Translate('SING_KIOSK_PROMPT_TITLE'),
+    Language.Translate(MessageKey),
+    @HandleKioskGuardPassword,
+    Context,
+    'SING_KIOSK_CONTINUE');
+end;
+
+procedure HandleKioskGuardPassword(Value: boolean; Data: Pointer);
+var
+  Context: PKioskGuardContext;
+begin
+  Context := PKioskGuardContext(Data);
+  try
+    if not Value then
+      Exit;
+
+    if not KioskMode.CheckPassword(ScreenPopupInsertUser.Password) then
+    begin
+      ScreenPopupError.ShowPopup(Language.Translate('SING_KIOSK_PASSWORD_INVALID'));
+      Exit;
+    end;
+
+    Display.Fade := 0;
+    Display.NextScreen := Context^.Target;
+    if Context^.Sound <> nil then
+      AudioPlayback.PlaySound(Context^.Sound);
+  finally
+    Dispose(Context);
+  end;
+end;
+
+function HandleKioskGuard(Screen: PMenu; const aSound: TAudioPlaybackStream): boolean;
+var
+  Action: TKioskGuardAction;
+  Context: PKioskGuardContext;
+begin
+  Result := RequireKioskGuard(Screen, Action);
+  if not Result then
+    Exit;
+
+  New(Context);
+  Context^.Target := Screen;
+  Context^.Sound := aSound;
+  Context^.Action := Action;
+  ShowKioskGuardPrompt(Context);
+end;
+
+procedure StartFade(Screen: PMenu; const aSound: TAudioPlaybackStream);
 begin
   Display.Fade := 0;
   Display.NextScreen := Screen;
+  if aSound <> nil then
+    AudioPlayback.PlaySound(aSound);
+end;
+
+procedure TMenu.FadeTo(Screen: PMenu);
+begin
+  if HandleKioskGuard(Screen, nil) then
+    Exit;
+  StartFade(Screen, nil);
 end;
 
 procedure TMenu.FadeTo(Screen: PMenu; aSound: TAudioPlaybackStream);
 begin
-  FadeTo( Screen );
-  AudioPlayback.PlaySound( aSound );
+  if HandleKioskGuard(Screen, aSound) then
+    Exit;
+  StartFade(Screen, aSound);
 end;
 
 procedure OnSaveEncodingError(Value: boolean; Data: Pointer);

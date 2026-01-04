@@ -149,6 +149,7 @@ begin
       if Song.Year        <> 0         then    SongFile.WriteLine('#YEAR:'      + IntToStr(Song.Year));
       if Song.Creator     <> ''        then    SongFile.WriteLine('#CREATOR:'   + EncodeToken(Song.Creator));
       if Song.Tags        <> ''        then    SongFile.WriteLine('#TAGS:'      + EncodeToken(Song.Tags));
+      if Song.Age        <> -1         then    SongFile.WriteLine('#AGE:'       + IntToStr(Song.Age));
 
       if Song.FormatVersion.MinVersion(1,0,0) then
         SongFile.WriteLine('#AUDIO:' + EncodeToken(Song.Audio.ToUTF8));

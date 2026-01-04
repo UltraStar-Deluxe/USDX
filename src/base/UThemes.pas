@@ -300,13 +300,14 @@ type
     ButtonStat:       TThemeButton;
     ButtonEditor:     TThemeButton;
     ButtonOptions:    TThemeButton;
+    ButtonKiosk:      TThemeButton;
     ButtonAbout:      TThemeButton;
     ButtonExit:       TThemeButton;
 
     TextDescription:      TThemeText;
     TextDescriptionLong:  TThemeText;
-    Description:          array[0..7] of UTF8String;
-    DescriptionLong:      array[0..7] of UTF8String;
+    Description:          array[0..8] of UTF8String;
+    DescriptionLong:      array[0..8] of UTF8String;
   end;
 
   TThemeName = class(TThemeBasic)
@@ -868,7 +869,7 @@ type
     Songsfound:       UTF8String;
     NoSongsfound:     UTF8String;
     CatText:          UTF8String;
-    IType:            array [0..8] of UTF8String;
+    IType:            array [0..9] of UTF8String;
   end;
 
   //Party Screens
@@ -1483,6 +1484,7 @@ begin
       ThemeLoadButton(Main.ButtonStat, 'MainButtonStats');
       ThemeLoadButton(Main.ButtonEditor, 'MainButtonEditor');
       ThemeLoadButton(Main.ButtonOptions, 'MainButtonOptions');
+      ThemeLoadButton(Main.ButtonKiosk, 'MainButtonKiosk');
       ThemeLoadButton(Main.ButtonAbout, 'MainButtonAbout');
       ThemeLoadButton(Main.ButtonExit, 'MainButtonExit');
 
@@ -1500,10 +1502,12 @@ begin
       Main.DescriptionLong[4] := Language.Translate('SING_EDITOR_DESC');
       Main.Description[5] := Language.Translate('SING_GAME_OPTIONS');
       Main.DescriptionLong[5] := Language.Translate('SING_GAME_OPTIONS_DESC');
-      Main.Description[6] := Language.Translate('SING_ABOUT');
-      Main.DescriptionLong[6] := Language.Translate('SING_ABOUT_DESC');
-      Main.Description[7] := Language.Translate('SING_EXIT');
-      Main.DescriptionLong[7] := Language.Translate('SING_EXIT_DESC');
+      Main.Description[6] := Language.Translate('SING_KIOSK');
+      Main.DescriptionLong[6] := Language.Translate('SING_KIOSK_DESC');
+      Main.Description[7] := Language.Translate('SING_ABOUT');
+      Main.DescriptionLong[7] := Language.Translate('SING_ABOUT_DESC');
+      Main.Description[8] := Language.Translate('SING_EXIT');
+      Main.DescriptionLong[8] := Language.Translate('SING_EXIT_DESC');
 
       //Main Desc Text Translation End
 
@@ -1981,6 +1985,7 @@ begin
       SongJumpto.IType[6] := Language.Translate('SONG_JUMPTO_TYPE7');
       SongJumpto.IType[7] := Language.Translate('SONG_JUMPTO_TYPE8');
       SongJumpto.IType[8] := Language.Translate('SONG_JUMPTO_TYPE9');
+      SongJumpto.IType[9] := Language.Translate('SONG_JUMPTO_TYPE10');
       SongJumpto.SongsFound := Language.Translate('SONG_JUMPTO_SONGSFOUND');
       SongJumpto.NoSongsFound := Language.Translate('SONG_JUMPTO_NOSONGSFOUND');
       SongJumpto.CatText := Language.Translate('SONG_JUMPTO_CATTEXT');
@@ -3425,6 +3430,7 @@ begin
 
   ThemeSaveButton(Main.ButtonEditor, 'MainButtonEditor');
   ThemeSaveButton(Main.ButtonOptions, 'MainButtonOptions');
+  ThemeSaveButton(Main.ButtonKiosk, 'MainButtonKiosk');
   ThemeSaveButton(Main.ButtonExit, 'MainButtonExit');
 
   ThemeSaveBasic(Name, 'Name');
