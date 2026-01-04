@@ -44,7 +44,7 @@
         <PackageName Value="LazUtils"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="130">
+    <Units Count="129">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -285,10 +285,6 @@
         <Filename Value="screens\UScreenEditSub.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit59>
-      <Unit60>
-        <Filename Value="screens\UScreenLevel.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit60>
       <Unit61>
         <Filename Value="screens\UScreenLoading.pas"/>
         <IsPartOfProject Value="True"/>
