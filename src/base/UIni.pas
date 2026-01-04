@@ -289,6 +289,10 @@ type
       DefaultEncoding: TEncoding;
       LastReadNames: LongInt;
 
+      // Kiosk mode
+      KioskAgeLimit: integer;
+      KioskPasswordHash: UTF8String;
+
       procedure Load();
       procedure Save();
       procedure SaveNames;
@@ -604,7 +608,8 @@ uses
   USkins,
   UThemes,
   UPathUtils,
-  UUnicodeUtils;
+  UUnicodeUtils,
+  UKioskMode;
 
 const
   IGNORE_INDEX = -1;
@@ -1579,6 +1584,11 @@ begin
   // DefaultEncoding
   DefaultEncoding := ParseEncoding(IniFile.ReadString('Lyrics', 'Encoding', ''), encAuto);
 
+  // Kiosk
+  KioskAgeLimit := IniFile.ReadInteger('Kiosk', 'AgeLimit', KioskAgeNoLimit);
+  KioskPasswordHash := IniFile.ReadString('Kiosk', 'PasswordHash', '');
+  KioskMode.Restore(KioskAgeLimit, KioskPasswordHash, false);
+
   LoadThemes(IniFile);
 
   LoadInputDeviceCfg(IniFile);
@@ -1898,6 +1908,10 @@ begin
 
     // Lyrics Effect
     IniFile.WriteString('Lyrics', 'LyricsEffect', ILyricsEffect[LyricsEffect]);
+
+    // Kiosk
+    IniFile.WriteInteger('Kiosk', 'AgeLimit', KioskAgeLimit);
+    IniFile.WriteString('Kiosk', 'PasswordHash', KioskPasswordHash);
 
     // NoteLines
     IniFile.WriteString('Lyrics', 'NoteLines', INoteLines[NoteLines]);

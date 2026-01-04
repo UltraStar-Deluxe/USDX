@@ -84,6 +84,7 @@ type
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
+      procedure ResetSongButtons;
     public
       TextArtist:   integer;
       TextTitle:    integer;
@@ -1991,6 +1992,22 @@ begin
   end;
 end;
 
+procedure TScreenSong.ResetSongButtons;
+var
+  I: integer;
+begin
+  for I := 0 to High(Button) do
+  begin
+    if Assigned(Button[I]) then
+      Button[I].Free;
+  end;
+
+  SetLength(Button, 0);
+  SetLength(Interactions, 0);
+  ButtonPos := -1;
+  SelInteraction := 0;
+end;
+
 procedure TScreenSong.GenerateThumbnails();
 var
   I: integer;
@@ -2000,8 +2017,13 @@ var
   CoverFile: IPath;
   Song: TSong;
 begin
+  ResetSongButtons;
+
   if (Length(CatSongs.Song) <= 0) then
+  begin
+    Interaction := 0;
     Exit;
+  end;
 
   // set length of button array once instead for every song
   SetButtonLength(Length(CatSongs.Song));
@@ -2112,7 +2134,14 @@ begin
 end;
 
 procedure TScreenSong.SetScrollRefresh;
+var
+  HasSelection: boolean;
 begin
+  HasSelection := (Length(Button) > 0) and (Length(CatSongs.Song) > 0) and
+                  (Interaction >= Low(Button)) and (Interaction <= High(Button)) and
+                  (Interaction >= Low(CatSongs.Song)) and (Interaction <= High(CatSongs.Song)) and
+                  (CatSongs.VisibleSongs > 0);
+
   case TSongMenuMode(Ini.SongMenu) of
     smRoulette: SetRouletteScrollRefresh;
     smChessboard: SetChessboardScrollRefresh;
@@ -2122,13 +2151,37 @@ begin
     smList: SetListScrollRefresh;
     smMosaic: SetChessboardScrollRefresh;
   end;
-  {if Button[Interaction].Texture.TexNum > 0 then
+
+  if not HasSelection then
+    Exit;
+
+  if (TSongMenuMode(Ini.SongMenu) <> smList) then
   begin
-    glDeleteTextures(1, PGLuint(@Button[Interaction].Texture.TexNum));
-    Button[Interaction].Texture.TexNum := 0;
+    // Set visibility of video icon
+    Statics[VideoIcon].Visible := CatSongs.Song[Interaction].Video.IsSet;
+
+    // Set visibility of medley icons
+    Statics[MedleyIcon].Visible := (CatSongs.Song[Interaction].Medley.Source = msTag);
+    Statics[CalcMedleyIcon].Visible := (CatSongs.Song[Interaction].Medley.Source = msCalculated);
+
+    //Set Visibility of Duet Icon
+    Statics[DuetIcon].Visible := CatSongs.Song[Interaction].isDuet;
+
+    //Set Visibility of Rap Icons
+    Statics[RapIcon].Visible := CatSongs.Song[Interaction].hasRap and not RapToFreestyle;
+    Statics[RapToFreestyleIcon].Visible := CatSongs.Song[Interaction].hasRap and RapToFreestyle;
+
+    // Set texts
+    Text[TextArtist].Size := Theme.Song.TextArtist.Size; // reset in case it was previously decreased by a too long artist
+    Text[TextArtist].Text := CatSongs.Song[Interaction].Artist;
+    Text[TextTitle].Size := Theme.Song.TextTitle.Size; // reset in case it was previously decreased by a too long title
+    Text[TextTitle].Text  :=  CatSongs.Song[Interaction].Title;
+    if ((Ini.Tabs = 0) or (TSortingType(Ini.Sorting) <> sYear))
+      and (CatSongs.Song[Interaction].Year <> 0) then
+        Text[TextYear].Text  :=  InttoStr(CatSongs.Song[Interaction].Year)
+    else
+      Text[TextYear].Text  :=  '';
   end;
-  Button[Interaction].Texture := Covers.FindCover(Button[Interaction].Texture.Name).GetTexture();}
-  //basisbit todo here
 end;
 
 procedure TScreenSong.SetScroll;
@@ -2925,23 +2978,36 @@ var
   B, Count, I:  integer;
   SongID: array of integer;
   Alpha: real;
+  HasSelection: boolean;
 begin
-  if Statics[StaticActual].Texture.Name <> Skin.GetTextureFileName('SongCover') then
+  HasSelection := (Length(Button) > 0) and (Length(CatSongs.Song) > 0) and
+                  (Interaction >= Low(Button)) and (Interaction <= High(Button)) and
+                  (CatSongs.VisibleSongs > 0);
+
+  if HasSelection then
   begin
-    glDeleteTextures(1, PGLuint(@Statics[StaticActual].Texture.TexNum));
+    if Statics[StaticActual].Texture.Name <> Skin.GetTextureFileName('SongCover') then
+    begin
+      glDeleteTextures(1, PGLuint(@Statics[StaticActual].Texture.TexNum));
+    end;
+
+    Statics[StaticActual].Texture := Covers.FindCover(Button[Interaction].Texture.Name).GetTexture();
+    Statics[StaticActual].Texture.Alpha := 1;
+
+    Statics[StaticActual].Texture.X := Theme.Song.Cover.SelectX;
+    Statics[StaticActual].Texture.Y := Theme.Song.Cover.SelectY;
+    Statics[StaticActual].Texture.W := Theme.Song.Cover.SelectW;
+    Statics[StaticActual].Texture.H := Theme.Song.Cover.SelectH;
+    Statics[StaticActual].Texture.Z := 1;
+
+    Statics[StaticActual].Reflection := Theme.Song.Cover.SelectReflection;
+    Statics[StaticActual].Reflectionspacing := Theme.Song.Cover.SelectReflectionSpacing;
+    Statics[StaticActual].Visible := true;
+  end
+  else
+  begin
+    Statics[StaticActual].Visible := false;
   end;
-
-  Statics[StaticActual].Texture := Covers.FindCover(Button[Interaction].Texture.Name).GetTexture();
-  Statics[StaticActual].Texture.Alpha := 1;
-
-  Statics[StaticActual].Texture.X := Theme.Song.Cover.SelectX;
-  Statics[StaticActual].Texture.Y := Theme.Song.Cover.SelectY;
-  Statics[StaticActual].Texture.W := Theme.Song.Cover.SelectW;
-  Statics[StaticActual].Texture.H := Theme.Song.Cover.SelectH;
-  Statics[StaticActual].Texture.Z := 1;
-
-  Statics[StaticActual].Reflection := Theme.Song.Cover.SelectReflection;
-  Statics[StaticActual].Reflectionspacing := Theme.Song.Cover.SelectReflectionSpacing;
 
   for I := 0 to High(StaticsList) do
   begin
@@ -2961,6 +3027,9 @@ begin
     StaticsList[I].Texture.H := Theme.Song.ListCover.H;
     StaticsList[I].Texture.X := Theme.Song.ListCover.X;
   end;
+
+  if not HasSelection then
+    Exit;
 
   Count := 0;
   B := 0;
@@ -4323,8 +4392,50 @@ begin
 end;
 
 procedure TScreenSong.Refresh;
+var
+  PrevSong: TSong;
+  PrevIndex, I: integer;
 begin
+  if not Assigned(CatSongs) then
+    Exit;
 
+  PrevSong := nil;
+  PrevIndex := -1;
+  if (Length(CatSongs.Song) > 0) and
+     (Interaction >= Low(CatSongs.Song)) and
+     (Interaction <= High(CatSongs.Song)) then
+  begin
+    PrevSong := CatSongs.Song[Interaction];
+  end;
+
+  CatSongs.Refresh;
+  GenerateThumbnails;
+
+  if Assigned(PrevSong) then
+  begin
+    for I := 0 to High(CatSongs.Song) do
+    begin
+      if CatSongs.Song[I] = PrevSong then
+      begin
+        PrevIndex := I;
+        Break;
+      end;
+    end;
+  end;
+
+  if (PrevIndex >= 0) then
+    Interaction := PrevIndex
+  else
+    Interaction := 0;
+
+  ListMinLine := 0;
+  ChessboardMinLine := 0;
+
+  if (CatSongs.VisibleSongs > 0) then
+  begin
+    FixSelected;
+    SetScrollRefresh;
+  end;
 end;
 
 //start Medley round

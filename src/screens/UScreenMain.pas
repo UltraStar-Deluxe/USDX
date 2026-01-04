@@ -40,6 +40,7 @@ uses
   UMenu,
   UMusic,
   UScreenSong,
+  UScreenKiosk,
   USong,
   UThemes,
   MD5,
@@ -134,6 +135,11 @@ begin
 
       SDLK_A: begin
         FadeTo(@ScreenAbout, SoundLib.Start);
+        Exit;
+      end;
+
+      SDLK_K: begin
+        FadeTo(@ScreenKiosk, SoundLib.Start);
         Exit;
       end;
 
@@ -234,14 +240,20 @@ begin
           FadeTo(@ScreenOptions, SoundLib.Start);
         end;
 
-        //About
+        //Kiosk
         if Interaction = 6 then
+        begin
+          FadeTo(@ScreenKiosk, SoundLib.Start);
+        end;
+
+        //About
+        if Interaction = 7 then
         begin
           FadeTo(@ScreenAbout, SoundLib.Start);
         end;
 
         //Exit
-        if Interaction = 7 then
+        if Interaction = 8 then
         begin
           Result := false;
         end;
@@ -293,6 +305,7 @@ begin
   AddButton(Theme.Main.ButtonStat);
   AddButton(Theme.Main.ButtonEditor);
   AddButton(Theme.Main.ButtonOptions);
+  AddButton(Theme.Main.ButtonKiosk);
   AddButton(Theme.Main.ButtonAbout);
   AddButton(Theme.Main.ButtonExit);
 
