@@ -1211,6 +1211,12 @@ begin
 
   if PlaySentenceMidi then
   begin
+    {$IFDEF UseMIDIPort}
+    if PlayOneMidi then
+      StopMidi;
+    {$ENDIF}
+    PlayOneMidi := false;
+    midinotefound := false;
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO_AND_MIDI');
     ConfigureMidiPlayback(PlaybackStart, SentenceEndTime);
   end;
@@ -1660,6 +1666,7 @@ begin
     PlayMidiTone(NoteTone);
     {$ENDIF}
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_NOTE_MIDI');
+    midinotefound := true;
   end
   else
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_NOTE_AUDIO');
@@ -3166,16 +3173,16 @@ end;
 
 procedure TScreenEditSub.PlayMidiTone(const Tone: Integer);
 var
-  MidiTone: Integer;
+  MidiNote: Integer;
 begin
-  MidiTone := EnsureRange(Tone + 60, 0, 127);
+  MidiNote := EnsureRange(Tone + 60, 0, 127);
 
   if MidiActive then
     MidiOut.PutShort(MIDI_NOTEOFF or 1, MidiTone + 60, 0);
 
   MidiOut.PutShort($B1, $7, GetMidiVolume());
-  MidiOut.PutShort($91, MidiTone, 127);
-  MidiTone := MidiTone - 60;
+  MidiOut.PutShort($91, MidiNote, 127);
+  MidiTone := MidiNote - 60;
   MidiActive := true;
 end;
 
@@ -5677,10 +5684,11 @@ begin
   begin
     MidiPos := AudioPlayback.Position - MidiAnchorPos + MidiStart;
     // stop the music
-    if ((MidiPos > MidiStop))  then // and (midinotefound)
+    if ((MidiPos >= MidiStop))  then // and (midinotefound)
     begin
       StopMidi;
       PlayOneMidi := false;
+      midinotefound := false;
     end;
 
     // click
