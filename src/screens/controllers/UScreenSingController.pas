@@ -1702,7 +1702,6 @@ var
   LineBonus: real;
   MaxSongScore: integer; // max. points for the song (without line bonus)
   MaxLineScore: real;    // max. points for the current line
-  Index: integer;
 const
   // TODO: move this to a better place
   MAX_LINE_RATING = 8;        // max. rating for singing performance
@@ -1724,8 +1723,6 @@ begin
 
   for PlayerIndex := 0 to High(Player) do
   begin
-    //PlayerIndex := Index;
-
     if (not CurrentSong.isDuet) or (PlayerIndex mod 2 = Track) or (PlayersPlay = 1)then
     begin
       CurrentPlayer := @Player[PlayerIndex];
