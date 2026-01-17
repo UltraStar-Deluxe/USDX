@@ -2513,6 +2513,7 @@ begin
           begin
             UTF8Delete(CurrentEditText, TextPosition, 1);
             dec(TextPosition);
+            dec(editLengthText);
             if TextEditMode then
             begin
               CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
@@ -2523,7 +2524,17 @@ begin
         end;
       SDLK_DELETE:
         begin
+          if (TextPosition >= 0) and (TextPosition < editLengthText) then
+          begin
             UTF8Delete(CurrentEditText, TextPosition+1, 1);
+            dec(editLengthText);
+            if TextEditMode then
+            begin
+              CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text := UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition);
+              EditorLyrics[CurrentTrack].AddLine(CurrentTrack, CurrentSong.Tracks[CurrentTrack].CurrentLine);
+              EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+            end;
+          end;
         end;
 
       SDLK_RIGHT:
@@ -2534,10 +2545,25 @@ begin
             if (TextPosition >= 0) and (TextPosition < editLengthText-1) then
                 TextPosition := TextPosition + 1
             else
+            begin
+              if TextEditMode then
               begin
-              // todo change to next note
-              TextPosition := 0;
-              end;
+                CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
+                Inc(CurrentNote[CurrentTrack]);
+                if CurrentNote[CurrentTrack] > CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].HighNote then
+                  CurrentNote[CurrentTrack] := 0;
+                CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
+                CurrentEditText := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
+                BackupEditText := CurrentEditText;
+                editLengthText := LengthUTF8(CurrentEditText);
+                TextPosition := 0;
+                EditorLyrics[CurrentTrack].AddLine(CurrentTrack, CurrentSong.Tracks[CurrentTrack].CurrentLine);
+                EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+                ShowInteractiveBackground;
+              end
+              else
+                TextPosition := 0;
+            end;
           end;
         end;
       SDLK_LEFT:
@@ -2548,10 +2574,25 @@ begin
             if TextPosition > 0 then
                 TextPosition := TextPosition - 1
             else
+            begin
+              if TextEditMode then
               begin
-                // todo change to next note
+                CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
+                Dec(CurrentNote[CurrentTrack]);
+                if CurrentNote[CurrentTrack] < 0 then
+                  CurrentNote[CurrentTrack] := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].HighNote;
+                CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
+                CurrentEditText := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
+                BackupEditText := CurrentEditText;
+                editLengthText := LengthUTF8(CurrentEditText);
+                TextPosition := editLengthText;
+                EditorLyrics[CurrentTrack].AddLine(CurrentTrack, CurrentSong.Tracks[CurrentTrack].CurrentLine);
+                EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+                ShowInteractiveBackground;
+              end
+              else
                 TextPosition := editLengthText-1;
-              end;
+            end;
           end;
         end;
       // SDLK_KP_DIVIDE is a temporary workaround for German keyboards
@@ -2779,6 +2820,8 @@ var
   Action: TMouseClickAction;
   TempR:  real;
   i:      Integer;
+  CursorWordIndex: Integer;
+  CursorCharIndex: Integer;
 begin
   // transfer mousecords to the 800x600 raster we use to draw
   X := Round((X / (ScreenW / Screens)) * RenderW);
@@ -2792,6 +2835,38 @@ begin
   Result := true;
   nBut := InteractAt(X, Y);
   Action := maNone;
+
+  if BtnDown and (MouseButton = SDL_BUTTON_LEFT) and (nBut = -1) then
+  begin
+    if EditorLyrics[CurrentTrack].GetCursorFromPoint(CurrentX, CurrentY, CursorWordIndex, CursorCharIndex) then
+    begin
+      CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
+      CurrentNote[CurrentTrack] := CursorWordIndex;
+      CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
+      EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+
+      TitleEditMode := false;
+      ArtistEditMode := false;
+      LanguageEditMode := false;
+      EditionEditMode := false;
+      GenreEditMode := false;
+      YearEditMode := false;
+      CreatorEditMode := false;
+      P1EditMode := false;
+      P2EditMode := false;
+      BPMEditMode := false;
+
+      BackupEditText := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
+      CurrentEditText := BackupEditText;
+      editLengthText := LengthUTF8(CurrentEditText);
+      TextPosition := EnsureRange(CursorCharIndex, 0, editLengthText);
+      CurrentSlideId := LyricSlideId;
+      TextEditMode := true;
+      StartTextInput;
+      ShowInteractiveBackground;
+      Exit;
+    end;
+  end;
 
   if nBut >= 0 then
   begin
@@ -3575,12 +3650,27 @@ var
   CurrentLine: Integer;
   LineIndex:   Integer;
   NoteIndex:   Integer;
+  DeletedText: UTF8String;
+  PrevText:    UTF8String;
+  NextText:    UTF8String;
 begin
   CurrentLine := CurrentSong.Tracks[CurrentTrack].CurrentLine;
 
   //Do Not delete Last Note
   if (CurrentSong.Tracks[CurrentTrack].Lines[CurrentLine].HighNote > 0) then
   begin
+    if (CurrentNote[CurrentTrack] > 0) and (CurrentNote[CurrentTrack] < CurrentSong.Tracks[CurrentTrack].Lines[CurrentLine].HighNote) then
+    begin
+      DeletedText := CurrentSong.Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
+      if Pos(' ', DeletedText) > 0 then
+      begin
+        PrevText := CurrentSong.Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote[CurrentTrack]-1].Text;
+        NextText := CurrentSong.Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote[CurrentTrack]+1].Text;
+        if not ((Length(PrevText) > 0) and (PrevText[Length(PrevText)] = ' ') or (Length(NextText) > 0) and (NextText[1] = ' ')) then
+          CurrentSong.Tracks[CurrentTrack].Lines[CurrentLine].Notes[CurrentNote[CurrentTrack]-1].Text := PrevText + ' ';
+      end;
+    end;
+
     // we copy all notes from the next to the selected one
     for NoteIndex := CurrentNote[CurrentTrack]+1 to CurrentSong.Tracks[CurrentTrack].Lines[CurrentLine].HighNote do
     begin
@@ -5782,6 +5872,10 @@ begin
   GoldenRec.SpawnRec;
 
   // draw text
+  if TextEditMode then
+    EditorLyrics[CurrentTrack].SetCursor(CurrentNote[CurrentTrack], TextPosition)
+  else
+    EditorLyrics[CurrentTrack].ClearCursor;
   EditorLyrics[CurrentTrack].Draw;
 
   //video

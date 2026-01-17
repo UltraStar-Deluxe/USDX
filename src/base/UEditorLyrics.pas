@@ -66,6 +66,9 @@ type
       FontFamilyI: integer;         // font number
       FontStyleI:  integer;         // font style number
       Word:        array of TWord;
+      CursorVisible:   boolean;
+      CursorWordIndex: integer;
+      CursorCharIndex: integer;
 
       procedure SetX(Value: real);
       procedure SetY(Value: real);
@@ -78,6 +81,9 @@ type
       procedure SetFontStyle(Value: integer);
       procedure AddWord(Text: UTF8String);
       procedure Refresh;
+      function GetCharIndexAtX(const WordIndex: integer; const X: real): integer;
+      function GetCharIndexAtXInternal(const WordIndex: integer; const X, BaseX: real;
+        const CursorIndex: integer; const CursorWidth: real): integer;
     public
       DColR:   real;
       DColG:   real;
@@ -91,6 +97,10 @@ type
       destructor Destroy; override;
 
       procedure AddLine(CurrentTrack, CurrentLine: integer);
+
+      procedure SetCursor(WordIndex, CharIndex: integer);
+      procedure ClearCursor;
+      function GetCursorFromPoint(const X, Y: real; out WordIndex, CharIndex: integer): boolean;
 
       procedure Clear;
       procedure Draw;
@@ -112,11 +122,15 @@ uses
   UGraphic,
   UDrawTexture,
   Math,
+  UUnicodeUtils,
   USkins;
 
 constructor TEditorLyrics.Create;
 begin
   inherited;
+  CursorVisible := false;
+  CursorWordIndex := -1;
+  CursorCharIndex := 0;
 end;
 
 destructor TEditorLyrics.Destroy;
@@ -236,6 +250,198 @@ begin
   Selected := -1;
 end;
 
+procedure TEditorLyrics.SetCursor(WordIndex, CharIndex: integer);
+begin
+  CursorVisible := true;
+  CursorWordIndex := WordIndex;
+  if (CursorWordIndex >= 0) and (CursorWordIndex <= High(Word)) then
+    CursorCharIndex := EnsureRange(CharIndex, 0, LengthUTF8(Word[CursorWordIndex].Text))
+  else
+    CursorCharIndex := 0;
+end;
+
+procedure TEditorLyrics.ClearCursor;
+begin
+  CursorVisible := false;
+  CursorWordIndex := -1;
+  CursorCharIndex := 0;
+end;
+
+function TEditorLyrics.GetCharIndexAtX(const WordIndex: integer; const X: real): integer;
+begin
+  Result := GetCharIndexAtXInternal(WordIndex, X, Word[WordIndex].X, -1, 0);
+end;
+
+function TEditorLyrics.GetCharIndexAtXInternal(const WordIndex: integer; const X, BaseX: real;
+  const CursorIndex: integer; const CursorWidth: real): integer;
+var
+  CharIndex: integer;
+  TextPrefix: UTF8String;
+  TextWidth: real;
+  MaxChars: integer;
+  WidthBeforeCursor: real;
+  HitSlop: real;
+begin
+  Result := 0;
+  if (WordIndex < 0) or (WordIndex > High(Word)) then
+    Exit;
+
+  SetFontFamily(Word[WordIndex].FontFamily);
+  SetFontStyle(Word[WordIndex].FontStyle);
+  SetFontSize(Word[WordIndex].Size);
+  SetFontItalic(Word[WordIndex].Italic);
+
+  MaxChars := LengthUTF8(Word[WordIndex].Text);
+  HitSlop := 2;
+
+  if (CursorIndex < 0) or (CursorWidth = 0) then
+  begin
+    for CharIndex := 0 to MaxChars do
+    begin
+      TextPrefix := UTF8Copy(Word[WordIndex].Text, 1, CharIndex);
+      TextWidth := glTextWidth(TextPrefix);
+      if (BaseX + TextWidth + HitSlop) >= X then
+      begin
+        Result := CharIndex;
+        Exit;
+      end;
+    end;
+
+    Result := MaxChars;
+    Exit;
+  end;
+
+  WidthBeforeCursor := glTextWidth(UTF8Copy(Word[WordIndex].Text, 1, CursorIndex));
+
+  if X <= BaseX + WidthBeforeCursor + HitSlop then
+  begin
+    for CharIndex := 0 to CursorIndex do
+    begin
+      TextPrefix := UTF8Copy(Word[WordIndex].Text, 1, CharIndex);
+      TextWidth := glTextWidth(TextPrefix);
+      if (BaseX + TextWidth + HitSlop) >= X then
+      begin
+        Result := CharIndex;
+        Exit;
+      end;
+    end;
+
+    Result := CursorIndex;
+    Exit;
+  end;
+
+  if X <= BaseX + WidthBeforeCursor + CursorWidth + HitSlop then
+  begin
+    Result := CursorIndex;
+    Exit;
+  end;
+
+  for CharIndex := CursorIndex + 1 to MaxChars do
+  begin
+    TextPrefix := UTF8Copy(Word[WordIndex].Text, 1, CharIndex);
+    TextWidth := glTextWidth(TextPrefix) + CursorWidth;
+    if (BaseX + TextWidth + HitSlop) >= X then
+    begin
+      Result := CharIndex;
+      Exit;
+    end;
+  end;
+
+  Result := MaxChars;
+end;
+
+function TEditorLyrics.GetCursorFromPoint(const X, Y: real; out WordIndex, CharIndex: integer): boolean;
+var
+  Index: integer;
+  LineY: real;
+  LineHalfHeight: real;
+  LastIndex: integer;
+  CursorWidth: real;
+  CursorShift: real;
+  CenterShift: real;
+  DisplayX: real;
+  DisplayWidth: real;
+  NextShift: real;
+  NextX: real;
+begin
+  Result := false;
+  WordIndex := -1;
+  CharIndex := 0;
+  if Length(Word) = 0 then
+    Exit;
+
+  LineY := Word[0].Y;
+  LineHalfHeight := SizeR;
+  if (Y < LineY - LineHalfHeight) or (Y > LineY + LineHalfHeight) then
+    Exit;
+
+  CursorWidth := 0;
+  CenterShift := 0;
+  if CursorVisible and (CursorWordIndex >= 0) and (CursorWordIndex <= High(Word)) then
+  begin
+    SetFontFamily(Word[CursorWordIndex].FontFamily);
+    SetFontStyle(Word[CursorWordIndex].FontStyle);
+    SetFontSize(Word[CursorWordIndex].Size);
+    SetFontItalic(Word[CursorWordIndex].Italic);
+    CursorWidth := glTextWidth('|');
+    if AlignI = 1 then
+      CenterShift := CursorWidth / 2;
+  end;
+
+  CursorShift := 0;
+  DisplayX := Word[0].X + CursorShift - CenterShift;
+  if X <= DisplayX then
+  begin
+    WordIndex := 0;
+    CharIndex := 0;
+    Result := true;
+    Exit;
+  end;
+
+  LastIndex := High(Word);
+  for Index := 0 to LastIndex do
+  begin
+    DisplayX := Word[Index].X + CursorShift - CenterShift;
+    DisplayWidth := Word[Index].Width;
+    if CursorVisible and (Index = CursorWordIndex) then
+      DisplayWidth := DisplayWidth + CursorWidth;
+
+    if X <= DisplayX + DisplayWidth then
+    begin
+      WordIndex := Index;
+      if CursorVisible and (Index = CursorWordIndex) then
+        CharIndex := GetCharIndexAtXInternal(Index, X, DisplayX, CursorCharIndex, CursorWidth)
+      else
+        CharIndex := GetCharIndexAtXInternal(Index, X, Word[Index].X, -1, 0);
+      Result := true;
+      Exit;
+    end;
+
+    NextShift := CursorShift;
+    if CursorVisible and (Index = CursorWordIndex) then
+      NextShift := CursorWidth;
+    if (Index < LastIndex) then
+      NextX := Word[Index + 1].X + NextShift - CenterShift
+    else
+      NextX := DisplayX + DisplayWidth;
+
+    if (Index < LastIndex) and (X < NextX) then
+    begin
+      WordIndex := Index + 1;
+      CharIndex := 0;
+      Result := true;
+      Exit;
+    end;
+
+    if CursorVisible and (Index = CursorWordIndex) then
+      CursorShift := CursorWidth;
+  end;
+
+  WordIndex := LastIndex;
+  CharIndex := LengthUTF8(Word[LastIndex].Text);
+  Result := true;
+end;
+
 procedure TEditorLyrics.Clear;
 begin
   SetLength(Word, 0);
@@ -262,16 +468,46 @@ end;
 procedure TEditorLyrics.Draw;
 var
   WordIndex: integer;
+  DisplayText: UTF8String;
+  CursorWidth: real;
+  CursorShift: real;
+  CenterShift: real;
+  DrawPosX: real;
 begin
+  CursorWidth := 0;
+  CursorShift := 0;
+  CenterShift := 0;
+
+  if CursorVisible and (CursorWordIndex >= 0) and (CursorWordIndex <= High(Word)) then
+  begin
+    SetFontFamily(Word[CursorWordIndex].FontFamily);
+    SetFontStyle(Word[CursorWordIndex].FontStyle);
+    SetFontSize(Word[CursorWordIndex].Size);
+    SetFontItalic(Word[CursorWordIndex].Italic);
+    CursorWidth := glTextWidth('|');
+    if AlignI = 1 then
+      CenterShift := CursorWidth / 2;
+  end;
+
   for WordIndex := 0 to High(Word) do
   begin
     SetFontFamily(Word[WordIndex].FontFamily);
     SetFontStyle(Word[WordIndex].FontStyle);
-    SetFontPos(Word[WordIndex].X, Word[WordIndex].Y);
+    DrawPosX := Word[WordIndex].X + CursorShift - CenterShift;
+    SetFontPos(DrawPosX, Word[WordIndex].Y);
     SetFontSize(Word[WordIndex].Size);
     SetFontItalic(Word[WordIndex].Italic);
     glColor3f(Word[WordIndex].ColR, Word[WordIndex].ColG, Word[WordIndex].ColB);
-    glPrint(Word[WordIndex].Text);
+    if CursorVisible and (CursorWordIndex = WordIndex) then
+      DisplayText := UTF8Copy(Word[WordIndex].Text, 1, CursorCharIndex) + '|' +
+        UTF8Copy(Word[WordIndex].Text, CursorCharIndex + 1, LengthUTF8(Word[WordIndex].Text) - CursorCharIndex)
+    else
+      DisplayText := Word[WordIndex].Text;
+
+    glPrint(DisplayText);
+
+    if CursorVisible and (WordIndex = CursorWordIndex) then
+      CursorShift := CursorWidth;
   end;
 end;
 
