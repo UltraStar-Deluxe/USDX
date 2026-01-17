@@ -293,6 +293,9 @@ var
   Tick:    cardinal;
   Spacing: real;
   y1, y2, y3, y4: real;
+  BaseX, BaseY, BaseW, BaseH: real;
+  SpacingScale: real;
+  RefSpacing: real;
 begin
   if Visible then
   begin
@@ -476,6 +479,13 @@ begin
       if SelectBool or not Colorized then
       with Texture do
       begin
+        ResolveTextureRect(Texture, BaseX, BaseY, BaseW, BaseH);
+        if (Texture.H * Texture.ScaleH) <> 0 then
+          SpacingScale := BaseH / (Texture.H * Texture.ScaleH)
+        else
+          SpacingScale := 1.0;
+        RefSpacing := Spacing * SpacingScale;
+
         //Bind Tex and GL Attributes
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_BLEND);
@@ -512,31 +522,31 @@ begin
         glEnd;
          }
 
-         y1 := y + h*scaleH + Spacing;
-         y2 := y+h*scaleH + h*scaleH/2 + Spacing;
-         y3 := y+h*scaleH + h*scaleH/2 + Spacing;
-         y4 := y+h*scaleH + Spacing;
+         y1 := BaseY + BaseH + RefSpacing;
+         y2 := BaseY + BaseH + BaseH/2 + RefSpacing;
+         y3 := y2;
+         y4 := y1;
 
 
          glBegin(GL_QUADS);//Top Left
           glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
           glTexCoord2f(TexX1*TexW, TexY2*TexH);
-          glVertex3f(x, y1 - (y1 - (LeftScale * (y1))), z);
+          glVertex3f(BaseX, y1 - (y1 - (LeftScale * (y1))), z);
 
           //Bottom Left
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
           glTexCoord2f(TexX1*TexW, TexY1+TexH*0.5);
-          glVertex3f(x, y2 - (y2 - (LeftScale * (y2))), z);
+          glVertex3f(BaseX, y2 - (y2 - (LeftScale * (y2))), z);
 
           //Bottom Right
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
           glTexCoord2f(TexX2*TexW, TexY1+TexH*0.5);
-          glVertex3f(x+w*scaleW, y3 - (y3 - (RightScale * (y3))), z);
+          glVertex3f(BaseX + BaseW, y3 - (y3 - (RightScale * (y3))), z);
 
           //Top Right
           glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
           glTexCoord2f(TexX2*TexW, TexY2*TexH);
-          glVertex3f(x+w*scaleW, y4 - (y4 - (RightScale * (y4))), z);
+          glVertex3f(BaseX + BaseW, y4 - (y4 - (RightScale * (y4))), z);
         glEnd;
 
          {
@@ -559,6 +569,13 @@ begin
       else
       with DeSelectTexture do
       begin
+        ResolveTextureRect(DeSelectTexture, BaseX, BaseY, BaseW, BaseH);
+        if (DeSelectTexture.H * DeSelectTexture.ScaleH) <> 0 then
+          SpacingScale := BaseH / (DeSelectTexture.H * DeSelectTexture.ScaleH)
+        else
+          SpacingScale := 1.0;
+        RefSpacing := Spacing * SpacingScale;
+
         //Bind Tex and GL Attributes
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_BLEND);
@@ -574,22 +591,22 @@ begin
         glBegin(GL_QUADS);//Top Left
           glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
           glTexCoord2f(TexX1*TexW, TexY2*TexH);
-          glVertex3f(x, y+h*scaleH+ Spacing, z);
+          glVertex3f(BaseX, BaseY + BaseH + RefSpacing, z);
 
           //Bottom Left
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
           glTexCoord2f(TexX1*TexW, TexY1+TexH*0.5);
-          glVertex3f(x, y+h*scaleH + h*scaleH/2 + Spacing, z);
+          glVertex3f(BaseX, BaseY + BaseH + BaseH/2 + RefSpacing, z);
 
           //Bottom Right
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
           glTexCoord2f(TexX2*TexW, TexY1+TexH*0.5);
-          glVertex3f(x+w*scaleW, y+h*scaleH + h*scaleH/2 + Spacing, z);
+          glVertex3f(BaseX + BaseW, BaseY + BaseH + BaseH/2 + RefSpacing, z);
 
           //Top Right
           glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
           glTexCoord2f(TexX2*TexW, TexY2*TexH);
-          glVertex3f(x+w*scaleW, y+h*scaleH + Spacing, z);
+          glVertex3f(BaseX + BaseW, BaseY + BaseH + RefSpacing, z);
         glEnd;
 
         glDisable(GL_TEXTURE_2D);
@@ -606,45 +623,50 @@ begin
 end;
 
 function TButton.GetMouseOverArea: TMouseOverRect;
+var
+  MainX, MainY, MainW, MainH: real;
+  FadeX, FadeY, FadeW, FadeH: real;
 begin
   if not(Display.Cursor_HiddenByScreen) then
   begin
+    ResolveTextureRect(Texture, MainX, MainY, MainW, MainH);
     if (FadeTex.TexNum = 0) then
     begin
-      Result.X := Texture.X;
-      Result.Y := Texture.Y;
-      Result.W := Texture.W;
-      Result.H := Texture.H;
+      Result.X := MainX;
+      Result.Y := MainY;
+      Result.W := MainW;
+      Result.H := MainH;
     end
     else
     begin
+      ResolveTextureRect(FadeTex, FadeX, FadeY, FadeW, FadeH);
       case FadeTexPos of
         0: begin // fade tex on top
-          Result.X := Texture.X;
-          Result.Y := FadeTex.Y;
-          Result.W := Texture.W;
-          Result.H := FadeTex.H + Texture.H;
+          Result.X := MainX;
+          Result.Y := FadeY;
+          Result.W := MainW;
+          Result.H := FadeH + MainH;
         end;
 
         1: begin // fade tex on left side
-          Result.X := FadeTex.X;
-          Result.Y := Texture.Y;
-          Result.W := FadeTex.W + Texture.W;
-          Result.H := Texture.H;
+          Result.X := FadeX;
+          Result.Y := MainY;
+          Result.W := FadeW + MainW;
+          Result.H := MainH;
         end;
 
         2: begin // fade tex on bottom
-          Result.X := Texture.X;
-          Result.Y := Texture.Y;
-          Result.W := Texture.W;
-          Result.H := FadeTex.H + Texture.H;
+          Result.X := MainX;
+          Result.Y := MainY;
+          Result.W := MainW;
+          Result.H := FadeH + MainH;
         end;
 
         3: begin // fade tex on right side
-          Result.X := Texture.X;
-          Result.Y := Texture.Y;
-          Result.W := FadeTex.W + Texture.W;
-          Result.H := Texture.H;
+          Result.X := MainX;
+          Result.Y := MainY;
+          Result.W := FadeW + MainW;
+          Result.H := MainH;
         end;
       end;
     end;

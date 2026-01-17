@@ -62,7 +62,9 @@ uses
   USkins,
   SysUtils,
   dglOpenGL,
-  UGraphic;
+  UGraphic,
+  UScale,
+  Math;
 
 constructor TMenuBackgroundTexture.Create(const ThemedSettings: TThemeBackground);
 var
@@ -83,6 +85,7 @@ begin
     freeandnil(Tex);
     raise EMenuBackgroundError.Create('TMenuBackgroundTexture: Can''t load texture');
   end;
+
 end;
 
 destructor  TMenuBackgroundTexture.Destroy;
@@ -92,6 +95,44 @@ begin
 end;
 
 procedure   TMenuBackgroundTexture.Draw;
+const
+  PAD_OVERLAP = 1.0;
+  EDGE_SAMPLE_PIXELS = 1.0;
+  EDGE_BLUR_PIXELS = 16.0;
+var
+  RenderWidth, RenderHeight: real;
+  Scale: real;
+  ScaleXFactor: real;
+  DrawW: real;
+  DrawX: real;
+  LeftPad: real;
+  RightPad: real;
+  ULeft, URight, VTop, VBottom: real;
+  EdgeU: real;
+  BlurU: real;
+  LeftInnerU, LeftOuterU: real;
+  RightInnerU, RightOuterU: real;
+
+  procedure DrawEdgeStrip(const PadStart, PadEnd, StartU, EndU: real);
+  begin
+    if PadEnd <= PadStart then
+      Exit;
+
+    glBegin(GL_QUADS);
+      glTexCoord2f(StartU, VTop);
+      glVertex2f(PadStart, 0);
+
+      glTexCoord2f(StartU, VBottom);
+      glVertex2f(PadStart, RenderHeight);
+
+      glTexCoord2f(EndU, VBottom);
+      glVertex2f(PadEnd, RenderHeight);
+
+      glTexCoord2f(EndU, VTop);
+      glVertex2f(PadEnd, 0);
+    glEnd;
+  end;
+
 begin
   If (ScreenAct = 1) then //Clear just once when in dual screen mode
     glClear(GL_DEPTH_BUFFER_BIT);
@@ -104,22 +145,92 @@ begin
 
   glBindTexture(GL_TEXTURE_2D, Tex.TexNum);
 
+  RenderWidth := RenderW;
+  RenderHeight := RenderH;
+  if (RenderWidth = 0) then
+    RenderWidth := 800;
+  if (RenderHeight = 0) then
+    RenderHeight := 600;
+
+  if (Tex.H <= 0) then
+    Scale := 1
+  else
+    Scale := RenderHeight / Tex.H;
+
+  if GetLayoutScaleX = 0 then
+    ScaleXFactor := Scale
+  else
+    ScaleXFactor := Scale * (GetLayoutScaleY / GetLayoutScaleX);
+
+  DrawW := Tex.W * ScaleXFactor;
+  DrawX := (RenderWidth - DrawW) * 0.5;
+
+  ULeft := Tex.TexX1 * Tex.TexW;
+  URight := Tex.TexX2 * Tex.TexW;
+  VTop := Tex.TexY1 * Tex.TexH;
+  VBottom := Tex.TexY2 * Tex.TexH;
+
+  if (Tex.W > 0) then
+  begin
+    EdgeU := (EDGE_SAMPLE_PIXELS / Tex.W) * Tex.TexW;
+    BlurU := (EDGE_BLUR_PIXELS / Tex.W) * Tex.TexW;
+  end
+  else
+  begin
+    EdgeU := 0;
+    BlurU := 0;
+  end;
+
+  if EdgeU = 0 then
+  begin
+    LeftInnerU := ULeft;
+    RightInnerU := URight;
+  end
+  else
+  begin
+    LeftInnerU := Min(ULeft + EdgeU * 0.5, URight);
+    RightInnerU := Max(URight - EdgeU * 0.5, ULeft);
+  end;
+
+  if BlurU <= EdgeU then
+    BlurU := EdgeU * 2;
+
+  if BlurU > 0 then
+  begin
+    LeftOuterU := Min(ULeft + BlurU, URight);
+    RightOuterU := Max(URight - BlurU, ULeft);
+  end
+  else
+  begin
+    LeftOuterU := LeftInnerU;
+    RightOuterU := RightInnerU;
+  end;
+
   glBegin(GL_QUADS);
-    glTexCoord2f(Tex.TexX1*Tex.TexW, Tex.TexY1*Tex.TexH);
-    glVertex2f(0, 0);
+    glTexCoord2f(ULeft, VTop);
+    glVertex2f(DrawX, 0);
 
-    glTexCoord2f(Tex.TexX1*Tex.TexW, Tex.TexY2*Tex.TexH);
-    glVertex2f(0, 600);
+    glTexCoord2f(ULeft, VBottom);
+    glVertex2f(DrawX, RenderHeight);
 
-    glTexCoord2f(Tex.TexX2*Tex.TexW, Tex.TexY2*Tex.TexH);
-    glVertex2f(800, 600);
+    glTexCoord2f(URight, VBottom);
+    glVertex2f(DrawX + DrawW, RenderHeight);
 
-    glTexCoord2f(Tex.TexX2*Tex.TexW, Tex.TexY1*Tex.TexH);
-    glVertex2f(800, 0);
+    glTexCoord2f(URight, VTop);
+    glVertex2f(DrawX + DrawW, 0);
   glEnd;
 
-  glDisable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
-end;
+  LeftPad := Max(DrawX, 0);
+  RightPad := Max(RenderWidth - (DrawX + DrawW), 0);
+
+  if (EdgeU > 0) and (LeftPad > 0) then
+    DrawEdgeStrip(0, Min(LeftPad + PAD_OVERLAP, RenderWidth - RightPad), LeftOuterU, LeftInnerU);
+
+  if (EdgeU > 0) and (RightPad > 0) then
+    DrawEdgeStrip(Max(RenderWidth - RightPad - PAD_OVERLAP, LeftPad), RenderWidth, RightInnerU, RightOuterU);
+
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
+  end;
 
 end.

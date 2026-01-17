@@ -47,6 +47,7 @@ uses
   UPlaylist,
   USingScores,
   USongs,
+  UScale,
   UTexture,
   UThemes,
   UTime,
@@ -2718,14 +2719,23 @@ end;
 procedure TScreenJukebox.RefreshCover();
 var
   CoverPath: IPath;
+  IsPlaceholder: boolean;
 begin
 
   CoverPath := CurrentSong.Path.Append(CurrentSong.Cover);
 
+  IsPlaceholder := CoverPath.Equals(Skin.GetTextureFileName('SongCover'));
   Statics[StaticCover].Texture := Texture.GetTexture(CoverPath, TEXTURE_TYPE_PLAIN, false);
 
   if (Statics[StaticCover].Texture.TexNum = 0) then
+  begin
     Statics[StaticCover].Texture := Texture.GetTexture(Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN, false);
+    IsPlaceholder := true;
+  end;
+
+  Statics[StaticCover].Texture.ScaleMode := lsUniform;
+  Statics[StaticCover].Texture.EdgeExtend := IsPlaceholder;
+  Statics[StaticCover].Texture.EdgeExtendPixels := 2;
 
   Statics[StaticCover].Texture.X := Theme.Jukebox.SongCover.X;
   Statics[StaticCover].Texture.Y := Theme.Jukebox.SongCover.Y;

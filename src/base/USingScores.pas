@@ -1081,6 +1081,11 @@ var
   Position: TScorePosition;
   ScoreStr: String;
   Drawing: boolean;
+  TextW: real;
+  TextX: real;
+  TextSize: integer;
+  MaxTextW: real;
+  Scale: real;
   procedure updatePosition(themeElements: TThemeSingPlayer);
   begin
     Position.BGX := themeElements.ScoreBackground.X;
@@ -1204,18 +1209,31 @@ begin
     glDisable(GL_BLEND);
 
     // draw score text
-    SetFontFamily(Position.TextFont);
-    SetFontStyle(Position.TextStyle);
-    SetFontItalic(false);
-    SetFontSize(Position.TextSize);
-    SetFontPos(Position.TextX, Position.TextY);
-    SetFontReflection(false, 0);
-
     ScoreStr := InttoStr(Players[Index].ScoreDisplayed div 10) + '0';
     while (Length(ScoreStr) < 5) do
       ScoreStr := '0' + ScoreStr;
 
-    glPrint(ScoreStr);
+    SetFontFamily(Position.TextFont);
+    SetFontStyle(Position.TextStyle);
+    SetFontItalic(false);
+    SetFontReflection(false, 0);
+
+    TextSize := Position.TextSize;
+    SetFontSize(TextSize);
+    TextW := glTextWidth(PChar(ScoreStr));
+
+    MaxTextW := Max(0, Position.BGW - 8);
+    if (TextW > 0) and (TextW > MaxTextW) then
+    begin
+      Scale := MaxTextW / TextW;
+      TextSize := Max(1, Round(TextSize * Scale));
+      SetFontSize(TextSize);
+      TextW := glTextWidth(PChar(ScoreStr));
+    end;
+
+    TextX := Position.BGX + (Position.BGW - TextW) / 2;
+    SetFontPos(TextX, Position.TextY);
+    glPrint(PChar(ScoreStr));
   end; // eo player has position
 end;
 

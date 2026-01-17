@@ -125,10 +125,7 @@ function TStatic.GetMouseOverArea: TMouseOverRect;
 begin
   if not(Display.Cursor_HiddenByScreen) then
   begin
-    Result.X := Texture.X;
-    Result.Y := Texture.Y;
-    Result.W := Texture.W;
-    Result.H := Texture.H;
+    ResolveTextureRect(Texture, Result.X, Result.Y, Result.W, Result.H);
   end;
 end;
 

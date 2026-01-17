@@ -42,6 +42,7 @@ uses
   USongs,
   UTexture,
   UThemes,
+  UScale,
   UWebSDK,
   dglOpenGL,
   math,
@@ -1525,6 +1526,10 @@ var
   Posx:  real;
   Posy:  real;
   Width: real;
+  DrawX: real;
+  DrawY: real;
+  DrawW: real;
+  DrawH: real;
   ThemeIndex: integer;
 begin
   ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
@@ -1532,9 +1537,14 @@ begin
   if (Theme.Score.StaticRatings[ThemeIndex].W <> 0) and (Theme.Score.StaticRatings[ThemeIndex].H <> 0) then
   begin
     PosX := Theme.Score.StaticRatings[ThemeIndex].X + (Theme.Score.StaticRatings[ThemeIndex].W  * 0.5);
-    PosY := Theme.Score.StaticRatings[ThemeIndex].Y + (Theme.Score.StaticRatings[ThemeIndex].H  * 0.5); ;
+    PosY := Theme.Score.StaticRatings[ThemeIndex].Y + (Theme.Score.StaticRatings[ThemeIndex].H  * 0.5);
 
-    Width := aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue/2;
+    Width := aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue / 2;
+    DrawX := PosX - Width;
+    DrawY := PosY - Width;
+    DrawW := Width * 2;
+    DrawH := Width * 2;
+    ResolveLayoutRect(DrawX, DrawY, DrawW, DrawH, lsUniform);
 
     glBindTexture(GL_TEXTURE_2D, Tex_Score_Ratings[Rating].TexNum);
 
@@ -1545,10 +1555,10 @@ begin
     glEnable(GL_BLEND);
 
     glBegin(GL_QUADS);
-      glTexCoord2f(0, 0);                                                           glVertex2f(PosX - Width,  PosY - Width);
-      glTexCoord2f(Tex_Score_Ratings[Rating].TexW, 0);                              glVertex2f(PosX + Width,  PosY - Width);
-      glTexCoord2f(Tex_Score_Ratings[Rating].TexW, Tex_Score_Ratings[Rating].TexH); glVertex2f(PosX + Width,  PosY + Width);
-      glTexCoord2f(0, Tex_Score_Ratings[Rating].TexH);                              glVertex2f(PosX - Width,  PosY + Width);
+      glTexCoord2f(0, 0);                                                           glVertex2f(DrawX,  DrawY);
+      glTexCoord2f(Tex_Score_Ratings[Rating].TexW, 0);                              glVertex2f(DrawX + DrawW,  DrawY);
+      glTexCoord2f(Tex_Score_Ratings[Rating].TexW, Tex_Score_Ratings[Rating].TexH); glVertex2f(DrawX + DrawW,  DrawY + DrawH);
+      glTexCoord2f(0, Tex_Score_Ratings[Rating].TexH);                              glVertex2f(DrawX,  DrawY + DrawH);
     glEnd;
 
     glDisable(GL_BLEND);
