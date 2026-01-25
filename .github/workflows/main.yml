@@ -88,6 +88,8 @@ jobs:
       - name: Install Dependencies
         run: |
           brew install fpc sdl2 sdl2_image automake portaudio lua ffmpeg
+          find ~/Library/Caches/Homebrew
+          find --help
       - name: Build
         run: |
           ./autogen.sh
