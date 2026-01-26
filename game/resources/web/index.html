@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Song List</title>
+    
+    <script src="/theme.js" fetchpriority="high" blocking="render"></script>
+    <link rel="stylesheet" href="/style.css" />
+ 
+    <script src="/jquery.min.js"></script>
+    <script src="/datatables.min.js"></script>
+    <link rel="stylesheet" href="/datatables.min.css" />
+</head>
+<body>
+    <h1>Song List</h1>
+
+    <div class="controls">
+        <div class="toggle-switch">
+            <label>
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <table id="songTable" class="hover stripe">
+        <thead>
+            <tr>
+                <th>Artist</th>
+                <th>Title</th>
+                <th>Edition</th>
+                <th>Genre</th>
+                <th>Year</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!--SONG_ROWS-->
+        </tbody>
+    </table>
+
+    <script>
+        const defaultPageLength = 25;
+        const PAGE_LENGTH = "pageLength";
+
+        let pageLength = parseInt(localStorage.getItem(PAGE_LENGTH), 10);
+        if (!pageLength || pageLength < 10 || pageLength > 100) {
+            pageLength = defaultPageLength;
+        }
+
+        let table = new DataTable('#songTable', {
+            // default entries per page
+            pageLength: pageLength,
+            layout: {
+                top: {
+                    search: {
+                        text: '',
+                        placeholder: 'Search for songs…'
+                    }
+                },
+                topStart: null,
+                topEnd: null,
+                bottomStart: [
+                    {
+                        pageLength: {
+                            menu: [ 10, 25, 50, 100 ]
+                        }
+                    },
+                ],
+                bottom2: {
+                    info: {
+                        text: 'Showing _START_ to _END_ of _TOTAL_ songs'
+                    }
+                },
+                bottomEnd: {
+                    paging: {
+                        // numbers: 6
+                    }
+                }
+            }
+        });
+        table.on('length.dt', function (e, settings, len) {
+            localStorage.setItem(PAGE_LENGTH, len);
+        });
+    </script>
+</body>
+</html>
