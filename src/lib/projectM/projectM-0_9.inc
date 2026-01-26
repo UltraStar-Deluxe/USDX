@@ -5,7 +5,7 @@ uses
 
 const
 {$IF Defined(MSWINDOWS)}
-  libprojectM = 'libprojectM.dll';
+  libprojectM = 'libprojectM-0.dll';
 {$ELSEIF Defined(UNIX)}
   libprojectM = 'libprojectM.so';
 {$IFEND}
@@ -424,4 +424,3 @@ begin
   data := nil;
   inherited;
 end;
-

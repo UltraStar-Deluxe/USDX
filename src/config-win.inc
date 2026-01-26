@@ -58,10 +58,10 @@
 
 {$DEFINE HaveProjectM}
 {$IF Defined(HaveProjectM) and Defined(IncludeConstants)}
-  ProjectM_DataDir = 'Visuals\projectM';
-  PROJECTM_VERSION_MAJOR   = 1;
-  PROJECTM_VERSION_MINOR   = 1;
-  PROJECTM_VERSION_RELEASE = 0;
+  ProjectM_DataDir = 'visuals\projectM';
+  PROJECTM_VERSION_MAJOR   = 2;
+  PROJECTM_VERSION_MINOR   = 2;
+  PROJECTM_VERSION_RELEASE = 1;
 {$IFEND}
 
 {$UNDEF HavePortaudio}
