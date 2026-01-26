@@ -1,82 +1,26 @@
-#!/usr/bin/python3
-
 import urllib.request
-import shutil
 import json
-import sys
-import os
+import re
 
-sha = '67f6a4f9305a2ee1508215ad4a861f23f7b8e3da'
-filename = 'usdx-dlls-i686'
-urlbase = 'https://api.github.com/repos/UltraStar-Deluxe/mxe/'
-headers = {
-    'Accept': 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28'
-    }
-
-token = os.environ.get('ARTIFACT_ACCESS_TOKEN')
-if token == None or token.strip() == '':
-    token = os.environ.get('GITHUB_TOKEN')
-if token != None and token.strip() != '':
-    headers['Authorization'] = 'Bearer ' + token
-
-print('Searching for binaries built from commit ' + sha)
-
-def search_releases():
-    pagesuffix = ''
-    page = 1
-    links = '"next"'
-    while links != None and links.find('"next"') != -1:
-        req = urllib.request.Request(url = urlbase + 'tags' + pagesuffix,
-                                     headers = headers)
-        rsp = urllib.request.urlopen(req)
-        links = rsp.headers['link']
-        for tag in json.load(rsp):
-            if tag['commit']['sha'] == sha:
-                req = urllib.request.Request(url = urlbase + 'releases/tags/'
-                                                 + tag['name'],
-                                             headers = headers)
-                rsp = urllib.request.urlopen(req)
-                release = json.load(rsp)
-                for asset in release['assets']:
-                    if asset['name'].startswith(filename):
-                        print('Found binaries in release ' + release['name'])
-                        headers.clear()
-                        return asset['browser_download_url']
-        page = page + 1
-        pagesuffix = '?page={}'.format(page)
-    print('No release matches')
-    return None
-
-def search_artifacts():
-    pagesuffix = ''
-    page = 1
-    links = '"next"'
-    while links != None and links.find('"next"') != -1:
-        req = urllib.request.Request(url = urlbase
-                                         + 'actions/artifacts'
-                                         + '?name=' + filename
-                                         + pagesuffix,
-                                     headers = headers)
-        rsp = urllib.request.urlopen(req)
-        links = rsp.headers['link']
-        for artifact in json.load(rsp)['artifacts']:
-            if artifact['workflow_run']['head_sha'] == sha and not artifact['expired']:
-                print('Found binaries in workflow run {}'.format(artifact['workflow_run']['id']))
-                return artifact['archive_download_url']
-        page = page + 1
-        pagesuffix = '&page={}'.format(page)
-    print('No workflow artifact matches')
-    return None
-
-dllurl = search_releases()
-if dllurl == None and token != None:
-    dllurl = search_artifacts()
-if dllurl == None:
-    sys.exit(1)
-print('Downloading from ' + dllurl)
-req = urllib.request.Request(url = dllurl)
-for key in headers:
-    req.add_unredirected_header(key, headers[key])
-shutil.copyfileobj(urllib.request.urlopen(req),
-                   open(filename + '.zip', 'wb'))
+api_url = 'https://api.github.com/repos/dgruss/mxe/releases'
+with urllib.request.urlopen(api_url) as resp:
+    releases = json.load(resp)
+    if not releases:
+        print('No releases found.')
+        exit(1)
+    pattern = r'^usdx-dlls-.*\.zip$'
+    for release in releases:
+        for asset in release.get('assets', []):
+            print(f"Downloading {asset['name']} from release '{release.get('name', release.get('tag_name', ''))}'...")
+            # Rename to only keep up to the third dash (usdx-dlls-arch.zip)
+            parts = asset['name'].split('-')
+            if len(parts) >= 3:
+                new_name = '-'.join(parts[:3]) + '.zip'
+            else:
+                new_name = asset['name']
+            with urllib.request.urlopen(asset['browser_download_url']) as dl, open(new_name, 'wb') as out:
+                out.write(dl.read())
+            print('Download complete.')
+            exit(0)
+    print('No usdx-dlls-*.zip asset found in any release.')
+    exit(1)
