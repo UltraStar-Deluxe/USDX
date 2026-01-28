@@ -42,14 +42,13 @@ end;
 
 function TEncoderLocale.Decode(const InStr: AnsiString; out OutStr: UCS4String): boolean;
 begin
-  OutStr := WideStringToUCS4String(InStr); // use implicit conversion
+  OutStr := WideStringToUCS4String(WideString(InStr));
   Result := true;
 end;
 
 function TEncoderLocale.Encode(const InStr: UCS4String; out OutStr: AnsiString): boolean;
 begin
-  OutStr := UCS4StringToWideString(InStr); // use implicit conversion
+  OutStr := AnsiString(UCS4StringToWideString(InStr));
   // any way to check for errors?
   Result := true;
 end;
-
