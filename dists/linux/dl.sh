@@ -80,6 +80,12 @@ if ! desktop-file-validate -h >/dev/null ; then
 	deps+=('desktop-file-utils,https://www.freedesktop.org/software/desktop-file-utils/releases/desktop-file-utils-0.26.tar.xz,9fd94cb7de302163015fcbc0e157c61323b1205d')
 fi
 
+deps+=('//xz,https://download.sourceforge.net/lzmautils/xz-5.2.3.tar.gz,529638eec3597e429cc54c74551ac0a89169e841')
+
+if ! pkg-config --exists libarchive ; then
+	deps+=('//libarchive,https://www.libarchive.org/downloads/libarchive-3.3.1.tar.gz,d5616f81804aba92547629c08a3ccff86c2844ae')
+fi
+
 for i in "${deps[@]}"; do
 	IFS=',' read -a dep <<< "$i"
 	name="${dep[0]}"

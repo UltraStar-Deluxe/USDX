@@ -121,6 +121,7 @@ task_desktop_file_utils() {
 
 task_AppImageKit() {
 	start_build AppImageKit || return 0
+	patch -p1 < $root/appimagekit-deps.patch
 	! pkg-config --exists libarchive || EXTRA_CMAKE_FLAGS="-DUSE_SYSTEM_LIBARCHIVE=ON"
 	rm -rf build
 	mkdir -p build

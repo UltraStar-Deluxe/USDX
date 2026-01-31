@@ -1,0 +1,22 @@
+diff --git a/lib/libappimage/cmake/dependencies.cmake b/lib/libappimage/cmake/dependencies.cmake
+index 8d96484..455e8a1 100644
+--- a/lib/libappimage/cmake/dependencies.cmake
++++ b/lib/libappimage/cmake/dependencies.cmake
+@@ -29,7 +29,7 @@ if(NOT USE_SYSTEM_XZ)
+     message(STATUS "Downloading and building xz")
+ 
+     ExternalProject_Add(xz-EXTERNAL
+-        URL https://netcologne.dl.sourceforge.net/project/lzmautils/xz-5.2.3.tar.gz
++        URL ${CMAKE_CURRENT_LIST_DIR}/../../../../dl/xz-5.2.3.tar.gz
+         URL_HASH SHA512=a5eb4f707cf31579d166a6f95dbac45cf7ea181036d1632b4f123a4072f502f8d57cd6e7d0588f0bf831a07b8fc4065d26589a25c399b95ddcf5f73435163da6
+         CONFIGURE_COMMAND CC=${CC} CXX=${CXX} CFLAGS=${CFLAGS} CPPFLAGS=${CPPFLAGS} LDFLAGS=${LDFLAGS} <SOURCE_DIR>/configure --with-pic --disable-shared --enable-static --prefix=<INSTALL_DIR> --libdir=<INSTALL_DIR>/lib ${EXTRA_CONFIGURE_FLAGS} --disable-xz --disable-xzdec
+         BUILD_COMMAND ${MAKE}
+@@ -103,7 +103,7 @@ if(NOT USE_SYSTEM_LIBARCHIVE)
+     message(STATUS "Downloading and building libarchive")
+ 
+     ExternalProject_Add(libarchive-EXTERNAL
+-        URL https://www.libarchive.org/downloads/libarchive-3.3.1.tar.gz
++        URL ${CMAKE_CURRENT_LIST_DIR}/../../../../dl/libarchive-3.3.1.tar.gz
+         URL_HASH SHA512=90702b393b6f0943f42438e277b257af45eee4fa82420431f6a4f5f48bb846f2a72c8ff084dc3ee9c87bdf8b57f4d8dddf7814870fe2604fe86c55d8d744c164
+         CONFIGURE_COMMAND CC=${CC} CXX=${CXX} CFLAGS=${CFLAGS} CPPFLAGS=${CPPFLAGS} LDFLAGS=${LDFLAGS} <SOURCE_DIR>/configure --with-pic --disable-shared --enable-static --disable-bsdtar --disable-bsdcat --disable-bsdcpio --with-zlib --without-bz2lib --without-iconv --without-lz4 --without-lzma --without-lzo2 --without-nettle --without-openssl --without-xml2 --without-expat --prefix=<INSTALL_DIR> --libdir=<INSTALL_DIR>/lib ${EXTRA_CONFIGURE_FLAGS}
+         BUILD_COMMAND ${MAKE}
