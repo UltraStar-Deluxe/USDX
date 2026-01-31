@@ -83,6 +83,11 @@ fi
 for i in "${deps[@]}"; do
 	IFS=',' read -a dep <<< "$i"
 	name="${dep[0]}"
+	extract=yes
+	case "$name" in //*)
+		name=${name#//}
+		extract=no
+	esac
 	url="${dep[1]}"
 	hashA="${dep[2]}"
 	filename="${url%/download}"
@@ -100,6 +105,7 @@ for i in "${deps[@]}"; do
 				exit 1
 			fi
 		fi
+		[ $extract = yes ] || continue
 		mkdir -p "deps/$name.tmp"
 		echo "Extracting $name"
 		unzip -q "deps/dl/$bname" -d "deps/$name.tmp"
@@ -129,6 +135,7 @@ for i in "${deps[@]}"; do
 				exit 1
 			fi
 		fi
+		[ $extract = yes ] || continue
 		echo "Extracting $name"
 		rm -rf "deps/$name"
 		mkdir -p "deps/$name"
