@@ -80,9 +80,20 @@ if ! desktop-file-validate -h >/dev/null ; then
 	deps+=('desktop-file-utils,https://www.freedesktop.org/software/desktop-file-utils/releases/desktop-file-utils-0.26.tar.xz,9fd94cb7de302163015fcbc0e157c61323b1205d')
 fi
 
+deps+=('//xz,https://download.sourceforge.net/lzmautils/xz-5.2.3.tar.gz,529638eec3597e429cc54c74551ac0a89169e841')
+
+if ! pkg-config --exists libarchive ; then
+	deps+=('//libarchive,https://www.libarchive.org/downloads/libarchive-3.3.1.tar.gz,d5616f81804aba92547629c08a3ccff86c2844ae')
+fi
+
 for i in "${deps[@]}"; do
 	IFS=',' read -a dep <<< "$i"
 	name="${dep[0]}"
+	extract=yes
+	case "$name" in //*)
+		name=${name#//}
+		extract=no
+	esac
 	url="${dep[1]}"
 	hashA="${dep[2]}"
 	filename="${url%/download}"
@@ -100,6 +111,7 @@ for i in "${deps[@]}"; do
 				exit 1
 			fi
 		fi
+		[ $extract = yes ] || continue
 		mkdir -p "deps/$name.tmp"
 		echo "Extracting $name"
 		unzip -q "deps/dl/$bname" -d "deps/$name.tmp"
@@ -129,6 +141,7 @@ for i in "${deps[@]}"; do
 				exit 1
 			fi
 		fi
+		[ $extract = yes ] || continue
 		echo "Extracting $name"
 		rm -rf "deps/$name"
 		mkdir -p "deps/$name"
