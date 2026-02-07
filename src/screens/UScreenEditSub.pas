@@ -5048,7 +5048,7 @@ begin
 
   try
     // reread header with custom tags
-    Error := not CurrentSong.Analyse(true, false);
+    Error := not CurrentSong.Analyse(true, false, false, false, 0, true);
 
     // with the duet/medley code, TSong.Analyse is already loading the song
     //if not Error then
