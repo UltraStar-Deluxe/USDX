@@ -918,7 +918,7 @@ var
   Done: byte;      // bit-vector of mandatory fields
   MedleyFlags: byte; //bit-vector for medley/preview tags
   EncFile: IPath; // encoded filename
-  FullFileName: string;
+  FullFileName: UTF8String;
   I: integer;
   TagMap: TFPGMap<string, string>;
 
@@ -1018,7 +1018,7 @@ begin
 
   //SetLength(tmpEdition, 0);
 
-  FullFileName := Path.Append(Filename).ToWide;
+  FullFileName := Path.Append(Filename).ToUTF8;
 
   //Read first Line
   SongFile.ReadLine(Line);
@@ -1935,4 +1935,3 @@ begin
 end;
 
 end.
-
