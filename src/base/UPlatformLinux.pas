@@ -65,6 +65,8 @@ uses
 
 const
   {$I paths.inc}
+  DEBUG_DIR_ENV_PRIMARY   = 'USDX_FPC_DEBUGDIR';
+  DEBUG_DIR_ENV_SECONDARY = 'USDX_DEBUG_DIR';
 
 procedure TPlatformLinux.Init;
 begin
@@ -85,7 +87,8 @@ end;
  *}
 procedure TPlatformLinux.DetectLocalExecution();
 var
-  LocalDir, LanguageDir: IPath;
+  LocalDir, LanguageDir, DebugDir: IPath;
+  EnvDebugDir: UTF8String;
 begin
   // we just check if the 'languages' folder exists in the
   // directory of the executable. If so -> local execution.
@@ -93,13 +96,34 @@ begin
   LanguageDir := LocalDir.Append('languages');
   UseLocalDirs := LanguageDir.IsDirectory and not LocalDir.IsReadonly;
 
-  if not UseLocalDirs then begin
-    try
-      // try to cd to the ExecutionDir -- this makes the stacktraces work when started from PATH
-      chdir(LocalDir.ToNative());
-    except
-      // this log statement is too early to be logged to the Error.log file, it'll only show up in stdout
-      // Log.LogWarn('Cannot chdir to '+LocalDir.ToNative()+', stacktraces might be broken', 'TPlatformLinux.DetectLocalExecution');
+  if not UseLocalDirs then
+  begin
+    DebugDir := PATH_NONE;
+    EnvDebugDir := GetEnvironmentVariable(DEBUG_DIR_ENV_PRIMARY);
+    if (EnvDebugDir = '') then
+      EnvDebugDir := GetEnvironmentVariable(DEBUG_DIR_ENV_SECONDARY);
+
+    if (EnvDebugDir <> '') then
+      DebugDir := Path(EnvDebugDir)
+    else if (FPC_DEBUG_DIR <> '') then
+      DebugDir := Path(FPC_DEBUG_DIR)
+    else
+      DebugDir := LocalDir;
+
+    if DebugDir.IsSet then
+    begin
+      if DebugDir.IsDirectory then
+      begin
+        try
+          chdir(DebugDir.ToNative());
+          Log.LogDebug('Changed working directory to ' + DebugDir.ToUTF8(), 'PlatformLinux');
+        except
+          on E: Exception do
+            Log.LogWarn('Failed to change working directory to ' + DebugDir.ToUTF8() + ': ' + E.Message, 'PlatformLinux');
+        end;
+      end
+      else
+        Log.LogWarn('Debug directory not found: ' + DebugDir.ToUTF8(), 'PlatformLinux');
     end;
   end;
 end;

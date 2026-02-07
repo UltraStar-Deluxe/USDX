@@ -74,19 +74,22 @@ type
     public
       Player:       UTF8String;
       AverageScore: word;
+      Count:        integer;
   end;
 
   TStatResultMostSungSong = class(TStatResult)
     public
       Artist:       UTF8String;
       Title:        UTF8String;
-      TimesSung:    word;
+      TimesSung:    integer;
+      AverageScore: word;
   end;
 
   TStatResultMostPopBand = class(TStatResult)
     public
       ArtistName:   UTF8String;
-      TimesSungTot: word;
+      TimesSungTot: integer;
+      AverageScore: word;
   end;
 
   PUserInfo = ^TUserInfo;
@@ -126,7 +129,7 @@ type
       procedure Init(const Filename: IPath);
       procedure ConvertFrom101To110();
       procedure ReadScore(Song: TSong);
-      procedure AddScore(Song: TSong; Level: integer; const Name: UTF8String; Score: integer);
+      procedure AddScore(Song: TSong; Level: integer; Track: integer; const Name: UTF8String; Score: integer);
       procedure WriteScore(Song: TSong);
 
       procedure ReadUsers;
@@ -249,6 +252,7 @@ begin
     ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS [' + cUS_Scores + '] (' +
                       '[SongID] INTEGER NOT NULL, ' +
                       '[Difficulty] INTEGER NOT NULL, ' +
+                      '[Track] INTEGER NOT NULL, ' +
                       '[Player] TEXT NOT NULL, ' +
                       '[Score] INTEGER NOT NULL, ' +
                       '[Date] INTEGER NULL' +
@@ -335,6 +339,13 @@ begin
     begin
       Log.LogInfo('Outdated song database found - adding column rating to "' + cUS_Songs + '"', 'TDataBaseSystem.Init');
       ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [Rating] INTEGER NULL');
+    end;
+
+    //add column date to cUS-Scores
+    if not ScoreDB.ContainsColumn(cUS_Scores, 'Track') then
+    begin
+      Log.LogInfo('adding column track to "' + cUS_Scores + '"', 'TDataBaseSystem.Init');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Scores + ' ADD COLUMN [Track] INTEGER NULL');
     end;
 
     // convert data from previous versions
@@ -515,12 +526,12 @@ begin
   try
     // Search Song in DB
     TableData := ScoreDB.GetUniTable(
-      'SELECT [Difficulty], [Player], [Score], [Date] FROM [' + cUS_Scores + '] ' +
+      'SELECT [Difficulty], [Track], [Player], [Score], [Date] FROM [' + cUS_Scores + '] ' +
       'WHERE [SongID] = (' +
         'SELECT [ID] FROM [' + cUS_Songs + '] ' +
         'WHERE [Artist] = ? AND [Title] = ? ' +
         'LIMIT 1) ' +
-      'ORDER BY [Score] DESC;', //no LIMIT! see filter below!
+      'ORDER BY [Score] DESC, [Track] ASC;', //no LIMIT! see filter below!
       [Song.Artist, Song.Title]);
 
     // Empty Old Scores
@@ -534,7 +545,7 @@ begin
       // Add one Entry to Array
       Difficulty := TableData.FieldAsInteger(TableData.FieldIndex['Difficulty']);
       if ((Difficulty >= 0) and (Difficulty <= 2)) and
-         (Length(Song.Score[Difficulty]) < 5) then
+         (Length(Song.Score[Difficulty]) < Ini.TopScreenSize) then
       begin
         //filter player
         PlayerListed:=false;
@@ -559,6 +570,8 @@ begin
 
           Song.Score[Difficulty, High(Song.Score[Difficulty])].Name  :=
             TableData.FieldByName['Player'];
+          Song.Score[Difficulty, High(Song.Score[Difficulty])].Track :=
+            TableData.FieldAsInteger(TableData.FieldIndex['Track']);
           Song.Score[Difficulty, High(Song.Score[Difficulty])].Score :=
             TableData.FieldAsInteger(TableData.FieldIndex['Score']);
           Song.Score[Difficulty, High(Song.Score[Difficulty])].Date :=
@@ -583,7 +596,7 @@ end;
 (**
  * Adds one new score to DB
  *)
-procedure TDataBaseSystem.AddScore(Song: TSong; Level: integer; const Name: UTF8String; Score: integer);
+procedure TDataBaseSystem.AddScore(Song: TSong; Level: integer; Track: integer; const Name: UTF8String; Score: integer);
 var
   ID:        integer;
   TableData: TSQLiteTable;
@@ -617,9 +630,9 @@ begin
     // Create new entry
     ScoreDB.ExecSQL(
       'INSERT INTO [' + cUS_Scores + '] ' +
-      '([SongID] ,[Difficulty], [Player], [Score], [Date]) VALUES ' +
-      '(?, ?, ?, ?, ?);',
-      [ID, Level, Name, Score, DateTimeToUnix(Now())]);
+      '([SongID] ,[Difficulty], [Track], [Player], [Score], [Date]) VALUES ' +
+      '(?, ?, ?, ?, ?, ?);',
+      [ID, Level, Track, Name, Score, DateTimeToUnix(Now())]);
 
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.AddScore');
@@ -1347,16 +1360,23 @@ begin
                'INNER JOIN [' + cUS_Songs + '] ON ([SongID] = [ID]) ORDER BY [Score]';
     end;
     stBestSingers: begin
-      Query := 'SELECT [Player], ROUND(AVG([Score])) FROM [' + cUS_Scores + '] ' +
+      Query := 'SELECT [Player], ROUND(AVG([Score])), COUNT(*) as [Count] FROM [' + cUS_Scores + '] ' +
                'GROUP BY [Player] ORDER BY AVG([Score])';
     end;
     stMostSungSong: begin
-      Query := 'SELECT [Artist], [Title], [TimesPlayed] FROM [' + cUS_Songs + '] ' +
-               'ORDER BY [TimesPlayed]';
+      Query := 'SELECT [Artist], [Title], [TimesPlayed], ROUND(AVG([SCORE])) FROM [' + cUS_Scores + '] ' + 'INNER JOIN [' + cUS_Songs + '] ON ([SongID] = [ID]) GROUP BY [Artist], [Title], [TimesPlayed] ORDER BY [TimesPlayed]';
     end;
     stMostPopBand: begin
-      Query := 'SELECT [Artist], SUM([TimesPlayed]) FROM [' + cUS_Songs + '] ' +
-               'GROUP BY [Artist] ORDER BY SUM([TimesPlayed])';
+      Query := 'SELECT s.[Artist], SUM(s.[TimesPlayed]), ' +
+           'ROUND(AVG(sub.AvgScore)) ' +
+           'FROM [' + cUS_Songs + '] s ' +
+           'LEFT JOIN ( ' +
+           '  SELECT sc.[SongID], AVG(sc.[Score]) AS AvgScore ' +
+           '  FROM [' + cUS_Scores + '] sc ' +
+           '  GROUP BY sc.[SongID] ' +
+           ') sub ON sub.[SongID] = s.[ID] ' +
+           'GROUP BY s.[Artist] ' +
+           'ORDER BY SUM(s.[TimesPlayed])';
     end;
   end;
 
@@ -1402,6 +1422,7 @@ begin
         begin
           Player := TableData.Fields[0];
           AverageScore := TableData.FieldAsInteger(1);
+          Count := TableData.FieldAsInteger(2);
         end;
       end;
       stMostSungSong: begin
@@ -1411,6 +1432,7 @@ begin
           Artist := TableData.Fields[0];
           Title  := TableData.Fields[1];
           TimesSung  := TableData.FieldAsInteger(2);
+          AverageScore := TableData.FieldAsInteger(3);
         end;
       end;
       stMostPopBand: begin
@@ -1419,6 +1441,7 @@ begin
         begin
           ArtistName := TableData.Fields[0];
           TimesSungTot := TableData.FieldAsInteger(1);
+          AverageScore := TableData.FieldAsInteger(2);
         end;
       end
       else

@@ -172,7 +172,7 @@ type
     function Draw: boolean; override;
 
     function ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
-      PressedDown: boolean): boolean; override;
+      PressedDown: boolean; Repeated: boolean = false): boolean; override;
 
     function FinishedMusic: boolean;
 
@@ -221,11 +221,12 @@ const
 // should be checked to know the next window to load;
 
 function TScreenSingController.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   SDL_ModState: word;
   i1:           integer;
   Color:        TRGB;
+  ResumeAfterHelp: boolean;
   NewPosition:  real;
 begin
   Result := true;
@@ -627,9 +628,10 @@ begin
         end
         else // show help popup
         begin
-          if not paused then
+          ResumeAfterHelp := not Paused;
+          if ResumeAfterHelp then
             Pause;
-          ScreenPopupHelp.ShowPopup();
+          ScreenPopupHelp.ShowPopup(ResumeAfterHelp);
         end;
       end;
     end;
@@ -867,6 +869,17 @@ begin
       ScoreLast      := 0;
 
       LastSentencePerfect := false;
+
+      Name           := PlayerNames[PlayerIndex + 1];
+      Level          := Ini.PlayerLevel[PlayerIndex];
+      Track          := 0;
+      if CurrentSong.isDuet then
+      begin
+        if ScreenSong.DuetChange then
+          Track := (PlayerIndex + 1) mod 2
+        else
+          Track := PlayerIndex mod 2;
+      end;
     end;
 
   // prepare music
@@ -1068,7 +1081,7 @@ begin
   success := false;
   // FIXME: bad style, put the try-except into loadsong() and not here
   try
-    success := CurrentSong.Analyse(false, ScreenSong.DuetChange, ScreenSong.RapToFreestyle, true, AudioEnd); // and CurrentSong.LoadSong();
+    success := CurrentSong.Analyse(false, ScreenSong.DuetChange, ScreenSong.RapToFreestyle, true, AudioEnd, true); // and CurrentSong.LoadSong();
   except
     on E: EInOutError do Log.LogWarn(E.Message, 'TScreenSing.LoadNextSong');
   end;

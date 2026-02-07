@@ -808,6 +808,10 @@ type
   //Help-Popup
   TThemeHelp = class(TThemeBasic)
     Button1:    TThemeButton;
+    SelectVolAudio:    TThemeSelectSlide;
+    SelectVolVocals:   TThemeSelectSlide;
+    SelectVolSfx:      TThemeSelectSlide;
+    SelectVolPreview:  TThemeSelectSlide;
   end;
 
   TThemeInsertUser = class(TThemeBasic)
@@ -1771,6 +1775,9 @@ begin
       ThemeLoadTexts(Top5.TextScore,      'Top5TextScore');
       ThemeLoadTexts(Top5.TextDate,       'Top5TextDate');
 
+      for I := 0 to Length(Top5.Text) - 1 do
+        Theme.Top5.Text[I].Text := StringReplace(Theme.Top5.Text[I].Text, '<N>', IntToStr(Ini.TopScreenSize), [rfReplaceAll]);
+
       // Options
       ThemeLoadBasic(Options, 'Options');
 
@@ -1931,6 +1938,14 @@ begin
       ThemeLoadButton(SendScorePopup.ButtonPassword, 'SendScorePopupButtonPassword');
       ThemeLoadButton(SendScorePopup.Button1, 'SendScorePopupButton1');
       ThemeLoadButton(SendScorePopup.Button2, 'SendScorePopupButton2');
+
+      // help popup
+      ThemeLoadBasic (HelpPopup, 'HelpPopup');
+      ThemeLoadButton(HelpPopup.Button1, 'HelpPopupButton1');
+      ThemeLoadSelectSlide(HelpPopup.SelectVolAudio, 'HelpPopupSelectVolAudio');
+      ThemeLoadSelectSlide(HelpPopup.SelectVolVocals, 'HelpPopupSelectVolVocals');
+      ThemeLoadSelectSlide(HelpPopup.SelectVolSfx, 'HelpPopupSelectVolSfx');
+      ThemeLoadSelectSlide(HelpPopup.SelectVolPreview, 'HelpPopupSelectVolPreview');
 
       // download score popup
       ThemeLoadBasic (ScoreDownloadPopup, 'ScoreDownloadPopup');

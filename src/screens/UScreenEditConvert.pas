@@ -168,7 +168,7 @@ type
     public
       constructor Create; override;
       procedure OnShow; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       function Draw: boolean; override;
       procedure OnHide; override;
@@ -213,7 +213,7 @@ const
   TRACK_SCROLL_ZOOM_AMOUNT = 2;
 
 
-function TScreenEditConvert.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenEditConvert.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   SDL_ModState: word;
 {$IFDEF UseMIDIPort}

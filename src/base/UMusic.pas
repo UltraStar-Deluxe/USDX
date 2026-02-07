@@ -460,6 +460,10 @@ type
 
       procedure SetAppVolume(Volume: single);
       procedure SetVolume(Volume: single);
+      procedure SetVocalsBalance(Balance: single);
+      function GetVocalsBalance: single;
+      function HasInstrumentalTrack: boolean;
+      function GetOverallVolume: single;
       procedure SetLoop(Enabled: boolean);
 
       procedure FadeIn(Time: real; TargetVolume: single);
@@ -621,6 +625,7 @@ type
 
       procedure StartBgMusic();
       procedure PauseBgMusic();
+      procedure ApplySfxVolume(Volume: single);
       // TODO
       //function AddSound(Filename: IPath): integer;
       //procedure RemoveSound(ID: integer);
@@ -642,9 +647,17 @@ function  AudioPlayback(): IAudioPlayback;
 function  AudioInput(): IAudioInput;
 function  AudioDecoders(): TInterfaceList;
 
+procedure SetAudioVolumePercent(Value: integer);
+procedure SetVocalsVolumePercent(Value: integer);
+procedure SetSfxVolumePercent(Value: integer);
+procedure SetPreviewVolumePercent(Value: integer);
+procedure SetBackgroundMusicVolumePercent(Value: integer);
+
 function  MediaManager: TInterfaceList;
 
 procedure DumpMediaInterfaces();
+
+procedure ForcePlaySound(Stream: TAudioPlaybackStream);
 
 function FindNote(beat: integer): TPos;
 
@@ -747,6 +760,90 @@ end;
 function AudioDecoders(): TInterfaceList;
 begin
   Result := AudioDecoderList;
+end;
+
+procedure SetAudioVolumePercent(Value: integer);
+var
+  Clamped: integer;
+  Playback: IAudioPlayback;
+begin
+  if Value < 0 then
+    Clamped := 0
+  else if Value > 100 then
+    Clamped := 100
+  else
+    Clamped := Value;
+
+  Ini.AudioVolume := Clamped;
+  Playback := AudioPlayback();
+  if assigned(Playback) then
+    Playback.SetVolume(Clamped / 100);
+end;
+
+procedure SetVocalsVolumePercent(Value: integer);
+var
+  Clamped: integer;
+  Playback: IAudioPlayback;
+begin
+  if Value < 0 then
+    Clamped := 0
+  else if Value > 100 then
+    Clamped := 100
+  else
+    Clamped := Value;
+
+  Ini.VocalsVolume := Clamped;
+  Playback := AudioPlayback();
+  if assigned(Playback) then
+    Playback.SetVocalsBalance(Clamped / 100);
+end;
+
+procedure SetSfxVolumePercent(Value: integer);
+var
+  Clamped: integer;
+begin
+  if Value < 0 then
+    Clamped := 0
+  else if Value > 100 then
+    Clamped := 100
+  else
+    Clamped := Value;
+
+  Ini.SfxVolume := Clamped;
+  if assigned(SoundLib) then
+    SoundLib.ApplySfxVolume(Clamped / 100);
+end;
+
+procedure SetPreviewVolumePercent(Value: integer);
+var
+  Clamped: integer;
+begin
+  if Value < 0 then
+    Clamped := 0
+  else if Value > 100 then
+    Clamped := 100
+  else
+    Clamped := Value;
+
+  Ini.PreviewVolume := Clamped;
+end;
+
+procedure SetBackgroundMusicVolumePercent(Value: integer);
+var
+  Clamped: integer;
+  Volume: single;
+begin
+  if Value < 0 then
+    Clamped := 0
+  else if Value > 100 then
+    Clamped := 100
+  else
+    Clamped := Value;
+
+  Ini.BackgroundMusicVolume := Clamped;
+  Volume := Clamped / 100;
+  if assigned(SoundLib) and assigned(SoundLib.BGMusic) then
+    SoundLib.BGMusic.SetVolume(Volume);
 end;
 
 procedure FilterInterfaceList(const IID: TGUID; InList, OutList: TInterfaceList);
@@ -993,7 +1090,12 @@ begin
   BGMusic := AudioPlayback.OpenSound(SoundPath.Append('background track.mp3'));
 
   if (BGMusic <> nil) then
+  begin
     BGMusic.Loop := True;
+    BGMusic.SetVolume(EnsureRange(Ini.BackgroundMusicVolume, 0, 100) / 100);
+  end;
+
+  ApplySfxVolume(Ini.SfxVolume / 100);
 end;
 
 procedure TSoundLibrary.UnloadSounds();
@@ -1006,6 +1108,29 @@ begin
   FreeAndNil(Click);
   FreeAndNil(Applause);
   FreeAndNil(BGMusic);
+end;
+
+procedure TSoundLibrary.ApplySfxVolume(Volume: single);
+begin
+  if Volume < 0 then
+    Volume := 0
+  else if Volume > 1 then
+    Volume := 1;
+
+  if Start <> nil then
+    Start.Volume := Volume;
+  if Back <> nil then
+    Back.Volume := Volume;
+  if Swoosh <> nil then
+    Swoosh.Volume := Volume;
+  if Change <> nil then
+    Change.Volume := Volume;
+  if Option <> nil then
+    Option.Volume := Volume;
+  if Click <> nil then
+    Click.Volume := Volume;
+  if Applause <> nil then
+    Applause.Volume := Volume;
 end;
 
 (* TODO
@@ -1023,7 +1148,7 @@ begin
   if (TBackgroundMusicOption(Ini.BackgroundMusicOption) = bmoOn) and
     (Soundlib.BGMusic <> nil) and not (Soundlib.BGMusic.Status = ssPlaying) then
   begin
-    SoundLib.BGMusic.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
+    SoundLib.BGMusic.SetVolume(EnsureRange(Ini.BackgroundMusicVolume, 0, 100) / 100);
     AudioPlayback.PlaySound(Soundlib.BGMusic);
   end;
 end;
@@ -1034,6 +1159,22 @@ begin
   begin
     Soundlib.BGMusic.Pause;
   end;
+end;
+
+procedure ForcePlaySound(Stream: TAudioPlaybackStream);
+var
+  Playback: IAudioPlayback;
+begin
+  if (Stream = nil) then
+    Exit;
+
+  Playback := AudioPlayback();
+  if (Playback = nil) then
+    Exit;
+
+  Stream.Stop;
+  Stream.Position := 0;
+  Playback.PlaySound(Stream);
 end;
 
 { TAudioConverter }
