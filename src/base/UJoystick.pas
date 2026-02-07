@@ -404,13 +404,11 @@ end;
 
 constructor TJoy.Create;
 var
-  Controller: TJoyController;
+  Controller, LoopController: TJoyController;
   Error: string;
 
   N: integer;
   I: integer;
-  BestButtonCount: integer;
-  BestIndex: integer;
 begin
   inherited;
 
@@ -439,30 +437,22 @@ begin
   if Controllers.Count = 1 then
   begin
     Controller := Controllers.Data[0];
-    Log.LogStatus(Format('Using controller: %s', [Controllers.Data[0].Name]), 'TJoy.Create');
+    Log.LogStatus(Format('Using controller: %s', [Controller.Name]), 'TJoy.Create');
   end;
 
 
   if not assigned(Controller) then
   begin
     // try finding game controller with best button count
-    BestIndex := -1;
-    BestButtonCount := 0;
     for i := 0 to Controllers.Count -1 do
     begin
-      if Controllers.Data[i].ControllerType = ctGameController then
-      begin
-        if Controllers.Data[i].ButtonCount > BestButtonCount then
-        begin
-          BestButtonCount := Controllers.Data[i].ButtonCount;
-          BestIndex := i;
-        end;
+      LoopController := Controllers.Data[i];
+      if (LoopController.ControllerType = ctGameController) and ((not assigned(Controller)) or (LoopController.ButtonCount > Controller.ButtonCount)) then begin
+        Controller := LoopController;
       end;
     end;
 
-    if BestIndex >= 0 then
-    begin
-      Controller := Controllers.Data[BestIndex];
+    if assigned(Controller) then begin
       Log.LogStatus(Format('Using game controller: %s', [Controller.Name]), 'TJoy.Create');
     end;
   end;
@@ -471,23 +461,15 @@ begin
   if not assigned(Controller) then
   begin
     // try finding joystick with best button count
-    BestIndex := -1;
-    BestButtonCount := 0;
     for i := 0 to Controllers.Count -1 do
     begin
-      if Controllers.Data[i].ControllerType = ctJoystick then
-      begin
-        if Controllers.Data[i].ButtonCount > BestButtonCount then
-        begin
-          BestButtonCount := Controllers.Data[i].ButtonCount;
-          BestIndex := i;
-        end;
+      LoopController := Controllers.Data[i];
+      if (LoopController.ControllerType = ctJoystick) and ((not assigned(Controller)) or (LoopController.ButtonCount > Controller.ButtonCount)) then begin
+        Controller := LoopController;
       end;
     end;
 
-    if BestIndex >= 0 then
-    begin
-      Controller := Controllers.Data[BestIndex];
+    if assigned(Controller) then begin
       Log.LogStatus(Format('Using legacy Joystick: %s', [Controller.Name]), 'TJoy.Create');
     end;
   end;

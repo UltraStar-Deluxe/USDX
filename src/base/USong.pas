@@ -922,6 +922,12 @@ var
   I: integer;
   TagMap: TFPGMap<string, string>;
 
+  { this is just the native TagMap.TryGetData, but causes less compiler notes about (not) inlining }
+  function TagMapTryGetData(const Key: string; out Data: string): boolean;
+  begin
+    Result := TagMap.TryGetData(Key, Data);
+  end;
+
   { adds a custom header tag to the song
     if there is no ':' in the read line, Tag should be empty
     and the whole line should be in Content }
@@ -988,11 +994,11 @@ var
     value: string;
     tempUtf8String: UTF8String;
   begin
-    if (TagMap.TryGetData(header, value)) then
+    if (TagMapTryGetData(header, value)) then
     begin
       TagMap.Remove(header);
       DecodeStringUTF8(value, field, Encoding);
-      while TagMap.TryGetData(header, value) do
+      while TagMapTryGetData(header, value) do
       begin
         TagMap.Remove(header);
         DecodeStringUTF8(value, tempUtf8String, Encoding);
@@ -1087,7 +1093,7 @@ begin
     //Read the songs attributes stored in the TagMap
 
     //First: Read the format version
-    if (TagMap.TryGetData('VERSION', Value)) then
+    if (TagMapTryGetData('VERSION', Value)) then
     begin
       RemoveTagsFromTagMap('VERSION');
       try
@@ -1123,7 +1129,7 @@ begin
     end
     else
     begin
-      if TagMap.TryGetData('ENCODING', Value) then
+      if TagMapTryGetData('ENCODING', Value) then
       begin
         RemoveTagsFromTagMap('ENCODING');
         self.Encoding := ParseEncoding(Value, Ini.DefaultEncoding);
@@ -1134,7 +1140,7 @@ begin
     //Required Attributes
     //-----------
 
-    if (TagMap.TryGetData('TITLE', Value)) then
+    if (TagMapTryGetData('TITLE', Value)) then
     begin
       RemoveTagsFromTagMap('TITLE');
       self.Title := DecodeStringUTF8(Value, Encoding);
@@ -1143,7 +1149,7 @@ begin
       Done := Done or 1;
     end;
 
-    if (TagMap.TryGetData('ARTIST', Value)) then
+    if (TagMapTryGetData('ARTIST', Value)) then
     begin
       RemoveTagsFromTagMap('ARTIST');
       self.Artist := DecodeStringUTF8(Value, Encoding);
@@ -1157,12 +1163,12 @@ begin
     // For older format versions the audio file is found in the MP3 header
     if self.FormatVersion.MinVersion(1,0,0) then
     begin
-      if TagMap.TryGetData('AUDIO', Value) then
+      if TagMapTryGetData('AUDIO', Value) then
       begin
         RemoveTagsFromTagMap('AUDIO');
         CheckAndSetAudioFile(Value);
         // If AUDIO is present MP3 should be ignored
-        if TagMap.TryGetData('MP3', Value) then
+        if TagMapTryGetData('MP3', Value) then
         begin
           // If MP3 has a different value than AUDIO add an info message to logs
           if not self.Audio.Equals(Value) then
@@ -1174,14 +1180,14 @@ begin
       end;
     end;
 
-    if TagMap.TryGetData('MP3', Value) then
+    if TagMapTryGetData('MP3', Value) then
     begin
       RemoveTagsFromTagMap('MP3');
       CheckAndSetAudioFile(Value);
     end;
 
     //Beats per Minute
-    if (TagMap.TryGetData('BPM', Value)) then
+    if (TagMapTryGetData('BPM', Value)) then
     begin
       RemoveTagsFromTagMap('BPM');
       SetLength(self.BPM, 1);
@@ -1203,28 +1209,28 @@ begin
     //---------
 
     // Gap
-    if (TagMap.TryGetData('GAP', Value)) then
+    if (TagMapTryGetData('GAP', Value)) then
     begin
       RemoveTagsFromTagMap('GAP');
       self.GAP := StrToFloatI18n(Value);
     end;
 
     //Cover Picture
-    if (TagMap.TryGetData('COVER', Value)) then
+    if (TagMapTryGetData('COVER', Value)) then
     begin
       RemoveTagsFromTagMap('COVER');
       self.Cover := DecodeFilename(Value);
     end;
 
     //Background Picture
-    if (TagMap.TryGetData('BACKGROUND', Value)) then
+    if (TagMapTryGetData('BACKGROUND', Value)) then
     begin
       RemoveTagsFromTagMap('BACKGROUND');
       self.Background := DecodeFilename(Value);
     end;
 
     // Video File
-    if (TagMap.TryGetData('VIDEO', Value)) then
+    if (TagMapTryGetData('VIDEO', Value)) then
     begin
       RemoveTagsFromTagMap('VIDEO');
       EncFile := DecodeFilename(Value);
@@ -1235,7 +1241,7 @@ begin
     end;
 
     // Instrumental Audio
-    if (TagMap.TryGetData('INSTRUMENTAL', Value)) then
+    if (TagMapTryGetData('INSTRUMENTAL', Value)) then
     begin
       RemoveTagsFromTagMap('INSTRUMENTAL');
       EncFile := DecodeFilename(Value);
@@ -1244,7 +1250,7 @@ begin
     end;
 
     // Video Gap
-    if (TagMap.TryGetData('VIDEOGAP', Value)) then
+    if (TagMapTryGetData('VIDEOGAP', Value)) then
     begin
       RemoveTagsFromTagMap('VIDEOGAP');
       self.VideoGAP := StrToFloatI18n( Value )
@@ -1269,28 +1275,28 @@ begin
     end;
 
     //Year Sorting
-    if (TagMap.TryGetData('YEAR', Value)) then
+    if (TagMapTryGetData('YEAR', Value)) then
     begin
       RemoveTagsFromTagMap('YEAR');
       TryStrtoInt(Value, self.Year)
     end;
 
     // Song Start
-    if (TagMap.TryGetData('START', Value)) then
+    if (TagMapTryGetData('START', Value)) then
     begin
       RemoveTagsFromTagMap('START');
       self.Start := StrToFloatI18n( Value )
     end;
 
     // Song Ending
-    if (TagMap.TryGetData('END', Value)) then
+    if (TagMapTryGetData('END', Value)) then
     begin
       RemoveTagsFromTagMap('END');
       TryStrtoInt(Value, self.Finish)
     end;
 
     // Resolution
-    if (TagMap.TryGetData('RESOLUTION', Value)) then
+    if (TagMapTryGetData('RESOLUTION', Value)) then
     begin
       if FormatVersion.MaxVersion(1,0,0,false) then
       begin
@@ -1310,7 +1316,7 @@ begin
     end;
 
     // Notes Gap
-    if (TagMap.TryGetData('NOTESGAP', Value)) then
+    if (TagMapTryGetData('NOTESGAP', Value)) then
     begin
       if FormatVersion.MaxVersion(1,0,0,false) then
       begin
@@ -1325,7 +1331,7 @@ begin
     end;
 
     // Relative Notes
-    if (TagMap.TryGetData('RELATIVE', Value)) then
+    if (TagMapTryGetData('RELATIVE', Value)) then
     begin
       if FormatVersion.MaxVersion(1,0,0,false) then
       begin
@@ -1342,7 +1348,7 @@ begin
     end;
 
     // PreviewStart
-    if (TagMap.TryGetData('PREVIEWSTART', Value)) then
+    if (TagMapTryGetData('PREVIEWSTART', Value)) then
     begin
       RemoveTagsFromTagMap('PREVIEWSTART');
       self.PreviewStart := StrToFloatI18n( Value );
@@ -1354,7 +1360,7 @@ begin
     end;
 
     // MedleyStartBeat
-    if TagMap.TryGetData('MEDLEYSTARTBEAT', Value) and not self.Relative then
+    if TagMapTryGetData('MEDLEYSTARTBEAT', Value) and not self.Relative then
     begin
       RemoveTagsFromTagMap('MEDLEYSTARTBEAT');
       if TryStrtoInt(Value, self.Medley.StartBeat) then
@@ -1362,7 +1368,7 @@ begin
     end;
 
     // MedleyEndBeat
-    if TagMap.TryGetData('MEDLEYENDBEAT', Value) and not self.Relative then
+    if TagMapTryGetData('MEDLEYENDBEAT', Value) and not self.Relative then
     begin
       RemoveTagsFromTagMap('MEDLEYENDBEAT');
       if TryStrtoInt(Value, self.Medley.EndBeat) then
@@ -1370,7 +1376,7 @@ begin
     end;
 
     // Medley
-    if (TagMap.TryGetData('CALCMEDLEY', Value)) then
+    if (TagMapTryGetData('CALCMEDLEY', Value)) then
     begin
       RemoveTagsFromTagMap('CALCMEDLEY');
       if Uppercase(Value) = 'OFF' then
@@ -1378,7 +1384,7 @@ begin
     end;
 
     // Duet Singer Name P1
-    if (TagMap.TryGetData('DUETSINGERP1', Value)) then
+    if (TagMapTryGetData('DUETSINGERP1', Value)) then
     begin
       if FormatVersion.MaxVersion(1,0,0,false) then
       begin
@@ -1393,7 +1399,7 @@ begin
     end;
 
     // Duet Singer Name P2
-    if (TagMap.TryGetData('DUETSINGERP2', Value)) then
+    if (TagMapTryGetData('DUETSINGERP2', Value)) then
     begin
       if FormatVersion.MaxVersion(1,0,0,false) then
       begin
@@ -1408,14 +1414,14 @@ begin
     end;
 
     // Duet Singer Name P1
-    if (TagMap.TryGetData('P1', Value)) then
+    if (TagMapTryGetData('P1', Value)) then
     begin
       RemoveTagsFromTagMap('P1');
       DecodeStringUTF8(Value, DuetNames[0], Encoding);
     end;
 
     // Duet Singer Name P2
-    if (TagMap.TryGetData('P2', Value)) then
+    if (TagMapTryGetData('P2', Value)) then
     begin
       RemoveTagsFromTagMap('P2');
       DecodeStringUTF8(Value, DuetNames[1], Encoding);
