@@ -116,7 +116,8 @@ uses
   UScreenJukebox,
   USong,
   UTexture,
-  UWebcam;
+  UWebcam,
+  UAudioWorker;
 
 
 procedure SingDrawWebCamFrame;
@@ -533,19 +534,20 @@ end;
 procedure SingDrawOscilloscope(Position: TThemePosition; NrSound: integer);
 var
   SampleIndex: integer;
-  Sound:       TCaptureBuffer;
+  State:       TAudioPlayerState;
   MaxX, MaxY:  real;
   Col: TRGB;
-begin;
-  Sound := AudioInputProcessor.Sound[NrSound];
-
-  //  Log.LogStatus('Oscilloscope', 'SingDraw');
-  //glColor3f(Skin_OscR, Skin_OscG, Skin_OscB);
-
+begin
   if (Party.bPartyGame) then
     Col := GetPlayerColor(Ini.TeamColor[NrSound])
   else
     Col := GetPlayerColor(Ini.PlayerColor[NrSound]);
+
+  if not AudioWorkerCopyPlayerState(NrSound, State) then
+  begin
+    // Draw nothing until the audio thread publishes data
+    Exit;
+  end;
 
   glColor3f(Col.R, Col.G, Col.B);
 {
@@ -558,18 +560,17 @@ begin;
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glTranslatef(Position.X, Position.Y + MaxY, 0);
-  glScalef(MaxX/High(Sound.AnalysisBuffer), MaxY/Low(Smallint), 1);
-
-  Sound.LockAnalysisBuffer();
+  if AUDIO_WORKER_OSCILLOSCOPE_SAMPLES > 1 then
+    glScalef(MaxX/(AUDIO_WORKER_OSCILLOSCOPE_SAMPLES-1), MaxY/Low(Smallint), 1)
+  else
+    glScalef(MaxX, MaxY/Low(Smallint), 1);
 
   glBegin(GL_LINE_STRIP);
-    for SampleIndex := 0 to High(Sound.AnalysisBuffer) do
+    for SampleIndex := 0 to AUDIO_WORKER_OSCILLOSCOPE_SAMPLES-1 do
     begin
-      glVertex2s(SampleIndex, Sound.AnalysisBuffer[SampleIndex]);
+      glVertex2s(SampleIndex, State.Oscilloscope[SampleIndex]);
     end;
   glEnd;
-
-  Sound.UnlockAnalysisBuffer();
 
   glPopMatrix();
 end;
