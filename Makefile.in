@@ -82,6 +82,10 @@ USE_PROJECTM_CWRAPPER = @USE_PROJECTM_CWRAPPER@
 
 OPENCV_CWRAPPER_DIR := $(USDX_LIB_DIR)/openCV3
 USE_OPENCV_CWRAPPER = @USE_OPENCV_CWRAPPER@
+USE_OPENCV_CWRAPPER_DLL ?= no
+ifeq ($(EXEEXT),.exe)
+USE_OPENCV_CWRAPPER_DLL := yes
+endif
 
 #################################################
 # Dependencies
@@ -93,7 +97,9 @@ DEPS += $(PROJECTM_CWRAPPER_DIR)
 endif
 
 ifeq ($(USE_OPENCV_CWRAPPER), yes)
+ifneq ($(USE_OPENCV_CWRAPPER_DLL), yes)
 DEPS += $(OPENCV_CWRAPPER_DIR)
+endif
 endif
 
 #################################################

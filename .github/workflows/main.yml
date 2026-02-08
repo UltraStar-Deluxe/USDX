@@ -43,13 +43,27 @@ jobs:
             mingw-w64-x86_64-SDL2_image
             mingw-w64-x86_64-ffmpeg
             mingw-w64-x86_64-lua
+            mingw-w64-x86_64-opencv
+            mingw-w64-x86_64-tools
       - name: Install Dependencies
         run: |
-          choco install wget --no-progress
-          wget https://sourceforge.net/projects/freepascal/files/Win32/3.2.2/fpc-3.2.2.win32.and.win64.exe/download -O fpc-installer.exe --timeout 60
+          curl.exe -L --max-time 60 -o fpc-installer.exe "https://sourceforge.net/projects/freepascal/files/Win32/3.2.2/fpc-3.2.2.win32.and.win64.exe/download"
+          curl.exe -L --max-time 60 -o nsis-3.05-setup.exe "https://sourceforge.net/projects/nsis/files/NSIS%203/3.05/nsis-3.05-setup.exe/download"
           Start-Process -FilePath ".\\fpc-installer.exe" -ArgumentList "/TYPE=full /VERYSILENT /SP- /SUPPRESSMSGBOXES /NORESTART" -Wait
-          wget "https://sourceforge.net/projects/nsis/files/NSIS%203/3.05/nsis-3.05-setup.exe/download" -O nsis-3.05-setup.exe --timeout 60
           ./nsis-3.05-setup.exe /S
+      - name: Download prebuilt DLLs
+        run: |
+          python dldlls.py
+          7z x -y usdx-dlls-x86_64.zip -ogame "*.dll"
+        env:
+          ARTIFACT_ACCESS_TOKEN: ${{ secrets.MxeActionsReadAccessToken }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Prepare OpenCV wrapper import lib
+        shell: msys2 {0}
+        run: |
+          export PATH="/mingw64/bin:$PATH"
+          /mingw64/bin/dlltool -d src/lib/openCV3/opencvwrapper.def -D opencvwrapper.dll -l src/lib/openCV3/libopencvwrapper.dll.a
+          cp src/lib/openCV3/libopencvwrapper.dll.a src/lib/openCV3/libopencvwrapper.a
       - name: Build
         shell: msys2 {0}
         run: |
@@ -62,15 +76,8 @@ jobs:
           export PPC="ppcrossx64"
           export FPCMAKE="/c/FPC/3.2.2/bin/i386-win32/fpcmake"
           ./autogen.sh
-          ./configure
+          ./configure --with-opencv-cxx-api
           make
-      - name: Add prebuilt DLLs
-        run: |
-          python dldlls.py
-          7z x -y usdx-dlls-x86_64.zip -ogame "*.dll"
-        env:
-          ARTIFACT_ACCESS_TOKEN: ${{ secrets.MxeActionsReadAccessToken }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create installer
         run: |
           del game\*.debug
