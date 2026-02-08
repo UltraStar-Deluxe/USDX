@@ -154,6 +154,15 @@ USE_PROJECTM_CWRAPPER := @USE_PROJECTM_CWRAPPER@
 OPENCV_CWRAPPER_DIR := $(USDX_LIB_DIR)/openCV3
 OPENCV_CWRAPPER_LIB := $(OPENCV_CWRAPPER_DIR)/libopenCV-cwrapper.a
 USE_OPENCV_CWRAPPER := @USE_OPENCV_CWRAPPER@
+USE_OPENCV_CWRAPPER_DLL ?= no
+ifeq ($(EXEEXT),.exe)
+USE_OPENCV_CWRAPPER_DLL := yes
+endif
+OPENCV_CWRAPPER_DLL_DIR ?= $(OPENCV_CWRAPPER_DIR)
+
+ifeq ($(USE_OPENCV_CWRAPPER), yes)
+PFLAGS_ALL += -Fl$(OPENCV_CWRAPPER_DLL_DIR)
+endif
 
 #################################################
 # Static libs
@@ -165,7 +174,9 @@ STATIC_LIBS += $(PROJECTM_CWRAPPER_LIB)
 endif
 
 ifeq ($(USE_OPENCV_CWRAPPER), yes)
+ifneq ($(USE_OPENCV_CWRAPPER_DLL), yes)
 STATIC_LIBS += $(OPENCV_CWRAPPER_LIB)
+endif
 endif
 
 #################################################
