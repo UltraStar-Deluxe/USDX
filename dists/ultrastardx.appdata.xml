@@ -14,6 +14,7 @@
   <url type="homepage">https://usdx.eu/</url>
   <url type="bugtracker">https://github.com/UltraStar-Deluxe/USDX/issues</url>
   <url type="translate">https://www.transifex.com/usdx/usdx</url>
+  <url type="vcs-browser">https://github.com/UltraStar-Deluxe/USDX</url>
   <screenshots>
     <screenshot type="default">
       <image>https://usdx.eu/images/screenshots/song_6_player_projectm.jpg</image>
