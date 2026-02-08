@@ -245,7 +245,7 @@ type
       procedure SetSlideScrollRefresh;
       procedure SetListScrollRefresh;
 
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
 
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       function ParseMouseRoulette(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
@@ -284,6 +284,7 @@ type
       procedure SelectRandomSong;
       procedure SetJoker;
       procedure SetStatics;
+      procedure FilterDuets;
       procedure ColorizeJokers;
       //procedure PartyTimeLimit;
       function PermitCategory(ID: integer): boolean;
@@ -641,7 +642,7 @@ end;
 
 // Method for input parsing. If false is returned, GetNextWindow
 // should be checked to know the next window to load;
-function TScreenSong.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenSong.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   I:      integer;
   I2:     integer;
@@ -1038,6 +1039,20 @@ begin
             SetScrollRefresh;
           end;
           Exit;
+        end;
+
+      SDLK_O: // O for Ordering
+        begin
+          // Only applicable in playlist view
+          if (CatSongs.CatNumShow = -3) and (Length(PlayListMan.Playlists) > 0) then
+          begin
+            PlayListMan.Playlists[PlayListMan.CurPlaylist].SortingEnabled :=
+              not PlayListMan.Playlists[PlayListMan.CurPlaylist].SortingEnabled;
+            // Persist change
+            PlayListMan.SavePlayList(PlayListMan.CurPlaylist);
+            // Refresh top-left label
+            PlayListMan.SetPlayList(PlayListMan.CurPlaylist);
+          end;
         end;
 
       SDLK_T:
@@ -1757,11 +1772,8 @@ begin
   // Song List
   //Songs.LoadSongList; // moved to the UltraStar unit
 
-  if (TSortingType(Ini.Sorting) <> sPlaylist) then
-  begin
-    CatSongs.Refresh;
-    GenerateThumbnails();
-  end;
+  CatSongs.Refresh;
+  GenerateThumbnails();
 
   // Randomize Patch
   Randomize;
@@ -3196,9 +3208,6 @@ begin
   //Party Mode
   else
   begin
-    SelectRandomSong;
-    //Show Menu directly in PartyMode
-    //But only if selected in Options
     if (Ini.PartyPopup = 1) then
     begin
       ScreenSongMenu.MenuShow(SM_Party_Main);
@@ -3227,8 +3236,13 @@ begin
       PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, SongIndex);
   end;
 
-  SetScrollRefresh;
+  FilterDuets; // in party mode
 
+  if (Mode = smPartyClassic) then
+    SelectRandomSong;
+
+  SetScrollRefresh;
+  FixSelected;
   //if (Mode = smPartyTournament) then
   //  PartyTime := SDL_GetTicks();
 
@@ -3735,6 +3749,7 @@ procedure TScreenSong.StartMusicPreview();
 var
   Song: TSong;
   PreviewPos: real;
+  PreviewVolume: single;
 begin
   if SongIndex <> -1 then
   begin
@@ -3773,17 +3788,18 @@ begin
     AudioPlayback.Position := PreviewPos;
   
     // set preview volume
+    PreviewVolume := EnsureRange(Ini.PreviewVolume, 0, 100) / 100;
     if Ini.PreviewFading = 0 then
     begin
       // music fade disabled: start with full volume
-      AudioPlayback.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
+      AudioPlayback.SetVolume(PreviewVolume);
       AudioPlayback.Play()
     end
     else
     begin
       // music fade enabled: start muted and fade-in
       AudioPlayback.SetVolume(0);
-      AudioPlayback.FadeIn(Ini.PreviewFading, IPreviewVolumeVals[Ini.PreviewVolume]);
+      AudioPlayback.FadeIn(Ini.PreviewFading, PreviewVolume);
     end;
   end;
 end;
@@ -3952,6 +3968,8 @@ var
   I, I2, Count, RealTarget: integer;
   Target: cardinal;
 begin
+  if (CatSongs.VisibleSongs <= 0) then
+    Exit;
   case PlayListMan.Mode of
       smAll:  // all songs just select random song
         begin
@@ -4219,6 +4237,21 @@ begin
   end;
 end;
 
+procedure TScreenSong.FilterDuets;
+var
+  I: integer;
+begin
+  if (Mode in [smPartyClassic, smPartyFree, smPartyTournament]) then
+  begin
+    for I := 0 to High(CatSongs.Song) do
+      if CatSongs.Song[I].isDuet then
+        CatSongs.Song[I].Visible := false;
+    // Reset visible-index cache so VisibleIndex() recomputes correctly
+    CatSongs.LastVisChecked := 0;
+    CatSongs.LastVisIndex := 0;
+  end;
+end;
+
 procedure TScreenSong.SetStatics;
 var
   I:       integer;
@@ -4298,6 +4331,8 @@ begin
 
     SelectRandomSong;
     SetJoker;
+    SetScrollRefresh;
+    FixSelected;
   end;
 end;
 

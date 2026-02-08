@@ -46,7 +46,7 @@ type
   TScreenOptionsAdvanced = class(TOptionsMenu)
     public
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
     protected
       procedure LoadWidgets; override;
@@ -65,7 +65,7 @@ uses
   UUnicodeUtils,
   SysUtils;
 
-function TScreenOptionsAdvanced.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenOptionsAdvanced.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -94,7 +94,7 @@ begin
       end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 8 then
+          if SelInteraction = Length(SelectsS) then
           begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
@@ -107,7 +107,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 7) then
+          if (SelInteraction >= 0) and (SelInteraction < Length(SelectsS)) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
@@ -115,7 +115,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 7) then
+          if (SelInteraction >= 0) and (SelInteraction < Length(SelectsS)) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
@@ -150,6 +150,7 @@ begin
   AddSelectSlide('SING_OPTIONS_ADVANCED_EFFECTSING', Ini.EffectSing, IEffectSingTranslated);
   AddSelectSlide('SING_OPTIONS_GRAPHICS_LINEBONUS', Ini.LineBonus, ILineBonusTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_ONSONGCLICK', Ini.OnSongClick, IOnSongClickTranslated);
+  AddSelectSlide('SING_OPTIONS_ADVANCED_PRELOAD_SONG_NOTES', Ini.PreloadSongNotes, IPreloadSongNotesTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_ASKBEFOREDEL', Ini.AskBeforeDel, IAskbeforeDelTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_PARTYPOPUP', Ini.PartyPopup, IPartyPopupTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_SINGSCORES', Ini.SingScores, ISingScoresTranslated);

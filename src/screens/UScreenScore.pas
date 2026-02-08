@@ -205,7 +205,7 @@ type
       procedure SwapToScreen(Screen: integer);
     public
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; override;
       procedure OnShow; override;
       procedure OnShowFinish; override;
@@ -356,7 +356,7 @@ begin
   end;
 end;
 
-function TScreenScore.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenScore.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -377,7 +377,7 @@ begin
         begin
           if (FinishScreenDraw = true) then
           begin
-            if (CurrentSong.isDuet) or (ScreenSong.RapToFreestyle) or (ScreenSong.Mode = smMedley) then
+            if (CurrentSong.isDuet and (Ini.DuetScores = 0)) or (ScreenSong.RapToFreestyle) or (ScreenSong.Mode = smMedley) then
               FadeTo(@ScreenSong)
             else
               FadeTo(@ScreenTop5);
@@ -401,7 +401,7 @@ begin
            if (FinishScreenDraw = true) then
            begin
 
-             if (CurrentSong.isDuet) or (ScreenSong.RapToFreestyle) or (ScreenSong.Mode = smMedley) then
+             if (CurrentSong.isDuet and (Ini.DuetScores = 0)) or (ScreenSong.RapToFreestyle) or (ScreenSong.Mode = smMedley) then
                FadeTo(@ScreenSong)
              else
                FadeTo(@ScreenTop5);
@@ -1789,6 +1789,7 @@ procedure TScreenSCore.StartPreview;
 var
   select:   integer;
   changed:  boolean;
+  PreviewVolume: single;
 begin
   //When Music Preview is activated -> then change music
   if (Ini.PreviewVolume <> 0) then
@@ -1827,17 +1828,18 @@ begin
           AudioPlayback.Position := (AudioPlayback.Length / 4);
 
         // set preview volume
+        PreviewVolume := EnsureRange(Ini.PreviewVolume, 0, 100) / 100;
         if (Ini.PreviewFading = 0) then
         begin
           // music fade disabled: start with full volume
-          AudioPlayback.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
+          AudioPlayback.SetVolume(PreviewVolume);
           AudioPlayback.Play()
         end
         else
         begin
           // music fade enabled: start muted and fade-in
           AudioPlayback.SetVolume(0);
-          AudioPlayback.FadeIn(Ini.PreviewFading, IPreviewVolumeVals[Ini.PreviewVolume]);
+          AudioPlayback.FadeIn(Ini.PreviewFading, PreviewVolume);
         end;
       end;
     end;

@@ -90,6 +90,7 @@ type
 
   TScore = record
     Name:       UTF8String;
+    Track:      integer;
     Score:      integer;
     Date:       UTF8String;
   end;
@@ -116,6 +117,8 @@ type
   TSong = class
   private
     FileLineNo  : integer;  // line, which is read last, for error reporting
+    FMD5        : string;
+    FMD5Cached  : boolean;
 
     function DecodeFilename(Filename: RawByteString): IPath;
     procedure ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String; RapToFreestyle: boolean);
@@ -131,15 +134,15 @@ type
     function ReadTXTHeader(SongFile: TTextFileStream; ReadCustomTags: Boolean): boolean;
 
     function GetFolderCategory(const aFileName: IPath): UTF8String;
-    function FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
     function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
+    function GetMD5: string;
+    procedure SetMD5(const Value: string);
   public
     Tracks: array of TLines; // Per-song track storage
   public
     Path:         IPath; // kust path component of file (only set if file was found)
     Folder:       UTF8String; // for sorting by folder (only set if file was found)
     FileName:     IPath; // just name component of file (only set if file was found)
-    MD5:          string; //MD5 Hash of Current Song
 
     FormatVersion: TVersion;
 
@@ -213,13 +216,14 @@ type
     LastError:  AnsiString;
     function    GetErrorLineNo: integer;
     property    ErrorLineNo: integer read GetErrorLineNo;
+    property    MD5: string read GetMD5 write SetMD5; //MD5 Hash of Current Song
 
 
     constructor Create(); overload;
     constructor Create(const aFileName : IPath); overload;
     destructor  Destroy; override;
     function    LoadSong(DuetChange: boolean): boolean;
-    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false; OutOfBoundsToFreestyle: boolean = false; AudioLength: real = 0): boolean;
+    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false; OutOfBoundsToFreestyle: boolean = false; AudioLength: real = 0; ForceLoadNotes: boolean = false): boolean;
     procedure   SetMedleyMode();
     procedure   Clear();
     function    MD5SongFile(SongFileR: TTextFileStream): string;
@@ -379,6 +383,9 @@ constructor TSong.Create();
 begin
   inherited;
 
+  FMD5 := '';
+  FMD5Cached := false;
+
   // to-do : special create for category "songs"
   //dirty fix to fix folders=on
   Self.Path     := PATH_NONE();
@@ -432,6 +439,9 @@ constructor TSong.Create(const aFileName: IPath);
 begin
   inherited Create();
 
+  FMD5 := '';
+  FMD5Cached := false;
+
   Mult    := 1;
   MultBPM := 4;
 
@@ -461,17 +471,6 @@ destructor TSong.Destroy;
 begin
   FreeAndNil(Self.FormatVersion);
   inherited;
-end;
-
-function TSong.FindSongFile(Dir: IPath; Mask: UTF8String): IPath;
-var
-  Iter: IFileIterator;
-begin
-  Iter := FileSystem.FileFind(Dir.Append(Mask), faDirectory);
-  if (Iter.HasNext) then
-    Result := Iter.Next.Name
-  else
-    Result := PATH_NONE;
 end;
 
 function TSong.DecodeFilename(Filename: RawByteString): IPath;
@@ -623,6 +622,7 @@ begin
     Exit;
   end;
 
+  CurrentSong := self;
   Result := LoadOpenedSong(SongFile, FileNamePath, DuetChange, false, false, 0);
   SongFile.Free;
 end;
@@ -678,7 +678,6 @@ begin
   Rel[1]            := 0;
 
   try
-    MD5 := MD5SongFile(SongFile);
     SongFile.Position := 0;
 
       //Search for Note Beginning
@@ -1438,15 +1437,6 @@ begin
     TagMap.Free;
   end;
 
-  //MD5 of File
-  self.MD5 := MD5SongFile(SongFile);
-
-  if self.Cover.IsUnset then
-    self.Cover := FindSongFile(Path, '*[CO].jpg');
-
-  if self.Background.IsUnset then
-    self.Background := FindSongFile(Path, '*[BG].jpg');
-
   //Check if all Required Values are given
   if (Done <> 15) then
   begin
@@ -1498,6 +1488,42 @@ begin
     Result := FileLineNo
   else
     Result := -1;
+end;
+
+function TSong.GetMD5: string;
+var
+  SongFile: TMemTextFileStream;
+  FileNamePath: IPath;
+begin
+  if not FMD5Cached then
+  begin
+    FMD5Cached := true;
+    FMD5 := '';
+
+    if Assigned(Path) and Assigned(FileName) and not Path.IsUnset and not FileName.IsUnset then
+    begin
+      FileNamePath := Path.Append(FileName);
+      try
+        SongFile := TMemTextFileStream.Create(FileNamePath, fmOpenRead);
+        try
+          FMD5 := MD5SongFile(SongFile);
+        finally
+          SongFile.Free;
+        end;
+      except
+        on E: Exception do
+          Log.LogWarn('Failed to compute MD5 for ' + FileNamePath.ToUTF8(true) + ': ' + E.Message, 'TSong.GetMD5');
+      end;
+    end;
+  end;
+
+  Result := FMD5;
+end;
+
+procedure TSong.SetMD5(const Value: string);
+begin
+  FMD5 := Value;
+  FMD5Cached := Value <> '';
 end;
 
 procedure TSong.ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String; RapToFreestyle: boolean);
@@ -1815,6 +1841,9 @@ end;
 
 procedure TSong.Clear();
 begin
+  FMD5 := '';
+  FMD5Cached := false;
+
   //Main Information
   Title  := '';
   Artist := '';
@@ -1861,12 +1890,14 @@ begin
   Relative := false;
 end;
 
-function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
+function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real; ForceLoadNotes: boolean): boolean;
 var
   SongFile: TTextFileStream;
   FileNamePath: IPath;
+  NotesLoaded: boolean;
 begin
   Result := false;
+  NotesLoaded := false;
 
   //Reset LineNo
   FileLineNo := 0;
@@ -1888,11 +1919,15 @@ begin
     //Read Header
     Result := Self.ReadTxTHeader(SongFile, ReadCustomTags);
 
-    //Load Song for Medley Tags
-    CurrentSong := Self;
-    Result := Result and LoadOpenedSong(SongFile, FileNamePath, DuetChange, RapToFreestyle, OutOfBoundsToFreestyle, AudioLength);
+    if Result and (ForceLoadNotes or (Ini = nil) or (Ini.PreloadSongNotes <> 0)) then
+    begin
+      //Load Song for Medley Tags
+      CurrentSong := Self;
+      NotesLoaded := LoadOpenedSong(SongFile, FileNamePath, DuetChange, RapToFreestyle, OutOfBoundsToFreestyle, AudioLength);
+      Result := Result and NotesLoaded;
+    end;
 
-    if Result then
+    if Result and NotesLoaded then
     begin
       //Medley and Duet - is it possible? Perhaps later...
       if not Self.isDuet then

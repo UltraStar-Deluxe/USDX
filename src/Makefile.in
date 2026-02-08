@@ -14,6 +14,7 @@ prefix      ?= @prefix@
 exec_prefix ?= @exec_prefix@
 datarootdir ?= @datarootdir@
 datadir     ?= @datadir@
+bindir      ?= @bindir@
 # project root-dir (directory of configure script)
 top_srcdir  ?= @top_srcdir@
 # project src-dir (directory of the current Makefile)
@@ -50,6 +51,7 @@ USDX_BUILD_DIR := $(top_srcdir)/build
 USDX_LIB_DIR   := $(USDX_SRC_DIR)/lib
 
 INSTALL_DATADIR := $(datadir)/$(USDX_PACKAGE_NAME)
+FPC_DEBUG_DIR ?= @FPC_DEBUG_DIR@
 
 #################################################
 # FPC config
@@ -228,7 +230,10 @@ SRC_FILES = $(shell find $(srcdir) -name "*.inc" -o -name "*.pas" -o -name "*.pp
 # of $(USDX_BIN).
 .PHONY: create-pathinfo
 create-pathinfo:
-	echo "INSTALL_DATADIR = '$(INSTALL_DATADIR)';" > paths.inc
+	{ \
+	  echo "INSTALL_DATADIR = '$(INSTALL_DATADIR)';"; \
+	  echo "FPC_DEBUG_DIR = '$(FPC_DEBUG_DIR)';"; \
+	} > paths.inc
 
 # check if any src-file changed and rebuild
 $(USDX_BIN): $(USDX_PROJ) $(STATIC_LIBS) $(SRC_FILES)

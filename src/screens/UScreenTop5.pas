@@ -37,6 +37,7 @@ uses
   UDisplay,
   UMenu,
   UMusic,
+  UIni,
   USongs,
   UThemes,
   sdl2,
@@ -49,16 +50,16 @@ type
       TextArtistTitle: integer;
       DifficultyShow:  integer;
 
-      StaticNumber:    array[1..5] of integer;
-      TextNumber:      array[1..5] of integer;
-      TextName:        array[1..5] of integer;
-      TextScore:       array[1..5] of integer;
-      TextDate:        array[1..5] of integer;
+      StaticNumber:    array of integer;
+      TextNumber:      array of integer;
+      TextName:        array of integer;
+      TextScore:       array of integer;
+      TextDate:        array of integer;
 
       Fadeout:         boolean;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       procedure OnShow; override;
       procedure DrawScores(difficulty: integer);
@@ -76,11 +77,10 @@ uses
   UHelp,
   ULog,
   UMain,
-  UIni,
   UNote,
   UUnicodeUtils;
 
-function TScreenTop5.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenTop5.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if PressedDown then
@@ -155,21 +155,56 @@ end;
 constructor TScreenTop5.Create;
 var
   I: integer;
+  DeltaStaticX, DeltaStaticY: integer;
+  DeltaTextNumberX, DeltaTextNumberY: integer;
+  DeltaTextNameX, DeltaTextNameY: integer;
+  DeltaTextScoreX, DeltaTextScoreY: integer;
+  DeltaTextDateX, DeltaTextDateY: integer;
 begin
   inherited Create;
+  SetLength(StaticNumber, Ini.TopScreenSize + 2);
+  SetLength(TextNumber, Ini.TopScreenSize + 2);
+  SetLength(TextName, Ini.TopScreenSize + 2);
+  SetLength(TextScore, Ini.TopScreenSize + 2);
+  SetLength(TextDate, Ini.TopScreenSize + 2);
 
   LoadFromTheme(Theme.Top5);
 
   TextLevel       := AddText(Theme.Top5.TextLevel);
   TextArtistTitle := AddText(Theme.Top5.TextArtistTitle);
 
-  for I := 0 to 4 do
+  DeltaStaticX := Round((Theme.Top5.StaticNumber[1].X - Theme.Top5.StaticNumber[0].X) / (Ini.TopScreenSize - 1));
+  DeltaStaticY := Round((Theme.Top5.StaticNumber[1].Y - Theme.Top5.StaticNumber[0].Y) / (Ini.TopScreenSize - 1));
+
+  DeltaTextNumberX := Round((Theme.Top5.TextNumber[1].X - Theme.Top5.TextNumber[0].X) / (Ini.TopScreenSize - 1));
+  DeltaTextNumberY := Round((Theme.Top5.TextNumber[1].Y - Theme.Top5.TextNumber[0].Y) / (Ini.TopScreenSize - 1));
+
+  DeltaTextNameX := Round((Theme.Top5.TextName[1].X - Theme.Top5.TextName[0].X) / (Ini.TopScreenSize - 1));
+  DeltaTextNameY := Round((Theme.Top5.TextName[1].Y - Theme.Top5.TextName[0].Y) / (Ini.TopScreenSize - 1));
+
+  DeltaTextScoreX := Round((Theme.Top5.TextScore[1].X - Theme.Top5.TextScore[0].X) / (Ini.TopScreenSize - 1));
+  DeltaTextScoreY := Round((Theme.Top5.TextScore[1].Y - Theme.Top5.TextScore[0].Y) / (Ini.TopScreenSize - 1));
+
+  DeltaTextDateX := Round((Theme.Top5.TextDate[1].X - Theme.Top5.TextDate[0].X) / (Ini.TopScreenSize - 1));
+  DeltaTextDateY := Round((Theme.Top5.TextDate[1].Y - Theme.Top5.TextDate[0].Y) / (Ini.TopScreenSize - 1));
+
+  for I := 0 to Ini.TopScreenSize do
   begin
-    StaticNumber[I+1] := AddStatic(Theme.Top5.StaticNumber[I]);
-    TextNumber[I+1]   := AddText  (Theme.Top5.TextNumber[I]);
-    TextName[I+1]     := AddText  (Theme.Top5.TextName[I]);
-    TextScore[I+1]    := AddText  (Theme.Top5.TextScore[I]);
-    TextDate[I+1]     := AddText  (Theme.Top5.TextDate[I]);
+    StaticNumber[I+1] := AddStatic(Theme.Top5.StaticNumber[0].X + DeltaStaticX * I,
+                                   Theme.Top5.StaticNumber[0].Y + DeltaStaticY * I,
+                                   Theme.Top5.StaticNumber[0]);
+    TextNumber[I+1]   := AddText  (Theme.Top5.TextNumber[0].X + DeltaTextNumberX * I,
+                                   Theme.Top5.TextNumber[0].Y + DeltaTextNumberY * I,
+                                   Theme.Top5.TextNumber[0], IntToStr(I + 1));
+    TextName[I+1]     := AddText  (Theme.Top5.TextName[0].X + DeltaTextNameX * I,
+                                   Theme.Top5.TextName[0].Y + DeltaTextNameY * I,
+                                   Theme.Top5.TextName[0]);
+    TextScore[I+1]    := AddText  (Theme.Top5.TextScore[0].X + DeltaTextScoreX * I,
+                                   Theme.Top5.TextScore[0].Y + DeltaTextScoreY * I,
+                                   Theme.Top5.TextScore[0]);
+    TextDate[I+1]     := AddText  (Theme.Top5.TextDate[0].X + DeltaTextDateX * I,
+                                   Theme.Top5.TextDate[0].Y + DeltaTextDateY * I,
+                                   Theme.Top5.TextDate[0]);
   end;
 
 end;
@@ -179,6 +214,10 @@ var
   I:    integer;
   sung: boolean; //score added? otherwise in wasn't sung!
   Report: string;
+  Name1, Name2:   UTF8String;
+  Score1, Score2: Integer;
+  CombinedName:   UTF8String;
+  CombinedScore:  Integer;
 begin
   inherited;
 
@@ -189,16 +228,49 @@ begin
   Fadeout := false;
   DifficultyShow := Ini.PlayerLevel[0];
 
-  //ReadScore(CurrentSong);
-
-  for I := 0 to PlayersPlay - 1 do
+  if ScreenSing.SungToEnd then
   begin
-    if (Round(Player[I].ScoreTotalInt) > 0) and (ScreenSing.SungToEnd) then
+    if not(CurrentSong.isDuet) or (Ini.DuetScores = 1) or (Ini.DuetScores = 3) then
     begin
-      DataBase.AddScore(CurrentSong, Ini.PlayerLevel[I], Ini.Name[I], Round(Player[I].ScoreTotalInt));
-      sung:=true;
+      for I := 0 to PlayersPlay - 1 do
+      begin
+        Score1 := Round(Player[I].ScoreTotalInt);
+        if Score1 > 0 then
+        begin
+          DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Track, Player[I].Name, Score1);
+          sung := True;
+        end;
+      end;
     end;
-  end;
+    if (CurrentSong.isDuet) and (Ini.DuetScores >= 2) then
+    begin
+      I := 0;
+      while I < PlayersPlay - 1 do
+      begin
+        Name1  := Player[I].Name;
+        Name2  := Player[I+1].Name;
+        Score1 := Round(Player[I].ScoreTotalInt);
+        Score2 := Round(Player[I+1].ScoreTotalInt);
+
+        if (Player[I].Level = Player[I+1].Level) then
+        begin
+          if UTF8CompareStr(Name1, Name2) <= 0 then
+            CombinedName := Format('%s & %s', [Name1, Name2])
+          else
+            CombinedName := Format('%s & %s', [Name2, Name1]);
+
+          CombinedScore := (Score1 + Score2) div 2;
+          if CombinedScore > 0 then
+          begin
+            DataBase.AddScore(CurrentSong, Player[I].Level, 3, CombinedName, CombinedScore);
+            sung := True;
+          end;
+        end;
+
+        Inc(I, 2);
+      end;
+    end;
+  end;  // if SungToEnd
 
   try
     if sung then
@@ -236,13 +308,15 @@ begin
     Text[TextDate[I]].Visible := true;
 
     Text[TextName[I]].Text := CurrentSong.Score[Ini.PlayerLevel[0], I-1].Name;
+    if (CurrentSong.IsDuet) and (CurrentSong.Score[Ini.PlayerLevel[0], I-1].Track < 2) then
+      Text[TextName[I]].Text := Text[TextName[I]].Text + ' (P' + IntToStr(CurrentSong.Score[Ini.PlayerLevel[0], I-1].Track + 1) + ')';
     Text[TextScore[I]].Text := IntToStr(CurrentSong.Score[Ini.PlayerLevel[0], I-1].Score);
     Text[TextDate[I]].Text := CurrentSong.Score[Ini.PlayerLevel[0], I-1].Date;
   end;
 
   If Length(CurrentSong.Score[Ini.PlayerLevel[0]])=0 then
     FadeTo(@ScreenSong); //if there are no scores to show, go to next screen
-  for I := Length(CurrentSong.Score[Ini.PlayerLevel[0]]) + 1 to 5 do
+  for I := Length(CurrentSong.Score[Ini.PlayerLevel[0]]) + 1 to Ini.TopScreenSize + 1 do
   begin
     Statics[StaticNumber[I]].Visible := false;
     Text[TextNumber[I]].Visible := false;
@@ -267,11 +341,13 @@ begin
     Text[TextDate[I]].Visible := true;
 
     Text[TextName[I]].Text := CurrentSong.Score[difficulty, I-1].Name;
+    if (CurrentSong.IsDuet) and (CurrentSong.Score[difficulty, I-1].Track < 2) then
+      Text[TextName[I]].Text := Text[TextName[I]].Text + ' (P' + IntToStr(CurrentSong.Score[difficulty, I-1].Track + 1) + ')';
     Text[TextScore[I]].Text := IntToStr(CurrentSong.Score[difficulty, I-1].Score);
     Text[TextDate[I]].Text := CurrentSong.Score[difficulty, I-1].Date;
   end;
 
-  for I := Length(CurrentSong.Score[difficulty]) + 1 to 5 do
+  for I := Length(CurrentSong.Score[difficulty]) + 1 to Ini.TopScreenSize + 1 do
   begin
     Statics[StaticNumber[I]].Visible := false;
     Text[TextNumber[I]].Visible := false;

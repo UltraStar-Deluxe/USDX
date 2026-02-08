@@ -93,7 +93,7 @@ type
       
       constructor Create; override;
       function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
 
       procedure OnShow; override;
@@ -261,7 +261,7 @@ begin
   end;
 end;
 
-function TScreenName.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenName.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
   var
     I: integer;
     SDL_ModState: word;
@@ -1076,6 +1076,7 @@ begin
   if Ini.ReloadNames then
   begin
     OnShow;
+    Ini.ReloadDelays;
   end;
 
   if isScrolling then

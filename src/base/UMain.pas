@@ -187,6 +187,13 @@ begin
     // Help
     Log.LogStatus('Load Help', 'Initialization');
     Help := THelp.Create;
+    if (Length(ILanguage) > 0) then
+    begin
+      if (Ini.Language >= 0) and (Ini.Language < Length(ILanguage)) then
+        Help.ChangeLanguage(ILanguage[Ini.Language])
+      else
+        Help.ChangeLanguage(ILanguage[0]);
+    end;
 
     // it is possible that this is the first run, create a .ini file if neccessary
     Log.LogStatus('Write Ini', 'Initialization');
@@ -491,6 +498,8 @@ begin
               KeepGoing := ScreenPopupSendScore.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else if (ScreenPopupScoreDownload <> nil) and (ScreenPopupScoreDownload.Visible) then
               KeepGoing := ScreenPopupScoreDownload.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+            else if (ScreenPopupHelp <> nil) and (ScreenPopupHelp.Visible) then
+              KeepGoing := ScreenPopupHelp.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else
             begin
               KeepGoing := Display.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y);
@@ -580,7 +589,7 @@ begin
             else if (Display.ShouldHandleInput(LongWord(SimKey), KeyCharUnicode, true, SuppressKey)) then
             begin
               // check if screen wants to exit
-              KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true);
+              KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true, Event.key._repeat > 0);
 
               // if screen wants to exit
               if not KeepGoing then
