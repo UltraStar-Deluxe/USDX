@@ -62,7 +62,7 @@ jobs:
           export PPC="ppcrossx64"
           export FPCMAKE="/c/FPC/3.2.2/bin/i386-win32/fpcmake"
           ./autogen.sh
-          ./configure
+          ./configure --with-opencv-cxx-api
           make
       - name: Add prebuilt DLLs
         run: |
