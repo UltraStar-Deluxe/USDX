@@ -74,3 +74,10 @@
 {$UNDEF HavePortmixer}
 
 {$DEFINE UseMIDIPort}
+
+{$DEFINE UseOpenCVWrapper}
+{$DEFINE OpenCVCoreStandalone}
+{$DEFINE OpenCVImgprocStandalone}
+{$DEFINE OpenCVVideoioStandalone}
+{$DEFINE OpenCVManualLink}
+{$DEFINE OpenCVWrapperDLL}
