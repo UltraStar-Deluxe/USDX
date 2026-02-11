@@ -219,7 +219,6 @@ type
       SingTimebarMode:       integer;
       JukeboxTimebarMode:    integer;
       DefaultSingMode:       integer;
-      PreloadSongNotes: integer;
 
       // Controller
       Joypad:         integer;
@@ -452,7 +451,6 @@ const
   sSelectPlayer = 1;
   sOpenMenu = 2;
   IDefaultSingMode: array[0..1] of UTF8String = ('Regular', 'Instrumental');
-  IPreloadSongNotes: array[0..1] of UTF8String = ('Off', 'On');
 
   ILineBonus:     array[0..1] of UTF8String = ('Off', 'On');
   IPartyPopup:    array[0..1] of UTF8String = ('Off', 'On');
@@ -556,7 +554,6 @@ var
   ISingScoresTranslated:       array[0..1] of UTF8String = ('Off', 'On');
   ITopScoresTranslated:        array[0..1] of UTF8String = ('All', 'Player');
   IDefaultSingModeTranslated:  array[0..1] of UTF8String = ('Regular', 'Instrumental');
-  IPreloadSongNotesTranslated: array[0..1] of UTF8String = ('Off', 'On');
 
   IJoypadTranslated:           array[0..1] of UTF8String = ('Off', 'On');
   IMouseTranslated:            array[0..2] of UTF8String = ('Off', 'On [System Cursor]', 'On [Game Cursor]');
@@ -839,10 +836,6 @@ begin
 
   IDefaultSingModeTranslated[0]       := ULanguage.Language.Translate('OPTION_VALUE_REGULAR');
   IDefaultSingModeTranslated[1]       := ULanguage.Language.Translate('OPTION_VALUE_INSTRUMENTAL');
-
-  IPreloadSongNotesTranslated[0]      := ULanguage.Language.Translate('OPTION_VALUE_OFF');
-  IPreloadSongNotesTranslated[1]      := ULanguage.Language.Translate('OPTION_VALUE_ON');
-
 
   ILineBonusTranslated[0]             := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   ILineBonusTranslated[1]             := ULanguage.Language.Translate('OPTION_VALUE_ON');
@@ -1621,9 +1614,6 @@ begin
   // DefaultSingMode
   DefaultSingMode := ReadArrayIndex(IDefaultSingMode, IniFile, 'Advanced', 'DefaultSingMode', IGNORE_INDEX, 'Regular');
 
-  // PreloadSongNotes
-  PreloadSongNotes := ReadArrayIndex(IPreloadSongNotes, IniFile, 'Advanced', 'PreloadSongNotes', IGNORE_INDEX, 'Off');
-
   // Linebonus
   LineBonus := ReadArrayIndex(ILineBonus, IniFile, 'Advanced', 'LineBonus', 1);
 
@@ -1635,7 +1625,6 @@ begin
 
   // TopScores
   TopScores := ReadArrayIndex(ITopScores, IniFile, 'Advanced', 'TopScores', IGNORE_INDEX, 'Player');
-
 
   // SyncTo
   SyncTo := ReadArrayIndex(ISyncTo, IniFile, 'Advanced', 'SyncTo', Ord(stMusic));
@@ -1945,9 +1934,6 @@ begin
     //DefaultSingMode
     IniFile.WriteString('Advanced', 'DefaultSingMode', IDefaultSingMode[DefaultSingMode]);
 
-    // PreloadSongNotes
-    IniFile.WriteString('Advanced', 'PreloadSongNotes', IPreloadSongNotes[PreloadSongNotes]);
-
     //Line Bonus
     IniFile.WriteString('Advanced', 'LineBonus', ILineBonus[LineBonus]);
 
@@ -1959,7 +1945,6 @@ begin
 
     //TopScores
     IniFile.WriteString('Advanced', 'TopScores', ITopScores[TopScores]);
-
 
     //SyncTo
     IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);

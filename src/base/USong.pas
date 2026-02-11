@@ -1912,7 +1912,7 @@ begin
     //Read Header
     Result := Self.ReadTxTHeader(SongFile, ReadCustomTags);
 
-    if Result and (ForceLoadNotes or (Ini = nil) or (Ini.PreloadSongNotes <> 0)) then
+    if Result and ForceLoadNotes then
     begin
       //Load Song for Medley Tags
       CurrentSong := Self;
