@@ -367,12 +367,14 @@ begin
 
           for I := 1 to PlayersPlay do
           begin
+            // TODO: is it really necessary for this screen to duplicate all these Ini. arrays?
             Ini.Name[I-1] := PlayerNames[I-1];
             Ini.PlayerColor[I-1] := Num[I-1];
             Ini.SingColor[I-1] := Num[I-1];
             Ini.PlayerLevel[I-1] := PlayerLevel[I-1];
             // also set (some) of this info in the much easier to use Player variable
             Player[I-1].Name := PlayerNames[I-1];
+            Player[I-1].Level := PlayerLevel[I-1];
 
             Ini.PlayerAvatar[I-1] := PlayerAvatarButtonMD5[PlayerAvatars[I-1]];
 
