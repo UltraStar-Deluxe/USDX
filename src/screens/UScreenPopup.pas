@@ -828,7 +828,7 @@ begin
   SetLength(IPlayersPlay, PlayersPlay);
 
   for I := 0 to PlayersPlay - 1 do
-    IPlayersPlay[I] := Ini.Name[I];
+    IPlayersPlay[I] := Player[I].Name;
 
   UpdateSelectSlideOptions(0, IPlayersPlay, SelectValueP);
 

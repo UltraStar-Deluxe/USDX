@@ -547,7 +547,7 @@ begin
     end
     else
     begin
-      ScreenSing.PlayerNames[I] := Ini.Name[I-1];
+      ScreenSing.PlayerNames[I] := Player[I-1].Name;
     end;
     ScreenSing.PlayerDuetNames[I] := ScreenSing.PlayerNames[I];
   end;

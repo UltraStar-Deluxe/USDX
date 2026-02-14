@@ -363,6 +363,7 @@ begin
           StopTextInput;
           Ini.Players := CountIndex;
           PlayersPlay:= UIni.IPlayersVals[CountIndex];
+          SetLength(Player, PlayersPlay);
 
           for I := 1 to PlayersPlay do
           begin
@@ -370,6 +371,8 @@ begin
             Ini.PlayerColor[I-1] := Num[I-1];
             Ini.SingColor[I-1] := Num[I-1];
             Ini.PlayerLevel[I-1] := PlayerLevel[I-1];
+            // also set (some) of this info in the much easier to use Player variable
+            Player[I-1].Name := PlayerNames[I-1];
 
             Ini.PlayerAvatar[I-1] := PlayerAvatarButtonMD5[PlayerAvatars[I-1]];
 

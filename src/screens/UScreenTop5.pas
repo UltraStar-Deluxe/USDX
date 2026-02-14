@@ -195,7 +195,7 @@ begin
   begin
     if (Round(Player[I].ScoreTotalInt) > 0) and (ScreenSing.SungToEnd) then
     begin
-      DataBase.AddScore(CurrentSong, Ini.PlayerLevel[I], Ini.Name[I], Round(Player[I].ScoreTotalInt));
+      DataBase.AddScore(CurrentSong, Ini.PlayerLevel[I], Player[I].Name, Round(Player[I].ScoreTotalInt));
       sung:=true;
     end;
   end;
