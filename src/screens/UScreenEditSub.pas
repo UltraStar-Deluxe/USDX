@@ -290,13 +290,19 @@ type
       VolumeAudioSlideId:      Integer;
       VolumeMidiSlideId:       Integer;
       VolumeClickSlideId:      Integer;
+      PrerollAudioSlideId:     Integer;
+      PrerollMidiSlideId:      Integer;
       VolumeAudioIndex:        Integer;
       VolumeMidiIndex:         Integer;
       VolumeClickIndex:        Integer; //for update slide
+      PrerollAudioIndex:       Integer;
+      PrerollMidiIndex:        Integer;
 
       VolumeAudio:             array of UTF8String;
       VolumeMidi:              array of UTF8String;
       VolumeClick:             array of UTF8String;
+      PrerollAudio:            array of UTF8String;
+      PrerollMidi:             array of UTF8String;
       // control buttons
       UndoButtonId:            Integer;
       PreviousSeqButtonID:     Integer;
@@ -3065,16 +3071,18 @@ begin
     AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio),nil);
   end;
 
-  if (((VolumeAudioSlideId = Interactions[nBut].Num) or (VolumeMidiSlideId = Interactions[nBut].Num) or (VolumeClickSlideId = Interactions[nBut].Num))
+  if (((VolumeAudioSlideId = Interactions[nBut].Num) or (VolumeMidiSlideId = Interactions[nBut].Num) or (VolumeClickSlideId = Interactions[nBut].Num)
+    or (PrerollAudioSlideId = Interactions[nBut].Num) or (PrerollMidiSlideId = Interactions[nBut].Num))
     and (Action = maLeft) and (SelectsS[Interactions[nBut].Num].SelectedOption > 0)) then
   begin
-    SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
+    SelectsS[Interactions[nBut].Num].SelectedOption := ((SelectsS[Interactions[nBut].Num].SelectedOption div 10) - 1) * 10;
   end;
 
-  if (((VolumeAudioSlideId = Interactions[nBut].Num) or (VolumeMidiSlideId = Interactions[nBut].Num) or (VolumeClickSlideId = Interactions[nBut].Num))
+  if (((VolumeAudioSlideId = Interactions[nBut].Num) or (VolumeMidiSlideId = Interactions[nBut].Num) or (VolumeClickSlideId = Interactions[nBut].Num)
+    or (PrerollAudioSlideId = Interactions[nBut].Num) or (PrerollMidiSlideId = Interactions[nBut].Num))
     and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
   begin
-    SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
+    SelectsS[Interactions[nBut].Num].SelectedOption := ((SelectsS[Interactions[nBut].Num].SelectedOption div 10) + 1) * 10;
   end;
   end
   else if (MouseButton = SDL_BUTTON_RIGHT) then
@@ -5060,6 +5068,12 @@ begin
   // Click Volume
   VolumeClickSlideId := AddSelectSlide(Theme.EditSub.SelectVolClick, VolumeClickIndex, VolumeClick);
 
+  // Audio Preroll
+  PrerollAudioSlideId := AddSelectSlide(Theme.EditSub.SelectPrerollAudio, PrerollAudioIndex, PrerollAudio);
+
+  // Midi Preroll
+  PrerollMidiSlideId := AddSelectSlide(Theme.EditSub.SelectPrerollMidi, PrerollMidiIndex, PrerollMidi);
+
   {
   playerIconId[1] := AddStatic(Theme.Score.StaticPlayerIdBox[1]);
   Statics[playerIconId[1]].Texture.X := 2;
@@ -5115,6 +5129,7 @@ var
   FileIndex:   Integer;
   TrackIndex:  Integer;
   VolumeIndex: Integer;
+  PrerollIndex: Integer;
   Ext:         string;
   TimingErrors: UTF8String;
 
@@ -5458,6 +5473,19 @@ begin
     UpdateSelectSlideOptions(VolumeMidiSlideId,  VolumeMidi,  VolumeMidiIndex);
     UpdateSelectSlideOptions(VolumeClickSlideId, VolumeClick, VolumeClickIndex);
 
+    // preroll slides (-500..500 ms)
+    SetLength(PrerollAudio, 1001);
+    SetLength(PrerollMidi, 1001);
+    for PrerollIndex := -500 to 500 do
+    begin
+      PrerollAudio[PrerollIndex + 500] := IntToStr(PrerollIndex);
+      PrerollMidi[PrerollIndex + 500] := IntToStr(PrerollIndex);
+    end;
+    PrerollAudioIndex := EnsureRange(Ini.EditorClickLeadMs, -500, 500) + 500;
+    PrerollMidiIndex := EnsureRange(Ini.EditorMidiLeadMs, -500, 500) + 500;
+    UpdateSelectSlideOptions(PrerollAudioSlideId, PrerollAudio, PrerollAudioIndex);
+    UpdateSelectSlideOptions(PrerollMidiSlideId,  PrerollMidi,  PrerollMidiIndex);
+
     for TrackIndex := 0 to High(CurrentSong.Tracks) do
     begin
       CurrentSong.Tracks[TrackIndex].CurrentLine := 0;
@@ -5557,6 +5585,9 @@ var
   Count:     Integer;
   ProjectedBeat: Integer;
 begin
+  Ini.EditorClickLeadMs := PrerollAudioIndex - 500;
+  Ini.EditorMidiLeadMs := PrerollMidiIndex - 500;
+
   {$IFDEF UseMIDIPort} // midi music
   if PlaySentenceMidi and Not (PlayOneMidi) then
   begin
