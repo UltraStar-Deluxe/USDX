@@ -201,6 +201,7 @@ type
       Theme:          integer;
       SkinNo:         integer;
       Color:          integer;
+      EditorNoteColor: integer;
       BackgroundMusicOption: integer;
 
       // Record
@@ -1226,6 +1227,11 @@ begin
 
   // Color
   Color := ReadArrayIndex(IColor, IniFile, 'Themes', 'Color', Skin.GetDefaultColor(SkinNo));
+
+  // Editor active note color (defaults to player 1 blue)
+  EditorNoteColor := IniFile.ReadInteger('Themes', 'EditorNoteColor', DefaultPlayerColors[0] - 1);
+  if (EditorNoteColor < 0) or (EditorNoteColor > High(IPlayerColorTranslated)) then
+    EditorNoteColor := DefaultPlayerColors[0] - 1;
 end;
 
 procedure TIni.LoadScreenModes(IniFile: TCustomIniFile);
@@ -1913,6 +1919,9 @@ begin
 
     // Color
     IniFile.WriteString('Themes', 'Color', IColor[Color]);
+
+  // Editor active note color
+  IniFile.WriteInteger('Themes', 'EditorNoteColor', EditorNoteColor);
 
     SaveInputDeviceCfg(IniFile);
 
