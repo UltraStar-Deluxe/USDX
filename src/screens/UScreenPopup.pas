@@ -179,8 +179,8 @@ type
 
       Texture_ProgressBar: TTexture;
 
-      List_MD5Song: widestring;
-      Receive_List: array[0..2] of widestring;
+      List_MD5Song: UTF8String;
+      Receive_List: array[0..2] of UTF8String;
       Actual_Level: integer;
       Position_Receive_List: array[0..2] of integer;
 
@@ -959,7 +959,7 @@ end;
 
 procedure TScreenPopupScoreDownload.SaveScoreSong();
 var
-  String_Text, User_Score, Max_Score, Media_Score: string;
+  String_Text, User_Score, Max_Score, Media_Score: UTF8String;
   J, Update: integer;
   DeleteSongLevel: array [0..2] of boolean;
 begin
@@ -1032,7 +1032,7 @@ end;
 
 procedure TScreenPopupScoreDownload.FileSaveScoreSong();
 var
-  String_Text, User_Score, Max_Score, Media_Score, MD5_Song: string;
+  String_Text, User_Score, Max_Score, Media_Score, MD5_Song: UTF8String;
   Level: byte;
   Update: integer;
   SongExist: boolean;

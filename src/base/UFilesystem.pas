@@ -654,7 +654,7 @@ end;
 
 function TFileSystemImpl.FindFirst(const FilePattern: IPath; Attr: integer; var F: TSytemSearchRec): integer;
 begin
-  Result := SysUtils.FindFirst(FilePattern.ToNative(), Attr, F);
+  Result := SysUtils.FindFirst(UTF8Decode(FilePattern.ToUTF8()), Attr, F);
 end;
 
 function TFileSystemImpl.FindNext(var F: TSytemSearchRec): integer;
