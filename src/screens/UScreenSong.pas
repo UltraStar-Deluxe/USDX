@@ -284,6 +284,7 @@ type
       procedure SelectRandomSong;
       procedure SetJoker;
       procedure SetStatics;
+      procedure FilterDuetsInPartyMode;
       procedure ColorizeJokers;
       //procedure PartyTimeLimit;
       function PermitCategory(ID: integer): boolean;
@@ -3196,9 +3197,6 @@ begin
   //Party Mode
   else
   begin
-    SelectRandomSong;
-    //Show Menu directly in PartyMode
-    //But only if selected in Options
     if (Ini.PartyPopup = 1) then
     begin
       ScreenSongMenu.MenuShow(SM_Party_Main);
@@ -3227,8 +3225,13 @@ begin
       PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, SongIndex);
   end;
 
-  SetScrollRefresh;
+  FilterDuetsInPartyMode; // in party mode
 
+  if (Mode = smPartyClassic) then
+    SelectRandomSong;
+
+  SetScrollRefresh;
+  FixSelected;
   //if (Mode = smPartyTournament) then
   //  PartyTime := SDL_GetTicks();
 
@@ -3952,6 +3955,8 @@ var
   I, I2, Count, RealTarget: integer;
   Target: cardinal;
 begin
+  if (CatSongs.VisibleSongs <= 0) then
+    Exit;
   case PlayListMan.Mode of
       smAll:  // all songs just select random song
         begin
@@ -4219,6 +4224,21 @@ begin
   end;
 end;
 
+procedure TScreenSong.FilterDuetsInPartyMode;
+var
+  I: integer;
+begin
+  if (Mode in [smPartyClassic, smPartyFree, smPartyTournament]) then
+  begin
+    for I := 0 to High(CatSongs.Song) do
+      if CatSongs.Song[I].isDuet then
+        CatSongs.Song[I].Visible := false;
+    // Reset visible-index cache so VisibleIndex() recomputes correctly
+    CatSongs.LastVisChecked := 0;
+    CatSongs.LastVisIndex := 0;
+  end;
+end;
+
 procedure TScreenSong.SetStatics;
 var
   I:       integer;
@@ -4298,6 +4318,8 @@ begin
 
     SelectRandomSong;
     SetJoker;
+    SetScrollRefresh;
+    FixSelected;
   end;
 end;
 
