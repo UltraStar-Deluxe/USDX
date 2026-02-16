@@ -18,7 +18,7 @@ Prebuilt DLLs for SDL2, SDL2_image, FFmpeg, SQLite, PortAudio, and Lua can be fo
 1. Start Lazarus.
 2. Choose Project → Open Project … in the menu bar. A file-dialog box will show.
 3. Change to the src subdirectory of your USDX working copy (e.g. ultrastardx/src).
-  * If you are running Windows, open the ultrastardx-win.lpi project-file (Preferably use the win32 verison of lazarus, as the included libraries are 32 bit).
+  * If you are running Windows, open the ultrastardx-win.lpi project-file (use the win64 version of Lazarus, as the included libraries are 64 bit).
   * On Unix-like systems use the ultrastardx-unix.lpi file.
 4. Now you can compile USDX by choosing the menu entry Run → Build or pressing Ctrl+F9.
 5. If you want to compile and/or start USDX directly choose Run → Run or press F9.
@@ -43,11 +43,13 @@ Optional libraries:
 
 #### Windows using MSYS2
 - Install [MSYS2](https://www.msys2.org)
-- Install [FPC](https://www.freepascal.org). You need at least a custom installation with the Free Pascal Utils (for `fpcres`) and the Units.
-- `pacman -S autoconf-wrapper automake-wrapper gcc git make mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_gfx mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-SDL2_mixer mingw-w64-x86_64-SDL2_net mingw-w64-x86_64-SDL2_ttf mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-lua51 pkgconf`
+- Install [FPC](https://www.freepascal.org). Use the Win32 cross-to-Win64 installer so you get `ppcrossx64` and the Win64 RTL units.
+- `pacman -S autoconf-wrapper automake-wrapper gcc git make mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_image mingw-w64-x86_64-ffmpeg mingw-w64-x86_64-lua mingw-w64-x86_64-pkgconf pkgconf`
 - Add some information to `.bash_profile`:
-  * Path to FPC, something like `PATH="${PATH}:/c/FPC/3.2.2/bin/i386-win32"`
-  * Path to mingw64 libraries, `PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/mingw64/lib/pkgconfig"`
+  * Path to the cross compiler: `PATH="${PATH}:/c/FPC/3.2.2/bin/i386-win32"`
+  * FPC config and base: `FPCCFG="/c/FPC/3.2.2/bin/i386-win32/fpc.cfg"` and `FPCDIR="/c/FPC/3.2.2"`
+  * mingw64 pkg-config path: `PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/mingw64/lib/pkgconfig:/mingw64/share/pkgconfig"`
+  * (Optional) pin the compiler: `PPC="ppcrossx64"`
 
 ### Compile and run
 - `git clone https://github.com/UltraStar-Deluxe/USDX`
