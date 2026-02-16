@@ -632,6 +632,8 @@
 ;TODO: EDIT_VOLUME_AUDIO=Audio Volume:
 ;TODO: EDIT_VOLUME_MIDI=Midi Volume:
 ;TODO: EDIT_VOLUME_CLICK=Click Volume:
+;TODO: EDIT_PREROLL_AUDIO=Audio Preroll (ms):
+;TODO: EDIT_PREROLL_MIDI=Midi Preroll (ms):
 ;TODO: EDIT_INFO_UNDO=Undo last operation
 ;TODO: EDIT_INFO_PREVIEW_SET=Preview start set at %0.3f s
 ;TODO: EDIT_INFO_PREVIEW_CLEARED=Preview start cleared
