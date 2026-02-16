@@ -921,7 +921,7 @@ begin
 
   // Send Score
   Act_MD5Song := CurrentSong.MD5;
-  Act_Level := Ini.PlayerLevel[0];
+  Act_Level := Player[0].Level;
 
   // start timer
   CountSkipTimeSet;
