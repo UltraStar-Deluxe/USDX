@@ -41,7 +41,8 @@ uses
   ULog,
   UIni,
   UTexture,
-  UPath;
+  UPath,
+  UScale;
 type
   TBackgroundType =
     (bgtNone, bgtColor, bgtTexture, bgtVideo, bgtFade, bgtAuto);
@@ -95,6 +96,7 @@ type
     Z:      real;
     W:      integer;
     H:      integer;
+    ScaleMode: TLayoutScaleMode;
   end;
 
   TThemeStaticAlphaRectangle = record
@@ -104,6 +106,7 @@ type
     W:      integer;
     H:      integer;
     Alpha:  real;
+    ScaleMode: TLayoutScaleMode;
   end;
 
   TThemeStaticColorRectangle = record
@@ -116,6 +119,7 @@ type
     ColR:   real;
     ColG:   real;
     ColB:   real;
+    ScaleMode: TLayoutScaleMode;
   end;
 
   TThemeStatic = record
@@ -138,6 +142,7 @@ type
     //Reflection
     Reflection:           boolean;
     Reflectionspacing:    real;
+    ScaleMode:            TLayoutScaleMode;
   end;
   AThemeStatic = array of TThemeStatic;
 
@@ -164,6 +169,7 @@ type
     //Reflection
     Reflection:           boolean;
     ReflectionSpacing:    real;
+    ScaleMode:            TLayoutScaleMode;
   end;
   AThemeText = array of TThemeText;
 
@@ -203,6 +209,7 @@ type
 
     //Button Collection Mod
     Parent: byte; //Number of the Button Collection this Button is assigned to. IF 0: No Assignement
+    ScaleMode: TLayoutScaleMode;
   end;
 
   //Button Collection Mod
@@ -1187,6 +1194,8 @@ type
     IMode:  array[0..3] of UTF8String;
     OptionsNetworkLegendStatic: array of TThemeStatic;
     OptionsNetworkLegendText: array of TThemeText;
+    LayoutScreenW: integer;
+    LayoutScreenH: integer;
 
     constructor Create;
 
@@ -1273,6 +1282,16 @@ uses
 const
   MAX_INHERITANCE = 10;
 
+function ParseScaleMode(const Value: string; Default: TLayoutScaleMode): TLayoutScaleMode;
+begin
+  if SameText(Value, 'stretch') then
+    Result := lsStretch
+  else if SameText(Value, 'uniform') then
+    Result := lsUniform
+  else
+    Result := Default;
+end;
+
 //-----------
 //Helper procs to use TRGB in Opengl ...maybe this should be somewhere else
 //-----------
@@ -1347,6 +1366,9 @@ begin
   StatDetail := TThemeStatDetail.Create;
 
   JukeboxPlaylist := TThemeJukeboxPlaylist.Create;
+
+  LayoutScreenW := 800;
+  LayoutScreenH := 600;
 
   //LoadTheme(FileName, Color);
   LoadList;
@@ -1475,6 +1497,16 @@ begin
     OpenFile(ThemeNum);
     if ThemeIni.ReadString('Theme', 'Name', '') <> '' then
     begin
+      LayoutScreenW := ThemeIni.ReadInteger('Theme', 'ScreenW', 0);
+      LayoutScreenH := ThemeIni.ReadInteger('Theme', 'ScreenH', 0);
+      if (LayoutScreenW <= 0) and (BaseThemeIni <> nil) then
+        LayoutScreenW := BaseThemeIni.ReadInteger('Theme', 'ScreenW', 0);
+      if (LayoutScreenH <= 0) and (BaseThemeIni <> nil) then
+        LayoutScreenH := BaseThemeIni.ReadInteger('Theme', 'ScreenH', 0);
+      if LayoutScreenW <= 0 then
+        LayoutScreenW := 800;
+      if LayoutScreenH <= 0 then
+        LayoutScreenH := 600;
 
       {Skin.SkinName := ThemeIni.ReadString('Theme', 'Name', 'Singstar');
       Skin.SkinPath := 'Skins\' + Skin.SkinName + '\';
@@ -2383,6 +2415,8 @@ begin
     ThemeText.DColG := Color[C].RGB.G;
     ThemeText.DColB := Color[C].RGB.B;
   end;
+
+  ThemeText.ScaleMode := ParseScaleMode(ReadString(SectionList, 'ScaleMode', ''), lsUniform);
 end;
 
 procedure TTheme.ThemeLoadTexts(var ThemeText: AThemeText; const Name: string);
@@ -2414,6 +2448,8 @@ procedure TTheme.ThemeLoadStatic(var ThemeStatic: TThemeStatic; const Name: stri
 var
   C: integer;
   SectionList: TThemeSectionList;
+  ScaleValue: string;
+  TexLower: string;
 begin
   SectionList := GetSectionList(Name);
   if (Length(SectionList)) = 0 then
@@ -2437,6 +2473,18 @@ begin
   ThemeStatic.TexY2 := ReadFloat(SectionList, 'TexY2', 1);
   ThemeStatic.Reflection         := ReadBool(SectionList, 'Reflection', false);
   ThemeStatic.Reflectionspacing  := ReadFloat(SectionList, 'ReflectionSpacing', 15);
+  ScaleValue := ReadString(SectionList, 'ScaleMode', '');
+  if ScaleValue = '' then
+  begin
+    TexLower := LowerCase(ThemeStatic.Tex);
+    if (Pos('icon', TexLower) > 0) or (Pos('logo', TexLower) > 0) or (Pos('symbol', TexLower) > 0) or
+       (Pos('mic', TexLower) > 0) or (Pos('star', TexLower) > 0) then
+      ThemeStatic.ScaleMode := lsUniform
+    else
+      ThemeStatic.ScaleMode := lsStretch;
+  end
+  else
+    ThemeStatic.ScaleMode := ParseScaleMode(ScaleValue, lsStretch);
   C := ColorExists(ThemeStatic.Color);
   if C >= 0 then
   begin
@@ -2468,6 +2516,7 @@ begin
   ThemeStaticRectangle.Z := ReadFloat  (SectionList, 'Z', 0);
   ThemeStaticRectangle.W := ReadInteger(SectionList, 'W', 0);
   ThemeStaticRectangle.H := ReadInteger(SectionList, 'H', 0);
+  ThemeStaticRectangle.ScaleMode := ParseScaleMode(ReadString(SectionList, 'ScaleMode', ''), lsUniform);
 end;
 
 procedure TTheme.ThemeLoadStaticAlphaRectangle(var static: TThemeStaticAlphaRectangle; const Name: string);
@@ -2484,6 +2533,7 @@ begin
   static.W := ReadInteger(SectionList, 'W', 0);
   static.H := ReadInteger(SectionList, 'H', 0);
   static.Alpha := ReadFloat(SectionList, 'Alpha', 1);
+  static.ScaleMode := ParseScaleMode(ReadString(SectionList, 'ScaleMode', ''), lsUniform);
 end;
 
 procedure TTheme.ThemeLoadStaticColorRectangle(var ThemeStaticColorRectangle: TThemeStaticColorRectangle; const Name: string);
@@ -2500,6 +2550,7 @@ begin
     ThemeStaticColorRectangle.Z := ReadFloat  (SectionList, 'Z', 0);
     ThemeStaticColorRectangle.W := ReadInteger(SectionList, 'W', 0);
     ThemeStaticColorRectangle.H := ReadInteger(SectionList, 'H', 0);
+    ThemeStaticColorRectangle.ScaleMode := ParseScaleMode(ReadString(SectionList, 'ScaleMode', ''), lsUniform);
     ThemeStaticColorRectangle.Color := ReadString(SectionList, 'Color', '');
 
   C := ColorExists(ThemeStaticColorRectangle.Color);
@@ -2581,6 +2632,7 @@ begin
   ThemeButton.Z := ReadFloat   (SectionList, 'Z', 0);
   ThemeButton.W := ReadInteger (SectionList, 'W', 0);
   ThemeButton.H := ReadInteger (SectionList, 'H', 0);
+  ThemeButton.ScaleMode := ParseScaleMode(ReadString(SectionList, 'ScaleMode', ''), lsStretch);
   ThemeButton.Typ := ParseTextureType(ReadString(SectionList, 'Type', ''), TEXTURE_TYPE_PLAIN);
 
   //Reflection Mod
