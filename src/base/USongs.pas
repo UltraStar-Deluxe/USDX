@@ -465,10 +465,6 @@ begin
         Songs.Sort(sArtist);
         Songs.Sort(sYear);
       end;
-    sPlaylist: begin
-        Songs.Sort(sTitle);
-        Songs.Sort(sArtist);
-      end;
   end; // case
 end;
 
@@ -878,6 +874,11 @@ var
   TmpString: UTF8String;
   WordArray: array of UTF8String;
 begin
+    if Assigned(PlayListMan) then
+    begin
+      if (Filter = fltAll) and (Trim(FilterStr) = '') then
+        PlayListMan.RestoreSongOrder;
+    end;
 
   FilterStr := Trim(LowerCase(TransliterateToASCII(FilterStr)));
 
