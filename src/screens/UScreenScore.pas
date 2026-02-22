@@ -1419,8 +1419,7 @@ begin
   ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
   if (ThemeIndex > 0) and ((ScreenAct = PlayerPositionMap[PlayerNumber-1].Screen) or (PlayerPositionMap[PlayerNumber-1].BothScreens)) then
   begin
-    // todo: take the name from player[PlayerNumber].Name instead of the ini when this is done (mog)
-    Text[TextName[ThemeIndex]].Text := Ini.Name[PlayerNumber-1];
+    Text[TextName[ThemeIndex]].Text := Player[PlayerNumber-1].Name;
     // end todo
 
     //golden

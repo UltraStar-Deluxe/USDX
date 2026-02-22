@@ -1387,7 +1387,7 @@ begin
   begin
 
     if (ScreenSong.Mode = smNormal) or (ScreenSong.Mode = smMedley) then
-      Difficulty := Ini.PlayerLevel[I - 1]
+      Difficulty := Player[I - 1].Level
     else
       Difficulty := Ini.Difficulty;
 

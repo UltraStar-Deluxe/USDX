@@ -187,7 +187,7 @@ begin
 
   sung := false;
   Fadeout := false;
-  DifficultyShow := Ini.PlayerLevel[0];
+  DifficultyShow := Player[0].Level;
 
   //ReadScore(CurrentSong);
 
@@ -195,7 +195,7 @@ begin
   begin
     if (Round(Player[I].ScoreTotalInt) > 0) and (ScreenSing.SungToEnd) then
     begin
-      DataBase.AddScore(CurrentSong, Ini.PlayerLevel[I], Ini.Name[I], Round(Player[I].ScoreTotalInt));
+      DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Name, Round(Player[I].ScoreTotalInt));
       sung:=true;
     end;
   end;
@@ -227,7 +227,8 @@ begin
 
   Text[TextArtistTitle].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
 
-  for I := 1 to Length(CurrentSong.Score[Ini.PlayerLevel[0]]) do
+  // TODO: the following loops are really hard to read
+  for I := 1 to Length(CurrentSong.Score[Player[0].Level]) do
   begin
     Statics[StaticNumber[I]].Visible := true;
     Text[TextNumber[I]].Visible := true;
@@ -235,14 +236,14 @@ begin
     Text[TextScore[I]].Visible := true;
     Text[TextDate[I]].Visible := true;
 
-    Text[TextName[I]].Text := CurrentSong.Score[Ini.PlayerLevel[0], I-1].Name;
-    Text[TextScore[I]].Text := IntToStr(CurrentSong.Score[Ini.PlayerLevel[0], I-1].Score);
-    Text[TextDate[I]].Text := CurrentSong.Score[Ini.PlayerLevel[0], I-1].Date;
+    Text[TextName[I]].Text := CurrentSong.Score[Player[0].Level, I-1].Name;
+    Text[TextScore[I]].Text := IntToStr(CurrentSong.Score[Player[0].Level, I-1].Score);
+    Text[TextDate[I]].Text := CurrentSong.Score[Player[0].Level, I-1].Date;
   end;
 
-  If Length(CurrentSong.Score[Ini.PlayerLevel[0]])=0 then
+  If Length(CurrentSong.Score[Player[0].Level])=0 then
     FadeTo(@ScreenSong); //if there are no scores to show, go to next screen
-  for I := Length(CurrentSong.Score[Ini.PlayerLevel[0]]) + 1 to 5 do
+  for I := Length(CurrentSong.Score[Player[0].Level]) + 1 to 5 do
   begin
     Statics[StaticNumber[I]].Visible := false;
     Text[TextNumber[I]].Visible := false;
@@ -251,7 +252,7 @@ begin
     Text[TextDate[I]].Visible := false;
   end;
 
-  Text[TextLevel].Text := IDifficultyTranslated[Ini.PlayerLevel[0]];
+  Text[TextLevel].Text := IDifficultyTranslated[Player[0].Level];
 end;
 
 procedure TScreenTop5.DrawScores(difficulty: integer);

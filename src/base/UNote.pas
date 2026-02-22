@@ -64,6 +64,8 @@ type
   PPLayer = ^TPlayer;
   TPlayer = record
     Name:           UTF8String;
+    // Level === Difficulty, both terms appear to be used
+    Level:          integer;
 
     // Index in Teaminfo record
     TeamID:         byte;
@@ -582,7 +584,7 @@ begin
               NoteHit := false;
               ActualTone := CurrentSound.Tone;
               if (ScreenSong.Mode = smNormal) or (ScreenSong.Mode = smMedley) then
-                Range := 2 - Ini.PlayerLevel[PlayerIndex]
+                Range := 2 - Player[PlayerIndex].Level
               else
                 Range := 2 - Ini.Difficulty;
 
