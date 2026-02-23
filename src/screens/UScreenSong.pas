@@ -3768,6 +3768,7 @@ procedure TScreenSong.StartMusicPreview();
 var
   Song: TSong;
   PreviewPos: real;
+  PreviewVolume: single;
 begin
   if SongIndex <> -1 then
   begin
@@ -3806,17 +3807,18 @@ begin
     AudioPlayback.Position := PreviewPos;
   
     // set preview volume
+    PreviewVolume := EnsureRange(Ini.PreviewVolume, 0, 100) / 100;
     if Ini.PreviewFading = 0 then
     begin
       // music fade disabled: start with full volume
-      AudioPlayback.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
+      AudioPlayback.SetVolume(PreviewVolume);
       AudioPlayback.Play()
     end
     else
     begin
       // music fade enabled: start muted and fade-in
       AudioPlayback.SetVolume(0);
-      AudioPlayback.FadeIn(Ini.PreviewFading, IPreviewVolumeVals[Ini.PreviewVolume]);
+      AudioPlayback.FadeIn(Ini.PreviewFading, PreviewVolume);
     end;
   end;
 end;

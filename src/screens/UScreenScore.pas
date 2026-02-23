@@ -1788,6 +1788,7 @@ procedure TScreenSCore.StartPreview;
 var
   select:   integer;
   changed:  boolean;
+  PreviewVolume: single;
 begin
   //When Music Preview is activated -> then change music
   if (Ini.PreviewVolume <> 0) then
@@ -1826,17 +1827,18 @@ begin
           AudioPlayback.Position := (AudioPlayback.Length / 4);
 
         // set preview volume
+        PreviewVolume := EnsureRange(Ini.PreviewVolume, 0, 100) / 100;
         if (Ini.PreviewFading = 0) then
         begin
           // music fade disabled: start with full volume
-          AudioPlayback.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
+          AudioPlayback.SetVolume(PreviewVolume);
           AudioPlayback.Play()
         end
         else
         begin
           // music fade enabled: start muted and fade-in
           AudioPlayback.SetVolume(0);
-          AudioPlayback.FadeIn(Ini.PreviewFading, IPreviewVolumeVals[Ini.PreviewVolume]);
+          AudioPlayback.FadeIn(Ini.PreviewFading, PreviewVolume);
         end;
       end;
     end;
