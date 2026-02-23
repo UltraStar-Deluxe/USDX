@@ -1,5 +1,7 @@
-import urllib.request
 import json
+import urllib.request
+import zipfile
+from pathlib import Path
 
 api_url = 'https://api.github.com/repos/dgruss/mxe/releases'
 with urllib.request.urlopen(api_url) as resp:
@@ -23,3 +25,14 @@ with urllib.request.urlopen(api_url) as resp:
             exit(0)
     print('No usdx-dlls-*.zip asset found in any release.')
     exit(1)
+
+bass_url = 'https://www.un4seen.com/files/bass24.zip'
+zip_name = 'bass24.zip'
+target = Path('game') / 'bass.dll'
+with urllib.request.urlopen(bass_url) as dl, open(zip_name, 'wb') as out:
+    out.write(dl.read())
+with zipfile.ZipFile(zip_name, 'r') as zf:
+    member = 'x64/bass.dll'
+    with zf.open(member) as src, open(target, 'wb') as dst:
+        dst.write(src.read())
+print(f'Downloaded {member} to {target}')
