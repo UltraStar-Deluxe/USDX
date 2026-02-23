@@ -88,6 +88,7 @@ function TextureTypeToStr(TexType: TTextureType): string;
 function ParseTextureType(const TypeStr: string; Default: TTextureType): TTextureType;
 
 procedure AdjustPixelFormat(var TexSurface: PSDL_Surface; Typ: TTextureType);
+procedure FreeTexture(var Texture: TTexture);
 
 type
   PTextureEntry = ^TTextureEntry;
@@ -170,6 +171,15 @@ begin
     TempSurface := TexSurface;
     TexSurface := SDL_ConvertSurfaceFormat(TempSurface, NeededPixFmt, 0);
     SDL_FreeSurface(TempSurface);
+  end;
+end;
+
+procedure FreeTexture(var Texture: TTexture);
+begin
+  if (Texture.TexNum <> 0) then
+  begin
+    glDeleteTextures(1, @Texture.TexNum);
+    Texture.TexNum := 0;
   end;
 end;
 

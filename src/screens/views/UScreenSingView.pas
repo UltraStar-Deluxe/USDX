@@ -193,6 +193,7 @@ type
 
 
     constructor Create;
+    destructor Destroy; override;
 
     procedure DrawMedleyCountdown();
     function Draw: boolean;
@@ -710,6 +711,41 @@ begin
   assignAvatarStatic(Theme.Sing.Duet3PP1, StaticDuetP1ThreePAvatar[1], AvatarPlayerTextures[4]);
   assignAvatarStatic(Theme.Sing.Duet3PP2, StaticDuetP2MAvatar[1]     , AvatarPlayerTextures[5]);
   assignAvatarStatic(Theme.Sing.Duet3PP3, StaticDuetP3RAvatar[1]     , AvatarPlayerTextures[6]);
+end;
+
+destructor TScreenSingView.Destroy;
+var
+  I: integer;
+begin
+  for I := 1 to UIni.IMaxPlayerCount do
+  begin
+    FreeTexture(Tex_Left[I]);
+    FreeTexture(Tex_Mid[I]);
+    FreeTexture(Tex_Right[I]);
+    FreeTexture(Tex_plain_Left[I]);
+    FreeTexture(Tex_plain_Mid[I]);
+    FreeTexture(Tex_plain_Right[I]);
+    FreeTexture(Tex_BG_Left[I]);
+    FreeTexture(Tex_BG_Mid[I]);
+    FreeTexture(Tex_BG_Right[I]);
+    FreeTexture(Tex_Left_Rap[I]);
+    FreeTexture(Tex_Mid_Rap[I]);
+    FreeTexture(Tex_Right_Rap[I]);
+    FreeTexture(Tex_plain_Left_Rap[I]);
+    FreeTexture(Tex_plain_Mid_Rap[I]);
+    FreeTexture(Tex_plain_Right_Rap[I]);
+    FreeTexture(Tex_BG_Left_Rap[I]);
+    FreeTexture(Tex_BG_Mid_Rap[I]);
+    FreeTexture(Tex_BG_Right_Rap[I]);
+    FreeTexture(Tex_ScoreBG[I - 1]);
+  end;
+  FreeTexture(Tex_Left_Inv);
+  FreeTexture(Tex_Mid_Inv);
+  FreeTexture(Tex_Right_Inv);
+  FreeTexture(Tex_Left_Rap_Inv);
+  FreeTexture(Tex_Mid_Rap_Inv);
+  FreeTexture(Tex_Right_Rap_Inv);
+  inherited;
 end;
 
 function TScreenSingView.Draw: boolean;
