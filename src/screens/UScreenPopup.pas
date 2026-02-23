@@ -66,7 +66,7 @@ type
       Visible: boolean; // whether the menu should be drawn
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       procedure ShowPopup(const Msg: UTF8String; Handler: TPopupCheckHandler;
           HandlerData: Pointer; DefaultValue: boolean = false);
@@ -88,7 +88,7 @@ type
       InteractionTmp: integer;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       procedure ShowPopup(const Title: UTF8String; Msg: UTF8String; Handler: TPopupInsertUserHandler;
           HandlerData: Pointer);
@@ -124,7 +124,7 @@ type
       SelectValueU: integer;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       procedure ShowPopup(const Title: UTF8String; Handler: TPopupSendScoreHandler;
           HandlerData: Pointer);
@@ -141,7 +141,7 @@ type
       Visible: boolean; //Whether the Menu should be Drawn
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       procedure OnHide; override;
       procedure ShowPopup(const Msg: UTF8String);
@@ -185,7 +185,7 @@ type
       Position_Receive_List: array[0..2] of integer;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       procedure ShowPopup(optmode: integer; optsong: integer; optweb: integer);
       procedure DownloadTimeBarSong();
@@ -242,7 +242,7 @@ type
     Visible:    Boolean; //Whether the Menu should be Drawn
 
     constructor Create; override;
-    function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+    function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
     procedure onShow; override;
     procedure onHide; override;
     procedure ShowPopup();
@@ -270,7 +270,7 @@ uses
 
 { TScreenPopupCheck }
 
-function TScreenPopupCheck.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPopupCheck.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   Value: boolean;
 begin
@@ -366,7 +366,7 @@ end;
 
 { TScreenPopupInsertUser }
 
-function TScreenPopupInsertUser.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPopupInsertUser.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   Value: boolean;
   I: integer;
@@ -529,7 +529,7 @@ end;
 
 { TScreenPopupSendScore }
 
-function TScreenPopupSendScore.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPopupSendScore.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   New_User: boolean;
   I, Value: integer;
@@ -882,7 +882,9 @@ end;
 
 { TScreenPopupScoreDownload }
 
-function TScreenPopupScoreDownload.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPopupScoreDownload.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
+var
+  Value: boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -1434,7 +1436,7 @@ end;
 
 { TScreenPopup }
 
-function TScreenPopup.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPopup.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -1541,7 +1543,7 @@ end;
 
 // Help popup
 
-function TScreenPopupHelp.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPopupHelp.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   pos:  double;
 begin
