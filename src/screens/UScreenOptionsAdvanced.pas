@@ -148,7 +148,6 @@ procedure TScreenOptionsAdvanced.LoadWidgets;
 begin
   AddSelectSlide('SING_OPTIONS_ADVANCED_SCREENFADE', Ini.ScreenFade, IScreenFadeTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_EFFECTSING', Ini.EffectSing, IEffectSingTranslated);
-  AddSelectSlide('SING_OPTIONS_GRAPHICS_LINEBONUS', Ini.LineBonus, ILineBonusTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_ONSONGCLICK', Ini.OnSongClick, IOnSongClickTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_ASKBEFOREDEL', Ini.AskBeforeDel, IAskbeforeDelTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_PARTYPOPUP', Ini.PartyPopup, IPartyPopupTranslated);
