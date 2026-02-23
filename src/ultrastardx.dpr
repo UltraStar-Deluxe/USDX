@@ -322,7 +322,6 @@ uses
   UScreenSongJumpto       in 'screens\UScreenSongJumpto.pas',
   UScreenStatMain         in 'screens\UScreenStatMain.pas',
   UScreenStatDetail       in 'screens\UScreenStatDetail.pas',
-  UScreenCredits          in 'screens\UScreenCredits.pas',
   UScreenPopup            in 'screens\UScreenPopup.pas',
 
   //Includes - Screens PartyMode

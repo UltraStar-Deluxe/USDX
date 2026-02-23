@@ -93,8 +93,6 @@ uses
   {Stats Screens}
   UScreenStatMain,
   UScreenStatDetail,
-  {CreditsScreen}
-  UScreenCredits,
   {Popup for errors, etc.}
   UScreenPopup;
 
@@ -186,9 +184,6 @@ var
   //StatsScreens
   ScreenStatMain:         TScreenStatMain;
   ScreenStatDetail:       TScreenStatDetail;
-
-  //CreditsScreen
-  ScreenCredits: TScreenCredits;
 
   //popup mod
   ScreenPopupCheck: TScreenPopupCheck;
@@ -1006,9 +1001,8 @@ begin
   ScreenPartyTournamentOptions :=      TScreenPartyTournamentOptions.Create;
   ScreenPartyTournamentWin :=      TScreenPartyTournamentWin.Create;
   ScreenStatMain :=         TScreenStatMain.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenStatDetail & ScreenCredits'));
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenStatDetail'));
   ScreenStatDetail :=       TScreenStatDetail.Create;
-  ScreenCredits    :=       TScreenCredits.Create;
   SDL_SetWindowTitle(Screen, PChar(Title));
 end;
 

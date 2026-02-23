@@ -138,8 +138,9 @@ begin
       end;
 
       SDLK_C: begin
-         FadeTo(@ScreenCredits, SoundLib.Start);
-         Exit;
+        ScreenAbout.ShowCreditsInAbout;
+        FadeTo(@ScreenAbout, SoundLib.Start);
+        Exit;
       end;
 
       SDLK_Q: begin

@@ -261,7 +261,7 @@
         <IsPartOfProject Value="True"/>
       </Unit54>
       <Unit55>
-        <Filename Value="screens\UScreenCredits.pas"/>
+        <Filename Value="base\UFilesystem.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit55>
       <Unit56>
@@ -555,10 +555,6 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UUnicodeStringHelper"/>
       </Unit127>
-      <Unit128>
-        <Filename Value="base\UFilesystem.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit128>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
