@@ -1,6 +1,5 @@
 import urllib.request
 import json
-import re
 
 api_url = 'https://api.github.com/repos/dgruss/mxe/releases'
 with urllib.request.urlopen(api_url) as resp:
