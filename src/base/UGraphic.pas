@@ -483,7 +483,11 @@ begin
   begin
     Log.LogCritical('SDL_Init Failed', 'UGraphic.Initialize3D');
   end;
+
+  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
   InitializeScreen;
+  glEnable(GL_MULTISAMPLE);
   // load icon image (must be 32x32 for win32)
   Icon := LoadImage(ResourcesPath.Append(WINDOW_ICON));
   if (Icon <> nil) then
