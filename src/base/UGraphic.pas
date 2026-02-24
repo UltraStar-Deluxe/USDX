@@ -502,7 +502,7 @@ begin
 
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing texturizer'));
   Texture := TTextureUnit.Create;
-  Texture.Limit :=1920; //currently, Full HD is all we want. switch to 64bit target before going further up
+  Texture.Limit :=4096;
 
   //LoadTextures;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing video modules'));
