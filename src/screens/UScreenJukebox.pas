@@ -2733,8 +2733,9 @@ begin
     IsPlaceholder := true;
   end;
 
-  Statics[StaticCover].Texture.ScaleMode := lsUniform;
-  Statics[StaticCover].Texture.EdgeExtend := IsPlaceholder;
+  Statics[StaticCover].Texture.ScaleMode := lsStretch;
+  Statics[StaticCover].Texture.EdgeExtend := true;
+  Statics[StaticCover].Texture.EdgeExtendSolidFill := false;
   Statics[StaticCover].Texture.EdgeExtendPixels := 2;
 
   Statics[StaticCover].Texture.X := Theme.Jukebox.SongCover.X;
@@ -2935,4 +2936,3 @@ begin
 end;
 
 end.
-
