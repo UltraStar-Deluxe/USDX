@@ -156,6 +156,7 @@ begin
   Result := GetTexture();
   Result.ScaleMode := lsStretch;
   Result.EdgeExtend := true;
+  Result.EdgeExtendSolidFill := false;
 end;
 
 function TCover.GetEmptyTexture(): TTexture;
@@ -172,6 +173,7 @@ begin
   Result := Texture.LoadTexture(Filename);
   Result.ScaleMode := lsStretch;
   Result.EdgeExtend := true;
+  Result.EdgeExtendSolidFill := false;
 end;
 
 
@@ -412,7 +414,9 @@ begin
        (PixelFmt = ipfRGB) then
     begin
       Result := Texture.CreateTexture(Data, Filename, Width, Height);
-      Result.ScaleMode := lsUniform;
+      Result.ScaleMode := lsStretch;
+      Result.EdgeExtend := true;
+      Result.EdgeExtendSolidFill := false;
     end
     else
     begin
@@ -489,4 +493,3 @@ begin
 end;
 
 end.
-

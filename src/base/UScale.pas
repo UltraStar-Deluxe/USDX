@@ -35,7 +35,6 @@ uses
   dglOpenGL;
 
 type
-  TUIScaleMode = (uiLetterBox, uiCropFill);
   TLayoutScaleMode = (lsUniform, lsStretch);
 
   TScaleDebugInfo = record
@@ -72,8 +71,6 @@ type
 
 procedure BeginLayoutSpace;
 procedure EndLayoutSpace;
-procedure BeginContentSpace(Mode: TUIScaleMode = uiLetterBox);
-procedure EndContentSpace;
 procedure GetScaleDebugInfo(out Info: TScaleDebugInfo);
 procedure UpdateUIScaleState(RenderW, RenderH, ScreenW, ScreenH: integer);
 function GetLayoutScaleX: single;
@@ -101,39 +98,6 @@ begin
 end;
 
 procedure EndLayoutSpace;
-begin
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix;
-end;
-
-procedure BeginContentSpace(Mode: TUIScaleMode);
-var
-  ScaleX, ScaleY: single;
-  OffsetX, OffsetY: single;
-begin
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix;
-
-  if Mode = uiLetterBox then
-  begin
-    ScaleX := UIScaleState.FitScaleX;
-    ScaleY := UIScaleState.FitScaleY;
-    OffsetX := UIScaleState.FitOffsetX;
-    OffsetY := UIScaleState.FitOffsetY;
-  end
-  else
-  begin
-    ScaleX := UIScaleState.FillScaleX;
-    ScaleY := UIScaleState.FillScaleY;
-    OffsetX := UIScaleState.FillOffsetX;
-    OffsetY := UIScaleState.FillOffsetY;
-  end;
-
-  glTranslatef(OffsetX, OffsetY, 0);
-  glScalef(ScaleX, ScaleY, 1);
-end;
-
-procedure EndContentSpace;
 begin
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix;
