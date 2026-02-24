@@ -443,9 +443,8 @@ begin
   Tex.ScaleMode := lsStretch;
   Tex.EdgeExtend := true;
   Tex.EdgeExtendPixels := 1;
-  // Real covers: black bars (solid fill)
-  // Placeholders: use textured edge extension (pixel-extend) like the background.
-  Tex.EdgeExtendSolidFill := not IsPlaceholder;
+  // Always use textured edge extension to avoid pillar/letterboxing.
+  Tex.EdgeExtendSolidFill := false;
   Tex.EdgeExtendFillR := 0;
   Tex.EdgeExtendFillG := 0;
   Tex.EdgeExtendFillB := 0;

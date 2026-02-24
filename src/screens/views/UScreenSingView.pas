@@ -51,7 +51,6 @@ uses
   USongs,
   UTexture,
   UThemes,
-  UScale,
   UTime,
   USkins;
 
@@ -997,9 +996,7 @@ begin
   ScreenSing.Statics[StaticLyricsBar].Visible := ScreenSing.Settings.LyricsVisible;
   ScreenSing.Statics[StaticLyricsBarDuet].Visible := ScreenSing.Settings.LyricsVisible and (CurrentSong.isDuet) and (PlayersPlay <> 1);
   ScreenSing.Statics[StaticTimeBar].Visible := ScreenSing.Settings.TimeBarVisible;
-  BeginContentSpace(uiLetterBox);
   SingDraw;
-  EndContentSpace;
 
   // goldennotestarstwinkle
   GoldenRec.SpawnRec;
@@ -1315,4 +1312,3 @@ begin
 end;
 
 end.
-

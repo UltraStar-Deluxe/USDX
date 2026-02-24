@@ -112,6 +112,7 @@ var
   RightOuterU, RightInnerU: real;
   ActualSourceW, ActualSourceH: real;
   HalfPixelU: real; // inset of half a source pixel to avoid sampling outside image bounds
+  OverlapX: real;
 begin
   // Some other render paths use GL_REPEAT, we need clamping here
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -157,6 +158,11 @@ begin
   else
     HalfPixelU := 0;
 
+  if GetLayoutScaleX > 0 then
+    OverlapX := 1.0 / GetLayoutScaleX
+  else
+    OverlapX := 1.0;
+
   // Sample slightly inside the image to avoid blending with the texture border
   LeftInnerU := Min(ULeft + HalfPixelU, URight);
   LeftOuterU := LeftInnerU;
@@ -181,10 +187,10 @@ begin
   RightPad := BaseX + BaseW - (DrawX + DrawW);
 
   if LeftPad > 0 then
-    DrawPad(LeftOuterU, LeftInnerU, BaseX, Min(DrawX, DrawX + DrawW));
+    DrawPad(LeftOuterU, LeftInnerU, BaseX, Min(DrawX + OverlapX, DrawX + DrawW));
 
   if RightPad > 0 then
-    DrawPad(RightInnerU, RightOuterU, Max(DrawX, DrawX + DrawW), BaseX + BaseW);
+    DrawPad(RightInnerU, RightOuterU, Max(DrawX + DrawW - OverlapX, DrawX), BaseX + BaseW);
 
   // Restore default wrap so other draw code that expects repeat keeps working.
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
