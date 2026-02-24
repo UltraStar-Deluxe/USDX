@@ -135,11 +135,11 @@ begin
     glBegin(GL_QUADS);
 
       glTexCoord2f(0, 0);
-      glVertex2f(800,  0);
+      glVertex2f(RenderW,  0);
       glTexCoord2f(0, Webcam.TextureCam.TexH);
-      glVertex2f(800,  600);
+      glVertex2f(RenderW,  RenderH);
       glTexCoord2f( Webcam.TextureCam.TexW, Webcam.TextureCam.TexH);
-      glVertex2f(0, 600);
+      glVertex2f(0, RenderH);
       glTexCoord2f( Webcam.TextureCam.TexW, 0);
       glVertex2f(0, 0);
 
@@ -309,10 +309,10 @@ begin
       Rec.Top := 110; // 80
       Rec.Bottom := Rec.Top + 20;
       Rec.Left  := 0;
-      Rec.Right := 800;
+      Rec.Right := RenderW;
 
-      TexRec.Top := (Rec.Top / 600) * ScreenJukebox.Tex_Background.TexH;
-      TexRec.Bottom := (Rec.Bottom / 600) * ScreenJukebox.Tex_Background.TexH;
+      TexRec.Top := (Rec.Top / RenderH) * ScreenJukebox.Tex_Background.TexH;
+      TexRec.Bottom := (Rec.Bottom / RenderH) * ScreenJukebox.Tex_Background.TexH;
       TexRec.Left := 0;
       TexRec.Right := ScreenJukebox.Tex_Background.TexW;
 
@@ -333,7 +333,7 @@ begin
         Rec.Top := Rec.Bottom;
         Rec.Bottom := 490 - 20; // 490 - 20
         TexRec.Top := TexRec.Bottom;
-        TexRec.Bottom := (Rec.Bottom / 600) * ScreenJukebox.Tex_Background.TexH;
+        TexRec.Bottom := (Rec.Bottom / RenderH) * ScreenJukebox.Tex_Background.TexH;
         glTexCoord2f(TexRec.Left,  TexRec.Top);    glVertex2f(Rec.Left,  Rec.Top);
         glTexCoord2f(TexRec.Left,  TexRec.Bottom); glVertex2f(Rec.Left,  Rec.Bottom);
         glTexCoord2f(TexRec.Right, TexRec.Bottom); glVertex2f(Rec.Right, Rec.Bottom);
@@ -343,7 +343,7 @@ begin
         Rec.Top := Rec.Bottom;
         Rec.Bottom := 490; // 490
         TexRec.Top := TexRec.Bottom;
-        TexRec.Bottom := (Rec.Bottom / 600) * ScreenJukebox.Tex_Background.TexH;
+        TexRec.Bottom := (Rec.Bottom / RenderH) * ScreenJukebox.Tex_Background.TexH;
         glTexCoord2f(TexRec.Right, TexRec.Top);    glVertex2f(Rec.Right, Rec.Top);
         glTexCoord2f(TexRec.Left,  TexRec.Top);    glVertex2f(Rec.Left,  Rec.Top);
         glColor4f(1, 1, 1, 0);
@@ -363,9 +363,9 @@ begin
         glColor4f(1, 1, 1, 1);
 
         glTexCoord2f(0, 0);   glVertex2f(0,  0);
-        glTexCoord2f(0,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(0,  600);
-        glTexCoord2f( ScreenJukebox.Tex_Background.TexW,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(800, 600);
-        glTexCoord2f( ScreenJukebox.Tex_Background.TexW, 0);   glVertex2f(800, 0);
+        glTexCoord2f(0,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(0,  RenderH);
+        glTexCoord2f( ScreenJukebox.Tex_Background.TexW,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(RenderW, RenderH);
+        glTexCoord2f( ScreenJukebox.Tex_Background.TexW, 0);   glVertex2f(RenderW, 0);
 
       glEnd;
       glDisable(GL_TEXTURE_2D);
@@ -381,9 +381,9 @@ begin
       glColor4f(0, 0, 0, 1);
 
       glTexCoord2f(0, 0);   glVertex2f(0,  0);
-      glTexCoord2f(0,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(0,  600);
-      glTexCoord2f( ScreenJukebox.Tex_Background.TexW,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(800, 600);
-      glTexCoord2f( ScreenJukebox.Tex_Background.TexW, 0);   glVertex2f(800, 0);
+      glTexCoord2f(0,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(0,  RenderH);
+      glTexCoord2f( ScreenJukebox.Tex_Background.TexW,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(RenderW, RenderH);
+      glTexCoord2f( ScreenJukebox.Tex_Background.TexW, 0);   glVertex2f(RenderW, 0);
 
     glEnd;
     glDisable(GL_TEXTURE_2D);
@@ -400,9 +400,9 @@ begin
     glColor4f(0, 0, 0, 1);
 
     glTexCoord2f(0, 0);   glVertex2f(0,  0);
-    glTexCoord2f(0,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(0,  600);
-    glTexCoord2f( ScreenJukebox.Tex_Background.TexW,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(800, 600);
-    glTexCoord2f( ScreenJukebox.Tex_Background.TexW, 0);   glVertex2f(800, 0);
+    glTexCoord2f(0,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(0,  RenderH);
+    glTexCoord2f( ScreenJukebox.Tex_Background.TexW,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(RenderW, RenderH);
+    glTexCoord2f( ScreenJukebox.Tex_Background.TexW, 0);   glVertex2f(RenderW, 0);
 
   glEnd;
   glDisable(GL_TEXTURE_2D);
@@ -1872,4 +1872,3 @@ begin
 end;
 
 end.
-

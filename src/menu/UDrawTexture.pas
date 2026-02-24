@@ -266,28 +266,6 @@ begin
     y2 := baseY + baseH;
     y3 := baseY + baseH;
     y4 := baseY;
-    if Rot <> 0 then
-    begin
-      xt1 := x1 - (baseX + baseW/2);
-      xt2 := x2 - (baseX + baseW/2);
-      xt3 := x3 - (baseX + baseW/2);
-      xt4 := x4 - (baseX + baseW/2);
-      yt1 := y1 - (baseY + baseH/2);
-      yt2 := y2 - (baseY + baseH/2);
-      yt3 := y3 - (baseY + baseH/2);
-      yt4 := y4 - (baseY + baseH/2);
-
-      x1 := (baseX + baseW/2) + xt1 * cos(Rot) - yt1 * sin(Rot);
-      x2 := (baseX + baseW/2) + xt2 * cos(Rot) - yt2 * sin(Rot);
-      x3 := (baseX + baseW/2) + xt3 * cos(Rot) - yt3 * sin(Rot);
-      x4 := (baseX + baseW/2) + xt4 * cos(Rot) - yt4 * sin(Rot);
-
-      y1 := (baseY + baseH/2) + yt1 * cos(Rot) + xt1 * sin(Rot);
-      y2 := (baseY + baseH/2) + yt2 * cos(Rot) + xt2 * sin(Rot);
-      y3 := (baseY + baseH/2) + yt3 * cos(Rot) + xt3 * sin(Rot);
-      y4 := (baseY + baseH/2) + yt4 * cos(Rot) + xt4 * sin(Rot);
-
-    end;
 
 {
     glBegin(GL_QUADS);
