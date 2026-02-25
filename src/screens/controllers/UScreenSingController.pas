@@ -166,6 +166,7 @@ type
     procedure EndSong;
 
     constructor Create; override;
+    destructor Destroy; override;
     procedure OnShow; override;
     procedure OnShowFinish; override;
     procedure OnHide; override;
@@ -678,6 +679,19 @@ begin
   BackgroundAspectCorrection := acoLetterBox;
 
   ClearSettings;
+end;
+
+destructor TScreenSingController.Destroy;
+begin
+  FreeAndNil(screenSingViewRef);
+  Lyrics.Free;
+  LyricsDuetP1.Free;
+  LyricsDuetP2.Free;
+  fLyricsSync.Free;
+  fMusicSync.Free;
+  eSongLoaded.Free;
+  Scores.Free;
+  inherited;
 end;
 
 procedure TScreenSingController.OnShow;
@@ -1339,11 +1353,7 @@ begin
   fCurrentVideo := nil;
 
   // background texture
-  if Tex_Background.TexNum > 0 then
-  begin
-    glDeleteTextures(1, PGLuint(@Tex_Background.TexNum));
-    Tex_Background.TexNum := 0;
-  end;
+  FreeTexture(Tex_Background);
   if fShowWebcam then
         begin
           Webcam.Release;

@@ -407,8 +407,8 @@ begin
 
           // Reload ScreenSing and ScreenScore because of player colors
           // TODO: do this better  REALLY NECESSARY?
-          //ScreenScore.Free;
-          //ScreenSing.Free;
+          ScreenScore.Free;
+          ScreenSing.Free;
 
           ScreenScore := TScreenScore.Create;
           ScreenSing  := TScreenSingController.Create;

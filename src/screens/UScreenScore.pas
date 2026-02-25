@@ -205,6 +205,7 @@ type
       procedure SwapToScreen(Screen: integer);
     public
       constructor Create; override;
+      destructor Destroy; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; override;
       procedure OnShow; override;
@@ -1001,6 +1002,22 @@ begin
   for I := 1 to 3 do
     ButtonSend[I] := AddButton(Theme.Score.ButtonSend[I]);
 
+end;
+
+destructor TScreenScore.Destroy;
+var
+  I: integer;
+begin
+  for I := 1 to UIni.IMaxPlayerCount do
+  begin
+    FreeTexture(Tex_Score_NoteBarLevel_Dark[I]);
+    FreeTexture(Tex_Score_NoteBarRound_Dark[I]);
+    FreeTexture(Tex_Score_NoteBarLevel_Light[I]);
+    FreeTexture(Tex_Score_NoteBarRound_Light[I]);
+    FreeTexture(Tex_Score_NoteBarLevel_Lightest[I]);
+    FreeTexture(Tex_Score_NoteBarRound_Lightest[I]);
+  end;
+  inherited;
 end;
 
 //TODO: adapt for players 7 to 12
