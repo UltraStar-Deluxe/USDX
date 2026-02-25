@@ -1723,10 +1723,7 @@ begin
     Exit;
 
   // set max song score
-  if Ini.LineBonus = 0 then
-    MaxSongScore := MAX_SONG_SCORE
-  else
-    MaxSongScore := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
+  MaxSongScore := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
 
   // Note: ScoreValue is the sum of all note values of the song
   MaxLineScore := MaxSongScore * (Line.ScoreValue / CurrentSong.Tracks[Track].ScoreValue);
@@ -1758,28 +1755,22 @@ begin
       else if LinePerfection > 1 then
         LinePerfection := 1;
 
-      // add line-bonus if enabled
-      if Ini.LineBonus > 0 then
-      begin
-        // line-bonus points (same for each line, no matter how long the line is)
-        LineBonus := MAX_SONG_LINE_BONUS / (Length(CurrentSong.Tracks[Track].Lines) -
-          NumEmptySentences[Track]);
-        // apply line-bonus
-        CurrentPlayer.ScoreLine :=
-          CurrentPlayer.ScoreLine + LineBonus * LinePerfection;
-        CurrentPlayer.ScoreLineInt := Floor(Round(CurrentPlayer.ScoreLine) / 10) * 10;
-        // update total score
-        CurrentPlayer.ScoreTotalInt :=
-          CurrentPlayer.ScoreInt +
-          CurrentPlayer.ScoreGoldenInt
-          + CurrentPlayer.ScoreLineInt;
+      // line-bonus points (same for each line, no matter how long the line is)
+      LineBonus := MAX_SONG_LINE_BONUS / (Length(CurrentSong.Tracks[Track].Lines) -
+        NumEmptySentences[Track]);
+      // apply line-bonus
+      CurrentPlayer.ScoreLine :=
+        CurrentPlayer.ScoreLine + LineBonus * LinePerfection;
+      CurrentPlayer.ScoreLineInt := Floor(Round(CurrentPlayer.ScoreLine) / 10) * 10;
+      // update total score
+      CurrentPlayer.ScoreTotalInt :=
+        CurrentPlayer.ScoreInt +
+        CurrentPlayer.ScoreGoldenInt
+        + CurrentPlayer.ScoreLineInt;
 
-        // spawn rating pop-up
-        Rating := Round(LinePerfection * MAX_LINE_RATING);
-        Scores.SpawnPopUp(PlayerIndex, Rating, CurrentPlayer.ScoreTotalInt);
-      end
-      else
-        Scores.RaiseScore(PlayerIndex, CurrentPlayer.ScoreTotalInt);
+      // spawn rating pop-up
+      Rating := Round(LinePerfection * MAX_LINE_RATING);
+      Scores.SpawnPopUp(PlayerIndex, Rating, CurrentPlayer.ScoreTotalInt);
 
       // PerfectLineTwinkle (effect), part 1
       if Ini.EffectSing = 1 then

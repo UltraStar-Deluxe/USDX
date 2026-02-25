@@ -150,9 +150,7 @@ type
       // draws a popup by pointer
       procedure DrawPopUp(const PopUp: PScorePopUp);
 
-      // raises players score if RaiseScore was called
-      // has to be called after DrawPopUp and before
-      // DrawScore
+      // has to be called after DrawPopUp and before DrawScore
       procedure DoRaiseScore(const Index: integer);
 
       // draws a score by playerindex
@@ -219,9 +217,6 @@ type
       // has to be called after positions and players have been added, before first call of draw
       // it gives every player a score position
       procedure Init;
-
-      // raises the score of a specified player to the specified score
-      procedure RaiseScore(Player: byte; Score: integer);
 
       // sets the score of a specified player to the specified score
       procedure SetScore(Player: byte; Score: integer);
@@ -427,15 +422,6 @@ begin
   // player 3:
   AddByStatics(4, Theme.Sing.Solo3PP3.ScoreBackground, Theme.Sing.Solo3PP3.SingBar, Theme.Sing.Solo3PP3.Score);
 
-end;
-
-{**
- * raises the score of a specified player to the specified score
- *}
-procedure TSingScores.RaiseScore(Player: byte; Score: integer);
-begin
-  if (Player <= PlayerCount - 1) then
-    aPlayers[Player].Score := Score;
 end;
 
 {**
@@ -755,9 +741,7 @@ begin
 end;
 
 {**
- * raises players score if RaiseScore was called
- * has to be called after DrawPopUp and before
- * DrawScore
+ * has to be called after DrawPopUp and before DrawScore
  *}
 procedure TSingScores.DoRaiseScore(const Index: integer);
   var

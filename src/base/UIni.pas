@@ -212,7 +212,6 @@ type
       ScreenFade:     integer;
       AskBeforeDel:   integer;
       OnSongClick:    integer;
-      LineBonus:      integer;
       PartyPopup:     integer;
       SingScores:     integer;
       TopScores:      integer;
@@ -452,7 +451,6 @@ const
   sOpenMenu = 2;
   IDefaultSingMode: array[0..1] of UTF8String = ('Regular', 'Instrumental');
 
-  ILineBonus:     array[0..1] of UTF8String = ('Off', 'On');
   IPartyPopup:    array[0..1] of UTF8String = ('Off', 'On');
 
   IJoypad:        array[0..1] of UTF8String = ('Off', 'On');
@@ -549,7 +547,6 @@ var
   IScreenFadeTranslated:       array[0..1] of UTF8String = ('Off', 'On');
   IAskbeforeDelTranslated:     array[0..1] of UTF8String = ('Off', 'On');
   IOnSongClickTranslated:      array[0..2] of UTF8String = ('Sing', 'Select Players', 'Open Menu');
-  ILineBonusTranslated:        array[0..1] of UTF8String = ('Off', 'On');
   IPartyPopupTranslated:       array[0..1] of UTF8String = ('Off', 'On');
   ISingScoresTranslated:       array[0..1] of UTF8String = ('Off', 'On');
   ITopScoresTranslated:        array[0..1] of UTF8String = ('All', 'Player');
@@ -836,9 +833,6 @@ begin
 
   IDefaultSingModeTranslated[0]       := ULanguage.Language.Translate('OPTION_VALUE_REGULAR');
   IDefaultSingModeTranslated[1]       := ULanguage.Language.Translate('OPTION_VALUE_INSTRUMENTAL');
-
-  ILineBonusTranslated[0]             := ULanguage.Language.Translate('OPTION_VALUE_OFF');
-  ILineBonusTranslated[1]             := ULanguage.Language.Translate('OPTION_VALUE_ON');
 
   IPartyPopupTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   IPartyPopupTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_ON');
@@ -1614,9 +1608,6 @@ begin
   // DefaultSingMode
   DefaultSingMode := ReadArrayIndex(IDefaultSingMode, IniFile, 'Advanced', 'DefaultSingMode', IGNORE_INDEX, 'Regular');
 
-  // Linebonus
-  LineBonus := ReadArrayIndex(ILineBonus, IniFile, 'Advanced', 'LineBonus', 1);
-
   // PartyPopup
   PartyPopup := ReadArrayIndex(IPartyPopup, IniFile, 'Advanced', 'PartyPopup', IGNORE_INDEX, 'On');
 
@@ -1933,9 +1924,6 @@ begin
 
     //DefaultSingMode
     IniFile.WriteString('Advanced', 'DefaultSingMode', IDefaultSingMode[DefaultSingMode]);
-
-    //Line Bonus
-    IniFile.WriteString('Advanced', 'LineBonus', ILineBonus[LineBonus]);
 
     //Party Popup
     IniFile.WriteString('Advanced', 'PartyPopup', IPartyPopup[PartyPopup]);

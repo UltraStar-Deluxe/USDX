@@ -601,10 +601,7 @@ begin
                 // half size notes patch
                 NoteHit := true;
 
-                if (Ini.LineBonus > 0) then
-                  MaxSongPoints := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS
-                else
-                  MaxSongPoints := MAX_SONG_SCORE;
+                MaxSongPoints := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
 
                 // Note: ScoreValue is the sum of all note values of the song
                 // (MaxSongPoints / ScoreValue) is the points that a player
