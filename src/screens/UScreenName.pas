@@ -44,6 +44,7 @@ uses
   UScreenScore,
   UScreenSingController,
   UScreenTop5,
+  UScale,
   UTexture,
   UThemes,
   dglOpenGL,
@@ -551,6 +552,7 @@ begin
   for I := 1 to UIni.IMaxPlayerCount do
   begin
     NoAvatarTexture[I] := Texture.GetTexture(Skin.GetTextureFileName('NoAvatar_P' + IntToStr(I)), TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
+    NoAvatarTexture[I].ScaleMode := lsUniform;
   end;
 
   // create no-avatar

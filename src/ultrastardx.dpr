@@ -182,6 +182,7 @@ uses
   UCommon           in 'base\UCommon.pas',
   UGraphic          in 'base\UGraphic.pas',
   UTexture          in 'base\UTexture.pas',
+  UScale            in 'base\UScale.pas',
   ULanguage         in 'base\ULanguage.pas',
   UMain             in 'base\UMain.pas',
   UDraw             in 'base\UDraw.pas',

@@ -40,7 +40,8 @@ uses
   UCommon,
   UPath,
   sdl2,
-  SDL2_image;
+  SDL2_image,
+  UScale;
 
 type
   PTexture = ^TTexture;
@@ -51,6 +52,8 @@ type
     Z:        real;
     W:        real;
     H:        real;
+    SourceW:  real;
+    SourceH:  real;
     ScaleW:   real; // for dynamic scalling while leaving width constant
     ScaleH:   real; // for dynamic scalling while leaving height constant
     Rot:      real; // 0 - 2*pi
@@ -68,6 +71,13 @@ type
     TexY2:    real;
     Alpha:    real;
     Name:     IPath; // experimental for handling cache images. maybe it's useful for dynamic skins
+    ScaleMode: TLayoutScaleMode;
+    EdgeExtend: boolean;
+    EdgeExtendPixels: real;
+    EdgeExtendSolidFill: boolean;
+    EdgeExtendFillR: real;
+    EdgeExtendFillG: real;
+    EdgeExtendFillB: real;
   end;
 
 type
@@ -373,6 +383,8 @@ begin
     Z := 0;
     W := oldWidth;
     H := oldHeight;
+    SourceW := oldWidth;
+    SourceH := oldHeight;
     ScaleW := 1;
     ScaleH := 1;
     Rot := 0;
@@ -394,6 +406,13 @@ begin
 
     RightScale := 1;
     LeftScale := 1;
+    ScaleMode := lsStretch;
+    EdgeExtend := false;
+    EdgeExtendPixels := 0;
+    EdgeExtendSolidFill := false;
+    EdgeExtendFillR := 0;
+    EdgeExtendFillG := 0;
+    EdgeExtendFillB := 0;
 
     Name := Identifier;
   end;
@@ -494,6 +513,8 @@ begin
   Result.Z := 0;
   Result.W := 0;
   Result.H := 0;
+  Result.SourceW := Width;
+  Result.SourceH := Height;
   Result.ScaleW := 1;
   Result.ScaleH := 1;
   Result.Rot := 0;
@@ -513,6 +534,12 @@ begin
 
   Result.RightScale := 1;
   Result.LeftScale := 1;
+  Result.EdgeExtend := false;
+  Result.EdgeExtendPixels := 0;
+  Result.EdgeExtendSolidFill := false;
+  Result.EdgeExtendFillR := 0;
+  Result.EdgeExtendFillG := 0;
+  Result.EdgeExtendFillB := 0;
 
   Result.Name := Name;
 end;
