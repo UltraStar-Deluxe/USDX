@@ -53,9 +53,6 @@ type
     H:        real;
     ScaleW:   real; // for dynamic scalling while leaving width constant
     ScaleH:   real; // for dynamic scalling while leaving height constant
-    Rot:      real; // 0 - 2*pi
-    RightScale: real; //
-    LeftScale:  real; //
     Int:      real; // intensity
     ColR:     real;
     ColG:     real;
@@ -375,7 +372,6 @@ begin
     H := oldHeight;
     ScaleW := 1;
     ScaleH := 1;
-    Rot := 0;
     TexNum := ActTex;
     TexW := oldWidth / newWidth;
     TexH := oldHeight / newHeight;
@@ -391,9 +387,6 @@ begin
     TexY1 := 0;
     TexX2 := 1;
     TexY2 := 1;
-
-    RightScale := 1;
-    LeftScale := 1;
 
     Name := Identifier;
   end;
@@ -496,7 +489,6 @@ begin
   Result.H := 0;
   Result.ScaleW := 1;
   Result.ScaleH := 1;
-  Result.Rot := 0;
   Result.TexNum := ActTex;
 
   Result.Int := 1;
@@ -510,9 +502,6 @@ begin
   Result.TexY1 := 0;
   Result.TexX2 := 1;
   Result.TexY2 := 1;
-
-  Result.RightScale := 1;
-  Result.LeftScale := 1;
 
   Result.Name := Name;
 end;

@@ -521,36 +521,24 @@ begin
          glBegin(GL_QUADS);//Top Left
           glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
           glTexCoord2f(TexX1*TexW, TexY2*TexH);
-          glVertex3f(x, y1 - (y1 - (LeftScale * (y1))), z);
+          glVertex3f(x, y1, z);
 
           //Bottom Left
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
           glTexCoord2f(TexX1*TexW, TexY1+TexH*0.5);
-          glVertex3f(x, y2 - (y2 - (LeftScale * (y2))), z);
+          glVertex3f(x, y2, z);
 
           //Bottom Right
           glColor4f(ColR * Int, ColG * Int, ColB * Int, 0);
           glTexCoord2f(TexX2*TexW, TexY1+TexH*0.5);
-          glVertex3f(x+w*scaleW, y3 - (y3 - (RightScale * (y3))), z);
+          glVertex3f(x+w*scaleW, y3, z);
 
           //Top Right
           glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha-0.3);
           glTexCoord2f(TexX2*TexW, TexY2*TexH);
-          glVertex3f(x+w*scaleW, y4 - (y4 - (RightScale * (y4))), z);
+          glVertex3f(x+w*scaleW, y4, z);
         glEnd;
 
-         {
-           glBegin(GL_QUADS);
-      glTexCoord2f(TexX1*TexW, TexY1*TexH);
-      glVertex3f(x, y + (y - (LeftScale * (y))), z);
-      glTexCoord2f(TexX1*TexW, TexY2*TexH);
-      glVertex3f(x, y - (y - (LeftScale * (y))), z);
-      glTexCoord2f(TexX2*TexW, TexY2*TexH);
-      glVertex3f(x, y - (y - (RightScale * (y))), z);
-      glTexCoord2f(TexX2*TexW, TexY1*TexH);
-      glVertex3f(x, y + (y - (RightScale * (y))), z);
-    glEnd;
-          }
 
         glDisable(GL_TEXTURE_2D);
         glDisable(GL_DEPTH_TEST);

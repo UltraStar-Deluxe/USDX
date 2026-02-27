@@ -3766,11 +3766,7 @@ begin
   case (TSongMenuMode(Ini.SongMenu)) of
     smRoulette: prefix := 'Roulette';
     smChessboard: prefix := 'Chessboard';
-    smCarousel: prefix := 'Carousel';
-    smSlotMachine: prefix := 'SlotMachine';
-    smSlide: prefix := 'Slide';
-    smList: prefix := 'List';
-    smMosaic: prefix := 'Mosaic';
+    else prefix := 'List';
   end;
 
   // Song
@@ -3823,15 +3819,9 @@ begin
   Song.Cover.W := ReadInteger(SectionList, 'W', 300);
   Song.Cover.H := ReadInteger(SectionList, 'H', 200);
 
-  // 0 - roulette
-  // 1 - chessboard
-  // 2 - carousel
-  // 3 - slotmachine
-  // 4 - slide
-  // 5 - list
-  // 6 - mosaic
+  // Song menu modes: 0 - roulette, 1 - chessboard, 2 - list
   
-  if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smMosaic]) then
+  if (TSongMenuMode(Ini.SongMenu) = smChessboard) then
   begin
     Song.Cover.Rows := ReadInteger(SectionList, 'Rows', 4);
     Song.Cover.Cols := ReadInteger(SectionList, 'Cols', 4);
@@ -3848,10 +3838,6 @@ begin
     Song.Cover.Tex := ReadString(SectionList,  'Text', '');
   end;
 
-  if (TSongMenuMode(Ini.SongMenu) in [smCarousel, smSlide]) then
-  begin
-    Song.Cover.Padding := ReadInteger(SectionList, 'Padding', 60);
-  end;
 
   if (TSongMenuMode(Ini.SongMenu) = smList) then
   begin
