@@ -102,8 +102,8 @@ AC_ARG_WITH([local-projectM-presets],
 # add OpenCV option
 AC_ARG_WITH([opencv-cxx-api],
     [AS_HELP_STRING([--with-opencv-cxx-api],
-      [use current OpenCV C++ API @<:@default=no@:>@])],
-    [with_opencv_cxx_api=$withval], [with_opencv_cxx_api="no"])
+      [use current OpenCV C++ API @<:@default=auto (yes on Windows, no elsewhere)@:>@])],
+    [with_opencv_cxx_api=$withval], [with_opencv_cxx_api="auto"])
 
 # print misc options header
 AC_ARG_WITH([cfg-dummy2], [
@@ -167,6 +167,15 @@ if [[ "$FPC_VERSION_MAJOR" -lt 3 ]]; then
 !!! version 3.0.0, but only version $FPC_VERSION was found.
 !!! Please install a newer fpc version.
 ]) 
+fi
+
+# On Windows, the OpenCV C-wrapper is required for compiling with current OpenCV.
+# Keep explicit user values, but auto-enable when no value was provided.
+if [[ "$with_opencv_cxx_api" = auto ]]; then
+   case "$FPC_PLATFORM" in
+      win32|win64) with_opencv_cxx_api=yes ;;
+      *)           with_opencv_cxx_api=no ;;
+   esac
 fi
 
 # find and test the C compiler (for C-libs and wrappers)
