@@ -486,7 +486,7 @@ begin
   case PlayersPlay of
     1 : button_s := ButtonSend[1];
     2, 4: button_s := ButtonSend[2];
-    3, 6: button_s := ButtonSend[3];
+    3, 5, 6: button_s := ButtonSend[3];
   else
     button_s := ButtonSend[3];
   end;
@@ -719,7 +719,7 @@ begin
   case PlayersPlay of
     1:    Max := 1;
     2, 4: Max := 2;
-    3, 6: Max := 3;
+    3, 5, 6: Max := 3;
     8:    Max := 4;
     12:   Max := 6;
   else
@@ -953,7 +953,7 @@ begin
           else
             ArrayStartModifier := 1;
        end;
-    6: begin
+    5, 6: begin
           if (Screens = 1) then
             ArrayStartModifier := 0
           else
@@ -1038,7 +1038,7 @@ begin
   case PlayersPlay of
     1:    ArrayStartModifier := 1;
     2, 4: ArrayStartModifier := 2;
-    3, 6: ArrayStartModifier := 4;
+    3, 5, 6: ArrayStartModifier := 4;
   else
     ArrayStartModifier := 0; //this should never happen
   end;
@@ -1046,7 +1046,7 @@ begin
   if (PlayersPlay <= 3) or ((PlayersPlay > 3) and (Screens = 1)) then
     PlayersPerScreen := PlayersPlay
   else
-    PlayersPerScreen := PlayersPlay div 2;
+    PlayersPerScreen := (PlayersPlay + 1) div 2;
 
   SetLength(PlayerPositionMap, PlayersPlay);
 
@@ -1206,15 +1206,15 @@ begin
             V[6] := false;
           end;
         end;
-    3, 6:  begin
-          if (PlayersPlay = 3) or ((PlayersPlay = 6) and (Screens = 2)) then
+    3, 5, 6:  begin
+          if (PlayersPlay = 3) or ((PlayersPlay in [5, 6]) and (Screens = 2)) then
           begin
             V[1] := false;
             V[2] := false;
             V[3] := false;
             V[4] := true;
             V[5] := true;
-            V[6] := true;
+            V[6] := (PlayersPlay <> 5) or (Screens = 2);
           end
           else
           begin
@@ -1223,7 +1223,7 @@ begin
             V[3] := true;
             V[4] := true;
             V[5] := true;
-            V[6] := true;
+            V[6] := (PlayersPlay = 6);
           end;
         end;
   end;
@@ -1277,7 +1277,7 @@ begin
              Button[1].Visible := true;
              Button[1].Selectable := true;
            end;
-      3,6: begin
+      3,5,6: begin
              Button[2].Visible := true;
              Button[2].Selectable := true;
            end;

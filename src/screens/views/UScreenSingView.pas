@@ -339,7 +339,7 @@ begin
     end;
   end;
 
-  if (PlayersPlay = 3) or ((PlayersPlay = 6) and (Ini.Screens = 1)) then
+  if (PlayersPlay = 3) or ((PlayersPlay in [5, 6]) and (Ini.Screens = 1)) then
   begin
     if (CurrentSong.isDuet) then
     begin
@@ -350,6 +350,8 @@ begin
           StaticDuetP2M[1], StaticDuetP2MAvatar[1],
           StaticDuetP3R[1], StaticDuetP3RAvatar[1]
         ]);
+        if (PlayersPlay = 5) then
+          hide([StaticDuetP3R[1], StaticDuetP3RAvatar[1]]);
       end;
 
       if (Screen = 1) then
@@ -370,6 +372,8 @@ begin
           StaticP2M[1], StaticP2MAvatar[1],
           StaticP3R[1], StaticP3RAvatar[1]
         ]);
+        if (PlayersPlay = 5) then
+          hide([StaticP3R[1], StaticP3RAvatar[1]]);
       end;
 
       if (Screen = 1) then
@@ -407,7 +411,7 @@ begin
   end;
 
   // 6 Players in 1 Screen
-  if (PlayersPlay = 6) and (Ini.Screens = 0) then
+  if (PlayersPlay in [5, 6]) and (Ini.Screens = 0) then
   begin
     if (CurrentSong.isDuet) then
     begin
@@ -419,6 +423,8 @@ begin
         StaticP5DuetSixP, StaticP5DuetSixPAvatar,
         StaticP6DuetSixP, StaticP6DuetSixPAvatar
       ]);
+      if (PlayersPlay = 5) then
+        hide([StaticP6DuetSixP, StaticP6DuetSixPAvatar]);
     end
     else
     begin
@@ -430,6 +436,8 @@ begin
         StaticP5SixP, StaticP5SixPAvatar,
         StaticP6SixP, StaticP6SixPAvatar
       ]);
+      if (PlayersPlay = 5) then
+        hide([StaticP6SixP, StaticP6SixPAvatar]);
     end;
   end;
 
@@ -814,13 +822,19 @@ begin
     ScreenSing.Text[TextP3SixP].Text       := ScreenSing.PlayerNames[3];
     ScreenSing.Text[TextP4SixP].Text       := ScreenSing.PlayerNames[4];
     ScreenSing.Text[TextP5SixP].Text       := ScreenSing.PlayerNames[5];
-    ScreenSing.Text[TextP6SixP].Text       := ScreenSing.PlayerNames[6];
+    if (PlayersPlay = 6) then
+      ScreenSing.Text[TextP6SixP].Text := ScreenSing.PlayerNames[6]
+    else
+      ScreenSing.Text[TextP6SixP].Text := '';
     ScreenSing.Text[TextP1DuetSixP].Text   := ScreenSing.PlayerDuetNames[1];
     ScreenSing.Text[TextP2DuetSixP].Text   := ScreenSing.PlayerDuetNames[2];
     ScreenSing.Text[TextP3DuetSixP].Text   := ScreenSing.PlayerDuetNames[3];
     ScreenSing.Text[TextP4DuetSixP].Text   := ScreenSing.PlayerDuetNames[4];
     ScreenSing.Text[TextP5DuetSixP].Text   := ScreenSing.PlayerDuetNames[5];
-    ScreenSing.Text[TextP6DuetSixP].Text   := ScreenSing.PlayerDuetNames[6];
+    if (PlayersPlay = 6) then
+      ScreenSing.Text[TextP6DuetSixP].Text := ScreenSing.PlayerDuetNames[6]
+    else
+      ScreenSing.Text[TextP6DuetSixP].Text := '';
 
     if (CurrentSong.isDuet) then
     begin
@@ -857,19 +871,25 @@ begin
         end;
 
       end;
-      6:
+      5, 6:
       begin
         if (CurrentSong.isDuet) then
         begin
           ScreenSing.Text[TextDuetP1ThreeP].Text := ScreenSing.PlayerDuetNames[4];
           ScreenSing.Text[TextDuetP2M].Text      := ScreenSing.PlayerDuetNames[5];
-          ScreenSing.Text[TextDuetP3R].Text      := ScreenSing.PlayerDuetNames[6];
+          if (PlayersPlay = 6) then
+            ScreenSing.Text[TextDuetP3R].Text := ScreenSing.PlayerDuetNames[6]
+          else
+            ScreenSing.Text[TextDuetP3R].Text := '';
         end
         else
         begin
           ScreenSing.Text[TextP1ThreeP].Text := ScreenSing.PlayerNames[4];
           ScreenSing.Text[TextP2M].Text      := ScreenSing.PlayerNames[5];
-          ScreenSing.Text[TextP3R].Text      := ScreenSing.PlayerNames[6];
+          if (PlayersPlay = 6) then
+            ScreenSing.Text[TextP3R].Text := ScreenSing.PlayerNames[6]
+          else
+            ScreenSing.Text[TextP3R].Text := '';
         end;
       end;
     end; // case
@@ -1348,4 +1368,3 @@ begin
 end;
 
 end.
-

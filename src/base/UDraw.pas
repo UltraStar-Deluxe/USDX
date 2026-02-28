@@ -470,7 +470,7 @@ begin;
     end;
   end;
 
-  if PlayersPlay = 6 then
+  if (PlayersPlay = 5) or (PlayersPlay = 6) then
   begin
     if (Ini.Screens = 1) then
     begin
@@ -486,7 +486,8 @@ begin;
         begin
           SingDrawOscilloscope(Theme.Sing.Duet3PP1.Oscilloscope, 3);
           SingDrawOscilloscope(Theme.Sing.Duet3PP2.Oscilloscope, 4);
-          SingDrawOscilloscope(Theme.Sing.Duet3PP3.Oscilloscope, 5);
+          if (PlayersPlay = 6) then
+            SingDrawOscilloscope(Theme.Sing.Duet3PP3.Oscilloscope, 5);
         end;
       end
       else
@@ -502,7 +503,8 @@ begin;
         begin
           SingDrawOscilloscope(Theme.Sing.Solo3PP1.Oscilloscope, 3);
           SingDrawOscilloscope(Theme.Sing.Solo3PP2.Oscilloscope, 4);
-          SingDrawOscilloscope(Theme.Sing.Solo3PP3.Oscilloscope, 5);
+          if (PlayersPlay = 6) then
+            SingDrawOscilloscope(Theme.Sing.Solo3PP3.Oscilloscope, 5);
         end;
       end;
     end
@@ -515,7 +517,8 @@ begin;
         SingDrawOscilloscope(Theme.Sing.Duet6PP3.Oscilloscope, 2);
         SingDrawOscilloscope(Theme.Sing.Duet6PP4.Oscilloscope, 3);
         SingDrawOscilloscope(Theme.Sing.Duet6PP5.Oscilloscope, 4);
-        SingDrawOscilloscope(Theme.Sing.Duet6PP6.Oscilloscope, 5);
+        if (PlayersPlay = 6) then
+          SingDrawOscilloscope(Theme.Sing.Duet6PP6.Oscilloscope, 5);
       end
       else
       begin
@@ -524,7 +527,8 @@ begin;
         SingDrawOscilloscope(Theme.Sing.Solo6PP3.Oscilloscope, 2);
         SingDrawOscilloscope(Theme.Sing.Solo6PP4.Oscilloscope, 3);
         SingDrawOscilloscope(Theme.Sing.Solo6PP5.Oscilloscope, 4);
-        SingDrawOscilloscope(Theme.Sing.Solo6PP6.Oscilloscope, 5);
+        if (PlayersPlay = 6) then
+          SingDrawOscilloscope(Theme.Sing.Solo6PP6.Oscilloscope, 5);
       end;
     end;
   end;
@@ -1277,7 +1281,7 @@ begin
     end;
   end;
 
-  if (PlayersPlay = 6) and (Ini.NoteLines = 1) then begin
+  if ((PlayersPlay = 5) or (PlayersPlay = 6)) and (Ini.NoteLines = 1) then begin
     if (ScreenSing.settings.NotesVisible[0]) then
     begin
       if (Ini.Screens = 1) then
@@ -1423,7 +1427,7 @@ begin
       end;
     end;
 
-    if PlayersPlay = 6 then
+    if (PlayersPlay = 5) or (PlayersPlay = 6) then
     begin
       NotesW[I - 1] := NotesW[I - 1] * 0.8;
       NotesH[I - 1] := NotesH[I - 1] * 0.8;
@@ -1520,7 +1524,7 @@ begin
     end;
   end;
 
-  if PlayersPlay = 6 then
+  if (PlayersPlay = 5) or (PlayersPlay = 6) then
   begin
     if (Ini.Screens = 1) then
     begin
@@ -1551,9 +1555,12 @@ begin
         SingDrawLine(NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP5, 4, LineSpacingThreeRows);
         SingDrawPlayerLine(NR.Left + 20, TopThreeRows2, NR.Width - 40, TrackP5, 4, LineSpacingThreeRows);
 
-        SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
-        SingDrawLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
-        SingDrawPlayerLine(NR.Left + 20, TopThreeRows3, NR.Width - 40, TrackP6, 5, LineSpacingThreeRows);
+        if (PlayersPlay = 6) then
+        begin
+          SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
+          SingDrawLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
+          SingDrawPlayerLine(NR.Left + 20, TopThreeRows3, NR.Width - 40, TrackP6, 5, LineSpacingThreeRows);
+        end;
       end;
     end
     else
@@ -1579,9 +1586,12 @@ begin
       SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP5, 4, LineSpacingThreeRows);
       SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, TopThreeRows2, NR.Width/2 - 30, TrackP5, 4, LineSpacingThreeRows);
 
-      SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
-      SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
-      SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, TopThreeRows3, NR.Width/2 - 30, TrackP6, 5, LineSpacingThreeRows);
+      if (PlayersPlay = 6) then
+      begin
+        SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
+        SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
+        SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, TopThreeRows3, NR.Width/2 - 30, TrackP6, 5, LineSpacingThreeRows);
+      end;
     end;
   end;
   glDisable(GL_BLEND);
@@ -1872,4 +1882,3 @@ begin
 end;
 
 end.
-
