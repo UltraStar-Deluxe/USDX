@@ -3712,16 +3712,16 @@ begin
   ThemeLoadText(Score.TextTitle, 'ScoreTextTitle');
   ThemeLoadText(Score.TextArtistTitle, 'ScoreTextArtistTitle');
 
-  if (Ini.Players < 3) or (Ini.Screens = 1) then
+  if (UIni.IPlayersVals[Ini.Players] < 4) or (Ini.Screens = 1) then
     prefix := ''
   else
   begin
     // 4 players 1 screen
-    if (Ini.Players = 3) then
+    if (UIni.IPlayersVals[Ini.Players] = 4) then
       prefix := 'FourP';
 
     // 6 players 1 screen
-    if (Ini.Players = 4) then
+    if (UIni.IPlayersVals[Ini.Players] in [5, 6]) then
       prefix := 'SixP';
   end;
 

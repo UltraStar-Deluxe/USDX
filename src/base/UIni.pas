@@ -90,8 +90,8 @@ const
   // Switch colors for players 2 and 4, since player 2 line color is used
   // for the second part in duet, and yellow (4) looks better than red (2)
   DefaultPlayerColors: array[0..IMaxPlayerCount-1] of integer = (1, 4, 3, 2, 5, 6, 7, 8, 9, 10, 11, 12);
-  IPlayers:     array[0..4] of UTF8String = ('1', '2', '3', '4', '6');
-  IPlayersVals: array[0..4] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 );
+  IPlayers:     array[0..5] of UTF8String = ('1', '2', '3', '4', '5', '6');
+  IPlayersVals: array[0..5] of integer    = ( 1 ,  2 ,  3 ,  4 ,  5 ,  6 );
 
 type
 

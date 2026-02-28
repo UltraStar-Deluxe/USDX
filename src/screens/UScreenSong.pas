@@ -1979,7 +1979,7 @@ begin
     end;
   end;
 
-  if (PlayersPlay = 6) then
+  if (PlayersPlay in [5, 6]) then
   begin
     if (Screens = 1) then
     begin
@@ -1988,7 +1988,8 @@ begin
       setColor(Static3PlayersDuetSingerP3, ColPlayer[2]);
       setColor(Static6PlayersDuetSingerP4, ColPlayer[3]);
       setColor(Static6PlayersDuetSingerP5, ColPlayer[4]);
-      setColor(Static6PlayersDuetSingerP6, ColPlayer[5]);
+      if (PlayersPlay = 6) then
+        setColor(Static6PlayersDuetSingerP6, ColPlayer[5]);
     end
     else
     begin
@@ -2003,7 +2004,8 @@ begin
       begin
         setColor(Static3PlayersDuetSingerP1, ColPlayer[3]);
         setColor(Static3PlayersDuetSingerP2, ColPlayer[4]);
-        setColor(Static3PlayersDuetSingerP3, ColPlayer[5]);
+        if (PlayersPlay = 6) then
+          setColor(Static3PlayersDuetSingerP3, ColPlayer[5]);
       end;
     end;
   end;
@@ -2234,7 +2236,7 @@ begin
     // Duet Singers
     if (CatSongs.Song[Interaction].isDuet) then
     begin
-      if (PlayersPlay = 3) or (PlayersPlay = 6) then
+      if (PlayersPlay = 3) or (PlayersPlay >= 5) then
       begin
         Text[Text3PlayersDuetSingerP1].Visible := true;
         Text[Text3PlayersDuetSingerP2].Visible := true;
@@ -2244,11 +2246,11 @@ begin
         Statics[Static3PlayersDuetSingerP2].Visible := true;
         Statics[Static3PlayersDuetSingerP3].Visible := true;
 
-        if (Screens = 1) and (PlayersPlay = 6) then
+        if (Screens = 1) and (PlayersPlay >= 5) then
         begin
           Statics[Static6PlayersDuetSingerP4].Visible := true;
           Statics[Static6PlayersDuetSingerP5].Visible := true;
-          Statics[Static6PlayersDuetSingerP6].Visible := true;
+          Statics[Static6PlayersDuetSingerP6].Visible := (PlayersPlay = 6);
         end;
       end
       else
@@ -2269,7 +2271,7 @@ begin
       // Set duet texts
       if (DuetChange) then
       begin
-        if (PlayersPlay = 3) or (PlayersPlay = 6) then
+        if (PlayersPlay = 3) or (PlayersPlay >= 5) then
         begin
           if (PlayersPlay = 3) then
           begin
@@ -2301,7 +2303,7 @@ begin
       end
       else
       begin
-        if (PlayersPlay = 3) or (PlayersPlay = 6) then
+        if (PlayersPlay = 3) or (PlayersPlay >= 5) then
         begin
           if (PlayersPlay = 3) then
           begin
@@ -2959,8 +2961,7 @@ begin
   if Mode = smMedley then
     Mode := smNormal;
 
-  if Ini.Players <= 3 then PlayersPlay := Ini.Players + 1;
-  if Ini.Players  = 4 then PlayersPlay := 6;
+  PlayersPlay := UIni.IPlayersVals[Ini.Players];
 
   //Cat Mod etc
   if (Ini.TabsAtStartup = 1) and (CatSongs.CatNumShow = -1) then

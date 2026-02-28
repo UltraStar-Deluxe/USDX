@@ -834,7 +834,7 @@ begin
 
         // DIRTY HACK
         // correct position for duet with 3/6 players and 4/6 players in one screen
-        if (Screens = 1) and ((PlayersPlay = 4) or (PlayersPlay = 6)) then
+        if (Screens = 1) and ((PlayersPlay = 4) or (PlayersPlay = 5) or (PlayersPlay = 6)) then
         begin
           if (PlayersPlay = 4) then
           begin
@@ -1088,7 +1088,7 @@ begin
 
   // DIRTY HACK
   // correct position for duet with 3/6 players and 4/6 players one screen
-  if (Screens = 1) and ((PlayersPlay = 4) or (PlayersPlay = 6)) then
+  if (Screens = 1) and ((PlayersPlay = 4) or (PlayersPlay = 5) or (PlayersPlay = 6)) then
   begin
 
     Position := aPositions[Players[Index].Position and 127];
@@ -1227,7 +1227,7 @@ begin
 
   // DIRTY HACK
   // correct position for duet with 3/6 players and 4/6 players in one screen
-  if (Screens = 1) and ((PlayersPlay = 4) or (PlayersPlay = 6)) then
+  if (Screens = 1) and ((PlayersPlay = 4) or (PlayersPlay = 5) or (PlayersPlay = 6)) then
   begin
     Drawing := true;
 
