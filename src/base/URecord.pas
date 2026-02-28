@@ -191,10 +191,16 @@ type
     private
       Started: boolean;
     protected
+      ScanMode: TAudioInputScanMode;
+      SeenDeviceNames: array of UTF8String;
+
+      procedure PrepareDeviceScan(AScanMode: TAudioInputScanMode);
+      function IsDeviceAssigned(const name: UTF8String): boolean;
+      function ShouldProbeDevice(const name: UTF8String): boolean;
       function UnifyDeviceName(const name: UTF8String; deviceIndex: integer): UTF8String;
     public
       function GetName: String;           virtual; abstract;
-      function InitializeRecord: boolean; virtual; abstract;
+      function InitializeRecord(ScanMode: TAudioInputScanMode): boolean; virtual; abstract;
       function FinalizeRecord: boolean;   virtual;
 
       procedure CaptureStart;
@@ -868,7 +874,46 @@ begin
   for i := 0 to High(AudioInputProcessor.DeviceList) do
     AudioInputProcessor.DeviceList[i].Free();
   AudioInputProcessor.DeviceList := nil;
+  SeenDeviceNames := nil;
   Result := true;
+end;
+
+procedure TAudioInputBase.PrepareDeviceScan(AScanMode: TAudioInputScanMode);
+begin
+  ScanMode := AScanMode;
+  SeenDeviceNames := nil;
+end;
+
+function TAudioInputBase.IsDeviceAssigned(const name: UTF8String): boolean;
+var
+  DeviceIniIndex: integer;
+  ChannelIndex: integer;
+  DeviceCfg: PInputDeviceConfig;
+begin
+  Result := false;
+
+  for DeviceIniIndex := 0 to High(Ini.InputDeviceConfig) do
+  begin
+    DeviceCfg := @Ini.InputDeviceConfig[DeviceIniIndex];
+    if (DeviceCfg.Name <> Trim(name)) then
+      continue;
+
+    for ChannelIndex := 0 to High(DeviceCfg.ChannelToPlayerMap) do
+    begin
+      if (DeviceCfg.ChannelToPlayerMap[ChannelIndex] <> CHANNEL_OFF) then
+      begin
+        Result := true;
+        Exit;
+      end;
+    end;
+
+    Exit;
+  end;
+end;
+
+function TAudioInputBase.ShouldProbeDevice(const name: UTF8String): boolean;
+begin
+  Result := (ScanMode = aimFull) or IsDeviceAssigned(name);
 end;
 
 {*
@@ -965,16 +1010,13 @@ var
     i: integer;
   begin
     Result := false;
-    // search devices with same description
-    for i := 0 to deviceIndex-1 do
+    // search already seen devices with same description
+    for i := 0 to High(SeenDeviceNames) do
     begin
-      if (AudioInputProcessor.DeviceList[i] <> nil) then
+      if (SeenDeviceNames[i] = name) then
       begin
-        if (AudioInputProcessor.DeviceList[i].Name = name) then
-        begin
-          Result := true;
-          Break;
-        end;
+        Result := true;
+        Break;
       end;
     end;
   end;
@@ -990,6 +1032,9 @@ begin
     // set description
     result := name + ' ('+IntToStr(count)+')';
   end;
+
+  SetLength(SeenDeviceNames, Length(SeenDeviceNames) + 1);
+  SeenDeviceNames[High(SeenDeviceNames)] := result;
 end;
 
 end.

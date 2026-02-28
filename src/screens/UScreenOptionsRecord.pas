@@ -643,6 +643,7 @@ begin
   // create preview sound-buffer
   PreviewChannel := TCaptureBuffer.Create();
 
+  ValidateSettings();
   UpdateInputDevice();
 end;
 
