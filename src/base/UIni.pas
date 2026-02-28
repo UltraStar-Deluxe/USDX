@@ -2169,12 +2169,17 @@ var
 begin
   if not Filename.IsReadOnly() then
   begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
-    for I := 1 to IMaxPlayerCount do
-      IniFile.WriteInteger('PlayerLevel', 'P' + IntToStr(I), PlayerLevel[I-1]);
-
-    IniFile.Free;
+    try
+      IniFile := TIniFile.Create(Filename.ToNative);
+      for I := 1 to IMaxPlayerCount do
+        IniFile.WriteInteger('PlayerLevel', 'P' + IntToStr(I), PlayerLevel[I-1]);
+      IniFile.Free;
+    except
+      on E: Exception do
+      begin
+        Log.LogError('Could not save player levels to INI, config-file is read-only', 'TIni.Save');
+      end;
+    end;
   end;
 end;
 
