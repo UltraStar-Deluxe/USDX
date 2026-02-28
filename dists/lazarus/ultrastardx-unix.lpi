@@ -287,9 +287,9 @@
         <IsPartOfProject Value="True"/>
       </Unit62>
       <Unit63>
-        <Filename Value="screens/UScreenCredits.pas"/>
+        <Filename Value="lua/ULuaUtils.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="UScreenCredits"/>
+        <UnitName Value="ULuaUtils"/>
       </Unit63>
       <Unit64>
         <Filename Value="screens/UScreenEdit.pas"/>
@@ -550,11 +550,6 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="ULuaUsdx"/>
       </Unit125>
-      <Unit126>
-        <Filename Value="lua/ULuaUtils.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="ULuaUtils"/>
-      </Unit126>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

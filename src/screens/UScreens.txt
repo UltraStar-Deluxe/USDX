@@ -2,7 +2,6 @@
 
 001  UScreenMain
 002  UScreenAbout
-003  UScreenCredits
 
 010  UScreenName
 012  UScreenSong, smNormal

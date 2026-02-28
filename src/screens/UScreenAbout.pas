@@ -44,11 +44,15 @@ uses
 
 type
   TScreenAbout = class(TMenu)
+    private
+      ShowCreditsRequested: boolean;
     public
       TextOverview:    integer;
+      procedure ShowCreditsInAbout;
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
+      procedure OnHide; override;
       procedure SetAnimationProgress(Progress: real); override;
 
       procedure SetOverview;
@@ -80,8 +84,12 @@ begin
     case PressedKey of
       SDLK_C:
         begin
-          FadeTo(@ScreenCredits, SoundLib.Start);
-          Exit;
+          if not ShowCreditsRequested then
+            ShowCreditsInAbout
+          else begin
+            ShowCreditsRequested := false;
+            SetOverview;
+          end;
         end;
 
       SDLK_Q:
@@ -116,8 +124,12 @@ begin
           // ultrastar deluxe team credits
           if Interaction = 0 then
           begin
-            AudioPlayback.PlaySound(SoundLib.Back);
-            FadeTo(@ScreenCredits);
+            if not ShowCreditsRequested then
+              ShowCreditsInAbout
+            else begin
+              ShowCreditsRequested := false;
+              SetOverview;
+            end;
           end;
         end;
       SDLK_LEFT:
@@ -161,8 +173,8 @@ begin
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenAbout');
 
-  //Set Overview Text:
-  SetOverview;
+  if not ShowCreditsRequested then
+    SetOverview;
 end;
 
 procedure TScreenAbout.SetOverview;
@@ -180,6 +192,29 @@ var
 begin
   for I := 0 to high(Button) do
     Button[I].Texture.ScaleW := Progress;
+end;
+
+procedure TScreenAbout.ShowCreditsInAbout;
+var
+  S: UTF8String;
+  SL: TStringList;
+begin
+  ShowCreditsRequested := true;
+  S := 'Thank you to everyone who contributed to UltraStar Deluxe, including pre-Github contributors: alexanders, blindy, brunzel, canni, hennymcc, jaybinks, krueger, mezzox, mischi, mog, and whiteshark                                                                   Thanks to all our more recent contributors: s09bQ5, basisbit, barbeque-squared, RattleSN4K3, dgruss, AlexanderS, DeinAlptraum, daniel-j, complexlogic, bohning, HermannDppes, TheNailDev, ePirat, brianch, memcopy, kamischi, rhaamo, TheNotary, GaryCXJk, shazzzzam, jose1711, mrtnmtth, sleumas2000, tobijdc, pkerling, mkinoo, ricardosdl, jmfergeau, PonPonTheDreambunny, sarrchri, j-lag, hoehermann, finn-wa, Goostav5, letscodehu, raulmt, luto, douardda, marcszy91, seigneurfuo, DoubleDee73, mobacon, Bronkoknorb, Travisrowe, qamil95, gitter-badger, taligentx, and everyone who helped with reporting bugs, testing, translating, creating themes or in any other way!';
+
+  // Assign text to the about text control. Some code paths set Text[0],
+  // some store the index in TextOverview — update both to be safe.
+  if (Length(Text) > 0) then
+    Text[0].Text := S;
+
+  if (TextOverview >= 0) and (TextOverview < Length(Text)) then
+    Text[TextOverview].Text := S;
+end;
+
+procedure TScreenAbout.OnHide;
+begin
+  inherited;
+  ShowCreditsRequested := false;
 end;
 
 end.
