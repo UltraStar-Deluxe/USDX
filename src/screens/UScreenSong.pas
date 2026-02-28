@@ -3679,7 +3679,6 @@ begin
   end
   else
   begin
-    // it's still off by one in certain cases, will select the first or last overall song
     if TargetInteraction = -1 then
     begin
       i := 0;
@@ -3687,9 +3686,9 @@ begin
       begin
         if CatSongs.Song[TargetInteraction].Visible then
         begin
-          Inc(i);
           if Target = i then
             break;
+          Inc(i);
         end;
       end;
     end;
