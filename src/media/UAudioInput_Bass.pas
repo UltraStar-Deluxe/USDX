@@ -59,7 +59,7 @@ type
       function EnumDevices(): boolean;
     public
       function GetName: String; override;
-      function InitializeRecord: boolean; override;
+      function InitializeRecord(ScanMode: TAudioInputScanMode): boolean; override;
       function FinalizeRecord: boolean; override;
   end;
 
@@ -363,7 +363,7 @@ var
   SourceIndex:  integer;
   RecordInfo: BASS_RECORDINFO;
   NumberOfSupportedChannels: byte;
-  SelectedSourceIndex: integer;
+  DeviceName: UTF8String;
 begin
   result := false;
 
@@ -377,13 +377,30 @@ begin
     if (not BASS_RecordGetDeviceInfo(BassDeviceID, DeviceInfo)) then
       break;
 
+    if ((DeviceInfo.flags and BASS_DEVICE_TYPE_MASK) = BASS_DEVICE_TYPE_SPEAKERS) then
+    begin
+      Inc(BassDeviceID);
+      continue;
+    end;
+
+    // BASS device names seem to be encoded with local encoding
+    // TODO: works for windows, check Linux + Mac OS X
+    Descr := DecodeStringUTF8(DeviceInfo.name, encAuto);
+    DeviceName := UnifyDeviceName(Descr, BassDeviceID);
+
+    if not ShouldProbeDevice(DeviceName) then
+    begin
+      Inc(BassDeviceID);
+      continue;
+    end;
+
     // try to initialize the device
     if not BASS_RecordInit(BassDeviceID) then
     begin
       Log.LogStatus('Failed to initialize BASS Capture-Device['+inttostr(BassDeviceID)+']',
                     'TAudioInput_Bass.InitializeRecord');
     end
-    else if ((DeviceInfo.flags and BASS_DEVICE_TYPE_MASK) <> BASS_DEVICE_TYPE_SPEAKERS) then
+    else
     begin
       SetLength(AudioInputProcessor.DeviceList, DeviceIndex+1);
 
@@ -393,11 +410,7 @@ begin
 
       BassDevice.BassDeviceID := BassDeviceID;
 
-      // BASS device names seem to be encoded with local encoding
-      // TODO: works for windows, check Linux + Mac OS X
-      Descr := DecodeStringUTF8(DeviceInfo.name, encAuto);
-
-      BassDevice.Name := UnifyDeviceName(Descr, DeviceIndex);
+      BassDevice.Name := DeviceName;
       Log.LogStatus('Attempting to configure InputDevice "' + BassDevice.Name + '"', 'Bass.EnumDevices');
 
       // zero info-struct as some fields might not be set (e.g. freq is just set on Vista and MacOSX)
@@ -509,7 +522,7 @@ begin
   result := true;
 end;
 
-function TAudioInput_Bass.InitializeRecord(): boolean;
+function TAudioInput_Bass.InitializeRecord(ScanMode: TAudioInputScanMode): boolean;
 begin
   BassCore := TAudioCore_Bass.GetInstance();
   if not BassCore.CheckVersion then
@@ -517,6 +530,7 @@ begin
     Result := false;
     Exit;
   end;
+  PrepareDeviceScan(ScanMode);
   Result := EnumDevices();
 end;
 
