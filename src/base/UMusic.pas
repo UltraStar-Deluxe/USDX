@@ -635,6 +635,7 @@ var
 procedure InitializeSound;
 procedure InitializeVideo;
 procedure FinalizeMedia;
+function RefreshAudioInputDevices(): boolean;
 
 function  Visualization(): IVideoPlayback;
 function  VideoPlayback(): IVideoPlayback;
@@ -747,6 +748,25 @@ end;
 function AudioDecoders(): TInterfaceList;
 begin
   Result := AudioDecoderList;
+end;
+
+function RefreshAudioInputDevices(): boolean;
+var
+  CurrentAudioInput: IAudioInput;
+begin
+  CurrentAudioInput := AudioInput();
+  if not assigned(CurrentAudioInput) then
+  begin
+    Result := false;
+    Exit;
+  end;
+
+  CurrentAudioInput.FinalizeRecord();
+  Result := CurrentAudioInput.InitializeRecord();
+  if not Result then
+    Log.LogError('Failed to refresh input devices for ' + CurrentAudioInput.GetName());
+
+  AudioInputProcessor.UpdateInputDeviceConfig();
 end;
 
 procedure FilterInterfaceList(const IID: TGUID; InList, OutList: TInterfaceList);
