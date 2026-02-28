@@ -115,6 +115,8 @@ type
 
       function GetVersion(): integer;
       procedure SetVersion(Version: integer);
+      procedure TrimTrailingNullByte(const TableName, ColumnName: string);
+      procedure MigrateTextColumns;
     public
       // Network
       NetworkUser: array of TNetworkUser;
@@ -179,9 +181,10 @@ uses
  cDBVersion - history
  0 = USDX 1.01 or no Database
  01 = USDX 1.1
+  2 = Trim trailing NUL bytes written into TEXT columns
 }
 const
-  cDBVersion = 01; // 0.1
+  cDBVersion = 2;
   cUS_Scores = 'us_scores';
   cUS_Songs  = 'us_songs';
   cUS_Statistics_Info = 'us_statistics_info';
@@ -234,10 +237,6 @@ begin
       ScoreDB.ExecSQL('ALTER TABLE US_Songs RENAME TO us_songs_101;');
       finalizeConversion := true; // means: conversion has to be done!
     end;
-
-    // Set version number after creation
-    if (Version = 0) then
-      SetVersion(cDBVersion);
 
     // SQLite does not handle VARCHAR(n) or INT(n) as expected.
     // Texts do not have a restricted length, no matter which type is used,
@@ -346,6 +345,12 @@ begin
         ConvertFrom101To110();
     end;
 
+    if (Version < 2) then
+      MigrateTextColumns;
+
+    if (Version < cDBVersion) then
+      SetVersion(cDBVersion);
+
   except
     on E: Exception do
     begin
@@ -356,6 +361,44 @@ begin
     end;
   end;
 
+end;
+
+procedure TDataBaseSystem.TrimTrailingNullByte(const TableName, ColumnName: string);
+begin
+  ScoreDB.ExecSQL(
+    'UPDATE [' + TableName + '] ' +
+    'SET [' + ColumnName + '] = ' +
+      'CAST(substr(CAST([' + ColumnName + '] AS BLOB), 1, ' +
+        'length(CAST([' + ColumnName + '] AS BLOB)) - 1) AS TEXT) ' +
+    'WHERE [' + ColumnName + '] IS NOT NULL ' +
+      'AND length(CAST([' + ColumnName + '] AS BLOB)) > 0 ' +
+      'AND substr(CAST([' + ColumnName + '] AS BLOB), ' +
+        'length(CAST([' + ColumnName + '] AS BLOB)), 1) = x''00'';');
+end;
+
+procedure TDataBaseSystem.MigrateTextColumns;
+begin
+  Log.LogInfo('Removing trailing NUL bytes from text columns', 'TDataBaseSystem.MigrateTextColumns');
+
+  TrimTrailingNullByte(cUS_Scores, 'Player');
+
+  TrimTrailingNullByte(cUS_Songs, 'Artist');
+  TrimTrailingNullByte(cUS_Songs, 'Title');
+  TrimTrailingNullByte(cUS_Songs, 'LyricSingFillColor');
+  TrimTrailingNullByte(cUS_Songs, 'LyricActualFillColor');
+  TrimTrailingNullByte(cUS_Songs, 'LyricNextFillColor');
+  TrimTrailingNullByte(cUS_Songs, 'LyricSingOutlineColor');
+  TrimTrailingNullByte(cUS_Songs, 'LyricActualOutlineColor');
+  TrimTrailingNullByte(cUS_Songs, 'LyricNextOutlineColor');
+
+  TrimTrailingNullByte(cUS_Webs, 'Name');
+
+  TrimTrailingNullByte(cUS_Webs_Stats, 'User_Score_0');
+  TrimTrailingNullByte(cUS_Webs_Stats, 'User_Score_1');
+  TrimTrailingNullByte(cUS_Webs_Stats, 'User_Score_2');
+
+  TrimTrailingNullByte(cUS_Users_Info, 'Username');
+  TrimTrailingNullByte(cUS_Users_Info, 'Password');
 end;
 
 (**
