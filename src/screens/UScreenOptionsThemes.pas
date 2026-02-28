@@ -262,6 +262,7 @@ end;
 
 procedure TScreenOptionsThemes.LoadWidgets;
 begin
+  // when editing this, also search for SelInteraction
   AddSelectSlide('SING_OPTIONS_THEMES_THEME', Ini.Theme, ITheme);
   SkinSelect := AddSelectSlide('SING_OPTIONS_THEMES_SKIN', Ini.SkinNo, ISkin);
   AddSelectSlide('SING_OPTIONS_THEMES_COLOR', Ini.Color, IColorTranslated);

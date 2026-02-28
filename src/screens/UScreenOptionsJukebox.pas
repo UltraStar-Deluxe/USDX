@@ -811,6 +811,7 @@ end;
 
 procedure TScreenOptionsJukebox.LoadWidgets;
 begin
+  // when editing this, also search for SelInteraction
   FontSelect := AddSelectSlide('SING_OPTIONS_LYRICS_FONT', Ini.JukeboxFont, FontFamilyNames);
   StyleSelect := AddSelectSlide('SING_OPTIONS_LYRICS_STYLE', Ini.JukeboxStyle, ILyricsStyleTranslated);
   AddSelectSlide('SING_OPTIONS_LYRICS_EFFECT', Ini.JukeboxEffect, ILyricsEffectTranslated);

@@ -297,6 +297,7 @@ end;
 
 procedure TScreenOptionsGame.LoadWidgets;
 begin
+  // when editing this, also search for SelInteraction
   AddSelectSlide('SING_OPTIONS_GAME_LANGUAGE', Ini.Language, ILanguageTranslated);
   AddSelectSlide('SING_OPTIONS_GAME_SONGMENU', Ini.SongMenu, ISongMenuTranslated);
   AddSelectSlide('SING_OPTIONS_GAME_TABS', Ini.Tabs, ITabsTranslated);
