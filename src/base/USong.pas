@@ -70,7 +70,7 @@ const
 
 type
 
-  TSingMode = ( smNormal, smPartyClassic, smPartyFree, smPartyChallenge, smPartyTournament, smJukebox, smPlaylistRandom , smMedley );
+  TSingMode = ( smNormal, smPartyClassic, smPartyFree, smPartyTournament, smJukebox, smPlaylistRandom , smMedley );
   TSongMode = ( smAll, smCategory, smPlaylist);
 
   TMedleySource = ( msNone, msCalculated, msTag );
