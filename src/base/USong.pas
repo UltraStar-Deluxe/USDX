@@ -739,6 +739,16 @@ begin
 
         if (Param0 = 'P') then
         begin
+          if (not Self.isDuet) then
+          begin
+            Log.LogError(
+              'Invalid track marker in solo song: "' + CurLine + '" in file "' + FileNamePath.ToNative +
+              '" at line ' + IntToStr(FileLineNo) + '. Track markers (P1/P2) are only allowed if the first note-section line after headers is a P-line.',
+              'TSong.LoadSong'
+            );
+            Result := false;
+            Exit;
+          end;
 
           if (CurLine[2] = ' ') then
             Param1 := StrToInt(CurLine[3])
