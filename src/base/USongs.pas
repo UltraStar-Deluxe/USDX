@@ -134,6 +134,7 @@ type
     procedure HideCategory(Index: integer);                 // hides all songs in category
     procedure ClickCategoryButton(Index: integer);          // uses ShowCategory and HideCategory when needed
     procedure ShowCategoryList;                             // Hides all Songs And Show the List of all Categorys
+    procedure ResetVisibleIndexCache;
     function FindNextVisible(SearchFrom: integer): integer; // Find Next visible Song
     function FindPreviousVisible(SearchFrom: integer): integer; // Find Previous visible Song
     function VisibleSongs: integer;                         // returns number of visible songs (for tabs)
@@ -718,8 +719,7 @@ begin
     CurSong.Visible := true;
 }
   end;
-  LastVisChecked := 0;
-  LastVisIndex := 0;
+  ResetVisibleIndexCache;
 
   // set CatNumber of last category
   if (Ini.TabsAtStartup = 1) and (High(Song) >= 1) then
@@ -750,8 +750,7 @@ begin
 //  KMS: This should be the same, but who knows :-)
     CatSongs.Song[S].Visible := ((CatSongs.Song[S].OrderNum = Index) and (not CatSongs.Song[S].Main));
   end;
-  LastVisChecked := 0;
-  LastVisIndex := 0;
+  ResetVisibleIndexCache;
 end;
 
 procedure TCatSongs.HideCategory(Index: integer); // hides all songs in category
@@ -763,8 +762,7 @@ begin
     if not CatSongs.Song[S].Main then
       CatSongs.Song[S].Visible := false // hides all at now
   end;
-  LastVisChecked := 0;
-  LastVisIndex := 0;
+  ResetVisibleIndexCache;
 end;
 
 procedure TCatSongs.ClickCategoryButton(Index: integer);
@@ -792,10 +790,18 @@ begin
     CatSongs.Song[S].Visible := CatSongs.Song[S].Main;
   CatSongs.Selected := CatNumShow; //Show last shown Category
   CatNumShow := -1;
-  LastVisChecked := 0;
-  LastVisIndex := 0;
+  ResetVisibleIndexCache;
 end;
 //Hide Categorys when in Category Hack End
+
+procedure TCatSongs.ResetVisibleIndexCache;
+begin
+  LastVisChecked := 0;
+  LastVisIndex := 0;
+
+  if Length(Song) > 0 then
+    Song[0].VisibleIndex := 0;
+end;
 
 // Wrong song selected when tabs on bug
 function TCatSongs.FindNextVisible(SearchFrom:integer): integer;// Find next Visible Song
@@ -951,8 +957,7 @@ begin
     end;
     Result := 0;
   end;
-  LastVisChecked := 0;
-  LastVisIndex := 0;
+  ResetVisibleIndexCache;
 end;
 
 // -----------------------------------------------------------------------------

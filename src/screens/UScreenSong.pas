@@ -360,7 +360,7 @@ var
 begin
   if (CatSongs.VisibleSongs > 0) then
   begin
-    if (Interaction > Low(CatSongs.Song)) and (Interaction <= High(CatSongs.Song)) then
+    if (Interaction >= Low(CatSongs.Song)) and (Interaction <= High(CatSongs.Song)) then
       I2 := CatSongs.VisibleIndex(Interaction)
     else
       I2 := CatSongs.VisibleSongs;
@@ -376,7 +376,7 @@ var
 begin
   if (CatSongs.VisibleSongs > 0) then
   begin
-    if (Interaction > Low(CatSongs.Song)) and (Interaction <= High(CatSongs.Song)) then
+    if (Interaction >= Low(CatSongs.Song)) and (Interaction <= High(CatSongs.Song)) then
       I2 := CatSongs.VisibleIndex(Interaction)
     else
       I2 := CatSongs.VisibleSongs;
@@ -655,6 +655,8 @@ var
     Idx, i: cardinal;
   begin
     Result := nil;
+    if Num <= 0 then
+      Exit;
     SetLength(Ordered, Num);
     SetLength(Result, Num);
     for i := 0 to Num-1 do Ordered[i] := i;
@@ -944,6 +946,9 @@ begin
           if (Songs.SongList.Count > 0) and
              (FreeListMode) then
           begin
+            if CatSongs.VisibleSongs <= 0 then
+              Exit;
+
             if (SDL_ModState = KMOD_LSHIFT) and (Ini.TabsAtStartup = 1) then // random category
             begin
               I2 := 0; // count cats
@@ -1010,7 +1015,8 @@ begin
             begin
               if CatSongs.CatNumShow = -2 then
               begin
-                if NextRandomSearchIdx >= CatSongs.VisibleSongs then
+                if (Length(RandomSearchOrder) <> CatSongs.VisibleSongs) or
+                   (NextRandomSearchIdx >= CatSongs.VisibleSongs) then
                 begin
                   NextRandomSearchIdx := 0;
                   RandomSearchOrder := RandomPermute(CatSongs.VisibleSongs);
@@ -1020,7 +1026,8 @@ begin
               end
               else
               begin
-                if NextRandomSongIdx >= CatSongs.VisibleSongs then
+                if (Length(RandomSongOrder) <> CatSongs.VisibleSongs) or
+                   (NextRandomSongIdx >= CatSongs.VisibleSongs) then
                 begin
                   NextRandomSongIdx := 0;
                   RandomSongOrder := RandomPermute(CatSongs.VisibleSongs);
@@ -1125,7 +1132,13 @@ begin
               //StopMusicPreview();
               OnSongDeSelect;
 
-              CatSongs.ShowCategoryList;
+              if (CatSongs.CatNumShow = -3) then
+              begin
+                CatSongs.SetFilter('', fltAll);
+                PlaylistMan.UnsetPlaylist;
+              end
+              else
+                CatSongs.ShowCategoryList;
 
               //Show Cat in Top Left Mod
               HideCatTL;
@@ -4035,8 +4048,7 @@ begin
       if CatSongs.Song[I].isDuet then
         CatSongs.Song[I].Visible := false;
     // Reset visible-index cache so VisibleIndex() recomputes correctly
-    CatSongs.LastVisChecked := 0;
-    CatSongs.LastVisIndex := 0;
+    CatSongs.ResetVisibleIndexCache;
   end;
 end;
 

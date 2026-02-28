@@ -370,8 +370,7 @@ begin
       Log.LogError('Playlist entry has invalid SongID after reordering: ' + Playlists[Index].Items[I].Artist + ' - ' + Playlists[Index].Items[I].Title);
   end;
 
-  CatSongs.LastVisChecked := 0;
-  CatSongs.LastVisIndex := 0;
+  CatSongs.ResetVisibleIndexCache;
 
   if ScreenSong.ListMinLine > 0 then
   begin
