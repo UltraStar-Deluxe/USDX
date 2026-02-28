@@ -107,7 +107,6 @@ uses
 procedure Main;
 var
   WindowTitle: string;
-  BadPlayer: integer;
 begin
   {$IFNDEF Debug}
   try
@@ -243,24 +242,6 @@ begin
       * Start background music
       *}
     SoundLib.StartBgMusic;
-
-    // check microphone settings, goto record options if they are corrupt
-    BadPlayer := AudioInputProcessor.ValidateSettings;
-    if (BadPlayer <> 0) then
-    begin
-      ScreenPopupError.ShowPopup(
-          Format(Language.Translate('ERROR_PLAYER_DEVICE_ASSIGNMENT'),
-          [BadPlayer]));
-      Display.CurrentScreen^.FadeTo( @ScreenOptionsRecord );
-    end;
-    BadPlayer := AudioInputProcessor.CheckPlayersConfig(1);
-    if (BadPlayer <> 0) then
-    begin
-      ScreenPopupError.ShowPopup(
-          Format(Language.Translate('ERROR_PLAYER_NO_DEVICE_ASSIGNMENT'),
-          [BadPlayer]));
-      Display.CurrentScreen^.FadeTo( @ScreenOptionsRecord );
-    end;
 
     //------------------------------
     // Start Mainloop

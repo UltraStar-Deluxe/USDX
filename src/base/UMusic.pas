@@ -42,6 +42,11 @@ uses
   UWebcam;
 
 type
+  TAudioInputScanMode = (
+    aimFast,
+    aimFull
+  );
+
   TNoteType = (ntFreestyle, ntNormal, ntGolden, ntRap, ntRapGolden);
 
   TPos = record // Tracks[track].Lines[line].Notes[note]
@@ -547,7 +552,7 @@ type
   IAudioInput = Interface
   ['{A5C8DA92-2A0C-4AB2-849B-2F7448C6003A}']
       function GetName: String;
-      function InitializeRecord: boolean;
+      function InitializeRecord(ScanMode: TAudioInputScanMode): boolean;
       function FinalizeRecord(): boolean;
 
       procedure CaptureStart;
@@ -646,7 +651,7 @@ var
 procedure InitializeSound;
 procedure InitializeVideo;
 procedure FinalizeMedia;
-function RefreshAudioInputDevices(): boolean;
+function RefreshAudioInputDevices(ScanMode: TAudioInputScanMode): boolean;
 
 function  Visualization(): IVideoPlayback;
 function  VideoPlayback(): IVideoPlayback;
@@ -761,7 +766,7 @@ begin
   Result := AudioDecoderList;
 end;
 
-function RefreshAudioInputDevices(): boolean;
+function RefreshAudioInputDevices(ScanMode: TAudioInputScanMode): boolean;
 var
   CurrentAudioInput: IAudioInput;
 begin
@@ -773,7 +778,7 @@ begin
   end;
 
   CurrentAudioInput.FinalizeRecord();
-  Result := CurrentAudioInput.InitializeRecord();
+  Result := CurrentAudioInput.InitializeRecord(ScanMode);
   if not Result then
     Log.LogError('Failed to refresh input devices for ' + CurrentAudioInput.GetName());
 
@@ -848,7 +853,7 @@ begin
   for i := 0 to InterfaceList.Count-1 do
   begin
     CurrentAudioInput := InterfaceList[i] as IAudioInput;
-    if (CurrentAudioInput.InitializeRecord()) then
+    if (CurrentAudioInput.InitializeRecord(aimFast)) then
     begin
       DefaultAudioInput := CurrentAudioInput;
       break;
