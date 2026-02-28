@@ -32,6 +32,7 @@
 !define name "UltraStar Deluxe"
 !define publisher "USDX Team"
 !define homepage "https://usdx.eu"
+!define song_editors "https://open-music-games.org/song-editors/"
 !define forum "https://github.com/UltraStar-Deluxe/USDX/issues"
 !define wiki "https://usdx.eu"
 
@@ -47,10 +48,9 @@
 
 !define installer_version_path "$LOCALAPPDATA\Temp\usdxversion"
 !define installer_exe_path "$LOCALAPPDATA\Temp\usdxupdate.exe"
-!define version_url "http://raw.githubusercontent.com/UltraStar-Deluxe/USDX/release/VERSION"
-!define update_url "https://github.com/UltraStar-Deluxe/USDX/releases/download/%VERSION%/UltraStar.Deluxe_v%VERSIONSTRING%-installer.exe"
+!define version_url "https://raw.githubusercontent.com/UltraStar-Deluxe/USDX/release/VERSION"
+!define update_url "https://github.com/UltraStar-Deluxe/USDX/releases/download/%VERSION%/UltraStar.Deluxe_v%VERSION%+stable_installer.exe"
 !define update_mask_online_version "%VERSION%"
-!define update_mask_installer_version "%VERSIONSTRING%"
 
 ; debug - uncomment for testing
 ;!define /redef update_url "http://downloads.sourceforge.net/project/ultrastardx/UltraStar%20Deluxe/Version%201.0.1a/ultrastardx-101a-installer-full.exe"

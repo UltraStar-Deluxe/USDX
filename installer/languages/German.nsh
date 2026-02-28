@@ -115,6 +115,7 @@ ${LangFileString} page_finish_txt_update "${name} Update hat nach einer neuen Ve
 ${LangFileString} sm_shortcut "${name} spielen"
 ${LangFileString} sm_uninstall "Deinstallieren"
 ${LangFileString} sm_website "Webseite"
+${LangFileString} sm_song_editors "Song-Editoren"
 ${LangFileString} sm_license "Lizenz"
 ${LangFileString} sm_readme "Lies mich"
 ${LangFileString} sm_songs "Songs"
@@ -140,8 +141,6 @@ ${LangFileString} DESC_Section2_sub2 "Hier können Shearer Songs (CC by-nc-sa 2.
 ${LangFileString} DESC_Section2_sub3 "Hier können Wise Guys Songs zum Herunterladen gewählt werden."
 ${LangFileString} DESC_Section2_sub4 "Hier können Pornophonique Songs zum Herunterladen gewählt werden."
 ;${LangFileString} DESC_Section3 "Hier können weitere Themes ausgewählt werden."
-${LangFileString} DESC_Section4 "Installiert den UltraStar Manager, ein Tool zur Pflege deiner ${name} Liedsammlung."
-${LangFileString} DESC_Section5 "Installiert den UltraStar Creator, ein Tool zum Erstellen eigener Lieder für ${name}."
 
 ${LangFileString} DESC_g2Section2 "Lädt das Lied 'Dead Smiling Pirates - I 18' (CC by-nc-nd 2.5) herunter."
 ${LangFileString} DESC_g2Section3 "Lädt das Lied 'Joshua Morin - On The Run' (CC by-sa 2.5) herunter."
