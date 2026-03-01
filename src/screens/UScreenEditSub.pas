@@ -38,6 +38,7 @@ uses
   UFiles,
   UFilesystem,
   UGraphicClasses,
+  UDraw,
   UIni,
   UMain,
   UMenu,
@@ -132,6 +133,8 @@ type
       MidiLastLine:            Integer;
       MidiLastTrack:           Integer;
       {$ENDIF}
+
+    EditorNoteTextures:      TNoteTextureBundle;
 
       //for mouse move
       LastPressedMouseButton:  boolean;
@@ -397,6 +400,8 @@ type
       procedure PreviousSentence;
       procedure DivideNote(doubleclick: boolean);
       procedure DeleteNote;
+
+  procedure LoadEditorNoteTextures;
       procedure OnMidiNote(Note: Byte);
       procedure DeleteSentence;
       procedure TransposeNote(Transpose: Integer);
@@ -453,7 +458,6 @@ implementation
 
 uses
   UDisplay,
-  UDraw,
   UGraphic,
   UHelp,
   ULanguage,
@@ -4507,7 +4511,7 @@ begin
         // all other lines in orange (current track) and gray (other track)
         if (Track = CurrentTrack) then
         begin
-          Color := GetPlayerColor(Ini.SingColor[CurrentTrack]);
+          Color := GetPlayerColor(1);
           glColor4f(Color.R, Color.G, Color.B, 1)
         end
         else
@@ -5099,6 +5103,44 @@ begin
   inherited;
 end;
 
+procedure TScreenEditSub.LoadEditorNoteTextures;
+const
+  DEFAULT_ACTIVE_COLOR_ID = 1;
+  INACTIVE_COLOR_ID = 9;
+  MAX_ACTIVE_COLOR_INDEX = 15;
+var
+  ActiveColor: TRGB;
+  InactiveColor: TRGB;
+  Color: Cardinal;
+  ActiveIndex: integer;
+begin
+  ActiveIndex := EnsureRange(Ini.EditorNoteColor, 0, MAX_ACTIVE_COLOR_INDEX) + 1;
+  if ActiveIndex < 1 then
+    ActiveIndex := DEFAULT_ACTIVE_COLOR_ID;
+
+  ActiveColor := GetPlayerColor(ActiveIndex);
+  Color := RGBFloatToInt(ActiveColor.R, ActiveColor.G, ActiveColor.B);
+
+  EditorNoteTextures.ActiveNoteLeft   := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),     TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.ActiveNoteMid    := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'),      TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.ActiveNoteRight  := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'),    TEXTURE_TYPE_COLORIZED, Color);
+
+  EditorNoteTextures.ActiveRapLeft    := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.ActiveRapMid     := Texture.LoadTexture(Skin.GetTextureFileName('GrayMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.ActiveRapRight   := Texture.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+
+  InactiveColor := GetPlayerColor(INACTIVE_COLOR_ID);
+  Color := RGBFloatToInt(InactiveColor.R, InactiveColor.G, InactiveColor.B);
+
+  EditorNoteTextures.InactiveNoteLeft  := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),     TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.InactiveNoteMid   := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'),      TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.InactiveNoteRight := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'),    TEXTURE_TYPE_COLORIZED, Color);
+
+  EditorNoteTextures.InactiveRapLeft   := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.InactiveRapMid    := Texture.LoadTexture(Skin.GetTextureFileName('GrayMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
+  EditorNoteTextures.InactiveRapRight  := Texture.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+end;
+
 procedure TScreenEditSub.OnShow;
 const
   SUPPORTED_EXTS_AUDIO: array[0..4]  of string = ('.mp3', '.flac', '.wav', '.ogg', '.m4a');
@@ -5117,6 +5159,8 @@ var
     Result := InRange(beat, Note.StartBeat, Note.StartBeat + Note.Duration);
   end;
 begin
+  LoadEditorNoteTextures;
+  SetEditNoteTextures(@EditorNoteTextures);
   inherited;
   // reset video playback engine
   CurrentTrack := 0;
@@ -5897,6 +5941,7 @@ end;
 
 procedure TScreenEditSub.OnHide;
 begin
+  SetEditNoteTextures(nil);
   {$IFDEF UseMIDIPort}
   MidiOut.Close;
   MidiOut.Free;
