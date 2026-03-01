@@ -77,6 +77,9 @@ type
 
       LastSelectMouse: integer;
       LastSelectTime: integer;
+      LastPreviewStartTime: integer;
+      LastChangeSoundTime: integer;
+      LastScrollStopTime: integer;
 
       RandomSongOrder: CardinalArray;
       NextRandomSongIdx: cardinal;
@@ -343,6 +346,8 @@ const
   MAX_TIME = 30;
   MAX_MESSAGE = 3;
   MAX_TIME_MOUSE_SELECT = 800;
+  CHANGE_SOUND_THROTTLE_MS = 200;
+  PREVIEW_DEBOUNCE_MS = 150;
 
 // ***** Public methods ****** //
 function TScreenSong.FreeListMode: boolean;
@@ -1920,6 +1925,9 @@ begin
 
   LastSelectMouse := 0;
   LastSelectTime := 0;
+  LastPreviewStartTime := 0;
+  LastChangeSoundTime := 0;
+  LastScrollStopTime := 0;
 
   NextRandomSongIdx := High(cardinal);
   NextRandomSearchIdx := High(cardinal);
@@ -2118,12 +2126,6 @@ end;
 { called when song flows movement stops at a song }
 procedure TScreenSong.OnSongSelect;
 begin
-  if (Ini.PreviewVolume <> 0) then
-  begin
-    StartMusicPreview;
-    StartVideoPreview;
-  end;
-
   // fade in detailed cover
   CoverTime := 0;
 
@@ -3108,8 +3110,19 @@ begin
     begin
       isScrolling := false;
       SongCurrent := SongTarget;
+      LastScrollStopTime := SDL_GetTicks;
       OnSongSelect;
     end;
+  end;
+
+  // Check if we need to start preview after debounce period
+  if (not isScrolling) and (Ini.PreviewVolume <> 0) and 
+     (PreviewOpened <> Interaction) and  // No preview loaded for current song
+     (LastScrollStopTime > 0) and
+     (SDL_GetTicks - LastScrollStopTime >= PREVIEW_DEBOUNCE_MS) then
+  begin
+    StartMusicPreview;
+    StartVideoPreview;
   end;
 
   {   //basisbit todo this block was auskommentiert
@@ -3338,6 +3351,7 @@ var
   Skip: integer;
   VS:   integer;
   NextInt: integer;
+  OriginalInteraction: integer;
 begin
   VS := CatSongs.VisibleSongs;
 
@@ -3356,12 +3370,13 @@ begin
       Inc(Skip);
 
     NextInt := (Interaction + Skip) mod Length(Interactions);
-
-    SongTarget := SongTarget + 1;//Skip;
-
+    OriginalInteraction := Interaction;
 
     if not ((TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) and (NextInt < Interaction)) then
       Interaction := NextInt;
+
+    if (Interaction <> OriginalInteraction) then
+      SongTarget := SongTarget + 1;//Skip;
 
     // try to keep all at the beginning
     if SongTarget > VS-1 then
@@ -3390,6 +3405,7 @@ var
   Skip: integer;
   VS:   integer;
   PrevInt: integer;
+  OriginalInteraction: integer;
 begin
   VS := CatSongs.VisibleSongs;
 
@@ -3406,12 +3422,14 @@ begin
     while (not CatSongs.Song[(Interaction - Skip + Length(Interactions)) mod Length(Interactions)].Visible) do
       Inc(Skip);
 
-    SongTarget := SongTarget - 1;
-
     PrevInt := (Interaction - Skip + Length(Interactions)) mod Length(Interactions);
+    OriginalInteraction := Interaction;
 
     if not ((TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) and (PrevInt > Interaction)) then
       Interaction := PrevInt;
+    
+    if (Interaction <> OriginalInteraction) then
+      SongTarget := SongTarget - 1;
     
     if (TSongMenuMode(Ini.SongMenu) = smChessboard) then
     begin
@@ -3432,10 +3450,16 @@ procedure TScreenSong.SelectNextRow;
 var
   Skip, SongIndex: integer;
   VS:   integer;
+  MaxLine: real;
+  OriginalInteraction: integer;
 begin
   VS := CatSongs.VisibleSongs;
 
-  AudioPlayback.PlaySound(SoundLib.Change);
+  if (SDL_GetTicks - LastChangeSoundTime >= CHANGE_SOUND_THROTTLE_MS) then
+  begin
+    AudioPlayback.PlaySound(SoundLib.Change);
+    LastChangeSoundTime := SDL_GetTicks;
+  end;
 
   if VS > 0 then
   begin
@@ -3446,6 +3470,7 @@ begin
       OnSongDeselect;
     end;
 
+    OriginalInteraction := Interaction;
     Skip := 0;
     SongIndex := Interaction;
 
@@ -3459,8 +3484,6 @@ begin
       Inc(SongIndex);
     end;
 
-    SongTarget := SongTarget + 1;
-
     if (Skip <= Theme.Song.Cover.Cols) then
     begin
       Interaction := LastVisibleSongIndex;
@@ -3471,8 +3494,22 @@ begin
         Interaction := SongIndex - 1;
     end;
 
+    if (Interaction <> OriginalInteraction) then
+      SongTarget := SongTarget + 1;
+
     if (not Button[Interaction].Visible) then
+    begin
       ChessboardMinLine := ChessboardMinLine + 1;
+      
+      MaxLine := (VS - Theme.Song.Cover.Cols * Theme.Song.Cover.Rows) / Theme.Song.Cover.Cols;
+      if (Frac(Maxline) > 0) then
+        MaxLine := Round(MaxLine) + 1
+      else
+        MaxLine := Round(MaxLine);
+      
+      if (ChessboardMinLine > Round(MaxLine)) then
+        ChessboardMinLine := Round(MaxLine);
+    end;
   end;
 end;
 
@@ -3480,10 +3517,15 @@ procedure TScreenSong.SelectPrevRow;
 var
   Skip, SongIndex: integer;
   VS:   integer;
+  OriginalInteraction: integer;
 begin
   VS := CatSongs.VisibleSongs;
 
-  AudioPlayback.PlaySound(SoundLib.Change);
+  if (SDL_GetTicks - LastChangeSoundTime >= CHANGE_SOUND_THROTTLE_MS) then
+  begin
+    AudioPlayback.PlaySound(SoundLib.Change);
+    LastChangeSoundTime := SDL_GetTicks;
+  end;
 
   if (VS > 0) then
   begin
@@ -3494,6 +3536,7 @@ begin
       OnSongDeselect;
     end;
 
+    OriginalInteraction := Interaction;
     Skip := 0;
     SongIndex := Interaction;
 
@@ -3507,8 +3550,6 @@ begin
       Dec(SongIndex);
     end;
 
-    SongTarget := SongTarget - 1;
-
     if (Skip <= Theme.Song.Cover.Cols) then
     begin
       Interaction := FirstVisibleSongIndex;
@@ -3519,10 +3560,17 @@ begin
         Interaction := SongIndex + 1;
     end;
 
+    if (Interaction <> OriginalInteraction) then
+      SongTarget := SongTarget - 1;
+
   end;
 
   if (not Button[Interaction].Visible) then
+  begin
     ChessboardMinLine := ChessboardMinLine - 1;
+    if (ChessboardMinLine < 0) then
+      ChessboardMinLine := 0;
+  end;
 end;
 
 procedure TScreenSong.SelectNextListRow;
@@ -3716,21 +3764,19 @@ begin
 
     if not (Button[Interaction].Visible) then
     begin
-      ChessboardLine := (CatSongs.VisibleIndex(Interaction) - Theme.Song.Cover.Cols * Theme.Song.Cover.Rows) / Theme.Song.Cover.Cols;
-
-      if (Frac(ChessboardLine) > 0) then
-        ChessboardMinLine := Round(ChessboardLine) + 1
-      else
-        ChessboardMinLine := Round(ChessboardLine);
-
+      i := CatSongs.VisibleIndex(Interaction);
+      ChessboardMinLine := Trunc(i / Theme.Song.Cover.Cols) - (Theme.Song.Cover.Rows - 1);
+      
+      if (ChessboardMinLine < 0) then
+        ChessboardMinLine := 0;
+      
       MaxLine := (VS - Theme.Song.Cover.Cols * Theme.Song.Cover.Rows) / Theme.Song.Cover.Cols;
-
       if (Frac(Maxline) > 0) then
         MaxLine := Round(MaxLine) + 1
       else
         MaxLine := Round(MaxLine);
-
-      if (ChessboardMinLine > MaxLine) then
+      
+      if (ChessboardMinLine > Round(MaxLine)) then
         ChessboardMinLine := Round(MaxLine);
     end;
 
