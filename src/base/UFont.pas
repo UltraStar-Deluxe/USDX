@@ -51,6 +51,9 @@ uses
   Math,
   Classes,
   SysUtils,
+  {$IFDEF MSWINDOWS}
+  Windows,
+  {$ENDIF}
   UUnicodeUtils,
   {$IFDEF BITMAP_FONT}
   UTexture,
@@ -1274,7 +1277,7 @@ begin
   // The result is our mipmap-level = the index of the mipmap to use.
 
   // Level > 0: Minification; < 0: Magnification
-  Result := Trunc(Log2(Max(WidthScale, HeightScale)) + cBias);
+  Result := Trunc(Log2(Math.Max(WidthScale, HeightScale)) + cBias);
 
   // clamp to valid range
   if (Result < 0) then
@@ -1501,20 +1504,49 @@ end;
  * TFTFontFace
  *}
 
- constructor TFTFontFace.Create(const Filename: IPath; Size: integer);
- var
-   b1: Integer;
- begin
-   inherited Create();
-   b1:=3;
+constructor TFTFontFace.Create(const Filename: IPath; Size: integer);
+var
+  b1: Integer;
+  Utf8FileName: UTF8String;
+  {$IFDEF MSWINDOWS}
+  FileHandle: THandle;
+  FileSize: DWORD;
+  BytesRead: DWORD;
+  WideFileName: WideString;
+  {$ENDIF}
+begin
+  inherited Create();
+  b1:=3;
 
-   fFilename := Filename;
-   fSize := Size;
-   try
-     b1 := FT_New_Face(TFreeType.GetLibrary(), PChar(Filename.ToNative), 0, fFace);
-   except
-     raise EFontError.Create('FT_New_Face: Error - Could not load font file to memory on Windows '''  + Filename.ToNative + '''');
-   end;
+  fFilename := Filename;
+  fSize := Size;
+  try
+    {$IFDEF MSWINDOWS}
+    WideFileName := Filename.ToWide();
+    FileHandle := CreateFileW(PWideChar(WideFileName), GENERIC_READ, FILE_SHARE_READ, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    if (FileHandle = INVALID_HANDLE_VALUE) then
+      raise EFontError.Create('FT_New_Face: Error - Could not open font file '''  + Filename.ToNative + '''');
+
+    try
+      FileSize := GetFileSize(FileHandle, nil);
+      if (FileSize = INVALID_FILE_SIZE) or (FileSize = 0) or (FileSize > High(Integer)) then
+        raise EFontError.Create('FT_New_Face: Error - Could not read font file size '''  + Filename.ToNative + '''');
+
+      SetLength(byarr1, FileSize);
+      if (not ReadFile(FileHandle, byarr1[0], FileSize, BytesRead, nil)) or (BytesRead <> FileSize) then
+        raise EFontError.Create('FT_New_Face: Error - Could not read font file '''  + Filename.ToNative + '''');
+    finally
+      CloseHandle(FileHandle);
+    end;
+
+    b1 := FT_New_Memory_Face(TFreeType.GetLibrary(), @byarr1[0], Length(byarr1), 0, fFace);
+    {$ELSE}
+    Utf8FileName := Filename.ToUTF8();
+    b1 := FT_New_Face(TFreeType.GetLibrary(), PAnsiChar(Utf8FileName), 0, fFace);
+    {$ENDIF}
+  except
+    raise EFontError.Create('FT_New_Face: Error - Could not load font file to memory on Windows '''  + Filename.ToNative + '''');
+  end;
    // load font information
    if (b1 <> 0) then
      raise EFontError.Create('FT_New_Face: Could not load font '''  + Filename.ToNative + '''');
