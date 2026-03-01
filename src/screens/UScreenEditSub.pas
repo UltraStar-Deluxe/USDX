@@ -416,7 +416,7 @@ type
       procedure Refresh;
       procedure CopyToUndo; //copy current lines, mouse position and headers
       procedure CopyFromUndo; //undo last lines, mouse position and headers
-      procedure DrawPlayerTrack(CurrentTone: Integer; Count: Integer; CurrentNote: Integer);
+      procedure DrawPlayerTrack(CurrentTone: Integer; Count: Integer; CurrentNote: Integer; DetectedToneAbs: Integer);
       procedure DrawInfoBar(X, Y, W, H: Integer; ColR, ColG, ColB, Alpha: real; Track: Integer);
       procedure DrawText(X, Y, W, H: real; Track: Integer; NumLines: Integer = 10);
       //video view
@@ -4364,7 +4364,7 @@ begin
 end; //if CurrentUndoLines
 end;
 
-procedure TScreenEditSub.DrawPlayerTrack(CurrentTone: Integer; Count: Integer; CurrentNote: Integer);
+procedure TScreenEditSub.DrawPlayerTrack(CurrentTone: Integer; Count: Integer; CurrentNote: Integer; DetectedToneAbs: Integer);
 var
   Rec:     TRecR;
   scale:   Integer;
@@ -4401,7 +4401,10 @@ begin
   SetFontPos(Theme.EditSub.TextCurrentTone.X, Theme.EditSub.TextCurrentTone.Y);
   SetFontSize(Theme.EditSub.TextCurrentTone.Size);
   glColor4f(Theme.EditSub.TextCurrentTone.ColR, Theme.EditSub.TextCurrentTone.ColG, Theme.EditSub.TextCurrentTone.ColB, 1);
-  glPrint(GetNoteName(CurrentTone));
+  if (DetectedToneAbs >= 0) then
+    glPrint(ToneAbsToString(DetectedToneAbs))
+  else
+    glPrint('-');
 end;
 
 procedure TScreenEditSub.DrawInfoBar(X, Y, W, H: Integer; ColR, ColG, ColB, Alpha: real; Track: Integer);
@@ -5866,7 +5869,7 @@ begin
   if (CurrentSound.ToneString <> '-') then
   begin
     Count := trunc((720 / (GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat) - GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat)))*(AudioPlayback.Position - GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat)));
-    DrawPlayerTrack(CurrentSound.Tone, Count, CurrentNote[CurrentTrack]);
+    DrawPlayerTrack(CurrentSound.Tone, Count, CurrentNote[CurrentTrack], CurrentSound.ToneAbs);
   end;
 
   GoldenRec.SpawnRec;
@@ -5950,17 +5953,17 @@ begin
   end;
 
   case Octave of
-    -3: Result := Result + SUB_MINUS + SUB_1; // subsub-contra: '''C - '''B
-    -2: Result := Result + SUB_0;             // sub-contra:     ''C - ''B
-    -1: Result := Result + SUB_1;             // contra:          'C - 'B
-     0: Result := Result + SUB_2;             // great:            C - B
-     1: Result := Result + SUB_3;             // small:            c - b
-     2: Result := Result + SUB_4;             // one-lined:       c' - b'
-     3: Result := Result + SUB_5;             // two-lined:      c'' - b''
-     4: Result := Result + SUB_6;             // three-lined:   c''' - b'''
-     5: Result := Result + SUB_7;             // four-lined:   c'''' - b''''
-     6: Result := Result + SUB_8;             // five-lined:  c''''' - b'''''
-     7: Result := Result + SUB_9;             // six-lined:  c'''''' - b''''''
+    -5: Result := Result + SUB_MINUS + SUB_1; // subsub-contra: '''C - '''B
+    -4: Result := Result + SUB_0;             // sub-contra:     ''C - ''B
+    -3: Result := Result + SUB_1;             // contra:          'C - 'B
+    -2: Result := Result + SUB_2;             // great:            C - B
+    -1: Result := Result + SUB_3;             // small:            c - b
+     0: Result := Result + SUB_4;             // one-lined:       c' - b'
+     1: Result := Result + SUB_5;             // two-lined:      c'' - b''
+     2: Result := Result + SUB_6;             // three-lined:   c''' - b'''
+     3: Result := Result + SUB_7;             // four-lined:   c'''' - b''''
+     4: Result := Result + SUB_8;             // five-lined:  c''''' - b'''''
+     5: Result := Result + SUB_9;             // six-lined:  c'''''' - b''''''
   end;
 end;
 
