@@ -1033,6 +1033,18 @@ begin
     ;
   end;
 
+  {$IF LIBSWSCALE_VERSION < 8003000}
+  {$IF DEFINED(CPUX86_64) or DEFINED(CPUX86)}
+  // Unscaled conversion with libswscale lacked the emms instruction.
+  // With FFmpeg 7.1 these mmx(ext) implementations have been removed.
+  // I assume you won't run this game on an x86 system that does not yet support mmx.
+  asm
+    emms
+  end ['st(0)','st(1)','st(2)','st(3)','st(4)','st(5)','st(6)','st(7)',
+       'mm0','mm1','mm2','mm3','mm4','mm5','mm6','mm7'];
+  {$ENDIF}
+  {$ENDIF}
+
   if (errnum < 0) then
   begin
     Log.LogError('Image conversion failed', 'TVideoPlayback_ffmpeg.GetFrame');
