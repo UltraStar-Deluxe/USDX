@@ -63,6 +63,7 @@ type
       MapIIDtoDescID: array of integer;
 
       procedure UpdateTextDescriptionFor(IID: integer); virtual;
+      procedure OpenRecordOptions;
 
     public
       TextDescription:    integer;
@@ -84,8 +85,17 @@ uses
   UHelp,
   ULanguage,
   ULog,
+  UScreenOptionsRecord,
   UWebcam,
   UUnicodeUtils;
+
+procedure TScreenOptions.OpenRecordOptions;
+begin
+  RefreshAudioInputDevices(aimFull);
+  FreeAndNil(ScreenOptionsRecord);
+  ScreenOptionsRecord := TScreenOptionsRecord.Create;
+  FadeTo(@ScreenOptionsRecord, SoundLib.Start);
+end;
 
 function TScreenOptions.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
@@ -132,7 +142,7 @@ begin
 
       SDLK_R:
         begin
-          FadeTo(@ScreenOptionsRecord, SoundLib.Start);
+          OpenRecordOptions;
           Exit;
         end;
 
@@ -228,8 +238,7 @@ begin
 
           if Interaction = ButtonRecordIID then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
-            FadeTo(@ScreenOptionsRecord);
+            OpenRecordOptions;
           end;
 
           if Interaction = ButtonAdvancedIID then
