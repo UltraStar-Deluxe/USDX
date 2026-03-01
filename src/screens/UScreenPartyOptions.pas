@@ -73,7 +73,6 @@ type
 
       procedure InitClassic;
       procedure InitFree;
-      procedure InitChallenge;
       procedure InitTournament;
   end;
 
@@ -141,8 +140,7 @@ begin
           case Mode of
             0: InitClassic;
             1: InitFree;
-            2: InitChallenge;
-            3: InitTournament;
+            2: InitTournament;
           end;
 
         end;
@@ -419,12 +417,6 @@ begin
   ScreenSong.Mode := smPartyFree;
   AudioPlayback.PlaySound(SoundLib.Start);
   FadeTo(@ScreenPartyPlayer);
-end;
-
-procedure TScreenPartyOptions.InitChallenge;
-begin
-  ScreenSong.Mode := smPartyChallenge;
-  ScreenPopupError.ShowPopup(Language.Translate('PARTY_MODE_NOT_AVAILABLE'));
 end;
 
 procedure TScreenPartyOptions.InitTournament;

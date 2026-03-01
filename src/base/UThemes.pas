@@ -1184,7 +1184,7 @@ type
     Playlist:         TThemePlaylist;
 
     ILevel: array[0..2] of UTF8String;
-    IMode:  array[0..3] of UTF8String;
+    IMode:  array[0..2] of UTF8String;
     OptionsNetworkLegendStatic: array of TThemeStatic;
     OptionsNetworkLegendText: array of TThemeText;
 
@@ -2136,8 +2136,7 @@ begin
       //Fill IMode
       IMode[0] := Language.Translate('PARTY_MODE_CLASSIC');
       IMode[1] := Language.Translate('PARTY_MODE_CLASSIC_FREE');
-      IMode[2] := Language.Translate('PARTY_MODE_CHALLENGE');
-      IMode[3] := Language.Translate('PARTY_MODE_TOURNAMENT');
+      IMode[2] := Language.Translate('PARTY_MODE_TOURNAMENT');
     end;
 
   CloseFile;
