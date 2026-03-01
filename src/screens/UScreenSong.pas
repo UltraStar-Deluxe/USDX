@@ -645,7 +645,7 @@ var
   UpperLetter: UCS4Char;
   TempLetter: UCS4Char;
   TempStr: UTF8String;
-  VerifySong, WebList: string;
+  VerifySong, WebList: UTF8String;
   Fix: boolean;
   VS: integer;
 

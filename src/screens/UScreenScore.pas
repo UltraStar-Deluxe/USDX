@@ -252,7 +252,7 @@ procedure SendScore(SendInfo: TSendInfo; Website: integer);
 var
   LoginInfo: TLoginInfo;
   SendStatus: integer;
-  EncryptPassword: widestring;
+  EncryptPassword: UTF8String;
 begin
 
   // Encrypt Password (with username and password)
@@ -284,9 +284,9 @@ end;
 procedure SaveScore(SendInfo: TSendInfo; Website: integer);
 var
   LoginInfo: TLoginInfo;
-  EncryptPassword: widestring;
+  EncryptPassword: UTF8String;
   ScoreFile: TextFile;
-  EncryptText: string;
+  EncryptText: UTF8String;
   WebName: UTF8String;
 begin
   // Encrypt Password (with username and password)

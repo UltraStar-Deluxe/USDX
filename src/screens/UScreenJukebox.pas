@@ -530,7 +530,7 @@ begin
 
   if (Filter <> '') then
   begin
-    Filter := LowerCase(TransliterateToASCII(UTF8Decode(Filter)));
+    Filter := UTF8LowerCase(TransliterateToASCII(Filter));
 
     SetLength(JukeboxVisibleSongs, 0);
     for I := 0 to High(JukeboxSongsList) do
@@ -2925,4 +2925,3 @@ begin
 end;
 
 end.
-

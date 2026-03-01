@@ -67,11 +67,11 @@ type
       procedure UnLoadWebsite;
 
       function  WebsiteSendScore (var SendInfo: TSendInfo): byte;
-      function  WebsiteEncryptScore (var SendInfo: TSendInfo): string;
+      function  WebsiteEncryptScore (var SendInfo: TSendInfo): UTF8String;
       function  WebsiteLogin (var LoginInfo: TLoginInfo): byte;
-      function  WebsiteEncryptPassword (var LoginInfo: TLoginInfo): string;
-      function  WebsiteDownloadScore (List_MD5Song: widestring; Level: byte): string;
-      function  WebsiteVerifySong (MD5Song: widestring): string;
+      function  WebsiteEncryptPassword (var LoginInfo: TLoginInfo): UTF8String;
+      function  WebsiteDownloadScore (List_MD5Song: UTF8String; Level: byte): UTF8String;
+      function  WebsiteVerifySong (MD5Song: UTF8String): UTF8String;
   end;
 
 var
@@ -224,10 +224,15 @@ begin
     Result := 0;
 end;
 
-function TDLLMan.WebsiteEncryptScore (var SendInfo: TSendInfo): string;
+function TDLLMan.WebsiteEncryptScore (var SendInfo: TSendInfo): UTF8String;
+var
+  WideResult: WideString;
 begin
   if (@P_EncryptScore <> nil) then
-    Result := P_EncryptScore (SendInfo)
+  begin
+    WideResult := P_EncryptScore(SendInfo);
+    Result := UTF8Encode(WideResult);
+  end
   else
     Result := '';
 end;
@@ -240,28 +245,45 @@ begin
     Result := 0;
 end;
 
-function TDLLMan.WebsiteEncryptPassword (var LoginInfo: TLoginInfo): string;
+function TDLLMan.WebsiteEncryptPassword (var LoginInfo: TLoginInfo): UTF8String;
+var
+  WideResult: WideString;
 begin
   if (@P_EncryptPassword <> nil) then
   begin
-    Result := P_EncryptPassword (LoginInfo);
+    WideResult := P_EncryptPassword(LoginInfo);
+    Result := UTF8Encode(WideResult);
   end
   else
     Result := '';
 end;
 
-function TDLLMan.WebsiteDownloadScore (List_MD5Song: widestring; Level: byte): string;
+function TDLLMan.WebsiteDownloadScore (List_MD5Song: UTF8String; Level: byte): UTF8String;
+var
+  WideList: WideString;
+  WideResult: WideString;
 begin
   if (@P_DownloadScore <> nil) then
-    Result := P_DownloadScore (List_MD5Song, Level)
+  begin
+    WideList := UTF8Decode(List_MD5Song);
+    WideResult := P_DownloadScore(WideList, Level);
+    Result := UTF8Encode(WideResult);
+  end
   else
     Result := '';
 end;
 
-function TDLLMan.WebsiteVerifySong (MD5Song: widestring): string;
+function TDLLMan.WebsiteVerifySong (MD5Song: UTF8String): UTF8String;
+var
+  WideMd5: WideString;
+  WideResult: WideString;
 begin
   if (@P_VerifySong <> nil) then
-    Result := P_VerifySong (MD5Song)
+  begin
+    WideMd5 := UTF8Decode(MD5Song);
+    WideResult := P_VerifySong(WideMd5);
+    Result := UTF8Encode(WideResult);
+  end
   else
     Result := '';
 end;
