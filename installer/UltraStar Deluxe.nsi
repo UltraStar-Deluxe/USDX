@@ -438,6 +438,7 @@ Section $(name_section1) Section1
 	CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(sm_shortcut).lnk" "$INSTDIR\${exe}.exe"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(sm_website).lnk" "${homepage}"
+	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(sm_song_editors).lnk" "${song_editors}"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(sm_songs).lnk" "$INSTDIR\songs"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(sm_uninstall).lnk" "$INSTDIR\${exeuninstall}.exe"
 	CreateShortCut "$SMPROGRAMS\$StartMenuFolder\$(sm_update).lnk" "$INSTDIR\${exeupdate}.exe"
@@ -481,18 +482,6 @@ SectionEnd
 
 ; No additional themes available 
 ; for current version of ultrastardx
-
-;------------------------------------
-; ULTRASTAR MANAGER (Section 4)
-;------------------------------------
-
-!include "${path_settings}\ultrastar_manager.nsh"
-
-;------------------------------------
-; ULTRASTAR CREATOR (Section 5)
-;------------------------------------
-
-!include "${path_settings}\ultrastar_creator.nsh"
 
 ;------------------------------------
 ; UNINSTALL (Section 6)

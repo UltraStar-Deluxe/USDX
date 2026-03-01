@@ -399,17 +399,9 @@ Section "Download Installer" Section2
 	
 	StrCpy $4 "${installer_exe_path}"
 	StrCpy $0 ${update_url}
-	${StrRep} $0 $0 ${update_mask_online_version} $1
-	${StrRep} $0 $0 ${update_mask_installer_version} $2
-	
-	NSISdl::download /TRANSLATE2 $(update_download_downloading) $(update_download_connecting) \
-		$(update_download_remain_sec) $(update_download_remain_min) \
-		$(update_download_remain_hour) $(update_download_remain_secs) \
-		$(update_download_remain_mins) $(update_download_remain_hours) \
-		$(update_download_progress) \
-		/TIMEOUT=60000 "$0" "$4"
-		
-	;inetc::get /CONNECTTIMEOUT 60 \
+	${StrRep} $0 $0 ${update_mask_online_version} $download_version
+
+	inetc::get /CONNECTTIMEOUT 60 \
 		/TRANSLATE $(update_download_downloading) $(update_download_connecting) $(update_download_sec) $(update_download_min) $(update_download_hour) $(update_download_multi) $(update_download_progress) $(update_download_remaining) \
 		"$0" "$4"
 		
