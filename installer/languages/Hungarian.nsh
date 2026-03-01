@@ -33,6 +33,7 @@ ${LangFileString} update_information "Ellenõrizheti, hogy van-e új '${name}'-v
 
 ${LangFileString} delete_components "Also delete the following components:"
 ${LangFileString} delete_covers "Töröljük a borítókat?"
+${LangFileString} delete_avatars "Avatars?"
 ${LangFileString} delete_highscores "Töröljük a pontszámokat?"
 ${LangFileString} delete_config "Config?"
 ${LangFileString} delete_screenshots "Screenshots?"
