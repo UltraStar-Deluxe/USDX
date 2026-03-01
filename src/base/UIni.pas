@@ -127,6 +127,7 @@ type
       Name:           array[0..15] of UTF8String;
       PlayerColor:    array[0..(IMaxPlayerCount-1)] of integer;
       TeamColor:      array[0..2] of integer;
+      PlayerDelay:    array[0..(IMaxPlayerCount-1)] of integer;
 
       PlayerAvatar:   array[0..(IMaxPlayerCount-1)] of UTF8String;
       PlayerLevel:    array[0..(IMaxPlayerCount-1)] of integer;
@@ -287,11 +288,14 @@ type
       // default encoding for texts (lyrics, song-name, ...)
       DefaultEncoding: TEncoding;
       LastReadNames: LongInt;
+      LastReadDelays: LongInt;
 
       procedure Load();
       procedure Save();
       procedure SaveNames;
-      function ReloadNames: boolean;
+      procedure SaveDelays;
+      procedure ReloadDelays;
+      function  ReloadNames: boolean;
       procedure SaveLevel;
       procedure SavePlayerColors;
       procedure SavePlayerAvatars;
@@ -1434,6 +1438,8 @@ begin
     PlayerAvatar[I] := IniFile.ReadString('PlayerAvatar', 'P'+IntToStr(I+1), '');
     // Level Player
     PlayerLevel[I] := IniFile.ReadInteger('PlayerLevel', 'P'+IntToStr(I+1), 1);
+    // Player Delay
+    PlayerDelay[I] := IniFile.ReadInteger('PlayerDelay', 'P'+IntToStr(I+1), 0);
   end;
 
   // Color Team
@@ -2053,6 +2059,41 @@ begin
   end;
 end;
 
+procedure TIni.SaveDelays;
+var
+  IniFile: TIniFile;
+  I:       integer;
+begin
+  if not Filename.IsReadOnly() then
+  begin
+    IniFile := TIniFile.Create(Filename.ToNative);
+
+    for I := 0 to High(PlayerDelay) do
+      IniFile.WriteInteger('PlayerDelay', 'P' + IntToStr(I+1), PlayerDelay[I]);
+
+    IniFile.Free;
+  end;
+end;
+
+
+procedure TIni.ReloadDelays;
+var
+  IniFile: TIniFile;
+  I:       integer;
+begin
+  if not FileExists(Filename.ToNative) or (FileAge(Filename.ToNative) <= LastReadDelays) then
+  begin
+    Exit;
+  end;
+  LastReadDelays := FileAge(Filename.ToNative);
+
+  IniFile := TIniFile.Create(Filename.ToNative);
+
+  for I := 0 to IMaxPlayerCount-1 do
+    PlayerDelay[I] := IniFile.ReadInteger('PlayerDelay', 'P'+IntToStr(I+1), 0);
+
+  IniFile.Free;
+end;
 
 function TIni.ReloadNames: boolean;
 var
