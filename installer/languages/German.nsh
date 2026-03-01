@@ -30,6 +30,7 @@ ${LangFileString} button_close "Beenden"
 
 ${LangFileString} delete_components "Folgende Komponenten ebenfalls entfernen:"
 ${LangFileString} delete_covers "Cover"
+${LangFileString} delete_avatars "Avatare"
 ${LangFileString} delete_highscores "Statistiken"
 ${LangFileString} delete_config "Konfiguration"
 ${LangFileString} delete_screenshots "Screenshots"

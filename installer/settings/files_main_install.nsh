@@ -105,8 +105,6 @@ RMDir /r "$INSTDIR\Skins"
 RMDir /r "$INSTDIR\Plugins"
 RMDir /r "$INSTDIR\Languages"
 RMDir /r "$INSTDIR\Webs"
-RMDir /r "$INSTDIR\Avatars"
-
 ; Create Directories:
 
 CreateDirectory $INSTDIR\plugins
