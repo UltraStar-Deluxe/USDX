@@ -95,27 +95,32 @@ end;
 
 procedure TProjectM.ResetGL(width, height: Integer);
 begin
-  _projectM_resetGL(data, width, height);
+  if (data <> nil) then
+    _projectM_resetGL(data, width, height);
 end;
 
 procedure TProjectM.SetTitle(const title: string);
 begin
-  _projectM_setTitle(data, PChar(title));
+  if (data <> nil) then
+    _projectM_setTitle(data, PChar(title));
 end;
 
 procedure TProjectM.RenderFrame();
 begin
-  _projectM_renderFrame(data);
+  if (data <> nil) then
+    _projectM_renderFrame(data);
 end;
 
 procedure TProjectM.AddPCMfloat(pcmData: PSingle; samples: integer);
 begin
-  _PCM_addPCMfloat(data, pcmData, samples);
+  if (data <> nil) then
+    _PCM_addPCMfloat(data, pcmData, samples);
 end;
 
 procedure TProjectM.AddPCM16(pcmData: PPCM16);
 begin
-  _PCM_addPCM16(data, pcmData);
+  if (data <> nil) then
+    _PCM_addPCM16(data, pcmData);
 end;
 
 {**
@@ -123,17 +128,20 @@ end;
  *}
 procedure TProjectM.AddPCM16Data(pcmData: PSmallint; samples: Smallint);
 begin
-  _PCM_addPCM16Data(data, PCshort(pcmData), samples);
+  if (data <> nil) then
+    _PCM_addPCM16Data(data, PCshort(pcmData), samples);
 end;
 
 procedure TProjectM.AddPCM8_512(pcmData: PPCM8_512);
 begin
-  _PCM_addPCM8_512(data, pcmData);
+  if (data <> nil) then
+    _PCM_addPCM8_512(data, pcmData);
 end;
 
 procedure TProjectM.AddPCM8_1024(pcmData: PPCM8_1024);
 begin
-  _PCM_addPCM8_1024(data, pcmData);
+  if (data <> nil) then
+    _PCM_addPCM8_1024(data, pcmData);
 end;
 
 {**
@@ -142,14 +150,16 @@ end;
  *}
 function TProjectM.InitRenderToTexture(): GLuint;
 begin
-  result := _projectM_initRenderToTexture(data);
+  if (data <> nil) then
+    result := _projectM_initRenderToTexture(data);
 end;
 
 procedure TProjectM.KeyHandler(event:    TProjectMEvent;
                                keycode:  TProjectMKeycode;
                                modifier: TProjectMModifier);
 begin
-  _projectM_key_handler(data, event, keycode, modifier);
+  if (data <> nil) then
+    _projectM_key_handler(data, event, keycode, modifier);
 end;
 
 procedure TProjectM.RandomPreset();
@@ -175,14 +185,18 @@ end;
 {$IF PROJECTM_VERSION > 1000000} // > 1.01
 procedure TProjectM.Settings(var settings: TSettings);
 begin
-  _projectM_settings(data, @settings);
+  if (data <> nil) then
+    _projectM_settings(data, @settings);
 end;
 {$IFEND}
 
 destructor TProjectM.Destroy();
+var
+  tmp: _PProjectM;
 begin
-  _projectM_free(data);
-  data := nil;
+  tmp := data;
+  data := nil; // prevent any further calls to projectM
+  if (tmp <> nil) then
+    _projectM_free(tmp);
   inherited;
 end;
-

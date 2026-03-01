@@ -8,9 +8,17 @@ interface
 
 {$I switches.inc}
 
-{$L ApiWrapper.o}
+{$IFNDEF OpenCVWrapperDLL}
+  {$L ApiWrapper.o}
+{$ELSE}
+  {$IFNDEF OpenCVWrapperManualLink}
+    {$LINKLIB opencvwrapper}
+  {$ENDIF}
+{$ENDIF}
 {$IFDEF OpenCVImgprocStandalone}
-  {$LINKLIB opencv_imgproc}
+  {$IFNDEF OpenCVManualLink}
+    {$LINKLIB opencv_imgproc}
+  {$ENDIF}
 {$ELSE}
   {$LINKLIB opencv_world}
 {$ENDIF}
