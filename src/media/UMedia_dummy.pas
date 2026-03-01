@@ -100,6 +100,7 @@ type
       procedure StopSound(stream: TAudioPlaybackStream);
 
       function CreateVoiceStream(Channel: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream;
+      function CreatePlaybackStreamForSource(SourceStream: TAudioSourceStream): TAudioPlaybackStream;
       procedure CloseVoiceStream(var VoiceStream: TAudioVoiceStream);
     end;
 
@@ -341,6 +342,11 @@ begin
 end;
 
 function TAudio_Dummy.CreateVoiceStream(Channel: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream;
+begin
+  Result := nil;
+end;
+
+function TAudio_Dummy.CreatePlaybackStreamForSource(SourceStream: TAudioSourceStream): TAudioPlaybackStream;
 begin
   Result := nil;
 end;
