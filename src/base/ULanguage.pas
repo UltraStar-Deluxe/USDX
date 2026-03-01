@@ -174,7 +174,6 @@ var
 begin
   SetLength(Entry, 0);
   LanguageFile := LanguagesPath.Append(Language + '.ini');
-  
   // Try to load the requested language file
   try
     IniFile := TUnicodeMemIniFile.Create(LanguageFile);
@@ -200,7 +199,6 @@ begin
     on Ex: Exception do
     begin
       Log.LogError('Unable to load language file: ' + LanguageFile.ToNative);
-      
       // If this is not English, try to fall back to English
       if (Uppercase(Language) <> 'ENGLISH') then
       begin
@@ -218,7 +216,6 @@ begin
                 Implode_Glue1 := S.ValueFromIndex[E]+ ' '
               else if S.Names[E] = 'IMPLODE_GLUE2' then
                 Implode_Glue2 := ' ' + S.ValueFromIndex[E] + ' ';
-
               Entry[E].ID := S.Names[E];
               Entry[E].Text := S.ValueFromIndex[E];
             end;
