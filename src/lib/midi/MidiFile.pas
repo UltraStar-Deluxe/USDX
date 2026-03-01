@@ -260,7 +260,7 @@ uses
 {$ENDIF}
 
 const
-  TIMER_RESOLUTION = 10;
+  TIMER_RESOLUTION = 1;
 
 {$IFDEF MSWINDOWS}
 type
