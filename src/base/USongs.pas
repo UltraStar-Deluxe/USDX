@@ -254,6 +254,8 @@ begin
     begin
       LoadSongFromFile(SongFiles[I]);
       Inc(fSongsLoaded);
+      if I = High(SongFiles) then
+        fLastProgressRedrawTicks := 0;
       UpdateLoadingProgress;
     end;
 
