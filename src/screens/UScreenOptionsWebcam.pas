@@ -341,6 +341,7 @@ begin
   WebcamsIDs[0] := Language.Translate('OPTION_VALUE_OFF');
   WebcamsIDs[1] := '0';
   WebcamsIDs[2] := '1';
+  // when editing this, also search for SelInteraction
   WebcamID := AddSelectSlide('SING_OPTIONS_WEBCAM_ID', Ini.WebCamID, WebcamsIDs);
   Resolution := AddSelectSlide('SING_OPTIONS_WEBCAM_RESOLUTION', Ini.WebcamResolution, IWebcamResolution);
   FPS := AddSelectSlide('SING_OPTIONS_WEBCAM_FPS', Ini.WebCamFPS, IWebcamFPS);

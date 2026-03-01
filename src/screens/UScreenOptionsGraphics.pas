@@ -219,6 +219,7 @@ end;
 
 procedure TScreenOptionsGraphics.LoadWidgets;
 begin
+  // when editing this, also search for SelInteraction
   SelectWindowMode := AddSelectSlide('SING_OPTIONS_GRAPHICS_FULLSCREEN', Ini.Fullscreen, IFullScreenTranslated);
   SelectResolution := AddSelectSlide('SING_OPTIONS_GRAPHICS_RESOLUTION', Ini.Resolution, IResolution);
   AddSelectSlide('SING_OPTIONS_GRAPHICS_DEPTH', Ini.Depth, IDepth);

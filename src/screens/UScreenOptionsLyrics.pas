@@ -245,6 +245,7 @@ end;
 
 procedure TScreenOptionsLyrics.LoadWidgets;
 begin
+  // when editing this, also search for SelInteraction
   AddSelectSlide('SING_OPTIONS_LYRICS_FONT', Ini.LyricsFont, FontFamilyNames);
   AddSelectSlide('SING_OPTIONS_LYRICS_STYLE', Ini.LyricsStyle, ILyricsStyleTranslated);
   AddSelectSlide('SING_OPTIONS_LYRICS_EFFECT', Ini.LyricsEffect, ILyricsEffectTranslated);

@@ -672,6 +672,7 @@ begin
       //IPassword[I] := DataBase.NetworkUser[CurrentWebsiteIndex].UserList[I].Password;
     end;
 
+    // when editing this, also search for SelInteraction
     AddSelectSlide('SING_OPTIONS_NETWORK_WEBSITE', CurrentWebsiteIndex, IWebsite);
     if (High(IWebsite) > 0) then
       SelectsS[High(SelectsS)].showArrows := true
