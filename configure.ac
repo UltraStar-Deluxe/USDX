@@ -19,11 +19,11 @@ AC_INIT([ultrastardx],
         m4_esyscmd_s([cat VERSION]),
         [https://github.com/UltraStar-Deluxe/USDX/issues/])
 # specify the website here
-PACKAGE_WEBSITE="http://usdx.eu/"
+PACKAGE_WEBSITE="https://usdx.eu/"
 AC_SUBST(PACKAGE_WEBSITE)
-# specify the IRC-channel here
-PACKAGE_IRC="#usdx at freenode.net"
-AC_SUBST(PACKAGE_IRC)
+# specify the contact page here
+PACKAGE_CONTACT="https://usdx.eu/contact/"
+AC_SUBST(PACKAGE_CONTACT)
 
 AC_CONFIG_MACRO_DIR([dists/autogen/m4])
 # Specify a source-file so autoconf can check if the source-dir exists
@@ -491,8 +491,8 @@ AC_MSG_NOTICE([
 !!!
 !!! In case you find a bug send a bugreport to:
 !!!   $PACKAGE_BUGREPORT
-!!! You might as well ask for help at the IRC-Channel
-!!!   $PACKAGE_IRC
+!!! For help and contact options visit:
+!!!   $PACKAGE_CONTACT
 !!!
 ])
 
@@ -504,5 +504,4 @@ if test x$FPC_PLATFORM = xdarwin; then
 !!! Selected packaging: $USE_OSX_PACKAGING with libdir $USE_OSX_PACKAGING_LIBDIR
                    ])
 fi
-
 
