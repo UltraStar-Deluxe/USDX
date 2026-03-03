@@ -58,7 +58,7 @@ const
 
 type
   TScoreBarType = (sbtScore, sbtLine, sbtGolden);
-  TPlayerScoreScreenTexture = record            // holds all colorized textures for up to 6 players
+  TPlayerScoreScreenTexture = record            // holds all colorized textures for one player
     //Bar textures
     Score_NoteBarLevel_Dark:     TTexture;      // Note
     Score_NoteBarRound_Dark:     TTexture;      // that's the round thing on top
@@ -85,9 +85,8 @@ type
 
   { hold maps of players to the different positions }
   TPlayerPositionMap = record
-    Position: byte; // 1..6: Position of Player; 0: no position (e.g. too little screens)
+    Position: byte; // local slot index on the assigned screen; 0 if unused
     Screen: byte;   // 0 - Screen 1; 1 - Screen 2
-    BothScreens: boolean; // true if player is drawn on both screens
   end;
   APlayerPositionMap = array of TPlayerPositionMap;
 
@@ -131,30 +130,22 @@ type
       TextTotalScore:       array[1..UIni.IMaxPlayerCount] of integer;
 
       PlayerStatic:         array[1..UIni.IMaxPlayerCount] of array of integer;
-      AvatarStatic:         array[1..UIni.IMaxPlayerCount] of integer;
       AvatarStaticRef:      array[1..UIni.IMaxPlayerCount] of Integer;
       { texture pairs for swapping when screens = 2
-        first array level: index of player ( actually this is a position
-          1    - Player 1 if PlayersPlay = 1 <- we don't need swapping here
-          2..3 - Player 1 and 2 or 3 and 4 if PlayersPlay = 2 or 4
-          4..6 - Player 1 - 3 or 4 - 6 if PlayersPlay = 3 or 6 )
-        second array level: different playerstatics for positions
-        third array level: texture for screen 1 or 2 }
-      PlayerStaticTextures: array[1..UIni.IMaxPlayerCount] of array of array [1..2] of TPlayerStaticTexture;
+        first array level: slot index on a screen
+        second array level: static index within that slot
+        third array level: precolored texture for the target player }
+      PlayerStaticTextures: array[1..UIni.IMaxPlayerCount] of array of array [1..UIni.IMaxPlayerCount] of TPlayerStaticTexture;
       PlayerTexts:          array[1..UIni.IMaxPlayerCount] of array of integer;
 
       StaticBoxLightest:    array[1..UIni.IMaxPlayerCount] of integer;
       StaticBoxLight:       array[1..UIni.IMaxPlayerCount] of integer;
       StaticBoxDark:        array[1..UIni.IMaxPlayerCount] of integer;
       { texture pairs for swapping when screens = 2
-        for boxes
-        first array level: index of player ( actually this is a position
-          1    - Player 1 if PlayersPlay = 1 <- we don't need swapping here
-          2..3 - Player 1 and 2 or 3 and 4 if PlayersPlay = 2 or 4
-          4..6 - Player 1 - 3 or 4 - 6 if PlayersPlay = 3 or 6 )
-        second array level: different boxes for positions (0: lightest; 1: light; 2: dark)
-        third array level: texture for screen 1 or 2 }
-      PlayerBoxTextures: array[1..UIni.IMaxPlayerCount] of array[0..2] of array [1..2] of TPlayerStaticTexture;
+        first array level: slot index on a screen
+        second array level: box variant (0: lightest; 1: light; 2: dark)
+        third array level: precolored texture for the target player }
+      PlayerBoxTextures: array[1..UIni.IMaxPlayerCount] of array[0..2] of array [1..UIni.IMaxPlayerCount] of TPlayerStaticTexture;
 
       StaticBackLevel:      array[1..UIni.IMaxPlayerCount] of integer;
       StaticBackLevelRound: array[1..UIni.IMaxPlayerCount] of integer;
@@ -167,7 +158,7 @@ type
       TextPhrase_ActualValue: array[1..UIni.IMaxPlayerCount] of integer;
       TextGolden_ActualValue: array[1..UIni.IMaxPlayerCount] of integer;
 
-      ButtonSend: array[1..UIni.IMaxPlayerCount] of integer;
+      ButtonSend: array[1..3] of integer;
       CurrentRound:          integer;
       StaticNavigate:       integer;
       TextNavigate:         integer;
@@ -226,6 +217,7 @@ uses
   ULog,
   UMenuStatic,
   UNote,
+  UPlayerLayout,
   UPathUtils,
   UScreenPopup,
   UScreenSong,
@@ -233,6 +225,203 @@ uses
   USong,
   UTime,
   UUnicodeUtils;
+
+function GetScoreSlotIndex(PlayerIndex, PlayerCount, ScreenCount: integer): integer;
+begin
+  Result := GetPlayerIndexOnScreen(PlayerIndex, PlayerCount, ScreenCount) + 1;
+end;
+
+function ReplaceBasePlayerColor(const Color: string; TargetPlayer: integer): string;
+var
+  SourcePrefix: string;
+begin
+  Result := Color;
+  SourcePrefix := 'P1';
+  if Copy(Color, 1, Length(SourcePrefix)) = SourcePrefix then
+    Result := 'P' + IntToStr(TargetPlayer) + Copy(Color, Length(SourcePrefix) + 1, MaxInt);
+end;
+
+function GetScorePlayerThemeColor(TargetPlayer: integer; const ThemeColor: string; out Col: TRGB): boolean;
+var
+  BaseColor: integer;
+begin
+  Result := false;
+  if (TargetPlayer < 1) or (TargetPlayer > Length(Ini.PlayerColor)) then
+    Exit;
+
+  if Pos('P1', ThemeColor) <> 1 then
+    Exit;
+
+  BaseColor := Ini.PlayerColor[TargetPlayer - 1];
+  if Pos('Lightest', ThemeColor) = 3 then
+    Col := ColorSqrt(GetPlayerLightColor(BaseColor))
+  else if Pos('Light', ThemeColor) = 3 then
+    Col := GetPlayerLightColor(BaseColor)
+  else
+    Col := GetPlayerColor(BaseColor);
+
+  Result := true;
+end;
+
+function ResolvePlayerThemeColor(const ThemeColor: string; TargetPlayer: integer; out Col: TRGB): boolean;
+var
+  ResolvedColor: string;
+  R: real;
+  G: real;
+  B: real;
+begin
+  Result := false;
+  if ThemeColor = '' then
+    Exit;
+
+  if GetScorePlayerThemeColor(TargetPlayer, ThemeColor, Col) then
+    Exit(true);
+
+  ResolvedColor := ReplaceBasePlayerColor(ThemeColor, TargetPlayer);
+  if ResolvedColor <> ThemeColor then
+  begin
+    LoadColor(R, G, B, ResolvedColor);
+    Col.R := R;
+    Col.G := G;
+    Col.B := B;
+    Result := true;
+  end;
+end;
+
+procedure ApplyThemeStaticForPlayer(const ScreenScore: TScreenScore; StaticIndex: integer;
+  const ThemeStatic: TThemeStatic; TargetPlayer: integer);
+var
+  Col: TRGB;
+  CurrentTexture: TTexture;
+begin
+  CurrentTexture := ScreenScore.Statics[StaticIndex].Texture;
+  if ResolvePlayerThemeColor(ThemeStatic.Color, TargetPlayer, Col) then
+  begin
+    if ThemeStatic.Typ = Texture_Type_Colorized then
+    begin
+      ScreenScore.Statics[StaticIndex].Texture :=
+        Texture.GetTexture(Skin.GetTextureFileName(ThemeStatic.Tex), ThemeStatic.Typ,
+          RGBFloatToInt(Col.R, Col.G, Col.B));
+      ScreenScore.Statics[StaticIndex].Texture.X := CurrentTexture.X;
+      ScreenScore.Statics[StaticIndex].Texture.Y := CurrentTexture.Y;
+      ScreenScore.Statics[StaticIndex].Texture.W := CurrentTexture.W;
+      ScreenScore.Statics[StaticIndex].Texture.H := CurrentTexture.H;
+      ScreenScore.Statics[StaticIndex].Texture.Z := CurrentTexture.Z;
+      ScreenScore.Statics[StaticIndex].Texture.Alpha := CurrentTexture.Alpha;
+    end
+    else
+    begin
+      ScreenScore.Statics[StaticIndex].Texture.ColR := Col.R;
+      ScreenScore.Statics[StaticIndex].Texture.ColG := Col.G;
+      ScreenScore.Statics[StaticIndex].Texture.ColB := Col.B;
+    end;
+  end;
+end;
+
+function GetScoreButtonLayout(PlayerCount, ScreenCount: integer): integer;
+begin
+  Result := EnsureRange(GetWidePlayerGrid(PlayerCount).Cols, 1, 3);
+end;
+
+procedure SetScoreSlotScoreAlpha(const ScreenScore: TScreenScore; SlotIndex: integer; Alpha: real);
+begin
+  ScreenScore.Text[ScreenScore.TextScore[SlotIndex]].Alpha := Alpha;
+  ScreenScore.Text[ScreenScore.TextNotes[SlotIndex]].Alpha := Alpha;
+  ScreenScore.Text[ScreenScore.TextNotesScore[SlotIndex]].Alpha := Alpha;
+  ScreenScore.Text[ScreenScore.TextLineBonus[SlotIndex]].Alpha := Alpha;
+  ScreenScore.Text[ScreenScore.TextLineBonusScore[SlotIndex]].Alpha := Alpha;
+  ScreenScore.Text[ScreenScore.TextGoldenNotes[SlotIndex]].Alpha := Alpha;
+  ScreenScore.Text[ScreenScore.TextGoldenNotesScore[SlotIndex]].Alpha := Alpha;
+  ScreenScore.Text[ScreenScore.TextTotal[SlotIndex]].Alpha := Alpha;
+  ScreenScore.Text[ScreenScore.TextTotalScore[SlotIndex]].Alpha := Alpha;
+  ScreenScore.Statics[ScreenScore.StaticBoxLightest[SlotIndex]].Texture.Alpha := Alpha;
+  ScreenScore.Statics[ScreenScore.StaticBoxLight[SlotIndex]].Texture.Alpha := Alpha;
+  ScreenScore.Statics[ScreenScore.StaticBoxDark[SlotIndex]].Texture.Alpha := Alpha;
+end;
+
+procedure SetScoreSlotVisible(const ScreenScore: TScreenScore; SlotIndex: integer; Visible: boolean);
+var
+  I: integer;
+begin
+  ScreenScore.Text[ScreenScore.TextName[SlotIndex]].Visible := Visible;
+  ScreenScore.Text[ScreenScore.TextScore[SlotIndex]].Visible := Visible;
+  ScreenScore.Text[ScreenScore.TextNotes[SlotIndex]].Visible := Visible;
+  ScreenScore.Text[ScreenScore.TextNotesScore[SlotIndex]].Visible := Visible;
+  ScreenScore.Text[ScreenScore.TextLineBonus[SlotIndex]].Visible := Visible;
+  ScreenScore.Text[ScreenScore.TextLineBonusScore[SlotIndex]].Visible := Visible;
+  ScreenScore.Text[ScreenScore.TextGoldenNotes[SlotIndex]].Visible := Visible;
+  ScreenScore.Text[ScreenScore.TextGoldenNotesScore[SlotIndex]].Visible := Visible;
+  ScreenScore.Text[ScreenScore.TextTotal[SlotIndex]].Visible := Visible;
+  ScreenScore.Text[ScreenScore.TextTotalScore[SlotIndex]].Visible := Visible;
+
+  for I := 0 to High(ScreenScore.PlayerStatic[SlotIndex]) do
+    ScreenScore.Statics[ScreenScore.PlayerStatic[SlotIndex, I]].Visible := Visible;
+
+  for I := 0 to High(ScreenScore.PlayerTexts[SlotIndex]) do
+    ScreenScore.Text[ScreenScore.PlayerTexts[SlotIndex, I]].Visible := Visible;
+
+  ScreenScore.Statics[ScreenScore.StaticBoxLightest[SlotIndex]].Visible := Visible;
+  ScreenScore.Statics[ScreenScore.StaticBoxLight[SlotIndex]].Visible := Visible;
+  ScreenScore.Statics[ScreenScore.StaticBoxDark[SlotIndex]].Visible := Visible;
+end;
+
+procedure ApplyScoreSlotTextColors(const ScreenScore: TScreenScore; SlotIndex, TargetPlayer: integer);
+var
+  I: integer;
+  procedure ApplyTextColor(TextIndex: integer; const ThemeColor: string);
+  var
+    Col: TRGB;
+  begin
+    if ResolvePlayerThemeColor(ThemeColor, TargetPlayer, Col) then
+    begin
+      ScreenScore.Text[TextIndex].ColR := Col.R;
+      ScreenScore.Text[TextIndex].ColG := Col.G;
+      ScreenScore.Text[TextIndex].ColB := Col.B;
+    end;
+  end;
+begin
+  for I := 0 to High(ScreenScore.PlayerTexts[SlotIndex]) do
+    ApplyTextColor(ScreenScore.PlayerTexts[SlotIndex, I], Theme.Score.PlayerTexts[SlotIndex, I].Color);
+
+  ApplyTextColor(ScreenScore.TextName[SlotIndex], Theme.Score.TextName[SlotIndex].Color);
+  ApplyTextColor(ScreenScore.TextScore[SlotIndex], Theme.Score.TextScore[SlotIndex].Color);
+  ApplyTextColor(ScreenScore.TextNotes[SlotIndex], Theme.Score.TextNotes[SlotIndex].Color);
+  ApplyTextColor(ScreenScore.TextNotesScore[SlotIndex], Theme.Score.TextNotesScore[SlotIndex].Color);
+  ApplyTextColor(ScreenScore.TextLineBonus[SlotIndex], Theme.Score.TextLineBonus[SlotIndex].Color);
+  ApplyTextColor(ScreenScore.TextLineBonusScore[SlotIndex], Theme.Score.TextLineBonusScore[SlotIndex].Color);
+  ApplyTextColor(ScreenScore.TextGoldenNotes[SlotIndex], Theme.Score.TextGoldenNotes[SlotIndex].Color);
+  ApplyTextColor(ScreenScore.TextGoldenNotesScore[SlotIndex], Theme.Score.TextGoldenNotesScore[SlotIndex].Color);
+  ApplyTextColor(ScreenScore.TextTotal[SlotIndex], Theme.Score.TextTotal[SlotIndex].Color);
+  ApplyTextColor(ScreenScore.TextTotalScore[SlotIndex], Theme.Score.TextTotalScore[SlotIndex].Color);
+end;
+
+procedure ApplyScoreSlotPlayerVisuals(const ScreenScore: TScreenScore; SlotIndex, TargetPlayer: integer);
+var
+  I: integer;
+begin
+  ApplyScoreSlotTextColors(ScreenScore, SlotIndex, TargetPlayer);
+
+  for I := 0 to High(ScreenScore.PlayerStatic[SlotIndex]) do
+    ApplyThemeStaticForPlayer(ScreenScore, ScreenScore.PlayerStatic[SlotIndex, I],
+      Theme.Score.PlayerStatic[SlotIndex, I], TargetPlayer);
+
+  ApplyThemeStaticForPlayer(ScreenScore, ScreenScore.StaticBoxLightest[SlotIndex],
+    Theme.Score.StaticBoxLightest[SlotIndex], TargetPlayer);
+  ApplyThemeStaticForPlayer(ScreenScore, ScreenScore.StaticBoxLight[SlotIndex],
+    Theme.Score.StaticBoxLight[SlotIndex], TargetPlayer);
+  ApplyThemeStaticForPlayer(ScreenScore, ScreenScore.StaticBoxDark[SlotIndex],
+    Theme.Score.StaticBoxDark[SlotIndex], TargetPlayer);
+  ApplyThemeStaticForPlayer(ScreenScore, ScreenScore.StaticBackLevel[SlotIndex],
+    Theme.Score.StaticBackLevel[SlotIndex], TargetPlayer);
+  ApplyThemeStaticForPlayer(ScreenScore, ScreenScore.StaticBackLevelRound[SlotIndex],
+    Theme.Score.StaticBackLevelRound[SlotIndex], TargetPlayer);
+  ApplyThemeStaticForPlayer(ScreenScore, ScreenScore.StaticLevel[SlotIndex],
+    Theme.Score.StaticLevel[SlotIndex], TargetPlayer);
+  ApplyThemeStaticForPlayer(ScreenScore, ScreenScore.StaticLevelRound[SlotIndex],
+    Theme.Score.StaticLevelRound[SlotIndex], TargetPlayer);
+  ApplyThemeStaticForPlayer(ScreenScore, ScreenScore.AvatarStaticRef[TargetPlayer],
+    Theme.Score.AvatarStatic[SlotIndex], TargetPlayer);
+end;
 
 {
  *****************************
@@ -482,14 +671,7 @@ var
 begin
   Result := True;
 
-  //TODO: adapt for players 7 to 12
-  case PlayersPlay of
-    1 : button_s := ButtonSend[1];
-    2, 4: button_s := ButtonSend[2];
-    3, 5, 6: button_s := ButtonSend[3];
-  else
-    button_s := ButtonSend[3];
-  end;
+  button_s := ButtonSend[GetScoreButtonLayout(PlayersPlay, Screens)];
 
   // transfer mousecords to the 800x600 raster we use to draw
   X := Round((X / (ScreenW / Screens)) * RenderW);
@@ -550,96 +732,42 @@ begin
   ResetScores;
 end;
 
-//TODO: adapt for players 7 to 12
 procedure TScreenScore.LoadSwapTextures;
-  var
-    P, I: integer;
-    PlayerNum, PlayerNum2: integer;
-    Color: string;
-    R, G, B: real;
-    StaticNum: integer;
-    ThemeStatic: TThemeStatic;
+var
+  P, I, TargetPlayer: integer;
+  Col: TRGB;
+  StaticNum: integer;
+  ThemeStatic: TThemeStatic;
 begin
-  { we only need to load swapping textures if in dualscreen mode }
   if Screens = 2 then
   begin
-    { load swapping textures for custom statics }
     for P := low(PlayerStatic) to High(PlayerStatic) do
     begin
       SetLength(PlayerStaticTextures[P], Length(PlayerStatic[P]));
 
-      { get the players that actually are on this position }
-      case P of
-        1: begin
-          PlayerNum := 1;
-          PlayerNum2 := 1;
-        end;
-
-        2, 3: begin
-          PlayerNum := P - 1;
-          PlayerNum2 := PlayerNum + 2;
-        end;
-
-        4..6: begin
-          PlayerNum := P - 3;
-          PlayerNum2 := PlayerNum + 3;
-        end;
-      end;
-
       for I := 0 to High(PlayerStatic[P]) do
       begin
-        // copy current statics texture to texture for screen 1
-        PlayerStaticTextures[P, I, 1].Tex := Statics[PlayerStatic[P, I]].Texture;
-
-        // fallback to first screen texture for 2nd screen
-        PlayerStaticTextures[P, I, 2].Tex := PlayerStaticTextures[P, I, 1].Tex;
-
-        { texture for second screen }
-        { we only change color for statics with playercolor
-          and with Texture type colorized
-          also we don't need to swap for one player position }
-        if (P <> 1) and
-           (Theme.Score.PlayerStatic[P, I].Typ = Texture_Type_Colorized) and
-           (Length(Theme.Score.PlayerStatic[P, I].Color) >= 2) and
-           (copy(Theme.Score.PlayerStatic[P, I].Color, 1, 2) = 'P' + IntToStr(PlayerNum)) then
+        for TargetPlayer := 1 to PlayersPlay do
         begin
-          // get the color
-          Color := Theme.Score.PlayerStatic[P, I].Color;
-          Color[2] := IntToStr(PlayerNum2)[1];
-          LoadColor(R, G, B, Color);
+          PlayerStaticTextures[P, I, TargetPlayer].Tex := Statics[PlayerStatic[P, I]].Texture;
 
-          with Theme.Score.PlayerStatic[P, I] do
-            PlayerStaticTextures[P, I, 2].Tex := Texture.GetTexture(Skin.GetTextureFileName(Tex), Typ, RGBFloatToInt(R, G, B));
+          if (Theme.Score.PlayerStatic[P, I].Typ = Texture_Type_Colorized) and
+             ResolvePlayerThemeColor(Theme.Score.PlayerStatic[P, I].Color, TargetPlayer, Col) then
+          begin
+            with Theme.Score.PlayerStatic[P, I] do
+              PlayerStaticTextures[P, I, TargetPlayer].Tex := Texture.GetTexture(Skin.GetTextureFileName(Tex), Typ, RGBFloatToInt(Col.R, Col.G, Col.B));
 
-          PlayerStaticTextures[P, I, 2].Tex.X := Statics[PlayerStatic[P, I]].Texture.X;
-          PlayerStaticTextures[P, I, 2].Tex.Y := Statics[PlayerStatic[P, I]].Texture.Y;
-          PlayerStaticTextures[P, I, 2].Tex.W := Statics[PlayerStatic[P, I]].Texture.W;
-          PlayerStaticTextures[P, I, 2].Tex.H := Statics[PlayerStatic[P, I]].Texture.H;
+            PlayerStaticTextures[P, I, TargetPlayer].Tex.X := Statics[PlayerStatic[P, I]].Texture.X;
+            PlayerStaticTextures[P, I, TargetPlayer].Tex.Y := Statics[PlayerStatic[P, I]].Texture.Y;
+            PlayerStaticTextures[P, I, TargetPlayer].Tex.W := Statics[PlayerStatic[P, I]].Texture.W;
+            PlayerStaticTextures[P, I, TargetPlayer].Tex.H := Statics[PlayerStatic[P, I]].Texture.H;
+          end;
         end;
       end;
     end;
 
-    { load swap textures for boxes }
     for P := low(PlayerBoxTextures) to High(PlayerBoxTextures) do
     begin
-      { get the players that actually are on this position }
-      case P of
-        1: begin
-          PlayerNum := 1;
-          PlayerNum2 := 1;
-        end;
-
-        2, 3: begin
-          PlayerNum := P - 1;
-          PlayerNum2 := PlayerNum + 2;
-        end;
-
-        4..6: begin
-          PlayerNum := P - 3;
-          PlayerNum2 := PlayerNum + 3;
-        end;
-      end;
-
       for I := 0 to High(PlayerBoxTextures[P]) do
       begin
         case I of
@@ -656,46 +784,32 @@ begin
             ThemeStatic := Theme.Score.StaticBoxDark[P];
           end;
         end;
-        // copy current statics texture to texture for screen 1
-        PlayerBoxTextures[P, I, 1].Tex := Statics[StaticNum].Texture;
-
-        // fallback to first screen texture for 2nd screen
-        PlayerBoxTextures[P, I, 2].Tex := PlayerBoxTextures[P, I, 1].Tex;
-
-        { texture for second screen }
-        { we only change color for statics with playercolor
-          and with Texture type colorized
-          also we don't need to swap for one player position }
-        if (P <> 1) and
-           (ThemeStatic.Typ = Texture_Type_Colorized) and
-           (Length(ThemeStatic.Color) >= 2) and
-           (copy(ThemeStatic.Color, 1, 2) = 'P' + IntToStr(PlayerNum)) then
+        for TargetPlayer := 1 to PlayersPlay do
         begin
-          // get the color
-          Color := ThemeStatic.Color;
-          Color[2] := IntToStr(PlayerNum2)[1];
-          LoadColor(R, G, B, Color);
+          PlayerBoxTextures[P, I, TargetPlayer].Tex := Statics[StaticNum].Texture;
 
-          with ThemeStatic do
-            PlayerBoxTextures[P, I, 2].Tex := Texture.GetTexture(Skin.GetTextureFileName(Tex), Typ, RGBFloatToInt(R, G, B));
+          if (ThemeStatic.Typ = Texture_Type_Colorized) and
+             ResolvePlayerThemeColor(ThemeStatic.Color, TargetPlayer, Col) then
+          begin
+            with ThemeStatic do
+              PlayerBoxTextures[P, I, TargetPlayer].Tex := Texture.GetTexture(Skin.GetTextureFileName(Tex), Typ, RGBFloatToInt(Col.R, Col.G, Col.B));
 
-            PlayerBoxTextures[P, I, 2].Tex.X := Statics[StaticNum].Texture.X;
-            PlayerBoxTextures[P, I, 2].Tex.Y := Statics[StaticNum].Texture.Y;
-            PlayerBoxTextures[P, I, 2].Tex.W := Statics[StaticNum].Texture.W;
-            PlayerBoxTextures[P, I, 2].Tex.H := Statics[StaticNum].Texture.H;
+            PlayerBoxTextures[P, I, TargetPlayer].Tex.X := Statics[StaticNum].Texture.X;
+            PlayerBoxTextures[P, I, TargetPlayer].Tex.Y := Statics[StaticNum].Texture.Y;
+            PlayerBoxTextures[P, I, TargetPlayer].Tex.W := Statics[StaticNum].Texture.W;
+            PlayerBoxTextures[P, I, TargetPlayer].Tex.H := Statics[StaticNum].Texture.H;
+          end;
         end;
       end;
     end;
   end;
 end;
 
-//TODO: adapt for players 7 to 12
 procedure TScreenScore.SwapToScreen(Screen: integer);
 var
-  P, I, J, Max: integer;
-  Col: TRGB;
+  P, I, J: integer;
 
-  function FindPlayerIndexForThemeSlot(const ThemeSlot, TargetScreen: integer): integer;
+  function FindPlayerIndexForSlot(const SlotIndex, TargetScreen: integer): integer;
   var
     PlayerIdx: integer;
   begin
@@ -706,151 +820,42 @@ var
 
     for PlayerIdx := Low(PlayerPositionMap) to High(PlayerPositionMap) do
     begin
-      if (PlayerPositionMap[PlayerIdx].Position = ThemeSlot) and
-         ((TargetScreen = PlayerPositionMap[PlayerIdx].Screen) or PlayerPositionMap[PlayerIdx].BothScreens) then
+      if (PlayerPositionMap[PlayerIdx].Position = SlotIndex) and
+         (TargetScreen = PlayerPositionMap[PlayerIdx].Screen) then
       begin
         Result := PlayerIdx;
         Exit;
       end;
     end;
   end;
+
 begin
-
-  case PlayersPlay of
-    1:    Max := 1;
-    2, 4: Max := 2;
-    3, 5, 6: Max := 3;
-    8:    Max := 4;
-    12:   Max := 6;
-  else
-    Max := 0; //this should never happen
-  end;
-
-  { if screens = 2 and playerplay <= 3 the 2nd screen shows the
-    textures of screen 1 }
-  if (PlayersPlay <= 3) and (Screen = 2) then
-    Screen := 1;
-
-  { set correct box textures }
   if (Screens = 2) then
   begin
-
-    for I:= 0 to Max - 1 do
+    for P := 1 to UIni.IMaxPlayerCount do
     begin
+      J := FindPlayerIndexForSlot(P, Screen);
+      SetScoreSlotVisible(Self, P, J <> -1);
 
-      J := FindPlayerIndexForThemeSlot(I + 1 + Max, Screen);
-      if (J <> -1) and (J <= High(Ini.PlayerColor)) then
-        Col := GetPlayerColor(Ini.PlayerColor[J])
-      else if (Screen = 2) and (I + Max <= High(Ini.PlayerColor)) then
-        Col := GetPlayerColor(Ini.PlayerColor[I + Max])
-      else if (I <= High(Ini.PlayerColor)) then
-        Col := GetPlayerColor(Ini.PlayerColor[I])
-      else
+      if J = -1 then
         Continue;
 
-      if (copy(Theme.Score.TextName[I + 1 + Max].Color, 1, 2) = 'P' + IntToStr(I + 1)) then
-      begin
-        Text[TextName[I + 1 + Max]].ColR := Col.R;
-        Text[TextName[I + 1 + Max]].ColG := Col.G;
-        Text[TextName[I + 1 + Max]].ColB := Col.B;
-      end;
-
-      if (copy(Theme.Score.TextScore[I + 1 + Max].Color, 1, 2) = 'P' + IntToStr(I + 1)) then
-      begin
-        Text[TextScore[I + 1 + Max]].ColR := Col.R;
-        Text[TextScore[I + 1 + Max]].ColG := Col.G;
-        Text[TextScore[I + 1 + Max]].ColB := Col.B;
-      end;
-
-      if (copy(Theme.Score.TextNotes[I + 1 + Max].Color, 1, 2) = 'P' + IntToStr(I + 1)) then
-      begin
-        Text[TextNotes[I + 1 + Max]].ColR := Col.R;
-        Text[TextNotes[I + 1 + Max]].ColG := Col.G;
-        Text[TextNotes[I + 1 + Max]].ColB := Col.B;
-      end;
-
-      if (copy(Theme.Score.TextNotesScore[I + 1 + Max].Color, 1, 2) = 'P' + IntToStr(I + 1)) then
-      begin
-        Text[TextNotesScore[I + 1 + Max]].ColR := Col.R;
-        Text[TextNotesScore[I + 1 + Max]].ColG := Col.G;
-        Text[TextNotesScore[I + 1 + Max]].ColB := Col.B;
-      end;
-
-      if (copy(Theme.Score.TextLineBonus[I + 1 + Max].Color, 1, 2) = 'P' + IntToStr(I + 1)) then
-      begin
-        Text[TextLineBonus[I + 1 + Max]].ColR := Col.R;
-        Text[TextLineBonus[I + 1 + Max]].ColG := Col.G;
-        Text[TextLineBonus[I + 1 + Max]].ColB := Col.B;
-      end;
-
-      if (copy(Theme.Score.TextLineBonusScore[I + 1 + Max].Color, 1, 2) = 'P' + IntToStr(I + 1)) then
-      begin
-        Text[TextLineBonusScore[I + 1 + Max]].ColR := Col.R;
-        Text[TextLineBonusScore[I + 1 + Max]].ColG := Col.G;
-        Text[TextLineBonusScore[I + 1 + Max]].ColB := Col.B;
-      end;
-
-      if (copy(Theme.Score.TextGoldenNotes[I + 1 + Max].Color, 1, 2) = 'P' + IntToStr(I + 1)) then
-      begin
-        Text[TextGoldenNotes[I + 1 + Max]].ColR := Col.R;
-        Text[TextGoldenNotes[I + 1 + Max]].ColG := Col.G;
-        Text[TextGoldenNotes[I + 1 + Max]].ColB := Col.B;
-      end;
-
-      if (copy(Theme.Score.TextGoldenNotesScore[I + 1 + Max].Color, 1, 2) = 'P' + IntToStr(I + 1)) then
-      begin
-        Text[TextGoldenNotesScore[I + 1 + Max]].ColR := Col.R;
-        Text[TextGoldenNotesScore[I + 1 + Max]].ColG := Col.G;
-        Text[TextGoldenNotesScore[I + 1 + Max]].ColB := Col.B;
-      end;
-
-      if (copy(Theme.Score.TextTotal[I + 1 + Max].Color, 1, 2) = 'P' + IntToStr(I + 1)) then
-      begin
-        Text[TextTotal[I + 1 + Max]].ColR := Col.R;
-        Text[TextTotal[I + 1 + Max]].ColG := Col.G;
-        Text[TextTotal[I + 1 + Max]].ColB := Col.B;
-      end;
-
-      if (copy(Theme.Score.TextTotalScore[I + 1 + Max].Color, 1, 2) = 'P' + IntToStr(I + 1)) then
-      begin
-        Text[TextTotalScore[I + 1 + Max]].ColR := Col.R;
-        Text[TextTotalScore[I + 1 + Max]].ColG := Col.G;
-        Text[TextTotalScore[I + 1 + Max]].ColB := Col.B;
-      end;
-      if((PlayersPlay > Max) and (Screen = 2)) then
-      begin
-        Statics[AvatarStaticRef[PlayersPlay-Max+I+1]].Visible:=true;
-      end
-      else if((PlayersPlay > Max) and (Screen = 1)) then
-      begin
-        Statics[AvatarStaticRef[PlayersPlay-Max+I+1]].Visible:=false;
-      end;
-    end;
-
-    { to keep it simple we just swap all statics, not just the shown ones }
-    for P := Low(PlayerStatic) to High(PlayerStatic) do
       for I := 0 to High(PlayerStatic[P]) do
       begin
-        Statics[PlayerStatic[P, I]].Texture := PlayerStaticTextures[P, I, Screen].Tex;
-        if (Theme.Score.PlayerStatic[P, I].Typ <> Texture_Type_Colorized) then
-        begin
-          J := FindPlayerIndexForThemeSlot(P, Screen);
-          if (J <> -1) and (J <= High(Ini.PlayerColor)) then
-          begin
-            Col := GetPlayerColor(Ini.PlayerColor[J]);
-            Statics[PlayerStatic[P, I]].Texture.ColR := Col.R;
-            Statics[PlayerStatic[P, I]].Texture.ColG := Col.G;
-            Statics[PlayerStatic[P, I]].Texture.ColB := Col.B;
-          end;
-        end;
+        Statics[PlayerStatic[P, I]].Texture := PlayerStaticTextures[P, I, J + 1].Tex;
       end;
 
-    { box statics }
-    for P := Low(PlayerStatic) to High(PlayerStatic) do
+      Statics[StaticBoxLightest[P]].Texture := PlayerBoxTextures[P, 0, J + 1].Tex;
+      Statics[StaticBoxLight[P]].Texture := PlayerBoxTextures[P, 1, J + 1].Tex;
+      Statics[StaticBoxDark[P]].Texture := PlayerBoxTextures[P, 2, J + 1].Tex;
+      ApplyScoreSlotPlayerVisuals(Self, P, J + 1);
+    end;
+
+    for P := 1 to PlayersPlay do
     begin
-      Statics[StaticBoxLightest[P]].Texture := PlayerBoxTextures[P, 0, Screen].Tex;
-      Statics[StaticBoxLight[P]].Texture := PlayerBoxTextures[P, 1, Screen].Tex;
-      Statics[StaticBoxDark[P]].Texture := PlayerBoxTextures[P, 2, Screen].Tex;
+      Statics[AvatarStaticRef[P]].Visible :=
+        (PlayerPositionMap[P-1].Position > 0) and
+        (Screen = PlayerPositionMap[P-1].Screen);
     end;
   end;
 end;
@@ -860,9 +865,10 @@ var
   Player:  integer;
   Counter: integer;
   I: integer;
-  R, G, B: real;
-  Col2: integer;
-  ArrayStartModifier: integer;
+  ColDark: TRGB;
+  ColLight: TRGB;
+  ColLightest: TRGB;
+  SlotIndex: integer;
 begin
   inherited Create;
 
@@ -913,22 +919,19 @@ begin
     //## the bars that visualize the score ##
 
     //NoteBar ScoreBar
-    LoadColor(R, G, B, 'P' + IntToStr(Player) + 'Dark');
-    Col2 := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Score_NoteBarLevel_Dark[Player] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Dark'), TEXTURE_TYPE_COLORIZED, Col2);
-    Tex_Score_NoteBarRound_Dark[Player] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Dark_Round'), TEXTURE_TYPE_COLORIZED, Col2);
+    ColDark := GetPlayerColor(Ini.PlayerColor[Player - 1]);
+    Tex_Score_NoteBarLevel_Dark[Player] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Dark'), TEXTURE_TYPE_COLORIZED, RGBFloatToInt(ColDark.R, ColDark.G, ColDark.B));
+    Tex_Score_NoteBarRound_Dark[Player] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Dark_Round'), TEXTURE_TYPE_COLORIZED, RGBFloatToInt(ColDark.R, ColDark.G, ColDark.B));
 
     //LineBonus ScoreBar
-    LoadColor(R, G, B, 'P' + IntToStr(Player) + 'Light');
-    Col2 := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Score_NoteBarLevel_Light[Player] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Light'), TEXTURE_TYPE_COLORIZED, Col2);
-    Tex_Score_NoteBarRound_Light[Player] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Light_Round'), TEXTURE_TYPE_COLORIZED, Col2);
+    ColLight := GetPlayerLightColor(Ini.PlayerColor[Player - 1]);
+    Tex_Score_NoteBarLevel_Light[Player] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Light'), TEXTURE_TYPE_COLORIZED, RGBFloatToInt(ColLight.R, ColLight.G, ColLight.B));
+    Tex_Score_NoteBarRound_Light[Player] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Light_Round'), TEXTURE_TYPE_COLORIZED, RGBFloatToInt(ColLight.R, ColLight.G, ColLight.B));
 
     //GoldenNotes ScoreBar
-    LoadColor(R, G, B, 'P' + IntToStr(Player) + 'Lightest');
-    Col2 := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-    Tex_Score_NoteBarLevel_Lightest[Player] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Lightest'), TEXTURE_TYPE_COLORIZED, Col2);
-    Tex_Score_NoteBarRound_Lightest[Player] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Lightest_Round'), TEXTURE_TYPE_COLORIZED, Col2);
+    ColLightest := ColorSqrt(ColLight);
+    Tex_Score_NoteBarLevel_Lightest[Player] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Lightest'), TEXTURE_TYPE_COLORIZED, RGBFloatToInt(ColLightest.R, ColLightest.G, ColLightest.B));
+    Tex_Score_NoteBarRound_Lightest[Player] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreLevel_Lightest_Round'), TEXTURE_TYPE_COLORIZED, RGBFloatToInt(ColLightest.R, ColLightest.G, ColLightest.B));
 
     //textures
     aPlayerScoreScreenTextures[Player].Score_NoteBarLevel_Dark     := Tex_Score_NoteBarLevel_Dark[Player];
@@ -941,65 +944,31 @@ begin
     aPlayerScoreScreenTextures[Player].Score_NoteBarRound_Lightest := Tex_Score_NoteBarRound_Lightest[Player];
   end;
 
-  //TODO: adapt for players 7 to 12
-  // avatars
-  case PlayersPlay of
-    1: ArrayStartModifier := 0;
-    2: ArrayStartModifier := 1;
-    3: ArrayStartModifier := 3;
-    4: begin
-          if (Screens = 1) then
-            ArrayStartModifier := 0
-          else
-            ArrayStartModifier := 1;
-       end;
-    5, 6: begin
-          if (Screens = 1) then
-            ArrayStartModifier := 0
-          else
-            ArrayStartModifier := 3;
-       end;
-    else
-      ArrayStartModifier := 0; //this should never happen
-  end;
+  MapPlayersToPosition;
 
   for I := 1 to PlayersPlay do
   begin
-    if((Screens = 2) and (PlayersPlay > 3) and (I > Trunc(PlayersPlay/2))) then
-    begin
-      AvatarStatic[I + ArrayStartModifier] := AddStatic(Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier]);
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture := AvatarPlayerTextures[I];
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.X := Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier].X;
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Y := Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier].Y;
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.H := Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier].H;
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.W := Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier].W;
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Z := Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier].Z;
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Alpha := Theme.Score.AvatarStatic[I-Trunc(PlayersPlay/2) + ArrayStartModifier].Alpha;
-    end
-    else
-    begin
-      AvatarStatic[I + ArrayStartModifier] := AddStatic(Theme.Score.AvatarStatic[I + ArrayStartModifier]);
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture := AvatarPlayerTextures[I];
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.X := Theme.Score.AvatarStatic[I + ArrayStartModifier].X;
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Y := Theme.Score.AvatarStatic[I + ArrayStartModifier].Y;
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.H := Theme.Score.AvatarStatic[I + ArrayStartModifier].H;
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.W := Theme.Score.AvatarStatic[I + ArrayStartModifier].W;
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Z := Theme.Score.AvatarStatic[I + ArrayStartModifier].Z;
-      Statics[AvatarStatic[I + ArrayStartModifier]].Texture.Alpha := Theme.Score.AvatarStatic[I + ArrayStartModifier].Alpha;
-    end;
-    Statics[AvatarStatic[I + ArrayStartModifier]].Visible := true;
-    AvatarStaticRef[I]:=AvatarStatic[I + ArrayStartModifier];
+    SlotIndex := PlayerPositionMap[I - 1].Position;
+    AvatarStaticRef[I] := AddStatic(Theme.Score.AvatarStatic[SlotIndex]);
+    Statics[AvatarStaticRef[I]].Texture := AvatarPlayerTextures[I];
+    Statics[AvatarStaticRef[I]].Texture.X := Theme.Score.AvatarStatic[SlotIndex].X;
+    Statics[AvatarStaticRef[I]].Texture.Y := Theme.Score.AvatarStatic[SlotIndex].Y;
+    Statics[AvatarStaticRef[I]].Texture.H := Theme.Score.AvatarStatic[SlotIndex].H;
+    Statics[AvatarStaticRef[I]].Texture.W := Theme.Score.AvatarStatic[SlotIndex].W;
+    Statics[AvatarStaticRef[I]].Texture.Z := Theme.Score.AvatarStatic[SlotIndex].Z;
+    Statics[AvatarStaticRef[I]].Texture.Alpha := Theme.Score.AvatarStatic[SlotIndex].Alpha;
+    Statics[AvatarStaticRef[I]].Visible := true;
+    ApplyScoreSlotPlayerVisuals(Self, SlotIndex, I);
   end;
 
   StaticNavigate := AddStatic(Theme.Score.StaticNavigate);
   TextNavigate := AddText(Theme.Score.TextNavigate);
 
-  if (PlayersPlay <= 3) or (Screens = 2) then
+  if Screens = 2 then
     LoadSwapTextures;
 
-  //TODO: adapt for players 4 to 12
-  //Send Buttons
-  for I := 1 to 3 do
+  // Send buttons are chosen from the current column layout at runtime.
+  for I := 1 to High(ButtonSend) do
     ButtonSend[I] := AddButton(Theme.Score.ButtonSend[I]);
 
 end;
@@ -1020,59 +989,19 @@ begin
   inherited;
 end;
 
-//TODO: adapt for players 7 to 12
 procedure TScreenScore.MapPlayersToPosition;
-  var
-    ArrayStartModifier: integer;
-    PlayersPerScreen: integer;
-    I: integer;
+var
+  I: integer;
+  ScreenIndex: integer;
 begin
-  // all statics / texts are loaded at start - so that we have them all even if we change the amount of players
-  // To show the corrects statics / text from the them, we simply modify the start of the according arrays
-  // 1 Player -> Player[0].Score         (The score for one player starts at 0)
-  //          -> Statics[1]              (The statics for the one player screen start at 1)
-  // 2 Player -> Player[0..1].Score
-  //          -> Statics[2..3]
-  // 3 Player -> Player[0..5].Score
-  //          -> Statics[4..6]
-  case PlayersPlay of
-    1:    ArrayStartModifier := 1;
-    2, 4: ArrayStartModifier := 2;
-    3, 5, 6: ArrayStartModifier := 4;
-  else
-    ArrayStartModifier := 0; //this should never happen
-  end;
-
-  if (PlayersPlay <= 3) or ((PlayersPlay > 3) and (Screens = 1)) then
-    PlayersPerScreen := PlayersPlay
-  else
-    PlayersPerScreen := (PlayersPlay + 1) div 2;
-
   SetLength(PlayerPositionMap, PlayersPlay);
 
-  // actually map players to positions
-  if (PlayersPlay <= 3) or (Screens = 2) then
+  for I := 0 to PlayersPlay - 1 do
   begin
-    for I := 0 to PlayersPlay - 1 do
-    begin
-      PlayerPositionMap[I].Screen := (I div PlayersPerScreen) + 1;
-      if (PlayerPositionMap[I].Screen > Screens) then
-        PlayerPositionMap[I].Position := 0
-      else
-        PlayerPositionMap[I].Position := ArrayStartModifier + (I mod PlayersPerScreen);
-      PlayerPositionMap[I].BothScreens := (PlayersPlay <= 3) and (Screens > 1);
-    end;
-  end
-  else
-  begin
-    for I := 0 to PlayersPlay - 1 do
-    begin
-      PlayerPositionMap[I].Screen := 0;
-      PlayerPositionMap[I].Position := I + 1;
-      PlayerPositionMap[I].BothScreens := true;
-    end;
+    ScreenIndex := GetPlayerScreen(I, PlayersPlay, Screens);
+    PlayerPositionMap[I].Screen := ScreenIndex;
+    PlayerPositionMap[I].Position := GetScoreSlotIndex(I, PlayersPlay, Screens);
   end;
-
 end;
 
 procedure TScreenScore.UpdateAnimation;
@@ -1112,7 +1041,7 @@ procedure TScreenScore.DrawPlayerBars;
 begin
   for I := 0 to PlayersPlay - 1 do
   begin
-    if (PlayerPositionMap[I].Position > 0) and ((ScreenAct = PlayerPositionMap[I].Screen) or (PlayerPositionMap[I].BothScreens)) then
+    if (PlayerPositionMap[I].Position > 0) and (ScreenAct = PlayerPositionMap[I].Screen) then
     begin
       if (BarScore_EaseOut_Step >= (EaseOut_MaxSteps * 10)) then
       begin
@@ -1175,82 +1104,14 @@ begin
   Text[TextTitle].Text       := CurrentSong.Title;
   Text[TextArtistTitle].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
 
-  //TODO: adapt for players 7 to 12
-  // set visibility
-  case PlayersPlay of
-    1:  begin
-          V[1] := true;
-          V[2] := false;
-          V[3] := false;
-          V[4] := false;
-          V[5] := false;
-          V[6] := false;
-        end;
-    2, 4:  begin
-          if (PlayersPlay = 2) or ((PlayersPlay = 4) and (Screens = 2)) then
-          begin
-            V[1] := false;
-            V[2] := true;
-            V[3] := true;
-            V[4] := false;
-            V[5] := false;
-            V[6] := false;
-          end
-          else
-          begin
-            V[1] := true;
-            V[2] := true;
-            V[3] := true;
-            V[4] := true;
-            V[5] := false;
-            V[6] := false;
-          end;
-        end;
-    3, 5, 6:  begin
-          if (PlayersPlay = 3) or ((PlayersPlay in [5, 6]) and (Screens = 2)) then
-          begin
-            V[1] := false;
-            V[2] := false;
-            V[3] := false;
-            V[4] := true;
-            V[5] := true;
-            V[6] := (PlayersPlay <> 5) or (Screens = 2);
-          end
-          else
-          begin
-            V[1] := true;
-            V[2] := true;
-            V[3] := true;
-            V[4] := true;
-            V[5] := true;
-            V[6] := (PlayersPlay = 6);
-          end;
-        end;
-  end;
+  FillChar(V, SizeOf(V), 0);
+  for P := 0 to PlayersPlay - 1 do
+    if PlayerPositionMap[P].Position > 0 then
+      V[PlayerPositionMap[P].Position] := true;
 
   for P := 1 to UIni.IMaxPlayerCount do
   begin
-    Text[TextName[P]].Visible               := V[P];
-    Text[TextScore[P]].Visible              := V[P];
-
-    Text[TextNotes[P]].Visible              := V[P];
-    Text[TextNotesScore[P]].Visible         := V[P];
-    Text[TextLineBonus[P]].Visible          := V[P];
-    Text[TextLineBonusScore[P]].Visible     := V[P];
-    Text[TextGoldenNotes[P]].Visible        := V[P];
-    Text[TextGoldenNotesScore[P]].Visible   := V[P];
-    Text[TextTotal[P]].Visible              := V[P];
-    Text[TextTotalScore[P]].Visible         := V[P];
-
-    for I := 0 to high(PlayerStatic[P]) do
-      Statics[PlayerStatic[P, I]].Visible    := V[P];
-
-    for I := 0 to high(PlayerTexts[P]) do
-      Text[PlayerTexts[P, I]].Visible       := V[P];
-
-    Statics[StaticBoxLightest[P]].Visible    := V[P];
-    Statics[StaticBoxLight[P]].Visible       := V[P];
-    Statics[StaticBoxDark[P]].Visible        := V[P];
+    SetScoreSlotVisible(Self, P, V[P]);
 
     // we draw that on our own
     Statics[StaticBackLevel[P]].Visible      := false;
@@ -1258,6 +1119,9 @@ begin
     Statics[StaticLevel[P]].Visible          := false;
     Statics[StaticLevelRound[P]].Visible     := false;
   end;
+
+  for P := 1 to PlayersPlay do
+    ApplyScoreSlotPlayerVisuals(Self, PlayerPositionMap[P - 1].Position, P);
 
   for I := 0 to 2 do
   begin
@@ -1268,20 +1132,9 @@ begin
   // Show Send Score Buttons
   if (ScreenSing.SungPaused = false) and (ScreenSing.SungToEnd) and (Length(DllMan.Websites) > 0) then
   begin
-    case PlayersPlay of
-      1: begin
-           Button[0].Visible := true;
-           Button[0].Selectable := true;
-         end;
-      2,4: begin
-             Button[1].Visible := true;
-             Button[1].Selectable := true;
-           end;
-      3,5,6: begin
-             Button[2].Visible := true;
-             Button[2].Selectable := true;
-           end;
-    end;
+    I := GetScoreButtonLayout(PlayersPlay, Screens) - 1;
+    Button[I].Visible := true;
+    Button[I].Selectable := true;
   end;
 
   Interaction := -1;
@@ -1319,21 +1172,7 @@ begin
   end;
 
   for P := 1 to UIni.IMaxPlayerCount do
-  begin
-    // We set alpha to 0 , so we can nicely blend them in when we need them
-    Text[TextScore[P]].Alpha                   := 0;
-    Text[TextNotesScore[P]].Alpha              := 0;
-    Text[TextNotes[P]].Alpha                   := 0;
-    Text[TextLineBonus[P]].Alpha               := 0;
-    Text[TextLineBonusScore[P]].Alpha          := 0;
-    Text[TextGoldenNotes[P]].Alpha             := 0;
-    Text[TextGoldenNotesScore[P]].Alpha        := 0;
-    Text[TextTotal[P]].Alpha                   := 0;
-    Text[TextTotalScore[P]].Alpha              := 0;
-    Statics[StaticBoxLightest[P]].Texture.Alpha := 0;
-    Statics[StaticBoxLight[P]].Texture.Alpha    := 0;
-    Statics[StaticBoxDark[P]].Texture.Alpha     := 0;
-  end;
+    SetScoreSlotScoreAlpha(Self, P, 0);
 
   BarScore_EaseOut_Step  := 1;
   BarPhrase_EaseOut_Step := 1;
@@ -1420,7 +1259,7 @@ begin
 
   // we have to swap the themeobjects values on every draw
   // to support dual screen
-  for PlayerCounter := 1 to PlayersPlay do       //TODO: adapt for players 7 to 12
+  for PlayerCounter := 1 to PlayersPlay do
   begin
     FillPlayerItems(PlayerCounter);
   end;
@@ -1431,40 +1270,40 @@ end;
 
 procedure TscreenScore.FillPlayerItems(PlayerNumber: integer);
 var
-  ThemeIndex: integer;
+  SlotIndex: integer;
 begin
-  ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
-  if (ThemeIndex > 0) and ((ScreenAct = PlayerPositionMap[PlayerNumber-1].Screen) or (PlayerPositionMap[PlayerNumber-1].BothScreens)) then
+  SlotIndex := PlayerPositionMap[PlayerNumber-1].Position;
+  if (SlotIndex > 0) and (ScreenAct = PlayerPositionMap[PlayerNumber-1].Screen) then
   begin
-    Text[TextName[ThemeIndex]].Text := Player[PlayerNumber-1].Name;
+    Text[TextName[SlotIndex]].Text := Player[PlayerNumber-1].Name;
     // end todo
 
     //golden
-    Text[TextGoldenNotesScore[ThemeIndex]].Text         := IntToStr(TextGolden_ActualValue[PlayerNumber]);
-    Text[TextGoldenNotesScore[ThemeIndex]].Alpha        := (BarGolden_EaseOut_Step / 100);
+    Text[TextGoldenNotesScore[SlotIndex]].Text         := IntToStr(TextGolden_ActualValue[PlayerNumber]);
+    Text[TextGoldenNotesScore[SlotIndex]].Alpha        := (BarGolden_EaseOut_Step / 100);
 
-    Statics[StaticBoxLightest[ThemeIndex]].Texture.Alpha := (BarGolden_EaseOut_Step / 100);
-    Text[TextGoldenNotes[ThemeIndex]].Alpha             := (BarGolden_EaseOut_Step / 100);
+    Statics[StaticBoxLightest[SlotIndex]].Texture.Alpha := (BarGolden_EaseOut_Step / 100);
+    Text[TextGoldenNotes[SlotIndex]].Alpha             := (BarGolden_EaseOut_Step / 100);
 
     // line bonus
-    Text[TextLineBonusScore[ThemeIndex]].Text           := IntToStr(TextPhrase_ActualValue[PlayerNumber]);
-    Text[TextLineBonusScore[ThemeIndex]].Alpha          := (BarPhrase_EaseOut_Step / 100);
+    Text[TextLineBonusScore[SlotIndex]].Text           := IntToStr(TextPhrase_ActualValue[PlayerNumber]);
+    Text[TextLineBonusScore[SlotIndex]].Alpha          := (BarPhrase_EaseOut_Step / 100);
 
-    Statics[StaticBoxLight[ThemeIndex]].Texture.Alpha    := (BarPhrase_EaseOut_Step / 100);
-    Text[TextLineBonus[ThemeIndex]].Alpha               := (BarPhrase_EaseOut_Step / 100);
+    Statics[StaticBoxLight[SlotIndex]].Texture.Alpha    := (BarPhrase_EaseOut_Step / 100);
+    Text[TextLineBonus[SlotIndex]].Alpha               := (BarPhrase_EaseOut_Step / 100);
 
     // plain score
-    Text[TextNotesScore[ThemeIndex]].Text               := IntToStr(TextScore_ActualValue[PlayerNumber]);
-    Text[TextNotes[ThemeIndex]].Alpha                   := (BarScore_EaseOut_Step / 100);
+    Text[TextNotesScore[SlotIndex]].Text               := IntToStr(TextScore_ActualValue[PlayerNumber]);
+    Text[TextNotes[SlotIndex]].Alpha                   := (BarScore_EaseOut_Step / 100);
 
-    Statics[StaticBoxDark[ThemeIndex]].Texture.Alpha     := (BarScore_EaseOut_Step / 100);
-    Text[TextNotesScore[ThemeIndex]].Alpha              := (BarScore_EaseOut_Step / 100);
+    Statics[StaticBoxDark[SlotIndex]].Texture.Alpha     := (BarScore_EaseOut_Step / 100);
+    Text[TextNotesScore[SlotIndex]].Alpha              := (BarScore_EaseOut_Step / 100);
 
     // total score
-    Text[TextTotalScore[ThemeIndex]].Text               := IntToStr(TextScore_ActualValue[PlayerNumber] + TextPhrase_ActualValue[PlayerNumber] + TextGolden_ActualValue[PlayerNumber]);
-    Text[TextTotalScore[ThemeIndex]].Alpha              := (BarScore_EaseOut_Step / 100);
+    Text[TextTotalScore[SlotIndex]].Text               := IntToStr(TextScore_ActualValue[PlayerNumber] + TextPhrase_ActualValue[PlayerNumber] + TextGolden_ActualValue[PlayerNumber]);
+    Text[TextTotalScore[SlotIndex]].Alpha              := (BarScore_EaseOut_Step / 100);
 
-    Text[TextTotal[ThemeIndex]].Alpha                   := (BarScore_EaseOut_Step / 100);
+    Text[TextTotal[SlotIndex]].Alpha                   := (BarScore_EaseOut_Step / 100);
 
     if(BarGolden_EaseOut_Step = 100) then
     begin
@@ -1476,50 +1315,50 @@ end;
 procedure TScreenScore.ShowRating(PlayerNumber: integer);
 var
   Rating: integer;
-  ThemeIndex: integer;
+  SlotIndex: integer;
 begin
-  ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
-  if (ThemeIndex > 0) and ((ScreenAct = PlayerPositionMap[PlayerNumber-1].Screen) or (PlayerPositionMap[PlayerNumber-1].BothScreens)) then
+  SlotIndex := PlayerPositionMap[PlayerNumber-1].Position;
+  if (SlotIndex > 0) and (ScreenAct = PlayerPositionMap[PlayerNumber-1].Screen) then
   begin
     case (Player[PlayerNumber-1].ScoreTotalInt) of
      0..2009:
        begin
-         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_TONE_DEAF');
+         Text[TextScore[SlotIndex]].Text := Language.Translate('SING_SCORE_TONE_DEAF');
          Rating := 0;
        end;
      2010..4009:
        begin
-         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_AMATEUR');
+         Text[TextScore[SlotIndex]].Text := Language.Translate('SING_SCORE_AMATEUR');
          Rating := 1;
        end;
      4010..5009:
        begin
-         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_WANNABE');
+         Text[TextScore[SlotIndex]].Text := Language.Translate('SING_SCORE_WANNABE');
          Rating := 2;
        end;
      5010..6009:
        begin
-         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_HOPEFUL');
+         Text[TextScore[SlotIndex]].Text := Language.Translate('SING_SCORE_HOPEFUL');
          Rating := 3;
        end;
      6010..7509:
        begin
-         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_RISING_STAR');
+         Text[TextScore[SlotIndex]].Text := Language.Translate('SING_SCORE_RISING_STAR');
          Rating := 4;
        end;
      7510..8509:
        begin
-         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_LEAD_SINGER');
+         Text[TextScore[SlotIndex]].Text := Language.Translate('SING_SCORE_LEAD_SINGER');
          Rating := 5;
        end;
      8510..9009:
        begin
-         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_SUPERSTAR');
+         Text[TextScore[SlotIndex]].Text := Language.Translate('SING_SCORE_SUPERSTAR');
          Rating := 6;
        end;
      9010..10000:
        begin
-         Text[TextScore[ThemeIndex]].Text := Language.Translate('SING_SCORE_ULTRASTAR');
+         Text[TextScore[SlotIndex]].Text := Language.Translate('SING_SCORE_ULTRASTAR');
          Rating := 7;
        end;
     else
@@ -1527,9 +1366,9 @@ begin
     end;
 
     //todo: this could break if the width is not given, for instance when there's a skin with no picture for ratings
-    if ( Theme.Score.StaticRatings[ThemeIndex].W > 0 ) and  ( aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue > 0 ) then
+    if ( Theme.Score.StaticRatings[SlotIndex].W > 0 ) and  ( aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue > 0 ) then
     begin
-      Text[TextScore[ThemeIndex]].Alpha := aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue / Theme.Score.StaticRatings[ThemeIndex].W;
+      Text[TextScore[SlotIndex]].Alpha := aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue / Theme.Score.StaticRatings[SlotIndex].W;
     end;
     // end todo
 
@@ -1542,14 +1381,14 @@ var
   Posx:  real;
   Posy:  real;
   Width: real;
-  ThemeIndex: integer;
+  SlotIndex: integer;
 begin
-  ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
+  SlotIndex := PlayerPositionMap[PlayerNumber-1].Position;
 
-  if (Theme.Score.StaticRatings[ThemeIndex].W <> 0) and (Theme.Score.StaticRatings[ThemeIndex].H <> 0) then
+  if (Theme.Score.StaticRatings[SlotIndex].W <> 0) and (Theme.Score.StaticRatings[SlotIndex].H <> 0) then
   begin
-    PosX := Theme.Score.StaticRatings[ThemeIndex].X + (Theme.Score.StaticRatings[ThemeIndex].W  * 0.5);
-    PosY := Theme.Score.StaticRatings[ThemeIndex].Y + (Theme.Score.StaticRatings[ThemeIndex].H  * 0.5); ;
+    PosX := Theme.Score.StaticRatings[SlotIndex].X + (Theme.Score.StaticRatings[SlotIndex].W  * 0.5);
+    PosY := Theme.Score.StaticRatings[SlotIndex].Y + (Theme.Score.StaticRatings[SlotIndex].H  * 0.5); ;
 
     Width := aPlayerScoreScreenRatings[PlayerNumber].RateEaseValue/2;
 
@@ -1579,12 +1418,12 @@ var
 
   RaiseStep, MaxVal: real;
   EaseOut_Step:      integer;
-  ThemeIndex: integer;
+  SlotIndex: integer;
 begin
-  ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
+  SlotIndex := PlayerPositionMap[PlayerNumber-1].Position;
 
   EaseOut_Step  := aPlayerScoreScreenRatings[PlayerNumber].RateEaseStep;
-  MaxVal        := Theme.Score.StaticRatings[ThemeIndex].W;
+  MaxVal        := Theme.Score.StaticRatings[SlotIndex].W;
 
   RaiseStep     := EaseOut_Step;
 
@@ -1621,10 +1460,10 @@ var
 
   lTmp:         real;
   Score:        integer;
-  ThemeIndex: integer;
+  SlotIndex: integer;
 begin
-  ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
-  MaxHeight    := Theme.Score.StaticBackLevel[ThemeIndex].H;
+  SlotIndex := PlayerPositionMap[PlayerNumber-1].Position;
+  MaxHeight    := Theme.Score.StaticBackLevel[SlotIndex].H;
 
   // let's get the points according to the bar we draw
   // score array starts at 0, which means the score for player 1 is in score[0]
@@ -1633,19 +1472,19 @@ begin
   begin
     Score        := Player[PlayerNumber - 1].ScoreInt;
     RaiseStep    := BarScore_EaseOut_Step;
-    BarStartPosY := Theme.Score.StaticBackLevel[ThemeIndex].Y + MaxHeight;
+    BarStartPosY := Theme.Score.StaticBackLevel[SlotIndex].Y + MaxHeight;
   end
   else if (BarType = sbtLine) then
   begin
     Score        := Player[PlayerNumber - 1].ScoreLineInt;
     RaiseStep    := BarPhrase_EaseOut_Step;
-    BarStartPosY := Theme.Score.StaticBackLevel[ThemeIndex].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight + MaxHeight;
+    BarStartPosY := Theme.Score.StaticBackLevel[SlotIndex].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight + MaxHeight;
   end
   else if (BarType = sbtGolden) then
   begin
     Score        := Player[PlayerNumber - 1].ScoreGoldenInt;
     RaiseStep    := BarGolden_EaseOut_Step;
-    BarStartPosY := Theme.Score.StaticBackLevel[ThemeIndex].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight - aPlayerScoreScreenDatas[PlayerNumber].BarLine_ActualHeight + MaxHeight;
+    BarStartPosY := Theme.Score.StaticBackLevel[SlotIndex].Y - aPlayerScoreScreenDatas[PlayerNumber].BarScore_ActualHeight - aPlayerScoreScreenDatas[PlayerNumber].BarLine_ActualHeight + MaxHeight;
   end;
 
   // the height dependend of the score
@@ -1682,13 +1521,13 @@ procedure TscreenScore.DrawBar(BarType: TScoreBarType; PlayerNumber: integer; Ba
 var
   Width:        real;
   BarStartPosX: real;
-  ThemeIndex: integer;
+  SlotIndex: integer;
 begin
-  ThemeIndex := PlayerPositionMap[PlayerNumber-1].Position;
+  SlotIndex := PlayerPositionMap[PlayerNumber-1].Position;
 
   // this is solely for better readability of the drawing
-  Width        := Theme.Score.StaticBackLevel[ThemeIndex].W;
-  BarStartPosX := Theme.Score.StaticBackLevel[ThemeIndex].X;
+  Width        := Theme.Score.StaticBackLevel[SlotIndex].W;
+  BarStartPosX := Theme.Score.StaticBackLevel[SlotIndex].X;
 
   glColor4f(1, 1, 1, 1);
 
@@ -1728,8 +1567,8 @@ begin
   glEnable(GL_BLEND);
 
   glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex3f(BarStartPosX,         (BarStartPosY - Statics[StaticLevelRound[ThemeIndex]].Texture.h) - NewHeight, ZBars);
-    glTexCoord2f(1, 0); glVertex3f(BarStartPosX + Width, (BarStartPosY - Statics[StaticLevelRound[ThemeIndex]].Texture.h) - NewHeight, ZBars);
+    glTexCoord2f(0, 0); glVertex3f(BarStartPosX,         (BarStartPosY - Statics[StaticLevelRound[SlotIndex]].Texture.h) - NewHeight, ZBars);
+    glTexCoord2f(1, 0); glVertex3f(BarStartPosX + Width, (BarStartPosY - Statics[StaticLevelRound[SlotIndex]].Texture.h) - NewHeight, ZBars);
     glTexCoord2f(1, 1); glVertex3f(BarStartPosX + Width,  BarStartPosY - NewHeight,                                                     ZBars);
     glTexCoord2f(0, 1); glVertex3f(BarStartPosX,          BarStartPosY - NewHeight,                                                     ZBars);
   glEnd;

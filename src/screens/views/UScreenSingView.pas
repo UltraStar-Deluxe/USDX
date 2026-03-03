@@ -47,6 +47,7 @@ uses
   UAvatars,
   UMenu,
   UMusic,
+  UPlayerLayout,
   USingScores,
   USongs,
   UTexture,
@@ -59,8 +60,6 @@ type
   public
 
     //StaticDuet: array of cardinal;
-    ColPlayer:  array[0..3] of TRGB;
-
     // lyrics bar fields
     StaticLyricsBar: integer;
     StaticLyricsBarDuet: integer;
@@ -71,118 +70,9 @@ type
     TextTimeLabelText: integer;
     TextTimeText: integer;
 
-    StaticP1: array [0..1] of integer;
-    TextP1:   integer;
-    StaticP1Avatar: array [0..1] of integer;
-
-    // shown when game is in 2/4 player modus
-    StaticP1TwoP: array [0..1] of integer;
-    TextP1TwoP:   integer;
-    StaticP1TwoPAvatar: array [0..1] of integer;
-
-    // shown when game is in 3/6 player modus
-    StaticP1ThreeP: array [0..1] of integer;
-    TextP1ThreeP:   integer;
-    StaticP1ThreePAvatar: array [0..1] of integer;
-
-    StaticP2R: array [0..1] of integer;
-    TextP2R:   integer;
-    StaticP2RAvatar: array [0..1] of integer;
-
-    StaticP2M: array [0..1] of integer;
-    TextP2M:   integer;
-    StaticP2MAvatar: array [0..1] of integer;
-
-    StaticP3R: array [0..1] of integer;
-    TextP3R:   integer;
-    StaticP3RAvatar: array [0..1] of integer;
-
-    // 4/6 players in one screen
-    StaticP1FourP:  integer;
-    StaticP2FourP:  integer;
-    StaticP3FourP:  integer;
-    StaticP4FourP:  integer;
-
-    StaticP1FourPAvatar:  integer;
-    StaticP2FourPAvatar:  integer;
-    StaticP3FourPAvatar:  integer;
-    StaticP4FourPAvatar:  integer;
-
-    TextP1FourP:   integer;
-    TextP2FourP:   integer;
-    TextP3FourP:   integer;
-    TextP4FourP:   integer;
-
-    StaticP1SixP:  integer;
-    StaticP2SixP:  integer;
-    StaticP3SixP:  integer;
-    StaticP4SixP:  integer;
-    StaticP5SixP:  integer;
-    StaticP6SixP:  integer;
-
-    StaticP1SixPAvatar:  integer;
-    StaticP2SixPAvatar:  integer;
-    StaticP3SixPAvatar:  integer;
-    StaticP4SixPAvatar:  integer;
-    StaticP5SixPAvatar:  integer;
-    StaticP6SixPAvatar:  integer;
-
-    TextP1SixP:   integer;
-    TextP2SixP:   integer;
-    TextP3SixP:   integer;
-    TextP4SixP:   integer;
-    TextP5SixP:   integer;
-    TextP6SixP:   integer;
-
-    // 3/6 players duet
-    StaticDuetP1ThreeP: array [0..1] of integer;
-    TextDuetP1ThreeP:   integer;
-    StaticDuetP1ThreePAvatar: array [0..1] of integer;
-
-    StaticDuetP2M: array [0..1] of integer;
-    TextDuetP2M:   integer;
-    StaticDuetP2MAvatar: array [0..1] of integer;
-
-    StaticDuetP3R: array [0..1] of integer;
-    TextDuetP3R:   integer;
-    StaticDuetP3RAvatar: array [0..1] of integer;
-
-    // 4/6 players duet one screen
-    StaticP1DuetFourP:  integer;
-    StaticP2DuetFourP:  integer;
-    StaticP3DuetFourP:  integer;
-    StaticP4DuetFourP:  integer;
-
-    StaticP1DuetFourPAvatar:  integer;
-    StaticP2DuetFourPAvatar:  integer;
-    StaticP3DuetFourPAvatar:  integer;
-    StaticP4DuetFourPAvatar:  integer;
-
-    TextP1DuetFourP:   integer;
-    TextP2DuetFourP:   integer;
-    TextP3DuetFourP:   integer;
-    TextP4DuetFourP:   integer;
-
-    StaticP1DuetSixP:  integer;
-    StaticP2DuetSixP:  integer;
-    StaticP3DuetSixP:  integer;
-    StaticP4DuetSixP:  integer;
-    StaticP5DuetSixP:  integer;
-    StaticP6DuetSixP:  integer;
-
-    StaticP1DuetSixPAvatar:  integer;
-    StaticP2DuetSixPAvatar:  integer;
-    StaticP3DuetSixPAvatar:  integer;
-    StaticP4DuetSixPAvatar:  integer;
-    StaticP5DuetSixPAvatar:  integer;
-    StaticP6DuetSixPAvatar:  integer;
-
-    TextP1DuetSixP:   integer;
-    TextP2DuetSixP:   integer;
-    TextP3DuetSixP:   integer;
-    TextP4DuetSixP:   integer;
-    TextP5DuetSixP:   integer;
-    TextP6DuetSixP:   integer;
+    PlayerFrameSlots:  array [1..UIni.IMaxPlayerCount, 0..UIni.IMaxPlayerCount-1] of integer;
+    PlayerAvatarSlots: array [1..UIni.IMaxPlayerCount, 0..UIni.IMaxPlayerCount-1] of integer;
+    PlayerTextSlots:   array [1..UIni.IMaxPlayerCount, 0..UIni.IMaxPlayerCount-1] of integer;
 
 
     StaticPausePopup: integer;
@@ -237,209 +127,219 @@ uses
 const
   MAX_MESSAGE = 3;
 
+type
+  TSlotArray = array of integer;
+
+procedure GetSingWidgetSlots(const View: TScreenSingView; LayoutPlayerCount: integer;
+  out FrameSlots, AvatarSlots: TSlotArray);
+var
+  SlotIndex: integer;
+begin
+  SetLength(FrameSlots, LayoutPlayerCount);
+  SetLength(AvatarSlots, LayoutPlayerCount);
+  for SlotIndex := 0 to LayoutPlayerCount - 1 do
+  begin
+    FrameSlots[SlotIndex] := View.PlayerFrameSlots[LayoutPlayerCount, SlotIndex];
+    AvatarSlots[SlotIndex] := View.PlayerAvatarSlots[LayoutPlayerCount, SlotIndex];
+  end;
+end;
+
+procedure GetSingTextSlots(const View: TScreenSingView; LayoutPlayerCount: integer;
+  out TextSlots: TSlotArray);
+var
+  SlotIndex: integer;
+begin
+  SetLength(TextSlots, LayoutPlayerCount);
+  for SlotIndex := 0 to LayoutPlayerCount - 1 do
+    TextSlots[SlotIndex] := View.PlayerTextSlots[LayoutPlayerCount, SlotIndex];
+end;
+
+function GetSingPlayerColor(PlayerIndex: integer): TRGB;
+begin
+  Result := GetPlayerColor(Ini.PlayerColor[PlayerIndex]);
+end;
+
+function BuildSingPlayerTemplate(const PlayerCountOnScreen, PlayerIndexOnScreen: integer): TThemeSingPlayer;
+var
+  BaseTemplate: TThemeSingPlayer;
+  LaneLeft: integer;
+  LaneRight: integer;
+  LaneTop: integer;
+  LaneWidth: integer;
+  Scale: real;
+  FrameW: integer;
+  FrameH: integer;
+  AvatarInsetX: integer;
+  AvatarInsetY: integer;
+  ScoreW: integer;
+  ScoreH: integer;
+  NameX: integer;
+  NameY: integer;
+  NameW: integer;
+  GroupTop: integer;
+  HeaderOffsetLeft: integer;
+  HeaderOffsetTop: integer;
+  Layout: TSingLaneLayout;
+begin
+  BaseTemplate := Theme.Sing.Solo1PP1;
+  Layout := GetSingLaneLayout(PlayerCountOnScreen, PlayerIndexOnScreen, CurrentSong.isDuet and (PlayersPlay <> 1));
+  LaneLeft := Layout.ColumnLeft;
+  LaneRight := Layout.ColumnRight;
+  LaneTop := Layout.RowAnchorY;
+  LaneWidth := Layout.ColumnWidth;
+  Scale := Layout.WidgetScale;
+
+  FrameW := Max(26, Round(BaseTemplate.AvatarFrame.W * Scale));
+  FrameH := Max(26, Round(BaseTemplate.AvatarFrame.H * Scale));
+  ScoreW := Max(56, Round(BaseTemplate.ScoreBackground.W * Scale));
+  ScoreH := Max(18, Round(BaseTemplate.ScoreBackground.H * Scale));
+  HeaderOffsetLeft := Round(30 * Scale);
+  HeaderOffsetTop := Round(40 * Scale);
+  GroupTop := Max(10, LaneTop - Max(FrameH, ScoreH) - 18 - HeaderOffsetTop);
+  AvatarInsetX := Max(1, Round((BaseTemplate.Avatar.X - BaseTemplate.AvatarFrame.X) * Scale));
+  AvatarInsetY := Max(1, Round((BaseTemplate.Avatar.Y - BaseTemplate.AvatarFrame.Y) * Scale));
+  NameX := Max(0, LaneLeft - HeaderOffsetLeft) + FrameW + Max(8, Round(10 * Scale));
+  NameW := Max(24, (LaneRight - ScoreW - Max(8, Round(10 * Scale))) - NameX);
+  NameY := GroupTop + Max(0, (FrameH - Max(12, Round(BaseTemplate.Name.Size * Scale))) div 2);
+
+  Result := BaseTemplate;
+  Result.AvatarFrame.X := Max(0, LaneLeft - HeaderOffsetLeft);
+  Result.AvatarFrame.Y := GroupTop;
+  Result.AvatarFrame.W := FrameW;
+  Result.AvatarFrame.H := FrameH;
+
+  Result.Avatar.X := Result.AvatarFrame.X + AvatarInsetX;
+  Result.Avatar.Y := Result.AvatarFrame.Y + AvatarInsetY;
+  Result.Avatar.W := Max(1, FrameW - 2 * AvatarInsetX);
+  Result.Avatar.H := Max(1, FrameH - 2 * AvatarInsetY);
+
+  Result.Name.X := Max(0, NameX - Max(4, Round(6 * Scale)));
+  Result.Name.Y := Max(0, NameY - Max(3, Round(6 * Scale)));
+  Result.Name.W := NameW;
+  Result.Name.H := Max(14, Round(BaseTemplate.Name.H * Scale));
+  Result.Name.Size := Max(10, Round(BaseTemplate.Name.Size * Scale));
+  if LaneWidth <= 0 then
+    Result.Name.W := 0;
+end;
+
+procedure ApplySingPlayerTemplate(const SingPlayer: TThemeSingPlayer; FrameSlot, AvatarSlot, TextSlot: integer);
+begin
+  ScreenSing.Statics[FrameSlot].Texture.X := SingPlayer.AvatarFrame.X;
+  ScreenSing.Statics[FrameSlot].Texture.Y := SingPlayer.AvatarFrame.Y;
+  ScreenSing.Statics[FrameSlot].Texture.W := SingPlayer.AvatarFrame.W;
+  ScreenSing.Statics[FrameSlot].Texture.H := SingPlayer.AvatarFrame.H;
+  ScreenSing.Statics[FrameSlot].Texture.Z := SingPlayer.AvatarFrame.Z;
+  ScreenSing.Statics[FrameSlot].Texture.Alpha := SingPlayer.AvatarFrame.Alpha;
+
+  ScreenSing.Statics[AvatarSlot].Texture.X := SingPlayer.Avatar.X;
+  ScreenSing.Statics[AvatarSlot].Texture.Y := SingPlayer.Avatar.Y;
+  ScreenSing.Statics[AvatarSlot].Texture.W := SingPlayer.Avatar.W;
+  ScreenSing.Statics[AvatarSlot].Texture.H := SingPlayer.Avatar.H;
+  ScreenSing.Statics[AvatarSlot].Texture.Z := SingPlayer.Avatar.Z;
+  ScreenSing.Statics[AvatarSlot].Texture.Alpha := SingPlayer.Avatar.Alpha;
+
+  ScreenSing.Text[TextSlot].X := SingPlayer.Name.X;
+  ScreenSing.Text[TextSlot].Y := SingPlayer.Name.Y;
+  ScreenSing.Text[TextSlot].W := SingPlayer.Name.W;
+  ScreenSing.Text[TextSlot].H := SingPlayer.Name.H;
+  ScreenSing.Text[TextSlot].Z := SingPlayer.Name.Z;
+  ScreenSing.Text[TextSlot].Size := SingPlayer.Name.Size;
+end;
+
 //ToDo basisbit: check this again
 // Dirty HacK
 procedure TScreenSingView.SwapToScreen(Screen: integer);
-  procedure setVisible(elements: array of integer; visible: boolean);
+var
+  LocalPlayerCount: integer;
+  FirstPlayerIndex: integer;
+  FrameSlots: TSlotArray;
+  AvatarSlots: TSlotArray;
+  IterLayoutPlayerCount: integer;
+  procedure setVisible(const elements: TSlotArray; visible: boolean);
   var
     J: integer;
   begin
     for J := 0 to High(elements) do
       ScreenSing.Statics[elements[J]].Visible := visible;
   end;
-  procedure hide(elements: array of integer);
+  procedure hide(const elements: TSlotArray);
   begin
     setVisible(elements, false);
   end;
-  procedure maybeShow(elements: array of integer);
+  procedure maybeShowCount(const elements: TSlotArray; Count: integer);
+  var
+    J: integer;
   begin
-    setVisible(elements, ScreenSing.Settings.AvatarsVisible);
+    if not ScreenSing.Settings.AvatarsVisible then
+      Exit;
+
+    for J := 0 to Count - 1 do
+      ScreenSing.Statics[elements[J]].Visible := true;
+  end;
+  procedure hideGroup(APlayerCount: integer);
+  begin
+    GetSingWidgetSlots(Self, APlayerCount, FrameSlots, AvatarSlots);
+    hide(FrameSlots);
+    hide(AvatarSlots);
+  end;
+  procedure setStaticColor(StaticIndex, PlayerIndex: integer);
+  var
+    PlayerColor: TRGB;
+  begin
+    PlayerColor := GetPlayerColor(Ini.SingColor[PlayerIndex]);
+    ScreenSing.Statics[StaticIndex].Texture.ColR := PlayerColor.R;
+    ScreenSing.Statics[StaticIndex].Texture.ColG := PlayerColor.G;
+    ScreenSing.Statics[StaticIndex].Texture.ColB := PlayerColor.B;
+  end;
+  procedure setVisibleSlotColors(const Slots: TSlotArray; Count, FirstIndex: integer);
+  var
+    J: integer;
+  begin
+    for J := 0 to Count - 1 do
+      setStaticColor(Slots[J], FirstIndex + J);
+  end;
+  procedure setVisibleSlotAvatars(const Slots: TSlotArray; Count, FirstIndex: integer);
+  var
+    J: integer;
+    PlayerIndex: integer;
+    CurrentTexture: TTexture;
+  begin
+    for J := 0 to Count - 1 do
+    begin
+      PlayerIndex := FirstIndex + J + 1;
+      if (PlayerIndex >= 1) and (PlayerIndex <= UIni.IMaxPlayerCount) then
+      begin
+        CurrentTexture := ScreenSing.Statics[Slots[J]].Texture;
+        ScreenSing.Statics[Slots[J]].Texture := AvatarPlayerTextures[PlayerIndex];
+        ScreenSing.Statics[Slots[J]].Texture.X := CurrentTexture.X;
+        ScreenSing.Statics[Slots[J]].Texture.Y := CurrentTexture.Y;
+        ScreenSing.Statics[Slots[J]].Texture.W := CurrentTexture.W;
+        ScreenSing.Statics[Slots[J]].Texture.H := CurrentTexture.H;
+        ScreenSing.Statics[Slots[J]].Texture.Z := CurrentTexture.Z;
+        ScreenSing.Statics[Slots[J]].Texture.Alpha := CurrentTexture.Alpha;
+      end;
+    end;
   end;
 begin
-  { if screens = 2 and playerplay <= 3 the 2nd screen shows the
-    textures of screen 1 }
-  if (PlayersPlay <= 3) and (Screen = 2) then
-    Screen := 1;
+  for IterLayoutPlayerCount := 1 to UIni.IMaxPlayerCount do
+    hideGroup(IterLayoutPlayerCount);
 
-  hide([
-    // 1P - screen 1
-    StaticP1[0], StaticP1Avatar[0],
-    // 2P - screen 1
-    StaticP1TwoP[0], StaticP1TwoPAvatar[0],
-    StaticP2R[0], StaticP2RAvatar[0],
-    // 3P - screen 1
-    StaticP1ThreeP[0], StaticP1ThreePAvatar[0],
-    StaticP2M[0], StaticP2MAvatar[0],
-    StaticP3R[0], StaticP3RAvatar[0],
-    // 1P - screen 2 (2 players across 2 screens)
-    StaticP1[1], StaticP1Avatar[1],
-    // 2P - screen 2 (4 players across 2 screens)
-    StaticP1TwoP[1], StaticP1TwoPAvatar[1],
-    StaticP2R[1], StaticP2RAvatar[1],
-    // 3P - screen 2 (6 players across 2 screens)
-    StaticP1ThreeP[1], StaticP1ThreePAvatar[1],
-    StaticP2M[1], StaticP2MAvatar[1],
-    StaticP3R[1], StaticP3RAvatar[1],
-    // 3P duet - screen 1
-    StaticDuetP1ThreeP[0], StaticDuetP1ThreePAvatar[0],
-    StaticDuetP2M[0], StaticDuetP2MAvatar[0],
-    StaticDuetP3R[0], StaticDuetP3RAvatar[0],
-    // 3P duet - screen 2 (6 players across 2 screens)
-    StaticDuetP1ThreeP[1], StaticDuetP1ThreePAvatar[1],
-    StaticDuetP2M[1], StaticDuetP2MAvatar[1],
-    StaticDuetP3R[1], StaticDuetP3RAvatar[1],
-    // 4P - screen 1
-    StaticP1FourP, StaticP1FourPAvatar,
-    StaticP2FourP, StaticP2FourPAvatar,
-    StaticP3FourP, StaticP3FourPAvatar,
-    StaticP4FourP, StaticP4FourPAvatar,
-    // 4P duet - screen 1
-    StaticP1DuetFourP, StaticP1DuetFourPAvatar,
-    StaticP2DuetFourP, StaticP2DuetFourPAvatar,
-    StaticP3DuetFourP, StaticP3DuetFourPAvatar,
-    StaticP4DuetFourP, StaticP4DuetFourPAvatar,
-    // 6P - screen 1
-    StaticP1SixP, StaticP1SixPAvatar,
-    StaticP2SixP, StaticP2SixPAvatar,
-    StaticP3SixP, StaticP3SixPAvatar,
-    StaticP4SixP, StaticP4SixPAvatar,
-    StaticP5SixP, StaticP5SixPAvatar,
-    StaticP6SixP, StaticP6SixPAvatar,
-    // 6P duet - screen 1
-    StaticP1DuetSixP, StaticP1DuetSixPAvatar,
-    StaticP2DuetSixP, StaticP2DuetSixPAvatar,
-    StaticP3DuetSixP, StaticP3DuetSixPAvatar,
-    StaticP4DuetSixP, StaticP4DuetSixPAvatar,
-    StaticP5DuetSixP, StaticP5DuetSixPAvatar,
-    StaticP6DuetSixP, StaticP6DuetSixPAvatar
-  ]);
-
-  if (PlayersPlay = 1) then
+  if Ini.Screens = 1 then
   begin
-    // this is actually correct! it just puts the sole player on all screens
-    maybeShow([StaticP1[0], StaticP1Avatar[0]]);
+    LocalPlayerCount := GetScreenPlayerCount(PlayersPlay, 2, Screen);
+    FirstPlayerIndex := GetFirstPlayerIndexForScreen(PlayersPlay, 2, Screen);
+  end
+  else
+  begin
+    LocalPlayerCount := PlayersPlay;
+    FirstPlayerIndex := 0;
   end;
 
-  if (PlayersPlay = 2) or ((PlayersPlay = 4) and (Ini.Screens = 1)) then
-  begin
-    if (Screen = 2) then
-    begin
-      maybeShow([
-        StaticP1TwoP[1], StaticP1TwoPAvatar[1],
-        StaticP2R[1], StaticP2RAvatar[1]
-      ]);
-    end;
-
-    if (Screen = 1) then
-    begin
-      maybeShow([
-        StaticP1TwoP[0], StaticP1TwoPAvatar[0],
-        StaticP2R[0], StaticP2RAvatar[0]
-      ]);
-    end;
-  end;
-
-  if (PlayersPlay = 3) or ((PlayersPlay in [5, 6]) and (Ini.Screens = 1)) then
-  begin
-    if (CurrentSong.isDuet) then
-    begin
-      if (Screen = 2) then
-      begin
-        maybeShow([
-          StaticDuetP1ThreeP[1], StaticDuetP1ThreePAvatar[1],
-          StaticDuetP2M[1], StaticDuetP2MAvatar[1],
-          StaticDuetP3R[1], StaticDuetP3RAvatar[1]
-        ]);
-        if (PlayersPlay = 5) then
-          hide([StaticDuetP3R[1], StaticDuetP3RAvatar[1]]);
-      end;
-
-      if (Screen = 1) then
-      begin
-        maybeShow([
-          StaticDuetP1ThreeP[0], StaticDuetP1ThreePAvatar[0],
-          StaticDuetP2M[0], StaticDuetP2MAvatar[0],
-          StaticDuetP3R[0], StaticDuetP3RAvatar[0]
-        ]);
-      end;
-    end
-    else
-    begin
-      if (Screen = 2) then
-      begin
-        maybeShow([
-          StaticP1ThreeP[1], StaticP1ThreePAvatar[1],
-          StaticP2M[1], StaticP2MAvatar[1],
-          StaticP3R[1], StaticP3RAvatar[1]
-        ]);
-        if (PlayersPlay = 5) then
-          hide([StaticP3R[1], StaticP3RAvatar[1]]);
-      end;
-
-      if (Screen = 1) then
-      begin
-        maybeShow([
-          StaticP1ThreeP[0], StaticP1ThreePAvatar[0],
-          StaticP2M[0], StaticP2MAvatar[0],
-          StaticP3R[0], StaticP3RAvatar[0]
-        ]);
-      end;
-    end;
-  end;
-
-  // 4 Players in 1 Screen
-  if (PlayersPlay = 4) and (Ini.Screens = 0) then
-  begin
-    if (CurrentSong.isDuet) then
-    begin
-      maybeShow([
-        StaticP1DuetFourP, StaticP1DuetFourPAvatar,
-        StaticP2DuetFourP, StaticP2DuetFourPAvatar,
-        StaticP3DuetFourP, StaticP3DuetFourPAvatar,
-        StaticP4DuetFourP, StaticP4DuetFourPAvatar
-      ]);
-    end
-    else
-    begin
-      maybeShow([
-        StaticP1FourP, StaticP1FourPAvatar,
-        StaticP2FourP, StaticP2FourPAvatar,
-        StaticP3FourP, StaticP3FourPAvatar,
-        StaticP4FourP, StaticP4FourPAvatar
-      ]);
-    end;
-  end;
-
-  // 6 Players in 1 Screen
-  if (PlayersPlay in [5, 6]) and (Ini.Screens = 0) then
-  begin
-    if (CurrentSong.isDuet) then
-    begin
-      maybeShow([
-        StaticP1DuetSixP, StaticP1DuetSixPAvatar,
-        StaticP2DuetSixP, StaticP2DuetSixPAvatar,
-        StaticP3DuetSixP, StaticP3DuetSixPAvatar,
-        StaticP4DuetSixP, StaticP4DuetSixPAvatar,
-        StaticP5DuetSixP, StaticP5DuetSixPAvatar,
-        StaticP6DuetSixP, StaticP6DuetSixPAvatar
-      ]);
-      if (PlayersPlay = 5) then
-        hide([StaticP6DuetSixP, StaticP6DuetSixPAvatar]);
-    end
-    else
-    begin
-      maybeShow([
-        StaticP1SixP, StaticP1SixPAvatar,
-        StaticP2SixP, StaticP2SixPAvatar,
-        StaticP3SixP, StaticP3SixPAvatar,
-        StaticP4SixP, StaticP4SixPAvatar,
-        StaticP5SixP, StaticP5SixPAvatar,
-        StaticP6SixP, StaticP6SixPAvatar
-      ]);
-      if (PlayersPlay = 5) then
-        hide([StaticP6SixP, StaticP6SixPAvatar]);
-    end;
-  end;
+  GetSingWidgetSlots(Self, LocalPlayerCount, FrameSlots, AvatarSlots);
+  setVisibleSlotColors(FrameSlots, LocalPlayerCount, FirstPlayerIndex);
+  setVisibleSlotAvatars(AvatarSlots, LocalPlayerCount, FirstPlayerIndex);
+  maybeShowCount(FrameSlots, LocalPlayerCount);
+  maybeShowCount(AvatarSlots, LocalPlayerCount);
 
 end;
 
@@ -460,11 +360,25 @@ var
     setColor(avatarFrame, color);
     static := ScreenSing.AddStatic(avatarFrame);
   end;
+  procedure setColorAndAssignAvatarFrameStaticForSlot(const PlayerCountOnScreen, PlayerIndexOnScreen: integer; var static: integer; color: TRGB);
+  var
+    SingPlayer: TThemeSingPlayer;
+  begin
+    SingPlayer := BuildSingPlayerTemplate(PlayerCountOnScreen, PlayerIndexOnScreen);
+    setColorAndAssignAvatarFrameStatic(SingPlayer.AvatarFrame, static, color);
+  end;
   // passing the integers for the statics by reference is deliberate
   procedure setColorAndAssignStatics(var singPlayer: TThemeSingPlayer; var avatarFrameStatic: integer; var nameStatic: integer; color: TRGB);
   begin
     setColorAndAssignAvatarFrameStatic(singPlayer.AvatarFrame, avatarFrameStatic, color);
     nameStatic := ScreenSing.AddText(singPlayer.Name);
+  end;
+  procedure setColorAndAssignStaticsForSlot(const PlayerCountOnScreen, PlayerIndexOnScreen: integer; var avatarFrameStatic: integer; var nameStatic: integer; color: TRGB);
+  var
+    SingPlayer: TThemeSingPlayer;
+  begin
+    SingPlayer := BuildSingPlayerTemplate(PlayerCountOnScreen, PlayerIndexOnScreen);
+    setColorAndAssignStatics(SingPlayer, avatarFrameStatic, nameStatic, color);
   end;
   // passing the integer for the static by reference is deliberate
   procedure assignAvatarStatic(var singPlayer: TThemeSingPlayer; var avatarStatic: integer; var texture: TTexture);
@@ -477,6 +391,53 @@ var
     ScreenSing.Statics[avatarStatic].Texture.W := singPlayer.Avatar.W;
     ScreenSing.Statics[avatarStatic].Texture.Z := singPlayer.Avatar.Z;
     ScreenSing.Statics[avatarStatic].Texture.Alpha := singPlayer.Avatar.Alpha;
+  end;
+  procedure assignAvatarStaticForSlot(const PlayerCountOnScreen, PlayerIndexOnScreen: integer; var avatarStatic: integer; var texture: TTexture);
+  var
+    SingPlayer: TThemeSingPlayer;
+  begin
+    SingPlayer := BuildSingPlayerTemplate(PlayerCountOnScreen, PlayerIndexOnScreen);
+    assignAvatarStatic(SingPlayer, avatarStatic, texture);
+  end;
+  procedure InitFrameSlots(MinLayoutPlayerCount, MaxLayoutPlayerCount: integer; CreateTextSlots: boolean);
+  var
+    LayoutPlayerCount: integer;
+    SlotIndex: integer;
+    ColorIndex: integer;
+  begin
+    for LayoutPlayerCount := MinLayoutPlayerCount to MaxLayoutPlayerCount do
+    begin
+      for SlotIndex := 0 to LayoutPlayerCount - 1 do
+      begin
+        ColorIndex := (SlotIndex mod UIni.IMaxPlayerCount) + 1;
+        if CreateTextSlots then
+          setColorAndAssignStaticsForSlot(LayoutPlayerCount, SlotIndex,
+            PlayerFrameSlots[LayoutPlayerCount, SlotIndex],
+            PlayerTextSlots[LayoutPlayerCount, SlotIndex],
+            Col[ColorIndex])
+        else
+          setColorAndAssignAvatarFrameStaticForSlot(LayoutPlayerCount, SlotIndex,
+            PlayerFrameSlots[LayoutPlayerCount, SlotIndex],
+            Col[ColorIndex]);
+      end;
+    end;
+  end;
+  procedure InitAvatarSlots(MaxLayoutPlayerCount: integer);
+  var
+    LayoutPlayerCount: integer;
+    SlotIndex: integer;
+    PlayerIndex: integer;
+  begin
+    for LayoutPlayerCount := 1 to MaxLayoutPlayerCount do
+    begin
+      for SlotIndex := 0 to LayoutPlayerCount - 1 do
+      begin
+        PlayerIndex := (SlotIndex mod UIni.IMaxPlayerCount) + 1;
+        assignAvatarStaticForSlot(LayoutPlayerCount, SlotIndex,
+          PlayerAvatarSlots[LayoutPlayerCount, SlotIndex],
+          AvatarPlayerTextures[PlayerIndex]);
+      end;
+    end;
   end;
 begin
   lastVolume:= -1;
@@ -512,41 +473,7 @@ begin
   for I := 1 to UIni.IMaxPlayerCount do
     Col[I] := GetPlayerColor(Ini.SingColor[I - 1]);
 
-  // SCREEN 1
-  // 1 player
-  setColorAndAssignAvatarFrameStatic(Theme.Sing.Solo1PP1.AvatarFrame, StaticP1[0], Col[1]);
-
-  // 2 or 4 players
-  setColorAndAssignAvatarFrameStatic(Theme.Sing.Solo2PP1.AvatarFrame, StaticP1TwoP[0], Col[1]);
-  setColorAndAssignAvatarFrameStatic(Theme.Sing.Solo2PP2.AvatarFrame, StaticP2R[0]   , Col[2]);
-
-  // 3 or 6 players
-  setColorAndAssignAvatarFrameStatic(Theme.Sing.Solo3PP1.AvatarFrame, StaticP1ThreeP[0], Col[1]);
-  setColorAndAssignAvatarFrameStatic(Theme.Sing.Solo3PP2.AvatarFrame, StaticP2M[0]     , Col[2]);
-  setColorAndAssignAvatarFrameStatic(Theme.Sing.Solo3PP3.AvatarFrame, StaticP3R[0]     , Col[3]);
-
-  // 3 or 6 players duet
-  setColorAndAssignAvatarFrameStatic(Theme.Sing.Duet3PP1.AvatarFrame, StaticDuetP1ThreeP[0], Col[1]);
-  setColorAndAssignAvatarFrameStatic(Theme.Sing.Duet3PP2.AvatarFrame, StaticDuetP2M[0]     , Col[2]);
-  setColorAndAssignAvatarFrameStatic(Theme.Sing.Duet3PP3.AvatarFrame, StaticDuetP3R[0]     , Col[3]);
-
-  // SCREEN 2
-  // 1 player
-  setColorAndAssignStatics(Theme.Sing.Solo1PP1, StaticP1[1], TextP1, Col[1]);
-
-  // 2 or 4 players
-  setColorAndAssignStatics(Theme.Sing.Solo2PP1, StaticP1TwoP[1], TextP1TwoP, Col[3]);
-  setColorAndAssignStatics(Theme.Sing.Solo2PP2, StaticP2R[1]   , TextP2R   , Col[4]);
-
-  // 3 or 6 players
-  setColorAndAssignStatics(Theme.Sing.Solo3PP1, StaticP1ThreeP[1], TextP1ThreeP, Col[4]);
-  setColorAndAssignStatics(Theme.Sing.Solo3PP2, StaticP2M[1]     , TextP2M     , Col[5]);
-  setColorAndAssignStatics(Theme.Sing.Solo3PP3, StaticP3R[1]     , TextP3R     , Col[6]);
-
-  // 3 or 6 players duet
-  setColorAndAssignStatics(Theme.Sing.Duet3PP1, StaticDuetP1ThreeP[1], TextDuetP1ThreeP, Col[4]);
-  setColorAndAssignStatics(Theme.Sing.Duet3PP2, StaticDuetP2M[1]     , TextDuetP2M     , Col[5]);
-  setColorAndAssignStatics(Theme.Sing.Duet3PP3, StaticDuetP3R[1]     , TextDuetP3R     , Col[6]);
+  InitFrameSlots(1, UIni.IMaxPlayerCount, true);
 
   for I := 1 to PlayersPlay do
   begin
@@ -560,35 +487,6 @@ begin
     end;
     ScreenSing.PlayerDuetNames[I] := ScreenSing.PlayerNames[I];
   end;
-
-  // 4 players in 1 screen
-  setColorAndAssignStatics(Theme.Sing.Solo4PP1, StaticP1FourP, TextP1FourP, Col[1]);
-  setColorAndAssignStatics(Theme.Sing.Solo4PP2, StaticP2FourP, TextP2FourP, Col[2]);
-  setColorAndAssignStatics(Theme.Sing.Solo4PP3, StaticP3FourP, TextP3FourP, Col[3]);
-  setColorAndAssignStatics(Theme.Sing.Solo4PP4, StaticP4FourP, TextP4FourP, Col[4]);
-
-  // 6 players in 1 screen
-  setColorAndAssignStatics(Theme.Sing.Solo6PP1, StaticP1SixP, TextP1SixP, Col[1]);
-  setColorAndAssignStatics(Theme.Sing.Solo6PP2, StaticP2SixP, TextP2SixP, Col[2]);
-  setColorAndAssignStatics(Theme.Sing.Solo6PP3, StaticP3SixP, TextP3SixP, Col[3]);
-  setColorAndAssignStatics(Theme.Sing.Solo6PP4, StaticP4SixP, TextP4SixP, Col[4]);
-  setColorAndAssignStatics(Theme.Sing.Solo6PP5, StaticP5SixP, TextP5SixP, Col[5]);
-  setColorAndAssignStatics(Theme.Sing.Solo6PP6, StaticP6SixP, TextP6SixP, Col[6]);
-
-
-  // 4 players duet in 1 screen
-  setColorAndAssignStatics(Theme.Sing.Duet4PP1, StaticP1DuetFourP, TextP1DuetFourP, Col[1]);
-  setColorAndAssignStatics(Theme.Sing.Duet4PP2, StaticP2DuetFourP, TextP2DuetFourP, Col[2]);
-  setColorAndAssignStatics(Theme.Sing.Duet4PP3, StaticP3DuetFourP, TextP3DuetFourP, Col[3]);
-  setColorAndAssignStatics(Theme.Sing.Duet4PP4, StaticP4DuetFourP, TextP4DuetFourP, Col[4]);
-
-  // 6 players duet in 1 screen
-  setColorAndAssignStatics(Theme.Sing.Duet6PP1, StaticP1DuetSixP, TextP1DuetSixP, Col[1]);
-  setColorAndAssignStatics(Theme.Sing.Duet6PP2, StaticP2DuetSixP, TextP2DuetSixP, Col[2]);
-  setColorAndAssignStatics(Theme.Sing.Duet6PP3, StaticP3DuetSixP, TextP3DuetSixP, Col[3]);
-  setColorAndAssignStatics(Theme.Sing.Duet6PP4, StaticP4DuetSixP, TextP4DuetSixP, Col[4]);
-  setColorAndAssignStatics(Theme.Sing.Duet6PP5, StaticP5DuetSixP, TextP5DuetSixP, Col[5]);
-  setColorAndAssignStatics(Theme.Sing.Duet6PP6, StaticP6DuetSixP, TextP6DuetSixP, Col[6]);
 
   // Sing Bars
   // P1-6
@@ -665,60 +563,7 @@ begin
   ScreenSing.InfoMessageBG := ScreenSing.AddStatic(Theme.Sing.InfoMessageBG);
   ScreenSing.InfoMessageText := ScreenSing.AddText(Theme.Sing.InfoMessageText);
 
-  // avatars
-  // SCREEN 1
-  // 1P
-  assignAvatarStatic(Theme.Sing.Solo1PP1, StaticP1Avatar[0], AvatarPlayerTextures[1]);
-  // 2P
-  assignAvatarStatic(Theme.Sing.Solo2PP1, StaticP1TwoPAvatar[0], AvatarPlayerTextures[1]);
-  assignAvatarStatic(Theme.Sing.Solo2PP2, StaticP2RAvatar[0]   , AvatarPlayerTextures[2]);
-  // 3P
-  assignAvatarStatic(Theme.Sing.Solo3PP1, StaticP1ThreePAvatar[0], AvatarPlayerTextures[1]);
-  assignAvatarStatic(Theme.Sing.Solo3PP2, StaticP2MAvatar[0]     , AvatarPlayerTextures[2]);
-  assignAvatarStatic(Theme.Sing.Solo3PP3, StaticP3RAvatar[0]     , AvatarPlayerTextures[3]);
-  // 3P duet
-  assignAvatarStatic(Theme.Sing.Duet3PP1, StaticDuetP1ThreePAvatar[0], AvatarPlayerTextures[1]);
-  assignAvatarStatic(Theme.Sing.Duet3PP2, StaticDuetP2MAvatar[0]     , AvatarPlayerTextures[2]);
-  assignAvatarStatic(Theme.Sing.Duet3PP3, StaticDuetP3RAvatar[0]     , AvatarPlayerTextures[3]);
-  // 4P
-  assignAvatarStatic(Theme.Sing.Solo4PP1, StaticP1FourPAvatar, AvatarPlayerTextures[1]);
-  assignAvatarStatic(Theme.Sing.Solo4PP2, StaticP2FourPAvatar, AvatarPlayerTextures[2]);
-  assignAvatarStatic(Theme.Sing.Solo4PP3, StaticP3FourPAvatar, AvatarPlayerTextures[3]);
-  assignAvatarStatic(Theme.Sing.Solo4PP4, StaticP4FourPAvatar, AvatarPlayerTextures[4]);
-  // 4P duet
-  assignAvatarStatic(Theme.Sing.Duet4PP1, StaticP1DuetFourPAvatar, AvatarPlayerTextures[1]);
-  assignAvatarStatic(Theme.Sing.Duet4PP2, StaticP2DuetFourPAvatar, AvatarPlayerTextures[2]);
-  assignAvatarStatic(Theme.Sing.Duet4PP3, StaticP3DuetFourPAvatar, AvatarPlayerTextures[3]);
-  assignAvatarStatic(Theme.Sing.Duet4PP4, StaticP4DuetFourPAvatar, AvatarPlayerTextures[4]);
-  // 6P
-  assignAvatarStatic(Theme.Sing.Solo6PP1, StaticP1SixPAvatar, AvatarPlayerTextures[1]);
-  assignAvatarStatic(Theme.Sing.Solo6PP2, StaticP2SixPAvatar, AvatarPlayerTextures[2]);
-  assignAvatarStatic(Theme.Sing.Solo6PP3, StaticP3SixPAvatar, AvatarPlayerTextures[3]);
-  assignAvatarStatic(Theme.Sing.Solo6PP4, StaticP4SixPAvatar, AvatarPlayerTextures[4]);
-  assignAvatarStatic(Theme.Sing.Solo6PP5, StaticP5SixPAvatar, AvatarPlayerTextures[5]);
-  assignAvatarStatic(Theme.Sing.Solo6PP6, StaticP6SixPAvatar, AvatarPlayerTextures[6]);
-  // 6P duet
-  assignAvatarStatic(Theme.Sing.Duet6PP1, StaticP1DuetSixPAvatar, AvatarPlayerTextures[1]);
-  assignAvatarStatic(Theme.Sing.Duet6PP2, StaticP2DuetSixPAvatar, AvatarPlayerTextures[2]);
-  assignAvatarStatic(Theme.Sing.Duet6PP3, StaticP3DuetSixPAvatar, AvatarPlayerTextures[3]);
-  assignAvatarStatic(Theme.Sing.Duet6PP4, StaticP4DuetSixPAvatar, AvatarPlayerTextures[4]);
-  assignAvatarStatic(Theme.Sing.Duet6PP5, StaticP5DuetSixPAvatar, AvatarPlayerTextures[5]);
-  assignAvatarStatic(Theme.Sing.Duet6PP6, StaticP6DuetSixPAvatar, AvatarPlayerTextures[6]);
-
-  // SCREEN 2
-  // 1P
-  assignAvatarStatic(Theme.Sing.Solo1PP1, StaticP1Avatar[1], AvatarPlayerTextures[2]);
-  // 2P
-  assignAvatarStatic(Theme.Sing.Solo2PP1, StaticP1TwoPAvatar[1], AvatarPlayerTextures[3]);
-  assignAvatarStatic(Theme.Sing.Solo2PP2, StaticP2RAvatar[1]   , AvatarPlayerTextures[4]);
-  // 3P
-  assignAvatarStatic(Theme.Sing.Solo3PP1, StaticP1ThreePAvatar[1], AvatarPlayerTextures[4]);
-  assignAvatarStatic(Theme.Sing.Solo3PP2, StaticP2MAvatar[1]     , AvatarPlayerTextures[5]);
-  assignAvatarStatic(Theme.Sing.Solo3PP3, StaticP3RAvatar[1]     , AvatarPlayerTextures[6]);
-  // 3P duet
-  assignAvatarStatic(Theme.Sing.Duet3PP1, StaticDuetP1ThreePAvatar[1], AvatarPlayerTextures[4]);
-  assignAvatarStatic(Theme.Sing.Duet3PP2, StaticDuetP2MAvatar[1]     , AvatarPlayerTextures[5]);
-  assignAvatarStatic(Theme.Sing.Duet3PP3, StaticDuetP3RAvatar[1]     , AvatarPlayerTextures[6]);
+  InitAvatarSlots(UIni.IMaxPlayerCount);
 end;
 
 destructor TScreenSingView.Destroy;
@@ -769,6 +614,54 @@ var
   medley_end:             boolean;
   medley_start_applause:  boolean;
   LastLineSungToEnd:      boolean;
+  LocalPlayerCount:       integer;
+  LocalStartIndex:        integer;
+  TextSlots:              TSlotArray;
+  IterLayoutPlayerCount:  integer;
+  SlotIndex:              integer;
+  SingPlayer:             TThemeSingPlayer;
+  procedure SetPlayerNameTexts(const Slots: TSlotArray; FirstPlayerIndex: integer; UseDuetNames: boolean);
+  var
+    J: integer;
+    PlayerIndex: integer;
+  begin
+    for J := 0 to High(Slots) do
+    begin
+      PlayerIndex := FirstPlayerIndex + J;
+      if (PlayerIndex >= 1) and (PlayerIndex <= PlayersPlay) then
+      begin
+        if UseDuetNames then
+          ScreenSing.Text[Slots[J]].Text := ScreenSing.PlayerDuetNames[PlayerIndex]
+        else
+          ScreenSing.Text[Slots[J]].Text := ScreenSing.PlayerNames[PlayerIndex];
+      end
+      else
+      begin
+        ScreenSing.Text[Slots[J]].Text := '';
+      end;
+    end;
+  end;
+  procedure SetTextVisibility(const Slots: TSlotArray; VisibleCount: integer; Visible: boolean);
+  var
+    J: integer;
+  begin
+    for J := 0 to High(Slots) do
+      ScreenSing.Text[Slots[J]].Visible := Visible and (J < VisibleCount) and ScreenSing.Settings.AvatarsVisible;
+  end;
+  procedure SetLyricsDuetColors(FirstPlayerIndex: integer);
+  var
+    PlayerColor: TRGB;
+  begin
+    PlayerColor := GetSingPlayerColor(FirstPlayerIndex - 1);
+    ScreenSing.LyricsDuetP1.LineColor_act.R := PlayerColor.R;
+    ScreenSing.LyricsDuetP1.LineColor_act.G := PlayerColor.G;
+    ScreenSing.LyricsDuetP1.LineColor_act.B := PlayerColor.B;
+
+    PlayerColor := GetSingPlayerColor(FirstPlayerIndex);
+    ScreenSing.LyricsDuetP2.LineColor_act.R := PlayerColor.R;
+    ScreenSing.LyricsDuetP2.LineColor_act.G := PlayerColor.G;
+    ScreenSing.LyricsDuetP2.LineColor_act.B := PlayerColor.B;
+  end;
 begin
   ScreenSing.Background.Draw;
 
@@ -797,103 +690,31 @@ begin
   if (ScreenSing.fShowWebCam) then
     SingDrawWebCamFrame;
 
-  // set player names (for 2 screens and only singstar skin)
-  if ScreenAct = 1 then
+  LocalPlayerCount := GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct);
+  LocalStartIndex := GetFirstPlayerIndexForScreen(PlayersPlay, Screens, ScreenAct) + 1;
+
+  for IterLayoutPlayerCount := 1 to UIni.IMaxPlayerCount do
   begin
-    ScreenSing.Text[TextP1].Text           := ScreenSing.PlayerNames[1];
-    ScreenSing.Text[TextP1TwoP].Text       := ScreenSing.PlayerNames[1];
-    ScreenSing.Text[TextP1ThreeP].Text     := ScreenSing.PlayerNames[1];
-    ScreenSing.Text[TextP2R].Text          := ScreenSing.PlayerNames[2];
-    ScreenSing.Text[TextP2M].Text          := ScreenSing.PlayerNames[2];
-    ScreenSing.Text[TextP3R].Text          := ScreenSing.PlayerNames[3];
-    ScreenSing.Text[TextDuetP1ThreeP].Text := ScreenSing.PlayerDuetNames[1];
-    ScreenSing.Text[TextDuetP2M].Text      := ScreenSing.PlayerDuetNames[2];
-    ScreenSing.Text[TextDuetP3R].Text      := ScreenSing.PlayerDuetNames[3];
-    ScreenSing.Text[TextP1FourP].Text      := ScreenSing.PlayerNames[1];
-    ScreenSing.Text[TextP2FourP].Text      := ScreenSing.PlayerNames[2];
-    ScreenSing.Text[TextP3FourP].Text      := ScreenSing.PlayerNames[3];
-    ScreenSing.Text[TextP4FourP].Text      := ScreenSing.PlayerNames[4];
-    ScreenSing.Text[TextP1DuetFourP].Text  := ScreenSing.PlayerDuetNames[1];
-    ScreenSing.Text[TextP2DuetFourP].Text  := ScreenSing.PlayerDuetNames[2];
-    ScreenSing.Text[TextP3DuetFourP].Text  := ScreenSing.PlayerDuetNames[3];
-    ScreenSing.Text[TextP4DuetFourP].Text  := ScreenSing.PlayerDuetNames[4];
-    ScreenSing.Text[TextP1SixP].Text       := ScreenSing.PlayerNames[1];
-    ScreenSing.Text[TextP2SixP].Text       := ScreenSing.PlayerNames[2];
-    ScreenSing.Text[TextP3SixP].Text       := ScreenSing.PlayerNames[3];
-    ScreenSing.Text[TextP4SixP].Text       := ScreenSing.PlayerNames[4];
-    ScreenSing.Text[TextP5SixP].Text       := ScreenSing.PlayerNames[5];
-    if (PlayersPlay = 6) then
-      ScreenSing.Text[TextP6SixP].Text := ScreenSing.PlayerNames[6]
-    else
-      ScreenSing.Text[TextP6SixP].Text := '';
-    ScreenSing.Text[TextP1DuetSixP].Text   := ScreenSing.PlayerDuetNames[1];
-    ScreenSing.Text[TextP2DuetSixP].Text   := ScreenSing.PlayerDuetNames[2];
-    ScreenSing.Text[TextP3DuetSixP].Text   := ScreenSing.PlayerDuetNames[3];
-    ScreenSing.Text[TextP4DuetSixP].Text   := ScreenSing.PlayerDuetNames[4];
-    ScreenSing.Text[TextP5DuetSixP].Text   := ScreenSing.PlayerDuetNames[5];
-    if (PlayersPlay = 6) then
-      ScreenSing.Text[TextP6DuetSixP].Text := ScreenSing.PlayerDuetNames[6]
-    else
-      ScreenSing.Text[TextP6DuetSixP].Text := '';
-
-    if (CurrentSong.isDuet) then
-    begin
-      if (PlayersPlay = 4) then
-      begin
-        ScreenSing.LyricsDuetP1.LineColor_act.R := ColPlayer[0].R;
-        ScreenSing.LyricsDuetP1.LineColor_act.G := ColPlayer[0].G;
-        ScreenSing.LyricsDuetP1.LineColor_act.B := ColPlayer[0].B;
-
-        ScreenSing.LyricsDuetP2.LineColor_act.R := ColPlayer[1].R;
-        ScreenSing.LyricsDuetP2.LineColor_act.G := ColPlayer[1].G;
-        ScreenSing.LyricsDuetP2.LineColor_act.B := ColPlayer[1].B;
-      end;
-    end;
+    GetSingTextSlots(Self, IterLayoutPlayerCount, TextSlots);
+    SetTextVisibility(TextSlots, 0, false);
   end;
 
-  if ScreenAct = 2 then
+  GetSingTextSlots(Self, LocalPlayerCount, TextSlots);
+  for SlotIndex := 0 to LocalPlayerCount - 1 do
   begin
-    case PlayersPlay of
-      4:
-      begin
-        ScreenSing.Text[TextP1TwoP].Text := ScreenSing.PlayerNames[3];
-        ScreenSing.Text[TextP2R].Text    := ScreenSing.PlayerNames[4];
+    SingPlayer := BuildSingPlayerTemplate(LocalPlayerCount, SlotIndex);
+    ApplySingPlayerTemplate(
+      SingPlayer,
+      PlayerFrameSlots[LocalPlayerCount, SlotIndex],
+      PlayerAvatarSlots[LocalPlayerCount, SlotIndex],
+      PlayerTextSlots[LocalPlayerCount, SlotIndex]
+    );
+  end;
+  SetPlayerNameTexts(TextSlots, LocalStartIndex, CurrentSong.isDuet and (LocalPlayerCount >= 3));
+  SetTextVisibility(TextSlots, LocalPlayerCount, true);
 
-        if (CurrentSong.isDuet) and (PlayersPlay = 4) then
-        begin
-          ScreenSing.LyricsDuetP1.LineColor_act.R := ColPlayer[2].R;
-          ScreenSing.LyricsDuetP1.LineColor_act.G := ColPlayer[2].G;
-          ScreenSing.LyricsDuetP1.LineColor_act.B := ColPlayer[2].B;
-
-          ScreenSing.LyricsDuetP2.LineColor_act.R := ColPlayer[3].R;
-          ScreenSing.LyricsDuetP2.LineColor_act.G := ColPlayer[3].G;
-          ScreenSing.LyricsDuetP2.LineColor_act.B := ColPlayer[3].B;
-        end;
-
-      end;
-      5, 6:
-      begin
-        if (CurrentSong.isDuet) then
-        begin
-          ScreenSing.Text[TextDuetP1ThreeP].Text := ScreenSing.PlayerDuetNames[4];
-          ScreenSing.Text[TextDuetP2M].Text      := ScreenSing.PlayerDuetNames[5];
-          if (PlayersPlay = 6) then
-            ScreenSing.Text[TextDuetP3R].Text := ScreenSing.PlayerDuetNames[6]
-          else
-            ScreenSing.Text[TextDuetP3R].Text := '';
-        end
-        else
-        begin
-          ScreenSing.Text[TextP1ThreeP].Text := ScreenSing.PlayerNames[4];
-          ScreenSing.Text[TextP2M].Text      := ScreenSing.PlayerNames[5];
-          if (PlayersPlay = 6) then
-            ScreenSing.Text[TextP3R].Text := ScreenSing.PlayerNames[6]
-          else
-            ScreenSing.Text[TextP3R].Text := '';
-        end;
-      end;
-    end; // case
-  end; // if
+  if CurrentSong.isDuet and (LocalPlayerCount = 2) then
+    SetLyricsDuetColors(LocalStartIndex);
 
   // retrieve current lyrics time, we have to store the value to avoid
   // that min- and sec-values do not match
@@ -1048,6 +869,10 @@ begin
   if (ScreenSing.Settings.TimeBarVisible) then
     DrawInfoLyricBar;
 
+  // draw scores
+  if (ScreenSing.Settings.ScoresVisible) and ((Ini.SingScores = 1) or (Party.bPartyGame)) then
+    ScreenSing.Scores.Draw;
+
   // always draw custom items
   ScreenSing.Statics[StaticLyricsBar].Visible := ScreenSing.Settings.LyricsVisible;
   ScreenSing.Statics[StaticLyricsBarDuet].Visible := ScreenSing.Settings.LyricsVisible and (CurrentSong.isDuet) and (PlayersPlay <> 1);
@@ -1056,10 +881,6 @@ begin
 
   // goldennotestarstwinkle
   GoldenRec.SpawnRec;
-
-  // draw scores
-  if (ScreenSing.Settings.ScoresVisible) and ((Ini.SingScores = 1) or (Party.bPartyGame)) then
-    ScreenSing.Scores.Draw;
 
   FadeMessage();
 

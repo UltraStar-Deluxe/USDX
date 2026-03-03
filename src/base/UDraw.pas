@@ -38,7 +38,8 @@ uses
   UThemes,
   sdl2,
   UGraphicClasses,
-  UIni;
+  UIni,
+  UPlayerLayout;
 
 procedure SingDraw;
 procedure SingDrawLines;
@@ -410,128 +411,90 @@ begin
 end;
 
 procedure SingDrawOscilloscopes;
+  function GetBaseOscilloscopePosition: TThemePosition;
+  begin
+    Result := Theme.Sing.Solo1PP1.Oscilloscope;
+  end;
+  function GetBaseSingPlayerTemplate: TThemeSingPlayer;
+  begin
+    Result := Theme.Sing.Solo1PP1;
+  end;
+  procedure GetLaneLayout(const PlayerCountOnScreen, PlayerIndexOnScreen: integer;
+    out LaneLeft, LaneRight, LaneTop, LaneWidth: integer);
+  var
+    Layout: TSingLaneLayout;
+  begin
+    Layout := GetSingLaneLayout(PlayerCountOnScreen, PlayerIndexOnScreen, CurrentSong.isDuet and (PlayersPlay <> 1));
+    LaneLeft := Layout.ColumnLeft;
+    LaneRight := Layout.ColumnRight;
+    LaneTop := Layout.RowAnchorY;
+    LaneWidth := Layout.ColumnWidth;
+  end;
+  function GetOscilloscopePosition(PlayerIndex: integer): TThemePosition;
+  var
+    BaseTemplate: TThemeSingPlayer;
+    BasePosition: TThemePosition;
+    LocalPlayerCount: integer;
+    LocalIndex: integer;
+    LaneLeft: integer;
+    LaneRight: integer;
+    LaneTop: integer;
+    LaneWidth: integer;
+    Scale: real;
+    FrameW: integer;
+    FrameH: integer;
+    ScoreW: integer;
+    ScoreH: integer;
+    NameX: integer;
+    NameY: integer;
+    NameW: integer;
+    GroupTop: integer;
+    HeaderOffsetLeft: integer;
+    HeaderOffsetTop: integer;
+    Layout: TSingLaneLayout;
+  begin
+    if Screens > 1 then
+    begin
+      LocalPlayerCount := GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct);
+      LocalIndex := GetPlayerIndexOnScreen(PlayerIndex, PlayersPlay, Screens);
+    end
+    else
+    begin
+      LocalPlayerCount := PlayersPlay;
+      LocalIndex := PlayerIndex;
+    end;
+
+    BaseTemplate := GetBaseSingPlayerTemplate;
+    BasePosition := GetBaseOscilloscopePosition;
+    Layout := GetSingLaneLayout(LocalPlayerCount, LocalIndex, CurrentSong.isDuet and (PlayersPlay <> 1));
+    GetLaneLayout(LocalPlayerCount, LocalIndex, LaneLeft, LaneRight, LaneTop, LaneWidth);
+    Scale := Layout.WidgetScale;
+
+    FrameW := Max(26, Round(BaseTemplate.AvatarFrame.W * Scale));
+    FrameH := Max(26, Round(BaseTemplate.AvatarFrame.H * Scale));
+    ScoreW := Max(56, Round(BaseTemplate.ScoreBackground.W * Scale));
+    ScoreH := Max(18, Round(BaseTemplate.ScoreBackground.H * Scale));
+    HeaderOffsetLeft := Round(30 * Scale);
+    HeaderOffsetTop := Round(40 * Scale);
+    GroupTop := Max(10, LaneTop - Max(FrameH, ScoreH) - 18 - HeaderOffsetTop);
+    NameX := Max(0, LaneLeft - HeaderOffsetLeft) + FrameW + Max(8, Round(10 * Scale));
+    NameW := Max(24, (LaneRight - ScoreW - Max(8, Round(10 * Scale))) - NameX);
+    NameY := GroupTop + Max(0, (FrameH - Max(12, Round(BaseTemplate.Name.Size * Scale))) div 2);
+    NameX := Max(0, NameX - Max(4, Round(6 * Scale)));
+    NameY := Max(0, NameY - Max(3, Round(6 * Scale)));
+
+    Result := BasePosition;
+    Result.X := NameX;
+    Result.Y := NameY + Max(12, Round(BaseTemplate.Name.H * Scale)) + Max(2, Round(4 * Scale));
+    Result.W := Min(NameW, Max(40, Round(BasePosition.W * Scale)));
+    Result.H := Max(8, Round(BasePosition.H * Scale));
+  end;
+var
+  PlayerIndex: integer;
 begin;
-  if PlayersPlay = 1 then
-    SingDrawOscilloscope(Theme.Sing.Solo1PP1.Oscilloscope, 0);
-
-  if PlayersPlay = 2 then
-  begin
-    SingDrawOscilloscope(Theme.Sing.Solo2PP1.Oscilloscope, 0);
-    SingDrawOscilloscope(Theme.Sing.Solo2PP2.Oscilloscope, 1);
-  end;
-
-  if PlayersPlay = 3 then
-  begin
-    if (CurrentSong.isDuet) then
-    begin
-      SingDrawOscilloscope(Theme.Sing.Duet3PP1.Oscilloscope, 0);
-      SingDrawOscilloscope(Theme.Sing.Duet3PP2.Oscilloscope, 1);
-      SingDrawOscilloscope(Theme.Sing.Duet3PP3.Oscilloscope, 2);
-    end
-    else
-    begin
-      SingDrawOscilloscope(Theme.Sing.Solo3PP1.Oscilloscope, 0);
-      SingDrawOscilloscope(Theme.Sing.Solo3PP2.Oscilloscope, 1);
-      SingDrawOscilloscope(Theme.Sing.Solo3PP3.Oscilloscope, 2);
-    end;
-  end;
-
-  if PlayersPlay = 4 then
-  begin
-    if (Ini.Screens = 1) then
-    begin
-      if ScreenAct = 1 then
-      begin
-        SingDrawOscilloscope(Theme.Sing.Solo2PP1.Oscilloscope, 0);
-        SingDrawOscilloscope(Theme.Sing.Solo2PP2.Oscilloscope, 1);
-      end;
-      if ScreenAct = 2 then
-      begin
-        SingDrawOscilloscope(Theme.Sing.Solo2PP1.Oscilloscope, 2);
-        SingDrawOscilloscope(Theme.Sing.Solo2PP2.Oscilloscope, 3);
-      end;
-    end
-    else
-    begin
-      if (CurrentSong.isDuet) then
-      begin
-        SingDrawOscilloscope(Theme.Sing.Duet4PP1.Oscilloscope, 0);
-        SingDrawOscilloscope(Theme.Sing.Duet4PP2.Oscilloscope, 1);
-        SingDrawOscilloscope(Theme.Sing.Duet4PP3.Oscilloscope, 2);
-        SingDrawOscilloscope(Theme.Sing.Duet4PP4.Oscilloscope, 3);
-      end
-      else
-      begin
-        SingDrawOscilloscope(Theme.Sing.Solo4PP1.Oscilloscope, 0);
-        SingDrawOscilloscope(Theme.Sing.Solo4PP2.Oscilloscope, 1);
-        SingDrawOscilloscope(Theme.Sing.Solo4PP3.Oscilloscope, 2);
-        SingDrawOscilloscope(Theme.Sing.Solo4PP4.Oscilloscope, 3);
-      end;
-    end;
-  end;
-
-  if (PlayersPlay = 5) or (PlayersPlay = 6) then
-  begin
-    if (Ini.Screens = 1) then
-    begin
-      if (CurrentSong.isDuet) then
-      begin
-        if ScreenAct = 1 then
-        begin
-          SingDrawOscilloscope(Theme.Sing.Duet3PP1.Oscilloscope, 0);
-          SingDrawOscilloscope(Theme.Sing.Duet3PP2.Oscilloscope, 1);
-          SingDrawOscilloscope(Theme.Sing.Duet3PP3.Oscilloscope, 2);
-        end;
-        if ScreenAct = 2 then
-        begin
-          SingDrawOscilloscope(Theme.Sing.Duet3PP1.Oscilloscope, 3);
-          SingDrawOscilloscope(Theme.Sing.Duet3PP2.Oscilloscope, 4);
-          if (PlayersPlay = 6) then
-            SingDrawOscilloscope(Theme.Sing.Duet3PP3.Oscilloscope, 5);
-        end;
-      end
-      else
-      begin
-        if ScreenAct = 1 then
-        begin
-          SingDrawOscilloscope(Theme.Sing.Solo3PP1.Oscilloscope, 0);
-          SingDrawOscilloscope(Theme.Sing.Solo3PP2.Oscilloscope, 1);
-          SingDrawOscilloscope(Theme.Sing.Solo3PP3.Oscilloscope, 2);
-        end;
-
-        if ScreenAct = 2 then
-        begin
-          SingDrawOscilloscope(Theme.Sing.Solo3PP1.Oscilloscope, 3);
-          SingDrawOscilloscope(Theme.Sing.Solo3PP2.Oscilloscope, 4);
-          if (PlayersPlay = 6) then
-            SingDrawOscilloscope(Theme.Sing.Solo3PP3.Oscilloscope, 5);
-        end;
-      end;
-    end
-    else
-    begin
-      if (CurrentSong.isDuet) then
-      begin
-        SingDrawOscilloscope(Theme.Sing.Duet6PP1.Oscilloscope, 0);
-        SingDrawOscilloscope(Theme.Sing.Duet6PP2.Oscilloscope, 1);
-        SingDrawOscilloscope(Theme.Sing.Duet6PP3.Oscilloscope, 2);
-        SingDrawOscilloscope(Theme.Sing.Duet6PP4.Oscilloscope, 3);
-        SingDrawOscilloscope(Theme.Sing.Duet6PP5.Oscilloscope, 4);
-        if (PlayersPlay = 6) then
-          SingDrawOscilloscope(Theme.Sing.Duet6PP6.Oscilloscope, 5);
-      end
-      else
-      begin
-        SingDrawOscilloscope(Theme.Sing.Solo6PP1.Oscilloscope, 0);
-        SingDrawOscilloscope(Theme.Sing.Solo6PP2.Oscilloscope, 1);
-        SingDrawOscilloscope(Theme.Sing.Solo6PP3.Oscilloscope, 2);
-        SingDrawOscilloscope(Theme.Sing.Solo6PP4.Oscilloscope, 3);
-        SingDrawOscilloscope(Theme.Sing.Solo6PP5.Oscilloscope, 4);
-        if (PlayersPlay = 6) then
-          SingDrawOscilloscope(Theme.Sing.Solo6PP6.Oscilloscope, 5);
-      end;
-    end;
-  end;
+  for PlayerIndex := 0 to PlayersPlay - 1 do
+    if (Screens <= 1) or (GetPlayerScreen(PlayerIndex, PlayersPlay, Screens) = ScreenAct) then
+      SingDrawOscilloscope(GetOscilloscopePosition(PlayerIndex), PlayerIndex);
 end;
 
 procedure SingDrawOscilloscope(Position: TThemePosition; NrSound: integer);
@@ -1075,26 +1038,10 @@ begin
 
       if (CurrentSong.isDuet) then
       begin
-        if (PlayersPlay = 1) or (PlayersPlay = 2) then
-          Col := GetLyricBarColor(Ini.SingColor[CP])
+        if (Screens > 1) and (GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct) = 2) then
+          Col := GetLyricBarColor(Ini.SingColor[GetFirstPlayerIndexForScreen(PlayersPlay, Screens, ScreenAct) + CP])
         else
-        begin
-          if (PlayersPlay = 3) or (PlayersPlay = 6) then
-          begin
-            //if (PlayersPlay = 3) then
-              Col := GetLyricBarColor(Ini.SingColor[CP]);
-
-            //if (PlayersPlay = 6) then
-            //  Col := GetLyricBarColor(CP + 1);
-          end
-          else
-          begin
-            if ScreenAct = 1 then
-              Col := GetLyricBarColor(Ini.SingColor[CP])
-            else
-              Col := GetLyricBarColor(Ini.SingColor[CP + 2]);
-          end;
-        end;
+          Col := GetLyricBarColor(Ini.SingColor[CP]);
       end
       else
         Col := GetLyricBarColor(1);
@@ -1225,6 +1172,34 @@ end;
 procedure SingDrawLines;
 var
   NR: TRecR;         // lyrics area bounds (NR = NoteRec?)
+  PlayerIndex: integer;
+  LocalIndex: integer;
+  LineTop: real;
+  LineSpacing: integer;
+  PlayerCountOnScreen: integer;
+  LaneLeft: real;
+  LaneRight: real;
+  procedure GetLaneLayout(const CurrentPlayerIndex: integer; out Left, Right, Top: real; out Spacing: integer);
+  var
+    Layout: TSingLaneLayout;
+  begin
+    if Screens > 1 then
+    begin
+      PlayerCountOnScreen := GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct);
+      LocalIndex := GetPlayerIndexOnScreen(CurrentPlayerIndex, PlayersPlay, Screens);
+    end
+    else
+    begin
+      PlayerCountOnScreen := PlayersPlay;
+      LocalIndex := CurrentPlayerIndex;
+    end;
+
+    Layout := GetSingLaneLayout(PlayerCountOnScreen, LocalIndex, CurrentSong.isDuet and (PlayersPlay <> 1));
+    Left := Layout.GridLeft;
+    Right := Layout.GridRight;
+    Top := Layout.GuideTopY;
+    Spacing := Layout.NoteLineSpacing;
+  end;
 begin
   // positions
   NR.Left := 20;
@@ -1235,85 +1210,18 @@ begin
 
   // draw note-lines
 
-  // to-do : needs fix when party mode works w/ 2 screens
-  if (PlayersPlay = 1) and (Ini.NoteLines = 1) and (ScreenSing.settings.NotesVisible[0]) then
-    SingDrawNoteLines(NR.Left, Skin_P2_NotesB - 105, NR.Right, 15);
+  if Ini.NoteLines <> 1 then
+    Exit;
 
-  if (PlayersPlay = 2) and (Ini.NoteLines = 1) then
+  for PlayerIndex := 0 to PlayersPlay - 1 do
   begin
-    if (ScreenSing.settings.NotesVisible[0]) then
-      SingDrawNoteLines(Nr.Left, Skin_P1_NotesB - 105, Nr.Right, 15);
-    if (ScreenSing.settings.NotesVisible[1]) then
-      SingDrawNoteLines(Nr.Left, Skin_P2_NotesB - 105, Nr.Right, 15);
-  end;
+    if (Screens > 1) and (GetPlayerScreen(PlayerIndex, PlayersPlay, Screens) <> ScreenAct) then
+      Continue;
+    if not ScreenSing.Settings.NotesVisible[PlayerIndex] then
+      Continue;
 
-  if (PlayersPlay = 3) and (Ini.NoteLines = 1) then begin
-    if (ScreenSing.settings.NotesVisible[0]) then
-      SingDrawNoteLines(Nr.Left, 120, Nr.Right, 12);
-    if (ScreenSing.settings.NotesVisible[1]) then
-      SingDrawNoteLines(Nr.Left, 245, Nr.Right, 12);
-    if (ScreenSing.settings.NotesVisible[2]) then
-      SingDrawNoteLines(Nr.Left, 370, Nr.Right, 12);
-  end;
-
-  if (PlayersPlay = 4) and (Ini.NoteLines = 1) then
-  begin
-    if (ScreenSing.settings.NotesVisible[0]) then
-    begin
-      if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left, Skin_P1_NotesB - 105, Nr.Right, 15)
-      else
-      begin
-        SingDrawNoteLines(Nr.Left, Skin_P1_NotesB - 105, Nr.Right/2 - 5, 15);
-        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, Skin_P1_NotesB - 105, Nr.Right, 15)
-      end;
-    end;
-
-    if (ScreenSing.settings.NotesVisible[1]) then
-    begin
-      if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left, Skin_P2_NotesB - 105, Nr.Right, 15)
-      else
-      begin
-        SingDrawNoteLines(Nr.Left, Skin_P2_NotesB - 105, Nr.Right/2 - 5, 15);
-        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, Skin_P2_NotesB - 105, Nr.Right, 15)
-      end;
-    end;
-  end;
-
-  if ((PlayersPlay = 5) or (PlayersPlay = 6)) and (Ini.NoteLines = 1) then begin
-    if (ScreenSing.settings.NotesVisible[0]) then
-    begin
-      if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left, 120, Nr.Right, 12)
-      else
-      begin
-        SingDrawNoteLines(Nr.Left, 120, Nr.Right/2 - 5, 12);
-        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, 120, Nr.Right, 12);
-      end;
-    end;
-
-    if (ScreenSing.settings.NotesVisible[1]) then
-    begin
-      if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left, 245, Nr.Right, 12)
-      else
-      begin
-        SingDrawNoteLines(Nr.Left, 245, Nr.Right/2 - 5, 12);
-        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, 245, Nr.Right, 12);
-      end;
-    end;
-
-    if (ScreenSing.settings.NotesVisible[2]) then
-    begin
-      if (Ini.Screens = 1) then
-        SingDrawNoteLines(Nr.Left, 370, Nr.Right, 12)
-      else
-      begin
-        SingDrawNoteLines(Nr.Left, 370, Nr.Right/2 - 5, 12);
-        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, 370, Nr.Right, 12);
-      end;
-    end;
+    GetLaneLayout(PlayerIndex, LaneLeft, LaneRight, LineTop, LineSpacing);
+    SingDrawNoteLines(LaneLeft, LineTop, LaneRight, LineSpacing);
   end;
 end;
 
@@ -1325,18 +1233,39 @@ var
   LyricEngineDuetP2: TLyricEngine;
   I: integer;
   Difficulty: integer;
-  TrackP1, TrackP2, TrackP3, TrackP4, TrackP5, TrackP6: integer;
-const
-  LineSpacingOneRow = 15;
-  LineSpacingTwoRows = 15;
-  LineSpacingThreeRows = 12;
-  // TODO: it looks like all these TopXRowsY constants are actually referring to the bottom. But all the functions they call have historically called it Top.
-  TopOneRow1 = Skin_P2_NotesB;
-  TopTwoRows1 = Skin_P1_NotesB;
-  TopTwoRows2 = Skin_P2_NotesB;
-  TopThreeRows1 = 120+95;
-  TopThreeRows2 = 245+95;
-  TopThreeRows3 = 370+95;
+  PlayerCountOnScreen: integer;
+  PlayerIndex: integer;
+  LocalIndex: integer;
+  LineTop: real;
+  LineSpacing: integer;
+  TrackIndex: integer;
+  LaneLeft: real;
+  LaneRight: real;
+  LaneWidth: real;
+  procedure GetLaneLayout(const CurrentPlayerIndex: integer; out Left, Right, Width, Top: real; out Spacing: integer);
+  var
+    Layout: TSingLaneLayout;
+  const
+    NoteContentLeftOffset = -4;
+  begin
+    if Screens > 1 then
+    begin
+      PlayerCountOnScreen := GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct);
+      LocalIndex := GetPlayerIndexOnScreen(CurrentPlayerIndex, PlayersPlay, Screens);
+    end
+    else
+    begin
+      PlayerCountOnScreen := PlayersPlay;
+      LocalIndex := CurrentPlayerIndex;
+    end;
+
+    Layout := GetSingLaneLayout(PlayerCountOnScreen, LocalIndex, CurrentSong.isDuet and (PlayersPlay <> 1));
+    Left := Layout.ColumnLeft + NoteContentLeftOffset;
+    Right := Layout.ColumnRight;
+    Width := Right - Left;
+    Top := Layout.RowAnchorY;
+    Spacing := Layout.NoteLineSpacing;
+  end;
 begin
   // positions
   NR.Left := 20;
@@ -1344,21 +1273,11 @@ begin
   NR.Width := 760; //NR.Right - NR.Left;
   NR.WMid  := 380; //NR.Width / 2;
   NR.Mid   := 400; //NR.Left + NR.WMid;
-
-  TrackP1 := 0;
-  TrackP2 := 0;
-  TrackP3 := 0;
-  TrackP4 := 0;
-  TrackP5 := 0;
-  TrackP6 := 0;
   // FIXME: accessing ScreenSing is not that generic
   if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
   begin
     LyricEngineDuetP1 := ScreenSing.LyricsDuetP1;
     LyricEngineDuetP2 := ScreenSing.LyricsDuetP2;
-    TrackP2 := 1;
-    TrackP4 := 1;
-    TrackP6 := 1;
   end
   else
     LyricEngine := ScreenSing.Lyrics;
@@ -1413,186 +1332,41 @@ begin
         end;
     end;
 
-    if PlayersPlay = 3 then
+    if Screens > 1 then
+      PlayerCountOnScreen := GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct)
+    else
+      PlayerCountOnScreen := PlayersPlay;
+
+    if PlayerCountOnScreen = 3 then
     begin
       NotesW[I - 1] := NotesW[I - 1] * 0.8;
       NotesH[I - 1] := NotesH[I - 1] * 0.8;
     end;
 
-    if PlayersPlay = 4 then
+    if (Screens <= 1) and (PlayerCountOnScreen = 4) then
     begin
-      if (Ini.Screens = 0) then
-      begin
-        NotesW[I - 1] := NotesW[I - 1] * 0.9;
-      end;
+      NotesW[I - 1] := NotesW[I - 1] * 0.9;
     end;
-
-    if (PlayersPlay = 5) or (PlayersPlay = 6) then
-    begin
-      NotesW[I - 1] := NotesW[I - 1] * 0.8;
-      NotesH[I - 1] := NotesH[I - 1] * 0.8;
-    end;
-
   end;
 
   // draw notes lines
   if (ScreenSing.Settings.InputVisible) then
     SingDrawLines;
   // Draw the Notes
-  if PlayersPlay = 1 then
+  for PlayerIndex := 0 to PlayersPlay - 1 do
   begin
-    // SINGLESCREEN
-    SingDrawPlayerBGLine(NR.Left + 20, TopOneRow1, NR.Right - 20, TrackP1, 0, LineSpacingOneRow);  // Background glow    - colorized in playercolor
-    SingDrawLine(NR.Left + 20, TopOneRow1, NR.Right - 20, TrackP1, 0, LineSpacingOneRow);             // Plain unsung notes - colorized in playercolor
-    SingDrawPlayerLine(NR.Left + 20, TopOneRow1, NR.Width - 40, TrackP1, 0, LineSpacingOneRow);       // imho the sung notes
-  end;
+    if (Screens > 1) and (GetPlayerScreen(PlayerIndex, PlayersPlay, Screens) <> ScreenAct) then
+      Continue;
 
-  if PlayersPlay = 2 then
-  begin
-    // SINGLESCREEN
-    SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP1, 0, LineSpacingTwoRows);
-    SingDrawLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP1, 0, LineSpacingTwoRows);
-    SingDrawPlayerLine(NR.Left + 20, TopTwoRows1, NR.Width - 40, TrackP1, 0, LineSpacingTwoRows);
+    GetLaneLayout(PlayerIndex, LaneLeft, LaneRight, LaneWidth, LineTop, LineSpacing);
 
-    SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP2, 1, LineSpacingTwoRows);
-    SingDrawLine(NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP2, 1, LineSpacingTwoRows);
-    SingDrawPlayerLine(NR.Left + 20, TopTwoRows2, NR.Width - 40, TrackP2, 1, LineSpacingTwoRows);
-  end;
+    TrackIndex := 0;
+    if (CurrentSong.isDuet) and (PlayersPlay <> 1) and Odd(PlayerIndex) then
+      TrackIndex := 1;
 
-  if PlayersPlay = 3 then
-  begin
-    // SINGLESCREEN
-    SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP1, 0, LineSpacingThreeRows);
-    SingDrawLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP1, 0, LineSpacingThreeRows);
-    SingDrawPlayerLine(NR.Left + 20, TopThreeRows1, NR.Width - 40, TrackP1, 0, LineSpacingThreeRows);
-
-    SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP2, 1, LineSpacingThreeRows);
-    SingDrawLine(NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP2, 1, LineSpacingThreeRows);
-    SingDrawPlayerLine(NR.Left + 20, TopThreeRows2, NR.Width - 40, TrackP2, 1, LineSpacingThreeRows);
-
-    SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP3, 2, LineSpacingThreeRows);
-    SingDrawLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP3, 2, LineSpacingThreeRows);
-    SingDrawPlayerLine(NR.Left + 20, TopThreeRows3, NR.Width - 40, TrackP3, 2, LineSpacingThreeRows);
-  end;
-
-  if PlayersPlay = 4 then
-  begin
-    if (Ini.Screens = 1) then
-    begin
-      // MULTISCREEN
-      if ScreenAct = 1 then
-      begin
-        // MULTISCREEN 1
-        SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP1, 0, LineSpacingTwoRows);
-        SingDrawLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP1, 0, LineSpacingTwoRows);
-        SingDrawPlayerLine(NR.Left + 20, TopTwoRows1, NR.Width - 40, TrackP1, 0, LineSpacingTwoRows);
-
-        SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP2, 1, LineSpacingTwoRows);
-        SingDrawLine(NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP2, 1, LineSpacingTwoRows);
-        SingDrawPlayerLine(NR.Left + 20, TopTwoRows2, NR.Width - 40, TrackP2, 1, LineSpacingTwoRows);
-      end;
-      if ScreenAct = 2 then
-      begin
-        // MULTISCREEN 2
-        SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP3, 2, LineSpacingTwoRows);
-        SingDrawLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP3, 2, LineSpacingTwoRows);
-        SingDrawPlayerLine(NR.Left + 20, TopTwoRows1, NR.Width - 40, TrackP3, 2, LineSpacingTwoRows);
-
-        SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP4, 3, LineSpacingTwoRows);
-        SingDrawLine(NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP4, 3, LineSpacingTwoRows);
-        SingDrawPlayerLine(NR.Left + 20, TopTwoRows2, NR.Width - 40, TrackP4, 3, LineSpacingTwoRows);
-      end;
-    end
-    else
-    begin
-      // SINGLESCREEN
-      SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows1, NR.Right/2 - 20, TrackP1, 0, LineSpacingTwoRows);
-      SingDrawLine(NR.Left + 20, TopTwoRows1, NR.Right/2 - 20, TrackP1, 0, LineSpacingTwoRows);
-      SingDrawPlayerLine(NR.Left + 20, TopTwoRows1, NR.Width/2 - 50, TrackP1, 0, LineSpacingTwoRows);
-
-      SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows2, NR.Right/2 - 20, TrackP2, 1, LineSpacingTwoRows);
-      SingDrawLine(NR.Left + 20, TopTwoRows2, NR.Right/2 - 20, TrackP2, 1, LineSpacingTwoRows);
-      SingDrawPlayerLine(NR.Left + 20, TopTwoRows2, NR.Width/2 - 50, TrackP2, 1, LineSpacingTwoRows);
-
-      SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP3, 2, LineSpacingTwoRows);
-      SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP3, 2, LineSpacingTwoRows);
-      SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, TopTwoRows1, NR.Width/2 - 30, TrackP3, 2, LineSpacingTwoRows);
-
-      SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP4, 3, LineSpacingTwoRows);
-      SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP4, 3, LineSpacingTwoRows);
-      SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, TopTwoRows2, NR.Width/2 - 30, TrackP4, 3, LineSpacingTwoRows);
-    end;
-  end;
-
-  if (PlayersPlay = 5) or (PlayersPlay = 6) then
-  begin
-    if (Ini.Screens = 1) then
-    begin
-      // MULTISCREEN
-      if ScreenAct = 1 then
-      begin
-        // MULTISCREEN 1
-        SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP1, 0, LineSpacingThreeRows);
-        SingDrawLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP1, 0, LineSpacingThreeRows);
-        SingDrawPlayerLine(NR.Left + 20, TopThreeRows1, NR.Width - 40, TrackP1, 0, LineSpacingThreeRows);
-
-        SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP2, 1, LineSpacingThreeRows);
-        SingDrawLine(NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP2, 1, LineSpacingThreeRows);
-        SingDrawPlayerLine(NR.Left + 20, TopThreeRows2, NR.Width - 40, TrackP2, 1, LineSpacingThreeRows);
-
-        SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP3, 2, LineSpacingThreeRows);
-        SingDrawLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP3, 2, LineSpacingThreeRows);
-        SingDrawPlayerLine(NR.Left + 20, TopThreeRows3, NR.Width - 40, TrackP3, 2, LineSpacingThreeRows);
-      end;
-      if ScreenAct = 2 then
-      begin
-        // MULTISCREEN 2
-        SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP4, 3, LineSpacingThreeRows);
-        SingDrawLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP4, 3, LineSpacingThreeRows);
-        SingDrawPlayerLine(NR.Left + 20, TopThreeRows1, NR.Width - 40, TrackP4, 3, LineSpacingThreeRows);
-
-        SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP5, 4, LineSpacingThreeRows);
-        SingDrawLine(NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP5, 4, LineSpacingThreeRows);
-        SingDrawPlayerLine(NR.Left + 20, TopThreeRows2, NR.Width - 40, TrackP5, 4, LineSpacingThreeRows);
-
-        if (PlayersPlay = 6) then
-        begin
-          SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
-          SingDrawLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
-          SingDrawPlayerLine(NR.Left + 20, TopThreeRows3, NR.Width - 40, TrackP6, 5, LineSpacingThreeRows);
-        end;
-      end;
-    end
-    else
-    begin
-      // SINGLESCREEN
-      SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows1, NR.Right/2 - 20, TrackP1, 0, LineSpacingThreeRows);
-      SingDrawLine(NR.Left + 20, TopThreeRows1, NR.Right/2 - 20, TrackP1, 0, LineSpacingThreeRows);
-      SingDrawPlayerLine(NR.Left + 20, TopThreeRows1, NR.Width/2 - 50, TrackP1, 0, LineSpacingThreeRows);
-
-      SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows2, NR.Right/2 - 20, TrackP2, 1, LineSpacingThreeRows);
-      SingDrawLine(NR.Left + 20, TopThreeRows2, NR.Right/2 - 20, TrackP2, 1, LineSpacingThreeRows);
-      SingDrawPlayerLine(NR.Left + 20, TopThreeRows2, NR.Width/2 - 50, TrackP2, 1, LineSpacingThreeRows);
-
-      SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows3, NR.Right/2 - 20, TrackP3, 2, LineSpacingThreeRows);
-      SingDrawLine(NR.Left + 20, TopThreeRows3, NR.Right/2 - 20, TrackP3, 2, LineSpacingThreeRows);
-      SingDrawPlayerLine(NR.Left + 20, TopThreeRows3, NR.Width/2 - 50, TrackP3, 2, LineSpacingThreeRows);
-
-      SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP4, 3, LineSpacingThreeRows);
-      SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP4, 3, LineSpacingThreeRows);
-      SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, TopThreeRows1, NR.Width/2 - 30, TrackP4, 3, LineSpacingThreeRows);
-
-      SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP5, 4, LineSpacingThreeRows);
-      SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP5, 4, LineSpacingThreeRows);
-      SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, TopThreeRows2, NR.Width/2 - 30, TrackP5, 4, LineSpacingThreeRows);
-
-      if (PlayersPlay = 6) then
-      begin
-        SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
-        SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
-        SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, TopThreeRows3, NR.Width/2 - 30, TrackP6, 5, LineSpacingThreeRows);
-      end;
-    end;
+    SingDrawPlayerBGLine(LaneLeft, LineTop, LaneRight, TrackIndex, PlayerIndex, LineSpacing);
+    SingDrawLine(LaneLeft, LineTop, LaneRight, TrackIndex, PlayerIndex, LineSpacing);
+    SingDrawPlayerLine(LaneLeft, LineTop, LaneWidth, TrackIndex, PlayerIndex, LineSpacing);
   end;
   glDisable(GL_BLEND);
   glDisable(GL_TEXTURE_2D);
