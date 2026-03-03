@@ -255,131 +255,6 @@ begin
   Result := (((EncodedPosition and 128) = 0) = (Screen = 1));
 end;
 
-function GetBaseSingThemePlayer: TThemeSingPlayer;
-begin
-  Result := Theme.Sing.Solo1PP1;
-end;
-
-function GetThemePlayerBounds(const ThemePlayer: TThemeSingPlayer): TPlayerSlotRect;
-var
-  MinX: integer;
-  MinY: integer;
-  MaxX: integer;
-  MaxY: integer;
-begin
-  MinX := Min(ThemePlayer.ScoreBackground.X, ThemePlayer.SingBar.X);
-  MinY := Min(ThemePlayer.ScoreBackground.Y, ThemePlayer.Score.Y);
-  MaxX := Max(ThemePlayer.ScoreBackground.X + ThemePlayer.ScoreBackground.W,
-              ThemePlayer.SingBar.X + ThemePlayer.SingBar.W);
-  MaxY := Max(ThemePlayer.ScoreBackground.Y + ThemePlayer.ScoreBackground.H,
-              ThemePlayer.SingBar.Y + ThemePlayer.SingBar.H);
-
-  Result.X := MinX;
-  Result.Y := MinY;
-  Result.W := MaxX - MinX;
-  Result.H := MaxY - MinY;
-end;
-
-function GetScoreLayoutBounds(const BaseBounds: TPlayerSlotRect; const PlayerCountOnScreen: integer; Flip: boolean): TPlayerSlotRect;
-var
-  Grid: TPlayerGrid;
-  Scale: real;
-  ScaleX: real;
-  ScaleY: real;
-begin
-  if Flip then
-    Grid := GetPlayerGrid(PlayerCountOnScreen, Flip)
-  else
-    Grid := GetWidePlayerGrid(PlayerCountOnScreen);
-  if (Grid.Cols <= 0) or (Grid.Rows <= 0) or (BaseBounds.W <= 0) or (BaseBounds.H <= 0) then
-  begin
-    Result.X := BaseBounds.X;
-    Result.Y := BaseBounds.Y;
-    Result.W := BaseBounds.W;
-    Result.H := BaseBounds.H;
-    Exit;
-  end;
-
-  ScaleX := (RenderW * 0.95) / (BaseBounds.W * Grid.Cols);
-  ScaleY := (RenderH * 0.45) / (BaseBounds.H * Grid.Rows);
-  Scale := Min(1.0, Min(ScaleX, ScaleY));
-
-  Result.W := Round(BaseBounds.W * Grid.Cols * Scale);
-  Result.H := Round(BaseBounds.H * Grid.Rows * Scale);
-  Result.X := Max(0, (RenderW - Result.W) div 2);
-  Result.Y := BaseBounds.Y;
-end;
-
-function ScaleToSlot(const Value, SourceStart, SourceSize, TargetStart, TargetSize: integer): integer;
-begin
-  if SourceSize <= 0 then
-    Exit(TargetStart);
-
-  Result := TargetStart + Round((Value - SourceStart) * TargetSize / SourceSize);
-end;
-
-function ScaleLengthToSlot(const Value, SourceSize, TargetSize: integer): integer;
-begin
-  if SourceSize <= 0 then
-    Exit(Value);
-
-  Result := Round(Value * TargetSize / SourceSize);
-end;
-
-function TransformThemePosition(const Source: TThemePosition; const SourceBounds, SlotRect: TPlayerSlotRect): TThemePosition;
-begin
-  Result := Source;
-  Result.X := ScaleToSlot(Source.X, SourceBounds.X, SourceBounds.W, SlotRect.X, SlotRect.W);
-  Result.Y := ScaleToSlot(Source.Y, SourceBounds.Y, SourceBounds.H, SlotRect.Y, SlotRect.H);
-  Result.W := ScaleLengthToSlot(Source.W, SourceBounds.W, SlotRect.W);
-  Result.H := ScaleLengthToSlot(Source.H, SourceBounds.H, SlotRect.H);
-end;
-
-function TransformThemeText(const Source: TThemeText; const SourceBounds, SlotRect: TPlayerSlotRect): TThemeText;
-var
-  Scale: real;
-begin
-  Result := Source;
-  Result.X := ScaleToSlot(Source.X, SourceBounds.X, SourceBounds.W, SlotRect.X, SlotRect.W);
-  Result.Y := ScaleToSlot(Source.Y, SourceBounds.Y, SourceBounds.H, SlotRect.Y, SlotRect.H);
-  Result.W := ScaleLengthToSlot(Source.W, SourceBounds.W, SlotRect.W);
-  Result.H := ScaleLengthToSlot(Source.H, SourceBounds.H, SlotRect.H);
-
-  Scale := Min(SlotRect.W / Max(1.0, SourceBounds.W), SlotRect.H / Max(1.0, SourceBounds.H));
-  Result.Size := Max(1, Round(Source.Size * Scale));
-end;
-
-function GetSingThemePlayer(const PlayerIndex: integer): TThemeSingPlayer;
-var
-  BaseBounds: TPlayerSlotRect;
-  LayoutBounds: TPlayerSlotRect;
-  SlotRect: TPlayerSlotRect;
-  BaseTemplate: TThemeSingPlayer;
-  LocalPlayerCount: integer;
-  LocalIndex: integer;
-begin
-  if Screens > 1 then
-  begin
-    LocalPlayerCount := GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct);
-    LocalIndex := GetPlayerIndexOnScreen(PlayerIndex, PlayersPlay, Screens);
-  end
-  else
-  begin
-    LocalPlayerCount := PlayersPlay;
-    LocalIndex := PlayerIndex;
-  end;
-
-  BaseTemplate := GetBaseSingThemePlayer;
-  BaseBounds := GetThemePlayerBounds(BaseTemplate);
-  LayoutBounds := GetScoreLayoutBounds(BaseBounds, LocalPlayerCount, false);
-  SlotRect := GetWidePlayerSlotRect(LocalIndex, LocalPlayerCount, LayoutBounds.X, LayoutBounds.Y, LayoutBounds.W, LayoutBounds.H);
-
-  Result := BaseTemplate;
-  Result.ScoreBackground := TransformThemePosition(BaseTemplate.ScoreBackground, BaseBounds, SlotRect);
-  Result.SingBar := TransformThemePosition(BaseTemplate.SingBar, BaseBounds, SlotRect);
-  Result.Score := TransformThemeText(BaseTemplate.Score, BaseBounds, SlotRect);
-end;
-
 function GetScorePositionForPlayer(const PlayerIndex: integer): TScorePosition;
 var
   BaseTemplate: TThemeSingPlayer;
@@ -413,27 +288,29 @@ begin
     LocalIndex := PlayerIndex;
   end;
 
-  Layout := GetSingLaneLayout(PlayerCountOnScreen, LocalIndex, CurrentSong.isDuet and (PlayersPlay <> 1));
+  Layout := GetSingLaneLayout(PlayerCountOnScreen, LocalIndex, Theme.Sing.PlayerLayout,
+    CurrentSong.isDuet and (PlayersPlay <> 1));
   LaneLeft := Layout.ColumnLeft;
   LaneRight := Layout.ColumnRight;
   LaneWidth := Layout.ColumnWidth;
 
-  BaseTemplate := GetBaseSingThemePlayer;
+  BaseTemplate := Theme.Sing.PlayerTemplate;
   Scale := Layout.WidgetScale;
 
-  ScoreScale := Min(1.0, (LaneWidth * 0.36) / Max(1.0, BaseTemplate.ScoreBackground.W * 1.0))
+  ScoreScale := Min(1.0, (LaneWidth * Theme.Sing.PlayerWidgetLayout.ScoreWidthFraction) /
+    Max(1.0, BaseTemplate.ScoreBackground.W * 1.0))
     * GetPlayerWidgetScale(PlayerCountOnScreen);
 
-  FrameH := Max(26, Round(BaseTemplate.AvatarFrame.H * Scale));
-  ScoreH := Max(18, Round(BaseTemplate.ScoreBackground.H * Scale));
-  HeaderOffsetTop := Round(40 * Scale);
+  FrameH := Max(Theme.Sing.PlayerWidgetLayout.MinFrameH, Round(BaseTemplate.AvatarFrame.H * Scale));
+  ScoreH := Max(Theme.Sing.PlayerWidgetLayout.MinScoreH, Round(BaseTemplate.ScoreBackground.H * Scale));
+  HeaderOffsetTop := GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, PlayerCountOnScreen, Scale);
 
   Result.PlayerCount := 0;
   Result.BGW := Round(BaseTemplate.ScoreBackground.W * ScoreScale);
   Result.BGH := Round(BaseTemplate.ScoreBackground.H * ScoreScale);
   Result.BGX := LaneRight - Result.BGW;
   GroupTop := Max(10, Layout.RowAnchorY -
-    Max(FrameH, ScoreH) - 18 - HeaderOffsetTop);
+    Max(FrameH, ScoreH) - Theme.Sing.PlayerWidgetLayout.HeaderGapY - HeaderOffsetTop);
   Result.BGY := GroupTop;
 
   ScoreOffsetX := BaseTemplate.Score.X - BaseTemplate.ScoreBackground.X;
@@ -453,13 +330,13 @@ begin
 
   if CurrentSong.isDuet then
   begin
-    PopupYOffset := 40;
-    PopupFontSize := 14;
+    PopupYOffset := Theme.Sing.PlayerWidgetLayout.PopupYOffsetDuet;
+    PopupFontSize := Theme.Sing.PlayerWidgetLayout.PopupFontSizeDuet;
   end
   else
   begin
-    PopupYOffset := 65;
-    PopupFontSize := 18;
+    PopupYOffset := Theme.Sing.PlayerWidgetLayout.PopupYOffsetSolo;
+    PopupFontSize := Theme.Sing.PlayerWidgetLayout.PopupFontSizeSolo;
   end;
 
   Result.PUW := Result.BGW;

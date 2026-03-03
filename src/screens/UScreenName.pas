@@ -149,106 +149,27 @@ uses
 
 function GetNamePlayerSelectBaseBounds: TPlayerSlotRect;
 begin
-  Result.X := Theme.Name.PlayerSelectTemplateFrame.X;
-  Result.Y := Theme.Name.PlayerSelectTemplateFrame.Y;
-  Result.W := Theme.Name.PlayerSelectTemplateFrame.W;
-  Result.H := Theme.Name.PlayerSelectTemplateFrame.H;
-
-  Result.W := Max(Result.W, Theme.Name.PlayerSelectTemplateText.X - Result.X + Theme.Name.PlayerSelectTemplateFrame.W);
-  Result.H := Max(Result.H, Theme.Name.PlayerSelectTemplateText.Y - Result.Y + Max(Theme.Name.PlayerSelectTemplateText.Size * 2, 1));
-  Result.W := Max(Result.W, Theme.Name.PlayerSelectTemplateAvatar.X - Result.X + Theme.Name.PlayerSelectTemplateAvatar.W);
-  Result.H := Max(Result.H, Theme.Name.PlayerSelectTemplateAvatar.Y - Result.Y + Theme.Name.PlayerSelectTemplateAvatar.H);
+  Result := UThemes.GetNamePlayerSelectBaseBounds(Theme.Name);
 end;
 
 function GetNamePlayerSelectLayoutBounds(const BaseBounds: TPlayerSlotRect; PlayerCount: integer): TPlayerSlotRect;
 begin
-  Result.X := 30;
-  Result.Y := 185;
-  Result.W := 760;
-  Result.H := 155;
-
-  if BaseBounds.W > 0 then
-    Result.W := Max(Result.W, BaseBounds.W);
-  if BaseBounds.H > 0 then
-    Result.H := Max(Result.H, BaseBounds.H);
+  Result := UThemes.GetNamePlayerSelectLayoutBounds(BaseBounds, Theme.Name.PlayerSelectLayout);
 end;
 
 function GetNamePlayerSelectSlotRect(PlayerIndex, PlayerCount: integer; const BaseBounds, LayoutBounds: TPlayerSlotRect): TPlayerSlotRect;
-var
-  LayoutPlayerCount: integer;
-  Cols: integer;
-  Rows: integer;
-  ColIndex: integer;
-  RowIndex: integer;
-  SlotWidth: integer;
-  SlotHeight: integer;
 begin
-  Result := BaseBounds;
-
-  if (PlayerIndex < 0) or (PlayerIndex >= PlayerCount) then
-    Exit;
-
-  LayoutPlayerCount := Max(PlayerCount, 2);
-  Cols := Min(12, LayoutPlayerCount);
-  Rows := (LayoutPlayerCount + Cols - 1) div Cols;
-  if (Cols <= 0) or (Rows <= 0) then
-    Exit;
-
-  ColIndex := PlayerIndex mod Cols;
-  RowIndex := PlayerIndex div Cols;
-
-  SlotWidth := LayoutBounds.W div Cols;
-  SlotHeight := LayoutBounds.H div Rows;
-
-  Result.X := LayoutBounds.X + ColIndex * SlotWidth;
-  Result.Y := LayoutBounds.Y + RowIndex * LongInt(Single(SlotHeight) / 1.5);
-
-  if ColIndex = Cols - 1 then
-    Result.W := LayoutBounds.X + LayoutBounds.W - Result.X
-  else
-    Result.W := SlotWidth;
-
-  if RowIndex = Rows - 1 then
-    Result.H := LayoutBounds.Y + LayoutBounds.H - Result.Y
-  else
-    Result.H := SlotHeight;
-end;
-
-function OffsetNameCoord(const Value, SourceStart, TargetStart: integer): integer;
-begin
-  Result := TargetStart + (Value - SourceStart);
+  Result := UThemes.GetNamePlayerSelectSlotRect(PlayerIndex, PlayerCount, BaseBounds, LayoutBounds, Theme.Name.PlayerSelectLayout);
 end;
 
 function ScaleNameCoord(const Value, SourceStart, SourceSize, TargetStart, TargetSize: integer): integer;
 begin
-  if SourceSize <= 0 then
-    Exit(TargetStart);
-
-  Result := TargetStart + Round((Value - SourceStart) * TargetSize / SourceSize);
+  Result := ScaleCoordToSlot(Value, SourceStart, SourceSize, TargetStart, TargetSize);
 end;
 
 function ScaleNameLength(const Value, SourceSize, TargetSize: integer): integer;
 begin
-  if SourceSize <= 0 then
-    Exit(Value);
-
-  Result := Round(Value * TargetSize / SourceSize);
-end;
-
-function GetFittedNameSlotRect(const SourceBounds, SlotRect: TPlayerSlotRect; MaxScale: real): TPlayerSlotRect;
-var
-  Scale: real;
-begin
-  Result := SlotRect;
-
-  if (SourceBounds.W <= 0) or (SourceBounds.H <= 0) or (SlotRect.W <= 0) or (SlotRect.H <= 0) then
-    Exit;
-
-  Scale := Min(MaxScale, Min(SlotRect.W / Max(1.0, SourceBounds.W), SlotRect.H / Max(1.0, SourceBounds.H)));
-  Result.W := Max(1, Round(SourceBounds.W * Scale));
-  Result.H := Max(1, Round(SourceBounds.H * Scale));
-  Result.X := SlotRect.X + (SlotRect.W - Result.W) div 2;
-  Result.Y := SlotRect.Y;
+  Result := ScaleLengthToSlot(Value, SourceSize, TargetSize);
 end;
 
 function GetNamePlayerSelectFittedRect(PlayerIndex, PlayerCount: integer): TPlayerSlotRect;
@@ -262,14 +183,9 @@ begin
   LayoutBounds := GetNamePlayerSelectLayoutBounds(BaseBounds, PlayerCount);
   SlotRect := GetNamePlayerSelectSlotRect(PlayerIndex, PlayerCount, BaseBounds, LayoutBounds);
 
-  if PlayerCount <= 2 then
-    MaxScale := 1.35
-  else if PlayerCount <= 4 then
-    MaxScale := 1.15
-  else
-    MaxScale := 1.0;
+  MaxScale := UThemes.GetNamePlayerSelectMaxScale(PlayerCount, Theme.Name.PlayerSelectLayout);
 
-  Result := GetFittedNameSlotRect(BaseBounds, SlotRect, MaxScale);
+  Result := GetFittedSlotRect(BaseBounds, SlotRect, MaxScale);
 end;
 
 function TScreenName.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;

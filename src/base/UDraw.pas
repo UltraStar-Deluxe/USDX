@@ -413,18 +413,19 @@ end;
 procedure SingDrawOscilloscopes;
   function GetBaseOscilloscopePosition: TThemePosition;
   begin
-    Result := Theme.Sing.Solo1PP1.Oscilloscope;
+    Result := Theme.Sing.PlayerTemplate.Oscilloscope;
   end;
   function GetBaseSingPlayerTemplate: TThemeSingPlayer;
   begin
-    Result := Theme.Sing.Solo1PP1;
+    Result := Theme.Sing.PlayerTemplate;
   end;
   procedure GetLaneLayout(const PlayerCountOnScreen, PlayerIndexOnScreen: integer;
     out LaneLeft, LaneRight, LaneTop, LaneWidth: integer);
   var
     Layout: TSingLaneLayout;
   begin
-    Layout := GetSingLaneLayout(PlayerCountOnScreen, PlayerIndexOnScreen, CurrentSong.isDuet and (PlayersPlay <> 1));
+    Layout := GetSingLaneLayout(PlayerCountOnScreen, PlayerIndexOnScreen, Theme.Sing.PlayerLayout,
+      CurrentSong.isDuet and (PlayersPlay <> 1));
     LaneLeft := Layout.ColumnLeft;
     LaneRight := Layout.ColumnRight;
     LaneTop := Layout.RowAnchorY;
@@ -466,28 +467,36 @@ procedure SingDrawOscilloscopes;
 
     BaseTemplate := GetBaseSingPlayerTemplate;
     BasePosition := GetBaseOscilloscopePosition;
-    Layout := GetSingLaneLayout(LocalPlayerCount, LocalIndex, CurrentSong.isDuet and (PlayersPlay <> 1));
+    Layout := GetSingLaneLayout(LocalPlayerCount, LocalIndex, Theme.Sing.PlayerLayout,
+      CurrentSong.isDuet and (PlayersPlay <> 1));
     GetLaneLayout(LocalPlayerCount, LocalIndex, LaneLeft, LaneRight, LaneTop, LaneWidth);
     Scale := Layout.WidgetScale;
 
-    FrameW := Max(26, Round(BaseTemplate.AvatarFrame.W * Scale));
-    FrameH := Max(26, Round(BaseTemplate.AvatarFrame.H * Scale));
-    ScoreW := Max(56, Round(BaseTemplate.ScoreBackground.W * Scale));
-    ScoreH := Max(18, Round(BaseTemplate.ScoreBackground.H * Scale));
-    HeaderOffsetLeft := Round(30 * Scale);
-    HeaderOffsetTop := Round(40 * Scale);
-    GroupTop := Max(10, LaneTop - Max(FrameH, ScoreH) - 18 - HeaderOffsetTop);
-    NameX := Max(0, LaneLeft - HeaderOffsetLeft) + FrameW + Max(8, Round(10 * Scale));
-    NameW := Max(24, (LaneRight - ScoreW - Max(8, Round(10 * Scale))) - NameX);
+    FrameW := Max(Theme.Sing.PlayerWidgetLayout.MinFrameW, Round(BaseTemplate.AvatarFrame.W * Scale));
+    FrameH := Max(Theme.Sing.PlayerWidgetLayout.MinFrameH, Round(BaseTemplate.AvatarFrame.H * Scale));
+    ScoreW := Max(Theme.Sing.PlayerWidgetLayout.MinScoreW, Round(BaseTemplate.ScoreBackground.W * Scale));
+    ScoreH := Max(Theme.Sing.PlayerWidgetLayout.MinScoreH, Round(BaseTemplate.ScoreBackground.H * Scale));
+    HeaderOffsetLeft := Round(Theme.Sing.PlayerWidgetLayout.HeaderOffsetLeft * Scale);
+    HeaderOffsetTop := GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, LocalPlayerCount, Scale);
+    GroupTop := Max(10, LaneTop - Max(FrameH, ScoreH) - Theme.Sing.PlayerWidgetLayout.HeaderGapY - HeaderOffsetTop);
+    NameX := Max(0, LaneLeft - HeaderOffsetLeft) + FrameW +
+      Max(Theme.Sing.PlayerWidgetLayout.NameGapMinX, Round(Theme.Sing.PlayerWidgetLayout.NameGapBaseX * Scale));
+    NameW := Max(Theme.Sing.PlayerWidgetLayout.NameMinW,
+      (LaneRight - ScoreW - Max(Theme.Sing.PlayerWidgetLayout.NameGapMinX,
+      Round(Theme.Sing.PlayerWidgetLayout.NameGapBaseX * Scale))) - NameX);
     NameY := GroupTop + Max(0, (FrameH - Max(12, Round(BaseTemplate.Name.Size * Scale))) div 2);
-    NameX := Max(0, NameX - Max(4, Round(6 * Scale)));
-    NameY := Max(0, NameY - Max(3, Round(6 * Scale)));
+    NameX := Max(0, NameX - Max(Theme.Sing.PlayerWidgetLayout.NamePaddingMinX,
+      Round(Theme.Sing.PlayerWidgetLayout.NamePaddingBaseX * Scale)));
+    NameY := Max(0, NameY - Max(Theme.Sing.PlayerWidgetLayout.NamePaddingMinY,
+      Round(Theme.Sing.PlayerWidgetLayout.NamePaddingBaseY * Scale)));
 
     Result := BasePosition;
     Result.X := NameX;
-    Result.Y := NameY + Max(12, Round(BaseTemplate.Name.H * Scale)) + Max(2, Round(4 * Scale));
-    Result.W := Min(NameW, Max(40, Round(BasePosition.W * Scale)));
-    Result.H := Max(8, Round(BasePosition.H * Scale));
+    Result.Y := NameY + Max(12, Round(BaseTemplate.Name.H * Scale)) +
+      Max(Theme.Sing.PlayerWidgetLayout.OscilloscopeGapMinY,
+      Round(Theme.Sing.PlayerWidgetLayout.OscilloscopeGapBaseY * Scale));
+    Result.W := Min(NameW, Max(Theme.Sing.PlayerWidgetLayout.OscilloscopeMinW, Round(BasePosition.W * Scale)));
+    Result.H := Max(Theme.Sing.PlayerWidgetLayout.OscilloscopeMinH, Round(BasePosition.H * Scale));
   end;
 var
   PlayerIndex: integer;
@@ -1194,7 +1203,8 @@ var
       LocalIndex := CurrentPlayerIndex;
     end;
 
-    Layout := GetSingLaneLayout(PlayerCountOnScreen, LocalIndex, CurrentSong.isDuet and (PlayersPlay <> 1));
+    Layout := GetSingLaneLayout(PlayerCountOnScreen, LocalIndex, Theme.Sing.PlayerLayout,
+      CurrentSong.isDuet and (PlayersPlay <> 1));
     Left := Layout.GridLeft;
     Right := Layout.GridRight;
     Top := Layout.GuideTopY;
@@ -1245,8 +1255,6 @@ var
   procedure GetLaneLayout(const CurrentPlayerIndex: integer; out Left, Right, Width, Top: real; out Spacing: integer);
   var
     Layout: TSingLaneLayout;
-  const
-    NoteContentLeftOffset = -4;
   begin
     if Screens > 1 then
     begin
@@ -1259,8 +1267,9 @@ var
       LocalIndex := CurrentPlayerIndex;
     end;
 
-    Layout := GetSingLaneLayout(PlayerCountOnScreen, LocalIndex, CurrentSong.isDuet and (PlayersPlay <> 1));
-    Left := Layout.ColumnLeft + NoteContentLeftOffset;
+    Layout := GetSingLaneLayout(PlayerCountOnScreen, LocalIndex, Theme.Sing.PlayerLayout,
+      CurrentSong.isDuet and (PlayersPlay <> 1));
+    Left := Layout.ColumnLeft + Theme.Sing.PlayerLayout.NoteContentOffsetX;
     Right := Layout.ColumnRight;
     Width := Right - Left;
     Top := Layout.RowAnchorY;

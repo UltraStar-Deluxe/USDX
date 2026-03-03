@@ -181,25 +181,31 @@ var
   HeaderOffsetTop: integer;
   Layout: TSingLaneLayout;
 begin
-  BaseTemplate := Theme.Sing.Solo1PP1;
-  Layout := GetSingLaneLayout(PlayerCountOnScreen, PlayerIndexOnScreen, CurrentSong.isDuet and (PlayersPlay <> 1));
+  BaseTemplate := Theme.Sing.PlayerTemplate;
+  Layout := GetSingLaneLayout(PlayerCountOnScreen, PlayerIndexOnScreen, Theme.Sing.PlayerLayout,
+    CurrentSong.isDuet and (PlayersPlay <> 1));
   LaneLeft := Layout.ColumnLeft;
   LaneRight := Layout.ColumnRight;
   LaneTop := Layout.RowAnchorY;
   LaneWidth := Layout.ColumnWidth;
   Scale := Layout.WidgetScale;
 
-  FrameW := Max(26, Round(BaseTemplate.AvatarFrame.W * Scale));
-  FrameH := Max(26, Round(BaseTemplate.AvatarFrame.H * Scale));
-  ScoreW := Max(56, Round(BaseTemplate.ScoreBackground.W * Scale));
-  ScoreH := Max(18, Round(BaseTemplate.ScoreBackground.H * Scale));
-  HeaderOffsetLeft := Round(30 * Scale);
-  HeaderOffsetTop := Round(40 * Scale);
-  GroupTop := Max(10, LaneTop - Max(FrameH, ScoreH) - 18 - HeaderOffsetTop);
-  AvatarInsetX := Max(1, Round((BaseTemplate.Avatar.X - BaseTemplate.AvatarFrame.X) * Scale));
-  AvatarInsetY := Max(1, Round((BaseTemplate.Avatar.Y - BaseTemplate.AvatarFrame.Y) * Scale));
-  NameX := Max(0, LaneLeft - HeaderOffsetLeft) + FrameW + Max(8, Round(10 * Scale));
-  NameW := Max(24, (LaneRight - ScoreW - Max(8, Round(10 * Scale))) - NameX);
+  FrameW := Max(Theme.Sing.PlayerWidgetLayout.MinFrameW, Round(BaseTemplate.AvatarFrame.W * Scale));
+  FrameH := Max(Theme.Sing.PlayerWidgetLayout.MinFrameH, Round(BaseTemplate.AvatarFrame.H * Scale));
+  ScoreW := Max(Theme.Sing.PlayerWidgetLayout.MinScoreW, Round(BaseTemplate.ScoreBackground.W * Scale));
+  ScoreH := Max(Theme.Sing.PlayerWidgetLayout.MinScoreH, Round(BaseTemplate.ScoreBackground.H * Scale));
+  HeaderOffsetLeft := Round(Theme.Sing.PlayerWidgetLayout.HeaderOffsetLeft * Scale);
+  HeaderOffsetTop := GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, PlayerCountOnScreen, Scale);
+  GroupTop := Max(10, LaneTop - Max(FrameH, ScoreH) - Theme.Sing.PlayerWidgetLayout.HeaderGapY - HeaderOffsetTop);
+  AvatarInsetX := Max(Theme.Sing.PlayerWidgetLayout.MinAvatarInsetX,
+    Round((BaseTemplate.Avatar.X - BaseTemplate.AvatarFrame.X) * Scale));
+  AvatarInsetY := Max(Theme.Sing.PlayerWidgetLayout.MinAvatarInsetY,
+    Round((BaseTemplate.Avatar.Y - BaseTemplate.AvatarFrame.Y) * Scale));
+  NameX := Max(0, LaneLeft - HeaderOffsetLeft) + FrameW +
+    Max(Theme.Sing.PlayerWidgetLayout.NameGapMinX, Round(Theme.Sing.PlayerWidgetLayout.NameGapBaseX * Scale));
+  NameW := Max(Theme.Sing.PlayerWidgetLayout.NameMinW,
+    (LaneRight - ScoreW - Max(Theme.Sing.PlayerWidgetLayout.NameGapMinX,
+    Round(Theme.Sing.PlayerWidgetLayout.NameGapBaseX * Scale))) - NameX);
   NameY := GroupTop + Max(0, (FrameH - Max(12, Round(BaseTemplate.Name.Size * Scale))) div 2);
 
   Result := BaseTemplate;
@@ -213,11 +219,13 @@ begin
   Result.Avatar.W := Max(1, FrameW - 2 * AvatarInsetX);
   Result.Avatar.H := Max(1, FrameH - 2 * AvatarInsetY);
 
-  Result.Name.X := Max(0, NameX - Max(4, Round(6 * Scale)));
-  Result.Name.Y := Max(0, NameY - Max(3, Round(6 * Scale)));
+  Result.Name.X := Max(0, NameX - Max(Theme.Sing.PlayerWidgetLayout.NamePaddingMinX,
+    Round(Theme.Sing.PlayerWidgetLayout.NamePaddingBaseX * Scale)));
+  Result.Name.Y := Max(0, NameY - Max(Theme.Sing.PlayerWidgetLayout.NamePaddingMinY,
+    Round(Theme.Sing.PlayerWidgetLayout.NamePaddingBaseY * Scale)));
   Result.Name.W := NameW;
-  Result.Name.H := Max(14, Round(BaseTemplate.Name.H * Scale));
-  Result.Name.Size := Max(10, Round(BaseTemplate.Name.Size * Scale));
+  Result.Name.H := Max(Theme.Sing.PlayerWidgetLayout.NameMinH, Round(BaseTemplate.Name.H * Scale));
+  Result.Name.Size := Max(Theme.Sing.PlayerWidgetLayout.NameMinSize, Round(BaseTemplate.Name.Size * Scale));
   if LaneWidth <= 0 then
     Result.Name.W := 0;
 end;

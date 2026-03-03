@@ -40,6 +40,7 @@ uses
   UCommon,
   ULog,
   UIni,
+  UPlayerLayout,
   UTexture,
   UPath;
 type
@@ -288,6 +289,47 @@ type
     Oscilloscope: TThemePosition;
   end;
 
+  TThemeNamePlayerSelectLayout = record
+    Area: TPlayerSlotRect;
+    MinPlayerCount: integer;
+    MaxColumns: integer;
+    RowHeightDivisor: real;
+    MaxScaleSmall: real;
+    MaxScaleMedium: real;
+    MaxScaleDefault: real;
+  end;
+
+  TThemeSingPlayerWidgetLayout = record
+    MinFrameW: integer;
+    MinFrameH: integer;
+    MinScoreW: integer;
+    MinScoreH: integer;
+    HeaderOffsetLeft: integer;
+    HeaderOffsetTopBase: integer;
+    HeaderOffsetTopPerExtraRow: integer;
+    HeaderGapY: integer;
+    MinAvatarInsetX: integer;
+    MinAvatarInsetY: integer;
+    NameGapBaseX: integer;
+    NameGapMinX: integer;
+    NamePaddingBaseX: integer;
+    NamePaddingMinX: integer;
+    NamePaddingBaseY: integer;
+    NamePaddingMinY: integer;
+    NameMinW: integer;
+    NameMinH: integer;
+    NameMinSize: integer;
+    ScoreWidthFraction: real;
+    OscilloscopeGapBaseY: integer;
+    OscilloscopeGapMinY: integer;
+    OscilloscopeMinW: integer;
+    OscilloscopeMinH: integer;
+    PopupYOffsetSolo: integer;
+    PopupYOffsetDuet: integer;
+    PopupFontSizeSolo: integer;
+    PopupFontSizeDuet: integer;
+  end;
+
   TThemeLoading = class(TThemeBasic)
     StaticAnimation:  TThemeStatic;
     TextLoading:      TThemeText;
@@ -323,6 +365,7 @@ type
     PlayerSelectTemplateFrame:   TThemeStatic;
     PlayerSelectTemplateText:    TThemeText;
     PlayerSelectTemplateAvatar:  TThemeStaticRectangle;
+    PlayerSelectLayout:          TThemeNamePlayerSelectLayout;
     PlayerSelect:        array [0..UIni.IMaxPlayerCount-1] of TThemeStatic;
     PlayerSelectText:    array [0..UIni.IMaxPlayerCount-1] of TThemeText;
     PlayerSelectAvatar:  array [0..UIni.IMaxPlayerCount-1] of TThemeStaticRectangle;
@@ -464,7 +507,9 @@ type
     TextTimeText:          TThemeText;
     //eoa TimeBar mod
 
-    Solo1PP1: TThemeSingPlayer;
+    PlayerTemplate:          TThemeSingPlayer;
+    PlayerLayout:            TSingPlayerLayoutConfig;
+    PlayerWidgetLayout:      TThemeSingPlayerWidgetLayout;
 
     StaticSongName:   TThemeStatic;
     TextSongName:     TThemeText;
@@ -562,6 +607,7 @@ type
     TextTitle:        TThemeText;
 
     TextArtistTitle:  TThemeText;
+    PlayerLayoutArea: TPlayerSlotRect;
 
     PlayerStatic:     array[1..UIni.IMaxPlayerCount] of AThemeStatic;
     PlayerTexts:      array[1..UIni.IMaxPlayerCount] of AThemeText;
@@ -1196,6 +1242,18 @@ function GetLyricGrayColor(Color: integer): TRGB;
 function GetLyricOutlineColor(Color: integer): TRGB;
 function GetLyricBarColor(Color: integer): TRGB;
 
+function GetThemePlayerBounds(const ThemePlayer: TThemeSingPlayer): TPlayerSlotRect;
+function GetThemePlayerScoreLayoutBounds(const BaseBounds, LayoutArea: TPlayerSlotRect;
+  PlayerCountOnScreen: integer): TPlayerSlotRect;
+function GetNamePlayerSelectBaseBounds(const NameTheme: TThemeName): TPlayerSlotRect;
+function GetNamePlayerSelectLayoutBounds(const BaseBounds: TPlayerSlotRect;
+  const Layout: TThemeNamePlayerSelectLayout): TPlayerSlotRect;
+function GetNamePlayerSelectSlotRect(PlayerIndex, PlayerCount: integer;
+  const BaseBounds, LayoutBounds: TPlayerSlotRect; const Layout: TThemeNamePlayerSelectLayout): TPlayerSlotRect;
+function GetNamePlayerSelectMaxScale(PlayerCount: integer; const Layout: TThemeNamePlayerSelectLayout): real;
+function GetSingHeaderTopOffset(const Layout: TThemeSingPlayerWidgetLayout;
+  PlayerCountOnScreen: integer; Scale: real): integer;
+
 function GetPlayerColor(Color: integer): TRGB;
 function GetPlayerLightColor(Color: integer): TRGB;
 procedure LoadPlayersColors;
@@ -1214,7 +1272,6 @@ uses
   USkins,
   UPathUtils,
   UFileSystem,
-  UPlayerLayout,
   TextGL,
   dglOpenGL,
   math,
@@ -1312,6 +1369,26 @@ begin
     ExpandScoreBounds(Result, Template.PlayerTexts[I].X, Template.PlayerTexts[I].Y, Template.PlayerTexts[I].W, Template.PlayerTexts[I].H, Initialized);
 end;
 
+function GetThemePlayerBounds(const ThemePlayer: TThemeSingPlayer): TPlayerSlotRect;
+var
+  MinX: integer;
+  MinY: integer;
+  MaxX: integer;
+  MaxY: integer;
+begin
+  MinX := Min(ThemePlayer.ScoreBackground.X, ThemePlayer.SingBar.X);
+  MinY := Min(ThemePlayer.ScoreBackground.Y, ThemePlayer.Score.Y);
+  MaxX := Max(ThemePlayer.ScoreBackground.X + ThemePlayer.ScoreBackground.W,
+              ThemePlayer.SingBar.X + ThemePlayer.SingBar.W);
+  MaxY := Max(ThemePlayer.ScoreBackground.Y + ThemePlayer.ScoreBackground.H,
+              ThemePlayer.SingBar.Y + ThemePlayer.SingBar.H);
+
+  Result.X := MinX;
+  Result.Y := MinY;
+  Result.W := MaxX - MinX;
+  Result.H := MaxY - MinY;
+end;
+
 function GetNamePlayerSelectTemplateBounds(const Template: TNamePlayerSelectTemplate): TPlayerSlotRect;
 var
   Initialized: boolean;
@@ -1322,12 +1399,23 @@ begin
   ExpandScoreBounds(Result, Template.Text.X, Template.Text.Y, Max(Template.Frame.W, 1), Max(Template.Text.H, 1), Initialized);
 end;
 
-function GetNamePlayerSelectLayoutBounds(const BaseBounds: TPlayerSlotRect; PlayerCount: integer): TPlayerSlotRect;
+function GetNamePlayerSelectBaseBounds(const NameTheme: TThemeName): TPlayerSlotRect;
+var
+  Initialized: boolean;
 begin
-  Result.X := 20;
-  Result.Y := 185;
-  Result.W := 760;
-  Result.H := 155;
+  Initialized := false;
+  ExpandScoreBounds(Result, NameTheme.PlayerSelectTemplateFrame.X, NameTheme.PlayerSelectTemplateFrame.Y,
+    NameTheme.PlayerSelectTemplateFrame.W, NameTheme.PlayerSelectTemplateFrame.H, Initialized);
+  ExpandScoreBounds(Result, NameTheme.PlayerSelectTemplateAvatar.X, NameTheme.PlayerSelectTemplateAvatar.Y,
+    NameTheme.PlayerSelectTemplateAvatar.W, NameTheme.PlayerSelectTemplateAvatar.H, Initialized);
+  ExpandScoreBounds(Result, NameTheme.PlayerSelectTemplateText.X, NameTheme.PlayerSelectTemplateText.Y,
+    Max(NameTheme.PlayerSelectTemplateFrame.W, 1), Max(NameTheme.PlayerSelectTemplateText.H, 1), Initialized);
+end;
+
+function GetNamePlayerSelectLayoutBounds(const BaseBounds: TPlayerSlotRect;
+  const Layout: TThemeNamePlayerSelectLayout): TPlayerSlotRect;
+begin
+  Result := Layout.Area;
 
   if BaseBounds.W > 0 then
     Result.W := Max(Result.W, BaseBounds.W);
@@ -1335,8 +1423,10 @@ begin
     Result.H := Max(Result.H, BaseBounds.H);
 end;
 
-function GetNamePlayerSelectSlotRect(PlayerIndex, PlayerCount: integer; const BaseBounds, LayoutBounds: TPlayerSlotRect; Flip: boolean): TPlayerSlotRect;
+function GetNamePlayerSelectSlotRect(PlayerIndex, PlayerCount: integer;
+  const BaseBounds, LayoutBounds: TPlayerSlotRect; const Layout: TThemeNamePlayerSelectLayout): TPlayerSlotRect;
 var
+  LayoutPlayerCount: integer;
   Cols: integer;
   Rows: integer;
   ColIndex: integer;
@@ -1349,8 +1439,9 @@ begin
   if (PlayerIndex < 0) or (PlayerIndex >= PlayerCount) then
     Exit;
 
-  Cols := Min(12, Max(PlayerCount, 1));
-  Rows := (PlayerCount + Cols - 1) div Cols;
+  LayoutPlayerCount := Max(PlayerCount, Layout.MinPlayerCount);
+  Cols := Min(Layout.MaxColumns, LayoutPlayerCount);
+  Rows := (LayoutPlayerCount + Cols - 1) div Cols;
   if (Cols <= 0) or (Rows <= 0) then
     Exit;
 
@@ -1361,7 +1452,7 @@ begin
   SlotHeight := LayoutBounds.H div Rows;
 
   Result.X := LayoutBounds.X + ColIndex * SlotWidth;
-  Result.Y := LayoutBounds.Y + RowIndex * SlotHeight;
+  Result.Y := LayoutBounds.Y + Round(RowIndex * (SlotHeight / Max(Layout.RowHeightDivisor, 1.0)));
 
   if ColIndex = Cols - 1 then
     Result.W := LayoutBounds.X + LayoutBounds.W - Result.X
@@ -1374,57 +1465,25 @@ begin
     Result.H := SlotHeight;
 end;
 
-function OffsetNameCoord(const Value, SourceStart, TargetStart: integer): integer;
+function GetNamePlayerSelectMaxScale(PlayerCount: integer; const Layout: TThemeNamePlayerSelectLayout): real;
 begin
-  Result := TargetStart + (Value - SourceStart);
+  if PlayerCount <= 2 then
+    Exit(Layout.MaxScaleSmall);
+  if PlayerCount <= 4 then
+    Exit(Layout.MaxScaleMedium);
+  Result := Layout.MaxScaleDefault;
 end;
 
-function ScaleNameCoord(const Value, SourceStart, SourceSize, TargetStart, TargetSize: integer): integer;
-begin
-  if SourceSize <= 0 then
-    Exit(TargetStart);
-
-  Result := TargetStart + Round((Value - SourceStart) * TargetSize / SourceSize);
-end;
-
-function ScaleNameLength(const Value, SourceSize, TargetSize: integer): integer;
-begin
-  if SourceSize <= 0 then
-    Exit(Value);
-
-  Result := Round(Value * TargetSize / SourceSize);
-end;
-
-function GetFittedNameSlotRect(const SourceBounds, SlotRect: TPlayerSlotRect; MaxScale: real): TPlayerSlotRect;
+function GetSingHeaderTopOffset(const Layout: TThemeSingPlayerWidgetLayout;
+  PlayerCountOnScreen: integer; Scale: real): integer;
 var
-  Scale: real;
+  BaseOffset: integer;
+  Grid: TPlayerGrid;
 begin
-  Result := SlotRect;
-
-  if (SourceBounds.W <= 0) or (SourceBounds.H <= 0) or (SlotRect.W <= 0) or (SlotRect.H <= 0) then
-    Exit;
-
-  Scale := Min(MaxScale, Min(SlotRect.W / Max(1.0, SourceBounds.W), SlotRect.H / Max(1.0, SourceBounds.H)));
-  Result.W := Max(1, Round(SourceBounds.W * Scale));
-  Result.H := Max(1, Round(SourceBounds.H * Scale));
-  Result.X := SlotRect.X + (SlotRect.W - Result.W) div 2;
-  Result.Y := SlotRect.Y;
-end;
-
-function ScaleScoreCoord(const Value, SourceStart, SourceSize, TargetStart, TargetSize: integer): integer;
-begin
-  if SourceSize <= 0 then
-    Exit(TargetStart);
-
-  Result := TargetStart + Round((Value - SourceStart) * TargetSize / SourceSize);
-end;
-
-function ScaleScoreLength(const Value, SourceSize, TargetSize: integer): integer;
-begin
-  if SourceSize <= 0 then
-    Exit(Value);
-
-  Result := Round(Value * TargetSize / SourceSize);
+  Grid := GetPlayerGrid(PlayerCountOnScreen, true);
+  BaseOffset := Layout.HeaderOffsetTopBase +
+    Max(0, Grid.Rows - 1) * Layout.HeaderOffsetTopPerExtraRow;
+  Result := Round(BaseOffset * Scale);
 end;
 
 function TransformNamePlayerSelectStatic(const Source: TThemeStatic; const SourceBounds, SlotRect: TPlayerSlotRect): TThemeStatic;
@@ -1432,11 +1491,11 @@ var
   FittedRect: TPlayerSlotRect;
 begin
   Result := Source;
-  FittedRect := GetFittedNameSlotRect(SourceBounds, SlotRect, 1.0);
-  Result.X := ScaleNameCoord(Source.X, SourceBounds.X, SourceBounds.W, FittedRect.X, FittedRect.W);
-  Result.Y := ScaleNameCoord(Source.Y, SourceBounds.Y, SourceBounds.H, FittedRect.Y, FittedRect.H);
-  Result.W := ScaleNameLength(Source.W, SourceBounds.W, FittedRect.W);
-  Result.H := ScaleNameLength(Source.H, SourceBounds.H, FittedRect.H);
+  FittedRect := GetFittedSlotRect(SourceBounds, SlotRect, 1.0);
+  Result.X := ScaleCoordToSlot(Source.X, SourceBounds.X, SourceBounds.W, FittedRect.X, FittedRect.W);
+  Result.Y := ScaleCoordToSlot(Source.Y, SourceBounds.Y, SourceBounds.H, FittedRect.Y, FittedRect.H);
+  Result.W := ScaleLengthToSlot(Source.W, SourceBounds.W, FittedRect.W);
+  Result.H := ScaleLengthToSlot(Source.H, SourceBounds.H, FittedRect.H);
 end;
 
 function TransformNamePlayerSelectText(const Source: TThemeText; const SourceBounds, SlotRect: TPlayerSlotRect): TThemeText;
@@ -1444,10 +1503,10 @@ var
   FittedRect: TPlayerSlotRect;
 begin
   Result := Source;
-  FittedRect := GetFittedNameSlotRect(SourceBounds, SlotRect, 1.0);
-  Result.X := ScaleNameCoord(Source.X, SourceBounds.X, SourceBounds.W, FittedRect.X, FittedRect.W);
-  Result.Y := ScaleNameCoord(Source.Y, SourceBounds.Y, SourceBounds.H, FittedRect.Y, FittedRect.H);
-  Result.Size := Max(8, ScaleNameLength(Source.Size, SourceBounds.H, FittedRect.H));
+  FittedRect := GetFittedSlotRect(SourceBounds, SlotRect, 1.0);
+  Result.X := ScaleCoordToSlot(Source.X, SourceBounds.X, SourceBounds.W, FittedRect.X, FittedRect.W);
+  Result.Y := ScaleCoordToSlot(Source.Y, SourceBounds.Y, SourceBounds.H, FittedRect.Y, FittedRect.H);
+  Result.Size := Max(8, ScaleLengthToSlot(Source.Size, SourceBounds.H, FittedRect.H));
 end;
 
 function TransformNamePlayerSelectAvatar(const Source: TThemeStaticRectangle; const SourceBounds, SlotRect: TPlayerSlotRect): TThemeStaticRectangle;
@@ -1455,11 +1514,11 @@ var
   FittedRect: TPlayerSlotRect;
 begin
   Result := Source;
-  FittedRect := GetFittedNameSlotRect(SourceBounds, SlotRect, 1.0);
-  Result.X := ScaleNameCoord(Source.X, SourceBounds.X, SourceBounds.W, FittedRect.X, FittedRect.W);
-  Result.Y := ScaleNameCoord(Source.Y, SourceBounds.Y, SourceBounds.H, FittedRect.Y, FittedRect.H);
-  Result.W := ScaleNameLength(Source.W, SourceBounds.W, FittedRect.W);
-  Result.H := ScaleNameLength(Source.H, SourceBounds.H, FittedRect.H);
+  FittedRect := GetFittedSlotRect(SourceBounds, SlotRect, 1.0);
+  Result.X := ScaleCoordToSlot(Source.X, SourceBounds.X, SourceBounds.W, FittedRect.X, FittedRect.W);
+  Result.Y := ScaleCoordToSlot(Source.Y, SourceBounds.Y, SourceBounds.H, FittedRect.Y, FittedRect.H);
+  Result.W := ScaleLengthToSlot(Source.W, SourceBounds.W, FittedRect.W);
+  Result.H := ScaleLengthToSlot(Source.H, SourceBounds.H, FittedRect.H);
 end;
 
 procedure AssignNamePlayerSelectSlot(var NameTheme: TThemeName; const Template: TNamePlayerSelectTemplate;
@@ -1467,37 +1526,16 @@ procedure AssignNamePlayerSelectSlot(var NameTheme: TThemeName; const Template: 
 var
   SlotRect: TPlayerSlotRect;
 begin
-  SlotRect := GetNamePlayerSelectSlotRect(PlayerIndex, UIni.IMaxPlayerCount, SourceBounds, LayoutBounds, true);
+  SlotRect := GetNamePlayerSelectSlotRect(PlayerIndex, UIni.IMaxPlayerCount, SourceBounds, LayoutBounds, NameTheme.PlayerSelectLayout);
   NameTheme.PlayerSelect[PlayerIndex] := TransformNamePlayerSelectStatic(Template.Frame, SourceBounds, SlotRect);
   NameTheme.PlayerSelectText[PlayerIndex] := TransformNamePlayerSelectText(Template.Text, SourceBounds, SlotRect);
   NameTheme.PlayerSelectAvatar[PlayerIndex] := TransformNamePlayerSelectAvatar(Template.Avatar, SourceBounds, SlotRect);
 end;
 
-function GetScoreLayoutBounds(const BaseBounds: TPlayerSlotRect; LayoutPlayerCount: integer; Flip: boolean): TPlayerSlotRect;
-var
-  Grid: TPlayerGrid;
-  Scale: real;
-  ScaleX: real;
-  ScaleY: real;
+function GetThemePlayerScoreLayoutBounds(const BaseBounds, LayoutArea: TPlayerSlotRect;
+  PlayerCountOnScreen: integer): TPlayerSlotRect;
 begin
-  if Flip then
-    Grid := GetPlayerGrid(LayoutPlayerCount, Flip)
-  else
-    Grid := GetWidePlayerGrid(LayoutPlayerCount);
-  if (Grid.Cols <= 0) or (Grid.Rows <= 0) or (BaseBounds.W <= 0) or (BaseBounds.H <= 0) then
-  begin
-    Result := BaseBounds;
-    Exit;
-  end;
-
-  ScaleX := (800 * 0.95) / (BaseBounds.W * Grid.Cols);
-  ScaleY := (600 * 0.72) / (BaseBounds.H * Grid.Rows);
-  Scale := Min(1.0, Min(ScaleX, ScaleY));
-
-  Result.W := Round(BaseBounds.W * Grid.Cols * Scale);
-  Result.H := Round(BaseBounds.H * Grid.Rows * Scale);
-  Result.X := Max(0, (800 - Result.W) div 2);
-  Result.Y := Max(110, (560 - Result.H) div 2);
+  Result := GetScaledGridLayoutBounds(BaseBounds, LayoutArea, PlayerCountOnScreen, true);
 end;
 
 function TransformScoreStatic(const Source: TThemeStatic; const SourceBounds, SlotRect: TPlayerSlotRect): TThemeStatic;
@@ -1505,10 +1543,10 @@ var
   Scale: real;
 begin
   Result := Source;
-  Result.X := ScaleScoreCoord(Source.X, SourceBounds.X, SourceBounds.W, SlotRect.X, SlotRect.W);
-  Result.Y := ScaleScoreCoord(Source.Y, SourceBounds.Y, SourceBounds.H, SlotRect.Y, SlotRect.H);
-  Result.W := ScaleScoreLength(Source.W, SourceBounds.W, SlotRect.W);
-  Result.H := ScaleScoreLength(Source.H, SourceBounds.H, SlotRect.H);
+  Result.X := ScaleCoordToSlot(Source.X, SourceBounds.X, SourceBounds.W, SlotRect.X, SlotRect.W);
+  Result.Y := ScaleCoordToSlot(Source.Y, SourceBounds.Y, SourceBounds.H, SlotRect.Y, SlotRect.H);
+  Result.W := ScaleLengthToSlot(Source.W, SourceBounds.W, SlotRect.W);
+  Result.H := ScaleLengthToSlot(Source.H, SourceBounds.H, SlotRect.H);
   // Preserve 1px theme separators as hairlines instead of scaling them into bands.
   if Source.W = 1 then
     Result.W := 1;
@@ -1523,10 +1561,10 @@ var
   Scale: real;
 begin
   Result := Source;
-  Result.X := ScaleScoreCoord(Source.X, SourceBounds.X, SourceBounds.W, SlotRect.X, SlotRect.W);
-  Result.Y := ScaleScoreCoord(Source.Y, SourceBounds.Y, SourceBounds.H, SlotRect.Y, SlotRect.H);
-  Result.W := ScaleScoreLength(Source.W, SourceBounds.W, SlotRect.W);
-  Result.H := ScaleScoreLength(Source.H, SourceBounds.H, SlotRect.H);
+  Result.X := ScaleCoordToSlot(Source.X, SourceBounds.X, SourceBounds.W, SlotRect.X, SlotRect.W);
+  Result.Y := ScaleCoordToSlot(Source.Y, SourceBounds.Y, SourceBounds.H, SlotRect.Y, SlotRect.H);
+  Result.W := ScaleLengthToSlot(Source.W, SourceBounds.W, SlotRect.W);
+  Result.H := ScaleLengthToSlot(Source.H, SourceBounds.H, SlotRect.H);
 
   Scale := Min(SlotRect.W / Max(1.0, SourceBounds.W), SlotRect.H / Max(1.0, SourceBounds.H));
   Result.Size := Max(1, Round(Source.Size * Scale));
@@ -1765,6 +1803,7 @@ function TTheme.LoadTheme(ThemeNum: integer; sColor: integer): boolean;
 var
   I, J:    integer;
   IniFile: TMemIniFile;
+  SectionList: TThemeSectionList;
   NamePlayerSelectTemplate: TNamePlayerSelectTemplate;
   NamePlayerSelectBounds: TPlayerSlotRect;
   NamePlayerSelectLayoutBounds: TPlayerSlotRect;
@@ -1858,14 +1897,33 @@ begin
       ThemeLoadSelectSlide(Name.SelectPlayerColor, 'NameSelectPlayerColor');
       ThemeLoadSelectSlide(Name.SelectPlayerLevel, 'NameSelectPlayerLevel');
 
-      ThemeLoadStatic(NamePlayerSelectTemplate.Frame, 'NamePlayerSelectStatic1');
-      ThemeLoadText(NamePlayerSelectTemplate.Text, 'NamePlayerSelectStatic1Text');
-      ThemeLoadStaticRectangle(NamePlayerSelectTemplate.Avatar, 'NamePlayerSelectStatic1Avatar');
+      ThemeLoadStatic(NamePlayerSelectTemplate.Frame, 'NamePlayerSelectTemplateFrame');
+      ThemeLoadText(NamePlayerSelectTemplate.Text, 'NamePlayerSelectTemplateText');
+      ThemeLoadStaticRectangle(NamePlayerSelectTemplate.Avatar, 'NamePlayerSelectTemplateAvatar');
       Name.PlayerSelectTemplateFrame := NamePlayerSelectTemplate.Frame;
       Name.PlayerSelectTemplateText := NamePlayerSelectTemplate.Text;
       Name.PlayerSelectTemplateAvatar := NamePlayerSelectTemplate.Avatar;
+      SectionList := GetSectionList('NamePlayerSelectGrid');
+      if Length(SectionList) = 0 then
+        SectionList := GetSectionList('NamePlayerSelectLayout');
+      Name.PlayerSelectLayout.Area.X := ReadInteger(SectionList, 'GridX', ReadInteger(SectionList, 'X', 30));
+      Name.PlayerSelectLayout.Area.Y := ReadInteger(SectionList, 'GridY', ReadInteger(SectionList, 'Y', 185));
+      Name.PlayerSelectLayout.Area.W := ReadInteger(SectionList, 'GridW', ReadInteger(SectionList, 'W', 760));
+      Name.PlayerSelectLayout.Area.H := ReadInteger(SectionList, 'GridH', ReadInteger(SectionList, 'H', 155));
+      Name.PlayerSelectLayout.MinPlayerCount := ReadInteger(SectionList, 'MinimumVisibleSlots',
+        ReadInteger(SectionList, 'MinPlayerCount', 2));
+      Name.PlayerSelectLayout.MaxColumns := ReadInteger(SectionList, 'MaximumColumns',
+        ReadInteger(SectionList, 'MaxColumns', 12));
+      Name.PlayerSelectLayout.RowHeightDivisor := ReadFloat(SectionList, 'RowVerticalSpreadDivisor',
+        ReadFloat(SectionList, 'RowHeightDivisor', 1.5));
+      Name.PlayerSelectLayout.MaxScaleSmall := ReadFloat(SectionList, 'MaxScaleUpTo2Players',
+        ReadFloat(SectionList, 'MaxScaleSmall', 1.35));
+      Name.PlayerSelectLayout.MaxScaleMedium := ReadFloat(SectionList, 'MaxScaleUpTo4Players',
+        ReadFloat(SectionList, 'MaxScaleMedium', 1.15));
+      Name.PlayerSelectLayout.MaxScaleDefault := ReadFloat(SectionList, 'MaxScaleDefault',
+        ReadFloat(SectionList, 'MaxScaleDefault', 1.0));
       NamePlayerSelectBounds := GetNamePlayerSelectTemplateBounds(NamePlayerSelectTemplate);
-      NamePlayerSelectLayoutBounds := GetNamePlayerSelectLayoutBounds(NamePlayerSelectBounds, UIni.IMaxPlayerCount);
+      NamePlayerSelectLayoutBounds := GetNamePlayerSelectLayoutBounds(NamePlayerSelectBounds, Name.PlayerSelectLayout);
 
       for I := 0 to UIni.IMaxPlayerCount-1 do
         AssignNamePlayerSelectSlot(Name, NamePlayerSelectTemplate, NamePlayerSelectBounds, NamePlayerSelectLayoutBounds, I);
@@ -1997,7 +2055,86 @@ begin
       ThemeLoadText (Sing.InfoMessageText, 'SingInfoMessageText');
       ThemeLoadStatic (Sing.InfoMessageBG, 'SingInfoMessageBG');
 
-      ThemeLoadSingPlayerStatics(Sing.Solo1PP1, 'P1');
+      ThemeLoadSingPlayerStatics(Sing.PlayerTemplate, 'PlayerTemplate');
+      SectionList := GetSectionList('SingPlayerGrid');
+      if Length(SectionList) = 0 then
+        SectionList := GetSectionList('SingPlayerLayout');
+      Sing.PlayerLayout.ColumnContainerLeft := ReadInteger(SectionList, 'LaneAreaX',
+        ReadInteger(SectionList, 'ColumnContainerLeft', 40));
+      Sing.PlayerLayout.ColumnContainerWidth := ReadInteger(SectionList, 'LaneAreaW',
+        ReadInteger(SectionList, 'ColumnContainerWidth', 750));
+      Sing.PlayerLayout.GridExtraLeft := ReadInteger(SectionList, 'LaneGridLeftInset',
+        ReadInteger(SectionList, 'GridExtraLeft', 20));
+      Sing.PlayerLayout.NoteContentOffsetX := ReadInteger(SectionList, 'NoteContentOffsetX', -4);
+      Sing.PlayerLayout.ContentVerticalOffset := ReadInteger(SectionList, 'LyricslessTopShiftY',
+        ReadInteger(SectionList, 'ContentVerticalOffset', -20));
+      Sing.PlayerLayout.TopLyricsReservedHeight := ReadInteger(SectionList, 'ReservedTopLyricsH',
+        ReadInteger(SectionList, 'TopLyricsReservedHeight', 80));
+      Sing.PlayerLayout.OneTwoRowSpacing := ReadInteger(SectionList, 'TopGuideSpacing1To2Rows',
+        ReadInteger(SectionList, 'OneTwoRowSpacing', 15));
+      Sing.PlayerLayout.MultiRowSpacing := ReadInteger(SectionList, 'TopGuideSpacing3PlusRows',
+        ReadInteger(SectionList, 'MultiRowSpacing', 12));
+      Sing.PlayerLayout.OneRowAnchorY := ReadInteger(SectionList, 'SingleRowAnchorY',
+        ReadInteger(SectionList, 'OneRowAnchorY', 430));
+      Sing.PlayerLayout.TwoRowsTopAnchorY := ReadInteger(SectionList, 'DualRowTopAnchorY',
+        ReadInteger(SectionList, 'TwoRowsTopAnchorY', 250));
+      Sing.PlayerLayout.TwoRowsBottomAnchorY := ReadInteger(SectionList, 'DualRowBottomAnchorY',
+        ReadInteger(SectionList, 'TwoRowsBottomAnchorY', 430));
+      Sing.PlayerLayout.MultiRowsTopAnchorY := ReadInteger(SectionList, 'MultiRowTopAnchorY',
+        ReadInteger(SectionList, 'MultiRowsTopAnchorY', 215));
+      Sing.PlayerLayout.MultiRowsBottomAnchorY := ReadInteger(SectionList, 'MultiRowBottomAnchorY',
+        ReadInteger(SectionList, 'MultiRowsBottomAnchorY', 465));
+      Sing.PlayerLayout.GuideRangeTopY := ReadInteger(SectionList, 'GuideSpacingReferenceTopY',
+        ReadInteger(SectionList, 'GuideRangeTopY', 120));
+      Sing.PlayerLayout.GuideRangeBottomY := ReadInteger(SectionList, 'GuideSpacingReferenceBottomY',
+        ReadInteger(SectionList, 'GuideRangeBottomY', 370));
+      Sing.PlayerLayout.WidgetScaleBaseWidth := ReadInteger(SectionList, 'WidgetScaleReferenceW',
+        ReadInteger(SectionList, 'WidgetScaleBaseWidth', 300));
+
+      SectionList := GetSectionList('SingPlayerWidgetPlacement');
+      if Length(SectionList) = 0 then
+        SectionList := GetSectionList('SingPlayerWidgetLayout');
+      Sing.PlayerWidgetLayout.MinFrameW := ReadInteger(SectionList, 'MinFrameW', 26);
+      Sing.PlayerWidgetLayout.MinFrameH := ReadInteger(SectionList, 'MinFrameH', 26);
+      Sing.PlayerWidgetLayout.MinScoreW := ReadInteger(SectionList, 'MinScoreW', 56);
+      Sing.PlayerWidgetLayout.MinScoreH := ReadInteger(SectionList, 'MinScoreH', 18);
+      Sing.PlayerWidgetLayout.HeaderOffsetLeft := ReadInteger(SectionList, 'HeaderLeftOffset',
+        ReadInteger(SectionList, 'HeaderOffsetLeft', 30));
+      Sing.PlayerWidgetLayout.HeaderOffsetTopBase := ReadInteger(SectionList, 'HeaderTopOffsetBase',
+        ReadInteger(SectionList, 'HeaderTopOffset',
+        ReadInteger(SectionList, 'HeaderOffsetTop', 40)));
+      Sing.PlayerWidgetLayout.HeaderOffsetTopPerExtraRow := ReadInteger(SectionList,
+        'HeaderTopOffsetPerExtraRow',
+        ReadInteger(SectionList, 'HeaderTopOffsetPerExtraPlayer', 0));
+      Sing.PlayerWidgetLayout.HeaderGapY := ReadInteger(SectionList, 'HeaderBottomGap',
+        ReadInteger(SectionList, 'HeaderGapY', 18));
+      Sing.PlayerWidgetLayout.MinAvatarInsetX := ReadInteger(SectionList, 'AvatarInsetMinX',
+        ReadInteger(SectionList, 'MinAvatarInsetX', 1));
+      Sing.PlayerWidgetLayout.MinAvatarInsetY := ReadInteger(SectionList, 'AvatarInsetMinY',
+        ReadInteger(SectionList, 'MinAvatarInsetY', 1));
+      Sing.PlayerWidgetLayout.NameGapBaseX := ReadInteger(SectionList, 'NameGapX',
+        ReadInteger(SectionList, 'NameGapBaseX', 10));
+      Sing.PlayerWidgetLayout.NameGapMinX := ReadInteger(SectionList, 'NameGapMinX', 8);
+      Sing.PlayerWidgetLayout.NamePaddingBaseX := ReadInteger(SectionList, 'NamePaddingX',
+        ReadInteger(SectionList, 'NamePaddingBaseX', 6));
+      Sing.PlayerWidgetLayout.NamePaddingMinX := ReadInteger(SectionList, 'NamePaddingMinX', 4);
+      Sing.PlayerWidgetLayout.NamePaddingBaseY := ReadInteger(SectionList, 'NamePaddingY',
+        ReadInteger(SectionList, 'NamePaddingBaseY', 6));
+      Sing.PlayerWidgetLayout.NamePaddingMinY := ReadInteger(SectionList, 'NamePaddingMinY', 3);
+      Sing.PlayerWidgetLayout.NameMinW := ReadInteger(SectionList, 'NameMinW', 24);
+      Sing.PlayerWidgetLayout.NameMinH := ReadInteger(SectionList, 'NameMinH', 14);
+      Sing.PlayerWidgetLayout.NameMinSize := ReadInteger(SectionList, 'NameMinSize', 10);
+      Sing.PlayerWidgetLayout.ScoreWidthFraction := ReadFloat(SectionList, 'ScoreWidthFractionOfLane',
+        ReadFloat(SectionList, 'ScoreWidthFraction', 0.36));
+      Sing.PlayerWidgetLayout.OscilloscopeGapBaseY := ReadInteger(SectionList, 'OscilloscopeGapY',
+        ReadInteger(SectionList, 'OscilloscopeGapBaseY', 4));
+      Sing.PlayerWidgetLayout.OscilloscopeGapMinY := ReadInteger(SectionList, 'OscilloscopeGapMinY', 2);
+      Sing.PlayerWidgetLayout.OscilloscopeMinW := ReadInteger(SectionList, 'OscilloscopeMinW', 40);
+      Sing.PlayerWidgetLayout.OscilloscopeMinH := ReadInteger(SectionList, 'OscilloscopeMinH', 8);
+      Sing.PlayerWidgetLayout.PopupYOffsetSolo := ReadInteger(SectionList, 'PopupYOffsetSolo', 65);
+      Sing.PlayerWidgetLayout.PopupYOffsetDuet := ReadInteger(SectionList, 'PopupYOffsetDuet', 40);
+      Sing.PlayerWidgetLayout.PopupFontSizeSolo := ReadInteger(SectionList, 'PopupFontSizeSolo', 18);
+      Sing.PlayerWidgetLayout.PopupFontSizeDuet := ReadInteger(SectionList, 'PopupFontSizeDuet', 14);
 
       ThemeLoadStatic(Sing.StaticSongName, 'SingSongNameStatic');
       ThemeLoadText(Sing.TextSongName, 'SingSongNameText');
@@ -3990,6 +4127,7 @@ var
   ScreenCount: integer;
   LayoutPlayerCount: integer;
   LayoutPlayerIndex: integer;
+  SectionList: TThemeSectionList;
   BaseTemplate: TScoreSlotThemeTemplate;
   BaseBounds: TPlayerSlotRect;
   LayoutBounds: TPlayerSlotRect;
@@ -4000,6 +4138,13 @@ begin
   ThemeLoadText(Score.TextArtist, 'ScoreTextArtist');
   ThemeLoadText(Score.TextTitle, 'ScoreTextTitle');
   ThemeLoadText(Score.TextArtistTitle, 'ScoreTextArtistTitle');
+  SectionList := GetSectionList('ScorePlayerSlotArea');
+  if Length(SectionList) = 0 then
+    SectionList := GetSectionList('ScorePlayerLayout');
+  Score.PlayerLayoutArea.X := ReadInteger(SectionList, 'AreaX', ReadInteger(SectionList, 'X', 20));
+  Score.PlayerLayoutArea.Y := ReadInteger(SectionList, 'AreaY', ReadInteger(SectionList, 'Y', 110));
+  Score.PlayerLayoutArea.W := ReadInteger(SectionList, 'AreaW', ReadInteger(SectionList, 'W', 760));
+  Score.PlayerLayoutArea.H := ReadInteger(SectionList, 'AreaH', ReadInteger(SectionList, 'H', 420));
 
   for I := 1 to UIni.IMaxPlayerCount do
   begin
@@ -4026,27 +4171,27 @@ begin
     Score.StaticLevelRound[I] := Default(TThemeStatic);
   end;
 
-  ThemeLoadStatics(BaseTemplate.PlayerStatic,      'ScorePlayer1Static');
-  ThemeLoadTexts(BaseTemplate.PlayerTexts,         'ScorePlayer1Text');
-  ThemeLoadStatic(BaseTemplate.AvatarStatic,       'ScorePlayer1Avatar');
-  ThemeLoadText(BaseTemplate.TextName,             'ScoreTextName1');
-  ThemeLoadText(BaseTemplate.TextScore,            'ScoreTextScore1');
-  ThemeLoadText(BaseTemplate.TextNotes,            'ScoreTextNotes1');
-  ThemeLoadText(BaseTemplate.TextNotesScore,       'ScoreTextNotesScore1');
-  ThemeLoadText(BaseTemplate.TextLineBonus,        'ScoreTextLineBonus1');
-  ThemeLoadText(BaseTemplate.TextLineBonusScore,   'ScoreTextLineBonusScore1');
-  ThemeLoadText(BaseTemplate.TextGoldenNotes,      'ScoreTextGoldenNotes1');
-  ThemeLoadText(BaseTemplate.TextGoldenNotesScore, 'ScoreTextGoldenNotesScore1');
-  ThemeLoadText(BaseTemplate.TextTotal,            'ScoreTextTotal1');
-  ThemeLoadText(BaseTemplate.TextTotalScore,       'ScoreTextTotalScore1');
-  ThemeLoadStatic(BaseTemplate.StaticBoxLightest,  'ScoreStaticBoxLightest1');
-  ThemeLoadStatic(BaseTemplate.StaticBoxLight,     'ScoreStaticBoxLight1');
-  ThemeLoadStatic(BaseTemplate.StaticBoxDark,      'ScoreStaticBoxDark1');
-  ThemeLoadStatic(BaseTemplate.StaticBackLevel,    'ScoreStaticBackLevel1');
-  ThemeLoadStatic(BaseTemplate.StaticBackLevelRound, 'ScoreStaticBackLevelRound1');
-  ThemeLoadStatic(BaseTemplate.StaticLevel,        'ScoreStaticLevel1');
-  ThemeLoadStatic(BaseTemplate.StaticLevelRound,   'ScoreStaticLevelRound1');
-  ThemeLoadStatic(BaseTemplate.StaticRatings,      'ScoreStaticRatingPicture1');
+  ThemeLoadStatics(BaseTemplate.PlayerStatic,      'ScorePlayerTemplateStatic');
+  ThemeLoadTexts(BaseTemplate.PlayerTexts,         'ScorePlayerTemplateText');
+  ThemeLoadStatic(BaseTemplate.AvatarStatic,       'ScorePlayerTemplateAvatar');
+  ThemeLoadText(BaseTemplate.TextName,             'ScorePlayerTemplateTextName');
+  ThemeLoadText(BaseTemplate.TextScore,            'ScorePlayerTemplateTextScore');
+  ThemeLoadText(BaseTemplate.TextNotes,            'ScorePlayerTemplateTextNotes');
+  ThemeLoadText(BaseTemplate.TextNotesScore,       'ScorePlayerTemplateTextNotesScore');
+  ThemeLoadText(BaseTemplate.TextLineBonus,        'ScorePlayerTemplateTextLineBonus');
+  ThemeLoadText(BaseTemplate.TextLineBonusScore,   'ScorePlayerTemplateTextLineBonusScore');
+  ThemeLoadText(BaseTemplate.TextGoldenNotes,      'ScorePlayerTemplateTextGoldenNotes');
+  ThemeLoadText(BaseTemplate.TextGoldenNotesScore, 'ScorePlayerTemplateTextGoldenNotesScore');
+  ThemeLoadText(BaseTemplate.TextTotal,            'ScorePlayerTemplateTextTotal');
+  ThemeLoadText(BaseTemplate.TextTotalScore,       'ScorePlayerTemplateTextTotalScore');
+  ThemeLoadStatic(BaseTemplate.StaticBoxLightest,  'ScorePlayerTemplateStaticBoxLightest');
+  ThemeLoadStatic(BaseTemplate.StaticBoxLight,     'ScorePlayerTemplateStaticBoxLight');
+  ThemeLoadStatic(BaseTemplate.StaticBoxDark,      'ScorePlayerTemplateStaticBoxDark');
+  ThemeLoadStatic(BaseTemplate.StaticBackLevel,    'ScorePlayerTemplateStaticBackLevel');
+  ThemeLoadStatic(BaseTemplate.StaticBackLevelRound, 'ScorePlayerTemplateStaticBackLevelRound');
+  ThemeLoadStatic(BaseTemplate.StaticLevel,        'ScorePlayerTemplateStaticLevel');
+  ThemeLoadStatic(BaseTemplate.StaticLevelRound,   'ScorePlayerTemplateStaticLevelRound');
+  ThemeLoadStatic(BaseTemplate.StaticRatings,      'ScorePlayerTemplateStaticRatingPicture');
   for I := 1 to High(Score.ButtonSend) do
     ThemeLoadButton(Score.ButtonSend[I], 'ScoreButtonSend' + IntToStr(I));
   ThemeLoadStatic(Score.StaticNavigate, 'ScoreStaticNavigate');
@@ -4059,7 +4204,7 @@ begin
     LayoutPlayerCount := GetScreenPlayerCount(UIni.IPlayersVals[Ini.Players], ScreenCount, 1)
   else
     LayoutPlayerCount := UIni.IPlayersVals[Ini.Players];
-  LayoutBounds := GetScoreLayoutBounds(BaseBounds, LayoutPlayerCount, false);
+  LayoutBounds := GetThemePlayerScoreLayoutBounds(BaseBounds, Score.PlayerLayoutArea, LayoutPlayerCount);
   for LayoutPlayerIndex := 0 to LayoutPlayerCount - 1 do
     AssignScoreThemeSlot(Score, BaseTemplate, BaseBounds, LayoutBounds, LayoutPlayerCount, LayoutPlayerIndex, LayoutPlayerIndex + 1);
 end;

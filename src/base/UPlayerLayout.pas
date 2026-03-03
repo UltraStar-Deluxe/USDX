@@ -26,6 +26,25 @@ type
     H: integer;
   end;
 
+  TSingPlayerLayoutConfig = record
+    ColumnContainerLeft: integer;
+    ColumnContainerWidth: integer;
+    GridExtraLeft: integer;
+    NoteContentOffsetX: integer;
+    ContentVerticalOffset: integer;
+    TopLyricsReservedHeight: integer;
+    OneTwoRowSpacing: integer;
+    MultiRowSpacing: integer;
+    OneRowAnchorY: integer;
+    TwoRowsTopAnchorY: integer;
+    TwoRowsBottomAnchorY: integer;
+    MultiRowsTopAnchorY: integer;
+    MultiRowsBottomAnchorY: integer;
+    GuideRangeTopY: integer;
+    GuideRangeBottomY: integer;
+    WidgetScaleBaseWidth: integer;
+  end;
+
   TSingLaneLayout = record
     ColumnLeft: integer;
     ColumnRight: integer;
@@ -50,7 +69,7 @@ procedure GetPlayerColumnLayout(ColIndex, ColCount, ContainerLeft, ContainerWidt
   out LaneLeft, LaneRight, LaneWidth: integer);
 function GetPlayerWidgetScale(PlayerCount: integer): real;
 function GetSingLaneLayout(PlayerCountOnScreen, PlayerIndexOnScreen: integer;
-  ReserveTopLyricsSpace: boolean = true): TSingLaneLayout;
+  const Config: TSingPlayerLayoutConfig; ReserveTopLyricsSpace: boolean = true): TSingLaneLayout;
 function GetScreenPlayerCount(PlayerCount, ScreenCount, ScreenIndex: integer): integer;
 function GetFirstPlayerIndexForScreen(PlayerCount, ScreenCount, ScreenIndex: integer): integer;
 function GetPlayerScreen(PlayerIndex, PlayerCount, ScreenCount: integer): integer;
@@ -59,6 +78,11 @@ function GetPlayerSlotRect(PlayerIndexOnScreen, PlayerCountOnScreen: integer;
   ContainerX, ContainerY, ContainerW, ContainerH: integer; Flip: boolean = false): TPlayerSlotRect;
 function GetWidePlayerSlotRect(PlayerIndexOnScreen, PlayerCountOnScreen: integer;
   ContainerX, ContainerY, ContainerW, ContainerH: integer): TPlayerSlotRect;
+function GetScaledGridLayoutBounds(const BaseBounds, AreaBounds: TPlayerSlotRect;
+  PlayerCount: integer; Wide: boolean): TPlayerSlotRect;
+function ScaleCoordToSlot(const Value, SourceStart, SourceSize, TargetStart, TargetSize: integer): integer;
+function ScaleLengthToSlot(const Value, SourceSize, TargetSize: integer): integer;
+function GetFittedSlotRect(const SourceBounds, SlotRect: TPlayerSlotRect; MaxScale: real): TPlayerSlotRect;
 
 implementation
 
@@ -166,63 +190,52 @@ begin
 end;
 
 function GetSingLaneLayout(PlayerCountOnScreen, PlayerIndexOnScreen: integer;
-  ReserveTopLyricsSpace: boolean = true): TSingLaneLayout;
+  const Config: TSingPlayerLayoutConfig; ReserveTopLyricsSpace: boolean = true): TSingLaneLayout;
 var
   Grid: TPlayerGrid;
   ColIndex: integer;
   RowIndex: integer;
-  OneRowAnchor: integer;
-  TwoRowsTopAnchor: integer;
-  TwoRowsBottomAnchor: integer;
-  MultiRowsTopAnchor: integer;
-  MultiRowsBottomAnchor: integer;
+  OneRowAnchorY: integer;
+  TwoRowsTopAnchorY: integer;
+  TwoRowsBottomAnchorY: integer;
+  MultiRowsTopAnchorY: integer;
+  MultiRowsBottomAnchorY: integer;
   EffectiveContentVerticalOffset: integer;
-const
-  SkinP1NotesB = 250;
-  SkinP2NotesB = 430;
-  ColumnContainerLeft = 40;
-  ColumnContainerWidth = 750;
-  GridExtraLeft = 20;
-  ContentVerticalOffset = -20;
-  TopLyricsReservedHeight = 80;
-  OneTwoRowSpacing = 15;
-  MultiRowSpacing = 12;
 begin
   Grid := GetPlayerGrid(PlayerCountOnScreen, true);
   ColIndex := PlayerIndexOnScreen div Grid.Rows;
   RowIndex := PlayerIndexOnScreen mod Grid.Rows;
 
-  OneRowAnchor := SkinP2NotesB;
-  TwoRowsTopAnchor := SkinP1NotesB;
-  TwoRowsBottomAnchor := SkinP2NotesB;
-  MultiRowsTopAnchor := 120 + 95;
-  MultiRowsBottomAnchor := 370 + 95;
+  OneRowAnchorY := Config.OneRowAnchorY;
+  TwoRowsTopAnchorY := Config.TwoRowsTopAnchorY;
+  TwoRowsBottomAnchorY := Config.TwoRowsBottomAnchorY;
+  MultiRowsTopAnchorY := Config.MultiRowsTopAnchorY;
+  MultiRowsBottomAnchorY := Config.MultiRowsBottomAnchorY;
 
   if not ReserveTopLyricsSpace then
   begin
-    Dec(OneRowAnchor, TopLyricsReservedHeight);
-    Dec(TwoRowsTopAnchor, TopLyricsReservedHeight);
-    Dec(MultiRowsTopAnchor, TopLyricsReservedHeight);
-  end;
-
-  if ReserveTopLyricsSpace then
-    EffectiveContentVerticalOffset := 0
+    Dec(OneRowAnchorY, Config.TopLyricsReservedHeight);
+    Dec(TwoRowsTopAnchorY, Config.TopLyricsReservedHeight);
+    Dec(MultiRowsTopAnchorY, Config.TopLyricsReservedHeight);
+    EffectiveContentVerticalOffset := Config.ContentVerticalOffset;
+  end
   else
-    EffectiveContentVerticalOffset := ContentVerticalOffset;
+    EffectiveContentVerticalOffset := 0;
 
-  GetPlayerColumnLayout(ColIndex, Grid.Cols, ColumnContainerLeft, ColumnContainerWidth,
+  GetPlayerColumnLayout(ColIndex, Grid.Cols, Config.ColumnContainerLeft, Config.ColumnContainerWidth,
     GetPlayerColumnGap(Grid.Cols), Result.ColumnLeft, Result.ColumnRight, Result.ColumnWidth);
-  Result.GridLeft := Result.ColumnLeft - GridExtraLeft;
+  Result.GridLeft := Result.ColumnLeft - Config.GridExtraLeft;
   Result.GridRight := Result.ColumnRight;
   Result.GridWidth := Result.GridRight - Result.GridLeft;
 
   Result.RowAnchorY := GetPlayerRowPosition(RowIndex, Grid.Rows,
-    OneRowAnchor, TwoRowsTopAnchor, TwoRowsBottomAnchor, MultiRowsTopAnchor, MultiRowsBottomAnchor)
+    OneRowAnchorY, TwoRowsTopAnchorY, TwoRowsBottomAnchorY, MultiRowsTopAnchorY, MultiRowsBottomAnchorY)
     + EffectiveContentVerticalOffset;
-  Result.NoteLineSpacing := GetPlayerRowSpacing(Grid.Rows, OneTwoRowSpacing, MultiRowSpacing,
-    120, 370);
+  Result.NoteLineSpacing := GetPlayerRowSpacing(Grid.Rows, Config.OneTwoRowSpacing, Config.MultiRowSpacing,
+    Config.GuideRangeTopY, Config.GuideRangeBottomY);
   Result.GuideTopY := Result.RowAnchorY - (7 * Result.NoteLineSpacing);
-  Result.WidgetScale := Min(1.0, Result.ColumnWidth / 300.0) * GetPlayerWidgetScale(PlayerCountOnScreen);
+  Result.WidgetScale := Min(1.0, Result.ColumnWidth / Max(1.0, Config.WidgetScaleBaseWidth)) *
+    GetPlayerWidgetScale(PlayerCountOnScreen);
 end;
 
 function GetScreenPlayerCount(PlayerCount, ScreenCount, ScreenIndex: integer): integer;
@@ -380,6 +393,64 @@ begin
     Result.H := ContainerY + ContainerH - Result.Y
   else
     Result.H := RowHeight;
+end;
+
+function GetScaledGridLayoutBounds(const BaseBounds, AreaBounds: TPlayerSlotRect;
+  PlayerCount: integer; Wide: boolean): TPlayerSlotRect;
+var
+  Grid: TPlayerGrid;
+  Scale: real;
+  ScaleX: real;
+  ScaleY: real;
+begin
+  if Wide then
+    Grid := GetWidePlayerGrid(PlayerCount)
+  else
+    Grid := GetPlayerGrid(PlayerCount, true);
+
+  if (Grid.Cols <= 0) or (Grid.Rows <= 0) or (BaseBounds.W <= 0) or (BaseBounds.H <= 0) then
+    Exit(BaseBounds);
+
+  ScaleX := AreaBounds.W / Max(1.0, BaseBounds.W * Grid.Cols);
+  ScaleY := AreaBounds.H / Max(1.0, BaseBounds.H * Grid.Rows);
+  Scale := Min(1.0, Min(ScaleX, ScaleY));
+
+  Result.W := Round(BaseBounds.W * Grid.Cols * Scale);
+  Result.H := Round(BaseBounds.H * Grid.Rows * Scale);
+  Result.X := AreaBounds.X + Max(0, (AreaBounds.W - Result.W) div 2);
+  Result.Y := AreaBounds.Y + Max(0, (AreaBounds.H - Result.H) div 2);
+end;
+
+function ScaleCoordToSlot(const Value, SourceStart, SourceSize, TargetStart, TargetSize: integer): integer;
+begin
+  if SourceSize <= 0 then
+    Exit(TargetStart);
+
+  Result := TargetStart + Round((Value - SourceStart) * TargetSize / SourceSize);
+end;
+
+function ScaleLengthToSlot(const Value, SourceSize, TargetSize: integer): integer;
+begin
+  if SourceSize <= 0 then
+    Exit(Value);
+
+  Result := Round(Value * TargetSize / SourceSize);
+end;
+
+function GetFittedSlotRect(const SourceBounds, SlotRect: TPlayerSlotRect; MaxScale: real): TPlayerSlotRect;
+var
+  Scale: real;
+begin
+  Result := SlotRect;
+
+  if (SourceBounds.W <= 0) or (SourceBounds.H <= 0) or (SlotRect.W <= 0) or (SlotRect.H <= 0) then
+    Exit;
+
+  Scale := Min(MaxScale, Min(SlotRect.W / Max(1.0, SourceBounds.W), SlotRect.H / Max(1.0, SourceBounds.H)));
+  Result.W := Max(1, Round(SourceBounds.W * Scale));
+  Result.H := Max(1, Round(SourceBounds.H * Scale));
+  Result.X := SlotRect.X + (SlotRect.W - Result.W) div 2;
+  Result.Y := SlotRect.Y;
 end;
 
 end.
