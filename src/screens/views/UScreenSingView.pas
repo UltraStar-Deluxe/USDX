@@ -178,7 +178,6 @@ var
   NameW: integer;
   GroupTop: integer;
   HeaderOffsetLeft: integer;
-  HeaderOffsetTop: integer;
   Layout: TSingLaneLayout;
 begin
   BaseTemplate := Theme.Sing.PlayerTemplate;
@@ -186,7 +185,7 @@ begin
     CurrentSong.isDuet and (PlayersPlay <> 1));
   LaneLeft := Layout.ColumnLeft;
   LaneRight := Layout.ColumnRight;
-  LaneTop := Layout.RowAnchorY;
+  LaneTop := Layout.GuideTopY;
   LaneWidth := Layout.ColumnWidth;
   Scale := Layout.WidgetScale;
 
@@ -195,8 +194,8 @@ begin
   ScoreW := Max(Theme.Sing.PlayerWidgetLayout.MinScoreW, Round(BaseTemplate.ScoreBackground.W * Scale));
   ScoreH := Max(Theme.Sing.PlayerWidgetLayout.MinScoreH, Round(BaseTemplate.ScoreBackground.H * Scale));
   HeaderOffsetLeft := Round(Theme.Sing.PlayerWidgetLayout.HeaderOffsetLeft * Scale);
-  HeaderOffsetTop := GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, Layout.GridRows, Scale);
-  GroupTop := Max(10, LaneTop - Max(FrameH, ScoreH) - Theme.Sing.PlayerWidgetLayout.HeaderGapY - HeaderOffsetTop);
+  GroupTop := Max(10, LaneTop - Max(FrameH, ScoreH) -
+    Max(2, Round(Theme.Sing.PlayerWidgetLayout.HeaderGapY * Scale)));
   AvatarInsetX := Max(Theme.Sing.PlayerWidgetLayout.MinAvatarInsetX,
     Round((BaseTemplate.Avatar.X - BaseTemplate.AvatarFrame.X) * Scale));
   AvatarInsetY := Max(Theme.Sing.PlayerWidgetLayout.MinAvatarInsetY,

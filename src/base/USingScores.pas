@@ -266,7 +266,6 @@ var
   Scale: real;
   FrameH: integer;
   ScoreH: integer;
-  HeaderOffsetTop: integer;
   ScoreScale: real;
   ScoreOffsetX: integer;
   ScoreOffsetY: integer;
@@ -302,14 +301,12 @@ begin
 
   FrameH := Max(Theme.Sing.PlayerWidgetLayout.MinFrameH, Round(BaseTemplate.AvatarFrame.H * Scale));
   ScoreH := Max(Theme.Sing.PlayerWidgetLayout.MinScoreH, Round(BaseTemplate.ScoreBackground.H * Scale));
-  HeaderOffsetTop := GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, Layout.GridRows, Scale);
-
   Result.PlayerCount := 0;
   Result.BGW := Round(BaseTemplate.ScoreBackground.W * ScoreScale);
   Result.BGH := Round(BaseTemplate.ScoreBackground.H * ScoreScale);
   Result.BGX := LaneRight - Result.BGW;
-  GroupTop := Max(10, Layout.RowAnchorY -
-    Max(FrameH, ScoreH) - Theme.Sing.PlayerWidgetLayout.HeaderGapY - HeaderOffsetTop);
+  GroupTop := Max(10, Layout.GuideTopY -
+    Max(FrameH, ScoreH) - Max(2, Round(Theme.Sing.PlayerWidgetLayout.HeaderGapY * Scale)));
   Result.BGY := GroupTop;
 
   ScoreOffsetX := BaseTemplate.Score.X - BaseTemplate.ScoreBackground.X;
