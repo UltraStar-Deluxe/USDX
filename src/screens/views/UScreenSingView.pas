@@ -195,7 +195,7 @@ begin
   ScoreW := Max(Theme.Sing.PlayerWidgetLayout.MinScoreW, Round(BaseTemplate.ScoreBackground.W * Scale));
   ScoreH := Max(Theme.Sing.PlayerWidgetLayout.MinScoreH, Round(BaseTemplate.ScoreBackground.H * Scale));
   HeaderOffsetLeft := Round(Theme.Sing.PlayerWidgetLayout.HeaderOffsetLeft * Scale);
-  HeaderOffsetTop := GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, PlayerCountOnScreen, Scale);
+  HeaderOffsetTop := GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, Layout.GridRows, Scale);
   GroupTop := Max(10, LaneTop - Max(FrameH, ScoreH) - Theme.Sing.PlayerWidgetLayout.HeaderGapY - HeaderOffsetTop);
   AvatarInsetX := Max(Theme.Sing.PlayerWidgetLayout.MinAvatarInsetX,
     Round((BaseTemplate.Avatar.X - BaseTemplate.AvatarFrame.X) * Scale));

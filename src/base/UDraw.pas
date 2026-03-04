@@ -477,7 +477,7 @@ procedure SingDrawOscilloscopes;
     ScoreW := Max(Theme.Sing.PlayerWidgetLayout.MinScoreW, Round(BaseTemplate.ScoreBackground.W * Scale));
     ScoreH := Max(Theme.Sing.PlayerWidgetLayout.MinScoreH, Round(BaseTemplate.ScoreBackground.H * Scale));
     HeaderOffsetLeft := Round(Theme.Sing.PlayerWidgetLayout.HeaderOffsetLeft * Scale);
-    HeaderOffsetTop := GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, LocalPlayerCount, Scale);
+    HeaderOffsetTop := GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, Layout.GridRows, Scale);
     GroupTop := Max(10, LaneTop - Max(FrameH, ScoreH) - Theme.Sing.PlayerWidgetLayout.HeaderGapY - HeaderOffsetTop);
     NameX := Max(0, LaneLeft - HeaderOffsetLeft) + FrameW +
       Max(Theme.Sing.PlayerWidgetLayout.NameGapMinX, Round(Theme.Sing.PlayerWidgetLayout.NameGapBaseX * Scale));
@@ -835,6 +835,9 @@ var
   Count:          integer;
   TempR:          real;
   W, H:           real;
+  GlowPadX:       real;
+  GlowExtraW:     real;
+  GlowExtraH:     real;
 begin
   if (ScreenSing.settings.NotesVisible[PlayerIndex]) then
   begin
@@ -855,10 +858,11 @@ begin
         begin
           if NoteType <> ntFreestyle then
           begin
-            // begin: 14, 20
-            // easy: 6, 11
-            W := NotesW[PlayerIndex] * 2 + 2;
-            H := NotesH[PlayerIndex] * 1.5 + 3.5;
+            GlowPadX := Max(1.0, NotesW[PlayerIndex] * 0.65);
+            GlowExtraW := Max(1.0, NotesW[PlayerIndex] * 0.35);
+            GlowExtraH := Max(1.5, NotesH[PlayerIndex] * 0.3);
+            W := NotesW[PlayerIndex] * 2 + GlowExtraW;
+            H := NotesH[PlayerIndex] * 1.5 + GlowExtraH;
 
             {
             X2 := (Start-CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].Current].Notes[0].Start) * TempR + Left + 0.5 + 4;
@@ -869,7 +873,7 @@ begin
             }
 
             // left
-            Rec.Right := (StartBeat - CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left + 0.5 + 4;
+            Rec.Right := (StartBeat - CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left + 0.5 + GlowPadX;
             Rec.Left  := Rec.Right - W;
             Rec.Top := Top - (Tone-BaseNote)*LineSpacing/2 - H;
             Rec.Bottom := Rec.Top + 2 * H;
@@ -891,7 +895,7 @@ begin
 
             // middle part
             Rec.Left  := Rec.Right;
-            Rec.Right := (StartBeat + Duration - CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left - 0.5 - 4;
+            Rec.Right := (StartBeat + Duration - CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left - 0.5 - GlowPadX;
 
             // the left note is more right than the right note itself, sounds weird - so we fix that xD
             if Rec.Right <= Rec.Left then
@@ -1252,9 +1256,11 @@ var
   LaneLeft: real;
   LaneRight: real;
   LaneWidth: real;
+  Layout: TSingLaneLayout;
+  ContentScale: real;
+  BaseNoteH: real;
+  BaseNoteW: real;
   procedure GetLaneLayout(const CurrentPlayerIndex: integer; out Left, Right, Width, Top: real; out Spacing: integer);
-  var
-    Layout: TSingLaneLayout;
   begin
     if Screens > 1 then
     begin
@@ -1269,8 +1275,8 @@ var
 
     Layout := GetSingLaneLayout(PlayerCountOnScreen, LocalIndex, Theme.Sing.PlayerLayout,
       CurrentSong.isDuet and (PlayersPlay <> 1));
-    Left := Layout.ColumnLeft + Theme.Sing.PlayerLayout.NoteContentOffsetX;
-    Right := Layout.ColumnRight;
+    Left := Layout.GridLeft;
+    Right := Layout.GridRight;
     Width := Right - Left;
     Top := Layout.RowAnchorY;
     Spacing := Layout.NoteLineSpacing;
@@ -1317,7 +1323,6 @@ begin
 
   for I := 1 to PlayersPlay do
   begin
-
     if (ScreenSong.Mode = smNormal) or (ScreenSong.Mode = smMedley) then
       Difficulty := Player[I - 1].Level
     else
@@ -1326,36 +1331,42 @@ begin
     case Difficulty of
       0:
         begin
-          NotesH[I - 1] := 11; // 9
-          NotesW[I - 1] := 6; // 5
+          BaseNoteH := 11;
+          BaseNoteW := 6;
         end;
       1:
         begin
-          NotesH[I - 1] := 8; // 7
-          NotesW[I - 1] := 4; // 4
+          BaseNoteH := 8;
+          BaseNoteW := 4;
         end;
       2:
         begin
-          NotesH[I - 1] := 5;
-          NotesW[I - 1] := 3;
+          BaseNoteH := 5;
+          BaseNoteW := 3;
         end;
+    else
+      begin
+        BaseNoteH := 8;
+        BaseNoteW := 4;
+      end;
     end;
 
     if Screens > 1 then
-      PlayerCountOnScreen := GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct)
+    begin
+      PlayerCountOnScreen := GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct);
+      LocalIndex := GetPlayerIndexOnScreen(I - 1, PlayersPlay, Screens);
+    end
     else
+    begin
       PlayerCountOnScreen := PlayersPlay;
-
-    if PlayerCountOnScreen = 3 then
-    begin
-      NotesW[I - 1] := NotesW[I - 1] * 0.8;
-      NotesH[I - 1] := NotesH[I - 1] * 0.8;
+      LocalIndex := I - 1;
     end;
 
-    if (Screens <= 1) and (PlayerCountOnScreen = 4) then
-    begin
-      NotesW[I - 1] := NotesW[I - 1] * 0.9;
-    end;
+    Layout := GetSingLaneLayout(PlayerCountOnScreen, LocalIndex, Theme.Sing.PlayerLayout,
+      CurrentSong.isDuet and (PlayersPlay <> 1));
+    ContentScale := Layout.ContentScale;
+    NotesH[I - 1] := Max(2.0, BaseNoteH * ContentScale);
+    NotesW[I - 1] := Max(1.0, BaseNoteW * ContentScale);
   end;
 
   // draw notes lines

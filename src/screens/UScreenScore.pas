@@ -320,7 +320,9 @@ end;
 
 function GetScoreButtonLayout(PlayerCount, ScreenCount: integer): integer;
 begin
-  Result := EnsureRange(GetWidePlayerGrid(PlayerCount).Cols, 1, 3);
+  Result := EnsureRange(GetScorePlayerGrid(PlayerCount,
+    Theme.Score.PlayerLayoutArea.W, Theme.Score.PlayerLayoutArea.H,
+    Theme.Score.PlayerLayoutExtraColsBias).Cols, 1, 3);
 end;
 
 procedure SetScoreSlotScoreAlpha(const ScreenScore: TScreenScore; SlotIndex: integer; Alpha: real);

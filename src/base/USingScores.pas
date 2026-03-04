@@ -297,13 +297,12 @@ begin
   BaseTemplate := Theme.Sing.PlayerTemplate;
   Scale := Layout.WidgetScale;
 
-  ScoreScale := Min(1.0, (LaneWidth * Theme.Sing.PlayerWidgetLayout.ScoreWidthFraction) /
-    Max(1.0, BaseTemplate.ScoreBackground.W * 1.0))
-    * GetPlayerWidgetScale(PlayerCountOnScreen);
+  ScoreScale := Min(Scale, (LaneWidth * Theme.Sing.PlayerWidgetLayout.ScoreWidthFraction) /
+    Max(1.0, BaseTemplate.ScoreBackground.W * 1.0));
 
   FrameH := Max(Theme.Sing.PlayerWidgetLayout.MinFrameH, Round(BaseTemplate.AvatarFrame.H * Scale));
   ScoreH := Max(Theme.Sing.PlayerWidgetLayout.MinScoreH, Round(BaseTemplate.ScoreBackground.H * Scale));
-  HeaderOffsetTop := GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, PlayerCountOnScreen, Scale);
+  HeaderOffsetTop := GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, Layout.GridRows, Scale);
 
   Result.PlayerCount := 0;
   Result.BGW := Round(BaseTemplate.ScoreBackground.W * ScoreScale);
@@ -343,9 +342,9 @@ begin
   Result.PUH := Result.BGH;
   Result.PUFont := 0;
   Result.PUStyle := ftOutline;
-  Result.PUSize := PopupFontSize;
+  Result.PUSize := Max(1, Round(PopupFontSize * Scale));
   Result.PUStartX := Result.BGX;
-  Result.PUStartY := Result.TextY + PopupYOffset;
+  Result.PUStartY := Result.TextY + Round(PopupYOffset * Scale);
   Result.PUTargetX := Result.BGX;
   Result.PUTargetY := Result.TextY;
 end;

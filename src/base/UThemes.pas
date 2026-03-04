@@ -608,6 +608,7 @@ type
 
     TextArtistTitle:  TThemeText;
     PlayerLayoutArea: TPlayerSlotRect;
+    PlayerLayoutExtraColsBias: integer;
 
     PlayerStatic:     array[1..UIni.IMaxPlayerCount] of AThemeStatic;
     PlayerTexts:      array[1..UIni.IMaxPlayerCount] of AThemeText;
@@ -1252,7 +1253,7 @@ function GetNamePlayerSelectSlotRect(PlayerIndex, PlayerCount: integer;
   const BaseBounds, LayoutBounds: TPlayerSlotRect; const Layout: TThemeNamePlayerSelectLayout): TPlayerSlotRect;
 function GetNamePlayerSelectMaxScale(PlayerCount: integer; const Layout: TThemeNamePlayerSelectLayout): real;
 function GetSingHeaderTopOffset(const Layout: TThemeSingPlayerWidgetLayout;
-  PlayerCountOnScreen: integer; Scale: real): integer;
+  RowCount: integer; Scale: real): integer;
 
 function GetPlayerColor(Color: integer): TRGB;
 function GetPlayerLightColor(Color: integer): TRGB;
@@ -1475,14 +1476,12 @@ begin
 end;
 
 function GetSingHeaderTopOffset(const Layout: TThemeSingPlayerWidgetLayout;
-  PlayerCountOnScreen: integer; Scale: real): integer;
+  RowCount: integer; Scale: real): integer;
 var
   BaseOffset: integer;
-  Grid: TPlayerGrid;
 begin
-  Grid := GetPlayerGrid(PlayerCountOnScreen, true);
   BaseOffset := Layout.HeaderOffsetTopBase +
-    Max(0, Grid.Rows - 1) * Layout.HeaderOffsetTopPerExtraRow;
+    Max(0, RowCount - 1) * Layout.HeaderOffsetTopPerExtraRow;
   Result := Round(BaseOffset * Scale);
 end;
 
@@ -1534,8 +1533,12 @@ end;
 
 function GetThemePlayerScoreLayoutBounds(const BaseBounds, LayoutArea: TPlayerSlotRect;
   PlayerCountOnScreen: integer): TPlayerSlotRect;
+var
+  Grid: TPlayerGrid;
 begin
-  Result := GetScaledGridLayoutBounds(BaseBounds, LayoutArea, PlayerCountOnScreen, true);
+  Grid := GetScorePlayerGrid(PlayerCountOnScreen, LayoutArea.W, LayoutArea.H,
+    Theme.Score.PlayerLayoutExtraColsBias);
+  Result := GetScaledGridLayoutBounds(BaseBounds, LayoutArea, Grid);
 end;
 
 function TransformScoreStatic(const Source: TThemeStatic; const SourceBounds, SlotRect: TPlayerSlotRect): TThemeStatic;
@@ -1593,8 +1596,11 @@ procedure AssignScoreThemeSlot(var ScoreTheme: TThemeScore; const Template: TSco
   const SourceBounds, LayoutBounds: TPlayerSlotRect; LayoutPlayerCount, LayoutPlayerIndex, TargetSlotIndex: integer);
 var
   SlotRect: TPlayerSlotRect;
+  Grid: TPlayerGrid;
 begin
-  SlotRect := GetWidePlayerSlotRect(LayoutPlayerIndex, LayoutPlayerCount, LayoutBounds.X, LayoutBounds.Y, LayoutBounds.W, LayoutBounds.H);
+  Grid := GetScorePlayerGrid(LayoutPlayerCount, LayoutBounds.W, LayoutBounds.H,
+    ScoreTheme.PlayerLayoutExtraColsBias);
+  SlotRect := GetPlayerSlotRect(LayoutPlayerIndex, Grid, LayoutBounds.X, LayoutBounds.Y, LayoutBounds.W, LayoutBounds.H);
 
   ScoreTheme.PlayerStatic[TargetSlotIndex] := TransformScoreStatics(Template.PlayerStatic, SourceBounds, SlotRect);
   ScoreTheme.PlayerTexts[TargetSlotIndex] := TransformScoreTexts(Template.PlayerTexts, SourceBounds, SlotRect);
@@ -4145,6 +4151,7 @@ begin
   Score.PlayerLayoutArea.Y := ReadInteger(SectionList, 'AreaY', ReadInteger(SectionList, 'Y', 110));
   Score.PlayerLayoutArea.W := ReadInteger(SectionList, 'AreaW', ReadInteger(SectionList, 'W', 760));
   Score.PlayerLayoutArea.H := ReadInteger(SectionList, 'AreaH', ReadInteger(SectionList, 'H', 420));
+  Score.PlayerLayoutExtraColsBias := ReadInteger(SectionList, 'ExtraColsBias', 0);
 
   for I := 1 to UIni.IMaxPlayerCount do
   begin
