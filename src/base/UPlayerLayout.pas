@@ -37,7 +37,11 @@ type
     RowGap: integer;
     GridExtraLeft: integer;
     BaseLineSpacing: integer;
+    GuideLineCount: integer;
+    RowAnchorGuideIndex: integer;
     WidgetScaleBaseWidth: integer;
+    WidgetScalePerPlayer: real;
+    WidgetScaleMin: real;
   end;
 
   TSingLaneLayout = record
@@ -64,7 +68,7 @@ function GetSingPlayerGrid(PlayerCountOnScreen: integer; const Config: TSingPlay
   ReserveTopLyricsSpace: boolean = true): TPlayerGrid;
 procedure GetPlayerColumnLayout(ColIndex, ColCount, ContainerLeft, ContainerWidth, ColumnGap: integer;
   out LaneLeft, LaneRight, LaneWidth: integer);
-function GetPlayerWidgetScale(PlayerCount: integer): real;
+function GetPlayerWidgetScale(PlayerCount: integer; const Config: TSingPlayerLayoutConfig): real;
 function GetSingLaneLayout(PlayerCountOnScreen, PlayerIndexOnScreen: integer;
   const Config: TSingPlayerLayoutConfig; ReserveTopLyricsSpace: boolean = true): TSingLaneLayout;
 function GetScreenPlayerCount(PlayerCount, ScreenCount, ScreenIndex: integer): integer;
@@ -253,11 +257,11 @@ begin
   LaneRight := LaneLeft + ColumnWidth;
 end;
 
-function GetPlayerWidgetScale(PlayerCount: integer): real;
+function GetPlayerWidgetScale(PlayerCount: integer; const Config: TSingPlayerLayoutConfig): real;
 begin
-  Result := 1.0 - Max(0, PlayerCount - 1) * 0.02;
-  if Result < 0.82 then
-    Result := 0.82;
+  Result := 1.0 - Max(0, PlayerCount - 1) * Config.WidgetScalePerPlayer;
+  if Result < Config.WidgetScaleMin then
+    Result := Config.WidgetScaleMin;
 end;
 
 function GetSingLaneLayout(PlayerCountOnScreen, PlayerIndexOnScreen: integer;
@@ -274,6 +278,8 @@ var
   SlotHeight: integer;
   TopPadding: integer;
   MaxLineSpacing: integer;
+  GuideLineCount: integer;
+  RowAnchorGuideIndex: integer;
   ColumnScale: real;
   AvailableRowScale: real;
   BaseLineSpacing: integer;
@@ -310,16 +316,18 @@ begin
 
   GetPlayerColumnLayout(ColIndex, Grid.Cols, Config.ColumnContainerLeft, Config.ColumnContainerWidth,
     Max(0, Config.ColumnGap), Result.ColumnLeft, Result.ColumnRight, Result.ColumnWidth);
+  GuideLineCount := Max(2, Config.GuideLineCount);
+  RowAnchorGuideIndex := EnsureRange(Config.RowAnchorGuideIndex, 0, GuideLineCount - 1);
   BaseLineSpacing := Max(1, Config.BaseLineSpacing);
   ColumnScale := Result.ColumnWidth / Max(1.0, Config.WidgetScaleBaseWidth);
-  MaxLineSpacing := Max(6, SlotHeight div 9);
+  MaxLineSpacing := Max(6, SlotHeight div GuideLineCount);
   AvailableRowScale := MaxLineSpacing / Max(1.0, BaseLineSpacing);
   Result.SlotScale := Min(1.0, Min(ColumnScale, AvailableRowScale));
-  Result.ContentScale := Result.SlotScale * GetPlayerWidgetScale(PlayerCountOnScreen);
+  Result.ContentScale := Result.SlotScale * GetPlayerWidgetScale(PlayerCountOnScreen, Config);
   Result.NoteLineSpacing := Max(6, Min(MaxLineSpacing, Round(BaseLineSpacing * Result.ContentScale)));
-  TopPadding := Max(0, SlotHeight - 9 * Result.NoteLineSpacing);
+  TopPadding := Max(0, SlotHeight - GuideLineCount * Result.NoteLineSpacing);
   Result.GuideTopY := SlotTopY + (TopPadding div 2);
-  Result.RowAnchorY := Result.GuideTopY + 7 * Result.NoteLineSpacing;
+  Result.RowAnchorY := Result.GuideTopY + RowAnchorGuideIndex * Result.NoteLineSpacing;
   GridInsetX := Max(1, Round(Config.GridExtraLeft * Result.ContentScale));
   Result.GridLeft := Result.ColumnLeft - GridInsetX;
   Result.GridRight := Result.ColumnRight;

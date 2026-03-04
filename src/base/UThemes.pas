@@ -307,7 +307,6 @@ type
     HeaderOffsetLeft: integer;
     HeaderOffsetTopBase: integer;
     HeaderOffsetTopPerExtraRow: integer;
-    HeaderGapY: integer;
     MinAvatarInsetX: integer;
     MinAvatarInsetY: integer;
     NameGapBaseX: integer;
@@ -2074,45 +2073,48 @@ begin
       Sing.PlayerLayout.RowGap := ReadInteger(SectionList, 'LaneRowGap', 0);
       Sing.PlayerLayout.GridExtraLeft := ReadInteger(SectionList, 'LaneGridLeftInset', 20);
       Sing.PlayerLayout.BaseLineSpacing := ReadInteger(SectionList, 'LaneBaseLineSpacing', 15);
+      Sing.PlayerLayout.GuideLineCount := ReadInteger(SectionList, 'LaneGuideLineCount', 9);
+      Sing.PlayerLayout.RowAnchorGuideIndex := ReadInteger(SectionList, 'LaneRowAnchorGuideIndex', 7);
       Sing.PlayerLayout.WidgetScaleBaseWidth := ReadInteger(SectionList, 'WidgetScaleReferenceW', 300);
+      Sing.PlayerLayout.WidgetScalePerPlayer := ReadFloat(SectionList, 'WidgetScalePerPlayer', 0.02);
+      Sing.PlayerLayout.WidgetScaleMin := ReadFloat(SectionList, 'WidgetScaleMin', 0.82);
+
+      Sing.PlayerLayout.ColumnContainerWidth := Max(1, Sing.PlayerLayout.ColumnContainerWidth);
+      Sing.PlayerLayout.LaneHeightReserved := Max(1, Sing.PlayerLayout.LaneHeightReserved);
+      Sing.PlayerLayout.LaneHeightNoLyrics := Max(1, Sing.PlayerLayout.LaneHeightNoLyrics);
+      Sing.PlayerLayout.ColumnGap := Max(0, Sing.PlayerLayout.ColumnGap);
+      Sing.PlayerLayout.RowGap := Max(0, Sing.PlayerLayout.RowGap);
+      Sing.PlayerLayout.GridExtraLeft := Max(0, Sing.PlayerLayout.GridExtraLeft);
+      Sing.PlayerLayout.BaseLineSpacing := Max(1, Sing.PlayerLayout.BaseLineSpacing);
+      Sing.PlayerLayout.GuideLineCount := Max(2, Sing.PlayerLayout.GuideLineCount);
+      Sing.PlayerLayout.RowAnchorGuideIndex := EnsureRange(Sing.PlayerLayout.RowAnchorGuideIndex,
+        0, Sing.PlayerLayout.GuideLineCount - 1);
+      Sing.PlayerLayout.WidgetScaleBaseWidth := Max(1, Sing.PlayerLayout.WidgetScaleBaseWidth);
+      Sing.PlayerLayout.WidgetScalePerPlayer := Max(0.0, Sing.PlayerLayout.WidgetScalePerPlayer);
+      Sing.PlayerLayout.WidgetScaleMin := EnsureRange(Sing.PlayerLayout.WidgetScaleMin, 0.1, 1.0);
 
       SectionList := GetSectionList('SingPlayerWidgetPlacement');
-      if Length(SectionList) = 0 then
-        SectionList := GetSectionList('SingPlayerWidgetLayout');
       Sing.PlayerWidgetLayout.MinFrameW := ReadInteger(SectionList, 'MinFrameW', 26);
       Sing.PlayerWidgetLayout.MinFrameH := ReadInteger(SectionList, 'MinFrameH', 26);
       Sing.PlayerWidgetLayout.MinScoreW := ReadInteger(SectionList, 'MinScoreW', 56);
       Sing.PlayerWidgetLayout.MinScoreH := ReadInteger(SectionList, 'MinScoreH', 18);
-      Sing.PlayerWidgetLayout.HeaderOffsetLeft := ReadInteger(SectionList, 'HeaderLeftOffset',
-        ReadInteger(SectionList, 'HeaderOffsetLeft', 30));
-      Sing.PlayerWidgetLayout.HeaderOffsetTopBase := ReadInteger(SectionList, 'HeaderTopOffsetBase',
-        ReadInteger(SectionList, 'HeaderTopOffset',
-        ReadInteger(SectionList, 'HeaderOffsetTop', 40)));
+      Sing.PlayerWidgetLayout.HeaderOffsetLeft := ReadInteger(SectionList, 'HeaderLeftOffset', 30);
+      Sing.PlayerWidgetLayout.HeaderOffsetTopBase := ReadInteger(SectionList, 'HeaderTopOffsetBase', 40);
       Sing.PlayerWidgetLayout.HeaderOffsetTopPerExtraRow := ReadInteger(SectionList,
-        'HeaderTopOffsetPerExtraRow',
-        ReadInteger(SectionList, 'HeaderTopOffsetPerExtraPlayer', 0));
-      Sing.PlayerWidgetLayout.HeaderGapY := ReadInteger(SectionList, 'HeaderBottomGap',
-        ReadInteger(SectionList, 'HeaderGapY', 18));
-      Sing.PlayerWidgetLayout.MinAvatarInsetX := ReadInteger(SectionList, 'AvatarInsetMinX',
-        ReadInteger(SectionList, 'MinAvatarInsetX', 1));
-      Sing.PlayerWidgetLayout.MinAvatarInsetY := ReadInteger(SectionList, 'AvatarInsetMinY',
-        ReadInteger(SectionList, 'MinAvatarInsetY', 1));
-      Sing.PlayerWidgetLayout.NameGapBaseX := ReadInteger(SectionList, 'NameGapX',
-        ReadInteger(SectionList, 'NameGapBaseX', 10));
+        'HeaderTopOffsetPerExtraRow', 0);
+      Sing.PlayerWidgetLayout.MinAvatarInsetX := ReadInteger(SectionList, 'AvatarInsetMinX', 1);
+      Sing.PlayerWidgetLayout.MinAvatarInsetY := ReadInteger(SectionList, 'AvatarInsetMinY', 1);
+      Sing.PlayerWidgetLayout.NameGapBaseX := ReadInteger(SectionList, 'NameGapX', 10);
       Sing.PlayerWidgetLayout.NameGapMinX := ReadInteger(SectionList, 'NameGapMinX', 8);
-      Sing.PlayerWidgetLayout.NamePaddingBaseX := ReadInteger(SectionList, 'NamePaddingX',
-        ReadInteger(SectionList, 'NamePaddingBaseX', 6));
+      Sing.PlayerWidgetLayout.NamePaddingBaseX := ReadInteger(SectionList, 'NamePaddingX', 6);
       Sing.PlayerWidgetLayout.NamePaddingMinX := ReadInteger(SectionList, 'NamePaddingMinX', 4);
-      Sing.PlayerWidgetLayout.NamePaddingBaseY := ReadInteger(SectionList, 'NamePaddingY',
-        ReadInteger(SectionList, 'NamePaddingBaseY', 6));
+      Sing.PlayerWidgetLayout.NamePaddingBaseY := ReadInteger(SectionList, 'NamePaddingY', 6);
       Sing.PlayerWidgetLayout.NamePaddingMinY := ReadInteger(SectionList, 'NamePaddingMinY', 3);
       Sing.PlayerWidgetLayout.NameMinW := ReadInteger(SectionList, 'NameMinW', 24);
       Sing.PlayerWidgetLayout.NameMinH := ReadInteger(SectionList, 'NameMinH', 14);
       Sing.PlayerWidgetLayout.NameMinSize := ReadInteger(SectionList, 'NameMinSize', 10);
-      Sing.PlayerWidgetLayout.ScoreWidthFraction := ReadFloat(SectionList, 'ScoreWidthFractionOfLane',
-        ReadFloat(SectionList, 'ScoreWidthFraction', 0.36));
-      Sing.PlayerWidgetLayout.OscilloscopeGapBaseY := ReadInteger(SectionList, 'OscilloscopeGapY',
-        ReadInteger(SectionList, 'OscilloscopeGapBaseY', 4));
+      Sing.PlayerWidgetLayout.ScoreWidthFraction := ReadFloat(SectionList, 'ScoreWidthFractionOfLane', 0.36);
+      Sing.PlayerWidgetLayout.OscilloscopeGapBaseY := ReadInteger(SectionList, 'OscilloscopeGapY', 4);
       Sing.PlayerWidgetLayout.OscilloscopeGapMinY := ReadInteger(SectionList, 'OscilloscopeGapMinY', 2);
       Sing.PlayerWidgetLayout.OscilloscopeMinW := ReadInteger(SectionList, 'OscilloscopeMinW', 40);
       Sing.PlayerWidgetLayout.OscilloscopeMinH := ReadInteger(SectionList, 'OscilloscopeMinH', 8);
