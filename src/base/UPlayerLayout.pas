@@ -28,20 +28,15 @@ type
 
   TSingPlayerLayoutConfig = record
     ColumnContainerLeft: integer;
+    ColumnContainerTopReserved: integer;
+    ColumnContainerTopNoLyrics: integer;
     ColumnContainerWidth: integer;
+    LaneHeightReserved: integer;
+    LaneHeightNoLyrics: integer;
+    ColumnGap: integer;
+    RowGap: integer;
     GridExtraLeft: integer;
-    NoteContentOffsetX: integer;
-    ContentVerticalOffset: integer;
-    TopLyricsReservedHeight: integer;
-    OneTwoRowSpacing: integer;
-    MultiRowSpacing: integer;
-    OneRowAnchorY: integer;
-    TwoRowsTopAnchorY: integer;
-    TwoRowsBottomAnchorY: integer;
-    MultiRowsTopAnchorY: integer;
-    MultiRowsBottomAnchorY: integer;
-    GuideRangeTopY: integer;
-    GuideRangeBottomY: integer;
+    BaseLineSpacing: integer;
     WidgetScaleBaseWidth: integer;
   end;
 
@@ -67,11 +62,6 @@ function GetPlayerGridForArea(PlayerCount, AreaW, AreaH: integer; SmallCountWide
 function GetScorePlayerGrid(PlayerCount, AreaW, AreaH, ExtraColsBias: integer): TPlayerGrid;
 function GetSingPlayerGrid(PlayerCountOnScreen: integer; const Config: TSingPlayerLayoutConfig;
   ReserveTopLyricsSpace: boolean = true): TPlayerGrid;
-function GetPlayerRowPosition(RowIndex, RowCount: integer;
-  SingleRowPos, TwoRowsTopPos, TwoRowsBottomPos, MultiRowsTopPos, MultiRowsBottomPos: integer): integer;
-function GetPlayerRowSpacing(RowCount, OneTwoRowSpacing, ThreeRowSpacing,
-  MultiRowsTopPos, MultiRowsBottomPos: integer): integer;
-function GetPlayerColumnGap(ColCount: integer): integer;
 procedure GetPlayerColumnLayout(ColIndex, ColCount, ContainerLeft, ContainerWidth, ColumnGap: integer;
   out LaneLeft, LaneRight, LaneWidth: integer);
 function GetPlayerWidgetScale(PlayerCount: integer): real;
@@ -224,32 +214,13 @@ function GetSingPlayerGrid(PlayerCountOnScreen: integer; const Config: TSingPlay
 var
   BaseGrid: TPlayerGrid;
   TallGrid: TPlayerGrid;
-  OneRowAnchorY: integer;
-  TwoRowsTopAnchorY: integer;
-  TwoRowsBottomAnchorY: integer;
-  MultiRowsTopAnchorY: integer;
-  MultiRowsBottomAnchorY: integer;
-  LayoutTopY: integer;
-  LayoutBottomY: integer;
   LayoutHeight: integer;
 begin
-  OneRowAnchorY := Config.OneRowAnchorY;
-  TwoRowsTopAnchorY := Config.TwoRowsTopAnchorY;
-  TwoRowsBottomAnchorY := Config.TwoRowsBottomAnchorY;
-  MultiRowsTopAnchorY := Config.MultiRowsTopAnchorY;
-  MultiRowsBottomAnchorY := Config.MultiRowsBottomAnchorY;
+  if ReserveTopLyricsSpace then
+    LayoutHeight := Max(1, Config.LaneHeightReserved)
+  else
+    LayoutHeight := Max(1, Config.LaneHeightNoLyrics);
 
-  if not ReserveTopLyricsSpace then
-  begin
-    Dec(OneRowAnchorY, Config.TopLyricsReservedHeight);
-    Dec(TwoRowsTopAnchorY, Config.TopLyricsReservedHeight);
-    Dec(MultiRowsTopAnchorY, Config.TopLyricsReservedHeight);
-  end;
-
-  LayoutTopY := Min(OneRowAnchorY, Min(TwoRowsTopAnchorY, MultiRowsTopAnchorY)) - (7 * Config.OneTwoRowSpacing);
-  LayoutBottomY := Max(OneRowAnchorY, Max(TwoRowsBottomAnchorY, MultiRowsBottomAnchorY)) +
-    (2 * Config.OneTwoRowSpacing);
-  LayoutHeight := Max(1, LayoutBottomY - LayoutTopY);
   BaseGrid := GetPlayerGridForArea(PlayerCountOnScreen, Config.ColumnContainerWidth, LayoutHeight, false);
 
   if (not ReserveTopLyricsSpace) and (PlayerCountOnScreen > 3) then
@@ -262,47 +233,6 @@ begin
   end
   else
     Result := BaseGrid;
-end;
-
-function GetPlayerRowPosition(RowIndex, RowCount: integer;
-  SingleRowPos, TwoRowsTopPos, TwoRowsBottomPos, MultiRowsTopPos, MultiRowsBottomPos: integer): integer;
-var
-  ClampedRowIndex: integer;
-begin
-  if RowCount <= 1 then
-    Exit(SingleRowPos);
-
-  ClampedRowIndex := EnsureRange(RowIndex, 0, Max(RowCount - 1, 0));
-
-  if RowCount = 2 then
-    Exit(TwoRowsTopPos + Round(ClampedRowIndex * (TwoRowsBottomPos - TwoRowsTopPos)));
-
-  Result := MultiRowsTopPos + Round(ClampedRowIndex * (MultiRowsBottomPos - MultiRowsTopPos) / Max(RowCount - 1, 1));
-end;
-
-function GetPlayerRowSpacing(RowCount, OneTwoRowSpacing, ThreeRowSpacing,
-  MultiRowsTopPos, MultiRowsBottomPos: integer): integer;
-var
-  MultiRowStep: real;
-  ThreeRowStep: real;
-begin
-  if RowCount <= 2 then
-    Exit(OneTwoRowSpacing);
-
-  ThreeRowStep := (MultiRowsBottomPos - MultiRowsTopPos) / 2.0;
-  if ThreeRowStep <= 0 then
-    Exit(ThreeRowSpacing);
-
-  MultiRowStep := (MultiRowsBottomPos - MultiRowsTopPos) / Max(RowCount - 1, 1);
-  Result := Max(6, Round(ThreeRowSpacing * MultiRowStep / ThreeRowStep));
-end;
-
-function GetPlayerColumnGap(ColCount: integer): integer;
-begin
-  if ColCount <= 1 then
-    Exit(0);
-
-  Result := 50;
 end;
 
 procedure GetPlayerColumnLayout(ColIndex, ColCount, ContainerLeft, ContainerWidth, ColumnGap: integer;
@@ -336,63 +266,60 @@ var
   Grid: TPlayerGrid;
   ColIndex: integer;
   RowIndex: integer;
-  OneRowAnchorY: integer;
-  TwoRowsTopAnchorY: integer;
-  TwoRowsBottomAnchorY: integer;
-  MultiRowsTopAnchorY: integer;
-  MultiRowsBottomAnchorY: integer;
-  EffectiveContentVerticalOffset: integer;
+  AreaTop: integer;
+  AreaHeight: integer;
+  RowGap: integer;
+  SlotTopY: integer;
+  SlotBottomY: integer;
+  SlotHeight: integer;
+  TopPadding: integer;
+  MaxLineSpacing: integer;
   ColumnScale: real;
   AvailableRowScale: real;
   BaseLineSpacing: integer;
-  AvailableLineSpacing: integer;
   GridInsetX: integer;
 begin
   Grid := GetSingPlayerGrid(PlayerCountOnScreen, Config, ReserveTopLyricsSpace);
   Result.GridCols := Grid.Cols;
   Result.GridRows := Grid.Rows;
-
-  OneRowAnchorY := Config.OneRowAnchorY;
-  TwoRowsTopAnchorY := Config.TwoRowsTopAnchorY;
-  TwoRowsBottomAnchorY := Config.TwoRowsBottomAnchorY;
-  MultiRowsTopAnchorY := Config.MultiRowsTopAnchorY;
-  MultiRowsBottomAnchorY := Config.MultiRowsBottomAnchorY;
-
-  if not ReserveTopLyricsSpace then
-  begin
-    Dec(OneRowAnchorY, Config.TopLyricsReservedHeight);
-    Dec(TwoRowsTopAnchorY, Config.TopLyricsReservedHeight);
-    Dec(MultiRowsTopAnchorY, Config.TopLyricsReservedHeight);
-    EffectiveContentVerticalOffset := Config.ContentVerticalOffset;
-  end
-  else
-    EffectiveContentVerticalOffset := 0;
   ColIndex := PlayerIndexOnScreen div Grid.Rows;
   RowIndex := PlayerIndexOnScreen mod Grid.Rows;
 
-  GetPlayerColumnLayout(ColIndex, Grid.Cols, Config.ColumnContainerLeft, Config.ColumnContainerWidth,
-    GetPlayerColumnGap(Grid.Cols), Result.ColumnLeft, Result.ColumnRight, Result.ColumnWidth);
-  Result.GridLeft := Result.ColumnLeft - Config.GridExtraLeft;
-  Result.GridRight := Result.ColumnRight;
-  Result.GridWidth := Result.GridRight - Result.GridLeft;
-
-  Result.RowAnchorY := GetPlayerRowPosition(RowIndex, Grid.Rows,
-    OneRowAnchorY, TwoRowsTopAnchorY, TwoRowsBottomAnchorY, MultiRowsTopAnchorY, MultiRowsBottomAnchorY)
-    + EffectiveContentVerticalOffset;
-
-  if Grid.Rows <= 2 then
-    BaseLineSpacing := Config.OneTwoRowSpacing
+  if ReserveTopLyricsSpace then
+  begin
+    AreaTop := Config.ColumnContainerTopReserved;
+    AreaHeight := Max(1, Config.LaneHeightReserved)
+  end
   else
-    BaseLineSpacing := Config.MultiRowSpacing;
+  begin
+    AreaTop := Config.ColumnContainerTopNoLyrics;
+    AreaHeight := Max(1, Config.LaneHeightNoLyrics);
+  end;
+  RowGap := Max(0, Config.RowGap);
+  if Grid.Rows > 1 then
+    SlotTopY := AreaTop + RowIndex * RowGap +
+      Round(RowIndex * Max(1.0, AreaHeight - RowGap * (Grid.Rows - 1)) / Grid.Rows)
+  else
+    SlotTopY := AreaTop;
+  if Grid.Rows > 1 then
+    SlotBottomY := AreaTop + RowIndex * RowGap +
+      Round((RowIndex + 1) * Max(1.0, AreaHeight - RowGap * (Grid.Rows - 1)) / Grid.Rows)
+  else
+    SlotBottomY := AreaTop + AreaHeight;
+  SlotHeight := Max(1, SlotBottomY - SlotTopY);
 
-  AvailableLineSpacing := GetPlayerRowSpacing(Grid.Rows, Config.OneTwoRowSpacing, Config.MultiRowSpacing,
-    Config.GuideRangeTopY, Config.GuideRangeBottomY);
+  GetPlayerColumnLayout(ColIndex, Grid.Cols, Config.ColumnContainerLeft, Config.ColumnContainerWidth,
+    Max(0, Config.ColumnGap), Result.ColumnLeft, Result.ColumnRight, Result.ColumnWidth);
+  BaseLineSpacing := Max(1, Config.BaseLineSpacing);
   ColumnScale := Result.ColumnWidth / Max(1.0, Config.WidgetScaleBaseWidth);
-  AvailableRowScale := AvailableLineSpacing / Max(1.0, BaseLineSpacing);
+  MaxLineSpacing := Max(6, SlotHeight div 9);
+  AvailableRowScale := MaxLineSpacing / Max(1.0, BaseLineSpacing);
   Result.SlotScale := Min(1.0, Min(ColumnScale, AvailableRowScale));
   Result.ContentScale := Result.SlotScale * GetPlayerWidgetScale(PlayerCountOnScreen);
-  Result.NoteLineSpacing := Max(6, Min(AvailableLineSpacing, Round(BaseLineSpacing * Result.ContentScale)));
-  Result.GuideTopY := Result.RowAnchorY - (7 * Result.NoteLineSpacing);
+  Result.NoteLineSpacing := Max(6, Min(MaxLineSpacing, Round(BaseLineSpacing * Result.ContentScale)));
+  TopPadding := Max(0, SlotHeight - 9 * Result.NoteLineSpacing);
+  Result.GuideTopY := SlotTopY + (TopPadding div 2);
+  Result.RowAnchorY := Result.GuideTopY + 7 * Result.NoteLineSpacing;
   GridInsetX := Max(1, Round(Config.GridExtraLeft * Result.ContentScale));
   Result.GridLeft := Result.ColumnLeft - GridInsetX;
   Result.GridRight := Result.ColumnRight;

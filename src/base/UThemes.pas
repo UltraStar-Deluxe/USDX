@@ -2063,39 +2063,18 @@ begin
 
       ThemeLoadSingPlayerStatics(Sing.PlayerTemplate, 'PlayerTemplate');
       SectionList := GetSectionList('SingPlayerGrid');
-      if Length(SectionList) = 0 then
-        SectionList := GetSectionList('SingPlayerLayout');
-      Sing.PlayerLayout.ColumnContainerLeft := ReadInteger(SectionList, 'LaneAreaX',
-        ReadInteger(SectionList, 'ColumnContainerLeft', 40));
-      Sing.PlayerLayout.ColumnContainerWidth := ReadInteger(SectionList, 'LaneAreaW',
-        ReadInteger(SectionList, 'ColumnContainerWidth', 750));
-      Sing.PlayerLayout.GridExtraLeft := ReadInteger(SectionList, 'LaneGridLeftInset',
-        ReadInteger(SectionList, 'GridExtraLeft', 20));
-      Sing.PlayerLayout.NoteContentOffsetX := ReadInteger(SectionList, 'NoteContentOffsetX', -4);
-      Sing.PlayerLayout.ContentVerticalOffset := ReadInteger(SectionList, 'LyricslessTopShiftY',
-        ReadInteger(SectionList, 'ContentVerticalOffset', -20));
-      Sing.PlayerLayout.TopLyricsReservedHeight := ReadInteger(SectionList, 'ReservedTopLyricsH',
-        ReadInteger(SectionList, 'TopLyricsReservedHeight', 80));
-      Sing.PlayerLayout.OneTwoRowSpacing := ReadInteger(SectionList, 'TopGuideSpacing1To2Rows',
-        ReadInteger(SectionList, 'OneTwoRowSpacing', 15));
-      Sing.PlayerLayout.MultiRowSpacing := ReadInteger(SectionList, 'TopGuideSpacing3PlusRows',
-        ReadInteger(SectionList, 'MultiRowSpacing', 12));
-      Sing.PlayerLayout.OneRowAnchorY := ReadInteger(SectionList, 'SingleRowAnchorY',
-        ReadInteger(SectionList, 'OneRowAnchorY', 430));
-      Sing.PlayerLayout.TwoRowsTopAnchorY := ReadInteger(SectionList, 'DualRowTopAnchorY',
-        ReadInteger(SectionList, 'TwoRowsTopAnchorY', 250));
-      Sing.PlayerLayout.TwoRowsBottomAnchorY := ReadInteger(SectionList, 'DualRowBottomAnchorY',
-        ReadInteger(SectionList, 'TwoRowsBottomAnchorY', 430));
-      Sing.PlayerLayout.MultiRowsTopAnchorY := ReadInteger(SectionList, 'MultiRowTopAnchorY',
-        ReadInteger(SectionList, 'MultiRowsTopAnchorY', 215));
-      Sing.PlayerLayout.MultiRowsBottomAnchorY := ReadInteger(SectionList, 'MultiRowBottomAnchorY',
-        ReadInteger(SectionList, 'MultiRowsBottomAnchorY', 465));
-      Sing.PlayerLayout.GuideRangeTopY := ReadInteger(SectionList, 'GuideSpacingReferenceTopY',
-        ReadInteger(SectionList, 'GuideRangeTopY', 120));
-      Sing.PlayerLayout.GuideRangeBottomY := ReadInteger(SectionList, 'GuideSpacingReferenceBottomY',
-        ReadInteger(SectionList, 'GuideRangeBottomY', 370));
-      Sing.PlayerLayout.WidgetScaleBaseWidth := ReadInteger(SectionList, 'WidgetScaleReferenceW',
-        ReadInteger(SectionList, 'WidgetScaleBaseWidth', 300));
+      Sing.PlayerLayout.ColumnContainerLeft := ReadInteger(SectionList, 'LaneAreaX', 40);
+      Sing.PlayerLayout.ColumnContainerTopReserved := ReadInteger(SectionList, 'LaneAreaY', 120);
+      Sing.PlayerLayout.ColumnContainerTopNoLyrics := ReadInteger(SectionList, 'LaneAreaYNoLyrics',
+        Sing.PlayerLayout.ColumnContainerTopReserved);
+      Sing.PlayerLayout.ColumnContainerWidth := ReadInteger(SectionList, 'LaneAreaW', 750);
+      Sing.PlayerLayout.LaneHeightReserved := ReadInteger(SectionList, 'LaneAreaHReserved', 335);
+      Sing.PlayerLayout.LaneHeightNoLyrics := ReadInteger(SectionList, 'LaneAreaHNoLyrics', 395);
+      Sing.PlayerLayout.ColumnGap := ReadInteger(SectionList, 'LaneColumnGap', 50);
+      Sing.PlayerLayout.RowGap := ReadInteger(SectionList, 'LaneRowGap', 0);
+      Sing.PlayerLayout.GridExtraLeft := ReadInteger(SectionList, 'LaneGridLeftInset', 20);
+      Sing.PlayerLayout.BaseLineSpacing := ReadInteger(SectionList, 'LaneBaseLineSpacing', 15);
+      Sing.PlayerLayout.WidgetScaleBaseWidth := ReadInteger(SectionList, 'WidgetScaleReferenceW', 300);
 
       SectionList := GetSectionList('SingPlayerWidgetPlacement');
       if Length(SectionList) = 0 then

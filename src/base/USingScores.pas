@@ -305,8 +305,8 @@ begin
   Result.BGW := Round(BaseTemplate.ScoreBackground.W * ScoreScale);
   Result.BGH := Round(BaseTemplate.ScoreBackground.H * ScoreScale);
   Result.BGX := LaneRight - Result.BGW;
-  GroupTop := Max(10, Layout.GuideTopY -
-    Max(FrameH, ScoreH) - Max(2, Round(Theme.Sing.PlayerWidgetLayout.HeaderGapY * Scale)));
+  GroupTop := Max(10, Layout.RowAnchorY -
+    GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, Layout.GridRows, Scale));
   Result.BGY := GroupTop;
 
   ScoreOffsetX := BaseTemplate.Score.X - BaseTemplate.ScoreBackground.X;

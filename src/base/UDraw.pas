@@ -428,7 +428,7 @@ procedure SingDrawOscilloscopes;
       CurrentSong.isDuet and (PlayersPlay <> 1));
     LaneLeft := Layout.ColumnLeft;
     LaneRight := Layout.ColumnRight;
-    LaneTop := Layout.GuideTopY;
+    LaneTop := Layout.RowAnchorY;
     LaneWidth := Layout.ColumnWidth;
   end;
   function GetOscilloscopePosition(PlayerIndex: integer): TThemePosition;
@@ -476,8 +476,8 @@ procedure SingDrawOscilloscopes;
     ScoreW := Max(Theme.Sing.PlayerWidgetLayout.MinScoreW, Round(BaseTemplate.ScoreBackground.W * Scale));
     ScoreH := Max(Theme.Sing.PlayerWidgetLayout.MinScoreH, Round(BaseTemplate.ScoreBackground.H * Scale));
     HeaderOffsetLeft := Round(Theme.Sing.PlayerWidgetLayout.HeaderOffsetLeft * Scale);
-    GroupTop := Max(10, LaneTop - Max(FrameH, ScoreH) -
-      Max(2, Round(Theme.Sing.PlayerWidgetLayout.HeaderGapY * Scale)));
+    GroupTop := Max(10, LaneTop -
+      GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, Layout.GridRows, Scale));
     NameX := Max(0, LaneLeft - HeaderOffsetLeft) + FrameW +
       Max(Theme.Sing.PlayerWidgetLayout.NameGapMinX, Round(Theme.Sing.PlayerWidgetLayout.NameGapBaseX * Scale));
     NameW := Max(Theme.Sing.PlayerWidgetLayout.NameMinW,

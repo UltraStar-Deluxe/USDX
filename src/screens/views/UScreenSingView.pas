@@ -185,7 +185,7 @@ begin
     CurrentSong.isDuet and (PlayersPlay <> 1));
   LaneLeft := Layout.ColumnLeft;
   LaneRight := Layout.ColumnRight;
-  LaneTop := Layout.GuideTopY;
+  LaneTop := Layout.RowAnchorY;
   LaneWidth := Layout.ColumnWidth;
   Scale := Layout.WidgetScale;
 
@@ -194,8 +194,8 @@ begin
   ScoreW := Max(Theme.Sing.PlayerWidgetLayout.MinScoreW, Round(BaseTemplate.ScoreBackground.W * Scale));
   ScoreH := Max(Theme.Sing.PlayerWidgetLayout.MinScoreH, Round(BaseTemplate.ScoreBackground.H * Scale));
   HeaderOffsetLeft := Round(Theme.Sing.PlayerWidgetLayout.HeaderOffsetLeft * Scale);
-  GroupTop := Max(10, LaneTop - Max(FrameH, ScoreH) -
-    Max(2, Round(Theme.Sing.PlayerWidgetLayout.HeaderGapY * Scale)));
+  GroupTop := Max(10, LaneTop -
+    GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, Layout.GridRows, Scale));
   AvatarInsetX := Max(Theme.Sing.PlayerWidgetLayout.MinAvatarInsetX,
     Round((BaseTemplate.Avatar.X - BaseTemplate.AvatarFrame.X) * Scale));
   AvatarInsetY := Max(Theme.Sing.PlayerWidgetLayout.MinAvatarInsetY,
