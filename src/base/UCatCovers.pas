@@ -63,6 +63,7 @@ uses
   UFilesystem,
   ULog,
   UMain,
+  UThemes,
   UUnicodeUtils,
   UPathUtils;
 
@@ -196,6 +197,12 @@ begin
   //No Cover
   if (Result.IsUnset) then
   begin
+    NoCoverPath := UThemes.ResolveThemeAsset(Path('NoCover.jpg'));
+    if NoCoverPath.IsUnset then
+      NoCoverPath := UThemes.ResolveThemeAsset(Path('covers').Append('NoCover.jpg'));
+    if (NoCoverPath.IsFile) then
+      Exit(NoCoverPath);
+
     for I := 0 to CoverPaths.Count-1 do
     begin
       NoCoverPath := (CoverPaths[I] as IPath).Append('NoCover.jpg');

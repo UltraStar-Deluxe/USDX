@@ -113,6 +113,8 @@ begin
       SDLK_R: begin
         UGraphic.UnLoadScreens();
         Theme.LoadTheme(Ini.Theme, Ini.Color);
+        SoundLib.LoadSounds();
+        SoundLib.StartBgMusic();
         UGraphic.LoadScreens(USDXVersionStr);
       end;
 
