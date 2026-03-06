@@ -1106,6 +1106,12 @@ begin
         if CatSongs.Song[Interaction].hasRap then
           RapToFreestyle := not RapToFreestyle;
 
+      SDLK_V:
+        begin
+          CoverFull := not CoverFull;
+          Exit;
+        end;
+
       SDLK_W:
         begin
 
@@ -1468,7 +1474,7 @@ end;
 function TScreenSong.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 begin
 
-  // transfer mousecords to the 800x600 raster we use to draw
+  // Convert mouse coordinates to the virtual render coordinate space.
   X := Round((X / (ScreenW / Screens)) * RenderW);
   if (X > RenderW) then
     X := X - RenderW;
@@ -2963,6 +2969,7 @@ begin
     AudioPlayback.Stop;
 
   PreviewOpened := -1;
+  CoverFull := false;
 
   // reset video playback engine
   fCurrentVideo := nil;
@@ -3076,6 +3083,7 @@ begin
   // stop preview
   StopMusicPreview();
   StopVideoPreview();
+  CoverFull := false;
 end;
 
 procedure TScreenSong.DrawExtensions;
@@ -3310,7 +3318,14 @@ begin
     fCurrentVideo.Alpha := VideoAlpha;
 
     //set up window
-    if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) then
+    if CoverFull then
+    begin
+        fCurrentVideo.SetScreenPosition(0, 0, 1);
+        fCurrentVideo.Width := RenderW;
+        fCurrentVideo.Height := RenderH;
+        fCurrentVideo.ReflectionSpacing := 0;
+    end
+    else if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) then
     begin
         fCurrentVideo.SetScreenPosition(Theme.Song.Cover.SelectX, Theme.Song.Cover.SelectY, 1);
         fCurrentVideo.Width := Theme.Song.Cover.SelectW;
@@ -3329,11 +3344,14 @@ begin
       end;
     end;
 
-    fCurrentVideo.AspectCorrection := acoCrop;
+    if CoverFull then
+      fCurrentVideo.AspectCorrection := acoLetterBox
+    else
+      fCurrentVideo.AspectCorrection := acoCrop;
 
     fCurrentVideo.Draw;
 
-    if Button[interaction].Reflection or (Theme.Song.Cover.SelectReflection) then
+    if (not CoverFull) and (Button[interaction].Reflection or (Theme.Song.Cover.SelectReflection)) then
       fCurrentVideo.DrawReflection;
   end;
 
@@ -3352,6 +3370,19 @@ begin
   Equalizer.Draw;
 
   DrawExtensions;
+
+  // Keep fullscreen preview video above all song-selection overlays/text.
+  if Assigned(fCurrentVideo) and CoverFull then
+  begin
+    fCurrentVideo.SetScreen(ScreenAct);
+    fCurrentVideo.Alpha := 1;
+    fCurrentVideo.SetScreenPosition(0, 0, 1);
+    fCurrentVideo.Width := RenderW;
+    fCurrentVideo.Height := RenderH;
+    fCurrentVideo.ReflectionSpacing := 0;
+    fCurrentVideo.AspectCorrection := acoLetterBox;
+    fCurrentVideo.Draw;
+  end;
 
   //if (Mode = smPartyTournament) then
   //  PartyTimeLimit();
