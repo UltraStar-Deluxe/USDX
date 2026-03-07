@@ -361,6 +361,41 @@ type
     TextCat:          TThemeText;
     StaticCat:        TThemeStatic;
 
+    LoopOverlay: record
+      X: real;
+      Y: real;
+      MinW: real;
+      MaxW: real;
+      H: real;
+      BoxPaddingW: real;
+      TextX: real;
+      TitleY: real;
+      TimeY: real;
+      FontSize: integer;
+      TitleMaxW: real;
+      TimeBarGap: real;
+      BarY: real;
+      BarH: real;
+      BarMinW: real;
+      BarMaxW: real;
+      BgR: real;
+      BgG: real;
+      BgB: real;
+      BgA: real;
+      TextR: real;
+      TextG: real;
+      TextB: real;
+      TextA: real;
+      BarBgR: real;
+      BarBgG: real;
+      BarBgB: real;
+      BarBgA: real;
+      BarFillR: real;
+      BarFillG: real;
+      BarFillB: real;
+      BarFillA: real;
+    end;
+
     //Cover Mod
     Cover: record
       Reflections: boolean;
@@ -3810,6 +3845,40 @@ begin
   //Show Cat in TopLeft Mod
   ThemeLoadStatic(Song.StaticCat, 'Song' + prefix + 'StaticCat');
   ThemeLoadText(Song.TextCat, 'Song' + prefix + 'TextCat');
+
+  SectionList := GetSectionList('LoopOverlay');
+  Song.LoopOverlay.X := ReadFloat(SectionList, 'X', 0);
+  Song.LoopOverlay.Y := ReadFloat(SectionList, 'Y', 0);
+  Song.LoopOverlay.MinW := ReadFloat(SectionList, 'MinW', 0);
+  Song.LoopOverlay.MaxW := ReadFloat(SectionList, 'MaxW', 0);
+  Song.LoopOverlay.H := ReadFloat(SectionList, 'H', 42);
+  Song.LoopOverlay.BoxPaddingW := ReadFloat(SectionList, 'BoxPaddingW', 18);
+  Song.LoopOverlay.TextX := ReadFloat(SectionList, 'TextX', 9);
+  Song.LoopOverlay.TitleY := ReadFloat(SectionList, 'TitleY', 6);
+  Song.LoopOverlay.TimeY := ReadFloat(SectionList, 'TimeY', 21);
+  Song.LoopOverlay.FontSize := ReadInteger(SectionList, 'FontSize', 13);
+  Song.LoopOverlay.TitleMaxW := ReadFloat(SectionList, 'TitleMaxW', 480);
+  Song.LoopOverlay.TimeBarGap := ReadFloat(SectionList, 'TimeBarGap', 10);
+  Song.LoopOverlay.BarY := ReadFloat(SectionList, 'BarY', 25);
+  Song.LoopOverlay.BarH := ReadFloat(SectionList, 'BarH', 6);
+  Song.LoopOverlay.BarMinW := ReadFloat(SectionList, 'BarMinW', 70);
+  Song.LoopOverlay.BarMaxW := ReadFloat(SectionList, 'BarMaxW', 260);
+  Song.LoopOverlay.BgR := ReadFloat(SectionList, 'BgR', 0);
+  Song.LoopOverlay.BgG := ReadFloat(SectionList, 'BgG', 0);
+  Song.LoopOverlay.BgB := ReadFloat(SectionList, 'BgB', 0);
+  Song.LoopOverlay.BgA := ReadFloat(SectionList, 'BgA', 0.35);
+  Song.LoopOverlay.TextR := ReadFloat(SectionList, 'TextR', 1);
+  Song.LoopOverlay.TextG := ReadFloat(SectionList, 'TextG', 1);
+  Song.LoopOverlay.TextB := ReadFloat(SectionList, 'TextB', 1);
+  Song.LoopOverlay.TextA := ReadFloat(SectionList, 'TextA', 0.82);
+  Song.LoopOverlay.BarBgR := ReadFloat(SectionList, 'BarBgR', 0.45);
+  Song.LoopOverlay.BarBgG := ReadFloat(SectionList, 'BarBgG', 0.45);
+  Song.LoopOverlay.BarBgB := ReadFloat(SectionList, 'BarBgB', 0.45);
+  Song.LoopOverlay.BarBgA := ReadFloat(SectionList, 'BarBgA', 0.30);
+  Song.LoopOverlay.BarFillR := ReadFloat(SectionList, 'BarFillR', 0.95);
+  Song.LoopOverlay.BarFillG := ReadFloat(SectionList, 'BarFillG', 0.95);
+  Song.LoopOverlay.BarFillB := ReadFloat(SectionList, 'BarFillB', 0.95);
+  Song.LoopOverlay.BarFillA := ReadFloat(SectionList, 'BarFillA', 0.30);
 
   //Load Cover Pos and Size from Theme Mod
   SectionList := GetSectionList('Song' + prefix + 'Cover');

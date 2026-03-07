@@ -609,25 +609,30 @@ begin
   SetFontItalic(false);
   SetFontReflection(false, 0);
   SetFontZ(0);
-  SetFontSize(13);
+  SetFontSize(Theme.Song.LoopOverlay.FontSize);
 
   SongText := CatSongs.Song[Interaction].Artist + ' - ' + CatSongs.Song[Interaction].Title;
-  SongText := TruncateLoopOverlayText(SongText, 480);
+  SongText := TruncateLoopOverlayText(SongText, Theme.Song.LoopOverlay.TitleMaxW);
   TitleW := glTextWidth(SongText);
   TimeTextW := glTextWidth(FormatLoopClock(AudioPlayback.Position) + ' / ' + FormatLoopClock(AudioPlayback.Length));
 
   MaxTimeTextW := glTextWidth('99:99 / 99:99');
-  BarW := EnsureRange(TitleW - MaxTimeTextW - 12, 70, 260);
-  ContentW := Max(TitleW, Max(TimeTextW, MaxTimeTextW) + 10 + BarW);
+  BarW := EnsureRange(TitleW - MaxTimeTextW - Theme.Song.LoopOverlay.TimeBarGap,
+    Theme.Song.LoopOverlay.BarMinW, Theme.Song.LoopOverlay.BarMaxW);
+  ContentW := Max(TitleW, Max(TimeTextW, MaxTimeTextW) + Theme.Song.LoopOverlay.TimeBarGap + BarW);
 
-  W := ContentW + 18;
-  H := 42;
-  X := 0;
-  Y := 0;
+  W := ContentW + Theme.Song.LoopOverlay.BoxPaddingW;
+  if Theme.Song.LoopOverlay.MinW > 0 then
+    W := Max(W, Theme.Song.LoopOverlay.MinW);
+  if Theme.Song.LoopOverlay.MaxW > 0 then
+    W := Min(W, Theme.Song.LoopOverlay.MaxW);
+  H := Theme.Song.LoopOverlay.H;
+  X := Theme.Song.LoopOverlay.X;
+  Y := Theme.Song.LoopOverlay.Y;
 
-  BarX := X + 9 + MaxTimeTextW + 10;
-  BarY := Y + 25;
-  BarH := 6;
+  BarX := X + Theme.Song.LoopOverlay.TextX + MaxTimeTextW + Theme.Song.LoopOverlay.TimeBarGap;
+  BarY := Y + Theme.Song.LoopOverlay.BarY;
+  BarH := Theme.Song.LoopOverlay.BarH;
 end;
 
 function TScreenSong.HandleLoopOverlayMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
@@ -672,7 +677,7 @@ begin
   TimeText := FormatLoopClock(AudioPlayback.Position) + ' / ' + FormatLoopClock(AudioPlayback.Length);
 
   GetLoopOverlayGeometry(X, Y, W, H, BarX, BarY, BarW, BarH);
-  SongText := TruncateLoopOverlayText(SongText, W - 18);
+  SongText := TruncateLoopOverlayText(SongText, W - Theme.Song.LoopOverlay.BoxPaddingW);
   if (AudioPlayback.Length > 0) then
     Progress := EnsureRange(AudioPlayback.Position / AudioPlayback.Length, 0.0, 1.0)
   else
@@ -681,31 +686,35 @@ begin
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_TEXTURE_2D);
   glEnable(GL_BLEND);
-  glColor4f(0, 0, 0, 0.35);
+  glColor4f(Theme.Song.LoopOverlay.BgR, Theme.Song.LoopOverlay.BgG,
+    Theme.Song.LoopOverlay.BgB, Theme.Song.LoopOverlay.BgA);
   glBegin(GL_QUADS);
     glVertex2f(X, Y);
     glVertex2f(X, Y + H);
     glVertex2f(X + W, Y + H);
     glVertex2f(X + W, Y);
   glEnd;
-  glColor4f(1, 1, 1, 0.82);
+  glColor4f(Theme.Song.LoopOverlay.TextR, Theme.Song.LoopOverlay.TextG,
+    Theme.Song.LoopOverlay.TextB, Theme.Song.LoopOverlay.TextA);
   glEnable(GL_TEXTURE_2D);
 
-  SetFontSize(13);
-  SetFontPos(X + 9, Y + 6);
+  SetFontSize(Theme.Song.LoopOverlay.FontSize);
+  SetFontPos(X + Theme.Song.LoopOverlay.TextX, Y + Theme.Song.LoopOverlay.TitleY);
   glPrint(SongText);
-  SetFontPos(X + 9, Y + 21);
+  SetFontPos(X + Theme.Song.LoopOverlay.TextX, Y + Theme.Song.LoopOverlay.TimeY);
   glPrint(TimeText);
 
   glDisable(GL_TEXTURE_2D);
-  glColor4f(0.45, 0.45, 0.45, 0.30);
+  glColor4f(Theme.Song.LoopOverlay.BarBgR, Theme.Song.LoopOverlay.BarBgG,
+    Theme.Song.LoopOverlay.BarBgB, Theme.Song.LoopOverlay.BarBgA);
   glBegin(GL_QUADS);
     glVertex2f(BarX, BarY);
     glVertex2f(BarX, BarY + BarH);
     glVertex2f(BarX + BarW, BarY + BarH);
     glVertex2f(BarX + BarW, BarY);
   glEnd;
-  glColor4f(0.95, 0.95, 0.95, 0.30);
+  glColor4f(Theme.Song.LoopOverlay.BarFillR, Theme.Song.LoopOverlay.BarFillG,
+    Theme.Song.LoopOverlay.BarFillB, Theme.Song.LoopOverlay.BarFillA);
   glBegin(GL_QUADS);
     glVertex2f(BarX, BarY);
     glVertex2f(BarX, BarY + BarH);
