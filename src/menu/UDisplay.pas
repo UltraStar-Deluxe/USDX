@@ -182,7 +182,80 @@ uses
   UTexture,
   UTime,
   ULanguage,
-  UPathUtils;
+  UPathUtils
+  {$IFDEF MSWINDOWS}
+  ,Windows
+  {$ENDIF}
+  ;
+
+function MinF(const A, B: Double): Double; inline;
+begin
+  if A < B then
+    Result := A
+  else
+    Result := B;
+end;
+
+function MaxF(const A, B: Double): Double; inline;
+begin
+  if A > B then
+    Result := A
+  else
+    Result := B;
+end;
+
+{$IFDEF MSWINDOWS}
+const
+  PRINTSCREEN_HOTKEY_ID = 1;
+  {$IFNDEF MOD_NOREPEAT}
+  MOD_NOREPEAT = $4000;
+  {$ENDIF}
+
+var
+  PrintScreenHotKeyRegistered: boolean = false;
+  PrintScreenHookInstalled: boolean = false;
+
+procedure HandlePrintScreenHotKey(Data: Pointer);
+begin
+  if Assigned(Display) then
+    Display.SaveScreenShot;
+end;
+
+procedure PrintScreenWindowsMessageHook(userdata, hWnd: Pointer; mesage: UInt32; wParam: UInt64; lParam: SInt64); cdecl;
+begin
+  if (mesage = WM_HOTKEY) and (wParam = PRINTSCREEN_HOTKEY_ID) then
+  begin
+    MainThreadExec(@HandlePrintScreenHotKey, nil);
+  end;
+end;
+
+procedure RegisterPrintScreenHotKey;
+begin
+  if not PrintScreenHookInstalled then
+  begin
+    SDL_SetWindowsMessageHook(@PrintScreenWindowsMessageHook, nil);
+    PrintScreenHookInstalled := true;
+  end;
+
+  if not PrintScreenHotKeyRegistered then
+    PrintScreenHotKeyRegistered := RegisterHotKey(0, PRINTSCREEN_HOTKEY_ID, MOD_NOREPEAT, VK_SNAPSHOT);
+end;
+
+procedure UnregisterPrintScreenHotKey;
+begin
+  if PrintScreenHotKeyRegistered then
+  begin
+    UnregisterHotKey(0, PRINTSCREEN_HOTKEY_ID);
+    PrintScreenHotKeyRegistered := false;
+  end;
+
+  if PrintScreenHookInstalled then
+  begin
+    SDL_SetWindowsMessageHook(nil, nil);
+    PrintScreenHookInstalled := false;
+  end;
+end;
+{$ENDIF}
 
 constructor TDisplay.Create;
 begin
@@ -220,10 +293,17 @@ begin
   Cursor_Fade     := false;
   Cursor_HiddenByScreen := true;
   Cursor_Update   := false;
+
+  {$IFDEF MSWINDOWS}
+  RegisterPrintScreenHotKey;
+  {$ENDIF}
 end;
 
 destructor TDisplay.Destroy;
 begin
+  {$IFDEF MSWINDOWS}
+  UnregisterPrintScreenHotKey;
+  {$ENDIF}
   glDeleteTextures(2, @FadeTex);
   inherited Destroy;
 end;
@@ -934,7 +1014,7 @@ begin
   glColor4f(1, 1, 1, 1);
 
   OldStretch := Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Stretch;
-  Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Stretch := 1.4*ScaleF * Min(1.3, Max(0.8, power((1.0*ScreenW)/800.0, 1.2)));
+  Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Stretch := 1.4*ScaleF * MinF(1.3, MaxF(0.8, power((1.0*ScreenW)/800.0, 1.2)));
 
   // don't draw anything else if nothing's logged
   if Log.ConsoleCount < 1 then Exit;
@@ -968,7 +1048,7 @@ begin
   // visible height bar + offset
   YOffset := H * ((1.0*LineCount)/(1.0*Log.ConsoleCount));
   PosY := 0;
-  if I > 0 then PosY := (H-2.0*ScrollPad) * Max(0.0, I)/(1.0*Log.ConsoleCount);
+  if I > 0 then PosY := (H-2.0*ScrollPad) * MaxF(0.0, I)/(1.0*Log.ConsoleCount);
 
   glColor4f(1, 1, 1, 1);
   glBegin(GL_QUADS);
