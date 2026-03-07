@@ -579,7 +579,6 @@ begin
   // song info
   Song := TSong.Create();
   Song.Clear();
-  Song.Resolution := 4;
   Song.BPM := BPM*4;
   SetLength(Notes, 0);
 
@@ -673,7 +672,6 @@ begin
   Track.Number      := 1;
   Track.High        := 0;
   Track.CurrentLine := 0;
-  Track.Resolution  := 0;
   Track.NotesGAP    := 0;
   Track.ScoreValue  := 0;
 

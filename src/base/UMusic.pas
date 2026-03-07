@@ -147,7 +147,6 @@ type
     CurrentLine: integer;  // for drawing of current line
     High:        integer;  // = High(Line)!
     Number:      integer;
-    Resolution:  integer;
     NotesGAP:    integer;
     ScoreValue:  integer;
     Lines:       array of TLine;
