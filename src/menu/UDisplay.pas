@@ -173,7 +173,80 @@ uses
   UTime,
   ULanguage,
   UPathUtils,
-  UScale;
+  UScale
+  {$IFDEF MSWINDOWS}
+  ,Windows
+  {$ENDIF}
+  ;
+
+function MinF(const A, B: Double): Double; inline;
+begin
+  if A < B then
+    Result := A
+  else
+    Result := B;
+end;
+
+function MaxF(const A, B: Double): Double; inline;
+begin
+  if A > B then
+    Result := A
+  else
+    Result := B;
+end;
+
+{$IFDEF MSWINDOWS}
+const
+  PRINTSCREEN_HOTKEY_ID = 1;
+  {$IFNDEF MOD_NOREPEAT}
+  MOD_NOREPEAT = $4000;
+  {$ENDIF}
+
+var
+  PrintScreenHotKeyRegistered: boolean = false;
+  PrintScreenHookInstalled: boolean = false;
+
+procedure HandlePrintScreenHotKey(Data: Pointer);
+begin
+  if Assigned(Display) then
+    Display.SaveScreenShot;
+end;
+
+procedure PrintScreenWindowsMessageHook(userdata, hWnd: Pointer; mesage: UInt32; wParam: UInt64; lParam: SInt64); cdecl;
+begin
+  if (mesage = WM_HOTKEY) and (wParam = PRINTSCREEN_HOTKEY_ID) then
+  begin
+    MainThreadExec(@HandlePrintScreenHotKey, nil);
+  end;
+end;
+
+procedure RegisterPrintScreenHotKey;
+begin
+  if not PrintScreenHookInstalled then
+  begin
+    SDL_SetWindowsMessageHook(@PrintScreenWindowsMessageHook, nil);
+    PrintScreenHookInstalled := true;
+  end;
+
+  if not PrintScreenHotKeyRegistered then
+    PrintScreenHotKeyRegistered := RegisterHotKey(0, PRINTSCREEN_HOTKEY_ID, MOD_NOREPEAT, VK_SNAPSHOT);
+end;
+
+procedure UnregisterPrintScreenHotKey;
+begin
+  if PrintScreenHotKeyRegistered then
+  begin
+    UnregisterHotKey(0, PRINTSCREEN_HOTKEY_ID);
+    PrintScreenHotKeyRegistered := false;
+  end;
+
+  if PrintScreenHookInstalled then
+  begin
+    SDL_SetWindowsMessageHook(nil, nil);
+    PrintScreenHookInstalled := false;
+  end;
+end;
+{$ENDIF}
 
 constructor TDisplay.Create;
 begin
@@ -211,10 +284,17 @@ begin
   Cursor_Fade     := false;
   Cursor_HiddenByScreen := true;
   Cursor_Update   := false;
+
+  {$IFDEF MSWINDOWS}
+  RegisterPrintScreenHotKey;
+  {$ENDIF}
 end;
 
 destructor TDisplay.Destroy;
 begin
+  {$IFDEF MSWINDOWS}
+  UnregisterPrintScreenHotKey;
+  {$ENDIF}
   glDeleteTextures(2, @FadeTex);
   inherited Destroy;
 end;
