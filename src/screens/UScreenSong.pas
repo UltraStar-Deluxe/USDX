@@ -739,7 +739,10 @@ begin
           begin
             if (CatSongs.Song[(I + Interaction) mod I2].Visible) then
             begin
-              TempStr := CatSongs.Song[(I + Interaction) mod I2].Artist;
+              if (TSortingType(Ini.Sorting) = sFolder) then
+                TempStr := CatSongs.Song[(I + Interaction) mod I2].Folder
+              else
+                TempStr := CatSongs.Song[(I + Interaction) mod I2].Artist;
               if Length(TempStr) > 0 then TempLetter := UCS4UpperCase(UTF8ToUCS4String(TempStr)[0])
               else                        TempLetter := 0;
               //in case of tabs, the artist string may be enclosed in brackets so we check the first charactere is a bracket then go to next
