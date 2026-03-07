@@ -56,13 +56,6 @@ procedure EditDrawLine(X, YBaseNote, W, H: real; Track: integer; NumLines: integ
 procedure EditDrawBorderedBox(X, Y, W, H: integer; FillR: real = 0.9; FillG: real = 0.9; FillB: real = 0.9; FillAlpha: real = 0.5);
 procedure EditDrawBeatDelimiters(X, Y, W, H: real; Track: integer);
 
-// Draw Jukebox
-procedure SingDrawJukebox;
-procedure SingDrawJukeboxBackground;
-procedure SingDrawJukeboxBlackBackground;
-procedure SingDrawJukeboxTimeBar();
-procedure SingDrawLyricHelperJukebox(Left, LyricsMid: real);
-
 // Draw Webcam
 procedure SingDrawWebCamFrame;
 
@@ -113,7 +106,6 @@ uses
   UMusic,
   URecord,
   UScreenSingController,
-  UScreenJukebox,
   USong,
   UTexture,
   UWebcam;
@@ -294,119 +286,6 @@ begin
       glDisable(GL_BLEND);
     end;
   end;
-end;
-
-procedure SingDrawJukeboxBackground;
-var
-  Rec:    TRecR;
-  TexRec: TRecR;
-begin
-  if (ScreenJukebox.Tex_Background.TexNum > 0) then
-  begin
-    if (Ini.MovieSize <= 1) then  //HalfSize BG
-    begin
-      (* half screen + gradient *)
-      Rec.Top := 110; // 80
-      Rec.Bottom := Rec.Top + 20;
-      Rec.Left  := 0;
-      Rec.Right := 800;
-
-      TexRec.Top := (Rec.Top / 600) * ScreenJukebox.Tex_Background.TexH;
-      TexRec.Bottom := (Rec.Bottom / 600) * ScreenJukebox.Tex_Background.TexH;
-      TexRec.Left := 0;
-      TexRec.Right := ScreenJukebox.Tex_Background.TexW;
-
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, ScreenJukebox.Tex_Background.TexNum);
-      glEnable(GL_BLEND);
-
-      glBegin(GL_QUADS);
-        (* gradient draw *)
-        (* top *)
-        glColor4f(1, 1, 1, 0);
-        glTexCoord2f(TexRec.Right, TexRec.Top);    glVertex2f(Rec.Right, Rec.Top);
-        glTexCoord2f(TexRec.Left,  TexRec.Top);    glVertex2f(Rec.Left,  Rec.Top);
-        glColor4f(1, 1, 1, 1);
-        glTexCoord2f(TexRec.Left,  TexRec.Bottom); glVertex2f(Rec.Left,  Rec.Bottom);
-        glTexCoord2f(TexRec.Right, TexRec.Bottom); glVertex2f(Rec.Right, Rec.Bottom);
-        (* mid *)
-        Rec.Top := Rec.Bottom;
-        Rec.Bottom := 490 - 20; // 490 - 20
-        TexRec.Top := TexRec.Bottom;
-        TexRec.Bottom := (Rec.Bottom / 600) * ScreenJukebox.Tex_Background.TexH;
-        glTexCoord2f(TexRec.Left,  TexRec.Top);    glVertex2f(Rec.Left,  Rec.Top);
-        glTexCoord2f(TexRec.Left,  TexRec.Bottom); glVertex2f(Rec.Left,  Rec.Bottom);
-        glTexCoord2f(TexRec.Right, TexRec.Bottom); glVertex2f(Rec.Right, Rec.Bottom);
-
-        glTexCoord2f(TexRec.Right, TexRec.Top);    glVertex2f(Rec.Right, Rec.Top);
-        (* bottom *)
-        Rec.Top := Rec.Bottom;
-        Rec.Bottom := 490; // 490
-        TexRec.Top := TexRec.Bottom;
-        TexRec.Bottom := (Rec.Bottom / 600) * ScreenJukebox.Tex_Background.TexH;
-        glTexCoord2f(TexRec.Right, TexRec.Top);    glVertex2f(Rec.Right, Rec.Top);
-        glTexCoord2f(TexRec.Left,  TexRec.Top);    glVertex2f(Rec.Left,  Rec.Top);
-        glColor4f(1, 1, 1, 0);
-        glTexCoord2f(TexRec.Left,  TexRec.Bottom); glVertex2f(Rec.Left,  Rec.Bottom);
-        glTexCoord2f(TexRec.Right, TexRec.Bottom); glVertex2f(Rec.Right, Rec.Bottom);
-
-      glEnd;
-      glDisable(GL_TEXTURE_2D);
-      glDisable(GL_BLEND);
-    end
-    else //Full Size BG
-    begin
-      glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D, ScreenJukebox.Tex_Background.TexNum);
-      glEnable(GL_BLEND);
-      glBegin(GL_QUADS);
-        glColor4f(1, 1, 1, 1);
-
-        glTexCoord2f(0, 0);   glVertex2f(0,  0);
-        glTexCoord2f(0,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(0,  600);
-        glTexCoord2f( ScreenJukebox.Tex_Background.TexW,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(800, 600);
-        glTexCoord2f( ScreenJukebox.Tex_Background.TexW, 0);   glVertex2f(800, 0);
-
-      glEnd;
-      glDisable(GL_TEXTURE_2D);
-      glDisable(GL_BLEND);
-    end;
-  end
-  else
-  begin
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, ScreenJukebox.Tex_Background.TexNum);
-    //glEnable(GL_BLEND);
-    glBegin(GL_QUADS);
-      glColor4f(0, 0, 0, 1);
-
-      glTexCoord2f(0, 0);   glVertex2f(0,  0);
-      glTexCoord2f(0,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(0,  600);
-      glTexCoord2f( ScreenJukebox.Tex_Background.TexW,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(800, 600);
-      glTexCoord2f( ScreenJukebox.Tex_Background.TexW, 0);   glVertex2f(800, 0);
-
-    glEnd;
-    glDisable(GL_TEXTURE_2D);
-    //glDisable(GL_BLEND);
-  end;
-end;
-
-procedure SingDrawJukeboxBlackBackground;
-begin
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, ScreenJukebox.Tex_Background.TexNum);
-  //glEnable(GL_BLEND);
-  glBegin(GL_QUADS);
-    glColor4f(0, 0, 0, 1);
-
-    glTexCoord2f(0, 0);   glVertex2f(0,  0);
-    glTexCoord2f(0,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(0,  600);
-    glTexCoord2f( ScreenJukebox.Tex_Background.TexW,  ScreenJukebox.Tex_Background.TexH);   glVertex2f(800, 600);
-    glTexCoord2f( ScreenJukebox.Tex_Background.TexW, 0);   glVertex2f(800, 0);
-
-  glEnd;
-  glDisable(GL_TEXTURE_2D);
-  //glDisable(GL_BLEND);
 end;
 
 procedure SingDrawOscilloscopes;
@@ -1111,113 +990,6 @@ begin
   end;
 end;
 
-(**
- * Draws the lyrics helper bar jukebox.
- * Left: position the bar starts at
- * LyricsMid: the middle of the lyrics relative to the position Left
- *)
-procedure SingDrawLyricHelperJukebox(Left, LyricsMid: real);
-var
-  Bounds: TRecR;           // bounds of the lyric help bar
-  BarProgress: real;       // progress of the lyrics helper
-  BarMoveDelta: real;      // current beat relative to the beat the bar starts to move at
-  BarAlpha: real;          // transparency
-  CurLine:  PLine;         // current lyric line (beat specific)
-  LineWidth: real;         // lyric line width
-  FirstNoteBeat: integer;  // beat of the first note in the current line
-  FirstNoteDelta: integer; // time in beats between the start of the current line and its first note
-  MoveStartX: real;        // x-pos. the bar starts to move from
-  MoveDist: real;          // number of pixels the bar will move
-  LyricEngine: TLyricEngine;
-const
-  BarWidth  = 50; // width  of the lyric helper bar
-  BarHeight = 30; // height of the lyric helper bar
-  BarMoveLimit = 40; // max. number of beats remaining before the bar starts to move
-begin
-
-  // get current lyrics line and the time in beats of its first note
-  CurLine := @CurrentSong.Tracks[0].Lines[CurrentSong.Tracks[0].CurrentLine];
-
-  // FIXME: accessing ScreenSing is not that generic
-  LyricEngine := ScreenJukebox.Lyrics;
-
-  // do not draw the lyrics helper if the current line does not contain any note
-  if (Length(CurLine.Notes) > 0) then
-  begin
-    // start beat of the first note of this line
-    FirstNoteBeat := CurLine.Notes[0].StartBeat;
-    // time in beats between the start of the current line and its first note
-    FirstNoteDelta := FirstNoteBeat - CurLine.StartBeat;
-
-    // beats from current beat to the first note of the line
-    BarMoveDelta := FirstNoteBeat - LyricsState.MidBeat;
-
-    if (FirstNoteDelta > 8) and  // if the wait-time is large enough
-       (BarMoveDelta > 0) then   // and the first note of the line is not reached
-    begin
-      // let the bar blink to the beat
-      BarAlpha := 0.75 + cos(BarMoveDelta/2) * 0.25;
-
-      // if the number of beats to the first note is too big,
-      // the bar stays on the left side.
-      if (BarMoveDelta > BarMoveLimit) then
-        BarMoveDelta := BarMoveLimit;
-
-      // limit number of beats the bar moves
-      if (FirstNoteDelta > BarMoveLimit) then
-        FirstNoteDelta := BarMoveLimit;
-
-      // calc bar progress
-      BarProgress := 1 - BarMoveDelta / FirstNoteDelta;
-
-      // retrieve the width of the upper lyrics line on the display
-      if (LyricEngine.GetUpperLine() <> nil) then
-        LineWidth := LyricEngine.GetUpperLine().Width
-      else
-        LineWidth := 0;
-
-      // distance the bar will move (LyricRec.Left to beginning of text)
-      MoveDist := LyricsMid - LineWidth/2 - BarWidth;
-
-      if (LineWidth/2 + (BarWidth - Left) * 2 >= 400) then
-        Bounds.Left := - BarProgress * MoveDist + Left - BarWidth
-      else
-      begin
-        // if the line is too long the helper might move from right to left
-        // so we have to assure the start position is left of the text.
-        if (MoveDist >= 0) then
-          MoveStartX := Left
-        else
-          MoveStartX := Left + MoveDist;
-
-        // determine lyric help bar position and size
-        Bounds.Left := MoveStartX + BarProgress * MoveDist;
-      end;
-
-      Bounds.Right := Bounds.Left + BarWidth;
-      Bounds.Top := Theme.LyricBarJukebox.IndicatorYOffset + ScreenJukeBox.Lyrics.UpperLineY;
-      Bounds.Bottom := Bounds.Top + BarHeight + 3;
-
-      // draw lyric help bar
-      glEnable(GL_TEXTURE_2D);
-      glEnable(GL_BLEND);
-
-      //glColor4f(1, 0.75, 0, BarAlpha);
-      glColor4f(ScreenJukebox.LyricHelper.R, ScreenJukebox.LyricHelper.G, ScreenJukebox.LyricHelper.B, BarAlpha);
-
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
-      glBegin(GL_QUADS);
-        glTexCoord2f(0, 0); glVertex2f(Bounds.Left,  Bounds.Top);
-        glTexCoord2f(0, 1); glVertex2f(Bounds.Left,  Bounds.Bottom);
-        glTexCoord2f(1, 1); glVertex2f(Bounds.Right, Bounds.Bottom);
-        glTexCoord2f(1, 0); glVertex2f(Bounds.Right, Bounds.Top);
-      glEnd;
-      glDisable(GL_BLEND);
-    end;
-  end;
-end;
-
 procedure SingDrawLines;
 var
   NR: TRecR;         // lyrics area bounds (NR = NoteRec?)
@@ -1588,36 +1360,6 @@ begin
   glDisable(GL_TEXTURE_2D);
 end;
 
-procedure SingDrawJukebox;
-var
-  NR: TRecR;         // lyrics area bounds (NR = NoteRec?)
-  LyricEngine: TLyricEngine;
-begin
-  // positions
-  NR.Left := 20;
-  NR.Right := 780;
-  NR.Width := 760; //NR.Right - NR.Left;
-  NR.WMid  := 380; //NR.Width / 2;
-  NR.Mid   := 400; //NR.Left + NR.WMid;
-
-  // FIXME: accessing ScreenJukebox is not that generic
-  LyricEngine := ScreenJukebox.Lyrics;
-
-  // draw Lyrics
-  if (ScreenJukebox.ShowLyrics) then
-  begin
-    if (ScreenJukebox.LyricsStart) or ((not(ScreenJukebox.LyricsStart) and (LyricsState.GetCurrentTime() * 1000 >= LyricsState.StartTime - 3000))) then
-    begin
-        LyricEngine.Draw(LyricsState.MidBeat);
-        SingDrawLyricHelperJukebox(NR.Left, NR.WMid);
-        ScreenJukebox.LyricsStart := true;
-    end;
-  end;
-
-  glDisable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
-end;
-
 // Draw Note Bars for Editor
 // There are 11 reasons for a new procedure:   (nice binary :D )
 // 1. It does not look good when you draw the golden note star effect in the editor
@@ -1803,73 +1545,4 @@ begin
   glDisable(GL_BLEND);
 end;
 
-procedure SingDrawJukeboxTimeBar();
-var
-  x, y:           real;
-  width, height:  real;
-  LyricsProgress: real;
-  CurLyricsTime:  real;
-begin
-
-  if (ScreenJukebox.SongListVisible) then
-  begin
-    x := Theme.Jukebox.StaticTimeProgress.x;
-    y := Theme.Jukebox.StaticTimeProgress.y;
-
-    width  := Theme.Jukebox.StaticTimeProgress.w;
-    height := Theme.Jukebox.StaticTimeProgress.h;
-
-    glColor4f(Theme.Jukebox.StaticTimeProgress.ColR,
-              Theme.Jukebox.StaticTimeProgress.ColG,
-              Theme.Jukebox.StaticTimeProgress.ColB, 1); //Set Color
-  end;
-
-  if (ScreenJukebox.SongMenuVisible) then
-  begin
-    x := Theme.Jukebox.StaticSongMenuTimeProgress.x;
-    y := Theme.Jukebox.StaticSongMenuTimeProgress.y;
-
-    width  := Theme.Jukebox.StaticSongMenuTimeProgress.w;
-    height := Theme.Jukebox.StaticSongMenuTimeProgress.h;
-
-    glColor4f(Theme.Jukebox.StaticSongMenuTimeProgress.ColR,
-              Theme.Jukebox.StaticSongMenuTimeProgress.ColG,
-              Theme.Jukebox.StaticSongMenuTimeProgress.ColB, 1); //Set Color
-  end;
-
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-
-  glBindTexture(GL_TEXTURE_2D, Tex_JukeboxTimeProgress.TexNum);
-
-  glBegin(GL_QUADS);
-    glTexCoord2f(0, 0);
-    glVertex2f(x, y);
-
-    CurLyricsTime := LyricsState.GetCurrentTime();
-    if (CurLyricsTime > 0) and
-       (LyricsState.TotalTime > 0) then
-    begin
-      LyricsProgress := CurLyricsTime / LyricsState.TotalTime;
-      // avoid that the bar "overflows" for inaccurate song lengths
-      if (LyricsProgress > 1.0) then
-        LyricsProgress := 1.0;
-      glTexCoord2f((width * LyricsProgress) / 8, 0);
-      glVertex2f(x + width * LyricsProgress, y);
-
-      glTexCoord2f((width * LyricsProgress) / 8, 1);
-      glVertex2f(x + width * LyricsProgress, y + height);
-    end;
-
-    glTexCoord2f(0, 1);
-    glVertex2f(x, y + height);
-  glEnd;
-
- glDisable(GL_TEXTURE_2D);
- glDisable(GL_BLEND);
- glcolor4f(1, 1, 1, 1);
-
-end;
-
 end.
-
