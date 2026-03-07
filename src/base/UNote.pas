@@ -397,8 +397,8 @@ begin
 
   if not (CurrentSong.isDuet) or (PlayersPlay = 1) then
   begin
-    if ((Ini.BeatClick = 1) and
-        ((LyricsState.CurrentBeatC + CurrentSong.Tracks[0].Resolution + CurrentSong.Tracks[0].NotesGAP) mod CurrentSong.Tracks[0].Resolution = 0)) then
+  if ((Ini.BeatClick = 1) and
+    ((LyricsState.CurrentBeatC + USong.DEFAULT_RESOLUTION + CurrentSong.Tracks[0].NotesGAP) mod USong.DEFAULT_RESOLUTION = 0)) then
     begin
       AudioPlayback.PlaySound(SoundLib.Click);
     end;

@@ -66,7 +66,7 @@ uses
   UMusic; // for TLines
 
 const
-  DEFAULT_RESOLUTION = 4; // default #RESOLUTION
+  DEFAULT_RESOLUTION = 4; // default beat grid resolution
 
 type
 
@@ -178,7 +178,6 @@ type
     Start:      real; // in seconds
     Finish:     integer; // in milliseconds
     Relative:   boolean;
-    Resolution: integer;
     BPM:        array of TBPM;
     GAP:        real; // in milliseconds
     
@@ -716,7 +715,6 @@ begin
         Tracks[TrackIndex].High := 0;
         Tracks[TrackIndex].Number := 1;
         Tracks[TrackIndex].CurrentLine := 0;
-        Tracks[TrackIndex].Resolution := self.Resolution;
         Tracks[TrackIndex].NotesGAP   := self.NotesGAP;
         Tracks[TrackIndex].ScoreValue := 0;
 
@@ -1305,24 +1303,11 @@ begin
       TryStrtoInt(Value, self.Finish)
     end;
 
-    // Resolution
-    if (TagMapTryGetData('RESOLUTION', Value)) then
+    // Resolution (deprecated and unused)
+    if TagMap.IndexOf('RESOLUTION') > -1 then
     begin
-      if FormatVersion.MaxVersion(1,0,0,false) then
-      begin
-        RemoveTagsFromTagMap('RESOLUTION');
-        TryStrtoInt(Value, self.Resolution);
-        if (self.Resolution < 1) then
-        begin
-          Log.LogError('Ignoring invalid resolution in song: ' + FullFileName);
-          self.Resolution := DEFAULT_RESOLUTION;
-        end;
-      end
-      else
-      begin
-        Log.LogInfo('Ignoring RESOLUTION header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
-        RemoveTagsFromTagMap('RESOLUTION', false);
-      end;
+      Log.LogInfo('Ignoring RESOLUTION header in file "' + FullFileName + '" (unsupported)', 'TSong.ReadTXTHeader');
+      RemoveTagsFromTagMap('RESOLUTION', false);
     end;
 
     // Notes Gap
@@ -1856,7 +1841,6 @@ begin
   Video      := PATH_NONE;
   VideoGAP   := 0;
   NotesGAP   := 0;
-  Resolution := DEFAULT_RESOLUTION;
   Creator    := '';
   PreviewStart := 0;
   CalcMedley := true;

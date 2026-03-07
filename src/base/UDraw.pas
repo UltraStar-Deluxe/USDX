@@ -1792,7 +1792,7 @@ begin
   glBegin(GL_LINES);
   for Count := CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[0].StartBeat to CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].EndBeat do
   begin
-    if (Count mod CurrentSong.Tracks[Track].Resolution) = CurrentSong.Tracks[Track].NotesGAP then
+    if (Count mod USong.DEFAULT_RESOLUTION) = CurrentSong.Tracks[Track].NotesGAP then
       glColor4f(0, 0, 0, 1)
     else
       glColor4f(0, 0, 0, 0.3);
