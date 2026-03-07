@@ -378,7 +378,10 @@ begin
           if (FinishScreenDraw = true) then
           begin
             if (CurrentSong.isDuet) or (ScreenSong.RapToFreestyle) or (ScreenSong.Mode = smMedley) then
+            begin
+              ScreenSong.PreservePreviewForReturn;
               FadeTo(@ScreenSong)
+            end
             else
               FadeTo(@ScreenTop5);
             Exit;
@@ -402,7 +405,10 @@ begin
            begin
 
              if (CurrentSong.isDuet) or (ScreenSong.RapToFreestyle) or (ScreenSong.Mode = smMedley) then
+             begin
+               ScreenSong.PreservePreviewForReturn;
                FadeTo(@ScreenSong)
+             end
              else
                FadeTo(@ScreenTop5);
 
@@ -1136,6 +1142,7 @@ var
   I: integer;
   V: array[1..UIni.IMaxPlayerCount] of boolean; // visibility array
 begin
+  AudioPlayback.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenScore');
 

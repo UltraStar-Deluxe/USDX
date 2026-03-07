@@ -132,6 +132,7 @@ uses
   UMenuButton,
   UPath,
   URenderer,
+  UScreenSong,
   USkins,
   USongs,
   UTime,
@@ -351,7 +352,12 @@ begin
           Ini.SaveNames;
           AudioPlayback.PlaySound(SoundLib.Back);
           if GoTo_SingScreen then
+          begin
+            AudioPlayback.SetVolume(1.0);
+            ScreenSong.StopMusicPreview();
+            ScreenSong.StopVideoPreview();
             FadeTo(@ScreenSong)
+          end
           else
             FadeTo(@ScreenMain);
         end;
@@ -418,6 +424,9 @@ begin
           begin
             // if we've been in the player screen, we need to show the warning again
             ScreenSing.CheckPlayerConfigOnNextSong := true;
+            AudioPlayback.SetVolume(1.0);
+            ScreenSong.StopMusicPreview();
+            ScreenSong.StopVideoPreview();
             FadeTo(@ScreenSing);
             GoTo_SingScreen := false;
           end
@@ -877,6 +886,7 @@ var
   I: integer;
 begin
   inherited;
+  AudioPlayback.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
 
   Ini.ReloadNames;
   CountIndex := Ini.Players;
@@ -898,13 +908,6 @@ begin
   AvatarCurrent := AvatarTarget;
 
   RefreshPlayers;
-
-  // list players
-  for I := 1 to PlayersPlay do
-  begin
-    Text[PlayerCurrentText[I - 1]].Text := Ini.Name[I - 1];
-    SetPlayerAvatar(I - 1);
-  end;
 
   PlayerColorButton(Num[PlayerIndex]);
 
