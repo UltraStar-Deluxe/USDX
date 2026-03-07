@@ -91,7 +91,7 @@ type
     Video:        IPath;
     VideoId:      Integer;
     VideoGAP:     Real;
-    BPM:          array of TBPM;
+    BPM:          Real;
     GAP:          Real;
     StartTag:     Real;
     EndTag:       longint;
@@ -1324,17 +1324,17 @@ begin
   CopyToUndo;
   if SDL_ModState = 0 then
   begin
-    CurrentSong.BPM[0].BPM := Round((CurrentSong.BPM[0].BPM * 5) + 1) / 5; // (1/20)
+    CurrentSong.BPM := Round((CurrentSong.BPM * 5) + 1) / 5; // (1/20)
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_INCREASED_BY') + ' 0.05';
   end;
   if SDL_ModState = KMOD_LSHIFT then
   begin
-    CurrentSong.BPM[0].BPM := CurrentSong.BPM[0].BPM + 4; // (1/1)
+    CurrentSong.BPM := CurrentSong.BPM + 4; // (1/1)
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_INCREASED_BY') + ' 1.0';
   end;
   if SDL_ModState = KMOD_LCTRL then
   begin
-    CurrentSong.BPM[0].BPM := Round((CurrentSong.BPM[0].BPM * 25) + 1) / 25; // (1/100)
+    CurrentSong.BPM := Round((CurrentSong.BPM * 25) + 1) / 25; // (1/100)
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_INCREASED_BY') + ' 0.01';
   end;
 end;
@@ -1346,17 +1346,17 @@ begin
   CopyToUndo;
   if SDL_ModState = 0 then
   begin
-    CurrentSong.BPM[0].BPM := Round((CurrentSong.BPM[0].BPM * 5) - 1) / 5;
+    CurrentSong.BPM := Round((CurrentSong.BPM * 5) - 1) / 5;
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_DECREASED_BY') + ' 0.05';
   end;
   if SDL_ModState = KMOD_LSHIFT then
   begin
-    CurrentSong.BPM[0].BPM := CurrentSong.BPM[0].BPM - 4;
+    CurrentSong.BPM := CurrentSong.BPM - 4;
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_DECREASED_BY') + ' 1.0';
   end;
   if SDL_ModState = KMOD_LCTRL then
   begin
-    CurrentSong.BPM[0].BPM := Round((CurrentSong.BPM[0].BPM * 25) - 1) / 25;
+    CurrentSong.BPM := Round((CurrentSong.BPM * 25) - 1) / 25;
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_DECREASED_BY') + ' 0.01';
   end;
 end;
@@ -1593,7 +1593,7 @@ end;
 procedure TScreenEditSub.EnterBPMEditMode(SDL_ModState: word);
 begin
   // Enter BPM Edit Mode
-  BackupEditText := FloatToStr(CurrentSong.BPM[0].BPM / 4);
+  BackupEditText := FloatToStr(CurrentSong.BPM / 4);
   CurrentEditText := BackupEditText;
   CurrentSlideId := BPMSlideId;
   TextPosition := LengthUTF8(BackupEditText);
@@ -1744,7 +1744,7 @@ begin
 
     if Interaction = BPMSlideId then
     begin
-      BackupEditText := FloatToStr(CurrentSong.BPM[0].BPM / 4);
+      BackupEditText := FloatToStr(CurrentSong.BPM / 4);
       CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
       editLengthText := LengthUTF8(BackupEditText);
       CurrentSlideId := BPMSlideId;
@@ -2644,7 +2644,7 @@ begin
       SDLK_ESCAPE:
         begin
           // exit BPM edit mode, restore previous BPM value
-          SelectsS[CurrentSlideId].TextOpt[0].Text := FloatToStr(CurrentSong.BPM[0].BPM / 4);
+          SelectsS[CurrentSlideId].TextOpt[0].Text := FloatToStr(CurrentSong.BPM / 4);
           BPMEditMode := false;
           StopTextInput;
           editLengthText := 0;
@@ -2665,7 +2665,6 @@ begin
           end
           else
           begin
-            CurrentSong.BPM[0].BPM := 0;
             SelectsS[CurrentSlideId].TextOpt[0].Text := BackupEditText;
           end;
 
@@ -3158,8 +3157,14 @@ var
   factor:     real;
 
 begin
-  factor := newBPM / CurrentSong.BPM[0].BPM;    // e.g. new/old => 1/2 = 0.5 => * 0.5
-  CurrentSong.BPM[0].BPM := newBPM;
+  if CurrentSong.BPM <= 0 then
+    CurrentSong.BPM := USong.MIN_BPM;
+
+  if newBPM <= 0 then
+    newBPM := USong.MIN_BPM;
+
+  factor := newBPM / CurrentSong.BPM;    // e.g. new/old => 1/2 = 0.5 => * 0.5
+  CurrentSong.BPM := newBPM;
 
   for TrackIndex := 0 to High(CurrentSong.Tracks) do
   begin
@@ -3185,12 +3190,12 @@ end;
 
 procedure TScreenEditSub.DivideBPM;
 begin
-  ChangeBPM(CurrentSong.BPM[0].BPM / 2);
+  ChangeBPM(CurrentSong.BPM / 2);
 end;
 
 procedure TScreenEditSub.MultiplyBPM;
 begin
-  ChangeBPM(CurrentSong.BPM[0].BPM * 2);
+  ChangeBPM(CurrentSong.BPM * 2);
 end;
 
 procedure TScreenEditSub.LyricsCapitalize;
@@ -3297,7 +3302,7 @@ begin
       end;
 
     // adjust GAP accordingly, round to nearest integer value (fractional GAPs make no sense)
-    CurrentSong.GAP := round((CurrentSong.GAP + (FirstBeat * 15000) / (CurrentSong.BPM[0].BPM / 4)));
+    CurrentSong.GAP := round((CurrentSong.GAP + (FirstBeat * 15000) / (CurrentSong.BPM / 4)));
 
     // adjust medley tags accordingly
     if (MedleyNotes.isStart) then
@@ -3321,9 +3326,9 @@ begin
         GapSeconds := GetTimeFromBeat(FirstBeat) - GetTimeFromBeat(EndBeat);
 
         if GapSeconds >= 4.0 then
-          LineStart := EndBeat + Trunc(2.0 * CurrentSong.BPM[0].BPM / 60.0)
+          LineStart := EndBeat + Trunc(2.0 * CurrentSong.BPM / 60.0)
         else if GapSeconds >= 2.0 then
-          LineStart := EndBeat + Trunc(1.0 * CurrentSong.BPM[0].BPM / 60.0)
+          LineStart := EndBeat + Trunc(1.0 * CurrentSong.BPM / 60.0)
         else if (GapBeats >= 0) and (GapBeats <= 1) then
           LineStart := EndBeat
         else if (GapBeats >= 2) and (GapBeats <= 8) then
@@ -4113,7 +4118,6 @@ end;
 
 procedure TScreenEditSub.CopyToUndo;
 var
-  BPMIndex:   Integer;
   TrackIndex: Integer;
   LineIndex:  Integer;
   NoteIndex:  Integer;
@@ -4139,12 +4143,7 @@ begin
   UndoHeader[CurrentUndoLines].Video := CurrentSong.Video;
   UndoHeader[CurrentUndoLines].VideoId := SelectsS[VideoSlideId].SelectedOption;
   UndoHeader[CurrentUndoLines].VideoGAP := CurrentSong.VideoGAP;
-  SetLength(UndoHeader[CurrentUndoLines].BPM, length(CurrentSong.BPM));
-  for BPMIndex := 0 to High(CurrentSong.BPM) do
-  begin
-    UndoHeader[CurrentUndoLines].BPM[BPMIndex].BPM := CurrentSong.BPM[BPMIndex].BPM;
-    UndoHeader[CurrentUndoLines].BPM[BPMIndex].StartBeat := CurrentSong.BPM[BPMIndex].StartBeat;
-  end;
+  UndoHeader[CurrentUndoLines].BPM := CurrentSong.BPM;
   UndoHeader[CurrentUndoLines].GAP  := CurrentSong.GAP;
   UndoHeader[CurrentUndoLines].StartTag := CurrentSong.Start;
   UndoHeader[CurrentUndoLines].EndTag := CurrentSong.Finish;
@@ -4271,7 +4270,6 @@ end;
 
 procedure TScreenEditSub.CopyFromUndo;
 var
-  BPMIndex:   Integer;
   TrackIndex: Integer;
   LineIndex:  Integer;
   NoteIndex:  Integer;
@@ -4297,12 +4295,7 @@ begin
   CurrentSong.Video        := Undoheader[CurrentUndoLines].Video;
   SelectsS[VideoSlideId].SelectedOption := Undoheader[CurrentUndoLines].VideoId;
   CurrentSong.VideoGAP     := Undoheader[CurrentUndoLines].VideoGAP;
-  SetLength(CurrentSong.BPM, length(Undoheader[CurrentUndoLines].BPM));
-  for BPMIndex := 0 to High(Undoheader[CurrentUndoLines].BPM) do
-  begin
-    CurrentSong.BPM[BPMIndex].BPM := Undoheader[CurrentUndoLines].BPM[BPMIndex].BPM;
-    CurrentSong.BPM[BPMIndex].StartBeat := Undoheader[CurrentUndoLines].BPM[BPMIndex].StartBeat;
-  end;
+  CurrentSong.BPM := Undoheader[CurrentUndoLines].BPM;
   CurrentSong.GAP          := Undoheader[CurrentUndoLines].GAP;
   CurrentSong.Start        := Undoheader[CurrentUndoLines].StartTag;
   CurrentSong.Finish       := Undoheader[CurrentUndoLines].EndTag;
@@ -5649,7 +5642,7 @@ begin
     // click
     if (Click) and (PlaySentence) then
     begin
-      //CurrentBeat := Floor(CurrentSong.BPM[0].BPM * (Music.Position - CurrentSong.GAP / 1000) / 60);
+      //CurrentBeat := Floor(CurrentSong.BPM * (Music.Position - CurrentSong.GAP / 1000) / 60);
       CurrentBeat := Floor(GetMidBeat(AudioPlayback.Position - CurrentSong.GAP / 1000));
       Text[TextInfo].Text := Language.Translate('EDIT_INFO_CURRENT_BEAT') + ' ' + IntToStr(CurrentBeat);
       if CurrentBeat <> LastClick then
@@ -5714,7 +5707,7 @@ begin
   // BPM
   if not BPMEditMode then
   begin
-    BPMVal[0] := FloatToStr(CurrentSong.BPM[0].BPM / 4);
+    BPMVal[0] := FloatToStr(CurrentSong.BPM / 4);
     SelectsS[BPMSlideId].TextOpt[0].Text := BPMVal[0];
   end;
   // GAP

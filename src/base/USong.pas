@@ -67,6 +67,7 @@ uses
 
 const
   DEFAULT_RESOLUTION = 4; // default #RESOLUTION
+  MIN_BPM = 1.0; // minimum allowed BPM to avoid divide-by-zero
 
 type
 
@@ -81,11 +82,6 @@ type
     EndBeat:      integer;        //end beat of medley
     FadeIn_time:  real;           //FadeIn-Time in seconds
     FadeOut_time: real;           //FadeOut-Time in seconds
-  end;
-
-  TBPM = record
-    BPM:        real;
-    StartBeat:  real;
   end;
 
   TScore = record
@@ -179,7 +175,7 @@ type
     Finish:     integer; // in milliseconds
     Relative:   boolean;
     Resolution: integer;
-    BPM:        array of TBPM;
+    BPM:        real;
     GAP:        real; // in milliseconds
     
     Encoding:   TEncoding;
@@ -208,7 +204,6 @@ type
     Base:       array[0..1] of integer;
     Rel:        array[0..1] of integer;
     Mult:       integer;
-    MultBPM:    integer;
 
     LastError:  AnsiString;
     function    GetErrorLineNo: integer;
@@ -433,7 +428,6 @@ begin
   inherited Create();
 
   Mult    := 1;
-  MultBPM := 4;
 
   LastError := '';
 
@@ -672,7 +666,6 @@ begin
   LastError := '';
   CurrentTrack := 0;
 
-  MultBPM           := 4; // multiply beat-count of note by 4
   Mult              := 1; // accuracy of measurement of note
   Rel[0]            := 0;
   Rel[1]            := 0;
@@ -841,12 +834,8 @@ begin
         end // if
         else if Param0 = 'B' then
         begin
-          SetLength(self.BPM, Length(self.BPM) + 1);
-          self.BPM[High(self.BPM)].StartBeat := ParseLyricFloatParam(CurLine, LinePos);
-          self.BPM[High(self.BPM)].StartBeat := self.BPM[High(self.BPM)].StartBeat + Rel[0];
-
-          self.BPM[High(self.BPM)].BPM := ParseLyricFloatParam(CurLine, LinePos);
-          self.BPM[High(self.BPM)].BPM := self.BPM[High(self.BPM)].BPM * Mult * MultBPM;
+          Log.LogWarn(Format('Ignoring variable BPM line in "%s" (line %d)',
+            [FileNamePath.ToNative, FileLineNo]), 'TSong.LoadSong');
         end;
 
         // Read next line in File
@@ -1022,9 +1011,7 @@ begin
   Result := true;
   Done   := 0;
   MedleyFlags := 0;
-  SetLength(self.BPM, 1);
-  self.BPM[0].BPM := 0;
-  self.BPM[0].StartBeat := 0;
+  self.BPM := 0;
 
   //SetLength(tmpEdition, 0);
 
@@ -1200,18 +1187,19 @@ begin
     if (TagMapTryGetData('BPM', Value)) then
     begin
       RemoveTagsFromTagMap('BPM');
-      SetLength(self.BPM, 1);
-      self.BPM[0].StartBeat := 0;
+      self.BPM := 0;
       StringReplace(Value, ',', '.', [rfReplaceAll]);
-      self.BPM[0].BPM := StrToFloatI18n(Value ) * Mult * MultBPM;
+      self.BPM := StrToFloatI18n(Value) * Mult * 4;
 
-      if self.BPM[0].BPM <> 0 then
+      if self.BPM <= 0 then
       begin
-        //Add BPM Flag to Done
-        Done := Done or 8
-      end
-      else
-          Log.LogError('Was not able to convert String ' + FullFileName + '"' + Value + '" to number.');
+        Log.LogWarn('Invalid BPM value "' + Value + '" in ' + FullFileName + ' -> clamped to minimum',
+          'TSong.ReadTXTHeader');
+        self.BPM := MIN_BPM;
+      end;
+
+      //Add BPM Flag to Done
+      Done := Done or 8;
     end;
 
     //---------
@@ -1844,7 +1832,7 @@ begin
 
   //Required Information
   Audio    := PATH_NONE;
-  SetLength(BPM, 0);
+  BPM := 0;
 
   GAP    := 0;
   Start  := 0;
