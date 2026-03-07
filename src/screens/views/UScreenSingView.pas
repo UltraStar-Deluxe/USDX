@@ -1295,16 +1295,16 @@ begin
   //calculate total singing beats of song
   if ScreenSong.Mode = smMedley then
   begin
-    SongStart := ScreenSing.MedleyStart * CurrentSong.BPM[0].BPM / 60;
-    SongEnd := ScreenSing.MedleyEnd * CurrentSong.BPM[0].BPM / 60;
+    SongStart := ScreenSing.MedleyStart * CurrentSong.BPM / 60;
+    SongEnd := ScreenSing.MedleyEnd * CurrentSong.BPM / 60;
   end
   else
   begin
-    SongStart := CurrentSong.BPM[0].BPM*CurrentSong.Start/60;
-    SongEnd := CurrentSong.BPM[0].BPM*TotalTime/60;
+    SongStart := CurrentSong.BPM*CurrentSong.Start/60;
+    SongEnd := CurrentSong.BPM*TotalTime/60;
   end;
   SongDuration := SongEnd - SongStart;
-  gapInBeats := CurrentSong.BPM[0].BPM*CurrentSong.GAP/1000/60;
+  gapInBeats := CurrentSong.BPM*CurrentSong.GAP/1000/60;
   // draw sentence boxes
   for CurrentTrack := 0 to High(CurrentSong.Tracks) do //for P1 of duet or solo lyrics, P2 of duet,..
   begin

@@ -190,15 +190,10 @@ begin
   lua_ClearStack(L);
   Result := 1;
 
-  if (CurrentSong = nil) or (Length(CurrentSong.BPM) = 0) or (Display.CurrentScreen <> @ScreenSing) then
+  if (CurrentSong = nil) or (CurrentSong.BPM = 0) or (Display.CurrentScreen <> @ScreenSing) then
     lua_PushNumber(L, 0) // in case of error
-  else if (Length(CurrentSong.BPM) = 1) then
-    lua_PushNumber(L, CurrentSong.BPM[0].BPM)
   else
-  begin
-    // to-do: do this for songs w/ BPM changes
-    //        or drop support for BPM changes?!
-  end;
+    lua_PushNumber(L, CurrentSong.BPM);
 end;
 
 { ScreenSing.BeatsToSeconds(Beats: float)
@@ -207,15 +202,10 @@ function ULuaScreenSing_BeatsToSeconds(L: Plua_State): Integer; cdecl;
 begin
   Result := 1;
 
-  if (CurrentSong = nil) or (Length(CurrentSong.BPM) = 0) or (Display.CurrentScreen <> @ScreenSing) then
+  if (CurrentSong = nil) or (CurrentSong.BPM = 0) or (Display.CurrentScreen <> @ScreenSing) then
     lua_PushNumber(L, 0) // in case of error
-  else if (Length(CurrentSong.BPM) = 1) then
-    lua_PushNumber(L, luaL_CheckNumber(L, 1) * 60 / CurrentSong.BPM[0].BPM)
   else
-  begin
-    // to-do: do this for songs w/ BPM changes
-    //        or drop support for BPM changes?!
-  end;
+    lua_PushNumber(L, luaL_CheckNumber(L, 1) * 60 / CurrentSong.BPM);
 end;
 
 { ScreenSing.BeatsToSeconds(Seconds: float)
@@ -224,15 +214,10 @@ function ULuaScreenSing_SecondsToBeats(L: Plua_State): Integer; cdecl;
 begin
   Result := 1;
 
-  if (CurrentSong = nil) or (Length(CurrentSong.BPM) = 0) or (Display.CurrentScreen <> @ScreenSing) then
+  if (CurrentSong = nil) or (CurrentSong.BPM = 0) or (Display.CurrentScreen <> @ScreenSing) then
     lua_PushNumber(L, 0)
-  else if (Length(CurrentSong.BPM) = 1) then
-    lua_PushNumber(L, luaL_CheckNumber(L, 1) * CurrentSong.BPM[0].BPM / 60)
   else
-  begin
-    // to-do: do this for songs w/ BPM changes
-    //        or drop support for BPM changes?!
-  end;
+    lua_PushNumber(L, luaL_CheckNumber(L, 1) * CurrentSong.BPM / 60);
 end;
 
 { ScreenSing.GetBeat() - returns current beat of lyricstate (in quarts) }

@@ -1106,7 +1106,7 @@ begin
       Text[screenSingViewRef.SongNameText].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
 
     //medley start and end timestamps
-    StartNote := FindNote(CurrentSong.Medley.StartBeat - round(CurrentSong.BPM[0].BPM*CurrentSong.Medley.FadeIn_time/60));
+    StartNote := FindNote(CurrentSong.Medley.StartBeat - round(CurrentSong.BPM*CurrentSong.Medley.FadeIn_time/60));
     MedleyStart := GetTimeFromBeat(CurrentSong.Tracks[0].Lines[StartNote.line].Notes[0].StartBeat);
 
     //check Medley-Start
@@ -1307,9 +1307,9 @@ end;
 
 procedure TScreenSingController.ClearLyricEngines();
 begin
-    Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
-    LyricsDuetP1.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
-    LyricsDuetP2.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
+  Lyrics.Clear(CurrentSong.BPM, CurrentSong.Resolution);
+  LyricsDuetP1.Clear(CurrentSong.BPM, CurrentSong.Resolution);
+  LyricsDuetP2.Clear(CurrentSong.BPM, CurrentSong.Resolution);
 end;
 
 procedure TScreenSingController.ClearSettings;
