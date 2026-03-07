@@ -208,7 +208,7 @@ begin
             ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
         end;
 
-        //Jukebox
+        // Loop mode entry
         if Interaction = 2 then
         begin
           if (Songs.SongList.Count >= 1) then
