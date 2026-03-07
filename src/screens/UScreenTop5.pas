@@ -102,6 +102,7 @@ begin
         begin
           if (not Fadeout) then
           begin
+            ScreenSong.PreservePreviewForReturn;
             FadeTo(@ScreenSong);
             Fadeout := true;
           end;
@@ -181,6 +182,7 @@ var
   Report: string;
 begin
   inherited;
+  AudioPlayback.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
 
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenTop5');
@@ -242,7 +244,10 @@ begin
   end;
 
   If Length(CurrentSong.Score[Player[0].Level])=0 then
+  begin
+    ScreenSong.PreservePreviewForReturn;
     FadeTo(@ScreenSong); //if there are no scores to show, go to next screen
+  end;
   for I := Length(CurrentSong.Score[Player[0].Level]) + 1 to 5 do
   begin
     Statics[StaticNumber[I]].Visible := false;
