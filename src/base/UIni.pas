@@ -216,7 +216,6 @@ type
       SingScores:     integer;
       TopScores:      integer;
       SingTimebarMode:       integer;
-      JukeboxTimebarMode:    integer;
       DefaultSingMode:       integer;
 
       // Controller
@@ -232,54 +231,6 @@ type
       WebCamSaturation: integer;
       WebCamHue:        integer;
       WebCamEffect:     integer;
-
-      // Jukebox
-      JukeboxSongMenu: integer;
-
-      JukeboxFont:     integer;
-      JukeboxStyle:    integer;
-      JukeboxEffect:   integer;
-      JukeboxAlpha:    integer;
-
-      JukeboxLine:      integer;
-      JukeboxProperty:  integer;
-
-      // Jukebox Lyric Fill Color
-      JukeboxSingLineColor:   integer;
-      JukeboxActualLineColor: integer;
-      JukeboxNextLineColor:   integer;
-
-      JukeboxSingLineOutlineColor:   integer;
-      JukeboxActualLineOutlineColor: integer;
-      JukeboxNextLineOutlineColor:   integer;
-
-      CurrentJukeboxSingLineOutlineColor:   integer;
-      CurrentJukeboxActualLineOutlineColor: integer;
-      CurrentJukeboxNextLineOutlineColor:   integer;
-
-      JukeboxSingLineOtherColorR: integer;
-      JukeboxSingLineOtherColorG: integer;
-      JukeboxSingLineOtherColorB: integer;
-
-      JukeboxActualLineOtherColorR: integer;
-      JukeboxActualLineOtherColorG: integer;
-      JukeboxActualLineOtherColorB: integer;
-
-      JukeboxNextLineOtherColorR: integer;
-      JukeboxNextLineOtherColorG: integer;
-      JukeboxNextLineOtherColorB: integer;
-
-      JukeboxSingLineOtherOColorR: integer;
-      JukeboxSingLineOtherOColorG: integer;
-      JukeboxSingLineOtherOColorB: integer;
-
-      JukeboxActualLineOtherOColorR: integer;
-      JukeboxActualLineOtherOColorG: integer;
-      JukeboxActualLineOtherOColorB: integer;
-
-      JukeboxNextLineOtherOColorR: integer;
-      JukeboxNextLineOtherOColorG: integer;
-      JukeboxNextLineOtherOColorB: integer;
 
       PianoKeysLow: TPianoKeyArray;
       PianoKeysHigh: TPianoKeyArray;
@@ -298,13 +249,11 @@ type
       procedure SavePlayerLevels;
       procedure SaveTeamColors;
       procedure SaveShowWebScore;
-      procedure SaveJukeboxSongMenu;
 
       procedure SaveSoundFont(Name: string);
       procedure SaveWebcamSettings();
       procedure SaveNumberOfPlayers;
       procedure SaveSingTimebarMode;
-      procedure SaveJukeboxTimebarMode;
 
       procedure TranslateOptionValues;
 
@@ -434,8 +383,6 @@ const
   IHexGrayColor: array[0..9] of UTF8String = ('000000', '202020', '404040', '606060', '808080', 'A0A0A0', 'C0C0C0', 'D6D6D6', 'FFFFFF', '');
   IHexOColor:    array[0..2] of UTF8String = ('000000', 'FFFFFF', '');
 
-  IJukeboxSongMenu: array[0..1] of UTF8String = ('Off', 'On');
-
   IColor:         array[0..8] of UTF8String = ('Blue', 'Green', 'Pink', 'Red', 'Violet', 'Orange', 'Yellow', 'Brown', 'Black');
 
   // Advanced
@@ -458,7 +405,6 @@ const
   IMouseLegacy:         array[0..2] of UTF8String = ('Off', 'Hardware Cursor', 'Software Cursor'); // use to convert old config option to new
 
   ISingTimebarMode:    array[0..2] of UTF8String = ('Current', 'Remaining', 'Total');
-  IJukeboxTimebarMode: array[0..2] of UTF8String = ('Current', 'Remaining', 'Total');
 
   // Recording options
   IChannelPlayer: array[0..6] of UTF8String = ('Off', '1', '2', '3', '4', '5', '6');
@@ -557,7 +503,6 @@ var
   IMouseTranslatedLegacy:      array[0..2] of UTF8String = ('Off', 'Hardware Cursor', 'Software Cursor');
 
   ISingTimebarModeTranslated:      array[0..2] of UTF8String = ('Current', 'Remaining', 'Total');
-  IJukeboxTimebarModeTranslated:      array[0..2] of UTF8String = ('Current', 'Remaining', 'Total');
 
   // Recording options
   IChannelPlayerTranslated:    array[0..IMaxPlayerCount] of UTF8String = ('Off', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12');
@@ -853,10 +798,6 @@ begin
   ISingTimebarModeTranslated[0]          := ULanguage.Language.Translate('OPTION_VALUE_CURRENT');
   ISingTimebarModeTranslated[1]          := ULanguage.Language.Translate('OPTION_VALUE_REMAINING');
   ISingTimebarModeTranslated[2]          := ULanguage.Language.Translate('OPTION_VALUE_TOTAL');
-
-  IJukeboxTimebarModeTranslated[0]          := ULanguage.Language.Translate('OPTION_VALUE_CURRENT');
-  IJukeboxTimebarModeTranslated[1]          := ULanguage.Language.Translate('OPTION_VALUE_REMAINING');
-  IJukeboxTimebarModeTranslated[2]          := ULanguage.Language.Translate('OPTION_VALUE_TOTAL');
 
   IAudioOutputBufferSizeTranslated[0] := ULanguage.Language.Translate('OPTION_VALUE_AUTO');
   IAudioOutputBufferSizeTranslated[1] := '256';
@@ -1401,8 +1342,6 @@ var
   IniFile: TMemIniFile;
   I:       integer;
   IShowWebScore: array of UTF8String;
-  HexColor: string;
-  Col: TRGB;
   KeysLow: string;
   KeysHigh: string;
   ReadPianoKeysLow: TPianoKeyArray;
@@ -1629,9 +1568,6 @@ begin
   // SingTimebarMode
   SingTimebarMode := ReadArrayIndex(ISingTimebarMode, IniFile, 'Advanced', 'SingTimebarMode', IGNORE_INDEX, 'Remaining');
 
-  // JukeboxTimebarMode
-  JukeboxTimebarMode := ReadArrayIndex(IJukeboxTimebarMode, IniFile, 'Advanced', 'JukeboxTimebarMode', IGNORE_INDEX, 'Current');
-
   // WebCam
   WebCamID := IniFile.ReadInteger('Webcam', 'ID', 0);
   WebCamResolution := ReadArrayIndex(IWebcamResolution, IniFile, 'Webcam', 'Resolution', IGNORE_INDEX, '320x240');
@@ -1643,101 +1579,6 @@ begin
   WebCamSaturation := ReadArrayIndex(IWebcamSaturation, IniFile, 'Webcam', 'Saturation', IGNORE_INDEX, '0');
   WebCamHue := ReadArrayIndex(IWebcamHue, IniFile, 'Webcam', 'Hue', IGNORE_INDEX, '0');
   WebCamEffect := IniFile.ReadInteger('Webcam', 'Effect', 0);
-
-  // Jukebox
-  JukeboxFont := ReadArrayIndex(ILyricsFont, IniFile, 'Jukebox', 'LyricsFont', 0);
-  JukeboxStyle := ReadArrayIndex(ILyricsStyle, IniFile, 'Jukebox', 'LyricsStyle', 2);
-  JukeboxEffect := ReadArrayIndex(ILyricsEffect, IniFile, 'Jukebox', 'LyricsEffect', 2);
-  JukeboxAlpha := ReadArrayIndex(ILyricsAlpha, IniFile, 'Jukebox', 'LyricsAlpha', 20);
-
-  JukeboxSongMenu := ReadArrayIndex(IJukeboxSongMenu, IniFile, 'Jukebox', 'SongMenu', IGNORE_INDEX, 'On');
-
-
-  JukeboxSingLineColor := ReadArrayIndex(IHexSingColor, IniFile, 'Jukebox', 'SingLineColor', High(IHexSingColor));
-
-  // other color
-  if (JukeboxSingLineColor = -1) or (JukeboxSingLineColor = High(IHexSingColor)) then
-  begin
-    JukeboxSingLineColor := High(IHexSingColor);
-
-    HexColor := IniFile.ReadString('Jukebox', 'SingLineColor', '47B3FF');
-    Col := HexToRGB(HexColor);
-
-    Ini.JukeboxSingLineOtherColorR := Round(Col.R);
-    Ini.JukeboxSingLineOtherColorG := Round(Col.G);
-    Ini.JukeboxSingLineOtherColorB := Round(Col.B);
-  end;
-
-  JukeboxActualLineColor := ReadArrayIndex(IHexGrayColor, IniFile, 'Jukebox', 'ActualLineColor', High(IHexGrayColor));
-
-  // other color
-  if (JukeboxActualLineColor = -1) or (JukeboxActualLineColor = High(IHexGrayColor)) then
-  begin
-    JukeboxActualLineColor := High(IHexGrayColor);
-
-    HexColor := IniFile.ReadString('Jukebox', 'ActualLineColor', IHexGrayColor[8]);
-    Col := HexToRGB(HexColor);
-
-    Ini.JukeboxActualLineOtherColorR := Round(Col.R);
-    Ini.JukeboxActualLineOtherColorG := Round(Col.G);
-    Ini.JukeboxActualLineOtherColorB := Round(Col.B);
-  end;
-
-  JukeboxNextLineColor := ReadArrayIndex(IHexGrayColor, IniFile, 'Jukebox', 'NextLineColor', High(IHexGrayColor));
-  // other color
-  if (JukeboxNextLineColor = -1) or (JukeboxNextLineColor = High(IHexGrayColor)) then
-  begin
-    JukeboxNextLineColor := High(IHexGrayColor);
-
-    HexColor := IniFile.ReadString('Jukebox', 'NextLineColor', IHexGrayColor[6]);
-    Col := HexToRGB(HexColor);
-
-    Ini.JukeboxNextLineOtherColorR := Round(Col.R);
-    Ini.JukeboxNextLineOtherColorG := Round(Col.G);
-    Ini.JukeboxNextLineOtherColorB := Round(Col.B);
-  end;
-
-  JukeboxSingLineOutlineColor := ReadArrayIndex(IHexOColor, IniFile, 'Jukebox', 'SingLineOColor', 0);
-  // other color
-  if (JukeboxSingLineOutlineColor = -1) then
-  begin
-    JukeboxSingLineOutlineColor := High(IHexOColor);
-
-    HexColor := IniFile.ReadString('Jukebox', 'SingLineOColor', IHexOColor[0]);
-    Col := HexToRGB(HexColor);
-
-    Ini.JukeboxSingLineOtherOColorR := Round(Col.R);
-    Ini.JukeboxSingLineOtherOColorG := Round(Col.G);
-    Ini.JukeboxSingLineOtherOColorB := Round(Col.B);
-  end;
-
-  JukeboxActualLineOutlineColor := ReadArrayIndex(IHexOColor, IniFile, 'Jukebox', 'ActualLineOColor', 0);
-  // other color
-  if (JukeboxActualLineOutlineColor = -1) then
-  begin
-    JukeboxActualLineOutlineColor := High(IHexOColor);
-
-    HexColor := IniFile.ReadString('Jukebox', 'ActualLineOColor', IHexOColor[0]);
-    Col := HexToRGB(HexColor);
-
-    Ini.JukeboxActualLineOtherOColorR := Round(Col.R);
-    Ini.JukeboxActualLineOtherOColorG := Round(Col.G);
-    Ini.JukeboxActualLineOtherOColorB := Round(Col.B);
-  end;
-
-  JukeboxNextLineOutlineColor := ReadArrayIndex(IHexOColor, IniFile, 'Jukebox', 'NextLineOColor', 0);
-  // other color
-  if (JukeboxNextLineOutlineColor = -1) then
-  begin
-    JukeboxNextLineOutlineColor := High(IHexOColor);
-
-    HexColor := IniFile.ReadString('Jukebox', 'NextLineOColor', IHexOColor[0]);
-    Col := HexToRGB(HexColor);
-
-    Ini.JukeboxNextLineOtherOColorR := Round(Col.R);
-    Ini.JukeboxNextLineOtherOColorG := Round(Col.G);
-    Ini.JukeboxNextLineOtherOColorB := Round(Col.B);
-  end;
 
   // default values
   PianoKeysLow := InitializePianoKeyArray([60, 97, 121, 115, 120, 100, 99, 118, 103, 98, 104, 110, 109, 107, 44, 108, 46, 246, 45]);
@@ -1763,8 +1604,6 @@ end;
 procedure TIni.Save;
 var
   IniFile: TIniFile;
-  HexColor: string;
-  C: TRGB;
 begin
   try
   begin
@@ -1942,9 +1781,6 @@ begin
     // SingTimebarMode
     IniFile.WriteString('Advanced', 'SingTimebarMode', ISingTimebarMode[SingTimebarMode]);
 
-    // JukeboxTimebarMode
-    IniFile.WriteString('Advanced', 'JukeboxTimebarMode', IJukeboxTimebarMode[JukeboxTimebarMode]);
-
     // Directories (add a template if section is missing)
     // Note: Value must be ' ' and not '', otherwise no key is generated on Linux
     if (not IniFile.SectionExists('Directories')) then
@@ -1952,72 +1788,6 @@ begin
 
     if (not IniFile.ValueExists('Directories', 'WebScoresDir')) then
       IniFile.WriteString('Directories', 'WebScoresDir', ' ');
-
-    // Jukebox
-    IniFile.WriteString('Jukebox', 'LyricsFont', ILyricsFont[JukeboxFont]);
-    IniFile.WriteString('Jukebox', 'LyricsStyle', ILyricsStyle[JukeboxStyle]);
-    IniFile.WriteString('Jukebox', 'LyricsEffect', ILyricsEffect[JukeboxEffect]);
-    IniFile.WriteString('Jukebox', 'LyricsAlpha', ILyricsAlpha[JukeboxAlpha]);
-
-    if (JukeboxSingLineColor <> High(ISingLineColor)) then
-    begin
-      C := GetLyricColor(JukeboxSingLineColor);
-      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-    end
-    else
-      HexColor := RGBToHex(JukeboxSingLineOtherColorR, JukeboxSingLineOtherColorG, JukeboxSingLineOtherColorB);
-
-    IniFile.WriteString('Jukebox', 'SingLineColor', HexColor);
-
-    if (JukeboxActualLineColor <> High(IActualLineColor)) then
-    begin
-      C := GetLyricGrayColor(JukeboxActualLineColor);
-      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-    end
-    else
-      HexColor := RGBToHex(JukeboxActualLineOtherColorR, JukeboxActualLineOtherColorG, JukeboxActualLineOtherColorB);
-
-    IniFile.WriteString('Jukebox', 'ActualLineColor', HexColor);
-
-    if (JukeboxNextLineColor <> High(INextLineColor)) then
-    begin
-      C := GetLyricGrayColor(JukeboxNextLineColor);
-      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-    end
-    else
-      HexColor := RGBToHex(JukeboxNextLineOtherColorR, JukeboxNextLineOtherColorG, JukeboxNextLineOtherColorB);
-
-    IniFile.WriteString('Jukebox', 'NextLineColor', HexColor);
-
-    if (JukeboxSingLineOutlineColor <> High(ISingLineOColor)) then
-    begin
-      C := GetLyricOutlineColor(JukeboxSingLineOutlineColor);
-      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-    end
-    else
-      HexColor := RGBToHex(JukeboxSingLineOtherOColorR, JukeboxSingLineOtherOColorG, JukeboxSingLineOtherOColorB);
-
-    IniFile.WriteString('Jukebox', 'SingLineOColor', HexColor);
-
-    if (JukeboxActualLineOutlineColor <> High(IActualLineOColor)) then
-    begin
-      C := GetLyricOutlineColor(JukeboxActualLineOutlineColor);
-      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-    end
-    else
-      HexColor := RGBToHex(JukeboxActualLineOtherOColorR, JukeboxActualLineOtherOColorG, JukeboxActualLineOtherOColorB);
-
-    IniFile.WriteString('Jukebox', 'ActualLineOColor', HexColor);
-
-    if (JukeboxNextLineOutlineColor <> High(INextLineOColor)) then
-    begin
-      C := GetLyricOutlineColor(JukeboxNextLineOutlineColor);
-      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-    end
-    else
-      HexColor := RGBToHex(JukeboxNextLineOtherOColorR, JukeboxNextLineOtherOColorG, JukeboxNextLineOtherOColorB);
-
-    IniFile.WriteString('Jukebox', 'NextLineOColor', HexColor);
 
     IniFile.WriteString('KeyBindings', 'PianoKeysLow', MergeIntArrayToString(PianoKeysLow));
     IniFile.WriteString('KeyBindings', 'PianoKeysHigh', MergeIntArrayToString(PianoKeysHigh));
@@ -2095,21 +1865,6 @@ begin
     IniFile.Free;
   end;
 end;
-
-procedure TIni.SaveJukeboxSongMenu;
-var
-  IniFile: TIniFile;
-begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
-    IniFile.WriteString('Jukebox', 'SongMenu', IJukeboxSongMenu[JukeboxSongMenu]);
-
-    IniFile.Free;
-  end;
-end;
-
 
 procedure TIni.SaveShowWebScore;
 var
@@ -2262,22 +2017,6 @@ begin
     IniFile.Free;
   end;
 end;
-
-procedure TIni.SaveJukeboxTimebarMode;
-var
-  IniFile: TIniFile;
-begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
-    // Players
-    IniFile.WriteString('Advanced', 'JukeboxTimebarMode', IJukeboxTimebarMode[JukeboxTimebarMode]);
-
-    IniFile.Free;
-  end;
-end;
-
 
 function TIni.SetResolution(ResolutionString: string; RemoveCurrent: boolean; NoSave: boolean): boolean;
   var

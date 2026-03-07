@@ -1,4 +1,4 @@
-{* UltraStar Deluxe - Karaoke Game
+﻿{* UltraStar Deluxe - Karaoke Game
  *
  * UltraStar Deluxe is the legal property of its developers, whose names
  * are too numerous to list here. Please refer to the COPYRIGHT
@@ -392,7 +392,7 @@ const
 // ***** Public methods ****** //
 function TScreenSong.FreeListMode: boolean;
 begin
-  if ((Mode = smNormal) or (Mode = smPartyTournament) or (Mode = smPartyFree) or (Mode = smJukebox)) then
+  if ((Mode = smNormal) or (Mode = smPartyTournament) or (Mode = smPartyFree)) then
     Result := true
   else
     Result := false;
@@ -400,7 +400,7 @@ end;
 
 function TScreenSong.IsLoopModeActive: boolean;
 begin
-  Result := LoopModeEnabled and FreeListMode and (Mode <> smJukebox);
+  Result := LoopModeEnabled and FreeListMode;
 end;
 
 function TScreenSong.IsLoopOrderEnabled: boolean;
@@ -792,21 +792,25 @@ begin
   Engine.LowerLineW := LowerW;
   Engine.LowerLineH := LowerH;
 
-  Engine.FontFamily := Ini.JukeboxFont;
-  Engine.FontStyle := Ini.JukeboxStyle;
+  Engine.FontFamily := Theme.Song.LoopLyrics.Font;
+  Engine.FontStyle := Theme.Song.LoopLyrics.Style;
 
   Engine.LineColor_act.R := ActiveColor.R;
   Engine.LineColor_act.G := ActiveColor.G;
   Engine.LineColor_act.B := ActiveColor.B;
   Engine.LineColor_act.A := 1;
 
-  Col := GetLyricGrayColor(Ini.JukeboxActualLineColor);
+  Col.R := Theme.Song.LoopLyrics.ActualR;
+  Col.G := Theme.Song.LoopLyrics.ActualG;
+  Col.B := Theme.Song.LoopLyrics.ActualB;
   Engine.LineColor_en.R := Col.R;
   Engine.LineColor_en.G := Col.G;
   Engine.LineColor_en.B := Col.B;
   Engine.LineColor_en.A := 1;
 
-  Col := GetLyricGrayColor(Ini.JukeboxNextLineColor);
+  Col.R := Theme.Song.LoopLyrics.NextR;
+  Col.G := Theme.Song.LoopLyrics.NextG;
+  Col.B := Theme.Song.LoopLyrics.NextB;
   Engine.LineColor_dis.R := Col.R;
   Engine.LineColor_dis.G := Col.G;
   Engine.LineColor_dis.B := Col.B;
@@ -819,11 +823,13 @@ var
   ColP1: TRGB;
   ColP2: TRGB;
 begin
-  ColBase := GetLyricColor(Ini.JukeboxSingLineColor);
+  ColBase.R := Theme.Song.LoopLyrics.SingR;
+  ColBase.G := Theme.Song.LoopLyrics.SingG;
+  ColBase.B := Theme.Song.LoopLyrics.SingB;
   ConfigureLoopLyricsEngine(
     LoopLyrics,
-    Theme.LyricBarJukebox.UpperX, Theme.LyricBarJukebox.UpperY, Theme.LyricBarJukebox.UpperW, Theme.LyricBarJukebox.UpperH,
-    Theme.LyricBarJukebox.LowerX, Theme.LyricBarJukebox.LowerY, Theme.LyricBarJukebox.LowerW, Theme.LyricBarJukebox.LowerH,
+    Theme.LyricBarLoop.UpperX, Theme.LyricBarLoop.UpperY, Theme.LyricBarLoop.UpperW, Theme.LyricBarLoop.UpperH,
+    Theme.LyricBarLoop.LowerX, Theme.LyricBarLoop.LowerY, Theme.LyricBarLoop.LowerW, Theme.LyricBarLoop.LowerH,
     ColBase);
 
   // Slightly tint active duet lines with player colors (mostly keep base lyric color).
@@ -834,8 +840,8 @@ begin
   ColP1.B := ColP1.B * 0.45 + 0.55;
   ConfigureLoopLyricsEngine(
     LoopLyricsP1,
-    Theme.LyricBarJukebox.UpperX, Theme.LyricBarJukebox.UpperY, Theme.LyricBarJukebox.UpperW, Theme.LyricBarJukebox.UpperH,
-    Theme.LyricBarJukebox.UpperX, -1000, Theme.LyricBarJukebox.UpperW, 0,
+    Theme.LyricBarLoop.UpperX, Theme.LyricBarLoop.UpperY, Theme.LyricBarLoop.UpperW, Theme.LyricBarLoop.UpperH,
+    Theme.LyricBarLoop.UpperX, -1000, Theme.LyricBarLoop.UpperW, 0,
     ColP1);
 
   ColP2 := GetPlayerColor(Ini.SingColor[1]);
@@ -845,8 +851,8 @@ begin
   ColP2.B := ColP2.B * 0.45 + 0.55;
   ConfigureLoopLyricsEngine(
     LoopLyricsP2,
-    Theme.LyricBarJukebox.LowerX, Theme.LyricBarJukebox.LowerY, Theme.LyricBarJukebox.LowerW, Theme.LyricBarJukebox.LowerH,
-    Theme.LyricBarJukebox.LowerX, -1000, Theme.LyricBarJukebox.LowerW, 0,
+    Theme.LyricBarLoop.LowerX, Theme.LyricBarLoop.LowerY, Theme.LyricBarLoop.LowerW, Theme.LyricBarLoop.LowerH,
+    Theme.LyricBarLoop.LowerX, -1000, Theme.LyricBarLoop.LowerW, 0,
     ColP2);
 end;
 
@@ -1493,29 +1499,18 @@ begin
                 if CatSongs.CatNumShow = -3 then
                 begin
                   ScreenSongMenu.OnShow;
-
-                  if (ScreenSong.Mode = smJukebox) then
-                    ScreenSongMenu.MenuShow(SM_Jukebox)
-                  else
-                    ScreenSongMenu.MenuShow(SM_Playlist);
+                  ScreenSongMenu.MenuShow(SM_Playlist);
                 end
                 else
                 begin
                   ScreenSongMenu.OnShow;
-
-                  if (ScreenSong.Mode = smJukebox) then
-                    ScreenSongMenu.MenuShow(SM_Jukebox)
-                  else
-                    ScreenSongMenu.MenuShow(SM_Main);
+                  ScreenSongMenu.MenuShow(SM_Main);
                 end;
               end
               else
               begin
                 ScreenSongMenu.OnShow;
-                if (ScreenSong.Mode = smJukebox) then
-                  ScreenSongMenu.MenuShow(SM_Jukebox)
-                else
-                  ScreenSongMenu.MenuShow(SM_Playlist_Load);
+                ScreenSongMenu.MenuShow(SM_Playlist_Load);
               end;
             end //Party Mode -> Show Party Menu
             else
@@ -1698,7 +1693,7 @@ begin
             SetScrollRefresh;
           end;
           // In non-playlist contexts, use O as loop-order toggle
-          if (CatSongs.CatNumShow <> -3) and FreeListMode and (Mode <> smJukebox) then
+          if (CatSongs.CatNumShow <> -3) and FreeListMode then
             LoopForceFixedOrder := not LoopForceFixedOrder;
         end;
 
@@ -1850,7 +1845,6 @@ begin
 
                 case Mode of
                   smPartyFree: FadeTo(@ScreenPartyNewRound);
-                  smJukebox: FadeTo(@ScreenJukeboxPlaylist);
                   smPartyTournament: FadeTo(@ScreenPartyTournamentRounds);
                   else
                   begin
@@ -1977,16 +1971,6 @@ begin
                   ScreenSong.StartSong;
                 end;
 
-                if (Mode = smJukebox) then
-                begin
-                  if (Length(ScreenJukebox.JukeboxSongsList) > 0) then
-                  begin
-                    ScreenJukebox.CurrentSongID := ScreenJukebox.JukeboxVisibleSongs[0];
-                    FadeTo(@ScreenJukebox);
-                  end
-                  else
-                    ScreenPopupError.ShowPopup(Language.Translate('PARTY_MODE_JUKEBOX_NO_SONGS'));
-                end;
               end;
           end;
         end;
@@ -2081,9 +2065,6 @@ begin
             ToggleLoopPause;
             Exit;
           end;
-
-          if (Mode = smJukebox) and (not CatSongs.Song[Interaction].Main) then
-            ScreenJukebox.AddSongToJukeboxList(Interaction);
 
           if (Mode = smNormal) and (CatSongs.Song[Interaction].isDuet) then
             DuetChange := not DuetChange;
@@ -2677,14 +2658,14 @@ begin
   LoopPreferredCoverFull := true;
 
   LoopLyrics := TLyricEngine.Create(
-    Theme.LyricBarJukebox.UpperX, Theme.LyricBarJukebox.UpperY, Theme.LyricBarJukebox.UpperW, Theme.LyricBarJukebox.UpperH,
-    Theme.LyricBarJukebox.LowerX, Theme.LyricBarJukebox.LowerY, Theme.LyricBarJukebox.LowerW, Theme.LyricBarJukebox.LowerH);
+    Theme.LyricBarLoop.UpperX, Theme.LyricBarLoop.UpperY, Theme.LyricBarLoop.UpperW, Theme.LyricBarLoop.UpperH,
+    Theme.LyricBarLoop.LowerX, Theme.LyricBarLoop.LowerY, Theme.LyricBarLoop.LowerW, Theme.LyricBarLoop.LowerH);
   LoopLyricsP1 := TLyricEngine.Create(
-    Theme.LyricBarJukebox.UpperX, Theme.LyricBarJukebox.UpperY, Theme.LyricBarJukebox.UpperW, Theme.LyricBarJukebox.UpperH,
-    Theme.LyricBarJukebox.UpperX, -1000, Theme.LyricBarJukebox.UpperW, 0);
+    Theme.LyricBarLoop.UpperX, Theme.LyricBarLoop.UpperY, Theme.LyricBarLoop.UpperW, Theme.LyricBarLoop.UpperH,
+    Theme.LyricBarLoop.UpperX, -1000, Theme.LyricBarLoop.UpperW, 0);
   LoopLyricsP2 := TLyricEngine.Create(
-    Theme.LyricBarJukebox.LowerX, Theme.LyricBarJukebox.LowerY, Theme.LyricBarJukebox.LowerW, Theme.LyricBarJukebox.LowerH,
-    Theme.LyricBarJukebox.LowerX, -1000, Theme.LyricBarJukebox.LowerW, 0);
+    Theme.LyricBarLoop.LowerX, Theme.LyricBarLoop.LowerY, Theme.LyricBarLoop.LowerW, Theme.LyricBarLoop.LowerH,
+    Theme.LyricBarLoop.LowerX, -1000, Theme.LyricBarLoop.LowerW, 0);
   LoopLyricsSong := nil;
   LoopLyricsLastLine := 0;
   LoopLyricsP1LastLine := 0;
@@ -3793,9 +3774,6 @@ begin
     end;
   end;
 
-  if (ScreenSong.Mode = smJukebox) and (Ini.PartyPopup = 1) then
-    ScreenSongMenu.MenuShow(SM_Jukebox);
-
   isScrolling := false;
   SetJoker;
   SetStatics;
@@ -3997,65 +3975,31 @@ begin
     StaticsList[I].Draw;
   end;
 
-  // Jukebox Playlist
-  if (Mode = smJukebox) then
-  begin
-    if Length(ScreenJukebox.JukeboxSongsList) > Theme.Song.TextMedleyMax then
-      J := Length(ScreenJukebox.JukeboxSongsList) - Theme.Song.TextMedleyMax
-    else
-      J := 0;
-
-    for I := 0 to Theme.Song.TextMedleyMax - 1 do
-    begin
-      if (Length(ScreenJukebox.JukeboxSongsList) > I + J) then
-      begin
-        Text[TextMedleyArtist[I]].Visible := true;
-        Text[TextMedleyTitle[I]].Visible  := true;
-        Text[TextMedleyNumber[I]].Visible := true;
-        Statics[StaticMedley[I]].Visible  := true;
-
-        Text[TextMedleyNumber[I]].Text := IntToStr(I + 1 + J);
-        Text[TextMedleyArtist[I]].Text := CatSongs.Song[ScreenJukebox.JukeboxSongsList[I + J]].Artist;
-        Text[TextMedleyTitle[I]].Text  := CatSongs.Song[ScreenJukebox.JukeboxSongsList[I + J]].Title;
-      end
-      else
-      begin
-        Text[TextMedleyArtist[I]].Visible := false;
-        Text[TextMedleyTitle[I]].Visible  := false;
-        Text[TextMedleyNumber[I]].Visible := false;
-        Statics[StaticMedley[I]].Visible  := false;
-      end;
-    end;
-  end
+  // Medley Playlist
+  if Length(PlaylistMedley.Song) > Theme.Song.TextMedleyMax then
+    J := Length(PlaylistMedley.Song) - Theme.Song.TextMedleyMax
   else
+    J := 0;
+
+  for I := 0 to Theme.Song.TextMedleyMax - 1 do
   begin
-
-    //Medley Playlist
-    if Length(PlaylistMedley.Song) > Theme.Song.TextMedleyMax then
-      J := Length(PlaylistMedley.Song) - Theme.Song.TextMedleyMax
-    else
-      J := 0;
-
-    for I := 0 to Theme.Song.TextMedleyMax - 1 do
+    if (Length(PlaylistMedley.Song) > I + J) and (MakeMedley) then
     begin
-      if (Length(PlaylistMedley.Song) > I + J) and (MakeMedley) then
-      begin
-        Text[TextMedleyArtist[I]].Visible := true;
-        Text[TextMedleyTitle[I]].Visible  := true;
-        Text[TextMedleyNumber[I]].Visible := true;
-        Statics[StaticMedley[I]].Visible  := true;
+      Text[TextMedleyArtist[I]].Visible := true;
+      Text[TextMedleyTitle[I]].Visible  := true;
+      Text[TextMedleyNumber[I]].Visible := true;
+      Statics[StaticMedley[I]].Visible  := true;
 
-        Text[TextMedleyNumber[I]].Text := IntToStr(I + 1 + J);
-        Text[TextMedleyArtist[I]].Text := CatSongs.Song[PlaylistMedley.Song[I + J]].Artist;
-        Text[TextMedleyTitle[I]].Text  := CatSongs.Song[PlaylistMedley.Song[I + J]].Title;
-      end
-      else
-      begin
-        Text[TextMedleyArtist[I]].Visible := false;
-        Text[TextMedleyTitle[I]].Visible  := false;
-        Text[TextMedleyNumber[I]].Visible := false;
-        Statics[StaticMedley[I]].Visible  := false;
-      end;
+      Text[TextMedleyNumber[I]].Text := IntToStr(I + 1 + J);
+      Text[TextMedleyArtist[I]].Text := CatSongs.Song[PlaylistMedley.Song[I + J]].Artist;
+      Text[TextMedleyTitle[I]].Text  := CatSongs.Song[PlaylistMedley.Song[I + J]].Title;
+    end
+    else
+    begin
+      Text[TextMedleyArtist[I]].Visible := false;
+      Text[TextMedleyTitle[I]].Visible  := false;
+      Text[TextMedleyNumber[I]].Visible := false;
+      Statics[StaticMedley[I]].Visible  := false;
     end;
   end;
 
