@@ -42,6 +42,7 @@ uses
   UFiles,
   UIni,
   ULanguage,
+  ULyrics,
   UMenu,
   UMenuEqualizer,
   UMusic,
@@ -88,6 +89,10 @@ type
       LoopForceFixedOrder: boolean;
       LoopPaused: boolean;
       LoopPreferredCoverFull: boolean;
+      LoopLyrics: TLyricEngine;
+      LoopLyricsSong: TSong;
+      LoopLyricsLastLine: integer;
+      LoopLyricsReady: boolean;
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
@@ -106,6 +111,11 @@ type
       function HandleLoopOverlayMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
       procedure DrawLoopModeOverlay;
       procedure DrawLoopFullscreenCoverFallback;
+      procedure ConfigureLoopLyrics;
+      function GetLoopLyricsCurrentLine(Song: TSong): integer;
+      procedure FillLoopLyricsQueue(Song: TSong; TargetLine: integer);
+      procedure ResetLoopLyricsForCurrentSong;
+      procedure UpdateAndDrawLoopLyrics;
     public
       TextArtist:   integer;
       TextTitle:    integer;
@@ -250,6 +260,7 @@ type
       NextRandomSearchIdx: cardinal;
 
       constructor Create; override;
+      destructor Destroy; override;
       procedure SetScroll;
       procedure SetScrollRefresh;
 
@@ -500,6 +511,7 @@ begin
   AudioPlayback.Position := 0;
   if Assigned(fCurrentVideo) then
     fCurrentVideo.Position := CatSongs.Song[Interaction].VideoGAP + AudioPlayback.Position;
+  ResetLoopLyricsForCurrentSong;
 end;
 
 procedure TScreenSong.ToggleLoopMode;
@@ -634,6 +646,7 @@ begin
   AudioPlayback.Position := TargetPos;
   if Assigned(fCurrentVideo) then
     fCurrentVideo.Position := CatSongs.Song[Interaction].VideoGAP + TargetPos;
+  ResetLoopLyricsForCurrentSong;
   Result := true;
 end;
 
@@ -727,6 +740,146 @@ begin
   FullscreenCover.ColB := 1;
   FullscreenCover.Alpha := 1;
   DrawTexture(FullscreenCover);
+end;
+
+procedure TScreenSong.ConfigureLoopLyrics;
+var
+  Col: TRGB;
+begin
+  if not Assigned(LoopLyrics) then
+    Exit;
+
+  LoopLyrics.UpperLineX := Theme.LyricBarJukebox.UpperX;
+  LoopLyrics.UpperLineY := Theme.LyricBarJukebox.UpperY;
+  LoopLyrics.UpperLineW := Theme.LyricBarJukebox.UpperW;
+  LoopLyrics.UpperLineH := Theme.LyricBarJukebox.UpperH;
+  LoopLyrics.LowerLineX := Theme.LyricBarJukebox.LowerX;
+  LoopLyrics.LowerLineY := Theme.LyricBarJukebox.LowerY;
+  LoopLyrics.LowerLineW := Theme.LyricBarJukebox.LowerW;
+  LoopLyrics.LowerLineH := Theme.LyricBarJukebox.LowerH;
+
+  LoopLyrics.FontFamily := Ini.JukeboxFont;
+  LoopLyrics.FontStyle := Ini.JukeboxStyle;
+
+  Col := GetLyricColor(Ini.JukeboxSingLineColor);
+  LoopLyrics.LineColor_act.R := Col.R;
+  LoopLyrics.LineColor_act.G := Col.G;
+  LoopLyrics.LineColor_act.B := Col.B;
+  LoopLyrics.LineColor_act.A := 1;
+
+  Col := GetLyricGrayColor(Ini.JukeboxActualLineColor);
+  LoopLyrics.LineColor_en.R := Col.R;
+  LoopLyrics.LineColor_en.G := Col.G;
+  LoopLyrics.LineColor_en.B := Col.B;
+  LoopLyrics.LineColor_en.A := 1;
+
+  Col := GetLyricGrayColor(Ini.JukeboxNextLineColor);
+  LoopLyrics.LineColor_dis.R := Col.R;
+  LoopLyrics.LineColor_dis.G := Col.G;
+  LoopLyrics.LineColor_dis.B := Col.B;
+  LoopLyrics.LineColor_dis.A := 1;
+end;
+
+function TScreenSong.GetLoopLyricsCurrentLine(Song: TSong): integer;
+var
+  I: integer;
+begin
+  Result := 0;
+  if (Song = nil) or (Length(Song.Tracks) = 0) or (Length(Song.Tracks[0].Lines) = 0) then
+    Exit;
+
+  for I := 0 to High(Song.Tracks[0].Lines) do
+  begin
+    if (LyricsState.CurrentBeat >= Song.Tracks[0].Lines[I].StartBeat) then
+      Result := I
+    else
+      Break;
+  end;
+end;
+
+procedure TScreenSong.FillLoopLyricsQueue(Song: TSong; TargetLine: integer);
+begin
+  if (Song = nil) or (Length(Song.Tracks) = 0) or not Assigned(LoopLyrics) then
+    Exit;
+
+  while (LoopLyrics.GetUpperLineIndex() < TargetLine) or
+        (not LoopLyrics.IsQueueFull) do
+  begin
+    if (LoopLyrics.LineCounter <= High(Song.Tracks[0].Lines)) then
+      LoopLyrics.AddLine(@Song.Tracks[0].Lines[LoopLyrics.LineCounter])
+    else
+      LoopLyrics.AddLine(nil);
+  end;
+end;
+
+procedure TScreenSong.ResetLoopLyricsForCurrentSong;
+var
+  Song: TSong;
+begin
+  LoopLyricsReady := false;
+  if not Assigned(LoopLyrics) then
+    Exit;
+  if (CatSongs.VisibleSongs <= 0) or CatSongs.Song[Interaction].Main then
+    Exit;
+
+  Song := CatSongs.Song[Interaction];
+  if (Song = nil) or (Length(Song.Tracks) = 0) or (Length(Song.Tracks[0].Lines) = 0) then
+    Exit;
+
+  ConfigureLoopLyrics;
+  LoopLyrics.Clear(Song.BPM[0].BPM, Song.Resolution);
+  LoopLyricsSong := Song;
+
+  LyricsState.Reset();
+  LyricsState.StartTime := Song.GAP;
+  LyricsState.SetCurrentTime(AudioPlayback.Position);
+  if (Song.Finish > 0) then
+    LyricsState.TotalTime := Song.Finish / 1000
+  else
+    LyricsState.TotalTime := AudioPlayback.Length;
+  LyricsState.UpdateBeats();
+
+  LoopLyricsLastLine := GetLoopLyricsCurrentLine(Song);
+  FillLoopLyricsQueue(Song, LoopLyricsLastLine);
+  LoopLyricsReady := true;
+end;
+
+procedure TScreenSong.UpdateAndDrawLoopLyrics;
+var
+  Song: TSong;
+  CurrentLine: integer;
+begin
+  if not (IsLoopModeActive and CoverFull) then
+    Exit;
+  if (CatSongs.VisibleSongs <= 0) or CatSongs.Song[Interaction].Main then
+    Exit;
+
+  Song := CatSongs.Song[Interaction];
+  if (Song = nil) or (Length(Song.Tracks) = 0) or (Length(Song.Tracks[0].Lines) = 0) then
+    Exit;
+
+  if (not LoopLyricsReady) or (LoopLyricsSong <> Song) then
+    ResetLoopLyricsForCurrentSong;
+
+  if not LoopLyricsReady then
+    Exit;
+
+  LyricsState.StartTime := Song.GAP;
+  LyricsState.SetCurrentTime(AudioPlayback.Position);
+  LyricsState.UpdateBeats();
+  CurrentLine := GetLoopLyricsCurrentLine(Song);
+
+  if (CurrentLine < LoopLyricsLastLine) then
+  begin
+    ResetLoopLyricsForCurrentSong;
+  end
+  else if (CurrentLine > LoopLyricsLastLine) then
+  begin
+    LoopLyricsLastLine := CurrentLine;
+    FillLoopLyricsQueue(Song, LoopLyricsLastLine);
+  end;
+
+  LoopLyrics.Draw(LyricsState.MidBeat);
 end;
 
 //Show Wrong Song when Tabs on Fix
@@ -2409,6 +2562,19 @@ begin
   LoopPaused := false;
   LoopPreferredCoverFull := true;
 
+  LoopLyrics := TLyricEngine.Create(
+    Theme.LyricBarJukebox.UpperX, Theme.LyricBarJukebox.UpperY, Theme.LyricBarJukebox.UpperW, Theme.LyricBarJukebox.UpperH,
+    Theme.LyricBarJukebox.LowerX, Theme.LyricBarJukebox.LowerY, Theme.LyricBarJukebox.LowerW, Theme.LyricBarJukebox.LowerH);
+  LoopLyricsSong := nil;
+  LoopLyricsLastLine := 0;
+  LoopLyricsReady := false;
+
+end;
+
+destructor TScreenSong.Destroy;
+begin
+  FreeAndNil(LoopLyrics);
+  inherited;
 end;
 
 procedure TScreenSong.ColorDuetNameSingers();
@@ -2623,6 +2789,8 @@ begin
   StopMusicPreview();
   StopVideoPreview();
   PreviewOpened := -1;
+  LoopLyricsReady := false;
+  LoopLyricsSong := nil;
 
   //SetScrollRefresh;
 end;
@@ -3554,6 +3722,8 @@ begin
   StopMusicPreview();
   StopVideoPreview();
   CoverFull := false;
+  LoopLyricsReady := false;
+  LoopLyricsSong := nil;
 end;
 
 procedure TScreenSong.DrawExtensions;
@@ -3864,6 +4034,7 @@ begin
     fCurrentVideo.Draw;
   end;
   DrawLoopFullscreenCoverFallback;
+  UpdateAndDrawLoopLyrics;
   DrawLoopModeOverlay;
 
   //if (Mode = smPartyTournament) then
