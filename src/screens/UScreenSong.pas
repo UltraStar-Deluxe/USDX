@@ -357,6 +357,7 @@ type
       procedure ParseInputPrevVertical(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
 
       procedure ResetScrollList;
+      procedure EnterLoopModeFromMainMenu;
   end;
 
 implementation
@@ -561,6 +562,21 @@ begin
       fCurrentVideo.Pause;
     LoopPaused := false;
   end;
+end;
+
+procedure TScreenSong.EnterLoopModeFromMainMenu;
+begin
+  Mode := smNormal;
+  LoopForceFixedOrder := false;
+  LoopPaused := false;
+  LoopPreferredCoverFull := true;
+  CoverFull := true;
+
+  if not LoopModeEnabled then
+    LoopModeEnabled := true;
+
+  if (CatSongs.VisibleSongs > 0) and (not CatSongs.Song[Interaction].Main) then
+    StartLoopPlaybackForCurrentSong(true);
 end;
 
 function TScreenSong.FormatLoopClock(Seconds: real): UTF8String;

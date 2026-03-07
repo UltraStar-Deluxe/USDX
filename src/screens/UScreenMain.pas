@@ -107,7 +107,13 @@ begin
       end;
 
       SDLK_J: begin
-        FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start);
+        if (Songs.SongList.Count >= 1) then
+        begin
+          ScreenSong.EnterLoopModeFromMainMenu;
+          FadeTo(@ScreenSong, SoundLib.Start);
+        end
+        else
+          ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
         Exit;
       end;
 
@@ -207,7 +213,8 @@ begin
         begin
           if (Songs.SongList.Count >= 1) then
           begin
-            FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start);
+            ScreenSong.EnterLoopModeFromMainMenu;
+            FadeTo(@ScreenSong, SoundLib.Start);
           end
           else //show error message, No Songs Loaded
             ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
