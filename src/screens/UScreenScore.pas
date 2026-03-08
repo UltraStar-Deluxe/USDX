@@ -1668,6 +1668,8 @@ var
   changed:  boolean;
   PreviewVolume: single;
 begin
+  if (not AudioPlayback.Finished) then
+    Exit;
   //When Music Preview is activated -> then change music
   if (Ini.PreviewVolume <> 0) then
   begin

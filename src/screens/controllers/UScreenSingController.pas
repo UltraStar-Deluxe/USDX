@@ -1385,7 +1385,6 @@ var
 
 begin
   AudioInput.CaptureStop;
-  AudioPlayback.Stop;
   AudioPlayback.SetSyncSource(nil);
 
   if (ScreenSong.Mode = smNormal) and (SungPaused = false) and (SungToEnd) and (Length(DllMan.Websites) > 0) then
