@@ -22,6 +22,16 @@ A git version of this SVN can be found in the [legacy-sourceforge-svn-mirror](ht
 - Don't let anyone else tell you what to work on. Do what you like and be free!
 Have fun and enjoy working on a game that easily can hit 5.000 downloads in a week. This is very rewarding work and you can learn a lot!
 
+### Whitespace checks
+- CI checks trailing whitespace in changed lines under `src` (excluding `src/lib` and `src/webSDK`).
+- Local one-liner (same check as CI, with `origin/master` as base):
+  `git -c core.whitespace=blank-at-eol diff --color --check "$(git merge-base HEAD origin/master)" -- './src' ':!./src/lib' ':!./src/webSDK'`
+- Make targets:
+  `make whitespace-check` (fails on issues), `make whitespace-warn` (warning only).
+- Normal build targets (`make`, `make debug`, `make release`, ...) now run `whitespace-warn` after the compile step.
+- If your base branch is different, override it:
+  `BASE_REF=origin/main make whitespace-check`
+
 ### About the engine / used libraries:
 - **SDL2** is used as general framework for spawning the window, getting keyboard / other input, and getting microphone and speaker device lists stuff. SDL2 also gets the OpenGL context for the window for us.
 - **OpenGL** is used for all the graphics drawing + rendering stuff. Currently, this is mostly based on the horribly old OpenGL 1.x drawing stuff. If you know OpenGL >2.1 / OpenGL ES then please help to implement the required shading stuff and replace the old opengl instructions by the new ones. I already ported to the **dglOpenGL** library, so anything up to OpenGL 4.x should be fully supported and easily usable - just bear in mind there is lots of hardware out there that doesn't do anything newer then OpenGL 3 feature set. Also, if you don't know OpenGL that much but know SDL2 quite good, feel free to switch from directly calling OpenGL to the functions which are provided by SDL2.

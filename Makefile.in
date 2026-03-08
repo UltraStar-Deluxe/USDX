@@ -130,6 +130,7 @@ BUILD_TARGETS = all debug release rebuild build
 .PHONY: $(BUILD_TARGETS)
 $(BUILD_TARGETS): all-deps
 	$(MAKE) -C $(USDX_SRC_DIR) $@
+	@$(MAKE) --no-print-directory whitespace-warn
 
 .PHONY: all-deps
 all-deps:
@@ -183,6 +184,29 @@ tidy:
 	find $(srcdir) -name "*.identcache" -o -name "*.dcu" | xargs $(RM)
 # Backup files
 	find $(srcdir) -name "*~" -o -name "*.bak" -o -name "*.orig" | xargs $(RM)
+
+# check for trailing whitespace in the same paths as CI
+.PHONY: whitespace-check
+whitespace-check:
+	@base_ref="$${BASE_REF:-origin/master}"; \
+	if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
+	  echo "error: whitespace-check must run inside a git checkout"; \
+	  exit 1; \
+	fi; \
+	if ! git rev-parse --verify "$$base_ref" >/dev/null 2>&1; then \
+	  echo "error: git ref '$$base_ref' not found (set BASE_REF=... if needed)"; \
+	  exit 1; \
+	fi; \
+	base_sha=`git merge-base HEAD "$$base_ref"`; \
+	git -c core.whitespace=blank-at-eol diff --color --check "$$base_sha" -- './src' ':!./src/lib' ':!./src/webSDK'
+
+# warning-only variant for local builds
+.PHONY: whitespace-warn
+whitespace-warn:
+	@$(MAKE) --no-print-directory whitespace-check || { \
+	  echo "warning: whitespace issues detected (run 'make whitespace-check' for details)"; \
+	  true; \
+	}
 
 
 #################################################
