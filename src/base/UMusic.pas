@@ -678,7 +678,8 @@ uses
   UCommon,
   URecord,
   ULog,
-  UPathUtils;
+  UPathUtils,
+  UThemes;
 
 var
   DefaultVideoPlayback : IVideoPlayback;
@@ -687,6 +688,19 @@ var
   DefaultAudioInput    : IAudioInput;
   AudioDecoderList     : TInterfaceList;
   MediaInterfaceList   : TInterfaceList;
+
+function ResolveSoundAsset(const Filename: UTF8String): IPath;
+begin
+  Result := UThemes.ResolveThemeAsset(Path('sounds').Append(Filename));
+  if Result.IsSet then
+    Exit;
+
+  Result := UThemes.ResolveThemeAsset(Path(Filename));
+  if Result.IsSet then
+    Exit;
+
+  Result := SoundPath.Append(Filename);
+end;
 
 
 constructor TAudioFormatInfo.Create(Channels: byte; SampleRate: double; Format: TAudioSampleFormat);
@@ -1105,15 +1119,15 @@ procedure TSoundLibrary.LoadSounds();
 begin
   UnloadSounds();
 
-  Start   := AudioPlayback.OpenSound(SoundPath.Append('Common start.mp3'));
-  Back    := AudioPlayback.OpenSound(SoundPath.Append('Common back.mp3'));
-  Swoosh  := AudioPlayback.OpenSound(SoundPath.Append('menu swoosh.mp3'));
-  Change  := AudioPlayback.OpenSound(SoundPath.Append('select music change music 50.mp3'));
-  Option  := AudioPlayback.OpenSound(SoundPath.Append('option change col.mp3'));
-  Click   := AudioPlayback.OpenSound(SoundPath.Append('rimshot022b.wav'));
-  Applause:= AudioPlayback.OpenSound(SoundPath.Append('Applause.mp3'));
+  Start   := AudioPlayback.OpenSound(ResolveSoundAsset('Common start.mp3'));
+  Back    := AudioPlayback.OpenSound(ResolveSoundAsset('Common back.mp3'));
+  Swoosh  := AudioPlayback.OpenSound(ResolveSoundAsset('menu swoosh.mp3'));
+  Change  := AudioPlayback.OpenSound(ResolveSoundAsset('select music change music 50.mp3'));
+  Option  := AudioPlayback.OpenSound(ResolveSoundAsset('option change col.mp3'));
+  Click   := AudioPlayback.OpenSound(ResolveSoundAsset('rimshot022b.wav'));
+  Applause:= AudioPlayback.OpenSound(ResolveSoundAsset('Applause.mp3'));
 
-  BGMusic := AudioPlayback.OpenSound(SoundPath.Append('background track.mp3'));
+  BGMusic := AudioPlayback.OpenSound(ResolveSoundAsset('background track.mp3'));
 
   if (BGMusic <> nil) then
   begin
