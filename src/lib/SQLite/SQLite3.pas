@@ -98,6 +98,7 @@ type
     
 
 function SQLite3_Open(filename: PAnsiChar; out db: TSQLiteDB): integer; cdecl; external SQLiteDLL name 'sqlite3_open';
+function SQLite3_Open16(filename: PWideChar; out db: TSQLiteDB): integer; cdecl; external SQLiteDLL name 'sqlite3_open16';
 function SQLite3_Close(db: TSQLiteDB): integer; cdecl; external SQLiteDLL name 'sqlite3_close';
 function SQLite3_Exec(db: TSQLiteDB; SQLStatement: PAnsiChar; CallbackPtr: TSQLiteExecCallback; UserData: Pointer; var ErrMsg: PAnsiChar): integer; cdecl; external SQLiteDLL name 'sqlite3_exec';
 function SQLite3_Version(): PAnsiChar; cdecl; external SQLiteDLL name 'sqlite3_libversion';
