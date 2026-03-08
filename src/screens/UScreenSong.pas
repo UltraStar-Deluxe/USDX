@@ -3842,10 +3842,13 @@ begin
 
   if IsLoopModeActive then
   begin
-    // Returning from sing/score should immediately restore loop fullscreen preview.
+    // Returning from sing/score in loop mode should advance to the next song
+    // before restarting fullscreen preview playback.
     LoopPreferredCoverFull := true;
     CoverFull := true;
-    if (CatSongs.VisibleSongs > 0) and (not CatSongs.Song[Interaction].Main) then
+    if (CatSongs.VisibleSongs > 0) and SelectLoopNextSong then
+      StartLoopPlaybackForCurrentSong(false)
+    else if (CatSongs.VisibleSongs > 0) and (not CatSongs.Song[Interaction].Main) then
       StartLoopPlaybackForCurrentSong(false);
   end;
 
