@@ -126,7 +126,7 @@ type
       procedure Init(const Filename: IPath);
       procedure ConvertFrom101To110();
       procedure ReadScore(Song: TSong);
-      procedure AddScore(Song: TSong; Level: integer; const Name: UTF8String; Score: integer);
+      procedure AddScore(Song: TSong; Level: integer; Track: integer; const Name: UTF8String; Score: integer);
       procedure WriteScore(Song: TSong);
 
       procedure ReadUsers;
@@ -249,6 +249,7 @@ begin
     ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS [' + cUS_Scores + '] (' +
                       '[SongID] INTEGER NOT NULL, ' +
                       '[Difficulty] INTEGER NOT NULL, ' +
+                      '[Track] INTEGER NOT NULL, ' +
                       '[Player] TEXT NOT NULL, ' +
                       '[Score] INTEGER NOT NULL, ' +
                       '[Date] INTEGER NULL' +
@@ -335,6 +336,13 @@ begin
     begin
       Log.LogInfo('Outdated song database found - adding column rating to "' + cUS_Songs + '"', 'TDataBaseSystem.Init');
       ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [Rating] INTEGER NULL');
+    end;
+
+    //add column date to cUS-Scores
+    if not ScoreDB.ContainsColumn(cUS_Scores, 'Track') then
+    begin
+      Log.LogInfo('adding column track to "' + cUS_Scores + '"', 'TDataBaseSystem.Init');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Scores + ' ADD COLUMN [Track] INTEGER NULL');
     end;
 
     // convert data from previous versions
@@ -515,12 +523,12 @@ begin
   try
     // Search Song in DB
     TableData := ScoreDB.GetUniTable(
-      'SELECT [Difficulty], [Player], [Score], [Date] FROM [' + cUS_Scores + '] ' +
+      'SELECT [Difficulty], [Track], [Player], [Score], [Date] FROM [' + cUS_Scores + '] ' +
       'WHERE [SongID] = (' +
         'SELECT [ID] FROM [' + cUS_Songs + '] ' +
         'WHERE [Artist] = ? AND [Title] = ? ' +
         'LIMIT 1) ' +
-      'ORDER BY [Score] DESC;', //no LIMIT! see filter below!
+      'ORDER BY [Score] DESC, [Track] ASC;', //no LIMIT! see filter below!
       [Song.Artist, Song.Title]);
 
     // Empty Old Scores
@@ -559,6 +567,8 @@ begin
 
           Song.Score[Difficulty, High(Song.Score[Difficulty])].Name  :=
             TableData.FieldByName['Player'];
+          Song.Score[Difficulty, High(Song.Score[Difficulty])].Track :=
+            TableData.FieldAsInteger(TableData.FieldIndex['Track']);
           Song.Score[Difficulty, High(Song.Score[Difficulty])].Score :=
             TableData.FieldAsInteger(TableData.FieldIndex['Score']);
           Song.Score[Difficulty, High(Song.Score[Difficulty])].Date :=
@@ -583,7 +593,7 @@ end;
 (**
  * Adds one new score to DB
  *)
-procedure TDataBaseSystem.AddScore(Song: TSong; Level: integer; const Name: UTF8String; Score: integer);
+procedure TDataBaseSystem.AddScore(Song: TSong; Level: integer; Track: integer; const Name: UTF8String; Score: integer);
 var
   ID:        integer;
   TableData: TSQLiteTable;
@@ -617,9 +627,9 @@ begin
     // Create new entry
     ScoreDB.ExecSQL(
       'INSERT INTO [' + cUS_Scores + '] ' +
-      '([SongID] ,[Difficulty], [Player], [Score], [Date]) VALUES ' +
-      '(?, ?, ?, ?, ?);',
-      [ID, Level, Name, Score, DateTimeToUnix(Now())]);
+      '([SongID] ,[Difficulty], [Track], [Player], [Score], [Date]) VALUES ' +
+      '(?, ?, ?, ?, ?, ?);',
+      [ID, Level, Track, Name, Score, DateTimeToUnix(Now())]);
 
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.AddScore');
