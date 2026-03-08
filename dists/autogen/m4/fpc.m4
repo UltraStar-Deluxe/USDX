@@ -113,7 +113,7 @@ AC_ARG_ENABLE(noexecstack,
 # Find compiler executable
 ###
 
-PPC_CHECK_PROGS="fpc FPC ppc386 ppc PPC386"
+PPC_CHECK_PROGS="ppcx64 ppcx64.exe ppcrossx64 ppcrossx64.exe fpc FPC ppc386 ppc PPC386"
 
 if test -z "$PPC_PATH"; then
     PPC_PATH=$PATH

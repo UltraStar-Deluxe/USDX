@@ -434,8 +434,8 @@ begin
     Pctlinfo^.hWindow := Handle; { Control's window handle }
 
     FError := midioutOpen(@FMidiHandle, FDeviceId,
-      dword(@midiHandler),
-      dword(PCtlInfo),
+      QWord(@midiHandler),
+      QWord(PCtlInfo),
       CALLBACK_FUNCTION);
 {    FError := midioutOpen(@FMidiHandle, FDeviceId,
       Handle,

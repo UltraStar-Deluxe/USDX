@@ -172,7 +172,7 @@ begin
       // Note: Do not use IsReadOnly() as it does not check file privileges, so
       // a non-read-only file might not be writable for us.
       Handle := ConfigIni.Open(fmOpenReadWrite);
-      if (Handle <> -1) then
+      if (Handle <> INVALID_HANDLE_VALUE) then
       begin
         FileClose(Handle);
         UseLocalDirs := true;
@@ -183,7 +183,7 @@ begin
   begin
     // try to create config.ini
     Handle := ConfigIni.CreateFile();
-    if (Handle <> -1) then
+    if (Handle <> INVALID_HANDLE_VALUE) then
     begin
       FileClose(Handle);
       UseLocalDirs := true;

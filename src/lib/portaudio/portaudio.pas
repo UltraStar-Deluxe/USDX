@@ -58,7 +58,7 @@ uses
 
 const
 {$IF Defined(MSWINDOWS)}
-  LibName = 'portaudio_x86.dll';
+  LibName = 'portaudio_x64.dll';
 {$ELSEIF Defined(DARWIN)}
   // this is for portaudio version 19
   LibName = 'libportaudio.2.dylib';

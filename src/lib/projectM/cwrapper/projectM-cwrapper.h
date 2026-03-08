@@ -14,6 +14,14 @@
 #define PROJECTM_VERSION_INT PROJECTM_VERSION_2_0_0
 #endif
 
+#if defined(_WIN32) || defined(__CYGWIN__)
+#define PROJECTM_CWRAPPER_CALL __cdecl
+#else
+#define PROJECTM_CWRAPPER_CALL
+#endif
+
+#define PROJECTM_CWRAPPER_API DLLEXPORT
+
 extern "C" {
 
     #if (PROJECTM_VERSION_INT > 1000000)
@@ -38,30 +46,30 @@ extern "C" {
 
     typedef void* projectM_ptr;
 
-    DLLEXPORT projectM_ptr projectM_create1(char* config_file);
+    PROJECTM_CWRAPPER_API projectM_ptr PROJECTM_CWRAPPER_CALL projectM_create1(char* config_file);
     #if (PROJECTM_VERSION_INT < 1000000 || PROJECTM_VERSION_INT >= 2000000)
-    DLLEXPORT projectM_ptr projectM_create2(int gx, int gy, int fps, int texsize, 
-					    int width, int height, char* preset_url, 
+    PROJECTM_CWRAPPER_API projectM_ptr PROJECTM_CWRAPPER_CALL projectM_create2(int gx, int gy, int fps, int texsize,
+					    int width, int height, char* preset_url,
 					    char* title_fonturl, char* title_menuurl);
     #endif
 
-    DLLEXPORT void projectM_resetGL(projectM_ptr pm, int width, int height);
-    DLLEXPORT void projectM_setTitle(projectM_ptr pm, char* title);
-    DLLEXPORT void projectM_renderFrame(projectM_ptr pm);
-    DLLEXPORT unsigned projectM_initRenderToTexture(projectM_ptr pm); 
-    DLLEXPORT void projectM_key_handler(projectM_ptr pm, projectMEvent event, 
+    PROJECTM_CWRAPPER_API void PROJECTM_CWRAPPER_CALL projectM_resetGL(projectM_ptr pm, int width, int height);
+    PROJECTM_CWRAPPER_API void PROJECTM_CWRAPPER_CALL projectM_setTitle(projectM_ptr pm, char* title);
+    PROJECTM_CWRAPPER_API void PROJECTM_CWRAPPER_CALL projectM_renderFrame(projectM_ptr pm);
+    PROJECTM_CWRAPPER_API unsigned PROJECTM_CWRAPPER_CALL projectM_initRenderToTexture(projectM_ptr pm);
+    PROJECTM_CWRAPPER_API void PROJECTM_CWRAPPER_CALL projectM_key_handler(projectM_ptr pm, projectMEvent event,
 					projectMKeycode keycode, projectMModifier modifier);
-    
-    DLLEXPORT void projectM_free(projectM_ptr pm);
 
-    DLLEXPORT void PCM_addPCMfloat(projectM_ptr pm, float *PCMdata, int samples);
-    DLLEXPORT void PCM_addPCM16(projectM_ptr pm, short [2][512]);
-    DLLEXPORT void PCM_addPCM16Data(projectM_ptr pm, const short* pcm_data, short samples);
-    DLLEXPORT void PCM_addPCM8(projectM_ptr pm, unsigned char [2][1024]);
-    DLLEXPORT void PCM_addPCM8_512(projectM_ptr pm, const unsigned char [2][512]);
+    PROJECTM_CWRAPPER_API void PROJECTM_CWRAPPER_CALL projectM_free(projectM_ptr pm);
+
+    PROJECTM_CWRAPPER_API void PROJECTM_CWRAPPER_CALL PCM_addPCMfloat(projectM_ptr pm, float *PCMdata, int samples);
+    PROJECTM_CWRAPPER_API void PROJECTM_CWRAPPER_CALL PCM_addPCM16(projectM_ptr pm, short [2][512]);
+    PROJECTM_CWRAPPER_API void PROJECTM_CWRAPPER_CALL PCM_addPCM16Data(projectM_ptr pm, const short* pcm_data, short samples);
+    PROJECTM_CWRAPPER_API void PROJECTM_CWRAPPER_CALL PCM_addPCM8(projectM_ptr pm, unsigned char [2][1024]);
+    PROJECTM_CWRAPPER_API void PROJECTM_CWRAPPER_CALL PCM_addPCM8_512(projectM_ptr pm, const unsigned char [2][512]);
 
     #if (PROJECTM_VERSION_INT > 1000000)
-    DLLEXPORT void projectM_settings(projectM_ptr pm, Settings* settings);
+    PROJECTM_CWRAPPER_API void PROJECTM_CWRAPPER_CALL projectM_settings(projectM_ptr pm, Settings* settings);
     #endif
 }
 
