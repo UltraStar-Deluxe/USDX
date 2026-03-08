@@ -493,6 +493,7 @@ type
 
     Static2PlayersDuetSingerP1: TThemeStatic;
     Text2PlayersDuetSingerP1:   TThemeText;
+    DuetSingerArea:             TThemePosition;
   end;
 
   TThemeSing = class(TThemeBasic)
@@ -4361,6 +4362,11 @@ begin
   // Duet Singers
   ThemeLoadStatic (Song.Static2PlayersDuetSingerP1, 'Song' + prefix + 'Static2PlayersDuetSingerP1');
   ThemeLoadText (Song.Text2PlayersDuetSingerP1, 'Song' + prefix + 'Text2PlayersDuetSingerP1');
+  SectionList := GetSectionList('Song' + prefix + 'DuetSingerArea');
+  Song.DuetSingerArea.X := ReadInteger(SectionList, 'X', Song.Static2PlayersDuetSingerP1.X);
+  Song.DuetSingerArea.Y := ReadInteger(SectionList, 'Y', Song.Static2PlayersDuetSingerP1.Y);
+  Song.DuetSingerArea.W := ReadInteger(SectionList, 'W', Song.Static2PlayersDuetSingerP1.W);
+  Song.DuetSingerArea.H := ReadInteger(SectionList, 'H', Song.Static2PlayersDuetSingerP1.H);
 
   //Party Mode
   ThemeLoadStatic(Song.StaticTeam1Joker1, 'Song' + prefix + 'StaticTeam1Joker1');
