@@ -134,7 +134,6 @@ type
 
       // song specific settings
       BPM:            real;
-      Resolution:     integer;
 
       // properties to easily read options of this class
       property IsQueueFull: boolean read QueueFull;  // line in queue?
@@ -144,7 +143,7 @@ type
       procedure Draw (Beat: real);                 // draw the current (active at beat) lyrics
 
       // clears all cached song specific information
-      procedure Clear(cBPM: real = 0; cResolution: integer = 0);
+      procedure Clear(cBPM: real = 0);
 
       function GetUpperLine(): TLyricLine;
       function GetLowerLine(): TLyricLine;
@@ -210,7 +209,6 @@ begin
   inherited Create();
 
   BPM := 0;
-  Resolution := 0;
   LCounter := 0;
   QueueFull := False;
 
@@ -248,11 +246,10 @@ end;
 {**
  * Clears all cached Song specific Information.
  *}
-procedure TLyricEngine.Clear(cBPM: real; cResolution: integer);
+procedure TLyricEngine.Clear(cBPM: real);
 begin
   UpperLine.CurWord := -1;
   BPM := cBPM;
-  Resolution := cResolution;
   LCounter := 0;
   QueueFull := False;
 

@@ -673,7 +673,6 @@ begin
   Track.Number      := 1;
   Track.High        := 0;
   Track.CurrentLine := 0;
-  Track.Resolution  := 0;
   Track.NotesGAP    := 0;
   Track.ScoreValue  := 0;
 
