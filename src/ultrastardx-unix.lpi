@@ -548,6 +548,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UMenuWidget"/>
       </Unit125>
+      <Unit126>
+        <Filename Value="base/UPlayerLayout.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UPlayerLayout"/>
+      </Unit126>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -36,6 +36,8 @@ interface
 uses
   dglOpenGL,
   UCommon,
+  UIni,
+  UPlayerLayout,
   UThemes,
   UTexture;
 
@@ -51,8 +53,8 @@ uses
 
 // some constants containing options that could change by time
 const
-  MaxPlayers = 6;   // maximum of players that could be added
-  MaxPositions = 6; // maximum of score positions that could be added
+  MaxPlayers = UIni.IMaxPlayerCount;   // maximum of players that could be added
+  MaxPositions = MaxPlayers; // maximum of score positions that could be added
 
 type
   TSingInfoBarMode = (
@@ -276,6 +278,108 @@ uses
   UIni,
   UDataBase;
 
+function IsPlayerVisibleOnScreen(const EncodedPosition: byte; const Screen: integer): boolean;
+begin
+  if EncodedPosition = High(byte) then
+    Exit(false);
+
+  if Screens <= 1 then
+    Exit(true);
+
+  Result := (((EncodedPosition and 128) = 0) = (Screen = 1));
+end;
+
+function GetScorePositionForPlayer(const PlayerIndex: integer): TScorePosition;
+var
+  BaseTemplate: TThemeSingPlayer;
+  PlayerCountOnScreen: integer;
+  LocalIndex: integer;
+  LaneLeft: integer;
+  LaneRight: integer;
+  LaneWidth: integer;
+  Scale: real;
+  FrameH: integer;
+  ScoreH: integer;
+  ScoreScale: real;
+  ScoreOffsetX: integer;
+  ScoreOffsetY: integer;
+  RatingOffsetX: integer;
+  RatingOffsetY: integer;
+  PopupYOffset: integer;
+  PopupFontSize: integer;
+  GroupTop: real;
+  Layout: TSingLaneLayout;
+begin
+  if Screens > 1 then
+  begin
+    PlayerCountOnScreen := GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct);
+    LocalIndex := GetPlayerIndexOnScreen(PlayerIndex, PlayersPlay, Screens);
+  end
+  else
+  begin
+    PlayerCountOnScreen := PlayersPlay;
+    LocalIndex := PlayerIndex;
+  end;
+
+  Layout := GetSingLaneLayout(PlayerCountOnScreen, LocalIndex, Theme.Sing.PlayerLayout,
+    CurrentSong.isDuet and (PlayersPlay <> 1));
+  LaneLeft := Layout.ColumnLeft;
+  LaneRight := Layout.ColumnRight;
+  LaneWidth := Layout.ColumnWidth;
+
+  BaseTemplate := Theme.Sing.PlayerTemplate;
+  Scale := Layout.WidgetScale;
+
+  ScoreScale := Min(Scale, (LaneWidth * Theme.Sing.PlayerWidgetLayout.ScoreWidthFraction) /
+    Max(1.0, BaseTemplate.ScoreBackground.W * 1.0));
+
+  FrameH := Max(Theme.Sing.PlayerWidgetLayout.MinFrameH, Round(BaseTemplate.AvatarFrame.H * Scale));
+  ScoreH := Max(Theme.Sing.PlayerWidgetLayout.MinScoreH, Round(BaseTemplate.ScoreBackground.H * Scale));
+  Result.PlayerCount := 0;
+  Result.BGW := Round(BaseTemplate.ScoreBackground.W * ScoreScale);
+  Result.BGH := Round(BaseTemplate.ScoreBackground.H * ScoreScale);
+  Result.BGX := LaneRight - Result.BGW;
+  GroupTop := Max(10, Layout.RowAnchorY -
+    GetSingHeaderTopOffset(Theme.Sing.PlayerWidgetLayout, Layout.GridRows, Scale));
+  Result.BGY := GroupTop;
+
+  ScoreOffsetX := BaseTemplate.Score.X - BaseTemplate.ScoreBackground.X;
+  ScoreOffsetY := BaseTemplate.Score.Y - BaseTemplate.ScoreBackground.Y;
+  Result.TextX := Result.BGX + Round(ScoreOffsetX * ScoreScale);
+  Result.TextY := Result.BGY + Round(ScoreOffsetY * ScoreScale);
+  Result.TextFont := BaseTemplate.Score.Font;
+  Result.TextStyle := BaseTemplate.Score.Style;
+  Result.TextSize := Max(1, Round(BaseTemplate.Score.Size * ScoreScale));
+
+  RatingOffsetX := BaseTemplate.SingBar.X - BaseTemplate.ScoreBackground.X;
+  RatingOffsetY := BaseTemplate.SingBar.Y - BaseTemplate.ScoreBackground.Y;
+  Result.RBX := Result.BGX + Round(RatingOffsetX * ScoreScale);
+  Result.RBY := Result.BGY + Round(RatingOffsetY * ScoreScale);
+  Result.RBW := Round(BaseTemplate.SingBar.W * ScoreScale);
+  Result.RBH := Round(BaseTemplate.SingBar.H * ScoreScale);
+
+  if CurrentSong.isDuet then
+  begin
+    PopupYOffset := Theme.Sing.PlayerWidgetLayout.PopupYOffsetDuet;
+    PopupFontSize := Theme.Sing.PlayerWidgetLayout.PopupFontSizeDuet;
+  end
+  else
+  begin
+    PopupYOffset := Theme.Sing.PlayerWidgetLayout.PopupYOffsetSolo;
+    PopupFontSize := Theme.Sing.PlayerWidgetLayout.PopupFontSizeSolo;
+  end;
+
+  Result.PUW := Result.BGW;
+  Result.PUH := Result.BGH;
+  Result.PUFont := 0;
+  Result.PUStyle := ftOutline;
+  Result.PUSize := Max(1, Round(PopupFontSize * Scale));
+  Result.PUStartX := Result.BGX;
+  Result.PUStartY := Result.TextY + Round(PopupYOffset * Scale);
+  Result.PUTargetX := Result.BGX;
+  Result.PUTargetY := Result.TextY;
+end;
+
 {**
  * sets some standard settings
  *}
@@ -399,43 +503,6 @@ end;
 procedure TSingScores.LoadfromTheme;
 var
   I: integer;
-  procedure AddbyStatics(const PC: byte; const ScoreStatic: TThemePosition; const SingBarStatic: TThemePosition; ScoreText: TThemeText);
-  var
-    nPosition: TScorePosition;
-  begin
-    nPosition.PlayerCount := PC; // only for one player playing
-
-    nPosition.BGX := ScoreStatic.X;
-    nPosition.BGY := ScoreStatic.Y;
-    nPosition.BGW := ScoreStatic.W;
-    nPosition.BGH := ScoreStatic.H;
-
-    nPosition.TextX      := ScoreText.X;
-    nPosition.TextY      := ScoreText.Y;
-    nPosition.TextFont := ScoreText.Font;
-    nPosition.TextStyle  := ScoreText.Style;
-    nPosition.TextSize   := ScoreText.Size;
-
-    nPosition.RBX := SingBarStatic.X;
-    nPosition.RBY := SingBarStatic.Y;
-    nPosition.RBW := SingBarStatic.W;
-    nPosition.RBH := SingBarStatic.H;
-
-    nPosition.PUW := nPosition.BGW;
-    nPosition.PUH := nPosition.BGH;
-
-    nPosition.PUFont := 0;
-    nPosition.PUStyle  := ftOutline;
-    nPosition.PUSize   := 18;
-
-    nPosition.PUStartX := nPosition.BGX;
-    nPosition.PUStartY := nPosition.TextY + 65;
-
-    nPosition.PUTargetX := nPosition.BGX;
-    nPosition.PUTargetY := nPosition.TextY;
-
-    AddPosition(@nPosition);
-  end;
 begin
   Clear;
 
@@ -447,21 +514,6 @@ begin
   // rating bar tex
   Settings.RatingBar_BG_Tex   :=  Tex_SingBar_Back;
   Settings.RatingBar_Bar_Tex  :=  Tex_SingBar_Bar;
-
-  // load positions from theme
-
-  // player 1:
-  AddByStatics(1, Theme.Sing.Solo1PP1.ScoreBackground, Theme.Sing.Solo1PP1.SingBar, Theme.Sing.Solo1PP1.Score);
-  AddByStatics(2, Theme.Sing.Solo2PP1.ScoreBackground, Theme.Sing.Solo2PP1.SingBar, Theme.Sing.Solo2PP1.Score);
-  AddByStatics(4, Theme.Sing.Solo3PP1.ScoreBackground, Theme.Sing.Solo3PP1.SingBar, Theme.Sing.Solo3PP1.Score);
-
-  // player 2:
-  AddByStatics(2, Theme.Sing.Solo2PP2.ScoreBackground, Theme.Sing.Solo2PP2.SingBar, Theme.Sing.Solo2PP2.Score);
-  AddByStatics(4, Theme.Sing.Solo3PP2.ScoreBackground, Theme.Sing.Solo3PP2.SingBar, Theme.Sing.Solo3PP2.Score);
-
-  // player 3:
-  AddByStatics(4, Theme.Sing.Solo3PP3.ScoreBackground, Theme.Sing.Solo3PP3.SingBar, Theme.Sing.Solo3PP3.Score);
-
 end;
 
 {**
@@ -622,104 +674,15 @@ end;
  *}
 procedure TSingScores.Init;
 var
-  PlC:                 array [0..1] of byte; // playercount first screen and second screen
-  I, J:    integer;
-  MaxPlayersperScreen: byte;
-  CurPlayer:           byte;
-
-  function GetPositionCountbyPlayerCount(bPlayerCount: byte): byte;
-  var
-    I: integer;
-  begin
-    Result := 0;
-    bPlayerCount := 1 shl (bPlayerCount - 1);
-
-    for I := 0 to PositionCount - 1 do
-    begin
-      if ((aPositions[I].PlayerCount and bPlayerCount) <> 0) then
-        Inc(Result);
-    end;
-  end;
-
-  function GetPositionbyPlayernum(bPlayerCount, bPlayer: byte): byte;
-  var
-    I: integer;
-  begin
-    bPlayerCount := 1 shl (bPlayerCount - 1);
-    Result := High(byte);
-
-    for I := 0 to PositionCount - 1 do
-    begin
-      if ((aPositions[I].PlayerCount and bPlayerCount) <> 0) then
-      begin
-        if (bPlayer = 0) then
-        begin
-          Result := I;
-          Break;
-        end
-        else
-          Dec(bPlayer);
-      end;
-    end;
-  end;
-
+  I: integer;
 begin
-  MaxPlayersPerScreen := 0;
-
-  for I := 1 to 6 do
+  for I := 0 to PlayerCount - 1 do
   begin
-    // if there are enough positions -> write to maxplayers
-    if (Screens = 2) or (PlayersPlay <= 3) then
-    begin
-      if (GetPositionCountbyPlayerCount(I) = I) then
-        MaxPlayersPerScreen := I
-      else
-        Break;
-    end
+    if Screens > 1 then
+      aPlayers[I].Position := GetPlayerIndexOnScreen(I, PlayerCount, Screens) or ((GetPlayerScreen(I, PlayerCount, Screens) - 1) shl 7)
     else
-    begin
-      // DIRTY HACK for 4/6 players one screen
-      MaxPlayersPerScreen := PlayersPlay;
-      //oPlayerCount := PlayersPlay;
-    end;
+      aPlayers[I].Position := I;
   end;
-
-  // split players to both screens or display on one screen
-  if (Screens = 2) and (MaxPlayersPerScreen < PlayerCount) then
-  begin
-    PlC[0] := PlayerCount div 2 + PlayerCount mod 2;
-    PlC[1] := PlayerCount div 2;
-  end
-  else
-  begin
-    PlC[0] := PlayerCount;
-    PlC[1] := 0;
-  end;
-
-  // check if there are enough positions for all players
-  for I := 0 to Screens - 1 do
-  begin
-    if (PlC[I] > MaxPlayersperScreen) then
-    begin
-      PlC[I] := MaxPlayersperScreen;
-      Log.LogError('More Players than available Positions, TSingScores');
-    end;
-  end;
-
-  CurPlayer := 0;
-  // give every player a position
-  for I := 0 to Screens - 1 do
-    for J := 0 to PlC[I]-1 do
-    begin
-      // DIRTY HACK for 4/6 players one screen
-      if (Screens = 2) or (PlayersPlay <= 3) then
-        aPlayers[CurPlayer].Position := GetPositionbyPlayernum(PlC[I], J) or (I shl 7)
-      else
-        aPlayers[CurPlayer].Position := J;
-
-      //Log.LogError('Player ' + InttoStr(CurPlayer) + ' gets Position: ' + InttoStr(aPlayers[CurPlayer].Position));
-      Inc(CurPlayer);
-    end;
 end;
 
 {**
@@ -823,36 +786,8 @@ var
   TextLen:           real;
   ScoretoAdd:        word;
   PosDiff:           real;
-  procedure aPositionsInternal(index: integer; themeElements: TThemeSingPlayer);
-  var
-    yOffset: integer;
-    puSize: integer;
-  begin
-    if (CurrentSong.isDuet) then begin
-      yOffset := 40;
-      puSize := 14;
-    end else begin
-      yOffset := 65;
-      puSize := 18;
-    end;
-    aPositions[PIndex].PUSize := puSize;
-
-    aPositions[PIndex].PUW := themeElements.ScoreBackground.W;
-    aPositions[PIndex].PUH := themeElements.ScoreBackground.H;
-
-    aPositions[PIndex].PUStartX := themeElements.ScoreBackground.X;
-    aPositions[PIndex].PUStartY := themeElements.Score.Y + yOffset;
-
-    aPositions[PIndex].PUTargetX := themeElements.ScoreBackground.X;
-    aPositions[PIndex].PUTargetY := themeElements.Score.Y;
-
-  end;
+  Position:          TScorePosition;
 begin
-{ if screens = 2 and playerplay <= 3 the 2nd screen shows the
-   textures of screen 1 }
-  if (Screens = 2) and (PlayersPlay <= 3) then
-    ScreenAct := 1;
-
   if (PopUp <> nil) then
   begin
     // only draw if player has a position
@@ -860,7 +795,7 @@ begin
     if PIndex <> High(byte) then
     begin
       // only draw if player is on cur screen
-      if ((Players[PopUp.Player].Position and 128) = 0) = (ScreenAct = 1) then
+      if IsPlayerVisibleOnScreen(Players[PopUp.Player].Position, ScreenAct) then
       begin
         CurTime := SDL_GetTicks;
         if not (Enabled and Players[PopUp.Player].Enabled) then
@@ -872,85 +807,7 @@ begin
 
         // get position of popup
         PIndex := PIndex and 127;
-
-        // DIRTY HACK
-        // correct position for duet with 3/6 players and 4/6 players in one screen
-        if (Screens = 1) and ((PlayersPlay = 4) or (PlayersPlay = 6)) then
-        begin
-          if (PlayersPlay = 4) then
-          begin
-            if (CurrentSong.isDuet) then
-            begin
-              case (PopUp.Player) of
-                  0: aPositionsInternal(PIndex, Theme.Sing.Duet4PP1);
-                  1: aPositionsInternal(PIndex, Theme.Sing.Duet4PP2);
-                  2: aPositionsInternal(PIndex, Theme.Sing.Duet4PP3);
-                  3: aPositionsInternal(PIndex, Theme.Sing.Duet4PP4);
-                end;
-            end
-            else
-            begin
-              case (PopUp.Player) of
-                  0: aPositionsInternal(PIndex, Theme.Sing.Solo4PP1);
-                  1: aPositionsInternal(PIndex, Theme.Sing.Solo4PP2);
-                  2: aPositionsInternal(PIndex, Theme.Sing.Solo4PP3);
-                  3: aPositionsInternal(PIndex, Theme.Sing.Solo4PP4);
-                end;
-            end;
-          end;
-
-          if (PlayersPlay = 6) then
-          begin
-            if (CurrentSong.isDuet) then
-            begin
-              case (PopUp.Player) of
-                  0: aPositionsInternal(PIndex, Theme.Sing.Duet6PP1);
-                  1: aPositionsInternal(PIndex, Theme.Sing.Duet6PP2);
-                  2: aPositionsInternal(PIndex, Theme.Sing.Duet6PP3);
-                  3: aPositionsInternal(PIndex, Theme.Sing.Duet6PP4);
-                  4: aPositionsInternal(PIndex, Theme.Sing.Duet6PP5);
-                  5: aPositionsInternal(PIndex, Theme.Sing.Duet6PP6);
-                end;
-            end
-            else
-            begin
-              case (PopUp.Player) of
-                  0: aPositionsInternal(0, Theme.Sing.Solo6PP1);
-                  1: aPositionsInternal(1, Theme.Sing.Solo6PP2);
-                  2: aPositionsInternal(2, Theme.Sing.Solo6PP3);
-                  3: aPositionsInternal(3, Theme.Sing.Solo6PP4);
-                  4: aPositionsInternal(4, Theme.Sing.Solo6PP5);
-                  5: aPositionsInternal(5, Theme.Sing.Solo6PP6);
-                end;
-            end;
-          end;
-        end
-        else
-        begin
-
-          if (CurrentSong.isDuet) then
-          begin
-            if ((PlayersPlay = 3) or (PlayersPlay = 6)) then
-            begin
-              case (PopUp.Player) of
-                0, 3, 6: aPositionsInternal(PIndex, Theme.Sing.Duet3PP1);
-                1, 4, 7: aPositionsInternal(PIndex, Theme.Sing.Duet3PP2);
-                2, 5, 8: aPositionsInternal(PIndex, Theme.Sing.Duet3PP3);
-              end;
-            end;
-          end
-          else
-          begin
-          if ((PlayersPlay = 3) or (PlayersPlay = 6)) then
-            begin
-              case (PopUp.Player) of
-                0, 3, 6: aPositionsInternal(PIndex, Theme.Sing.Solo3PP1);
-                1, 4, 7: aPositionsInternal(PIndex, Theme.Sing.Solo3PP2);
-                2, 5, 8: aPositionsInternal(PIndex, Theme.Sing.Solo3PP3);
-              end;
-            end;
-          end;
-        end;
+        Position := GetScorePositionForPlayer(PopUp.Player);
 
         // check for phase ...
         if (TimeDiff <= Settings.Phase1Time) then
@@ -959,13 +816,13 @@ begin
           Progress := TimeDiff / Settings.Phase1Time;
 
 
-          W := aPositions[PIndex].PUW * Sin(Progress/2*Pi);
-          H := aPositions[PIndex].PUH * Sin(Progress/2*Pi);
+          W := Position.PUW * Sin(Progress/2*Pi);
+          H := Position.PUH * Sin(Progress/2*Pi);
 
-          X := aPositions[PIndex].PUStartX + (aPositions[PIndex].PUW - W)/2;
-          Y := aPositions[PIndex].PUStartY + (aPositions[PIndex].PUH - H)/2;
+          X := Position.PUStartX + (Position.PUW - W)/2;
+          Y := Position.PUStartY + (Position.PUH - H)/2;
 
-          FontSize   := Round(Progress * aPositions[PIndex].PUSize);
+          FontSize   := Round(Progress * Position.PUSize);
           FontOffset := (H - FontSize) / 2;
           Alpha := 1;
         end
@@ -975,20 +832,20 @@ begin
           // phase 2 - the moving
           Progress := (TimeDiff - Settings.Phase1Time) / Settings.Phase2Time;
 
-          W := aPositions[PIndex].PUW;
-          H := aPositions[PIndex].PUH;
+          W := Position.PUW;
+          H := Position.PUH;
 
-          PosDiff := aPositions[PIndex].PUTargetX - aPositions[PIndex].PUStartX;
+          PosDiff := Position.PUTargetX - Position.PUStartX;
           if PosDiff > 0 then
             PosDiff := PosDiff + W;
-          X := aPositions[PIndex].PUStartX + PosDiff * sqr(Progress);
+          X := Position.PUStartX + PosDiff * sqr(Progress);
 
-          PosDiff := aPositions[PIndex].PUTargetY - aPositions[PIndex].PUStartY;
+          PosDiff := Position.PUTargetY - Position.PUStartY;
           if PosDiff < 0 then
-            PosDiff := PosDiff + aPositions[PIndex].BGH;
-          Y := aPositions[PIndex].PUStartY + PosDiff * sqr(Progress);
+            PosDiff := PosDiff + Position.BGH;
+          Y := Position.PUStartY + PosDiff * sqr(Progress);
 
-          FontSize   := aPositions[PIndex].PUSize;
+          FontSize   := Position.PUSize;
           FontOffset := (H - FontSize) / 2;
           Alpha := 1 - 0.3 * Progress;
         end
@@ -1021,24 +878,24 @@ begin
             // set positions etc.
             Alpha := 0.7 - 0.7 * Progress;
 
-            W := aPositions[PIndex].PUW;
-            H := aPositions[PIndex].PUH;
+            W := Position.PUW;
+            H := Position.PUH;
 
-            PosDiff := aPositions[PIndex].PUTargetX - aPositions[PIndex].PUStartX;
+            PosDiff := Position.PUTargetX - Position.PUStartX;
             if (PosDiff > 0) then
               PosDiff := W
             else
               PosDiff := 0;
-            X := aPositions[PIndex].PUTargetX + PosDiff * Progress;
+            X := Position.PUTargetX + PosDiff * Progress;
 
-            PosDiff := aPositions[PIndex].PUTargetY - aPositions[PIndex].PUStartY;
+            PosDiff := Position.PUTargetY - Position.PUStartY;
             if (PosDiff < 0) then
-              PosDiff := -aPositions[PIndex].BGH
+              PosDiff := -Position.BGH
             else
               PosDiff := 0;
-            Y := aPositions[PIndex].PUTargetY - PosDiff * (1 - Progress);
+            Y := Position.PUTargetY - PosDiff * (1 - Progress);
 
-            FontSize   := aPositions[PIndex].PUSize;
+            FontSize   := Position.PUSize;
             FontOffset := (H - FontSize) / 2;
           end
           else
@@ -1075,8 +932,8 @@ begin
           glDisable(GL_BLEND);
 
           // set font style and size
-          SetFontFamily(aPositions[PIndex].PUFont);
-          SetFontStyle(aPositions[PIndex].PUStyle);
+          SetFontFamily(Position.PUFont);
+          SetFontStyle(Position.PUStyle);
           SetFontItalic(false);
           SetFontSize(FontSize);
           SetFontReflection(false, 0);
@@ -1127,90 +984,13 @@ var
 begin
   Drawing := false;
 
-  { if screens = 2 and playerplay <= 3 the 2nd screen shows the
-   textures of screen 1 }
-  if (Screens = 2) and (PlayersPlay <= 3) then
-    ScreenAct := 1;
-
-  // DIRTY HACK
-  // correct position for duet with 3/6 players and 4/6 players one screen
-  if (Screens = 1) and ((PlayersPlay = 4) or (PlayersPlay = 6)) then
+  if Players[Index].Position <> High(byte) then
   begin
-
-    Position := aPositions[Players[Index].Position and 127];
-    Drawing := true;
-
-    if (PlayersPlay = 4) then
+    if IsPlayerVisibleOnScreen(Players[Index].Position, ScreenAct) and Players[Index].Visible then
     begin
-      if (CurrentSong.isDuet) then
-      begin
-        case Index of
-          0: updatePosition(Theme.Sing.Duet4PP1);
-          1: updatePosition(Theme.Sing.Duet4PP2);
-          2: updatePosition(Theme.Sing.Duet4PP3);
-          3: updatePosition(Theme.Sing.Duet4PP4);
-        end;
-      end
-      else
-      begin
-        case Index of
-          0: updatePosition(Theme.Sing.Solo4PP1);
-          1: updatePosition(Theme.Sing.Solo4PP2);
-          2: updatePosition(Theme.Sing.Solo4PP3);
-          3: updatePosition(Theme.Sing.Solo4PP4);
-        end;
-      end;
-    end
-    else
-    begin
-      // 6 players
-      if (CurrentSong.isDuet) then
-      begin
-        case Index of
-          0: updatePosition(Theme.Sing.Duet6PP1);
-          1: updatePosition(Theme.Sing.Duet6PP2);
-          2: updatePosition(Theme.Sing.Duet6PP3);
-          3: updatePosition(Theme.Sing.Duet6PP4);
-          4: updatePosition(Theme.Sing.Duet6PP5);
-          5: updatePosition(Theme.Sing.Duet6PP6);
-        end;
-      end
-      else
-      begin
-        case Index of
-          0: updatePosition(Theme.Sing.Solo6PP1);
-          1: updatePosition(Theme.Sing.Solo6PP2);
-          2: updatePosition(Theme.Sing.Solo6PP3);
-          3: updatePosition(Theme.Sing.Solo6PP4);
-          4: updatePosition(Theme.Sing.Solo6PP5);
-          5: updatePosition(Theme.Sing.Solo6PP6);
-        end;
-      end;
+      Position := GetScorePositionForPlayer(Index);
+      Drawing := true;
     end;
-  end
-  else
-  begin
-
-    // only draw if player has a position
-    if Players[Index].Position <> High(byte) then
-    begin
-      // only draw if player is on cur screen
-      if (((Players[Index].Position and 128) = 0) = (ScreenAct = 1)) and Players[Index].Visible then
-      begin
-        Position := aPositions[Players[Index].Position and 127];
-
-        Drawing := true;
-
-        if (CurrentSong.isDuet) and ((PlayersPlay = 3) or (PlayersPlay = 6)) then
-        begin
-          case Index of
-            0, 3, 6: updatePosition(Theme.Sing.Duet3PP1);
-            1, 4, 7: updatePosition(Theme.Sing.Duet3PP2);
-            2, 5, 8: updatePosition(Theme.Sing.Duet3PP3);
-          end;
-      end;
-  end;
-  end;
   end;
 
   if (Drawing) then
@@ -1330,99 +1110,17 @@ function TSingScores.TryGetBarRect(const Index: integer; out Rect: TBarRect): bo
 var
   Position:   TScorePosition;
   Drawing: boolean;
-  procedure updatePosition(themeElements: TThemeSingPlayer);
-  begin
-    Position.RBX := themeElements.SingBar.X;
-    Position.RBY := themeElements.SingBar.Y;
-    Position.RBW := themeElements.SingBar.W;
-    Position.RBH := themeElements.SingBar.H;
-  end;
 begin
-  Result := false;
-
-  if (Screens = 2) and (PlayersPlay <= 3) then
-    ScreenAct := 1;
-
   Drawing := false;
 
-  if (Screens = 1) and ((PlayersPlay = 4) or (PlayersPlay = 6)) then
+  if Players[Index].Position <> High(byte) then
   begin
-    Drawing := true;
-
-    if (PlayersPlay = 4) then
+    if IsPlayerVisibleOnScreen(Players[Index].Position, ScreenAct) and
+       Players[index].RBVisible and
+       Players[index].Visible then
     begin
-
-      if (CurrentSong.isDuet) then
-      begin
-        case Index of
-          0: updatePosition(Theme.Sing.Duet4PP1);
-          1: updatePosition(Theme.Sing.Duet4PP2);
-          2: updatePosition(Theme.Sing.Duet4PP3);
-          3: updatePosition(Theme.Sing.Duet4PP4);
-        end;
-      end
-      else
-      begin
-        case Index of
-          0: updatePosition(Theme.Sing.Solo4PP1);
-          1: updatePosition(Theme.Sing.Solo4PP2);
-          2: updatePosition(Theme.Sing.Solo4PP3);
-          3: updatePosition(Theme.Sing.Solo4PP4);
-        end;
-      end;
-    end
-    else
-    begin
-      // 6 players
-      if (CurrentSong.isDuet) then
-      begin
-        case Index of
-          0: updatePosition(Theme.Sing.Duet6PP1);
-          1: updatePosition(Theme.Sing.Duet6PP2);
-          2: updatePosition(Theme.Sing.Duet6PP3);
-          3: updatePosition(Theme.Sing.Duet6PP4);
-          4: updatePosition(Theme.Sing.Duet6PP5);
-          5: updatePosition(Theme.Sing.Duet6PP6);
-        end;
-      end
-      else
-      begin
-        case Index of
-          0: updatePosition(Theme.Sing.Solo6PP1);
-          1: updatePosition(Theme.Sing.Solo6PP2);
-          2: updatePosition(Theme.Sing.Solo6PP3);
-          3: updatePosition(Theme.Sing.Solo6PP4);
-          4: updatePosition(Theme.Sing.Solo6PP5);
-          5: updatePosition(Theme.Sing.Solo6PP6);
-        end;
-      end;
-    end;
-  end
-  else
-  begin
-    // only draw if player has a position
-    if Players[Index].Position <> High(byte) then
-    begin
-      // only draw if player is on cur screen
-      if (((Players[Index].Position and 128) = 0) = (ScreenAct = 1) and
-          Players[index].RBVisible and
-          Players[index].Visible) then
-      begin
-        Drawing := true;
-
-        Position := aPositions[Players[Index].Position and 127];
-
-        // DIRTY HACK
-        // correct position for duet with 3/6 players
-        if (CurrentSong.isDuet) and ((PlayersPlay = 3) or (PlayersPlay = 6)) then
-        begin
-          case Index of
-            0, 3, 6: updatePosition(Theme.Sing.Duet3PP1);
-            1, 4, 7: updatePosition(Theme.Sing.Duet3PP2);
-            2, 5, 8: updatePosition(Theme.Sing.Duet3PP3);
-          end;
-        end;
-      end;
+      Drawing := true;
+      Position := GetScorePositionForPlayer(Index);
     end;
   end;
 

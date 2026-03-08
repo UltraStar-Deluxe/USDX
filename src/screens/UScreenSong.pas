@@ -45,6 +45,7 @@ uses
   UMenu,
   UMenuEqualizer,
   UMusic,
+  UPlayerLayout,
   UPath,
   UScale,
   USong,
@@ -197,26 +198,10 @@ type
       InfoMessageBG: cardinal;
       InfoMessageText: cardinal;
 
-      Static2PlayersDuetSingerP1: cardinal;
-      Static2PlayersDuetSingerP2: cardinal;
-      Text2PlayersDuetSingerP1: cardinal;
-      Text2PlayersDuetSingerP2: cardinal;
-
-      Static3PlayersDuetSingerP1: cardinal;
-      Static3PlayersDuetSingerP2: cardinal;
-      Static3PlayersDuetSingerP3: cardinal;
-      Text3PlayersDuetSingerP1: cardinal;
-      Text3PlayersDuetSingerP2: cardinal;
-      Text3PlayersDuetSingerP3: cardinal;
-
-      Static4PlayersDuetSingerP3: cardinal;
-      Static4PlayersDuetSingerP4: cardinal;
-
-      Static6PlayersDuetSingerP4: cardinal;
-      Static6PlayersDuetSingerP5: cardinal;
-      Static6PlayersDuetSingerP6: cardinal;
-
-      ColPlayer:  array[0..UIni.IMaxPlayerCount-1] of TRGB;
+      DuetSingerStatics: array[0..UIni.IMaxPlayerCount-1] of cardinal;
+      DuetSingerTexts: array[0..UIni.IMaxPlayerCount-1] of cardinal;
+      DuetSingerBaseStatic: TThemeStatic;
+      DuetSingerBaseText: TThemeText;
 
       //CurrentPartyTime: cardinal;
       //PartyTime: cardinal;
@@ -311,6 +296,9 @@ type
       function  getVisibleMedleyArr(MinSource: TMedleySource): TVisArr;
 
       procedure ColorDuetNameSingers;
+      procedure LayoutDuetSingerWidgets(PlayerCount: integer);
+      procedure SetDuetSingerVisibility(Count: integer);
+      procedure SetDuetSingerTexts(Count, FirstNameIndex: integer);
 
       procedure StopMusicPreview();
       procedure StopVideoPreview();
@@ -343,6 +331,11 @@ uses
   UUnicodeUtils,
   dglOpenGL,
   Math;
+
+function GetSongPlayerColor(PlayerIndex: integer): TRGB;
+begin
+  Result := GetPlayerColor(Ini.SingColor[PlayerIndex]);
+end;
 
 const
   MAX_TIME = 30;
@@ -1833,25 +1826,14 @@ begin
   InfoMessageBG := AddStatic(Theme.Song.InfoMessageBG);
   InfoMessageText := AddText(Theme.Song.InfoMessageText);
 
-  // Duet Names Singers
-  Static4PlayersDuetSingerP3 := AddStatic(Theme.Song.Static4PlayersDuetSingerP3);
-  Static4PlayersDuetSingerP4 := AddStatic(Theme.Song.Static4PlayersDuetSingerP4);
-
-  Static6PlayersDuetSingerP4 := AddStatic(Theme.Song.Static6PlayersDuetSingerP4);
-  Static6PlayersDuetSingerP5 := AddStatic(Theme.Song.Static6PlayersDuetSingerP5);
-  Static6PlayersDuetSingerP6 := AddStatic(Theme.Song.Static6PlayersDuetSingerP6);
-
-  Text2PlayersDuetSingerP1 := AddText(Theme.Song.Text2PlayersDuetSingerP1);
-  Text2PlayersDuetSingerP2 := AddText(Theme.Song.Text2PlayersDuetSingerP2);
-  Static2PlayersDuetSingerP1 := AddStatic(Theme.Song.Static2PlayersDuetSingerP1);
-  Static2PlayersDuetSingerP2 := AddStatic(Theme.Song.Static2PlayersDuetSingerP2);
-
-  Text3PlayersDuetSingerP1 := AddText(Theme.Song.Text3PlayersDuetSingerP1);
-  Text3PlayersDuetSingerP2 := AddText(Theme.Song.Text3PlayersDuetSingerP2);
-  Text3PlayersDuetSingerP3 := AddText(Theme.Song.Text3PlayersDuetSingerP3);
-  Static3PlayersDuetSingerP1 := AddStatic(Theme.Song.Static3PlayersDuetSingerP1);
-  Static3PlayersDuetSingerP2 := AddStatic(Theme.Song.Static3PlayersDuetSingerP2);
-  Static3PlayersDuetSingerP3 := AddStatic(Theme.Song.Static3PlayersDuetSingerP3);
+  // Duet singer labels are created from a single base template and laid out at runtime.
+  DuetSingerBaseStatic := Theme.Song.Static2PlayersDuetSingerP1;
+  DuetSingerBaseText := Theme.Song.Text2PlayersDuetSingerP1;
+  for I := 0 to High(DuetSingerStatics) do
+  begin
+    DuetSingerStatics[I] := AddStatic(DuetSingerBaseStatic);
+    DuetSingerTexts[I] := AddText(DuetSingerBaseText);
+  end;
 
   // Medley Playlist
   SetLength(TextMedleyArtist, Theme.Song.TextMedleyMax);
@@ -1968,6 +1950,11 @@ begin
 end;
 
 procedure TScreenSong.ColorDuetNameSingers();
+var
+  LocalPlayerCount: integer;
+  LocalStartIndex: integer;
+  VisibleCount: integer;
+  I: integer;
   procedure setColor(static: integer; color: TRGB);
   begin
     Statics[static].Texture.ColR := color.R;
@@ -1975,78 +1962,105 @@ procedure TScreenSong.ColorDuetNameSingers();
     Statics[static].Texture.ColB := color.B;
   end;
 begin
-  if (PlayersPlay = 1) then
+  if Screens > 1 then
   begin
-    setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
-    // this one is different from all the others
-    setColor(Static2PlayersDuetSingerP2, GetPlayerLightColor(Ini.SingColor[0]));
+    LocalPlayerCount := GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct);
+    LocalStartIndex := GetFirstPlayerIndexForScreen(PlayersPlay, Screens, ScreenAct);
+  end
+  else
+  begin
+    LocalPlayerCount := PlayersPlay;
+    LocalStartIndex := 0;
   end;
 
-  if (PlayersPlay = 2) then
+  VisibleCount := Max(2, LocalPlayerCount);
+  LayoutDuetSingerWidgets(VisibleCount);
+  if LocalPlayerCount = 1 then
   begin
-    setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
-    setColor(Static2PlayersDuetSingerP2, ColPlayer[1]);
+    setColor(DuetSingerStatics[0], GetSongPlayerColor(LocalStartIndex));
+    setColor(DuetSingerStatics[1], GetPlayerLightColor(Ini.SingColor[LocalStartIndex]));
+  end
+  else
+  begin
+    for I := 0 to VisibleCount - 1 do
+      setColor(DuetSingerStatics[I], GetSongPlayerColor(LocalStartIndex + I));
   end;
+end;
 
-  if (PlayersPlay = 3) then
-  begin
-    setColor(Static3PlayersDuetSingerP1, ColPlayer[0]);
-    setColor(Static3PlayersDuetSingerP2, ColPlayer[1]);
-    setColor(Static3PlayersDuetSingerP3, ColPlayer[2]);
-  end;
+procedure TScreenSong.LayoutDuetSingerWidgets(PlayerCount: integer);
+var
+  I: integer;
+  Grid: TPlayerGrid;
+  SlotRect: TPlayerSlotRect;
+  TextOffsetX: real;
+  TextOffsetY: real;
+  BoxWidth: integer;
+  ContainerX: integer;
+  ContainerY: integer;
+  ContainerW: integer;
+  ContainerH: integer;
+  TotalWidth: integer;
+const
+  MappingOffsetX = 36;
+  MappingOffsetY = -72;
+begin
+  if PlayerCount <= 0 then
+    Exit;
 
-  if (PlayersPlay = 4) then
+  Grid := GetPlayerGrid(PlayerCount);
+  BoxWidth := Round(DuetSingerBaseStatic.W * 0.68);
+  TextOffsetX := DuetSingerBaseText.X - DuetSingerBaseStatic.X;
+  TextOffsetY := DuetSingerBaseText.Y - DuetSingerBaseStatic.Y;
+  TotalWidth := Grid.Cols * BoxWidth;
+  if Grid.Cols > 1 then
+    Inc(TotalWidth, (Grid.Cols - 1) * 8);
+
+  ContainerY := DuetSingerBaseStatic.Y + MappingOffsetY;
+  ContainerH := Grid.Rows * DuetSingerBaseStatic.H;
+  ContainerW := TotalWidth;
+  ContainerX := Round(Text[TextMaxScoreLocal].X) - 20 - ContainerW + MappingOffsetX;
+  if ContainerX < 360 then
+    ContainerX := 360;
+
+  for I := 0 to High(DuetSingerStatics) do
   begin
-    if (Screens = 1) then
+    if I < PlayerCount then
     begin
-      setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
-      setColor(Static2PlayersDuetSingerP2, ColPlayer[1]);
-      setColor(Static4PlayersDuetSingerP3, ColPlayer[2]);
-      setColor(Static4PlayersDuetSingerP4, ColPlayer[3]);
-    end
-    else
-    begin
-      if (ScreenAct = 1) then
-      begin
-        setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
-        setColor(Static2PlayersDuetSingerP2, ColPlayer[1]);
-      end;
+      SlotRect := GetPlayerSlotRect(I, PlayerCount, ContainerX, ContainerY, ContainerW, ContainerH);
+      Statics[DuetSingerStatics[I]].Texture.X := SlotRect.X;
+      Statics[DuetSingerStatics[I]].Texture.Y := SlotRect.Y;
+      Statics[DuetSingerStatics[I]].Texture.W := BoxWidth;
+      Statics[DuetSingerStatics[I]].Texture.H := DuetSingerBaseStatic.H;
 
-      if (ScreenAct = 2) then
-      begin
-        setColor(Static2PlayersDuetSingerP1, ColPlayer[2]);
-        setColor(Static2PlayersDuetSingerP2, ColPlayer[3]);
-      end;
+      Text[DuetSingerTexts[I]].X := Statics[DuetSingerStatics[I]].Texture.X + TextOffsetX;
+      Text[DuetSingerTexts[I]].Y := Statics[DuetSingerStatics[I]].Texture.Y + TextOffsetY;
+      Text[DuetSingerTexts[I]].W := BoxWidth - Round(TextOffsetX);
+      Text[DuetSingerTexts[I]].H := DuetSingerBaseText.H;
     end;
   end;
+end;
 
-  if (PlayersPlay = 6) then
+procedure TScreenSong.SetDuetSingerVisibility(Count: integer);
+var
+  I: integer;
+begin
+  for I := 0 to High(DuetSingerStatics) do
   begin
-    if (Screens = 1) then
-    begin
-      setColor(Static3PlayersDuetSingerP1, ColPlayer[0]);
-      setColor(Static3PlayersDuetSingerP2, ColPlayer[1]);
-      setColor(Static3PlayersDuetSingerP3, ColPlayer[2]);
-      setColor(Static6PlayersDuetSingerP4, ColPlayer[3]);
-      setColor(Static6PlayersDuetSingerP5, ColPlayer[4]);
-      setColor(Static6PlayersDuetSingerP6, ColPlayer[5]);
-    end
-    else
-    begin
-      if (ScreenAct = 1) then
-      begin
-        setColor(Static3PlayersDuetSingerP1, ColPlayer[0]);
-        setColor(Static3PlayersDuetSingerP2, ColPlayer[1]);
-        setColor(Static3PlayersDuetSingerP3, ColPlayer[2]);
-      end;
+    Statics[DuetSingerStatics[I]].Visible := I < Count;
+    Text[DuetSingerTexts[I]].Visible := I < Count;
+  end;
+end;
 
-      if (ScreenAct = 2) then
-      begin
-        setColor(Static3PlayersDuetSingerP1, ColPlayer[3]);
-        setColor(Static3PlayersDuetSingerP2, ColPlayer[4]);
-        setColor(Static3PlayersDuetSingerP3, ColPlayer[5]);
-      end;
-    end;
+procedure TScreenSong.SetDuetSingerTexts(Count, FirstNameIndex: integer);
+var
+  I: integer;
+begin
+  for I := 0 to High(DuetSingerTexts) do
+  begin
+    if I < Count then
+      Text[DuetSingerTexts[I]].Text := CatSongs.Song[Interaction].DuetNames[(FirstNameIndex + (I mod 2)) mod 2]
+    else
+      Text[DuetSingerTexts[I]].Text := '';
   end;
 end;
 
@@ -2208,29 +2222,10 @@ end;
 procedure TScreenSong.SetScroll;
 var
   VS, B, SongsInCat: integer;
-  procedure HideDuetElements;
-  begin
-    Text[Text2PlayersDuetSingerP1].Visible := false;
-    Text[Text2PlayersDuetSingerP2].Visible := false;
-
-    Statics[Static2PlayersDuetSingerP1].Visible := false;
-    Statics[Static2PlayersDuetSingerP2].Visible := false;
-
-    Text[Text3PlayersDuetSingerP1].Visible := false;
-    Text[Text3PlayersDuetSingerP2].Visible := false;
-    Text[Text3PlayersDuetSingerP3].Visible := false;
-
-    Statics[Static3PlayersDuetSingerP1].Visible := false;
-    Statics[Static3PlayersDuetSingerP2].Visible := false;
-    Statics[Static3PlayersDuetSingerP3].Visible := false;
-
-    Statics[Static4PlayersDuetSingerP3].Visible := false;
-    Statics[Static4PlayersDuetSingerP4].Visible := false;
-
-    Statics[Static6PlayersDuetSingerP4].Visible := false;
-    Statics[Static6PlayersDuetSingerP5].Visible := false;
-    Statics[Static6PlayersDuetSingerP6].Visible := false;
-  end;
+  LocalPlayerCount: integer;
+  LocalStartIndex: integer;
+  BaseNameIndex: integer;
+  VisibleCount: integer;
 begin
   VS := CatSongs.VisibleSongs;
   if VS > 0 then
@@ -2270,108 +2265,40 @@ begin
         Text[TextYear].Text  :=  '';
     end;
 
-    HideDuetElements;
+    SetDuetSingerVisibility(0);
 
     // Duet Singers
     if (CatSongs.Song[Interaction].isDuet) then
     begin
-      if (PlayersPlay = 3) or (PlayersPlay = 6) then
+      if Screens > 1 then
       begin
-        Text[Text3PlayersDuetSingerP1].Visible := true;
-        Text[Text3PlayersDuetSingerP2].Visible := true;
-        Text[Text3PlayersDuetSingerP3].Visible := true;
-
-        Statics[Static3PlayersDuetSingerP1].Visible := true;
-        Statics[Static3PlayersDuetSingerP2].Visible := true;
-        Statics[Static3PlayersDuetSingerP3].Visible := true;
-
-        if (Screens = 1) and (PlayersPlay = 6) then
-        begin
-          Statics[Static6PlayersDuetSingerP4].Visible := true;
-          Statics[Static6PlayersDuetSingerP5].Visible := true;
-          Statics[Static6PlayersDuetSingerP6].Visible := true;
-        end;
+        LocalPlayerCount := GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct);
+        LocalStartIndex := GetFirstPlayerIndexForScreen(PlayersPlay, Screens, ScreenAct);
       end
       else
       begin
-        Text[Text2PlayersDuetSingerP1].Visible := true;
-        Text[Text2PlayersDuetSingerP2].Visible := true;
-
-        Statics[Static2PlayersDuetSingerP1].Visible := true;
-        Statics[Static2PlayersDuetSingerP2].Visible := true;
-
-        if (Screens = 1) and (PlayersPlay = 4) then
-        begin
-          Statics[Static4PlayersDuetSingerP3].Visible := true;
-          Statics[Static4PlayersDuetSingerP4].Visible := true;
-        end;
+        LocalPlayerCount := PlayersPlay;
+        LocalStartIndex := 0;
       end;
+
+      VisibleCount := Max(2, LocalPlayerCount);
+      LayoutDuetSingerWidgets(VisibleCount);
+      SetDuetSingerVisibility(VisibleCount);
 
       // Set duet texts
-      if (DuetChange) then
+      if Screens > 1 then
       begin
-        if (PlayersPlay = 3) or (PlayersPlay = 6) then
-        begin
-          if (PlayersPlay = 3) then
-          begin
-            Text[Text3PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[1];
-            Text[Text3PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[0];
-            Text[Text3PlayersDuetSingerP3].Text := CatSongs.Song[Interaction].DuetNames[1];
-          end
-          else
-          begin
-            if (ScreenAct = 1) then
-            begin
-              Text[Text3PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[1];
-              Text[Text3PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[0];
-              Text[Text3PlayersDuetSingerP3].Text := CatSongs.Song[Interaction].DuetNames[1];
-            end
-            else
-            begin
-              Text[Text3PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[0];
-              Text[Text3PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[1];
-              Text[Text3PlayersDuetSingerP3].Text := CatSongs.Song[Interaction].DuetNames[0];
-            end;
-          end;
-        end
+        if LocalPlayerCount <= 2 then
+          BaseNameIndex := Ord(not DuetChange)
         else
-        begin
-          Text[Text2PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[1];
-          Text[Text2PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[0];
-        end;
+          BaseNameIndex := (LocalStartIndex + Ord(DuetChange)) mod 2;
       end
       else
       begin
-        if (PlayersPlay = 3) or (PlayersPlay = 6) then
-        begin
-          if (PlayersPlay = 3) then
-          begin
-            Text[Text3PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[0];
-            Text[Text3PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[1];
-            Text[Text3PlayersDuetSingerP3].Text := CatSongs.Song[Interaction].DuetNames[0];
-          end
-          else
-          begin
-            if (ScreenAct = 1) then
-            begin
-              Text[Text3PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[0];
-              Text[Text3PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[1];
-              Text[Text3PlayersDuetSingerP3].Text := CatSongs.Song[Interaction].DuetNames[0];
-            end
-            else
-            begin
-              Text[Text3PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[1];
-              Text[Text3PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[0];
-              Text[Text3PlayersDuetSingerP3].Text := CatSongs.Song[Interaction].DuetNames[1];
-            end;
-          end;
-        end
-        else
-        begin
-          Text[Text2PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[0];
-          Text[Text2PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[1];
-        end;
+        BaseNameIndex := Ord(DuetChange);
       end;
+
+      SetDuetSingerTexts(VisibleCount, BaseNameIndex);
     end;
     //Set Song Score
     SongScore;
@@ -2406,7 +2333,7 @@ begin
 
     Statics[VideoIcon].Visible := false;
 
-    HideDuetElements;
+    SetDuetSingerVisibility(0);
 
     for B := 0 to High(Button) do
       Button[B].Visible := false;
@@ -2985,14 +2912,6 @@ begin
     Statics[RapToFreestyleIcon].Visible := false;
   end;
 
-  // for duet names
-  ScreenSong.ColPlayer[0] := GetPlayerColor(Ini.SingColor[0]);
-  ScreenSong.ColPlayer[1] := GetPlayerColor(Ini.SingColor[1]);
-  ScreenSong.ColPlayer[2] := GetPlayerColor(Ini.SingColor[2]);
-  ScreenSong.ColPlayer[3] := GetPlayerColor(Ini.SingColor[3]);
-  ScreenSong.ColPlayer[4] := GetPlayerColor(Ini.SingColor[4]);
-  ScreenSong.ColPlayer[5] := GetPlayerColor(Ini.SingColor[5]);
-
   {**
    * Pause background music
    *}
@@ -3013,8 +2932,7 @@ begin
   if Mode = smMedley then
     Mode := smNormal;
 
-  if Ini.Players <= 3 then PlayersPlay := Ini.Players + 1;
-  if Ini.Players  = 4 then PlayersPlay := 6;
+  PlayersPlay := UIni.IPlayersVals[Ini.Players];
 
   //Cat Mod etc
   if (Ini.TabsAtStartup = 1) and (CatSongs.CatNumShow = -1) then

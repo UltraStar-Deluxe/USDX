@@ -39,7 +39,8 @@ uses
   UIni,
   UTexture,
   UThemes,
-  UMusic;
+  UMusic,
+  UMenu;
 
 type
   // stores two textures for enabled/disabled states
@@ -164,6 +165,7 @@ uses
   UGraphic,
   UDisplay,
   ULog,
+  UPath,
   math;
 
 { TLyricLine }
@@ -265,6 +267,10 @@ end;
 procedure TLyricEngine.LoadTextures;
 var
   I: Integer;
+  ActiveIconFile: IPath;
+  InactiveIconFile: IPath;
+  PlayerColor: TRGB;
+  PlayerColorInt: integer;
 begin
   // lyric indicator (bar that indicates when the line start)
   IndicatorTex := Texture.LoadTexture(Skin.GetTextureFileName('LyricHelpBar'), TEXTURE_TYPE_TRANSPARENT, $FF00FF);
@@ -272,11 +278,24 @@ begin
   // ball for current word hover in ball effect
   BallTex := Texture.LoadTexture(Skin.GetTextureFileName('Ball'), TEXTURE_TYPE_TRANSPARENT, 0);
 
+  ActiveIconFile := Skin.SkinPath.Append(Path('[sing.player]lyric_active.png'));
+  InactiveIconFile := Skin.SkinPath.Append(Path('[sing.player]lyric_inactive.png'));
+
   // duet mode: load player icon
   for I := 0 to UIni.IMaxPlayerCount - 1 do
   begin
-    PlayerIconTex[I][0] := Texture.LoadTexture(Skin.GetTextureFileName('LyricIcon_P' + InttoStr(I+1)), TEXTURE_TYPE_TRANSPARENT, 0);
-    PlayerIconTex[I][1] := Texture.LoadTexture(Skin.GetTextureFileName('LyricIconD_P' + InttoStr(I+1)), TEXTURE_TYPE_TRANSPARENT, 0);
+    if ActiveIconFile.IsFile() and InactiveIconFile.IsFile() then
+    begin
+      PlayerColor := GetPlayerColor(Ini.PlayerColor[I]);
+      PlayerColorInt := RGBFloatToInt(PlayerColor.R, PlayerColor.G, PlayerColor.B);
+      PlayerIconTex[I][0] := Texture.LoadTexture(ActiveIconFile, TEXTURE_TYPE_COLORIZED, PlayerColorInt);
+      PlayerIconTex[I][1] := Texture.LoadTexture(InactiveIconFile, TEXTURE_TYPE_COLORIZED, PlayerColorInt);
+    end
+    else
+    begin
+      PlayerIconTex[I][0] := Texture.LoadTexture(Skin.GetTextureFileName('LyricIcon_P' + InttoStr(I+1)), TEXTURE_TYPE_TRANSPARENT, 0);
+      PlayerIconTex[I][1] := Texture.LoadTexture(Skin.GetTextureFileName('LyricIconD_P' + InttoStr(I+1)), TEXTURE_TYPE_TRANSPARENT, 0);
+    end;
   end;
 end;
 
@@ -844,4 +863,3 @@ begin
 end;
 
 end.
-

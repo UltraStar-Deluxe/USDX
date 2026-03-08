@@ -37,6 +37,7 @@ uses
   UTexture,
   ULog,
   UIni,
+  UPlayerLayout,
   SDL2;
 
 const
@@ -665,109 +666,42 @@ var
   P, I, Life: cardinal;
   Left, Right, Top, Bottom: cardinal;
   cScreen, Nstars: integer;
+  ScreenCount: integer;
+  LocalPlayerCount: integer;
+  LocalPlayerIndex: integer;
+  SlotRect: TPlayerSlotRect;
+const
+  NotesAreaLeft = 30;
+  NotesAreaTop = 130;
+  NotesAreaRight = 770;
+  NotesAreaBottom = 465;
 begin
-// calculation of coordinates done with hardcoded values like in UDraw.pas
-// might need to be adjusted if drawing of SingScreen is modified
-// coordinates may still be a bit weird and need adjustment
-  Left := 30;
-  Right := 770;
+  ScreenCount := Ini.Screens + 1;
 
   // spawn effect for every player with a perfect line
   for P := 0 to PlayersPlay-1 do
     if Player[P].LastSentencePerfect then
     begin
-      // 3 and 6 players in 1 screen
-      if (Ini.Screens = 0) then
-      begin
-        if (PlayersPlay = 4) then
-        begin
-          if (P <= 1) then
-          begin
-            Left := 30;
-            Right := 385;
-          end
-          else
-          begin
-            Left := 415;
-            Right := 770;
-          end;
-        end;
+      cScreen := GetPlayerScreen(P, PlayersPlay, ScreenCount);
+      LocalPlayerCount := GetScreenPlayerCount(PlayersPlay, ScreenCount, cScreen);
+      LocalPlayerIndex := GetPlayerIndexOnScreen(P, PlayersPlay, ScreenCount);
+      SlotRect := GetPlayerSlotRect(
+        LocalPlayerIndex,
+        LocalPlayerCount,
+        NotesAreaLeft,
+        NotesAreaTop,
+        NotesAreaRight - NotesAreaLeft,
+        NotesAreaBottom - NotesAreaTop
+      );
 
-        if (PlayersPlay = 6) then
-        begin
-          if (P <= 2) then
-          begin
-            Left := 30;
-            Right := 385;
-          end
-          else
-          begin
-            Left := 415;
-            Right := 770;
-          end;
-        end;
-      end;
-
-      // calculate area where notes of this player are drawn
-      case PlayersPlay of
-        1: begin
-             Bottom := Skin_P2_NotesB+10;
-             Top := Bottom-105;
-             cScreen := 1;
-           end;
-        2,4: begin
-               case P of
-                 0,2: begin
-                        Bottom := Skin_P1_NotesB+10;
-                        Top := Bottom-105;
-                      end;
-                 else begin
-                        Bottom := Skin_P2_NotesB+10;
-                        Top := Bottom-105;
-                      end;
-               end;
-               case P of
-                 0,1: cScreen := 1;
-                 else
-                 begin
-                   if (Ini.Screens = 1) then
-                     cScreen := 2
-                   else
-                     cScreen := 1;
-                 end;
-               end;
-             end;
-        3,6: begin
-               case P of
-                 0,3: begin
-                        Top := 130;
-                        Bottom := Top+85;
-                      end;
-                 1,4: begin
-                        Top := 255;
-                        Bottom := Top+85;
-                      end;
-                 2,5: begin
-                        Top := 380;
-                        Bottom := Top+85;
-                      end;
-               end;
-               case P of
-                 0,1,2: cScreen := 1;
-                 else
-                 begin
-                   if (Ini.Screens = 1) then
-                     cScreen := 2
-                   else
-                     cScreen := 1;
-                 end;
-               end;
-             end;
-      end;
+      Left := SlotRect.X;
+      Right := SlotRect.X + SlotRect.W;
+      Top := SlotRect.Y;
+      Bottom := SlotRect.Y + SlotRect.H;
 
       // spawn Sparkling Stars inside calculated coordinates
       Nstars := 80;
-      if (Ini.Screens = 0) and (PlayersPlay > 3) then
+      if LocalPlayerCount > 3 then
         Nstars := 40;
 
       for I := 0 to Nstars do
@@ -775,12 +709,8 @@ begin
         Life := RandomRange(8,16);
         Spawn(RandomRange(Left,Right), RandomRange(Top,Bottom), cScreen, Life, 16-Life, -1, PerfectLineTwinkle, P);
 
-        //spawn also on second screen if the amount of players is <=3
-        if (Screens = 2) and (PlayersPlay <= 3) then
-           Spawn(RandomRange(Left,Right), RandomRange(Top,Bottom), 2, Life, 16-Life, -1, PerfectLineTwinkle, P);
       end;
     end;
 end;
 
 end.
-

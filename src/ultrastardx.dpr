@@ -217,6 +217,7 @@ uses
   UPathUtils        in 'base\UPathUtils.pas',
   UNote             in 'base\UNote.pas',
   UBeatTimer        in 'base\UBeatTimer.pas',
+  UPlayerLayout     in 'base\UPlayerLayout.pas',
 
   TextGL            in 'base\TextGL.pas',
   UUnicodeUtils     in 'base\UUnicodeUtils.pas',
@@ -404,4 +405,3 @@ begin
     end;
   end;
 end.
-
