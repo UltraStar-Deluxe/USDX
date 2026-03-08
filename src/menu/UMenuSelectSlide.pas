@@ -81,6 +81,7 @@ type
       //Visibility
       Visible: boolean;
 
+      ClickSelectsPosition: boolean;
       // Size and position
       PosX, PosY, W, H, SkipX: real;
 
@@ -197,6 +198,7 @@ begin
   SetLength(TextOpt, 1);
   TextOpt[0] := TText.Create;
   Visible := true;
+  ClickSelectsPosition := false;
   self.W := W;
   self.H := H;
   self.SkipX := SkipX;
@@ -730,11 +732,33 @@ end;
 function TSelectSlide.OnClick(X, Y: Real): TMouseClickAction;
   var
     AreaW: Real;
+    Ratio: Real;
+    NewIndex: integer;
 begin
   // default: press return on click 
   Result := maReturn;
   // use left sides to inc or dec selection by click
   AreaW := self.Tex_SelectS_ArrowL.W;
+
+  if ClickSelectsPosition and (Length(TextOptT) > 0) and (TextureSBG.W > 0) then
+  begin
+    if (Y >= TextureSBG.Y) and (Y <= TextureSBG.Y + TextureSBG.H) then
+    begin
+      Ratio := (X - TextureSBG.X) / TextureSBG.W;
+      if Ratio < 0 then
+        Ratio := 0
+      else if Ratio > 1 then
+        Ratio := 1;
+      NewIndex := Round(Ratio * High(TextOptT));
+      if NewIndex < 0 then
+        NewIndex := 0
+      else if NewIndex > High(TextOptT) then
+        NewIndex := High(TextOptT);
+      SetSelectOpt(NewIndex);
+      Result := maNone;
+      Exit;
+    end;
+  end;
 
   if (Y >= TextureSBG.Y) and (Y <= TextureSBG.Y + TextureSBG.H) then
   begin
