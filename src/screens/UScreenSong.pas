@@ -305,6 +305,7 @@ type
       procedure HideCatTL;// Show Cat in Tob left
       procedure Refresh;//(GiveStats: boolean); //Refresh Song Sorting
       procedure ChangeMusic;
+      procedure PreservePreviewForReturn;
 
       function FreeListMode: boolean;
 
