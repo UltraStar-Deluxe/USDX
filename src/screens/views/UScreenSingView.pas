@@ -159,6 +159,11 @@ begin
   Result := GetPlayerColor(Ini.PlayerColor[PlayerIndex]);
 end;
 
+function IsCurrentSongDuet: boolean;
+begin
+  Result := Assigned(CurrentSong) and CurrentSong.isDuet;
+end;
+
 function BuildSingPlayerTemplate(const PlayerCountOnScreen, PlayerIndexOnScreen: integer): TThemeSingPlayer;
 var
   BaseTemplate: TThemeSingPlayer;
@@ -182,7 +187,7 @@ var
 begin
   BaseTemplate := Theme.Sing.PlayerTemplate;
   Layout := GetSingLaneLayout(PlayerCountOnScreen, PlayerIndexOnScreen, Theme.Sing.PlayerLayout,
-    CurrentSong.isDuet and (PlayersPlay <> 1));
+    IsCurrentSongDuet and (PlayersPlay <> 1));
   LaneLeft := Layout.ColumnLeft;
   LaneRight := Layout.ColumnRight;
   LaneTop := Layout.RowAnchorY;
@@ -721,10 +726,10 @@ begin
       PlayerTextSlots[LocalPlayerCount, SlotIndex]
     );
   end;
-  SetPlayerNameTexts(TextSlots, LocalStartIndex, CurrentSong.isDuet and (LocalPlayerCount >= 3));
+  SetPlayerNameTexts(TextSlots, LocalStartIndex, IsCurrentSongDuet and (LocalPlayerCount >= 3));
   SetTextVisibility(TextSlots, LocalPlayerCount, true);
 
-  if CurrentSong.isDuet and (LocalPlayerCount = 2) then
+  if IsCurrentSongDuet and (LocalPlayerCount = 2) then
     SetLyricsDuetColors(LocalStartIndex);
 
   // retrieve current lyrics time, we have to store the value to avoid
@@ -782,7 +787,7 @@ begin
       ScreenSing.SungToEnd := true;
   end;
 
-  if not(ScreenSing.SungToEnd) and CurrentSong.isDuet and not(ScreenSong.RapToFreestyle) then
+  if not(ScreenSing.SungToEnd) and IsCurrentSongDuet and not(ScreenSong.RapToFreestyle) then
   begin
     Line := ScreenSing.LyricsDuetP1.GetUpperLine();
     if Line.LastLine then
@@ -889,7 +894,7 @@ begin
 
   // always draw custom items
   ScreenSing.Statics[StaticLyricsBar].Visible := ScreenSing.Settings.LyricsVisible;
-  ScreenSing.Statics[StaticLyricsBarDuet].Visible := ScreenSing.Settings.LyricsVisible and (CurrentSong.isDuet) and (PlayersPlay <> 1);
+  ScreenSing.Statics[StaticLyricsBarDuet].Visible := ScreenSing.Settings.LyricsVisible and IsCurrentSongDuet and (PlayersPlay <> 1);
   ScreenSing.Statics[StaticTimeBar].Visible := ScreenSing.Settings.TimeBarVisible;
   SingDraw;
 

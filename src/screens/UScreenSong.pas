@@ -228,6 +228,7 @@ type
       procedure SetRouletteScrollRefresh;
       procedure SetChessboardScrollRefresh;
       procedure SetListScrollRefresh;
+      procedure SyncDuetSingerTheme;
 
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
 
@@ -335,6 +336,12 @@ uses
 function GetSongPlayerColor(PlayerIndex: integer): TRGB;
 begin
   Result := GetPlayerColor(Ini.SingColor[PlayerIndex]);
+end;
+
+procedure TScreenSong.SyncDuetSingerTheme;
+begin
+  DuetSingerBaseStatic := Theme.Song.Static2PlayersDuetSingerP1;
+  DuetSingerBaseText := Theme.Song.Text2PlayersDuetSingerP1;
 end;
 
 const
@@ -1827,8 +1834,7 @@ begin
   InfoMessageText := AddText(Theme.Song.InfoMessageText);
 
   // Duet singer labels are created from a single base template and laid out at runtime.
-  DuetSingerBaseStatic := Theme.Song.Static2PlayersDuetSingerP1;
-  DuetSingerBaseText := Theme.Song.Text2PlayersDuetSingerP1;
+  SyncDuetSingerTheme;
   for I := 0 to High(DuetSingerStatics) do
   begin
     DuetSingerStatics[I] := AddStatic(DuetSingerBaseStatic);
@@ -1992,35 +1998,47 @@ var
   I: integer;
   Grid: TPlayerGrid;
   SlotRect: TPlayerSlotRect;
+  RawTextOffsetX: real;
+  RawTextOffsetY: real;
   TextOffsetX: real;
   TextOffsetY: real;
+  RowScale: real;
   BoxWidth: integer;
+  BoxHeight: integer;
   ContainerX: integer;
   ContainerY: integer;
   ContainerW: integer;
   ContainerH: integer;
   TotalWidth: integer;
 const
-  MappingOffsetX = 36;
-  MappingOffsetY = -72;
+  TextNudgeX = 3;
 begin
   if PlayerCount <= 0 then
     Exit;
 
+  SyncDuetSingerTheme;
   Grid := GetPlayerGrid(PlayerCount);
-  BoxWidth := Round(DuetSingerBaseStatic.W * 0.68);
-  TextOffsetX := DuetSingerBaseText.X - DuetSingerBaseStatic.X;
-  TextOffsetY := DuetSingerBaseText.Y - DuetSingerBaseStatic.Y;
+  RowScale := Max(0.72, 1.0 - 0.08 * (Grid.Rows - 1));
+  BoxWidth := Max(1, Round(DuetSingerBaseStatic.W * 0.68 * RowScale));
+  BoxHeight := Max(1, Round(DuetSingerBaseStatic.H * RowScale));
+  RawTextOffsetX := DuetSingerBaseText.X - DuetSingerBaseStatic.X;
+  RawTextOffsetY := DuetSingerBaseText.Y - DuetSingerBaseStatic.Y;
+  if (RawTextOffsetX < 0) or (RawTextOffsetX > DuetSingerBaseStatic.W) then
+    TextOffsetX := BoxWidth * 0.35
+  else
+    TextOffsetX := RawTextOffsetX * (BoxWidth / Max(1.0, DuetSingerBaseStatic.W));
+  if (RawTextOffsetY < 0) or (RawTextOffsetY > DuetSingerBaseStatic.H) then
+    TextOffsetY := BoxHeight * 0.15
+  else
+    TextOffsetY := RawTextOffsetY * (BoxHeight / Max(1.0, DuetSingerBaseStatic.H));
   TotalWidth := Grid.Cols * BoxWidth;
   if Grid.Cols > 1 then
     Inc(TotalWidth, (Grid.Cols - 1) * 8);
 
-  ContainerY := DuetSingerBaseStatic.Y + MappingOffsetY;
-  ContainerH := Grid.Rows * DuetSingerBaseStatic.H;
+  ContainerX := Theme.Song.DuetSingerArea.X;
+  ContainerY := Theme.Song.DuetSingerArea.Y;
+  ContainerH := Grid.Rows * BoxHeight;
   ContainerW := TotalWidth;
-  ContainerX := Round(Text[TextMaxScoreLocal].X) - 20 - ContainerW + MappingOffsetX;
-  if ContainerX < 360 then
-    ContainerX := 360;
 
   for I := 0 to High(DuetSingerStatics) do
   begin
@@ -2030,12 +2048,15 @@ begin
       Statics[DuetSingerStatics[I]].Texture.X := SlotRect.X;
       Statics[DuetSingerStatics[I]].Texture.Y := SlotRect.Y;
       Statics[DuetSingerStatics[I]].Texture.W := BoxWidth;
-      Statics[DuetSingerStatics[I]].Texture.H := DuetSingerBaseStatic.H;
+      Statics[DuetSingerStatics[I]].Texture.H := BoxHeight;
+      Statics[DuetSingerStatics[I]].Texture.Z := Max(DuetSingerBaseStatic.Z, 0.995);
 
-      Text[DuetSingerTexts[I]].X := Statics[DuetSingerStatics[I]].Texture.X + TextOffsetX;
+      Text[DuetSingerTexts[I]].X := Statics[DuetSingerStatics[I]].Texture.X + TextOffsetX + TextNudgeX;
       Text[DuetSingerTexts[I]].Y := Statics[DuetSingerStatics[I]].Texture.Y + TextOffsetY;
-      Text[DuetSingerTexts[I]].W := BoxWidth - Round(TextOffsetX);
-      Text[DuetSingerTexts[I]].H := DuetSingerBaseText.H;
+      Text[DuetSingerTexts[I]].W := BoxWidth;
+      Text[DuetSingerTexts[I]].H := Max(1, Round(DuetSingerBaseText.H * RowScale));
+      Text[DuetSingerTexts[I]].Size := Max(8, Round(DuetSingerBaseText.Size * RowScale));
+      Text[DuetSingerTexts[I]].Z := Max(DuetSingerBaseText.Z, 0.996);
     end;
   end;
 end;
@@ -2836,6 +2857,7 @@ var
   I: integer;
 begin
   inherited;
+  SyncDuetSingerTheme;
 
   CloseMessage();
 
@@ -3002,6 +3024,7 @@ procedure TScreenSong.OnShowFinish;
 begin
   DuetChange := false;
   RapToFreestyle := false;
+  SyncDuetSingerTheme;
 
   isScrolling := true;
   CoverTime := 10;
@@ -3019,6 +3042,7 @@ begin
 
   SetScrollRefresh;
   FixSelected;
+  SetScroll;
   //if (Mode = smPartyTournament) then
   //  PartyTime := SDL_GetTicks();
 
@@ -3305,6 +3329,17 @@ begin
   // and texts
   for I := 0 to High(Text) do
     Text[I].Draw;
+
+  // Keep duet assignment widgets in the foreground to avoid mode-specific overlap.
+  if CatSongs.Song[Interaction].isDuet then
+  begin
+    for I := 0 to High(DuetSingerStatics) do
+      if Statics[DuetSingerStatics[I]].Visible then
+        Statics[DuetSingerStatics[I]].Draw;
+    for I := 0 to High(DuetSingerTexts) do
+      if Text[DuetSingerTexts[I]].Visible then
+        Text[DuetSingerTexts[I]].Draw;
+  end;
 
   Equalizer.Draw;
 
@@ -4364,7 +4399,7 @@ procedure TScreenSong.SongScore;
   end;
 begin
 
-  if (CatSongs.Song[Interaction].isDuet) or (RapToFreestyle) or ((Mode <> smNormal) or (Ini.ShowScores = 0) or (CatSongs.Song[Interaction].Edition = '') or ((Ini.ShowScores = 1) and ((Text[TextMaxScore2].Text = '0') and (Text[TextMaxScoreLocal].Text = '0')))) then
+  if RapToFreestyle or ((Mode <> smNormal) or (Ini.ShowScores = 0) or (CatSongs.Song[Interaction].Edition = '') or ((Ini.ShowScores = 1) and ((Text[TextMaxScore2].Text = '0') and (Text[TextMaxScoreLocal].Text = '0')))) then
   begin
     hide([
       TextScore, TextMaxScore, TextMediaScore,
