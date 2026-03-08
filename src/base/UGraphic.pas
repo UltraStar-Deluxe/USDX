@@ -63,12 +63,8 @@ uses
   UScreenOptionsAdvanced,
   UScreenOptionsNetwork,
   UScreenOptionsWebcam,
-  UScreenOptionsJukebox,
   UScreenSong,
   UScreenSingController,
-  UScreenJukebox,
-  UScreenJukeboxOptions,
-  UScreenJukeboxPlaylist,
   UScreenScore,
   UScreenTop5,
   UScreenEditSub,
@@ -141,10 +137,6 @@ var
   ScreenSong:         TScreenSong;
   ScreenSing:         TScreenSingController;
 
-  ScreenJukebox:         TScreenJukebox;
-  ScreenJukeboxOptions:  TScreenJukeboxOptions;
-  ScreenJukeboxPlaylist: TScreenJukeboxPlaylist;
-
   ScreenScore:        TScreenScore;
   ScreenTop5:         TScreenTop5;
   ScreenOptions:          TScreenOptions;
@@ -158,7 +150,6 @@ var
   ScreenOptionsAdvanced:  TScreenOptionsAdvanced;
   ScreenOptionsNetwork:   TScreenOptionsNetwork;
   ScreenOptionsWebcam:    TScreenOptionsWebcam;
-  ScreenOptionsJukebox:   TScreenOptionsJukebox;
   ScreenEditSub:      TScreenEditSub;
   ScreenEdit:         TScreenEdit;
   ScreenEditConvert:  TScreenEditConvert;
@@ -240,7 +231,6 @@ var
   FullScreen:     boolean;
 
   Tex_TimeProgress: TTexture;
-  Tex_JukeboxTimeProgress: TTexture;
   
   //Sing Bar Mod
   Tex_SingBar_Back:  TTexture;
@@ -405,7 +395,6 @@ begin
 
   //TimeBar mod
   Tex_TimeProgress := Texture.LoadTexture(Skin.GetTextureFileName('TimeBar'));
-  Tex_JukeboxTimeProgress := Texture.LoadTexture(Skin.GetTextureFileName('JukeboxTimeBar'));
   //eoa TimeBar mod
 
   //SingBar Mod
@@ -952,14 +941,8 @@ begin
   ScreenName :=             TScreenName.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenSong'));
   ScreenSong :=             TScreenSong.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenSongMenu & ScreenJukebox'));
+  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenSongMenu'));
   ScreenSongMenu :=             TScreenSongMenu.Create;
-  ScreenJukebox :=             TScreenJukebox.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox', 3); Log.BenchmarkStart(3);
-  ScreenJukeboxOptions :=   TScreenJukeboxOptions.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox Options', 3); Log.BenchmarkStart(3);
-  ScreenJukeboxPlaylist :=   TScreenJukeboxPlaylist.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox Playlist', 3); Log.BenchmarkStart(3);
   ScreenTop5 :=             TScreenTop5.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptions & ScreenOptionsGame'));
   ScreenOptions :=          TScreenOptions.Create;
@@ -979,8 +962,6 @@ begin
   ScreenOptionsNetwork :=    TScreenOptionsNetwork.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsWebCam'));
   ScreenOptionsWebcam  :=    TScreenOptionsWebcam.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsJukebox'));
-  ScreenOptionsJukebox :=    TScreenOptionsJukebox.Create;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenEditConvert & ScreenEditSub & ScreenEdit'));
   ScreenEditConvert :=      TScreenEditConvert.Create;
   ScreenEditSub :=          TScreenEditSub.Create;
@@ -1045,13 +1026,9 @@ begin
   FreeAndNil(ScreenOptionsAdvanced);
   FreeAndNil(ScreenOptionsNetwork);
   FreeAndNil(ScreenOptionsWebcam);
-  FreeAndNil(ScreenOptionsJukebox);
   FreeAndNil(ScreenEditSub);
   FreeAndNil(ScreenEdit);
   FreeAndNil(ScreenEditConvert);
-  FreeAndNil(ScreenJukebox);
-  FreeAndNil(ScreenJukeboxOptions);
-  FreeAndNil(ScreenJukeboxPlaylist);
   FreeAndNil(ScreenTop5);
   FreeAndNil(ScreenOpen);
   FreeAndNil(ScreenAbout);

@@ -62,7 +62,6 @@ type
 
       procedure FillLevel;
       procedure FillPlaylist;
-      procedure FillPlaylistJukebox;
       procedure SetPlaylists;
       procedure SetPlaylist2;
     public
@@ -231,15 +230,6 @@ begin
 end;
 
 procedure TScreenPartyOptions.FillPlaylist;
-begin
-  SetLength(IPlaylist, 3);
-
-  IPlaylist[0] := Language.Translate('PARTY_PLAYLIST_ALL');
-  IPlaylist[1] := Language.Translate('PARTY_PLAYLIST_CATEGORY');
-  IPlaylist[2] := Language.Translate('PARTY_PLAYLIST_PLAYLIST');
-end;
-
-procedure TScreenPartyOptions.FillPlaylistJukebox;
 begin
   SetLength(IPlaylist, 3);
 
@@ -433,4 +423,3 @@ begin
 end;
 
 end.
-
