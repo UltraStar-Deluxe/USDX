@@ -32,6 +32,7 @@ ${LangFileString} update_information "Você pode verificar se uma nova versão d
 
 ${LangFileString} delete_components "Além disso, exclua os seguintes componentes:"
 ${LangFileString} delete_covers "Capas?"
+${LangFileString} delete_avatars "Avatares?"
 ${LangFileString} delete_highscores "Pontuações?"
 ${LangFileString} delete_config "Configurações?"
 ${LangFileString} delete_screenshots "Screenshots?"
