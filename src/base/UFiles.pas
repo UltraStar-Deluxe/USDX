@@ -89,7 +89,6 @@ var
   CurrentNote:      integer;
   CurrentTrack:     integer;
   Line:             AnsiString;
-  B:      integer;
   RelativeSubTime: integer;
   NoteState: AnsiString;
   SongFile: TTextFileStream;
@@ -176,7 +175,7 @@ begin
         SongFile.WriteLine('#MEDLEYENDBEAT:' + IntToStr(Song.Medley.EndBeat));
       end;
 
-      SongFile.WriteLine('#BPM:' + FloatToStr(Song.BPM[0].BPM / 4));
+      SongFile.WriteLine('#BPM:' + FloatToStr(Song.BPM / 4));
       SongFile.WriteLine('#GAP:' + FloatToStr(Song.GAP));
 
       if Song.isDuet then
@@ -189,9 +188,6 @@ begin
       WriteCustomTags;
 
       RelativeSubTime := 0;
-      for B := 1 to High(Song.BPM) do
-        SongFile.WriteLine('B ' + FloatToStr(Song.BPM[B].StartBeat) + ' '
-                                + FloatToStr(Song.BPM[B].BPM/4));
 
       for CurrentTrack := 0 to High(Tracks) do
       begin

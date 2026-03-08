@@ -77,11 +77,6 @@ type
     fltTags
   );
 
-  TBPM = record
-    BPM:       real;
-    StartBeat: real;
-  end;
-
   TScore = record
     Name:   UTF8String;
     Score:  integer;
