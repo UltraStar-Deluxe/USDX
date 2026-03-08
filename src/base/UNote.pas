@@ -80,6 +80,7 @@ type
     ScoreLineInt:   integer;
     ScoreGoldenInt: integer;
     ScoreTotalInt:  integer;
+    ScorePerfectRemaining: real;
 
     // LineBonus
     ScoreLast:      real;    // Last Line Score
@@ -563,6 +564,43 @@ begin
         else
           LastPlayerNote := nil;
 
+        Line := nil;
+        CurrentLineFragment := nil;
+        CurrentNoteType := ntNormal;
+
+        if NoteAvailable then
+        begin
+          Line := @CurrentSong.Tracks[CP].Lines[SentenceDetected];
+          for LineFragmentIndex := 0 to Line.HighNote do
+          begin
+            if (Line.Notes[LineFragmentIndex].StartBeat <= ActualBeat) and
+               (Line.Notes[LineFragmentIndex].StartBeat + Line.Notes[LineFragmentIndex].Duration > ActualBeat) then
+            begin
+              CurrentLineFragment := @Line.Notes[LineFragmentIndex];
+              CurrentNoteType := CurrentLineFragment.NoteType;
+              Break;
+            end;
+          end;
+        end;
+
+        CurNotePoints := 0;
+        if (CurrentLineFragment <> nil) and (CurrentSong.Tracks[CP].ScoreValue > 0) then
+        begin
+          MaxSongPoints := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
+
+          // Note: ScoreValue is the sum of all note values of the song
+          // (MaxSongPoints / ScoreValue) is the points that a player
+          // gets for a hit of one beat of a normal note
+          // CurNotePoints is the amount of points that is meassured
+          // for a hit of the note per full beat
+          CurNotePoints := (MaxSongPoints / CurrentSong.Tracks[CP].ScoreValue) *
+            ScoreFactor[CurrentLineFragment.NoteType];
+
+          CurrentPlayer.ScorePerfectRemaining := CurrentPlayer.ScorePerfectRemaining - CurNotePoints;
+          if (CurrentPlayer.ScorePerfectRemaining < 0) then
+            CurrentPlayer.ScorePerfectRemaining := 0;
+        end;
+
         // analyze buffer
         CurrentSound.AnalyzeBuffer;
 
@@ -571,12 +609,25 @@ begin
         //LyricsState.Tone := LyricsState.Tone + Round(Random(3)) - 1;
 
         // add note if possible
-        if (CurrentSound.ToneValid and NoteAvailable) then
+        if (CurrentSound.ToneValid and (CurrentLineFragment <> nil)) then
         begin
-          CurrentNoteType := ntNormal;
-          Line := @CurrentSong.Tracks[CP].Lines[SentenceDetected];
-          // process until last note
-          for LineFragmentIndex := 0 to Line.HighNote do
+          // move players tone to proper octave
+          while (CurrentSound.Tone - CurrentLineFragment.Tone > 6) do
+            CurrentSound.Tone := CurrentSound.Tone - 12;
+
+          while (CurrentSound.Tone - CurrentLineFragment.Tone < -6) do
+            CurrentSound.Tone := CurrentSound.Tone + 12;
+
+          // half size notes patch
+          NoteHit := false;
+          ActualTone := CurrentSound.Tone;
+          if (ScreenSong.Mode = smNormal) or (ScreenSong.Mode = smMedley) then
+            Range := 2 - Ini.PlayerLevel[PlayerIndex]
+          else
+            Range := 2 - Ini.Difficulty;
+
+          // check if the player hit the correct tone within the tolerated range
+          if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) or (CurrentLineFragment.NoteType = ntRap) or (CurrentLineFragment.NoteType = ntRapGolden) then
           begin
             CurrentLineFragment := @Line.Notes[LineFragmentIndex];
             if (CurrentLineFragment.StartBeat <= ActualBeat) and
@@ -615,14 +666,6 @@ begin
                 NoteHit := true;
 
                 MaxSongPoints := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
-
-                // Note: ScoreValue is the sum of all note values of the song
-                // (MaxSongPoints / ScoreValue) is the points that a player
-                // gets for a hit of one beat of a normal note
-                // CurNotePoints is the amount of points that is meassured
-                // for a hit of the note per full beat
-                CurNotePoints := (MaxSongPoints / CurrentSong.Tracks[CP].ScoreValue) * ScoreFactor[CurrentLineFragment.NoteType];
-
                 case CurrentLineFragment.NoteType of
                   ntNormal:    CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
                   ntGolden:    CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
@@ -650,8 +693,8 @@ begin
 
 
                 CurrentPlayer.ScoreTotalInt := CurrentPlayer.ScoreInt +
-                                               CurrentPlayer.ScoreGoldenInt +
-                                               CurrentPlayer.ScoreLineInt;
+                                              CurrentPlayer.ScoreGoldenInt +
+                                              CurrentPlayer.ScoreLineInt;
               end;
             end; // operation
           end; // for
