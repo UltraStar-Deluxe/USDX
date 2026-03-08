@@ -182,7 +182,8 @@ uses
   UTexture,
   UTime,
   ULanguage,
-  UPathUtils;
+  UPathUtils,
+  UScale;
 
 constructor TDisplay.Create;
 begin
@@ -566,6 +567,8 @@ var
   Alpha: single;
   Ticks: cardinal;
   DrawX: double;
+  CursorW: real;
+  CursorH: real;
 begin
   if (Ini.Mouse = 2) and ((Screens = 1) or ((ScreenAct - 1) = (Round(Cursor_X+16) div RenderW))) then
   begin // draw software cursor
@@ -611,6 +614,11 @@ begin
       DrawX := Cursor_X;
       if (ScreenAct = 2) then
         DrawX := DrawX - RenderW;
+      CursorH := 32;
+      if (GetLayoutScaleX > 0) and (GetLayoutScaleY > 0) then
+        CursorW := CursorH * (GetLayoutScaleY / GetLayoutScaleX)
+      else
+        CursorW := CursorH;
       glColor4f(1, 1, 1, Alpha);
       glEnable(GL_TEXTURE_2D);
       glEnable(GL_BLEND);
@@ -626,13 +634,13 @@ begin
         glVertex2f(DrawX, Cursor_Y);
 
         glTexCoord2f(0, 1);
-        glVertex2f(DrawX, Cursor_Y + 32);
+        glVertex2f(DrawX, Cursor_Y + CursorH);
 
         glTexCoord2f(1, 1);
-        glVertex2f(DrawX + 32, Cursor_Y + 32);
+        glVertex2f(DrawX + CursorW, Cursor_Y + CursorH);
 
         glTexCoord2f(1, 0);
-        glVertex2f(DrawX + 32, Cursor_Y);
+        glVertex2f(DrawX + CursorW, Cursor_Y);
       glEnd;
 
       glDisable(GL_BLEND);
