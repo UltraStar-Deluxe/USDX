@@ -878,13 +878,20 @@ begin
     Exit;
 
   Song := CatSongs.Song[Interaction];
-  if (Song = nil) or (Length(Song.Tracks) = 0) or (Length(Song.Tracks[0].Lines) = 0) then
+  if (Song = nil) then
+    Exit;
+  if (Length(Song.Tracks) = 0) or (Length(Song.Tracks[0].Lines) = 0) then
+  begin
+    if not Song.Analyse(false, DuetChange, RapToFreestyle, true, AudioPlayback.Length(*, true -- will be necessary when combined with PR 1121*)) then
+      Exit;
+  end;
+  if (Length(Song.Tracks) = 0) or (Length(Song.Tracks[0].Lines) = 0) then
     Exit;
 
   ConfigureLoopLyrics;
-  LoopLyrics.Clear(Song.BPM[0].BPM, Song.Resolution);
-  LoopLyricsP1.Clear(Song.BPM[0].BPM, Song.Resolution);
-  LoopLyricsP2.Clear(Song.BPM[0].BPM, Song.Resolution);
+  LoopLyrics.Clear(Song.BPM);
+  LoopLyricsP1.Clear(Song.BPM);
+  LoopLyricsP2.Clear(Song.BPM);
   LoopLyricsSong := Song;
 
   LyricsState.Reset();
