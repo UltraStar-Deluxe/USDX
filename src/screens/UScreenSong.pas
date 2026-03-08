@@ -923,9 +923,9 @@ begin
     Exit;
 
   ConfigureLoopLyrics;
-  LoopLyrics.Clear(Song.BPM[0].BPM, Song.Resolution);
-  LoopLyricsP1.Clear(Song.BPM[0].BPM, Song.Resolution);
-  LoopLyricsP2.Clear(Song.BPM[0].BPM, Song.Resolution);
+  LoopLyrics.Clear(Song.BPM);
+  LoopLyricsP1.Clear(Song.BPM);
+  LoopLyricsP2.Clear(Song.BPM);
   LoopLyricsSong := Song;
 
   LyricsState.Reset();
