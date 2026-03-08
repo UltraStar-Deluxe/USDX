@@ -937,6 +937,21 @@ var
     Result := TagMap.TryGetData(Key, Data);
   end;
 
+  function GetFirstNonWhitespaceChar(const S: string): AnsiChar;
+  var
+    P: integer;
+  begin
+    Result := #0;
+    for P := 1 to Length(S) do
+    begin
+      if not (S[P] in [#9, ' ']) then
+      begin
+        Result := UpCase(S[P]);
+        Exit;
+      end;
+    end;
+  end;
+
   { adds a custom header tag to the song
     if there is no ':' in the read line, Tag should be empty
     and the whole line should be in Content }
@@ -1098,6 +1113,11 @@ begin
         Break;
       end;
     end; // while
+
+    // Lightweight duet detection for song list: if the first non-header
+    // note-section line starts with a P-track marker, this is a duet.
+    if GetFirstNonWhitespaceChar(Line) = 'P' then
+      Self.isDuet := true;
 
     //Read the songs attributes stored in the TagMap
 
@@ -1980,4 +2000,3 @@ begin
 end;
 
 end.
-
