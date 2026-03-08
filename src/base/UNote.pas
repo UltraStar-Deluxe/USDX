@@ -385,6 +385,8 @@ begin
       SetLength(Player[I].Note, 0);
     end;
   end;
+  
+  Ini.ReloadDelays;
 
   Screen.onSentenceChange(CP, CurrentSong.Tracks[CP].CurrentLine)
 end;
@@ -493,6 +495,9 @@ var
   MaxSongPoints:       integer; // max. points for the song (without line bonus)
   CurNotePoints:       real;    // Points for the cur. Note (PointsperNote * ScoreFactor[CurNote])
   CurrentNoteType:     TNoteType;
+  DelayBeats:          real;
+  PlayerOldBeat:       integer;
+  PlayerCurBeat:       integer;
 begin
   ActualTone := 0;
   NoteHit := false;
@@ -507,12 +512,20 @@ begin
     SentenceMin := 0;
   SentenceMax := CurrentSong.Tracks[CP].CurrentLine;
 
-  for ActualBeat := LyricsState.OldBeatD+1 to LyricsState.CurrentBeatD do
+  // analyze player signals
+  for PlayerIndex := 0 to PlayersPlay-1 do
   begin
-    // analyze player signals
-    for PlayerIndex := 0 to PlayersPlay-1 do
+    if (not CurrentSong.isDuet) or (PlayerIndex mod 2 = CP) then
     begin
-      if (not CurrentSong.isDuet) or (PlayerIndex mod 2 = CP) then
+
+      // delay in beats (Ini.PlayerDelay is ms)
+      DelayBeats := GetBeats(CurrentSong.BPM[0].BPM, Ini.PlayerDelay[PlayerIndex] / 1000);
+
+      PlayerOldBeat := Floor(LyricsState.OldBeatD - DelayBeats);
+      if PlayerOldBeat < 0 then PlayerOldBeat := 0;
+      PlayerCurBeat := Floor(LyricsState.CurrentBeatD - DelayBeats);
+
+      for ActualBeat := PlayerOldBeat+1 to PlayerCurBeat do
       begin
         // check for an active note at the current time defined in the lyrics
         NoteAvailable := false;
@@ -706,9 +719,9 @@ begin
           end; // if SentenceDetected = SentenceMax
 
         end; // if Detected
-      end;
-    end; // for PlayerIndex
-  end; // for ActualBeat
+      end; // for ActualBeat
+    end;
+  end; // for PlayerIndex
   //Log.LogStatus('EndBeat', 'NewBeat');
 end;
 
