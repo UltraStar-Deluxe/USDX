@@ -397,10 +397,9 @@ begin
           AudioPlayback.PlaySound(SoundLib.Back);
           if GoTo_SingScreen then
           begin
-            AudioPlayback.SetVolume(1.0);
-            ScreenSong.StopMusicPreview();
-            ScreenSong.StopVideoPreview();
-            FadeTo(@ScreenSong)
+            ScreenSong.PreservePreviewForReturn;
+            FadeTo(@ScreenSong);
+            GoTo_SingScreen := false;
           end
           else
             FadeTo(@ScreenMain);
