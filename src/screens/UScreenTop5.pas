@@ -219,9 +219,16 @@ var
   Score1, Score2: Integer;
   CombinedName:   UTF8String;
   CombinedScore:  Integer;
+  PreviewVolume: single;
 begin
   inherited;
-  AudioPlayback.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
+  if Ini.PreviewVolume < 0 then
+    PreviewVolume := 0
+  else if Ini.PreviewVolume > 100 then
+    PreviewVolume := 1
+  else
+    PreviewVolume := Ini.PreviewVolume / 100;
+  AudioPlayback.SetVolume(PreviewVolume);
 
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenTop5');

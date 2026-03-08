@@ -1022,9 +1022,11 @@ end;
 procedure TScreenName.OnShow;
 var
   I: integer;
+  PreviewVolume: single;
 begin
   inherited;
-  AudioPlayback.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
+  PreviewVolume := EnsureRange(Ini.PreviewVolume, 0, 100) / 100;
+  AudioPlayback.SetVolume(PreviewVolume);
 
   Ini.ReloadNames;
   CountIndex := Ini.Players;
