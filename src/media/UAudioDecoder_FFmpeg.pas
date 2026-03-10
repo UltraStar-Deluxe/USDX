@@ -156,6 +156,7 @@ type
 
       function DecodeFrame(): integer;
       procedure FlushCodecBuffers();
+      procedure FlushSwrContext();
       procedure PauseDecoderUnlocked();
       procedure ResumeDecoderUnlocked();
       procedure PauseDecoder();
@@ -849,6 +850,8 @@ begin
               fAudioPaketSize := 0;
               fAudioPaketSilence := 0;
               FlushCodecBuffers();
+              if (fSwrContext <> nil) then
+                FlushSwrContext();
               
               // Set preliminary stream position. The position will be set to
               // the correct value as soon as the first packet is decoded.
@@ -1077,6 +1080,19 @@ begin
   end;
 end;
 
+procedure TFFmpegDecodeStream.FlushSwrContext();
+var
+  I, NumSamples: integer;
+  Buffer: array[0..1023] of Byte;
+  BufferPtr: PByte;
+begin
+  BufferPtr := @Buffer[0];
+  NumSamples := SizeOf(Buffer) div fBytesPerSample;
+  repeat
+    I := swr_convert(fSwrContext, BufferPtr, NumSamples, nil, 0);
+  until I <= 0;
+end;
+
 function TFFmpegDecodeStream.DecodeFrame(): integer;
 var
   Packet: PAVPacket;
@@ -1279,7 +1295,7 @@ begin
     begin
       BufferPtr := @Buffer[0];
       BufferPos := swr_convert(fSwrContext, BufferPtr, BufferSize div fBytesPerSample,
-                               fAudioBufferFrame.extended_data^, 0);
+                               fAudioBufferFrame.extended_data, 0);
       if (BufferPos < 0) then // might happen if out of memory
         Exit;
       BufferPos := BufferPos * fBytesPerSample;
@@ -1323,7 +1339,7 @@ begin
       begin
         BufferPtr := @Buffer[BufferPos];
         CopyByteCount := swr_convert(fSwrContext, BufferPtr, RemainByteCount div fBytesPerSample,
-                                     fAudioBufferFrame.extended_data^, fAudioBufferFrame.nb_samples);
+                                     fAudioBufferFrame.extended_data, fAudioBufferFrame.nb_samples);
         if (CopyByteCount < 0) then
           Exit;
         CopyByteCount := CopyByteCount * fBytesPerSample;
