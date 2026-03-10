@@ -266,7 +266,7 @@ begin
   InBufPtr := Pcuint8(@InputBuffer[0]);
   OutBufPtr := Pcuint8(@OutputBuffer[0]);
   OutputSampleCount:= swr_convert(SwrContext, OutBufPtr, OutputSampleCount,
-                                  InBufPtr, InputSampleCount);
+                                  @InBufPtr, InputSampleCount);
   if (OutputSampleCount < 0) then
   begin
     Log.LogError('swr_convert failed ' + inttostr(OutputSampleCount), 'TAudioConverter_SWResample.Init');
