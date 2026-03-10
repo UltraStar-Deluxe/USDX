@@ -71,8 +71,10 @@ const
 type
   TLog = class
   private
-    LogFile:             TextFile;
-    LogFileOpened:       boolean;
+    ErrorLogFile:        TextFile;
+    ErrorLogFileOpened:  boolean;
+    SongLogFile:         TextFile;
+    SongLogFileOpened:   boolean;
     BenchmarkFile:       TextFile;
     BenchmarkFileOpened: boolean;
     ConsoleBuffer: TStringList; // stores logged messages for in-game console, capped to CONSOLE_SCROLLBACK_SIZE
@@ -82,7 +84,8 @@ type
     // level of messages written to the log-file
     LogFileLevel: integer;
 
-    procedure LogToFile(const Text: string);
+    procedure LogToFile(const Text: string; const LogName: string;
+            var LogFileOpened: boolean; var LogFile: TextFile);
 
     function GetConsoleCount: integer;
 
@@ -118,6 +121,8 @@ type
     procedure LogWarn(const Msg, Context: string);
     procedure LogError(const Text: string); overload;
     procedure LogError(const Msg, Context: string); overload;
+    procedure LogSongError(const LogMsg: string); overload;
+    procedure LogSongError(const LogMsg, Context: string); overload;
     //Critical Error (Halt + MessageBox)
     procedure LogCritical(const Msg, Context: string);
     procedure CriticalError(const Text: string);
@@ -178,6 +183,9 @@ begin
   LogLevel := LOG_LEVEL_DEFAULT;
   LogFileLevel := LOG_FILE_LEVEL_DEFAULT;
   FileOutputEnabled := false;
+  ErrorLogFileOpened := false;
+  SongLogFileOpened := false;
+  BenchmarkFileOpened := false;
   InitCriticalSection(Lock);
 end;
 
@@ -188,8 +196,10 @@ begin
     CloseFile(BenchmarkFile);
   //if AnalyzeFileOpened then
   //  CloseFile(AnalyzeFile);
-  if LogFileOpened then
-    CloseFile(LogFile);
+  if ErrorLogFileOpened then
+    CloseFile(ErrorLogFile);
+  if SongLogFileOpened then
+    CloseFile(SongLogFile);
 
   ConsoleBuffer.Free;
   inherited;
@@ -292,12 +302,13 @@ begin
   LeaveCriticalSection(Lock);
 end;
 
-procedure TLog.LogToFile(const Text: string);
+procedure TLog.LogToFile(const Text: string; const LogName: string;
+                        var LogFileOpened: boolean; var LogFile: TextFile);
 begin
   EnterCriticalSection(Lock);
   if (FileOutputEnabled and not LogFileOpened) then
   begin
-    AssignFile(LogFile, LogPath.Append('Error.log').ToNative);
+    AssignFile(LogFile, LogPath.Append(LogName).ToNative);
     {$I-}
     Rewrite(LogFile);
     if IOResult = 0 then
@@ -307,7 +318,7 @@ begin
     //If File is opened write Date to Error File
     if (LogFileOpened) then
     begin
-      WriteLn(LogFile, Title + ' Error Log');
+      WriteLn(LogFile, Title + ' ' + ChangeFileExt(LogName, '') + ' Log');
       WriteLn(LogFile, 'Date: ' + DatetoStr(Now) + ' Time: ' + TimetoStr(Now));
       WriteLn(LogFile, '-------------------');
 
@@ -376,7 +387,7 @@ begin
     // write message to log-file
     if (Level <= LogFileLevel) then
     begin
-      LogToFile(LogMsg);
+      LogToFile(LogMsg, 'Error.log', ErrorLogFileOpened, ErrorLogFile);
     end;
   end;
 
@@ -424,6 +435,22 @@ end;
 procedure TLog.LogError(const Text: string);
 begin
   LogMsg(Text, LOG_LEVEL_ERROR);
+end;
+
+procedure TLog.LogSongError(const LogMsg, Context: string);
+begin
+  LogSongError(LogMsg + ' ['+Context+']');
+end;
+
+procedure TLog.LogSongError(const LogMsg: string);
+begin
+  if (LOG_LEVEL_ERROR <= LogLevel) then
+  begin
+    DebugWriteLn(LogMsg);
+    LogConsole(LogMsg);
+  end;
+
+  LogToFile(LogMsg, 'SongError.log', SongLogFileOpened, SongLogFile);
 end;
 
 procedure TLog.CriticalError(const Text: string);
