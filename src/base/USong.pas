@@ -578,7 +578,7 @@ begin
   else if (Length(Str) > 1) and (Str[1] <> 'P') then
   begin
     Log.LogSongError(Format('"%s" in line %d: %s',
-        [FileName.ToNative, FileLineNo, 'character expected but found "' + Str + '"']),
+    [Path.Append(FileName).ToNative, FileLineNo, 'character expected but found "' + Str + '"']),
         'TSong.ParseLyricCharParam');
   end;
 
