@@ -3711,15 +3711,22 @@ var
   CutPosition:   Integer;
   SpacePosition: Integer;
   TempR:         real;
+  NoteDuration:  Integer;
   TempStr:       UCS4String;
 begin
   LineIndex := CurrentSong.Tracks[CurrentTrack].CurrentLine;
+  NoteDuration := CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentNote[CurrentTrack]].Duration;
   TempR := 720 / (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat - CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
 
   if (doubleclick) and (InteractAt(currentX, CurrentY) > 0) then
       CutPosition := Round((currentX - button[Interactions[InteractAt(currentX, CurrentY)].Num].X) / TempR)
   else
-      CutPosition := 1;
+      CutPosition := NoteDuration div 2;
+
+  if CutPosition < 1 then
+    CutPosition := 1;
+  if CutPosition >= NoteDuration then
+    CutPosition := NoteDuration - 1;
 
   with CurrentSong.Tracks[CurrentTrack].Lines[LineIndex] do
   begin
@@ -3760,6 +3767,20 @@ begin
     begin
       Notes[CurrentNote[CurrentTrack]+1].Text := UTF8Copy(SelectsS[LyricSlideId].TextOpt[0].Text, TextPosition + 2, LengthUTF8(SelectsS[LyricSlideId].TextOpt[0].Text));
       Notes[CurrentNote[CurrentTrack]].Text := UTF8Copy(SelectsS[LyricSlideId].TextOpt[0].Text, 1, TextPosition);
+
+      if (LengthUTF8(Notes[CurrentNote[CurrentTrack]].Text) > 0) and
+         (UTF8Copy(Notes[CurrentNote[CurrentTrack]].Text, LengthUTF8(Notes[CurrentNote[CurrentTrack]].Text), 1) = ' ') then
+      begin
+        UTF8Delete(Notes[CurrentNote[CurrentTrack]].Text, LengthUTF8(Notes[CurrentNote[CurrentTrack]].Text), 1);
+        Notes[CurrentNote[CurrentTrack]+1].Text := ' ~' + Notes[CurrentNote[CurrentTrack]+1].Text;
+      end
+      else if (LengthUTF8(Notes[CurrentNote[CurrentTrack]+1].Text) > 0) and
+              (UTF8Copy(Notes[CurrentNote[CurrentTrack]+1].Text, 1, 1) = ' ') then
+      begin
+        UTF8Delete(Notes[CurrentNote[CurrentTrack]+1].Text, 1, 1);
+        Notes[CurrentNote[CurrentTrack]+1].Text := '~ ' + Notes[CurrentNote[CurrentTrack]+1].Text;
+      end;
+
       SelectsS[LyricSlideId].TextOpt[0].Text := Notes[CurrentNote[CurrentTrack]].Text;
       TextPosition := -1;
     end
