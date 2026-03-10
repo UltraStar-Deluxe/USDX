@@ -86,6 +86,8 @@ type
     destructor Destroy; override;
 
     procedure DrawMedleyCountdown();
+    procedure DrawCountIn();
+    procedure DrawCountdown(timeDiff: real);
     function Draw: boolean;
 
     procedure SwapToScreen(Screen: integer);
@@ -748,7 +750,7 @@ begin
   // retrieve time for timebar text
   case (ScreenSing.fTimebarMode) of
     tbmRemaining: begin
-      DisplayTime := TotalTime - CurLyricsTime;
+      DisplayTime := TotalTime - Max(CurLyricsTime, CurrentSong.Start);
       DisplayPrefix := '-';
     end;
     tbmTotal: begin
@@ -756,7 +758,7 @@ begin
       DisplayPrefix := '#';
     end;
     else begin       // current time
-      DisplayTime := CurLyricsTime;
+      DisplayTime := Max(CurLyricsTime, CurrentSong.Start);
       DisplayPrefix := '';
     end;
   end;
@@ -829,13 +831,13 @@ begin
       if (ScreenSing.ShowFinish) then
       begin
         // everything is setup, determine the current position
-        VideoFrameTime := CurrentSong.VideoGAP + LyricsState.GetCurrentTime();
+        VideoFrameTime := CurrentSong.VideoGAP + Max(LyricsState.GetCurrentTime(), CurrentSong.Start);
       end
       else
       begin
         // Important: do not yet start the triggered timer by a call to
         // LyricsState.GetCurrentTime()
-        VideoFrameTime := CurrentSong.VideoGAP;
+        VideoFrameTime := CurrentSong.VideoGAP + CurrentSong.Start;
       end;
       try
         ScreenSing.fCurrentVideo.GetFrame(VideoFrameTime);
@@ -853,6 +855,8 @@ begin
   //Medley Countdown
   if ScreenSong.Mode = smMedley then
     DrawMedleyCountdown;
+  if ScreenSing.CountIn then
+    DrawCountIn;
 
   // check for music finish
   //Log.LogError('Check for music finish: ' + BoolToStr(Music.Finished) + ' ' + FloatToStr(LyricsState.CurrentTime*1000) + ' ' + IntToStr(CurrentSong.Finish));
@@ -930,11 +934,6 @@ begin
 end;
 
 procedure TScreenSingView.DrawMedleyCountdown();
-var
-  w, h:           real;
-  timeDiff:       real;
-  t:              real;
-  CountDownText:  UTF8String;
 begin
   if AudioPlayback.Position < GetTimeFromBeat(CurrentSong.Medley.StartBeat) then
   begin
@@ -945,22 +944,7 @@ begin
 
     ScreenSing.Statics[SongNameStatic].Visible := true;
     ScreenSing.Text[SongNameText].Visible := true;
-
-    timeDiff := GetTimeFromBeat(CurrentSong.Medley.StartBeat) - AudioPlayback.Position + 1;
-    t := frac(timeDiff);
-
-    glColor4f(0.15, 0.30, 0.6, t);
-
-    h := 300*t*ScreenH/RenderH;
-    SetFontFamily(0);
-    SetFontStyle(ftBoldHighRes);
-    SetFontItalic(false);
-    SetFontSize(h);
-    CountDownText := IntToStr(round(timeDiff-t));
-    w := glTextWidth(PChar(CountDownText));
-
-    SetFontPos (RenderW/2-w/2, RenderH/2-h/2);
-    glPrint(PChar(CountDownText));
+    DrawCountdown(GetTimeFromBeat(CurrentSong.Medley.StartBeat) - AudioPlayback.Position);
   end else
   begin
     if (ScreenSing.TextMedleyFadeOut = false) then
@@ -971,6 +955,41 @@ begin
 
     MedleyTitleFadeOut;
   end;
+end;
+
+procedure TScreenSingView.DrawCountIn;
+var
+  Pos: real;
+begin
+  Pos := AudioPlayback.Position;
+  if (Pos > ScreenSing.FirstNote) then
+    ScreenSing.CountIn := false
+  else
+    DrawCountdown(ScreenSing.FirstNote - Pos);
+
+end;
+
+procedure TScreenSingView.DrawCountdown(timeDiff: real);
+var
+  t: real;
+  w, h: real;
+  CountDownText:  UTF8String;
+begin
+  t := frac(timeDiff);
+
+  glColor4f(0.15, 0.30, 0.6, t);
+
+  h := 300*t*ScreenH/RenderH;
+  SetFontFamily(0);
+  SetFontStyle(ftBoldHighRes);
+  SetFontItalic(false);
+  SetFontSize(h);
+  CountDownText := IntToStr(round(timeDiff - t + 1));
+  w := glTextWidth(PChar(CountDownText));
+
+  SetFontPos (RenderW/2-w/2, RenderH/2-h/2);
+  glPrint(PChar(CountDownText));
+
 end;
 
 procedure TScreenSingView.WriteMessage(msg: UTF8String);
@@ -1206,7 +1225,7 @@ begin
   end;
 
   // draw progress indicator
-  br := (gapInBeats + LyricsState.CurrentBeat - SongStart) / SongDuration*w;
+  br := Max((gapInBeats + LyricsState.CurrentBeat - SongStart) / SongDuration*w, 0);
   glColor4f(Theme.Sing.StaticTimeProgress.ColR,
              Theme.Sing.StaticTimeProgress.ColG,
              Theme.Sing.StaticTimeProgress.ColB, 1); //Set Color
