@@ -240,6 +240,8 @@ type
       function GetLength(): real;           virtual; abstract;
       function GetPosition(): real;         virtual; abstract;
       procedure SetPosition(Time: real);    virtual; abstract;
+      function GetStartTime(): real;         virtual; abstract;
+      procedure SetStartTime(Time: real);    virtual; abstract;
       function GetLoop(): boolean;          virtual; abstract;
       procedure SetLoop(Enabled: boolean);  virtual; abstract;
 
@@ -259,6 +261,7 @@ type
 
       property Length: real read GetLength;
       property Position: real read GetPosition write SetPosition;
+      property StartTime: real read GetStartTime write SetStartTime;
       property Loop: boolean read GetLoop write SetLoop;
   end;
 
@@ -269,6 +272,8 @@ type
     protected
       function IsEOF(): boolean;            virtual; abstract;
       function IsError(): boolean;          virtual; abstract;
+      function GetStartTime(): real; override;
+      procedure SetStartTime(Time: real); override;
       procedure SetReplayGain(const GainTag: AnsiString; const PeakTag: AnsiString);
       procedure SetReplayGainR128(const R128Tag: AnsiString);
     public
@@ -305,6 +310,8 @@ type
       function GetStatus(): TStreamStatus;  virtual; abstract;
       function GetVolume(): single;         virtual; abstract;
       procedure SetVolume(Volume: single);  virtual; abstract;
+      function GetStartTime(): real; override;
+      procedure SetStartTime(Time: real); override;
       function Synchronize(BufferSize: integer; FormatInfo: TAudioFormatInfo): integer;
       procedure FillBufferWithFrame(Buffer: PByteArray; BufferSize: integer; Frame: PByteArray; FrameSize: integer);
     public
@@ -482,7 +489,12 @@ type
       procedure SetPosition(Time: real);
       function GetPosition: real;
 
+      procedure SetStartTime(Time: real);
+      function GetStartTime: real;
+
       property Position: real read GetPosition write SetPosition;
+      property StartTime: real read GetStartTime write SetStartTime;
+
 
       // Sounds
       // TODO:
@@ -1152,6 +1164,15 @@ begin
   Result := RG;
 end;
 
+function TAudioSourceStream.GetStartTime(): real;
+begin
+  Result := 0;
+end;
+
+procedure TAudioSourceStream.SetStartTime();
+begin
+end;
+
 { TAudioPlaybackStream }
 
 constructor TAudioPlaybackStream.Create();
@@ -1313,6 +1334,20 @@ end;
 procedure TAudioPlaybackStream.SetReplayGainEnabled(RGEnabled: boolean);
 begin
   self.RGEnabled := RGEnabled;
+end;
+
+function TAudioPlaybackStream.GetStartTime(): real;
+begin
+  if (assigned(SourceStream)) then
+    Result := SourceStream.StartTime
+  else
+    Result := 0;
+end;
+
+procedure TAudioPlaybackStream.SetStartTime(Time: real);
+begin
+  if (assigned(SourceStream)) then
+    SourceStream.StartTime := Time;
 end;
 
 { TAudioVoiceStream }

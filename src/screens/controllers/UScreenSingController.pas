@@ -75,11 +75,14 @@ type
   TScreenSingController = class(TMenu)
   private
     StartNote, EndNote:     TPos;
+    fCountIn: boolean;
+    fStartTime, fFirstNote: real;
 
     procedure LoadNextSong();
     procedure SongError();
     procedure ResetLinesAndLyrics();
     procedure ClearLyricEngines();
+    procedure CalculateStartTime;
   public
     CheckPlayerConfigOnNextSong: boolean;
     eSongLoaded: THookableEvent; //< event is called after lyrics of a song are loaded on OnShow
@@ -185,6 +188,8 @@ type
     procedure UpdateMedleyStats(medley_end: boolean);
     procedure OnSentenceEnd(Track: integer; SentenceIndex: cardinal);     // for linebonus + singbar
     procedure OnSentenceChange(Track: integer; SentenceIndex: cardinal);  // for golden notes
+    property CountIn: boolean read fCountIn write fCountIn;
+    property FirstNote: real read fFirstNote;
   end;
 
 var screenSingViewRef: TScreenSingView;
@@ -217,6 +222,7 @@ uses
 
 const
   MAX_MESSAGE = 3;
+  MINIMUM_START_TIME = 3;
 
 // method for input parsing. if false is returned, getnextwindow
 // should be checked to know the next window to load;
@@ -271,7 +277,9 @@ begin
 
           LastSentencePerfect := false;
         end;
-        AudioPlayback.SetPosition(CurrentSong.Start);
+        AudioPlayback.SetPosition(fStartTime);
+        if (fStartTime < CurrentSong.Start) then
+          fCountIn := true;
         if (Assigned(fCurrentVideo)) then
            fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start;// + (CurrentSong.gap / 1000.0 - 5.0);
         Scores.KillAllPopUps;
@@ -287,7 +295,7 @@ begin
           Scores.AddPlayer(Tex_ScoreBG[i1], Color);
         end;
 
-        LyricsState.SetCurrentTime(CurrentSong.Start);
+        LyricsState.SetCurrentTime(fStartTime);
         LyricsState.UpdateBeats();
         ClearLyricEngines;
         ResetLinesAndLyrics;
@@ -899,6 +907,8 @@ begin
   else
     AudioPlayback.SetVolume(1.0);
   //AudioPlayback.Position := CurrentSong.Start;
+    if ((fStartTime < CurrentSong.Start) and (fStartTime > 0)) then
+      AudioPlayback.StartTime := CurrentSong.Start;
   AudioPlayback.Position := LyricsState.GetCurrentTime();
 
 
@@ -1093,6 +1103,15 @@ begin
     Exit;
   end;
 
+  CalculateStartTime;
+  if (fStartTime < CurrentSong.Start) then
+  begin
+    fCountIn := true;
+    AudioPlayback.Position := fStartTime;
+    if (fStartTime > 0) then
+      AudioPlayback.StartTime := CurrentSong.Start;
+  end;
+
   // Set up Medley timings
   if ScreenSong.Mode = smMedley then
   begin
@@ -1217,7 +1236,7 @@ begin
   end
   else
   begin
-    LyricsState.SetCurrentTime(CurrentSong.Start);
+    LyricsState.SetCurrentTime(fStartTime);
     LyricsState.StartTime := CurrentSong.Gap;
     if CurrentSong.Finish > 0 then
       LyricsState.TotalTime := CurrentSong.Finish / 1000
@@ -1310,6 +1329,20 @@ begin
     Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
     LyricsDuetP1.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
     LyricsDuetP2.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
+end;
+
+procedure TScreenSingController.CalculateStartTime;
+var
+  I, StartBeat: integer;
+begin
+  StartBeat := CurrentSong.Tracks[0].Lines[0].Notes[0].StartBeat;
+  for I := 1 to High(CurrentSong.Tracks) do
+    StartBeat := Min(StartBeat, CurrentSong.Tracks[I].Lines[0].Notes[0].StartBeat);
+  fFirstNote := CurrentSong.GAP / 1000 + StartBeat * (CurrentSong.BPM[0].BPM / 60);
+  if ((fFirstNote - CurrentSong.Start) < MINIMUM_START_TIME) then
+    fStartTime := fFirstNote - MINIMUM_START_TIME
+  else
+    fStartTime := CurrentSong.Start;
 end;
 
 procedure TScreenSingController.ClearSettings;
