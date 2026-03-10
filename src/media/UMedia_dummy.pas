@@ -65,6 +65,8 @@ type
 
       procedure SetPosition(Time: real);
       function  GetPosition: real;
+      procedure SetStartTime(Time: real);
+      function  GetStartTime: real;
 
       procedure SetSyncSource(SyncSource: TSyncSource);
 
@@ -229,6 +231,15 @@ begin
 end;
 
 function  TAudio_Dummy.GetPosition: real;
+begin
+  Result := 0;
+end;
+
+procedure TAudio_Dummy.SetStartTime(Time: real);
+begin
+end;
+
+function  TAudio_Dummy.GetStartTime: real;
 begin
   Result := 0;
 end;
