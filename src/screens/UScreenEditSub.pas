@@ -418,6 +418,7 @@ type
       procedure CopyFromUndo; //undo last lines, mouse position and headers
       procedure DrawPlayerTrack(CurrentTone: Integer; Count: Integer; CurrentNote: Integer);
       procedure DrawInfoBar(X, Y, W, H: Integer; ColR, ColG, ColB, Alpha: real; Track: Integer);
+      procedure DrawMaxScoreInfo(X, Y, W, H: Integer; Track: Integer);
       procedure DrawText(X, Y, W, H: real; Track: Integer; NumLines: Integer = 10);
       //video view
       procedure StartVideoPreview();
@@ -4560,6 +4561,99 @@ begin
   glLineWidth(1);
 end;
 
+procedure TScreenEditSub.DrawMaxScoreInfo(X, Y, W, H: Integer; Track: Integer);
+var
+  LineIndex: Integer;
+  NoteIndex: Integer;
+  NonEmptyLines: Integer;
+  LineWeight: Integer;
+  TotalWeight: Integer;
+  NormalWeight: Integer;
+  GoldenWeight: Integer;
+  MaxSongPoints: Integer;
+  NormalPoints: Integer;
+  GoldenPoints: Integer;
+  LineBonusPoints: Integer;
+  Lines: array[0..2] of UTF8String;
+  OrgFont: TFont;
+begin
+  if (Track < Low(CurrentSong.Tracks)) or (Track > High(CurrentSong.Tracks)) then
+    Exit;
+
+  NonEmptyLines := 0;
+  TotalWeight := 0;
+  NormalWeight := 0;
+  GoldenWeight := 0;
+
+  for LineIndex := 0 to High(CurrentSong.Tracks[Track].Lines) do
+  begin
+    LineWeight := 0;
+
+    for NoteIndex := 0 to High(CurrentSong.Tracks[Track].Lines[LineIndex].Notes) do
+    begin
+      Inc(
+        LineWeight,
+        CurrentSong.Tracks[Track].Lines[LineIndex].Notes[NoteIndex].Duration *
+        ScoreFactor[CurrentSong.Tracks[Track].Lines[LineIndex].Notes[NoteIndex].NoteType]);
+
+      case CurrentSong.Tracks[Track].Lines[LineIndex].Notes[NoteIndex].NoteType of
+        ntNormal, ntRap:
+          Inc(
+            NormalWeight,
+            CurrentSong.Tracks[Track].Lines[LineIndex].Notes[NoteIndex].Duration *
+            ScoreFactor[CurrentSong.Tracks[Track].Lines[LineIndex].Notes[NoteIndex].NoteType]);
+        ntGolden, ntRapGolden:
+          Inc(
+            GoldenWeight,
+            CurrentSong.Tracks[Track].Lines[LineIndex].Notes[NoteIndex].Duration *
+            ScoreFactor[CurrentSong.Tracks[Track].Lines[LineIndex].Notes[NoteIndex].NoteType]);
+      end;
+    end;
+
+    if LineWeight > 0 then
+      Inc(NonEmptyLines);
+
+    Inc(TotalWeight, LineWeight);
+  end;
+
+  if TotalWeight > 0 then
+  begin
+    MaxSongPoints := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
+    GoldenPoints := Round(MaxSongPoints * GoldenWeight / TotalWeight);
+    NormalPoints := MaxSongPoints - GoldenPoints;
+  end
+  else
+  begin
+    NormalPoints := 0;
+    GoldenPoints := 0;
+  end;
+
+  if NonEmptyLines > 0 then
+    LineBonusPoints := MAX_SONG_LINE_BONUS
+  else
+    LineBonusPoints := 0;
+
+  Lines[0] := Language.Translate('SING_NOTES') + ': ' + IntToStr(NormalPoints);
+  Lines[1] := Language.Translate('SING_PHRASE_BONUS') + ': ' + IntToStr(LineBonusPoints);
+  Lines[2] := Language.Translate('SING_GOLDEN_NOTES') + ': ' + IntToStr(GoldenPoints);
+
+  OrgFont := CurrentFont;
+  SetFontFamily(0);
+  SetFontStyle(ftBold);
+  SetFontItalic(False);
+  SetFontReflection(False, 0);
+  SetFontSize(14);
+  glColor4f(0, 0, 0, 1);
+
+  for LineIndex := 0 to High(Lines) do
+  begin
+    SetFontPos(X + 10, Y + 12 + LineIndex * 18);
+    glPrint(Lines[LineIndex]);
+  end;
+
+  SetFont(OrgFont);
+end;
+
 procedure TScreenEditSub.DrawText(X, Y, W, H: real; Track: Integer; NumLines: Integer);
 var
   Rec:   TRecR;
@@ -5875,6 +5969,13 @@ begin
   else
     EditorLyrics[CurrentTrack].ClearCursor;
   EditorLyrics[CurrentTrack].Draw;
+
+  DrawMaxScoreInfo(
+    Theme.EditSub.BackgroundImage.X,
+    Theme.EditSub.BackgroundImage.Y,
+    Theme.EditSub.BackgroundImage.W,
+    Theme.EditSub.BackgroundImage.H,
+    CurrentTrack);
 
   //video
   if Assigned(fCurrentVideo) then
