@@ -1,0 +1,107 @@
+/* Default colors */
+:root {
+    --text-color: #121212;
+    --bkg-color: #fff;
+    --accent-color: #add8e6;
+}
+/* Dark theme colors */
+[data-theme="dark"] {
+    --text-color: #fff;
+    --bkg-color: #181a1b;
+    --accent-color: rgb(27, 73, 88);
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: var(--bkg-color);
+    color: var(--text-color);
+}
+
+table {
+    width: 100% !important;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: var(--accent-color);
+}
+
+input {
+    margin-bottom: 12px;
+    padding: 8px;
+    width: 100%;
+}
+
+.controls {
+    position: absolute;
+    top: 12px;
+    right: 10px;
+}
+
+
+/* Toggle Switch */
+/* inspired by:
+- https://codepen.io/alvarotrigo/pen/zYPydpB
+- https://dribbble.com/shots/14199649-Dark-Light-Mode-Toggle-Switch-Pattern-A11y
+*/
+
+:root {
+--switch-light: #d8dbe0;
+--switch-dark: #28292c;
+--switch-width: 60px;
+--switch-height: 30px;
+}
+
+.toggle-switch {
+    position: relative;
+    width: var(--switch-width);
+
+    label {
+        position: absolute;
+        width: 100%;
+        height: var(--switch-height);
+        background-color: var(--switch-dark);
+        border-radius: calc(var(--switch-height)/2);
+        cursor: pointer;
+    }
+    
+    input {
+        position: absolute;
+        display: none;
+    }
+    
+    .slider {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: calc(var(--switch-height)/2);
+        transition: 0.3s;
+    }
+    
+    input:checked ~ .slider {
+        background-color: var(--switch-light);
+    }
+    
+    .slider::before {
+        content: "";
+        position: absolute;
+        top: calc(var(--switch-height)*0.13);
+        left: calc(var(--switch-height)*0.16);
+        width: calc(var(--switch-height)*0.75);
+        height: calc(var(--switch-height)*0.75);
+        border-radius: 50%;
+        box-shadow: inset calc(var(--switch-height)*0.28) -4px 0 0 var(--switch-light);
+        background-color: var(--switch-dark);
+        transition: 0.3s;
+    }
+    
+    input:checked ~ .slider::before {
+        transform: translateX(calc(var(--switch-height)*0.95));
+        background-color: var(--switch-dark);
+        box-shadow: none;
+    }
+}
