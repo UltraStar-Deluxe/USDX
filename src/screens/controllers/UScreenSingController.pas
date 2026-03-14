@@ -1110,7 +1110,9 @@ begin
     AudioPlayback.Position := fStartTime;
     if (fStartTime > 0) then
       AudioPlayback.StartTime := CurrentSong.Start;
-  end;
+  end
+  else
+    fCountIn := false;
 
   // Set up Medley timings
   if ScreenSong.Mode = smMedley then
