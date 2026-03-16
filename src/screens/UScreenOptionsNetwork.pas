@@ -94,6 +94,20 @@ uses
   UUnicodeUtils,
   SysUtils;
 
+type
+  InteractionID = (
+    iWebsiteSlide,
+    iUsernameSlide,
+    iSendNameSlide,
+    iAutoModeSlide,
+    iAutoPlayerSlide,
+    iAutoScoreEasySlide,
+    iAutoScoreMediumSlide,
+    iAutoScoreHardSlide,
+    iBackButton,
+    iInsertUserButton
+  );
+
 var
   Receive_String: widestring;
 
@@ -280,19 +294,19 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if (SelInteraction = 8) then
+          if (SelInteraction = ord(iBackButton)) then
           begin
             DataBase.UpdateUsers;
             AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(@ScreenOptions);
           end;
 
-          if (SelInteraction = 9) then
+          if (SelInteraction = ord(iInsertUserButton)) then
             ScreenPopupInsertUser.ShowPopup(Format(Language.Translate('MSG_INSERT_USER_TITLE'), [DataBase.NetworkUser[CurrentWebsiteIndex].Website]), Language.Translate('MSG_INSERT_USER_DESC'), OnNewUser, nil);
         end;
       SDLK_DOWN:
         begin
-          if (SelInteraction = 8) then
+          if (SelInteraction = ord(iBackButton)) then
             Interaction := 0
           else
             InteractNext;
@@ -300,31 +314,31 @@ begin
       SDLK_UP :
         begin
           if (SelInteraction = 0) then
-            Interaction := 8
+            Interaction := ord(iBackButton)
           else
             InteractPrev;
         end;
       SDLK_RIGHT:
         begin
-          if (SelInteraction = 8) then
-            Interaction := 9;
+          if (SelInteraction = ord(iBackButton)) then
+            Interaction := ord(iInsertUserButton);
 
-          if (SelInteraction >= 0) and (SelInteraction < 5) then
+          if InteractionID(SelInteraction) in [iWebsiteSlide, iUsernameSlide, iSendNameSlide, iAutoModeSlide] then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
           end;
 
           // Navigate Website List
-          if (SelInteraction = 0) and (High(DataBase.NetworkUser) > 0) then
+          if (SelInteraction = ord(iWebsiteSlide)) and (High(DataBase.NetworkUser) > 0) then
             UpdateUsernameList(true);
 
           // Navigate Username List
-          if (SelInteraction = 1) then
+          if (SelInteraction = ord(iUsernameSlide)) then
             UpdateUsernameSettings;
 
           // Modify User Options
-          if (SelInteraction >= 5) and (SelInteraction <= 7) then
+          if (InteractionID(SelInteraction) in [iAutoScoreEasySlide, iAutoScoreMediumSlide, iAutoScoreHardSlide]) then
           begin
             DataBase.NetworkUser[CurrentWebsiteIndex].UserList[CurrentUserIndex].Save := true;
 
@@ -351,7 +365,7 @@ begin
             end;
           end;
 
-          if (SelInteraction >= 2) and (SelInteraction <= 7) then
+          if (InteractionID(SelInteraction) in [iSendNameSlide, iAutoModeSlide, iAutoPlayerSlide, iAutoScoreEasySlide, iAutoScoreMediumSlide, iAutoScoreHardSlide]) then
           begin
             UpdateSettings;
             DataBase.NetworkUser[CurrentWebsiteIndex].UserList[CurrentUserIndex].Save := true;
@@ -360,25 +374,25 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction = 9) then
-            Interaction := 8;
+          if (SelInteraction = ord(iInsertUserButton)) then
+            Interaction := ord(iBackButton);
 
-          if (SelInteraction >= 0) and (SelInteraction < 5) then
+          if InteractionID(SelInteraction) in [iWebsiteSlide, iUsernameSlide, iSendNameSlide, iAutoModeSlide] then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
           end;
 
           // Navigate Website List
-          if (SelInteraction = 0) and (High(DataBase.NetworkUser) > 0) then
+          if (SelInteraction = ord(iWebsiteSlide)) and (High(DataBase.NetworkUser) > 0) then
             UpdateUsernameList(true);
 
           // Navigate Username List
-          if (SelInteraction = 1) then
+          if (SelInteraction = ord(iUsernameSlide)) then
             UpdateUsernameSettings;
 
           // Modify User Options
-          if (SelInteraction >= 5) and (SelInteraction <= 7) then
+          if (InteractionID(SelInteraction) in [iAutoScoreEasySlide, iAutoScoreMediumSlide, iAutoScoreHardSlide]) then
           begin
             DataBase.NetworkUser[CurrentWebsiteIndex].UserList[CurrentUserIndex].Save := true;
 
@@ -405,7 +419,7 @@ begin
             end;
           end;
 
-          if (SelInteraction >= 2) and (SelInteraction <= 7) then
+          if (InteractionID(SelInteraction) in [iSendNameSlide, iAutoModeSlide, iAutoPlayerSlide, iAutoScoreEasySlide, iAutoScoreMediumSlide, iAutoScoreHardSlide]) then
           begin
             UpdateSettings;
             DataBase.NetworkUser[CurrentWebsiteIndex].UserList[CurrentUserIndex].Save := true;
@@ -672,7 +686,7 @@ begin
       //IPassword[I] := DataBase.NetworkUser[CurrentWebsiteIndex].UserList[I].Password;
     end;
 
-    // when editing this, also search for SelInteraction
+    // when editing this, also update the InteractionID enum declaration
     AddSelectSlide('SING_OPTIONS_NETWORK_WEBSITE', CurrentWebsiteIndex, IWebsite);
     if (High(IWebsite) > 0) then
       SelectsS[High(SelectsS)].showArrows := true

@@ -155,6 +155,17 @@ uses
   SysUtils,
   TextGL;
 
+type
+  InteractionID = (
+    iCardSlide,
+    iInputSlide,
+    iChannelSlide,
+    iAssigneeSlide,
+    iThresholdSlide,
+    iMicBoostSlide,
+    iBackButton
+  );
+
 constructor TVolumeMeter.Create(PosX, PosY, Width, Height: real);
 begin
   inherited;
@@ -476,7 +487,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction < ExitButtonIID) then
+          if (Interactions[SelInteraction].Typ = iSelectS) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
@@ -485,7 +496,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction < ExitButtonIID) then
+          if (Interactions[SelInteraction].Typ = iSelectS) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
@@ -523,9 +534,9 @@ begin
 
   // store InteractionID
   if (Length(AudioInputProcessor.DeviceList) > 0) then
-    ExitButtonIID := 1 + 5
+    ExitButtonIID := ord(iBackButton)
   else
-    ExitButtonIID := 2;
+    ExitButtonIID := ord(iInputSlide) + 1;
 
   // set focus
   Interaction := 0;
