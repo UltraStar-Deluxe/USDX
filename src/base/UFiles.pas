@@ -155,6 +155,7 @@ begin
       if Song.FormatVersion.MaxVersion(2,0,0) then
          SongFile.WriteLine('#MP3:' + EncodeToken(Song.Audio.ToUTF8));
       if Assigned(Song.Karaoke) and (Song.Karaoke <> PATH_NONE()) and Song.Karaoke.IsSet            then    SongFile.WriteLine('#INSTRUMENTAL:'+ EncodeToken(Song.Karaoke.ToUTF8));
+      if Assigned(Song.Vocals) and (Song.Vocals <> PATH_NONE()) and Song.Vocals.IsSet               then    SongFile.WriteLine('#VOCALS:'      + EncodeToken(Song.Vocals.ToUTF8));
 
       if Song.Cover.IsSet              then    SongFile.WriteLine('#COVER:'       + EncodeToken(Song.Cover.ToUTF8));
       if Song.Background.IsSet         then    SongFile.WriteLine('#BACKGROUND:'  + EncodeToken(Song.Background.ToUTF8));
@@ -248,4 +249,3 @@ begin
 end;
 
 end.
-
