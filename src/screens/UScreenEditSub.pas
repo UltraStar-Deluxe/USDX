@@ -403,6 +403,7 @@ type
       procedure EnsurePreviewScoreCache(const Track: Integer);
       procedure InvalidatePreviewScoreLine(const Track, LineIndex: Integer);
       function  GetEditorScoreDifficulty: Integer;
+      function  HasVocalsPreviewSource: Boolean;
       function  HasVocalsPreviewPlayback: Boolean;
       function  HasCopySource: Boolean;
       procedure StartAnalysisThread(const BuildPreview: Boolean; const Track: Integer; const LineIndex: Integer = -1);
@@ -1392,7 +1393,7 @@ begin
 
   if UseVocalsPreview then
   begin
-    if (not FPreviewBuildStarted) and (not FAnalysisFailed) then
+    if HasVocalsPreviewSource and (not FPreviewBuildStarted) and (not FAnalysisFailed) then
       StartAnalysisThread(true, CurrentTrack);
     if HasVocalsPreviewPlayback then
       SetVocalsPreviewPlayback(true, false)
@@ -5157,6 +5158,14 @@ begin
     Result := 2;
 end;
 
+function TScreenEditSub.HasVocalsPreviewSource: Boolean;
+begin
+  Result := Assigned(CurrentSong.Karaoke) and
+    (CurrentSong.Karaoke <> PATH_NONE) and
+    CurrentSong.Karaoke.IsSet and
+    CurrentSong.Path.Append(CurrentSong.Karaoke).Exists;
+end;
+
 function TScreenEditSub.HasVocalsPreviewPlayback: Boolean;
 begin
   Result := GetVocalsPreviewByteSize > 0;
@@ -5201,6 +5210,9 @@ end;
 
 procedure TScreenEditSub.StartAnalysisThread(const BuildPreview: Boolean; const Track: Integer; const LineIndex: Integer = -1);
 begin
+  if BuildPreview and not HasVocalsPreviewSource then
+    Exit;
+
   if Assigned(FAnalysisThread) and (not FAnalysisThreadRunning) then
     FreeAndNil(FAnalysisThread);
   if FAnalysisThreadRunning then
@@ -5243,7 +5255,8 @@ begin
      (CurrentSong.Tracks[CurrentTrack].CurrentLine > High(CurrentSong.Tracks[CurrentTrack].Lines)) then
     Exit;
 
-  if not FPreviewBuildStarted and not FAnalysisThreadRunning and not FAnalysisFailed then
+  if HasVocalsPreviewSource and
+     not FPreviewBuildStarted and not FAnalysisThreadRunning and not FAnalysisFailed then
     StartAnalysisThread(true, CurrentTrack);
 end;
 
