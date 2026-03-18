@@ -379,6 +379,7 @@ type
       FPreviewLineBonusScore:  array of Double;
       FPreviewLineScoreReady:  array of Boolean;
       FVocalsPreviewSamples:   array of SmallInt;
+      FVocalsPreviewReadySamples: Int64;
       FVocalsPreviewSourceStream: TAudioSourceStream;
       FVocalsPreviewPlaybackStream: TAudioPlaybackStream;
       FPreviewBuildComplete:   Boolean;
@@ -410,6 +411,7 @@ type
       function  GetEditorScoreDifficulty: Integer;
       function  HasVocalsPreviewSource: Boolean;
       function  HasVocalsPreviewPlayback: Boolean;
+      function  HasVocalsPreviewPlaybackAtTime(const Time: Real): Boolean;
       function  HasCopySource: Boolean;
       procedure StartAnalysisThread(const BuildPreview: Boolean; const Track: Integer; const LineIndex: Integer = -1);
       procedure StopAnalysisThread;
@@ -1362,14 +1364,6 @@ begin
   begin
     if HasVocalsPreviewSource and (not FPreviewBuildStarted) and (not FAnalysisFailed) then
       StartAnalysisThread(true, CurrentTrack);
-    if HasVocalsPreviewPlayback then
-      SetVocalsPreviewPlayback(true, false)
-    else
-    begin
-      // fall back silently to standard playback with the same no-click behavior
-      UseVocalsPreview := false;
-      RestoreStandardPlayback(false);
-    end
   end
   else
     RestoreStandardPlayback(false);
@@ -1397,6 +1391,18 @@ begin
   else
     PlaybackStop := SentenceEndTime;
 
+  if UseVocalsPreview then
+  begin
+    if HasVocalsPreviewPlaybackAtTime(PlaybackStart) then
+      SetVocalsPreviewPlayback(true, false)
+    else
+    begin
+      // fall back silently to standard playback with the same no-click behavior
+      UseVocalsPreview := false;
+      RestoreStandardPlayback(false);
+    end;
+  end;
+
   PlaySentenceMidi := UseMidiPreview;
   {$IFDEF UseMIDIPort}
   StopMidi;
@@ -1415,8 +1421,12 @@ begin
   if PlaybackStart <= GetPlaybackLength then
   begin
     SetPlaybackPosition(PlaybackStart);
+    {$IFDEF UseMIDIPort}
     if PlaySentenceMidi then
       ConfigureMidiPlayback(PlaybackStart, PlaybackStop);
+    {$ELSE}
+      PlaySentenceMidi := false;
+    {$ENDIF}
     PlayStopTime := PlaybackStop;
     PlaySentence := true;
     Click := UseClicks;
@@ -1911,16 +1921,8 @@ begin
   UseVocalsPreview := (SDL_ModState and (KMOD_LALT + KMOD_RALT)) <> 0;
   if UseVocalsPreview then
   begin
-    if (not FPreviewBuildStarted) and (not FAnalysisFailed) then
+    if HasVocalsPreviewSource and (not FPreviewBuildStarted) and (not FAnalysisFailed) then
       StartAnalysisThread(true, CurrentTrack);
-    if HasVocalsPreviewPlayback then
-      SetVocalsPreviewPlayback(true, false)
-    else if FAnalysisThreadRunning and FAnalysisThreadBuildPreview then
-      Text[TextInfo].Text := 'Vocals preview is still building in the background (' + IntToStr(FAnalysisProgressPct) + '%)'
-    else if FAnalysisFailed then
-      Text[TextInfo].Text := 'Vocals preview build failed: ' + FAnalysisError
-    else
-      Text[TextInfo].Text := 'Vocals preview unavailable (no instrumental)';
   end
   else
     RestoreStandardPlayback(false);
@@ -1932,6 +1934,17 @@ begin
     CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration);
   NoteEndBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
     CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration;
+
+  if UseVocalsPreview then
+  begin
+    if HasVocalsPreviewPlaybackAtTime(NoteStart) then
+      SetVocalsPreviewPlayback(true, false)
+    else
+    begin
+      UseVocalsPreview := false;
+      RestoreStandardPlayback(false);
+    end;
+  end;
 
   // Play current note
   PlaySentenceMidi := false; // stop midi
@@ -2347,7 +2360,7 @@ begin
   begin
     // clear debug text
     Text[TextInfo].Text := '';
-    AudioPlayback.Stop;
+    StopPlayback;
     PlaySentence := false;
     PlayOne := false;
     PlayVideo := false;
@@ -2429,7 +2442,7 @@ begin
   begin
     // clear debug text
     Text[TextInfo].Text := '';
-    AudioPlayback.Stop();
+    StopPlayback;
     PlaySentence := false;
     PlayOne := false;
     PlayVideo := false;
@@ -3960,7 +3973,7 @@ begin
 
   EditorLyrics[CurrentTrack].AddLine(CurrentTrack, CurrentSong.Tracks[CurrentTrack].CurrentLine);
   EditorLyrics[CurrentTrack].Selected := 0;
-  AudioPlayback.Stop();
+  StopPlayback;
   PlaySentence := false;
   PlayVideo := false;
   GoldenRec.KillAll;
@@ -3968,7 +3981,7 @@ end;
 
 procedure TScreenEditSub.PreviousSentence;
 begin
-  AudioPlayback.Stop();
+  StopPlayback;
   PlayVideo := false;
   PlaySentence := false;
   PlayOne := false;
@@ -4979,6 +4992,7 @@ begin
   FVocalsPitchStepSec := 0;
   FVocalsPitchStartSec := 0;
   SetLength(FVocalsPreviewSamples, 0);
+  FVocalsPreviewReadySamples := 0;
   if ClearPreview then
   begin
     FPreviewScoreTrack := -1;
@@ -5153,11 +5167,27 @@ begin
   Result := GetVocalsPreviewByteSize > 0;
 end;
 
-function TScreenEditSub.GetVocalsPreviewByteSize: Int64;
+function TScreenEditSub.HasVocalsPreviewPlaybackAtTime(const Time: Real): Boolean;
+var
+  ReadySamples: Int64;
 begin
+  ReadySamples := 0;
   EnterCriticalSection(FAnalysisDataLock);
   try
-    Result := Length(FVocalsPreviewSamples) * SizeOf(SmallInt);
+    ReadySamples := FVocalsPreviewReadySamples;
+  finally
+    LeaveCriticalSection(FAnalysisDataLock);
+  end;
+  Result := (Time >= 0) and
+    (Floor(Time * VOCALS_WAVEFORM_SAMPLE_RATE) < ReadySamples);
+end;
+
+function TScreenEditSub.GetVocalsPreviewByteSize: Int64;
+begin
+  Result := 0;
+  EnterCriticalSection(FAnalysisDataLock);
+  try
+    Result := FVocalsPreviewReadySamples * SizeOf(SmallInt);
   finally
     LeaveCriticalSection(FAnalysisDataLock);
   end;
@@ -5178,7 +5208,7 @@ begin
     if SafePosition < 0 then
       SafePosition := 0;
     SafePosition := SafePosition - (SafePosition mod SizeOf(SmallInt));
-    BytesAvailable := Int64(Length(FVocalsPreviewSamples)) * SizeOf(SmallInt) - SafePosition;
+    BytesAvailable := FVocalsPreviewReadySamples * SizeOf(SmallInt) - SafePosition;
     if BytesAvailable <= 0 then
       Exit;
     Result := BufferSize;
@@ -5411,6 +5441,7 @@ var
   PitchTone: Single;
   PreviewSample16: SmallInt;
   PreviewWriteIndex: Integer;
+  WrittenSamples: Integer;
   AvailableUntilSec: Double;
   BoundaryDelta: Single;
   SmoothCount: Integer;
@@ -5917,6 +5948,7 @@ begin
       SetLength(FVocalsPitchContour, 0);
       FVocalsPitchStepSec := VOCALS_PITCH_ANALYSIS_HOP / 1.0 / VOCALS_WAVEFORM_SAMPLE_RATE;
       FVocalsPitchStartSec := (VOCALS_PITCH_ANALYSIS_WINDOW * 0.5) / 1.0 / VOCALS_WAVEFORM_SAMPLE_RATE;
+      FVocalsPreviewReadySamples := 0;
     finally
       LeaveCriticalSection(FAnalysisDataLock);
     end;
@@ -6025,6 +6057,7 @@ begin
       begin
         EnterCriticalSection(FAnalysisDataLock);
         try
+          WrittenSamples := 0;
           for SampleIndex := 0 to SampleCount - 1 do
           begin
             if PreviewNextSample + SampleIndex > High(FVocalsPreviewSamples) then
@@ -6032,7 +6065,10 @@ begin
             PreviewWriteIndex := PreviewNextSample + SampleIndex;
             PreviewSample16 := Round(EnsureRange(AnalysisSamples[SampleIndex], -1.0, 1.0) * 32767);
             FVocalsPreviewSamples[PreviewWriteIndex] := PreviewSample16;
+            Inc(WrittenSamples);
           end;
+          if PreviewNextSample + WrittenSamples > FVocalsPreviewReadySamples then
+            FVocalsPreviewReadySamples := PreviewNextSample + WrittenSamples;
         finally
           LeaveCriticalSection(FAnalysisDataLock);
         end;
@@ -7680,10 +7716,13 @@ begin
     if not FPreserveAnalysisOnShow then
     begin
       ClearVocalsWaveformCache(false);
-      StartAnalysisThread(true, CurrentTrack);
-      Text[TextInfo].Text := 'Vocals analysis is building in the background';
+      if HasVocalsPreviewSource then
+      begin
+        StartAnalysisThread(true, CurrentTrack);
+        Text[TextInfo].Text := 'Vocals analysis is building in the background';
+      end;
     end
-    else if (not FPreviewBuildComplete) and (not FAnalysisThreadRunning) and (not FAnalysisFailed) then
+    else if HasVocalsPreviewSource and (not FPreviewBuildComplete) and (not FAnalysisThreadRunning) and (not FAnalysisFailed) then
       StartAnalysisThread(true, CurrentTrack);
     //Set Down Music Volume for Better hearability of Midi Sounds
     //Music.SetVolume(0.4);
@@ -8173,7 +8212,8 @@ begin
     fCurrentVideo.Draw;
   end;
 
-  if FAnalysisThreadRunning and not (PlaySentence or PlayVideo or PlayOne) then
+  if HasVocalsPreviewSource and FAnalysisThreadRunning and (FAnalysisProgressPct < 100) and
+     not (PlaySentence or PlayVideo or PlayOne) then
   begin
     if FAnalysisThreadBuildPreview then
       Text[TextInfo].Text := 'Vocals preview building: ' + IntToStr(FAnalysisProgressPct) + '%'
