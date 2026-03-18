@@ -126,6 +126,7 @@ type
       LastMidiBeatValid:       boolean;
       Click:                   boolean;
       CopySrc:                 TPos;
+      CopySrcValid:            Boolean;
       {$IFDEF UseMIDIPort}
       MidiOut:                 TMidiOutput;
       MidiStart:               real;
@@ -403,6 +404,7 @@ type
       procedure InvalidatePreviewScoreLine(const Track, LineIndex: Integer);
       function  GetEditorScoreDifficulty: Integer;
       function  HasVocalsPreviewPlayback: Boolean;
+      function  HasCopySource: Boolean;
       procedure StartAnalysisThread(const BuildPreview: Boolean; const Track: Integer; const LineIndex: Integer = -1);
       procedure StopAnalysisThread;
       function  EnsureVocalsPreviewPlaybackStream: Boolean;
@@ -430,6 +432,8 @@ type
       procedure ReloadSong(SDL_ModState: word);
       procedure HandleDivideBPM(SDL_ModState: word);
       procedure HandleMultiplyBPM(SDL_ModState: word);
+      procedure HandleLinePlayback(SDL_ModState: word; const WithVideo: Boolean;
+        const AllowVocalsPreview: Boolean);
       procedure HandleVideo(SDL_ModState: word);
       procedure HandlePaste(SDL_ModState: word);
       procedure HandleFixTimings(SDL_ModState: word);
@@ -850,8 +854,10 @@ begin
       SDLK_M: HandleMultiplyBPM(SDL_ModState);
       SDLK_C: CapitalizeLyrics(SDL_ModState);
       SDLK_V:
-        if (SDL_ModState = 0) or (SDL_ModState = KMOD_LALT) then HandleVideo(SDL_ModState)
-        else HandlePaste(SDL_ModState);
+        if (SDL_ModState and KMOD_CTRL) <> 0 then
+          HandlePaste(SDL_ModState)
+        else
+          HandleVideo(SDL_ModState);
       SDLK_T: HandleFixTimings(SDL_ModState);
       SDLK_P: HandlePlaySentence(SDL_ModState);
       SDLK_G: SetGoldenNote(SDL_ModState);
@@ -1364,46 +1370,119 @@ begin
   Exit;
 end;
 
+procedure TScreenEditSub.HandleLinePlayback(SDL_ModState: word; const WithVideo: Boolean;
+  const AllowVocalsPreview: Boolean);
+var
+  R: real;
+  PlaybackStart: real;
+  PlaybackStop: real;
+  SentenceEndTime: real;
+  SentencePreroll: real;
+  RequestedVocalsPreview: boolean;
+  UseVocalsPreview: boolean;
+  UseMidiPreview: boolean;
+  ContinuePlayback: boolean;
+  UseClicks: boolean;
+begin
+  ContinuePlayback := (SDL_ModState and KMOD_ALT) <> 0;
+  RequestedVocalsPreview := AllowVocalsPreview and ((SDL_ModState and KMOD_CTRL) <> 0);
+  UseVocalsPreview := RequestedVocalsPreview;
+  UseMidiPreview := (SDL_ModState and KMOD_SHIFT) <> 0;
+  UseClicks := (not WithVideo) and (SDL_ModState = 0);
+
+  if UseVocalsPreview then
+  begin
+    if (not FPreviewBuildStarted) and (not FAnalysisFailed) then
+      StartAnalysisThread(true, CurrentTrack);
+    if HasVocalsPreviewPlayback then
+      SetVocalsPreviewPlayback(true, false)
+    else
+    begin
+      // fall back silently to standard playback with the same no-click behavior
+      UseVocalsPreview := false;
+      RestoreStandardPlayback(false);
+    end
+  end
+  else
+    RestoreStandardPlayback(false);
+
+  Click := false;
+  StopPlayback;
+  PlayVideo := WithVideo;
+  StopVideoPreview;
+  CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
+  CurrentNote[CurrentTrack] := 0;
+
+  R := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
+  SentenceEndTime := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat);
+  PlaybackStart := R;
+  SentencePreroll := 3 * GetSentenceLeadSeconds(UseMidiPreview);
+  if SentencePreroll > 0 then
+  begin
+    PlaybackStart := R - SentencePreroll;
+    if PlaybackStart < 0 then
+      PlaybackStart := 0;
+  end;
+
+  if ContinuePlayback then
+    PlaybackStop := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].High].EndBeat)
+  else
+    PlaybackStop := SentenceEndTime;
+
+  PlaySentenceMidi := UseMidiPreview;
+  {$IFDEF UseMIDIPort}
+  StopMidi;
+  {$ENDIF}
+  if PlaySentenceMidi then
+  begin
+    PlayOneMidi := false;
+    midinotefound := false;
+  end;
+
+  if UseVocalsPreview or RequestedVocalsPreview or (not UseMidiPreview) then
+    SetPlaybackVolume(VolumeAudioIndex / 100)
+  else
+    SetPlaybackVolume(0);
+
+  if PlaybackStart <= GetPlaybackLength then
+  begin
+    SetPlaybackPosition(PlaybackStart);
+    if PlaySentenceMidi then
+      ConfigureMidiPlayback(PlaybackStart, PlaybackStop);
+    PlayStopTime := PlaybackStop;
+    PlaySentence := true;
+    Click := UseClicks;
+    PlayPlayback;
+    LastClick := -100;
+    ResetBeatTracking;
+    if WithVideo then
+      StartVideoPreview();
+  end;
+
+  if WithVideo then
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SONG')
+  else if UseVocalsPreview then
+    Text[TextInfo].Text := 'Play sentence vocals'
+  else if UseMidiPreview then
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO_AND_MIDI')
+  else
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO');
+end;
+
       // SDLK_V: HandleVideo; HandlePaste;
 procedure TScreenEditSub.HandleVideo(SDL_ModState: word);
 begin
-  if (SDL_ModState = 0) or (SDL_ModState = KMOD_LALT) then // play current line/remainder of song with video
-  begin
-    StopVideoPreview;
-    AudioPlayback.Stop;
-    PlayVideo := true;
-    PlaySentenceMidi := false;
-    {$IFDEF UseMIDIPort}
-    StopMidi;
-    {$ENDIF}
-    StopVideoPreview();
-    Click := true;
-    with CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine] do
-    begin
-      Notes[CurrentNote[CurrentTrack]].Color := 1;
-      CurrentNote[CurrentTrack] := 0;
-      AudioPlayback.Position := GetTimeFromBeat(Notes[0].StartBeat);
-      PlayStopTime := ifthen(SDL_ModState = KMOD_LALT,
-                            GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].High].EndBeat),
-                            GetTimeFromBeat(Notes[High(Notes)].EndBeat));
-    end;
-    if (SDL_ModState = KMOD_LALT) then
-    begin
-      PlaySentenceMidi := true;
-      ConfigureMidiPlayback(AudioPlayback.Position, PlayStopTime);
-    end;
-    PlaySentence := true;
-    AudioPlayback.SetVolume(VolumeAudioIndex / 100);
-    AudioPlayback.Play;
-    LastClick := -100;
-    ResetBeatTracking;
-    StartVideoPreview();
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SONG');
-  end;
+  HandleLinePlayback(SDL_ModState, true, false);
 end;
 
 procedure TScreenEditSub.HandlePaste(SDL_ModState: word);
 begin
+  if not HasCopySource then
+  begin
+    Text[TextInfo].Text := 'Nothing copied yet';
+    Exit;
+  end;
+
   // paste notes + text (enforce length of src line)
   if SDL_ModState = KMOD_LCTRL then
   begin
@@ -1452,85 +1531,8 @@ end;
 
       // SDLK_P: PlaySentence;
 procedure TScreenEditSub.HandlePlaySentence(SDL_ModState: word);
-var
-  R: real;
-  PlaybackStart: real;
-  SentenceEndTime: real;
-  SentencePreroll: real;
-  PlayAudio: boolean;
-  ModWithoutAlt: word;
-  UseVocalsPreview: boolean;
 begin
-  ModWithoutAlt := SDL_ModState and not (KMOD_LALT + KMOD_RALT);
-  UseVocalsPreview := (SDL_ModState and (KMOD_LALT + KMOD_RALT)) <> 0;
-  if UseVocalsPreview then
-  begin
-    if (not FPreviewBuildStarted) and (not FAnalysisFailed) then
-      StartAnalysisThread(true, CurrentTrack);
-    if HasVocalsPreviewPlayback then
-      SetVocalsPreviewPlayback(true, false)
-    else if FAnalysisThreadRunning and FAnalysisThreadBuildPreview then
-      Text[TextInfo].Text := 'Vocals preview is still building in the background (' + IntToStr(FAnalysisProgressPct) + '%)'
-    else if FAnalysisFailed then
-      Text[TextInfo].Text := 'Vocals preview build failed: ' + FAnalysisError
-    else
-      Text[TextInfo].Text := 'Vocals preview unavailable (no instrumental)';
-  end
-  else
-    RestoreStandardPlayback(false);
-
-  Click := true;
-  StopPlayback;
-  PlayVideo := false;
-  StopVideoPreview;
-  CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
-  CurrentNote[CurrentTrack] := 0;
-  R := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
-  PlaybackStart := R;
-  SentenceEndTime := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat);
-
-  PlaySentenceMidi := (ModWithoutAlt and KMOD_LSHIFT) <> 0;
-  SentencePreroll := 3 * GetSentenceLeadSeconds(PlaySentenceMidi);
-  if SentencePreroll > 0 then
-  begin
-    PlaybackStart := R - SentencePreroll;
-    if PlaybackStart < 0 then
-      PlaybackStart := 0;
-  end;
-
-  Click := ModWithoutAlt = 0;
-  if Click then
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO');
-
-  if PlaySentenceMidi then
-  begin
-    {$IFDEF UseMIDIPort}
-    if PlayOneMidi then
-      StopMidi;
-    {$ENDIF}
-    PlayOneMidi := false;
-    midinotefound := false;
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO_AND_MIDI');
-    ConfigureMidiPlayback(PlaybackStart, SentenceEndTime);
-  end;
-
-  PlayAudio := (ModWithoutAlt and KMOD_LCTRL) <> 0;
-  if Click or PlayAudio then
-    SetPlaybackVolume(VolumeAudioIndex / 100)
-  else
-    SetPlaybackVolume(0);
-
-  if PlaybackStart <= GetPlaybackLength then
-  begin
-    SetPlaybackPosition(PlaybackStart);
-    PlayStopTime := SentenceEndTime;
-    PlaySentence := true;
-    PlayPlayback;
-    LastClick := -100;
-  end;
-
-  if ModWithoutAlt = KMOD_LSHIFT and KMOD_LCTRL then
-    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO_AND_MIDI');
+  HandleLinePlayback(SDL_ModState, false, true);
 end;
       // SDLK_G: SetGoldenNote;
 procedure TScreenEditSub.SetGoldenNote(SDL_ModState: word);
@@ -1680,6 +1682,12 @@ var
   NumLines:     Integer;
   LineCount:    Integer;
 begin
+  if not HasCopySource then
+  begin
+    Text[TextInfo].Text := 'Nothing copied yet';
+    Exit;
+  end;
+
   DstTrack := CurrentTrack;
   DstLine := CurrentSong.Tracks[CurrentTrack].CurrentLine;
   NumLines := PressedKey - SDLK_0;
@@ -4427,6 +4435,14 @@ begin
   CopySrc.track := CurrentTrack;
   CopySrc.line  := CurrentSong.Tracks[CurrentTrack].CurrentLine;
   CopySrc.note  := CurrentNote[CurrentTrack];
+  CopySrcValid  := true;
+end;
+
+function TScreenEditSub.HasCopySource: Boolean;
+begin
+  Result := CopySrcValid and
+    (CopySrc.track >= 0) and (CopySrc.track <= High(CurrentSong.Tracks)) and
+    (CopySrc.line >= 0) and (CopySrc.line <= High(CurrentSong.Tracks[CopySrc.track].Lines));
 end;
 
 procedure TScreenEditSub.CopySentence(SrcTrack, SrcLine, DstTrack, DstLine: Integer; CopyText, CopyNotes, EnforceSrcLength: boolean);
@@ -4452,7 +4468,7 @@ begin
   begin
     if (CopyText) then // copy text
     begin
-      CurrentSong.Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Text      := CurrentSong.Tracks[CopySrc.track].Lines[SrcLine].Notes[NoteIndex].Text;
+      CurrentSong.Tracks[DstTrack].Lines[DstLine].Notes[NoteIndex].Text      := CurrentSong.Tracks[SrcTrack].Lines[SrcLine].Notes[NoteIndex].Text;
     end;
     if (CopyNotes) then // copy duration, tone, note type and (shifted) start beat
     begin
@@ -5374,6 +5390,7 @@ var
   CarryOriginal: TSingleDynArray;
   CarryKaraoke: TSingleDynArray;
   DiffSamples: TSingleDynArray;
+  AnalysisSamples: TSingleDynArray;
   InputBytesOriginal: array of Byte;
   InputBytesKaraoke: array of Byte;
   OutputBytesOriginal: array of Byte;
@@ -5435,6 +5452,7 @@ var
   SongLengthSec: Double;
   OriginalEOF: Boolean;
   KaraokeEOF: Boolean;
+  HasKaraokePreview: Boolean;
 
   function AnalysisCancelled: Boolean;
   begin
@@ -5811,6 +5829,7 @@ begin
   PreviewNextSample := 0;
   OriginalEOF := false;
   KaraokeEOF := false;
+  HasKaraokePreview := false;
   HopsSinceScoreUpdate := 0;
   HaveLastPreviewSample := false;
   SetLength(PendingSamples, 0);
@@ -5821,16 +5840,20 @@ begin
     if Assigned(CurrentSong.Karaoke) and (CurrentSong.Karaoke <> PATH_NONE) and
        CurrentSong.Karaoke.IsSet and CurrentSong.Path.Append(CurrentSong.Karaoke).Exists then
       KaraokeStream := OpenDecodeStream(CurrentSong.Path.Append(CurrentSong.Karaoke));
-    if (not Assigned(OriginalStream)) or (not Assigned(KaraokeStream)) then
+    if not Assigned(OriginalStream) then
       Exit;
+    HasKaraokePreview := Assigned(KaraokeStream);
 
     TargetFormat := TAudioFormatInfo.Create(1, VOCALS_WAVEFORM_SAMPLE_RATE, asfFloat);
     OriginalConverter := TAudioConverter_SWResample.Create();
-    KaraokeConverter := TAudioConverter_SWResample.Create();
     if not OriginalConverter.Init(OriginalStream.GetAudioFormatInfo(), TargetFormat) then
       Exit;
-    if not KaraokeConverter.Init(KaraokeStream.GetAudioFormatInfo(), TargetFormat) then
-      Exit;
+    if HasKaraokePreview then
+    begin
+      KaraokeConverter := TAudioConverter_SWResample.Create();
+      if not KaraokeConverter.Init(KaraokeStream.GetAudioFormatInfo(), TargetFormat) then
+        Exit;
+    end;
 
     LineSnapshots := Copy(CurrentSong.Tracks[Track].Lines);
     SetLength(RefinedLines, Length(LineSnapshots));
@@ -5869,24 +5892,30 @@ begin
     end;
 
     SongLengthSec := OriginalStream.Length;
-    if Assigned(KaraokeStream) and (KaraokeStream.Length > SongLengthSec) then
+    if HasKaraokePreview and (KaraokeStream.Length > SongLengthSec) then
       SongLengthSec := KaraokeStream.Length;
     if Assigned(AudioPlayback) and (AudioPlayback.Length > SongLengthSec) then
       SongLengthSec := AudioPlayback.Length;
     SongTotalSamples := Ceil(SongLengthSec * VOCALS_WAVEFORM_SAMPLE_RATE);
-    EnterCriticalSection(FAnalysisDataLock);
-    try
-      if SongTotalSamples > High(Integer) then
-        SetLength(FVocalsPreviewSamples, High(Integer))
-      else
-        SetLength(FVocalsPreviewSamples, SongTotalSamples);
-    finally
-      LeaveCriticalSection(FAnalysisDataLock);
+    if HasKaraokePreview then
+    begin
+      EnterCriticalSection(FAnalysisDataLock);
+      try
+        if SongTotalSamples > High(Integer) then
+          SetLength(FVocalsPreviewSamples, High(Integer))
+        else
+          SetLength(FVocalsPreviewSamples, SongTotalSamples);
+      finally
+        LeaveCriticalSection(FAnalysisDataLock);
+      end;
     end;
     SetLength(InputBytesOriginal, VOCALS_WAVEFORM_DECODE_BYTES);
-    SetLength(InputBytesKaraoke, VOCALS_WAVEFORM_DECODE_BYTES);
     SetLength(OutputBytesOriginal, OriginalConverter.GetOutputBufferSize(Length(InputBytesOriginal)));
-    SetLength(OutputBytesKaraoke, KaraokeConverter.GetOutputBufferSize(Length(InputBytesKaraoke)));
+    if HasKaraokePreview then
+    begin
+      SetLength(InputBytesKaraoke, VOCALS_WAVEFORM_DECODE_BYTES);
+      SetLength(OutputBytesKaraoke, KaraokeConverter.GetOutputBufferSize(Length(InputBytesKaraoke)));
+    end;
 
     EnterCriticalSection(FAnalysisDataLock);
     try
@@ -5908,7 +5937,7 @@ begin
       try
         if not OriginalEOF then
           ReadBytesOriginal := OriginalStream.ReadData(@InputBytesOriginal[0], Length(InputBytesOriginal));
-        if not KaraokeEOF then
+        if HasKaraokePreview and (not KaraokeEOF) then
           ReadBytesKaraoke := KaraokeStream.ReadData(@InputBytesKaraoke[0], Length(InputBytesKaraoke));
       finally
         LeaveCriticalSection(FAnalysisDecodeLock);
@@ -5916,12 +5945,14 @@ begin
 
       if ReadBytesOriginal <= 0 then
         OriginalEOF := true;
-      if ReadBytesKaraoke <= 0 then
+      if HasKaraokePreview and (ReadBytesKaraoke <= 0) then
+        KaraokeEOF := true;
+      if not HasKaraokePreview then
         KaraokeEOF := true;
 
       if OriginalEOF and KaraokeEOF and
          (Length(CarryOriginal) = 0) and
-         (Length(CarryKaraoke) = 0) then
+         ((not HasKaraokePreview) or (Length(CarryKaraoke) = 0)) then
         Break;
 
       InputSizeOriginal := ReadBytesOriginal;
@@ -5930,7 +5961,7 @@ begin
         OutputSizeOriginal := OriginalConverter.Convert(@InputBytesOriginal[0], @OutputBytesOriginal[0], InputSizeOriginal)
       else
         OutputSizeOriginal := 0;
-      if InputSizeKaraoke > 0 then
+      if HasKaraokePreview and (InputSizeKaraoke > 0) then
         OutputSizeKaraoke := KaraokeConverter.Convert(@InputBytesKaraoke[0], @OutputBytesKaraoke[0], InputSizeKaraoke)
       else
         OutputSizeKaraoke := 0;
@@ -5938,7 +5969,8 @@ begin
       FramesDecodedKaraoke := OutputSizeKaraoke div SizeOf(Single);
       if (FramesDecodedOriginal <= 0) and (FramesDecodedKaraoke <= 0) and
          ((not OriginalEOF) or (not KaraokeEOF) or
-          (Length(CarryOriginal) = 0) or (Length(CarryKaraoke) = 0)) then
+          (Length(CarryOriginal) = 0) or
+          (HasKaraokePreview and (Length(CarryKaraoke) = 0))) then
         Continue;
 
       if FramesDecodedOriginal > 0 then
@@ -5948,14 +5980,17 @@ begin
         AppendSamples(CarryOriginal, OriginalSamples, FramesDecodedOriginal);
       end;
 
-      if FramesDecodedKaraoke > 0 then
+      if HasKaraokePreview and (FramesDecodedKaraoke > 0) then
       begin
         SetLength(KaraokeSamples, FramesDecodedKaraoke);
         Move(OutputBytesKaraoke[0], KaraokeSamples[0], FramesDecodedKaraoke * SizeOf(Single));
         AppendSamples(CarryKaraoke, KaraokeSamples, FramesDecodedKaraoke);
       end;
 
-      SampleCount := Min(Length(CarryOriginal), Length(CarryKaraoke));
+      if HasKaraokePreview then
+        SampleCount := Min(Length(CarryOriginal), Length(CarryKaraoke))
+      else
+        SampleCount := Length(CarryOriginal);
       if SampleCount <= 0 then
       begin
         if OriginalEOF and KaraokeEOF then
@@ -5963,48 +5998,59 @@ begin
         Continue;
       end;
 
-      SetLength(DiffSamples, SampleCount);
-      for SampleIndex := 0 to SampleCount - 1 do
+      if HasKaraokePreview then
       begin
-        DiffSamples[SampleIndex] := CarryOriginal[SampleIndex] - CarryKaraoke[SampleIndex];
+        SetLength(DiffSamples, SampleCount);
+        for SampleIndex := 0 to SampleCount - 1 do
+          DiffSamples[SampleIndex] := CarryOriginal[SampleIndex] - CarryKaraoke[SampleIndex];
+        AnalysisSamples := DiffSamples;
+      end
+      else
+      begin
+        SetLength(AnalysisSamples, SampleCount);
+        Move(CarryOriginal[0], AnalysisSamples[0], SampleCount * SizeOf(Single));
       end;
       ConsumeLeadingSamples(CarryOriginal, SampleCount);
-      ConsumeLeadingSamples(CarryKaraoke, SampleCount);
+      if HasKaraokePreview then
+        ConsumeLeadingSamples(CarryKaraoke, SampleCount);
 
-      if HaveLastPreviewSample and (SampleCount > 0) then
+      if HasKaraokePreview and HaveLastPreviewSample and (SampleCount > 0) then
       begin
-        BoundaryDelta := DiffSamples[0] - LastPreviewSample;
+        BoundaryDelta := AnalysisSamples[0] - LastPreviewSample;
         SmoothCount := Min(PREVIEW_BOUNDARY_SMOOTH_SAMPLES, SampleCount);
         if SmoothCount > 0 then
           for SampleIndex := 0 to SmoothCount - 1 do
           begin
             SmoothFactor := (SmoothCount - SampleIndex) / SmoothCount;
-            DiffSamples[SampleIndex] := DiffSamples[SampleIndex] - BoundaryDelta * SmoothFactor;
+            AnalysisSamples[SampleIndex] := AnalysisSamples[SampleIndex] - BoundaryDelta * SmoothFactor;
           end;
       end;
 
-      EnterCriticalSection(FAnalysisDataLock);
-      try
-        for SampleIndex := 0 to SampleCount - 1 do
-        begin
-          if PreviewNextSample + SampleIndex > High(FVocalsPreviewSamples) then
-            Break;
-          PreviewWriteIndex := PreviewNextSample + SampleIndex;
-          PreviewSample16 := Round(EnsureRange(DiffSamples[SampleIndex], -1.0, 1.0) * 32767);
-          FVocalsPreviewSamples[PreviewWriteIndex] := PreviewSample16;
-        end;
-      finally
-        LeaveCriticalSection(FAnalysisDataLock);
-      end;
-
-      if SampleCount > 0 then
+      if HasKaraokePreview then
       begin
-        LastPreviewSample := DiffSamples[SampleCount - 1];
-        HaveLastPreviewSample := true;
-        Inc(PreviewNextSample, SampleCount);
+        EnterCriticalSection(FAnalysisDataLock);
+        try
+          for SampleIndex := 0 to SampleCount - 1 do
+          begin
+            if PreviewNextSample + SampleIndex > High(FVocalsPreviewSamples) then
+              Break;
+            PreviewWriteIndex := PreviewNextSample + SampleIndex;
+            PreviewSample16 := Round(EnsureRange(AnalysisSamples[SampleIndex], -1.0, 1.0) * 32767);
+            FVocalsPreviewSamples[PreviewWriteIndex] := PreviewSample16;
+          end;
+        finally
+          LeaveCriticalSection(FAnalysisDataLock);
+        end;
+
+        if SampleCount > 0 then
+        begin
+          LastPreviewSample := AnalysisSamples[SampleCount - 1];
+          HaveLastPreviewSample := true;
+          Inc(PreviewNextSample, SampleCount);
+        end;
       end;
 
-      AppendSamples(PendingSamples, DiffSamples, SampleCount);
+      AppendSamples(PendingSamples, AnalysisSamples, SampleCount);
 
       while NextPitchStartSample + VOCALS_PITCH_ANALYSIS_WINDOW <= PendingStartSample + Length(PendingSamples) do
       begin
@@ -6027,7 +6073,8 @@ begin
           else
             AvailableUntilSec := 0;
 
-          RefineCompletedLines(AvailableUntilSec, false);
+          if HasKaraokePreview then
+            RefineCompletedLines(AvailableUntilSec, false);
 
           EnterCriticalSection(FAnalysisDataLock);
           try
@@ -6071,7 +6118,8 @@ begin
       AvailableUntilSec := 0;
     if AnalysisCancelled then
       Exit;
-    RefineCompletedLines(AvailableUntilSec, true);
+    if HasKaraokePreview then
+      RefineCompletedLines(AvailableUntilSec, true);
     RecomputeScoresFromContour(WorkingContour, AvailableUntilSec, true);
 
     FPreviewBuildComplete := true;
