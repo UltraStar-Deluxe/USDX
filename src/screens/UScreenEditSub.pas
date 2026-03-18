@@ -410,6 +410,8 @@ type
       procedure RecomputeAllPreviewScores;
       procedure TriggerGlobalPreviewRescore;
       function  GetEditorScoreDifficulty: Integer;
+      function  HasVocalsPreviewDirectSource: Boolean;
+      function  GetVocalsPreviewSourcePath: IPath;
       function  HasVocalsPreviewSource: Boolean;
       function  HasVocalsPreviewPlayback: Boolean;
       function  HasVocalsPreviewPlaybackAtTime(const Time: Real): Boolean;
@@ -5194,12 +5196,34 @@ begin
     Result := 2;
 end;
 
+function TScreenEditSub.HasVocalsPreviewDirectSource: Boolean;
+begin
+  Result := Assigned(CurrentSong.Vocals) and
+    (CurrentSong.Vocals <> PATH_NONE) and
+    CurrentSong.Vocals.IsSet and
+    CurrentSong.Path.Append(CurrentSong.Vocals).Exists;
+end;
+
+function TScreenEditSub.GetVocalsPreviewSourcePath: IPath;
+begin
+  if HasVocalsPreviewDirectSource then
+    Result := CurrentSong.Vocals
+  else if Assigned(CurrentSong.Karaoke) and
+          (CurrentSong.Karaoke <> PATH_NONE) and
+          CurrentSong.Karaoke.IsSet and
+          CurrentSong.Path.Append(CurrentSong.Karaoke).Exists then
+    Result := CurrentSong.Karaoke
+  else
+    Result := PATH_NONE;
+end;
+
 function TScreenEditSub.HasVocalsPreviewSource: Boolean;
 begin
-  Result := Assigned(CurrentSong.Karaoke) and
-    (CurrentSong.Karaoke <> PATH_NONE) and
-    CurrentSong.Karaoke.IsSet and
-    CurrentSong.Path.Append(CurrentSong.Karaoke).Exists;
+  Result := HasVocalsPreviewDirectSource or
+    (Assigned(CurrentSong.Karaoke) and
+     (CurrentSong.Karaoke <> PATH_NONE) and
+     CurrentSong.Karaoke.IsSet and
+     CurrentSong.Path.Append(CurrentSong.Karaoke).Exists);
 end;
 
 function TScreenEditSub.HasVocalsPreviewPlayback: Boolean;
@@ -5530,6 +5554,7 @@ var
   OriginalEOF: Boolean;
   KaraokeEOF: Boolean;
   HasKaraokePreview: Boolean;
+  UseDirectVocalsSource: Boolean;
   RescoreTrackIndex: Integer;
 
   function AnalysisCancelled: Boolean;
@@ -5910,24 +5935,37 @@ begin
   OriginalEOF := false;
   KaraokeEOF := false;
   HasKaraokePreview := false;
+  UseDirectVocalsSource := false;
   HopsSinceScoreUpdate := 0;
   HaveLastPreviewSample := false;
   SetLength(PendingSamples, 0);
   SetLength(WorkingContour, 0);
 
   try
-    OriginalStream := OpenDecodeStream(CurrentSong.Path.Append(CurrentSong.Audio));
-    if Assigned(CurrentSong.Karaoke) and (CurrentSong.Karaoke <> PATH_NONE) and
-       CurrentSong.Karaoke.IsSet and CurrentSong.Path.Append(CurrentSong.Karaoke).Exists then
-      KaraokeStream := OpenDecodeStream(CurrentSong.Path.Append(CurrentSong.Karaoke));
-    if not Assigned(OriginalStream) then
-      Exit;
+    UseDirectVocalsSource := HasVocalsPreviewDirectSource;
+    if UseDirectVocalsSource then
+    begin
+      KaraokeStream := OpenDecodeStream(CurrentSong.Path.Append(CurrentSong.Vocals));
+      if not Assigned(KaraokeStream) then
+        Exit;
+    end
+    else
+    begin
+      OriginalStream := OpenDecodeStream(CurrentSong.Path.Append(CurrentSong.Audio));
+      if not Assigned(OriginalStream) then
+        Exit;
+      if HasVocalsPreviewSource then
+        KaraokeStream := OpenDecodeStream(CurrentSong.Path.Append(GetVocalsPreviewSourcePath));
+    end;
     HasKaraokePreview := Assigned(KaraokeStream);
 
     TargetFormat := TAudioFormatInfo.Create(1, VOCALS_WAVEFORM_SAMPLE_RATE, asfFloat);
-    OriginalConverter := TAudioConverter_SWResample.Create();
-    if not OriginalConverter.Init(OriginalStream.GetAudioFormatInfo(), TargetFormat) then
-      Exit;
+    if Assigned(OriginalStream) then
+    begin
+      OriginalConverter := TAudioConverter_SWResample.Create();
+      if not OriginalConverter.Init(OriginalStream.GetAudioFormatInfo(), TargetFormat) then
+        Exit;
+    end;
     if HasKaraokePreview then
     begin
       KaraokeConverter := TAudioConverter_SWResample.Create();
@@ -5971,7 +6009,12 @@ begin
       LeaveCriticalSection(FAnalysisDataLock);
     end;
 
-    SongLengthSec := OriginalStream.Length;
+    if Assigned(OriginalStream) then
+      SongLengthSec := OriginalStream.Length
+    else if HasKaraokePreview then
+      SongLengthSec := KaraokeStream.Length
+    else
+      SongLengthSec := 0;
     if HasKaraokePreview and (KaraokeStream.Length > SongLengthSec) then
       SongLengthSec := KaraokeStream.Length;
     if Assigned(AudioPlayback) and (AudioPlayback.Length > SongLengthSec) then
@@ -5989,8 +6032,11 @@ begin
         LeaveCriticalSection(FAnalysisDataLock);
       end;
     end;
-    SetLength(InputBytesOriginal, VOCALS_WAVEFORM_DECODE_BYTES);
-    SetLength(OutputBytesOriginal, OriginalConverter.GetOutputBufferSize(Length(InputBytesOriginal)));
+    if Assigned(OriginalConverter) then
+    begin
+      SetLength(InputBytesOriginal, VOCALS_WAVEFORM_DECODE_BYTES);
+      SetLength(OutputBytesOriginal, OriginalConverter.GetOutputBufferSize(Length(InputBytesOriginal)));
+    end;
     if HasKaraokePreview then
     begin
       SetLength(InputBytesKaraoke, VOCALS_WAVEFORM_DECODE_BYTES);
@@ -6006,6 +6052,9 @@ begin
     finally
       LeaveCriticalSection(FAnalysisDataLock);
     end;
+
+    if UseDirectVocalsSource then
+      OriginalEOF := true;
 
     while true do
     begin
@@ -6032,7 +6081,7 @@ begin
         KaraokeEOF := true;
 
       if OriginalEOF and KaraokeEOF and
-         (Length(CarryOriginal) = 0) and
+         (UseDirectVocalsSource or (Length(CarryOriginal) = 0)) and
          ((not HasKaraokePreview) or (Length(CarryKaraoke) = 0)) then
         Break;
 
@@ -6050,14 +6099,14 @@ begin
       FramesDecodedKaraoke := OutputSizeKaraoke div SizeOf(Single);
       if (FramesDecodedOriginal <= 0) and (FramesDecodedKaraoke <= 0) and
          ((not OriginalEOF) or (not KaraokeEOF) or
-          (Length(CarryOriginal) = 0) or
+          ((not UseDirectVocalsSource) and (Length(CarryOriginal) = 0)) or
           (HasKaraokePreview and (Length(CarryKaraoke) = 0))) then
       begin
         Sleep(1);
         Continue;
       end;
 
-      if FramesDecodedOriginal > 0 then
+      if (FramesDecodedOriginal > 0) and not UseDirectVocalsSource then
       begin
         SetLength(OriginalSamples, FramesDecodedOriginal);
         Move(OutputBytesOriginal[0], OriginalSamples[0], FramesDecodedOriginal * SizeOf(Single));
@@ -6071,7 +6120,9 @@ begin
         AppendSamples(CarryKaraoke, KaraokeSamples, FramesDecodedKaraoke);
       end;
 
-      if HasKaraokePreview then
+      if UseDirectVocalsSource then
+        SampleCount := Length(CarryKaraoke)
+      else if HasKaraokePreview then
         SampleCount := Min(Length(CarryOriginal), Length(CarryKaraoke))
       else
         SampleCount := Length(CarryOriginal);
@@ -6083,7 +6134,7 @@ begin
         Continue;
       end;
 
-      if HasKaraokePreview then
+      if HasKaraokePreview and not UseDirectVocalsSource then
       begin
         SetLength(DiffSamples, SampleCount);
         for SampleIndex := 0 to SampleCount - 1 do
@@ -6093,9 +6144,13 @@ begin
       else
       begin
         SetLength(AnalysisSamples, SampleCount);
-        Move(CarryOriginal[0], AnalysisSamples[0], SampleCount * SizeOf(Single));
+        if UseDirectVocalsSource then
+          Move(CarryKaraoke[0], AnalysisSamples[0], SampleCount * SizeOf(Single))
+        else
+          Move(CarryOriginal[0], AnalysisSamples[0], SampleCount * SizeOf(Single));
       end;
-      ConsumeLeadingSamples(CarryOriginal, SampleCount);
+      if not UseDirectVocalsSource then
+        ConsumeLeadingSamples(CarryOriginal, SampleCount);
       if HasKaraokePreview then
         ConsumeLeadingSamples(CarryKaraoke, SampleCount);
 
