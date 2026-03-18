@@ -6320,6 +6320,10 @@ end;
 
 procedure TScreenEditSub.OnHide;
 begin
+  Ini.EditorClickLeadMs := PrerollAudioIndex - 500;
+  Ini.EditorMidiLeadMs := PrerollMidiIndex - 500;
+  Ini.Save;
+
   {$IFDEF UseMIDIPort}
   StopMidi;
   MidiOut.Close;
