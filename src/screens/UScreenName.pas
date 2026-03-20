@@ -601,10 +601,10 @@ begin
   SetLength(PlayerAvatarButtonMD5, Length(AvatarsList) + 1);
 
   // 1st no-avatar dummy
-  GenericNoAvatarFile := Skin.SkinPath.Append(Path('[name]noavatar.png'));
+  GenericNoAvatarFile := Skin.GetSkinFile(Path('[name]noavatar.png'));
   for I := 1 to UIni.IMaxPlayerCount do
   begin
-    if GenericNoAvatarFile.IsFile() then
+    if GenericNoAvatarFile.IsSet then
       NoAvatarFile := GenericNoAvatarFile
     else
     begin

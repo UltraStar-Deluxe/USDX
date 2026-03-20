@@ -275,13 +275,13 @@ begin
   // ball for current word hover in ball effect
   BallTex := Texture.LoadTexture(Skin.GetTextureFileName('Ball'), TEXTURE_TYPE_TRANSPARENT, 0);
 
-  ActiveIconFile := Skin.SkinPath.Append(Path('[sing.player]lyric_active.png'));
-  InactiveIconFile := Skin.SkinPath.Append(Path('[sing.player]lyric_inactive.png'));
+  ActiveIconFile := Skin.GetSkinFile(Path('[sing.player]lyric_active.png'));
+  InactiveIconFile := Skin.GetSkinFile(Path('[sing.player]lyric_inactive.png'));
 
   // duet mode: load player icon
   for I := 0 to UIni.IMaxPlayerCount - 1 do
   begin
-    if ActiveIconFile.IsFile() and InactiveIconFile.IsFile() then
+    if ActiveIconFile.IsSet and InactiveIconFile.IsSet then
     begin
       PlayerColor := GetPlayerColor(Ini.PlayerColor[I]);
       PlayerColorInt := RGBFloatToInt(PlayerColor.R, PlayerColor.G, PlayerColor.B);
