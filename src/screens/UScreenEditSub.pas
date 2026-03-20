@@ -3192,10 +3192,76 @@ var
   Action: TMouseClickAction;
   TempR:  real;
   i:      Integer;
+  ClickedNoteIndex: Integer;
+  HandledNoteClick: Boolean;
   PrevAudioIndex: Integer;
   PrevClickIndex: Integer;
   CursorWordIndex: Integer;
   CursorCharIndex: Integer;
+  procedure HandleNoteClick(NoteIndex: Integer);
+  begin
+    CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
+    CurrentNote[CurrentTrack] := NoteIndex;
+    CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
+    EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+
+    PlaySentenceMidi := false;
+    {$IFDEF UseMIDIPort}
+    StopMidi;
+    {$ENDIF}
+    midinotefound := false;
+    PlayOne := true;
+    PlayOneMidi := true;
+
+    PlayVideo := false;
+    StopVideoPreview;
+    Click := false;
+    AudioPlayback.Stop;
+    AudioPlayback.Position := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
+    PlayStopTime := GetTimeFromBeat(
+      CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
+      CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration);
+    ConfigureMidiPlayback(AudioPlayback.Position, PlayStopTime);
+    AudioPlayback.SetVolume(VolumeAudioIndex / 100);
+    AudioPlayback.Play;
+    LastClick := -100;
+  end;
+  function FindInteractiveNoteAt(MouseX, MouseY: Integer): Integer;
+  var
+    NoteIdx: Integer;
+    InteractionIdx: Integer;
+    ButtonIdx: Integer;
+    ButtonX: real;
+    ButtonY: real;
+    ButtonW: real;
+    ButtonH: real;
+  begin
+    Result := -1;
+    for NoteIdx := High(InteractiveNoteId) downto 0 do
+    begin
+      InteractionIdx := InteractiveNoteId[NoteIdx];
+      ButtonIdx := -1;
+      if (InteractionIdx >= Low(Interactions)) and (InteractionIdx <= High(Interactions)) and
+         (Interactions[InteractionIdx].Typ = iButton) then
+      begin
+        ButtonIdx := Interactions[InteractionIdx].Num;
+        ButtonX := Button[ButtonIdx].X;
+        ButtonY := Button[ButtonIdx].Y;
+        ButtonW := Button[ButtonIdx].W;
+        ButtonH := Button[ButtonIdx].H;
+        if Button[ButtonIdx].Visible and
+           Button[ButtonIdx].Selectable and
+           (ButtonW > 0) and (ButtonH > 0) and
+           (MouseX >= ButtonX) and (MouseX <= ButtonX + ButtonW) and
+           (MouseY >= ButtonY) and (MouseY <= ButtonY + ButtonH) and
+           ((not Button[ButtonIdx].Scrollable) or InRegion(MouseX, MouseY, ScrollArea)) then
+        begin
+          Result := NoteIdx;
+          Exit;
+        end;
+      end;
+    end;
+  end;
 begin
   // transfer mousecords to the 800x600 raster we use to draw
   X := Round((X / (ScreenW / Screens)) * RenderW);
@@ -3210,10 +3276,16 @@ begin
   PrevClickIndex := VolumeClickIndex;
 
   Result := true;
-  nBut := InteractAt(X, Y);
+  ClickedNoteIndex := -1;
+  HandledNoteClick := false;
+  ClickedNoteIndex := FindInteractiveNoteAt(X, Y);
+  if ClickedNoteIndex >= 0 then
+    nBut := InteractiveNoteId[ClickedNoteIndex]
+  else
+    nBut := InteractAt(X, Y);
   Action := maNone;
 
-  if BtnDown and (MouseButton = SDL_BUTTON_LEFT) and (nBut = -1) then
+  if BtnDown and (MouseButton = SDL_BUTTON_LEFT) and (ClickedNoteIndex < 0) and (nBut = -1) then
   begin
     if EditorLyrics[CurrentTrack].GetCursorFromPoint(CurrentX, CurrentY, CursorWordIndex, CursorCharIndex) then
     begin
@@ -3250,6 +3322,7 @@ begin
     //select on mouse-over
     if nBut <> Interaction then
       SetInteraction(nBut);
+
   end;
   if not BtnDown then
   begin
@@ -3261,6 +3334,23 @@ begin
   begin
   if (BtnDown) then
   begin
+    if (MouseButton = SDL_BUTTON_LEFT) and (ClickedNoteIndex >= 0) then
+    begin
+      if (ClickedNoteIndex = CurrentNote[CurrentTrack]) and (SDL_GetTicks() - LastClickTime < 350) then
+      begin
+        CopyToUndo;
+        GoldenRec.KillAll;
+        DivideNote(true);
+        ShowInteractiveBackground;
+        LastClickTime := 0;
+        Exit;
+      end;
+
+      HandleNoteClick(ClickedNoteIndex);
+      LastClickTime := SDL_GetTicks();
+      HandledNoteClick := true;
+    end;
+
     if (MouseButton = SDL_BUTTON_RIGHT) or (MouseButton = SDL_BUTTON_LEFT) then
     begin
       LastPressedMouseType := MouseButton;
@@ -3299,6 +3389,8 @@ begin
       begin
         Action := SelectsS[Interactions[nBut].Num].OnClick(X, Y);
       end
+      else if HandledNoteClick then
+        Action := maNone
       else
         Action := maReturn;
     end;
@@ -4136,8 +4228,10 @@ begin
   NoteDuration := CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentNote[CurrentTrack]].Duration;
   TempR := 720 / (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat - CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
 
-  if (doubleclick) and (InteractAt(currentX, CurrentY) >= 0) then
-      CutPosition := Round((currentX - button[Interactions[InteractAt(currentX, CurrentY)].Num].X) / TempR)
+  if (doubleclick) and
+     (CurrentNote[CurrentTrack] >= 0) and
+     (CurrentNote[CurrentTrack] <= High(TransparentNoteButtonId)) then
+      CutPosition := Round((currentX - Button[TransparentNoteButtonId[CurrentNote[CurrentTrack]]].X) / TempR)
   else
       CutPosition := NoteDuration div 2;
 
@@ -4146,8 +4240,8 @@ begin
   if CutPosition >= NoteDuration then
     CutPosition := NoteDuration - 1;
 
-  // Auto-splitting text at spaces should also split timing proportionally by word count.
-  if TextPosition < 0 then
+  // Auto-splitting text at spaces should only adjust timing for non-mouse splits.
+  if (not doubleclick) and (TextPosition < 0) then
   begin
     SourceNoteText := CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentNote[CurrentTrack]].Text;
     FirstSpacePos := FindFirstSplitSpacePos(SourceNoteText);
@@ -6873,8 +6967,6 @@ procedure TScreenEditSub.ShowInteractiveBackground;
 var
   TempR:     real;
   NoteIndex: Integer;
-  HitAreaY:  real;
-  HitAreaH:  real;
 begin
 
   for NoteIndex := 0 to High(TransparentNoteButtonId) do
@@ -6896,14 +6988,16 @@ begin
     InteractiveNoteId[Length(InteractiveNoteId) - 1] := Length(Interactions) - 1;
   end;
   TempR := 720 / (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat - CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
-  HitAreaY := Theme.EditSub.NotesBackground.Y + 7 * LineSpacing - NotesH[0];
-  HitAreaH := 2 * NotesH[0];
   for NoteIndex := 0 to CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].HighNote do
   begin
     Button[TransparentNoteButtonId[NoteIndex]].SetX(Theme.EditSub.NotesBackground.X + NotesSkipX + (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].StartBeat - CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat) * TempR + 0.5);
-    Button[TransparentNoteButtonId[NoteIndex]].SetY(HitAreaY);
+    Button[TransparentNoteButtonId[NoteIndex]].SetY(
+      Theme.EditSub.NotesBackground.Y + 7 * LineSpacing -
+      (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].Tone -
+       CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].BaseNote) * LineSpacing / 2 -
+      NotesH[0]);
     Button[TransparentNoteButtonId[NoteIndex]].SetW((CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].Duration) * TempR - 0.5);
-    Button[TransparentNoteButtonId[NoteIndex]].SetH(HitAreaH);
+    Button[TransparentNoteButtonId[NoteIndex]].SetH(2 * NotesH[0]);
   end;
 end;
 
