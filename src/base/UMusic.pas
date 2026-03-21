@@ -1080,15 +1080,16 @@ end;
 
 procedure FinalizeMedia;
 begin
-  // stop, close and free sounds
-  SoundLib.Free;
-
-  // release webcam
-  Webcam.Free;
-
-  // stop and close music stream
+  // Stop and release the main music streams before auxiliary sound effects.
+  // This avoids backend teardown races during shutdown.
   if (AudioPlayback <> nil) then
     AudioPlayback.Close;
+
+  // stop, close and free sounds
+  FreeAndNil(SoundLib);
+
+  // release webcam
+  FreeAndNil(Webcam);
 
   // stop any active captures
   if (AudioInput <> nil) then

@@ -193,8 +193,8 @@ end;
 function TAudioPlaybackBase.Open(const Filename: IPath; const FilenameKaraoke: IPath): boolean;
 begin
   // free old MusicStream
-  MusicStream.Free;
-  KaraokeMusicStream.Free;
+  FreeAndNil(MusicStream);
+  FreeAndNil(KaraokeMusicStream);
   CurrentFileName := Filename.ToNative;
 
   MusicStream := OpenStream(Filename);
