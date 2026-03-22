@@ -2564,9 +2564,19 @@ var
   C:    integer;
   TLen: integer;
   T:    integer;
+  TextCount: integer;
+  Enabled: boolean;
   Collections2: PAThemeButtonCollection;
   SectionList: TThemeSectionList;
 begin
+  if SectionExists(Name, Enabled) and (not Enabled) then
+  begin
+    SetLength(ThemeButton.Text, 0);
+    ThemeButton.Visible := False;
+    ThemeButton.Parent := 0;
+    Exit;
+  end;
+
   SectionList := GetSectionList(Name);
   if Length(SectionList) = 0 then
   begin
@@ -2651,9 +2661,17 @@ begin
 
   //Read ButtonTexts
   TLen := ReadInteger(SectionList, 'Texts', 0);
-  SetLength(ThemeButton.Text, TLen);
+  TextCount := 0;
+  SetLength(ThemeButton.Text, 0);
   for T := 1 to TLen do
-    ThemeLoadText(ThemeButton.Text[T-1], Name + 'Text' + IntToStr(T));
+  begin
+    if SectionExists(Name + 'Text' + IntToStr(T), Enabled) and Enabled then
+    begin
+      SetLength(ThemeButton.Text, TextCount + 1);
+      ThemeLoadText(ThemeButton.Text[TextCount], Name + 'Text' + IntToStr(T));
+      Inc(TextCount);
+    end;
+  end;
 end;
 
 procedure TTheme.ThemeLoadSelectSlide(var ThemeSelectS: TThemeSelectSlide; const Name: string);
