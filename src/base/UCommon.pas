@@ -292,7 +292,7 @@ function setlocale(category: integer; locale: pchar): pchar; cdecl; external 'c'
 
 {$IFEND}
 
-// In Linux and maybe MacOSX some units (like cwstring) call setlocale(LC_ALL, '')
+// In Linux and maybe macOS some units (like cwstring) call setlocale(LC_ALL, '')
 // to set the language/country specific locale (e.g. charset) for this application.
 // Unfortunately, LC_NUMERIC is set by this call too.
 // It defines the decimal-separator and other country-specific numeric settings.
@@ -304,7 +304,7 @@ function setlocale(category: integer; locale: pchar): pchar; cdecl; external 'c'
 // Note: The behaviour of Pascal parsing functions (e.g. strtofloat()) is not
 //   changed by this because it doesn't use the locale-settings.
 // TODO:
-// - Check if this is needed in MacOSX (at least the locale is set in cwstring)
+// - Check if this is needed in macOS (at least the locale is set in cwstring)
 // - Find out which libs are concerned by this problem.
 //   If only projectM is concerned by this problem set and restore the numeric locale
 //   for each call to projectM instead of changing it globally.

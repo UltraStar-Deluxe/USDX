@@ -5,7 +5,7 @@
     * [UConfig.pas](src/base/UConfig.pas)
     * [variables.nsh](installer/settings/variables.nsh)
     * [ultrastardx.appdata.xml](dists/ultrastardx.appdata.xml)
-    * 2x [Info.plist](src/macosx/Info.plist)
+    * 2x [Info.plist](src/macos/Info.plist)
 2. Make the release:
     * in the first two files, update it to the new version _without_ the `+dev` bit
     * in `variables.nsh` update both blocks immediately and swap the comments

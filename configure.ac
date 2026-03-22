@@ -22,8 +22,8 @@ AC_INIT([ultrastardx],
 PACKAGE_WEBSITE="http://usdx.eu/"
 AC_SUBST(PACKAGE_WEBSITE)
 # specify the IRC-channel here
-PACKAGE_IRC="#usdx at freenode.net"
-AC_SUBST(PACKAGE_IRC)
+PACKAGE_DISCORD="https://discord.gg/qfS2b7VwDG"
+AC_SUBST(PACKAGE_DISCORD)
 
 AC_CONFIG_MACRO_DIR([dists/autogen/m4])
 # Specify a source-file so autoconf can check if the source-dir exists
@@ -129,27 +129,11 @@ AC_ARG_ENABLE(debug,
   [test $enableval = "yes" && ENABLE_DEBUG="yes"], [])
 AC_SUBST(ENABLE_DEBUG)
 
-# OSX Packaging
-AC_ARG_ENABLE(osx-fink, [AS_HELP_STRING([--enable-osx-fink], [Enable fink packaging for OSX])])
-AC_ARG_ENABLE(osx-brew, [AS_HELP_STRING([--enable-osx-brew], [Enable homebrew packaging for OSX])])
+MACOS_PACKAGING="brew"
+MACOS_PACKAGING_LIBDIR="$(brew --prefix)/lib"
 
-if [[ x$enable_osx_fink != x -a x$enable_osx_brew != x ]]; then
-    AC_MSG_ERROR([
-!!! You can't use --enable-osx-fink with --enable-osx-brew at the same time
-])
-fi
-
-# Default (homebrew)
-USE_OSX_PACKAGING="brew"
-USE_OSX_PACKAGING_LIBDIR="/usr/local/lib"
-
-if [[ x$enable_osx_fink != x ]]; then
-    USE_OSX_PACKAGING="fink"
-    USE_OSX_PACKAGING_LIBDIR="/sw/lib"
-fi
-
-AC_SUBST(USE_OSX_PACKAGING, $USE_OSX_PACKAGING)
-AC_SUBST(USE_OSX_PACKAGING_LIBDIR, $USE_OSX_PACKAGING_LIBDIR)
+AC_SUBST(MACOS_PACKAGING, $MACOS_PACKAGING)
+AC_SUBST(MACOS_PACKAGING_LIBDIR, $MACOS_PACKAGING_LIBDIR)
 
 # -----------------------------------------
 # check for compilers
@@ -190,7 +174,7 @@ fi
 # -----------------------------------------
 
 if test x$FPC_PLATFORM = xdarwin; then
-   AC_MACOSX_VERSION
+   AC_MACOS_VERSION
 fi
 
 # -----------------------------------------
@@ -209,13 +193,13 @@ PKG_HAVE([freetype], [freetype2], yes)
 # find sqlite3
 PKG_HAVE([sqlite3], [sqlite3], yes)
 
-# find lua 5.3, 5.2 or 5.11
+# find lua 5.5, 5.4, 5.3, 5.2 or 5.1
 # (K)Ubuntu uses lua5.2.pc and lua5.1.pc, 
-# Mac OS X and other linux distributions use lua.pc
+# macOS and other linux distributions use lua.pc
 # Archlinux aur package for 5.3 use lua5.3.pc in order
 # to make it work alongside the 5.2 version.
 
-for i in 5.4 5.3 5.2 5.1 ; do
+for i in 5.5 5.4 5.3 5.2 5.1 ; do
     PKG_HAVE([lua], [lua$i], check)
     if [[ x$lua_HAVE = xyes ]]; then
         lua_LIB_NAME="lua$i"
@@ -257,17 +241,11 @@ AC_SUBST(lua_LIB_NAME)
 #   although it is lower because pkg-config is confused by the 0d.
 # Use [mylib]_VERSION_INT for version-checking instead
 PKG_HAVE([libavcodec], [libavcodec], check)
-# The following finds libavcodec.pc in its new location on Mac OS X.
+# The following finds libavcodec.pc in its new location on macOS.
 # It only takes the last from the list, assuming that this is the latest 
 # version.
 if [[ x$libavcodec_HAVE = xno -a x$FPC_PLATFORM = xdarwin ]]; then
-    if [[ x$enable_osx_fink != x ]]; then
-        PKG_CONFIG_PATH=`find /sw/lib -name libavcodec.pc | tail -n 1 | xargs dirname`:$PKG_CONFIG_PATH
-    elif [[ x$enable_osx_brew != x ]]; then
-        PKG_CONFIG_PATH=`find /usr/local/opt/ffmpeg*/lib /usr/local/lib -name libavcodec.pc | tail -n 1 | xargs dirname`:$PKG_CONFIG_PATH
-    else
-        PKG_CONFIG_PATH=`find $FPCDIR/lib/ffmpeg* -name libavcodec.pc | tail -n 1 | xargs dirname`:$PKG_CONFIG_PATH
-    fi
+    PKG_CONFIG_PATH="$MACOS_PACKAGING_LIBDIR/pkgconfig:$PKG_CONFIG_PATH"
     export PKG_CONFIG_PATH
     PKG_HAVE([libavcodec], [libavcodec], yes)
 fi
@@ -453,7 +431,7 @@ AC_SUBST(porttime_LIB_NAME)
 
 # determine linker-flags
 if test x$FPC_PLATFORM = xdarwin; then
-  LDFLAGS="-macosx_version_min 10.4 -undefined dynamic_lookup -headerpad_max_install_names -L/usr/X11/lib"
+  LDFLAGS="-macos_version_min 10.8 -undefined dynamic_lookup -headerpad_max_install_names"
 fi
 #LIBS=
 AC_SUBST(LDFLAGS)
@@ -492,16 +470,16 @@ AC_MSG_NOTICE([
 !!! In case you find a bug send a bugreport to:
 !!!   $PACKAGE_BUGREPORT
 !!! You might as well ask for help at the IRC-Channel
-!!!   $PACKAGE_IRC
+!!!   $PACKAGE_DISCORD
 !!!
 ])
 
 if test x$FPC_PLATFORM = xdarwin; then
     AC_MSG_NOTICE([
-!!! Special target for OSX are:
-!!! "make macosx-standalone-app" to create a standalone .app
-!!! "make macosx-dmg" to create a dmg archive with standalone .app
-!!! Selected packaging: $USE_OSX_PACKAGING with libdir $USE_OSX_PACKAGING_LIBDIR
+!!! Special target for macOS are:
+!!! "make macos-standalone-app" to create a standalone .app
+!!! "make macos-dmg" to create a dmg archive with standalone .app
+!!! Selected packaging: $MACOS_PACKAGING with libdir $MACOS_PACKAGING_LIBDIR
                    ])
 fi
 

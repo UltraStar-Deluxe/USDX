@@ -134,7 +134,7 @@ uses
   {$ENDIF}
 
   {$IFDEF DARWIN}
-  PseudoThread  in 'macosx\PseudoThread.pas',
+  PseudoThread  in 'macos\PseudoThread.pas',
   {$ENDIF}
 
   //------------------------------
@@ -235,7 +235,7 @@ uses
 {$IF Defined(MSWINDOWS)}
   UPlatformWindows  in 'base\UPlatformWindows.pas',
 {$ELSEIF Defined(DARWIN)}
-  UPlatformMacOSX   in 'base\UPlatformMacOSX.pas',
+  UPlatformMacOS   in 'base\UPlatformMacOS.pas',
 {$ELSEIF Defined(UNIX)}
   UPlatformLinux    in 'base\UPlatformLinux.pas',
 {$IFEND}
