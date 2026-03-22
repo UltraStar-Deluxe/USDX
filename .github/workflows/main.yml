@@ -88,12 +88,14 @@ jobs:
       - name: Install Dependencies
         run: |
           brew install fpc sdl2 sdl2_image automake portaudio lua ffmpeg
+      - name: Generate Build Scripts
+        run: ./autogen.sh
+      - name: Configure Project
+        run: ./configure
       - name: Build
-        run: |
-          ./autogen.sh
-          ./configure
-          make macos-dmg
-          mv UltraStarDeluxe.dmg UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}.dmg
+        run: make macos-dmg
+      - name: Rename DMG
+        run: mv UltraStarDeluxe.dmg UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}.dmg
       - name: Upload Image Artifact
         uses: actions/upload-artifact@v6
         with:
