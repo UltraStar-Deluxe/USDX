@@ -2,10 +2,22 @@ unit ULua;
 
 (*
  * A complete Pascal wrapper for Lua DLL module.
- * Version 5.1 or 5.2
+ * Versions 5.1 through 5.5
  *
  * Created by Geo Massar, 2006
  * Distributed as free/open source.
+ *
+ * Adaptations to support Lua 5.5, 2026-03-23:
+ *  - LUA_REGISTRYINDEX — changed from -LUAI_MAXSTACK - 1000 to -(INT_MAX/2 + 1000)
+ *  - luaL_openlibs — removed in 5.5, replaced by luaL_openselectedlibs; implemented as a Pascal wrapper calling luaL_openselectedlibs(L, 1023, 0)
+ *  - luaL_checkversion_ — gained a third size_t parameter; luaL_checkversion updated to pass LUAL_NUMSIZES
+ *  - lua_resetthread — gained a second from : Plua_State parameter
+ *  - luaL_Buffer — fixed struct layout for 5.5 with the alignment union
+ *  - LUA_NUMTAGS — restricted to 5.2–5.4; LUA_NUMTYPES hardcoded to 9 for 5.4+
+ *  - luaL_checkunsigned/luaL_optunsigned — restricted to 5.2 only
+ *  - LUA_BITLIBNAME/luaopen_bit32 — restricted to 5.2–5.3
+ *  - GC constants — corrected version guards for LUA_GCSETMAJORINC, LUA_GCGEN, LUA_GCINC; added LUA_GCSTEPSIZE for 5.5
+ *  - luaL_openselectedlibs/luaL_makeseed — new functions added for 5.5
  *)
 
 interface
@@ -250,8 +262,11 @@ const
   LUA_REGISTRYINDEX = -10000;
   LUA_ENVIRONINDEX  = -10001;
   LUA_GLOBALSINDEX  = -10002;
-{$ELSEIF LUA_VERSION_NUM >= 502}
+{$ELSEIF (LUA_VERSION_NUM >= 502) AND (LUA_VERSION_NUM <= 504)}
   LUA_REGISTRYINDEX = LUAI_FIRSTPSEUDOIDX;
+{$ELSEIF LUA_VERSION_NUM >= 505}
+  (* In Lua 5.5, LUA_REGISTRYINDEX changed to -(INT_MAX/2 + 1000) *)
+  LUA_REGISTRYINDEX = -(High(Integer) div 2 + 1000);
 {$IFEND}
 
 function lua_upvalueindex(idx : Integer) : Integer;   // a marco
@@ -313,11 +328,11 @@ const
   LUA_TFUNCTION      = 6;
   LUA_TUSERDATA	     = 7;
   LUA_TTHREAD        = 8;
-{$IF LUA_VERSION_NUM >= 502}
+{$IF (LUA_VERSION_NUM >= 502) AND (LUA_VERSION_NUM <= 504)}
   LUA_NUMTAGS        = 9;
 {$IFEND}
 {$IF LUA_VERSION_NUM >= 504}
-  LUA_NUMTYPES       = LUA_NUMTAGS;
+  LUA_NUMTYPES       = 9;
 {$IFEND}
 
 (* minimum Lua stack available to a C function *)
@@ -366,7 +381,7 @@ procedure lua_close(L : Plua_State);
 function  lua_newthread(L : Plua_State) : Plua_State;
   cdecl; external LUA_LIB_NAME;
 {$IF LUA_VERSION_NUM >= 504}
-function  lua_resetthread(L : Plua_State) : Integer;
+function  lua_resetthread(L : Plua_State; from : Plua_State) : Integer;
   cdecl; external LUA_LIB_NAME;
 {$IFEND}
 
@@ -776,13 +791,20 @@ const
   LUA_GCSTEP       = 5;
   LUA_GCSETPAUSE   = 6;
   LUA_GCSETSTEPMUL = 7;
-{$IF LUA_VERSION_NUM = 503}
-  LUA_GCISRUNNING   = 9;
-{$ELSEIF LUA_VERSION_NUM >= 502}
+{$IF LUA_VERSION_NUM = 502}
   LUA_GCSETMAJORINC = 8;
   LUA_GCISRUNNING   = 9;
   LUA_GCGEN         = 10;
   LUA_GCINC         = 11;
+{$ELSEIF LUA_VERSION_NUM = 503}
+  LUA_GCISRUNNING   = 9;
+{$ELSEIF LUA_VERSION_NUM >= 504}
+  LUA_GCISRUNNING   = 9;
+  LUA_GCGEN         = 10;
+  LUA_GCINC         = 11;
+{$IFEND}
+{$IF LUA_VERSION_NUM >= 505}
+  LUA_GCSTEPSIZE    = 8;  // new in 5.5: set step size
 {$IFEND}
 
 {$IF LUA_VERSION_NUM >= 504}
@@ -1019,7 +1041,7 @@ const
   LUA_IOLIBNAME   = 'io';
   LUA_OSLIBNAME   = 'os';
   LUA_STRLIBNAME  = 'string';
-{$IF LUA_VERSION_NUM >= 502}
+{$IF (LUA_VERSION_NUM >= 502) AND (LUA_VERSION_NUM <= 503)}
   LUA_BITLIBNAME  = 'bit32';
 {$IFEND}
   LUA_MATHLIBNAME = 'math';
@@ -1057,7 +1079,18 @@ function luaopen_package(L : Plua_State) : Integer;
 
 {* open all previous libraries *}
 procedure luaL_openlibs(L : Plua_State);
+{$IF LUA_VERSION_NUM < 505}
   cdecl; external LUA_LIB_NAME;
+{$IFEND}
+
+{$IF LUA_VERSION_NUM >= 505}
+{* open selected libraries - new in 5.5, replaces luaL_openlibs *}
+procedure luaL_openselectedlibs(L : Plua_State; load : Integer; preload : Integer);
+  cdecl; external LUA_LIB_NAME;
+
+function luaL_makeseed(L : Plua_State) : cuint;
+  cdecl; external LUA_LIB_NAME;
+{$IFEND}
 
 procedure lua_assert(x : Boolean);    // a macro
 
@@ -1102,7 +1135,11 @@ procedure luaL_register(L : Plua_State; const libname : PChar;
                         const lr : PluaL_Reg);
 
 procedure luaL_checkversion(L : Plua_State);
+{$IF LUA_VERSION_NUM >= 505}
+procedure luaL_checkversion_(L : Plua_State; ver : lua_Number; sz : size_t);
+{$ELSE}
 procedure luaL_checkversion_(L : Plua_State; ver : lua_Number);
+{$IFEND}
   cdecl; external LUA_LIB_NAME;
 {$IFEND}
 
@@ -1141,7 +1178,7 @@ function luaL_checkinteger(L : Plua_State; numArg : Integer) : lua_Integer;
 function luaL_optinteger(L : Plua_State; nArg : Integer;
                         def : lua_Integer) : lua_Integer;
   cdecl; external LUA_LIB_NAME;
-{$IF LUA_VERSION_NUM >= 502}
+{$IF LUA_VERSION_NUM = 502}
 function luaL_checkunsigned(L : Plua_State; numArg : Integer) : lua_Unsigned;
   cdecl; external LUA_LIB_NAME;
 function luaL_optunsigned(L : Plua_State; numArg : Integer;
@@ -1290,13 +1327,30 @@ procedure luaL_getmetatable(L : Plua_State; n : PChar);
 *)
 
 type
+{$IF LUA_VERSION_NUM >= 505}
+  (* Lua 5.5: struct uses natural C alignment, not packed.
+     The init union contains LUAI_MAXALIGN (largest member = Double = 8 bytes)
+     followed by the initial char buffer. *)
+  luaL_Buffer_init = record
+    case Boolean of
+      false: (align_pad : Double);
+      true:  (initb : array [0..LUAL_BUFFERSIZE-1] of Char);
+  end;
+  luaL_Buffer = record
+    b     : PChar;
+    size  : size_t;
+    n     : size_t;
+    L     : Plua_State;
+    init  : luaL_Buffer_init;
+  end;
+{$ELSE}
   luaL_Buffer = packed record
 {$IF LUA_VERSION_NUM = 501}
     p : PChar;       (* current position in buffer *)
     lvl : Integer;   (* number of strings in the stack (level) *)
     L : Plua_State;
     buffer : array [0..LUAL_BUFFERSIZE-1] of Char;
-{$ELSEIF LUA_VERSION_NUM >= 502}
+{$ELSEIF (LUA_VERSION_NUM >= 502) AND (LUA_VERSION_NUM <= 504)}
     b     : PChar;      (* buffer address *)
     size  : size_t;     (* buffer size *)
     n     : size_t;     (* number of characters in buffer *)
@@ -1304,6 +1358,7 @@ type
     initb : array [0..LUAL_BUFFERSIZE-1] of Char;  (* initial buffer *)
 {$IFEND}
   end;
+{$IFEND}
   PluaL_Buffer = ^luaL_Buffer;
 
 {$IF LUA_VERSION_NUM = 501}
@@ -1561,7 +1616,11 @@ end;
 
 function lua_getgccount(L : Plua_State) : Integer;
 begin
+{$IF LUA_VERSION_NUM >= 504}
+  lua_getgccount := lua_gc(L, LUA_GCCOUNT);
+{$ELSE}
   lua_getgccount := lua_gc(L, LUA_GCCOUNT, 0);
+{$IFEND}
 end;
 
 
@@ -1572,6 +1631,15 @@ end;
 procedure lua_assert(x : Boolean);
 begin
 end;
+
+{$IF LUA_VERSION_NUM >= 505}
+procedure luaL_openlibs(L : Plua_State);
+begin
+  // In Lua 5.5, luaL_openlibs was removed. Open all 10 standard libraries
+  // by setting all bits 0..9 in the load mask (= 1023) and preload = 0.
+  luaL_openselectedlibs(L, (1 shl 10) - 1, 0);
+end;
+{$IFEND}
 
 
 (*****************************************************************************)
@@ -1601,7 +1669,11 @@ end;
 
 procedure luaL_checkversion(L : Plua_State);
 begin
+{$IF LUA_VERSION_NUM >= 505}
+  luaL_checkversion_(L, LUA_VERSION_NUM, SizeOf(lua_Integer) * 16 + SizeOf(lua_Number));
+{$ELSE}
   luaL_checkversion_(L, LUA_VERSION_NUM);
+{$IFEND}
 end;
 {$IFEND}
 
