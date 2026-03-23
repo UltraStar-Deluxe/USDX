@@ -1,0 +1,262 @@
+{
+  // - Linux:   all tasks work natively
+  // - macOS:   all tasks work natively; macOS-specific targets only make sense here
+  // - Windows: requires MSYS2 or WSL; run tasks from a WSL/MSYS2 terminal instead
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "autogen + configure",
+      "type": "shell",
+      "command": "./autogen.sh && ./configure",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+
+    // -------------------------------------------------------
+    // Primary build targets
+    // -------------------------------------------------------
+    {
+      "label": "build (all)",
+      "type": "shell",
+      "command": "make all",
+      "group": "build",
+      "dependsOn": "autogen + configure",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "build (debug)",
+      "type": "shell",
+      "command": "make debug",
+      "group": "build",
+      "dependsOn": "autogen + configure",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "build (release)",
+      "type": "shell",
+      "command": "make release",
+      "group": "build",
+      "dependsOn": "autogen + configure",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "rebuild",
+      "type": "shell",
+      "command": "make rebuild",
+      "group": "build",
+      "dependsOn": "autogen + configure",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "all-deps",
+      "type": "shell",
+      "command": "make all-deps",
+      "group": "build",
+      "dependsOn": "autogen + configure",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "reconf",
+      "type": "shell",
+      "command": "make reconf",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+
+    // -------------------------------------------------------
+    // macOS targets (macOS only)
+    // -------------------------------------------------------
+    {
+      "label": "macos-app",
+      "type": "shell",
+      "command": "make macos-app",
+      "group": "build",
+      "dependsOn": "autogen + configure",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "macos-standalone-app",
+      "type": "shell",
+      "command": "make macos-standalone-app",
+      "group": { "kind": "build", "isDefault": true },
+      "dependsOn": "autogen + configure",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "macos-dmg",
+      "type": "shell",
+      "command": "make macos-dmg",
+      "group": "build",
+      "dependsOn": "autogen + configure",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+
+    // -------------------------------------------------------
+    // Install targets (Linux/macOS)
+    // -------------------------------------------------------
+    {
+      "label": "install",
+      "type": "shell",
+      "command": "make install",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "install-all",
+      "type": "shell",
+      "command": "make install-all",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "install-exec",
+      "type": "shell",
+      "command": "make install-exec",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "install-data",
+      "type": "shell",
+      "command": "make install-data",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "install-plugins",
+      "type": "shell",
+      "command": "make install-plugins",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "uninstall",
+      "type": "shell",
+      "command": "make uninstall",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+
+    // -------------------------------------------------------
+    // Distribution targets (Linux)
+    // -------------------------------------------------------
+    {
+      "label": "dist",
+      "type": "shell",
+      "command": "make dist",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "deb",
+      "type": "shell",
+      "command": "make deb",
+      "group": "build",
+      "dependsOn": "autogen + configure",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "rpm",
+      "type": "shell",
+      "command": "make rpm",
+      "group": "build",
+      "dependsOn": "autogen + configure",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+
+    // -------------------------------------------------------
+    // Clean targets
+    // -------------------------------------------------------
+    {
+      "label": "clean",
+      "type": "shell",
+      "command": "make clean",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "clean-src",
+      "type": "shell",
+      "command": "make clean-src",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "clean-deps",
+      "type": "shell",
+      "command": "make clean-deps",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "clean-game",
+      "type": "shell",
+      "command": "make clean-game",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "clean-macos",
+      "type": "shell",
+      "command": "make clean-macos",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "mostlyclean",
+      "type": "shell",
+      "command": "make mostlyclean",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "distclean",
+      "type": "shell",
+      "command": "make distclean",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "maintainer-clean",
+      "type": "shell",
+      "command": "make maintainer-clean",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    },
+    {
+      "label": "tidy",
+      "type": "shell",
+      "command": "make tidy",
+      "group": "build",
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    }
+  ]
+}
