@@ -218,13 +218,13 @@ PKG_HAVE([freetype], [freetype2], yes)
 # find sqlite3
 PKG_HAVE([sqlite3], [sqlite3], yes)
 
-# find lua 5.3, 5.2 or 5.11
+# find lua 5.5, 5.4, 5.3, 5.2 or 5.1
 # (K)Ubuntu uses lua5.2.pc and lua5.1.pc, 
 # Mac OS X and other linux distributions use lua.pc
 # Archlinux aur package for 5.3 use lua5.3.pc in order
 # to make it work alongside the 5.2 version.
 
-for i in 5.4 5.3 5.2 5.1 ; do
+for i in 5.5 5.4 5.3 5.2 5.1 ; do
     PKG_HAVE([lua], [lua$i], check)
     if [[ x$lua_HAVE = xyes ]]; then
         lua_LIB_NAME="lua$i"
