@@ -49,9 +49,12 @@ uses
 type
   TScreenOptionsLyrics = class(TOptionsMenu)
     private
-      Lyrics:        TLyricEngine;
-      TopLine:       TLine;
-      BottomLine:    TLine;
+      LyricsEngine1:  TLyricEngine;
+      LyricsEngine2:  TLyricEngine;
+      GermanLine:     TLine;
+      FrenchLine:     TLine;
+      SpanishLine:    TLine;
+      PolishLine:     TLine;
       LastFontFamily: Integer;
       LastFontStyle:  Integer;
       procedure RebuildLines;
@@ -143,8 +146,11 @@ end;
 
 constructor TScreenOptionsLyrics.Create;
 const
-  LyricsTop: array [0..7] of string = ('Max ', '(zwölf) ', 'quäkt ', 'hy', 'pend: ', '»Grüß ', 'Jobs, ', 'Vic!« ');
-  LyricsBottom: array [0..12] of string = ('Voix ', 'am', 'bi', 'gu', 'ë ', 'd''un ', 'cœur ', 'qui ', 'pré', 'fère ', 'le ', 'zé', 'phyr. ');
+  LyricsGerman:  array [0..7]  of string = ('Max ', '(zwölf) ', 'quäkt ', 'hy', 'pend: ', '»Grüß ', 'Jobs, ', 'Vic!« ');
+  LyricsFrench:  array [0..12] of string = ('Voix ', 'am', 'bi', 'gu', 'ë ', 'd’un ', 'cœur ', 'qui ', 'pré', 'fère ', 'le ', 'zé', 'phyr. ');
+  LyricsSpanish: array [0..15] of string = ('Whis', 'ky ', 'bu', 'e', 'no: ', '¡Ex', 'ci', 'tad ', 'mi ', 'frá', 'gil ', 'pe', 'que', 'ña ', 've', 'jez! ');
+  LyricsPolish:  array [0..9]  of string = ('“W ', 'ni', 'żach ', 'mógł ', 'zjeść ', 'tru', 'flę ', 'koń ', 'bądź ', 'psy?” ');
+
 var
   i: Integer;
 begin
@@ -153,35 +159,62 @@ begin
   WhereAmI := Language.Translate('SING_OPTIONS_LYRICS_WHEREAMI');
   Load;
 
-  // lyric sample engine
-  Lyrics := TLyricEngine.Create(
+  // lyric sample engine 1
+  LyricsEngine1 := TLyricEngine.Create(
+      80, 350, 640, 40,
+      80, 390, 640, 40);
+
+  // build German line data
+  SetLength(GermanLine.Notes, Length(LyricsGerman));
+  for i := 0 to High(GermanLine.Notes) do
+  begin
+    GermanLine.Notes[i].NoteType  := ntNormal;
+    GermanLine.Notes[i].StartBeat := i * 10;
+    GermanLine.Notes[i].Duration  := 8;
+    GermanLine.Notes[i].Text      := LyricsGerman[i];
+  end;
+  GermanLine.ScoreValue := 6;
+  GermanLine.StartBeat  := 0;
+  GermanLine.EndBeat    := GermanLine.Notes[High(GermanLine.Notes)].StartBeat + GermanLine.Notes[High(GermanLine.Notes)].Duration;
+  GermanLine.LastLine   := true;
+
+  // build French line data
+  SetLength(FrenchLine.Notes, Length(LyricsFrench));
+  for i := 0 to High(FrenchLine.Notes) do
+  begin
+    FrenchLine.Notes[i].NoteType  := ntFreestyle;
+    FrenchLine.Notes[i].StartBeat := i * 10;
+    FrenchLine.Notes[i].Duration  := 8;
+    FrenchLine.Notes[i].Text      := LyricsFrench[i];
+  end;
+  FrenchLine.LastLine := true;
+
+  // lyric sample engine 2
+  LyricsEngine2 := TLyricEngine.Create(
       80, 450, 640, 40,
       80, 490, 640, 40);
 
-  // build top line data
-  SetLength(TopLine.Notes, Length(LyricsTop));
-  for i := 0 to High(TopLine.Notes) do
+  // build Spanish line data
+  SetLength(SpanishLine.Notes, Length(LyricsSpanish));
+  for i := 0 to High(SpanishLine.Notes) do
   begin
-    TopLine.Notes[i].NoteType  := ntNormal;
-    TopLine.Notes[i].StartBeat := i * 10;
-    TopLine.Notes[i].Duration  := 8;
-    TopLine.Notes[i].Text      := LyricsTop[i];
+    SpanishLine.Notes[i].NoteType  := ntNormal;
+    SpanishLine.Notes[i].StartBeat := i * 10;
+    SpanishLine.Notes[i].Duration  := 8;
+    SpanishLine.Notes[i].Text      := LyricsSpanish[i];
   end;
-  TopLine.ScoreValue := 6;
-  TopLine.StartBeat  := 0;
-  TopLine.EndBeat    := TopLine.Notes[High(TopLine.Notes)].StartBeat + TopLine.Notes[High(TopLine.Notes)].Duration;
-  TopLine.LastLine   := true;
+  SpanishLine.LastLine := true;
 
-  // build bottom line data
-  SetLength(BottomLine.Notes, Length(LyricsBottom));
-  for i := 0 to High(BottomLine.Notes) do
+  // build Polish line data
+  SetLength(PolishLine.Notes, Length(LyricsPolish));
+  for i := 0 to High(PolishLine.Notes) do
   begin
-    BottomLine.Notes[i].NoteType  := ntFreestyle;
-    BottomLine.Notes[i].StartBeat := i * 10;
-    BottomLine.Notes[i].Duration  := 8;
-    BottomLine.Notes[i].Text      := LyricsBottom[i];
+    PolishLine.Notes[i].NoteType  := ntFreestyle;
+    PolishLine.Notes[i].StartBeat := i * 10;
+    PolishLine.Notes[i].Duration  := 8;
+    PolishLine.Notes[i].Text      := LyricsPolish[i];
   end;
-  BottomLine.LastLine := true;
+  PolishLine.LastLine := true;
 
   // force RebuildLines on first draw
   LastFontFamily := -1;
@@ -190,39 +223,60 @@ end;
 
 procedure TScreenOptionsLyrics.RebuildLines;
 begin
-  Lyrics.Clear;
-  Lyrics.AddLine(@TopLine);
-  Lyrics.AddLine(@BottomLine);
-  Lyrics.AddLine(@BottomLine);
+  LyricsEngine1.Clear;
+  LyricsEngine1.AddLine(@GermanLine);
+  LyricsEngine1.AddLine(@FrenchLine);
+  LyricsEngine2.Clear;
+  LyricsEngine2.AddLine(@SpanishLine);
+  LyricsEngine2.AddLine(@PolishLine);
 end;
 
 procedure TScreenOptionsLyrics.LyricSample;
 begin
   if (Ini.LyricsFont <> LastFontFamily) or (Ini.LyricsStyle <> LastFontStyle) then
   begin
-    LastFontFamily    := Ini.LyricsFont;
-    LastFontStyle     := Ini.LyricsStyle;
-    Lyrics.FontFamily := Ini.LyricsFont;
-    Lyrics.FontStyle  := Ini.LyricsStyle;
+    LastFontFamily           := Ini.LyricsFont;
+    LastFontStyle            := Ini.LyricsStyle;
+    LyricsEngine1.FontFamily := Ini.LyricsFont;
+    LyricsEngine1.FontStyle  := Ini.LyricsStyle;
+    LyricsEngine2.FontFamily := Ini.LyricsFont;
+    LyricsEngine2.FontStyle  := Ini.LyricsStyle;
+
     RebuildLines;
   end;
 
   // current lyrics
-  Lyrics.LineColor_act.R := 0;
-  Lyrics.LineColor_act.G := 0.6;
-  Lyrics.LineColor_act.B := 1;
+  LyricsEngine1.LineColor_act.R := 0;
+  LyricsEngine1.LineColor_act.G := 0.6;
+  LyricsEngine1.LineColor_act.B := 1;
 
   // current line
-  Lyrics.LineColor_en.R := 1;
-  Lyrics.LineColor_en.G := 1;
-  Lyrics.LineColor_en.B := 1;
+  LyricsEngine1.LineColor_en.R := 1;
+  LyricsEngine1.LineColor_en.G := 1;
+  LyricsEngine1.LineColor_en.B := 1;
 
   // next line
-  Lyrics.LineColor_dis.R := 1;
-  Lyrics.LineColor_dis.G := 1;
-  Lyrics.LineColor_dis.B := 1;
+  LyricsEngine1.LineColor_dis.R := 1;
+  LyricsEngine1.LineColor_dis.G := 1;
+  LyricsEngine1.LineColor_dis.B := 1;
 
-  Lyrics.Draw(LyricsState.MidBeat);
+  // current lyrics
+  LyricsEngine2.LineColor_act.R := 0;
+  LyricsEngine2.LineColor_act.G := 0.6;
+  LyricsEngine2.LineColor_act.B := 1;
+
+  // current line
+  LyricsEngine2.LineColor_en.R := 1;
+  LyricsEngine2.LineColor_en.G := 1;
+  LyricsEngine2.LineColor_en.B := 1;
+
+  // next line
+  LyricsEngine2.LineColor_dis.R := 1;
+  LyricsEngine2.LineColor_dis.G := 1;
+  LyricsEngine2.LineColor_dis.B := 1;
+
+  LyricsEngine1.Draw(LyricsState.MidBeat);
+  LyricsEngine2.Draw(LyricsState.MidBeat);
 end;
 
 procedure TScreenOptionsLyrics.OnShow;
