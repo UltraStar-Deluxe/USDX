@@ -1862,6 +1862,9 @@ end;
 function TTheme.LoadTheme(ThemeNum: integer; sColor: integer): boolean;
 var
   I, J:    integer;
+  ActiveSkinName: string;
+  BaseSkinName: string;
+  BaseSkins: TUTF8StringDynArray;
   IniFile: TMemIniFile;
   SectionList: TThemeSectionList;
   NamePlayerSelectTemplate: TNamePlayerSelectTemplate;
@@ -1901,7 +1904,36 @@ begin
       Skin.SkinReg := false; }
       Skin.Color := sColor;
 
-      Skin.LoadSkin(ISkin[Ini.SkinNo], Themes[ThemeNum].Name);
+      if (Length(ISkin) = 0) then
+      begin
+        Log.LogError('Theme has no selectable skins (' + Themes[ThemeNum].Name + ')', 'TTheme.LoadTheme');
+        CloseFile;
+        Exit(false);
+      end;
+
+      if (Ini.SkinNo < Low(ISkin)) or (Ini.SkinNo > High(ISkin)) then
+        Ini.SkinNo := EnsureRange(Themes[ThemeNum].DefaultSkin, Low(ISkin), High(ISkin));
+
+      ActiveSkinName := ISkin[Ini.SkinNo];
+      BaseSkinName := '';
+      SetLength(BaseSkins, 0);
+
+      if (CurrentBaseThemeIndex >= Low(Themes)) and (CurrentBaseThemeIndex <= High(Themes)) then
+      begin
+        if Skin.HasSkin(ActiveSkinName, Themes[CurrentBaseThemeIndex].Name) then
+          BaseSkinName := ActiveSkinName
+        else
+        begin
+          Skin.GetSkinsByTheme(Themes[CurrentBaseThemeIndex].Name, BaseSkins);
+          if Length(BaseSkins) > 0 then
+            BaseSkinName := BaseSkins[EnsureRange(Themes[CurrentBaseThemeIndex].DefaultSkin, Low(BaseSkins), High(BaseSkins))];
+        end;
+      end;
+
+      if (BaseSkinName <> '') then
+        Skin.LoadSkin(ActiveSkinName, Themes[ThemeNum].Name, BaseSkinName, Themes[CurrentBaseThemeIndex].Name)
+      else
+        Skin.LoadSkin(ActiveSkinName, Themes[ThemeNum].Name);
 
       LoadColors;
 
