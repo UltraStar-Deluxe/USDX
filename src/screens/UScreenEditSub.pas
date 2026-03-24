@@ -1127,6 +1127,7 @@ procedure TScreenEditSub.HandleVideo(SDL_ModState: word);
 begin
   if (SDL_ModState = 0) or (SDL_ModState = KMOD_LALT) then // play current line/remainder of song with video
   begin
+    Statics[BackgroundImageId].Visible := false;
     StopVideoPreview;
     AudioPlayback.Stop;
     PlayVideo := true;
@@ -1157,6 +1158,9 @@ begin
     AudioPlayback.Play;
     LastClick := -100;
     StartVideoPreview();
+    Statics[BackgroundImageId].Visible :=
+      (not Assigned(fCurrentVideo)) and
+      (Statics[BackgroundImageId].Texture.TexNum > 0);
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SONG');
   end;
 end;
@@ -3131,6 +3135,7 @@ begin
     Statics[BackgroundImageId].Texture.Y := theme.EditSub.BackgroundImage.Y;
     Statics[BackgroundImageId].Texture.W := theme.EditSub.BackgroundImage.W;
     Statics[BackgroundImageId].Texture.H := theme.EditSub.BackgroundImage.H;
+    Statics[BackgroundImageId].Visible := false;
   end;
 
   if ((BackgroundSlideId = Interactions[nBut].Num) and (Action = maRight) and (SelectsS[Interactions[nBut].Num].SelectedOption < Length(SelectsS[Interactions[nBut].Num].TextOptT)-1)) then
@@ -3146,6 +3151,7 @@ begin
     Statics[BackgroundImageId].Texture.Y := theme.EditSub.BackgroundImage.Y;
     Statics[BackgroundImageId].Texture.W := theme.EditSub.BackgroundImage.W;
     Statics[BackgroundImageId].Texture.H := theme.EditSub.BackgroundImage.H;
+    Statics[BackgroundImageId].Visible := false;
   end;
 
   // changed video
@@ -5033,6 +5039,7 @@ end;
 procedure TScreenEditSub.StopVideoPreview;
 begin
   // Stop video preview of previous song
+  Statics[BackgroundImageId].Visible := false;
   if Assigned(fCurrentVideo) then
   begin
     fCurrentVideo.Stop();
@@ -5385,6 +5392,7 @@ begin
 
   // background image & preview
   BackgroundImageId := AddStatic(Theme.EditSub.BackgroundImage);
+  Statics[BackgroundImageId].Visible := false;
 
   // note info
   // start header
@@ -5902,6 +5910,7 @@ begin
       Statics[BackgroundImageId].Texture.Y := Theme.EditSub.BackgroundImage.Y;
       Statics[BackgroundImageId].Texture.W := Theme.EditSub.BackgroundImage.W;
       Statics[BackgroundImageId].Texture.H := Theme.EditSub.BackgroundImage.H;
+      Statics[BackgroundImageId].Visible := false;
     end;
   except
     Log.LogError('Background could not be loaded: ' + CurrentSong.Background.ToNative);
