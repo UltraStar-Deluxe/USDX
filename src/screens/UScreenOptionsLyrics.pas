@@ -49,8 +49,7 @@ uses
 type
   TScreenOptionsLyrics = class(TOptionsMenu)
     private
-      LyricsEngine1:  TLyricEngine;
-      LyricsEngine2:  TLyricEngine;
+      LyricEngine:   array [0..1] of TLyricEngine;
       GermanLine:     TLine;
       FrenchLine:     TLine;
       SpanishLine:    TLine;
@@ -160,7 +159,7 @@ begin
   Load;
 
   // lyric sample engine 1
-  LyricsEngine1 := TLyricEngine.Create(
+  LyricEngine[0] := TLyricEngine.Create(
       80, 350, 640, 40,
       80, 390, 640, 40);
 
@@ -190,7 +189,7 @@ begin
   FrenchLine.LastLine := true;
 
   // lyric sample engine 2
-  LyricsEngine2 := TLyricEngine.Create(
+  LyricEngine[1] := TLyricEngine.Create(
       80, 450, 640, 40,
       80, 490, 640, 40);
 
@@ -222,61 +221,54 @@ begin
 end;
 
 procedure TScreenOptionsLyrics.RebuildLines;
+var
+  i: Integer;
 begin
-  LyricsEngine1.Clear;
-  LyricsEngine1.AddLine(@GermanLine);
-  LyricsEngine1.AddLine(@FrenchLine);
-  LyricsEngine2.Clear;
-  LyricsEngine2.AddLine(@SpanishLine);
-  LyricsEngine2.AddLine(@PolishLine);
+  for i := 0 to 1 do
+  begin
+    LyricEngine[i].Clear;
+  end;
+  LyricEngine[0].AddLine(@GermanLine);
+  LyricEngine[0].AddLine(@FrenchLine);
+  LyricEngine[1].AddLine(@SpanishLine);
+  LyricEngine[1].AddLine(@PolishLine);
 end;
 
 procedure TScreenOptionsLyrics.LyricSample;
+var
+  i: Integer;
 begin
   if (Ini.LyricsFont <> LastFontFamily) or (Ini.LyricsStyle <> LastFontStyle) then
   begin
     LastFontFamily           := Ini.LyricsFont;
     LastFontStyle            := Ini.LyricsStyle;
-    LyricsEngine1.FontFamily := Ini.LyricsFont;
-    LyricsEngine1.FontStyle  := Ini.LyricsStyle;
-    LyricsEngine2.FontFamily := Ini.LyricsFont;
-    LyricsEngine2.FontStyle  := Ini.LyricsStyle;
-
+    for i := 0 to 1 do
+    begin
+      LyricEngine[i].FontFamily := Ini.LyricsFont;
+      LyricEngine[i].FontStyle  := Ini.LyricsStyle;
+    end;
     RebuildLines;
   end;
 
-  // current lyrics
-  LyricsEngine1.LineColor_act.R := 0;
-  LyricsEngine1.LineColor_act.G := 0.6;
-  LyricsEngine1.LineColor_act.B := 1;
+  for i := 0 to 1 do
+  begin
+    // current lyrics
+    LyricEngine[i].LineColor_act.R := 0;
+    LyricEngine[i].LineColor_act.G := 0.6;
+    LyricEngine[i].LineColor_act.B := 1;
 
-  // current line
-  LyricsEngine1.LineColor_en.R := 1;
-  LyricsEngine1.LineColor_en.G := 1;
-  LyricsEngine1.LineColor_en.B := 1;
+    // current line
+    LyricEngine[i].LineColor_en.R := 1;
+    LyricEngine[i].LineColor_en.G := 1;
+    LyricEngine[i].LineColor_en.B := 1;
 
-  // next line
-  LyricsEngine1.LineColor_dis.R := 1;
-  LyricsEngine1.LineColor_dis.G := 1;
-  LyricsEngine1.LineColor_dis.B := 1;
+    // next line
+    LyricEngine[i].LineColor_dis.R := 1;
+    LyricEngine[i].LineColor_dis.G := 1;
+    LyricEngine[i].LineColor_dis.B := 1;
 
-  // current lyrics
-  LyricsEngine2.LineColor_act.R := 0;
-  LyricsEngine2.LineColor_act.G := 0.6;
-  LyricsEngine2.LineColor_act.B := 1;
-
-  // current line
-  LyricsEngine2.LineColor_en.R := 1;
-  LyricsEngine2.LineColor_en.G := 1;
-  LyricsEngine2.LineColor_en.B := 1;
-
-  // next line
-  LyricsEngine2.LineColor_dis.R := 1;
-  LyricsEngine2.LineColor_dis.G := 1;
-  LyricsEngine2.LineColor_dis.B := 1;
-
-  LyricsEngine1.Draw(LyricsState.MidBeat);
-  LyricsEngine2.Draw(LyricsState.MidBeat);
+    LyricEngine[i].Draw(LyricsState.MidBeat);
+  end;
 end;
 
 procedure TScreenOptionsLyrics.OnShow;
