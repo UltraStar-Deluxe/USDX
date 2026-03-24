@@ -1075,6 +1075,7 @@ var
   DeviceIndex:  integer;
   ChannelCount: integer;
   ChannelIndex: integer;
+  PlayerNumber: integer;
   RecordKeys:   TStringList;
   i:            integer;
 begin
@@ -1117,8 +1118,11 @@ begin
       // or set non-configured channels to no player (=0).
       for ChannelIndex := 0 to High(DeviceCfg.ChannelToPlayerMap) do
       begin
-        DeviceCfg.ChannelToPlayerMap[ChannelIndex] :=
+        PlayerNumber :=
           IniFile.ReadInteger('Record', Format('Channel%d[%d]', [ChannelIndex+1, DeviceIndex]), CHANNEL_OFF);
+        if (PlayerNumber < 1) or (PlayerNumber > IMaxPlayerCount) then
+          PlayerNumber := CHANNEL_OFF;
+        DeviceCfg.ChannelToPlayerMap[ChannelIndex] := PlayerNumber;
       end;
     end;
   end;
@@ -1151,7 +1155,7 @@ begin
     for ChannelIndex := 0 to High(InputDeviceConfig[DeviceIndex].ChannelToPlayerMap) do
     begin
       PlayerNumber := InputDeviceConfig[DeviceIndex].ChannelToPlayerMap[ChannelIndex];
-      if PlayerNumber > 0 then
+      if (PlayerNumber >= 1) and (PlayerNumber <= IMaxPlayerCount) then
       begin
         IniFile.WriteInteger('Record',
             Format('Channel%d[%d]', [ChannelIndex+1, DeviceIndex+1]),
