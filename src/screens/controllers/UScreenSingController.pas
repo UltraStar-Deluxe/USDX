@@ -1127,7 +1127,7 @@ begin
       Text[screenSingViewRef.SongNameText].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
 
     //medley start and end timestamps
-    StartNote := FindNote(CurrentSong.Medley.StartBeat - round(CurrentSong.BPM[0].BPM*CurrentSong.Medley.FadeIn_time/60));
+    StartNote := FindNote(CurrentSong.Medley.StartBeat - round(CurrentSong.BPM*CurrentSong.Medley.FadeIn_time/60));
     MedleyStart := GetTimeFromBeat(CurrentSong.Tracks[0].Lines[StartNote.line].Notes[0].StartBeat);
 
     //check Medley-Start
@@ -1340,7 +1340,7 @@ begin
   StartBeat := CurrentSong.Tracks[0].Lines[0].Notes[0].StartBeat;
   for I := 1 to High(CurrentSong.Tracks) do
     StartBeat := Min(StartBeat, CurrentSong.Tracks[I].Lines[0].Notes[0].StartBeat);
-  fFirstNote := CurrentSong.GAP / 1000 + StartBeat * (CurrentSong.BPM[0].BPM / 60);
+  fFirstNote := CurrentSong.GAP / 1000 + StartBeat * (CurrentSong.BPM / 60);
   if ((fFirstNote - CurrentSong.Start) < MINIMUM_START_TIME) then
     fStartTime := fFirstNote - MINIMUM_START_TIME
   else

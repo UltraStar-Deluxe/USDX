@@ -46,7 +46,7 @@ Translate all texts according to section (2) of this file.
    Note the `;` in front of it.
 7. Share your translation with others:
    - Send the translated file to our Patch-Tracker at SourceForge (http://sourceforge.net/tracker/?group_id=191560&atid=937872)
-   - or contact us via our IRC channel
+   - or contact us via our Discord channel (https://discord.gg/qfS2b7VwDG)
 
 ---
 

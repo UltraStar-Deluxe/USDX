@@ -215,7 +215,7 @@ end;
 
 function TFileSystemImpl.IsCaseSensitive(): boolean;
 begin
-  // Windows and Mac OS X do not have case sensitive file systems
+  // Windows and macOS (at least by default) do not have case sensitive file systems
   {$IF Defined(MSWINDOWS) or Defined(DARWIN)}
     Result := false;
   {$ELSE}

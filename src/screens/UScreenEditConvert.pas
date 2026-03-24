@@ -579,8 +579,8 @@ begin
   // song info
   Song := TSong.Create();
   Song.Clear();
-  SetLength(Song.BPM, 1);
-  Song.BPM[0].BPM := BPM*4;
+  Song.Resolution := 4;
+  Song.BPM := BPM*4;
   SetLength(Notes, 0);
 
   // extract notes

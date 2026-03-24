@@ -191,7 +191,7 @@ type
    * It is rare but it happens.
    *
    * IMPORTANT:
-   *   This interface needs the cwstring unit on Unix (Max OS X / Linux) systems.
+   *   This interface needs the cwstring unit on Unix (macOS / Linux) systems.
    *   Cwstring functions (WideUpperCase, ...) cannot be used by external threads
    *   as FPC uses Thread-Local-Storage for the implementation. As a result do not
    *   call IPath stuff by external threads (e.g. in C callbacks or by SDL-threads).

@@ -84,11 +84,6 @@ type
     FadeOut_time: real;           //FadeOut-Time in seconds
   end;
 
-  TBPM = record
-    BPM:        real;
-    StartBeat:  real;
-  end;
-
   TScore = record
     Name:       UTF8String;
     Track:      integer;
@@ -183,7 +178,8 @@ type
     Start:      real; // in seconds
     Finish:     integer; // in milliseconds
     Relative:   boolean;
-    BPM:        array of TBPM;
+    Resolution: integer;
+    BPM:        real;
     GAP:        real; // in milliseconds
     
     Encoding:   TEncoding;
@@ -212,7 +208,6 @@ type
     Base:       array[0..1] of integer;
     Rel:        array[0..1] of integer;
     Mult:       integer;
-    MultBPM:    integer;
 
     LastError:  AnsiString;
     function    GetErrorLineNo: integer;
@@ -445,7 +440,6 @@ begin
   FMD5Cached := false;
 
   Mult    := 1;
-  MultBPM := 4;
 
   LastError := '';
 
@@ -674,7 +668,6 @@ begin
   LastError := '';
   CurrentTrack := 0;
 
-  MultBPM           := 4; // multiply beat-count of note by 4
   Mult              := 1; // accuracy of measurement of note
   Rel[0]            := 0;
   Rel[1]            := 0;
@@ -1033,9 +1026,7 @@ begin
   Result := true;
   Done   := 0;
   MedleyFlags := 0;
-  SetLength(self.BPM, 1);
-  self.BPM[0].BPM := 0;
-  self.BPM[0].StartBeat := 0;
+  self.BPM := 0;
 
   //SetLength(tmpEdition, 0);
 
@@ -1216,12 +1207,11 @@ begin
     if (TagMapTryGetData('BPM', Value)) then
     begin
       RemoveTagsFromTagMap('BPM');
-      SetLength(self.BPM, 1);
-      self.BPM[0].StartBeat := 0;
+      self.BPM := 0;
       StringReplace(Value, ',', '.', [rfReplaceAll]);
-      self.BPM[0].BPM := StrToFloatI18n(Value ) * Mult * MultBPM;
+      self.BPM := StrToFloatI18n(Value) * Mult * 4;
 
-      if self.BPM[0].BPM <> 0 then
+      if self.BPM <= 0 then
       begin
         Log.LogError('Invalid BPM value "' + Value + '" in ' + FullFileName + '"',
           'TSong.ReadTXTHeader');

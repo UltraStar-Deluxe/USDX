@@ -45,6 +45,10 @@ uses
 type
 
   TByteSet = set of byte;
+  InteractionID = (
+    iMouseSlide,
+    iJoypadSupportSlide
+  );
 
   TScreenOptionsInput = class(TOptionsMenu)
     protected

@@ -28,7 +28,7 @@ unit UPlatform;
 // Comment by Eddie:
 // This unit defines an interface for platform specific utility functions.
 // The Interface is implemented in separate files for each platform:
-// UPlatformWindows, UPlatformLinux and UPlatformMacOSX.
+// UPlatformWindows, UPlatformLinux and UPlatformMacOS.
 
 interface
 
@@ -65,7 +65,7 @@ uses
   {$IF Defined(MSWINDOWS)}
   UPlatformWindows,
   {$ELSEIF Defined(DARWIN)}
-  UPlatformMacOSX,
+  UPlatformMacOS,
   {$ELSEIF Defined(UNIX)}
   UPlatformLinux,
   {$IFEND}
@@ -125,7 +125,7 @@ initialization
 {$IF Defined(MSWINDOWS)}
   Platform_singleton := TPlatformWindows.Create;
 {$ELSEIF Defined(DARWIN)}
-  Platform_singleton := TPlatformMacOSX.Create;
+  Platform_singleton := TPlatformMacOS.Create;
 {$ELSEIF Defined(UNIX)}
   Platform_singleton := TPlatformLinux.Create;
 {$IFEND}

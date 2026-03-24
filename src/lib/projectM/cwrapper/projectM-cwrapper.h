@@ -16,11 +16,14 @@
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define PROJECTM_CWRAPPER_CALL __cdecl
+#define PROJECTM_CWRAPPER_API __declspec(dllexport)
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#define PROJECTM_CWRAPPER_CALL
+#define PROJECTM_CWRAPPER_API __attribute__((visibility("default")))
 #else
 #define PROJECTM_CWRAPPER_CALL
+#define PROJECTM_CWRAPPER_API
 #endif
-
-#define PROJECTM_CWRAPPER_API DLLEXPORT
 
 extern "C" {
 
