@@ -601,6 +601,7 @@ type
 const
   DEFAULT_FADE_IN_TIME  = 8;    //TODO in INI
   DEFAULT_FADE_OUT_TIME = 2;
+  MIN_EDITOR_BPM = 1.0;
   NOT_SET = '-';
   // Line-local waveform rendering can afford a denser cache.
   VOCALS_WAVEFORM_SAMPLE_RATE = 44100;
@@ -1656,6 +1657,9 @@ begin
     CurrentSong.BPM := Round((CurrentSong.BPM * 25) - 1) / 25;
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_DECREASED_BY') + ' 0.01';
   end;
+
+  if CurrentSong.BPM <= 0 then
+    CurrentSong.BPM := MIN_EDITOR_BPM;
 end;
 
       // SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_6: HandleExtendedCopyPaste;
@@ -2995,6 +2999,7 @@ function TScreenEditSub.ParseInputEditBPM(PressedKey: cardinal; CharCode: UCS4Ch
 var
   SDL_ModState:  word;
   qBPM:          real;
+  NewBPM:        real;
 begin
   // used when in Text Edit Mode
   Result := true;
@@ -3031,9 +3036,13 @@ begin
           //CopyToUndo;
           if (TryStrToFloat(UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition), qBPM)) then
           begin
-            BPMVal[0] := FloatToStr(qBPM * 4);
-            ChangeBPM(qBPM * 4);
-            SelectsS[CurrentSlideId].TextOpt[0].Text := CurrentEditText;
+            NewBPM := qBPM * 4;
+            if NewBPM <= 0 then
+              NewBPM := MIN_EDITOR_BPM;
+
+            BPMVal[0] := FloatToStr(NewBPM / 4);
+            ChangeBPM(NewBPM);
+            SelectsS[CurrentSlideId].TextOpt[0].Text := BPMVal[0];
             UpdateSelectSlideOptions(BPMSlideId,BPMVal,SlideBPMIndex);
             SelectsS[BPMSlideId].TextOpt[0].Align := 0;
             SelectsS[BPMSlideId].TextOpt[0].X := SelectsS[BPMSlideId].TextureSBG.X + 5;
@@ -3643,10 +3652,10 @@ var
 
 begin
   if CurrentSong.BPM <= 0 then
-    CurrentSong.BPM := USong.MIN_BPM;
+    CurrentSong.BPM := MIN_EDITOR_BPM;
 
   if newBPM <= 0 then
-    newBPM := USong.MIN_BPM;
+    newBPM := MIN_EDITOR_BPM;
 
   factor := newBPM / CurrentSong.BPM;    // e.g. new/old => 1/2 = 0.5 => * 0.5
   CurrentSong.BPM := newBPM;
