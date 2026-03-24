@@ -30,6 +30,7 @@ interface
 {$IFDEF FPC}
   {$MODE Delphi}
 {$ENDIF}
+{$codepage UTF8}
 
 {$I switches.inc}
 
@@ -48,8 +49,12 @@ uses
 type
   TScreenOptionsLyrics = class(TOptionsMenu)
     private
-      Lyrics: TLyricEngine;
-      Line: TLine;
+      Lyrics:        TLyricEngine;
+      TopLine:       TLine;
+      BottomLine:    TLine;
+      LastFontFamily: Integer;
+      LastFontStyle:  Integer;
+      procedure RebuildLines;
 
     public
       constructor Create; override;
@@ -137,73 +142,70 @@ begin
 end;
 
 constructor TScreenOptionsLyrics.Create;
+const
+  LyricsTop: array [0..7] of string = ('Max ', '(zwölf) ', 'quäkt ', 'hy', 'pend: ', '»Grüß ', 'Jobs, ', 'Vic!« ');
+  LyricsBottom: array [0..12] of string = ('Voix ', 'am', 'bi', 'gu', 'ë ', 'd''un ', 'cœur ', 'qui ', 'pré', 'fère ', 'le ', 'zé', 'phyr. ');
 var
-  ExitButton: TButton;
+  i: Integer;
 begin
   inherited Create;
   Description := Language.Translate('SING_OPTIONS_LYRICS_DESC');
   WhereAmI := Language.Translate('SING_OPTIONS_LYRICS_WHEREAMI');
   Load;
 
-  ExitButton := Button[High(Button)];
-  // lyric sample
+  // lyric sample engine
   Lyrics := TLyricEngine.Create(
-      ExitButton.X + ExitButton.W + 5.0, ExitButton.Y - 10.0, 400.0, 40.0,
-      ExitButton.X + ExitButton.W + 5.0, ExitButton.Y + 20.0, 400.0, 40.0);
+      80, 450, 640, 40,
+      80, 490, 640, 40);
 
-  //Line.Lyric := 'Lorem ipsum dolor sit amet';
-  // 1st line
-  SetLength(Line.Notes, 5);
-  Line.Notes[0].Text := 'Lorem';
-  Line.Notes[1].Text := ' ipsum';
-  Line.Notes[2].Text := ' dolor';
-  Line.Notes[3].Text := ' sit';
-  Line.Notes[4].Text := ' amet';
+  // build top line data
+  SetLength(TopLine.Notes, Length(LyricsTop));
+  for i := 0 to High(TopLine.Notes) do
+  begin
+    TopLine.Notes[i].NoteType  := ntNormal;
+    TopLine.Notes[i].StartBeat := i * 10;
+    TopLine.Notes[i].Duration  := 8;
+    TopLine.Notes[i].Text      := LyricsTop[i];
+  end;
+  TopLine.ScoreValue := 6;
+  TopLine.StartBeat  := 0;
+  TopLine.EndBeat    := TopLine.Notes[High(TopLine.Notes)].StartBeat + TopLine.Notes[High(TopLine.Notes)].Duration;
+  TopLine.LastLine   := true;
 
-  Line.Notes[0].StartBeat := 0;
-  Line.Notes[1].StartBeat := 10;
-  Line.Notes[2].StartBeat := 20;
-  Line.Notes[3].StartBeat := 30;
-  Line.Notes[4].StartBeat := 40;
+  // build bottom line data
+  SetLength(BottomLine.Notes, Length(LyricsBottom));
+  for i := 0 to High(BottomLine.Notes) do
+  begin
+    BottomLine.Notes[i].NoteType  := ntFreestyle;
+    BottomLine.Notes[i].StartBeat := i * 10;
+    BottomLine.Notes[i].Duration  := 8;
+    BottomLine.Notes[i].Text      := LyricsBottom[i];
+  end;
+  BottomLine.LastLine := true;
 
-  Line.Notes[0].Duration := 10;
-  Line.Notes[1].Duration := 10;
-  Line.Notes[2].Duration := 10;
-  Line.Notes[3].Duration := 10;
-  Line.Notes[4].Duration := 10;
+  // force RebuildLines on first draw
+  LastFontFamily := -1;
+  LastFontStyle  := -1;
+end;
 
-  Line.ScoreValue := 6;
-  Line.EndBeat := 50;
-  Line.StartBeat := 0;
-  Line.LastLine := true;
-  Lyrics.AddLine(@Line);
-
-  // 2nd line
-  //consectetur adipiscing elit
-  SetLength(Line.Notes, 3);
-
-  Line.Notes[0].Text := 'consectetur';
-  Line.Notes[1].Text := ' adipiscing';
-  Line.Notes[2].Text := ' elit';
-
-  Line.Notes[0].StartBeat := 50;
-  Line.Notes[1].StartBeat := 60;
-  Line.Notes[2].StartBeat := 70;
-
-  Line.Notes[0].Duration := 10;
-  Line.Notes[1].Duration := 10;
-  Line.Notes[2].Duration := 10;
-
-  Line.LastLine := true;
-
-  Lyrics.AddLine(@Line);
-  Lyrics.AddLine(@Line);
+procedure TScreenOptionsLyrics.RebuildLines;
+begin
+  Lyrics.Clear;
+  Lyrics.AddLine(@TopLine);
+  Lyrics.AddLine(@BottomLine);
+  Lyrics.AddLine(@BottomLine);
 end;
 
 procedure TScreenOptionsLyrics.LyricSample;
 begin
-  Lyrics.FontFamily := Ini.LyricsFont;
-  Lyrics.FontStyle  := Ini.LyricsStyle;
+  if (Ini.LyricsFont <> LastFontFamily) or (Ini.LyricsStyle <> LastFontStyle) then
+  begin
+    LastFontFamily    := Ini.LyricsFont;
+    LastFontStyle     := Ini.LyricsStyle;
+    Lyrics.FontFamily := Ini.LyricsFont;
+    Lyrics.FontStyle  := Ini.LyricsStyle;
+    RebuildLines;
+  end;
 
   // current lyrics
   Lyrics.LineColor_act.R := 0;
