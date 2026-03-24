@@ -23,7 +23,7 @@
  * $Id: UPlatformMacOSX.pas 3018 2013-12-06 21:48:55Z k-m_schindler $
  *}
 
-unit UPlatformMacOSX;
+unit UPlatformMacOS;
 
 interface
 
@@ -43,9 +43,9 @@ uses
 
 type
   {**
-   * @abstract(Provides Mac OS X specific details.)
+   * @abstract(Provides macOS specific details.)
    * @lastmod(August 1, 2008)
-   * The UPlatformMacOSX unit takes care of setting paths to resource folders.
+   * The UPlatformMacOS unit takes care of setting paths to resource folders.
    *
    * (Note for non-Maccies: "folder" is the Mac name for directory.)
    *
@@ -99,7 +99,7 @@ type
    * The idea is to remove this at some time.
    *
    *}
-  TPlatformMacOSX = class(TPlatform)
+  TPlatformMacOS = class(TPlatform)
     private
       {**
        * GetBundlePath returns the path to the application bundle
@@ -170,12 +170,12 @@ type
 const
   LogSwitch: TLogSwitch = Off;
 
-procedure TPlatformMacOSX.Init;
+procedure TPlatformMacOS.Init;
 begin
   CreateUserFolders();
 end;
 
-procedure TPlatformMacOSX.CreateUserFolders();
+procedure TPlatformMacOS.CreateUserFolders();
 var
   RelativePath: IPath;
   // BaseDir contains the path to the folder, where a search is performed.
@@ -312,7 +312,7 @@ begin
     if (not CreatedDirectory) and (FileAttrs and faSymLink > 0) then
       writeln('Failed to create the folder "' +
               DirectoryPath.ToNative +
-              '" in PlatformMacOSX.CreateUserFolders');
+              '" in PlatformMacOS.CreateUserFolders');
   end;
 
   // copy missing files
@@ -330,7 +330,7 @@ begin
   FileSystem.SetCurrentDir(OldBaseDir);
 end;
 
-function TPlatformMacOSX.GetBundlePath: IPath;
+function TPlatformMacOS.GetBundlePath: IPath;
 begin
   // Mac applications are packaged in folders.
   // Cutting the last two folders yields the application folder.
@@ -339,37 +339,37 @@ begin
     writeln('Bundle path: ' + Result.ToNative);
 end;
 
-function TPlatformMacOSX.GetHomeDir: IPath;
+function TPlatformMacOS.GetHomeDir: IPath;
 begin
   Result := Path(GetEnvironmentVariable('HOME'));
   if LogSwitch = On then
     writeln('Home path: ' + Result.ToNative);
 end;
 
-function TPlatformMacOSX.GetApplicationSupportPath: IPath;
+function TPlatformMacOS.GetApplicationSupportPath: IPath;
 begin
 // append the version for conflict resolution
   Result := GetHomeDir.Append('Library/Application Support/UltraStarDeluxe' + USDX_VERSION, pdAppend);
 end;
 
-function TPlatformMacOSX.GetLogPath: IPath;
+function TPlatformMacOS.GetLogPath: IPath;
 begin
   Result := GetHomeDir.Append('Library/Logs/UltraStar Deluxe', pdAppend);
 end;
 
-function TPlatformMacOSX.GetMusicPath: IPath;
+function TPlatformMacOS.GetMusicPath: IPath;
 begin
   Result := GetHomeDir.Append('Music/UltraStar Deluxe', pdAppend);
   if LogSwitch = On then
     writeln('Music path: ' + Result.ToNative);
 end;
 
-function TPlatformMacOSX.GetGameSharedPath: IPath;
+function TPlatformMacOS.GetGameSharedPath: IPath;
 begin
   Result := GetApplicationSupportPath;
 end;
 
-function TPlatformMacOSX.GetGameUserPath: IPath;
+function TPlatformMacOS.GetGameUserPath: IPath;
 begin
   Result := GetApplicationSupportPath;
 end;

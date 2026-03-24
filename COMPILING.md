@@ -56,7 +56,7 @@ Optional libraries:
 - `cd USDX`
 - `./autogen.sh`
 - `./configure` (see optional flags below)
-- `make` (on MacOS: `make macosx-standalone-app`)
+- `make` (on macOS: `make macos-standalone-app`)
 - `./game/ultrastardx[.exe]` (on MacOS: `open UltraStarDeluxe.app`)
 
 #### configure flags
