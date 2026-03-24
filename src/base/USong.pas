@@ -1223,13 +1223,15 @@ begin
 
       if self.BPM[0].BPM <> 0 then
       begin
-        Log.LogSongError('Invalid BPM value "' + Value + '" in ' + FullFileName + ' -> clamped to minimum',
+        Log.LogError('Invalid BPM value "' + Value + '" in ' + FullFileName + '"',
           'TSong.ReadTXTHeader');
-        self.BPM := MIN_BPM;
+        self.BPM := 0;
+      end
+      else
+      begin
+        //Add BPM Flag to Done
+        Done := Done or 8;
       end;
-
-      //Add BPM Flag to Done
-      Done := Done or 8;
     end;
 
     //---------
