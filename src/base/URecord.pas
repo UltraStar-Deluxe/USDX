@@ -701,10 +701,13 @@ function TAudioInputProcessor.ValidateSettings: integer;
 var
   I, J: integer;
   PlayerID: integer;
+  MaxPlayerID: integer;
   PlayerMap: array [0 .. UIni.IMaxPlayerCount - 1] of boolean;
   InputDevice: TAudioInputDevice;
   InputDeviceCfg: PInputDeviceConfig;
 begin
+  MaxPlayerID := Length(PlayerMap);
+
   // mark all players as unassigned
   for I := 0 to High(PlayerMap) do
     PlayerMap[I] := false;
@@ -721,6 +724,10 @@ begin
       PlayerID := InputDeviceCfg.ChannelToPlayerMap[J];
       if (PlayerID <> CHANNEL_OFF) then
       begin
+        // avoid out-of-bounds access when switching between game versions with different max player counts
+        if (PlayerID < 1) or (PlayerID > MaxPlayerID) then
+          continue;
+
         // check if player is already assigned to another device/channel
         if (PlayerMap[PlayerID - 1]) then
         begin
