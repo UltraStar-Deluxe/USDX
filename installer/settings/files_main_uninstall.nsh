@@ -13,8 +13,6 @@
  RMDir /r "$INSTDIR\sounds"
  RMDir /r "$INSTDIR\webs"
  RMDir /r "$INSTDIR\soundfonts"
- RMDir /r "$INSTDIR\avatars"
-
 ; Delete remaining files
  Delete "$INSTDIR\${exe}.exe"
  Delete "$INSTDIR\${exeupdate}.exe"
@@ -57,7 +55,7 @@
  Delete "$INSTDIR\libidn-11.dll"
  Delete "$INSTDIR\libjpeg-9.dll"
  Delete "$INSTDIR\libpng16-16.dll"
- Delete "$INSTDIR\libprojectM.dll"
+ Delete "$INSTDIR\libprojectM-0.dll"
  Delete "$INSTDIR\libprojectM2.dll"
  Delete "$INSTDIR\libssl32.dll"
  Delete "$INSTDIR\libtiff-5.dll"
@@ -65,7 +63,7 @@
  Delete "$INSTDIR\lua5.1.dll"
  Delete "$INSTDIR\opengl32_.dll"
  Delete "$INSTDIR\pcre3.dll"
- Delete "$INSTDIR\portaudio_x86.dll"
+ Delete "$INSTDIR\portaudio_x64.dll"
  Delete "$INSTDIR\portmixer.dll"
  Delete "$INSTDIR\postproc-53.dll"
  Delete "$INSTDIR\projectM-cwrapper.dll"
@@ -119,8 +117,6 @@
  Delete "$APPDATA\ultrastardx\Error.log"
  Delete "$APPDATA\ultrastardx\Benchmark.log"
  Delete "$APPDATA\ultrastardx\cover.db"
- Delete "$APPDATA\ultrastardx\avatar.db"
- 
  StrCpy $0 "$APPDATA\ultrastardx\covers"
  Call un.DeleteIfEmpty
 

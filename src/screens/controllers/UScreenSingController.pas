@@ -75,11 +75,14 @@ type
   TScreenSingController = class(TMenu)
   private
     StartNote, EndNote:     TPos;
+    fCountIn: boolean;
+    fStartTime, fFirstNote: real;
 
     procedure LoadNextSong();
     procedure SongError();
     procedure ResetLinesAndLyrics();
     procedure ClearLyricEngines();
+    procedure CalculateStartTime;
   public
     CheckPlayerConfigOnNextSong: boolean;
     eSongLoaded: THookableEvent; //< event is called after lyrics of a song are loaded on OnShow
@@ -173,7 +176,7 @@ type
     function Draw: boolean; override;
 
     function ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
-      PressedDown: boolean): boolean; override;
+      PressedDown: boolean; Repeated: boolean = false): boolean; override;
 
     function FinishedMusic: boolean;
 
@@ -185,6 +188,8 @@ type
     procedure UpdateMedleyStats(medley_end: boolean);
     procedure OnSentenceEnd(Track: integer; SentenceIndex: cardinal);     // for linebonus + singbar
     procedure OnSentenceChange(Track: integer; SentenceIndex: cardinal);  // for golden notes
+    property CountIn: boolean read fCountIn write fCountIn;
+    property FirstNote: real read fFirstNote;
   end;
 
 var screenSingViewRef: TScreenSingView;
@@ -217,16 +222,18 @@ uses
 
 const
   MAX_MESSAGE = 3;
+  MINIMUM_START_TIME = 3;
 
 // method for input parsing. if false is returned, getnextwindow
 // should be checked to know the next window to load;
 
 function TScreenSingController.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   SDL_ModState: word;
   i1:           integer;
   Color:        TRGB;
+  ResumeAfterHelp: boolean;
   NewPosition:  real;
 begin
   Result := true;
@@ -266,12 +273,15 @@ begin
           ScoreLineInt   := 0;
           ScoreGoldenInt := 0;
           ScoreTotalInt  := 0;
+          ScorePerfectRemaining := MAX_SONG_SCORE;
 
           ScoreLast      := 0;
 
           LastSentencePerfect := false;
         end;
-        AudioPlayback.SetPosition(CurrentSong.Start);
+        AudioPlayback.SetPosition(fStartTime);
+        if (fStartTime < CurrentSong.Start) then
+          fCountIn := true;
         if (Assigned(fCurrentVideo)) then
            fCurrentVideo.Position := CurrentSong.VideoGAP + CurrentSong.Start;// + (CurrentSong.gap / 1000.0 - 5.0);
         Scores.KillAllPopUps;
@@ -287,7 +297,7 @@ begin
           Scores.AddPlayer(Tex_ScoreBG[i1], Color);
         end;
 
-        LyricsState.SetCurrentTime(CurrentSong.Start);
+        LyricsState.SetCurrentTime(fStartTime);
         LyricsState.UpdateBeats();
         ClearLyricEngines;
         ResetLinesAndLyrics;
@@ -586,6 +596,7 @@ begin
           ScoreLineInt   := 0;
           ScoreGoldenInt := 0;
           ScoreTotalInt  := 0;
+          ScorePerfectRemaining := MAX_SONG_SCORE;
 
           ScoreLast      := 0;
 
@@ -628,9 +639,10 @@ begin
         end
         else // show help popup
         begin
-          if not paused then
+          ResumeAfterHelp := not Paused;
+          if ResumeAfterHelp then
             Pause;
-          ScreenPopupHelp.ShowPopup();
+          ScreenPopupHelp.ShowPopup(ResumeAfterHelp);
         end;
       end;
     end;
@@ -696,7 +708,7 @@ end;
 
 procedure TScreenSingController.OnShow;
 var
-  BadPlayer: integer;
+  BadPlayer, I: integer;
   Col, ColP1, ColP2: TRGB;
 begin
   inherited;
@@ -753,17 +765,6 @@ begin
     CheckPlayerConfigOnNextSong := false;
   end;
 
-  if (CurrentSong.isDuet) then
-  begin
-    if (PlayersPlay = 4) then
-    begin
-      screenSingViewRef.ColPlayer[0] := GetPlayerColor(Ini.PlayerColor[0]);
-      screenSingViewRef.ColPlayer[1] := GetPlayerColor(Ini.PlayerColor[1]);
-      screenSingViewRef.ColPlayer[2] := GetPlayerColor(Ini.PlayerColor[2]);
-      screenSingViewRef.ColPlayer[3] := GetPlayerColor(Ini.PlayerColor[3]);
-    end;
-  end;
-
   // set custom options
   if (CurrentSong.isDuet) and (PlayersPlay <> 1) then
   begin
@@ -787,10 +788,9 @@ begin
     LyricsDuetP2.LineColor_act.B := ColP2.B;
     LyricsDuetP2.LineColor_act.A := 1;
 
-    if (Ini.JukeboxActualLineColor = High(UIni.IActualLineColor)) then
-      Col := GetJukeboxLyricOtherColor(1)
-    else
-      Col := GetLyricGrayColor(Ini.JukeboxActualLineColor);
+    Col.R := Theme.Song.LoopLyrics.ActualR;
+    Col.G := Theme.Song.LoopLyrics.ActualG;
+    Col.B := Theme.Song.LoopLyrics.ActualB;
     LyricsDuetP1.LineColor_en.R := Col.R;
     LyricsDuetP1.LineColor_en.G := Col.G;
     LyricsDuetP1.LineColor_en.B := Col.B;
@@ -801,10 +801,9 @@ begin
     LyricsDuetP2.LineColor_en.B := Col.B;
     LyricsDuetP2.LineColor_en.A := 1;
 
-    if (Ini.JukeboxNextLineColor = High(UIni.INextLineColor)) then
-      Col := GetJukeboxLyricOtherColor(2)
-    else
-      Col := GetLyricGrayColor(Ini.JukeboxNextLineColor);
+    Col.R := Theme.Song.LoopLyrics.NextR;
+    Col.G := Theme.Song.LoopLyrics.NextG;
+    Col.B := Theme.Song.LoopLyrics.NextB;
     LyricsDuetP1.LineColor_dis.R := Col.R;
     LyricsDuetP1.LineColor_dis.G := Col.G;
     LyricsDuetP1.LineColor_dis.B := Col.B;
@@ -822,28 +821,25 @@ begin
     Lyrics.FontFamily := Ini.LyricsFont;
     Lyrics.FontStyle := Ini.LyricsStyle;
 
-    if (Ini.JukeboxSingLineColor = High(UIni.ISingLineColor)) then
-      Col := GetJukeboxLyricOtherColor(0)
-    else
-      Col := GetLyricColor(Ini.JukeboxSingLineColor);
+    Col.R := Theme.Song.LoopLyrics.SingR;
+    Col.G := Theme.Song.LoopLyrics.SingG;
+    Col.B := Theme.Song.LoopLyrics.SingB;
     Lyrics.LineColor_act.R := Col.R;
     Lyrics.LineColor_act.G := Col.G;
     Lyrics.LineColor_act.B := Col.B;
     Lyrics.LineColor_act.A := 1;
 
-    if (Ini.JukeboxActualLineColor = High(UIni.IActualLineColor)) then
-      Col := GetJukeboxLyricOtherColor(1)
-    else
-      Col := GetLyricGrayColor(Ini.JukeboxActualLineColor);
+    Col.R := Theme.Song.LoopLyrics.ActualR;
+    Col.G := Theme.Song.LoopLyrics.ActualG;
+    Col.B := Theme.Song.LoopLyrics.ActualB;
     Lyrics.LineColor_en.R := Col.R;
     Lyrics.LineColor_en.G := Col.G;
     Lyrics.LineColor_en.B := Col.B;
     Lyrics.LineColor_en.A := 1;
 
-    if (Ini.JukeboxNextLineColor = High(UIni.INextLineColor)) then
-      Col := GetJukeboxLyricOtherColor(2)
-    else
-      Col := GetLyricGrayColor(Ini.JukeboxNextLineColor);
+    Col.R := Theme.Song.LoopLyrics.NextR;
+    Col.G := Theme.Song.LoopLyrics.NextG;
+    Col.B := Theme.Song.LoopLyrics.NextB;
     Lyrics.LineColor_dis.R := Col.R;
     Lyrics.LineColor_dis.G := Col.G;
     Lyrics.LineColor_dis.B := Col.B;
@@ -877,10 +873,22 @@ begin
       ScoreLineInt   := 0;
       ScoreGoldenInt := 0;
       ScoreTotalInt  := 0;
+      ScorePerfectRemaining := MAX_SONG_SCORE;
 
       ScoreLast      := 0;
 
       LastSentencePerfect := false;
+
+      Name           := PlayerNames[PlayerIndex + 1];
+      Level          := Ini.PlayerLevel[PlayerIndex];
+      Track          := 0;
+      if CurrentSong.isDuet then
+      begin
+        if ScreenSong.DuetChange then
+          Track := (PlayerIndex + 1) mod 2
+        else
+          Track := PlayerIndex mod 2;
+      end;
     end;
 
   // prepare music
@@ -899,6 +907,8 @@ begin
   else
     AudioPlayback.SetVolume(1.0);
   //AudioPlayback.Position := CurrentSong.Start;
+    if ((fStartTime < CurrentSong.Start) and (fStartTime > 0)) then
+      AudioPlayback.StartTime := CurrentSong.Start;
   AudioPlayback.Position := LyricsState.GetCurrentTime();
 
 
@@ -1082,7 +1092,7 @@ begin
   success := false;
   // FIXME: bad style, put the try-except into loadsong() and not here
   try
-    success := CurrentSong.Analyse(false, ScreenSong.DuetChange, ScreenSong.RapToFreestyle, true, AudioEnd); // and CurrentSong.LoadSong();
+    success := CurrentSong.Analyse(false, ScreenSong.DuetChange, ScreenSong.RapToFreestyle, true, AudioEnd, true); // and CurrentSong.LoadSong();
   except
     on E: EInOutError do Log.LogWarn(E.Message, 'TScreenSing.LoadNextSong');
   end;
@@ -1092,6 +1102,17 @@ begin
     SongError();
     Exit;
   end;
+
+  CalculateStartTime;
+  if (fStartTime < CurrentSong.Start) then
+  begin
+    fCountIn := true;
+    AudioPlayback.Position := fStartTime;
+    if (fStartTime > 0) then
+      AudioPlayback.StartTime := CurrentSong.Start;
+  end
+  else
+    fCountIn := false;
 
   // Set up Medley timings
   if ScreenSong.Mode = smMedley then
@@ -1106,7 +1127,7 @@ begin
       Text[screenSingViewRef.SongNameText].Text := CurrentSong.Artist + ' - ' + CurrentSong.Title;
 
     //medley start and end timestamps
-    StartNote := FindNote(CurrentSong.Medley.StartBeat - round(CurrentSong.BPM[0].BPM*CurrentSong.Medley.FadeIn_time/60));
+    StartNote := FindNote(CurrentSong.Medley.StartBeat - round(CurrentSong.BPM*CurrentSong.Medley.FadeIn_time/60));
     MedleyStart := GetTimeFromBeat(CurrentSong.Tracks[0].Lines[StartNote.line].Notes[0].StartBeat);
 
     //check Medley-Start
@@ -1217,7 +1238,7 @@ begin
   end
   else
   begin
-    LyricsState.SetCurrentTime(CurrentSong.Start);
+    LyricsState.SetCurrentTime(fStartTime);
     LyricsState.StartTime := CurrentSong.Gap;
     if CurrentSong.Finish > 0 then
       LyricsState.TotalTime := CurrentSong.Finish / 1000
@@ -1307,9 +1328,23 @@ end;
 
 procedure TScreenSingController.ClearLyricEngines();
 begin
-    Lyrics.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
-    LyricsDuetP1.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
-    LyricsDuetP2.Clear(CurrentSong.BPM[0].BPM, CurrentSong.Resolution);
+  Lyrics.Clear(CurrentSong.BPM);
+  LyricsDuetP1.Clear(CurrentSong.BPM);
+  LyricsDuetP2.Clear(CurrentSong.BPM);
+end;
+
+procedure TScreenSingController.CalculateStartTime;
+var
+  I, StartBeat: integer;
+begin
+  StartBeat := CurrentSong.Tracks[0].Lines[0].Notes[0].StartBeat;
+  for I := 1 to High(CurrentSong.Tracks) do
+    StartBeat := Min(StartBeat, CurrentSong.Tracks[I].Lines[0].Notes[0].StartBeat);
+  fFirstNote := CurrentSong.GAP / 1000 + StartBeat * (CurrentSong.BPM / 60);
+  if ((fFirstNote - CurrentSong.Start) < MINIMUM_START_TIME) then
+    fStartTime := fFirstNote - MINIMUM_START_TIME
+  else
+    fStartTime := CurrentSong.Start;
 end;
 
 procedure TScreenSingController.ClearSettings;
@@ -1364,193 +1399,7 @@ begin
 end;
 
 function TScreenSingController.Draw: boolean;
-var
-  V1:     boolean;
-  V1TwoP: boolean;   // position of score box in two player mode
-  V1ThreeP: boolean; // position of score box in three player mode
-  V2R:    boolean;
-  V2M:    boolean;
-  V3R:    boolean;
-  VDuet1ThreeP: boolean;
-  VDuet2M:    boolean;
-  VDuet3R:    boolean;
-  V1FourP: boolean;
-  V2FourP: boolean;
-  V3FourP: boolean;
-  V4FourP: boolean;
-  V1SixP: boolean;
-  V2SixP: boolean;
-  V3SixP: boolean;
-  V4SixP: boolean;
-  V5SixP: boolean;
-  V6SixP: boolean;
-  V1DuetFourP: boolean;
-  V2DuetFourP: boolean;
-  V3DuetFourP: boolean;
-  V4DuetFourP: boolean;
-  V1DuetSixP: boolean;
-  V2DuetSixP: boolean;
-  V3DuetSixP: boolean;
-  V4DuetSixP: boolean;
-  V5DuetSixP: boolean;
-  V6DuetSixP: boolean;
 begin
-  V1     := false;
-  V1TwoP := false;
-  V1ThreeP := false;
-  V2R    := false;
-  V2M    := false;
-  V3R    := false;
-
-  VDuet1ThreeP := false;
-  VDuet2M := false;
-  VDuet3R := false;
-
-  V1FourP := false;
-  V2FourP := false;
-  V3FourP := false;
-  V4FourP := false;
-
-  V1SixP := false;
-  V2SixP := false;
-  V3SixP := false;
-  V4SixP := false;
-  V5SixP := false;
-  V6SixP := false;
-
-  V1DuetFourP := false;
-  V2DuetFourP := false;
-  V3DuetFourP := false;
-  V4DuetFourP := false;
-
-  V1DuetSixP := false;
-  V2DuetSixP := false;
-  V3DuetSixP := false;
-  V4DuetSixP := false;
-  V5DuetSixP := false;
-  V6DuetSixP := false;
-
-  case PlayersPlay of
-    1:
-    begin
-      V1     := true;
-    end;
-    2:
-    begin
-      V1TwoP := true;
-      V2R    := true;
-    end;
-    3:
-    begin
-      if (CurrentSong.isDuet) then
-      begin
-        VDuet1ThreeP := true;
-        VDuet2M := true;
-        VDuet3R := true;
-      end
-      else
-      begin
-        V1ThreeP := true;
-        V2M    := true;
-        V3R    := true;
-      end;
-    end;
-    4:
-    begin // double screen
-      if (Ini.Screens = 1) then
-      begin
-        V1TwoP := true;
-        V2R    := true;
-      end
-      else
-      begin
-        if (CurrentSong.isDuet) then
-        begin
-          V1DuetFourP := true;
-          V2DuetFourP := true;
-          V3DuetFourP := true;
-          V4DuetFourP := true;
-        end
-        else
-        begin
-          V1FourP := true;
-          V2FourP := true;
-          V3FourP := true;
-          V4FourP := true;
-        end;
-      end;
-    end;
-    6:
-    begin // double screen
-      if (Ini.Screens = 1) then
-      begin
-        if (CurrentSong.isDuet) then
-        begin
-          VDuet1ThreeP := true;
-          VDuet2M := true;
-          VDuet3R := true;
-        end
-        else
-        begin
-          V1ThreeP := true;
-          V2M    := true;
-          V3R    := true;
-        end;
-      end
-      else
-      begin
-       if (CurrentSong.isDuet) then
-        begin
-          V1DuetSixP := true;
-          V2DuetSixP := true;
-          V3DuetSixP := true;
-          V4DuetSixP := true;
-          V5DuetSixP := true;
-          V6DuetSixP := true;
-        end
-        else
-        begin
-          V1SixP := true;
-          V2SixP := true;
-          V3SixP := true;
-          V4SixP := true;
-          V5SixP := true;
-          V6SixP := true;
-        end;
-      end;
-    end;
-  end;
-
-  Text[screenSingViewRef.TextP1].Visible           := V1 and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1TwoP].Visible       := V1TwoP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2R].Visible          := V2R and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1ThreeP].Visible     := V1ThreeP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2M].Visible          := V2M and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3R].Visible          := V3R and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextDuetP1ThreeP].Visible := VDuet1ThreeP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextDuetP2M].Visible      := VDuet2M and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextDuetP3R].Visible      := VDuet3R and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1FourP].Visible      := V1FourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2FourP].Visible      := V2FourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3FourP].Visible      := V3FourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP4FourP].Visible      := V4FourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1SixP].Visible       := V1SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2SixP].Visible       := V2SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3SixP].Visible       := V3SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP4SixP].Visible       := V4SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP5SixP].Visible       := V5SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP6SixP].Visible       := V6SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1DuetFourP].Visible  := V1DuetFourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2DuetFourP].Visible  := V2DuetFourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3DuetFourP].Visible  := V3DuetFourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP4DuetFourP].Visible  := V4DuetFourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1DuetSixP].Visible   := V1DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2DuetSixP].Visible   := V2DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3DuetSixP].Visible   := V3DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP4DuetSixP].Visible   := V4DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP5DuetSixP].Visible   := V5DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP6DuetSixP].Visible   := V6DuetSixP and ScreenSing.Settings.AvatarsVisible;
-
   Result := screenSingViewRef.Draw();
 end;
 
@@ -1566,7 +1415,6 @@ var
 
 begin
   AudioInput.CaptureStop;
-  AudioPlayback.Stop;
   AudioPlayback.SetSyncSource(nil);
 
   if (ScreenSong.Mode = smNormal) and (SungPaused = false) and (SungToEnd) and (Length(DllMan.Websites) > 0) then
@@ -1768,9 +1616,19 @@ begin
         CurrentPlayer.ScoreGoldenInt
         + CurrentPlayer.ScoreLineInt;
 
+      // remove this line's potential after awarding its bonus
+      CurrentPlayer.ScorePerfectRemaining := CurrentPlayer.ScorePerfectRemaining - LineBonus;
+      if (CurrentPlayer.ScorePerfectRemaining < 0) then
+        CurrentPlayer.ScorePerfectRemaining := 0;
+
       // spawn rating pop-up
       Rating := Round(LinePerfection * MAX_LINE_RATING);
       Scores.SpawnPopUp(PlayerIndex, Rating, CurrentPlayer.ScoreTotalInt);
+
+      if (Scores <> nil) then
+        Scores.SetRemainingScore(PlayerIndex,
+          CurrentPlayer.ScorePerfectRemaining / MAX_SONG_SCORE,
+          CurrentPlayer.Score + CurrentPlayer.ScoreGolden + CurrentPlayer.ScoreLine);
 
       // PerfectLineTwinkle (effect), part 1
       if Ini.EffectSing = 1 then
@@ -2009,4 +1867,3 @@ begin
 end;
 
 end.
-

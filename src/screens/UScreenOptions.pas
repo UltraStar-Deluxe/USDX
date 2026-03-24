@@ -57,17 +57,17 @@ type
       ButtonAdvancedIID,
       ButtonNetworkIID,
       ButtonWebcamIID,
-      ButtonJukeboxIID,
       ButtonExitIID: cardinal;
 
       MapIIDtoDescID: array of integer;
 
       procedure UpdateTextDescriptionFor(IID: integer); virtual;
+      procedure OpenRecordOptions;
 
     public
       TextDescription:    integer;
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       procedure SetInteraction(Num: integer); override;
       procedure SetAnimationProgress(Progress: real); override;
@@ -84,10 +84,19 @@ uses
   UHelp,
   ULanguage,
   ULog,
+  UScreenOptionsRecord,
   UWebcam,
   UUnicodeUtils;
 
-function TScreenOptions.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+procedure TScreenOptions.OpenRecordOptions;
+begin
+  RefreshAudioInputDevices(aimFull);
+  FreeAndNil(ScreenOptionsRecord);
+  ScreenOptionsRecord := TScreenOptionsRecord.Create;
+  FadeTo(@ScreenOptionsRecord, SoundLib.Start);
+end;
+
+function TScreenOptions.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -132,7 +141,7 @@ begin
 
       SDLK_R:
         begin
-          FadeTo(@ScreenOptionsRecord, SoundLib.Start);
+          OpenRecordOptions;
           Exit;
         end;
 
@@ -157,12 +166,6 @@ begin
       SDLK_W:
         begin
           FadeTo(@ScreenOptionsWebcam, SoundLib.Start);
-          Exit;
-        end;
-
-      SDLK_J:
-        begin
-          FadeTo(@ScreenOptionsJukebox, SoundLib.Start);
           Exit;
         end;
 
@@ -228,8 +231,7 @@ begin
 
           if Interaction = ButtonRecordIID then
           begin
-            AudioPlayback.PlaySound(SoundLib.Start);
-            FadeTo(@ScreenOptionsRecord);
+            OpenRecordOptions;
           end;
 
           if Interaction = ButtonAdvancedIID then
@@ -253,17 +255,6 @@ begin
           begin
             AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(@ScreenOptionsWebcam);
-          end;
-
-          if Interaction = ButtonJukeboxIID then
-          begin
-            if (Songs.SongList.Count >= 1) then
-            begin
-              AudioPlayback.PlaySound(SoundLib.Start);
-              FadeTo(@ScreenOptionsJukebox);
-            end
-            else //show error message, No Songs Loaded
-              ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
           end;
 
           if Interaction = ButtonExitIID then
@@ -322,7 +313,6 @@ begin
   AddButtonChecked(Theme.Options.ButtonNetwork, OPTIONS_DESC_INDEX_NETWORK,  ButtonNetworkIID);
 
   AddButtonChecked(Theme.Options.ButtonWebcam, OPTIONS_DESC_INDEX_WEBCAM,  ButtonWebcamIID);
-  AddButtonChecked(Theme.Options.ButtonJukebox, OPTIONS_DESC_INDEX_JUKEBOX,  ButtonJukeboxIID);
 
   AddButtonChecked(Theme.Options.ButtonExit, OPTIONS_DESC_INDEX_BACK,  ButtonExitIID);
 

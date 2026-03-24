@@ -45,7 +45,6 @@ uses
   UMusic,
   URecord,
   UScreenSingController,
-  UScreenJukebox,
   USong,
   UTime;
 
@@ -64,8 +63,8 @@ type
   PPLayer = ^TPlayer;
   TPlayer = record
     Name:           UTF8String;
-    // Level === Difficulty, both terms appear to be used
-    Level:          integer;
+    Level:          integer; // 0 - easy, 1 - medium, 2 - hard
+    Track:          integer; // 0 - track 1, 1 - track 2 (duet)
 
     // Index in Teaminfo record
     TeamID:         byte;
@@ -80,6 +79,7 @@ type
     ScoreLineInt:   integer;
     ScoreGoldenInt: integer;
     ScoreTotalInt:  integer;
+    ScorePerfectRemaining: real;
 
     // LineBonus
     ScoreLast:      real;    // Last Line Score
@@ -140,8 +140,6 @@ procedure NewNote(CP: integer; Screen: TScreenSingController);       // detect n
 function  GetMidBeat(Time: real): real;
 function  GetTimeFromBeat(Beat: integer; SelfSong: TSong = nil): real;
 
-procedure SingJukebox(Screen: TScreenJukebox);
-
 implementation
 
 uses
@@ -175,130 +173,32 @@ begin
   Result := BPM * msTime / 60;
 end;
 
-procedure GetMidBeatSub(BPMNum: integer; var Time: real; var CurBeat: real);
-var
-  NewTime: real;
-begin
-  if High(CurrentSong.BPM) = BPMNum then
-  begin
-    // last BPM
-    CurBeat := CurrentSong.BPM[BPMNum].StartBeat + GetBeats(CurrentSong.BPM[BPMNum].BPM, Time);
-    Time := 0;
-  end
-  else
-  begin
-    // not last BPM
-    // count how much time is it for start of the new BPM and store it in NewTime
-    NewTime := GetTimeForBeats(CurrentSong.BPM[BPMNum].BPM, CurrentSong.BPM[BPMNum+1].StartBeat - CurrentSong.BPM[BPMNum].StartBeat);
-
-    // compare it to remaining time
-    if (Time - NewTime) > 0 then
-    begin
-      // there is still remaining time
-      CurBeat := CurrentSong.BPM[BPMNum].StartBeat;
-      Time := Time - NewTime;
-    end
-    else
-    begin
-      // there is no remaining time
-      CurBeat := CurrentSong.BPM[BPMNum].StartBeat + GetBeats(CurrentSong.BPM[BPMNum].BPM, Time);
-      Time := 0;
-    end; // if
-  end; // if
-end;
-
 function GetMidBeat(Time: real): real;
-var
-  CurBeat: real;
-  CurBPM:  integer;
 begin
   try
-  // static BPM
-  if Length(CurrentSong.BPM) = 1 then
-  begin
-    Result := Time * CurrentSong.BPM[0].BPM / 60;
-  end
-  // variable BPM
-  else if Length(CurrentSong.BPM) > 1 then
-  begin
-    CurBeat := 0;
-    CurBPM := 0;
-    while (Time > 0) do
-    begin
-      GetMidBeatSub(CurBPM, Time, CurBeat);
-      Inc(CurBPM);
-    end;
-
-    Result := CurBeat;
-  end
-  // invalid BPM
-  else
-  begin
-    Result := 0;
-  end;
+    if CurrentSong.BPM > 0 then
+      Result := Time * CurrentSong.BPM / 60
+    else
+      Result := 0;
   except
     on E : Exception do
-    Result :=0;
+      Result := 0;
   end;
 end;
 
 function GetTimeFromBeat(Beat: integer; SelfSong: TSong = nil): real;
 var
-  CurBPM: integer;
   Song: TSong;
 begin
-
   if (SelfSong <> nil) then
     Song := SelfSong
   else
     Song := CurrentSong;
 
-  Result := 0;
-
-  // static BPM
-  if Length(Song.BPM) = 1 then
-  begin
-    Result := Song.GAP / 1000 + Beat * 60 / Song.BPM[0].BPM;
-  end
-  // variable BPM
-  else if Length(Song.BPM) > 1 then
-  begin
-    Result := Song.GAP / 1000;
-    CurBPM := 0;
-    while (CurBPM <= High(Song.BPM)) and
-          (Beat > Song.BPM[CurBPM].StartBeat) do
-    begin
-      if (CurBPM < High(Song.BPM)) and
-         (Beat >= Song.BPM[CurBPM+1].StartBeat) then
-      begin
-        // full range
-        Result := Result + (60 / Song.BPM[CurBPM].BPM) *
-                           (Song.BPM[CurBPM+1].StartBeat - Song.BPM[CurBPM].StartBeat);
-      end;
-
-      if (CurBPM = High(Song.BPM)) or
-         (Beat < Song.BPM[CurBPM+1].StartBeat) then
-      begin
-        // in the middle
-        Result := Result + (60 / Song.BPM[CurBPM].BPM) *
-                           (Beat - Song.BPM[CurBPM].StartBeat);
-      end;
-      Inc(CurBPM);
-    end;
-
-    {
-    while (Time > 0) do
-    begin
-      GetMidBeatSub(CurBPM, Time, CurBeat);
-      Inc(CurBPM);
-    end;
-    }
-  end
-  // invalid BPM
+  if Song.BPM > 0 then
+    Result := Song.GAP / 1000 + Beat * 60 / Song.BPM
   else
-  begin
     Result := 0;
-  end;
 end;
 
 procedure Sing(Screen: TScreenSingController);
@@ -344,33 +244,6 @@ begin
     NewBeatDetect(Screen);
 end;
 
-procedure SingJukebox(Screen: TScreenJukebox);
-var
-  Count:   integer;
-  CountGr: integer;
-  CP:      integer;
-begin
-  LyricsState.UpdateBeats();
-
-  // sentences routines
-  for CountGr := 0 to 0 do //High(Tracks)
-  begin;
-    CP := CountGr;
-    // old parts
-    LyricsState.OldLine := CurrentSong.Tracks[CP].CurrentLine;
-
-    // choose current parts
-    for Count := 0 to CurrentSong.Tracks[CP].High do
-    begin
-      if LyricsState.CurrentBeat >= CurrentSong.Tracks[CP].Lines[Count].StartBeat then
-        CurrentSong.Tracks[CP].CurrentLine := Count;
-    end;
-  end; // for CountGr
-
-  // on sentence change...
-  Screen.onSentenceChange(CurrentSong.Tracks[0].CurrentLine);
-end;
-
 procedure NewSentence(CP: integer; Screen: TScreenSingController);
 var
   I: integer;
@@ -386,6 +259,8 @@ begin
     end;
   end;
 
+  Ini.ReloadDelays;
+
   Screen.onSentenceChange(CP, CurrentSong.Tracks[CP].CurrentLine)
 end;
 
@@ -397,8 +272,8 @@ begin
 
   if not (CurrentSong.isDuet) or (PlayersPlay = 1) then
   begin
-    if ((Ini.BeatClick = 1) and
-        ((LyricsState.CurrentBeatC + CurrentSong.Tracks[0].Resolution + CurrentSong.Tracks[0].NotesGAP) mod CurrentSong.Tracks[0].Resolution = 0)) then
+  if ((Ini.BeatClick = 1) and
+    ((LyricsState.CurrentBeatC + USong.DEFAULT_RESOLUTION + CurrentSong.Tracks[0].NotesGAP) mod USong.DEFAULT_RESOLUTION = 0)) then
     begin
       AudioPlayback.PlaySound(SoundLib.Click);
     end;
@@ -493,6 +368,9 @@ var
   MaxSongPoints:       integer; // max. points for the song (without line bonus)
   CurNotePoints:       real;    // Points for the cur. Note (PointsperNote * ScoreFactor[CurNote])
   CurrentNoteType:     TNoteType;
+  DelayBeats:          real;
+  PlayerOldBeat:       integer;
+  PlayerCurBeat:       integer;
 begin
   ActualTone := 0;
   NoteHit := false;
@@ -507,12 +385,20 @@ begin
     SentenceMin := 0;
   SentenceMax := CurrentSong.Tracks[CP].CurrentLine;
 
-  for ActualBeat := LyricsState.OldBeatD+1 to LyricsState.CurrentBeatD do
+  // analyze player signals
+  for PlayerIndex := 0 to PlayersPlay-1 do
   begin
-    // analyze player signals
-    for PlayerIndex := 0 to PlayersPlay-1 do
+    if (not CurrentSong.isDuet) or (PlayerIndex mod 2 = CP) then
     begin
-      if (not CurrentSong.isDuet) or (PlayerIndex mod 2 = CP) then
+
+      // delay in beats (Ini.PlayerDelay is ms)
+      DelayBeats := GetBeats(CurrentSong.BPM, Ini.PlayerDelay[PlayerIndex] / 1000);
+
+      PlayerOldBeat := Floor(LyricsState.OldBeatD - DelayBeats);
+      if PlayerOldBeat < 0 then PlayerOldBeat := 0;
+      PlayerCurBeat := Floor(LyricsState.CurrentBeatD - DelayBeats);
+
+      for ActualBeat := PlayerOldBeat+1 to PlayerCurBeat do
       begin
         // check for an active note at the current time defined in the lyrics
         NoteAvailable := false;
@@ -550,6 +436,43 @@ begin
         else
           LastPlayerNote := nil;
 
+        Line := nil;
+        CurrentLineFragment := nil;
+        CurrentNoteType := ntNormal;
+
+        if NoteAvailable then
+        begin
+          Line := @CurrentSong.Tracks[CP].Lines[SentenceDetected];
+          for LineFragmentIndex := 0 to Line.HighNote do
+          begin
+            if (Line.Notes[LineFragmentIndex].StartBeat <= ActualBeat) and
+               (Line.Notes[LineFragmentIndex].StartBeat + Line.Notes[LineFragmentIndex].Duration > ActualBeat) then
+            begin
+              CurrentLineFragment := @Line.Notes[LineFragmentIndex];
+              CurrentNoteType := CurrentLineFragment.NoteType;
+              Break;
+            end;
+          end;
+        end;
+
+        CurNotePoints := 0;
+        if (CurrentLineFragment <> nil) and (CurrentSong.Tracks[CP].ScoreValue > 0) then
+        begin
+          MaxSongPoints := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
+
+          // Note: ScoreValue is the sum of all note values of the song
+          // (MaxSongPoints / ScoreValue) is the points that a player
+          // gets for a hit of one beat of a normal note
+          // CurNotePoints is the amount of points that is meassured
+          // for a hit of the note per full beat
+          CurNotePoints := (MaxSongPoints / CurrentSong.Tracks[CP].ScoreValue) *
+            ScoreFactor[CurrentLineFragment.NoteType];
+
+          CurrentPlayer.ScorePerfectRemaining := CurrentPlayer.ScorePerfectRemaining - CurNotePoints;
+          if (CurrentPlayer.ScorePerfectRemaining < 0) then
+            CurrentPlayer.ScorePerfectRemaining := 0;
+        end;
+
         // analyze buffer
         CurrentSound.AnalyzeBuffer;
 
@@ -558,12 +481,25 @@ begin
         //LyricsState.Tone := LyricsState.Tone + Round(Random(3)) - 1;
 
         // add note if possible
-        if (CurrentSound.ToneValid and NoteAvailable) then
+        if (CurrentSound.ToneValid and (CurrentLineFragment <> nil)) then
         begin
-          CurrentNoteType := ntNormal;
-          Line := @CurrentSong.Tracks[CP].Lines[SentenceDetected];
-          // process until last note
-          for LineFragmentIndex := 0 to Line.HighNote do
+          // move players tone to proper octave
+          while (CurrentSound.Tone - CurrentLineFragment.Tone > 6) do
+            CurrentSound.Tone := CurrentSound.Tone - 12;
+
+          while (CurrentSound.Tone - CurrentLineFragment.Tone < -6) do
+            CurrentSound.Tone := CurrentSound.Tone + 12;
+
+          // half size notes patch
+          NoteHit := false;
+          ActualTone := CurrentSound.Tone;
+          if (ScreenSong.Mode = smNormal) or (ScreenSong.Mode = smMedley) then
+            Range := 2 - Ini.PlayerLevel[PlayerIndex]
+          else
+            Range := 2 - Ini.Difficulty;
+
+          // check if the player hit the correct tone within the tolerated range
+          if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) or (CurrentLineFragment.NoteType = ntRap) or (CurrentLineFragment.NoteType = ntRapGolden) then
           begin
             CurrentLineFragment := @Line.Notes[LineFragmentIndex];
             if (CurrentLineFragment.StartBeat <= ActualBeat) and
@@ -602,14 +538,6 @@ begin
                 NoteHit := true;
 
                 MaxSongPoints := MAX_SONG_SCORE - MAX_SONG_LINE_BONUS;
-
-                // Note: ScoreValue is the sum of all note values of the song
-                // (MaxSongPoints / ScoreValue) is the points that a player
-                // gets for a hit of one beat of a normal note
-                // CurNotePoints is the amount of points that is meassured
-                // for a hit of the note per full beat
-                CurNotePoints := (MaxSongPoints / CurrentSong.Tracks[CP].ScoreValue) * ScoreFactor[CurrentLineFragment.NoteType];
-
                 case CurrentLineFragment.NoteType of
                   ntNormal:    CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
                   ntGolden:    CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
@@ -637,8 +565,8 @@ begin
 
 
                 CurrentPlayer.ScoreTotalInt := CurrentPlayer.ScoreInt +
-                                               CurrentPlayer.ScoreGoldenInt +
-                                               CurrentPlayer.ScoreLineInt;
+                                              CurrentPlayer.ScoreGoldenInt +
+                                              CurrentPlayer.ScoreLineInt;
               end;
             end; // operation
           end; // for
@@ -706,9 +634,9 @@ begin
           end; // if SentenceDetected = SentenceMax
 
         end; // if Detected
-      end;
-    end; // for PlayerIndex
-  end; // for ActualBeat
+      end; // for ActualBeat
+    end;
+  end; // for PlayerIndex
   //Log.LogStatus('EndBeat', 'NewBeat');
 end;
 

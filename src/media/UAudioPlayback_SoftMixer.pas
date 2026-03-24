@@ -453,7 +453,9 @@ var
   Mixer: TAudioMixerStream;
 begin
   // only paused streams are not flushed
-  if (Status = ssPaused) then
+  if Status = ssPlaying then
+    Exit
+  else if Status = ssPaused then
     NeedsRewind := false;
 
   // rewind if necessary. Cases that require no rewind are:

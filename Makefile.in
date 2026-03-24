@@ -82,6 +82,10 @@ USE_PROJECTM_CWRAPPER = @USE_PROJECTM_CWRAPPER@
 
 OPENCV_CWRAPPER_DIR := $(USDX_LIB_DIR)/openCV3
 USE_OPENCV_CWRAPPER = @USE_OPENCV_CWRAPPER@
+USE_OPENCV_CWRAPPER_DLL ?= no
+ifeq ($(EXEEXT),.exe)
+USE_OPENCV_CWRAPPER_DLL := yes
+endif
 
 #################################################
 # Dependencies
@@ -93,7 +97,9 @@ DEPS += $(PROJECTM_CWRAPPER_DIR)
 endif
 
 ifeq ($(USE_OPENCV_CWRAPPER), yes)
+ifneq ($(USE_OPENCV_CWRAPPER_DLL), yes)
 DEPS += $(OPENCV_CWRAPPER_DIR)
+endif
 endif
 
 #################################################
@@ -124,6 +130,7 @@ BUILD_TARGETS = all debug release rebuild build
 .PHONY: $(BUILD_TARGETS)
 $(BUILD_TARGETS): all-deps
 	$(MAKE) -C $(USDX_SRC_DIR) $@
+	@$(MAKE) --no-print-directory whitespace-warn
 
 .PHONY: all-deps
 all-deps:
@@ -177,6 +184,29 @@ tidy:
 	find $(srcdir) -name "*.identcache" -o -name "*.dcu" | xargs $(RM)
 # Backup files
 	find $(srcdir) -name "*~" -o -name "*.bak" -o -name "*.orig" | xargs $(RM)
+
+# check for trailing whitespace in the same paths as CI
+.PHONY: whitespace-check
+whitespace-check:
+	@base_ref="$${BASE_REF:-origin/master}"; \
+	if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
+	  echo "error: whitespace-check must run inside a git checkout"; \
+	  exit 1; \
+	fi; \
+	if ! git rev-parse --verify "$$base_ref" >/dev/null 2>&1; then \
+	  echo "error: git ref '$$base_ref' not found (set BASE_REF=... if needed)"; \
+	  exit 1; \
+	fi; \
+	base_sha=`git merge-base HEAD "$$base_ref"`; \
+	git -c core.whitespace=blank-at-eol diff --color --check "$$base_sha" -- './src' ':!./src/lib' ':!./src/webSDK'
+
+# warning-only variant for local builds
+.PHONY: whitespace-warn
+whitespace-warn:
+	@$(MAKE) --no-print-directory whitespace-check || { \
+	  echo "warning: whitespace issues detected (run 'make whitespace-check' for details)"; \
+	  true; \
+	}
 
 
 #################################################
@@ -381,88 +411,87 @@ rpm: all
 
 
 #################################################
-# Mac OS X defines
+# macOS defines
 #################################################
 
-# otool: Mac OS X object file displaying tool
+# otool: macOS object file displaying tool
 OTOOL := /usr/bin/otool 
-# install_name_tool: Mac OS X tool to change dynamic shared library install names
+# install_name_tool: macOS tool to change dynamic shared library install names
 INSTALL_NAME_TOOL := /usr/bin/install_name_tool
-# hdiutil: Mac OS X disk image tool
+# hdiutil: macOS disk image tool
 HDIUTIL := /usr/bin/hdiutil
 # pkgingLibDir := path for libraries installed using packaging system
-pkgingLibDir := @USE_OSX_PACKAGING_LIBDIR@
+pkgingLibDir := @MACOS_PACKAGING_LIBDIR@
 
 #################################################
-# Mac OS X app-bundle
+# macOS app-bundle
 #################################################
 
-macosx_bundle_path := UltraStarDeluxe.app/Contents
-.PHONY: macosx-app
-macosx-app: all 
-# Create double clickable Mac OS X application.
+macos_bundle_path := UltraStarDeluxe.app/Contents
+.PHONY: macos-app
+macos-app: all 
+# Create double clickable macOS application.
 
 	@echo ""
-	@echo "Creating the Mac OS X application"
+	@echo "Creating the macOS application"
 	@echo ""
 
-	$(MKDIR) $(macosx_bundle_path)
+	$(MKDIR) $(macos_bundle_path)
 
 # Put the icon file into its particular place. 
 # Must be done BEFORE info.plist is created.
-	$(MKDIR) $(macosx_bundle_path)/resources
-	$(INSTALL_DATA) icons/ultrastardx.icns $(macosx_bundle_path)/resources/
+	$(MKDIR) $(macos_bundle_path)/resources
+	$(INSTALL_DATA) icons/ultrastardx.icns $(macos_bundle_path)/resources/
 
 # the info.plist file
-	$(INSTALL_DATA) $(USDX_SRC_DIR)/macosx/Info.plist $(macosx_bundle_path)/
+	$(INSTALL_DATA) $(USDX_SRC_DIR)/macos/Info.plist $(macos_bundle_path)/
 
 # Copy the resources. 
-	$(MAKE) install-all INSTALL_DATADIR=$(macosx_bundle_path) bindir=$(macosx_bundle_path)/MacOS
+	$(MAKE) install-all INSTALL_DATADIR=$(macos_bundle_path) bindir=$(macos_bundle_path)/MacOS
 
 # Copy the lua plugins. 
-	$(MAKE) install-plugins INSTALL_DATADIR=$(macosx_bundle_path) bindir=$(macosx_bundle_path)/MacOS
+	$(MAKE) install-plugins INSTALL_DATADIR=$(macos_bundle_path) bindir=$(macos_bundle_path)/MacOS
 
 # Create the song directory. 
-	$(MKDIR) $(macosx_bundle_path)/songs
+	$(MKDIR) $(macos_bundle_path)/songs
 
 # final messages
 	@echo ""
-	@echo "Mac OS X application created (UltraStarDeluxe.app)."
-	@echo "Using @USE_OSX_PACKAGING@ with libdir @USE_OSX_PACKAGING_LIBDIR@"
-	@echo "Please report issues to the developer team, preferably mischi."
+	@echo "macOS application created (UltraStarDeluxe.app)."
+	@echo "Using @MACOS_PACKAGING@ with libdir @MACOS_PACKAGING_LIBDIR@"
+	@echo "Please report issues to the developer team, preferably on Discord (https://discord.gg/qfS2b7VwDG)."
 	@echo "Have fun."
 	@echo ""
 
-# export some variables used by Makefile.osx-helper
+# export some variables used by Makefile.macos-helper
 export USDX_BIN
 export pkgingLibDir
-export macosx_bundle_path
+export macos_bundle_path
 export INSTALL
 export INSTALL_NAME_TOOL
 export OTOOL
 
-.PHONY: macosx-standalone-app
-macosx-standalone-app: macosx-app 
-# Create double clickable standalone Mac OS X application.
-# Not fully test, but should work on 10.5.
+.PHONY: macos-standalone-app
+macos-standalone-app: macos-app 
+# Create double clickable standalone macOS application.
 
 	@echo ""
-	@echo "Creating the standalone Mac OS X application"
+	@echo "Creating the standalone macOS application"
 	@echo ""
 
-	@rm -f $(macosx_bundle_path)/MacOS/$(USDX_BIN_NAME)
-	@$(MAKE) -f Makefile.osx-helper
+	@rm -f $(macos_bundle_path)/MacOS/$(USDX_BIN_NAME)
+	@$(MAKE) -f Makefile.macos-helper
 
 # do  not forget to sign the code
 #	codesign -f -s USDX-codesign UltraStarDeluxe.app
 
 # final messages
 	@echo ""
-	@echo "Standalone Mac OS X application created."
+	@echo "Standalone macOS application created."
 	@echo ""
 
-.PHONY: macosx-dmg
-macosx-dmg: macosx-standalone-app
+.PHONY: macos-dmg
+macos-dmg: macos-standalone-app
 	@if test -d "/Volumes/UltraStarDeluxe"; then\
 		echo "Error: there is already a disk mounted on /Volumes/UltraStarDeluxe";\
 		exit 1;\
@@ -486,15 +515,15 @@ macosx-dmg: macosx-standalone-app
 	@echo "DMG Disk image created (UltraStarDeluxe.dmg)."
 	@echo ""
 
-# remove Mac OS X apllication bundle and disk image
-.PHONY: clean-macosx
-clean-macosx: clean-macosx-app clean-macosx-dmg
+# remove macOS apllication bundle and disk image
+.PHONY: clean-macos
+clean-macos: clean-macos-app clean-macos-dmg
 
-.PHONY: clean-macosx-app
-clean-macosx-app:
+.PHONY: clean-macos-app
+clean-macos-app:
 	$(RM_REC) UltraStarDeluxe.app 
 
-.PHONY: clean-macosx-dmg
-clean-macosx-dmg:
+.PHONY: clean-macos-dmg
+clean-macos-dmg:
 	$(RM) UltraStarDeluxe.dmg 
 	$(RM) UltraStarDeluxe.sparseimage

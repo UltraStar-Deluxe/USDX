@@ -149,7 +149,7 @@
         <IsPartOfProject Value="True"/>
       </Unit28>
       <Unit29>
-        <Filename Value="base/UPlatformMacOSX.pas"/>
+        <Filename Value="base/UPlatformMacOS.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit29>
       <Unit30>
@@ -548,6 +548,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UMenuWidget"/>
       </Unit125>
+      <Unit126>
+        <Filename Value="base/UPlayerLayout.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UPlayerLayout"/>
+      </Unit126>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

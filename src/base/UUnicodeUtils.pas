@@ -49,7 +49,7 @@ type
 {**
  * Returns true if the system uses UTF-8 as default string type
  * (filesystem or API calls).
- * This is always true on Mac OS X and always false on Win32. On Unix it depends
+ * This is always true on macOS and always false on Win32. On Unix it depends
  * on the LC_CTYPE setting.
  * Do not use AnsiToUTF8() or UTF8ToAnsi() if this function returns true.
  *}
@@ -621,9 +621,9 @@ end;
 
 function WideStringUpperCase(const str: WideString): WideString;
 begin
-  // On Linux and MacOSX the cwstring unit is necessary for Unicode function-calls.
+  // On Linux and macOS the cwstring unit is necessary for Unicode function-calls.
   // Otherwise you will get an EIntOverflow exception (thrown by unimplementedwidestring()).
-  // The Unicode manager cwstring does not work with MacOSX at the moment because
+  // The Unicode manager cwstring does not work with macOS at the moment because
   // of missing references to iconv.
   // Note: Should be fixed now
 

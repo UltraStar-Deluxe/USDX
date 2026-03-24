@@ -5,7 +5,7 @@
     * [UConfig.pas](src/base/UConfig.pas)
     * [variables.nsh](installer/settings/variables.nsh)
     * [ultrastardx.appdata.xml](dists/ultrastardx.appdata.xml)
-    * 2x [Info.plist](src/macosx/Info.plist)
+    * 2x [Info.plist](src/macos/Info.plist)
 2. Make the release:
     * in the first two files, update it to the new version _without_ the `+dev` bit
     * in `variables.nsh` update both blocks immediately and swap the comments
@@ -17,7 +17,7 @@
     If any of them fail, retry the job.
 6. Add `+dev` to the version in the first two files and swap the comments in `variables.nsh` again, commit, push.
     This is just to set the dev version again.
-7. Attach the artifacts to the release page and publish it.\
+7. Attach the artifacts to the [release page](https://github.com/UltraStar-Deluxe/USDX/releases) and publish it.\
     You need to extract all the zips _except_ the portable: `for i in UltraStarDeluxe-*{linux,mac,installer}*; do unzip $i; rm $i; done`
 8. Create a PR in [the FlatHub repository](https://github.com/flathub/eu.usdx.UltraStarDeluxe) that updates the tag and commit values.
     See this PR for an example: https://github.com/flathub/eu.usdx.UltraStarDeluxe/pull/7/files

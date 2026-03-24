@@ -52,7 +52,8 @@ uses
   UImage,
   UThemes,
   UTexture,
-  UPath;
+  UPath,
+  UScale;
 
 type
   ECoverDBException = class(Exception)
@@ -153,6 +154,9 @@ end;
 function TCover.GetPreviewTexture(): TTexture;
 begin
   Result := GetTexture();
+  Result.ScaleMode := lsStretch;
+  Result.EdgeExtend := true;
+  Result.EdgeExtendSolidFill := false;
 end;
 
 function TCover.GetEmptyTexture(): TTexture;
@@ -167,6 +171,9 @@ begin
   Result := Default(TTexture);
   if not Assigned(Filename) then Exit;
   Result := Texture.LoadTexture(Filename);
+  Result.ScaleMode := lsStretch;
+  Result.EdgeExtend := true;
+  Result.EdgeExtendSolidFill := false;
 end;
 
 
@@ -406,8 +413,10 @@ begin
       if (Data <> nil) and
        (PixelFmt = ipfRGB) then
     begin
-
-      Result := Texture.CreateTexture(Data, Filename, Width, Height)
+      Result := Texture.CreateTexture(Data, Filename, Width, Height);
+      Result.ScaleMode := lsStretch;
+      Result.EdgeExtend := true;
+      Result.EdgeExtendSolidFill := false;
     end
     else
     begin
@@ -484,4 +493,3 @@ begin
 end;
 
 end.
-

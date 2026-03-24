@@ -19,11 +19,11 @@ AC_INIT([ultrastardx],
         m4_esyscmd_s([cat VERSION]),
         [https://github.com/UltraStar-Deluxe/USDX/issues/])
 # specify the website here
-PACKAGE_WEBSITE="http://usdx.eu/"
+PACKAGE_WEBSITE="https://usdx.eu/"
 AC_SUBST(PACKAGE_WEBSITE)
-# specify the IRC-channel here
-PACKAGE_IRC="#usdx at freenode.net"
-AC_SUBST(PACKAGE_IRC)
+# specify the contact page here
+PACKAGE_CONTACT="https://usdx.eu/contact/"
+AC_SUBST(PACKAGE_CONTACT)
 
 AC_CONFIG_MACRO_DIR([dists/autogen/m4])
 # Specify a source-file so autoconf can check if the source-dir exists
@@ -102,8 +102,8 @@ AC_ARG_WITH([local-projectM-presets],
 # add OpenCV option
 AC_ARG_WITH([opencv-cxx-api],
     [AS_HELP_STRING([--with-opencv-cxx-api],
-      [use current OpenCV C++ API @<:@default=no@:>@])],
-    [with_opencv_cxx_api=$withval], [with_opencv_cxx_api="no"])
+      [use current OpenCV C++ API @<:@default=auto (yes on Windows, no elsewhere)@:>@])],
+    [with_opencv_cxx_api=$withval], [with_opencv_cxx_api="auto"])
 
 # print misc options header
 AC_ARG_WITH([cfg-dummy2], [
@@ -129,27 +129,11 @@ AC_ARG_ENABLE(debug,
   [test $enableval = "yes" && ENABLE_DEBUG="yes"], [])
 AC_SUBST(ENABLE_DEBUG)
 
-# OSX Packaging
-AC_ARG_ENABLE(osx-fink, [AS_HELP_STRING([--enable-osx-fink], [Enable fink packaging for OSX])])
-AC_ARG_ENABLE(osx-brew, [AS_HELP_STRING([--enable-osx-brew], [Enable homebrew packaging for OSX])])
+MACOS_PACKAGING="brew"
+MACOS_PACKAGING_LIBDIR="$(brew --prefix)/lib"
 
-if [[ x$enable_osx_fink != x -a x$enable_osx_brew != x ]]; then
-    AC_MSG_ERROR([
-!!! You can't use --enable-osx-fink with --enable-osx-brew at the same time
-])
-fi
-
-# Default (homebrew)
-USE_OSX_PACKAGING="brew"
-USE_OSX_PACKAGING_LIBDIR="/usr/local/lib"
-
-if [[ x$enable_osx_fink != x ]]; then
-    USE_OSX_PACKAGING="fink"
-    USE_OSX_PACKAGING_LIBDIR="/sw/lib"
-fi
-
-AC_SUBST(USE_OSX_PACKAGING, $USE_OSX_PACKAGING)
-AC_SUBST(USE_OSX_PACKAGING_LIBDIR, $USE_OSX_PACKAGING_LIBDIR)
+AC_SUBST(MACOS_PACKAGING, $MACOS_PACKAGING)
+AC_SUBST(MACOS_PACKAGING_LIBDIR, $MACOS_PACKAGING_LIBDIR)
 
 # -----------------------------------------
 # check for compilers
@@ -167,6 +151,15 @@ if [[ "$FPC_VERSION_MAJOR" -lt 3 ]]; then
 !!! version 3.0.0, but only version $FPC_VERSION was found.
 !!! Please install a newer fpc version.
 ]) 
+fi
+
+# On Windows, the OpenCV C-wrapper is required for compiling with current OpenCV.
+# Keep explicit user values, but auto-enable when no value was provided.
+if [[ "$with_opencv_cxx_api" = auto ]]; then
+   case "$FPC_PLATFORM" in
+      win32|win64) with_opencv_cxx_api=yes ;;
+      *)           with_opencv_cxx_api=no ;;
+   esac
 fi
 
 # find and test the C compiler (for C-libs and wrappers)
@@ -190,7 +183,7 @@ fi
 # -----------------------------------------
 
 if test x$FPC_PLATFORM = xdarwin; then
-   AC_MACOSX_VERSION
+   AC_MACOS_VERSION
 fi
 
 # -----------------------------------------
@@ -211,7 +204,7 @@ PKG_HAVE([sqlite3], [sqlite3], yes)
 
 # find lua 5.5, 5.4, 5.3, 5.2 or 5.1
 # (K)Ubuntu uses lua5.2.pc and lua5.1.pc, 
-# Mac OS X and other linux distributions use lua.pc
+# macOS and other linux distributions use lua.pc
 # Archlinux aur package for 5.3 use lua5.3.pc in order
 # to make it work alongside the 5.2 version.
 
@@ -257,17 +250,11 @@ AC_SUBST(lua_LIB_NAME)
 #   although it is lower because pkg-config is confused by the 0d.
 # Use [mylib]_VERSION_INT for version-checking instead
 PKG_HAVE([libavcodec], [libavcodec], check)
-# The following finds libavcodec.pc in its new location on Mac OS X.
+# The following finds libavcodec.pc in its new location on macOS.
 # It only takes the last from the list, assuming that this is the latest 
 # version.
 if [[ x$libavcodec_HAVE = xno -a x$FPC_PLATFORM = xdarwin ]]; then
-    if [[ x$enable_osx_fink != x ]]; then
-        PKG_CONFIG_PATH=`find /sw/lib -name libavcodec.pc | tail -n 1 | xargs dirname`:$PKG_CONFIG_PATH
-    elif [[ x$enable_osx_brew != x ]]; then
-        PKG_CONFIG_PATH=`find /usr/local/opt/ffmpeg*/lib /usr/local/lib -name libavcodec.pc | tail -n 1 | xargs dirname`:$PKG_CONFIG_PATH
-    else
-        PKG_CONFIG_PATH=`find $FPCDIR/lib/ffmpeg* -name libavcodec.pc | tail -n 1 | xargs dirname`:$PKG_CONFIG_PATH
-    fi
+    PKG_CONFIG_PATH="$MACOS_PACKAGING_LIBDIR/pkgconfig:$PKG_CONFIG_PATH"
     export PKG_CONFIG_PATH
     PKG_HAVE([libavcodec], [libavcodec], yes)
 fi
@@ -426,6 +413,22 @@ AC_SUBST_DEFINE(HAVE_PORTMIXER, $portmixer_HAVE)
 AC_ARG_ENABLE(portmidi, [AS_HELP_STRING([--disable-portmidi], [Disable PortTime Midi loop])])
 AC_ARG_WITH(porttime, [AS_HELP_STRING([--with-porttime], [Use PortTime instead of SDL Midi loop])])
 
+
+# Default to MIDI emulation on Linux and macOS unless --disable-midiemu is given
+case "$host_os" in
+    linux*|darwin*)
+        default_midiemu=yes ;;
+    *)
+        default_midiemu=no ;;
+esac
+AC_ARG_ENABLE(midiemu, [AS_HELP_STRING([--enable-midiemu],[Enable built-in MIDI emulation backend (default on Linux/macOS)])],
+    [enable_midiemu=$enableval],
+    [enable_midiemu=$default_midiemu])
+
+AC_ARG_ENABLE(disable-midiemu, [AS_HELP_STRING([--disable-midiemu],[Disable built-in MIDI emulation backend and use system MIDI backend if available])],
+    [if test x$enableval = xyes; then enable_midiemu=no; fi])
+
+
 if [[ x$enable_portmidi != xno ]] ; then
     AC_CHECK_LIB([portmidi], [Pm_Initialize], [
         portmidi_HAVE=yes
@@ -451,9 +454,22 @@ AC_SUBST_DEFINE(HAVE_PORTMIDI, $portmidi_HAVE)
 AC_SUBST_DEFINE(HAVE_PORTTIME, $porttime_HAVE)
 AC_SUBST(porttime_LIB_NAME)
 
+## MIDI emulation backend
+if [[ x$enable_midiemu = xyes ]] ; then
+    midiemu_HAVE=yes
+    PFLAGS_EXTRA="$PFLAGS_EXTRA -dUseMidiEmu"
+    # Avoid platform MIDI backends with system synths if built-in MIDI emulation is enabled
+    portmidi_HAVE=no
+    porttime_HAVE=no
+else
+    midiemu_HAVE=no
+fi
+AC_SUBST_DEFINE(HAVE_MIDI_EMU, $midiemu_HAVE)
+AC_SUBST(PFLAGS_EXTRA)
+
 # determine linker-flags
 if test x$FPC_PLATFORM = xdarwin; then
-  LDFLAGS="-macosx_version_min 10.4 -undefined dynamic_lookup -headerpad_max_install_names -L/usr/X11/lib"
+  LDFLAGS="-macos_version_min 10.8 -undefined dynamic_lookup -headerpad_max_install_names"
 fi
 #LIBS=
 AC_SUBST(LDFLAGS)
@@ -491,18 +507,17 @@ AC_MSG_NOTICE([
 !!!
 !!! In case you find a bug send a bugreport to:
 !!!   $PACKAGE_BUGREPORT
-!!! You might as well ask for help at the IRC-Channel
-!!!   $PACKAGE_IRC
+!!! For help and contact options visit:
+!!!   $PACKAGE_CONTACT
 !!!
 ])
 
 if test x$FPC_PLATFORM = xdarwin; then
     AC_MSG_NOTICE([
-!!! Special target for OSX are:
-!!! "make macosx-standalone-app" to create a standalone .app
-!!! "make macosx-dmg" to create a dmg archive with standalone .app
-!!! Selected packaging: $USE_OSX_PACKAGING with libdir $USE_OSX_PACKAGING_LIBDIR
+!!! Special target for macOS are:
+!!! "make macos-standalone-app" to create a standalone .app
+!!! "make macos-dmg" to create a dmg archive with standalone .app
+!!! Selected packaging: $MACOS_PACKAGING with libdir $MACOS_PACKAGING_LIBDIR
                    ])
 fi
-
 
