@@ -79,6 +79,8 @@ type
 
       procedure SetPosition(Time: real);
       function  GetPosition: real;
+      procedure SetStartTime(Time: real);
+      function GetStartTime: real;
 
       function InitializePlayback: boolean; virtual; abstract;
       function FinalizePlayback: boolean; virtual;
@@ -324,11 +326,7 @@ end;
 function TAudioPlaybackBase.GetPosition: real;
 begin
   if assigned(MusicStream) then
-  begin
-    Result := MusicStream.Position - Ini.AVDelay / 1000;
-    if Result < 0 then
-      Result := 0;
-  end
+    Result := MusicStream.Position - Ini.AVDelay / 1000
   else
     Result := 0;
 end;
@@ -339,6 +337,22 @@ begin
     MusicStream.Position := Time;
   if assigned(KaraokeMusicStream) then
     KaraokeMusicStream.Position := Time;
+end;
+
+function TAudioPlaybackBase.GetStartTime: real;
+begin
+  if assigned(MusicStream) then
+    Result := MusicStream.StartTime
+  else
+    Result := 0;
+end;
+
+procedure TAudioPlaybackBase.SetStartTime(Time: real);
+begin
+  if assigned(MusicStream) then
+    MusicStream.StartTime := Time;
+  if assigned(KaraokeMusicStream) then
+    KaraokeMusicStream.StartTime := Time;
 end;
 
 procedure TAudioPlaybackBase.SetSyncSource(SyncSource: TSyncSource);
