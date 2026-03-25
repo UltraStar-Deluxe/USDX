@@ -18,7 +18,7 @@ A git version of this SVN can be found in the [legacy-sourceforge-svn-mirror](ht
 - There is Github Actions continuous integration set up. It will email project members if build of the master branch or some other branch is broken. This is quite helpful because linux users and other more tech savy users tend to run the most recent code so that they can use all the neat new features. Please keep them happy by not breaking too much of general singstar-like karaoke gameplay on the master branch. 
 - If you start working on something that is more then just a small code change, please create an issue in the git repository issue tracker for that and assign it to yourself, so the other developers don't touch it in the mean time.
 - Please write somewhat reusable code and split big problems into smaller functions. :)
-- If you have questions, feel free to ask them in the irc channel or on the issue tracker.
+- If you have questions, feel free to ask them on Discord (https://discord.gg/qfS2b7VwDG) or on the Github issue tracker.
 - Don't let anyone else tell you what to work on. Do what you like and be free!
 Have fun and enjoy working on a game that easily can hit 5.000 downloads in a week. This is very rewarding work and you can learn a lot!
 
