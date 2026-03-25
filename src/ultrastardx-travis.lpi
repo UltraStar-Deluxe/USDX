@@ -560,6 +560,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UUnicodeStringHelper"/>
       </Unit127>
+      <Unit128>
+        <Filename Value="base\UPlayerLayout.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="UPlayerLayout"/>
+      </Unit128>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

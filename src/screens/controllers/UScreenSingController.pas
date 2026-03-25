@@ -696,7 +696,7 @@ end;
 
 procedure TScreenSingController.OnShow;
 var
-  BadPlayer: integer;
+  BadPlayer, I: integer;
   Col, ColP1, ColP2: TRGB;
 begin
   inherited;
@@ -751,17 +751,6 @@ begin
         [BadPlayer]));
     // do not show the warning again, unless something sets this to true again
     CheckPlayerConfigOnNextSong := false;
-  end;
-
-  if (CurrentSong.isDuet) then
-  begin
-    if (PlayersPlay = 4) then
-    begin
-      screenSingViewRef.ColPlayer[0] := GetPlayerColor(Ini.PlayerColor[0]);
-      screenSingViewRef.ColPlayer[1] := GetPlayerColor(Ini.PlayerColor[1]);
-      screenSingViewRef.ColPlayer[2] := GetPlayerColor(Ini.PlayerColor[2]);
-      screenSingViewRef.ColPlayer[3] := GetPlayerColor(Ini.PlayerColor[3]);
-    end;
   end;
 
   // set custom options
@@ -1364,193 +1353,7 @@ begin
 end;
 
 function TScreenSingController.Draw: boolean;
-var
-  V1:     boolean;
-  V1TwoP: boolean;   // position of score box in two player mode
-  V1ThreeP: boolean; // position of score box in three player mode
-  V2R:    boolean;
-  V2M:    boolean;
-  V3R:    boolean;
-  VDuet1ThreeP: boolean;
-  VDuet2M:    boolean;
-  VDuet3R:    boolean;
-  V1FourP: boolean;
-  V2FourP: boolean;
-  V3FourP: boolean;
-  V4FourP: boolean;
-  V1SixP: boolean;
-  V2SixP: boolean;
-  V3SixP: boolean;
-  V4SixP: boolean;
-  V5SixP: boolean;
-  V6SixP: boolean;
-  V1DuetFourP: boolean;
-  V2DuetFourP: boolean;
-  V3DuetFourP: boolean;
-  V4DuetFourP: boolean;
-  V1DuetSixP: boolean;
-  V2DuetSixP: boolean;
-  V3DuetSixP: boolean;
-  V4DuetSixP: boolean;
-  V5DuetSixP: boolean;
-  V6DuetSixP: boolean;
 begin
-  V1     := false;
-  V1TwoP := false;
-  V1ThreeP := false;
-  V2R    := false;
-  V2M    := false;
-  V3R    := false;
-
-  VDuet1ThreeP := false;
-  VDuet2M := false;
-  VDuet3R := false;
-
-  V1FourP := false;
-  V2FourP := false;
-  V3FourP := false;
-  V4FourP := false;
-
-  V1SixP := false;
-  V2SixP := false;
-  V3SixP := false;
-  V4SixP := false;
-  V5SixP := false;
-  V6SixP := false;
-
-  V1DuetFourP := false;
-  V2DuetFourP := false;
-  V3DuetFourP := false;
-  V4DuetFourP := false;
-
-  V1DuetSixP := false;
-  V2DuetSixP := false;
-  V3DuetSixP := false;
-  V4DuetSixP := false;
-  V5DuetSixP := false;
-  V6DuetSixP := false;
-
-  case PlayersPlay of
-    1:
-    begin
-      V1     := true;
-    end;
-    2:
-    begin
-      V1TwoP := true;
-      V2R    := true;
-    end;
-    3:
-    begin
-      if (CurrentSong.isDuet) then
-      begin
-        VDuet1ThreeP := true;
-        VDuet2M := true;
-        VDuet3R := true;
-      end
-      else
-      begin
-        V1ThreeP := true;
-        V2M    := true;
-        V3R    := true;
-      end;
-    end;
-    4:
-    begin // double screen
-      if (Ini.Screens = 1) then
-      begin
-        V1TwoP := true;
-        V2R    := true;
-      end
-      else
-      begin
-        if (CurrentSong.isDuet) then
-        begin
-          V1DuetFourP := true;
-          V2DuetFourP := true;
-          V3DuetFourP := true;
-          V4DuetFourP := true;
-        end
-        else
-        begin
-          V1FourP := true;
-          V2FourP := true;
-          V3FourP := true;
-          V4FourP := true;
-        end;
-      end;
-    end;
-    6:
-    begin // double screen
-      if (Ini.Screens = 1) then
-      begin
-        if (CurrentSong.isDuet) then
-        begin
-          VDuet1ThreeP := true;
-          VDuet2M := true;
-          VDuet3R := true;
-        end
-        else
-        begin
-          V1ThreeP := true;
-          V2M    := true;
-          V3R    := true;
-        end;
-      end
-      else
-      begin
-       if (CurrentSong.isDuet) then
-        begin
-          V1DuetSixP := true;
-          V2DuetSixP := true;
-          V3DuetSixP := true;
-          V4DuetSixP := true;
-          V5DuetSixP := true;
-          V6DuetSixP := true;
-        end
-        else
-        begin
-          V1SixP := true;
-          V2SixP := true;
-          V3SixP := true;
-          V4SixP := true;
-          V5SixP := true;
-          V6SixP := true;
-        end;
-      end;
-    end;
-  end;
-
-  Text[screenSingViewRef.TextP1].Visible           := V1 and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1TwoP].Visible       := V1TwoP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2R].Visible          := V2R and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1ThreeP].Visible     := V1ThreeP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2M].Visible          := V2M and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3R].Visible          := V3R and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextDuetP1ThreeP].Visible := VDuet1ThreeP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextDuetP2M].Visible      := VDuet2M and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextDuetP3R].Visible      := VDuet3R and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1FourP].Visible      := V1FourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2FourP].Visible      := V2FourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3FourP].Visible      := V3FourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP4FourP].Visible      := V4FourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1SixP].Visible       := V1SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2SixP].Visible       := V2SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3SixP].Visible       := V3SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP4SixP].Visible       := V4SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP5SixP].Visible       := V5SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP6SixP].Visible       := V6SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1DuetFourP].Visible  := V1DuetFourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2DuetFourP].Visible  := V2DuetFourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3DuetFourP].Visible  := V3DuetFourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP4DuetFourP].Visible  := V4DuetFourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1DuetSixP].Visible   := V1DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2DuetSixP].Visible   := V2DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3DuetSixP].Visible   := V3DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP4DuetSixP].Visible   := V4DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP5DuetSixP].Visible   := V5DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP6DuetSixP].Visible   := V6DuetSixP and ScreenSing.Settings.AvatarsVisible;
-
   Result := screenSingViewRef.Draw();
 end;
 
@@ -2009,4 +1812,3 @@ begin
 end;
 
 end.
-
