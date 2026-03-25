@@ -44,6 +44,7 @@ uses
   UScreenScore,
   UScreenSingController,
   UScreenTop5,
+  UScale,
   UTexture,
   UThemes,
   dglOpenGL,
@@ -55,11 +56,16 @@ type
   TScreenName = class(TMenu)
     private
       PlayersCount:  cardinal;
+      PlayersCountIID: integer;
       PlayerAvatar:  cardinal;
       PlayerName:    cardinal;
+      PlayerNameIID: integer;
       PlayerColor:   cardinal;
+      PlayerColorIID: integer;
       PlayerSelect:  cardinal;
+      PlayerSelectIID: integer;
       PlayerSelectLevel: cardinal;
+      PlayerSelectLevelIID: integer;
 
       CountIndex:   integer;
       PlayerIndex:  integer;
@@ -90,10 +96,10 @@ type
       PlayerAvatarButtonMD5: array of UTF8String;
     public
       Goto_SingScreen: boolean; //If true then next Screen in SingScreen
-      
+
       constructor Create; override;
       function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
 
       procedure OnShow; override;
@@ -114,6 +120,7 @@ type
 
       procedure GenerateAvatars();
       procedure SetPlayerAvatar(Player: integer);
+      procedure ApplyPlayerSelectLayout(Player, PlayerCount: integer);
   end;
 
 var
@@ -134,11 +141,79 @@ uses
   UMain,
   UMenuButton,
   UPath,
+  UPlayerLayout,
+  UScreenSong,
   USkins,
   USongs,
   UTime,
   UUnicodeUtils,
   Math;
+
+function GetNamePlayerSelectBaseBounds: TPlayerSlotRect;
+begin
+  Result := UThemes.GetNamePlayerSelectBaseBounds(Theme.Name);
+end;
+
+function GetNamePlayerSelectLayoutBounds(const BaseBounds: TPlayerSlotRect; PlayerCount: integer): TPlayerSlotRect;
+begin
+  Result := UThemes.GetNamePlayerSelectLayoutBounds(BaseBounds, Theme.Name.PlayerSelectLayout);
+end;
+
+function GetNamePlayerSelectSlotRect(PlayerIndex, PlayerCount: integer; const BaseBounds, LayoutBounds: TPlayerSlotRect): TPlayerSlotRect;
+begin
+  Result := UThemes.GetNamePlayerSelectSlotRect(PlayerIndex, PlayerCount, BaseBounds, LayoutBounds, Theme.Name.PlayerSelectLayout);
+end;
+
+function ScaleNameCoord(const Value, SourceStart, SourceSize, TargetStart, TargetSize: integer): integer;
+begin
+  Result := ScaleCoordToSlot(Value, SourceStart, SourceSize, TargetStart, TargetSize);
+end;
+
+function ScaleNameLength(const Value, SourceSize, TargetSize: integer): integer;
+begin
+  Result := ScaleLengthToSlot(Value, SourceSize, TargetSize);
+end;
+
+function GetNamePlayerSelectFittedRect(PlayerIndex, PlayerCount: integer): TPlayerSlotRect;
+var
+  BaseBounds: TPlayerSlotRect;
+  LayoutBounds: TPlayerSlotRect;
+  SlotRect: TPlayerSlotRect;
+  MaxScale: real;
+begin
+  BaseBounds := GetNamePlayerSelectBaseBounds;
+  LayoutBounds := GetNamePlayerSelectLayoutBounds(BaseBounds, PlayerCount);
+  SlotRect := GetNamePlayerSelectSlotRect(PlayerIndex, PlayerCount, BaseBounds, LayoutBounds);
+
+  MaxScale := UThemes.GetNamePlayerSelectMaxScale(PlayerCount, Theme.Name.PlayerSelectLayout);
+
+  Result := GetFittedSlotRect(BaseBounds, SlotRect, MaxScale);
+end;
+
+procedure AssignTexturePreservingViewport(var TargetTexture: TTexture; const SourceTexture: TTexture);
+var
+  X: real;
+  Y: real;
+  W: real;
+  H: real;
+  Z: real;
+  ScaleMode: TLayoutScaleMode;
+begin
+  X := TargetTexture.X;
+  Y := TargetTexture.Y;
+  W := TargetTexture.W;
+  H := TargetTexture.H;
+  Z := TargetTexture.Z;
+  ScaleMode := TargetTexture.ScaleMode;
+
+  TargetTexture := SourceTexture;
+  TargetTexture.X := X;
+  TargetTexture.Y := Y;
+  TargetTexture.W := W;
+  TargetTexture.H := H;
+  TargetTexture.Z := Z;
+  TargetTexture.ScaleMode := ScaleMode;
+end;
 
 function TScreenName.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 var
@@ -183,7 +258,7 @@ begin
 
       if InRegion(X, Y, Button[PlayerAvatarButton[Btn]].GetMouseOverArea) then
       begin
-        Interaction := 2;
+        Interaction := PlayerAvatarIID;
 
         ParseInput(SDLK_LEFT, 0, true);
         ParseInput(SDLK_LEFT, 0, true);
@@ -196,7 +271,7 @@ begin
 
       if InRegion(X, Y, Button[PlayerAvatarButton[Btn]].GetMouseOverArea) then
       begin
-        Interaction := 2;
+        Interaction := PlayerAvatarIID;
 
         ParseInput(SDLK_LEFT, 0, true);
       end;
@@ -208,7 +283,7 @@ begin
 
       if InRegion(X, Y, Button[PlayerAvatarButton[Btn]].GetMouseOverArea) then
       begin
-        Interaction := 2;
+        Interaction := PlayerAvatarIID;
 
         ParseInput(SDLK_RIGHT, 0, true);
       end;
@@ -220,17 +295,18 @@ begin
 
       if InRegion(X, Y, Button[PlayerAvatarButton[Btn]].GetMouseOverArea) then
       begin
-        Interaction := 2;
+        Interaction := PlayerAvatarIID;
 
         ParseInput(SDLK_RIGHT, 0, true);
         ParseInput(SDLK_RIGHT, 0, true);
       end;
 
       // click for change player profile
-      for I := 0 to 5 do
+      for I := 0 to High(PlayerCurrent) do
       begin
         if Statics[PlayerCurrent[I]].Visible and InRegion(X, Y, Statics[PlayerCurrent[I]].GetMouseOverArea) then
         begin
+          Interaction := PlayerSelectIID;
           PlayerIndex := I;
 
           RefreshProfile();
@@ -247,21 +323,14 @@ function TScreenName.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char;
 begin
   Result := inherited;
   // only suppress special keys for now
-  case PressedKey of
-    // Templates for Names Mod
-    SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12:
-     if (Button[PlayerName].Selected) then
-     begin
-       SuppressKey := true;
-     end
-     else
-     begin
-       Result := false;
-     end;
-  end;
+  if GetNameTemplateIndexFromKey(PressedKey) <> -1 then
+    if (Button[PlayerName].Selected) then
+      SuppressKey := true
+    else
+      Result := false;
 end;
 
-function TScreenName.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenName.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
   var
     I: integer;
     SDL_ModState: word;
@@ -285,6 +354,15 @@ function TScreenName.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; Presse
     end;
   end;
 
+  procedure HandleTemplateHotkey;
+  var
+    TemplateIndex: integer;
+  begin
+    TemplateIndex := GetNameTemplateIndexFromKey(PressedKey);
+    if (TemplateIndex >= 0) and (TemplateIndex <= High(Ini.NameTemplate)) then
+      HandleNameTemplate(TemplateIndex);
+  end;
+
 begin
   Result := true;
   if (PressedDown) then
@@ -304,7 +382,7 @@ begin
           end;
       end;
     end
-    else if (Interaction = 3) and (IsPrintableChar(CharCode)) then
+    else if (Interaction = PlayerNameIID) and (IsPrintableChar(CharCode)) then
     begin
       // pass printable chars to button
       Button[PlayerName].Text[0].Text := Button[PlayerName].Text[0].Text +
@@ -317,23 +395,13 @@ begin
     // check special keys
     case PressedKey of
 
-      // Templates for Names Mod
-      SDLK_F1: HandleNameTemplate(0);
-      SDLK_F2: HandleNameTemplate(1);
-      SDLK_F3: HandleNameTemplate(2);
-      SDLK_F4: HandleNameTemplate(3);
-      SDLK_F5: HandleNameTemplate(4);
-      SDLK_F6: HandleNameTemplate(5);
-      SDLK_F7: HandleNameTemplate(6);
-      SDLK_F8: HandleNameTemplate(7);
-      SDLK_F9: HandleNameTemplate(8);
-      SDLK_F10: HandleNameTemplate(9);
-      SDLK_F11: HandleNameTemplate(10);
-      SDLK_F12: HandleNameTemplate(11);
+      SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6,
+      SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12:
+        HandleTemplateHotkey;
 
       SDLK_BACKSPACE:
         begin
-          if (Interaction = 3) then
+          if (Interaction = PlayerNameIID) then
           begin
             Button[PlayerName].Text[0].DeleteLastLetter();
             PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
@@ -353,7 +421,11 @@ begin
           Ini.SaveNames;
           AudioPlayback.PlaySound(SoundLib.Back);
           if GoTo_SingScreen then
-            FadeTo(@ScreenSong)
+          begin
+            ScreenSong.PreservePreviewForReturn;
+            FadeTo(@ScreenSong);
+            GoTo_SingScreen := false;
+          end
           else
             FadeTo(@ScreenMain);
         end;
@@ -420,6 +492,9 @@ begin
           begin
             // if we've been in the player screen, we need to show the warning again
             ScreenSing.CheckPlayerConfigOnNextSong := true;
+            AudioPlayback.SetVolume(1.0);
+            ScreenSong.StopMusicPreview();
+            ScreenSong.StopVideoPreview();
             FadeTo(@ScreenSing);
             GoTo_SingScreen := false;
           end
@@ -449,13 +524,13 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Change);
 
-          if (Interaction in [0, 4, 5]) then
+          if (Interaction in [PlayersCountIID, PlayerColorIID, PlayerSelectLevelIID]) then
             InteractInc;
 
-          if (Interaction = 0) then
+          if (Interaction = PlayersCountIID) then
             RefreshPlayers();
 
-          if (Interaction = 1) then
+          if (Interaction = PlayerSelectIID) then
           begin //TODO: adapt this to new playersize
               if (PlayerIndex < UIni.IPlayersVals[CountIndex]-1) then
             begin
@@ -468,7 +543,7 @@ begin
             end;
           end;
 
-          if (Interaction = 2) then
+          if (Interaction = PlayerAvatarIID) then
           begin
             SelectNext;
             SetAvatarScroll;
@@ -476,13 +551,13 @@ begin
             SetPlayerAvatar(PlayerIndex);
           end;
 
-          if (Interaction = 4) then
+          if (Interaction = PlayerColorIID) then
           begin
             RefreshColor();
             SelectsS[PlayerColor].SetSelect(true);
           end;
 
-          if (Interaction = 5) then
+          if (Interaction = PlayerSelectLevelIID) then
           begin
             PlayerLevel[PlayerIndex] := LevelIndex;
           end;
@@ -492,13 +567,13 @@ begin
         begin
           AudioPlayback.PlaySound(SoundLib.Change);
 
-          if (Interaction in [0, 4, 5]) then
+          if (Interaction in [PlayersCountIID, PlayerColorIID, PlayerSelectLevelIID]) then
             InteractDec;
 
-          if (Interaction = 0) then
+          if (Interaction = PlayersCountIID) then
             RefreshPlayers();
 
-          if (Interaction = 1) then
+          if (Interaction = PlayerSelectIID) then
           begin
             if (PlayerIndex > 0) then
             begin
@@ -511,7 +586,7 @@ begin
             end;
           end;
 
-          if (Interaction = 2) then
+          if (Interaction = PlayerAvatarIID) then
           begin
             SelectPrev;
             SetAvatarScroll;
@@ -519,16 +594,17 @@ begin
             SetPlayerAvatar(PlayerIndex);
           end;
 
-          if (Interaction = 4) then
+          if (Interaction = PlayerColorIID) then
           begin
             RefreshColor();
             SelectsS[PlayerColor].SetSelect(true);
           end;
 
-          if (Interaction = 5) then
+          if (Interaction = PlayerSelectLevelIID) then
           begin
             PlayerLevel[PlayerIndex] := LevelIndex;
           end;
+
         end;
 
     end;
@@ -542,20 +618,33 @@ var
   Avatar: TAvatar;
   AvatarFile: IPath;
   Hash: string;
+  GenericNoAvatarFile: IPath;
+  NoAvatarFile: IPath;
 begin
 
   SetLength(PlayerAvatarButton, Length(AvatarsList) + 1);
   SetLength(PlayerAvatarButtonMD5, Length(AvatarsList) + 1);
 
   // 1st no-avatar dummy
+  GenericNoAvatarFile := Skin.GetSkinFile(Path('[name]noavatar.png'));
   for I := 1 to UIni.IMaxPlayerCount do
   begin
-    NoAvatarTexture[I] := Texture.GetTexture(Skin.GetTextureFileName('NoAvatar_P' + IntToStr(I)), TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
+    if GenericNoAvatarFile.IsSet then
+      NoAvatarFile := GenericNoAvatarFile
+    else
+    begin
+      NoAvatarFile := Skin.GetTextureFileName('NoAvatar_P' + IntToStr(I));
+      if not NoAvatarFile.IsSet then
+        NoAvatarFile := Skin.GetTextureFileName('NoAvatar_P1');
+    end;
+
+    NoAvatarTexture[I] := Texture.GetTexture(NoAvatarFile, TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
+    NoAvatarTexture[I].ScaleMode := lsUniform;
   end;
 
   // create no-avatar
   PlayerAvatarButton[0] := AddButton(Theme.Name.PlayerAvatar);
-  Button[PlayerAvatarButton[0]].Texture := NoAvatarTexture[1];
+  AssignTexturePreservingViewport(Button[PlayerAvatarButton[0]].Texture, NoAvatarTexture[1]);
   Button[PlayerAvatarButton[0]].Selectable := false;
   Button[PlayerAvatarButton[0]].Selected := false;
   Button[PlayerAvatarButton[0]].Visible := false;
@@ -579,7 +668,7 @@ begin
     if (Avatar <> nil) then
     begin
       AvatarTexture := Avatar.GetTexture();
-      Button[PlayerAvatarButton[I]].Texture := AvatarTexture;
+      AssignTexturePreservingViewport(Button[PlayerAvatarButton[I]].Texture, AvatarTexture);
 
       Button[PlayerAvatarButton[I]].Selectable := false;
       Button[PlayerAvatarButton[I]].Selected := false;
@@ -592,8 +681,69 @@ begin
 end;
 
 procedure TScreenName.ChangeSelectPlayerPosition(Player: integer);
+var
+  BaseBounds: TPlayerSlotRect;
+  Count: integer;
+  FittedRect: TPlayerSlotRect;
+  SelectButton: integer;
 begin
-  Button[PlayerSelect].X := Theme.Name.PlayerSelect[Player].X + Theme.Name.PlayerSelectCurrent.X;
+  Count := UIni.IPlayersVals[CountIndex];
+  BaseBounds := GetNamePlayerSelectBaseBounds;
+  FittedRect := GetNamePlayerSelectFittedRect(Player, Count);
+
+  Button[PlayerSelect].X := ScaleNameCoord(
+    Theme.Name.PlayerSelectCurrent.X, BaseBounds.X, BaseBounds.W, FittedRect.X, FittedRect.W);
+  Button[PlayerSelect].Y := ScaleNameCoord(
+    Theme.Name.PlayerSelectCurrent.Y, BaseBounds.Y, BaseBounds.H, FittedRect.Y, FittedRect.H);
+  Button[PlayerSelect].W := ScaleNameLength(
+    Theme.Name.PlayerSelectCurrent.W, BaseBounds.W, FittedRect.W);
+  Button[PlayerSelect].H := ScaleNameLength(
+    Theme.Name.PlayerSelectCurrent.H, BaseBounds.H, FittedRect.H);
+  Button[PlayerSelect].SelectW := Button[PlayerSelect].W;
+  Button[PlayerSelect].SelectH := Button[PlayerSelect].H;
+
+  SelectButton := Interactions[PlayerSelectIID].Num;
+  Button[SelectButton].X := Button[PlayerSelect].X;
+  Button[SelectButton].Y := Button[PlayerSelect].Y;
+  Button[SelectButton].W := Button[PlayerSelect].W;
+  Button[SelectButton].H := Button[PlayerSelect].H;
+  Button[SelectButton].SelectW := Button[PlayerSelect].SelectW;
+  Button[SelectButton].SelectH := Button[PlayerSelect].SelectH;
+end;
+
+procedure TScreenName.ApplyPlayerSelectLayout(Player, PlayerCount: integer);
+var
+  BaseBounds: TPlayerSlotRect;
+  FittedRect: TPlayerSlotRect;
+begin
+  BaseBounds := GetNamePlayerSelectBaseBounds;
+  FittedRect := GetNamePlayerSelectFittedRect(Player, PlayerCount);
+
+  Statics[PlayerCurrent[Player]].Texture.X := ScaleNameCoord(
+    Theme.Name.PlayerSelectTemplateFrame.X, BaseBounds.X, BaseBounds.W, FittedRect.X, FittedRect.W);
+  Statics[PlayerCurrent[Player]].Texture.Y := ScaleNameCoord(
+    Theme.Name.PlayerSelectTemplateFrame.Y, BaseBounds.Y, BaseBounds.H, FittedRect.Y, FittedRect.H);
+  Statics[PlayerCurrent[Player]].Texture.W := ScaleNameLength(
+    Theme.Name.PlayerSelectTemplateFrame.W, BaseBounds.W, FittedRect.W);
+  Statics[PlayerCurrent[Player]].Texture.H := ScaleNameLength(
+    Theme.Name.PlayerSelectTemplateFrame.H, BaseBounds.H, FittedRect.H);
+
+  Text[PlayerCurrentText[Player]].X := ScaleNameCoord(
+    Theme.Name.PlayerSelectTemplateText.X, BaseBounds.X, BaseBounds.W, FittedRect.X, FittedRect.W);
+  Text[PlayerCurrentText[Player]].Y := ScaleNameCoord(
+    Theme.Name.PlayerSelectTemplateText.Y, BaseBounds.Y, BaseBounds.H, FittedRect.Y, FittedRect.H) -
+    Max(2, ScaleNameLength(4, BaseBounds.H, FittedRect.H));
+  Text[PlayerCurrentText[Player]].Size := Max(8, ScaleNameLength(
+    Theme.Name.PlayerSelectTemplateText.Size, BaseBounds.H, FittedRect.H));
+
+  Statics[PlayerCurrentAvatar[Player]].Texture.X := ScaleNameCoord(
+    Theme.Name.PlayerSelectTemplateAvatar.X, BaseBounds.X, BaseBounds.W, FittedRect.X, FittedRect.W);
+  Statics[PlayerCurrentAvatar[Player]].Texture.Y := ScaleNameCoord(
+    Theme.Name.PlayerSelectTemplateAvatar.Y, BaseBounds.Y, BaseBounds.H, FittedRect.Y, FittedRect.H);
+  Statics[PlayerCurrentAvatar[Player]].Texture.W := ScaleNameLength(
+    Theme.Name.PlayerSelectTemplateAvatar.W, BaseBounds.W, FittedRect.W);
+  Statics[PlayerCurrentAvatar[Player]].Texture.H := ScaleNameLength(
+    Theme.Name.PlayerSelectTemplateAvatar.H, BaseBounds.H, FittedRect.H);
 end;
 
 procedure TScreenName.RefreshPlayers();
@@ -608,8 +758,10 @@ begin
     PlayerIndex := PlayerIndex - 1;
 
   // Player Colors
-  for I := Count-1 downto 0 do
+  for I := 0 to Count-1 do
   begin
+    ApplyPlayerSelectLayout(I, Count);
+
     if (Ini.PlayerColor[I] > 0) then
       Num[I] := NoRepeatColors(Ini.PlayerColor[I], I, 1)
     else
@@ -808,6 +960,7 @@ begin
   Theme.Name.SelectPlayersCount.oneItemOnly := true;
   Theme.Name.SelectPlayersCount.showArrows := true;
   PlayersCount := AddSelectSlide(Theme.Name.SelectPlayersCount, CountIndex, IPlayers);
+  PlayersCountIID := High(Interactions);
 
   for I := 0 to UIni.IMaxPlayerCount -1 do
   begin
@@ -817,20 +970,31 @@ begin
   end;
 
   PlayerSelect := AddButton(Theme.Name.PlayerSelectCurrent);
+  Button[PlayerSelect].Selectable := false;
+
+  AddButton(0, 0, 0, 0, Skin.GetTextureFileName(Theme.Name.PlayerSelectCurrent.Tex), Theme.Name.PlayerSelectCurrent.Typ, false);
+  PlayerSelectIID := High(Interactions);
+  Button[Interactions[PlayerSelectIID].Num].SelectInt := 0;
+  Button[Interactions[PlayerSelectIID].Num].DeselectInt := 0;
+  Button[Interactions[PlayerSelectIID].Num].Texture.Alpha := 0;
+  Button[Interactions[PlayerSelectIID].Num].DeSelectTexture.Alpha := 0;
 
   PlayerAvatar := AddButton(Theme.Name.PlayerButtonAvatar);
   PlayerAvatarIID := High(Interactions);
 
   PlayerName := AddButton(Theme.Name.PlayerButtonName);
+  PlayerNameIID := High(Interactions);
   Button[PlayerName].Text[0].Writable := true;
 
   Theme.Name.SelectPlayerColor.oneItemOnly := true;
   Theme.Name.SelectPlayerColor.showArrows := true;
   PlayerColor := AddSelectSlide(Theme.Name.SelectPlayerColor, ColorIndex, IPlayerColorTranslated);
+  PlayerColorIID := High(Interactions);
 
   Theme.Name.SelectPlayerLevel.oneItemOnly := true;
   Theme.Name.SelectPlayerLevel.showArrows := true;
   PlayerSelectLevel := AddSelectSlide(Theme.Name.SelectPlayerLevel, LevelIndex, IDifficultyTranslated);
+  PlayerSelectLevelIID := High(Interactions);
 
   isScrolling := false;
 
@@ -846,10 +1010,9 @@ procedure TScreenName.SetPlayerAvatar(Player: integer);
 var
   Col: TRGB;
 begin
-
   if (PlayerAvatars[Player] = 0) then
   begin
-    Statics[PlayerCurrentAvatar[Player]].Texture := NoAvatarTexture[Player + 1];
+    AssignTexturePreservingViewport(Statics[PlayerCurrentAvatar[Player]].Texture, NoAvatarTexture[Player + 1]);
 
     Col := GetPlayerColor(Num[Player]);
 
@@ -858,13 +1021,8 @@ begin
     Statics[PlayerCurrentAvatar[Player]].Texture.ColB := Col.B;
   end
   else
-    Statics[PlayerCurrentAvatar[Player]].Texture := Button[PlayerAvatarButton[PlayerAvatars[Player]]].Texture;
-
-  Statics[PlayerCurrentAvatar[Player]].Texture.X := Theme.Name.PlayerSelectAvatar[Player].X;
-  Statics[PlayerCurrentAvatar[Player]].Texture.Y := Theme.Name.PlayerSelectAvatar[Player].Y;
-  Statics[PlayerCurrentAvatar[Player]].Texture.W := Theme.Name.PlayerSelectAvatar[Player].W;
-  Statics[PlayerCurrentAvatar[Player]].Texture.H := Theme.Name.PlayerSelectAvatar[Player].H;
-  Statics[PlayerCurrentAvatar[Player]].Texture.Z := Theme.Name.PlayerSelectAvatar[Player].Z;
+    AssignTexturePreservingViewport(Statics[PlayerCurrentAvatar[Player]].Texture,
+      Button[PlayerAvatarButton[PlayerAvatars[Player]]].Texture);
 
   Statics[PlayerCurrentAvatar[Player]].Texture.Int := 1;
 
@@ -873,8 +1031,11 @@ end;
 procedure TScreenName.OnShow;
 var
   I: integer;
+  PreviewVolume: single;
 begin
   inherited;
+  PreviewVolume := EnsureRange(Ini.PreviewVolume, 0, 100) / 100;
+  AudioPlayback.SetVolume(PreviewVolume);
 
   Ini.ReloadNames;
   CountIndex := Ini.Players;
@@ -896,13 +1057,6 @@ begin
   AvatarCurrent := AvatarTarget;
 
   RefreshPlayers;
-
-  // list players
-  for I := 1 to PlayersPlay do
-  begin
-    Text[PlayerCurrentText[I - 1]].Text := Ini.Name[I - 1];
-    SetPlayerAvatar(I - 1);
-  end;
 
   PlayerColorButton(Num[PlayerIndex]);
 
@@ -994,7 +1148,7 @@ begin
         Button[B].Y := Theme.Name.PlayerAvatar.Y;
 
         AvatarCurrent := AvatarTarget;
-        
+
         isScrolling := false;
       end
 
@@ -1081,6 +1235,7 @@ begin
   if Ini.ReloadNames then
   begin
     OnShow;
+    Ini.ReloadDelays;
   end;
 
   if isScrolling then

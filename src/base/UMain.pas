@@ -107,7 +107,6 @@ uses
 procedure Main;
 var
   WindowTitle: string;
-  BadPlayer: integer;
 begin
   {$IFNDEF Debug}
   try
@@ -243,24 +242,6 @@ begin
       * Start background music
       *}
     SoundLib.StartBgMusic;
-
-    // check microphone settings, goto record options if they are corrupt
-    BadPlayer := AudioInputProcessor.ValidateSettings;
-    if (BadPlayer <> 0) then
-    begin
-      ScreenPopupError.ShowPopup(
-          Format(Language.Translate('ERROR_PLAYER_DEVICE_ASSIGNMENT'),
-          [BadPlayer]));
-      Display.CurrentScreen^.FadeTo( @ScreenOptionsRecord );
-    end;
-    BadPlayer := AudioInputProcessor.CheckPlayersConfig(1);
-    if (BadPlayer <> 0) then
-    begin
-      ScreenPopupError.ShowPopup(
-          Format(Language.Translate('ERROR_PLAYER_NO_DEVICE_ASSIGNMENT'),
-          [BadPlayer]));
-      Display.CurrentScreen^.FadeTo( @ScreenOptionsRecord );
-    end;
 
     //------------------------------
     // Start Mainloop
@@ -491,6 +472,8 @@ begin
               KeepGoing := ScreenPopupSendScore.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else if (ScreenPopupScoreDownload <> nil) and (ScreenPopupScoreDownload.Visible) then
               KeepGoing := ScreenPopupScoreDownload.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
+            else if (ScreenPopupHelp <> nil) and (ScreenPopupHelp.Visible) then
+              KeepGoing := ScreenPopupHelp.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y)
             else
             begin
               KeepGoing := Display.ParseMouse(mouseBtn, mouseDown, Event.button.x, Event.button.y);
@@ -580,7 +563,7 @@ begin
             else if (Display.ShouldHandleInput(LongWord(SimKey), KeyCharUnicode, true, SuppressKey)) then
             begin
               // check if screen wants to exit
-              KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true);
+              KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true, Event.key._repeat > 0);
 
               // if screen wants to exit
               if not KeepGoing then

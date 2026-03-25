@@ -74,19 +74,22 @@ type
     public
       Player:       UTF8String;
       AverageScore: word;
+      Count:        integer;
   end;
 
   TStatResultMostSungSong = class(TStatResult)
     public
       Artist:       UTF8String;
       Title:        UTF8String;
-      TimesSung:    word;
+      TimesSung:    integer;
+      AverageScore: word;
   end;
 
   TStatResultMostPopBand = class(TStatResult)
     public
       ArtistName:   UTF8String;
-      TimesSungTot: word;
+      TimesSungTot: integer;
+      AverageScore: word;
   end;
 
   PUserInfo = ^TUserInfo;
@@ -115,6 +118,8 @@ type
 
       function GetVersion(): integer;
       procedure SetVersion(Version: integer);
+      procedure TrimTrailingNullByte(const TableName, ColumnName: string);
+      procedure MigrateTextColumns;
     public
       // Network
       NetworkUser: array of TNetworkUser;
@@ -126,7 +131,7 @@ type
       procedure Init(const Filename: IPath);
       procedure ConvertFrom101To110();
       procedure ReadScore(Song: TSong);
-      procedure AddScore(Song: TSong; Level: integer; const Name: UTF8String; Score: integer);
+      procedure AddScore(Song: TSong; Level: integer; Track: integer; const Name: UTF8String; Score: integer);
       procedure WriteScore(Song: TSong);
 
       procedure ReadUsers;
@@ -179,9 +184,10 @@ uses
  cDBVersion - history
  0 = USDX 1.01 or no Database
  01 = USDX 1.1
+  2 = Trim trailing NUL bytes written into TEXT columns
 }
 const
-  cDBVersion = 01; // 0.1
+  cDBVersion = 2;
   cUS_Scores = 'us_scores';
   cUS_Songs  = 'us_songs';
   cUS_Statistics_Info = 'us_statistics_info';
@@ -235,10 +241,6 @@ begin
       finalizeConversion := true; // means: conversion has to be done!
     end;
 
-    // Set version number after creation
-    if (Version = 0) then
-      SetVersion(cDBVersion);
-
     // SQLite does not handle VARCHAR(n) or INT(n) as expected.
     // Texts do not have a restricted length, no matter which type is used,
     // so use the native TEXT type. INT(n) is always INTEGER.
@@ -249,6 +251,7 @@ begin
     ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS [' + cUS_Scores + '] (' +
                       '[SongID] INTEGER NOT NULL, ' +
                       '[Difficulty] INTEGER NOT NULL, ' +
+                      '[Track] INTEGER NOT NULL, ' +
                       '[Player] TEXT NOT NULL, ' +
                       '[Score] INTEGER NOT NULL, ' +
                       '[Date] INTEGER NULL' +
@@ -304,10 +307,10 @@ begin
                       '[AutoScoreHard] INTEGER NOT NULL' +
                     ');');
 
-    //add column for options jukebox
+    // add column for legacy per-song display options
     if not ScoreDB.ContainsColumn(cUS_Songs, 'VideoRatioAspect') then
     begin
-      Log.LogInfo('adding columns to "' + cUS_Songs + ' for jukebox options"', 'TDataBaseSystem.Init');
+      Log.LogInfo('adding columns to "' + cUS_Songs + ' for legacy song display options"', 'TDataBaseSystem.Init');
 
       ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [VideoRatioAspect] INTEGER NULL');
       ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [VideoWidth] INTEGER NULL');
@@ -337,6 +340,13 @@ begin
       ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [Rating] INTEGER NULL');
     end;
 
+    //add column date to cUS-Scores
+    if not ScoreDB.ContainsColumn(cUS_Scores, 'Track') then
+    begin
+      Log.LogInfo('adding column track to "' + cUS_Scores + '"', 'TDataBaseSystem.Init');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Scores + ' ADD COLUMN [Track] INTEGER NULL');
+    end;
+
     // convert data from previous versions
     // part #2 - accomplishment
     if finalizeConversion then
@@ -345,6 +355,12 @@ begin
       if ScoreDB.TableExists('us_scores_101') then
         ConvertFrom101To110();
     end;
+
+    if (Version < 2) then
+      MigrateTextColumns;
+
+    if (Version < cDBVersion) then
+      SetVersion(cDBVersion);
 
   except
     on E: Exception do
@@ -356,6 +372,44 @@ begin
     end;
   end;
 
+end;
+
+procedure TDataBaseSystem.TrimTrailingNullByte(const TableName, ColumnName: string);
+begin
+  ScoreDB.ExecSQL(
+    'UPDATE [' + TableName + '] ' +
+    'SET [' + ColumnName + '] = ' +
+      'CAST(substr(CAST([' + ColumnName + '] AS BLOB), 1, ' +
+        'length(CAST([' + ColumnName + '] AS BLOB)) - 1) AS TEXT) ' +
+    'WHERE [' + ColumnName + '] IS NOT NULL ' +
+      'AND length(CAST([' + ColumnName + '] AS BLOB)) > 0 ' +
+      'AND substr(CAST([' + ColumnName + '] AS BLOB), ' +
+        'length(CAST([' + ColumnName + '] AS BLOB)), 1) = x''00'';');
+end;
+
+procedure TDataBaseSystem.MigrateTextColumns;
+begin
+  Log.LogInfo('Removing trailing NUL bytes from text columns', 'TDataBaseSystem.MigrateTextColumns');
+
+  TrimTrailingNullByte(cUS_Scores, 'Player');
+
+  TrimTrailingNullByte(cUS_Songs, 'Artist');
+  TrimTrailingNullByte(cUS_Songs, 'Title');
+  TrimTrailingNullByte(cUS_Songs, 'LyricSingFillColor');
+  TrimTrailingNullByte(cUS_Songs, 'LyricActualFillColor');
+  TrimTrailingNullByte(cUS_Songs, 'LyricNextFillColor');
+  TrimTrailingNullByte(cUS_Songs, 'LyricSingOutlineColor');
+  TrimTrailingNullByte(cUS_Songs, 'LyricActualOutlineColor');
+  TrimTrailingNullByte(cUS_Songs, 'LyricNextOutlineColor');
+
+  TrimTrailingNullByte(cUS_Webs, 'Name');
+
+  TrimTrailingNullByte(cUS_Webs_Stats, 'User_Score_0');
+  TrimTrailingNullByte(cUS_Webs_Stats, 'User_Score_1');
+  TrimTrailingNullByte(cUS_Webs_Stats, 'User_Score_2');
+
+  TrimTrailingNullByte(cUS_Users_Info, 'Username');
+  TrimTrailingNullByte(cUS_Users_Info, 'Password');
 end;
 
 (**
@@ -515,12 +569,12 @@ begin
   try
     // Search Song in DB
     TableData := ScoreDB.GetUniTable(
-      'SELECT [Difficulty], [Player], [Score], [Date] FROM [' + cUS_Scores + '] ' +
+      'SELECT [Difficulty], [Track], [Player], [Score], [Date] FROM [' + cUS_Scores + '] ' +
       'WHERE [SongID] = (' +
         'SELECT [ID] FROM [' + cUS_Songs + '] ' +
         'WHERE [Artist] = ? AND [Title] = ? ' +
         'LIMIT 1) ' +
-      'ORDER BY [Score] DESC;', //no LIMIT! see filter below!
+      'ORDER BY [Score] DESC, [Track] ASC;', //no LIMIT! see filter below!
       [Song.Artist, Song.Title]);
 
     // Empty Old Scores
@@ -534,7 +588,7 @@ begin
       // Add one Entry to Array
       Difficulty := TableData.FieldAsInteger(TableData.FieldIndex['Difficulty']);
       if ((Difficulty >= 0) and (Difficulty <= 2)) and
-         (Length(Song.Score[Difficulty]) < 5) then
+         (Length(Song.Score[Difficulty]) < Ini.TopScreenSize) then
       begin
         //filter player
         PlayerListed:=false;
@@ -559,6 +613,8 @@ begin
 
           Song.Score[Difficulty, High(Song.Score[Difficulty])].Name  :=
             TableData.FieldByName['Player'];
+          Song.Score[Difficulty, High(Song.Score[Difficulty])].Track :=
+            TableData.FieldAsInteger(TableData.FieldIndex['Track']);
           Song.Score[Difficulty, High(Song.Score[Difficulty])].Score :=
             TableData.FieldAsInteger(TableData.FieldIndex['Score']);
           Song.Score[Difficulty, High(Song.Score[Difficulty])].Date :=
@@ -583,7 +639,7 @@ end;
 (**
  * Adds one new score to DB
  *)
-procedure TDataBaseSystem.AddScore(Song: TSong; Level: integer; const Name: UTF8String; Score: integer);
+procedure TDataBaseSystem.AddScore(Song: TSong; Level: integer; Track: integer; const Name: UTF8String; Score: integer);
 var
   ID:        integer;
   TableData: TSQLiteTable;
@@ -617,9 +673,9 @@ begin
     // Create new entry
     ScoreDB.ExecSQL(
       'INSERT INTO [' + cUS_Scores + '] ' +
-      '([SongID] ,[Difficulty], [Player], [Score], [Date]) VALUES ' +
-      '(?, ?, ?, ?, ?);',
-      [ID, Level, Name, Score, DateTimeToUnix(Now())]);
+      '([SongID] ,[Difficulty], [Track], [Player], [Score], [Date]) VALUES ' +
+      '(?, ?, ?, ?, ?, ?);',
+      [ID, Level, Track, Name, Score, DateTimeToUnix(Now())]);
 
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.AddScore');
@@ -1347,16 +1403,23 @@ begin
                'INNER JOIN [' + cUS_Songs + '] ON ([SongID] = [ID]) ORDER BY [Score]';
     end;
     stBestSingers: begin
-      Query := 'SELECT [Player], ROUND(AVG([Score])) FROM [' + cUS_Scores + '] ' +
+      Query := 'SELECT [Player], ROUND(AVG([Score])), COUNT(*) as [Count] FROM [' + cUS_Scores + '] ' +
                'GROUP BY [Player] ORDER BY AVG([Score])';
     end;
     stMostSungSong: begin
-      Query := 'SELECT [Artist], [Title], [TimesPlayed] FROM [' + cUS_Songs + '] ' +
-               'ORDER BY [TimesPlayed]';
+      Query := 'SELECT [Artist], [Title], [TimesPlayed], ROUND(AVG([SCORE])) FROM [' + cUS_Scores + '] ' + 'INNER JOIN [' + cUS_Songs + '] ON ([SongID] = [ID]) GROUP BY [Artist], [Title], [TimesPlayed] ORDER BY [TimesPlayed]';
     end;
     stMostPopBand: begin
-      Query := 'SELECT [Artist], SUM([TimesPlayed]) FROM [' + cUS_Songs + '] ' +
-               'GROUP BY [Artist] ORDER BY SUM([TimesPlayed])';
+      Query := 'SELECT s.[Artist], SUM(s.[TimesPlayed]), ' +
+           'ROUND(AVG(sub.AvgScore)) ' +
+           'FROM [' + cUS_Songs + '] s ' +
+           'LEFT JOIN ( ' +
+           '  SELECT sc.[SongID], AVG(sc.[Score]) AS AvgScore ' +
+           '  FROM [' + cUS_Scores + '] sc ' +
+           '  GROUP BY sc.[SongID] ' +
+           ') sub ON sub.[SongID] = s.[ID] ' +
+           'GROUP BY s.[Artist] ' +
+           'ORDER BY SUM(s.[TimesPlayed])';
     end;
   end;
 
@@ -1402,6 +1465,7 @@ begin
         begin
           Player := TableData.Fields[0];
           AverageScore := TableData.FieldAsInteger(1);
+          Count := TableData.FieldAsInteger(2);
         end;
       end;
       stMostSungSong: begin
@@ -1411,6 +1475,7 @@ begin
           Artist := TableData.Fields[0];
           Title  := TableData.Fields[1];
           TimesSung  := TableData.FieldAsInteger(2);
+          AverageScore := TableData.FieldAsInteger(3);
         end;
       end;
       stMostPopBand: begin
@@ -1419,6 +1484,7 @@ begin
         begin
           ArtistName := TableData.Fields[0];
           TimesSungTot := TableData.FieldAsInteger(1);
+          AverageScore := TableData.FieldAsInteger(2);
         end;
       end
       else

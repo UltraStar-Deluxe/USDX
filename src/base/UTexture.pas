@@ -40,7 +40,8 @@ uses
   UCommon,
   UPath,
   sdl2,
-  SDL2_image;
+  SDL2_image,
+  UScale;
 
 type
   PTexture = ^TTexture;
@@ -51,6 +52,8 @@ type
     Z:        real;
     W:        real;
     H:        real;
+    SourceW:  real;
+    SourceH:  real;
     ScaleW:   real; // for dynamic scalling while leaving width constant
     ScaleH:   real; // for dynamic scalling while leaving height constant
     Int:      real; // intensity
@@ -65,6 +68,13 @@ type
     TexY2:    real;
     Alpha:    real;
     Name:     IPath; // experimental for handling cache images. maybe it's useful for dynamic skins
+    ScaleMode: TLayoutScaleMode;
+    EdgeExtend: boolean;
+    EdgeExtendPixels: real;
+    EdgeExtendSolidFill: boolean;
+    EdgeExtendFillR: real;
+    EdgeExtendFillG: real;
+    EdgeExtendFillB: real;
   end;
 
 type
@@ -141,6 +151,32 @@ uses
   UCovers,
   UThemes,
   UImage;
+
+procedure ApplyTextureSampling;
+var
+  MaxAnisotropy: GLfloat;
+begin
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  if GL_EXT_texture_filter_anisotropic then
+  begin
+    MaxAnisotropy := 1;
+    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, @MaxAnisotropy);
+    if MaxAnisotropy > 1 then
+      glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, Min(MaxAnisotropy, 8.0));
+  end;
+end;
+
+procedure GenerateTextureMipmaps;
+begin
+  if Assigned(glGenerateMipmap) then
+    glGenerateMipmap(GL_TEXTURE_2D)
+  else if Assigned(glGenerateMipmapEXT) then
+    glGenerateMipmapEXT(GL_TEXTURE_2D);
+end;
 
 function RoundPOT(value: integer): integer;
 begin
@@ -343,10 +379,7 @@ begin
   glGenTextures(1, @ActTex);
 
   glBindTexture(GL_TEXTURE_2D, ActTex);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ApplyTextureSampling;
 
   // load data into gl texture
   if not assigned(TexSurface.pixels) then
@@ -362,6 +395,8 @@ begin
     glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, TexSurface.pixels);
   end;
 
+  GenerateTextureMipmaps;
+
   // setup texture struct
   with Result do
   begin
@@ -370,6 +405,8 @@ begin
     Z := 0;
     W := oldWidth;
     H := oldHeight;
+    SourceW := oldWidth;
+    SourceH := oldHeight;
     ScaleW := 1;
     ScaleH := 1;
     TexNum := ActTex;
@@ -387,6 +424,13 @@ begin
     TexY1 := 0;
     TexX2 := 1;
     TexY2 := 1;
+    ScaleMode := lsStretch;
+    EdgeExtend := false;
+    EdgeExtendPixels := 0;
+    EdgeExtendSolidFill := false;
+    EdgeExtendFillR := 0;
+    EdgeExtendFillG := 0;
+    EdgeExtendFillB := 0;
 
     Name := Identifier;
   end;
@@ -453,9 +497,7 @@ var
 begin
   glGenTextures(1, @ActTex); // ActText = new texture number
   glBindTexture(GL_TEXTURE_2D, ActTex);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ApplyTextureSampling;
 
   if SupportsNPOT or (((Width and (Width - 1)) = 0) and ((Height and (Height - 1)) = 0)) then
   begin
@@ -473,6 +515,8 @@ begin
     Result.TexH := Height / TexHeight;
   end;
 
+  GenerateTextureMipmaps;
+
 {
   if Mipmapping then
   begin
@@ -487,6 +531,8 @@ begin
   Result.Z := 0;
   Result.W := 0;
   Result.H := 0;
+  Result.SourceW := Width;
+  Result.SourceH := Height;
   Result.ScaleW := 1;
   Result.ScaleH := 1;
   Result.TexNum := ActTex;
@@ -502,6 +548,12 @@ begin
   Result.TexY1 := 0;
   Result.TexX2 := 1;
   Result.TexY2 := 1;
+  Result.EdgeExtend := false;
+  Result.EdgeExtendPixels := 0;
+  Result.EdgeExtendSolidFill := false;
+  Result.EdgeExtendFillR := 0;
+  Result.EdgeExtendFillG := 0;
+  Result.EdgeExtendFillB := 0;
 
   Result.Name := Name;
 end;

@@ -514,10 +514,6 @@
         <Filename Value="base\UWebcam.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit117>
-      <Unit118>
-        <Filename Value="screens\UScreenJukebox.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit118>
       <Unit119>
         <Filename Value="screens\UScreenOptionsWebcam.pas"/>
         <IsPartOfProject Value="True"/>
@@ -564,6 +560,10 @@
         <Filename Value="menu\UMenuWidget.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit129>
+      <Unit130>
+        <Filename Value="base\UPlayerLayout.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit130>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
