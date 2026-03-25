@@ -21,7 +21,7 @@ AC_INIT([ultrastardx],
 # specify the website here
 PACKAGE_WEBSITE="http://usdx.eu/"
 AC_SUBST(PACKAGE_WEBSITE)
-# specify the IRC-channel here
+# specify the Discord channel here
 PACKAGE_DISCORD="https://discord.gg/qfS2b7VwDG"
 AC_SUBST(PACKAGE_DISCORD)
 
@@ -469,7 +469,7 @@ AC_MSG_NOTICE([
 !!!
 !!! In case you find a bug send a bugreport to:
 !!!   $PACKAGE_BUGREPORT
-!!! You might as well ask for help at the IRC-Channel
+!!! You might as well ask for help on Discord
 !!!   $PACKAGE_DISCORD
 !!!
 ])
