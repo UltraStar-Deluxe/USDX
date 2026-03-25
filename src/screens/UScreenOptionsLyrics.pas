@@ -60,6 +60,7 @@ type
 
     public
       constructor Create; override;
+      destructor Destroy; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
       function Draw: boolean; override;
@@ -220,11 +221,20 @@ begin
   LastFontStyle  := -1;
 end;
 
+destructor TScreenOptionsLyrics.Destroy;
+var
+  i: Integer;
+begin
+  for i := 0 to High(LyricEngine) do
+    LyricEngine[i].Free;
+  inherited Destroy;
+end;
+
 procedure TScreenOptionsLyrics.RebuildLines;
 var
   i: Integer;
 begin
-  for i := 0 to 1 do
+  for i := 0 to High(LyricEngine) do
   begin
     LyricEngine[i].Clear;
   end;
@@ -242,7 +252,7 @@ begin
   begin
     LastFontFamily           := Ini.LyricsFont;
     LastFontStyle            := Ini.LyricsStyle;
-    for i := 0 to 1 do
+    for i := 0 to High(LyricEngine) do
     begin
       LyricEngine[i].FontFamily := Ini.LyricsFont;
       LyricEngine[i].FontStyle  := Ini.LyricsStyle;
@@ -250,7 +260,7 @@ begin
     RebuildLines;
   end;
 
-  for i := 0 to 1 do
+  for i := 0 to High(LyricEngine) do
   begin
     // current lyrics
     LyricEngine[i].LineColor_act.R := 0;
