@@ -119,6 +119,7 @@ uses
   math,
   UScreenSingController,
   UNote,
+  USong,
   UDisplay,
   UGraphic,
   UMusic,
@@ -190,7 +191,7 @@ begin
   lua_ClearStack(L);
   Result := 1;
 
-  if (CurrentSong = nil) or (CurrentSong.BPM = 0) or (Display.CurrentScreen <> @ScreenSing) then
+  if (CurrentSong = nil) or (CurrentSong.BPM < MIN_BPM) or (Display.CurrentScreen <> @ScreenSing) then
     lua_PushNumber(L, 0) // in case of error
   else
     lua_PushNumber(L, CurrentSong.BPM);
@@ -202,7 +203,7 @@ function ULuaScreenSing_BeatsToSeconds(L: Plua_State): Integer; cdecl;
 begin
   Result := 1;
 
-  if (CurrentSong = nil) or (CurrentSong.BPM = 0) or (Display.CurrentScreen <> @ScreenSing) then
+  if (CurrentSong = nil) or (CurrentSong.BPM < MIN_BPM) or (Display.CurrentScreen <> @ScreenSing) then
     lua_PushNumber(L, 0) // in case of error
   else
     lua_PushNumber(L, luaL_CheckNumber(L, 1) * 60 / CurrentSong.BPM);
@@ -214,7 +215,7 @@ function ULuaScreenSing_SecondsToBeats(L: Plua_State): Integer; cdecl;
 begin
   Result := 1;
 
-  if (CurrentSong = nil) or (CurrentSong.BPM = 0) or (Display.CurrentScreen <> @ScreenSing) then
+  if (CurrentSong = nil) or (CurrentSong.BPM < MIN_BPM) or (Display.CurrentScreen <> @ScreenSing) then
     lua_PushNumber(L, 0)
   else
     lua_PushNumber(L, luaL_CheckNumber(L, 1) * CurrentSong.BPM / 60);

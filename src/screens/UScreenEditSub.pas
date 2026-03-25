@@ -468,7 +468,6 @@ uses
 const
   DEFAULT_FADE_IN_TIME  = 8;    //TODO in INI
   DEFAULT_FADE_OUT_TIME = 2;
-  MIN_EDITOR_BPM = 1.0;
   NOT_SET = '-';
   NotesSkipX:  Integer = 20;
   LineSpacing: Integer = 15;
@@ -1361,8 +1360,8 @@ begin
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_BPM_DECREASED_BY') + ' 0.01';
   end;
 
-  if CurrentSong.BPM <= 0 then
-    CurrentSong.BPM := MIN_EDITOR_BPM;
+  if CurrentSong.BPM < MIN_BPM then
+    CurrentSong.BPM := MIN_BPM;
 end;
 
       // SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_6: HandleExtendedCopyPaste;
@@ -2662,8 +2661,8 @@ begin
           if (TryStrToFloat(UTF8Copy(CurrentEditText, 1, TextPosition) + UTF8Copy(CurrentEditText, TextPosition+1, LengthUTF8(CurrentEditText)-TextPosition), qBPM)) then
           begin
             NewBPM := qBPM * 4;
-            if NewBPM <= 0 then
-              NewBPM := MIN_EDITOR_BPM;
+            if NewBPM < MIN_BPM then
+              NewBPM := MIN_BPM;
 
             BPMVal[0] := FloatToStr(NewBPM / 4);
             ChangeBPM(NewBPM);
@@ -3166,11 +3165,11 @@ var
   factor:     real;
 
 begin
-  if CurrentSong.BPM <= 0 then
-    CurrentSong.BPM := MIN_EDITOR_BPM;
+  if CurrentSong.BPM < MIN_BPM then
+    CurrentSong.BPM := MIN_BPM;
 
-  if newBPM <= 0 then
-    newBPM := MIN_EDITOR_BPM;
+  if newBPM < MIN_BPM then
+    newBPM := MIN_BPM;
 
   factor := newBPM / CurrentSong.BPM;    // e.g. new/old => 1/2 = 0.5 => * 0.5
   CurrentSong.BPM := newBPM;

@@ -178,7 +178,7 @@ end;
 function GetMidBeat(Time: real): real;
 begin
   try
-    if CurrentSong.BPM > 0 then
+    if CurrentSong.BPM >= MIN_BPM then
       Result := Time * CurrentSong.BPM / 60
     else
       Result := 0;
@@ -197,7 +197,7 @@ begin
   else
     Song := CurrentSong;
 
-  if Song.BPM > 0 then
+  if Song.BPM >= MIN_BPM then
     Result := Song.GAP / 1000 + Beat * 60 / Song.BPM
   else
     Result := 0;

@@ -67,6 +67,7 @@ uses
 
 const
   DEFAULT_RESOLUTION = 4; // default #RESOLUTION
+  MIN_BPM = 1.0; // minimum allowed BPM to avoid divide-by-zero
 type
 
   TSingMode = ( smNormal, smPartyClassic, smPartyFree, smPartyTournament, smJukebox, smPlaylistRandom , smMedley );
@@ -1189,7 +1190,7 @@ begin
       StringReplace(Value, ',', '.', [rfReplaceAll]);
       self.BPM := StrToFloatI18n(Value) * Mult * 4;
 
-      if self.BPM <= 0 then
+      if self.BPM < MIN_BPM then
       begin
         Log.LogError('Invalid BPM value "' + Value + '" in ' + FullFileName + '"',
           'TSong.ReadTXTHeader');
