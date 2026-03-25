@@ -19,11 +19,11 @@ AC_INIT([ultrastardx],
         m4_esyscmd_s([cat VERSION]),
         [https://github.com/UltraStar-Deluxe/USDX/issues/])
 # specify the website here
-PACKAGE_WEBSITE="http://usdx.eu/"
+PACKAGE_WEBSITE="https://usdx.eu/"
 AC_SUBST(PACKAGE_WEBSITE)
-# specify the IRC-channel here
-PACKAGE_IRC="#usdx at freenode.net"
-AC_SUBST(PACKAGE_IRC)
+# specify the contact page here
+PACKAGE_CONTACT="https://usdx.eu/contact/"
+AC_SUBST(PACKAGE_CONTACT)
 
 AC_CONFIG_MACRO_DIR([dists/autogen/m4])
 # Specify a source-file so autoconf can check if the source-dir exists
@@ -102,8 +102,8 @@ AC_ARG_WITH([local-projectM-presets],
 # add OpenCV option
 AC_ARG_WITH([opencv-cxx-api],
     [AS_HELP_STRING([--with-opencv-cxx-api],
-      [use current OpenCV C++ API @<:@default=no@:>@])],
-    [with_opencv_cxx_api=$withval], [with_opencv_cxx_api="no"])
+      [use current OpenCV C++ API @<:@default=auto (yes on Windows, no elsewhere)@:>@])],
+    [with_opencv_cxx_api=$withval], [with_opencv_cxx_api="auto"])
 
 # print misc options header
 AC_ARG_WITH([cfg-dummy2], [
@@ -167,6 +167,15 @@ if [[ "$FPC_VERSION_MAJOR" -lt 3 ]]; then
 !!! version 3.0.0, but only version $FPC_VERSION was found.
 !!! Please install a newer fpc version.
 ]) 
+fi
+
+# On Windows, the OpenCV C-wrapper is required for compiling with current OpenCV.
+# Keep explicit user values, but auto-enable when no value was provided.
+if [[ "$with_opencv_cxx_api" = auto ]]; then
+   case "$FPC_PLATFORM" in
+      win32|win64) with_opencv_cxx_api=yes ;;
+      *)           with_opencv_cxx_api=no ;;
+   esac
 fi
 
 # find and test the C compiler (for C-libs and wrappers)
@@ -426,6 +435,22 @@ AC_SUBST_DEFINE(HAVE_PORTMIXER, $portmixer_HAVE)
 AC_ARG_ENABLE(portmidi, [AS_HELP_STRING([--disable-portmidi], [Disable PortTime Midi loop])])
 AC_ARG_WITH(porttime, [AS_HELP_STRING([--with-porttime], [Use PortTime instead of SDL Midi loop])])
 
+
+# Default to MIDI emulation on Linux and macOS unless --disable-midiemu is given
+case "$host_os" in
+    linux*|darwin*)
+        default_midiemu=yes ;;
+    *)
+        default_midiemu=no ;;
+esac
+AC_ARG_ENABLE(midiemu, [AS_HELP_STRING([--enable-midiemu],[Enable built-in MIDI emulation backend (default on Linux/macOS)])],
+    [enable_midiemu=$enableval],
+    [enable_midiemu=$default_midiemu])
+
+AC_ARG_ENABLE(disable-midiemu, [AS_HELP_STRING([--disable-midiemu],[Disable built-in MIDI emulation backend and use system MIDI backend if available])],
+    [if test x$enableval = xyes; then enable_midiemu=no; fi])
+
+
 if [[ x$enable_portmidi != xno ]] ; then
     AC_CHECK_LIB([portmidi], [Pm_Initialize], [
         portmidi_HAVE=yes
@@ -450,6 +475,19 @@ fi
 AC_SUBST_DEFINE(HAVE_PORTMIDI, $portmidi_HAVE)
 AC_SUBST_DEFINE(HAVE_PORTTIME, $porttime_HAVE)
 AC_SUBST(porttime_LIB_NAME)
+
+## MIDI emulation backend
+if [[ x$enable_midiemu = xyes ]] ; then
+    midiemu_HAVE=yes
+    PFLAGS_EXTRA="$PFLAGS_EXTRA -dUseMidiEmu"
+    # Avoid platform MIDI backends with system synths if built-in MIDI emulation is enabled
+    portmidi_HAVE=no
+    porttime_HAVE=no
+else
+    midiemu_HAVE=no
+fi
+AC_SUBST_DEFINE(HAVE_MIDI_EMU, $midiemu_HAVE)
+AC_SUBST(PFLAGS_EXTRA)
 
 # determine linker-flags
 if test x$FPC_PLATFORM = xdarwin; then
@@ -491,8 +529,8 @@ AC_MSG_NOTICE([
 !!!
 !!! In case you find a bug send a bugreport to:
 !!!   $PACKAGE_BUGREPORT
-!!! You might as well ask for help at the IRC-Channel
-!!!   $PACKAGE_IRC
+!!! For help and contact options visit:
+!!!   $PACKAGE_CONTACT
 !!!
 ])
 
@@ -504,5 +542,4 @@ if test x$FPC_PLATFORM = xdarwin; then
 !!! Selected packaging: $USE_OSX_PACKAGING with libdir $USE_OSX_PACKAGING_LIBDIR
                    ])
 fi
-
 

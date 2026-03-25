@@ -135,6 +135,7 @@ type
 
       // static
       function AddStatic(ThemeStatic: TThemeStatic): integer; overload;
+      function AddStatic(X, Y: real; ThemeStatic: TThemeStatic): integer; overload;
       function AddStaticRectangle(static: TThemeStaticRectangle): integer;
       function AddStaticAlphaRectangle(static: TThemeStaticAlphaRectangle): integer;
       function AddStaticColorRectangle(static: TThemeStaticColorRectangle): integer;
@@ -152,6 +153,7 @@ type
 
       // text
       function AddText(ThemeText: TThemeText): integer; overload;
+      function AddText(X, Y: real; ThemeText: TThemeText; Replacement: string = ''): integer; overload;
       function AddText(X, Y: real; const Text_: UTF8String): integer; overload;
       function AddText(X, Y: real; Font, Style: integer; Size, ColR, ColG, ColB: real; const Text: UTF8String): integer; overload;
       function AddText(X, Y, W, H: real; Font, Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: UTF8String; Reflection_: boolean; ReflectionSpacing_: real; Z : real; Writable: boolean): integer; overload;
@@ -191,7 +193,7 @@ type
       function DrawFG: boolean; virtual;
       function Draw: boolean; virtual;
       function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean; virtual;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean; virtual;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; Repeated : boolean = false): boolean; virtual;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; virtual;
       function InRegion(X, Y: real; A: TMouseOverRect): boolean;
       function InRegionX(X: real; A: TMouseOverRect): boolean;
@@ -644,6 +646,9 @@ begin
   ButtonCollection[Num].Texture.TexY1 := 0;
   ButtonCollection[Num].Texture.TexX2 := 1;
   ButtonCollection[Num].Texture.TexY2 := 1;
+  ButtonCollection[Num].Texture.ScaleMode := ThemeCollection.Style.ScaleMode;
+  ButtonCollection[Num].DeSelectTexture.ScaleMode := ThemeCollection.Style.ScaleMode;
+  ButtonCollection[Num].Texture2.ScaleMode := ThemeCollection.Style.ScaleMode;
   ButtonCollection[Num].SetSelect(false);
 
   ButtonCollection[Num].Reflection := ThemeCollection.Style.Reflection;
@@ -669,6 +674,8 @@ begin
       Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), ThemeCollection.Style.Typ);
   end;
   ButtonCollection[Num].FadeTexPos := ThemeCollection.Style.FadeTexPos;
+  if (ButtonCollection[Num].FadeTex.TexNum <> 0) then
+    ButtonCollection[Num].FadeTex.ScaleMode := ThemeCollection.Style.ScaleMode;
 
   BTLen := Length(ThemeCollection.Style.Text);
   for BT := 0 to BTLen-1 do
@@ -683,6 +690,17 @@ end;
 function TMenu.AddStatic(ThemeStatic: TThemeStatic): integer;
 begin
   Result := AddStatic(ThemeStatic.X, ThemeStatic.Y, ThemeStatic.W, ThemeStatic.H, ThemeStatic.Z,
+    ThemeStatic.ColR, ThemeStatic.ColG, ThemeStatic.ColB,
+    ThemeStatic.TexX1, ThemeStatic.TexY1, ThemeStatic.TexX2, ThemeStatic.TexY2, ThemeStatic.Alpha,
+    Skin.GetTextureFileName(ThemeStatic.Tex),
+    ThemeStatic.Typ, $FFFFFF, ThemeStatic.Reflection, ThemeStatic.Reflectionspacing);
+    if (Result >= 0) then
+      Statics[Result].Texture.ScaleMode := ThemeStatic.ScaleMode;
+end;
+
+function TMenu.AddStatic(X,Y: real; ThemeStatic: TThemeStatic): integer;
+begin
+  Result := AddStatic(X, Y, ThemeStatic.W, ThemeStatic.H, ThemeStatic.Z,
     ThemeStatic.ColR, ThemeStatic.ColG, ThemeStatic.ColB,
     ThemeStatic.TexX1, ThemeStatic.TexY1, ThemeStatic.TexX2, ThemeStatic.TexY2, ThemeStatic.Alpha,
     Skin.GetTextureFileName(ThemeStatic.Tex),
@@ -928,6 +946,14 @@ begin
     ThemeText.ColR, ThemeText.ColG, ThemeText.ColB, ThemeText.Align, ThemeText.Text, ThemeText.Reflection, ThemeText.ReflectionSpacing, ThemeText.Z, ThemeText.Writable);
 end;
 
+function TMenu.AddText(X, Y: real; ThemeText: TThemeText; Replacement: string): integer;
+begin
+  if (Replacement = '') then
+    Replacement := ThemeText.Text;
+  Result := AddText(X, Y, ThemeText.W, ThemeText.H, ThemeText.Font, ThemeText.Style, ThemeText.Size,
+    ThemeText.ColR, ThemeText.ColG, ThemeText.ColB, ThemeText.Align, Replacement, ThemeText.Reflection, ThemeText.ReflectionSpacing, ThemeText.Z, ThemeText.Writable);
+end;
+
 function TMenu.AddText(X, Y: real; const Text_: UTF8String): integer;
 var
   TextNum: integer;
@@ -991,6 +1017,10 @@ begin
     Skin.GetTextureFileName(ThemeButton.Tex), ThemeButton.Typ,
     ThemeButton.Reflection, ThemeButton.Reflectionspacing, ThemeButton.DeSelectReflectionspacing);
 
+  Button[Result].Texture.ScaleMode := ThemeButton.ScaleMode;
+  Button[Result].DeSelectTexture.ScaleMode := ThemeButton.ScaleMode;
+  Button[Result].Texture2.ScaleMode := ThemeButton.ScaleMode;
+
   Button[Result].Z := ThemeButton.Z;
 
   //Button Visibility
@@ -1013,6 +1043,9 @@ begin
     Button[Result].FadeTex := Texture.GetTexture(
       Skin.GetTextureFileName(ThemeButton.FadeTex), ThemeButton.Typ);
   end;
+
+  if (Button[Result].FadeTex.TexNum <> 0) then
+    Button[Result].FadeTex.ScaleMode := ThemeButton.ScaleMode;
 
   Button[Result].FadeTexPos := ThemeButton.FadeTexPos;
 
@@ -1846,7 +1879,7 @@ begin
   Result := true;
 end;
 
-function TMenu.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TMenu.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   // nothing
   Result := true;
