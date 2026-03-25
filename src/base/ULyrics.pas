@@ -556,74 +556,19 @@ begin
   SetFontStyle(FontStyle);
   ResetFont();
 
-  // hack to OptionsJukebox lyrics demo
-  if (Display.CurrentScreen = @ScreenOptionsJukebox) and (FontStyle = 2) then
-    SetFontSize(Line.Height * 0.8)
-  else
-    SetFontSize(Line.Height);
+  SetFontSize(Line.Height);
 
-  // set outline
-  if (Display.CurrentScreen = @ScreenJukebox) or (Display.CurrentScreen = @ScreenOptionsJukebox) then
-  begin
-
-    if (Ini.CurrentJukeboxSingLineOutlineColor <> 2) then
-      OutlineColor_act := GetLyricOutlineColor(Ini.CurrentJukeboxSingLineOutlineColor)
-    else
-    begin
-      if (Display.CurrentScreen = @ScreenJukebox) then
-        OutlineColor_act := ScreenJukeboxOptions.GetJukeboxOptionsLyricOtherOutlineColor(0)
-      else
-        OutlineColor_act := GetJukeboxLyricOtherOutlineColor(0);
-    end;
-
-    if (Ini.CurrentJukeboxActualLineOutlineColor <> 2) then
-      OutlineColor_en := GetLyricOutlineColor(Ini.CurrentJukeboxActualLineOutlineColor)
-    else
-    begin
-      if (Display.CurrentScreen = @ScreenJukebox) then
-        OutlineColor_en := ScreenJukeboxOptions.GetJukeboxOptionsLyricOtherOutlineColor(1)
-      else
-        OutlineColor_en := GetJukeboxLyricOtherOutlineColor(1);
-    end;
-
-    if (Ini.CurrentJukeboxNextLineOutlineColor <> 2) then
-      OutlineColor_dis := GetLyricOutlineColor(Ini.CurrentJukeboxNextLineOutlineColor)
-    else
-    begin
-      if (Display.CurrentScreen = @ScreenJukebox) then
-        OutlineColor_dis := ScreenJukeboxOptions.GetJukeboxOptionsLyricOtherOutlineColor(2)
-      else
-        OutlineColor_dis := GetJukeboxLyricOtherOutlineColor(2);
-    end;
-
-  end
-  else
-  begin
-    OutlineColor_act := GetLyricOutlineColor(0);
-    OutlineColor_en := GetLyricOutlineColor(0);
-    OutlineColor_dis := GetLyricOutlineColor(0);
-  end;
+  OutlineColor_act := GetLyricOutlineColor(0);
+  OutlineColor_en := GetLyricOutlineColor(0);
+  OutlineColor_dis := GetLyricOutlineColor(0);
 
   // center lyrics
   LyricX := X + (W - Line.Width) / 2;
   LyricY := Y + (H - Line.Height) / 2;
   // get lyrics effect
 
-  if (Display.CurrentScreen = @ScreenJukebox) or (Display.CurrentScreen = @ScreenOptionsJukebox) then
-    LyricsEffect := TLyricsEffect(Ini.JukeboxEffect)
-  else
-    LyricsEffect := TLyricsEffect(Ini.LyricsEffect);
-
-  if (Display.CurrentScreen <> @ScreenJukebox)
-    and (Display.CurrentScreen <> @ScreenOptionsJukebox) then
-    Alpha := 1
-  else
-  begin
-    if (Display.CurrentScreen = @ScreenOptionsJukebox) then
-      Alpha := ILyricsAlphaVals[Ini.JukeboxAlpha]
-    else
-      Alpha := ScreenJukebox.LyricsAlpha;
-  end;
+  LyricsEffect := TLyricsEffect(Ini.LyricsEffect);
+  Alpha := 1;
 
   // check if this line is active (at least its first note must be active)
   if (Beat >= Line.StartNote) then
@@ -660,23 +605,12 @@ begin
       Progress := 0;
 
     // last word of this line finished, but this line did not hide -> fade out
-    if (Display.CurrentScreen <> @ScreenJukebox)
-      and (Display.CurrentScreen <> @ScreenOptionsJukebox) then
+    if Line.LastLine and
+     (Beat > LastWord.Start + LastWord.Length) then
     begin
-      if Line.LastLine and
-       (Beat > LastWord.Start + LastWord.Length) then
-      begin
-        Alpha := 1 - (Beat - (LastWord.Start + LastWord.Length)) / 15;
-        if (Alpha < 0) then
-          Alpha := 0;
-      end
-    end
-    else
-    begin
-      if (Display.CurrentScreen = @ScreenOptionsJukebox) then
-        Alpha := ILyricsAlphaVals[Ini.JukeboxAlpha]
-      else
-        Alpha := ScreenJukebox.LyricsAlpha;
+      Alpha := 1 - (Beat - (LastWord.Start + LastWord.Length)) / 15;
+      if (Alpha < 0) then
+        Alpha := 0;
     end;
 
     // outline color
@@ -708,9 +642,7 @@ begin
     SetOutlineColor(OutlineColor_act.R, OutlineColor_act.G, OutlineColor_act.B, Alpha);
 
     // draw current word
-    if ((LyricsEffect in [lfxSimple, lfxBall, lfxShift])
-      // hack to OptionsJukebox lyrics demo
-      or ((LyricsEffect = lfxSlide) and (Display.CurrentScreen = @ScreenOptionsJukebox))) then
+    if (LyricsEffect in [lfxSimple, lfxBall, lfxShift]) then
     begin
       if (LyricsEffect = lfxShift) then
         WordY := LyricY - 8 * (1-Progress)
@@ -844,4 +776,3 @@ begin
 end;
 
 end.
-

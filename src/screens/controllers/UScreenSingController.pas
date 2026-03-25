@@ -787,10 +787,9 @@ begin
     LyricsDuetP2.LineColor_act.B := ColP2.B;
     LyricsDuetP2.LineColor_act.A := 1;
 
-    if (Ini.JukeboxActualLineColor = High(UIni.IActualLineColor)) then
-      Col := GetJukeboxLyricOtherColor(1)
-    else
-      Col := GetLyricGrayColor(Ini.JukeboxActualLineColor);
+    Col.R := Theme.Song.LoopLyrics.ActualR;
+    Col.G := Theme.Song.LoopLyrics.ActualG;
+    Col.B := Theme.Song.LoopLyrics.ActualB;
     LyricsDuetP1.LineColor_en.R := Col.R;
     LyricsDuetP1.LineColor_en.G := Col.G;
     LyricsDuetP1.LineColor_en.B := Col.B;
@@ -801,10 +800,9 @@ begin
     LyricsDuetP2.LineColor_en.B := Col.B;
     LyricsDuetP2.LineColor_en.A := 1;
 
-    if (Ini.JukeboxNextLineColor = High(UIni.INextLineColor)) then
-      Col := GetJukeboxLyricOtherColor(2)
-    else
-      Col := GetLyricGrayColor(Ini.JukeboxNextLineColor);
+    Col.R := Theme.Song.LoopLyrics.NextR;
+    Col.G := Theme.Song.LoopLyrics.NextG;
+    Col.B := Theme.Song.LoopLyrics.NextB;
     LyricsDuetP1.LineColor_dis.R := Col.R;
     LyricsDuetP1.LineColor_dis.G := Col.G;
     LyricsDuetP1.LineColor_dis.B := Col.B;
@@ -822,28 +820,25 @@ begin
     Lyrics.FontFamily := Ini.LyricsFont;
     Lyrics.FontStyle := Ini.LyricsStyle;
 
-    if (Ini.JukeboxSingLineColor = High(UIni.ISingLineColor)) then
-      Col := GetJukeboxLyricOtherColor(0)
-    else
-      Col := GetLyricColor(Ini.JukeboxSingLineColor);
+    Col.R := Theme.Song.LoopLyrics.SingR;
+    Col.G := Theme.Song.LoopLyrics.SingG;
+    Col.B := Theme.Song.LoopLyrics.SingB;
     Lyrics.LineColor_act.R := Col.R;
     Lyrics.LineColor_act.G := Col.G;
     Lyrics.LineColor_act.B := Col.B;
     Lyrics.LineColor_act.A := 1;
 
-    if (Ini.JukeboxActualLineColor = High(UIni.IActualLineColor)) then
-      Col := GetJukeboxLyricOtherColor(1)
-    else
-      Col := GetLyricGrayColor(Ini.JukeboxActualLineColor);
+    Col.R := Theme.Song.LoopLyrics.ActualR;
+    Col.G := Theme.Song.LoopLyrics.ActualG;
+    Col.B := Theme.Song.LoopLyrics.ActualB;
     Lyrics.LineColor_en.R := Col.R;
     Lyrics.LineColor_en.G := Col.G;
     Lyrics.LineColor_en.B := Col.B;
     Lyrics.LineColor_en.A := 1;
 
-    if (Ini.JukeboxNextLineColor = High(UIni.INextLineColor)) then
-      Col := GetJukeboxLyricOtherColor(2)
-    else
-      Col := GetLyricGrayColor(Ini.JukeboxNextLineColor);
+    Col.R := Theme.Song.LoopLyrics.NextR;
+    Col.G := Theme.Song.LoopLyrics.NextG;
+    Col.B := Theme.Song.LoopLyrics.NextB;
     Lyrics.LineColor_dis.R := Col.R;
     Lyrics.LineColor_dis.G := Col.G;
     Lyrics.LineColor_dis.B := Col.B;
@@ -2009,4 +2004,3 @@ begin
 end;
 
 end.
-

@@ -522,10 +522,6 @@
         <Filename Value="base\UWebcam.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit118>
-      <Unit119>
-        <Filename Value="screens\UScreenJukebox.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit119>
       <Unit120>
         <Filename Value="screens\UScreenOptionsWebcam.pas"/>
         <IsPartOfProject Value="True"/>

@@ -45,7 +45,6 @@ uses
   UMusic,
   URecord,
   UScreenSingController,
-  UScreenJukebox,
   USong,
   UTime;
 
@@ -139,8 +138,6 @@ procedure NewBeatDetect(Screen: TScreenSingController); // executed when on then
 procedure NewNote(CP: integer; Screen: TScreenSingController);       // detect note
 function  GetMidBeat(Time: real): real;
 function  GetTimeFromBeat(Beat: integer; SelfSong: TSong = nil): real;
-
-procedure SingJukebox(Screen: TScreenJukebox);
 
 implementation
 
@@ -342,33 +339,6 @@ begin
   // make some operations when detecting new voice pitch
   if (LyricsState.CurrentBeatD >= 0) and (LyricsState.OldBeatD <> LyricsState.CurrentBeatD) then
     NewBeatDetect(Screen);
-end;
-
-procedure SingJukebox(Screen: TScreenJukebox);
-var
-  Count:   integer;
-  CountGr: integer;
-  CP:      integer;
-begin
-  LyricsState.UpdateBeats();
-
-  // sentences routines
-  for CountGr := 0 to 0 do //High(Tracks)
-  begin;
-    CP := CountGr;
-    // old parts
-    LyricsState.OldLine := CurrentSong.Tracks[CP].CurrentLine;
-
-    // choose current parts
-    for Count := 0 to CurrentSong.Tracks[CP].High do
-    begin
-      if LyricsState.CurrentBeat >= CurrentSong.Tracks[CP].Lines[Count].StartBeat then
-        CurrentSong.Tracks[CP].CurrentLine := Count;
-    end;
-  end; // for CountGr
-
-  // on sentence change...
-  Screen.onSentenceChange(CurrentSong.Tracks[0].CurrentLine);
 end;
 
 procedure NewSentence(CP: integer; Screen: TScreenSingController);

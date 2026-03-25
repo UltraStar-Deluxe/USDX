@@ -70,7 +70,8 @@ const
 
 type
 
-  TSingMode = ( smNormal, smPartyClassic, smPartyFree, smPartyTournament, smJukebox, smPlaylistRandom , smMedley );
+  // Keep the deprecated slot for compatibility with persisted mode values.
+  TSingMode = ( smNormal, smPartyClassic, smPartyFree, smPartyTournament, smLegacyLoopMode, smPlaylistRandom, smMedley );
   TSongMode = ( smAll, smCategory, smPlaylist);
 
   TMedleySource = ( msNone, msCalculated, msTag );
@@ -1945,4 +1946,3 @@ begin
 end;
 
 end.
-
