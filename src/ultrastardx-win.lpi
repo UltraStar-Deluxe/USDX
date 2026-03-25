@@ -150,7 +150,7 @@
         <IsPartOfProject Value="True"/>
       </Unit25>
       <Unit26>
-        <Filename Value="base\UPlatformMacOSX.pas"/>
+        <Filename Value="base\UPlatformMacOS.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit26>
       <Unit27>

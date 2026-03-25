@@ -394,13 +394,13 @@ begin
       BassDevice.BassDeviceID := BassDeviceID;
 
       // BASS device names seem to be encoded with local encoding
-      // TODO: works for windows, check Linux + Mac OS X
+      // TODO: works for windows, check Linux + macOS
       Descr := DecodeStringUTF8(DeviceInfo.name, encAuto);
 
       BassDevice.Name := UnifyDeviceName(Descr, DeviceIndex);
       Log.LogStatus('Attempting to configure InputDevice "' + BassDevice.Name + '"', 'Bass.EnumDevices');
 
-      // zero info-struct as some fields might not be set (e.g. freq is just set on Vista and MacOSX)
+      // zero info-struct as some fields might not be set (e.g. freq is just set on Vista and macOS)
       FillChar(RecordInfo, SizeOf(RecordInfo), 0);
       // retrieve recording device info
       BASS_RecordGetInfo(RecordInfo);
@@ -416,7 +416,7 @@ begin
       // check if BASS has capture-freq. info
       if (RecordInfo.freq > 0) then
       begin
-        // use current input sample rate (available only on Windows Vista and OSX).
+        // use current input sample rate (available only on Windows Vista and macOS).
         // Recording at this rate will give the best quality and performance, as no resampling is required.
         // FIXME: does BASS use LSB/MSB or system integer values for 16bit?
         BassDevice.AudioFormat := TAudioFormatInfo.Create(NumberOfSupportedChannels, RecordInfo.freq, asfS16)
@@ -453,7 +453,7 @@ begin
         SourceName := BASS_RecordGetInputName(SourceIndex-1);
 
         {$IFDEF DARWIN}
-        // Under MacOSX the SingStar Mics have an empty InputName.
+        // Under macOS the SingStar Mics have an empty InputName.
         // So, we have to add a hard coded Workaround for this problem
         // FIXME: - Do we need this anymore? Doesn't the (new) default source already solve this problem?
         //        - Normally a nil return value of BASS_RecordGetInputName() means end-of-list, so maybe
@@ -476,7 +476,7 @@ begin
 
         SetLength(BassDevice.Source, Length(BassDevice.Source)+1);
         // BASS source names seem to be encoded with local encoding
-        // TODO: works for windows, check Linux + Mac OS X
+        // TODO: works for windows, check Linux + macOS
         BassDevice.Source[SourceIndex].Name := DecodeStringUTF8(SourceName, encAuto);
 
         // get input-source info

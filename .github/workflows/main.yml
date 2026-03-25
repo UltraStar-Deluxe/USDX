@@ -14,14 +14,14 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Determine version
         run: |
           $VNAME=$(cat VERSION | sed "s/+dev$/+dev-$(git rev-parse --short HEAD)/")
           echo "versionName=$VNAME" >> $env:GITHUB_ENV
       - name: Cache deps
         id: cache-deps
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           key: lazarus-4.2-nsis-3.05
           path: |
@@ -52,13 +52,13 @@ jobs:
           & 'C:\Program Files (x86)\NSIS\makensis.exe' "installer/UltraStar Deluxe.nsi"
           mv installer\dist\UltraStar.Deluxe_*_installer.exe UltraStarDeluxe-windows-installer-${{ env.versionName }}.exe
       - name: Upload Installer Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: UltraStarDeluxe-windows-installer-${{ env.versionName }}
           path: UltraStarDeluxe-windows-installer-${{ env.versionName }}.exe
           if-no-files-found: error
       - name: Upload Portable Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: UltraStarDeluxe-windows-portable-${{ env.versionName }}
           path: game
@@ -73,7 +73,7 @@ jobs:
         os: [macos-latest, macos-15-intel]
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Determine version
         run: |
           VNAME=$(cat VERSION | sed "s/+dev$/+dev-$(git rev-parse --short HEAD)/")
@@ -88,14 +88,16 @@ jobs:
       - name: Install Dependencies
         run: |
           brew install fpc sdl2 sdl2_image automake portaudio lua ffmpeg
+      - name: Generate Build Scripts
+        run: ./autogen.sh
+      - name: Configure Project
+        run: ./configure
       - name: Build
-        run: |
-          ./autogen.sh
-          ./configure
-          make macosx-dmg
-          mv UltraStarDeluxe.dmg UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}.dmg
+        run: make macos-dmg
+      - name: Rename DMG
+        run: mv UltraStarDeluxe.dmg UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}.dmg
       - name: Upload Image Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}
           path: UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}.dmg
@@ -106,25 +108,25 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Determine version
         run: |
           VNAME=$(cat VERSION | sed "s/+dev$/+dev-$(git rev-parse --short HEAD)/")
           echo "versionName=$VNAME" >> $GITHUB_ENV
       - name: Cache build
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           key: linux-docker-${{ hashFiles('dists/linux/dl.sh', 'dists/linux/tasks.sh') }}
           path: |
             dists/linux/prefix
       - name: Start container builder
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Generate Dockerfile
         run: |
           cd dists/linux
           ./dockerenv.sh --dockerfile > Dockerfile
       - name: Build container
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: dists/linux
           cache-from: type=gha
@@ -138,7 +140,7 @@ jobs:
           ./dockerenv.sh --use-existing=usdx/buildenv:latest make compress
           mv UltraStar*.AppImage ../../UltraStarDeluxe-linux-${{ env.versionName }}.AppImage
       - name: Upload Image Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: UltraStarDeluxe-linux-${{ env.versionName }}
           path: UltraStarDeluxe-linux-${{ env.versionName }}.AppImage
