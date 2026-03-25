@@ -62,12 +62,11 @@ type
 
       procedure FillLevel;
       procedure FillPlaylist;
-      procedure FillPlaylistJukebox;
       procedure SetPlaylists;
       procedure SetPlaylist2;
     public
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       procedure SetAnimationProgress(Progress: real); override;
 
@@ -95,7 +94,7 @@ uses
   UTexture,
   UUnicodeUtils;
 
-function TScreenPartyOptions.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPartyOptions.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -231,15 +230,6 @@ begin
 end;
 
 procedure TScreenPartyOptions.FillPlaylist;
-begin
-  SetLength(IPlaylist, 3);
-
-  IPlaylist[0] := Language.Translate('PARTY_PLAYLIST_ALL');
-  IPlaylist[1] := Language.Translate('PARTY_PLAYLIST_CATEGORY');
-  IPlaylist[2] := Language.Translate('PARTY_PLAYLIST_PLAYLIST');
-end;
-
-procedure TScreenPartyOptions.FillPlaylistJukebox;
 begin
   SetLength(IPlaylist, 3);
 
@@ -433,4 +423,3 @@ begin
 end;
 
 end.
-

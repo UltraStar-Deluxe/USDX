@@ -274,7 +274,6 @@ constructor TSQLiteDatabase.Create(const FileName: string);
 var
   Msg: PAnsiChar;
   iResult: integer;
-  utf8FileName: UTF8string;
 begin
   inherited Create;
   fParams := TList.Create;
@@ -283,8 +282,11 @@ begin
 
   Msg := nil;
   try
-    utf8FileName := UTF8String(FileName);
-    iResult := SQLite3_Open(PAnsiChar(utf8FileName), Fdb);
+    {$IFDEF MSWINDOWS}
+    iResult := SQLite3_Open16(PWideChar(UTF8Decode(UTF8String(FileName))), Fdb);
+    {$ELSE}
+    iResult := SQLite3_Open(PAnsiChar(UTF8String(FileName)), Fdb);
+    {$ENDIF}
 
     if iResult <> SQLITE_OK then
       if Assigned(Fdb) then
@@ -393,7 +395,9 @@ begin
           vtString: begin // ShortString
             AnsiStr := Bindings[I].VString^;
             DataPtr := PAnsiChar(AnsiStr);
-            DataSize := Length(AnsiStr)+1;
+            // MODIFIED, original line was: DataSize := Length(AnsiStr)+1;
+            // reason: don't insert null byte at the end of a string
+            DataSize := Length(AnsiStr);
           end;
           vtPChar: begin
             DataPtr := Bindings[I].VPChar;
@@ -402,7 +406,9 @@ begin
           vtAnsiString: begin
             AnsiStrPtr := PAnsiString(@Bindings[I].VAnsiString);
             DataPtr := PAnsiChar(AnsiStrPtr^);
-            DataSize := Length(AnsiStrPtr^)+1;
+            // MODIFIED, original line was: DataSize := Length(AnsiStrPtr^)+1;
+            // reason: don't insert null byte at the end of a string
+            DataSize := Length(AnsiStrPtr^);
           end;
           vtPWideChar: begin
             AnsiStr := UTF8Encode(WideString(Bindings[I].VPWideChar));
@@ -417,7 +423,9 @@ begin
           vtChar: begin
             AnsiStr := AnsiString(Bindings[I].VChar);
             DataPtr := PAnsiChar(AnsiStr);
-            DataSize := 2;
+            // MODIFIED, original line was: DataSize := 2;
+            // reason: don't insert null byte at the end of a string
+            DataSize := Length(AnsiStr);
           end;
           vtWideChar: begin
             AnsiStr := UTF8Encode(WideString(Bindings[I].VWideChar));
@@ -427,7 +435,9 @@ begin
           else
             raise ESqliteException.Create('Unknown string-type');
         end;
-        if (sqlite3_bind_text(Stmt, I+1, DataPtr, DataSize, SQLITE_STATIC) <> SQLITE_OK) then
+        // MODIFIED, original line was: if (sqlite3_bind_text(Stmt, I+1, DataPtr, DataSize, SQLITE_STATIC) <> SQLITE_OK) then
+        // reason: use SQLITE_TRANSIENT for proper memory management
+        if (sqlite3_bind_text(Stmt, I+1, DataPtr, DataSize, SQLITE_TRANSIENT) <> SQLITE_OK) then
           RaiseError('Could not bind text', 'BindData');
       end;
       vtInteger:
@@ -1500,4 +1510,3 @@ begin
 end;
 
 end.
-

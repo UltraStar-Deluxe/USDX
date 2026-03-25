@@ -32,6 +32,7 @@ ${LangFileString} button_check_update "Sprawdź"
 
 ${LangFileString} delete_components "Usuń również następujące składniki:"
 ${LangFileString} delete_covers "Okładka"
+${LangFileString} delete_avatars "Awatary"
 ${LangFileString} delete_highscores "Wyniki"
 ${LangFileString} delete_config "Koniguracja"
 ${LangFileString} delete_screenshots "Zrzuty ekranów"
