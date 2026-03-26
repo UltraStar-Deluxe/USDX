@@ -58,6 +58,7 @@ type
       LastFontStyle:  Integer;
       AnimStartTicks: UInt32;
       LastAnimBeat:   real;
+      SavedAnimBeat:  real;
       procedure RebuildLines;
 
     public
@@ -65,6 +66,7 @@ type
       destructor Destroy; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
+      procedure OnHide; override;
       function Draw: boolean; override;
       procedure LyricSample;
 
@@ -180,7 +182,6 @@ begin
   GermanLine.ScoreValue := 6;
   GermanLine.StartBeat  := 0;
   GermanLine.EndBeat    := GermanLine.Notes[High(GermanLine.Notes)].StartBeat + GermanLine.Notes[High(GermanLine.Notes)].Duration;
-  GermanLine.LastLine   := true;
 
   // build French line data
   SetLength(FrenchLine.Notes, Length(LyricsFrench));
@@ -191,7 +192,6 @@ begin
     FrenchLine.Notes[i].Duration  := Trunc(PREVIEW_LOOP_BEATS/Length(LyricsFrench));
     FrenchLine.Notes[i].Text      := LyricsFrench[i];
   end;
-  FrenchLine.LastLine := true;
 
   // lyric sample engine 2
   LyricEngine[1] := TLyricEngine.Create(
@@ -207,7 +207,6 @@ begin
     SpanishLine.Notes[i].Duration  := Trunc(PREVIEW_LOOP_BEATS/Length(LyricsSpanish));
     SpanishLine.Notes[i].Text      := LyricsSpanish[i];
   end;
-  SpanishLine.LastLine := true;
 
   // build Polish line data
   SetLength(PolishLine.Notes, Length(LyricsPolish));
@@ -218,11 +217,11 @@ begin
     PolishLine.Notes[i].Duration  := Trunc(PREVIEW_LOOP_BEATS/Length(LyricsPolish));
     PolishLine.Notes[i].Text      := LyricsPolish[i];
   end;
-  PolishLine.LastLine := true;
 
   // force RebuildLines on first draw
   LastFontFamily := -1;
   LastFontStyle  := -1;
+  SavedAnimBeat  := 0;
 end;
 
 destructor TScreenOptionsLyrics.Destroy;
@@ -302,8 +301,14 @@ begin
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOptionsLyrics');
 
-  AnimStartTicks := SDL_GetTicks;
+  AnimStartTicks := SDL_GetTicks - Trunc(SavedAnimBeat * 100.0);
   LastAnimBeat   := -1;
+end;
+
+procedure TScreenOptionsLyrics.OnHide;
+begin
+  inherited;
+  SavedAnimBeat := LastAnimBeat;
 end;
 
 function TScreenOptionsLyrics.Draw: boolean;
