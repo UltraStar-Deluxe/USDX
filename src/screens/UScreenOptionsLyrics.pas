@@ -166,7 +166,7 @@ begin
 
   // build German line data
   SetLength(GermanLine.Notes, Length(LyricsGerman));
-  for i := 0 to High(GermanLine.Notes) do
+  for i := Low(GermanLine.Notes) to High(GermanLine.Notes) do
   begin
     GermanLine.Notes[i].NoteType  := ntNormal;
     GermanLine.Notes[i].StartBeat := i * 10;
@@ -180,7 +180,7 @@ begin
 
   // build French line data
   SetLength(FrenchLine.Notes, Length(LyricsFrench));
-  for i := 0 to High(FrenchLine.Notes) do
+  for i := Low(FrenchLine.Notes) to High(FrenchLine.Notes) do
   begin
     FrenchLine.Notes[i].NoteType  := ntFreestyle;
     FrenchLine.Notes[i].StartBeat := i * 10;
@@ -196,7 +196,7 @@ begin
 
   // build Spanish line data
   SetLength(SpanishLine.Notes, Length(LyricsSpanish));
-  for i := 0 to High(SpanishLine.Notes) do
+  for i := Low(SpanishLine.Notes) to High(SpanishLine.Notes) do
   begin
     SpanishLine.Notes[i].NoteType  := ntNormal;
     SpanishLine.Notes[i].StartBeat := i * 10;
@@ -207,7 +207,7 @@ begin
 
   // build Polish line data
   SetLength(PolishLine.Notes, Length(LyricsPolish));
-  for i := 0 to High(PolishLine.Notes) do
+  for i := Low(PolishLine.Notes) to High(PolishLine.Notes) do
   begin
     PolishLine.Notes[i].NoteType  := ntFreestyle;
     PolishLine.Notes[i].StartBeat := i * 10;
@@ -225,7 +225,7 @@ destructor TScreenOptionsLyrics.Destroy;
 var
   i: Integer;
 begin
-  for i := 0 to High(LyricEngine) do
+  for i := Low(LyricEngine) to High(LyricEngine) do
     LyricEngine[i].Free;
   inherited Destroy;
 end;
@@ -234,7 +234,7 @@ procedure TScreenOptionsLyrics.RebuildLines;
 var
   i: Integer;
 begin
-  for i := 0 to High(LyricEngine) do
+  for i := Low(LyricEngine) to High(LyricEngine) do
   begin
     LyricEngine[i].Clear;
   end;
@@ -252,7 +252,7 @@ begin
   begin
     LastFontFamily           := Ini.LyricsFont;
     LastFontStyle            := Ini.LyricsStyle;
-    for i := 0 to High(LyricEngine) do
+    for i := Low(LyricEngine) to High(LyricEngine) do
     begin
       LyricEngine[i].FontFamily := Ini.LyricsFont;
       LyricEngine[i].FontStyle  := Ini.LyricsStyle;
@@ -260,7 +260,7 @@ begin
     RebuildLines;
   end;
 
-  for i := 0 to High(LyricEngine) do
+  for i := Low(LyricEngine) to High(LyricEngine) do
   begin
     // current lyrics
     LyricEngine[i].LineColor_act.R := 0;
