@@ -56,6 +56,7 @@ type
       PolishLine:     TLine;
       LastFontFamily: Integer;
       LastFontStyle:  Integer;
+      AnimStartTicks: UInt32;
       procedure RebuildLines;
 
     public
@@ -72,6 +73,7 @@ type
 
 const
   ID='ID_075';   //for help system
+  PREVIEW_LOOP_BEATS = 200;
 
 implementation
 
@@ -82,6 +84,7 @@ uses
   ULog,
   UMenuButton,
   UUnicodeUtils,
+  Math,
   SysUtils;
 
 function TScreenOptionsLyrics.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -169,8 +172,8 @@ begin
   for i := Low(GermanLine.Notes) to High(GermanLine.Notes) do
   begin
     GermanLine.Notes[i].NoteType  := ntNormal;
-    GermanLine.Notes[i].StartBeat := i * 10;
-    GermanLine.Notes[i].Duration  := 8;
+    GermanLine.Notes[i].StartBeat := i * Trunc(PREVIEW_LOOP_BEATS/Length(LyricsGerman));
+    GermanLine.Notes[i].Duration  := Trunc(PREVIEW_LOOP_BEATS/Length(LyricsGerman));
     GermanLine.Notes[i].Text      := LyricsGerman[i];
   end;
   GermanLine.ScoreValue := 6;
@@ -183,8 +186,8 @@ begin
   for i := Low(FrenchLine.Notes) to High(FrenchLine.Notes) do
   begin
     FrenchLine.Notes[i].NoteType  := ntFreestyle;
-    FrenchLine.Notes[i].StartBeat := i * 10;
-    FrenchLine.Notes[i].Duration  := 8;
+    FrenchLine.Notes[i].StartBeat := i * Trunc(PREVIEW_LOOP_BEATS/Length(LyricsFrench));
+    FrenchLine.Notes[i].Duration  := Trunc(PREVIEW_LOOP_BEATS/Length(LyricsFrench));
     FrenchLine.Notes[i].Text      := LyricsFrench[i];
   end;
   FrenchLine.LastLine := true;
@@ -199,8 +202,8 @@ begin
   for i := Low(SpanishLine.Notes) to High(SpanishLine.Notes) do
   begin
     SpanishLine.Notes[i].NoteType  := ntNormal;
-    SpanishLine.Notes[i].StartBeat := i * 10;
-    SpanishLine.Notes[i].Duration  := 8;
+    SpanishLine.Notes[i].StartBeat := i * Trunc(PREVIEW_LOOP_BEATS/Length(LyricsSpanish));
+    SpanishLine.Notes[i].Duration  := Trunc(PREVIEW_LOOP_BEATS/Length(LyricsSpanish));
     SpanishLine.Notes[i].Text      := LyricsSpanish[i];
   end;
   SpanishLine.LastLine := true;
@@ -210,8 +213,8 @@ begin
   for i := Low(PolishLine.Notes) to High(PolishLine.Notes) do
   begin
     PolishLine.Notes[i].NoteType  := ntFreestyle;
-    PolishLine.Notes[i].StartBeat := i * 10;
-    PolishLine.Notes[i].Duration  := 8;
+    PolishLine.Notes[i].StartBeat := i * Trunc(PREVIEW_LOOP_BEATS/Length(LyricsPolish));
+    PolishLine.Notes[i].Duration  := Trunc(PREVIEW_LOOP_BEATS/Length(LyricsPolish));
     PolishLine.Notes[i].Text      := LyricsPolish[i];
   end;
   PolishLine.LastLine := true;
@@ -246,7 +249,8 @@ end;
 
 procedure TScreenOptionsLyrics.LyricSample;
 var
-  i: Integer;
+  i:        Integer;
+  AnimBeat: real;
 begin
   if (Ini.LyricsFont <> LastFontFamily) or (Ini.LyricsStyle <> LastFontStyle) then
   begin
@@ -259,6 +263,10 @@ begin
     end;
     RebuildLines;
   end;
+
+  // compute a looping beat from elapsed time:
+  // 10 beats per syllable at ~1 beat per 200ms = ~5 syllables per second
+  AnimBeat := fmod((SDL_GetTicks - AnimStartTicks) / 200.0, PREVIEW_LOOP_BEATS);
 
   for i := Low(LyricEngine) to High(LyricEngine) do
   begin
@@ -277,7 +285,7 @@ begin
     LyricEngine[i].LineColor_dis.G := 1;
     LyricEngine[i].LineColor_dis.B := 1;
 
-    LyricEngine[i].Draw(LyricsState.MidBeat);
+    LyricEngine[i].Draw(AnimBeat);
   end;
 end;
 
@@ -290,14 +298,12 @@ begin
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOptionsLyrics');
 
-  LyricsState.StartTime := 0;
-  LyricsState.UpdateBeats;
+  AnimStartTicks := SDL_GetTicks;
 end;
 
 function TScreenOptionsLyrics.Draw: boolean;
 begin
   Result := inherited Draw;
-
   LyricSample();
 end;
 
