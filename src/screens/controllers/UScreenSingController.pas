@@ -1307,9 +1307,9 @@ end;
 
 procedure TScreenSingController.ClearLyricEngines();
 begin
-  Lyrics.Clear(CurrentSong.BPM, CurrentSong.Resolution);
-  LyricsDuetP1.Clear(CurrentSong.BPM, CurrentSong.Resolution);
-  LyricsDuetP2.Clear(CurrentSong.BPM, CurrentSong.Resolution);
+  Lyrics.Clear(CurrentSong.BPM);
+  LyricsDuetP1.Clear(CurrentSong.BPM);
+  LyricsDuetP2.Clear(CurrentSong.BPM);
 end;
 
 procedure TScreenSingController.ClearSettings;
