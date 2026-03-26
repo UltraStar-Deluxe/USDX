@@ -15,7 +15,8 @@ Thumbs.db
 *.dcu
 
 # other editors
-/.idea/
+.vscode
+.idea
 
 # intermediates
 /configure

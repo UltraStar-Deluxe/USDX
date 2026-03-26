@@ -3,9 +3,6 @@
     // Pascal support
     "wosi.omnipascal",
 
-    // C/C++ support for the C wrappers in the project
-    "ms-vscode.cpptools",
-
     // Makefile support
     "ms-vscode.makefile-tools",
 
