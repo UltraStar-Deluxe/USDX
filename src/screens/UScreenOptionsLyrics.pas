@@ -57,6 +57,7 @@ type
       LastFontFamily: Integer;
       LastFontStyle:  Integer;
       AnimStartTicks: UInt32;
+      LastAnimBeat:   real;
       procedure RebuildLines;
 
     public
@@ -264,9 +265,12 @@ begin
     RebuildLines;
   end;
 
-  // compute a looping beat from elapsed time:
-  // 10 beats per syllable at ~1 beat per 200ms = ~5 syllables per second
-  AnimBeat := fmod((SDL_GetTicks - AnimStartTicks) / 200.0, PREVIEW_LOOP_BEATS);
+  AnimBeat := fmod((SDL_GetTicks - AnimStartTicks) / 100.0, PREVIEW_LOOP_BEATS);
+
+  // when the beat wraps back to the start, rebuild lines to reset engine state
+  if AnimBeat < LastAnimBeat then
+    RebuildLines;
+  LastAnimBeat := AnimBeat;
 
   for i := Low(LyricEngine) to High(LyricEngine) do
   begin
@@ -299,6 +303,7 @@ begin
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOptionsLyrics');
 
   AnimStartTicks := SDL_GetTicks;
+  LastAnimBeat   := -1;
 end;
 
 function TScreenOptionsLyrics.Draw: boolean;
