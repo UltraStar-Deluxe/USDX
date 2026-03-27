@@ -254,14 +254,20 @@ var
 begin
   if (Ini.LyricsFont <> LastFontFamily) or (Ini.LyricsStyle <> LastFontStyle) then
   begin
-    LastFontFamily           := Ini.LyricsFont;
-    LastFontStyle            := Ini.LyricsStyle;
     for i := Low(LyricEngine) to High(LyricEngine) do
     begin
       LyricEngine[i].FontFamily := Ini.LyricsFont;
       LyricEngine[i].FontStyle  := Ini.LyricsStyle;
     end;
-    RebuildLines;
+    if ((LastFontFamily = -1) or (LastFontStyle = -1)) then
+      RebuildLines
+    else
+    begin
+      for i := Low(LyricEngine) to High(LyricEngine) do
+        LyricEngine[i].UpdateLineMetrics;
+    end;
+    LastFontFamily           := Ini.LyricsFont;
+    LastFontStyle            := Ini.LyricsStyle;
   end;
 
   AnimBeat := fmod((SDL_GetTicks - AnimStartTicks) / 100.0, PREVIEW_LOOP_BEATS);
