@@ -116,7 +116,7 @@ type
       constructor Create; override;
       destructor Destroy; override;
       function    Draw: boolean; override;
-      function    ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function    ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure   OnShow; override;
       procedure   OnHide; override;
   end;
@@ -407,7 +407,7 @@ begin
 
 end;
 
-function TScreenOptionsRecord.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenOptionsRecord.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if (PressedDown) then

@@ -69,7 +69,7 @@ type
     
     public
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       procedure UpdateUsernameList(ResetIndex: boolean);
       procedure UpdateUsernameSettings;
@@ -244,7 +244,7 @@ begin
 
 end;
 
-function TScreenOptionsNetwork.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenOptionsNetwork.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   SDL_ModState:  word;
 begin
