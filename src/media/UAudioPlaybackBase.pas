@@ -49,7 +49,8 @@ type
       OutputDeviceList: TAudioOutputDeviceList;
       MusicStream: TAudioPlaybackStream;
       KaraokeMusicStream: TAudioPlaybackStream;
-      KaraokeMode: boolean;
+      FOverallVolume: single;
+      FVocalsShare: single;
       CurrentFileName: string;
 
       function CreatePlaybackStream(): TAudioPlaybackStream; virtual; abstract;
@@ -60,6 +61,7 @@ type
       function OpenStream(const Filename: IPath): TAudioPlaybackStream;
       function OpenStreamBuffer(Buffer: TStream; Format: TAudioFormatInfo): TAudioPlaybackStream;
       function OpenDecodeStream(const Filename: IPath): TAudioDecodeStream;
+      procedure UpdateStreamVolumes;
     public
       constructor Create(); virtual;
       function GetName: string; virtual; abstract;
@@ -89,6 +91,10 @@ type
       procedure SetAppVolume(Volume: single); virtual; abstract;
       procedure SetVolume(Volume: single);
       procedure SetLoop(Enabled: boolean);
+      procedure SetVocalsBalance(Balance: single);
+      function GetVocalsBalance: single;
+      function HasInstrumentalTrack: boolean;
+      function GetOverallVolume: single;
 
       procedure Rewind;
       function  Finished: boolean;
@@ -137,7 +143,8 @@ uses
 constructor TAudioPlaybackBase.Create();
 begin
   inherited;
-  KaraokeMode := false;
+  FOverallVolume := 1.0;
+  FVocalsShare := 1.0;
 end;
 
 { TAudioPlaybackBase }
@@ -156,6 +163,28 @@ begin
     Result := CurrentFileName
   else
     Result := '';
+end;
+
+procedure TAudioPlaybackBase.UpdateStreamVolumes;
+var
+  VocalsVolume: single;
+  InstrumentalVolume: single;
+begin
+  if assigned(KaraokeMusicStream) then
+  begin
+    VocalsVolume := FOverallVolume * FVocalsShare;
+    InstrumentalVolume := FOverallVolume * (1 - FVocalsShare);
+  end
+  else
+  begin
+    VocalsVolume := FOverallVolume;
+    InstrumentalVolume := 0;
+  end;
+
+  if assigned(MusicStream) then
+    MusicStream.Volume := VocalsVolume;
+  if assigned(KaraokeMusicStream) then
+    KaraokeMusicStream.Volume := InstrumentalVolume;
 end;
 
 function TAudioPlaybackBase.Open(const Filename: IPath; const FilenameKaraoke: IPath): boolean;
@@ -177,15 +206,24 @@ begin
   if assigned(FilenameKaraoke) then
     KaraokeMusicStream := OpenStream(FilenameKaraoke);
 
-  KaraokeMode := false;
-  if assigned(KaraokeMusicStream) then begin
-    KaraokeMusicStream.Volume := 0;
+  if assigned(KaraokeMusicStream) then
+  begin
     if (Ini.ReplayGain = 1) then
       KaraokeMusicStream.ReplayGainEnabled := true;
   end;
 
-  if (Ini.DefaultSingMode = 1) and assigned(KaraokeMusicStream) then
-    ToggleKaraoke;
+  FOverallVolume := Ini.AudioVolume / 100;
+  FVocalsShare := Ini.VocalsVolume / 100;
+  if FOverallVolume < 0 then
+    FOverallVolume := 0
+  else if FOverallVolume > 1 then
+    FOverallVolume := 1;
+  if FVocalsShare < 0 then
+    FVocalsShare := 0
+  else if FVocalsShare > 1 then
+    FVocalsShare := 1;
+
+  UpdateStreamVolumes;
 
   Result := true;
 end;
@@ -292,16 +330,24 @@ begin
 end;
 
 procedure TAudioPlaybackBase.ToggleKaraoke;
+var
+  TargetPercent: integer;
+  VolumeChanged: boolean;
 begin
-  KaraokeMode := not KaraokeMode;
-  if KaraokeMode and assigned(KaraokeMusicStream) and assigned(MusicStream) then begin
-    KaraokeMusicStream.Volume := MusicStream.Volume;
-    MusicStream.Volume := 0;
-  end;
-  if (not KaraokeMode) and assigned(KaraokeMusicStream) and assigned(MusicStream) then begin
-    MusicStream.Volume := KaraokeMusicStream.Volume;
-    KaraokeMusicStream.Volume := 0;
-  end;
+  if not assigned(KaraokeMusicStream) then
+    Exit;
+
+  if FVocalsShare > 0.5 then
+    TargetPercent := 0
+  else
+    TargetPercent := 100;
+
+  VolumeChanged := Ini.VocalsVolume <> TargetPercent;
+  Ini.VocalsVolume := TargetPercent;
+  SetVocalsBalance(TargetPercent / 100);
+
+  if VolumeChanged then
+    Ini.Save;
 end;
 
 procedure TAudioPlaybackBase.Stop;
@@ -310,7 +356,6 @@ begin
     MusicStream.Stop();
   if assigned(KaraokeMusicStream) then
     KaraokeMusicStream.Stop();
-  KaraokeMode := false;
 end;
 
 function TAudioPlaybackBase.Length: real;
@@ -364,26 +409,68 @@ end;
 
 procedure TAudioPlaybackBase.SetVolume(Volume: single);
 begin
-  if (not KaraokeMode) and assigned(MusicStream) then
-    MusicStream.Volume := Volume;
-  if KaraokeMode and assigned(KaraokeMusicStream) then
-    KaraokeMusicStream.Volume := Volume;
+  if Volume < 0 then
+    Volume := 0
+  else if Volume > 1 then
+    Volume := 1;
+  FOverallVolume := Volume;
+  UpdateStreamVolumes;
 end;
 
 procedure TAudioPlaybackBase.FadeIn(Time: real; TargetVolume: single);
+var
+  VocalsTarget: single;
+  InstrumentalTarget: single;
 begin
-  if (not KaraokeMode) and assigned(MusicStream) then
-    MusicStream.FadeIn(Time, TargetVolume);
-  if KaraokeMode and assigned(KaraokeMusicStream) then
-    KaraokeMusicStream.FadeIn(Time, TargetVolume);
+  if TargetVolume < 0 then
+    TargetVolume := 0
+  else if TargetVolume > 1 then
+    TargetVolume := 1;
+  FOverallVolume := TargetVolume;
+
+  if assigned(KaraokeMusicStream) then
+  begin
+    VocalsTarget := FOverallVolume * FVocalsShare;
+    InstrumentalTarget := FOverallVolume * (1 - FVocalsShare);
+  end
+  else
+  begin
+    VocalsTarget := FOverallVolume;
+    InstrumentalTarget := 0;
+  end;
+
+  if assigned(MusicStream) then
+    MusicStream.FadeIn(Time, VocalsTarget);
+  if assigned(KaraokeMusicStream) then
+    KaraokeMusicStream.FadeIn(Time, InstrumentalTarget);
 end;
 
 procedure TAudioPlaybackBase.Fade(Time: real; TargetVolume: single);
+var
+  VocalsTarget: single;
+  InstrumentalTarget: single;
 begin
-  if (not KaraokeMode) and assigned(MusicStream) then
-    MusicStream.Fade(Time, TargetVolume);
-  if KaraokeMode and assigned(KaraokeMusicStream) then
-    KaraokeMusicStream.Fade(Time, TargetVolume);
+  if TargetVolume < 0 then
+    TargetVolume := 0
+  else if TargetVolume > 1 then
+    TargetVolume := 1;
+  FOverallVolume := TargetVolume;
+
+  if assigned(KaraokeMusicStream) then
+  begin
+    VocalsTarget := FOverallVolume * FVocalsShare;
+    InstrumentalTarget := FOverallVolume * (1 - FVocalsShare);
+  end
+  else
+  begin
+    VocalsTarget := FOverallVolume;
+    InstrumentalTarget := 0;
+  end;
+
+  if assigned(MusicStream) then
+    MusicStream.Fade(Time, VocalsTarget);
+  if assigned(KaraokeMusicStream) then
+    KaraokeMusicStream.Fade(Time, InstrumentalTarget);
 end;
 
 procedure TAudioPlaybackBase.SetLoop(Enabled: boolean);
@@ -392,6 +479,31 @@ begin
     MusicStream.Loop := Enabled;
   if assigned(KaraokeMusicStream) then
     KaraokeMusicStream.Loop := Enabled;
+end;
+
+procedure TAudioPlaybackBase.SetVocalsBalance(Balance: single);
+begin
+  if Balance < 0 then
+    Balance := 0
+  else if Balance > 1 then
+    Balance := 1;
+  FVocalsShare := Balance;
+  UpdateStreamVolumes;
+end;
+
+function TAudioPlaybackBase.GetVocalsBalance: single;
+begin
+  Result := FVocalsShare;
+end;
+
+function TAudioPlaybackBase.HasInstrumentalTrack: boolean;
+begin
+  Result := assigned(KaraokeMusicStream);
+end;
+
+function TAudioPlaybackBase.GetOverallVolume: single;
+begin
+  Result := FOverallVolume;
 end;
 
 // Equalizer
@@ -407,9 +519,14 @@ end;
  *}
 function TAudioPlaybackBase.GetPCMData(var data: TPCMData): Cardinal;
 begin
-  if  (not KaraokeMode) and assigned(MusicStream) then
-    Result := MusicStream.GetPCMData(data)
-  else if  KaraokeMode and assigned(KaraokeMusicStream) then
+  if (not assigned(KaraokeMusicStream)) or (FVocalsShare >= 0.5) then
+  begin
+    if assigned(MusicStream) then
+      Result := MusicStream.GetPCMData(data)
+    else
+      Result := 0;
+  end
+  else if assigned(KaraokeMusicStream) then
     Result := KaraokeMusicStream.GetPCMData(data)
   else
     Result := 0;
