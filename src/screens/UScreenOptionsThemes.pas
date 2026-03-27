@@ -228,6 +228,8 @@ end;
 procedure TScreenOptionsThemes.ReloadTheme;
 begin
   Theme.LoadTheme(Ini.Theme, Ini.Color);
+  SoundLib.LoadSounds();
+  SoundLib.StartBgMusic();
 
   ScreenOptionsThemes := TScreenOptionsThemes.create();
   ScreenOptionsThemes.onshow;
