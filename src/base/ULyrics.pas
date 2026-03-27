@@ -94,7 +94,7 @@ type
 
       // Some helper procedures for lyric drawing
       procedure DrawLyrics (Beat: real);
-      procedure UpdateLineMetrics(LyricLine: TLyricLine);
+      procedure UpdateLineMetrics(LyricLine: TLyricLine) overload;
       procedure DrawLyricsWords(LyricLine: TLyricLine; X, Y: real; StartWord, EndWord: integer);
       procedure DrawLyricsLine(X, W, Y, H: real; Line: TLyricLine; Beat: real);
       procedure DrawPlayerIcon(Player: byte; Enabled: boolean; X, Y: real; Size, Alpha: real);
@@ -146,6 +146,7 @@ type
 
       function GetUpperLine(): TLyricLine;
       function GetLowerLine(): TLyricLine;
+      procedure UpdateLineMetrics() overload;
 
       function GetUpperLineIndex(): integer;
 
@@ -508,6 +509,12 @@ begin
       TextSoFar := '';
     end;
   end;
+end;
+
+procedure TLyricEngine.UpdateLineMetrics();
+begin
+  UpdateLineMetrics(UpperLine);
+  UpdateLineMetrics(LowerLine);
 end;
 
 
