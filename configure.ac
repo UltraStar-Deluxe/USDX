@@ -73,6 +73,8 @@ AC_DEFUN([AC_SUBST_DEFINE],
 # define switches
 # -----------------------------------------
 
+AC_CANONICAL_HOST
+
 # print library options header
 AC_ARG_WITH([cfg-dummy1], [
 External Libraries:])
@@ -129,8 +131,13 @@ AC_ARG_ENABLE(debug,
   [test $enableval = "yes" && ENABLE_DEBUG="yes"], [])
 AC_SUBST(ENABLE_DEBUG)
 
-MACOS_PACKAGING="brew"
-MACOS_PACKAGING_LIBDIR="$(brew --prefix)/lib"
+if [[ "$host_os" == *darwin* ]]; then
+  MACOS_PACKAGING="brew"
+  MACOS_PACKAGING_LIBDIR="$(brew --prefix)/lib"
+else
+  MACOS_PACKAGING=""
+  MACOS_PACKAGING_LIBDIR=""
+fi
 
 AC_SUBST(MACOS_PACKAGING, $MACOS_PACKAGING)
 AC_SUBST(MACOS_PACKAGING_LIBDIR, $MACOS_PACKAGING_LIBDIR)
@@ -138,8 +145,6 @@ AC_SUBST(MACOS_PACKAGING_LIBDIR, $MACOS_PACKAGING_LIBDIR)
 # -----------------------------------------
 # check for compilers
 # -----------------------------------------
-
-AC_CANONICAL_HOST
 
 # find and test the freepascal compiler
 # sets PFLAGS, FPC_VERSION, FPC_DEBUG, etc.
