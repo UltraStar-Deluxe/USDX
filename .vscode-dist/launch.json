@@ -1,0 +1,39 @@
+{
+  "version": "0.2.0",
+  "inputs": [
+    {
+      "id": "songpath",
+      "type": "promptString",
+      "description": "Path to songs folder",
+      "default": "songs"
+    }
+  ],
+  "configurations": [
+    {
+      "name": "Debug USDX",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/game/ultrastardx",
+      "args": ["-songpath", "${input:songpath}"],
+      "cwd": "${workspaceFolder}/game"
+    },
+    {
+      "name": "Run USDX",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/game/ultrastardx",
+      "args": ["-songpath", "${input:songpath}"],
+      "cwd": "${workspaceFolder}/game",
+      "noDebug": true
+    },
+    {
+      "name": "Run USDX (no song path)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/game/ultrastardx",
+      "args": [],
+      "cwd": "${workspaceFolder}/game",
+      "noDebug": true
+    }
+  ]
+}
