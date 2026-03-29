@@ -143,6 +143,9 @@ begin
   else
     Latency := 0;
 
+  Log.LogStatus('Audio-Output Latency: ' + floatToStr(Latency * 1000) + 
+                'ms', 'TAudioPlayback_Portaudio.OpenDevice');
+
   FormatInfo := TAudioFormatInfo.Create(
     OutParams.channelCount,
     SampleRate,
