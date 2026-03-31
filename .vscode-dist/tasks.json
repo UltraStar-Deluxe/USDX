@@ -1,262 +1,152 @@
 {
-  // - Linux:   all tasks work natively
-  // - macOS:   all tasks work natively; macOS-specific targets only make sense here
-  // - Windows: requires MSYS2 or WSL; run tasks from a WSL/MSYS2 terminal instead
   "version": "2.0.0",
+
   "tasks": [
+    // -------------------------------------------------------
+    // Setup (manual)
+    // -------------------------------------------------------
     {
-      "label": "autogen + configure",
+      "label": "[helper] autogen",
       "type": "shell",
-      "command": "./autogen.sh && ./configure",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
+      "command": "./autogen.sh"
+    },
+    {
+      "label": "[helper] configure",
+      "type": "shell",
+      "command": "./configure ${input:configureArgs}"
+    },
+    {
+      "label": "[any] 1. autogen & configure",
+      "dependsOn": ["[helper] autogen", "[helper] configure"],
+      "dependsOrder": "sequence",
     },
 
     // -------------------------------------------------------
-    // Primary build targets
+    // Build
     // -------------------------------------------------------
     {
-      "label": "build (all)",
+      "label": "[any] 2. make all",
       "type": "shell",
       "command": "make all",
-      "group": "build",
-      "dependsOn": "autogen + configure",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "build (debug)",
-      "type": "shell",
-      "command": "make debug",
-      "group": "build",
-      "dependsOn": "autogen + configure",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "build (release)",
-      "type": "shell",
-      "command": "make release",
-      "group": "build",
-      "dependsOn": "autogen + configure",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "rebuild",
-      "type": "shell",
-      "command": "make rebuild",
-      "group": "build",
-      "dependsOn": "autogen + configure",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "all-deps",
-      "type": "shell",
-      "command": "make all-deps",
-      "group": "build",
-      "dependsOn": "autogen + configure",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "reconf",
-      "type": "shell",
-      "command": "make reconf",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     },
 
     // -------------------------------------------------------
-    // macOS targets (macOS only)
+    // Variants
     // -------------------------------------------------------
     {
-      "label": "macos-app",
+      "label": "[any] 2.a make debug",
+      "type": "shell",
+      "command": "make debug"
+    },
+    {
+      "label": "[any] 2.b make release",
+      "type": "shell",
+      "command": "make release"
+    },
+    {
+      "label": "[any] 2.c make rebuild",
+      "type": "shell",
+      "command": "make rebuild"
+    },
+
+    // -------------------------------------------------------
+    // macOS extras
+    // -------------------------------------------------------
+    {
+      "label": "[macos] make macos-app",
       "type": "shell",
       "command": "make macos-app",
-      "group": "build",
-      "dependsOn": "autogen + configure",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
+      "osx": {
+        "group": "build"
+      }
     },
     {
-      "label": "macos-standalone-app",
+      "label": "[macos] make macos-standalone-app",
       "type": "shell",
       "command": "make macos-standalone-app",
-      "group": { "kind": "build", "isDefault": true },
-      "dependsOn": "autogen + configure",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
+      "osx": {
+        "group": "build"
+      }
     },
     {
-      "label": "macos-dmg",
+      "label": "[macos] make macos-dmg",
       "type": "shell",
       "command": "make macos-dmg",
-      "group": "build",
-      "dependsOn": "autogen + configure",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
+      "osx": {
+        "group": "build"
+      }
     },
 
     // -------------------------------------------------------
-    // Install targets (Linux/macOS)
+    // Install
     // -------------------------------------------------------
     {
-      "label": "install",
+      "label": "[any] make install",
       "type": "shell",
-      "command": "make install",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
+      "command": "make install"
     },
     {
-      "label": "install-all",
+      "label": "[any] make uninstall",
       "type": "shell",
-      "command": "make install-all",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "install-exec",
-      "type": "shell",
-      "command": "make install-exec",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "install-data",
-      "type": "shell",
-      "command": "make install-data",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "install-plugins",
-      "type": "shell",
-      "command": "make install-plugins",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "uninstall",
-      "type": "shell",
-      "command": "make uninstall",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
+      "command": "make uninstall"
     },
 
     // -------------------------------------------------------
-    // Distribution targets (Linux)
+    // Clean
     // -------------------------------------------------------
     {
-      "label": "dist",
+      "label": "[any] make clean",
       "type": "shell",
-      "command": "make dist",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
+      "command": "make clean"
     },
     {
-      "label": "deb",
+      "label": "[any] make distclean",
       "type": "shell",
-      "command": "make deb",
-      "group": "build",
-      "dependsOn": "autogen + configure",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "rpm",
-      "type": "shell",
-      "command": "make rpm",
-      "group": "build",
-      "dependsOn": "autogen + configure",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
+      "command": "make distclean"
     },
 
     // -------------------------------------------------------
-    // Clean targets
+    // Run helpers
     // -------------------------------------------------------
     {
-      "label": "clean",
+      "label": "[any] run",
       "type": "shell",
-      "command": "make clean",
-      "group": "build",
-      "presentation": { "reveal": "always" },
+      "command": "./game/ultrastardx",
+      "dependsOn": "build",
       "problemMatcher": []
     },
     {
-      "label": "clean-src",
+      "label": "[any] run with songpath",
       "type": "shell",
-      "command": "make clean-src",
-      "group": "build",
-      "presentation": { "reveal": "always" },
+      "command": "./game/ultrastardx -songpath ${input:songpath}",
+      "dependsOn": "build",
       "problemMatcher": []
     },
     {
-      "label": "clean-deps",
+      "label": "[macos] run macos-standalone-app",
       "type": "shell",
-      "command": "make clean-deps",
-      "group": "build",
-      "presentation": { "reveal": "always" },
+      "command": "open build/macOS/ultrastardx.app",
+      "osx": {},
       "problemMatcher": []
+    }
+  ],
+
+  "inputs": [
+    {
+      "id": "configureArgs",
+      "type": "promptString",
+      "description": "Arguments for ./configure",
+      "default": ""
     },
     {
-      "label": "clean-game",
-      "type": "shell",
-      "command": "make clean-game",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "clean-macos",
-      "type": "shell",
-      "command": "make clean-macos",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "mostlyclean",
-      "type": "shell",
-      "command": "make mostlyclean",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "distclean",
-      "type": "shell",
-      "command": "make distclean",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "maintainer-clean",
-      "type": "shell",
-      "command": "make maintainer-clean",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
-    },
-    {
-      "label": "tidy",
-      "type": "shell",
-      "command": "make tidy",
-      "group": "build",
-      "presentation": { "reveal": "always" },
-      "problemMatcher": []
+      "id": "songpath",
+      "type": "promptString",
+      "description": "Path to songs folder",
+      "default": "songs"
     }
   ]
 }
