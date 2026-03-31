@@ -1,0 +1,4 @@
+{
+  "omnipascal.defaultDevelopmentEnvironment": "FreePascal",
+  "omnipascal.freePascalSourcePath": "/usr/local/share/fpcsrc/3.2.2"
+}
