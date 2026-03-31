@@ -65,6 +65,18 @@ uses
   UUnicodeUtils,
   SysUtils;
 
+type
+  InteractionID = (
+    iScreenFadeSlide,
+    iEffectSingSlide,
+    iOnSongClickSlide,
+    iAskBeforeDelSlide,
+    iPartyPopupSlide,
+    iSingScoresSlide,
+    iTopScoresSlide,
+    iBackButton
+  );
+
 function TScreenOptionsAdvanced.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
@@ -94,7 +106,7 @@ begin
       end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 7 then
+          if SelInteraction = ord(iBackButton) then
           begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
@@ -107,7 +119,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 6) then
+          if Interactions[SelInteraction].Typ = iSelectS then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
@@ -115,7 +127,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 6) then
+          if Interactions[SelInteraction].Typ = iSelectS then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
@@ -146,7 +158,7 @@ end;
 
 procedure TScreenOptionsAdvanced.LoadWidgets;
 begin
-  // when editing this, also search for SelInteraction
+  // when editing this, also update the InteractionID enum declaration
   AddSelectSlide('SING_OPTIONS_ADVANCED_SCREENFADE', Ini.ScreenFade, IScreenFadeTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_EFFECTSING', Ini.EffectSing, IEffectSingTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_ONSONGCLICK', Ini.OnSongClick, IOnSongClickTranslated);

@@ -141,6 +141,21 @@ uses
   UUnicodeUtils,
   SysUtils;
 
+type
+  InteractionID = (
+    iFontSlide,
+    iStyleSlide,
+    iEffectSlide,
+    iAlphaSlide,
+    iLineSlide,
+    iPropertySlide,
+    iColorSlide,
+    iRedSlide,
+    iGreenSlide,
+    iBlueSlide,
+    iBackButton
+  );
+
 constructor TLyricsColorPicker.Create(PosX, PosY: real; SelectR, SelectG, SelectB: TSelectSlide; Red, Green, Blue: integer);
 begin
   self.SelectR := SelectR;
@@ -339,7 +354,7 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 10 then
+          if SelInteraction = ord(iBackButton) then
           begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
@@ -352,11 +367,11 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 9) then
+          if (Interactions[SelInteraction].Typ = iSelectS) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
 
-            if (SelInteraction >= 7) and (SelInteraction <= 9) then
+            if (InteractionID(SelInteraction) in [iRedSlide, iGreenSlide, iBlueSlide]) then
             begin
               if (SDL_ModState and (KMOD_LSHIFT or KMOD_RSHIFT) <> 0) and (SelectsS[SelInteraction].SelectOptInt <= 245) then
                 Salt_Mod := 9
@@ -402,11 +417,11 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 9) then
+          if (Interactions[SelInteraction].Typ = iSelectS) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
 
-            if (SelInteraction >= 7) and (SelInteraction <= 9) then
+            if (InteractionID(SelInteraction) in [iRedSlide, iGreenSlide, iBlueSlide]) then
             begin
               if (SDL_ModState and (KMOD_LSHIFT or KMOD_RSHIFT) <> 0) and (SelectsS[SelInteraction].SelectOptInt >= 10) then
                 Salt_Mod := 9
@@ -480,7 +495,7 @@ procedure TScreenOptionsJukebox.InteractInc;
 begin
   inherited InteractInc;
 
-  if (SelInteraction = 1) then
+  if (SelInteraction = ord(iStyleSlide)) then
     UpdatePropertyList;
 
   RefreshSelectsColors;
@@ -490,7 +505,7 @@ procedure TScreenOptionsJukebox.InteractDec;
 begin
   inherited InteractDec;
 
-  if (SelInteraction = 1) then
+  if (SelInteraction = ord(iStyleSlide)) then
     UpdatePropertyList;
 
   RefreshSelectsColors;
@@ -526,7 +541,7 @@ begin
 
   end;
 
-  if (SelInteraction >= 7) and (SelInteraction <= 9) then
+  if (InteractionID(SelInteraction) in [iRedSlide, iGreenSlide, iBlueSlide]) then
   begin
     if (SelectsS[PropertySelect].SelectedOption = 1) then
       ChangeOtherOColor()
@@ -811,7 +826,7 @@ end;
 
 procedure TScreenOptionsJukebox.LoadWidgets;
 begin
-  // when editing this, also search for SelInteraction
+  // when editing this, also update the InteractionID enum declaration
   FontSelect := AddSelectSlide('SING_OPTIONS_LYRICS_FONT', Ini.JukeboxFont, FontFamilyNames);
   StyleSelect := AddSelectSlide('SING_OPTIONS_LYRICS_STYLE', Ini.JukeboxStyle, ILyricsStyleTranslated);
   AddSelectSlide('SING_OPTIONS_LYRICS_EFFECT', Ini.JukeboxEffect, ILyricsEffectTranslated);

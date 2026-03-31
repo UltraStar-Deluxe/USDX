@@ -66,6 +66,18 @@ uses
   UUnicodeUtils,
   SysUtils;
 
+type
+  InteractionID = (
+    iVoicePassthroughSlide,
+    iBackgroundMusicSlide,
+    iClickAssistSlide,
+    iBeatClickSlide,
+    iReplayGainSlide,
+    iPreviewVolumeSlide,
+    iPreviewFadingSlide,
+    iBackButton
+  );
+
 function TScreenOptionsSound.ParseInput(PressedKey: cardinal;
   CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
@@ -96,7 +108,7 @@ begin
       end;
       SDLK_RETURN:
       begin
-        if SelInteraction = 7 then
+        if SelInteraction = ord(iBackButton) then
         begin
           Ini.Save;
           AudioPlayback.PlaySound(SoundLib.Back);
@@ -109,7 +121,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
       begin
-        if (SelInteraction >= 0) and (SelInteraction <= 6) then
+        if (Interactions[SelInteraction].Typ = iSelectS) then
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractInc;
@@ -117,7 +129,7 @@ begin
       end;
       SDLK_LEFT:
       begin
-        if (SelInteraction >= 0) and (SelInteraction <= 6) then
+        if (Interactions[SelInteraction].Typ = iSelectS) then
         begin
           AudioPlayback.PlaySound(SoundLib.Option);
           InteractDec;
@@ -133,14 +145,14 @@ begin
  * TODO: - Fetching the SelectInteraction via something more descriptive
  *       - Obtaining the current value of a select is imho ugly
  *}
-  if (SelInteraction = 1) then
+  if (SelInteraction = ord(iBackgroundMusicSlide)) then
   begin
     if TBackgroundMusicOption(SelectsS[1].SelectedOption) = bmoOn then
       SoundLib.StartBgMusic
     else
       SoundLib.PauseBgMusic;
   end
-  else if (SelInteraction = 5) then
+  else if (SelInteraction = ord(iPreviewVolumeSlide)) then
   begin
     // preview volume, restart the background music so it uses the new volume
     SoundLib.PauseBgMusic;
@@ -168,7 +180,7 @@ end;
 
 procedure TScreenOptionsSound.LoadWidgets;
 begin
-  // when editing this, also search for SelInteraction
+  // when editing this, also update the InteractionID enum declaration
   AddSelectSlide('SING_OPTIONS_SOUND_VOICEPASSTHROUGH', Ini.VoicePassthrough, IVoicePassthroughTranslated);
   AddSelectSlide('SING_OPTIONS_SOUND_BACKGROUNDMUSIC', Ini.BackgroundMusicOption, IBackgroundMusicTranslated);
   AddSelectSlide('SING_OPTIONS_SOUND_CLICK_ASSIST', Ini.ClickAssist, IClickAssistTranslated);

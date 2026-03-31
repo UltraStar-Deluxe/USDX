@@ -90,6 +90,15 @@ uses
   Math,
   SysUtils;
 
+type
+  InteractionID = (
+    iFontSlide,
+    iStyleSlide,
+    iEffectSlide,
+    iNoteLinesSlide,
+    iBackButton
+  );
+
 function TScreenOptionsLyrics.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
@@ -119,7 +128,7 @@ begin
       end;
       SDLK_RETURN:
         begin
-          if SelInteraction = 4 then
+          if SelInteraction = ord(iBackButton) then
           begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
@@ -132,7 +141,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 3) then
+          if (Interactions[SelInteraction].Typ = iSelectS) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
@@ -140,7 +149,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if (SelInteraction >= 0) and (SelInteraction <= 3) then
+          if (Interactions[SelInteraction].Typ = iSelectS) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
@@ -325,7 +334,7 @@ end;
 
 procedure TScreenOptionsLyrics.LoadWidgets;
 begin
-  // when editing this, also search for SelInteraction
+  // when editing this, also update the InteractionID enum declaration
   AddSelectSlide('SING_OPTIONS_LYRICS_FONT', Ini.LyricsFont, FontFamilyNames);
   AddSelectSlide('SING_OPTIONS_LYRICS_STYLE', Ini.LyricsStyle, ILyricsStyleTranslated);
   AddSelectSlide('SING_OPTIONS_LYRICS_EFFECT', Ini.LyricsEffect, ILyricsEffectTranslated);
