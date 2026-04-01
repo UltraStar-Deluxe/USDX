@@ -502,6 +502,7 @@ type
       function GetPCMData(var Data: TPCMData): Cardinal;
 
       function CreateVoiceStream(ChannelMap: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream;
+      function CreatePlaybackStreamForSource(SourceStream: TAudioSourceStream): TAudioPlaybackStream;
   end;
 
   IGenericDecoder = Interface
