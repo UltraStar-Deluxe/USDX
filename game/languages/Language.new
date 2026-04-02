@@ -327,6 +327,7 @@
 ;TODO: SONG_JUMPTO_TYPE6=Genre
 ;TODO: SONG_JUMPTO_TYPE7=Year
 ;TODO: SONG_JUMPTO_TYPE8=Creator
+;TODO: SONG_JUMPTO_TYPE9=Tags
 ;TODO: SONG_JUMPTO_SONGSFOUND=%d Song(s) found
 ;TODO: SONG_JUMPTO_NOSONGSFOUND=No Song found
 ;TODO: SONG_JUMPTO_HELP=Type Text to Search for
@@ -724,6 +725,9 @@
 ;TODO: EDIT_INFO_MEDLEY_DUET_UNSUPPORTED=Medley for duets is not supported!
 ;TODO: EDIT_INFO_SYNTAX_ERRORS=This song contains some syntax errors!
 ;TODO: EDIT_INFO_NO_MEDLEY_SECTION=No medley section set. Check your txt file or set it with A (start) and SHIFT+A (end).
+;TODO: EDIT_INFO_SYNTAX_ERRORS_TIMING_HEADER=This song contains timing-related syntax errors:
+;TODO: EDIT_INFO_TIMING_NOTE_OVERLAP=Track %d, line %d: note %d (beats %d-%d) overlaps a previous note ending at beat %d.
+;TODO: EDIT_INFO_TIMING_LINEBREAK_OVERLAP=Track %d, line %d: linebreak at beat %d cuts note %d (beats %d-%d).
 ;TODO: EDIT_NOTENAME_C=C
 ;TODO: EDIT_NOTENAME_C_SHARP=C♯
 ;TODO: EDIT_NOTENAME_D=D
@@ -879,4 +883,2382 @@
 ;TODO: ABOUT_USDX_CREDITS=Credits
 ;TODO: ABOUT_OVERVIEW=UltraStar Deluxe is a free open-source karaoke game for your PC. The gameplay experience is similar to that of the commercial product SingStar™ by Sony Computer Entertainment, which is exclusively available for the Playstation®. Unlike SingStar™, however, UltraStar Deluxe allows users to create their own songs and sing them on their PC.\nBy publishing the sourcecode, we’ve enabled you to customize the game completly to your heart’s content, desires and particular needs.\nEspecially you are allowed to modify the product as you wish.\n\nCreate your own themes or download content from the community, such as plugins, free songs or code patches for extended features.\nIn party mode it allows up to twelve players to sing along to your favorite music in order to score points, depending on the pitch of the voice and the rhythm of singing.
 
+;-------------------------------------------------------;
+;  Help System                                          ;
+;-------------------------------------------------------;
 
+[config]
+;TODO: NumIDs = 81
+
+[Keymap]
+;TODO: ESC = Esc
+;TODO: CTRL = Ctrl
+;TODO: ALT = Alt
+;TODO: SHIFT = Shift
+;TODO: BACKQUOTE =
+;TODO: TAB = Tab
+;TODO: BACKSPACE = Backspace
+;TODO: EQUALS =
+;TODO: MINUS = -
+;TODO: SLASH = /
+;TODO: PERIOD = .
+;TODO: RIGHT = Right
+;TODO: LEFT = Left
+;TODO: DOWN = Down
+;TODO: UP = Up
+;TODO: ARROWKEYS = Arrow Keys
+;TODO: UPDOWN = Up/Down
+;TODO: LEFTRIGHT = Left/Right
+;TODO: SPACE = Space
+;TODO: KPPLUS = Key-Pad +
+;TODO: KPMINUS = Key-Pad -
+;TODO: DELETE = Del
+;TODO: RETURN = Enter
+;TODO: PRINT = PrintScreen
+;TODO: F1F12 = F1-F12
+;TODO: PAGEUP = PageUp
+;TODO: PAGEDOWN = PageDown
+;TODO: PAGEUPDOWN = PageUp/PageDown
+;TODO: AZ = A-Z
+;TODO: A = A
+;TODO: B = B
+;TODO: C = C
+;TODO: D = D
+;TODO: E = E
+;TODO: F = F
+;TODO: G = G
+;TODO: H = H
+;TODO: I = I
+;TODO: J = J
+;TODO: K = K
+;TODO: L = L
+;TODO: M = M
+;TODO: N = N
+;TODO: O = O
+;TODO: P = P
+;TODO: Q = Q
+;TODO: R = R
+;TODO: S = S
+;TODO: T = T
+;TODO: U = U
+;TODO: V = V
+;TODO: W = W
+;TODO: X = X
+;TODO: Y = Y
+;TODO: Z = Z
+;TODO: 0 = 0
+;TODO: 1 = 1
+;TODO: 2 = 2
+;TODO: 3 = 3
+;TODO: 4 = 4
+;TODO: 5 = 5
+;TODO: 6 = 6
+;TODO: 7 = 7
+;TODO: 8 = 8
+;TODO: 9 = 9
+;TODO: F1 = F1
+;TODO: F2 = F2
+;TODO: F3 = F3
+;TODO: F4 = F4
+;TODO: F5 = F5
+;TODO: F6 = F6
+;TODO: F7 = F7
+;TODO: F8 = F8
+;TODO: F9 = F9
+;TODO: F10 = F10
+;TODO: F11 = F11
+;TODO: F12 = F12
+
+; IDs must have the format: 'ID_###'
+
+;-------------------------------------------------------;
+; ID_001: UScreenMain                                   ;
+;-------------------------------------------------------;
+[ID_001]
+;TODO: Title = Main Menu
+;TODO: Description = This is the UltraStar Deluxe main menu
+;-------------------------------------------------------;
+;TODO: SUB_010 = Sing
+;TODO: ENT_011 = Singing options depend on the selected song:
+;TODO: ENT_012 = ♫ Solo Songs: can be sung competitively by up to 6 players
+;TODO: ENT_013 = ♫ Medley Songs: are solos which can also be sung in medleys (marked C or M)
+;TODO: ENT_014 = ♫ Duet Songs: must be sung by at least 2 players (marked with crossed mics)
+;-------------------------------------------------------;
+;TODO: SUB_020 = Party
+;TODO: ENT_021 = Pick one of the party modes:
+;TODO: ENT_022 = ♫ Classic Mode: 2-12 players in up to 3 teams compete over several rounds
+;TODO: ENT_023 = ♫ Challenge Mode: 2-9 players compete for rankings over several rounds
+;-------------------------------------------------------;
+;TODO: SUB_030 = Jukebox
+;TODO: ENT_031 = Use UltraStar Deluxe as a party jukebox
+;TODO: ENT_032 = ♫ All songs: randomly plays songs from your entire song collection
+;TODO: ENT_033 = ♫ Folder: randomly plays songs from selected folder
+;TODO: ENT_034 = ♫ Playlist: randomly plays songs from selected playlist
+;TODO: ENT_035 = ♫ Manual Selection: randomly plays songs from a manual selection
+;-------------------------------------------------------;
+;TODO: SUB_040 = Tools
+;TODO: ENT_041 = Select from the following:
+;TODO: ENT_042 = ♫ Stats: summarizes highscores, top singers and popular artists
+;TODO: ENT_043 = ♫ Editor: convert MIDI files to UltraStar songs
+;TODO: ENT_044 = ♫ Options: adjust visual, audio and various other settings
+;-------------------------------------------------------;
+;TODO: SUB_050 = About
+;TODO: ENT_051 = About UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SUB_060 = Quit
+;TODO: ENT_061 = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue with current selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Quit UltraStar Deluxe
+;TODO: ESC = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+;TODO: SEC_020 = Shortcuts
+;TODO: S = Sing!
+;TODO: P = Party mode
+;TODO: J = Jukebox mode
+;TODO: T = Statistics
+;TODO: E = Editor/MIDI converter
+;TODO: O = Options menu
+;TODO: A = About screen
+;TODO: C = Credits
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+; ID_002: UScreenAbout                                  ;
+;-------------------------------------------------------;
+[ID_002]
+;TODO: Title = About
+;TODO: Description = This is the UltraStar deluxe About screen
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to main menu
+;TODO: ESC = Back to main menu
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+;TODO: SEC_010 = Shortcuts
+;TODO: C = Credits
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+; ID_003: UScreenCredits                                ;
+;-------------------------------------------------------;
+[ID_003]
+;TODO: Title = Credits
+;TODO: Description = This is the UltraStar deluxe Credits screen
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Back to main menu
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: BACKSPACE = Back to main menu
+;TODO: ESC = Back to main menu
+;-------------------------------------------------------;
+;TODO: SEC_010 = Shortcuts
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+; ID_010: UScreenName                                   ;
+;-------------------------------------------------------;
+[ID_010]
+;TODO: Title = Player Names
+;TODO: Description = Select number of players, and set names, avatars, player colors and difficulty levels
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm players' names and continue to song selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to main menu
+;TODO: ESC = Back to main menu
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+;TODO: SEC_020 = Edit
+;TODO: BACKSPACE = Delete last character of selected name field
+;TODO: ALT_F1F12 = Save current player name in one of Template 1-12
+;TODO: SHIFT_F1F12 = Save current player name in one of Template 1-12
+;TODO: F1F12 = Load Template 1-12 player name into selected field
+;-------------------------------------------------------;
+;TODO: SEC_030 = Shortcuts
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+; ID_011: UScreenLevel                                  ;
+;-------------------------------------------------------;
+[ID_011]
+;TODO: Title = Difficulty Level
+;TODO: Description = Difficulty affects how accurate singing needs to be to score
+;-------------------------------------------------------;
+;TODO: SUB_010 = Easy
+;TODO: ENT_011 = Allows ±2 semitone deviation from each note to score points
+;-------------------------------------------------------;
+;TODO: SUB_020 = Medium
+;TODO: ENT_021 = Allows ±1 semitone deviation from each note to score points
+;-------------------------------------------------------;
+;TODO: SUB_030 = Hard
+;TODO: ENT_031 = Allows no deviation: sing each note perfectly to score points
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm difficulty level selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to Player Names
+;TODO: ESC = Back to Player Names
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+;TODO: SEC_020 = Shortcuts
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+; ID_012: UScreenSong                                   ;
+;-------------------------------------------------------;
+[ID_012]
+;TODO: Title = Song Selection
+;TODO: Description = Scroll through your song collection or use the search function to find your favorite
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Sing selected song
+;CTRL_RETURN Sing selected song together (mean points over all players)
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Leave filtered song selection (if active) / Back to main menu
+;TODO: ESC = Leave filtered song selection (if active) / Back to main menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: UPDOWN = Move to previous/next category (if categories selected)
+;TODO: LEFTRIGHT = Rotate left/right through song collection
+;TODO: PAGEUPDOWN = Jump to artists beginning with the previous/following letter
+;TODO: ALT_AZ = Jump to artists beginning with chosen letter
+;TODO: SHIFT_ALT_AZ = Jump to titles beginning with chosen letter
+;TODO: M = Open song menu
+;TODO: J = Open search menu
+;TODO: P = Open playlist menu
+;TODO: R = Jump to random song
+;TODO: T = Interpret rap notes as freestyle (toggle on/off)
+;TODO: E = Load editor for selected song
+;TODO: W = Web matching
+;-------------------------------------------------------;
+;TODO: SEC_020 = Medley
+;TODO: S = 1-song medley (if song has medley tags)
+;TODO: SHIFT_S = 1-song medley (if song has medley info)
+;TODO: D = Random 5-song medley (songs with medley tags)
+;TODO: SHIFT_D = Random 5-song medley (songs with medley info)
+;TODO: F = Add song to custom medley of up to 99 songs (if it has medley info)
+;TODO: SHIFT_F = Remove last song from medley
+;-------------------------------------------------------;
+;TODO: SEC_030 = Duet
+;TODO: SPACE = Switch singers
+;-------------------------------------------------------;
+; ID_013: UScreenSong, smPartyClassic                   ;
+;-------------------------------------------------------;
+[ID_013]
+;TODO: Title = Song Selection [Party Classic]
+;TODO: Description = Displays song selection for Classic Party Mode
+;-------------------------------------------------------;
+;TODO: SUB_010 = Joker
+;TODO: ENT_010 = Each team has a limited amount of jokers.
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Sing selected song
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit classic party mode
+;TODO: ESC = Exit classic party mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Song Selection
+;TODO: M = Open song menu
+;TODO: 1 = Play joker (new random song) for Team 1
+;TODO: 2 = Play joker (new random song) for Team 2
+;TODO: 3 = Play joker (new random song) for Team 3
+;TODO: ALT_1 = Cheat: new random song (keep jokers)
+;TODO: ALT_2 = Cheat: new random song (keep jokers)
+;TODO: ALT_3 = Cheat: new random song (keep jokers)
+;-------------------------------------------------------;
+;SEC_020  Playback
+;A  Switch aspect ratio (fullscreen mode only)
+;K  Toggle karaoke playback (removes vocals)
+;V  Toggle fullscreen video preview
+;PAGEUPDOWN  Adjust song volume
+;-------------------------------------------------------;
+; ID_014: UScreenSong, smPartyFree                      ;
+;-------------------------------------------------------;
+[ID_014]
+;TODO: Title = Song Selection [Party Classic Free]
+;TODO: Description = Displays song selection for Classic Free Party Mode
+;-------------------------------------------------------;
+;TODO: SUB_010 = Description
+;TODO: ENT_010 = In classic free party mode, songs can be freely chosen from the song collection.
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Sing selected song
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit classic free party mode
+;TODO: ESC = Exit classic free party mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: UPDOWN = Move to previous/next category (if categories selected)
+;TODO: LEFTRIGHT = Rotate left/right through song collection
+;TODO: PAGEUPDOWN = Jump to artists beginning with the previous/following letter
+;TODO: ALT_AZ = Jump to artists beginning with chosen letter
+;TODO: SHIFT_ALT_AZ = Jump to titles beginning with chosen letter
+;TODO: M = Open song menu
+;TODO: J = Open search menu
+;TODO: P = Open playlist menu
+;TODO: R = Jump to random song
+;TODO: T = Interpret rap notes as freestyle (toggle on/off)
+;TODO: W = Web matching
+;-------------------------------------------------------;
+;SEC_020  Playback
+;A  Switch aspect ratio (fullscreen mode only)
+;K  Toggle karaoke playback (removes vocals)
+;V  Toggle fullscreen video preview
+;PAGEUPDOWN  Adjust song volume
+;-------------------------------------------------------;
+; ID_015: UScreenSong, smPartyTournament                ;
+;-------------------------------------------------------;
+[ID_015]
+;TODO: Title = Song Selection [Party Tournament]
+;TODO: Description = Displays song selection for Tournament Party Mode
+;-------------------------------------------------------;
+;TODO: SUB_010 = Joker
+;TODO: ENT_010 = Each team has a limited amount of jokers.
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Sing selected song
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit classic free party mode
+;TODO: ESC = Exit classic free party mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: UPDOWN = Move to previous/next category (if categories selected)
+;TODO: LEFTRIGHT = Rotate left/right through song collection
+;TODO: PAGEUPDOWN = Jump to artists beginning with the previous/following letter
+;TODO: ALT_AZ = Jump to artists beginning with chosen letter
+;TODO: SHIFT_ALT_AZ = Jump to titles beginning with chosen letter
+;TODO: M = Open song menu
+;TODO: J = Open search menu
+;TODO: P = Open playlist menu
+;TODO: R = Jump to random song
+;TODO: T = Interpret rap notes as freestyle (toggle on/off)
+;TODO: W = Web matching
+;-------------------------------------------------------;
+;SEC_020  Playback
+;A Switch aspect ratio (fullscreen mode only)
+;K Toggle karaoke playback (removes vocals)
+;V Toggle fullscreen video preview
+;PAGEUPDOWN  Adjust song volume
+;-------------------------------------------------------;
+; ID_016: UScreenSongJumpTo                             ;
+;-------------------------------------------------------;
+[ID_016]
+;TODO: Title = Song Search
+;TODO: Description = Search for specific songs by title, artist, language, edition, genre, year or creator
+;-------------------------------------------------------;
+;TODO: SEC_010 = General
+;TODO: RETURN = Close song search and show filtered songs
+;F1  Toggle duet song filter
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: ESC = Close song search and show filtered songs
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: LEFTRIGHT = Change search category
+;-------------------------------------------------------;
+;SEC_020  Playback
+;PAGEUPDOWN Adjust song volume
+;-------------------------------------------------------;
+; ID_017: UScreenSongMenu                               ;
+;-------------------------------------------------------;
+[ID_017]
+;TODO: Title = Song Menu
+;TODO: Description = Shows options for this song and sorting options for all songs displayed
+;-------------------------------------------------------;
+;TODO: SUB_010 = Song
+;TODO: ENT_011 = ♫ Sing: Start the selected song with the current settings
+;TODO: ENT_012 = ♫ Change Players: Change player names or microphone assignment
+;TODO: ENT_013 = ♫ Add Song: To a new or to an existing playlist
+;TODO: ENT_014 = ♫ Edit: Open song editor to correct song timing, notes, tags etc.
+;TODO: ENT_015 = ♫ Cancel: Return to song menu
+;-------------------------------------------------------;
+;TODO: SUB_020 = Medley
+;TODO: ENT_021 = ♫ Add Song: Adds the selected Song to a temporary medley playlist.
+;TODO: ENT_022 = ♫ Delete Song: Removes the last added song from the medley playlist.
+;TODO: ENT_023 = ♫ Sing!: Start selected song as medley or the hole medley-playlist.
+;TODO: ENT_024 = ♫ Sing 5 Songs: Start a random medley sequence with up to 5 songs beginning with the selected song.
+;TODO: ENT_024 = ♫ Cancel: Return to song menu
+;-------------------------------------------------------;
+;TODO: SUB_030 = Sort
+;TODO: ENT_031 = currently not available
+;ENT_031 = ♫ Toggle Tabs: Toggle whether songs appear nested under sort criteria tabs
+;ENT_032 = ♫ Toggle Duet Filter: Toggle to turn duet filter on or off
+;ENT_033 = ♫ Sort Category: Sort by edition, genre, language, name or folder
+;ENT_034 = ♫ Apply: Confirm changes
+;-------------------------------------------------------;
+;TODO: SUB_040 = Update Scores
+;TODO: ENT_041 = Update scores of this or all songs from an online or file source
+;-------------------------------------------------------;
+;TODO: SUB_050 = Extra
+;TODO: ENT_051 = currently not available
+;-------------------------------------------------------;
+;TODO: SEC_010 = General
+;TODO: RETURN = Confirm song menu option
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit song menu
+;TODO: ESC = Exit song menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+; ID_018: UScreenSongMenu Party                         ;
+;-------------------------------------------------------;
+[ID_018]
+;TODO: Title = Song Menu - Party Mode
+;TODO: Description = Shows options for this song in party mode
+;-------------------------------------------------------;
+;TODO: SUB_010 = Sing
+;TODO: ENT_011 = Start the selected song
+;-------------------------------------------------------;
+;TODO: SUB_020 = Joker
+;TODO: ENT_021 = Take a joker (new random song)
+;-------------------------------------------------------;
+;TODO: SEC_010 = General
+;TODO: RETURN = Confirm currently selected option
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit song menu
+;TODO: ESC = Exit song menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;SEC_020 = Playback
+;PAGEUPDOWN = Adjust song volume
+;-------------------------------------------------------;
+; ID_019: UScreenSongMenu Refresh Scores                ;
+;-------------------------------------------------------;
+[ID_019]
+;TODO: Title = Song Menu - Update Scores
+;TODO: Description = Update scores of this or all songs from an online or file source
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: LEFTRIGHT = Rotate left/right through options
+;-------------------------------------------------------;
+; ID_020: UScreenSongMenu Extra                         ;
+;-------------------------------------------------------;
+[ID_020]
+;TODO: Title = Song Menu - Extra
+;TODO: Description = Currently not available
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+; ID_021: UScreenSongMenu Jukebox                       ;
+;-------------------------------------------------------;
+[ID_021]
+;TODO: Title = Song Menu - Jukebox
+;TODO: Description = Provides jukebox-specific actions like skipping songs, repeating the current track, or returning to playlist view
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+; ID_022: UScreenSing                                   ;
+;-------------------------------------------------------;
+[ID_022]
+;TODO: Title = Song
+;TODO: Description = Lyrics appear one line at a time at the bottom/top with notes in the center
+;-------------------------------------------------------;
+;TODO: SUB_010 = Scoring
+;TODO: ENT_011 = ♫ The maximum score on any song including bonus points is scaled to 10,000 points
+;TODO: ENT_012 = ♫ If a note is sung accurately (depending on difficulty), it scores points
+;TODO: ENT_013 = ♫ The longer this note is held throughout its duration, the more points are scored
+;-------------------------------------------------------;
+;TODO: SUB_020 = Line Bonus
+;TODO: ENT_021 = ♫ A line bonus is awarded for every line where all notes are sung accurately
+;-------------------------------------------------------;
+;TODO: SUB_030 = Golden Notes
+;TODO: ENT_031 = ♫ Golden notes score additional bonus points as they are usually harder to hit
+;-------------------------------------------------------;
+;TODO: SUB_040 = Freestyle Notes
+;TODO: ENT_041 = ♫ Freestyle notes score no points and are generally only used for lyrics with no tune
+;TODO: ENT_042 = ♫ No notes appear on-screen and the corresponding lyrics appear in italics
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: TAB = Toggle help (pauses song)
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: ESC = Exit song
+;TODO: BACKSPACE = Exit song
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_002 = Playback
+;TODO: SPACE = Pause/unpause song
+;TODO: P = Pause/unpause song
+;TODO: K = Toggle karaoke mode (if file is available via the #INSTRUMENTAL tag)
+;TODO: R = Restart song from beginning
+;TODO: V = Toggle video/visualization/background (if available)
+;TODO: W = Toggle webcam on/off (if available)
+;TODO: T = Toggle running time/remaining time/total time display
+;TODO: S = Skip intro/long break
+;TODO: CTRL_TAB = Change visualization style (if visualization is enabled)
+;TODO: CTRL_TAB = Change webcam filter (if webcam is enabled)
+;PAGEUPDOWN Adjust song volume
+;N Toggle notes on/off
+;TODO: A = Toggle video/background aspect ratio: Letter Box/Crop/Stretch (if available)
+;S Toggle display under score: score bars/max. achievable score/player names/off
+;-------------------------------------------------------;
+; ID_023: UScreenScore                                  ;
+;-------------------------------------------------------;
+[ID_023]
+;TODO: Title = Song Scores
+;TODO: Description = Shows score breakdown including points from line bonuses and golden notes
+;-------------------------------------------------------;
+;TODO: SUB_010 = Player ratings depend on total score
+;TODO: ENT_011 = ♫       <  2000    Tone Deaf
+;TODO: ENT_012 = ♫ 2010  -  4000    Amateur
+;TODO: ENT_013 = ♫ 4010  -  6000    Wannabe
+;TODO: ENT_014 = ♫ 6010  -  8000    Rising Star
+;TODO: ENT_015 = ♫ 8010  -  9000    Hit Artist
+;TODO: ENT_016 = ♫ 9010  -  9800    Superstar
+;TODO: ENT_017 = ♫ 9810  - 10000    Ultrastar
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Continue
+;TODO: ESC = Continue
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;SEC_010  Playback
+;PAGEUPDOWN = Adjust song volume
+;-------------------------------------------------------;
+; ID_024: UScreenTop5                                   ;
+;-------------------------------------------------------;
+[ID_024]
+;TODO: Title = Song Highscores
+;TODO: Description = Scores don't count unless a song is sung to the last line and scores over 90 points
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue to song selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Continue to song selection
+;TODO: ESC = Continue to song selection
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+; ID_030: UScreenPartyOptions                           ;
+;-------------------------------------------------------;
+[ID_030]
+;TODO: Title = Party Mode - Options
+;TODO: Description = Set up a party game
+;-------------------------------------------------------;
+;TODO: SUB_010 = Mode
+;TODO: ENT_011 = ♫ Classic: Sing a fixed number of random songs in different party modes
+;TODO: ENT_012 = ♫ Classic Free: Sing a fixed number of songs in different party modes
+;TODO: ENT_013 = ♫ Challenge: (currently not available)
+;TODO: ENT_014 = ♫ Tournament: Tournament style party mode
+;-------------------------------------------------------;
+;TODO: SUB_020 = Difficulty
+;TODO: ENT_021 = Set a fixed difficulty level for all rounds
+;TODO: ENT_022 = ♫ Easy
+;TODO: ENT_023 = ♫ Medium
+;TODO: ENT_024 = ♫ Hard
+;-------------------------------------------------------;
+;TODO: SUB_030 = Song Selection
+;TODO: ENT_031 = Set song selection format for all classic party rounds
+;TODO: ENT_032 = ♫ All songs: songs will be randomly picked from the entire song collection
+;TODO: ENT_033 = ♫ Folder: songs will be randomly picked from the selected category (set Options » Game Options » Tabs: On)
+;TODO: ENT_034 = ♫ Playlist: songs will be randomly picked from the selected playlist
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm current settings
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to main menu
+;TODO: ESC = Back to main menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_031: UScreenPartyPlayer                            ;
+;-------------------------------------------------------;
+[ID_031]
+;TODO: Title = Party Mode - Team Setup
+;TODO: Description = Enter team and player names here
+;-------------------------------------------------------;
+;TODO: SUB_050 = Number of teams
+;TODO: ENT_051 = Select the number of teams playing (2-3)
+;-------------------------------------------------------;
+;TODO: SUB_060 = Number of singers in team 1/2/3
+;TODO: ENT_061 = Select the number of players in each team (1-4)
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm all player names and continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: ESC = Back to party options screen
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+;TODO: SEC_020 = Edit
+;TODO: BACKSPACE = Delete last character of selected name field
+;TODO: ALT_F1F12 = Save current player name in one of Template 1-12
+;TODO: F1F12 = Load Template 1-12 player name into selected field
+;-------------------------------------------------------;
+;TODO: SEC_030 = Shortcuts
+;TODO: CTRL_R = Shuffle player names
+;TODO: CTRL_UP = Rotate up through team colors (when team name is selected)
+;TODO: CTRL_DOWN = Rotate down through team colors (when team name is selected)
+;TODO: ALT_F1F12 = Save current player name in one of template 1-12
+;TODO: F1F12 = Load template 1-12 player name into selected field
+;-------------------------------------------------------;
+; ID_032: UScreenPartyRounds                            ;
+;-------------------------------------------------------;
+[ID_032]
+;TODO: Title = Party Mode - Rounds Setup
+;TODO: Description = Select the number of rounds and modes to be played
+;-------------------------------------------------------;
+;TODO: SUB_010 = No. of Rounds
+;TODO: ENT_011 = Select the number of rounds to be played
+;-------------------------------------------------------;
+;TODO: SUB_020 = Modes
+;TODO: ENT_021 = ♫ Random Mode: randomly picked mode
+;TODO: ENT_022 = ♫ +1000 Blind: Gain a lead of more than 1000 points, but without seeing the notes!
+;TODO: ENT_022 = ♫ +500 Blind: Gain a lead of more than 500 points, but without seeing the notes!
+;TODO: ENT_023 = ♫ Blind 2000/5000/7000: Race to 2000/5000/7000 points, but without seeing the notes!
+;TODO: ENT_024 = ♫ Blind Mode: A 1v1 duel, but with the notes hidden!
+;TODO: ENT_025 = ♫ Deaf: Think you know the notes? Can you sing it without the accompaniment?
+;TODO: ENT_026 = ♫ Duel: A 1v1 duel to get the highest score!
+;TODO: ENT_027 = ♫ Hardcore: Battle for a three-line lead on your opponent!
+;TODO: ENT_028 = ♫ Hold the Blind: Keep your rating above the line for the longest, but with the notes hidden!
+;TODO: ENT_028 = ♫ Hold the Line: Keep your rating above the line for the longest!
+;TODO: ENT_029 = ♫ No Lyrics: Think you know all the lyrics? Sing with the lyrics hidden!
+;TODO: ENT_030 = ♫ Short Song: A fast-paced 1v1 duel over half the song!
+;TODO: ENT_031 = ♫ Total Darkness!: A duel, but with the notes and the lyrics hidden. Only for the brave!
+;TODO: ENT_032 = ♫ Until 2000/5000/7000: Race to 2000/5000/7000 Points!
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to party team setup
+;TODO: ESC = Back to party team setup
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_033: UScreenPartyNewRound                          ;
+;-------------------------------------------------------;
+[ID_033]
+;TODO: Title = Party Mode - Overview and Next Round
+;TODO: Description = View winners of previous rounds, the score so far, and the setup for the next round
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Start next round
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit party mode
+;TODO: ESC = Exit party mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: UPDOWN = Scroll through the rounds (if there are more rounds that can be displayed)
+;-------------------------------------------------------;
+; ID_034: UScreenPartyScore                             ;
+;-------------------------------------------------------;
+[ID_034]
+;TODO: Title = Party Mode - Scores
+;TODO: Description = Displays the results and the winner of the last round
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue to next round
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: BACKSPACE = Continue to next round
+;TODO: ESC = Continue to next round
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+; ID_035: UScreenPartyWin                               ;
+;-------------------------------------------------------;
+[ID_035]
+;TODO: Title = Party Mode - Winner
+;TODO: Description = Displays the overall winner after all party rounds have been played
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Exit to main menu
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit to main menu
+;TODO: ESC = Exit to main menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+; ID_036: UScreenPartyTournamentPlayer                  ;
+;-------------------------------------------------------;
+[ID_036]
+;TODO: Title = Party Mode Tournament - Player
+;TODO: Description = Enter number and names of tournament players
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm all player names
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: ESC = Back to party mode settings
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+;TODO: SEC_020 = Edit
+;TODO: BACKSPACE = Delete last character of selected name field
+;TODO: ALT_F1F12 = Save current player name in one of Template 1-12
+;TODO: SHIFT_F1F12 = Save current player name in one of Template 1-12
+;TODO: F1F12 = Load Template 1-12 player name into selected field
+;-------------------------------------------------------;
+; ID_037: UScreenPartyTournamentOptions                 ;
+;-------------------------------------------------------;
+[ID_037]
+;TODO: Title = Party Mode Tournament - Options
+;TODO: Description = These are the options available in Tournament Party Mode
+;-------------------------------------------------------;
+;TODO: SUB_010 = Difficulty
+;TODO: ENT_011 = Set a fixed difficulty level for all rounds
+;-------------------------------------------------------;
+;TODO: SUB_020 = Song Selection
+;TODO: ENT_021 = Set song selection format for all Challenge Party rounds
+;TODO: ENT_022 = For a folder or playlist, use the next option to set which folder or playlist is used
+;-------------------------------------------------------;
+;TODO: SUB_030 = No. of Players
+;TODO: ENT_031 = Determine the number of players
+;-------------------------------------------------------;
+;TODO: SUB_040 = No. of Rounds
+;TODO: ENT_041 = Select the number of rounds to be played
+;-------------------------------------------------------;
+;TODO: SUB_050 = Allow Plugins
+;TODO: ENT_051 = Toggle the use of party plugins
+;-------------------------------------------------------;
+;TODO: SUB_060 = Allow Handicap
+;TODO: ENT_061 = Toggle scaling of better players' points based on previous scores.
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm current settings
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to Main Menu
+;TODO: ESC = Back to Main Menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_038: UScreenPartyTournamentRounds                  ;
+;-------------------------------------------------------;
+[ID_038]
+;TODO: Title = Party Mode Tournament - Rounds
+;TODO: Description = Review tournament rounds, reorder matchups, and prepare the upcoming songs
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: UPDOWN = Rotate through the rounds
+;-------------------------------------------------------;
+; ID_039: UScreenPartyTournamentWin                     ;
+;-------------------------------------------------------;
+[ID_039]
+;TODO: Title = Party Mode Tournament - Winner
+;TODO: Description = Displays the tournament standings and crowns the final winner
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: UPDOWN = Rotate through the rounds
+;-------------------------------------------------------;
+; ID_040: UScreenJukeboxPlaylist                        ;
+;-------------------------------------------------------;
+[ID_040]
+;TODO: Title = UScreenJukeboxPlaylist
+;TODO: Description = Browse and edit the list of songs the jukebox will cycle through
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: UPDOWN = Rotate through the rounds
+;-------------------------------------------------------;
+; ID_041: UScreenJukebox                                ;
+;-------------------------------------------------------;
+[ID_041]
+;TODO: Title = UScreenJukebox
+;TODO: Description = Shows the currently playing jukebox song along with minimal controls and visuals
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: UPDOWN = Rotate through the rounds
+;-------------------------------------------------------;
+;TODO: SEC_020 = Shortcuts
+;TODO: O = Jukebox options
+;-------------------------------------------------------;
+; ID_042: UScreenJukeboxOptions                         ;
+;-------------------------------------------------------;
+[ID_042]
+;TODO: Title = Jukebox Options
+;TODO: Description = Adjust jukebox settings
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: UP = Rotate up through the rounds
+;TODO: DOWN = Rotate down through the rounds
+;-------------------------------------------------------;
+; ID_050: UScreenStatMain                               ;
+;-------------------------------------------------------;
+[ID_050]
+;TODO: Title = Statistics Overview
+;TODO: Description = Displays summarized statistics on songs, players and scores
+;-------------------------------------------------------;
+;TODO: SUB_010 = Best Scores
+;TODO: ENT_011 = Displays all song highscores, their difficulty levels and dates
+;-------------------------------------------------------;
+;TODO: SUB_020 = Best Singers
+;TODO: ENT_021 = Displays all previous singers and their average scores
+;-------------------------------------------------------;
+;TODO: SUB_030 = Popular Songs
+;TODO: ENT_031 = Lists all songs and how often each has been sung
+;-------------------------------------------------------;
+;TODO: SUB_040 = Popular Artists
+;TODO: ENT_041 = Lists all artists and how often each has been sung
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm current selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Return to Main Menu
+;TODO: ESC = Return to Main Menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_002 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_051: UScreenStatDetail                             ;
+;-------------------------------------------------------;
+[ID_051]
+;TODO: Title = Detailed Statistics
+;TODO: Description = More detailed statistics are displayed here
+;-------------------------------------------------------;
+;TODO: SUB_010 = Next Page
+;TODO: ENT_011 =  View the next page of statistics
+;-------------------------------------------------------;
+;TODO: SUB_020 = Previous Page
+;TODO: ENT_021 =  View the previous page of statistics
+;-------------------------------------------------------;
+;TODO: SUB_030 = Reverse
+;TODO: ENT_031 =  Reverse the current sort order
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm current selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to Statistics Overview
+;TODO: ESC = Back to Statistics Overview
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_002 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_060: UScreenEdit                                   ;
+;-------------------------------------------------------;
+[ID_060]
+;TODO: Title = Editor
+;TODO: Description = Create UltraStar files by converting MIDI files
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_061: UScreenEditConvert                            ;
+;-------------------------------------------------------;
+[ID_061]
+;TODO: Title = MIDI Converter
+;TODO: Description = Select MIDI tracks, map instruments, and convert them into UltraStar notes
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: LEFTRIGHT = Navigate through options
+;TODO: UPDOWN = Navigate through MIDI tracks
+;TODO: SPACE = Select/deselect current MIDI track
+;-------------------------------------------------------;
+; ID_062: UScreenOpen                                   ;
+;-------------------------------------------------------;
+[ID_062]
+;TODO: Title = Open Midi File
+;TODO: Description = Select a Midi File to import
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_063: UScreenEditHeader                             ;
+;-------------------------------------------------------;
+[ID_063]
+;TODO: Title = UScreenEditHeader
+;TODO: Description = Edit song metadata such as title, artist, BPM and tag values before saving
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_064: UScreenEditSub                                ;
+;-------------------------------------------------------;
+[ID_064]
+;TODO: Title = Song Editor
+;TODO: Description = Edit your song's lyrics, notes and tags here
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: ESC = Exit Song Editor (or lyrics editor)
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Save
+;TODO: R = Reload song
+;TODO: S = Save song with absolute timings (#RELATIVE:No)
+;TODO: SHIFT_S = Save song with relative timings (#RELATIVE:Yes)
+;-------------------------------------------------------;
+;TODO: SEC_020 = Basic Navigation
+;TODO: UPDOWN = Go to previous/next line
+;TODO: LEFTRIGHT = Go to previous/next note
+;-------------------------------------------------------;
+;TODO: SEC_030 = Playback
+;TODO: PAGEUPDOWN = Adjust song volume
+;TODO: SPACE = Play Audio for current note
+;TODO: SHIFT_SPACE = Play MIDI for current note
+;TODO: CTRL_SHIFT_SPACE = Play Audio+MIDI for current note
+;TODO: P = Play Audio+CLICKS for current line
+;TODO: SHIFT_P = Play MIDI for current line
+;TODO: CTRL_SHIFT_P = Play MIDI+Audio+CLICKS for current line
+;TODO: ALT_P = Play Audio+CLICKS from current line onwards
+;TODO: SHIFT_ALT_P = Play MIDI from current line onwards
+;TODO: CTRL_SHIFT_ALT_P = Play MIDI+Audio+CLICKS from current line onwards
+;TODO: V = Play VIDEO from current line onwards
+;TODO: SHIFT_V = Play VIDEO+CLICKS from current line onwards
+;-------------------------------------------------------;
+;TODO: SEC_040 = Note Type
+;TODO: G = Toggle golden note
+;TODO: F = Toggle freestyle note
+;-------------------------------------------------------;
+;TODO: SEC_041 = Note Pitch
+;TODO: SHIFT_UP = Increase current note by 1 semitone
+;TODO: SHIFT_DOWN = Decrease current note by 1 semitone
+;TODO: KPPLUS = Increase all notes by 1 semitone
+;TODO: KPMINUS = Decrease all notes by 1 semitone
+;TODO: SHIFT_KPPLUS = Increase all notes by 12 semitones (1 octave)
+;TODO: SHIFT_KPMINUS = Decrease all notes by 12 semitones (1 octave)
+;TODO: CTRL_ALT_PAGEUP = Increase all notes by 1 semitone
+;TODO: CTRL_ALT_PAGEDOWN = Decrease all notes by 1 semitone
+;TODO: CTRL_SHIFT_ALT_PAGEUP = Increase all notes by 12 semitones (1 octave)
+;TODO: CTRL_SHIFT_ALT_PAGEDOWN = Decrease all notes by 12 semitones (1 octave)
+;TODO: CTRL_PAGEUP = Increase all notes of current line by 1 semitone
+;TODO: CTRL_PAGEDOWN = Decrease all notes of current line by 1 semitone
+;TODO: CTRL_SHIFT_PAGEUP = Increase all notes of current line by 12 semitones (1 octave)
+;TODO: CTRL_SHIFT_PAGEDOWN = Decrease all notes of current line by 12 semitones (1 octave)
+;-------------------------------------------------------;
+;TODO: SEC_042 = Voice Pitch Recording
+;TODO: N = Set note pitch of current note to the last detected voice pitch.
+;TODO: SHIFT_N = Record voice pitch for current line.
+;TODO: ALT_N = Start voice pitch recording from current position.
+;-------------------------------------------------------;
+;TODO: SEC_043 = Note Position
+;TODO: SHIFT_DELETE = Delete line
+;TODO: CTRL_DELETE = Delete note
+;TODO: CTRL_SLASH = Divide note into two
+;TODO: SHIFT_LEFT = Move whole note left
+;TODO: SHIFT_RIGHT = Move whole note right
+;TODO: CTRL_LEFT = Move start of note left (lengthen note)
+;TODO: CTRL_RIGHT = Move start of note right (shorten note)
+;TODO: ALT_LEFT = Move end of note left (lengthen note)
+;TODO: ALT_RIGHT = Move end of note right (shorten note)
+;TODO: CTRL_ALT_SHIFT_LEFT = Move this note and all notes after it left
+;TODO: CTRL_ALT_SHIFT_RIGHT = Move this note and all notes after it right
+;-------------------------------------------------------;
+;TODO: SEC_045 = Lyrics
+;TODO: F4 = Toggle lyrics editor
+;TODO: RETURN = Exit lyrics editor
+;TODO: BACKSPACE = Delete character of selected note in lyrics editor
+;TODO: PERIOD = Move current text to next note of current line
+;TODO: T = Correct line breaks and timings
+;TODO: C = Correct capitalization of first letter of each line
+;TODO: SHIFT_C = Remove unnecessary spaces in current line
+;TODO: SLASH = Insert a line break before current note
+;TODO: SHIFT_SLASH = Remove the line break before current line
+;-------------------------------------------------------;
+;TODO: SEC_050 = Preview Tags
+;TODO: SHIFT_I = Toggle selected note as PreviewStart note
+;TODO: I = Jump to PreviewStart note
+;TODO: ALT_I = Jump to PreviewStart and play
+;-------------------------------------------------------;
+;TODO: SEC_060 = Medley Tags
+;TODO: A = Toggle selected note as MedleyStart note
+;TODO: SHIFT_A = Toggle selected note as MedleyEnd note
+;TODO: J = Jump to MedleyStart note
+;TODO: SHIFT_J = Jump to MedleyEnd note
+;TODO: ALT_J = Play medley section
+;-------------------------------------------------------;
+;TODO: SEC_070 = Duet Songs
+;TODO: CTRL_SHIFT_D = Toggle P2 (second player) track
+;TODO: CTRL_UP = Switch to P1 track
+;TODO: CTRL_DOWN = Switch to P2 track
+;TODO: CTRL_SHIFT_DOWN = Copy current line of 1st track into 2nd track
+;TODO: CTRL_SHIFT_UP = Copy current line of 2nd track into 1st track
+;TODO: CTRL_ALT_SHIFT_DOWN = Move current line of 1st track into 2nd track
+;TODO: CTRL_ALT_SHIFT_UP = Move current line of 2nd track into 1st track
+;-------------------------------------------------------;
+;TODO: SEC_080 = Gap & VideoGap
+;TODO: 0 = Increase GAP by 10 ms
+;TODO: SHIFT_0 = Increase GAP by 1000 ms
+;TODO: 9 = Decrease GAP by 10 ms
+;TODO: SHIFT_9 = Decrease GAP by 1000 ms
+;TODO: 8 = Increase VideoGap by 10 ms
+;TODO: SHIFT_8 = Increase VideoGap by 100 ms
+;TODO: CTRL_8 = Increase VideoGap by 1000 ms
+;TODO: 7 = Decrease VideoGap by 10 ms
+;TODO: SHIFT_7 = Decrease VideoGap by 100 ms
+;TODO: CTRL_7 = Decrease VideoGap by 1000 ms
+;-------------------------------------------------------;
+;TODO: SEC_085 = BPM
+;TODO: CTRL_EQUALS = Increase BPM by 0.01
+;TODO: CTRL_MINUS = Decrease BPM by 0.01
+;TODO: EQUALS = Increase BPM by 0.05
+;TODO: MINUS = Decrease BPM by 0.05
+;TODO: SHIFT_EQUALS = Increase BPM by 1.00
+;TODO: SHIFT_MINUS = Decrease BPM by 1.00
+;TODO: SHIFT_M = Multiply BPM and note times by 2 (more accurate)
+;TODO: SHIFT_D = Divide BPM and note times by 2 (less accurate)
+;TODO: F5 = Toggle BPM editor mode
+;-------------------------------------------------------;
+;TODO: SEC_090 = Other
+;TODO: CTRL_C = Copy current line
+;TODO: CTRL_V = Paste LYRICS over current line
+;TODO: CTRL_SHIFT_V = Paste LYRICS+NOTES over current line
+;TODO: CTRL_ALT_V = Paste NOTES over current line
+;TODO: CTRL_SHIFT_4 = Paste LYRICS+NOTES over each of the next 4 lines
+;TODO: CTRL_SHIFT_ALT_4 = Paste LYRICS+NOTES+LINE-END 4 times
+;TODO: CTRL_SHIFT_5 = Paste LYRICS+NOTES over each of the next 5 lines
+;TODO: CTRL_SHIFT_ALT_5 = Paste LYRICS+NOTES+LINE-END 5 times
+;TODO: F6 = Toggle Piano edit mode
+;-------------------------------------------------------;
+; ID_070: UScreenOptions                                ;
+;-------------------------------------------------------;
+[ID_070]
+;TODO: Title = Options
+;TODO: Description = Game preferences can be changed here and fall under the categories below
+;-------------------------------------------------------;
+;TODO: SUB_010 = Game
+;TODO: ENT_011 = Player numbers, difficulty, language, sorting, sort tabs, shuffle and debug mode
+;-------------------------------------------------------;
+;TODO: SUB_020 = Graphics
+;TODO: ENT_021 = Resolution, full-screen, colour depth, oscilloscope, video size and video preview
+;-------------------------------------------------------;
+;TODO: SUB_030 = Sound
+;TODO: ENT_031 = Mic boost, note clicks, beat clicks, noise threshold, preview volume and fading
+;-------------------------------------------------------;
+;TODO: SUB_040 = Input
+;TODO: ENT_041 = Mouse cursor and game controller input
+;-------------------------------------------------------;
+;TODO: SUB_040 = Lyrics
+;TODO: ENT_041 = Lyric font and lyric animation
+;-------------------------------------------------------;
+;TODO: SUB_050 = Themes
+;TODO: ENT_051 = Theme, theme skin and theme skin colour
+;-------------------------------------------------------;
+;TODO: SUB_060 = Record
+;TODO: ENT_061 = Sound card, audio input and channel assignment
+;-------------------------------------------------------;
+;TODO: SUB_070 = Advanced
+;TODO: ENT_071 = Fade, animation, line bonus, song select, quit prompt, party menu and top scores
+;-------------------------------------------------------;
+;TODO: SUB_070 = Network
+;TODO: ENT_071 = Internet settings
+;-------------------------------------------------------;
+;TODO: SUB_070 = Webcam
+;TODO: ENT_071 = Webcam selection and settings
+;-------------------------------------------------------;
+;TODO: SUB_070 = Jukebox
+;TODO: ENT_071 = Font, color and effect settings for jukebox mode
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm current selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to main menu
+;TODO: ESC = Back to main menu
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+;TODO: SEC_020 = Shortcuts
+;TODO: G = Game options
+;TODO: H = Graphics options
+;TODO: S = Sound options
+;TODO: I = Input options
+;TODO: L = Lyrics options
+;TODO: T = Themes options
+;TODO: R = Recording options
+;TODO: A = Advanced options
+;TODO: N = Network options
+;TODO: W = Webcam options
+;TODO: J = Jukebox options
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+; ID_071: UScreenOptionsGame                            ;
+;-------------------------------------------------------;
+[ID_071]
+;TODO: Title = Game Options
+;TODO: Description = These are the basic game options available
+;-------------------------------------------------------;
+;SUB_010 = No. of Players
+;ENT_011 = Adjust the number of players.
+;-------------------------------------------------------;
+;SUB_020 = Difficulty
+;ENT_021 = Set the default difficulty level
+;-------------------------------------------------------;
+;TODO: SUB_010 = Language
+;TODO: ENT_011 = Select the language in which the game will be displayed (requires restart)
+;-------------------------------------------------------;
+;TODO: SUB_020 = Song Menu
+;TODO: ENT_021 = Select menu type for song selection
+;-------------------------------------------------------;
+;TODO: SUB_030 = Tabs
+;TODO: ENT_031 = Toggle whether songs are displayed nested in sort criteria tabs
+;-------------------------------------------------------;
+;TODO: SUB_040 = Sorting
+;TODO: ENT_041 = Choose criteria to sort songs by e.g. language, edition etc
+;-------------------------------------------------------;
+;SUB_060 = Auto Shuffle
+;ENT_061 = Determine if and how often to randomly auto-select songs at song selection
+;TODO: SUB_050 = Show Scores
+;TODO: ENT_051 = Choose whether to show scores or not
+;-------------------------------------------------------;
+;TODO: SUB_070 = Debug
+;TODO: ENT_071 = Toggle the display of debug data e.g. frame rates
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm current selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to Options Menu
+;TODO: ESC = Back to Options Menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_072: UScreenOptionsGraphics                        ;
+;-------------------------------------------------------;
+[ID_072]
+;TODO: Title = Graphics Options
+;TODO: Description = These are the graphics options
+;-------------------------------------------------------;
+;TODO: SUB_010 = Resolution
+;TODO: ENT_011 = Adjust the screen resolution of the game.
+;-------------------------------------------------------;
+;TODO: SUB_020 = Fullscreen
+;TODO: ENT_021 = Toggle fullscreen mode (requires restart)
+;-------------------------------------------------------;
+;TODO: SUB_030 = Colour Depth
+;TODO: ENT_031 = Determine colour depth
+;-------------------------------------------------------;
+;TODO: SUB_040 = Oscilloscope
+;TODO: ENT_041 = Toggle the display of an oscilloscope trace for each singer's microphone
+;-------------------------------------------------------;
+;TODO: SUB_050 = Video Size
+;TODO: ENT_051 = Determine whether and at what size song videos will be displayed
+;-------------------------------------------------------;
+;TODO: SUB_060 = Video Preview
+;TODO: ENT_061 = Determine whether a video previews will be displayed at song selection
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm current selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to Options Menu
+;TODO: ESC = Back to Options Menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_073: UScreenOptionsSound                           ;
+;-------------------------------------------------------;
+[ID_073]
+;TODO: Title = Sound Options
+;TODO: Description = These are the various sound options
+;-------------------------------------------------------;
+;TODO: SUB_010 = Mic Boost
+;TODO: ENT_011 = Set the boost/gain across all microphones
+;-------------------------------------------------------;
+;TODO: SUB_020 = Note Clicks
+;TODO: ENT_021 = Toggle the playing of a click at the start of each note
+;-------------------------------------------------------;
+;TODO: SUB_030 = Beat Clicks
+;TODO: ENT_031 = Toggle the playing of clicks on the quarter-beat
+;-------------------------------------------------------;
+;TODO: SUB_040 = Noise Threshold
+;TODO: ENT_041 = Set the microphone noise threshold (the percentage of input filtered out as noise)
+;-------------------------------------------------------;
+;TODO: SUB_050 = Preview Volume
+;TODO: ENT_051 = Determine the volume of song previews at the song selection menu
+;-------------------------------------------------------;
+;TODO: SUB_060 = Preview Fading
+;TODO: ENT_061 = Determine how many seconds song previews take to fade in to preview volume
+;-------------------------------------------------------;
+;TODO: SUB_070 = Delay (mic)
+;TODO: ENT_071 = Sets the delay time for the singing rating procedure. The tone detection is always behind the picture and music.
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm current selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to Options Menu
+;TODO: ESC = Back to Options Menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_074: UScreenOptionsInput                           ;
+;-------------------------------------------------------;
+[ID_074]
+;TODO: Title = Input Options
+;TODO: Description = Change your input settings here
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_075: UScreenOptionsLyrics                          ;
+;-------------------------------------------------------;
+[ID_075]
+;TODO: Title = Lyrics Options
+;TODO: Description = This is where you can change the lyrics options
+;-------------------------------------------------------;
+;TODO: SUB_010 = Font
+;TODO: ENT_011 = Set the font of the lyrics
+;-------------------------------------------------------;
+;TODO: SUB_020 = Animation
+;TODO: ENT_021 = Determine the lyrics animation effect
+;-------------------------------------------------------;
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm current selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to Options Menu
+;TODO: ESC = Back to Options Menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_076: UScreenOptionsThemes                          ;
+;-------------------------------------------------------;
+[ID_076]
+;TODO: Title = Theme Options
+;TODO: Description = These are the theme, theme skin and theme skin colour schemes available
+;-------------------------------------------------------;
+;TODO: SUB_010 = Theme
+;TODO: ENT_011 = Determine which theme will be used
+;-------------------------------------------------------;
+;TODO: SUB_020 = Theme Skin
+;TODO: ENT_021 = Choose from the range of skins available for the currently selected theme
+;-------------------------------------------------------;
+;TODO: SUB_030 = Theme Skin Colour
+;TODO: ENT_031 = Set the colour scheme for the currently selected theme and skin pairing
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm current selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to Options Menu
+;TODO: ESC = Back to Options Menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_077: UScreenOptionsRecord                          ;
+;-------------------------------------------------------;
+[ID_077]
+;TODO: Title = Recording Options
+;TODO: Description = These determine the players' microphone settings.
+;-------------------------------------------------------;
+;TODO: SUB_010 = Soundcard
+;TODO: ENT_011 = Select one of the available sound cards to view the corresponding input settings
+;-------------------------------------------------------;
+;TODO: SUB_020 = Input
+;TODO: ENT_021 = Determine the input for the sound card selected
+;-------------------------------------------------------;
+;TODO: SUB_030 = Left Channel
+;TODO: ENT_031 = The left channel of the selected soundcard input is assigned to player number...
+;-------------------------------------------------------;
+;TODO: SUB_040 = Right Channel
+;TODO: ENT_041 = The right channel of the selected soundcard input is assigned to player number...
+;-------------------------------------------------------;
+;TODO: SUB_050 = Enable Webcam
+;TODO: ENT_051 = Switch the webcam on or off. You must switch it on for using in the singscreen.
+;-------------------------------------------------------;
+;TODO: SUB_060 = Webcam
+;TODO: ENT_061 = Select one of the available webcams.
+;-------------------------------------------------------;
+;TODO: SUB_070 = Webcam Codec
+;TODO: ENT_071 = Determine the codec and resolution for the selected webcam.
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm current selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to Options Menu
+;TODO: ESC = Back to Options Menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_078: UScreenOptionsAdvanced                        ;
+;-------------------------------------------------------;
+[ID_078]
+;TODO: Title = Advanced Options Menu
+;TODO: Description = Here are the more advanced options
+;-------------------------------------------------------;
+;TODO: SUB_010 = Screen Fading
+;TODO: ENT_011 = Toggle transitional fading effect between screens
+;-------------------------------------------------------;
+;TODO: SUB_020 = Note Animation
+;TODO: ENT_021 = Toggle sing note animations e.g. sparkling golden notes
+;-------------------------------------------------------;
+;TODO: SUB_030 = Line Bonus
+;TODO: ENT_031 = Determine when the line bonus is awarded, if at all
+;-------------------------------------------------------;
+;TODO: SUB_040 = On Song Select
+;TODO: ENT_041 = Change what happens after a song has been selected
+;-------------------------------------------------------;
+;TODO: SUB_050 = Quit Prompts
+;TODO: ENT_051 = Toggle confirmation prompts to prevent accidental quits
+;-------------------------------------------------------;
+;TODO: SUB_060 = Auto Party Menu
+;TODO: ENT_061 = Toggle automatic display of song menu at classic party mode song selection
+;-------------------------------------------------------;
+;TODO: SUB_070 = Top Scores
+;TODO: ENT_071 = Never / dynamically / always abbreviate song top scores by player name
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Confirm current selection
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Back to Options Menu
+;TODO: ESC = Back to Options Menu
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_079: UScreenOptionsNetwork                         ;
+;-------------------------------------------------------;
+[ID_079]
+;TODO: Title = Network Options
+;TODO: Description = Here you can set up your network
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_080: UScreenOptionsWebcam                          ;
+;-------------------------------------------------------;
+[ID_080]
+;TODO: Title = Webcam Options
+;TODO: Description = Here you can adjust your webcam settings
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+;-------------------------------------------------------;
+; ID_081: UScreenOptionsJukebox                         ;
+;-------------------------------------------------------;
+[ID_081]
+;TODO: Title = Jukebox Options
+;TODO: Description = Configure fonts, colours, transitions and other presentation options for jukebox mode
+;-------------------------------------------------------;
+;TODO: SEC_001 = General
+;TODO: RETURN = Continue
+;TODO: TAB = Toggle help
+;TODO: PRINT = Take screenshot
+;TODO: F11 = Toggle fullscreen
+;TODO: ALT_RETURN = Toggle fullscreen (upscaled)
+;TODO: BACKSPACE = Exit Challenge Party Mode
+;TODO: ESC = Exit Challenge Party Mode
+;TODO: Q = Quit UltraStar Deluxe
+;-------------------------------------------------------;
+;TODO: SEC_010 = Navigation
+;TODO: ARROWKEYS = Navigate through options
+
+; ===== Unused translations from original file (kept commented) =====
+;RAW: [Text]
+;UNUSED: ;TODO: LANGUAGE=English
+;UNUSED: ;TODO: OPTION_VALUE_EASY=Easy
+;UNUSED: ;TODO: OPTION_VALUE_MEDIUM=Medium
+;UNUSED: ;TODO: OPTION_VALUE_HARD=Hard
+;UNUSED: ;TODO: OPTION_VALUE_ON=On
+;UNUSED: ;TODO: OPTION_VALUE_OFF=Off
+;UNUSED: ;TODO: OPTION_VALUE_EDITION=Edition
+;UNUSED: ;TODO: OPTION_VALUE_GENRE=Genre
+;UNUSED: ;TODO: OPTION_VALUE_LANGUAGE=Language
+;UNUSED: ;TODO: OPTION_VALUE_FOLDER=Folder
+;UNUSED: ;TODO: OPTION_VALUE_TITLE=Title Letter
+;UNUSED: ;TODO: OPTION_VALUE_ARTIST=Artist Letter
+;UNUSED: ;TODO: OPTION_VALUE_ARTIST2=Artist
+;UNUSED: ;TODO: OPTION_VALUE_YEAR=Year
+;UNUSED: ;TODO: OPTION_VALUE_YEAR_REVERSED=Year Reversed
+;UNUSED: ;TODO: OPTION_VALUE_DECADE=Decade
+;UNUSED: ;TODO: OPTION_VALUE_PLAYLIST=Playlist
+;UNUSED: ;TODO: OPTION_VALUE_BORDERLESS=Borderless
+;UNUSED: ;TODO: OPTION_VALUE_WHENNOVIDEO=When No Video
+;UNUSED: ;TODO: OPTION_VALUE_WHENNOVIDEOANDIMAGE=When No Video and Image
+;UNUSED: ;TODO: OPTION_VALUE_SMALL=Small
+;UNUSED: ;TODO: OPTION_VALUE_BIG=Big
+;UNUSED: ;TODO: OPTION_VALUE_HALF=Half
+;UNUSED: ;TODO: OPTION_VALUE_FULL_VID=Full (Video)
+;UNUSED: ;TODO: OPTION_VALUE_FULL_VID_BG=Full (BG & Video)
+;UNUSED: ;TODO: OPTION_VALUE_GAIN_SOFT=Soft
+;UNUSED: ;TODO: OPTION_VALUE_GAIN_MEDIUM=Medium
+;UNUSED: ;TODO: OPTION_VALUE_GAIN_HARD=Hard
+;UNUSED: ;TODO: OPTION_VALUE_AUTO=Auto
+;UNUSED: ;TODO: OPTION_VALUE_SEC=Second
+;UNUSED: ;TODO: OPTION_VALUE_SECS=Seconds
+;UNUSED: ;TODO: OPTION_VALUE_REGULAR=Regular
+;UNUSED: ;TODO: OPTION_VALUE_BOLD=Bold
+;UNUSED: ;TODO: OPTION_VALUE_TEXTOUTLINE=Outline
+;UNUSED: ;TODO: OPTION_VALUE_SIMPLE=Simple
+;UNUSED: ;TODO: OPTION_VALUE_ZOOM=Zoom
+;UNUSED: ;TODO: OPTION_VALUE_SLIDE=Slide
+;UNUSED: ;TODO: OPTION_VALUE_BALL=Ball
+;UNUSED: ;TODO: OPTION_VALUE_SHIFT=Shift
+;UNUSED: ;TODO: OPTION_VALUE_EURO=Euro
+;UNUSED: ;TODO: OPTION_VALUE_JAPAN=Japan
+;UNUSED: ;TODO: OPTION_VALUE_AMERICAN=American
+;UNUSED: ;TODO: OPTION_VALUE_BLUE=Blue
+;UNUSED: ;TODO: OPTION_VALUE_GREEN=Green
+;UNUSED: ;TODO: OPTION_VALUE_PINK=Pink
+;UNUSED: ;TODO: OPTION_VALUE_RED=Red
+;UNUSED: ;TODO: OPTION_VALUE_VIOLET=Violet
+;UNUSED: ;TODO: OPTION_VALUE_ORANGE=Orange
+;UNUSED: ;TODO: OPTION_VALUE_YELLOW=Yellow
+;UNUSED: ;TODO: OPTION_VALUE_BROWN=Brown
+;UNUSED: ;TODO: OPTION_VALUE_BLACK=Black
+;UNUSED: ;TODO: OPTION_VALUE_SING=Sing
+;UNUSED: ;TODO: OPTION_VALUE_SELECT_PLAYERS=Select Players
+;UNUSED: ;TODO: OPTION_VALUE_OPEN_MENU=Open Menu
+;UNUSED: ;TODO: OPTION_VALUE_SYSTEM_CURSOR=On [System Cursor]
+;UNUSED: ;TODO: OPTION_VALUE_GAME_CURSOR=On [Game Cursor]
+;UNUSED: ;TODO: OPTION_VALUE_HARDWARE_CURSOR=Hardware Cursor
+;UNUSED: ;TODO: OPTION_VALUE_SOFTWARE_CURSOR=Software Cursor
+;UNUSED: ;TODO: SING_LOADING=Loading...
+;UNUSED: ;TODO: SING_CHOOSE_MODE=Choose Mode
+;UNUSED: ;TODO: SING_SING=Sing
+;UNUSED: ;TODO: SING_SING_DESC=Compete in solos, duets or medleys
+;UNUSED: ;TODO: SING_MULTI=Party
+;UNUSED: ;TODO: SING_MULTI_DESC=Sing in party mode
+;UNUSED: ;TODO: SING_TOOLS=Tools
+;UNUSED: ;TODO: SING_STATS=Statistics
+;UNUSED: ;TODO: SING_STATS_DESC=View the statistics
+;UNUSED: ;TODO: SING_EDITOR=Editor
+;UNUSED: ;TODO: SING_EDITOR_DESC=Create your own song
+;UNUSED: ;TODO: SING_EDITOR_WHEREAMI=Tools » Editor
+;UNUSED: ;TODO: SING_GAME_OPTIONS=Game options
+;UNUSED: ;TODO: SING_GAME_OPTIONS_DESC=Change game settings
+;UNUSED: ;TODO: SING_EXIT=Quit
+;UNUSED: ;TODO: SING_EXIT_DESC=Quit game
+;UNUSED: ;TODO: SING_OPTIONS=Options
+;UNUSED: ;TODO: SING_OPTIONS_DESC=Change settings
+;UNUSED: ;TODO: SING_OPTIONS_WHEREAMI=Tools » Options
+;UNUSED: ;TODO: SING_OPTIONS_GAME=Game
+;UNUSED: ;TODO: SING_OPTIONS_GRAPHICS=Graphics
+;UNUSED: ;TODO: SING_OPTIONS_SOUND=Sound
+;UNUSED: ;TODO: SING_OPTIONS_INPUT=Input
+;UNUSED: ;TODO: SING_OPTIONS_LYRICS=Lyrics
+;UNUSED: ;TODO: SING_OPTIONS_THEMES=Themes
+;UNUSED: ;TODO: SING_OPTIONS_RECORD=Record
+;UNUSED: ;TODO: SING_OPTIONS_ADVANCED=Advanced
+;UNUSED: ;TODO: SING_OPTIONS_EXIT=Back
+;UNUSED: ;TODO: SING_OPTIONS_GAME_WHEREAMI=Tools » Options » Game
+;UNUSED: ;TODO: SING_OPTIONS_GAME_DESC=General game settings
+;UNUSED: ;TODO: SING_OPTIONS_GAME_PLAYERS=Players
+;UNUSED: ;TODO: SING_OPTIONS_GAME_DIFFICULTY=Difficulty
+;UNUSED: ;TODO: SING_OPTIONS_GAME_LANGUAGE=Language
+;UNUSED: ;TODO: SING_OPTIONS_GAME_TABS=Tabs
+;UNUSED: ;TODO: SING_OPTIONS_GAME_SORTING=Sorting
+;UNUSED: ;TODO: SING_OPTIONS_GAME_DEBUG=Debug
+;UNUSED: ;TODO: SING_OPTIONS_GAME_AVDELAY=Audio/Video Delay
+;UNUSED: ;TODO: SING_OPTIONS_GAME_MICDELAY=Microphone Delay
+;UNUSED: ;TODO: SING_OPTIONS_GRAPHICS_WHEREAMI=Tools » Options » Graphics
+;UNUSED: ;TODO: SING_OPTIONS_GRAPHICS_DESC=Graphic settings
+;UNUSED: ;TODO: SING_OPTIONS_GRAPHICS_RESOLUTION=Resolution
+;UNUSED: ;TODO: SING_OPTIONS_GRAPHICS_FULLSCREEN=Fullscreen
+;UNUSED: ;TODO: SING_OPTIONS_GRAPHICS_DEPTH=Depth
+;UNUSED: ;TODO: SING_OPTIONS_GRAPHICS_VISUALIZER=Visualization
+;UNUSED: ;TODO: SING_OPTIONS_GRAPHICS_OSCILLOSCOPE=Oscilloscope
+;UNUSED: ;TODO: SING_OPTIONS_GRAPHICS_LINEBONUS=Line Bonus
+;UNUSED: ;TODO: SING_OPTIONS_GRAPHICS_MOVIE_SIZE=Movie size
+;UNUSED: ;TODO: SING_OPTIONS_SOUND_WHEREAMI=Tools » Options » Sound
+;UNUSED: ;TODO: SING_OPTIONS_SOUND_DESC=Sound settings
+;UNUSED: ;TODO: SING_OPTIONS_SOUND_VOICEPASSTHROUGH=Microphone Playback
+;UNUSED: ;TODO: SING_OPTIONS_SOUND_BACKGROUNDMUSIC=Background music
+;UNUSED: ;TODO: SING_OPTIONS_SOUND_MIC_BOOST=Mic boost
+;UNUSED: ;TODO: SING_OPTIONS_SOUND_CLICK_ASSIST=Click assist
+;UNUSED: ;TODO: SING_OPTIONS_SOUND_BEAT_CLICK=Beat click
+;UNUSED: ;TODO: SING_OPTIONS_SOUND_THRESHOLD=Threshold
+;UNUSED: ;TODO: SING_OPTIONS_SOUND_TWO_PLAYERS_MODE=Two players mode
+;UNUSED: ;TODO: SING_OPTIONS_SOUND_MUSICAUTOGAIN=ReplayGain
+;UNUSED: ;TODO: SING_OPTIONS_SOUND_PREVIEWVOLUME=Preview Volume
+;UNUSED: ;TODO: SING_OPTIONS_SOUND_PREVIEWFADING=Preview Fading
+;UNUSED: ;TODO: SING_OPTIONS_INPUT_WHEREAMI=Tools » Options » Input
+;UNUSED: ;TODO: SING_OPTIONS_INPUT_DESC=Input settings
+;UNUSED: ;TODO: SING_OPTIONS_INPUT_MOUSE=Mouse
+;UNUSED: ;TODO: SING_OPTIONS_INPUT_JOYPAD_SUPPORT=Controller support
+;UNUSED: ;TODO: SING_OPTIONS_LYRICS_WHEREAMI=Tools » Options » Lyrics
+;UNUSED: ;TODO: SING_OPTIONS_LYRICS_DESC=Lyrics settings
+;UNUSED: ;TODO: SING_OPTIONS_LYRICS_FONT=Font
+;UNUSED: ;TODO: SING_OPTIONS_LYRICS_STYLE=Style
+;UNUSED: ;TODO: SING_OPTIONS_LYRICS_EFFECT=Effect
+;UNUSED: ;TODO: SING_OPTIONS_LYRICS_SOLMIZATION=Solmization
+;UNUSED: ;TODO: SING_OPTIONS_LYRICS_NOTELINES=Staves
+;UNUSED: ;TODO: SING_OPTIONS_THEMES_WHEREAMI=Tools » Options » Themes
+;UNUSED: ;TODO: SING_OPTIONS_THEMES_DESC=Theme and Skin settings
+;UNUSED: ;TODO: SING_OPTIONS_THEMES_THEME=Theme
+;UNUSED: ;TODO: SING_OPTIONS_THEMES_SKIN=Skin
+;UNUSED: ;TODO: SING_OPTIONS_THEMES_COLOR=Color
+;UNUSED: ;TODO: SING_OPTIONS_RECORD_WHEREAMI=Tools » Options » Record
+;UNUSED: ;TODO: SING_OPTIONS_RECORD_DESC=Microphone settings
+;UNUSED: ;TODO: SING_OPTIONS_RECORD_CARD=Soundcard
+;UNUSED: ;TODO: SING_OPTIONS_RECORD_INPUT=Input
+;UNUSED: ;TODO: SING_OPTIONS_RECORD_CHANNEL=Channel
+;UNUSED: ;TODO: SING_OPTIONS_RECORD_NOONE=None
+;UNUSED: ;TODO: SING_OPTIONS_RECORD_ASSIGNEE=Assigned Player
+;UNUSED: ;TODO: SING_OPTIONS_ADVANCED_WHEREAMI=Tools » Options » Advanced
+;UNUSED: ;TODO: SING_OPTIONS_ADVANCED_DESC=Advanced settings
+;UNUSED: ;TODO: SING_OPTIONS_ADVANCED_EFFECTSING=Sing Effects
+;UNUSED: ;TODO: SING_OPTIONS_ADVANCED_SCREENFADE=Screen Fading
+;UNUSED: ;TODO: SING_OPTIONS_ADVANCED_LOADANIMATION=Load Animation
+;UNUSED: ;TODO: SING_OPTIONS_ADVANCED_ASKBEFOREDEL=Safety Questions
+;UNUSED: ;TODO: SING_OPTIONS_ADVANCED_LINEBONUS=Line Bonus
+;UNUSED: ;TODO: SING_OPTIONS_ADVANCED_ONSONGCLICK=After Song Select
+;UNUSED: ;TODO: SING_OPTIONS_ADVANCED_PARTYPOPUP=Auto PartyMenu
+;UNUSED: ;TODO: SING_EDIT=Editor
+;UNUSED: ;TODO: SING_EDIT_MENU_DESCRIPTION=Create your own song
+;UNUSED: ;TODO: SING_EDIT_WHEREAMI=Tools » Editor
+;UNUSED: ;TODO: SING_EDIT_BUTTON_DESCRIPTION_CONVERT=Import text from midi file
+;UNUSED: ;TODO: SING_EDIT_BUTTON_DESCRIPTION_EXIT=Back
+;UNUSED: ;TODO: SING_EDIT_BUTTON_CONVERT=Import
+;UNUSED: ;TODO: SING_EDIT_BUTTON_EXIT=Back
+;UNUSED: ;TODO: SING_EDIT_NAVIGATE=Navigate
+;UNUSED: ;TODO: SING_EDIT_SELECT=Select
+;UNUSED: ;TODO: SING_EDIT_EXIT=Back
+;UNUSED: ;TODO: SING_EDIT_CONVERT=MIDI Converter
+;UNUSED: ;TODO: SING_EDIT_CONVERT_MENU_DESCRIPTION=Convert MIDI files to UltraStar files
+;UNUSED: ;TODO: SING_EDIT_CONVERT_TEXTDESCRIPTION=Convert MIDI files to UltraStar files
+;UNUSED: ;TODO: SING_EDIT_CONVERT_NAVIGATE=Navigate
+;UNUSED: ;TODO: SING_EDIT_CONVERT_SELECT=Select
+;UNUSED: ;TODO: SING_EDIT_CONVERT_EXIT=Back
+;UNUSED: ;TODO: SING_EDIT_CONVERT_WHEREAMI=Tools » Editor » MIDI Converter
+;UNUSED: ;TODO: SING_EDIT_CONVERT_BUTTON_OPEN=Open
+;UNUSED: ;TODO: SING_EDIT_CONVERT_BUTTON_PLAY=Play
+;UNUSED: ;TODO: SING_EDIT_CONVERT_BUTTON_PLAYSELECTED=Play sel.
+;UNUSED: ;TODO: SING_EDIT_CONVERT_BUTTON_PAUSE=Pause
+;UNUSED: ;TODO: SING_EDIT_CONVERT_BUTTON_STOP=Stop
+;UNUSED: ;TODO: SING_EDIT_CONVERT_BUTTON_SAVE=Save
+;UNUSED: ;TODO: SING_EDIT_OPEN=Open MIDI file
+;UNUSED: ;TODO: SING_EDIT_OPEN_MENU_DESCRIPTION=Load a MIDI file from disk
+;UNUSED: ;TODO: SING_EDIT_OPEN_TEXTDESCRIPTION=Load a MIDI file from disk
+;UNUSED: ;TODO: SING_EDIT_OPEN_PATH=Path:
+;UNUSED: ;TODO: SING_EDIT_OPEN_NAVIGATE=Navigate
+;UNUSED: ;TODO: SING_EDIT_OPEN_SELECT=Select
+;UNUSED: ;TODO: SING_EDIT_OPEN_EXIT=Back
+;UNUSED: ;TODO: SING_EDIT_OPEN_WHEREAMI=Tools » Editor » MIDI Conv. » Open
+;UNUSED: ;TODO: SING_EDIT_OPEN_BUTTON_LOAD=Load
+;UNUSED: ;TODO: SING_EDIT_OPEN_BUTTON_BACK=Back
+;UNUSED: ;TODO: SING_LEGEND_SELECT=Select
+;UNUSED: ;TODO: SING_LEGEND_NAVIGATE=Navigate
+;UNUSED: ;TODO: SING_LEGEND_CONTINUE=Continue
+;UNUSED: ;TODO: SING_LEGEND_ESC=Back
+;UNUSED: ;TODO: SING_PLAYER_DESC=Player setup
+;UNUSED: ;TODO: SING_PLAYER_WHEREAMI=Sing » Player setup
+;UNUSED: ;TODO: SING_PLAYER_ENTER_NAME=Enter name
+;UNUSED: ;TODO: SING_DIFFICULTY_DESC=Select difficulty
+;UNUSED: ;TODO: SING_DIFFICULTY_WHEREAMI=Sing » Difficulty
+;UNUSED: ;TODO: SING_DIFFICULTY_CONTINUE=To song selection
+;UNUSED: ;TODO: SING_EASY=Easy
+;UNUSED: ;TODO: SING_MEDIUM=Medium
+;UNUSED: ;TODO: SING_HARD=Hard
+;UNUSED: ;TODO: SING_SONG_SELECTION_DESC=Choose your song
+;UNUSED: ;TODO: SING_SONG_SELECTION_WHEREAMI=Sing » Song selection
+;UNUSED: ;TODO: SING_SONG_SELECTION_GOTO=Go to ..
+;UNUSED: ;TODO: SING_SONG_SELECTION=Song selection
+;UNUSED: ;TODO: SING_SONG_SELECTION_MENU=Menu
+;UNUSED: ;TODO: SING_SONG_SELECTION_PLAYLIST=Playlist
+;UNUSED: ;TODO: SING_SONG_IN_CAT=Song
+;UNUSED: ;TODO: SING_SONGS_IN_CAT=Songs
+;UNUSED: ;TODO: PLAYLIST_CATTEXT=Playlist: %s
+;UNUSED: ;TODO: SING_TIME=TIME
+;UNUSED: ;TODO: SING_TOTAL=Total
+;UNUSED: ;TODO: SING_MODE=Sing solo
+;UNUSED: ;TODO: SING_NOTES=Notes
+;UNUSED: ;TODO: SING_GOLDEN_NOTES=Golden notes
+;UNUSED: ;TODO: SING_PHRASE_BONUS=Line bonus
+;UNUSED: ;TODO: SING_MENU=Main Menu
+;UNUSED: ;TODO: SONG_SCORE=Song score
+;UNUSED: ;TODO: SONG_SCORE_WHEREAMI=Sing » Score
+;UNUSED: ;TODO: SING_SCORE_TONE_DEAF=Tone Deaf
+;UNUSED: ;TODO: SING_SCORE_AMATEUR=Amateur
+;UNUSED: ;TODO: SING_SCORE_WANNABE=Wannabe
+;UNUSED: ;TODO: SING_SCORE_HOPEFUL=Hopeful
+;UNUSED: ;TODO: SING_SCORE_RISING_STAR=Rising Star
+;UNUSED: ;TODO: SING_SCORE_LEAD_SINGER=Lead Singer
+;UNUSED: ;TODO: SING_SCORE_SUPERSTAR=Superstar
+;UNUSED: ;TODO: SING_SCORE_ULTRASTAR=Ultrastar
+;UNUSED: ;TODO: SING_TOP_5_CHARTS=Top 5 Players
+;UNUSED: ;TODO: SING_TOP_5_CHARTS_WHEREAMI=Top 5
+;UNUSED: ;TODO: SING_TOP_5_CHARTS_CONTINUE=To song selection
+;UNUSED: ;TODO: SING_TOP_5_CHARTS_SWITCH_DIFFICULTY=Switch difficulty
+;UNUSED: ;TODO: POPUP_PERFECT=perfect!
+;UNUSED: ;TODO: POPUP_AWESOME=awesome!
+;UNUSED: ;TODO: POPUP_GREAT=great!
+;UNUSED: ;TODO: POPUP_GOOD=good!
+;UNUSED: ;TODO: POPUP_NOTBAD=not bad!
+;UNUSED: ;TODO: POPUP_BAD=bad!
+;UNUSED: ;TODO: POPUP_POOR=poor!
+;UNUSED: ;TODO: POPUP_AWFUL=awful!
+;UNUSED: ;TODO: IMPLODE_GLUE1=,
+;UNUSED: ;TODO: IMPLODE_GLUE2= and
+;UNUSED: ;TODO: SONG_MENU_NAME_MAIN=Song menu
+;UNUSED: ;TODO: SONG_MENU_PLAY=Sing
+;UNUSED: ;TODO: SONG_MENU_CHANGEPLAYERS=Change Players
+;UNUSED: ;TODO: SONG_MENU_EDIT=Edit
+;UNUSED: ;TODO: SONG_MENU_MODI=Sing a Modi
+;UNUSED: ;TODO: SONG_MENU_CANCEL=Cancel
+;UNUSED: ;TODO: SONG_MENU_NAME_PLAYLIST=Song Menu
+;UNUSED: ;TODO: SONG_MENU_PLAYLIST_ADD=Add Song
+;UNUSED: ;TODO: SONG_MENU_PLAYLIST_DEL=Delete Song
+;UNUSED: ;TODO: SONG_MENU_NAME_PLAYLIST_ADD=Add Song
+;UNUSED: ;TODO: SONG_MENU_PLAYLIST_ADD_NEW=To new playlist
+;UNUSED: ;TODO: SONG_MENU_PLAYLIST_ADD_EXISTING=To existing playlist
+;UNUSED: ;TODO: SONG_MENU_PLAYLIST_NOEXISTING=No playlist available
+;UNUSED: ;TODO: SONG_MENU_NAME_PLAYLIST_NEW=New Playlist
+;UNUSED: ;TODO: SONG_MENU_PLAYLIST_NEW_CREATE=Create
+;UNUSED: ;TODO: SONG_MENU_PLAYLIST_NEW_UNNAMED=Unnamed
+;UNUSED: ;TODO: SONG_MENU_NAME_PLAYLIST_DELITEM=Really Delete?
+;UNUSED: ;TODO: SONG_MENU_YES=Yes
+;UNUSED: ;TODO: SONG_MENU_NO=No
+;UNUSED: ;TODO: SONG_MENU_NAME_PLAYLIST_LOAD=Open Playlist
+;UNUSED: ;TODO: SONG_MENU_PLAYLIST_LOAD=Open
+;UNUSED: ;TODO: SONG_MENU_PLAYLIST_DELCURRENT=Delete current Playlist
+;UNUSED: ;TODO: SONG_MENU_NAME_PLAYLIST_DEL=Delete Playlist?
+;UNUSED: ;TODO: SONG_MENU_NAME_PARTY_MAIN=Party Menu
+;UNUSED: ;TODO: SONG_MENU_JOKER=Joker
+;UNUSED: ;TODO: SONG_MENU_NAME_PARTY_JOKER=Take joker
+;UNUSED: ;TODO: SONG_JUMPTO_DESC=Search song
+;UNUSED: ;TODO: SONG_JUMPTO_TYPE_DESC=Search for:
+;UNUSED: ;TODO: SONG_JUMPTO_TYPE1=All
+;UNUSED: ;TODO: SONG_JUMPTO_TYPE2=Title
+;UNUSED: ;TODO: SONG_JUMPTO_TYPE3=Artist
+;UNUSED: ;TODO: SONG_JUMPTO_TYPE4=Language
+;UNUSED: ;TODO: SONG_JUMPTO_TYPE5=Edition
+;UNUSED: ;TODO: SONG_JUMPTO_TYPE6=Genre
+;UNUSED: ;TODO: SONG_JUMPTO_TYPE7=Year
+;UNUSED: ;TODO: SONG_JUMPTO_TYPE8=Creator
+;UNUSED: ;TODO: SONG_JUMPTO_TYPE9=Tags
+;UNUSED: ;TODO: SONG_JUMPTO_SONGSFOUND=%d Song(s) found
+;UNUSED: ;TODO: SONG_JUMPTO_NOSONGSFOUND=No Song found
+;UNUSED: ;TODO: SONG_JUMPTO_HELP=Type Text to Search for
+;UNUSED: ;TODO: SONG_JUMPTO_CATTEXT=Search for: %s
+;UNUSED: ;TODO: PARTY_MODE=Party mode
+;UNUSED: ;TODO: PARTY_DIFFICULTY=Difficulty
+;UNUSED: ;TODO: PARTY_PLAYLIST=Song selection
+;UNUSED: ;TODO: PARTY_PLAYLIST_ALL=All songs
+;UNUSED: ;TODO: PARTY_PLAYLIST_CATEGORY=Category
+;UNUSED: ;TODO: PARTY_PLAYLIST_PLAYLIST=Playlist
+;UNUSED: ;TODO: PARTY_TEAMS=Number of teams
+;UNUSED: ;TODO: PARTY_TEAMS_PLAYER1=Num. of singers
+;UNUSED: ;TODO: PARTY_TEAMS_PLAYER2=Num. of singers
+;UNUSED: ;TODO: PARTY_TEAMS_PLAYER3=Num. of singers
+;UNUSED: ;TODO: PARTY_LEGEND_CONTINUE=Continue
+;UNUSED: ;TODO: PARTY_OPTIONS_DESC=Settings for the party game
+;UNUSED: ;TODO: PARTY_OPTIONS_WHEREAMI=Party » Options
+;UNUSED: ;TODO: PARTY_PLAYER_DESC=Enter player and team names!
+;UNUSED: ;TODO: PARTY_PLAYER_WHEREAMI=Party » Classic » Players
+;UNUSED: ;TODO: PARTY_PLAYER_ENTER_NAME=Enter names
+;UNUSED: ;TODO: PARTY_ROUNDS_DESC=Select which modes you want to play
+;UNUSED: ;TODO: PARTY_ROUNDS_WHEREAMI=Party » Classic » Rounds
+;UNUSED: ;TODO: PARTY_ROUNDS_LEGEND_CONTINUE=Start party-game
+;UNUSED: ;TODO: PARTY_ROUNDCOUNT=Number of rounds
+;UNUSED: ;TODO: PARTY_SELECTMODE=Round %d
+;UNUSED: ;TODO: PARTY_ROUND_DESC=Next players to the mics
+;UNUSED: ;TODO: PARTY_ROUND_WHEREAMI=Party » Classic » Next round
+;UNUSED: ;TODO: PARTY_ROUND_LEGEND_CONTINUE=Start round
+;UNUSED: ;TODO: PARTY_SONG_WHEREAMI=Party » Classic » Song selection
+;UNUSED: ;TODO: PARTY_SONG_LEGEND_CONTINUE=Sing
+;UNUSED: ;TODO: PARTY_SONG_MENU=Party menu
+;UNUSED: ;TODO: PARTY_SCORE_DESC=Score of the last round
+;UNUSED: ;TODO: PARTY_SCORE_WHEREAMI=Party » Classic » Points
+;UNUSED: ;TODO: PARTY_WIN_DESC=Winner of the party game
+;UNUSED: ;TODO: PARTY_WIN_WHEREAMI=Party » Classic » Winner
+;UNUSED: ;TODO: PARTY_WIN_LEGEND_CONTINUE=Back to main menu
+;UNUSED: ;TODO: PARTY_ROUND=Round
+;UNUSED: ;TODO: PARTY_ROUND_WINNER=Winner
+;UNUSED: ;TODO: PARTY_NOTPLAYEDYET=Not played yet
+;UNUSED: ;TODO: PARTY_NOBODY=Nobody
+;UNUSED: ;TODO: NEXT_ROUND=Next round:
+;UNUSED: ;TODO: PARTY_DISMISSED=Dismissed!
+;UNUSED: ;TODO: PARTY_SCORE_WINS=%s
+;UNUSED: ;TODO: PARTY_SCORE_WINS2=Wins!
+;UNUSED: ;TODO: MODE_RANDOM_NAME=Random Mode
+;UNUSED: ;TODO: MODE_RANDOM_DESC=Keep yourself on your toes! The game will select a mode for you at random!
+;UNUSED: ;TODO: MODE_HOLDTHELINE_NAME=Hold the Line
+;UNUSED: ;TODO: MODE_HOLDTHELINE_DESC=Keep your rating above the line for the longest!
+;UNUSED: ;TODO: MODE_HOLDTHELINEBLIND_NAME=Hold the Blind
+;UNUSED: ;TODO: MODE_HOLDTHELINEBLIND_DESC=Keep your rating above the line for the longest, but with the notes hidden!
+;UNUSED: ;TODO: MODE_7000POINTS_NAME=Until 7000
+;UNUSED: ;TODO: MODE_7000POINTS_DESC=Race to 7000 Points!
+;UNUSED: ;TODO: MODE_7000POINTSBLIND_NAME=Blind 7000
+;UNUSED: ;TODO: MODE_7000POINTSBLIND_DESC=Race to 7000 points, but without seeing the notes!
+;UNUSED: ;TODO: MODE_5000POINTS_NAME=Until 5000
+;UNUSED: ;TODO: MODE_5000POINTS_DESC=Race to 5000 Points!
+;UNUSED: ;TODO: MODE_5000POINTSBLIND_NAME=Blind 5000
+;UNUSED: ;TODO: MODE_5000POINTSBLIND_DESC=Race to 5000 points, but without seeing the notes!
+;UNUSED: ;TODO: MODE_2000POINTS_NAME=Until 2000
+;UNUSED: ;TODO: MODE_2000POINTS_DESC=Race to 2000 Points!
+;UNUSED: ;TODO: MODE_2000POINTSBLIND_NAME=Blind 2000
+;UNUSED: ;TODO: MODE_2000POINTSBLIND_DESC=Race to 2000 points, but without seeing the notes!
+;UNUSED: ;TODO: MODE_DUEL_NAME=Duel
+;UNUSED: ;TODO: MODE_DUEL_DESC=A 1v1 duel to get the highest score!
+;UNUSED: ;TODO: MODE_TEAMDUEL_NAME=Team Duel
+;UNUSED: ;TODO: MODE_TEAMDUEL_DESC=Pass The Mic! Work together to get a higher score than the other team!
+;UNUSED: ;TODO: MODE_BLIND_NAME=Blind Mode
+;UNUSED: ;TODO: MODE_BLIND_DESC=A 1v1 duel, but with the notes hidden!
+;UNUSED: ;TODO: MODE_BLINDTOTAL_NAME=Total Darkness!
+;UNUSED: ;TODO: MODE_BLINDTOTAL_DESC=A duel, but with the notes and the lyrics hidden. Only for the brave!
+;UNUSED: ;TODO: MODE_1000BLIND_NAME= +1000 Blind
+;UNUSED: ;TODO: MODE_1000BLIND_DESC= Gain a lead of more than 1000 points, but without seeing the notes!
+;UNUSED: ;TODO: MODE_DEAF_NAME= Deaf
+;UNUSED: ;TODO: MODE_DEAF_DESC= Think you know the notes? Can you sing it without the accompaniment?
+;UNUSED: ;TODO: MODE_BLINDLYRICS_NAME= No Lyrics
+;UNUSED: ;TODO: MODE_BLINDLYRICS_DESC= Think you know all the lyrics? Sing with the lyrics hidden!
+;UNUSED: ;TODO: MODE_500BLIND_NAME= +500 Blind
+;UNUSED: ;TODO: MODE_500BLIND_DESC= Gain a lead of more than 500 points, but without seeing the notes!
+;UNUSED: ;TODO: MODE_SHORTSONG_NAME= Short Song
+;UNUSED: ;TODO: MODE_SHORTSONG_DESC= A fast-paced 1v1 duel over half the song!
+;UNUSED: ;TODO: MODE_HARDCORE_NAME=Hardcore
+;UNUSED: ;TODO: MODE_HARDCORE_DESC=Battle for a three-line lead on your opponent!
+;UNUSED: ;TODO: STAT_MAIN=Statistics
+;UNUSED: ;TODO: STAT_MAIN_DESC=General
+;UNUSED: ;TODO: STAT_MAIN_WHEREAMI=Tools » Statistics
+;UNUSED: ;TODO: STAT_OVERVIEW_INTRO=%0:s Statistics.  \n Last Reset at %3:d-%2:.2d-%1:.2d
+;UNUSED: ;TODO: STAT_OVERVIEW_SONG=%0:d Songs(%3:d with Video), whereof %1:d already were played  and %2:d were not played yet.\n The most popular Song is %5:s from %4:s.
+;UNUSED: ;TODO: STAT_OVERVIEW_PLAYER=Since the last Reset there were/was %0:d different Player(s).\n The best Player is %1:s with an average Score of %2:d Points.\n %3:s did the highest Score with %4:d Points.
+;UNUSED: ;TODO: STAT_FORMAT_DATE=%2:d-%1:.2d-%0:.2d
+;UNUSED: ;TODO: STAT_DETAIL=Statistics
+;UNUSED: ;TODO: STAT_DETAIL_WHEREAMI=Tools » Statistics » Details
+;UNUSED: ;TODO: STAT_NEXT=Next Page
+;UNUSED: ;TODO: STAT_PREV=Previous Page
+;UNUSED: ;TODO: STAT_REVERSE=Reverse Order
+;UNUSED: ;TODO: STAT_PAGE=Page %0:d of %1:d pages\n (%2:d of %3:d Entries)
+;UNUSED: ;TODO: STAT_DESC_SCORES=HighScores
+;UNUSED: ;TODO: STAT_DESC_SCORES_REVERSED=LowScores
+;UNUSED: ;TODO: STAT_FORMAT_SCORES=%0:s - %1:d  [%2:s]  %5:s \n (%3:s - %4:s)
+;UNUSED: ;TODO: STAT_DESC_SINGERS=Best Singers
+;UNUSED: ;TODO: STAT_DESC_SINGERS_REVERSED=Worst Singers
+;UNUSED: ;TODO: STAT_FORMAT_SINGERS=%0:s \n Average Score: %1:d
+;UNUSED: ;TODO: STAT_DESC_SONGS=Most popular Songs
+;UNUSED: ;TODO: STAT_DESC_SONGS_REVERSED=Least popular Songs
+;UNUSED: ;TODO: STAT_FORMAT_SONGS=%0:s - %1:s \n %2:dx sung
+;UNUSED: ;TODO: STAT_DESC_BANDS=Most popular Bands
+;UNUSED: ;TODO: STAT_DESC_BANDS_REVERSED=Least popular Bands
+;UNUSED: ;TODO: STAT_FORMAT_BANDS=%0:s \n %1:dx Sung
+;UNUSED: ;TODO: SCREENSHOT_SAVED=Screenshot saved
+;UNUSED: ;TODO: SCREENSHOT_FAILED=Couldn''t save screenshot
+;UNUSED: ;TODO: INFO_FILE_SAVED=File saved
+;UNUSED: ;TODO: ERROR_SAVE_FILE_FAILED=Couldn''t save file
+;UNUSED: ;TODO: ERROR_FILE_NOT_FOUND=File not found
+;UNUSED: ;TODO: ENCODING_ERROR_ASK_FOR_UTF8=Cannot save changes in current encoding. Convert to UTF-8?
+;UNUSED: ;TODO: EDITOR_ERROR_NO_TRACK_SELECTED=No track selected
+;UNUSED: ;TODO: MSG_ERROR_TITLE=Error
+;UNUSED: ;TODO: MSG_INFO_TITLE=Information
+;UNUSED: ;TODO: MSG_QUESTION_TITLE=Question
+;UNUSED: ;TODO: MSG_QUIT_USDX=Really leave UltraStar?
+;UNUSED: ;TODO: MSG_END_PARTY=Really leave Party Mode?
+;UNUSED: ;TODO: MSG_HELP_KEYMAP= Key Mapping
+;UNUSED: ;TODO: MSG_HELP_TITLE= Help
+;UNUSED: ;TODO: ERROR_NO_SONGS=No Songs loaded
+;UNUSED: ;TODO: ERROR_NO_PLUGINS=No Plugins loaded
+;UNUSED: ;TODO: ERROR_NO_MODES_FOR_CURRENT_SETUP=No modes available for current player/team setup
+;UNUSED: ;TODO: ERROR_CAN_NOT_START_PARTY=An error occurred starting the party game
+;UNUSED: ;TODO: ERROR_CORRUPT_SONG=Song could not be loaded.
+;UNUSED: ;TODO: ERROR_CORRUPT_SONG_FILE_NOT_FOUND=Song could not be loaded: File not found
+;UNUSED: ;TODO: ERROR_CORRUPT_SONG_NO_NOTES=Song could not be loaded: Can''t find any notes
+;UNUSED: ;TODO: ERROR_CORRUPT_SONG_NO_BREAKS=Song could not be loaded: Can''t find any linebreaks
+;UNUSED: ;TODO: ERROR_CORRUPT_SONG_UNKNOWN_IN_LINE=Song could not be loaded: Error parsing line %0:d
+;UNUSED: ;TODO: ERROR_DUETS_NOT_EDITABLE=Duet songs are currently not editable.
+;UNUSED: ;TODO: ERROR_NO_EDITOR=This feature is not available on this version.
+;UNUSED: ;TODO: ERROR_PLAYER_DEVICE_ASSIGNMENT=Player %d is assigned to multiple microphones. Please check your record options
+;UNUSED: ;TODO: ERROR_PLAYER_NO_DEVICE_ASSIGNMENT=Player %d is not assigned to a microphone. Please check your record options
+;UNUSED: ;TODO: ERROR_SOFTWARE_RENDERING=You appear to be using software rendering OpenGL. Expect bad performance.
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK=Network
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_WHEREAMI=Tools » Options » Network
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_DESC=Network General Settings
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_INSERT_USER_INFO=Press key "Insert" to add user to this web...
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_WEBSITE=Website
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_USERNAME=Username
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_PASSWORD=Password
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_SEND_SAVE_PLAYER_NAME=Send Name
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_AUTO_MODE=Auto
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_AUTO_PLAYER=Player
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_AUTO_SCORE_EASY=Auto-Send (Easy)
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_AUTO_SCORE_MEDIUM=Auto-Send (Medium)
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_AUTO_SCORE_HARD=Auto-Send (Hard)
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_NO_DLL=No compatible leaderboard-plugin found!
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_DELETE_PLAYER=Really delete the user %0:s of the website %1:s?
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_LEGEND_INSERT=Insert
+;UNUSED: ;TODO: SING_OPTIONS_NETWORK_LEGEND_DELETE=Delete
+;UNUSED: ;TODO: OPTION_PLAYER_1=Player 1
+;UNUSED: ;TODO: OPTION_PLAYER_2=Player 2
+;UNUSED: ;TODO: OPTION_PLAYER_3=Player 3
+;UNUSED: ;TODO: OPTION_PLAYER_4=Player 4
+;UNUSED: ;TODO: OPTION_PLAYER_5=Player 5
+;UNUSED: ;TODO: OPTION_PLAYER_6=Player 6
+;UNUSED: ;TODO: OPTION_ALL_PLAYERS=All
+;UNUSED: ;TODO: OPTION_ALL_SCORES=All
+;UNUSED: ;TODO: OPTION_VALUE_SAVE=Save
+;UNUSED: ;TODO: OPTION_VALUE_SEND=Send
+;UNUSED: ;TODO: MSG_INSERT_USER_TITLE=%0:s
+;UNUSED: ;TODO: MSG_INSERT_USER_DESC=Fill the fields:
+;UNUSED: ;TODO: MSG_INSERT_USER_ADD=Add
+;UNUSED: ;TODO: MSG_INSERT_USER_CANCEL=Cancel
+;UNUSED: ;TODO: WEBSITE_NO_CONNECTION=No website connection!
+;UNUSED: ;TODO: WEBSITE_LOGIN_ERROR=Login Incorrect!
+;UNUSED: ;TODO: WEBSITE_BLANK_LOGIN=There are blank fields!
+;UNUSED: ;TODO: WEBSITE_EXIST_USER=Existing user!
+;UNUSED: ;TODO: WEBSITE_ERROR_SCORE=Scoring Error!
+;UNUSED: ;TODO: WEBSITE_OK_SEND=Score sent successfully!
+;UNUSED: ;TODO: WEBSITE_ERROR_SCORE_DUPLICATED=Existing Score!
+;UNUSED: ;TODO: WEBSITE_ERROR_SONG=Song Not Found!
+;UNUSED: ;TODO: WEBSITE_SAVE_SCORE=Score save successfully!
+;UNUSED: ;TODO: WEBSITE_NO_CONNECTION_SAVE=No website connection! Save user anyway?
+;UNUSED: ;TODO: SONG_MENU_REFRESH_SCORES=Update Scores
+;UNUSED: ;TODO: SONG_MENU_REFRESH_SCORES_TITLE=Update
+;UNUSED: ;TODO: SONG_MENU_REFRESH_SCORES_NO_WEB=There aren't websites!
+;UNUSED: ;TODO: SONG_MENU_REFRESH_SCORES_ONLINE=Online
+;UNUSED: ;TODO: SONG_MENU_REFRESH_SCORES_FILE=File
+;UNUSED: ;TODO: SONG_MENU_REFRESH_SCORES_ALL_WEB=All Websites
+;UNUSED: ;TODO: SONG_MENU_REFRESH_SCORES_ALL_SONGS=All Songs
+;UNUSED: ;TODO: SONG_MENU_REFRESH_SCORES_ONLY_SONG=This Song
+;UNUSED: ;TODO: SONG_MENU_REFRESH_SCORES_REFRESH=Update
+;UNUSED: ;TODO: SONG_MENU_REFRESH_SCORES_ERROR_CONNECTION=Error connect to the website: %0:s!
+;UNUSED: ;TODO: SONG_MENU_REFRESH_SCORES_ERROR_FILE=File not found: '%0:s [Download Scores]'!
+;UNUSED: ;TODO: SONG_SCORE_MAX=Best:
+;UNUSED: ;TODO: SONG_SCORE_MEDIA=Average:
+;UNUSED: ;TODO: SCORE_SEND_DESC=Send Score
+;UNUSED: ;TODO: SCORE_SEND=Send
+;UNUSED: ;TODO: SCORE_SEND_PLAYER=Player
+;UNUSED: ;TODO: SCORE_SEND_OTHER_USER= Other Username
+;UNUSED: ;TODO: SCORE_SAVE=Save
+;UNUSED: ;TODO: SCORE_DOWNLOAD_TITLE=Download
+;UNUSED: ;TODO: SCORE_DOWNLOAD_SONG=Song:
+;UNUSED: ;TODO: SCORE_DOWNLOAD_CREATE_LIST=Preparing List...
+;UNUSED: ;TODO: SCORE_DOWNLOAD_RECEIVE_LIST=Downloading...
+;UNUSED: ;TODO: SCORE_DOWNLOAD_CANCEL=Cancel
+;UNUSED: ;TODO: SCORE_DOWNLOAD_OK=OK
+;UNUSED: ;TODO: SCORE_DOWNLOAD_SONG_UPDATE=%0:d song(s) change(s) by web!
+;UNUSED: ;TODO: SING_OPTIONS_GAME_SHOWSCORES=Show Scores
+;UNUSED: ;TODO: OPTION_VALUE_WHENEXIST=When Exists
+;UNUSED: ;TODO: PARTY_SELECT_MODE=Mode
+;UNUSED: ;TODO: PARTY_MODE_CLASSIC=Classic
+;UNUSED: ;TODO: PARTY_MODE_CLASSIC_FREE=Classic Free
+;UNUSED: ;TODO: PARTY_MODE_CHALLENGE=Challenge
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT=Tournament
+;UNUSED: ;TODO: PARTY_MODE_JUKEBOX=Jukebox
+;UNUSED: ;TODO: PARTY_MODE_NOT_AVAILABLE=Not Available!
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT_PLAYER_DESC=Select number of players and enter names
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT_PLAYER_WHEREAMI=Party » Tournament » Players
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT_NUMBER_PLAYERS=Number of players
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT_OPTIONS_DESC=Number of rounds
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT_OPTIONS_WHEREAMI=Party » Tournament » Options
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT_ROUNDS_FINAL=Final
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT_ROUNDS_2FINAL=Semifinals
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT_ROUNDS_4FINAL=Quarterfinals
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT_ROUNDS_8FINAL=Round of 16
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT_ROUNDS_DESC=Next players to the mics
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT_ROUNDS_WHEREAMI=Party » Tournament » Rounds
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT_WIN_DESC=Round result
+;UNUSED: ;TODO: PARTY_MODE_TOURNAMENT_CHAMPION=The champion is: %0:s!
+;UNUSED: ;TODO: EDIT_TITLE=Title:
+;UNUSED: ;TODO: EDIT_ARTIST=Artist:
+;UNUSED: ;TODO: EDIT_LANGUAGE=Language:
+;UNUSED: ;TODO: EDIT_EDITION=Edition:
+;UNUSED: ;TODO: EDIT_GENRE=Genre:
+;UNUSED: ;TODO: EDIT_YEAR=Year:
+;UNUSED: ;TODO: EDIT_CREATOR=Creator:
+;UNUSED: ;TODO: EDIT_MP3=Audio:
+;UNUSED: ;TODO: EDIT_COVER=Cover:
+;UNUSED: ;TODO: EDIT_BACKGROUND=Background:
+;UNUSED: ;TODO: EDIT_VIDEO=Video:
+;UNUSED: ;TODO: EDIT_VIDEOGAP=Videogap:
+;UNUSED: ;TODO: EDIT_BPM=BPM:
+;UNUSED: ;TODO: EDIT_GAP=GAP:
+;UNUSED: ;TODO: EDIT_STARTTAG=Start:
+;UNUSED: ;TODO: EDIT_MEDLEYSTART=MedleyStart:
+;UNUSED: ;TODO: EDIT_PREVIEWSTART=Preview:
+;UNUSED: ;TODO: EDIT_ENDTAG=End:
+;UNUSED: ;TODO: EDIT_MEDLEYEND=MedleyEnd:
+;UNUSED: ;TODO: EDIT_RELATIVE=Relative:
+;UNUSED: ;TODO: EDIT_START=Start:
+;UNUSED: ;TODO: EDIT_DURATION=Duration:
+;UNUSED: ;TODO: EDIT_TONE=Tone:
+;UNUSED: ;TODO: EDIT_LYRIC=Lyric:
+;UNUSED: ;TODO: EDIT_VOLUME_AUDIO=Audio Volume:
+;UNUSED: ;TODO: EDIT_VOLUME_MIDI=Midi Volume:
+;UNUSED: ;TODO: EDIT_VOLUME_CLICK=Click Volume:
+;UNUSED: ;TODO: EDIT_INFO_UNDO=Undo last operation
+;UNUSED: ;TODO: EDIT_INFO_PREVIEW_SET=Preview start set at %0.3f s
+;UNUSED: ;TODO: EDIT_INFO_PREVIEW_CLEARED=Preview start cleared
+;UNUSED: ;TODO: EDIT_INFO_NO_MEDLEY_START=No medley start beat (set/clear with A)
+;UNUSED: ;TODO: EDIT_INFO_MEDLEY_END=Medley end beat is at %d
+;UNUSED: ;TODO: EDIT_INFO_NO_MEDLEY_END=No medley end beat (set/clear with SHIFT+A)
+;UNUSED: ;TODO: EDIT_INFO_MEDLEY_START=Medley start beat is at %d
+;UNUSED: ;TODO: EDIT_INFO_MEDLEY_LENGTH=MedleyLength: %0.2f s %s
+;UNUSED: ;TODO: EDIT_INFO_MEDLEY_CUSTOM=(custom)
+;UNUSED: ;TODO: EDIT_INFO_MEDLEY_TXT=(txt)
+;UNUSED: ;TODO: EDIT_INFO_MEDLEY_START_CLEARED=Medley start cleared
+;UNUSED: ;TODO: EDIT_INFO_MEDLEY_START_SET=Medley start set
+;UNUSED: ;TODO: EDIT_INFO_MEDLEY_END_CLEARED=Medley end cleared
+;UNUSED: ;TODO: EDIT_INFO_MEDLEY_END_SET=Medley end set
+;UNUSED: ;TODO: EDIT_INFO_MEDLEY_END_AFTER_MEDLEY_START=Medley end not set (must be after medley start)
+;UNUSED: ;TODO: EDIT_INFO_SET_MEDLEY_START_FIRST=Medley end not set (set medley start first)
+;UNUSED: ;TODO: EDIT_INFO_JUMPTO_MEDLEY_AND_PLAY=Jump to medley and play
+;UNUSED: ;TODO: EDIT_INFO_JUMPTO_MEDLEY_START=Jump to medley start
+;UNUSED: ;TODO: EDIT_INFO_JUMPTO_MEDLEY_END=Jump to medley end
+;UNUSED: ;TODO: EDIT_INFO_MARKED_FOR_COPY=Line(s) marked for copy
+;UNUSED: ;TODO: EDIT_INFO_PASTE_SENTENCE=Paste sentence
+;UNUSED: ;TODO: EDIT_INFO_PASTE_TEXT=Paste text
+;UNUSED: ;TODO: EDIT_INFO_PASTE_NOTES=Paste notes
+;UNUSED: ;TODO: EDIT_INFO_PASTE_TEXT_NOTES=Paste text and notes
+;UNUSED: ;TODO: EDIT_INFO_PASTE_SENTENCE_N=Paste sentence (%d lines)
+;UNUSED: ;TODO: EDIT_INFO_PASTE_TEXT_N=Paste text (%d lines)
+;UNUSED: ;TODO: EDIT_INFO_PASTE_NOTES_N=Paste notes (%d lines)
+;UNUSED: ;TODO: EDIT_INFO_PASTE_TEXT_NOTES_N=Paste text and notes (%d lines)
+;UNUSED: ;TODO: EDIT_INFO_SONG_RELOADED=Song reloaded
+;UNUSED: ;TODO: EDIT_INFO_DIVIDED_BPM=BPM divided by 2
+;UNUSED: ;TODO: EDIT_INFO_MULTIPLIED_BPM=BPM multiplied by 2
+;UNUSED: ;TODO: EDIT_INFO_CAPITALIZATION_CORRECTED=Capitalization corrected
+;UNUSED: ;TODO: EDIT_INFO_SPACES_CORRECTED=Spaces corrected
+;UNUSED: ;TODO: EDIT_INFO_PLAY_SONG=Play song
+;UNUSED: ;TODO: EDIT_INFO_PLAY_SENTENCE=Play sentence
+;UNUSED: ;TODO: EDIT_INFO_PLAY_SENTENCE_AUDIO=Play sentence audio
+;UNUSED: ;TODO: EDIT_INFO_PLAY_SENTENCE_MIDI=Play sentence MIDI
+;UNUSED: ;TODO: EDIT_INFO_PLAY_SENTENCE_AUDIO_AND_MIDI=Play sentence audio and MIDI
+;UNUSED: ;TODO: EDIT_INFO_PLAY_NOTE_AUDIO=Play note audio
+;UNUSED: ;TODO: EDIT_INFO_PLAY_NOTE_MIDI=Play note MIDI
+;UNUSED: ;TODO: EDIT_INFO_DELETE_NOTE=Delete note
+;UNUSED: ;TODO: EDIT_INFO_DELETE_SENTENCE=Delete sentence
+;UNUSED: ;TODO: EDIT_INFO_MOVE_TEXT_RIGHT=Move text right
+;UNUSED: ;TODO: EDIT_INFO_ALL_TONES_INCREASED_BY_SEMITONE=All notes increased by a semitone
+;UNUSED: ;TODO: EDIT_INFO_ALL_TONES_INCREASED_BY_OCTAVE=All notes increased by an octave
+;UNUSED: ;TODO: EDIT_INFO_ALL_TONES_DECREASED_BY_SEMITONE=All notes decreased by a semitone
+;UNUSED: ;TODO: EDIT_INFO_ALL_TONES_DECREASED_BY_OCTAVE=All notes decreased by an octave
+;UNUSED: ;TODO: EDIT_INFO_FIX_TIMINGS=Timings corrected
+;UNUSED: ;TODO: EDIT_INFO_JUMPTO_PREVIEW=Jump to preview position
+;UNUSED: ;TODO: EDIT_INFO_JUMPTO_PREVIEW_AND_PLAY=Jump to preview and play
+;UNUSED: ;TODO: EDIT_INFO_NO_PREVIEW=No preview set (set/clear with I)
+;UNUSED: ;TODO: EDIT_INFO_NOTE_SHORTENED_AT_START=Note shortened at start
+;UNUSED: ;TODO: EDIT_INFO_NOTE_LENGTHENED_AT_START=Note lengthened at start
+;UNUSED: ;TODO: EDIT_INFO_NOTE_SHORTENED_AT_END=Note shortened at end
+;UNUSED: ;TODO: EDIT_INFO_NOTE_LENGTHENED_AT_END=Note lengthened at end
+;UNUSED: ;TODO: EDIT_INFO_NOTE_SHIFTED_LEFT=Note shifted left
+;UNUSED: ;TODO: EDIT_INFO_NOTE_SHIFTED_RIGHT=Note shifted right
+;UNUSED: ;TODO: EDIT_INFO_NOTES_SHIFTED_LEFT=All notes shifted left (from current note)
+;UNUSED: ;TODO: EDIT_INFO_NOTES_SHIFTED_RIGHT=All notes shifted right (from current note)
+;UNUSED: ;TODO: EDIT_INFO_NOTE_PITCH_DECREASED=Note pitch decreased
+;UNUSED: ;TODO: EDIT_INFO_NOTE_PITCH_INCREASED=Note pitch increased
+;UNUSED: ;TODO: EDIT_INFO_NOTE_SET_TO_NORMAL=Note set to normal
+;UNUSED: ;TODO: EDIT_INFO_NOTE_SET_TO_GOLDEN=Note set to golden
+;UNUSED: ;TODO: EDIT_INFO_NOTE_SET_TO_FREESTYLE=Note set to freestyle
+;UNUSED: ;TODO: EDIT_INFO_NOTE_SET_TO_RAP=Note set to rap
+;UNUSED: ;TODO: EDIT_INFO_NOTE_SET_TO_RAPGOLDEN=Note set to rap golden
+;UNUSED: ;TODO: EDIT_INFO_BPM_DECREASED_BY=BPM decreased by
+;UNUSED: ;TODO: EDIT_INFO_BPM_INCREASED_BY=BPM increased by
+;UNUSED: ;TODO: EDIT_INFO_GAP_DECREASED_BY=GAP decreased by
+;UNUSED: ;TODO: EDIT_INFO_GAP_INCREASED_BY=GAP increased by
+;UNUSED: ;TODO: EDIT_INFO_VIDEOGAP_DECREASED_BY=Videogap decreased by
+;UNUSED: ;TODO: EDIT_INFO_VIDEOGAP_INCREASED_BY=Videogap increased by
+;UNUSED: ;TODO: EDIT_INFO_NOTE_DIVIDED=Note divided
+;UNUSED: ;TODO: EDIT_INFO_CONVERTED_TO_SOLO=Song converted to solo (current track)
+;UNUSED: ;TODO: EDIT_INFO_CONVERTED_TO_DUET=Song converted to duet
+;UNUSED: ;TODO: EDIT_INFO_SWITCHED_TO_TRACK=Switched to track
+;UNUSED: ;TODO: EDIT_INFO_LINE_COPIED_TO_TRACK=Line copied to track
+;UNUSED: ;TODO: EDIT_INFO_LINE_NOT_COPIED=Line NOT copied (not enough space)
+;UNUSED: ;TODO: EDIT_INFO_LINE_DIVIDED=Line divided at current note
+;UNUSED: ;TODO: EDIT_INFO_LINES_JOINED=Joined current and next line
+;UNUSED: ;TODO: EDIT_INFO_LINE_MOVED_TO_TRACK=Line moved to track
+;UNUSED: ;TODO: EDIT_INFO_LINE_NOT_MOVED=Line NOT moved (not enough space)
+;UNUSED: ;TODO: EDIT_INFO_EXIT=Do you want to leave the editor without saving?
+;UNUSED: ;TODO: EDIT_INFO_CURRENT_LINE=Line:
+;UNUSED: ;TODO: EDIT_INFO_CURRENT_NOTE=Note:
+;UNUSED: ;TODO: EDIT_INFO_CURRENT_BEAT=Beat:
+;UNUSED: ;TODO: EDIT_INFO_MEDLEY_RELATIVE_UNSUPPORTED=Medley with relative timing is not supported!
+;UNUSED: ;TODO: EDIT_INFO_MEDLEY_DELETED=Medley tags deleted!
+;UNUSED: ;TODO: EDIT_INFO_DUET_RELATIVE_UNSUPPORTED=Duet with relative timing is not supported!
+;UNUSED: ;TODO: EDIT_INFO_MEDLEY_DUET_UNSUPPORTED=Medley for duets is not supported!
+;UNUSED: ;TODO: EDIT_INFO_SYNTAX_ERRORS=This song contains some syntax errors!
+;UNUSED: ;TODO: EDIT_INFO_NO_MEDLEY_SECTION=No medley section set. Check your txt file or set it with A (start) and SHIFT+A (end).
+;UNUSED: ;TODO: EDIT_INFO_SYNTAX_ERRORS_TIMING_HEADER=This song contains timing-related syntax errors:
+;UNUSED: ;TODO: EDIT_INFO_TIMING_NOTE_OVERLAP=Track %d, line %d: note %d (beats %d-%d) overlaps a previous note ending at beat %d.
+;UNUSED: ;TODO: EDIT_INFO_TIMING_LINEBREAK_OVERLAP=Track %d, line %d: linebreak at beat %d cuts note %d (beats %d-%d).
+;UNUSED: ;TODO: EDIT_NOTENAME_C=C
+;UNUSED: ;TODO: EDIT_NOTENAME_C_SHARP=C♯
+;UNUSED: ;TODO: EDIT_NOTENAME_D=D
+;UNUSED: ;TODO: EDIT_NOTENAME_D_SHARP=D♯
+;UNUSED: ;TODO: EDIT_NOTENAME_E=E
+;UNUSED: ;TODO: EDIT_NOTENAME_F=F
+;UNUSED: ;TODO: EDIT_NOTENAME_F_SHARP=F♯
+;UNUSED: ;TODO: EDIT_NOTENAME_G=G
+;UNUSED: ;TODO: EDIT_NOTENAME_G_SHARP=G♯
+;UNUSED: ;TODO: EDIT_NOTENAME_A=A
+;UNUSED: ;TODO: EDIT_NOTENAME_A_SHARP=A♯
+;UNUSED: ;TODO: EDIT_NOTENAME_B=B
+;UNUSED: ;TODO: INFO_MIDI_CHANNEL_OFF= Channel %0:s off!
+;UNUSED: ;TODO: INFO_MIDI_CHANNEL_RESET= All channels on!
+;UNUSED: ;TODO: MSG_END_JUKEBOX=Do you want leave Jukebox Mode?
+;UNUSED: ;TODO: JUKEBOX_RANDOM=Random
+;UNUSED: ;TODO: JUKEBOX_REPEAT=Repeat
+;UNUSED: ;TODO: JUKEBOX_FIND=Find:
+;UNUSED: ;TODO: JUKEBOX_SORT=Sort:
+;UNUSED: ;TODO: JUKEBOX_SONGLIST=List of Songs
+;UNUSED: ;TODO: SING_ERROR_DUET_MODE_PARTY= Duet! Not playable in Party Mode!
+;UNUSED: ;TODO: SONG_MENU_SONG=Song
+;UNUSED: ;TODO: SONG_MENU_MEDLEY=Medley
+;UNUSED: ;TODO: SONG_MENU_EXTRA=Extra
+;UNUSED: ;TODO: SONG_MENU_NAME_SONG=Song Menu
+;UNUSED: ;TODO: SONG_MENU_NAME_MEDLEY=Medley Menu
+;UNUSED: ;TODO: SONG_MENU_ADD_SONG=Add Song
+;UNUSED: ;TODO: SONG_MENU_DELETE_SONG=Delete Song
+;UNUSED: ;TODO: SONG_MENU_START_MEDLEY=Sing!
+;UNUSED: ;TODO: SONG_MENU_START_5_MEDLEY=Sing %0:d Songs!
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM=Webcam
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_DESC=Webcam Settings
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_WHEREAMI=Tools » Options » Webcam
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_ID=Webcam
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_RESOLUTION=Resolution
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_FPS=FPS
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_NO_WEBCAM=No Webcam Found!
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_FLIP=Flip
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_EFFECT=Effect
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_BRIGHTNESS=Brightness
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_SATURATION=Saturation
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_HUE=Hue
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_ENABLE_PREVIEW=Enable Preview
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_DISABLE_PREVIEW=Disable Preview
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_EFFECT_NORMAL=Normal
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_EFFECT_GRAYSCALE=Grayscale
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_EFFECT_BLACK_WHITE=Black & White
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_EFFECT_NEGATIVE=Negative
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_EFFECT_BINARY_IMAGE=Binary Image
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_EFFECT_DILATE=Dilate
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_EFFECT_THRESHOLD=Threshold
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_EFFECT_EDGES=Edges
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_EFFECT_GAUSSIAN_BLUR=Gaussian Blur
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_EFFECT_EQUALIZED=Equalized
+;UNUSED: ;TODO: SING_OPTIONS_WEBCAM_EFFECT_ERODE=Erode
+;UNUSED: ;TODO: PARTY_PLAYLIST_MANUAL=Manual Selection
+;UNUSED: ;TODO: PARTY_MODE_JUKEBOX_NO_SONGS=Playlist is empty!
+;UNUSED: ;TODO: SONG_MENU_OPEN_CATEGORY=Open category
+;UNUSED: ;TODO: SONG_MENU_CLOSE_CATEGORY=Close category
+;UNUSED: ;TODO: SONG_MENU_START_JUKEBOX=Start Jukebox!
+;UNUSED: ;TODO: SONG_MENU_NAME_JUKEBOX=Menu Jukebox
+;UNUSED: ;TODO: WEBSITE_EXIST_SONG=The song belongs to the website: %0:s
+;UNUSED: ;TODO: WEBSITE_NOT_EXIST_SONG=The song does not belong to any website!
+;UNUSED: ;TODO: NAME_PLAYERS_COUNT=Number of Players
+;UNUSED: ;TODO: NAME_CURRENT_PLAYER=Player
+;UNUSED: ;TODO: SING_OPTIONS_GAME_SONGMENU=Song Menu
+;UNUSED: ;TODO: OPTION_VALUE_ROULETTE=Roulette
+;UNUSED: ;TODO: OPTION_VALUE_CHESSBOARD=Chessboard
+;UNUSED: ;TODO: OPTION_VALUE_CAROUSEL=Carousel
+;UNUSED: ;TODO: OPTION_VALUE_SLOTMACHINE=Slot Machine
+;UNUSED: ;TODO: OPTION_VALUE_LIST=List
+;UNUSED: ;TODO: OPTION_VALUE_MOSAIC=Tile
+;UNUSED: ;TODO: SING_OPTIONS_JUKEBOX=Jukebox
+;UNUSED: ;TODO: SING_OPTIONS_JUKEBOX_DESC=Jukebox configuration
+;UNUSED: ;TODO: SING_OPTIONS_JUKEBOX_WHEREAMI=Tools » Options » Jukebox
+;UNUSED: ;TODO: OPTION_VALUE_TO_SING=Sing
+;UNUSED: ;TODO: OPTION_VALUE_CURRENT=Current
+;UNUSED: ;TODO: OPTION_VALUE_NEXT=Next
+;UNUSED: ;TODO: OPTION_VALUE_OTHER=Other
+;UNUSED: ;TODO: OPTION_VALUE_FILL=Fill
+;UNUSED: ;TODO: OPTION_VALUE_OUTLINE=Outline
+;UNUSED: ;TODO: OPTION_VALUE_GRAY=Gray
+;UNUSED: ;TODO: OPTION_VALUE_WHITE=White
+;UNUSED: ;TODO: OPTION_VALUE_TURQUOISE=Turquoise
+;UNUSED: ;TODO: OPTION_VALUE_SALMON=Salmon
+;UNUSED: ;TODO: OPTION_VALUE_GREENYELLOW=GreenYellow
+;UNUSED: ;TODO: OPTION_VALUE_LAVENDER=Lavender
+;UNUSED: ;TODO: OPTION_VALUE_BEIGE=Beige
+;UNUSED: ;TODO: OPTION_VALUE_TEAL=Teal
+;UNUSED: ;TODO: OPTION_VALUE_ORCHID=Orchid
+;UNUSED: ;TODO: OPTION_VALUE_STEELBLUE=Steel Blue
+;UNUSED: ;TODO: OPTION_VALUE_PLUM=Plum
+;UNUSED: ;TODO: OPTION_VALUE_CHOCOLATE=Chocolate
+;UNUSED: ;TODO: OPTION_VALUE_GOLD=Gold
+;UNUSED: ;TODO: OPTION_VALUE_DARKBLUE=Dark Blue
+;UNUSED: ;TODO: OPTION_VALUE_SKY=Sky
+;UNUSED: ;TODO: OPTION_VALUE_HARLEQUIN=Harlequin
+;UNUSED: ;TODO: OPTION_VALUE_CYAN=Cyan
+;UNUSED: ;TODO: OPTION_VALUE_FLAME=Flame
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_VIDEO=Video Options
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_VIDEO_ASPECT=Aspect
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_VIDEO_WIDTH=Width
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_VIDEO_HEIGHT=Height
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_LYRIC=Lyric Options
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_LYRIC_SIZE=Size
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_LYRIC_POSITION=Position
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_LYRIC_ALPHA=Alpha
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_LYRIC_COLOR=Color
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_LYRIC_LINE=Line
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_LYRIC_PROPERTY=Property
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_LYRIC_RGB_RED=Red
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_LYRIC_RGB_GREEN=Green
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_LYRIC_RGB_BLUE=Blue
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_VIDEO_STRETCH=Stretch
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_VIDEO_CROP=Crop
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_VIDEO_LETTERBOX=LetterBox
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_SAVE=Save
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_CLOSE=Close
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_DEFAULT=Default
+;UNUSED: ;TODO: JUKEBOX_SONGOPTIONS_OPTIONSSAVED=Saved!
+;UNUSED: ;TODO: SING_SONG_CREDITS=Credits
+;UNUSED: ;TODO: SING_JUKEBOX=Jukebox
+;UNUSED: ;TODO: SING_JUKEBOX_DESC=Listen to my collection
+;UNUSED: ;TODO: JUKEBOX_MODE=Jukebox Mode
+;UNUSED: ;TODO: JUKEBOX_OPTIONS_DESC=Playlist Options
+;UNUSED: ;TODO: JUKEBOX_OPTIONS_WHEREAMI=Jukebox » Options
+;UNUSED: ;TODO: JUKEBOX_OPTIONS_PLAYLIST=Playlist
+;UNUSED: ;TODO: JUKEBOX_OPTIONS_PLAYLIST_MODE=Mode
+;UNUSED: ;TODO: SING_OPTIONS_ADVANCED_SINGSCORES=Scores on Singing
+;UNUSED: ;TODO: SING_OPTIONS_ADVANCED_TOPSCORES=Top Scores
+;UNUSED: ;TODO: OPTION_VALUE_ALL=All
+;UNUSED: ;TODO: OPTION_VALUE_PLAYER=Player
+;UNUSED: ;TODO: SING_ABOUT=About
+;UNUSED: ;TODO: SING_ABOUT_DESC=About Ultrastar Deluxe
+;UNUSED: ;TODO: ABOUT_MAIN=About
+;UNUSED: ;TODO: ABOUT_MAIN_DESC=Ultrastar Deluxe
+;UNUSED: ;TODO: ABOUT_MAIN_WHEREAMI=About
+;UNUSED: ;TODO: ABOUT_USDX_CREDITS=Credits
+;UNUSED: ;TODO: ABOUT_OVERVIEW=UltraStar Deluxe is a free open-source karaoke game for your PC. The gameplay experience is similar to that of the commercial product SingStar™ by Sony Computer Entertainment, which is exclusively available for the Playstation®. Unlike SingStar™, however, UltraStar Deluxe allows users to create their own songs and sing them on their PC.\nBy publishing the sourcecode, we’ve enabled you to customize the game completly to your heart’s content, desires and particular needs.\nEspecially you are allowed to modify the product as you wish.\n\nCreate your own themes or download content from the community, such as plugins, free songs or code patches for extended features.\nIn party mode it allows up to twelve players to sing along to your favorite music in order to score points, depending on the pitch of the voice and the rhythm of singing.
