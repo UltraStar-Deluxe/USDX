@@ -42,6 +42,7 @@ uses
   UCommon,
   ULog,
   UIni,
+  UPlatform,
   SysUtils,
   UImage,
   UCatCovers,
@@ -469,6 +470,9 @@ end;
 const
   WINDOW_ICON = 'icons/ultrastardx-icon.png';
 
+{* Progress callback for song loading - updates loading screen *}
+procedure OnSongLoadingProgress(const Stats: TSongLoadingStats); forward;
+
 procedure Initialize3D (Title: string);
 var
   Icon: PSDL_Surface;
@@ -532,9 +536,16 @@ begin
   Log.LogStatus('Creating Avatars Cache', 'Initialization');
   Avatars := TAvatarDatabase.Create;
 
-  // Songs
+  // Songs - set up progress callback before loading
   Log.LogStatus('Creating Song Array', 'Initialization');
+  SongLoadingProgressCallback := @OnSongLoadingProgress;
   Songs := TSongs.Create;
+  SongLoadingProgressCallback := nil;  // Clear callback after loading
+
+  // Log song loading statistics
+  Log.LogStatus(Format('Song loading complete: %d loaded, %d failed in %.3f seconds',
+    [Songs.LoadingStats.SongsLoaded, Songs.LoadingStats.SongsFailed,
+     Songs.LoadingStats.LoadTimeMs / 1000]), 'Initialization');
 
   Log.LogStatus('Creating 2nd Song Array', 'Initialization');
   CatSongs := TCatSongs.Create;
@@ -916,6 +927,17 @@ begin
   if assigned(Display) then
   begin
     Display.OnWindowResized(); // notify display window has changed
+  end;
+end;
+
+{* Progress callback for song loading - updates loading screen progress bar *}
+procedure OnSongLoadingProgress(const Stats: TSongLoadingStats);
+begin
+  // Only update every 20 songs to avoid slowdown, plus first and last
+  if Assigned(ScreenLoading) and (Stats.FilesFound > 0) and
+     ((Stats.CurrentFile mod 20 = 0) or (Stats.CurrentFile = 1) or (Stats.CurrentFile = Stats.FilesFound)) then
+  begin
+    ScreenLoading.SetProgress(Stats.CurrentFile, Stats.FilesFound);
   end;
 end;
 
