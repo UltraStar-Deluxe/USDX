@@ -122,6 +122,10 @@ begin
     // Commandline Parameter Parser
     Params := TCMDParams.Create;
 
+    // Enable verbose logging if -debug flag is passed
+    if Params.Debug then
+      Log.SetLogLevel(50);  // LOG_LEVEL_DEBUG - shows all messages including STATUS
+
     if Platform.TerminateIfAlreadyRunning(WindowTitle) then
       Exit;
 
