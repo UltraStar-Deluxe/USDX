@@ -67,6 +67,7 @@ uses
 
 const
   DEFAULT_RESOLUTION = 4; // default beat grid resolution
+  MIN_BPM = 1.0; // minimum allowed BPM to avoid divide-by-zero
 
 type
 
