@@ -93,17 +93,16 @@ type
   private
     fParseSongDirectory: boolean;
     fProcessing:         boolean;
+    fDiscoveryDirCount:  integer;
+    fDiscoveryDirsScanned: integer;
     fTotalSongsToLoad:   integer;
     fSongsLoaded:        integer;
-    fLoadingBaseTemplate: UTF8String;
-    fLoadingBaseText:    UTF8String;
-    fLastProgressRedrawTicks: cardinal;
     function CollectSongFiles: TPathDynArray;
     procedure int_LoadSongList;
     procedure DoDirChanged(Sender: TObject);
     procedure LoadSongFromFile(const FilePath: IPath);
-    procedure UpdateLoadingProgress;
-    procedure RedrawLoadingScreen;
+    procedure UpdateDiscoveryProgress(SongsFound: integer; Force: boolean = false);
+    procedure UpdateSongLoadingProgress(Force: boolean = false);
   protected
     procedure Execute; override;
   public
@@ -171,13 +170,54 @@ uses
   UCovers,
   UFiles,
   UGraphic,
-  UDisplay,
-  UMenuText,
   UMain,
   UPathUtils,
   UNote,
   UFilesystem,
   UUnicodeUtils;
+
+procedure PumpLoadingEvents;
+var
+  Event: TSDL_Event;
+begin
+  while SDL_PollEvent(@Event) <> 0 do
+    ;
+end;
+
+function CollectDirectories(const StartDir: IPath; Recursive: Boolean): TPathDynArray;
+var
+  Iter: IFileIterator;
+  FileInfo: TFileInfo;
+  FileName: IPath;
+  SubDirs: TPathDynArray;
+  SubDirCount, SubDirIdx: Integer;
+begin
+  SetLength(Result, 1);
+  Result[0] := StartDir;
+  if not Recursive then
+    Exit;
+
+  Iter := FileSystem.FileFind(StartDir.Append('*'), faDirectory);
+  while Iter.HasNext do
+  begin
+    FileInfo := Iter.Next;
+    FileName := FileInfo.Name;
+    if ((FileInfo.Attr and faDirectory) <> 0) and
+       (not FileName.Equals('.')) and
+       (not FileName.Equals('..')) and
+       (not FileName.Equals('')) then
+    begin
+      SubDirs := CollectDirectories(StartDir.Append(FileName), true);
+      SubDirCount := Length(SubDirs);
+      if SubDirCount > 0 then
+      begin
+        SetLength(Result, Length(Result) + SubDirCount);
+        for SubDirIdx := 0 to SubDirCount - 1 do
+          Result[High(Result) - SubDirCount + 1 + SubDirIdx] := SubDirs[SubDirIdx];
+      end;
+    end;
+  end;
+end;
 
 constructor TSongs.Create();
 begin
@@ -235,23 +275,33 @@ begin
 
     Log.LogStatus('Searching For Songs', 'SongList');
 
+    fDiscoveryDirCount := 0;
+    fDiscoveryDirsScanned := 0;
     fSongsLoaded := 0;
     fTotalSongsToLoad := 0;
-    fLoadingBaseTemplate := '';
-    fLoadingBaseText := '';
-    UpdateLoadingProgress;
+    if Assigned(ScreenLoading) then
+    begin
+      ScreenLoading.SetDiscoveryProgress(0, 0, 0);
+      ScreenLoading.SetSongLoadingProgress(0, 0);
+      ScreenLoading.RefreshProgress(true);
+    end;
 
     SongFiles := CollectSongFiles;
 
     fTotalSongsToLoad := Length(SongFiles);
-    UpdateLoadingProgress;
+    UpdateDiscoveryProgress(fTotalSongsToLoad, true);
+    UpdateSongLoadingProgress(true);
 
     for I := 0 to High(SongFiles) do
     begin
       LoadSongFromFile(SongFiles[I]);
       Inc(fSongsLoaded);
-      UpdateLoadingProgress;
+      UpdateSongLoadingProgress;
+      PumpLoadingEvents;
     end;
+
+    if fTotalSongsToLoad > 0 then
+      UpdateSongLoadingProgress(true);
 
     if assigned(CatSongs) then
       CatSongs.Refresh;
@@ -287,68 +337,31 @@ end;
 procedure TSongs.FindFilesByExtension(const Dir: IPath; const Ext: IPath; Recursive: Boolean; var Files: TPathDynArray);
 var
   DirList: TPathDynArray;
-  DirCount, DirIdx: Integer;
+  DirIndex: Integer;
   Iter: IFileIterator;
   FileInfo: TFileInfo;
   FileName: IPath;
-  function CollectDirectories(const StartDir: IPath): TPathDynArray;
-  var
-    LocalDirs: TPathDynArray;
-    LocalIter: IFileIterator;
-    LocalFileInfo: TFileInfo;
-    LocalFileName: IPath;
-    SubDirs: TPathDynArray;
-    SubDirCount, SubDirIdx: Integer;
-  begin
-    SetLength(LocalDirs, 1);
-    LocalDirs[0] := StartDir;
-    if not Recursive then
-      Exit(LocalDirs);
-
-    // Only search for directories
-    LocalIter := FileSystem.FileFind(StartDir.Append('*'), faDirectory);
-    while (LocalIter.HasNext) do
-    begin
-      LocalFileInfo := LocalIter.Next;
-      LocalFileName := LocalFileInfo.Name;
-      if ((LocalFileInfo.Attr and faDirectory) <> 0) and
-         (not LocalFileName.Equals('.')) and (not LocalFileName.Equals('..')) and (not LocalFileName.Equals('')) then
-      begin
-        // Add subdirectory and recurse
-        SubDirs := CollectDirectories(StartDir.Append(LocalFileName));
-        SubDirCount := Length(SubDirs);
-        if SubDirCount > 0 then
-        begin
-          SetLength(LocalDirs, Length(LocalDirs) + SubDirCount);
-          for SubDirIdx := 0 to SubDirCount - 1 do
-            LocalDirs[High(LocalDirs) - SubDirCount + 1 + SubDirIdx] := SubDirs[SubDirIdx];
-        end;
-      end;
-    end;
-    Exit(LocalDirs);
-  end;
 begin
-  // First, collect all directories (including Dir itself)
-  DirList := CollectDirectories(Dir);
-  DirCount := Length(DirList);
-
-  for DirIdx := 0 to DirCount - 1 do
+  if Recursive then
+    DirList := CollectDirectories(Dir, true)
+  else
   begin
-    Iter := FileSystem.FileFind(DirList[DirIdx].Append('*.txt'), 0);
-    while (Iter.HasNext) do
+    SetLength(DirList, 1);
+    DirList[0] := Dir;
+  end;
+
+  for DirIndex := 0 to High(DirList) do
+  begin
+    Iter := FileSystem.FileFind(DirList[DirIndex].Append('*.txt'), 0);
+    while Iter.HasNext do
     begin
       FileInfo := Iter.Next;
       FileName := FileInfo.Name;
-      if ((FileInfo.Attr and faDirectory) = 0) then
+      if ((FileInfo.Attr and faDirectory) = 0) and Ext.Equals(FileName.GetExtension(), true) then
       begin
-        if (Ext.Equals(FileName.GetExtension(), true)) then
-        begin
-          Log.LogDebug('Found file ' + DirList[DirIdx].Append(FileName).ToWide, 'TSongs.FindFilesByExtension');
-          SetLength(Files, Length(Files)+1);
-          Files[High(Files)] := DirList[DirIdx].Append(FileName);
-          fTotalSongsToLoad := fTotalSongsToLoad + 1;
-          UpdateLoadingProgress;
-        end;
+        Log.LogDebug('Found file ' + DirList[DirIndex].Append(FileName).ToWide, 'TSongs.FindFilesByExtension');
+        SetLength(Files, Length(Files) + 1);
+        Files[High(Files)] := DirList[DirIndex].Append(FileName);
       end;
     end;
   end;
@@ -356,12 +369,15 @@ end;
 
 function TSongs.CollectSongFiles: TPathDynArray;
 var
-  DirIndex, FileIndex, AppendIndex, AdditionalCount: integer;
+  DirIndex, FileIndex, AppendIndex, AdditionalCount, ScanIndex: integer;
+  DirList: TPathDynArray;
+  AllDirs: TPathDynArray;
   DirFiles: TPathDynArray;
   Extension: IPath;
   DirPath: IPath;
 begin
   SetLength(Result, 0);
+  SetLength(AllDirs, 0);
 
   if SongPaths = nil then
     Exit;
@@ -372,20 +388,36 @@ begin
   begin
     DirPath := SongPaths[DirIndex] as IPath;
     Log.LogDebug('Searching directory ' + DirPath.ToWide + ' for txt files', 'TSongs.CollectSongFiles');
-    SetLength(DirFiles, 0);
-    FindFilesByExtension(DirPath, Extension, true, DirFiles);
-    AdditionalCount := Length(DirFiles);
-    if AdditionalCount = 0 then
-      Continue;
+    DirList := CollectDirectories(DirPath, true);
+    AdditionalCount := Length(DirList);
+    if AdditionalCount > 0 then
+    begin
+      AppendIndex := Length(AllDirs);
+      SetLength(AllDirs, AppendIndex + AdditionalCount);
+      for FileIndex := 0 to AdditionalCount - 1 do
+        AllDirs[AppendIndex + FileIndex] := DirList[FileIndex];
+    end;
+  end;
 
-    AppendIndex := Length(Result);
-    SetLength(Result, AppendIndex + AdditionalCount);
-    for FileIndex := 0 to AdditionalCount - 1 do begin
-      Result[AppendIndex + FileIndex] := DirFiles[FileIndex];
-      fTotalSongsToLoad := Length(Result);
-      UpdateLoadingProgress;
+  fDiscoveryDirCount := Length(AllDirs);
+  UpdateDiscoveryProgress(0, true);
+
+  for ScanIndex := 0 to High(AllDirs) do
+  begin
+    SetLength(DirFiles, 0);
+    FindFilesByExtension(AllDirs[ScanIndex], Extension, false, DirFiles);
+    AdditionalCount := Length(DirFiles);
+    if AdditionalCount > 0 then
+    begin
+      AppendIndex := Length(Result);
+      SetLength(Result, AppendIndex + AdditionalCount);
+      for FileIndex := 0 to AdditionalCount - 1 do
+        Result[AppendIndex + FileIndex] := DirFiles[FileIndex];
     end;
 
+    Inc(fDiscoveryDirsScanned);
+    UpdateDiscoveryProgress(Length(Result));
+    PumpLoadingEvents;
     SetLength(DirFiles, 0);
   end;
 end;
@@ -405,49 +437,24 @@ begin
   end;
 end;
 
-procedure TSongs.UpdateLoadingProgress;
-var
-  Percent: integer;
-  ProgressText: UTF8String;
-  LoadingText: TText;
-  NowTicks: cardinal;
+procedure TSongs.UpdateDiscoveryProgress(SongsFound: integer; Force: boolean = false);
 begin
-  if (ScreenLoading = nil) or (Length(ScreenLoading.Text) = 0) then
+  if not Assigned(ScreenLoading) then
     Exit;
 
-  NowTicks := SDL_GetTicks();
-  if (NowTicks - fLastProgressRedrawTicks < 100) and (fLastProgressRedrawTicks <> 0) then
-    Exit;
-
-  LoadingText := ScreenLoading.Text[0];
-  if LoadingText = nil then
-    Exit;
-
-  if fLoadingBaseTemplate = '' then
-    fLoadingBaseTemplate := LoadingText.Text;
-
-  if fLoadingBaseText = '' then
-    fLoadingBaseText := fLoadingBaseTemplate;
-
-  ProgressText := fLoadingBaseText + UTF8String(' [' + IntToStr(fSongsLoaded) + '/' + IntToStr(fTotalSongsToLoad) + ']');
-
-  LoadingText.Text := ProgressText;
-
-  RedrawLoadingScreen;
-  fLastProgressRedrawTicks := NowTicks;
+  ScreenLoading.SetDiscoveryProgress(fDiscoveryDirsScanned, fDiscoveryDirCount, SongsFound);
+  if Force then
+    ScreenLoading.RefreshProgress(true);
 end;
 
-procedure TSongs.RedrawLoadingScreen;
+procedure TSongs.UpdateSongLoadingProgress(Force: boolean = false);
 begin
-  if (ScreenLoading = nil) or (Display = nil) then
+  if not Assigned(ScreenLoading) then
     Exit;
 
-  if Display.CurrentScreen <> @ScreenLoading then
-    Exit;
-
-  ScreenLoading.Draw;
-  Display.Draw;
-  SwapBuffers;
+  ScreenLoading.SetSongLoadingProgress(fSongsLoaded, fTotalSongsToLoad);
+  if Force then
+    ScreenLoading.RefreshProgress(true);
 end;
 
 (*
