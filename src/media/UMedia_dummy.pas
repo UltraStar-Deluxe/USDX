@@ -65,11 +65,13 @@ type
 
       procedure SetPosition(Time: real);
       function  GetPosition: real;
+      procedure SetStartTime(Time: real);
+      function  GetStartTime: real;
 
       procedure SetSyncSource(SyncSource: TSyncSource);
 
       // IAudioInput
-      function InitializeRecord: boolean;
+      function InitializeRecord(ScanMode: TAudioInputScanMode): boolean;
       function FinalizeRecord: boolean;
       procedure CaptureStart;
       procedure CaptureStop;
@@ -85,6 +87,10 @@ type
       procedure Fade(Time: real; TargetVolume: single);
       procedure SetAppVolume(Volume: single);
       procedure SetVolume(Volume: single);
+      procedure SetVocalsBalance(Balance: single);
+      function GetVocalsBalance: single;
+      function HasInstrumentalTrack: boolean;
+      function GetOverallVolume: single;
       procedure Rewind;
 
       procedure SetLoop(Enabled: boolean);
@@ -100,6 +106,7 @@ type
       procedure StopSound(stream: TAudioPlaybackStream);
 
       function CreateVoiceStream(Channel: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream;
+      function CreatePlaybackStreamForSource(SourceStream: TAudioSourceStream): TAudioPlaybackStream;
       procedure CloseVoiceStream(var VoiceStream: TAudioVoiceStream);
     end;
 
@@ -228,12 +235,21 @@ begin
   Result := 0;
 end;
 
+procedure TAudio_Dummy.SetStartTime(Time: real);
+begin
+end;
+
+function  TAudio_Dummy.GetStartTime: real;
+begin
+  Result := 0;
+end;
+
 procedure TAudio_Dummy.SetSyncSource(SyncSource: TSyncSource);
 begin
 end;
 
 // IAudioInput
-function TAudio_Dummy.InitializeRecord: boolean;
+function TAudio_Dummy.InitializeRecord(ScanMode: TAudioInputScanMode): boolean;
 begin
   Result := true;
 end;
@@ -285,6 +301,25 @@ end;
 
 procedure TAudio_Dummy.SetVolume(Volume: single);
 begin
+end;
+
+procedure TAudio_Dummy.SetVocalsBalance(Balance: single);
+begin
+end;
+
+function TAudio_Dummy.GetVocalsBalance: single;
+begin
+  Result := 1.0;
+end;
+
+function TAudio_Dummy.HasInstrumentalTrack: boolean;
+begin
+  Result := false;
+end;
+
+function TAudio_Dummy.GetOverallVolume: single;
+begin
+  Result := 1.0;
 end;
 
 procedure TAudio_Dummy.SetLoop(Enabled: boolean);
@@ -341,6 +376,11 @@ begin
 end;
 
 function TAudio_Dummy.CreateVoiceStream(Channel: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream;
+begin
+  Result := nil;
+end;
+
+function TAudio_Dummy.CreatePlaybackStreamForSource(SourceStream: TAudioSourceStream): TAudioPlaybackStream;
 begin
   Result := nil;
 end;

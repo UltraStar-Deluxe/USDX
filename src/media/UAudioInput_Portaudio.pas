@@ -61,7 +61,7 @@ type
       function EnumDevices(): boolean;
     public
       function GetName: string; override;
-      function InitializeRecord: boolean; override;
+      function InitializeRecord(ScanMode: TAudioInputScanMode): boolean; override;
       function FinalizeRecord: boolean; override;
   end;
 
@@ -332,6 +332,7 @@ var
   streamInfo:   PPaStreamInfo;
   sampleRate:   double;
   latency:      TPaTime;
+  unifiedDeviceName: UTF8String;
   {$IFDEF UsePortmixer}
   mixer:        PPxMixer;
   sourceCnt:    integer;
@@ -369,12 +370,16 @@ begin
     if (channelCnt <= 0) then
       continue;
 
+    // retrieve device-name before running expensive tests
+    deviceName := ConvertPaStringToUTF8(paDeviceInfo^.name);
+    unifiedDeviceName := UnifyDeviceName(deviceName, i);
+    if not ShouldProbeDevice(unifiedDeviceName) then
+      continue;
+
     paDevice := TPortaudioInputDevice.Create();
     AudioInputProcessor.DeviceList[deviceIndex] := paDevice;
 
-    // retrieve device-name
-    deviceName := ConvertPaStringToUTF8(paDeviceInfo^.name);
-    paDevice.Name := UnifyDeviceName(deviceName, deviceIndex);
+    paDevice.Name := unifiedDeviceName;
     Log.LogStatus('Attempting to configure InputDevice "' + paDevice.Name + '"', 'Portaudio.EnumDevices');
     paDevice.PaDeviceIndex := paDeviceIndex;
 
@@ -486,7 +491,7 @@ begin
   Result := true;
 end;
 
-function TAudioInput_Portaudio.InitializeRecord(): boolean;
+function TAudioInput_Portaudio.InitializeRecord(ScanMode: TAudioInputScanMode): boolean;
 begin
   Result := false;
   AudioCore := TAudioCore_Portaudio.GetInstance();
@@ -494,6 +499,7 @@ begin
   // initialize portaudio
   if (not AudioCore.Initialize()) then
      Exit;
+  PrepareDeviceScan(ScanMode);
   Result := EnumDevices();
 end;
 

@@ -42,6 +42,11 @@ uses
   UWebcam;
 
 type
+  TAudioInputScanMode = (
+    aimFast,
+    aimFull
+  );
+
   TNoteType = (ntFreestyle, ntNormal, ntGolden, ntRap, ntRapGolden);
 
   TPos = record // Tracks[track].Lines[line].Notes[note]
@@ -239,6 +244,8 @@ type
       function GetLength(): real;           virtual; abstract;
       function GetPosition(): real;         virtual; abstract;
       procedure SetPosition(Time: real);    virtual; abstract;
+      function GetStartTime(): real;         virtual; abstract;
+      procedure SetStartTime(Time: real);    virtual; abstract;
       function GetLoop(): boolean;          virtual; abstract;
       procedure SetLoop(Enabled: boolean);  virtual; abstract;
 
@@ -258,6 +265,7 @@ type
 
       property Length: real read GetLength;
       property Position: real read GetPosition write SetPosition;
+      property StartTime: real read GetStartTime write SetStartTime;
       property Loop: boolean read GetLoop write SetLoop;
   end;
 
@@ -268,6 +276,8 @@ type
     protected
       function IsEOF(): boolean;            virtual; abstract;
       function IsError(): boolean;          virtual; abstract;
+      function GetStartTime(): real; override;
+      procedure SetStartTime(Time: real); override;
       procedure SetReplayGain(const GainTag: AnsiString; const PeakTag: AnsiString);
       procedure SetReplayGainR128(const R128Tag: AnsiString);
     public
@@ -304,6 +314,8 @@ type
       function GetStatus(): TStreamStatus;  virtual; abstract;
       function GetVolume(): single;         virtual; abstract;
       procedure SetVolume(Volume: single);  virtual; abstract;
+      function GetStartTime(): real; override;
+      procedure SetStartTime(Time: real); override;
       function Synchronize(BufferSize: integer; FormatInfo: TAudioFormatInfo): integer;
       procedure FillBufferWithFrame(Buffer: PByteArray; BufferSize: integer; Frame: PByteArray; FrameSize: integer);
     public
@@ -459,6 +471,10 @@ type
 
       procedure SetAppVolume(Volume: single);
       procedure SetVolume(Volume: single);
+      procedure SetVocalsBalance(Balance: single);
+      function GetVocalsBalance: single;
+      function HasInstrumentalTrack: boolean;
+      function GetOverallVolume: single;
       procedure SetLoop(Enabled: boolean);
 
       procedure FadeIn(Time: real; TargetVolume: single);
@@ -481,7 +497,12 @@ type
       procedure SetPosition(Time: real);
       function GetPosition: real;
 
+      procedure SetStartTime(Time: real);
+      function GetStartTime: real;
+
       property Position: real read GetPosition write SetPosition;
+      property StartTime: real read GetStartTime write SetStartTime;
+
 
       // Sounds
       // TODO:
@@ -502,6 +523,7 @@ type
       function GetPCMData(var Data: TPCMData): Cardinal;
 
       function CreateVoiceStream(ChannelMap: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream;
+      function CreatePlaybackStreamForSource(SourceStream: TAudioSourceStream): TAudioPlaybackStream;
   end;
 
   IGenericDecoder = Interface
@@ -535,7 +557,7 @@ type
   IAudioInput = Interface
   ['{A5C8DA92-2A0C-4AB2-849B-2F7448C6003A}']
       function GetName: String;
-      function InitializeRecord: boolean;
+      function InitializeRecord(ScanMode: TAudioInputScanMode): boolean;
       function FinalizeRecord(): boolean;
 
       procedure CaptureStart;
@@ -620,6 +642,7 @@ type
 
       procedure StartBgMusic();
       procedure PauseBgMusic();
+      procedure ApplySfxVolume(Volume: single);
       // TODO
       //function AddSound(Filename: IPath): integer;
       //procedure RemoveSound(ID: integer);
@@ -634,6 +657,7 @@ var
 procedure InitializeSound;
 procedure InitializeVideo;
 procedure FinalizeMedia;
+function RefreshAudioInputDevices(ScanMode: TAudioInputScanMode): boolean;
 
 function  Visualization(): IVideoPlayback;
 function  VideoPlayback(): IVideoPlayback;
@@ -641,9 +665,17 @@ function  AudioPlayback(): IAudioPlayback;
 function  AudioInput(): IAudioInput;
 function  AudioDecoders(): TInterfaceList;
 
+procedure SetAudioVolumePercent(Value: integer);
+procedure SetVocalsVolumePercent(Value: integer);
+procedure SetSfxVolumePercent(Value: integer);
+procedure SetPreviewVolumePercent(Value: integer);
+procedure SetBackgroundMusicVolumePercent(Value: integer);
+
 function  MediaManager: TInterfaceList;
 
 procedure DumpMediaInterfaces();
+
+procedure ForcePlaySound(Stream: TAudioPlaybackStream);
 
 function FindNote(beat: integer): TPos;
 
@@ -657,7 +689,8 @@ uses
   UCommon,
   URecord,
   ULog,
-  UPathUtils;
+  UPathUtils,
+  UThemes;
 
 var
   DefaultVideoPlayback : IVideoPlayback;
@@ -666,6 +699,19 @@ var
   DefaultAudioInput    : IAudioInput;
   AudioDecoderList     : TInterfaceList;
   MediaInterfaceList   : TInterfaceList;
+
+function ResolveSoundAsset(const Filename: UTF8String): IPath;
+begin
+  Result := UThemes.ResolveThemeAsset(Path('sounds').Append(Filename));
+  if Result.IsSet then
+    Exit;
+
+  Result := UThemes.ResolveThemeAsset(Path(Filename));
+  if Result.IsSet then
+    Exit;
+
+  Result := SoundPath.Append(Filename);
+end;
 
 
 constructor TAudioFormatInfo.Create(Channels: byte; SampleRate: double; Format: TAudioSampleFormat);
@@ -748,6 +794,109 @@ begin
   Result := AudioDecoderList;
 end;
 
+procedure SetAudioVolumePercent(Value: integer);
+var
+  Clamped: integer;
+  Playback: IAudioPlayback;
+begin
+  if Value < 0 then
+    Clamped := 0
+  else if Value > 100 then
+    Clamped := 100
+  else
+    Clamped := Value;
+
+  Ini.AudioVolume := Clamped;
+  Playback := AudioPlayback();
+  if assigned(Playback) then
+    Playback.SetVolume(Clamped / 100);
+end;
+
+procedure SetVocalsVolumePercent(Value: integer);
+var
+  Clamped: integer;
+  Playback: IAudioPlayback;
+begin
+  if Value < 0 then
+    Clamped := 0
+  else if Value > 100 then
+    Clamped := 100
+  else
+    Clamped := Value;
+
+  Ini.VocalsVolume := Clamped;
+  Playback := AudioPlayback();
+  if assigned(Playback) then
+    Playback.SetVocalsBalance(Clamped / 100);
+end;
+
+procedure SetSfxVolumePercent(Value: integer);
+var
+  Clamped: integer;
+begin
+  if Value < 0 then
+    Clamped := 0
+  else if Value > 100 then
+    Clamped := 100
+  else
+    Clamped := Value;
+
+  Ini.SfxVolume := Clamped;
+  if assigned(SoundLib) then
+    SoundLib.ApplySfxVolume(Clamped / 100);
+end;
+
+procedure SetPreviewVolumePercent(Value: integer);
+var
+  Clamped: integer;
+begin
+  if Value < 0 then
+    Clamped := 0
+  else if Value > 100 then
+    Clamped := 100
+  else
+    Clamped := Value;
+
+  Ini.PreviewVolume := Clamped;
+end;
+
+procedure SetBackgroundMusicVolumePercent(Value: integer);
+var
+  Clamped: integer;
+  Volume: single;
+begin
+  if Value < 0 then
+    Clamped := 0
+  else if Value > 100 then
+    Clamped := 100
+  else
+    Clamped := Value;
+
+  Ini.BackgroundMusicVolume := Clamped;
+  Volume := Clamped / 100;
+  if assigned(SoundLib) and assigned(SoundLib.BGMusic) then
+    SoundLib.BGMusic.SetVolume(Volume);
+end;
+
+function RefreshAudioInputDevices(ScanMode: TAudioInputScanMode): boolean;
+var
+  CurrentAudioInput: IAudioInput;
+begin
+  CurrentAudioInput := AudioInput();
+  if not assigned(CurrentAudioInput) then
+  begin
+    Result := false;
+    Exit;
+  end;
+
+  CurrentAudioInput.FinalizeRecord();
+  Result := CurrentAudioInput.InitializeRecord(ScanMode);
+  if not Result then
+    Log.LogError('Failed to refresh input devices for ' + CurrentAudioInput.GetName());
+
+  AudioInputProcessor.UpdateInputDeviceConfig();
+end;
+
 procedure FilterInterfaceList(const IID: TGUID; InList, OutList: TInterfaceList);
 var
   i: integer;
@@ -816,7 +965,7 @@ begin
   for i := 0 to InterfaceList.Count-1 do
   begin
     CurrentAudioInput := InterfaceList[i] as IAudioInput;
-    if (CurrentAudioInput.InitializeRecord()) then
+    if (CurrentAudioInput.InitializeRecord(aimFast)) then
     begin
       DefaultAudioInput := CurrentAudioInput;
       break;
@@ -981,18 +1130,23 @@ procedure TSoundLibrary.LoadSounds();
 begin
   UnloadSounds();
 
-  Start   := AudioPlayback.OpenSound(SoundPath.Append('Common start.mp3'));
-  Back    := AudioPlayback.OpenSound(SoundPath.Append('Common back.mp3'));
-  Swoosh  := AudioPlayback.OpenSound(SoundPath.Append('menu swoosh.mp3'));
-  Change  := AudioPlayback.OpenSound(SoundPath.Append('select music change music 50.mp3'));
-  Option  := AudioPlayback.OpenSound(SoundPath.Append('option change col.mp3'));
-  Click   := AudioPlayback.OpenSound(SoundPath.Append('rimshot022b.wav'));
-  Applause:= AudioPlayback.OpenSound(SoundPath.Append('Applause.mp3'));
+  Start   := AudioPlayback.OpenSound(ResolveSoundAsset('Common start.mp3'));
+  Back    := AudioPlayback.OpenSound(ResolveSoundAsset('Common back.mp3'));
+  Swoosh  := AudioPlayback.OpenSound(ResolveSoundAsset('menu swoosh.mp3'));
+  Change  := AudioPlayback.OpenSound(ResolveSoundAsset('select music change music 50.mp3'));
+  Option  := AudioPlayback.OpenSound(ResolveSoundAsset('option change col.mp3'));
+  Click   := AudioPlayback.OpenSound(ResolveSoundAsset('rimshot022b.wav'));
+  Applause:= AudioPlayback.OpenSound(ResolveSoundAsset('Applause.mp3'));
 
-  BGMusic := AudioPlayback.OpenSound(SoundPath.Append('background track.mp3'));
+  BGMusic := AudioPlayback.OpenSound(ResolveSoundAsset('background track.mp3'));
 
   if (BGMusic <> nil) then
+  begin
     BGMusic.Loop := True;
+    BGMusic.SetVolume(EnsureRange(Ini.BackgroundMusicVolume, 0, 100) / 100);
+  end;
+
+  ApplySfxVolume(Ini.SfxVolume / 100);
 end;
 
 procedure TSoundLibrary.UnloadSounds();
@@ -1005,6 +1159,29 @@ begin
   FreeAndNil(Click);
   FreeAndNil(Applause);
   FreeAndNil(BGMusic);
+end;
+
+procedure TSoundLibrary.ApplySfxVolume(Volume: single);
+begin
+  if Volume < 0 then
+    Volume := 0
+  else if Volume > 1 then
+    Volume := 1;
+
+  if Start <> nil then
+    Start.Volume := Volume;
+  if Back <> nil then
+    Back.Volume := Volume;
+  if Swoosh <> nil then
+    Swoosh.Volume := Volume;
+  if Change <> nil then
+    Change.Volume := Volume;
+  if Option <> nil then
+    Option.Volume := Volume;
+  if Click <> nil then
+    Click.Volume := Volume;
+  if Applause <> nil then
+    Applause.Volume := Volume;
 end;
 
 (* TODO
@@ -1022,7 +1199,7 @@ begin
   if (TBackgroundMusicOption(Ini.BackgroundMusicOption) = bmoOn) and
     (Soundlib.BGMusic <> nil) and not (Soundlib.BGMusic.Status = ssPlaying) then
   begin
-    SoundLib.BGMusic.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
+    SoundLib.BGMusic.SetVolume(EnsureRange(Ini.BackgroundMusicVolume, 0, 100) / 100);
     AudioPlayback.PlaySound(Soundlib.BGMusic);
   end;
 end;
@@ -1033,6 +1210,22 @@ begin
   begin
     Soundlib.BGMusic.Pause;
   end;
+end;
+
+procedure ForcePlaySound(Stream: TAudioPlaybackStream);
+var
+  Playback: IAudioPlayback;
+begin
+  if (Stream = nil) then
+    Exit;
+
+  Playback := AudioPlayback();
+  if (Playback = nil) then
+    Exit;
+
+  Stream.Stop;
+  Stream.Position := 0;
+  Playback.PlaySound(Stream);
 end;
 
 { TAudioConverter }
@@ -1149,6 +1342,15 @@ end;
 function TAudioSourceStream.GetReplayGain(): single;
 begin
   Result := RG;
+end;
+
+function TAudioSourceStream.GetStartTime(): real;
+begin
+  Result := 0;
+end;
+
+procedure TAudioSourceStream.SetStartTime();
+begin
 end;
 
 { TAudioPlaybackStream }
@@ -1312,6 +1514,20 @@ end;
 procedure TAudioPlaybackStream.SetReplayGainEnabled(RGEnabled: boolean);
 begin
   self.RGEnabled := RGEnabled;
+end;
+
+function TAudioPlaybackStream.GetStartTime(): real;
+begin
+  if (assigned(SourceStream)) then
+    Result := SourceStream.StartTime
+  else
+    Result := 0;
+end;
+
+procedure TAudioPlaybackStream.SetStartTime(Time: real);
+begin
+  if (assigned(SourceStream)) then
+    SourceStream.StartTime := Time;
 end;
 
 { TAudioVoiceStream }

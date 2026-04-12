@@ -54,6 +54,12 @@ type
   end;
 
   TSkin = class
+  private
+    FallbackSkinPath: IPath;
+    function FindTextureIndex(const TextureName: string): integer;
+    function FindSkinIndex(const Name, Theme: string): integer;
+    procedure LoadSkinTextures(const SkinIndex: integer; AppendMissingOnly: boolean);
+  public
     Skin:        array of TSkinEntry;
     SkinTexture: array of TSkinTexture;
     SkinPath:    IPath;
@@ -62,9 +68,11 @@ type
     procedure LoadList;
     procedure ParseDir(Dir: IPath);
     procedure LoadHeader(FileName: IPath);
-    procedure LoadSkin(Name, Theme: string);
+    procedure LoadSkin(Name, Theme: string; const FallbackName: string = ''; const FallbackTheme: string = '');
     function GetTextureFileName(TextureName: string): IPath;
+    function GetSkinFile(const RelativeFileName: IPath): IPath;
     function GetSkinNumber(Name, Theme: string): integer;
+    function HasSkin(Name, Theme: string): boolean;
     function GetDefaultColor(SkinNo: integer): integer;
 
     procedure GetSkinsByTheme(Theme: string; out Skins: TUTF8StringDynArray);
@@ -143,30 +151,110 @@ begin
   SkinIni.Free;
 end;
 
-procedure TSkin.LoadSkin(Name, Theme: string);
+function TSkin.FindTextureIndex(const TextureName: string): integer;
+var
+  T: integer;
+begin
+  Result := -1;
+
+  for T := 0 to High(SkinTexture) do
+  begin
+    if (SkinTexture[T].Name = TextureName) then
+    begin
+      Result := T;
+      Break;
+    end;
+  end;
+end;
+
+function TSkin.FindSkinIndex(const Name, Theme: string): integer;
+var
+  S: integer;
+begin
+  Result := -1;
+
+  for S := 0 to High(Skin) do
+  begin
+    if (CompareText(Skin[S].Name, Name) = 0) and
+       (CompareText(Skin[S].Theme, Theme) = 0) then
+    begin
+      Result := S;
+      Break;
+    end;
+  end;
+end;
+
+procedure TSkin.LoadSkinTextures(const SkinIndex: integer; AppendMissingOnly: boolean);
 var
   SkinIni: TMemIniFile;
   SL:      TStringList;
   T:       integer;
-  S:       integer;
+  TextureIndex: integer;
+  TextureFile: IPath;
 begin
-  S        := GetSkinNumber(Name, Theme);
-  SkinPath := Skin[S].Path;
+  if (SkinIndex < Low(Skin)) or (SkinIndex > High(Skin)) then
+    Exit;
 
-  SkinIni  := TMemIniFile.Create(SkinPath.Append(Skin[S].FileName).ToNative);
+  SkinIni := TMemIniFile.Create(Skin[SkinIndex].Path.Append(Skin[SkinIndex].FileName).ToNative);
 
   SL := TStringList.Create;
   SkinIni.ReadSection('Textures', SL);
 
-  SetLength(SkinTexture, SL.Count);
   for T := 0 to SL.Count-1 do
   begin
-    SkinTexture[T].Name     := SL.Strings[T];
-    SkinTexture[T].FileName := Path(SkinIni.ReadString('Textures', SL.Strings[T], ''));
+    TextureIndex := FindTextureIndex(SL.Strings[T]);
+    TextureFile := Path(SkinIni.ReadString('Textures', SL.Strings[T], ''));
+    if TextureFile.IsSet then
+      TextureFile := Skin[SkinIndex].Path.Append(TextureFile);
+
+    if TextureIndex = -1 then
+    begin
+      TextureIndex := Length(SkinTexture);
+      SetLength(SkinTexture, TextureIndex + 1);
+      SkinTexture[TextureIndex].Name := SL.Strings[T];
+    end
+    else if AppendMissingOnly and
+            SkinTexture[TextureIndex].FileName.IsSet and
+            SkinTexture[TextureIndex].FileName.IsFile then
+    begin
+      Continue;
+    end;
+
+    SkinTexture[TextureIndex].FileName := TextureFile;
   end;
 
   SL.Free;
   SkinIni.Free;
+end;
+
+procedure TSkin.LoadSkin(Name, Theme: string; const FallbackName: string = ''; const FallbackTheme: string = '');
+var
+  SkinIndex: integer;
+begin
+  SetLength(SkinTexture, 0);
+  SkinPath := PATH_NONE;
+  FallbackSkinPath := PATH_NONE;
+
+  SkinIndex := FindSkinIndex(Name, Theme);
+  if (SkinIndex = -1) then
+  begin
+    Log.LogError('Could not find skin "' + Name + '" for theme "' + Theme + '"', 'TSkin.LoadSkin');
+    Exit;
+  end;
+
+  SkinPath := Skin[SkinIndex].Path;
+  LoadSkinTextures(SkinIndex, false);
+
+  if (FallbackName = '') or (FallbackTheme = '') then
+    Exit;
+
+  SkinIndex := FindSkinIndex(FallbackName, FallbackTheme);
+  if (SkinIndex = -1) then
+    Exit;
+
+  FallbackSkinPath := Skin[SkinIndex].Path;
+  if not FallbackSkinPath.Equals(SkinPath) then
+    LoadSkinTextures(SkinIndex, true);
 end;
 
 function TSkin.GetTextureFileName(TextureName: string): IPath;
@@ -180,7 +268,8 @@ begin
     if (SkinTexture[T].Name = TextureName) and
        (SkinTexture[T].FileName.IsSet) then
     begin
-      Result := SkinPath.Append(SkinTexture[T].FileName);
+      Result := SkinTexture[T].FileName;
+      Break;
     end;
   end;
 
@@ -191,14 +280,40 @@ begin
   end;
 end;
 
-function TSkin.GetSkinNumber(Name, Theme: string): integer;
-var
-  S: integer;
+function TSkin.GetSkinFile(const RelativeFileName: IPath): IPath;
 begin
-  Result := 0; // set default to the first available skin
-  for S := 0 to High(Skin) do
-    if (CompareText(Skin[S].Name, Name) = 0) and (CompareText(Skin[S].Theme, Theme) = 0) then
-      Result := S;
+  Result := PATH_NONE;
+
+  if (RelativeFileName = nil) or RelativeFileName.IsUnset then
+    Exit;
+
+  if SkinPath.IsSet then
+  begin
+    Result := SkinPath.Append(RelativeFileName);
+    if Result.IsFile then
+      Exit;
+  end;
+
+  if FallbackSkinPath.IsSet then
+  begin
+    Result := FallbackSkinPath.Append(RelativeFileName);
+    if Result.IsFile then
+      Exit;
+  end;
+
+  Result := PATH_NONE;
+end;
+
+function TSkin.GetSkinNumber(Name, Theme: string): integer;
+begin
+  Result := FindSkinIndex(Name, Theme);
+  if Result < 0 then
+    Result := 0; // set default to the first available skin
+end;
+
+function TSkin.HasSkin(Name, Theme: string): boolean;
+begin
+  Result := (FindSkinIndex(Name, Theme) <> -1);
 end;
 
 procedure TSkin.GetSkinsByTheme(Theme: string; out Skins: TUTF8StringDynArray);

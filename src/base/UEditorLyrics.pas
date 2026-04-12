@@ -361,6 +361,9 @@ var
   CenterShift: real;
   DisplayX: real;
   DisplayWidth: real;
+  MinX: real;
+  MaxX: real;
+  HitSlop: real;
   NextShift: real;
   NextX: real;
 begin
@@ -390,6 +393,33 @@ begin
 
   CursorShift := 0;
   DisplayX := Word[0].X + CursorShift - CenterShift;
+  HitSlop := 4;
+  MinX := DisplayX - HitSlop;
+  MaxX := DisplayX;
+
+  LastIndex := High(Word);
+  for Index := 0 to LastIndex do
+  begin
+    DisplayX := Word[Index].X + CursorShift - CenterShift;
+    DisplayWidth := Word[Index].Width;
+    if CursorVisible and (Index = CursorWordIndex) then
+      DisplayWidth := DisplayWidth + CursorWidth;
+
+    if DisplayX < MinX then
+      MinX := DisplayX;
+    if (DisplayX + DisplayWidth) > MaxX then
+      MaxX := DisplayX + DisplayWidth;
+
+    if CursorVisible and (Index = CursorWordIndex) then
+      CursorShift := CursorWidth;
+  end;
+  MaxX := MaxX + HitSlop;
+
+  if (X < MinX) or (X > MaxX) then
+    Exit;
+
+  CursorShift := 0;
+  DisplayX := Word[0].X + CursorShift - CenterShift;
   if X <= DisplayX then
   begin
     WordIndex := 0;
@@ -398,7 +428,6 @@ begin
     Exit;
   end;
 
-  LastIndex := High(Word);
   for Index := 0 to LastIndex do
   begin
     DisplayX := Word[Index].X + CursorShift - CenterShift;

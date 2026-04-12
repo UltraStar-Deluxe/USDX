@@ -46,7 +46,7 @@ type
   TScreenOptionsAdvanced = class(TOptionsMenu)
     public
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
     protected
       procedure LoadWidgets; override;
@@ -65,19 +65,7 @@ uses
   UUnicodeUtils,
   SysUtils;
 
-type
-  InteractionID = (
-    iScreenFadeSlide,
-    iEffectSingSlide,
-    iOnSongClickSlide,
-    iAskBeforeDelSlide,
-    iPartyPopupSlide,
-    iSingScoresSlide,
-    iTopScoresSlide,
-    iBackButton
-  );
-
-function TScreenOptionsAdvanced.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenOptionsAdvanced.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -106,7 +94,7 @@ begin
       end;
       SDLK_RETURN:
         begin
-          if SelInteraction = ord(iBackButton) then
+          if SelInteraction = 7 then
           begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
@@ -119,7 +107,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if Interactions[SelInteraction].Typ = iSelectS then
+          if (SelInteraction >= 0) and (SelInteraction <= 6) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
@@ -127,7 +115,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if Interactions[SelInteraction].Typ = iSelectS then
+          if (SelInteraction >= 0) and (SelInteraction <= 6) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
@@ -158,7 +146,7 @@ end;
 
 procedure TScreenOptionsAdvanced.LoadWidgets;
 begin
-  // when editing this, also update the InteractionID enum declaration
+  // when editing this, also search for SelInteraction
   AddSelectSlide('SING_OPTIONS_ADVANCED_SCREENFADE', Ini.ScreenFade, IScreenFadeTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_EFFECTSING', Ini.EffectSing, IEffectSingTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_ONSONGCLICK', Ini.OnSongClick, IOnSongClickTranslated);

@@ -30,7 +30,6 @@ interface
 {$IFDEF FPC}
   {$MODE Delphi}
 {$ENDIF}
-{$codepage UTF8}
 
 {$I switches.inc}
 
@@ -49,24 +48,13 @@ uses
 type
   TScreenOptionsLyrics = class(TOptionsMenu)
     private
-      LyricEngine:   array [0..1] of TLyricEngine;
-      GermanLine:     TLine;
-      FrenchLine:     TLine;
-      SpanishLine:    TLine;
-      PolishLine:     TLine;
-      LastFontFamily: Integer;
-      LastFontStyle:  Integer;
-      AnimStartTicks: UInt32;
-      LastAnimBeat:   real;
-      SavedAnimBeat:  real;
-      procedure RebuildLines;
+      Lyrics: TLyricEngine;
+      Line: TLine;
 
     public
       constructor Create; override;
-      destructor Destroy; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
-      procedure OnHide; override;
       function Draw: boolean; override;
       procedure LyricSample;
 
@@ -76,7 +64,6 @@ type
 
 const
   ID='ID_075';   //for help system
-  PREVIEW_LOOP_BEATS = 200;
 
 implementation
 
@@ -87,19 +74,9 @@ uses
   ULog,
   UMenuButton,
   UUnicodeUtils,
-  Math,
   SysUtils;
 
-type
-  InteractionID = (
-    iFontSlide,
-    iStyleSlide,
-    iEffectSlide,
-    iNoteLinesSlide,
-    iBackButton
-  );
-
-function TScreenOptionsLyrics.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenOptionsLyrics.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -128,7 +105,7 @@ begin
       end;
       SDLK_RETURN:
         begin
-          if SelInteraction = ord(iBackButton) then
+          if SelInteraction = 4 then
           begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
@@ -141,7 +118,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (Interactions[SelInteraction].Typ = iSelectS) then
+          if (SelInteraction >= 0) and (SelInteraction <= 3) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
@@ -149,7 +126,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if (Interactions[SelInteraction].Typ = iSelectS) then
+          if (SelInteraction >= 0) and (SelInteraction <= 3) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
@@ -160,151 +137,90 @@ begin
 end;
 
 constructor TScreenOptionsLyrics.Create;
-const
-  LyricsGerman:  array [0..7]  of string = ('Max ', '(zwölf) ', 'quäkt ', 'hy', 'pend: ', '»Grüß ', 'Jobs, ', 'Vic!« ');
-  LyricsFrench:  array [0..12] of string = ('Voix ', 'am', 'bi', 'gu', 'ë ', 'd’un ', 'cœur ', 'qui ', 'pré', 'fère ', 'le ', 'zé', 'phyr. ');
-  LyricsSpanish: array [0..15] of string = ('Whis', 'ky ', 'bu', 'e', 'no: ', '¡Ex', 'ci', 'tad ', 'mi ', 'frá', 'gil ', 'pe', 'que', 'ña ', 've', 'jez! ');
-  LyricsPolish:  array [0..9]  of string = ('“W ', 'ni', 'żach ', 'mógł ', 'zjeść ', 'tru', 'flę ', 'koń ', 'bądź ', 'psy?” ');
-
 var
-  i: Integer;
+  ExitButton: TButton;
 begin
   inherited Create;
   Description := Language.Translate('SING_OPTIONS_LYRICS_DESC');
   WhereAmI := Language.Translate('SING_OPTIONS_LYRICS_WHEREAMI');
   Load;
 
-  // lyric sample engine 1
-  LyricEngine[0] := TLyricEngine.Create(
-      80, 350, 640, 40,
-      80, 390, 640, 40);
+  ExitButton := Button[High(Button)];
+  // lyric sample
+  Lyrics := TLyricEngine.Create(
+      ExitButton.X + ExitButton.W + 5.0, ExitButton.Y - 10.0, 400.0, 40.0,
+      ExitButton.X + ExitButton.W + 5.0, ExitButton.Y + 20.0, 400.0, 40.0);
 
-  // build German line data
-  SetLength(GermanLine.Notes, Length(LyricsGerman));
-  for i := Low(GermanLine.Notes) to High(GermanLine.Notes) do
-  begin
-    GermanLine.Notes[i].NoteType  := ntNormal;
-    GermanLine.Notes[i].StartBeat := i * Trunc(PREVIEW_LOOP_BEATS/Length(LyricsGerman));
-    GermanLine.Notes[i].Duration  := Trunc(PREVIEW_LOOP_BEATS/Length(LyricsGerman));
-    GermanLine.Notes[i].Text      := LyricsGerman[i];
-  end;
-  GermanLine.ScoreValue := 6;
-  GermanLine.StartBeat  := 0;
-  GermanLine.EndBeat    := GermanLine.Notes[High(GermanLine.Notes)].StartBeat + GermanLine.Notes[High(GermanLine.Notes)].Duration;
+  //Line.Lyric := 'Lorem ipsum dolor sit amet';
+  // 1st line
+  SetLength(Line.Notes, 5);
+  Line.Notes[0].Text := 'Lorem';
+  Line.Notes[1].Text := ' ipsum';
+  Line.Notes[2].Text := ' dolor';
+  Line.Notes[3].Text := ' sit';
+  Line.Notes[4].Text := ' amet';
 
-  // build French line data
-  SetLength(FrenchLine.Notes, Length(LyricsFrench));
-  for i := Low(FrenchLine.Notes) to High(FrenchLine.Notes) do
-  begin
-    FrenchLine.Notes[i].NoteType  := ntFreestyle;
-    FrenchLine.Notes[i].StartBeat := i * Trunc(PREVIEW_LOOP_BEATS/Length(LyricsFrench));
-    FrenchLine.Notes[i].Duration  := Trunc(PREVIEW_LOOP_BEATS/Length(LyricsFrench));
-    FrenchLine.Notes[i].Text      := LyricsFrench[i];
-  end;
+  Line.Notes[0].StartBeat := 0;
+  Line.Notes[1].StartBeat := 10;
+  Line.Notes[2].StartBeat := 20;
+  Line.Notes[3].StartBeat := 30;
+  Line.Notes[4].StartBeat := 40;
 
-  // lyric sample engine 2
-  LyricEngine[1] := TLyricEngine.Create(
-      80, 450, 640, 40,
-      80, 490, 640, 40);
+  Line.Notes[0].Duration := 10;
+  Line.Notes[1].Duration := 10;
+  Line.Notes[2].Duration := 10;
+  Line.Notes[3].Duration := 10;
+  Line.Notes[4].Duration := 10;
 
-  // build Spanish line data
-  SetLength(SpanishLine.Notes, Length(LyricsSpanish));
-  for i := Low(SpanishLine.Notes) to High(SpanishLine.Notes) do
-  begin
-    SpanishLine.Notes[i].NoteType  := ntNormal;
-    SpanishLine.Notes[i].StartBeat := i * Trunc(PREVIEW_LOOP_BEATS/Length(LyricsSpanish));
-    SpanishLine.Notes[i].Duration  := Trunc(PREVIEW_LOOP_BEATS/Length(LyricsSpanish));
-    SpanishLine.Notes[i].Text      := LyricsSpanish[i];
-  end;
+  Line.ScoreValue := 6;
+  Line.EndBeat := 50;
+  Line.StartBeat := 0;
+  Line.LastLine := true;
+  Lyrics.AddLine(@Line);
 
-  // build Polish line data
-  SetLength(PolishLine.Notes, Length(LyricsPolish));
-  for i := Low(PolishLine.Notes) to High(PolishLine.Notes) do
-  begin
-    PolishLine.Notes[i].NoteType  := ntFreestyle;
-    PolishLine.Notes[i].StartBeat := i * Trunc(PREVIEW_LOOP_BEATS/Length(LyricsPolish));
-    PolishLine.Notes[i].Duration  := Trunc(PREVIEW_LOOP_BEATS/Length(LyricsPolish));
-    PolishLine.Notes[i].Text      := LyricsPolish[i];
-  end;
+  // 2nd line
+  //consectetur adipiscing elit
+  SetLength(Line.Notes, 3);
 
-  // force RebuildLines on first draw
-  LastFontFamily := -1;
-  LastFontStyle  := -1;
-  SavedAnimBeat  := 0;
-end;
+  Line.Notes[0].Text := 'consectetur';
+  Line.Notes[1].Text := ' adipiscing';
+  Line.Notes[2].Text := ' elit';
 
-destructor TScreenOptionsLyrics.Destroy;
-var
-  i: Integer;
-begin
-  for i := Low(LyricEngine) to High(LyricEngine) do
-    LyricEngine[i].Free;
-  inherited Destroy;
-end;
+  Line.Notes[0].StartBeat := 50;
+  Line.Notes[1].StartBeat := 60;
+  Line.Notes[2].StartBeat := 70;
 
-procedure TScreenOptionsLyrics.RebuildLines;
-var
-  i: Integer;
-begin
-  for i := Low(LyricEngine) to High(LyricEngine) do
-  begin
-    LyricEngine[i].Clear;
-  end;
-  LyricEngine[0].AddLine(@GermanLine);
-  LyricEngine[0].AddLine(@FrenchLine);
-  LyricEngine[1].AddLine(@SpanishLine);
-  LyricEngine[1].AddLine(@PolishLine);
+  Line.Notes[0].Duration := 10;
+  Line.Notes[1].Duration := 10;
+  Line.Notes[2].Duration := 10;
+
+  Line.LastLine := true;
+
+  Lyrics.AddLine(@Line);
+  Lyrics.AddLine(@Line);
 end;
 
 procedure TScreenOptionsLyrics.LyricSample;
-var
-  i:        Integer;
-  AnimBeat: real;
 begin
-  if (Ini.LyricsFont <> LastFontFamily) or (Ini.LyricsStyle <> LastFontStyle) then
-  begin
-    for i := Low(LyricEngine) to High(LyricEngine) do
-    begin
-      LyricEngine[i].FontFamily := Ini.LyricsFont;
-      LyricEngine[i].FontStyle  := Ini.LyricsStyle;
-    end;
-    if ((LastFontFamily = -1) or (LastFontStyle = -1)) then
-      RebuildLines
-    else
-    begin
-      for i := Low(LyricEngine) to High(LyricEngine) do
-        LyricEngine[i].UpdateLineMetrics;
-    end;
-    LastFontFamily           := Ini.LyricsFont;
-    LastFontStyle            := Ini.LyricsStyle;
-  end;
+  Lyrics.FontFamily := Ini.LyricsFont;
+  Lyrics.FontStyle  := Ini.LyricsStyle;
 
-  AnimBeat := fmod((SDL_GetTicks - AnimStartTicks) / 100.0, PREVIEW_LOOP_BEATS);
+  // current lyrics
+  Lyrics.LineColor_act.R := 0;
+  Lyrics.LineColor_act.G := 0.6;
+  Lyrics.LineColor_act.B := 1;
 
-  // when the beat wraps back to the start, rebuild lines to reset engine state
-  if AnimBeat < LastAnimBeat then
-    RebuildLines;
-  LastAnimBeat := AnimBeat;
+  // current line
+  Lyrics.LineColor_en.R := 1;
+  Lyrics.LineColor_en.G := 1;
+  Lyrics.LineColor_en.B := 1;
 
-  for i := Low(LyricEngine) to High(LyricEngine) do
-  begin
-    // current lyrics
-    LyricEngine[i].LineColor_act.R := 0;
-    LyricEngine[i].LineColor_act.G := 0.6;
-    LyricEngine[i].LineColor_act.B := 1;
+  // next line
+  Lyrics.LineColor_dis.R := 1;
+  Lyrics.LineColor_dis.G := 1;
+  Lyrics.LineColor_dis.B := 1;
 
-    // current line
-    LyricEngine[i].LineColor_en.R := 1;
-    LyricEngine[i].LineColor_en.G := 1;
-    LyricEngine[i].LineColor_en.B := 1;
-
-    // next line
-    LyricEngine[i].LineColor_dis.R := 1;
-    LyricEngine[i].LineColor_dis.G := 1;
-    LyricEngine[i].LineColor_dis.B := 1;
-
-    LyricEngine[i].Draw(AnimBeat);
-  end;
+  Lyrics.Draw(LyricsState.MidBeat);
 end;
 
 procedure TScreenOptionsLyrics.OnShow;
@@ -316,25 +232,20 @@ begin
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenOptionsLyrics');
 
-  AnimStartTicks := SDL_GetTicks - Trunc(SavedAnimBeat * 100.0);
-  LastAnimBeat   := -1;
-end;
-
-procedure TScreenOptionsLyrics.OnHide;
-begin
-  inherited;
-  SavedAnimBeat := LastAnimBeat;
+  LyricsState.StartTime := 0;
+  LyricsState.UpdateBeats;
 end;
 
 function TScreenOptionsLyrics.Draw: boolean;
 begin
   Result := inherited Draw;
+
   LyricSample();
 end;
 
 procedure TScreenOptionsLyrics.LoadWidgets;
 begin
-  // when editing this, also update the InteractionID enum declaration
+  // when editing this, also search for SelInteraction
   AddSelectSlide('SING_OPTIONS_LYRICS_FONT', Ini.LyricsFont, FontFamilyNames);
   AddSelectSlide('SING_OPTIONS_LYRICS_STYLE', Ini.LyricsStyle, ILyricsStyleTranslated);
   AddSelectSlide('SING_OPTIONS_LYRICS_EFFECT', Ini.LyricsEffect, ILyricsEffectTranslated);

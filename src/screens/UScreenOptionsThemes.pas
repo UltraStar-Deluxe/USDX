@@ -60,7 +60,7 @@ type
       SkinSelect: integer;
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       procedure InteractInc; override;
       procedure InteractDec; override;
@@ -83,15 +83,7 @@ uses
   UUnicodeUtils,
   SysUtils;
 
-type
-  InteractionID = (
-    iThemeSlide,
-    iSkinSlide,
-    iColorSlide,
-    iBackButton
-  );
-
-function TScreenOptionsThemes.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenOptionsThemes.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -127,7 +119,7 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = ord(iBackButton) then
+          if SelInteraction = 3 then
           begin
             Ini.Save;
 
@@ -147,7 +139,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (Interactions[SelInteraction].Typ = iSelectS) then
+          if (SelInteraction >= 0) and (SelInteraction <= 2) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
@@ -155,7 +147,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if (Interactions[SelInteraction].Typ = iSelectS) then
+          if (SelInteraction >= 0) and (SelInteraction <= 2) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
@@ -170,7 +162,7 @@ begin
   inherited InteractInc;
 
   //Update Skins
-  if (SelInteraction = ord(iThemeSlide)) then
+  if (SelInteraction = 0) then
   begin
     Skin.OnThemeChange;
     UpdateSelectSlideOptions(SkinSelect, ISkin, Ini.SkinNo);
@@ -180,7 +172,7 @@ begin
   end;
 
   { set skins default color }
-  if (SelInteraction = ord(iThemeSlide)) or (SelInteraction = ord(iSkinSlide)) then
+  if (SelInteraction = 0) or (SelInteraction = 1) then
   begin
     Ini.Color := Skin.GetDefaultColor(Ini.SkinNo);
   end;
@@ -193,7 +185,7 @@ begin
   inherited InteractDec;
 
   //Update Skins
-  if (SelInteraction = ord(iThemeSlide) ) then
+  if (SelInteraction = 0 ) then
   begin
     Skin.OnThemeChange;
     UpdateSelectSlideOptions(SkinSelect, ISkin, Ini.SkinNo);
@@ -203,7 +195,7 @@ begin
   end;
 
   { set skins default color }
-  if (SelInteraction = ord(iThemeSlide)) or (SelInteraction = ord(iSkinSlide)) then
+  if (SelInteraction = 0) or (SelInteraction = 1) then
   begin
     Ini.Color := Skin.GetDefaultColor(Ini.SkinNo);
   end;
@@ -236,6 +228,8 @@ end;
 procedure TScreenOptionsThemes.ReloadTheme;
 begin
   Theme.LoadTheme(Ini.Theme, Ini.Color);
+  SoundLib.LoadSounds();
+  SoundLib.StartBgMusic();
 
   ScreenOptionsThemes := TScreenOptionsThemes.create();
   ScreenOptionsThemes.onshow;
@@ -270,7 +264,7 @@ end;
 
 procedure TScreenOptionsThemes.LoadWidgets;
 begin
-  // when editing this, also update the InteractionID enum declaration
+  // when editing this, also search for SelInteraction
   AddSelectSlide('SING_OPTIONS_THEMES_THEME', Ini.Theme, ITheme);
   SkinSelect := AddSelectSlide('SING_OPTIONS_THEMES_SKIN', Ini.SkinNo, ISkin);
   AddSelectSlide('SING_OPTIONS_THEMES_COLOR', Ini.Color, IColorTranslated);

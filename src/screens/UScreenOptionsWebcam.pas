@@ -61,7 +61,7 @@ type
 
     public
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       function Draw: boolean; override;
       procedure DrawWebCamFrame;
@@ -83,21 +83,7 @@ uses
   dglOpenGL,
   SysUtils;
 
-type
-  InteractionID = (
-    iWebcamIDSlide,
-    iResolutionSlide,
-    iFPSSlide,
-    iFlipSlide,
-    iBrightnessSlide,
-    iSaturationSlide,
-    iHueSlide,
-    iEffectSlide,
-    iEnablePreviewButton,
-    iBackButton
-  );
-
-function TScreenOptionsWebcam.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenOptionsWebcam.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -129,7 +115,7 @@ begin
         end;
       SDLK_RETURN:
         begin
-          if SelInteraction = ord(iEnablePreviewButton) then
+          if SelInteraction = 8 then
           begin
             PreVisualization := not PreVisualization;
 
@@ -158,7 +144,7 @@ begin
               Button[0].Text[0].Text := Language.Translate('SING_OPTIONS_WEBCAM_ENABLE_PREVIEW');
           end;
 
-          if SelInteraction = ord(iBackButton) then
+          if SelInteraction = 9 then
           begin
             AudioPlayback.PlaySound(SoundLib.Back);
             FadeTo(@ScreenOptions);
@@ -172,7 +158,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if (Interactions[SelInteraction].Typ = iSelectS) then
+          if (SelInteraction >= 0) and (SelInteraction <= 7) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
@@ -182,13 +168,13 @@ begin
             Ini.SaveWebcamSettings;
 
           // refresh webcam config
-          if (SelInteraction = ord(iWebcamIDSlide)) or (SelInteraction = ord(iResolutionSlide)) and (PreVisualization) then
+          if (SelInteraction = 0) or (SelInteraction = 1) and (PreVisualization) then
             Webcam.Restart;
 
       end;
       SDLK_LEFT:
         begin
-          if (Interactions[SelInteraction].Typ = iSelectS) then
+          if (SelInteraction >= 0) and (SelInteraction <= 7) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
@@ -198,7 +184,7 @@ begin
             Ini.SaveWebcamSettings;
 
           // refresh webcam config
-          if (SelInteraction = ord(iWebcamIDSlide)) or (SelInteraction = ord(iResolutionSlide)) and (PreVisualization) then
+          if (SelInteraction = 0) or (SelInteraction = 1) and (PreVisualization) then
             Webcam.Restart;
         end;
     end;
@@ -355,7 +341,7 @@ begin
   WebcamsIDs[0] := Language.Translate('OPTION_VALUE_OFF');
   WebcamsIDs[1] := '0';
   WebcamsIDs[2] := '1';
-  // when editing this, also update the InteractionID enum declaration
+  // when editing this, also search for SelInteraction
   WebcamID := AddSelectSlide('SING_OPTIONS_WEBCAM_ID', Ini.WebCamID, WebcamsIDs);
   Resolution := AddSelectSlide('SING_OPTIONS_WEBCAM_RESOLUTION', Ini.WebcamResolution, IWebcamResolution);
   FPS := AddSelectSlide('SING_OPTIONS_WEBCAM_FPS', Ini.WebCamFPS, IWebcamFPS);

@@ -58,7 +58,7 @@ type
 
     public
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       procedure OnHide; override;
       procedure OnWindowResized; override;
@@ -80,18 +80,7 @@ uses
   UUnicodeUtils,
   SysUtils;
 
-type
-  InteractionID = (
-    iFullscreenSlide,
-    iResolutionSlide,
-    iDepthSlide,
-    iVisualizerSlide,
-    iOscilloscopeSlide,
-    iMoveSizeSlide,
-    iBackButton
-  );
-
-function TScreenOptionsGraphics.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenOptionsGraphics.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
   if (PressedDown) then
@@ -120,7 +109,7 @@ begin
       end;
       SDLK_RETURN:
         begin
-          if SelInteraction = ord(iBackButton) then
+          if SelInteraction = 6 then
           begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
@@ -137,7 +126,7 @@ begin
         InteractPrev;
       SDLK_RIGHT:
         begin
-          if Interactions[SelInteraction].Typ = iSelectS then
+          if (SelInteraction >= 0) and (SelInteraction < 6) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractInc;
@@ -151,7 +140,7 @@ begin
         end;
       SDLK_LEFT:
         begin
-          if Interactions[SelInteraction].Typ = iSelectS then
+          if (SelInteraction >= 0) and (SelInteraction < 6) then
           begin
             AudioPlayback.PlaySound(SoundLib.Option);
             InteractDec;
@@ -230,7 +219,7 @@ end;
 
 procedure TScreenOptionsGraphics.LoadWidgets;
 begin
-  // when editing this, also update the InteractionID enum declaration
+  // when editing this, also search for SelInteraction
   SelectWindowMode := AddSelectSlide('SING_OPTIONS_GRAPHICS_FULLSCREEN', Ini.Fullscreen, IFullScreenTranslated);
   SelectResolution := AddSelectSlide('SING_OPTIONS_GRAPHICS_RESOLUTION', Ini.Resolution, IResolution);
   AddSelectSlide('SING_OPTIONS_GRAPHICS_DEPTH', Ini.Depth, IDepth);

@@ -6,11 +6,11 @@
 
 ; use this block for a dev version
 !define VersionStr "2026.4.0"
-!define FullVersion "2026.4.0+dev" ; semver compatible. see semver.org
-!define Release "Dev"
+!define FullVersion "2026.4.0+beta-pr" ; semver compatible. see semver.org
+!define Release "Beta PR"
 !define DevBuild true
-!define ReleaseMeta "+dev"
-!define ReleaseApp " Dev"
+!define ReleaseMeta "+beta-pr"
+!define ReleaseApp " Beta PR"
 
 ; use this block for a release version
 ;!define VersionStr "2026.4.0"
