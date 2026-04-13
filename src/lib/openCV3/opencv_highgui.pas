@@ -8,11 +8,15 @@ interface
 
 {$I switches.inc}
 
-{$L ApiWrapper.o}
-{$IFDEF OpenCVVideoioStandalone}
-  {$LINKLIB opencv_videoio}
-{$ELSE}
-  {$LINKLIB opencv_world}
+{$IFNDEF MSWINDOWS}
+  {$L ApiWrapper.o}
+  {$IFDEF OpenCVVideoioStandalone}
+    {$IFNDEF OpenCVManualLink}
+      {$LINKLIB opencv_videoio}
+    {$ENDIF}
+  {$ELSE}
+    {$LINKLIB opencv_world}
+  {$ENDIF}
 {$ENDIF}
 
 uses
@@ -50,10 +54,13 @@ const
 
   CV_CAP_DSHOW   = 700;
 
-function cvCreateCameraCapture(index: cint): PCvCapture; cdecl; external name 'USDX_cvCreateCameraCapture';
-function USDX_cvQueryFrame(capture: PCvCapture): PUMatWrapper; cdecl; external;
+function cvCreateCameraCapture(index: cint): PCvCapture; cdecl;
+  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvCreateCameraCapture';
+function USDX_cvQueryFrame(capture: PCvCapture): PUMatWrapper; cdecl;
+  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
 function cvQueryFrame(capture: PCvCapture): PIplImage;
-procedure cvReleaseCapture(capture: PPCvCapture); cdecl; external name 'USDX_cvReleaseCapture';
+procedure cvReleaseCapture(capture: PPCvCapture); cdecl;
+  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvReleaseCapture';
 
 const
     CV_CAP_PROP_DC1394_OFF         = -4;
@@ -139,7 +146,8 @@ const
     CV_CAP_PROP_XI_AEAG_LEVEL    = 419;
     CV_CAP_PROP_XI_TIMEOUT       = 420;
 
-function cvSetCaptureProperty(capture: PCvCapture; property_id: cint; value: cdouble): cint; cdecl; external name 'USDX_cvSetCaptureProperty';
+function cvSetCaptureProperty(capture: PCvCapture; property_id: cint; value: cdouble): cint; cdecl;
+  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvSetCaptureProperty';
 
 implementation
 

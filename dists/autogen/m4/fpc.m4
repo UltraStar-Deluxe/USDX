@@ -151,6 +151,18 @@ if test x$FPC_PLATFORM = xdarwin; then
   fi
 fi
 
+# The official Windows x86_64 FPC package uses the generic "fpc" driver
+# as a 32-bit cross-compiler targeting x86_64.
+case "$host_os" in
+  mingw*|msys*|cygwin*)
+    case "$host_cpu" in
+      x86_64|amd64)
+        PFLAGS+=" -Px86_64 "
+        ;;
+    esac
+    ;;
+esac
+
 AC_SUBST(FPC_PLATFORM)
 AC_SUBST(FPC_PROCESSOR)
 AC_SUBST(FPC_CPLATFORM)

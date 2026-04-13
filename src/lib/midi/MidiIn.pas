@@ -528,8 +528,8 @@ begin
     Pctlinfo^.hWindow := Handle; { Control's window handle }
     PCtlInfo^.SysexOnly := FSysexOnly;
     FError := midiInOpen(@FMidiHandle, FDeviceId,
-      dword(@midiHandler),
-      dword(PCtlInfo),
+      PtrUInt(@midiHandler),
+      PtrUInt(PCtlInfo),
       CALLBACK_FUNCTION);
 
     if FError <> MMSYSERR_NOERROR then
