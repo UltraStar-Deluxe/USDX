@@ -1340,7 +1340,7 @@ begin
   StartBeat := MaxInt;
   for I := Low(CurrentSong.Tracks) to High(CurrentSong.Tracks) do
     StartBeat := Min(StartBeat, CurrentSong.Tracks[I].Lines[0].Notes[0].StartBeat);
-  fFirstNote := CurrentSong.GAP / 1000 + StartBeat * (CurrentSong.BPM / 60);
+  fFirstNote := (CurrentSong.GAP / 1000) + ((StartBeat * 60) / CurrentSong.BPM);
   if ((fFirstNote - CurrentSong.Start) < MINIMUM_START_TIME) then
     fStartTime := fFirstNote - MINIMUM_START_TIME
   else
