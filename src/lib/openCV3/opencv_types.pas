@@ -7,11 +7,15 @@ interface
 
 {$I switches.inc}
 
-{$L ApiWrapper.o}
-{$IFDEF OpenCVCoreStandalone}
-  {$LINKLIB opencv_core}
-{$ELSE}
-  {$LINKLIB opencv_world}
+{$IFNDEF MSWINDOWS}
+  {$L ApiWrapper.o}
+  {$IFDEF OpenCVCoreStandalone}
+    {$IFNDEF OpenCVManualLink}
+      {$LINKLIB opencv_core}
+    {$ENDIF}
+  {$ELSE}
+    {$LINKLIB opencv_world}
+  {$ENDIF}
 {$ENDIF}
 
 {$IFDEF CPUAARCH64}
@@ -21,6 +25,11 @@ interface
 
 uses
   CTypes;
+
+{$IFDEF MSWINDOWS}
+const
+  libopencvwrapper = 'opencvwrapper.dll';
+{$ENDIF}
 
 type
   PPUMatWrapper = ^PUMatWrapper;
@@ -50,8 +59,10 @@ type
 function CvSizeV(p_width, p_height: integer):CvSize; overload;
 function CvSizeV(p_width, p_height: extended):CvSize; overload;
 
-function Get_UMat_depth(w: PUMatWrapper): cint; cdecl; external;
-function Get_UMat_as_8UC3(w: PUMatWrapper): pointer; cdecl; external;
+function Get_UMat_depth(w: PUMatWrapper): cint; cdecl;
+  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+function Get_UMat_as_8UC3(w: PUMatWrapper): pointer; cdecl;
+  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
 
 // The type casts needed for the old API are not needed/supported by this wrapper.
 // These functions pass through their parameter unchanged to allow the type casts

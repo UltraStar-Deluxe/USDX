@@ -19,32 +19,43 @@ jobs:
         run: |
           $VNAME=$(cat VERSION | sed "s/+dev$/+dev-$(git rev-parse --short HEAD)/")
           echo "versionName=$VNAME" >> $env:GITHUB_ENV
-      - name: Cache deps
-        id: cache-deps
-        uses: actions/cache@v5
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
         with:
-          key: lazarus-4.2-nsis-3.05
-          path: |
-            c:\lazarus
-            c:\Program Files (x86)\NSIS
-      - if: ${{ steps.cache-deps.outputs.cache-hit != 'true' }}
-        name: Install Dependencies
+          msystem: MSYS
+          update: false
+          install: >-
+            autoconf-wrapper
+            automake-wrapper
+            git
+            make
+            pkgconf
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-tools
+      - name: Install Dependencies
         run: |
-          choco install wget --no-progress
-          wget https://sourceforge.net/projects/lazarus/files/Lazarus%20Windows%2032%20bits/Lazarus%204.2/lazarus-4.2-fpc-3.2.2-win32.exe/download -O lazarus-installer.exe --timeout 60 --progress=dot:giga
-          Start-Process -FilePath "./lazarus-installer.exe" -ArgumentList "/verysilent" -Wait
-          wget "https://sourceforge.net/projects/nsis/files/NSIS%203/3.05/nsis-3.05-setup.exe/download" -O nsis-3.05-setup.exe --timeout 60
+          curl.exe -L --max-time 60 -o fpc-installer.exe "https://sourceforge.net/projects/freepascal/files/Win32/3.2.2/fpc-3.2.2.win32.and.win64.exe/download"
+          curl.exe -L --max-time 60 -o nsis-3.05-setup.exe "https://sourceforge.net/projects/nsis/files/NSIS%203/3.05/nsis-3.05-setup.exe/download"
+          Start-Process -FilePath ".\\fpc-installer.exe" -ArgumentList "/TYPE=full /VERYSILENT /SP- /SUPPRESSMSGBOXES /NORESTART" -Wait
           ./nsis-3.05-setup.exe /S
-      - name: Build
-        run: |
-          c:\lazarus\lazbuild src\ultrastardx-win.lpi  --lazarusdir=c:\lazarus
-      - name: Add prebuilt DLLs
+      - name: Download prebuilt DLLs
         run: |
           python dldlls.py
-          7z x -y usdx-dlls-i686.zip -ogame "*.dll"
+          7z x -y usdx-dlls-x86_64.zip -ogame "*.dll"
         env:
           ARTIFACT_ACCESS_TOKEN: ${{ secrets.MxeActionsReadAccessToken }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build
+        shell: msys2 {0}
+        run: |
+          export PATH="/usr/bin:/mingw64/bin:/c/FPC/3.2.2/bin:/c/FPC/3.2.2/bin/i386-win32:$PATH"
+          export MAKE="/usr/bin/make"
+          export FPCCFG="/c/FPC/3.2.2/bin/i386-win32/fpc.cfg"
+          export FPCDIR="/c/FPC/3.2.2"
+          export FPCMAKE="/c/FPC/3.2.2/bin/i386-win32/fpcmake"
+          ./autogen.sh
+          ./configure
+          make
       - name: Create installer
         run: |
           del game\*.debug

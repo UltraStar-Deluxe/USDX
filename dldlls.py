@@ -5,9 +5,10 @@ import shutil
 import json
 import sys
 import os
+import zipfile
 
-sha = '67f6a4f9305a2ee1508215ad4a861f23f7b8e3da'
-filename = 'usdx-dlls-i686'
+sha = 'cf77d4e33eb71ad972f32bfb2633fb6ad704dc4a'
+filename = 'usdx-dlls-x86_64'
 urlbase = 'https://api.github.com/repos/UltraStar-Deluxe/mxe/'
 headers = {
     'Accept': 'application/vnd.github+json',
@@ -21,6 +22,19 @@ if token != None and token.strip() != '':
     headers['Authorization'] = 'Bearer ' + token
 
 print('Searching for binaries built from commit ' + sha)
+
+def download_bass():
+    bass_url = 'https://www.un4seen.com/files/bass24.zip'
+    zip_name = 'bass24.zip'
+    target = 'game/bass.dll'
+    with urllib.request.urlopen(bass_url) as dl, open(zip_name, 'wb') as out:
+        out.write(dl.read())
+    with zipfile.ZipFile(zip_name, 'r') as zf:
+        member = 'x64/bass.dll'
+        with zf.open(member) as src, open(target, 'wb') as dst:
+            dst.write(src.read())
+    print('Downloaded ' + member + ' to ' + target)
+
 
 def search_releases():
     pagesuffix = ''
@@ -68,6 +82,8 @@ def search_artifacts():
         pagesuffix = '&page={}'.format(page)
     print('No workflow artifact matches')
     return None
+
+download_bass()
 
 dllurl = search_releases()
 if dllurl == None and token != None:

@@ -104,8 +104,8 @@ AC_ARG_WITH([local-projectM-presets],
 # add OpenCV option
 AC_ARG_WITH([opencv-cxx-api],
     [AS_HELP_STRING([--with-opencv-cxx-api],
-      [use current OpenCV C++ API @<:@default=no@:>@])],
-    [with_opencv_cxx_api=$withval], [with_opencv_cxx_api="no"])
+      [use current OpenCV C++ API @<:@default=auto (yes on Windows, no elsewhere)@:>@])],
+    [with_opencv_cxx_api=$withval], [with_opencv_cxx_api="auto"])
 
 # print misc options header
 AC_ARG_WITH([cfg-dummy2], [
@@ -158,6 +158,15 @@ if [[ "$FPC_VERSION_MAJOR" -lt 3 ]]; then
 ]) 
 fi
 
+# On Windows, the OpenCV C-wrapper is required for compiling with current OpenCV.
+# Keep explicit user values, but auto-enable when no value was provided.
+if [[ "$with_opencv_cxx_api" = auto ]]; then
+   case "$FPC_PLATFORM" in
+      win32|win64) with_opencv_cxx_api=yes ;;
+      *)           with_opencv_cxx_api=no ;;
+   esac
+fi
+
 # find and test the C compiler (for C-libs and wrappers)
 AC_PROG_CC
 AC_LANG([C])
@@ -186,6 +195,15 @@ fi
 # check for libraries
 # -----------------------------------------
 
+use_generated_config=yes
+if test x$FPC_PLATFORM = xwin32 -o x$FPC_PLATFORM = xwin64; then
+    use_generated_config=no
+    AC_MSG_NOTICE([Using src/config-win.inc for Windows library configuration; skipping pkg-config checks for bundled runtime DLLs.])
+    libprojectM_USE_CWRAPPER=no
+    AC_SUBST(USE_PROJECTM_CWRAPPER, $libprojectM_USE_CWRAPPER)
+    opencv_USE_CWRAPPER=yes
+    AC_SUBST(USE_OPENCV_CWRAPPER, $opencv_USE_CWRAPPER)
+else
 # find sdl2
 PKG_HAVE([sdl2], [sdl2], yes)
 
@@ -433,6 +451,7 @@ fi
 AC_SUBST_DEFINE(HAVE_PORTMIDI, $portmidi_HAVE)
 AC_SUBST_DEFINE(HAVE_PORTTIME, $porttime_HAVE)
 AC_SUBST(porttime_LIB_NAME)
+fi
 
 # determine linker-flags
 if test x$FPC_PLATFORM = xdarwin; then
@@ -448,7 +467,9 @@ AC_SUBST(LIBS)
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
-AC_CONFIG_FILES([src/config-$FPC_PLATFORM.inc:src/config.inc.in])
+if [[ "$use_generated_config" = yes ]]; then
+    AC_CONFIG_FILES([src/config-$FPC_PLATFORM.inc:src/config.inc.in])
+fi
 if [[ x$libprojectM_USE_CWRAPPER = xyes ]]; then
     AC_CONFIG_FILES([src/lib/projectM/cwrapper/Makefile])
 fi
