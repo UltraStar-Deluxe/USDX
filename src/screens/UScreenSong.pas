@@ -319,6 +319,7 @@ type
       procedure ParseInputNextVertical(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
       procedure ParseInputPrevVertical(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
 
+        procedure ResetRandomSongState;
       procedure ResetScrollList;
   end;
 
@@ -420,6 +421,14 @@ begin
   Text[TextCat].Text := Theme.Song.TextCat.Text;
 end;
 //Show Cat in Top Left Mod End
+
+procedure TScreenSong.ResetRandomSongState;
+begin
+  SetLength(RandomSongOrder, 0);
+  SetLength(RandomSearchOrder, 0);
+  NextRandomSongIdx := High(cardinal);
+  NextRandomSearchIdx := High(cardinal);
+end;
 
 procedure TScreenSong.ResetScrollList();
 begin
@@ -1148,15 +1157,18 @@ begin
               //Show Cat in Top Left Mod
               HideCatTL;
 
+              ChessboardMinLine := MainChessboardMinLine;
+              ListMinLine := MainListMinLine;
+
               //Show Wrong Song when Tabs on Fix
               if (Fix) then
               begin
                 SelectNext;
-                FixSelected;
+                if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) then
+                  SkipTo(CatSongs.VisibleIndex(Interaction), Interaction, CatSongs.VisibleSongs)
+                else
+                  FixSelected;
               end;
-
-              ChessboardMinLine := MainChessboardMinLine;
-              ListMinLine := MainListMinLine;
             end
             else
             begin
@@ -1172,12 +1184,18 @@ begin
                 HideCatTL;
                 Interaction := 0;
 
+                ChessboardMinLine := MainChessboardMinLine;
+                ListMinLine := MainListMinLine;
+
                 PlaylistMan.UnsetPlaylist;
 
                 //Show Wrong Song when Tabs on Fix
                 SelectNext;
                 SelectPrev;
-                FixSelected;
+                if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) then
+                  SkipTo(CatSongs.VisibleIndex(Interaction), Interaction, CatSongs.VisibleSongs)
+                else
+                  FixSelected;
               end
               else
               begin
@@ -3029,6 +3047,9 @@ begin
 end;
 
 procedure TScreenSong.OnShowFinish;
+var
+  I: Integer;
+  NextSongID: Integer;
 begin
   DuetChange := false;
   RapToFreestyle := false;
@@ -3039,7 +3060,32 @@ begin
   if (PlaylistMan.CurPlayList <> -1) then
   begin
     if PlaylistMan.ReloadPlayList(PlaylistMan.CurPlayList) then
-      PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, SongIndex);
+    begin
+      if PlaylistMan.Playlists[PlaylistMan.CurPlayList].FixedOrder then
+      begin
+        NextSongID := SongIndex;
+
+        if (SongIndex <> -1) then
+        begin
+          I := PlaylistMan.GetIndexbySongID(SongIndex);
+          if (I <> -1) then
+          begin
+            repeat
+              Inc(I);
+              if (I > High(PlaylistMan.Playlists[PlaylistMan.CurPlayList].Items)) then
+                I := 0;
+
+              NextSongID := PlaylistMan.Playlists[PlaylistMan.CurPlayList].Items[I].SongID;
+            until (NextSongID <> SongIndex) or
+                  (Length(PlaylistMan.Playlists[PlaylistMan.CurPlayList].Items) <= 1);
+          end;
+        end;
+        end
+      else
+        NextSongID := -1;
+
+      PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, NextSongID);
+    end;
   end;
 
   FilterDuetsInPartyMode; // in party mode
