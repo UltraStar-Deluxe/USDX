@@ -143,7 +143,6 @@ File /r /x .git /x .gitignore ..\game\fonts
 File /r /x .git /x .gitignore ..\game\resources
 File /r /x .git /x .gitignore ..\game\visuals
 File /r /x .git /x .gitignore ..\game\webs
-File /r /x .git /x .gitignore ..\game\soundfonts
 File /r /x .git /x .gitignore ..\game\avatars
 
 ; Root dir:

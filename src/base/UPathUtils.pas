@@ -55,7 +55,6 @@ var
   PlaylistPath:     IPath;
   WebsitePath:      IPath;
   WebScoresPath:    IPath;
-  SoundFontsPath:   IPath;
   AvatarsPath:      IPath;
 
 function FindPath(out PathResult: IPath; const RequestedPath: IPath; NeedsWritePermission: boolean): boolean;
@@ -181,7 +180,6 @@ begin
   FindPath(FontPath,      SharedPath.Append('fonts'),     false);
   FindPath(ResourcesPath, SharedPath.Append('resources'), false);
   FindPath(WebsitePath,   SharedPath.Append('webs'), false);
-  FindPath(SoundFontsPath, SharedPath.Append('soundfonts'), false);
   FindPath(AvatarsPath, SharedPath.Append('avatars'), false);
 
   // Playlists are not shared as we need one directory to write too

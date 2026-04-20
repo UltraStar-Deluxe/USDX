@@ -262,9 +262,6 @@ install-data:
 	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/resources" \
             RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/resources" \
             install-data-recursive
-	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/soundfonts" \
-            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/sounds" \
-            install-data-recursive
 	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/sounds" \
             RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/sounds" \
             install-data-recursive

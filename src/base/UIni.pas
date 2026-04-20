@@ -182,7 +182,6 @@ type
       ThresholdIndex: integer;
       AudioOutputBufferSizeIndex: integer;
       VoicePassthrough: integer;
-      SoundFont:      string;
       ReplayGain:     integer;
 
       SyncTo: integer;
@@ -299,8 +298,6 @@ type
       procedure SaveTeamColors;
       procedure SaveShowWebScore;
       procedure SaveJukeboxSongMenu;
-
-      procedure SaveSoundFont(Name: string);
       procedure SaveWebcamSettings();
       procedure SaveNumberOfPlayers;
       procedure SaveSingTimebarMode;
@@ -1553,8 +1550,6 @@ begin
 
   //AudioRepeat aka VoicePassthrough
   VoicePassthrough := ReadArrayIndex(IVoicePassthrough, IniFile, 'Sound', 'VoicePassthrough', 0);
-  
-  SoundFont := IniFile.ReadString('Sound', 'SoundFont', '');
 
   // Lyrics Font
   LyricsFont := ReadArrayIndex(ILyricsFont, IniFile, 'Lyrics', 'LyricsFont', 0);
@@ -2194,20 +2189,6 @@ begin
     //Colors for Names Mod
     for I := 1 to 3 do
       IniFile.WriteString('TeamColor', 'T' + IntToStr(I), IntToStr(TeamColor[I-1]));
-
-    IniFile.Free;
-  end;
-end;
-
-procedure TIni.SaveSoundFont(Name: string);
-var
-  IniFile: TIniFile;
-begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
-    IniFile.WriteString('Sound', 'SoundFont', Name);
 
     IniFile.Free;
   end;
