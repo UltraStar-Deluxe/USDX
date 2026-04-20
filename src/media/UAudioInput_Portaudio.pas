@@ -369,6 +369,13 @@ begin
     if (channelCnt <= 0) then
       continue;
 
+    // workaround for https://github.com/alsa-project/alsa-plugins/issues/13
+    if CompareStr(paDeviceInfo^.name, 'vdownmix') = 0 then
+    begin
+      Log.LogWarn('Skipping vdownmix device because of alsa-plugins Github issue 13', 'Portaudio.EnumDevices');
+      continue;
+    end;
+
     paDevice := TPortaudioInputDevice.Create();
     AudioInputProcessor.DeviceList[deviceIndex] := paDevice;
 
