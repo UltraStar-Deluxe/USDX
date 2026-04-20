@@ -327,7 +327,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
 AC_LANG_POP([C++])
 
 # find projectM version
-libprojectM_PKG="libprojectM >= 0.98"
+libprojectM_PKG="libprojectM >= 1.0"
 PKG_HAVE([libprojectM], [$libprojectM_PKG], no)
 PKG_VERSION([libprojectM], [$libprojectM_PKG])
 if [[ "$libprojectM_VERSION_MAJOR" -ge 3 ]] ; then
@@ -336,9 +336,6 @@ fi
 if [[ "$libprojectM_VERSION_MAJOR" -eq 1 ]] && [[ "${#libprojectM_VERSION_MAJOR}" -eq 2 ]] ; then
 	# The official releases with major = 1 were 1.00, 1.01, 1.10, and 1.2.0.
 	# So 1.10 is in fact 1.1.0 and also uses 1.1 in the ChangeLog file.
-	# This is probably also true for 0.x, where xmms-projectm went from 0.9.1
-	# to 0.91.2 within three days., but that's still a monotonic increase, so
-	# we don't care.
 	libprojectM_VERSION_RELEASE="${libprojectM_VERSION_MINOR#?}"
 	libprojectM_VERSION_MINOR="${libprojectM_VERSION_MINOR%?}"
 fi
@@ -351,14 +348,14 @@ PKG_VALUE([libprojectM], [DATADIR], [variable=pkgdatadir], [$libprojectM_PKG],
           [projectM data-directory for presets etc. (e.g. /usr/share/projectM)])
 # check if we need the c-wrapper
 if [[ "$libprojectM_VERSION_MAJOR" -ge 1 ]]; then
-	if [[ "$cxx_works" = yes ]] ; then
-		libprojectM_USE_CWRAPPER=yes
-		use_cxx=yes
-	else
-		AC_MSG_FAILURE([Need C++ compiler to build libprojectM wrapper])
-	fi
+    if [[ "$cxx_works" = yes ]] ; then
+        libprojectM_USE_CWRAPPER=yes
+        use_cxx=yes
+    else
+        AC_MSG_FAILURE([Need C++ compiler to build libprojectM wrapper])
+    fi
 else
-	libprojectM_USE_CWRAPPER=no
+    libprojectM_USE_CWRAPPER=no
 fi
 AC_SUBST(USE_PROJECTM_CWRAPPER, $libprojectM_USE_CWRAPPER)
 AC_SUBST_DEFINE(USE_LOCAL_PROJECTM_PRESETS, $with_local_projectM_presets)
