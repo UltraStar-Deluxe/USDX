@@ -313,7 +313,10 @@ begin
     Song := TSong.Create(Files[I]);
 
     if Song.Analyse then
+    begin
+      Song.ReleaseTracks();
       SongList.Add(Song)
+    end
     else
     begin
       Log.LogError('AnalyseFile failed for "' + Files[I].ToNative + '".');

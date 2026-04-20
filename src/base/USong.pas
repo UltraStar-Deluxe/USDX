@@ -213,6 +213,7 @@ type
     destructor  Destroy; override;
     function    LoadSong(DuetChange: boolean): boolean;
     function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false; OutOfBoundsToFreestyle: boolean = false; AudioLength: real = 0): boolean;
+    procedure   ReleaseTracks();
     procedure   SetMedleyMode();
     procedure   Clear();
     function    MD5SongFile(SongFileR: TTextFileStream): string;
@@ -1842,6 +1843,11 @@ begin
   DuetNames[1] := 'P2';
 
   Relative := false;
+end;
+
+procedure TSong.ReleaseTracks();
+begin
+  SetLength(Tracks, 0);
 end;
 
 function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
