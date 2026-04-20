@@ -1,6 +1,5 @@
 # Compiling
 [Free Pascal](http://freepascal.org/) 3.0.0 or newer is required to compile UltraStar Deluxe. If you had some older version of fpc installed before, make sure to remove everything of it correctly before trying to install Free Pascal (otherwise compiling will fail with various weird error messages). Also, using the newest version is suggested.
-If you want to help the project by coding patches, we suggest you to use the [Lazarus 1.6](http://www.lazarus-ide.org/) or newer integrated development environment.
 For linking and running the game, the following libraries are also required:
 - SDL2, SDL2_image
 - FFmpeg 4.0-8.0
@@ -13,15 +12,6 @@ For linking and running the game, the following libraries are also required:
 - projectM 2,x if you want audio visualisation support
 
 Prebuilt DLLs for SDL2, SDL2_image, FFmpeg, SQLite, PortAudio, and Lua can be found in the releases section of [our MXE fork](https://github.com/UltraStar-Deluxe/mxe). You can use the dldlls.py script to download the DLLs for the checked out code. The remaining DLLs needed for Windows builds are part of this repository.
-
-## Compiling using Lazarus
-1. Start Lazarus.
-2. Choose Project → Open Project … in the menu bar. A file-dialog box will show.
-3. Change to the src subdirectory of your USDX working copy (e.g. ultrastardx/src).
-  * If you are running Windows, open the ultrastardx-win.lpi project-file (use the win64 version of Lazarus, as the included libraries are 64 bit).
-  * On Unix-like systems use the ultrastardx-unix.lpi file.
-4. Now you can compile USDX by choosing the menu entry Run → Build or pressing Ctrl+F9.
-5. If you want to compile and/or start USDX directly choose Run → Run or press F9.
 
 ## Compiling using make
 ### Install prequisites

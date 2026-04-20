@@ -10,8 +10,8 @@ Generally, you don't need to look at commits that aren't in the git history, but
 A git version of this SVN can be found in the [legacy-sourceforge-svn-mirror](https://github.com/UltraStar-Deluxe/legacy-sourceforge-svn-mirror) repository.
 
 ### General information:
-- Freepascal 3 and Lazarus 1.6 are strongly suggested for development
-- Yes, Lazarus is not a good integrated development environment, but it is the best you get which also supports debugging and trial&error development for objective pascal. After some time you get used to it and you'll start to eventually even like it. Add buttons for compile, run and stop to the toolbar of the code window. Project -> Project Inspector is what shows you the various files of the project. Enable "show directory hierarchy" in the Project Inspector window. General usage is quite similar to eclipse (hold ctrl + click on a word to go to ist declaration; right click menu for jumping to certain places,…)
+- Freepascal 3 is strongly suggested for development
+- The supported build path is the same one used by CI: `./autogen.sh`, `./configure`, and `make`.
 - Please use CamelCase naming. Classes/Units/Types/Functions should start with a capital letter and constants/values/instances should start with small letters
 - You can use Windows or Linux or macOS for development just fine. See readme.md for Linux / macOS install instructions.
 - As soon as whatever you changed works somewhat and doesn't break much of general gameplay, please commit it to the  git code repository. If you work on bigger parts, please use a separate branch and commit your changes there often, so that your work in progress is visible. No one will judge you on work-in-progress code quality - we don't get paid for this so screw the other people if they complain ;-) .
