@@ -331,7 +331,10 @@ begin
 
   fAudioStream := PPAVStream(PtrUInt(fFormatCtx.streams) + fAudioStreamIndex * Sizeof(pointer))^;
   fAudioStreamPos := 0;
-  fStartTime := fAudioStream^.start_time;
+  if (fAudioStream^.start_time <> AV_NOPTS_VALUE) then
+    fStartTime := fAudioStream^.start_time
+  else
+    fStartTime := 0;
 
 {$IF LIBAVFORMAT_VERSION < 59000000}
   CodecID := fAudioStream^.codec^.codec_id;
