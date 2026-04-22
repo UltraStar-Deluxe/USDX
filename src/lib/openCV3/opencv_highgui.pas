@@ -9,13 +9,15 @@ interface
 {$I switches.inc}
 
 {$IFNDEF MSWINDOWS}
-  {$L ApiWrapper.o}
-  {$IFDEF OpenCVVideoioStandalone}
-    {$IFNDEF OpenCVManualLink}
-      {$LINKLIB opencv_videoio}
+  {$IFNDEF DARWIN}
+    {$L ApiWrapper.o}
+    {$IFDEF OpenCVVideoioStandalone}
+      {$IFNDEF OpenCVManualLink}
+        {$LINKLIB opencv_videoio}
+      {$ENDIF}
+    {$ELSE}
+      {$LINKLIB opencv_world}
     {$ENDIF}
-  {$ELSE}
-    {$LINKLIB opencv_world}
   {$ENDIF}
 {$ENDIF}
 
@@ -55,12 +57,12 @@ const
   CV_CAP_DSHOW   = 700;
 
 function cvCreateCameraCapture(index: cint): PCvCapture; cdecl;
-  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvCreateCameraCapture';
+  {$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvCreateCameraCapture';
 function USDX_cvQueryFrame(capture: PCvCapture): PUMatWrapper; cdecl;
-  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+  {$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 function cvQueryFrame(capture: PCvCapture): PIplImage;
 procedure cvReleaseCapture(capture: PPCvCapture); cdecl;
-  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvReleaseCapture';
+  {$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvReleaseCapture';
 
 const
     CV_CAP_PROP_DC1394_OFF         = -4;
@@ -147,7 +149,7 @@ const
     CV_CAP_PROP_XI_TIMEOUT       = 420;
 
 function cvSetCaptureProperty(capture: PCvCapture; property_id: cint; value: cdouble): cint; cdecl;
-  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvSetCaptureProperty';
+  {$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvSetCaptureProperty';
 
 implementation
 

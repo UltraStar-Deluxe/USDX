@@ -9,13 +9,15 @@ interface
 {$I switches.inc}
 
 {$IFNDEF MSWINDOWS}
-	{$L ApiWrapper.o}
-	{$IFDEF OpenCVCoreStandalone}
-		{$IFNDEF OpenCVManualLink}
-			{$LINKLIB opencv_core}
+	{$IFNDEF DARWIN}
+		{$L ApiWrapper.o}
+		{$IFDEF OpenCVCoreStandalone}
+			{$IFNDEF OpenCVManualLink}
+				{$LINKLIB opencv_core}
+			{$ENDIF}
+		{$ELSE}
+			{$LINKLIB opencv_world}
 		{$ENDIF}
-	{$ELSE}
-		{$LINKLIB opencv_world}
 	{$ENDIF}
 {$ENDIF}
 
@@ -23,25 +25,25 @@ uses
   CTypes, SysUtils, opencv_types;
 
 function USDX_cvCreateImage(width: cint; height: cint; depth: cint; channels: cint): PUMatWrapper; cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 function cvCreateImage(size: CvSize; depth: integer; channels: integer): PIplImage;
 
 function USDX_cvCloneImage(img: PUMatWrapper): PUMatWrapper; cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 function cvCloneImage(img: PIplImage): PIplImage;
 
 procedure USDX_cvReleaseImage(image: PPUMatWrapper); cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 procedure cvReleaseImage(image: PPIplImage);
 
 function cvCreateMat(rows: cint; cols: cint; _type: cint): PCvMat; cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvCreateMat';
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvCreateMat';
 procedure cvReleaseMat(mat: PPCvMat); cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvReleaseMat';
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvReleaseMat';
 procedure cvSetReal2D(arr: PCvMat; idx0: cint; idx1: cint; value: cdouble); cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvSetReal2D';
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvSetReal2D';
 procedure cvSetZero(arr: PCvMat); cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvSetZero';
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvSetZero';
 
 const
  CV_GEMM_A_T = 1;
@@ -49,7 +51,7 @@ const
  CV_GEMM_C_T = 4;
 
 procedure cvGEMM(src1: PCvMat; src2: PCvMat; alpha: cdouble; src3: PCvMat; beta: cdouble; dst: PCvMat; tABC: cint = 0); cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvGEMM';
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvGEMM';
 
 const
   CV_LU = 0;
@@ -60,23 +62,23 @@ const
   CV_NORMAL = 16;
 
 function cvInvert(A: PCvMat; B: PCvMat; method: cint = CV_LU): cdouble; cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvInvert';
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF} name 'USDX_cvInvert';
 
 procedure USDX_cvNot(src: PUMatWrapper; dst: PUMatWrapper); cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 procedure cvNot(src: PIplImage; dst: PIplImage); {$IFDEF HasInline}inline;{$ENDIF}
 procedure USDX_cvFlip(src: PUMatWrapper; dst: PUMatwrapper; flipmode: cint); cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 procedure cvFlip(src: PIplImage; dst: PIplImage = nil; flipmode: integer = 0); {$IFDEF HasInline}inline;{$ENDIF}
 procedure USDX_cvAbsDiff(src1: PUMatWrapper; src2: PUMatWrapper; dst: PUMatWrapper); cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 procedure cvAbsDiff(src1: PIplImage; src2: PIplImage; dst: PIplImage); {$IFDEF HasInline}inline;{$ENDIF}
 procedure USDX_cvTransform(src: PUMatWrapper; dst: PUMatWrapper; transmat: PCvMat; shiftvec: PCvMat); cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 procedure cvTransform(src: PIplImage; dst: PIplImage; transmat: PCvMat; shiftvec: PCvMat = nil); {$IFDEF HasInline}inline;{$ENDIF}
 
 function USDX_cvGetDimSize(w: PUMatWrapper; index: cint): cint; cdecl;
-	{$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+	{$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 function cvGetDimSize(img: PIplImage; index: integer): integer; {$IFDEF HasInline}inline;{$ENDIF}
 
 

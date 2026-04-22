@@ -9,13 +9,15 @@ interface
 {$I switches.inc}
 
 {$IFNDEF MSWINDOWS}
-  {$L ApiWrapper.o}
-  {$IFDEF OpenCVImgprocStandalone}
-    {$IFNDEF OpenCVManualLink}
-      {$LINKLIB opencv_imgproc}
+  {$IFNDEF DARWIN}
+    {$L ApiWrapper.o}
+    {$IFDEF OpenCVImgprocStandalone}
+      {$IFNDEF OpenCVManualLink}
+        {$LINKLIB opencv_imgproc}
+      {$ENDIF}
+    {$ELSE}
+      {$LINKLIB opencv_world}
     {$ENDIF}
-  {$ELSE}
-    {$LINKLIB opencv_world}
   {$ENDIF}
 {$ENDIF}
 
@@ -31,7 +33,7 @@ const
 
 
 procedure USDX_cvSmooth(src, dst: PUMatWrapper; smoothtype: cint; size1: cint; size2: cint; sigma1: cdouble; sigma2: cdouble); cdecl;
-  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+  {$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 procedure cvSmooth(src, dst: PIplImage; smoothtype: integer = CV_GAUSSIAN; size1: integer = 3; size2: integer = 0; sigma1: double = 0; sigma2: double = 0); {$IFDEF HasInline}inline;{$ENDIF}
 
 const
@@ -130,19 +132,19 @@ const
   CV_COLORCVT_MAX  =100;
 
 procedure USDX_cvCvtColor(src: PUMatWrapper; dst: PUMatWrapper; code: cint); cdecl;
-  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+  {$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 procedure cvCvtColor(src: PIplImage; dst: PIplImage; code: integer); {$IFDEF HasInline}inline;{$ENDIF}
 procedure USDX_cvEqualizeHist(src: PUMatWrapper; dst: PUMatWrapper); cdecl;
-  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+  {$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 procedure cvEqualizeHist(src: PIplImage; dst: PIplImage); {$IFDEF HasInline}inline;{$ENDIF}
 procedure USDX_cvCanny(image: PUMatWrapper; edges: PUMatWrapper; threshold1: cdouble; threshold2: cdouble; aperture_size: cint); cdecl;
-  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+  {$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 procedure cvCanny(image: PIplImage; edges: PIplImage; threshold1: double; threshold2: double; aperture_size: integer = 3); {$IFDEF HasInline}inline;{$ENDIF}
 procedure USDX_cvDilate(src: PUMatWrapper; dst: PUMatWrapper; element: pointer; iterations: cint); cdecl;
-  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+  {$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 procedure cvDilate(src: PIplImage; dst: PIplImage; element: pointer = nil; iterations: integer = 1); {$IFDEF HasInline}inline;{$ENDIF}
 procedure USDX_cvErode(src: PUMatWrapper; dst: PUMatWrapper; element: pointer; iterations: cint); cdecl;
-  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+  {$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 procedure cvErode(src: PIplImage; dst: PIplImage; element: pointer = nil; iterations: integer = 1); {$IFDEF HasInline}inline;{$ENDIF}
 
 const
@@ -155,7 +157,7 @@ const
  CV_THRESH_OTSU       = 8;
 
 procedure USDX_cvThreshold(src: PUMatWrapper; dst: PUMatWrapper; threshold: cdouble; max_value: cdouble; threshold_type: cint); cdecl;
-  {$IFDEF MSWINDOWS}external libopencvwrapper{$ELSE}external{$ENDIF};
+  {$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
 procedure cvThreshold(src: PIplImage; dst: PIplImage; threshold: double; max_value: double; threshold_type: integer); {$IFDEF HasInline}inline;{$ENDIF}
 
 implementation

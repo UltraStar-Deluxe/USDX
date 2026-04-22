@@ -86,6 +86,9 @@ USE_OPENCV_CWRAPPER_DLL ?= no
 ifeq ($(EXEEXT),.exe)
 USE_OPENCV_CWRAPPER_DLL := yes
 endif
+ifeq ($(PPLATFORM),darwin)
+USE_OPENCV_CWRAPPER_DLL := yes
+endif
 
 #################################################
 # Dependencies
@@ -474,7 +477,7 @@ macos-dmg: macos-standalone-app
 	fi
 	$(RM) UltraStarDeluxe.dmg
 	$(RM) UltraStarDeluxe.sparseimage
-	$(HDIUTIL) create -type SPARSE -size 300m -fs HFS+ -volname UltraStarDeluxe -ov UltraStarDeluxe.sparseimage
+	$(HDIUTIL) create -type SPARSE -size 1g -fs HFS+ -volname UltraStarDeluxe -ov UltraStarDeluxe.sparseimage
 	$(HDIUTIL) attach UltraStarDeluxe.sparseimage
 	/bin/ln -s /Applications /Volumes/UltraStarDeluxe/Applications
 	/bin/cp -R UltraStarDeluxe.app /Volumes/UltraStarDeluxe

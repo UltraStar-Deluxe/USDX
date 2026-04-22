@@ -98,11 +98,11 @@ jobs:
           fi
       - name: Install Dependencies
         run: |
-          brew install fpc sdl2 sdl2_image automake portaudio lua ffmpeg
+          brew install fpc sdl2 sdl2_image automake portaudio lua ffmpeg opencv
       - name: Generate Build Scripts
         run: ./autogen.sh
       - name: Configure Project
-        run: ./configure
+        run: ./configure --with-opencv-cxx-api
       - name: Build
         run: make macos-dmg
       - name: Rename DMG

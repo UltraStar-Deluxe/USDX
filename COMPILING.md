@@ -39,7 +39,7 @@ Optional libraries:
 - Install Homebrew. Follow instructions from [brew.sh](http://brew.sh)
 - `brew install fpc` or get it from [freepascal.org](http://www.freepascal.org/down/i386/macosx.var)
 - `xcode-select --install`
-- `brew install sdl2 sdl2_image automake portaudio binutils sqlite freetype lua libtiff pkg-config ffmpeg`
+- `brew install sdl2 sdl2_image automake portaudio binutils sqlite freetype lua libtiff pkg-config ffmpeg opencv`
 
 #### Windows using MSYS2
 - Install [MSYS2](https://www.msys2.org)
@@ -69,7 +69,7 @@ Optional libraries:
   It will look for it at runtime using a deprecated C API, and enable webcam functionality if found.
   Current Linux distributions do not offer the C API.
 * `--with-opencv-cxx-api`: Use OpenCV's newer C++ API.
-  Required for webcam support under Linux, but requires OpenCV to be present at both build time as well as runtime.
+  Required for webcam support under Linux and macOS, but requires OpenCV to be present at both build time as well as runtime.
 
 ## Compiling on Linux using flatpak-builder
 - The manifest for our Flathub releases is in a different repository:

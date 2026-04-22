@@ -7,22 +7,33 @@
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
+FPC_PLATFORM = @FPC_PLATFORM@
 
 OBJECTS	= ApiWrapper.o
+ifeq ($(FPC_PLATFORM),darwin)
+LIBRARY = libopencvwrapper.dylib
+else
 LIBRARY = libopenCV-cwrapper.a
+endif
 
 CXX      = @CXX@
 CPPFLAGS = @CPPFLAGS@
 CXXFLAGS += @CXXFLAGS@ @OpenCV_CXXFLAGS@
+OPENCV_WRAPPER_LIBS = @OpenCV_WRAPPER_LIBS@
 RANLIB   = @RANLIB@
 
 .PHONY: all clean distclean
 
 all: $(LIBRARY)
 
+ifeq ($(FPC_PLATFORM),darwin)
+$(LIBRARY): $(OBJECTS)
+	$(CXX) -dynamiclib -install_name $(abspath $(LIBRARY)) -o $(LIBRARY) $(OBJECTS) $(OPENCV_WRAPPER_LIBS)
+else
 $(LIBRARY): $(OBJECTS)
 	ar ruv $(LIBRARY) $(OBJECTS)
 	$(RANLIB) $(LIBRARY)
+endif
 
 %.o: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(<) -o $@

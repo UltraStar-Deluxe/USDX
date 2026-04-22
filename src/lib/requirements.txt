@@ -48,4 +48,4 @@ Install brew by running this command in the terminal:
 
 Install the FreePascal compiler as well as game dependencies using brew:
 
-    brew install fpc, sdl2 sdl2_image automake portaudio binutils sqlite freetype lua libtiff pkg-config ffmpeg
+  brew install fpc sdl2 sdl2_image automake portaudio binutils sqlite freetype lua libtiff pkg-config ffmpeg opencv
