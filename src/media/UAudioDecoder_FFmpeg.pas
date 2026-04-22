@@ -101,6 +101,7 @@ type
       fSeekPos:     double;    // stream position to seek for (in secs) (locked by StateLock)
       fSeekFlush:   boolean;   // true if the buffers should be flushed after seeking (locked by StateLock)
       SeekFinishedCond: PSDL_Cond;
+      fStartTime:   int64; // start time in PTS
 
       fLoop: boolean; // (locked by StateLock)
 
@@ -173,6 +174,8 @@ type
       function GetAudioFormatInfo(): TAudioFormatInfo; override;
       function GetPosition: real;            override;
       procedure SetPosition(Time: real);     override;
+      function GetStartTime: real;           override;
+      procedure SetStartTime(Time: real);    override;
       function GetLoop(): boolean;           override;
       procedure SetLoop(Enabled: boolean);   override;
       function IsEOF(): boolean;             override;
@@ -231,6 +234,7 @@ begin
   fErrorState := false;
   fLoop := false;
   fQuitRequest := false;
+  fStartTime := 0;
 
   fAudioPaketSize := 0;
   fAudioPaketSilence := 0;
@@ -327,6 +331,10 @@ begin
 
   fAudioStream := PPAVStream(PtrUInt(fFormatCtx.streams) + fAudioStreamIndex * Sizeof(pointer))^;
   fAudioStreamPos := 0;
+  if (fAudioStream^.start_time <> AV_NOPTS_VALUE) then
+    fStartTime := fAudioStream^.start_time
+  else
+    fStartTime := 0;
 
 {$IF LIBAVFORMAT_VERSION < 59000000}
   CodecID := fAudioStream^.codec^.codec_id;
@@ -613,6 +621,24 @@ begin
   SDL_UnlockMutex(fStateLock);
 end;
 
+function TFFmpegDecodeStream.GetStartTime: real;
+begin
+  SDL_LockMutex(fStateLock);
+  if (fAudioStream <> nil) then
+    Result := fStartTime * av_q2d(fAudioStream^.time_base)
+  else
+    Result := 0;
+  SDL_UnlockMutex(fStateLock);
+end;
+
+procedure TFFMpegDecodeStream.SetStartTime(Time: real);
+begin
+  SDL_LockMutex(fStateLock);
+  if (fAudioStream <> nil) then
+    fStartTime := Max(fAudioStream^.start_time, Round(Time / av_q2d(fAudioStream^.time_base)));
+  SDL_UnlockMutex(fStateLock);
+end;
+
 function TFFmpegDecodeStream.GetLoopInternal(): boolean;
 begin
   Result := fLoop;
@@ -811,8 +837,11 @@ begin
         // first try: seek on the audio stream
         SeekTarget := Round(fSeekPos / av_q2d(fAudioStream^.time_base));
         StartSilence := 0;
-        if (SeekTarget < fAudioStream^.start_time) then
-          StartSilence := (fAudioStream^.start_time - SeekTarget) * av_q2d(fAudioStream^.time_base);
+        if (SeekTarget < fStartTime) then
+        begin
+          StartSilence := (fStartTime - SeekTarget) * av_q2d(fAudioStream^.time_base);
+          SeekTarget := fStartTime;
+        end;
         ErrorCode := av_seek_frame(fFormatCtx, fAudioStreamIndex, SeekTarget, fSeekFlags);
 
         if (ErrorCode < 0) then
@@ -820,8 +849,11 @@ begin
           // second try: seek on the default stream (necessary for flv-videos and some ogg-files)
           SeekTarget := Round(fSeekPos * AV_TIME_BASE);
           StartSilence := 0;
-          if (SeekTarget < fFormatCtx^.start_time) then
-            StartSilence := (fFormatCtx^.start_time - SeekTarget) / AV_TIME_BASE;
+          if (SeekTarget < fStartTime) then
+          begin
+            StartSilence := (fStartTime - SeekTarget) / AV_TIME_BASE;
+            SeekTarget := fStartTime;
+          end;
           ErrorCode := av_seek_frame(fFormatCtx, -1, SeekTarget, fSeekFlags);
         end;
 
