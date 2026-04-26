@@ -527,7 +527,7 @@ task_usdx() {
 	start_build ../../.. UltraStar Deluxe
 	local OUTPUT="$root/build/$ARCH"
 	bash ./autogen.sh
-	./configure --prefix=/usr PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" CC="$CC" CXX="$CXX" --enable-debug --with-opencv-cxx-api --without-portaudio --with-libprojectM --with-local-projectM-presets
+	./configure --prefix=/usr PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" CC="$CC" CXX="$CXX" --enable-debug --without-portaudio --with-libprojectM --with-local-projectM-presets
 	sleep 1
 	make LDFLAGS="-O2 --sort-common --as-needed -z relro" INSTALL_DATADIR="../share/ultrastardx"
 	rm -rf "$OUTPUT"
