@@ -63,6 +63,20 @@ type
 
   PPLayer = ^TPlayer;
   TPlayer = record
+  private
+    _Score:       real;
+    _ScoreLine:   real;
+    _ScoreGolden: real;
+    _ScoreInt:       integer;
+    _ScoreLineInt:   integer;
+    _ScoreGoldenInt: integer;
+    _ScoreTotalInt:  integer;
+    procedure SetScore(newScore: real);
+    procedure SetScoreLine(newScoreLine: real);
+    procedure SetScoreGolden(newScoreGolden: real);
+    procedure UpdateIntScores;
+
+  public
     Name:           UTF8String;
     // Level === Difficulty, both terms appear to be used
     Level:          integer;
@@ -70,16 +84,6 @@ type
     // Index in Teaminfo record
     TeamID:         byte;
     PlayerID:       byte;
-
-    // Scores
-    Score:          real;
-    ScoreLine:      real;
-    ScoreGolden:    real;
-
-    ScoreInt:       integer;
-    ScoreLineInt:   integer;
-    ScoreGoldenInt: integer;
-    ScoreTotalInt:  integer;
 
     // LineBonus
     ScoreLast:      real;    // Last Line Score
@@ -90,6 +94,17 @@ type
     HighNote:       integer; // index of last note (= High(Note)?)
     LengthNote:     integer; // number of notes (= Length(Note)?).
     Note:           array of TPlayerNote;
+
+    // Scores
+    property Score:       real read _Score write SetScore;
+    property ScoreLine:   real read _ScoreLine write SetScoreLine;
+    property ScoreGolden: real read _ScoreGolden write SetScoreGolden;
+
+    property ScoreInt:       integer read _ScoreInt;
+    property ScoreLineInt:   integer read _ScoreLineInt;
+    property ScoreGoldenInt: integer read _ScoreGoldenInt;
+    property ScoreTotalInt:  integer read _ScoreTotalInt;
+    procedure ResetScores;
   end;
 
   TStats = record
@@ -164,6 +179,57 @@ uses
   USkins,
   USongs,
   UThemes;
+
+procedure TPlayer.SetScore(newScore: real);
+begin
+  _Score := newScore;
+  UpdateIntScores;
+end;
+procedure TPlayer.SetScoreLine(newScoreLine: real);
+begin
+  _ScoreLine := newScoreLine;
+  UpdateIntScores;
+end;
+procedure TPlayer.SetScoreGolden(newScoreGolden: real);
+begin
+  _ScoreGolden := newScoreGolden;
+  UpdateIntScores;
+end;
+procedure TPlayer.UpdateIntScores();
+begin
+  // a problem if we use floor instead of round is that a score of
+  // 10000 points is only possible if the last digit of the total points
+  // for golden and normal notes is 0.
+  // if we use round, the max score is 10000 for most songs
+  // but a score of 10010 is possible if the last digit of the total
+  // points for golden and normal notes is 5
+  // the best solution is to use round for one of these scores
+  // and round the other score in the opposite direction
+  // so we assure that the highest possible score is 10000 in every case.
+  _ScoreInt := round(Score / 10) * 10;
+  if (_ScoreInt < Score) then
+    //normal score is floored so we have to ceil golden notes score
+    _ScoreGoldenInt := ceil(ScoreGolden / 10) * 10
+  else
+    //normal score is ceiled so we have to floor golden notes score
+    _ScoreGoldenInt := floor(ScoreGolden / 10) * 10;
+
+  // line bonus
+  _ScoreLineInt := Floor(Round(ScoreLine) / 10) * 10;
+
+  // total score
+  _ScoreTotalInt := ScoreInt + ScoreGoldenInt + ScoreLineInt;
+end;
+procedure TPlayer.ResetScores();
+begin
+  _Score := 0;
+  _ScoreLine := 0;
+  _ScoreGolden := 0;
+  _ScoreInt := 0;
+  _ScoreLineInt := 0;
+  _ScoreGoldenInt := 0;
+  _ScoreTotalInt := 0;
+end;
 
 function GetTimeForBeats(BPM, Beats: real): real;
 begin
@@ -518,29 +584,6 @@ begin
                   ntRap:       CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
                   ntRapGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
                 end;
-
-                // a problem if we use floor instead of round is that a score of
-                // 10000 points is only possible if the last digit of the total points
-                // for golden and normal notes is 0.
-                // if we use round, the max score is 10000 for most songs
-                // but a score of 10010 is possible if the last digit of the total
-                // points for golden and normal notes is 5
-                // the best solution is to use round for one of these scores
-                // and round the other score in the opposite direction
-                // so we assure that the highest possible score is 10000 in every case.
-                CurrentPlayer.ScoreInt := round(CurrentPlayer.Score / 10) * 10;
-
-                if (CurrentPlayer.ScoreInt < CurrentPlayer.Score) then
-                  //normal score is floored so we have to ceil golden notes score
-                  CurrentPlayer.ScoreGoldenInt := ceil(CurrentPlayer.ScoreGolden / 10) * 10
-                else
-                  //normal score is ceiled so we have to floor golden notes score
-                  CurrentPlayer.ScoreGoldenInt := floor(CurrentPlayer.ScoreGolden / 10) * 10;
-
-
-                CurrentPlayer.ScoreTotalInt := CurrentPlayer.ScoreInt +
-                                               CurrentPlayer.ScoreGoldenInt +
-                                               CurrentPlayer.ScoreLineInt;
               end;
             end; // operation
           end; // for

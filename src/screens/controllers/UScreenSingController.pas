@@ -264,14 +264,7 @@ begin
         for i1 := 0 to High(Player) do
         with Player[i1] do
         begin
-          Score          := 0;
-          ScoreLine      := 0;
-          ScoreGolden    := 0;
-
-          ScoreInt       := 0;
-          ScoreLineInt   := 0;
-          ScoreGoldenInt := 0;
-          ScoreTotalInt  := 0;
+          ResetScores;
 
           ScoreLast      := 0;
 
@@ -586,14 +579,7 @@ begin
         for i1 := 0 to High(Player) do
         with Player[i1] do
         begin
-          Score          := 0;
-          ScoreLine      := 0;
-          ScoreGolden    := 0;
-
-          ScoreInt       := 0;
-          ScoreLineInt   := 0;
-          ScoreGoldenInt := 0;
-          ScoreTotalInt  := 0;
+          ResetScores;
 
           ScoreLast      := 0;
 
@@ -877,14 +863,7 @@ begin
   for PlayerIndex := 0 to High(Player) do
     with Player[PlayerIndex] do
     begin
-      Score          := 0;
-      ScoreLine      := 0;
-      ScoreGolden    := 0;
-
-      ScoreInt       := 0;
-      ScoreLineInt   := 0;
-      ScoreGoldenInt := 0;
-      ScoreTotalInt  := 0;
+      ResetScores;
 
       ScoreLast      := 0;
 
@@ -1668,22 +1647,6 @@ begin
             PlaylistMedley.Stats[len].Player[I].ScoreGolden :=
               PlaylistMedley.Stats[len].Player[I].ScoreGolden +
               PlaylistMedley.Stats[J].Player[I].ScoreGolden;
-
-            PlaylistMedley.Stats[len].Player[I].ScoreInt :=
-              PlaylistMedley.Stats[len].Player[I].ScoreInt +
-              PlaylistMedley.Stats[J].Player[I].ScoreInt;
-
-            PlaylistMedley.Stats[len].Player[I].ScoreLineInt :=
-              PlaylistMedley.Stats[len].Player[I].ScoreLineInt +
-              PlaylistMedley.Stats[J].Player[I].ScoreLineInt;
-
-            PlaylistMedley.Stats[len].Player[I].ScoreGoldenInt :=
-              PlaylistMedley.Stats[len].Player[I].ScoreGoldenInt +
-              PlaylistMedley.Stats[J].Player[I].ScoreGoldenInt;
-
-            PlaylistMedley.Stats[len].Player[I].ScoreTotalInt :=
-              PlaylistMedley.Stats[len].Player[I].ScoreTotalInt +
-              PlaylistMedley.Stats[J].Player[I].ScoreTotalInt;
           end; //of for I
         end; //of for J
 
@@ -1698,18 +1661,6 @@ begin
 
           PlaylistMedley.Stats[len].Player[I].ScoreGolden := round(
             PlaylistMedley.Stats[len].Player[I].ScoreGolden / len);
-
-          PlaylistMedley.Stats[len].Player[I].ScoreInt := round(
-            PlaylistMedley.Stats[len].Player[I].ScoreInt / len);
-
-          PlaylistMedley.Stats[len].Player[I].ScoreLineInt := round(
-            PlaylistMedley.Stats[len].Player[I].ScoreLineInt / len);
-
-          PlaylistMedley.Stats[len].Player[I].ScoreGoldenInt := round(
-            PlaylistMedley.Stats[len].Player[I].ScoreGoldenInt / len);
-
-          PlaylistMedley.Stats[len].Player[I].ScoreTotalInt := round(
-            PlaylistMedley.Stats[len].Player[I].ScoreTotalInt / len);
         end;
 
         Party.CallAfterSing;
@@ -1796,12 +1747,6 @@ begin
       // apply line-bonus
       CurrentPlayer.ScoreLine :=
         CurrentPlayer.ScoreLine + LineBonus * LinePerfection;
-      CurrentPlayer.ScoreLineInt := Floor(Round(CurrentPlayer.ScoreLine) / 10) * 10;
-      // update total score
-      CurrentPlayer.ScoreTotalInt :=
-        CurrentPlayer.ScoreInt +
-        CurrentPlayer.ScoreGoldenInt
-        + CurrentPlayer.ScoreLineInt;
 
       // spawn rating pop-up
       Rating := Round(LinePerfection * MAX_LINE_RATING);
@@ -1922,7 +1867,7 @@ begin
       for IndexUser := 0 to High(DataBase.NetworkUser[IndexWeb].Userlist) do
       begin
         Send := false;
-        TotalScore := player[PlayerIndex - 1].ScoreInt + player[PlayerIndex - 1].ScoreLineInt + player[PlayerIndex - 1].ScoreGoldenInt;
+        TotalScore := player[PlayerIndex - 1].ScoreTotalInt;
 
         case (Act_Level) of
           0: if (TotalScore >= DataBase.NetworkUser[IndexWeb].UserList[IndexUser].AutoScoreEasy)
@@ -1988,7 +1933,7 @@ begin
       for IndexUser := 0 to High(DataBase.NetworkUser[IndexWeb].Userlist) do
       begin
         Save := false;
-        TotalScore := player[PlayerIndex - 1].ScoreInt + player[PlayerIndex - 1].ScoreLineInt + player[PlayerIndex - 1].ScoreGoldenInt;
+        TotalScore := player[PlayerIndex - 1].ScoreTotalInt;
 
         case (Act_Level) of
           0: if (TotalScore >= DataBase.NetworkUser[IndexWeb].UserList[IndexUser].AutoScoreEasy)
