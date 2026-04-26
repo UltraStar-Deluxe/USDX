@@ -341,8 +341,7 @@ end;
  *}
 procedure TPlayListManager.SetPlayList(Index: Integer; SongID: Integer = -1);
 var
-  I, SongIdx: Integer;
-  Found: Boolean;
+  I, SongIdx, TargetSongID, RandomVisibleIndex, VisibleCount: Integer;
 begin
   if (Index < 0) or (Index > High(PlayLists)) then
     exit;
@@ -398,30 +397,84 @@ begin
   else
     ScreenSong.ShowCatTLCustom(Format(Theme.Playlist.CatText,[Playlists[Index].Name + '  [Fixed Order: Off]']));
 
-  //Fix SongSelection
-  ScreenSong.Interaction := 0;
-  Found := False;
+  ScreenSong.ResetRandomSongState;
+
+  // Fix SongSelection and keep the viewport aligned with the selected song.
+  TargetSongID := -1;
   if (SongID <> -1) then
   begin
     for I := 0 to high(PlayLists[Index].Items) do
     begin
-      ScreenSong.SelectNext;
-      if (PlayLists[Index].Items[I].SongID = Int(SongID)) then
+      if (PlayLists[Index].Items[I].SongID = SongID) then
       begin
-        Found := True;
+        TargetSongID := SongID;
         Break;
       end;
     end;
   end;
-  if (not Found) then
+
+  if (TargetSongID = -1) and not Playlists[Index].FixedOrder and (CatSongs.VisibleSongs > 0) then
+  begin
+    RandomVisibleIndex := Random(CatSongs.VisibleSongs);
+    VisibleCount := 0;
+
+    for I := 0 to High(CatSongs.Song) do
+    begin
+      if CatSongs.Song[I].Visible then
+      begin
+        if (VisibleCount = RandomVisibleIndex) then
+        begin
+          TargetSongID := I;
+          Break;
+        end;
+        Inc(VisibleCount);
+      end;
+    end;
+  end;
+
+  if (TargetSongID = -1) then
+  begin
+    for I := 0 to high(PlayLists[Index].Items) do
+    begin
+      SongIdx := PlayLists[Index].Items[I].SongID;
+      if (SongIdx >= 0) and (SongIdx <= High(CatSongs.Song)) and CatSongs.Song[SongIdx].Visible then
+      begin
+        TargetSongID := SongIdx;
+        Break;
+      end;
+    end;
+  end;
+
+  if (TargetSongID = -1) then
+  begin
     ScreenSong.Interaction := 0;
-  if (ScreenSong.Interaction = 0) then
-    ScreenSong.SelectNext;
-  ScreenSong.FixSelected;
+    case TSongMenuMode(Ini.SongMenu) of
+      smChessboard:
+        ScreenSong.ChessboardMinLine := 0;
+      smList:
+        ScreenSong.ListMinLine := 0;
+    end;
+  end
+  else
+  begin
+    case TSongMenuMode(Ini.SongMenu) of
+      smRoulette,
+      smChessboard,
+      smList:
+        ScreenSong.SkipTo(CatSongs.VisibleIndex(TargetSongID), TargetSongID, CatSongs.VisibleSongs);
+    else
+      begin
+        ScreenSong.Interaction := TargetSongID;
+        ScreenSong.FixSelected;
+      end;
+    end;
+  end;
+
+  if (TargetSongID = -1) then
+    ScreenSong.FixSelected;
 
   //Play correct Music
   //ScreenSong.ChangeMusic;
-
 end;
 
 {**
