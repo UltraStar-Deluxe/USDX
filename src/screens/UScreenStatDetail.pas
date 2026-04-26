@@ -154,13 +154,20 @@ end;
 constructor TScreenStatDetail.Create;
 var
   I:    integer;
+  DeltaTextX, DeltaTextY: integer;
 begin
   inherited Create;
 
-  for I := 0 to High(Theme.StatDetail.TextList) do
-    AddText(Theme.StatDetail.TextList[I]);
+  if Ini.StatDetailCount < 2 then
+    Ini.StatDetailCount := 2;
 
-  Count := Length(Theme.StatDetail.TextList);
+  DeltaTextX := Round((Theme.StatDetail.TextList[1].X - Theme.StatDetail.TextList[0].X) / (Ini.StatDetailCount - 1));
+  DeltaTextY := Round((Theme.StatDetail.TextList[1].Y - Theme.StatDetail.TextList[0].Y) / (Ini.StatDetailCount - 1));
+
+  for I := 0 to Ini.StatDetailCount-1 do
+    AddText(Theme.StatDetail.TextList[0].X + I * DeltaTextX, Theme.StatDetail.TextList[0].Y + I * DeltaTextY, Theme.StatDetail.TextList[0]);
+
+  Count := Ini.StatDetailCount;
 
   AddText(Theme.StatDetail.TextDescription);
   AddText(Theme.StatDetail.TextPage);
@@ -220,18 +227,28 @@ var
   I: integer;
   FormatStr: string;
   PerPage: byte;
+  NewlinesInFormatStr: integer;
 begin
+  // reset texts
+  for I := 0 to Ini.StatDetailCount-1 do
+    Text[I].Text := '';
+
+  FormatStr := Theme.StatDetail.FormatStr[Ord(Typ)];
+
+  NewlinesInFormatStr := 1;
+  for I := 1 to Length(FormatStr)-1 do
+  begin
+    if (FormatStr[I] = '\') and (FormatStr[I+1] = 'n') then
+      Inc(NewlinesInFormatStr);
+  end;
+
+  Count := Ini.StatDetailCount div (NewlinesInFormatStr);
+
   // fetch statistics
   StatList := Database.GetStats(Typ, Count, NewPage, Reversed);
   if ((StatList <> nil) and (StatList.Count > 0)) then
   begin
     Page := NewPage;
-
-    // reset texts
-    for I := 0 to Count-1 do
-      Text[I].Text := '';
-
-    FormatStr := Theme.StatDetail.FormatStr[Ord(Typ)];
 
     //refresh Texts
     for I := 0 to StatList.Count-1 do
@@ -244,8 +261,7 @@ begin
               //Set Texts
               if (Score > 0) then
               begin
-                Text[I].Text := Format(FormatStr,
-                  [Singer, Score, Theme.ILevel[Difficulty], SongArtist, SongTitle, Date]);
+                Text[I*2].Text := Format(FormatStr, [Singer, Score, Theme.ILevel[Difficulty], SongArtist, SongTitle, Date]);
               end;
             end;
           end;
@@ -255,7 +271,7 @@ begin
             begin
               //Set Texts
               if (AverageScore > 0) then
-                Text[I].Text := Format(FormatStr, [Player, AverageScore]);
+                Text[I].Text := Format(FormatStr, [Player, AverageScore, Count]);
             end;
           end;
 
@@ -263,8 +279,9 @@ begin
             with TStatResultMostSungSong(StatList[I]) do
             begin
               //Set Texts
-              if (Artist <> '') then
-                Text[I].Text := Format(FormatStr, [Artist, Title, TimesSung]);
+              if (Artist <> '') then begin
+                Text[I].Text := Format(FormatStr, [Artist, Title, TimesSung, AverageScore]);
+                end;
             end;
           end;
 
@@ -273,7 +290,7 @@ begin
             begin
               //Set Texts
               if (ArtistName <> '') then
-                Text[I].Text := Format(FormatStr, [ArtistName, TimesSungtot]);
+                Text[I].Text := Format(FormatStr, [ArtistName, TimesSungtot, AverageScore]);
             end;
           end;
         end;
@@ -287,6 +304,8 @@ begin
       PerPage := (TotEntrys mod Count)
     else
       PerPage := Count;
+
+    Count := Ini.StatDetailCount;
 
     try      
       Text[Count+1].Text := Format(Theme.StatDetail.PageStr,
