@@ -1002,16 +1002,19 @@ begin
 
   Button[Result].Fade := ThemeButton.Fade;
   Button[Result].FadeText := ThemeButton.FadeText;
-  if (ThemeButton.Typ = TEXTURE_TYPE_COLORIZED) then
+  if ThemeButton.Fade then
   begin
-    Button[Result].FadeTex := Texture.GetTexture(
-      Skin.GetTextureFileName(ThemeButton.FadeTex), TEXTURE_TYPE_COLORIZED,
-      RGBFloatToInt(ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB));
-  end
-  else
-  begin
-    Button[Result].FadeTex := Texture.GetTexture(
-      Skin.GetTextureFileName(ThemeButton.FadeTex), ThemeButton.Typ);
+    if (ThemeButton.Typ = TEXTURE_TYPE_COLORIZED) then
+    begin
+      Button[Result].FadeTex := Texture.GetTexture(
+        Skin.GetTextureFileName(ThemeButton.FadeTex), TEXTURE_TYPE_COLORIZED,
+        RGBFloatToInt(ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB));
+    end
+    else
+    begin
+      Button[Result].FadeTex := Texture.GetTexture(
+        Skin.GetTextureFileName(ThemeButton.FadeTex), ThemeButton.Typ);
+    end;
   end;
 
   Button[Result].FadeTexPos := ThemeButton.FadeTexPos;

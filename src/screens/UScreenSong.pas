@@ -1679,13 +1679,28 @@ procedure TScreenSong.ColorizeJokers;
 var
   StartJoker, I, J: integer;
   Col: TRGB;
+  JokerTyp: TTextureType;
 begin
 
   StartJoker := StaticTeam1Joker1;
 
   for I:= 0 to 2 do
   begin
-    Col := GetPlayerColor(Ini.SingColor[I]);
+    case I of
+      0: JokerTyp := Theme.Song.StaticTeam1Joker1.Typ;
+      1: JokerTyp := Theme.Song.StaticTeam2Joker1.Typ;
+    else
+      JokerTyp := Theme.Song.StaticTeam3Joker1.Typ;
+    end;
+
+    if (JokerTyp = TEXTURE_TYPE_COLORIZED) then
+      Col := GetPlayerColor(Ini.SingColor[I])
+    else
+    begin
+      Col.R := 1;
+      Col.G := 1;
+      Col.B := 1;
+    end;
 
     for J := StartJoker + I * 5 to (StartJoker + I * 5 - 1) + 5  do
     begin
@@ -1760,6 +1775,7 @@ begin
   StaticTeam3Joker3 := AddStatic(Theme.Song.StaticTeam3Joker3);
   StaticTeam3Joker4 := AddStatic(Theme.Song.StaticTeam3Joker4);
   StaticTeam3Joker5 := AddStatic(Theme.Song.StaticTeam3Joker5);
+  ColorizeJokers;
 
   //Load Party or NonParty specific Statics and Texts
   SetLength(StaticParty, Length(Theme.Song.StaticParty));
