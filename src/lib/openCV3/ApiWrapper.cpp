@@ -10,6 +10,10 @@
 #define CV_SVD			1
 #define CV_SVD_SYM		2
 
+#if CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR < 10
+#define hfloat float16_t
+#endif
+
 // The idea is to use the UMat for all calculations while keeping the Mat empty.
 // Only when the Pascal code requests a pointer to the image data, we assign
 // getMat to the Mat to keep a reference to that buffer.
@@ -342,7 +346,7 @@ void USDX_cvSetReal2D(cv::Mat *mat, int y, int x, double value)
 		case CV_16U: mat->at<ushort>(y, x) = value; return;
 		case CV_16S: mat->at<short>(y, x)  = value; return;
 #if CV_VERSION_MAJOR >= 4
-		case CV_16F: mat->at<cv::float16_t>(y, x) = cv::float16_t(value); return;
+		case CV_16F: mat->at<cv::hfloat>(y, x) = cv::hfloat(value); return;
 #endif
 		case CV_32S: mat->at<int>(y, x)    = value; return;
 		case CV_32F: mat->at<float>(y, x)  = value; return;

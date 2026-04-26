@@ -34,6 +34,8 @@
 	<string>SDLMain</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Need camera access for webcam features.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Need microphone access for pitch analysis of the singer’s voice.</string>
 </dict>

@@ -366,6 +366,7 @@ AC_SUBST_DEFINE(USE_LOCAL_PROJECTM_PRESETS, $with_local_projectM_presets)
 opencv_core_standalone=no
 opencv_imgproc_standalone=no
 opencv_videoio_standalone=no
+OpenCV_WRAPPER_LIBS=
 if [[ "$with_opencv_cxx_api" = yes ]] ; then
 	if [[ "$cxx_works" = yes ]] ; then
 		AX_CXX_COMPILE_STDCXX([11], [], [optional])
@@ -382,6 +383,17 @@ if [[ "$with_opencv_cxx_api" = yes ]] ; then
 		opencv_USE_CWRAPPER=yes
 		use_cxx=yes
 		for lib in $OpenCV_LIBS ; do
+            case "${lib##*/}" in
+            *opencv_core*|*opencv_imgproc*|*opencv_videoio*)
+                OpenCV_WRAPPER_LIBS="$OpenCV_WRAPPER_LIBS $lib"
+                ;;
+            *opencv_*)
+                ;;
+            *)
+                OpenCV_WRAPPER_LIBS="$OpenCV_WRAPPER_LIBS $lib"
+                continue
+                ;;
+            esac
 			case "${lib##*/}" in
 			*opencv_core*)    opencv_core_standalone=yes ;;
 			*opencv_imgproc*) opencv_imgproc_standalone=yes ;;
@@ -394,6 +406,8 @@ if [[ "$with_opencv_cxx_api" = yes ]] ; then
 			esac
 		done
 		AC_SUBST(OpenCV_CXXFLAGS)
+        AC_SUBST(OpenCV_LIBS)
+        AC_SUBST(OpenCV_WRAPPER_LIBS)
 	else
 		AC_MSG_FAILURE([Need C++ compiler to build OpenCV wrapper])
 	fi
