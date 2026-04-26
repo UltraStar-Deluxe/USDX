@@ -196,7 +196,11 @@ type
       function InRegion(X, Y: real; A: TMouseOverRect): boolean;
       function InRegionX(X: real; A: TMouseOverRect): boolean;
       function InRegionY(Y: real; A: TMouseOverRect): boolean;
+      function InteractionContainsPoint(Index: integer; X, Y: real): boolean;
+      function GetInteractionZ(Index: integer): real;
+      function GetInteractionDrawOrder(Index: integer): integer;
       function InteractAt(X, Y: real): integer;
+      function GetCollectionZ(Index: integer): real;
       function CollectionAt(X, Y: real): integer;
       procedure OnShow; virtual;
       procedure OnShowFinish; virtual;
@@ -1994,53 +1998,101 @@ begin
   Result := (Y >= A.Y) and (Y <= A.Y + A.H);
 end;
 
+function TMenu.InteractionContainsPoint(Index: integer; X, Y: real): boolean;
+begin
+  Result := false;
+
+  case Interactions[Index].Typ of
+    iButton, iBCollectionChild:
+      Result := InRegion(X, Y, Button[Interactions[Index].Num].GetMouseOverArea) and
+        Button[Interactions[Index].Num].Visible and
+        Button[Interactions[Index].Num].Selectable and
+        ((not Button[Interactions[Index].Num].Scrollable) or InRegion(X, Y, ScrollArea));
+    iSelectS:
+      Result := InRegion(X, Y, SelectSs[Interactions[Index].Num].GetMouseOverArea) and
+        ((not SelectSs[Interactions[Index].Num].Scrollable) or InRegion(X, Y, ScrollArea));
+  end;
+end;
+
+function TMenu.GetInteractionZ(Index: integer): real;
+begin
+  case Interactions[Index].Typ of
+    iButton, iBCollectionChild:
+      Result := Button[Interactions[Index].Num].Z;
+    iSelectS:
+      Result := SelectSs[Interactions[Index].Num].Texture.Z;
+  else
+    Result := 0;
+  end;
+end;
+
+function TMenu.GetInteractionDrawOrder(Index: integer): integer;
+begin
+  case Interactions[Index].Typ of
+    iButton, iBCollectionChild:
+      Result := Interactions[Index].Num;
+    iSelectS:
+      Result := Length(Button) + Interactions[Index].Num;
+  else
+    Result := Interactions[Index].Num;
+  end;
+end;
+
 //takes x,y coordinates and returns the interaction number
 //of the control at this position
 function TMenu.InteractAt(X, Y: real): integer;
 var
   i: integer;
+  BestZ: real;
+  BestDrawOrder: integer;
+  CurZ: real;
+  CurDrawOrder: integer;
 begin
   Result := -1;
+  BestZ := 0;
+  BestDrawOrder := 0;
+
   for i := Low(Interactions) to High(Interactions) do
   begin
-    case Interactions[i].Typ of
-      iButton:
-        if InRegion(X, Y, Button[Interactions[i].Num].GetMouseOverArea) and
-           Button[Interactions[i].Num].Visible and Button[Interactions[i].Num].Selectable and
-           ((not Button[Interactions[i].Num].Scrollable) or InRegion(X, Y, ScrollArea)) then
-        begin
-          Result:=i;
-          exit;
-        end;
-      iBCollectionChild:
-        if InRegion(X, Y, Button[Interactions[i].Num].GetMouseOverArea) then
-        begin
-          Result:=i;
-          exit;
-        end;
-      iSelectS:
-        if InRegion(X, Y, SelectSs[Interactions[i].Num].GetMouseOverArea) and ((not SelectSs[Interactions[i].Num].Scrollable) or InRegion(X, Y, ScrollArea))  then
-      	begin
-          Result:=i;
-          exit;
-        end;
+    if not InteractionContainsPoint(i, X, Y) then
+      continue;
+
+    CurZ := GetInteractionZ(i);
+    CurDrawOrder := GetInteractionDrawOrder(i);
+    if (Result = -1) or (CurZ > BestZ) or
+       (SameValue(CurZ, BestZ) and (CurDrawOrder > BestDrawOrder)) then
+    begin
+      Result := i;
+      BestZ := CurZ;
+      BestDrawOrder := CurDrawOrder;
     end;
   end;
+end;
+
+function TMenu.GetCollectionZ(Index: integer): real;
+begin
+  Result := ButtonCollection[Index].Z;
 end;
 
 //takes x,y coordinates and returns the button collection id
 function TMenu.CollectionAt(X, Y: real): integer;
 var
   i: integer;
+  BestZ: real;
 begin
   Result := -1;
+  BestZ := 0;
   for i:= Low(ButtonCollection) to High(ButtonCollection) do
   begin
     if InRegion(X, Y, ButtonCollection[i].GetMouseOverArea) and
         ButtonCollection[i].Visible then
     begin
-      Result:=i;
-      exit;
+      if (Result = -1) or (GetCollectionZ(i) > BestZ) or
+         (SameValue(GetCollectionZ(i), BestZ) and (i > Result)) then
+      begin
+        Result := i;
+        BestZ := GetCollectionZ(i);
+      end;
     end;
   end;
 end;
