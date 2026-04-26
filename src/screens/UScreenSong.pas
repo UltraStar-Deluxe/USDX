@@ -349,6 +349,10 @@ const
   CHANGE_SOUND_THROTTLE_MS = 200;
   PREVIEW_DEBOUNCE_MS = 150;
 
+var
+  AltJumpPrefix: UTF8String = '';
+  AltJumpLastTick: cardinal = 0;
+
 // ***** Public methods ****** //
 function TScreenSong.FreeListMode: boolean;
 begin
@@ -646,9 +650,10 @@ function TScreenSong.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; Presse
 var
   I:      integer;
   I2:     integer;
+  JumpStart: integer;
+  JumpTarget: integer;
   SDL_ModState:  word;
   UpperLetter: UCS4Char;
-  TempLetter: UCS4Char;
   TempStr: UTF8String;
   VerifySong, WebList: string;
   Fix: boolean;
@@ -697,6 +702,9 @@ begin
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
+    if (SDL_ModState and KMOD_LALT = 0) or ((AltJumpPrefix <> '') and (SDL_GetTicks - AltJumpLastTick > 1000)) then
+      AltJumpPrefix := '';
+
     //Jump to Artist/Title
     if ((SDL_ModState and KMOD_LALT <> 0) and (FreeListMode)) then
     begin
@@ -708,6 +716,8 @@ begin
 
       if (PressedKey in ([SDLK_a..SDLK_z, SDLK_0..SDLK_9])) then
       begin
+        AltJumpPrefix := AltJumpPrefix + UCS4ToUTF8String(UCS4UpperCase(PressedKey));
+        AltJumpLastTick := SDL_GetTicks;
         I2 := Length(CatSongs.Song);
 
         //Jump To Title
@@ -718,8 +728,7 @@ begin
             if (CatSongs.Song[(I + Interaction) mod I2].Visible) then
             begin
               TempStr := CatSongs.Song[(I + Interaction) mod I2].Title;
-              if (Length(TempStr) > 0) and
-                 (UCS4UpperCase(UTF8ToUCS4String(TempStr)[0]) = UpperLetter) then
+              if (Length(TempStr) > 0) and UTF8StartsText(AltJumpPrefix, TempStr) then
               begin
                 SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2), (I + Interaction) mod I2, VS);
 
@@ -735,26 +744,79 @@ begin
         //Jump to Artist
         else if (SDL_ModState = KMOD_LALT) then
         begin
+          JumpStart := Interaction;
           for I := 1 to High(CatSongs.Song) do
           begin
-            if (CatSongs.Song[(I + Interaction) mod I2].Visible) then
+            if (CatSongs.Song[(I + JumpStart) mod I2].Visible) then
             begin
-              TempStr := CatSongs.Song[(I + Interaction) mod I2].Artist;
-              if Length(TempStr) > 0 then TempLetter := UCS4UpperCase(UTF8ToUCS4String(TempStr)[0])
-              else                        TempLetter := 0;
+              if (TSortingType(Ini.Sorting) = sFolder) then
+              begin
+                if CatSongs.Song[(I + JumpStart) mod I2].Main then
+                  TempStr := CatSongs.Song[(I + JumpStart) mod I2].Artist
+                else
+                  TempStr := CatSongs.Song[(I + JumpStart) mod I2].Folder;
+              end
+              else
+                TempStr := CatSongs.Song[(I + JumpStart) mod I2].Artist;
               //in case of tabs, the artist string may be enclosed in brackets so we check the first charactere is a bracket then go to next
               // 91 -> '['
-              if (Length(TempStr) > 1) and (TempLetter = 91) then
-                 TempLetter := UCS4UpperCase(UTF8ToUCS4String(TempStr)[1]);
-              if (TempLetter = UpperLetter) then
+              if (Length(TempStr) > 1) and (TempStr[1] = '[') then
+                TempStr := UTF8Copy(TempStr, 2, Length(TempStr) - 1);
+              if (Length(TempStr) > 0) and UTF8StartsText(AltJumpPrefix, TempStr) then
               begin
-                SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2), (I + Interaction) mod I2, VS);
+                SkipTo(CatSongs.VisibleIndex((I + JumpStart) mod I2), (I + JumpStart) mod I2, VS);
 
                 AudioPlayback.PlaySound(SoundLib.Change);
 
                 SetScrollRefresh;
 
                 //Break and Exit
+                Exit;
+              end;
+            end;
+          end;
+
+          if (TSortingType(Ini.Sorting) in [sArtist, sArtist2, sFolder]) and (Ini.TabsAtStartup = 1) and
+             (CatSongs.CatNumShow > -1) then
+          begin
+            JumpStart := -1;
+            for I := 0 to High(CatSongs.Song) do
+            begin
+              if CatSongs.Song[I].Main and (CatSongs.Song[I].OrderNum = CatSongs.CatNumShow) then
+              begin
+                JumpStart := I;
+                break;
+              end;
+            end;
+
+            if (JumpStart <> -1) then
+            begin
+              JumpTarget := -1;
+              for I := 1 to High(CatSongs.Song) do
+              begin
+                if CatSongs.Song[(I + JumpStart) mod I2].Main then
+                begin
+                  TempStr := CatSongs.Song[(I + JumpStart) mod I2].Artist;
+                  if (Length(TempStr) > 1) and (TempStr[1] = '[') then
+                    TempStr := UTF8Copy(TempStr, 2, Length(TempStr) - 1);
+                  if (Length(TempStr) > 0) and UTF8StartsText(AltJumpPrefix, TempStr) then
+                  begin
+                    JumpTarget := (I + JumpStart) mod I2;
+                    break;
+                  end;
+                end;
+              end;
+
+              if (JumpTarget <> -1) then
+              begin
+                CatSongs.ShowCategoryList;
+                SkipTo(CatSongs.VisibleIndex(JumpTarget), JumpTarget, CatSongs.VisibleSongs);
+                ShowCatTL(JumpTarget);
+
+                AudioPlayback.PlaySound(SoundLib.Change);
+
+                SetScrollRefresh;
+
                 Exit;
               end;
             end;
