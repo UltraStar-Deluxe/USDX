@@ -335,17 +335,10 @@ uses
   UWebSDK                 in 'webSDK\UWebSDK.pas',
   //curlobj                 in 'webSDK\cURL\src\curlobj.pas',
 
-{$IFDEF UseOpenCVWrapper}
   opencv_highgui          in 'lib\openCV3\opencv_highgui.pas',
   opencv_core             in 'lib\openCV3\opencv_core.pas',
   opencv_imgproc          in 'lib\openCV3\opencv_imgproc.pas',
   opencv_types            in 'lib\openCV3\opencv_types.pas',
-{$ELSE}
-  opencv_highgui          in 'lib\openCV\opencv_highgui.pas',
-  opencv_core             in 'lib\openCV\opencv_core.pas',
-  opencv_imgproc          in 'lib\openCV\opencv_imgproc.pas',
-  opencv_types            in 'lib\openCV\opencv_types.pas',
-{$ENDIF}
 
   UMenuStaticList in 'menu\UMenuStaticList.pas',
   UWebcam                 in 'base\UWebcam.pas',

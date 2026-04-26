@@ -39,7 +39,6 @@ src_configure() {
 	econf \
 		$(use_with portaudio) \
 		$(use_with projectm libprojectM) \
-		$(use_with webcam opencv-cxx-api) \
 		$(use_enable midi portmidi) \
 		$(use_enable debug) \
 		|| die "econf failed"

@@ -101,12 +101,6 @@ AC_ARG_WITH([local-projectM-presets],
 		    [use the presets from game/visuals/ @<:@default=no@:>@])],
     [with_local_projectM_presets=$withval], [with_local_projectM_presets="no"])
 
-# add OpenCV option
-AC_ARG_WITH([opencv-cxx-api],
-    [AS_HELP_STRING([--with-opencv-cxx-api],
-      [use current OpenCV C++ API @<:@default=auto (yes on Windows, no elsewhere)@:>@])],
-    [with_opencv_cxx_api=$withval], [with_opencv_cxx_api="auto"])
-
 # print misc options header
 AC_ARG_WITH([cfg-dummy2], [
 Development options:])
@@ -367,52 +361,48 @@ opencv_core_standalone=no
 opencv_imgproc_standalone=no
 opencv_videoio_standalone=no
 OpenCV_WRAPPER_LIBS=
-if [[ "$with_opencv_cxx_api" = yes ]] ; then
-	if [[ "$cxx_works" = yes ]] ; then
-		AX_CXX_COMPILE_STDCXX([11], [], [optional])
-		CMAKE_FIND_PACKAGE([OpenCV], [CXX], [GNU], , [OpenCV_HAVE=yes], [OpenCV_HAVE=no])
-		if [[ "$OpenCV_HAVE" != yes ]] ; then
-			PKG_HAVE([OpenCV], [opencv4], no)
-			if [[ "$OpenCV_HAVE" != yes ]] ; then
-				PKG_HAVE([OpenCV], [opencv >= 3.0.0], yes)
-				OpenCV_CXXFLAGS=`$PKG_CONFIG --cflags "opencv >= 3.0.0"`
-			else
-				OpenCV_CXXFLAGS=`$PKG_CONFIG --cflags opencv4`
-			fi
-		fi
-		opencv_USE_CWRAPPER=yes
-		use_cxx=yes
-		for lib in $OpenCV_LIBS ; do
-            case "${lib##*/}" in
-            *opencv_core*|*opencv_imgproc*|*opencv_videoio*)
-                OpenCV_WRAPPER_LIBS="$OpenCV_WRAPPER_LIBS $lib"
-                ;;
-            *opencv_*)
-                ;;
-            *)
-                OpenCV_WRAPPER_LIBS="$OpenCV_WRAPPER_LIBS $lib"
-                continue
-                ;;
-            esac
-			case "${lib##*/}" in
-			*opencv_core*)    opencv_core_standalone=yes ;;
-			*opencv_imgproc*) opencv_imgproc_standalone=yes ;;
-			*opencv_videoio*) opencv_videoio_standalone=yes ;;
-			*) continue ;;
-			esac
-			case "$lib" in
-			-L)  LIBS="$LIBS $lib" ;;
-			*/*) LIBS="$LIBS -L${lib%/*}" ;;
-			esac
-		done
-		AC_SUBST(OpenCV_CXXFLAGS)
-        AC_SUBST(OpenCV_LIBS)
-        AC_SUBST(OpenCV_WRAPPER_LIBS)
-	else
-		AC_MSG_FAILURE([Need C++ compiler to build OpenCV wrapper])
-	fi
+if [[ "$cxx_works" = yes ]] ; then
+    AX_CXX_COMPILE_STDCXX([11], [], [optional])
+    CMAKE_FIND_PACKAGE([OpenCV], [CXX], [GNU], , [OpenCV_HAVE=yes], [OpenCV_HAVE=no])
+    if [[ "$OpenCV_HAVE" != yes ]] ; then
+        PKG_HAVE([OpenCV], [opencv4], no)
+        if [[ "$OpenCV_HAVE" != yes ]] ; then
+            PKG_HAVE([OpenCV], [opencv >= 3.0.0], yes)
+            OpenCV_CXXFLAGS=`$PKG_CONFIG --cflags "opencv >= 3.0.0"`
+        else
+            OpenCV_CXXFLAGS=`$PKG_CONFIG --cflags opencv4`
+        fi
+    fi
+    opencv_USE_CWRAPPER=yes
+    use_cxx=yes
+    for lib in $OpenCV_LIBS ; do
+        case "${lib##*/}" in
+        *opencv_core*|*opencv_imgproc*|*opencv_videoio*)
+            OpenCV_WRAPPER_LIBS="$OpenCV_WRAPPER_LIBS $lib"
+            ;;
+        *opencv_*)
+            ;;
+        *)
+            OpenCV_WRAPPER_LIBS="$OpenCV_WRAPPER_LIBS $lib"
+            continue
+            ;;
+        esac
+        case "${lib##*/}" in
+        *opencv_core*)    opencv_core_standalone=yes ;;
+        *opencv_imgproc*) opencv_imgproc_standalone=yes ;;
+        *opencv_videoio*) opencv_videoio_standalone=yes ;;
+        *) continue ;;
+        esac
+        case "$lib" in
+        -L)  LIBS="$LIBS $lib" ;;
+        */*) LIBS="$LIBS -L${lib%/*}" ;;
+        esac
+    done
+    AC_SUBST(OpenCV_CXXFLAGS)
+    AC_SUBST(OpenCV_LIBS)
+    AC_SUBST(OpenCV_WRAPPER_LIBS)
 else
-	opencv_USE_CWRAPPER=no
+    AC_MSG_FAILURE([Need C++ compiler to build the required OpenCV wrapper])
 fi
 AC_SUBST_DEFINE(USE_OPENCV_CWRAPPER, $opencv_USE_CWRAPPER)
 AC_SUBST(USE_OPENCV_CWRAPPER, $opencv_USE_CWRAPPER)
@@ -522,5 +512,4 @@ if test x$FPC_PLATFORM = xdarwin; then
 !!! Selected packaging: $MACOS_PACKAGING with libdir $MACOS_PACKAGING_LIBDIR
                    ])
 fi
-
 
