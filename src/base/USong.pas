@@ -451,7 +451,7 @@ begin
     end
     else
     begin
-      Log.LogError('Error Loading SongHeader, abort Song Loading');
+      Log.LogSongError('Error Loading SongHeader, abort Song Loading');
       Exit;
     end;
   end;
@@ -573,7 +573,7 @@ begin
   end
   else if (Length(Str) > 1) and (Str[1] <> 'P') then
   begin
-    Log.LogWarn(Format('"%s" in line %d: %s',
+    Log.LogSongError(Format('"%s" in line %d: %s',
         [Path.Append(FileName).ToNative, FileLineNo, 'character expected but found "' + Str + '"']),
         'TSong.ParseLyricCharParam');
   end;
@@ -609,7 +609,7 @@ begin
     SongFile := TMemTextFileStream.Create(FileNamePath, fmOpenRead);
   except
     LastError := 'ERROR_CORRUPT_SONG_FILE_NOT_FOUND';
-    Log.LogError('File not found: "' + FileNamePath.ToNative + '"', 'TSong.LoadSong()');
+    Log.LogSongError('File not found: "' + FileNamePath.ToNative + '"', 'TSong.LoadSong()');
     Exit;
   end;
 
@@ -685,7 +685,7 @@ begin
 
       if (not NotesFound) then
       begin //Song File Corrupted - No Notes
-        Log.LogError('Could not load txt File, no notes found: ' + FileNamePath.ToNative);
+        Log.LogSongError('Could not load txt File, no notes found: ' + FileNamePath.ToNative);
         LastError := 'ERROR_CORRUPT_SONG_NO_NOTES';
         Exit;
       end;
@@ -729,7 +729,7 @@ begin
         begin
           if (not Self.isDuet) then
           begin
-            Log.LogError(
+            Log.LogSongError(
               'Invalid track marker in solo song: "' + CurLine + '" in file "' + FileNamePath.ToNative +
               '" at line ' + IntToStr(FileLineNo) + '. Track markers (P1/P2) are only allowed if the first note-section line after headers is a P-line.',
               'TSong.LoadSong'
@@ -761,7 +761,7 @@ begin
             end
             else
             begin
-              Log.LogError('Wrong P-Number in file: "' + FileName.ToNative + '"; Line '+IntToStr(FileLineNo)+' (LoadSong)');
+              Log.LogSongError('Wrong P-Number in file: "' + FileName.ToNative + '"; Line '+IntToStr(FileLineNo)+' (LoadSong)');
               Result := False;
               Exit;
             end;
@@ -788,11 +788,11 @@ begin
           //Check for ZeroNote
           if Param2 = 0 then
           begin
-            Log.LogWarn(Format('"%s" in line %d: %s',
+            Log.LogSongError(Format('"%s" in line %d: %s',
               [FileNamePath.ToNative, FileLineNo,
               'found note with length zero -> converted to FreeStyle']),
               'TSong.LoadSong');
-            //Log.LogError('Found zero-length note at "'+Param0+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamLyric+'" -> Note ignored!')
+            //Log.LogSongError('Found zero-length note at "'+Param0+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamLyric+'" -> Note ignored!')
             Param0 := 'F';
           end;
 
@@ -800,7 +800,7 @@ begin
           begin
             // convert to freestyle note
             Param0 := 'F';
-            Log.LogWarn(
+            Log.LogSongError(
               Format('Note at "%s %d %d %d %s" is before audio start (%.2f < %.2f) or after audio end (%.2f >= %.2f) -> converted to freestyle note',
               [Param0, Param1, Param2, Param3, ParamLyric, GetTimeFromBeat(Param1, Self), Self.Start, GetTimeFromBeat(Param1 + Param3, Self), AudioLength]),
               'TSong.LoadSong'
@@ -810,7 +810,7 @@ begin
           // add notes
           if (Tracks[CurrentTrack].High < 0) or (Tracks[CurrentTrack].High > 5000) then
           begin
-            Log.LogError('Found faulty song. Did you forget a P1 or P2 tag? "'+Param0+' '+IntToStr(Param1)+
+            Log.LogSongError('Found faulty song. Did you forget a P1 or P2 tag? "'+Param0+' '+IntToStr(Param1)+
             ' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamLyric+'" -> '+
             FileNamePath.ToNative+' Line:'+IntToStr(FileLineNo));
             Break;
@@ -842,7 +842,7 @@ begin
   except
     on E: Exception do
     begin
-      Log.LogError(Format('Error loading file: "%s" in line %d,%d: %s',
+      Log.LogSongError(Format('Error loading file: "%s" in line %d,%d: %s',
                   [FileNamePath.ToNative, FileLineNo, LinePos, E.Message]));
       Exit;
     end;
@@ -853,7 +853,7 @@ begin
     if (Length(Tracks[TrackIndex].Lines) < 1) then
     begin
       LastError := 'ERROR_CORRUPT_SONG_NO_BREAKS';
-      Log.LogError('Error loading file: Can''t find any linebreaks in "' + FileNamePath.ToNative + '"');
+      Log.LogSongError('Error loading file: Can''t find any linebreaks in "' + FileNamePath.ToNative + '"');
       exit;
     end;
 
@@ -862,7 +862,7 @@ begin
     if (Length(Tracks[TrackIndex].Lines) < 1) then
     begin
       LastError := 'ERROR_CORRUPT_SONG_NO_NOTES';
-      Log.LogError('Error loading file: No notes found after removing empty sentences in "' + FileNamePath.ToNative + '"');
+      Log.LogSongError('Error loading file: No notes found after removing empty sentences in "' + FileNamePath.ToNative + '"');
       exit;
     end;
   end;
@@ -967,7 +967,7 @@ var
     end;
     if logDuplicateMsg and (count > 1) then
     begin
-      Log.LogInfo('Duplicate Tag "'+ tag +'" found in file ' + FullFileName + '. Only the last value will be used.',
+      Log.LogSongError('Duplicate Tag "'+ tag +'" found in file ' + FullFileName + '. Only the last value will be used.',
                   'TSong.ReadTXTHeader.RemoveTagsFromTagMap');
     end;
   end;
@@ -990,7 +990,7 @@ var
     end
     else
     begin
-      Log.LogError('Can''t find audio file in song: ' + DecodeStringUTF8(FullFileName, Encoding));
+      Log.LogSongError('Can''t find audio file in song: ' + DecodeStringUTF8(FullFileName, Encoding));
     end;
   end;
 
@@ -1031,7 +1031,7 @@ begin
   SongFile.ReadLine(Line);
   if (Length(Line) <= 0) then
   begin
-    Log.LogError('File starts with empty line: ' + FullFileName,
+    Log.LogSongError('File starts with empty line: ' + FullFileName,
                  'TSong.ReadTXTHeader');
     Result := false;
     Exit;
@@ -1051,7 +1051,7 @@ begin
 
     //Read Lines while Line starts with # or its empty
     //Store all read tags into the TagMap for later use
-    //Log.LogDebug(Line,'TSong.ReadTXTHeader');
+    //Log.LogSongError(Line,'TSong.ReadTXTHeader');
     while (Length(Line) > 0) and (Line[1] = '#') do
     begin
       //Increase Line Number
@@ -1066,7 +1066,7 @@ begin
         if (not SongFile.ReadLine(Line)) then
         begin
           Result := false;
-          Log.LogError('File incomplete or not Ultrastar txt (A): ' + FullFileName);
+          Log.LogSongError('File incomplete or not Ultrastar txt (A): ' + FullFileName);
           Break;
         end;
         Continue;
@@ -1079,7 +1079,7 @@ begin
       //Check the Identifier (If Value is given)
       if (Length(Value) = 0) then
       begin
-        Log.LogInfo('Empty field "'+Identifier+'" in file ' + FullFileName,
+        Log.LogSongError('Empty field "'+Identifier+'" in file ' + FullFileName,
                      'TSong.ReadTXTHeader');
         AddCustomTag(Identifier, '');
       end
@@ -1092,7 +1092,7 @@ begin
       if not SongFile.ReadLine(Line) then
       begin
         Result := false;
-        Log.LogError('File incomplete or not Ultrastar txt (A): ' + FullFileName);
+        Log.LogSongError('File incomplete or not Ultrastar txt (A): ' + FullFileName);
         Break;
       end;
     end; // while
@@ -1114,14 +1114,14 @@ begin
         on E: Exception do
         begin
           Result := false;
-          Log.LogError(E.Message + ' in Song File: ' + FullFileName);
+          Log.LogSongError(E.Message + ' in Song File: ' + FullFileName);
           Exit;
         end
       end;
       if not self.FormatVersion.MaxVersion(2,0,0,false) then
       begin
         Result := false;
-        Log.LogError('Unsupported format version ' + self.FormatVersion.VersionString + '; Maximum supported version is 1.X.X: ' + FullFileName);
+        Log.LogSongError('Unsupported format version ' + self.FormatVersion.VersionString + '; Maximum supported version is 1.X.X: ' + FullFileName);
         Exit;
       end;
     end
@@ -1135,7 +1135,7 @@ begin
       self.Encoding := encUTF8;
       if TagMap.IndexOf('ENCODING') > -1 then
       begin
-        Log.LogInfo('Ignoring ENCODING header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        Log.LogSongError('Ignoring ENCODING header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
         RemoveTagsFromTagMap('ENCODING', false);
       end;
     end
@@ -1185,7 +1185,7 @@ begin
           // If MP3 has a different value than AUDIO add an info message to logs
           if not self.Audio.Equals(Value) then
           begin
-             Log.LogInfo('The AUDIO header overwrites the MP3 header in file ' + FullFileName, 'TSong.ReadTXTHeader');
+             Log.LogSongError('The AUDIO header overwrites the MP3 header in file ' + FullFileName, 'TSong.ReadTXTHeader');
           end;
           RemoveTagsFromTagMap('MP3', false);
         end;
@@ -1252,7 +1252,7 @@ begin
       if (self.Path.Append(EncFile).IsFile) then
         self.Video := EncFile
       else
-        Log.LogError('Can''t find video file in song: ' + FullFileName);
+        Log.LogSongError('Can''t find video file in song: ' + FullFileName);
     end;
 
     // Instrumental Audio
@@ -1313,7 +1313,7 @@ begin
     // Resolution (deprecated and unused)
     if TagMap.IndexOf('RESOLUTION') > -1 then
     begin
-      Log.LogInfo('Ignoring RESOLUTION header in file "' + FullFileName + '" (unsupported)', 'TSong.ReadTXTHeader');
+      Log.LogSongError('Ignoring RESOLUTION header in file "' + FullFileName + '" (unsupported)', 'TSong.ReadTXTHeader');
       RemoveTagsFromTagMap('RESOLUTION', false);
     end;
 
@@ -1327,7 +1327,7 @@ begin
       end
       else
       begin
-        Log.LogInfo('Ignoring NOTESGAP header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        Log.LogSongError('Ignoring NOTESGAP header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
         RemoveTagsFromTagMap('NOTESGAP', false);
       end;
     end;
@@ -1344,7 +1344,7 @@ begin
       else
       begin
         Result := false;
-        Log.LogError('Relative Mode was removed for format >=1.0.0. The song will not be loaded. ' + FullFileName);
+        Log.LogSongError('Relative Mode was removed for format >=1.0.0. The song will not be loaded. ' + FullFileName);
         Exit;
       end;
     end;
@@ -1395,7 +1395,7 @@ begin
       end
       else
       begin
-        Log.LogInfo('Ignoring DUETSINGERP1 header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        Log.LogSongError('Ignoring DUETSINGERP1 header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
         RemoveTagsFromTagMap('DUETSINGERP1', false);
       end;
     end;
@@ -1410,7 +1410,7 @@ begin
       end
       else
       begin
-        Log.LogInfo('Ignoring DUETSINGERP2 header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
+        Log.LogSongError('Ignoring DUETSINGERP2 header in file "' + FullFileName + '" (deprecated in Format 1.0.0)', 'TSong.ReadTXTHeader');
         RemoveTagsFromTagMap('DUETSINGERP2', false);
       end;
     end;
@@ -1445,15 +1445,15 @@ begin
   begin
     Result := false;
     if (Done and 8) = 0 then      //No BPM Flag
-      Log.LogError('File contains empty lines or BPM tag missing: ' + FullFileName)
+      Log.LogSongError('File contains empty lines or BPM tag missing: ' + FullFileName)
     else if (Done and 4) = 0 then //No Audio Flag
-      Log.LogError('Audio/MP3 tag/file missing: ' + FullFileName)
+      Log.LogSongError('Audio/MP3 tag/file missing: ' + FullFileName)
     else if (Done and 2) = 0 then //No Artist Flag
-      Log.LogError('Artist tag missing: ' + FullFileName)
+      Log.LogSongError('Artist tag missing: ' + FullFileName)
     else if (Done and 1) = 0 then //No Title Flag
-      Log.LogError('Title tag missing: ' + FullFileName)
+      Log.LogSongError('Title tag missing: ' + FullFileName)
     else //unknown Error
-      Log.LogError('File incomplete or not Ultrastar txt (B - '+ inttostr(Done) +'): ' + FullFileName);
+      Log.LogSongError('File incomplete or not Ultrastar txt (B - '+ inttostr(Done) +'): ' + FullFileName);
   end
   else
   begin //check medley tags
@@ -1597,7 +1597,7 @@ begin
   begin //use old line if it there were no notes added since last call of NewSentence
     // HACK DUET ERROR
     if not Self.isDuet then
-      Log.LogError('Error loading Song, sentence w/o note found in line ' +
+      Log.LogSongError('Error loading Song, sentence w/o note found in line ' +
                  InttoStr(FileLineNo) + ': ' + Filename.ToNative);
   end;
 
@@ -1657,7 +1657,7 @@ begin
   //relative is not supported for medley!
   if self.Relative then
   begin
-    Log.LogError('Song '+self.Artist+'-' + self.Title + ' contains #Relative, this is not supported by medley-function!');
+    Log.LogSongError('Song '+self.Artist+'-' + self.Title + ' contains #Relative, this is not supported by medley-function!');
     self.Medley.Source := msNone;
     Exit;
   end;
@@ -1909,7 +1909,7 @@ begin
     //Open File and set File Pointer to the beginning
     SongFile := TMemTextFileStream.Create(FileNamePath, fmOpenRead);
   except
-    Log.LogError('Failed to open ' + FileNamePath.ToUTF8(true));
+    Log.LogSongError('Failed to open ' + FileNamePath.ToUTF8(true));
     Exit;
   end;
 
@@ -1938,7 +1938,7 @@ begin
         Self.Medley.Source := msNone;
     end;
   except
-    Log.LogError('Reading headers from file failed. File incomplete or not Ultrastar txt?: ' + FileNamePath.ToUTF8(true));
+    Log.LogSongError('Reading headers from file failed. File incomplete or not Ultrastar txt?: ' + FileNamePath.ToUTF8(true));
   end;
   SongFile.Free;
 end;
