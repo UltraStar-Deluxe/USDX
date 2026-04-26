@@ -39,7 +39,8 @@ uses
   UIni,
   UTexture,
   UThemes,
-  UMusic;
+  UMusic,
+  UMenu;
 
 type
   TLyricsEffect = (lfxSimple, lfxZoom, lfxSlide, lfxBall, lfxShift);
@@ -156,6 +157,7 @@ uses
   UGraphic,
   UDisplay,
   ULog,
+  UPath,
   math;
 
 { TLyricLine }
@@ -254,8 +256,6 @@ end;
  * player icons, a ball for the ball effect and the lyric indicator.
  *}
 procedure TLyricEngine.LoadTextures;
-var
-  I: Integer;
 begin
 
   // ball for current word hover in ball effect
@@ -794,4 +794,3 @@ begin
 end;
 
 end.
-
