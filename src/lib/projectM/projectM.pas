@@ -178,7 +178,7 @@ type
     private
       data: Pointer;
     public
-      {$IF (PROJECTM_VERSION < 1000000) or (PROJECTM_VERSION >= 2000000)} // 0.9x, emulated with 2.x
+      {$IF PROJECTM_VERSION >= 2000000}
       constructor Create(gx, gy: integer; fps: integer;
         texsize: integer; width, height: integer;
         const presetsDir, fontsDir: string;
@@ -223,10 +223,6 @@ type
 
 implementation
 
-{$IF PROJECTM_VERSION >= 1000000}
-  {$I projectM-1_0.inc}
-{$ELSE}
-  {$I projectM-0_9.inc}
-{$IFEND}
+{$I projectM-1_0.inc}
 
 end.
