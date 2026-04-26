@@ -1112,13 +1112,15 @@ type
   TTheme = class
   private
     ThemeIni:         TMemIniFile;
-    BaseThemeIni:     TMemIniFile;
+    BaseThemeInis:    array of TMemIniFile;
 
     LastThemeBasic:   TThemeBasic;
     procedure CreateThemeObjects();
     procedure OpenFile(ThemeNum: integer);
     procedure CloseFile;
     procedure LoadHeader(FileName: IPath);
+    function FindThemeIndex(const ThemeName: string): integer;
+    procedure AddBaseThemeChain(const ThemeName: string; Depth: integer);
     function ResolveThemeFile(SectionName: string): TMemIniFile;
     function SectionExists(const Name: string; var Enabled: boolean): boolean;
     function GetSectionList(const Name: string): TThemeSectionList;
@@ -1353,31 +1355,76 @@ begin
 end;
 
 procedure TTheme.OpenFile(ThemeNum: integer);
-var
-  I: integer;
 begin
   ThemeIni := TMemIniFile.Create(Themes[ThemeNum].FileName.ToNative);
+  SetLength(BaseThemeInis, 0);
 
   // Load base theme if declared
   if (Themes[ThemeNum].BaseTheme <> '') then
+    AddBaseThemeChain(Themes[ThemeNum].BaseTheme, 0);
+end;
+
+procedure TTheme.CloseFile;
+var
+  I: integer;
+begin
+  freeandnil(ThemeIni);
+  for I := Low(BaseThemeInis) to High(BaseThemeInis) do
+    FreeAndNil(BaseThemeInis[I]);
+  SetLength(BaseThemeInis, 0);
+end;
+
+function TTheme.FindThemeIndex(const ThemeName: string): integer;
+var
+  I: integer;
+begin
+  Result := -1;
+  for I := Low(Themes) to High(Themes) do
   begin
-    for I := Low(Themes) to High(Themes) do
+    if CompareText(ThemeName, Themes[I].Name) = 0 then
     begin
-      if (CompareText(Themes[ThemeNum].BaseTheme, Themes[I].Name) = 0) then
-      begin
-        if (Themes[I].BaseTheme <> '') then
-          Log.LogError('Multiple base themes not allowed', 'TTheme.LoadTheme');
-        BaseThemeIni := TMemIniFile.Create(Themes[I].FileName.ToNative);
-        Break;
-      end;
+      Result := I;
+      Exit;
     end;
   end;
 end;
 
-procedure TTheme.CloseFile;
+procedure TTheme.AddBaseThemeChain(const ThemeName: string; Depth: integer);
+var
+  ThemeIndex: integer;
+  BaseIndex: integer;
 begin
-  freeandnil(ThemeIni);
-  freeandnil(BaseThemeIni);
+  if ThemeName = '' then
+    Exit;
+
+  if Depth >= MAX_INHERITANCE then
+  begin
+    Log.LogError('Maximum base theme inheritance depth exceeded for theme "' + ThemeName + '"', 'TTheme.LoadTheme');
+    Exit;
+  end;
+
+  ThemeIndex := FindThemeIndex(ThemeName);
+  if ThemeIndex < 0 then
+  begin
+    Log.LogError('Base theme not found: ' + ThemeName, 'TTheme.LoadTheme');
+    Exit;
+  end;
+
+  for BaseIndex := Low(BaseThemeInis) to High(BaseThemeInis) do
+  begin
+    if CompareText(Themes[ThemeIndex].FileName.ToNative, BaseThemeInis[BaseIndex].FileName) = 0 then
+    begin
+      Log.LogError('Circular base theme inheritance detected for theme "' + ThemeName + '"', 'TTheme.LoadTheme');
+      Exit;
+    end;
+  end;
+
+  BaseIndex := Length(BaseThemeInis);
+  SetLength(BaseThemeInis, BaseIndex + 1);
+  BaseThemeInis[BaseIndex] := TMemIniFile.Create(Themes[ThemeIndex].FileName.ToNative);
+
+  if Themes[ThemeIndex].BaseTheme <> '' then
+    AddBaseThemeChain(Themes[ThemeIndex].BaseTheme, Depth + 1);
 end;
 
 procedure TTheme.LoadHeader(FileName: IPath);
@@ -2146,31 +2193,38 @@ end;
 
 // Return the the theme file that contains the desired section
 function TTheme.ResolveThemeFile(SectionName: string): TMemIniFile; inline;
+var
+  I: integer;
 begin
-  Result := ThemeIni;
-  if (BaseThemeIni = nil) then
+  if ThemeIni.SectionExists(SectionName) then
+  begin
+    Result := ThemeIni;
     Exit;
-  if (not ThemeIni.SectionExists(SectionName) and BaseThemeIni.SectionExists(SectionName)) then
-    Result := BaseThemeIni;
+  end;
+
+  for I := Low(BaseThemeInis) to High(BaseThemeInis) do
+  begin
+    if BaseThemeInis[I].SectionExists(SectionName) then
+    begin
+      Result := BaseThemeInis[I];
+      Exit;
+    end;
+  end;
+
+  Result := nil;
 end;
 
 // Determine if the section exists in the theme or in the base theme
 // If it exists, determine whethere it is enabled. This allows the user
 // to opt out of optional texts/statics in derived themes
 function TTheme.SectionExists(const Name: string; var Enabled: boolean): boolean;
+var
+  IniFile: TMemIniFile;
 begin
-  if (ThemeIni.SectionExists(Name)) then
-  begin
-    Result := True;
-    Enabled := ThemeIni.ReadBool(Name, 'Enabled', true);
-  end
-  else if ((BaseThemeIni <> nil) and BaseThemeIni.SectionExists(Name)) then
-  begin
-    Result := True;
-    Enabled := BaseThemeIni.ReadBool(Name, 'Enabled', true);
-  end
-  else
-    Result := False;
+  IniFile := ResolveThemeFile(Name);
+  Result := IniFile <> nil;
+  if Result then
+    Enabled := IniFile.ReadBool(Name, 'Enabled', true);
 end;
 
 function TTheme.GetSectionList(const Name: string): TThemeSectionList;
@@ -2180,12 +2234,10 @@ var
   NextSection: string;
 begin
   Result := nil;
-  if (ThemeIni.SectionExists(Name)) then
-    IniFile := ThemeIni
-  else if ((BaseThemeIni <> nil) and (BaseThemeIni.SectionExists(Name))) then
-    IniFile := BaseThemeIni
-  else
+  IniFile := ResolveThemeFile(Name);
+  if IniFile = nil then
     Exit;
+
   SetLength(Result, 1);
   I := 0;
   Result[I].Name := Name;
@@ -2196,11 +2248,8 @@ begin
     NextSection := Result[I].IniFile.ReadString(Result[I].Name, 'Inherits', '');
     if (NextSection = '') then
       Break;
-    if (ThemeIni.SectionExists(NextSection)) then
-      IniFile := ThemeIni
-    else if ((BaseThemeIni <> nil) and (BaseThemeIni.SectionExists(Name))) then
-      IniFile := BaseThemeIni
-    else
+    IniFile := ResolveThemeFile(NextSection);
+    if IniFile = nil then
     begin
       Log.LogError('Inherited section "' + NextSection + '" not found (from section "' + Result[I].Name + '")', 'TTheme.GetSectionList');
       Break;
@@ -2403,7 +2452,7 @@ end;
 
 procedure TTheme.ThemeLoadOptionalStatic(var ThemeStatic: TThemeStatic; const Name: string);
 begin
-  if ThemeIni.SectionExists(Name) or ((BaseThemeIni <> nil) and BaseThemeIni.SectionExists(Name)) then
+  if ResolveThemeFile(Name) <> nil then
   begin
     ThemeLoadStatic(ThemeStatic, Name);
   end;
@@ -2448,7 +2497,7 @@ end;
 
 procedure TTheme.ThemeLoadOptionalStaticRectangle(var ThemeStaticRectangle: TThemeStaticRectangle; const Name: string);
 begin
-  if ThemeIni.SectionExists(Name) or ((BaseThemeIni <> nil) and BaseThemeIni.SectionExists(Name)) then
+  if ResolveThemeFile(Name) <> nil then
   begin
     ThemeLoadStaticRectangle(ThemeStaticRectangle, Name);
   end;
@@ -2550,7 +2599,7 @@ var
   I: integer;
 begin
   I := 1;
-  while ThemeIni.SectionExists(Name + IntToStr(I)) or ((BaseThemeIni <> nil) and BaseThemeIni.SectionExists(Name + IntToStr(I))) do
+  while ResolveThemeFile(Name + IntToStr(I)) <> nil do
   begin
     SetLength(Collections, I);
     ThemeLoadButtonCollection(Collections[I-1], Name + IntToStr(I));
@@ -3817,6 +3866,12 @@ begin
   Song.Cover.Y := ReadInteger(SectionList, 'Y', 190);
   Song.Cover.W := ReadInteger(SectionList, 'W', 300);
   Song.Cover.H := ReadInteger(SectionList, 'H', 200);
+  Song.Cover.SelectX := ReadInteger(SectionList, 'SelectX', Song.Cover.X);
+  Song.Cover.SelectY := ReadInteger(SectionList, 'SelectY', Song.Cover.Y);
+  Song.Cover.SelectW := ReadInteger(SectionList, 'SelectW', Song.Cover.W);
+  Song.Cover.SelectH := ReadInteger(SectionList, 'SelectH', Song.Cover.H);
+  Song.Cover.SelectReflection := ReadBool(SectionList, 'SelectReflection', false);
+  Song.Cover.SelectReflectionSpacing := ReadInteger(SectionList, 'SelectReflectionSpacing', 0);
 
   // Song menu modes: 0 - roulette, 1 - chessboard, 2 - list
   
@@ -3825,12 +3880,6 @@ begin
     Song.Cover.Rows := ReadInteger(SectionList, 'Rows', 4);
     Song.Cover.Cols := ReadInteger(SectionList, 'Cols', 4);
     Song.Cover.Padding := ReadInteger(SectionList, 'Padding', 0);
-    Song.Cover.SelectX := ReadInteger(SectionList, 'SelectX', 300);
-    Song.Cover.SelectY := ReadInteger(SectionList, 'SelectY', 120);
-    Song.Cover.SelectW := ReadInteger(SectionList, 'SelectW', 325);
-    Song.Cover.SelectH := ReadInteger(SectionList, 'SelectH', 200);
-    Song.Cover.SelectReflection := ReadBool(SectionList, 'SelectReflection', false);
-    Song.Cover.SelectReflectionSpacing := ReadInteger(SectionList, 'SelectReflectionSpacing', 0);
     Song.Cover.ZoomThumbW := ReadInteger(SectionList, 'ZoomThumbW', 120);
     Song.Cover.ZoomThumbH := ReadInteger(SectionList, 'ZoomThumbH', 120);
     Song.Cover.ZoomThumbStyle := ReadInteger(SectionList, 'ZoomThumbStyle', 0);
@@ -3840,12 +3889,6 @@ begin
 
   if (TSongMenuMode(Ini.SongMenu) = smList) then
   begin
-    Song.Cover.SelectX := ReadInteger(SectionList, 'SelectX', 300);
-    Song.Cover.SelectY := ReadInteger(SectionList, 'SelectY', 120);
-    Song.Cover.SelectW := ReadInteger(SectionList, 'SelectW', 325);
-    Song.Cover.SelectH := ReadInteger(SectionList, 'SelectH', 200);
-    Song.Cover.SelectReflection := ReadBool(SectionList, 'SelectReflection', false);
-    Song.Cover.SelectReflectionSpacing := ReadInteger(SectionList, 'SelectReflectionSpacing', 0);
     Song.Cover.Padding := ReadInteger(SectionList, 'Padding', 4);
 
     SectionList := GetSectionList('Song' + prefix + 'SelectSong');
