@@ -634,7 +634,7 @@ begin
   if not Assigned(ScoreDB) then
     Exit;
 
-  // Prevent 0 Scores from being added EDIT: ==> UScreenTop5.pas!
+  // Prevent 0 scores from being added. Callers are expected to filter these.
   //if (Score <= 0) then
   //  Exit;
 
