@@ -174,6 +174,7 @@ type
 
       procedure RefreshTexts;
       procedure ResetScores;
+      procedure SaveLocalScores;
 
       procedure StartPreview;
       procedure StartVoice;
@@ -1342,10 +1343,34 @@ begin
   BarTime := SDL_GetTicks();
 end;
 
+procedure TScreenScore.SaveLocalScores;
+var
+  I: integer;
+  Sung: boolean;
+begin
+  if (ScreenSong.Mode <> smNormal) or ScreenSing.SungPaused or (not ScreenSing.SungToEnd) then
+    Exit;
+
+  Sung := false;
+  for I := 0 to PlayersPlay - 1 do
+  begin
+    if Round(Player[I].ScoreTotalInt) > 0 then
+    begin
+      DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Name, Round(Player[I].ScoreTotalInt));
+      Sung := true;
+    end;
+  end;
+
+  if Sung then
+    DataBase.WriteScore(CurrentSong);
+end;
+
 procedure TScreenScore.onShowFinish;
 var
   index: integer;
 begin
+  SaveLocalScores;
+
   for index := 1 to (PlayersPlay) do
   begin
     TextScore_ActualValue[index]  := 0;

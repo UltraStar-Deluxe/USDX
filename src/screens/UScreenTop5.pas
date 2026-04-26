@@ -177,7 +177,6 @@ end;
 procedure TScreenTop5.OnShow;
 var
   I:    integer;
-  sung: boolean; //score added? otherwise in wasn't sung!
   Report: string;
 begin
   inherited;
@@ -185,31 +184,15 @@ begin
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenTop5');
 
-  sung := false;
   Fadeout := false;
   DifficultyShow := Player[0].Level;
 
-  //ReadScore(CurrentSong);
-
-  for I := 0 to PlayersPlay - 1 do
-  begin
-    if (Round(Player[I].ScoreTotalInt) > 0) and (ScreenSing.SungToEnd) then
-    begin
-      DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Name, Round(Player[I].ScoreTotalInt));
-      sung:=true;
-    end;
-  end;
-
   try
-    if sung then
-    begin
-       DataBase.WriteScore(CurrentSong);
-    end;
     DataBase.ReadScore(CurrentSong);
   except
     on E : Exception do
     begin
-      Report := 'Writing or reading songscore failed in Top-5-creen. Faulty database file?' + LineEnding +
+      Report := 'Reading songscore failed in Top-5-screen. Faulty database file?' + LineEnding +
       'Stacktrace:' + LineEnding;
       if E <> nil then
       begin
