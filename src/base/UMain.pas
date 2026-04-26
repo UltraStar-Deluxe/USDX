@@ -83,6 +83,7 @@ uses
   UJoystick,
   ULanguage,
   ULog,
+  UMenu,
   UPathUtils,
   UPlaylist,
   UMusic,
@@ -296,6 +297,31 @@ end;
 procedure SetTextInput(enabled: boolean);
 begin
   if enabled then StartTextInput else StopTextInput;
+end;
+
+procedure ReloadCurrentTheme;
+var
+  CurrentScreen: PMenu;
+begin
+  CurrentScreen := Display.CurrentScreen;
+
+  Display.NextScreen := nil;
+  Display.NextScreenWithCheck := nil;
+
+  Theme.LoadTheme(Ini.Theme, Ini.Color);
+  UGraphic.UnloadScreens;
+  UGraphic.LoadScreens(USDXVersionStr);
+
+  if Assigned(CurrentScreen) and Assigned(CurrentScreen^) then
+  begin
+    Display.CurrentScreen := CurrentScreen;
+    Display.CurrentScreen^.OnShow;
+  end
+  else
+  begin
+    Display.CurrentScreen := @ScreenMain;
+    ScreenMain.OnShow;
+  end;
 end;
 
 procedure MainLoop;
@@ -542,6 +568,8 @@ begin
             // if print is pressed -> make screenshot and save to screenshot path
             if (SimKey = SDLK_SYSREQ) or (SimKey = SDLK_PRINTSCREEN) then
               Display.SaveScreenShot
+            else if (SimKey = SDLK_F5) then
+              ReloadCurrentTheme
             // if there is a visible popup then let it handle input instead of underlying screen
             // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
             else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then
