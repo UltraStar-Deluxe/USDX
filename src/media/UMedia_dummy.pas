@@ -71,7 +71,7 @@ type
       procedure SetSyncSource(SyncSource: TSyncSource);
 
       // IAudioInput
-      function InitializeRecord: boolean;
+      function InitializeRecord(ScanMode: TAudioInputScanMode): boolean;
       function FinalizeRecord: boolean;
       procedure CaptureStart;
       procedure CaptureStop;
@@ -244,7 +244,7 @@ begin
 end;
 
 // IAudioInput
-function TAudio_Dummy.InitializeRecord: boolean;
+function TAudio_Dummy.InitializeRecord(ScanMode: TAudioInputScanMode): boolean;
 begin
   Result := true;
 end;
