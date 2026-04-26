@@ -1922,7 +1922,7 @@ begin
       for IndexUser := 0 to High(DataBase.NetworkUser[IndexWeb].Userlist) do
       begin
         Send := false;
-        TotalScore := player[PlayerIndex - 1].ScoreInt + player[PlayerIndex - 1].ScoreLineInt + player[PlayerIndex - 1].ScoreGoldenInt;
+        TotalScore := player[PlayerIndex - 1].ScoreTotalInt;
 
         case (Act_Level) of
           0: if (TotalScore >= DataBase.NetworkUser[IndexWeb].UserList[IndexUser].AutoScoreEasy)
@@ -1988,7 +1988,7 @@ begin
       for IndexUser := 0 to High(DataBase.NetworkUser[IndexWeb].Userlist) do
       begin
         Save := false;
-        TotalScore := player[PlayerIndex - 1].ScoreInt + player[PlayerIndex - 1].ScoreLineInt + player[PlayerIndex - 1].ScoreGoldenInt;
+        TotalScore := player[PlayerIndex - 1].ScoreTotalInt;
 
         case (Act_Level) of
           0: if (TotalScore >= DataBase.NetworkUser[IndexWeb].UserList[IndexUser].AutoScoreEasy)
