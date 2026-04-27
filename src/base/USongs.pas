@@ -93,6 +93,7 @@ type
   private
     fParseSongDirectory: boolean;
     fProcessing:         boolean;
+    fDiscoveringDirectories: boolean;
     fDiscoveryDirCount:  integer;
     fDiscoveryDirsScanned: integer;
     fTotalSongsToLoad:   integer;
@@ -175,15 +176,27 @@ uses
   UFilesystem,
   UUnicodeUtils;
 
+var
+  LastLoadingEventPumpTicks: cardinal = 0;
+
 procedure PumpLoadingEvents;
+const
+  LoadingEventPumpIntervalMs = 50;
 var
   Event: TSDL_Event;
+  NowTicks: cardinal;
 begin
+  NowTicks := SDL_GetTicks;
+  if (LastLoadingEventPumpTicks <> 0) and (NowTicks - LastLoadingEventPumpTicks < LoadingEventPumpIntervalMs) then
+    Exit;
+
   while SDL_PollEvent(@Event) <> 0 do
     ;
+
+  LastLoadingEventPumpTicks := NowTicks;
 end;
 
-function CollectDirectories(const StartDir: IPath; Recursive: Boolean): TPathDynArray;
+function CollectDirectories(const StartDir: IPath; Recursive: Boolean; Owner: TSongs = nil): TPathDynArray;
 var
   Iter: IFileIterator;
   FileInfo: TFileInfo;
@@ -193,6 +206,12 @@ var
 begin
   SetLength(Result, 1);
   Result[0] := StartDir;
+  if Assigned(Owner) then
+  begin
+    Inc(Owner.fDiscoveryDirCount);
+    Owner.UpdateDiscoveryProgress(0);
+    PumpLoadingEvents;
+  end;
   if not Recursive then
     Exit;
 
@@ -207,7 +226,7 @@ begin
        (not FileName.Equals('')) then
     begin
       Log.LogDebug('Recursing: ' + StartDir.Append(FileName).ToWide, 'TSongs.FindFilesByExtension');
-      SubDirs := CollectDirectories(StartDir.Append(FileName), true);
+      SubDirs := CollectDirectories(StartDir.Append(FileName), true, Owner);
       SubDirCount := Length(SubDirs);
       if SubDirCount > 0 then
       begin
@@ -275,6 +294,7 @@ begin
 
     Log.LogStatus('Searching For Songs', 'SongList');
 
+    fDiscoveringDirectories := false;
     fDiscoveryDirCount := 0;
     fDiscoveryDirsScanned := 0;
     fSongsLoaded := 0;
@@ -340,7 +360,7 @@ var
   FileName: IPath;
 begin
   if Recursive then
-    DirList := CollectDirectories(Dir, true)
+    DirList := CollectDirectories(Dir, true, Self)
   else
   begin
     SetLength(DirList, 1);
@@ -359,6 +379,7 @@ begin
         Log.LogDebug('Found file ' + DirList[DirIndex].Append(FileName).ToWide, 'TSongs.FindFilesByExtension');
         SetLength(Files, Length(Files) + 1);
         Files[High(Files)] := DirList[DirIndex].Append(FileName);
+        PumpLoadingEvents;
       end;
     end;
   end;
@@ -380,12 +401,14 @@ begin
     Exit;
 
   Extension := Path('.txt');
+  fDiscoveringDirectories := true;
+  UpdateDiscoveryProgress(0, true);
 
   for DirIndex := 0 to SongPaths.Count - 1 do
   begin
     DirPath := SongPaths[DirIndex] as IPath;
     Log.LogDebug('Searching directory ' + DirPath.ToWide + ' for txt files', 'TSongs.CollectSongFiles');
-    DirList := CollectDirectories(DirPath, true);
+    DirList := CollectDirectories(DirPath, true, Self);
     AdditionalCount := Length(DirList);
     if AdditionalCount > 0 then
     begin
@@ -396,7 +419,9 @@ begin
     end;
   end;
 
+  fDiscoveringDirectories := false;
   fDiscoveryDirCount := Length(AllDirs);
+  fDiscoveryDirsScanned := 0;
   UpdateDiscoveryProgress(0, true);
 
   for ScanIndex := 0 to High(AllDirs) do
@@ -435,11 +460,29 @@ begin
 end;
 
 procedure TSongs.UpdateDiscoveryProgress(SongsFound: integer; Force: boolean = false);
+var
+  Percent: integer;
+  FilesNeeded: integer;
 begin
   if not Assigned(ScreenLoading) then
     Exit;
 
-  ScreenLoading.SetDiscoveryProgress(fDiscoveryDirsScanned, fDiscoveryDirCount, SongsFound);
+  if fDiscoveringDirectories then
+  begin
+    FilesNeeded := 0;
+    Percent := 0;
+    while (Percent < 99) and (fDiscoveryDirCount >= FilesNeeded + 5 * (Percent + 1)) do
+    begin
+      Inc(Percent);
+      Inc(FilesNeeded, 5 * Percent);
+    end;
+    ScreenLoading.SetDiscoveryProgress(Percent, 200, SongsFound);
+  end
+  else if fDiscoveryDirCount > 0 then
+    ScreenLoading.SetDiscoveryProgress(fDiscoveryDirCount + fDiscoveryDirsScanned, fDiscoveryDirCount * 2, SongsFound)
+  else
+    ScreenLoading.SetDiscoveryProgress(0, 100, SongsFound);
+
   if Force then
     ScreenLoading.RefreshProgress(true);
 end;
