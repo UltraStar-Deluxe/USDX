@@ -59,6 +59,8 @@ type
 
   APlaylist = array of TPlaylist;
 
+  TPlaylistSortOrder = (psoArtist, psoTitle, psoEdition, psoGenre, psoLanguage, psoShuffle);
+
   //----------
   //TPlaylistManager - Class for Managing Playlists (Loading, Displaying, Saving)
   //----------
@@ -66,9 +68,11 @@ type
     private
       SongOrderDirty: Boolean;
       function  FindSongIndexByNames(const Artist, Title: UTF8String): Integer;
+      function  PlaylistContainsSongID(const iPlaylist: Cardinal; const SongID: Integer): Boolean;
       procedure MoveSongIndex(const OldIndex, NewIndex: Integer);
       procedure ApplyPlaylistOrder(Index: Cardinal);
       procedure ReindexAllPlaylists;
+      procedure SortItems(var Items: APlaylistItem; Order: TPlaylistSortOrder);
 
     public
       Mode:         TSongMode;     //Current Playlist Mode for SongScreen
@@ -90,8 +94,12 @@ type
       function    AddPlaylist(const Name: UTF8String): Cardinal;
       procedure   DelPlaylist(const Index: Cardinal);
 
-      procedure   AddItem(const SongID: Cardinal; const iPlaylist: Integer = -1);
+      function    AddItem(const SongID: Cardinal; const iPlaylist: Integer = -1): Boolean;
+      function    AddVisibleItems(const iPlaylist: Integer = -1): Cardinal;
       procedure   DelItem(const iItem: Cardinal; const iPlaylist: Integer = -1);
+      procedure   DelVisibleItems(const iPlaylist: Integer = -1);
+      procedure   SortPlaylist(const Order: TPlaylistSortOrder; const iPlaylist: Integer = -1);
+      function    MoveItem(const SongID: Cardinal; const Direction: Integer; const iPlaylist: Integer = -1): Integer;
 
       procedure   GetNames(var PLNames: array of UTF8String);
       function    GetIndexbySongID(const SongID: Cardinal; const iPlaylist: Integer = -1): Integer;
@@ -514,11 +522,13 @@ end;
 //----------
 //AddItem - Adds an Item to a specific Playlist
 //----------
-Procedure   TPlayListManager.AddItem(const SongID: Cardinal; const iPlaylist: Integer);
+Function    TPlayListManager.AddItem(const SongID: Cardinal; const iPlaylist: Integer): Boolean;
 var
   P: Cardinal;
   Len: Cardinal;
 begin
+  Result := False;
+
   if iPlaylist = -1 then
     P := CurPlaylist
   else if (iPlaylist >= 0) AND (iPlaylist <= high(Playlists)) then
@@ -528,17 +538,62 @@ begin
 
   if (Int(SongID) <= High(CatSongs.Song)) AND (NOT CatSongs.Song[SongID].Main) then
   begin
+    if PlaylistContainsSongID(P, SongID) then
+      Exit;
+
     Len := Length(Playlists[P].Items);
     SetLength(Playlists[P].Items, Len + 1);
 
     Playlists[P].Items[Len].SongID  := SongID;
     Playlists[P].Items[Len].Title   := CatSongs.Song[SongID].Title;
     Playlists[P].Items[Len].Artist  := CatSongs.Song[SongID].Artist;
+    Result := True;
 
     //Save Changes
     SavePlayList(P);
 
     //Correct Display when Editing current Playlist
+    if (CatSongs.CatNumShow = -3) and (P = CurPlaylist) then
+      SetPlaylist(P);
+  end;
+end;
+
+function TPlayListManager.AddVisibleItems(const iPlaylist: Integer): Cardinal;
+var
+  P: Cardinal;
+  I, Len: Integer;
+begin
+  Result := 0;
+
+  if iPlaylist = -1 then
+    P := CurPlaylist
+  else if (iPlaylist >= 0) AND (iPlaylist <= high(Playlists)) then
+    P := iPlaylist
+  else
+    exit;
+
+  Len := Length(Playlists[P].Items);
+
+  for I := Low(CatSongs.Song) to High(CatSongs.Song) do
+  begin
+    if CatSongs.Song[I].Visible and (not CatSongs.Song[I].Main) then
+    begin
+      if PlaylistContainsSongID(P, I) then
+        Continue;
+
+      SetLength(Playlists[P].Items, Len + 1);
+      Playlists[P].Items[Len].SongID := I;
+      Playlists[P].Items[Len].Title  := CatSongs.Song[I].Title;
+      Playlists[P].Items[Len].Artist := CatSongs.Song[I].Artist;
+      Inc(Len);
+      Inc(Result);
+    end;
+  end;
+
+  if Result > 0 then
+  begin
+    SavePlayList(P);
+
     if (CatSongs.CatNumShow = -3) and (P = CurPlaylist) then
       SetPlaylist(P);
   end;
@@ -580,6 +635,185 @@ begin
   //Correct Display when Editing current Playlist
   else if (CatSongs.CatNumShow = -3) and (P = CurPlaylist) then
     SetPlaylist(P);
+end;
+
+procedure TPlayListManager.DelVisibleItems(const iPlaylist: Integer);
+var
+  P: Cardinal;
+  I, Len: Integer;
+begin
+  if iPlaylist = -1 then
+    P := CurPlaylist
+  else if (iPlaylist >= 0) AND (iPlaylist <= high(Playlists)) then
+    P := iPlaylist
+  else
+    exit;
+
+  Len := 0;
+  for I := 0 to High(Playlists[P].Items) do
+  begin
+    if (Playlists[P].Items[I].SongID < Low(CatSongs.Song)) or
+       (Playlists[P].Items[I].SongID > High(CatSongs.Song)) or
+       (not CatSongs.Song[Playlists[P].Items[I].SongID].Visible) then
+    begin
+      Playlists[P].Items[Len] := Playlists[P].Items[I];
+      Inc(Len);
+    end;
+  end;
+  SetLength(Playlists[P].Items, Len);
+  SavePlayList(P);
+
+  if (CatSongs.CatNumShow = -3) and (P = CurPlaylist) then
+  begin
+    if Length(Playlists[P].Items) = 0 then
+    begin
+      ScreenSong.UnloadCover(ScreenSong.Interaction);
+      ScreenSong.HideCatTL;
+      CatSongs.SetFilter('', fltAll);
+      ScreenSong.Interaction := 0;
+      ScreenSong.FixSelected;
+      ScreenSong.ChangeMusic;
+      UnsetPlaylist;
+    end
+    else
+      SetPlaylist(P);
+  end;
+end;
+
+procedure TPlayListManager.SortPlaylist(const Order: TPlaylistSortOrder; const iPlaylist: Integer);
+var
+  P: Cardinal;
+begin
+  if iPlaylist = -1 then
+    P := CurPlaylist
+  else if (iPlaylist >= 0) AND (iPlaylist <= high(Playlists)) then
+    P := iPlaylist
+  else
+    exit;
+
+  SortItems(Playlists[P].Items, Order);
+  Playlists[P].FixedOrder := True;
+  SavePlayList(P);
+
+  if (CatSongs.CatNumShow = -3) and (P = CurPlaylist) then
+    SetPlaylist(P);
+end;
+
+function TPlayListManager.MoveItem(const SongID: Cardinal; const Direction: Integer; const iPlaylist: Integer): Integer;
+var
+  P: Cardinal;
+  ItemIndex, NewIndex, I, MovedSongID: Integer;
+  Item: TPlaylistItem;
+  WasVisible: APlaylistItem;
+
+  function WasShown(const Song: TSong): Boolean;
+  var
+    V: Integer;
+  begin
+    Result := False;
+    for V := 0 to High(WasVisible) do
+    begin
+      if (WasVisible[V].Artist = Song.Artist) and
+         (WasVisible[V].Title = Song.Title) then
+      begin
+        Result := True;
+        Exit;
+      end;
+    end;
+  end;
+
+  function PlaylistItemWasShown(const PlaylistItem: TPlaylistItem): Boolean;
+  var
+    V: Integer;
+  begin
+    Result := False;
+    for V := 0 to High(WasVisible) do
+    begin
+      if (WasVisible[V].Artist = PlaylistItem.Artist) and
+         (WasVisible[V].Title = PlaylistItem.Title) then
+      begin
+        Result := True;
+        Exit;
+      end;
+    end;
+  end;
+begin
+  Result := -1;
+
+  if Direction = 0 then
+    Exit;
+
+  if iPlaylist = -1 then
+    P := CurPlaylist
+  else if (iPlaylist >= 0) AND (iPlaylist <= high(Playlists)) then
+    P := iPlaylist
+  else
+    exit;
+
+  ItemIndex := GetIndexbySongID(SongID, P);
+  if ItemIndex = -1 then
+    Exit;
+
+  SetLength(WasVisible, 0);
+  for I := Low(CatSongs.Song) to High(CatSongs.Song) do
+  begin
+    if CatSongs.Song[I].Visible and (not CatSongs.Song[I].Main) then
+    begin
+      SetLength(WasVisible, Length(WasVisible) + 1);
+      WasVisible[High(WasVisible)].Artist := CatSongs.Song[I].Artist;
+      WasVisible[High(WasVisible)].Title := CatSongs.Song[I].Title;
+      WasVisible[High(WasVisible)].SongID := I;
+    end;
+  end;
+
+  NewIndex := ItemIndex;
+  repeat
+    Inc(NewIndex, Direction);
+  until (NewIndex < 0) or
+        (NewIndex > High(Playlists[P].Items)) or
+        PlaylistItemWasShown(Playlists[P].Items[NewIndex]);
+
+  if NewIndex < 0 then
+    NewIndex := 0
+  else if NewIndex > High(Playlists[P].Items) then
+    NewIndex := High(Playlists[P].Items);
+
+  if NewIndex = ItemIndex then
+  begin
+    Result := SongID;
+    Exit;
+  end;
+
+  Item := Playlists[P].Items[ItemIndex];
+  if ItemIndex > NewIndex then
+  begin
+    for I := ItemIndex downto NewIndex + 1 do
+      Playlists[P].Items[I] := Playlists[P].Items[I - 1];
+  end
+  else
+  begin
+    for I := ItemIndex to NewIndex - 1 do
+      Playlists[P].Items[I] := Playlists[P].Items[I + 1];
+  end;
+  Playlists[P].Items[NewIndex] := Item;
+
+  Playlists[P].FixedOrder := True;
+  SavePlayList(P);
+  SetPlaylist(P);
+
+  for I := Low(CatSongs.Song) to High(CatSongs.Song) do
+    CatSongs.Song[I].Visible := CatSongs.Song[I].Visible and WasShown(CatSongs.Song[I]);
+
+  CatSongs.ResetVisibleIndexCache;
+
+  MovedSongID := FindSongIndexByNames(Item.Artist, Item.Title);
+  if MovedSongID <> -1 then
+  begin
+    ScreenSong.SkipTo(CatSongs.VisibleIndex(MovedSongID), MovedSongID, CatSongs.VisibleSongs);
+    Result := MovedSongID;
+  end
+  else
+    Result := SongID;
 end;
 
 //----------
@@ -640,6 +874,25 @@ begin
     if (CatSongs.Song[I].Artist = Artist) and (CatSongs.Song[I].Title = Title) then
     begin
       Result := I;
+      Exit;
+    end;
+  end;
+end;
+
+function TPlayListManager.PlaylistContainsSongID(const iPlaylist: Cardinal; const SongID: Integer): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+
+  if iPlaylist > High(Playlists) then
+    Exit;
+
+  for I := 0 to High(Playlists[iPlaylist].Items) do
+  begin
+    if Playlists[iPlaylist].Items[I].SongID = SongID then
+    begin
+      Result := True;
       Exit;
     end;
   end;
@@ -708,6 +961,82 @@ begin
 
   ReindexAllPlaylists;
   SongOrderDirty := True;
+end;
+
+procedure TPlayListManager.SortItems(var Items: APlaylistItem; Order: TPlaylistSortOrder);
+var
+  I, J, R: Integer;
+  Item: TPlaylistItem;
+
+  function CompareItems(const Left, Right: TPlaylistItem): Integer;
+  var
+    LeftSong, RightSong: TSong;
+  begin
+    LeftSong := nil;
+    RightSong := nil;
+
+    if (Left.SongID >= 0) and (Left.SongID <= High(CatSongs.Song)) then
+      LeftSong := CatSongs.Song[Left.SongID];
+    if (Right.SongID >= 0) and (Right.SongID <= High(CatSongs.Song)) then
+      RightSong := CatSongs.Song[Right.SongID];
+
+    case Order of
+      psoArtist:
+        Result := UTF8CompareText(Left.Artist, Right.Artist);
+      psoTitle:
+        Result := UTF8CompareText(Left.Title, Right.Title);
+      psoEdition:
+        if Assigned(LeftSong) and Assigned(RightSong) then
+          Result := UTF8CompareText(LeftSong.Edition, RightSong.Edition)
+        else
+          Result := 0;
+      psoGenre:
+        if Assigned(LeftSong) and Assigned(RightSong) then
+          Result := UTF8CompareText(LeftSong.Genre, RightSong.Genre)
+        else
+          Result := 0;
+      psoLanguage:
+        if Assigned(LeftSong) and Assigned(RightSong) then
+          Result := UTF8CompareText(LeftSong.Language, RightSong.Language)
+        else
+          Result := 0;
+      else
+        Result := 0;
+    end;
+
+    if Result = 0 then
+      Result := UTF8CompareText(Left.Artist, Right.Artist);
+    if Result = 0 then
+      Result := UTF8CompareText(Left.Title, Right.Title);
+  end;
+
+begin
+  if Length(Items) < 2 then
+    Exit;
+
+  if Order = psoShuffle then
+  begin
+    for I := High(Items) downto 1 do
+    begin
+      R := Random(I + 1);
+      Item := Items[I];
+      Items[I] := Items[R];
+      Items[R] := Item;
+    end;
+    Exit;
+  end;
+
+  for I := 1 to High(Items) do
+  begin
+    Item := Items[I];
+    J := I;
+    while (J > 0) and (CompareItems(Item, Items[J - 1]) < 0) do
+    begin
+      Items[J] := Items[J - 1];
+      Dec(J);
+    end;
+    Items[J] := Item;
+  end;
 end;
 
 procedure TPlayListManager.RestoreSongOrder;
