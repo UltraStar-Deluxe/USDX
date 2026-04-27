@@ -2037,7 +2037,7 @@ begin
   for I := 0 to High(CatSongs.Song) do
   begin
     if Assigned(ScreenLoading) then
-      ScreenLoading.SetStatus(Format('generating song thumbnails %d / %d', [I, Length(CatSongs.Song)]));
+      ScreenLoading.SetStatusRaw(Format('%s %d / %d', [Language.Translate('EDIT_COVER'), I, Length(CatSongs.Song)]));
 
     while SDL_PollEvent(@Event) <> 0 do
       ;

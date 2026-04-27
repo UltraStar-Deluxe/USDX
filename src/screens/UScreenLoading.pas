@@ -65,6 +65,7 @@ type
       procedure OnShow; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure SetStatus(const Value: UTF8String; Force: boolean = false);
+      procedure SetStatusRaw(const Value: UTF8String; Force: boolean = false);
       procedure SetDiscoveryProgress(Current, Total, SongsFound: integer);
       procedure SetSongLoadingProgress(Current, Total: integer);
       procedure RefreshProgress(Force: boolean = false);
@@ -198,6 +199,13 @@ end;
 procedure TScreenLoading.SetStatus(const Value: UTF8String; Force: boolean = false);
 begin
   UpdateStatus(Value);
+  RefreshProgress(Force);
+end;
+
+procedure TScreenLoading.SetStatusRaw(const Value: UTF8String; Force: boolean = false);
+begin
+  if (StatusTextIndex >= 0) and (StatusTextIndex < Length(Text)) then
+    Text[StatusTextIndex].Text := Value;
   RefreshProgress(Force);
 end;
 

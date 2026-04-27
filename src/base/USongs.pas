@@ -170,6 +170,7 @@ uses
   UCovers,
   UFiles,
   UGraphic,
+  ULanguage,
   UMain,
   UPathUtils,
   UNote,
@@ -307,8 +308,6 @@ begin
     if assigned(CatSongs) then
     begin
       Log.LogStatus('Refreshing Song Categories', 'SongList');
-      if Assigned(ScreenLoading) then
-        ScreenLoading.SetStatus('refreshing categories', true);
       CatSongs.Refresh;
       Log.LogStatus('Refreshing Song Categories - Done', 'SongList');
     end;
@@ -316,8 +315,6 @@ begin
     if assigned(CatCovers) then
     begin
       Log.LogStatus('Loading Category Covers', 'SongList');
-      if Assigned(ScreenLoading) then
-        ScreenLoading.SetStatus('loading category covers', true);
       CatCovers.Load;
       Log.LogStatus('Loading Category Covers - Done', 'SongList');
     end;
@@ -329,12 +326,10 @@ begin
     begin
       Log.LogStatus('Generating Song Thumbnails', 'SongList');
       if Assigned(ScreenLoading) then
-        ScreenLoading.SetStatus('generating song thumbnails', true);
+        ScreenLoading.SetStatusRaw(Language.Translate('EDIT_COVER'), true);
       ScreenSong.GenerateThumbnails();
       Log.LogStatus('Generating Song Thumbnails - Done', 'SongList');
       Log.LogStatus('Refreshing Song Screen', 'SongList');
-      if Assigned(ScreenLoading) then
-        ScreenLoading.SetStatus('refreshing song screen', true);
       ScreenSong.OnShow; // refresh ScreenSong
       Log.LogStatus('Refreshing Song Screen - Done', 'SongList');
     end;
