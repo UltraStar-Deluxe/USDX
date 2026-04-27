@@ -293,6 +293,12 @@ begin
 end;
 
 procedure TLog.LogToFile(const Text: string);
+
+  procedure WriteLogLine(const Line: string);
+  begin
+    WriteLn(LogFile, FormatDateTime('yyyy-mm-dd hh:nn:ss.zzz', Now) + ' ' + Line);
+  end;
+
 begin
   EnterCriticalSection(Lock);
   if (FileOutputEnabled and not LogFileOpened) then
@@ -307,9 +313,9 @@ begin
     //If File is opened write Date to Error File
     if (LogFileOpened) then
     begin
-      WriteLn(LogFile, Title + ' Error Log');
-      WriteLn(LogFile, 'Date: ' + DatetoStr(Now) + ' Time: ' + TimetoStr(Now));
-      WriteLn(LogFile, '-------------------');
+      WriteLogLine(Title + ' Error Log');
+      WriteLogLine('Date: ' + DatetoStr(Now) + ' Time: ' + TimetoStr(Now));
+      WriteLogLine('-------------------');
 
       Flush(LogFile);
     end;
@@ -318,7 +324,7 @@ begin
   if LogFileOpened then
   begin
     try
-      WriteLn(LogFile, Text);
+      WriteLogLine(Text);
       Flush(LogFile);
     except
       LogFileOpened := false;
@@ -581,5 +587,4 @@ begin
 end;
 
 end.
-
 

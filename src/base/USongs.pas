@@ -326,7 +326,7 @@ begin
     begin
       Log.LogStatus('Generating Song Thumbnails', 'SongList');
       if Assigned(ScreenLoading) then
-        ScreenLoading.SetStatusRaw(Language.Translate('EDIT_COVER'), true);
+        ScreenLoading.SetCoverLoadingProgress(0, Length(CatSongs.Song), Language.Translate('EDIT_COVER'), true);
       ScreenSong.GenerateThumbnails();
       Log.LogStatus('Generating Song Thumbnails - Done', 'SongList');
       Log.LogStatus('Refreshing Song Screen', 'SongList');

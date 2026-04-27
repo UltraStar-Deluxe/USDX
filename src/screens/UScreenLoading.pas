@@ -68,6 +68,7 @@ type
       procedure SetStatusRaw(const Value: UTF8String; Force: boolean = false);
       procedure SetDiscoveryProgress(Current, Total, SongsFound: integer);
       procedure SetSongLoadingProgress(Current, Total: integer);
+      procedure SetCoverLoadingProgress(Current, Total: integer; const Value: UTF8String; Force: boolean = false);
       procedure RefreshProgress(Force: boolean = false);
   end;
 
@@ -218,12 +219,20 @@ end;
 
 procedure TScreenLoading.SetSongLoadingProgress(Current, Total: integer);
 begin
-  UpdateBar(LoadingBarBaseIndex, LoadingBarFillIndex, ClampProgress(Current, Total), LoadingBarAlpha * 0.5, LoadingBarAlpha);
+  UpdateBar(LoadingBarBaseIndex, LoadingBarFillIndex, ClampProgress(Current, Total) * 0.5, LoadingBarAlpha * 0.5, LoadingBarAlpha);
   if Total > 0 then
     UpdateStatus(Format('%5d / %5d', [Current, Total]))
   else
     UpdateStatus('');
   RefreshProgress;
+end;
+
+procedure TScreenLoading.SetCoverLoadingProgress(Current, Total: integer; const Value: UTF8String; Force: boolean = false);
+begin
+  UpdateBar(LoadingBarBaseIndex, LoadingBarFillIndex, 0.5 + ClampProgress(Current, Total) * 0.5, LoadingBarAlpha * 0.5, LoadingBarAlpha);
+  if (StatusTextIndex >= 0) and (StatusTextIndex < Length(Text)) then
+    Text[StatusTextIndex].Text := Value;
+  RefreshProgress(Force);
 end;
 
 procedure TScreenLoading.RefreshProgress(Force: boolean);

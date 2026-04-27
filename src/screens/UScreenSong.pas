@@ -2037,7 +2037,7 @@ begin
   for I := 0 to High(CatSongs.Song) do
   begin
     if Assigned(ScreenLoading) then
-      ScreenLoading.SetStatusRaw(Format('%s %d / %d', [Language.Translate('EDIT_COVER'), I, Length(CatSongs.Song)]));
+      ScreenLoading.SetCoverLoadingProgress(I + 1, Length(CatSongs.Song), Format('%s %d / %d', [Language.Translate('EDIT_COVER'), I + 1, Length(CatSongs.Song)]));
 
     while SDL_PollEvent(@Event) <> 0 do
       ;
