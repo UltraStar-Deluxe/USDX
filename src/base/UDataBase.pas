@@ -158,6 +158,8 @@ type
       procedure FreeStats(StatList: TList);
       function GetTotalEntrys(Typ: TStatType): cardinal;
       function GetStatReset: TDateTime;
+      function GetLastSongFileCount: integer;
+      procedure SetLastSongFileCount(Count: integer);
       function FormatDate(time_stamp: integer): UTF8String;
 
       procedure SaveSongOptions(Song: TSong; Options: TSongOptions);
@@ -182,9 +184,10 @@ uses
  0 = USDX 1.01 or no Database
  01 = USDX 1.1
   2 = Trim trailing NUL bytes written into TEXT columns
+  3 = Cache the last discovered song file count
 }
 const
-  cDBVersion = 2;
+  cDBVersion = 3;
   cUS_Scores = 'us_scores';
   cUS_Songs  = 'us_songs';
   cUS_Statistics_Info = 'us_statistics_info';
@@ -219,12 +222,19 @@ begin
     begin
       Log.LogInfo('Outdated song database found - missing table"' + cUS_Statistics_Info + '"', 'TDataBaseSystem.Init');
       ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS [' + cUS_Statistics_Info + '] (' +
-                      '[ResetTime] INTEGER' +
+                      '[ResetTime] INTEGER, ' +
+                      '[LastSongFileCount] INTEGER NULL' +
                       ');');
       // insert creation timestamp
       ScoreDB.ExecSQL(Format('INSERT INTO [' + cUS_Statistics_Info + '] ' +
                              '([ResetTime]) VALUES(%d);',
                              [DateTimeToUnix(Now())]));
+    end;
+
+    if not ScoreDB.ContainsColumn(cUS_Statistics_Info, 'LastSongFileCount') then
+    begin
+      Log.LogInfo('Outdated song database found - adding column LastSongFileCount to "' + cUS_Statistics_Info + '"', 'TDataBaseSystem.Init');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Statistics_Info + ' ADD COLUMN [LastSongFileCount] INTEGER NULL');
     end;
 
     // convert data from 1.01 to 1.1
@@ -1537,6 +1547,41 @@ begin
     Result := UnixToDateTime(ScoreDB.GetTableValue(Query));
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.GetStatReset');
+  end;
+end;
+
+function TDataBaseSystem.GetLastSongFileCount: integer;
+var
+  Query: string;
+begin
+  Result := 0;
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  try
+    Query := 'SELECT COALESCE([LastSongFileCount], 0) FROM [' + cUS_Statistics_Info + '];';
+    Result := ScoreDB.GetTableValue(Query);
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.GetLastSongFileCount');
+  end;
+end;
+
+procedure TDataBaseSystem.SetLastSongFileCount(Count: integer);
+begin
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  try
+    if ScoreDB.GetTableValue('SELECT COUNT(*) FROM [' + cUS_Statistics_Info + '];') = 0 then
+      ScoreDB.ExecSQL(Format('INSERT INTO [' + cUS_Statistics_Info + '] ' +
+                             '([ResetTime], [LastSongFileCount]) VALUES(%d, %d);',
+                             [DateTimeToUnix(Now()), Count]))
+    else
+      ScoreDB.ExecSQL(Format('UPDATE [' + cUS_Statistics_Info + '] SET [LastSongFileCount] = %d;',
+                             [Count]));
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.SetLastSongFileCount');
   end;
 end;
 
