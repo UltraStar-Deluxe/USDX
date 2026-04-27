@@ -2025,6 +2025,7 @@ var
   Cover: TCover;
   CoverFile: IPath;
   Song: TSong;
+  Event: TSDL_Event;
 begin
   if (Length(CatSongs.Song) <= 0) then
     Exit;
@@ -2035,6 +2036,12 @@ begin
   // create all buttons
   for I := 0 to High(CatSongs.Song) do
   begin
+    if Assigned(ScreenLoading) then
+      ScreenLoading.SetStatus(Format('generating song thumbnails %d / %d', [I, Length(CatSongs.Song)]));
+
+    while SDL_PollEvent(@Event) <> 0 do
+      ;
+
     CoverButton := nil;
 
     // create a clickable cover

@@ -174,6 +174,8 @@ begin
         if (FontFile.Equals(PATH_NONE)) then
           Continue;
 
+        Log.LogStatus('Building font ' + SectionName + ' ' + FONT_STYLES[FontStyleIndex], 'BuildFonts');
+
         FontMaxResolution := FontIni.ReadInteger(SectionName, FONT_STYLES[FontStyleIndex] + 'MaxResolution', 64);
         Embolden := FontIni.ReadFloat(SectionName, FONT_STYLES[FontStyleIndex] + 'Embolden', 0.0);
         Outline := FontIni.ReadFloat(SectionName, FONT_STYLES[FontStyleIndex] + 'Outline', 0.0);

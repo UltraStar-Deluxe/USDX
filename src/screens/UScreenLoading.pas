@@ -64,6 +64,7 @@ type
       constructor Create; override;
       procedure OnShow; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      procedure SetStatus(const Value: UTF8String; Force: boolean = false);
       procedure SetDiscoveryProgress(Current, Total, SongsFound: integer);
       procedure SetSongLoadingProgress(Current, Total: integer);
       procedure RefreshProgress(Force: boolean = false);
@@ -192,6 +193,12 @@ begin
     else
       Text[StatusTextIndex].Text := StatusTextBase + ' ' + Value;
   end;
+end;
+
+procedure TScreenLoading.SetStatus(const Value: UTF8String; Force: boolean = false);
+begin
+  UpdateStatus(Value);
+  RefreshProgress(Force);
 end;
 
 procedure TScreenLoading.SetDiscoveryProgress(Current, Total, SongsFound: integer);
