@@ -59,7 +59,7 @@ var
 
 function FindPath(out PathResult: IPath; const RequestedPath: IPath; NeedsWritePermission: boolean): boolean;
 procedure InitializePaths;
-procedure AddSongPath(const Path: IPath);
+procedure AddSongPath(const Path: IPath; CreateMissing: boolean = true);
 
 implementation
 
@@ -69,7 +69,7 @@ uses
   UCommandLine,
   ULog;
 
-procedure AddSpecialPath(var PathList: IInterfaceList; const Path: IPath);
+procedure AddSpecialPath(var PathList: IInterfaceList; const Path: IPath; CreateMissing: boolean);
 var
   Index: integer;
   PathAbs, PathTmp: IPath;
@@ -78,7 +78,21 @@ begin
   if (PathList = nil) then
     PathList := TInterfaceList.Create;
 
-  if Path.Equals(PATH_NONE) or not Path.CreateDirectory(true) then
+  if Path.Equals(PATH_NONE) then
+  begin
+    Log.LogWarn('Path "'+ Path.ToNative +'" not available', 'UPathUtils.AddSpecialPath');
+    Exit;
+  end;
+
+  if CreateMissing then
+  begin
+    if not Path.CreateDirectory(true) then
+    begin
+      Log.LogWarn('Path "'+ Path.ToNative +'" not available', 'UPathUtils.AddSpecialPath');
+      Exit;
+    end;
+  end
+  else if not Path.IsDirectory() then
   begin
     Log.LogWarn('Path "'+ Path.ToNative +'" not available', 'UPathUtils.AddSpecialPath');
     Exit;
@@ -116,14 +130,14 @@ begin
   Log.LogInfo('Path "'+ PathAbs.ToNative +'" added', 'UPathUtils.AddSpecialPath');
 end;
 
-procedure AddSongPath(const Path: IPath);
+procedure AddSongPath(const Path: IPath; CreateMissing: boolean);
 begin
-  AddSpecialPath(SongPaths, Path);
+  AddSpecialPath(SongPaths, Path, CreateMissing);
 end;
 
 procedure AddCoverPath(const Path: IPath);
 begin
-  AddSpecialPath(CoverPaths, Path);
+  AddSpecialPath(CoverPaths, Path, true);
 end;
 
 (**
