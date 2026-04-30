@@ -174,6 +174,7 @@ uses
   UPathUtils,
   UPlatform,
   UPlaylist,
+  URemoteInput,
   USkins,
   USongs,
   UThemes;
@@ -576,6 +577,8 @@ var
   MaxSongPoints:       integer; // max. points for the song (without line bonus)
   CurNotePoints:       real;    // Points for the cur. Note (PointsperNote * ScoreFactor[CurNote])
   CurrentNoteType:     TNoteType;
+  SongTimeUs:          int64;
+  RemoteTone:          TRemoteToneSample;
   DelayBeats:          real;
   PlayerOldBeat:       integer;
   PlayerCurBeat:       integer;
@@ -679,6 +682,13 @@ begin
 
         // analyze buffer
         CurrentSound.AnalyzeBuffer;
+        SongTimeUs := Round(GetTimeFromBeat(ActualBeat) * 1000000);
+        if RemoteInputProcessor.TryGetTone(PlayerIndex, SongTimeUs, RemoteTone) then
+        begin
+          CurrentSound.ToneValid := RemoteTone.ToneValid;
+          CurrentSound.Tone := RemoteTone.Tone;
+          CurrentSound.ToneAbs := RemoteTone.ToneAbs;
+        end;
 
         // add some noise
         // TODO: do we need this?

@@ -106,6 +106,9 @@ type
       LoopLyricsP1LastLine: integer;
       LoopLyricsP2LastLine: integer;
       LoopLyricsReady: boolean;
+      LastRemoteStateInteraction: integer;
+      LastRemoteStateVisibleSongs: integer;
+      LastRemoteStateTick: cardinal;
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
@@ -264,6 +267,7 @@ type
 
       NextRandomSearchIdx: cardinal;
 
+      procedure SendRemoteSongSelectState(Force: boolean);
       constructor Create; override;
       destructor Destroy; override;
       procedure SetScroll;
@@ -311,6 +315,8 @@ type
       procedure HideCatTL;// Show Cat in Tob left
       procedure Refresh;//(GiveStats: boolean); //Refresh Song Sorting
       procedure ChangeMusic;
+      procedure StartPreview;
+      procedure StopPreview;
 
       function FreeListMode: boolean;
 
@@ -380,6 +386,7 @@ uses
   UNote,
   UParty,
   UPlaylist,
+  URemoteBridgeIPC,
   UScreenSongMenu,
   USkins,
   TextGL,
@@ -405,6 +412,7 @@ const
   CHANGE_SOUND_THROTTLE_MS = 200;
   PREVIEW_DEBOUNCE_MS = 150;
   PLAYLIST_RELOAD_INTERVAL_MS = 10000;
+  REMOTE_STATE_THROTTLE_MS = 500;
 
 var
   AltJumpPrefix: UTF8String = '';
@@ -1052,6 +1060,163 @@ begin
     if LoopLyricsReady then
       LoopLyrics.Draw(LyricsState.MidBeat);
   end;
+end;
+
+procedure TScreenSong.SendRemoteSongSelectState(Force: boolean);
+var
+  Tick: cardinal;
+  I: integer;
+  Sent: integer;
+  SongId: integer;
+  PlaylistIndex: integer;
+  SongJson: string;
+  ResultsJson: string;
+  LibraryJson: string;
+  PlaylistsJson: string;
+  PlaylistItemsJson: string;
+  Song: TSong;
+  CurrentPlaylist: integer;
+  PlaylistItemIndex: integer;
+
+  function BoolJson(Value: boolean): string;
+  begin
+    if Value then
+      Result := 'true'
+    else
+      Result := 'false';
+  end;
+
+  function SongToJson(const SongIndex: integer): string;
+  var
+    Item: TSong;
+  begin
+    Result := 'null';
+    if (SongIndex < 0) or (SongIndex > High(CatSongs.Song)) then
+      Exit;
+    Item := CatSongs.Song[SongIndex];
+    if not Assigned(Item) then
+      Exit;
+
+    Result :=
+      '{"songId":' + IntToStr(SongIndex) +
+      ',"artist":"' + RemoteJsonEscape(Item.Artist) + '"' +
+      ',"title":"' + RemoteJsonEscape(Item.Title) + '"' +
+      ',"year":' + IntToStr(Item.Year) +
+      ',"visible":' + BoolJson(Item.Visible) +
+      ',"category":' + BoolJson(Item.Main) +
+      ',"duet":' + BoolJson(Item.isDuet) +
+      ',"previewStart":' + StringReplace(FloatToStr(Item.PreviewStart), ',', '.', []) +
+      ',"audioPath":"' + RemoteJsonEscape(UTF8String(Item.Path.Append(Item.Audio).ToNative)) + '"' +
+      '}';
+  end;
+
+begin
+  Tick := SDL_GetTicks();
+  if (not Force) and
+     (Tick - LastRemoteStateTick < REMOTE_STATE_THROTTLE_MS) and
+     (LastRemoteStateInteraction = Interaction) and
+     (LastRemoteStateVisibleSongs = CatSongs.VisibleSongs) then
+    Exit;
+
+  LastRemoteStateTick := Tick;
+  LastRemoteStateInteraction := Interaction;
+  LastRemoteStateVisibleSongs := CatSongs.VisibleSongs;
+
+  SongJson := SongToJson(Interaction);
+
+  ResultsJson := '[';
+  Sent := 0;
+  for I := 0 to High(CatSongs.Song) do
+  begin
+    Song := CatSongs.Song[I];
+    if Assigned(Song) and Song.Visible and (not Song.Main) then
+    begin
+      if Sent > 0 then
+        ResultsJson := ResultsJson + ',';
+      ResultsJson := ResultsJson + SongToJson(I);
+      Inc(Sent);
+      if Sent >= 30 then
+        Break;
+    end;
+  end;
+  ResultsJson := ResultsJson + ']';
+
+  LibraryJson := '[';
+  Sent := 0;
+  for I := 0 to High(CatSongs.Song) do
+  begin
+    Song := CatSongs.Song[I];
+    if Assigned(Song) and (not Song.Main) then
+    begin
+      if Sent > 0 then
+        LibraryJson := LibraryJson + ',';
+      LibraryJson := LibraryJson + SongToJson(I);
+      Inc(Sent);
+    end;
+  end;
+  LibraryJson := LibraryJson + ']';
+
+  PlaylistsJson := '[';
+  for PlaylistIndex := 0 to High(PlaylistMan.Playlists) do
+  begin
+    if PlaylistIndex > 0 then
+      PlaylistsJson := PlaylistsJson + ',';
+    PlaylistsJson := PlaylistsJson +
+      '{"index":' + IntToStr(PlaylistIndex) +
+      ',"name":"' + RemoteJsonEscape(PlaylistMan.Playlists[PlaylistIndex].Name) + '"' +
+      ',"size":' + IntToStr(Length(PlaylistMan.Playlists[PlaylistIndex].Items)) +
+      ',"current":' + BoolJson(PlaylistIndex = PlaylistMan.CurPlaylist) +
+      '}';
+  end;
+  PlaylistsJson := PlaylistsJson + ']';
+
+  CurrentPlaylist := PlaylistMan.CurPlaylist;
+  PlaylistItemsJson := '[';
+  if (CurrentPlaylist >= 0) and (CurrentPlaylist <= High(PlaylistMan.Playlists)) then
+  begin
+    Sent := 0;
+    for PlaylistItemIndex := 0 to High(PlaylistMan.Playlists[CurrentPlaylist].Items) do
+    begin
+      if Sent > 0 then
+        PlaylistItemsJson := PlaylistItemsJson + ',';
+      PlaylistItemsJson := PlaylistItemsJson +
+        '{"itemIndex":' + IntToStr(PlaylistItemIndex) +
+        ',"songId":' + IntToStr(PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID) +
+        ',"artist":"' + RemoteJsonEscape(PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].Artist) + '"' +
+        ',"title":"' + RemoteJsonEscape(PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].Title) + '"';
+      if (PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID >= 0) and
+         (PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID <= High(CatSongs.Song)) and
+         Assigned(CatSongs.Song[PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID]) then
+        PlaylistItemsJson := PlaylistItemsJson +
+          ',"previewStart":' + StringReplace(FloatToStr(CatSongs.Song[PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID].PreviewStart), ',', '.', []) +
+          ',"audioPath":"' + RemoteJsonEscape(UTF8String(CatSongs.Song[PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID].Path.Append(CatSongs.Song[PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID].Audio).ToNative)) + '"';
+      PlaylistItemsJson := PlaylistItemsJson + '}';
+      Inc(Sent);
+      if Sent >= 50 then
+        Break;
+    end;
+  end;
+  PlaylistItemsJson := PlaylistItemsJson + ']';
+
+  SongId := Interaction;
+  if (SongId < 0) or (SongId > High(CatSongs.Song)) then
+    SongId := -1;
+
+  RemoteBridgeIPC.SendJsonMessage(
+    '{"type":"song.select.state","protocol":1' +
+    ',"selectedSongId":' + IntToStr(SongId) +
+    ',"visibleSongs":' + IntToStr(CatSongs.VisibleSongs) +
+    ',"totalSongs":' + IntToStr(Length(CatSongs.Song)) +
+    ',"searchActive":' + BoolJson(CatSongs.CatNumShow = -2) +
+    ',"playlistActive":' + BoolJson(CatSongs.CatNumShow = -3) +
+    ',"currentSong":' + SongJson +
+    ',"results":' + ResultsJson +
+    ',"library":' + LibraryJson +
+    ',"playlists":' + PlaylistsJson +
+    ',"playlistItems":' + PlaylistItemsJson +
+    ',"curPlaylist":' + IntToStr(PlaylistMan.CurPlaylist) +
+    '}'
+  );
 end;
 
 //Show Wrong Song when Tabs on Fix
@@ -3998,6 +4163,9 @@ begin
     SetScroll;
     SetScrollRefresh;
   end;
+
+  RemoteBridgeIPC.SendGameState('song_select', 0, 0);
+  SendRemoteSongSelectState(true);
 end;
 
 procedure TScreenSong.OnShowFinish;
@@ -4275,6 +4443,7 @@ begin
 
   FadeMessage();
   ReloadCurrentPlaylist(false);
+  SendRemoteSongSelectState(false);
 
   if isScrolling then
   begin
@@ -4866,6 +5035,20 @@ procedure TScreenSong.StopMusicPreview();
 begin
   // Stop preview of previous song
   AudioPlayback.Stop;
+end;
+
+procedure TScreenSong.StartPreview;
+begin
+  StopMusicPreview;
+  StopVideoPreview;
+  StartMusicPreview;
+  StartVideoPreview;
+end;
+
+procedure TScreenSong.StopPreview;
+begin
+  StopMusicPreview;
+  StopVideoPreview;
 end;
 
 procedure TScreenSong.StartVideoPreview();

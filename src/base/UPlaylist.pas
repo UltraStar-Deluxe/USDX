@@ -100,7 +100,8 @@ type
       procedure   DelItem(const iItem: Cardinal; const iPlaylist: Integer = -1);
       procedure   DelVisibleItems(const iPlaylist: Integer = -1);
       procedure   SortPlaylist(const Order: TPlaylistSortOrder; const iPlaylist: Integer = -1);
-      function    MoveItem(const SongID: Cardinal; const Direction: Integer; const iPlaylist: Integer = -1): Integer;
+      function    MoveItem(const SongID: Cardinal; const Direction: Integer; const iPlaylist: Integer = -1): Integer; overload;
+      procedure   MoveItem(const iItem, iNewItem: Cardinal; const iPlaylist: Integer = -1); overload;
 
       procedure   GetNames(var PLNames: array of UTF8String);
       function    GetIndexbySongID(const SongID: Cardinal; const iPlaylist: Integer = -1): Integer;
@@ -882,6 +883,48 @@ begin
   end
   else
     Result := SongID;
+end;
+
+//----------
+//MoveItem - Reorders an Item inside a specific Playlist
+//----------
+Procedure   TPlayListManager.MoveItem(const iItem, iNewItem: Cardinal; const iPlaylist: Integer);
+var
+  P: Cardinal;
+  I: Integer;
+  Item: TPlaylistItem;
+begin
+  if iPlaylist = -1 then
+    P := CurPlaylist
+  else if (iPlaylist >= 0) AND (iPlaylist <= high(Playlists)) then
+    P := iPlaylist
+  else
+    exit;
+
+  if (Int(iItem) > high(Playlists[P].Items)) or
+     (Int(iNewItem) > high(Playlists[P].Items)) or
+     (iItem = iNewItem) then
+    exit;
+
+  Item := Playlists[P].Items[iItem];
+
+  if iItem > iNewItem then
+  begin
+    for I := Integer(iItem) downto Integer(iNewItem) + 1 do
+      Playlists[P].Items[I] := Playlists[P].Items[I - 1];
+  end
+  else
+  begin
+    for I := Integer(iItem) to Integer(iNewItem) - 1 do
+      Playlists[P].Items[I] := Playlists[P].Items[I + 1];
+  end;
+
+  Playlists[P].Items[Integer(iNewItem)] := Item;
+
+  SavePlayList(P);
+
+  if (CatSongs.CatNumShow = -3) and (P = CurPlaylist) then
+    SetPlaylist(P, Item.SongID);
 end;
 
 //----------

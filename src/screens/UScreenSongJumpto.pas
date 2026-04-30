@@ -65,6 +65,7 @@ type
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       function Draw: boolean; override;
+      procedure SetSearchText(const Query: UTF8String);
 
       property Visible: boolean read fVisible write SetVisible;
   end;
@@ -268,6 +269,18 @@ begin
   Button[0].Text[0].Selected := true;
 
   fLastPlayed := ScreenSong.Interaction;
+end;
+
+procedure TScreenSongJumpto.SetSearchText(const Query: UTF8String);
+begin
+  Visible := true;
+  Interaction := 0;
+  Button[0].Text[0].ColR := Theme.SongJumpto.ButtonSearchText.ColR;
+  Button[0].Text[0].ColG := Theme.SongJumpto.ButtonSearchText.ColG;
+  Button[0].Text[0].ColB := Theme.SongJumpto.ButtonSearchText.ColB;
+  Button[0].Text[0].Text := Query;
+  SetTextFound(CatSongs.SetFilter(Query, fSelectType));
+  ScreenSong.NextRandomSearchIdx := CatSongs.VisibleSongs;
 end;
 
 function TScreenSongJumpto.Draw: boolean;
