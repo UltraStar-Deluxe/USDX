@@ -60,6 +60,7 @@ type
       Debug:      boolean;
       Benchmark:  boolean;
       NoLog:      boolean;
+      CheckSongs: boolean;
       ScreenMode: TScreenMode;
       Joypad:     boolean;
       Split:      TSplitMode;
@@ -89,6 +90,7 @@ var
 const
   cHelp            = 'help';
   cDebug           = 'debug';
+  cCheckSongs      = 'check-songs';
   cMediaInterfaces = 'showinterfaces';
 
 
@@ -128,6 +130,7 @@ begin
   writeln('  ----------------------------------------------------------');
   writeln('  '+ Fmt(cMediaInterfaces) +' : Show in-use media interfaces');
   writeln('  '+ Fmt(cDebug) +' : Display Debugging info');
+  writeln('  '+ Fmt(cCheckSongs) +' : Fully validate song files during startup');
   writeln;
 
   platform.halt;
@@ -141,6 +144,7 @@ begin
   Debug       := false;
   Benchmark   := False;
   NoLog       := false;
+  CheckSongs  := false;
   ScreenMode  := scmDefault;
   Joypad      := False;
   Split       := spmDefault;
@@ -185,6 +189,8 @@ begin
       // boolean triggers
       if (Command = 'debug') then
         Debug       := True
+      else if (Command = cCheckSongs) then
+        CheckSongs  := True
       else if (Command = 'benchmark') then
         Benchmark   := True
       else if (Command = 'nolog') then

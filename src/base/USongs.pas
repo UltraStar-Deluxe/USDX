@@ -168,6 +168,7 @@ implementation
 uses
   StrUtils,
   SDL2,
+  UCommandLine,
   UFiles,
   UGraphic,
   UMain,
@@ -450,7 +451,7 @@ var
 begin
   Song := TSong.Create(FilePath);
 
-  if Song.Analyse then
+  if Song.Analyse(false, false, false, false, 0, Params.CheckSongs) then
     SongList.Add(Song)
   else
   begin
