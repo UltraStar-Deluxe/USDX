@@ -927,13 +927,32 @@ begin
 end;
 
 procedure LoadScreens(Title: string);
+  procedure SetLoadingTitle(const Value: string);
+  const
+    MaxLoadingStatusLength = 25;
+  var
+    Event: TSDL_Event;
+    LoadingStatus: string;
+  begin
+    SDL_SetWindowTitle(Screen, PChar(Title + ' - ' + Value));
+    if Assigned(ScreenLoading) then
+    begin
+      LoadingStatus := Value;
+      if Length(LoadingStatus) > MaxLoadingStatusLength then
+        LoadingStatus := Copy(LoadingStatus, 1, MaxLoadingStatusLength - 3) + '...';
+      ScreenLoading.SetStatus(LoadingStatus);
+    end;
+    while SDL_PollEvent(@Event) <> 0 do
+      ;
+  end;
+
 begin
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenMain & ScreenName'));
+  SetLoadingTitle('Loading ScreenMain & ScreenName');
   ScreenMain :=             TScreenMain.Create;
   ScreenName :=             TScreenName.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenSong'));
+  SetLoadingTitle('Loading ScreenSong');
   ScreenSong :=             TScreenSong.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenSongMenu & ScreenJukebox'));
+  SetLoadingTitle('Loading ScreenSongMenu & ScreenJukebox');
   ScreenSongMenu :=             TScreenSongMenu.Create;
   ScreenJukebox :=             TScreenJukebox.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox', 3); Log.BenchmarkStart(3);
@@ -942,62 +961,62 @@ begin
   ScreenJukeboxPlaylist :=   TScreenJukeboxPlaylist.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox Playlist', 3); Log.BenchmarkStart(3);
   ScreenTop5 :=             TScreenTop5.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptions & ScreenOptionsGame'));
+  SetLoadingTitle('Loading ScreenOptions & ScreenOptionsGame');
   ScreenOptions :=          TScreenOptions.Create;
   ScreenOptionsGame :=      TScreenOptionsGame.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsGraphics & ScreenOptionsSound & ScreenOptionsInput'));
+  SetLoadingTitle('Loading ScreenOptionsGraphics & ScreenOptionsSound & ScreenOptionsInput');
   ScreenOptionsGraphics  :=  TScreenOptionsGraphics.Create;
   ScreenOptionsSound    :=     TScreenOptionsSound.Create;
   ScreenOptionsInput    :=     TScreenOptionsInput.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsLyrics & ScreenOptionsThemes'));
+  SetLoadingTitle('Loading ScreenOptionsLyrics & ScreenOptionsThemes');
   ScreenOptionsLyrics   :=    TScreenOptionsLyrics.Create;
   ScreenOptionsThemes   :=    TScreenOptionsThemes.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsRecord & ScreenOptionsAdvanced'));
+  SetLoadingTitle('Loading ScreenOptionsRecord & ScreenOptionsAdvanced');
   ScreenOptionsRecord   :=    TScreenOptionsRecord.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsAdvanced'));
+  SetLoadingTitle('Loading ScreenOptionsAdvanced');
   ScreenOptionsAdvanced :=    TScreenOptionsAdvanced.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsNetwork'));
+  SetLoadingTitle('Loading ScreenOptionsNetwork');
   ScreenOptionsNetwork :=    TScreenOptionsNetwork.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsWebCam'));
+  SetLoadingTitle('Loading ScreenOptionsWebCam');
   ScreenOptionsWebcam  :=    TScreenOptionsWebcam.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOptionsJukebox'));
+  SetLoadingTitle('Loading ScreenOptionsJukebox');
   ScreenOptionsJukebox :=    TScreenOptionsJukebox.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenEditConvert & ScreenEditSub & ScreenEdit'));
+  SetLoadingTitle('Loading ScreenEditConvert & ScreenEditSub & ScreenEdit');
   ScreenEditConvert :=      TScreenEditConvert.Create;
   ScreenEditSub :=          TScreenEditSub.Create;
   ScreenEdit :=             TScreenEdit.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenOpen'));
+  SetLoadingTitle('Loading ScreenOpen');
   ScreenOpen :=             TScreenOpen.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenAbout'));
+  SetLoadingTitle('Loading ScreenAbout');
   ScreenAbout :=             TScreenAbout.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen About', 3); Log.BenchmarkStart(3);
   //ScreenSingModi :=         TScreenSingModi.Create;
   //Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Sing with Modi support', 3); Log.BenchmarkStart(3);
   ScreenSongJumpto :=         TScreenSongJumpto.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPopupCheck & ScreenPopupError & ScreenPopupHelp'));
+  SetLoadingTitle('Loading ScreenPopupCheck & ScreenPopupError & ScreenPopupHelp');
   ScreenPopupCheck := TScreenPopupCheck.Create;
   ScreenPopupError := TScreenPopupError.Create;
   ScreenPopupHelp  := TScreenPopupHelp.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPopupInfo & ScreenScoreX & ScreenPartyNewRound'));
+  SetLoadingTitle('Loading ScreenPopupInfo & ScreenScoreX & ScreenPartyNewRound');
   ScreenPopupInfo := TScreenPopupInfo.Create;
   ScreenPopupInsertUser := TScreenPopupInsertUser.Create;
   ScreenPopupSendScore := TScreenPopupSendScore.Create;
   ScreenPopupScoreDownload := TScreenPopupScoreDownload.Create;
   ScreenPartyNewRound :=    TScreenPartyNewRound.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPartyScore & ScreenPartyWin'));
+  SetLoadingTitle('Loading ScreenPartyScore & ScreenPartyWin');
   ScreenPartyScore :=       TScreenPartyScore.Create;
   ScreenPartyWin :=         TScreenPartyWin.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPartyOptions & ScreenPartyPlayer'));
+  SetLoadingTitle('Loading ScreenPartyOptions & ScreenPartyPlayer');
   ScreenPartyOptions :=     TScreenPartyOptions.Create;
   ScreenPartyPlayer :=      TScreenPartyPlayer.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenPartyRounds & ScreenTournamentX & ScreenStatMain'));
+  SetLoadingTitle('Loading ScreenPartyRounds & ScreenTournamentX & ScreenStatMain');
   ScreenPartyRounds :=      TScreenPartyRounds.Create;
   ScreenPartyTournamentRounds :=      TScreenPartyTournamentRounds.Create;
   ScreenPartyTournamentPlayer :=      TScreenPartyTournamentPlayer.Create;
   ScreenPartyTournamentOptions :=      TScreenPartyTournamentOptions.Create;
   ScreenPartyTournamentWin :=      TScreenPartyTournamentWin.Create;
   ScreenStatMain :=         TScreenStatMain.Create;
-  SDL_SetWindowTitle(Screen, PChar(Title + ' - Loading ScreenStatDetail'));
+  SetLoadingTitle('Loading ScreenStatDetail');
   ScreenStatDetail :=       TScreenStatDetail.Create;
   SDL_SetWindowTitle(Screen, PChar(Title));
 end;

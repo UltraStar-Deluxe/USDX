@@ -66,6 +66,7 @@ type
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure SetDiscoveryProgress(Current, Total, SongsFound: integer);
       procedure SetSongLoadingProgress(Current, Total: integer);
+      procedure SetStatus(const Value: UTF8String);
       procedure RefreshProgress(Force: boolean = false);
   end;
 
@@ -197,7 +198,10 @@ end;
 procedure TScreenLoading.SetDiscoveryProgress(Current, Total, SongsFound: integer);
 begin
   UpdateBar(DiscoveryBarBaseIndex, DiscoveryBarFillIndex, ClampProgress(Current, Total), DiscoveryBarAlpha * 0.5, DiscoveryBarAlpha);
-  UpdateStatus(Format('0 / %5d', [SongsFound]));
+  if SongsFound > 0 then
+    UpdateStatus(Format('0 / %5d', [SongsFound]))
+  else
+    UpdateStatus('');
   RefreshProgress;
 end;
 
@@ -209,6 +213,13 @@ begin
   else
     UpdateStatus('');
   RefreshProgress;
+end;
+
+procedure TScreenLoading.SetStatus(const Value: UTF8String);
+begin
+  if (StatusTextIndex >= 0) and (StatusTextIndex < Length(Text)) then
+    Text[StatusTextIndex].Text := Value;
+  RefreshProgress(true);
 end;
 
 procedure TScreenLoading.RefreshProgress(Force: boolean);
