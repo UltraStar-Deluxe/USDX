@@ -91,6 +91,8 @@ begin
                       'ms) buffer', 'SDL');
       SDL_PauseAudioDevice(DevID, 0);
     end;
+    if DevID <= 0 then
+      Log.LogError('Could not open input device "' + Name + '": ' + SDL_GetError, 'SDL');
   end;
 
   Result := (DevID > 0);
@@ -202,7 +204,7 @@ begin
   // adjust size to actual input-device count
   SetLength(AudioInputProcessor.DeviceList, deviceIndex);
   Log.LogStatus('#Input-Devices: ' + IntToStr(deviceIndex), 'SDL');
-  Result := (deviceIndex > 0);
+  Result := (deviceIndex > 0) or (ScanMode = aimFast);
 end;
 
 function TAudioInput_SDL.InitializeRecord(ScanMode: TAudioInputScanMode): boolean;
