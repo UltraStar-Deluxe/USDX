@@ -412,7 +412,7 @@ const
   CHANGE_SOUND_THROTTLE_MS = 200;
   PREVIEW_DEBOUNCE_MS = 150;
   PLAYLIST_RELOAD_INTERVAL_MS = 10000;
-  REMOTE_STATE_THROTTLE_MS = 500;
+  REMOTE_STATE_THROTTLE_MS = 100;
 
 var
   AltJumpPrefix: UTF8String = '';
@@ -1077,6 +1077,12 @@ var
   Song: TSong;
   CurrentPlaylist: integer;
   PlaylistItemIndex: integer;
+  PreviewSongId: integer;
+  PreviewActive: boolean;
+  PreviewPosition: real;
+  StateChanged: boolean;
+  IncludeFullState: boolean;
+  BaseJson: string;
 
   function BoolJson(Value: boolean): string;
   begin
@@ -1112,17 +1118,45 @@ var
 
 begin
   Tick := SDL_GetTicks();
-  if (not Force) and
-     (Tick - LastRemoteStateTick < REMOTE_STATE_THROTTLE_MS) and
-     (LastRemoteStateInteraction = Interaction) and
-     (LastRemoteStateVisibleSongs = CatSongs.VisibleSongs) then
+
+  StateChanged := (LastRemoteStateInteraction <> Interaction) or
+                  (LastRemoteStateVisibleSongs <> CatSongs.VisibleSongs);
+  if (not Force) and (not StateChanged) and
+     (Tick - LastRemoteStateTick < REMOTE_STATE_THROTTLE_MS) then
     Exit;
 
+  IncludeFullState := Force or (LastRemoteStateVisibleSongs <> CatSongs.VisibleSongs);
   LastRemoteStateTick := Tick;
   LastRemoteStateInteraction := Interaction;
   LastRemoteStateVisibleSongs := CatSongs.VisibleSongs;
 
+  SongId := Interaction;
+  if (SongId < 0) or (SongId > High(CatSongs.Song)) then
+    SongId := -1;
+
+  PreviewSongId := PreviewOpened;
+  if (PreviewSongId < 0) or (PreviewSongId > High(CatSongs.Song)) then
+    PreviewSongId := -1;
+  PreviewActive := (PreviewSongId >= 0) and (not AudioPlayback.Finished);
+  if PreviewActive then
+    PreviewPosition := AudioPlayback.Position
+  else
+    PreviewPosition := 0;
+
   SongJson := SongToJson(Interaction);
+  BaseJson :=
+    '{"type":"song.select.state","protocol":1' +
+    ',"selectedSongId":' + IntToStr(SongId) +
+    ',"previewSongId":' + IntToStr(PreviewSongId) +
+    ',"previewActive":' + BoolJson(PreviewActive) +
+    ',"previewPositionSec":' + StringReplace(FloatToStr(PreviewPosition), ',', '.', []) +
+    ',"currentSong":' + SongJson;
+
+  if not IncludeFullState then
+  begin
+    RemoteBridgeIPC.SendJsonMessage(BaseJson + '}');
+    Exit;
+  end;
 
   ResultsJson := '[';
   Sent := 0;
@@ -1198,18 +1232,12 @@ begin
   end;
   PlaylistItemsJson := PlaylistItemsJson + ']';
 
-  SongId := Interaction;
-  if (SongId < 0) or (SongId > High(CatSongs.Song)) then
-    SongId := -1;
-
   RemoteBridgeIPC.SendJsonMessage(
-    '{"type":"song.select.state","protocol":1' +
-    ',"selectedSongId":' + IntToStr(SongId) +
+    BaseJson +
     ',"visibleSongs":' + IntToStr(CatSongs.VisibleSongs) +
     ',"totalSongs":' + IntToStr(Length(CatSongs.Song)) +
     ',"searchActive":' + BoolJson(CatSongs.CatNumShow = -2) +
     ',"playlistActive":' + BoolJson(CatSongs.CatNumShow = -3) +
-    ',"currentSong":' + SongJson +
     ',"results":' + ResultsJson +
     ',"library":' + LibraryJson +
     ',"playlists":' + PlaylistsJson +
@@ -5028,6 +5056,7 @@ begin
       AudioPlayback.SetVolume(0);
       AudioPlayback.FadeIn(Ini.PreviewFading, PreviewVolume);
     end;
+    SendRemoteSongSelectState(false);
   end;
 end;
 

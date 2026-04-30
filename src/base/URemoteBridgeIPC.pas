@@ -1,6 +1,6 @@
 {* UltraStar Deluxe - Karaoke Game
  *
- * Local JSONL IPC reader for tools/usdx-bridge.mjs.
+ * Local JSONL IPC reader for game/webs/usdx-bridge.mjs.
  * This connects to 127.0.0.1:8765 and consumes typed remote-control and
  * remote-pitch observations. It never handles raw microphone audio.
  *}

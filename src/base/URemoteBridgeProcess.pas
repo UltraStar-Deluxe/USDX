@@ -1,6 +1,6 @@
 {* UltraStar Deluxe - Karaoke Game
  *
- * Optional helper process launcher for tools/usdx-bridge.mjs.
+ * Optional helper process launcher for game/webs/usdx-bridge.mjs.
  *}
 
 unit URemoteBridgeProcess;
@@ -61,8 +61,8 @@ end;
 
 function TRemoteBridgeProcess.BridgeScriptPath: string;
 begin
-  Result := ExpandFileName(ExtractFilePath(ParamStr(0)) + '..' + DirectorySeparator +
-    'tools' + DirectorySeparator + 'usdx-bridge.mjs');
+  Result := ExpandFileName(ExtractFilePath(ParamStr(0)) +
+    'webs' + DirectorySeparator + 'usdx-bridge.mjs');
 end;
 
 function TRemoteBridgeProcess.NodeExecutablePath: string;

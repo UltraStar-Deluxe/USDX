@@ -88,6 +88,7 @@ type
     procedure AnnounceRemoteSongPaused;
     procedure AnnounceRemoteSongResumed;
     procedure AnnounceRemoteSongEnded;
+    procedure AnnounceRemoteSongPosition(const Reason: UTF8String);
     procedure SendRemoteScoreSnapshot(Force: boolean);
     function RemoteMediaStartUs: int64;
   public
@@ -582,6 +583,7 @@ begin
           AudioPlayback.SetPosition(NewPosition);
           if (Assigned(fCurrentVideo)) then
             fCurrentVideo.Position := CurrentSong.VideoGAP + NewPosition;
+          AnnounceRemoteSongPosition('seek');
         end;
       end;
 
@@ -617,6 +619,7 @@ begin
         LyricsState.UpdateBeats();
         if (Assigned(fCurrentVideo)) then
           fCurrentVideo.Position := CurrentSong.VideoGAP + NewPosition;
+        AnnounceRemoteSongPosition('seek');
         end;
       end;
 
@@ -1413,6 +1416,20 @@ begin
     RemoteBridgeIPC.SendSongEnded(RemoteSongSeq, RemoteMediaStartUs);
     RemoteBridgeIPC.SendGameState('song_ended', RemoteSongSeq, 0);
   end;
+end;
+
+procedure TScreenSingController.AnnounceRemoteSongPosition(const Reason: UTF8String);
+begin
+  if (RemoteSongSeq <= 0) then
+    Exit;
+
+  RemoteBridgeIPC.SendJsonMessage(
+    '{"type":"song.position","protocol":1' +
+    ',"songSeq":' + IntToStr(RemoteSongSeq) +
+    ',"mediaStartUs":' + IntToStr(RemoteMediaStartUs) +
+    ',"reason":"' + RemoteJsonEscape(Reason) + '"' +
+    '}'
+  );
 end;
 
 procedure TScreenSingController.SendRemoteScoreSnapshot(Force: boolean);

@@ -301,7 +301,7 @@ install-data:
 	        install-data-recursive ; \
 	fi
 	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/webs" \
-            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/themes" \
+            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/webs" \
             install-data-recursive
 	$(INSTALL_DATA) "LICENSE" "$(DESTDIR)$(INSTALL_DATADIR)/LICENSE"
 

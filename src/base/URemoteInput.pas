@@ -24,9 +24,9 @@ const
   REMOTE_INPUT_MAX_PLAYERS = 12;
   REMOTE_INPUT_BASE_TONE_FREQ = 440;
   REMOTE_INPUT_NUM_HALFTONES = 49;
-  REMOTE_INPUT_DEFAULT_DELAY_US = 120000;
-  REMOTE_INPUT_MAX_FRAME_AGE_US = 500000;
-  REMOTE_INPUT_MAX_FRAMES = 256;
+  REMOTE_INPUT_DEFAULT_DELAY_US = 0;
+  REMOTE_INPUT_MAX_FRAME_AGE_US = 1500000;
+  REMOTE_INPUT_MAX_FRAMES = 2048;
   REMOTE_INPUT_MIN_CONFIDENCE = 0.30;
 
 type
@@ -190,9 +190,6 @@ procedure TRemotePlayerBuffer.AddFrame(const Frame: TRemotePitchFrame);
 var
   Index: integer;
 begin
-  if (not Frame.Voiced) or (Frame.Confidence < REMOTE_INPUT_MIN_CONFIDENCE) then
-    Exit;
-
   SDL_LockMutex(FLock);
   try
     if (Length(FFrames) >= REMOTE_INPUT_MAX_FRAMES) then
