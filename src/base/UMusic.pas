@@ -658,6 +658,8 @@ procedure InitializeSound;
 procedure InitializeVideo;
 procedure FinalizeMedia;
 function RefreshAudioInputDevices(ScanMode: TAudioInputScanMode): boolean;
+procedure MarkAudioInputDevicesChanged;
+function AudioInputDevicesNeedRefresh: boolean;
 
 function  Visualization(): IVideoPlayback;
 function  VideoPlayback(): IVideoPlayback;
@@ -696,6 +698,8 @@ var
   DefaultAudioInput    : IAudioInput;
   AudioDecoderList     : TInterfaceList;
   MediaInterfaceList   : TInterfaceList;
+  AudioInputDevicesDirty: boolean;
+  AudioInputDeviceListComplete: boolean;
 
 
 constructor TAudioFormatInfo.Create(Channels: byte; SampleRate: double; Format: TAudioSampleFormat);
@@ -793,8 +797,26 @@ begin
   Result := CurrentAudioInput.InitializeRecord(ScanMode);
   if not Result then
     Log.LogError('Failed to refresh input devices for ' + CurrentAudioInput.GetName());
+  if Result then
+  begin
+    AudioInputDevicesDirty := false;
+    AudioInputDeviceListComplete := (ScanMode = aimFull);
+  end;
 
   AudioInputProcessor.UpdateInputDeviceConfig();
+end;
+
+procedure MarkAudioInputDevicesChanged;
+begin
+  AudioInputDevicesDirty := true;
+  AudioInputDeviceListComplete := false;
+end;
+
+function AudioInputDevicesNeedRefresh: boolean;
+begin
+  Result := AudioInputDevicesDirty or
+            not AudioInputDeviceListComplete or
+            (Length(AudioInputProcessor.DeviceList) = 0);
 end;
 
 procedure SetAudioVolumePercent(Value: integer);

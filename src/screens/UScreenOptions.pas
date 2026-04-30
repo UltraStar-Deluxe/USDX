@@ -91,7 +91,8 @@ uses
 
 procedure TScreenOptions.OpenRecordOptions;
 begin
-  RefreshAudioInputDevices(aimFull);
+  if AudioInputDevicesNeedRefresh then
+    RefreshAudioInputDevices(aimFull);
   FreeAndNil(ScreenOptionsRecord);
   ScreenOptionsRecord := TScreenOptionsRecord.Create;
   FadeTo(@ScreenOptionsRecord, SoundLib.Start);

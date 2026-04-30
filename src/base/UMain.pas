@@ -403,6 +403,12 @@ begin
         Display.CheckOK := true;
       end;
 
+      SDL_AUDIODEVICEADDED, SDL_AUDIODEVICEREMOVED:
+      begin
+        if (Event.adevice.iscapture <> 0) then
+          MarkAudioInputDevicesChanged;
+      end;
+
       SDL_MOUSEMOTION, SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP, SDL_MOUSEWHEEL:
       begin
         if (Ini.Mouse > 0) then
