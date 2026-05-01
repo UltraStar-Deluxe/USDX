@@ -18,7 +18,8 @@ uses
   Math,
   UMusic,
   ULog,
-  SyncObjs;
+  SyncObjs,
+  MidiCons;
 
 type
   TMidiAudioSourceStream = class(TAudioSourceStream)
@@ -188,8 +189,21 @@ procedure TMidiAudioSourceStream.HandleMidiEvent(MidiMessage: byte; Data1: byte;
 begin
   FLock.Enter;
   try
+    if ((((MidiMessage and $F0) = MIDI_CONTROLCHANGE) and
+         ((Data1 = MIDI_ALLNOTESOFF) or (Data1 = $78))) or
+        (MidiMessage = MIDI_STOP) or
+        (MidiMessage = MIDI_SYSTEMRESET)) then
+    begin
+      FActive := False;
+      FRelease := False;
+      FEnvLevel := 0;
+      FVel := 0;
+      FNote := -1;
+      Exit;
+    end;
+
     // NOTE ON
-    if ((MidiMessage and $F0) = $90) and (Data2 <> 0) then
+    if ((MidiMessage and $F0) = MIDI_NOTEON) and (Data2 <> 0) then
     begin
       FNote := Data1;
       FFreq := 440.0 * Power(2.0, (FNote - 69)/12.0);
@@ -202,7 +216,7 @@ begin
       Exit;
     end;
     // NOTE OFF
-    if ((((MidiMessage and $F0) = $90) and (Data2 = 0)) or ((MidiMessage and $F0) = $80)) and (FNote = Data1) then
+    if ((((MidiMessage and $F0) = MIDI_NOTEON) and (Data2 = 0)) or ((MidiMessage and $F0) = MIDI_NOTEOFF)) and (FNote = Data1) then
     begin
       FRelease := True;
     end;
