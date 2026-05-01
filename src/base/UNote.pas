@@ -95,6 +95,7 @@ type
     HighNote:       integer; // index of last note (= High(Note)?)
     LengthNote:     integer; // number of notes (= Length(Note)?).
     Note:           array of TPlayerNote;
+    SentenceScore:  array of array of real;
 
     // Scores
     property Score:       real read _Score write SetScore;
@@ -156,6 +157,7 @@ procedure NewBeatDetect(Screen: TScreenSingController); // executed when on then
 procedure NewNote(CP: integer; Screen: TScreenSingController);       // detect note
 function  GetMidBeat(Time: real): real;
 function  GetTimeFromBeat(Beat: integer; SelfSong: TSong = nil): real;
+function  GetPlayerSentenceScore(PlayerIndex, Track, SentenceIndex: integer; out Points: real): boolean;
 
 implementation
 
@@ -235,6 +237,51 @@ begin
   _ScoreGoldenInt := 0;
   _ScoreTotalInt := 0;
   ScorePerfectRemaining := MAX_SONG_SCORE;
+  SetLength(SentenceScore, 0);
+end;
+
+procedure EnsurePlayerSentenceScores(PlayerIndex: integer);
+var
+  TrackIndex: integer;
+begin
+  if (PlayerIndex < 0) or (PlayerIndex > High(Player)) then
+    Exit;
+
+  if (Length(Player[PlayerIndex].SentenceScore) <> Length(CurrentSong.Tracks)) then
+    SetLength(Player[PlayerIndex].SentenceScore, Length(CurrentSong.Tracks));
+
+  for TrackIndex := 0 to High(CurrentSong.Tracks) do
+  begin
+    if (Length(Player[PlayerIndex].SentenceScore[TrackIndex]) <> Length(CurrentSong.Tracks[TrackIndex].Lines)) then
+      SetLength(Player[PlayerIndex].SentenceScore[TrackIndex], Length(CurrentSong.Tracks[TrackIndex].Lines));
+  end;
+end;
+
+procedure AddPlayerSentenceScore(PlayerIndex, Track, SentenceIndex: integer; Points: real);
+begin
+  if (PlayerIndex < 0) or (PlayerIndex > High(Player)) or
+     (Track < 0) or (Track > High(CurrentSong.Tracks)) or
+     (SentenceIndex < 0) or (SentenceIndex > CurrentSong.Tracks[Track].High) then
+    Exit;
+
+  EnsurePlayerSentenceScores(PlayerIndex);
+  Player[PlayerIndex].SentenceScore[Track][SentenceIndex] :=
+    Player[PlayerIndex].SentenceScore[Track][SentenceIndex] + Points;
+end;
+
+function GetPlayerSentenceScore(PlayerIndex, Track, SentenceIndex: integer; out Points: real): boolean;
+begin
+  Result := false;
+  Points := 0;
+
+  if (PlayerIndex < 0) or (PlayerIndex > High(Player)) or
+     (Track < 0) or (Track > High(CurrentSong.Tracks)) or
+     (SentenceIndex < 0) or (SentenceIndex > CurrentSong.Tracks[Track].High) then
+    Exit;
+
+  EnsurePlayerSentenceScores(PlayerIndex);
+  Points := Player[PlayerIndex].SentenceScore[Track][SentenceIndex];
+  Result := true;
 end;
 
 function GetTimeForBeats(BPM, Beats: real): real;
@@ -487,6 +534,22 @@ begin
   end;
 end;
 
+function TrackHasRemotePlayer(Track: integer): boolean;
+var
+  PlayerIndex: integer;
+begin
+  Result := false;
+  for PlayerIndex := 0 to PlayersPlay - 1 do
+  begin
+    if ((not CurrentSong.isDuet) or (PlayerIndex mod 2 = Track)) and
+       RemoteInputProcessor.HasAssignedPlayer(PlayerIndex) then
+    begin
+      Result := true;
+      Exit;
+    end;
+  end;
+end;
+
 procedure UpdateRemainingScoreBar(CP: integer; Screen: TScreenSingController);
 var
   PlayerIndex: integer;
@@ -507,10 +570,19 @@ begin
   end;
 end;
 
+function MaxConfiguredPlayerDelayMs(): integer;
+var
+  PlayerIndex: integer;
+begin
+  Result := 0;
+  for PlayerIndex := 0 to PlayersPlay - 1 do
+    Result := Max(Result, Ini.PlayerDelay[PlayerIndex]);
+end;
+
 procedure NewBeatDetect(Screen: TScreenSingController);
   var
-    MaxCP, CP, SentenceEnd, StartLine, EndLine: integer;
-    I, J: cardinal;
+    MaxCP, CP, SentenceEnd: integer;
+    I, J: integer;
 begin
   // check for sentence end
   // we check three lines (previous, current, next)
@@ -526,27 +598,27 @@ begin
     for J := 0 to MaxCP do
     begin
       CP := J;
-
-      StartLine := CurrentSong.Tracks[CP].CurrentLine - 1;
-      if StartLine < 0 then
-        StartLine := 0;
-      EndLine := StartLine + 1;
-      if EndLine > CurrentSong.Tracks[CP].High then
-        EndLine := CurrentSong.Tracks[CP].High;
+      if (CP > High(CurrentSong.Tracks)) then
+        Continue;
 
       NewNote(CP, Screen);
       ConsumePerfectScorePotential(CP, LyricsState.OldBeatD, LyricsState.CurrentBeatD, Screen);
 
-      for I := StartLine to EndLine do
+      if (CurrentSong.Tracks[CP].High >= 0) then
       begin
-        with CurrentSong.Tracks[CP].Lines[I] do
+        for I := 0 to CurrentSong.Tracks[CP].High do
         begin
-          if (HighNote >= 0) then
+          with CurrentSong.Tracks[CP].Lines[I] do
           begin
-            SentenceEnd := Notes[HighNote].StartBeat + Notes[HighNote].Duration;
+            if (HighNote >= 0) then
+            begin
+              SentenceEnd := Notes[HighNote].StartBeat + Notes[HighNote].Duration;
+              if TrackHasRemotePlayer(CP) then
+                Inc(SentenceEnd, REMOTE_INPUT_LATE_BEAT_WINDOW);
 
-            if (LyricsState.OldBeatD < SentenceEnd) and (LyricsState.CurrentBeatD >= SentenceEnd) then
-              Screen.OnSentenceEnd(CP, I);
+              if (LyricsState.OldBeatD < SentenceEnd) and (LyricsState.CurrentBeatD >= SentenceEnd) then
+                Screen.OnSentenceEnd(CP, I);
+            end;
           end;
         end;
       end;
@@ -554,6 +626,126 @@ begin
       UpdateRemainingScoreBar(CP, Screen);
     end;
   end;
+end;
+
+procedure RecomputePlayerNotePerfects(CurrentPlayer: PPLayer; Line: PLine);
+var
+  PlayerNoteIndex: integer;
+  LineFragmentIndex: integer;
+begin
+  for PlayerNoteIndex := 0 to CurrentPlayer.HighNote do
+  begin
+    CurrentPlayer.Note[PlayerNoteIndex].Perfect := false;
+    for LineFragmentIndex := 0 to Line.HighNote do
+    begin
+      if (Line.Notes[LineFragmentIndex].StartBeat = CurrentPlayer.Note[PlayerNoteIndex].Start) and
+         (Line.Notes[LineFragmentIndex].Duration = CurrentPlayer.Note[PlayerNoteIndex].Duration) and
+         (Line.Notes[LineFragmentIndex].Tone = CurrentPlayer.Note[PlayerNoteIndex].Tone) then
+      begin
+        CurrentPlayer.Note[PlayerNoteIndex].Perfect := true;
+        Break;
+      end;
+    end;
+  end;
+end;
+
+procedure DeletePlayerNoteAt(CurrentPlayer: PPLayer; NoteIndex: integer);
+var
+  I: integer;
+begin
+  for I := NoteIndex to CurrentPlayer.HighNote - 1 do
+    CurrentPlayer.Note[I] := CurrentPlayer.Note[I + 1];
+  Dec(CurrentPlayer.LengthNote);
+  Dec(CurrentPlayer.HighNote);
+  SetLength(CurrentPlayer.Note, CurrentPlayer.LengthNote);
+end;
+
+function InsertPlayerBeatNote(CurrentPlayer: PPLayer; Beat: integer; Tone: real;
+  Hit: boolean; NoteType: TNoteType): integer;
+var
+  InsertAt: integer;
+  I: integer;
+begin
+  InsertAt := 0;
+  while (InsertAt <= CurrentPlayer.HighNote) and
+        (CurrentPlayer.Note[InsertAt].Start < Beat) do
+    Inc(InsertAt);
+
+  Inc(CurrentPlayer.LengthNote);
+  Inc(CurrentPlayer.HighNote);
+  SetLength(CurrentPlayer.Note, CurrentPlayer.LengthNote);
+  for I := CurrentPlayer.HighNote downto InsertAt + 1 do
+    CurrentPlayer.Note[I] := CurrentPlayer.Note[I - 1];
+
+  CurrentPlayer.Note[InsertAt].Start := Beat;
+  CurrentPlayer.Note[InsertAt].Duration := 1;
+  CurrentPlayer.Note[InsertAt].Tone := Tone;
+  CurrentPlayer.Note[InsertAt].Perfect := false;
+  CurrentPlayer.Note[InsertAt].Hit := Hit;
+  CurrentPlayer.Note[InsertAt].NoteType := NoteType;
+  Result := InsertAt;
+end;
+
+procedure MergeAdjacentPlayerNotes(CurrentPlayer: PPLayer);
+var
+  I: integer;
+begin
+  I := 0;
+  while I < CurrentPlayer.HighNote do
+  begin
+    if (CurrentPlayer.Note[I].Start + CurrentPlayer.Note[I].Duration = CurrentPlayer.Note[I + 1].Start) and
+       (CurrentPlayer.Note[I].Tone = CurrentPlayer.Note[I + 1].Tone) and
+       (CurrentPlayer.Note[I].Hit = CurrentPlayer.Note[I + 1].Hit) and
+       (CurrentPlayer.Note[I].NoteType = CurrentPlayer.Note[I + 1].NoteType) then
+    begin
+      Inc(CurrentPlayer.Note[I].Duration, CurrentPlayer.Note[I + 1].Duration);
+      DeletePlayerNoteAt(CurrentPlayer, I + 1);
+    end
+    else
+      Inc(I);
+  end;
+end;
+
+procedure UpsertRemotePlayerBeatNote(CurrentPlayer: PPLayer; Line: PLine;
+  Beat, Tone: integer; Hit: boolean; NoteType: TNoteType);
+var
+  I: integer;
+  OldStart: integer;
+  OldEnd: integer;
+  OldNote: TPlayerNote;
+  InsertedIndex: integer;
+begin
+  for I := 0 to CurrentPlayer.HighNote do
+  begin
+    OldStart := CurrentPlayer.Note[I].Start;
+    OldEnd := OldStart + CurrentPlayer.Note[I].Duration;
+    if (Beat < OldStart) or (Beat >= OldEnd) then
+      Continue;
+
+    OldNote := CurrentPlayer.Note[I];
+    if OldNote.Duration = 1 then
+      DeletePlayerNoteAt(CurrentPlayer, I)
+    else if Beat = OldStart then
+    begin
+      Inc(CurrentPlayer.Note[I].Start);
+      Dec(CurrentPlayer.Note[I].Duration);
+    end
+    else if Beat = OldEnd - 1 then
+      Dec(CurrentPlayer.Note[I].Duration)
+    else
+    begin
+      CurrentPlayer.Note[I].Duration := Beat - OldStart;
+      OldNote.Start := Beat + 1;
+      OldNote.Duration := OldEnd - Beat - 1;
+      InsertedIndex := InsertPlayerBeatNote(CurrentPlayer, OldNote.Start, OldNote.Tone, OldNote.Hit, OldNote.NoteType);
+      CurrentPlayer.Note[InsertedIndex].Duration := OldNote.Duration;
+    end;
+    Break;
+  end;
+
+  InsertedIndex := InsertPlayerBeatNote(CurrentPlayer, Beat, Tone, Hit, NoteType);
+  MergeAdjacentPlayerNotes(CurrentPlayer);
+  RecomputePlayerNotePerfects(CurrentPlayer, Line);
 end;
 
 procedure NewNote(CP: integer; Screen: TScreenSingController);
@@ -564,7 +756,7 @@ var
   CurrentSound:        TCaptureBuffer;
   CurrentPlayer:       PPlayer;
   LastPlayerNote:      PPlayerNote;
-  Line: 	       PLine;
+  Line:                PLine;
   SentenceIndex:       integer;
   SentenceMin:         integer;
   SentenceMax:         integer;
@@ -579,6 +771,7 @@ var
   CurNotePoints:       real;    // Points for the cur. Note (PointsperNote * ScoreFactor[CurNote])
   CurrentNoteType:     TNoteType;
   DelayBeats:          real;
+  PlayerDelayMs:       integer;
   PlayerOldBeat:       integer;
   PlayerCurBeat:       integer;
   FirstBeatToAnalyze:  integer;
@@ -599,6 +792,12 @@ begin
   if (SentenceMin < 0) then
     SentenceMin := 0;
   SentenceMax := CurrentSong.Tracks[CP].CurrentLine;
+  if (CurrentSong.Tracks[CP].High < 0) or (SentenceMax < 0) then
+    Exit;
+  if (SentenceMax > CurrentSong.Tracks[CP].High) then
+    SentenceMax := CurrentSong.Tracks[CP].High;
+  if (SentenceMin > SentenceMax) then
+    SentenceMin := SentenceMax;
 
   // analyze player signals
   for PlayerIndex := 0 to PlayersPlay-1 do
@@ -607,16 +806,26 @@ begin
     begin
 
       IsRemotePlayer := RemoteInputProcessor.HasAssignedPlayer(PlayerIndex);
+      PlayerDelayMs := Ini.PlayerDelay[PlayerIndex];
       if IsRemotePlayer then
       begin
-        FirstBeatToAnalyze := Max(0, LyricsState.CurrentBeatD - REMOTE_INPUT_LATE_BEAT_WINDOW);
-        PlayerCurBeat := LyricsState.CurrentBeatD;
+        // CurrentBeatD already includes Ini.MicDelay. Remote beat frames are
+        // placed by song beat on the phone, so only delay scoring long enough
+        // for late network frames to arrive, relative to the slowest input path.
+        PlayerDelayMs := Max(RemoteInputProcessor.RequiredGameDelayMs,
+          Ini.MicDelay + MaxConfiguredPlayerDelayMs + REMOTE_INPUT_GAME_DELAY_MARGIN_MS) - Ini.MicDelay;
+      end;
+
+      // delay in beats (Ini.PlayerDelay or compensated remote game delay are ms)
+      DelayBeats := GetBeats(CurrentSong.BPM, PlayerDelayMs / 1000);
+      if IsRemotePlayer then
+      begin
+        PlayerCurBeat := Floor(LyricsState.CurrentBeatD - DelayBeats);
+        if PlayerCurBeat < 0 then PlayerCurBeat := 0;
+        FirstBeatToAnalyze := Max(0, PlayerCurBeat - REMOTE_INPUT_LATE_BEAT_WINDOW);
       end
       else
       begin
-        // delay in beats (Ini.PlayerDelay is ms)
-        DelayBeats := GetBeats(CurrentSong.BPM, Ini.PlayerDelay[PlayerIndex] / 1000);
-
         PlayerOldBeat := Floor(LyricsState.OldBeatD - DelayBeats);
         if PlayerOldBeat < 0 then PlayerOldBeat := 0;
         PlayerCurBeat := Floor(LyricsState.CurrentBeatD - DelayBeats);
@@ -756,66 +965,73 @@ begin
               ntRap:       CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
               ntRapGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
             end;
+            AddPlayerSentenceScore(PlayerIndex, CP, SentenceDetected, CurNotePoints);
           end; // operation
 
           // check if we have to add a new note or extend the note's length
-          if (SentenceDetected = SentenceMax) and CanUpdatePlayerNote then
+          if (SentenceDetected = SentenceMax) then
           begin
-            // we will add a new note
-            NewNote := true;
-
-            // if previous note (if any) was the same, extend previous note
-            if ((CurrentPlayer.LengthNote > 0) and
-                (LastPlayerNote <> nil) and
-                (LastPlayerNote.Tone = ActualTone) and
-                ((LastPlayerNote.Start + LastPlayerNote.Duration) = ActualBeat)) then
+            if IsRemotePlayer then
+              UpsertRemotePlayerBeatNote(CurrentPlayer, Line, ActualBeat,
+                ActualTone, NoteHit, CurrentNoteType)
+            else if CanUpdatePlayerNote then
             begin
-              NewNote := false;
-            end;
+              // we will add a new note
+              NewNote := true;
 
-            // if is not as new note to control
-            for LineFragmentIndex := 0 to Line.HighNote do
-            begin
-              if (Line.Notes[LineFragmentIndex].StartBeat = ActualBeat) then
-                NewNote := true;
-            end;
-
-            // add new note
-            if NewNote then
-            begin
-              // new note
-              Inc(CurrentPlayer.LengthNote);
-              Inc(CurrentPlayer.HighNote);
-              SetLength(CurrentPlayer.Note, CurrentPlayer.LengthNote);
-
-              // update player's last note
-              LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote];
-              with LastPlayerNote^ do
+              // if previous note (if any) was the same, extend previous note
+              if ((CurrentPlayer.LengthNote > 0) and
+                  (LastPlayerNote <> nil) and
+                  (LastPlayerNote.Tone = ActualTone) and
+                  ((LastPlayerNote.Start + LastPlayerNote.Duration) = ActualBeat)) then
               begin
-                Start    := ActualBeat;
-                Duration := 1;
-                Tone     := ActualTone; // Tone || ToneAbs
-                //Detect := LyricsState.MidBeat; // Not used!
-                Hit      := NoteHit; // half note patch
-                NoteType := CurrentNoteType;
+                NewNote := false;
               end;
-            end
-            else
-            begin
-              // extend note length
-              if (LastPlayerNote <> nil) then
-                Inc(LastPlayerNote.Duration);
-            end;
 
-            // check for perfect note and then light the star (on Draw)
-            for LineFragmentIndex := 0 to Line.HighNote do
-            begin
-              CurrentLineFragment := @Line.Notes[LineFragmentIndex];
-              if (CurrentLineFragment.StartBeat  = LastPlayerNote.Start) and
-                (CurrentLineFragment.Duration = LastPlayerNote.Duration) and
-                (CurrentLineFragment.Tone   = LastPlayerNote.Tone) then
+              // if is not as new note to control
+              for LineFragmentIndex := 0 to Line.HighNote do
               begin
-                LastPlayerNote.Perfect := true;
+                if (Line.Notes[LineFragmentIndex].StartBeat = ActualBeat) then
+                  NewNote := true;
+              end;
+
+              // add new note
+              if NewNote then
+              begin
+                // new note
+                Inc(CurrentPlayer.LengthNote);
+                Inc(CurrentPlayer.HighNote);
+                SetLength(CurrentPlayer.Note, CurrentPlayer.LengthNote);
+
+                // update player's last note
+                LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote];
+                with LastPlayerNote^ do
+                begin
+                  Start    := ActualBeat;
+                  Duration := 1;
+                  Tone     := ActualTone; // Tone || ToneAbs
+                  //Detect := LyricsState.MidBeat; // Not used!
+                  Hit      := NoteHit; // half note patch
+                  NoteType := CurrentNoteType;
+                end;
+              end
+              else
+              begin
+                // extend note length
+                if (LastPlayerNote <> nil) then
+                  Inc(LastPlayerNote.Duration);
+              end;
+
+              // check if the new/extended note is perfect and then light the star (on Draw)
+              for LineFragmentIndex := 0 to Line.HighNote do
+              begin
+                CurrentLineFragment := @Line.Notes[LineFragmentIndex];
+                if (CurrentLineFragment.StartBeat  = LastPlayerNote.Start) and
+                  (CurrentLineFragment.Duration = LastPlayerNote.Duration) and
+                  (CurrentLineFragment.Tone   = LastPlayerNote.Tone) then
+                begin
+                  LastPlayerNote.Perfect := true;
+                end;
               end;
             end;
           end; // if SentenceDetected = SentenceMax

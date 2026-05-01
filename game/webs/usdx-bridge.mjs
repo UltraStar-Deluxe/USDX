@@ -40,9 +40,10 @@ function wsUrl(base) {
 const server = getArg('server', 'ws://127.0.0.1:8080/ws/host');
 let maxPlayers = Number(getArg('max-players', '6'));
 const reconnectDelayMs = Number(getArg('reconnect-delay-ms', '2000'));
+const heartbeatIntervalMs = Number(getArg('heartbeat-interval-ms', '500'));
 const ipcHost = getArg('ipc-host', '127.0.0.1');
 const ipcPort = Number(getArg('ipc-port', '8765'));
-const p2pEnabled = getBoolArg('p2p', true);
+const p2pEnabled = getBoolArg('p2p', false);
 const p2pIceServersArg = getArg('ice-servers', 'stun:stun.l.google.com:19302');
 const mockSong = getBoolArg('mock-song', true);
 const autoAck = getBoolArg('auto-ack', true);
@@ -51,18 +52,38 @@ const songScan = getBoolArg('song-scan', true);
 const songConfig = getArg('song-config', path.join(gameDir, 'config.ini'));
 const songRootArg = getArg('song-root', '');
 const playlistDirArg = getArg('playlist-dir', '');
-const maxIniPlayerDelays = Number(getArg('max-player-delays', '12'));
+const parentPid = Number(getArg('parent-pid', '0'));
+const ipcDisconnectGraceMs = Number(getArg('ipc-disconnect-grace-ms', '30000'));
+const logFile = getArg('log-file', path.join(gameDir, 'usdx-bridge.log'));
+const previewStreaming = getBoolArg('preview-streaming', true);
+const maxWsBufferedBytes = Number(getArg('max-ws-buffered-bytes', String(256 * 1024)));
+const maxLowPriorityMessageBytes = Number(getArg('max-low-priority-message-bytes', String(64 * 1024)));
+const maxSongStateLibrarySongs = Number(getArg('max-song-state-library-songs', '200'));
+const transientDisconnectGraceMs = Number(getArg('transient-disconnect-grace-ms', '15000'));
+const resumeFailureGraceMs = Number(getArg('resume-failure-grace-ms', '60000'));
+const resumeFailureMaxRetries = Number(getArg('resume-failure-max-retries', '30'));
+const configuredPhoneMicDelayBaseMs = Number(getArg('phone-mic-delay-base-ms', '250'));
+const phoneMicDelayBaseMs = Number.isFinite(configuredPhoneMicDelayBaseMs) ? configuredPhoneMicDelayBaseMs : 250;
 
 let ws = null;
+let ipcServer = null;
 let room = null;
 let seq = 1;
 let songSeq = 0;
+let currentGameState = 'lobby';
 let lastSongClockMessage = null;
 let songScanStarted = false;
 let scannedSongState = null;
 let scannedLibrary = [];
 let currentPlaylistIndex = -1;
 let reconnectTimer = null;
+let ipcDisconnectTimer = null;
+let bridgeDisconnectNotifyTimer = null;
+let pendingGameStateTimer = null;
+let pendingGameStateValue = null;
+let shuttingDown = false;
+let firstResumeFailureAt = 0;
+let resumeFailureCount = 0;
 let songScanProgress = {
   status: 'idle',
   indexedSongs: 0,
@@ -75,17 +96,47 @@ const pitchStats = new Map();
 const ipcClients = new Set();
 const songPreviewPaths = new Map();
 const activePreviewStreams = new Map();
-const maxActivePreviewStreams = Number(getArg('max-active-previews', '6'));
+const disabledPreviewRequestLog = new Map();
+const maxActivePreviewStreams = Number(getArg('max-active-previews', '2'));
 const previewBackpressureHighBytes = Number(getArg('preview-backpressure-high-bytes', String(512 * 1024)));
 const previewBackpressureLowBytes = Number(getArg('preview-backpressure-low-bytes', String(128 * 1024)));
-let playerDelayWriteQueue = Promise.resolve();
+const maxPreviewBytes = Number(getArg('max-preview-bytes', String(256 * 1024)));
+const previewChunkBytes = Number(getArg('preview-chunk-bytes', String(12 * 1024)));
 const p2pSessions = new Map();
 let nodeDataChannelPromise = null;
+let lastSelectedSongId = null;
 
-function send(message) {
+function send(message, options = {}) {
+  if (shuttingDown) return false;
   if (!ws || ws.readyState !== WebSocket.OPEN) return false;
-  ws.send(JSON.stringify({ protocol, ...message }));
-  return true;
+  const bufferedAmount = Number(ws.bufferedAmount || 0);
+  if (options.lowPriority && Number.isFinite(maxWsBufferedBytes) && bufferedAmount > maxWsBufferedBytes) {
+    log('send dropped: backpressure', {
+      type: message?.type || 'unknown',
+      bufferedAmount,
+      limit: maxWsBufferedBytes
+    });
+    return false;
+  }
+
+  const payload = JSON.stringify({ protocol, ...message });
+  const payloadBytes = Buffer.byteLength(payload);
+  if (options.lowPriority && Number.isFinite(maxLowPriorityMessageBytes) && payloadBytes > maxLowPriorityMessageBytes) {
+    log('send dropped: low priority message too large', {
+      type: message?.type || 'unknown',
+      bytes: payloadBytes,
+      limit: maxLowPriorityMessageBytes
+    });
+    return false;
+  }
+
+  try {
+    ws.send(payload);
+    return true;
+  } catch (error) {
+    log('send failed', { type: message?.type || 'unknown', bytes: payloadBytes, error: error.message });
+    return false;
+  }
 }
 
 function sendPreviewMessage(message) {
@@ -95,7 +146,13 @@ function sendPreviewMessage(message) {
 
 function log(message, fields = {}) {
   const suffix = Object.keys(fields).length ? ` ${JSON.stringify(fields)}` : '';
-  console.log(`[usdx-bridge] ${message}${suffix}`);
+  const line = `[usdx-bridge] ${message}${suffix}`;
+  console.log(line);
+  if (logFile) {
+    try {
+      fs.appendFileSync(resolveHostPath(logFile), `${new Date().toISOString()} ${line}\n`);
+    } catch {}
+  }
 }
 
 function safeJsonParse(text) {
@@ -168,18 +225,151 @@ function compactPitchFrameHz(frame) {
   return 440 * (2 ** ((cents - 6900) / 1200));
 }
 
+function playerDelayMsForPitchMessage(msg) {
+  const direct = players.get(String(msg.playerId || ''));
+  if (direct) return clampDelayMs(direct.micDelayMs);
+
+  if (Object.prototype.hasOwnProperty.call(msg, 'micDelayMs')) {
+    return phoneMicDelayToEffectiveMs(msg.micDelayMs);
+  }
+  if (Object.prototype.hasOwnProperty.call(msg, 'playerDelayMs')) {
+    return phoneMicDelayToEffectiveMs(msg.playerDelayMs);
+  }
+
+  const slot = Number(msg.slot ?? msg.playerSlot);
+  if (Number.isInteger(slot) && slot > 0) {
+    for (const player of players.values()) {
+      if (Number(player.slot) === slot) return clampDelayMs(player.micDelayMs);
+    }
+  }
+
+  return 0;
+}
+
+function offsetPitchSongTimeUs(value, delayUs) {
+  const timeUs = Number(value);
+  if (!Number.isFinite(timeUs)) return value;
+  return Math.max(0, Math.round(timeUs - delayUs));
+}
+
+function offsetPitchFrames(frames, delayUs, hasBaseSongTime) {
+  if (!delayUs) return frames;
+  return frames.map((frame) => {
+    if (Array.isArray(frame)) {
+      if (hasBaseSongTime) return frame;
+      const next = [...frame];
+      next[0] = offsetPitchSongTimeUs(next[0], delayUs);
+      return next;
+    }
+    if (frame && typeof frame === 'object' && Object.prototype.hasOwnProperty.call(frame, 'songTimeUs')) {
+      return { ...frame, songTimeUs: offsetPitchSongTimeUs(frame.songTimeUs, delayUs) };
+    }
+    return frame;
+  });
+}
+
 function sendToIpc(message) {
   const line = `${JSON.stringify({ protocol, ...message })}\n`;
   for (const client of ipcClients) {
-    if (!client.destroyed) client.write(line);
+    if (!client.destroyed) {
+      try {
+        client.write(line);
+      } catch (error) {
+        log('ipc write failed', { error: error.message });
+      }
+    }
   }
+}
+
+function writeToIpcClient(client, message) {
+  if (!client || client.destroyed) return false;
+  try {
+    client.write(`${JSON.stringify({ protocol, ...message })}\n`);
+    return true;
+  } catch (error) {
+    log('ipc write failed', { error: error.message });
+    return false;
+  }
+}
+
+function mergeRoomMessage(msg) {
+  const previous = room && room.roomId === msg.roomId ? room : null;
+  return {
+    ...msg,
+    hostToken: msg.hostToken || previous?.hostToken || null,
+    displayCode: msg.displayCode || previous?.displayCode || null,
+    expiresAt: msg.expiresAt || previous?.expiresAt || null
+  };
+}
+
+function roomStatusMessage(type = 'bridge.ready') {
+  return {
+    type,
+    roomId: room?.roomId || null,
+    displayCode: room?.displayCode || null,
+    expiresAt: room?.expiresAt || null,
+    connected: Boolean(room?.displayCode),
+    hostMonoUs: hostMonoUs()
+  };
 }
 
 function hasIpcClient() {
   return ipcClients.size > 0;
 }
 
+function cancelIpcDisconnectGrace() {
+  if (!ipcDisconnectTimer) return;
+  clearTimeout(ipcDisconnectTimer);
+  ipcDisconnectTimer = null;
+}
+
+function cancelBridgeDisconnectNotify() {
+  if (!bridgeDisconnectNotifyTimer) return;
+  clearTimeout(bridgeDisconnectNotifyTimer);
+  bridgeDisconnectNotifyTimer = null;
+}
+
+function notifyBridgeDisconnected(reason = 'websocket_close') {
+  if (shuttingDown) return;
+  cancelBridgeDisconnectNotify();
+  sendToIpc({ type: 'bridge.disconnected', reason });
+}
+
+function scheduleBridgeDisconnectNotify(reason = 'websocket_close') {
+  if (shuttingDown) return;
+  if (!room || !Number.isFinite(transientDisconnectGraceMs) || transientDisconnectGraceMs <= 0) {
+    notifyBridgeDisconnected(reason);
+    return;
+  }
+  if (bridgeDisconnectNotifyTimer) return;
+  log('bridge disconnected; waiting for resume before notifying game', {
+    reason,
+    delayMs: transientDisconnectGraceMs,
+    roomId: room.roomId || null,
+    code: room.displayCode || null
+  });
+  bridgeDisconnectNotifyTimer = setTimeout(() => {
+    bridgeDisconnectNotifyTimer = null;
+    sendToIpc({ type: 'bridge.disconnected', reason });
+  }, transientDisconnectGraceMs);
+  bridgeDisconnectNotifyTimer.unref?.();
+}
+
+function scheduleHostCloseForMissingIpc(reason) {
+  if (shuttingDown || hasIpcClient() || ipcDisconnectTimer) return;
+  const delayMs = Number.isFinite(ipcDisconnectGraceMs)
+    ? Math.max(0, ipcDisconnectGraceMs)
+    : 5000;
+  log('ipc unavailable; delaying host close', { reason, delayMs });
+  ipcDisconnectTimer = setTimeout(() => {
+    ipcDisconnectTimer = null;
+    if (!hasIpcClient()) closeHostConnection(reason);
+  }, delayMs);
+  ipcDisconnectTimer.unref?.();
+}
+
 function closeHostConnection(reason = 'ipc_disconnected') {
+  if (shuttingDown) return;
   if (ws && ws.readyState === WebSocket.OPEN) {
     log('closing host connection', { reason });
     try { ws.close(); } catch {}
@@ -188,6 +378,7 @@ function closeHostConnection(reason = 'ipc_disconnected') {
   players.clear();
   pitchStats.clear();
   closeAllP2pSessions();
+  closeAllPreviewStreams(reason);
 }
 
 function p2pDescriptionType(type) {
@@ -208,6 +399,19 @@ function closeP2pSession(playerId, reason = 'closed') {
 
 function closeAllP2pSessions(reason = 'closed') {
   for (const playerId of [...p2pSessions.keys()]) closeP2pSession(playerId, reason);
+}
+
+function closePreviewStream(requestId, reason = 'closed') {
+  const source = activePreviewStreams.get(String(requestId || ''));
+  if (!source) return false;
+  try { source.destroy?.(); } catch {}
+  activePreviewStreams.delete(String(requestId || ''));
+  log('preview.cancelled', { requestId: String(requestId || ''), reason });
+  return true;
+}
+
+function closeAllPreviewStreams(reason = 'closed') {
+  for (const requestId of [...activePreviewStreams.keys()]) closePreviewStream(requestId, reason);
 }
 
 function sendP2p(playerId, message) {
@@ -255,7 +459,7 @@ async function handleP2pClientMessage(playerId, message) {
     return;
   }
 
-  if (['control.command', 'pitch.batch'].includes(msg.type)) {
+  if (['control.command', 'pitch.batch', 'pitch.beats'].includes(msg.type)) {
     await handleMessage(msg);
   }
 }
@@ -286,6 +490,12 @@ async function handleP2pOffer(msg) {
   const playerId = String(msg.playerId || '');
   const player = players.get(playerId);
   if (!player) return;
+
+  if (!p2pEnabled) {
+    log('p2p offer ignored; disabled', { playerId, attempt: msg.attempt });
+    send({ type: 'p2p.error', playerId, attempt: msg.attempt, code: 'bridge.webrtc_disabled' });
+    return;
+  }
 
   const rtc = await loadNodeDataChannel();
   if (!rtc) {
@@ -353,6 +563,7 @@ function handleP2pIce(msg) {
 }
 
 function scheduleConnect() {
+  if (shuttingDown) return;
   if (reconnectTimer) return;
   if (!hasIpcClient()) {
     log('connect deferred until USDX IPC is available');
@@ -390,6 +601,16 @@ function contentTypeForAudio(filePath) {
   if (ext === '.wav') return 'audio/wav';
   if (ext === '.flac') return 'audio/flac';
   return 'audio/mpeg';
+}
+
+function audioFormatForPath(filePath) {
+  const ext = path.extname(filePath || '').toLowerCase().replace(/^\./, '');
+  if (ext === 'm4a' || ext === 'mp4') return 'mp4';
+  if (ext === 'mp3' || ext === 'mp2' || ext === 'mp1' || ext === 'mpeg' || ext === 'mpg') return 'mp3';
+  if (ext === 'ogg' || ext === 'oga') return 'ogg';
+  if (ext === 'wav') return 'wav';
+  if (ext === 'flac') return 'flac';
+  return ext || 'mp3';
 }
 
 function bufferAscii(buffer, start, length) {
@@ -436,6 +657,25 @@ function audioPathWithExtension(filePath, formatHint = '') {
   if (!filePath || !ext) return filePath;
   const candidate = path.join(path.dirname(filePath), `${path.basename(filePath, path.extname(filePath))}.${ext}`);
   return fs.existsSync(candidate) ? candidate : filePath;
+}
+
+function audioPathForRequest(filePath, formatHint = '') {
+  const ext = normalizeAudioExtensionHint(formatHint);
+  if (!filePath || !ext) {
+    return { filePath, formatAvailable: Boolean(filePath), requestedFormat: ext, actualFormat: audioFormatForPath(filePath) };
+  }
+
+  const originalFormat = audioFormatForPath(filePath);
+  if (ext === originalFormat || (ext === 'm4a' && originalFormat === 'mp4')) {
+    return { filePath, formatAvailable: true, requestedFormat: ext, actualFormat: originalFormat };
+  }
+
+  const candidate = path.join(path.dirname(filePath), `${path.basename(filePath, path.extname(filePath))}.${ext}`);
+  if (fs.existsSync(candidate)) {
+    return { filePath: candidate, formatAvailable: true, requestedFormat: ext, actualFormat: audioFormatForPath(candidate) };
+  }
+
+  return { filePath, formatAvailable: false, requestedFormat: ext, actualFormat: originalFormat };
 }
 
 function sanitizePlaylistName(value) {
@@ -697,92 +937,23 @@ function clampDelayMs(value) {
   return Math.max(-500, Math.min(500, Math.round(number / 10) * 10));
 }
 
+function phoneMicDelayToRawMs(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return clampDelayMs(number);
+}
+
+function phoneMicDelayToEffectiveMs(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return clampDelayMs(phoneMicDelayBaseMs);
+  return clampDelayMs(number + phoneMicDelayBaseMs);
+}
+
 function micDelayFromSettings(settings, fallback = 0) {
-  if (!settings || typeof settings !== 'object') return clampDelayMs(fallback);
-  if (Object.prototype.hasOwnProperty.call(settings, 'micDelayMs')) return clampDelayMs(settings.micDelayMs);
-  if (Object.prototype.hasOwnProperty.call(settings, 'playerDelayMs')) return clampDelayMs(settings.playerDelayMs);
+  if (!settings || typeof settings !== 'object') return phoneMicDelayToRawMs(fallback);
+  if (Object.prototype.hasOwnProperty.call(settings, 'micDelayMs')) return phoneMicDelayToRawMs(settings.micDelayMs);
+  if (Object.prototype.hasOwnProperty.call(settings, 'playerDelayMs')) return phoneMicDelayToRawMs(settings.playerDelayMs);
   return clampDelayMs(fallback);
-}
-
-function replaceIniValue(text, sectionName, keyName, value) {
-  const newline = String(text || '').includes('\r\n') ? '\r\n' : '\n';
-  const lines = String(text || '') ? String(text || '').split(/\r?\n/) : [];
-  const wantedSection = sectionName.toLowerCase();
-  const wantedKey = keyName.toLowerCase();
-  let sectionStart = -1;
-  let sectionEnd = lines.length;
-
-  for (let index = 0; index < lines.length; index += 1) {
-    const match = lines[index].trim().match(/^\[([^\]]+)\]$/);
-    if (!match) continue;
-    if (sectionStart >= 0) {
-      sectionEnd = index;
-      break;
-    }
-    if (match[1].trim().toLowerCase() === wantedSection) {
-      sectionStart = index;
-    }
-  }
-
-  if (sectionStart < 0) {
-    if (lines.length && lines.at(-1) !== '') lines.push('');
-    lines.push(`[${sectionName}]`, `${keyName}=${value}`);
-    return lines.join(newline);
-  }
-
-  for (let index = sectionStart + 1; index < sectionEnd; index += 1) {
-    const line = lines[index];
-    const equals = line.indexOf('=');
-    if (equals < 0) continue;
-    const key = line.slice(0, equals).trim();
-    if (key.toLowerCase() === wantedKey) {
-      lines[index] = `${keyName}=${value}`;
-      return lines.join(newline);
-    }
-  }
-
-  lines.splice(sectionEnd, 0, `${keyName}=${value}`);
-  return lines.join(newline);
-}
-
-async function writePlayerDelayConfig(reason = 'update') {
-  const configPath = resolveHostPath(songConfig);
-  const delaySlots = Number.isFinite(maxIniPlayerDelays)
-    ? Math.max(1, Math.min(64, Math.round(maxIniPlayerDelays)))
-    : 12;
-  const delays = Array.from({ length: delaySlots }, () => 0);
-  for (const player of players.values()) {
-    const slot = Number(player.slot);
-    if (Number.isInteger(slot) && slot >= 1 && slot <= delays.length) {
-      delays[slot - 1] = clampDelayMs(player.micDelayMs);
-    }
-  }
-
-  let text = '';
-  try {
-    text = await fsp.readFile(configPath, 'utf8');
-  } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
-  }
-
-  let next = text;
-  delays.forEach((delay, index) => {
-    next = replaceIniValue(next, 'PlayerDelay', `P${index + 1}`, String(delay));
-  });
-  if (next !== text) {
-    await fsp.mkdir(path.dirname(configPath), { recursive: true });
-    await fsp.writeFile(configPath, next, 'utf8');
-    log('player delay config updated', { config: configPath, reason, delays });
-  }
-}
-
-function schedulePlayerDelayConfigWrite(reason) {
-  playerDelayWriteQueue = playerDelayWriteQueue
-    .catch(() => {})
-    .then(() => writePlayerDelayConfig(reason))
-    .catch((error) => {
-      log('player delay config update failed', { error: error.message });
-    });
 }
 
 function songRootsFromConfig() {
@@ -938,7 +1109,7 @@ function sendSongLibraryProgress(progress = songScanProgress) {
     scannedDirs: songScanProgress.scannedDirs,
     roots: songScanProgress.roots,
     message: songScanProgress.message || ''
-  });
+  }, { lowPriority: true });
 }
 
 async function publishScannedSongState(library, options = {}) {
@@ -967,14 +1138,14 @@ async function publishScannedSongState(library, options = {}) {
     curPlaylist: selectedPlaylist ? selectedPlaylist.index : -1,
     libraryProgress: songScanProgress
   };
-  if (broadcast) send(sanitizeSongStateForServer(scannedSongState));
+  if (broadcast) send(sanitizeSongStateForServer(scannedSongState), { lowPriority: true });
 }
 
 async function scanSongLibrary() {
   if (!songScan) return;
   if (songScanStarted) {
     sendSongLibraryProgress();
-    if (!hasIpcClient() && scannedSongState) send(sanitizeSongStateForServer(scannedSongState));
+    if (!hasIpcClient() && scannedSongState) send(sanitizeSongStateForServer(scannedSongState), { lowPriority: true });
     return;
   }
   songScanStarted = true;
@@ -1041,8 +1212,60 @@ function rememberSongPreview(song) {
   });
 }
 
+function markRemoteAudioAvailability(msg) {
+  if (!msg || typeof msg !== 'object') return msg;
+  if (previewStreaming) {
+    const songId = Number(msg.songId);
+    const songInfo = Number.isInteger(songId) ? songPreviewPaths.get(songId) : null;
+    msg.audioAvailable = true;
+    msg.previewAvailable = true;
+    if (songInfo?.filePath) {
+      msg.audioFileName = path.basename(songInfo.filePath);
+      msg.audioFormat = audioFormatForPath(songInfo.filePath);
+      msg.audioContentType = contentTypeForAudio(songInfo.filePath);
+    }
+  } else {
+    msg.audioAvailable = false;
+    msg.previewAvailable = false;
+    delete msg.audioFileName;
+    delete msg.audioFormat;
+    delete msg.audioContentType;
+    delete msg.audioPath;
+  }
+  return msg;
+}
+
 function sanitizeSongStateForServer(msg) {
   const copy = JSON.parse(JSON.stringify(msg));
+  const maxLibrarySongs = Number.isFinite(maxSongStateLibrarySongs)
+    ? Math.max(0, Math.floor(maxSongStateLibrarySongs))
+    : 200;
+  const maxPlaylistItems = 50;
+
+  if (Array.isArray(copy.library) && copy.library.length > maxLibrarySongs) {
+    copy.libraryTotal = copy.library.length;
+    copy.library = copy.library.slice(0, maxLibrarySongs);
+    copy.librarySent = copy.library.length;
+    copy.libraryTruncated = true;
+  }
+
+  if (Array.isArray(copy.playlists)) {
+    for (const playlist of copy.playlists) {
+      if (!playlist || !Array.isArray(playlist.items) || playlist.items.length <= maxPlaylistItems) continue;
+      playlist.itemsTotal = playlist.items.length;
+      playlist.items = playlist.items.slice(0, maxPlaylistItems);
+      playlist.itemsSent = playlist.items.length;
+      playlist.itemsTruncated = true;
+    }
+  }
+
+  if (Array.isArray(copy.playlistItems) && copy.playlistItems.length > maxPlaylistItems) {
+    copy.playlistItemsTotal = copy.playlistItems.length;
+    copy.playlistItems = copy.playlistItems.slice(0, maxPlaylistItems);
+    copy.playlistItemsSent = copy.playlistItems.length;
+    copy.playlistItemsTruncated = true;
+  }
+
   const songs = [];
   if (copy.currentSong) songs.push(copy.currentSong);
   if (Array.isArray(copy.results)) songs.push(...copy.results);
@@ -1055,13 +1278,48 @@ function sanitizeSongStateForServer(msg) {
   if (Array.isArray(copy.playlistItems)) songs.push(...copy.playlistItems);
   for (const song of songs) {
     rememberSongPreview(song);
-    if (song.audioPath) song.audioFileName = path.basename(song.audioPath);
+    if (previewStreaming && song.audioPath) {
+      song.audioFileName = path.basename(song.audioPath);
+      song.audioFormat = audioFormatForPath(song.audioPath);
+      song.audioContentType = contentTypeForAudio(song.audioPath);
+      if (Object.prototype.hasOwnProperty.call(song, 'previewAvailable')) {
+        song.previewAvailable = Boolean(song.previewAvailable);
+      }
+    } else {
+      delete song.audioFileName;
+      delete song.audioFormat;
+      delete song.audioContentType;
+      song.previewAvailable = false;
+    }
     delete song.audioPath;
   }
   return copy;
 }
 
 function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'preview', rangeStart = null, rangeEnd = null, formatHint = '') {
+  if (!previewStreaming) {
+    const requestPurpose = String(purpose || 'song-preview');
+    const key = `${songId}:${requestPurpose}`;
+    const now = Date.now();
+    const previous = disabledPreviewRequestLog.get(key) || 0;
+    if (now - previous > 5000) {
+      disabledPreviewRequestLog.set(key, now);
+      log('preview.disabled', { requestId, songId, purpose: requestPurpose });
+    }
+    send({
+      type: 'song.preview.error',
+      requestId,
+      songId: Number(songId),
+      purpose: requestPurpose,
+      reason: 'audio_unavailable',
+      permanent: true,
+      retryable: false,
+      audioAvailable: false,
+      previewAvailable: false
+    });
+    return;
+  }
+
   const info = songPreviewPaths.get(Number(songId));
   if (!info || !info.filePath) {
     log('preview.error', { requestId, songId, purpose, reason: 'preview_not_found' });
@@ -1075,7 +1333,30 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
   }
 
   const requestPurpose = String(purpose || 'song-preview');
-  const requestedFilePath = audioPathWithExtension(info.filePath, formatHint);
+  const requestedAudio = audioPathForRequest(info.filePath, formatHint);
+  if (!requestedAudio.formatAvailable) {
+    log('preview.error', {
+      requestId,
+      songId,
+      purpose: requestPurpose,
+      reason: 'format_unavailable',
+      requestedFormat: requestedAudio.requestedFormat,
+      actualFormat: requestedAudio.actualFormat
+    });
+    send({
+      type: 'song.preview.error',
+      requestId,
+      songId: Number(songId),
+      purpose: requestPurpose,
+      reason: 'format_unavailable',
+      requestedFormat: requestedAudio.requestedFormat,
+      availableFormat: requestedAudio.actualFormat,
+      audioFormat: requestedAudio.actualFormat,
+      audioContentType: contentTypeForAudio(requestedAudio.filePath)
+    });
+    return;
+  }
+  const requestedFilePath = requestedAudio.filePath;
   const contentType = sniffContentTypeForAudio(requestedFilePath);
   const seekSec = 0;
   let contentLength = null;
@@ -1089,20 +1370,38 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
   }
   let streamStart = 0;
   let streamEnd = null;
+  let capped = false;
   const requestedRangeStart = Number(rangeStart);
   const requestedRangeEnd = Number(rangeEnd);
   const hasRange = Number.isSafeInteger(requestedRangeStart) && requestedRangeStart >= 0 && Number.isFinite(fileSize) && fileSize > 0;
+  const maxBytesPerRequest = Number.isFinite(maxPreviewBytes) && maxPreviewBytes > 0
+    ? Math.max(1, Math.floor(maxPreviewBytes))
+    : 0;
   if (hasRange) {
     streamStart = Math.min(requestedRangeStart, Math.max(0, fileSize - 1));
     streamEnd = Number.isSafeInteger(requestedRangeEnd) && requestedRangeEnd >= streamStart
       ? Math.min(requestedRangeEnd, fileSize - 1)
       : fileSize - 1;
+    if (maxBytesPerRequest > 0 && streamEnd - streamStart + 1 > maxBytesPerRequest) {
+      streamEnd = Math.min(fileSize - 1, streamStart + maxBytesPerRequest - 1);
+      capped = true;
+    }
     contentLength = Math.max(0, streamEnd - streamStart + 1);
   }
-  const streamOptions = { highWaterMark: 64 * 1024 };
+  const streamOptions = {
+    highWaterMark: Number.isFinite(previewChunkBytes)
+      ? Math.max(4 * 1024, Math.min(48 * 1024, Math.floor(previewChunkBytes)))
+      : 24 * 1024
+  };
   if (hasRange) {
     streamOptions.start = streamStart;
     streamOptions.end = streamEnd;
+  } else if (Number.isFinite(fileSize) && fileSize > 0 && maxBytesPerRequest > 0) {
+    streamEnd = Math.min(fileSize - 1, maxBytesPerRequest - 1);
+    contentLength = streamEnd + 1;
+    streamOptions.start = 0;
+    streamOptions.end = streamEnd;
+    capped = streamEnd < fileSize - 1;
   }
   const stream = fs.createReadStream(requestedFilePath, streamOptions);
   let bytesSent = 0;
@@ -1140,23 +1439,30 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
     songId: Number(songId),
     purpose: requestPurpose,
     startSec: seekSec,
-    rangeStart: hasRange ? streamStart : null,
-    rangeEnd: hasRange ? streamEnd : null,
+    rangeStart: streamOptions.start ?? null,
+    rangeEnd: streamOptions.end ?? null,
     transcoded: false,
     contentType,
     contentLength,
+    chunkBytes: streamOptions.highWaterMark,
+    capped,
     file: path.basename(requestedFilePath),
-    formatHint: normalizeAudioExtensionHint(formatHint)
+    formatHint: requestedAudio.requestedFormat,
+    audioFormat: requestedAudio.actualFormat
   });
+  const partialPreview = streamOptions.end != null && Number.isFinite(fileSize) && streamOptions.end < fileSize - 1;
   send({
     type: 'song.preview.meta',
     requestId,
     songId: Number(songId),
-    statusCode: hasRange ? 206 : 200,
+    statusCode: hasRange || partialPreview ? 206 : 200,
     contentType,
     contentLength,
-    contentRange: hasRange ? `bytes ${streamStart}-${streamEnd}/${fileSize}` : null,
+    contentRange: streamOptions.end != null && Number.isFinite(fileSize)
+      ? `bytes ${streamOptions.start || 0}-${streamOptions.end}/${fileSize}`
+      : null,
     fileName: path.basename(requestedFilePath),
+    audioFormat: requestedAudio.actualFormat,
     title: info.title,
     artist: info.artist,
     previewStart: info.previewStart,
@@ -1165,6 +1471,10 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
     transcoded: false
   });
   stream.on('data', (chunk) => {
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      stream.destroy();
+      return;
+    }
     bytesSent += chunk.length;
     const canContinue = sendPreviewMessage({ type: 'song.preview.chunk', requestId, data: chunk.toString('base64') });
     if (!canContinue) waitForPreviewDrain();
@@ -1186,6 +1496,11 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
 
 function handleIpcMessage(msg) {
   if (!msg || typeof msg.type !== 'string') return;
+  if (msg.type === 'bridge.shutdown') {
+    shutdown('ipc_shutdown');
+    return;
+  }
+
   if (msg.protocol && msg.protocol !== protocol) {
     sendToIpc({ type: 'error', code: 'protocol.unsupported', source: 'bridge.ipc' });
     return;
@@ -1199,9 +1514,11 @@ function handleIpcMessage(msg) {
   const receivedHostUs = hostMonoUs();
   if (msg.type === 'game.state') {
     seq = Math.max(seq, Number(msg.seq || 0) + 1);
+    currentGameState = String(msg.state || currentGameState || 'lobby');
   } else if (msg.type === 'song.select.state') {
     msg.hostStateUs = receivedHostUs;
   } else if (msg.type === 'song.started' || msg.type === 'song.resumed') {
+    currentGameState = 'singing';
     songSeq = Number(msg.songSeq || songSeq || 0);
     const mediaStartUs = Number(msg.mediaStartUs || 0);
     msg.hostStateUs = receivedHostUs;
@@ -1214,6 +1531,7 @@ function handleIpcMessage(msg) {
         msg.songId = Number(song.songId);
       }
     }
+    markRemoteAudioAvailability(msg);
     lastSongClockMessage = { ...msg };
   } else if (msg.type === 'score.snapshot' || msg.type === 'song.position') {
     const mediaStartUs = Number(msg.mediaStartUs || 0);
@@ -1223,13 +1541,22 @@ function handleIpcMessage(msg) {
     }
     lastSongClockMessage = { ...msg };
   } else if (msg.type === 'song.paused' || msg.type === 'song.ended') {
+    currentGameState = msg.type === 'song.paused' ? 'paused' : 'song_ended';
     const mediaStartUs = Number(msg.mediaStartUs || 0);
     msg.hostStateUs = receivedHostUs;
     if (Number.isFinite(mediaStartUs) && mediaStartUs >= 0 && !Number.isFinite(Number(msg.hostSongStartUs))) {
       msg.hostSongStartUs = receivedHostUs - mediaStartUs;
     }
+    markRemoteAudioAvailability(msg);
     if (msg.type === 'song.ended') lastSongClockMessage = null;
     else lastSongClockMessage = { ...msg };
+  }
+  if (msg.type === 'song.select.state') {
+    const selectedSongId = Number(msg.selectedSongId);
+    if (Number.isInteger(selectedSongId) && selectedSongId !== lastSelectedSongId) {
+      if (lastSelectedSongId !== null) closeAllPreviewStreams('song_changed');
+      lastSelectedSongId = selectedSongId;
+    }
   }
 
   const allowed = new Set([
@@ -1239,6 +1566,7 @@ function handleIpcMessage(msg) {
     'song.paused',
     'song.position',
     'song.lyrics',
+    'score.sheet',
     'song.resumed',
     'song.ended',
     'score.snapshot',
@@ -1257,7 +1585,11 @@ function handleIpcMessage(msg) {
     return;
   }
 
-  send(msg.type === 'song.select.state' ? sanitizeSongStateForServer(msg) : msg);
+  if (msg.type === 'song.select.state') {
+    send(sanitizeSongStateForServer(msg), { lowPriority: true });
+  } else {
+    send(msg);
+  }
 }
 
 function startIpcServer() {
@@ -1266,20 +1598,15 @@ function startIpcServer() {
     return;
   }
 
-  const server = net.createServer((socket) => {
+  ipcServer = net.createServer((socket) => {
     socket.setEncoding('utf8');
     ipcClients.add(socket);
+    cancelIpcDisconnectGrace();
     log('ipc client connected', { remote: `${socket.remoteAddress}:${socket.remotePort}` });
     if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
       scheduleConnect();
     }
-    socket.write(`${JSON.stringify({
-      protocol,
-      type: 'bridge.ready',
-      roomId: room?.roomId || null,
-      displayCode: room?.displayCode || null,
-      hostMonoUs: hostMonoUs()
-    })}\n`);
+    writeToIpcClient(socket, room?.displayCode ? roomStatusMessage('room.resumed') : roomStatusMessage('bridge.ready'));
 
     let buffer = '';
     socket.on('data', (chunk) => {
@@ -1300,19 +1627,19 @@ function startIpcServer() {
     socket.on('close', () => {
       ipcClients.delete(socket);
       log('ipc client disconnected');
-      if (!hasIpcClient()) closeHostConnection('ipc_disconnected');
+      if (!hasIpcClient()) scheduleHostCloseForMissingIpc('ipc_disconnected');
     });
     socket.on('error', (error) => {
       ipcClients.delete(socket);
       log('ipc client error', { error: error.message });
-      if (!hasIpcClient()) closeHostConnection('ipc_error');
+      if (!hasIpcClient()) scheduleHostCloseForMissingIpc('ipc_error');
     });
   });
 
-  server.on('error', (error) => {
+  ipcServer.on('error', (error) => {
     log('ipc listen failed', { ipcHost, ipcPort, error: error.message });
   });
-  server.listen(ipcPort, ipcHost, () => {
+  ipcServer.listen(ipcPort, ipcHost, () => {
     log('ipc listening', { ipcHost, ipcPort });
   });
 }
@@ -1331,11 +1658,27 @@ function gameState(state = 'lobby') {
       connected: player.connected !== false,
       singing: player.role === 'singer' || player.role === 'controller',
       role: player.role,
-      micDelayMs: player.micDelayMs || 0
+      micDelayMs: player.phoneMicDelayMs || 0
     })),
     controllerPlayerId: [...players.values()].find((player) => player.role === 'controller')?.playerId || null,
     playlistSize: 0
   };
+}
+
+function gameStateAfterPlayerChange() {
+  return songSeq ? (currentGameState || 'singing') : 'lobby';
+}
+
+function scheduleGameState(state = 'lobby') {
+  pendingGameStateValue = state;
+  if (pendingGameStateTimer) return;
+  pendingGameStateTimer = setTimeout(() => {
+    pendingGameStateTimer = null;
+    const nextState = pendingGameStateValue || 'lobby';
+    pendingGameStateValue = null;
+    send(gameState(nextState));
+  }, 25);
+  pendingGameStateTimer.unref?.();
 }
 
 function startMockSong() {
@@ -1370,18 +1713,20 @@ async function handleMessage(msg) {
   }
 
   if (msg.type === 'room.created') {
+    cancelBridgeDisconnectNotify();
+    firstResumeFailureAt = 0;
+    resumeFailureCount = 0;
     if (!room || room.roomId !== msg.roomId) {
       players.clear();
       pitchStats.clear();
       closeAllP2pSessions('new_room');
     }
-    room = msg;
-    log('room created', { code: msg.displayCode, roomId: msg.roomId });
+    room = mergeRoomMessage(msg);
+    log('room created', { code: room.displayCode, roomId: room.roomId });
     console.log(`Join at https://usdx.at`);
-    console.log(`Code: ${msg.displayCode}`);
-    sendToIpc({ type: 'room.created', roomId: msg.roomId, displayCode: msg.displayCode, expiresAt: msg.expiresAt });
+    console.log(`Code: ${room.displayCode}`);
+    sendToIpc({ type: 'room.created', roomId: room.roomId, displayCode: room.displayCode, expiresAt: room.expiresAt });
     send(gameState('lobby'));
-    schedulePlayerDelayConfigWrite('room.created');
     scanSongLibrary().catch((error) => {
       sendSongLibraryProgress({ status: 'error', message: error.message });
       log('song scan failed', { error: error.message });
@@ -1390,13 +1735,15 @@ async function handleMessage(msg) {
   }
 
   if (msg.type === 'room.resumed') {
-    room = msg;
-    log('room resumed', { code: msg.displayCode, roomId: msg.roomId });
+    cancelBridgeDisconnectNotify();
+    firstResumeFailureAt = 0;
+    resumeFailureCount = 0;
+    room = mergeRoomMessage(msg);
+    log('room resumed', { code: room.displayCode, roomId: room.roomId });
     console.log(`Join at https://usdx.at`);
-    console.log(`Code: ${msg.displayCode}`);
-    sendToIpc({ type: 'room.resumed', roomId: msg.roomId, displayCode: msg.displayCode, expiresAt: msg.expiresAt });
+    console.log(`Code: ${room.displayCode}`);
+    sendToIpc({ type: 'room.resumed', roomId: room.roomId, displayCode: room.displayCode, expiresAt: room.expiresAt });
     send(gameState(songSeq ? 'singing' : 'lobby'));
-    schedulePlayerDelayConfigWrite('room.resumed');
     scanSongLibrary().catch((error) => {
       sendSongLibraryProgress({ status: 'error', message: error.message });
       log('song scan failed', { error: error.message });
@@ -1405,6 +1752,7 @@ async function handleMessage(msg) {
   }
 
   if (msg.type === 'game.state') {
+    currentGameState = String(msg.state || currentGameState || 'lobby');
     if (Number.isFinite(Number(msg.maxPlayers))) {
       maxPlayers = Math.max(1, Math.min(12, Number(msg.maxPlayers)));
     }
@@ -1413,15 +1761,18 @@ async function handleMessage(msg) {
   }
 
   if (msg.type === 'player.joined') {
+    const phoneMicDelayMs = phoneMicDelayToRawMs(msg.micDelayMs);
+    const micDelayMs = phoneMicDelayToEffectiveMs(phoneMicDelayMs);
     players.set(msg.playerId, {
       playerId: msg.playerId,
       name: msg.name,
       slot: msg.slot,
       role: msg.role,
-      micDelayMs: clampDelayMs(msg.micDelayMs),
+      phoneMicDelayMs,
+      micDelayMs,
       connected: true
     });
-    log('player joined', { name: msg.name, slot: msg.slot, role: msg.role });
+    log('player joined', { playerId: msg.playerId, name: msg.name, slot: msg.slot, role: msg.role, phoneMicDelayMs, micDelayMs, players: players.size, p2pEnabled });
     sendToIpc({
       type: 'player.joined',
       roomId: room?.roomId,
@@ -1429,7 +1780,7 @@ async function handleMessage(msg) {
       name: msg.name,
       slot: msg.slot,
       role: msg.role,
-      micDelayMs: clampDelayMs(msg.micDelayMs)
+      micDelayMs
     });
     if (autoAssign) {
       send({
@@ -1437,11 +1788,10 @@ async function handleMessage(msg) {
         playerId: msg.playerId,
         slot: msg.slot,
         role: msg.role,
-        micDelayMs: clampDelayMs(msg.micDelayMs)
+        micDelayMs: phoneMicDelayMs
       });
     }
-    send(gameState('lobby'));
-    schedulePlayerDelayConfigWrite('player.joined');
+    scheduleGameState('lobby');
     if (mockSong && players.size === 1 && songSeq === 0) startMockSong();
     return;
   }
@@ -1452,11 +1802,12 @@ async function handleMessage(msg) {
       player.slot = msg.slot ?? player.slot;
       player.role = msg.role || player.role;
       if (Object.prototype.hasOwnProperty.call(msg, 'micDelayMs')) {
-        player.micDelayMs = clampDelayMs(msg.micDelayMs);
+        player.phoneMicDelayMs = phoneMicDelayToRawMs(msg.micDelayMs);
+        player.micDelayMs = phoneMicDelayToEffectiveMs(player.phoneMicDelayMs);
       }
       player.connected = true;
     }
-    log('player assigned', { playerId: msg.playerId, slot: msg.slot, role: msg.role });
+    log('player assigned', { playerId: msg.playerId, slot: msg.slot, role: msg.role, phoneMicDelayMs: player?.phoneMicDelayMs || 0, micDelayMs: player?.micDelayMs || 0, p2pEnabled });
     sendToIpc({
       type: 'player.assigned',
       roomId: room?.roomId,
@@ -1466,8 +1817,7 @@ async function handleMessage(msg) {
       role: msg.role,
       micDelayMs: player?.micDelayMs || 0
     });
-    send(gameState(songSeq ? 'singing' : 'lobby'));
-    schedulePlayerDelayConfigWrite('player.assigned');
+    scheduleGameState(gameStateAfterPlayerChange());
     return;
   }
 
@@ -1476,8 +1826,7 @@ async function handleMessage(msg) {
     players.delete(msg.playerId);
     log('player left', { playerId: msg.playerId });
     sendToIpc({ type: 'player.left', roomId: room?.roomId, playerId: msg.playerId, reason: msg.reason || 'disconnect' });
-    send(gameState(songSeq ? 'singing' : 'lobby'));
-    schedulePlayerDelayConfigWrite('player.left');
+    scheduleGameState(gameStateAfterPlayerChange());
     return;
   }
 
@@ -1486,7 +1835,7 @@ async function handleMessage(msg) {
     if (player) player.name = msg.name || player.name;
     log('player renamed', { playerId: msg.playerId, name: msg.name });
     sendToIpc({ type: 'player.renamed', roomId: room?.roomId, playerId: msg.playerId, name: msg.name });
-    send(gameState(songSeq ? 'singing' : 'lobby'));
+    scheduleGameState(gameStateAfterPlayerChange());
     return;
   }
 
@@ -1496,7 +1845,7 @@ async function handleMessage(msg) {
     closeP2pSession(msg.playerId, 'player_disconnected');
     log('player disconnected', { playerId: msg.playerId });
     sendToIpc({ type: 'player.disconnected', roomId: room?.roomId, playerId: msg.playerId, reason: msg.reason || 'disconnect' });
-    send(gameState(songSeq ? 'singing' : 'lobby'));
+    scheduleGameState(gameStateAfterPlayerChange());
     return;
   }
 
@@ -1525,27 +1874,23 @@ async function handleMessage(msg) {
   }
 
   if (msg.type === 'song.preview.cancel') {
-    const source = activePreviewStreams.get(String(msg.requestId || ''));
-    if (source) {
-      source.destroy();
-      activePreviewStreams.delete(String(msg.requestId || ''));
-      log('preview.cancelled', { requestId: String(msg.requestId || '') });
-    }
+    closePreviewStream(msg.requestId, 'client_cancel');
     return;
   }
 
   if (msg.type === 'song.state.request') {
     if (lastSongClockMessage) send(lastSongClockMessage);
     sendSongLibraryProgress();
-    if (!hasIpcClient() && scannedSongState) send(sanitizeSongStateForServer(scannedSongState));
+    if (!hasIpcClient() && scannedSongState) send(sanitizeSongStateForServer(scannedSongState), { lowPriority: true });
     return;
   }
 
   if (msg.type === 'settings.update') {
     const player = players.get(msg.playerId);
     if (player) {
-      player.micDelayMs = micDelayFromSettings(msg.settings, player.micDelayMs);
-      log('player settings updated', { playerId: msg.playerId, slot: player.slot, micDelayMs: player.micDelayMs });
+      player.phoneMicDelayMs = micDelayFromSettings(msg.settings, player.phoneMicDelayMs);
+      player.micDelayMs = phoneMicDelayToEffectiveMs(player.phoneMicDelayMs);
+      log('player settings updated', { playerId: msg.playerId, slot: player.slot, phoneMicDelayMs: player.phoneMicDelayMs, micDelayMs: player.micDelayMs });
       sendToIpc({
         type: 'settings.update',
         roomId: room?.roomId,
@@ -1555,11 +1900,11 @@ async function handleMessage(msg) {
         settings: {
           ...(msg.settings && typeof msg.settings === 'object' ? msg.settings : {}),
           micDelayMs: player.micDelayMs,
-          playerDelayMs: player.micDelayMs
+          playerDelayMs: player.micDelayMs,
+          phoneMicDelayMs: player.phoneMicDelayMs
         }
       });
-      send(gameState(songSeq ? 'singing' : 'lobby'));
-      schedulePlayerDelayConfigWrite('settings.update');
+      scheduleGameState(gameStateAfterPlayerChange());
     }
     return;
   }
@@ -1592,7 +1937,17 @@ async function handleMessage(msg) {
   }
 
   if (msg.type === 'pitch.batch') {
+    if (currentGameState !== 'singing') return;
     const frames = Array.isArray(msg.frames) ? msg.frames : [];
+    const micDelayMs = playerDelayMsForPitchMessage(msg);
+    const micDelayUs = micDelayMs * 1000;
+    const rawBaseSongTimeUs = Number(msg.baseSongTimeUs);
+    const hasBaseSongTime = Number.isFinite(rawBaseSongTimeUs);
+    const baseSongTimeUs = hasBaseSongTime
+      ? offsetPitchSongTimeUs(rawBaseSongTimeUs, micDelayUs)
+      : msg.baseSongTimeUs;
+    const adjustedFrames = offsetPitchFrames(frames, micDelayUs, hasBaseSongTime);
+    const adjustedBatch = { ...msg, baseSongTimeUs, frames: adjustedFrames };
     const voiced = frames.filter((frame) => compactPitchFrameVoiced(frame)).length;
     const last = frames.at(-1);
     const stats = pitchStats.get(msg.playerId) || { batches: 0, frames: 0, voiced: 0, lastHz: null, lastSongTimeMs: null };
@@ -1601,8 +1956,9 @@ async function handleMessage(msg) {
     stats.voiced += voiced;
     stats.songSeq = msg.songSeq;
     stats.lastHz = compactPitchFrameHz(last) ?? stats.lastHz;
-    const lastSongTimeUs = compactPitchFrameSongTimeUs(msg, last);
+    const lastSongTimeUs = compactPitchFrameSongTimeUs(adjustedBatch, adjustedFrames.at(-1));
     stats.lastSongTimeMs = Number.isFinite(lastSongTimeUs) ? Math.round(lastSongTimeUs / 1000) : stats.lastSongTimeMs;
+    stats.micDelayMs = micDelayMs;
     pitchStats.set(msg.playerId, stats);
     sendToIpc({
       type: 'pitch.batch',
@@ -1613,8 +1969,28 @@ async function handleMessage(msg) {
       songSeq: msg.songSeq,
       compact: msg.compact,
       batchSeq: msg.batchSeq,
-      baseSongTimeUs: msg.baseSongTimeUs,
+      baseSongTimeUs,
+      micDelayMs,
       frameDurUs: msg.frameDurUs,
+      frames: adjustedFrames
+    });
+    return;
+  }
+
+  if (msg.type === 'pitch.beats') {
+    if (currentGameState !== 'singing') return;
+    const frames = Array.isArray(msg.frames) ? msg.frames : [];
+    const stats = pitchStats.get(msg.playerId) || { batches: 0, frames: 0, voiced: 0, lastHz: null, lastSongTimeMs: null };
+    stats.batches += 1;
+    stats.frames += frames.length;
+    stats.beatMode = true;
+    pitchStats.set(msg.playerId, stats);
+    sendToIpc({
+      type: 'pitch.beats',
+      roomId: room?.roomId,
+      playerId: msg.playerId,
+      slot: players.get(msg.playerId)?.slot || null,
+      role: players.get(msg.playerId)?.role || null,
       frames
     });
     return;
@@ -1635,6 +2011,30 @@ async function handleMessage(msg) {
   if (msg.type === 'error') {
     log('server error', { code: msg.code, reason: msg.reason });
     if (msg.code === 'host.resume_failed') {
+      const now = Date.now();
+      if (!firstResumeFailureAt) firstResumeFailureAt = now;
+      resumeFailureCount += 1;
+      const withinGrace = room
+        && room.roomId
+        && room.hostToken
+        && (!Number.isFinite(resumeFailureGraceMs) || resumeFailureGraceMs < 0 || now - firstResumeFailureAt <= resumeFailureGraceMs)
+        && (!Number.isFinite(resumeFailureMaxRetries) || resumeFailureMaxRetries < 0 || resumeFailureCount <= resumeFailureMaxRetries);
+      log('host resume failed', {
+        roomId: room?.roomId || null,
+        code: room?.displayCode || null,
+        attempts: resumeFailureCount,
+        ageMs: now - firstResumeFailureAt,
+        tolerating: Boolean(withinGrace)
+      });
+      if (withinGrace) {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          try { ws.close(4000, 'resume_retry'); } catch {}
+        } else {
+          scheduleConnect();
+        }
+        return;
+      }
+      cancelBridgeDisconnectNotify();
       room = null;
       players.clear();
       pitchStats.clear();
@@ -1644,6 +2044,7 @@ async function handleMessage(msg) {
 }
 
 function connect() {
+  if (shuttingDown) return;
   if (!hasIpcClient()) {
     log('connect skipped; no USDX IPC client');
     return;
@@ -1672,23 +2073,81 @@ function connect() {
       log('bad message', { error: error.message });
     }
   });
-  ws.addEventListener('close', () => {
-    log('disconnected');
-    sendToIpc({ type: 'bridge.disconnected' });
-    if (hasIpcClient()) scheduleConnect();
+  ws.addEventListener('close', (event) => {
+    log('disconnected', {
+      code: event.code,
+      reason: event.reason || '',
+      wasClean: event.wasClean
+    });
+    scheduleBridgeDisconnectNotify('websocket_close');
+    if (!shuttingDown && hasIpcClient()) scheduleConnect();
   });
   ws.addEventListener('error', (event) => {
     log('socket error', { message: event.message || 'websocket error' });
   });
 }
 
+function shutdown(reason = 'shutdown', exitCode = 0) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  log('shutting down', { reason });
+
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+  cancelBridgeDisconnectNotify();
+  if (pendingGameStateTimer) {
+    clearTimeout(pendingGameStateTimer);
+    pendingGameStateTimer = null;
+  }
+  pendingGameStateValue = null;
+  cancelIpcDisconnectGrace();
+
+  closeAllP2pSessions(reason);
+  closeAllPreviewStreams(reason);
+
+  if (ws) {
+    try { ws.close(); } catch {}
+    ws = null;
+  }
+
+  for (const client of [...ipcClients]) {
+    try { client.end(); } catch {}
+    try { client.destroy(); } catch {}
+  }
+  ipcClients.clear();
+
+  if (ipcServer) {
+    try { ipcServer.close(); } catch {}
+    ipcServer = null;
+  }
+
+  setTimeout(() => process.exit(exitCode), 25).unref?.();
+}
+
+process.once('SIGTERM', () => shutdown('sigterm'));
+process.once('SIGINT', () => shutdown('sigint'));
+
+if (Number.isInteger(parentPid) && parentPid > 0) {
+  setInterval(() => {
+    if (shuttingDown) return;
+    try {
+      process.kill(parentPid, 0);
+    } catch (error) {
+      if (error?.code === 'ESRCH') shutdown('parent_exited');
+    }
+  }, 1000).unref();
+}
+
 setInterval(() => {
+  if (shuttingDown) return;
   if (room && hasIpcClient()) {
     send({ type: 'host.heartbeat' });
   } else if (room && !hasIpcClient()) {
-    closeHostConnection('ipc_unavailable');
+    scheduleHostCloseForMissingIpc('ipc_unavailable');
   }
-}, 1_000).unref();
+}, Number.isFinite(heartbeatIntervalMs) && heartbeatIntervalMs > 0 ? heartbeatIntervalMs : 500).unref();
 
 setInterval(() => {
   for (const [playerId, stats] of pitchStats) {

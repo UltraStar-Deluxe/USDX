@@ -24,6 +24,10 @@ const
   REMOTE_INPUT_MAX_PLAYERS = 12;
   REMOTE_INPUT_BASE_TONE_FREQ = 440;
   REMOTE_INPUT_NUM_HALFTONES = 49;
+  REMOTE_TONE_VOICED_UNSTABLE = -1000;
+  REMOTE_TONE_UNVOICED = -1001;
+  REMOTE_INPUT_MIN_GAME_DELAY_MS = 500;
+  REMOTE_INPUT_GAME_DELAY_MARGIN_MS = 250;
   REMOTE_INPUT_DEFAULT_DELAY_US = 0;
   REMOTE_INPUT_MAX_FRAME_AGE_US = 1500000;
   REMOTE_INPUT_MAX_FRAME_DISTANCE_US = 180000;
@@ -44,6 +48,12 @@ type
     Voiced: boolean;
   end;
 
+  TRemoteBeatTone = record
+    SongSeq: integer;
+    Beat: integer;
+    Tone: integer;
+  end;
+
   TRemoteToneSample = record
     ToneValid: boolean;
     Tone: integer;
@@ -60,25 +70,32 @@ type
   TRemotePlayerBuffer = class
   private
     FFrames: array of TRemotePitchFrame;
+    FBeatTones: array of TRemoteBeatTone;
     FLock: PSDL_Mutex;
     FPlayerId: UTF8String;
     FRole: UTF8String;
     FSlot: integer;
+    FMicDelayMs: integer;
     FEnabled: boolean;
     FConsumedBeats: array of TRemoteConsumedBeat;
 
     procedure DropOldFrames(TargetSongTimeUs: int64);
     function FrameToTone(const Frame: TRemotePitchFrame; out Tone: TRemoteToneSample): boolean;
     function IsBeatConsumed(SongSeq, Beat: integer): boolean;
+    procedure UnmarkBeatConsumed(SongSeq, Beat: integer);
     procedure MarkBeatConsumed(SongSeq, Beat: integer);
+    function FindBeatTone(SongSeq, Beat: integer; out StoredTone: integer): boolean;
+    function StoredToneToToneSample(StoredTone: integer; out Tone: TRemoteToneSample): boolean;
   public
     constructor Create;
     destructor Destroy; override;
 
-    procedure AssignPlayer(const PlayerId, Role: UTF8String; Slot: integer);
+    procedure AssignPlayer(const PlayerId, Role: UTF8String; Slot, MicDelayMs: integer);
     procedure Clear;
     procedure ClearFrames;
+    procedure SetMicDelayMs(MicDelayMs: integer);
     procedure AddFrame(const Frame: TRemotePitchFrame);
+    procedure AddBeatTone(const BeatTone: TRemoteBeatTone);
     function TryGetTone(SongSeq: integer; SongTimeUs: int64; DelayUs: int64;
       out Tone: TRemoteToneSample): boolean;
     function TryConsumeToneForBeat(SongSeq, Beat: integer; SongTimeUs: int64; DelayUs: int64;
@@ -88,6 +105,7 @@ type
     property PlayerId: UTF8String read FPlayerId;
     property Slot: integer read FSlot;
     property Role: UTF8String read FRole;
+    property MicDelayMs: integer read FMicDelayMs;
   end;
 
   TRemoteInputProcessor = class
@@ -95,6 +113,7 @@ type
     FPlayers: array of TRemotePlayerBuffer;
     FCurrentSongSeq: integer;
     FDelayUs: int64;
+    FAcceptingInput: boolean;
 
     function GetPlayerBuffer(PlayerIndex: integer): TRemotePlayerBuffer;
   public
@@ -103,15 +122,19 @@ type
 
     procedure Clear;
     procedure SetSongSeq(SongSeq: integer);
-    procedure AssignPlayerSlot(PlayerIndex: integer; const PlayerId, Role: UTF8String; Slot: integer);
+    procedure AssignPlayerSlot(PlayerIndex: integer; const PlayerId, Role: UTF8String; Slot, MicDelayMs: integer);
     procedure ClearPlayerSlot(PlayerIndex: integer);
+    procedure SetPlayerDelayMs(PlayerIndex, MicDelayMs: integer);
     procedure AddPitchFrame(PlayerIndex: integer; const Frame: TRemotePitchFrame);
+    procedure AddBeatTone(PlayerIndex: integer; Beat, Tone: integer);
     function TryGetTone(PlayerIndex: integer; SongTimeUs: int64; out Tone: TRemoteToneSample): boolean;
     function TryConsumeToneForBeat(PlayerIndex, Beat: integer; SongTimeUs: int64; out Tone: TRemoteToneSample): boolean;
     function HasAssignedPlayer(PlayerIndex: integer): boolean;
+    function RequiredGameDelayMs(): integer;
 
     property CurrentSongSeq: integer read FCurrentSongSeq;
     property DelayUs: int64 read FDelayUs write FDelayUs;
+    property AcceptingInput: boolean read FAcceptingInput write FAcceptingInput;
     property PlayerBuffer[PlayerIndex: integer]: TRemotePlayerBuffer read GetPlayerBuffer;
   end;
 
@@ -162,16 +185,24 @@ begin
   inherited;
 end;
 
-procedure TRemotePlayerBuffer.AssignPlayer(const PlayerId, Role: UTF8String; Slot: integer);
+procedure TRemotePlayerBuffer.AssignPlayer(const PlayerId, Role: UTF8String; Slot, MicDelayMs: integer);
+var
+  SameAssignment: boolean;
 begin
   SDL_LockMutex(FLock);
   try
+    SameAssignment := FEnabled and (FPlayerId = PlayerId) and (FRole = Role) and (FSlot = Slot);
     FPlayerId := PlayerId;
     FRole := Role;
     FSlot := Slot;
+    FMicDelayMs := MicDelayMs;
     FEnabled := true;
-    SetLength(FFrames, 0);
-    SetLength(FConsumedBeats, 0);
+    if not SameAssignment then
+    begin
+      SetLength(FFrames, 0);
+      SetLength(FBeatTones, 0);
+      SetLength(FConsumedBeats, 0);
+    end;
   finally
     SDL_UnlockMutex(FLock);
   end;
@@ -185,8 +216,20 @@ begin
     FPlayerId := '';
     FRole := '';
     FSlot := 0;
+    FMicDelayMs := 0;
     FEnabled := false;
     SetLength(FConsumedBeats, 0);
+    SetLength(FBeatTones, 0);
+  finally
+    SDL_UnlockMutex(FLock);
+  end;
+end;
+
+procedure TRemotePlayerBuffer.SetMicDelayMs(MicDelayMs: integer);
+begin
+  SDL_LockMutex(FLock);
+  try
+    FMicDelayMs := MicDelayMs;
   finally
     SDL_UnlockMutex(FLock);
   end;
@@ -197,6 +240,7 @@ begin
   SDL_LockMutex(FLock);
   try
     SetLength(FFrames, 0);
+    SetLength(FBeatTones, 0);
     SetLength(FConsumedBeats, 0);
   finally
     SDL_UnlockMutex(FLock);
@@ -218,6 +262,49 @@ begin
     Index := Length(FFrames);
     SetLength(FFrames, Index + 1);
     FFrames[Index] := Frame;
+  finally
+    SDL_UnlockMutex(FLock);
+  end;
+end;
+
+procedure TRemotePlayerBuffer.AddBeatTone(const BeatTone: TRemoteBeatTone);
+var
+  I: integer;
+  Index: integer;
+  PreviousTone: integer;
+  HadPreviousTone: boolean;
+begin
+  SDL_LockMutex(FLock);
+  try
+    HadPreviousTone := FindBeatTone(BeatTone.SongSeq, BeatTone.Beat, PreviousTone);
+    for I := 0 to High(FBeatTones) do
+    begin
+      if (FBeatTones[I].SongSeq = BeatTone.SongSeq) and
+         (FBeatTones[I].Beat = BeatTone.Beat) then
+      begin
+        if (FBeatTones[I].Tone > REMOTE_TONE_VOICED_UNSTABLE) and
+           (BeatTone.Tone <= REMOTE_TONE_VOICED_UNSTABLE) then
+          Exit;
+
+        FBeatTones[I].Tone := BeatTone.Tone;
+        if ((not HadPreviousTone) or (PreviousTone <= REMOTE_TONE_VOICED_UNSTABLE)) and
+           (BeatTone.Tone > REMOTE_TONE_VOICED_UNSTABLE) then
+          UnmarkBeatConsumed(BeatTone.SongSeq, BeatTone.Beat);
+        Exit;
+      end;
+    end;
+
+    if (Length(FBeatTones) >= REMOTE_INPUT_MAX_FRAMES) then
+    begin
+      Move(FBeatTones[1], FBeatTones[0], (Length(FBeatTones) - 1) * SizeOf(TRemoteBeatTone));
+      SetLength(FBeatTones, Length(FBeatTones) - 1);
+    end;
+
+    Index := Length(FBeatTones);
+    SetLength(FBeatTones, Index + 1);
+    FBeatTones[Index] := BeatTone;
+    if (BeatTone.Tone > REMOTE_TONE_VOICED_UNSTABLE) then
+      UnmarkBeatConsumed(BeatTone.SongSeq, BeatTone.Beat);
   finally
     SDL_UnlockMutex(FLock);
   end;
@@ -291,6 +378,23 @@ begin
   end;
 end;
 
+procedure TRemotePlayerBuffer.UnmarkBeatConsumed(SongSeq, Beat: integer);
+var
+  I: integer;
+  J: integer;
+begin
+  for I := 0 to High(FConsumedBeats) do
+  begin
+    if (FConsumedBeats[I].SongSeq = SongSeq) and (FConsumedBeats[I].Beat = Beat) then
+    begin
+      for J := I to High(FConsumedBeats) - 1 do
+        FConsumedBeats[J] := FConsumedBeats[J + 1];
+      SetLength(FConsumedBeats, Length(FConsumedBeats) - 1);
+      Exit;
+    end;
+  end;
+end;
+
 procedure TRemotePlayerBuffer.MarkBeatConsumed(SongSeq, Beat: integer);
 var
   Index: integer;
@@ -309,6 +413,42 @@ begin
   SetLength(FConsumedBeats, Index + 1);
   FConsumedBeats[Index].SongSeq := SongSeq;
   FConsumedBeats[Index].Beat := Beat;
+end;
+
+function TRemotePlayerBuffer.FindBeatTone(SongSeq, Beat: integer; out StoredTone: integer): boolean;
+var
+  I: integer;
+begin
+  Result := false;
+  StoredTone := REMOTE_TONE_UNVOICED;
+  for I := 0 to High(FBeatTones) do
+  begin
+    if (FBeatTones[I].SongSeq = SongSeq) and (FBeatTones[I].Beat = Beat) then
+    begin
+      StoredTone := FBeatTones[I].Tone;
+      Result := true;
+      Exit;
+    end;
+  end;
+end;
+
+function TRemotePlayerBuffer.StoredToneToToneSample(StoredTone: integer; out Tone: TRemoteToneSample): boolean;
+begin
+  Tone.ToneValid := false;
+  Tone.Tone := -1;
+  Tone.ToneAbs := -1;
+  Tone.Confidence := 0;
+  Tone.RmsDb := -120;
+
+  Result := StoredTone > REMOTE_TONE_VOICED_UNSTABLE;
+  if not Result then
+    Exit;
+
+  Tone.ToneValid := true;
+  Tone.Tone := StoredTone;
+  Tone.ToneAbs := StoredTone;
+  Tone.Confidence := 1;
+  Tone.RmsDb := 0;
 end;
 
 function TRemotePlayerBuffer.TryGetTone(SongSeq: integer; SongTimeUs: int64; DelayUs: int64;
@@ -468,6 +608,8 @@ end;
 
 function TRemotePlayerBuffer.TryConsumeToneForBeat(SongSeq, Beat: integer; SongTimeUs: int64;
   DelayUs: int64; out Tone: TRemoteToneSample): boolean;
+var
+  StoredTone: integer;
 begin
   SDL_LockMutex(FLock);
   try
@@ -479,6 +621,13 @@ begin
       Tone.ToneAbs := -1;
       Tone.Confidence := 0;
       Tone.RmsDb := -120;
+      Exit;
+    end;
+
+    if FindBeatTone(SongSeq, Beat, StoredTone) then
+    begin
+      Result := StoredToneToToneSample(StoredTone, Tone);
+      MarkBeatConsumed(SongSeq, Beat);
       Exit;
     end;
   finally
@@ -504,6 +653,7 @@ var
   I: integer;
 begin
   inherited;
+  FAcceptingInput := false;
   FDelayUs := REMOTE_INPUT_DEFAULT_DELAY_US;
   FCurrentSongSeq := 0;
   SetLength(FPlayers, REMOTE_INPUT_MAX_PLAYERS);
@@ -524,6 +674,7 @@ procedure TRemoteInputProcessor.Clear;
 var
   I: integer;
 begin
+  FAcceptingInput := false;
   for I := 0 to High(FPlayers) do
     FPlayers[I].Clear;
 end;
@@ -548,10 +699,10 @@ begin
     Result := FPlayers[PlayerIndex];
 end;
 
-procedure TRemoteInputProcessor.AssignPlayerSlot(PlayerIndex: integer; const PlayerId, Role: UTF8String; Slot: integer);
+procedure TRemoteInputProcessor.AssignPlayerSlot(PlayerIndex: integer; const PlayerId, Role: UTF8String; Slot, MicDelayMs: integer);
 begin
   if (GetPlayerBuffer(PlayerIndex) <> nil) then
-    FPlayers[PlayerIndex].AssignPlayer(PlayerId, Role, Slot);
+    FPlayers[PlayerIndex].AssignPlayer(PlayerId, Role, Slot, MicDelayMs);
 end;
 
 procedure TRemoteInputProcessor.ClearPlayerSlot(PlayerIndex: integer);
@@ -560,10 +711,29 @@ begin
     FPlayers[PlayerIndex].Clear;
 end;
 
-procedure TRemoteInputProcessor.AddPitchFrame(PlayerIndex: integer; const Frame: TRemotePitchFrame);
+procedure TRemoteInputProcessor.SetPlayerDelayMs(PlayerIndex, MicDelayMs: integer);
 begin
   if (GetPlayerBuffer(PlayerIndex) <> nil) then
+    FPlayers[PlayerIndex].SetMicDelayMs(MicDelayMs);
+end;
+
+procedure TRemoteInputProcessor.AddPitchFrame(PlayerIndex: integer; const Frame: TRemotePitchFrame);
+begin
+  if FAcceptingInput and (GetPlayerBuffer(PlayerIndex) <> nil) then
     FPlayers[PlayerIndex].AddFrame(Frame);
+end;
+
+procedure TRemoteInputProcessor.AddBeatTone(PlayerIndex: integer; Beat, Tone: integer);
+var
+  BeatTone: TRemoteBeatTone;
+begin
+  if (not FAcceptingInput) or (GetPlayerBuffer(PlayerIndex) = nil) then
+    Exit;
+
+  BeatTone.SongSeq := FCurrentSongSeq;
+  BeatTone.Beat := Beat;
+  BeatTone.Tone := Tone;
+  FPlayers[PlayerIndex].AddBeatTone(BeatTone);
 end;
 
 function TRemoteInputProcessor.TryGetTone(PlayerIndex: integer; SongTimeUs: int64; out Tone: TRemoteToneSample): boolean;
@@ -612,6 +782,41 @@ begin
   finally
     SDL_UnlockMutex(Buffer.FLock);
   end;
+end;
+
+function TRemoteInputProcessor.RequiredGameDelayMs(): integer;
+var
+  I: integer;
+  Buffer: TRemotePlayerBuffer;
+  HasRemotePlayer: boolean;
+  MaxMicDelayMs: integer;
+begin
+  Result := 0;
+  HasRemotePlayer := false;
+  MaxMicDelayMs := 0;
+
+  for I := 0 to High(FPlayers) do
+  begin
+    Buffer := FPlayers[I];
+    if (Buffer = nil) then
+      Continue;
+
+    SDL_LockMutex(Buffer.FLock);
+    try
+      if Buffer.FEnabled and (Buffer.FPlayerId <> '') and
+         ((Buffer.FRole = 'singer') or (Buffer.FRole = 'controller')) then
+      begin
+        HasRemotePlayer := true;
+        MaxMicDelayMs := Max(MaxMicDelayMs, Buffer.FMicDelayMs);
+      end;
+    finally
+      SDL_UnlockMutex(Buffer.FLock);
+    end;
+  end;
+
+  if HasRemotePlayer then
+    Result := Max(REMOTE_INPUT_MIN_GAME_DELAY_MS,
+      MaxMicDelayMs + REMOTE_INPUT_GAME_DELAY_MARGIN_MS);
 end;
 
 end.

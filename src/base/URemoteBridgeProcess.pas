@@ -23,6 +23,7 @@ type
     function NodeExecutablePath: string;
     function RemoteServerUrl: string;
     function IsIpcAvailable: boolean;
+    procedure RequestBridgeShutdown;
   public
     destructor Destroy; override;
 
@@ -41,12 +42,15 @@ uses
   Classes,
   Process,
   ssockets,
-  SysUtils;
+  SysUtils
+  {$IFDEF UNIX}, BaseUnix{$ENDIF};
 
 const
   DEFAULT_REMOTE_SERVER = 'wss://usdx.at/ws/host';
   DEFAULT_IPC_HOST = '127.0.0.1';
   DEFAULT_IPC_PORT = 8765;
+  IPC_CONNECT_TIMEOUT_MS = 100;
+  IPC_WRITE_TIMEOUT_MS = 100;
 
 var
   singleton_RemoteBridgeProcess: TRemoteBridgeProcess = nil;
@@ -98,10 +102,28 @@ begin
   Result := false;
   Socket := nil;
   try
-    Socket := TInetSocket.Create(DEFAULT_IPC_HOST, DEFAULT_IPC_PORT);
+    Socket := TInetSocket.Create(DEFAULT_IPC_HOST, DEFAULT_IPC_PORT, IPC_CONNECT_TIMEOUT_MS);
+    Socket.IOTimeout := IPC_WRITE_TIMEOUT_MS;
     Result := true;
   except
     Result := false;
+  end;
+  Socket.Free;
+end;
+
+procedure TRemoteBridgeProcess.RequestBridgeShutdown;
+var
+  Socket: TInetSocket;
+  Line: string;
+begin
+  Socket := nil;
+  try
+    Socket := TInetSocket.Create(DEFAULT_IPC_HOST, DEFAULT_IPC_PORT, IPC_CONNECT_TIMEOUT_MS);
+    Socket.IOTimeout := IPC_WRITE_TIMEOUT_MS;
+    Line := '{"type":"bridge.shutdown"}' + #10;
+    Socket.Write(Pointer(Line)^, Length(Line));
+  except
+    // The bridge may already be gone; Stop will still terminate the process handle.
   end;
   Socket.Free;
 end;
@@ -110,9 +132,27 @@ procedure TRemoteBridgeProcess.Start;
 var
   Proc: TProcess;
   ScriptPath: string;
+  I: integer;
 begin
-  if (FProcess <> nil) or IsIpcAvailable then
+  if (FProcess <> nil) then
     Exit;
+
+  if IsIpcAvailable then
+  begin
+    RequestBridgeShutdown;
+    for I := 1 to 20 do
+    begin
+      Sleep(100);
+      if not IsIpcAvailable then
+        Break;
+    end;
+
+    if IsIpcAvailable then
+    begin
+      FLastError := 'Remote bridge IPC port is already in use';
+      Exit;
+    end;
+  end;
 
   ScriptPath := BridgeScriptPath;
   if (not FileExists(ScriptPath)) then
@@ -130,6 +170,9 @@ begin
     Proc.Parameters.Add('--mock-song=false');
     Proc.Parameters.Add('--auto-ack=false');
     Proc.Parameters.Add('--auto-assign=false');
+    Proc.Parameters.Add('--p2p=false');
+    Proc.Parameters.Add('--parent-pid');
+    Proc.Parameters.Add(IntToStr(GetProcessID));
     Proc.Options := [poNoConsole];
     Proc.Execute;
     FProcess := Proc;
@@ -155,7 +198,19 @@ begin
   FProcess := nil;
   try
     if Proc.Running then
+    begin
       Proc.Terminate(0);
+      if (not Proc.WaitOnExit(1000)) and Proc.Running then
+      begin
+        {$IFDEF UNIX}
+        fpKill(Proc.ProcessID, SIGKILL);
+        Proc.WaitOnExit(500);
+        {$ELSE}
+        Proc.Terminate(1);
+        Proc.WaitOnExit(500);
+        {$ENDIF}
+      end;
+    end;
   finally
     Proc.Free;
     FStartedByGame := false;

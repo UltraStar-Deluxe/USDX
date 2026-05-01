@@ -90,6 +90,7 @@ type
     procedure AnnounceRemoteSongEnded;
     procedure AnnounceRemoteSongPosition(const Reason: UTF8String);
     procedure SendRemoteLyrics;
+    procedure SendRemoteScoreSheet;
     procedure SendRemoteScoreSnapshot(Force: boolean);
     function RemoteMediaStartUs: int64;
     function RemoteSongDurationUs: int64;
@@ -1389,7 +1390,9 @@ begin
     CurrentSong.Title,
     CurrentSong.Artist
   );
+  RemoteInputProcessor.AcceptingInput := true;
   RemoteBridgeIPC.SendGameState('singing', RemoteSongSeq, 0);
+  SendRemoteScoreSheet;
   SendRemoteLyrics;
   SendRemoteScoreSnapshot(true);
 end;
@@ -1398,6 +1401,7 @@ procedure TScreenSingController.AnnounceRemoteSongPaused;
 begin
   if (RemoteSongSeq > 0) then
   begin
+    RemoteInputProcessor.AcceptingInput := false;
     RemoteBridgeIPC.SendSongPaused(RemoteSongSeq, RemoteMediaStartUs, RemoteSongDurationUs);
     RemoteBridgeIPC.SendGameState('paused', RemoteSongSeq, 0);
   end;
@@ -1407,6 +1411,7 @@ procedure TScreenSingController.AnnounceRemoteSongResumed;
 begin
   if (RemoteSongSeq > 0) then
   begin
+    RemoteInputProcessor.AcceptingInput := true;
     RemoteBridgeIPC.SendSongResumed(RemoteSongSeq, RemoteMediaStartUs, RemoteSongDurationUs);
     RemoteBridgeIPC.SendGameState('singing', RemoteSongSeq, 0);
   end;
@@ -1416,6 +1421,7 @@ procedure TScreenSingController.AnnounceRemoteSongEnded;
 begin
   if (RemoteSongSeq > 0) then
   begin
+    RemoteInputProcessor.AcceptingInput := false;
     SendRemoteScoreSnapshot(true);
     RemoteBridgeIPC.SendSongEnded(RemoteSongSeq, RemoteMediaStartUs, RemoteSongDurationUs);
     RemoteBridgeIPC.SendGameState('song_ended', RemoteSongSeq, 0);
@@ -1470,6 +1476,65 @@ begin
     '{"type":"song.lyrics","protocol":1' +
     ',"songSeq":' + IntToStr(RemoteSongSeq) +
     ',"mediaStartUs":' + IntToStr(RemoteMediaStartUs) +
+    ',"tracks":' + TracksJson +
+    '}'
+  );
+end;
+
+procedure TScreenSingController.SendRemoteScoreSheet;
+var
+  TrackIndex: integer;
+  LineIndex: integer;
+  NoteIndex: integer;
+  Beat: integer;
+  TracksJson: string;
+  BeatsJson: string;
+  NeedComma: boolean;
+  Note: PLineFragment;
+begin
+  if (RemoteSongSeq <= 0) or (Length(CurrentSong.Tracks) = 0) then
+    Exit;
+
+  TracksJson := '[';
+  for TrackIndex := 0 to High(CurrentSong.Tracks) do
+  begin
+    if (TrackIndex > 0) then
+      TracksJson := TracksJson + ',';
+
+    BeatsJson := '[';
+    NeedComma := false;
+    for LineIndex := 0 to CurrentSong.Tracks[TrackIndex].High do
+    begin
+      for NoteIndex := 0 to CurrentSong.Tracks[TrackIndex].Lines[LineIndex].HighNote do
+      begin
+        Note := @CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex];
+        if (Note.NoteType = ntFreestyle) or (Note.Duration <= 0) then
+          Continue;
+
+        for Beat := Note.StartBeat to Note.StartBeat + Note.Duration - 1 do
+        begin
+          if NeedComma then
+            BeatsJson := BeatsJson + ',';
+          NeedComma := true;
+          BeatsJson := BeatsJson +
+            '[' + IntToStr(Beat) +
+            ',' + IntToStr(Note.Tone) +
+            ',' + IntToStr(Ord(Note.NoteType)) +
+            ']';
+        end;
+      end;
+    end;
+    BeatsJson := BeatsJson + ']';
+
+    TracksJson := TracksJson +
+      '{"track":' + IntToStr(TrackIndex) +
+      ',"beats":' + BeatsJson +
+      '}';
+  end;
+  TracksJson := TracksJson + ']';
+
+  RemoteBridgeIPC.SendJsonMessage(
+    '{"type":"score.sheet"' +
     ',"tracks":' + TracksJson +
     '}'
   );
@@ -1763,7 +1828,8 @@ begin
       // line bonus
 
       // points for this line
-      LineScore := CurrentScore - CurrentPlayer.ScoreLast;
+      if not GetPlayerSentenceScore(PlayerIndex, Track, SentenceIndex, LineScore) then
+        LineScore := CurrentScore - CurrentPlayer.ScoreLast;
 
       // check for lines with low points
       if MaxLineScore <= 2 then

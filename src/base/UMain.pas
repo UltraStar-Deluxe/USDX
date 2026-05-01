@@ -314,8 +314,8 @@ begin
     // or at least use the corresponding Free methods
 
     Log.LogStatus('Remote Bridge IPC', 'Finalization');
-    RemoteBridgeIPC.Stop;
     RemoteBridgeProcess.Stop;
+    RemoteBridgeIPC.Stop;
 
     Log.LogStatus('Closing DB file', 'Finalization');
     if (DataBase <> nil) then
