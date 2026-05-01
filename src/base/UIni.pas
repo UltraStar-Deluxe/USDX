@@ -2147,25 +2147,6 @@ begin
   IniFile.Free;
 end;
 
-procedure TIni.ReloadDelays;
-var
-  IniFile: TIniFile;
-  I:       integer;
-begin
-  if not FileExists(Filename.ToNative) or (FileAge(Filename.ToNative) <= LastReadDelays) then
-  begin
-    Exit;
-  end;
-  LastReadDelays := FileAge(Filename.ToNative);
-
-  IniFile := TIniFile.Create(Filename.ToNative);
-
-  for I := 0 to IMaxPlayerCount-1 do
-    PlayerDelay[I] := IniFile.ReadInteger('PlayerDelay', 'P'+IntToStr(I+1), 0);
-
-  IniFile.Free;
-end;
-
 function TIni.ReloadNames: boolean;
 var
   IniFile: TIniFile;

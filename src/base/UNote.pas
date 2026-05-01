@@ -147,6 +147,7 @@ var
 const
   MAX_SONG_SCORE = 10000;     // max. achievable points per song
   MAX_SONG_LINE_BONUS = 1000; // max. achievable line bonus per song
+  REMOTE_INPUT_LATE_BEAT_WINDOW = 8;
 
 procedure Sing(Screen: TScreenSingController);
 procedure NewSentence(CP: integer; Screen: TScreenSingController);
@@ -331,8 +332,6 @@ begin
       SetLength(Player[I].Note, 0);
     end;
   end;
-  
-  Ini.ReloadDelays;
 
   Ini.ReloadDelays;
 
@@ -582,6 +581,9 @@ var
   DelayBeats:          real;
   PlayerOldBeat:       integer;
   PlayerCurBeat:       integer;
+  FirstBeatToAnalyze:  integer;
+  IsRemotePlayer:      boolean;
+  CanUpdatePlayerNote: boolean;
   SongTimeUs:          int64;
   RemoteTone:          TRemoteToneSample;
 begin
@@ -604,14 +606,24 @@ begin
     if (not CurrentSong.isDuet) or (PlayerIndex mod 2 = CP) then
     begin
 
-      // delay in beats (Ini.PlayerDelay is ms)
-      DelayBeats := GetBeats(CurrentSong.BPM, Ini.PlayerDelay[PlayerIndex] / 1000);
+      IsRemotePlayer := RemoteInputProcessor.HasAssignedPlayer(PlayerIndex);
+      if IsRemotePlayer then
+      begin
+        FirstBeatToAnalyze := Max(0, LyricsState.CurrentBeatD - REMOTE_INPUT_LATE_BEAT_WINDOW);
+        PlayerCurBeat := LyricsState.CurrentBeatD;
+      end
+      else
+      begin
+        // delay in beats (Ini.PlayerDelay is ms)
+        DelayBeats := GetBeats(CurrentSong.BPM, Ini.PlayerDelay[PlayerIndex] / 1000);
 
-      PlayerOldBeat := Floor(LyricsState.OldBeatD - DelayBeats);
-      if PlayerOldBeat < 0 then PlayerOldBeat := 0;
-      PlayerCurBeat := Floor(LyricsState.CurrentBeatD - DelayBeats);
+        PlayerOldBeat := Floor(LyricsState.OldBeatD - DelayBeats);
+        if PlayerOldBeat < 0 then PlayerOldBeat := 0;
+        PlayerCurBeat := Floor(LyricsState.CurrentBeatD - DelayBeats);
+        FirstBeatToAnalyze := PlayerOldBeat + 1;
+      end;
 
-      for ActualBeat := PlayerOldBeat+1 to PlayerCurBeat do
+      for ActualBeat := FirstBeatToAnalyze to PlayerCurBeat do
       begin
         // check for an active note at the current time defined in the lyrics
         NoteAvailable := false;
@@ -648,6 +660,8 @@ begin
           LastPlayerNote := @CurrentPlayer.Note[CurrentPlayer.HighNote]
         else
           LastPlayerNote := nil;
+        CanUpdatePlayerNote := (LastPlayerNote = nil) or
+          (ActualBeat >= LastPlayerNote.Start + LastPlayerNote.Duration);
 
         Line := nil;
         CurrentLineFragment := nil;
@@ -683,13 +697,22 @@ begin
         end;
 
         // analyze buffer
-        CurrentSound.AnalyzeBuffer;
-        SongTimeUs := Round(GetTimeFromBeat(ActualBeat) * 1000000);
-        if RemoteInputProcessor.TryGetTone(PlayerIndex, SongTimeUs, RemoteTone) then
+        if IsRemotePlayer then
         begin
+          if not NoteAvailable then
+            Continue;
+
+          SongTimeUs := Round(GetTimeFromBeat(ActualBeat) * 1000000);
+          if not RemoteInputProcessor.TryConsumeToneForBeat(PlayerIndex, ActualBeat, SongTimeUs, RemoteTone) then
+            Continue;
+
           CurrentSound.ToneValid := RemoteTone.ToneValid;
           CurrentSound.Tone := RemoteTone.Tone;
           CurrentSound.ToneAbs := RemoteTone.ToneAbs;
+        end
+        else
+        begin
+          CurrentSound.AnalyzeBuffer;
         end;
 
         // add some noise
@@ -736,7 +759,7 @@ begin
           end; // operation
 
           // check if we have to add a new note or extend the note's length
-          if (SentenceDetected = SentenceMax) then
+          if (SentenceDetected = SentenceMax) and CanUpdatePlayerNote then
           begin
             // we will add a new note
             NewNote := true;

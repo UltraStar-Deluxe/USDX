@@ -45,11 +45,11 @@ const ipcPort = Number(getArg('ipc-port', '8765'));
 const mockSong = getBoolArg('mock-song', true);
 const autoAck = getBoolArg('auto-ack', true);
 const autoAssign = getBoolArg('auto-assign', true);
-const controllerPassword = getArg('controller-password', '');
 const songScan = getBoolArg('song-scan', true);
 const songConfig = getArg('song-config', path.join(gameDir, 'config.ini'));
 const songRootArg = getArg('song-root', '');
 const playlistDirArg = getArg('playlist-dir', '');
+const maxIniPlayerDelays = Number(getArg('max-player-delays', '12'));
 
 let ws = null;
 let room = null;
@@ -76,6 +76,7 @@ const activePreviewStreams = new Map();
 const maxActivePreviewStreams = Number(getArg('max-active-previews', '6'));
 const previewBackpressureHighBytes = Number(getArg('preview-backpressure-high-bytes', String(512 * 1024)));
 const previewBackpressureLowBytes = Number(getArg('preview-backpressure-low-bytes', String(128 * 1024)));
+let playerDelayWriteQueue = Promise.resolve();
 
 function send(message) {
   if (!ws || ws.readyState !== WebSocket.OPEN) return false;
@@ -166,10 +167,57 @@ function resolveHostPath(filePath, baseDir = process.cwd()) {
 function contentTypeForAudio(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   if (ext === '.m4a' || ext === '.mp4') return 'audio/mp4';
+  if (ext === '.mp3' || ext === '.mp2' || ext === '.mp1' || ext === '.mpeg' || ext === '.mpg') return 'audio/mpeg';
   if (ext === '.ogg' || ext === '.oga') return 'audio/ogg';
   if (ext === '.wav') return 'audio/wav';
   if (ext === '.flac') return 'audio/flac';
   return 'audio/mpeg';
+}
+
+function bufferAscii(buffer, start, length) {
+  return buffer.subarray(start, start + length).toString('ascii');
+}
+
+function looksLikeMpegAudio(buffer) {
+  for (let index = 0; index < buffer.length - 1; index += 1) {
+    if (buffer[index] === 0xff && (buffer[index + 1] & 0xe0) === 0xe0) return true;
+  }
+  return false;
+}
+
+function sniffContentTypeForAudio(filePath) {
+  let fd = null;
+  try {
+    fd = fs.openSync(filePath, 'r');
+    const buffer = Buffer.alloc(4096);
+    const bytesRead = fs.readSync(fd, buffer, 0, buffer.length, 0);
+    const bytes = buffer.subarray(0, bytesRead);
+    if (bytes.length >= 10 && bufferAscii(bytes, 0, 3) === 'ID3') return 'audio/mpeg';
+    if (looksLikeMpegAudio(bytes)) return 'audio/mpeg';
+    if (bytes.length >= 12 && bufferAscii(bytes, 4, 4) === 'ftyp') return 'audio/mp4';
+    if (bytes.length >= 4 && bufferAscii(bytes, 0, 4) === 'OggS') return 'audio/ogg';
+    if (bytes.length >= 4 && bufferAscii(bytes, 0, 4) === 'fLaC') return 'audio/flac';
+    if (bytes.length >= 12 && bufferAscii(bytes, 0, 4) === 'RIFF' && bufferAscii(bytes, 8, 4) === 'WAVE') return 'audio/wav';
+  } catch {
+    // Fall back to extension-based MIME below.
+  } finally {
+    if (fd != null) {
+      try { fs.closeSync(fd); } catch {}
+    }
+  }
+  return contentTypeForAudio(filePath);
+}
+
+function normalizeAudioExtensionHint(formatHint = '') {
+  const hint = String(formatHint || '').toLowerCase().replace(/^\./, '').replace(/[^a-z0-9]/g, '');
+  return hint;
+}
+
+function audioPathWithExtension(filePath, formatHint = '') {
+  const ext = normalizeAudioExtensionHint(formatHint);
+  if (!filePath || !ext) return filePath;
+  const candidate = path.join(path.dirname(filePath), `${path.basename(filePath, path.extname(filePath))}.${ext}`);
+  return fs.existsSync(candidate) ? candidate : filePath;
 }
 
 function sanitizePlaylistName(value) {
@@ -425,6 +473,100 @@ function parseIniSections(text) {
   return result;
 }
 
+function clampDelayMs(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.max(-500, Math.min(500, Math.round(number / 10) * 10));
+}
+
+function micDelayFromSettings(settings, fallback = 0) {
+  if (!settings || typeof settings !== 'object') return clampDelayMs(fallback);
+  if (Object.prototype.hasOwnProperty.call(settings, 'micDelayMs')) return clampDelayMs(settings.micDelayMs);
+  if (Object.prototype.hasOwnProperty.call(settings, 'playerDelayMs')) return clampDelayMs(settings.playerDelayMs);
+  return clampDelayMs(fallback);
+}
+
+function replaceIniValue(text, sectionName, keyName, value) {
+  const newline = String(text || '').includes('\r\n') ? '\r\n' : '\n';
+  const lines = String(text || '') ? String(text || '').split(/\r?\n/) : [];
+  const wantedSection = sectionName.toLowerCase();
+  const wantedKey = keyName.toLowerCase();
+  let sectionStart = -1;
+  let sectionEnd = lines.length;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const match = lines[index].trim().match(/^\[([^\]]+)\]$/);
+    if (!match) continue;
+    if (sectionStart >= 0) {
+      sectionEnd = index;
+      break;
+    }
+    if (match[1].trim().toLowerCase() === wantedSection) {
+      sectionStart = index;
+    }
+  }
+
+  if (sectionStart < 0) {
+    if (lines.length && lines.at(-1) !== '') lines.push('');
+    lines.push(`[${sectionName}]`, `${keyName}=${value}`);
+    return lines.join(newline);
+  }
+
+  for (let index = sectionStart + 1; index < sectionEnd; index += 1) {
+    const line = lines[index];
+    const equals = line.indexOf('=');
+    if (equals < 0) continue;
+    const key = line.slice(0, equals).trim();
+    if (key.toLowerCase() === wantedKey) {
+      lines[index] = `${keyName}=${value}`;
+      return lines.join(newline);
+    }
+  }
+
+  lines.splice(sectionEnd, 0, `${keyName}=${value}`);
+  return lines.join(newline);
+}
+
+async function writePlayerDelayConfig(reason = 'update') {
+  const configPath = resolveHostPath(songConfig);
+  const delaySlots = Number.isFinite(maxIniPlayerDelays)
+    ? Math.max(1, Math.min(64, Math.round(maxIniPlayerDelays)))
+    : 12;
+  const delays = Array.from({ length: delaySlots }, () => 0);
+  for (const player of players.values()) {
+    const slot = Number(player.slot);
+    if (Number.isInteger(slot) && slot >= 1 && slot <= delays.length) {
+      delays[slot - 1] = clampDelayMs(player.micDelayMs);
+    }
+  }
+
+  let text = '';
+  try {
+    text = await fsp.readFile(configPath, 'utf8');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+
+  let next = text;
+  delays.forEach((delay, index) => {
+    next = replaceIniValue(next, 'PlayerDelay', `P${index + 1}`, String(delay));
+  });
+  if (next !== text) {
+    await fsp.mkdir(path.dirname(configPath), { recursive: true });
+    await fsp.writeFile(configPath, next, 'utf8');
+    log('player delay config updated', { config: configPath, reason, delays });
+  }
+}
+
+function schedulePlayerDelayConfigWrite(reason) {
+  playerDelayWriteQueue = playerDelayWriteQueue
+    .catch(() => {})
+    .then(() => writePlayerDelayConfig(reason))
+    .catch((error) => {
+      log('player delay config update failed', { error: error.message });
+    });
+}
+
 function songRootsFromConfig() {
   const roots = [];
   function addRoot(root) {
@@ -501,9 +643,18 @@ function songMetaFromTxt(text, txtPath) {
 
 function candidateAudioPath(txtPath, audioName) {
   const dir = path.dirname(txtPath);
-  if (audioName) return resolveHostPath(audioName, dir);
+  const extensions = ['.mp3', '.mp4', '.m4a', '.mp2', '.mp1', '.mpeg', '.mpg', '.ogg', '.oga', '.wav', '.flac'];
+  if (audioName) {
+    const requested = resolveHostPath(audioName, dir);
+    if (fs.existsSync(requested)) return requested;
+    const requestedStem = path.join(path.dirname(requested), path.basename(requested, path.extname(requested)));
+    for (const ext of extensions) {
+      const candidate = `${requestedStem}${ext}`;
+      if (fs.existsSync(candidate)) return candidate;
+    }
+  }
   const stem = path.join(dir, path.basename(txtPath, path.extname(txtPath)));
-  for (const ext of ['.mp3', '.m4a', '.ogg', '.oga', '.wav', '.flac']) {
+  for (const ext of extensions) {
     const candidate = `${stem}${ext}`;
     if (fs.existsSync(candidate)) return candidate;
   }
@@ -686,12 +837,13 @@ function sanitizeSongStateForServer(msg) {
   if (Array.isArray(copy.playlistItems)) songs.push(...copy.playlistItems);
   for (const song of songs) {
     rememberSongPreview(song);
+    if (song.audioPath) song.audioFileName = path.basename(song.audioPath);
     delete song.audioPath;
   }
   return copy;
 }
 
-function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'preview', rangeStart = null, rangeEnd = null) {
+function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'preview', rangeStart = null, rangeEnd = null, formatHint = '') {
   const info = songPreviewPaths.get(Number(songId));
   if (!info || !info.filePath) {
     log('preview.error', { requestId, songId, purpose, reason: 'preview_not_found' });
@@ -705,11 +857,13 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
   }
 
   const requestPurpose = String(purpose || 'song-preview');
+  const requestedFilePath = audioPathWithExtension(info.filePath, formatHint);
+  const contentType = sniffContentTypeForAudio(requestedFilePath);
   const seekSec = 0;
   let contentLength = null;
   let fileSize = null;
   try {
-    fileSize = fs.statSync(info.filePath).size;
+    fileSize = fs.statSync(requestedFilePath).size;
     contentLength = fileSize;
   } catch {
     fileSize = null;
@@ -732,7 +886,7 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
     streamOptions.start = streamStart;
     streamOptions.end = streamEnd;
   }
-  const stream = fs.createReadStream(info.filePath, streamOptions);
+  const stream = fs.createReadStream(requestedFilePath, streamOptions);
   let bytesSent = 0;
   let resumeTimer = null;
   const clearResumeTimer = () => {
@@ -771,19 +925,20 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
     rangeStart: hasRange ? streamStart : null,
     rangeEnd: hasRange ? streamEnd : null,
     transcoded: false,
-    contentType: contentTypeForAudio(info.filePath),
+    contentType,
     contentLength,
-    file: path.basename(info.filePath)
+    file: path.basename(requestedFilePath),
+    formatHint: normalizeAudioExtensionHint(formatHint)
   });
   send({
     type: 'song.preview.meta',
     requestId,
     songId: Number(songId),
     statusCode: hasRange ? 206 : 200,
-    contentType: contentTypeForAudio(info.filePath),
+    contentType,
     contentLength,
     contentRange: hasRange ? `bytes ${streamStart}-${streamEnd}/${fileSize}` : null,
-    fileName: path.basename(info.filePath),
+    fileName: path.basename(requestedFilePath),
     title: info.title,
     artist: info.artist,
     previewStart: info.previewStart,
@@ -865,6 +1020,7 @@ function handleIpcMessage(msg) {
     'song.started',
     'song.paused',
     'song.position',
+    'song.lyrics',
     'song.resumed',
     'song.ended',
     'score.snapshot',
@@ -956,7 +1112,8 @@ function gameState(state = 'lobby') {
       name: player.name,
       connected: player.connected !== false,
       singing: player.role === 'singer' || player.role === 'controller',
-      role: player.role
+      role: player.role,
+      micDelayMs: player.micDelayMs || 0
     })),
     controllerPlayerId: [...players.values()].find((player) => player.role === 'controller')?.playerId || null,
     playlistSize: 0
@@ -990,6 +1147,7 @@ async function handleMessage(msg) {
     console.log(`Code: ${msg.displayCode}`);
     sendToIpc({ type: 'room.created', roomId: msg.roomId, displayCode: msg.displayCode, expiresAt: msg.expiresAt });
     send(gameState('lobby'));
+    schedulePlayerDelayConfigWrite('room.created');
     scanSongLibrary().catch((error) => {
       sendSongLibraryProgress({ status: 'error', message: error.message });
       log('song scan failed', { error: error.message });
@@ -1004,6 +1162,7 @@ async function handleMessage(msg) {
     console.log(`Code: ${msg.displayCode}`);
     sendToIpc({ type: 'room.resumed', roomId: msg.roomId, displayCode: msg.displayCode, expiresAt: msg.expiresAt });
     send(gameState(songSeq ? 'singing' : 'lobby'));
+    schedulePlayerDelayConfigWrite('room.resumed');
     scanSongLibrary().catch((error) => {
       sendSongLibraryProgress({ status: 'error', message: error.message });
       log('song scan failed', { error: error.message });
@@ -1025,6 +1184,7 @@ async function handleMessage(msg) {
       name: msg.name,
       slot: msg.slot,
       role: msg.role,
+      micDelayMs: clampDelayMs(msg.micDelayMs),
       connected: true
     });
     log('player joined', { name: msg.name, slot: msg.slot, role: msg.role });
@@ -1034,17 +1194,20 @@ async function handleMessage(msg) {
       playerId: msg.playerId,
       name: msg.name,
       slot: msg.slot,
-      role: msg.role
+      role: msg.role,
+      micDelayMs: clampDelayMs(msg.micDelayMs)
     });
     if (autoAssign) {
       send({
         type: 'player.assigned',
         playerId: msg.playerId,
         slot: msg.slot,
-        role: msg.role
+        role: msg.role,
+        micDelayMs: clampDelayMs(msg.micDelayMs)
       });
     }
     send(gameState('lobby'));
+    schedulePlayerDelayConfigWrite('player.joined');
     if (mockSong && players.size === 1 && songSeq === 0) startMockSong();
     return;
   }
@@ -1054,6 +1217,9 @@ async function handleMessage(msg) {
     if (player) {
       player.slot = msg.slot ?? player.slot;
       player.role = msg.role || player.role;
+      if (Object.prototype.hasOwnProperty.call(msg, 'micDelayMs')) {
+        player.micDelayMs = clampDelayMs(msg.micDelayMs);
+      }
       player.connected = true;
     }
     log('player assigned', { playerId: msg.playerId, slot: msg.slot, role: msg.role });
@@ -1063,9 +1229,11 @@ async function handleMessage(msg) {
       playerId: msg.playerId,
       name: player?.name || '',
       slot: msg.slot,
-      role: msg.role
+      role: msg.role,
+      micDelayMs: player?.micDelayMs || 0
     });
     send(gameState(songSeq ? 'singing' : 'lobby'));
+    schedulePlayerDelayConfigWrite('player.assigned');
     return;
   }
 
@@ -1074,6 +1242,7 @@ async function handleMessage(msg) {
     log('player left', { playerId: msg.playerId });
     sendToIpc({ type: 'player.left', roomId: room?.roomId, playerId: msg.playerId, reason: msg.reason || 'disconnect' });
     send(gameState(songSeq ? 'singing' : 'lobby'));
+    schedulePlayerDelayConfigWrite('player.left');
     return;
   }
 
@@ -1113,7 +1282,8 @@ async function handleMessage(msg) {
       Number(msg.startSec || 0),
       msg.purpose,
       msg.rangeStart,
-      msg.rangeEnd
+      msg.rangeEnd,
+      msg.formatHint
     );
     return;
   }
@@ -1132,6 +1302,29 @@ async function handleMessage(msg) {
     if (lastSongClockMessage) send(lastSongClockMessage);
     sendSongLibraryProgress();
     if (!hasIpcClient() && scannedSongState) send(sanitizeSongStateForServer(scannedSongState));
+    return;
+  }
+
+  if (msg.type === 'settings.update') {
+    const player = players.get(msg.playerId);
+    if (player) {
+      player.micDelayMs = micDelayFromSettings(msg.settings, player.micDelayMs);
+      log('player settings updated', { playerId: msg.playerId, slot: player.slot, micDelayMs: player.micDelayMs });
+      sendToIpc({
+        type: 'settings.update',
+        roomId: room?.roomId,
+        playerId: msg.playerId,
+        slot: player.slot,
+        role: player.role,
+        settings: {
+          ...(msg.settings && typeof msg.settings === 'object' ? msg.settings : {}),
+          micDelayMs: player.micDelayMs,
+          playerDelayMs: player.micDelayMs
+        }
+      });
+      send(gameState(songSeq ? 'singing' : 'lobby'));
+      schedulePlayerDelayConfigWrite('settings.update');
+    }
     return;
   }
 
@@ -1230,7 +1423,6 @@ function connect() {
       bridgeVersion: '0.1.0',
       capabilities: ['remotePitch', 'remoteControl', 'clockSync'],
       maxPlayers,
-      controllerPassword,
       roomId: room?.roomId,
       hostToken: room?.hostToken
     });

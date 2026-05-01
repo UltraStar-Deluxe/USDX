@@ -63,10 +63,10 @@ type
     procedure SendAck(const PlayerId: UTF8String; CommandId: integer;
       Accepted: boolean; const Reason: UTF8String; GameStateSeq: integer);
     procedure SendSongStarted(SongSeq: integer; SongId: integer; MediaStartUs: int64;
-      const Title, Artist: UTF8String);
-    procedure SendSongPaused(SongSeq: integer; MediaStartUs: int64);
-    procedure SendSongResumed(SongSeq: integer; MediaStartUs: int64);
-    procedure SendSongEnded(SongSeq: integer; MediaStartUs: int64);
+      DurationUs: int64; const Title, Artist: UTF8String);
+    procedure SendSongPaused(SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
+    procedure SendSongResumed(SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
+    procedure SendSongEnded(SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
     procedure SendPlayerAssigned(const PlayerId, Role: UTF8String; Slot: integer);
     procedure SendJsonMessage(const JsonMessage: string);
     function SendGameState(const State: UTF8String; SongSeq: integer;
@@ -115,15 +115,15 @@ type
     procedure SendAck(const PlayerId: UTF8String; CommandId: integer;
       Accepted: boolean; const Reason: UTF8String; GameStateSeq: integer);
     procedure SendSongStarted(SongSeq: integer; SongId: integer; MediaStartUs: int64;
-      const Title, Artist: UTF8String);
+      DurationUs: int64; const Title, Artist: UTF8String);
     procedure SendPlayerAssigned(const PlayerId, Role: UTF8String; Slot: integer);
     procedure SendGameState(Seq: integer; const State: UTF8String;
       SongSeq: integer; PlaylistSize: integer; const PlayersJson: string;
       const ControllerPlayerId: UTF8String);
-    procedure SendSongEvent(const EventType: string; SongSeq: integer; MediaStartUs: int64);
-    procedure SendSongPaused(SongSeq: integer; MediaStartUs: int64);
-    procedure SendSongResumed(SongSeq: integer; MediaStartUs: int64);
-    procedure SendSongEnded(SongSeq: integer; MediaStartUs: int64);
+    procedure SendSongEvent(const EventType: string; SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
+    procedure SendSongPaused(SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
+    procedure SendSongResumed(SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
+    procedure SendSongEnded(SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
     procedure SendLine(const Line: string);
     procedure CloseSocket;
   protected
@@ -136,6 +136,7 @@ type
 var
   singleton_RemoteBridgeIPC: TRemoteBridgeIPC = nil;
   remotePitchLogCounter: integer = 0;
+  remotePitchRejectLogCounter: integer = 0;
 
 function RemoteBridgeIPC(): TRemoteBridgeIPC;
 begin
@@ -500,29 +501,29 @@ begin
 end;
 
 procedure TRemoteBridgeIPC.SendSongStarted(SongSeq: integer; SongId: integer; MediaStartUs: int64;
-  const Title, Artist: UTF8String);
+  DurationUs: int64; const Title, Artist: UTF8String);
 begin
   RemoteInputProcessor.SetSongSeq(SongSeq);
   if (FThread <> nil) and (FThread is TRemoteBridgeIPCThread) then
-    TRemoteBridgeIPCThread(FThread).SendSongStarted(SongSeq, SongId, MediaStartUs, Title, Artist);
+    TRemoteBridgeIPCThread(FThread).SendSongStarted(SongSeq, SongId, MediaStartUs, DurationUs, Title, Artist);
 end;
 
-procedure TRemoteBridgeIPC.SendSongPaused(SongSeq: integer; MediaStartUs: int64);
+procedure TRemoteBridgeIPC.SendSongPaused(SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
 begin
   if (FThread <> nil) and (FThread is TRemoteBridgeIPCThread) then
-    TRemoteBridgeIPCThread(FThread).SendSongPaused(SongSeq, MediaStartUs);
+    TRemoteBridgeIPCThread(FThread).SendSongPaused(SongSeq, MediaStartUs, DurationUs);
 end;
 
-procedure TRemoteBridgeIPC.SendSongResumed(SongSeq: integer; MediaStartUs: int64);
+procedure TRemoteBridgeIPC.SendSongResumed(SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
 begin
   if (FThread <> nil) and (FThread is TRemoteBridgeIPCThread) then
-    TRemoteBridgeIPCThread(FThread).SendSongResumed(SongSeq, MediaStartUs);
+    TRemoteBridgeIPCThread(FThread).SendSongResumed(SongSeq, MediaStartUs, DurationUs);
 end;
 
-procedure TRemoteBridgeIPC.SendSongEnded(SongSeq: integer; MediaStartUs: int64);
+procedure TRemoteBridgeIPC.SendSongEnded(SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
 begin
   if (FThread <> nil) and (FThread is TRemoteBridgeIPCThread) then
-    TRemoteBridgeIPCThread(FThread).SendSongEnded(SongSeq, MediaStartUs);
+    TRemoteBridgeIPCThread(FThread).SendSongEnded(SongSeq, MediaStartUs, DurationUs);
 end;
 
 procedure TRemoteBridgeIPC.SendPlayerAssigned(const PlayerId, Role: UTF8String; Slot: integer);
@@ -613,13 +614,14 @@ begin
 end;
 
 procedure TRemoteBridgeIPCThread.SendSongStarted(SongSeq: integer; SongId: integer; MediaStartUs: int64;
-  const Title, Artist: UTF8String);
+  DurationUs: int64; const Title, Artist: UTF8String);
 begin
   SendLine(
     '{"type":"song.started","protocol":1' +
     ',"songSeq":' + IntToStr(SongSeq) +
     ',"songId":' + IntToStr(SongId) +
     ',"mediaStartUs":' + IntToStr(MediaStartUs) +
+    ',"durationUs":' + IntToStr(DurationUs) +
     ',"title":"' + JsonEscape(Title) + '"' +
     ',"artist":"' + JsonEscape(Artist) + '"' +
     '}' + #10
@@ -663,29 +665,30 @@ begin
   );
 end;
 
-procedure TRemoteBridgeIPCThread.SendSongEvent(const EventType: string; SongSeq: integer; MediaStartUs: int64);
+procedure TRemoteBridgeIPCThread.SendSongEvent(const EventType: string; SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
 begin
   SendLine(
     '{"type":"' + JsonEscape(UTF8String(EventType)) + '","protocol":1' +
     ',"songSeq":' + IntToStr(SongSeq) +
     ',"mediaStartUs":' + IntToStr(MediaStartUs) +
+    ',"durationUs":' + IntToStr(DurationUs) +
     '}' + #10
   );
 end;
 
-procedure TRemoteBridgeIPCThread.SendSongPaused(SongSeq: integer; MediaStartUs: int64);
+procedure TRemoteBridgeIPCThread.SendSongPaused(SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
 begin
-  SendSongEvent('song.paused', SongSeq, MediaStartUs);
+  SendSongEvent('song.paused', SongSeq, MediaStartUs, DurationUs);
 end;
 
-procedure TRemoteBridgeIPCThread.SendSongResumed(SongSeq: integer; MediaStartUs: int64);
+procedure TRemoteBridgeIPCThread.SendSongResumed(SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
 begin
-  SendSongEvent('song.resumed', SongSeq, MediaStartUs);
+  SendSongEvent('song.resumed', SongSeq, MediaStartUs, DurationUs);
 end;
 
-procedure TRemoteBridgeIPCThread.SendSongEnded(SongSeq: integer; MediaStartUs: int64);
+procedure TRemoteBridgeIPCThread.SendSongEnded(SongSeq: integer; MediaStartUs: int64; DurationUs: int64);
 begin
-  SendSongEvent('song.ended', SongSeq, MediaStartUs);
+  SendSongEvent('song.ended', SongSeq, MediaStartUs, DurationUs);
 end;
 
 procedure TRemoteBridgeIPCThread.Execute;
@@ -834,12 +837,22 @@ begin
   if (Slot <= 0) then
     Slot := JsonGetInt(Obj, 'playerSlot', 0);
   if (Slot <= 0) then
+  begin
+    Inc(remotePitchRejectLogCounter);
+    if (remotePitchRejectLogCounter <= 5) or ((remotePitchRejectLogCounter mod 50) = 0) then
+      Log.LogWarn('pitch.batch rejected: missing slot', 'Remote Pitch');
     Exit;
+  end;
 
   PlayerIndex := SlotToPlayerIndex(Slot);
   Frames := JsonFindArray(Obj, 'frames');
   if (Frames = nil) then
+  begin
+    Inc(remotePitchRejectLogCounter);
+    if (remotePitchRejectLogCounter <= 5) or ((remotePitchRejectLogCounter mod 50) = 0) then
+      Log.LogWarn('pitch.batch rejected: missing frames array slot=' + IntToStr(Slot), 'Remote Pitch');
     Exit;
+  end;
 
   Added := 0;
   BatchSongSeq := JsonGetInt(Obj, 'songSeq', 0);
@@ -893,14 +906,27 @@ begin
   if (Added > 0) then
   begin
     Inc(remotePitchLogCounter);
+  end
+  else
+  begin
+    Inc(remotePitchRejectLogCounter);
+    if (remotePitchRejectLogCounter <= 5) or ((remotePitchRejectLogCounter mod 50) = 0) then
+      Log.LogWarn(
+        'pitch.batch decoded zero frames slot=' + IntToStr(Slot) +
+        ' playerIndex=' + IntToStr(PlayerIndex) +
+        ' songSeq=' + IntToStr(BatchSongSeq) +
+        ' rawFrames=' + IntToStr(Frames.Count),
+        'Remote Pitch'
+      );
   end;
 
-  if (Added > 0) and ((remotePitchLogCounter = 1) or ((remotePitchLogCounter mod 100) = 0)) then
+  if (Added > 0) and ((remotePitchLogCounter = 1) or ((remotePitchLogCounter mod 25) = 0)) then
     Log.LogStatus(
       'pitch.batch slot=' + IntToStr(Slot) +
       ' playerIndex=' + IntToStr(PlayerIndex) +
       ' songSeq=' + IntToStr(JsonGetInt(Obj, 'songSeq', 0)) +
-      ' frames=' + IntToStr(Added),
+      ' frames=' + IntToStr(Added) +
+      ' totalBatches=' + IntToStr(remotePitchLogCounter),
       'Remote Pitch'
     );
 end;

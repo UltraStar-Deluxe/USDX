@@ -26,8 +26,9 @@ const
   REMOTE_INPUT_NUM_HALFTONES = 49;
   REMOTE_INPUT_DEFAULT_DELAY_US = 0;
   REMOTE_INPUT_MAX_FRAME_AGE_US = 1500000;
+  REMOTE_INPUT_MAX_FRAME_DISTANCE_US = 180000;
+  REMOTE_INPUT_VOTE_WINDOW_US = 5000;
   REMOTE_INPUT_MAX_FRAMES = 2048;
-  REMOTE_INPUT_MIN_CONFIDENCE = 0.30;
 
 type
   TRemotePitchFrame = record
@@ -49,6 +50,11 @@ type
     RmsDb: double;
   end;
 
+  TRemoteConsumedBeat = record
+    SongSeq: integer;
+    Beat: integer;
+  end;
+
   TRemotePlayerBuffer = class
   private
     FFrames: array of TRemotePitchFrame;
@@ -57,9 +63,12 @@ type
     FRole: UTF8String;
     FSlot: integer;
     FEnabled: boolean;
+    FConsumedBeats: array of TRemoteConsumedBeat;
 
     procedure DropOldFrames(TargetSongTimeUs: int64);
     function FrameToTone(const Frame: TRemotePitchFrame; out Tone: TRemoteToneSample): boolean;
+    function IsBeatConsumed(SongSeq, Beat: integer): boolean;
+    procedure MarkBeatConsumed(SongSeq, Beat: integer);
   public
     constructor Create;
     destructor Destroy; override;
@@ -69,6 +78,8 @@ type
     procedure ClearFrames;
     procedure AddFrame(const Frame: TRemotePitchFrame);
     function TryGetTone(SongSeq: integer; SongTimeUs: int64; DelayUs: int64;
+      out Tone: TRemoteToneSample): boolean;
+    function TryConsumeToneForBeat(SongSeq, Beat: integer; SongTimeUs: int64; DelayUs: int64;
       out Tone: TRemoteToneSample): boolean;
 
     property Enabled: boolean read FEnabled write FEnabled;
@@ -94,6 +105,7 @@ type
     procedure ClearPlayerSlot(PlayerIndex: integer);
     procedure AddPitchFrame(PlayerIndex: integer; const Frame: TRemotePitchFrame);
     function TryGetTone(PlayerIndex: integer; SongTimeUs: int64; out Tone: TRemoteToneSample): boolean;
+    function TryConsumeToneForBeat(PlayerIndex, Beat: integer; SongTimeUs: int64; out Tone: TRemoteToneSample): boolean;
     function HasAssignedPlayer(PlayerIndex: integer): boolean;
 
     property CurrentSongSeq: integer read FCurrentSongSeq;
@@ -157,6 +169,7 @@ begin
     FSlot := Slot;
     FEnabled := true;
     SetLength(FFrames, 0);
+    SetLength(FConsumedBeats, 0);
   finally
     SDL_UnlockMutex(FLock);
   end;
@@ -171,6 +184,7 @@ begin
     FRole := '';
     FSlot := 0;
     FEnabled := false;
+    SetLength(FConsumedBeats, 0);
   finally
     SDL_UnlockMutex(FLock);
   end;
@@ -181,6 +195,7 @@ begin
   SDL_LockMutex(FLock);
   try
     SetLength(FFrames, 0);
+    SetLength(FConsumedBeats, 0);
   finally
     SDL_UnlockMutex(FLock);
   end;
@@ -238,21 +253,55 @@ begin
   Tone.Confidence := Frame.Confidence;
   Tone.RmsDb := Frame.RmsDb;
 
-  if (not Frame.Voiced) or (Frame.Confidence < REMOTE_INPUT_MIN_CONFIDENCE) then
-    Exit;
-
   if (Frame.F0Cents > 0) then
     ToneAbs := CentsToToneAbs(Frame.F0Cents)
   else
     ToneAbs := HertzToToneAbs(Frame.F0Hz);
 
-  if (ToneAbs < 0) or (ToneAbs >= REMOTE_INPUT_NUM_HALFTONES) then
-    Exit;
+  if (ToneAbs < 0) then
+    ToneAbs := 0
+  else if (ToneAbs >= REMOTE_INPUT_NUM_HALFTONES) then
+    ToneAbs := REMOTE_INPUT_NUM_HALFTONES - 1;
 
   Tone.ToneValid := true;
   Tone.ToneAbs := ToneAbs;
   Tone.Tone := ToneAbs mod 12;
   Result := true;
+end;
+
+function TRemotePlayerBuffer.IsBeatConsumed(SongSeq, Beat: integer): boolean;
+var
+  I: integer;
+begin
+  Result := false;
+  for I := 0 to High(FConsumedBeats) do
+  begin
+    if (FConsumedBeats[I].SongSeq = SongSeq) and (FConsumedBeats[I].Beat = Beat) then
+    begin
+      Result := true;
+      Exit;
+    end;
+  end;
+end;
+
+procedure TRemotePlayerBuffer.MarkBeatConsumed(SongSeq, Beat: integer);
+var
+  Index: integer;
+begin
+  if IsBeatConsumed(SongSeq, Beat) then
+    Exit;
+
+  if (Length(FConsumedBeats) >= REMOTE_INPUT_MAX_FRAMES) then
+  begin
+    Move(FConsumedBeats[1], FConsumedBeats[0],
+      (Length(FConsumedBeats) - 1) * SizeOf(TRemoteConsumedBeat));
+    SetLength(FConsumedBeats, Length(FConsumedBeats) - 1);
+  end;
+
+  Index := Length(FConsumedBeats);
+  SetLength(FConsumedBeats, Index + 1);
+  FConsumedBeats[Index].SongSeq := SongSeq;
+  FConsumedBeats[Index].Beat := Beat;
 end;
 
 function TRemotePlayerBuffer.TryGetTone(SongSeq: integer; SongTimeUs: int64; DelayUs: int64;
@@ -262,7 +311,21 @@ var
   TargetSongTimeUs: int64;
   BestIndex: integer;
   BestDistance: int64;
+  BestValidDistance: int64;
   Distance: int64;
+  FrameEndUs: int64;
+  FrameStartUs: int64;
+  FrameMidUs: int64;
+  WindowStartUs: int64;
+  WindowEndUs: int64;
+  VoteCount: integer;
+  BestVoteToneAbs: integer;
+  BestVoteCount: integer;
+  ToneCounts: array[0..REMOTE_INPUT_NUM_HALFTONES-1] of integer;
+  ToneConfidences: array[0..REMOTE_INPUT_NUM_HALFTONES-1] of double;
+  ToneRmsDb: array[0..REMOTE_INPUT_NUM_HALFTONES-1] of double;
+  CandidateTone: TRemoteToneSample;
+  BestTone: TRemoteToneSample;
 begin
   Result := false;
   Tone.ToneValid := false;
@@ -277,37 +340,153 @@ begin
   TargetSongTimeUs := SongTimeUs - DelayUs;
   if (TargetSongTimeUs < 0) then
     TargetSongTimeUs := 0;
+  WindowStartUs := TargetSongTimeUs - (REMOTE_INPUT_VOTE_WINDOW_US div 2);
+  if (WindowStartUs < 0) then
+    WindowStartUs := 0;
+  WindowEndUs := TargetSongTimeUs + (REMOTE_INPUT_VOTE_WINDOW_US div 2);
 
   SDL_LockMutex(FLock);
   try
     DropOldFrames(TargetSongTimeUs);
     BestIndex := -1;
     BestDistance := High(int64);
+    BestValidDistance := High(int64);
+    VoteCount := 0;
+    FillChar(ToneCounts, SizeOf(ToneCounts), 0);
+    FillChar(ToneConfidences, SizeOf(ToneConfidences), 0);
+    FillChar(ToneRmsDb, SizeOf(ToneRmsDb), 0);
 
     for I := 0 to High(FFrames) do
     begin
       if (FFrames[I].SongSeq <> SongSeq) then
         Continue;
 
-      if (TargetSongTimeUs >= FFrames[I].SongTimeUs) and
-        (TargetSongTimeUs <= FFrames[I].SongTimeUs + FFrames[I].DurUs + 40000) then
+      FrameStartUs := FFrames[I].SongTimeUs;
+      FrameEndUs := FFrames[I].SongTimeUs + FFrames[I].DurUs;
+      if (FrameEndUs < FrameStartUs) then
+        FrameEndUs := FrameStartUs;
+      FrameMidUs := (FrameStartUs + FrameEndUs) div 2;
+
+      if (FrameEndUs >= WindowStartUs) and (FrameStartUs <= WindowEndUs) then
       begin
-        BestIndex := I;
-        Break;
+        Inc(VoteCount);
+        if FrameToTone(FFrames[I], CandidateTone) then
+        begin
+          Inc(ToneCounts[CandidateTone.ToneAbs]);
+          ToneConfidences[CandidateTone.ToneAbs] :=
+            ToneConfidences[CandidateTone.ToneAbs] + CandidateTone.Confidence;
+          ToneRmsDb[CandidateTone.ToneAbs] :=
+            ToneRmsDb[CandidateTone.ToneAbs] + CandidateTone.RmsDb;
+        end;
       end;
 
-      Distance := Abs(FFrames[I].SongTimeUs - TargetSongTimeUs);
-      if (Distance < BestDistance) and (Distance <= 60000) then
+      if (TargetSongTimeUs >= FFrames[I].SongTimeUs) and
+        (TargetSongTimeUs <= FrameEndUs + 40000) then
+      begin
+        Distance := Abs(FrameMidUs - TargetSongTimeUs);
+      end
+      else
+      begin
+        Distance := Abs(FFrames[I].SongTimeUs - TargetSongTimeUs);
+        if (Distance > REMOTE_INPUT_MAX_FRAME_DISTANCE_US) then
+          Continue;
+      end;
+
+      if (Distance < BestDistance) then
       begin
         BestDistance := Distance;
         BestIndex := I;
       end;
+
+      if FrameToTone(FFrames[I], CandidateTone) and (Distance < BestValidDistance) then
+      begin
+        BestValidDistance := Distance;
+        BestTone := CandidateTone;
+        Result := true;
+      end;
     end;
 
-    if (BestIndex >= 0) then
+    BestVoteToneAbs := -1;
+    BestVoteCount := 0;
+    for I := 0 to REMOTE_INPUT_NUM_HALFTONES - 1 do
+    begin
+      if (ToneCounts[I] <= 0) then
+        Continue;
+
+      if (BestVoteToneAbs < 0) then
+      begin
+        BestVoteToneAbs := I;
+        BestVoteCount := ToneCounts[I];
+        Continue;
+      end;
+
+      if (ToneCounts[I] > BestVoteCount) or
+        ((ToneCounts[I] = BestVoteCount) and
+         (ToneConfidences[I] / ToneCounts[I] >
+          ToneConfidences[BestVoteToneAbs] / ToneCounts[BestVoteToneAbs])) then
+      begin
+        BestVoteToneAbs := I;
+        BestVoteCount := ToneCounts[I];
+      end;
+    end;
+
+    if (VoteCount > 0) then
+    begin
+      if (BestVoteToneAbs >= 0) then
+      begin
+        Tone.ToneValid := true;
+        Tone.ToneAbs := BestVoteToneAbs;
+        Tone.Tone := BestVoteToneAbs mod 12;
+        Tone.Confidence := ToneConfidences[BestVoteToneAbs] / BestVoteCount;
+        Tone.RmsDb := ToneRmsDb[BestVoteToneAbs] / BestVoteCount;
+        Result := true;
+        Exit;
+      end;
+
+      if Result then
+      begin
+        Tone := BestTone;
+        Exit;
+      end;
+    end;
+
+    if Result then
+      Tone := BestTone
+    else if (BestIndex >= 0) then
       Result := FrameToTone(FFrames[BestIndex], Tone);
   finally
     SDL_UnlockMutex(FLock);
+  end;
+end;
+
+function TRemotePlayerBuffer.TryConsumeToneForBeat(SongSeq, Beat: integer; SongTimeUs: int64;
+  DelayUs: int64; out Tone: TRemoteToneSample): boolean;
+begin
+  SDL_LockMutex(FLock);
+  try
+    if IsBeatConsumed(SongSeq, Beat) then
+    begin
+      Result := false;
+      Tone.ToneValid := false;
+      Tone.Tone := -1;
+      Tone.ToneAbs := -1;
+      Tone.Confidence := 0;
+      Tone.RmsDb := -120;
+      Exit;
+    end;
+  finally
+    SDL_UnlockMutex(FLock);
+  end;
+
+  Result := TryGetTone(SongSeq, SongTimeUs, DelayUs, Tone);
+  if Result and Tone.ToneValid then
+  begin
+    SDL_LockMutex(FLock);
+    try
+      MarkBeatConsumed(SongSeq, Beat);
+    finally
+      SDL_UnlockMutex(FLock);
+    end;
   end;
 end;
 
@@ -393,6 +572,21 @@ begin
     Exit;
 
   Result := FPlayers[PlayerIndex].TryGetTone(FCurrentSongSeq, SongTimeUs, FDelayUs, Tone);
+end;
+
+function TRemoteInputProcessor.TryConsumeToneForBeat(PlayerIndex, Beat: integer; SongTimeUs: int64; out Tone: TRemoteToneSample): boolean;
+begin
+  Result := false;
+  Tone.ToneValid := false;
+  Tone.Tone := -1;
+  Tone.ToneAbs := -1;
+  Tone.Confidence := 0;
+  Tone.RmsDb := -120;
+
+  if (GetPlayerBuffer(PlayerIndex) = nil) then
+    Exit;
+
+  Result := FPlayers[PlayerIndex].TryConsumeToneForBeat(FCurrentSongSeq, Beat, SongTimeUs, FDelayUs, Tone);
 end;
 
 function TRemoteInputProcessor.HasAssignedPlayer(PlayerIndex: integer): boolean;

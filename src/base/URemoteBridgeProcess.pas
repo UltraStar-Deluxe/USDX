@@ -130,11 +130,6 @@ begin
     Proc.Parameters.Add('--mock-song=false');
     Proc.Parameters.Add('--auto-ack=false');
     Proc.Parameters.Add('--auto-assign=false');
-    if (GetEnvironmentVariable('USDX_REMOTE_CONTROLLER_PASSWORD') <> '') then
-    begin
-      Proc.Parameters.Add('--controller-password');
-      Proc.Parameters.Add(GetEnvironmentVariable('USDX_REMOTE_CONTROLLER_PASSWORD'));
-    end;
     Proc.Options := [poNoConsole];
     Proc.Execute;
     FProcess := Proc;
