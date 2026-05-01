@@ -42,6 +42,8 @@ let maxPlayers = Number(getArg('max-players', '6'));
 const reconnectDelayMs = Number(getArg('reconnect-delay-ms', '2000'));
 const ipcHost = getArg('ipc-host', '127.0.0.1');
 const ipcPort = Number(getArg('ipc-port', '8765'));
+const p2pEnabled = getBoolArg('p2p', true);
+const p2pIceServersArg = getArg('ice-servers', 'stun:stun.l.google.com:19302');
 const mockSong = getBoolArg('mock-song', true);
 const autoAck = getBoolArg('auto-ack', true);
 const autoAssign = getBoolArg('auto-assign', true);
@@ -77,6 +79,8 @@ const maxActivePreviewStreams = Number(getArg('max-active-previews', '6'));
 const previewBackpressureHighBytes = Number(getArg('preview-backpressure-high-bytes', String(512 * 1024)));
 const previewBackpressureLowBytes = Number(getArg('preview-backpressure-low-bytes', String(128 * 1024)));
 let playerDelayWriteQueue = Promise.resolve();
+const p2pSessions = new Map();
+let nodeDataChannelPromise = null;
 
 function send(message) {
   if (!ws || ws.readyState !== WebSocket.OPEN) return false;
@@ -92,6 +96,57 @@ function sendPreviewMessage(message) {
 function log(message, fields = {}) {
   const suffix = Object.keys(fields).length ? ` ${JSON.stringify(fields)}` : '';
   console.log(`[usdx-bridge] ${message}${suffix}`);
+}
+
+function safeJsonParse(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+function parseIceServersForNodeDataChannel(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return [];
+  const parsed = safeJsonParse(raw);
+  const entries = Array.isArray(parsed) ? parsed : (parsed && typeof parsed === 'object' ? [parsed] : null);
+  if (!entries) return raw.split(',').map((url) => url.trim()).filter(Boolean);
+
+  const urls = [];
+  for (const entry of entries) {
+    if (typeof entry === 'string') {
+      urls.push(entry);
+      continue;
+    }
+    if (!entry || typeof entry !== 'object') continue;
+    const entryUrls = Array.isArray(entry.urls) ? entry.urls : [entry.urls];
+    for (const url of entryUrls) {
+      if (!url) continue;
+      const text = String(url);
+      if (/^turns?:/i.test(text) && entry.username && entry.credential && !text.includes('@')) {
+        urls.push(text.replace(/^(turns?:)/i, `$1${entry.username}:${entry.credential}@`));
+      } else {
+        urls.push(text);
+      }
+    }
+  }
+  return urls;
+}
+
+const p2pIceServers = parseIceServersForNodeDataChannel(p2pIceServersArg);
+
+async function loadNodeDataChannel() {
+  if (!p2pEnabled) return null;
+  if (!nodeDataChannelPromise) {
+    nodeDataChannelPromise = import('node-datachannel')
+      .then((module) => module.default || module)
+      .catch((error) => {
+        log('p2p unavailable', { error: error.message });
+        return null;
+      });
+  }
+  return nodeDataChannelPromise;
 }
 
 function compactPitchFrameSongTimeUs(batch, frame) {
@@ -132,6 +187,169 @@ function closeHostConnection(reason = 'ipc_disconnected') {
   room = null;
   players.clear();
   pitchStats.clear();
+  closeAllP2pSessions();
+}
+
+function p2pDescriptionType(type) {
+  const value = String(type || '').toLowerCase();
+  if (value === 'offer') return 'Offer';
+  if (value === 'answer') return 'Answer';
+  return type || 'Unspec';
+}
+
+function closeP2pSession(playerId, reason = 'closed') {
+  const session = p2pSessions.get(playerId);
+  if (!session) return;
+  p2pSessions.delete(playerId);
+  try { session.dc?.close?.(); } catch {}
+  try { session.pc?.close?.(); } catch {}
+  log('p2p closed', { playerId, reason });
+}
+
+function closeAllP2pSessions(reason = 'closed') {
+  for (const playerId of [...p2pSessions.keys()]) closeP2pSession(playerId, reason);
+}
+
+function sendP2p(playerId, message) {
+  const dc = p2pSessions.get(playerId)?.dc;
+  if (!dc) return false;
+  try {
+    dc.sendMessage(JSON.stringify({ protocol, roomId: room?.roomId || null, playerId, ...message }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function handleP2pClientMessage(playerId, message) {
+  const player = players.get(playerId);
+  if (!player) return;
+  const msg = {
+    ...message,
+    protocol,
+    roomId: room?.roomId || null,
+    playerId,
+    slot: player.slot || null,
+    role: player.role || null
+  };
+
+  if (msg.type === 'clock.sync.ping') {
+    const hostReceiveUs = hostMonoUs();
+    sendP2p(playerId, {
+      type: 'clock.sync.pong',
+      clientSendUs: msg.clientSendUs,
+      hostReceiveUs,
+      hostSendUs: hostMonoUs()
+    });
+    return;
+  }
+
+  if (msg.type === 'control.command' && player.role !== 'controller') {
+    sendP2p(playerId, {
+      type: 'ack',
+      commandId: msg.commandId,
+      accepted: false,
+      reason: 'not_controller',
+      gameStateSeq: seq
+    });
+    return;
+  }
+
+  if (['control.command', 'pitch.batch'].includes(msg.type)) {
+    await handleMessage(msg);
+  }
+}
+
+function attachP2pDataChannel(playerId, attempt, dc) {
+  const session = p2pSessions.get(playerId);
+  if (!session || session.attempt !== attempt) return;
+  session.dc = dc;
+  dc.onOpen?.(() => {
+    log('p2p open', { playerId, attempt });
+    send({ type: 'p2p.state', playerId, attempt, state: 'open' });
+  });
+  dc.onMessage?.((data) => {
+    const text = Buffer.isBuffer(data) ? data.toString('utf8') : String(data);
+    try {
+      handleP2pClientMessage(playerId, JSON.parse(text)).catch((error) => {
+        log('p2p message failed', { playerId, error: error.message });
+      });
+    } catch (error) {
+      log('p2p bad message', { playerId, error: error.message });
+    }
+  });
+  dc.onClosed?.(() => closeP2pSession(playerId, 'datachannel_closed'));
+  dc.onError?.((error) => log('p2p datachannel error', { playerId, error: String(error?.message || error || 'error') }));
+}
+
+async function handleP2pOffer(msg) {
+  const playerId = String(msg.playerId || '');
+  const player = players.get(playerId);
+  if (!player) return;
+
+  const rtc = await loadNodeDataChannel();
+  if (!rtc) {
+    send({ type: 'p2p.error', playerId, attempt: msg.attempt, code: 'bridge.webrtc_unavailable' });
+    return;
+  }
+
+  closeP2pSession(playerId, 'new_offer');
+  const attempt = Number(msg.attempt || 0);
+  const pc = new rtc.PeerConnection(`usdx-${playerId}`, { iceServers: p2pIceServers });
+  p2pSessions.set(playerId, { pc, dc: null, attempt });
+  pc.onLocalDescription((sdp, type) => {
+    send({
+      type: 'p2p.answer',
+      playerId,
+      attempt,
+      description: {
+        type: String(type || 'answer').toLowerCase(),
+        sdp
+      }
+    });
+  });
+  pc.onLocalCandidate((candidate, mid) => {
+    send({
+      type: 'p2p.ice',
+      playerId,
+      attempt,
+      candidate: {
+        candidate,
+        sdpMid: mid || '0'
+      }
+    });
+  });
+  pc.onDataChannel((dc) => attachP2pDataChannel(playerId, attempt, dc));
+
+  const description = msg.description || { type: msg.descriptionType || msg.sdpType || 'offer', sdp: msg.sdp };
+  if (!description.sdp) {
+    send({ type: 'p2p.error', playerId, attempt, code: 'offer.bad_description' });
+    closeP2pSession(playerId, 'bad_offer');
+    return;
+  }
+  try {
+    pc.setRemoteDescription(description.sdp, p2pDescriptionType(description.type));
+  } catch (error) {
+    log('p2p offer failed', { playerId, error: error.message });
+    send({ type: 'p2p.error', playerId, attempt, code: 'offer.failed', reason: error.message });
+    closeP2pSession(playerId, 'offer_failed');
+  }
+}
+
+function handleP2pIce(msg) {
+  const playerId = String(msg.playerId || '');
+  const session = p2pSessions.get(playerId);
+  if (!session) return;
+  if (Number(msg.attempt || 0) && Number(msg.attempt) !== session.attempt) return;
+  const candidate = msg.candidate && typeof msg.candidate === 'object'
+    ? msg.candidate
+    : { candidate: msg.candidate, sdpMid: msg.sdpMid || msg.mid };
+  if (!candidate.candidate) return;
+  try {
+    session.pc.addRemoteCandidate(candidate.candidate, candidate.sdpMid || '0');
+  } catch (error) {
+    log('p2p candidate failed', { playerId, error: error.message });
+  }
 }
 
 function scheduleConnect() {
@@ -1136,10 +1354,26 @@ function startMockSong() {
 }
 
 async function handleMessage(msg) {
+  if (msg.type === 'p2p.offer') {
+    await handleP2pOffer(msg);
+    return;
+  }
+
+  if (msg.type === 'p2p.ice') {
+    handleP2pIce(msg);
+    return;
+  }
+
+  if (msg.type === 'p2p.close') {
+    closeP2pSession(String(msg.playerId || ''), 'client_closed');
+    return;
+  }
+
   if (msg.type === 'room.created') {
     if (!room || room.roomId !== msg.roomId) {
       players.clear();
       pitchStats.clear();
+      closeAllP2pSessions('new_room');
     }
     room = msg;
     log('room created', { code: msg.displayCode, roomId: msg.roomId });
@@ -1238,6 +1472,7 @@ async function handleMessage(msg) {
   }
 
   if (msg.type === 'player.left') {
+    closeP2pSession(msg.playerId, 'player_left');
     players.delete(msg.playerId);
     log('player left', { playerId: msg.playerId });
     sendToIpc({ type: 'player.left', roomId: room?.roomId, playerId: msg.playerId, reason: msg.reason || 'disconnect' });
@@ -1258,6 +1493,7 @@ async function handleMessage(msg) {
   if (msg.type === 'player.disconnected') {
     const player = players.get(msg.playerId);
     if (player) player.connected = false;
+    closeP2pSession(msg.playerId, 'player_disconnected');
     log('player disconnected', { playerId: msg.playerId });
     sendToIpc({ type: 'player.disconnected', roomId: room?.roomId, playerId: msg.playerId, reason: msg.reason || 'disconnect' });
     send(gameState(songSeq ? 'singing' : 'lobby'));
@@ -1421,7 +1657,7 @@ function connect() {
       type: 'host.hello',
       gameVersion: 'usdx-dev',
       bridgeVersion: '0.1.0',
-      capabilities: ['remotePitch', 'remoteControl', 'clockSync'],
+      capabilities: ['remotePitch', 'remoteControl', 'clockSync', ...(p2pEnabled ? ['p2pDataChannel'] : [])],
       maxPlayers,
       roomId: room?.roomId,
       hostToken: room?.hostToken

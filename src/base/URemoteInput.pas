@@ -27,8 +27,10 @@ const
   REMOTE_INPUT_DEFAULT_DELAY_US = 0;
   REMOTE_INPUT_MAX_FRAME_AGE_US = 1500000;
   REMOTE_INPUT_MAX_FRAME_DISTANCE_US = 180000;
-  REMOTE_INPUT_VOTE_WINDOW_US = 5000;
+  REMOTE_INPUT_VOTE_WINDOW_US = 45000;
   REMOTE_INPUT_MAX_FRAMES = 2048;
+  REMOTE_INPUT_MIN_CONFIDENCE = 0.35;
+  REMOTE_INPUT_MIN_RMS_DB = -70;
 
 type
   TRemotePitchFrame = record
@@ -252,6 +254,11 @@ begin
   Tone.ToneAbs := -1;
   Tone.Confidence := Frame.Confidence;
   Tone.RmsDb := Frame.RmsDb;
+
+  if (not Frame.Voiced) or
+     (Frame.Confidence < REMOTE_INPUT_MIN_CONFIDENCE) or
+     (Frame.RmsDb < REMOTE_INPUT_MIN_RMS_DB) then
+    Exit;
 
   if (Frame.F0Cents > 0) then
     ToneAbs := CentsToToneAbs(Frame.F0Cents)
