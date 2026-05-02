@@ -372,7 +372,7 @@ begin
 
   LineY := Word[0].Y;
   LineHalfHeight := SizeR;
-  if (Y < LineY - LineHalfHeight) or (Y > LineY + LineHalfHeight) then
+  if (Y < LineY - LineHalfHeight + 40) or (Y > LineY + LineHalfHeight) then
     Exit;
 
   CursorWidth := 0;
