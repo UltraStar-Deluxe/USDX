@@ -444,6 +444,7 @@ type
       procedure ResetMidiLastNote;
       procedure ReleaseMidiLastNote;
       procedure StopMidiPlayback;
+      procedure ApplyMidiVolume;
       procedure UpdateMidiPitchOffset;
       function  GetMidiPitch(NoteTone: Integer): Byte;
       {$ENDIF}
@@ -1058,6 +1059,13 @@ begin
   end;
 
   ResetMidiLastNote;
+end;
+
+procedure TScreenEditSub.ApplyMidiVolume;
+begin
+  if Assigned(MidiOut) and
+     (VolumeMidiSlideId >= 0) and (VolumeMidiSlideId <= High(SelectsS)) then
+    MidiOut.PutShort($B1, $7, Floor(1.27 * EnsureRange(SelectsS[VolumeMidiSlideId].SelectedOption, 0, 100)));
 end;
 {$ENDIF}
 
@@ -2908,6 +2916,7 @@ var
   TempR:  real;
   i:      Integer;
   PrevAudioIndex: Integer;
+  PrevMidiIndex: Integer;
   PrevClickIndex: Integer;
   CursorWordIndex: Integer;
   CursorCharIndex: Integer;
@@ -2922,6 +2931,7 @@ begin
   CurrentY := Y;
 
   PrevAudioIndex := VolumeAudioIndex;
+  PrevMidiIndex := VolumeMidiIndex;
   PrevClickIndex := VolumeClickIndex;
 
   Result := true;
@@ -3220,6 +3230,11 @@ begin
 
   if (VolumeAudioSlideId = Interactions[nBut].Num) and (VolumeAudioIndex <> PrevAudioIndex) then
     SetAudioVolumePercent(EnsureRange(VolumeAudioIndex, 0, 100));
+
+  {$IFDEF UseMIDIPort}
+  if (VolumeMidiSlideId = Interactions[nBut].Num) and (VolumeMidiIndex <> PrevMidiIndex) then
+    ApplyMidiVolume;
+  {$ENDIF}
 
   if (VolumeClickSlideId = Interactions[nBut].Num) and (VolumeClickIndex <> PrevClickIndex) then
     SetSfxVolumePercent(EnsureRange(VolumeClickIndex, 0, 100));
