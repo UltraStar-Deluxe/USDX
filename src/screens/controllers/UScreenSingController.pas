@@ -961,7 +961,7 @@ begin
     begin
       //Error Loading Song in Medley Mode -> skip actual Medley Song an go on if possible
       len := Length(PlaylistMedley.Song);
-      for I := PlaylistMedley.CurrentMedleySong-1 to len - 1 do
+      for I := PlaylistMedley.CurrentMedleySong - 1 to len - 2 do
         PlaylistMedley.Song[I] := PlaylistMedley.Song[I+1];
 
       SetLength(PlaylistMedley.Song, Len-1);
@@ -1082,6 +1082,21 @@ begin
   begin
     SongError();
     Exit;
+  end;
+
+  if ScreenSong.Mode = smMedley then
+  begin
+    if (CurrentSong.Medley.Source < msCalculated) or (Length(CurrentSong.Tracks) = 0) then
+    begin
+      SongError();
+      Exit;
+    end;
+
+    if Length(CurrentSong.Tracks[0].Lines) = 0 then
+    begin
+      SongError();
+      Exit;
+    end;
   end;
 
   CalculateStartTime;
