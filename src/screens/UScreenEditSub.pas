@@ -140,15 +140,18 @@ type
       PressedNoteId:           Integer;
       MouseDownX:              Integer;
       MouseDownY:              Integer;
+      MouseDownModState:       word;
       DragStartTone:           Integer;
       DragAppliedToneDelta:    Integer;
       DragHasMoved:            boolean;
       DragUndoCopied:          boolean;
       PendingNoteClick:        boolean;
       PendingNoteClickTime:    Integer;
+      PendingNoteClickCooldownUntil: Integer;
       PendingNoteClickTrack:   Integer;
       PendingNoteClickLine:    Integer;
       PendingNoteClickIndex:   Integer;
+      PendingNoteClickModState: word;
 
       TextPosition:            Integer;
       TextEditMode:            boolean;
@@ -447,7 +450,6 @@ type
       procedure QueuePendingNoteClick(NoteIndex: Integer);
       procedure PlayPendingNoteClick;
       procedure SelectNote(NoteIndex: Integer);
-      procedure PlaySelectedNoteFromMouseClick;
       {$IFDEF UseMIDIPort}
       procedure ResetMidiLastNote;
       procedure ReleaseMidiLastNote;
@@ -1752,11 +1754,15 @@ end;
 
 procedure TScreenEditSub.QueuePendingNoteClick(NoteIndex: Integer);
 begin
+  if SDL_GetTicks() < PendingNoteClickCooldownUntil then
+    Exit;
+
   PendingNoteClick := true;
   PendingNoteClickTime := SDL_GetTicks() + 250;
   PendingNoteClickTrack := CurrentTrack;
   PendingNoteClickLine := CurrentSong.Tracks[CurrentTrack].CurrentLine;
   PendingNoteClickIndex := NoteIndex;
+  PendingNoteClickModState := MouseDownModState;
 end;
 
 procedure TScreenEditSub.SelectNote(NoteIndex: Integer);
@@ -1769,33 +1775,6 @@ begin
   CurrentNote[CurrentTrack] := NoteIndex;
   CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
   EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
-end;
-
-procedure TScreenEditSub.PlaySelectedNoteFromMouseClick;
-begin
-  PlaySentenceMidi := false;
-  midinotefound := false;
-  PlayOne := true;
-  PlayOneMidi := true;
-  {$IFDEF UseMIDIPort}
-  MidiTime := USTime.GetTime;
-  MidiStart := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
-  MidiStop := GetTimeFromBeat(
-    CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
-    CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration);
-  {$ENDIF}
-
-  PlayVideo := false;
-  StopVideoPreview;
-  Click := false;
-  AudioPlayback.Stop;
-  AudioPlayback.Position := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
-  PlayStopTime := (GetTimeFromBeat(
-    CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
-    CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration));
-  AudioPlayback.Play;
-
-  LastClick := -100;
 end;
 
 procedure TScreenEditSub.PlayPendingNoteClick;
@@ -1812,7 +1791,7 @@ begin
      (PendingNoteClickIndex <= CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].HighNote) then
   begin
     SelectNote(PendingNoteClickIndex);
-    PlaySelectedNoteFromMouseClick;
+    PlayNote(PendingNoteClickModState);
   end;
 
   CancelPendingNoteClick;
@@ -1925,7 +1904,7 @@ begin
     // Interaction = 16 // PreviewSlideId
     // Interaction = 17 // RelativeSlideId
 
-    if Interaction = MedleyStartSlideId then
+    if CurrentSong.isDuet and (Interaction = MedleyStartSlideId) then
     begin
       BackupEditText := ifthen(CurrentSong.DuetNames[0] <> '', CurrentSong.DuetNames[0], NOT_SET);
       CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
@@ -1936,7 +1915,7 @@ begin
       StartTextInput;
     end;
 
-    if Interaction = MedleyEndSlideId then
+    if CurrentSong.isDuet and (Interaction = MedleyEndSlideId) then
     begin
       BackupEditText := ifthen(CurrentSong.DuetNames[1] <> '', CurrentSong.DuetNames[1], NOT_SET);
       CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
@@ -1962,7 +1941,7 @@ begin
       StartTextInput;
     end;
 
-    if Interaction = 24 then // UndoButtonId
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = UndoButtonId) then
     begin
       CopyFromUndo;
       GoldenRec.KillAll;
@@ -1970,17 +1949,17 @@ begin
       ShowInteractiveBackground;
     end;
 
-    if Interaction = 25 then // PreviousSeqButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = PreviousSeqButtonID) then
     begin
       PreviousSentence;
     end;
 
-    if Interaction = 26 then // NextSeqButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = NextSeqButtonID) then
     begin
       NextSentence;
     end;
 
-    if Interaction = 27 then // FreestyleButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = FreestyleButtonID) then
     begin
       CopyToUndo;
       if (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntFreestyle) then
@@ -2003,7 +1982,7 @@ begin
       Exit;
     end;
 
-    if Interaction = 28 then // GoldButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = GoldButtonID) then
     begin
       CopyToUndo;
       if (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntGolden) then
@@ -2022,7 +2001,7 @@ begin
       Exit;
     end;
 
-    if Interaction = 29 then // PlayOnlyButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = PlayOnlyButtonID) then
     begin
       // Play Sentence
       Click := true;
@@ -2043,7 +2022,7 @@ begin
       Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE');
     end;
 
-    if Interaction = 30 then // PlayWithNoteButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = PlayWithNoteButtonID) then
     begin
       CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
       CurrentNote[CurrentTrack] := 0;
@@ -2065,7 +2044,7 @@ begin
       Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE');
     end;
 
-    if Interaction = 31 then // PlayNoteButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = PlayNoteButtonID) then
     begin
       CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
       CurrentNote[CurrentTrack] := 0;
@@ -3058,6 +3037,61 @@ begin
       SetInteraction(nBut);
   end;
 
+  if BtnDown and (MouseButton = SDL_BUTTON_LEFT) and
+     (nBut >= 0) and (Interactions[nBut].Typ = iButton) and (NoteIndex < 0) then
+  begin
+    if Interactions[nBut].Num = UndoButtonId then
+    begin
+      CopyFromUndo;
+      GoldenRec.KillAll;
+      Text[TextInfo].Text := Language.Translate('EDIT_INFO_UNDO');
+      ShowInteractiveBackground;
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = PreviousSeqButtonID then
+    begin
+      PreviousSentence;
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = NextSeqButtonID then
+    begin
+      NextSentence;
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = FreestyleButtonID then
+    begin
+      SetFreestyleNote(0);
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = GoldButtonID then
+    begin
+      SetGoldenNote(0);
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = PlayOnlyButtonID then
+    begin
+      HandlePlaySentence(0);
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = PlayWithNoteButtonID then
+    begin
+      HandlePlaySentence(KMOD_LSHIFT or KMOD_LCTRL);
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = PlayNoteButtonID then
+    begin
+      HandlePlaySentence(KMOD_LSHIFT);
+      Exit;
+    end;
+  end;
+
   if not BtnDown then
   begin
     if (MouseButton = SDL_BUTTON_LEFT) and (PressedNoteId >= 0) and (not DragHasMoved) then
@@ -3080,6 +3114,8 @@ begin
       LastY := CurrentY;
       MouseDownX := CurrentX;
       MouseDownY := CurrentY;
+      MouseDownModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+        + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT {+ KMOD_CAPS});
       PressedNoteId := NoteIndex;
       DragStartTone := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].Tone;
       DragAppliedToneDelta := 0;
@@ -3115,6 +3151,7 @@ begin
          (SDL_ModState = 0) then
       begin
         CancelPendingNoteClick;
+        PendingNoteClickCooldownUntil := SDL_GetTicks() + 350;
         CopyToUndo;
         GoldenRec.KillAll;
         DivideNote(true);
@@ -3141,7 +3178,7 @@ begin
       begin
         TempR := 720 / (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat - CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
         BeatDelta := Round((CurrentX - LastX) / TempR);
-        if MoveNote then
+        if MoveNote and (LastPressedMouseType <> SDL_BUTTON_RIGHT) then
           ToneDelta := -Round((CurrentY - MouseDownY) / (LineSpacing / 2)) - DragAppliedToneDelta
         else
           ToneDelta := 0;
@@ -5732,6 +5769,7 @@ begin
     PressedNoteId := -1;
     DragHasMoved := false;
     DragUndoCopied := false;
+    PendingNoteClickCooldownUntil := 0;
     CancelPendingNoteClick;
     //show transparent background for notes
     ShowInteractiveBackground;
