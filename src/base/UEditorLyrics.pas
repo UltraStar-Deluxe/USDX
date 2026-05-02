@@ -351,6 +351,8 @@ begin
 end;
 
 function TEditorLyrics.GetCursorFromPoint(const X, Y: real; out WordIndex, CharIndex: integer): boolean;
+const
+  LyricsTopHitInset = 40; // keeps the lyrics hitbox below the note lanes while preserving the lower edge
 var
   Index: integer;
   LineY: real;
@@ -372,7 +374,7 @@ begin
 
   LineY := Word[0].Y;
   LineHalfHeight := SizeR;
-  if (Y < LineY - LineHalfHeight + 40) or (Y > LineY + LineHalfHeight) then
+  if (Y < LineY - LineHalfHeight + LyricsTopHitInset) or (Y > LineY + LineHalfHeight) then
     Exit;
 
   CursorWidth := 0;

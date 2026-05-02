@@ -1777,11 +1777,13 @@ begin
   midinotefound := false;
   PlayOne := true;
   PlayOneMidi := true;
-  {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
+  {$IFDEF UseMIDIPort}
+  MidiTime := USTime.GetTime;
   MidiStart := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
   MidiStop := GetTimeFromBeat(
     CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
-    CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration); {$ENDIF}
+    CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration);
+  {$ENDIF}
 
   PlayVideo := false;
   StopVideoPreview;
