@@ -1044,7 +1044,10 @@ procedure TScreenEditSub.ApplyMidiVolume;
 begin
   if Assigned(MidiOut) and
      (VolumeMidiSlideId >= 0) and (VolumeMidiSlideId <= High(SelectsS)) then
-    MidiOut.PutShort($B1, $7, Floor(1.27 * EnsureRange(SelectsS[VolumeMidiSlideId].SelectedOption, 0, 100)));
+  begin
+    Ini.MidiVolume := EnsureRange(SelectsS[VolumeMidiSlideId].SelectedOption, 0, 100);
+    MidiOut.PutShort($B1, $7, Floor(1.27 * Ini.MidiVolume));
+  end;
 end;
 {$ENDIF}
 
@@ -3200,7 +3203,10 @@ begin
 
   {$IFDEF UseMIDIPort}
   if (VolumeMidiSlideId = Interactions[nBut].Num) and (VolumeMidiIndex <> PrevMidiIndex) then
+  begin
     ApplyMidiVolume;
+    Ini.Save;
+  end;
   {$ENDIF}
 
   if (VolumeClickSlideId = Interactions[nBut].Num) and (VolumeClickIndex <> PrevClickIndex) then
@@ -5511,7 +5517,7 @@ begin
       VolumeClick[VolumeIndex] := IntToStr(VolumeIndex);
     end;
     VolumeAudioIndex := EnsureRange(Ini.AudioVolume, 0, 100);
-    VolumeMidiIndex  := 100;
+    VolumeMidiIndex  := EnsureRange(Ini.MidiVolume, 0, 100);
     VolumeClickIndex := EnsureRange(Ini.SfxVolume, 0, 100);
     UpdateSelectSlideOptions(VolumeAudioSlideId, VolumeAudio, VolumeAudioIndex);
     UpdateSelectSlideOptions(VolumeMidiSlideId,  VolumeMidi,  VolumeMidiIndex);
@@ -5612,6 +5618,7 @@ end;
 procedure TScreenEditSub.SyncVolumeSlidersFromIni;
 var
   NewAudio: Integer;
+  NewMidi: Integer;
   NewClick: Integer;
 begin
   NewAudio := EnsureRange(Ini.AudioVolume, 0, 100);
@@ -5620,6 +5627,14 @@ begin
   begin
     VolumeAudioIndex := NewAudio;
     SelectsS[VolumeAudioSlideId].SelectedOption := VolumeAudioIndex;
+  end;
+
+  NewMidi := EnsureRange(Ini.MidiVolume, 0, 100);
+  if (VolumeMidiIndex <> NewMidi) and
+     (VolumeMidiSlideId >= 0) and (VolumeMidiSlideId <= High(SelectsS)) then
+  begin
+    VolumeMidiIndex := NewMidi;
+    SelectsS[VolumeMidiSlideId].SelectedOption := VolumeMidiIndex;
   end;
 
   NewClick := EnsureRange(Ini.SfxVolume, 0, 100);
