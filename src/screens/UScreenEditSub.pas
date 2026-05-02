@@ -3014,7 +3014,10 @@ begin
 
   if BtnDown and (MouseButton = SDL_BUTTON_LEFT) then
   begin
-    if EditorLyrics[CurrentTrack].GetCursorFromPoint(CurrentX, CurrentY, CursorWordIndex, CursorCharIndex) then
+    if EditorLyrics[CurrentTrack].GetCursorFromPoint(CurrentX, CurrentY,
+      Theme.EditSub.SentenceBackground.Y,
+      Theme.EditSub.SentenceBackground.Y + Theme.EditSub.SentenceBackground.H,
+      CursorWordIndex, CursorCharIndex) then
     begin
       CancelPendingNoteClick;
       CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
