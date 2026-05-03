@@ -445,6 +445,7 @@ type
       procedure ShowInteractiveBackground;
       function  GetMedleyLength: real; //if available returns the length of the medley in seconds, otherwise 0
       procedure SyncVolumeSlidersFromIni;
+      procedure LoadCurrentLyricForTextEdit(CursorPosition: Integer);
       function  GetInteractiveNoteIndex(InteractionIndex: Integer): Integer;
       procedure CancelPendingNoteClick;
       procedure QueuePendingNoteClick(NoteIndex: Integer);
@@ -1659,11 +1660,7 @@ end;
 procedure TScreenEditSub.EnterTextEditMode(SDL_ModState: word);
 begin
   // Enter Text Edit Mode
-  BackupEditText := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
-  CurrentEditText := BackupEditText;
-  CurrentSlideId := LyricSlideId;
-  TextPosition := LengthUTF8(BackupEditText);
-  editLengthText := LengthUTF8(BackupEditText);
+  LoadCurrentLyricForTextEdit(-1);
   TextEditMode := true;
   StartTextInput;
 end;
@@ -1731,6 +1728,18 @@ begin
   end;
 end;
 
+procedure TScreenEditSub.LoadCurrentLyricForTextEdit(CursorPosition: Integer);
+begin
+  BackupEditText := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Text;
+  CurrentEditText := BackupEditText;
+  editLengthText := LengthUTF8(CurrentEditText);
+  CurrentSlideId := LyricSlideId;
+  if CursorPosition < 0 then
+    TextPosition := editLengthText
+  else
+    TextPosition := EnsureRange(CursorPosition, 0, editLengthText);
+end;
+
 function TScreenEditSub.GetInteractiveNoteIndex(InteractionIndex: Integer): Integer;
 var
   NoteIndex: Integer;
@@ -1775,6 +1784,8 @@ begin
   CurrentNote[CurrentTrack] := NoteIndex;
   CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
   EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+  if TextEditMode then
+    LoadCurrentLyricForTextEdit(-1);
 end;
 
 procedure TScreenEditSub.PlayPendingNoteClick;
