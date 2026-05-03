@@ -3872,10 +3872,16 @@ begin
   if (doubleclick) and (InteractAt(currentX, CurrentY) > 0) then
       CutPosition := Round((currentX - button[Interactions[InteractAt(currentX, CurrentY)].Num].X) / TempR)
   else
-      CutPosition := 1;
+      CutPosition := -1;
 
   with CurrentSong.Tracks[CurrentTrack].Lines[LineIndex] do
   begin
+    if not doubleclick then
+      CutPosition := Round(Notes[CurrentNote[CurrentTrack]].Duration / 2);
+
+    if (CutPosition <= 0) or (CutPosition >= Notes[CurrentNote[CurrentTrack]].Duration) then
+      Exit;
+
     Inc(HighNote);
     SetLength(Notes, HighNote + 1);
 
@@ -3887,10 +3893,7 @@ begin
 
     // Notes[CurrentNote[CurrentTrack]] and Notes[CurrentNote[CurrentTrack] + 1] is identical at this point
     // modify first note
-    if (doubleclick) then
-      Notes[CurrentNote[CurrentTrack]].Duration := CutPosition
-    else
-      Notes[CurrentNote[CurrentTrack]].Duration := Round(Notes[CurrentNote[CurrentTrack]].Duration / 2);
+    Notes[CurrentNote[CurrentTrack]].Duration := CutPosition;
 
     // 2nd note
     Notes[CurrentNote[CurrentTrack]+1].StartBeat := Notes[CurrentNote[CurrentTrack]].StartBeat + Notes[CurrentNote[CurrentTrack]].Duration;
