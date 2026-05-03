@@ -196,28 +196,34 @@ begin
 end;
 procedure TPlayer.UpdateIntScores();
 begin
-  // a problem if we use floor instead of round is that a score of
-  // 10000 points is only possible if the last digit of the total points
-  // for golden and normal notes is 0.
-  // if we use round, the max score is 10000 for most songs
-  // but a score of 10010 is possible if the last digit of the total
-  // points for golden and normal notes is 5
-  // the best solution is to use round for one of these scores
-  // and round the other score in the opposite direction
-  // so we assure that the highest possible score is 10000 in every case.
-  _ScoreInt := round(Score / 10) * 10;
-  if (_ScoreInt < Score) then
-    //normal score is floored so we have to ceil golden notes score
-    _ScoreGoldenInt := ceil(ScoreGolden / 10) * 10
-  else
-    //normal score is ceiled so we have to floor golden notes score
-    _ScoreGoldenInt := floor(ScoreGolden / 10) * 10;
-
-  // line bonus
-  _ScoreLineInt := Floor(Round(ScoreLine) / 10) * 10;
-
   // total score
-  _ScoreTotalInt := ScoreInt + ScoreGoldenInt + ScoreLineInt;
+  _ScoreTotalInt := round(Score + ScoreGolden + ScoreLine);
+  // components
+  _ScoreInt := round(Score);
+  _ScoreGoldenInt := round(ScoreGolden);
+  _ScoreLineInt := round(ScoreLine);
+  // _ScoreTotalInt = as close to the truth as possible, but the components might not add up to it
+  // this can happen if:
+  // * all the components are .2 (total is one higher than sum of components)
+  // * all the components are .6 (total is one less than the sum of components)
+  // in these cases we just +1/-1 a component until it fits
+  while (_ScoreInt + _ScoreGoldenInt + _ScoreLineInt > _ScoreTotalInt) do begin
+    // prefer decreasing golden notes first, then regular notes, as a last resort just -1 the line bonus
+    if (_ScoreGoldenInt > 0) then
+      _ScoreGoldenInt := _ScoreGoldenInt - 1
+    else if (_ScoreInt > 0) then
+      _ScoreInt := _ScoreInt - 1
+    else
+      _ScoreLineInt := _ScoreLineInt - 1;
+  end;
+  while (_ScoreInt + _ScoreGoldenInt + _ScoreLineInt < _ScoreTotalInt) do begin
+    // if the very first note(s) is golden AND this is the very beginning of the song, this might (temporarily) increase the wrong one.
+    // it is estimated that there are way more songs that simply don't have golden notes at all and where it thus would pick the correct one.
+    if (_ScoreInt > 0) or (_ScoreGoldenInt = 0) then
+      _ScoreInt := _ScoreInt + 1
+    else
+      _ScoreGoldenInt := _ScoreGoldenInt + 1;
+  end;
 end;
 procedure TPlayer.ResetScores();
 begin
