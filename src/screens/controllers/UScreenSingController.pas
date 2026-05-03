@@ -961,7 +961,7 @@ begin
     begin
       //Error Loading Song in Medley Mode -> skip actual Medley Song an go on if possible
       len := Length(PlaylistMedley.Song);
-      for I := PlaylistMedley.CurrentMedleySong-1 to len - 1 do
+      for I := PlaylistMedley.CurrentMedleySong - 1 to len - 2 do
         PlaylistMedley.Song[I] := PlaylistMedley.Song[I+1];
 
       SetLength(PlaylistMedley.Song, Len-1);
@@ -1082,6 +1082,21 @@ begin
   begin
     SongError();
     Exit;
+  end;
+
+  if ScreenSong.Mode = smMedley then
+  begin
+    if (CurrentSong.Medley.Source < msCalculated) or (Length(CurrentSong.Tracks) = 0) then
+    begin
+      SongError();
+      Exit;
+    end;
+
+    if Length(CurrentSong.Tracks[0].Lines) = 0 then
+    begin
+      SongError();
+      Exit;
+    end;
   end;
 
   CalculateStartTime;
@@ -1615,6 +1630,9 @@ begin
   begin
     if not FadeOut then
     begin
+      if Length(PlaylistMedley.Stats) = 0 then
+        UpdateMedleyStats(false);
+
       for I := 0 to PlayersPlay - 1 do
         PlaylistMedley.Stats[Length(PlaylistMedley.Stats) - 1].Player[I] := Player[I];
 
@@ -1632,7 +1650,16 @@ begin
         SetLength(PlaylistMedley.Stats, len + 1);
         SetLength(PlaylistMedley.Stats[len].Player, num);
         for I := 0 to num - 1 do
+        begin
+          PlaylistMedley.Stats[len].Player[I].Name := PlaylistMedley.Stats[0].Player[I].Name;
+          PlaylistMedley.Stats[len].Player[I].Level := PlaylistMedley.Stats[0].Player[I].Level;
+          PlaylistMedley.Stats[len].Player[I].TeamID := PlaylistMedley.Stats[0].Player[I].TeamID;
+          PlaylistMedley.Stats[len].Player[I].PlayerID := PlaylistMedley.Stats[0].Player[I].PlayerID;
           PlaylistMedley.Stats[len].Player[I].HighNote := -1;
+          PlaylistMedley.Stats[len].Player[I].LengthNote := 0;
+          SetLength(PlaylistMedley.Stats[len].Player[I].Note, 0);
+          PlaylistMedley.Stats[len].Player[I].ResetScores;
+        end;
 
         for J := 0 to len - 1 do
         begin
