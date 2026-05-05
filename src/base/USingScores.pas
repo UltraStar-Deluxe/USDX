@@ -1243,22 +1243,11 @@ begin
     SetFontItalic(false);
     SetFontReflection(false, 0);
 
-    TextSize := Position.TextSize;
-    SetFontSize(TextSize);
-    TextW := glTextWidth(PChar(ScoreStr));
+    ScoreStr := InttoStr(Players[Index].ScoreDisplayed);
+    while (Length(ScoreStr) < 5) do
+      ScoreStr := '0' + ScoreStr;
 
-    MaxTextW := Max(0, Position.BGW - 8);
-    if (TextW > 0) and (TextW > MaxTextW) then
-    begin
-      Scale := MaxTextW / TextW;
-      TextSize := Max(1, Round(TextSize * Scale));
-      SetFontSize(TextSize);
-      TextW := glTextWidth(PChar(ScoreStr));
-    end;
-
-    TextX := Position.BGX + (Position.BGW - TextW) / 2;
-    SetFontPos(TextX, Position.TextY);
-    glPrint(PChar(ScoreStr));
+    glPrint(ScoreStr);
   end; // eo player has position
 end;
 
