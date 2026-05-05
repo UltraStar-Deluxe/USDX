@@ -1195,7 +1195,7 @@ begin
     SetFontPos(Position.TextX, Position.TextY);
     SetFontReflection(false, 0);
 
-    ScoreStr := InttoStr(Players[Index].ScoreDisplayed div 10) + '0';
+    ScoreStr := InttoStr(Players[Index].ScoreDisplayed);
     while (Length(ScoreStr) < 5) do
       ScoreStr := '0' + ScoreStr;
 
