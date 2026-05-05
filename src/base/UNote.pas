@@ -208,8 +208,8 @@ begin
   // this can happen if:
   // * all the components are .2 (total is one higher than sum of components)
   // * all the components are .6 (total is one less than the sum of components)
-  // in these cases we just +1/-1 a component until it fits
-  while (_ScoreInt + _ScoreGoldenInt + _ScoreLineInt > _ScoreTotalInt) do begin
+  // in these cases we just +1/-1 a component so that it fits
+  if (_ScoreInt + _ScoreGoldenInt + _ScoreLineInt > _ScoreTotalInt) then begin
     // prefer decreasing golden notes first, then regular notes, as a last resort just -1 the line bonus
     if (_ScoreGoldenInt > 0) then
       _ScoreGoldenInt := _ScoreGoldenInt - 1
@@ -217,8 +217,7 @@ begin
       _ScoreInt := _ScoreInt - 1
     else
       _ScoreLineInt := _ScoreLineInt - 1;
-  end;
-  while (_ScoreInt + _ScoreGoldenInt + _ScoreLineInt < _ScoreTotalInt) do begin
+  end else if (_ScoreInt + _ScoreGoldenInt + _ScoreLineInt < _ScoreTotalInt) then begin
     // if the very first note(s) is golden AND this is the very beginning of the song, this might (temporarily) increase the wrong one.
     // it is estimated that there are way more songs that simply don't have golden notes at all and where it thus would pick the correct one.
     if (_ScoreInt > 0) or (_ScoreGoldenInt = 0) then
