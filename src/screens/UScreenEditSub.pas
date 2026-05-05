@@ -2010,16 +2010,12 @@ begin
         CurrentNote[CurrentTrack] := NoteIndex;
         CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
         EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
-        //play current note playonewithmidi
+        //play current note
         PlaySentenceMidi := false;
         midinotefound := false;
         PlayOne := true;
-        PlayOneMidi := true;
-        {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
-        MidiStart := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat);
-        MidiStop := GetTimeFromBeat(
-          CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +
-          CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration); {$ENDIF}
+        // TODO: temporary fix: don't force-play Midi when clicking a note
+        PlayOneMidi := false;
 
         // playone
         PlayVideo := false;
