@@ -504,12 +504,6 @@ begin
           //if (Event.key.keysym.unicode in [1 .. 26]) then
           //  Event.key.keysym.unicode := Ord('A') + Event.key.keysym.unicode - 1;
 
-          // toggle in-game console if allowed
-          if boolean(Ini.Debug) and ((Event.key.keysym.sym = SInt32('~')) or (Event.key.keysym.sym = SDLK_CARET)) then
-          begin
-            Display.ToggleConsole;
-          end;
-
           if Event.key.keysym.sym = SDLK_RETURN then
           begin
             if (SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT) = KMOD_LALT) then
