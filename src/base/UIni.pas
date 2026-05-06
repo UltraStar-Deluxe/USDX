@@ -602,8 +602,62 @@ uses
   UPathUtils,
   UUnicodeUtils;
 
+type
+  TSafeIniFile = class(TIniFile)
+    private
+      FLogSource: string;
+      FWriteFailed: boolean;
+      procedure LogWriteError(const E: Exception);
+    public
+      constructor Create(const FileName, LogSource: string);
+      procedure WriteString(const Section, Ident, Value: string); override;
+      procedure DeleteKey(const Section, Ident: string); override;
+  end;
+
 const
   IGNORE_INDEX = -1;
+
+constructor TSafeIniFile.Create(const FileName, LogSource: string);
+begin
+  inherited Create(FileName);
+  FLogSource := LogSource;
+  FWriteFailed := false;
+end;
+
+procedure TSafeIniFile.LogWriteError(const E: Exception);
+begin
+  if FWriteFailed then
+    Exit;
+
+  FWriteFailed := true;
+  Log.LogError('Could not write to config-file: ' + E.Message, FLogSource);
+end;
+
+procedure TSafeIniFile.WriteString(const Section, Ident, Value: string);
+begin
+  if FWriteFailed then
+    Exit;
+
+  try
+    inherited WriteString(Section, Ident, Value);
+  except
+    on E: Exception do
+      LogWriteError(E);
+  end;
+end;
+
+procedure TSafeIniFile.DeleteKey(const Section, Ident: string);
+begin
+  if FWriteFailed then
+    Exit;
+
+  try
+    inherited DeleteKey(Section, Ident);
+  except
+    on E: Exception do
+      LogWriteError(E);
+  end;
+end;
 
 (**
  * Translate and set the values of options, which need translation.
@@ -1801,16 +1855,10 @@ var
   HexColor: string;
   C: TRGB;
 begin
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.Save');
+
   try
   begin
-    if (Filename.IsFile and Filename.IsReadOnly) then
-    begin
-      Log.LogError('Config-file is read-only', 'TIni.Save');
-      Exit;
-    end;
-
-    IniFile := TIniFile.Create(Filename.ToNative);
-
     // Players
     IniFile.WriteString('Game', 'Players', IPlayers[Players]);
 
@@ -2057,14 +2105,9 @@ begin
 
     IniFile.WriteString('KeyBindings', 'PianoKeysLow', MergeIntArrayToString(PianoKeysLow));
     IniFile.WriteString('KeyBindings', 'PianoKeysHigh', MergeIntArrayToString(PianoKeysHigh));
-
+  end;
+  finally
     IniFile.Free;
-
-  end
-  except
-    On e :Exception do begin
-      Log.LogWarn('Saving InputDeviceConfig failed: ' + e.Message, 'UIni.Save');
-    end;
   end;
 end;
 
@@ -2073,10 +2116,8 @@ var
   IniFile: TIniFile;
   I:       integer;
 begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveNames');
+  try
     //Name Templates for Names Mod
     for I := 0 to High(Name) do
       IniFile.WriteString('Name', 'P' + IntToStr(I+1), Name[I]);
@@ -2084,7 +2125,7 @@ begin
       IniFile.WriteString('NameTeam', 'T' + IntToStr(I+1), NameTeam[I]);
     for I := 0 to High(NameTemplate) do
       IniFile.WriteString('NameTemplate', 'Name' + IntToStr(I+1), NameTemplate[I]);
-
+  finally
     IniFile.Free;
   end;
 end;
@@ -2121,13 +2162,11 @@ procedure TIni.SaveLevel;
 var
   IniFile: TIniFile;
 begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveLevel');
+  try
     // Difficulty
     IniFile.WriteString('Game', 'Difficulty', IDifficulty[Difficulty]);
-
+  finally
     IniFile.Free;
   end;
 end;
@@ -2136,12 +2175,10 @@ procedure TIni.SaveJukeboxSongMenu;
 var
   IniFile: TIniFile;
 begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveJukeboxSongMenu');
+  try
     IniFile.WriteString('Jukebox', 'SongMenu', IJukeboxSongMenu[JukeboxSongMenu]);
-
+  finally
     IniFile.Free;
   end;
 end;
@@ -2151,13 +2188,11 @@ procedure TIni.SaveShowWebScore;
 var
   IniFile: TIniFile;
 begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveShowWebScore');
+  try
     // ShowWebScore
     IniFile.WriteString('Game', 'ShowWebScore', DllMan.Websites[ShowWebScore].Name);
-
+  finally
     IniFile.Free;
   end;
 end;
@@ -2169,14 +2204,12 @@ var
   IniFile: TIniFile;
   I: integer;
 begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SavePlayerColors');
+  try
     //Colors for Names Mod
     for I := 1 to IMaxPlayerCount do
       IniFile.WriteString('PlayerColor', 'P' + IntToStr(I), IntToStr(PlayerColor[I-1]));
-
+  finally
     IniFile.Free;
   end;
 end;
@@ -2186,14 +2219,12 @@ var
   IniFile: TIniFile;
   I: integer;
 begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SavePlayerAvatars');
+  try
     //Colors for Names Mod
     for I := 1 to IMaxPlayerCount do
       IniFile.WriteString('PlayerAvatar', 'P' + IntToStr(I), PlayerAvatar[I-1]);
-
+  finally
     IniFile.Free;
   end;
 end;
@@ -2203,13 +2234,11 @@ var
   IniFile: TIniFile;
   I: integer;
 begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SavePlayerLevels');
+  try
     for I := 1 to IMaxPlayerCount do
       IniFile.WriteInteger('PlayerLevel', 'P' + IntToStr(I), PlayerLevel[I-1]);
-
+  finally
     IniFile.Free;
   end;
 end;
@@ -2219,14 +2248,12 @@ var
   IniFile: TIniFile;
   I: integer;
 begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveTeamColors');
+  try
     //Colors for Names Mod
     for I := 1 to 3 do
       IniFile.WriteString('TeamColor', 'T' + IntToStr(I), IntToStr(TeamColor[I-1]));
-
+  finally
     IniFile.Free;
   end;
 end;
@@ -2235,10 +2262,8 @@ procedure TIni.SaveWebcamSettings;
 var
   IniFile: TIniFile;
 begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveWebcamSettings');
+  try
     // WebCam
     IniFile.WriteInteger('Webcam', 'ID', WebCamID);
     IniFile.WriteString('Webcam', 'Resolution', IWebcamResolution[WebcamResolution]);
@@ -2249,7 +2274,7 @@ begin
     IniFile.WriteString('Webcam', 'Saturation', IWebcamSaturation[WebcamSaturation]);
     IniFile.WriteString('Webcam', 'Hue', IWebcamHue[WebcamHue]);
     IniFile.WriteInteger('Webcam', 'Effect', WebcamEffect);
-
+  finally
     IniFile.Free;
   end;
 
@@ -2259,13 +2284,11 @@ procedure TIni.SaveNumberOfPlayers;
 var
   IniFile: TIniFile;
 begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveNumberOfPlayers');
+  try
     // Players
     IniFile.WriteString('Game', 'Players', IPlayers[Players]);
-
+  finally
     IniFile.Free;
   end;
 end;
@@ -2274,13 +2297,11 @@ procedure TIni.SaveSingTimebarMode;
 var
   IniFile: TIniFile;
 begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveSingTimebarMode');
+  try
     // Players
     IniFile.WriteString('Advanced', 'SingTimebarMode', ISingTimebarMode[SingTimebarMode]);
-
+  finally
     IniFile.Free;
   end;
 end;
@@ -2289,13 +2310,11 @@ procedure TIni.SaveJukeboxTimebarMode;
 var
   IniFile: TIniFile;
 begin
-  if not Filename.IsReadOnly() then
-  begin
-    IniFile := TIniFile.Create(Filename.ToNative);
-
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveJukeboxTimebarMode');
+  try
     // Players
     IniFile.WriteString('Advanced', 'JukeboxTimebarMode', IJukeboxTimebarMode[JukeboxTimebarMode]);
-
+  finally
     IniFile.Free;
   end;
 end;
