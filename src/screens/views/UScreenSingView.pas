@@ -977,7 +977,7 @@ begin
       begin
         // Important: do not yet start the triggered timer by a call to
         // LyricsState.GetCurrentTime()
-        VideoFrameTime := CurrentSong.VideoGAP + CurrentSong.Start;
+        VideoFrameTime := CurrentSong.VideoGAP;
       end;
       try
         ScreenSing.fCurrentVideo.GetFrame(VideoFrameTime);
