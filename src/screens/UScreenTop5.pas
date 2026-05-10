@@ -193,9 +193,9 @@ begin
 
   for I := 0 to PlayersPlay - 1 do
   begin
-    if (Round(Player[I].ScoreTotalInt) > 0) and (ScreenSing.SungToEnd) then
+    if (Player[I].ScoreTotalInt > 0) and (ScreenSing.SungToEnd) then
     begin
-      DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Name, Round(Player[I].ScoreTotalInt));
+      DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Name, Player[I].ScoreTotalInt);
       sung:=true;
     end;
   end;
