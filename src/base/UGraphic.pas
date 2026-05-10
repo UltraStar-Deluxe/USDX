@@ -277,41 +277,9 @@ var
   SoftwareRendering: boolean;
 
 const
-  Skin_BGColorR = 1;
-  Skin_BGColorG = 1;
-  Skin_BGColorB = 1;
-
-  Skin_SpectrumR = 0;
-  Skin_SpectrumG = 0;
-  Skin_SpectrumB = 0;
-
-  Skin_Spectograph1R = 0.6;
-  Skin_Spectograph1G = 0.8;
-  Skin_Spectograph1B = 1;
-
-  Skin_Spectograph2R = 0;
-  Skin_Spectograph2G = 0;
-  Skin_Spectograph2B = 0.2;
-
   Skin_FontR = 0;
   Skin_FontG = 0;
   Skin_FontB = 0;
-
-  Skin_FontHighlightR = 0.3; // 0.3
-  Skin_FontHighlightG = 0.3; // 0.3
-  Skin_FontHighlightB = 1;   // 1
-
-  Skin_TimeR = 0.25; //0,0,0
-  Skin_TimeG = 0.25;
-  Skin_TimeB = 0.25;
-
-  Skin_OscR = 0;
-  Skin_OscG = 0;
-  Skin_OscB = 0;
-
-  Skin_SpectrumT = 470;
-  Skin_SpectrumBot = 570;
-  Skin_SpectrumH = 100;
 
   Skin_P1_LinesR = 0.5;  // 0.6 0.6 1
   Skin_P1_LinesG = 0.5;
@@ -323,12 +291,6 @@ const
 
   Skin_P1_NotesB = 250;
   Skin_P2_NotesB = 430; // 430 / 300
-
-  Skin_P1_ScoreT = 50;
-  Skin_P1_ScoreL = 20;
-
-  Skin_P2_ScoreT = 50;
-  Skin_P2_ScoreL = 640;
 
 procedure Initialize3D (Title: string);
 procedure Finalize3D;
