@@ -118,9 +118,6 @@ type
     //the song was sung to the end
     SungToEnd: boolean;
 
-    //use pause
-    SungPaused: boolean;
-
     // some settings to be set by plugins
     Settings: record
       Finish: Boolean; //< if true, screen will finish on next draw
@@ -708,7 +705,6 @@ begin
 
   //the song was sung to the end
   SungToEnd := false;
-  SungPaused := false;
 
   ClearSettings;
   Party.CallBeforeSing;
@@ -1600,7 +1596,7 @@ begin
   AudioPlayback.Stop;
   AudioPlayback.SetSyncSource(nil);
 
-  if (ScreenSong.Mode = smNormal) and (SungPaused = false) and (SungToEnd) and (Length(DllMan.Websites) > 0) then
+  if (ScreenSong.Mode = smNormal) and (SungToEnd) and (Length(DllMan.Websites) > 0) then
   begin
     AutoSendScore;
     AutoSaveScore;
