@@ -1472,7 +1472,7 @@ begin
       // MULTISCREEN
       if (ScreenAct = 1) then
       begin
-        // MULTISCREEN 1
+        // MULTISCREEN - SCREEN 1
         SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP1, 0, LineSpacingTwoRows);
         SingDrawLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP1, 0, LineSpacingTwoRows);
         SingDrawPlayerLine(NR.Left + 20, TopTwoRows1, NR.Width - 40, TrackP1, 0, LineSpacingTwoRows);
@@ -1483,7 +1483,7 @@ begin
       end;
       if (ScreenAct = 2) then
       begin
-        // MULTISCREEN 2
+        // MULTISCREEN - SCREEN 2
         SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP3, 2, LineSpacingTwoRows);
         SingDrawLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP3, 2, LineSpacingTwoRows);
         SingDrawPlayerLine(NR.Left + 20, TopTwoRows1, NR.Width - 40, TrackP3, 2, LineSpacingTwoRows);
@@ -1521,7 +1521,7 @@ begin
       // MULTISCREEN
       if (ScreenAct = 1) then
       begin
-        // MULTISCREEN 1
+        // MULTISCREEN - SCREEN 1
         SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP1, 0, LineSpacingThreeRows);
         SingDrawLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP1, 0, LineSpacingThreeRows);
         SingDrawPlayerLine(NR.Left + 20, TopThreeRows1, NR.Width - 40, TrackP1, 0, LineSpacingThreeRows);
@@ -1536,7 +1536,7 @@ begin
       end;
       if (ScreenAct = 2) then
       begin
-        // MULTISCREEN 2
+        // MULTISCREEN - SCREEN 2
         SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP4, 3, LineSpacingThreeRows);
         SingDrawLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP4, 3, LineSpacingThreeRows);
         SingDrawPlayerLine(NR.Left + 20, TopThreeRows1, NR.Width - 40, TrackP4, 3, LineSpacingThreeRows);
