@@ -439,8 +439,7 @@ begin
           end
           else
           begin
-            if (ScreenSing.SungPaused = false) and
-               (ScreenSing.SungToEnd) and (Length(DllMan.Websites) > 0) then
+            if (ScreenSing.SungToEnd) and (Length(DllMan.Websites) > 0) then
               InteractNext;
           end;
         end;
@@ -465,8 +464,7 @@ begin
           end
           else
           begin
-            if (ScreenSing.SungPaused = false) and
-               (ScreenSing.SungToEnd) and (Length(DllMan.Websites) > 0) then
+            if (ScreenSing.SungToEnd) and (Length(DllMan.Websites) > 0) then
               InteractPrev;
           end;
 
@@ -1266,7 +1264,7 @@ begin
   end;
 
   // Show Send Score Buttons
-  if (ScreenSing.SungPaused = false) and (ScreenSing.SungToEnd) and (Length(DllMan.Websites) > 0) then
+  if (ScreenSing.SungToEnd) and (Length(DllMan.Websites) > 0) then
   begin
     case PlayersPlay of
       1: begin
