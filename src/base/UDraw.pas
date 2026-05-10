@@ -539,19 +539,13 @@ var
 begin;
   Sound := AudioInputProcessor.Sound[NrSound];
 
-  //  Log.LogStatus('Oscilloscope', 'SingDraw');
-  //glColor3f(Skin_OscR, Skin_OscG, Skin_OscB);
-
   if (Party.bPartyGame) then
     Col := GetPlayerColor(Ini.TeamColor[NrSound])
   else
     Col := GetPlayerColor(Ini.PlayerColor[NrSound]);
 
   glColor3f(Col.R, Col.G, Col.B);
-{
-  if (ParamStr(1) = '-black') or (ParamStr(1) = '-fsblack') then
-    glColor3f(1, 1, 1);
-}
+
   MaxX := Position.W-1;
   MaxY := (Position.H-1) / 2;
 
