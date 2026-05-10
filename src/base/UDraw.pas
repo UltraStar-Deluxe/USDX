@@ -1429,7 +1429,7 @@ begin
   if (ScreenSing.Settings.InputVisible) then
     SingDrawLines;
   // Draw the Notes
-  if PlayersPlay = 1 then
+  if (PlayersPlay = 1) then
   begin
     // SINGLESCREEN
     SingDrawPlayerBGLine(NR.Left + 20, TopOneRow1, NR.Right - 20, TrackP1, 0, LineSpacingOneRow);  // Background glow    - colorized in playercolor
@@ -1437,7 +1437,7 @@ begin
     SingDrawPlayerLine(NR.Left + 20, TopOneRow1, NR.Width - 40, TrackP1, 0, LineSpacingOneRow);       // imho the sung notes
   end;
 
-  if PlayersPlay = 2 then
+  if (PlayersPlay = 2) then
   begin
     // SINGLESCREEN
     SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP1, 0, LineSpacingTwoRows);
@@ -1449,7 +1449,7 @@ begin
     SingDrawPlayerLine(NR.Left + 20, TopTwoRows2, NR.Width - 40, TrackP2, 1, LineSpacingTwoRows);
   end;
 
-  if PlayersPlay = 3 then
+  if (PlayersPlay = 3) then
   begin
     // SINGLESCREEN
     SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP1, 0, LineSpacingThreeRows);
@@ -1465,12 +1465,12 @@ begin
     SingDrawPlayerLine(NR.Left + 20, TopThreeRows3, NR.Width - 40, TrackP3, 2, LineSpacingThreeRows);
   end;
 
-  if PlayersPlay = 4 then
+  if (PlayersPlay = 4) then
   begin
     if (Ini.Screens = 1) then
     begin
       // MULTISCREEN
-      if ScreenAct = 1 then
+      if (ScreenAct = 1) then
       begin
         // MULTISCREEN 1
         SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP1, 0, LineSpacingTwoRows);
@@ -1481,7 +1481,7 @@ begin
         SingDrawLine(NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP2, 1, LineSpacingTwoRows);
         SingDrawPlayerLine(NR.Left + 20, TopTwoRows2, NR.Width - 40, TrackP2, 1, LineSpacingTwoRows);
       end;
-      if ScreenAct = 2 then
+      if (ScreenAct = 2) then
       begin
         // MULTISCREEN 2
         SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP3, 2, LineSpacingTwoRows);
@@ -1514,12 +1514,12 @@ begin
     end;
   end;
 
-  if PlayersPlay = 6 then
+  if (PlayersPlay = 6) then
   begin
     if (Ini.Screens = 1) then
     begin
       // MULTISCREEN
-      if ScreenAct = 1 then
+      if (ScreenAct = 1) then
       begin
         // MULTISCREEN 1
         SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP1, 0, LineSpacingThreeRows);
@@ -1534,7 +1534,7 @@ begin
         SingDrawLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP3, 2, LineSpacingThreeRows);
         SingDrawPlayerLine(NR.Left + 20, TopThreeRows3, NR.Width - 40, TrackP3, 2, LineSpacingThreeRows);
       end;
-      if ScreenAct = 2 then
+      if (ScreenAct = 2) then
       begin
         // MULTISCREEN 2
         SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP4, 3, LineSpacingThreeRows);
