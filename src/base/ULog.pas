@@ -66,8 +66,6 @@ const
   LOG_LEVEL_DEFAULT      = LOG_LEVEL_WARN;
   LOG_FILE_LEVEL_DEFAULT = LOG_LEVEL_ERROR;
 
-  CONSOLE_SCROLLBACK_SIZE = 512;
-
 type
   TLog = class
   private
@@ -75,7 +73,6 @@ type
     LogFileOpened:       boolean;
     BenchmarkFile:       TextFile;
     BenchmarkFileOpened: boolean;
-    ConsoleBuffer: TStringList; // stores logged messages for in-game console, capped to CONSOLE_SCROLLBACK_SIZE
     Lock:                TRTLCriticalSection;
 
     LogLevel: integer;
@@ -83,8 +80,6 @@ type
     LogFileLevel: integer;
 
     procedure LogToFile(const Text: string);
-
-    function GetConsoleCount: integer;
 
   public
     BenchmarkTimeStart:   array[0..31] of real;
@@ -127,12 +122,6 @@ type
     // buffer
     procedure LogBuffer(const buf : Pointer; const bufLength : Integer; const filename : IPath);
 
-    // console
-    property ConsoleCount: integer read GetConsoleCount;
-    function GetConsole(const index: integer; FromTheBeginning: boolean = false): string;
-    procedure LogConsole(const Text: string);
-    procedure ClearConsoleLog;
-
   end;
 
 procedure DebugWriteln(const aString: String);
@@ -173,7 +162,6 @@ end;
 
 constructor TLog.Create;
 begin
-  ConsoleBuffer := TStringList.Create;
   inherited;
   LogLevel := LOG_LEVEL_DEFAULT;
   LogFileLevel := LOG_FILE_LEVEL_DEFAULT;
@@ -191,7 +179,6 @@ begin
   if LogFileOpened then
     CloseFile(LogFile);
 
-  ConsoleBuffer.Free;
   inherited;
 end;
 
@@ -376,7 +363,6 @@ begin
     if (Level <= LogLevel) then
     begin
       DebugWriteLn(LogMsg);
-      LogConsole(LogMsg);
     end;
     
     // write message to log-file
@@ -556,35 +542,4 @@ begin
   end;
 end;
 
-procedure TLog.ClearConsoleLog;
-begin
-  EnterCriticalSection(Lock);
-  ConsoleBuffer.Clear;
-  LeaveCriticalSection(Lock);
-end;
-
-function TLog.GetConsole(const index: integer; FromTheBeginning: boolean = false): string;
-begin
-  EnterCriticalSection(Lock);
-  if FromTheBeginning then Result := ConsoleBuffer[index]
-  else Result := ConsoleBuffer[ConsoleBuffer.Count-1-index];
-  LeaveCriticalSection(Lock);
-end;
-
-function TLog.GetConsoleCount: integer;
-begin
-  EnterCriticalSection(Lock);
-  Result := ConsoleBuffer.Count;
-  LeaveCriticalSection(Lock);
-end;
-
-procedure TLog.LogConsole(const Text: string);
-begin
-  EnterCriticalSection(Lock);
-  ConsoleBuffer.Insert(0, Text);
-  if ConsoleBuffer.Count > CONSOLE_SCROLLBACK_SIZE then ConsoleBuffer.Capacity:=CONSOLE_SCROLLBACK_SIZE;
-  LeaveCriticalSection(Lock);
-end;
-
 end.
-
