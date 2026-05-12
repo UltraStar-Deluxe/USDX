@@ -756,6 +756,7 @@ var
   DisplayPrefix:          string;
   DisplayMin:             integer;
   DisplaySec:             integer;
+  I:                      integer;
   T:                      integer;
   CurLyricsTime:          real;
   VideoFrameTime:         Extended;
@@ -763,6 +764,185 @@ var
   medley_end:             boolean;
   medley_start_applause:  boolean;
   LastLineSungToEnd:      boolean;
+  procedure SetPlayerNameVisible(TextIndex: integer; Visible: boolean);
+  begin
+    ScreenSing.Text[TextIndex].Visible := Visible and ScreenSing.Settings.AvatarsVisible;
+  end;
+  procedure UpdatePlayerNameVisibility;
+  var
+    V1:     boolean;
+    V1TwoP: boolean;
+    V1ThreeP: boolean;
+    V2R:    boolean;
+    V2M:    boolean;
+    V3R:    boolean;
+    VDuet1ThreeP: boolean;
+    VDuet2M:    boolean;
+    VDuet3R:    boolean;
+    V1FourP: boolean;
+    V2FourP: boolean;
+    V3FourP: boolean;
+    V4FourP: boolean;
+    V1SixP: boolean;
+    V2SixP: boolean;
+    V3SixP: boolean;
+    V4SixP: boolean;
+    V5SixP: boolean;
+    V6SixP: boolean;
+    V1DuetFourP: boolean;
+    V2DuetFourP: boolean;
+    V3DuetFourP: boolean;
+    V4DuetFourP: boolean;
+    V1DuetSixP: boolean;
+    V2DuetSixP: boolean;
+    V3DuetSixP: boolean;
+    V4DuetSixP: boolean;
+    V5DuetSixP: boolean;
+    V6DuetSixP: boolean;
+  begin
+    V1 := false;
+    V1TwoP := false;
+    V1ThreeP := false;
+    V2R := false;
+    V2M := false;
+    V3R := false;
+    VDuet1ThreeP := false;
+    VDuet2M := false;
+    VDuet3R := false;
+    V1FourP := false;
+    V2FourP := false;
+    V3FourP := false;
+    V4FourP := false;
+    V1SixP := false;
+    V2SixP := false;
+    V3SixP := false;
+    V4SixP := false;
+    V5SixP := false;
+    V6SixP := false;
+    V1DuetFourP := false;
+    V2DuetFourP := false;
+    V3DuetFourP := false;
+    V4DuetFourP := false;
+    V1DuetSixP := false;
+    V2DuetSixP := false;
+    V3DuetSixP := false;
+    V4DuetSixP := false;
+    V5DuetSixP := false;
+    V6DuetSixP := false;
+
+    case PlayersPlay of
+      1:
+        V1 := true;
+      2:
+      begin
+        V1TwoP := true;
+        V2R := true;
+      end;
+      3:
+      begin
+        if (CurrentSong.isDuet) then
+        begin
+          VDuet1ThreeP := true;
+          VDuet2M := true;
+          VDuet3R := true;
+        end
+        else
+        begin
+          V1ThreeP := true;
+          V2M := true;
+          V3R := true;
+        end;
+      end;
+      4:
+      begin
+        if (Ini.Screens = 1) then
+        begin
+          V1TwoP := true;
+          V2R := true;
+        end
+        else if (CurrentSong.isDuet) then
+        begin
+          V1DuetFourP := true;
+          V2DuetFourP := true;
+          V3DuetFourP := true;
+          V4DuetFourP := true;
+        end
+        else
+        begin
+          V1FourP := true;
+          V2FourP := true;
+          V3FourP := true;
+          V4FourP := true;
+        end;
+      end;
+      6:
+      begin
+        if (Ini.Screens = 1) then
+        begin
+          if (CurrentSong.isDuet) then
+          begin
+            VDuet1ThreeP := true;
+            VDuet2M := true;
+            VDuet3R := true;
+          end
+          else
+          begin
+            V1ThreeP := true;
+            V2M := true;
+            V3R := true;
+          end;
+        end
+        else if (CurrentSong.isDuet) then
+        begin
+          V1DuetSixP := true;
+          V2DuetSixP := true;
+          V3DuetSixP := true;
+          V4DuetSixP := true;
+          V5DuetSixP := true;
+          V6DuetSixP := true;
+        end
+        else
+        begin
+          V1SixP := true;
+          V2SixP := true;
+          V3SixP := true;
+          V4SixP := true;
+          V5SixP := true;
+          V6SixP := true;
+        end;
+      end;
+    end;
+
+    SetPlayerNameVisible(TextP1, V1);
+    SetPlayerNameVisible(TextP1TwoP, V1TwoP);
+    SetPlayerNameVisible(TextP2R, V2R);
+    SetPlayerNameVisible(TextP1ThreeP, V1ThreeP);
+    SetPlayerNameVisible(TextP2M, V2M);
+    SetPlayerNameVisible(TextP3R, V3R);
+    SetPlayerNameVisible(TextDuetP1ThreeP, VDuet1ThreeP);
+    SetPlayerNameVisible(TextDuetP2M, VDuet2M);
+    SetPlayerNameVisible(TextDuetP3R, VDuet3R);
+    SetPlayerNameVisible(TextP1FourP, V1FourP);
+    SetPlayerNameVisible(TextP2FourP, V2FourP);
+    SetPlayerNameVisible(TextP3FourP, V3FourP);
+    SetPlayerNameVisible(TextP4FourP, V4FourP);
+    SetPlayerNameVisible(TextP1SixP, V1SixP);
+    SetPlayerNameVisible(TextP2SixP, V2SixP);
+    SetPlayerNameVisible(TextP3SixP, V3SixP);
+    SetPlayerNameVisible(TextP4SixP, V4SixP);
+    SetPlayerNameVisible(TextP5SixP, V5SixP);
+    SetPlayerNameVisible(TextP6SixP, V6SixP);
+    SetPlayerNameVisible(TextP1DuetFourP, V1DuetFourP);
+    SetPlayerNameVisible(TextP2DuetFourP, V2DuetFourP);
+    SetPlayerNameVisible(TextP3DuetFourP, V3DuetFourP);
+    SetPlayerNameVisible(TextP4DuetFourP, V4DuetFourP);
+    SetPlayerNameVisible(TextP1DuetSixP, V1DuetSixP);
+    SetPlayerNameVisible(TextP2DuetSixP, V2DuetSixP);
+    SetPlayerNameVisible(TextP3DuetSixP, V3DuetSixP);
+    SetPlayerNameVisible(TextP4DuetSixP, V4DuetSixP);
+    SetPlayerNameVisible(TextP5DuetSixP, V5DuetSixP);
+    SetPlayerNameVisible(TextP6DuetSixP, V6DuetSixP);
+  end;
 begin
   ScreenSing.Background.Draw;
 
@@ -780,6 +960,13 @@ begin
 
   // swap static textures to current screen ones
   SwapToScreen(ScreenAct);
+  UpdatePlayerNameVisibility;
+
+  if (CurrentSong.isDuet) and (PlayersPlay = 4) then
+  begin
+    for I := 0 to High(ColPlayer) do
+      ColPlayer[I] := GetPlayerColor(Ini.PlayerColor[I]);
+  end;
 
   // draw background picture (if any, and if no visualizations)
   // when we don't check for visualizations the visualizations would
@@ -1367,4 +1554,3 @@ begin
 end;
 
 end.
-
