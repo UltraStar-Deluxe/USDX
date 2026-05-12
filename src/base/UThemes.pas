@@ -492,25 +492,7 @@ type
     StaticTeam3Joker5: TThemeStatic;
 
     Static2PlayersDuetSingerP1: TThemeStatic;
-    Static2PlayersDuetSingerP2: TThemeStatic;
-
-    Static3PlayersDuetSingerP1: TThemeStatic;
-    Static3PlayersDuetSingerP2: TThemeStatic;
-    Static3PlayersDuetSingerP3: TThemeStatic;
-
-    Static4PlayersDuetSingerP3: TThemeStatic;
-    Static4PlayersDuetSingerP4: TThemeStatic;
-
-    Static6PlayersDuetSingerP4: TThemeStatic;
-    Static6PlayersDuetSingerP5: TThemeStatic;
-    Static6PlayersDuetSingerP6: TThemeStatic;
-
     Text2PlayersDuetSingerP1:   TThemeText;
-    Text2PlayersDuetSingerP2:   TThemeText;
-
-    Text3PlayersDuetSingerP1:   TThemeText;
-    Text3PlayersDuetSingerP2:   TThemeText;
-    Text3PlayersDuetSingerP3:   TThemeText;
     DuetSingerArea:             TThemePosition;
   end;
 
@@ -524,45 +506,6 @@ type
     TextTimeLabelText:     TThemeText;
     TextTimeText:          TThemeText;
     //eoa TimeBar mod
-
-    Solo1PP1: TThemeSingPlayer;
-
-    Solo2PP1: TThemeSingPlayer;
-    Solo2PP2: TThemeSingPlayer;
-
-    Solo3PP1: TThemeSingPlayer;
-    Solo3PP2: TThemeSingPlayer;
-    Solo3PP3: TThemeSingPlayer;
-
-    Duet3PP1: TThemeSingPlayer;
-    Duet3PP2: TThemeSingPlayer;
-    Duet3PP3: TThemeSingPlayer;
-
-    //game in 4/6 player modi in 1 Screen
-    Solo4PP1: TThemeSingPlayer;
-    Solo4PP2: TThemeSingPlayer;
-    Solo4PP3: TThemeSingPlayer;
-    Solo4PP4: TThemeSingPlayer;
-
-    Solo6PP1: TThemeSingPlayer;
-    Solo6PP2: TThemeSingPlayer;
-    Solo6PP3: TThemeSingPlayer;
-    Solo6PP4: TThemeSingPlayer;
-    Solo6PP5: TThemeSingPlayer;
-    Solo6PP6: TThemeSingPlayer;
-
-    // duet 4/6 players in one screen
-    Duet4PP1: TThemeSingPlayer;
-    Duet4PP2: TThemeSingPlayer;
-    Duet4PP3: TThemeSingPlayer;
-    Duet4PP4: TThemeSingPlayer;
-
-    Duet6PP1: TThemeSingPlayer;
-    Duet6PP2: TThemeSingPlayer;
-    Duet6PP3: TThemeSingPlayer;
-    Duet6PP4: TThemeSingPlayer;
-    Duet6PP5: TThemeSingPlayer;
-    Duet6PP6: TThemeSingPlayer;
 
     PlayerTemplate:          TThemeSingPlayer;
     PlayerLayout:            TSingPlayerLayoutConfig;
@@ -2121,54 +2064,6 @@ begin
 
       ThemeLoadText (Sing.InfoMessageText, 'SingInfoMessageText');
       ThemeLoadStatic (Sing.InfoMessageBG, 'SingInfoMessageBG');
-
-      ThemeLoadSingPlayerStatics(Sing.Solo1PP1, 'P1');
-
-      ThemeLoadSingPlayerStatics(Sing.Solo2PP1, 'P1TwoP');
-      ThemeLoadSingPlayerStatics(Sing.Solo2PP2, 'P2R');
-
-      ThemeLoadSingPlayerStatics(Sing.Solo3PP1, 'P1ThreeP');
-      ThemeLoadSingPlayerStatics(Sing.Solo3PP2, 'P2M');
-      // TODO: we have to load Solo3PP3 manually because the SingBar uses a different name
-      ThemeLoadText(Sing.Solo3PP3.Name, 'SingP3RText');
-      ThemeLoadText(Sing.Solo3PP3.Score, 'SingP3RTextScore');
-      ThemeLoadPosition(Sing.Solo3PP3.ScoreBackground, 'SingP3RStatic2');
-      ThemeLoadStatic(Sing.Solo3PP3.AvatarFrame, 'SingP3RStatic');
-      ThemeLoadStaticAlphaRectangle(Sing.Solo3PP3.Avatar, 'SingP3RAvatar');
-      // TODO: SingBar uses non-consistent naming in theme
-      ThemeLoadPosition(Sing.Solo3PP3.SingBar, 'SingP3SingBar');
-      ThemeLoadPosition(Sing.Solo3PP3.Oscilloscope, 'SingP3ROscilloscope');
-
-      // 3/6 players duet
-      ThemeLoadSingPlayerStatics(Sing.Duet3PP1, 'DuetP1ThreeP');
-      ThemeLoadSingPlayerStatics(Sing.Duet3PP2, 'DuetP2M');
-      ThemeLoadSingPlayerStatics(Sing.Duet3PP3, 'DuetP3R');
-
-      //4P/6P mode in 1 Screen
-      ThemeLoadSingPlayerStatics(Sing.Solo4PP1, 'P1FourP');
-      ThemeLoadSingPlayerStatics(Sing.Solo4PP2, 'P2FourP');
-      ThemeLoadSingPlayerStatics(Sing.Solo4PP3, 'P3FourP');
-      ThemeLoadSingPlayerStatics(Sing.Solo4PP4, 'P4FourP');
-
-      ThemeLoadSingPlayerStatics(Sing.Solo6PP1, 'P1SixP');
-      ThemeLoadSingPlayerStatics(Sing.Solo6PP2, 'P2SixP');
-      ThemeLoadSingPlayerStatics(Sing.Solo6PP3, 'P3SixP');
-      ThemeLoadSingPlayerStatics(Sing.Solo6PP4, 'P4SixP');
-      ThemeLoadSingPlayerStatics(Sing.Solo6PP5, 'P5SixP');
-      ThemeLoadSingPlayerStatics(Sing.Solo6PP6, 'P6SixP');
-
-      // duet 4/6 players in one screen
-      ThemeLoadSingPlayerStatics(Sing.Duet4PP1, 'P1DuetFourP');
-      ThemeLoadSingPlayerStatics(Sing.Duet4PP2, 'P2DuetFourP');
-      ThemeLoadSingPlayerStatics(Sing.Duet4PP3, 'P3DuetFourP');
-      ThemeLoadSingPlayerStatics(Sing.Duet4PP4, 'P4DuetFourP');
-
-      ThemeLoadSingPlayerStatics(Sing.Duet6PP1, 'P1DuetSixP');
-      ThemeLoadSingPlayerStatics(Sing.Duet6PP2, 'P2DuetSixP');
-      ThemeLoadSingPlayerStatics(Sing.Duet6PP3, 'P3DuetSixP');
-      ThemeLoadSingPlayerStatics(Sing.Duet6PP4, 'P4DuetSixP');
-      ThemeLoadSingPlayerStatics(Sing.Duet6PP5, 'P5DuetSixP');
-      ThemeLoadSingPlayerStatics(Sing.Duet6PP6, 'P6DuetSixP');
 
       ThemeLoadSingPlayerStatics(Sing.PlayerTemplate, 'PlayerTemplate');
       SectionList := GetSectionList('SingPlayerGrid');
@@ -4478,26 +4373,7 @@ begin
 
   // Duet Singers
   ThemeLoadStatic (Song.Static2PlayersDuetSingerP1, 'Song' + prefix + 'Static2PlayersDuetSingerP1');
-  ThemeLoadStatic (Song.Static2PlayersDuetSingerP2, 'Song' + prefix + 'Static2PlayersDuetSingerP2');
-
-  ThemeLoadStatic (Song.Static3PlayersDuetSingerP1, 'Song' + prefix + 'Static3PlayersDuetSingerP1');
-  ThemeLoadStatic (Song.Static3PlayersDuetSingerP2, 'Song' + prefix + 'Static3PlayersDuetSingerP2');
-  ThemeLoadStatic (Song.Static3PlayersDuetSingerP3, 'Song' + prefix + 'Static3PlayersDuetSingerP3');
-
-  ThemeLoadStatic (Song.Static4PlayersDuetSingerP3, 'Song' + prefix + 'Static4PlayersDuetSingerP3');
-  ThemeLoadStatic (Song.Static4PlayersDuetSingerP4, 'Song' + prefix + 'Static4PlayersDuetSingerP4');
-
-  ThemeLoadStatic (Song.Static6PlayersDuetSingerP4, 'Song' + prefix + 'Static6PlayersDuetSingerP4');
-  ThemeLoadStatic (Song.Static6PlayersDuetSingerP5, 'Song' + prefix + 'Static6PlayersDuetSingerP5');
-  ThemeLoadStatic (Song.Static6PlayersDuetSingerP6, 'Song' + prefix + 'Static6PlayersDuetSingerP6');
-
   ThemeLoadText (Song.Text2PlayersDuetSingerP1, 'Song' + prefix + 'Text2PlayersDuetSingerP1');
-  ThemeLoadText (Song.Text2PlayersDuetSingerP2, 'Song' + prefix + 'Text2PlayersDuetSingerP2');
-
-  ThemeLoadText (Song.Text3PlayersDuetSingerP1, 'Song' + prefix + 'Text3PlayersDuetSingerP1');
-  ThemeLoadText (Song.Text3PlayersDuetSingerP2, 'Song' + prefix + 'Text3PlayersDuetSingerP2');
-  ThemeLoadText (Song.Text3PlayersDuetSingerP3, 'Song' + prefix + 'Text3PlayersDuetSingerP3');
-
   SectionList := GetSectionList('Song' + prefix + 'DuetSingerArea');
   Song.DuetSingerArea.X := ReadInteger(SectionList, 'X', Song.Static2PlayersDuetSingerP1.X);
   Song.DuetSingerArea.Y := ReadInteger(SectionList, 'Y', Song.Static2PlayersDuetSingerP1.Y);
