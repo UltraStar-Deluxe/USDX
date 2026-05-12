@@ -93,6 +93,12 @@ const
   IPlayers:     array[0..4] of UTF8String = ('1', '2', '3', '4', '6');
   IPlayersVals: array[0..4] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 );
 
+type
+  TUTF8StringArray = array of UTF8String;
+  TIntegerArray = array of integer;
+
+function GetNameTemplateIndexFromKey(const Key: cardinal): integer;
+function CreateNumericOptionArray(const FirstValue, LastValue: integer): TUTF8StringArray;
 function TryGetMixedPlayerColorPair(ColorIndex: integer; out LeftColor, RightColor: integer): boolean;
 
 type
@@ -619,6 +625,41 @@ type
 const
   IGNORE_INDEX = -1;
   BASE_PLAYER_COLOR_COUNT = 16;
+
+function GetNameTemplateIndexFromKey(const Key: cardinal): integer;
+begin
+  case Key of
+    SDLK_F1:  Result := 0;
+    SDLK_F2:  Result := 1;
+    SDLK_F3:  Result := 2;
+    SDLK_F4:  Result := 3;
+    SDLK_F5:  Result := 4;
+    SDLK_F6:  Result := 5;
+    SDLK_F7:  Result := 6;
+    SDLK_F8:  Result := 7;
+    SDLK_F9:  Result := 8;
+    SDLK_F10: Result := 9;
+    SDLK_F11: Result := 10;
+    SDLK_F12: Result := 11;
+  else
+    Result := -1;
+  end;
+end;
+
+function CreateNumericOptionArray(const FirstValue, LastValue: integer): TUTF8StringArray;
+var
+  I: integer;
+begin
+  if LastValue < FirstValue then
+  begin
+    SetLength(Result, 0);
+    Exit;
+  end;
+
+  SetLength(Result, LastValue - FirstValue + 1);
+  for I := 0 to High(Result) do
+    Result[I] := IntToStr(FirstValue + I);
+end;
 
 function TryGetMixedPlayerColorPair(ColorIndex: integer; out LeftColor, RightColor: integer): boolean;
 var
