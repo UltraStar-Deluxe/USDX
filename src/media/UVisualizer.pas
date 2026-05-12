@@ -83,13 +83,12 @@ uses
   UPlatform,
   ULog;
 
-{$IF (PROJECTM_VERSION >= 1000000) and ((PROJECTM_VERSION < 2000000) or not Defined(UseLocalProjectMPresets))}
+{$IF (PROJECTM_VERSION < 2000000) or not Defined(UseLocalProjectMPresets)}
 {$DEFINE UseConfigInp}
 {$IFEND}
 
 {$IFNDEF UseConfigInp}
-// Initialization data used on projectM 0.9x creation.
-// Since projectM 1.0 this data is passed via the config-file.
+// projectM 2.x still needs explicit initialization when local presets are used.
 const
   meshX = 32;
   meshY = 24;
