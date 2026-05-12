@@ -1238,7 +1238,7 @@ begin
   begin
     if (Pos('SONGDIR', UpperCase(PathStrings[I])) = 1) then
     begin
-      AddSongPath(Path(IniFile.ReadString('Directories', PathStrings[I], '')));
+      AddSongPath(Path(IniFile.ReadString('Directories', PathStrings[I], '')), false);
     end;
   end;
 
