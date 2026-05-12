@@ -1643,6 +1643,19 @@ begin
 
   SelectsS[High(SelectsS)].Text.Size := ThemeSelectS.TextSize;
   SelectsS[High(SelectsS)].Text.Y := ThemeSelectS.Y + (ThemeSelectS.H /2 ) - (ThemeSelectS.TextSize / 2);
+
+  if (ThemeSelectS.ArrowW > 0) then
+  begin
+    SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.W := ThemeSelectS.ArrowW;
+    SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.W := ThemeSelectS.ArrowW;
+  end;
+  if (ThemeSelectS.ArrowH > 0) then
+  begin
+    SelectsS[High(SelectsS)].Tex_SelectS_ArrowL.H := ThemeSelectS.ArrowH;
+    SelectsS[High(SelectsS)].Tex_SelectS_ArrowR.H := ThemeSelectS.ArrowH;
+  end;
+  SelectsS[High(SelectsS)].SetX(ThemeSelectS.X);
+  SelectsS[High(SelectsS)].SetY(ThemeSelectS.Y);
   
   SelectsS[High(SelectsS)].Texture.Z := ThemeSelectS.Z;
   SelectsS[High(SelectsS)].TextureSBG.Z := ThemeSelectS.Z;
