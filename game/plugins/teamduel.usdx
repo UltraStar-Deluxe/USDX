@@ -37,7 +37,7 @@ BarPos.Right = 500
 function plugin_init()
   register('party mode: teamduel', '1.00', 'USDX Team', 'http://www.UltrastarDeluxe.org');
 
-  require('math', 'Usdx.Party', 'Usdx.ScreenSing', 'Usdx.Gl', 'Usdx.TextGl');
+  require('math', 'Usdx.Party', 'Usdx.ScreenSing', 'Usdx.Gl', 'Usdx.UText');
   local Mode = {}
 
   Mode.Name = 'teamduel';
@@ -162,15 +162,15 @@ function DrawPlayerText(i, Text)
 
   -- text
   Gl.Color(1, 0, 0, 1);
-  TextGl.Style(1);
-  TextGl.Size(18);
-  TextGl.Italic(false);
+  UText.Style(1);
+  UText.Size(18);
+  UText.Italic(false);
   local PosX = (OSD[i].Left + OSD[i].Right) / 2;
-  PosX = PosX - TextGl.Width(Text) / 2;
+  PosX = PosX - UText.Width(Text) / 2;
 
-  TextGl.Pos(PosX, OSD[i].Top - 3);
+  UText.Pos(PosX, OSD[i].Top - 3);
 
-  TextGl.Print(Text);
+  UText.Print(Text);
 end;
 
 -- draws the progress bar for player i

@@ -81,7 +81,6 @@ uses
   UPlaylist,
   USong,
   USongs,
-  UTexture,
   UUnicodeUtils;
 
 procedure TScreenPartyTournamentOptions.UpdateTournament();

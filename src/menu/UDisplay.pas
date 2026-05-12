@@ -37,11 +37,11 @@ uses
   UCommon,
   Math,
   sdl2,
-  dglOpenGL,
   SysUtils,
   UMenu,
   UPath,
   UMusic,
+  URenderer,
   UHookableEvent;
 
 type
@@ -58,7 +58,7 @@ type
       FadeStartTime: cardinal; // time when fading starts, 0 means that the fade texture must be initialized
       DoneOnShow:    boolean;  // true if passed onShow after fading
 
-      FadeTex:       array[0..1] of GLuint;
+      FadeTex:       array[0..1] of TTexture;
       TexW, TexH:    Cardinal;
  
       FPSCounter:    cardinal;
@@ -171,7 +171,7 @@ const
 implementation
 
 uses
-  TextGL,
+  UText,
   StrUtils,
   UCommandLine,
   UGraphic,
@@ -179,7 +179,6 @@ uses
   UImage,
   ULog,
   UMain,
-  UTexture,
   UTime,
   ULanguage,
   UPathUtils;
@@ -204,8 +203,6 @@ begin
   FadeFailed  := false;
   DoneOnShow  := false;
 
-  glGenTextures(2, PGLuint(@FadeTex));
-  SupportsNPOT := (AnsiContainsStr(glGetString(GL_EXTENSIONS),'texture_non_power_of_two')) and not (AnsiContainsStr(glGetString(GL_EXTENSIONS), 'Radeon X16'));
   InitFadeTextures();
 
   // set LastError for OSD to No Error
@@ -224,7 +221,8 @@ end;
 
 destructor TDisplay.Destroy;
 begin
-  glDeleteTextures(2, @FadeTex);
+  FadeTex[0].Free;
+  FadeTex[1].Free;
   inherited Destroy;
 end;
 
@@ -232,23 +230,10 @@ procedure TDisplay.InitFadeTextures();
 var
   i: integer;
 begin
-  if (SupportsNPOT = false) then
-  begin
-  TexW := Round(Power(2, Ceil(Log2(ScreenW div Screens))));
-  TexH := Round(Power(2, Ceil(Log2(ScreenH))));
-  end
-  else
-  begin
-    TexW := ScreenW div Screens;
-    TexH := ScreenH;
-  end;
+  TexW := ScreenW div Screens;
+  TexH := ScreenH;
   for i := 0 to 1 do
-  begin
-    glBindTexture(GL_TEXTURE_2D, FadeTex[i]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, 3, TexW, TexH, 0, GL_RGB, GL_UNSIGNED_BYTE, nil);
-  end;
+    FadeTex[i] := Renderer.CreateTexture(nil, PATH_NONE, TexW, TexH);
 end;
 
 function TDisplay.Draw: boolean;
@@ -257,7 +242,6 @@ var
   FadeStateSquare: real;
   FadeW, FadeH:    real;
   FadeCopyW, FadeCopyH: integer;
-  glError:         glEnum;
 
 begin
   Result := true;
@@ -265,7 +249,7 @@ begin
   for S := 1 to Screens do
   begin
     ScreenAct := S;
-    glViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
+    Renderer.SetViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
 
     // popup check was successful... move on
     if CheckOK then
@@ -333,7 +317,7 @@ begin
 
           // clear OpenGL errors, otherwise fading might be disabled due to some
           // older errors in previous OpenGL calls.
-          glGetError();
+          Renderer.GetError();
 
           FadeCopyW := ScreenW div Screens;
           FadeCopyH := ScreenH;
@@ -344,15 +328,12 @@ begin
             InitFadeTextures();
 
           // copy screen to texture
-          glBindTexture(GL_TEXTURE_2D, FadeTex[S-1]);
-          glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, (S-1) * ScreenW div Screens, 0,
-            FadeCopyW, FadeCopyH);
+          FadeTex[S-1].CopyFrameBuffer((S-1) * ScreenW div Screens, 0, FadeCopyW, FadeCopyH);
 
-          glError := glGetError();
-          if (glError <> GL_NO_ERROR) then
+          if (Renderer.Error) then
           begin
             FadeFailed := true;
-            Log.LogError('Fading disabled: $' + IntToHex(glError, 4), 'TDisplay.Draw');
+            Log.LogError('Fading disabled: $' + IntToHex(Renderer.GetErrorCode(), 4), 'TDisplay.Draw');
           end;
 
           if not BlackScreen and (S = 1) and not DoneOnShow then
@@ -376,8 +357,8 @@ begin
         else if ScreenAct = 1 then
         begin
           // draw black screen
-          glClearColor(0, 0, 0, 1);
-          glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+          Renderer.SetClearColor(0, 0, 0, 1);
+          Renderer.ClearFrameBuffer(CLEAR_COLOR or CLEAR_DEPTH);
         end;
 
         // and draw old screen over it... slowly fading out
@@ -390,33 +371,21 @@ begin
         begin
           FadeW := (ScreenW div Screens)/TexW;
           FadeH := ScreenH/TexH;
-
-          glBindTexture(GL_TEXTURE_2D, FadeTex[S-1]);
-          // TODO: check if glTexEnvi() gives any speed improvement
-          //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-          glColor4f(1, 1, 1, 1-FadeStateSquare);
-
-          glEnable(GL_TEXTURE_2D);
-          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-          glEnable(GL_BLEND);
-          glBegin(GL_QUADS);
-            glTexCoord2f((0+FadeStateSquare/2)*FadeW, (0+FadeStateSquare/2)*FadeH);
-            glVertex2f(0,   RenderH);
-
-            glTexCoord2f((0+FadeStateSquare/2)*FadeW, (1-FadeStateSquare/2)*FadeH);
-            glVertex2f(0,   0);
-
-            glTexCoord2f((1-FadeStateSquare/2)*FadeW, (1-FadeStateSquare/2)*FadeH);
-            glVertex2f(RenderW, 0);
-
-            glTexCoord2f((1-FadeStateSquare/2)*FadeW, (0+FadeStateSquare/2)*FadeH);
-            glVertex2f(RenderW, RenderH);
-          glEnd;
-          glDisable(GL_BLEND);
-          glDisable(GL_TEXTURE_2D);
-
-          // reset to default
-          //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+          with FadeTex[S-1] do
+          begin
+            X := 0;
+            Y := 0;
+            W := RenderW;
+            H := RenderH;
+            Alpha := 1 - FadeStateSquare;
+            TexX1 := (0+FadeStateSquare/2)*FadeW;
+            TexY1 := (1-FadeStateSquare/2)*FadeH;
+            TexX2 := (1-FadeStateSquare/2)*FadeW;
+            TexY2 := (0+FadeStateSquare/2)*FadeH;
+          end;
+          Renderer.DepthTest := false;
+          Renderer.DrawTexture(FadeTex[S-1]);
+          Renderer.DepthTest := true;
         end;
       end
 
@@ -566,6 +535,7 @@ var
   Alpha: single;
   Ticks: cardinal;
   DrawX: double;
+  Texture: TTexture;
 begin
   if (Ini.Mouse = 2) and ((Screens = 1) or ((ScreenAct - 1) = (Round(Cursor_X+16) div RenderW))) then
   begin // draw software cursor
@@ -611,32 +581,21 @@ begin
       DrawX := Cursor_X;
       if (ScreenAct = 2) then
         DrawX := DrawX - RenderW;
-      glColor4f(1, 1, 1, Alpha);
-      glEnable(GL_TEXTURE_2D);
-      glEnable(GL_BLEND);
-      glDisable(GL_DEPTH_TEST);
-
-      if (Cursor_Pressed) and (Tex_Cursor_Pressed.TexNum > 0) then
-        glBindTexture(GL_TEXTURE_2D, Tex_Cursor_Pressed.TexNum)
+      if (Cursor_Pressed) and (Tex_Cursor_Pressed <> nil) then
+        Texture := Tex_Cursor_Pressed
       else
-        glBindTexture(GL_TEXTURE_2D, Tex_Cursor_Unpressed.TexNum);
-
-      glBegin(GL_QUADS);
-        glTexCoord2f(0, 0);
-        glVertex2f(DrawX, Cursor_Y);
-
-        glTexCoord2f(0, 1);
-        glVertex2f(DrawX, Cursor_Y + 32);
-
-        glTexCoord2f(1, 1);
-        glVertex2f(DrawX + 32, Cursor_Y + 32);
-
-        glTexCoord2f(1, 0);
-        glVertex2f(DrawX + 32, Cursor_Y);
-      glEnd;
-
-      glDisable(GL_BLEND);
-      glDisable(GL_TEXTURE_2D);
+        Texture := Tex_Cursor_Unpressed;
+      with Texture do
+      begin
+        X := DrawX;
+        Y := Cursor_Y;
+        W := 32;
+        H := 32;
+      end;
+      Texture.Alpha := Alpha;
+      Renderer.DepthTest := false;
+      Renderer.DrawTexture(Texture);
+      Renderer.DepthTest := true;
     end;
   end;
 end;
@@ -744,6 +703,8 @@ begin
 
 end;
 
+
+// todo  complexlogic
 procedure TDisplay.SaveScreenShot;
 var
   Num:        integer;
@@ -755,6 +716,7 @@ var
   Align:      integer;
   RowSize:    integer;
 begin
+{
   // Exit if Screenshot-path does not exist or read-only
   if (ScreenshotsPath.IsUnset) then
     Exit;
@@ -793,6 +755,7 @@ begin
 
   SDL_FreeSurface(Surface);
   FreeMem(ScreenData);
+  }
 end;
 
 //------------
@@ -802,24 +765,16 @@ procedure TDisplay.DrawDebugInformation;
 var
   Ticks: cardinal;
 begin
+  Renderer.DepthTest := false;
   // Some White Background for information
-  glEnable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
-  glColor4f(1, 1, 1, 0.5);
-  glBegin(GL_QUADS);
-    glVertex2f(690, 35);
-    glVertex2f(690, 0);
-    glVertex2f(800, 0);
-    glVertex2f(800, 35);
-  glEnd;
-  glDisable(GL_BLEND);
+  Renderer.DrawQuad(690, 0, 0, 110, 35, 1, 1, 1, 0.5);
 
   // set font specs
   SetFontFamily(0);
   SetFontStyle(ftRegular);
   SetFontSize(21);
   SetFontItalic(false);
-  glColor4f(0, 0, 0, 1);
+  SetFontColor(0, 0, 0, 1);
 
   // calculate fps
   Ticks := SDL_GetTicks();
@@ -836,13 +791,12 @@ begin
 
   // fps
   SetFontPos(695, 0);
-  glPrint ('FPS: ' + InttoStr(LastFPS));
+  PrintText ('FPS: ' + InttoStr(LastFPS));
 
   SetFontPos(695, 13);
-  glColor4f(0.8, 0.5, 0.2, 1);
-  glPrint ('Game.Debug');
-
-  glColor4f(1, 1, 1, 1);
+  SetFontColor(0.8, 0.5, 0.2, 1);
+  PrintText ('Game.Debug');
+  Renderer.DepthTest := true;
 end;
 
 procedure TDisplay.ToggleConsole;
@@ -908,16 +862,7 @@ begin
   ScrollW := 10.0;
 
   // Some black background
-  glEnable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
-  glColor4f(0, 0, 0, 0.85);
-  glBegin(GL_QUADS);
-    glVertex2f(0, 0);
-    glVertex2f(0, H);
-    glVertex2f(W, H);
-    glVertex2f(W, 0);
-  glEnd;
-  glDisable(GL_BLEND);
+  Renderer.DrawQuad(0, 0, 0, W, H, 0, 0, 0, 0.85);
 
   // scale sizes to DPI/aspect
   ScaleF := (1.0*ScreenH)/(1.0*ScreenW);
@@ -931,7 +876,6 @@ begin
   SetFontSize(FontSize);
   SetFontItalic(false);
   SetFontReflection(false, 0);
-  glColor4f(1, 1, 1, 1);
 
   OldStretch := Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Stretch;
   Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Stretch := 1.4*ScaleF * Min(1.3, Max(0.8, power((1.0*ScreenW)/800.0, 1.2)));
@@ -948,39 +892,23 @@ begin
   begin
     YOffset := YOffset - FontSize;
     SetFontPos(5, YOffset);
-    glPrint(Log.GetConsole(i));
+    PrintText(Log.GetConsole(i));
 
     Dec(i);
     Inc(LineCount);
   end;
 
   // draw scoll bar
-  glEnable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
-  glColor4f(0.33, 0.33, 0.33, 1);
-  glBegin(GL_QUADS);
-    glVertex2f(W-ScrollPad-ScrollW, ScrollPad); // top left
-    glVertex2f(W-ScrollPad, ScrollPad); // top right
-    glVertex2f(W-ScrollPad, H-ScrollPad); // bottom right
-    glVertex2f(W-ScrollPad-ScrollW, H-ScrollPad); // bottom left
-  glEnd;
+  Renderer.DrawQuad(W-ScrollPad-ScrollW, ScrollPad, 0, ScrollW, H - 2*ScrollPad, 0.33, 0.33, 0.33, 1);
 
   // visible height bar + offset
   YOffset := H * ((1.0*LineCount)/(1.0*Log.ConsoleCount));
   PosY := 0;
   if I > 0 then PosY := (H-2.0*ScrollPad) * Max(0.0, I)/(1.0*Log.ConsoleCount);
 
-  glColor4f(1, 1, 1, 1);
-  glBegin(GL_QUADS);
-    glVertex2f(W-ScrollPad-ScrollW, ScrollPad + PosY); // top left
-    glVertex2f(W-ScrollPad, ScrollPad + PosY); // top right
-    glVertex2f(W-ScrollPad, ScrollPad + PosY + YOffset); // bottom right
-    glVertex2f(W-ScrollPad-ScrollW, ScrollPad + PosY + YOffset); // bottom left
-  glEnd;
-  glDisable(GL_BLEND);
+  Renderer.DrawQuad(W-ScrollPad-ScrollW, ScrollPad + PosY, 0, ScrollW, YOffset, 1, 1, 1, 1);
 
   Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Stretch := OldStretch;
-  glColor4f(1, 1, 1, 1);
 end;
 
 end.

@@ -34,10 +34,9 @@ interface
 {$I switches.inc}
 
 uses
-  dglOpenGL,
   UCommon,
-  UThemes,
-  UTexture;
+  URenderer,
+  UThemes;
 
 //////////////////////////////////////////////////////////////
 //                        ATTENTION:                        //
@@ -237,7 +236,7 @@ uses
   SysUtils,
   Math,
   sdl2,
-  TextGL,
+  UText,
   ULog,
   UNote,
   UGraphic;
@@ -266,19 +265,19 @@ begin
   Settings.Phase2Time := 550;  // shift it up        ^[   ]^
   Settings.Phase3Time := 200;  // increase score      [s++]
 
-  Settings.PopUpTex[0].TexNum := 0;
-  Settings.PopUpTex[1].TexNum := 0;
-  Settings.PopUpTex[2].TexNum := 0;
-  Settings.PopUpTex[3].TexNum := 0;
-  Settings.PopUpTex[4].TexNum := 0;
-  Settings.PopUpTex[5].TexNum := 0;
-  Settings.PopUpTex[6].TexNum := 0;
-  Settings.PopUpTex[7].TexNum := 0;
-  Settings.PopUpTex[8].TexNum := 0;
+  Settings.PopUpTex[0] := nil;
+  Settings.PopUpTex[1] := nil;
+  Settings.PopUpTex[2] := nil;
+  Settings.PopUpTex[3] := nil;
+  Settings.PopUpTex[4] := nil;
+  Settings.PopUpTex[5] := nil;
+  Settings.PopUpTex[6] := nil;
+  Settings.PopUpTex[7] := nil;
+  Settings.PopUpTex[8] := nil;
 
-  Settings.RatingBar_BG_Tex.TexNum   := 0;
-  Settings.RatingBar_FG_Tex.TexNum   := 0;
-  Settings.RatingBar_Bar_Tex.TexNum  := 0;
+  Settings.RatingBar_BG_Tex   := nil;
+  Settings.RatingBar_FG_Tex   := nil;
+  Settings.RatingBar_Bar_Tex  := nil;
 end;
 
 {**
@@ -1016,22 +1015,12 @@ begin
         if (Alpha > 0) and (Players[PopUp.Player].Visible) then
         begin
           // draw bg:
-          glEnable(GL_TEXTURE_2D);
-          glEnable(GL_BLEND);
-          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-          glColor4f(1,1,1, Alpha);
-          glBindTexture(GL_TEXTURE_2D, Settings.PopUpTex[PopUp.Rating].TexNum);
-
-          glBegin(GL_QUADS);
-            glTexCoord2f(0, 0); glVertex2f(X, Y);
-            glTexCoord2f(0, Settings.PopUpTex[PopUp.Rating].TexH); glVertex2f(X, Y + H);
-            glTexCoord2f(Settings.PopUpTex[PopUp.Rating].TexW, Settings.PopUpTex[PopUp.Rating].TexH); glVertex2f(X + W, Y + H);
-            glTexCoord2f(Settings.PopUpTex[PopUp.Rating].TexW, 0); glVertex2f(X + W, Y);
-          glEnd;
-
-          glDisable(GL_TEXTURE_2D);
-          glDisable(GL_BLEND);
+          Settings.PopUpTex[PopUp.Rating].X := X;
+          Settings.PopUpTex[PopUp.Rating].Y := Y;
+          Settings.PopUpTex[PopUp.Rating].W := W;
+          Settings.PopUpTex[PopUp.Rating].H := H;
+          Settings.PopUpTex[PopUp.Rating].Alpha := Alpha;
+          Renderer.DrawTexture(Settings.PopUpTex[PopUp.Rating]);
 
           // set font style and size
           SetFontFamily(aPositions[PIndex].PUFont);
@@ -1041,14 +1030,14 @@ begin
           SetFontReflection(false, 0);
 
           // draw text
-          TextLen := glTextWidth(Theme.Sing.LineBonusText[PopUp.Rating]);
+          TextLen := TextWidth(Theme.Sing.LineBonusText[PopUp.Rating]);
 
           // color and pos
           SetFontPos (X + (W - TextLen) / 2, Y + FontOffset);
-          glColor4f(1, 1, 1, Alpha);
+          SetFontColor(1, 1, 1, Alpha);
 
           // draw
-          glPrint(Theme.Sing.LineBonusText[PopUp.Rating]);
+          PrintText(Theme.Sing.LineBonusText[PopUp.Rating]);
         end; // eo alpha check
       end; // eo right screen
     end; // eo player has position
@@ -1170,22 +1159,14 @@ begin
   if (Drawing) then
   begin
     // draw scorebg
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glColor4f(1,1,1, 1);
-    glBindTexture(GL_TEXTURE_2D, Players[Index].ScoreBG.TexNum);
-
-    glBegin(GL_QUADS);
-      glTexCoord2f(0, 0); glVertex2f(Position.BGX, Position.BGY);
-      glTexCoord2f(0, Players[Index].ScoreBG.TexH); glVertex2f(Position.BGX, Position.BGY + Position.BGH);
-      glTexCoord2f(Players[Index].ScoreBG.TexW, Players[Index].ScoreBG.TexH); glVertex2f(Position.BGX + Position.BGW, Position.BGY + Position.BGH);
-      glTexCoord2f(Players[Index].ScoreBG.TexW, 0); glVertex2f(Position.BGX + Position.BGW, Position.BGY);
-    glEnd;
-
-    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_BLEND);
+    with Players[Index].ScoreBG do
+    begin
+      X := Position.BGX;
+      Y := Position.BGY;
+      W := Position.BGW;
+      H := Position.BGH;
+    end;
+    Renderer.DrawTexture(Players[Index].ScoreBG);
 
     // draw score text
     SetFontFamily(Position.TextFont);
@@ -1194,12 +1175,13 @@ begin
     SetFontSize(Position.TextSize);
     SetFontPos(Position.TextX, Position.TextY);
     SetFontReflection(false, 0);
+    SetFontColor(1, 1, 1, 1);
 
     ScoreStr := InttoStr(Players[Index].ScoreDisplayed div 10) + '0';
     while (Length(ScoreStr) < 5) do
       ScoreStr := '0' + ScoreStr;
 
-    glPrint(ScoreStr);
+    PrintText(ScoreStr);
   end; // eo player has position
 end;
 
@@ -1208,7 +1190,7 @@ procedure TSingScores.DrawRatingBar(const Index: integer);
 var
   Position:   TScorePosition;
   R, G, B:    real;
-  Size, Diff: real;
+  Diff: real;
   Drawing: boolean;
   procedure updatePosition(themeElements: TThemeSingPlayer);
   begin
@@ -1352,67 +1334,39 @@ begin
       B := 0;
     end;
 
-    // enable all glfuncs needed
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     // draw rating bar bg
-    glColor4f(1, 1, 1, 0.8);
-    glBindTexture(GL_TEXTURE_2D, Settings.RatingBar_BG_Tex.TexNum);
-
-    glBegin(GL_QUADS);
-      glTexCoord2f(0, 0);
-      glVertex2f(Position.RBX, Position.RBY);
-
-      glTexCoord2f(0, Settings.RatingBar_BG_Tex.TexH);
-      glVertex2f(Position.RBX, Position.RBY+Position.RBH);
-
-      glTexCoord2f(Settings.RatingBar_BG_Tex.TexW, Settings.RatingBar_BG_Tex.TexH);
-      glVertex2f(Position.RBX+Position.RBW, Position.RBY+Position.RBH);
-
-      glTexCoord2f(Settings.RatingBar_BG_Tex.TexW, 0);
-      glVertex2f(Position.RBX+Position.RBW, Position.RBY);
-    glEnd;
+    with Settings.RatingBar_BG_Tex do
+    begin
+      X := Position.RBX;
+      Y := Position.RBY;
+      W := Position.RBW;
+      H := Position.RBH;
+      Alpha := 0.8
+    end;
 
     // draw rating bar itself
-    Size := Position.RBX + Position.RBW * Players[Index].RBPos;
-    glColor4f(R, G, B, 1);
-    glBindTexture(GL_TEXTURE_2D, Settings.RatingBar_Bar_Tex.TexNum);
-    glBegin(GL_QUADS);
-      glTexCoord2f(0, 0);
-      glVertex2f(Position.RBX, Position.RBY);
-
-      glTexCoord2f(0, Settings.RatingBar_Bar_Tex.TexH);
-      glVertex2f(Position.RBX, Position.RBY + Position.RBH);
-
-      glTexCoord2f(Settings.RatingBar_Bar_Tex.TexW, Settings.RatingBar_Bar_Tex.TexH);
-      glVertex2f(Size, Position.RBY + Position.RBH);
-
-      glTexCoord2f(Settings.RatingBar_Bar_Tex.TexW, 0);
-      glVertex2f(Size, Position.RBY);
-    glEnd;
+    with Settings.RatingBar_Bar_Tex do
+    begin
+      X := Position.RBX;
+      Y := Position.RBY;
+      W := Position.RBW * Players[Index].RBPos;
+      H := Position.RBH;
+      ColR := R;
+      ColG := G;
+      ColB := B;
+    end;
+    Renderer.DrawTexture(Settings.RatingBar_Bar_Tex);
 
     // draw rating bar fg (the thing with the 3 lines to get better readability)
-    glColor4f(1, 1, 1, 0.6);
-    glBindTexture(GL_TEXTURE_2D, Settings.RatingBar_FG_Tex.TexNum);
-    glBegin(GL_QUADS);
-      glTexCoord2f(0, 0);
-      glVertex2f(Position.RBX, Position.RBY);
-
-      glTexCoord2f(0, Settings.RatingBar_FG_Tex.TexH);
-      glVertex2f(Position.RBX, Position.RBY + Position.RBH);
-
-      glTexCoord2f(Settings.RatingBar_FG_Tex.TexW, Settings.RatingBar_FG_Tex.TexH);
-      glVertex2f(Position.RBX + Position.RBW, Position.RBY + Position.RBH);
-
-      glTexCoord2f(Settings.RatingBar_FG_Tex.TexW, 0);
-      glVertex2f(Position.RBX + Position.RBW, Position.RBY);
-    glEnd;
-
-    // disable all enabled glfuncs
-    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_BLEND);
+    with Settings.RatingBar_FG_Tex do
+    begin
+      X := Position.RBX;
+      Y := Position.RBY;
+      W := Position.RBW;
+      H := Position.RBH;
+      Alpha := 0.6;
+    end;
+    Renderer.DrawTexture(Settings.RatingBar_FG_Tex);
   end; // eo Player has Position
 end;
 

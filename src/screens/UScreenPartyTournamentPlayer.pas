@@ -90,7 +90,6 @@ uses
   ULog,
   UMain,
   UIni,
-  UTexture,
   UUnicodeUtils,
   UScreenPartyOptions,
   ULanguage, Math;

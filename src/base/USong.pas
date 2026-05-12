@@ -59,7 +59,7 @@ uses
   ULog,
   UPath,
   UPlatform,
-  UTexture,
+  URenderer,
   UTextEncoding,
   UUnicodeStringHelper,
   UUnicodeUtils,
@@ -243,7 +243,7 @@ implementation
 
 uses
   StrUtils,
-  TextGL,
+  UText,
   UIni,
   UPathUtils,
   USongs,
@@ -461,6 +461,7 @@ end;
 destructor TSong.Destroy;
 begin
   FreeAndNil(Self.FormatVersion);
+  CoverTex.Free;
   inherited;
 end;
 

@@ -13,7 +13,7 @@ function plugin_init()
   require('Usdx.ScreenSing');
   require('Usdx.Log');
   require('Usdx.Gl');
-  require('Usdx.TextGl');
+  require('Usdx.UText');
   require('table');
   require('math');
 

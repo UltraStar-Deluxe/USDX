@@ -35,7 +35,7 @@ interface
 
 uses
   Classes,
-  UTexture,
+  URenderer,
   sdl2,
   opencv_highgui,
   opencv_core,
@@ -82,7 +82,6 @@ var
 implementation
 
 uses
-  dglOpenGL,
   SysUtils,
   ULog,
   UIni;
@@ -128,6 +127,7 @@ begin
   end;
   SDL_DestroyCond(StopCond);
   SDL_DestroyMutex(Mutex);
+  TextureCam.Free;
   inherited;
 end;
 
@@ -246,11 +246,7 @@ begin
 
   if WebcamFrame <> nil then
   begin
-    if (TextureCam.TexNum > 0) then
-    begin
-      glDeleteTextures(1, PGLuint(@TextureCam.TexNum));
-      TextureCam.TexNum := 0;
-    end;
+    FreeAndNil(TextureCam);
 
     if (Ini.WebCamFlip = 0) then
       cvFlip(WebcamFrame, nil, 1);
@@ -258,7 +254,7 @@ begin
     WebcamFrame := FrameAdjust(WebcamFrame);
     WebcamFrame := FrameEffect(Ini.WebCamEffect, WebcamFrame);
 
-    TextureCam := Texture.CreateTexture(WebcamFrame.imageData, nil, WebcamFrame.Width, WebcamFrame.Height);
+    TextureCam := Renderer.CreateTexture(WebcamFrame.imageData, nil, WebcamFrame.Width, WebcamFrame.Height);
 
     cvReleaseImage(@WebcamFrame);
   end;

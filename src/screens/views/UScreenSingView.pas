@@ -36,8 +36,7 @@ interface
 uses
   SysUtils,
   sdl2,
-  dglOpenGL,
-  TextGL,
+  UText,
   UCommon,
   UGraphicClasses,
   UHookableEvent,
@@ -47,9 +46,9 @@ uses
   UAvatars,
   UMenu,
   UMusic,
+  URenderer,
   USingScores,
   USongs,
-  UTexture,
   UThemes,
   UTime,
   USkins;
@@ -464,7 +463,8 @@ var
   procedure assignAvatarStatic(var singPlayer: TThemeSingPlayer; var avatarStatic: integer; var texture: TTexture);
   begin
     avatarStatic := ScreenSing.AddStaticAlphaRectangle(singPlayer.Avatar);
-    ScreenSing.Statics[avatarStatic].Texture := texture;
+    if (texture <> nil) then
+      ScreenSing.Statics[avatarStatic].Texture := texture.clone();
     ScreenSing.Statics[avatarStatic].Texture.X := singPlayer.Avatar.X;
     ScreenSing.Statics[avatarStatic].Texture.Y := singPlayer.Avatar.Y;
     ScreenSing.Statics[avatarStatic].Texture.H := singPlayer.Avatar.H;
@@ -593,42 +593,42 @@ begin
 	// Color := $002222; //light blue
   // Color := $10000 * Round(0.22*255) + $100 * Round(0.39*255) + Round(0.64*255); //dark blue
 
-    Tex_Left[I]         := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),  TEXTURE_TYPE_COLORIZED, Color);
-    Tex_Mid[I]          := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'),   TEXTURE_TYPE_COLORIZED, Color);
-    Tex_Right[I]        := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_COLORIZED, Color);
+    Tex_Left[I]         := Renderer.LoadTexture(Skin.GetTextureFileName('GrayLeft'),  TEXTURE_TYPE_COLORIZED, Color);
+    Tex_Mid[I]          := Renderer.LoadTexture(Skin.GetTextureFileName('GrayMid'),   TEXTURE_TYPE_COLORIZED, Color);
+    Tex_Right[I]        := Renderer.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_COLORIZED, Color);
 
-    Tex_plain_Left[I]   := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainLeft'),  TEXTURE_TYPE_COLORIZED, Color);
-    Tex_plain_Mid[I]    := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainMid'),   TEXTURE_TYPE_COLORIZED, Color);
-    Tex_plain_Right[I]  := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainRight'), TEXTURE_TYPE_COLORIZED, Color);
+    Tex_plain_Left[I]   := Renderer.LoadTexture(Skin.GetTextureFileName('NotePlainLeft'),  TEXTURE_TYPE_COLORIZED, Color);
+    Tex_plain_Mid[I]    := Renderer.LoadTexture(Skin.GetTextureFileName('NotePlainMid'),   TEXTURE_TYPE_COLORIZED, Color);
+    Tex_plain_Right[I]  := Renderer.LoadTexture(Skin.GetTextureFileName('NotePlainRight'), TEXTURE_TYPE_COLORIZED, Color);
 
-    Tex_BG_Left[I]      := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGLeft'),  TEXTURE_TYPE_COLORIZED, Color);
-    Tex_BG_Mid[I]       := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGMid'),   TEXTURE_TYPE_COLORIZED, Color);
-    Tex_BG_Right[I]     := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGRight'), TEXTURE_TYPE_COLORIZED, Color);
+    Tex_BG_Left[I]      := Renderer.LoadTexture(Skin.GetTextureFileName('NoteBGLeft'),  TEXTURE_TYPE_COLORIZED, Color);
+    Tex_BG_Mid[I]       := Renderer.LoadTexture(Skin.GetTextureFileName('NoteBGMid'),   TEXTURE_TYPE_COLORIZED, Color);
+    Tex_BG_Right[I]     := Renderer.LoadTexture(Skin.GetTextureFileName('NoteBGRight'), TEXTURE_TYPE_COLORIZED, Color);
 
-    Tex_Left_Rap[I]         := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
-    Tex_Mid_Rap[I]          := Texture.LoadTexture(Skin.GetTextureFileName('GrayMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
-    Tex_Right_Rap[I]        := Texture.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+    Tex_Left_Rap[I]         := Renderer.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
+    Tex_Mid_Rap[I]          := Renderer.LoadTexture(Skin.GetTextureFileName('GrayMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
+    Tex_Right_Rap[I]        := Renderer.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
 
-    Tex_plain_Left_Rap[I]   := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
-    Tex_plain_Mid_Rap[I]    := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
-    Tex_plain_Right_Rap[I]  := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+    Tex_plain_Left_Rap[I]   := Renderer.LoadTexture(Skin.GetTextureFileName('NotePlainLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
+    Tex_plain_Mid_Rap[I]    := Renderer.LoadTexture(Skin.GetTextureFileName('NotePlainMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
+    Tex_plain_Right_Rap[I]  := Renderer.LoadTexture(Skin.GetTextureFileName('NotePlainRightRap'), TEXTURE_TYPE_COLORIZED, Color);
 
-    Tex_BG_Left_Rap[I]      := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
-    Tex_BG_Mid_Rap[I]       := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
-    Tex_BG_Right_Rap[I]     := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+    Tex_BG_Left_Rap[I]      := Renderer.LoadTexture(Skin.GetTextureFileName('NoteBGLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
+    Tex_BG_Mid_Rap[I]       := Renderer.LoadTexture(Skin.GetTextureFileName('NoteBGMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
+    Tex_BG_Right_Rap[I]     := Renderer.LoadTexture(Skin.GetTextureFileName('NoteBGRightRap'), TEXTURE_TYPE_COLORIZED, Color);
 
     //## backgrounds for the scores ##
-    Tex_ScoreBG[I - 1] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreBG'), TEXTURE_TYPE_COLORIZED, Color);
+    Tex_ScoreBG[I - 1] := Renderer.LoadTexture(Skin.GetTextureFileName('ScoreBG'), TEXTURE_TYPE_COLORIZED, Color);
   end;
 
   // Inversions of first player colors used to mark selected note in editor
   Color := RGBFloatToInt(1 - Col[1].R, 1 - Col[1].G, 1 - Col[1].B);
-  Tex_Left_Inv := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'), TEXTURE_TYPE_COLORIZED, Color);
-  Tex_Mid_Inv := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'), TEXTURE_TYPE_COLORIZED, Color);
-  Tex_Right_Inv := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_COLORIZED, Color);
-  Tex_Left_Rap_Inv := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'), TEXTURE_TYPE_COLORIZED, Color);
-  Tex_Mid_Rap_Inv := Texture.LoadTexture(Skin.GetTextureFileName('GrayMidRap'), TEXTURE_TYPE_COLORIZED, Color);
-  Tex_Right_Rap_Inv := Texture.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+  Tex_Left_Inv := Renderer.LoadTexture(Skin.GetTextureFileName('GrayLeft'), TEXTURE_TYPE_COLORIZED, Color);
+  Tex_Mid_Inv := Renderer.LoadTexture(Skin.GetTextureFileName('GrayMid'), TEXTURE_TYPE_COLORIZED, Color);
+  Tex_Right_Inv := Renderer.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_COLORIZED, Color);
+  Tex_Left_Rap_Inv := Renderer.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'), TEXTURE_TYPE_COLORIZED, Color);
+  Tex_Mid_Rap_Inv := Renderer.LoadTexture(Skin.GetTextureFileName('GrayMidRap'), TEXTURE_TYPE_COLORIZED, Color);
+  Tex_Right_Rap_Inv := Renderer.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
 
   StaticPausePopup := ScreenSing.AddStatic(Theme.Sing.PausePopUp);
 
@@ -721,32 +721,32 @@ var
 begin
   for I := 1 to UIni.IMaxPlayerCount do
   begin
-    FreeTexture(Tex_Left[I]);
-    FreeTexture(Tex_Mid[I]);
-    FreeTexture(Tex_Right[I]);
-    FreeTexture(Tex_plain_Left[I]);
-    FreeTexture(Tex_plain_Mid[I]);
-    FreeTexture(Tex_plain_Right[I]);
-    FreeTexture(Tex_BG_Left[I]);
-    FreeTexture(Tex_BG_Mid[I]);
-    FreeTexture(Tex_BG_Right[I]);
-    FreeTexture(Tex_Left_Rap[I]);
-    FreeTexture(Tex_Mid_Rap[I]);
-    FreeTexture(Tex_Right_Rap[I]);
-    FreeTexture(Tex_plain_Left_Rap[I]);
-    FreeTexture(Tex_plain_Mid_Rap[I]);
-    FreeTexture(Tex_plain_Right_Rap[I]);
-    FreeTexture(Tex_BG_Left_Rap[I]);
-    FreeTexture(Tex_BG_Mid_Rap[I]);
-    FreeTexture(Tex_BG_Right_Rap[I]);
-    FreeTexture(Tex_ScoreBG[I - 1]);
+    FreeAndNil(Tex_Left[I]);
+    FreeAndNil(Tex_Mid[I]);
+    FreeAndNil(Tex_Right[I]);
+    FreeAndNil(Tex_plain_Left[I]);
+    FreeAndNil(Tex_plain_Mid[I]);
+    FreeAndNil(Tex_plain_Right[I]);
+    FreeAndNil(Tex_BG_Left[I]);
+    FreeAndNil(Tex_BG_Mid[I]);
+    FreeAndNil(Tex_BG_Right[I]);
+    FreeAndNil(Tex_Left_Rap[I]);
+    FreeAndNil(Tex_Mid_Rap[I]);
+    FreeAndNil(Tex_Right_Rap[I]);
+    FreeAndNil(Tex_plain_Left_Rap[I]);
+    FreeAndNil(Tex_plain_Mid_Rap[I]);
+    FreeAndNil(Tex_plain_Right_Rap[I]);
+    FreeAndNil(Tex_BG_Left_Rap[I]);
+    FreeAndNil(Tex_BG_Mid_Rap[I]);
+    FreeAndNil(Tex_BG_Right_Rap[I]);
+    FreeAndNil(Tex_ScoreBG[I - 1]);
   end;
-  FreeTexture(Tex_Left_Inv);
-  FreeTexture(Tex_Mid_Inv);
-  FreeTexture(Tex_Right_Inv);
-  FreeTexture(Tex_Left_Rap_Inv);
-  FreeTexture(Tex_Mid_Rap_Inv);
-  FreeTexture(Tex_Right_Rap_Inv);
+  FreeAndNil(Tex_Left_Inv);
+  FreeAndNil(Tex_Mid_Inv);
+  FreeAndNil(Tex_Right_Inv);
+  FreeAndNil(Tex_Left_Rap_Inv);
+  FreeAndNil(Tex_Mid_Rap_Inv);
+  FreeAndNil(Tex_Right_Rap_Inv);
   inherited;
 end;
 
@@ -1106,18 +1106,17 @@ var
 begin
   t := frac(timeDiff);
 
-  glColor4f(0.15, 0.30, 0.6, t);
-
   h := 300*t*ScreenH/RenderH;
   SetFontFamily(0);
   SetFontStyle(ftBoldHighRes);
   SetFontItalic(false);
   SetFontSize(h);
+  SetFontColor(0.15, 0.30, 0.6, t);
   CountDownText := IntToStr(round(timeDiff - t + 1));
-  w := glTextWidth(PChar(CountDownText));
+  w := TextWidth(PChar(CountDownText));
 
   SetFontPos (RenderW/2-w/2, RenderH/2-h/2);
-  glPrint(PChar(CountDownText));
+  PrintText(PChar(CountDownText));
 
 end;
 
@@ -1303,7 +1302,10 @@ var
   numLines:        integer;
 
   x, y, w, h:      real;
+  Col:            TRGB;
   CurrentTrack:    integer;
+  QuadList:        TQuadList;
+  NumQuads, I:     integer;
 begin
   x := Theme.Sing.StaticTimeProgress.x;
   y := Theme.Sing.StaticTimeProgress.y;
@@ -1324,17 +1326,24 @@ begin
   end;
   SongDuration := SongEnd - SongStart;
   gapInBeats := CurrentSong.BPM*CurrentSong.GAP/1000/60;
+
+  // Calculate number of quads to draw
+  NumQuads := 1; // progress indicator
+  for CurrentTrack := 0 to High(CurrentSong.Tracks) do
+    NumQuads := NumQuads + Length(CurrentSong.Tracks[CurrentTrack].Lines);
+  SetLength(QuadList, NumQuads);
+  I := 0;
+
   // draw sentence boxes
   for CurrentTrack := 0 to High(CurrentSong.Tracks) do //for P1 of duet or solo lyrics, P2 of duet,..
   begin
     numLines := Length(CurrentSong.Tracks[CurrentTrack].Lines); //Lyric lines
     //set color to player.color
     if (CurrentTrack = 0) then
-      glColor4f(GetLyricColor(Ini.SingColor[0]).R, GetLyricColor(Ini.SingColor[0]).G, GetLyricColor(Ini.SingColor[0]).B, 0.6)
+      Col := GetLyricColor(Ini.SingColor[0])
     else
-      glColor4f(GetLyricColor(Ini.SingColor[CurrentTrack]).R, GetLyricColor(Ini.SingColor[CurrentTrack]).G, GetLyricColor(Ini.SingColor[CurrentTrack]).B, 0.6);
+      Col := GetLyricColor(Ini.SingColor[CurrentTrack]);
 
-    glbegin(gl_quads);
     for LineIndex := 0 to numLines - 1 do
     begin
       if (CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes = nil) then Continue;
@@ -1343,27 +1352,33 @@ begin
       br := (CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].HighNote].StartBeat +
                 CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].HighNote].Duration -
                 CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[0].StartBeat) / SongDuration*w;  //br = last note of sentence position + its duration - first note of sentence position
-
-      //draw a square
-      glVertex2f(x+pos, y); //left top
-      glVertex2f(x+pos, y+h); //left bottom
-      glVertex2f(x+pos+br, y+h); //right bottom
-      glVertex2f(x+pos+br, y); //right top
+      QuadList[I].X := x+pos;
+      QuadList[I].Y := y;
+      QuadList[I].Z := 0;
+      QuadList[I].W := br;
+      QuadList[I].H := h;
+      QuadList[I].Gradient := gdNone;
+      QuadList[I].ColR := Col.R;
+      QuadList[I].ColG := Col.G;
+      QuadList[I].ColB := Col.B;
+      QuadList[I].Alpha := 0.6;
+      I := I + 1;
     end;
-    glEnd;
   end;
 
   // draw progress indicator
   br := Max((gapInBeats + LyricsState.CurrentBeat - SongStart) / SongDuration*w, 0);
-  glColor4f(Theme.Sing.StaticTimeProgress.ColR,
-             Theme.Sing.StaticTimeProgress.ColG,
-             Theme.Sing.StaticTimeProgress.ColB, 1); //Set Color
-  glBegin(GL_QUADS);
-  glVertex2f(x, y); // left top
-  glVertex2f(x, y+h); // left bottom
-  glVertex2f(x+br, y+h); // right bottom
-  glVertex2f(x+br, y); // right top
-  glEnd;
+  QuadList[I].X := x;
+  QuadList[I].Y := y;
+  QuadList[I].Z := 0;
+  QuadList[I].W := br;
+  QuadList[I].H := h;
+  QuadList[I].Gradient := gdNone;
+  QuadList[I].ColR := Theme.Sing.StaticTimeProgress.ColR;
+  QuadList[I].ColG := Theme.Sing.StaticTimeProgress.ColG;
+  QuadList[I].ColB := Theme.Sing.StaticTimeProgress.ColB;
+  QuadList[I].Alpha := 1;
+  Renderer.DrawQuads(QuadList);
 end;
 
 end.

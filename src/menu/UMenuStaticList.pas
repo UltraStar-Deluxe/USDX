@@ -34,7 +34,6 @@ interface
 {$I switches.inc}
 
 uses
-  UTexture,
   UMenuInteract,
   dglOpenGL;
 
@@ -60,7 +59,6 @@ type
 
 implementation
 uses
-  UDrawTexture,
   UDisplay;
 
 procedure TStaticList.Draw;
@@ -85,14 +83,12 @@ begin
       begin
         //Bind Tex and GL Attributes
         glEnable(GL_TEXTURE_2D);
-        glEnable(GL_BLEND);
 
         glDepthRange(0, 10);
         glDepthFunc(GL_LEQUAL);
         glEnable(GL_DEPTH_TEST);
 
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glBindTexture(GL_TEXTURE_2D, TexNum);
+                glBindTexture(GL_TEXTURE_2D, TexNum);
 
         //Draw
         glBegin(GL_QUADS);//Top Left
@@ -119,7 +115,6 @@ begin
 
         glDisable(GL_TEXTURE_2D);
         glDisable(GL_DEPTH_TEST);
-        glDisable(GL_BLEND);
       end;
     end;
   end;

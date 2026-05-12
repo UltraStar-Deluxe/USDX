@@ -40,7 +40,7 @@ uses
   UCommon,
   ULog,
   UIni,
-  UTexture,
+  URenderer,
   UPath;
 type
   TBackgroundType =
@@ -1234,11 +1234,6 @@ type
     RGB:    TRGB;
   end;
 
-procedure glColorRGB(Color: TRGB);  overload;
-procedure glColorRGB(Color: TRGB; Alpha: real);  overload;
-procedure glColorRGB(Color: TRGBA); overload;
-procedure glColorRGB(Color: TRGBA; Alpha: real); overload;
-
 function ColorExists(Name: string): integer;
 procedure LoadColor(var R, G, B: real; ColorName: string);
 function GetSystemColor(Color: integer): TRGB;
@@ -1269,36 +1264,12 @@ uses
   USkins,
   UPathUtils,
   UFileSystem,
-  TextGL,
-  dglOpenGL,
+  UText,
   math,
   StrUtils;
 
 const
   MAX_INHERITANCE = 10;
-
-//-----------
-//Helper procs to use TRGB in Opengl ...maybe this should be somewhere else
-//-----------
-procedure glColorRGB(Color: TRGB);  overload;
-begin
-  glColor3f(Color.R, Color.G, Color.B);
-end;
-
-procedure glColorRGB(Color: TRGB; Alpha: real);  overload;
-begin
-  glColor4f(Color.R, Color.G, Color.B, Alpha);
-end;
-
-procedure glColorRGB(Color: TRGBA); overload;
-begin
-  glColor4f(Color.R, Color.G, Color.B, Color.A);
-end;
-
-procedure glColorRGB(Color: TRGBA; Alpha: real); overload;
-begin
-  glColor4f(Color.R, Color.G, Color.B, Min(Color.A, Alpha));
-end;
 
 constructor TTheme.Create;
 begin

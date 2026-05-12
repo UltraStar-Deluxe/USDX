@@ -34,7 +34,7 @@ interface
 {$I switches.inc}
 
 uses
-  UTexture,
+  URenderer,
   ULog,
   UIni,
   SDL2;
@@ -57,7 +57,7 @@ type
    Col      : array of TColour3f; // Colour(s) of particle
    Scale    : array of real;      // Scaling factors of particle layers
    Frame    : byte;     //act. Frame
-   Tex      : cardinal; //Tex num from Textur Manager
+   Tex      : TTexture; //Tex num from Textur Manager
    Live     : byte;     //How many Cycles before Kill
    RecIndex : integer;  //To which rectangle this particle belongs (only GoldenNote)
    StarType : TParticleType;  // GoldenNote | PerfectNote | NoteHitTwinkle | PerfectLineTwinkle
@@ -128,9 +128,7 @@ implementation
 uses
   SysUtils,
   Math,
-  dglOpenGL,
   UCommon,
-  UDrawTexture,
   UGraphic,
   UNote,
   USkins,
@@ -162,7 +160,7 @@ begin
   case cStarType of
     GoldenNote:
         begin
-          Tex := Tex_Note_Star.TexNum;
+          Tex := Tex_Note_Star;
           W := 20;
           H := 20;
           SetLength(Scale,4);
@@ -188,7 +186,7 @@ begin
         end;
     PerfectNote:
         begin
-          Tex := Tex_Note_Perfect_Star.TexNum;
+          Tex := Tex_Note_Perfect_Star;
           W := 30;
           H := 30;
           SetLength(Col,1);
@@ -198,7 +196,7 @@ begin
         end;
     NoteHitTwinkle:
         begin
-          Tex := Tex_Note_Star.TexNum;
+          Tex := Tex_Note_Star;
           Alpha := (Live/16);  // linear fade-out
           W := 15;
           H := 15;
@@ -209,7 +207,7 @@ begin
         end;
     PerfectLineTwinkle:
         begin
-          Tex := Tex_Note_Star.TexNum;
+          Tex := Tex_Note_Star;
           W := RandomRange(10,20);
           H := W;
           SizeMod := (-cos((Frame+1)*5*2*pi/16)*0.5+1.1);
@@ -239,7 +237,7 @@ begin
         end;
     ColoredStar:
         begin
-          Tex := Tex_Note_Star.TexNum;
+          Tex := Tex_Note_Star;
           W := RandomRange(10,20);
           H := W;
           SizeMod := (-cos((Frame+1)*5*2*pi/16)*0.5+1.1);
@@ -255,7 +253,7 @@ begin
         end;
     Flare:
         begin
-          Tex := Tex_Note_Star.TexNum;
+          Tex := Tex_Note_Star;
           W := 7;
           H := 7;
           SizeMod := (-cos((Frame+1)*5*2*pi/16)*0.5+1.1);
@@ -285,7 +283,7 @@ begin
         end;
     else    // just some random default values
         begin
-          Tex := Tex_Note_Star.TexNum;
+          Tex := Tex_Note_Star;
           Alpha := 1;
           W := 20;
           H := 20;
@@ -359,6 +357,7 @@ var
 begin
   { if screens = 2 and playerplay <= 3 the 2nd screen shows the
     textures of screen 1 }
+    {
   if (Screens = 2) and (PlayersPlay <= 3) then
     ScreenAct := 1;
 
@@ -366,8 +365,6 @@ begin
   begin
     glEnable(GL_TEXTURE_2D);
 	  glBindTexture(GL_TEXTURE_2D, Tex);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_BLEND);
 	
     // this draws (multiple) texture(s) of our particle
     for L := 0 to High(Col) do
@@ -382,11 +379,11 @@ begin
       glEnd;
     end;
 	
-	  glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
     glcolor4f(1,1,1,1);
   end;
+  }
 end;
 // end of TParticle
 

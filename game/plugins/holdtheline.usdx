@@ -48,7 +48,7 @@ local dissmissedCount;
 function plugin_init()
   register('party mode: holdtheline', '0.6', 'USDX Team', 'http://www.UltrastarDeluxe.org');
 
-  require('math', 'Usdx.Party', 'Usdx.ScreenSing', 'Usdx.Gl', 'Usdx.TextGl');
+  require('math', 'Usdx.Party', 'Usdx.ScreenSing', 'Usdx.Gl', 'Usdx.UText');
   local Mode = {}
 
   Mode.Name = 'holdtheline';
@@ -127,13 +127,13 @@ function DrawOut(i)
 
   -- text
   Gl.Color(1, 0, 0, 1);
-  TextGl.Size(18);
-  TextGl.Style(1);
-  TextGl.Italic(false);
+  UText.Size(18);
+  UText.Style(1);
+  UText.Italic(false);
   local PosX = (OSD[i].Left + OSD[i].Right) / 2;
-  PosX = PosX - TextGl.Width(Text) / 2;
-  TextGl.Pos(PosX, OSD[i].Top - 3);
-  TextGl.Print(Text);
+  PosX = PosX - UText.Width(Text) / 2;
+  UText.Pos(PosX, OSD[i].Top - 3);
+  UText.Print(Text);
 
 end;
 

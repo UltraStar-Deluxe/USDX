@@ -75,7 +75,7 @@ uses
 implementation
 
 uses
-  TextGL,
+  UText,
   UGraphic,
   UMain,
   UConfig,
@@ -535,7 +535,7 @@ begin
       {$IFDEF UseConfigInp}
       fPm := TProjectM.Create(fProjectMPath + 'config.inp');
       {$ELSE}
-      Font := TextGL.Fonts[0][0].Font.Filename;
+      Font := UText.Fonts[0][0].Font.Filename;
       fPm := TProjectM.Create(
         meshX, meshY, fps, textureSize, ScreenW, ScreenH,
         fProjectMPath + 'presets', Font.GetDir.ToNative,
@@ -636,7 +636,6 @@ begin
   glPushMatrix();
   glLoadIdentity();
 
-  glEnable(GL_BLEND);
   glEnable(GL_TEXTURE_2D);
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
   glBindTexture(GL_TEXTURE_2D, fVisualTex);
@@ -652,7 +651,6 @@ begin
   glEnd();
 
   glDisable(GL_TEXTURE_2D);
-  glDisable(GL_BLEND);
 
   // restore state
   glMatrixMode(GL_PROJECTION);

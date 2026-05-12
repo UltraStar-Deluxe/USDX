@@ -78,9 +78,9 @@ uses
   UHelp,
   ULanguage,
   ULog,
+  URenderer,
   UUnicodeUtils,
   UWebcam,
-  dglOpenGL,
   SysUtils;
 
 type
@@ -318,32 +318,16 @@ begin
 
   Webcam.GetWebcamFrame;
 
-  if (Webcam.TextureCam.TexNum > 0) then
+  if (Webcam.TextureCam  <> nil) then
   begin
-    glColor4f(1, 1, 1, 1);
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-    glEnable(GL_TEXTURE_2D);
-
-    glBindTexture(GL_TEXTURE_2D, Webcam.TextureCam.TexNum);
-    glEnable(GL_BLEND);
-    glBegin(GL_QUADS);
-
-      glTexCoord2f(0, 0);
-      glVertex2f(800,  0);
-      glTexCoord2f(0, Webcam.TextureCam.TexH);
-      glVertex2f(800,  600);
-      glTexCoord2f( Webcam.TextureCam.TexW, Webcam.TextureCam.TexH);
-      glVertex2f(0, 600);
-      glTexCoord2f( Webcam.TextureCam.TexW, 0);
-      glVertex2f(0, 0);
-
-    glEnd;
-    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_BLEND);
-
-    // reset to default
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
+    with Webcam.TextureCam do
+    begin
+      X := 0;
+      Y := 0;
+      W := RenderW;
+      H := RenderH;
+    end;
+    Renderer.DrawTexture(Webcam.TextureCam);
   end;
 
 end;

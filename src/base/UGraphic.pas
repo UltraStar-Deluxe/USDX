@@ -35,9 +35,7 @@ interface
 
 uses
   sdl2,
-  dglOpenGL,
-  UTexture,
-  TextGL,
+  UText,
   UConfig,
   UCommon,
   ULog,
@@ -48,6 +46,7 @@ uses
   USongs,
   UAvatars,
   UMusic,
+  URenderer,
   UScreenLoading,
   UScreenMain,
   UScreenName,
@@ -114,7 +113,6 @@ type
 
 var
   Screen:         PSDL_Window;
-  glcontext:      TSDL_GLContext;
   LoadingThread:  PSDL_Thread;
   Mutex:          PSDL_Mutex;
 
@@ -274,7 +272,6 @@ var
 
 
   PboSupported: boolean;
-  SoftwareRendering: boolean;
 
 const
   Skin_FontR = 0;
@@ -295,7 +292,6 @@ const
 procedure Initialize3D (Title: string);
 procedure Finalize3D;
 procedure Reinitialize3D;
-procedure SwapBuffers;
 
 procedure LoadTextures;
 procedure InitializeScreen;
@@ -348,30 +344,30 @@ begin
 
   Log.LogStatus('Loading Textures - A', 'LoadTextures');
 
-  Tex_Note_Perfect_Star := Texture.LoadTexture(Skin.GetTextureFileName('NotePerfectStar'), TEXTURE_TYPE_TRANSPARENT, 0);
-  Tex_Note_Star         := Texture.LoadTexture(Skin.GetTextureFileName('NoteStar') ,       TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
-  Tex_Ball              := Texture.LoadTexture(Skin.GetTextureFileName('Ball'),            TEXTURE_TYPE_TRANSPARENT, $FF00FF);
-  Tex_Lyric_Help_Bar    := Texture.LoadTexture(Skin.GetTextureFileName('LyricHelpBar'),    TEXTURE_TYPE_TRANSPARENT, 0);
+  Tex_Note_Perfect_Star := Renderer.LoadTexture(Skin.GetTextureFileName('NotePerfectStar'), TEXTURE_TYPE_TRANSPARENT, 0);
+  Tex_Note_Star         := Renderer.LoadTexture(Skin.GetTextureFileName('NoteStar') ,       TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
+  Tex_Ball              := Renderer.LoadTexture(Skin.GetTextureFileName('Ball'),            TEXTURE_TYPE_TRANSPARENT, $FF00FF);
+  Tex_Lyric_Help_Bar    := Renderer.LoadTexture(Skin.GetTextureFileName('LyricHelpBar'),    TEXTURE_TYPE_TRANSPARENT, 0);
 
-  Tex_SelectS_ArrowL    := Texture.LoadTexture(Skin.GetTextureFileName('Select_ArrowLeft'),    TEXTURE_TYPE_TRANSPARENT, 0);
-  Tex_SelectS_ArrowR    := Texture.LoadTexture(Skin.GetTextureFileName('Select_ArrowRight'),    TEXTURE_TYPE_TRANSPARENT, 0);
+  Tex_SelectS_ArrowL    := Renderer.LoadTexture(Skin.GetTextureFileName('Select_ArrowLeft'),    TEXTURE_TYPE_TRANSPARENT, 0);
+  Tex_SelectS_ArrowR    := Renderer.LoadTexture(Skin.GetTextureFileName('Select_ArrowRight'),    TEXTURE_TYPE_TRANSPARENT, 0);
 
-  Tex_Cursor_Unpressed  := Texture.LoadTexture(Skin.GetTextureFileName('Cursor'), TEXTURE_TYPE_TRANSPARENT, 0);
+  Tex_Cursor_Unpressed  := Renderer.LoadTexture(Skin.GetTextureFileName('Cursor'), TEXTURE_TYPE_TRANSPARENT, 0);
 
   if (Skin.GetTextureFileName('Cursor_Pressed').IsSet) then
-    Tex_Cursor_Pressed    := Texture.LoadTexture(Skin.GetTextureFileName('Cursor_Pressed'), TEXTURE_TYPE_TRANSPARENT, 0)
+    Tex_Cursor_Pressed    := Renderer.LoadTexture(Skin.GetTextureFileName('Cursor_Pressed'), TEXTURE_TYPE_TRANSPARENT, 0)
   else
-    Tex_Cursor_Pressed.TexNum := 0;
+    Tex_Cursor_Pressed := nil;
 
   //TimeBar mod
-  Tex_TimeProgress := Texture.LoadTexture(Skin.GetTextureFileName('TimeBar'));
-  Tex_JukeboxTimeProgress := Texture.LoadTexture(Skin.GetTextureFileName('JukeboxTimeBar'));
+  Tex_TimeProgress := Renderer.LoadTexture(Skin.GetTextureFileName('TimeBar'));
+  Tex_JukeboxTimeProgress := Renderer.LoadTexture(Skin.GetTextureFileName('JukeboxTimeBar'));
   //eoa TimeBar mod
 
   //SingBar Mod
-  Tex_SingBar_Back  := Texture.LoadTexture(Skin.GetTextureFileName('SingBarBack'),  TEXTURE_TYPE_PLAIN, 0);
-  Tex_SingBar_Bar   := Texture.LoadTexture(Skin.GetTextureFileName('SingBarBar'),   TEXTURE_TYPE_PLAIN, 0);
-  Tex_SingBar_Front := Texture.LoadTexture(Skin.GetTextureFileName('SingBarFront'), TEXTURE_TYPE_PLAIN, 0);
+  Tex_SingBar_Back  := Renderer.LoadTexture(Skin.GetTextureFileName('SingBarBack'),  TEXTURE_TYPE_PLAIN, 0);
+  Tex_SingBar_Bar   := Renderer.LoadTexture(Skin.GetTextureFileName('SingBarBar'),   TEXTURE_TYPE_PLAIN, 0);
+  Tex_SingBar_Front := Renderer.LoadTexture(Skin.GetTextureFileName('SingBarFront'), TEXTURE_TYPE_PLAIN, 0);
   //end Singbar Mod
 
   Log.LogStatus('Loading Textures - B', 'LoadTextures');
@@ -414,14 +410,14 @@ begin
       End;
 
       Col := $10000 * Round(R*255) + $100 * Round(G*255) + Round(B*255);
-      Tex_SingLineBonusBack[P] :=  Texture.LoadTexture(Skin.GetTextureFileName('LineBonusBack'), TEXTURE_TYPE_COLORIZED, Col);
+      Tex_SingLineBonusBack[P] :=  Renderer.LoadTexture(Skin.GetTextureFileName('LineBonusBack'), TEXTURE_TYPE_COLORIZED, Col);
     end;
 
     Log.LogStatus('Loading Textures - C', 'LoadTextures');
 
     //## rating pictures that show a picture according to your rate ##
     for P := 0 to 7 do begin
-      Tex_Score_Ratings[P] := Texture.LoadTexture(Skin.GetTextureFileName('Rating_'+IntToStr(P)), TEXTURE_TYPE_TRANSPARENT, 0);
+      Tex_Score_Ratings[P] := Renderer.LoadTexture(Skin.GetTextureFileName('Rating_'+IntToStr(P)), TEXTURE_TYPE_TRANSPARENT, 0);
   end;
 
   Log.LogStatus('Loading Textures - Done', 'LoadTextures');
@@ -457,8 +453,6 @@ begin
 
 
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing texturizer'));
-  Texture := TTextureUnit.Create;
-  Texture.Limit :=1920; //currently, Full HD is all we want. switch to 64bit target before going further up
 
   //LoadTextures;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing video modules'));
@@ -520,15 +514,6 @@ begin
   Log.LogStatus('Finish', 'Initialize3D');
 end;
 
-procedure SwapBuffers;
-begin
-  SDL_GL_SwapWindow(Screen);
-  glMatrixMode(GL_PROJECTION);
-    glLoadIdentity;
-    glOrtho(0, RenderW, RenderH, 0, -1, 100);
-  glMatrixMode(GL_MODELVIEW);
-end;
-
 procedure Finalize3D;
 begin
   UnloadFontTextures;
@@ -552,7 +537,6 @@ var
 
 label
   NoDoubledResolution;
-
 begin
   if (Params.Screens <> -1) then
     Screens := Params.Screens + 1
@@ -605,6 +589,7 @@ begin
 NoDoubledResolution:
 
   Log.LogStatus('Creating window', 'SDL_SetVideoMode');
+  PreInitRenderer;
 
   // TODO: use SDL renderer (for proper scale in "real fullscreen"). Able to choose rendering mode (OpenGL, OpenGL ES, Direct3D)
   if Borderless then
@@ -628,8 +613,9 @@ NoDoubledResolution:
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE);
   end;
-
-  //SDL_ShowCursor(0);    just to be able to debug while having mosue cursor
+  InitRenderer;
+  Renderer.Blend := true;
+  Renderer.DepthTest := true;
 
   if (screen = nil) then
   begin
@@ -669,47 +655,14 @@ NoDoubledResolution:
     end;
   end;
 
-  //LoadOpenGL();
-  glcontext := SDL_GL_CreateContext(Screen);
-  InitOpenGL();
-
-  //   ActivateRenderingContext(
-  ReadExtensions;
-  ReadImplementationProperties;
-  Log.LogInfo('OpenGL vendor ' + glGetString(GL_VENDOR), 'UGraphic.InitializeScreen');
-  if not (glGetError = GL_NO_ERROR) then
-  begin
-    Log.LogInfo('an OpenGL Error happened.', 'UGraphic.InitializeScreen');
-  end;
-  S := glGetString(GL_RENDERER);
-  Log.LogInfo('OpenGL renderer ' + S, 'UGraphic.InitializeScreen');
-  Log.LogInfo('OpenGL version ' + glGetString(GL_VERSION), 'UGraphic.InitializeScreen');
-
-  if (Pos('GDI Generic', S) > 0) or // Microsoft
-     (Pos('Software Renderer', S) > 0) or // Apple
-     (Pos('Software Rasterizer', S) > 0) or // Mesa (-Ddri-drivers=swrast)
-     (Pos('softpipe', S) > 0) or // Mesa (-Dgallium-drivers=swrast -Dllvm=false)
-     (Pos('llvmpipe', S) > 0) or // Mesa (-Dgallium-drivers=swrast -Dllvm=true)
-     (Pos('SWR', S) > 0) or // Mesa (-Dgallium-drivers=swr)
-     (Pos('Mesa X11', S) > 0) or // Mesa (-Dglx=xlib)
-     (Pos('SwiftShader', S) > 0) then // Google; OpenGL ES, D3D9 & Vulkan only so far, but who knows...
-    SoftwareRendering := true
-  else
-    SoftwareRendering := false;
-
   // define virtual (Render) and real (Screen) screen size
   RenderW := 800;
   RenderH := 600;
   ScreenW := ActualW;
   ScreenH := ActualH;
-  // Ausganswerte für die State-Machine setzen
-  SDL_GL_SetSwapInterval(1); // VSYNC (currently Windows only)
+  Renderer.SetOrthographicProjection(0, RenderW, RenderH, 0, -1, 100);
+  Renderer.VSync := true;
 
-  {// clear screen once window is being shown
-  // Note: SwapBuffers uses RenderW/H, so they must be defined before
-  glClearColor(1, 1, 1, 1);
-  glClear(GL_COLOR_BUFFER_BIT);
-  SwapBuffers;}
 end;
 
 function HasWindowState(Flag: integer): boolean;
@@ -882,10 +835,10 @@ begin
   ScreenLoading := TScreenLoading.Create;
   ScreenLoading.OnShow;
   Display.CurrentScreen := @ScreenLoading;
-  SwapBuffers;
+  Renderer.SwapBuffers;
   ScreenLoading.Draw;
   Display.Draw;
-  SwapBuffers;
+  Renderer.SwapBuffers;
 end;
 
 procedure LoadScreens(Title: string);
