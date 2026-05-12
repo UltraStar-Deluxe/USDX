@@ -93,6 +93,8 @@ const
   IPlayers:     array[0..4] of UTF8String = ('1', '2', '3', '4', '6');
   IPlayersVals: array[0..4] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 );
 
+function TryGetMixedPlayerColorPair(ColorIndex: integer; out LeftColor, RightColor: integer): boolean;
+
 type
 
 //Options
@@ -616,6 +618,50 @@ type
 
 const
   IGNORE_INDEX = -1;
+  BASE_PLAYER_COLOR_COUNT = 16;
+
+function TryGetMixedPlayerColorPair(ColorIndex: integer; out LeftColor, RightColor: integer): boolean;
+var
+  Remaining: integer;
+  Sum: integer;
+  LeftCandidate: integer;
+  RightCandidate: integer;
+begin
+  Result := false;
+  LeftColor := 0;
+  RightColor := 0;
+
+  if ColorIndex <= BASE_PLAYER_COLOR_COUNT then
+    Exit;
+
+  Remaining := ColorIndex - BASE_PLAYER_COLOR_COUNT;
+  for Sum := BASE_PLAYER_COLOR_COUNT + 1 to BASE_PLAYER_COLOR_COUNT * 2 - 1 do
+  begin
+    LeftCandidate := Sum - BASE_PLAYER_COLOR_COUNT;
+    if LeftCandidate < 1 then
+      LeftCandidate := 1;
+    while LeftCandidate <= ((Sum - 1) div 2) do
+    begin
+      RightCandidate := Sum - LeftCandidate;
+      if LeftCandidate >= RightCandidate then
+      begin
+        Inc(LeftCandidate);
+        Continue;
+      end;
+
+      Dec(Remaining);
+      if Remaining = 0 then
+      begin
+        LeftColor := LeftCandidate;
+        RightColor := RightCandidate;
+        Result := true;
+        Exit;
+      end;
+
+      Inc(LeftCandidate);
+    end;
+  end;
+end;
 
 constructor TSafeIniFile.Create(const FileName, LogSource: string);
 begin
