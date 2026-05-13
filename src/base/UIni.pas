@@ -1238,7 +1238,7 @@ begin
   begin
     if (Pos('SONGDIR', UpperCase(PathStrings[I])) = 1) then
     begin
-      AddSongPath(Path(IniFile.ReadString('Directories', PathStrings[I], '')));
+      AddSongPath(Path(IniFile.ReadString('Directories', PathStrings[I], '')), false);
     end;
   end;
 
@@ -1727,7 +1727,7 @@ begin
   if (WebCamResolution = -1) then
     WebcamResolution := 2;
   WebCamFPS := ReadArrayIndex(IWebcamFPS, IniFile, 'Webcam', 'FPS', 4);
-  WebCamFlip := ReadArrayIndex(IWebcamFlipTranslated, IniFile, 'Webcam', 'Flip', IGNORE_INDEX, 'On');
+  WebCamFlip := ReadArrayIndex(IWebcamFlip, IniFile, 'Webcam', 'Flip', IGNORE_INDEX, 'On');
   WebCamBrightness := ReadArrayIndex(IWebcamBrightness, IniFile, 'Webcam', 'Brightness', IGNORE_INDEX, '0');
   WebCamSaturation := ReadArrayIndex(IWebcamSaturation, IniFile, 'Webcam', 'Saturation', IGNORE_INDEX, '0');
   WebCamHue := ReadArrayIndex(IWebcamHue, IniFile, 'Webcam', 'Hue', IGNORE_INDEX, '0');

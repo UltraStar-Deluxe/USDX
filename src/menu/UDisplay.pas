@@ -78,15 +78,7 @@ type
 
       Cursor_Update:       boolean;
 
-      Console_Draw:         boolean;
-      Console_ScrollOffset: integer;
       procedure DrawDebugInformation;
-      procedure DrawDebugConsole;
-
-      { Handles parsing of inputs when console is opened. Called from ParseInput }
-      function ConsoleParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
-       { Handles parsing of inputs when console is opened. Called from ParseMouse }
-      function ConsoleParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 
       { called by MoveCursor and OnMouseButton to update last move and start fade in }
       procedure UpdateCursorFade;
@@ -109,8 +101,6 @@ type
 
       procedure InitFadeTextures();
 
-      procedure ToggleConsole;
-      
       procedure SaveScreenShot;
 
       function  Draw: boolean;
@@ -424,12 +414,6 @@ begin
     if ((Ini.Debug = 1) or (Params.Debug)) and (S = 1) then
     begin
       DrawDebugInformation;
-      if Console_Draw then DrawDebugConsole;
-    end else if Console_Draw then
-    begin
-      // clear flag to prevent drawing console when toggling debug
-      // TODO: considers using event in ScreenOptions for clearing debug
-      Console_Draw := false;
     end;
 
     if not BlackScreen then
@@ -602,13 +586,6 @@ end;
 
 function TDisplay.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean;
 begin
-  if Console_Draw then
-  begin
-    Result := true;
-    SuppressKey := true;
-    Exit;
-  end;
-
   if (assigned(NextScreen)) then
     Result := NextScreen^.ShouldHandleInput(PressedKey, CharCode, PressedDown, SuppressKey)
   else if (assigned(CurrentScreen)) then
@@ -619,8 +596,6 @@ end;
 
 function TDisplay.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
 begin
-  if Console_Draw and ConsoleParseInput(PressedKey, CharCode, PressedDown) then Exit;
-
   if (assigned(NextScreen)) then
     Result := NextScreen^.ParseInput(PressedKey, CharCode, PressedDown)
   else if (assigned(CurrentScreen)) then
@@ -631,8 +606,6 @@ end;
 
 function TDisplay.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 begin
-  if Console_Draw and ConsoleParseMouse(MouseButton, BtnDown, X, Y) then Exit;
-
   if (assigned(NextScreen)) then
     Result := NextScreen^.ParseMouse(MouseButton, BtnDown, X, Y)
   else
@@ -797,118 +770,6 @@ begin
   SetFontColor(0.8, 0.5, 0.2, 1);
   PrintText ('Game.Debug');
   Renderer.DepthTest := true;
-end;
-
-procedure TDisplay.ToggleConsole;
-begin
-  Console_Draw := not Console_Draw;
-  Console_ScrollOffset := 0;
-end;
-
-function TDisplay.ConsoleParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
-var
-  SDL_ModState:  word;
-begin
-  Result := false;
-
-  if (PressedDown) then
-  begin // Key Down
-    Result := true;
-    SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
-    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
-
-    case PressedKey of
-      SDLK_PAGEUP: Console_ScrollOffset := Min(Console_ScrollOffset+3, Log.ConsoleCount-1);
-      SDLK_PAGEDOWN: Console_ScrollOffset := Max(Console_ScrollOffset-3, 0);
-      SDLK_HOME: Console_ScrollOffset := Log.ConsoleCount-1;
-      SDLK_END: Console_ScrollOffset := 0;
-      SDLK_DELETE: if SDL_ModState and KMOD_CTRL <> 0 then Log.ClearConsoleLog;
-      otherwise Result := false;
-    end;
-  end;
-end;
-
-function TDisplay.ConsoleParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
-begin
-  Result := false;
-
-  if (BtnDown) then
-  begin // button Down
-    Result := true;
-    case MouseButton of
-      SDL_BUTTON_WHEELUP: Console_ScrollOffset := Min(Console_ScrollOffset+3, Log.ConsoleCount-1);
-      SDL_BUTTON_WHEELDOWN: Console_ScrollOffset := Max(Console_ScrollOffset-3, 0);
-      otherwise Result := false;
-    end;
-  end;
-end;
-
-//------------
-// DrawDebugInformation - procedure draw fps and some other informations on screen
-//------------
-procedure TDisplay.DrawDebugConsole;
-var
-  I, LineCount: integer;
-  YOffset, ScaleF, FontSize: real;
-  PosY: real;
-  W, H: real;
-  ScrollPad, ScrollW: real;
-  OldStretch: real;
-begin
-  FontSize := 16.0;
-  W := 800.0;
-  H := 400.0;
-  ScrollPad := 5.0;
-  ScrollW := 10.0;
-
-  // Some black background
-  Renderer.DrawQuad(0, 0, 0, W, H, 0, 0, 0, 0.85);
-
-  // scale sizes to DPI/aspect
-  ScaleF := (1.0*ScreenH)/(1.0*ScreenW);
-  FontSize := FontSize * 600.0/(1.0*ScreenH);
-  ScrollW := ScrollW * 800.0/(1.0*ScreenW);
-  ScrollPad := ScrollPad * ScaleF;
-
-  // set font specs
-  SetFontFamily(0);
-  SetFontStyle(ftRegular);
-  SetFontSize(FontSize);
-  SetFontItalic(false);
-  SetFontReflection(false, 0);
-
-  OldStretch := Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Stretch;
-  Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Stretch := 1.4*ScaleF * Min(1.3, Max(0.8, power((1.0*ScreenW)/800.0, 1.2)));
-
-  // don't draw anything else if nothing's logged
-  if Log.ConsoleCount < 1 then Exit;
-
-
-  // draw log buffer
-  YOffset := H; // start at bottom
-  LineCount := 0;
-  I := Log.ConsoleCount-1 - Console_ScrollOffset;
-  while (I >= 0) and (YOffset > 0) do
-  begin
-    YOffset := YOffset - FontSize;
-    SetFontPos(5, YOffset);
-    PrintText(Log.GetConsole(i));
-
-    Dec(i);
-    Inc(LineCount);
-  end;
-
-  // draw scoll bar
-  Renderer.DrawQuad(W-ScrollPad-ScrollW, ScrollPad, 0, ScrollW, H - 2*ScrollPad, 0.33, 0.33, 0.33, 1);
-
-  // visible height bar + offset
-  YOffset := H * ((1.0*LineCount)/(1.0*Log.ConsoleCount));
-  PosY := 0;
-  if I > 0 then PosY := (H-2.0*ScrollPad) * Max(0.0, I)/(1.0*Log.ConsoleCount);
-
-  Renderer.DrawQuad(W-ScrollPad-ScrollW, ScrollPad + PosY, 0, ScrollW, YOffset, 1, 1, 1, 1);
-
-  Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Stretch := OldStretch;
 end;
 
 end.
