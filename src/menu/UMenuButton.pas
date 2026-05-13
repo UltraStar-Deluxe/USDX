@@ -441,7 +441,7 @@ begin
     end;
 
     //Draw FadeTex
-    if (FadeTex.TexNum > 0) then
+    if Fade and (FadeTex.TexNum > 0) then
       DrawTexture(FadeTex);
 
     if Texture2.Alpha > 0 then
@@ -715,6 +715,9 @@ begin
 
   Fade           := false;
   FadeTex.TexNum := 0;
+  FadeTex.Alpha  := 0;
+  Texture2.TexNum:= 0;
+  Texture2.Alpha := 0;
   FadeProgress   := 0;
   FadeText       := false;
   SelectW        := DeSelectW;
