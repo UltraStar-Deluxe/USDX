@@ -83,6 +83,7 @@ type
       procedure DrawGlyph(Texture: TTexture); override;
       procedure DrawQuads(QuadList: TQuadList); override;
       procedure DrawLines(LineList: TLineList); override;
+      procedure DrawParticles(Texture: TTexture; ParticleList: TParticleList); override;
       procedure SetBlend(Enabled: boolean); override;
       function GetBlend(): boolean; override;
       procedure SetDepthTest(Enabled: boolean); override;
@@ -550,9 +551,9 @@ begin
     NumQuads := 1;
   Bytes := SizeOf(TVertexBufferData) * NumQuads;
   Buffer := GetArrayBuffer(Bytes);
+  glBindTexture(GL_TEXTURE_2D, Tex.TexID);
   with Tex do
   begin
-    glBindTexture(GL_TEXTURE_2D, TexID);
     ColorR := Int * ColR;
     ColorG := Int * ColG;
     ColorB := Int * ColB;
@@ -678,9 +679,7 @@ begin
       Buffer[VERTEX_TOPLEFT_OFFSET + TEXX_OFFSET] := TexX1;
       Buffer[VERTEX_TOPLEFT_OFFSET + TEXY_OFFSET] := ReflectionTexY1;
     end;
-  end;
-
-  glUnmapBuffer(GL_ARRAY_BUFFER);
+  end;  glUnmapBuffer(GL_ARRAY_BUFFER);
   glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_INT, PGLvoid(EBOCursor * SizeOf(GLuint)));
   VBOCursor := VBOCursor + (NumQuads * 4 * VERTEX_STRIDE);
   EBOCursor := EBOCursor + (NumQuads * 6);
@@ -1006,6 +1005,115 @@ begin
   RaiseExceptionIfError;
   {$ENDIF};
 end;
+
+procedure TRenderer_OpenGL.DrawParticles(Texture: TTexture; ParticleList: TParticleList);
+var
+  Tex: TTexture_OpenGL;
+  NumQuads: GLuint;
+  Buffer: PGLfloat;
+  Bytes: GLuint;
+  X2, Y2: single;
+  I: integer;
+begin
+  if (Texture.TexID = 0) then
+    Exit;
+  NumQuads := Length(ParticleList);
+  if (NumQuads = 0) then
+    Exit;
+  Tex := TTexture_OpenGL(Texture);
+  glBindVertexArray(VAO);
+  glUseProgram(MainProgram);
+  if (UpdateTransformMain) then
+  begin
+    glUniformMatrix4fv(TransformLocationMain, 1, GL_TRUE, PGLfloat(@ProjectionMatrix));
+    UpdateTransformMain := false;
+  end;
+  Bytes := SizeOf(TVertexBufferData) * NumQuads;
+  Buffer := GetArrayBuffer(Bytes);
+  glBindTexture(GL_TEXTURE_2D, Tex.TexID);
+  {
+  for I := Low(ParticleList) to High(ParticleList) do
+  begin
+    Tex.X := ParticleList[I].X;
+    Tex.Y := ParticleList[I].Y;
+    Tex.W := ParticleList[I].W;
+    Tex.H := ParticleList[I].H;
+    Tex.Int := 1;
+    Tex.ColR := ParticleList[I].ColR;
+    Tex.ColG := ParticleList[I].ColG;
+    Tex.ColB := ParticleList[I].ColB;
+    Tex.Alpha := ParticleList[I].Alpha;
+    Tex.TexX1 := ParticleList[I].TexX1;
+    Tex.TexY1 := ParticleList[I].TexY1;
+    Tex.TexX2 := ParticleList[I].TexX2;
+    Tex.TexY2 := ParticleList[I].TexY2;
+    Tex.Reflection := false;
+    FillBufferFromTexture(Buffer, Tex);
+    Buffer := Buffer + QUAD_STRIDE;
+  end;
+  }
+
+  for I := Low(ParticleList) to High(ParticleList) do
+  begin
+
+    X2 := ParticleList[I].X + ParticleList[I].W;
+    Y2 := ParticleList[I].Y + ParticleList[I].H;
+
+    // Top right
+    Buffer[VERTEX_TOPRIGHT_OFFSET + X_OFFSET] := X2;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + Y_OFFSET] := ParticleList[I].Y;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + Z_OFFSET] := 0;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + R_OFFSET] := ParticleList[I].ColR;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + G_OFFSET] := ParticleList[I].ColG;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + B_OFFSET] := ParticleList[I].ColB;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + A_OFFSET] := ParticleList[I].Alpha;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + TEXX_OFFSET] := ParticleList[I].TexX1;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + TEXY_OFFSET] := ParticleList[I].TexY1;
+
+    // Bottom right
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + X_OFFSET] := X2;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + Y_OFFSET] := Y2;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + Z_OFFSET] := 0;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + R_OFFSET] := ParticleList[I].ColR;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + G_OFFSET] := ParticleList[I].ColG;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + B_OFFSET] := ParticleList[I].ColB;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + A_OFFSET] := ParticleList[I].Alpha;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + TEXX_OFFSET] := ParticleList[I].TexX2;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + TEXY_OFFSET] := ParticleList[I].TexY1;
+
+    // Bottom left
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + X_OFFSET] := ParticleList[I].X;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + Y_OFFSET] := Y2;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + Z_OFFSET] := 0;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + R_OFFSET] := ParticleList[I].ColR;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + G_OFFSET] := ParticleList[I].ColG;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + B_OFFSET] := ParticleList[I].ColB;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + A_OFFSET] := ParticleList[I].Alpha;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + TEXX_OFFSET] := ParticleList[I].TexX2;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + TEXY_OFFSET] := ParticleList[I].TexY2;
+
+    // Top left
+    Buffer[VERTEX_TOPLEFT_OFFSET + X_OFFSET] := ParticleList[I].X;
+    Buffer[VERTEX_TOPLEFT_OFFSET + Y_OFFSET] := ParticleList[I].Y;
+    Buffer[VERTEX_TOPLEFT_OFFSET + Z_OFFSET] := 0;
+    Buffer[VERTEX_TOPLEFT_OFFSET + R_OFFSET] := ParticleList[I].ColR;
+    Buffer[VERTEX_TOPLEFT_OFFSET + G_OFFSET] := ParticleList[I].ColG;
+    Buffer[VERTEX_TOPLEFT_OFFSET + B_OFFSET] := ParticleList[I].ColB;
+    Buffer[VERTEX_TOPLEFT_OFFSET + A_OFFSET] := ParticleList[I].Alpha;
+    Buffer[VERTEX_TOPLEFT_OFFSET + TEXX_OFFSET] := ParticleList[I].TexX1;
+    Buffer[VERTEX_TOPLEFT_OFFSET + TEXY_OFFSET] := ParticleList[I].TexY2;
+    Buffer := Buffer + QUAD_STRIDE;
+
+  end;
+  glUnmapBuffer(GL_ARRAY_BUFFER);
+  glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_INT, PGLvoid(EBOCursor * SizeOf(GLuint)));
+  VBOCursor := VBOCursor + (NumQuads * 4 * VERTEX_STRIDE);
+  EBOCursor := EBOCursor + (NumQuads * 6);
+  {$IFDEF DEBUG_MODE}
+  RaiseExceptionIfError;
+  {$ENDIF};
+end;
+
 
 procedure TRenderer_OpenGL.SetBlend(Enabled: boolean);
 begin

@@ -354,36 +354,36 @@ end;
 procedure TParticle.Draw;
 var
   L: cardinal;
+  ParticleList: TParticleList;
 begin
   { if screens = 2 and playerplay <= 3 the 2nd screen shows the
     textures of screen 1 }
-    {
+
   if (Screens = 2) and (PlayersPlay <= 3) then
     ScreenAct := 1;
 
   if (ScreenAct = Screen) then
   begin
-    glEnable(GL_TEXTURE_2D);
-	  glBindTexture(GL_TEXTURE_2D, Tex);
 	
     // this draws (multiple) texture(s) of our particle
+    SetLength(ParticleList, Length(Col));
     for L := 0 to High(Col) do
     begin
-      glColor4f(Col[L].r, Col[L].g, Col[L].b, Alpha);
-
-      glBegin(GL_QUADS);
-	      glTexCoord2f((1/16) * Frame, 0);          glVertex2f(X-W*Scale[L]*SizeMod, Y-H*Scale[L]*SizeMod);
-        glTexCoord2f((1/16) * Frame + (1/16), 0); glVertex2f(X-W*Scale[L]*SizeMod, Y+H*Scale[L]*SizeMod);
-        glTexCoord2f((1/16) * Frame + (1/16), 1); glVertex2f(X+W*Scale[L]*SizeMod, Y+H*Scale[L]*SizeMod);
-        glTexCoord2f((1/16) * Frame, 1);          glVertex2f(X+W*Scale[L]*SizeMod, Y-H*Scale[L]*SizeMod);
-      glEnd;
+      ParticleList[L].X := X-W*Scale[L]*SizeMod;
+      ParticleList[L].Y := Y-H*Scale[L]*SizeMod;
+      ParticleList[L].W := 2*W*Scale[L]*SizeMod;
+      ParticleList[L].H := 2*H*Scale[L]*SizeMod;
+      ParticleList[L].ColR := Col[L].r;
+      ParticleList[L].ColG := Col[L].g;
+      ParticleList[L].ColB := Col[L].b;
+      ParticleList[L].Alpha := Alpha;
+      ParticleList[L].TexX1 := (1/16) * Frame;
+      ParticleList[L].TexY1 := 1;
+      ParticleList[L].TexX2 := (1/16) * Frame + (1/16);
+      ParticleList[L].TexY2 := 0;
     end;
-	
-    glDisable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glcolor4f(1,1,1,1);
   end;
-  }
+  Renderer.DrawParticles(Tex, ParticleList);
 end;
 // end of TParticle
 

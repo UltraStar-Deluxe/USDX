@@ -87,6 +87,22 @@ type
   end;
   TLineList = array of TLineInfo;
 
+  TParticleInfo = record
+    X: single;
+    Y: single;
+    W: single;
+    H: single;
+    ColR: single;
+    ColG: single;
+    ColB: single;
+    Alpha: single;
+    TexX1: single;
+    TexY1: single;
+    TexX2: single;
+    TexY2: single;
+  end;
+  TParticleList = array of TParticleInfo;
+
   TTexture = class
     protected
       OwnsTex: boolean;
@@ -179,6 +195,7 @@ type
       procedure DrawQuad(X, Y, Z, W, H, ColR, ColG, ColB, Alpha: single);
       procedure DrawLines(LineList: TLineList); virtual; abstract;
       procedure DrawLine(X1, Y1, X2, Y2, Z, LineThickness, ColR, ColG, ColB, Alpha: single);
+      procedure DrawParticles(Texture: TTexture; ParticleList: TParticleList); virtual; abstract;
       procedure DrawBoundedBox(X1, Y1, X2, Y2, Z, LineThickness, ColR, ColG, ColB, Alpha: single); virtual;
       procedure SetBlend(Enabled: boolean); virtual; abstract;
       function GetBlend(): boolean; virtual; abstract;

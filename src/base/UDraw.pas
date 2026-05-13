@@ -1682,7 +1682,7 @@ begin
           W := Rec.Right - Rec.Left;
           H := Rec.Bottom - Rec.Top;
           ColR := ColorR;
-          ColG := ColorB;
+          ColG := ColorG;
           ColB := ColorB;
           Alpha := Al;
           TexX1 := 0;
@@ -1718,7 +1718,7 @@ begin
           W := Rec.Right - Rec.Left;
           H := Rec.Bottom - Rec.Top;
           ColR := ColorR;
-          ColG := ColorB;
+          ColG := ColorG;
           ColB := ColorB;
           Alpha := Al;
           TexX1 := 0;
@@ -1753,7 +1753,7 @@ begin
           W := Rec.Right - Rec.Left;
           H := Rec.Bottom - Rec.Top;
           ColR := ColorR;
-          ColG := ColorB;
+          ColG := ColorG;
           ColB := ColorB;
           Alpha := Al;
           TexX1 := 0;
