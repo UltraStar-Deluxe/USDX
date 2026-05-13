@@ -83,6 +83,7 @@ type
     procedure ResetLinesAndLyrics();
     procedure ClearLyricEngines();
     procedure CalculateStartTime;
+    procedure SaveLocalScores;
   public
     CheckPlayerConfigOnNextSong: boolean;
     eSongLoaded: THookableEvent; //< event is called after lyrics of a song are loaded on OnShow
@@ -1592,14 +1593,20 @@ var
   len, num: integer;
 
 begin
+  Log.LogStatus('TScreenSingController.Finish', 'TScreenSingController.Finish');
   AudioInput.CaptureStop;
   AudioPlayback.Stop;
   AudioPlayback.SetSyncSource(nil);
 
-  if (ScreenSong.Mode = smNormal) and (SungToEnd) and (Length(DllMan.Websites) > 0) then
+  if (ScreenSong.Mode = smNormal) and SungToEnd then
   begin
-    AutoSendScore;
-    AutoSaveScore;
+    SaveLocalScores;
+
+    if (Length(DllMan.Websites) > 0) then
+    begin
+      AutoSendScore;
+      AutoSaveScore;
+    end;
   end;
 
   LyricsState.Stop();
@@ -1877,6 +1884,25 @@ begin
 end;
 
 
+procedure TScreenSingController.SaveLocalScores;
+var
+  I: integer;
+  Sung: boolean;
+begin
+  Sung := false;
+  for I := 0 to PlayersPlay - 1 do
+  begin
+    if Player[I].ScoreTotalInt > 0 then
+    begin
+      DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Name, Player[I].ScoreTotalInt);
+      Sung := true;
+    end;
+  end;
+
+  if Sung then
+    DataBase.WriteScore(CurrentSong);
+end;
+
 procedure TScreenSingController.AutoSendScore;
 var
   SendInfo: TSendInfo;
@@ -2014,4 +2040,3 @@ begin
 end;
 
 end.
-
