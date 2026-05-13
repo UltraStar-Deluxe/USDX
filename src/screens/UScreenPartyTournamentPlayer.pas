@@ -80,7 +80,6 @@ type
 
 const
   ID='ID_036';   //for help system
-  ITournamentPlayers: array[0..14] of UTF8String = ('2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16');
 
 implementation
 
@@ -153,24 +152,18 @@ function TScreenPartyTournamentPlayer.ShouldHandleInput(PressedKey: cardinal; Ch
 begin
   Result := inherited;
   // only suppress special keys for now
-  case PressedKey of
-    // Templates for Names Mod
-    SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12:
-     if (Button[Interactions[Interaction].Num].Selected) then
-     begin
-       SuppressKey := true;
-     end
-     else
-     begin
-       Result := false;
-     end;
-  end;
+  if GetNameTemplateIndexFromKey(PressedKey) <> -1 then
+    if (Button[Interactions[Interaction].Num].Selected) then
+      SuppressKey := true
+    else
+      Result := false;
 end;
 
 function TScreenPartyTournamentPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
   SDL_ModState:  word;
   isAlternate: boolean;
+  TemplateIndex: integer;
   procedure IntNext;
   begin
     repeat
@@ -215,116 +208,16 @@ begin
     isAlternate := (SDL_ModState = KMOD_LSHIFT) or (SDL_ModState = KMOD_RSHIFT);
     isAlternate := isAlternate or (SDL_ModState = KMOD_LALT); // legacy key combination
     case PressedKey of
-      // Templates for Names Mod
-      SDLK_F1:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[0] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[0];
-         end;
-      SDLK_F2:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[1] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[1];
-         end;
-      SDLK_F3:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[2] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[2];
-         end;
-      SDLK_F4:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[3] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[3];
-         end;
-      SDLK_F5:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[4] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[4];
-         end;
-      SDLK_F6:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[5] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[5];
-         end;
-      SDLK_F7:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[6] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[6];
-         end;
-      SDLK_F8:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[7] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[7];
-         end;
-      SDLK_F9:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[8] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[8];
-         end;
-      SDLK_F10:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[9] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[9];
-         end;
-      SDLK_F11:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[10] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[10];
-         end;
-      SDLK_F12:
-       if isAlternate then
-         begin
-           Ini.NameTemplate[11] := Button[Interactions[Interaction].Num].Text[0].Text;
-         end
-         else
-         begin
-           Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[11];
-         end;
-
+      SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6,
+      SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12:
+        begin
+          TemplateIndex := GetNameTemplateIndexFromKey(PressedKey);
+          if (TemplateIndex >= 0) and (TemplateIndex <= High(Ini.NameTemplate)) then
+            if isAlternate then
+              Ini.NameTemplate[TemplateIndex] := Button[Interactions[Interaction].Num].Text[0].Text
+            else
+              Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[TemplateIndex];
+        end;
       SDLK_BACKSPACE:
         begin
           Button[Interactions[Interaction].Num].Text[0].DeleteLastLetter;
@@ -384,14 +277,18 @@ begin
 end;
 
 constructor TScreenPartyTournamentPlayer.Create;
+var
+  TournamentPlayerOptions: TUTF8StringArray;
 begin
   inherited Create;
 
   LoadFromTheme(Theme.PartyTournamentPlayer);
 
+  TournamentPlayerOptions := CreateNumericOptionArray(2, 16);
+
   Theme.PartyTournamentPlayer.SelectPlayers.oneItemOnly := true;
   Theme.PartyTournamentPlayer.SelectPlayers.showArrows := true;
-  SelectPlayers := AddSelectSlide(Theme.PartyTournamentPlayer.SelectPlayers, CountPlayer, ITournamentPlayers);
+  SelectPlayers := AddSelectSlide(Theme.PartyTournamentPlayer.SelectPlayers, CountPlayer, TournamentPlayerOptions);
 
   AddButton(Theme.PartyTournamentPlayer.Player1Name);
   AddButton(Theme.PartyTournamentPlayer.Player2Name);
