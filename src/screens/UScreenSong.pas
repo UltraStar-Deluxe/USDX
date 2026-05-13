@@ -4051,6 +4051,10 @@ begin
   SetScrollRefresh;
   FixSelected;
   SetScroll;
+
+  if (PreviewOpened = Interaction) and not Assigned(fCurrentVideo) then
+    StartVideoPreview();
+
   //if (Mode = smPartyTournament) then
   //  PartyTime := SDL_GetTicks();
 

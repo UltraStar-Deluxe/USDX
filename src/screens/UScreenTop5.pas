@@ -78,7 +78,8 @@ uses
   ULog,
   UMain,
   UNote,
-  UUnicodeUtils;
+  UUnicodeUtils,
+  Math;
 
 function TScreenTop5.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
@@ -216,7 +217,7 @@ var
   Report: string;
 begin
   inherited;
-  AudioPlayback.SetVolume(IPreviewVolumeVals[Ini.PreviewVolume]);
+  AudioPlayback.SetVolume(EnsureRange(Ini.PreviewVolume, 0, 100) / 100);
 
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenTop5');
