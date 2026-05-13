@@ -94,6 +94,14 @@ const
   IPlayersVals: array[0..4] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 );
 
 type
+  TUTF8StringArray = array of UTF8String;
+  TIntegerArray = array of integer;
+
+function GetNameTemplateIndexFromKey(const Key: cardinal): integer;
+function CreateNumericOptionArray(const FirstValue, LastValue: integer): TUTF8StringArray;
+function TryGetMixedPlayerColorPair(ColorIndex: integer; out LeftColor, RightColor: integer): boolean;
+
+type
 
 //Options
 
@@ -616,6 +624,85 @@ type
 
 const
   IGNORE_INDEX = -1;
+  BASE_PLAYER_COLOR_COUNT = 16;
+
+function GetNameTemplateIndexFromKey(const Key: cardinal): integer;
+begin
+  case Key of
+    SDLK_F1:  Result := 0;
+    SDLK_F2:  Result := 1;
+    SDLK_F3:  Result := 2;
+    SDLK_F4:  Result := 3;
+    SDLK_F5:  Result := 4;
+    SDLK_F6:  Result := 5;
+    SDLK_F7:  Result := 6;
+    SDLK_F8:  Result := 7;
+    SDLK_F9:  Result := 8;
+    SDLK_F10: Result := 9;
+    SDLK_F11: Result := 10;
+    SDLK_F12: Result := 11;
+  else
+    Result := -1;
+  end;
+end;
+
+function CreateNumericOptionArray(const FirstValue, LastValue: integer): TUTF8StringArray;
+var
+  I: integer;
+begin
+  if LastValue < FirstValue then
+  begin
+    SetLength(Result, 0);
+    Exit;
+  end;
+
+  SetLength(Result, LastValue - FirstValue + 1);
+  for I := 0 to High(Result) do
+    Result[I] := IntToStr(FirstValue + I);
+end;
+
+function TryGetMixedPlayerColorPair(ColorIndex: integer; out LeftColor, RightColor: integer): boolean;
+var
+  Remaining: integer;
+  Sum: integer;
+  LeftCandidate: integer;
+  RightCandidate: integer;
+begin
+  Result := false;
+  LeftColor := 0;
+  RightColor := 0;
+
+  if ColorIndex <= BASE_PLAYER_COLOR_COUNT then
+    Exit;
+
+  Remaining := ColorIndex - BASE_PLAYER_COLOR_COUNT;
+  for Sum := BASE_PLAYER_COLOR_COUNT + 1 to BASE_PLAYER_COLOR_COUNT * 2 - 1 do
+  begin
+    LeftCandidate := Sum - BASE_PLAYER_COLOR_COUNT;
+    if LeftCandidate < 1 then
+      LeftCandidate := 1;
+    while LeftCandidate <= ((Sum - 1) div 2) do
+    begin
+      RightCandidate := Sum - LeftCandidate;
+      if LeftCandidate >= RightCandidate then
+      begin
+        Inc(LeftCandidate);
+        Continue;
+      end;
+
+      Dec(Remaining);
+      if Remaining = 0 then
+      begin
+        LeftColor := LeftCandidate;
+        RightColor := RightCandidate;
+        Result := true;
+        Exit;
+      end;
+
+      Inc(LeftCandidate);
+    end;
+  end;
+end;
 
 constructor TSafeIniFile.Create(const FileName, LogSource: string);
 begin
