@@ -439,7 +439,6 @@ begin
   if (LOG_LEVEL_ERROR <= LogLevel) then
   begin
     DebugWriteLn(LogMsg);
-    LogConsole(LogMsg);
   end;
 
   LogToFile(LogMsg, 'SongError.log', SongLogFileOpened, SongLogFile);
