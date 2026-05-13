@@ -98,10 +98,6 @@ type
   end;
 
 const
-  ITeams:   array[0..1] of UTF8String = ('2', '3');
-  IPlayers: array[0..3] of UTF8String = ('1', '2', '3', '4');
-
-const
   ID='ID_031';   //for help system
 
 implementation
@@ -246,18 +242,11 @@ function TScreenPartyPlayer.ShouldHandleInput(PressedKey: cardinal; CharCode: UC
 begin
   Result := inherited;
   // only suppress special keys for now
-  case PressedKey of
-    // Templates for Names Mod
-    SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12:
-     if (Button[Interactions[Interaction].Num].Selected) then
-     begin
-       SuppressKey := true;
-     end
-     else
-     begin
-       Result := false;
-     end;
-  end;
+  if GetNameTemplateIndexFromKey(PressedKey) <> -1 then
+    if (Button[Interactions[Interaction].Num].Selected) then
+      SuppressKey := true
+    else
+      Result := false;
 end;
 
 function TScreenPartyPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
@@ -294,6 +283,14 @@ function TScreenPartyPlayer.ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
     if isAlternate then Ini.NameTemplate[index] := Button[Interactions[Interaction].Num].Text[0].Text
     else Button[Interactions[Interaction].Num].Text[0].Text := Ini.NameTemplate[index];
   end;
+  procedure HandleTemplateHotkey;
+  var
+    TemplateIndex: integer;
+  begin
+    TemplateIndex := GetNameTemplateIndexFromKey(PressedKey);
+    if (TemplateIndex >= 0) and (TemplateIndex <= High(Ini.NameTemplate)) then
+      HandleNameTemplate(TemplateIndex);
+  end;
 begin
   Result := true;
 
@@ -318,20 +315,9 @@ begin
 
     // check special keys
     case PressedKey of
-      // Templates for Names Mod
-      SDLK_F1: HandleNameTemplate(0);
-      SDLK_F2: HandleNameTemplate(1);
-      SDLK_F3: HandleNameTemplate(2);
-      SDLK_F4: HandleNameTemplate(3);
-      SDLK_F5: HandleNameTemplate(4);
-      SDLK_F6: HandleNameTemplate(5);
-      SDLK_F7: HandleNameTemplate(6);
-      SDLK_F8: HandleNameTemplate(7);
-      SDLK_F9: HandleNameTemplate(8);
-      SDLK_F10: HandleNameTemplate(9);
-      SDLK_F11: HandleNameTemplate(10);
-      SDLK_F12: HandleNameTemplate(11);
-
+      SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6,
+      SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12:
+        HandleTemplateHotkey;
       SDLK_BACKSPACE:
         begin
           Button[Interactions[Interaction].Num].Text[0].DeleteLastLetter;
@@ -492,21 +478,26 @@ end;
 constructor TScreenPartyPlayer.Create;
 var
   ButtonID: integer;
+  TeamOptions: TUTF8StringArray;
+  PlayerOptions: TUTF8StringArray;
 begin
   inherited Create;
 
   LoadFromTheme(Theme.PartyPlayer);
 
+  TeamOptions := CreateNumericOptionArray(2, 3);
+  PlayerOptions := CreateNumericOptionArray(1, 4);
+
   Theme.PartyPlayer.SelectTeams.oneItemOnly := true;
   Theme.PartyPlayer.SelectTeams.showArrows := true;
-  SelectTeams     := AddSelectSlide(Theme.PartyPlayer.SelectTeams, CountTeams, ITeams);
+  SelectTeams     := AddSelectSlide(Theme.PartyPlayer.SelectTeams, CountTeams, TeamOptions);
 
   Team1Name := AddButton(Theme.PartyPlayer.Team1Name);
   Button[Team1Name].Text[0].Writable := true;
 
   Theme.PartyPlayer.SelectPlayers1.oneItemOnly := true;
   Theme.PartyPlayer.SelectPlayers1.showArrows := true;
-  SelectPlayers[0]  := AddSelectSlide(Theme.PartyPlayer.SelectPlayers1, CountPlayer[0], IPlayers);
+  SelectPlayers[0]  := AddSelectSlide(Theme.PartyPlayer.SelectPlayers1, CountPlayer[0], PlayerOptions);
 
   ButtonID := AddButton(Theme.PartyPlayer.Player1Name);
   Button[ButtonID].Text[0].Writable := true;
@@ -525,7 +516,7 @@ begin
 
   Theme.PartyPlayer.SelectPlayers2.oneItemOnly := true;
   Theme.PartyPlayer.SelectPlayers2.showArrows := true;
-  SelectPlayers[1]  := AddSelectSlide(Theme.PartyPlayer.SelectPlayers2, CountPlayer[1], IPlayers);
+  SelectPlayers[1]  := AddSelectSlide(Theme.PartyPlayer.SelectPlayers2, CountPlayer[1], PlayerOptions);
 
   ButtonID := AddButton(Theme.PartyPlayer.Player5Name);
   Button[ButtonID].Text[0].Writable := true;
@@ -544,7 +535,7 @@ begin
 
   Theme.PartyPlayer.SelectPlayers3.oneItemOnly := true;
   Theme.PartyPlayer.SelectPlayers3.showArrows := true;
-  SelectPlayers[2]  := AddSelectSlide(Theme.PartyPlayer.SelectPlayers3, CountPlayer[2], IPlayers);
+  SelectPlayers[2]  := AddSelectSlide(Theme.PartyPlayer.SelectPlayers3, CountPlayer[2], PlayerOptions);
 
   ButtonID := AddButton(Theme.PartyPlayer.Player9Name);
   Button[ButtonID].Text[0].Writable := true;
