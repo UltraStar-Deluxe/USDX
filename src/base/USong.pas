@@ -146,6 +146,7 @@ type
     Background: IPath;
     Video:      IPath;
     Karaoke:    IPath;
+    Vocals:     IPath;
 
     // sorting methods
     Genre:      UTF8String;
@@ -385,6 +386,7 @@ begin
   Self.Cover    := PATH_NONE();
   Self.Audio    := PATH_NONE();
   Self.Karaoke  := PATH_NONE();
+  Self.Vocals   := PATH_NONE();
   Self.Background:= PATH_NONE();
   Self.Video    := PATH_NONE();
 end;
@@ -1264,6 +1266,15 @@ begin
         self.Karaoke := EncFile;
     end;
 
+    // Editor-only direct vocals preview source
+    if (TagMapTryGetData('VOCALS', Value)) then
+    begin
+      RemoveTagsFromTagMap('VOCALS');
+      EncFile := DecodeFilename(Value);
+      if (self.Path.Append(EncFile).IsFile) then
+        self.Vocals := EncFile;
+    end;
+
     // Video Gap
     if (TagMapTryGetData('VIDEOGAP', Value)) then
     begin
@@ -1866,6 +1877,7 @@ begin
 
   //Required Information
   Audio    := PATH_NONE;
+  Vocals   := PATH_NONE;
   BPM := 0;
 
   GAP    := 0;
