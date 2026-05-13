@@ -1966,14 +1966,14 @@ begin
       // current position in editor
       ThemeLoadButton(EditSub.ButtonCurrentLine, 'EditSubButtonCurrentLine');
       ThemeLoadButton(EditSub.ButtonCurrentNote, 'EditSubButtonCurrentNote');
-      ThemeLoadButton(EditSub.PlayOnly,    'EditSubBarStatic1');
-      ThemeLoadButton(EditSub.PlayWithNote,    'EditSubBarStatic2');
-      ThemeLoadButton(EditSub.PlayNote,    'EditSubBarStatic3');
-      ThemeLoadButton(EditSub.previousseq,    'EditSubBarStatic4');
-      ThemeLoadButton(EditSub.nextseq,    'EditSubBarStatic5');
-      ThemeLoadButton(EditSub.gold,    'EditSubBarStatic6');
-      ThemeLoadButton(EditSub.freestyle,    'EditSubBarStatic7');
-      ThemeLoadButton(EditSub.undo,    'EditSubBarStatic8');
+      ThemeLoadButton(EditSub.undo,        'EditSubBarStatic1');
+      ThemeLoadButton(EditSub.previousseq, 'EditSubBarStatic2');
+      ThemeLoadButton(EditSub.nextseq,     'EditSubBarStatic3');
+      ThemeLoadButton(EditSub.freestyle,   'EditSubBarStatic4');
+      ThemeLoadButton(EditSub.gold,        'EditSubBarStatic5');
+      ThemeLoadButton(EditSub.PlayOnly,    'EditSubBarStatic6');
+      ThemeLoadButton(EditSub.PlayWithNote,'EditSubBarStatic7');
+      ThemeLoadButton(EditSub.PlayNote,    'EditSubBarStatic8');
       ThemeLoadSelectSlide(EditSub.SlideTitle, 'EditSubTitle');
       ThemeLoadSelectSlide(EditSub.SlideArtist, 'EditSubArtist');
       ThemeLoadSelectSlide(EditSub.SlideLanguage, 'EditSubLanguage');
