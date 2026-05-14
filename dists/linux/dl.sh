@@ -4,6 +4,8 @@ set -e
 
 declare -a deps
 
+ARCH=$(uname -m)
+
 older() {
 	local minver=$1
 	shift
@@ -70,7 +72,13 @@ if ! patchelf 2>&1 | grep -q syntax ; then
 	deps+=('patchelf,https://github.com/NixOS/patchelf/releases/download/0.13.1/patchelf-0.13.1.tar.bz2,5d9c1690c0fbe70c312f43d597e04b6c1eeffc60')
 fi
 
-deps+=('opencv,https://github.com/opencv/opencv/archive/refs/tags/4.10.0.tar.gz,6bd566dc4297023914137677aa96fdebee89f5bd')
+if older 2.26 ld --version ; then
+	if [ "$ARCH" = x86_64 ] ; then
+		# newer versions contain R_X86_64_REX_GOTPCRELX relocations
+		deps+=("ipp-icv-$ARCH",https://raw.githubusercontent.com/opencv/opencv_3rdparty/7f55c0c26be418d494615afca15218566775c725/ippicv/ippicv_2021.12.0_lnx_intel64_20240425_general.tgz,145b8f21727037c047b5b0e99d952c81d99bef88)
+	fi
+fi
+deps+=('opencv,https://github.com/opencv/opencv/archive/refs/tags/4.13.0.tar.gz,fc2f2ce6f8f2d5a5c34435054334fa6046ae3d6d')
 deps+=('projectm,https://github.com/projectM-visualizer/projectm/releases/download/v2.2.1/projectM-2.2.1.tar.gz,bfd0cb09797384a814c3585b7b0369fc1c8b04fe')
 # if [ -f /.dockerenv ]; then
 # 	deps+=('fpc-x86_64,https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.x86_64-linux.tar,0720e428eaea423423e1b76a7267d6749c3399f4')
