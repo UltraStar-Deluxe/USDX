@@ -63,7 +63,7 @@ deps+=('portmidi-debian,http://http.debian.net/debian/pool/main/p/portmidi/portm
 deps+=('lua,https://www.lua.org/ftp/lua-5.4.8.tar.gz,ced7c0ec99ad9d984ad3e7af5fcd2deef2b33f9f')
 deps+=('libjpeg-turbo,https://download.sourceforge.net/libjpeg-turbo/libjpeg-turbo-2.1.5.1.tar.gz,3ec9f6a19781a583285d93c2c4653f3dbe845fcc')
 deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.58.tar.xz,6263409a6907d180e7b990827ca84ee944c6cc17')
-deps+=('libwebp,https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.5.0.tar.gz,b21aa842136dc59a72a38776a5aa73f4d0b00ac5')
+deps+=('libwebp,https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.6.0.tar.gz,c65babfd749817e6d0f8233d653f8a85e4220b48')
 # deps+=('libcwrap.h,https://raw.githubusercontent.com/wheybags/glibc_version_header/master/version_headers/force_link_glibc_2.10.2.h,aff0c46cf3005fe15c49688e74df62a9988855a5')
 
 if ! patchelf 2>&1 | grep -q syntax ; then
