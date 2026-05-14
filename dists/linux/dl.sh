@@ -56,7 +56,7 @@ if older 2.15 nasm --version ; then
 	deps+=('nasm,https://www.nasm.us/pub/nasm/releasebuilds/3.01/nasm-3.01.tar.xz,f0531dfe9728192fe190cc4932df44a26f1bde7c')
 fi
 
-deps+=('dav1d,https://downloads.videolan.org/pub/videolan/dav1d/1.4.3/dav1d-1.4.3.tar.xz,daf40121d16d5f580c42b4e8374c91d34efd9835')
+deps+=('dav1d,https://downloads.videolan.org/pub/videolan/dav1d/1.5.3/dav1d-1.5.3.tar.xz,a547b3830b3469ef9e6a33a2fa62b714eb1f611c')
 deps+=('ffmpeg,https://ffmpeg.org/releases/ffmpeg-8.1.1.tar.xz,0b8318579556aaa736096ceb1e8333d2260b63bf')
 deps+=('portmidi,https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip,f45bf4e247c0d7617deacd6a65d23d9fddae6117')
 deps+=('portmidi-debian,http://http.debian.net/debian/pool/main/p/portmidi/portmidi_217-6.debian.tar.xz,02e4c6dcfbd35a75913de2acd39be8f0cfd0b244')
