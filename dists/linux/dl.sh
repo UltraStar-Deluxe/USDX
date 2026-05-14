@@ -52,12 +52,12 @@ deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.32.10.tar.gz,ce98fa93e31836a7
 deps+=('SDL2_image,https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.8.12.tar.gz,d7075e3fe8c1780c5d239c69371ab19089209ea0')
 deps+=('sqlite,https://sqlite.org/2026/sqlite-autoconf-3530100.tar.gz,f5828a709d18bb4857cec8ddb4298c47a9143892')
 
-if older 2.14 nasm --version ; then
-	deps+=('nasm,https://www.nasm.us/pub/nasm/releasebuilds/2.16.01/nasm-2.16.01.tar.xz,3ab515b4a7d50b7f8c63406a19070a93dcfdb820')
+if older 2.15 nasm --version ; then
+	deps+=('nasm,https://www.nasm.us/pub/nasm/releasebuilds/3.01/nasm-3.01.tar.xz,f0531dfe9728192fe190cc4932df44a26f1bde7c')
 fi
 
 deps+=('dav1d,https://downloads.videolan.org/pub/videolan/dav1d/1.4.3/dav1d-1.4.3.tar.xz,daf40121d16d5f580c42b4e8374c91d34efd9835')
-deps+=('ffmpeg,http://ffmpeg.org/releases/ffmpeg-7.0.2.tar.xz,69e11a56def9ac7073aca9d6602fa9d51a6ed6b6')
+deps+=('ffmpeg,https://ffmpeg.org/releases/ffmpeg-8.1.1.tar.xz,0b8318579556aaa736096ceb1e8333d2260b63bf')
 deps+=('portmidi,https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip,f45bf4e247c0d7617deacd6a65d23d9fddae6117')
 deps+=('portmidi-debian,http://http.debian.net/debian/pool/main/p/portmidi/portmidi_217-6.debian.tar.xz,02e4c6dcfbd35a75913de2acd39be8f0cfd0b244')
 deps+=('lua,https://www.lua.org/ftp/lua-5.4.7.tar.gz,29b54f97dab8631f52ee21a44871622eaefbe235')

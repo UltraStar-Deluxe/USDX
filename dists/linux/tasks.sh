@@ -431,7 +431,6 @@ task_ffmpeg() {
 		--disable-debug \
 		--disable-indevs \
 		--disable-outdevs \
-		--disable-postproc \
 		--disable-muxers \
 		--disable-bsfs \
 		--disable-filters \
