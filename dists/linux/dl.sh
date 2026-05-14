@@ -50,7 +50,7 @@ deps+=('wayland-protocols,https://gitlab.freedesktop.org/wayland/wayland-protoco
 deps+=('xkbcommon,https://github.com/xkbcommon/libxkbcommon/archive/refs/tags/xkbcommon-1.13.1.tar.gz,f487d1e7f5e362b8971e23e354d9eb4bdc51e453')
 deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.32.10.tar.gz,ce98fa93e31836a751feca374ab28a0770b63c16')
 deps+=('SDL2_image,https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.8.12.tar.gz,d7075e3fe8c1780c5d239c69371ab19089209ea0')
-deps+=('sqlite,https://www.sqlite.org/2024/sqlite-autoconf-3460100.tar.gz,1fdbada080f3285ac864c314bfbfc581b13e804b')
+deps+=('sqlite,https://sqlite.org/2026/sqlite-autoconf-3530100.tar.gz,f5828a709d18bb4857cec8ddb4298c47a9143892')
 
 if older 2.14 nasm --version ; then
 	deps+=('nasm,https://www.nasm.us/pub/nasm/releasebuilds/2.16.01/nasm-2.16.01.tar.xz,3ab515b4a7d50b7f8c63406a19070a93dcfdb820')
