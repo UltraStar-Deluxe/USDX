@@ -221,6 +221,22 @@ Cflags: -I$PREFIX/include -D_REENTRANT
 EOF
 }
 
+task_xkbcommon() {
+	start_build xkbcommon || return 0
+	mkdir -p $PREFIX/include/xkbcommon $PREFIX/lib/pkgconfig
+	cp include/xkbcommon/*.h $PREFIX/include/xkbcommon
+	true | $CC -shared -o $PREFIX/lib/libxkbcommon.so.0 -Wl,-soname,libxkbcommon.so.0 -x c -
+	ln -s libxkbcommon.so.0 $PREFIX/lib/libxkbcommon.so
+	XKBC_VERSION=$(sed -n "s/.*version[[:space:]]*:[[:space:]]*'\\([^']*\\)'.*/\1/p" meson.build | head -n1)
+	cat > $PREFIX/lib/pkgconfig/xkbcommon.pc <<EOF
+Name: xkbcommon
+Description: stuff
+Version: $XKBC_VERSION
+Libs: -L$PREFIX/lib -lxkbcommon
+Cflags: -I$PREFIX/include
+EOF
+}
+
 task_sdl2() {
 	start_build SDL2 || return 0
 	bash ./autogen.sh
@@ -611,6 +627,8 @@ if [ "$1" == "all_deps" ]; then
 	task_pulseaudio
 	echo
 	task_pipewire
+	echo
+	task_xkbcommon
 	echo
 	task_sdl2
 	echo
