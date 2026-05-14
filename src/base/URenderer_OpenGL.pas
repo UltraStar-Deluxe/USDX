@@ -44,7 +44,9 @@ type
       glcontext: TSDL_GLContext;
       MainProgram: GLuint;
       TextProgram: GLuint;
-      VAO: GLuint;
+      LineStripProgram: GLuint;
+      MainVAO: GLuint;
+      LineStripVAO: GLuint;
       VBO: GLuint;
       EBO: GLuint;
       VBOCursor: GLuint;
@@ -56,6 +58,8 @@ type
       MajorVersion, MinorVersion: integer;
       TransformLocationMain: GLint;
       TransformLocationText: GLint;
+      TransformLocationLineStrip: GLint;
+      ColorLocationLineStrip: GLint;
 
       UpdateTransformMain: boolean;
       UpdateTransformText: boolean;
@@ -84,6 +88,7 @@ type
       procedure DrawQuads(QuadList: TQuadList); override;
       procedure DrawLines(LineList: TLineList); override;
       procedure DrawParticles(Texture: TTexture; ParticleList: TParticleList); override;
+      procedure DrawLineStrip(PointList: TPointList; ScaleX, ScaleY, TranslateX, TranslateY, ColR, ColG, ColB, Alpha: single); override;
       procedure SetBlend(Enabled: boolean); override;
       function GetBlend(): boolean; override;
       procedure SetDepthTest(Enabled: boolean); override;
@@ -149,7 +154,7 @@ const
   GLSL_CORE_HEADER = '#version 150 core' + #10;
   GLSL_COMPAT_HEADER = '#version 130' + #10;
 
-  VERTEX_SHADER_SOURCE =
+  MAIN_VERTEX_SHADER_SOURCE =
     'in vec3 pos;                                ' + #10 +
     'in vec4 color;                              ' + #10 +
     'in vec2 tex_coords;                         ' + #10 +
@@ -161,7 +166,15 @@ const
 	  '  gl_Position = transform * vec4(pos, 1.0); ' + #10 +
 	  '  col = color;                              ' + #10 +
 	  '  tc = tex_coords;                          ' + #10 +
-    '}                                           ';
+    '}';
+
+  LINE_STRIP_VERTEX_SHADER_SOURCE =
+    'in vec2 pos;                                     ' + #10 +
+    'uniform mat4 transform;                          ' + #10 +
+    'void main()                                      ' + #10 +
+    '{                                                ' + #10 +
+	  '  gl_Position = transform * vec4(pos, 0.0, 1.0); ' + #10 +
+    '}';
 
   MAIN_FRAGMENT_SHADER_SOURCE =
     'in vec4 col;                                ' + #10 +
@@ -181,6 +194,14 @@ const
     'void main()                                           ' + #10 +
     '{                                                     ' + #10 +
     '  out_col = vec4(col.rgb, texture(tex, tc).r * col.a);' + #10 +
+    '}';
+
+  LINE_STRIP_FRAGMENT_SHADER_SOURCE =
+    'out vec4 out_col;      ' + #10 +
+    'uniform vec4 color;    ' + #10 +
+    'void main()            ' + #10 +
+    '{                      ' + #10 +
+    '  out_col = color;     ' + #10 +
     '}';
 
   VBO_SIZE = (2 * 2 shl 20); // 2 MB
@@ -341,6 +362,10 @@ begin
   glUniform1i(glGetUniformLocation(TextProgram, 'tex'), 0);
   TransformLocationText := glGetUniformLocation(TextProgram, 'transform');
 
+  TransformLocationText := glGetUniformLocation(LineStripProgram, 'transform');
+  ColorLocationLineStrip := glGetUniformLocation(LineStripProgram, 'color');
+
+
   // Create 1x1 white texture for drawing quads
   glGenTextures(1, @WhiteTexture);
   glBindTexture(GL_TEXTURE_2D, WhiteTexture);
@@ -357,7 +382,9 @@ destructor TRenderer_OpenGL.Destroy();
 begin
   glDeleteProgram(MainProgram);
   glDeleteProgram(TextProgram);
-  glDeleteVertexArrays(1, @VAO);
+  glDeleteProgram(LineStripProgram);
+  glDeleteVertexArrays(1, @MainVAO);
+  glDeleteVertexArrays(1, @LineStripVAO);
   glDeleteBuffers(1, @VBO);
   glDeleteBuffers(1, @EBO);
   if (WhiteTexture > 0) then
@@ -368,7 +395,8 @@ end;
 
 procedure TRenderer_OpenGL.InitShaderPrograms();
 var
-  VertexShader, MainFragmentShader, TextFragmentShader: GLuint;
+  VertexShader, MainFragmentShader, TextFragmentShader,
+  LineStripVertexShader, LineStripFragmentShader: GLuint;
   Source: string;
   CompileResult: GLint;
   ErrorBuf: array[0..511] of GLcharARB;
@@ -381,7 +409,7 @@ begin
 
   // Compile vertex shader
   VertexShader := glCreateShader(GL_VERTEX_SHADER);
-  Source := Header + VERTEX_SHADER_SOURCE;
+  Source := Header + MAIN_VERTEX_SHADER_SOURCE;
   glShaderSource(VertexShader, 1, PPGLcharARB(@Source), nil);
   glCompileShader(VertexShader);
   glGetShaderiv(VertexShader, GL_COMPILE_STATUS, @CompileResult);
@@ -416,6 +444,30 @@ begin
     raise Exception.Create('Failed to compile text fragment shader. OpenGL Error: ' + ErrorBuf);
   end;
 
+  // Compile line strip vertex shader
+  LineStripVertexShader := glCreateShader(GL_VERTEX_SHADER);
+  Source := Header + LINE_STRIP_VERTEX_SHADER_SOURCE;
+  glShaderSource(LineStripVertexShader, 1, PPGLcharARB(@Source), nil);
+  glCompileShader(LineStripVertexShader);
+  glGetShaderiv(LineStripVertexShader, GL_COMPILE_STATUS, @CompileResult);
+  if (ByteBool(CompileResult) = GL_FALSE) then
+  begin
+    glGetShaderInfoLog(LineStripVertexShader, SizeOf(ErrorBuf), nil, @ErrorBuf[0]);
+    raise Exception.Create('Failed to compile line strip vertex shader. OpenGL Error: ' + ErrorBuf);
+  end;
+
+  // Compile line strip fragment shader
+  LineStripFragmentShader := glCreateShader(GL_FRAGMENT_SHADER);
+  Source := Header + LINE_STRIP_FRAGMENT_SHADER_SOURCE;
+  glShaderSource(LineStripFragmentShader, 1, PPGLcharARB(@Source), nil);
+  glCompileShader(LineStripFragmentShader);
+  glGetShaderiv(LineStripFragmentShader, GL_COMPILE_STATUS, @CompileResult);
+  if (ByteBool(CompileResult) = GL_FALSE) then
+  begin
+    glGetShaderInfoLog(LineStripFragmentShader, SizeOf(ErrorBuf), nil, @ErrorBuf[0]);
+    raise Exception.Create('Failed to compile line strip fragment shader. OpenGL Error: ' + ErrorBuf);
+  end;
+
   // Link main shader program
   MainProgram := glCreateProgram();
   glAttachShader(MainProgram, VertexShader);
@@ -446,9 +498,25 @@ begin
     raise Exception.Create('Failed to link text shader program. OpenGL Error: ' + ErrorBuf);
   end;
 
+  // Link line strip shader program
+  LineStripProgram := glCreateProgram();
+  glAttachShader(LineStripProgram, LineStripVertexShader);
+  glAttachShader(LineStripProgram, LineStripFragmentShader);
+  glBindAttribLocation(LineStripProgram, 0, 'pos');
+  glLinkProgram(LineStripProgram);
+  glGetProgramiv(LineStripProgram, GL_LINK_STATUS, @CompileResult);
+  if (ByteBool(CompileResult) = GL_FALSE) then
+  begin
+    glGetProgramInfoLog(LineStripProgram, SizeOf(ErrorBuf), nil, @ErrorBuf[0]);
+    raise Exception.Create('Failed to link line strip shader program. OpenGL Error: ' + ErrorBuf);
+  end;
+
   glDeleteShader(VertexShader);
   glDeleteShader(MainFragmentShader);
   glDeleteShader(TextFragmentShader);
+  glDeleteShader(LineStripVertexShader);
+  glDeleteShader(LineStripFragmentShader);
+
   {$IFDEF DEBUG_MODE}
   TRenderer_OpenGL(Renderer).RaiseExceptionIfError;
   {$ENDIF}
@@ -459,10 +527,12 @@ var
   I, Quad: Cardinal;
   EBOData: array of GLuint;
 begin
-  glGenVertexArrays(1, @VAO);
+  glGenVertexArrays(1, @MainVAO);
+  glGenVertexArrays(1, @LineStripVAO);
+
   glGenBuffers(1, @VBO);
   glGenBuffers(1, @EBO);
-  glBindVertexArray(VAO);
+  glBindVertexArray(MainVAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, VBO_SIZE, nil, GL_STREAM_DRAW);
@@ -498,6 +568,11 @@ begin
   // Texture Coords
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, VERTEX_STRIDE_BYTES, PGLvoid(TEXX_OFFSET * SizeOf(GLfloat)));
   glEnableVertexAttribArray(2);
+
+  glBindVertexArray(LineStripVAO);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, PGLvoid(0));
+  glEnableVertexAttribArray(0);
+
   glBindVertexArray(0);
   {$IFDEF DEBUG_MODE}
   RaiseExceptionIfError;
@@ -537,7 +612,7 @@ begin
   if (Texture.TexID = 0) then
     Exit;
   Tex := TTexture_OpenGL(Texture);
-  glBindVertexArray(VAO);
+  glBindVertexArray(MainVAO);
   glUseProgram(Prog);
   if (UpdateTransform) then
   begin
@@ -679,7 +754,8 @@ begin
       Buffer[VERTEX_TOPLEFT_OFFSET + TEXX_OFFSET] := TexX1;
       Buffer[VERTEX_TOPLEFT_OFFSET + TEXY_OFFSET] := ReflectionTexY1;
     end;
-  end;  glUnmapBuffer(GL_ARRAY_BUFFER);
+  end;
+  glUnmapBuffer(GL_ARRAY_BUFFER);
   glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_INT, PGLvoid(EBOCursor * SizeOf(GLuint)));
   VBOCursor := VBOCursor + (NumQuads * 4 * VERTEX_STRIDE);
   EBOCursor := EBOCursor + (NumQuads * 6);
@@ -709,7 +785,7 @@ begin
   NumQuads := Length(QuadList);
   if (NumQuads = 0) then
     Exit;
-  glBindVertexArray(VAO);
+  glBindVertexArray(MainVAO);
   glUseProgram(MainProgram);
   if (UpdateTransformMain) then
   begin
@@ -857,7 +933,7 @@ begin
   NumQuads := Length(LineList);
   if (NumQuads = 0) then
     Exit;
-  glBindVertexArray(VAO);
+  glBindVertexArray(MainVAO);
   glUseProgram(MainProgram);
   if (UpdateTransformMain) then
   begin
@@ -1021,7 +1097,7 @@ begin
   if (NumQuads = 0) then
     Exit;
   Tex := TTexture_OpenGL(Texture);
-  glBindVertexArray(VAO);
+  glBindVertexArray(MainVAO);
   glUseProgram(MainProgram);
   if (UpdateTransformMain) then
   begin
@@ -1031,27 +1107,6 @@ begin
   Bytes := SizeOf(TVertexBufferData) * NumQuads;
   Buffer := GetArrayBuffer(Bytes);
   glBindTexture(GL_TEXTURE_2D, Tex.TexID);
-  {
-  for I := Low(ParticleList) to High(ParticleList) do
-  begin
-    Tex.X := ParticleList[I].X;
-    Tex.Y := ParticleList[I].Y;
-    Tex.W := ParticleList[I].W;
-    Tex.H := ParticleList[I].H;
-    Tex.Int := 1;
-    Tex.ColR := ParticleList[I].ColR;
-    Tex.ColG := ParticleList[I].ColG;
-    Tex.ColB := ParticleList[I].ColB;
-    Tex.Alpha := ParticleList[I].Alpha;
-    Tex.TexX1 := ParticleList[I].TexX1;
-    Tex.TexY1 := ParticleList[I].TexY1;
-    Tex.TexX2 := ParticleList[I].TexX2;
-    Tex.TexY2 := ParticleList[I].TexY2;
-    Tex.Reflection := false;
-    FillBufferFromTexture(Buffer, Tex);
-    Buffer := Buffer + QUAD_STRIDE;
-  end;
-  }
 
   for I := Low(ParticleList) to High(ParticleList) do
   begin
@@ -1114,6 +1169,44 @@ begin
   {$ENDIF};
 end;
 
+procedure TRenderer_OpenGL.DrawLineStrip(PointList: TPointList; ScaleX, ScaleY, TranslateX, TranslateY, ColR, ColG, ColB, Alpha: single);
+var
+  Transform: Tmatrix4_single;
+  NumPoints, NumQuads, I: integer;
+  Buffer: PGLfloat;
+  Bytes: GLuint;
+begin
+  NumPoints := Length(PointList);
+  if (NumPoints = 0) then
+    Exit;
+  glBindVertexArray(LineStripVAO);
+  glUseProgram(LineStripProgram);
+  Transform.init_identity;
+  Transform.data[0,0] := ScaleX;
+  Transform.data[0,3] := TranslateX;
+  Transform.data[1,1] := ScaleY;
+  Transform.data[1,3] := TranslateY;
+  Transform := ProjectionMatrix * Transform;
+  glUniformMatrix4fv(TransformLocationLineStrip, 1, GL_TRUE, PGLfloat(@Transform));
+  glUniform4f(ColorLocationLineStrip, ColR, ColG, ColB, Alpha);
+  Bytes := 2 * SizeOf(GLfloat) * NumPoints;
+  Buffer := GetArrayBuffer(Bytes);
+
+  for I := Low(PointList) to High(PointList) do
+  begin
+    Buffer[0] := PointList[I].X;
+    Buffer[1] := PointList[I].Y;
+    Buffer := Buffer + 2;
+  end;
+  glUnmapBuffer(GL_ARRAY_BUFFER);
+  glDrawArrays(GL_LINE_STRIP, VBOCursor div 2, NumPoints);
+  NumQuads := Bytes div SizeOf(TVertexBufferData);
+  VBOCursor := VBOCursor + (NumQuads * QUAD_STRIDE);
+  EBOCursor := EBOCursor + (NumQuads * 6);
+  {$IFDEF DEBUG_MODE}
+  RaiseExceptionIfError;
+  {$ENDIF};
+end;
 
 procedure TRenderer_OpenGL.SetBlend(Enabled: boolean);
 begin

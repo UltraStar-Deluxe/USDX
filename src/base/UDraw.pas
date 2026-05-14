@@ -512,8 +512,8 @@ var
   Sound:       TCaptureBuffer;
   MaxX, MaxY:  real;
   Col: TRGB;
+  PointList: TPointList;
 begin;
-{ todo complexlogic
   Sound := AudioInputProcessor.Sound[NrSound];
 
   if (Party.bPartyGame) then
@@ -521,29 +521,19 @@ begin;
   else
     Col := GetPlayerColor(Ini.PlayerColor[NrSound]);
 
-  glColor3f(Col.R, Col.G, Col.B);
-
   MaxX := Position.W-1;
   MaxY := (Position.H-1) / 2;
-
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glTranslatef(Position.X, Position.Y + MaxY, 0);
-  glScalef(MaxX/High(Sound.AnalysisBuffer), MaxY/Low(Smallint), 1);
-
   Sound.LockAnalysisBuffer();
+  SetLength(PointList, Length(Sound.AnalysisBuffer));
 
-  glBegin(GL_LINE_STRIP);
-    for SampleIndex := 0 to High(Sound.AnalysisBuffer) do
-    begin
-      glVertex2s(SampleIndex, Sound.AnalysisBuffer[SampleIndex]);
-    end;
-  glEnd;
+  for SampleIndex := 0 to High(Sound.AnalysisBuffer) do
+  begin
+    PointList[SampleIndex].X := SampleIndex;
+    PointList[SampleIndex].Y := Sound.AnalysisBuffer[SampleIndex];
+  end;
 
   Sound.UnlockAnalysisBuffer();
-
-  glPopMatrix();
-  }
+  Renderer.DrawLineStrip(PointList, MaxX/High(Sound.AnalysisBuffer), MaxY/Low(Smallint), Position.X, Position.Y + MaxY, Col.R, Col.G, Col.B, 1);
 end;
 
 procedure SingDrawNoteLines(Left, Top, Right: real; LineSpacing: integer; LineThickness: single);

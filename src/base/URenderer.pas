@@ -103,6 +103,12 @@ type
   end;
   TParticleList = array of TParticleInfo;
 
+  TPoint = record
+    X: single;
+    Y: single;
+  end;
+  TPointList = array of TPoint;
+
   TTexture = class
     protected
       OwnsTex: boolean;
@@ -197,6 +203,7 @@ type
       procedure DrawLine(X1, Y1, X2, Y2, Z, LineThickness, ColR, ColG, ColB, Alpha: single);
       procedure DrawParticles(Texture: TTexture; ParticleList: TParticleList); virtual; abstract;
       procedure DrawBoundedBox(X1, Y1, X2, Y2, Z, LineThickness, ColR, ColG, ColB, Alpha: single); virtual;
+      procedure DrawLineStrip(PointList: TPointList; ScaleX, ScaleY, TranslateX, TranslateY, ColR, ColG, ColB, Alpha: single); virtual; abstract;
       procedure SetBlend(Enabled: boolean); virtual; abstract;
       function GetBlend(): boolean; virtual; abstract;
       procedure SetDepthTest(Enabled: boolean); virtual; abstract;
