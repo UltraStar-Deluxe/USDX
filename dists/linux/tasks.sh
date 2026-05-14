@@ -186,10 +186,10 @@ task_pulseaudio() {
 #define PA_API_VERSION $PA_API_VERSION
 #endif
 EOF
-	true | $CC -shared -o $PREFIX/lib/libpulse-simple.so.0 -Wl,-soname,libpulse-simple.so.0 -x c -
-	ln -s libpulse-simple.so.0 $PREFIX/lib/libpulse-simple.so
+	true | $CC -shared -o $PREFIX/lib/libpulse.so.0 -Wl,-soname,libpulse.so.0 -x c -
+	ln -s libpulse.so.0 $PREFIX/lib/libpulse.so
 	PA_VERSION=$(cat .tarball-version)
-	sed -e "s:@prefix@:$PREFIX:;s:@exec_prefix@:$PREFIX:;s:@libdir@:$PREFIX/lib:;s:@includedir@:$PREFIX/include:;s:@PACKAGE_VERSION@:$PA_VERSION:;s:@PTHREAD_LIBS@:-pthread:;/^Libs.private/d;/^Requires:/d" < libpulse-simple.pc.in > $PREFIX/lib/pkgconfig/libpulse-simple.pc
+	sed -e "s:@prefix@:$PREFIX:;s:@exec_prefix@:$PREFIX:;s:@libdir@:$PREFIX/lib:;s:@includedir@:$PREFIX/include:;s:@PACKAGE_VERSION@:$PA_VERSION:;s:@PTHREAD_LIBS@:-pthread:;/^Libs.private/d;/^Requires:/d" < libpulse.pc.in > $PREFIX/lib/pkgconfig/libpulse.pc
 }
 
 task_pipewire() {

@@ -48,7 +48,7 @@ deps+=('pulseaudio,https://www.freedesktop.org/software/pulseaudio/releases/puls
 deps+=('pipewire,https://gitlab.freedesktop.org/pipewire/pipewire/-/archive/0.3.66/pipewire-0.3.66.tar.bz2,20c58dd867c33a7d111df69d7ec8d31c45b92a0b')
 deps+=('wayland-protocols,https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/1.31/downloads/wayland-protocols-1.31.tar.xz,5a84628630598027fab1708f822fc399d9e70b02')
 deps+=('xkbcommon,https://github.com/xkbcommon/libxkbcommon/archive/refs/tags/xkbcommon-1.13.1.tar.gz,f487d1e7f5e362b8971e23e354d9eb4bdc51e453')
-deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.26.5.tar.gz,ca5d89edc537fd819eddab1f1a86f61e45fcb68b')
+deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.32.10.tar.gz,ce98fa93e31836a751feca374ab28a0770b63c16')
 deps+=('SDL2_image,https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.8.2.tar.gz,5c8926619d7e3f7edea4eb6410f8b1e7be7978ff')
 deps+=('sqlite,https://www.sqlite.org/2024/sqlite-autoconf-3460100.tar.gz,1fdbada080f3285ac864c314bfbfc581b13e804b')
 
