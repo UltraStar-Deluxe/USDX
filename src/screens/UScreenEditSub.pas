@@ -5180,6 +5180,7 @@ begin
   PlaySentenceMidi := false;
   Text[TextInfo].Text := '';
   Log.LogStatus('Initializing', 'TEditScreen.OnShow');
+  LoadSingScreenTextures;
   Xmouse := 0;
   VolumeDragSlideId := -1;
 
