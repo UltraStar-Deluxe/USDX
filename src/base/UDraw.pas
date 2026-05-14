@@ -102,7 +102,6 @@ uses
   SysUtils,
   Math,
   dglOpenGL,
-  opencv_core,
   TextGL,
   UDrawTexture,
   UGraphic,
