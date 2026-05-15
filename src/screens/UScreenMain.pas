@@ -55,7 +55,7 @@ type
 
     constructor Create; override;
     function ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-      PressedDown: boolean): boolean; override;
+      PressedDown: boolean; Repeated: boolean = false): boolean; override;
     function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
     procedure OnShow; override;
     procedure SetInteraction(Num: integer); override;
@@ -85,7 +85,9 @@ uses
   UUnicodeUtils;
 
 function TScreenMain.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Repeated: boolean = false): boolean;
+var
+  SDL_ModState: word;
 begin
   Result := true;
 
@@ -107,13 +109,21 @@ begin
       end;
 
       SDLK_J: begin
-        FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start);
+        if (Songs.SongList.Count >= 1) then
+        begin
+          ScreenSong.EnterLoopModeFromMainMenu;
+          FadeTo(@ScreenSong, SoundLib.Start);
+        end
+        else
+          ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
         Exit;
       end;
 
       SDLK_R: begin
         UGraphic.UnLoadScreens();
         Theme.LoadTheme(Ini.Theme, Ini.Color);
+        SoundLib.LoadSounds();
+        SoundLib.StartBgMusic();
         UGraphic.LoadScreens(USDXVersionStr);
       end;
 
@@ -172,10 +182,7 @@ begin
         begin
           if (Songs.SongList.Count >= 1) then
           begin
-            if (Ini.Players >= 0) and (Ini.Players <= 3) then
-              PlayersPlay := Ini.Players + 1;
-            if (Ini.Players = 4) then
-              PlayersPlay := 6;
+            PlayersPlay := UIni.IPlayersVals[Ini.Players];
 
             if Ini.OnSongClick = sSelectPlayer then
               FadeTo(@ScreenSong)
@@ -202,12 +209,13 @@ begin
             ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));
         end;
 
-        //Jukebox
+        // Loop mode entry
         if Interaction = 2 then
         begin
           if (Songs.SongList.Count >= 1) then
           begin
-            FadeTo(@ScreenJukeboxPlaylist, SoundLib.Start);
+            ScreenSong.EnterLoopModeFromMainMenu;
+            FadeTo(@ScreenSong, SoundLib.Start);
           end
           else //show error message, No Songs Loaded
             ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_SONGS'));

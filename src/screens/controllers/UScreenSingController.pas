@@ -84,6 +84,16 @@ type
     procedure ClearLyricEngines();
     procedure CalculateStartTime;
     procedure SaveLocalScores;
+    procedure AnnounceRemoteSongStarted;
+    procedure AnnounceRemoteSongPaused;
+    procedure AnnounceRemoteSongResumed;
+    procedure AnnounceRemoteSongEnded;
+    procedure AnnounceRemoteSongPosition(const Reason: UTF8String);
+    procedure SendRemoteLyrics;
+    procedure SendRemoteScoreSheet;
+    procedure SendRemoteScoreSnapshot(Force: boolean);
+    function RemoteMediaStartUs: int64;
+    function RemoteSongDurationUs: int64;
   public
     CheckPlayerConfigOnNextSong: boolean;
     eSongLoaded: THookableEvent; //< event is called after lyrics of a song are loaded on OnShow
@@ -174,7 +184,7 @@ type
     function Draw: boolean; override;
 
     function ParseInput(PressedKey: cardinal; CharCode: UCS4Char;
-      PressedDown: boolean): boolean; override;
+      PressedDown: boolean; Repeated: boolean = false): boolean; override;
 
     function FinishedMusic: boolean;
 
@@ -209,6 +219,8 @@ uses
   ULog,
   UNote,
   URecord,
+  URemoteBridgeIPC,
+  URemoteInput,
   UParty,
   UPathUtils,
   USong,
@@ -222,11 +234,18 @@ const
   MAX_MESSAGE = 3;
   MINIMUM_START_TIME = 3;
 
+var
+  RemoteSongSeq: integer = 0;
+  LastRemoteScoreSnapshotTick: cardinal = 0;
+
+const
+  REMOTE_SCORE_SNAPSHOT_MS = 500;
+
 // method for input parsing. if false is returned, getnextwindow
 // should be checked to know the next window to load;
 
 function TScreenSingController.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
-  PressedDown: boolean): boolean;
+  PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   SDL_ModState: word;
   i1:           integer;
@@ -293,6 +312,7 @@ begin
         ResetLinesAndLyrics;
 
         Scores.Init;
+        AnnounceRemoteSongStarted;
         Exit;
       end;
 
@@ -566,6 +586,7 @@ begin
           AudioPlayback.SetPosition(NewPosition);
           if (Assigned(fCurrentVideo)) then
             fCurrentVideo.Position := CurrentSong.VideoGAP + NewPosition;
+          AnnounceRemoteSongPosition('seek');
         end;
       end;
 
@@ -601,6 +622,7 @@ begin
         LyricsState.UpdateBeats();
         if (Assigned(fCurrentVideo)) then
           fCurrentVideo.Position := CurrentSong.VideoGAP + NewPosition;
+        AnnounceRemoteSongPosition('seek');
         end;
       end;
 
@@ -647,6 +669,7 @@ begin
     if (fCurrentVideo <> nil) then
       fCurrentVideo.Pause;
 
+    AnnounceRemoteSongPaused;
   end
   else              // disable pause
   begin
@@ -660,6 +683,7 @@ begin
       fCurrentVideo.Pause;
 
     Paused := false;
+    AnnounceRemoteSongResumed;
   end;
 end;
 
@@ -691,6 +715,8 @@ end;
 procedure TScreenSingController.OnShow;
 var
   BadPlayer: integer;
+  I: integer;
+  PlayerState: TBooleanDynArray;
   Col, ColP1, ColP2: TRGB;
 begin
   inherited;
@@ -736,7 +762,23 @@ begin
   Statics[screenSingViewRef.SongNameStatic].Visible := false;
   Text[screenSingViewRef.SongNameText].Visible := false;
 
-  BadPlayer := AudioInputProcessor.CheckPlayersConfig(PlayersPlay);
+  AudioInputProcessor.CheckPlayersConfig(PlayersPlay, PlayerState);
+  for I := 0 to High(PlayerState) do
+  begin
+    if RemoteInputProcessor.HasAssignedPlayer(I) then
+      PlayerState[I] := true;
+  end;
+
+  BadPlayer := 0;
+  for I := 0 to High(PlayerState) do
+  begin
+    if not PlayerState[I] then
+    begin
+      BadPlayer := I + 1;
+      Break;
+    end;
+  end;
+
   if (BadPlayer <> 0) and CheckPlayerConfigOnNextSong then
   begin
     ScreenPopupError.ShowPopup(
@@ -744,17 +786,6 @@ begin
         [BadPlayer]));
     // do not show the warning again, unless something sets this to true again
     CheckPlayerConfigOnNextSong := false;
-  end;
-
-  if (CurrentSong.isDuet) then
-  begin
-    if (PlayersPlay = 4) then
-    begin
-      screenSingViewRef.ColPlayer[0] := GetPlayerColor(Ini.PlayerColor[0]);
-      screenSingViewRef.ColPlayer[1] := GetPlayerColor(Ini.PlayerColor[1]);
-      screenSingViewRef.ColPlayer[2] := GetPlayerColor(Ini.PlayerColor[2]);
-      screenSingViewRef.ColPlayer[3] := GetPlayerColor(Ini.PlayerColor[3]);
-    end;
   end;
 
   // set custom options
@@ -780,10 +811,9 @@ begin
     LyricsDuetP2.LineColor_act.B := ColP2.B;
     LyricsDuetP2.LineColor_act.A := 1;
 
-    if (Ini.JukeboxActualLineColor = High(UIni.IActualLineColor)) then
-      Col := GetJukeboxLyricOtherColor(1)
-    else
-      Col := GetLyricGrayColor(Ini.JukeboxActualLineColor);
+    Col.R := Theme.Song.LoopLyrics.ActualR;
+    Col.G := Theme.Song.LoopLyrics.ActualG;
+    Col.B := Theme.Song.LoopLyrics.ActualB;
     LyricsDuetP1.LineColor_en.R := Col.R;
     LyricsDuetP1.LineColor_en.G := Col.G;
     LyricsDuetP1.LineColor_en.B := Col.B;
@@ -794,10 +824,9 @@ begin
     LyricsDuetP2.LineColor_en.B := Col.B;
     LyricsDuetP2.LineColor_en.A := 1;
 
-    if (Ini.JukeboxNextLineColor = High(UIni.INextLineColor)) then
-      Col := GetJukeboxLyricOtherColor(2)
-    else
-      Col := GetLyricGrayColor(Ini.JukeboxNextLineColor);
+    Col.R := Theme.Song.LoopLyrics.NextR;
+    Col.G := Theme.Song.LoopLyrics.NextG;
+    Col.B := Theme.Song.LoopLyrics.NextB;
     LyricsDuetP1.LineColor_dis.R := Col.R;
     LyricsDuetP1.LineColor_dis.G := Col.G;
     LyricsDuetP1.LineColor_dis.B := Col.B;
@@ -815,28 +844,25 @@ begin
     Lyrics.FontFamily := Ini.LyricsFont;
     Lyrics.FontStyle := Ini.LyricsStyle;
 
-    if (Ini.JukeboxSingLineColor = High(UIni.ISingLineColor)) then
-      Col := GetJukeboxLyricOtherColor(0)
-    else
-      Col := GetLyricColor(Ini.JukeboxSingLineColor);
+    Col.R := Theme.Song.LoopLyrics.SingR;
+    Col.G := Theme.Song.LoopLyrics.SingG;
+    Col.B := Theme.Song.LoopLyrics.SingB;
     Lyrics.LineColor_act.R := Col.R;
     Lyrics.LineColor_act.G := Col.G;
     Lyrics.LineColor_act.B := Col.B;
     Lyrics.LineColor_act.A := 1;
 
-    if (Ini.JukeboxActualLineColor = High(UIni.IActualLineColor)) then
-      Col := GetJukeboxLyricOtherColor(1)
-    else
-      Col := GetLyricGrayColor(Ini.JukeboxActualLineColor);
+    Col.R := Theme.Song.LoopLyrics.ActualR;
+    Col.G := Theme.Song.LoopLyrics.ActualG;
+    Col.B := Theme.Song.LoopLyrics.ActualB;
     Lyrics.LineColor_en.R := Col.R;
     Lyrics.LineColor_en.G := Col.G;
     Lyrics.LineColor_en.B := Col.B;
     Lyrics.LineColor_en.A := 1;
 
-    if (Ini.JukeboxNextLineColor = High(UIni.INextLineColor)) then
-      Col := GetJukeboxLyricOtherColor(2)
-    else
-      Col := GetLyricGrayColor(Ini.JukeboxNextLineColor);
+    Col.R := Theme.Song.LoopLyrics.NextR;
+    Col.G := Theme.Song.LoopLyrics.NextG;
+    Col.B := Theme.Song.LoopLyrics.NextB;
     Lyrics.LineColor_dis.R := Col.R;
     Lyrics.LineColor_dis.G := Col.G;
     Lyrics.LineColor_dis.B := Col.B;
@@ -867,6 +893,17 @@ begin
       ScoreLast      := 0;
 
       LastSentencePerfect := false;
+
+      Name           := PlayerNames[PlayerIndex + 1];
+      Level          := Ini.PlayerLevel[PlayerIndex];
+      Track          := 0;
+      if CurrentSong.isDuet then
+      begin
+        if ScreenSong.DuetChange then
+          Track := (PlayerIndex + 1) mod 2
+        else
+          Track := PlayerIndex mod 2;
+      end;
     end;
 
   // prepare music
@@ -920,6 +957,7 @@ begin
     AudioPlayback.FadeIn(CurrentSong.Medley.FadeIn_time, 1.0)
   else
     AudioPlayback.Play();
+  AnnounceRemoteSongStarted;
 
   // Send Score
   Act_MD5Song := CurrentSong.MD5;
@@ -1340,6 +1378,226 @@ begin
     fStartTime := CurrentSong.Start;
 end;
 
+procedure TScreenSingController.AnnounceRemoteSongStarted;
+begin
+  Inc(RemoteSongSeq);
+  LastRemoteScoreSnapshotTick := 0;
+  RemoteBridgeIPC.SendSongStarted(
+    RemoteSongSeq,
+    CatSongs.Selected,
+    RemoteMediaStartUs,
+    RemoteSongDurationUs,
+    CurrentSong.Title,
+    CurrentSong.Artist
+  );
+  RemoteInputProcessor.AcceptingInput := true;
+  RemoteBridgeIPC.SendGameState('singing', RemoteSongSeq, 0);
+  SendRemoteScoreSheet;
+  SendRemoteLyrics;
+  SendRemoteScoreSnapshot(true);
+end;
+
+procedure TScreenSingController.AnnounceRemoteSongPaused;
+begin
+  if (RemoteSongSeq > 0) then
+  begin
+    RemoteInputProcessor.AcceptingInput := false;
+    RemoteBridgeIPC.SendSongPaused(RemoteSongSeq, RemoteMediaStartUs, RemoteSongDurationUs);
+    RemoteBridgeIPC.SendGameState('paused', RemoteSongSeq, 0);
+  end;
+end;
+
+procedure TScreenSingController.AnnounceRemoteSongResumed;
+begin
+  if (RemoteSongSeq > 0) then
+  begin
+    RemoteInputProcessor.AcceptingInput := true;
+    RemoteBridgeIPC.SendSongResumed(RemoteSongSeq, RemoteMediaStartUs, RemoteSongDurationUs);
+    RemoteBridgeIPC.SendGameState('singing', RemoteSongSeq, 0);
+  end;
+end;
+
+procedure TScreenSingController.AnnounceRemoteSongEnded;
+begin
+  if (RemoteSongSeq > 0) then
+  begin
+    RemoteInputProcessor.AcceptingInput := false;
+    SendRemoteScoreSnapshot(true);
+    RemoteBridgeIPC.SendSongEnded(RemoteSongSeq, RemoteMediaStartUs, RemoteSongDurationUs);
+    RemoteBridgeIPC.SendGameState('song_ended', RemoteSongSeq, 0);
+  end;
+end;
+
+procedure TScreenSingController.AnnounceRemoteSongPosition(const Reason: UTF8String);
+begin
+  if (RemoteSongSeq <= 0) then
+    Exit;
+
+  RemoteBridgeIPC.SendJsonMessage(
+    '{"type":"song.position","protocol":1' +
+    ',"songSeq":' + IntToStr(RemoteSongSeq) +
+    ',"mediaStartUs":' + IntToStr(RemoteMediaStartUs) +
+    ',"durationUs":' + IntToStr(RemoteSongDurationUs) +
+    ',"reason":"' + RemoteJsonEscape(Reason) + '"' +
+    '}'
+  );
+end;
+
+procedure TScreenSingController.SendRemoteLyrics;
+var
+  TrackIndex: integer;
+  LineIndex: integer;
+  TracksJson: string;
+  LyricText: UTF8String;
+begin
+  if (RemoteSongSeq <= 0) or (Length(CurrentSong.Tracks) = 0) then
+    Exit;
+
+  TracksJson := '[';
+  for TrackIndex := 0 to High(CurrentSong.Tracks) do
+  begin
+    if (TrackIndex > 0) then
+      TracksJson := TracksJson + ',';
+
+    LineIndex := CurrentSong.Tracks[TrackIndex].CurrentLine;
+    if (LineIndex >= 0) and (LineIndex <= CurrentSong.Tracks[TrackIndex].High) then
+      LyricText := CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Lyric
+    else
+      LyricText := '';
+
+    TracksJson := TracksJson +
+      '{"track":' + IntToStr(TrackIndex) +
+      ',"line":' + IntToStr(LineIndex) +
+      ',"text":"' + RemoteJsonEscape(LyricText) + '"}';
+  end;
+  TracksJson := TracksJson + ']';
+
+  RemoteBridgeIPC.SendJsonMessage(
+    '{"type":"song.lyrics","protocol":1' +
+    ',"songSeq":' + IntToStr(RemoteSongSeq) +
+    ',"mediaStartUs":' + IntToStr(RemoteMediaStartUs) +
+    ',"tracks":' + TracksJson +
+    '}'
+  );
+end;
+
+procedure TScreenSingController.SendRemoteScoreSheet;
+var
+  TrackIndex: integer;
+  LineIndex: integer;
+  NoteIndex: integer;
+  Beat: integer;
+  TracksJson: string;
+  BeatsJson: string;
+  NeedComma: boolean;
+  Note: PLineFragment;
+begin
+  if (RemoteSongSeq <= 0) or (Length(CurrentSong.Tracks) = 0) then
+    Exit;
+
+  TracksJson := '[';
+  for TrackIndex := 0 to High(CurrentSong.Tracks) do
+  begin
+    if (TrackIndex > 0) then
+      TracksJson := TracksJson + ',';
+
+    BeatsJson := '[';
+    NeedComma := false;
+    for LineIndex := 0 to CurrentSong.Tracks[TrackIndex].High do
+    begin
+      for NoteIndex := 0 to CurrentSong.Tracks[TrackIndex].Lines[LineIndex].HighNote do
+      begin
+        Note := @CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex];
+        if (Note.NoteType = ntFreestyle) or (Note.Duration <= 0) then
+          Continue;
+
+        for Beat := Note.StartBeat to Note.StartBeat + Note.Duration - 1 do
+        begin
+          if NeedComma then
+            BeatsJson := BeatsJson + ',';
+          NeedComma := true;
+          BeatsJson := BeatsJson +
+            '[' + IntToStr(Beat) +
+            ',' + IntToStr(Note.Tone) +
+            ',' + IntToStr(Ord(Note.NoteType)) +
+            ']';
+        end;
+      end;
+    end;
+    BeatsJson := BeatsJson + ']';
+
+    TracksJson := TracksJson +
+      '{"track":' + IntToStr(TrackIndex) +
+      ',"beats":' + BeatsJson +
+      '}';
+  end;
+  TracksJson := TracksJson + ']';
+
+  RemoteBridgeIPC.SendJsonMessage(
+    '{"type":"score.sheet"' +
+    ',"tracks":' + TracksJson +
+    '}'
+  );
+end;
+
+procedure TScreenSingController.SendRemoteScoreSnapshot(Force: boolean);
+var
+  Tick: cardinal;
+  I: integer;
+  PlayersJson: string;
+begin
+  if (RemoteSongSeq <= 0) then
+    Exit;
+
+  Tick := SDL_GetTicks;
+  if (not Force) and (Tick - LastRemoteScoreSnapshotTick < REMOTE_SCORE_SNAPSHOT_MS) then
+    Exit;
+
+  LastRemoteScoreSnapshotTick := Tick;
+  PlayersJson := '[';
+  for I := 0 to High(Player) do
+  begin
+    if (I > 0) then
+      PlayersJson := PlayersJson + ',';
+    PlayersJson := PlayersJson +
+      '{"slot":' + IntToStr(I + 1) +
+      ',"score":' + IntToStr(Player[I].ScoreInt) +
+      ',"scoreLine":' + IntToStr(Player[I].ScoreLineInt) +
+      ',"scoreGolden":' + IntToStr(Player[I].ScoreGoldenInt) +
+      ',"scoreTotal":' + IntToStr(Player[I].ScoreTotalInt) +
+      '}';
+  end;
+  PlayersJson := PlayersJson + ']';
+
+  RemoteBridgeIPC.SendJsonMessage(
+    '{"type":"score.snapshot","protocol":1' +
+    ',"songSeq":' + IntToStr(RemoteSongSeq) +
+    ',"mediaStartUs":' + IntToStr(RemoteMediaStartUs) +
+    ',"durationUs":' + IntToStr(RemoteSongDurationUs) +
+    ',"players":' + PlayersJson +
+    '}'
+  );
+end;
+
+function TScreenSingController.RemoteMediaStartUs: int64;
+begin
+  Result := Round(AudioPlayback.Position * 1000000);
+  if (Result < 0) then
+    Result := 0;
+end;
+
+function TScreenSingController.RemoteSongDurationUs: int64;
+var
+  Duration: real;
+begin
+  Duration := LyricsState.TotalTime;
+  if (Duration <= 0) and Assigned(AudioPlayback) then
+    Duration := AudioPlayback.Length;
+  Result := Round(Duration * 1000000);
+  if (Result < 0) then
+    Result := 0;
+end;
+
 procedure TScreenSingController.ClearSettings;
 begin
   Settings.Finish := False;
@@ -1392,193 +1650,8 @@ begin
 end;
 
 function TScreenSingController.Draw: boolean;
-var
-  V1:     boolean;
-  V1TwoP: boolean;   // position of score box in two player mode
-  V1ThreeP: boolean; // position of score box in three player mode
-  V2R:    boolean;
-  V2M:    boolean;
-  V3R:    boolean;
-  VDuet1ThreeP: boolean;
-  VDuet2M:    boolean;
-  VDuet3R:    boolean;
-  V1FourP: boolean;
-  V2FourP: boolean;
-  V3FourP: boolean;
-  V4FourP: boolean;
-  V1SixP: boolean;
-  V2SixP: boolean;
-  V3SixP: boolean;
-  V4SixP: boolean;
-  V5SixP: boolean;
-  V6SixP: boolean;
-  V1DuetFourP: boolean;
-  V2DuetFourP: boolean;
-  V3DuetFourP: boolean;
-  V4DuetFourP: boolean;
-  V1DuetSixP: boolean;
-  V2DuetSixP: boolean;
-  V3DuetSixP: boolean;
-  V4DuetSixP: boolean;
-  V5DuetSixP: boolean;
-  V6DuetSixP: boolean;
 begin
-  V1     := false;
-  V1TwoP := false;
-  V1ThreeP := false;
-  V2R    := false;
-  V2M    := false;
-  V3R    := false;
-
-  VDuet1ThreeP := false;
-  VDuet2M := false;
-  VDuet3R := false;
-
-  V1FourP := false;
-  V2FourP := false;
-  V3FourP := false;
-  V4FourP := false;
-
-  V1SixP := false;
-  V2SixP := false;
-  V3SixP := false;
-  V4SixP := false;
-  V5SixP := false;
-  V6SixP := false;
-
-  V1DuetFourP := false;
-  V2DuetFourP := false;
-  V3DuetFourP := false;
-  V4DuetFourP := false;
-
-  V1DuetSixP := false;
-  V2DuetSixP := false;
-  V3DuetSixP := false;
-  V4DuetSixP := false;
-  V5DuetSixP := false;
-  V6DuetSixP := false;
-
-  case PlayersPlay of
-    1:
-    begin
-      V1     := true;
-    end;
-    2:
-    begin
-      V1TwoP := true;
-      V2R    := true;
-    end;
-    3:
-    begin
-      if (CurrentSong.isDuet) then
-      begin
-        VDuet1ThreeP := true;
-        VDuet2M := true;
-        VDuet3R := true;
-      end
-      else
-      begin
-        V1ThreeP := true;
-        V2M    := true;
-        V3R    := true;
-      end;
-    end;
-    4:
-    begin // double screen
-      if (Ini.Screens = 1) then
-      begin
-        V1TwoP := true;
-        V2R    := true;
-      end
-      else
-      begin
-        if (CurrentSong.isDuet) then
-        begin
-          V1DuetFourP := true;
-          V2DuetFourP := true;
-          V3DuetFourP := true;
-          V4DuetFourP := true;
-        end
-        else
-        begin
-          V1FourP := true;
-          V2FourP := true;
-          V3FourP := true;
-          V4FourP := true;
-        end;
-      end;
-    end;
-    6:
-    begin // double screen
-      if (Ini.Screens = 1) then
-      begin
-        if (CurrentSong.isDuet) then
-        begin
-          VDuet1ThreeP := true;
-          VDuet2M := true;
-          VDuet3R := true;
-        end
-        else
-        begin
-          V1ThreeP := true;
-          V2M    := true;
-          V3R    := true;
-        end;
-      end
-      else
-      begin
-       if (CurrentSong.isDuet) then
-        begin
-          V1DuetSixP := true;
-          V2DuetSixP := true;
-          V3DuetSixP := true;
-          V4DuetSixP := true;
-          V5DuetSixP := true;
-          V6DuetSixP := true;
-        end
-        else
-        begin
-          V1SixP := true;
-          V2SixP := true;
-          V3SixP := true;
-          V4SixP := true;
-          V5SixP := true;
-          V6SixP := true;
-        end;
-      end;
-    end;
-  end;
-
-  Text[screenSingViewRef.TextP1].Visible           := V1 and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1TwoP].Visible       := V1TwoP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2R].Visible          := V2R and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1ThreeP].Visible     := V1ThreeP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2M].Visible          := V2M and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3R].Visible          := V3R and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextDuetP1ThreeP].Visible := VDuet1ThreeP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextDuetP2M].Visible      := VDuet2M and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextDuetP3R].Visible      := VDuet3R and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1FourP].Visible      := V1FourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2FourP].Visible      := V2FourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3FourP].Visible      := V3FourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP4FourP].Visible      := V4FourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1SixP].Visible       := V1SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2SixP].Visible       := V2SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3SixP].Visible       := V3SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP4SixP].Visible       := V4SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP5SixP].Visible       := V5SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP6SixP].Visible       := V6SixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1DuetFourP].Visible  := V1DuetFourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2DuetFourP].Visible  := V2DuetFourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3DuetFourP].Visible  := V3DuetFourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP4DuetFourP].Visible  := V4DuetFourP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP1DuetSixP].Visible   := V1DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP2DuetSixP].Visible   := V2DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP3DuetSixP].Visible   := V3DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP4DuetSixP].Visible   := V4DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP5DuetSixP].Visible   := V5DuetSixP and ScreenSing.Settings.AvatarsVisible;
-  Text[screenSingViewRef.TextP6DuetSixP].Visible   := V6DuetSixP and ScreenSing.Settings.AvatarsVisible;
-
+  SendRemoteScoreSnapshot(false);
   Result := screenSingViewRef.Draw();
 end;
 
@@ -1593,9 +1666,8 @@ var
   len, num: integer;
 
 begin
-  Log.LogStatus('TScreenSingController.Finish', 'TScreenSingController.Finish');
+  AnnounceRemoteSongEnded;
   AudioInput.CaptureStop;
-  AudioPlayback.Stop;
   AudioPlayback.SetSyncSource(nil);
 
   if (ScreenSong.Mode = smNormal) and SungToEnd then
@@ -1756,7 +1828,8 @@ begin
       // line bonus
 
       // points for this line
-      LineScore := CurrentScore - CurrentPlayer.ScoreLast;
+      if not GetPlayerSentenceScore(PlayerIndex, Track, SentenceIndex, LineScore) then
+        LineScore := CurrentScore - CurrentPlayer.ScoreLast;
 
       // check for lines with low points
       if MaxLineScore <= 2 then
@@ -1783,6 +1856,11 @@ begin
       // spawn rating pop-up
       Rating := Round(LinePerfection * MAX_LINE_RATING);
       Scores.SpawnPopUp(PlayerIndex, Rating, CurrentPlayer.ScoreTotalInt);
+
+      if (Scores <> nil) then
+        Scores.SetRemainingScore(PlayerIndex,
+          CurrentPlayer.ScorePerfectRemaining / MAX_SONG_SCORE,
+          CurrentPlayer.Score + CurrentPlayer.ScoreGolden + CurrentPlayer.ScoreLine);
 
       // PerfectLineTwinkle (effect), part 1
       if Ini.EffectSing = 1 then
@@ -1839,6 +1917,7 @@ begin
       tmp_Lyric.AddLine(nil);
   end;
 
+  SendRemoteLyrics;
 end;
 
 function TLyricsSyncSource.GetClock(): real;
@@ -1888,14 +1967,54 @@ procedure TScreenSingController.SaveLocalScores;
 var
   I: integer;
   Sung: boolean;
+  Name1, Name2: UTF8String;
+  Score1, Score2: Integer;
+  CombinedName: UTF8String;
+  CombinedScore: Integer;
 begin
   Sung := false;
-  for I := 0 to PlayersPlay - 1 do
+
+  if ScreenSing.SungToEnd then
   begin
-    if Player[I].ScoreTotalInt > 0 then
+    if (ScreenSing.SungToEnd) and not(CurrentSong.isDuet) or (Ini.DuetScores = 1) or (Ini.DuetScores = 3) then
     begin
-      DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Name, Player[I].ScoreTotalInt);
-      Sung := true;
+      for I := 0 to PlayersPlay - 1 do
+      begin
+        Score1 := Round(Player[I].ScoreTotalInt);
+        if Score1 > 0 then
+        begin
+          DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Track, Player[I].Name, Score1);
+          Sung := true;
+        end;
+      end;
+    end;
+    if (CurrentSong.isDuet) and (Ini.DuetScores >= 2) then
+    begin
+      I := 0;
+      while I < PlayersPlay - 1 do
+      begin
+        Name1  := Player[I].Name;
+        Name2  := Player[I+1].Name;
+        Score1 := Round(Player[I].ScoreTotalInt);
+        Score2 := Round(Player[I+1].ScoreTotalInt);
+
+        if (Player[I].Level = Player[I+1].Level) then
+        begin
+          if UTF8CompareStr(Name1, Name2) <= 0 then
+            CombinedName := Format('%s & %s', [Name1, Name2])
+          else
+            CombinedName := Format('%s & %s', [Name2, Name1]);
+
+          CombinedScore := (Score1 + Score2) div 2;
+          if CombinedScore > 0 then
+          begin
+            DataBase.AddScore(CurrentSong, Player[I].Level, 3, CombinedName, CombinedScore);
+            Sung := true;
+          end;
+        end;
+
+        Inc(I, 2);
+      end;
     end;
   end;
 

@@ -1,4 +1,4 @@
-{* UltraStar Deluxe - Karaoke Game
+﻿{* UltraStar Deluxe - Karaoke Game
  *
  * UltraStar Deluxe is the legal property of its developers, whose names
  * are too numerous to list here. Please refer to the COPYRIGHT
@@ -42,10 +42,14 @@ uses
   UFiles,
   UIni,
   ULanguage,
+  ULyrics,
   UMenu,
   UMenuEqualizer,
+  UMenuInteract,
   UMusic,
+  UPlayerLayout,
   UPath,
+  UScale,
   USong,
   USongs,
   UTexture,
@@ -80,13 +84,60 @@ type
       LastPreviewStartTime: integer;
       LastChangeSoundTime: integer;
       LastScrollStopTime: integer;
+      LastPlaylistReloadTime: integer;
+      PreviewEndReloaded: boolean;
 
       RandomSongOrder: CardinalArray;
       NextRandomSongIdx: cardinal;
       RandomSearchOrder: CardinalArray;
+      MarkedPlaylistSong: integer;
+      KeepPreviewMusicOnHide: boolean;
+      PreviewRestorePosition: real;
+      PreviewRestoreValid: boolean;
+      LoopModeEnabled: boolean;
+      LoopForceFixedOrder: boolean;
+      LoopPaused: boolean;
+      LoopPreferredCoverFull: boolean;
+      LoopLyrics: TLyricEngine;
+      LoopLyricsP1: TLyricEngine;
+      LoopLyricsP2: TLyricEngine;
+      LoopLyricsSong: TSong;
+      LoopLyricsLastLine: integer;
+      LoopLyricsP1LastLine: integer;
+      LoopLyricsP2LastLine: integer;
+      LoopLyricsReady: boolean;
+      LastRemoteStateInteraction: integer;
+      LastRemoteStateVisibleSongs: integer;
+      LastRemoteStateTick: cardinal;
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
+      function GetSongButtonMouseOverArea(ButtonIndex: integer): TMouseOverRect;
+      procedure ConfigureCoverTexture(var Tex: TTexture; IsPlaceholder: boolean);
+      function IsLoopModeActive: boolean;
+      function IsLoopOrderEnabled: boolean;
+      function SelectLoopRandomSong: boolean;
+      function SelectLoopAdjacentSong(Direction: integer): boolean;
+      function SelectLoopNextSong: boolean;
+      procedure StartLoopPlaybackForCurrentSong(ForceFullscreen: boolean);
+      procedure ToggleLoopMode;
+      procedure ToggleLoopPause;
+      function FormatLoopClock(Seconds: real): UTF8String;
+      function TruncateLoopOverlayText(const Value: UTF8String; MaxWidth: real): UTF8String;
+      function IsLoopOverlayVisible: boolean;
+      procedure GetLoopOverlayGeometry(out X, Y, W, H, BarX, BarY, BarW, BarH: real);
+      function HandleLoopOverlayMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+      procedure DrawLoopModeOverlay;
+      procedure DrawLoopFullscreenCoverFallback;
+      procedure ConfigureLoopLyricsEngine(Engine: TLyricEngine;
+        UpperX, UpperY, UpperW, UpperH, LowerX, LowerY, LowerW, LowerH: real;
+        const ActiveColor: TRGB);
+      procedure ConfigureLoopLyrics;
+      function GetLoopLyricsCurrentLine(Song: TSong; TrackIndex: integer): integer;
+      procedure FillLoopLyricsQueue(Engine: TLyricEngine; Song: TSong; TrackIndex, TargetLine: integer);
+      procedure ResetLoopLyricsForCurrentSong;
+      procedure UpdateAndDrawLoopLyrics;
+      function ReloadCurrentPlaylist(ForceCheck: boolean): boolean;
     public
       TextArtist:   integer;
       TextTitle:    integer;
@@ -192,29 +243,15 @@ type
       MidiFadeIn: boolean;
       FadeTime: cardinal;
 
+      KeepPreviewPositionOnShow: boolean;
+
       InfoMessageBG: cardinal;
       InfoMessageText: cardinal;
 
-      Static2PlayersDuetSingerP1: cardinal;
-      Static2PlayersDuetSingerP2: cardinal;
-      Text2PlayersDuetSingerP1: cardinal;
-      Text2PlayersDuetSingerP2: cardinal;
-
-      Static3PlayersDuetSingerP1: cardinal;
-      Static3PlayersDuetSingerP2: cardinal;
-      Static3PlayersDuetSingerP3: cardinal;
-      Text3PlayersDuetSingerP1: cardinal;
-      Text3PlayersDuetSingerP2: cardinal;
-      Text3PlayersDuetSingerP3: cardinal;
-
-      Static4PlayersDuetSingerP3: cardinal;
-      Static4PlayersDuetSingerP4: cardinal;
-
-      Static6PlayersDuetSingerP4: cardinal;
-      Static6PlayersDuetSingerP5: cardinal;
-      Static6PlayersDuetSingerP6: cardinal;
-
-      ColPlayer:  array[0..UIni.IMaxPlayerCount-1] of TRGB;
+      DuetSingerStatics: array[0..UIni.IMaxPlayerCount-1] of cardinal;
+      DuetSingerTexts: array[0..UIni.IMaxPlayerCount-1] of cardinal;
+      DuetSingerBaseStatic: TThemeStatic;
+      DuetSingerBaseText: TThemeText;
 
       //CurrentPartyTime: cardinal;
       //PartyTime: cardinal;
@@ -230,7 +267,9 @@ type
 
       NextRandomSearchIdx: cardinal;
 
+      procedure SendRemoteSongSelectState(Force: boolean);
       constructor Create; override;
+      destructor Destroy; override;
       procedure SetScroll;
       procedure SetScrollRefresh;
 
@@ -241,8 +280,9 @@ type
       procedure SetRouletteScrollRefresh;
       procedure SetChessboardScrollRefresh;
       procedure SetListScrollRefresh;
+      procedure SyncDuetSingerTheme;
 
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
 
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       function ParseMouseRoulette(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
@@ -275,6 +315,8 @@ type
       procedure HideCatTL;// Show Cat in Tob left
       procedure Refresh;//(GiveStats: boolean); //Refresh Song Sorting
       procedure ChangeMusic;
+      procedure StartPreview;
+      procedure StopPreview;
 
       function FreeListMode: boolean;
 
@@ -310,6 +352,9 @@ type
       function  getVisibleMedleyArr(MinSource: TMedleySource): TVisArr;
 
       procedure ColorDuetNameSingers;
+      procedure LayoutDuetSingerWidgets(PlayerCount: integer);
+      procedure SetDuetSingerVisibility(Count: integer);
+      procedure SetDuetSingerTexts(Count, FirstNameIndex: integer);
 
       procedure StopMusicPreview();
       procedure StopVideoPreview();
@@ -320,7 +365,11 @@ type
       procedure ParseInputNextVertical(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
       procedure ParseInputPrevVertical(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
 
+      procedure ResetRandomSongState;
       procedure ResetScrollList;
+
+      procedure PreservePreviewForReturn;
+      procedure EnterLoopModeFromMainMenu;
   end;
 
 implementation
@@ -332,15 +381,29 @@ uses
   ULog,
   UMain,
   UMenuButton,
+  UDrawTexture,
   UMenuStatic,
   UNote,
   UParty,
   UPlaylist,
+  URemoteBridgeIPC,
   UScreenSongMenu,
   USkins,
+  TextGL,
   UUnicodeUtils,
   dglOpenGL,
   Math;
+
+function GetSongPlayerColor(PlayerIndex: integer): TRGB;
+begin
+  Result := GetPlayerColor(Ini.SingColor[PlayerIndex]);
+end;
+
+procedure TScreenSong.SyncDuetSingerTheme;
+begin
+  DuetSingerBaseStatic := Theme.Song.Static2PlayersDuetSingerP1;
+  DuetSingerBaseText := Theme.Song.Text2PlayersDuetSingerP1;
+end;
 
 const
   MAX_TIME = 30;
@@ -348,6 +411,12 @@ const
   MAX_TIME_MOUSE_SELECT = 800;
   CHANGE_SOUND_THROTTLE_MS = 200;
   PREVIEW_DEBOUNCE_MS = 150;
+  PLAYLIST_RELOAD_INTERVAL_MS = 10000;
+  REMOTE_STATE_THROTTLE_MS = 100;
+
+var
+  AltJumpPrefix: UTF8String = '';
+  AltJumpLastTick: cardinal = 0;
 
 // ***** Public methods ****** //
 function TScreenSong.EnsureMedleyData(SongIndex: integer; MinSource: TMedleySource): boolean;
@@ -376,10 +445,806 @@ end;
 
 function TScreenSong.FreeListMode: boolean;
 begin
-  if ((Mode = smNormal) or (Mode = smPartyTournament) or (Mode = smPartyFree) or (Mode = smJukebox)) then
+  if ((Mode = smNormal) or (Mode = smPartyTournament) or (Mode = smPartyFree)) then
     Result := true
   else
     Result := false;
+end;
+
+function TScreenSong.IsLoopModeActive: boolean;
+begin
+  Result := LoopModeEnabled and FreeListMode;
+end;
+
+function TScreenSong.IsLoopOrderEnabled: boolean;
+begin
+  Result := LoopForceFixedOrder;
+  if (CatSongs.CatNumShow = -3) and (PlayListMan.CurPlaylist >= 0) and
+     (PlayListMan.CurPlaylist <= High(PlayListMan.Playlists)) then
+  begin
+    Result := Result or PlayListMan.Playlists[PlayListMan.CurPlaylist].FixedOrder;
+  end;
+end;
+
+function TScreenSong.SelectLoopAdjacentSong(Direction: integer): boolean;
+var
+  Step: integer;
+  Candidate: integer;
+  SongCount: integer;
+  FallbackCandidate: integer;
+begin
+  Result := false;
+  SongCount := Length(CatSongs.Song);
+  if (CatSongs.VisibleSongs <= 0) or (SongCount <= 0) then
+    Exit;
+
+  FallbackCandidate := -1;
+  for Step := 1 to SongCount do
+  begin
+    Candidate := (Interaction + (Direction * Step) + SongCount) mod SongCount;
+    if CatSongs.Song[Candidate].Visible and (not CatSongs.Song[Candidate].Main) then
+    begin
+      if (Candidate <> Interaction) then
+      begin
+        SkipTo(CatSongs.VisibleIndex(Candidate), Candidate, CatSongs.VisibleSongs);
+        SetScrollRefresh;
+        Result := true;
+        Exit;
+      end;
+      // only possible if there is no other playable visible song
+      FallbackCandidate := Candidate;
+    end;
+  end;
+
+  if (FallbackCandidate <> -1) then
+  begin
+    SkipTo(CatSongs.VisibleIndex(FallbackCandidate), FallbackCandidate, CatSongs.VisibleSongs);
+    SetScrollRefresh;
+    Result := true;
+  end;
+end;
+
+function TScreenSong.SelectLoopRandomSong: boolean;
+var
+  I: integer;
+  Pick: integer;
+  PlayableCount: integer;
+  EligibleCount: integer;
+  ExcludeCurrent: boolean;
+begin
+  Result := false;
+  if (CatSongs.VisibleSongs <= 0) then
+    Exit;
+
+  PlayableCount := 0;
+  for I := 0 to High(CatSongs.Song) do
+  begin
+    if CatSongs.Song[I].Visible and (not CatSongs.Song[I].Main) then
+      Inc(PlayableCount);
+  end;
+
+  if (PlayableCount <= 0) then
+    Exit;
+
+  ExcludeCurrent := (PlayableCount > 1);
+  if ExcludeCurrent then
+    EligibleCount := PlayableCount - 1
+  else
+    EligibleCount := PlayableCount;
+
+  Pick := Random(EligibleCount);
+  for I := 0 to High(CatSongs.Song) do
+  begin
+    if CatSongs.Song[I].Visible and (not CatSongs.Song[I].Main) then
+    begin
+      if ExcludeCurrent and (I = Interaction) then
+        Continue;
+      if (Pick = 0) then
+      begin
+        SkipTo(CatSongs.VisibleIndex(I), I, CatSongs.VisibleSongs);
+        SetScrollRefresh;
+        Result := true;
+        Exit;
+      end;
+      Dec(Pick);
+    end;
+  end;
+end;
+
+function TScreenSong.SelectLoopNextSong: boolean;
+begin
+  if IsLoopOrderEnabled then
+    Result := SelectLoopAdjacentSong(1)
+  else
+    Result := SelectLoopRandomSong;
+end;
+
+procedure TScreenSong.StartLoopPlaybackForCurrentSong(ForceFullscreen: boolean);
+begin
+  if (CatSongs.VisibleSongs <= 0) or CatSongs.Song[Interaction].Main then
+    Exit;
+
+  if ForceFullscreen then
+    CoverFull := LoopPreferredCoverFull;
+
+  LoopPaused := false;
+  ChangeMusic;
+  AudioPlayback.Position := 0;
+  if Assigned(fCurrentVideo) then
+    fCurrentVideo.Position := CatSongs.Song[Interaction].VideoGAP + AudioPlayback.Position;
+  ResetLoopLyricsForCurrentSong;
+end;
+
+procedure TScreenSong.ToggleLoopMode;
+begin
+  LoopModeEnabled := not LoopModeEnabled;
+  LoopPaused := false;
+
+  if LoopModeEnabled then
+  begin
+    LoopPreferredCoverFull := true;
+    CoverFull := true;
+
+    if CatSongs.Song[Interaction].Main then
+      SelectLoopAdjacentSong(1);
+
+    StartLoopPlaybackForCurrentSong(false);
+  end;
+  if not LoopModeEnabled then
+  begin
+    CoverFull := false;
+  end;
+end;
+
+procedure TScreenSong.ToggleLoopPause;
+begin
+  if not IsLoopModeActive then
+    Exit;
+
+  if not LoopPaused then
+  begin
+    AudioPlayback.Pause;
+    if Assigned(fCurrentVideo) then
+      fCurrentVideo.Pause;
+    LoopPaused := true;
+  end
+  else
+  begin
+    AudioPlayback.Play;
+    if Assigned(fCurrentVideo) then
+      fCurrentVideo.Pause;
+    LoopPaused := false;
+  end;
+end;
+
+procedure TScreenSong.EnterLoopModeFromMainMenu;
+begin
+  Mode := smNormal;
+  LoopForceFixedOrder := false;
+  LoopPaused := false;
+  LoopPreferredCoverFull := true;
+  CoverFull := true;
+
+  if not LoopModeEnabled then
+    LoopModeEnabled := true;
+
+  if (CatSongs.VisibleSongs > 0) and (not CatSongs.Song[Interaction].Main) then
+    StartLoopPlaybackForCurrentSong(true);
+end;
+
+function TScreenSong.FormatLoopClock(Seconds: real): UTF8String;
+var
+  Total: integer;
+begin
+  if Seconds < 0 then
+    Seconds := 0;
+  Total := Trunc(Seconds);
+  Result := Format('%.2d:%.2d', [Total div 60, Total mod 60]);
+end;
+
+function TScreenSong.TruncateLoopOverlayText(const Value: UTF8String; MaxWidth: real): UTF8String;
+var
+  CharLen: integer;
+begin
+  Result := Value;
+  if (Result = '') or (glTextWidth(Result) <= MaxWidth) then
+    Exit;
+
+  CharLen := Length(UTF8ToUCS4String(Value));
+  while (glTextWidth(Result) > MaxWidth) and (CharLen > 0) do
+  begin
+    Dec(CharLen);
+    Result := UTF8Copy(Value, 1, CharLen) + '..';
+  end;
+end;
+
+function TScreenSong.IsLoopOverlayVisible: boolean;
+begin
+  Result := IsLoopModeActive and CoverFull and (CatSongs.VisibleSongs > 0) and
+            (not CatSongs.Song[Interaction].Main);
+end;
+
+procedure TScreenSong.GetLoopOverlayGeometry(out X, Y, W, H, BarX, BarY, BarW, BarH: real);
+var
+  SongText: UTF8String;
+  TitleW: real;
+  TimeTextW: real;
+  MaxTimeTextW: real;
+  ContentW: real;
+begin
+
+  SetFontFamily(Text[TextTitle].Font);
+  SetFontStyle(Text[TextTitle].Style);
+  SetFontItalic(false);
+  SetFontReflection(false, 0);
+  SetFontZ(0);
+  SetFontSize(Theme.Song.LoopOverlay.FontSize);
+
+  SongText := CatSongs.Song[Interaction].Artist + ' - ' + CatSongs.Song[Interaction].Title;
+  SongText := TruncateLoopOverlayText(SongText, Theme.Song.LoopOverlay.TitleMaxW);
+  TitleW := glTextWidth(SongText);
+  TimeTextW := glTextWidth(FormatLoopClock(AudioPlayback.Position) + ' / ' + FormatLoopClock(AudioPlayback.Length));
+
+  MaxTimeTextW := glTextWidth('99:99 / 99:99');
+  BarW := EnsureRange(TitleW - MaxTimeTextW - Theme.Song.LoopOverlay.TimeBarGap,
+    Theme.Song.LoopOverlay.BarMinW, Theme.Song.LoopOverlay.BarMaxW);
+  ContentW := Max(TitleW, Max(TimeTextW, MaxTimeTextW) + Theme.Song.LoopOverlay.TimeBarGap + BarW);
+
+  W := ContentW + Theme.Song.LoopOverlay.BoxPaddingW;
+  if Theme.Song.LoopOverlay.MinW > 0 then
+    W := Max(W, Theme.Song.LoopOverlay.MinW);
+  if Theme.Song.LoopOverlay.MaxW > 0 then
+    W := Min(W, Theme.Song.LoopOverlay.MaxW);
+  H := Theme.Song.LoopOverlay.H;
+  X := Theme.Song.LoopOverlay.X;
+  Y := Theme.Song.LoopOverlay.Y;
+
+  BarX := X + Theme.Song.LoopOverlay.TextX + MaxTimeTextW + Theme.Song.LoopOverlay.TimeBarGap;
+  BarY := Y + Theme.Song.LoopOverlay.BarY;
+  BarH := Theme.Song.LoopOverlay.BarH;
+end;
+
+function TScreenSong.HandleLoopOverlayMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+var
+  OverlayX, OverlayY, OverlayW, OverlayH: real;
+  BarX, BarY, BarW, BarH: real;
+  TargetPos: real;
+begin
+  Result := false;
+  if not IsLoopOverlayVisible then
+    Exit;
+  if not BtnDown or (MouseButton <> SDL_BUTTON_LEFT) then
+    Exit;
+  if (AudioPlayback.Length <= 0) then
+    Exit;
+
+  GetLoopOverlayGeometry(OverlayX, OverlayY, OverlayW, OverlayH, BarX, BarY, BarW, BarH);
+  if (X < BarX) or (X > BarX + BarW) or (Y < BarY) or (Y > BarY + BarH) then
+    Exit;
+
+  TargetPos := ((X - BarX) / BarW) * AudioPlayback.Length;
+  TargetPos := EnsureRange(TargetPos, 0.0, AudioPlayback.Length);
+  AudioPlayback.Position := TargetPos;
+  if Assigned(fCurrentVideo) then
+    fCurrentVideo.Position := CatSongs.Song[Interaction].VideoGAP + TargetPos;
+  ResetLoopLyricsForCurrentSong;
+  Result := true;
+end;
+
+procedure TScreenSong.DrawLoopModeOverlay;
+var
+  SongText: UTF8String;
+  TimeText: UTF8String;
+  X, Y, W, H: real;
+  BarX, BarY, BarW, BarH: real;
+  Progress: real;
+begin
+  if not IsLoopOverlayVisible then
+    Exit;
+
+  SongText := CatSongs.Song[Interaction].Artist + ' - ' + CatSongs.Song[Interaction].Title;
+  TimeText := FormatLoopClock(AudioPlayback.Position) + ' / ' + FormatLoopClock(AudioPlayback.Length);
+
+  GetLoopOverlayGeometry(X, Y, W, H, BarX, BarY, BarW, BarH);
+  SongText := TruncateLoopOverlayText(SongText, W - Theme.Song.LoopOverlay.BoxPaddingW);
+  if (AudioPlayback.Length > 0) then
+    Progress := EnsureRange(AudioPlayback.Position / AudioPlayback.Length, 0.0, 1.0)
+  else
+    Progress := 0;
+
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_TEXTURE_2D);
+  glEnable(GL_BLEND);
+  glColor4f(Theme.Song.LoopOverlay.BgR, Theme.Song.LoopOverlay.BgG,
+    Theme.Song.LoopOverlay.BgB, Theme.Song.LoopOverlay.BgA);
+  glBegin(GL_QUADS);
+    glVertex2f(X, Y);
+    glVertex2f(X, Y + H);
+    glVertex2f(X + W, Y + H);
+    glVertex2f(X + W, Y);
+  glEnd;
+  glColor4f(Theme.Song.LoopOverlay.TextR, Theme.Song.LoopOverlay.TextG,
+    Theme.Song.LoopOverlay.TextB, Theme.Song.LoopOverlay.TextA);
+  glEnable(GL_TEXTURE_2D);
+
+  SetFontSize(Theme.Song.LoopOverlay.FontSize);
+  SetFontPos(X + Theme.Song.LoopOverlay.TextX, Y + Theme.Song.LoopOverlay.TitleY);
+  glPrint(SongText);
+  SetFontPos(X + Theme.Song.LoopOverlay.TextX, Y + Theme.Song.LoopOverlay.TimeY);
+  glPrint(TimeText);
+
+  glDisable(GL_TEXTURE_2D);
+  glColor4f(Theme.Song.LoopOverlay.BarBgR, Theme.Song.LoopOverlay.BarBgG,
+    Theme.Song.LoopOverlay.BarBgB, Theme.Song.LoopOverlay.BarBgA);
+  glBegin(GL_QUADS);
+    glVertex2f(BarX, BarY);
+    glVertex2f(BarX, BarY + BarH);
+    glVertex2f(BarX + BarW, BarY + BarH);
+    glVertex2f(BarX + BarW, BarY);
+  glEnd;
+  glColor4f(Theme.Song.LoopOverlay.BarFillR, Theme.Song.LoopOverlay.BarFillG,
+    Theme.Song.LoopOverlay.BarFillB, Theme.Song.LoopOverlay.BarFillA);
+  glBegin(GL_QUADS);
+    glVertex2f(BarX, BarY);
+    glVertex2f(BarX, BarY + BarH);
+    glVertex2f(BarX + (BarW * Progress), BarY + BarH);
+    glVertex2f(BarX + (BarW * Progress), BarY);
+  glEnd;
+  glEnable(GL_TEXTURE_2D);
+
+  glEnable(GL_DEPTH_TEST);
+end;
+
+procedure TScreenSong.DrawLoopFullscreenCoverFallback;
+var
+  Song: TSong;
+  FullscreenCover: TTexture;
+begin
+  if not (IsLoopModeActive and CoverFull and (not Assigned(fCurrentVideo))) then
+    Exit;
+  if (CatSongs.VisibleSongs <= 0) or CatSongs.Song[Interaction].Main then
+    Exit;
+
+  Song := CatSongs.Song[Interaction];
+  if Song.Video.IsSet or Song.Background.IsSet then
+    Exit;
+  if (Interaction < 0) or (Interaction > High(Button)) or (Button[Interaction].Texture.TexNum = 0) then
+    Exit;
+
+  FullscreenCover := Button[Interaction].Texture;
+  FullscreenCover.X := 0;
+  FullscreenCover.Y := 0;
+  FullscreenCover.W := 800;
+  FullscreenCover.H := 600;
+  FullscreenCover.Z := 1;
+  FullscreenCover.ScaleW := 1;
+  FullscreenCover.ScaleH := 1;
+  FullscreenCover.Int := 1;
+  FullscreenCover.ColR := 1;
+  FullscreenCover.ColG := 1;
+  FullscreenCover.ColB := 1;
+  FullscreenCover.Alpha := 1;
+  DrawTexture(FullscreenCover);
+end;
+
+procedure TScreenSong.ConfigureLoopLyricsEngine(Engine: TLyricEngine;
+  UpperX, UpperY, UpperW, UpperH, LowerX, LowerY, LowerW, LowerH: real;
+  const ActiveColor: TRGB);
+var
+  Col: TRGB;
+begin
+  if not Assigned(Engine) then
+    Exit;
+
+  Engine.UpperLineX := UpperX;
+  Engine.UpperLineY := UpperY;
+  Engine.UpperLineW := UpperW;
+  Engine.UpperLineH := UpperH;
+  Engine.LowerLineX := LowerX;
+  Engine.LowerLineY := LowerY;
+  Engine.LowerLineW := LowerW;
+  Engine.LowerLineH := LowerH;
+
+  Engine.FontFamily := Theme.Song.LoopLyrics.Font;
+  Engine.FontStyle := Theme.Song.LoopLyrics.Style;
+
+  Engine.LineColor_act.R := ActiveColor.R;
+  Engine.LineColor_act.G := ActiveColor.G;
+  Engine.LineColor_act.B := ActiveColor.B;
+  Engine.LineColor_act.A := 1;
+
+  Col.R := Theme.Song.LoopLyrics.ActualR;
+  Col.G := Theme.Song.LoopLyrics.ActualG;
+  Col.B := Theme.Song.LoopLyrics.ActualB;
+  Engine.LineColor_en.R := Col.R;
+  Engine.LineColor_en.G := Col.G;
+  Engine.LineColor_en.B := Col.B;
+  Engine.LineColor_en.A := 1;
+
+  Col.R := Theme.Song.LoopLyrics.NextR;
+  Col.G := Theme.Song.LoopLyrics.NextG;
+  Col.B := Theme.Song.LoopLyrics.NextB;
+  Engine.LineColor_dis.R := Col.R;
+  Engine.LineColor_dis.G := Col.G;
+  Engine.LineColor_dis.B := Col.B;
+  Engine.LineColor_dis.A := 1;
+end;
+
+procedure TScreenSong.ConfigureLoopLyrics;
+var
+  ColBase: TRGB;
+  ColP1: TRGB;
+  ColP2: TRGB;
+begin
+  ColBase.R := Theme.Song.LoopLyrics.SingR;
+  ColBase.G := Theme.Song.LoopLyrics.SingG;
+  ColBase.B := Theme.Song.LoopLyrics.SingB;
+  ConfigureLoopLyricsEngine(
+    LoopLyrics,
+    Theme.LyricBarLoop.UpperX, Theme.LyricBarLoop.UpperY, Theme.LyricBarLoop.UpperW, Theme.LyricBarLoop.UpperH,
+    Theme.LyricBarLoop.LowerX, Theme.LyricBarLoop.LowerY, Theme.LyricBarLoop.LowerW, Theme.LyricBarLoop.LowerH,
+    ColBase);
+
+  // Slightly tint active duet lines with player colors (mostly keep base lyric color).
+  ColP1 := GetPlayerColor(Ini.SingColor[0]);
+  // Keep true P1 hue; only lighten slightly for subtle tint.
+  ColP1.R := ColP1.R * 0.45 + 0.55;
+  ColP1.G := ColP1.G * 0.45 + 0.55;
+  ColP1.B := ColP1.B * 0.45 + 0.55;
+  ConfigureLoopLyricsEngine(
+    LoopLyricsP1,
+    Theme.LyricBarLoop.UpperX, Theme.LyricBarLoop.UpperY, Theme.LyricBarLoop.UpperW, Theme.LyricBarLoop.UpperH,
+    Theme.LyricBarLoop.UpperX, -1000, Theme.LyricBarLoop.UpperW, 0,
+    ColP1);
+
+  ColP2 := GetPlayerColor(Ini.SingColor[1]);
+  // Keep true P2 hue; only lighten slightly for subtle tint.
+  ColP2.R := ColP2.R * 0.45 + 0.55;
+  ColP2.G := ColP2.G * 0.45 + 0.55;
+  ColP2.B := ColP2.B * 0.45 + 0.55;
+  ConfigureLoopLyricsEngine(
+    LoopLyricsP2,
+    Theme.LyricBarLoop.LowerX, Theme.LyricBarLoop.LowerY, Theme.LyricBarLoop.LowerW, Theme.LyricBarLoop.LowerH,
+    Theme.LyricBarLoop.LowerX, -1000, Theme.LyricBarLoop.LowerW, 0,
+    ColP2);
+end;
+
+function TScreenSong.GetLoopLyricsCurrentLine(Song: TSong; TrackIndex: integer): integer;
+var
+  I: integer;
+begin
+  Result := 0;
+  if (Song = nil) or (TrackIndex < 0) or (TrackIndex > High(Song.Tracks)) or
+     (Length(Song.Tracks[TrackIndex].Lines) = 0) then
+    Exit;
+
+  for I := 0 to High(Song.Tracks[TrackIndex].Lines) do
+  begin
+    if (LyricsState.CurrentBeat >= Song.Tracks[TrackIndex].Lines[I].StartBeat) then
+      Result := I
+    else
+      Break;
+  end;
+end;
+
+procedure TScreenSong.FillLoopLyricsQueue(Engine: TLyricEngine; Song: TSong; TrackIndex, TargetLine: integer);
+begin
+  if (Song = nil) or not Assigned(Engine) or (TrackIndex < 0) or (TrackIndex > High(Song.Tracks)) then
+    Exit;
+
+  while (Engine.GetUpperLineIndex() < TargetLine) or
+        (not Engine.IsQueueFull) do
+  begin
+    if (Engine.LineCounter <= High(Song.Tracks[TrackIndex].Lines)) then
+      Engine.AddLine(@Song.Tracks[TrackIndex].Lines[Engine.LineCounter])
+    else
+      Engine.AddLine(nil);
+  end;
+end;
+
+procedure TScreenSong.ResetLoopLyricsForCurrentSong;
+var
+  Song: TSong;
+begin
+  LoopLyricsReady := false;
+  if not Assigned(LoopLyrics) then
+    Exit;
+  if (CatSongs.VisibleSongs <= 0) or CatSongs.Song[Interaction].Main then
+    Exit;
+
+  Song := CatSongs.Song[Interaction];
+  if (Song = nil) then
+    Exit;
+  if (Length(Song.Tracks) = 0) or (Length(Song.Tracks[0].Lines) = 0) then
+  begin
+    if not Song.Analyse(false, DuetChange, RapToFreestyle, true, AudioPlayback.Length(*, true -- will be necessary when combined with PR 1121*)) then
+      Exit;
+  end;
+  if (Length(Song.Tracks) = 0) or (Length(Song.Tracks[0].Lines) = 0) then
+    Exit;
+
+  ConfigureLoopLyrics;
+  LoopLyrics.Clear(Song.BPM);
+  LoopLyricsP1.Clear(Song.BPM);
+  LoopLyricsP2.Clear(Song.BPM);
+  LoopLyricsSong := Song;
+
+  LyricsState.Reset();
+  LyricsState.StartTime := Song.GAP;
+  LyricsState.SetCurrentTime(AudioPlayback.Position);
+  if (Song.Finish > 0) then
+    LyricsState.TotalTime := Song.Finish / 1000
+  else
+    LyricsState.TotalTime := AudioPlayback.Length;
+  LyricsState.UpdateBeats();
+
+  if Song.isDuet and (Length(Song.Tracks) >= 2) then
+  begin
+    LoopLyricsP1LastLine := GetLoopLyricsCurrentLine(Song, 0);
+    LoopLyricsP2LastLine := GetLoopLyricsCurrentLine(Song, 1);
+    FillLoopLyricsQueue(LoopLyricsP1, Song, 0, LoopLyricsP1LastLine);
+    FillLoopLyricsQueue(LoopLyricsP2, Song, 1, LoopLyricsP2LastLine);
+  end
+  else
+  begin
+    LoopLyricsLastLine := GetLoopLyricsCurrentLine(Song, 0);
+    FillLoopLyricsQueue(LoopLyrics, Song, 0, LoopLyricsLastLine);
+  end;
+  LoopLyricsReady := true;
+end;
+
+procedure TScreenSong.UpdateAndDrawLoopLyrics;
+var
+  Song: TSong;
+  CurrentLine: integer;
+  CurrentLineP1: integer;
+  CurrentLineP2: integer;
+begin
+  if not (IsLoopModeActive and CoverFull) then
+    Exit;
+  if (CatSongs.VisibleSongs <= 0) or CatSongs.Song[Interaction].Main then
+    Exit;
+
+  Song := CatSongs.Song[Interaction];
+  if (Song = nil) or (Length(Song.Tracks) = 0) or (Length(Song.Tracks[0].Lines) = 0) then
+    Exit;
+
+  if (not LoopLyricsReady) or (LoopLyricsSong <> Song) then
+    ResetLoopLyricsForCurrentSong;
+
+  if not LoopLyricsReady then
+    Exit;
+
+  LyricsState.StartTime := Song.GAP;
+  LyricsState.SetCurrentTime(AudioPlayback.Position);
+  LyricsState.UpdateBeats();
+  if Song.isDuet and (Length(Song.Tracks) >= 2) and (Length(Song.Tracks[1].Lines) > 0) then
+  begin
+    CurrentLineP1 := GetLoopLyricsCurrentLine(Song, 0);
+    CurrentLineP2 := GetLoopLyricsCurrentLine(Song, 1);
+
+    if (CurrentLineP1 < LoopLyricsP1LastLine) or (CurrentLineP2 < LoopLyricsP2LastLine) then
+      ResetLoopLyricsForCurrentSong
+    else
+    begin
+      if (CurrentLineP1 > LoopLyricsP1LastLine) then
+      begin
+        LoopLyricsP1LastLine := CurrentLineP1;
+        FillLoopLyricsQueue(LoopLyricsP1, Song, 0, LoopLyricsP1LastLine);
+      end;
+      if (CurrentLineP2 > LoopLyricsP2LastLine) then
+      begin
+        LoopLyricsP2LastLine := CurrentLineP2;
+        FillLoopLyricsQueue(LoopLyricsP2, Song, 1, LoopLyricsP2LastLine);
+      end;
+    end;
+
+    if LoopLyricsReady then
+    begin
+      LoopLyricsP1.Draw(LyricsState.MidBeat);
+      LoopLyricsP2.Draw(LyricsState.MidBeat);
+    end;
+  end
+  else
+  begin
+    CurrentLine := GetLoopLyricsCurrentLine(Song, 0);
+
+    if (CurrentLine < LoopLyricsLastLine) then
+      ResetLoopLyricsForCurrentSong
+    else if (CurrentLine > LoopLyricsLastLine) then
+    begin
+      LoopLyricsLastLine := CurrentLine;
+      FillLoopLyricsQueue(LoopLyrics, Song, 0, LoopLyricsLastLine);
+    end;
+
+    if LoopLyricsReady then
+      LoopLyrics.Draw(LyricsState.MidBeat);
+  end;
+end;
+
+procedure TScreenSong.SendRemoteSongSelectState(Force: boolean);
+var
+  Tick: cardinal;
+  I: integer;
+  Sent: integer;
+  SongId: integer;
+  PlaylistIndex: integer;
+  SongJson: string;
+  ResultsJson: string;
+  LibraryJson: string;
+  PlaylistsJson: string;
+  PlaylistItemsJson: string;
+  Song: TSong;
+  CurrentPlaylist: integer;
+  PlaylistItemIndex: integer;
+  PreviewSongId: integer;
+  PreviewActive: boolean;
+  PreviewPosition: real;
+  StateChanged: boolean;
+  IncludeFullState: boolean;
+  BaseJson: string;
+
+  function BoolJson(Value: boolean): string;
+  begin
+    if Value then
+      Result := 'true'
+    else
+      Result := 'false';
+  end;
+
+  function SongToJson(const SongIndex: integer): string;
+  var
+    Item: TSong;
+  begin
+    Result := 'null';
+    if (SongIndex < 0) or (SongIndex > High(CatSongs.Song)) then
+      Exit;
+    Item := CatSongs.Song[SongIndex];
+    if not Assigned(Item) then
+      Exit;
+
+    Result :=
+      '{"songId":' + IntToStr(SongIndex) +
+      ',"artist":"' + RemoteJsonEscape(Item.Artist) + '"' +
+      ',"title":"' + RemoteJsonEscape(Item.Title) + '"' +
+      ',"year":' + IntToStr(Item.Year) +
+      ',"visible":' + BoolJson(Item.Visible) +
+      ',"category":' + BoolJson(Item.Main) +
+      ',"duet":' + BoolJson(Item.isDuet) +
+      ',"previewStart":' + StringReplace(FloatToStr(Item.PreviewStart), ',', '.', []) +
+      ',"audioPath":"' + RemoteJsonEscape(UTF8String(Item.Path.Append(Item.Audio).ToNative)) + '"' +
+      '}';
+  end;
+
+begin
+  Tick := SDL_GetTicks();
+
+  StateChanged := (LastRemoteStateInteraction <> Interaction) or
+                  (LastRemoteStateVisibleSongs <> CatSongs.VisibleSongs);
+  if (not Force) and (not StateChanged) and
+     (Tick - LastRemoteStateTick < REMOTE_STATE_THROTTLE_MS) then
+    Exit;
+
+  IncludeFullState := Force or (LastRemoteStateVisibleSongs <> CatSongs.VisibleSongs);
+  LastRemoteStateTick := Tick;
+  LastRemoteStateInteraction := Interaction;
+  LastRemoteStateVisibleSongs := CatSongs.VisibleSongs;
+
+  SongId := Interaction;
+  if (SongId < 0) or (SongId > High(CatSongs.Song)) then
+    SongId := -1;
+
+  PreviewSongId := PreviewOpened;
+  if (PreviewSongId < 0) or (PreviewSongId > High(CatSongs.Song)) then
+    PreviewSongId := -1;
+  PreviewActive := (PreviewSongId >= 0) and (not AudioPlayback.Finished);
+  if PreviewActive then
+    PreviewPosition := AudioPlayback.Position
+  else
+    PreviewPosition := 0;
+
+  SongJson := SongToJson(Interaction);
+  BaseJson :=
+    '{"type":"song.select.state","protocol":1' +
+    ',"selectedSongId":' + IntToStr(SongId) +
+    ',"previewSongId":' + IntToStr(PreviewSongId) +
+    ',"previewActive":' + BoolJson(PreviewActive) +
+    ',"previewPositionSec":' + StringReplace(FloatToStr(PreviewPosition), ',', '.', []) +
+    ',"currentSong":' + SongJson;
+
+  if not IncludeFullState then
+  begin
+    RemoteBridgeIPC.SendJsonMessage(BaseJson + '}');
+    Exit;
+  end;
+
+  ResultsJson := '[';
+  Sent := 0;
+  for I := 0 to High(CatSongs.Song) do
+  begin
+    Song := CatSongs.Song[I];
+    if Assigned(Song) and Song.Visible and (not Song.Main) then
+    begin
+      if Sent > 0 then
+        ResultsJson := ResultsJson + ',';
+      ResultsJson := ResultsJson + SongToJson(I);
+      Inc(Sent);
+      if Sent >= 30 then
+        Break;
+    end;
+  end;
+  ResultsJson := ResultsJson + ']';
+
+  LibraryJson := '[';
+  Sent := 0;
+  for I := 0 to High(CatSongs.Song) do
+  begin
+    Song := CatSongs.Song[I];
+    if Assigned(Song) and (not Song.Main) then
+    begin
+      if Sent > 0 then
+        LibraryJson := LibraryJson + ',';
+      LibraryJson := LibraryJson + SongToJson(I);
+      Inc(Sent);
+    end;
+  end;
+  LibraryJson := LibraryJson + ']';
+
+  PlaylistsJson := '[';
+  for PlaylistIndex := 0 to High(PlaylistMan.Playlists) do
+  begin
+    if PlaylistIndex > 0 then
+      PlaylistsJson := PlaylistsJson + ',';
+    PlaylistsJson := PlaylistsJson +
+      '{"index":' + IntToStr(PlaylistIndex) +
+      ',"name":"' + RemoteJsonEscape(PlaylistMan.Playlists[PlaylistIndex].Name) + '"' +
+      ',"size":' + IntToStr(Length(PlaylistMan.Playlists[PlaylistIndex].Items)) +
+      ',"current":' + BoolJson(PlaylistIndex = PlaylistMan.CurPlaylist) +
+      '}';
+  end;
+  PlaylistsJson := PlaylistsJson + ']';
+
+  CurrentPlaylist := PlaylistMan.CurPlaylist;
+  PlaylistItemsJson := '[';
+  if (CurrentPlaylist >= 0) and (CurrentPlaylist <= High(PlaylistMan.Playlists)) then
+  begin
+    Sent := 0;
+    for PlaylistItemIndex := 0 to High(PlaylistMan.Playlists[CurrentPlaylist].Items) do
+    begin
+      if Sent > 0 then
+        PlaylistItemsJson := PlaylistItemsJson + ',';
+      PlaylistItemsJson := PlaylistItemsJson +
+        '{"itemIndex":' + IntToStr(PlaylistItemIndex) +
+        ',"songId":' + IntToStr(PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID) +
+        ',"artist":"' + RemoteJsonEscape(PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].Artist) + '"' +
+        ',"title":"' + RemoteJsonEscape(PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].Title) + '"';
+      if (PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID >= 0) and
+         (PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID <= High(CatSongs.Song)) and
+         Assigned(CatSongs.Song[PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID]) then
+        PlaylistItemsJson := PlaylistItemsJson +
+          ',"previewStart":' + StringReplace(FloatToStr(CatSongs.Song[PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID].PreviewStart), ',', '.', []) +
+          ',"audioPath":"' + RemoteJsonEscape(UTF8String(CatSongs.Song[PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID].Path.Append(CatSongs.Song[PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID].Audio).ToNative)) + '"';
+      PlaylistItemsJson := PlaylistItemsJson + '}';
+      Inc(Sent);
+      if Sent >= 50 then
+        Break;
+    end;
+  end;
+  PlaylistItemsJson := PlaylistItemsJson + ']';
+
+  RemoteBridgeIPC.SendJsonMessage(
+    BaseJson +
+    ',"visibleSongs":' + IntToStr(CatSongs.VisibleSongs) +
+    ',"totalSongs":' + IntToStr(Length(CatSongs.Song)) +
+    ',"searchActive":' + BoolJson(CatSongs.CatNumShow = -2) +
+    ',"playlistActive":' + BoolJson(CatSongs.CatNumShow = -3) +
+    ',"results":' + ResultsJson +
+    ',"library":' + LibraryJson +
+    ',"playlists":' + PlaylistsJson +
+    ',"playlistItems":' + PlaylistItemsJson +
+    ',"curPlaylist":' + IntToStr(PlaylistMan.CurPlaylist) +
+    '}'
+  );
 end;
 
 //Show Wrong Song when Tabs on Fix
@@ -445,6 +1310,14 @@ begin
 end;
 //Show Cat in Top Left Mod End
 
+procedure TScreenSong.ResetRandomSongState;
+begin
+  SetLength(RandomSongOrder, 0);
+  SetLength(RandomSearchOrder, 0);
+  NextRandomSongIdx := High(cardinal);
+  NextRandomSearchIdx := High(cardinal);
+end;
+
 procedure TScreenSong.ResetScrollList();
 begin
 
@@ -455,6 +1328,37 @@ begin
     SetScrollRefresh;
   end;
 
+end;
+
+procedure TScreenSong.ConfigureCoverTexture(var Tex: TTexture; IsPlaceholder: boolean);
+var
+  CropX1, CropX2: real;
+begin
+  Tex.ScaleMode := lsStretch;
+  Tex.EdgeExtend := true;
+  Tex.EdgeExtendPixels := 1;
+  // Always use textured edge extension to avoid pillar/letterboxing.
+  Tex.EdgeExtendSolidFill := false;
+  Tex.EdgeExtendFillR := 0;
+  Tex.EdgeExtendFillG := 0;
+  Tex.EdgeExtendFillB := 0;
+
+  // Placeholders: crop to a centered square region via TexX1/TexX2 and edge extend
+  if IsPlaceholder or (Tex.SourceW > Tex.SourceH * 1.5) then
+  begin
+    Tex.TexX1 := 0;
+    Tex.TexX2 := 1;
+    Tex.TexY1 := 0;
+    Tex.TexY2 := 1;
+
+    if (Tex.SourceW > 0) and (Tex.SourceH > 0) and (Tex.SourceW > Tex.SourceH) then
+    begin
+      CropX1 := (Tex.SourceW - Tex.SourceH) / (2 * Tex.SourceW);
+      CropX2 := 1 - CropX1;
+      Tex.TexX1 := CropX1;
+      Tex.TexX2 := CropX2;
+    end;
+  end;
 end;
 
 procedure TScreenSong.ParseInputNextHorizontal(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
@@ -666,17 +1570,19 @@ end;
 
 // Method for input parsing. If false is returned, GetNextWindow
 // should be checked to know the next window to load;
-function TScreenSong.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenSong.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   I:      integer;
   I2:     integer;
+  JumpStart: integer;
+  JumpTarget: integer;
   SDL_ModState:  word;
   UpperLetter: UCS4Char;
-  TempLetter: UCS4Char;
   TempStr: UTF8String;
   VerifySong, WebList: string;
   Fix: boolean;
   VS: integer;
+  NeedPlayersScreen: boolean;
 
   function RandomPermute(Num: integer): CardinalArray;
   var
@@ -721,6 +1627,9 @@ begin
     SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
     + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
 
+    if (SDL_ModState and KMOD_LALT = 0) or ((AltJumpPrefix <> '') and (SDL_GetTicks - AltJumpLastTick > 1000)) then
+      AltJumpPrefix := '';
+
     //Jump to Artist/Title
     if ((SDL_ModState and KMOD_LALT <> 0) and (FreeListMode)) then
     begin
@@ -732,6 +1641,8 @@ begin
 
       if (PressedKey in ([SDLK_a..SDLK_z, SDLK_0..SDLK_9])) then
       begin
+        AltJumpPrefix := AltJumpPrefix + UCS4ToUTF8String(UCS4UpperCase(PressedKey));
+        AltJumpLastTick := SDL_GetTicks;
         I2 := Length(CatSongs.Song);
 
         //Jump To Title
@@ -742,8 +1653,7 @@ begin
             if (CatSongs.Song[(I + Interaction) mod I2].Visible) then
             begin
               TempStr := CatSongs.Song[(I + Interaction) mod I2].Title;
-              if (Length(TempStr) > 0) and
-                 (UCS4UpperCase(UTF8ToUCS4String(TempStr)[0]) = UpperLetter) then
+              if (Length(TempStr) > 0) and UTF8StartsText(AltJumpPrefix, TempStr) then
               begin
                 SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2), (I + Interaction) mod I2, VS);
 
@@ -759,34 +1669,79 @@ begin
         //Jump to Artist
         else if (SDL_ModState = KMOD_LALT) then
         begin
+          JumpStart := Interaction;
           for I := 1 to High(CatSongs.Song) do
           begin
-            if (CatSongs.Song[(I + Interaction) mod I2].Visible) then
+            if (CatSongs.Song[(I + JumpStart) mod I2].Visible) then
             begin
               if (TSortingType(Ini.Sorting) = sFolder) then
               begin
-                if CatSongs.Song[(I + Interaction) mod I2].Main then
-                  TempStr := CatSongs.Song[(I + Interaction) mod I2].Artist
+                if CatSongs.Song[(I + JumpStart) mod I2].Main then
+                  TempStr := CatSongs.Song[(I + JumpStart) mod I2].Artist
                 else
-                  TempStr := CatSongs.Song[(I + Interaction) mod I2].Folder;
+                  TempStr := CatSongs.Song[(I + JumpStart) mod I2].Folder;
               end
               else
-                TempStr := CatSongs.Song[(I + Interaction) mod I2].Artist;
-              if Length(TempStr) > 0 then TempLetter := UCS4UpperCase(UTF8ToUCS4String(TempStr)[0])
-              else                        TempLetter := 0;
+                TempStr := CatSongs.Song[(I + JumpStart) mod I2].Artist;
               //in case of tabs, the artist string may be enclosed in brackets so we check the first charactere is a bracket then go to next
               // 91 -> '['
-              if (Length(TempStr) > 1) and (TempLetter = 91) then
-                 TempLetter := UCS4UpperCase(UTF8ToUCS4String(TempStr)[1]);
-              if (TempLetter = UpperLetter) then
+              if (Length(TempStr) > 1) and (TempStr[1] = '[') then
+                TempStr := UTF8Copy(TempStr, 2, Length(TempStr) - 1);
+              if (Length(TempStr) > 0) and UTF8StartsText(AltJumpPrefix, TempStr) then
               begin
-                SkipTo(CatSongs.VisibleIndex((I + Interaction) mod I2), (I + Interaction) mod I2, VS);
+                SkipTo(CatSongs.VisibleIndex((I + JumpStart) mod I2), (I + JumpStart) mod I2, VS);
 
                 AudioPlayback.PlaySound(SoundLib.Change);
 
                 SetScrollRefresh;
 
                 //Break and Exit
+                Exit;
+              end;
+            end;
+          end;
+
+          if (TSortingType(Ini.Sorting) in [sArtist, sArtist2, sFolder]) and (Ini.TabsAtStartup = 1) and
+             (CatSongs.CatNumShow > -1) then
+          begin
+            JumpStart := -1;
+            for I := 0 to High(CatSongs.Song) do
+            begin
+              if CatSongs.Song[I].Main and (CatSongs.Song[I].OrderNum = CatSongs.CatNumShow) then
+              begin
+                JumpStart := I;
+                break;
+              end;
+            end;
+
+            if (JumpStart <> -1) then
+            begin
+              JumpTarget := -1;
+              for I := 1 to High(CatSongs.Song) do
+              begin
+                if CatSongs.Song[(I + JumpStart) mod I2].Main then
+                begin
+                  TempStr := CatSongs.Song[(I + JumpStart) mod I2].Artist;
+                  if (Length(TempStr) > 1) and (TempStr[1] = '[') then
+                    TempStr := UTF8Copy(TempStr, 2, Length(TempStr) - 1);
+                  if (Length(TempStr) > 0) and UTF8StartsText(AltJumpPrefix, TempStr) then
+                  begin
+                    JumpTarget := (I + JumpStart) mod I2;
+                    break;
+                  end;
+                end;
+              end;
+
+              if (JumpTarget <> -1) then
+              begin
+                CatSongs.ShowCategoryList;
+                SkipTo(CatSongs.VisibleIndex(JumpTarget), JumpTarget, CatSongs.VisibleSongs);
+                ShowCatTL(JumpTarget);
+
+                AudioPlayback.PlaySound(SoundLib.Change);
+
+                SetScrollRefresh;
+
                 Exit;
               end;
             end;
@@ -886,30 +1841,19 @@ begin
                 if CatSongs.CatNumShow = -3 then
                 begin
                   ScreenSongMenu.OnShow;
-
-                  if (ScreenSong.Mode = smJukebox) then
-                    ScreenSongMenu.MenuShow(SM_Jukebox)
-                  else
-                    ScreenSongMenu.MenuShow(SM_Playlist);
+                  ScreenSongMenu.MenuShow(SM_Playlist);
                 end
                 else
                 begin
                   EnsureMedleyData(Interaction, msCalculated);
                   ScreenSongMenu.OnShow;
-
-                  if (ScreenSong.Mode = smJukebox) then
-                    ScreenSongMenu.MenuShow(SM_Jukebox)
-                  else
-                    ScreenSongMenu.MenuShow(SM_Main);
+                  ScreenSongMenu.MenuShow(SM_Main);
                 end;
               end
               else
               begin
                 ScreenSongMenu.OnShow;
-                if (ScreenSong.Mode = smJukebox) then
-                  ScreenSongMenu.MenuShow(SM_Jukebox)
-                else
-                  ScreenSongMenu.MenuShow(SM_Playlist_Load);
+                ScreenSongMenu.MenuShow(SM_Playlist_Load);
               end;
             end //Party Mode -> Show Party Menu
             else
@@ -1091,11 +2035,28 @@ begin
             PlayListMan.SetPlayList(PlayListMan.CurPlaylist);
             SetScrollRefresh;
           end;
+          // In non-playlist contexts, use O as loop-order toggle
+          if (CatSongs.CatNumShow <> -3) and FreeListMode then
+            LoopForceFixedOrder := not LoopForceFixedOrder;
+        end;
+
+      SDLK_L:
+        begin
+          ToggleLoopMode;
+          Exit;
         end;
 
       SDLK_T:
         if CatSongs.Song[Interaction].hasRap then
           RapToFreestyle := not RapToFreestyle;
+
+      SDLK_V:
+        begin
+          CoverFull := not CoverFull;
+          if IsLoopModeActive then
+            LoopPreferredCoverFull := CoverFull;
+          Exit;
+        end;
 
       SDLK_W:
         begin
@@ -1127,14 +2088,29 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
+          if (PressedKey = SDLK_ESCAPE) and IsLoopModeActive and CoverFull then
+          begin
+            CoverFull := false;
+            Exit;
+          end;
+
           CloseMessage();
 
           if (FreeListMode) then
           begin
             Fix := true;
 
+            if (CatSongs.CatNumShow = -2) and (PlaylistMan.CurPlayList <> -1) then
+            begin
+              PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, Interaction);
+              NextRandomSearchIdx := CatSongs.VisibleSongs;
+              SelectNext;
+              SelectPrev;
+              FixSelected;
+            end
+
             //On Escape goto Cat-List Hack
-            if (Ini.Tabs = 1) and (CatSongs.CatNumShow <> -1) then
+            else if (Ini.Tabs = 1) and (CatSongs.CatNumShow <> -1) then
             begin
 
               //Find Category
@@ -1180,15 +2156,18 @@ begin
               //Show Cat in Top Left Mod
               HideCatTL;
 
+              ChessboardMinLine := MainChessboardMinLine;
+              ListMinLine := MainListMinLine;
+
               //Show Wrong Song when Tabs on Fix
               if (Fix) then
               begin
                 SelectNext;
-                FixSelected;
+                if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) then
+                  SkipTo(CatSongs.VisibleIndex(Interaction), Interaction, CatSongs.VisibleSongs)
+                else
+                  FixSelected;
               end;
-
-              ChessboardMinLine := MainChessboardMinLine;
-              ListMinLine := MainListMinLine;
             end
             else
             begin
@@ -1204,12 +2183,18 @@ begin
                 HideCatTL;
                 Interaction := 0;
 
+                ChessboardMinLine := MainChessboardMinLine;
+                ListMinLine := MainListMinLine;
+
                 PlaylistMan.UnsetPlaylist;
 
                 //Show Wrong Song when Tabs on Fix
                 SelectNext;
                 SelectPrev;
-                FixSelected;
+                if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) then
+                  SkipTo(CatSongs.VisibleIndex(Interaction), Interaction, CatSongs.VisibleSongs)
+                else
+                  FixSelected;
               end
               else
               begin
@@ -1221,9 +2206,15 @@ begin
 
                 case Mode of
                   smPartyFree: FadeTo(@ScreenPartyNewRound);
-                  smJukebox: FadeTo(@ScreenJukeboxPlaylist);
                   smPartyTournament: FadeTo(@ScreenPartyTournamentRounds);
-                  else FadeTo(@ScreenMain);
+                  else
+                  begin
+                    LoopModeEnabled := false;
+                    LoopPaused := false;
+                    LoopForceFixedOrder := false;
+                    CoverFull := false;
+                    FadeTo(@ScreenMain);
+                  end;
                 end;
 
               end;
@@ -1233,6 +2224,10 @@ begin
           //When in party Mode then Ask before Close
           else if (Mode = smPartyClassic) then
           begin
+            LoopModeEnabled := false;
+            LoopPaused := false;
+            LoopForceFixedOrder := false;
+            CoverFull := false;
             AudioPlayback.PlaySound(SoundLib.Back);
             CheckFadeTo(@ScreenMain,'MSG_END_PARTY');
           end;
@@ -1287,8 +2282,10 @@ begin
                 Exit;
               end;
 
+              NeedPlayersScreen := (Mode = smNormal) and (Ini.OnSongClick = 1);
               StopVideoPreview;
-              StopMusicPreview;
+              if not NeedPlayersScreen then
+                StopMusicPreview;
 
               if (Mode = smNormal) then //Normal Mode -> Start Song
               begin
@@ -1337,23 +2334,33 @@ begin
                   ScreenSong.StartSong;
                 end;
 
-                if (Mode = smJukebox) then
-                begin
-                  if (Length(ScreenJukebox.JukeboxSongsList) > 0) then
-                  begin
-                    ScreenJukebox.CurrentSongID := ScreenJukebox.JukeboxVisibleSongs[0];
-                    FadeTo(@ScreenJukebox);
-                  end
-                  else
-                    ScreenPopupError.ShowPopup(Language.Translate('PARTY_MODE_JUKEBOX_NO_SONGS'));
-                end;
               end;
           end;
         end;
 
       SDLK_DOWN:
         begin
+          if IsLoopModeActive then
+          begin
+            LastSelectTime := SDL_GetTicks;
+            if SelectLoopAdjacentSong(1) then
+            begin
+              StartLoopPlaybackForCurrentSong(false);
+              AudioPlayback.PlaySound(SoundLib.Change);
+            end;
+            Exit;
+          end;
+
           LastSelectTime := SDL_GetTicks;
+
+          if (CatSongs.CatNumShow = -3) and (MarkedPlaylistSong <> -1) then
+          begin
+            MarkedPlaylistSong := PlaylistMan.MoveItem(MarkedPlaylistSong, 1);
+            LastSelectTime := 0;
+            FixSelected;
+            SetScrollRefresh;
+            Exit;
+          end;
 
           if (TSongMenuMode(Ini.SongMenu) = smList) then
             ParseInputNextHorizontal(PressedKey, CharCode, PressedDown)
@@ -1363,7 +2370,27 @@ begin
 
       SDLK_UP:
         begin
+          if IsLoopModeActive then
+          begin
+            LastSelectTime := SDL_GetTicks;
+            if SelectLoopAdjacentSong(-1) then
+            begin
+              StartLoopPlaybackForCurrentSong(false);
+              AudioPlayback.PlaySound(SoundLib.Change);
+            end;
+            Exit;
+          end;
+
           LastSelectTime := SDL_GetTicks;
+
+          if (CatSongs.CatNumShow = -3) and (MarkedPlaylistSong <> -1) then
+          begin
+            MarkedPlaylistSong := PlaylistMan.MoveItem(MarkedPlaylistSong, -1);
+            LastSelectTime := 0;
+            FixSelected;
+            SetScrollRefresh;
+            Exit;
+          end;
 
           if (TSongMenuMode(Ini.SongMenu) = smList) then
             ParseInputPrevHorizontal(PressedKey, CharCode, PressedDown)
@@ -1373,7 +2400,27 @@ begin
 
       SDLK_RIGHT:
         begin
+          if IsLoopModeActive then
+          begin
+            LastSelectTime := SDL_GetTicks;
+            if SelectLoopAdjacentSong(1) then
+            begin
+              StartLoopPlaybackForCurrentSong(false);
+              AudioPlayback.PlaySound(SoundLib.Change);
+            end;
+            Exit;
+          end;
+
           LastSelectTime := SDL_GetTicks;
+
+          if (CatSongs.CatNumShow = -3) and (MarkedPlaylistSong <> -1) then
+          begin
+            MarkedPlaylistSong := PlaylistMan.MoveItem(MarkedPlaylistSong, 1);
+            LastSelectTime := 0;
+            FixSelected;
+            SetScrollRefresh;
+            Exit;
+          end;
 
           if (TSongMenuMode(Ini.SongMenu) = smList) then
             ParseInputNextVertical(PressedKey, CharCode, PressedDown)
@@ -1383,7 +2430,27 @@ begin
 
       SDLK_LEFT:
         begin
+          if IsLoopModeActive then
+          begin
+            LastSelectTime := SDL_GetTicks;
+            if SelectLoopAdjacentSong(-1) then
+            begin
+              StartLoopPlaybackForCurrentSong(false);
+              AudioPlayback.PlaySound(SoundLib.Change);
+            end;
+            Exit;
+          end;
+
           LastSelectTime := SDL_GetTicks;
+
+          if (CatSongs.CatNumShow = -3) and (MarkedPlaylistSong <> -1) then
+          begin
+            MarkedPlaylistSong := PlaylistMan.MoveItem(MarkedPlaylistSong, -1);
+            LastSelectTime := 0;
+            FixSelected;
+            SetScrollRefresh;
+            Exit;
+          end;
 
           if (TSongMenuMode(Ini.SongMenu) = smList) then
             ParseInputPrevVertical(PressedKey, CharCode, PressedDown)
@@ -1392,8 +2459,25 @@ begin
         end;
       SDLK_SPACE:
         begin
-          if (Mode = smJukebox) and (not CatSongs.Song[Interaction].Main) then
-            ScreenJukebox.AddSongToJukeboxList(Interaction);
+          if IsLoopModeActive then
+          begin
+            ToggleLoopPause;
+            Exit;
+          end;
+
+          if (CatSongs.CatNumShow = -3) and (not CatSongs.Song[Interaction].Main) then
+          begin
+            if MarkedPlaylistSong = -1 then
+            begin
+              MarkedPlaylistSong := Interaction;
+            end
+            else
+            begin
+              MarkedPlaylistSong := -1;
+            end;
+            SetScrollRefresh;
+            Exit;
+          end;
 
           if (Mode = smNormal) and (CatSongs.Song[Interaction].isDuet) then
             DuetChange := not DuetChange;
@@ -1456,6 +2540,24 @@ begin
     X := X - RenderW;
   Y := Round((Y / ScreenH) * RenderH);
 
+  if CoverFull then
+  begin
+    if HandleLoopOverlayMouse(MouseButton, BtnDown, X, Y) then
+    begin
+      Result := true;
+      Exit;
+    end;
+    // In fullscreen preview mode, ignore all other mouse interactions.
+    Result := true;
+    Exit;
+  end;
+
+  if HandleLoopOverlayMouse(MouseButton, BtnDown, X, Y) then
+  begin
+    Result := true;
+    Exit;
+  end;
+
   if (ScreenSongMenu.Visible) then
   begin
     Result := ScreenSongMenu.ParseMouse(MouseButton, BtnDown, X, Y);
@@ -1501,8 +2603,7 @@ begin
     // hover cover
     for B := 0 to High(Button) do begin
       if (Button[B].Visible) then begin
-        // TODO: you have to specifically hover the cover image. see SetListScroll
-        if InRegion(X, Y, Button[B].GetMouseOverArea) then begin
+        if InRegion(X, Y, GetSongButtonMouseOverArea(B)) then begin
           if (Interaction <> B) then begin
             // play current hover
             isScrolling := false;
@@ -1515,6 +2616,27 @@ begin
         end;
       end;
     end;
+  end;
+end;
+
+function TScreenSong.GetSongButtonMouseOverArea(ButtonIndex: integer): TMouseOverRect;
+var
+  B: integer;
+  ListIndex: integer;
+begin
+  Result := Button[ButtonIndex].GetMouseOverArea;
+
+  if (TSongMenuMode(Ini.SongMenu) = smList) then
+  begin
+    ListIndex := -1;
+    for B := 0 to ButtonIndex do
+    begin
+      if (Button[B].Visible) then
+        Inc(ListIndex);
+    end;
+
+    if (ListIndex >= 0) and (ListIndex <= High(StaticList)) then
+      Result := StaticsList[StaticList[ListIndex]].GetMouseOverArea;
   end;
 end;
 
@@ -1545,7 +2667,7 @@ begin
       begin
         if (Button[B].Visible) then
         begin
-          if InRegion(X, Y, Button[B].GetMouseOverArea) then
+          if InRegion(X, Y, GetSongButtonMouseOverArea(B)) then
           begin
             ParseInput(SDLK_RETURN, 0, true)
           end;
@@ -1562,7 +2684,7 @@ begin
     begin
       if (Button[B].Visible) then
       begin
-        if InRegion(X, Y, Button[B].GetMouseOverArea) then
+        if InRegion(X, Y, GetSongButtonMouseOverArea(B)) then
         begin
           if (Interaction <> B) then
           begin
@@ -1622,7 +2744,7 @@ begin
         // test the 3 front buttons for click
         for I := 0 to 2 do
         begin
-          if InRegion(X, Y, Button[Btn].GetMouseOverArea) then
+          if InRegion(X, Y, GetSongButtonMouseOverArea(Btn)) then
           begin
             // song cover clicked
             if (I = 1) then
@@ -1671,7 +2793,7 @@ begin
         for I := 0 to 4 do
         begin
 
-          if InRegion(X, Y, Button[Btn].GetMouseOverArea) then
+          if InRegion(X, Y, GetSongButtonMouseOverArea(Btn)) then
           begin
             // song cover clicked
             if (I = 2) then
@@ -1711,13 +2833,28 @@ procedure TScreenSong.ColorizeJokers;
 var
   StartJoker, I, J: integer;
   Col: TRGB;
+  JokerTyp: TTextureType;
 begin
 
   StartJoker := StaticTeam1Joker1;
 
   for I:= 0 to 2 do
   begin
-    Col := GetPlayerColor(Ini.SingColor[I]);
+    case I of
+      0: JokerTyp := Theme.Song.StaticTeam1Joker1.Typ;
+      1: JokerTyp := Theme.Song.StaticTeam2Joker1.Typ;
+    else
+      JokerTyp := Theme.Song.StaticTeam3Joker1.Typ;
+    end;
+
+    if (JokerTyp = TEXTURE_TYPE_COLORIZED) then
+      Col := GetPlayerColor(Ini.SingColor[I])
+    else
+    begin
+      Col.R := 1;
+      Col.G := 1;
+      Col.B := 1;
+    end;
 
     for J := StartJoker + I * 5 to (StartJoker + I * 5 - 1) + 5  do
     begin
@@ -1737,6 +2874,8 @@ var
   StaticY: real;
 begin
   inherited Create;
+
+  MarkedPlaylistSong := -1;
 
   LoadFromTheme(Theme.Song);
 
@@ -1792,6 +2931,7 @@ begin
   StaticTeam3Joker3 := AddStatic(Theme.Song.StaticTeam3Joker3);
   StaticTeam3Joker4 := AddStatic(Theme.Song.StaticTeam3Joker4);
   StaticTeam3Joker5 := AddStatic(Theme.Song.StaticTeam3Joker5);
+  ColorizeJokers;
 
   //Load Party or NonParty specific Statics and Texts
   SetLength(StaticParty, Length(Theme.Song.StaticParty));
@@ -1832,25 +2972,13 @@ begin
   InfoMessageBG := AddStatic(Theme.Song.InfoMessageBG);
   InfoMessageText := AddText(Theme.Song.InfoMessageText);
 
-  // Duet Names Singers
-  Static4PlayersDuetSingerP3 := AddStatic(Theme.Song.Static4PlayersDuetSingerP3);
-  Static4PlayersDuetSingerP4 := AddStatic(Theme.Song.Static4PlayersDuetSingerP4);
-
-  Static6PlayersDuetSingerP4 := AddStatic(Theme.Song.Static6PlayersDuetSingerP4);
-  Static6PlayersDuetSingerP5 := AddStatic(Theme.Song.Static6PlayersDuetSingerP5);
-  Static6PlayersDuetSingerP6 := AddStatic(Theme.Song.Static6PlayersDuetSingerP6);
-
-  Text2PlayersDuetSingerP1 := AddText(Theme.Song.Text2PlayersDuetSingerP1);
-  Text2PlayersDuetSingerP2 := AddText(Theme.Song.Text2PlayersDuetSingerP2);
-  Static2PlayersDuetSingerP1 := AddStatic(Theme.Song.Static2PlayersDuetSingerP1);
-  Static2PlayersDuetSingerP2 := AddStatic(Theme.Song.Static2PlayersDuetSingerP2);
-
-  Text3PlayersDuetSingerP1 := AddText(Theme.Song.Text3PlayersDuetSingerP1);
-  Text3PlayersDuetSingerP2 := AddText(Theme.Song.Text3PlayersDuetSingerP2);
-  Text3PlayersDuetSingerP3 := AddText(Theme.Song.Text3PlayersDuetSingerP3);
-  Static3PlayersDuetSingerP1 := AddStatic(Theme.Song.Static3PlayersDuetSingerP1);
-  Static3PlayersDuetSingerP2 := AddStatic(Theme.Song.Static3PlayersDuetSingerP2);
-  Static3PlayersDuetSingerP3 := AddStatic(Theme.Song.Static3PlayersDuetSingerP3);
+  // Duet singer labels are created from a single base template and laid out at runtime.
+  SyncDuetSingerTheme;
+  for I := 0 to High(DuetSingerStatics) do
+  begin
+    DuetSingerStatics[I] := AddStatic(DuetSingerBaseStatic);
+    DuetSingerTexts[I] := AddText(DuetSingerBaseText);
+  end;
 
   // Medley Playlist
   SetLength(TextMedleyArtist, Theme.Song.TextMedleyMax);
@@ -1960,13 +3088,51 @@ begin
   LastPreviewStartTime := 0;
   LastChangeSoundTime := 0;
   LastScrollStopTime := 0;
+  LastPlaylistReloadTime := 0;
+  PreviewEndReloaded := false;
 
   NextRandomSongIdx := High(cardinal);
   NextRandomSearchIdx := High(cardinal);
+  LoopModeEnabled := false;
+  LoopForceFixedOrder := false;
+  LoopPaused := false;
+  LoopPreferredCoverFull := true;
+
+  KeepPreviewMusicOnHide := false;
+  KeepPreviewPositionOnShow := false;
+  PreviewRestorePosition := 0;
+  PreviewRestoreValid := false;
+  LoopLyrics := TLyricEngine.Create(
+    Theme.LyricBarLoop.UpperX, Theme.LyricBarLoop.UpperY, Theme.LyricBarLoop.UpperW, Theme.LyricBarLoop.UpperH,
+    Theme.LyricBarLoop.LowerX, Theme.LyricBarLoop.LowerY, Theme.LyricBarLoop.LowerW, Theme.LyricBarLoop.LowerH);
+  LoopLyricsP1 := TLyricEngine.Create(
+    Theme.LyricBarLoop.UpperX, Theme.LyricBarLoop.UpperY, Theme.LyricBarLoop.UpperW, Theme.LyricBarLoop.UpperH,
+    Theme.LyricBarLoop.UpperX, -1000, Theme.LyricBarLoop.UpperW, 0);
+  LoopLyricsP2 := TLyricEngine.Create(
+    Theme.LyricBarLoop.LowerX, Theme.LyricBarLoop.LowerY, Theme.LyricBarLoop.LowerW, Theme.LyricBarLoop.LowerH,
+    Theme.LyricBarLoop.LowerX, -1000, Theme.LyricBarLoop.LowerW, 0);
+  LoopLyricsSong := nil;
+  LoopLyricsLastLine := 0;
+  LoopLyricsP1LastLine := 0;
+  LoopLyricsP2LastLine := 0;
+  LoopLyricsReady := false;
 
 end;
 
+destructor TScreenSong.Destroy;
+begin
+  FreeAndNil(LoopLyricsP2);
+  FreeAndNil(LoopLyricsP1);
+  FreeAndNil(LoopLyrics);
+  inherited;
+end;
+
 procedure TScreenSong.ColorDuetNameSingers();
+var
+  LocalPlayerCount: integer;
+  LocalStartIndex: integer;
+  VisibleCount: integer;
+  I: integer;
   procedure setColor(static: integer; color: TRGB);
   begin
     Statics[static].Texture.ColR := color.R;
@@ -1974,78 +3140,120 @@ procedure TScreenSong.ColorDuetNameSingers();
     Statics[static].Texture.ColB := color.B;
   end;
 begin
-  if (PlayersPlay = 1) then
+  if Screens > 1 then
   begin
-    setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
-    // this one is different from all the others
-    setColor(Static2PlayersDuetSingerP2, GetPlayerLightColor(Ini.SingColor[0]));
+    LocalPlayerCount := GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct);
+    LocalStartIndex := GetFirstPlayerIndexForScreen(PlayersPlay, Screens, ScreenAct);
+  end
+  else
+  begin
+    LocalPlayerCount := PlayersPlay;
+    LocalStartIndex := 0;
   end;
 
-  if (PlayersPlay = 2) then
+  VisibleCount := Max(2, LocalPlayerCount);
+  LayoutDuetSingerWidgets(VisibleCount);
+  if LocalPlayerCount = 1 then
   begin
-    setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
-    setColor(Static2PlayersDuetSingerP2, ColPlayer[1]);
+    setColor(DuetSingerStatics[0], GetSongPlayerColor(LocalStartIndex));
+    setColor(DuetSingerStatics[1], GetPlayerLightColor(Ini.SingColor[LocalStartIndex]));
+  end
+  else
+  begin
+    for I := 0 to VisibleCount - 1 do
+      setColor(DuetSingerStatics[I], GetSongPlayerColor(LocalStartIndex + I));
   end;
+end;
 
-  if (PlayersPlay = 3) then
-  begin
-    setColor(Static3PlayersDuetSingerP1, ColPlayer[0]);
-    setColor(Static3PlayersDuetSingerP2, ColPlayer[1]);
-    setColor(Static3PlayersDuetSingerP3, ColPlayer[2]);
-  end;
+procedure TScreenSong.LayoutDuetSingerWidgets(PlayerCount: integer);
+var
+  I: integer;
+  Grid: TPlayerGrid;
+  SlotRect: TPlayerSlotRect;
+  RawTextOffsetX: real;
+  RawTextOffsetY: real;
+  TextOffsetX: real;
+  TextOffsetY: real;
+  RowScale: real;
+  BoxWidth: integer;
+  BoxHeight: integer;
+  ContainerX: integer;
+  ContainerY: integer;
+  ContainerW: integer;
+  ContainerH: integer;
+  TotalWidth: integer;
+const
+  TextNudgeX = 3;
+begin
+  if PlayerCount <= 0 then
+    Exit;
 
-  if (PlayersPlay = 4) then
+  SyncDuetSingerTheme;
+  Grid := GetPlayerGrid(PlayerCount);
+  RowScale := Max(0.72, 1.0 - 0.08 * (Grid.Rows - 1));
+  BoxWidth := Max(1, Round(DuetSingerBaseStatic.W * 0.68 * RowScale));
+  BoxHeight := Max(1, Round(DuetSingerBaseStatic.H * RowScale));
+  RawTextOffsetX := DuetSingerBaseText.X - DuetSingerBaseStatic.X;
+  RawTextOffsetY := DuetSingerBaseText.Y - DuetSingerBaseStatic.Y;
+  if (RawTextOffsetX < 0) or (RawTextOffsetX > DuetSingerBaseStatic.W) then
+    TextOffsetX := BoxWidth * 0.35
+  else
+    TextOffsetX := RawTextOffsetX * (BoxWidth / Max(1.0, DuetSingerBaseStatic.W));
+  if (RawTextOffsetY < 0) or (RawTextOffsetY > DuetSingerBaseStatic.H) then
+    TextOffsetY := BoxHeight * 0.15
+  else
+    TextOffsetY := RawTextOffsetY * (BoxHeight / Max(1.0, DuetSingerBaseStatic.H));
+  TotalWidth := Grid.Cols * BoxWidth;
+  if Grid.Cols > 1 then
+    Inc(TotalWidth, (Grid.Cols - 1) * 8);
+
+  ContainerX := Theme.Song.DuetSingerArea.X;
+  ContainerY := Theme.Song.DuetSingerArea.Y;
+  ContainerH := Grid.Rows * BoxHeight;
+  ContainerW := TotalWidth;
+
+  for I := 0 to High(DuetSingerStatics) do
   begin
-    if (Screens = 1) then
+    if I < PlayerCount then
     begin
-      setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
-      setColor(Static2PlayersDuetSingerP2, ColPlayer[1]);
-      setColor(Static4PlayersDuetSingerP3, ColPlayer[2]);
-      setColor(Static4PlayersDuetSingerP4, ColPlayer[3]);
-    end
-    else
-    begin
-      if (ScreenAct = 1) then
-      begin
-        setColor(Static2PlayersDuetSingerP1, ColPlayer[0]);
-        setColor(Static2PlayersDuetSingerP2, ColPlayer[1]);
-      end;
+      SlotRect := GetPlayerSlotRect(I, PlayerCount, ContainerX, ContainerY, ContainerW, ContainerH);
+      Statics[DuetSingerStatics[I]].Texture.X := SlotRect.X;
+      Statics[DuetSingerStatics[I]].Texture.Y := SlotRect.Y;
+      Statics[DuetSingerStatics[I]].Texture.W := BoxWidth;
+      Statics[DuetSingerStatics[I]].Texture.H := BoxHeight;
+      Statics[DuetSingerStatics[I]].Texture.Z := Max(DuetSingerBaseStatic.Z, 0.995);
 
-      if (ScreenAct = 2) then
-      begin
-        setColor(Static2PlayersDuetSingerP1, ColPlayer[2]);
-        setColor(Static2PlayersDuetSingerP2, ColPlayer[3]);
-      end;
+      Text[DuetSingerTexts[I]].X := Statics[DuetSingerStatics[I]].Texture.X + TextOffsetX + TextNudgeX;
+      Text[DuetSingerTexts[I]].Y := Statics[DuetSingerStatics[I]].Texture.Y + TextOffsetY;
+      Text[DuetSingerTexts[I]].W := BoxWidth;
+      Text[DuetSingerTexts[I]].H := Max(1, Round(DuetSingerBaseText.H * RowScale));
+      Text[DuetSingerTexts[I]].Size := Max(8, Round(DuetSingerBaseText.Size * RowScale));
+      Text[DuetSingerTexts[I]].Z := Max(DuetSingerBaseText.Z, 0.996);
     end;
   end;
+end;
 
-  if (PlayersPlay = 6) then
+procedure TScreenSong.SetDuetSingerVisibility(Count: integer);
+var
+  I: integer;
+begin
+  for I := 0 to High(DuetSingerStatics) do
   begin
-    if (Screens = 1) then
-    begin
-      setColor(Static3PlayersDuetSingerP1, ColPlayer[0]);
-      setColor(Static3PlayersDuetSingerP2, ColPlayer[1]);
-      setColor(Static3PlayersDuetSingerP3, ColPlayer[2]);
-      setColor(Static6PlayersDuetSingerP4, ColPlayer[3]);
-      setColor(Static6PlayersDuetSingerP5, ColPlayer[4]);
-      setColor(Static6PlayersDuetSingerP6, ColPlayer[5]);
-    end
-    else
-    begin
-      if (ScreenAct = 1) then
-      begin
-        setColor(Static3PlayersDuetSingerP1, ColPlayer[0]);
-        setColor(Static3PlayersDuetSingerP2, ColPlayer[1]);
-        setColor(Static3PlayersDuetSingerP3, ColPlayer[2]);
-      end;
+    Statics[DuetSingerStatics[I]].Visible := I < Count;
+    Text[DuetSingerTexts[I]].Visible := I < Count;
+  end;
+end;
 
-      if (ScreenAct = 2) then
-      begin
-        setColor(Static3PlayersDuetSingerP1, ColPlayer[3]);
-        setColor(Static3PlayersDuetSingerP2, ColPlayer[4]);
-        setColor(Static3PlayersDuetSingerP3, ColPlayer[5]);
-      end;
-    end;
+procedure TScreenSong.SetDuetSingerTexts(Count, FirstNameIndex: integer);
+var
+  I: integer;
+begin
+  for I := 0 to High(DuetSingerTexts) do
+  begin
+    if I < Count then
+      Text[DuetSingerTexts[I]].Text := CatSongs.Song[Interaction].DuetNames[(FirstNameIndex + (I mod 2)) mod 2]
+    else
+      Text[DuetSingerTexts[I]].Text := '';
   end;
 end;
 
@@ -2055,6 +3263,7 @@ var
   CoverButtonIndex: integer;
   CoverButton: TButton;
   CoverFile: IPath;
+  IsPlaceholder: boolean;
   Song: TSong;
   Event: TSDL_Event;
 begin
@@ -2141,6 +3350,9 @@ begin
   StopMusicPreview();
   StopVideoPreview();
   PreviewOpened := -1;
+  PreviewEndReloaded := false;
+  LoopLyricsReady := false;
+  LoopLyricsSong := nil;
 
   //SetScrollRefresh;
 end;
@@ -2164,29 +3376,10 @@ end;
 procedure TScreenSong.SetScroll;
 var
   VS, B, SongsInCat: integer;
-  procedure HideDuetElements;
-  begin
-    Text[Text2PlayersDuetSingerP1].Visible := false;
-    Text[Text2PlayersDuetSingerP2].Visible := false;
-
-    Statics[Static2PlayersDuetSingerP1].Visible := false;
-    Statics[Static2PlayersDuetSingerP2].Visible := false;
-
-    Text[Text3PlayersDuetSingerP1].Visible := false;
-    Text[Text3PlayersDuetSingerP2].Visible := false;
-    Text[Text3PlayersDuetSingerP3].Visible := false;
-
-    Statics[Static3PlayersDuetSingerP1].Visible := false;
-    Statics[Static3PlayersDuetSingerP2].Visible := false;
-    Statics[Static3PlayersDuetSingerP3].Visible := false;
-
-    Statics[Static4PlayersDuetSingerP3].Visible := false;
-    Statics[Static4PlayersDuetSingerP4].Visible := false;
-
-    Statics[Static6PlayersDuetSingerP4].Visible := false;
-    Statics[Static6PlayersDuetSingerP5].Visible := false;
-    Statics[Static6PlayersDuetSingerP6].Visible := false;
-  end;
+  LocalPlayerCount: integer;
+  LocalStartIndex: integer;
+  BaseNameIndex: integer;
+  VisibleCount: integer;
 begin
   VS := CatSongs.VisibleSongs;
   if VS > 0 then
@@ -2226,108 +3419,40 @@ begin
         Text[TextYear].Text  :=  '';
     end;
 
-    HideDuetElements;
+    SetDuetSingerVisibility(0);
 
     // Duet Singers
     if (CatSongs.Song[Interaction].isDuet) then
     begin
-      if (PlayersPlay = 3) or (PlayersPlay = 6) then
+      if Screens > 1 then
       begin
-        Text[Text3PlayersDuetSingerP1].Visible := true;
-        Text[Text3PlayersDuetSingerP2].Visible := true;
-        Text[Text3PlayersDuetSingerP3].Visible := true;
-
-        Statics[Static3PlayersDuetSingerP1].Visible := true;
-        Statics[Static3PlayersDuetSingerP2].Visible := true;
-        Statics[Static3PlayersDuetSingerP3].Visible := true;
-
-        if (Screens = 1) and (PlayersPlay = 6) then
-        begin
-          Statics[Static6PlayersDuetSingerP4].Visible := true;
-          Statics[Static6PlayersDuetSingerP5].Visible := true;
-          Statics[Static6PlayersDuetSingerP6].Visible := true;
-        end;
+        LocalPlayerCount := GetScreenPlayerCount(PlayersPlay, Screens, ScreenAct);
+        LocalStartIndex := GetFirstPlayerIndexForScreen(PlayersPlay, Screens, ScreenAct);
       end
       else
       begin
-        Text[Text2PlayersDuetSingerP1].Visible := true;
-        Text[Text2PlayersDuetSingerP2].Visible := true;
-
-        Statics[Static2PlayersDuetSingerP1].Visible := true;
-        Statics[Static2PlayersDuetSingerP2].Visible := true;
-
-        if (Screens = 1) and (PlayersPlay = 4) then
-        begin
-          Statics[Static4PlayersDuetSingerP3].Visible := true;
-          Statics[Static4PlayersDuetSingerP4].Visible := true;
-        end;
+        LocalPlayerCount := PlayersPlay;
+        LocalStartIndex := 0;
       end;
+
+      VisibleCount := Max(2, LocalPlayerCount);
+      LayoutDuetSingerWidgets(VisibleCount);
+      SetDuetSingerVisibility(VisibleCount);
 
       // Set duet texts
-      if (DuetChange) then
+      if Screens > 1 then
       begin
-        if (PlayersPlay = 3) or (PlayersPlay = 6) then
-        begin
-          if (PlayersPlay = 3) then
-          begin
-            Text[Text3PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[1];
-            Text[Text3PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[0];
-            Text[Text3PlayersDuetSingerP3].Text := CatSongs.Song[Interaction].DuetNames[1];
-          end
-          else
-          begin
-            if (ScreenAct = 1) then
-            begin
-              Text[Text3PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[1];
-              Text[Text3PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[0];
-              Text[Text3PlayersDuetSingerP3].Text := CatSongs.Song[Interaction].DuetNames[1];
-            end
-            else
-            begin
-              Text[Text3PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[0];
-              Text[Text3PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[1];
-              Text[Text3PlayersDuetSingerP3].Text := CatSongs.Song[Interaction].DuetNames[0];
-            end;
-          end;
-        end
+        if LocalPlayerCount <= 2 then
+          BaseNameIndex := Ord(not DuetChange)
         else
-        begin
-          Text[Text2PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[1];
-          Text[Text2PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[0];
-        end;
+          BaseNameIndex := (LocalStartIndex + Ord(DuetChange)) mod 2;
       end
       else
       begin
-        if (PlayersPlay = 3) or (PlayersPlay = 6) then
-        begin
-          if (PlayersPlay = 3) then
-          begin
-            Text[Text3PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[0];
-            Text[Text3PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[1];
-            Text[Text3PlayersDuetSingerP3].Text := CatSongs.Song[Interaction].DuetNames[0];
-          end
-          else
-          begin
-            if (ScreenAct = 1) then
-            begin
-              Text[Text3PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[0];
-              Text[Text3PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[1];
-              Text[Text3PlayersDuetSingerP3].Text := CatSongs.Song[Interaction].DuetNames[0];
-            end
-            else
-            begin
-              Text[Text3PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[1];
-              Text[Text3PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[0];
-              Text[Text3PlayersDuetSingerP3].Text := CatSongs.Song[Interaction].DuetNames[1];
-            end;
-          end;
-        end
-        else
-        begin
-          Text[Text2PlayersDuetSingerP1].Text := CatSongs.Song[Interaction].DuetNames[0];
-          Text[Text2PlayersDuetSingerP2].Text := CatSongs.Song[Interaction].DuetNames[1];
-        end;
+        BaseNameIndex := Ord(DuetChange);
       end;
+
+      SetDuetSingerTexts(VisibleCount, BaseNameIndex);
     end;
     //Set Song Score
     SongScore;
@@ -2362,7 +3487,7 @@ begin
 
     Statics[VideoIcon].Visible := false;
 
-    HideDuetElements;
+    SetDuetSingerVisibility(0);
 
     for B := 0 to High(Button) do
       Button[B].Visible := false;
@@ -2664,8 +3789,13 @@ begin
 end;
 
 procedure TScreenSong.SetChessboardScrollRefresh;
+var
+  PlaceholderPath: IPath;
+  IsPlaceholder: boolean;
 begin
-  if Statics[StaticActual].Texture.Name <> Skin.GetTextureFileName('SongCover') then
+  PlaceholderPath := Skin.GetTextureFileName('SongCover');
+
+  if Statics[StaticActual].Texture.Name <> PlaceholderPath then
   begin
     glDeleteTextures(1, PGLuint(@Statics[StaticActual].Texture.TexNum));
   end;
@@ -2739,8 +3869,12 @@ var
   B, Count, I:  integer;
   SongID: array of integer;
   Alpha: real;
+  PlaceholderPath: IPath;
+  IsPlaceholder: boolean;
 begin
-  if Statics[StaticActual].Texture.Name <> Skin.GetTextureFileName('SongCover') then
+  PlaceholderPath := Skin.GetTextureFileName('SongCover');
+
+  if Statics[StaticActual].Texture.Name <> PlaceholderPath then
   begin
     glDeleteTextures(1, PGLuint(@Statics[StaticActual].Texture.TexNum));
   end;
@@ -2823,10 +3957,12 @@ begin
 
     //Set Visibility of Rap Icons
     Statics[ListRapIcon[I]].Texture.Alpha := Alpha;
-    Statics[ListRapIcon[I]].Visible := CatSongs.Song[SongID[I]].hasRap and not RapToFreestyle;
+    Statics[ListRapIcon[I]].Visible := CatSongs.Song[SongID[I]].hasRap and
+      ((SongID[I] <> Interaction) or not RapToFreestyle);
 
     Statics[ListRapToFreestyleIcon[I]].Texture.Alpha := Alpha;
-    Statics[ListRapToFreestyleIcon[I]].Visible := CatSongs.Song[SongID[I]].hasRap and RapToFreestyle;
+    Statics[ListRapToFreestyleIcon[I]].Visible := CatSongs.Song[SongID[I]].hasRap and
+      (SongID[I] = Interaction) and RapToFreestyle;
 
     // Set texts
     Text[ListTextArtist[I]].Alpha := Alpha;
@@ -2850,8 +3986,13 @@ end;
 procedure TScreenSong.OnShow;
 var
   I: integer;
+  KeepPreview: boolean;
 begin
   inherited;
+  SyncDuetSingerTheme;
+
+  MarkedPlaylistSong := -1;
+  KeepPreviewMusicOnHide := false;
 
   CloseMessage();
 
@@ -2909,12 +4050,12 @@ begin
       Text[ListTextArtist[I]].Visible := true;
       Text[ListTextTitle[I]].Visible  := true;
       Text[ListTextYear[I]].Visible   := true;
-      Statics[ListVideoIcon[I]].Visible  := true;
-      Statics[ListMedleyIcon[I]].Visible := true;
-      Statics[ListCalcMedleyIcon[I]].Visible := true;
-      Statics[ListDuetIcon[I]].Visible := true;
-      Statics[ListRapIcon[I]].Visible := true;
-      Statics[ListRapToFreestyleIcon[I]].Visible := true;
+      Statics[ListVideoIcon[I]].Visible  := false;
+      Statics[ListMedleyIcon[I]].Visible := false;
+      Statics[ListCalcMedleyIcon[I]].Visible := false;
+      Statics[ListDuetIcon[I]].Visible := false;
+      Statics[ListRapIcon[I]].Visible := false;
+      Statics[ListRapToFreestyleIcon[I]].Visible := false;
     end;
 
     Text[TextArtist].Visible := false;
@@ -2928,26 +4069,53 @@ begin
     Statics[RapToFreestyleIcon].Visible := false;
   end;
 
-  // for duet names
-  ScreenSong.ColPlayer[0] := GetPlayerColor(Ini.SingColor[0]);
-  ScreenSong.ColPlayer[1] := GetPlayerColor(Ini.SingColor[1]);
-  ScreenSong.ColPlayer[2] := GetPlayerColor(Ini.SingColor[2]);
-  ScreenSong.ColPlayer[3] := GetPlayerColor(Ini.SingColor[3]);
-  ScreenSong.ColPlayer[4] := GetPlayerColor(Ini.SingColor[4]);
-  ScreenSong.ColPlayer[5] := GetPlayerColor(Ini.SingColor[5]);
-
   {**
    * Pause background music
    *}
   SoundLib.PauseBgMusic;
 
-  if SongIndex <> Interaction then
+  KeepPreview := KeepPreviewPositionOnShow;
+  if (SongIndex <> Interaction) and not KeepPreview then
     AudioPlayback.Stop;
 
-  PreviewOpened := -1;
+  if KeepPreview then
+    PreviewOpened := Interaction
+  else
+    PreviewOpened := -1;
+  KeepPreviewPositionOnShow := false;
+
+  DuetChange := false;
+  RapToFreestyle := false;
+  if IsLoopModeActive then
+    CoverFull := LoopPreferredCoverFull
+  else
+    CoverFull := false;
 
   // reset video playback engine
   fCurrentVideo := nil;
+  PreviewEndReloaded := false;
+  LastPlaylistReloadTime := SDL_GetTicks;
+  if KeepPreview then
+  begin
+    if PreviewRestoreValid then
+    begin
+      if (AudioPlayback.Length <= 0) then
+      begin
+        if AudioPlayback.Open(CatSongs.Song[Interaction].Path.Append(CatSongs.Song[Interaction].Audio), nil) then
+          AudioPlayback.Position := PreviewRestorePosition;
+        AudioPlayback.Play();
+      end
+      else if AudioPlayback.Finished then
+      begin
+        AudioPlayback.Position := PreviewRestorePosition;
+        AudioPlayback.Play();
+      end;
+
+      PreviewRestoreValid := false;
+    end;
+
+    StartVideoPreview();
+  end;
 
   // reset Medley-Playlist
   SetLength(PlaylistMedley.Song, 0);
@@ -2956,8 +4124,7 @@ begin
   if Mode = smMedley then
     Mode := smNormal;
 
-  if Ini.Players <= 3 then PlayersPlay := Ini.Players + 1;
-  if Ini.Players  = 4 then PlayersPlay := 6;
+  PlayersPlay := UIni.IPlayersVals[Ini.Players];
 
   //Cat Mod etc
   if (Ini.TabsAtStartup = 1) and (CatSongs.CatNumShow = -1) then
@@ -3015,18 +4182,28 @@ begin
     end;
   end;
 
-  if (ScreenSong.Mode = smJukebox) and (Ini.PartyPopup = 1) then
-    ScreenSongMenu.MenuShow(SM_Jukebox);
-
   isScrolling := false;
   SetJoker;
   SetStatics;
+
+  if (TSongMenuMode(Ini.SongMenu) = smList) then
+  begin
+    SetScroll;
+    SetScrollRefresh;
+  end;
+
+  RemoteBridgeIPC.SendGameState('song_select', 0, 0);
+  SendRemoteSongSelectState(true);
 end;
 
 procedure TScreenSong.OnShowFinish;
+var
+  I: Integer;
+  NextSongID: Integer;
 begin
   DuetChange := false;
   RapToFreestyle := false;
+  SyncDuetSingerTheme;
 
   isScrolling := true;
   CoverTime := 10;
@@ -3034,16 +4211,56 @@ begin
   if (PlaylistMan.CurPlayList <> -1) then
   begin
     if PlaylistMan.ReloadPlayList(PlaylistMan.CurPlayList) then
-      PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, SongIndex);
+    begin
+      if PlaylistMan.Playlists[PlaylistMan.CurPlayList].FixedOrder then
+      begin
+        NextSongID := SongIndex;
+
+        if (SongIndex <> -1) then
+        begin
+          I := PlaylistMan.GetIndexbySongID(SongIndex);
+          if (I <> -1) then
+          begin
+            repeat
+              Inc(I);
+              if (I > High(PlaylistMan.Playlists[PlaylistMan.CurPlayList].Items)) then
+                I := 0;
+
+              NextSongID := PlaylistMan.Playlists[PlaylistMan.CurPlayList].Items[I].SongID;
+            until (NextSongID <> SongIndex) or
+                  (Length(PlaylistMan.Playlists[PlaylistMan.CurPlayList].Items) <= 1);
+          end;
+        end;
+        end
+      else
+        NextSongID := -1;
+
+      PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, NextSongID);
+    end;
   end;
+  LastPlaylistReloadTime := SDL_GetTicks;
 
   FilterDuetsInPartyMode; // in party mode
 
   if (Mode = smPartyClassic) then
     SelectRandomSong;
 
+  if IsLoopModeActive then
+  begin
+    // Returning from sing/score should immediately restore loop fullscreen preview.
+    LoopPreferredCoverFull := true;
+    CoverFull := true;
+    if (CatSongs.VisibleSongs > 0) and (not CatSongs.Song[Interaction].Main) then
+      StartLoopPlaybackForCurrentSong(false);
+  end;
+
   SetScrollRefresh;
   FixSelected;
+  SetScroll;
+
+  if (PreviewOpened = Interaction) and not Assigned(fCurrentVideo) then
+    StartVideoPreview();
+
   //if (Mode = smPartyTournament) then
   //  PartyTime := SDL_GetTicks();
 
@@ -3051,13 +4268,24 @@ end;
 
 procedure TScreenSong.OnHide;
 begin
+  if not KeepPreviewMusicOnHide then
+  begin
+    // turn music volume to 100%
+    AudioPlayback.SetVolume(1.0);
 
-  // turn music volume to 100%
-  AudioPlayback.SetVolume(1.0);
-
-  // stop preview
-  StopMusicPreview();
-  StopVideoPreview();
+    // stop preview
+    StopMusicPreview();
+    StopVideoPreview();
+  end
+  else
+  begin
+    // keep music preview running (e.g., player select), but stop video preview
+    StopVideoPreview();
+    KeepPreviewMusicOnHide := false;
+  end;
+  CoverFull := false;
+  LoopLyricsReady := false;
+  LoopLyricsSong := nil;
 end;
 
 procedure TScreenSong.DrawExtensions;
@@ -3071,6 +4299,113 @@ begin
   begin
     ScreenSongJumpto.Draw;
   end;
+end;
+
+function TScreenSong.ReloadCurrentPlaylist(ForceCheck: boolean): boolean;
+var
+  CurrentSongRef: TSong;
+  PreviewSongRef: TSong;
+  NewInteraction: integer;
+  NewPreviewOpened: integer;
+  NowTicks: integer;
+
+  function FindSongRefIndex(SongRef: TSong): integer;
+  var
+    I: integer;
+  begin
+    Result := -1;
+    if not Assigned(SongRef) or (Length(CatSongs.Song) = 0) then
+      Exit;
+
+    for I := Low(CatSongs.Song) to High(CatSongs.Song) do
+    begin
+      if CatSongs.Song[I] = SongRef then
+      begin
+        Result := I;
+        Exit;
+      end;
+    end;
+  end;
+
+begin
+  Result := false;
+
+  if not Assigned(PlayListMan) then
+    Exit;
+
+  if (PlayListMan.CurPlayList < 0) or
+     (PlayListMan.CurPlayList > High(PlayListMan.Playlists)) or
+     (CatSongs.CatNumShow <> -3) then
+    Exit;
+
+  NowTicks := SDL_GetTicks;
+  if not ForceCheck then
+  begin
+    if isScrolling or
+       ((LastPlaylistReloadTime <> 0) and
+        (NowTicks - LastPlaylistReloadTime < PLAYLIST_RELOAD_INTERVAL_MS)) then
+      Exit;
+  end;
+  LastPlaylistReloadTime := NowTicks;
+
+  CurrentSongRef := nil;
+  PreviewSongRef := nil;
+  if (Length(CatSongs.Song) > 0) then
+  begin
+    if (Interaction >= Low(CatSongs.Song)) and (Interaction <= High(CatSongs.Song)) then
+      CurrentSongRef := CatSongs.Song[Interaction];
+
+    if (PreviewOpened >= Low(CatSongs.Song)) and (PreviewOpened <= High(CatSongs.Song)) then
+      PreviewSongRef := CatSongs.Song[PreviewOpened];
+  end;
+
+  if not PlayListMan.ReloadPlayList(Cardinal(PlayListMan.CurPlayList)) then
+    Exit;
+
+  if not PlayListMan.ApplyPlayList(PlayListMan.CurPlayList) then
+    Exit;
+
+  NewPreviewOpened := FindSongRefIndex(PreviewSongRef);
+  if (NewPreviewOpened >= 0) and CatSongs.Song[NewPreviewOpened].Visible then
+    PreviewOpened := NewPreviewOpened
+  else if (PreviewOpened <> -1) then
+  begin
+    StopMusicPreview();
+    StopVideoPreview();
+    PreviewOpened := -1;
+    PreviewEndReloaded := false;
+  end;
+
+  NewInteraction := FindSongRefIndex(CurrentSongRef);
+  if (NewInteraction >= 0) and CatSongs.Song[NewInteraction].Visible then
+  begin
+    Interaction := NewInteraction;
+    FixSelected;
+    SetScrollRefresh;
+    Result := true;
+    Exit;
+  end;
+
+  StopMusicPreview();
+  StopVideoPreview();
+  PreviewOpened := -1;
+  PreviewEndReloaded := false;
+
+  if CatSongs.VisibleSongs > 0 then
+  begin
+    NewInteraction := CatSongs.FindNextVisible(Interaction);
+    if NewInteraction = -1 then
+      NewInteraction := CatSongs.FindPreviousVisible(Interaction);
+
+    if NewInteraction <> -1 then
+      Interaction := NewInteraction;
+
+    FixSelected;
+    SetScrollRefresh;
+    LastScrollStopTime := SDL_GetTicks;
+  end;
+
+  Result := true;
 end;
 
 function TScreenSong.FinishedMusic: boolean;
@@ -3087,9 +4422,56 @@ var
   VideoAlpha: real;
   Position:   real;
   I, J:       integer;
+
+  procedure SetMarkedCardTexture(StaticIndex: integer; const ThemeStatic: TThemeStatic);
+  var
+    NewTexture: TTexture;
+    X, Y, W, H, Z, Alpha: real;
+    Marked: boolean;
+  begin
+    if (StaticIndex < 0) or
+       (StaticIndex > High(Statics)) or
+       (not SameText(ThemeStatic.Tex, 'SongSelection2')) then
+      Exit;
+
+    Marked := (CatSongs.CatNumShow = -3) and (MarkedPlaylistSong = Interaction);
+
+    X := Statics[StaticIndex].Texture.X;
+    Y := Statics[StaticIndex].Texture.Y;
+    W := Statics[StaticIndex].Texture.W;
+    H := Statics[StaticIndex].Texture.H;
+    Z := Statics[StaticIndex].Texture.Z;
+    Alpha := Statics[StaticIndex].Texture.Alpha;
+
+    if Marked then
+      NewTexture := Texture.GetTexture(
+        Skin.GetTextureFileName(ThemeStatic.Tex),
+        ThemeStatic.Typ,
+        RGBFloatToInt(Theme.Song.ListCover.DColR, Theme.Song.ListCover.DColG, Theme.Song.ListCover.DColB))
+    else
+      NewTexture := Texture.GetTexture(
+        Skin.GetTextureFileName(ThemeStatic.Tex),
+        ThemeStatic.Typ,
+        RGBFloatToInt(ThemeStatic.ColR, ThemeStatic.ColG, ThemeStatic.ColB));
+
+    Statics[StaticIndex].Texture := NewTexture;
+    Statics[StaticIndex].Texture.X := X;
+    Statics[StaticIndex].Texture.Y := Y;
+    Statics[StaticIndex].Texture.W := W;
+    Statics[StaticIndex].Texture.H := H;
+    Statics[StaticIndex].Texture.Z := Z;
+    Statics[StaticIndex].Texture.Alpha := Alpha;
+    Statics[StaticIndex].Texture.TexX1 := ThemeStatic.TexX1;
+    Statics[StaticIndex].Texture.TexY1 := ThemeStatic.TexY1;
+    Statics[StaticIndex].Texture.TexX2 := ThemeStatic.TexX2;
+    Statics[StaticIndex].Texture.TexY2 := ThemeStatic.TexY2;
+  end;
+
 begin
 
   FadeMessage();
+  ReloadCurrentPlaylist(false);
+  SendRemoteSongSelectState(false);
 
   if isScrolling then
   begin
@@ -3137,7 +4519,22 @@ begin
   //Log.LogBenchmark('SetScroll4', 5);
 
   if (AudioPlayback.Finished) then
+  begin
     CoverTime := 0;
+    if (PreviewOpened <> -1) and not PreviewEndReloaded then
+    begin
+      PreviewEndReloaded := true;
+      ReloadCurrentPlaylist(true);
+    end;
+    if IsLoopModeActive and (not LoopPaused) then
+    begin
+      if SelectLoopNextSong then
+      begin
+        StartLoopPlaybackForCurrentSong(true);
+        AudioPlayback.PlaySound(SoundLib.Change);
+      end;
+    end;
+  end;
 
   //Fading Functions, Only if Covertime is under 5 Seconds
   if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) then
@@ -3197,65 +4594,31 @@ begin
     StaticsList[I].Draw;
   end;
 
-  // Jukebox Playlist
-  if (Mode = smJukebox) then
-  begin
-    if Length(ScreenJukebox.JukeboxSongsList) > Theme.Song.TextMedleyMax then
-      J := Length(ScreenJukebox.JukeboxSongsList) - Theme.Song.TextMedleyMax
-    else
-      J := 0;
-
-    for I := 0 to Theme.Song.TextMedleyMax - 1 do
-    begin
-      if (Length(ScreenJukebox.JukeboxSongsList) > I + J) then
-      begin
-        Text[TextMedleyArtist[I]].Visible := true;
-        Text[TextMedleyTitle[I]].Visible  := true;
-        Text[TextMedleyNumber[I]].Visible := true;
-        Statics[StaticMedley[I]].Visible  := true;
-
-        Text[TextMedleyNumber[I]].Text := IntToStr(I + 1 + J);
-        Text[TextMedleyArtist[I]].Text := CatSongs.Song[ScreenJukebox.JukeboxSongsList[I + J]].Artist;
-        Text[TextMedleyTitle[I]].Text  := CatSongs.Song[ScreenJukebox.JukeboxSongsList[I + J]].Title;
-      end
-      else
-      begin
-        Text[TextMedleyArtist[I]].Visible := false;
-        Text[TextMedleyTitle[I]].Visible  := false;
-        Text[TextMedleyNumber[I]].Visible := false;
-        Statics[StaticMedley[I]].Visible  := false;
-      end;
-    end;
-  end
+  // Medley Playlist
+  if Length(PlaylistMedley.Song) > Theme.Song.TextMedleyMax then
+    J := Length(PlaylistMedley.Song) - Theme.Song.TextMedleyMax
   else
+    J := 0;
+
+  for I := 0 to Theme.Song.TextMedleyMax - 1 do
   begin
-
-    //Medley Playlist
-    if Length(PlaylistMedley.Song) > Theme.Song.TextMedleyMax then
-      J := Length(PlaylistMedley.Song) - Theme.Song.TextMedleyMax
-    else
-      J := 0;
-
-    for I := 0 to Theme.Song.TextMedleyMax - 1 do
+    if (Length(PlaylistMedley.Song) > I + J) and (MakeMedley) then
     begin
-      if (Length(PlaylistMedley.Song) > I + J) and (MakeMedley) then
-      begin
-        Text[TextMedleyArtist[I]].Visible := true;
-        Text[TextMedleyTitle[I]].Visible  := true;
-        Text[TextMedleyNumber[I]].Visible := true;
-        Statics[StaticMedley[I]].Visible  := true;
+      Text[TextMedleyArtist[I]].Visible := true;
+      Text[TextMedleyTitle[I]].Visible  := true;
+      Text[TextMedleyNumber[I]].Visible := true;
+      Statics[StaticMedley[I]].Visible  := true;
 
-        Text[TextMedleyNumber[I]].Text := IntToStr(I + 1 + J);
-        Text[TextMedleyArtist[I]].Text := CatSongs.Song[PlaylistMedley.Song[I + J]].Artist;
-        Text[TextMedleyTitle[I]].Text  := CatSongs.Song[PlaylistMedley.Song[I + J]].Title;
-      end
-      else
-      begin
-        Text[TextMedleyArtist[I]].Visible := false;
-        Text[TextMedleyTitle[I]].Visible  := false;
-        Text[TextMedleyNumber[I]].Visible := false;
-        Statics[StaticMedley[I]].Visible  := false;
-      end;
+      Text[TextMedleyNumber[I]].Text := IntToStr(I + 1 + J);
+      Text[TextMedleyArtist[I]].Text := CatSongs.Song[PlaylistMedley.Song[I + J]].Artist;
+      Text[TextMedleyTitle[I]].Text  := CatSongs.Song[PlaylistMedley.Song[I + J]].Title;
+    end
+    else
+    begin
+      Text[TextMedleyArtist[I]].Visible := false;
+      Text[TextMedleyTitle[I]].Visible  := false;
+      Text[TextMedleyNumber[I]].Visible := false;
+      Statics[StaticMedley[I]].Visible  := false;
     end;
   end;
 
@@ -3292,7 +4655,14 @@ begin
     fCurrentVideo.Alpha := VideoAlpha;
 
     //set up window
-    if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) then
+    if CoverFull then
+    begin
+        fCurrentVideo.SetScreenPosition(0, 0, 1);
+        fCurrentVideo.Width := 800;
+        fCurrentVideo.Height := 600;
+        fCurrentVideo.ReflectionSpacing := 0;
+    end
+    else if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) then
     begin
         fCurrentVideo.SetScreenPosition(Theme.Song.Cover.SelectX, Theme.Song.Cover.SelectY, 1);
         fCurrentVideo.Width := Theme.Song.Cover.SelectW;
@@ -3311,17 +4681,26 @@ begin
       end;
     end;
 
-    fCurrentVideo.AspectCorrection := acoCrop;
+    if CoverFull then
+      fCurrentVideo.AspectCorrection := acoLetterBox
+    else
+      fCurrentVideo.AspectCorrection := acoCrop;
 
     fCurrentVideo.Draw;
 
-    if Button[interaction].Reflection or (Theme.Song.Cover.SelectReflection) then
+    if (not CoverFull) and (Button[interaction].Reflection or (Theme.Song.Cover.SelectReflection)) then
       fCurrentVideo.DrawReflection;
   end;
 
   // duet names
   if (CatSongs.Song[Interaction].isDuet) then
     ColorDuetNameSingers();
+
+  for I := 0 to High(Theme.Song.Statics) do
+    SetMarkedCardTexture(I, Theme.Song.Statics[I]);
+
+  for I := 0 to High(Theme.Song.StaticNonParty) do
+    SetMarkedCardTexture(StaticNonParty[I], Theme.Song.StaticNonParty[I]);
 
   // Statics
   for I := 0 to High(Statics) do
@@ -3331,9 +4710,36 @@ begin
   for I := 0 to High(Text) do
     Text[I].Draw;
 
+  // Keep duet assignment widgets in the foreground to avoid mode-specific overlap.
+  if CatSongs.Song[Interaction].isDuet then
+  begin
+    for I := 0 to High(DuetSingerStatics) do
+      if Statics[DuetSingerStatics[I]].Visible then
+        Statics[DuetSingerStatics[I]].Draw;
+    for I := 0 to High(DuetSingerTexts) do
+      if Text[DuetSingerTexts[I]].Visible then
+        Text[DuetSingerTexts[I]].Draw;
+  end;
+
   Equalizer.Draw;
 
   DrawExtensions;
+
+  // Keep fullscreen preview video above all song-selection overlays/text.
+  if Assigned(fCurrentVideo) and CoverFull then
+  begin
+    fCurrentVideo.SetScreen(ScreenAct);
+    fCurrentVideo.Alpha := 1;
+    fCurrentVideo.SetScreenPosition(0, 0, 1);
+    fCurrentVideo.Width := 800;
+    fCurrentVideo.Height := 600;
+    fCurrentVideo.ReflectionSpacing := 0;
+    fCurrentVideo.AspectCorrection := acoLetterBox;
+    fCurrentVideo.Draw;
+  end;
+  DrawLoopFullscreenCoverFallback;
+  UpdateAndDrawLoopLyrics;
+  DrawLoopModeOverlay;
 
   //if (Mode = smPartyTournament) then
   //  PartyTimeLimit();
@@ -3598,6 +5004,8 @@ var
   PreviewPos: real;
   PreviewVolume: single;
 begin
+  PreviewEndReloaded := false;
+
   if SongIndex <> -1 then
   begin
     PreviewOpened := SongIndex;
@@ -3648,6 +5056,7 @@ begin
       AudioPlayback.SetVolume(0);
       AudioPlayback.FadeIn(Ini.PreviewFading, PreviewVolume);
     end;
+    SendRemoteSongSelectState(false);
   end;
 end;
 
@@ -3655,6 +5064,20 @@ procedure TScreenSong.StopMusicPreview();
 begin
   // Stop preview of previous song
   AudioPlayback.Stop;
+end;
+
+procedure TScreenSong.StartPreview;
+begin
+  StopMusicPreview;
+  StopVideoPreview;
+  StartMusicPreview;
+  StartVideoPreview;
+end;
+
+procedure TScreenSong.StopPreview;
+begin
+  StopMusicPreview;
+  StopVideoPreview;
 end;
 
 procedure TScreenSong.StartVideoPreview();
@@ -3707,6 +5130,13 @@ begin
     fCurrentVideo.Stop();
     fCurrentVideo := nil;
   end;
+end;
+
+procedure TScreenSong.PreservePreviewForReturn;
+begin
+  KeepPreviewPositionOnShow := true;
+  PreviewRestorePosition := AudioPlayback.Position;
+  PreviewRestoreValid := true;
 end;
 
 // Changes previewed song
@@ -4136,8 +5566,8 @@ end;
 procedure TScreenSong.SelectPlayers;
 begin
   CatSongs.Selected := Interaction;
-  StopMusicPreview();
 
+  KeepPreviewMusicOnHide := true;
   ScreenName.Goto_SingScreen := true;
   FadeTo(@ScreenName);
 end;
@@ -4193,6 +5623,10 @@ end;
 
 //Detailled Cover Loading. Loads the Detailed, uncached Cover of the Song Button
 procedure TScreenSong.LoadCover(NumberOfButtonInArray: integer);
+var
+  PlaceholderPath: IPath;
+  Tex: TTexture;
+  IsPlaceholder: boolean;
 begin
   If (Button[NumberOfButtonInArray].Texture.TexNum = 0) and Assigned(Button[NumberOfButtonInArray].Texture.Name) then
   begin
@@ -4318,7 +5752,8 @@ begin
   begin
     Mode := smMedley;
 
-    StopMusicPreview();
+    if (Ini.OnSongClick <> 1) then
+      StopMusicPreview();
 
     //TODO: how about case 2? menu for medley mode?
     case Ini.OnSongClick of
@@ -4338,7 +5773,8 @@ begin
     if PlaylistMedley.NumMedleySongs = NumSongs then
     begin
       Mode := smMedley;
-      StopMusicPreview();
+      if (Ini.OnSongClick <> 1) then
+        StopMusicPreview();
 
       //TODO: how about case 2? menu for medley mode?
       case Ini.OnSongClick of
@@ -4404,7 +5840,7 @@ procedure TScreenSong.SongScore;
   end;
 begin
 
-  if (CatSongs.Song[Interaction].isDuet) or (RapToFreestyle) or ((Mode <> smNormal) or (Ini.ShowScores = 0) or (CatSongs.Song[Interaction].Edition = '') or ((Ini.ShowScores = 1) and ((Text[TextMaxScore2].Text = '0') and (Text[TextMaxScoreLocal].Text = '0')))) then
+  if RapToFreestyle or ((Mode <> smNormal) or (Ini.ShowScores = 0) or (CatSongs.Song[Interaction].Edition = '') or ((Ini.ShowScores = 1) and ((Text[TextMaxScore2].Text = '0') and (Text[TextMaxScoreLocal].Text = '0')))) then
   begin
     hide([
       TextScore, TextMaxScore, TextMediaScore,
