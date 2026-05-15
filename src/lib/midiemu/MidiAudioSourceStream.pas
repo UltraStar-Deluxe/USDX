@@ -31,6 +31,7 @@ type
     FNote: Integer;
     FFreq: Double;
     FVel: Double;
+    FChannelVolume: Double;
     FPhase: Double;
     FRelease: Boolean;
     FEnvLevel: Double;
@@ -66,6 +67,7 @@ begin
   FNote := -1;
   FFreq := 440.0;
   FVel := 0.0;
+  FChannelVolume := 1.0;
   FOvertoneLevel := 0.0;
   FOvertoneDecay := Power(3e-10, 1 / FFormat.SampleRate); // after 1s amplitude has fallen to 3e-10
   FLock := TCriticalSection.Create;
@@ -140,9 +142,9 @@ begin
 
       if FActive then
       begin
-        sample := Sin(FPhase) * FVel * FEnvLevel;
+        sample := Sin(FPhase) * FVel * FChannelVolume * FEnvLevel;
         // Add overtone with exponential decay for note restart detection
-        overtone := Sin(2 * FPhase) * FOvertoneLevel * FEnvLevel;
+        overtone := Sin(2 * FPhase) * FOvertoneLevel * FChannelVolume * FEnvLevel;
         sample := sample + overtone;
         // Decay overtone
         FOvertoneLevel := FOvertoneLevel * FOvertoneDecay;
@@ -199,6 +201,12 @@ begin
       FEnvLevel := 0;
       FVel := 0;
       FNote := -1;
+      Exit;
+    end;
+
+    if ((MidiMessage and $F0) = MIDI_CONTROLCHANGE) and (Data1 = $07) then
+    begin
+      FChannelVolume := Sqr(Data2 / 127.0);
       Exit;
     end;
 
