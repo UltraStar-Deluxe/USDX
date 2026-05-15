@@ -135,6 +135,7 @@ type
 
       // static
       function AddStatic(ThemeStatic: TThemeStatic): integer; overload;
+      function AddStatic(X, Y: real; ThemeStatic: TThemeStatic): integer; overload;
       function AddStaticRectangle(static: TThemeStaticRectangle): integer;
       function AddStaticAlphaRectangle(static: TThemeStaticAlphaRectangle): integer;
       function AddStaticColorRectangle(static: TThemeStaticColorRectangle): integer;
@@ -152,6 +153,7 @@ type
 
       // text
       function AddText(ThemeText: TThemeText): integer; overload;
+      function AddText(X, Y: real; ThemeText: TThemeText; Replacement: string = ''): integer; overload;
       function AddText(X, Y: real; const Text_: UTF8String): integer; overload;
       function AddText(X, Y: real; Font, Style: integer; Size, ColR, ColG, ColB: real; const Text: UTF8String): integer; overload;
       function AddText(X, Y, W, H: real; Font, Style: integer; Size, ColR, ColG, ColB: real; Align: integer; const Text_: UTF8String; Reflection_: boolean; ReflectionSpacing_: real; Z : real; Writable: boolean): integer; overload;
@@ -191,12 +193,16 @@ type
       function DrawFG: boolean; virtual;
       function Draw: boolean; virtual;
       function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean; virtual;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean; virtual;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; Repeated : boolean = false): boolean; virtual;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; virtual;
       function InRegion(X, Y: real; A: TMouseOverRect): boolean;
       function InRegionX(X: real; A: TMouseOverRect): boolean;
       function InRegionY(Y: real; A: TMouseOverRect): boolean;
+      function InteractionContainsPoint(Index: integer; X, Y: real): boolean;
+      function GetInteractionZ(Index: integer): real;
+      function GetInteractionDrawOrder(Index: integer): integer;
       function InteractAt(X, Y: real): integer;
+      function GetCollectionZ(Index: integer): real;
       function CollectionAt(X, Y: real): integer;
       procedure OnShow; virtual;
       procedure OnShowFinish; virtual;
@@ -643,6 +649,9 @@ begin
   ButtonCollection[Num].Texture.TexY1 := 0;
   ButtonCollection[Num].Texture.TexX2 := 1;
   ButtonCollection[Num].Texture.TexY2 := 1;
+  ButtonCollection[Num].Texture.ScaleMode := ThemeCollection.Style.ScaleMode;
+  ButtonCollection[Num].DeSelectTexture.ScaleMode := ThemeCollection.Style.ScaleMode;
+  ButtonCollection[Num].Texture2.ScaleMode := ThemeCollection.Style.ScaleMode;
   ButtonCollection[Num].SetSelect(false);
 
   ButtonCollection[Num].Reflection := ThemeCollection.Style.Reflection;
@@ -668,6 +677,8 @@ begin
       Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), ThemeCollection.Style.Typ);
   end;
   ButtonCollection[Num].FadeTexPos := ThemeCollection.Style.FadeTexPos;
+  if (ButtonCollection[Num].FadeTex.TexNum <> 0) then
+    ButtonCollection[Num].FadeTex.ScaleMode := ThemeCollection.Style.ScaleMode;
 
   BTLen := Length(ThemeCollection.Style.Text);
   for BT := 0 to BTLen-1 do
@@ -682,6 +693,17 @@ end;
 function TMenu.AddStatic(ThemeStatic: TThemeStatic): integer;
 begin
   Result := AddStatic(ThemeStatic.X, ThemeStatic.Y, ThemeStatic.W, ThemeStatic.H, ThemeStatic.Z,
+    ThemeStatic.ColR, ThemeStatic.ColG, ThemeStatic.ColB,
+    ThemeStatic.TexX1, ThemeStatic.TexY1, ThemeStatic.TexX2, ThemeStatic.TexY2, ThemeStatic.Alpha,
+    Skin.GetTextureFileName(ThemeStatic.Tex),
+    ThemeStatic.Typ, $FFFFFF, ThemeStatic.Reflection, ThemeStatic.Reflectionspacing);
+    if (Result >= 0) then
+      Statics[Result].Texture.ScaleMode := ThemeStatic.ScaleMode;
+end;
+
+function TMenu.AddStatic(X,Y: real; ThemeStatic: TThemeStatic): integer;
+begin
+  Result := AddStatic(X, Y, ThemeStatic.W, ThemeStatic.H, ThemeStatic.Z,
     ThemeStatic.ColR, ThemeStatic.ColG, ThemeStatic.ColB,
     ThemeStatic.TexX1, ThemeStatic.TexY1, ThemeStatic.TexX2, ThemeStatic.TexY2, ThemeStatic.Alpha,
     Skin.GetTextureFileName(ThemeStatic.Tex),
@@ -927,6 +949,14 @@ begin
     ThemeText.ColR, ThemeText.ColG, ThemeText.ColB, ThemeText.Align, ThemeText.Text, ThemeText.Reflection, ThemeText.ReflectionSpacing, ThemeText.Z, ThemeText.Writable);
 end;
 
+function TMenu.AddText(X, Y: real; ThemeText: TThemeText; Replacement: string): integer;
+begin
+  if (Replacement = '') then
+    Replacement := ThemeText.Text;
+  Result := AddText(X, Y, ThemeText.W, ThemeText.H, ThemeText.Font, ThemeText.Style, ThemeText.Size,
+    ThemeText.ColR, ThemeText.ColG, ThemeText.ColB, ThemeText.Align, Replacement, ThemeText.Reflection, ThemeText.ReflectionSpacing, ThemeText.Z, ThemeText.Writable);
+end;
+
 function TMenu.AddText(X, Y: real; const Text_: UTF8String): integer;
 var
   TextNum: integer;
@@ -990,6 +1020,10 @@ begin
     Skin.GetTextureFileName(ThemeButton.Tex), ThemeButton.Typ,
     ThemeButton.Reflection, ThemeButton.Reflectionspacing, ThemeButton.DeSelectReflectionspacing);
 
+  Button[Result].Texture.ScaleMode := ThemeButton.ScaleMode;
+  Button[Result].DeSelectTexture.ScaleMode := ThemeButton.ScaleMode;
+  Button[Result].Texture2.ScaleMode := ThemeButton.ScaleMode;
+
   Button[Result].Z := ThemeButton.Z;
 
   //Button Visibility
@@ -1001,17 +1035,23 @@ begin
 
   Button[Result].Fade := ThemeButton.Fade;
   Button[Result].FadeText := ThemeButton.FadeText;
-  if (ThemeButton.Typ = TEXTURE_TYPE_COLORIZED) then
+  if ThemeButton.Fade then
   begin
-    Button[Result].FadeTex := Texture.GetTexture(
-      Skin.GetTextureFileName(ThemeButton.FadeTex), TEXTURE_TYPE_COLORIZED,
-      RGBFloatToInt(ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB));
-  end
-  else
-  begin
-    Button[Result].FadeTex := Texture.GetTexture(
-      Skin.GetTextureFileName(ThemeButton.FadeTex), ThemeButton.Typ);
+    if (ThemeButton.Typ = TEXTURE_TYPE_COLORIZED) then
+    begin
+      Button[Result].FadeTex := Texture.GetTexture(
+        Skin.GetTextureFileName(ThemeButton.FadeTex), TEXTURE_TYPE_COLORIZED,
+        RGBFloatToInt(ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB));
+    end
+    else
+    begin
+      Button[Result].FadeTex := Texture.GetTexture(
+        Skin.GetTextureFileName(ThemeButton.FadeTex), ThemeButton.Typ);
+    end;
   end;
+
+  if (Button[Result].FadeTex.TexNum <> 0) then
+    Button[Result].FadeTex.ScaleMode := ThemeButton.ScaleMode;
 
   Button[Result].FadeTexPos := ThemeButton.FadeTexPos;
 
@@ -1845,7 +1885,7 @@ begin
   Result := true;
 end;
 
-function TMenu.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TMenu.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   // nothing
   Result := true;
@@ -1993,53 +2033,101 @@ begin
   Result := (Y >= A.Y) and (Y <= A.Y + A.H);
 end;
 
+function TMenu.InteractionContainsPoint(Index: integer; X, Y: real): boolean;
+begin
+  Result := false;
+
+  case Interactions[Index].Typ of
+    iButton, iBCollectionChild:
+      Result := InRegion(X, Y, Button[Interactions[Index].Num].GetMouseOverArea) and
+        Button[Interactions[Index].Num].Visible and
+        Button[Interactions[Index].Num].Selectable and
+        ((not Button[Interactions[Index].Num].Scrollable) or InRegion(X, Y, ScrollArea));
+    iSelectS:
+      Result := InRegion(X, Y, SelectSs[Interactions[Index].Num].GetMouseOverArea) and
+        ((not SelectSs[Interactions[Index].Num].Scrollable) or InRegion(X, Y, ScrollArea));
+  end;
+end;
+
+function TMenu.GetInteractionZ(Index: integer): real;
+begin
+  case Interactions[Index].Typ of
+    iButton, iBCollectionChild:
+      Result := Button[Interactions[Index].Num].Z;
+    iSelectS:
+      Result := SelectSs[Interactions[Index].Num].Texture.Z;
+  else
+    Result := 0;
+  end;
+end;
+
+function TMenu.GetInteractionDrawOrder(Index: integer): integer;
+begin
+  case Interactions[Index].Typ of
+    iButton, iBCollectionChild:
+      Result := Interactions[Index].Num;
+    iSelectS:
+      Result := Length(Button) + Interactions[Index].Num;
+  else
+    Result := Interactions[Index].Num;
+  end;
+end;
+
 //takes x,y coordinates and returns the interaction number
 //of the control at this position
 function TMenu.InteractAt(X, Y: real): integer;
 var
   i: integer;
+  BestZ: real;
+  BestDrawOrder: integer;
+  CurZ: real;
+  CurDrawOrder: integer;
 begin
   Result := -1;
+  BestZ := 0;
+  BestDrawOrder := 0;
+
   for i := Low(Interactions) to High(Interactions) do
   begin
-    case Interactions[i].Typ of
-      iButton:
-        if InRegion(X, Y, Button[Interactions[i].Num].GetMouseOverArea) and
-           Button[Interactions[i].Num].Visible and Button[Interactions[i].Num].Selectable and
-           ((not Button[Interactions[i].Num].Scrollable) or InRegion(X, Y, ScrollArea)) then
-        begin
-          Result:=i;
-          exit;
-        end;
-      iBCollectionChild:
-        if InRegion(X, Y, Button[Interactions[i].Num].GetMouseOverArea) then
-        begin
-          Result:=i;
-          exit;
-        end;
-      iSelectS:
-        if InRegion(X, Y, SelectSs[Interactions[i].Num].GetMouseOverArea) and ((not SelectSs[Interactions[i].Num].Scrollable) or InRegion(X, Y, ScrollArea))  then
-      	begin
-          Result:=i;
-          exit;
-        end;
+    if not InteractionContainsPoint(i, X, Y) then
+      continue;
+
+    CurZ := GetInteractionZ(i);
+    CurDrawOrder := GetInteractionDrawOrder(i);
+    if (Result = -1) or (CurZ > BestZ) or
+       (SameValue(CurZ, BestZ) and (CurDrawOrder > BestDrawOrder)) then
+    begin
+      Result := i;
+      BestZ := CurZ;
+      BestDrawOrder := CurDrawOrder;
     end;
   end;
+end;
+
+function TMenu.GetCollectionZ(Index: integer): real;
+begin
+  Result := ButtonCollection[Index].Z;
 end;
 
 //takes x,y coordinates and returns the button collection id
 function TMenu.CollectionAt(X, Y: real): integer;
 var
   i: integer;
+  BestZ: real;
 begin
   Result := -1;
+  BestZ := 0;
   for i:= Low(ButtonCollection) to High(ButtonCollection) do
   begin
     if InRegion(X, Y, ButtonCollection[i].GetMouseOverArea) and
         ButtonCollection[i].Visible then
     begin
-      Result:=i;
-      exit;
+      if (Result = -1) or (GetCollectionZ(i) > BestZ) or
+         (SameValue(GetCollectionZ(i), BestZ) and (i > Result)) then
+      begin
+        Result := i;
+        BestZ := GetCollectionZ(i);
+      end;
     end;
   end;
 end;

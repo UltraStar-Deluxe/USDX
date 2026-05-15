@@ -186,6 +186,13 @@ begin
     // Help
     Log.LogStatus('Load Help', 'Initialization');
     Help := THelp.Create;
+    if (Length(ILanguage) > 0) then
+    begin
+      if (Ini.Language >= 0) and (Ini.Language < Length(ILanguage)) then
+        Help.ChangeLanguage(ILanguage[Ini.Language])
+      else
+        Help.ChangeLanguage(ILanguage[0]);
+    end;
 
     // it is possible that this is the first run, create a .ini file if neccessary
     Log.LogStatus('Write Ini', 'Initialization');
@@ -557,7 +564,7 @@ begin
             else if (Display.ShouldHandleInput(LongWord(SimKey), KeyCharUnicode, true, SuppressKey)) then
             begin
               // check if screen wants to exit
-              KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true);
+              KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true, Event.key._repeat > 0);
 
               // if screen wants to exit
               if not KeepGoing then
