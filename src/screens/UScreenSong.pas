@@ -80,6 +80,8 @@ type
       LastPreviewStartTime: integer;
       LastChangeSoundTime: integer;
       LastScrollStopTime: integer;
+      LastPlaylistReloadTime: integer;
+      PreviewEndReloaded: boolean;
 
       RandomSongOrder: CardinalArray;
       NextRandomSongIdx: cardinal;
@@ -87,6 +89,7 @@ type
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
+      function ReloadCurrentPlaylist(ForceCheck: boolean): boolean;
     public
       TextArtist:   integer;
       TextTitle:    integer;
@@ -348,6 +351,7 @@ const
   MAX_TIME_MOUSE_SELECT = 800;
   CHANGE_SOUND_THROTTLE_MS = 200;
   PREVIEW_DEBOUNCE_MS = 150;
+  PLAYLIST_RELOAD_INTERVAL_MS = 10000;
 
 // ***** Public methods ****** //
 function TScreenSong.EnsureMedleyData(SongIndex: integer; MinSource: TMedleySource): boolean;
@@ -1952,6 +1956,8 @@ begin
   LastPreviewStartTime := 0;
   LastChangeSoundTime := 0;
   LastScrollStopTime := 0;
+  LastPlaylistReloadTime := 0;
+  PreviewEndReloaded := false;
 
   NextRandomSongIdx := High(cardinal);
   NextRandomSearchIdx := High(cardinal);
@@ -2133,6 +2139,7 @@ begin
   StopMusicPreview();
   StopVideoPreview();
   PreviewOpened := -1;
+  PreviewEndReloaded := false;
 
   //SetScrollRefresh;
 end;
@@ -2940,6 +2947,8 @@ begin
 
   // reset video playback engine
   fCurrentVideo := nil;
+  PreviewEndReloaded := false;
+  LastPlaylistReloadTime := SDL_GetTicks;
 
   // reset Medley-Playlist
   SetLength(PlaylistMedley.Song, 0);
@@ -3028,6 +3037,7 @@ begin
     if PlaylistMan.ReloadPlayList(PlaylistMan.CurPlayList) then
       PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, SongIndex);
   end;
+  LastPlaylistReloadTime := SDL_GetTicks;
 
   FilterDuetsInPartyMode; // in party mode
 
@@ -3065,6 +3075,113 @@ begin
   end;
 end;
 
+function TScreenSong.ReloadCurrentPlaylist(ForceCheck: boolean): boolean;
+var
+  CurrentSongRef: TSong;
+  PreviewSongRef: TSong;
+  NewInteraction: integer;
+  NewPreviewOpened: integer;
+  NowTicks: integer;
+
+  function FindSongRefIndex(SongRef: TSong): integer;
+  var
+    I: integer;
+  begin
+    Result := -1;
+    if not Assigned(SongRef) or (Length(CatSongs.Song) = 0) then
+      Exit;
+
+    for I := Low(CatSongs.Song) to High(CatSongs.Song) do
+    begin
+      if CatSongs.Song[I] = SongRef then
+      begin
+        Result := I;
+        Exit;
+      end;
+    end;
+  end;
+
+begin
+  Result := false;
+
+  if not Assigned(PlayListMan) then
+    Exit;
+
+  if (PlayListMan.CurPlayList < 0) or
+     (PlayListMan.CurPlayList > High(PlayListMan.Playlists)) or
+     (CatSongs.CatNumShow <> -3) then
+    Exit;
+
+  NowTicks := SDL_GetTicks;
+  if not ForceCheck then
+  begin
+    if isScrolling or
+       ((LastPlaylistReloadTime <> 0) and
+        (NowTicks - LastPlaylistReloadTime < PLAYLIST_RELOAD_INTERVAL_MS)) then
+      Exit;
+  end;
+  LastPlaylistReloadTime := NowTicks;
+
+  CurrentSongRef := nil;
+  PreviewSongRef := nil;
+  if (Length(CatSongs.Song) > 0) then
+  begin
+    if (Interaction >= Low(CatSongs.Song)) and (Interaction <= High(CatSongs.Song)) then
+      CurrentSongRef := CatSongs.Song[Interaction];
+
+    if (PreviewOpened >= Low(CatSongs.Song)) and (PreviewOpened <= High(CatSongs.Song)) then
+      PreviewSongRef := CatSongs.Song[PreviewOpened];
+  end;
+
+  if not PlayListMan.ReloadPlayList(Cardinal(PlayListMan.CurPlayList)) then
+    Exit;
+
+  if not PlayListMan.ApplyPlayList(PlayListMan.CurPlayList) then
+    Exit;
+
+  NewPreviewOpened := FindSongRefIndex(PreviewSongRef);
+  if (NewPreviewOpened >= 0) and CatSongs.Song[NewPreviewOpened].Visible then
+    PreviewOpened := NewPreviewOpened
+  else if (PreviewOpened <> -1) then
+  begin
+    StopMusicPreview();
+    StopVideoPreview();
+    PreviewOpened := -1;
+    PreviewEndReloaded := false;
+  end;
+
+  NewInteraction := FindSongRefIndex(CurrentSongRef);
+  if (NewInteraction >= 0) and CatSongs.Song[NewInteraction].Visible then
+  begin
+    Interaction := NewInteraction;
+    FixSelected;
+    SetScrollRefresh;
+    Result := true;
+    Exit;
+  end;
+
+  StopMusicPreview();
+  StopVideoPreview();
+  PreviewOpened := -1;
+  PreviewEndReloaded := false;
+
+  if CatSongs.VisibleSongs > 0 then
+  begin
+    NewInteraction := CatSongs.FindNextVisible(Interaction);
+    if NewInteraction = -1 then
+      NewInteraction := CatSongs.FindPreviousVisible(Interaction);
+
+    if NewInteraction <> -1 then
+      Interaction := NewInteraction;
+
+    FixSelected;
+    SetScrollRefresh;
+    LastScrollStopTime := SDL_GetTicks;
+  end;
+
+  Result := true;
+end;
+
 function TScreenSong.FinishedMusic: boolean;
 begin
 
@@ -3082,6 +3199,7 @@ var
 begin
 
   FadeMessage();
+  ReloadCurrentPlaylist(false);
 
   if isScrolling then
   begin
@@ -3129,7 +3247,14 @@ begin
   //Log.LogBenchmark('SetScroll4', 5);
 
   if (AudioPlayback.Finished) then
+  begin
+    if (PreviewOpened <> -1) and not PreviewEndReloaded then
+    begin
+      PreviewEndReloaded := true;
+      ReloadCurrentPlaylist(true);
+    end;
     CoverTime := 0;
+  end;
 
   //Fading Functions, Only if Covertime is under 5 Seconds
   if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) then
@@ -3590,6 +3715,8 @@ var
   PreviewPos: real;
   PreviewVolume: single;
 begin
+  PreviewEndReloaded := false;
+
   if SongIndex <> -1 then
   begin
     PreviewOpened := SongIndex;
