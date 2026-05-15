@@ -85,6 +85,7 @@ type
       procedure   LoadPlayLists;
       function    LoadPlayList(Index: Cardinal; const Filename: IPath): Boolean;
       function    ReloadPlayList(Index: Cardinal): Boolean;
+      function    ApplyPlayList(Index: Integer): Boolean;
       procedure   SavePlayList(Index: Cardinal);
 
       procedure   RestoreSongOrder;
@@ -219,7 +220,7 @@ begin
   Playlists[Index].Filename := Filename;
   Playlists[Index].Name := '';
   Playlists[Index].FixedOrder := False;
-  Playlists[Index].LastRead := FileAge(Filename.ToNative);
+  Playlists[Index].LastRead := FileAge(FilenameAbs.ToNative);
 
   //Read Until End of File
   while TextStream.ReadLine(Line) do
@@ -342,26 +343,30 @@ begin
     Log.LogError('Could not write Playlistfile "' + Playlists[Index].Name + '"');
   end;
   TextStream.Free;
+  Playlists[Index].LastRead := FileAge(PlaylistFile.ToNative);
 end;
 
 {**
  * Display a Playlist in CatSongs
  *}
-procedure TPlayListManager.SetPlayList(Index: Integer; SongID: Integer = -1);
+function TPlayListManager.ApplyPlayList(Index: Integer): Boolean;
 var
-  I, SongIdx, TargetSongID, RandomVisibleIndex, VisibleCount: Integer;
+  I, SongIdx: Integer;
 begin
+  Result := False;
+
   if (Index < 0) or (Index > High(PlayLists)) then
-    exit;
+    Exit;
 
   RestoreSongOrder;
 
   if Playlists[Index].FixedOrder then
-    ApplyPlaylistOrder(Index)
+  begin
+    ApplyPlaylistOrder(Index);
+    ScreenSong.SyncCoversToSongs;
+  end
   else
     SongOrderDirty := False;
-
-  ScreenSong.SyncCoversToSongs;
 
   //Hide all Songs
   for I := 0 to high(CatSongs.Song) do
@@ -404,6 +409,16 @@ begin
     ScreenSong.ShowCatTLCustom(Format(Theme.Playlist.CatText,[Playlists[Index].Name + '  [Fixed Order: On]']))
   else
     ScreenSong.ShowCatTLCustom(Format(Theme.Playlist.CatText,[Playlists[Index].Name + '  [Fixed Order: Off]']));
+
+  Result := True;
+end;
+
+procedure TPlayListManager.SetPlayList(Index: Integer; SongID: Integer = -1);
+var
+  I, SongIdx, TargetSongID, RandomVisibleIndex, VisibleCount: Integer;
+begin
+  if not ApplyPlayList(Index) then
+    Exit;
 
   ScreenSong.ResetRandomSongState;
 
