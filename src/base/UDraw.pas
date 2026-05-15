@@ -1646,8 +1646,16 @@ begin
           ntFreestyle: glColor4f(1, 1, 1, 0.35);
           ntNormal: glColor4f(1, 1, 1, 0.85);
           ntGolden: Glcolor4f(1, 1, 0.3, 0.85);
-          ntRap: glColor4f(1, 1, 1, 0.85);
-          ntRapGolden: Glcolor4f(1, 1, 0.3, 0.85);
+          ntRap:
+            if (Color = P1_INVERTED) then
+              glColor4f(1, 1, 1, 0.75)
+            else
+              glColor4f(1, 1, 1, 0.5);
+          ntRapGolden:
+            if (Color = P1_INVERTED) then
+              Glcolor4f(1, 1, 0.3, 0.75)
+            else
+              Glcolor4f(1, 1, 0.3, 0.5);
         end; // case
 
         // left part
@@ -1866,4 +1874,3 @@ begin
 end;
 
 end.
-
