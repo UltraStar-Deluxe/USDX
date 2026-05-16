@@ -93,7 +93,7 @@ begin
   Size := luaL_checknumber(L, 1);
 
   SetFontSize(Size);
-  
+
   Result := 0;
 end;
 
@@ -119,7 +119,7 @@ begin
   isItalic := lua_toBoolean(L, 1);
 
   SetFontItalic(isItalic);
-  
+
   Result := 0;
 end;
 
