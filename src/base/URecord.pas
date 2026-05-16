@@ -378,9 +378,9 @@ begin
   LockAnalysisBuffer();
   try
 
-    // find maximum volume of first 1024 samples
+    // find maximum volume across the analysis buffer
     MaxVolume := 0;
-    for SampleIndex := 0 to 1023 do
+    for SampleIndex := 0 to AnalysisBufferSize - 1 do
     begin
       Volume := Abs(AnalysisBuffer[SampleIndex]) / -Low(Smallint);
       if Volume > MaxVolume then
