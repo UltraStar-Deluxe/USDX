@@ -44,9 +44,7 @@ uses
   UScreenScore,
   UScreenSingController,
   UScreenTop5,
-  UTexture,
   UThemes,
-  dglOpenGL,
   SysUtils,
   sdl2,
   md5;
@@ -134,6 +132,7 @@ uses
   UMain,
   UMenuButton,
   UPath,
+  URenderer,
   USkins,
   USongs,
   UTime,
@@ -391,7 +390,7 @@ begin
             else
             begin
               Button[PlayerAvatarButton[PlayerAvatars[I-1]]].Texture.Int := 1;
-              AvatarPlayerTextures[I] := Button[PlayerAvatarButton[PlayerAvatars[I-1]]].Texture;
+              AvatarPlayerTextures[I] := Button[PlayerAvatarButton[PlayerAvatars[I-1]]].Texture.Clone();
             end;
 
           end;
@@ -538,7 +537,6 @@ end;
 procedure TScreenName.GenerateAvatars();
 var
   I: integer;
-  AvatarTexture: TTexture;
   Avatar: TAvatar;
   AvatarFile: IPath;
   Hash: string;
@@ -550,12 +548,13 @@ begin
   // 1st no-avatar dummy
   for I := 1 to UIni.IMaxPlayerCount do
   begin
-    NoAvatarTexture[I] := Texture.GetTexture(Skin.GetTextureFileName('NoAvatar_P' + IntToStr(I)), TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
+    NoAvatarTexture[I] := Renderer.GetTexture(Skin.GetTextureFileName('NoAvatar_P' + IntToStr(I)), TEXTURE_TYPE_TRANSPARENT, $FFFFFF);
   end;
 
   // create no-avatar
   PlayerAvatarButton[0] := AddButton(Theme.Name.PlayerAvatar);
-  Button[PlayerAvatarButton[0]].Texture := NoAvatarTexture[1];
+  Button[PlayerAvatarButton[0]].Texture.Free;
+  Button[PlayerAvatarButton[0]].Texture := NoAvatarTexture[1].Clone;
   Button[PlayerAvatarButton[0]].Selectable := false;
   Button[PlayerAvatarButton[0]].Selected := false;
   Button[PlayerAvatarButton[0]].Visible := false;
@@ -578,9 +577,8 @@ begin
 
     if (Avatar <> nil) then
     begin
-      AvatarTexture := Avatar.GetTexture();
-      Button[PlayerAvatarButton[I]].Texture := AvatarTexture;
-
+      Button[PlayerAvatarButton[I]].Texture.Free;
+      Button[PlayerAvatarButton[I]].Texture := Avatar.GetTexture();
       Button[PlayerAvatarButton[I]].Selectable := false;
       Button[PlayerAvatarButton[I]].Selected := false;
       Button[PlayerAvatarButton[I]].Visible := false;
@@ -650,7 +648,8 @@ var
   Used: boolean;
 begin
   // no-avatar for current player
-  Button[PlayerAvatarButton[0]].Texture.TexNum := NoAvatarTexture[PlayerIndex + 1].TexNum;
+  Button[PlayerAvatarButton[0]].Texture.Free;
+  Button[PlayerAvatarButton[0]].Texture := NoAvatarTexture[PlayerIndex + 1].Clone();
 
   Button[PlayerName].Text[0].Text := PlayerNames[PlayerIndex];
 
@@ -849,7 +848,8 @@ begin
 
   if (PlayerAvatars[Player] = 0) then
   begin
-    Statics[PlayerCurrentAvatar[Player]].Texture := NoAvatarTexture[Player + 1];
+    Statics[PlayerCurrentAvatar[Player]].Texture.Free;
+    Statics[PlayerCurrentAvatar[Player]].Texture := NoAvatarTexture[Player + 1].Clone;
 
     Col := GetPlayerColor(Num[Player]);
 
@@ -858,7 +858,10 @@ begin
     Statics[PlayerCurrentAvatar[Player]].Texture.ColB := Col.B;
   end
   else
-    Statics[PlayerCurrentAvatar[Player]].Texture := Button[PlayerAvatarButton[PlayerAvatars[Player]]].Texture;
+  begin
+    Statics[PlayerCurrentAvatar[Player]].Texture.Free;
+    Statics[PlayerCurrentAvatar[Player]].Texture := Button[PlayerAvatarButton[PlayerAvatars[Player]]].Texture.Clone;
+  end;
 
   Statics[PlayerCurrentAvatar[Player]].Texture.X := Theme.Name.PlayerSelectAvatar[Player].X;
   Statics[PlayerCurrentAvatar[Player]].Texture.Y := Theme.Name.PlayerSelectAvatar[Player].Y;

@@ -38,7 +38,6 @@ uses
   UMenuStatic,
   SysUtils,
   UThemes,
-  dglOpenGL,
   sdl2;
 
 type
@@ -75,6 +74,7 @@ implementation
 uses
   UGraphic,
   UDisplay,
+  URenderer,
   UTime;
 
 function TScreenLoading.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -235,7 +235,7 @@ begin
 
   Self.Draw;
   Display.Draw;
-  SwapBuffers;
+  Renderer.SwapBuffers;
   LastRedrawTicks := NowTicks;
 end;
 

@@ -38,6 +38,7 @@ uses
   UIni,
   UMenu,
   UMusic,
+  URenderer,
   UThemes,
   sdl2,
   SysUtils;
@@ -62,7 +63,7 @@ type
       StaticTeam3Deco:   cardinal;
       TextWinner:        cardinal;
 
-      DecoTex:          array[0..UIni.IMaxPlayerCount-1] of integer;
+      DecoTex:          array[0..UIni.IMaxPlayerCount-1] of TTexture;
       DecoColor:        array[0..UIni.IMaxPlayerCount-1] of Record
                                         R, G, B: real;
                         end;
@@ -70,6 +71,7 @@ type
       MaxScore:          word;
       
       constructor Create; override;
+      destructor Destroy; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
       procedure SetAnimationProgress(Progress: real); override;
@@ -89,7 +91,6 @@ uses
   UParty,
   USkins,
   USong,
-  UTexture,
   UUnicodeUtils;
 
 function TScreenPartyScore.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -135,7 +136,6 @@ end;
 
 constructor TScreenPartyScore.Create;
 var
-  Tex:  TTexture;
   R, G, B: real;
   Color: integer;
 begin
@@ -171,10 +171,7 @@ begin
     DecoColor[0].B := B;
 
     //Load Texture
-    Tex := Texture.LoadTexture(
-      Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.FirstTexture),
-      Theme.PartyScore.DecoTextures.FirstTyp, Color);
-    DecoTex[0] := Tex.TexNum;
+    DecoTex[0] := Renderer.LoadTexture(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.FirstTexture), Theme.PartyScore.DecoTextures.FirstTyp, Color);
 
     //Get Second Color
     LoadColor(R, G, B, Theme.PartyScore.DecoTextures.SecondColor);
@@ -184,10 +181,7 @@ begin
     DecoColor[1].B := B;
 
     //Load Second Texture
-    Tex := Texture.LoadTexture(
-      Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.SecondTexture),
-      Theme.PartyScore.DecoTextures.SecondTyp, Color);
-    DecoTex[1] := Tex.TexNum;
+    DecoTex[1] := Renderer.LoadTexture(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.SecondTexture), Theme.PartyScore.DecoTextures.SecondTyp, Color);
 
     //Get Third Color
     LoadColor(R, G, B, Theme.PartyScore.DecoTextures.ThirdColor);
@@ -197,13 +191,18 @@ begin
     DecoColor[2].B := B;
 
     //Load Third Texture
-    Tex := Texture.LoadTexture(
-      Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.ThirdTexture),
-      Theme.PartyScore.DecoTextures.ThirdTyp, Color);
-    DecoTex[2] := Tex.TexNum;
+    DecoTex[2] := Renderer.LoadTexture(Skin.GetTextureFileName(Theme.PartyScore.DecoTextures.ThirdTexture), Theme.PartyScore.DecoTextures.ThirdTyp, Color);
   end;
 
   LoadFromTheme(Theme.PartyScore);
+end;
+
+destructor TScreenPartyScore.Destroy();
+begin
+  DecoTex[0].Free;
+  DecoTex[1].Free;
+  Decotex[2].Free;
+  inherited;
 end;
 
 procedure TScreenPartyScore.OnShow;
@@ -248,7 +247,12 @@ begin
     begin
       if (Length(Ranking) >= 1) and (Ranking[0].Rank >= 1) and (Ranking[0].Rank <= Length(DecoTex)) then
       begin
-        Statics[StaticTeam1Deco].Texture.TexNum := DecoTex[Ranking[0].Rank-1];
+        DecoTex[Ranking[0].Rank-1].X := Statics[StaticTeam1Deco].Texture.X;
+        DecoTex[Ranking[0].Rank-1].Y := Statics[StaticTeam1Deco].Texture.Y;
+        DecoTex[Ranking[0].Rank-1].W := Statics[StaticTeam1Deco].Texture.W;
+        DecoTex[Ranking[0].Rank-1].H := Statics[StaticTeam1Deco].Texture.H;
+        Statics[StaticTeam1Deco].Texture.Free;
+        Statics[StaticTeam1Deco].Texture := DecoTex[Ranking[0].Rank-1].Clone;
         Statics[StaticTeam1Deco].Texture.ColR := DecoColor[Ranking[0].Rank-1].R;
         Statics[StaticTeam1Deco].Texture.ColG := DecoColor[Ranking[0].Rank-1].G;
         Statics[StaticTeam1Deco].Texture.ColB := DecoColor[Ranking[0].Rank-1].B;
@@ -280,10 +284,16 @@ begin
     begin
       if (Length(Ranking) >= 2) and (Ranking[1].Rank >= 1) and (Ranking[1].Rank <= Length(DecoTex)) then
       begin
-        Statics[StaticTeam2Deco].Texture.TexNum := DecoTex[Ranking[1].Rank-1];
-        Statics[StaticTeam2Deco].Texture.ColR := DecoColor[Ranking[1].Rank-1].R;
-        Statics[StaticTeam2Deco].Texture.ColG := DecoColor[Ranking[1].Rank-1].G;
-        Statics[StaticTeam2Deco].Texture.ColB := DecoColor[Ranking[1].Rank-1].B;
+        DecoTex[Ranking[1].Rank-1].X := Statics[StaticTeam2Deco].Texture.X;
+        DecoTex[Ranking[1].Rank-1].Y := Statics[StaticTeam2Deco].Texture.Y;
+        DecoTex[Ranking[1].Rank-1].W := Statics[StaticTeam2Deco].Texture.W;
+        DecoTex[Ranking[1].Rank-1].H := Statics[StaticTeam2Deco].Texture.H;
+        Statics[StaticTeam2Deco].Texture.Free;
+        Statics[StaticTeam2Deco].Texture := DecoTex[Ranking[1].Rank-1].Clone;
+        Statics[StaticTeam2Deco].Texture.ColR := DecoColor[Ranking[0].Rank-1].R;
+        Statics[StaticTeam2Deco].Texture.ColG := DecoColor[Ranking[0].Rank-1].G;
+        Statics[StaticTeam2Deco].Texture.ColB := DecoColor[Ranking[0].Rank-1].B;
+
       end;
     end;
 
@@ -312,10 +322,15 @@ begin
     begin
       if (Length(Ranking) >= 3) and (Ranking[2].Rank >= 1) and (Ranking[2].Rank <= Length(DecoTex)) then
       begin
-        Statics[StaticTeam3Deco].Texture.TexNum := DecoTex[Ranking[2].Rank-1];
-        Statics[StaticTeam3Deco].Texture.ColR := DecoColor[Ranking[2].Rank-1].R;
-        Statics[StaticTeam3Deco].Texture.ColG := DecoColor[Ranking[2].Rank-1].G;
-        Statics[StaticTeam3Deco].Texture.ColB := DecoColor[Ranking[2].Rank-1].B;
+        DecoTex[Ranking[2].Rank-1].X := Statics[StaticTeam3Deco].Texture.X;
+        DecoTex[Ranking[2].Rank-1].Y := Statics[StaticTeam3Deco].Texture.Y;
+        DecoTex[Ranking[2].Rank-1].W := Statics[StaticTeam3Deco].Texture.W;
+        DecoTex[Ranking[2].Rank-1].H := Statics[StaticTeam3Deco].Texture.H;
+        Statics[StaticTeam3Deco].Texture.Free;
+        Statics[StaticTeam3Deco].Texture := DecoTex[Ranking[2].Rank-1].Clone;
+        Statics[StaticTeam3Deco].Texture.ColR := DecoColor[Ranking[0].Rank-1].R;
+        Statics[StaticTeam3Deco].Texture.ColG := DecoColor[Ranking[0].Rank-1].G;
+        Statics[StaticTeam3Deco].Texture.ColB := DecoColor[Ranking[0].Rank-1].B;
       end;
     end;
 

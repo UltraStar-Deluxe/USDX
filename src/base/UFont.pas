@@ -38,7 +38,7 @@ interface
   // Default is a cartesian coordinate system with y-axis in upper direction
   // but with USDX the y-axis is in lower direction.
   {$DEFINE FLIP_YAXIS}
-  {$DEFINE BITMAP_FONT}
+  {.$DEFINE BITMAP_FONT}
 {$ENDIF}
 
 // Enables the Freetype font cache
@@ -46,30 +46,22 @@ interface
 
 uses
   FreeType,
-  dglOpenGL,
   sdl2,
   Math,
   Classes,
   SysUtils,
   UUnicodeUtils,
-  {$IFDEF BITMAP_FONT}
-  UTexture,
-  {$ENDIF}
+  UCommon,
+  URenderer,
   UPath;
 
 type
 
-  PGLubyteArray = ^TGLubyteArray;
-  TGLubyteArray = array[0 .. (MaxInt div SizeOf(GLubyte))-1] of GLubyte;
-  TGLubyteDynArray = array of GLubyte;
+  PUByteArray = ^TUByteArray;
+  TUByteArray = array[0 .. (MaxInt div SizeOf(Byte))-1] of Byte;
+  TByteDynArray = array of Byte;
 
   TUCS4StringArray = array of UCS4String;
-
-  TGLColor = packed record
-    case byte of
-      0: ( vals: array[0..3] of GLfloat; );
-      1: ( r, g, b, a: GLfloat; );
-  end;
 
   TBoundsDbl = record
     Left, Right: double;
@@ -99,8 +91,7 @@ type
       function GetAdvance(): TPositionDbl; virtual; abstract;
       function GetBounds(): TBoundsDbl; virtual; abstract;
     public
-      procedure Render(UseDisplayLists: boolean); virtual; abstract;
-      procedure RenderReflection(); virtual; abstract;
+      procedure Render(PosX, PosY, PosZ, ScaleX, ScaleY: single; HasReflection: boolean; ReflectionSpace: single; Italic: boolean); virtual; abstract;
 
       {** Distance to next glyph (in pixels) *}
       property Advance: TPositionDbl read GetAdvance;
@@ -128,7 +119,7 @@ type
       fLineSpacing: single;       // must be inited by subclass
       fReflectionSpacing: single; // must be inited by subclass to -2*Descender
       fGlyphSpacing: single;
-      fReflectionPass: boolean;
+      fColor: TRGBA;
 
       {**
        * Splits lines in Text seperated by newline (char-code #13).
@@ -142,7 +133,7 @@ type
        * Lines of text are seperated by the line-spacing.
        * This is the base function for all text drawing.
        *}
-      procedure Print(const Text: TUCS4StringArray); overload; virtual;
+      procedure Print(const Text: TUCS4StringArray; PosX, PosY, PosZ: single; ScaleX: single = 1; ScaleY: single = 1); overload; virtual;
 
       {**
        * Draws an underline.
@@ -152,7 +143,7 @@ type
       {**
        * Renders (one) line of text.
        *}
-      procedure Render(const Text: UCS4String); virtual; abstract;
+      procedure Render(const Text: UCS4String; PosX, PosY, PosZ, ScaleX, ScaleY: single); virtual; abstract;
 
       {**
        * Returns the bounds of text-lines contained in Text.
@@ -182,10 +173,6 @@ type
       function GetUnderlineThickness(): single; virtual; abstract;
       procedure SetUseKerning(Enable: boolean); virtual;
       function GetUseKerning(): boolean; virtual;
-      procedure SetReflectionPass(Enable: boolean); virtual;
-
-      {** Returns true if the current render-pass is used to draw the reflection }
-      property ReflectionPass: boolean read fReflectionPass write SetReflectionPass;
 
     public
       constructor Create(const Filename: IPath);
@@ -194,11 +181,11 @@ type
       {**
        * Prints a text.
        *}
-      procedure Print(const Text: UCS4String); overload;
+      procedure Print(const Text: UCS4String; PosX, PosY, PosZ: single); overload;
       {** UTF-16 version of @link(Print) }
-      procedure Print(const Text: WideString); overload;
+      procedure Print(const Text: WideString; PosX, PosY, PosZ: single); overload;
       {** UTF-8 version of @link(Print) }
-      procedure Print(const Text: UTF8String); overload;
+      procedure Print(const Text: UTF8String; PosX, PosY, PosZ: single); overload;
 
       {**
        * Calculates the bounding box (width and height) around Text.
@@ -222,6 +209,8 @@ type
        * @raises EFontError  if the fallback could not be initialized
        *}
       procedure AddFallback(const Filename: IPath); virtual; abstract;
+      procedure SetColor(R, G, B, A: single); virtual;
+      function GetColor(): TRGBA; virtual;
 
       {** Font height }
       property Height: single read GetHeight;
@@ -250,10 +239,6 @@ const
 type
   {**
    * Wrapper around TFont to allow font size changes.
-   * The font is scaled to the requested size by a modelview matrix
-   * transformation (glScale) and not by rescaling the internal bitmap
-   * representation. This way changing the size is really fast but the result
-   * may lack quality on large or small scale factors.
    *}
   TScalableFont = class(TFont)
     private
@@ -267,8 +252,8 @@ type
       /// Mipmap fonts (size[level+1] = size[level]/2)
       fMipmapFonts: array[0..cMaxMipmapLevel] of TFont;
 
-      procedure Render(const Text: UCS4String); override;
-      procedure Print(const Text: TUCS4StringArray); override;
+      procedure Render(const Text: UCS4String; PosX, PosY, PosZ, ScaleX, ScaleY: single); override;
+      procedure Print(const Text: TUCS4StringArray; PosX, PosY, PosZ: single;  ScaleX: single = 1; ScaleY: single = 1); override;
       function BBox(const Text: TUCS4StringArray; Advance: boolean): TBoundsDbl; override;
 
       {**
@@ -282,7 +267,7 @@ type
        * Returns the mipmap level considering the current scale and projection
        * matrix.
        *}
-      function GetMipmapLevel(): integer;
+      function GetMipmapLevel(ScaleX, ScaleY: single): integer;
 
       {**
        * Returns the scale applied to the given mipmap font.
@@ -294,7 +279,7 @@ type
        * Chooses the mipmap that looks nicest with current scale and projection
        * matrix.
        *}
-      function ChooseMipmapFont(): TFont;
+      function ChooseMipmapFont(var ScaleX: single; var ScaleY: single): TFont;
 
       procedure SetHeight(Height: single); virtual;
       function GetHeight(): single; override;
@@ -331,6 +316,8 @@ type
 
       {** @seealso TFont.Reset }
       procedure Reset(); override;
+
+      procedure SetColor(R, G, B, A: single); override;
 
       {** Font height }
       property Height: single read GetHeight write SetHeight;
@@ -500,8 +487,7 @@ type
       fCharCode:  UCS4Char;     //**< Char code
       fFace: TFTFontFace;       //**< Freetype face used for this glyph
       fCharIndex: FT_UInt;      //**< Freetype specific char-index (<> char-code)
-      fDisplayList: GLuint;     //**< Display-list ID
-      fTexture: GLuint;         //**< Texture ID
+      fTexture: TTexture;         //**< Texture ID
       fBitmapCoords: TBitmapCoords; //**< Left/Top offset and Width/Height of the bitmap (in pixels)
       fTexOffset: TPositionDbl; //**< Right and bottom texture offset for removal of power-of-2 padding
       fTexSize: TTextureSize;   //**< Texture size in pixels
@@ -544,10 +530,8 @@ type
                          LoadFlags: FT_Int32);
       destructor Destroy(); override;
 
-      {** Renders the glyph (normal render pass) }
-      procedure Render(UseDisplayLists: boolean); override;
-      {** Renders the glyph's reflection }
-      procedure RenderReflection(); override;
+      {** Renders the glyph }
+      procedure Render(PosX, PosY, PosZ, ScaleX, ScaleY: single; HasReflection: boolean; ReflectionSpace: single; Italic: boolean); override;
 
       {** Freetype specific char-index (<> char-code) }
       property CharIndex: FT_UInt read fCharIndex;
@@ -573,14 +557,13 @@ type
       fOutset: single;              //**< size of outset extrusion (in pixels)
       fPreCache: boolean;           //**< pre-load base glyphs
       fLoadFlags: FT_Int32;         //**< FT glpyh load-flags
-      fUseDisplayLists: boolean;    //**< true: use display-lists, false: direct drawing
       fPart: TFontPart;             //**< indicates the part of an outline font
       fFallbackFaces: TFTFontFaceArray; //**< available fallback faces, ordered by priority
 
       {** @seealso TCachedFont.LoadGlyph }
       function LoadGlyph(ch: UCS4Char): TGlyph; override;
 
-      procedure Render(const Text: UCS4String); override;
+      procedure Render(const Text: UCS4String; PosX, PosY, PosZ, ScaleX, ScaleY: single); override;
       function BBox(const Text: TUCS4StringArray; Advance: boolean): TBoundsDbl; override;
 
       function GetHeight(): single; override;
@@ -674,14 +657,14 @@ type
       fSize: integer;
       fOutset: single;
       fInnerFont, fOutlineFont: TFTFont;
-      fOutlineColor: TGLColor;
+      fOutlineColor: TRGBA;
       fPreCache: boolean;
 
       procedure ResetIntern();
       
   protected
       procedure DrawUnderline(const Text: UCS4String); override;
-      procedure Render(const Text: UCS4String); override;
+      procedure Render(const Text: UCS4String; PosX, PosY, PosZ, ScaleX, ScaleY: single); override;
       function BBox(const Text: TUCS4StringArray; Advance: boolean): TBoundsDbl; override;
 
       function GetHeight(): single; override;
@@ -695,7 +678,6 @@ type
       function GetUnderlinePosition(): single; override;
       function GetUnderlineThickness(): single; override;
       procedure SetUseKerning(Enable: boolean); override;
-      procedure SetReflectionPass(Enable: boolean); override;
 
     public
       constructor Create(const Filename: IPath;
@@ -709,7 +691,7 @@ type
        * If the alpha component is < 0, OpenGL's current alpha value will be
        * used.
        *}
-      procedure SetOutlineColor(r, g, b: GLfloat; a: GLfloat = -1.0);
+      procedure SetOutlineColor(r, g, b: single; a: single = -1.0);
 
       {** @seealso TGlyphCache.FlushCache }
       procedure FlushCache(KeepBaseSet: boolean);
@@ -741,7 +723,7 @@ type
                          PreCache: boolean = true);
 
       {** @seealso TFTOutlineFont.SetOutlineColor }
-      procedure SetOutlineColor(r, g, b: GLfloat; a: GLfloat = -1.0);
+      procedure SetOutlineColor(r, g, b: single; a: single = -1.0);
 
       {** @seealso TGlyphCache.FlushCache }
       procedure FlushCache(KeepBaseSet: boolean);
@@ -751,72 +733,6 @@ type
       {** Outset size }
       property Outset: single read GetOutset;
   end;
-
-{$IFDEF BITMAP_FONT}
-
-  {**
-   * A bitmapped font loads it's glyphs from a bitmap and stores them in a
-   * texture. Unicode characters are not supported (but could be by supporting
-   * multiple textures each storing a subset of unicode glyphs).
-   * For backward compatibility only.
-   *}
-  TBitmapFont = class(TFont)
-    private
-      fTex:       TTexture;
-      fTexSize:   integer;
-      fBaseline:  integer;
-      fAscender:  integer;
-      fDescender: integer;
-      fWidths:    array[0..255] of byte; //**< half widths
-      fOutline:   integer;
-      fTempColor: TGLColor; //**< colours for the reflection
-
-      procedure ResetIntern();
-
-      procedure RenderChar(ch: UCS4Char; var AdvanceX: real);
-
-      {**
-       * Load font widths from an info file.
-       * @param  InfoFile  the name of the info (.dat) file
-       * @raises EFontError if the file is corrupted
-       *}
-      procedure LoadFontInfo(const InfoFile: IPath);
-
-    protected
-      procedure Render(const Text: UCS4String); override;
-      function BBox(const Text: TUCS4StringArray; Advance: boolean): TBoundsDbl; override;
-
-      function GetHeight(): single; override;
-      function GetAscender(): single; override;
-      function GetDescender(): single; override;
-      function GetUnderlinePosition(): single; override;
-      function GetUnderlineThickness(): single; override;
-
-    public
-      {**
-       * Creates a bitmapped font from image Filename and font width info
-       * loaded from the corresponding file with ending .dat.
-       * @param(Baseline  y-coord of the baseline given in cartesian coords
-       *        (y-axis up) and from the lower edge of the glyphs bounding box)
-       * @param(Ascender  pixels from baseline to top of highest glyph)
-       *}
-      constructor Create(const Filename: IPath; Outline: integer;
-                         Baseline, Ascender, Descender: integer);
-      destructor Destroy(); override;
-
-      {**
-       * Corrects font widths provided by the info file.
-       * NewWidth := Width * WidthMult + WidthAdd
-       *}
-      procedure CorrectWidths(WidthMult: real; WidthAdd: integer);
-
-      {** @seealso TFont.Reset }
-      procedure Reset(); override;
-
-      procedure AddFallback(const Filename: IPath); override;
-  end;
-
-{$ENDIF BITMAP_FONT}
 
   TFreeType = class
     public
@@ -832,28 +748,25 @@ type
 
 implementation
 
-uses Types;
+uses
+  Types,
+  ULog,
+  UGraphic;
 
 const
   //** shear factor used for the italic effect (bigger value -> more bending)
   cShearFactor = 0.25;
+  {
   cShearMatrix: array[0..15] of GLfloat = (
       1,            0, 0, 0,
       cShearFactor, 1, 0, 0,
       0,            0, 1, 0,
       0,            0, 0, 1
   );
+  }
 
 var
   LibraryInst: FT_Library;
-
-function NewGLColor(r, g, b, a: GLfloat): TGLColor;
-begin
-  Result.r := r;
-  Result.g := g;
-  Result.b := b;
-  Result.a := a;
-end;
 
 {**
  * Returns the first power of 2 >= Value.
@@ -887,7 +800,6 @@ begin
   fStyle := [];
   fUseKerning := true;
   fGlyphSpacing := 0.0;
-  fReflectionPass := false;
 
   // must be set by subclasses
   fLineSpacing := 0.0;
@@ -953,104 +865,67 @@ begin
   Result := BBox(WideStringToUCS4String(Text), Advance);
 end;
 
-procedure TFont.Print(const Text: TUCS4StringArray);
+procedure TFont.Print(const Text: TUCS4StringArray; PosX, PosY, PosZ: single; ScaleX: single; ScaleY: single);
 var
   LineIndex: integer;
 begin
-  // recursively call this function to draw reflected text
-  if ((Reflect in Style) and not ReflectionPass) then
-  begin
-    ReflectionPass := true;
-    Print(Text);
-    ReflectionPass := false;
-  end;
-
-  // store current color, enable-flags, matrix-mode
-  glPushAttrib(GL_CURRENT_BIT or GL_ENABLE_BIT or GL_TRANSFORM_BIT);
 
   // set OpenGL state
-  glMatrixMode(GL_MODELVIEW);
-  glDisable(GL_DEPTH_TEST);
-  glEnable(GL_BLEND);
-  glEnable(GL_TEXTURE_2D);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  {
-  // TODO: just draw texels with alpha > 0 to avoid setting z-buffer for them?
-  glAlphaFunc(GL_GREATER, 0);
-  glEnable(GL_ALPHA_TEST);
-
-  //TODO: Do we need depth-testing?
-  if (ReflectionPass) then
-  begin
-    glDepthMask(0);
-    glEnable(GL_DEPTH_TEST);
-  end;
-  }
-
-  {$IFDEF FLIP_YAXIS}
-  glPushMatrix();
-  glScalef(1, -1, 1);
-  {$ENDIF}
+  Renderer.DepthTest := false;
 
   // display text
   for LineIndex := 0 to High(Text) do
   begin
-    glPushMatrix();
 
     // move to baseline
-    glTranslatef(0, -LineSpacing*LineIndex, 0);
+    PosY := PosY + (LineSpacing * LineIndex * ScaleY);
 
+    {
     if ((Underline in Style) and not ReflectionPass) then
     begin
       glDisable(GL_TEXTURE_2D);
       DrawUnderline(Text[LineIndex]);
       glEnable(GL_TEXTURE_2D);
     end;
-
-    // draw reflection
-    if (ReflectionPass) then
-    begin
-      // set reflection spacing
-      glTranslatef(0, -ReflectionSpacing, 0);
-      // flip y-axis
-      glScalef(1, -1, 1);
-    end;
-
-    // shear for italic effect
-    if (Italic in Style) then
-      glMultMatrixf(@cShearMatrix);
+    }
 
     // render text line
-    Render(Text[LineIndex]);
+    Render(Text[LineIndex], PosX, PosY, PosZ, ScaleX, ScaleY);
 
-    glPopMatrix();
   end;
-
-  // restore settings
-  {$IFDEF FLIP_YAXIS}
-  glPopMatrix();
-  {$ENDIF}
-  glPopAttrib();
+  Renderer.DepthTest := true;
 end;
 
-procedure TFont.Print(const Text: UCS4String);
+procedure TFont.Print(const Text: UCS4String; PosX, PosY, PosZ: single);
 var
   LineArray: TUCS4StringArray;
 begin
   SplitLines(Text, LineArray);
-  Print(LineArray);
+  Print(LineArray, PosX, PosY, PosZ);
   SetLength(LineArray, 0);
 end;
 
-procedure TFont.Print(const Text: UTF8String);
+procedure TFont.Print(const Text: UTF8String; PosX, PosY, PosZ: single);
 begin
-  Print(UTF8Decode(Text));
+  Print(UTF8Decode(Text), PosX, PosY, PosZ);
 end;
 
-procedure TFont.Print(const Text: WideString);
+procedure TFont.Print(const Text: WideString; PosX, PosY, PosZ: single);
 begin
-  Print(WideStringToUCS4String(Text));
+  Print(WideStringToUCS4String(Text), PosX, PosY, PosZ);
+end;
+
+procedure TFont.SetColor(R, G, B, A: single);
+begin
+  fColor.R := R;
+  fColor.G := G;
+  fColor.B := B;
+  fColor.A := A;
+end;
+
+function TFont.GetColor(): TRGBA;
+begin
+  Result := fColor;
 end;
 
 procedure TFont.DrawUnderline(const Text: UCS4String);
@@ -1058,10 +933,12 @@ var
   UnderlineY1, UnderlineY2: single;
   Bounds: TBoundsDbl;
 begin
+{
   UnderlineY1 := GetUnderlinePosition();
   UnderlineY2 := UnderlineY1 + GetUnderlineThickness();
   Bounds := BBox(Text, false);
   glRectf(Bounds.Left, UnderlineY1, Bounds.Right, UnderlineY2);
+  }
 end;
 
 procedure TFont.SetStyle(Style: TFontStyle);
@@ -1112,11 +989,6 @@ end;
 function TFont.GetUseKerning(): boolean;
 begin
   Result := fUseKerning;
-end;
-
-procedure TFont.SetReflectionPass(Enable: boolean);
-begin
-  fReflectionPass := Enable;
 end;
 
 
@@ -1174,6 +1046,15 @@ begin
       fMipmapFonts[Level].Reset();
 end;
 
+procedure TScalableFont.SetColor(R, G, B, A: single);
+var
+  Level: integer;
+begin
+  for Level := 0 to High(fMipmapFonts) do
+    if (fMipmapFonts[Level] <> nil) then
+      fMipmapFonts[Level].SetColor(R, G, B, A);
+end;
+
 {**
  * Returns the mipmap level to use with regard to the current projection
  * and modelview matrix, font scale and stretch.
@@ -1210,12 +1091,13 @@ end;
  *   The trickiest task is to determine the mipmap to use by calculating the
  *   amount of minification that is performed in this function.
  *}
-function TScalableFont.GetMipmapLevel(): integer;
+function TScalableFont.GetMipmapLevel(ScaleX, ScaleY: single): integer;
 var
-  ModelMatrix, ProjMatrix: TGLMatrixd4;
-  ViewPortArray: TGLVectori4;
+  //ModelMatrix, ProjMatrix: TGLMatrixd4;
+  //ViewPortArray: TGLVectori4;
   Dist, Dist2, DistSum, PM15x2: double;
   WidthScale, HeightScale: double;
+  ScreenWidth: single;
 const
   // an offset to the mipmap-level to adjust the change-over of two consecutive
   // mipmap levels. If for example the bias is 0.1 and unbiased level is 1.9
@@ -1224,16 +1106,21 @@ const
   cBias = 0.2;
 begin
   // 1. retrieve current transformation matrices for gluProject
+  {
   glGetDoublev(GL_MODELVIEW_MATRIX, @ModelMatrix);
   glGetDoublev(GL_PROJECTION_MATRIX, @ProjMatrix);
   glGetIntegerv(GL_VIEWPORT, @ViewPortArray);
+  }
 
   // See 6545ededd512ea7c7dc5c08a1ef96397afdcbe49 for the original
   // code using gluProject() that has been simplified.
+  {
   PM15x2 := 2*abs(ModelMatrix[3,0]*ProjMatrix[0,3]
                  +ModelMatrix[3,1]*ProjMatrix[1,3]
                  +ModelMatrix[3,2]*ProjMatrix[2,3]
                  +ModelMatrix[3,3]*ProjMatrix[3,3]);
+
+  PM15x2 := 2;
 
   Dist  := ViewPortArray[2]*(ModelMatrix[0,0]*ProjMatrix[0,0]
                             +ModelMatrix[0,1]*ProjMatrix[1,0]
@@ -1243,6 +1130,13 @@ begin
                             +ModelMatrix[0,1]*ProjMatrix[1,1]
                             +ModelMatrix[0,2]*ProjMatrix[2,1]
                             +ModelMatrix[0,3]*ProjMatrix[3,1]);
+                            }
+  PM15x2 := 2;
+  ScreenWidth := ScreenW div Screens;
+  Dist :=  (ScreenW div Screens) * ((ScaleX * (2 / RenderW)));
+  Dist2 := 0;
+
+
   WidthScale := 1;
   DistSum := Dist*Dist + Dist2*Dist2;
   if (DistSum > 0) then
@@ -1250,6 +1144,7 @@ begin
     WidthScale := PM15x2 / Sqrt(DistSum);
   end;
 
+{
   Dist  := ViewPortArray[2]*(ModelMatrix[1,0]*ProjMatrix[0,0]
                             +ModelMatrix[1,1]*ProjMatrix[1,0]
                             +ModelMatrix[1,2]*ProjMatrix[2,0]
@@ -1258,6 +1153,10 @@ begin
                             +ModelMatrix[1,1]*ProjMatrix[1,1]
                             +ModelMatrix[1,2]*ProjMatrix[2,1]
                             +ModelMatrix[1,3]*ProjMatrix[3,1]);
+                            }
+  Dist := 0;
+  Dist2 := ScreenH * (ScaleY * (2 / RenderH));
+  //Dist2 := 2 * ScaleY;
 
   HeightScale := 1;
   DistSum := Dist*Dist + Dist2*Dist2;
@@ -1299,14 +1198,14 @@ end;
  * matrix. The modelview scale is adjusted to the mipmap level, so
  * Result.Print() will display the font in the correct size.
  *}
-function TScalableFont.ChooseMipmapFont(): TFont;
+function TScalableFont.ChooseMipmapFont(var ScaleX: single; var ScaleY: single): TFont;
 var
   DesiredLevel: integer;
   Level: integer;
   MipmapScale: single;
 begin
   Result := nil;
-  DesiredLevel := GetMipmapLevel();
+  DesiredLevel := GetMipmapLevel(ScaleX, ScaleY);
 
   // get the smallest mipmap available for the desired level
   // as not all levels must be assigned to a font.
@@ -1322,26 +1221,24 @@ begin
   // since the mipmap font (if level > 0) is smaller than the base-font
   // we have to scale to get its size right.
   MipmapScale := fMipmapFonts[0].Height/Result.Height;
-  glScalef(MipmapScale, MipmapScale, 0);
+  ScaleX := ScaleX * MipmapScale;
+  ScaleY := ScaleY * MipmapScale;
 end;
 
-procedure TScalableFont.Print(const Text: TUCS4StringArray);
+procedure TScalableFont.Print(const Text: TUCS4StringArray; PosX, PosY, PosZ: single; ScaleX: single; ScaleY: single);
 begin
-  glPushMatrix();
-
-  // set scale and stretching
-  glScalef(fScale * fStretch, fScale, 0);
+  ScaleX := ScaleX * fScale * fStretch;
+  ScaleY := ScaleY * fScale;
 
   // print text
   if (fUseMipmaps) then
-    ChooseMipmapFont().Print(Text)
+    ChooseMipmapFont(ScaleX, ScaleY).Print(Text, PosX, PosY, PosZ, ScaleX, ScaleY)
   else
-    fBaseFont.Print(Text);
+    fBaseFont.Print(Text, PosX, PosY, PosZ, ScaleX, ScaleY);
 
-  glPopMatrix();
 end;
 
-procedure TScalableFont.Render(const Text: UCS4String);
+procedure TScalableFont.Render(const Text: UCS4String; PosX, PosY, PosZ, ScaleX, ScaleY: single);
 begin
   Assert(false, 'Unused TScalableFont.Render() was called');
 end;
@@ -1613,7 +1510,6 @@ begin
   fOutset := Outset;
   fPreCache := PreCache;
   fLoadFlags := LoadFlags;
-  fUseDisplayLists := true;
   fPart := fpNone;
 
   fFace := GetFaceCache.LoadFace(Filename, Size);
@@ -1788,7 +1684,7 @@ begin
     Result.Bottom := 0.0;
 end;
 
-procedure TFTFont.Render(const Text: UCS4String);
+procedure TFTFont.Render(const Text: UCS4String; PosX, PosY, PosZ, ScaleX, ScaleY: single);
 var
   CharIndex: integer;
   Glyph, PrevGlyph: TFTGlyph;
@@ -1808,17 +1704,11 @@ begin
       begin
         FT_Get_Kerning(fFace.Data, PrevGlyph.CharIndex, Glyph.CharIndex,
                        FT_KERNING_UNSCALED, KernDelta);
-        glTranslatef(KernDelta.x * fFace.FontUnitScale.X, 0, 0);
+        PosX := PosX + (KernDelta.x * fFace.FontUnitScale.X * ScaleX);
       end;
-
-      if (ReflectionPass) then
-        Glyph.RenderReflection()
-      else
-        Glyph.Render(fUseDisplayLists);
-
-      glTranslatef(Glyph.Advance.x + fGlyphSpacing, 0, 0);
+      Glyph.Render(PosX, PosY, PosZ, ScaleX, ScaleY, Reflect in Style, ReflectionSpacing, Italic in Style);
+      PosX := PosX + ((Glyph.Advance.x + fGlyphSpacing) * ScaleX);
     end;
-
     PrevGlyph := Glyph;
   end;
 end;
@@ -1955,7 +1845,13 @@ begin
 
   fLineSpacing := fOutlineFont.LineSpacing;
   fReflectionSpacing := fOutlineFont.ReflectionSpacing;
-  fOutlineColor := NewGLColor(0, 0, 0, -1);
+  with fOutlineColor do
+  begin
+    R := 0;
+    G := 0;
+    B := 0;
+    A := -1;
+  end;
 end;
 
 procedure TFTOutlineFont.Reset();
@@ -1968,9 +1864,10 @@ end;
 
 procedure TFTOutlineFont.DrawUnderline(const Text: UCS4String);
 var
-  CurrentColor: TGLColor;
-  OutlineColor: TGLColor;
+  CurrentColor: TRGBA;
+  OutlineColor: TRGBA;
 begin
+ {
   // save current color
   glGetFloatv(GL_CURRENT_COLOR, @CurrentColor.vals);
 
@@ -1989,40 +1886,36 @@ begin
   glTranslatef(fOutset, 0, 0);
   fInnerFont.DrawUnderline(Text);
   glPopMatrix();
+  }
 end;
 
-procedure TFTOutlineFont.Render(const Text: UCS4String);
+procedure TFTOutlineFont.Render(const Text: UCS4String; PosX, PosY, PosZ, ScaleX, ScaleY: single);
 var
-  CurrentColor: TGLColor;
-  OutlineColor: TGLColor;
+  OutlineColor: TRGBA;
 begin
-  // save current color
-  glGetFloatv(GL_CURRENT_COLOR, @CurrentColor.vals);
 
-  // if the outline's alpha component is < 0 use the current alpha
+  // if the outline's alpha component is < 0 use 1
   OutlineColor := fOutlineColor;
   if (OutlineColor.a < 0) then
-    OutlineColor.a := CurrentColor.a;
+    OutlineColor.a := 1;
 
   { setup and render outline font }
-
-  glColor4fv(@OutlineColor.vals);
-  glPushMatrix();
-  fOutlineFont.Render(Text);
-  glPopMatrix();
-  glColor4fv(@CurrentColor.vals);
+  fOutlineFont.SetColor(OutlineColor.R, OutlineColor.G, OutlineColor.B, OutlineColor.A);
+  fOutlineFont.Render(Text, PosX, PosY, PosZ, ScaleX, ScaleY);
 
   { setup and render inner font }
-
-  glPushMatrix();
-  glTranslatef(fOutset, fOutset, 0);
-  fInnerFont.Render(Text);
-  glPopMatrix();
+  PosX := PosX + (fOutset * ScaleX);
+  PosY := PosY - (fOutset * ScaleY);
+  fInnerFont.SetColor(fColor.R, fColor.G, fColor.B, fColor.A);
+  fInnerFont.Render(Text, PosX, PosY, PosZ, ScaleX, ScaleY);
 end;
 
-procedure TFTOutlineFont.SetOutlineColor(r, g, b: GLfloat; a: GLfloat);
+procedure TFTOutlineFont.SetOutlineColor(r, g, b: single; a: single);
 begin
-  fOutlineColor := NewGLColor(r, g, b, a);
+  fOutlineColor.R := r;
+  fOutlineColor.G := g;
+  fOutlineColor.B := b;
+  fOutlineColor.A := a;
 end;
 
 procedure TFTOutlineFont.FlushCache(KeepBaseSet: boolean);
@@ -2107,13 +2000,6 @@ begin
   fOutlineFont.fUseKerning := Enable;
 end;
 
-procedure TFTOutlineFont.SetReflectionPass(Enable: boolean);
-begin
-  inherited SetReflectionPass(Enable);
-  fInnerFont.fReflectionPass := Enable;
-  fOutlineFont.fReflectionPass := Enable;
-end;
-
 {**
  * TScalableOutlineFont
  *}
@@ -2157,7 +2043,7 @@ begin
   Result := TFTOutlineFont(fBaseFont).Outset * fScale;
 end;
 
-procedure TFTScalableOutlineFont.SetOutlineColor(r, g, b: GLfloat; a: GLfloat);
+procedure TFTScalableOutlineFont.SetOutlineColor(r, g, b: single; a: single);
 var
   Level: integer;
 begin
@@ -2332,8 +2218,8 @@ var
   Bitmap:        PFT_Bitmap;
   BitmapLine:    PByteArray;
   BitmapBuffer:  PByteArray;
-  TexBuffer:     TGLubyteDynArray;
-  TexLine:       PGLubyteArray;
+  TexBuffer:     TByteDynArray;
+  TexLine:       PUByteArray;
   CBox:          FT_BBox;
 begin
   // we need vector data for outlined glyphs so do not load bitmaps.
@@ -2426,7 +2312,7 @@ begin
       end;
       FT_PIXEL_MODE_MONO: begin  // 1 bit mono
         for X := 0 to Bitmap.width-1 do
-          TexLine[X] := High(GLubyte) * ((BitmapLine[X div 8] shr (7-(X mod 8))) and $1);
+          TexLine[X] := High(Byte) * ((BitmapLine[X div 8] shr (7-(X mod 8))) and $1);
       end;
       else begin
         // unhandled pixel format
@@ -2434,35 +2320,13 @@ begin
     end;
   end;
 
-  // allocate resources for textures and display lists
-  glGenTextures(1, @fTexture);
-
-  // setup texture parameters
-  glBindTexture(GL_TEXTURE_2D, fTexture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  // create alpha-map (GL_ALPHA component only).
-  // TexCoord (0,0) corresponds to the top left pixel of the glyph,
-  // (1,1) to the bottom right pixel. So the glyph is flipped as OpenGL uses
-  // a cartesian (y-axis up) coordinate system for textures.   
-  // See the cTexSmoothBorder comment for info on texture borders.
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, fTexSize.Width, fTexSize.Height,
-      0, GL_ALPHA, GL_UNSIGNED_BYTE, @TexBuffer[0]);
+  // create alpha-map texture
+  fTexture := Renderer.LoadGlyph(@TexBuffer[0], fTexSize.Width, fTexSize.Height);
+  fTexture.TexX2 := fTexOffset.X;
+  fTexture.TexY2 := fTexOffset.Y;
 
   // free expanded data
   SetLength(TexBuffer, 0);
-
-  // create the display list
-  fDisplayList := glGenLists(1);
-
-  // render to display-list
-  glNewList(fDisplayList, GL_COMPILE);
-    Render(false);
-  glEndList();
 
   // free glyph data (bitmap, etc.)
   FT_Done_Glyph(Glyph);
@@ -2504,113 +2368,71 @@ end;
 
 destructor TFTGlyph.Destroy;
 begin
-  if (fDisplayList <> 0) then
-    glDeleteLists(fDisplayList, 1);
-  if (fTexture <> 0) then
-    glDeleteTextures(1, @fTexture);
+  fTexture.Free;
   inherited;
 end;
 
-procedure TFTGlyph.Render(UseDisplayLists: boolean);
-begin
-  // use display-lists if enabled and exit
-  if (UseDisplayLists) then
-  begin
-    glCallList(fDisplayList);
-    Exit;
-  end;
-
-  glBindTexture(GL_TEXTURE_2D, fTexture);
-  glPushMatrix();
-
-  // move to top left glyph position
-  glTranslatef(fBitmapCoords.Left, fBitmapCoords.Top, 0);
-
-  // draw glyph texture
-  glBegin(GL_QUADS);
-    // top right
-    glTexCoord2f(fTexOffset.X, 0);
-    glVertex2f(fBitmapCoords.Width, 0);
-
-    // top left
-    glTexCoord2f(0, 0);
-    glVertex2f(0, 0);
-
-    // bottom left
-    glTexCoord2f(0, fTexOffset.Y);
-    glVertex2f(0, -fBitmapCoords.Height);
-
-    // bottom right
-    glTexCoord2f(fTexOffset.X, fTexOffset.Y);
-    glVertex2f(fBitmapCoords.Width, -fBitmapCoords.Height);
-  glEnd();
-
-  glPopMatrix();
-end;
-
-procedure TFTGlyph.RenderReflection();
+procedure TFTGlyph.Render(PosX, PosY, PosZ, ScaleX, ScaleY: single; HasReflection: boolean; ReflectionSpace: single; Italic: boolean);
 var
-  Color: TGLColor;
-  TexUpperPos: single;
-  TexLowerPos: single;
-  UpperPos: single;
+  Color: TRGBA;
+  PosYGlyph: single;
 const
-  CutOff = 0.6;
+  CutOff = 0.6; // Percent of the reflected glyph height to display
 begin
-  glPushMatrix();
-  glBindTexture(GL_TEXTURE_2D, fTexture);
-  glGetFloatv(GL_CURRENT_COLOR, @Color.vals);
+  // move to top left glyph position
+  PosX := PosX + fBitmapCoords.Left * ScaleX;
+  PosYGlyph := PosY - fBitmapCoords.Top * ScaleY;
+  Color := fFont.GetColor();
+  with fTexture do
+  begin
+    X := PosX;
+    Y := PosYGlyph;
+    Z := PosZ;
+    W := fBitmapCoords.Width * ScaleX;
+    H := fBitmapCoords.Height * ScaleY;
+    ColR := Color.R;
+    ColG := Color.G;
+    ColB := Color.B;
+    Alpha := Color.A;
+    if (HasReflection) then
+    begin
+      Reflection := true;
 
-  // add extra space to the left of the glyph
-  glTranslatef(fBitmapCoords.Left, 0, 0);
+      // ReflectionSpace is the spacing between the two baselines. To get the actual spacing between
+      // the textures, we have to subtract the descender from the reflected texture from the bottom position
+      // of the main texture
+      ReflectionSpacing := PosY + ((ReflectionSpace + fFont.Descender) * ScaleY) - (Y + H);
+      ReflectionHeight := fFont.Height * CutOff * ScaleY / H;
+      ReflectionAlphaDiff := 0.3;
 
-  // The upper position of the glyph, if CutOff is 1.0, it is fFont.Ascender.
-  // If CutOff is set to 0.5 only half of the glyph height is displayed.
-  UpperPos := fFont.Descender + fFont.Height * CutOff;
+      // the glyph texture's height is just the height of the glyph but not the font
+      // height. Setting a color for the upper and lower bounds of the glyph results
+      // in different color gradients. So we have to set the color values for the
+      // descender and ascender (as we have a cutoff, for the upper-pos here) as
+      // these positions are font but not glyph specific.
 
-  // the glyph texture's height is just the height of the glyph but not the font
-  // height. Setting a color for the upper and lower bounds of the glyph results
-  // in different color gradients. So we have to set the color values for the
-  // descender and ascender (as we have a cutoff, for the upper-pos here) as
-  // these positions are font but not glyph specific.
+      // To get the texture positions we have to enhance the texture at the top and
+      // bottom by the amount from the top to ascender (rather upper-pos here) and
+      // from the bottom (Height-Top) to descender. Then we have to convert those
+      // heights to texture coordinates by dividing by the bitmap Height and
+      // removing the power-of-2 padding space by multiplying with fTexOffset.Y
+      // (as fBitmapCoords.Height corresponds to fTexOffset.Y and not 1.0).
+      ReflectionTexY1 := (-(fFont.Descender + fBitmapCoords.Height - fBitmapCoords.Top) / fBitmapCoords.Height + 1) * fTexOffset.Y;
+      ReflectionTexY2 := -(fFont.Descender + fFont.Height * CutOff - fBitmapCoords.Top) / fBitmapCoords.Height * fTexOffset.Y;
 
-  // To get the texture positions we have to enhance the texture at the top and
-  // bottom by the amount from the top to ascender (rather upper-pos here) and
-  // from the bottom (Height-Top) to descender. Then we have to convert those
-  // heights to texture coordinates by dividing by the bitmap Height and
-  // removing the power-of-2 padding space by multiplying with fTexOffset.Y
-  // (as fBitmapCoords.Height corresponds to fTexOffset.Y and not 1.0).
-  TexUpperPos  := -(UpperPos - fBitmapCoords.Top) / fBitmapCoords.Height * fTexOffset.Y;
-  TexLowerPos := (-(fFont.Descender + fBitmapCoords.Height - fBitmapCoords.Top) /
-                    fBitmapCoords.Height + 1) * fTexOffset.Y;
+    end
+    else
+      Reflection := false;
 
-  // draw glyph texture
-  glBegin(GL_QUADS);
-    // top right
-    glColor4f(Color.r, Color.g, Color.b, 0);
-    glTexCoord2f(fTexOffset.X, TexUpperPos);
-    glVertex2f(fBitmapCoords.Width, UpperPos);
-
-    // top left
-    glTexCoord2f(0, TexUpperPos);
-    glVertex2f(0, UpperPos);
-
-    // bottom left
-    glColor4f(Color.r, Color.g, Color.b, Color.a-0.3);
-    glTexCoord2f(0, TexLowerPos);
-    glVertex2f(0, fFont.Descender);
-
-    // bottom right
-    glTexCoord2f(fTexOffset.X, TexLowerPos);
-    glVertex2f(fBitmapCoords.Width, fFont.Descender);
-  glEnd();
-
-  glPopMatrix();
-
-  // restore old color
-  // Note: glPopAttrib(GL_CURRENT_BIT)/glPopAttrib() is much slower then
-  // glGetFloatv(GL_CURRENT_COLOR, ...)/glColor4fv(...)
-  glColor4fv(@Color.vals);
+    if (Italic) then
+    begin
+      X := X + (ScaleX * cShearFactor * (fBitmapCoords.Top - fOutset));
+      Shear := -cShearFactor * ScaleX * fBitmapCoords.Height;
+    end
+    else
+      Shear := 0;
+  end;
+  Renderer.DrawGlyph(fTexture);
 end;
 
 function TFTGlyph.GetAdvance(): TPositionDbl;
@@ -2812,241 +2634,6 @@ begin
     FT_Done_FreeType(LibraryInst);
   LibraryInst := nil;
 end;
-
-
-{$IFDEF BITMAP_FONT}
-{*
- * TBitmapFont
- *}
-
-constructor TBitmapFont.Create(const Filename: IPath; Outline: integer;
-    Baseline, Ascender, Descender: integer);
-begin
-  inherited Create(Filename);
-
-  fTex := Texture.LoadTexture(Filename, TEXTURE_TYPE_TRANSPARENT, 0);
-  fTexSize := 1024;
-  fOutline := Outline;
-  fBaseline  := Baseline;
-  fAscender  := Ascender;
-  fDescender := Descender;
-
-  LoadFontInfo(Filename.SetExtension('.dat'));
-
-  ResetIntern();
-end;
-
-destructor TBitmapFont.Destroy();
-begin
-  glDeleteTextures(1, @fTex.TexNum);
-  inherited;
-end;
-
-procedure TBitmapFont.ResetIntern();
-begin
-  fLineSpacing := Height;
-end;
-
-procedure TBitmapFont.Reset();
-begin
-  inherited;
-  ResetIntern();
-end;
-
-procedure TBitmapFont.AddFallback(const Filename: IPath);
-begin
-  // no support for fallbacks
-end;
-
-procedure TBitmapFont.CorrectWidths(WidthMult: real; WidthAdd: integer);
-var
-  Count: integer;
-begin
-  for Count := 0 to 255 do
-    fWidths[Count] := Round(fWidths[Count] * WidthMult) + WidthAdd;
-end;
-
-procedure TBitmapFont.LoadFontInfo(const InfoFile: IPath);
-var
-  Stream: TStream;
-begin
-  FillChar(fWidths[0], Length(fWidths), 0);
-
-  Stream := nil;
-  try
-    Stream := TBinaryFileStream.Create(InfoFile, fmOpenRead);
-    Stream.Read(fWidths, 256);
-  except
-    raise EFontError.Create('Could not read font info file ''' +  InfoFile.ToNative + '''');
-  end;
-  Stream.Free;
-end;
-
-function TBitmapFont.BBox(const Text: TUCS4StringArray; Advance: boolean): TBoundsDbl;
-var
-  LineIndex, CharIndex: integer;
-  CharCode: cardinal;
-  Line: UCS4String;
-  LineWidth: double;
-begin
-  Result.Left := 0;
-  Result.Right := 0;
-  Result.Top := Height;
-  Result.Bottom := 0;
-
-  for LineIndex := 0 to High(Text) do
-  begin
-    Line := Text[LineIndex];
-    LineWidth := 0;
-    for CharIndex := 0 to LengthUCS4(Line)-1 do
-    begin
-      CharCode := Ord(Line[CharIndex]);
-      if (CharCode < Length(fWidths)) then
-        LineWidth := LineWidth + fWidths[CharCode];
-    end;
-    if (LineWidth > Result.Right) then
-      Result.Right := LineWidth;
-  end;
-end;
-
-procedure TBitmapFont.RenderChar(ch: UCS4Char; var AdvanceX: real);
-var
-  TexX, TexY:        real;
-  TexR, TexB:        real;
-  GlyphWidth:        real;
-  PL, PT:            real;
-  PR, PB:            real;
-  CharCode:          cardinal;
-begin
-  CharCode := Ord(ch);
-  if (CharCode > High(fWidths)) then
-    CharCode := 0;
-
-  GlyphWidth := fWidths[CharCode];
-
-  // set texture positions
-  TexX := (CharCode mod 16) * 1/16 + 1/32 - (GlyphWidth/2 - fOutline)/fTexSize;
-  TexY := (CharCode div 16) * 1/16 + {2 texels} 2/fTexSize;
-  TexR := (CharCode mod 16) * 1/16 + 1/32 + (GlyphWidth/2 + fOutline)/fTexSize;
-  TexB := (1 + CharCode div 16) * 1/16 - {2 texels} 2/fTexSize;
-
-  // set vector positions
-  PL := AdvanceX - fOutline;
-  PR := PL + GlyphWidth + fOutline*2;
-  PB := -fBaseline;
-  PT := PB + fTexSize div 16;
-
-  (*
-  if (Font.Blend) then
-  begin
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  end;
-  *)
-
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, fTex.TexNum);
-  
-  if (not ReflectionPass) then
-  begin
-    glBegin(GL_QUADS);
-      glTexCoord2f(TexX, TexY); glVertex2f(PL, PT);
-      glTexCoord2f(TexX, TexB); glVertex2f(PL, PB);
-      glTexCoord2f(TexR, TexB); glVertex2f(PR, PB);
-      glTexCoord2f(TexR, TexY); glVertex2f(PR, PT);
-    glEnd;
-  end
-  else
-  begin
-    glDepthRange(0, 10);
-    glDepthFunc(GL_LEQUAL);
-    glEnable(GL_DEPTH_TEST);
-
-    glBegin(GL_QUADS);
-      glTexCoord2f(TexX, TexY); glVertex2f(PL, PT);
-      glTexCoord2f(TexX, TexB); glVertex2f(PL, PB);
-      glTexCoord2f(TexR, TexB); glVertex2f(PR, PB);
-      glTexCoord2f(TexR, TexY); glVertex2f(PR, PT);
-    glEnd;
-
-    glBegin(GL_QUADS);
-      glTexCoord2f(TexX, TexY); glVertex2f(PL, PT);
-      glTexCoord2f(TexX, TexB); glVertex2f(PL, PB);
-      glTexCoord2f(TexR, TexB); glVertex2f(PR, PB);
-      glTexCoord2f(TexR, TexY); glVertex2f(PR, PT);
-
-(*
-      glColor4f(fTempColor.r, fTempColor.g, fTempColor.b, 0.7);
-      glTexCoord2f(TexX, TexB); glVertex3f(PL, PB, 0);
-      glTexCoord2f(TexR, TexB); glVertex3f(PR, PB, 0);
-
-      glColor4f(fTempColor.r, fTempColor.g, fTempColor.b, 0);
-      glTexCoord2f(TexR, (TexY + TexB)/2); glVertex3f(PR, (PT + PB)/2, 0);
-      glTexCoord2f(TexX, (TexY + TexB)/2); glVertex3f(PL, (PT + PB)/2, 0);
-*)
-    glEnd;
-
-    //write the colour back
-    glColor4fv(@fTempColor);
-
-    glDisable(GL_DEPTH_TEST);
-  end; // reflection
-
-  glDisable(GL_TEXTURE_2D);
-  (*
-  if (Font.Blend) then
-    glDisable(GL_BLEND);
-  *)
-
-  AdvanceX := AdvanceX + GlyphWidth;
-end;
-
-procedure TBitmapFont.Render(const Text: UCS4String);
-var
-  CharIndex: integer;
-  AdvanceX: real;
-begin
-  // if there is no text do nothing
-  if (Text = nil) or (Text[0] = 0) then
-    Exit;
-
-  //Save the current color and alpha (for reflection)
-  glGetFloatv(GL_CURRENT_COLOR, @fTempColor);
-
-  AdvanceX := 0;
-  for CharIndex := 0 to LengthUCS4(Text)-1 do
-  begin
-    RenderChar(Text[CharIndex], AdvanceX);
-  end;
-end;
-
-function TBitmapFont.GetHeight(): single;
-begin
-  Result := fAscender - fDescender;
-end;
-
-function TBitmapFont.GetAscender(): single;
-begin
-  Result := fAscender;
-end;
-
-function TBitmapFont.GetDescender(): single;
-begin
-  Result := fDescender;
-end;
-
-function TBitmapFont.GetUnderlinePosition(): single;
-begin
-  Result := -2.0;
-end;
-
-function TBitmapFont.GetUnderlineThickness(): single;
-begin
-  Result := 1.0;
-end;
-
-{$ENDIF BITMAP_FONT}
-
 
 initialization
 

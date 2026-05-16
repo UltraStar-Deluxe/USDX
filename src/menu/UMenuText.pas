@@ -36,11 +36,9 @@ interface
 uses
   math,
   SysUtils,
-  dglOpenGL,
   sdl2,
-  TextGL,
-  UMenuInteract,
-  UTexture;
+  UText,
+  UMenuInteract;
 
 type
   TText = class
@@ -52,20 +50,20 @@ type
       STicks:      cardinal;
       SelectBlink: boolean;
     public
-      X:       real;
-      Y:       real;
-      Z:       real;
-      MoveX:   real;       // some modifier for x - position that don't affect the real Y
-      MoveY:   real;       // some modifier for y - position that don't affect the real Y
-      W:       real;       // text wider than W is wrapped
-      H:       real;       // text higher than H is decreased in font size
-      Size:    real;
-      ColR:    real;
-      ColG:    real;
-      ColB:    real;
+      X:       single;
+      Y:       single;
+      Z:       single;
+      MoveX:   single;       // some modifier for x - position that don't affect the single Y
+      MoveY:   single;       // some modifier for y - position that don't affect the single Y
+      W:       single;       // text wider than W is wrapped
+      H:       single;       // text higher than H is decreased in font size
+      Size:    single;
+      ColR:    single;
+      ColG:    single;
+      ColB:    single;
 
-      Alpha:   real;
-      Int:     real;
+      Alpha:   single;
+      Int:     single;
       Font:    integer;
       Style:   integer;
       Visible: boolean;
@@ -73,7 +71,7 @@ type
 
       // reflection
       Reflection:        boolean;
-      ReflectionSpacing: real;
+      ReflectionSpacing: single;
 
       Writable: boolean;
 
@@ -87,8 +85,8 @@ type
 
       procedure Draw;
       constructor Create; overload;
-      constructor Create(X, Y: real; const Text: UTF8String); overload;
-      constructor Create(ParX, ParY, ParW, ParH: real; ParFont, ParStyle: integer; ParSize, ParColR, ParColG, ParColB: real; ParAlign: integer; const ParText: UTF8String; ParReflection: boolean; ParReflectionSpacing: real; ParZ: real; Writable: boolean); overload;
+      constructor Create(X, Y: single; const Text: UTF8String); overload;
+      constructor Create(ParX, ParY, ParW, ParH: single; ParFont, ParStyle: integer; ParSize, ParColR, ParColG, ParColB: single; ParAlign: integer; const ParText: UTF8String; ParReflection: boolean; ParReflectionSpacing: single; ParZ: single; Writable: boolean); overload;
 
       function GetMouseOverArea: TMouseOverRect;
   end;
@@ -215,7 +213,7 @@ begin
       if isBreak then
       begin
         // look for break before the break
-        if (glTextWidth(Copy(Value, LastBreak, NextPos - LastBreak + 1)) > W) AND (NextPos-LastPos > 1) then
+        if (TextWidth(Copy(Value, LastBreak, NextPos - LastBreak + 1)) > W) AND (NextPos-LastPos > 1) then
         begin
           isBreak := false;
           // not the first word after break, so we don't have to break within a word
@@ -236,7 +234,7 @@ begin
         AddBreak(LastBreak, NextPos);
       end
       // text comes out of the text area -> createbreak
-      else if (glTextWidth(Copy(Value, LastBreak, NextPos - LastBreak + 1)) > W) then
+      else if (TextWidth(Copy(Value, LastBreak, NextPos - LastBreak + 1)) > W) then
       begin
         // not the first word after break, so we don't have to break within a word
         if (FirstWord > 1) then
@@ -283,7 +281,7 @@ end;
 
 procedure TText.Draw;
 var
-  X2, Y2: real;
+  X2, Y2: single;
   tmpText2, Text2:  UTF8String;
   I:      integer;
   Ticks:  cardinal;
@@ -295,7 +293,7 @@ begin
     SetFontSize(Size);
     SetFontItalic(false);
 
-    glColor4f(ColR*Int, ColG*Int, ColB*Int, Alpha);
+    SetFontColor(ColR*Int, ColG*Int, ColB*Int, Alpha);
 
     // reflection
     if Reflection then
@@ -323,12 +321,12 @@ begin
 
       case Align of
         0: X2 := X;
-        1: X2 := X - glTextWidth(Text2)/2;
-        2: X2 := X - glTextWidth(Text2);
+        1: X2 := X - TextWidth(Text2)/2;
+        2: X2 := X - TextWidth(Text2);
       end;
 
       SetFontPos(X2, Y);
-      glPrint(Text2);
+      PrintText(Text2);
       SetFontStyle(ftNormal); // reset to default
     end
     else
@@ -353,8 +351,8 @@ begin
         end;
 
         case Align of
-          1: X2 := X + MoveX - glTextWidth(tmpText2)/2; { centered }
-          2: X2 := X + MoveX - glTextWidth(tmpText2); { right aligned }
+          1: X2 := X + MoveX - TextWidth(tmpText2)/2; { centered }
+          2: X2 := X + MoveX - TextWidth(tmpText2); { right aligned }
           else X2 := X + MoveX; { left aligned (default) }
         end;
 
@@ -362,7 +360,7 @@ begin
 
         SetFontZ(Z);
 
-        glPrint(Text2);
+        PrintText(Text2);
 
         {if Size >= 10 then
           Y2 := Y2 + Size * 0.93
@@ -386,19 +384,19 @@ begin
   Create(0, 0, '');
 end;
 
-constructor TText.Create(X, Y: real; const Text: UTF8String);
+constructor TText.Create(X, Y: single; const Text: UTF8String);
 begin
   Create(X, Y, 0, 0, 0, ftRegular, 30, 0, 0, 0, 0, Text, false, 0, 0, false);
 end;
 
-constructor TText.Create(ParX, ParY, ParW, ParH: real;
+constructor TText.Create(ParX, ParY, ParW, ParH: single;
                          ParFont, ParStyle: integer;
-                         ParSize, ParColR, ParColG, ParColB: real;
+                         ParSize, ParColR, ParColG, ParColB: single;
                          ParAlign: integer;
                          const ParText: UTF8String;
                          ParReflection: boolean;
-                         ParReflectionSpacing: real;
-                         ParZ: real;
+                         ParReflectionSpacing: single;
+                         ParZ: single;
                          Writable: boolean);
 begin
   inherited Create;
@@ -432,15 +430,15 @@ begin
     begin
       Result.X := X;
       Result.Y := Y;
-      Result.W := glTextWidth(Text);
+      Result.W := TextWidth(Text);
       Result.H := Size;
     end;
 
     if (Align = 1) then
     begin
-      Result.X := X -glTextWidth(Text)/2;
+      Result.X := X -TextWidth(Text)/2;
       Result.Y := Y;
-      Result.W := glTextWidth(Text);
+      Result.W := TextWidth(Text);
       Result.H := Size;
     end;
 
@@ -449,14 +447,14 @@ begin
       if (W <> 0) then
         Result.X := X - W
       else
-        Result.X := X - glTextWidth(Text);
+        Result.X := X - TextWidth(Text);
 
       Result.Y := Y;
 
       if (W <> 0) then
         Result.W := W
       else
-        Result.W := glTextWidth(Text);
+        Result.W := TextWidth(Text);
 
       Result.H := Size;
     end;

@@ -104,7 +104,6 @@ uses
   UMain,
   UParty,
   USong,
-  UTexture,
   UUnicodeUtils;
 
 function TScreenPartyNewRound.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;

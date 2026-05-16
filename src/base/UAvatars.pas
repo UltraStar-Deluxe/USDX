@@ -41,7 +41,7 @@ uses
   Classes,
   UImage,
   UIni,
-  UTexture,
+  URenderer,
   UPath;
 
 type
@@ -152,7 +152,7 @@ end;
 
 function TAvatar.GetTexture(): TTexture;
 begin
-  Result := Texture.LoadTexture(Filename);
+  Result := Renderer.LoadTexture(Filename);
 end;
 
 
@@ -386,7 +386,7 @@ begin
     if (Data <> nil) and
        (PixelFmt = ipfRGB) then
     begin
-      Result := Texture.CreateTexture(Data, Filename, Width, Height)
+      Result := Renderer.CreateTexture(Data, Filename, Width, Height)
     end
     else
     begin

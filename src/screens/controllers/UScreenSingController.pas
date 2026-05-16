@@ -44,17 +44,16 @@ uses
   UMenu,
   UMusic,
   UPath,
+  URenderer,
   UScreenSingView,
   USingScores,
   USkins,
   USongs,
-  UTexture,
   UThemes,
   UTime,
-  dglOpenGL,
   sdl2,
   SysUtils,
-  TextGL;
+  UText;
 
 type
   TLyricsSyncSource = class(TSyncSource)
@@ -685,6 +684,7 @@ begin
   fMusicSync.Free;
   eSongLoaded.Free;
   Scores.Free;
+  Tex_Background.Free;
   inherited;
 end;
 
@@ -1010,11 +1010,7 @@ var
 
 begin
   // background texture (garbage disposal)
-  if (Tex_Background.TexNum > 0) then
-  begin
-    glDeleteTextures(1, PGLuint(@Tex_Background.TexNum));
-    Tex_Background.TexNum := 0;
-  end;
+  FreeAndNil(Tex_Background);
 
   // reset video playback engine
   fCurrentVideo := nil;
@@ -1173,16 +1169,16 @@ begin
   begin
     BgFile := CurrentSong.Path.Append(CurrentSong.Background);
     try
-      Tex_Background := Texture.LoadTexture(BgFile);
+      Tex_Background := Renderer.LoadTexture(BgFile);
       fShowBackground := fCurrentVideo = nil;
     except
       Log.LogError('Background could not be loaded: ' + BgFile.ToNative);
-      Tex_Background.TexNum := 0;
+      FreeAndNil(Tex_Background);
     end;
   end
   else
   begin
-    Tex_Background.TexNum := 0;
+    FreeAndNil(Tex_Background);
   end;
 
   {*
@@ -1381,7 +1377,7 @@ begin
   fCurrentVideo := nil;
 
   // background texture
-  FreeTexture(Tex_Background);
+  FreeAndNil(Tex_Background);
   if fShowWebcam then
         begin
           Webcam.Release;
