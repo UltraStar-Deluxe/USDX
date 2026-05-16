@@ -30,6 +30,7 @@ ${LangFileString} button_close "Close"
 
 ${LangFileString} delete_components "Also delete the following components:"
 ${LangFileString} delete_covers "Cover"
+${LangFileString} delete_avatars "Avatars"
 ${LangFileString} delete_highscores "Highscores"
 ${LangFileString} delete_config "Config"
 ${LangFileString} delete_screenshots "Screenshots"
