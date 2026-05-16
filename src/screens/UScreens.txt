@@ -14,7 +14,6 @@
 018  UScreenSongMenu Party
 019  UScreenSongMenu Refresh Scores
 020  UScreenSongMenu Extra
-021  UScreenSongMenu Jukebox
 022  UScreenSingController
 023  UScreenScore
 024  UScreenTop5
@@ -29,10 +28,6 @@
 037  UScreenPartyTournamentOptions
 038  UScreenPartyTournamentRounds
 039  UScreenPartyTournamentWin
-
-040  UScreenJukeboxPlaylist
-041  UScreenJukebox
-042  UScreenJukeboxOptions
 
 050  UScreenStatMain
 051  UScreenStatDetail
@@ -54,9 +49,6 @@
 078  UScreenOptionsAdvanced
 079  UScreenOptionsNetwork
 080  UScreenOptionsWebcam
-081  UScreenOptionsJukebox
-
 ---  UScreenPopup
-
 
 
