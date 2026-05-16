@@ -84,6 +84,7 @@ type
       RandomSongOrder: CardinalArray;
       NextRandomSongIdx: cardinal;
       RandomSearchOrder: CardinalArray;
+      MarkedPlaylistSong: integer;
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
@@ -1133,8 +1134,17 @@ begin
           begin
             Fix := true;
 
+            if (CatSongs.CatNumShow = -2) and (PlaylistMan.CurPlayList <> -1) then
+            begin
+              PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, Interaction);
+              NextRandomSearchIdx := CatSongs.VisibleSongs;
+              SelectNext;
+              SelectPrev;
+              FixSelected;
+            end
+
             //On Escape goto Cat-List Hack
-            if (Ini.Tabs = 1) and (CatSongs.CatNumShow <> -1) then
+            else if (Ini.Tabs = 1) and (CatSongs.CatNumShow <> -1) then
             begin
 
               //Find Category
@@ -1355,6 +1365,15 @@ begin
         begin
           LastSelectTime := SDL_GetTicks;
 
+          if (CatSongs.CatNumShow = -3) and (MarkedPlaylistSong <> -1) then
+          begin
+            MarkedPlaylistSong := PlaylistMan.MoveItem(MarkedPlaylistSong, 1);
+            LastSelectTime := 0;
+            FixSelected;
+            SetScrollRefresh;
+            Exit;
+          end;
+
           if (TSongMenuMode(Ini.SongMenu) = smList) then
             ParseInputNextHorizontal(PressedKey, CharCode, PressedDown)
           else
@@ -1364,6 +1383,15 @@ begin
       SDLK_UP:
         begin
           LastSelectTime := SDL_GetTicks;
+
+          if (CatSongs.CatNumShow = -3) and (MarkedPlaylistSong <> -1) then
+          begin
+            MarkedPlaylistSong := PlaylistMan.MoveItem(MarkedPlaylistSong, -1);
+            LastSelectTime := 0;
+            FixSelected;
+            SetScrollRefresh;
+            Exit;
+          end;
 
           if (TSongMenuMode(Ini.SongMenu) = smList) then
             ParseInputPrevHorizontal(PressedKey, CharCode, PressedDown)
@@ -1375,6 +1403,15 @@ begin
         begin
           LastSelectTime := SDL_GetTicks;
 
+          if (CatSongs.CatNumShow = -3) and (MarkedPlaylistSong <> -1) then
+          begin
+            MarkedPlaylistSong := PlaylistMan.MoveItem(MarkedPlaylistSong, 1);
+            LastSelectTime := 0;
+            FixSelected;
+            SetScrollRefresh;
+            Exit;
+          end;
+
           if (TSongMenuMode(Ini.SongMenu) = smList) then
             ParseInputNextVertical(PressedKey, CharCode, PressedDown)
           else
@@ -1385,6 +1422,15 @@ begin
         begin
           LastSelectTime := SDL_GetTicks;
 
+          if (CatSongs.CatNumShow = -3) and (MarkedPlaylistSong <> -1) then
+          begin
+            MarkedPlaylistSong := PlaylistMan.MoveItem(MarkedPlaylistSong, -1);
+            LastSelectTime := 0;
+            FixSelected;
+            SetScrollRefresh;
+            Exit;
+          end;
+
           if (TSongMenuMode(Ini.SongMenu) = smList) then
             ParseInputPrevVertical(PressedKey, CharCode, PressedDown)
           else
@@ -1392,6 +1438,20 @@ begin
         end;
       SDLK_SPACE:
         begin
+          if (CatSongs.CatNumShow = -3) and (not CatSongs.Song[Interaction].Main) then
+          begin
+            if MarkedPlaylistSong = -1 then
+            begin
+              MarkedPlaylistSong := Interaction;
+            end
+            else
+            begin
+              MarkedPlaylistSong := -1;
+            end;
+            SetScrollRefresh;
+            Exit;
+          end;
+
           if (Mode = smJukebox) and (not CatSongs.Song[Interaction].Main) then
             ScreenJukebox.AddSongToJukeboxList(Interaction);
 
@@ -1737,6 +1797,8 @@ var
   StaticY: real;
 begin
   inherited Create;
+
+  MarkedPlaylistSong := -1;
 
   LoadFromTheme(Theme.Song);
 
@@ -2853,6 +2915,7 @@ var
 begin
   inherited;
 
+  MarkedPlaylistSong := -1;
   CloseMessage();
 
   if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) then
@@ -3087,6 +3150,51 @@ var
   VideoAlpha: real;
   Position:   real;
   I, J:       integer;
+
+  procedure SetMarkedCardTexture(StaticIndex: integer; const ThemeStatic: TThemeStatic);
+  var
+    NewTexture: TTexture;
+    X, Y, W, H, Z, Alpha: real;
+    Marked: boolean;
+  begin
+    if (StaticIndex < 0) or
+       (StaticIndex > High(Statics)) or
+       (not SameText(ThemeStatic.Tex, 'SongSelection2')) then
+      Exit;
+
+    Marked := (CatSongs.CatNumShow = -3) and (MarkedPlaylistSong = Interaction);
+
+    X := Statics[StaticIndex].Texture.X;
+    Y := Statics[StaticIndex].Texture.Y;
+    W := Statics[StaticIndex].Texture.W;
+    H := Statics[StaticIndex].Texture.H;
+    Z := Statics[StaticIndex].Texture.Z;
+    Alpha := Statics[StaticIndex].Texture.Alpha;
+
+    if Marked then
+      NewTexture := Texture.GetTexture(
+        Skin.GetTextureFileName(ThemeStatic.Tex),
+        ThemeStatic.Typ,
+        RGBFloatToInt(Theme.Song.ListCover.DColR, Theme.Song.ListCover.DColG, Theme.Song.ListCover.DColB))
+    else
+      NewTexture := Texture.GetTexture(
+        Skin.GetTextureFileName(ThemeStatic.Tex),
+        ThemeStatic.Typ,
+        RGBFloatToInt(ThemeStatic.ColR, ThemeStatic.ColG, ThemeStatic.ColB));
+
+    Statics[StaticIndex].Texture := NewTexture;
+    Statics[StaticIndex].Texture.X := X;
+    Statics[StaticIndex].Texture.Y := Y;
+    Statics[StaticIndex].Texture.W := W;
+    Statics[StaticIndex].Texture.H := H;
+    Statics[StaticIndex].Texture.Z := Z;
+    Statics[StaticIndex].Texture.Alpha := Alpha;
+    Statics[StaticIndex].Texture.TexX1 := ThemeStatic.TexX1;
+    Statics[StaticIndex].Texture.TexY1 := ThemeStatic.TexY1;
+    Statics[StaticIndex].Texture.TexX2 := ThemeStatic.TexX2;
+    Statics[StaticIndex].Texture.TexY2 := ThemeStatic.TexY2;
+  end;
+
 begin
 
   FadeMessage();
@@ -3322,6 +3430,12 @@ begin
   // duet names
   if (CatSongs.Song[Interaction].isDuet) then
     ColorDuetNameSingers();
+
+  for I := 0 to High(Theme.Song.Statics) do
+    SetMarkedCardTexture(I, Theme.Song.Statics[I]);
+
+  for I := 0 to High(Theme.Song.StaticNonParty) do
+    SetMarkedCardTexture(StaticNonParty[I], Theme.Song.StaticNonParty[I]);
 
   // Statics
   for I := 0 to High(Statics) do
