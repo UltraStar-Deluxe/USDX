@@ -867,6 +867,17 @@ begin
       ScoreLast      := 0;
 
       LastSentencePerfect := false;
+
+      Name           := PlayerNames[PlayerIndex + 1];
+      Level          := Ini.PlayerLevel[PlayerIndex];
+      Track          := 0;
+      if CurrentSong.isDuet then
+      begin
+        if ScreenSong.DuetChange then
+          Track := (PlayerIndex + 1) mod 2
+        else
+          Track := PlayerIndex mod 2;
+      end;
     end;
 
   // prepare music
@@ -1888,16 +1899,56 @@ procedure TScreenSingController.SaveLocalScores;
 var
   I: integer;
   Sung: boolean;
+  Name1, Name2: UTF8String;
+  Score1, Score2: Integer;
+  CombinedName: UTF8String;
+  CombinedScore: Integer;
 begin
   Sung := false;
-  for I := 0 to PlayersPlay - 1 do
+
+  if ScreenSing.SungToEnd then
   begin
-    if Player[I].ScoreTotalInt > 0 then
+    if (ScreenSing.SungToEnd) and not(CurrentSong.isDuet) or (Ini.DuetScores = 1) or (Ini.DuetScores = 3) then
     begin
-      DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Name, Player[I].ScoreTotalInt);
-      Sung := true;
+      for I := 0 to PlayersPlay - 1 do
+      begin
+        Score1 := Round(Player[I].ScoreTotalInt);
+        if Score1 > 0 then
+        begin
+          DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Track, Player[I].Name, Score1);
+          Sung := True;
+        end;
+      end;
     end;
-  end;
+    if (CurrentSong.isDuet) and (Ini.DuetScores >= 2) then
+    begin
+      I := 0;
+      while I < PlayersPlay - 1 do
+      begin
+        Name1  := Player[I].Name;
+        Name2  := Player[I+1].Name;
+        Score1 := Round(Player[I].ScoreTotalInt);
+        Score2 := Round(Player[I+1].ScoreTotalInt);
+
+        if (Player[I].Level = Player[I+1].Level) then
+        begin
+          if UTF8CompareStr(Name1, Name2) <= 0 then
+            CombinedName := Format('%s & %s', [Name1, Name2])
+          else
+            CombinedName := Format('%s & %s', [Name2, Name1]);
+
+          CombinedScore := (Score1 + Score2) div 2;
+          if CombinedScore > 0 then
+          begin
+            DataBase.AddScore(CurrentSong, Player[I].Level, 3, CombinedName, CombinedScore);
+            Sung := True;
+          end;
+        end;
+
+        Inc(I, 2);
+      end;
+    end;
+  end;  // if SungToEnd
 
   if Sung then
     DataBase.WriteScore(CurrentSong);

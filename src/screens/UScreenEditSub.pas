@@ -3717,10 +3717,7 @@ begin
 
     // Notes[CurrentNote[CurrentTrack]] and Notes[CurrentNote[CurrentTrack] + 1] is identical at this point
     // modify first note
-    if (doubleclick) then
-      Notes[CurrentNote[CurrentTrack]].Duration := CutPosition
-    else
-      Notes[CurrentNote[CurrentTrack]].Duration := Round(Notes[CurrentNote[CurrentTrack]].Duration / 2);
+    Notes[CurrentNote[CurrentTrack]].Duration := CutPosition;
 
     // 2nd note
     Notes[CurrentNote[CurrentTrack]+1].StartBeat := Notes[CurrentNote[CurrentTrack]].StartBeat + Notes[CurrentNote[CurrentTrack]].Duration;
@@ -3750,13 +3747,7 @@ begin
       TextPosition := -1;
     end
     else
-    begin
-      if (Length(Notes[CurrentNote[CurrentTrack]].Text) > 0) and (Notes[CurrentNote[CurrentTrack]].Text[Length(Notes[CurrentNote[CurrentTrack]].Text)] = ' ') then
-        Notes[CurrentNote[CurrentTrack] + 1].Text := '~ '
-      else
-        Notes[CurrentNote[CurrentTrack] + 1].Text := '~';
-      Notes[CurrentNote[CurrentTrack]].Text := TrimRight(Notes[CurrentNote[CurrentTrack]].Text);
-    end;
+      Notes[CurrentNote[CurrentTrack]+1].Text := '~';
     Notes[CurrentNote[CurrentTrack]+1].Color := 1;
   end;
 
