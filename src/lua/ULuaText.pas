@@ -50,6 +50,9 @@ function ULuaText_Style(L: Plua_State): Integer; cdecl;
 { UText.Italic(isItalic: boolean) : sets if font is italic }
 function ULuaText_Italic(L: Plua_State): Integer; cdecl;
 
+function ULuaText_Color(L: Plua_State): Integer; cdecl;
+
+
 { UText.Width(Text: String) : returns width of Text if printed
   w/ current settings in pixels }
 function ULuaText_Width(L: Plua_State): Integer; cdecl;
@@ -59,15 +62,15 @@ function ULuaText_Width(L: Plua_State): Integer; cdecl;
 function ULuaText_Print(L: Plua_State): Integer; cdecl;
 
 const
-  ULuaText_Lib_f: array [0..5] of lual_reg = (
+  ULuaText_Lib_f: array [0..6] of lual_reg = (
     (name:'Pos'; func:ULuaText_Pos),
     (name:'Size'; func:ULuaText_Size),
     (name:'Style'; func:ULuaText_Style),
     (name:'Italic'; func:ULuaText_Italic),
+    (name:'Color'; func:ULuaText_Color),
     (name:'Width'; func:ULuaText_Width),
     (name:'Print'; func:ULuaText_Print)
   );
-
 
 implementation
 
@@ -118,6 +121,17 @@ begin
   SetFontItalic(isItalic);
   
   Result := 0;
+end;
+
+function ULuaText_Color(L: Plua_State): Integer; cdecl;
+var
+  R, G, B, A: single;
+begin
+  R := luaL_checknumber(L, 1);
+  G := luaL_checknumber(L, 2);
+  B := luaL_checknumber(L, 3);
+  A := luaL_checknumber(L, 4);
+  SetFontColor(R, G, B, A);
 end;
 
 { UText.Width(Text: String) : returns width of Text if printed

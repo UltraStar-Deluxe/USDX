@@ -73,6 +73,21 @@ type
   end;
   TQuadList = array of TQuad;
 
+  TTriangle = record
+    X1: single;
+    Y1: single;
+    X2: single;
+    Y2: single;
+    X3: single;
+    Y3: single;
+    Z: single;
+    ColR: single;
+    ColG: single;
+    ColB: single;
+    Alpha: single;
+  end;
+  TTriangleList = array of TTriangle;
+
   TLineInfo = record
     X1: single;
     Y1: single;
@@ -103,7 +118,7 @@ type
   end;
   TParticleList = array of TParticleInfo;
 
-  TPoint = record
+  TPoint = packed record
     X: single;
     Y: single;
   end;
@@ -199,6 +214,8 @@ type
       procedure DrawGlyph(Texture: TTexture); virtual; abstract;
       procedure DrawQuads(QuadList: TQuadList); virtual; abstract;
       procedure DrawQuad(X, Y, Z, W, H, ColR, ColG, ColB, Alpha: single);
+      procedure DrawTriangles(TriangleList: TTriangleList); virtual; abstract;
+      procedure DrawTriangle(X1, Y1, X2, Y2, X3, Y3, Z, ColR, ColG, ColB, Alpha: single);
       procedure DrawLines(LineList: TLineList); virtual; abstract;
       procedure DrawLine(X1, Y1, X2, Y2, Z, LineThickness, ColR, ColG, ColB, Alpha: single);
       procedure DrawParticles(Texture: TTexture; ParticleList: TParticleList); virtual; abstract;
@@ -485,6 +502,25 @@ begin
   QuadList[0].Gradient := gdNone;
   QuadList[0].Alpha := Alpha;
   DrawQuads(QuadList);
+end;
+
+procedure TRenderer.DrawTriangle(X1, Y1, X2, Y2, X3, Y3, Z, ColR, ColG, ColB, Alpha: single);
+var
+  TriangleList: TTriangleList;
+begin
+  SetLength(TriangleList, 1);
+  TriangleList[0].X1 := X1;
+  TriangleList[0].Y1 := Y1;
+  TriangleList[0].X2 := X2;
+  TriangleList[0].Y2 := Y2;
+  TriangleList[0].X3 := X3;
+  TriangleList[0].Y3 := Y3;
+  TriangleList[0].Z := Z;
+  TriangleList[0].ColR := ColR;
+  TriangleList[0].ColG := ColG;
+  TriangleList[0].ColB := ColB;
+  TriangleList[0].Alpha := Alpha;
+  DrawTriangles(TriangleList);
 end;
 
 procedure TRenderer.DrawLine(X1, Y1, X2, Y2, Z, LineThickness, ColR, ColG, ColB, Alpha: single);

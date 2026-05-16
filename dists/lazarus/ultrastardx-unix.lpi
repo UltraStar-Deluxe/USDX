@@ -508,9 +508,9 @@
         <UnitName Value="ULuaCore"/>
       </Unit118>
       <Unit119>
-        <Filename Value="lua/ULuaGl.pas"/>
+        <Filename Value="lua/ULuaRenderer.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ULuaGl"/>
+        <UnitName Value="ULuaRenderer"/>
       </Unit119>
       <Unit120>
         <Filename Value="lua/ULuaLog.pas"/>

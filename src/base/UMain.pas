@@ -94,7 +94,7 @@ uses
   UParty,
   UPartyTournament,
   ULuaCore,
-  ULuaGl,
+  ULuaRenderer,
   ULuaLog,
   ULuaTexture,
   ULuaText,
@@ -226,8 +226,8 @@ begin
     PartyTournament := TPartyTournament.Create;
 
     LuaCore.RegisterModule('Log', ULuaLog_Lib_f);
-    LuaCore.RegisterModule('Gl', ULuaGl_Lib_f);
-    LuaCore.RegisterModule('UText', ULuaText_Lib_f);
+    LuaCore.RegisterModule('Renderer', ULuaRenderer_Lib_f);
+    LuaCore.RegisterModule('Text', ULuaText_Lib_f);
     LuaCore.RegisterModule('Party', ULuaParty_Lib_f);
     LuaCore.RegisterModule('ScreenSing', ULuaScreenSing_Lib_f);
 

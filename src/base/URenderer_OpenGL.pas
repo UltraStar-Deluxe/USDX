@@ -86,6 +86,7 @@ type
       procedure DrawTexture(Texture: TTexture); override;
       procedure DrawGlyph(Texture: TTexture); override;
       procedure DrawQuads(QuadList: TQuadList); override;
+      procedure DrawTriangles(TriangleList: TTriangleList); override;
       procedure DrawLines(LineList: TLineList); override;
       procedure DrawParticles(Texture: TTexture; ParticleList: TParticleList); override;
       procedure DrawLineStrip(PointList: TPointList; ScaleX, ScaleY, TranslateX, TranslateY, ColR, ColG, ColB, Alpha: single); override;
@@ -146,9 +147,11 @@ const
   VERTEX_BOTTOMLEFT_OFFSET = VERTEX_BOTTOMLEFT * VERTEX_STRIDE;
   VERTEX_TOPLEFT_OFFSET = VERTEX_TOPLEFT * VERTEX_STRIDE;
   QUAD_STRIDE = VERTEX_STRIDE * 4;
+  TRIANGLE_STRIDE = VERTEX_STRIDE * 3;
 
 type
-  TVertexBufferData = array[VERTEX_TOPRIGHT..VERTEX_TOPLEFT, X_OFFSET..TEXY_OFFSET] of GLfloat;
+  TQuadVertexBufferData = array[VERTEX_TOPRIGHT..VERTEX_TOPLEFT, X_OFFSET..TEXY_OFFSET] of GLfloat;
+  TTriangleVertexBufferData = array[VERTEX_TOPRIGHT..VERTEX_BOTTOMLEFT, X_OFFSET..TEXY_OFFSET] of GLfloat;
 
 const
   GLSL_CORE_HEADER = '#version 150 core' + #10;
@@ -205,7 +208,7 @@ const
     '}';
 
   VBO_SIZE = (2 * 2 shl 20); // 2 MB
-  MAX_QUADS = (VBO_SIZE div SizeOf(TVertexBufferData));
+  MAX_QUADS = (VBO_SIZE div SizeOf(TQuadVertexBufferData));
   EBO_INDICES = MAX_QUADS * 6; // 2 triangles, 6 total vertices per quad
   EBO_SIZE = EBO_INDICES * SizeOf(GLuint);
 
@@ -581,7 +584,7 @@ end;
 
 function TRenderer_OpenGL.GetArrayBuffer(var Bytes: GLuint): PGLfloat;
 begin
-  Bytes := Bytes + Bytes mod SizeOf(TVertexBufferData);
+  Bytes := Bytes + Bytes mod SizeOf(TQuadVertexBufferData);
   if (GLuint(VBOCursor) * SizeOf(GLfloat) + Bytes >= VBO_SIZE) then
   begin
     glBufferData(GL_ARRAY_BUFFER, VBO_SIZE, nil, GL_STREAM_DRAW);
@@ -624,7 +627,7 @@ begin
     NumQuads := 2
   else
     NumQuads := 1;
-  Bytes := SizeOf(TVertexBufferData) * NumQuads;
+  Bytes := SizeOf(TQuadVertexBufferData) * NumQuads;
   Buffer := GetArrayBuffer(Bytes);
   glBindTexture(GL_TEXTURE_2D, Tex.TexID);
   with Tex do
@@ -792,7 +795,7 @@ begin
     glUniformMatrix4fv(TransformLocationMain, 1, GL_TRUE, PGLfloat(@ProjectionMatrix));
     UpdateTransformMain := false;
   end;
-  Bytes := SizeOf(TVertexBufferData) * NumQuads;
+  Bytes := SizeOf(TQuadVertexBufferData) * NumQuads;
   Buffer := GetArrayBuffer(Bytes);
   glBindTexture(GL_TEXTURE_2D, WhiteTexture);
   for I := Low(QuadList) to High(QuadList) do
@@ -923,6 +926,77 @@ begin
   {$ENDIF};
 end;
 
+procedure TRenderer_OpenGL.DrawTriangles(TriangleList: TTriangleList);
+var
+  NumTriangles: GLuint;
+  EquivalentQuads: GLuint;
+  Buffer: PGLfloat;
+  Bytes: GLuint;
+  I: integer;
+begin
+  NumTriangles := Length(TriangleList);
+  if (NumTriangles = 0) then
+    Exit;
+  glBindVertexArray(MainVAO);
+  glUseProgram(MainProgram);
+  if (UpdateTransformMain) then
+  begin
+    glUniformMatrix4fv(TransformLocationMain, 1, GL_TRUE, PGLfloat(@ProjectionMatrix));
+    UpdateTransformMain := false;
+  end;
+  Bytes := VERTEX_STRIDE_BYTES * 3;
+  Buffer := GetArrayBuffer(Bytes);
+  glBindTexture(GL_TEXTURE_2D, WhiteTexture);
+  for I := Low(TriangleList) to High(TriangleList) do
+  begin
+
+    // First Vertex
+    Buffer[VERTEX_TOPRIGHT_OFFSET + X_OFFSET] := TriangleList[I].X1;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + Y_OFFSET] := TriangleList[I].Y1;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + Z_OFFSET] := TriangleList[I].Z;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + R_OFFSET] := TriangleList[I].ColR;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + G_OFFSET] := TriangleList[I].ColG;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + B_OFFSET] := TriangleList[I].ColB;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + A_OFFSET] := TriangleList[I].Alpha;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + TEXX_OFFSET] := 1;
+    Buffer[VERTEX_TOPRIGHT_OFFSET + TEXY_OFFSET] := 0;
+
+    // Second Vertex
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + X_OFFSET] := TriangleList[I].X2;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + Y_OFFSET] := TriangleList[I].Y2;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + Z_OFFSET] := TriangleList[I].Z;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + R_OFFSET] := TriangleList[I].ColR;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + G_OFFSET] := TriangleList[I].ColG;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + B_OFFSET] := TriangleList[I].ColB;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + A_OFFSET] := TriangleList[I].Alpha;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + TEXX_OFFSET] := 1;
+    Buffer[VERTEX_BOTTOMRIGHT_OFFSET + TEXY_OFFSET] := 1;
+
+    // Third Vertex
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + X_OFFSET] := TriangleList[I].X3;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + Y_OFFSET] := TriangleList[I].Y3;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + Z_OFFSET] := TriangleList[I].Z;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + R_OFFSET] := TriangleList[I].ColR;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + G_OFFSET] := TriangleList[I].ColG;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + B_OFFSET] := TriangleList[I].ColB;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + A_OFFSET] := TriangleList[I].Alpha;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + TEXX_OFFSET] := 0;
+    Buffer[VERTEX_BOTTOMLEFT_OFFSET + TEXY_OFFSET] := 1;
+
+    Buffer := Buffer + TRIANGLE_STRIDE;
+  end;
+
+  glUnmapBuffer(GL_ARRAY_BUFFER);
+  glDrawArrays(GL_TRIANGLES, VBOCursor div VERTEX_STRIDE, NumTriangles * 3);
+  EquivalentQuads := Bytes div SizeOf(TQuadVertexBufferData);
+  VBOCursor := VBOCursor + (EquivalentQuads * QUAD_STRIDE);
+  EBOCursor := EBOCursor + (EquivalentQuads * 6);
+  {$IFDEF DEBUG_MODE}
+  RaiseExceptionIfError;
+  {$ENDIF};
+end;
+
+
 procedure TRenderer_OpenGL.DrawLines(LineList: TLineList);
 var
   VecX, VecY, VecPerpX, VecPerpY, Dist, LineThicknessW, LineThicknessH, HalfLineThicknessW, HalfLineThicknessH, PixelWidth, PixelHeight, X1, X2, Y1, Y2: single;
@@ -940,7 +1014,7 @@ begin
     glUniformMatrix4fv(TransformLocationMain, 1, GL_TRUE, PGLfloat(@ProjectionMatrix));
     UpdateTransformMain := false;
   end;
-  Bytes := SizeOf(TVertexBufferData) * NumQuads;
+  Bytes := SizeOf(TQuadVertexBufferData) * NumQuads;
   Buffer := GetArrayBuffer(Bytes);
   glBindTexture(GL_TEXTURE_2D, WhiteTexture);
   PixelWidth := (ScreenW div Screens) / RenderW;
@@ -1104,7 +1178,7 @@ begin
     glUniformMatrix4fv(TransformLocationMain, 1, GL_TRUE, PGLfloat(@ProjectionMatrix));
     UpdateTransformMain := false;
   end;
-  Bytes := SizeOf(TVertexBufferData) * NumQuads;
+  Bytes := SizeOf(TQuadVertexBufferData) * NumQuads;
   Buffer := GetArrayBuffer(Bytes);
   glBindTexture(GL_TEXTURE_2D, Tex.TexID);
 
@@ -1191,16 +1265,10 @@ begin
   glUniform4f(ColorLocationLineStrip, ColR, ColG, ColB, Alpha);
   Bytes := 2 * SizeOf(GLfloat) * NumPoints;
   Buffer := GetArrayBuffer(Bytes);
-
-  for I := Low(PointList) to High(PointList) do
-  begin
-    Buffer[0] := PointList[I].X;
-    Buffer[1] := PointList[I].Y;
-    Buffer := Buffer + 2;
-  end;
+  Move(PointList[0], Buffer[0], NumPoints * SizeOf(TPoint));
   glUnmapBuffer(GL_ARRAY_BUFFER);
   glDrawArrays(GL_LINE_STRIP, VBOCursor div 2, NumPoints);
-  NumQuads := Bytes div SizeOf(TVertexBufferData);
+  NumQuads := Bytes div SizeOf(TQuadVertexBufferData);
   VBOCursor := VBOCursor + (NumQuads * QUAD_STRIDE);
   EBOCursor := EBOCursor + (NumQuads * 6);
   {$IFDEF DEBUG_MODE}

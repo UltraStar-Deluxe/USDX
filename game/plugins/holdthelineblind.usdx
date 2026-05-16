@@ -48,7 +48,7 @@ local dissmissedCount;
 function plugin_init()
   register('party mode: holdthelineblind', '0.6', 'USDX Team', 'http://www.UltrastarDeluxe.org');
 
-  require('math', 'Usdx.Party', 'Usdx.ScreenSing', 'Usdx.Gl', 'Usdx.UText');
+  require('math', 'Usdx.Party', 'Usdx.ScreenSing', 'Usdx.Renderer', 'Usdx.Text');
   local Mode = {}
 
   Mode.Name = 'holdthelineblind';
@@ -110,34 +110,33 @@ function Prepare()
 end;
 
 function DrawPlayerIndicator(i)
-  Gl.Disable('GL_TEXTURE_2D');
+  local xOffset = ratingLimit * (OSD[i].Right - OSD[i].Left)
 
- local xOffset = ratingLimit * (OSD[i].Right - OSD[i].Left)
+  Renderer.DrawTriangle(
+    OSD[i].Left+xOffset-(Indicator.Width/2), -- X1
+    OSD[i].Top+Indicator.Height,             -- Y1
+    OSD[i].Left+xOffset,                     -- X2
+    OSD[i].Top,                              -- Y2
+    OSD[i].Left+xOffset+(Indicator.Width/2), -- X3
+    OSD[i].Top+Indicator.Height,             -- Y3
+    0,                                       -- Z
+    0, 1, 0, 1)                              -- RGBA
 
-  -- background
-  Gl.Color (0, 1, 0, 1);
-  Gl.Begin('GL_QUADS');
-    Gl.Vertex(OSD[i].Left+xOffset-(Indicator.Width/2), OSD[i].Top+Indicator.Height);
-    Gl.Vertex(OSD[i].Left+xOffset, OSD[i].Top);
-    Gl.Vertex(OSD[i].Left+xOffset, OSD[i].Top);
-    Gl.Vertex(OSD[i].Left+xOffset+(Indicator.Width/2), OSD[i].Top+Indicator.Height);
-  Gl.End();
 end;
 
 function DrawOut(i)
-  Gl.Disable('GL_TEXTURE_2D');
-
   local Text = ' OUT ';
 
   -- text
-  Gl.Color(1, 0, 0, 1);
-  UText.Size(18);
-  UText.Style(1);
-  UText.Italic(false);
+  Usdx.Text.Size(18);
+  Usdx.Text.Style(1);
+  Usdx.Text.Italic(false);
+  Usdx.Text.Color(1, 0, 0, 1);
+
   local PosX = (OSD[i].Left + OSD[i].Right) / 2;
-  PosX = PosX - UText.Width(Text) / 2;
-  UText.Pos(PosX, OSD[i].Top - 3);
-  UText.Print(Text);
+  PosX = PosX - Usdx.Text.Width(Text) / 2;
+  Usdx.Text.Pos(PosX, OSD[i].Top - 3);
+  Usdx.Text.Print(Text);
 
 end;
 

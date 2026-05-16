@@ -148,9 +148,9 @@ uses
   //------------------------------
   ULua           in 'lib\Lua\ULua.pas',
   ULuaUtils      in 'lua\ULuaUtils.pas',
-  ULuaGl         in 'lua\ULuaGl.pas',
+  ULuaRenderer   in 'lua\ULuaRenderer.pas',
   ULuaLog        in 'lua\ULuaLog.pas',
-  ULuaText     in 'lua\ULuaText.pas',
+  ULuaText       in 'lua\ULuaText.pas',
   ULuaTexture    in 'lua\ULuaTexture.pas',
   UHookableEvent in 'lua\UHookableEvent.pas',
   ULuaCore       in 'lua\ULuaCore.pas',

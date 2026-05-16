@@ -462,7 +462,7 @@
         <IsPartOfProject Value="True"/>
       </Unit107>
       <Unit108>
-        <Filename Value="lua\ULuaGl.pas"/>
+        <Filename Value="lua\ULuaRenderer.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit108>
       <Unit109>
