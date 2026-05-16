@@ -131,6 +131,7 @@ type
       MidiLastLine:            Integer;
       MidiLastTrack:           Integer;
       MidiLastPitch:           Integer;
+      EditorMidiPitchOffset:   Integer;
       {$ENDIF}
 
       //for mouse move
@@ -434,6 +435,8 @@ type
       procedure ResetMidiLastNote;
       procedure ReleaseMidiLastNote;
       procedure StopMidiPlayback;
+      procedure UpdateMidiPitchOffset;
+      function  GetMidiPitch(NoteTone: Integer): Byte;
       {$ENDIF}
 
     public
@@ -478,6 +481,11 @@ const
   NOT_SET = '-';
   NotesSkipX:  Integer = 20;
   LineSpacing: Integer = 15;
+  EditorMidiToneOffset = 60;
+  EditorMidiMinPitch = 0;
+  EditorMidiMaxPitch = 127;
+  EditorMidiVocalLow = 36;
+  EditorMidiVocalHigh = 96;
 
 procedure OnSaveEncodingError(Value: boolean; Data: Pointer);
 var
@@ -1004,6 +1012,52 @@ begin
   MidiLastLine  := -1;
   MidiLastNote  := -1;
   MidiLastPitch := -1;
+end;
+
+procedure TScreenEditSub.UpdateMidiPitchOffset;
+var
+  TrackIndex: Integer;
+  LineIndex: Integer;
+  NoteIndex: Integer;
+  MinTone: Integer;
+  MaxTone: Integer;
+  FoundTone: Boolean;
+begin
+  FoundTone := false;
+  MinTone := High(Integer);
+  MaxTone := Low(Integer);
+
+  for TrackIndex := 0 to High(CurrentSong.Tracks) do
+    for LineIndex := 0 to High(CurrentSong.Tracks[TrackIndex].Lines) do
+      for NoteIndex := 0 to CurrentSong.Tracks[TrackIndex].Lines[LineIndex].HighNote do
+        with CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex] do
+        begin
+          FoundTone := true;
+          if Tone < MinTone then
+            MinTone := Tone;
+          if Tone > MaxTone then
+            MaxTone := Tone;
+        end;
+
+  EditorMidiPitchOffset := EditorMidiToneOffset;
+  if FoundTone and (MinTone >= EditorMidiMinPitch) and (MaxTone <= EditorMidiMaxPitch) and
+     ((MaxTone + EditorMidiToneOffset > EditorMidiMaxPitch) or
+      ((MinTone >= EditorMidiVocalLow) and (MaxTone <= EditorMidiVocalHigh) and
+       (MaxTone + EditorMidiToneOffset > EditorMidiVocalHigh))) then
+    EditorMidiPitchOffset := 0;
+end;
+
+function TScreenEditSub.GetMidiPitch(NoteTone: Integer): Byte;
+var
+  Pitch: Integer;
+begin
+  Pitch := NoteTone + EditorMidiPitchOffset;
+  if Pitch < EditorMidiMinPitch then
+    Pitch := EditorMidiMinPitch
+  else if Pitch > EditorMidiMaxPitch then
+    Pitch := EditorMidiMaxPitch;
+
+  Result := Pitch;
 end;
 
 procedure TScreenEditSub.ReleaseMidiLastNote;
@@ -4929,6 +4983,7 @@ begin
   fCurrentVideo := nil;
 
   {$IFDEF UseMIDIPort}
+  EditorMidiPitchOffset := EditorMidiToneOffset;
   ResetMidiLastNote;
   {$ENDIF}
 
@@ -5200,6 +5255,7 @@ begin
   PlaySentenceMidi := false;
   Text[TextInfo].Text := '';
   Log.LogStatus('Initializing', 'TEditScreen.OnShow');
+  LoadSingScreenTextures;
   Xmouse := 0;
   VolumeDragSlideId := -1;
 
@@ -5239,6 +5295,7 @@ begin
         ScreenPopupError.ShowPopup(TimingErrors);
     end;
   {$IFDEF UseMIDIPort}
+    UpdateMidiPitchOffset;
     MidiOut := TMidiOutput.Create(nil);
       // run additional timing checks (note/linebreak overlaps)
       // if there are problems, show them in a popup but still allow editing
@@ -5642,6 +5699,9 @@ var
   LastLine:  Integer;
   NoteIndex: Integer;
   Count:     Integer;
+  {$IFDEF UseMIDIPort}
+  MidiPitch: Integer;
+  {$ENDIF}
 begin
   SyncVolumeSlidersFromIni;
 
@@ -5679,11 +5739,12 @@ begin
           MidiOut.PutShort($B1, $7, Floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
           if MidiLastPitch >= 0 then
             MidiOut.PutShort(MIDI_NOTEOFF or 1, MidiLastPitch, 127);
-          MidiOut.PutShort($91, CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].Tone + 60, 127);
+          MidiPitch := GetMidiPitch(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].Tone);
+          MidiOut.PutShort($91, MidiPitch, 127);
             MidiLastTrack := CurrentTrack;
             MidiLastLine  := CurrentSong.Tracks[CurrentTrack].CurrentLine;
             MidiLastNote  := NoteIndex;
-            MidiLastPitch := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].Tone + 60;
+            MidiLastPitch := MidiPitch;
         end;
     end;
   end; // if PlaySentenceMidi
@@ -5787,12 +5848,13 @@ begin
           MidiOut.PutShort($B1, $7, Floor(1.27 * SelectsS[VolumeMidiSlideId].SelectedOption));
           if MidiLastPitch >= 0 then
             MidiOut.PutShort($81, MidiLastPitch, 127);
-          MidiOut.PutShort($91, CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone + 60, 127);
+          MidiPitch := GetMidiPitch(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone);
+          MidiOut.PutShort($91, MidiPitch, 127);
 
           MidiLastTrack := CurrentTrack;
           MidiLastLine  := CurrentSong.Tracks[CurrentTrack].CurrentLine;
           MidiLastNote  := CurrentNote[CurrentTrack];
-          MidiLastPitch := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone + 60;
+          MidiLastPitch := MidiPitch;
         end;
 //      end;
     end;

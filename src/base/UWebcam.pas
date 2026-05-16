@@ -35,15 +35,18 @@ interface
 
 uses
   Classes,
-  URenderer,
+  URenderer
+  {$IFDEF UseOpenCVWrapper},
   sdl2,
   opencv_highgui,
   opencv_core,
   opencv_imgproc,
-  opencv_types;
+  opencv_types
+  {$ENDIF};
 
 type
 
+{$IFDEF UseOpenCVWrapper}
   TWebcam = class
     private
       IsEnabled:     Boolean;
@@ -74,6 +77,19 @@ type
       function FrameEffect(Nr_Effect: integer; Frame: PIplImage): PIplImage;
       function FrameAdjust(Frame: PIplImage): PIplImage;
    end;
+{$ELSE}
+  TWebcam = class
+    public
+      Capture: Pointer;
+      TextureCam: TTexture;
+
+      constructor Create;
+      procedure Start;
+      procedure Release;
+      procedure Restart;
+      procedure GetWebcamFrame();
+   end;
+{$ENDIF}
 
 var
   Webcam:    TWebcam;
@@ -81,6 +97,7 @@ var
 
 implementation
 
+{$IFDEF UseOpenCVWrapper}
 uses
   SysUtils,
   ULog,
@@ -436,5 +453,37 @@ begin
 end;
 
 //----------
+
+{$ELSE}
+
+constructor TWebcam.Create;
+begin
+  inherited;
+  Capture := nil;
+  TextureCam.TexNum := 0;
+end;
+
+procedure TWebcam.Start;
+begin
+  Capture := nil;
+end;
+
+procedure TWebcam.Release;
+begin
+  Capture := nil;
+  TextureCam.TexNum := 0;
+end;
+
+procedure TWebcam.Restart;
+begin
+  Release;
+  Start;
+end;
+
+procedure TWebcam.GetWebcamFrame();
+begin
+end;
+
+{$ENDIF}
 
 end.

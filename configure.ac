@@ -102,10 +102,30 @@ AC_ARG_WITH([local-projectM-presets],
     [with_local_projectM_presets=$withval], [with_local_projectM_presets="no"])
 
 # add OpenCV option
+AC_ARG_WITH([opencv],
+    [AS_HELP_STRING([--with-opencv],
+      [enable webcam support with OpenCV @<:@default=check@:>@])],
+    [with_OpenCV=$withval], [with_OpenCV="check"])
+
+# Backward-compatible spelling for the OpenCV package name used by PKG_HAVE.
+AC_ARG_WITH([OpenCV], [],
+    [with_OpenCV=$withval], [])
+
 AC_ARG_WITH([opencv-cxx-api],
     [AS_HELP_STRING([--with-opencv-cxx-api],
-      [use current OpenCV C++ API @<:@default=auto (yes on Windows, no elsewhere)@:>@])],
-    [with_opencv_cxx_api=$withval], [with_opencv_cxx_api="auto"])
+      [(deprecated) alias for --with-opencv])],
+    [case "$withval" in
+        yes)  with_OpenCV=yes ;;
+        no)   with_OpenCV=no ;;
+        auto) with_OpenCV=check ;;
+        *)    AC_MSG_ERROR([bad value "$withval" for --with-opencv-cxx-api]) ;;
+     esac], [])
+
+case "$with_OpenCV" in
+    yes|no|check|nocheck) ;;
+    auto) with_OpenCV=check ;;
+    *) AC_MSG_ERROR([bad value "$with_OpenCV" for --with-opencv; use yes, no, check, auto, or nocheck]) ;;
+esac
 
 # print misc options header
 AC_ARG_WITH([cfg-dummy2], [
@@ -145,15 +165,6 @@ if [[ "$FPC_VERSION_MAJOR" -lt 3 ]]; then
 !!! version 3.0.0, but only version $FPC_VERSION was found.
 !!! Please install a newer fpc version.
 ]) 
-fi
-
-# On Windows, the OpenCV C-wrapper is required for compiling with current OpenCV.
-# Keep explicit user values, but auto-enable when no value was provided.
-if [[ "$with_opencv_cxx_api" = auto ]]; then
-   case "$FPC_PLATFORM" in
-      win32|win64) with_opencv_cxx_api=yes ;;
-      *)           with_opencv_cxx_api=no ;;
-   esac
 fi
 
 # find and test the C compiler (for C-libs and wrappers)
@@ -371,52 +382,72 @@ opencv_core_standalone=no
 opencv_imgproc_standalone=no
 opencv_videoio_standalone=no
 OpenCV_WRAPPER_LIBS=
-if [[ "$with_opencv_cxx_api" = yes ]] ; then
-	if [[ "$cxx_works" = yes ]] ; then
-		AX_CXX_COMPILE_STDCXX([11], [], [optional])
-		CMAKE_FIND_PACKAGE([OpenCV], [CXX], [GNU], , [OpenCV_HAVE=yes], [OpenCV_HAVE=no])
-		if [[ "$OpenCV_HAVE" != yes ]] ; then
-			PKG_HAVE([OpenCV], [opencv4], no)
-			if [[ "$OpenCV_HAVE" != yes ]] ; then
-				PKG_HAVE([OpenCV], [opencv >= 3.0.0], yes)
-				OpenCV_CXXFLAGS=`$PKG_CONFIG --cflags "opencv >= 3.0.0"`
-			else
-				OpenCV_CXXFLAGS=`$PKG_CONFIG --cflags opencv4`
-			fi
-		fi
-		opencv_USE_CWRAPPER=yes
-		use_cxx=yes
-		for lib in $OpenCV_LIBS ; do
-            case "${lib##*/}" in
-            *opencv_core*|*opencv_imgproc*|*opencv_videoio*)
-                OpenCV_WRAPPER_LIBS="$OpenCV_WRAPPER_LIBS $lib"
-                ;;
-            *opencv_*)
-                ;;
-            *)
-                OpenCV_WRAPPER_LIBS="$OpenCV_WRAPPER_LIBS $lib"
-                continue
-                ;;
-            esac
-			case "${lib##*/}" in
-			*opencv_core*)    opencv_core_standalone=yes ;;
-			*opencv_imgproc*) opencv_imgproc_standalone=yes ;;
-			*opencv_videoio*) opencv_videoio_standalone=yes ;;
-			*) continue ;;
-			esac
-			case "$lib" in
-			-L)  LIBS="$LIBS $lib" ;;
-			*/*) LIBS="$LIBS -L${lib%/*}" ;;
-			esac
-		done
-		AC_SUBST(OpenCV_CXXFLAGS)
-        AC_SUBST(OpenCV_LIBS)
-        AC_SUBST(OpenCV_WRAPPER_LIBS)
-	else
-		AC_MSG_FAILURE([Need C++ compiler to build OpenCV wrapper])
-	fi
-else
-	opencv_USE_CWRAPPER=no
+OpenCV_PKG=
+opencv_USE_CWRAPPER=no
+if [[ x$with_OpenCV != xno ]] ; then
+    if [[ "$cxx_works" = yes ]] ; then
+        AX_CXX_COMPILE_STDCXX([11], [], [optional])
+        if [[ x$with_OpenCV = xnocheck ]] ; then
+            OpenCV_HAVE=yes
+        else
+            CMAKE_FIND_PACKAGE([OpenCV], [CXX], [GNU], , [OpenCV_HAVE=yes], [OpenCV_HAVE=no])
+            if [[ "$OpenCV_HAVE" != yes ]] ; then
+                saved_with_OpenCV=$with_OpenCV
+                with_OpenCV=check
+                PKG_HAVE([OpenCV], [opencv4], no)
+                if [[ "$OpenCV_HAVE" = yes ]] ; then
+                    OpenCV_PKG=opencv4
+                else
+                    PKG_HAVE([OpenCV], [opencv >= 3.0.0], no)
+                    if [[ "$OpenCV_HAVE" = yes ]] ; then
+                        OpenCV_PKG="opencv >= 3.0.0"
+                    fi
+                fi
+                with_OpenCV=$saved_with_OpenCV
+                if [[ x$OpenCV_PKG != x ]] ; then
+                    OpenCV_CXXFLAGS=`$PKG_CONFIG --cflags "$OpenCV_PKG"`
+                fi
+            fi
+        fi
+        if [[ "$OpenCV_HAVE" = yes ]] ; then
+            opencv_USE_CWRAPPER=yes
+            use_cxx=yes
+            for lib in $OpenCV_LIBS ; do
+                case "${lib##*/}" in
+                *opencv_core*|*opencv_imgproc*|*opencv_videoio*)
+                    OpenCV_WRAPPER_LIBS="$OpenCV_WRAPPER_LIBS $lib"
+                    ;;
+                *opencv_*)
+                    ;;
+                *)
+                    OpenCV_WRAPPER_LIBS="$OpenCV_WRAPPER_LIBS $lib"
+                    continue
+                    ;;
+                esac
+                case "${lib##*/}" in
+                *opencv_core*)    opencv_core_standalone=yes ;;
+                *opencv_imgproc*) opencv_imgproc_standalone=yes ;;
+                *opencv_videoio*) opencv_videoio_standalone=yes ;;
+                *) continue ;;
+                esac
+                case "$lib" in
+                -L)  LIBS="$LIBS $lib" ;;
+                */*) LIBS="$LIBS -L${lib%/*}" ;;
+                esac
+            done
+            AC_SUBST(OpenCV_CXXFLAGS)
+            AC_SUBST(OpenCV_LIBS)
+            AC_SUBST(OpenCV_WRAPPER_LIBS)
+        elif [[ x$with_OpenCV = xyes ]] ; then
+            AC_MSG_FAILURE([OpenCV was requested but not found])
+        else
+            AC_MSG_NOTICE([OpenCV not found; webcam support disabled])
+        fi
+    elif [[ x$with_OpenCV = xyes -o x$with_OpenCV = xnocheck ]] ; then
+        AC_MSG_FAILURE([Need C++ compiler to build the OpenCV wrapper])
+    else
+        AC_MSG_NOTICE([C++ compiler is not available; webcam support disabled])
+    fi
 fi
 AC_SUBST_DEFINE(USE_OPENCV_CWRAPPER, $opencv_USE_CWRAPPER)
 AC_SUBST(USE_OPENCV_CWRAPPER, $opencv_USE_CWRAPPER)
@@ -555,5 +586,4 @@ if test x$FPC_PLATFORM = xdarwin; then
 !!! Packaging with $MACOS_PACKAGING and libdir $MACOS_PACKAGING_LIBDIR.
                    ])
 fi
-
 

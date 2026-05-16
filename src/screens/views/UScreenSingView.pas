@@ -440,7 +440,6 @@ constructor TScreenSingView.Create;
 var
   Col: array [1..UIni.IMaxPlayerCount] of TRGB;
   I: integer;
-  Color: cardinal;
   procedure setColor(var avatarFrame: TThemeStatic; color: TRGB);
   begin
     avatarFrame.ColR := color.R;
@@ -584,51 +583,7 @@ begin
   setColorAndAssignStatics(Theme.Sing.Duet6PP5, StaticP5DuetSixP, TextP5DuetSixP, Col[5]);
   setColorAndAssignStatics(Theme.Sing.Duet6PP6, StaticP6DuetSixP, TextP6DuetSixP, Col[6]);
 
-  // Sing Bars
-  // P1-6
-  for I := 1 to UIni.IMaxPlayerCount do
-  begin
-    Color := RGBFloatToInt(Col[I].R, Col[I].G, Col[I].B);
-
-	// Color := $002222; //light blue
-  // Color := $10000 * Round(0.22*255) + $100 * Round(0.39*255) + Round(0.64*255); //dark blue
-
-    Tex_Left[I]         := Renderer.LoadTexture(Skin.GetTextureFileName('GrayLeft'),  TEXTURE_TYPE_COLORIZED, Color);
-    Tex_Mid[I]          := Renderer.LoadTexture(Skin.GetTextureFileName('GrayMid'),   TEXTURE_TYPE_COLORIZED, Color);
-    Tex_Right[I]        := Renderer.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_COLORIZED, Color);
-
-    Tex_plain_Left[I]   := Renderer.LoadTexture(Skin.GetTextureFileName('NotePlainLeft'),  TEXTURE_TYPE_COLORIZED, Color);
-    Tex_plain_Mid[I]    := Renderer.LoadTexture(Skin.GetTextureFileName('NotePlainMid'),   TEXTURE_TYPE_COLORIZED, Color);
-    Tex_plain_Right[I]  := Renderer.LoadTexture(Skin.GetTextureFileName('NotePlainRight'), TEXTURE_TYPE_COLORIZED, Color);
-
-    Tex_BG_Left[I]      := Renderer.LoadTexture(Skin.GetTextureFileName('NoteBGLeft'),  TEXTURE_TYPE_COLORIZED, Color);
-    Tex_BG_Mid[I]       := Renderer.LoadTexture(Skin.GetTextureFileName('NoteBGMid'),   TEXTURE_TYPE_COLORIZED, Color);
-    Tex_BG_Right[I]     := Renderer.LoadTexture(Skin.GetTextureFileName('NoteBGRight'), TEXTURE_TYPE_COLORIZED, Color);
-
-    Tex_Left_Rap[I]         := Renderer.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
-    Tex_Mid_Rap[I]          := Renderer.LoadTexture(Skin.GetTextureFileName('GrayMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
-    Tex_Right_Rap[I]        := Renderer.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
-
-    Tex_plain_Left_Rap[I]   := Renderer.LoadTexture(Skin.GetTextureFileName('NotePlainLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
-    Tex_plain_Mid_Rap[I]    := Renderer.LoadTexture(Skin.GetTextureFileName('NotePlainMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
-    Tex_plain_Right_Rap[I]  := Renderer.LoadTexture(Skin.GetTextureFileName('NotePlainRightRap'), TEXTURE_TYPE_COLORIZED, Color);
-
-    Tex_BG_Left_Rap[I]      := Renderer.LoadTexture(Skin.GetTextureFileName('NoteBGLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
-    Tex_BG_Mid_Rap[I]       := Renderer.LoadTexture(Skin.GetTextureFileName('NoteBGMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
-    Tex_BG_Right_Rap[I]     := Renderer.LoadTexture(Skin.GetTextureFileName('NoteBGRightRap'), TEXTURE_TYPE_COLORIZED, Color);
-
-    //## backgrounds for the scores ##
-    Tex_ScoreBG[I - 1] := Renderer.LoadTexture(Skin.GetTextureFileName('ScoreBG'), TEXTURE_TYPE_COLORIZED, Color);
-  end;
-
-  // Inversions of first player colors used to mark selected note in editor
-  Color := RGBFloatToInt(1 - Col[1].R, 1 - Col[1].G, 1 - Col[1].B);
-  Tex_Left_Inv := Renderer.LoadTexture(Skin.GetTextureFileName('GrayLeft'), TEXTURE_TYPE_COLORIZED, Color);
-  Tex_Mid_Inv := Renderer.LoadTexture(Skin.GetTextureFileName('GrayMid'), TEXTURE_TYPE_COLORIZED, Color);
-  Tex_Right_Inv := Renderer.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_COLORIZED, Color);
-  Tex_Left_Rap_Inv := Renderer.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'), TEXTURE_TYPE_COLORIZED, Color);
-  Tex_Mid_Rap_Inv := Renderer.LoadTexture(Skin.GetTextureFileName('GrayMidRap'), TEXTURE_TYPE_COLORIZED, Color);
-  Tex_Right_Rap_Inv := Renderer.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+  LoadSingScreenTextures(true);
 
   StaticPausePopup := ScreenSing.AddStatic(Theme.Sing.PausePopUp);
 
@@ -716,37 +671,8 @@ begin
 end;
 
 destructor TScreenSingView.Destroy;
-var
-  I: integer;
 begin
-  for I := 1 to UIni.IMaxPlayerCount do
-  begin
-    FreeAndNil(Tex_Left[I]);
-    FreeAndNil(Tex_Mid[I]);
-    FreeAndNil(Tex_Right[I]);
-    FreeAndNil(Tex_plain_Left[I]);
-    FreeAndNil(Tex_plain_Mid[I]);
-    FreeAndNil(Tex_plain_Right[I]);
-    FreeAndNil(Tex_BG_Left[I]);
-    FreeAndNil(Tex_BG_Mid[I]);
-    FreeAndNil(Tex_BG_Right[I]);
-    FreeAndNil(Tex_Left_Rap[I]);
-    FreeAndNil(Tex_Mid_Rap[I]);
-    FreeAndNil(Tex_Right_Rap[I]);
-    FreeAndNil(Tex_plain_Left_Rap[I]);
-    FreeAndNil(Tex_plain_Mid_Rap[I]);
-    FreeAndNil(Tex_plain_Right_Rap[I]);
-    FreeAndNil(Tex_BG_Left_Rap[I]);
-    FreeAndNil(Tex_BG_Mid_Rap[I]);
-    FreeAndNil(Tex_BG_Right_Rap[I]);
-    FreeAndNil(Tex_ScoreBG[I - 1]);
-  end;
-  FreeAndNil(Tex_Left_Inv);
-  FreeAndNil(Tex_Mid_Inv);
-  FreeAndNil(Tex_Right_Inv);
-  FreeAndNil(Tex_Left_Rap_Inv);
-  FreeAndNil(Tex_Mid_Rap_Inv);
-  FreeAndNil(Tex_Right_Rap_Inv);
+  UnloadSingScreenTextures;
   inherited;
 end;
 
@@ -1382,4 +1308,3 @@ begin
 end;
 
 end.
-

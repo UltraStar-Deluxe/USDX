@@ -101,7 +101,6 @@ implementation
 uses
   SysUtils,
   Math,
-  opencv_core,
   UText,
   UGraphic,
   ULog,
@@ -1632,17 +1631,37 @@ begin
           end;
           ntRap:
           begin
-            ColorR := 1;
-            ColorG := 1;
-            ColorB := 1;
-            Al := 0.85;
+            if (Color = P1_INVERTED) then
+            begin
+              ColorR := 1;
+              ColorG := 1;
+              ColorB := 1;
+              Al := 0.75;
+            end
+            else
+            begin
+              ColorR := 1;
+              ColorG := 1;
+              ColorB := 1;
+              Al := 0.5;
+            end;
           end;
           ntRapGolden:
           begin
-            ColorR := 1;
-            ColorG := 1;
-            ColorB := 0.3;
-            Al := 0.85;
+            if (Color = P1_INVERTED) then
+            begin
+              ColorR := 1;
+              ColorG := 1;
+              ColorB := 0.3;
+              Al := 0.75;
+            end
+            else
+            begin
+              ColorR := 1;
+              ColorG := 1;
+              ColorB := 0.3;
+              Al := 0.5;
+            end;
           end;
         end; // case
 
@@ -1861,4 +1880,3 @@ begin
 end;
 
 end.
-

@@ -1,26 +1,23 @@
 FROM %%from%%
 
-RUN sed -i 's;^.*baseurl=http://mirror;baseurl=https://vault;g' /etc/yum.repos.d/*.repo
+RUN apt-get update
 
-RUN [ -z "%%epelpkgs%%" ] || yum install -y --setopt=tsflags=nodocs \
-    https://archives.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
+RUN apt-get upgrade -y
 
-RUN yum upgrade -y --setopt=tsflags=nodocs
-
-RUN yum install -y --setopt=tsflags=nodocs \
-    make automake autoconf patch which file git unzip bzip2 gcc gcc-c++ \
-    glibc-devel mesa-libGL-devel mesa-libgbm-devel alsa-lib-devel \
-    libX11-devel libXext-devel libXcursor-devel libXinerama-devel libXrandr-devel libXi-devel libxkbcommon-devel \
-    dbus-devel systemd-devel zlib-devel libffi-devel expat-devel libxml2-devel libtool python3-pip \
-    wget vim-common desktop-file-utils glib2-devel cairo-devel fuse-devel libarchive-devel %%epelpkgs%%
+RUN apt-get install -y --no-install-recommends \
+    build-essential make automake autoconf patch file git unzip bzip2 xz-utils \
+    libgl1-mesa-dev libgbm-dev libasound2-dev \
+    libx11-dev libxext-dev libxcursor-dev libxinerama-dev libxrandr-dev libxi-dev libxkbcommon-dev \
+    libdbus-1-dev libsystemd-dev zlib1g-dev libffi-dev libexpat1-dev libxml2-dev libssl-dev libtool python3-pip pkg-config \
+    wget curl ca-certificates vim-common desktop-file-utils libglib2.0-dev libcairo2-dev libfuse-dev libarchive-dev
 
 RUN mkdir /tmp/fpcinst \
     && wget --progress=dot:giga -O - %%fpcpackage%% | tar xC /tmp/fpcinst --strip-components=1 \
     && (echo /usr/local ; echo n ; echo n) | (cd /tmp/fpcinst ; ./install.sh) \
     && rm -Rf /tmp/fpcinst
 
-RUN yum clean all -y
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-ENV LC_CTYPE=en_US.utf8
+ENV LC_CTYPE=C.UTF-8
 
 CMD ["bash"]

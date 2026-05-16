@@ -64,12 +64,9 @@ Optional libraries:
   This should support newer platforms like PulseAudio and PipeWire.
   Might not be able to detect the number of channels correctly when used with PulseAudio.
   Might fix issues experienced when using PortAudio on certain distributions.
-* `--without-opencv-cxx-api`: This is the default.
-  OpenCV does not need to be present at build time.
-  It will look for it at runtime using a deprecated C API, and enable webcam functionality if found.
-  Current Linux distributions do not offer the C API.
-* `--with-opencv-cxx-api`: Use OpenCV's newer C++ API.
-  Required for webcam support under Linux and macOS, but requires OpenCV to be present at both build time as well as runtime.
+* `--with-opencv`: Enable webcam support with OpenCV. By default, configure
+  auto-detects OpenCV 3+ and disables webcam support if OpenCV is not found.
+* `--without-opencv`: Build without webcam support even if OpenCV is installed.
 
 ## Compiling on Linux using flatpak-builder
 - The manifest for our Flathub releases is in a different repository:
