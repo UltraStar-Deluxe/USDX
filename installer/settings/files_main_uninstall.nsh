@@ -112,6 +112,17 @@
  Delete "$INSTDIR\libopencv_imgproc460.dll"
  Delete "$INSTDIR\libopencv_videoio460.dll"
  Delete "$INSTDIR\opencvwrapper.dll"
+ Delete "$INSTDIR\avcodec-62.dll"
+ Delete "$INSTDIR\avformat-62.dll"
+ Delete "$INSTDIR\avutil-60.dll"
+ Delete "$INSTDIR\swresample-6.dll"
+ Delete "$INSTDIR\swscale-9.dll"
+ Delete "$INSTDIR\lua54.dll"
+ Delete "$INSTDIR\libopencv_core4130.dll"
+ Delete "$INSTDIR\libopencv_imgcodecs4130.dll"
+ Delete "$INSTDIR\libopencv_imgproc4130.dll"
+ Delete "$INSTDIR\libopencv_videoio4130.dll"
+ Delete "$INSTDIR\libsharpyuv-0.dll"
 
  StrCpy $0 "$INSTDIR\songs"
  Call un.DeleteIfEmpty 
