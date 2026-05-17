@@ -101,6 +101,17 @@
  Delete "$INSTDIR\avutil-59.dll"
  Delete "$INSTDIR\swresample-5.dll"
  Delete "$INSTDIR\swscale-8.dll"
+ Delete "$INSTDIR\libdl.dll"
+ Delete "$INSTDIR\libfreetype-6.dll"
+ Delete "$INSTDIR\libgcc_s_seh-1.dll"
+ Delete "$INSTDIR\libstdc++-6.dll"
+ Delete "$INSTDIR\libwinpthread-1.dll"
+ Delete "$INSTDIR\lua.dll"
+ Delete "$INSTDIR\libopencv_core460.dll"
+ Delete "$INSTDIR\libopencv_imgcodecs460.dll"
+ Delete "$INSTDIR\libopencv_imgproc460.dll"
+ Delete "$INSTDIR\libopencv_videoio460.dll"
+ Delete "$INSTDIR\opencvwrapper.dll"
 
  StrCpy $0 "$INSTDIR\songs"
  Call un.DeleteIfEmpty 

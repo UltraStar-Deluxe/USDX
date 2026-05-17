@@ -99,6 +99,18 @@ IfFileExists $INSTDIR\swresample-4.dll 0 +2
 Delete "$INSTDIR\swresample-4.dll"
 IfFileExists $INSTDIR\swscale-7.dll 0 +2
 Delete "$INSTDIR\swscale-7.dll"
+IfFileExists $INSTDIR\glew32.dll 0 +2
+Delete "$INSTDIR\glew32.dll"
+IfFileExists $INSTDIR\libprojectM.dll 0 +2
+Delete "$INSTDIR\libprojectM.dll"
+IfFileExists $INSTDIR\opengl32_.dll 0 +2
+Delete "$INSTDIR\opengl32_.dll"
+IfFileExists $INSTDIR\freetype6.dll 0 +2
+Delete "$INSTDIR\freetype6.dll"
+IfFileExists $INSTDIR\lua5.4.dll 0 +2
+Delete "$INSTDIR\lua5.4.dll"
+IfFileExists $INSTDIR\portaudio_x86.dll 0 +2
+Delete "$INSTDIR\portaudio_x86.dll"
 
 RMDir /r "$INSTDIR\Themes"
 RMDir /r "$INSTDIR\Skins"
