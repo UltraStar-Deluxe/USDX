@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import net from 'node:net';
 import path from 'node:path';
 import process from 'node:process';
@@ -59,6 +60,8 @@ const previewStreaming = getBoolArg('preview-streaming', true);
 const maxWsBufferedBytes = Number(getArg('max-ws-buffered-bytes', String(256 * 1024)));
 const maxLowPriorityMessageBytes = Number(getArg('max-low-priority-message-bytes', String(64 * 1024)));
 const maxSongStateLibrarySongs = Number(getArg('max-song-state-library-songs', '200'));
+const catalogChunkSongs = Number(getArg('catalog-chunk-songs', '100'));
+const catalogTransferBufferHighBytes = Number(getArg('catalog-transfer-buffer-high-bytes', String(512 * 1024)));
 const transientDisconnectGraceMs = Number(getArg('transient-disconnect-grace-ms', '15000'));
 const resumeFailureGraceMs = Number(getArg('resume-failure-grace-ms', '60000'));
 const resumeFailureMaxRetries = Number(getArg('resume-failure-max-retries', '30'));
@@ -73,8 +76,10 @@ let songSeq = 0;
 let currentGameState = 'lobby';
 let lastSongClockMessage = null;
 let songScanStarted = false;
+let songScanPromise = null;
 let scannedSongState = null;
 let scannedLibrary = [];
+let scannedLibraryHash = '';
 let currentPlaylistIndex = -1;
 let reconnectTimer = null;
 let ipcDisconnectTimer = null;
@@ -161,6 +166,10 @@ function safeJsonParse(text) {
   } catch {
     return null;
   }
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function parseIceServersForNodeDataChannel(value) {
@@ -1146,58 +1155,67 @@ async function scanSongLibrary() {
   if (songScanStarted) {
     sendSongLibraryProgress();
     if (!hasIpcClient() && scannedSongState) send(sanitizeSongStateForServer(scannedSongState), { lowPriority: true });
+    if (songScanPromise) await songScanPromise;
     return;
   }
   songScanStarted = true;
-  const roots = songRootsFromConfig().filter((root) => {
-    try {
-      return fs.existsSync(root) && fs.statSync(root).isDirectory();
-    } catch {
-      return false;
-    }
-  });
-  sendSongLibraryProgress({ status: roots.length ? 'scanning' : 'no_roots', roots, message: roots.length ? 'Scanning song folders' : 'No song folders found' });
-  if (!roots.length) return;
+  songScanPromise = (async () => {
+    const roots = songRootsFromConfig().filter((root) => {
+      try {
+        return fs.existsSync(root) && fs.statSync(root).isDirectory();
+      } catch {
+        return false;
+      }
+    });
+    sendSongLibraryProgress({ status: roots.length ? 'scanning' : 'no_roots', roots, message: roots.length ? 'Scanning song folders' : 'No song folders found' });
+    if (!roots.length) return;
 
-  const progress = { ...songScanProgress, status: 'scanning', roots, indexedSongs: 0, scannedFiles: 0, scannedDirs: 0 };
-  const txtFiles = [];
-  for (const root of roots) {
-    txtFiles.push(...await collectSongTxtFiles(root, progress));
-    sendSongLibraryProgress(progress);
-  }
-  txtFiles.sort((a, b) => a.localeCompare(b));
-
-  const library = [];
-  for (const txtPath of txtFiles) {
-    try {
-      const text = await fsp.readFile(txtPath, 'utf8');
-      const meta = songMetaFromTxt(text, txtPath);
-      const audioPath = candidateAudioPath(txtPath, meta.audio);
-      const songId = library.length;
-      const song = {
-        songId,
-        artist: meta.artist,
-        title: meta.title,
-        year: meta.year,
-        visible: true,
-        category: false,
-        duet: meta.duet,
-        previewStart: meta.previewStart,
-        previewAvailable: Boolean(audioPath && fs.existsSync(audioPath)),
-        audioPath
-      };
-      library.push(song);
-      rememberSongPreview(song);
-      progress.indexedSongs = library.length;
-      if (library.length % 250 === 0) sendSongLibraryProgress(progress);
-    } catch (error) {
-      log('song parse failed', { file: txtPath, error: error.message });
+    const progress = { ...songScanProgress, status: 'scanning', roots, indexedSongs: 0, scannedFiles: 0, scannedDirs: 0 };
+    const txtFiles = [];
+    for (const root of roots) {
+      txtFiles.push(...await collectSongTxtFiles(root, progress));
+      sendSongLibraryProgress(progress);
     }
+    txtFiles.sort((a, b) => a.localeCompare(b));
+
+    const library = [];
+    for (const txtPath of txtFiles) {
+      try {
+        const text = await fsp.readFile(txtPath, 'utf8');
+        const meta = songMetaFromTxt(text, txtPath);
+        const audioPath = candidateAudioPath(txtPath, meta.audio);
+        const songId = library.length;
+        const song = {
+          songId,
+          artist: meta.artist,
+          title: meta.title,
+          year: meta.year,
+          visible: true,
+          category: false,
+          duet: meta.duet,
+          previewStart: meta.previewStart,
+          previewAvailable: Boolean(audioPath && fs.existsSync(audioPath)),
+          audioPath
+        };
+        library.push(song);
+        rememberSongPreview(song);
+        progress.indexedSongs = library.length;
+        if (library.length % 250 === 0) sendSongLibraryProgress(progress);
+      } catch (error) {
+        log('song parse failed', { file: txtPath, error: error.message });
+      }
+    }
+    sendSongLibraryProgress({ ...progress, status: 'ready', indexedSongs: library.length, message: `Indexed ${library.length} songs` });
+    scannedLibrary = library;
+    scannedLibraryHash = catalogHashForLibrary(library);
+    await publishScannedSongState(library, { broadcast: !hasIpcClient() });
+    log('song scan complete', { songs: library.length, roots: roots.length, catalogId: scannedLibraryHash });
+  })();
+  try {
+    await songScanPromise;
+  } finally {
+    songScanPromise = null;
   }
-  sendSongLibraryProgress({ ...progress, status: 'ready', indexedSongs: library.length, message: `Indexed ${library.length} songs` });
-  scannedLibrary = library;
-  await publishScannedSongState(library, { broadcast: !hasIpcClient() });
-  log('song scan complete', { songs: library.length, roots: roots.length });
 }
 
 function rememberSongPreview(song) {
@@ -1210,6 +1228,60 @@ function rememberSongPreview(song) {
     artist: song.artist || '',
     previewStart: Number(song.previewStart || 0)
   });
+}
+
+function catalogHashForLibrary(library) {
+  const hash = crypto.createHash('sha256');
+  hash.update(String(Array.isArray(library) ? library.length : 0));
+  for (const song of Array.isArray(library) ? library : []) {
+    hash.update('\n');
+    hash.update(String(song?.songId ?? ''));
+    hash.update('\t');
+    hash.update(String(song?.artist || ''));
+    hash.update('\t');
+    hash.update(String(song?.title || ''));
+    hash.update('\t');
+    hash.update(String(song?.audioPath || ''));
+  }
+  return hash.digest('hex').slice(0, 24);
+}
+
+function sanitizedCatalogSong(song) {
+  const copy = JSON.parse(JSON.stringify(song || {}));
+  rememberSongPreview(copy);
+  if (previewStreaming && copy.audioPath) {
+    copy.audioFileName = path.basename(copy.audioPath);
+    copy.audioFormat = audioFormatForPath(copy.audioPath);
+    copy.audioContentType = contentTypeForAudio(copy.audioPath);
+    if (Object.prototype.hasOwnProperty.call(copy, 'previewAvailable')) {
+      copy.previewAvailable = Boolean(copy.previewAvailable);
+    }
+  } else {
+    copy.previewAvailable = false;
+  }
+  delete copy.audioPath;
+  return copy;
+}
+
+function catalogStateForTransfer(state, catalogId) {
+  const copy = sanitizeSongStateForServer({
+    ...(state && typeof state === 'object' ? state : {}),
+    libraryHash: catalogId
+  });
+  delete copy.library;
+  delete copy.librarySent;
+  delete copy.libraryTruncated;
+  copy.libraryTotal = Array.isArray(state?.library) ? state.library.length : scannedLibrary.length;
+  copy.libraryProgress = {
+    ...(copy.libraryProgress || {}),
+    type: 'song.library.progress',
+    status: 'ready',
+    indexedSongs: scannedLibrary.length,
+    transferReceived: scannedLibrary.length,
+    transferTotal: scannedLibrary.length,
+    message: `Indexed ${scannedLibrary.length} songs`
+  };
+  return copy;
 }
 
 function markRemoteAudioAvailability(msg) {
@@ -1294,6 +1366,111 @@ function sanitizeSongStateForServer(msg) {
     delete song.audioPath;
   }
   return copy;
+}
+
+async function waitForCatalogTransferBuffer() {
+  if (!Number.isFinite(catalogTransferBufferHighBytes) || catalogTransferBufferHighBytes <= 0) return;
+  while (ws && ws.readyState === WebSocket.OPEN && Number(ws.bufferedAmount || 0) > catalogTransferBufferHighBytes) {
+    await sleep(10);
+  }
+}
+
+async function handleCatalogRequest(msg) {
+  const requestId = String(msg.requestId || '');
+  log('catalog.request.received', {
+    requestId,
+    knownCatalogId: msg.knownCatalogId || '',
+    catalogId: msg.catalogId || '',
+    forceTransfer: Boolean(msg.forceTransfer)
+  });
+
+  try {
+    await scanSongLibrary();
+    const library = scannedLibrary;
+    if (!Array.isArray(library) || !library.length) {
+      send({
+        type: 'catalog.error',
+        requestId,
+        code: 'catalog.empty',
+        message: 'Song catalog is empty or still unavailable.'
+      });
+      return;
+    }
+
+    const catalogId = scannedLibraryHash || catalogHashForLibrary(library);
+    scannedLibraryHash = catalogId;
+    await publishScannedSongState(library, { broadcast: false });
+    const state = catalogStateForTransfer(scannedSongState, catalogId);
+    const knownCatalogId = String(msg.knownCatalogId || '');
+    const requestedCatalogId = String(msg.catalogId || '');
+    const forceTransfer = Boolean(msg.forceTransfer);
+    const clientHasCatalog = knownCatalogId && knownCatalogId === catalogId;
+
+    if (clientHasCatalog && !forceTransfer) {
+      send({
+        type: 'catalog.manifest',
+        requestId,
+        catalogId,
+        libraryHash: catalogId,
+        totalSongs: library.length,
+        total: library.length,
+        source: 'bridge-scan',
+        state
+      });
+      log('catalog.manifest.sent', { requestId, catalogId, totalSongs: library.length });
+      return;
+    }
+
+    send({
+      type: 'catalog.transfer.start',
+      requestId,
+      catalogId,
+      libraryHash: catalogId,
+      totalSongs: library.length,
+      total: library.length,
+      source: 'bridge-scan',
+      requestedCatalogId
+    });
+
+    const chunkSize = Number.isFinite(catalogChunkSongs)
+      ? Math.max(1, Math.floor(catalogChunkSongs))
+      : 100;
+    for (let offset = 0; offset < library.length; offset += chunkSize) {
+      await waitForCatalogTransferBuffer();
+      if (!ws || ws.readyState !== WebSocket.OPEN) return;
+      const songs = library.slice(offset, offset + chunkSize).map(sanitizedCatalogSong);
+      send({
+        type: 'catalog.transfer.chunk',
+        requestId,
+        catalogId,
+        libraryHash: catalogId,
+        offset,
+        count: songs.length,
+        songs
+      });
+    }
+
+    await waitForCatalogTransferBuffer();
+    send({
+      type: 'catalog.transfer.end',
+      requestId,
+      catalogId,
+      libraryHash: catalogId,
+      totalSongs: library.length,
+      total: library.length,
+      source: 'bridge-scan',
+      state
+    });
+    log('catalog.transfer.sent', { requestId, catalogId, totalSongs: library.length });
+  } catch (error) {
+    send({
+      type: 'catalog.error',
+      requestId,
+      code: 'catalog.failed',
+      message: error.message || 'Catalog transfer failed.'
+    });
+    log('catalog.request.failed', { requestId, error: error.message });
+  }
 }
 
 function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'preview', rangeStart = null, rangeEnd = null, formatHint = '') {
@@ -1860,6 +2037,20 @@ async function handleMessage(msg) {
     return;
   }
 
+  if (msg.type === 'catalog.request') {
+    await handleCatalogRequest(msg);
+    return;
+  }
+
+  if (msg.type === 'catalog.ready') {
+    log('catalog.ready', {
+      playerId: msg.playerId || '',
+      catalogId: msg.catalogId || msg.songLibraryHash || '',
+      songCount: msg.songCount
+    });
+    return;
+  }
+
   if (msg.type === 'song.preview.request') {
     streamPreviewToServer(
       String(msg.requestId || ''),
@@ -2057,8 +2248,8 @@ function connect() {
     send({
       type: 'host.hello',
       gameVersion: 'usdx-dev',
-      bridgeVersion: '0.1.0',
-      capabilities: ['remotePitch', 'remoteControl', 'clockSync', ...(p2pEnabled ? ['p2pDataChannel'] : [])],
+      bridgeVersion: '0.1.1',
+      capabilities: ['remotePitch', 'remoteControl', 'clockSync', 'songCatalog', ...(p2pEnabled ? ['p2pDataChannel'] : [])],
       maxPlayers,
       roomId: room?.roomId,
       hostToken: room?.hostToken
