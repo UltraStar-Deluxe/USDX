@@ -410,11 +410,7 @@ begin
 
       BassDevice.BassDeviceID := BassDeviceID;
 
-      // BASS device names seem to be encoded with local encoding
-      // TODO: works for windows, check Linux + macOS
-      Descr := DecodeStringUTF8(DeviceInfo.name, encAuto);
-
-      BassDevice.Name := UnifyDeviceName(Descr, DeviceIndex);
+      BassDevice.Name := DeviceName;
       Log.LogStatus('Attempting to configure InputDevice "' + BassDevice.Name + '"', 'Bass.EnumDevices');
 
       // zero info-struct as some fields might not be set (e.g. freq is just set on Vista and macOS)
