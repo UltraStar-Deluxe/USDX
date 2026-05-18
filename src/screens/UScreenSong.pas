@@ -1083,6 +1083,9 @@ var
   StateChanged: boolean;
   IncludeFullState: boolean;
   BaseJson: string;
+  PlaylistSongId: integer;
+  PlaylistAudioPath: IPath;
+  PlaylistAudioSource: UTF8String;
 
   function BoolJson(Value: boolean): string;
   begin
@@ -1090,6 +1093,42 @@ var
       Result := 'true'
     else
       Result := 'false';
+  end;
+
+  function UseInstrumentalAudio(const Item: TSong): boolean;
+  var
+    AudioVolume: integer;
+    VocalsVolume: integer;
+    RegularVolume: integer;
+    InstrumentalVolume: integer;
+  begin
+    Result := false;
+    if not Assigned(Item) then
+      Exit;
+    if (not Assigned(Item.Karaoke)) or (Item.Karaoke = PATH_NONE) then
+      Exit;
+    if not Item.Path.Append(Item.Karaoke).IsFile then
+      Exit;
+
+    AudioVolume := EnsureRange(Ini.AudioVolume, 0, 100);
+    VocalsVolume := EnsureRange(Ini.VocalsVolume, 0, 100);
+    RegularVolume := AudioVolume * VocalsVolume;
+    InstrumentalVolume := AudioVolume * (100 - VocalsVolume);
+    Result := InstrumentalVolume > RegularVolume;
+  end;
+
+  procedure SelectRemoteAudio(const Item: TSong; var AudioPath: IPath; var AudioSource: UTF8String);
+  begin
+    if UseInstrumentalAudio(Item) then
+    begin
+      AudioPath := Item.Path.Append(Item.Karaoke);
+      AudioSource := 'instrumental';
+    end
+    else
+    begin
+      AudioPath := Item.Path.Append(Item.Audio);
+      AudioSource := 'audio';
+    end;
   end;
 
   function SongToJson(const SongIndex: integer): string;
@@ -1107,16 +1146,7 @@ var
     if not Assigned(Item) then
       Exit;
 
-    if Assigned(Item.Karaoke) and (Item.Karaoke <> PATH_NONE) then
-    begin
-      AudioPath := Item.Path.Append(Item.Karaoke);
-      AudioSource := 'instrumental';
-    end
-    else
-    begin
-      AudioPath := Item.Path.Append(Item.Audio);
-      AudioSource := 'audio';
-    end;
+    SelectRemoteAudio(Item, AudioPath, AudioSource);
     SongKey := LowerCase(Item.Artist + ' - ' + Item.Title);
     SearchText := Trim(
       Item.ArtistASCII + ' ' +
@@ -1251,12 +1281,17 @@ begin
         ',"songId":' + IntToStr(PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID) +
         ',"artist":"' + RemoteJsonEscape(PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].Artist) + '"' +
         ',"title":"' + RemoteJsonEscape(PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].Title) + '"';
-      if (PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID >= 0) and
-         (PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID <= High(CatSongs.Song)) and
-         Assigned(CatSongs.Song[PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID]) then
+      PlaylistSongId := PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID;
+      if (PlaylistSongId >= 0) and
+         (PlaylistSongId <= High(CatSongs.Song)) and
+         Assigned(CatSongs.Song[PlaylistSongId]) then
+      begin
+        SelectRemoteAudio(CatSongs.Song[PlaylistSongId], PlaylistAudioPath, PlaylistAudioSource);
         PlaylistItemsJson := PlaylistItemsJson +
-          ',"previewStart":' + StringReplace(FloatToStr(CatSongs.Song[PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID].PreviewStart), ',', '.', []) +
-          ',"audioPath":"' + RemoteJsonEscape(UTF8String(CatSongs.Song[PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID].Path.Append(CatSongs.Song[PlaylistMan.Playlists[CurrentPlaylist].Items[PlaylistItemIndex].SongID].Audio).ToNative)) + '"';
+          ',"previewStart":' + StringReplace(FloatToStr(CatSongs.Song[PlaylistSongId].PreviewStart), ',', '.', []) +
+          ',"audioSource":"' + RemoteJsonEscape(PlaylistAudioSource) + '"' +
+          ',"audioPath":"' + RemoteJsonEscape(UTF8String(PlaylistAudioPath.ToNative)) + '"';
+      end;
       PlaylistItemsJson := PlaylistItemsJson + '}';
       Inc(Sent);
       if Sent >= 50 then

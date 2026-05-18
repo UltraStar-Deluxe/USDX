@@ -283,13 +283,18 @@ begin
     { prepare software cursor }
     Display.SetCursor;
 
-    Log.LogStatus('Remote Bridge IPC', 'Initialization');
-    RemoteBridgeProcess.Start(Ini.RemoteBridgeWebApp);
-    if (RemoteBridgeProcess.LastError <> '') then
-      Log.LogWarn(RemoteBridgeProcess.LastError, 'Remote Bridge Process');
-    RemoteBridgeIPC.OnCommand := RemoteBridgeCommandReceived;
-    RemoteBridgeIPC.Start;
-    RemoteBridgeIPC.SendGameState('boot', 0, 0);
+    if (Ini.RemoteBridgeEnabled = 1) then
+    begin
+      Log.LogStatus('Remote Bridge IPC', 'Initialization');
+      RemoteBridgeIPC.Host := Ini.RemoteBridgeIpcHost;
+      RemoteBridgeIPC.Port := Ini.RemoteBridgeIpcPort;
+      RemoteBridgeProcess.Start;
+      if (RemoteBridgeProcess.LastError <> '') then
+        Log.LogWarn(RemoteBridgeProcess.LastError, 'Remote Bridge Process');
+      RemoteBridgeIPC.OnCommand := RemoteBridgeCommandReceived;
+      RemoteBridgeIPC.Start;
+      RemoteBridgeIPC.SendGameState('boot', 0, 0);
+    end;
 
     {**
       * Start background music
@@ -313,9 +318,12 @@ begin
     // call an uninitialize routine for every initialize step
     // or at least use the corresponding Free methods
 
-    Log.LogStatus('Remote Bridge IPC', 'Finalization');
-    RemoteBridgeProcess.Stop;
-    RemoteBridgeIPC.Stop;
+    if (Ini.RemoteBridgeEnabled = 1) then
+    begin
+      Log.LogStatus('Remote Bridge IPC', 'Finalization');
+      RemoteBridgeProcess.Stop;
+      RemoteBridgeIPC.Stop;
+    end;
 
     Log.LogStatus('Closing DB file', 'Finalization');
     if (DataBase <> nil) then

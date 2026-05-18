@@ -77,6 +77,10 @@ const
   LATENCY_AUTODETECT = -1; // for field Latency
   DEFAULT_RESOLUTION = '800x600';
   DEFAULT_THEME = 'Modern';
+  DEFAULT_REMOTE_BRIDGE_ENABLED = 1;
+  DEFAULT_REMOTE_BRIDGE_IPC_HOST = '127.0.0.1';
+  DEFAULT_REMOTE_BRIDGE_IPC_PORT = 8765;
+  DEFAULT_REMOTE_BRIDGE_SERVER_URL = 'wss://usdx.at/ws/host';
   IMaxPlayerCount = 24;
 
 type
@@ -247,6 +251,13 @@ type
       LastReadDelays: LongInt;
 
       // Remote bridge
+      RemoteBridgeEnabled: integer;
+      RemoteBridgeIpcHost: string;
+      RemoteBridgeIpcPort: integer;
+      RemoteBridgeServerUrl: string;
+      RemoteBridgeNodeExecutable: string;
+      RemoteBridgeScriptPath: string;
+      RemoteBridgeStartCommand: string;
       RemoteBridgeWebApp: UTF8String;
 
       procedure Load();
@@ -1625,6 +1636,13 @@ var
     else if Result > 100 then
       Result := 100;
   end;
+
+  function ReadRemoteBridgeInteger(const Key: string; DefaultValue, MinValue: integer): integer;
+  begin
+    Result := IniFile.ReadInteger('RemoteBridge', Key, DefaultValue);
+    if (Result < MinValue) then
+      Result := MinValue;
+  end;
 begin
   InitializePlayerOptionArrays;
   LoadFontFamilyNames;
@@ -1696,6 +1714,19 @@ begin
   MicDelay := IniFile.ReadInteger('Game', 'MicDelay', 140);
   EditorMidiLeadMs := IniFile.ReadInteger('Editor', 'MidiPreviewLeadMs', 0);
   EditorClickLeadMs := IniFile.ReadInteger('Editor', 'ClickLeadMs', 0);
+  RemoteBridgeEnabled := ReadArrayIndex(ITabs, IniFile, 'RemoteBridge', 'Enabled', DEFAULT_REMOTE_BRIDGE_ENABLED);
+  if (RemoteBridgeEnabled < 0) then
+    RemoteBridgeEnabled := DEFAULT_REMOTE_BRIDGE_ENABLED;
+  RemoteBridgeIpcHost := Trim(IniFile.ReadString('RemoteBridge', 'IpcHost', DEFAULT_REMOTE_BRIDGE_IPC_HOST));
+  if (RemoteBridgeIpcHost = '') then
+    RemoteBridgeIpcHost := DEFAULT_REMOTE_BRIDGE_IPC_HOST;
+  RemoteBridgeIpcPort := ReadRemoteBridgeInteger('IpcPort', DEFAULT_REMOTE_BRIDGE_IPC_PORT, 1);
+  RemoteBridgeServerUrl := Trim(IniFile.ReadString('RemoteBridge', 'ServerUrl', DEFAULT_REMOTE_BRIDGE_SERVER_URL));
+  if (RemoteBridgeServerUrl = '') then
+    RemoteBridgeServerUrl := DEFAULT_REMOTE_BRIDGE_SERVER_URL;
+  RemoteBridgeNodeExecutable := Trim(IniFile.ReadString('RemoteBridge', 'NodeExecutable', ''));
+  RemoteBridgeScriptPath := Trim(IniFile.ReadString('RemoteBridge', 'BridgeScriptPath', ''));
+  RemoteBridgeStartCommand := Trim(IniFile.ReadString('RemoteBridge', 'StartCommand', ''));
   RemoteBridgeWebApp := Trim(IniFile.ReadString('RemoteBridge', 'WebApp', ''));
 
   // Read Users Info (Network)
@@ -1930,8 +1961,14 @@ begin
     IniFile.WriteInteger('Game', 'MicDelay', MicDelay);
     IniFile.WriteInteger('Editor', 'MidiPreviewLeadMs', EditorMidiLeadMs);
     IniFile.WriteInteger('Editor', 'ClickLeadMs', EditorClickLeadMs);
-    if (RemoteBridgeWebApp <> '') or IniFile.SectionExists('RemoteBridge') then
-      IniFile.WriteString('RemoteBridge', 'WebApp', RemoteBridgeWebApp);
+    IniFile.WriteString('RemoteBridge', 'Enabled', ITabs[RemoteBridgeEnabled]);
+    IniFile.WriteString('RemoteBridge', 'IpcHost', RemoteBridgeIpcHost);
+    IniFile.WriteInteger('RemoteBridge', 'IpcPort', RemoteBridgeIpcPort);
+    IniFile.WriteString('RemoteBridge', 'ServerUrl', RemoteBridgeServerUrl);
+    IniFile.WriteString('RemoteBridge', 'NodeExecutable', RemoteBridgeNodeExecutable);
+    IniFile.WriteString('RemoteBridge', 'BridgeScriptPath', RemoteBridgeScriptPath);
+    IniFile.WriteString('RemoteBridge', 'StartCommand', RemoteBridgeStartCommand);
+    IniFile.WriteString('RemoteBridge', 'WebApp', RemoteBridgeWebApp);
 
     // MaxFramerate
     IniFile.WriteString('Graphics', 'MaxFramerate', IMaxFramerate[MaxFramerate]);

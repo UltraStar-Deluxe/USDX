@@ -42,13 +42,11 @@ uses
   Classes,
   Process,
   ssockets,
-  SysUtils
+  SysUtils,
+  UIni
   {$IFDEF UNIX}, BaseUnix{$ENDIF};
 
 const
-  DEFAULT_REMOTE_SERVER = 'wss://usdx.at/ws/host';
-  DEFAULT_IPC_HOST = '127.0.0.1';
-  DEFAULT_IPC_PORT = 8765;
   IPC_CONNECT_TIMEOUT_MS = 100;
   IPC_WRITE_TIMEOUT_MS = 100;
 
@@ -65,6 +63,13 @@ end;
 
 function TRemoteBridgeProcess.BridgeScriptPath: string;
 begin
+  Result := Ini.RemoteBridgeScriptPath;
+  if (Result <> '') then
+  begin
+    Result := ExpandFileName(Result);
+    Exit;
+  end;
+
   Result := ExpandFileName(ExtractFilePath(ParamStr(0)) +
     'webs' + DirectorySeparator + 'usdx-bridge.mjs');
 end;
@@ -72,6 +77,10 @@ end;
 function TRemoteBridgeProcess.NodeExecutablePath: string;
 begin
   Result := GetEnvironmentVariable('USDX_REMOTE_NODE');
+  if (Result <> '') then
+    Exit;
+
+  Result := Ini.RemoteBridgeNodeExecutable;
   if (Result <> '') then
     Exit;
 
@@ -92,7 +101,9 @@ function TRemoteBridgeProcess.RemoteServerUrl: string;
 begin
   Result := GetEnvironmentVariable('USDX_REMOTE_SERVER');
   if (Result = '') then
-    Result := DEFAULT_REMOTE_SERVER;
+    Result := Ini.RemoteBridgeServerUrl;
+  if (Result = '') then
+    Result := DEFAULT_REMOTE_BRIDGE_SERVER_URL;
 end;
 
 function TRemoteBridgeProcess.IsIpcAvailable: boolean;
@@ -102,7 +113,7 @@ begin
   Result := false;
   Socket := nil;
   try
-    Socket := TInetSocket.Create(DEFAULT_IPC_HOST, DEFAULT_IPC_PORT, IPC_CONNECT_TIMEOUT_MS);
+    Socket := TInetSocket.Create(Ini.RemoteBridgeIpcHost, Ini.RemoteBridgeIpcPort, IPC_CONNECT_TIMEOUT_MS);
     Socket.IOTimeout := IPC_WRITE_TIMEOUT_MS;
     Result := true;
   except
@@ -118,7 +129,7 @@ var
 begin
   Socket := nil;
   try
-    Socket := TInetSocket.Create(DEFAULT_IPC_HOST, DEFAULT_IPC_PORT, IPC_CONNECT_TIMEOUT_MS);
+    Socket := TInetSocket.Create(Ini.RemoteBridgeIpcHost, Ini.RemoteBridgeIpcPort, IPC_CONNECT_TIMEOUT_MS);
     Socket.IOTimeout := IPC_WRITE_TIMEOUT_MS;
     Line := '{"type":"bridge.shutdown"}' + #10;
     Socket.Write(Pointer(Line)^, Length(Line));
@@ -126,6 +137,49 @@ begin
     // The bridge may already be gone; Stop will still terminate the process handle.
   end;
   Socket.Free;
+end;
+
+procedure ApplyStartCommand(Proc: TProcess; const CommandLine: string);
+var
+  Args: TStringList;
+  Current: string;
+  I: integer;
+  InQuote: boolean;
+
+  procedure PushCurrent;
+  begin
+    if (Current <> '') then
+    begin
+      Args.Add(Current);
+      Current := '';
+    end;
+  end;
+
+begin
+  Args := TStringList.Create;
+  try
+    Current := '';
+    InQuote := false;
+    for I := 1 to Length(CommandLine) do
+    begin
+      if (CommandLine[I] = '"') then
+        InQuote := not InQuote
+      else if (not InQuote) and (CommandLine[I] in [#9, ' ']) then
+        PushCurrent
+      else
+        Current := Current + CommandLine[I];
+    end;
+    PushCurrent;
+
+    if (Args.Count = 0) then
+      Exit;
+
+    Proc.Executable := Args[0];
+    for I := 1 to Args.Count - 1 do
+      Proc.Parameters.Add(Args[I]);
+  finally
+    Args.Free;
+  end;
 end;
 
 procedure TRemoteBridgeProcess.Start(const WebApp: string);
@@ -155,8 +209,10 @@ begin
     end;
   end;
 
-  ScriptPath := BridgeScriptPath;
-  if (not FileExists(ScriptPath)) then
+  ScriptPath := '';
+  if (Ini.RemoteBridgeStartCommand = '') then
+    ScriptPath := BridgeScriptPath;
+  if (ScriptPath <> '') and (not FileExists(ScriptPath)) then
   begin
     FLastError := 'Bridge script not found: ' + ScriptPath;
     Exit;
@@ -165,24 +221,35 @@ begin
   RequestedWebApp := Trim(GetEnvironmentVariable('USDX_REMOTE_WEB_APP'));
   if (RequestedWebApp = '') then
     RequestedWebApp := Trim(WebApp);
+  if (RequestedWebApp = '') then
+    RequestedWebApp := Trim(Ini.RemoteBridgeWebApp);
 
   Proc := TProcess.Create(nil);
   try
-    Proc.Executable := NodeExecutablePath;
-    Proc.Parameters.Add(ScriptPath);
-    Proc.Parameters.Add('--server');
-    Proc.Parameters.Add(RemoteServerUrl);
-    Proc.Parameters.Add('--mock-song=false');
-    Proc.Parameters.Add('--auto-ack=false');
-    Proc.Parameters.Add('--auto-assign=false');
-    Proc.Parameters.Add('--p2p=false');
-    if (RequestedWebApp <> '') then
+    if (Ini.RemoteBridgeStartCommand <> '') then
+      ApplyStartCommand(Proc, Ini.RemoteBridgeStartCommand)
+    else
     begin
-      Proc.Parameters.Add('--web-app');
-      Proc.Parameters.Add(RequestedWebApp);
+      Proc.Executable := NodeExecutablePath;
+      Proc.Parameters.Add(ScriptPath);
+      Proc.Parameters.Add('--server');
+      Proc.Parameters.Add(RemoteServerUrl);
+      Proc.Parameters.Add('--ipc-host');
+      Proc.Parameters.Add(Ini.RemoteBridgeIpcHost);
+      Proc.Parameters.Add('--ipc-port');
+      Proc.Parameters.Add(IntToStr(Ini.RemoteBridgeIpcPort));
+      Proc.Parameters.Add('--mock-song=false');
+      Proc.Parameters.Add('--auto-ack=false');
+      Proc.Parameters.Add('--auto-assign=false');
+      Proc.Parameters.Add('--p2p=false');
+      if (RequestedWebApp <> '') then
+      begin
+        Proc.Parameters.Add('--web-app');
+        Proc.Parameters.Add(RequestedWebApp);
+      end;
+      Proc.Parameters.Add('--parent-pid');
+      Proc.Parameters.Add(IntToStr(GetProcessID));
     end;
-    Proc.Parameters.Add('--parent-pid');
-    Proc.Parameters.Add(IntToStr(GetProcessID));
     Proc.Options := [poNoConsole];
     Proc.Execute;
     FProcess := Proc;
@@ -209,6 +276,10 @@ begin
   try
     if Proc.Running then
     begin
+      RequestBridgeShutdown;
+      if Proc.WaitOnExit(1500) then
+        Exit;
+
       Proc.Terminate(0);
       if (not Proc.WaitOnExit(1000)) and Proc.Running then
       begin

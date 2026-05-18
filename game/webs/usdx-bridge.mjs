@@ -8,8 +8,8 @@ import { fileURLToPath } from 'node:url';
 
 const protocol = 1;
 const gameVersion = 'usdx-dev';
-const bridgeVersion = '0.1.4';
-const catalogSchemaVersion = 2;
+const bridgeVersion = '0.1.5';
+const catalogSchemaVersion = 4;
 const fsp = fs.promises;
 const bridgeDir = path.dirname(fileURLToPath(import.meta.url));
 const gameDir = path.resolve(bridgeDir, '..');
@@ -59,7 +59,7 @@ const songConfig = getArg('song-config', path.join(gameDir, 'config.ini'));
 const songRootArg = getArg('song-root', '');
 const playlistDirArg = getArg('playlist-dir', '');
 const parentPid = Number(getArg('parent-pid', '0'));
-const ipcDisconnectGraceMs = Number(getArg('ipc-disconnect-grace-ms', '30000'));
+const ipcDisconnectGraceMs = Number(getArg('ipc-disconnect-grace-ms', '5000'));
 const logFile = getArg('log-file', path.join(gameDir, 'usdx-bridge.log'));
 const diagnosticsLogLines = Number(getArg('diagnostics-log-lines', '120'));
 const diagnosticsIncludePaths = getBoolArg('diagnostics-include-paths', false);
@@ -70,8 +70,6 @@ const maxSongStateLibrarySongs = Number(getArg('max-song-state-library-songs', '
 const catalogChunkSongs = Number(getArg('catalog-chunk-songs', '100'));
 const catalogTransferBufferHighBytes = Number(getArg('catalog-transfer-buffer-high-bytes', String(512 * 1024)));
 const transientDisconnectGraceMs = Number(getArg('transient-disconnect-grace-ms', '15000'));
-const resumeFailureGraceMs = Number(getArg('resume-failure-grace-ms', '60000'));
-const resumeFailureMaxRetries = Number(getArg('resume-failure-max-retries', '30'));
 const configuredPhoneMicDelayBaseMs = Number(getArg('phone-mic-delay-base-ms', '250'));
 const phoneMicDelayBaseMs = Number.isFinite(configuredPhoneMicDelayBaseMs) ? configuredPhoneMicDelayBaseMs : 250;
 
@@ -97,6 +95,7 @@ let pendingGameStateValue = null;
 let lastSentGameStateFingerprint = '';
 let lastSentGameStateAt = 0;
 let shuttingDown = false;
+let shutdownExitTimer = null;
 let firstResumeFailureAt = 0;
 let resumeFailureCount = 0;
 let songScanProgress = {
@@ -112,6 +111,8 @@ const pitchStats = new Map();
 const ipcClients = new Set();
 const songPreviewPaths = new Map();
 const songPreviewPathsByKey = new Map();
+const songCoverPaths = new Map();
+const songCoverPathsByKey = new Map();
 const activePreviewStreams = new Map();
 const disabledPreviewRequestLog = new Map();
 const maxActivePreviewStreams = Number(getArg('max-active-previews', '2'));
@@ -434,6 +435,7 @@ function closeHostConnection(reason = 'ipc_disconnected') {
   if (shuttingDown) return;
   if (ws && ws.readyState === WebSocket.OPEN) {
     log('closing host connection', { reason });
+    send({ type: 'host.shutdown', reason });
     try { ws.close(); } catch {}
   }
   room = null;
@@ -826,6 +828,15 @@ function contentTypeForAudio(filePath) {
   return 'audio/mpeg';
 }
 
+function contentTypeForImage(filePath) {
+  const ext = path.extname(filePath || '').toLowerCase();
+  if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
+  if (ext === '.png') return 'image/png';
+  if (ext === '.webp') return 'image/webp';
+  if (ext === '.gif') return 'image/gif';
+  return 'application/octet-stream';
+}
+
 function audioFormatForPath(filePath) {
   const ext = path.extname(filePath || '').toLowerCase().replace(/^\./, '');
   if (ext === 'm4a' || ext === 'mp4') return 'mp4';
@@ -932,6 +943,12 @@ function publicSongKey(artist, title) {
   return `${artistText} - ${titleText}`;
 }
 
+function stableSongKeyForPath(filePath) {
+  const normalized = normalizeHostPath(filePath).replaceAll('\\', '/').toLowerCase();
+  const digest = crypto.createHash('sha256').update(normalized).digest('hex').slice(0, 24);
+  return `file:${digest}`;
+}
+
 function catalogSearchText(song) {
   return [
     song?.artist,
@@ -968,8 +985,26 @@ function uniqueLibrarySongByArtistTitle(artist, title) {
 function uniqueLibrarySongByPublicKey(key) {
   const value = String(key || '');
   if (!value) return null;
-  const matches = scannedLibrary.filter((song) => publicSongKey(song.artist, song.title) === value);
+  const matches = scannedLibrary.filter((song) =>
+    song.songKey === value ||
+    song.artistTitleKey === value ||
+    publicSongKey(song.artist, song.title) === value
+  );
   return matches.length === 1 ? matches[0] : null;
+}
+
+function songFromReference(ref = {}) {
+  const byKey = uniqueLibrarySongByPublicKey(ref.songKey);
+  if (byKey) return byKey;
+  const byArtistTitleKey = uniqueLibrarySongByPublicKey(ref.artistTitleKey);
+  if (byArtistTitleKey) return byArtistTitleKey;
+  const byArtistTitle = uniqueLibrarySongByArtistTitle(ref.artist, ref.title);
+  if (byArtistTitle) return byArtistTitle;
+  const songId = Number(ref.songId);
+  if (Number.isInteger(songId) && songId >= 0) {
+    return scannedLibrary.find((item) => Number(item.songId) === songId) || null;
+  }
+  return null;
 }
 
 function playlistPathForName(name) {
@@ -1014,10 +1049,22 @@ async function readPlaylistFile(filePath, index = -1, songMap = libraryByArtistT
     items.push({
       itemIndex: items.length,
       songId: Number.isInteger(Number(song?.songId)) ? Number(song.songId) : -1,
+      songKey: song?.songKey || publicSongKey(artist, title),
+      artistTitleKey: song?.artistTitleKey || publicSongKey(artist, title),
       artist,
       title,
+      year: song?.year || '',
+      creator: song?.creator || '',
+      genre: song?.genre || '',
+      edition: song?.edition || '',
+      language: song?.language || '',
+      tags: song?.tags || '',
+      coverAvailable: Boolean(song?.coverAvailable),
+      coverLookup: song?.coverLookup !== false,
+      coverPath: song?.coverPath || '',
       previewStart: Number(song?.previewStart || 0),
       previewAvailable: Boolean(song?.previewAvailable),
+      audioSource: song?.audioSource || 'audio',
       audioPath: song?.audioPath || ''
     });
   }
@@ -1116,18 +1163,34 @@ async function handleBridgePlaylistCommand(msg) {
       const playlist = playlists[playlistIndex];
       if (command === 'playlist.addSongs') {
         const existing = new Set(playlist.items.map((item) => `${item.artist} : ${item.title}`));
-        for (const rawSongId of Array.isArray(args.songIds) ? args.songIds : [args.songId]) {
-          const songId = Number(rawSongId);
-          const song = scannedLibrary.find((item) => Number(item.songId) === songId);
+        const refs = Array.isArray(args.songs) && args.songs.length
+          ? args.songs
+          : (Array.isArray(args.songKeys) ? args.songKeys.map((songKey) => ({ songKey })) : (Array.isArray(args.songIds) ? args.songIds.map((songId) => ({ songId })) : [{ songId: args.songId }]));
+        for (const ref of refs) {
+          const song = songFromReference(ref);
+          if (!song) continue;
+          const songId = Number(song.songId);
           const line = songLine(song);
           if (line && !existing.has(line)) {
             playlist.items.push({
               itemIndex: playlist.items.length,
               songId,
+              songKey: song.songKey || publicSongKey(song.artist, song.title),
+              artistTitleKey: song.artistTitleKey || publicSongKey(song.artist, song.title),
               artist: song.artist,
               title: song.title,
+              year: song.year || '',
+              creator: song.creator || '',
+              genre: song.genre || '',
+              edition: song.edition || '',
+              language: song.language || '',
+              tags: song.tags || '',
+              coverAvailable: Boolean(song.coverAvailable),
+              coverLookup: song.coverLookup !== false,
+              coverPath: song.coverPath || '',
               previewStart: Number(song.previewStart || 0),
               previewAvailable: Boolean(song.previewAvailable),
+              audioSource: song.audioSource || 'audio',
               audioPath: song.audioPath || ''
             });
             existing.add(line);
@@ -1184,6 +1247,55 @@ function parseIniSections(text) {
   return result;
 }
 
+function iniSection(ini, name) {
+  const expected = String(name || '').toLowerCase();
+  for (const [key, value] of Object.entries(ini || {})) {
+    if (String(key).toLowerCase() === expected) return value || {};
+  }
+  return {};
+}
+
+function iniValue(section, name) {
+  const expected = String(name || '').toLowerCase();
+  for (const [key, value] of Object.entries(section || {})) {
+    if (String(key).toLowerCase() === expected) return value;
+  }
+  return undefined;
+}
+
+function parseVolumePercent(value, fallback = 100) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return fallback;
+  if (/^off$/i.test(raw)) return 0;
+  const numeric = Number(raw.replace(/%$/, '').replace(',', '.'));
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.max(0, Math.min(100, Math.round(numeric)));
+}
+
+function audioMixFromConfig() {
+  const configPath = resolveHostPath(songConfig);
+  let audioVolume = 100;
+  let vocalsVolume = 100;
+  try {
+    const config = fs.readFileSync(configPath, 'utf8');
+    const sound = iniSection(parseIniSections(config), 'Sound');
+    audioVolume = parseVolumePercent(iniValue(sound, 'AudioVolume'), audioVolume);
+    vocalsVolume = parseVolumePercent(iniValue(sound, 'VocalsVolume'), vocalsVolume);
+  } catch (error) {
+    log('song audio config unavailable', { config: configPath, error: error.message });
+  }
+
+  const regularVolume = audioVolume * vocalsVolume;
+  const instrumentalVolume = audioVolume * (100 - vocalsVolume);
+  return {
+    audioVolume,
+    vocalsVolume,
+    regularVolume,
+    instrumentalVolume,
+    preferInstrumental: instrumentalVolume > regularVolume
+  };
+}
+
 function clampDelayMs(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return 0;
@@ -1226,7 +1338,7 @@ function songRootsFromConfig() {
   try {
     const config = fs.readFileSync(configPath, 'utf8');
     const ini = parseIniSections(config);
-    const directories = ini.Directories || ini.directories || {};
+    const directories = iniSection(ini, 'Directories');
     for (const [key, value] of Object.entries(directories)) {
       if (/^SongDir/i.test(key) && String(value || '').trim()) {
         addRoot(resolveHostPath(value, path.dirname(configPath)));
@@ -1268,6 +1380,7 @@ function songMetaFromTxt(text, txtPath) {
     language: '',
     tags: '',
     audio: '',
+    cover: '',
     instrumental: '',
     vocals: '',
     previewStart: 0,
@@ -1288,6 +1401,7 @@ function songMetaFromTxt(text, txtPath) {
     else if (key === 'LANGUAGE') meta.language = value;
     else if (key === 'TAGS') meta.tags = value;
     else if (key === 'MP3' || key === 'AUDIO') meta.audio = value;
+    else if (key === 'COVER') meta.cover = value;
     else if (key === 'INSTRUMENTAL') meta.instrumental = value;
     else if (key === 'VOCALS') meta.vocals = value;
     else if (key === 'PREVIEWSTART' || key === 'PREVIEW') meta.previewStart = Number(value.replace(',', '.')) || 0;
@@ -1313,6 +1427,34 @@ function candidateAudioPath(txtPath, audioName) {
   for (const ext of extensions) {
     const candidate = `${stem}${ext}`;
     if (fs.existsSync(candidate)) return candidate;
+  }
+  return '';
+}
+
+function candidateImagePath(txtPath, imageName) {
+  const dir = path.dirname(txtPath);
+  const extensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+  if (imageName) {
+    const requested = resolveHostPath(imageName, dir);
+    if (fs.existsSync(requested)) return requested;
+    const requestedStem = path.join(path.dirname(requested), path.basename(requested, path.extname(requested)));
+    for (const ext of extensions) {
+      const candidate = `${requestedStem}${ext}`;
+      if (fs.existsSync(candidate)) return candidate;
+    }
+  }
+  const stem = path.join(dir, path.basename(txtPath, path.extname(txtPath)));
+  for (const suffix of [' [CO]', '-cover', '_cover', ' cover', '']) {
+    for (const ext of extensions) {
+      const candidate = `${stem}${suffix}${ext}`;
+      if (fs.existsSync(candidate)) return candidate;
+    }
+  }
+  for (const name of ['cover', 'folder', 'front']) {
+    for (const ext of extensions) {
+      const candidate = path.join(dir, `${name}${ext}`);
+      if (fs.existsSync(candidate)) return candidate;
+    }
   }
   return '';
 }
@@ -1421,6 +1563,8 @@ function resetSongLibraryScan(reason = 'manual') {
   lastSelectedSongId = null;
   songPreviewPaths.clear();
   songPreviewPathsByKey.clear();
+  songCoverPaths.clear();
+  songCoverPathsByKey.clear();
   closeAllPreviewStreams('catalog_resync');
   songScanProgress = {
     status: 'idle',
@@ -1465,17 +1609,24 @@ async function scanSongLibrary() {
     txtFiles.sort((a, b) => a.localeCompare(b));
 
     const library = [];
+    const audioMix = audioMixFromConfig();
     for (const txtPath of txtFiles) {
       if (generation !== songScanGeneration) return;
       try {
         const text = await fsp.readFile(txtPath, 'utf8');
         const meta = songMetaFromTxt(text, txtPath);
-        const instrumentalPath = candidateAudioPath(txtPath, meta.instrumental);
-        const audioPath = instrumentalPath || candidateAudioPath(txtPath, meta.audio);
+        const instrumentalPath = meta.instrumental ? candidateAudioPath(txtPath, meta.instrumental) : '';
+        const regularAudioPath = candidateAudioPath(txtPath, meta.audio);
+        const useInstrumental = Boolean(instrumentalPath) && audioMix.preferInstrumental;
+        const audioPath = useInstrumental ? instrumentalPath : regularAudioPath;
+        const coverPath = candidateImagePath(txtPath, meta.cover);
         const songId = library.length;
         const song = {
           songId,
-          songKey: publicSongKey(meta.artist, meta.title),
+          songKey: stableSongKeyForPath(txtPath),
+          artistTitleKey: publicSongKey(meta.artist, meta.title),
+          txtPath,
+          coverName: meta.cover,
           artist: meta.artist,
           title: meta.title,
           year: meta.year,
@@ -1487,9 +1638,12 @@ async function scanSongLibrary() {
           visible: true,
           category: false,
           duet: meta.duet,
+          coverAvailable: Boolean(coverPath),
+          coverLookup: false,
+          coverPath,
           previewStart: meta.previewStart,
           previewAvailable: Boolean(audioPath && fs.existsSync(audioPath)),
-          audioSource: instrumentalPath ? 'instrumental' : 'audio',
+          audioSource: useInstrumental ? 'instrumental' : 'audio',
           audioPath
         };
         song.searchText = catalogSearchText(song);
@@ -1521,10 +1675,12 @@ function rememberSongPreview(song) {
   const songId = Number(song.songId);
   if (!Number.isInteger(songId) || !song.audioPath) return;
   const songKey = song.songKey || publicSongKey(song.artist, song.title);
+  const artistTitleKey = song.artistTitleKey || publicSongKey(song.artist, song.title);
   const info = {
     songId,
     filePath: normalizeHostPath(song.audioPath),
     songKey,
+    artistTitleKey,
     title: song.title || '',
     artist: song.artist || '',
     previewStart: Number(song.previewStart || 0),
@@ -1532,6 +1688,7 @@ function rememberSongPreview(song) {
   };
   songPreviewPaths.set(songId, info);
   if (songKey) songPreviewPathsByKey.set(songKey, info);
+  if (artistTitleKey && artistTitleKey !== songKey) songPreviewPathsByKey.set(artistTitleKey, info);
 }
 
 function catalogHashForLibrary(library) {
@@ -1541,8 +1698,6 @@ function catalogHashForLibrary(library) {
   hash.update(String(Array.isArray(library) ? library.length : 0));
   for (const song of Array.isArray(library) ? library : []) {
     hash.update('\n');
-    hash.update(String(song?.songId ?? ''));
-    hash.update('\t');
     hash.update(String(song?.songKey || publicSongKey(song?.artist, song?.title)));
     hash.update('\t');
     hash.update(String(song?.artist || ''));
@@ -1562,13 +1717,85 @@ function catalogHashForLibrary(library) {
     hash.update(String(song?.audioSource || ''));
     hash.update('\t');
     hash.update(String(song?.audioPath || ''));
+    hash.update('\t');
+    hash.update(String(Boolean(song?.coverAvailable)));
+    hash.update('\t');
+    hash.update(String(song?.coverPath || song?.coverName || song?.coverFileName || ''));
   }
   return hash.digest('hex').slice(0, 24);
+}
+
+function rememberSongCover(song) {
+  if (!song || typeof song !== 'object') return;
+  const songId = Number(song.songId);
+  if (!Number.isInteger(songId) || !song.coverPath) return;
+  const songKey = song.songKey || publicSongKey(song.artist, song.title);
+  const artistTitleKey = song.artistTitleKey || publicSongKey(song.artist, song.title);
+  const info = {
+    songId,
+    filePath: normalizeHostPath(song.coverPath),
+    songKey,
+    artistTitleKey,
+    title: song.title || '',
+    artist: song.artist || ''
+  };
+  songCoverPaths.set(songId, info);
+  if (songKey) songCoverPathsByKey.set(songKey, info);
+  if (artistTitleKey && artistTitleKey !== songKey) songCoverPathsByKey.set(artistTitleKey, info);
+}
+
+function coverInfoFromSong(song) {
+  if (!song?.coverPath) return null;
+  const songId = Number(song.songId);
+  const filePath = normalizeHostPath(song.coverPath);
+  return {
+    songId: Number.isInteger(songId) ? songId : null,
+    filePath,
+    songKey: song.songKey || publicSongKey(song.artist, song.title),
+    artistTitleKey: song.artistTitleKey || publicSongKey(song.artist, song.title),
+    title: song.title || '',
+    artist: song.artist || ''
+  };
+}
+
+function resolveSongCoverInfo(song) {
+  if (!song || typeof song !== 'object') return null;
+  const songId = Number(song.songId);
+  const cached = Number.isInteger(songId) ? songCoverPaths.get(songId) : null;
+  if (cached?.filePath && fs.existsSync(cached.filePath)) return cached;
+  if (song.coverLookupDone && !song.coverPath) return null;
+
+  let coverPath = normalizeHostPath(song.coverPath);
+  if (!coverPath && song.txtPath) {
+    coverPath = candidateImagePath(song.txtPath, song.coverName || song.cover || '');
+  }
+  if (!coverPath || !fs.existsSync(coverPath)) {
+    song.coverLookupDone = true;
+    song.coverAvailable = false;
+    return null;
+  }
+
+  song.coverPath = coverPath;
+  song.coverLookupDone = true;
+  song.coverAvailable = true;
+  rememberSongCover(song);
+  return (Number.isInteger(songId) ? songCoverPaths.get(songId) : null) || coverInfoFromSong(song);
 }
 
 function sanitizedCatalogSong(song) {
   const copy = JSON.parse(JSON.stringify(song || {}));
   rememberSongPreview(copy);
+  rememberSongCover(copy);
+  if (copy.coverPath) {
+    copy.coverAvailable = true;
+    copy.coverFileName = path.basename(copy.coverPath);
+    copy.coverContentType = contentTypeForImage(copy.coverPath);
+  } else {
+    copy.coverAvailable = false;
+    copy.coverLookup = false;
+    delete copy.coverFileName;
+    delete copy.coverContentType;
+  }
   if (previewStreaming && copy.audioPath) {
     copy.audioFileName = path.basename(copy.audioPath);
     copy.audioFormat = audioFormatForPath(copy.audioPath);
@@ -1581,6 +1808,12 @@ function sanitizedCatalogSong(song) {
   } else {
     copy.previewAvailable = false;
   }
+  copy.songKey = copy.songKey || publicSongKey(copy.artist, copy.title);
+  copy.artistTitleKey = copy.artistTitleKey || publicSongKey(copy.artist, copy.title);
+  delete copy.coverPath;
+  delete copy.coverName;
+  delete copy.coverLookupDone;
+  delete copy.txtPath;
   delete copy.audioPath;
   return copy;
 }
@@ -1596,8 +1829,12 @@ function previewSongFromRequest(msg, numericSongId) {
 
   const byKey = uniqueLibrarySongByPublicKey(msg.songKey);
   if (byKey) return { song: byKey, source: 'songKey' };
+  const byArtistTitleKey = uniqueLibrarySongByPublicKey(msg.artistTitleKey);
+  if (byArtistTitleKey) return { song: byArtistTitleKey, source: 'artistTitleKey' };
   const previewByKey = songPreviewPathsByKey.get(String(msg.songKey || ''));
   if (previewByKey) return { preview: previewByKey, source: 'songKey' };
+  const previewByArtistTitleKey = songPreviewPathsByKey.get(String(msg.artistTitleKey || ''));
+  if (previewByArtistTitleKey) return { preview: previewByArtistTitleKey, source: 'artistTitleKey' };
 
   const artist = String(msg.artist || '').trim();
   const title = String(msg.title || '').trim();
@@ -1650,6 +1887,7 @@ function markRemoteAudioAvailability(msg) {
       msg.audioFormat = audioFormatForPath(songInfo.filePath);
       msg.audioContentType = contentTypeForAudio(songInfo.filePath);
       msg.songKey = songInfo.songKey || publicSongKey(msg.artist, msg.title);
+      msg.artistTitleKey = songInfo.artistTitleKey || publicSongKey(msg.artist, msg.title);
       msg.audioSource = songInfo.audioSource || 'audio';
     }
   } else {
@@ -1694,6 +1932,28 @@ function sanitizeSongStateForServer(msg) {
     copy.playlistItemsTruncated = true;
   }
 
+  for (const song of Array.isArray(copy.library) ? copy.library : []) {
+    rememberSongCover(song);
+    song.songKey = song.songKey || publicSongKey(song.artist, song.title);
+    song.artistTitleKey = song.artistTitleKey || publicSongKey(song.artist, song.title);
+    if (song?.coverPath) {
+      song.coverAvailable = true;
+      song.coverFileName = path.basename(song.coverPath);
+      song.coverContentType = contentTypeForImage(song.coverPath);
+    } else {
+      song.coverAvailable = Boolean(song?.coverAvailable);
+      song.coverLookup = false;
+      if (!song.coverAvailable) {
+        delete song.coverFileName;
+        delete song.coverContentType;
+      }
+    }
+    delete song.coverPath;
+    delete song.coverName;
+    delete song.coverLookupDone;
+    delete song.txtPath;
+  }
+
   const songs = [];
   if (copy.currentSong) songs.push(copy.currentSong);
   if (Array.isArray(copy.results)) songs.push(...copy.results);
@@ -1706,6 +1966,21 @@ function sanitizeSongStateForServer(msg) {
   if (Array.isArray(copy.playlistItems)) songs.push(...copy.playlistItems);
   for (const song of songs) {
     rememberSongPreview(song);
+    rememberSongCover(song);
+    song.songKey = song.songKey || publicSongKey(song.artist, song.title);
+    song.artistTitleKey = song.artistTitleKey || publicSongKey(song.artist, song.title);
+    if (song.coverPath) {
+      song.coverAvailable = true;
+      song.coverFileName = path.basename(song.coverPath);
+      song.coverContentType = contentTypeForImage(song.coverPath);
+    } else {
+      song.coverAvailable = Boolean(song.coverAvailable);
+      song.coverLookup = false;
+      if (!song.coverAvailable) {
+        delete song.coverFileName;
+        delete song.coverContentType;
+      }
+    }
     if (previewStreaming && song.audioPath) {
       song.audioFileName = path.basename(song.audioPath);
       song.audioFormat = audioFormatForPath(song.audioPath);
@@ -1721,6 +1996,10 @@ function sanitizeSongStateForServer(msg) {
       delete song.audioContentType;
       song.previewAvailable = false;
     }
+    delete song.coverPath;
+    delete song.coverName;
+    delete song.coverLookupDone;
+    delete song.txtPath;
     delete song.audioPath;
   }
   return copy;
@@ -1735,8 +2014,10 @@ async function waitForCatalogTransferBuffer() {
 
 async function handleCatalogRequest(msg) {
   const requestId = String(msg.requestId || '');
+  const playerId = String(msg.playerId || '');
   log('catalog.request.received', {
     requestId,
+    playerId,
     knownCatalogId: msg.knownCatalogId || '',
     catalogId: msg.catalogId || '',
     forceTransfer: Boolean(msg.forceTransfer),
@@ -1753,6 +2034,7 @@ async function handleCatalogRequest(msg) {
       send({
         type: 'catalog.error',
         requestId,
+        playerId,
         code: 'catalog.empty',
         message: 'Song catalog is empty or still unavailable.'
       });
@@ -1772,6 +2054,7 @@ async function handleCatalogRequest(msg) {
       send({
         type: 'catalog.manifest',
         requestId,
+        playerId,
         catalogId,
         libraryHash: catalogId,
         catalogSchemaVersion,
@@ -1787,6 +2070,7 @@ async function handleCatalogRequest(msg) {
     send({
       type: 'catalog.transfer.start',
       requestId,
+      playerId,
       catalogId,
       libraryHash: catalogId,
       catalogSchemaVersion,
@@ -1806,6 +2090,7 @@ async function handleCatalogRequest(msg) {
       send({
         type: 'catalog.transfer.chunk',
         requestId,
+        playerId,
         catalogId,
         libraryHash: catalogId,
         catalogSchemaVersion,
@@ -1819,6 +2104,7 @@ async function handleCatalogRequest(msg) {
     send({
       type: 'catalog.transfer.end',
       requestId,
+      playerId,
       catalogId,
       libraryHash: catalogId,
       catalogSchemaVersion,
@@ -1832,6 +2118,7 @@ async function handleCatalogRequest(msg) {
     send({
       type: 'catalog.error',
       requestId,
+      playerId,
       code: 'catalog.failed',
       message: error.message || 'Catalog transfer failed.'
     });
@@ -1844,11 +2131,17 @@ function streamPreviewToServer(msgOrRequestId, songId = null, startSec = 0, purp
     ? msgOrRequestId
     : { requestId: msgOrRequestId, songId, startSec, purpose, rangeStart, rangeEnd, formatHint };
   const requestId = String(request.requestId || '');
-  const numericSongId = Number(request.songId);
+  const numericSongId = request.songId !== undefined && request.songId !== null && request.songId !== ''
+    ? Number(request.songId)
+    : NaN;
   const requestPurpose = String(request.purpose || 'song-preview');
+  const coverRequest = requestPurpose === 'song-cover' || requestPurpose === 'cover';
   const resolved = previewSongFromRequest(request, numericSongId);
   const resolvedSongId = Number(resolved.song?.songId ?? resolved.preview?.songId);
-  const info = resolved.preview || (Number.isInteger(resolvedSongId) ? songPreviewPaths.get(resolvedSongId) : null);
+  const info = coverRequest
+    ? (resolveSongCoverInfo(resolved.song || (Number.isInteger(resolvedSongId) ? scannedLibrary[resolvedSongId] : null))
+      || (Number.isInteger(resolvedSongId) ? songCoverPaths.get(resolvedSongId) : null))
+    : (resolved.preview || (Number.isInteger(resolvedSongId) ? songPreviewPaths.get(resolvedSongId) : null));
   log('preview.request', {
     requestId,
     songId: numericSongId,
@@ -1862,7 +2155,7 @@ function streamPreviewToServer(msgOrRequestId, songId = null, startSec = 0, purp
     catalogId: request.catalogId || request.libraryHash || '',
     known: Boolean(info?.filePath),
     active: activePreviewStreams.size,
-    knownPreviewSongs: songPreviewPaths.size
+    knownPreviewSongs: coverRequest ? songCoverPaths.size : songPreviewPaths.size
   });
 
   if (!previewStreaming) {
@@ -1894,41 +2187,51 @@ function streamPreviewToServer(msgOrRequestId, songId = null, startSec = 0, purp
   }
 
   if (!info || !info.filePath) {
-    log('preview.error', { requestId, songId: resolvedSongId, purpose: requestPurpose, reason: 'preview_not_found', knownPreviewSongs: songPreviewPaths.size });
-    send({ type: 'song.preview.error', requestId, songId: resolvedSongId, purpose: requestPurpose, reason: 'preview_not_found' });
+    const reason = coverRequest ? 'cover_not_found' : 'preview_not_found';
+    log('preview.error', { requestId, songId: resolvedSongId, purpose: requestPurpose, reason, knownPreviewSongs: coverRequest ? songCoverPaths.size : songPreviewPaths.size });
+    send({ type: 'song.preview.error', requestId, songId: resolvedSongId, purpose: requestPurpose, reason });
     return;
   }
-  if (activePreviewStreams.size >= maxActivePreviewStreams) {
+  const activeStreamLimit = coverRequest ? Math.max(8, maxActivePreviewStreams) : maxActivePreviewStreams;
+  if (activePreviewStreams.size >= activeStreamLimit) {
     log('preview.error', { requestId, songId: resolvedSongId, purpose: requestPurpose, reason: 'too_many_active_previews', active: activePreviewStreams.size });
     send({ type: 'song.preview.error', requestId, songId: resolvedSongId, purpose: requestPurpose, reason: 'too_many_active_previews' });
     return;
   }
 
-  const requestedAudio = audioPathForRequest(info.filePath, request.formatHint);
-  if (!requestedAudio.formatAvailable) {
-    log('preview.error', {
-      requestId,
-      songId: resolvedSongId,
-      purpose: requestPurpose,
-      reason: 'format_unavailable',
-      requestedFormat: requestedAudio.requestedFormat,
-      actualFormat: requestedAudio.actualFormat
-    });
-    send({
-      type: 'song.preview.error',
-      requestId,
-      songId: resolvedSongId,
-      purpose: requestPurpose,
-      reason: 'format_unavailable',
-      requestedFormat: requestedAudio.requestedFormat,
-      availableFormat: requestedAudio.actualFormat,
-      audioFormat: requestedAudio.actualFormat,
-      audioContentType: contentTypeForAudio(requestedAudio.filePath)
-    });
-    return;
+  let requestedFilePath = info.filePath;
+  let contentType = coverRequest ? contentTypeForImage(requestedFilePath) : '';
+  let mediaFormat = path.extname(requestedFilePath || '').toLowerCase().replace(/^\./, '');
+  let requestedFormat = '';
+  if (!coverRequest) {
+    const requestedAudio = audioPathForRequest(info.filePath, request.formatHint);
+    if (!requestedAudio.formatAvailable) {
+      log('preview.error', {
+        requestId,
+        songId: resolvedSongId,
+        purpose: requestPurpose,
+        reason: 'format_unavailable',
+        requestedFormat: requestedAudio.requestedFormat,
+        actualFormat: requestedAudio.actualFormat
+      });
+      send({
+        type: 'song.preview.error',
+        requestId,
+        songId: resolvedSongId,
+        purpose: requestPurpose,
+        reason: 'format_unavailable',
+        requestedFormat: requestedAudio.requestedFormat,
+        availableFormat: requestedAudio.actualFormat,
+        audioFormat: requestedAudio.actualFormat,
+        audioContentType: contentTypeForAudio(requestedAudio.filePath)
+      });
+      return;
+    }
+    requestedFilePath = requestedAudio.filePath;
+    contentType = sniffContentTypeForAudio(requestedFilePath);
+    mediaFormat = requestedAudio.actualFormat;
+    requestedFormat = requestedAudio.requestedFormat;
   }
-  const requestedFilePath = requestedAudio.filePath;
-  const contentType = sniffContentTypeForAudio(requestedFilePath);
   const seekSec = 0;
   let contentLength = null;
   let fileSize = null;
@@ -1945,7 +2248,7 @@ function streamPreviewToServer(msgOrRequestId, songId = null, startSec = 0, purp
   const requestedRangeStart = Number(request.rangeStart);
   const requestedRangeEnd = Number(request.rangeEnd);
   const hasRange = Number.isSafeInteger(requestedRangeStart) && requestedRangeStart >= 0 && Number.isFinite(fileSize) && fileSize > 0;
-  const maxBytesPerRequest = Number.isFinite(maxPreviewBytes) && maxPreviewBytes > 0
+  const maxBytesPerRequest = !coverRequest && Number.isFinite(maxPreviewBytes) && maxPreviewBytes > 0
     ? Math.max(1, Math.floor(maxPreviewBytes))
     : 0;
   if (hasRange) {
@@ -2030,8 +2333,8 @@ function streamPreviewToServer(msgOrRequestId, songId = null, startSec = 0, purp
     chunkBytes: streamOptions.highWaterMark,
     capped,
     file: path.basename(requestedFilePath),
-    formatHint: requestedAudio.requestedFormat,
-    audioFormat: requestedAudio.actualFormat
+    formatHint: requestedFormat,
+    audioFormat: coverRequest ? undefined : mediaFormat
   });
   const partialPreview = streamOptions.end != null && Number.isFinite(fileSize) && streamOptions.end < fileSize - 1;
   const metaSent = send({
@@ -2045,8 +2348,8 @@ function streamPreviewToServer(msgOrRequestId, songId = null, startSec = 0, purp
       ? `bytes ${streamOptions.start || 0}-${streamOptions.end}/${fileSize}`
       : null,
     fileName: path.basename(requestedFilePath),
-    audioFormat: requestedAudio.actualFormat,
-    audioSource: info.audioSource || 'audio',
+    audioFormat: coverRequest ? undefined : mediaFormat,
+    audioSource: coverRequest ? undefined : (info.audioSource || 'audio'),
     songKey: info.songKey || publicSongKey(info.artist, info.title),
     catalogId: scannedLibraryHash || '',
     title: info.title,
@@ -2671,30 +2974,23 @@ async function handleMessage(msg) {
       const now = Date.now();
       if (!firstResumeFailureAt) firstResumeFailureAt = now;
       resumeFailureCount += 1;
-      const withinGrace = room
-        && room.roomId
-        && room.hostToken
-        && (!Number.isFinite(resumeFailureGraceMs) || resumeFailureGraceMs < 0 || now - firstResumeFailureAt <= resumeFailureGraceMs)
-        && (!Number.isFinite(resumeFailureMaxRetries) || resumeFailureMaxRetries < 0 || resumeFailureCount <= resumeFailureMaxRetries);
       log('host resume failed', {
         roomId: room?.roomId || null,
         code: room?.displayCode || null,
         attempts: resumeFailureCount,
         ageMs: now - firstResumeFailureAt,
-        tolerating: Boolean(withinGrace)
+        refreshingRoom: true
       });
-      if (withinGrace) {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          try { ws.close(4000, 'resume_retry'); } catch {}
-        } else {
-          scheduleConnect();
-        }
-        return;
-      }
       cancelBridgeDisconnectNotify();
       room = null;
       players.clear();
+      playerAssignmentFingerprints.clear();
       pitchStats.clear();
+      closeAllP2pSessions('host_resume_failed');
+      firstResumeFailureAt = 0;
+      resumeFailureCount = 0;
+      if (!ws || ws.readyState !== WebSocket.OPEN) scheduleConnect();
+      return;
     }
     sendToIpc({ type: 'error', code: msg.code, reason: msg.reason, source: 'server' });
   }
@@ -2751,6 +3047,7 @@ function shutdown(reason = 'shutdown', exitCode = 0) {
   if (shuttingDown) return;
   shuttingDown = true;
   log('shutting down', { reason });
+  const hadOpenWebSocket = Boolean(ws && ws.readyState === WebSocket.OPEN);
 
   if (reconnectTimer) {
     clearTimeout(reconnectTimer);
@@ -2768,8 +3065,13 @@ function shutdown(reason = 'shutdown', exitCode = 0) {
   closeAllPreviewStreams(reason);
 
   if (ws) {
-    try { ws.close(); } catch {}
-    ws = null;
+    if (hadOpenWebSocket) {
+      try { ws.send(JSON.stringify({ protocol, type: 'host.shutdown', reason })); } catch {}
+    }
+    const socket = ws;
+    setTimeout(() => {
+      try { socket.close(); } catch {}
+    }, hadOpenWebSocket ? 150 : 0).unref?.();
   }
 
   for (const client of [...ipcClients]) {
@@ -2783,7 +3085,7 @@ function shutdown(reason = 'shutdown', exitCode = 0) {
     ipcServer = null;
   }
 
-  setTimeout(() => process.exit(exitCode), 25).unref?.();
+  shutdownExitTimer = setTimeout(() => process.exit(exitCode), hadOpenWebSocket ? 900 : 25);
 }
 
 process.once('SIGTERM', () => shutdown('sigterm'));
