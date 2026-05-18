@@ -1098,6 +1098,7 @@ var
     AudioPath: IPath;
     AudioSource: UTF8String;
     SongKey: UTF8String;
+    SearchText: UTF8String;
   begin
     Result := 'null';
     if (SongIndex < 0) or (SongIndex > High(CatSongs.Song)) then
@@ -1117,6 +1118,15 @@ var
       AudioSource := 'audio';
     end;
     SongKey := LowerCase(Item.Artist + ' - ' + Item.Title);
+    SearchText := Trim(
+      Item.ArtistASCII + ' ' +
+      Item.TitleASCII + ' ' +
+      Item.CreatorASCII + ' ' +
+      Item.GenreASCII + ' ' +
+      Item.EditionASCII + ' ' +
+      Item.LanguageASCII + ' ' +
+      Item.TagsASCII + ' ' +
+      IntToStr(Item.Year));
 
     Result :=
       '{"songId":' + IntToStr(SongIndex) +
@@ -1124,6 +1134,12 @@ var
       ',"artist":"' + RemoteJsonEscape(Item.Artist) + '"' +
       ',"title":"' + RemoteJsonEscape(Item.Title) + '"' +
       ',"year":' + IntToStr(Item.Year) +
+      ',"creator":"' + RemoteJsonEscape(Item.Creator) + '"' +
+      ',"genre":"' + RemoteJsonEscape(Item.Genre) + '"' +
+      ',"edition":"' + RemoteJsonEscape(Item.Edition) + '"' +
+      ',"language":"' + RemoteJsonEscape(Item.Language) + '"' +
+      ',"tags":"' + RemoteJsonEscape(Item.Tags) + '"' +
+      ',"searchText":"' + RemoteJsonEscape(SearchText) + '"' +
       ',"visible":' + BoolJson(Item.Visible) +
       ',"category":' + BoolJson(Item.Main) +
       ',"duet":' + BoolJson(Item.isDuet) +

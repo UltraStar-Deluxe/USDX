@@ -27,7 +27,7 @@ type
   public
     destructor Destroy; override;
 
-    procedure Start;
+    procedure Start(const WebApp: string = '');
     procedure Stop;
 
     property StartedByGame: boolean read FStartedByGame;
@@ -128,10 +128,11 @@ begin
   Socket.Free;
 end;
 
-procedure TRemoteBridgeProcess.Start;
+procedure TRemoteBridgeProcess.Start(const WebApp: string);
 var
   Proc: TProcess;
   ScriptPath: string;
+  RequestedWebApp: string;
   I: integer;
 begin
   if (FProcess <> nil) then
@@ -161,6 +162,10 @@ begin
     Exit;
   end;
 
+  RequestedWebApp := Trim(GetEnvironmentVariable('USDX_REMOTE_WEB_APP'));
+  if (RequestedWebApp = '') then
+    RequestedWebApp := Trim(WebApp);
+
   Proc := TProcess.Create(nil);
   try
     Proc.Executable := NodeExecutablePath;
@@ -171,6 +176,11 @@ begin
     Proc.Parameters.Add('--auto-ack=false');
     Proc.Parameters.Add('--auto-assign=false');
     Proc.Parameters.Add('--p2p=false');
+    if (RequestedWebApp <> '') then
+    begin
+      Proc.Parameters.Add('--web-app');
+      Proc.Parameters.Add(RequestedWebApp);
+    end;
     Proc.Parameters.Add('--parent-pid');
     Proc.Parameters.Add(IntToStr(GetProcessID));
     Proc.Options := [poNoConsole];

@@ -284,7 +284,7 @@ begin
     Display.SetCursor;
 
     Log.LogStatus('Remote Bridge IPC', 'Initialization');
-    RemoteBridgeProcess.Start;
+    RemoteBridgeProcess.Start(Ini.RemoteBridgeWebApp);
     if (RemoteBridgeProcess.LastError <> '') then
       Log.LogWarn(RemoteBridgeProcess.LastError, 'Remote Bridge Process');
     RemoteBridgeIPC.OnCommand := RemoteBridgeCommandReceived;

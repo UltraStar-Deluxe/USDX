@@ -8,7 +8,8 @@ import { fileURLToPath } from 'node:url';
 
 const protocol = 1;
 const gameVersion = 'usdx-dev';
-const bridgeVersion = '0.1.2';
+const bridgeVersion = '0.1.4';
+const catalogSchemaVersion = 2;
 const fsp = fs.promises;
 const bridgeDir = path.dirname(fileURLToPath(import.meta.url));
 const gameDir = path.resolve(bridgeDir, '..');
@@ -52,6 +53,7 @@ const p2pIceServersArg = getArg('ice-servers', 'stun:stun.l.google.com:19302');
 const mockSong = getBoolArg('mock-song', true);
 const autoAck = getBoolArg('auto-ack', true);
 const autoAssign = getBoolArg('auto-assign', true);
+const webApp = String(getArg('web-app', process.env.USDX_REMOTE_WEB_APP || '')).trim();
 const songScan = getBoolArg('song-scan', true);
 const songConfig = getArg('song-config', path.join(gameDir, 'config.ini'));
 const songRootArg = getArg('song-root', '');
@@ -82,6 +84,7 @@ let currentGameState = 'lobby';
 let lastSongClockMessage = null;
 let songScanStarted = false;
 let songScanPromise = null;
+let songScanGeneration = 0;
 let scannedSongState = null;
 let scannedLibrary = [];
 let scannedLibraryHash = '';
@@ -670,6 +673,7 @@ function diagnosticPath(filePath, includePaths = diagnosticsIncludePaths) {
 
 function diagnosticSongProgress(includePaths = diagnosticsIncludePaths) {
   return {
+    catalogSchemaVersion,
     status: songScanProgress.status,
     indexedSongs: songScanProgress.indexedSongs,
     scannedFiles: songScanProgress.scannedFiles,
@@ -722,6 +726,7 @@ function collectDiagnostics(request = {}) {
       protocol,
       bridgeVersion,
       gameVersion,
+      catalogSchemaVersion,
       nodeVersion: process.version,
       platform: `${process.platform}/${process.arch}`,
       pid: process.pid,
@@ -744,6 +749,7 @@ function collectDiagnostics(request = {}) {
       mockSong,
       autoAck,
       autoAssign,
+      webApp,
       songScan,
       previewStreaming,
       maxWsBufferedBytes,
@@ -762,6 +768,7 @@ function collectDiagnostics(request = {}) {
       playlistSize: selectedPlaylist?.size ?? null
     },
     catalog: {
+      catalogSchemaVersion,
       progress: diagnosticSongProgress(includePaths),
       scannedLibrarySongs: scannedLibrary.length,
       scannedLibraryHash,
@@ -923,6 +930,23 @@ function publicSongKey(artist, title) {
   const artistText = String(artist || '').trim().toLowerCase();
   const titleText = String(title || '').trim().toLowerCase();
   return `${artistText} - ${titleText}`;
+}
+
+function catalogSearchText(song) {
+  return [
+    song?.artist,
+    song?.title,
+    song?.creator,
+    song?.genre,
+    song?.edition,
+    song?.language,
+    song?.tags,
+    song?.year
+  ]
+    .map((value) => String(value || '').trim())
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
 }
 
 function libraryByArtistTitle() {
@@ -1238,6 +1262,11 @@ function songMetaFromTxt(text, txtPath) {
     artist: '',
     title: '',
     year: 0,
+    creator: '',
+    genre: '',
+    edition: '',
+    language: '',
+    tags: '',
     audio: '',
     instrumental: '',
     vocals: '',
@@ -1253,6 +1282,11 @@ function songMetaFromTxt(text, txtPath) {
     if (key === 'ARTIST') meta.artist = value;
     else if (key === 'TITLE') meta.title = value;
     else if (key === 'YEAR') meta.year = Number.parseInt(value, 10) || 0;
+    else if (key === 'CREATOR') meta.creator = value;
+    else if (key === 'GENRE') meta.genre = value;
+    else if (key === 'EDITION') meta.edition = value;
+    else if (key === 'LANGUAGE') meta.language = value;
+    else if (key === 'TAGS') meta.tags = value;
     else if (key === 'MP3' || key === 'AUDIO') meta.audio = value;
     else if (key === 'INSTRUMENTAL') meta.instrumental = value;
     else if (key === 'VOCALS') meta.vocals = value;
@@ -1336,6 +1370,7 @@ function sendSongLibraryProgress(progress = songScanProgress) {
   };
   send({
     type: 'song.library.progress',
+    catalogSchemaVersion,
     status: songScanProgress.status,
     indexedSongs: songScanProgress.indexedSongs,
     scannedFiles: songScanProgress.scannedFiles,
@@ -1352,6 +1387,8 @@ async function publishScannedSongState(library, options = {}) {
   scannedSongState = {
     type: 'song.select.state',
     source: 'bridge-scan',
+    catalogSchemaVersion,
+    libraryHash: scannedLibraryHash || '',
     selectedSongId: library[0]?.songId ?? -1,
     visibleSongs: library.length,
     totalSongs: library.length,
@@ -1374,6 +1411,29 @@ async function publishScannedSongState(library, options = {}) {
   if (broadcast) send(sanitizeSongStateForServer(scannedSongState), { lowPriority: true });
 }
 
+function resetSongLibraryScan(reason = 'manual') {
+  songScanGeneration += 1;
+  songScanStarted = false;
+  songScanPromise = null;
+  scannedSongState = null;
+  scannedLibrary = [];
+  scannedLibraryHash = '';
+  lastSelectedSongId = null;
+  songPreviewPaths.clear();
+  songPreviewPathsByKey.clear();
+  closeAllPreviewStreams('catalog_resync');
+  songScanProgress = {
+    status: 'idle',
+    indexedSongs: 0,
+    scannedFiles: 0,
+    scannedDirs: 0,
+    roots: [],
+    message: `Catalog resync requested: ${reason}`
+  };
+  sendSongLibraryProgress(songScanProgress);
+  log('catalog.resync.reset', { reason, catalogSchemaVersion });
+}
+
 async function scanSongLibrary() {
   if (!songScan) return;
   if (songScanStarted) {
@@ -1383,7 +1443,8 @@ async function scanSongLibrary() {
     return;
   }
   songScanStarted = true;
-  songScanPromise = (async () => {
+  const generation = songScanGeneration;
+  const scanPromise = (async () => {
     const roots = songRootsFromConfig().filter((root) => {
       try {
         return fs.existsSync(root) && fs.statSync(root).isDirectory();
@@ -1397,6 +1458,7 @@ async function scanSongLibrary() {
     const progress = { ...songScanProgress, status: 'scanning', roots, indexedSongs: 0, scannedFiles: 0, scannedDirs: 0 };
     const txtFiles = [];
     for (const root of roots) {
+      if (generation !== songScanGeneration) return;
       txtFiles.push(...await collectSongTxtFiles(root, progress));
       sendSongLibraryProgress(progress);
     }
@@ -1404,6 +1466,7 @@ async function scanSongLibrary() {
 
     const library = [];
     for (const txtPath of txtFiles) {
+      if (generation !== songScanGeneration) return;
       try {
         const text = await fsp.readFile(txtPath, 'utf8');
         const meta = songMetaFromTxt(text, txtPath);
@@ -1416,6 +1479,11 @@ async function scanSongLibrary() {
           artist: meta.artist,
           title: meta.title,
           year: meta.year,
+          creator: meta.creator,
+          genre: meta.genre,
+          edition: meta.edition,
+          language: meta.language,
+          tags: meta.tags,
           visible: true,
           category: false,
           duet: meta.duet,
@@ -1424,6 +1492,7 @@ async function scanSongLibrary() {
           audioSource: instrumentalPath ? 'instrumental' : 'audio',
           audioPath
         };
+        song.searchText = catalogSearchText(song);
         library.push(song);
         rememberSongPreview(song);
         progress.indexedSongs = library.length;
@@ -1432,16 +1501,18 @@ async function scanSongLibrary() {
         log('song parse failed', { file: txtPath, error: error.message });
       }
     }
+    if (generation !== songScanGeneration) return;
     sendSongLibraryProgress({ ...progress, status: 'ready', indexedSongs: library.length, message: `Indexed ${library.length} songs` });
     scannedLibrary = library;
     scannedLibraryHash = catalogHashForLibrary(library);
     await publishScannedSongState(library, { broadcast: !hasIpcClient() });
     log('song scan complete', { songs: library.length, roots: roots.length, catalogId: scannedLibraryHash });
   })();
+  songScanPromise = scanPromise;
   try {
-    await songScanPromise;
+    await scanPromise;
   } finally {
-    songScanPromise = null;
+    if (songScanPromise === scanPromise) songScanPromise = null;
   }
 }
 
@@ -1465,14 +1536,30 @@ function rememberSongPreview(song) {
 
 function catalogHashForLibrary(library) {
   const hash = crypto.createHash('sha256');
+  hash.update(`schema:${catalogSchemaVersion}`);
+  hash.update('\n');
   hash.update(String(Array.isArray(library) ? library.length : 0));
   for (const song of Array.isArray(library) ? library : []) {
     hash.update('\n');
     hash.update(String(song?.songId ?? ''));
     hash.update('\t');
+    hash.update(String(song?.songKey || publicSongKey(song?.artist, song?.title)));
+    hash.update('\t');
     hash.update(String(song?.artist || ''));
     hash.update('\t');
     hash.update(String(song?.title || ''));
+    hash.update('\t');
+    hash.update(String(song?.creator || ''));
+    hash.update('\t');
+    hash.update(String(song?.genre || ''));
+    hash.update('\t');
+    hash.update(String(song?.edition || ''));
+    hash.update('\t');
+    hash.update(String(song?.language || ''));
+    hash.update('\t');
+    hash.update(String(song?.tags || ''));
+    hash.update('\t');
+    hash.update(String(song?.audioSource || ''));
     hash.update('\t');
     hash.update(String(song?.audioPath || ''));
   }
@@ -1531,6 +1618,7 @@ function previewSongFromRequest(msg, numericSongId) {
 function catalogStateForTransfer(state, catalogId) {
   const copy = sanitizeSongStateForServer({
     ...(state && typeof state === 'object' ? state : {}),
+    catalogSchemaVersion,
     libraryHash: catalogId
   });
   delete copy.library;
@@ -1540,6 +1628,7 @@ function catalogStateForTransfer(state, catalogId) {
   copy.libraryProgress = {
     ...(copy.libraryProgress || {}),
     type: 'song.library.progress',
+    catalogSchemaVersion,
     status: 'ready',
     indexedSongs: scannedLibrary.length,
     transferReceived: scannedLibrary.length,
@@ -1650,10 +1739,14 @@ async function handleCatalogRequest(msg) {
     requestId,
     knownCatalogId: msg.knownCatalogId || '',
     catalogId: msg.catalogId || '',
-    forceTransfer: Boolean(msg.forceTransfer)
+    forceTransfer: Boolean(msg.forceTransfer),
+    forceRescan: Boolean(msg.forceRescan || msg.resync)
   });
 
   try {
+    if (msg.forceRescan || msg.resync) {
+      resetSongLibraryScan(msg.reason || 'catalog_request');
+    }
     await scanSongLibrary();
     const library = scannedLibrary;
     if (!Array.isArray(library) || !library.length) {
@@ -1681,6 +1774,7 @@ async function handleCatalogRequest(msg) {
         requestId,
         catalogId,
         libraryHash: catalogId,
+        catalogSchemaVersion,
         totalSongs: library.length,
         total: library.length,
         source: 'bridge-scan',
@@ -1695,6 +1789,7 @@ async function handleCatalogRequest(msg) {
       requestId,
       catalogId,
       libraryHash: catalogId,
+      catalogSchemaVersion,
       totalSongs: library.length,
       total: library.length,
       source: 'bridge-scan',
@@ -1713,6 +1808,7 @@ async function handleCatalogRequest(msg) {
         requestId,
         catalogId,
         libraryHash: catalogId,
+        catalogSchemaVersion,
         offset,
         count: songs.length,
         songs
@@ -1725,6 +1821,7 @@ async function handleCatalogRequest(msg) {
       requestId,
       catalogId,
       libraryHash: catalogId,
+      catalogSchemaVersion,
       totalSongs: library.length,
       total: library.length,
       source: 'bridge-scan',
@@ -2377,6 +2474,37 @@ async function handleMessage(msg) {
     return;
   }
 
+  if (msg.type === 'catalog.resync' || msg.type === 'catalog.rescan') {
+    const requestId = String(msg.requestId || '');
+    const reason = String(msg.reason || msg.type);
+    resetSongLibraryScan(reason);
+    send({ type: 'catalog.resync.started', requestId, reason, catalogSchemaVersion });
+    try {
+      await scanSongLibrary();
+      send({
+        type: 'catalog.resync.complete',
+        requestId,
+        reason,
+        catalogId: scannedLibraryHash || '',
+        libraryHash: scannedLibraryHash || '',
+        catalogSchemaVersion,
+        totalSongs: scannedLibrary.length,
+        total: scannedLibrary.length
+      });
+    } catch (error) {
+      send({
+        type: 'catalog.resync.error',
+        requestId,
+        reason,
+        catalogSchemaVersion,
+        code: 'catalog.failed',
+        message: error.message || 'Catalog resync failed.'
+      });
+      log('catalog.resync.failed', { requestId, reason, error: error.message });
+    }
+    return;
+  }
+
   if (msg.type === 'catalog.request') {
     await handleCatalogRequest(msg);
     return;
@@ -2588,6 +2716,8 @@ function connect() {
       type: 'host.hello',
       gameVersion,
       bridgeVersion,
+      catalogSchemaVersion,
+      webApp: webApp || undefined,
       capabilities: ['remotePitch', 'remoteControl', 'clockSync', 'songCatalog', 'diagnostics', ...(p2pEnabled ? ['p2pDataChannel'] : [])],
       maxPlayers,
       roomId: room?.roomId,
