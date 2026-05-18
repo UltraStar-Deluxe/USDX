@@ -289,6 +289,8 @@ procedure Reinitialize3D;
 procedure SwapBuffers;
 
 procedure LoadTextures;
+procedure LoadSingScreenTextures(ForceReload: boolean = false);
+procedure UnloadSingScreenTextures;
 procedure InitializeScreen;
 procedure LoadLoadingScreen;
 procedure LoadScreens(Title: string);
@@ -315,6 +317,9 @@ uses
   UDisplay,
   UCommandLine,
   UPathUtils;
+
+var
+  SingScreenTexturesLoaded: boolean = false;
 
 procedure LoadFontTextures;
 begin
@@ -414,6 +419,101 @@ begin
   end;
 
   Log.LogStatus('Loading Textures - Done', 'LoadTextures');
+end;
+
+procedure UnloadSingScreenTextures;
+var
+  I: integer;
+begin
+  for I := 1 to UIni.IMaxPlayerCount do
+  begin
+    FreeTexture(Tex_Left[I]);
+    FreeTexture(Tex_Mid[I]);
+    FreeTexture(Tex_Right[I]);
+    FreeTexture(Tex_plain_Left[I]);
+    FreeTexture(Tex_plain_Mid[I]);
+    FreeTexture(Tex_plain_Right[I]);
+    FreeTexture(Tex_BG_Left[I]);
+    FreeTexture(Tex_BG_Mid[I]);
+    FreeTexture(Tex_BG_Right[I]);
+    FreeTexture(Tex_Left_Rap[I]);
+    FreeTexture(Tex_Mid_Rap[I]);
+    FreeTexture(Tex_Right_Rap[I]);
+    FreeTexture(Tex_plain_Left_Rap[I]);
+    FreeTexture(Tex_plain_Mid_Rap[I]);
+    FreeTexture(Tex_plain_Right_Rap[I]);
+    FreeTexture(Tex_BG_Left_Rap[I]);
+    FreeTexture(Tex_BG_Mid_Rap[I]);
+    FreeTexture(Tex_BG_Right_Rap[I]);
+    FreeTexture(Tex_ScoreBG[I - 1]);
+  end;
+
+  FreeTexture(Tex_Left_Inv);
+  FreeTexture(Tex_Mid_Inv);
+  FreeTexture(Tex_Right_Inv);
+  FreeTexture(Tex_Left_Rap_Inv);
+  FreeTexture(Tex_Mid_Rap_Inv);
+  FreeTexture(Tex_Right_Rap_Inv);
+  SingScreenTexturesLoaded := false;
+end;
+
+procedure LoadSingScreenTextures(ForceReload: boolean);
+var
+  I: integer;
+  Col: TRGB;
+  Color: cardinal;
+begin
+  if ForceReload then
+    UnloadSingScreenTextures
+  else if SingScreenTexturesLoaded then
+    Exit;
+
+  for I := 1 to UIni.IMaxPlayerCount do
+  begin
+    Col := GetPlayerColor(Ini.SingColor[I - 1]);
+    Color := (Trunc(255 * Col.R) shl 16) or
+             (Trunc(255 * Col.G) shl  8) or
+              Trunc(255 * Col.B);
+
+    Tex_Left[I]         := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'),  TEXTURE_TYPE_COLORIZED, Color);
+    Tex_Mid[I]          := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'),   TEXTURE_TYPE_COLORIZED, Color);
+    Tex_Right[I]        := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_COLORIZED, Color);
+
+    Tex_plain_Left[I]   := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainLeft'),  TEXTURE_TYPE_COLORIZED, Color);
+    Tex_plain_Mid[I]    := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainMid'),   TEXTURE_TYPE_COLORIZED, Color);
+    Tex_plain_Right[I]  := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainRight'), TEXTURE_TYPE_COLORIZED, Color);
+
+    Tex_BG_Left[I]      := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGLeft'),  TEXTURE_TYPE_COLORIZED, Color);
+    Tex_BG_Mid[I]       := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGMid'),   TEXTURE_TYPE_COLORIZED, Color);
+    Tex_BG_Right[I]     := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGRight'), TEXTURE_TYPE_COLORIZED, Color);
+
+    Tex_Left_Rap[I]         := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
+    Tex_Mid_Rap[I]          := Texture.LoadTexture(Skin.GetTextureFileName('GrayMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
+    Tex_Right_Rap[I]        := Texture.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+
+    Tex_plain_Left_Rap[I]   := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
+    Tex_plain_Mid_Rap[I]    := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
+    Tex_plain_Right_Rap[I]  := Texture.LoadTexture(Skin.GetTextureFileName('NotePlainRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+
+    Tex_BG_Left_Rap[I]      := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGLeftRap'),  TEXTURE_TYPE_COLORIZED, Color);
+    Tex_BG_Mid_Rap[I]       := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGMidRap'),   TEXTURE_TYPE_COLORIZED, Color);
+    Tex_BG_Right_Rap[I]     := Texture.LoadTexture(Skin.GetTextureFileName('NoteBGRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+
+    Tex_ScoreBG[I - 1] := Texture.LoadTexture(Skin.GetTextureFileName('ScoreBG'), TEXTURE_TYPE_COLORIZED, Color);
+  end;
+
+  Col := GetPlayerColor(Ini.SingColor[0]);
+  Color := (Trunc(255 * (1 - Col.R)) shl 16) or
+           (Trunc(255 * (1 - Col.G)) shl  8) or
+            Trunc(255 * (1 - Col.B));
+
+  Tex_Left_Inv := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeft'), TEXTURE_TYPE_COLORIZED, Color);
+  Tex_Mid_Inv := Texture.LoadTexture(Skin.GetTextureFileName('GrayMid'), TEXTURE_TYPE_COLORIZED, Color);
+  Tex_Right_Inv := Texture.LoadTexture(Skin.GetTextureFileName('GrayRight'), TEXTURE_TYPE_COLORIZED, Color);
+  Tex_Left_Rap_Inv := Texture.LoadTexture(Skin.GetTextureFileName('GrayLeftRap'), TEXTURE_TYPE_COLORIZED, Color);
+  Tex_Mid_Rap_Inv := Texture.LoadTexture(Skin.GetTextureFileName('GrayMidRap'), TEXTURE_TYPE_COLORIZED, Color);
+  Tex_Right_Rap_Inv := Texture.LoadTexture(Skin.GetTextureFileName('GrayRightRap'), TEXTURE_TYPE_COLORIZED, Color);
+  SingScreenTexturesLoaded := true;
 end;
 
 const
@@ -1030,6 +1130,7 @@ begin
   FreeAndNil(ScreenPartyTournamentWin);
   FreeAndNil(ScreenStatMain);
   FreeAndNil(ScreenStatDetail);
+  UnloadSingScreenTextures;
 end;
 
 end.

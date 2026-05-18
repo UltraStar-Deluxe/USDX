@@ -64,8 +64,9 @@ Optional libraries:
   This should support newer platforms like PulseAudio and PipeWire.
   Might not be able to detect the number of channels correctly when used with PulseAudio.
   Might fix issues experienced when using PortAudio on certain distributions.
-* OpenCV 3+ is required to build the webcam wrapper.
-  Current builds use the wrapper-backed OpenCV bindings on every platform.
+* `--with-opencv`: Enable webcam support with OpenCV. By default, configure
+  auto-detects OpenCV 3+ and disables webcam support if OpenCV is not found.
+* `--without-opencv`: Build without webcam support even if OpenCV is installed.
 
 ## Compiling on Linux using flatpak-builder
 - The manifest for our Flathub releases is in a different repository:

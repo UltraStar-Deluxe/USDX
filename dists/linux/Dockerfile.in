@@ -1,13 +1,16 @@
 FROM %%from%%
 
+RUN echo deb http://archive.debian.org/debian jessie-backports main >> /etc/apt/sources.list
+
 RUN apt-get update
 
 RUN apt-get upgrade -y
 
 RUN apt-get install -y --no-install-recommends \
     build-essential make automake autoconf patch file git unzip bzip2 xz-utils \
-    libgl1-mesa-dev libgbm-dev libasound2-dev \
-    libx11-dev libxext-dev libxcursor-dev libxinerama-dev libxrandr-dev libxi-dev libxkbcommon-dev \
+    libgl1-mesa-dev/jessie-backports libgbm-dev/jessie-backports libgl1-mesa-glx/jessie-backports \
+    mesa-common-dev libdrm-dev/jessie-backports libegl1-mesa-dev/jessie-backports libwayland-egl1-mesa/jessie-backports \
+    libasound2-dev libx11-dev libxext-dev libxcursor-dev libxinerama-dev libxrandr-dev libxi-dev \
     libdbus-1-dev libsystemd-dev zlib1g-dev libffi-dev libexpat1-dev libxml2-dev libssl-dev libtool python3-pip pkg-config \
     wget curl ca-certificates vim-common desktop-file-utils libglib2.0-dev libcairo2-dev libfuse-dev libarchive-dev
 

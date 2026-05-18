@@ -138,6 +138,7 @@ type
       MidiLastTrack:           Integer;
       MidiLastPitch:           Integer;
       MidiStopBeat:            Integer;
+      EditorMidiPitchOffset:   Integer;
       {$ENDIF}
 
       //for mouse move
@@ -551,6 +552,7 @@ type
       procedure ReleaseMidiLastNote;
       procedure StopMidiPlayback;
       procedure ApplyMidiVolume;
+      procedure UpdateMidiPitchOffset;
       function  GetMidiPitch(NoteTone: Integer): Byte;
       {$ENDIF}
       function  GetSentenceLeadSeconds(const UseMidi: boolean): real;
@@ -1294,15 +1296,13 @@ begin
   MidiLastPitch := -1;
 end;
 
-function TScreenEditSub.GetMidiPitch(NoteTone: Integer): Byte;
+procedure TScreenEditSub.UpdateMidiPitchOffset;
 var
   TrackIndex: Integer;
   LineIndex: Integer;
   NoteIndex: Integer;
   MinTone: Integer;
   MaxTone: Integer;
-  Pitch: Integer;
-  Offset: Integer;
   FoundTone: Boolean;
 begin
   FoundTone := false;
@@ -1321,14 +1321,19 @@ begin
             MaxTone := Tone;
         end;
 
-  Offset := EditorMidiToneOffset;
+  EditorMidiPitchOffset := EditorMidiToneOffset;
   if FoundTone and (MinTone >= EditorMidiMinPitch) and (MaxTone <= EditorMidiMaxPitch) and
      ((MaxTone + EditorMidiToneOffset > EditorMidiMaxPitch) or
       ((MinTone >= EditorMidiVocalLow) and (MaxTone <= EditorMidiVocalHigh) and
        (MaxTone + EditorMidiToneOffset > EditorMidiVocalHigh))) then
-    Offset := 0;
+    EditorMidiPitchOffset := 0;
+end;
 
-  Pitch := NoteTone + Offset;
+function TScreenEditSub.GetMidiPitch(NoteTone: Integer): Byte;
+var
+  Pitch: Integer;
+begin
+  Pitch := NoteTone + EditorMidiPitchOffset;
   if Pitch < EditorMidiMinPitch then
     Pitch := EditorMidiMinPitch
   else if Pitch > EditorMidiMaxPitch then
@@ -7539,6 +7544,10 @@ begin
   ResetBeatTracking;
   PendingSaveRelative := false;
   TimingErrorValid := false;
+  {$IFDEF UseMIDIPort}
+  EditorMidiPitchOffset := EditorMidiToneOffset;
+  ResetMidiLastNote;
+  {$ENDIF}
 
   EditorLyrics[0] := TEditorLyrics.Create;
   EditorLyrics[1] := TEditorLyrics.Create;
@@ -7821,6 +7830,7 @@ begin
   PlaySentenceMidi := false;
   Text[TextInfo].Text := '';
   Log.LogStatus('Initializing', 'TEditScreen.OnShow');
+  LoadSingScreenTextures;
   Xmouse := 0;
   VolumeDragSlideId := -1;
 
@@ -7860,6 +7870,7 @@ begin
         ScreenPopupError.ShowPopup(TimingErrors);
     end;
   {$IFDEF UseMIDIPort}
+    UpdateMidiPitchOffset;
     MidiOut := TMidiOutput.Create(nil);
       // run additional timing checks (note/linebreak overlaps)
       // if there are problems, show them in a popup but still allow editing

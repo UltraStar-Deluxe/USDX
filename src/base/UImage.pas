@@ -70,7 +70,6 @@ function LoadImage(const Filename: IPath): PSDL_Surface;
  * Image manipulation
  *******************************************************)
 
-function PixelFormatEquals(fmt1, fmt2: PSDL_PixelFormat): boolean;
 procedure ScaleImage(var ImgSurface: PSDL_Surface; Width, Height: cardinal);
 procedure FitImage(var ImgSurface: PSDL_Surface; Width, Height: cardinal);
 procedure ColorizeImage(ImgSurface: PSDL_Surface; NewColor: cardinal);
@@ -81,6 +80,9 @@ uses
   SysUtils,
   Classes,
   Math,
+  ctypes,
+  avutil,
+  swscale,
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF}
@@ -105,15 +107,6 @@ begin
             (pixelFmt.RMask = $0000FF)   and
             (pixelFmt.GMask = $00FF00)   and
             (pixelFmt.BMask = $FF0000);
-end;
-
-function IsRGBASurface(pixelFmt: PSDL_PixelFormat): boolean;
-begin
-  Result := (pixelFmt.BitsPerPixel = 32) and
-            (pixelFmt.RMask = $000000FF) and
-            (pixelFmt.GMask = $0000FF00) and
-            (pixelFmt.BMask = $00FF0000) and
-            (pixelFmt.AMask = $FF000000);
 end;
 
 function IsBGRSurface(pixelFmt: PSDL_PixelFormat): boolean;
@@ -152,29 +145,6 @@ begin
       Result := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_BGRA8888, 0)
     else
       Result := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_BGR24, 0);
-    Converted := true;
-  end;
-end;
-
-// Converts alpha-formats to RGBA, non-alpha to RGB, and leaves RGB(A) as is
-// sets converted to true if the surface needed to be converted
-function ConvertToRGB_RGBASurface(Surface: PSDL_Surface; out Converted: boolean): PSDL_Surface;
-var
-  pixelFmt: PSDL_PixelFormat;
-begin
-  pixelFmt := Surface.format;
-  if (IsRGBSurface(pixelFmt) or IsRGBASurface(pixelFmt)) then
-  begin
-    Converted := false;
-    Result := Surface;
-  end
-  else
-  begin
-    // invalid format -> needs conversion
-    if (pixelFmt.AMask <> 0) then
-      Result := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_ARGB8888, SDL_SWSURFACE)
-    else
-      Result := SDL_ConvertSurfaceFormat(Surface, SDL_PIXELFORMAT_RGB24, SDL_SWSURFACE);
     Converted := true;
   end;
 end;
@@ -563,33 +533,91 @@ end;
  * Image manipulation
  *******************************************************)
 
-function PixelFormatEquals(fmt1, fmt2: PSDL_PixelFormat): boolean;
+function GetSwscalePixelFormat(PixelFmt: PSDL_PixelFormat; out SwsPixelFmt: TAVPixelFormat): boolean;
 begin
-  Result := 
-    (fmt1^.BitsPerPixel  = fmt2^.BitsPerPixel)  and
-    (fmt1^.BytesPerPixel = fmt2^.BytesPerPixel) and
-    (fmt1^.Rloss = fmt2^.Rloss)   and (fmt1^.Gloss = fmt2^.Gloss)   and (fmt1^.Bloss = fmt2^.Bloss)   and
-    (fmt1^.Rmask = fmt2^.Rmask)   and (fmt1^.Gmask = fmt2^.Gmask)   and (fmt1^.Bmask = fmt2^.Bmask)   and
-    (fmt1^.Rshift = fmt2^.Rshift) and (fmt1^.Gshift = fmt2^.Gshift) and (fmt1^.Bshift = fmt2^.Bshift)
-  ;
+  case PixelFmt.format of
+    SDL_PIXELFORMAT_RGB24:
+    begin
+      SwsPixelFmt := AV_PIX_FMT_RGB24;
+      Result := true;
+    end;
+    SDL_PIXELFORMAT_RGBA32:
+    begin
+      SwsPixelFmt := AV_PIX_FMT_RGBA;
+      Result := true;
+    end;
+    else
+      Result := false;
+  end;
 end;
 
 procedure ScaleImage(var ImgSurface: PSDL_Surface; Width, Height: cardinal);
 var
-   newstretchRect: PSDL_Rect;
-   origRect: PSDL_Rect;
+  SwsPixelFmt: TAVPixelFormat;
+  SwsContext: PSwsContext;
+  NewSurface: PSDL_Surface;
+  SrcData: pcuint8;
+  DstData: pcuint8;
+  SrcStride: cint;
+  DstStride: cint;
+  SrcLocked: boolean;
+  DstLocked: boolean;
+  ScaledHeight: integer;
 begin
-  origRect := new(PSDL_Rect);
-  origRect.x:=0;
-  origRect.y:=0;
-  origRect.w:=ImgSurface.w;
-  origRect.h:=ImgSurface.h;
-  newstretchRect := new(PSDL_Rect);
-  newstretchRect.x := 0;
-  newstretchRect.y := 0;
-  newstretchRect.w := Width;
-  newstretchRect.h := Height;
-  SDL_UpperBlitScaled( ImgSurface, origRect, ImgSurface, newstretchRect );
+  if (ImgSurface = nil) or (Width = 0) or (Height = 0) then
+    Exit;
+
+  if not GetSwscalePixelFormat(ImgSurface^.format, SwsPixelFmt) then
+    Exit;
+
+  NewSurface := SDL_CreateRGBSurface(
+    SDL_SWSURFACE, Width, Height, ImgSurface^.format^.BitsPerPixel,
+    ImgSurface^.format^.RMask, ImgSurface^.format^.GMask,
+    ImgSurface^.format^.BMask, ImgSurface^.format^.AMask);
+  if (NewSurface = nil) then
+    Exit;
+
+  SwsContext := sws_getContext(
+    ImgSurface^.w, ImgSurface^.h, SwsPixelFmt,
+    Width, Height, SwsPixelFmt,
+    SWS_LANCZOS, nil, nil, nil);
+  if (SwsContext = nil) then
+  begin
+    SDL_FreeSurface(NewSurface);
+    Exit;
+  end;
+
+  SrcLocked := false;
+  DstLocked := false;
+  ScaledHeight := 0;
+  try
+    SrcLocked := SDL_LockSurface(ImgSurface) = 0;
+    DstLocked := SDL_LockSurface(NewSurface) = 0;
+    if SrcLocked and DstLocked then
+    begin
+      SrcData := pcuint8(ImgSurface^.pixels);
+      DstData := pcuint8(NewSurface^.pixels);
+      SrcStride := ImgSurface^.pitch;
+      DstStride := NewSurface^.pitch;
+      ScaledHeight := sws_scale(
+        SwsContext, @SrcData, @SrcStride, 0, ImgSurface^.h,
+        @DstData, @DstStride);
+    end;
+  finally
+    if DstLocked then
+      SDL_UnlockSurface(NewSurface);
+    if SrcLocked then
+      SDL_UnlockSurface(ImgSurface);
+    sws_freeContext(SwsContext);
+  end;
+
+  if ScaledHeight = integer(Height) then
+  begin
+    SDL_FreeSurface(ImgSurface);
+    ImgSurface := NewSurface;
+  end
+  else
+    SDL_FreeSurface(NewSurface);
 end;
 
 procedure FitImage(var ImgSurface: PSDL_Surface; Width, Height: cardinal);
