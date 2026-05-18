@@ -202,6 +202,7 @@ type
       function ParseMouse(MouseButton: Integer; BtnDown: Boolean; X, Y: integer): boolean; override;
       procedure OnShow; override;
       procedure OnShowFinish; override;
+      procedure OnHide; override;
       function Draw: boolean; override;
   end;
 
@@ -220,6 +221,7 @@ uses
   UNote,
   UPlayerLayout,
   UPathUtils,
+  URemoteBridgeIPC,
   UScreenPopup,
   UScreenSong,
   USkins,
@@ -1201,6 +1203,14 @@ begin
   end;
 
   BarTime := SDL_GetTicks();
+end;
+
+procedure TScreenScore.OnHide;
+begin
+  RemoteBridgeIPC.SendJsonMessage(
+    '{"type":"audio.stop","protocol":1,"reason":"score_screen_left"}'
+  );
+  inherited;
 end;
 
 function TScreenScore.Draw: boolean;

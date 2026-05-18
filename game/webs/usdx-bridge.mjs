@@ -7,6 +7,8 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 const protocol = 1;
+const gameVersion = 'usdx-dev';
+const bridgeVersion = '0.1.2';
 const fsp = fs.promises;
 const bridgeDir = path.dirname(fileURLToPath(import.meta.url));
 const gameDir = path.resolve(bridgeDir, '..');
@@ -42,6 +44,7 @@ const server = getArg('server', 'ws://127.0.0.1:8080/ws/host');
 let maxPlayers = Number(getArg('max-players', '6'));
 const reconnectDelayMs = Number(getArg('reconnect-delay-ms', '2000'));
 const heartbeatIntervalMs = Number(getArg('heartbeat-interval-ms', '500'));
+const gameStateRefreshMs = Number(getArg('game-state-refresh-ms', '30000'));
 const ipcHost = getArg('ipc-host', '127.0.0.1');
 const ipcPort = Number(getArg('ipc-port', '8765'));
 const p2pEnabled = getBoolArg('p2p', false);
@@ -56,6 +59,8 @@ const playlistDirArg = getArg('playlist-dir', '');
 const parentPid = Number(getArg('parent-pid', '0'));
 const ipcDisconnectGraceMs = Number(getArg('ipc-disconnect-grace-ms', '30000'));
 const logFile = getArg('log-file', path.join(gameDir, 'usdx-bridge.log'));
+const diagnosticsLogLines = Number(getArg('diagnostics-log-lines', '120'));
+const diagnosticsIncludePaths = getBoolArg('diagnostics-include-paths', false);
 const previewStreaming = getBoolArg('preview-streaming', true);
 const maxWsBufferedBytes = Number(getArg('max-ws-buffered-bytes', String(256 * 1024)));
 const maxLowPriorityMessageBytes = Number(getArg('max-low-priority-message-bytes', String(64 * 1024)));
@@ -86,6 +91,8 @@ let ipcDisconnectTimer = null;
 let bridgeDisconnectNotifyTimer = null;
 let pendingGameStateTimer = null;
 let pendingGameStateValue = null;
+let lastSentGameStateFingerprint = '';
+let lastSentGameStateAt = 0;
 let shuttingDown = false;
 let firstResumeFailureAt = 0;
 let resumeFailureCount = 0;
@@ -97,9 +104,11 @@ let songScanProgress = {
   roots: []
 };
 const players = new Map();
+const playerAssignmentFingerprints = new Map();
 const pitchStats = new Map();
 const ipcClients = new Set();
 const songPreviewPaths = new Map();
+const songPreviewPathsByKey = new Map();
 const activePreviewStreams = new Map();
 const disabledPreviewRequestLog = new Map();
 const maxActivePreviewStreams = Number(getArg('max-active-previews', '2'));
@@ -147,6 +156,47 @@ function send(message, options = {}) {
 function sendPreviewMessage(message) {
   if (!send(message)) return false;
   return !ws || Number(ws.bufferedAmount || 0) < previewBackpressureHighBytes;
+}
+
+function resetGameStateDedupe() {
+  lastSentGameStateFingerprint = '';
+  lastSentGameStateAt = 0;
+}
+
+function gameStateFingerprint(message) {
+  if (!message || typeof message !== 'object') return '';
+  const copy = { ...message };
+  delete copy.protocol;
+  delete copy.seq;
+  return JSON.stringify(copy);
+}
+
+function playerAssignmentFingerprint(player) {
+  if (!player) return '';
+  return JSON.stringify({
+    slot: player.slot ?? null,
+    role: player.role || '',
+    connected: player.connected !== false,
+    phoneMicDelayMs: player.phoneMicDelayMs || 0,
+    micDelayMs: player.micDelayMs || 0
+  });
+}
+
+function sendGameStateMessage(message, options = {}) {
+  if (!message || message.type !== 'game.state') return send(message, options);
+
+  const now = Date.now();
+  const fingerprint = gameStateFingerprint(message);
+  const refreshMs = Number.isFinite(gameStateRefreshMs) ? gameStateRefreshMs : 30000;
+  const forceRefresh = refreshMs >= 0 && now - lastSentGameStateAt >= refreshMs;
+  if (fingerprint && fingerprint === lastSentGameStateFingerprint && !forceRefresh) {
+    return false;
+  }
+
+  if (!send(message, options)) return false;
+  lastSentGameStateFingerprint = fingerprint;
+  lastSentGameStateAt = now;
+  return true;
 }
 
 function log(message, fields = {}) {
@@ -602,6 +652,163 @@ function resolveHostPath(filePath, baseDir = process.cwd()) {
   return path.resolve(baseDir, normalized);
 }
 
+function clampInteger(value, fallback, min, max) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.max(min, Math.min(max, Math.floor(number)));
+}
+
+function diagnosticPath(filePath, includePaths = diagnosticsIncludePaths) {
+  const value = String(filePath || '');
+  if (!value) return '';
+  if (includePaths) return value;
+  const normalized = normalizeHostPath(value);
+  const parsed = path.parse(normalized);
+  if (!parsed.base) return '';
+  return parsed.root ? path.join(parsed.root, '...', parsed.base) : parsed.base;
+}
+
+function diagnosticSongProgress(includePaths = diagnosticsIncludePaths) {
+  return {
+    status: songScanProgress.status,
+    indexedSongs: songScanProgress.indexedSongs,
+    scannedFiles: songScanProgress.scannedFiles,
+    scannedDirs: songScanProgress.scannedDirs,
+    roots: Array.isArray(songScanProgress.roots) ? songScanProgress.roots.map((root) => diagnosticPath(root, includePaths)) : [],
+    message: songScanProgress.message || '',
+    updatedAt: songScanProgress.updatedAt || null
+  };
+}
+
+function readLogTail(lineLimit = diagnosticsLogLines) {
+  const fallbackLines = Number.isFinite(diagnosticsLogLines) ? diagnosticsLogLines : 120;
+  const lines = clampInteger(lineLimit, fallbackLines, 0, 500);
+  if (!logFile || lines <= 0) return [];
+
+  let fd = null;
+  try {
+    const filename = resolveHostPath(logFile);
+    const stat = fs.statSync(filename);
+    const bytes = Math.min(stat.size, 128 * 1024);
+    if (bytes <= 0) return [];
+    const buffer = Buffer.alloc(bytes);
+    fd = fs.openSync(filename, 'r');
+    fs.readSync(fd, buffer, 0, bytes, stat.size - bytes);
+    return buffer
+      .toString('utf8')
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .slice(-lines);
+  } catch (error) {
+    return [`log_tail_unavailable: ${error.message}`];
+  } finally {
+    if (fd !== null) {
+      try { fs.closeSync(fd); } catch {}
+    }
+  }
+}
+
+function collectDiagnostics(request = {}) {
+  const includeLog = request.includeLog !== false;
+  const includePaths = Boolean(request.includePaths || diagnosticsIncludePaths);
+  const selectedPlaylist = currentPlaylistIndex >= 0 && Array.isArray(scannedSongState?.playlists)
+    ? scannedSongState.playlists[currentPlaylistIndex]
+    : null;
+
+  return {
+    generatedAt: new Date().toISOString(),
+    reason: String(request.reason || ''),
+    bridge: {
+      protocol,
+      bridgeVersion,
+      gameVersion,
+      nodeVersion: process.version,
+      platform: `${process.platform}/${process.arch}`,
+      pid: process.pid,
+      parentPid: parentPid || null
+    },
+    connection: {
+      server,
+      websocketState: ws?.readyState ?? null,
+      websocketBufferedBytes: Number(ws?.bufferedAmount || 0),
+      ipcHost,
+      ipcPort,
+      ipcClients: ipcClients.size,
+      roomId: room?.roomId || null,
+      displayCode: room?.displayCode || null,
+      connected: Boolean(room?.displayCode)
+    },
+    config: {
+      maxPlayers,
+      p2pEnabled,
+      mockSong,
+      autoAck,
+      autoAssign,
+      songScan,
+      previewStreaming,
+      maxWsBufferedBytes,
+      maxLowPriorityMessageBytes,
+      catalogChunkSongs,
+      catalogTransferBufferHighBytes,
+      maxActivePreviewStreams,
+      diagnosticsIncludePaths
+    },
+    game: {
+      currentGameState,
+      songSeq,
+      lastSelectedSongId,
+      hasSongClock: Boolean(lastSongClockMessage),
+      playlistIndex: currentPlaylistIndex,
+      playlistSize: selectedPlaylist?.size ?? null
+    },
+    catalog: {
+      progress: diagnosticSongProgress(includePaths),
+      scannedLibrarySongs: scannedLibrary.length,
+      scannedLibraryHash,
+      hasScannedSongState: Boolean(scannedSongState),
+      stateTotalSongs: scannedSongState?.totalSongs ?? null,
+      stateVisibleSongs: scannedSongState?.visibleSongs ?? null,
+      resultCount: Array.isArray(scannedSongState?.results) ? scannedSongState.results.length : null,
+      playlistCount: Array.isArray(scannedSongState?.playlists) ? scannedSongState.playlists.length : null
+    },
+    players: [...players.values()].map((player) => ({
+      playerId: player.playerId,
+      name: player.name,
+      slot: player.slot,
+      role: player.role,
+      connected: player.connected !== false,
+      phoneMicDelayMs: player.phoneMicDelayMs || 0,
+      micDelayMs: player.micDelayMs || 0
+    })),
+    pitchStats: [...pitchStats.entries()].map(([playerId, stats]) => ({ playerId, ...stats })),
+    previews: {
+      activePreviewStreams: activePreviewStreams.size,
+      knownPreviewSongs: songPreviewPaths.size,
+      disabledPreviewRequestKeys: disabledPreviewRequestLog.size
+    },
+    logTail: includeLog ? readLogTail(request.logLines) : []
+  };
+}
+
+function sendDiagnosticsReport(request = {}) {
+  const requestId = String(request.requestId || crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`);
+  const report = collectDiagnostics(request);
+  send({
+    type: 'diagnostics.report',
+    requestId,
+    source: 'bridge',
+    roomId: room?.roomId || null,
+    displayCode: room?.displayCode || null,
+    report
+  });
+  log('diagnostics.report.sent', {
+    requestId,
+    reason: report.reason,
+    includeLog: request.includeLog !== false,
+    logLines: report.logTail.length
+  });
+}
+
 function contentTypeForAudio(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   if (ext === '.m4a' || ext === '.mp4') return 'audio/mp4';
@@ -712,6 +919,12 @@ function songKey(artist, title) {
   return `${String(artist || '').trim().toLowerCase()}\u0000${String(title || '').trim().toLowerCase()}`;
 }
 
+function publicSongKey(artist, title) {
+  const artistText = String(artist || '').trim().toLowerCase();
+  const titleText = String(title || '').trim().toLowerCase();
+  return `${artistText} - ${titleText}`;
+}
+
 function libraryByArtistTitle() {
   const map = new Map();
   for (const song of scannedLibrary) {
@@ -725,6 +938,13 @@ function uniqueLibrarySongByArtistTitle(artist, title) {
   const key = songKey(artist, title);
   if (key === '\u0000') return null;
   const matches = scannedLibrary.filter((song) => songKey(song.artist, song.title) === key);
+  return matches.length === 1 ? matches[0] : null;
+}
+
+function uniqueLibrarySongByPublicKey(key) {
+  const value = String(key || '');
+  if (!value) return null;
+  const matches = scannedLibrary.filter((song) => publicSongKey(song.artist, song.title) === value);
   return matches.length === 1 ? matches[0] : null;
 }
 
@@ -1019,6 +1239,8 @@ function songMetaFromTxt(text, txtPath) {
     title: '',
     year: 0,
     audio: '',
+    instrumental: '',
+    vocals: '',
     previewStart: 0,
     duet: false
   };
@@ -1032,6 +1254,8 @@ function songMetaFromTxt(text, txtPath) {
     else if (key === 'TITLE') meta.title = value;
     else if (key === 'YEAR') meta.year = Number.parseInt(value, 10) || 0;
     else if (key === 'MP3' || key === 'AUDIO') meta.audio = value;
+    else if (key === 'INSTRUMENTAL') meta.instrumental = value;
+    else if (key === 'VOCALS') meta.vocals = value;
     else if (key === 'PREVIEWSTART' || key === 'PREVIEW') meta.previewStart = Number(value.replace(',', '.')) || 0;
     else if (key === 'DUETSINGERP1' || key === 'DUETSINGERP2') meta.duet = true;
   }
@@ -1183,10 +1407,12 @@ async function scanSongLibrary() {
       try {
         const text = await fsp.readFile(txtPath, 'utf8');
         const meta = songMetaFromTxt(text, txtPath);
-        const audioPath = candidateAudioPath(txtPath, meta.audio);
+        const instrumentalPath = candidateAudioPath(txtPath, meta.instrumental);
+        const audioPath = instrumentalPath || candidateAudioPath(txtPath, meta.audio);
         const songId = library.length;
         const song = {
           songId,
+          songKey: publicSongKey(meta.artist, meta.title),
           artist: meta.artist,
           title: meta.title,
           year: meta.year,
@@ -1195,6 +1421,7 @@ async function scanSongLibrary() {
           duet: meta.duet,
           previewStart: meta.previewStart,
           previewAvailable: Boolean(audioPath && fs.existsSync(audioPath)),
+          audioSource: instrumentalPath ? 'instrumental' : 'audio',
           audioPath
         };
         library.push(song);
@@ -1222,12 +1449,18 @@ function rememberSongPreview(song) {
   if (!song || typeof song !== 'object') return;
   const songId = Number(song.songId);
   if (!Number.isInteger(songId) || !song.audioPath) return;
-  songPreviewPaths.set(songId, {
+  const songKey = song.songKey || publicSongKey(song.artist, song.title);
+  const info = {
+    songId,
     filePath: normalizeHostPath(song.audioPath),
+    songKey,
     title: song.title || '',
     artist: song.artist || '',
-    previewStart: Number(song.previewStart || 0)
-  });
+    previewStart: Number(song.previewStart || 0),
+    audioSource: song.audioSource || 'audio'
+  };
+  songPreviewPaths.set(songId, info);
+  if (songKey) songPreviewPathsByKey.set(songKey, info);
 }
 
 function catalogHashForLibrary(library) {
@@ -1253,6 +1486,8 @@ function sanitizedCatalogSong(song) {
     copy.audioFileName = path.basename(copy.audioPath);
     copy.audioFormat = audioFormatForPath(copy.audioPath);
     copy.audioContentType = contentTypeForAudio(copy.audioPath);
+    copy.songKey = copy.songKey || publicSongKey(copy.artist, copy.title);
+    copy.audioSource = copy.audioSource || 'audio';
     if (Object.prototype.hasOwnProperty.call(copy, 'previewAvailable')) {
       copy.previewAvailable = Boolean(copy.previewAvailable);
     }
@@ -1261,6 +1496,36 @@ function sanitizedCatalogSong(song) {
   }
   delete copy.audioPath;
   return copy;
+}
+
+function previewSongFromRequest(msg, numericSongId) {
+  const requestedCatalogId = String(msg.catalogId || msg.libraryHash || '');
+  if (requestedCatalogId && scannedLibraryHash && requestedCatalogId !== scannedLibraryHash) {
+    return {
+      error: 'catalog_mismatch',
+      details: { requestedCatalogId, currentCatalogId: scannedLibraryHash }
+    };
+  }
+
+  const byKey = uniqueLibrarySongByPublicKey(msg.songKey);
+  if (byKey) return { song: byKey, source: 'songKey' };
+  const previewByKey = songPreviewPathsByKey.get(String(msg.songKey || ''));
+  if (previewByKey) return { preview: previewByKey, source: 'songKey' };
+
+  const artist = String(msg.artist || '').trim();
+  const title = String(msg.title || '').trim();
+  if (artist || title) {
+    const byArtistTitle = uniqueLibrarySongByArtistTitle(artist, title);
+    if (byArtistTitle) return { song: byArtistTitle, source: 'artistTitle' };
+    const previewByArtistTitle = songPreviewPathsByKey.get(publicSongKey(artist, title));
+    if (previewByArtistTitle) return { preview: previewByArtistTitle, source: 'artistTitle' };
+    return { error: 'song_identity_ambiguous', details: { artist, title } };
+  }
+
+  const byId = Number.isInteger(numericSongId) ? scannedLibrary[numericSongId] : null;
+  if (byId && Number(byId.songId) === numericSongId) return { song: byId, source: 'songId' };
+
+  return { error: 'preview_not_found', details: { songId: numericSongId } };
 }
 
 function catalogStateForTransfer(state, catalogId) {
@@ -1289,12 +1554,14 @@ function markRemoteAudioAvailability(msg) {
   if (previewStreaming) {
     const songId = Number(msg.songId);
     const songInfo = Number.isInteger(songId) ? songPreviewPaths.get(songId) : null;
-    msg.audioAvailable = true;
-    msg.previewAvailable = true;
+    msg.audioAvailable = Boolean(songInfo?.filePath);
+    msg.previewAvailable = Boolean(songInfo?.filePath);
     if (songInfo?.filePath) {
       msg.audioFileName = path.basename(songInfo.filePath);
       msg.audioFormat = audioFormatForPath(songInfo.filePath);
       msg.audioContentType = contentTypeForAudio(songInfo.filePath);
+      msg.songKey = songInfo.songKey || publicSongKey(msg.artist, msg.title);
+      msg.audioSource = songInfo.audioSource || 'audio';
     }
   } else {
     msg.audioAvailable = false;
@@ -1354,6 +1621,8 @@ function sanitizeSongStateForServer(msg) {
       song.audioFileName = path.basename(song.audioPath);
       song.audioFormat = audioFormatForPath(song.audioPath);
       song.audioContentType = contentTypeForAudio(song.audioPath);
+      song.songKey = song.songKey || publicSongKey(song.artist, song.title);
+      song.audioSource = song.audioSource || 'audio';
       if (Object.prototype.hasOwnProperty.call(song, 'previewAvailable')) {
         song.previewAvailable = Boolean(song.previewAvailable);
       }
@@ -1473,20 +1742,44 @@ async function handleCatalogRequest(msg) {
   }
 }
 
-function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'preview', rangeStart = null, rangeEnd = null, formatHint = '') {
+function streamPreviewToServer(msgOrRequestId, songId = null, startSec = 0, purpose = 'preview', rangeStart = null, rangeEnd = null, formatHint = '') {
+  const request = (msgOrRequestId && typeof msgOrRequestId === 'object')
+    ? msgOrRequestId
+    : { requestId: msgOrRequestId, songId, startSec, purpose, rangeStart, rangeEnd, formatHint };
+  const requestId = String(request.requestId || '');
+  const numericSongId = Number(request.songId);
+  const requestPurpose = String(request.purpose || 'song-preview');
+  const resolved = previewSongFromRequest(request, numericSongId);
+  const resolvedSongId = Number(resolved.song?.songId ?? resolved.preview?.songId);
+  const info = resolved.preview || (Number.isInteger(resolvedSongId) ? songPreviewPaths.get(resolvedSongId) : null);
+  log('preview.request', {
+    requestId,
+    songId: numericSongId,
+    resolvedSongId: Number.isInteger(resolvedSongId) ? resolvedSongId : null,
+    resolveSource: resolved.source || '',
+    purpose: requestPurpose,
+    startSec: Number(request.startSec || 0),
+    rangeStart: Number.isFinite(Number(request.rangeStart)) ? Number(request.rangeStart) : null,
+    rangeEnd: Number.isFinite(Number(request.rangeEnd)) ? Number(request.rangeEnd) : null,
+    formatHint: String(request.formatHint || ''),
+    catalogId: request.catalogId || request.libraryHash || '',
+    known: Boolean(info?.filePath),
+    active: activePreviewStreams.size,
+    knownPreviewSongs: songPreviewPaths.size
+  });
+
   if (!previewStreaming) {
-    const requestPurpose = String(purpose || 'song-preview');
-    const key = `${songId}:${requestPurpose}`;
+    const key = `${numericSongId}:${requestPurpose}`;
     const now = Date.now();
     const previous = disabledPreviewRequestLog.get(key) || 0;
     if (now - previous > 5000) {
       disabledPreviewRequestLog.set(key, now);
-      log('preview.disabled', { requestId, songId, purpose: requestPurpose });
+      log('preview.disabled', { requestId, songId: numericSongId, purpose: requestPurpose });
     }
     send({
       type: 'song.preview.error',
       requestId,
-      songId: Number(songId),
+      songId: numericSongId,
       purpose: requestPurpose,
       reason: 'audio_unavailable',
       permanent: true,
@@ -1497,24 +1790,28 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
     return;
   }
 
-  const info = songPreviewPaths.get(Number(songId));
-  if (!info || !info.filePath) {
-    log('preview.error', { requestId, songId, purpose, reason: 'preview_not_found' });
-    send({ type: 'song.preview.error', requestId, reason: 'preview_not_found' });
-    return;
-  }
-  if (activePreviewStreams.size >= maxActivePreviewStreams) {
-    log('preview.error', { requestId, songId, purpose, reason: 'too_many_active_previews', active: activePreviewStreams.size });
-    send({ type: 'song.preview.error', requestId, reason: 'too_many_active_previews' });
+  if (resolved.error) {
+    log('preview.error', { requestId, songId: numericSongId, purpose: requestPurpose, reason: resolved.error, ...(resolved.details || {}) });
+    send({ type: 'song.preview.error', requestId, songId: numericSongId, purpose: requestPurpose, reason: resolved.error, ...(resolved.details || {}) });
     return;
   }
 
-  const requestPurpose = String(purpose || 'song-preview');
-  const requestedAudio = audioPathForRequest(info.filePath, formatHint);
+  if (!info || !info.filePath) {
+    log('preview.error', { requestId, songId: resolvedSongId, purpose: requestPurpose, reason: 'preview_not_found', knownPreviewSongs: songPreviewPaths.size });
+    send({ type: 'song.preview.error', requestId, songId: resolvedSongId, purpose: requestPurpose, reason: 'preview_not_found' });
+    return;
+  }
+  if (activePreviewStreams.size >= maxActivePreviewStreams) {
+    log('preview.error', { requestId, songId: resolvedSongId, purpose: requestPurpose, reason: 'too_many_active_previews', active: activePreviewStreams.size });
+    send({ type: 'song.preview.error', requestId, songId: resolvedSongId, purpose: requestPurpose, reason: 'too_many_active_previews' });
+    return;
+  }
+
+  const requestedAudio = audioPathForRequest(info.filePath, request.formatHint);
   if (!requestedAudio.formatAvailable) {
     log('preview.error', {
       requestId,
-      songId,
+      songId: resolvedSongId,
       purpose: requestPurpose,
       reason: 'format_unavailable',
       requestedFormat: requestedAudio.requestedFormat,
@@ -1523,7 +1820,7 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
     send({
       type: 'song.preview.error',
       requestId,
-      songId: Number(songId),
+      songId: resolvedSongId,
       purpose: requestPurpose,
       reason: 'format_unavailable',
       requestedFormat: requestedAudio.requestedFormat,
@@ -1548,15 +1845,15 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
   let streamStart = 0;
   let streamEnd = null;
   let capped = false;
-  const requestedRangeStart = Number(rangeStart);
-  const requestedRangeEnd = Number(rangeEnd);
+  const requestedRangeStart = Number(request.rangeStart);
+  const requestedRangeEnd = Number(request.rangeEnd);
   const hasRange = Number.isSafeInteger(requestedRangeStart) && requestedRangeStart >= 0 && Number.isFinite(fileSize) && fileSize > 0;
   const maxBytesPerRequest = Number.isFinite(maxPreviewBytes) && maxPreviewBytes > 0
     ? Math.max(1, Math.floor(maxPreviewBytes))
     : 0;
   if (hasRange) {
     streamStart = Math.min(requestedRangeStart, Math.max(0, fileSize - 1));
-    streamEnd = Number.isSafeInteger(requestedRangeEnd) && requestedRangeEnd >= streamStart
+    streamEnd = Number.isSafeInteger(requestedRangeEnd) && requestedRangeEnd > streamStart
       ? Math.min(requestedRangeEnd, fileSize - 1)
       : fileSize - 1;
     if (maxBytesPerRequest > 0 && streamEnd - streamStart + 1 > maxBytesPerRequest) {
@@ -1583,6 +1880,18 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
   const stream = fs.createReadStream(requestedFilePath, streamOptions);
   let bytesSent = 0;
   let resumeTimer = null;
+  let finished = false;
+  const finishPreview = (status, fields = {}) => {
+    if (finished) return;
+    finished = true;
+    log(`preview.${status}`, {
+      requestId,
+      songId: resolvedSongId,
+      purpose: requestPurpose,
+      bytes: bytesSent,
+      ...fields
+    });
+  };
   const clearResumeTimer = () => {
     if (resumeTimer) clearInterval(resumeTimer);
     resumeTimer = null;
@@ -1613,7 +1922,7 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
   });
   log('preview.start', {
     requestId,
-    songId: Number(songId),
+    songId: resolvedSongId,
     purpose: requestPurpose,
     startSec: seekSec,
     rangeStart: streamOptions.start ?? null,
@@ -1628,10 +1937,10 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
     audioFormat: requestedAudio.actualFormat
   });
   const partialPreview = streamOptions.end != null && Number.isFinite(fileSize) && streamOptions.end < fileSize - 1;
-  send({
+  const metaSent = send({
     type: 'song.preview.meta',
     requestId,
-    songId: Number(songId),
+    songId: resolvedSongId,
     statusCode: hasRange || partialPreview ? 206 : 200,
     contentType,
     contentLength,
@@ -1640,6 +1949,9 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
       : null,
     fileName: path.basename(requestedFilePath),
     audioFormat: requestedAudio.actualFormat,
+    audioSource: info.audioSource || 'audio',
+    songKey: info.songKey || publicSongKey(info.artist, info.title),
+    catalogId: scannedLibraryHash || '',
     title: info.title,
     artist: info.artist,
     previewStart: info.previewStart,
@@ -1647,8 +1959,15 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
     purpose: requestPurpose,
     transcoded: false
   });
+  if (!metaSent) {
+    finishPreview('error', { reason: 'meta_send_failed' });
+    cleanupStream();
+    stream.destroy();
+    return;
+  }
   stream.on('data', (chunk) => {
     if (!ws || ws.readyState !== WebSocket.OPEN) {
+      finishPreview('error', { reason: 'websocket_closed' });
       stream.destroy();
       return;
     }
@@ -1658,12 +1977,12 @@ function streamPreviewToServer(requestId, songId, startSec = 0, purpose = 'previ
   });
   stream.on('end', () => {
     cleanupStream();
-    log('preview.end', { requestId, songId: Number(songId), purpose: requestPurpose, bytes: bytesSent });
+    finishPreview('end');
     send({ type: 'song.preview.end', requestId });
   });
   stream.on('error', (error) => {
     cleanupStream();
-    log('preview.error', { requestId, songId: Number(songId), purpose: requestPurpose, reason: error.message, bytes: bytesSent });
+    finishPreview('error', { reason: error.message });
     send({ type: 'song.preview.error', requestId, reason: error.message });
   });
   stream.on('close', () => {
@@ -1755,6 +2074,7 @@ function handleIpcMessage(msg) {
     'ack',
     'clock.sync.pong',
     'song.state.request',
+    'audio.stop',
     'error'
   ]);
   if (!allowed.has(msg.type)) {
@@ -1764,6 +2084,11 @@ function handleIpcMessage(msg) {
 
   if (msg.type === 'song.select.state') {
     send(sanitizeSongStateForServer(msg), { lowPriority: true });
+  } else if (msg.type === 'game.state') {
+    sendGameStateMessage(msg);
+  } else if (msg.type === 'audio.stop') {
+    closeAllPreviewStreams(msg.reason || 'game_audio_stop');
+    send(msg);
   } else {
     send(msg);
   }
@@ -1853,7 +2178,7 @@ function scheduleGameState(state = 'lobby') {
     pendingGameStateTimer = null;
     const nextState = pendingGameStateValue || 'lobby';
     pendingGameStateValue = null;
-    send(gameState(nextState));
+    sendGameStateMessage(gameState(nextState));
   }, 25);
   pendingGameStateTimer.unref?.();
 }
@@ -1869,7 +2194,7 @@ function startMockSong() {
     title: 'Bridge mock song',
     artist: 'USDX Remote'
   });
-  send(gameState('singing'));
+  sendGameStateMessage(gameState('singing'));
   log('mock song clock started', { songSeq, startsInMs: 2000 });
 }
 
@@ -1895,6 +2220,7 @@ async function handleMessage(msg) {
     resumeFailureCount = 0;
     if (!room || room.roomId !== msg.roomId) {
       players.clear();
+      playerAssignmentFingerprints.clear();
       pitchStats.clear();
       closeAllP2pSessions('new_room');
     }
@@ -1903,7 +2229,8 @@ async function handleMessage(msg) {
     console.log(`Join at https://usdx.at`);
     console.log(`Code: ${room.displayCode}`);
     sendToIpc({ type: 'room.created', roomId: room.roomId, displayCode: room.displayCode, expiresAt: room.expiresAt });
-    send(gameState('lobby'));
+    resetGameStateDedupe();
+    sendGameStateMessage(gameState('lobby'));
     scanSongLibrary().catch((error) => {
       sendSongLibraryProgress({ status: 'error', message: error.message });
       log('song scan failed', { error: error.message });
@@ -1920,7 +2247,8 @@ async function handleMessage(msg) {
     console.log(`Join at https://usdx.at`);
     console.log(`Code: ${room.displayCode}`);
     sendToIpc({ type: 'room.resumed', roomId: room.roomId, displayCode: room.displayCode, expiresAt: room.expiresAt });
-    send(gameState(songSeq ? 'singing' : 'lobby'));
+    resetGameStateDedupe();
+    sendGameStateMessage(gameState(songSeq ? 'singing' : 'lobby'));
     scanSongLibrary().catch((error) => {
       sendSongLibraryProgress({ status: 'error', message: error.message });
       log('song scan failed', { error: error.message });
@@ -1940,7 +2268,7 @@ async function handleMessage(msg) {
   if (msg.type === 'player.joined') {
     const phoneMicDelayMs = phoneMicDelayToRawMs(msg.micDelayMs);
     const micDelayMs = phoneMicDelayToEffectiveMs(phoneMicDelayMs);
-    players.set(msg.playerId, {
+    const joinedPlayer = {
       playerId: msg.playerId,
       name: msg.name,
       slot: msg.slot,
@@ -1948,7 +2276,9 @@ async function handleMessage(msg) {
       phoneMicDelayMs,
       micDelayMs,
       connected: true
-    });
+    };
+    players.set(msg.playerId, joinedPlayer);
+    playerAssignmentFingerprints.set(msg.playerId, playerAssignmentFingerprint(joinedPlayer));
     log('player joined', { playerId: msg.playerId, name: msg.name, slot: msg.slot, role: msg.role, phoneMicDelayMs, micDelayMs, players: players.size, p2pEnabled });
     sendToIpc({
       type: 'player.joined',
@@ -1974,7 +2304,8 @@ async function handleMessage(msg) {
   }
 
   if (msg.type === 'player.assigned') {
-    const player = players.get(msg.playerId);
+    const playerId = String(msg.playerId || '');
+    const player = players.get(playerId);
     if (player) {
       player.slot = msg.slot ?? player.slot;
       player.role = msg.role || player.role;
@@ -1984,6 +2315,11 @@ async function handleMessage(msg) {
       }
       player.connected = true;
     }
+    const fingerprint = playerAssignmentFingerprint(player);
+    if (fingerprint && playerAssignmentFingerprints.get(playerId) === fingerprint) {
+      return;
+    }
+    if (fingerprint) playerAssignmentFingerprints.set(playerId, fingerprint);
     log('player assigned', { playerId: msg.playerId, slot: msg.slot, role: msg.role, phoneMicDelayMs: player?.phoneMicDelayMs || 0, micDelayMs: player?.micDelayMs || 0, p2pEnabled });
     sendToIpc({
       type: 'player.assigned',
@@ -2001,6 +2337,7 @@ async function handleMessage(msg) {
   if (msg.type === 'player.left') {
     closeP2pSession(msg.playerId, 'player_left');
     players.delete(msg.playerId);
+    playerAssignmentFingerprints.delete(msg.playerId);
     log('player left', { playerId: msg.playerId });
     sendToIpc({ type: 'player.left', roomId: room?.roomId, playerId: msg.playerId, reason: msg.reason || 'disconnect' });
     scheduleGameState(gameStateAfterPlayerChange());
@@ -2018,7 +2355,10 @@ async function handleMessage(msg) {
 
   if (msg.type === 'player.disconnected') {
     const player = players.get(msg.playerId);
-    if (player) player.connected = false;
+    if (player) {
+      player.connected = false;
+      playerAssignmentFingerprints.set(msg.playerId, playerAssignmentFingerprint(player));
+    }
     closeP2pSession(msg.playerId, 'player_disconnected');
     log('player disconnected', { playerId: msg.playerId });
     sendToIpc({ type: 'player.disconnected', roomId: room?.roomId, playerId: msg.playerId, reason: msg.reason || 'disconnect' });
@@ -2051,16 +2391,13 @@ async function handleMessage(msg) {
     return;
   }
 
+  if (msg.type === 'diagnostics.request') {
+    sendDiagnosticsReport(msg);
+    return;
+  }
+
   if (msg.type === 'song.preview.request') {
-    streamPreviewToServer(
-      String(msg.requestId || ''),
-      Number(msg.songId),
-      Number(msg.startSec || 0),
-      msg.purpose,
-      msg.rangeStart,
-      msg.rangeEnd,
-      msg.formatHint
-    );
+    streamPreviewToServer(msg);
     return;
   }
 
@@ -2081,6 +2418,7 @@ async function handleMessage(msg) {
     if (player) {
       player.phoneMicDelayMs = micDelayFromSettings(msg.settings, player.phoneMicDelayMs);
       player.micDelayMs = phoneMicDelayToEffectiveMs(player.phoneMicDelayMs);
+      playerAssignmentFingerprints.set(msg.playerId, playerAssignmentFingerprint(player));
       log('player settings updated', { playerId: msg.playerId, slot: player.slot, phoneMicDelayMs: player.phoneMicDelayMs, micDelayMs: player.micDelayMs });
       sendToIpc({
         type: 'settings.update',
@@ -2245,11 +2583,12 @@ function connect() {
   ws = new WebSocket(target);
   ws.addEventListener('open', () => {
     log('connected');
+    resetGameStateDedupe();
     send({
       type: 'host.hello',
-      gameVersion: 'usdx-dev',
-      bridgeVersion: '0.1.1',
-      capabilities: ['remotePitch', 'remoteControl', 'clockSync', 'songCatalog', ...(p2pEnabled ? ['p2pDataChannel'] : [])],
+      gameVersion,
+      bridgeVersion,
+      capabilities: ['remotePitch', 'remoteControl', 'clockSync', 'songCatalog', 'diagnostics', ...(p2pEnabled ? ['p2pDataChannel'] : [])],
       maxPlayers,
       roomId: room?.roomId,
       hostToken: room?.hostToken
