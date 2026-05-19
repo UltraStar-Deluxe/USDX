@@ -2363,9 +2363,9 @@ begin
 
                   //Do the Action that is specified in Ini
                   case Ini.OnSongClick of
-                    0: FadeTo(@ScreenSing);
+                    0: StartSong;
                     1: SelectPlayers;
-                    2: FadeTo(@ScreenSing);
+                    2: StartSong;
                   end;
                 end
                 else
@@ -4192,6 +4192,7 @@ begin
   if Mode = smMedley then
     Mode := smNormal;
 
+  Ini.ReloadNames;
   PlayersPlay := UIni.IPlayersVals[Ini.Players];
 
   //Cat Mod etc
@@ -5623,6 +5624,8 @@ end;
 //Procedures for Menu
 
 procedure TScreenSong.StartSong;
+var
+  I: integer;
 begin
   CatSongs.Selected := Interaction;
 
@@ -5630,6 +5633,21 @@ begin
     Party.SaveSungPartySong(Interaction);
 
   StopMusicPreview();
+
+  if (not Party.bPartyGame) and (Mode <> smPartyTournament) then
+  begin
+    Ini.ReloadNames;
+    PlayersPlay := UIni.IPlayersVals[Ini.Players];
+    SetLength(Player, PlayersPlay);
+
+    for I := 0 to PlayersPlay - 1 do
+    begin
+      Player[I].Name := Ini.Name[I];
+      Player[I].Level := Ini.PlayerLevel[I];
+      ScreenSing.PlayerNames[I + 1] := Player[I].Name;
+      ScreenSing.PlayerDuetNames[I + 1] := Player[I].Name;
+    end;
+  end;
 
   FadeTo(@ScreenSing);
 end;
@@ -5828,9 +5846,9 @@ begin
 
     //TODO: how about case 2? menu for medley mode?
     case Ini.OnSongClick of
-      0: FadeTo(@ScreenSing);
+      0: StartSong;
       1: SelectPlayers;
-      2: FadeTo(@ScreenSing);
+      2: StartSong;
       {2: begin
          if (CatSongs.CatNumShow = -3) then
            ScreenSongMenu.MenuShow(SM_Playlist)
@@ -5849,9 +5867,9 @@ begin
 
       //TODO: how about case 2? menu for medley mode?
       case Ini.OnSongClick of
-        0: FadeTo(@ScreenSing);
+        0: StartSong;
         1: SelectPlayers;
-        2: FadeTo(@ScreenSing);
+        2: StartSong;
         {2: begin
           if (CatSongs.CatNumShow = -3) then
             ScreenSongMenu.MenuShow(SM_Playlist)
