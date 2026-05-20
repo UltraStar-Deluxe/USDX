@@ -170,26 +170,76 @@ var
   IniFile:    TUnicodeMemIniFile;
   E:          integer; // entry
   S:          TStringList;
+  LanguageFile: IPath;
 begin
   SetLength(Entry, 0);
-  IniFile := TUnicodeMemIniFile.Create(LanguagesPath.Append(Language + '.ini'));
-  S := TStringList.Create;
+  LanguageFile := LanguagesPath.Append(Language + '.ini');
+  // Try to load the requested language file
+  try
+    IniFile := TUnicodeMemIniFile.Create(LanguageFile);
+    S := TStringList.Create;
+    try
+      IniFile.ReadSectionValues('Text', S);
+      SetLength(Entry, S.Count);
+      for E := 0 to high(Entry) do
+      begin
+        if S.Names[E] = 'IMPLODE_GLUE1' then
+          Implode_Glue1 := S.ValueFromIndex[E]+ ' '
+        else if S.Names[E] = 'IMPLODE_GLUE2' then
+          Implode_Glue2 := ' ' + S.ValueFromIndex[E] + ' ';
 
-  IniFile.ReadSectionValues('Text', S);
-  SetLength(Entry, S.Count);
-  for E := 0 to high(Entry) do
-  begin
-    if S.Names[E] = 'IMPLODE_GLUE1' then
-      Implode_Glue1 := S.ValueFromIndex[E]+ ' '
-    else if S.Names[E] = 'IMPLODE_GLUE2' then
-      Implode_Glue2 := ' ' + S.ValueFromIndex[E] + ' ';
-
-    Entry[E].ID := S.Names[E];
-    Entry[E].Text := S.ValueFromIndex[E];
+        Entry[E].ID := S.Names[E];
+        Entry[E].Text := S.ValueFromIndex[E];
+      end;
+    finally
+      S.Free;
+      IniFile.Free;
+    end;
+  except
+    on Ex: Exception do
+    begin
+      Log.LogError('Unable to load language file: ' + LanguageFile.ToNative);
+      // If this is not English, try to fall back to English
+      if (Uppercase(Language) <> 'ENGLISH') then
+      begin
+        Log.LogStatus('Falling back to English language', 'Language');
+        try
+          LanguageFile := LanguagesPath.Append('English.ini');
+          IniFile := TUnicodeMemIniFile.Create(LanguageFile);
+          S := TStringList.Create;
+          try
+            IniFile.ReadSectionValues('Text', S);
+            SetLength(Entry, S.Count);
+            for E := 0 to high(Entry) do
+            begin
+              if S.Names[E] = 'IMPLODE_GLUE1' then
+                Implode_Glue1 := S.ValueFromIndex[E]+ ' '
+              else if S.Names[E] = 'IMPLODE_GLUE2' then
+                Implode_Glue2 := ' ' + S.ValueFromIndex[E] + ' ';
+              Entry[E].ID := S.Names[E];
+              Entry[E].Text := S.ValueFromIndex[E];
+            end;
+          finally
+            S.Free;
+            IniFile.Free;
+          end;
+        except
+          on Ex: Exception do
+          begin
+            // English also failed, use plain strings without translation
+            Log.LogError('Unable to load English language file. Using plain strings without translation.');
+            SetLength(Entry, 0);
+          end;
+        end;
+      end
+      else
+      begin
+        // English failed, use plain strings without translation
+        Log.LogError('Unable to load English language file. Using plain strings without translation.');
+        SetLength(Entry, 0);
+      end;
+    end;
   end;
-
-  S.Free;
-  IniFile.Free;
 end;
 
 {**

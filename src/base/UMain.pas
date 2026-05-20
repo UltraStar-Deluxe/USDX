@@ -51,6 +51,11 @@ procedure SetTextInput(enabled: boolean);
 
 type
   TMainThreadExecProc = procedure(Data: Pointer);
+  PMainThreadExecData = ^TMainThreadExecData;
+  TMainThreadExecData = record
+    Proc: TMainThreadExecProc;
+    Data: Pointer;
+  end;
 
 const
   MAINTHREAD_EXEC_EVENT = SDL_USEREVENT + 2;
@@ -68,6 +73,7 @@ procedure MainThreadExec(Proc: TMainThreadExecProc; Data: Pointer);
 implementation
 
 uses
+  Classes,
   math,
   dglOpenGL,
   UCommandLine,
@@ -87,9 +93,13 @@ uses
   UPlaylist,
   UMusic,
   URecord,
+  URemoteBridgeIPC,
+  URemoteBridgeProcess,
+  URemoteControl,
   UBeatTimer,
   UPlatform,
   USkins,
+  USongs,
   UThemes,
   UParty,
   UPartyTournament,
@@ -103,6 +113,34 @@ uses
   UTime,
   UWebcam;
   //UVideoAcinerella;
+
+type
+  PRemoteCommandData = ^TRemoteCommandData;
+  TRemoteCommandData = record
+    PlayerIndex: integer;
+    PlayerId: UTF8String;
+    Command: TRemoteControlCommand;
+    CommandId: integer;
+    ArgsText: UTF8String;
+    ArgsIndex: integer;
+    ArgsItemIndex: integer;
+    EnqueuedTick: cardinal;
+  end;
+
+procedure EnqueueRemoteCommand(Data: Pointer); forward;
+procedure RemoteBridgeCommandReceived(PlayerIndex: integer; const PlayerId: UTF8String;
+  Command: TRemoteControlCommand; CommandId: integer; const ArgsText: UTF8String;
+  ArgsIndex: integer; ArgsItemIndex: integer); forward;
+procedure DoQuit; forward;
+
+const
+  REMOTE_COMMAND_MAX_QUEUE = 16;
+  REMOTE_COMMAND_SPACING_MS = 25;
+  REMOTE_COMMAND_MAX_AGE_MS = 750;
+
+var
+  RemoteCommandQueue: array of PRemoteCommandData;
+  LastRemoteCommandTick: cardinal = 0;
 
 procedure Main;
 var
@@ -186,6 +224,13 @@ begin
     // Help
     Log.LogStatus('Load Help', 'Initialization');
     Help := THelp.Create;
+    if (Length(ILanguage) > 0) then
+    begin
+      if (Ini.Language >= 0) and (Ini.Language < Length(ILanguage)) then
+        Help.ChangeLanguage(ILanguage[Ini.Language])
+      else
+        Help.ChangeLanguage(ILanguage[0]);
+    end;
 
     // it is possible that this is the first run, create a .ini file if neccessary
     Log.LogStatus('Write Ini', 'Initialization');
@@ -238,6 +283,19 @@ begin
     { prepare software cursor }
     Display.SetCursor;
 
+    if (Ini.RemoteBridgeEnabled = 1) then
+    begin
+      Log.LogStatus('Remote Bridge IPC', 'Initialization');
+      RemoteBridgeIPC.Host := Ini.RemoteBridgeIpcHost;
+      RemoteBridgeIPC.Port := Ini.RemoteBridgeIpcPort;
+      RemoteBridgeProcess.Start;
+      if (RemoteBridgeProcess.LastError <> '') then
+        Log.LogWarn(RemoteBridgeProcess.LastError, 'Remote Bridge Process');
+      RemoteBridgeIPC.OnCommand := RemoteBridgeCommandReceived;
+      RemoteBridgeIPC.Start;
+      RemoteBridgeIPC.SendGameState('boot', 0, 0);
+    end;
+
     {**
       * Start background music
       *}
@@ -260,6 +318,13 @@ begin
     // call an uninitialize routine for every initialize step
     // or at least use the corresponding Free methods
 
+    if (Ini.RemoteBridgeEnabled = 1) then
+    begin
+      Log.LogStatus('Remote Bridge IPC', 'Finalization');
+      RemoteBridgeProcess.Stop;
+      RemoteBridgeIPC.Stop;
+    end;
+
     Log.LogStatus('Closing DB file', 'Finalization');
     if (DataBase <> nil) then
     begin
@@ -281,6 +346,429 @@ begin
   {$IFNDEF Debug}
   end;
   {$ENDIF}
+end;
+
+function DispatchRemoteCommand(Command: TRemoteControlCommand; const ArgsText: UTF8String;
+  ArgsIndex: integer; ArgsItemIndex: integer): boolean;
+var
+  PlaylistItemIndex: integer;
+  Key: cardinal;
+
+  function AddSongIdListToPlaylist(const SongIdsText: UTF8String; PlaylistIndex: integer): boolean;
+  var
+    Parts: TStringList;
+    I: integer;
+    SongId: integer;
+  begin
+    Result := false;
+    if (PlaylistIndex < 0) or (PlaylistIndex > High(PlaylistMan.Playlists)) then
+      Exit;
+
+    Parts := TStringList.Create;
+    try
+      Parts.Delimiter := ',';
+      Parts.StrictDelimiter := true;
+      Parts.DelimitedText := string(SongIdsText);
+      for I := 0 to Parts.Count - 1 do
+      begin
+        SongId := StrToIntDef(Trim(Parts[I]), -1);
+        if (SongId >= 0) and (SongId <= High(CatSongs.Song)) and
+           Assigned(CatSongs.Song[SongId]) and (not CatSongs.Song[SongId].Main) then
+        begin
+          if PlaylistMan.GetIndexbySongID(SongId, PlaylistIndex) < 0 then
+            PlaylistMan.AddItem(SongId, PlaylistIndex);
+          Result := true;
+        end;
+      end;
+    finally
+      Parts.Free;
+    end;
+  end;
+begin
+  Result := true;
+  Key := 0;
+
+  case Command of
+    rccMenuUp:     Key := SDLK_UP;
+    rccMenuDown:   Key := SDLK_DOWN;
+    rccMenuLeft:   Key := SDLK_LEFT;
+    rccMenuRight:  Key := SDLK_RIGHT;
+    rccMenuSelect: Key := SDLK_RETURN;
+    rccMenuBack:   Key := SDLK_ESCAPE;
+    rccGamePause:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSing);
+        if Result and (not ScreenSing.Paused) then
+          ScreenSing.Pause;
+        Exit;
+      end;
+    rccGameResume:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSing);
+        if Result and ScreenSing.Paused then
+          ScreenSing.Pause;
+        Exit;
+      end;
+    rccSongSkipIntro:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSing);
+        if Result then
+          ScreenSing.ParseInput(SDLK_S, 0, true);
+        Exit;
+      end;
+    rccSongRestart:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSing);
+        if Result then
+          ScreenSing.ParseInput(SDLK_R, 0, true);
+        Exit;
+      end;
+    rccSongMenu:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong);
+        if Result then
+          Key := SDLK_M
+        else
+          Exit;
+      end;
+    rccSongPlaylistMenu:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong);
+        if Result then
+          Key := SDLK_P
+        else
+          Exit;
+      end;
+    rccSongJumpTo:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong);
+        if Result then
+          Key := SDLK_J
+        else
+          Exit;
+      end;
+    rccSongRandom:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong);
+        if Result then
+          Key := SDLK_R
+        else
+          Exit;
+      end;
+    rccSongSelect:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong) and (ArgsIndex >= 0) and
+          (ArgsIndex <= High(CatSongs.Song)) and CatSongs.Song[ArgsIndex].Visible;
+        if Result then
+        begin
+          ScreenSong.SkipTo(CatSongs.VisibleIndex(ArgsIndex), ArgsIndex, CatSongs.VisibleSongs);
+          ScreenSong.SetScrollRefresh;
+        end;
+        Exit;
+      end;
+    rccSongStart:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong) and (ScreenSong.Interaction >= 0) and
+          (ScreenSong.Interaction <= High(CatSongs.Song)) and (not CatSongs.Song[ScreenSong.Interaction].Main);
+        if Result then
+          ScreenSong.StartSong;
+        Exit;
+      end;
+    rccPreviewStart:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong);
+        if Result then
+          ScreenSong.StartPreview;
+        Exit;
+      end;
+    rccPreviewStop:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong);
+        if Result then
+          ScreenSong.StopPreview;
+        Exit;
+      end;
+    rccSearchSetText:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong);
+        if Result then
+          ScreenSongJumpto.SetSearchText(ArgsText);
+        Exit;
+      end;
+    rccPlaylistLoad:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong) and (ArgsIndex >= 0) and
+          (ArgsIndex <= High(PlaylistMan.Playlists));
+        if Result then
+        begin
+          PlaylistMan.ReloadPlaylist(ArgsIndex);
+          PlaylistMan.SetPlaylist(ArgsIndex);
+          ScreenSong.SetScrollRefresh;
+          ScreenSong.SendRemoteSongSelectState(true);
+        end;
+        Exit;
+      end;
+    rccPlaylistCreate:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong) and (ArgsText <> '');
+        if Result then
+        begin
+          PlaylistMan.AddPlaylist(ArgsText);
+          ScreenSong.SendRemoteSongSelectState(true);
+        end;
+        Exit;
+      end;
+    rccPlaylistDelete:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong) and (ArgsIndex >= 0) and
+          (ArgsIndex <= High(PlaylistMan.Playlists));
+        if Result then
+        begin
+          PlaylistMan.DelPlaylist(ArgsIndex);
+          ScreenSong.SendRemoteSongSelectState(true);
+        end;
+        Exit;
+      end;
+    rccPlaylistAddSelected:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong) and (ArgsIndex >= 0) and
+          (ArgsIndex <= High(PlaylistMan.Playlists));
+        if Result then
+        begin
+          PlaylistMan.AddItem(ScreenSong.Interaction, ArgsIndex);
+          ScreenSong.SendRemoteSongSelectState(true);
+        end;
+        Exit;
+      end;
+    rccPlaylistRemoveSelected:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong) and (ArgsIndex >= 0) and
+          (ArgsIndex <= High(PlaylistMan.Playlists));
+        if Result then
+        begin
+          PlaylistItemIndex := PlaylistMan.GetIndexbySongID(ScreenSong.Interaction, ArgsIndex);
+          Result := PlaylistItemIndex >= 0;
+          if Result then
+          begin
+            PlaylistMan.DelItem(PlaylistItemIndex, ArgsIndex);
+            ScreenSong.SendRemoteSongSelectState(true);
+          end;
+        end;
+        Exit;
+      end;
+    rccPlaylistAddSongs:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong) and (ArgsIndex >= 0) and
+          (ArgsIndex <= High(PlaylistMan.Playlists));
+        if Result then
+        begin
+          Result := AddSongIdListToPlaylist(ArgsText, ArgsIndex);
+          if Result then
+            ScreenSong.SendRemoteSongSelectState(true);
+        end;
+        Exit;
+      end;
+    rccPlaylistRemoveSong:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong) and (ArgsIndex >= 0) and
+          (ArgsIndex <= High(PlaylistMan.Playlists)) and (ArgsItemIndex >= 0);
+        if Result then
+        begin
+          PlaylistItemIndex := PlaylistMan.GetIndexbySongID(ArgsItemIndex, ArgsIndex);
+          Result := PlaylistItemIndex >= 0;
+          if Result then
+          begin
+            PlaylistMan.DelItem(PlaylistItemIndex, ArgsIndex);
+            ScreenSong.SendRemoteSongSelectState(true);
+          end;
+        end;
+        Exit;
+      end;
+    rccPlaylistRemoveItem:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong) and (ArgsIndex >= 0) and
+          (ArgsIndex <= High(PlaylistMan.Playlists)) and (ArgsItemIndex >= 0) and
+          (ArgsItemIndex <= High(PlaylistMan.Playlists[ArgsIndex].Items));
+        if Result then
+        begin
+          PlaylistMan.DelItem(ArgsItemIndex, ArgsIndex);
+          ScreenSong.SendRemoteSongSelectState(true);
+        end;
+        Exit;
+      end;
+    rccPlaylistMoveItemUp:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong) and (ArgsIndex >= 0) and
+          (ArgsIndex <= High(PlaylistMan.Playlists)) and (ArgsItemIndex > 0) and
+          (ArgsItemIndex <= High(PlaylistMan.Playlists[ArgsIndex].Items));
+        if Result then
+        begin
+          PlaylistMan.MoveItem(Cardinal(ArgsItemIndex), Cardinal(ArgsItemIndex - 1), ArgsIndex);
+          ScreenSong.SendRemoteSongSelectState(true);
+        end;
+        Exit;
+      end;
+    rccPlaylistMoveItemDown:
+      begin
+        Result := (Display.CurrentScreen = @ScreenSong) and (ArgsIndex >= 0) and
+          (ArgsIndex <= High(PlaylistMan.Playlists)) and (ArgsItemIndex >= 0) and
+          (ArgsItemIndex < High(PlaylistMan.Playlists[ArgsIndex].Items));
+        if Result then
+        begin
+          PlaylistMan.MoveItem(Cardinal(ArgsItemIndex), Cardinal(ArgsItemIndex + 1), ArgsIndex);
+          ScreenSong.SendRemoteSongSelectState(true);
+        end;
+        Exit;
+      end;
+  else
+    Result := false;
+    Exit;
+  end;
+
+  if (Key <> 0) and (not Assigned(Display.NextScreen)) then
+  begin
+    Result := Display.ParseInput(Key, 0, true);
+    if not Result then
+      DoQuit;
+  end;
+  if (Key <> 0) and Assigned(Display.NextScreen) then
+    Result := false;
+end;
+
+procedure FreeRemoteCommandData(CommandData: PRemoteCommandData);
+begin
+  if (CommandData <> nil) then
+    Dispose(CommandData);
+end;
+
+procedure AckRemoteCommand(CommandData: PRemoteCommandData; Accepted: boolean; const Reason: UTF8String);
+begin
+  if (CommandData = nil) then
+    Exit;
+
+  Log.LogStatus(
+    'Remote control ' + RemoteControlCommandToString(CommandData^.Command) +
+    ' commandId=' + IntToStr(CommandData^.CommandId) +
+    ' accepted=' + BoolToStr(Accepted, true) +
+    ' reason=' + string(Reason),
+    'Remote Control'
+  );
+
+  RemoteBridgeIPC.SendAck(
+    CommandData^.PlayerId,
+    CommandData^.CommandId,
+    Accepted,
+    Reason,
+    RemoteBridgeIPC.GameStateSeq
+  );
+end;
+
+procedure EnqueueRemoteCommand(Data: Pointer);
+var
+  CommandData: PRemoteCommandData;
+  QueueIndex: integer;
+  I: integer;
+begin
+  CommandData := PRemoteCommandData(Data);
+  if (CommandData = nil) then
+    Exit;
+
+  if (Length(RemoteCommandQueue) >= REMOTE_COMMAND_MAX_QUEUE) then
+  begin
+    AckRemoteCommand(RemoteCommandQueue[0], false, 'remote_queue_full');
+    FreeRemoteCommandData(RemoteCommandQueue[0]);
+    for I := 1 to High(RemoteCommandQueue) do
+      RemoteCommandQueue[I - 1] := RemoteCommandQueue[I];
+    SetLength(RemoteCommandQueue, Length(RemoteCommandQueue) - 1);
+  end;
+
+  QueueIndex := Length(RemoteCommandQueue);
+  CommandData^.EnqueuedTick := SDL_GetTicks;
+  SetLength(RemoteCommandQueue, QueueIndex + 1);
+  RemoteCommandQueue[QueueIndex] := CommandData;
+  Log.LogStatus(
+    'Queued remote control ' + RemoteControlCommandToString(CommandData^.Command) +
+    ' commandId=' + IntToStr(CommandData^.CommandId) +
+    ' queue=' + IntToStr(Length(RemoteCommandQueue)),
+    'Remote Control'
+  );
+end;
+
+procedure DropRemoteCommandQueueHead;
+var
+  I: integer;
+begin
+  if (Length(RemoteCommandQueue) = 0) then
+    Exit;
+
+  for I := 1 to High(RemoteCommandQueue) do
+    RemoteCommandQueue[I - 1] := RemoteCommandQueue[I];
+  SetLength(RemoteCommandQueue, Length(RemoteCommandQueue) - 1);
+end;
+
+procedure DropStaleRemoteCommands;
+var
+  Tick: cardinal;
+  CommandData: PRemoteCommandData;
+begin
+  Tick := SDL_GetTicks;
+  while (Length(RemoteCommandQueue) > 0) do
+  begin
+    CommandData := RemoteCommandQueue[0];
+    if (CommandData <> nil) and (Tick - CommandData^.EnqueuedTick <= REMOTE_COMMAND_MAX_AGE_MS) then
+      Exit;
+
+    DropRemoteCommandQueueHead;
+    AckRemoteCommand(CommandData, false, 'remote_command_stale');
+    FreeRemoteCommandData(CommandData);
+  end;
+end;
+
+procedure ProcessRemoteCommandQueue;
+var
+  Tick: cardinal;
+  CommandData: PRemoteCommandData;
+  Accepted: boolean;
+begin
+  DropStaleRemoteCommands;
+  if (Length(RemoteCommandQueue) = 0) then
+    Exit;
+
+  if Assigned(Display.NextScreen) then
+    Exit;
+
+  Tick := SDL_GetTicks;
+  if (LastRemoteCommandTick <> 0) and (Tick - LastRemoteCommandTick < REMOTE_COMMAND_SPACING_MS) then
+    Exit;
+
+  CommandData := RemoteCommandQueue[0];
+  DropRemoteCommandQueueHead;
+  LastRemoteCommandTick := Tick;
+
+  Accepted := DispatchRemoteCommand(CommandData^.Command, CommandData^.ArgsText,
+    CommandData^.ArgsIndex, CommandData^.ArgsItemIndex);
+  if Accepted then
+    AckRemoteCommand(CommandData, true, '')
+  else
+    AckRemoteCommand(CommandData, false, 'not_available');
+  FreeRemoteCommandData(CommandData);
+end;
+
+procedure RemoteBridgeCommandReceived(PlayerIndex: integer; const PlayerId: UTF8String;
+  Command: TRemoteControlCommand; CommandId: integer; const ArgsText: UTF8String;
+  ArgsIndex: integer; ArgsItemIndex: integer);
+var
+  Data: PRemoteCommandData;
+begin
+  New(Data);
+  Data^.PlayerIndex := PlayerIndex;
+  Data^.PlayerId := PlayerId;
+  Data^.Command := Command;
+  Data^.CommandId := CommandId;
+  Data^.ArgsText := ArgsText;
+  Data^.ArgsIndex := ArgsIndex;
+  Data^.ArgsItemIndex := ArgsItemIndex;
+  MainThreadExec(EnqueueRemoteCommand, Data);
 end;
 
 procedure StartTextInput;
@@ -320,6 +808,7 @@ begin
 
       // keyboard/mouse/joystick events
       CheckEvents;
+      ProcessRemoteCommandQueue;
 
       // display
       Done := not Display.Draw;
@@ -557,7 +1046,7 @@ begin
             else if (Display.ShouldHandleInput(LongWord(SimKey), KeyCharUnicode, true, SuppressKey)) then
             begin
               // check if screen wants to exit
-              KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true);
+              KeepGoing := Display.ParseInput(SimKey, KeyCharUnicode, true, Event.key._repeat > 0);
 
               // if screen wants to exit
               if not KeepGoing then
@@ -596,7 +1085,14 @@ begin
       MAINTHREAD_EXEC_EVENT:
         with Event.user do
         begin
-          TMainThreadExecProc(data1)(data2);
+          if (data1 <> nil) then
+          begin
+            try
+              PMainThreadExecData(data1)^.Proc(PMainThreadExecData(data1)^.Data);
+            finally
+              Dispose(PMainThreadExecData(data1));
+            end;
+          end;
         end;
 
       otherwise
@@ -623,13 +1119,17 @@ end;
 procedure MainThreadExec(Proc: TMainThreadExecProc; Data: Pointer);
 var
   Event: TSDL_Event;
+  ExecData: PMainThreadExecData;
 begin
+  New(ExecData);
+  ExecData^.Proc := Proc;
+  ExecData^.Data := Data;
   with Event.user do
   begin
     type_ := MAINTHREAD_EXEC_EVENT;
     code  := 0;     // not used at the moment
-    data1 := @Proc;
-    data2 := Data;
+    data1 := ExecData;
+    data2 := nil;
   end;
   SDL_PushEvent(@Event);
 end;

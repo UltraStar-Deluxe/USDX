@@ -77,21 +77,20 @@ const
   LATENCY_AUTODETECT = -1; // for field Latency
   DEFAULT_RESOLUTION = '800x600';
   DEFAULT_THEME = 'Modern';
-  // TODO: the menu options only go up to 6, but there are internals that still go up to 12
-  //  IMaxPlayerCount is untouched because lowering (or raising) it causes very strange behaviour, such as:
-  //  * the game starts in a completely different language than the config specifies
-  //  * the game crashes randomly
-  //  8 and 12 players have never worked at any point in history
-  //  it all needs refactoring at some point anyway because:
-  //  * a lot of code works with the _index_ of IPlayers (instead of just the number of actual players)
-  //  * it should be possible to play with 5 players [without duplicating a lot of code]
-  //  * there might be a valid usecase for 0 players
-  IMaxPlayerCount = 12;
-  // Switch colors for players 2 and 4, since player 2 line color is used
-  // for the second part in duet, and yellow (4) looks better than red (2)
-  DefaultPlayerColors: array[0..IMaxPlayerCount-1] of integer = (1, 4, 3, 2, 5, 6, 7, 8, 9, 10, 11, 12);
-  IPlayers:     array[0..4] of UTF8String = ('1', '2', '3', '4', '6');
-  IPlayersVals: array[0..4] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 );
+  DEFAULT_REMOTE_BRIDGE_ENABLED = 1;
+  DEFAULT_REMOTE_BRIDGE_IPC_HOST = '127.0.0.1';
+  DEFAULT_REMOTE_BRIDGE_IPC_PORT = 8765;
+  DEFAULT_REMOTE_BRIDGE_SERVER_URL = 'wss://usdx.at/ws/host';
+  IMaxPlayerCount = 24;
+
+type
+  TUTF8StringArray = array of UTF8String;
+  TIntegerArray = array of integer;
+
+function GetNameTemplateIndexFromKey(const Key: cardinal): integer;
+function CreateNumericOptionArray(const FirstValue, LastValue: integer): TUTF8StringArray;
+function GetPlayerColorOptionCount: integer;
+function TryGetMixedPlayerColorPair(ColorIndex: integer; out LeftColor, RightColor: integer): boolean;
 
 type
 
@@ -124,9 +123,10 @@ type
       // Players or Teams colors
       SingColor:      array[0..(IMaxPlayerCount-1)] of integer;
       
-      Name:           array[0..15] of UTF8String;
+      Name:           array[0..(IMaxPlayerCount-1)] of UTF8String;
       PlayerColor:    array[0..(IMaxPlayerCount-1)] of integer;
       TeamColor:      array[0..2] of integer;
+      PlayerDelay:    array[0..(IMaxPlayerCount-1)] of integer;
 
       PlayerAvatar:   array[0..(IMaxPlayerCount-1)] of UTF8String;
       PlayerLevel:    array[0..(IMaxPlayerCount-1)] of integer;
@@ -151,6 +151,8 @@ type
       Debug:          integer;
       AVDelay:        integer;
       MicDelay:       integer;
+      EditorMidiLeadMs: integer;
+      EditorClickLeadMs: integer;
 
       // Graphics
       MaxFramerate:   byte;
@@ -181,11 +183,13 @@ type
       SavePlayback:   integer;
       ThresholdIndex: integer;
       AudioOutputBufferSizeIndex: integer;
+      AudioInputBufferSizeIndex: integer;
       VoicePassthrough: integer;
       ReplayGain:     integer;
 
       AudioVolume:    integer;
       VocalsVolume:   integer;
+      MidiVolume:     integer;
       SfxVolume:      integer;
       BackgroundMusicVolume: integer;
 
@@ -218,9 +222,11 @@ type
       OnSongClick:    integer;
       PartyPopup:     integer;
       SingScores:     integer;
+      DuetScores:     integer;
       TopScores:      integer;
+      StatDetailCount:       integer;
+      TopScreenSize:  integer;
       SingTimebarMode:       integer;
-      JukeboxTimebarMode:    integer;
 
       // Controller
       Joypad:         integer;
@@ -236,76 +242,39 @@ type
       WebCamHue:        integer;
       WebCamEffect:     integer;
 
-      // Jukebox
-      JukeboxSongMenu: integer;
-
-      JukeboxFont:     integer;
-      JukeboxStyle:    integer;
-      JukeboxEffect:   integer;
-      JukeboxAlpha:    integer;
-
-      JukeboxLine:      integer;
-      JukeboxProperty:  integer;
-
-      // Jukebox Lyric Fill Color
-      JukeboxSingLineColor:   integer;
-      JukeboxActualLineColor: integer;
-      JukeboxNextLineColor:   integer;
-
-      JukeboxSingLineOutlineColor:   integer;
-      JukeboxActualLineOutlineColor: integer;
-      JukeboxNextLineOutlineColor:   integer;
-
-      CurrentJukeboxSingLineOutlineColor:   integer;
-      CurrentJukeboxActualLineOutlineColor: integer;
-      CurrentJukeboxNextLineOutlineColor:   integer;
-
-      JukeboxSingLineOtherColorR: integer;
-      JukeboxSingLineOtherColorG: integer;
-      JukeboxSingLineOtherColorB: integer;
-
-      JukeboxActualLineOtherColorR: integer;
-      JukeboxActualLineOtherColorG: integer;
-      JukeboxActualLineOtherColorB: integer;
-
-      JukeboxNextLineOtherColorR: integer;
-      JukeboxNextLineOtherColorG: integer;
-      JukeboxNextLineOtherColorB: integer;
-
-      JukeboxSingLineOtherOColorR: integer;
-      JukeboxSingLineOtherOColorG: integer;
-      JukeboxSingLineOtherOColorB: integer;
-
-      JukeboxActualLineOtherOColorR: integer;
-      JukeboxActualLineOtherOColorG: integer;
-      JukeboxActualLineOtherOColorB: integer;
-
-      JukeboxNextLineOtherOColorR: integer;
-      JukeboxNextLineOtherOColorG: integer;
-      JukeboxNextLineOtherOColorB: integer;
-
       PianoKeysLow: TPianoKeyArray;
       PianoKeysHigh: TPianoKeyArray;
 
       // default encoding for texts (lyrics, song-name, ...)
       DefaultEncoding: TEncoding;
       LastReadNames: LongInt;
+      LastReadDelays: LongInt;
+
+      // Remote bridge
+      RemoteBridgeEnabled: integer;
+      RemoteBridgeIpcHost: string;
+      RemoteBridgeIpcPort: integer;
+      RemoteBridgeServerUrl: string;
+      RemoteBridgeNodeExecutable: string;
+      RemoteBridgeScriptPath: string;
+      RemoteBridgeStartCommand: string;
+      RemoteBridgeWebApp: UTF8String;
 
       procedure Load();
       procedure Save();
       procedure SaveNames;
-      function ReloadNames: boolean;
+      procedure SaveDelays;
+      procedure ReloadDelays;
+      function  ReloadNames: boolean;
       procedure SaveLevel;
       procedure SavePlayerColors;
       procedure SavePlayerAvatars;
       procedure SavePlayerLevels;
       procedure SaveTeamColors;
       procedure SaveShowWebScore;
-      procedure SaveJukeboxSongMenu;
       procedure SaveWebcamSettings();
       procedure SaveNumberOfPlayers;
       procedure SaveSingTimebarMode;
-      procedure SaveJukeboxTimebarMode;
 
       procedure TranslateOptionValues;
 
@@ -435,8 +404,6 @@ const
   IHexGrayColor: array[0..9] of UTF8String = ('000000', '202020', '404040', '606060', '808080', 'A0A0A0', 'C0C0C0', 'D6D6D6', 'FFFFFF', '');
   IHexOColor:    array[0..2] of UTF8String = ('000000', 'FFFFFF', '');
 
-  IJukeboxSongMenu: array[0..1] of UTF8String = ('Off', 'On');
-
   IColor:         array[0..8] of UTF8String = ('Blue', 'Green', 'Pink', 'Red', 'Violet', 'Orange', 'Yellow', 'Brown', 'Black');
 
   // Advanced
@@ -444,8 +411,9 @@ const
   IEffectSing:    array[0..1] of UTF8String = ('Off', 'On');
   IScreenFade:    array[0..1] of UTF8String = ('Off', 'On');
   IAskbeforeDel:  array[0..1] of UTF8String = ('Off', 'On');
-  ISingScores:    array[0..1] of UTF8String = ('Off', 'On');
-  ITopScores:    array[0..1] of UTF8String = ('All', 'Player');
+  ISingScores:    array[0..3] of UTF8String = ('Off', 'On', 'Bar Rating', 'Remaining Score');
+  IDuetScores:    array[0..3] of UTF8String = ('Off', 'Separate', 'Combined', 'Both');
+  ITopScores:     array[0..1] of UTF8String = ('All', 'Player');
   IOnSongClick:   array[0..2] of UTF8String = ('Sing', 'Select Players', 'Open Menu');
   sStartSing = 0;
   sSelectPlayer = 1;
@@ -458,10 +426,8 @@ const
   IMouseLegacy:         array[0..2] of UTF8String = ('Off', 'Hardware Cursor', 'Software Cursor'); // use to convert old config option to new
 
   ISingTimebarMode:    array[0..2] of UTF8String = ('Current', 'Remaining', 'Total');
-  IJukeboxTimebarMode: array[0..2] of UTF8String = ('Current', 'Remaining', 'Total');
 
   // Recording options
-  IChannelPlayer: array[0..6] of UTF8String = ('Off', '1', '2', '3', '4', '5', '6');
   IMicBoost:      array[0..3] of UTF8String = ('Off', '+6dB', '+12dB', '+18dB');
 
   // Webcam
@@ -474,6 +440,9 @@ const
  *}
 
 var
+  IPlayers:                    TUTF8StringArray;
+  IPlayersVals:                TIntegerArray;
+  IChannelPlayer:              TUTF8StringArray;
   ILanguageTranslated:         array of UTF8String;
   ILyricsFont:                 array of UTF8String;
 
@@ -528,7 +497,7 @@ var
   ILyricsEffectTranslated:     array[0..4] of UTF8String = ('Simple', 'Zoom', 'Slide', 'Ball', 'Shift');
   INoteLinesTranslated:        array[0..1] of UTF8String = ('Off', 'On');
   IColorTranslated:            array[0..8] of UTF8String = ('Blue', 'Green', 'Pink', 'Red', 'Violet', 'Orange', 'Yellow', 'Brown', 'Black');
-  IPlayerColorTranslated:      array[0..15] of UTF8String = ('Blue', 'Red', 'Green', 'Yellow', 'Orange', 'Pink',  'Violet', 'Brown', 'Gray', 'Dark Blue', 'Sky', 'Cyan', 'Flame', 'Orchid', 'Harlequin', 'Lime');
+  IPlayerColorTranslated:      TUTF8StringArray;
 
   // for lyric colors
   ILineTranslated:             array[0..2] of UTF8String = ('Sing', 'Actual', 'Next');
@@ -548,24 +517,26 @@ var
   IAskbeforeDelTranslated:     array[0..1] of UTF8String = ('Off', 'On');
   IOnSongClickTranslated:      array[0..2] of UTF8String = ('Sing', 'Select Players', 'Open Menu');
   IPartyPopupTranslated:       array[0..1] of UTF8String = ('Off', 'On');
-  ISingScoresTranslated:       array[0..1] of UTF8String = ('Off', 'On');
+  ISingScoresTranslated:       array[0..3] of UTF8String = ('Off', 'On', 'Bar Rating', 'Remaining Score');
+  IDuetScoresTranslated:       array[0..3] of UTF8String = ('Off', 'Separate', 'Combined', 'Both');
   ITopScoresTranslated:        array[0..1] of UTF8String = ('All', 'Player');
+
+  IStatDetailCount:            array of UTF8String;
 
   IJoypadTranslated:           array[0..1] of UTF8String = ('Off', 'On');
   IMouseTranslated:            array[0..2] of UTF8String = ('Off', 'On [System Cursor]', 'On [Game Cursor]');
   IMouseTranslatedLegacy:      array[0..2] of UTF8String = ('Off', 'Hardware Cursor', 'Software Cursor');
 
   ISingTimebarModeTranslated:      array[0..2] of UTF8String = ('Current', 'Remaining', 'Total');
-  IJukeboxTimebarModeTranslated:      array[0..2] of UTF8String = ('Current', 'Remaining', 'Total');
 
   // Recording options
-  IChannelPlayerTranslated:    array[0..IMaxPlayerCount] of UTF8String = ('Off', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12');
+  IChannelPlayerTranslated:    TUTF8StringArray;
   IMicBoostTranslated:         array[0..3] of UTF8String = ('Off', '+6dB', '+12dB', '+18dB');
 
   // Network
   ISendNameTranslated:        array[0..1] of UTF8String = ('Off', 'On');
   IAutoModeTranslated:        array[0..2] of UTF8String = ('Off', 'Send', 'Guardar');
-  IAutoPlayerTranslated:      array[0..IMaxPlayerCount] of UTF8String = ('Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6', 'Player 7', 'Player 8', 'Player 9', 'Player 10', 'Player 11', 'Player 12', 'All');
+  IAutoPlayerTranslated:      TUTF8StringArray;
   IAutoScoreEasyTranslated:   array of UTF8String;
   IAutoScoreMediumTranslated: array of UTF8String;
   IAutoScoreHardTranslated:   array of UTF8String;
@@ -578,7 +549,7 @@ var
   IWebcamEffectTranslated:     array [0..10] of UTF8String;
 
   // Name
-  IPlayerTranslated:      array[0..(IMaxPlayerCount-1)] of UTF8String = ('Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6', 'Player 7', 'Player 8', 'Player 9', 'Player 10', 'Player 11', 'Player 12');
+  IPlayerTranslated:      TUTF8StringArray;
 
   IRed:       array[0..255] of UTF8String;
   IGreen:     array[0..255] of UTF8String;
@@ -593,6 +564,7 @@ uses
   UCommandLine,
   UDataBase,
   UDllManager,
+  UHelp,
   ULanguage,
   UPlatform,
   UMain,
@@ -616,6 +588,160 @@ type
 
 const
   IGNORE_INDEX = -1;
+  BASE_PLAYER_COLOR_COUNT = 16;
+
+  PLAYER_COLOR_DEFAULTS: array[0..15] of UTF8String = (
+    'Blue', 'Red', 'Green', 'Yellow', 'Orange', 'Pink', 'Violet', 'Brown',
+    'Gray', 'Dark Blue', 'Sky', 'Cyan', 'Flame', 'Orchid', 'Harlequin', 'Lime'
+  );
+
+  PLAYER_COLOR_TRANSLATION_KEYS: array[0..15] of UTF8String = (
+    'OPTION_VALUE_BLUE', 'OPTION_VALUE_RED', 'OPTION_VALUE_GREEN',
+    'OPTION_VALUE_YELLOW', 'OPTION_VALUE_ORANGE', 'OPTION_VALUE_PINK',
+    'OPTION_VALUE_VIOLET', 'OPTION_VALUE_BROWN', 'OPTION_VALUE_GRAY',
+    'OPTION_VALUE_DARKBLUE', 'OPTION_VALUE_SKY', 'OPTION_VALUE_CYAN',
+    'OPTION_VALUE_FLAME', 'OPTION_VALUE_ORCHID', 'OPTION_VALUE_HARLEQUIN',
+    'OPTION_VALUE_GREENYELLOW'
+  );
+
+function GetNameTemplateIndexFromKey(const Key: cardinal): integer;
+begin
+  case Key of
+    SDLK_F1:  Result := 0;
+    SDLK_F2:  Result := 1;
+    SDLK_F3:  Result := 2;
+    SDLK_F4:  Result := 3;
+    SDLK_F5:  Result := 4;
+    SDLK_F6:  Result := 5;
+    SDLK_F7:  Result := 6;
+    SDLK_F8:  Result := 7;
+    SDLK_F9:  Result := 8;
+    SDLK_F10: Result := 9;
+    SDLK_F11: Result := 10;
+    SDLK_F12: Result := 11;
+  else
+    Result := -1;
+  end;
+end;
+
+function CreateNumericOptionArray(const FirstValue, LastValue: integer): TUTF8StringArray;
+var
+  I: integer;
+begin
+  if LastValue < FirstValue then
+  begin
+    SetLength(Result, 0);
+    Exit;
+  end;
+
+  SetLength(Result, LastValue - FirstValue + 1);
+  for I := 0 to High(Result) do
+    Result[I] := IntToStr(FirstValue + I);
+end;
+
+function GetPlayerColorOptionCount: integer;
+begin
+  Result := (IMaxPlayerCount * 3 + 1) div 2;
+  if Result < BASE_PLAYER_COLOR_COUNT then
+    Result := BASE_PLAYER_COLOR_COUNT;
+end;
+
+function TryGetMixedPlayerColorPair(ColorIndex: integer; out LeftColor, RightColor: integer): boolean;
+var
+  Remaining: integer;
+  Sum: integer;
+  LeftCandidate: integer;
+  RightCandidate: integer;
+begin
+  Result := false;
+  LeftColor := 0;
+  RightColor := 0;
+
+  if ColorIndex <= BASE_PLAYER_COLOR_COUNT then
+    Exit;
+
+  Remaining := ColorIndex - BASE_PLAYER_COLOR_COUNT;
+  for Sum := BASE_PLAYER_COLOR_COUNT + 1 to BASE_PLAYER_COLOR_COUNT * 2 - 1 do
+  begin
+    LeftCandidate := Sum - BASE_PLAYER_COLOR_COUNT;
+    if LeftCandidate < 1 then
+      LeftCandidate := 1;
+    while LeftCandidate <= ((Sum - 1) div 2) do
+    begin
+      RightCandidate := Sum - LeftCandidate;
+      if LeftCandidate >= RightCandidate then
+      begin
+        Inc(LeftCandidate);
+        Continue;
+      end;
+
+      Dec(Remaining);
+      if Remaining = 0 then
+      begin
+        LeftColor := LeftCandidate;
+        RightColor := RightCandidate;
+        Result := true;
+        Exit;
+      end;
+
+      Inc(LeftCandidate);
+    end;
+  end;
+end;
+
+function GetDefaultPlayerColor(PlayerIndex: integer): integer;
+begin
+  if Length(IPlayerColorTranslated) = 0 then
+    Exit(0);
+
+  Result := (PlayerIndex mod Length(IPlayerColorTranslated)) + 1;
+end;
+
+procedure InitializePlayerOptionArrays;
+var
+  I: integer;
+  LeftColor: integer;
+  RightColor: integer;
+begin
+  SetLength(IPlayerColorTranslated, GetPlayerColorOptionCount);
+  for I := 0 to High(IPlayerColorTranslated) do
+  begin
+    if I < Length(PLAYER_COLOR_DEFAULTS) then
+      IPlayerColorTranslated[I] := PLAYER_COLOR_DEFAULTS[I]
+    else if TryGetMixedPlayerColorPair(I + 1, LeftColor, RightColor) then
+      IPlayerColorTranslated[I] := PLAYER_COLOR_DEFAULTS[LeftColor - 1] + ' + ' + PLAYER_COLOR_DEFAULTS[RightColor - 1]
+    else
+      IPlayerColorTranslated[I] := PLAYER_COLOR_DEFAULTS[I mod Length(PLAYER_COLOR_DEFAULTS)];
+  end;
+
+  SetLength(IPlayers, IMaxPlayerCount);
+  SetLength(IPlayersVals, IMaxPlayerCount);
+  for I := 0 to IMaxPlayerCount - 1 do
+  begin
+    IPlayers[I] := IntToStr(I + 1);
+    IPlayersVals[I] := I + 1;
+  end;
+
+  SetLength(IChannelPlayer, IMaxPlayerCount + 1);
+  IChannelPlayer[0] := 'Off';
+  for I := 1 to IMaxPlayerCount do
+    IChannelPlayer[I] := IntToStr(I);
+
+  SetLength(IChannelPlayerTranslated, IMaxPlayerCount + 1);
+  SetLength(IAutoPlayerTranslated, IMaxPlayerCount + 1);
+  SetLength(IPlayerTranslated, IMaxPlayerCount);
+
+  IChannelPlayerTranslated[0] := 'Off';
+  for I := 1 to IMaxPlayerCount do
+    IChannelPlayerTranslated[I] := IntToStr(I);
+
+  for I := 0 to IMaxPlayerCount - 1 do
+    IPlayerTranslated[I] := 'Player ' + IntToStr(I + 1);
+
+  for I := 0 to IMaxPlayerCount - 1 do
+    IAutoPlayerTranslated[I] := 'Player ' + IntToStr(I + 1);
+  IAutoPlayerTranslated[IMaxPlayerCount] := 'All';
+end;
 
 constructor TSafeIniFile.Create(const FileName, LogSource: string);
 begin
@@ -666,12 +792,25 @@ procedure TIni.TranslateOptionValues;
 var
   I: integer;
   Zeros: string;
+  SelectedLanguage: integer;
+  BasePlayerColorNames: array[0..BASE_PLAYER_COLOR_COUNT-1] of UTF8String;
+  LeftColor: integer;
+  RightColor: integer;
 begin
-  // Load language file, fallback to config language if param is invalid
+  InitializePlayerOptionArrays;
+
+  // Determine which language index should be active
   if (Params.Language > -1) and (Params.Language < Length(ILanguage)) then
-    ULanguage.Language.ChangeLanguage(ILanguage[Params.Language])
+    SelectedLanguage := Params.Language
   else
-    ULanguage.Language.ChangeLanguage(ILanguage[Language]);
+    SelectedLanguage := Language;
+
+  // Load UI strings for the selected language
+  ULanguage.Language.ChangeLanguage(ILanguage[SelectedLanguage]);
+
+  // Keep help overlays in sync as well (if initialized already)
+  if Assigned(Help) and (SelectedLanguage >= 0) and (SelectedLanguage < Length(ILanguage)) then
+    Help.ChangeLanguage(ILanguage[SelectedLanguage]);
 
   IDifficultyTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_EASY');
   IDifficultyTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_MEDIUM');
@@ -846,22 +985,18 @@ begin
   IColorTranslated[7] := ULanguage.Language.Translate('OPTION_VALUE_BROWN');
   IColorTranslated[8] := ULanguage.Language.Translate('OPTION_VALUE_BLACK');
 
-  IPlayerColorTranslated[0] := ULanguage.Language.Translate('OPTION_VALUE_BLUE');
-  IPlayerColorTranslated[1] := ULanguage.Language.Translate('OPTION_VALUE_RED');
-  IPlayerColorTranslated[2] := ULanguage.Language.Translate('OPTION_VALUE_GREEN');
-  IPlayerColorTranslated[3] := ULanguage.Language.Translate('OPTION_VALUE_YELLOW');
-  IPlayerColorTranslated[4] := ULanguage.Language.Translate('OPTION_VALUE_ORANGE');
-  IPlayerColorTranslated[5] := ULanguage.Language.Translate('OPTION_VALUE_PINK');
-  IPlayerColorTranslated[6] := ULanguage.Language.Translate('OPTION_VALUE_VIOLET');
-  IPlayerColorTranslated[7] := ULanguage.Language.Translate('OPTION_VALUE_BROWN');
-  IPlayerColorTranslated[8] := ULanguage.Language.Translate('OPTION_VALUE_GRAY');
-  IPlayerColorTranslated[9] := ULanguage.Language.Translate('OPTION_VALUE_DARKBLUE');
-  IPlayerColorTranslated[10] := ULanguage.Language.Translate('OPTION_VALUE_SKY');
-  IPlayerColorTranslated[11] := ULanguage.Language.Translate('OPTION_VALUE_CYAN');
-  IPlayerColorTranslated[12] := ULanguage.Language.Translate('OPTION_VALUE_FLAME');
-  IPlayerColorTranslated[13] := ULanguage.Language.Translate('OPTION_VALUE_ORCHID');
-  IPlayerColorTranslated[14] := ULanguage.Language.Translate('OPTION_VALUE_HARLEQUIN');
-  IPlayerColorTranslated[15] := ULanguage.Language.Translate('OPTION_VALUE_GREENYELLOW');
+  for I := 0 to High(BasePlayerColorNames) do
+    BasePlayerColorNames[I] := ULanguage.Language.Translate(PLAYER_COLOR_TRANSLATION_KEYS[I]);
+
+  for I := 0 to High(IPlayerColorTranslated) do
+  begin
+    if I < Length(BasePlayerColorNames) then
+      IPlayerColorTranslated[I] := BasePlayerColorNames[I]
+    else if TryGetMixedPlayerColorPair(I + 1, LeftColor, RightColor) then
+      IPlayerColorTranslated[I] := BasePlayerColorNames[LeftColor - 1] + ' + ' + BasePlayerColorNames[RightColor - 1]
+    else
+      IPlayerColorTranslated[I] := BasePlayerColorNames[I mod Length(BasePlayerColorNames)];
+  end;
 
   // Advanced
   ILoadAnimationTranslated[0]         := ULanguage.Language.Translate('OPTION_VALUE_OFF');
@@ -885,6 +1020,12 @@ begin
 
   ISingScoresTranslated[0]          := ULanguage.Language.Translate('OPTION_VALUE_OFF');
   ISingScoresTranslated[1]          := ULanguage.Language.Translate('OPTION_VALUE_ON');
+  ISingScoresTranslated[2]          := ULanguage.Language.Translate('OPTION_VALUE_BAR_RATING');
+  ISingScoresTranslated[3]          := ULanguage.Language.Translate('OPTION_VALUE_REMAINING_SCORE');
+  IDuetScoresTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_OFF');
+  IDuetScoresTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_SEPARATE');
+  IDuetScoresTranslated[2]            := ULanguage.Language.Translate('OPTION_VALUE_COMBINED');
+  IDuetScoresTranslated[3]            := ULanguage.Language.Translate('OPTION_VALUE_BOTH');
 
   ITopScoresTranslated[0]          := ULanguage.Language.Translate('OPTION_VALUE_ALL');
   ITopScoresTranslated[1]          := ULanguage.Language.Translate('OPTION_VALUE_PLAYER');
@@ -903,10 +1044,6 @@ begin
   ISingTimebarModeTranslated[0]          := ULanguage.Language.Translate('OPTION_VALUE_CURRENT');
   ISingTimebarModeTranslated[1]          := ULanguage.Language.Translate('OPTION_VALUE_REMAINING');
   ISingTimebarModeTranslated[2]          := ULanguage.Language.Translate('OPTION_VALUE_TOTAL');
-
-  IJukeboxTimebarModeTranslated[0]          := ULanguage.Language.Translate('OPTION_VALUE_CURRENT');
-  IJukeboxTimebarModeTranslated[1]          := ULanguage.Language.Translate('OPTION_VALUE_REMAINING');
-  IJukeboxTimebarModeTranslated[2]          := ULanguage.Language.Translate('OPTION_VALUE_TOTAL');
 
   IAudioOutputBufferSizeTranslated[0] := ULanguage.Language.Translate('OPTION_VALUE_AUTO');
   IAudioOutputBufferSizeTranslated[1] := '256';
@@ -973,9 +1110,12 @@ begin
 
   for I:=0 to IMaxPlayerCount-1 do
   begin
-    IAutoPlayerTranslated[I]       :=ULanguage.Language.Translate('OPTION_PLAYER_' + IntToStr(I));
+    IAutoPlayerTranslated[I]       := ULanguage.Language.Translate('OPTION_PLAYER_' + IntToStr(I + 1));
   end;
-  IAutoPlayerTranslated[12]         := ULanguage.Language.Translate('OPTION_ALL_PLAYERS');
+  IAutoPlayerTranslated[IMaxPlayerCount] := ULanguage.Language.Translate('OPTION_ALL_PLAYERS');
+
+  for I := 0 to IMaxPlayerCount - 1 do
+    IPlayerTranslated[I] := ULanguage.Language.Translate('OPTION_PLAYER_' + IntToStr(I + 1));
 
   // Webcam
   IWebcamFlipTranslated[0]          := ULanguage.Language.Translate('OPTION_VALUE_OFF');
@@ -1455,8 +1595,6 @@ var
   IniFile: TMemIniFile;
   I:       integer;
   IShowWebScore: array of UTF8String;
-  HexColor: string;
-  Col: TRGB;
   KeysLow: string;
   KeysHigh: string;
   ReadPianoKeysLow: TPianoKeyArray;
@@ -1498,7 +1636,15 @@ var
     else if Result > 100 then
       Result := 100;
   end;
+
+  function ReadRemoteBridgeInteger(const Key: string; DefaultValue, MinValue: integer): integer;
+  begin
+    Result := IniFile.ReadInteger('RemoteBridge', Key, DefaultValue);
+    if (Result < MinValue) then
+      Result := MinValue;
+  end;
 begin
+  InitializePlayerOptionArrays;
   LoadFontFamilyNames;
   ILyricsFont := FontFamilyNames;
   GamePath := Platform.GetGameUserPath;
@@ -1513,18 +1659,20 @@ begin
   Log.LogStatus('Using config : ' + FileName.ToNative, 'Ini');
   IniFile := TMemIniFile.Create(FileName.ToNative);
 
-  for I := 0 to IMaxPlayerCount-1 do
+  for I := 0 to High(Name) do
   begin
     // Name
     Name[I] := IniFile.ReadString('Name', 'P'+IntToStr(I+1), 'Player'+IntToStr(I+1));
     // Color Player
-    PlayerColor[I] := IniFile.ReadInteger('PlayerColor', 'P'+IntToStr(I+1), DefaultPlayerColors[I]);
+    PlayerColor[I] := IniFile.ReadInteger('PlayerColor', 'P'+IntToStr(I+1), GetDefaultPlayerColor(I));
     // Initialize session sing colors from the saved player colors so they are usable before the first song
     SingColor[I] := PlayerColor[I];
     // Avatar Player
     PlayerAvatar[I] := IniFile.ReadString('PlayerAvatar', 'P'+IntToStr(I+1), '');
     // Level Player
     PlayerLevel[I] := IniFile.ReadInteger('PlayerLevel', 'P'+IntToStr(I+1), 1);
+    // Player Delay
+    PlayerDelay[I] := IniFile.ReadInteger('PlayerDelay', 'P'+IntToStr(I+1), 0);
   end;
 
   // Color Team
@@ -1534,7 +1682,7 @@ begin
   // Templates for Names Mod
   for I := 0 to 2 do
     NameTeam[I] := IniFile.ReadString('NameTeam', 'T'+IntToStr(I+1), 'Team'+IntToStr(I+1));
-  for I := 0 to 11 do
+  for I := 0 to High(NameTemplate) do
     NameTemplate[I] := IniFile.ReadString('NameTemplate', 'Name'+IntToStr(I+1), 'Template'+IntToStr(I+1));
 
   // Players
@@ -1564,6 +1712,22 @@ begin
   AVDelay := IniFile.ReadInteger('Game', 'AVDelay', 0);
 
   MicDelay := IniFile.ReadInteger('Game', 'MicDelay', 140);
+  EditorMidiLeadMs := IniFile.ReadInteger('Editor', 'MidiPreviewLeadMs', 0);
+  EditorClickLeadMs := IniFile.ReadInteger('Editor', 'ClickLeadMs', 0);
+  RemoteBridgeEnabled := ReadArrayIndex(ITabs, IniFile, 'RemoteBridge', 'Enabled', DEFAULT_REMOTE_BRIDGE_ENABLED);
+  if (RemoteBridgeEnabled < 0) then
+    RemoteBridgeEnabled := DEFAULT_REMOTE_BRIDGE_ENABLED;
+  RemoteBridgeIpcHost := Trim(IniFile.ReadString('RemoteBridge', 'IpcHost', DEFAULT_REMOTE_BRIDGE_IPC_HOST));
+  if (RemoteBridgeIpcHost = '') then
+    RemoteBridgeIpcHost := DEFAULT_REMOTE_BRIDGE_IPC_HOST;
+  RemoteBridgeIpcPort := ReadRemoteBridgeInteger('IpcPort', DEFAULT_REMOTE_BRIDGE_IPC_PORT, 1);
+  RemoteBridgeServerUrl := Trim(IniFile.ReadString('RemoteBridge', 'ServerUrl', DEFAULT_REMOTE_BRIDGE_SERVER_URL));
+  if (RemoteBridgeServerUrl = '') then
+    RemoteBridgeServerUrl := DEFAULT_REMOTE_BRIDGE_SERVER_URL;
+  RemoteBridgeNodeExecutable := Trim(IniFile.ReadString('RemoteBridge', 'NodeExecutable', ''));
+  RemoteBridgeScriptPath := Trim(IniFile.ReadString('RemoteBridge', 'BridgeScriptPath', ''));
+  RemoteBridgeStartCommand := Trim(IniFile.ReadString('RemoteBridge', 'StartCommand', ''));
+  RemoteBridgeWebApp := Trim(IniFile.ReadString('RemoteBridge', 'WebApp', ''));
 
   // Read Users Info (Network)
   DataBase.ReadUsers;
@@ -1631,6 +1795,7 @@ begin
 
   AudioVolume  := ReadVolumePercent('Sound', 'AudioVolume', 100);
   VocalsVolume := ReadVolumePercent('Sound', 'VocalsVolume', 100);
+  MidiVolume   := ReadVolumePercent('Sound', 'MidiVolume', 100);
   SfxVolume    := ReadVolumePercent('Sound', 'SfxVolume', 100);
   PreviewVolume := ReadVolumePercent('Sound', 'PreviewVolume', 30);
   BackgroundMusicVolume := ReadVolumePercent('Sound', 'BackgroundMusicVolume', 40);
@@ -1699,8 +1864,17 @@ begin
   // SingScores
   SingScores := ReadArrayIndex(ISingScores, IniFile, 'Advanced', 'SingScores', IGNORE_INDEX, 'On');
 
+  // DuetScores
+  DuetScores := ReadArrayIndex(IDuetScores, IniFile, 'Advanced', 'DuetScores', IGNORE_INDEX, 'Off');
+
   // TopScores
   TopScores := ReadArrayIndex(ITopScores, IniFile, 'Advanced', 'TopScores', IGNORE_INDEX, 'Player');
+
+  // StatDetailCount
+  StatDetailCount := IniFile.ReadInteger('Advanced', 'StatDetailCount', 20);
+
+  // TopScreenSize
+  TopScreenSize := IniFile.ReadInteger('Advanced', 'TopScreenSize', 5);
 
   // SyncTo
   SyncTo := ReadArrayIndex(ISyncTo, IniFile, 'Advanced', 'SyncTo', Ord(stMusic));
@@ -1718,9 +1892,6 @@ begin
   // SingTimebarMode
   SingTimebarMode := ReadArrayIndex(ISingTimebarMode, IniFile, 'Advanced', 'SingTimebarMode', IGNORE_INDEX, 'Remaining');
 
-  // JukeboxTimebarMode
-  JukeboxTimebarMode := ReadArrayIndex(IJukeboxTimebarMode, IniFile, 'Advanced', 'JukeboxTimebarMode', IGNORE_INDEX, 'Current');
-
   // WebCam
   WebCamID := IniFile.ReadInteger('Webcam', 'ID', 0);
   WebCamResolution := ReadArrayIndex(IWebcamResolution, IniFile, 'Webcam', 'Resolution', IGNORE_INDEX, '320x240');
@@ -1732,101 +1903,6 @@ begin
   WebCamSaturation := ReadArrayIndex(IWebcamSaturation, IniFile, 'Webcam', 'Saturation', IGNORE_INDEX, '0');
   WebCamHue := ReadArrayIndex(IWebcamHue, IniFile, 'Webcam', 'Hue', IGNORE_INDEX, '0');
   WebCamEffect := IniFile.ReadInteger('Webcam', 'Effect', 0);
-
-  // Jukebox
-  JukeboxFont := ReadArrayIndex(ILyricsFont, IniFile, 'Jukebox', 'LyricsFont', 0);
-  JukeboxStyle := ReadArrayIndex(ILyricsStyle, IniFile, 'Jukebox', 'LyricsStyle', 2);
-  JukeboxEffect := ReadArrayIndex(ILyricsEffect, IniFile, 'Jukebox', 'LyricsEffect', 2);
-  JukeboxAlpha := ReadArrayIndex(ILyricsAlpha, IniFile, 'Jukebox', 'LyricsAlpha', 20);
-
-  JukeboxSongMenu := ReadArrayIndex(IJukeboxSongMenu, IniFile, 'Jukebox', 'SongMenu', IGNORE_INDEX, 'On');
-
-
-  JukeboxSingLineColor := ReadArrayIndex(IHexSingColor, IniFile, 'Jukebox', 'SingLineColor', High(IHexSingColor));
-
-  // other color
-  if (JukeboxSingLineColor = -1) or (JukeboxSingLineColor = High(IHexSingColor)) then
-  begin
-    JukeboxSingLineColor := High(IHexSingColor);
-
-    HexColor := IniFile.ReadString('Jukebox', 'SingLineColor', '47B3FF');
-    Col := HexToRGB(HexColor);
-
-    Ini.JukeboxSingLineOtherColorR := Round(Col.R);
-    Ini.JukeboxSingLineOtherColorG := Round(Col.G);
-    Ini.JukeboxSingLineOtherColorB := Round(Col.B);
-  end;
-
-  JukeboxActualLineColor := ReadArrayIndex(IHexGrayColor, IniFile, 'Jukebox', 'ActualLineColor', High(IHexGrayColor));
-
-  // other color
-  if (JukeboxActualLineColor = -1) or (JukeboxActualLineColor = High(IHexGrayColor)) then
-  begin
-    JukeboxActualLineColor := High(IHexGrayColor);
-
-    HexColor := IniFile.ReadString('Jukebox', 'ActualLineColor', IHexGrayColor[8]);
-    Col := HexToRGB(HexColor);
-
-    Ini.JukeboxActualLineOtherColorR := Round(Col.R);
-    Ini.JukeboxActualLineOtherColorG := Round(Col.G);
-    Ini.JukeboxActualLineOtherColorB := Round(Col.B);
-  end;
-
-  JukeboxNextLineColor := ReadArrayIndex(IHexGrayColor, IniFile, 'Jukebox', 'NextLineColor', High(IHexGrayColor));
-  // other color
-  if (JukeboxNextLineColor = -1) or (JukeboxNextLineColor = High(IHexGrayColor)) then
-  begin
-    JukeboxNextLineColor := High(IHexGrayColor);
-
-    HexColor := IniFile.ReadString('Jukebox', 'NextLineColor', IHexGrayColor[6]);
-    Col := HexToRGB(HexColor);
-
-    Ini.JukeboxNextLineOtherColorR := Round(Col.R);
-    Ini.JukeboxNextLineOtherColorG := Round(Col.G);
-    Ini.JukeboxNextLineOtherColorB := Round(Col.B);
-  end;
-
-  JukeboxSingLineOutlineColor := ReadArrayIndex(IHexOColor, IniFile, 'Jukebox', 'SingLineOColor', 0);
-  // other color
-  if (JukeboxSingLineOutlineColor = -1) then
-  begin
-    JukeboxSingLineOutlineColor := High(IHexOColor);
-
-    HexColor := IniFile.ReadString('Jukebox', 'SingLineOColor', IHexOColor[0]);
-    Col := HexToRGB(HexColor);
-
-    Ini.JukeboxSingLineOtherOColorR := Round(Col.R);
-    Ini.JukeboxSingLineOtherOColorG := Round(Col.G);
-    Ini.JukeboxSingLineOtherOColorB := Round(Col.B);
-  end;
-
-  JukeboxActualLineOutlineColor := ReadArrayIndex(IHexOColor, IniFile, 'Jukebox', 'ActualLineOColor', 0);
-  // other color
-  if (JukeboxActualLineOutlineColor = -1) then
-  begin
-    JukeboxActualLineOutlineColor := High(IHexOColor);
-
-    HexColor := IniFile.ReadString('Jukebox', 'ActualLineOColor', IHexOColor[0]);
-    Col := HexToRGB(HexColor);
-
-    Ini.JukeboxActualLineOtherOColorR := Round(Col.R);
-    Ini.JukeboxActualLineOtherOColorG := Round(Col.G);
-    Ini.JukeboxActualLineOtherOColorB := Round(Col.B);
-  end;
-
-  JukeboxNextLineOutlineColor := ReadArrayIndex(IHexOColor, IniFile, 'Jukebox', 'NextLineOColor', 0);
-  // other color
-  if (JukeboxNextLineOutlineColor = -1) then
-  begin
-    JukeboxNextLineOutlineColor := High(IHexOColor);
-
-    HexColor := IniFile.ReadString('Jukebox', 'NextLineOColor', IHexOColor[0]);
-    Col := HexToRGB(HexColor);
-
-    Ini.JukeboxNextLineOtherOColorR := Round(Col.R);
-    Ini.JukeboxNextLineOtherOColorG := Round(Col.G);
-    Ini.JukeboxNextLineOtherOColorB := Round(Col.B);
-  end;
 
   // default values
   PianoKeysLow := InitializePianoKeyArray([60, 97, 121, 115, 120, 100, 99, 118, 103, 98, 104, 110, 109, 107, 44, 108, 46, 246, 45]);
@@ -1852,8 +1928,6 @@ end;
 procedure TIni.Save;
 var
   IniFile: TIniFile;
-  HexColor: string;
-  C: TRGB;
 begin
   IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.Save');
 
@@ -1885,6 +1959,16 @@ begin
 
     IniFile.WriteInteger('Game', 'AVDelay', AVDelay);
     IniFile.WriteInteger('Game', 'MicDelay', MicDelay);
+    IniFile.WriteInteger('Editor', 'MidiPreviewLeadMs', EditorMidiLeadMs);
+    IniFile.WriteInteger('Editor', 'ClickLeadMs', EditorClickLeadMs);
+    IniFile.WriteString('RemoteBridge', 'Enabled', ITabs[RemoteBridgeEnabled]);
+    IniFile.WriteString('RemoteBridge', 'IpcHost', RemoteBridgeIpcHost);
+    IniFile.WriteInteger('RemoteBridge', 'IpcPort', RemoteBridgeIpcPort);
+    IniFile.WriteString('RemoteBridge', 'ServerUrl', RemoteBridgeServerUrl);
+    IniFile.WriteString('RemoteBridge', 'NodeExecutable', RemoteBridgeNodeExecutable);
+    IniFile.WriteString('RemoteBridge', 'BridgeScriptPath', RemoteBridgeScriptPath);
+    IniFile.WriteString('RemoteBridge', 'StartCommand', RemoteBridgeStartCommand);
+    IniFile.WriteString('RemoteBridge', 'WebApp', RemoteBridgeWebApp);
 
     // MaxFramerate
     IniFile.WriteString('Graphics', 'MaxFramerate', IMaxFramerate[MaxFramerate]);
@@ -1951,6 +2035,7 @@ begin
     // Volume Settings
     IniFile.WriteInteger('Sound', 'AudioVolume', AudioVolume);
     IniFile.WriteInteger('Sound', 'VocalsVolume', VocalsVolume);
+    IniFile.WriteInteger('Sound', 'MidiVolume', MidiVolume);
     IniFile.WriteInteger('Sound', 'SfxVolume', SfxVolume);
     IniFile.WriteInteger('Sound', 'BackgroundMusicVolume', BackgroundMusicVolume);
     IniFile.WriteInteger('Sound', 'PreviewVolume', PreviewVolume);
@@ -2011,8 +2096,17 @@ begin
     //SingScores
     IniFile.WriteString('Advanced', 'SingScores', ISingScores[SingScores]);
 
+    //DuetScores
+    IniFile.WriteString('Advanced', 'DuetScores', IDuetScores[DuetScores]);
+
     //TopScores
     IniFile.WriteString('Advanced', 'TopScores', ITopScores[TopScores]);
+
+    //StatDetailCount
+    IniFile.WriteInteger('Advanced', 'StatDetailCount', StatDetailCount);
+
+    //TopScreenSize
+    IniFile.WriteInteger('Advanced', 'TopScreenSize', TopScreenSize);
 
     //SyncTo
     IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);
@@ -2026,9 +2120,6 @@ begin
     // SingTimebarMode
     IniFile.WriteString('Advanced', 'SingTimebarMode', ISingTimebarMode[SingTimebarMode]);
 
-    // JukeboxTimebarMode
-    IniFile.WriteString('Advanced', 'JukeboxTimebarMode', IJukeboxTimebarMode[JukeboxTimebarMode]);
-
     // Directories (add a template if section is missing)
     // Note: Value must be ' ' and not '', otherwise no key is generated on Linux
     if (not IniFile.SectionExists('Directories')) then
@@ -2036,72 +2127,6 @@ begin
 
     if (not IniFile.ValueExists('Directories', 'WebScoresDir')) then
       IniFile.WriteString('Directories', 'WebScoresDir', ' ');
-
-    // Jukebox
-    IniFile.WriteString('Jukebox', 'LyricsFont', ILyricsFont[JukeboxFont]);
-    IniFile.WriteString('Jukebox', 'LyricsStyle', ILyricsStyle[JukeboxStyle]);
-    IniFile.WriteString('Jukebox', 'LyricsEffect', ILyricsEffect[JukeboxEffect]);
-    IniFile.WriteString('Jukebox', 'LyricsAlpha', ILyricsAlpha[JukeboxAlpha]);
-
-    if (JukeboxSingLineColor <> High(ISingLineColor)) then
-    begin
-      C := GetLyricColor(JukeboxSingLineColor);
-      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-    end
-    else
-      HexColor := RGBToHex(JukeboxSingLineOtherColorR, JukeboxSingLineOtherColorG, JukeboxSingLineOtherColorB);
-
-    IniFile.WriteString('Jukebox', 'SingLineColor', HexColor);
-
-    if (JukeboxActualLineColor <> High(IActualLineColor)) then
-    begin
-      C := GetLyricGrayColor(JukeboxActualLineColor);
-      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-    end
-    else
-      HexColor := RGBToHex(JukeboxActualLineOtherColorR, JukeboxActualLineOtherColorG, JukeboxActualLineOtherColorB);
-
-    IniFile.WriteString('Jukebox', 'ActualLineColor', HexColor);
-
-    if (JukeboxNextLineColor <> High(INextLineColor)) then
-    begin
-      C := GetLyricGrayColor(JukeboxNextLineColor);
-      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-    end
-    else
-      HexColor := RGBToHex(JukeboxNextLineOtherColorR, JukeboxNextLineOtherColorG, JukeboxNextLineOtherColorB);
-
-    IniFile.WriteString('Jukebox', 'NextLineColor', HexColor);
-
-    if (JukeboxSingLineOutlineColor <> High(ISingLineOColor)) then
-    begin
-      C := GetLyricOutlineColor(JukeboxSingLineOutlineColor);
-      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-    end
-    else
-      HexColor := RGBToHex(JukeboxSingLineOtherOColorR, JukeboxSingLineOtherOColorG, JukeboxSingLineOtherOColorB);
-
-    IniFile.WriteString('Jukebox', 'SingLineOColor', HexColor);
-
-    if (JukeboxActualLineOutlineColor <> High(IActualLineOColor)) then
-    begin
-      C := GetLyricOutlineColor(JukeboxActualLineOutlineColor);
-      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-    end
-    else
-      HexColor := RGBToHex(JukeboxActualLineOtherOColorR, JukeboxActualLineOtherOColorG, JukeboxActualLineOtherOColorB);
-
-    IniFile.WriteString('Jukebox', 'ActualLineOColor', HexColor);
-
-    if (JukeboxNextLineOutlineColor <> High(INextLineOColor)) then
-    begin
-      C := GetLyricOutlineColor(JukeboxNextLineOutlineColor);
-      HexColor := RGBToHex(Round(C.R * 255), Round(C.G * 255), Round(C.B * 255));
-    end
-    else
-      HexColor := RGBToHex(JukeboxNextLineOtherOColorR, JukeboxNextLineOtherOColorG, JukeboxNextLineOtherOColorB);
-
-    IniFile.WriteString('Jukebox', 'NextLineOColor', HexColor);
 
     IniFile.WriteString('KeyBindings', 'PianoKeysLow', MergeIntArrayToString(PianoKeysLow));
     IniFile.WriteString('KeyBindings', 'PianoKeysHigh', MergeIntArrayToString(PianoKeysHigh));
@@ -2130,6 +2155,40 @@ begin
   end;
 end;
 
+procedure TIni.SaveDelays;
+var
+  IniFile: TIniFile;
+  I:       integer;
+begin
+  if not Filename.IsReadOnly() then
+  begin
+    IniFile := TIniFile.Create(Filename.ToNative);
+
+    for I := 0 to High(PlayerDelay) do
+      IniFile.WriteInteger('PlayerDelay', 'P' + IntToStr(I+1), PlayerDelay[I]);
+
+    IniFile.Free;
+  end;
+end;
+
+procedure TIni.ReloadDelays;
+var
+  IniFile: TIniFile;
+  I:       integer;
+begin
+  if not FileExists(Filename.ToNative) or (FileAge(Filename.ToNative) <= LastReadDelays) then
+  begin
+    Exit;
+  end;
+  LastReadDelays := FileAge(Filename.ToNative);
+
+  IniFile := TIniFile.Create(Filename.ToNative);
+
+  for I := 0 to IMaxPlayerCount-1 do
+    PlayerDelay[I] := IniFile.ReadInteger('PlayerDelay', 'P'+IntToStr(I+1), 0);
+
+  IniFile.Free;
+end;
 
 function TIni.ReloadNames: boolean;
 var
@@ -2171,19 +2230,6 @@ begin
   end;
 end;
 
-procedure TIni.SaveJukeboxSongMenu;
-var
-  IniFile: TIniFile;
-begin
-  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveJukeboxSongMenu');
-  try
-    IniFile.WriteString('Jukebox', 'SongMenu', IJukeboxSongMenu[JukeboxSongMenu]);
-  finally
-    IniFile.Free;
-  end;
-end;
-
-
 procedure TIni.SaveShowWebScore;
 var
   IniFile: TIniFile;
@@ -2196,7 +2242,6 @@ begin
     IniFile.Free;
   end;
 end;
-
 
 procedure TIni.SavePlayerColors;
 
@@ -2305,20 +2350,6 @@ begin
     IniFile.Free;
   end;
 end;
-
-procedure TIni.SaveJukeboxTimebarMode;
-var
-  IniFile: TIniFile;
-begin
-  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveJukeboxTimebarMode');
-  try
-    // Players
-    IniFile.WriteString('Advanced', 'JukeboxTimebarMode', IJukeboxTimebarMode[JukeboxTimebarMode]);
-  finally
-    IniFile.Free;
-  end;
-end;
-
 
 function TIni.SetResolution(ResolutionString: string; RemoveCurrent: boolean; NoSave: boolean): boolean;
   var

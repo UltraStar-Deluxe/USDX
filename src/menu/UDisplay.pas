@@ -110,7 +110,7 @@ type
       function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; out SuppressKey: boolean): boolean;
 
       { calls ParseInput of cur or next Screen if assigned }
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; Repeated : boolean = false): boolean;
 
       { calls ParseMouse of cur or next Screen if assigned }
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
@@ -169,10 +169,85 @@ uses
   UImage,
   ULog,
   UMain,
+  URemoteOverlay,
   UTexture,
   UTime,
   ULanguage,
-  UPathUtils;
+  UPathUtils,
+  UScale
+  {$IFDEF MSWINDOWS}
+  ,Windows
+  {$ENDIF}
+  ;
+
+function MinF(const A, B: Double): Double; inline;
+begin
+  if A < B then
+    Result := A
+  else
+    Result := B;
+end;
+
+function MaxF(const A, B: Double): Double; inline;
+begin
+  if A > B then
+    Result := A
+  else
+    Result := B;
+end;
+
+{$IFDEF MSWINDOWS}
+const
+  PRINTSCREEN_HOTKEY_ID = 1;
+  {$IFNDEF MOD_NOREPEAT}
+  MOD_NOREPEAT = $4000;
+  {$ENDIF}
+
+var
+  PrintScreenHotKeyRegistered: boolean = false;
+  PrintScreenHookInstalled: boolean = false;
+
+procedure HandlePrintScreenHotKey(Data: Pointer);
+begin
+  if Assigned(Display) then
+    Display.SaveScreenShot;
+end;
+
+procedure PrintScreenWindowsMessageHook(userdata, hWnd: Pointer; mesage: UInt32; wParam: UInt64; lParam: SInt64); cdecl;
+begin
+  if (mesage = WM_HOTKEY) and (wParam = PRINTSCREEN_HOTKEY_ID) then
+  begin
+    MainThreadExec(@HandlePrintScreenHotKey, nil);
+  end;
+end;
+
+procedure RegisterPrintScreenHotKey;
+begin
+  if not PrintScreenHookInstalled then
+  begin
+    SDL_SetWindowsMessageHook(@PrintScreenWindowsMessageHook, nil);
+    PrintScreenHookInstalled := true;
+  end;
+
+  if not PrintScreenHotKeyRegistered then
+    PrintScreenHotKeyRegistered := RegisterHotKey(0, PRINTSCREEN_HOTKEY_ID, MOD_NOREPEAT, VK_SNAPSHOT);
+end;
+
+procedure UnregisterPrintScreenHotKey;
+begin
+  if PrintScreenHotKeyRegistered then
+  begin
+    UnregisterHotKey(0, PRINTSCREEN_HOTKEY_ID);
+    PrintScreenHotKeyRegistered := false;
+  end;
+
+  if PrintScreenHookInstalled then
+  begin
+    SDL_SetWindowsMessageHook(nil, nil);
+    PrintScreenHookInstalled := false;
+  end;
+end;
+{$ENDIF}
 
 constructor TDisplay.Create;
 begin
@@ -210,10 +285,17 @@ begin
   Cursor_Fade     := false;
   Cursor_HiddenByScreen := true;
   Cursor_Update   := false;
+
+  {$IFDEF MSWINDOWS}
+  RegisterPrintScreenHotKey;
+  {$ENDIF}
 end;
 
 destructor TDisplay.Destroy;
 begin
+  {$IFDEF MSWINDOWS}
+  UnregisterPrintScreenHotKey;
+  {$ENDIF}
   glDeleteTextures(2, @FadeTex);
   inherited Destroy;
 end;
@@ -441,6 +523,8 @@ begin
       end;
     end; // if
 
+    DrawRemoteRoomOverlay;
+
     // Draw OSD only on first Screen if Debug Mode is enabled
     if ((Ini.Debug = 1) or (Params.Debug)) and (S = 1) then
     begin
@@ -550,6 +634,8 @@ var
   Alpha: single;
   Ticks: cardinal;
   DrawX: double;
+  CursorW: real;
+  CursorH: real;
 begin
   if (Ini.Mouse = 2) and ((Screens = 1) or ((ScreenAct - 1) = (Round(Cursor_X+16) div RenderW))) then
   begin // draw software cursor
@@ -595,6 +681,11 @@ begin
       DrawX := Cursor_X;
       if (ScreenAct = 2) then
         DrawX := DrawX - RenderW;
+      CursorH := 32;
+      if (GetLayoutScaleX > 0) and (GetLayoutScaleY > 0) then
+        CursorW := CursorH * (GetLayoutScaleY / GetLayoutScaleX)
+      else
+        CursorW := CursorH;
       glColor4f(1, 1, 1, Alpha);
       glEnable(GL_TEXTURE_2D);
       glEnable(GL_BLEND);
@@ -610,13 +701,13 @@ begin
         glVertex2f(DrawX, Cursor_Y);
 
         glTexCoord2f(0, 1);
-        glVertex2f(DrawX, Cursor_Y + 32);
+        glVertex2f(DrawX, Cursor_Y + CursorH);
 
         glTexCoord2f(1, 1);
-        glVertex2f(DrawX + 32, Cursor_Y + 32);
+        glVertex2f(DrawX + CursorW, Cursor_Y + CursorH);
 
         glTexCoord2f(1, 0);
-        glVertex2f(DrawX + 32, Cursor_Y);
+        glVertex2f(DrawX + CursorW, Cursor_Y);
       glEnd;
 
       glDisable(GL_BLEND);
@@ -635,12 +726,12 @@ begin
     Result := True;
 end;
 
-function TDisplay.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean): boolean;
+function TDisplay.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown : boolean; Repeated : boolean = false): boolean;
 begin
   if (assigned(NextScreen)) then
-    Result := NextScreen^.ParseInput(PressedKey, CharCode, PressedDown)
+    Result := NextScreen^.ParseInput(PressedKey, CharCode, PressedDown, Repeated)
   else if (assigned(CurrentScreen)) then
-    Result := CurrentScreen^.ParseInput(PressedKey, CharCode, PressedDown)
+    Result := CurrentScreen^.ParseInput(PressedKey, CharCode, PressedDown, Repeated)
   else
     Result := True;
 end;
