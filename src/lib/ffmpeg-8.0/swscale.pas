@@ -21,6 +21,7 @@ uses
 
 const
   SWS_FAST_BILINEAR = 1;
+  SWS_LANCZOS = $200;
 type
   PSwsContext = ^TSwsContext;
   TSwsContext = record
