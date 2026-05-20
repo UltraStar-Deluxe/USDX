@@ -961,6 +961,11 @@ procedure TSingScores.DrawScore(const Index: integer);
 var
   Position: TScorePosition;
   ScoreStr: String;
+  TextSize: integer;
+  TextW: real;
+  MaxTextW: real;
+  Scale: real;
+  TextX: real;
   Drawing: boolean;
 begin
   Drawing := false;
@@ -995,10 +1000,6 @@ begin
     glDisable(GL_BLEND);
 
     // draw score text
-    ScoreStr := InttoStr(Players[Index].ScoreDisplayed div 10) + '0';
-    while (Length(ScoreStr) < 5) do
-      ScoreStr := '0' + ScoreStr;
-
     SetFontFamily(Position.TextFont);
     SetFontStyle(Position.TextStyle);
     SetFontItalic(false);
@@ -1008,6 +1009,21 @@ begin
     while (Length(ScoreStr) < 5) do
       ScoreStr := '0' + ScoreStr;
 
+    TextSize := Position.TextSize;
+    SetFontSize(TextSize);
+    TextW := glTextWidth(ScoreStr);
+
+    MaxTextW := Max(0, Position.BGW - 8);
+    if (TextW > 0) and (TextW > MaxTextW) then
+    begin
+      Scale := MaxTextW / TextW;
+      TextSize := Max(1, Round(TextSize * Scale));
+      SetFontSize(TextSize);
+      TextW := glTextWidth(ScoreStr);
+    end;
+
+    TextX := Position.BGX + (Position.BGW - TextW) / 2;
+    SetFontPos(TextX, Position.TextY);
     glPrint(ScoreStr);
   end; // eo player has position
 end;
