@@ -63,7 +63,7 @@ type
 
       constructor Create; override;
       procedure OnShow; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure SetDiscoveryProgress(Current, Total, SongsFound: integer);
       procedure SetSongLoadingProgress(Current, Total: integer);
       procedure SetStatus(const Value: UTF8String);
@@ -77,7 +77,7 @@ uses
   UDisplay,
   UTime;
 
-function TScreenLoading.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenLoading.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 begin
   Result := true;
 end;

@@ -62,12 +62,8 @@ uses
   UScreenOptionsAdvanced,
   UScreenOptionsNetwork,
   UScreenOptionsWebcam,
-  UScreenOptionsJukebox,
   UScreenSong,
   UScreenSingController,
-  UScreenJukebox,
-  UScreenJukeboxOptions,
-  UScreenJukeboxPlaylist,
   UScreenScore,
   UScreenTop5,
   UScreenEditSub,
@@ -93,7 +89,9 @@ uses
   UScreenStatMain,
   UScreenStatDetail,
   {Popup for errors, etc.}
-  UScreenPopup;
+  UScreenPopup,
+  UThemes,
+  UScale;
 
 type
   TRecR = record
@@ -138,10 +136,6 @@ var
   ScreenSong:         TScreenSong;
   ScreenSing:         TScreenSingController;
 
-  ScreenJukebox:         TScreenJukebox;
-  ScreenJukeboxOptions:  TScreenJukeboxOptions;
-  ScreenJukeboxPlaylist: TScreenJukeboxPlaylist;
-
   ScreenScore:        TScreenScore;
   ScreenTop5:         TScreenTop5;
   ScreenOptions:          TScreenOptions;
@@ -155,7 +149,6 @@ var
   ScreenOptionsAdvanced:  TScreenOptionsAdvanced;
   ScreenOptionsNetwork:   TScreenOptionsNetwork;
   ScreenOptionsWebcam:    TScreenOptionsWebcam;
-  ScreenOptionsJukebox:   TScreenOptionsJukebox;
   ScreenEditSub:      TScreenEditSub;
   ScreenEdit:         TScreenEdit;
   ScreenEditConvert:  TScreenEditConvert;
@@ -237,12 +230,10 @@ var
   FullScreen:     boolean;
 
   Tex_TimeProgress: TTexture;
-  Tex_JukeboxTimeProgress: TTexture;
   
   //Sing Bar Mod
   Tex_SingBar_Back:  TTexture;
   Tex_SingBar_Bar:  TTexture;
-  Tex_SingBar_Front:  TTexture;
   //end Singbar Mod
 
   //PhrasenBonus - Line Bonus Mod
@@ -325,8 +316,7 @@ uses
   Classes,
   UDisplay,
   UCommandLine,
-  UPathUtils,
-  UThemes;
+  UPathUtils;
 
 var
   SingScreenTexturesLoaded: boolean = false;
@@ -371,13 +361,11 @@ begin
 
   //TimeBar mod
   Tex_TimeProgress := Texture.LoadTexture(Skin.GetTextureFileName('TimeBar'));
-  Tex_JukeboxTimeProgress := Texture.LoadTexture(Skin.GetTextureFileName('JukeboxTimeBar'));
   //eoa TimeBar mod
 
   //SingBar Mod
   Tex_SingBar_Back  := Texture.LoadTexture(Skin.GetTextureFileName('SingBarBack'),  TEXTURE_TYPE_PLAIN, 0);
   Tex_SingBar_Bar   := Texture.LoadTexture(Skin.GetTextureFileName('SingBarBar'),   TEXTURE_TYPE_PLAIN, 0);
-  Tex_SingBar_Front := Texture.LoadTexture(Skin.GetTextureFileName('SingBarFront'), TEXTURE_TYPE_PLAIN, 0);
   //end Singbar Mod
 
   Log.LogStatus('Loading Textures - B', 'LoadTextures');
@@ -540,7 +528,11 @@ begin
   begin
     Log.LogCritical('SDL_Init Failed', 'UGraphic.Initialize3D');
   end;
+
+  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
   InitializeScreen;
+  glEnable(GL_MULTISAMPLE);
   // load icon image (must be 32x32 for win32)
   Icon := LoadImage(ResourcesPath.Append(WINDOW_ICON));
   if (Icon <> nil) then
@@ -559,7 +551,7 @@ begin
 
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing texturizer'));
   Texture := TTextureUnit.Create;
-  Texture.Limit :=1920; //currently, Full HD is all we want. switch to 64bit target before going further up
+  Texture.Limit :=4096;
 
   //LoadTextures;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing video modules'));
@@ -799,10 +791,19 @@ NoDoubledResolution:
     SoftwareRendering := false;
 
   // define virtual (Render) and real (Screen) screen size
-  RenderW := 800;
-  RenderH := 600;
+  if Theme <> nil then
+  begin
+    RenderW := Theme.LayoutScreenW;
+    RenderH := Theme.LayoutScreenH;
+  end
+  else
+  begin
+    RenderW := 800;
+    RenderH := 600;
+  end;
   ScreenW := ActualW;
   ScreenH := ActualH;
+  UpdateUIScaleState(RenderW, RenderH, ScreenW, ScreenH);
   // Ausganswerte für die State-Machine setzen
   SDL_GL_SetSwapInterval(1); // VSYNC (currently Windows only)
 
@@ -962,6 +963,8 @@ begin
     end;
   end;
 
+  UpdateUIScaleState(RenderW, RenderH, ScreenW, ScreenH);
+
   if CurrentWindowMode = Mode_Fullscreen then
   begin
     Screen.W := ScreenW;
@@ -1015,14 +1018,8 @@ begin
   ScreenName :=             TScreenName.Create;
   SetLoadingTitle('Loading ScreenSong');
   ScreenSong :=             TScreenSong.Create;
-  SetLoadingTitle('Loading ScreenSongMenu & ScreenJukebox');
+  SetLoadingTitle('Loading ScreenSongMenu');
   ScreenSongMenu :=             TScreenSongMenu.Create;
-  ScreenJukebox :=             TScreenJukebox.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox', 3); Log.BenchmarkStart(3);
-  ScreenJukeboxOptions :=   TScreenJukeboxOptions.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox Options', 3); Log.BenchmarkStart(3);
-  ScreenJukeboxPlaylist :=   TScreenJukeboxPlaylist.Create;
-  Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox Playlist', 3); Log.BenchmarkStart(3);
   ScreenTop5 :=             TScreenTop5.Create;
   SetLoadingTitle('Loading ScreenOptions & ScreenOptionsGame');
   ScreenOptions :=          TScreenOptions.Create;
@@ -1042,8 +1039,6 @@ begin
   ScreenOptionsNetwork :=    TScreenOptionsNetwork.Create;
   SetLoadingTitle('Loading ScreenOptionsWebCam');
   ScreenOptionsWebcam  :=    TScreenOptionsWebcam.Create;
-  SetLoadingTitle('Loading ScreenOptionsJukebox');
-  ScreenOptionsJukebox :=    TScreenOptionsJukebox.Create;
   SetLoadingTitle('Loading ScreenEditConvert & ScreenEditSub & ScreenEdit');
   ScreenEditConvert :=      TScreenEditConvert.Create;
   ScreenEditSub :=          TScreenEditSub.Create;
@@ -1108,13 +1103,9 @@ begin
   FreeAndNil(ScreenOptionsAdvanced);
   FreeAndNil(ScreenOptionsNetwork);
   FreeAndNil(ScreenOptionsWebcam);
-  FreeAndNil(ScreenOptionsJukebox);
   FreeAndNil(ScreenEditSub);
   FreeAndNil(ScreenEdit);
   FreeAndNil(ScreenEditConvert);
-  FreeAndNil(ScreenJukebox);
-  FreeAndNil(ScreenJukeboxOptions);
-  FreeAndNil(ScreenJukeboxPlaylist);
   FreeAndNil(ScreenTop5);
   FreeAndNil(ScreenOpen);
   FreeAndNil(ScreenAbout);

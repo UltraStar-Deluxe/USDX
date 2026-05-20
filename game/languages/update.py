@@ -1,150 +1,187 @@
 #!/usr/bin/python3
 
-# UltraStar Deluxe - Karaoke Game
-#
-# UltraStar Deluxe is the legal property of its developers, whose names
-# are too numerous to list here. Please refer to the COPYRIGHT
-# file distributed with this source distribution.
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; see the file COPYING. If not, write to
-# the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-# Boston, MA 02110-1301, USA.
-
-from __future__ import with_statement, print_function
+from __future__ import print_function
 
 import re
 import sys
 import os
-import codecs
+import time
 
-# buffer english file
-english = []
-with open("English.ini", "r", encoding="utf8") as f:
-	for line in f:
-		english.append(line.strip())
+# Pattern for key=value lines (accept any key chars, allow empty value)
+transPattern = re.compile(r"\s*([^=]+?)\s*=(.*)$")
 
-transPattern = re.compile("\s*(\w+)\s*=(.+)$")
 
-def update(lang):
-	print("\nUpdate " +  lang)
+def read_lines(path):
+    with open(path, 'r', encoding='utf8') as f:
+        return f.read().splitlines()
 
-	# buffer translation file
-	translation = []
-	with open(lang, "r", encoding="utf8") as f:
-		for line in f:
-			translation.append(line.strip())
 
-	outList = []
-	# find new fields
-	for line in english:
-		# header
-		if re.search("\[Text\]", line, re.I):
-			outList.append("[Text]")
-			continue
-		# ignore help text sections for now
-		if re.match("\s*\[", line):
-			break
-		# ignore comments
-		elif re.match("\s*[;#]", line):
-			continue
-		# copy empty lines
-		elif re.match("\s*$", line):
-			outList.append("")
-			continue
-		m = transPattern.match(line)
-		if (not m):
-			print("Invalid line: " + line)
-			sys.exit(1)
-		untranslated = True
-		for transline in translation:
-			m2 = re.match("\s*" + m.group(1) + "\s*=(.+)$", transline)
-			if (m2):
-				outList.append(m.group(1) + "=" + m2.group(1))
-				untranslated = False
-				break
-		if (untranslated):
-			print("  +" + m.group(1))
-			outList.append(";TODO: " + line)
+def parse_blocks(lines):
+    """Parse lines into blocks: ('raw', line) or ('keyblock', section, key, [lines])
+    Continuation lines are any subsequent physical lines that are not a section header,
+    comment, blank, or another key=value line.
+    """
+    blocks = []
+    cur_section = None
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if re.match(r"\s*\[.*\]", line):
+            cur_section = line.strip()
+            blocks.append(('raw', line))
+            i += 1
+            continue
+        if re.match(r"\s*[;#]", line) or re.match(r"\s*$", line):
+            blocks.append(('raw', line))
+            i += 1
+            continue
+        m = transPattern.match(line)
+        if m:
+            key = m.group(1).strip()
+            blk_lines = [line]
+            j = i + 1
+            while j < len(lines):
+                nxt = lines[j]
+                if re.match(r"\s*\[.*\]", nxt) or re.match(r"\s*[;#]", nxt) or transPattern.match(nxt):
+                    break
+                blk_lines.append(nxt)
+                j += 1
+            blocks.append(('keyblock', cur_section, key, blk_lines))
+            i = j
+        else:
+            blocks.append(('raw', line))
+            i += 1
+    return blocks
 
-	# find unsupported (not in English.ini) translations
-	for line in translation:
-		# ignore header
-		if re.search("\[Text\]", line, re.I):
-			continue
-		# ignore TODOs
-		if re.match(";TODO:", line):
-			continue
-		# copy comments
-		elif re.match("\s*[;#]", line):
-			outList.append(line)
-			continue
-		# ignore empty line
-		elif re.match("\s*$", line):
-			continue
-		m = transPattern.match(line)
-		if (not m):
-			print("  -" + line)
-			outList.append(";INVALID: " + line)
-			continue
-		# check if field is in English.ini
-		unsupported = True
-		for orig in english:
-			m2 = re.match("\s*" + m.group(1) + "\s*=(.+)$", orig)
-			# ignore translated lines (already written in first pass)
-			if (m2):
-				unsupported = False
-				break
-		# unsupported translation
-		if (unsupported):
-			print("  -" + m.group(1))
-			outList.append(";UNUSED: " + m.group(1) + "=" + m.group(2))
 
-	# check if file changed
-	changed = False
-	if (len(outList) != len(translation)):
-		changed = True
-	else:
-		# search for a changed line
-		for i in range(len(outList)):
-			if (outList[i] != translation[i]):
-				changed = True
-				break
+def parse_translation_blocks(lines):
+    """Return mapping (section,key) -> list_of_physical_lines for translation file."""
+    trans = {}
+    cur_section = None
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if re.match(r"\s*\[.*\]", line):
+            cur_section = line.strip()
+            i += 1
+            continue
+        if re.match(r"\s*[;#]", line) or re.match(r"\s*$", line):
+            i += 1
+            continue
+        m = transPattern.match(line)
+        if m:
+            key = m.group(1).strip()
+            blk_lines = [line]
+            j = i + 1
+            while j < len(lines):
+                nxt = lines[j]
+                if re.match(r"\s*\[.*\]", nxt) or re.match(r"\s*[;#]", nxt) or transPattern.match(nxt):
+                    break
+                blk_lines.append(nxt)
+                j += 1
+            trans[(cur_section, key)] = blk_lines
+            i = j
+        else:
+            i += 1
+    return trans
 
-	# write changes
-	if changed:
-		# create a backup first
-		oldLang = lang + ".bak"
-		if (os.path.exists(oldLang)):
-			os.remove(oldLang)
-		os.rename(lang, oldLang)
 
-		with open(lang, 'w', encoding='utf-8', newline='\n') as f:
-			for line in outList:
-				f.write(line + "\n")
+def update(lang, dry_run=False):
+    print('\nUpdate', lang)
+    english_lines = read_lines('English.ini')
+    translation_lines = read_lines(lang)
 
-if len(sys.argv) >= 2:
-	# update specific language file passed as command-line argument
-	update(sys.argv[1])
-else:
-	# update all language (ini) files
-	iniList=os.listdir(".")
-	for ini in iniList: 
-		if not re.search(".ini$", ini):
-			continue
-		if ini == "English.ini":
-			continue
-		update(ini);
+    eng_blocks = parse_blocks(english_lines)
+    trans_map = parse_translation_blocks(translation_lines)
 
-	# update template (do not use an .ini prefix as USDX would load it)
-	update("Language.new");
+    out_lines = []
+    used = set()
+
+    for blk in eng_blocks:
+        if blk[0] == 'raw':
+            out_lines.append(blk[1])
+            continue
+        _, section, key, eng_blk_lines = blk
+        tkey = (section, key)
+        if tkey in trans_map:
+            used.add(tkey)
+            tr_lines = trans_map[tkey]
+            # output same number of physical lines as eng block
+            for idx in range(len(eng_blk_lines)):
+                if idx < len(tr_lines):
+                    if idx == 0:
+                        # preserve left-hand formatting from English first line
+                        m_en = re.match(r'^(\s*[^=]+?\s*=\s*)(.*)$', eng_blk_lines[0])
+                        lhs = m_en.group(1) if m_en else (key + '=')
+                        # get RHS from translation line (strip key= if present)
+                        m_tr = transPattern.match(tr_lines[0])
+                        rhs = m_tr.group(2) if m_tr else tr_lines[0]
+                        out_lines.append(lhs + rhs)
+                    else:
+                        out_lines.append(tr_lines[idx])
+                else:
+                    # missing translated continuation -> mark TODO with English continuation
+                    out_lines.append(';TODO: ' + eng_blk_lines[idx])
+        else:
+            # no translation for this keyblock -> output TODO for each english physical line
+            for line in eng_blk_lines:
+                out_lines.append(';TODO: ' + line)
+
+    # detect unused translations
+    unused = []
+    for (sec, key), lines in trans_map.items():
+        if (sec, key) not in used:
+            unused.append((sec, key, lines))
+
+    # compare and write
+    changed = (out_lines != translation_lines)
+    if changed:
+        if dry_run:
+            print('Dry-run: would update', lang, '({} lines -> {} lines)'.format(len(translation_lines), len(out_lines)))
+            if unused:
+                print('  Unused translations:', len(unused))
+            return out_lines, unused
+        # backup existing file
+        stamp = time.strftime('%Y%m%d%H%M%S')
+        bak = lang + '.' + stamp + '.bak'
+        os.rename(lang, bak)
+        with open(lang, 'w', encoding='utf-8', newline='\n') as f:
+            for l in out_lines:
+                f.write(l + '\n')
+        print('Wrote', lang, 'backup->', bak)
+        if unused:
+            unused_file = lang + '.unused'
+            with open(unused_file, 'w', encoding='utf-8', newline='\n') as f:
+                for sec, key, lines in unused:
+                    f.write('; Section: %s\n' % (sec or '<global>'))
+                    for ln in lines:
+                        f.write('; %s\n' % ln)
+            print('Wrote unused translations to', unused_file)
+    else:
+        print('No changes for', lang)
+    return out_lines, unused
+
+
+if __name__ == '__main__':
+    dry = False
+    args = sys.argv[1:]
+    if '--dry-run' in args:
+        dry = True
+        args.remove('--dry-run')
+    dump = False
+    if '--dump' in args:
+        dump = True
+        args.remove('--dump')
+    if args:
+        out, unused = update(args[0], dry_run=dry)
+        if dump:
+            for l in out:
+                print(l)
+    else:
+        # run on all .ini except English.ini
+        for fn in os.listdir('.'):
+            if not fn.endswith('.ini'):
+                continue
+            if fn == 'English.ini':
+                continue
+            update(fn, dry_run=dry)

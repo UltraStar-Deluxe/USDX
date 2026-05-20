@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>USDX Modern Theme: Sing Layout Reference</title>
+  <style>
+    :root {
+      --bg: #111418;
+      --panel: #1a1f26;
+      --ink: #e8edf3;
+      --muted: #9aa8b8;
+      --line: #2c3642;
+      --accent: #4cc2ff;
+      --accent2: #8fe28f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 14px/1.45 "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1, h2 { margin: 0 0 10px; }
+    h1 { font-size: 26px; }
+    h2 { font-size: 19px; margin-top: 26px; }
+    p { margin: 8px 0; color: var(--muted); }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 12px;
+    }
+    .controls {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: end;
+      margin-top: 10px;
+    }
+    label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+    input, select {
+      background: #0f1318;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 6px 8px;
+      min-width: 100px;
+    }
+    .mono { font-family: Consolas, Menlo, Monaco, monospace; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 7px 8px;
+      vertical-align: top;
+    }
+    th { text-align: left; color: #d8e8ff; background: #121820; }
+    .sect {
+      margin-top: 18px;
+      color: #c9d5e4;
+      font-weight: 600;
+    }
+    .key { color: var(--accent); }
+    .svgwrap {
+      position: relative;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0f1318;
+      margin-top: 10px;
+    }
+    .note { color: #b6c4d4; font-size: 12px; }
+    .hover-editor {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0f1318;
+    }
+    .hover-editor h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: #d7e6f7;
+    }
+    .hover-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 8px 12px;
+    }
+    .hover-item label { font-size: 11px; }
+    .hover-item input { width: 100%; min-width: 0; }
+    .svg-tip {
+      position: absolute;
+      pointer-events: none;
+      display: none;
+      z-index: 20;
+      max-width: 320px;
+      background: rgba(10, 14, 20, 0.96);
+      color: #dbe9f8;
+      border: 1px solid #34506d;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      line-height: 1.35;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+    }
+    .svg-tip .k {
+      color: #70c9ff;
+      font-family: Consolas, Menlo, Monaco, monospace;
+    }
+    .hotspot { cursor: help; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Sing Screen Layout Reference (Modern Theme)</h1>
+    <p>
+      This page documents the current sing layout model in <span class="mono">UPlayerLayout.pas</span> and
+      <span class="mono">UThemes.pas</span>, using constants from <span class="mono">[SingPlayerGrid]</span> and
+      <span class="mono">[SingPlayerWidgetPlacement]</span>.
+    </p>
+
+    <div class="card">
+      <h2>Preview</h2>
+      <p class="note">
+        Preview draws the lane area, computed slot rects, grid guides, row anchor line, and header region.
+      </p>
+      <div class="controls">
+        <div>
+          <label for="players">Players On Screen</label>
+          <input id="players" type="number" min="1" max="20" value="6" />
+        </div>
+        <div>
+          <label for="mode">Top Lyrics Reserved</label>
+          <select id="mode">
+            <option value="reserved">Yes (reserved)</option>
+            <option value="nolyrics">No (lyricsless)</option>
+          </select>
+        </div>
+        <div>
+          <label for="idx">Highlighted Player Index</label>
+          <input id="idx" type="number" min="0" max="19" value="0" />
+        </div>
+      </div>
+      <div class="svgwrap">
+        <svg id="view" width="1200" height="680" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div id="svgTip" class="svg-tip"></div>
+      </div>
+      <p id="summary" class="note mono"></p>
+      <div class="hover-editor">
+        <h3>Hovered Constants (Live)</h3>
+        <div id="hoverEditor" class="hover-grid note">Hover over a highlighted SVG region to see/edit relevant constants.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Core Formulas</h2>
+      <p class="mono">
+        grid = GetSingPlayerGrid(players, areaW, areaH, reserveTopLyricsSpace)<br/>
+        slotHeight = (areaH - rowGap*(rows-1)) / rows<br/>
+        maxLineSpacing = slotHeight / LaneGuideLineCount<br/>
+        slotScale = min(1, min(columnWidth/WidgetScaleReferenceW, maxLineSpacing/LaneBaseLineSpacing))<br/>
+        contentScale = slotScale * max(WidgetScaleMin, 1 - (players-1)*WidgetScalePerPlayer)<br/>
+        noteLineSpacing = min(maxLineSpacing, LaneBaseLineSpacing*contentScale)<br/>
+        guideTopY = slotTop + (slotHeight - LaneGuideLineCount*noteLineSpacing)/2<br/>
+        rowAnchorY = guideTopY + LaneRowAnchorGuideIndex*noteLineSpacing
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>Theme Constants</h2>
+      <div id="tables"></div>
+    </div>
+  </div>
+
+  <script>
+    const constants = {
+      SingPlayerGrid: [
+        { key: "LaneAreaX", value: 20, desc: "Left edge of sing lane area." },
+        { key: "LaneAreaY", value: 110, desc: "Top edge when top lyrics space is reserved." },
+        { key: "LaneAreaYNoLyrics", value: 50, desc: "Top edge when top lyrics space is not reserved." },
+        { key: "LaneAreaW", value: 760, desc: "Width of lane area shared by all columns." },
+        { key: "LaneAreaHReserved", value: 365, desc: "Lane area height in reserved mode." },
+        { key: "LaneAreaHNoLyrics", value: 425, desc: "Lane area height in lyricsless mode." },
+        { key: "LaneColumnGap", value: 20, desc: "Horizontal gap between columns." },
+        { key: "LaneRowGap", value: 20, desc: "Vertical gap between row slots." },
+        { key: "LaneGridLeftInset", value: 0, desc: "Extra left inset for note grid inside lane column." },
+        { key: "LaneBaseLineSpacing", value: 15, desc: "Base spacing for note guide lines before scaling." },
+        { key: "LaneGuideLineCount", value: 9, desc: "Number of horizontal guide lines per slot." },
+        { key: "LaneRowAnchorGuideIndex", value: 7, desc: "Guide index used as row anchor (0-based)." },
+        { key: "WidgetScaleReferenceW", value: 300, desc: "Reference column width for scale normalization." },
+        { key: "WidgetScalePerPlayer", value: 0.02, desc: "Per-player scale reduction factor." },
+        { key: "WidgetScaleMin", value: 0.82, desc: "Minimum widget scale clamp." }
+      ],
+      SingPlayerWidgetPlacement: [
+        { key: "MinFrameW", value: 26, desc: "Minimum avatar frame width after scaling." },
+        { key: "MinFrameH", value: 26, desc: "Minimum avatar frame height after scaling." },
+        { key: "MinScoreW", value: 56, desc: "Minimum score background width." },
+        { key: "MinScoreH", value: 18, desc: "Minimum score background height." },
+        { key: "HeaderLeftOffset", value: 0, desc: "Header group horizontal offset from lane left." },
+        { key: "HeaderTopOffsetBase", value: 148, desc: "Header vertical offset from row anchor." },
+        { key: "HeaderTopOffsetPerExtraRow", value: 0, desc: "Additional header offset per extra row." },
+        { key: "AvatarInsetMinX", value: 1, desc: "Minimum avatar inset inside frame (X)." },
+        { key: "AvatarInsetMinY", value: 1, desc: "Minimum avatar inset inside frame (Y)." },
+        { key: "NameGapX", value: 10, desc: "Base gap between avatar frame and name text." },
+        { key: "NameGapMinX", value: 8, desc: "Minimum gap between avatar frame and name text." },
+        { key: "NamePaddingX", value: 6, desc: "Base name text horizontal padding." },
+        { key: "NamePaddingMinX", value: 4, desc: "Minimum name text horizontal padding." },
+        { key: "NamePaddingY", value: 6, desc: "Base name text vertical padding." },
+        { key: "NamePaddingMinY", value: 3, desc: "Minimum name text vertical padding." },
+        { key: "NameMinW", value: 24, desc: "Minimum name text width." },
+        { key: "NameMinH", value: 14, desc: "Minimum name text height." },
+        { key: "NameMinSize", value: 10, desc: "Minimum name font size." },
+        { key: "ScoreWidthFractionOfLane", value: 0.36, desc: "Max fraction of lane width for score box." },
+        { key: "OscilloscopeGapY", value: 4, desc: "Base gap below name for oscilloscope." },
+        { key: "OscilloscopeGapMinY", value: 2, desc: "Minimum oscilloscope gap below name." },
+        { key: "OscilloscopeMinW", value: 40, desc: "Minimum oscilloscope width." },
+        { key: "OscilloscopeMinH", value: 8, desc: "Minimum oscilloscope height." },
+        { key: "PopupYOffsetSolo", value: 65, desc: "Solo popup Y offset." },
+        { key: "PopupYOffsetDuet", value: 40, desc: "Duet popup Y offset." },
+        { key: "PopupFontSizeSolo", value: 18, desc: "Solo popup font size." },
+        { key: "PopupFontSizeDuet", value: 14, desc: "Duet popup font size." }
+      ]
+    };
+
+    const constByKey = new Map();
+    for (const sectionName of Object.keys(constants)) {
+      for (const row of constants[sectionName]) {
+        constByKey.set(row.key, { ...row, section: sectionName });
+      }
+    }
+    const getStep = value => Number.isInteger(value) ? "1" : "0.01";
+    const v = (section, key) => constants[section].find(x => x.key === key).value;
+    const vk = key => constByKey.get(key).value;
+    function setConst(key, rawValue) {
+      const c = constByKey.get(key);
+      if (!c) return;
+      const next = Number(rawValue);
+      if (!Number.isFinite(next)) return;
+      c.value = Number.isInteger(c.value) ? Math.round(next) : next;
+      constants[c.section].find(x => x.key === key).value = c.value;
+      syncInputs(key, c.value);
+      renderTables();
+      draw();
+    }
+    function syncInputs(key, value) {
+      document.querySelectorAll(`[data-const-key="${key}"]`).forEach(el => {
+        if (document.activeElement !== el) el.value = String(value);
+      });
+    }
+
+    function getGrid(playerCount, areaW, areaH) {
+      if (playerCount <= 3) return { cols: 1, rows: playerCount };
+      const tall = gridBySqrt(playerCount, false);
+      const wide = gridBySqrt(playerCount, true);
+      return aspectScore(wide, areaW, areaH) >= aspectScore(tall, areaW, areaH) ? wide : tall;
+    }
+    function gridBySqrt(n, flip) {
+      let rows = Math.ceil(Math.sqrt(n));
+      let cols = Math.ceil(n / rows);
+      if (flip) [cols, rows] = [rows, cols];
+      return { cols, rows };
+    }
+    function aspectScore(g, w, h) {
+      const a = w / h;
+      const ga = g.cols / g.rows;
+      return Math.min(a, ga) / Math.max(a, ga);
+    }
+
+    function renderTables() {
+      const host = document.getElementById("tables");
+      host.innerHTML = "";
+      for (const sectionName of Object.keys(constants)) {
+        const title = document.createElement("div");
+        title.className = "sect mono";
+        title.textContent = `[${sectionName}]`;
+        host.appendChild(title);
+
+        const table = document.createElement("table");
+        table.innerHTML = `
+          <thead><tr><th>Key</th><th>Value (Live)</th><th>Meaning</th></tr></thead>
+          <tbody></tbody>`;
+        const body = table.querySelector("tbody");
+        for (const row of constants[sectionName]) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="mono key">${row.key}</td>
+            <td>
+              <input
+                class="mono"
+                data-const-key="${row.key}"
+                type="number"
+                step="${getStep(row.value)}"
+                value="${row.value}"
+              />
+            </td>
+            <td>${row.desc}</td>`;
+          body.appendChild(tr);
+        }
+        host.appendChild(table);
+      }
+      host.querySelectorAll("input[data-const-key]").forEach(input => {
+        input.addEventListener("input", e => setConst(e.target.dataset.constKey, e.target.value));
+      });
+    }
+
+    function renderHoverEditor(keys) {
+      const host = document.getElementById("hoverEditor");
+      if (!keys || !keys.length) {
+        host.innerHTML = "Hover over a highlighted SVG region to see/edit relevant constants.";
+        return;
+      }
+      host.innerHTML = keys.map(k => {
+        const c = constByKey.get(k);
+        if (!c) return "";
+        return `
+          <div class="hover-item">
+            <label class="mono key" title="${c.section}">${k}</label>
+            <input
+              class="mono"
+              data-const-key="${k}"
+              type="number"
+              step="${getStep(c.value)}"
+              value="${c.value}"
+            />
+            <div class="note">${c.desc}</div>
+          </div>`;
+      }).join("");
+      host.querySelectorAll("input[data-const-key]").forEach(input => {
+        input.addEventListener("input", e => setConst(e.target.dataset.constKey, e.target.value));
+      });
+    }
+
+    function bindHotspots() {
+      const wrap = document.querySelector(".svgwrap");
+      const tip = document.getElementById("svgTip");
+      const spots = document.querySelectorAll("#view .hotspot");
+      const moveTip = (e) => {
+        const r = wrap.getBoundingClientRect();
+        tip.style.left = `${e.clientX - r.left + 12}px`;
+        tip.style.top = `${e.clientY - r.top + 12}px`;
+      };
+      spots.forEach(el => {
+        el.addEventListener("mouseenter", e => {
+          const keys = (el.getAttribute("data-keys") || "").split(",").map(s => s.trim()).filter(Boolean);
+          if (!keys.length) return;
+          tip.style.display = "block";
+          tip.innerHTML = `Change with: ${keys.map(k => `<span class="k">${k}</span>`).join(", ")}`;
+          renderHoverEditor(keys);
+          moveTip(e);
+        });
+        el.addEventListener("mousemove", moveTip);
+        el.addEventListener("mouseleave", () => {
+          tip.style.display = "none";
+        });
+      });
+    }
+
+    function draw() {
+      const svg = document.getElementById("view");
+      const players = Math.max(1, Math.min(20, Number(document.getElementById("players").value) || 1));
+      const mode = document.getElementById("mode").value;
+      const idx = Math.max(0, Math.min(players - 1, Number(document.getElementById("idx").value) || 0));
+      document.getElementById("idx").max = String(players - 1);
+
+      const areaX = v("SingPlayerGrid", "LaneAreaX");
+      const areaY = mode === "reserved" ? v("SingPlayerGrid", "LaneAreaY") : v("SingPlayerGrid", "LaneAreaYNoLyrics");
+      const areaW = v("SingPlayerGrid", "LaneAreaW");
+      const areaH = mode === "reserved" ? v("SingPlayerGrid", "LaneAreaHReserved") : v("SingPlayerGrid", "LaneAreaHNoLyrics");
+      const colGap = v("SingPlayerGrid", "LaneColumnGap");
+      const rowGap = v("SingPlayerGrid", "LaneRowGap");
+      const guideCount = v("SingPlayerGrid", "LaneGuideLineCount");
+      const guideAnchor = Math.max(0, Math.min(guideCount - 1, v("SingPlayerGrid", "LaneRowAnchorGuideIndex")));
+      const baseSpacing = v("SingPlayerGrid", "LaneBaseLineSpacing");
+      const refW = v("SingPlayerGrid", "WidgetScaleReferenceW");
+      const perPlayer = v("SingPlayerGrid", "WidgetScalePerPlayer");
+      const minScale = v("SingPlayerGrid", "WidgetScaleMin");
+      const gridInsetLeft = v("SingPlayerGrid", "LaneGridLeftInset");
+
+      const g = getGrid(players, areaW, areaH);
+      const colW = (areaW - colGap * (g.cols - 1)) / g.cols;
+      const widgetScale = Math.max(minScale, 1 - (players - 1) * perPlayer);
+
+      const sx = 1.35;
+      const sy = 1.2;
+      const ox = 80;
+      const oy = 30;
+      const px = x => ox + x * sx;
+      const py = y => oy + y * sy;
+      const pw = w => w * sx;
+      const ph = h => h * sy;
+
+      const lines = [];
+      lines.push(`<rect x="0" y="0" width="1200" height="680" fill="#0f1318"/>`);
+      lines.push(`<text x="18" y="22" fill="#9aa8b8" font-size="12" font-family="Consolas,monospace">screen 800x600 space (scaled)</text>`);
+      lines.push(`<rect x="${px(10)}" y="${py(10)}" width="${pw(780)}" height="${ph(70)}" fill="rgba(220,220,220,0.18)" stroke="#3d4a5b" stroke-width="1"/>`);
+      lines.push(`<text x="${px(20)}" y="${py(32)}" fill="#b7c2d0" font-size="12" font-family="Consolas,monospace">top song/lyrics zone</text>`);
+      lines.push(`<rect x="${px(10)}" y="${py(490)}" width="${pw(780)}" height="${ph(85)}" fill="rgba(220,220,220,0.18)" stroke="#3d4a5b" stroke-width="1"/>`);
+      lines.push(`<text x="${px(20)}" y="${py(512)}" fill="#b7c2d0" font-size="12" font-family="Consolas,monospace">bottom lyrics bar</text>`);
+
+      const areaYKey = mode === "reserved" ? "LaneAreaY" : "LaneAreaYNoLyrics";
+      const areaHKey = mode === "reserved" ? "LaneAreaHReserved" : "LaneAreaHNoLyrics";
+      lines.push(`<rect x="${px(areaX)}" y="${py(areaY)}" width="${pw(areaW)}" height="${ph(areaH)}" fill="none" stroke="#2d9bf0" stroke-width="2"/>`);
+      lines.push(`<rect class="hotspot" data-keys="LaneAreaX,${areaYKey},LaneAreaW,${areaHKey}" x="${px(areaX)}" y="${py(areaY)}" width="${pw(areaW)}" height="${ph(areaH)}" fill="transparent"/>`);
+      lines.push(`<text x="${px(areaX)+4}" y="${py(areaY)-6}" fill="#6ec1ff" font-size="12" font-family="Consolas,monospace">lane area (${mode})</text>`);
+
+      let selected = null;
+      const rowSpace = Math.max(1, areaH - rowGap * (g.rows - 1));
+      for (let p = 0; p < players; p++) {
+        const c = Math.floor(p / g.rows);
+        const r = p % g.rows;
+        const laneLeft = areaX + c * (colW + colGap);
+        const laneRight = laneLeft + colW;
+        const slotTop = areaY + r * rowGap + (r * rowSpace / g.rows);
+        const slotBottom = areaY + r * rowGap + ((r + 1) * rowSpace / g.rows);
+        const slotH = slotBottom - slotTop;
+
+        const maxLineSpacing = Math.max(6, slotH / guideCount);
+        const slotScale = Math.min(1, Math.min(colW / refW, maxLineSpacing / baseSpacing));
+        const contentScale = slotScale * widgetScale;
+        const noteLineSpacing = Math.max(6, Math.min(maxLineSpacing, baseSpacing * contentScale));
+        const topPad = Math.max(0, slotH - guideCount * noteLineSpacing);
+        const guideTop = slotTop + topPad / 2;
+        const rowAnchorY = guideTop + guideAnchor * noteLineSpacing;
+        const gridLeft = laneLeft - Math.max(1, gridInsetLeft * contentScale);
+        const headerTop = rowAnchorY - v("SingPlayerWidgetPlacement", "HeaderTopOffsetBase") * contentScale;
+
+        const isSel = p === idx;
+        const slotStroke = isSel ? "#4cc2ff" : "#32404f";
+        const slotFill = isSel ? "rgba(76,194,255,0.10)" : "rgba(0,0,0,0.06)";
+
+        lines.push(`<rect x="${px(laneLeft)}" y="${py(slotTop)}" width="${pw(colW)}" height="${ph(slotH)}" fill="${slotFill}" stroke="${slotStroke}" stroke-width="${isSel ? 2 : 1}"/>`);
+        lines.push(`<rect class="hotspot" data-keys="LaneRowGap" x="${px(laneLeft)}" y="${py(slotTop)}" width="${pw(colW)}" height="${ph(slotH)}" fill="transparent"/>`);
+
+        for (let i = 0; i < guideCount; i++) {
+          const y = guideTop + i * noteLineSpacing;
+          const colLine = (i === guideAnchor && isSel) ? "#ff8e8e" : "#31404f";
+          const sw = (i === guideAnchor && isSel) ? 1.8 : 1;
+          lines.push(`<line x1="${px(gridLeft)}" y1="${py(y)}" x2="${px(laneRight)}" y2="${py(y)}" stroke="${colLine}" stroke-width="${sw}"/>`);
+        }
+
+        const headerH = Math.max(18, (rowAnchorY - headerTop));
+        lines.push(`<rect x="${px(laneLeft)}" y="${py(headerTop)}" width="${pw(colW)}" height="${ph(headerH)}" fill="rgba(143,226,143,0.06)" stroke="${isSel ? "#8fe28f" : "#3d5a3d"}" stroke-width="1"/>`);
+        if (isSel) {
+          lines.push(`<rect class="hotspot" data-keys="HeaderTopOffsetBase,HeaderTopOffsetPerExtraRow,HeaderLeftOffset" x="${px(laneLeft)}" y="${py(headerTop)}" width="${pw(colW)}" height="${ph(headerH)}" fill="transparent"/>`);
+        }
+
+        const frameW = Math.max(v("SingPlayerWidgetPlacement", "MinFrameW"), 50 * contentScale);
+        const frameH = Math.max(v("SingPlayerWidgetPlacement", "MinFrameH"), 50 * contentScale);
+        const scoreW = Math.max(v("SingPlayerWidgetPlacement", "MinScoreW"), Math.min(colW * v("SingPlayerWidgetPlacement", "ScoreWidthFractionOfLane"), 100 * contentScale));
+        const scoreH = Math.max(v("SingPlayerWidgetPlacement", "MinScoreH"), 36 * contentScale);
+        const headerLeft = laneLeft - v("SingPlayerWidgetPlacement", "HeaderLeftOffset") * contentScale;
+        lines.push(`<rect x="${px(headerLeft)}" y="${py(headerTop)}" width="${pw(frameW)}" height="${ph(frameH)}" fill="rgba(27,170,226,0.4)" stroke="#46c8ff" stroke-width="1"/>`);
+        lines.push(`<rect x="${px(laneRight-scoreW)}" y="${py(headerTop)}" width="${pw(scoreW)}" height="${ph(scoreH)}" fill="rgba(27,170,226,0.4)" stroke="#46c8ff" stroke-width="1"/>`);
+
+        if (isSel) {
+          selected = { laneLeft, laneRight, slotTop, slotBottom, slotH, guideTop, rowAnchorY, gridLeft, noteLineSpacing, slotScale, contentScale, headerTop };
+        }
+      }
+
+      if (g.cols > 1) {
+        const gapX = areaX + colW;
+        lines.push(`<rect class="hotspot" data-keys="LaneColumnGap" x="${px(gapX)}" y="${py(areaY)}" width="${pw(colGap)}" height="${ph(areaH)}" fill="transparent"/>`);
+      }
+
+      if (selected) {
+        lines.push(`<text x="${px(selected.laneLeft)+5}" y="${py(selected.slotTop)+14}" fill="#4cc2ff" font-size="12" font-family="Consolas,monospace">highlighted slot (${idx})</text>`);
+        lines.push(`<line x1="${px(selected.gridLeft)}" y1="${py(selected.guideTop)}" x2="${px(selected.laneRight)}" y2="${py(selected.guideTop)}" stroke="#f0d97f" stroke-width="1.8"/>`);
+        lines.push(`<text x="${px(selected.gridLeft)+4}" y="${py(selected.guideTop)-6}" fill="#f0d97f" font-size="12" font-family="Consolas,monospace">guide top</text>`);
+        lines.push(`<line x1="${px(selected.laneRight)+8}" y1="${py(selected.slotTop)}" x2="${px(selected.laneRight)+8}" y2="${py(selected.slotBottom)}" stroke="#9fb2c7" stroke-width="1.5"/>`);
+        lines.push(`<line x1="${px(selected.laneRight)}" y1="${py(selected.slotTop)}" x2="${px(selected.laneRight)+16}" y2="${py(selected.slotTop)}" stroke="#9fb2c7" stroke-width="1.5"/>`);
+        lines.push(`<line x1="${px(selected.laneRight)}" y1="${py(selected.slotBottom)}" x2="${px(selected.laneRight)+16}" y2="${py(selected.slotBottom)}" stroke="#9fb2c7" stroke-width="1.5"/>`);
+        lines.push(`<text x="${px(selected.laneRight)+20}" y="${py((selected.slotTop+selected.slotBottom)/2)}" fill="#9fb2c7" font-size="11" font-family="Consolas,monospace">slot height</text>`);
+        lines.push(`<text x="${px(selected.laneRight)-104}" y="${py(selected.rowAnchorY)-6}" fill="#ff8e8e" font-size="12" font-family="Consolas,monospace">row anchor</text>`);
+        lines.push(`<rect class="hotspot" data-keys="LaneBaseLineSpacing,LaneGuideLineCount,WidgetScaleReferenceW,WidgetScalePerPlayer,WidgetScaleMin" x="${px(selected.gridLeft)}" y="${py(selected.guideTop)}" width="${pw(selected.laneRight - selected.gridLeft)}" height="${ph(selected.slotH)}" fill="transparent"/>`);
+        lines.push(`<rect class="hotspot" data-keys="LaneRowAnchorGuideIndex" x="${px(selected.gridLeft)}" y="${py(selected.rowAnchorY - selected.noteLineSpacing * 0.5)}" width="${pw(selected.laneRight - selected.gridLeft)}" height="${Math.max(10, ph(selected.noteLineSpacing))}" fill="transparent"/>`);
+        const insetW = selected.laneLeft - selected.gridLeft;
+        if (insetW > 0.5) {
+          lines.push(`<rect class="hotspot" data-keys="LaneGridLeftInset" x="${px(selected.gridLeft)}" y="${py(selected.guideTop)}" width="${pw(insetW)}" height="${ph(selected.slotH)}" fill="transparent"/>`);
+        }
+      }
+
+      svg.innerHTML = lines.join("");
+      bindHotspots();
+      if (selected) {
+        document.getElementById("summary").textContent =
+          `players=${players} mode=${mode} grid=${g.cols}x${g.rows} highlighted=${idx} slotH=${selected.slotH.toFixed(2)} `
+          + `lineSpacing=${selected.noteLineSpacing.toFixed(2)} slotScale=${selected.slotScale.toFixed(3)} contentScale=${selected.contentScale.toFixed(3)}`;
+      }
+    }
+
+    renderTables();
+    draw();
+    ["players", "mode", "idx"].forEach(id => document.getElementById(id).addEventListener("input", draw));
+  </script>
+</body>
+</html>

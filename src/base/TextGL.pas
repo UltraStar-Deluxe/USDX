@@ -47,6 +47,7 @@ type
   TGLFont = record
     Font:     TScalableFont;
     Outlined: boolean;
+    BaseStretch: single;
     X, Y, Z:  real;
   end;
   TFont = record
@@ -96,7 +97,30 @@ uses
   IniFiles,
   UCommon,
   UMain,
-  UPathUtils;
+  UPathUtils,
+  UScale;
+
+function GetLayoutStretchCompensation: single;
+var
+  LayoutX, LayoutY: single;
+begin
+  LayoutX := GetLayoutScaleX;
+  LayoutY := GetLayoutScaleY;
+  if (LayoutX = 0) or (LayoutY = 0) then
+    Result := 1
+  else
+    Result := LayoutY / LayoutX;
+end;
+
+procedure ApplyFontStretch;
+var
+  GLFont: PGLFont;
+  StretchScale: single;
+begin
+  StretchScale := GetLayoutStretchCompensation;
+  GLFont := @Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle];
+  GLFont.Font.Stretch := GLFont.BaseStretch * StretchScale;
+end;
 
 const
   FONT_STYLES: array [0..3] of string = (
@@ -212,7 +236,8 @@ begin
         end;
 
         Fonts[FontNameIndex][FontStyleIndex].Font.GlyphSpacing := FontIni.ReadFloat(SectionName, FONT_STYLES[FontStyleIndex] + 'GlyphSpacing', 0.0);
-        Fonts[FontNameIndex][FontStyleIndex].Font.Stretch := FontIni.ReadFloat(SectionName, FONT_STYLES[FontStyleIndex] + 'Stretch', 1.0);
+        Fonts[FontNameIndex][FontStyleIndex].BaseStretch := FontIni.ReadFloat(SectionName, FONT_STYLES[FontStyleIndex] + 'Stretch', 1.0);
+        Fonts[FontNameIndex][FontStyleIndex].Font.Stretch := Fonts[FontNameIndex][FontStyleIndex].BaseStretch;
 
         for FallbackIndex := 1 to 25 do
         begin
@@ -253,6 +278,7 @@ function glTextWidth(const text: UTF8String): real;
 var
   Bounds: TBoundsDbl;
 begin
+  ApplyFontStretch;
   Bounds := Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.BBox(Text, true);
   Result := Bounds.Right;
 end;
@@ -272,6 +298,7 @@ begin
     // set font position
     glTranslatef(GLFont.X, GLFont.Y + GLFont.Font.Ascender, GLFont.Z);
     // draw string
+    ApplyFontStretch;
     GLFont.Font.Print(Text);
   glPopMatrix();
 end;
@@ -299,16 +326,19 @@ end;
 procedure SetFontSize(Size: real);
 begin
   Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Height := Size;
+  ApplyFontStretch;
 end;
 
 procedure SetFontFamily(FontFamily: integer);
 begin
   CurrentFont.FontFamily := FontFamily;
+  ApplyFontStretch;
 end;
 
 procedure SetFontStyle(FontStyle: integer);
 begin
   CurrentFont.FontStyle := FontStyle;
+  ApplyFontStretch;
 end;
 
 procedure SetFont(Family, Style: integer);
