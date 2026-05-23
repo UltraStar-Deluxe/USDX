@@ -415,6 +415,7 @@ type
       function  DuetMoveLine: boolean;
       procedure CopyLine(SrcTrack, SrcLine, DstTrack, DstLine: Integer);
       function  CheckTimingSyntaxErrors(out ErrorMessages: UTF8String): boolean;
+      function  SaveSongToFile(const SaveRelative: boolean): boolean;
       procedure Refresh;
       procedure CopyToUndo; //copy current lines, mouse position and headers
       procedure CopyFromUndo; //undo last lines, mouse position and headers
@@ -625,7 +626,6 @@ end;
       // SDLK_S: HandleSaveSong
 procedure TScreenEditSub.HandleSaveSong(SDL_ModState: word);
 var
-  SResult: TSaveSongResult;
   TimingErrors: UTF8String;
 begin
   // run timing checks before saving and abort on serious problems
@@ -636,70 +636,7 @@ begin
     Exit;
   end;
 
-  // handle medley tags first
-  if CurrentSong.isDuet then
-  begin
-    CurrentSong.Medley.Source := msNone;
-  end
-  else if (MedleyNotes.isStart and MedleyNotes.isEnd and MedleyNotes.isCustom) and
-          (MedleyNotes.start.line < MedleyNotes.end_.line) and
-          (Length(CurrentSong.Tracks[CurrentTrack].Lines)> MedleyNotes.end_.line) and
-          (Length(CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes) > MedleyNotes.end_.note) and
-          (Length(CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes) > MedleyNotes.start.note) then
-  begin
-    CurrentSong.Medley.Source := msTag;
-    CurrentSong.Medley.StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes[MedleyNotes.start.note].StartBeat;
-    CurrentSong.Medley.EndBeat := CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].StartBeat +
-      CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].Duration;
-    CurrentSong.Medley.FadeIn_time := DEFAULT_FADE_IN_TIME;
-    CurrentSong.Medley.FadeOut_time := DEFAULT_FADE_OUT_TIME;
-  end
-  else if MedleyNotes.isCustom then
-  begin
-    CurrentSong.Medley.Source := msNone;
-    CurrentSong.Medley.StartBeat := 0;
-    CurrentSong.Medley.EndBeat := 0;
-  end;
-
-  // Save Song (SHIFT = relative)
-  if SDL_ModState = KMOD_LSHIFT then
-  begin
-    if (CurrentSong.isDuet) then
-    begin
-      ScreenPopupError.ShowPopup(Language.Translate('EDIT_INFO_DUET_RELATIVE_UNSUPPORTED'));
-      Exit;
-    end;
-
-    if (CurrentSong.Medley.Source = msTag) then
-    begin
-      ScreenPopupError.ShowPopup(Language.Translate('EDIT_INFO_MEDLEY_RELATIVE_UNSUPPORTED') + ' ' + Language.Translate('EDIT_INFO_MEDLEY_DELETED'));
-    end;
-
-    CurrentSong.Medley.Source := msNone;
-    CurrentSong.Relative := true;
-    SResult := SaveSong(CurrentSong, CurrentSong.Tracks, CurrentSong.Path.Append(CurrentSong.FileName), CurrentSong.Relative); //save with relative timings
-  end else
-  begin
-    CurrentSong.Relative := false;
-    SResult := SaveSong(CurrentSong, CurrentSong.Tracks, CurrentSong.Path.Append(CurrentSong.FileName), CurrentSong.Relative); // save with absolute timings
-  end;
-
-  if (SResult = ssrOK) then // saving was successful
-  begin
-    Text[TextInfo].Text := Language.Translate('INFO_FILE_SAVED');
-    SetLength(UndoLines, 0, High(CurrentSong.Tracks)); //clear undo lines
-    SetLength(UndoStateNote, 0, Length(CurrentSong.Tracks)); //clear undo CurrentNote[CurrentTrack] state
-    SetLength(Undoheader, 0); //clear undo headers
-    CurrentUndoLines := 0;
-    //if not CheckSong then
-    //  ScreenPopupError.ShowPopup(Language.Translate(''));
-
-    //CatSongs.Song[SongIndex] := CurrentSong;
-  end
-  else // saving was unsuccessful
-  begin
-    ScreenPopupError.ShowPopup(Language.Translate('ERROR_SAVE_FILE_FAILED'));
-  end;
+  SaveSongToFile(SDL_ModState = KMOD_LSHIFT);
 end;
 
 
@@ -4899,6 +4836,66 @@ begin
     ErrorMessages := '';
     Result := false;
   end;
+end;
+
+function TScreenEditSub.SaveSongToFile(const SaveRelative: boolean): boolean;
+var
+  SResult: TSaveSongResult;
+begin
+  if CurrentSong.isDuet then
+  begin
+    CurrentSong.Medley.Source := msNone;
+  end
+  else if (MedleyNotes.isStart and MedleyNotes.isEnd and MedleyNotes.isCustom) and
+          (MedleyNotes.start.line < MedleyNotes.end_.line) and
+          (Length(CurrentSong.Tracks[CurrentTrack].Lines) > MedleyNotes.end_.line) and
+          (Length(CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes) > MedleyNotes.end_.note) and
+          (Length(CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes) > MedleyNotes.start.note) then
+  begin
+    CurrentSong.Medley.Source := msTag;
+    CurrentSong.Medley.StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes[MedleyNotes.start.note].StartBeat;
+    CurrentSong.Medley.EndBeat := CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].StartBeat +
+      CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].Duration;
+    CurrentSong.Medley.FadeIn_time := DEFAULT_FADE_IN_TIME;
+    CurrentSong.Medley.FadeOut_time := DEFAULT_FADE_OUT_TIME;
+  end
+  else if MedleyNotes.isCustom then
+  begin
+    CurrentSong.Medley.Source := msNone;
+    CurrentSong.Medley.StartBeat := 0;
+    CurrentSong.Medley.EndBeat := 0;
+  end;
+
+  if SaveRelative then
+  begin
+    if CurrentSong.isDuet then
+    begin
+      ScreenPopupError.ShowPopup(Language.Translate('EDIT_INFO_DUET_RELATIVE_UNSUPPORTED'));
+      Exit(false);
+    end;
+
+    if CurrentSong.Medley.Source = msTag then
+      ScreenPopupError.ShowPopup(Language.Translate('EDIT_INFO_MEDLEY_RELATIVE_UNSUPPORTED') + ' ' + Language.Translate('EDIT_INFO_MEDLEY_DELETED'));
+
+    CurrentSong.Medley.Source := msNone;
+    CurrentSong.Relative := true;
+  end
+  else
+    CurrentSong.Relative := false;
+
+  SResult := SaveSong(CurrentSong, CurrentSong.Tracks, CurrentSong.Path.Append(CurrentSong.FileName), CurrentSong.Relative);
+  Result := (SResult = ssrOK);
+
+  if Result then
+  begin
+    Text[TextInfo].Text := Language.Translate('INFO_FILE_SAVED');
+    SetLength(UndoLines, 0, High(CurrentSong.Tracks));
+    SetLength(UndoStateNote, 0, Length(CurrentSong.Tracks));
+    SetLength(Undoheader, 0);
+    CurrentUndoLines := 0;
+  end;
+  if not Result then
+    ScreenPopupError.ShowPopup(Language.Translate('ERROR_SAVE_FILE_FAILED'));
 end;
 
 constructor TScreenEditSub.Create;
