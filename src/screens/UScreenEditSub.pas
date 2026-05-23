@@ -392,7 +392,7 @@ type
       procedure DivideBPM;
       procedure MultiplyBPM;
       procedure LyricsCapitalize;
-      procedure LyricsCorrectSpaces;
+      procedure LyricsCorrectSpaces(TrackFilter: Integer = -1; LineFilter: Integer = -1);
       procedure FixTimings;
       procedure DivideSentence;
       procedure JoinSentence;
@@ -3340,7 +3340,7 @@ begin
   end; // TrackIndex
 end;
 
-procedure TScreenEditSub.LyricsCorrectSpaces;
+procedure TScreenEditSub.LyricsCorrectSpaces(TrackFilter: Integer; LineFilter: Integer);
 var
   TrackIndex:   Integer;
   LineIndex:    Integer;
@@ -3348,8 +3348,19 @@ var
 begin
   for TrackIndex := 0 to High(CurrentSong.Tracks) do
   begin
+    if (TrackFilter >= 0) and (TrackIndex <> TrackFilter) then
+      Continue;
+
     for LineIndex := 0 to CurrentSong.Tracks[TrackIndex].High do
     begin
+      if (LineFilter >= 0) and (LineIndex <> LineFilter) then
+        Continue;
+
+      if (Length(CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes) = 0) then
+        Continue;
+
+      CurrentSong.Tracks[TrackIndex].Lines[LineIndex].HighNote := High(CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes);
+
       // correct starting spaces in the first word
       while Copy(CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[0].Text, 1, 1) = ' ' do
         CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[0].Text := Copy(CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[0].Text, 2, 100);
@@ -3533,6 +3544,8 @@ begin
   //cleanup of first note of new sentence: trim leading white space and capitalize
   CurrentSong.Tracks[CurrentTrack].Lines[LineNew].Notes[0].Text := TrimLeft(CurrentSong.Tracks[CurrentTrack].Lines[LineNew].Notes[0].Text);
   CurrentSong.Tracks[CurrentTrack].Lines[LineNew].Notes[0].Text := UTF8UpperCase(UTF8Copy(CurrentSong.Tracks[CurrentTrack].Lines[LineNew].Notes[0].Text, 1, 1)) + UTF8Copy(CurrentSong.Tracks[CurrentTrack].Lines[LineNew].Notes[0].Text, 2, Length(CurrentSong.Tracks[CurrentTrack].Lines[LineNew].Notes[0].Text) - 1);
+  LyricsCorrectSpaces(CurrentTrack, LineStart);
+  LyricsCorrectSpaces(CurrentTrack, LineNew);
 
   CurrentSong.Tracks[CurrentTrack].CurrentLine := CurrentSong.Tracks[CurrentTrack].CurrentLine + 1;
   CurrentNote[CurrentTrack] := 0;
@@ -3614,6 +3627,7 @@ begin
   SetLength(CurrentSong.Tracks[CurrentTrack].Lines, Length(CurrentSong.Tracks[CurrentTrack].Lines) - 1);
   Dec(CurrentSong.Tracks[CurrentTrack].Number);
   Dec(CurrentSong.Tracks[CurrentTrack].High);
+  LyricsCorrectSpaces(CurrentTrack, CurrentSong.Tracks[CurrentTrack].CurrentLine);
 
   // adjust medley tags
   if (MedleyNotes.isStart) then
@@ -4445,7 +4459,6 @@ var
 
 begin
   FixTimings;
-  LyricsCorrectSpaces;
 
   if not (CurrentSong.isDuet) then
   begin
