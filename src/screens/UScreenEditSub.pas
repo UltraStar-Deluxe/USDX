@@ -346,6 +346,11 @@ type
 
       // medley
       MedleyNotes:             TMedleyNotes;
+      PendingSaveRelative:     boolean;
+      TimingErrorTrack:        Integer;
+      TimingErrorLine:         Integer;
+      TimingErrorBeat:         Integer;
+      TimingErrorValid:        boolean;
 
       procedure ChangeBPM(newBPM: real);
       procedure HandleSaveSong(SDL_ModState: word);
@@ -415,6 +420,8 @@ type
       function  DuetMoveLine: boolean;
       procedure CopyLine(SrcTrack, SrcLine, DstTrack, DstLine: Integer);
       function  CheckTimingSyntaxErrors(out ErrorMessages: UTF8String): boolean;
+      procedure GoToLineAndBeat(const TrackIndex, LineIndex, Beat: Integer);
+      procedure GoToFirstTimingError;
       function  SaveSongToFile(const SaveRelative: boolean): boolean;
       procedure Refresh;
       procedure CopyToUndo; //copy current lines, mouse position and headers
@@ -503,6 +510,20 @@ begin
     ScreenPopupInfo.ShowPopup(Language.Translate('INFO_FILE_SAVED'))
   else
     ScreenPopupError.ShowPopup(Language.Translate('ERROR_SAVE_FILE_FAILED'));
+end;
+
+procedure OnSaveTimingErrorChoice(Value: integer; Data: Pointer);
+var
+  EditScreen: TScreenEditSub;
+begin
+  if Data = nil then
+    Exit;
+
+  EditScreen := TScreenEditSub(Data);
+  case Value of
+    0: EditScreen.SaveSongToFile(EditScreen.PendingSaveRelative);
+    1: EditScreen.GoToFirstTimingError;
+  end;
 end;
 
 procedure OnExit(Value: boolean; Data: Pointer);
@@ -627,16 +648,25 @@ end;
 procedure TScreenEditSub.HandleSaveSong(SDL_ModState: word);
 var
   TimingErrors: UTF8String;
+  SaveRelative: boolean;
 begin
-  // run timing checks before saving and abort on serious problems
+  SaveRelative := (SDL_ModState = KMOD_LSHIFT);
+  PendingSaveRelative := SaveRelative;
+
   if CheckTimingSyntaxErrors(TimingErrors) then
   begin
     if TimingErrors <> '' then
-      ScreenPopupError.ShowPopup(TimingErrors);
+      ScreenPopupError.ShowPopup(
+        TimingErrors,
+        ['Save anyways', 'Go to Error', 'Cancel'],
+        OnSaveTimingErrorChoice,
+        Self,
+        1,
+        2);
     Exit;
   end;
 
-  SaveSongToFile(SDL_ModState = KMOD_LSHIFT);
+  SaveSongToFile(SaveRelative);
 end;
 
 
@@ -4732,12 +4762,27 @@ var
   procedure AppendMsg(const Msg: UTF8String);
   begin
     if Messages <> '' then
-      Messages := Messages + ' ' + Msg
+      Messages := Messages + '\n' + Msg
     else
       Messages := Msg;
   end;
+
+  procedure RememberFirstError(const TrackIndex, LineIndex, Beat: Integer);
+  begin
+    if TimingErrorValid then
+      Exit;
+
+    TimingErrorValid := true;
+    TimingErrorTrack := TrackIndex;
+    TimingErrorLine := LineIndex;
+    TimingErrorBeat := Beat;
+  end;
 begin
   Messages := '';
+  TimingErrorValid := false;
+  TimingErrorTrack := 0;
+  TimingErrorLine := 0;
+  TimingErrorBeat := 0;
 
   for TrackIndex := 0 to High(CurrentSong.Tracks) do
   begin
@@ -4768,6 +4813,7 @@ begin
         // any later note starting before previous note ended is an overlap
         if NoteStart < PrevNoteEnd then
         begin
+          RememberFirstError(TrackIndex, LineIndex, NoteStart);
           AppendMsg(Format(Language.Translate('EDIT_INFO_TIMING_NOTE_OVERLAP'),
                            [TrackIndex + 1, LineIndex + 1, NoteIndex + 1,
                             NoteStart, NoteEnd - 1, PrevNoteEnd - 1]));
@@ -4787,6 +4833,7 @@ begin
         // forbidden: NoteStart < LineEndBeat < NoteEnd
         if (NoteStart < LineEndBeat) and (LineEndBeat < NoteEnd) then
         begin
+          RememberFirstError(TrackIndex, LineIndex, LineEndBeat);
           AppendMsg(Format(Language.Translate('EDIT_INFO_TIMING_LINEBREAK_OVERLAP'),
                            [TrackIndex + 1, LineIndex + 1, LineEndBeat,
                             NoteIndex + 1, NoteStart, NoteEnd - 1]));
@@ -4817,6 +4864,7 @@ begin
 
           if (NoteStart < LineEndBeat) and (LineEndBeat < NoteEnd) then
           begin
+            RememberFirstError(TrackIndex, LineIndex, LineEndBeat);
             AppendMsg(Format(Language.Translate('EDIT_INFO_TIMING_LINEBREAK_OVERLAP'),
                              [TrackIndex + 1, LineIndex + 1, LineEndBeat,
                               NoteIndex + 1, NoteStart, NoteEnd - 1]));
@@ -4828,7 +4876,7 @@ begin
 
   if Messages <> '' then
   begin
-    ErrorMessages := Language.Translate('EDIT_INFO_SYNTAX_ERRORS_TIMING_HEADER') + ' ' + Messages;
+    ErrorMessages := Language.Translate('EDIT_INFO_SYNTAX_ERRORS_TIMING_HEADER') + '\n\n' + Messages;
     Result := true;
   end
   else
@@ -4836,6 +4884,54 @@ begin
     ErrorMessages := '';
     Result := false;
   end;
+end;
+
+procedure TScreenEditSub.GoToLineAndBeat(const TrackIndex, LineIndex, Beat: Integer);
+var
+  NoteIndex: Integer;
+begin
+  if (TrackIndex < 0) or (TrackIndex > High(CurrentSong.Tracks)) then
+    Exit;
+  if (LineIndex < 0) or (LineIndex > CurrentSong.Tracks[TrackIndex].High) then
+    Exit;
+  if CurrentSong.Tracks[TrackIndex].Lines[LineIndex].HighNote < 0 then
+    Exit;
+
+  AudioPlayback.Stop;
+  PlaySentence := false;
+  PlaySentenceMidi := false;
+  PlayOne := false;
+  PlayVideo := false;
+  StopVideoPreview;
+  {$IFDEF UseMIDIPort}
+  StopMidiPlayback;
+  {$ENDIF}
+
+  CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
+  CurrentTrack := TrackIndex;
+  CurrentSong.Tracks[CurrentTrack].CurrentLine := LineIndex;
+  CurrentNote[CurrentTrack] := 0;
+
+  for NoteIndex := 0 to CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].HighNote do
+  begin
+    CurrentNote[CurrentTrack] := NoteIndex;
+    if CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteIndex].EndBeat >= Beat then
+      Break;
+  end;
+
+  UpdateLineBaseNote(CurrentTrack, CurrentSong.Tracks[CurrentTrack].CurrentLine);
+  CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
+  EditorLyrics[CurrentTrack].AddLine(CurrentTrack, CurrentSong.Tracks[CurrentTrack].CurrentLine);
+  EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+  ShowInteractiveBackground;
+  GoldenRec.KillAll;
+  Text[TextInfo].Text := Language.Translate('EDIT_INFO_CURRENT_BEAT') + ' ' + IntToStr(Beat);
+end;
+
+procedure TScreenEditSub.GoToFirstTimingError;
+begin
+  if TimingErrorValid then
+    GoToLineAndBeat(TimingErrorTrack, TimingErrorLine, TimingErrorBeat);
 end;
 
 function TScreenEditSub.SaveSongToFile(const SaveRelative: boolean): boolean;
@@ -4909,6 +5005,8 @@ begin
   {$IFDEF UseMIDIPort}
   ResetMidiLastNote;
   {$ENDIF}
+  PendingSaveRelative := false;
+  TimingErrorValid := false;
 
   EditorLyrics[0] := TEditorLyrics.Create;
   EditorLyrics[1] := TEditorLyrics.Create;
