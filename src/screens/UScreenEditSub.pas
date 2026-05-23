@@ -139,6 +139,20 @@ type
       LastPressedMouseButton:  boolean;
       LastPressedMouseType:    Integer;
       PressedNoteId:           Integer;
+      MouseDownX:              Integer;
+      MouseDownY:              Integer;
+      MouseDownModState:       word;
+      DragStartTone:           Integer;
+      DragAppliedToneDelta:    Integer;
+      DragHasMoved:            boolean;
+      DragUndoCopied:          boolean;
+      PendingNoteClick:        boolean;
+      PendingNoteClickTime:    Integer;
+      PendingNoteClickCooldownUntil: Integer;
+      PendingNoteClickTrack:   Integer;
+      PendingNoteClickLine:    Integer;
+      PendingNoteClickIndex:   Integer;
+      PendingNoteClickModState: word;
 
       TextPosition:            Integer;
       TextEditMode:            boolean;
@@ -441,6 +455,11 @@ type
       function  GetMedleyLength: real; //if available returns the length of the medley in seconds, otherwise 0
       procedure SyncVolumeSlidersFromIni;
       procedure LoadCurrentLyricForTextEdit(CursorPosition: Integer);
+      function  GetInteractiveNoteIndex(InteractionIndex: Integer): Integer;
+      procedure CancelPendingNoteClick;
+      procedure QueuePendingNoteClick(NoteIndex: Integer);
+      procedure PlayPendingNoteClick;
+      procedure SelectNote(NoteIndex: Integer);
       {$IFDEF UseMIDIPort}
       procedure ResetMidiLastNote;
       procedure ReleaseMidiLastNote;
@@ -1746,6 +1765,73 @@ begin
     TextPosition := EnsureRange(CursorPosition, 0, editLengthText);
 end;
 
+function TScreenEditSub.GetInteractiveNoteIndex(InteractionIndex: Integer): Integer;
+var
+  NoteIndex: Integer;
+begin
+  Result := -1;
+  for NoteIndex := 0 to High(InteractiveNoteId) do
+  begin
+    if InteractiveNoteId[NoteIndex] = InteractionIndex then
+    begin
+      Result := NoteIndex;
+      Exit;
+    end;
+  end;
+end;
+
+procedure TScreenEditSub.CancelPendingNoteClick;
+begin
+  PendingNoteClick := false;
+  PendingNoteClickIndex := -1;
+end;
+
+procedure TScreenEditSub.QueuePendingNoteClick(NoteIndex: Integer);
+begin
+  if SDL_GetTicks() < PendingNoteClickCooldownUntil then
+    Exit;
+
+  PendingNoteClick := true;
+  PendingNoteClickTime := SDL_GetTicks() + 250;
+  PendingNoteClickTrack := CurrentTrack;
+  PendingNoteClickLine := CurrentSong.Tracks[CurrentTrack].CurrentLine;
+  PendingNoteClickIndex := NoteIndex;
+  PendingNoteClickModState := MouseDownModState;
+end;
+
+procedure TScreenEditSub.SelectNote(NoteIndex: Integer);
+begin
+  if (NoteIndex < 0) or
+     (NoteIndex > CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].HighNote) then
+    Exit;
+
+  CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
+  CurrentNote[CurrentTrack] := NoteIndex;
+  CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
+  EditorLyrics[CurrentTrack].Selected := CurrentNote[CurrentTrack];
+  if TextEditMode then
+    LoadCurrentLyricForTextEdit(-1);
+end;
+
+procedure TScreenEditSub.PlayPendingNoteClick;
+begin
+  if not PendingNoteClick then
+    Exit;
+
+  if SDL_GetTicks() < PendingNoteClickTime then
+    Exit;
+
+  if (PendingNoteClickTrack = CurrentTrack) and
+     (PendingNoteClickLine = CurrentSong.Tracks[CurrentTrack].CurrentLine) and
+     (PendingNoteClickIndex >= 0) and
+     (PendingNoteClickIndex <= CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].HighNote) then
+  begin
+    SelectNote(PendingNoteClickIndex);
+    PlayNote(PendingNoteClickModState);
+  end;
+
+  CancelPendingNoteClick;
+end;
 
       // SDLK_RETURN: ToggleTextEditMode
 procedure TScreenEditSub.ToggleTextEditMode(SDL_ModState: word);
@@ -2918,11 +3004,16 @@ var
   nBut:   Integer;
   Action: TMouseClickAction;
   TempR:  real;
-  i:      Integer;
   PrevAudioIndex: Integer;
   PrevClickIndex: Integer;
   CursorWordIndex: Integer;
   CursorCharIndex: Integer;
+  NoteIndex: Integer;
+  BeatDelta: Integer;
+  NoteXBefore: real;
+  NoteXAfter: real;
+  ToneDelta: Integer;
+  SDL_ModState: word;
 begin
   // transfer mousecords to the 800x600 raster we use to draw
   X := Round((X / (ScreenW / Screens)) * RenderW);
@@ -2951,6 +3042,7 @@ begin
       Theme.EditSub.SentenceBackground.Y + Theme.EditSub.SentenceBackground.H,
       CursorWordIndex, CursorCharIndex) then
     begin
+      CancelPendingNoteClick;
       CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
       CurrentNote[CurrentTrack] := CursorWordIndex;
       CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := P1_INVERTED;
@@ -2980,24 +3072,245 @@ begin
   end;
 
   nBut := InteractAt(X, Y);
+  NoteIndex := GetInteractiveNoteIndex(nBut);
+
   if nBut >= 0 then
   begin
     //select on mouse-over
     if nBut <> Interaction then
       SetInteraction(nBut);
   end;
-  if not BtnDown then
+
+  if BtnDown and (MouseButton = SDL_BUTTON_LEFT) and
+     (nBut >= 0) and (Interactions[nBut].Typ = iButton) and (NoteIndex < 0) then
   begin
-    PressedNoteId := -1;
-    Xmouse := 0;
+    if Interactions[nBut].Num = UndoButtonId then
+    begin
+      CopyFromUndo;
+      GoldenRec.KillAll;
+      Text[TextInfo].Text := Language.Translate('EDIT_INFO_UNDO');
+      ShowInteractiveBackground;
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = PreviousSeqButtonID then
+    begin
+      PreviousSentence;
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = NextSeqButtonID then
+    begin
+      NextSentence;
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = FreestyleButtonID then
+    begin
+      SetFreestyleNote(0);
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = GoldButtonID then
+    begin
+      SetGoldenNote(0);
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = PlayOnlyButtonID then
+    begin
+      HandlePlaySentence(0);
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = PlayWithNoteButtonID then
+    begin
+      HandlePlaySentence(KMOD_LSHIFT or KMOD_LCTRL);
+      Exit;
+    end;
+
+    if Interactions[nBut].Num = PlayNoteButtonID then
+    begin
+      HandlePlaySentence(KMOD_LSHIFT);
+      Exit;
+    end;
   end;
 
-  if (nBut > -1) then
+  if not BtnDown then
+  begin
+    if (MouseButton = SDL_BUTTON_LEFT) and (PressedNoteId >= 0) and (not DragHasMoved) then
+      QueuePendingNoteClick(PressedNoteId);
+
+    PressedNoteId := -1;
+    Xmouse := 0;
+    DragHasMoved := false;
+    DragUndoCopied := false;
+  end;
+
+  if (nBut > -1) or ((MouseButton = 0) and BtnDown and (PressedNoteId >= 0)) then
   begin
   if (BtnDown) then
   begin
+    if ((MouseButton = SDL_BUTTON_RIGHT) or (MouseButton = SDL_BUTTON_LEFT)) and (NoteIndex >= 0) then
+    begin
+      LastPressedMouseType := MouseButton;
+      LastX := CurrentX;
+      LastY := CurrentY;
+      MouseDownX := CurrentX;
+      MouseDownY := CurrentY;
+      MouseDownModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+        + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT {+ KMOD_CAPS});
+      PressedNoteId := NoteIndex;
+      DragStartTone := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].Tone;
+      DragAppliedToneDelta := 0;
+      DragHasMoved := false;
+      DragUndoCopied := false;
+
+      MoveNote := true;
+      ResizeNoteLeft := false;
+      ResizeNoteRight := false;
+      if (Interactions[nBut].Typ = iButton) then
+      begin
+        if CurrentX < Button[Interactions[nBut].Num].X + Button[Interactions[nBut].Num].W * 0.2 then
+        begin
+          ResizeNoteLeft := true;
+          MoveNote := false;
+        end
+        else if CurrentX > Button[Interactions[nBut].Num].X + Button[Interactions[nBut].Num].W - Button[Interactions[nBut].Num].W * 0.2 then
+        begin
+          ResizeNoteRight := true;
+          MoveNote := false;
+        end;
+      end;
+
+      SelectNote(NoteIndex);
+
+      SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+        + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT {+ KMOD_CAPS});
+      if (MouseButton = SDL_BUTTON_LEFT) and PendingNoteClick and
+         (PendingNoteClickTrack = CurrentTrack) and
+         (PendingNoteClickLine = CurrentSong.Tracks[CurrentTrack].CurrentLine) and
+         (PendingNoteClickIndex = NoteIndex) and
+         (SDL_GetTicks() < PendingNoteClickTime) and
+         (SDL_ModState = 0) then
+      begin
+        CancelPendingNoteClick;
+        PendingNoteClickCooldownUntil := SDL_GetTicks() + 350;
+        CopyToUndo;
+        GoldenRec.KillAll;
+        DivideNote(true);
+        ShowInteractiveBackground;
+        PressedNoteId := -1;
+        Exit;
+      end;
+
+      if (MouseButton = SDL_BUTTON_LEFT) or (MouseButton = SDL_BUTTON_RIGHT) then
+        CancelPendingNoteClick;
+
+      Exit;
+    end;
+
+    if (MouseButton = 0) and (PressedNoteId >= 0) then
+    begin
+      if (Abs(CurrentX - MouseDownX) > 3) or (Abs(CurrentY - MouseDownY) > 3) then
+      begin
+        DragHasMoved := true;
+        CancelPendingNoteClick;
+      end;
+
+      if DragHasMoved then
+      begin
+        TempR := 720 / (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat - CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
+        BeatDelta := Round((CurrentX - LastX) / TempR);
+        if MoveNote and (LastPressedMouseType <> SDL_BUTTON_RIGHT) then
+          ToneDelta := -Round((CurrentY - MouseDownY) / (LineSpacing / 2)) - DragAppliedToneDelta
+        else
+          ToneDelta := 0;
+
+        if (BeatDelta <> 0) or (ToneDelta <> 0) then
+        begin
+          if not DragUndoCopied then
+          begin
+            CopyToUndo;
+            DragUndoCopied := true;
+          end;
+
+          if BeatDelta <> 0 then
+          begin
+            NoteXBefore := Theme.EditSub.NotesBackground.X + NotesSkipX +
+              (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat -
+              CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat) * TempR + 0.5;
+            if ResizeNoteRight then
+              NoteXBefore := NoteXBefore + CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration * TempR - 0.5;
+
+            if LastPressedMouseType = SDL_BUTTON_RIGHT then
+            begin
+              if MoveNote then
+                MoveAllToEnd(BeatDelta);
+              if (ResizeNoteRight) and (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration + BeatDelta > 0) then
+              begin
+                CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration + BeatDelta;
+                if CurrentNote[CurrentTrack] = CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].HighNote then
+                  CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat + BeatDelta;
+              end;
+              if (ResizeNoteLeft) and (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration - BeatDelta > 0) then
+              begin
+                CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat + BeatDelta;
+                CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration - BeatDelta;
+                if CurrentNote[CurrentTrack] = 0 then
+                  CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].StartBeat + BeatDelta;
+              end;
+            end
+            else
+            begin
+              if MoveNote then
+              begin
+                CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat + BeatDelta;
+                if CurrentNote[CurrentTrack] = 0 then
+                  CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].StartBeat - BeatDelta;
+                if CurrentNote[CurrentTrack] = CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].HighNote then
+                  CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat + BeatDelta;
+              end;
+              if (ResizeNoteRight) and (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration + BeatDelta > 0) then
+              begin
+                CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration + BeatDelta;
+                if CurrentNote[CurrentTrack] = CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].HighNote then
+                  CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat + BeatDelta;
+              end;
+              if (ResizeNoteLeft) and (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration - BeatDelta > 0) then
+              begin
+                CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat + BeatDelta;
+                CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration - BeatDelta;
+                if CurrentNote[CurrentTrack] = 0 then
+                  CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].StartBeat + BeatDelta;
+              end;
+            end;
+
+            TempR := 720 / (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat - CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
+            NoteXAfter := Theme.EditSub.NotesBackground.X + NotesSkipX +
+              (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat -
+              CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat) * TempR + 0.5;
+            if ResizeNoteRight then
+              NoteXAfter := NoteXAfter + CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration * TempR - 0.5;
+            LastX := LastX + Round(NoteXAfter - NoteXBefore);
+          end;
+
+          if ToneDelta <> 0 then
+          begin
+            CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone := DragStartTone + DragAppliedToneDelta + ToneDelta;
+            Inc(DragAppliedToneDelta, ToneDelta);
+          end;
+
+          GoldenRec.KillAll;
+          ShowInteractiveBackground;
+        end;
+      end;
+      Exit;
+    end;
+
     if (MouseButton = SDL_BUTTON_RIGHT) or (MouseButton = SDL_BUTTON_LEFT) then
     begin
+      CancelPendingNoteClick;
       LastPressedMouseType := MouseButton;
       LastX := CurrentX;
       LastY := CurrentY;
@@ -3005,26 +3318,6 @@ begin
       MoveNote := true;
       ResizeNoteLeft := false;
       ResizeNoteRight := false;
-      // check current mouse position to resize note - 20% of left or right note to resize
-      if (Interactions[nBut].Typ = iButton) then
-      begin
-        if CurrentX < Button[Interactions[nBut].Num].X + Button[Interactions[nBut].Num].W * 0.2 then
-        begin
-          // selected left side note - 20%
-          ResizeNoteLeft := true;
-          ResizeNoteRight := false;
-          MoveNote := false;
-        end;
-
-        if CurrentX > Button[Interactions[nBut].Num].X + Button[Interactions[nBut].Num].W - Button[Interactions[nBut].Num].W * 0.2 then
-        begin
-          // selected right side note - 20%
-          ResizeNoteLeft := false;
-          ResizeNoteRight := true;
-          MoveNote := false;
-        end;
-        PressedNoteId :=  Interactions[nBut].Num;
-      end;
     end;
 
     if (MouseButton = SDL_BUTTON_LEFT) then
@@ -3036,92 +3329,6 @@ begin
       end
       else
         Action := maReturn;
-    end;
-
-    // move notes by mouse move (left-right)
-    TempR := 720 / (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat - CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
-    if (MouseButton = 0) and (LastPressedMouseType = SDL_BUTTON_RIGHT) and (PressedNoteId >=0) then
-    begin
-      // left & right
-      if (Floor((CurrentX - 40) / TempR) > Floor((LastX - 40) / TempR)) or  (Floor((CurrentX - 40) / TempR) < Floor((LastX - 40) / TempR)) then
-      begin
-        CopyToUndo;
-        i := Floor((currentx-40) / Floor(TempR)) - Floor((lastx - 40) / Floor(TempR));
-        if MoveNote then
-          MoveAllToEnd(i);
-        if (ResizeNoteRight) and (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration + i > 0) then
-        begin
-          MoveAllToEnd(i);
-          CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat - i;
-          CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration + i;
-        end;
-        if (ResizeNoteLeft) and (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration - i > 0) then
-        begin
-          CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat + i;
-          CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration - i;
-          if CurrentNote[CurrentTrack] = 0 then
-            CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].StartBeat - i;
-        end;
-        LastX := CurrentX;
-        GoldenRec.KillAll;
-        ShowInteractiveBackground;
-      end;
-      // up & down
-      if (CurrentY - LastY < -6) or (CurrentY - LastY > 6) then
-      begin
-        CopyToUndo;
-        TransposeNote(-1* Floor((CurrentY-LastY) div (6)));
-        LastY := CurrentY;
-        GoldenRec.KillAll;
-        ShowInteractiveBackground;
-      end;
-    end;
-
-    //move one note by mouse move
-    if (MouseButton = 0) and (LastPressedMouseType = SDL_BUTTON_LEFT) and (PressedNoteId >= 0) then
-    begin
-      if (Floor((CurrentX - 40) / TempR) > Floor((LastX - 40) / TempR)) or (Floor((CurrentX - 40) / TempR) < Floor((LastX - 40) / TempR)) then
-      begin
-        CopyToUndo;
-        // move left & right
-        i := Floor((currentx - 40) / Floor(TempR)) - Floor((lastx - 40) / Floor(TempR));
-        if MoveNote then
-        begin
-            CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat +i;
-            if CurrentNote[CurrentTrack] = 0 then
-              CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].StartBeat - i;
-            if CurrentNote[CurrentTrack] = CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].HighNote then
-              CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat + i;
-        end;
-        // resize note
-        if (ResizeNoteRight) and (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration + i > 0) then
-        begin
-          CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration + i;
-          if CurrentNote[CurrentTrack] = CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].HighNote then
-              CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat + i;
-        end;
-        if (ResizeNoteLeft) and (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration - i > 0) then
-        begin
-          CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].StartBeat + i;
-          CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Duration - i;
-          if CurrentNote[CurrentTrack] = 0 then
-              CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].StartBeat + i;
-        end;
-
-        LastX := CurrentX;
-        GoldenRec.KillAll;
-        ShowInteractiveBackground;
-      end;
-
-      // up & down
-      if (CurrentY - LastY < -6) or (CurrentY - LastY > 6) then
-      begin
-        CopyToUndo;
-        TransposeNote(-1* Floor((CurrentY-LastY) div (6)));
-        LastY := CurrentY;
-        GoldenRec.KillAll;
-        ShowInteractiveBackground;
-      end;
     end;
 
     // change to next sequence
@@ -3239,7 +3446,7 @@ begin
   if (VolumeClickSlideId = Interactions[nBut].Num) and (VolumeClickIndex <> PrevClickIndex) then
     SetSfxVolumePercent(EnsureRange(VolumeClickIndex, 0, 100));
   end
-  else if (MouseButton = SDL_BUTTON_RIGHT) then
+  else if BtnDown and (MouseButton = SDL_BUTTON_RIGHT) then
   begin
     if length(UndoLines) > 0 then
     begin
@@ -3826,6 +4033,12 @@ begin
 
   with CurrentSong.Tracks[CurrentTrack].Lines[LineIndex] do
   begin
+    if not doubleclick then
+      CutPosition := Round(Notes[CurrentNote[CurrentTrack]].Duration / 2);
+
+    if (CutPosition <= 0) or (CutPosition >= Notes[CurrentNote[CurrentTrack]].Duration) then
+      Exit;
+
     Inc(HighNote);
     SetLength(Notes, HighNote + 1);
 
@@ -5879,6 +6092,11 @@ begin
     ResizeNoteLeft := false;
     ResizeNoteRight := false;
     MoveNote := false;
+    PressedNoteId := -1;
+    DragHasMoved := false;
+    DragUndoCopied := false;
+    PendingNoteClickCooldownUntil := 0;
+    CancelPendingNoteClick;
     //show transparent background for notes
     ShowInteractiveBackground;
     // user input tracking
@@ -5952,6 +6170,7 @@ var
   {$ENDIF}
 begin
   SyncVolumeSlidersFromIni;
+  PlayPendingNoteClick;
 
   {$IFDEF UseMIDIPort} // midi music
   if PlaySentenceMidi and Not (PlayOneMidi) then
@@ -6302,6 +6521,8 @@ end;
 
 procedure TScreenEditSub.OnHide;
 begin
+  CancelPendingNoteClick;
+  PressedNoteId := -1;
   {$IFDEF UseMIDIPort}
   StopMidiPlayback;
   FreeAndNil(MidiOut);
