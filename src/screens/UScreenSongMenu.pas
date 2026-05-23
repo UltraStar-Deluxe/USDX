@@ -1053,7 +1053,6 @@ begin
               PlaylistMan.ReloadPlaylist(SelectValue3);
               PlaylistMan.SetPlayList(SelectValue3);
               Visible := false;
-              ScreenSong.SelectNext(false);
               ScreenSong.SetScrollRefresh;
             end;
         end;

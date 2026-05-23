@@ -320,6 +320,7 @@ type
       procedure ParseInputNextVertical(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
       procedure ParseInputPrevVertical(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
 
+        procedure ResetRandomSongState;
       procedure ResetScrollList;
   end;
 
@@ -444,6 +445,14 @@ begin
   Text[TextCat].Text := Theme.Song.TextCat.Text;
 end;
 //Show Cat in Top Left Mod End
+
+procedure TScreenSong.ResetRandomSongState;
+begin
+  SetLength(RandomSongOrder, 0);
+  SetLength(RandomSearchOrder, 0);
+  NextRandomSongIdx := High(cardinal);
+  NextRandomSearchIdx := High(cardinal);
+end;
 
 procedure TScreenSong.ResetScrollList();
 begin
@@ -1180,15 +1189,18 @@ begin
               //Show Cat in Top Left Mod
               HideCatTL;
 
+              ChessboardMinLine := MainChessboardMinLine;
+              ListMinLine := MainListMinLine;
+
               //Show Wrong Song when Tabs on Fix
               if (Fix) then
               begin
                 SelectNext;
-                FixSelected;
+                if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) then
+                  SkipTo(CatSongs.VisibleIndex(Interaction), Interaction, CatSongs.VisibleSongs)
+                else
+                  FixSelected;
               end;
-
-              ChessboardMinLine := MainChessboardMinLine;
-              ListMinLine := MainListMinLine;
             end
             else
             begin
@@ -1204,12 +1216,18 @@ begin
                 HideCatTL;
                 Interaction := 0;
 
+                ChessboardMinLine := MainChessboardMinLine;
+                ListMinLine := MainListMinLine;
+
                 PlaylistMan.UnsetPlaylist;
 
                 //Show Wrong Song when Tabs on Fix
                 SelectNext;
                 SelectPrev;
-                FixSelected;
+                if (TSongMenuMode(Ini.SongMenu) in [smChessboard, smList]) then
+                  SkipTo(CatSongs.VisibleIndex(Interaction), Interaction, CatSongs.VisibleSongs)
+                else
+                  FixSelected;
               end
               else
               begin
@@ -2997,17 +3015,7 @@ begin
       end;
   end;
 
-  //Playlist Mode
-  if not(Mode = smPartyClassic) then
-  begin
-    //If Playlist Shown -> Select Next automatically
-    if not(Mode = smPartyFree) and (CatSongs.CatNumShow = -3) then
-    begin
-      SelectNext;
-    end;
-  end
-  //Party Mode
-  else
+  if (Mode = smPartyClassic) then
   begin
     if (Ini.PartyPopup = 1) then
     begin
@@ -3024,6 +3032,8 @@ begin
 end;
 
 procedure TScreenSong.OnShowFinish;
+var
+  NextSongID: Integer;
 begin
   DuetChange := false;
   RapToFreestyle := false;
@@ -3034,7 +3044,15 @@ begin
   if (PlaylistMan.CurPlayList <> -1) then
   begin
     if PlaylistMan.ReloadPlayList(PlaylistMan.CurPlayList) then
-      PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, SongIndex);
+    begin
+      NextSongID := SongIndex;
+      if (NextSongID = -1) then
+        NextSongID := CatSongs.Selected;
+      if (NextSongID = -1) then
+        NextSongID := Interaction;
+
+      PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, NextSongID);
+    end;
   end;
 
   FilterDuetsInPartyMode; // in party mode
@@ -3722,8 +3740,8 @@ end;
 procedure TScreenSong.SkipTo(Target: cardinal; TargetInteraction: integer = -1; VS: integer = -1);
 var
   i: integer;
-  MaxLine: real;
-  ChessboardLine: real;
+  MaxLine: integer;
+  TargetLine: integer;
 begin
   if (TSongMenuMode(Ini.SongMenu) = smRoulette) then
   begin
@@ -3759,22 +3777,29 @@ begin
     Interaction := TargetInteraction;
     SongTarget := Interaction;
 
-    if not (Button[Interaction].Visible) then
+    if (VS > 0) and (Theme.Song.Cover.Cols > 0) and (Theme.Song.Cover.Rows > 0) then
     begin
       i := CatSongs.VisibleIndex(Interaction);
-      ChessboardMinLine := Trunc(i / Theme.Song.Cover.Cols) - (Theme.Song.Cover.Rows - 1);
 
-      if (ChessboardMinLine < 0) then
+      MaxLine := 0;
+      if (VS > Theme.Song.Cover.Cols * Theme.Song.Cover.Rows) then
+        MaxLine := (VS - Theme.Song.Cover.Cols * Theme.Song.Cover.Rows + Theme.Song.Cover.Cols - 1) div Theme.Song.Cover.Cols;
+
+      if ChessboardMinLine < 0 then
         ChessboardMinLine := 0;
+      if ChessboardMinLine > MaxLine then
+        ChessboardMinLine := MaxLine;
 
-      MaxLine := (VS - Theme.Song.Cover.Cols * Theme.Song.Cover.Rows) / Theme.Song.Cover.Cols;
-      if (Frac(Maxline) > 0) then
-        MaxLine := Round(MaxLine) + 1
-      else
-        MaxLine := Round(MaxLine);
+      TargetLine := i div Theme.Song.Cover.Cols;
+      if TargetLine < ChessboardMinLine then
+        ChessboardMinLine := TargetLine
+      else if TargetLine >= ChessboardMinLine + Theme.Song.Cover.Rows then
+        ChessboardMinLine := TargetLine - Theme.Song.Cover.Rows + 1;
 
-      if (ChessboardMinLine > Round(MaxLine)) then
-        ChessboardMinLine := Round(MaxLine);
+      if ChessboardMinLine < 0 then
+        ChessboardMinLine := 0;
+      if ChessboardMinLine > MaxLine then
+        ChessboardMinLine := MaxLine;
     end;
 
     FixSelected;
@@ -3786,20 +3811,28 @@ begin
     Interaction := TargetInteraction;
     SongTarget := Interaction;
 
-    if not (Button[Interaction].Visible) then
+    if (VS > 0) and (Theme.Song.ListCover.Rows > 0) then
     begin
       i := CatSongs.VisibleIndex(Interaction);
-      if i > ListMinLine then
-        ListMinLine := i - Theme.Song.ListCover.Rows + 1
-      else
-        ListMinLine := i;
 
-      i := VS - Theme.Song.ListCover.Rows;
-      if (ListMinLine > i) then
-        ListMinLine := i;
+      MaxLine := VS - Theme.Song.ListCover.Rows;
+      if MaxLine < 0 then
+        MaxLine := 0;
 
       if ListMinLine < 0 then
         ListMinLine := 0;
+      if ListMinLine > MaxLine then
+        ListMinLine := MaxLine;
+
+      if i < ListMinLine then
+        ListMinLine := i
+      else if i >= ListMinLine + Theme.Song.ListCover.Rows then
+        ListMinLine := i - Theme.Song.ListCover.Rows + 1;
+
+      if ListMinLine < 0 then
+        ListMinLine := 0;
+      if ListMinLine > MaxLine then
+        ListMinLine := MaxLine;
     end;
 
     FixSelected;
