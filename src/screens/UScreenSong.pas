@@ -99,6 +99,13 @@ type
       procedure StartLoopPlaybackForCurrentSong(ForceFullscreen: boolean);
       procedure ToggleLoopMode;
       procedure ToggleLoopPause;
+      function FormatLoopClock(Seconds: real): UTF8String;
+      function TruncateLoopOverlayText(const Value: UTF8String; MaxWidth: real): UTF8String;
+      function IsLoopOverlayVisible: boolean;
+      procedure GetLoopOverlayGeometry(out X, Y, W, H, BarX, BarY, BarW, BarH: real);
+      function HandleLoopOverlayMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+      procedure DrawLoopModeOverlay;
+      procedure DrawLoopFullscreenCoverFallback;
     public
       TextArtist:   integer;
       TextTitle:    integer;
@@ -345,12 +352,14 @@ uses
   ULog,
   UMain,
   UMenuButton,
+  UDrawTexture,
   UMenuStatic,
   UNote,
   UParty,
   UPlaylist,
   UScreenSongMenu,
   USkins,
+  TextGL,
   UUnicodeUtils,
   dglOpenGL,
   Math;
@@ -558,6 +567,200 @@ begin
       fCurrentVideo.Pause;
     LoopPaused := false;
   end;
+end;
+
+function TScreenSong.FormatLoopClock(Seconds: real): UTF8String;
+var
+  Total: integer;
+begin
+  if Seconds < 0 then
+    Seconds := 0;
+  Total := Trunc(Seconds);
+  Result := Format('%.2d:%.2d', [Total div 60, Total mod 60]);
+end;
+
+function TScreenSong.TruncateLoopOverlayText(const Value: UTF8String; MaxWidth: real): UTF8String;
+var
+  CharLen: integer;
+begin
+  Result := Value;
+  if (Result = '') or (glTextWidth(Result) <= MaxWidth) then
+    Exit;
+
+  CharLen := Length(UTF8ToUCS4String(Value));
+  while (glTextWidth(Result) > MaxWidth) and (CharLen > 0) do
+  begin
+    Dec(CharLen);
+    Result := UTF8Copy(Value, 1, CharLen) + '..';
+  end;
+end;
+
+function TScreenSong.IsLoopOverlayVisible: boolean;
+begin
+  Result := IsLoopModeActive and CoverFull and (CatSongs.VisibleSongs > 0) and
+            (not CatSongs.Song[Interaction].Main);
+end;
+
+procedure TScreenSong.GetLoopOverlayGeometry(out X, Y, W, H, BarX, BarY, BarW, BarH: real);
+var
+  SongText: UTF8String;
+  TitleW: real;
+  TimeTextW: real;
+  MaxTimeTextW: real;
+  ContentW: real;
+begin
+
+  SetFontFamily(Text[TextTitle].Font);
+  SetFontStyle(Text[TextTitle].Style);
+  SetFontItalic(false);
+  SetFontReflection(false, 0);
+  SetFontZ(0);
+  SetFontSize(Theme.Song.LoopOverlay.FontSize);
+
+  SongText := CatSongs.Song[Interaction].Artist + ' - ' + CatSongs.Song[Interaction].Title;
+  SongText := TruncateLoopOverlayText(SongText, Theme.Song.LoopOverlay.TitleMaxW);
+  TitleW := glTextWidth(SongText);
+  TimeTextW := glTextWidth(FormatLoopClock(AudioPlayback.Position) + ' / ' + FormatLoopClock(AudioPlayback.Length));
+
+  MaxTimeTextW := glTextWidth('99:99 / 99:99');
+  BarW := EnsureRange(TitleW - MaxTimeTextW - Theme.Song.LoopOverlay.TimeBarGap,
+    Theme.Song.LoopOverlay.BarMinW, Theme.Song.LoopOverlay.BarMaxW);
+  ContentW := Max(TitleW, Max(TimeTextW, MaxTimeTextW) + Theme.Song.LoopOverlay.TimeBarGap + BarW);
+
+  W := ContentW + Theme.Song.LoopOverlay.BoxPaddingW;
+  if Theme.Song.LoopOverlay.MinW > 0 then
+    W := Max(W, Theme.Song.LoopOverlay.MinW);
+  if Theme.Song.LoopOverlay.MaxW > 0 then
+    W := Min(W, Theme.Song.LoopOverlay.MaxW);
+  H := Theme.Song.LoopOverlay.H;
+  X := Theme.Song.LoopOverlay.X;
+  Y := Theme.Song.LoopOverlay.Y;
+
+  BarX := X + Theme.Song.LoopOverlay.TextX + MaxTimeTextW + Theme.Song.LoopOverlay.TimeBarGap;
+  BarY := Y + Theme.Song.LoopOverlay.BarY;
+  BarH := Theme.Song.LoopOverlay.BarH;
+end;
+
+function TScreenSong.HandleLoopOverlayMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+var
+  OverlayX, OverlayY, OverlayW, OverlayH: real;
+  BarX, BarY, BarW, BarH: real;
+  TargetPos: real;
+begin
+  Result := false;
+  if not IsLoopOverlayVisible then
+    Exit;
+  if not BtnDown or (MouseButton <> SDL_BUTTON_LEFT) then
+    Exit;
+  if (AudioPlayback.Length <= 0) then
+    Exit;
+
+  GetLoopOverlayGeometry(OverlayX, OverlayY, OverlayW, OverlayH, BarX, BarY, BarW, BarH);
+  if (X < BarX) or (X > BarX + BarW) or (Y < BarY) or (Y > BarY + BarH) then
+    Exit;
+
+  TargetPos := ((X - BarX) / BarW) * AudioPlayback.Length;
+  TargetPos := EnsureRange(TargetPos, 0.0, AudioPlayback.Length);
+  AudioPlayback.Position := TargetPos;
+  if Assigned(fCurrentVideo) then
+    fCurrentVideo.Position := CatSongs.Song[Interaction].VideoGAP + TargetPos;
+  Result := true;
+end;
+
+procedure TScreenSong.DrawLoopModeOverlay;
+var
+  SongText: UTF8String;
+  TimeText: UTF8String;
+  X, Y, W, H: real;
+  BarX, BarY, BarW, BarH: real;
+  Progress: real;
+begin
+  if not IsLoopOverlayVisible then
+    Exit;
+
+  SongText := CatSongs.Song[Interaction].Artist + ' - ' + CatSongs.Song[Interaction].Title;
+  TimeText := FormatLoopClock(AudioPlayback.Position) + ' / ' + FormatLoopClock(AudioPlayback.Length);
+
+  GetLoopOverlayGeometry(X, Y, W, H, BarX, BarY, BarW, BarH);
+  SongText := TruncateLoopOverlayText(SongText, W - Theme.Song.LoopOverlay.BoxPaddingW);
+  if (AudioPlayback.Length > 0) then
+    Progress := EnsureRange(AudioPlayback.Position / AudioPlayback.Length, 0.0, 1.0)
+  else
+    Progress := 0;
+
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_TEXTURE_2D);
+  glEnable(GL_BLEND);
+  glColor4f(Theme.Song.LoopOverlay.BgR, Theme.Song.LoopOverlay.BgG,
+    Theme.Song.LoopOverlay.BgB, Theme.Song.LoopOverlay.BgA);
+  glBegin(GL_QUADS);
+    glVertex2f(X, Y);
+    glVertex2f(X, Y + H);
+    glVertex2f(X + W, Y + H);
+    glVertex2f(X + W, Y);
+  glEnd;
+  glColor4f(Theme.Song.LoopOverlay.TextR, Theme.Song.LoopOverlay.TextG,
+    Theme.Song.LoopOverlay.TextB, Theme.Song.LoopOverlay.TextA);
+  glEnable(GL_TEXTURE_2D);
+
+  SetFontSize(Theme.Song.LoopOverlay.FontSize);
+  SetFontPos(X + Theme.Song.LoopOverlay.TextX, Y + Theme.Song.LoopOverlay.TitleY);
+  glPrint(SongText);
+  SetFontPos(X + Theme.Song.LoopOverlay.TextX, Y + Theme.Song.LoopOverlay.TimeY);
+  glPrint(TimeText);
+
+  glDisable(GL_TEXTURE_2D);
+  glColor4f(Theme.Song.LoopOverlay.BarBgR, Theme.Song.LoopOverlay.BarBgG,
+    Theme.Song.LoopOverlay.BarBgB, Theme.Song.LoopOverlay.BarBgA);
+  glBegin(GL_QUADS);
+    glVertex2f(BarX, BarY);
+    glVertex2f(BarX, BarY + BarH);
+    glVertex2f(BarX + BarW, BarY + BarH);
+    glVertex2f(BarX + BarW, BarY);
+  glEnd;
+  glColor4f(Theme.Song.LoopOverlay.BarFillR, Theme.Song.LoopOverlay.BarFillG,
+    Theme.Song.LoopOverlay.BarFillB, Theme.Song.LoopOverlay.BarFillA);
+  glBegin(GL_QUADS);
+    glVertex2f(BarX, BarY);
+    glVertex2f(BarX, BarY + BarH);
+    glVertex2f(BarX + (BarW * Progress), BarY + BarH);
+    glVertex2f(BarX + (BarW * Progress), BarY);
+  glEnd;
+  glEnable(GL_TEXTURE_2D);
+
+  glEnable(GL_DEPTH_TEST);
+end;
+
+procedure TScreenSong.DrawLoopFullscreenCoverFallback;
+var
+  Song: TSong;
+  FullscreenCover: TTexture;
+begin
+  if not (IsLoopModeActive and CoverFull and (not Assigned(fCurrentVideo))) then
+    Exit;
+  if (CatSongs.VisibleSongs <= 0) or CatSongs.Song[Interaction].Main then
+    Exit;
+
+  Song := CatSongs.Song[Interaction];
+  if Song.Video.IsSet or Song.Background.IsSet then
+    Exit;
+  if (Interaction < 0) or (Interaction > High(Button)) or (Button[Interaction].Texture.TexNum = 0) then
+    Exit;
+
+  FullscreenCover := Button[Interaction].Texture;
+  FullscreenCover.X := 0;
+  FullscreenCover.Y := 0;
+  FullscreenCover.W := 800;
+  FullscreenCover.H := 600;
+  FullscreenCover.Z := 1;
+  FullscreenCover.ScaleW := 1;
+  FullscreenCover.ScaleH := 1;
+  FullscreenCover.Int := 1;
+  FullscreenCover.ColR := 1;
+  FullscreenCover.ColG := 1;
+  FullscreenCover.ColB := 1;
+  FullscreenCover.Alpha := 1;
+  DrawTexture(FullscreenCover);
 end;
 
 //Show Wrong Song when Tabs on Fix
@@ -1737,7 +1940,18 @@ begin
 
   if CoverFull then
   begin
+    if HandleLoopOverlayMouse(MouseButton, BtnDown, X, Y) then
+    begin
+      Result := true;
+      Exit;
+    end;
     // In fullscreen preview mode, ignore all other mouse interactions.
+    Result := true;
+    Exit;
+  end;
+
+  if HandleLoopOverlayMouse(MouseButton, BtnDown, X, Y) then
+  begin
     Result := true;
     Exit;
   end;
@@ -3671,6 +3885,8 @@ begin
     fCurrentVideo.AspectCorrection := acoLetterBox;
     fCurrentVideo.Draw;
   end;
+  DrawLoopFullscreenCoverFallback;
+  DrawLoopModeOverlay;
 
   //if (Mode = smPartyTournament) then
   //  PartyTimeLimit();
