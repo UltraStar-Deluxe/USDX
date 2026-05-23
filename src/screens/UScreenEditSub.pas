@@ -4382,7 +4382,6 @@ var
 
 begin
   FixTimings;
-  LyricsCorrectSpaces;
 
   if not (CurrentSong.isDuet) then
   begin
