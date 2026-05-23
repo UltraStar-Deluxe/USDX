@@ -2120,6 +2120,7 @@ begin
     AudioPlayback.Stop;
     PlaySentence := false;
     PlayOne := false;
+    PlaySentenceMidi := false;
     PlayVideo := false;
     CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
     Inc(CurrentNote[CurrentTrack]);
@@ -2196,6 +2197,7 @@ begin
     AudioPlayback.Stop();
     PlaySentence := false;
     PlayOne := false;
+    PlaySentenceMidi := false;
     PlayVideo := false;
 
     CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
@@ -3669,6 +3671,7 @@ begin
   EditorLyrics[CurrentTrack].Selected := 0;
   AudioPlayback.Stop();
   PlaySentence := false;
+  PlaySentenceMidi := false;
   PlayVideo := false;
   GoldenRec.KillAll;
 end;
@@ -3678,6 +3681,7 @@ begin
   AudioPlayback.Stop();
   PlayVideo := false;
   PlaySentence := false;
+  PlaySentenceMidi := false;
   PlayOne := false;
 
   CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
