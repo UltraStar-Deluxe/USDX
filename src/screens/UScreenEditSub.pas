@@ -1813,7 +1813,7 @@ begin
     // Interaction = 16 // PreviewSlideId
     // Interaction = 17 // RelativeSlideId
 
-    if Interaction = MedleyStartSlideId then
+    if CurrentSong.isDuet and (Interaction = MedleyStartSlideId) then
     begin
       BackupEditText := ifthen(CurrentSong.DuetNames[0] <> '', CurrentSong.DuetNames[0], NOT_SET);
       CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
@@ -1824,7 +1824,7 @@ begin
       StartTextInput;
     end;
 
-    if Interaction = MedleyEndSlideId then
+    if CurrentSong.isDuet and (Interaction = MedleyEndSlideId) then
     begin
       BackupEditText := ifthen(CurrentSong.DuetNames[1] <> '', CurrentSong.DuetNames[1], NOT_SET);
       CurrentEditText := ifthen(BackupEditText <> NOT_SET, BackupEditText, '');
@@ -1850,7 +1850,7 @@ begin
       StartTextInput;
     end;
 
-    if Interaction = 24 then // UndoButtonId
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = UndoButtonId) then
     begin
       CopyFromUndo;
       GoldenRec.KillAll;
@@ -1858,17 +1858,17 @@ begin
       ShowInteractiveBackground;
     end;
 
-    if Interaction = 25 then // PreviousSeqButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = PreviousSeqButtonID) then
     begin
       PreviousSentence;
     end;
 
-    if Interaction = 26 then // NextSeqButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = NextSeqButtonID) then
     begin
       NextSentence;
     end;
 
-    if Interaction = 27 then // FreestyleButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = FreestyleButtonID) then
     begin
       CopyToUndo;
       if (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntFreestyle) then
@@ -1891,7 +1891,7 @@ begin
       Exit;
     end;
 
-    if Interaction = 28 then // GoldButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = GoldButtonID) then
     begin
       CopyToUndo;
       if (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].NoteType = ntGolden) then
@@ -1910,7 +1910,7 @@ begin
       Exit;
     end;
 
-    if Interaction = 29 then // PlayOnlyButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = PlayOnlyButtonID) then
     begin
       // Play Sentence
       Click := true;
@@ -1931,7 +1931,7 @@ begin
       Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE');
     end;
 
-    if Interaction = 30 then // PlayWithNoteButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = PlayWithNoteButtonID) then
     begin
       CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
       CurrentNote[CurrentTrack] := 0;
@@ -1957,7 +1957,7 @@ begin
       Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE');
     end;
 
-    if Interaction = 31 then // PlayNoteButtonID
+    if (Interactions[Interaction].Typ = iButton) and (Interactions[Interaction].Num = PlayNoteButtonID) then
     begin
       CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
       CurrentNote[CurrentTrack] := 0;
