@@ -1153,10 +1153,14 @@ begin
     end;
     if (SDL_ModState = KMOD_LALT) then
     begin
+      {$IFDEF UseMIDIPort}
       PlaySentenceMidi := true;
-      {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
+      MidiTime  := USTime.GetTime;
       MidiStart := AudioPlayback.Position;
-      MidiStop  := PlayStopTime; {$ENDIF}
+      MidiStop  := PlayStopTime;
+      {$ELSE}
+      PlaySentenceMidi := false;
+      {$ENDIF}
     end;
     PlaySentence := true;
     AudioPlayback.Play;
@@ -1941,7 +1945,11 @@ begin
     begin
       CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
       CurrentNote[CurrentTrack] := 0;
+      {$IFDEF UseMIDIPort}
       PlaySentenceMidi := true;
+      {$ELSE}
+      PlaySentenceMidi := false;
+      {$ENDIF}
       PlayVideo := false;
       StopVideoPreview;
       {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
@@ -1963,7 +1971,11 @@ begin
     begin
       CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
       CurrentNote[CurrentTrack] := 0;
+      {$IFDEF UseMIDIPort}
       PlaySentenceMidi := true;
+      {$ELSE}
+      PlaySentenceMidi := false;
+      {$ENDIF}
       PlayVideo := false;
       StopVideoPreview;
       {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
