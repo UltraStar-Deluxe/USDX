@@ -649,7 +649,7 @@ type
     TextNavigate:     TThemeText;
   end;
 
-  TThemeTop5 = class(TThemeBasic)
+  TThemeHighScores = class(TThemeBasic)
     TextLevel:        TThemeText;
     TextArtistTitle:  TThemeText;
 
@@ -1144,7 +1144,7 @@ type
     Jukebox:          TThemeJukebox;
     JukeboxPlaylist:  TThemeJukeboxPlaylist;
     Score:            TThemeScore;
-    Top5:             TThemeTop5;
+    HighScores:       TThemeHighScores;
     Options:          TThemeOptions;
     OptionsSub:       TThemeOptionsSub;
 
@@ -1310,7 +1310,7 @@ begin
   Song := TThemeSong.Create;
   Sing := TThemeSing.Create;
   Score := TThemeScore.Create;
-  Top5 := TThemeTop5.Create;
+  HighScores := TThemeHighScores.Create;
   Options := TThemeOptions.Create;
   OptionsSub := TThemeOptionsSub.Create;
 
@@ -1764,16 +1764,16 @@ begin
       ThemeLoadStatic(Score.StaticNavigate, 'ScoreStaticNavigate');
       ThemeLoadText(Score.TextNavigate, 'ScoreTextNavigate');
 
-      // Top5
-      ThemeLoadBasic(Top5, 'Top5');
+      // Highscores. Theme section names stay Top5 for compatibility.
+      ThemeLoadBasic(HighScores, 'Top5');
 
-      ThemeLoadText(Top5.TextLevel,       'Top5TextLevel');
-      ThemeLoadText(Top5.TextArtistTitle, 'Top5TextArtistTitle');
-      ThemeLoadStatics(Top5.StaticNumber, 'Top5StaticNumber');
-      ThemeLoadTexts(Top5.TextNumber,     'Top5TextNumber');
-      ThemeLoadTexts(Top5.TextName,       'Top5TextName');
-      ThemeLoadTexts(Top5.TextScore,      'Top5TextScore');
-      ThemeLoadTexts(Top5.TextDate,       'Top5TextDate');
+      ThemeLoadText(HighScores.TextLevel,       'Top5TextLevel');
+      ThemeLoadText(HighScores.TextArtistTitle, 'Top5TextArtistTitle');
+      ThemeLoadStatics(HighScores.StaticNumber, 'Top5StaticNumber');
+      ThemeLoadTexts(HighScores.TextNumber,     'Top5TextNumber');
+      ThemeLoadTexts(HighScores.TextName,       'Top5TextName');
+      ThemeLoadTexts(HighScores.TextScore,      'Top5TextScore');
+      ThemeLoadTexts(HighScores.TextDate,       'Top5TextDate');
 
       // Options
       ThemeLoadBasic(Options, 'Options');
@@ -4021,8 +4021,8 @@ begin
   freeandnil(Score);
   Score := TThemeScore.Create;
 
-  freeandnil(Top5);
-  Top5 := TThemeTop5.Create;
+  freeandnil(HighScores);
+  HighScores := TThemeHighScores.Create;
 
   freeandnil(Options);
   Options := TThemeOptions.Create;

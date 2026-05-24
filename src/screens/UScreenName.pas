@@ -43,7 +43,7 @@ uses
   UNote,
   UScreenScore,
   UScreenSingController,
-  UScreenTop5,
+  UScreenHighScores,
   UTexture,
   UThemes,
   dglOpenGL,
