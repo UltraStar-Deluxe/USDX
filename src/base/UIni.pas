@@ -77,6 +77,9 @@ const
   LATENCY_AUTODETECT = -1; // for field Latency
   DEFAULT_RESOLUTION = '800x600';
   DEFAULT_THEME = 'Modern';
+  DEFAULT_HIGH_SCORE_SCREEN_ENTRIES = 5;
+  MIN_HIGH_SCORE_SCREEN_ENTRIES = 1;
+  MAX_HIGH_SCORE_SCREEN_ENTRIES = 15;
   // TODO: the menu options only go up to 6, but there are internals that still go up to 12
   //  IMaxPlayerCount is untouched because lowering (or raising) it causes very strange behaviour, such as:
   //  * the game starts in a completely different language than the config specifies
@@ -205,6 +208,7 @@ type
       Theme:          integer;
       SkinNo:         integer;
       Color:          integer;
+      HighScoreScreenEntries: integer;
       BackgroundMusicOption: integer;
 
       // Record
@@ -301,6 +305,7 @@ type
       procedure SavePlayerLevels;
       procedure SaveTeamColors;
       procedure SaveShowWebScore;
+      procedure SaveHighScoreScreenEntries;
       procedure SaveJukeboxSongMenu;
       procedure SaveWebcamSettings();
       procedure SaveNumberOfPlayers;
@@ -1270,6 +1275,7 @@ begin
 
   // Color
   Color := ReadArrayIndex(IColor, IniFile, 'Themes', 'Color', Skin.GetDefaultColor(SkinNo));
+
 end;
 
 procedure TIni.LoadScreenModes(IniFile: TCustomIniFile);
@@ -1702,6 +1708,13 @@ begin
   // TopScores
   TopScores := ReadArrayIndex(ITopScores, IniFile, 'Advanced', 'TopScores', IGNORE_INDEX, 'Player');
 
+  // HighScoreScreenEntries
+  HighScoreScreenEntries := IniFile.ReadInteger('Advanced', 'HighScoreScreenEntries', DEFAULT_HIGH_SCORE_SCREEN_ENTRIES);
+  if (HighScoreScreenEntries < MIN_HIGH_SCORE_SCREEN_ENTRIES) then
+    HighScoreScreenEntries := MIN_HIGH_SCORE_SCREEN_ENTRIES
+  else if (HighScoreScreenEntries > MAX_HIGH_SCORE_SCREEN_ENTRIES) then
+    HighScoreScreenEntries := MAX_HIGH_SCORE_SCREEN_ENTRIES;
+
   // SyncTo
   SyncTo := ReadArrayIndex(ISyncTo, IniFile, 'Advanced', 'SyncTo', Ord(stMusic));
 
@@ -2014,6 +2027,9 @@ begin
     //TopScores
     IniFile.WriteString('Advanced', 'TopScores', ITopScores[TopScores]);
 
+    // HighScoreScreenEntries
+    IniFile.WriteInteger('Advanced', 'HighScoreScreenEntries', HighScoreScreenEntries);
+
     //SyncTo
     IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);
 
@@ -2197,6 +2213,17 @@ begin
   end;
 end;
 
+procedure TIni.SaveHighScoreScreenEntries;
+var
+  IniFile: TIniFile;
+begin
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveHighScoreScreenEntries');
+  try
+    IniFile.WriteInteger('Advanced', 'HighScoreScreenEntries', HighScoreScreenEntries);
+  finally
+    IniFile.Free;
+  end;
+end;
 
 procedure TIni.SavePlayerColors;
 

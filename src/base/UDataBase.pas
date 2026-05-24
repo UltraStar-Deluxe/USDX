@@ -577,7 +577,7 @@ begin
       // Add one Entry to Array
       Difficulty := TableData.FieldAsInteger(TableData.FieldIndex['Difficulty']);
       if ((Difficulty >= 0) and (Difficulty <= 2)) and
-         (Length(Song.Score[Difficulty]) < 5) then
+         (Length(Song.Score[Difficulty]) < Ini.HighScoreScreenEntries) then
       begin
         //filter player
         PlayerListed:=false;
@@ -1381,7 +1381,7 @@ begin
   if not Assigned(ScoreDB) then
     Exit;
 
-  {Todo:  Add Prevention that only players with more than 5 scores are selected at type 2}
+  {Todo:  Add prevention that only players with enough scores are selected at type 2}
 
   // Create query
   case Typ of
