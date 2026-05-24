@@ -380,7 +380,7 @@ begin
             if (CurrentSong.isDuet) or (ScreenSong.RapToFreestyle) or (ScreenSong.Mode = smMedley) then
               FadeTo(@ScreenSong)
             else
-              FadeTo(@ScreenTop5);
+              FadeTo(@ScreenHighScores);
             Exit;
           end
           else
@@ -404,7 +404,7 @@ begin
              if (CurrentSong.isDuet) or (ScreenSong.RapToFreestyle) or (ScreenSong.Mode = smMedley) then
                FadeTo(@ScreenSong)
              else
-               FadeTo(@ScreenTop5);
+               FadeTo(@ScreenHighScores);
 
           	 Exit;
            end
