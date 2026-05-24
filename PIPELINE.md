@@ -11,3 +11,9 @@ To get a new one:
 * Repository access = Only select repositories (`mxe`)
 * Permissions: readonly for Actions on the `mxe` repository
 * And then in the [USDX repository actions secrets](https://github.com/UltraStar-Deluxe/USDX/settings/secrets/actions) the token needs to be a `Repository secret` named `MXEACTIONSREADACCESSTOKEN`
+
+## Wiki sync
+The GitHub wiki source is mirrored in the `wiki/` directory of this repository.
+Changes to `wiki/**` on `master` are copied to the GitHub wiki by the `Sync Wiki` workflow.
+
+Create a repository secret named `WIKI_TOKEN` with write access to `UltraStar-Deluxe/USDX.wiki`. The default `GITHUB_TOKEN` is scoped to the main repository and should not be relied on for pushing to the wiki Git remote.

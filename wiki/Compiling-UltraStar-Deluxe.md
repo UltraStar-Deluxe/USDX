@@ -1,0 +1,1 @@
+All compilation instructions have moved to the [README](https://github.com/UltraStar-Deluxe/USDX#readme)

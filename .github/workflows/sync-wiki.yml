@@ -1,0 +1,60 @@
+name: Sync Wiki
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/sync-wiki.yml"
+      - "wiki/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wiki-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync repository wiki files to GitHub Wiki
+    runs-on: ubuntu-latest
+    if: github.repository == 'UltraStar-Deluxe/USDX'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Validate wiki token
+        env:
+          WIKI_TOKEN: ${{ secrets.WIKI_TOKEN }}
+        run: |
+          if [ -z "$WIKI_TOKEN" ]; then
+            echo "::error::Set a WIKI_TOKEN repository secret with write access to the GitHub wiki."
+            exit 1
+          fi
+
+      - name: Checkout wiki
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: .wiki-repo
+          token: ${{ secrets.WIKI_TOKEN }}
+
+      - name: Copy wiki source
+        run: |
+          rsync -a --delete --exclude='.git/' wiki/ .wiki-repo/
+
+      - name: Commit wiki changes
+        working-directory: .wiki-repo
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Wiki is already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Sync wiki from repository"
+          git push
