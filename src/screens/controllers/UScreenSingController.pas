@@ -104,7 +104,6 @@ type
     removeVoice: boolean;
     fShowWebcam: boolean;
 
-    Act_Level: integer;
     Act_MD5Song: string;
 
     MedleyStart, MedleyEnd: real;
@@ -923,7 +922,6 @@ begin
 
   // Send Score
   Act_MD5Song := CurrentSong.MD5;
-  Act_Level := Player[0].Level;
 
   // start timer
   CountSkipTimeSet;
@@ -1920,7 +1918,7 @@ begin
         Send := false;
         TotalScore := player[PlayerIndex - 1].ScoreTotalInt;
 
-        case (Act_Level) of
+        case (player[PlayerIndex - 1].Level) of
           0: if (TotalScore >= DataBase.NetworkUser[IndexWeb].UserList[IndexUser].AutoScoreEasy)
               and (DataBase.NetworkUser[IndexWeb].UserList[IndexUser].AutoMode = 1)
               and (DataBase.NetworkUser[IndexWeb].UserList[IndexUser].AutoPlayer = PlayerIndex - 1) then
@@ -1948,7 +1946,7 @@ begin
           SendInfo.ScoreLineInt := player[PlayerIndex - 1].ScoreLineInt;
           SendInfo.ScoreGoldenInt := player[PlayerIndex - 1].ScoreGoldenInt;
           SendInfo.MD5Song := Act_MD5Song;
-          SendInfo.Level := Act_Level;
+          SendInfo.Level := player[PlayerIndex - 1].Level;
 
           SendStatus := DllMan.WebsiteSendScore(SendInfo);
 
@@ -1986,7 +1984,7 @@ begin
         Save := false;
         TotalScore := player[PlayerIndex - 1].ScoreTotalInt;
 
-        case (Act_Level) of
+        case (player[PlayerIndex - 1].Level) of
           0: if (TotalScore >= DataBase.NetworkUser[IndexWeb].UserList[IndexUser].AutoScoreEasy)
               and (DataBase.NetworkUser[IndexWeb].UserList[IndexUser].AutoMode = 2)
               and (DataBase.NetworkUser[IndexWeb].UserList[IndexUser].AutoPlayer = PlayerIndex - 1) then
@@ -2014,7 +2012,7 @@ begin
           SendInfo.ScoreLineInt := player[PlayerIndex - 1].ScoreLineInt;
           SendInfo.ScoreGoldenInt := player[PlayerIndex - 1].ScoreGoldenInt;
           SendInfo.MD5Song := Act_MD5Song;
-          SendInfo.Level := Act_Level;
+          SendInfo.Level := player[PlayerIndex - 1].Level;
 
           WebName := DataBase.NetworkUser[IndexWeb].Website;
           EncryptText := DllMan.WebsiteEncryptScore(SendInfo);
