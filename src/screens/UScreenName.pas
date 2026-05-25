@@ -88,6 +88,11 @@ type
 
       PlayerAvatarButton: array of integer;
       PlayerAvatarButtonMD5: array of UTF8String;
+
+      TemplateStatusText: integer;
+      TemplateStatusUntil: cardinal;
+
+      procedure ShowTemplateStatus(const Status: UTF8String; Index: integer);
     public
       Goto_SingScreen: boolean; //If true then next Screen in SingScreen
       
@@ -250,15 +255,17 @@ begin
   case PressedKey of
     // Templates for Names Mod
     SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12:
-     if (Button[PlayerName].Selected) then
      begin
        SuppressKey := true;
-     end
-     else
-     begin
-       Result := false;
      end;
   end;
+end;
+
+procedure TScreenName.ShowTemplateStatus(const Status: UTF8String; Index: integer);
+begin
+  Text[TemplateStatusText].Text := Status + ' F' + IntToStr(Index + 1);
+  Text[TemplateStatusText].Visible := true;
+  TemplateStatusUntil := SDL_GetTicks() + 1500;
 end;
 
 function TScreenName.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -270,18 +277,58 @@ function TScreenName.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; Presse
   procedure HandleNameTemplate(const index: integer);
   var
     isAlternate: boolean;
+    TemplateAvatar: integer;
+    J: integer;
   begin
-    isAlternate := (SDL_ModState = KMOD_LSHIFT) or (SDL_ModState = KMOD_RSHIFT);
-    isAlternate := isAlternate or (SDL_ModState = KMOD_LALT); // legacy key combination
+    isAlternate := (SDL_ModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LALT + KMOD_RALT)) <> 0;
 
     if isAlternate then
     begin
+      PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
       Ini.NameTemplate[index] := Button[PlayerName].Text[0].Text;
+      Ini.NameTemplateColor[index] := Num[PlayerIndex];
+      Ini.NameTemplateAvatar[index] := PlayerAvatarButtonMD5[PlayerAvatars[PlayerIndex]];
+      Ini.NameTemplateLevel[index] := PlayerLevel[PlayerIndex];
+      for J := 0 to High(PlayerNames) do
+        Ini.Name[J] := PlayerNames[J];
+      Ini.SaveNames;
+      AudioPlayback.PlaySound(SoundLib.Change);
+      ShowTemplateStatus('Saved', index);
     end
     else
     begin
       Button[PlayerName].Text[0].Text := Ini.NameTemplate[index];
       PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
+
+      if (Ini.NameTemplateColor[index] > 0) and
+        (Ini.NameTemplateColor[index] <= Length(IPlayerColorTranslated)) then
+      begin
+        PlayerColorButton(Ini.NameTemplateColor[index]);
+      end;
+
+      if (Ini.NameTemplateAvatar[index] <> NAME_TEMPLATE_AVATAR_UNSET) then
+      begin
+        TemplateAvatar := GetArrayIndex(PlayerAvatarButtonMD5, Ini.NameTemplateAvatar[index]);
+        if (TemplateAvatar < 0) then
+          TemplateAvatar := 0;
+
+        PlayerAvatars[PlayerIndex] := TemplateAvatar;
+        AvatarTarget := TemplateAvatar;
+        AvatarCurrent := TemplateAvatar;
+        isScrolling := false;
+        SetPlayerAvatar(PlayerIndex);
+      end;
+
+      if (Ini.NameTemplateLevel[index] >= 0) and
+        (Ini.NameTemplateLevel[index] <= High(IDifficultyTranslated)) then
+      begin
+        PlayerLevel[PlayerIndex] := Ini.NameTemplateLevel[index];
+        SelectsS[PlayerSelectLevel].SetSelectOpt(PlayerLevel[PlayerIndex]);
+      end;
+
+      RefreshProfile();
+      AudioPlayback.PlaySound(SoundLib.Change);
+      ShowTemplateStatus('Loaded', index);
     end;
   end;
 
@@ -646,7 +693,7 @@ end;
 procedure TScreenName.RefreshProfile();
 var
   ITmp: array of UTF8String;
-  Count, Max, I, J, Index: integer;
+  Count, I, J, Index: integer;
   Used: boolean;
 begin
   // no-avatar for current player
@@ -662,11 +709,8 @@ begin
 
   PlayerColorButton(Num[PlayerIndex]);
 
-  Max := Length(IPlayerColorTranslated) - Count + 1;
-  SetLength(ITmp, Max);
-
   APlayerColor := nil;
-  SetLength(APlayerColor, Max);
+  ITmp := nil;
 
   Index := 0;
   for I := 0 to High(IPlayerColorTranslated) do      //for every color
@@ -675,7 +719,7 @@ begin
 
     for J := 0 to Count -1 do      //for every active player
     begin
-      if (Num[J] - 1 = I) and (J <> PlayerIndex) then   //check if color is already used for not current player
+      if (Num[J] - 1 = I) and (J <> PlayerIndex) and (Num[PlayerIndex] <> I + 1) then   //check if color is already used for not current player
       begin
         Used := true;
         break;
@@ -684,6 +728,8 @@ begin
 
     if not (Used) then
     begin
+      SetLength(ITmp, Index + 1);
+      SetLength(APlayerColor, Index + 1);
       ITmp[Index] := IPlayerColorTranslated[I];
       APlayerColor[Index] := I + 1;
       Index := Index + 1;
@@ -831,6 +877,10 @@ begin
   Theme.Name.SelectPlayerLevel.oneItemOnly := true;
   Theme.Name.SelectPlayerLevel.showArrows := true;
   PlayerSelectLevel := AddSelectSlide(Theme.Name.SelectPlayerLevel, LevelIndex, IDifficultyTranslated);
+
+  TemplateStatusText := AddText(780, 20, 0, 0, 0, 0, 20, 1, 1, 1, 2, '', false, 0, 1, false);
+  Text[TemplateStatusText].Visible := false;
+  TemplateStatusUntil := 0;
 
   isScrolling := false;
 
@@ -1101,6 +1151,9 @@ begin
   end;
 
   SetAvatarScroll;
+
+  if Text[TemplateStatusText].Visible and (SDL_GetTicks() > TemplateStatusUntil) then
+    Text[TemplateStatusText].Visible := false;
 
   // set current name = name in list
   Text[PlayerCurrentText[PlayerIndex]].Text := Button[PlayerName].Text[0].Text;
