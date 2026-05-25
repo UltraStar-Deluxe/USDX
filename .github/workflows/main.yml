@@ -107,8 +107,10 @@ jobs:
         env:
           HOMEBREW_NO_AUTO_UPDATE: "1"
           HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1"
+          HOMEBREW_NO_INSTALL_CLEANUP: "1"
+          HOMEBREW_DISPLAY_INSTALL_TIMES: "1"
         run: |
-          brew install --overwrite fpc sdl2 sdl2_image automake portaudio lua ffmpeg opencv
+          brew install --overwrite --display-times fpc sdl2 sdl2_image automake portaudio lua ffmpeg opencv
       - name: Generate Build Scripts
         run: ./autogen.sh
       - name: Configure Project
