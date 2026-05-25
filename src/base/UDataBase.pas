@@ -54,6 +54,11 @@ type
     stMostPopBand   // Most popular band
   );
 
+  TStatFilter = (
+    sfMinMedianScoreCount
+  );
+  TStatFilters = set of TStatFilter;
+
   // abstract super-class for statistic results
   TStatResult = class
     public
@@ -118,6 +123,7 @@ type
 
       function GetVersion(): integer;
       procedure SetVersion(Version: integer);
+      function GetBestSingerMedianScoreCount: integer;
       procedure TrimTrailingNullByte(const TableName, ColumnName: string);
       procedure MigrateTextColumns;
     public
@@ -157,9 +163,10 @@ type
 
       function Delete_Score(Song: TSong; WebID: integer): integer;
 
-      function GetStats(Typ: TStatType; Count: integer; Page: cardinal; Reversed: boolean): TList;
+      function GetStats(Typ: TStatType; Count: integer; Page: cardinal;
+          Reversed: boolean; Filters: TStatFilters = []): TList;
       procedure FreeStats(StatList: TList);
-      function GetTotalEntrys(Typ: TStatType): cardinal;
+      function GetTotalEntrys(Typ: TStatType; Filters: TStatFilters = []): cardinal;
       function GetStatReset: TDateTime;
       function FormatDate(time_stamp: integer): UTF8String;
 
@@ -1367,24 +1374,66 @@ begin
   Result := Score;
 end;
 
+(**
+ * Gets the median number of scores per singer.
+ *)
+function TDataBaseSystem.GetBestSingerMedianScoreCount: integer;
+var
+  Counts: array of integer;
+  Query: string;
+  TableData: TSQLiteUniTable;
+begin
+  Result := 0;
+  SetLength(Counts, 0);
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  Query := 'SELECT COUNT(*) AS [Count] FROM [' + cUS_Scores + '] ' +
+           'GROUP BY [Player] ORDER BY [Count];';
+
+  try
+    TableData := ScoreDB.GetUniTable(Query);
+  except
+    on E: Exception do
+    begin
+      Log.LogError(E.Message, 'TDataBaseSystem.GetBestSingerMedianScoreCount');
+      Exit;
+    end;
+  end;
+
+  while not TableData.EOF do
+  begin
+    SetLength(Counts, Length(Counts) + 1);
+    Counts[High(Counts)] := TableData.FieldAsInteger(0);
+    TableData.Next;
+  end;
+
+  TableData.Free;
+
+  if Length(Counts) > 0 then
+    Result := (Counts[(Length(Counts) - 1) div 2] +
+        Counts[Length(Counts) div 2] + 1) div 2;
+end;
+
 (*
  * Writes some stats to array.
  * Returns nil if the database is not ready or a list with zero or more statistic
  * entries.
  * Free the result-list with FreeStats() after usage to avoid memory leaks.
  *)
-function TDataBaseSystem.GetStats(Typ: TStatType; Count: integer; Page: cardinal; Reversed: boolean): TList;
+function TDataBaseSystem.GetStats(Typ: TStatType; Count: integer; Page: cardinal;
+    Reversed: boolean; Filters: TStatFilters): TList;
 var
-  Query:     string;
-  TableData: TSQLiteUniTable;
-  Stat:      TStatResult;
+  Query:             string;
+  MedianScoreCount:  integer;
+  TableData:         TSQLiteUniTable;
+  Stat:              TStatResult;
 begin
   Result := nil;
 
   if not Assigned(ScoreDB) then
     Exit;
-
-  {Todo:  Add Prevention that only players with more than 5 scores are selected at type 2}
 
   // Create query
   case Typ of
@@ -1393,8 +1442,15 @@ begin
                'INNER JOIN [' + cUS_Songs + '] ON ([SongID] = [ID]) ORDER BY [Score]';
     end;
     stBestSingers: begin
+      MedianScoreCount := 0;
+      if (sfMinMedianScoreCount in Filters) then
+        MedianScoreCount := GetBestSingerMedianScoreCount;
+
       Query := 'SELECT [Player], ROUND(AVG([Score])), COUNT(*) as [Count] FROM [' + cUS_Scores + '] ' +
-               'GROUP BY [Player] ORDER BY AVG([Score])';
+               'GROUP BY [Player]';
+      if (MedianScoreCount > 0) then
+        Query := Query + ' HAVING COUNT(*) >= ' + IntToStr(MedianScoreCount);
+      Query := Query + ' ORDER BY AVG([Score])';
     end;
     stMostSungSong: begin
       Query := 'SELECT s.[Artist], s.[Title], s.[TimesPlayed], ROUND(AVG(sc.[Score])) ' +
@@ -1508,8 +1564,9 @@ end;
 (**
  * Gets total number of entrys for a stats query
  *)
-function TDataBaseSystem.GetTotalEntrys(Typ: TStatType): cardinal;
+function TDataBaseSystem.GetTotalEntrys(Typ: TStatType; Filters: TStatFilters): cardinal;
 var
+  MedianScoreCount: integer;
   Query: string;
 begin
   Result := 0;
@@ -1523,7 +1580,19 @@ begin
       stBestScores:
         Query := 'SELECT COUNT([SongID]) FROM [' + cUS_Scores + '];';
       stBestSingers:
-        Query := 'SELECT COUNT(DISTINCT [Player]) FROM [' + cUS_Scores + '];';
+      begin
+        MedianScoreCount := 0;
+        if (sfMinMedianScoreCount in Filters) then
+          MedianScoreCount := GetBestSingerMedianScoreCount;
+
+        if (MedianScoreCount > 0) then
+          Query := 'SELECT COUNT(*) FROM (' +
+              'SELECT [Player] FROM [' + cUS_Scores + '] GROUP BY [Player] ' +
+              'HAVING COUNT(*) >= ' + IntToStr(MedianScoreCount) +
+              ') AS [FilteredSingers];'
+        else
+          Query := 'SELECT COUNT(DISTINCT [Player]) FROM [' + cUS_Scores + '];';
+      end;
       stMostSungSong:
         Query := 'SELECT COUNT([ID]) FROM [' + cUS_Songs + '];';
       stMostPopBand:

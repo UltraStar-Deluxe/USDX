@@ -1102,6 +1102,8 @@ type
     TextDescription:  TThemeText;
     TextPage:         TThemeText;
     TextHeader:       TThemeText;
+    StaticMinMedian:  TThemeStatic;
+    TextMinMedian:    TThemeText;
     TextList:         AThemeText;
     ListX:            integer;
     ListY:            integer;
@@ -2123,6 +2125,8 @@ begin
       ThemeLoadText (StatDetail.TextDescription, 'StatDetailTextDescription');
       ThemeLoadText (StatDetail.TextPage, 'StatDetailTextPage');
       ThemeLoadText (StatDetail.TextHeader, 'StatDetailTextHeader');
+      ThemeLoadStatic(StatDetail.StaticMinMedian, 'StatDetailStaticMinMedian');
+      ThemeLoadText (StatDetail.TextMinMedian, 'StatDetailTextMinMedian');
       ThemeLoadTexts(StatDetail.TextList, 'StatDetailTextList');
 
       if Length(StatDetail.TextList) > 0 then

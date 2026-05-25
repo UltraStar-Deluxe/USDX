@@ -66,7 +66,10 @@ type
       TextListValue: array[0..STAT_DETAIL_MAX_COLUMNS - 1] of TStatDetailCellValue;
       TextDescription: integer;
       TextPage: integer;
+      StaticMinMedian: integer;
+      TextMinMedian: integer;
       EntriesPerPage: integer;
+      MinMedianFilter: boolean;
 
       procedure ChangeEntriesPerPage(Delta: integer);
       procedure ClearRows;
@@ -74,6 +77,9 @@ type
       procedure SetRowText(Row, Column: integer; const Value: UTF8String);
       function StatCellText(StatList: TList; Row: integer; Value: TStatDetailCellValue): UTF8String;
       procedure UpdateListLayout(StatList: TList; VisibleEntries: integer);
+      procedure ToggleMinMedianFilter;
+      procedure UpdateMinMedianHint;
+      function ActiveFilters: TStatFilters;
 
     public
       Typ:  TStatType;
@@ -342,6 +348,10 @@ begin
           Reversed := not Reversed;
           SetPage(Page);
         end;
+      SDLK_M:
+        begin
+          ToggleMinMedianFilter;
+        end;
     end;
   end;
 end;
@@ -368,10 +378,14 @@ begin
 
   LoadFromTheme(Theme.StatDetail);
 
+  StaticMinMedian := AddStatic(Theme.StatDetail.StaticMinMedian);
+  TextMinMedian := AddText(Theme.StatDetail.TextMinMedian);
+
   EntriesPerPage := EnsureRange(Ini.StatDetailCount,
       Theme.StatDetail.MinEntries, Theme.StatDetail.MaxEntries);
   if (Ini.StatDetailCount <= 0) then
     EntriesPerPage := Theme.StatDetail.DefaultEntries;
+  MinMedianFilter := false;
   Typ := TStatType(0);
 end;
 
@@ -383,10 +397,12 @@ begin
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenStatDetail');
 
   Reversed := false;
+  MinMedianFilter := false;
 
   //Set Tot Entrys and Pages
-  TotEntrys := DataBase.GetTotalEntrys(Typ);
+  TotEntrys := DataBase.GetTotalEntrys(Typ, ActiveFilters);
   RecalculatePages;
+  UpdateMinMedianHint;
 
   //Show correct Title
   SetTitle;
@@ -408,6 +424,22 @@ begin
   TotPages := Ceil(TotEntrys / EntriesPerPage);
   if TotPages = 0 then
     TotPages := 1;
+end;
+
+function TScreenStatDetail.ActiveFilters: TStatFilters;
+begin
+  Result := [];
+  if (Typ = stBestSingers) and MinMedianFilter then
+    Include(Result, sfMinMedianScoreCount);
+end;
+
+procedure TScreenStatDetail.UpdateMinMedianHint;
+var
+  ShowHint: boolean;
+begin
+  ShowHint := (Typ = stBestSingers);
+  Statics[StaticMinMedian].Visible := ShowHint;
+  Text[TextMinMedian].Visible := ShowHint;
 end;
 
 procedure TScreenStatDetail.ClearRows;
@@ -811,6 +843,26 @@ begin
   SetPage(FirstEntry div EntriesPerPage);
 end;
 
+procedure TScreenStatDetail.ToggleMinMedianFilter;
+var
+  FirstEntry: cardinal;
+  NewPage: cardinal;
+begin
+  if (Typ <> stBestSingers) then
+    Exit;
+
+  FirstEntry := Page * EntriesPerPage;
+  MinMedianFilter := not MinMedianFilter;
+  TotEntrys := DataBase.GetTotalEntrys(Typ, ActiveFilters);
+  RecalculatePages;
+  UpdateMinMedianHint;
+
+  NewPage := FirstEntry div EntriesPerPage;
+  if (NewPage >= TotPages) then
+    NewPage := TotPages - 1;
+  SetPage(NewPage);
+end;
+
 procedure TScreenStatDetail.SetPage(NewPage: cardinal);
 var
   StatList: TList;
@@ -842,7 +894,8 @@ begin
   end;
 
   // fetch statistics
-  StatList := Database.GetStats(Typ, EntriesPerPage, NewPage, Reversed);
+  StatList := Database.GetStats(Typ, EntriesPerPage, NewPage, Reversed,
+      ActiveFilters);
   if (StatList <> nil) then
     VisibleEntries := Min(StatList.Count, EntriesPerPage)
   else
