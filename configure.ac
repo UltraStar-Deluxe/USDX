@@ -82,8 +82,8 @@ External Libraries:])
 # add portmixer option
 AC_ARG_WITH([portaudio],
     [AS_HELP_STRING([--with-portaudio],
-      [enable audio capture with PortAudio @<:@default=check@:>@])],
-    [with_portmixer=$withval], [with_portaudio="check"])
+      [enable audio capture/playback with PortAudio @<:@default=check@:>@])],
+    [with_portaudio=$withval], [with_portaudio="check"])
 
 AC_ARG_WITH([portmixer],
     [AS_HELP_STRING([--with-portmixer],

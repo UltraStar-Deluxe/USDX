@@ -279,14 +279,14 @@ uses
 {$IFDEF UseSDLInput}
   UAudioInput_SDL           in 'media\UAudioInput_SDL.pas',
 {$ENDIF}
-{$IFDEF UseSDLPlayback}
-  UAudioPlayback_SDL        in 'media\UAudioPlayback_SDL.pas',
-{$ENDIF}
 {$IFDEF UsePortaudioInput}
   UAudioInput_Portaudio     in 'media\UAudioInput_Portaudio.pas',
 {$ENDIF}
 {$IFDEF UsePortaudioPlayback}
   UAudioPlayback_Portaudio  in 'media\UAudioPlayback_Portaudio.pas',
+{$ENDIF}
+{$IFDEF UseSDLPlayback}
+  UAudioPlayback_SDL        in 'media\UAudioPlayback_SDL.pas',
 {$ENDIF}
 {$IFDEF UseFFmpegDecoder}
   UAudioDecoder_FFmpeg      in 'media\UAudioDecoder_FFmpeg.pas',
