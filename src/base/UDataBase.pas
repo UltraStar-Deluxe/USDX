@@ -157,7 +157,7 @@ type
 
       function Delete_Score(Song: TSong; WebID: integer): integer;
 
-      function GetStats(Typ: TStatType; Count: byte; Page: cardinal; Reversed: boolean): TList;
+      function GetStats(Typ: TStatType; Count: integer; Page: cardinal; Reversed: boolean): TList;
       procedure FreeStats(StatList: TList);
       function GetTotalEntrys(Typ: TStatType): cardinal;
       function GetStatReset: TDateTime;
@@ -1373,7 +1373,7 @@ end;
  * entries.
  * Free the result-list with FreeStats() after usage to avoid memory leaks.
  *)
-function TDataBaseSystem.GetStats(Typ: TStatType; Count: byte; Page: cardinal; Reversed: boolean): TList;
+function TDataBaseSystem.GetStats(Typ: TStatType; Count: integer; Page: cardinal; Reversed: boolean): TList;
 var
   Query:     string;
   TableData: TSQLiteUniTable;

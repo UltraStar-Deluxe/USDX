@@ -92,9 +92,6 @@ const
   DefaultPlayerColors: array[0..IMaxPlayerCount-1] of integer = (1, 4, 3, 2, 5, 6, 7, 8, 9, 10, 11, 12);
   IPlayers:     array[0..4] of UTF8String = ('1', '2', '3', '4', '6');
   IPlayersVals: array[0..4] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 );
-  STAT_DETAIL_MIN_ENTRIES = 5;
-  STAT_DETAIL_MAX_ENTRIES = 30;
-  STAT_DETAIL_DEFAULT_ENTRIES = 20;
 
 type
 
@@ -1708,11 +1705,7 @@ begin
   TopScores := ReadArrayIndex(ITopScores, IniFile, 'Advanced', 'TopScores', IGNORE_INDEX, 'Player');
 
   // StatDetailCount
-  StatDetailCount := IniFile.ReadInteger('Advanced', 'StatDetailCount', STAT_DETAIL_DEFAULT_ENTRIES);
-  if StatDetailCount < STAT_DETAIL_MIN_ENTRIES then
-    StatDetailCount := STAT_DETAIL_MIN_ENTRIES
-  else if StatDetailCount > STAT_DETAIL_MAX_ENTRIES then
-    StatDetailCount := STAT_DETAIL_MAX_ENTRIES;
+  StatDetailCount := IniFile.ReadInteger('Advanced', 'StatDetailCount', 0);
 
   // SyncTo
   SyncTo := ReadArrayIndex(ISyncTo, IniFile, 'Advanced', 'SyncTo', Ord(stMusic));
