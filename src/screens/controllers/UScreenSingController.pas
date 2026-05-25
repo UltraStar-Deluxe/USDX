@@ -104,6 +104,7 @@ type
     removeVoice: boolean;
     fShowWebcam: boolean;
 
+    // TODO: delete this?
     Act_MD5Song: string;
 
     MedleyStart, MedleyEnd: real;
