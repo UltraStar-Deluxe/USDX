@@ -96,21 +96,10 @@ jobs:
           else
             echo "arch=ARM" >> $GITHUB_ENV
           fi
-      - name: Cache Homebrew downloads
-        uses: actions/cache@v5
+      - name: Install and Cache Homebrew Dependencies
+        uses: gerlero/brew-install@v1
         with:
-          path: ~/Library/Caches/Homebrew
-          key: brew-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.github/workflows/main.yml') }}
-          restore-keys: |
-            brew-${{ runner.os }}-${{ runner.arch }}-
-      - name: Install Dependencies
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: "1"
-          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1"
-          HOMEBREW_NO_INSTALL_CLEANUP: "1"
-          HOMEBREW_DISPLAY_INSTALL_TIMES: "1"
-        run: |
-          brew install --overwrite --display-times fpc sdl2 sdl2_image automake portaudio lua ffmpeg opencv
+          packages: fpc sdl2 sdl2_image automake portaudio lua ffmpeg opencv
       - name: Generate Build Scripts
         run: ./autogen.sh
       - name: Configure Project
