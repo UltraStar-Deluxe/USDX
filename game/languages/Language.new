@@ -487,7 +487,7 @@
 ;TODO: STAT_DETAIL_WHEREAMI=Tools » Statistics » Details
 
 ;TODO: STAT_DETAIL_NAVIGATE=Page / Entries
-;TODO: STAT_DETAIL_REVERSE=Reverse Order
+;TODO: STAT_DETAIL_REVERSE=Reverse
 ;TODO: STAT_DETAIL_MIN_MEDIAN=Min. Median
 ;TODO: STAT_PAGE=Page %0:d of %1:d pages\n (%2:d of %3:d Entries)
 ;TODO: STAT_DETAIL_HEADER_RANK=#
@@ -916,4 +916,3 @@
 ;TODO: ABOUT_MAIN_WHEREAMI=About
 ;TODO: ABOUT_USDX_CREDITS=Credits
 ;TODO: ABOUT_OVERVIEW=UltraStar Deluxe is a free open-source karaoke game for your PC. The gameplay experience is similar to that of the commercial product SingStar™ by Sony Computer Entertainment, which is exclusively available for the Playstation®. Unlike SingStar™, however, UltraStar Deluxe allows users to create their own songs and sing them on their PC.\nBy publishing the sourcecode, we’ve enabled you to customize the game completly to your heart’s content, desires and particular needs.\nEspecially you are allowed to modify the product as you wish.\n\nCreate your own themes or download content from the community, such as plugins, free songs or code patches for extended features.\nIn party mode it allows up to twelve players to sing along to your favorite music in order to score points, depending on the pitch of the voice and the rhythm of singing.
-
