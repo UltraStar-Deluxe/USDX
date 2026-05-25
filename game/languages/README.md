@@ -84,36 +84,6 @@ Format:
 - `%3:s` Best Score Player (Result2)
 - `%4:d` Best Score
 
-#### `STAT_FORMAT_SCORES`
-Format:
-
-- `%0:s` Singer
-- `%1:d` Score
-- `%2:s` Difficulty
-- `%3:s` Song Artist
-- `%4:s` Song Title
-
-#### `STAT_FORMAT_SINGERS`
-Format:
-
-- `%0:s` Singer
-- `%1:d` Average Score
-
-
-#### `STAT_FORMAT_SONGS`
-Format:
-
-- `%0:s` Artist
-- `%1:s` Title
-- `%2:d` Times Sung
-
-#### `STAT_FORMAT_BANDS`
-Format:
-
-- `%0:s` Artist Name
-- `%1:d` Times Sung
-
-
 Some further explanations about the wildcards:
 
 ```
