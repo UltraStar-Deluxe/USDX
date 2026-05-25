@@ -284,7 +284,7 @@ begin
             begin
               //Set Texts
               if (AverageScore > 0) then
-                Text[I].Text := Format(FormatStr, [Player, AverageScore]);
+                Text[I].Text := Format(FormatStr, [Player, AverageScore, Count]);
             end;
           end;
 
@@ -293,7 +293,9 @@ begin
             begin
               //Set Texts
               if (Artist <> '') then
-                Text[I].Text := Format(FormatStr, [Artist, Title, TimesSung]);
+              begin
+                Text[I].Text := Format(FormatStr, [Artist, Title, TimesSung, AverageScore]);
+              end;
             end;
           end;
 
@@ -302,7 +304,7 @@ begin
             begin
               //Set Texts
               if (ArtistName <> '') then
-                Text[I].Text := Format(FormatStr, [ArtistName, TimesSungtot]);
+                Text[I].Text := Format(FormatStr, [ArtistName, TimesSungtot, AverageScore]);
             end;
           end;
         end;
