@@ -59,6 +59,13 @@ type
   );
   TStatFilters = set of TStatFilter;
 
+  TScoreStatMetric = (
+    ssmAverageScore,
+    ssmScoreCount,
+    ssmScoredSongCount,
+    ssmSingerCount
+  );
+
   // abstract super-class for statistic results
   TStatResult = class
     public
@@ -124,6 +131,7 @@ type
       function GetVersion(): integer;
       procedure SetVersion(Version: integer);
       function GetBestSingerMedianScoreCount: integer;
+      function GetScoreStatValue(Metric: TScoreStatMetric; SinceDate: TDateTime = 0): int64;
       procedure TrimTrailingNullByte(const TableName, ColumnName: string);
       procedure MigrateTextColumns;
     public
@@ -167,6 +175,10 @@ type
           Reversed: boolean; Filters: TStatFilters = []): TList;
       procedure FreeStats(StatList: TList);
       function GetTotalEntrys(Typ: TStatType; Filters: TStatFilters = []): cardinal;
+      function GetAverageScore(SinceDate: TDateTime = 0): integer;
+      function GetScoreCount(SinceDate: TDateTime = 0): cardinal;
+      function GetScoredSongCount(SinceDate: TDateTime = 0): cardinal;
+      function GetSingerCount(SinceDate: TDateTime = 0): cardinal;
       function GetStatReset: TDateTime;
       function FormatDate(time_stamp: integer): UTF8String;
 
@@ -1559,6 +1571,61 @@ begin
   for Index := 0 to StatList.Count-1 do
     TStatResult(StatList[Index]).Free;
   StatList.Free;
+end;
+
+function TDataBaseSystem.GetScoreStatValue(Metric: TScoreStatMetric; SinceDate: TDateTime): int64;
+var
+  Query: string;
+  SelectExpr: string;
+begin
+  Result := 0;
+
+  if not Assigned(ScoreDB) then
+    Exit;
+
+  case Metric of
+    ssmAverageScore:
+      SelectExpr := 'ROUND(AVG([Score]))';
+    ssmScoreCount:
+      SelectExpr := 'COUNT(*)';
+    ssmScoredSongCount:
+      SelectExpr := 'COUNT(DISTINCT [SongID])';
+    ssmSingerCount:
+      SelectExpr := 'COUNT(DISTINCT [Player])';
+  else
+    Exit;
+  end;
+
+  Query := 'SELECT ' + SelectExpr + ' FROM [' + cUS_Scores + ']';
+  try
+    if (SinceDate > 0) then
+      Result := ScoreDB.GetTableValue(Query + ' WHERE [Date] >= ?;',
+          [DateTimeToUnix(SinceDate)])
+    else
+      Result := ScoreDB.GetTableValue(Query + ';');
+  except on E: Exception do
+    Log.LogError(E.Message, 'TDataBaseSystem.GetScoreStatValue');
+  end;
+end;
+
+function TDataBaseSystem.GetAverageScore(SinceDate: TDateTime): integer;
+begin
+  Result := GetScoreStatValue(ssmAverageScore, SinceDate);
+end;
+
+function TDataBaseSystem.GetScoreCount(SinceDate: TDateTime): cardinal;
+begin
+  Result := GetScoreStatValue(ssmScoreCount, SinceDate);
+end;
+
+function TDataBaseSystem.GetScoredSongCount(SinceDate: TDateTime): cardinal;
+begin
+  Result := GetScoreStatValue(ssmScoredSongCount, SinceDate);
+end;
+
+function TDataBaseSystem.GetSingerCount(SinceDate: TDateTime): cardinal;
+begin
+  Result := GetScoreStatValue(ssmSingerCount, SinceDate);
 end;
 
 (**
