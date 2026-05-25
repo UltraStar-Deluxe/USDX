@@ -1072,6 +1072,11 @@ type
   end;
 
   //Stats Screens
+  TThemeStatMainRecentPeriod = record
+    TitleTextID: RawByteString;
+    Days: integer;
+  end;
+
   TThemeStatDetailColumn = record
     Width:     real;
     GapBefore: real;
@@ -1096,14 +1101,15 @@ type
     ButtonExit:       TThemeButton;
 
     TextOverview:     TThemeText;
+    RecentPeriod:     array of TThemeStatMainRecentPeriod;
   end;
 
   TThemeStatDetail = class(TThemeBasic)
     TextDescription:  TThemeText;
     TextPage:         TThemeText;
-    TextHeader:       TThemeText;
     StaticMinMedian:  TThemeStatic;
     TextMinMedian:    TThemeText;
+    TextHeader:       TThemeText;
     TextList:         AThemeText;
     ListX:            integer;
     ListY:            integer;
@@ -1169,6 +1175,7 @@ type
     function ReadInteger(const Sections: TThemeSectionList; const Key: string; DefaultValue: integer): integer;
     function ReadBool(const Sections: TThemeSectionList; const Key: string; DefaultValue: boolean): boolean;
     function ReadFloat(const Sections: TThemeSectionList; const Key: string; DefaultValue: real): real;
+    procedure LoadStatMainRecentPeriods;
     procedure LoadStatDetailColumn(var Column: TThemeStatDetailColumn; const SectionName: string);
     procedure LoadStatDetailTable(var Table: TThemeStatDetailTable; const SectionName: string);
   public
@@ -2147,14 +2154,16 @@ begin
 
       ThemeLoadText (StatMain.TextOverview, 'StatMainTextOverview');
 
+      LoadStatMainRecentPeriods;
+
 
       ThemeLoadBasic(StatDetail, 'StatDetail');
 
       ThemeLoadText (StatDetail.TextDescription, 'StatDetailTextDescription');
       ThemeLoadText (StatDetail.TextPage, 'StatDetailTextPage');
-      ThemeLoadText (StatDetail.TextHeader, 'StatDetailTextHeader');
       ThemeLoadStatic(StatDetail.StaticMinMedian, 'StatDetailStaticMinMedian');
       ThemeLoadText (StatDetail.TextMinMedian, 'StatDetailTextMinMedian');
+      ThemeLoadText (StatDetail.TextHeader, 'StatDetailTextHeader');
       ThemeLoadTexts(StatDetail.TextList, 'StatDetailTextList');
 
       if Length(StatDetail.TextList) > 0 then
@@ -2366,6 +2375,28 @@ begin
     end;
   end;
   Result := DefaultValue;
+end;
+
+procedure TTheme.LoadStatMainRecentPeriods;
+var
+  PeriodIndex: integer;
+  Period: TThemeStatMainRecentPeriod;
+  SectionList: TThemeSectionList;
+begin
+  SetLength(StatMain.RecentPeriod, 0);
+  PeriodIndex := 1;
+
+  repeat
+    SectionList := GetSectionList('StatMainRecentPeriod' + IntToStr(PeriodIndex));
+    if (Length(SectionList) = 0) then
+      Break;
+
+    Period.TitleTextID := ReadString(SectionList, 'Text', '');
+    Period.Days := ReadInteger(SectionList, 'Days', 0);
+    SetLength(StatMain.RecentPeriod, Length(StatMain.RecentPeriod) + 1);
+    StatMain.RecentPeriod[High(StatMain.RecentPeriod)] := Period;
+    Inc(PeriodIndex);
+  until false;
 end;
 
 procedure TTheme.LoadStatDetailColumn(var Column: TThemeStatDetailColumn; const SectionName: string);
