@@ -45,10 +45,18 @@ uses
 
 type
   TScreenStatDetail = class(TMenu)
+    private
+      TextDescription: integer;
+      TextPage: integer;
+      EntriesPerPage: byte;
+
+      procedure ChangeEntriesPerPage(Delta: integer);
+      procedure RecalculatePages;
+      procedure UpdateListLayout;
+
     public
       Typ:  TStatType;
       Page: cardinal;
-      Count: byte;
       Reversed: boolean;
 
       TotEntrys: cardinal;
@@ -60,7 +68,7 @@ type
       procedure SetAnimationProgress(Progress: real); override;
 
       procedure SetTitle;
-      Procedure SetPage(NewPage: cardinal);
+      procedure SetPage(NewPage: cardinal);
   end;
 
 const
@@ -71,7 +79,6 @@ implementation
 uses
   UGraphic,
   UHelp,
-  ULanguage,
   ULog,
   UUnicodeUtils,
   Math,
@@ -103,87 +110,48 @@ begin
         begin
           ScreenPopupHelp.ShowPopup();
         end;
-      SDLK_RETURN:
-        begin
-          if Interaction = 0 then
-          begin
-            //Next Page
-            SetPage(Page+1);
-          end;
-
-          if Interaction = 1 then
-          begin
-            //Previous Page
-            if (Page > 0) then
-              SetPage(Page-1);
-          end;
-
-          if Interaction = 2 then
-          begin
-            //Reverse Order
-            Reversed := not Reversed;
-            SetPage(Page);
-          end;
-
-          if Interaction = 3 then
-          begin
-            AudioPlayback.PlaySound(SoundLib.Back);
-            FadeTo(@ScreenStatMain);
-          end;
-        end;
       SDLK_LEFT:
-      begin
-          InteractPrev;
-      end;
+        begin
+          if (Page > 0) then
+            SetPage(Page - 1);
+        end;
       SDLK_RIGHT:
-      begin
-          InteractNext;
-      end;
+        begin
+          if (Page + 1 < TotPages) then
+            SetPage(Page + 1);
+        end;
       SDLK_UP:
-      begin
-          InteractPrev;
-      end;
+        begin
+          ChangeEntriesPerPage(-1);
+        end;
       SDLK_DOWN:
-      begin
-          InteractNext;
-      end;
+        begin
+          ChangeEntriesPerPage(1);
+        end;
+      SDLK_R:
+        begin
+          Reversed := not Reversed;
+          SetPage(Page);
+        end;
     end;
   end;
 end;
 
 constructor TScreenStatDetail.Create;
 var
-  I:    integer;
+  I: integer;
 begin
   inherited Create;
 
-  for I := 0 to High(Theme.StatDetail.TextList) do
-    AddText(Theme.StatDetail.TextList[I]);
+  for I := 0 to STAT_DETAIL_MAX_ENTRIES - 1 do
+    AddText(Theme.StatDetail.TextList[0]);
 
-  Count := Length(Theme.StatDetail.TextList);
-
-  AddText(Theme.StatDetail.TextDescription);
-  AddText(Theme.StatDetail.TextPage);
+  TextDescription := AddText(Theme.StatDetail.TextDescription);
+  TextPage := AddText(Theme.StatDetail.TextPage);
 
   LoadFromTheme(Theme.StatDetail);
 
-  AddButton(Theme.StatDetail.ButtonNext);
-  if (Length(Button[0].Text)=0) then
-    AddButtonText(14, 20, Language.Translate('STAT_NEXT'));
-
-  AddButton(Theme.StatDetail.ButtonPrev);
-  if (Length(Button[1].Text)=0) then
-    AddButtonText(14, 20, Language.Translate('STAT_PREV'));
-
-  AddButton(Theme.StatDetail.ButtonReverse);
-  if (Length(Button[2].Text)=0) then
-    AddButtonText(14, 20, Language.Translate('STAT_REVERSE'));
-
-  AddButton(Theme.StatDetail.ButtonExit);
-  if (Length(Button[3].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_NETWORK]);
-
-  Interaction := 0;
+  EntriesPerPage := Ini.StatDetailCount;
   Typ := TStatType(0);
 end;
 
@@ -196,7 +164,8 @@ begin
 
   //Set Tot Entrys and Pages
   TotEntrys := DataBase.GetTotalEntrys(Typ);
-  TotPages := Ceil(TotEntrys / Count);
+  RecalculatePages;
+  UpdateListLayout;
 
   //Show correct Title
   SetTitle;
@@ -209,9 +178,66 @@ end;
 procedure TScreenStatDetail.SetTitle;
 begin
   if Reversed then
-    Text[Count].Text := Theme.StatDetail.DescriptionR[Ord(Typ)]
+    Text[TextDescription].Text := Theme.StatDetail.DescriptionR[Ord(Typ)]
   else
-    Text[Count].Text := Theme.StatDetail.Description[Ord(Typ)];
+    Text[TextDescription].Text := Theme.StatDetail.Description[Ord(Typ)];
+end;
+
+procedure TScreenStatDetail.RecalculatePages;
+begin
+  TotPages := Ceil(TotEntrys / EntriesPerPage);
+  if TotPages = 0 then
+    TotPages := 1;
+end;
+
+procedure TScreenStatDetail.UpdateListLayout;
+var
+  I: integer;
+  TopY: real;
+  BottomY: real;
+  RowHeight: real;
+  TextSize: real;
+  ThemeText: TThemeText;
+begin
+  ThemeText := Theme.StatDetail.TextList[0];
+  TopY := ThemeText.Y;
+
+  if (Length(Theme.StatDetail.TextList) > 1) then
+    BottomY := Theme.StatDetail.TextList[High(Theme.StatDetail.TextList)].Y
+  else
+    BottomY := TopY + 18 * (EntriesPerPage - 0.5);
+
+  RowHeight := (BottomY - TopY) / Max(1.0, EntriesPerPage - 0.5);
+  TextSize := Min(ThemeText.Size, Max(12.0, RowHeight - 2));
+
+  for I := 0 to STAT_DETAIL_MAX_ENTRIES - 1 do
+  begin
+    Text[I].X := ThemeText.X;
+    Text[I].Y := TopY + I * RowHeight;
+    Text[I].W := ThemeText.W;
+    Text[I].H := Max(1.0, RowHeight);
+    Text[I].Size := TextSize;
+    Text[I].Visible := I < EntriesPerPage;
+  end;
+end;
+
+procedure TScreenStatDetail.ChangeEntriesPerPage(Delta: integer);
+var
+  FirstEntry: cardinal;
+  NewCount: integer;
+begin
+  NewCount := EnsureRange(EntriesPerPage + Delta, STAT_DETAIL_MIN_ENTRIES, STAT_DETAIL_MAX_ENTRIES);
+  if (NewCount = EntriesPerPage) then
+    Exit;
+
+  FirstEntry := Page * EntriesPerPage;
+  EntriesPerPage := byte(NewCount);
+  Ini.StatDetailCount := EntriesPerPage;
+  Ini.SaveStatDetailCount;
+
+  RecalculatePages;
+  UpdateListLayout;
+  SetPage(FirstEntry div EntriesPerPage);
 end;
 
 procedure TScreenStatDetail.SetPage(NewPage: cardinal);
@@ -220,21 +246,26 @@ var
   I: integer;
   FormatStr: string;
   PerPage: byte;
+  VisibleEntries: integer;
 begin
+  // reset texts
+  for I := 0 to STAT_DETAIL_MAX_ENTRIES - 1 do
+    Text[I].Text := '';
+
+  FormatStr := Theme.StatDetail.FormatStr[Ord(Typ)];
+
+  if (NewPage >= TotPages) then
+    NewPage := TotPages - 1;
+  Page := NewPage;
+
   // fetch statistics
-  StatList := Database.GetStats(Typ, Count, NewPage, Reversed);
-  if ((StatList <> nil) and (StatList.Count > 0)) then
+  StatList := Database.GetStats(Typ, EntriesPerPage, NewPage, Reversed);
+  if (StatList <> nil) then
   begin
-    Page := NewPage;
-
-    // reset texts
-    for I := 0 to Count-1 do
-      Text[I].Text := '';
-
-    FormatStr := Theme.StatDetail.FormatStr[Ord(Typ)];
+    VisibleEntries := Min(StatList.Count, EntriesPerPage);
 
     //refresh Texts
-    for I := 0 to StatList.Count-1 do
+    for I := 0 to VisibleEntries - 1 do
     begin
       try
         case Typ of
@@ -244,8 +275,7 @@ begin
               //Set Texts
               if (Score > 0) then
               begin
-                Text[I].Text := Format(FormatStr,
-                  [Singer, Score, Theme.ILevel[Difficulty], SongArtist, SongTitle, Date]);
+                Text[I].Text := Format(FormatStr, [Singer, Score, Theme.ILevel[Difficulty], SongArtist, SongTitle, Date]);
               end;
             end;
           end;
@@ -282,23 +312,25 @@ begin
           Log.LogError('Error Parsing FormatString in UScreenStatDetail: ' + E.Message);
       end;
     end;
-
-    if (Page + 1 = TotPages) and (TotEntrys mod Count <> 0) then
-      PerPage := (TotEntrys mod Count)
-    else
-      PerPage := Count;
-
-    try      
-      Text[Count+1].Text := Format(Theme.StatDetail.PageStr,
-          [Page + 1, TotPages, PerPage, TotEntrys]);
-    except
-      on E: EConvertError do
-        Log.LogError('Error Parsing FormatString in UScreenStatDetail: ' + E.Message);
-    end;
-
-    //Show correct Title
-    SetTitle;
   end;
+
+  if (TotEntrys = 0) then
+    PerPage := 0
+  else if (Page + 1 = TotPages) and (TotEntrys mod EntriesPerPage <> 0) then
+    PerPage := (TotEntrys mod EntriesPerPage)
+  else
+    PerPage := EntriesPerPage;
+
+  try
+    Text[TextPage].Text := Format(Theme.StatDetail.PageStr,
+        [Page + 1, TotPages, PerPage, TotEntrys]);
+  except
+    on E: EConvertError do
+      Log.LogError('Error Parsing FormatString in UScreenStatDetail: ' + E.Message);
+  end;
+
+  //Show correct Title
+  SetTitle;
 
   Database.FreeStats(StatList);
 end;

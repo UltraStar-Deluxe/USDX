@@ -92,6 +92,9 @@ const
   DefaultPlayerColors: array[0..IMaxPlayerCount-1] of integer = (1, 4, 3, 2, 5, 6, 7, 8, 9, 10, 11, 12);
   IPlayers:     array[0..4] of UTF8String = ('1', '2', '3', '4', '6');
   IPlayersVals: array[0..4] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 );
+  STAT_DETAIL_MIN_ENTRIES = 5;
+  STAT_DETAIL_MAX_ENTRIES = 30;
+  STAT_DETAIL_DEFAULT_ENTRIES = 20;
 
 type
 
@@ -219,6 +222,7 @@ type
       PartyPopup:     integer;
       SingScores:     integer;
       TopScores:      integer;
+      StatDetailCount:       integer;
       SingTimebarMode:       integer;
       JukeboxTimebarMode:    integer;
 
@@ -304,6 +308,7 @@ type
       procedure SaveJukeboxSongMenu;
       procedure SaveWebcamSettings();
       procedure SaveNumberOfPlayers;
+      procedure SaveStatDetailCount;
       procedure SaveSingTimebarMode;
       procedure SaveJukeboxTimebarMode;
 
@@ -1702,6 +1707,13 @@ begin
   // TopScores
   TopScores := ReadArrayIndex(ITopScores, IniFile, 'Advanced', 'TopScores', IGNORE_INDEX, 'Player');
 
+  // StatDetailCount
+  StatDetailCount := IniFile.ReadInteger('Advanced', 'StatDetailCount', STAT_DETAIL_DEFAULT_ENTRIES);
+  if StatDetailCount < STAT_DETAIL_MIN_ENTRIES then
+    StatDetailCount := STAT_DETAIL_MIN_ENTRIES
+  else if StatDetailCount > STAT_DETAIL_MAX_ENTRIES then
+    StatDetailCount := STAT_DETAIL_MAX_ENTRIES;
+
   // SyncTo
   SyncTo := ReadArrayIndex(ISyncTo, IniFile, 'Advanced', 'SyncTo', Ord(stMusic));
 
@@ -2014,6 +2026,9 @@ begin
     //TopScores
     IniFile.WriteString('Advanced', 'TopScores', ITopScores[TopScores]);
 
+    //StatDetailCount
+    IniFile.WriteInteger('Advanced', 'StatDetailCount', StatDetailCount);
+
     //SyncTo
     IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);
 
@@ -2288,6 +2303,18 @@ begin
   try
     // Players
     IniFile.WriteString('Game', 'Players', IPlayers[Players]);
+  finally
+    IniFile.Free;
+  end;
+end;
+
+procedure TIni.SaveStatDetailCount;
+var
+  IniFile: TIniFile;
+begin
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveStatDetailCount');
+  try
+    IniFile.WriteInteger('Advanced', 'StatDetailCount', StatDetailCount);
   finally
     IniFile.Free;
   end;

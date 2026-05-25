@@ -309,6 +309,7 @@ begin
 
   //Set ButtonPos to Autoset Length
   ButtonPos := -1;
+  SelInteraction := -1;
 
   Background := nil;
 

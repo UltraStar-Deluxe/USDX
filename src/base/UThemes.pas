@@ -1079,11 +1079,6 @@ type
   end;
 
   TThemeStatDetail = class(TThemeBasic)
-    ButtonNext:       TThemeButton;
-    ButtonPrev:       TThemeButton;
-    ButtonReverse:    TThemeButton;
-    ButtonExit:       TThemeButton;
-
     TextDescription:  TThemeText;
     TextPage:         TThemeText;
     TextList:         AThemeText;
@@ -2107,11 +2102,6 @@ begin
 
 
       ThemeLoadBasic(StatDetail, 'StatDetail');
-
-      ThemeLoadButton(StatDetail.ButtonNext, 'StatDetailButtonNext');
-      ThemeLoadButton(StatDetail.ButtonPrev, 'StatDetailButtonPrev');
-      ThemeLoadButton(StatDetail.ButtonReverse, 'StatDetailButtonReverse');
-      ThemeLoadButton(StatDetail.ButtonExit, 'StatDetailButtonExit');
 
       ThemeLoadText (StatDetail.TextDescription, 'StatDetailTextDescription');
       ThemeLoadText (StatDetail.TextPage, 'StatDetailTextPage');
