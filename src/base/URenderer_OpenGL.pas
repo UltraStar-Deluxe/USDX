@@ -35,7 +35,8 @@ uses
   matrix,
   sdl2,
   UPath,
-  URenderer;
+  URenderer,
+  UScale;
 
 type
   TViewPortArray = array[0..3] of integer;
@@ -299,6 +300,8 @@ begin
   inherited Create(Identifier);
   self.W := W;
   self.H := H;
+  self.SourceW := W;
+  self.SourceH := H;
 
   // prepare OpenGL texture
   glGenTextures(1, @TexID);
@@ -344,6 +347,8 @@ begin
   else
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, Width, Height, GL_RGBA, GL_UNSIGNED_BYTE, Data);
   glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+  SourceW := Width;
+  SourceH := Height;
   fIsEmpty := false;
 
   {$IFDEF DEBUG_MODE}
@@ -880,8 +885,157 @@ begin
 end;
 
 procedure TRenderer_OpenGLBase.DrawTexture(Texture: TTexture);
+var
+  MainTexture: TTexture;
+  EdgeTexture: TTexture;
+  SourceAspect: single;
+  TargetAspect: single;
+  Scale: single;
+  CropAmount: single;
+  U1, U2, V1, V2: single;
+  EdgeU: single;
+  BlurU: single;
+  LayoutScaleCorrection: single;
+  DrawX, DrawW: single;
+  LeftPad, RightPad: single;
+
+  procedure DrawEdge(X, Y, W, H, TexX1, TexY1, TexX2, TexY2: single);
+  begin
+    if (W <= 0) or (H <= 0) then
+      Exit;
+    EdgeTexture := MainTexture.Clone;
+    try
+      EdgeTexture.X := X;
+      EdgeTexture.Y := Y;
+      EdgeTexture.W := W;
+      EdgeTexture.H := H;
+      EdgeTexture.TexX1 := TexX1;
+      EdgeTexture.TexY1 := TexY1;
+      EdgeTexture.TexX2 := TexX2;
+      EdgeTexture.TexY2 := TexY2;
+      EdgeTexture.ScaleMode := lsStretch;
+      EdgeTexture.EdgeExtend := false;
+      EdgeTexture.Reflection := false;
+      DrawTexture(EdgeTexture, MainProgram, UpdateTransformMain, TransformLocationMain);
+    finally
+      EdgeTexture.Free;
+    end;
+  end;
+
+  procedure DrawSolidEdge(X, Y, W, H: single);
+  begin
+    if (W <= 0) or (H <= 0) then
+      Exit;
+    DrawQuad(X, Y, MainTexture.Z, W, H,
+      MainTexture.EdgeExtendFillR,
+      MainTexture.EdgeExtendFillG,
+      MainTexture.EdgeExtendFillB,
+      MainTexture.Alpha);
+  end;
 begin
-  DrawTexture(Texture, MainProgram, UpdateTransformMain, TransformLocationMain);
+  MainTexture := Texture.Clone;
+  try
+    U1 := MainTexture.TexX1;
+    U2 := MainTexture.TexX2;
+    V1 := MainTexture.TexY1;
+    V2 := MainTexture.TexY2;
+
+    if (GetLayoutScaleX > 0) and (GetLayoutScaleY > 0) then
+      LayoutScaleCorrection := GetLayoutScaleY / GetLayoutScaleX
+    else
+      LayoutScaleCorrection := 1;
+
+    if (MainTexture.SourceW > 0) and (MainTexture.SourceH > 0) and
+       (MainTexture.W > 0) and (MainTexture.H > 0) then
+    begin
+      SourceAspect := (MainTexture.SourceW * Abs(U2 - U1)) /
+        (MainTexture.SourceH * Abs(V2 - V1));
+
+      if MainTexture.ScaleMode = lsUniform then
+      begin
+        if MainTexture.EdgeExtend then
+        begin
+          // Logical coordinates are stretched independently on each axis.
+          // Preserve the source aspect in physical pixels, then fill only
+          // the horizontal remainder with the requested edge treatment.
+          DrawW := SourceAspect * MainTexture.H * LayoutScaleCorrection;
+          if DrawW > MainTexture.W then
+            DrawW := MainTexture.W;
+          DrawX := MainTexture.X + (MainTexture.W - DrawW) / 2;
+
+          // Keep the edge next to the image sharp, but gradually sample
+          // farther into the image toward the outside of each pad.  This is
+          // the legacy background behaviour; stretching one wide strip here
+          // makes the extension visibly harsher.
+          EdgeU := (1 / MainTexture.SourceW) * Abs(U2 - U1);
+          BlurU := (MainTexture.EdgeExtendPixels / MainTexture.SourceW) *
+            Abs(U2 - U1);
+          if BlurU <= EdgeU then
+            BlurU := EdgeU * 2;
+
+          LeftPad := DrawX - MainTexture.X;
+          RightPad := MainTexture.X + MainTexture.W - (DrawX + DrawW);
+
+          if MainTexture.EdgeExtendSolidFill then
+          begin
+            DrawSolidEdge(MainTexture.X, MainTexture.Y,
+              LeftPad, MainTexture.H);
+            DrawSolidEdge(DrawX + DrawW, MainTexture.Y,
+              RightPad, MainTexture.H);
+          end
+          else
+          begin
+            // The one logical-pixel overlap avoids a seam between the edge
+            // strip and the centred image.
+            DrawEdge(MainTexture.X, MainTexture.Y,
+              LeftPad + 1, MainTexture.H,
+              Min(U1 + BlurU, U2), V1, Min(U1 + EdgeU * 0.5, U2), V2);
+            DrawEdge(DrawX + DrawW - 1, MainTexture.Y,
+              RightPad + 1, MainTexture.H,
+              Max(U2 - EdgeU * 0.5, U1), V1, Max(U2 - BlurU, U1), V2);
+          end;
+
+          MainTexture.X := DrawX;
+          MainTexture.W := DrawW;
+          MainTexture.ScaleMode := lsStretch;
+          MainTexture.EdgeExtend := false;
+        end
+        else
+          ResolveLayoutRect(MainTexture.X, MainTexture.Y,
+            MainTexture.W, MainTexture.H, lsUniform);
+      end
+      else if MainTexture.ScaleMode = lsCrop then
+      begin
+        // Crop against the on-screen aspect, not the stretched logical box.
+        TargetAspect := (MainTexture.W / MainTexture.H) / LayoutScaleCorrection;
+        if (SourceAspect > 0) and (TargetAspect > 0) then
+        begin
+          if TargetAspect > SourceAspect then
+          begin
+            Scale := SourceAspect / TargetAspect;
+            CropAmount := (V2 - V1) * (1 - Scale) / 2;
+            V1 := V1 + CropAmount;
+            V2 := V2 - CropAmount;
+          end
+          else
+          begin
+            Scale := TargetAspect / SourceAspect;
+            CropAmount := (U2 - U1) * (1 - Scale) / 2;
+            U1 := U1 + CropAmount;
+            U2 := U2 - CropAmount;
+          end;
+          MainTexture.TexX1 := U1;
+          MainTexture.TexX2 := U2;
+          MainTexture.TexY1 := V1;
+          MainTexture.TexY2 := V2;
+        end;
+      end;
+    end;
+
+    DrawTexture(MainTexture, MainProgram, UpdateTransformMain, TransformLocationMain);
+  finally
+    MainTexture.Free;
+  end;
 end;
 
 procedure TRenderer_OpenGLBase.DrawGlyph(Texture: TTexture);

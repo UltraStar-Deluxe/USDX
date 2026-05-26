@@ -59,7 +59,8 @@ type
 
 implementation
 uses
-  UDisplay;
+  UDisplay,
+  UScale;
 
 procedure TStatic.Draw;
 begin
@@ -93,6 +94,7 @@ begin
     Result.Y := Texture.Y;
     Result.W := Texture.W;
     Result.H := Texture.H;
+    ResolveLayoutRect(Result.X, Result.Y, Result.W, Result.H, Texture.ScaleMode);
   end;
 end;
 

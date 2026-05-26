@@ -164,10 +164,10 @@ begin
       Rec.Top := 110; // 80
       Rec.Bottom := Rec.Top + 20;
       Rec.Left  := 0;
-      Rec.Right := 800;
+      Rec.Right := RenderW;
 
-      TexRec.Top := (Rec.Top / 600);
-      TexRec.Bottom := (Rec.Bottom / 600);
+      TexRec.Top := (Rec.Top / RenderH);
+      TexRec.Bottom := (Rec.Bottom / RenderH);
       TexRec.Left := 0;
       TexRec.Right := 1;
 
@@ -193,7 +193,7 @@ begin
       Rec.Top := Rec.Bottom;
       Rec.Bottom := 490 - 20; // 490 - 20
       TexRec.Top := TexRec.Bottom;
-      TexRec.Bottom := (Rec.Bottom / 600);
+      TexRec.Bottom := (Rec.Bottom / RenderH);
       with ScreenSing.Tex_Background do
       begin
         Y := Rec.Top;
@@ -209,7 +209,7 @@ begin
       Rec.Top := Rec.Bottom;
       Rec.Bottom := 490; // 490
       TexRec.Top := TexRec.Bottom;
-      TexRec.Bottom := (Rec.Bottom / 600);
+      TexRec.Bottom := (Rec.Bottom / RenderH);
       with ScreenSing.Tex_Background do
       begin
         Y := Rec.Top;
@@ -298,10 +298,10 @@ begin
       Rec.Top := 110; // 80
       Rec.Bottom := Rec.Top + 20;
       Rec.Left  := 0;
-      Rec.Right := 800;
+      Rec.Right := RenderW;
 
-      TexRec.Top := (Rec.Top / 600);
-      TexRec.Bottom := (Rec.Bottom / 600);
+      TexRec.Top := (Rec.Top / RenderH);
+      TexRec.Bottom := (Rec.Bottom / RenderH);
       TexRec.Left := 0;
       TexRec.Right := 1;
 
@@ -327,7 +327,7 @@ begin
       Rec.Top := Rec.Bottom;
       Rec.Bottom := 490 - 20; // 490 - 20
       TexRec.Top := TexRec.Bottom;
-      TexRec.Bottom := (Rec.Bottom / 600);
+      TexRec.Bottom := (Rec.Bottom / RenderH);
       with ScreenJukebox.Tex_Background do
       begin
         Y := Rec.Top;
@@ -343,7 +343,7 @@ begin
       Rec.Top := Rec.Bottom;
       Rec.Bottom := 490; // 490
       TexRec.Top := TexRec.Bottom;
-      TexRec.Bottom := (Rec.Bottom / 600);
+      TexRec.Bottom := (Rec.Bottom / RenderH);
       with ScreenJukebox.Tex_Background do
       begin
         Y := Rec.Top;

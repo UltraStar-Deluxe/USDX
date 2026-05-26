@@ -171,7 +171,8 @@ uses
   UMain,
   UTime,
   ULanguage,
-  UPathUtils
+  UPathUtils,
+  UScale
   {$IFDEF MSWINDOWS}
   ,Windows
   {$ENDIF}
@@ -587,6 +588,7 @@ var
   Alpha: single;
   Ticks: cardinal;
   DrawX: double;
+  CursorW: single;
   Texture: TTexture;
 begin
   if (Ini.Mouse = 2) and ((Screens = 1) or ((ScreenAct - 1) = (Round(Cursor_X+16) div RenderW))) then
@@ -637,11 +639,15 @@ begin
         Texture := Tex_Cursor_Pressed
       else
         Texture := Tex_Cursor_Unpressed;
+      if (GetLayoutScaleX > 0) and (GetLayoutScaleY > 0) then
+        CursorW := 32 * GetLayoutScaleY / GetLayoutScaleX
+      else
+        CursorW := 32;
       with Texture do
       begin
         X := DrawX;
         Y := Cursor_Y;
-        W := 32;
+        W := CursorW;
         H := 32;
       end;
       Texture.Alpha := Alpha;

@@ -61,7 +61,8 @@ implementation
 uses
   USkins,
   SysUtils,
-  UGraphic;
+  UGraphic,
+  UScale;
 
 constructor TMenuBackgroundTexture.Create(const ThemedSettings: TThemeBackground);
 var
@@ -101,6 +102,10 @@ begin
     ColR := Color.R;
     ColG := Color.G;
     ColB := Color.B;
+    ScaleMode := lsUniform;
+    EdgeExtend := true;
+    EdgeExtendSolidFill := false;
+    EdgeExtendPixels := 16;
   end;
   Renderer.DrawTexture(Tex);
 end;

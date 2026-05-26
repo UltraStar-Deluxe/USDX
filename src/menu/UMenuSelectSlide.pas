@@ -738,11 +738,22 @@ end;
 
 
 function TSelectSlide.GetMouseOverArea: TMouseOverRect;
+var
+  MainX, MainY, MainW, MainH: real;
+  BgX, BgY, BgW, BgH: real;
 begin
-  Result.X := Texture.X;
-  Result.Y := Texture.Y;
-  Result.W := (TextureSBG.X + TextureSBG.W) - Result.X;
-  Result.H := Max(Texture.H, TextureSBG.H);
+  MainX := Texture.X;
+  MainY := Texture.Y;
+  MainW := Texture.W;
+  MainH := Texture.H;
+  BgX := TextureSBG.X;
+  BgY := TextureSBG.Y;
+  BgW := TextureSBG.W;
+  BgH := TextureSBG.H;
+  Result.X := MainX;
+  Result.Y := MainY;
+  Result.W := (BgX + BgW) - Result.X;
+  Result.H := Max(MainH, BgH);
 end;
 
 function TSelectSlide.OnClick(X, Y: single): TMouseClickAction;
