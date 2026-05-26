@@ -39,7 +39,7 @@ uses
 
 type
   TViewPortArray = array[0..3] of integer;
-  TRenderer_OpenGL = class(TRenderer)
+  TRenderer_OpenGLBase = class(TRenderer)
     protected
       glcontext: TSDL_GLContext;
       MainProgram: GLuint;
@@ -67,21 +67,27 @@ type
       WhiteTexture: GLuint;
       ErrorCode: GLenum;
 
+      SupportsVAO: boolean;
+
       procedure InitShaderPrograms();
       procedure InitBuffers();
+      procedure BindMainVertexAttrib();
+      procedure BindLineStripVertexAttrib();
       function LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType): TTexture; overload; override;
       procedure DrawTexture(Texture: TTexture; Prog: GLuint; var UpdateTransform: boolean; TransformLocation: GLint); overload;
       function LoadGlyph(Data: PByte; W, H: integer): TTexture; overload; override;
       function CreateEmptyTexture(const Identifier: IPath): TTexture; override;
       function GetArrayBuffer(var Bytes: GLuint): PGLfloat;
       procedure UpdateTransformationMatrix();
+      procedure CheckVersion(); virtual; abstract;
+      procedure GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string); virtual; abstract;
 
       {$IFDEF DEBUG_MODE}
       procedure RaiseExceptionIfError();
       {$ENDIF}
 
     public
-      constructor Create();
+      constructor Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
       destructor Destroy; override;
       procedure DrawTexture(Texture: TTexture); override;
       procedure DrawGlyph(Texture: TTexture); override;
@@ -108,8 +114,29 @@ type
       procedure ClearFrameBuffer(Buffers: cardinal); override;
       procedure SetTextClipBoundary(X: single; Direction: ClippingDirection); override;
       procedure SetClipText(Enabled: boolean); override;
-
   end;
+
+  TRenderer_OpenGL3 = class(TRenderer_OpenGLBase)
+    public
+      constructor Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
+      procedure CheckVersion() override;
+      procedure GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string); override;
+    end;
+
+  TRenderer_OpenGL2 = class(TRenderer_OpenGLBase)
+    public
+      constructor Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
+      procedure CheckVersion() override;
+      procedure GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string); override;
+    end;
+
+  TRenderer_OpenGLES = class(TRenderer_OpenGLBase)
+    public
+      constructor Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
+      procedure CheckVersion() override;
+      procedure GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string); override;
+    end;
+
 
 implementation
 
@@ -156,13 +183,15 @@ type
 const
   GLSL_CORE_HEADER = '#version 150 core' + #10;
   GLSL_COMPAT_HEADER = '#version 130' + #10;
+  GLSL_LEGACY_HEADER = '#version 110' + #10;
+  ES_PRECISION_SPECIFIER = 'precision mediump float;' + #10;
 
   MAIN_VERTEX_SHADER_SOURCE =
-    'in vec3 pos;                                ' + #10 +
-    'in vec4 color;                              ' + #10 +
-    'in vec2 tex_coords;                         ' + #10 +
-    'out vec4 col;                               ' + #10 +
-    'out vec2 tc;                                ' + #10 +
+    '[VTX_IN] vec3 pos;                          ' + #10 +
+    '[VTX_IN] vec4 color;                        ' + #10 +
+    '[VTX_IN] vec2 tex_coords;                   ' + #10 +
+    '[VTX_OUT] vec4 col;                         ' + #10 +
+    '[VTX_OUT] vec2 tc;                          ' + #10 +
     'uniform mat4 transform;                     ' + #10 +
     'void main()                                 ' + #10 +
     '{                                           ' + #10 +
@@ -171,40 +200,40 @@ const
 	  '  tc = tex_coords;                          ' + #10 +
     '}';
 
+  MAIN_FRAGMENT_SHADER_SOURCE =
+    '[FRAG_IN] vec4 col;                            ' + #10 +
+    '[FRAG_IN] vec2 tc;                             ' + #10 +
+    '[FRAG_OUT_DECL]                                ' + #10 +
+    'uniform sampler2D tex;                         ' + #10 +
+    'void main()                                    ' + #10 +
+    '{                                              ' + #10 +
+    '  [FRAG_OUT] = [TEXTURE_FUNC](tex, tc) * col;  ' + #10 +
+    '}';
+
+  TEXT_FRAGMENT_SHADER_SOURCE =
+    '[FRAG_IN] vec4 col;                                             ' + #10 +
+    '[FRAG_IN] vec2 tc;                                              ' + #10 +
+    '[FRAG_OUT_DECL]                                                 ' + #10 +
+    'uniform sampler2D tex;                                          ' + #10 +
+    'void main()                                                     ' + #10 +
+    '{                                                               ' + #10 +
+    '  [FRAG_OUT] = vec4(col.rgb, [TEXTURE_FUNC](tex, tc).r * col.a);' + #10 +
+    '}';
+
   LINE_STRIP_VERTEX_SHADER_SOURCE =
-    'in vec2 pos;                                     ' + #10 +
+    '[VTX_IN] vec2 pos;                               ' + #10 +
     'uniform mat4 transform;                          ' + #10 +
     'void main()                                      ' + #10 +
     '{                                                ' + #10 +
 	  '  gl_Position = transform * vec4(pos, 0.0, 1.0); ' + #10 +
     '}';
 
-  MAIN_FRAGMENT_SHADER_SOURCE =
-    'in vec4 col;                                ' + #10 +
-    'in vec2 tc;                                 ' + #10 +
-    'out vec4 out_col;                           ' + #10 +
-    'uniform sampler2D tex;                      ' + #10 +
-    'void main()                                 ' + #10 +
-    '{                                           ' + #10 +
-    '  out_col = texture(tex, tc) * col;         ' + #10 +
-    '}';
-
-  TEXT_FRAGMENT_SHADER_SOURCE =
-    'in vec4 col;                                          ' + #10 +
-    'in vec2 tc;                                           ' + #10 +
-    'out vec4 out_col;                                     ' + #10 +
-    'uniform sampler2D tex;                                ' + #10 +
-    'void main()                                           ' + #10 +
-    '{                                                     ' + #10 +
-    '  out_col = vec4(col.rgb, texture(tex, tc).r * col.a);' + #10 +
-    '}';
-
   LINE_STRIP_FRAGMENT_SHADER_SOURCE =
-    'out vec4 out_col;      ' + #10 +
+    '[FRAG_OUT_DECL] ;      ' + #10 +
     'uniform vec4 color;    ' + #10 +
     'void main()            ' + #10 +
     '{                      ' + #10 +
-    '  out_col = color;     ' + #10 +
+    '  [FRAG_OUT] = color;  ' + #10 +
     '}';
 
   VBO_SIZE = (2 * 2 shl 20); // 2 MB
@@ -248,7 +277,7 @@ begin
   glTexImage2D(GL_TEXTURE_2D, 0, Format, W, H, 0, Format, GL_UNSIGNED_BYTE, Data);
   fIsEmpty := false;
   {$IFDEF DEBUG_MODE}
-  TRenderer_OpenGL(Renderer).RaiseExceptionIfError;
+  TRenderer_OpenGLBase(Renderer).RaiseExceptionIfError;
   {$ENDIF}
 end;
 
@@ -270,7 +299,7 @@ begin
   fIsEmpty := false;
 
   {$IFDEF DEBUG_MODE}
-  TRenderer_OpenGL(Renderer).RaiseExceptionIfError;
+  TRenderer_OpenGLBase(Renderer).RaiseExceptionIfError;
   {$ENDIF}
 end;
 
@@ -279,7 +308,7 @@ begin
   glBindTexture(GL_TEXTURE_2D, TexID);
   glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, X, Y, Width, Height);
   {$IFDEF DEBUG_MODE}
-  TRenderer_OpenGL(Renderer).RaiseExceptionIfError;
+  TRenderer_OpenGLBase(Renderer).RaiseExceptionIfError;
   {$ENDIF}
 end;
 
@@ -292,7 +321,7 @@ begin
   end;
   fIsEmpty := true;
   {$IFDEF DEBUG_MODE}
-  TRenderer_OpenGL(Renderer).RaiseExceptionIfError;
+  TRenderer_OpenGLBase(Renderer).RaiseExceptionIfError;
   {$ENDIF}
 end;
 
@@ -312,7 +341,7 @@ begin
   inherited;
 end;
 
-constructor TRenderer_OpenGL.Create();
+constructor TRenderer_OpenGLBase.Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
 var
   WhitePixel: array[0..3] of GLubyte = (255, 255, 255, 255);
   S: string;
@@ -322,17 +351,16 @@ begin
   EBOCursor := 0;
   ProjectionMatrix.init_zero;
 
-  glcontext := SDL_GL_CreateContext(Screen);
+  self.glcontext := glcontext;
+  self.MajorVersion := MajorVersion;
+  self.MinorVersion := MinorVersion;
   InitOpenGL;
   ReadOpenGLCore;
-  Log.LogInfo('OpenGL vendor ' + glGetString(GL_VENDOR), 'TRenderer_OpenGL.Create');
-  if not (glGetError = GL_NO_ERROR) then
-  begin
-    Log.LogInfo('an OpenGL Error happened.', 'TRenderer_OpenGL.Create');
-  end;
-  Log.LogInfo('OpenGL vendor ' + glGetString(GL_VENDOR), 'TRenderer_OpenGL.Create');
-  Log.LogInfo('OpenGL renderer ' + glGetString(GL_RENDERER), 'TRenderer_OpenGL.Create');
-  Log.LogInfo('OpenGL version ' + glGetString(GL_VERSION), 'TRenderer_OpenGL.Create');
+  ReadCoreVersion;
+
+  Log.LogInfo('OpenGL vendor ' + glGetString(GL_VENDOR), 'TRenderer_OpenGLBase.Create');
+  Log.LogInfo('OpenGL renderer ' + glGetString(GL_RENDERER), 'TRenderer_OpenGLBase.Create');
+  Log.LogInfo('OpenGL version ' + glGetString(GL_VERSION), 'TRenderer_OpenGLBase.Create');
 
   if (Pos('GDI Generic', S) > 0) or // Microsoft
      (Pos('Software Renderer', S) > 0) or // Apple
@@ -346,28 +374,22 @@ begin
   else
     SWRendering := false;
 
-  SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, @MajorVersion);
-  SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, @MinorVersion);
-
-  if (MajorVersion < 3) then
-    raise Exception.Create('Could not initialize OpenGL 3.0 or later');
-
+  CheckVersion;
   InitShaderPrograms;
   InitBuffers;
+
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthFunc(GL_LEQUAL);
-  glDepthRange(0, 10);
+  glDepthRangef(0, 10);
   glUseProgram(MainProgram);
   glActiveTexture(GL_TEXTURE0);
   glUniform1i(glGetUniformLocation(MainProgram, 'tex'), 0);
   TransformLocationMain := glGetUniformLocation(MainProgram, 'transform');
-
   glUniform1i(glGetUniformLocation(TextProgram, 'tex'), 0);
   TransformLocationText := glGetUniformLocation(TextProgram, 'transform');
 
   TransformLocationText := glGetUniformLocation(LineStripProgram, 'transform');
   ColorLocationLineStrip := glGetUniformLocation(LineStripProgram, 'color');
-
 
   // Create 1x1 white texture for drawing quads
   glGenTextures(1, @WhiteTexture);
@@ -381,7 +403,7 @@ begin
   {$ENDIF}
 end;
 
-destructor TRenderer_OpenGL.Destroy();
+destructor TRenderer_OpenGLBase.Destroy();
 begin
   glDeleteProgram(MainProgram);
   glDeleteProgram(TextProgram);
@@ -396,24 +418,18 @@ begin
   inherited;
 end;
 
-procedure TRenderer_OpenGL.InitShaderPrograms();
+procedure TRenderer_OpenGLBase.InitShaderPrograms();
 var
-  VertexShader, MainFragmentShader, TextFragmentShader,
-  LineStripVertexShader, LineStripFragmentShader: GLuint;
-  Source: string;
+  VertexShader, MainFragmentShader, TextFragmentShader, LineStripVertexShader, LineStripFragmentShader: GLuint;
+  MainVertexSource, MainFragmentSource, TextFragmentSource, LineStripVertexSource, LineStripFragmentSource: string;
   CompileResult: GLint;
   ErrorBuf: array[0..511] of GLcharARB;
-  Header: string;
 begin
-  if ((MajorVersion > 3) or ((MajorVersion = 3) and (MinorVersion >= 2))) then
-    Header := GLSL_CORE_HEADER
-  else
-    Header := GLSL_COMPAT_HEADER;
+  GetShaderSource(MainVertexSource, MainFragmentSource, TextFragmentSource, LineStripVertexSource, LineStripFragmentSource);
 
   // Compile vertex shader
   VertexShader := glCreateShader(GL_VERTEX_SHADER);
-  Source := Header + MAIN_VERTEX_SHADER_SOURCE;
-  glShaderSource(VertexShader, 1, PPGLcharARB(@Source), nil);
+  glShaderSource(VertexShader, 1, PPGLcharARB(@MainVertexSource), nil);
   glCompileShader(VertexShader);
   glGetShaderiv(VertexShader, GL_COMPILE_STATUS, @CompileResult);
   if (ByteBool(CompileResult) = GL_FALSE) then
@@ -424,8 +440,7 @@ begin
 
   // Compile main fragment shader
   MainFragmentShader := glCreateShader(GL_FRAGMENT_SHADER);
-  Source := Header + MAIN_FRAGMENT_SHADER_SOURCE;
-  glShaderSource(MainFragmentShader, 1, PPGLcharARB(@Source), nil);
+  glShaderSource(MainFragmentShader, 1, PPGLcharARB(@MainFragmentSource), nil);
   glCompileShader(MainFragmentShader);
   glGetShaderiv(MainFragmentShader, GL_COMPILE_STATUS, @CompileResult);
   if (ByteBool(CompileResult) = GL_FALSE) then
@@ -436,9 +451,7 @@ begin
 
   // Compile text fragment shader
   TextFragmentShader := glCreateShader(GL_FRAGMENT_SHADER);
-  Source := Header + TEXT_FRAGMENT_SHADER_SOURCE;
-
-  glShaderSource(TextFragmentShader, 1, PPGLcharARB(@Source), nil);
+  glShaderSource(TextFragmentShader, 1, PPGLcharARB(@TextFragmentSource), nil);
   glCompileShader(TextFragmentShader);
   glGetShaderiv(TextFragmentShader, GL_COMPILE_STATUS, @CompileResult);
   if (ByteBool(CompileResult) = GL_FALSE) then
@@ -449,8 +462,7 @@ begin
 
   // Compile line strip vertex shader
   LineStripVertexShader := glCreateShader(GL_VERTEX_SHADER);
-  Source := Header + LINE_STRIP_VERTEX_SHADER_SOURCE;
-  glShaderSource(LineStripVertexShader, 1, PPGLcharARB(@Source), nil);
+  glShaderSource(LineStripVertexShader, 1, PPGLcharARB(@LineStripVertexSource), nil);
   glCompileShader(LineStripVertexShader);
   glGetShaderiv(LineStripVertexShader, GL_COMPILE_STATUS, @CompileResult);
   if (ByteBool(CompileResult) = GL_FALSE) then
@@ -461,8 +473,7 @@ begin
 
   // Compile line strip fragment shader
   LineStripFragmentShader := glCreateShader(GL_FRAGMENT_SHADER);
-  Source := Header + LINE_STRIP_FRAGMENT_SHADER_SOURCE;
-  glShaderSource(LineStripFragmentShader, 1, PPGLcharARB(@Source), nil);
+  glShaderSource(LineStripFragmentShader, 1, PPGLcharARB(@LineStripFragmentSource), nil);
   glCompileShader(LineStripFragmentShader);
   glGetShaderiv(LineStripFragmentShader, GL_COMPILE_STATUS, @CompileResult);
   if (ByteBool(CompileResult) = GL_FALSE) then
@@ -521,21 +532,25 @@ begin
   glDeleteShader(LineStripFragmentShader);
 
   {$IFDEF DEBUG_MODE}
-  TRenderer_OpenGL(Renderer).RaiseExceptionIfError;
+  TRenderer_OpenGLBase(Renderer).RaiseExceptionIfError;
   {$ENDIF}
 end;
 
-procedure TRenderer_OpenGL.InitBuffers();
+procedure TRenderer_OpenGLBase.InitBuffers();
 var
   I, Quad: Cardinal;
   EBOData: array of GLuint;
 begin
-  glGenVertexArrays(1, @MainVAO);
-  glGenVertexArrays(1, @LineStripVAO);
+  if (SupportsVAO) then
+  begin
+    glGenVertexArrays(1, @MainVAO);
+    glGenVertexArrays(1, @LineStripVAO);
+  end;
 
   glGenBuffers(1, @VBO);
   glGenBuffers(1, @EBO);
-  glBindVertexArray(MainVAO);
+  if (SupportsVAO) then
+    glBindVertexArray(MainVAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, VBO_SIZE, nil, GL_STREAM_DRAW);
@@ -560,6 +575,21 @@ begin
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, EBO_SIZE, PGLvoid(EBOData), GL_STATIC_DRAW);
 
+  if (SupportsVAO) then
+  begin
+    BindMainVertexAttrib;
+    glBindVertexArray(LineStripVAO);
+    BindLineStripVertexAttrib;
+    glBindVertexArray(0);
+  end;
+
+  {$IFDEF DEBUG_MODE}
+  RaiseExceptionIfError;
+  {$ENDIF};
+end;
+
+procedure TRenderer_OpenGLBase.BindMainVertexAttrib();
+begin
   // Position
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_STRIDE_BYTES, PGLvoid(0));
   glEnableVertexAttribArray(0);
@@ -572,17 +602,22 @@ begin
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, VERTEX_STRIDE_BYTES, PGLvoid(TEXX_OFFSET * SizeOf(GLfloat)));
   glEnableVertexAttribArray(2);
 
-  glBindVertexArray(LineStripVAO);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, PGLvoid(0));
-  glEnableVertexAttribArray(0);
-
-  glBindVertexArray(0);
   {$IFDEF DEBUG_MODE}
   RaiseExceptionIfError;
   {$ENDIF};
 end;
 
-function TRenderer_OpenGL.GetArrayBuffer(var Bytes: GLuint): PGLfloat;
+procedure TRenderer_OpenGLBase.BindLineStripVertexAttrib();
+begin
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, PGLvoid(0));
+  glEnableVertexAttribArray(0);
+
+  {$IFDEF DEBUG_MODE}
+  RaiseExceptionIfError;
+  {$ENDIF};
+end;
+
+function TRenderer_OpenGLBase.GetArrayBuffer(var Bytes: GLuint): PGLfloat;
 begin
   Bytes := Bytes + Bytes mod SizeOf(TQuadVertexBufferData);
   if (GLuint(VBOCursor) * SizeOf(GLfloat) + Bytes >= VBO_SIZE) then
@@ -597,13 +632,13 @@ begin
   {$ENDIF};
 end;
 
-procedure TRenderer_OpenGL.UpdateTransformationMatrix();
+procedure TRenderer_OpenGLBase.UpdateTransformationMatrix();
 begin
   UpdateTransformMain := true;
   UpdateTransformText := true;
 end;
 
-procedure TRenderer_OpenGL.DrawTexture(Texture: TTexture; Prog: GLuint; var UpdateTransform: boolean; TransformLocation: GLint);
+procedure TRenderer_OpenGLBase.DrawTexture(Texture: TTexture; Prog: GLuint; var UpdateTransform: boolean; TransformLocation: GLint);
 var
   Tex: TTexture_OpenGL;
   NumQuads: GLuint;
@@ -615,7 +650,10 @@ begin
   if (Texture.TexID = 0) then
     Exit;
   Tex := TTexture_OpenGL(Texture);
-  glBindVertexArray(MainVAO);
+  if (SupportsVAO) then
+    glBindVertexArray(MainVAO)
+  else
+    BindMainVertexAttrib;
   glUseProgram(Prog);
   if (UpdateTransform) then
   begin
@@ -767,17 +805,17 @@ begin
   {$ENDIF};
 end;
 
-procedure TRenderer_OpenGL.DrawTexture(Texture: TTexture);
+procedure TRenderer_OpenGLBase.DrawTexture(Texture: TTexture);
 begin
   DrawTexture(Texture, MainProgram, UpdateTransformMain, TransformLocationMain);
 end;
 
-procedure TRenderer_OpenGL.DrawGlyph(Texture: TTexture);
+procedure TRenderer_OpenGLBase.DrawGlyph(Texture: TTexture);
 begin
   DrawTexture(Texture, TextProgram, UpdateTransformText, TransformLocationText);
 end;
 
-procedure TRenderer_OpenGL.DrawQuads(QuadList: TQuadList);
+procedure TRenderer_OpenGLBase.DrawQuads(QuadList: TQuadList);
 var
   NumQuads: GLuint;
   Buffer: PGLfloat;
@@ -788,7 +826,10 @@ begin
   NumQuads := Length(QuadList);
   if (NumQuads = 0) then
     Exit;
-  glBindVertexArray(MainVAO);
+  if (SupportsVAO) then
+    glBindVertexArray(MainVAO)
+  else
+    BindMainVertexAttrib;
   glUseProgram(MainProgram);
   if (UpdateTransformMain) then
   begin
@@ -926,7 +967,7 @@ begin
   {$ENDIF};
 end;
 
-procedure TRenderer_OpenGL.DrawTriangles(TriangleList: TTriangleList);
+procedure TRenderer_OpenGLBase.DrawTriangles(TriangleList: TTriangleList);
 var
   NumTriangles: GLuint;
   EquivalentQuads: GLuint;
@@ -937,7 +978,10 @@ begin
   NumTriangles := Length(TriangleList);
   if (NumTriangles = 0) then
     Exit;
-  glBindVertexArray(MainVAO);
+  if (SupportsVAO) then
+    glBindVertexArray(MainVAO)
+  else
+    BindMainVertexAttrib;
   glUseProgram(MainProgram);
   if (UpdateTransformMain) then
   begin
@@ -997,7 +1041,7 @@ begin
 end;
 
 
-procedure TRenderer_OpenGL.DrawLines(LineList: TLineList);
+procedure TRenderer_OpenGLBase.DrawLines(LineList: TLineList);
 var
   VecX, VecY, VecPerpX, VecPerpY, Dist, LineThicknessW, LineThicknessH, HalfLineThicknessW, HalfLineThicknessH, PixelWidth, PixelHeight, X1, X2, Y1, Y2: single;
   I, NumQuads: integer;
@@ -1007,7 +1051,10 @@ begin
   NumQuads := Length(LineList);
   if (NumQuads = 0) then
     Exit;
-  glBindVertexArray(MainVAO);
+  if (SupportsVAO) then
+    glBindVertexArray(MainVAO)
+  else
+    BindMainVertexAttrib;
   glUseProgram(MainProgram);
   if (UpdateTransformMain) then
   begin
@@ -1156,7 +1203,7 @@ begin
   {$ENDIF};
 end;
 
-procedure TRenderer_OpenGL.DrawParticles(Texture: TTexture; ParticleList: TParticleList);
+procedure TRenderer_OpenGLBase.DrawParticles(Texture: TTexture; ParticleList: TParticleList);
 var
   Tex: TTexture_OpenGL;
   NumQuads: GLuint;
@@ -1171,7 +1218,10 @@ begin
   if (NumQuads = 0) then
     Exit;
   Tex := TTexture_OpenGL(Texture);
-  glBindVertexArray(MainVAO);
+  if (SupportsVAO) then
+    glBindVertexArray(MainVAO)
+  else
+    BindMainVertexAttrib;
   glUseProgram(MainProgram);
   if (UpdateTransformMain) then
   begin
@@ -1243,7 +1293,7 @@ begin
   {$ENDIF};
 end;
 
-procedure TRenderer_OpenGL.DrawLineStrip(PointList: TPointList; ScaleX, ScaleY, TranslateX, TranslateY, ColR, ColG, ColB, Alpha: single);
+procedure TRenderer_OpenGLBase.DrawLineStrip(PointList: TPointList; ScaleX, ScaleY, TranslateX, TranslateY, ColR, ColG, ColB, Alpha: single);
 var
   Transform: Tmatrix4_single;
   NumPoints, NumQuads, I: integer;
@@ -1253,7 +1303,10 @@ begin
   NumPoints := Length(PointList);
   if (NumPoints = 0) then
     Exit;
-  glBindVertexArray(LineStripVAO);
+  if (SupportsVAO) then
+    glBindVertexArray(LineStripVAO)
+  else
+    BindLineStripVertexAttrib;
   glUseProgram(LineStripProgram);
   Transform.init_identity;
   Transform.data[0,0] := ScaleX;
@@ -1276,7 +1329,7 @@ begin
   {$ENDIF};
 end;
 
-procedure TRenderer_OpenGL.SetBlend(Enabled: boolean);
+procedure TRenderer_OpenGLBase.SetBlend(Enabled: boolean);
 begin
   if (Enabled) then
     glEnable(GL_BLEND)
@@ -1287,12 +1340,12 @@ begin
   {$ENDIF};
 end;
 
-function TRenderer_OpenGL.GetBlend(): boolean;
+function TRenderer_OpenGLBase.GetBlend(): boolean;
 begin
   Result := glIsEnabled(GL_BLEND) = GL_TRUE;
 end;
 
-function TRenderer_OpenGL.LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType): TTexture;
+function TRenderer_OpenGLBase.LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType): TTexture;
 begin
   if (Typ = TEXTURE_TYPE_TRANSPARENT) or (Typ = TEXTURE_TYPE_COLORIZED) then
     Result := TTexture_OpenGL.Create(Data, W, H, Identifier, GL_RGBA, 4, GL_CLAMP_TO_EDGE)
@@ -1303,7 +1356,7 @@ begin
   {$ENDIF};
 end;
 
-function TRenderer_OpenGL.LoadGlyph(Data: PByte; W, H: integer): TTexture;
+function TRenderer_OpenGLBase.LoadGlyph(Data: PByte; W, H: integer): TTexture;
 begin
   Result := TTexture_OpenGL.Create(Data, W, H, PATH_NONE, GL_RED, 1, GL_CLAMP_TO_EDGE);
   {$IFDEF DEBUG_MODE}
@@ -1311,7 +1364,7 @@ begin
   {$ENDIF};
 end;
 
-function TRenderer_OpenGL.CreateEmptyTexture(const Identifier: IPath): TTexture;
+function TRenderer_OpenGLBase.CreateEmptyTexture(const Identifier: IPath): TTexture;
 begin
   Result := TTexture_OpenGL.Create(Identifier);
   {$IFDEF DEBUG_MODE}
@@ -1319,11 +1372,8 @@ begin
   {$ENDIF};
 end;
 
-procedure TRenderer_OpenGL.SetDepthTest(Enabled: boolean);
+procedure TRenderer_OpenGLBase.SetDepthTest(Enabled: boolean);
 begin
-  {$IFDEF DEBUG_MODE}
-  RaiseExceptionIfError;
-  {$ENDIF};
   if (Enabled) then
     glEnable(GL_DEPTH_TEST)
   else
@@ -1333,12 +1383,12 @@ begin
   {$ENDIF};
 end;
 
-function TRenderer_OpenGL.GetDepthTest(): boolean;
+function TRenderer_OpenGLBase.GetDepthTest(): boolean;
 begin
   Result := glIsEnabled(GL_DEPTH_TEST) = GL_TRUE;
 end;
 
-procedure TRenderer_OpenGL.SetScissorRect(X, Y: integer; W, H: cardinal);
+procedure TRenderer_OpenGLBase.SetScissorRect(X, Y: integer; W, H: cardinal);
 begin
   glScissor(X, Y, W, H);
   {$IFDEF DEBUG_MODE}
@@ -1346,7 +1396,7 @@ begin
   {$ENDIF};
 end;
 
-procedure TRenderer_OpenGL.SetScissorTest(Scissor: boolean);
+procedure TRenderer_OpenGLBase.SetScissorTest(Scissor: boolean);
 begin
   if (Scissor) then
     glEnable(GL_SCISSOR_TEST)
@@ -1357,12 +1407,12 @@ begin
   {$ENDIF};
 end;
 
-function TRenderer_OpenGL.GetScissorTest(): boolean;
+function TRenderer_OpenGLBase.GetScissorTest(): boolean;
 begin
   Result := glIsEnabled(GL_SCISSOR_TEST) = GL_TRUE;
 end;
 
-procedure TRenderer_OpenGL.SetOrthographicProjection(Left, Right, Bottom, Top, NearVal, FarVal: single);
+procedure TRenderer_OpenGLBase.SetOrthographicProjection(Left, Right, Bottom, Top, NearVal, FarVal: single);
 begin
   ProjectionMatrix.init_zero;
   ProjectionMatrix.data[0,0] := 2 / (Right - Left);
@@ -1375,7 +1425,7 @@ begin
   UpdateTransformationMatrix;
 end;
 
-procedure TRenderer_OpenGL.SetViewPort(x, y: integer; width, height: cardinal);
+procedure TRenderer_OpenGLBase.SetViewPort(x, y: integer; width, height: cardinal);
 begin
   glViewPort(x, y, width, height);
   ViewPortArray[0] := x;
@@ -1387,7 +1437,7 @@ begin
   {$ENDIF};
 end;
 
-procedure TRenderer_OpenGL.SetVSync(Enabled: boolean);
+procedure TRenderer_OpenGLBase.SetVSync(Enabled: boolean);
 begin
   if (Enabled) then
     SDL_GL_SetSwapInterval(1)
@@ -1398,12 +1448,12 @@ begin
   {$ENDIF};
 end;
 
-function TRenderer_OpenGL.GetVSync(): boolean;
+function TRenderer_OpenGLBase.GetVSync(): boolean;
 begin
   Result := SDL_GL_GetSwapInterval() = 1;
 end;
 
-procedure TRenderer_OpenGL.SwapBuffers();
+procedure TRenderer_OpenGLBase.SwapBuffers();
 begin
   SDL_GL_SwapWindow(Screen);
   {$IFDEF DEBUG_MODE}
@@ -1411,19 +1461,19 @@ begin
   {$ENDIF};
 end;
 
-function TRenderer_OpenGL.GetError(): boolean;
+function TRenderer_OpenGLBase.GetError(): boolean;
 begin
   ErrorCode := glGetError();
   Result := ErrorCode <> GL_NO_ERROR;
 end;
 
-function TRenderer_OpenGL.GetErrorCode(): integer;
+function TRenderer_OpenGLBase.GetErrorCode(): integer;
 begin
   Result := Integer(ErrorCode);
   ErrorCode := GL_NO_ERROR;
 end;
 
-procedure TRenderer_OpenGL.SetClearColor(R, G, B, A: single);
+procedure TRenderer_OpenGLBase.SetClearColor(R, G, B, A: single);
 begin
   glClearColor(R, G, B, A);
   {$IFDEF DEBUG_MODE}
@@ -1431,7 +1481,7 @@ begin
   {$ENDIF};
 end;
 
-procedure TRenderer_OpenGL.ClearFrameBuffer(Buffers: cardinal);
+procedure TRenderer_OpenGLBase.ClearFrameBuffer(Buffers: cardinal);
 var
   GLBuffers: cardinal;
 begin
@@ -1446,7 +1496,7 @@ begin
   {$ENDIF};
 end;
 
-procedure TRenderer_OpenGL.SetTextClipBoundary(X: single; Direction: ClippingDirection);
+procedure TRenderer_OpenGLBase.SetTextClipBoundary(X: single; Direction: ClippingDirection);
 var
   WindowBoundary: integer; // X converted to window x coordinate
   NewX: single;
@@ -1476,7 +1526,7 @@ begin
   {$ENDIF};
 end;
 
-procedure TRenderer_OpenGL.SetClipText(Enabled: boolean);
+procedure TRenderer_OpenGLBase.SetClipText(Enabled: boolean);
 begin
   if (Enabled) then
     OldProjectionMatrix := ProjectionMatrix
@@ -1492,7 +1542,7 @@ begin
 end;
 
 {$IFDEF DEBUG_MODE}
-procedure TRenderer_OpenGL.RaiseExceptionIfError();
+procedure TRenderer_OpenGLBase.RaiseExceptionIfError();
 var
   ErrCode: GLenum;
 begin
@@ -1501,5 +1551,145 @@ begin
     raise Exception.Create('OpenGL error: ' + IntToStr(Integer(ErrCode)));
 end;
 {$ENDIF}
+
+constructor TRenderer_OpenGL3.Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
+begin
+  inherited Create(glcontext, MajorVersion, MinorVersion);
+end;
+
+procedure TRenderer_OpenGL3.CheckVersion();
+begin
+  if (MajorVersion < 3) then
+    raise Exception.Create('Could not initialize OpenGL 3.0 or later');
+  Log.LogInfo('Using OpenGL 3.0 renderer', 'TRenderer_OpenGL3.CheckVersion');
+  SupportsVAO := true;
+end;
+
+procedure TRenderer_OpenGL3.GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string);
+var
+  Header: string;
+  function GetVertexShader(const ShaderSource: string): string;
+  begin
+    Result := Header + ShaderSource;
+    Result := StringReplace(Result, '[VTX_IN]', 'in', [rfReplaceAll]);
+    Result := StringReplace(Result, '[VTX_OUT]', 'out', [rfReplaceAll]);
+  end;
+  function GetFragmentShader(const ShaderSource: string): string;
+  begin
+    Result := Header + ShaderSource;
+    Result := StringReplace(Result, '[FRAG_IN]', 'in', [rfReplaceAll]);
+    Result := StringReplace(Result, '[FRAG_OUT_DECL]', 'out vec4 [FRAG_OUT];', [rfReplaceAll]);
+    Result := StringReplace(Result, '[FRAG_OUT]', 'out_col', [rfReplaceAll]);
+    Result := StringReplace(Result, '[TEXTURE_FUNC]', 'texture', [rfReplaceAll]);
+  end;
+
+begin
+  if ((MajorVersion > 3) or ((MajorVersion = 3) and (MinorVersion >= 2))) then
+    Header := GLSL_CORE_HEADER
+  else
+    Header := GLSL_COMPAT_HEADER;
+
+  MainVertex := GetVertexShader(MAIN_VERTEX_SHADER_SOURCE);
+  MainFragment := GetFragmentShader(MAIN_FRAGMENT_SHADER_SOURCE);
+  TextFragment := GetFragmentShader(TEXT_FRAGMENT_SHADER_SOURCE);
+  LineStripVertex := GetVertexShader(LINE_STRIP_VERTEX_SHADER_SOURCE);
+  LineStripFragment := GetFragmentShader(LINE_STRIP_FRAGMENT_SHADER_SOURCE);
+end;
+
+constructor TRenderer_OpenGLES.Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
+begin
+  inherited Create(glcontext, MajorVersion, MinorVersion);
+end;
+
+procedure TRenderer_OpenGLES.CheckVersion();
+var
+  Extensions: string;
+  GL_OES_vertex_array_object: boolean;
+begin
+  if (MajorVersion < 2) then
+    raise Exception.Create('Could not initialize OpenGL ES 2.0 or later');
+  Log.LogInfo('Using OpenGL ES renderer', 'TRenderer_OpenGLES.CheckVersion');
+  if (MajorVersion >= 3) then
+    SupportsVAO := true
+  else
+  begin
+    Extensions := Int_GetExtensionString;
+    GL_OES_vertex_array_object := Int_CheckExtension(Extensions, 'GL_OES_vertex_array_object');
+    if (GL_OES_vertex_array_object) then
+      SupportsVAO := true;
+  end;
+
+end;
+
+procedure TRenderer_OpenGLES.GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string);
+  function GetVertexShader(const ShaderSource: string): string;
+  begin
+    Result := StringReplace(ShaderSource, '[VTX_IN]', 'attribute', [rfReplaceAll]);
+    Result := StringReplace(Result, '[VTX_OUT]', 'varying', [rfReplaceAll]);
+  end;
+  function GetFragmentShader(const ShaderSource: string): string;
+  begin
+    Result := ES_PRECISION_SPECIFIER + ShaderSource;
+    Result := StringReplace(Result, '[FRAG_IN]', 'varying', [rfReplaceAll]);
+    Result := StringReplace(Result, '[FRAG_OUT_DECL]', '', [rfReplaceAll]);
+    Result := StringReplace(Result, '[FRAG_OUT]', 'gl_FragColor', [rfReplaceAll]);
+    Result := StringReplace(Result, '[TEXTURE_FUNC]', 'texture2D', [rfReplaceAll]);
+  end;
+
+begin
+  MainVertex := GetVertexShader(MAIN_VERTEX_SHADER_SOURCE);
+  MainFragment := GetFragmentShader(MAIN_FRAGMENT_SHADER_SOURCE);
+  TextFragment := GetFragmentShader(TEXT_FRAGMENT_SHADER_SOURCE);
+  LineStripVertex := GetVertexShader(LINE_STRIP_VERTEX_SHADER_SOURCE);
+  LineStripFragment := GetFragmentShader(LINE_STRIP_FRAGMENT_SHADER_SOURCE);
+end;
+
+constructor TRenderer_OpenGL2.Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
+begin
+  inherited Create(glcontext, MajorVersion, MinorVersion);
+end;
+
+procedure TRenderer_OpenGL2.CheckVersion();
+var
+  Extensions: string;
+begin
+  if (MajorVersion < 2) then
+    raise Exception.Create('Could not initialize OpenGL 2.0 or later');
+  Log.LogInfo('Using OpenGL 2.0 renderer', 'TRenderer_OpenGL2.CheckVersion');
+  if (MajorVersion >= 3) then
+    SupportsVAO := true
+  else
+  begin
+    Extensions := Int_GetExtensionString;
+    GL_ARB_vertex_array_object := Int_CheckExtension(Extensions, 'GL_ARB_vertex_array_object');
+    if (GL_ARB_vertex_array_object) then
+      SupportsVAO := true;
+  end;
+
+end;
+
+procedure TRenderer_OpenGL2.GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string);
+  function GetVertexShader(const ShaderSource: string): string;
+  begin
+    Result := GLSL_LEGACY_HEADER + ShaderSource;
+    Result := StringReplace(ShaderSource, '[VTX_IN]', 'attribute', [rfReplaceAll]);
+    Result := StringReplace(Result, '[VTX_OUT]', 'varying', [rfReplaceAll]);
+  end;
+  function GetFragmentShader(const ShaderSource: string): string;
+  begin
+    Result := GLSL_LEGACY_HEADER + ShaderSource;
+    Result := StringReplace(Result, '[FRAG_IN]', 'varying', [rfReplaceAll]);
+    Result := StringReplace(Result, '[FRAG_OUT_DECL]', '', [rfReplaceAll]);
+    Result := StringReplace(Result, '[FRAG_OUT]', 'gl_FragColor', [rfReplaceAll]);
+    Result := StringReplace(Result, '[TEXTURE_FUNC]', 'texture2D', [rfReplaceAll]);
+  end;
+
+begin
+  MainVertex := GetVertexShader(MAIN_VERTEX_SHADER_SOURCE);
+  MainFragment := GetFragmentShader(MAIN_FRAGMENT_SHADER_SOURCE);
+  TextFragment := GetFragmentShader(TEXT_FRAGMENT_SHADER_SOURCE);
+  LineStripVertex := GetVertexShader(LINE_STRIP_VERTEX_SHADER_SOURCE);
+  LineStripFragment := GetFragmentShader(LINE_STRIP_FRAGMENT_SHADER_SOURCE);
+end;
 
 end.

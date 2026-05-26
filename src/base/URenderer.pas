@@ -35,6 +35,11 @@ uses
   UPath;
 
 const
+  {$IF Defined(UNIX) and (not Defined(DARWIN)) and (Defined(CPUARM) or Defined(CPUAARCH64))}
+  DEFAULT_RENDERRER = 'gles';
+  {$ELSE}
+  DEFAULT_RENDERRER = 'gl';
+  {$ENDIF}
   REFLECTION_HEIGHT = 0.5;
   REFLECTION_ALPHA_DIFF = 0.3;
 
@@ -195,7 +200,6 @@ type
     private
       Texture: array of TTextureEntry;
     public
-      procedure AddTexture(var Tex: TTexture; Typ: TTextureType; Color: cardinal);
       function FindTexture(const Name: IPath; Typ: TTextureType; Color: cardinal): integer;
   end;
 
@@ -239,8 +243,6 @@ type
       procedure SetClipText(Enabled: boolean); virtual; abstract;
 
       // Texture loading functions
-      procedure AddTexture(Tex: TTexture; Typ: TTextureType); overload;
-      procedure AddTexture(Tex: TTexture; Typ: TTextureType; Color: cardinal); overload;
       function GetTexture(const Name: IPath; Typ: TTextureType): TTexture; overload;
       function GetTexture(const Name: IPath; Typ: TTextureType; Col: LongWord): TTexture; overload;
       function LoadTexture(const Identifier: IPath; Typ: TTextureType; Col: LongWord): TTexture; overload;
@@ -275,6 +277,8 @@ implementation
 uses
   math,
   sysutils,
+  StrUtils,
+  UCommandLine,
   UGraphic,
   UImage,
   ULog,
@@ -360,16 +364,6 @@ destructor TRenderer.Destroy();
 begin
   TextureDatabase.Free;
   inherited;
-end;
-
-procedure TRenderer.AddTexture(Tex: TTexture; Typ: TTextureType);
-begin
-  TextureDatabase.AddTexture(Tex, Typ, 0);
-end;
-
-procedure TRenderer.AddTexture(Tex: TTexture; Typ: TTextureType; Color: cardinal);
-begin
-  TextureDatabase.AddTexture(Tex, Typ, Color);
 end;
 
 function TRenderer.LoadTexture(const Identifier: IPath): TTexture;
@@ -617,38 +611,53 @@ begin
 end;
 
 procedure PreInitRenderer();
+var
+  ValidRenderers: array of string;
 begin
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  {$IFDEF DARWIN}
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  {$ELSE}
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-  {$ENDIF}
-
+  ValidRenderers := ['gl', 'gles' {$IFDEF DEBUG_MODE},'gl2'{$ENDIF}];
+  if Params.Renderer.IsEmpty() then
+    Params.Renderer := DEFAULT_RENDERRER
+  else if (IndexStr(Params.Renderer, ValidRenderers) = -1) then
+  begin
+    Log.LogError('Requested renderer  unavailable, defaulting to ' + DEFAULT_RENDERRER);
+    Params.Renderer := DEFAULT_RENDERRER;
+  end;
+  if (Params.Renderer = 'gles') then
+  begin
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+  end
+  else if (Params.Renderer = 'gl') then
+  begin
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    {$IFDEF DARWIN}
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    {$ELSE}
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    {$ENDIF}
+  end;
 end;
 
 procedure InitRenderer();
-begin
-  Renderer := TRenderer_OpenGL.Create();
-end;
-
-procedure TTextureDatabase.AddTexture(var Tex: TTexture; Typ: TTextureType; Color: cardinal);
 var
-  TextureIndex: integer;
+  Profile: integer;
+  MajorVersion: integer;
+  MinorVersion: integer;
+  glcontext: TSDL_GLContext;
 begin
-  TextureIndex := FindTexture(Tex.Name, Typ, Color);
-  if (TextureIndex = -1) then
-  begin
-    TextureIndex := Length(Texture);
-    SetLength(Texture, TextureIndex+1);
-
-    Texture[TextureIndex].Name  := Tex.Name;
-    Texture[TextureIndex].Typ   := Typ;
-    Texture[TextureIndex].Color := Color;
-  end;
-  Texture[TextureIndex].Texture := Tex;
+  glcontext := SDL_GL_CreateContext(Screen);
+  SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, @MajorVersion);
+  SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, @MinorVersion);
+  SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, @Profile);
+  if (Profile = SDL_GL_CONTEXT_PROFILE_ES) then
+    Renderer := TRenderer_OpenGLES.Create(glcontext, MajorVersion, MinorVersion)
+  else if (MajorVersion >= 3) then
+    Renderer := TRenderer_OpenGL3.Create(glcontext, MajorVersion, MinorVersion)
+  else
+    Renderer := TRenderer_OpenGL2.Create(glcontext, MajorVersion, MinorVersion);
 end;
 
 function TTextureDatabase.FindTexture(const Name: IPath; Typ: TTextureType; Color: cardinal): integer;
@@ -718,6 +727,5 @@ begin
     SDL_FreeSurface(TempSurface);
   end;
 end;
-
 
 end.
