@@ -391,7 +391,7 @@ type
       procedure DivideBPM;
       procedure MultiplyBPM;
       procedure LyricsCapitalize;
-      procedure LyricsCorrectSpaces;
+      procedure LyricsCorrectSpaces(TrackFilter: Integer = -1; LineFilter: Integer = -1);
       procedure FixTimings;
       procedure DivideSentence;
       procedure JoinSentence;
@@ -415,6 +415,7 @@ type
       function  DuetMoveLine: boolean;
       procedure CopyLine(SrcTrack, SrcLine, DstTrack, DstLine: Integer);
       function  CheckTimingSyntaxErrors(out ErrorMessages: UTF8String): boolean;
+      function  SaveSongToFile(const SaveRelative: boolean): boolean;
       procedure Refresh;
       procedure CopyToUndo; //copy current lines, mouse position and headers
       procedure CopyFromUndo; //undo last lines, mouse position and headers
@@ -632,7 +633,6 @@ end;
       // SDLK_S: HandleSaveSong
 procedure TScreenEditSub.HandleSaveSong(SDL_ModState: word);
 var
-  SResult: TSaveSongResult;
   TimingErrors: UTF8String;
 begin
   // run timing checks before saving and abort on serious problems
@@ -643,70 +643,7 @@ begin
     Exit;
   end;
 
-  // handle medley tags first
-  if CurrentSong.isDuet then
-  begin
-    CurrentSong.Medley.Source := msNone;
-  end
-  else if (MedleyNotes.isStart and MedleyNotes.isEnd and MedleyNotes.isCustom) and
-          (MedleyNotes.start.line < MedleyNotes.end_.line) and
-          (Length(CurrentSong.Tracks[CurrentTrack].Lines)> MedleyNotes.end_.line) and
-          (Length(CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes) > MedleyNotes.end_.note) and
-          (Length(CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes) > MedleyNotes.start.note) then
-  begin
-    CurrentSong.Medley.Source := msTag;
-    CurrentSong.Medley.StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes[MedleyNotes.start.note].StartBeat;
-    CurrentSong.Medley.EndBeat := CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].StartBeat +
-      CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].Duration;
-    CurrentSong.Medley.FadeIn_time := DEFAULT_FADE_IN_TIME;
-    CurrentSong.Medley.FadeOut_time := DEFAULT_FADE_OUT_TIME;
-  end
-  else if MedleyNotes.isCustom then
-  begin
-    CurrentSong.Medley.Source := msNone;
-    CurrentSong.Medley.StartBeat := 0;
-    CurrentSong.Medley.EndBeat := 0;
-  end;
-
-  // Save Song (SHIFT = relative)
-  if SDL_ModState = KMOD_LSHIFT then
-  begin
-    if (CurrentSong.isDuet) then
-    begin
-      ScreenPopupError.ShowPopup(Language.Translate('EDIT_INFO_DUET_RELATIVE_UNSUPPORTED'));
-      Exit;
-    end;
-
-    if (CurrentSong.Medley.Source = msTag) then
-    begin
-      ScreenPopupError.ShowPopup(Language.Translate('EDIT_INFO_MEDLEY_RELATIVE_UNSUPPORTED') + ' ' + Language.Translate('EDIT_INFO_MEDLEY_DELETED'));
-    end;
-
-    CurrentSong.Medley.Source := msNone;
-    CurrentSong.Relative := true;
-    SResult := SaveSong(CurrentSong, CurrentSong.Tracks, CurrentSong.Path.Append(CurrentSong.FileName), CurrentSong.Relative); //save with relative timings
-  end else
-  begin
-    CurrentSong.Relative := false;
-    SResult := SaveSong(CurrentSong, CurrentSong.Tracks, CurrentSong.Path.Append(CurrentSong.FileName), CurrentSong.Relative); // save with absolute timings
-  end;
-
-  if (SResult = ssrOK) then // saving was successful
-  begin
-    Text[TextInfo].Text := Language.Translate('INFO_FILE_SAVED');
-    SetLength(UndoLines, 0, High(CurrentSong.Tracks)); //clear undo lines
-    SetLength(UndoStateNote, 0, Length(CurrentSong.Tracks)); //clear undo CurrentNote[CurrentTrack] state
-    SetLength(Undoheader, 0); //clear undo headers
-    CurrentUndoLines := 0;
-    //if not CheckSong then
-    //  ScreenPopupError.ShowPopup(Language.Translate(''));
-
-    //CatSongs.Song[SongIndex] := CurrentSong;
-  end
-  else // saving was unsuccessful
-  begin
-    ScreenPopupError.ShowPopup(Language.Translate('ERROR_SAVE_FILE_FAILED'));
-  end;
+  SaveSongToFile(SDL_ModState = KMOD_LSHIFT);
 end;
 
 
@@ -1206,10 +1143,14 @@ begin
     end;
     if (SDL_ModState = KMOD_LALT) then
     begin
+      {$IFDEF UseMIDIPort}
       PlaySentenceMidi := true;
-      {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
+      MidiTime  := USTime.GetTime;
       MidiStart := AudioPlayback.Position;
-      MidiStop  := PlayStopTime; {$ENDIF}
+      MidiStop  := PlayStopTime;
+      {$ELSE}
+      PlaySentenceMidi := false;
+      {$ENDIF}
     end;
     PlaySentence := true;
     AudioPlayback.Play;
@@ -1994,7 +1935,11 @@ begin
     begin
       CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
       CurrentNote[CurrentTrack] := 0;
+      {$IFDEF UseMIDIPort}
       PlaySentenceMidi := true;
+      {$ELSE}
+      PlaySentenceMidi := false;
+      {$ENDIF}
       PlayVideo := false;
       StopVideoPreview;
       {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
@@ -2016,7 +1961,11 @@ begin
     begin
       CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
       CurrentNote[CurrentTrack] := 0;
+      {$IFDEF UseMIDIPort}
       PlaySentenceMidi := true;
+      {$ELSE}
+      PlaySentenceMidi := false;
+      {$ENDIF}
       PlayVideo := false;
       StopVideoPreview;
       {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
@@ -2048,7 +1997,7 @@ begin
     begin
       if Interaction = InteractiveNoteId[NoteIndex] then
       begin
-        if (SDL_GetTicks() - LastClickTime < 250) and (SDL_ModState = 0) then
+        if (SDL_GetTicks() - LastClickTime < 350) and (SDL_ModState = 0) then
         begin
             CopyToUndo;
             GoldenRec.KillAll;
@@ -3341,7 +3290,7 @@ begin
   end; // TrackIndex
 end;
 
-procedure TScreenEditSub.LyricsCorrectSpaces;
+procedure TScreenEditSub.LyricsCorrectSpaces(TrackFilter: Integer; LineFilter: Integer);
 var
   TrackIndex:   Integer;
   LineIndex:    Integer;
@@ -3349,8 +3298,19 @@ var
 begin
   for TrackIndex := 0 to High(CurrentSong.Tracks) do
   begin
+    if (TrackFilter >= 0) and (TrackIndex <> TrackFilter) then
+      Continue;
+
     for LineIndex := 0 to CurrentSong.Tracks[TrackIndex].High do
     begin
+      if (LineFilter >= 0) and (LineIndex <> LineFilter) then
+        Continue;
+
+      if (Length(CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes) = 0) then
+        Continue;
+
+      CurrentSong.Tracks[TrackIndex].Lines[LineIndex].HighNote := High(CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes);
+
       // correct starting spaces in the first word
       while Copy(CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[0].Text, 1, 1) = ' ' do
         CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[0].Text := Copy(CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[0].Text, 2, 100);
@@ -3534,6 +3494,8 @@ begin
   //cleanup of first note of new sentence: trim leading white space and capitalize
   CurrentSong.Tracks[CurrentTrack].Lines[LineNew].Notes[0].Text := TrimLeft(CurrentSong.Tracks[CurrentTrack].Lines[LineNew].Notes[0].Text);
   CurrentSong.Tracks[CurrentTrack].Lines[LineNew].Notes[0].Text := UTF8UpperCase(UTF8Copy(CurrentSong.Tracks[CurrentTrack].Lines[LineNew].Notes[0].Text, 1, 1)) + UTF8Copy(CurrentSong.Tracks[CurrentTrack].Lines[LineNew].Notes[0].Text, 2, Length(CurrentSong.Tracks[CurrentTrack].Lines[LineNew].Notes[0].Text) - 1);
+  LyricsCorrectSpaces(CurrentTrack, LineStart);
+  LyricsCorrectSpaces(CurrentTrack, LineNew);
 
   CurrentSong.Tracks[CurrentTrack].CurrentLine := CurrentSong.Tracks[CurrentTrack].CurrentLine + 1;
   CurrentNote[CurrentTrack] := 0;
@@ -3615,6 +3577,7 @@ begin
   SetLength(CurrentSong.Tracks[CurrentTrack].Lines, Length(CurrentSong.Tracks[CurrentTrack].Lines) - 1);
   Dec(CurrentSong.Tracks[CurrentTrack].Number);
   Dec(CurrentSong.Tracks[CurrentTrack].High);
+  LyricsCorrectSpaces(CurrentTrack, CurrentSong.Tracks[CurrentTrack].CurrentLine);
 
   // adjust medley tags
   if (MedleyNotes.isStart) then
@@ -3694,16 +3657,126 @@ var
   NoteIndex:     Integer;
   CutPosition:   Integer;
   SpacePosition: Integer;
+  FirstSpacePos: Integer;
+  LeftWordCount: Integer;
+  TotalWordCount: Integer;
   TempR:         real;
-  TempStr:       UCS4String;
+  NoteDuration:  Integer;
+  SourceText:    UTF8String;
+  SourceTextLen: Integer;
+  SourceNoteText: UTF8String;
+  ShouldInsertContinuation: Boolean;
+  LeftPart:      UTF8String;
+  RightPart:     UTF8String;
+
+  function CountWords(const S: UTF8String): Integer;
+  var
+    i: Integer;
+    InWord: Boolean;
+  begin
+    Result := 0;
+    InWord := false;
+    for i := 1 to Length(S) do
+    begin
+      if S[i] <> ' ' then
+      begin
+        if not InWord then
+        begin
+          Inc(Result);
+          InWord := true;
+        end;
+      end
+      else
+        InWord := false;
+    end;
+  end;
+
+  function IsVowel(const Ch: UTF8String): Boolean;
+  begin
+    Result :=
+      (Ch = 'a') or (Ch = 'e') or (Ch = 'i') or (Ch = 'o') or (Ch = 'u') or (Ch = 'y') or
+      (Ch = 'A') or (Ch = 'E') or (Ch = 'I') or (Ch = 'O') or (Ch = 'U') or (Ch = 'Y');
+  end;
+
+  function HasVowel(const S: UTF8String): Boolean;
+  var
+    Chars: UCS4String;
+    i: Integer;
+  begin
+    Result := false;
+    if S = '' then
+      Exit;
+
+    Chars := UTF8ToUCS4String(S);
+    for i := 0 to High(Chars) do
+    begin
+      if IsVowel(UCS4ToUTF8String(Chars[i])) then
+      begin
+        Result := true;
+        Exit;
+      end;
+    end;
+  end;
+
+  function FindFirstSplitSpacePos(const S: UTF8String): Integer;
+  var
+    Chars: UCS4String;
+    i, j: Integer;
+  begin
+    Result := -1;
+    if S = '' then
+      Exit;
+
+    Chars := UTF8ToUCS4String(S);
+    for i := 0 to High(Chars) do
+    begin
+      if (UCS4ToUTF8String(Chars[i]) = ' ') and
+         (i > 0) and
+         (UCS4ToUTF8String(Chars[i - 1]) <> ' ') then
+      begin
+        for j := i + 1 to High(Chars) do
+        begin
+          if UCS4ToUTF8String(Chars[j]) <> ' ' then
+          begin
+            Result := i;
+            Exit;
+          end;
+        end;
+      end;
+    end;
+  end;
 begin
   LineIndex := CurrentSong.Tracks[CurrentTrack].CurrentLine;
+  NoteDuration := CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentNote[CurrentTrack]].Duration;
+  if NoteDuration <= 1 then
+    Exit;
+
   TempR := 720 / (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat - CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
 
-  if (doubleclick) and (InteractAt(currentX, CurrentY) > 0) then
-      CutPosition := Round((currentX - button[Interactions[InteractAt(currentX, CurrentY)].Num].X) / TempR)
+  if (doubleclick) and
+     (CurrentNote[CurrentTrack] >= 0) and
+     (CurrentNote[CurrentTrack] <= High(TransparentNoteButtonId)) then
+      CutPosition := Round((CurrentX - Button[TransparentNoteButtonId[CurrentNote[CurrentTrack]]].X) / TempR)
   else
-      CutPosition := 1;
+      CutPosition := NoteDuration div 2;
+
+  if CutPosition < 1 then
+    CutPosition := 1;
+  if CutPosition >= NoteDuration then
+    CutPosition := NoteDuration - 1;
+
+  if (not doubleclick) and (TextPosition < 0) then
+  begin
+    SourceNoteText := CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentNote[CurrentTrack]].Text;
+    FirstSpacePos := FindFirstSplitSpacePos(SourceNoteText);
+    if (FirstSpacePos >= 0) then
+    begin
+      LeftWordCount := CountWords(UTF8Copy(SourceNoteText, 1, FirstSpacePos));
+      TotalWordCount := CountWords(SourceNoteText);
+      if (LeftWordCount > 0) and (TotalWordCount > LeftWordCount) then
+        CutPosition := EnsureRange(Round(NoteDuration * LeftWordCount / TotalWordCount), 1, NoteDuration - 1);
+    end;
+  end;
 
   with CurrentSong.Tracks[CurrentTrack].Lines[LineIndex] do
   begin
@@ -3718,35 +3791,57 @@ begin
 
     // Notes[CurrentNote[CurrentTrack]] and Notes[CurrentNote[CurrentTrack] + 1] is identical at this point
     // modify first note
-    if (doubleclick) then
-      Notes[CurrentNote[CurrentTrack]].Duration := CutPosition
-    else
-      Notes[CurrentNote[CurrentTrack]].Duration := Round(Notes[CurrentNote[CurrentTrack]].Duration / 2);
+    Notes[CurrentNote[CurrentTrack]].Duration := CutPosition;
 
     // 2nd note
     Notes[CurrentNote[CurrentTrack]+1].StartBeat := Notes[CurrentNote[CurrentTrack]].StartBeat + Notes[CurrentNote[CurrentTrack]].Duration;
     Notes[CurrentNote[CurrentTrack]+1].Duration := Notes[CurrentNote[CurrentTrack]+1].Duration - Notes[CurrentNote[CurrentTrack]].Duration;
 
-    // find space in text
-    SpacePosition := -1;
-    for  NoteIndex := 0 to LengthUTF8(Notes[CurrentNote[CurrentTrack]].Text) do
+    SpacePosition := FindFirstSplitSpacePos(Notes[CurrentNote[CurrentTrack]].Text);
+    if (TextPosition < 0) and (SpacePosition >= 0) then
     begin
-
-      TempStr := UTF8ToUCS4String(Notes[CurrentNote[CurrentTrack]].Text);
-      if ((UCS4ToUTF8String(TempStr[NoteIndex]) = ' ') and (SpacePosition < 0)) then
-        SpacePosition := NoteIndex;
-
-    end;
-    if ((TextPosition < 0) and (ansipos(' ', Notes[CurrentNote[CurrentTrack]].Text) > 1) and (ansipos(' ', Notes[CurrentNote[CurrentTrack]].Text) < Length(Notes[CurrentNote[CurrentTrack]].Text)  )) then
-    begin
-      Notes[CurrentNote[CurrentTrack]+1].Text := UTF8Copy(Notes[CurrentNote[CurrentTrack]].Text, SpacePosition + 2, LengthUTF8(Notes[CurrentNote[CurrentTrack]].Text));
-      Notes[CurrentNote[CurrentTrack]].Text := UTF8Copy(Notes[CurrentNote[CurrentTrack]].Text, 1, SpacePosition + 1)
+      LeftPart := UTF8Copy(Notes[CurrentNote[CurrentTrack]].Text, 1, SpacePosition);
+      RightPart := ' ' + UTF8Copy(Notes[CurrentNote[CurrentTrack]].Text, SpacePosition + 2, LengthUTF8(Notes[CurrentNote[CurrentTrack]].Text));
+      ShouldInsertContinuation := not (HasVowel(LeftPart) and HasVowel(RightPart));
+      Notes[CurrentNote[CurrentTrack]].Text := LeftPart;
+      if ShouldInsertContinuation then
+        Notes[CurrentNote[CurrentTrack]+1].Text := '~' + RightPart
+      else
+        Notes[CurrentNote[CurrentTrack]+1].Text := RightPart;
     end
     else
-    if ((TextPosition >= 0) and (TextPosition < Length(Notes[CurrentNote[CurrentTrack]].Text))) then
+    if (TextPosition >= 0) and (TextPosition <= LengthUTF8(Notes[CurrentNote[CurrentTrack]].Text)) then
     begin
-      Notes[CurrentNote[CurrentTrack]+1].Text := UTF8Copy(SelectsS[LyricSlideId].TextOpt[0].Text, TextPosition + 2, LengthUTF8(SelectsS[LyricSlideId].TextOpt[0].Text));
-      Notes[CurrentNote[CurrentTrack]].Text := UTF8Copy(SelectsS[LyricSlideId].TextOpt[0].Text, 1, TextPosition);
+      SourceText := SelectsS[LyricSlideId].TextOpt[0].Text;
+      SourceTextLen := LengthUTF8(SourceText);
+      Notes[CurrentNote[CurrentTrack]+1].Text := UTF8Copy(SourceText, TextPosition + 2, SourceTextLen);
+      Notes[CurrentNote[CurrentTrack]].Text := UTF8Copy(SourceText, 1, TextPosition);
+      ShouldInsertContinuation := not (HasVowel(Notes[CurrentNote[CurrentTrack]].Text) and HasVowel(Notes[CurrentNote[CurrentTrack]+1].Text));
+
+      if (TextPosition < SourceTextLen) and
+         (UTF8Copy(SourceText, TextPosition + 1, 1) = ' ') then
+      begin
+        if ShouldInsertContinuation then
+          Notes[CurrentNote[CurrentTrack]+1].Text := '~ ' + Notes[CurrentNote[CurrentTrack]+1].Text
+        else
+          Notes[CurrentNote[CurrentTrack]+1].Text := ' ' + Notes[CurrentNote[CurrentTrack]+1].Text;
+      end
+      else if (TextPosition > 0) and
+              (UTF8Copy(SourceText, TextPosition, 1) = ' ') then
+      begin
+        if (LengthUTF8(Notes[CurrentNote[CurrentTrack]].Text) > 0) then
+          UTF8Delete(Notes[CurrentNote[CurrentTrack]].Text, LengthUTF8(Notes[CurrentNote[CurrentTrack]].Text), 1);
+        if ShouldInsertContinuation then
+          Notes[CurrentNote[CurrentTrack]+1].Text := '~ ' + UTF8Copy(SourceText, TextPosition + 1, SourceTextLen)
+        else
+          Notes[CurrentNote[CurrentTrack]+1].Text := ' ' + UTF8Copy(SourceText, TextPosition + 1, SourceTextLen);
+      end
+      else
+      begin
+        if ShouldInsertContinuation then
+          Notes[CurrentNote[CurrentTrack]+1].Text := '~' + Notes[CurrentNote[CurrentTrack]+1].Text;
+      end;
+
       SelectsS[LyricSlideId].TextOpt[0].Text := Notes[CurrentNote[CurrentTrack]].Text;
       TextPosition := -1;
     end
@@ -4314,7 +4409,6 @@ var
 
 begin
   FixTimings;
-  LyricsCorrectSpaces;
 
   if not (CurrentSong.isDuet) then
   begin
@@ -4972,6 +5066,66 @@ begin
     ErrorMessages := '';
     Result := false;
   end;
+end;
+
+function TScreenEditSub.SaveSongToFile(const SaveRelative: boolean): boolean;
+var
+  SResult: TSaveSongResult;
+begin
+  if CurrentSong.isDuet then
+  begin
+    CurrentSong.Medley.Source := msNone;
+  end
+  else if (MedleyNotes.isStart and MedleyNotes.isEnd and MedleyNotes.isCustom) and
+          (MedleyNotes.start.line < MedleyNotes.end_.line) and
+          (Length(CurrentSong.Tracks[CurrentTrack].Lines) > MedleyNotes.end_.line) and
+          (Length(CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes) > MedleyNotes.end_.note) and
+          (Length(CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes) > MedleyNotes.start.note) then
+  begin
+    CurrentSong.Medley.Source := msTag;
+    CurrentSong.Medley.StartBeat := CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.start.line].Notes[MedleyNotes.start.note].StartBeat;
+    CurrentSong.Medley.EndBeat := CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].StartBeat +
+      CurrentSong.Tracks[CurrentTrack].Lines[MedleyNotes.end_.line].Notes[MedleyNotes.end_.note].Duration;
+    CurrentSong.Medley.FadeIn_time := DEFAULT_FADE_IN_TIME;
+    CurrentSong.Medley.FadeOut_time := DEFAULT_FADE_OUT_TIME;
+  end
+  else if MedleyNotes.isCustom then
+  begin
+    CurrentSong.Medley.Source := msNone;
+    CurrentSong.Medley.StartBeat := 0;
+    CurrentSong.Medley.EndBeat := 0;
+  end;
+
+  if SaveRelative then
+  begin
+    if CurrentSong.isDuet then
+    begin
+      ScreenPopupError.ShowPopup(Language.Translate('EDIT_INFO_DUET_RELATIVE_UNSUPPORTED'));
+      Exit(false);
+    end;
+
+    if CurrentSong.Medley.Source = msTag then
+      ScreenPopupError.ShowPopup(Language.Translate('EDIT_INFO_MEDLEY_RELATIVE_UNSUPPORTED') + ' ' + Language.Translate('EDIT_INFO_MEDLEY_DELETED'));
+
+    CurrentSong.Medley.Source := msNone;
+    CurrentSong.Relative := true;
+  end
+  else
+    CurrentSong.Relative := false;
+
+  SResult := SaveSong(CurrentSong, CurrentSong.Tracks, CurrentSong.Path.Append(CurrentSong.FileName), CurrentSong.Relative);
+  Result := (SResult = ssrOK);
+
+  if Result then
+  begin
+    Text[TextInfo].Text := Language.Translate('INFO_FILE_SAVED');
+    SetLength(UndoLines, 0, High(CurrentSong.Tracks));
+    SetLength(UndoStateNote, 0, Length(CurrentSong.Tracks));
+    SetLength(Undoheader, 0);
+    CurrentUndoLines := 0;
+  end;
+  if not Result then
+    ScreenPopupError.ShowPopup(Language.Translate('ERROR_SAVE_FILE_FAILED'));
 end;
 
 constructor TScreenEditSub.Create;

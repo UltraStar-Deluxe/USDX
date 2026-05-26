@@ -201,7 +201,7 @@ begin
       Result := S;
 end;
 
-procedure TSkin.GetSkinsByTheme(Theme: string; out Skins: TUTF8StringDynArray);
+procedure TSkin.GetSkinsByTheme(Theme: string; out Skins: UCommon.TUTF8StringDynArray);
   var
     I: Integer;
     Len: integer;
