@@ -61,7 +61,6 @@ uses
   UMediaCore_FFmpeg,
   UCommon,
   UConfig,
-  UIni,
   ULog,
   UMusic,
   UGraphicClasses,
@@ -236,8 +235,6 @@ type
 var
   FFmpegCore: TMediaCore_FFmpeg;
   SupportsNPOT: Boolean;
-  PreferredCodecs: array of PAVCodec;
-  PreferredCodecsParsed: boolean = false;
 
 function IsSupportedScalingInput(Fmt: TAVPixelFormat): boolean;
 begin
@@ -255,117 +252,6 @@ begin
     Inc(Formats);
   end;
   Result := Formats^;
-end;
-
-function IsCodecUsable(Codec: PAVCodec): boolean;
-var
-  Fmt: PAVPixelFormat;
-begin
-  Result := true;
-  if Codec^.type_ <> AVMEDIA_TYPE_VIDEO then
-    Result := false;
-
-  if Result and (
-     av_codec_is_decoder(Codec) = 0
-     ) then
-    Result := false;
-
-  if Result then
-  begin
-    {$IF LIBAVCODEC_VERSION_MAJOR >= 62}
-    if (avcodec_get_supported_config(nil, codec, AV_CODEC_CONFIG_PIX_FORMAT, 0, @Fmt, nil) = 0) and (Fmt <> nil) then
-    {$ELSE}
-    Fmt := Codec^.pix_fmts;
-    if (Fmt <> nil) then
-    {$ENDIF}
-    begin
-      Result := false;
-      // -1 is the value of AV_PIX_FMT_NONE, which terminates the pixel format list
-      while ord(Fmt^) <> -1 do
-      begin
-        if IsSupportedScalingInput(Fmt^) then
-        begin
-          Result := true;
-          break;
-        end;
-        Inc(Fmt);
-      end;
-    end;
-  end;
-end;
-
-procedure ParsePreferredCodecs();
-var
-  I: integer;
-  J: integer;
-  NumCodecs: integer;
-  ListCodecs: boolean;
-  CodecName: ansistring;
-  FormatDesc: PAVCodecDescriptor;
-  FormatName: PAnsiChar;
-  Codec: PAVCodec;
-  Codec2: PAVCodec;
-  CodecIterator: pointer;
-
-const
-  CodecDelims = [' ', ','];
-begin
-  ListCodecs := false;
-  NumCodecs := WordCount(Ini.PreferredCodecNames, CodecDelims);
-  SetLength(PreferredCodecs, NumCodecs);
-  J := 0;
-  for I := 1 to NumCodecs do
-  begin
-    CodecName := ExtractWord(I, Ini.PreferredCodecNames, CodecDelims);
-    Codec := avcodec_find_decoder_by_name(PAnsiChar(CodecName));
-    if Codec = nil then
-    begin
-      Log.LogError('Unknown preferred codec ' + CodecName, 'TVideo_FFmpeg');
-      ListCodecs := true;
-    end
-    else if not IsCodecUsable(Codec) then
-    begin
-      Log.LogError('Can''t use ' + CodecName, 'TVideo_FFmpeg');
-    end
-    else
-    begin
-      PreferredCodecs[J] := Codec;
-      Inc(J);
-    end
-  end;
-  SetLength(PreferredCodecs, J);
-
-  if ListCodecs then
-  begin
-    Log.LogInfo('Valid non-default codecs are:', 'TVideo_FFmpeg');
-    CodecIterator := nil;
-    Codec := av_codec_iterate(@CodecIterator);
-
-    while Codec <> nil do
-    begin
-      if IsCodecUsable(Codec) then
-      begin
-        Codec2 := avcodec_find_decoder(Codec^.id);
-        if strcomp(Codec2^.name, Codec^.name) <> 0 then
-        begin
-            FormatName := nil;
-            FormatDesc := avcodec_descriptor_get(Codec^.id);
-            if FormatDesc <> nil then
-            begin
-              FormatName := FormatDesc^.long_name;
-              if FormatName = nil then
-                FormatName := FormatDesc^.name;
-            end;
-            if FormatName <> nil then
-              Log.LogInfo('    ' + Codec^.name, FormatName)
-            else
-              Log.LogInfo('    ' + Codec^.name, 'ID ' + inttostr(ord(Codec^.id)));
-        end;
-      end;
-      Codec := av_codec_iterate(@CodecIterator);
-    end;
-  end;
-  PreferredCodecsParsed := true;
 end;
 
 
@@ -429,7 +315,6 @@ var
   glErr: GLenum;
   AudioStreamIndex: integer;
   r_frame_rate: cdouble;
-  PossibleCodecs: array of PAVCodec;
   CodecID: TAVCodecID;
 
   function ReduceSize: boolean;
@@ -458,11 +343,6 @@ var
 begin
   Result := false;
   Reset();
-
-  FFmpegCore.LockAVCodec();
-  if not PreferredCodecsParsed then
-    ParsePreferredCodecs;
-  FFmpegCore.UnlockAVCodec();
 
   fPboEnabled := PboSupported;
 
@@ -505,55 +385,45 @@ begin
   if (LeftStr(fFormatContext^.iformat^.name, 4) = 'mov,') or (fFormatContext^.iformat^.name = 'mov') then
     fPreferDTS := true;
 
-  SetLength(PossibleCodecs, 1);
-  for fCodec in PreferredCodecs do
-    if fCodec^.id = CodecID then
-    begin
-      PossibleCodecs[High(PossibleCodecs)] := fCodec;
-      SetLength(PossibleCodecs, Length(PossibleCodecs) + 1);
-    end;
-  PossibleCodecs[High(PossibleCodecs)] := avcodec_find_decoder(CodecID);
-
   errnum := -1;
-  for fCodec in PossibleCodecs do
+  fCodec := avcodec_find_decoder(CodecID);
+  if fCodec <> nil then
   begin
-    if fCodec = nil then
-      continue;
-
     fCodecContext := FFmpegCore.GetCodecContext(fStream, fCodec);
-    if fCodecContext = nil then
-      continue;
+    if fCodecContext <> nil then
+    begin
+      fCodecContext^.get_format := @SelectFormat;
 
-    fCodecContext^.get_format := @SelectFormat;
+      // set debug options
+      fCodecContext^.debug := 0;
 
-    // set debug options
-    fCodecContext^.debug := 0;
+      // detect bug-workarounds automatically
+      fCodecContext^.workaround_bugs := FF_BUG_AUTODETECT;
+      // error resilience strategy (careful/compliant/agressive/very_aggressive)
+      //fCodecContext^.error_resilience := FF_ER_CAREFUL; //FF_ER_COMPLIANT;
+      // allow non spec compliant speedup tricks.
 
-    // detect bug-workarounds automatically
-    fCodecContext^.workaround_bugs := FF_BUG_AUTODETECT;
-    // error resilience strategy (careful/compliant/agressive/very_aggressive)
-    //fCodecContext^.error_resilience := FF_ER_CAREFUL; //FF_ER_COMPLIANT;
-    // allow non spec compliant speedup tricks.
+      //fCodecContext^.flags2 := CODEC_FLAG2_FAST;
 
-    //fCodecContext^.flags2 := CODEC_FLAG2_FAST;
-
-    // Note: avcodec_open() and avcodec_close() are not thread-safe and will
-    // fail if called concurrently by different threads.
-    FFmpegCore.LockAVCodec();
-    try
+      // Note: avcodec_open() and avcodec_close() are not thread-safe and will
+      // fail if called concurrently by different threads.
+      FFmpegCore.LockAVCodec();
+      try
         // by setting this explicitly to 0, it won't default to a single thread
         fCodecContext^.thread_count := 0;
 
         errnum := avcodec_open2(fCodecContext, fCodec, nil);
-    finally
-      FFmpegCore.UnlockAVCodec();
+      finally
+        FFmpegCore.UnlockAVCodec();
+      end;
+      if errnum < 0 then
+      begin
+        Log.LogError('Error ' + IntToStr(errnum) + ' returned by ' + fCodec^.name, 'TVideoPlayback_ffmpeg.Open');
+        {$IF LIBAVFORMAT_VERSION >= 59000000}
+        avcodec_free_context(@fCodecContext);
+        {$ENDIF}
+      end;
     end;
-    if errnum >= 0 then
-      Break;
-    Log.LogError('Error ' + IntToStr(errnum) + ' returned by ' + fCodec^.name, 'TVideoPlayback_ffmpeg.Open');
-    {$IF LIBAVFORMAT_VERSION >= 59000000}
-    avcodec_free_context(@fCodecContext);
-    {$ENDIF}
   end;
   if (errnum < 0) then
   begin

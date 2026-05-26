@@ -172,7 +172,6 @@ type
       MovieSize:      integer;
       VideoPreview:   integer;
       VideoEnabled:   integer;
-      PreferredCodecNames: string;
 
       // Sound
       MicBoost:       integer;
@@ -1614,8 +1613,6 @@ begin
 
   // VideoEnabled
   VideoEnabled := ReadArrayIndex(IVideoEnabled, IniFile, 'Graphics', 'VideoEnabled', 1);
-
-  PreferredCodecNames := IniFile.ReadString('Graphics', 'PreferredCodecs', '');
 
   // ClickAssist
   ClickAssist := ReadArrayIndex(IClickAssist, IniFile, 'Sound', 'ClickAssist', IGNORE_INDEX, 'Off');
