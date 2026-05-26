@@ -326,7 +326,8 @@ uses
   UDisplay,
   UCommandLine,
   UPathUtils,
-  UThemes;
+  UThemes,
+  UScale;
 
 var
   SingScreenTexturesLoaded: boolean = false;
@@ -799,10 +800,19 @@ NoDoubledResolution:
     SoftwareRendering := false;
 
   // define virtual (Render) and real (Screen) screen size
-  RenderW := 800;
-  RenderH := 600;
+  if Theme <> nil then
+  begin
+    RenderW := Theme.LayoutScreenW;
+    RenderH := Theme.LayoutScreenH;
+  end
+  else
+  begin
+    RenderW := 800;
+    RenderH := 600;
+  end;
   ScreenW := ActualW;
   ScreenH := ActualH;
+  UpdateUIScaleState(RenderW, RenderH, ScreenW, ScreenH);
   // Ausganswerte für die State-Machine setzen
   SDL_GL_SetSwapInterval(1); // VSYNC (currently Windows only)
 
@@ -961,6 +971,8 @@ begin
       LastH := h;
     end;
   end;
+
+  UpdateUIScaleState(RenderW, RenderH, ScreenW, ScreenH);
 
   if CurrentWindowMode = Mode_Fullscreen then
   begin
