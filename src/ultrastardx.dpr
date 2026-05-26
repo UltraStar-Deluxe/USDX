@@ -188,6 +188,7 @@ uses
   URenderer         in 'base\URenderer.pas',
   URenderer_OpenGL  in 'base\URenderer_OpenGL.pas',
   UGraphic          in 'base\UGraphic.pas',
+  UScale            in 'base\UScale.pas',
   ULanguage         in 'base\ULanguage.pas',
   UMain             in 'base\UMain.pas',
   UDraw             in 'base\UDraw.pas',
