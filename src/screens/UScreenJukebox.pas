@@ -48,6 +48,7 @@ uses
   URenderer,
   USingScores,
   USongs,
+  UScale,
   UThemes,
   UTime,
   UVideo,
@@ -2723,6 +2724,8 @@ begin
   if (Statics[StaticCover].Texture = nil) then
     Statics[StaticCover].Texture := Renderer.GetTexture(Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN, 0);
 
+  Statics[StaticCover].Texture.ScaleMode := lsUniform;
+
   Statics[StaticCover].Texture.X := Theme.Jukebox.SongCover.X;
   Statics[StaticCover].Texture.Y := Theme.Jukebox.SongCover.Y;
   Statics[StaticCover].Texture.W := Theme.Jukebox.SongCover.W;
@@ -2910,4 +2913,3 @@ begin
 end;
 
 end.
-

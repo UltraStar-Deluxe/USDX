@@ -47,6 +47,7 @@ uses
   UMusic,
   UPath,
   URenderer,
+  UScale,
   USong,
   USongs,
   UThemes,
@@ -2664,6 +2665,8 @@ begin
     Statics[StaticActual].Texture := Renderer.GetTexture(Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN)
   else
     Statics[StaticActual].Texture := Renderer.LoadTexture(Button[Interaction].Texture.Name);
+
+  Statics[StaticActual].Texture.ScaleMode := lsUniform;
 
   Statics[StaticActual].Texture.Alpha := 1;
 
