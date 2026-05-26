@@ -42,7 +42,8 @@ uses
   UImage,
   UIni,
   URenderer,
-  UPath;
+  UPath,
+  UScale;
 
 type
   ECoverDBException = class(Exception)
@@ -148,11 +149,13 @@ end;
 function TAvatar.GetPreviewTexture(): TTexture;
 begin
   Result := Avatars.LoadAvatar(ID);
+  Result.ScaleMode := lsUniform;
 end;
 
 function TAvatar.GetTexture(): TTexture;
 begin
   Result := Renderer.LoadTexture(Filename);
+  Result.ScaleMode := lsUniform;
 end;
 
 
@@ -386,7 +389,10 @@ begin
     Data := Table.FieldAsBlobPtr(4, DataSize);
     if (Data <> nil) and
        (PixelFmt = ipfRGB) then
-      Result := Renderer.CreateTexture(Data, Filename, Width, Height, TEXTURE_TYPE_PLAIN)
+    begin
+      Result := Renderer.CreateTexture(Data, Filename, Width, Height, TEXTURE_TYPE_PLAIN);
+      Result.ScaleMode := lsUniform;
+    end
     else
       Result := Renderer.CreateEmptyTexture(PATH_NONE);
   except on E: Exception do

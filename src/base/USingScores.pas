@@ -1054,6 +1054,11 @@ var
   Position: TScorePosition;
   ScoreStr: String;
   Drawing: boolean;
+  TextW: real;
+  TextX: real;
+  TextSize: integer;
+  MaxTextW: real;
+  Scale: real;
   procedure updatePosition(themeElements: TThemeSingPlayer);
   begin
     Position.BGX := themeElements.ScoreBackground.X;
@@ -1169,18 +1174,31 @@ begin
     Renderer.DrawTexture(Players[Index].ScoreBG);
 
     // draw score text
-    SetFontFamily(Position.TextFont);
-    SetFontStyle(Position.TextStyle);
-    SetFontItalic(false);
-    SetFontSize(Position.TextSize);
-    SetFontPos(Position.TextX, Position.TextY);
-    SetFontReflection(false, 0);
-    SetFontColor(1, 1, 1, 1);
-
-    ScoreStr := InttoStr(Players[Index].ScoreDisplayed);
+    ScoreStr := InttoStr(Players[Index].ScoreDisplayed div 10) + '0';
     while (Length(ScoreStr) < 5) do
       ScoreStr := '0' + ScoreStr;
 
+    SetFontFamily(Position.TextFont);
+    SetFontStyle(Position.TextStyle);
+    SetFontItalic(false);
+    SetFontReflection(false, 0);
+    SetFontColor(1, 1, 1, 1);
+
+    TextSize := Position.TextSize;
+    SetFontSize(TextSize);
+    TextW := TextWidth(ScoreStr);
+
+    MaxTextW := Max(0, Position.BGW - 8);
+    if (TextW > 0) and (TextW > MaxTextW) then
+    begin
+      Scale := MaxTextW / TextW;
+      TextSize := Max(1, Round(TextSize * Scale));
+      SetFontSize(TextSize);
+      TextW := TextWidth(ScoreStr);
+    end;
+
+    TextX := Position.BGX + (Position.BGW - TextW) / 2;
+    SetFontPos(TextX, Position.TextY);
     PrintText(ScoreStr);
   end; // eo player has position
 end;
