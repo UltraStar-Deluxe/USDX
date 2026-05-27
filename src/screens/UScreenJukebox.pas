@@ -47,6 +47,7 @@ uses
   UPlaylist,
   USingScores,
   USongs,
+  UScale,
   UTexture,
   UThemes,
   UTime,
@@ -2727,6 +2728,11 @@ begin
   if (Statics[StaticCover].Texture.TexNum = 0) then
     Statics[StaticCover].Texture := Texture.GetTexture(Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN, false);
 
+  Statics[StaticCover].Texture.ScaleMode := lsStretch;
+  Statics[StaticCover].Texture.EdgeExtend := true;
+  Statics[StaticCover].Texture.EdgeExtendSolidFill := false;
+  Statics[StaticCover].Texture.EdgeExtendPixels := 2;
+
   Statics[StaticCover].Texture.X := Theme.Jukebox.SongCover.X;
   Statics[StaticCover].Texture.Y := Theme.Jukebox.SongCover.Y;
   Statics[StaticCover].Texture.W := Theme.Jukebox.SongCover.W;
@@ -2925,4 +2931,3 @@ begin
 end;
 
 end.
-

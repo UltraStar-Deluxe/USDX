@@ -46,6 +46,7 @@ uses
   UMenuEqualizer,
   UMusic,
   UPath,
+  UScale,
   USong,
   USongs,
   UTexture,
@@ -87,6 +88,7 @@ type
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
+      procedure ConfigureCoverTexture(var Tex: TTexture; IsPlaceholder: boolean);
     public
       TextArtist:   integer;
       TextTitle:    integer;
@@ -464,6 +466,37 @@ begin
     SetScrollRefresh;
   end;
 
+end;
+
+procedure TScreenSong.ConfigureCoverTexture(var Tex: TTexture; IsPlaceholder: boolean);
+var
+  CropX1, CropX2: real;
+begin
+  Tex.ScaleMode := lsStretch;
+  Tex.EdgeExtend := true;
+  Tex.EdgeExtendPixels := 1;
+  // Always use textured edge extension to avoid pillar/letterboxing.
+  Tex.EdgeExtendSolidFill := false;
+  Tex.EdgeExtendFillR := 0;
+  Tex.EdgeExtendFillG := 0;
+  Tex.EdgeExtendFillB := 0;
+
+  // Placeholders: crop to a centered square region via TexX1/TexX2 and edge extend
+  if IsPlaceholder or (Tex.SourceW > Tex.SourceH * 1.5) then
+  begin
+    Tex.TexX1 := 0;
+    Tex.TexX2 := 1;
+    Tex.TexY1 := 0;
+    Tex.TexY2 := 1;
+
+    if (Tex.SourceW > 0) and (Tex.SourceH > 0) and (Tex.SourceW > Tex.SourceH) then
+    begin
+      CropX1 := (Tex.SourceW - Tex.SourceH) / (2 * Tex.SourceW);
+      CropX2 := 1 - CropX1;
+      Tex.TexX1 := CropX1;
+      Tex.TexX2 := CropX2;
+    end;
+  end;
 end;
 
 procedure TScreenSong.ParseInputNextHorizontal(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
@@ -2682,13 +2715,20 @@ begin
 end;
 
 procedure TScreenSong.SetChessboardScrollRefresh;
+var
+  PlaceholderPath: IPath;
+  IsPlaceholder: boolean;
 begin
-  if Statics[StaticActual].Texture.Name <> Skin.GetTextureFileName('SongCover') then
+  PlaceholderPath := Skin.GetTextureFileName('SongCover');
+
+  if Statics[StaticActual].Texture.Name <> PlaceholderPath then
   begin
     glDeleteTextures(1, PGLuint(@Statics[StaticActual].Texture.TexNum));
   end;
 
   Statics[StaticActual].Texture := Texture.LoadTexture(Button[Interaction].Texture.Name);
+  IsPlaceholder := Assigned(Button[Interaction].Texture.Name) and Button[Interaction].Texture.Name.Equals(PlaceholderPath);
+  ConfigureCoverTexture(Statics[StaticActual].Texture, IsPlaceholder);
   Statics[StaticActual].Texture.Alpha := 1;
 
   Statics[StaticActual].Texture.X := Theme.Song.Cover.SelectX;
@@ -2757,13 +2797,19 @@ var
   B, Count, I:  integer;
   SongID: array of integer;
   Alpha: real;
+  PlaceholderPath: IPath;
+  IsPlaceholder: boolean;
 begin
-  if Statics[StaticActual].Texture.Name <> Skin.GetTextureFileName('SongCover') then
+  PlaceholderPath := Skin.GetTextureFileName('SongCover');
+
+  if Statics[StaticActual].Texture.Name <> PlaceholderPath then
   begin
     glDeleteTextures(1, PGLuint(@Statics[StaticActual].Texture.TexNum));
   end;
 
   Statics[StaticActual].Texture := Texture.LoadTexture(Button[Interaction].Texture.Name);
+  IsPlaceholder := Assigned(Button[Interaction].Texture.Name) and Button[Interaction].Texture.Name.Equals(PlaceholderPath);
+  ConfigureCoverTexture(Statics[StaticActual].Texture, IsPlaceholder);
   Statics[StaticActual].Texture.Alpha := 1;
 
   Statics[StaticActual].Texture.X := Theme.Song.Cover.SelectX;
@@ -4226,10 +4272,17 @@ end;
 
 //Detailled Cover Loading. Loads the Detailed, uncached Cover of the Song Button
 procedure TScreenSong.LoadCover(NumberOfButtonInArray: integer);
+var
+  PlaceholderPath: IPath;
+  IsPlaceholder: boolean;
 begin
   If (Button[NumberOfButtonInArray].Texture.TexNum = 0) and Assigned(Button[NumberOfButtonInArray].Texture.Name) then
   begin
     Button[NumberOfButtonInArray].Texture := Texture.LoadTexture(Button[NumberOfButtonInArray].Texture.Name);
+    PlaceholderPath := Skin.GetTextureFileName('SongCover');
+    IsPlaceholder := Assigned(Button[NumberOfButtonInArray].Texture.Name) and
+      Button[NumberOfButtonInArray].Texture.Name.Equals(PlaceholderPath);
+    ConfigureCoverTexture(Button[NumberOfButtonInArray].Texture, IsPlaceholder);
   end;
 end;
 
