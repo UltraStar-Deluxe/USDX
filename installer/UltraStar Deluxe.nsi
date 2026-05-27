@@ -653,10 +653,6 @@ Function .onInit
 
 
 continue:
-	ReadRegStr $R2 "${PRODUCT_UNINST_ROOT_KEY}" "${PRODUCT_UNINST_KEY}" 'UninstallString'
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION "$(oninit_uninstall)" IDNO done
-	ExecWait '"$R2" _?=$INSTDIR'
-
 done:
 	!insertmacro MUI_LANGDLL_DISPLAY
 
