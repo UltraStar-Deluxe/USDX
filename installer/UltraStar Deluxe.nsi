@@ -353,8 +353,8 @@ Function un.DeleteAll
 	${NSD_GetState} $CHECKBOX_COVERS $CB_COVERS_State
 	${NSD_GetState} $CHECKBOX_CONFIG $CB_CONFIG_State
 	${NSD_GetState} $CHECKBOX_SCORES $CB_SCORES_State
-	${NSD_GetState} $CHECKBOX_SCORES $CB_SCREENSHOTS_State
-	${NSD_GetState} $CHECKBOX_SCORES $CB_PLAYLISTS_State
+	${NSD_GetState} $CHECKBOX_SCREENSHOTS $CB_SCREENSHOTS_State
+	${NSD_GetState} $CHECKBOX_PLAYLISTS $CB_PLAYLISTS_State
 	${NSD_GetState} $CHECKBOX_SONGS  $CB_SONGS_State
 
 	${If} $CB_COVERS_State == "1" ; Remove covers
@@ -379,13 +379,13 @@ Function un.DeleteAll
 	${EndIf}
 
 	${If} $CB_SCREENSHOTS_State == "1" ; Remove screenshots
-		RMDir /r "$INSTDIR\sreenshots"
+		RMDir /r "$INSTDIR\screenshots"
 		SetShellVarContext current
 		RMDir /r "$APPDATA\ultrastardx\screenshots"
 		SetShellVarContext all
 	${EndIf}
 
-	${If} $CB_SCREENSHOTS_State == "1" ; Remove playlists
+	${If} $CB_PLAYLISTS_State == "1" ; Remove playlists
 		RMDir /r "$INSTDIR\playlists"
 		SetShellVarContext current
 		RMDir /r "$APPDATA\ultrastardx\playlists"
