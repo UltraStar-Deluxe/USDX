@@ -258,6 +258,8 @@ Function Settings
 
 	Var /GLOBAL CHECKBOX_COVERS
 	Var /GLOBAL CB_COVERS_State
+	Var /GLOBAL CHECKBOX_AVATARS
+	Var /GLOBAL CB_AVATARS_State
 	Var /GLOBAL CHECKBOX_SCORES
 	Var /GLOBAL CB_SCORES_State
 	Var /GLOBAL CHECKBOX_CONFIG
@@ -323,25 +325,29 @@ Function un.AskDelete
 	Pop $CHECKBOX_COVERS
 	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_COVERS $1
 
-	${NSD_CreateCheckbox} 0 -155 100% 8u "$(delete_config)"
+	${NSD_CreateCheckbox} 0 -155 100% 8u "$(delete_avatars)"
+	Pop $CHECKBOX_AVATARS
+	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_AVATARS $2
+
+	${NSD_CreateCheckbox} 0 -135 100% 8u "$(delete_config)"
 	Pop $CHECKBOX_CONFIG
-	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_CONFIG $2
+	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_CONFIG $3
 
-	${NSD_CreateCheckbox} 0 -135 100% 8u "$(delete_highscores)"
+	${NSD_CreateCheckbox} 0 -115 100% 8u "$(delete_highscores)"
 	Pop $CHECKBOX_SCORES 
-	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_SCORES $3
+	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_SCORES $4
 
-	${NSD_CreateCheckbox} 0 -115 100% 8u "$(delete_screenshots)"
+	${NSD_CreateCheckbox} 0 -95 100% 8u "$(delete_screenshots)"
 	Pop $CHECKBOX_SCREENSHOTS 
-	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_SCREENSHOTS $4
+	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_SCREENSHOTS $5
 
-	${NSD_CreateCheckbox} 0 -95 100% 8u "$(delete_playlists)"
+	${NSD_CreateCheckbox} 0 -75 100% 8u "$(delete_playlists)"
 	Pop $CHECKBOX_PLAYLISTS
-	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_PLAYLISTS $5
+	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_PLAYLISTS $6
 
-	${NSD_CreateCheckbox} 0 -65 100% 18u "$(delete_songs)"
+	${NSD_CreateCheckbox} 0 -45 100% 18u "$(delete_songs)"
 	Pop $CHECKBOX_SONGS 
-	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_SONGS $6
+	nsDialogs::OnClick /NOUNLOAD $CHECKBOX_SONGS $7
 
 
 	nsDialogs::Show
@@ -351,6 +357,7 @@ FunctionEnd
 Function un.DeleteAll
 
 	${NSD_GetState} $CHECKBOX_COVERS $CB_COVERS_State
+	${NSD_GetState} $CHECKBOX_AVATARS $CB_AVATARS_State
 	${NSD_GetState} $CHECKBOX_CONFIG $CB_CONFIG_State
 	${NSD_GetState} $CHECKBOX_SCORES $CB_SCORES_State
 	${NSD_GetState} $CHECKBOX_SCREENSHOTS $CB_SCREENSHOTS_State
@@ -361,6 +368,14 @@ Function un.DeleteAll
 		RMDir /r "$INSTDIR\covers"
 		SetShellVarContext current	
 		RMDir /r "$APPDATA\ultrastardx\covers"
+		SetShellVarContext all
+	${EndIf}
+
+	${If} $CB_AVATARS_State == "1" ; Remove avatars
+		RMDir /r "$INSTDIR\avatars"
+		Delete "$INSTDIR\avatar.db"
+		SetShellVarContext current
+		Delete "$APPDATA\ultrastardx\avatar.db"
 		SetShellVarContext all
 	${EndIf}
 
