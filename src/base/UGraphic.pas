@@ -562,6 +562,8 @@ begin
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing texturizer'));
   Texture := TTextureUnit.Create;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, @MaxTextureSize);
+  // log it because the actual usable size might be lower than the reported value
+  Log.LogStatus('Graphics reports '+IntToStr(MaxTextureSize)+' max texture size', 'UGraphic.Initialize3D');
   // beyond 4096 something starts becoming noticeably slow in LoadTexture
   // memory usage also becomes an issue
   Texture.Limit := Min(MaxTextureSize, 4096);
