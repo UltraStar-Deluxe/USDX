@@ -323,6 +323,7 @@ implementation
 
 uses
   Classes,
+  Math,
   UDisplay,
   UCommandLine,
   UPathUtils,
@@ -534,6 +535,7 @@ const
 procedure Initialize3D (Title: string);
 var
   Icon: PSDL_Surface;
+  MaxTextureSize: integer;
 begin
   Log.LogStatus('SDL_Init', 'UGraphic.Initialize3D');
   if ( SDL_InitSubSystem(SDL_INIT_VIDEO) = -1 ) then
@@ -559,7 +561,10 @@ begin
 
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing texturizer'));
   Texture := TTextureUnit.Create;
-  Texture.Limit :=4096;
+  glGetIntegerv(GL_MAX_TEXTURE_SIZE, @MaxTextureSize);
+  // beyond 4096 something starts becoming noticeably slow in LoadTexture
+  // memory usage also becomes an issue
+  Texture.Limit := Min(MaxTextureSize, 4096);
 
   //LoadTextures;
   SDL_SetWindowTitle(Screen, PChar(Title + ' - Initializing video modules'));
