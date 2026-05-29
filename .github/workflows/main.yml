@@ -42,6 +42,7 @@ jobs:
         run: |
           python dldlls.py
           7z x -y usdx-dlls-x86_64.zip -ogame "*.dll"
+          7z x -y usdx-dlls-x86_64.zip -osrc "config-win.inc"
         env:
           ARTIFACT_ACCESS_TOKEN: ${{ secrets.MxeActionsReadAccessToken }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

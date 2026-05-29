@@ -44,6 +44,7 @@ ppaslink.sh
 /src/config-darwin.inc
 /src/config-linux.inc
 /src/config-win32.inc
+/src/config-win.inc
 /src/paths.inc
 /src/ultrastardx-*.lps
 /src/ultrastardx.res
@@ -65,6 +66,7 @@ ppaslink.sh
 /game/ultrastardx
 
 # created by dldlls.py on Windows
+/usdx-dlls-x86_64.zip
 /usdx-dlls-i686.zip
 /game/*.dll
 /game/*.debug
