@@ -13,7 +13,6 @@
  RMDir /r "$INSTDIR\sounds"
  RMDir /r "$INSTDIR\webs"
  RMDir /r "$INSTDIR\soundfonts"
- RMDir /r "$INSTDIR\avatars"
 
 ; Delete remaining files
  Delete "$INSTDIR\${exe}.exe"
@@ -143,7 +142,6 @@
  Delete "$APPDATA\ultrastardx\Error.log"
  Delete "$APPDATA\ultrastardx\Benchmark.log"
  Delete "$APPDATA\ultrastardx\cover.db"
- Delete "$APPDATA\ultrastardx\avatar.db"
  
  StrCpy $0 "$APPDATA\ultrastardx\covers"
  Call un.DeleteIfEmpty
