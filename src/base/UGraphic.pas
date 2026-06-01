@@ -319,6 +319,7 @@ implementation
 
 uses
   Classes,
+  Math,
   UDisplay,
   UCommandLine,
   UPathUtils,
@@ -530,6 +531,7 @@ const
 procedure Initialize3D (Title: string);
 var
   Icon: PSDL_Surface;
+  MaxTextureSize: integer;
 begin
   Log.LogStatus('SDL_Init', 'UGraphic.Initialize3D');
   if ( SDL_InitSubSystem(SDL_INIT_VIDEO) = -1 ) then

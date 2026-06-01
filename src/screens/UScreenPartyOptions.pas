@@ -65,6 +65,7 @@ type
       procedure FillPlaylistJukebox;
       procedure SetPlaylists;
       procedure SetPlaylist2;
+      function ApplyPlaylistRestriction: boolean;
     public
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
@@ -258,32 +259,13 @@ end;
 
 procedure TScreenPartyOptions.SetPlaylists;
 begin
-  if (Mode = 1) or (Mode = 2) or (Mode = 3) then
-  begin
-    SetLength(IPlaylist, 1);
-    IPlaylist[0] := '---';
+  UpdateSelectSlideOptions(SelectLevel, ILevel, Level);
 
-    SetLength(IPlaylist2, 1);
-    IPlaylist2[0] := '---';
+  FillPlaylist;
 
-    Playlist  := 0;
-    Playlist2 := 0;
+  UpdateSelectSlideOptions(SelectPlayList, IPlaylist, Playlist);
 
-    UpdateSelectSlideOptions(SelectLevel, ILevel, Level);
-    UpdateSelectSlideOptions(SelectPlayList, IPlaylist, Playlist);
-    UpdateSelectSlideOptions(SelectPlayList2, IPlaylist2, Playlist2);
-  end
-  else
-  begin
-    UpdateSelectSlideOptions(SelectLevel, ILevel, Level);
-
-    FillPlaylist;
-
-    UpdateSelectSlideOptions(SelectPlayList, IPlaylist, Playlist);
-
-    SetPlaylist2;
-  end;
-
+  SetPlaylist2;
 end;
 
 procedure TScreenPartyOptions.SetPlaylist2;
@@ -347,6 +329,8 @@ begin
 
   Party.Clear;
 
+  SetPlaylists;
+
   // check if there are loaded modes
   if Party.ModesAvailable then
   begin
@@ -360,19 +344,17 @@ begin
   end;
 end;
 
-procedure TScreenPartyOptions.InitClassic;
+function TScreenPartyOptions.ApplyPlaylistRestriction: boolean;
 var
   I, J: integer;
 begin
+  Result := false;
 
-  //Save Playlist
   PlaylistMan.Mode := TSongMode(Playlist);
   PlaylistMan.CurPlayList := -1;
 
-  //if Category Selected Search Category ID
   if Playlist = 1 then
   begin
-
     J := -1;
     for I := 0 to high(CatSongs.Song) do
     begin
@@ -386,23 +368,24 @@ begin
       end;
     end;
 
-    //No Categorys or Invalid Entry
     if PlaylistMan.CurPlayList = -1 then
       Exit;
   end
   else if Playlist = 2 then
   begin
-    // Playlist selected: ensure there is at least one playlist and the selected index is valid
     if (Length(PlaylistMan.Playlists) = 0) or (Playlist2 < 0) or (Playlist2 > High(PlaylistMan.Playlists)) then
       Exit
     else
       PlaylistMan.CurPlayList := Playlist2;
-  end
-  else
-  begin
-    // All selected: no specific playlist
-    PlaylistMan.CurPlayList := -1;
   end;
+
+  Result := true;
+end;
+
+procedure TScreenPartyOptions.InitClassic;
+begin
+  if not ApplyPlaylistRestriction then
+    Exit;
 
   ScreenSong.Mode := smPartyClassic;
 
@@ -413,6 +396,9 @@ end;
 
 procedure TScreenPartyOptions.InitFree;
 begin
+  if not ApplyPlaylistRestriction then
+    Exit;
+
   ScreenSong.Mode := smPartyFree;
   AudioPlayback.PlaySound(SoundLib.Start);
   FadeTo(@ScreenPartyPlayer);
@@ -420,6 +406,9 @@ end;
 
 procedure TScreenPartyOptions.InitTournament;
 begin
+  if not ApplyPlaylistRestriction then
+    Exit;
+
   ScreenSong.Mode := smPartyTournament;
   AudioPlayback.PlaySound(SoundLib.Start);
   FadeTo(@ScreenPartyTournamentPlayer);
@@ -432,4 +421,3 @@ begin
 end;
 
 end.
-
