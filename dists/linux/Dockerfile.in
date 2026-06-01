@@ -1,6 +1,6 @@
 FROM %%from%%
 
-RUN echo deb http://archive.debian.org/debian jessie-backports main >> /etc/apt/sources.list
+RUN echo deb http://archive.debian.org/debian stretch-backports main >> /etc/apt/sources.list
 
 RUN apt-get update
 
@@ -8,11 +8,11 @@ RUN apt-get upgrade -y
 
 RUN apt-get install -y --no-install-recommends \
     build-essential make automake autoconf patch file git unzip bzip2 xz-utils \
-    libgl1-mesa-dev/jessie-backports libgbm-dev/jessie-backports libgl1-mesa-glx/jessie-backports \
-    mesa-common-dev libdrm-dev/jessie-backports libegl1-mesa-dev/jessie-backports libwayland-egl1-mesa/jessie-backports \
+    libgl1-mesa-dev libgbm-dev libgl1-mesa-glx \
+    mesa-common-dev libdrm-dev libegl1-mesa-dev libwayland-egl1-mesa \
     libasound2-dev libx11-dev libxext-dev libxcursor-dev libxinerama-dev libxrandr-dev libxi-dev \
     libdbus-1-dev libsystemd-dev zlib1g-dev libffi-dev libexpat1-dev libxml2-dev libssl-dev libtool python3-pip pkg-config \
-    wget curl ca-certificates vim-common desktop-file-utils libglib2.0-dev libcairo2-dev libfuse-dev libarchive-dev
+    wget curl ca-certificates vim-common desktop-file-utils libglib2.0-dev libcairo2-dev libfuse-dev libarchive-dev ninja-build python3-venv libgl1-mesa-dev
 
 RUN mkdir /tmp/fpcinst \
     && wget --progress=dot:giga -O - %%fpcpackage%% | tar xC /tmp/fpcinst --strip-components=1 \

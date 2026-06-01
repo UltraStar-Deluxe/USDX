@@ -82,8 +82,6 @@ type
     Length: string;
   end;
 
-  TPathDynArray = array of IPath;
-
   {$IFDEF USE_PSEUDO_THREAD}
   TSongs = class(TPseudoThread)
   {$ELSE}

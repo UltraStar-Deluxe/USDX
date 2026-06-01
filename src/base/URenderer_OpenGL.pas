@@ -68,6 +68,7 @@ type
       ErrorCode: GLenum;
 
       SupportsVAO: boolean;
+      SupportsFBO: boolean;
 
       procedure InitShaderPrograms();
       procedure InitBuffers();
@@ -114,6 +115,7 @@ type
       procedure ClearFrameBuffer(Buffers: cardinal); override;
       procedure SetTextClipBoundary(X: single; Direction: ClippingDirection); override;
       procedure SetClipText(Enabled: boolean); override;
+      procedure ResetState(); override;
   end;
 
   TRenderer_OpenGL3 = class(TRenderer_OpenGLBase)
@@ -619,6 +621,7 @@ end;
 
 function TRenderer_OpenGLBase.GetArrayBuffer(var Bytes: GLuint): PGLfloat;
 begin
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
   Bytes := Bytes + Bytes mod SizeOf(TQuadVertexBufferData);
   if (GLuint(VBOCursor) * SizeOf(GLfloat) + Bytes >= VBO_SIZE) then
   begin
@@ -1541,6 +1544,17 @@ begin
   {$ENDIF};
 end;
 
+procedure TRenderer_OpenGLBase.ResetState();
+begin
+  inherited;
+  SetViewPort(ViewPortArray[0], ViewPortArray[1], ViewPortArray[2], ViewPortArray[3]);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glDepthFunc(GL_LEQUAL);
+  glDepthRangef(0, 10);
+  if (SupportsFBO) then
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+end;
+
 {$IFDEF DEBUG_MODE}
 procedure TRenderer_OpenGLBase.RaiseExceptionIfError();
 var
@@ -1563,6 +1577,9 @@ begin
     raise Exception.Create('Could not initialize OpenGL 3.0 or later');
   Log.LogInfo('Using OpenGL 3.0 renderer', 'TRenderer_OpenGL3.CheckVersion');
   SupportsVAO := true;
+  SupportsFBO := true;
+  if ((MajorVersion > 3) or ((MajorVersion = 3) and (MinorVersion >= 3))) then
+    fSupportsProjectM := true;
 end;
 
 procedure TRenderer_OpenGL3.GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string);
@@ -1610,7 +1627,10 @@ begin
     raise Exception.Create('Could not initialize OpenGL ES 2.0 or later');
   Log.LogInfo('Using OpenGL ES renderer', 'TRenderer_OpenGLES.CheckVersion');
   if (MajorVersion >= 3) then
-    SupportsVAO := true
+  begin
+    SupportsVAO := true;
+    fSupportsProjectM := true;
+  end
   else
   begin
     Extensions := Int_GetExtensionString;
@@ -1618,7 +1638,7 @@ begin
     if (GL_OES_vertex_array_object) then
       SupportsVAO := true;
   end;
-
+  SupportsFBO := true;
 end;
 
 procedure TRenderer_OpenGLES.GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string);
@@ -1665,7 +1685,8 @@ begin
     if (GL_ARB_vertex_array_object) then
       SupportsVAO := true;
   end;
-
+  fSupportsProjectM := false;
+  SupportsFBO := false;
 end;
 
 procedure TRenderer_OpenGL2.GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string);

@@ -217,8 +217,6 @@ use_generated_config=yes
 if test x$FPC_PLATFORM = xwin32 -o x$FPC_PLATFORM = xwin64; then
     use_generated_config=no
     AC_MSG_NOTICE([Using src/config-win.inc for Windows library configuration; skipping pkg-config checks for bundled runtime DLLs.])
-    libprojectM_USE_CWRAPPER=no
-    AC_SUBST(USE_PROJECTM_CWRAPPER, $libprojectM_USE_CWRAPPER)
     opencv_USE_CWRAPPER=yes
     AC_SUBST(USE_OPENCV_CWRAPPER, $opencv_USE_CWRAPPER)
 else
@@ -345,37 +343,16 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
 AC_LANG_POP([C++])
 
 # find projectM version
-libprojectM_PKG="libprojectM >= 1.0"
+libprojectM_PKG="projectM-4 >= 4.0"
 PKG_HAVE([libprojectM], [$libprojectM_PKG], no)
-PKG_VERSION([libprojectM], [$libprojectM_PKG])
-if [[ "$libprojectM_VERSION_MAJOR" -ge 3 ]] ; then
-	AC_MSG_FAILURE([libprojectM >= 3 not yet supported])
-fi
-if [[ "$libprojectM_VERSION_MAJOR" -eq 1 ]] && [[ "${#libprojectM_VERSION_MAJOR}" -eq 2 ]] ; then
-	# The official releases with major = 1 were 1.00, 1.01, 1.10, and 1.2.0.
-	# So 1.10 is in fact 1.1.0 and also uses 1.1 in the ChangeLog file.
-	libprojectM_VERSION_RELEASE="${libprojectM_VERSION_MINOR#?}"
-	libprojectM_VERSION_MINOR="${libprojectM_VERSION_MINOR%?}"
-fi
 AC_SUBST_DEFINE(HAVE_PROJECTM, $libprojectM_HAVE)
+PKG_VERSION([libprojectM], [$libprojectM_PKG])
 # get projectM include-dir
 PKG_VALUE([libprojectM], [INCLUDEDIR], [variable=includedir], [$libprojectM_PKG], 
           [C-Header include-dir (e.g. /usr/include)])
 # get projectM data-dir (for preset- and font-dir)
 PKG_VALUE([libprojectM], [DATADIR], [variable=pkgdatadir], [$libprojectM_PKG], 
           [projectM data-directory for presets etc. (e.g. /usr/share/projectM)])
-# check if we need the c-wrapper
-if [[ "$libprojectM_VERSION_MAJOR" -ge 1 ]]; then
-    if [[ "$cxx_works" = yes ]] ; then
-        libprojectM_USE_CWRAPPER=yes
-        use_cxx=yes
-    else
-        AC_MSG_FAILURE([Need C++ compiler to build libprojectM wrapper])
-    fi
-else
-    libprojectM_USE_CWRAPPER=no
-fi
-AC_SUBST(USE_PROJECTM_CWRAPPER, $libprojectM_USE_CWRAPPER)
 AC_SUBST_DEFINE(USE_LOCAL_PROJECTM_PRESETS, $with_local_projectM_presets)
 
 opencv_core_standalone=no

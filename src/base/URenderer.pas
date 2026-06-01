@@ -207,6 +207,7 @@ type
     protected
       TextureDatabase: TTextureDatabase;
       SWRendering: boolean;
+      fSupportsProjectM: boolean;
 
       function LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType): TTexture; overload; virtual; abstract;
       function CreateEmptyTexture(const Identifier: IPath): TTexture; virtual; abstract;
@@ -241,6 +242,7 @@ type
       procedure ClearFrameBuffer(Buffers: cardinal); virtual; abstract;
       procedure SetTextClipBoundary(X: single; Direction: ClippingDirection); virtual; abstract;
       procedure SetClipText(Enabled: boolean); virtual; abstract;
+      procedure ResetState(); virtual;
 
       // Texture loading functions
       function GetTexture(const Name: IPath; Typ: TTextureType): TTexture; overload;
@@ -263,6 +265,7 @@ type
       property ClipText: boolean write SetClipText;
       property SoftwareRendering: boolean read SWRendering;
       property VSync: boolean read GetVSync write SetVSync;
+      property SupportsProjectM: boolean read fSupportsProjectM;
       property Error: boolean read GetError;
       property ErrorCode: integer read GetErrorCode;
   end;
@@ -609,6 +612,13 @@ begin
 
   Renderer.DrawQuads(QuadList);
 end;
+
+procedure TRenderer.ResetState();
+begin
+  Blend := true;
+  DepthTest := true;
+end;
+
 
 procedure PreInitRenderer();
 var

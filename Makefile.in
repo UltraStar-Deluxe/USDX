@@ -70,13 +70,6 @@ USDX_BIN_NAME ?= ultrastardx$(EXEEXT)
 USDX_BIN := $(USDX_GAME_DIR)/$(USDX_BIN_NAME)
 
 #################################################
-# ProjectM
-#################################################
-
-PROJECTM_CWRAPPER_DIR := $(USDX_LIB_DIR)/projectM/cwrapper
-USE_PROJECTM_CWRAPPER = @USE_PROJECTM_CWRAPPER@
-
-#################################################
 # OpenCV
 #################################################
 
@@ -93,11 +86,6 @@ endif
 #################################################
 # Dependencies
 #################################################
-
-DEPS :=
-ifeq ($(USE_PROJECTM_CWRAPPER), yes)
-DEPS += $(PROJECTM_CWRAPPER_DIR)
-endif
 
 ifeq ($(USE_OPENCV_CWRAPPER), yes)
 ifneq ($(USE_OPENCV_CWRAPPER_DLL), yes)
@@ -172,7 +160,7 @@ distclean: clean clean-game
 	$(RM) config.log config.status aclocal.m4 
 	$(RM_REC) autom4te.cache
 	$(RM) $(USDX_SRC_DIR)/config.inc 
-	$(RM) $(srcdir)/Makefile $(USDX_SRC_DIR)/Makefile $(PROJECTM_CWRAPPER_DIR)/Makefile
+	$(RM) $(srcdir)/Makefile $(USDX_SRC_DIR)/Makefile
 
 .PHONY: maintainer-clean
 maintainer-clean: distclean
@@ -216,7 +204,7 @@ whitespace-warn:
 # auto-update
 #################################################
 
-Makefile: $(srcdir)/Makefile.in $(USDX_SRC_DIR)/Makefile.in $(USDX_SRC_DIR)/config.inc.in $(PROJECTM_CWRAPPER_DIR)/Makefile.in config.status
+Makefile: $(srcdir)/Makefile.in $(USDX_SRC_DIR)/Makefile.in $(USDX_SRC_DIR)/config.inc.in config.status
 	@echo "-----------------------------------"
 	@echo "Performing reconfiguration..."
 	./config.status

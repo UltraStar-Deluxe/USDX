@@ -57,8 +57,6 @@ uses
 
 type
   TVisArr = array of integer;
-  CardinalArray = array of cardinal;
-
   TScreenSong = class(TMenu)
     private
       Equalizer: Tms_Equalizer;
@@ -685,27 +683,6 @@ var
   VerifySong, WebList: string;
   Fix: boolean;
   VS: integer;
-
-  function RandomPermute(Num: integer): CardinalArray;
-  var
-    Ordered: array of cardinal;
-    Idx, i: cardinal;
-  begin
-    Result := nil;
-    if Num <= 0 then
-      Exit;
-    SetLength(Ordered, Num);
-    SetLength(Result, Num);
-    for i := 0 to Num-1 do Ordered[i] := i;
-    for i := 0 to Num-1 do
-    begin
-      Idx := Random(Num);
-      Result[i] := Ordered[Idx];
-      Delete(Ordered, Idx, 1);
-      Dec(Num);
-    end;
-  end;
-
 begin
   Result := true;
 

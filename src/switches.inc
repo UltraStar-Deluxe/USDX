@@ -102,7 +102,7 @@
 
 // projectM config
 {$IF Defined(HaveProjectM)}
-  {.$DEFINE UseProjectM}
+  {$DEFINE UseProjectM}
 {$IFEND}
 
 // specify some useful defines

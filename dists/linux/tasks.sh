@@ -100,15 +100,10 @@ task_cmake() {
 }
 
 task_projectm() {
-	start_build projectm projectM || return 0
-	patch -p1 < $root/projectM-2.2.1.patch
-	chmod a+x autogen.sh
-	./autogen.sh
-	./configure --prefix="$PREFIX" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CC="$CC" CXX="$CXX" \
-		--disable-static
+	start_build projectm projectm || return 0
+	cmake -DCMAKE_INSTALL_PREFIX="$PREFIX" -DCMAKE_BUILD_TYPE=Release -DENABLE_PLAYLIST=OFF
 	make $makearg
 	make install
-	hide make distclean
 }
 
 task_desktop_file_utils() {
@@ -366,32 +361,6 @@ task_python() {
 	hide make distclean
 }
 
-task_ninja() {
-	start_build ninja || return 0
-	mkdir -p build
-	cd build
-	if cmake \
-		-DCMAKE_CACHEFILE_DIR="$(pwd)/out" \
-		-DCMAKE_INSTALL_PREFIX="$PREFIX" \
-		-DCMAKE_INSTALL_LIBDIR:PATH="lib" \
-		-DCMAKE_BUILD_TYPE="Release" \
-		-DCMAKE_C_FLAGS="$CFLAGS" \
-		-DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
-		..
-	then
-		hide make $makearg
-		hide make install
-		cd ..
-	else
-		cd ..
-		./configure.py --bootstrap
-		mv ninja "$PREFIX/bin"
-		rm build.ninja
-		find -name '*.pyc' | xargs rm
-	fi
-	rm -r build
-}
-
 task_meson() {
 	start_build meson || return 0
 	will_install_python3_module
@@ -600,13 +569,15 @@ if [ "$1" == "all_deps" ]; then
 	clean_prefix
 	echo
 
-	task_openssl
-	echo
-	task_python
 	echo
 	task_cmake
 	echo
-	task_ninja
+	task_projectm
+
+	task_openssl
+	echo
+	task_python
+
 	echo
 	task_meson
 	echo
@@ -661,8 +632,6 @@ if [ "$1" == "all_deps" ]; then
 
 	echo
 	task_opencv
-	echo
-	task_projectm
 
 	touch "$PREFIX/built_libs"
 
