@@ -75,7 +75,7 @@ type
       fProjectMPath: string;
       Presets: array of string;
       PresetOrder: array of cardinal;
-      PresetI: cardinal;
+      PresetIdx: cardinal;
       ScreenW, ScreenH: integer;
 
     protected
@@ -210,7 +210,7 @@ begin
     Exit;
   Randomize;
   PresetOrder := RandomPermute(Length(Presets));
-  PresetI := 0;
+  PresetIdx := 0;
   projectm_set_preset_switch_requested_event_callback(Handle, @PresetChangeRequested, self);
   fInitialized := true;
   Result := true;
@@ -221,7 +221,6 @@ var
   IniFile: TIniFile;
   PresetPath: IPath;
   MeshX, MeshY: integer;
-  WindowW, WindowH: integer;
   SoftCut: double;
   PresetDuration: double;
   EasterEgg: single;
@@ -275,6 +274,7 @@ begin
   AspectCorrection := IniFile.ReadBool('ProjectM', 'Aspect Correction', true);
   projectm_set_aspect_correction(Handle, AspectCorrection);
 
+  IniFile.Free;
   Result := true;
 end;
 
@@ -308,10 +308,10 @@ end;
 
 procedure TVideoPlayback_ProjectM.RandomPreset(SmoothTransition: boolean);
 begin
-  projectm_load_preset_Data(Handle, PChar(Presets[PresetOrder[PresetI]]), SmoothTransition);
-  PresetI := PresetI + 1;
-  if (PresetI > High(Presets)) then
-    PresetI := 0;
+  projectm_load_preset_Data(Handle, PChar(Presets[PresetOrder[PresetIdx]]), SmoothTransition);
+  PresetIdx := PresetIdx + 1;
+  if (PresetIdx > High(Presets)) then
+    PresetIdx := 0;
 end;
 
 procedure TVideoPlayback_ProjectM.AddAudioSamples(Data: PSingle; Count: integer; Channels: projectm_channels);

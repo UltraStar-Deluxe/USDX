@@ -104,6 +104,7 @@ task_projectm() {
 	cmake -DCMAKE_INSTALL_PREFIX="$PREFIX" -DCMAKE_BUILD_TYPE=Release -DENABLE_PLAYLIST=OFF
 	make $makearg
 	make install
+	ln -s /usr/lib/x86_64-linux-gnu/pkgconfig/gl.pc $PREFIX/lib/pkgconfig/opengl.pc
 }
 
 task_desktop_file_utils() {
@@ -521,9 +522,6 @@ task_usdx() {
 	make LDFLAGS="-O2 --sort-common --as-needed -z relro" INSTALL_DATADIR="../share/ultrastardx"
 	rm -rf "$OUTPUT"
 	make DESTDIR="$OUTPUT/" install
-	rm -r "$OUTPUT/usr/share/ultrastardx/visuals/projectM/presets"
-	local projectM_datadir=`PKG_CONFIG_PATH="$PKG_CONFIG_PATH" pkg-config --variable=pkgdatadir libprojectM`
-	cp -av "$projectM_datadir/presets" "$OUTPUT/usr/share/ultrastardx/visuals/projectM"
 	for i in 32 256 512 ; do
 		mkdir -p "$OUTPUT/usr/share/icons/hicolor/${i}x${i}/apps"
 		cp "$root/../../icons/ultrastardx-icon_${i}.png" "$OUTPUT/usr/share/icons/hicolor/${i}x${i}/apps/ultrastardx.png"
@@ -571,8 +569,6 @@ if [ "$1" == "all_deps" ]; then
 
 	echo
 	task_cmake
-	echo
-	task_projectm
 
 	task_openssl
 	echo
@@ -632,6 +628,9 @@ if [ "$1" == "all_deps" ]; then
 
 	echo
 	task_opencv
+
+	echo
+	task_projectm
 
 	touch "$PREFIX/built_libs"
 
