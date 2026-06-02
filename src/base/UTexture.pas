@@ -119,7 +119,7 @@ type
       function GetTexture(const Name: IPath; Typ: TTextureType; Col: LongWord; FromCache: boolean = false): TTexture; overload;
       function LoadTexture(const Identifier: IPath; Typ: TTextureType; Col: LongWord): TTexture; overload;
       function LoadTexture(const Identifier: IPath): TTexture; overload;
-      function CreateTexture(Data: PChar; const Name: IPath; Width, Height: word): TTexture;
+      function CreateTexture(Data: PChar; const Name: IPath; Width, Height: word; UseMipmaps: boolean = true): TTexture;
       procedure UnloadTexture(const Name: IPath; Typ: TTextureType; FromCache: boolean); overload;
       procedure UnloadTexture(const Name: IPath; Typ: TTextureType; Col: cardinal; FromCache: boolean); overload;
       //procedure FlushTextureDatabase();
@@ -140,6 +140,33 @@ uses
   ULog,
   UThemes,
   UImage;
+
+function CanGenerateTextureMipmaps: boolean;
+begin
+  Result := Assigned(glGenerateMipmap) or Assigned(glGenerateMipmapEXT);
+end;
+
+procedure ApplyTextureSampling(UseMipmaps: boolean);
+begin
+  if UseMipmaps and CanGenerateTextureMipmaps then
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+  else
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+end;
+
+procedure GenerateTextureMipmaps(UseMipmaps: boolean);
+begin
+  if not UseMipmaps or not CanGenerateTextureMipmaps then
+    Exit;
+
+  if Assigned(glGenerateMipmap) then
+    glGenerateMipmap(GL_TEXTURE_2D)
+  else
+    glGenerateMipmapEXT(GL_TEXTURE_2D);
+end;
 
 function RoundPOT(value: integer): integer;
 begin
@@ -342,10 +369,7 @@ begin
   glGenTextures(1, @ActTex);
 
   glBindTexture(GL_TEXTURE_2D, ActTex);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ApplyTextureSampling(true);
 
   // load data into gl texture
   if not assigned(TexSurface.pixels) then
@@ -360,6 +384,8 @@ begin
   begin
     glTexImage2D(GL_TEXTURE_2D, 0, 3, newWidth, newHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, TexSurface.pixels);
   end;
+
+  GenerateTextureMipmaps(true);
 
   // setup texture struct
   with Result do
@@ -443,7 +469,7 @@ begin
   Result := TextureDatabase.Texture[TextureIndex].Texture;
 end;
 
-function TTextureUnit.CreateTexture(Data: PChar; const Name: IPath; Width, Height: word): TTexture;
+function TTextureUnit.CreateTexture(Data: PChar; const Name: IPath; Width, Height: word; UseMipmaps: boolean): TTexture;
 var
   //Error:     integer;
   ActTex:    GLuint;
@@ -452,9 +478,7 @@ var
 begin
   glGenTextures(1, @ActTex); // ActText = new texture number
   glBindTexture(GL_TEXTURE_2D, ActTex);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  ApplyTextureSampling(UseMipmaps);
 
   if SupportsNPOT or (((Width and (Width - 1)) = 0) and ((Height and (Height - 1)) = 0)) then
   begin
@@ -471,6 +495,8 @@ begin
     Result.TexW := Width / TexWidth;
     Result.TexH := Height / TexHeight;
   end;
+
+  GenerateTextureMipmaps(UseMipmaps);
 
 {
   if Mipmapping then
