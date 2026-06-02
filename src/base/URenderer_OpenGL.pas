@@ -85,7 +85,7 @@ type
       procedure InitBuffers();
       procedure BindMainVertexAttrib();
       procedure BindLineStripVertexAttrib();
-      function LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType): TTexture; overload; override;
+      function LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType; UseMipmaps: boolean): TTexture; overload; override;
       procedure DrawTexture(Texture: TTexture; Prog: GLuint; var UpdateTransform: boolean; TransformLocation: GLint); overload;
       function GetArrayBuffer(var Bytes: GLuint): PGLfloat;
       procedure UploadArray(DataSize: GLuint);
@@ -293,7 +293,7 @@ type
       TexID: GLuint;
 
     public
-      constructor Create(Data: PByte; W, H: integer; const Identifier: IPath; Format: GLint; Alignment: GLint; WrapMode: GLint); overload;
+      constructor Create(Data: PByte; W, H: integer; const Identifier: IPath; Format: GLint; Alignment: GLint; WrapMode: GLint; UseMipmaps: boolean); overload;
       constructor Create(const Identifier: IPath); overload;
       destructor Destroy; override;
       procedure UpdateData(Data: PByte; Width, Height: word; PixelsPerRow: integer; Typ: TTextureType); override;
@@ -303,7 +303,7 @@ type
   end;
 
 
-constructor TTexture_OpenGL.Create(Data: PByte; W, H: integer; const Identifier: IPath; Format: GLint; Alignment: GLint; WrapMode: GLint);
+constructor TTexture_OpenGL.Create(Data: PByte; W, H: integer; const Identifier: IPath; Format: GLint; Alignment: GLint; WrapMode: GLint; UseMipmaps: boolean);
 begin
   inherited Create(Identifier);
   self.W := W;
@@ -313,7 +313,10 @@ begin
   glGenTextures(1, @TexID);
   glBindTexture(GL_TEXTURE_2D, TexID);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  if UseMipmaps and (Assigned(glGenerateMipmap) or Assigned(glGenerateMipmapEXT)) then
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+  else
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, WrapMode);
@@ -322,6 +325,13 @@ begin
 
   // load data into gl texture
   glTexImage2D(GL_TEXTURE_2D, 0, Format, W, H, 0, Format, GL_UNSIGNED_BYTE, Data);
+  if UseMipmaps then
+  begin
+    if Assigned(glGenerateMipmap) then
+      glGenerateMipmap(GL_TEXTURE_2D)
+    else if Assigned(glGenerateMipmapEXT) then
+      glGenerateMipmapEXT(GL_TEXTURE_2D);
+  end;
   fIsEmpty := false;
   {$IFDEF DEBUG_MODE}
   TRenderer_OpenGLBase(Renderer).RaiseExceptionIfError;
@@ -1510,12 +1520,12 @@ begin
   Result := glIsEnabled(GL_BLEND) = GL_TRUE;
 end;
 
-function TRenderer_OpenGLBase.LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType): TTexture;
+function TRenderer_OpenGLBase.LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType; UseMipmaps: boolean): TTexture;
 begin
   if (Typ = TEXTURE_TYPE_TRANSPARENT) or (Typ = TEXTURE_TYPE_COLORIZED) then
-    Result := TTexture_OpenGL.Create(Data, W, H, Identifier, GL_RGBA, 4, GL_CLAMP_TO_EDGE)
+    Result := TTexture_OpenGL.Create(Data, W, H, Identifier, GL_RGBA, 4, GL_CLAMP_TO_EDGE, UseMipmaps)
   else // TEXTURE_TYPE_PLAIN
-    Result := TTexture_OpenGL.Create(Data, W, H, Identifier, GL_RGB, 4, GL_CLAMP_TO_EDGE);
+    Result := TTexture_OpenGL.Create(Data, W, H, Identifier, GL_RGB, 4, GL_CLAMP_TO_EDGE, UseMipmaps);
   {$IFDEF DEBUG_MODE}
   RaiseExceptionIfError;
   {$ENDIF};

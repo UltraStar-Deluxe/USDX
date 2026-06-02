@@ -271,7 +271,7 @@ begin
     WebcamFrame := FrameAdjust(WebcamFrame);
     WebcamFrame := FrameEffect(Ini.WebCamEffect, WebcamFrame);
 
-    TextureCam := Renderer.CreateTexture(WebcamFrame.imageData, nil, WebcamFrame.Width, WebcamFrame.Height, TEXTURE_TYPE_PLAIN);
+    TextureCam := Renderer.CreateTexture(WebcamFrame.imageData, nil, WebcamFrame.Width, WebcamFrame.Height, TEXTURE_TYPE_PLAIN, false);
 
     cvReleaseImage(@WebcamFrame);
   end;
