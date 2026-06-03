@@ -113,6 +113,8 @@ type
 
       // Interface for Visualizer
       function GetPCMData(var Data: TPCMData): Cardinal;
+      function GetFormatInfo(): TAudioFormatInfo;
+
 
       function CreateVoiceStream(Channel: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream; virtual; abstract;
       function CreatePlaybackStreamForSource(SourceStream: TAudioSourceStream): TAudioPlaybackStream;
@@ -561,6 +563,14 @@ begin
     Result := KaraokeMusicStream.GetPCMData(data)
   else
     Result := 0;
+end;
+
+function TAudioPlaybackBase.GetFormatInfo(): TAudioFormatInfo;
+begin
+  if assigned(MusicStream) then
+     Result := MusicStream.GetAudioFormatInfo()
+  else if assigned(KaraokeMusicStream) then
+    Result := KaraokeMusicStream.GetAudioFormatInfo();
 end;
 
 function TAudioPlaybackBase.OpenSound(const Filename: IPath): TAudioPlaybackStream;

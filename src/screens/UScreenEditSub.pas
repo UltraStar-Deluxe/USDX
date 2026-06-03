@@ -45,12 +45,11 @@ uses
   UMusic,
   UPath,
   URecord,
+  URenderer,
   USong,
   USongs,
-  UTexture,
   UThemes,
   UTime,
-  dglOpenGL,
   Math,
   {$IFDEF UseMIDIPort}
     MidiOut,
@@ -475,7 +474,7 @@ uses
   USkins,
   UTextEncoding,
   UUnicodeUtils,
-  TextGL;
+  UText;
 
 const
   DEFAULT_FADE_IN_TIME  = 8;    //TODO in INI
@@ -3120,9 +3119,10 @@ begin
     CopyToUndo;
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption -1;
     CurrentSong.Background := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
-    Tex_PrevBackground := Texture.LoadTexture(CurrentSong.Path.Append(CurrentSong.Background));
-    Texture.AddTexture(Tex_PrevBackground, TEXTURE_TYPE_PLAIN, false);
-    Statics[BackgroundImageId].Texture := Tex_PrevBackground;
+    Tex_PrevBackground.Free;
+    Tex_PrevBackground := Renderer.LoadTexture(CurrentSong.Path.Append(CurrentSong.Background));
+    Statics[BackgroundImageId].Texture.Free;
+    Statics[BackgroundImageId].Texture := Tex_PrevBackground.Clone;
     Statics[BackgroundImageId].Texture.X := theme.EditSub.BackgroundImage.X;
     Statics[BackgroundImageId].Texture.Y := theme.EditSub.BackgroundImage.Y;
     Statics[BackgroundImageId].Texture.W := theme.EditSub.BackgroundImage.W;
@@ -3134,9 +3134,10 @@ begin
     CopyToUndo;
     SelectsS[Interactions[nBut].Num].SelectedOption := SelectsS[Interactions[nBut].Num].SelectedOption +1;
     CurrentSong.Background := Path(SelectsS[Interactions[nBut].Num].TextOptT[SelectsS[Interactions[nBut].Num].SelectedOption]);
-    Tex_PrevBackground := Texture.LoadTexture(CurrentSong.Path.Append(CurrentSong.Background));
-    Texture.AddTexture(Tex_PrevBackground, TEXTURE_TYPE_PLAIN, false);
-    Statics[BackgroundImageId].Texture := Tex_PrevBackground;
+    Tex_PrevBackground.Free;
+    Tex_PrevBackground := Renderer.LoadTexture(CurrentSong.Path.Append(CurrentSong.Background));
+    Statics[BackgroundImageId].Texture.Free;
+    Statics[BackgroundImageId].Texture := Tex_PrevBackground.Clone;
     Statics[BackgroundImageId].Texture.X := theme.EditSub.BackgroundImage.X;
     Statics[BackgroundImageId].Texture.Y := theme.EditSub.BackgroundImage.Y;
     Statics[BackgroundImageId].Texture.W := theme.EditSub.BackgroundImage.W;
@@ -4571,11 +4572,6 @@ var
   BarWidth: real;
   BarHeight: real;
 begin
-  glColor3f(1, 1, 1);
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
   BarWidth := 16;
   BarHeight := 16;
   HalfToneHeight := 7.5;
@@ -4587,20 +4583,24 @@ begin
   Rec.Top := 429 - (CurrentTone - 12*scale - CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].BaseNote) * HalfToneHeight - 0.5 * BarHeight;
   Rec.Bottom := Rec.Top + BarHeight;
 
-  glColor3f(1, 1, 1);
-  glBindTexture(GL_TEXTURE_2D, Tex_Lyric_Help_Bar.TexNum);
-  glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex2f(Rec.Left,  Rec.Top);
-    glTexCoord2f(0, 1); glVertex2f(Rec.Left,  Rec.Bottom);
-    glTexCoord2f(1, 1); glVertex2f(Rec.Right, Rec.Bottom);
-    glTexCoord2f(1, 0); glVertex2f(Rec.Right, Rec.Top);
-  glEnd;
+  with Tex_Lyric_Help_Bar do
+  begin
+    X := Rec.Left;
+    Y := Rec.Top;
+    W := Rec.Right - Rec.Left;
+    H := Rec.Bottom - Rec.Top;
+    ColR := 1;
+    ColG := 1;
+    ColB := 1;
+    Alpha := 1;
+  end;
+  Renderer.DrawTexture(Tex_Lyric_Help_Bar);
 
   // draw currently recorded tone
   SetFontPos(Theme.EditSub.TextCurrentTone.X, Theme.EditSub.TextCurrentTone.Y);
   SetFontSize(Theme.EditSub.TextCurrentTone.Size);
-  glColor4f(Theme.EditSub.TextCurrentTone.ColR, Theme.EditSub.TextCurrentTone.ColG, Theme.EditSub.TextCurrentTone.ColB, 1);
-  glPrint(GetNoteName(CurrentTone));
+  SetFontColor(Theme.EditSub.TextCurrentTone.ColR, Theme.EditSub.TextCurrentTone.ColG, Theme.EditSub.TextCurrentTone.ColB, 1);
+  PrintText(GetNoteName(CurrentTone));
 end;
 
 procedure TScreenEditSub.DrawInfoBar(X, Y, W, H: Integer; ColR, ColG, ColB, Alpha: real; Track: Integer);
@@ -4618,6 +4618,7 @@ var
 
   LineIndex: Integer;
   numLines:  Integer;
+  QuadList:  TQuadList;
 
   function FindStartBeat(): Integer;
   var
@@ -4691,26 +4692,47 @@ begin
     InteractiveLineId[Length(InteractiveLineId) - 1] := Length(Interactions) - 1;
   end;
 
+  SetLength(QuadList, numLines + 1);
+  I := 0;
   for LineIndex := 0 to numLines - 1 do
   begin
     if (LineIndex = CurrentSong.Tracks[Track].CurrentLine) and not (PlaySentence or PlaySentenceMidi or PlayOne) then
-      glColor4f(1, 0.6, 0, 1) // currently selected line in orange
+    begin
+      // currently selected line in orange
+      QuadList[I].ColR := 1;
+      QuadList[I].ColG := 0.6;
+      QuadList[I].ColB := 0;
+      QuadList[I].Alpha := 1;
+    end
     else
       if (CurrentSong.Medley.Source <> msNone) and
          (MedleyNotes.isStart) and (MedleyNotes.isEnd) and
          (LineIndex >= MedleyNotes.start.line) and (LineIndex <= MedleyNotes.end_.line) then
+         begin
         // medley section in green
-        glColor4f(0.15, 0.75, 0.15, 1)
+          QuadList[I].ColR := 0.15;
+          QuadList[I].ColG := 0.75;
+          QuadList[I].ColB := 0.15;
+          QuadList[I].Alpha := 1;
+        end
       else
       begin
         // all other lines in orange (current track) and gray (other track)
         if (Track = CurrentTrack) then
         begin
           Color := GetPlayerColor(Ini.SingColor[CurrentTrack]);
-          glColor4f(Color.R, Color.G, Color.B, 1)
+          QuadList[I].ColR := Color.R;
+          QuadList[I].ColG := Color.G;
+          QuadList[I].ColB := Color.B;
+          QuadList[I].Alpha := 1;
         end
         else
-          glColor4f(0.7, 0.7, 0.7, 1);
+        begin
+          QuadList[I].ColR := 0.7;
+          QuadList[I].ColG := 0.7;
+          QuadList[I].ColB := 0.7;
+          QuadList[I].Alpha := 1;
+        end;
       end;
 
     StartBeat := CurrentSong.Tracks[Track].Lines[LineIndex].Notes[0].StartBeat;
@@ -4725,40 +4747,43 @@ begin
     Button[TransparentLineButtonId[LineIndex]].SetW(Width);
     Button[TransparentLineButtonId[LineIndex]].SetH(H);
 
-    glbegin(gl_quads);
-      glVertex2f(X + CurrentPos, Y);
-      glVertex2f(X + CurrentPos, Y + H);
-      glVertex2f(X + CurrentPos + Width, Y + H);
-      glVertex2f(X + CurrentPos + Width, Y);
-    glEnd;
+    QuadList[I].X := X + CurrentPos;
+    QuadList[I].Y := Y;
+    QuadList[I].Z := 0;
+    QuadList[I].W := Width;
+    QuadList[I].H := H;
+    QuadList[I].Gradient := gdNone;
+    I := I + 1;
   end;
 
   if(PlaySentence or PlaySentenceMidi or PlayOne) then
   begin
-    glColor4f(0, 0, 0, 0.5);
+    QuadList[I].ColR := 0;
+    QuadList[I].ColG := 0;
+    QuadList[I].ColB := 0;
+    QuadList[I].Alpha := 0.5;
     CurrentPos := 0;
     Width := (CurrentBeat - SongStart) / SongDuration * W;
     if (Width > W) then
       Width := W;
   end else
   begin
-    glColor4f(1, 0, 0, 1);
+    QuadList[I].ColR := 1;
+    QuadList[I].ColG := 0;
+    QuadList[I].ColB := 0;
+    QuadList[I].Alpha := 1;
     CurrentPos := (CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[CurrentNote[Track]].StartBeat - SongStart) / SongDuration * W;
     Width := CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[CurrentNote[Track]].Duration / SongDuration * W;
     if (Width < 1) then
       Width := 1;
   end;
-
-  glEnable(GL_BLEND);
-  glbegin(gl_quads);
-    glVertex2f(X + CurrentPos, Y);
-    glVertex2f(X + CurrentPos, Y + H);
-    glVertex2f(X + CurrentPos + Width, Y + H);
-    glVertex2f(X + CurrentPos + Width, Y);
-  glEnd;
-  glDisable(GL_BLEND);
-
-  glLineWidth(1);
+  QuadList[I].X := X + CurrentPos;
+  QuadList[I].Y := Y;
+  QuadList[I].Z := 0;
+  QuadList[I].W := Width;
+  QuadList[I].H := H;
+  QuadList[I].Gradient := gdNone;
+  Renderer.DrawQuads(QuadList);
 end;
 
 procedure TScreenEditSub.DrawText(X, Y, W, H: real; Track: Integer; NumLines: Integer);
@@ -4777,10 +4802,6 @@ begin
   begin
     Space := H / (NumLines - 1);
     //PlayerNumber := Track + 1; // Player 1 is 0
-    glColor3f(1, 1, 1);
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     if not CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].HasLength(TempR) then TempR := 0
     else TempR := W / TempR;
@@ -4789,11 +4810,11 @@ begin
     begin
 
       OrgFont := CurrentFont;
-      glColor4f(0, 0, 0, 1);
       SetFontFamily(0);
       SetFontStyle(ftBold);
       SetFontItalic(False);
       SetFontSize(14);
+      SetFontColor(0, 0, 0, 1);
 
       for Count := 0 to HighNote do
       begin
@@ -4809,26 +4830,26 @@ begin
           Rec.Left := (StartBeat - CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + X + 0.5 + NotesW[0];
           Rec.Right := (StartBeat + Duration - CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + X - NotesW[0] - 0.5;
           SetFontPos(Rec.Left, Rec.Top);
-          glPrint(Text);
+          PrintText(Text);
           // add info if current note is medley start
           if (CurrentSong.Medley.Source <> msNone) and (MedleyNotes.isStart) and (CurrentSong.Tracks[Track].CurrentLine = MedleyNotes.start.line) and (Count = MedleyNotes.start.note) then
           begin
             Str := Language.Translate('EDIT_MEDLEYSTART');
             Str := '| ' + Copy(Str, 1, Length(Str) - 1) + ' (' + Language.Translate('EDIT_DURATION') + ' ' + FloatToStr(GetMedleyLength) + ' s)';
             SetFontPos(Rec.Left - 0.5 - NotesW[0], Rec.Top + Space);
-            glColor4f(0.15, 0.75, 0.15, 1);
-            glPrint(Str);
-            glColor4f(0, 0, 0, 1);
+            SetFontColor(0.15, 0.75, 0.15, 1);
+            PrintText(Str);
+            SetFontColor(0, 0, 0, 1);
           end;
           // add info if current note is medley end
           if (CurrentSong.Medley.Source <> msNone) and (MedleyNotes.isEnd) and (CurrentSong.Tracks[Track].CurrentLine = MedleyNotes.end_.line) and (Count = MedleyNotes.end_.note) then
           begin
             Str := Language.Translate('EDIT_MEDLEYEND');
             Str := '(' + Language.Translate('EDIT_DURATION') + ' ' + FloatToStr(GetMedleyLength) + ' s) ' + Copy(Str, 1, Length(Str) - 1) + ' |';
-            SetFontPos(Rec.Right + 0.5 + NotesW[0] - glTextWidth(Str), Rec.Top + Space);
-            glColor4f(0.15, 0.75, 0.15, 1);
-            glPrint(Str);
-            glColor4f(0, 0, 0, 1);
+            SetFontPos(Rec.Right + 0.5 + NotesW[0] - TextWidth(Str), Rec.Top + Space);
+            SetFontColor(0.15, 0.75, 0.15, 1);
+            PrintText(Str);
+            SetfontColor(0, 0, 0, 1);
           end;
           if (CurrentSong.HasPreview) and (IsStartPreview) then
           begin
@@ -4836,7 +4857,7 @@ begin
             Str := '| ' + Copy(Str, 1, Length(Str) - 1 ) + ' (' + FloatToStr(CurrentSong.PreviewStart) + ' s)';
             SetFontPos(Rec.Left - 0.5 - NotesW[0], Rec.Top - Space);
             //glColor4f(0.15, 0.75, 0.15, 1);
-            glPrint(Str);
+            PrintText(Str);
             //glColor4f(0, 0, 0, 1);
           end;
         end; // with
@@ -4846,8 +4867,6 @@ begin
     // revert the font to prevent conflicts within drawing the editor lyric line
     SetFont(OrgFont);
 
-    glDisable(GL_BLEND);
-    glDisable(GL_TEXTURE_2D);
   end;
 end;
 
@@ -5358,6 +5377,7 @@ begin
     CloseMidiIn;
     {$ENDIF}
   {$ENDIF}
+  Tex_PrevBackground.Free;
   inherited;
 end;
 
@@ -5774,9 +5794,10 @@ begin
   try
     if (not (CurrentSong.Background = PATH_NONE) and CurrentSong.Path.Append(CurrentSong.Background).Exists) then
     begin
-      Tex_PrevBackground := Texture.LoadTexture(CurrentSong.Path.Append(CurrentSong.Background));
-      Texture.AddTexture(Tex_PrevBackground, TEXTURE_TYPE_PLAIN, true);
-      Statics[BackgroundImageId].Texture   := Tex_PrevBackground;
+      Tex_PrevBackground.Free;
+      Tex_PrevBackground := Renderer.LoadTexture(CurrentSong.Path.Append(CurrentSong.Background));
+      Statics[BackgroundImageId].Texture.Free;
+      Statics[BackgroundImageId].Texture   := Tex_PrevBackground.Clone;
       Statics[BackgroundImageId].Texture.X := Theme.EditSub.BackgroundImage.X;
       Statics[BackgroundImageId].Texture.Y := Theme.EditSub.BackgroundImage.Y;
       Statics[BackgroundImageId].Texture.W := Theme.EditSub.BackgroundImage.W;
@@ -5784,7 +5805,7 @@ begin
     end;
   except
     Log.LogError('Background could not be loaded: ' + CurrentSong.Background.ToNative);
-    Tex_PrevBackground.TexNum := 0;
+    FreeAndNil(Tex_PrevBackground);
   end;
 
   //Interaction := 0;
@@ -6125,7 +6146,7 @@ begin
       // notes background
       EditDrawBorderedBox(Theme.EditSub.NotesBackground.X, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W + Xmouse, Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.ColR, Theme.EditSub.NotesBackground.ColG, Theme.EditSub.NotesBackground.ColB, Theme.EditSub.NotesBackground.Alpha);
       // horizontal lines
-      SingDrawNoteLines(Theme.EditSub.NotesBackground.X, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.X + Theme.EditSub.NotesBackground.W + Xmouse);
+      SingDrawNoteLines(Theme.EditSub.NotesBackground.X, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.X + Theme.EditSub.NotesBackground.W + Xmouse, 15, 2);
       // vertical lines
       EditDrawBeatDelimiters(Theme.EditSub.NotesBackground.X + NotesSkipX, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - 2 * NotesSkipX + Xmouse, Theme.EditSub.NotesBackground.H, CurrentTrack);
       // draw notes
@@ -6138,7 +6159,7 @@ begin
       // notes background
       EditDrawBorderedBox(Theme.EditSub.NotesBackground.X + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - Xmouse, Theme.EditSub.NotesBackground.H, Theme.EditSub.NotesBackground.ColR, Theme.EditSub.NotesBackground.ColG, Theme.EditSub.NotesBackground.ColB, Theme.EditSub.NotesBackground.Alpha);
       // horizontal lines
-      SingDrawNoteLines(Theme.EditSub.NotesBackground.X + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.X + Theme.EditSub.NotesBackground.W);
+      SingDrawNoteLines(Theme.EditSub.NotesBackground.X + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.X + Theme.EditSub.NotesBackground.W, 15, 2);
       // vertical lines
       EditDrawBeatDelimiters(Theme.EditSub.NotesBackground.X + NotesSkipX + Xmouse, Theme.EditSub.NotesBackground.Y, Theme.EditSub.NotesBackground.W - 2 * NotesSkipX, Theme.EditSub.NotesBackground.H, CurrentTrack);
       // draw notes

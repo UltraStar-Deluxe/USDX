@@ -69,7 +69,6 @@ implementation
 
 uses
   math,
-  dglOpenGL,
   UCommandLine,
   UCommon,
   UConfig,
@@ -89,15 +88,16 @@ uses
   URecord,
   UBeatTimer,
   UPlatform,
+  URenderer,
   USkins,
   UThemes,
   UParty,
   UPartyTournament,
   ULuaCore,
-  ULuaGl,
+  ULuaRenderer,
   ULuaLog,
   ULuaTexture,
-  ULuaTextGL,
+  ULuaText,
   ULuaParty,
   ULuaScreenSing,
   UTime,
@@ -226,8 +226,8 @@ begin
     PartyTournament := TPartyTournament.Create;
 
     LuaCore.RegisterModule('Log', ULuaLog_Lib_f);
-    LuaCore.RegisterModule('Gl', ULuaGl_Lib_f);
-    LuaCore.RegisterModule('TextGl', ULuaTextGl_Lib_f);
+    LuaCore.RegisterModule('Renderer', ULuaRenderer_Lib_f);
+    LuaCore.RegisterModule('Text', ULuaText_Lib_f);
     LuaCore.RegisterModule('Party', ULuaParty_Lib_f);
     LuaCore.RegisterModule('ScreenSing', ULuaScreenSing_Lib_f);
 
@@ -323,7 +323,7 @@ begin
 
       // display
       Done := not Display.Draw;
-      SwapBuffers;
+      Renderer.SwapBuffers;
 
       // FPS limiter
       TicksCurrent := SDL_GetTicks;

@@ -12,8 +12,8 @@ function plugin_init()
   require('Usdx.Party');
   require('Usdx.ScreenSing');
   require('Usdx.Log');
-  require('Usdx.Gl');
-  require('Usdx.TextGl');
+  require('Usdx.Renderer');
+  require('Usdx.Text');
   require('table');
   require('math');
 
@@ -189,7 +189,6 @@ function CalculateWinner()
 end;
 
 function Draw()
-	Gl.Disable('GL_TEXTURE_2D');
 	-- Für jedes Team das OSD zeichnen
 	for i=1, #Teams, 1 do
 		-- Wiederhole die Anzahl der Fehlzeilen
@@ -197,22 +196,7 @@ function Draw()
 			-- Wenn mindestens 1 Fehler gemacht wurde
 			if TeamsOhnePunkteCount[i] > 0 then
 				-- Möglichkeit den Spielern verschiedene Farben zu geben
-				if i == 1 then
-					Gl.Color (1, 1, 1, 0.8);
-				elseif i == 2 then
-					Gl.Color (1, 1, 1, 0.8);
-				elseif i == 3 then
-					Gl.Color (1, 1, 1, 0.8);
-				end;
-				-- Start von Zeichnen des Polygons
-				Gl.Begin("GL_POLYGON");
-				-- 4 Ecken definieren
-				Gl.Vertex(OSD[i].Left + 5*(j-1), OSD[i].Bottom-10);
-				Gl.Vertex(OSD[i].Left + 5*(j-1) +2, OSD[i].Bottom-10);
-				Gl.Vertex(OSD[i].Left + 5*(j-1) +2, OSD[i].Bottom-2);
-				Gl.Vertex(OSD[i].Left + 5*(j-1), OSD[i].Bottom-2);
-				-- Ende von Polygon-Zeichnen
-				Gl.End();
+				Renderer.DrawQuad(OSD[i].Left + 5*(j-1), OSD[i].Bottom-10, 0, 2, 8, 1, 1, 1, 0.8)
 			end;
 		end;
 	end;

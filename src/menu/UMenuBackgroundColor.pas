@@ -52,8 +52,8 @@ type
 
 implementation
 uses
-  dglOpenGL,
-  UGraphic;
+  UGraphic,
+  URenderer;
 
 constructor TMenuBackgroundColor.Create(const ThemedSettings: TThemeBackground);
 begin
@@ -65,8 +65,8 @@ procedure   TMenuBackgroundColor.Draw;
 begin
   if (ScreenAct = 1) then
   begin //just clear once, even when using two screens
-   glClearColor(Color.R, Color.G, Color.B, 0);
-   glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
+    Renderer.SetClearColor(Color.R, Color.G, Color.B, 0);
+    Renderer.ClearFrameBuffer(CLEAR_DEPTH or CLEAR_COLOR);
   end;
 end;
 

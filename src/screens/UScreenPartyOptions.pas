@@ -93,7 +93,6 @@ uses
   UPlaylist,
   USong,
   USongs,
-  UTexture,
   UUnicodeUtils;
 
 function TScreenPartyOptions.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;

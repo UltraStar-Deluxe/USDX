@@ -115,7 +115,6 @@ uses
   ULog,
   UMain,
   UScreenPartyOptions,
-  UTexture,
   UUnicodeUtils;
 
 var

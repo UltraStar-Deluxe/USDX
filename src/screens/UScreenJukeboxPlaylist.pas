@@ -75,7 +75,6 @@ uses
   UHelp,
   UMain,
   UIni,
-  UTexture,
   ULanguage,
   ULog,
   UParty,

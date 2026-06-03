@@ -79,9 +79,9 @@ uses
   ULog,
   UNote,
   UParty,
+  URenderer,
   USkins,
   USongs,
-  UTexture,
   UUnicodeUtils;
 
 function TScreenMain.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
@@ -299,7 +299,7 @@ begin
 
   Interaction := 0;
 
-  WantSoftwareRenderingMsg := SoftwareRendering;
+  WantSoftwareRenderingMsg := Renderer.SoftwareRendering;
 end;
 
 procedure TScreenMain.OnShow;

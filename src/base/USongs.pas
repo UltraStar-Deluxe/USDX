@@ -53,7 +53,6 @@ uses
   {$ENDIF}
   UPlatform,
   ULog,
-  UTexture,
   UCommon,
   {$IFDEF USE_PSEUDO_THREAD}
   PseudoThread,
@@ -82,8 +81,6 @@ type
     Score:  integer;
     Length: string;
   end;
-
-  TPathDynArray = array of IPath;
 
   {$IFDEF USE_PSEUDO_THREAD}
   TSongs = class(TPseudoThread)

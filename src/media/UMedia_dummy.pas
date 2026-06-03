@@ -77,6 +77,8 @@ type
       procedure CaptureStop;
       procedure GetFFTData(var data: TFFTData);
       function GetPCMData(var data: TPCMData): Cardinal;
+      function GetFormatInfo(): TAudioFormatInfo;
+
 
       // IAudioPlayback
       function InitializePlayback: boolean;
@@ -275,6 +277,12 @@ function  TAudio_Dummy.GetPCMData(var data: TPCMData): Cardinal;
 begin
   Result := 0;
 end;
+
+function TAudio_Dummy.GetFormatInfo(): TAudioFormatInfo;
+begin
+  Result := nil;
+end;
+
 
 // IAudioPlayback
 function TAudio_Dummy.InitializePlayback: boolean;

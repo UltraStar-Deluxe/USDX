@@ -7,9 +7,9 @@ import sys
 import os
 import zipfile
 
-sha = 'bce8633438abaa66e19f1169f2503df86dca766c'
+sha = 'babbfd7a352fd8a14470e980b97d2a6ca4dfec59'
 filename = 'usdx-dlls-x86_64'
-urlbase = 'https://api.github.com/repos/UltraStar-Deluxe/mxe/'
+urlbase = 'https://api.github.com/repos/complexlogic/mxe/'
 headers = {
     'Accept': 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28'

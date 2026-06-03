@@ -180,7 +180,6 @@ const
 implementation
 
 uses
-  UDrawTexture,
   UFiles,
   UGraphic,
   UHelp,
@@ -189,12 +188,12 @@ uses
   ULog,
   UMain,
   UPathUtils,
+  URenderer,
   USkins,
   UTextEncoding,
   UUnicodeUtils,
-  dglOpenGL,
   SysUtils,
-  TextGL;
+  UText;
 
 const
   // MIDI/KAR lyrics are specified to be ASCII only.
@@ -1030,30 +1029,29 @@ begin
 
 
   // Draw time bar
-  DrawLine(XTrack, Y-YSkip, XTrack, Y, 0, 0, 0); // start
-  DrawLine(Right, Y-YSkip, Right, Y, 0, 0, 0); // end
+  Renderer.DrawLine(XTrack, Y-YSkip, XTrack, Y, 0, 1, 0, 0, 0, 1); // start
+  Renderer.DrawLine(Right, Y-YSkip, Right, Y,0, 1, 0, 0, 0, 1); // end
   // draw time
   SetFontSize(FontSize);
-  TimeWidth := glTextWidth('00:00');
+  TimeWidth := TextWidth('00:00');
   SetFontPos(XTrack-TimeWidth-5, Y-YSkip);
-  glPrint(Format('%.2d:%.2d', [0,0]));
+  PrintText(Format('%.2d:%.2d', [0,0]));
   SetFontPos(Right-TimeWidth-5, Y-YSkip);
   {$IFDEF UseMIDIPort}
   MidiTimeToSeconds(MidiFile.GetTrackLength, tm, ts);
   {$ENDIF}
-  glPrint(Format('%.2d:%.2d', [tm,ts]));
+  PrintText(Format('%.2d:%.2d', [tm,ts]));
 
 
   // highlight selected track
-  DrawQuad(Padding, Y+ ifthen(SelMaxHeight, 0, SelTrack*YSkip), Right-Padding, YSelected, 0.8, 0.8, 0.8);
+  Renderer.DrawQuad(Padding, Y+ ifthen(SelMaxHeight, 0, SelTrack*YSkip), 0, Right-Padding, YSelected, 0.8, 0.8, 0.8, 1);
 
   // vertical grid
-  DrawLine(Padding,   Y,  Padding,   Bottom, 0, 0, 0);
-  DrawLine(XTrack,    Y,  XTrack,    Bottom, 0, 0, 0);
-  DrawLine(Right,     Y,  Right,     Bottom, 0, 0, 0);
+  Renderer.DrawLine(Padding,   Y,  Padding,   Bottom, 0, 1, 0, 0, 0, 1);
+  Renderer.DrawLine(XTrack,    Y,  XTrack,    Bottom, 0, 1, 0, 0, 0, 1);
+  Renderer.DrawLine(Right,     Y,  Right,     Bottom, 0, 1, 0, 0, 0, 1);
 
-  glColor3f(0, 0, 0);
-  DrawLine(Padding, Y, Right, Y, 0, 0, 0);
+  Renderer.DrawLine(Padding, Y, Right, Y, 0, 1, 0, 0, 0, 1);
   for Count := 0 to High(MTracks) do
   begin
     YHeight := ifthen(Count = SelTrack, YSelected, YSkip);
@@ -1065,38 +1063,38 @@ begin
     // draw track-selection
     if MTracks[Count].Status <> [] then
     begin
-      DrawQuad(Padding, Y, XTrack-Padding, YHeight, 0.8, 0.3, 0.3);
+      Renderer.DrawQuad(Padding, Y, 0, XTrack-Padding, YHeight, 0.8, 0.3, 0.3, 1);
     end;
 
     // draw track info
     if MTracks[Count].NoteType = ntAvail then
     begin
       if tsNotes in MTracks[Count].Status then
-        glColor3f(0, 0, 0)
+        SetFontColor(0, 0, 0, 1)
       else
-        glColor3f(0.7, 0.7, 0.7);
+        SetFontColor(0.7, 0.7, 0.7, 1);
       SetFontPos(Padding+FontSize, Y);
       SetFontSize(FontSize);
-      glPrint('N');
+      PrintText('N');
     end;
     if MTracks[Count].LyricType <> [] then
     begin
       if tsLyrics in MTracks[Count].Status then
-        glColor3f(0, 0, 0)
+        SetFontColor(0, 0, 0, 1)
       else
-        glColor3f(0.7, 0.7, 0.7);
+        SetFontColor(0.7, 0.7, 0.7, 1);
       SetFontPos(Padding+30, Y);
       SetFontSize(FontSize);
-      glPrint('L');
+      PrintText('L');
     end;
 
     // Draw track lines
-    DrawLine(Padding, Y+YHeight, Right, Y+YHeight, 0, 0, 0);
+    Renderer.DrawLine(Padding, Y+YHeight, Right, Y+YHeight, 0, 1, 0, 0, 0, 1);
 
     // Draw track names
     SetFontPos(XTrack+5, Y);
     SetFontSize(FontSize);
-    glPrint(MTracks[Count].Name);
+    PrintText(MTracks[Count].Name);
 
     // draw track notes
     //if Count = SelTrack then
@@ -1106,21 +1104,21 @@ begin
       YNote := NoteDiff / TrackDiff;
 
       if MTracks[Count].Note[Count2].EventType = MIDI_EVENTTYPE_NOTEON then
-        DrawQuad(XTrack + MTracks[Count].Note[Count2].Start/Len * TrackWidth,
-                 Y+YHeight - (YHeight - 2*Padding)*YNote - Padding,
+        Renderer.DrawQuad(XTrack + MTracks[Count].Note[Count2].Start/Len * TrackWidth,
+                 Y+YHeight - (YHeight - 2*Padding)*YNote - Padding, 0,
                  Max(1.0, (MTracks[Count].Note[Count2].Len/Len) * TrackWidth), Max(1.0, YHeight / TrackDiff),
-                 ColR[Count], ColG[Count], ColB[Count]);
+                 ColR[Count], ColG[Count], ColB[Count], 1);
       if MTracks[Count].Note[Count2].EventType = MIDI_EVENTTYPE_META_SYSEX then
-        DrawLine(XTrack + MTracks[Count].Note[Count2].Start/Len * TrackWidth, Y+YHeight - 0.25*YSkip,
-                 XTrack + MTracks[Count].Note[Count2].Start/Len * TrackWidth, Y+YHeight,
-                 ColR[Count], ColG[Count], ColB[Count]);
+        Renderer.DrawLine(XTrack + MTracks[Count].Note[Count2].Start/Len * TrackWidth, Y+YHeight - 0.25*YSkip,
+                 XTrack + MTracks[Count].Note[Count2].Start/Len * TrackWidth, Y+YHeight, 0, 1,
+                 ColR[Count], ColG[Count], ColB[Count], 1);
     end;
 
     Y := Y + YHeight;
   end;
 
   // last horizontal track line
-  DrawLine(Padding, Y+YHeight, Right, Y+YHeight, 0, 0, 0);
+  Renderer.DrawLine(Padding, Y+YHeight, Right, Y+YHeight, 0, 1, 0, 0, 0, 1);
 
 
   // update tracks area for mouse interaction (e.g. seeking bar)
@@ -1136,7 +1134,7 @@ begin
     TrackPos := XTrack + (MidiFile.GetCurrentTime/MidiFile.GetTrackLength) * TrackWidth;
     if MidiFile.GetCurrentTime > MidiFile.GetTrackLength then StopPlayback;
   {$ENDIF}
-  DrawLine(TrackPos, Top, TrackPos, Bottom, 0.3, 0.3, 0.3);
+  Renderer.DrawLine(TrackPos, Top, TrackPos, Bottom, 0, 1, 0.3, 0.3, 0.3, 1);
 
   // TODO: time stamp (in seconds) seems to run slower than actual seconds. IIRC the calculation is correct. Could be related to the Mouse lag while playing
   SetFontSize(FontSize);
@@ -1144,7 +1142,7 @@ begin
   {$IFDEF UseMIDIPort}
   MidiTimeToSeconds(MidiFile.GetCurrentTime, tm, ts);
   {$ENDIF}
-  glPrint(Format('%.2d:%.2d', [tm, ts]));
+  PrintText(Format('%.2d:%.2d', [tm, ts]));
 end;
 
 procedure TScreenEditConvert.DrawChannels(InWidth: real; Offset: real = 0.5);
@@ -1184,15 +1182,15 @@ begin
   Right := Left + InWidth - Padding;
 
   // highlight selected channel
-  DrawQuad(XPadding, Y+SelChannel*YHeight, InWidth - 2*Padding, YHeight, 0.8, 0.8, 0.8);
+  Renderer.DrawQuad(XPadding, Y+SelChannel*YHeight, 0, InWidth - 2*Padding, YHeight, 0.8, 0.8, 0.8, 1);
 
   SetFontSize(FontSize);
-  X := glTextWidth('XXX');
+  X := TextWidth('XXX');
   XChannel := 0;
 
   for Count := 0 to High(Channels) do
   begin
-    glColor3f(0, 0, 0);
+    SetFontColor(0, 0, 0, 1);
 
     // draw channel-filter state
     if Channels[Count].Filter then
@@ -1200,17 +1198,17 @@ begin
       SetFontPos(XPadding, Y);
       SetFontSize(FontSize);
 
-      glPrint(' X ');
+      PrintText(' X ');
     end;
 
     // draw channel name
     SetFontPos(XPadding+X, Y);
     SetFontSize(FontSize);
-    XChannel := Max(XChannel, glTextWidth(Channels[Count].Name));
-    glPrint(Channels[Count].Name);
+    XChannel := Max(XChannel, TextWidth(Channels[Count].Name));
+    PrintText(Channels[Count].Name);
 
     // Draw track lines
-    DrawLine(XPadding, Y, Right, Y, 0, 0, 0);
+    Renderer.DrawLine(XPadding, Y, Right, Y, 0, 1, 0, 0, 0, 1);
 
     Y := Y + YHeight;
   end;
@@ -1218,10 +1216,10 @@ begin
   XChannel := XPadding + X + XChannel + 10;
 
   // grid
-  DrawLine(XPadding, Y, Right, Y, 0, 0, 0); // horz
-  DrawLine(XPadding, Top, XPadding, Bottom, 0, 0, 0);
-  DrawLine(XChannel, Top, XChannel, Bottom, 0, 0, 0);
-  DrawLine(Right,    Top, Right,    Bottom, 0, 0, 0);
+  Renderer.DrawLine(XPadding, Y, Right, Y, 0, 1, 0, 0, 0, 1); // horz
+  Renderer.DrawLine(XPadding, Top, XPadding, Bottom, 0, 1, 0, 0, 0, 1);
+  Renderer.DrawLine(XChannel, Top, XChannel, Bottom, 0, 1,  0, 0, 0, 1);
+  Renderer.DrawLine(Right,    Top, Right,    Bottom, 0, 1, 0, 0, 0, 1);
 end;
 
 procedure TScreenEditConvert.OnHide;

@@ -36,9 +36,9 @@ interface
 uses
   UCommon,
   UThemes,
-  UTexture,
   UMenuBackground,
-  UPath;
+  UPath,
+  URenderer;
 
 //TMenuBackgroundFade - Background Fade In for Overlay screens
 //--------
@@ -66,7 +66,6 @@ const
 implementation
 uses
   sdl2,
-  dglOpenGL,
   USkins,
   UGraphic;
 
@@ -82,9 +81,9 @@ begin
   if (Length(ThemedSettings.Tex) > 0) then
   begin
     texFilename := Skin.GetTextureFileName(ThemedSettings.Tex);
-    Tex         := Texture.GetTexture(texFilename, TEXTURE_TYPE_PLAIN);
+    Tex         := Renderer.GetTexture(texFilename, TEXTURE_TYPE_PLAIN);
 
-    UseTexture  := (Tex.TexNum <> 0);
+    UseTexture  := (Tex <> nil);
   end
   else
     UseTexture := false;
@@ -95,9 +94,7 @@ end;
 
 destructor  TMenuBackgroundFade.Destroy;
 begin
-  //Why isn't there any Tex.free method?
-  {if UseTexture then
-    FreeandNil(Tex); }
+  Tex.Free;
   inherited;
 end;
 
@@ -124,51 +121,27 @@ begin
   if (UseTexture) then
   begin //Draw Texture to Screen
     if (ScreenAct = 1) then //Clear just once when in dual screen mode
-      glClear(GL_DEPTH_BUFFER_BIT);
+      Renderer.ClearFrameBuffer(CLEAR_DEPTH);
 
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glColorRGB(Color, Progress);
-    glBindTexture(GL_TEXTURE_2D, Tex.TexNum);
-
-    glBegin(GL_QUADS);
-      glTexCoord2f(Tex.TexX1*Tex.TexW, Tex.TexY1*Tex.TexH);
-      glVertex2f(0, 0);
-
-      glTexCoord2f(Tex.TexX1*Tex.TexW, Tex.TexY2*Tex.TexH);
-      glVertex2f(0, 600);
-
-      glTexCoord2f(Tex.TexX2*Tex.TexW, Tex.TexY2*Tex.TexH);
-      glVertex2f(800, 600);
-
-      glTexCoord2f(Tex.TexX2*Tex.TexW, Tex.TexY1*Tex.TexH);
-      glVertex2f(800, 0);
-    glEnd;
-
-    glDisable(GL_BLEND);
-    glDisable(GL_TEXTURE_2D);
+    with Tex do
+    begin
+      X := 0;
+      Y := 0;
+      W := RenderW;
+      H := RenderH;
+      ColR := Color.R;
+      ColG := Color.G;
+      ColB := Color.B;
+      Alpha := Progress;
+    end;
+    Renderer.DrawTexture(Tex);
   end
   else
   begin //Clear Screen w/ progress Alpha + Color
     if (ScreenAct = 1) then //Clear just once when in dual screen mode
-      glClear(GL_DEPTH_BUFFER_BIT);
+      Renderer.ClearFrameBuffer(CLEAR_DEPTH);
       
-    glDisable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glColorRGB(Color, Progress);
-
-    glBegin(GL_QUADS);
-      glVertex2f(0, 0);
-      glVertex2f(0, 600);
-      glVertex2f(800, 600);
-      glVertex2f(800, 0);
-    glEnd;
-
-    glDisable(GL_BLEND);
+    Renderer.DrawQuad(0, 0, 0, RenderW, RenderH, Color.R, Color.G, Color.B, Progress);
   end;  
 end;
 

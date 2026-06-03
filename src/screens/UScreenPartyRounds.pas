@@ -86,7 +86,6 @@ uses
   UPlaylist,
   USong,
   USongs,
-  UTexture,
   UUnicodeUtils;
 
 procedure TScreenPartyRounds.InteractNext;

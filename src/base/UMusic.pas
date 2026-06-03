@@ -521,6 +521,7 @@ type
 
       // Interface for Visualizer
       function GetPCMData(var Data: TPCMData): Cardinal;
+      function GetFormatInfo(): TAudioFormatInfo;
 
       function CreateVoiceStream(ChannelMap: integer; FormatInfo: TAudioFormatInfo): TAudioVoiceStream;
       function CreatePlaybackStreamForSource(SourceStream: TAudioSourceStream): TAudioPlaybackStream;
