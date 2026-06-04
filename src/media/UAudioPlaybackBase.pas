@@ -241,10 +241,7 @@ function TAudioPlaybackBase.OpenDecodeStream(const Filename: IPath): TAudioDecod
 var
   i: integer;
 begin
-  // If MIDI emulation is enabled, avoid letting generic audio decoders
-  // open .mid/.midi files as PCM. These files should be handled by the
-  // MIDI subsystem (MidiFile/MidiOut) so that our MidiEmu receives events.
-  {$IFDEF UseMidiEmu}
+  // MIDI files are handled by MidiFile/MidiOut so MidiEmu receives events.
   try
     if (LowerCase(ExtractFileExt(Filename.ToNative)) = '.mid') or
        (LowerCase(ExtractFileExt(Filename.ToNative)) = '.midi') then
@@ -256,7 +253,6 @@ begin
   except
     // ignore any exception from ExtractFileExt and continue
   end;
-  {$ENDIF}
   for i := 0 to AudioDecoders.Count-1 do
   begin
     Result := IAudioDecoder(AudioDecoders[i]).Open(Filename);
