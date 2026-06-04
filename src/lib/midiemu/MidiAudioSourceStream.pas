@@ -34,8 +34,9 @@ type
     FPhase: Double;
     FRelease: Boolean;
     FEnvLevel: Double;
-    FOvertoneLevel: Double;
-    FOvertoneDecay: Double;
+    FNoteAge: Double;
+    FReleaseAge: Double;
+    FReleaseLevel: Double;
     FLock: TCriticalSection;
   protected
     function IsEOF: boolean; override;
@@ -55,6 +56,35 @@ type
 
 implementation
 
+const
+  PianoAttackTime = 0.003;
+  PianoDecayTime = 1.35;
+  PianoReleaseTime = 0.080;
+  PianoGain = 0.58;
+  PianoSilenceLevel = 0.0004;
+
+function PianoEnvelope(Age: Double): Double;
+begin
+  if Age < PianoAttackTime then
+    Result := Age / PianoAttackTime
+  else
+    Result := Exp(-(Age - PianoAttackTime) / PianoDecayTime);
+end;
+
+function PianoWave(Phase, Age: Double): Double;
+var
+  Bright: Double;
+begin
+  Bright := Exp(-Age / 0.45);
+
+  Result :=
+    Sin(Phase) +
+    0.22 * Bright * Sin(2.001 * Phase) +
+    0.12 * Bright * Sin(3.006 * Phase) +
+    0.06 * Bright * Sin(4.014 * Phase) +
+    0.03 * Bright * Sin(5.025 * Phase);
+end;
+
 constructor TMidiAudioSourceStream.Create(MidiFile: Pointer; Format: TAudioFormatInfo);
 begin
   FFormat := Format.Copy;
@@ -66,8 +96,9 @@ begin
   FNote := -1;
   FFreq := 440.0;
   FVel := 0.0;
-  FOvertoneLevel := 0.0;
-  FOvertoneDecay := Power(3e-10, 1 / FFormat.SampleRate); // after 1s amplitude has fallen to 3e-10
+  FNoteAge := 0.0;
+  FReleaseAge := 0.0;
+  FReleaseLevel := 0.0;
   FLock := TCriticalSection.Create;
   Log.LogDebug('MidiAudioSourceStream: Created', 'MidiSynth');
 end;
@@ -105,8 +136,7 @@ var
   Frames: Integer;
   s: PSmallInt;
   i, j: Integer;
-  phaseInc, sample, overtone: Double;
-  attackStep, releaseStep: Double;
+  phaseInc, sample, sampleTime: Double;
   outSample: SmallInt;
   tempSample: Int64;
 begin
@@ -114,8 +144,7 @@ begin
   Channels := Trunc(FFormat.Channels);
   Frames := BufferSize div (Channels * 2); // 2 bytes per sample
   s := PSmallInt(Buffer);
-  attackStep := 1.0 / (0.005 * SampleRate);  // 5ms attack
-  releaseStep := 1.0 / (0.005 * SampleRate); // 5ms release
+  sampleTime := 1.0 / SampleRate;
 
   FLock.Enter;
   try
@@ -125,27 +154,23 @@ begin
       // Envelope
       if FRelease then
       begin
-        FEnvLevel := FEnvLevel - releaseStep;
-        if FEnvLevel <= 0 then
+        FReleaseAge := FReleaseAge + sampleTime;
+        FEnvLevel := FReleaseLevel * Exp(-FReleaseAge / PianoReleaseTime);
+        if FEnvLevel <= PianoSilenceLevel then
         begin
           FEnvLevel := 0;
           FActive := False;
         end;
       end
-      else if FEnvLevel < 1.0 then
+      else if FActive then
       begin
-        FEnvLevel := FEnvLevel + attackStep;
-        if FEnvLevel > 1.0 then FEnvLevel := 1.0;
+        FNoteAge := FNoteAge + sampleTime;
+        FEnvLevel := PianoEnvelope(FNoteAge);
       end;
 
       if FActive then
       begin
-        sample := Sin(FPhase) * FVel * FEnvLevel;
-        // Add overtone with exponential decay for note restart detection
-        overtone := Sin(2 * FPhase) * FOvertoneLevel * FEnvLevel;
-        sample := sample + overtone;
-        // Decay overtone
-        FOvertoneLevel := FOvertoneLevel * FOvertoneDecay;
+        sample := PianoWave(FPhase, FNoteAge) * FVel * FEnvLevel * PianoGain;
         // FPhase handling: keep between -Pi and +Pi
         FPhase := FPhase + phaseInc;
         if FPhase > Pi then FPhase := FPhase - 2 * Pi;
@@ -199,6 +224,9 @@ begin
       FEnvLevel := 0;
       FVel := 0;
       FNote := -1;
+      FNoteAge := 0;
+      FReleaseAge := 0;
+      FReleaseLevel := 0;
       Exit;
     end;
 
@@ -211,13 +239,18 @@ begin
       FVel := Sqr(Data2 / 127.0);
       FActive := True;
       FRelease := False;
-      // Add overtone for note restart detection
-      FOvertoneLevel := 0.5 * FVel; // Start overtone at half velocity
+      FEnvLevel := 0;
+      FPhase := 0;
+      FNoteAge := 0;
+      FReleaseAge := 0;
+      FReleaseLevel := 0;
       Exit;
     end;
     // NOTE OFF
     if ((((MidiMessage and $F0) = MIDI_NOTEON) and (Data2 = 0)) or ((MidiMessage and $F0) = MIDI_NOTEOFF)) and (FNote = Data1) then
     begin
+      FReleaseAge := 0;
+      FReleaseLevel := FEnvLevel;
       FRelease := True;
     end;
   finally
