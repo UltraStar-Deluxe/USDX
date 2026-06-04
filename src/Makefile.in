@@ -31,6 +31,9 @@ MKDIR     ?= @MKDIR_P@
 RM        ?= rm -f
 RM_REC    ?= $(RM) -r
 
+# python interpreter used by helper scripts
+PYTHON ?= python3
+
 #################################################
 # General package configuration
 #################################################
@@ -182,6 +185,11 @@ STATIC_LIBS += $(OPENCV_CWRAPPER_LIB)
 endif
 endif
 
+WINDOWS_RUNTIME_DEPS :=
+ifeq ($(EXEEXT),.exe)
+WINDOWS_RUNTIME_DEPS := windows-runtime-deps
+endif
+
 #################################################
 # general targets
 #################################################
@@ -216,6 +224,10 @@ release-build: build
 rebuild: clean_obj
 	$(MAKE) build
 
+.PHONY: windows-runtime-deps
+windows-runtime-deps:
+	$(PYTHON) "$(top_srcdir)/dldlls.py" --ensure
+
 # Build if files changed. Always clean old data before compiling.
 # FPC does not reliably recognize changes, neither in .pas, 
 # .inc-files nor static libs (.a/.o). This might result in corrupted 
@@ -245,6 +257,7 @@ create-pathinfo:
 	echo "INSTALL_DATADIR = '$(INSTALL_DATADIR)';" > paths.inc
 
 # check if any src-file changed and rebuild
+$(USDX_BIN): | $(WINDOWS_RUNTIME_DEPS)
 $(USDX_BIN): $(USDX_PROJ) $(STATIC_LIBS) $(SRC_FILES)
 	@echo "==================================="
 	@echo "Changed files:"
