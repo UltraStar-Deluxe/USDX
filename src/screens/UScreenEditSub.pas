@@ -53,7 +53,6 @@ uses
   dglOpenGL,
   Math,
   MidiOut,
-  MidiCons,
   UMidiInput,
   sdl2,
   strutils,
@@ -986,14 +985,12 @@ end;
 procedure TScreenEditSub.ReleaseMidiLastNote;
 begin
   if Assigned(MidiOut) and (MidiLastPitch >= 0) then
-    MidiOut.PutShort(MIDI_NOTEOFF or 1, MidiLastPitch, 127);
+    MidiOut.NoteOff(MidiLastPitch);
 
   ResetMidiLastNote;
 end;
 
 procedure TScreenEditSub.StopMidiPlayback;
-var
-  Channel: Integer;
 begin
   PlaySentenceMidi := false;
   PlayOneMidi := false;
@@ -1002,14 +999,7 @@ begin
   if Assigned(MidiOut) then
   begin
     ReleaseMidiLastNote;
-
-    for Channel := 0 to 15 do
-    begin
-      MidiOut.PutShort(MIDI_CONTROLCHANGE or Channel, $78, 0);
-      MidiOut.PutShort(MIDI_CONTROLCHANGE or Channel, MIDI_ALLNOTESOFF, 0);
-    end;
-
-    MidiOut.PutShort(MIDI_STOP, 0, 0);
+    MidiOut.StopAll;
   end;
 
   ResetMidiLastNote;
@@ -5810,7 +5800,7 @@ begin
       if (CurrentBeat >= CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[MidiLastNote].StartBeat + CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[MidiLastNote].Duration) then
       begin
         if MidiLastPitch >= 0 then
-          MidiOut.PutShort(MIDI_NOTEOFF or 1, MidiLastPitch, 127);
+          MidiOut.NoteOff(MidiLastPitch);
         ResetMidiLastNote;
       end;
     end;
@@ -5821,11 +5811,11 @@ begin
         if (CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].StartBeat = CurrentBeat) then
         begin
           LastClick := CurrentBeat;
-          MidiOut.PutShort($B1, $7, Floor(1.27*SelectsS[VolumeMidiSlideId].SelectedOption));
+          MidiOut.SetVolume(SelectsS[VolumeMidiSlideId].SelectedOption / 100);
           if MidiLastPitch >= 0 then
-            MidiOut.PutShort(MIDI_NOTEOFF or 1, MidiLastPitch, 127);
+            MidiOut.NoteOff(MidiLastPitch);
           MidiPitch := GetMidiPitch(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[NoteIndex].Tone);
-          MidiOut.PutShort($91, MidiPitch, 127);
+          MidiOut.NoteOn(MidiPitch);
           MidiLastTrack := CurrentTrack;
           MidiLastLine  := CurrentSong.Tracks[CurrentTrack].CurrentLine;
           MidiLastNote  := NoteIndex;
@@ -5927,11 +5917,11 @@ begin
         begin
           LastClick := CurrentBeat;
           midinotefound := true;
-          MidiOut.PutShort($B1, $7, Floor(1.27 * SelectsS[VolumeMidiSlideId].SelectedOption));
+          MidiOut.SetVolume(SelectsS[VolumeMidiSlideId].SelectedOption / 100);
           if MidiLastPitch >= 0 then
-            MidiOut.PutShort($81, MidiLastPitch, 127);
+            MidiOut.NoteOff(MidiLastPitch);
           MidiPitch := GetMidiPitch(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Tone);
-          MidiOut.PutShort($91, MidiPitch, 127);
+          MidiOut.NoteOn(MidiPitch);
 
           MidiLastTrack := CurrentTrack;
           MidiLastLine  := CurrentSong.Tracks[CurrentTrack].CurrentLine;

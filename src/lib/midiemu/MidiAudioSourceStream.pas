@@ -18,8 +18,17 @@ uses
   Math,
   UMusic,
   ULog,
-  SyncObjs,
-  MidiCons;
+  SyncObjs;
+
+type
+  TSynthEventKind = (sekNoteOn, sekNoteOff, sekStopAll);
+
+  TScheduledSynthEvent = record
+    Time: Double;
+    Kind: TSynthEventKind;
+    Pitch: Byte;
+    Velocity: Byte;
+  end;
 
 type
   TMidiAudioSourceStream = class(TAudioSourceStream)
@@ -37,7 +46,14 @@ type
     FNoteAge: Double;
     FReleaseAge: Double;
     FReleaseLevel: Double;
+    FEvents: array of TScheduledSynthEvent;
     FLock: TCriticalSection;
+
+    procedure QueueEvent(Time: Double; Kind: TSynthEventKind; Pitch: Byte; Velocity: Byte);
+    procedure ProcessEvents(Time: Double);
+    procedure ApplyNoteOn(Pitch: Byte; Velocity: Byte);
+    procedure ApplyNoteOff(Pitch: Byte);
+    procedure ApplyStopAll;
   protected
     function IsEOF: boolean; override;
     function IsError: boolean; override;
@@ -47,45 +63,50 @@ type
     function GetLoop(): boolean; override;
     procedure SetLoop(Enabled: boolean); override;
   public
-    constructor Create(MidiFile: Pointer; Format: TAudioFormatInfo); // MidiFile unused for now
+    constructor Create(Format: TAudioFormatInfo);
+    destructor Destroy; override;
     function ReadData(Buffer: PByte; BufferSize: integer): integer; override;
     function GetAudioFormatInfo: TAudioFormatInfo; override;
     procedure Close; override;
-    procedure HandleMidiEvent(MidiMessage: byte; Data1: byte; Data2: byte);
+    procedure NoteOn(Pitch: Byte; Velocity: Byte = 127; Time: Double = -1.0);
+    procedure NoteOff(Pitch: Byte; Time: Double = -1.0);
+    procedure StopAll(Time: Double = -1.0);
   end;
 
 implementation
 
 const
-  PianoAttackTime = 0.003;
-  PianoDecayTime = 1.35;
-  PianoReleaseTime = 0.080;
-  PianoGain = 0.58;
-  PianoSilenceLevel = 0.0004;
+  OrganAttackTime = 0.004;
+  OrganReleaseTime = 0.050;
+  OrganGain = 0.62;
+  OrganSilenceLevel = 0.0004;
 
-function PianoEnvelope(Age: Double): Double;
+function OrganEnvelope(Age: Double): Double;
 begin
-  if Age < PianoAttackTime then
-    Result := Age / PianoAttackTime
+  if Age < OrganAttackTime then
+    Result := Age / OrganAttackTime
   else
-    Result := Exp(-(Age - PianoAttackTime) / PianoDecayTime);
+    Result := 1.0;
 end;
 
-function PianoWave(Phase, Age: Double): Double;
+function OrganWave(Phase, Age: Double): Double;
 var
-  Bright: Double;
+  Percussion: Double;
 begin
-  Bright := Exp(-Age / 0.45);
+  Percussion := Exp(-Age / 0.16);
 
   Result :=
-    Sin(Phase) +
-    0.22 * Bright * Sin(2.001 * Phase) +
-    0.12 * Bright * Sin(3.006 * Phase) +
-    0.06 * Bright * Sin(4.014 * Phase) +
-    0.03 * Bright * Sin(5.025 * Phase);
+    0.72 * Sin(Phase) +
+    0.18 * Sin(2.0 * Phase) +
+    0.10 * Sin(3.0 * Phase) +
+    Percussion * (
+      0.28 * Sin(4.0 * Phase) +
+      0.14 * Sin(5.0 * Phase) +
+      0.08 * Sin(6.0 * Phase)
+    );
 end;
 
-constructor TMidiAudioSourceStream.Create(MidiFile: Pointer; Format: TAudioFormatInfo);
+constructor TMidiAudioSourceStream.Create(Format: TAudioFormatInfo);
 begin
   FFormat := Format.Copy;
   FEnvLevel := 0;
@@ -99,8 +120,15 @@ begin
   FNoteAge := 0.0;
   FReleaseAge := 0.0;
   FReleaseLevel := 0.0;
+  System.SetLength(FEvents, 0);
   FLock := TCriticalSection.Create;
   Log.LogDebug('MidiAudioSourceStream: Created', 'MidiSynth');
+end;
+
+destructor TMidiAudioSourceStream.Destroy;
+begin
+  Close;
+  inherited Destroy;
 end;
 
 function TMidiAudioSourceStream.IsEOF: boolean;
@@ -125,7 +153,14 @@ end;
 
 procedure TMidiAudioSourceStream.SetPosition(Time: real);
 begin
-  FPosition := Time;
+  FLock.Enter;
+  try
+    FPosition := Time;
+    System.SetLength(FEvents, 0);
+    ApplyStopAll;
+  finally
+    FLock.Leave;
+  end;
 end;
 
 function TMidiAudioSourceStream.ReadData(Buffer: PByte; BufferSize: integer): integer;
@@ -136,7 +171,7 @@ var
   Frames: Integer;
   s: PSmallInt;
   i, j: Integer;
-  phaseInc, sample, sampleTime: Double;
+  phaseInc, sample, sampleTime, frameTime: Double;
   outSample: SmallInt;
   tempSample: Int64;
 begin
@@ -151,12 +186,16 @@ begin
     phaseInc := 2 * Pi * FFreq / SampleRate;
     for i := 0 to Frames - 1 do
     begin
+      frameTime := FPosition + i * sampleTime;
+      ProcessEvents(frameTime);
+      phaseInc := 2 * Pi * FFreq / SampleRate;
+
       // Envelope
       if FRelease then
       begin
         FReleaseAge := FReleaseAge + sampleTime;
-        FEnvLevel := FReleaseLevel * Exp(-FReleaseAge / PianoReleaseTime);
-        if FEnvLevel <= PianoSilenceLevel then
+        FEnvLevel := FReleaseLevel * Exp(-FReleaseAge / OrganReleaseTime);
+        if FEnvLevel <= OrganSilenceLevel then
         begin
           FEnvLevel := 0;
           FActive := False;
@@ -165,12 +204,12 @@ begin
       else if FActive then
       begin
         FNoteAge := FNoteAge + sampleTime;
-        FEnvLevel := PianoEnvelope(FNoteAge);
+        FEnvLevel := OrganEnvelope(FNoteAge);
       end;
 
       if FActive then
       begin
-        sample := PianoWave(FPhase, FNoteAge) * FVel * FEnvLevel * PianoGain;
+        sample := OrganWave(FPhase, FNoteAge) * FVel * FEnvLevel * OrganGain;
         // FPhase handling: keep between -Pi and +Pi
         FPhase := FPhase + phaseInc;
         if FPhase > Pi then FPhase := FPhase - 2 * Pi;
@@ -192,6 +231,8 @@ begin
         Inc(s);
       end;
     end;
+
+    FPosition := FPosition + Frames * sampleTime;
   finally
     FLock.Leave;
   end;
@@ -206,53 +247,125 @@ end;
 
 procedure TMidiAudioSourceStream.Close;
 begin
-  FreeAndNil(FFormat);
-  FreeAndNil(FLock);
+  if Assigned(FFormat) then
+    FreeAndNil(FFormat);
+  if Assigned(FLock) then
+    FreeAndNil(FLock);
 end;
 
-procedure TMidiAudioSourceStream.HandleMidiEvent(MidiMessage: byte; Data1: byte; Data2: byte);
+procedure TMidiAudioSourceStream.QueueEvent(Time: Double; Kind: TSynthEventKind; Pitch: Byte; Velocity: Byte);
+var
+  Index: Integer;
+  Count: Integer;
+begin
+  if Time < 0 then
+    Time := FPosition
+  else if Time < FPosition then
+    Time := FPosition;
+
+  Count := System.Length(FEvents);
+  System.SetLength(FEvents, Count + 1);
+  Index := Count;
+  while (Index > 0) and (FEvents[Index - 1].Time > Time) do
+  begin
+    FEvents[Index] := FEvents[Index - 1];
+    Dec(Index);
+  end;
+
+  FEvents[Index].Time := Time;
+  FEvents[Index].Kind := Kind;
+  FEvents[Index].Pitch := Pitch;
+  FEvents[Index].Velocity := Velocity;
+end;
+
+procedure TMidiAudioSourceStream.ProcessEvents(Time: Double);
+var
+  i: Integer;
+  Event: TScheduledSynthEvent;
+begin
+  while (System.Length(FEvents) > 0) and (FEvents[0].Time <= Time) do
+  begin
+    Event := FEvents[0];
+    for i := 1 to High(FEvents) do
+      FEvents[i - 1] := FEvents[i];
+    System.SetLength(FEvents, System.Length(FEvents) - 1);
+
+    case Event.Kind of
+      sekNoteOn:
+        ApplyNoteOn(Event.Pitch, Event.Velocity);
+      sekNoteOff:
+        ApplyNoteOff(Event.Pitch);
+      sekStopAll:
+        ApplyStopAll;
+    end;
+  end;
+end;
+
+procedure TMidiAudioSourceStream.ApplyNoteOn(Pitch: Byte; Velocity: Byte);
+begin
+  FNote := Pitch;
+  FFreq := 440.0 * Power(2.0, (FNote - 69) / 12.0);
+  FVel := Sqr(Velocity / 127.0);
+  FActive := True;
+  FRelease := False;
+  FEnvLevel := 0;
+  FPhase := 0;
+  FNoteAge := 0;
+  FReleaseAge := 0;
+  FReleaseLevel := 0;
+end;
+
+procedure TMidiAudioSourceStream.ApplyNoteOff(Pitch: Byte);
+begin
+  if (FNote = Pitch) and FActive then
+  begin
+    FReleaseAge := 0;
+    FReleaseLevel := FEnvLevel;
+    FRelease := True;
+  end;
+end;
+
+procedure TMidiAudioSourceStream.ApplyStopAll;
+begin
+  FActive := False;
+  FRelease := False;
+  FEnvLevel := 0;
+  FVel := 0;
+  FNote := -1;
+  FNoteAge := 0;
+  FReleaseAge := 0;
+  FReleaseLevel := 0;
+  System.SetLength(FEvents, 0);
+end;
+
+procedure TMidiAudioSourceStream.NoteOn(Pitch: Byte; Velocity: Byte; Time: Double);
 begin
   FLock.Enter;
   try
-    if ((((MidiMessage and $F0) = MIDI_CONTROLCHANGE) and
-         ((Data1 = MIDI_ALLNOTESOFF) or (Data1 = $78))) or
-        (MidiMessage = MIDI_STOP) or
-        (MidiMessage = MIDI_SYSTEMRESET)) then
-    begin
-      FActive := False;
-      FRelease := False;
-      FEnvLevel := 0;
-      FVel := 0;
-      FNote := -1;
-      FNoteAge := 0;
-      FReleaseAge := 0;
-      FReleaseLevel := 0;
-      Exit;
-    end;
+    QueueEvent(Time, sekNoteOn, Pitch, Velocity);
+    ProcessEvents(FPosition);
+  finally
+    FLock.Leave;
+  end;
+end;
 
-    // NOTE ON
-    if ((MidiMessage and $F0) = MIDI_NOTEON) and (Data2 <> 0) then
-    begin
-      FNote := Data1;
-      FFreq := 440.0 * Power(2.0, (FNote - 69)/12.0);
-      // Velocity mapping: amplitude proportional to square of velocity
-      FVel := Sqr(Data2 / 127.0);
-      FActive := True;
-      FRelease := False;
-      FEnvLevel := 0;
-      FPhase := 0;
-      FNoteAge := 0;
-      FReleaseAge := 0;
-      FReleaseLevel := 0;
-      Exit;
-    end;
-    // NOTE OFF
-    if ((((MidiMessage and $F0) = MIDI_NOTEON) and (Data2 = 0)) or ((MidiMessage and $F0) = MIDI_NOTEOFF)) and (FNote = Data1) then
-    begin
-      FReleaseAge := 0;
-      FReleaseLevel := FEnvLevel;
-      FRelease := True;
-    end;
+procedure TMidiAudioSourceStream.NoteOff(Pitch: Byte; Time: Double);
+begin
+  FLock.Enter;
+  try
+    QueueEvent(Time, sekNoteOff, Pitch, 0);
+    ProcessEvents(FPosition);
+  finally
+    FLock.Leave;
+  end;
+end;
+
+procedure TMidiAudioSourceStream.StopAll(Time: Double);
+begin
+  FLock.Enter;
+  try
+    QueueEvent(Time, sekStopAll, 0, 0);
+    ProcessEvents(FPosition);
   finally
     FLock.Leave;
   end;

@@ -259,8 +259,7 @@ begin
             begin
               if IsPlaying then
               begin
-                MidiOut.PutShort(MIDI_STOP, 0, 0);
-                MidiOut.PutShort(MIDI_NOTEOFF or 1, 0, 127);
+                MidiOut.StopAll;
                 MidiFile.OnMidiEvent := nil;
                 MidiFile.StopPlaying;
                 Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAY');
@@ -270,6 +269,7 @@ begin
               begin
                 MidiFile.OnMidiEvent := MidiFile1MidiEvent;
                 //MidiFile.GoToTime(MidiFile.GetTrackLength div 2);
+                MidiOut.SetPosition(MidiFile.GetCurrentTime / 1000);
                 MidiFile.ContinuePlaying;
                 Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PAUSE');
                 IsPlaying := true;
@@ -304,6 +304,7 @@ begin
                     else MidiTrack.OnMidiEvent := nil;
                   end;
 
+                  MidiOut.SetPosition(MidiFile.GetCurrentTime / 1000);
                   MidiFile.ContinuePlaying;
                   Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PAUSE');
                   Button[1].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAY');
@@ -472,6 +473,8 @@ begin
       seektime := seektime * MidiFile.GetTrackLength;
       if seektime < MidiFile.GetCurrentTime then
         MidiFile.GoToTime(trunc(seektime));
+      MidiOut.StopAll;
+      MidiOut.SetPosition(seektime / 1000);
 
       for i := 0 to High(MTracks) do
       begin
@@ -716,10 +719,25 @@ begin
 end;
 
 procedure TScreenEditConvert.MidiFile1MidiEvent(event: PMidiEvent);
+var
+  EventTime: Double;
 begin
   //Log.LogStatus(IntToStr(event.event), 'MIDI');
   try
-    MidiOut.PutShort(event.event, event.data1, event.data2);
+    EventTime := event.time * MidiFile.GetFusPerTick / 1000000.0;
+
+    if ((event.event and $F0) = MIDI_NOTEON) and (event.data2 <> 0) then
+      MidiOut.NoteOn(event.data1, event.data2, EventTime)
+    else if (((event.event and $F0) = MIDI_NOTEOFF) or
+             (((event.event and $F0) = MIDI_NOTEON) and (event.data2 = 0))) then
+      MidiOut.NoteOff(event.data1, EventTime)
+    else if ((event.event and $F0) = MIDI_CONTROLCHANGE) and (event.data1 = 7) then
+      MidiOut.SetVolume(event.data2 / 127)
+    else if ((event.event and $F0) = MIDI_CONTROLCHANGE) and
+            ((event.data1 = MIDI_ALLNOTESOFF) or (event.data1 = $78)) then
+      MidiOut.StopAll(EventTime)
+    else if (event.event = MIDI_STOP) or (event.event = MIDI_SYSTEMRESET) then
+      MidiOut.StopAll(EventTime);
   except
     MidiFile.StopPlaying();
   end;
@@ -1228,8 +1246,8 @@ begin
 
     MidiFile.StopPlaying;
 
-    MidiOut.Close;
-    MidiOut.Open;
+    MidiOut.StopAll;
+    MidiOut.SetPosition(0);
 
     Button[1].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAY');
     Button[2].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAYSELECTED');
