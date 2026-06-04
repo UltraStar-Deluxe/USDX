@@ -60,8 +60,6 @@ fi
 
 deps+=('dav1d,https://downloads.videolan.org/pub/videolan/dav1d/1.5.3/dav1d-1.5.3.tar.xz,a547b3830b3469ef9e6a33a2fa62b714eb1f611c')
 deps+=('ffmpeg,https://ffmpeg.org/releases/ffmpeg-8.1.1.tar.xz,0b8318579556aaa736096ceb1e8333d2260b63bf')
-deps+=('portmidi,https://sourceforge.net/projects/portmedia/files/portmidi/217/portmidi-src-217.zip,f45bf4e247c0d7617deacd6a65d23d9fddae6117')
-deps+=('portmidi-debian,http://http.debian.net/debian/pool/main/p/portmidi/portmidi_217-6.debian.tar.xz,02e4c6dcfbd35a75913de2acd39be8f0cfd0b244')
 deps+=('lua,https://www.lua.org/ftp/lua-5.4.8.tar.gz,ced7c0ec99ad9d984ad3e7af5fcd2deef2b33f9f')
 deps+=('libjpeg-turbo,https://download.sourceforge.net/libjpeg-turbo/libjpeg-turbo-2.1.5.1.tar.gz,3ec9f6a19781a583285d93c2c4653f3dbe845fcc')
 deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.58.tar.xz,6263409a6907d180e7b990827ca84ee944c6cc17')
