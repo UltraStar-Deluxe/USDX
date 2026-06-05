@@ -575,6 +575,11 @@
       </SyntaxOptions>
     </Parsing>
     <Linking>
+      <Options>
+        <Win32>
+          <GraphicApplication Value="True"/>
+        </Win32>
+      </Options>
       <Debugging>
         <DebugInfoType Value="dsStabs"/>
       </Debugging>
