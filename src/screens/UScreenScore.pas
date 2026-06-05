@@ -597,7 +597,6 @@ begin
           and with Texture type colorized
           also we don't need to swap for one player position }
         if (P <> 1) and
-           (Theme.Score.PlayerStatic[P, I].Typ = Texture_Type_Colorized) and
            (Length(Theme.Score.PlayerStatic[P, I].Color) >= 2) and
            (copy(Theme.Score.PlayerStatic[P, I].Color, 1, 2) = 'P' + IntToStr(PlayerNum)) then
         begin
@@ -613,6 +612,12 @@ begin
           PlayerStaticTextures[P, I, 2].Tex.Y := Statics[PlayerStatic[P, I]].Texture.Y;
           PlayerStaticTextures[P, I, 2].Tex.W := Statics[PlayerStatic[P, I]].Texture.W;
           PlayerStaticTextures[P, I, 2].Tex.H := Statics[PlayerStatic[P, I]].Texture.H;
+          if (Theme.Score.PlayerStatic[P, I].Typ <> TEXTURE_TYPE_COLORIZED) then
+          begin
+            PlayerStaticTextures[P, I, 2].Tex.ColR := R;
+            PlayerStaticTextures[P, I, 2].Tex.ColG := G;
+            PlayerStaticTextures[P, I, 2].Tex.ColB := B;
+          end;
         end;
       end;
     end;
