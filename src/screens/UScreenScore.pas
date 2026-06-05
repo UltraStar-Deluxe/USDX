@@ -589,7 +589,7 @@ begin
         PlayerStaticTextures[P, I, 1].Tex := Statics[PlayerStatic[P, I]].Texture;
 
         // fallback to first screen texture for 2nd screen
-        PlayerStaticTextures[P, I, 2].Tex := PlayerStaticTextures[P, I, 1].Tex;
+        PlayerStaticTextures[P, I, 2].Tex := PlayerStaticTextures[P, I, 1].Tex.Clone;
 
         { texture for second screen }
         { we only change color for statics with playercolor
@@ -606,7 +606,10 @@ begin
           LoadColor(R, G, B, Color);
 
           with Theme.Score.PlayerStatic[P, I] do
+          begin
+            PlayerStaticTextures[P, I, 2].Tex.Free;
             PlayerStaticTextures[P, I, 2].Tex := Renderer.GetTexture(Skin.GetTextureFileName(Tex), Typ, RGBFloatToInt(R, G, B));
+          end;
 
           PlayerStaticTextures[P, I, 2].Tex.X := Statics[PlayerStatic[P, I]].Texture.X;
           PlayerStaticTextures[P, I, 2].Tex.Y := Statics[PlayerStatic[P, I]].Texture.Y;
@@ -657,7 +660,7 @@ begin
         PlayerBoxTextures[P, I, 1].Tex := Statics[StaticNum].Texture;
 
         // fallback to first screen texture for 2nd screen
-        PlayerBoxTextures[P, I, 2].Tex := PlayerBoxTextures[P, I, 1].Tex;
+        PlayerBoxTextures[P, I, 2].Tex := PlayerBoxTextures[P, I, 1].Tex.Clone;
 
         { texture for second screen }
         { we only change color for statics with playercolor
@@ -674,7 +677,8 @@ begin
           LoadColor(R, G, B, Color);
 
           with ThemeStatic do
-            PlayerBoxTextures[P, I, 2].Tex := Renderer.GetTexture(Skin.GetTextureFileName(Tex), Typ, RGBFloatToInt(R, G, B));
+            PlayerBoxTextures[P, I, 2].Tex.Free;
+            PlayerBoxTextures[P, I, 2].Tex := Renderer.GetTexture(Skin.GetTextureFileName(ThemeStatic.Tex), ThemeStatic.Typ, RGBFloatToInt(R, G, B));
 
             PlayerBoxTextures[P, I, 2].Tex.X := Statics[StaticNum].Texture.X;
             PlayerBoxTextures[P, I, 2].Tex.Y := Statics[StaticNum].Texture.Y;
@@ -828,8 +832,7 @@ begin
     for P := Low(PlayerStatic) to High(PlayerStatic) do
       for I := 0 to High(PlayerStatic[P]) do
       begin
-        Statics[PlayerStatic[P, I]].Texture.Free;
-        Statics[PlayerStatic[P, I]].Texture := PlayerStaticTextures[P, I, Screen].Tex.Clone();
+        Statics[PlayerStatic[P, I]].Texture := PlayerStaticTextures[P, I, Screen].Tex;
         if (Theme.Score.PlayerStatic[P, I].Typ <> Texture_Type_Colorized) then
         begin
           J := FindPlayerIndexForThemeSlot(P, Screen);
@@ -846,10 +849,9 @@ begin
     { box statics }
     for P := Low(PlayerStatic) to High(PlayerStatic) do
     begin
-      Statics[StaticBoxLightest[P]].Texture.Free;
-      Statics[StaticBoxLightest[P]].Texture := PlayerBoxTextures[P, 0, Screen].Tex.Clone();
-      Statics[StaticBoxLight[P]].Texture := PlayerBoxTextures[P, 1, Screen].Tex.Clone();
-      Statics[StaticBoxDark[P]].Texture := PlayerBoxTextures[P, 2, Screen].Tex.Clone();
+      Statics[StaticBoxLightest[P]].Texture := PlayerBoxTextures[P, 0, Screen].Tex;
+      Statics[StaticBoxLight[P]].Texture := PlayerBoxTextures[P, 1, Screen].Tex;
+      Statics[StaticBoxDark[P]].Texture := PlayerBoxTextures[P, 2, Screen].Tex;
     end;
   end;
 end;
@@ -1007,7 +1009,7 @@ end;
 
 destructor TScreenScore.Destroy;
 var
-  I: integer;
+  P, I, S: integer;
 begin
   for I := 1 to UIni.IMaxPlayerCount do
   begin
@@ -1017,6 +1019,27 @@ begin
     Tex_Score_NoteBarRound_Light[I].Free;
     Tex_Score_NoteBarLevel_Lightest[I].Free;
     Tex_Score_NoteBarRound_Lightest[I].Free;
+  end;
+
+  // Use the textures in PlayerStaticTextures and PlayerBoxTexture to free the memory, then
+  // set the texture copy in the static to nil so we avoid a double free in the destructor of TStatic
+  for S := 1 to Screens do
+  begin
+    for P := Low(PlayerStatic) to High(PlayerStatic) do
+      for I := 0 to High(PlayerStatic[P]) do
+      begin
+        PlayerStaticTextures[P, I, S].Tex.Free;
+        Statics[PlayerStatic[P, I]].Texture := nil;
+      end;
+    for P := Low(PlayerStatic) to High(PlayerStatic) do
+    begin
+      PlayerBoxTextures[P, 0, S].Tex.Free;
+      Statics[StaticBoxLightest[P]].Texture := nil;
+      PlayerBoxTextures[P, 1, S].Tex.Free;
+      Statics[StaticBoxLight[P]].Texture := nil;
+      PlayerBoxTextures[P, 2, S].Tex.Free;
+      Statics[StaticBoxDark[P]].Texture := nil;
+    end;
   end;
   inherited;
 end;

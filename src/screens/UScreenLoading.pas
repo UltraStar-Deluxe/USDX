@@ -160,9 +160,9 @@ begin
 
   StaticNum := Length(Statics);
   SetLength(Statics, StaticNum + 1);
-  Statics[StaticNum] := TStatic.Create(Statics[SourceBarIndex].Texture);
+  Statics[StaticNum] := TStatic.Create(Statics[SourceBarIndex].Texture.Clone);
   Statics[StaticNum].Texture.Alpha := Alpha;
-  Statics[StaticNum].Texture.ScaleW := 0;
+  Statics[StaticNum].Texture.W := 0;
   Statics[StaticNum].Visible := Statics[SourceBarIndex].Visible;
   Statics[StaticNum].Reflection := Statics[SourceBarIndex].Reflection;
   Statics[StaticNum].ReflectionSpacing := Statics[SourceBarIndex].ReflectionSpacing;
@@ -173,13 +173,12 @@ procedure TScreenLoading.UpdateBar(BaseBarIndex, FillBarIndex: integer; Progress
 begin
   if (BaseBarIndex >= 0) and (BaseBarIndex < Length(Statics)) then
   begin
-    Statics[BaseBarIndex].Texture.ScaleW := 1;
     Statics[BaseBarIndex].Texture.Alpha := BaseAlpha;
   end;
 
   if (FillBarIndex >= 0) and (FillBarIndex < Length(Statics)) then
   begin
-    Statics[FillBarIndex].Texture.ScaleW := Progress;
+    Statics[FillBarIndex].Texture.W := Progress * Statics[BaseBarIndex].Texture.W;
     Statics[FillBarIndex].Texture.Alpha := FillAlpha;
   end;
 end;

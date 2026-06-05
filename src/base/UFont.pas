@@ -33,17 +33,6 @@ unit UFont;
 
 interface
 
-{$IFNDEF FREETYPE_DEMO}
-  // Flip direction of y-axis.
-  // Default is a cartesian coordinate system with y-axis in upper direction
-  // but with USDX the y-axis is in lower direction.
-  {$DEFINE FLIP_YAXIS}
-  {.$DEFINE BITMAP_FONT}
-{$ENDIF}
-
-// Enables the Freetype font cache
-{$DEFINE ENABLE_FT_FACE_CACHE}
-
 uses
   FreeType,
   sdl2,
@@ -102,7 +91,7 @@ type
   {**
    * Font styles used by TFont.Style
    *}
-  TFontStyle = set of (Italic, Underline, Reflect);
+  TFontStyle = set of (Italic, Reflect);
 
   {**
    * Base font class.
@@ -136,11 +125,6 @@ type
       procedure Print(const Text: TUCS4StringArray; PosX, PosY, PosZ: single; ScaleX: single = 1; ScaleY: single = 1); overload; virtual;
 
       {**
-       * Draws an underline.
-       *}
-      procedure DrawUnderline(const Text: UCS4String); virtual;
-
-      {**
        * Renders (one) line of text.
        *}
       procedure Render(const Text: UCS4String; PosX, PosY, PosZ, ScaleX, ScaleY: single); virtual; abstract;
@@ -169,8 +153,6 @@ type
       function GetReflectionSpacing(): single; virtual;
       procedure SetStyle(Style: TFontStyle); virtual;
       function GetStyle(): TFontStyle; virtual;
-      function GetUnderlinePosition(): single; virtual; abstract;
-      function GetUnderlineThickness(): single; virtual; abstract;
       procedure SetUseKerning(Enable: boolean); virtual;
       function GetUseKerning(): boolean; virtual;
 
@@ -189,7 +171,7 @@ type
 
       {**
        * Calculates the bounding box (width and height) around Text.
-       * Works with Italic and Underline styles but reflections created
+       * Works with Italic style but reflections created
        * with the Reflect style are not considered.
        * Note that the width might differ due to kerning with appended text,
        * e.g. Width('VA') <= Width('V') + Width('A').
@@ -224,7 +206,7 @@ type
       property GlyphSpacing: single read GetGlyphSpacing write SetGlyphSpacing;
       {** Distance between normal baseline and baseline of the reflection }
       property ReflectionSpacing: single read GetReflectionSpacing write SetReflectionSpacing;
-      {** Font style (italic/underline/...) }
+      {** Font style (italic/...) }
       property Style: TFontStyle read GetStyle write SetStyle;
       {** If set to true (default) kerning will be used if available }
       property UseKerning: boolean read GetUseKerning write SetUseKerning;
@@ -295,8 +277,6 @@ type
       function GetReflectionSpacing(): single; override;
       procedure SetStyle(Style: TFontStyle); override;
       function GetStyle(): TFontStyle; override;
-      function GetUnderlinePosition(): single; override;
-      function GetUnderlineThickness(): single; override;
       procedure SetUseKerning(Enable: boolean); override;
 
     public
@@ -510,7 +490,7 @@ type
       procedure StrokeBorder(var Glyph: FT_Glyph);
 
       {**
-       * Creates an OpenGL texture (and display list) for the glyph.
+       * Creates a texture for the glyph.
        * The glyph's and bitmap's metrics are set correspondingly.
        * @param  LoadFlags  flags passed to FT_Load_Glyph()
        * @raises EFontError  if the glyph could not be initialized
@@ -569,8 +549,6 @@ type
       function GetHeight(): single; override;
       function GetAscender(): single; override;
       function GetDescender(): single; override;
-      function GetUnderlinePosition(): single; override;
-      function GetUnderlineThickness(): single; override;
 
     public
       {**
@@ -663,7 +641,6 @@ type
       procedure ResetIntern();
       
   protected
-      procedure DrawUnderline(const Text: UCS4String); override;
       procedure Render(const Text: UCS4String; PosX, PosY, PosZ, ScaleX, ScaleY: single); override;
       function BBox(const Text: TUCS4StringArray; Advance: boolean): TBoundsDbl; override;
 
@@ -675,8 +652,6 @@ type
       procedure SetReflectionSpacing(Spacing: single); override;
       procedure SetStyle(Style: TFontStyle); override;
       function GetStyle(): TFontStyle; override;
-      function GetUnderlinePosition(): single; override;
-      function GetUnderlineThickness(): single; override;
       procedure SetUseKerning(Enable: boolean); override;
 
     public
@@ -688,8 +663,6 @@ type
 
       {**
        * Sets the color of the outline.
-       * If the alpha component is < 0, OpenGL's current alpha value will be
-       * used.
        *}
       procedure SetOutlineColor(r, g, b: single; a: single = -1.0);
 
@@ -756,14 +729,6 @@ uses
 const
   //** shear factor used for the italic effect (bigger value -> more bending)
   cShearFactor = 0.25;
-  {
-  cShearMatrix: array[0..15] of GLfloat = (
-      1,            0, 0, 0,
-      cShearFactor, 1, 0, 0,
-      0,            0, 1, 0,
-      0,            0, 0, 1
-  );
-  }
 
 var
   LibraryInst: FT_Library;
@@ -870,7 +835,7 @@ var
   LineIndex: integer;
 begin
 
-  // set OpenGL state
+  // set renderer state
   Renderer.DepthTest := false;
 
   // display text
@@ -879,15 +844,6 @@ begin
 
     // move to baseline
     PosY := PosY + (LineSpacing * LineIndex * ScaleY);
-
-    {
-    if ((Underline in Style) and not ReflectionPass) then
-    begin
-      glDisable(GL_TEXTURE_2D);
-      DrawUnderline(Text[LineIndex]);
-      glEnable(GL_TEXTURE_2D);
-    end;
-    }
 
     // render text line
     Render(Text[LineIndex], PosX, PosY, PosZ, ScaleX, ScaleY);
@@ -926,19 +882,6 @@ end;
 function TFont.GetColor(): TRGBA;
 begin
   Result := fColor;
-end;
-
-procedure TFont.DrawUnderline(const Text: UCS4String);
-var
-  UnderlineY1, UnderlineY2: single;
-  Bounds: TBoundsDbl;
-begin
-{
-  UnderlineY1 := GetUnderlinePosition();
-  UnderlineY2 := UnderlineY1 + GetUnderlineThickness();
-  Bounds := BBox(Text, false);
-  glRectf(Bounds.Left, UnderlineY1, Bounds.Right, UnderlineY2);
-  }
 end;
 
 procedure TFont.SetStyle(Style: TFontStyle);
@@ -1093,11 +1036,7 @@ end;
  *}
 function TScalableFont.GetMipmapLevel(ScaleX, ScaleY: single): integer;
 var
-  //ModelMatrix, ProjMatrix: TGLMatrixd4;
-  //ViewPortArray: TGLVectori4;
-  Dist, Dist2, DistSum, PM15x2: double;
   WidthScale, HeightScale: double;
-  ScreenWidth: single;
 const
   // an offset to the mipmap-level to adjust the change-over of two consecutive
   // mipmap levels. If for example the bias is 0.1 and unbiased level is 1.9
@@ -1105,69 +1044,20 @@ const
   // With bias=0.1 we prefer larger mipmaps over smaller ones.
   cBias = 0.2;
 begin
-  // 1. retrieve current transformation matrices for gluProject
-  {
-  glGetDoublev(GL_MODELVIEW_MATRIX, @ModelMatrix);
-  glGetDoublev(GL_PROJECTION_MATRIX, @ProjMatrix);
-  glGetIntegerv(GL_VIEWPORT, @ViewPortArray);
-  }
-
   // See 6545ededd512ea7c7dc5c08a1ef96397afdcbe49 for the original
-  // code using gluProject() that has been simplified.
-  {
-  PM15x2 := 2*abs(ModelMatrix[3,0]*ProjMatrix[0,3]
-                 +ModelMatrix[3,1]*ProjMatrix[1,3]
-                 +ModelMatrix[3,2]*ProjMatrix[2,3]
-                 +ModelMatrix[3,3]*ProjMatrix[3,3]);
+  // code using gluProject(). That was simlified by 2808a6c443ebe817c5a5fd51cf770504f6899452
+  // and has been further simplifed for our use case.
 
-  PM15x2 := 2;
+  if ((ScaleX <> 0) and (ScreenWPerScreen <> 0)) then
+    WidthScale := RenderW / (ScreenWPerScreen * ScaleX)
+  else
+    WidthScale := 1;
+  if ((ScaleY <> 0) and (ScreenH <> 0)) then
+    HeightScale := RenderH / (ScreenH * ScaleY)
+  else
+    HeightScale := 1;
 
-  Dist  := ViewPortArray[2]*(ModelMatrix[0,0]*ProjMatrix[0,0]
-                            +ModelMatrix[0,1]*ProjMatrix[1,0]
-                            +ModelMatrix[0,2]*ProjMatrix[2,0]
-                            +ModelMatrix[0,3]*ProjMatrix[3,0]);
-  Dist2 := ViewPortArray[3]*(ModelMatrix[0,0]*ProjMatrix[0,1]
-                            +ModelMatrix[0,1]*ProjMatrix[1,1]
-                            +ModelMatrix[0,2]*ProjMatrix[2,1]
-                            +ModelMatrix[0,3]*ProjMatrix[3,1]);
-                            }
-  PM15x2 := 2;
-  ScreenWidth := ScreenW div Screens;
-  Dist :=  (ScreenW div Screens) * ((ScaleX * (2 / RenderW)));
-  Dist2 := 0;
-
-
-  WidthScale := 1;
-  DistSum := Dist*Dist + Dist2*Dist2;
-  if (DistSum > 0) then
-  begin
-    WidthScale := PM15x2 / Sqrt(DistSum);
-  end;
-
-{
-  Dist  := ViewPortArray[2]*(ModelMatrix[1,0]*ProjMatrix[0,0]
-                            +ModelMatrix[1,1]*ProjMatrix[1,0]
-                            +ModelMatrix[1,2]*ProjMatrix[2,0]
-                            +ModelMatrix[1,3]*ProjMatrix[3,0]);
-  Dist2 := ViewPortArray[3]*(ModelMatrix[1,0]*ProjMatrix[0,1]
-                            +ModelMatrix[1,1]*ProjMatrix[1,1]
-                            +ModelMatrix[1,2]*ProjMatrix[2,1]
-                            +ModelMatrix[1,3]*ProjMatrix[3,1]);
-                            }
-  Dist := 0;
-  Dist2 := ScreenH * (ScaleY * (2 / RenderH));
-  //Dist2 := 2 * ScaleY;
-
-  HeightScale := 1;
-  DistSum := Dist*Dist + Dist2*Dist2;
-  if (DistSum > 0) then
-  begin
-    HeightScale := PM15x2 / Sqrt(DistSum);
-  end;
-
-  //writeln(Format('Scale %f, %f', [WidthScale, HeightScale]));
-
-  // 4. Now that we have got the scale, take the bigger minification scale
+  // Now that we have got the scale, take the bigger minification scale
   // and get it to a logarithmic scale as each mipmap is 1/2 the size of its
   // predecessor (Mipmap_size[i] = Mipmap_size[i-1]/2).
   // The result is our mipmap-level = the index of the mipmap to use.
@@ -1338,16 +1228,6 @@ begin
   Result := fBaseFont.GetStyle();
 end;
 
-function TScalableFont.GetUnderlinePosition(): single;
-begin
-  Result := fBaseFont.GetUnderlinePosition();
-end;
-
-function TScalableFont.GetUnderlineThickness(): single;
-begin
-  Result := fBaseFont.GetUnderlinePosition();
-end;
-
 procedure TScalableFont.SetUseKerning(Enable: boolean);
 var
   Level: integer;
@@ -1446,7 +1326,6 @@ var
   I: Integer;
   Face: TFTFontFace;
 begin
-  {$IFDEF ENABLE_FT_FACE_CACHE}
   for I := 0 to High(fFaces) do
   begin
     Face := fFaces[I];
@@ -1459,7 +1338,6 @@ begin
       Exit;
     end;
   end;
-  {$ENDIF}
 
   // face not in cache -> load it
   Face := TFTFontFace.Create(Filename, Size);
@@ -1581,7 +1459,6 @@ var
   LineIndex, CharIndex: integer;
   LineBounds: TBoundsDbl;
   KernDelta: FT_Vector;
-  UnderlinePos: double;
 begin
   // Reset global bounds
   Result.Left   := Infinity;
@@ -1654,14 +1531,6 @@ begin
       LineBounds.Right := LineBounds.Right + LineBounds.Top * cShearFactor;
     end;
 
-    // handle underlined font style
-    if (Underline in Style) then
-    begin
-      UnderlinePos := GetUnderlinePosition();
-      if (UnderlinePos < LineBounds.Bottom) then
-        LineBounds.Bottom := UnderlinePos;
-    end;
-
     // add line offset
     LineBounds.Bottom := LineBounds.Bottom + LineYOffset;
     LineBounds.Top := LineBounds.Top + LineYOffset;
@@ -1728,17 +1597,6 @@ begin
   // Note: outset is not part of the descender as the baseline is lifted
   Result := fFace.Data.descender * fFace.FontUnitScale.Y;
 end;
-
-function TFTFont.GetUnderlinePosition(): single;
-begin
-  Result := fFace.Data.underline_position * fFace.FontUnitScale.Y - Outset;
-end;
-
-function TFTFont.GetUnderlineThickness(): single;
-begin
-  Result := fFace.Data.underline_thickness * fFace.FontUnitScale.Y + Outset*2;
-end;
-
 
 {*
  * TFTScalableFont
@@ -1862,33 +1720,6 @@ begin
   ResetIntern();
 end;
 
-procedure TFTOutlineFont.DrawUnderline(const Text: UCS4String);
-var
-  CurrentColor: TRGBA;
-  OutlineColor: TRGBA;
-begin
- {
-  // save current color
-  glGetFloatv(GL_CURRENT_COLOR, @CurrentColor.vals);
-
-  // if the outline's alpha component is < 0 use the current alpha
-  OutlineColor := fOutlineColor;
-  if (OutlineColor.a < 0) then
-    OutlineColor.a := CurrentColor.a;
-
-  // draw underline outline (in outline color)
-  glColor4fv(@OutlineColor.vals);
-  fOutlineFont.DrawUnderline(Text);
-  glColor4fv(@CurrentColor.vals);
-
-  // draw underline inner part (in current color)
-  glPushMatrix();
-  glTranslatef(fOutset, 0, 0);
-  fInnerFont.DrawUnderline(Text);
-  glPopMatrix();
-  }
-end;
-
 procedure TFTOutlineFont.Render(const Text: UCS4String; PosX, PosY, PosZ, ScaleX, ScaleY: single);
 var
   OutlineColor: TRGBA;
@@ -1981,16 +1812,6 @@ end;
 function TFTOutlineFont.GetStyle(): TFontStyle;
 begin
   Result := inherited GetStyle();
-end;
-
-function TFTOutlineFont.GetUnderlinePosition(): single;
-begin
-  Result := fOutlineFont.GetUnderlinePosition();
-end;
-
-function TFTOutlineFont.GetUnderlineThickness(): single;
-begin
-  Result := fOutlineFont.GetUnderlinePosition();
 end;
 
 procedure TFTOutlineFont.SetUseKerning(Enable: boolean);

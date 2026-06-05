@@ -97,7 +97,6 @@ type
       procedure OnShow; override;
       function Draw: boolean; override;
 
-      procedure SetAnimationProgress(Progress: real); override;
       procedure SetAvatarScroll;
       procedure SelectNext;
       procedure SelectPrev;
@@ -1009,10 +1008,6 @@ begin
 
   end;
 
-end;
-
-procedure TScreenName.SetAnimationProgress(Progress: real);
-begin
 end;
 
 procedure TScreenName.SelectNext;

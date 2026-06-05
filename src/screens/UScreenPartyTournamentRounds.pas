@@ -91,7 +91,6 @@ type
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
       function Draw: boolean; override;
-      procedure SetAnimationProgress(Progress: real); override;
 
       procedure DrawLine(X, Y, W, H: real);
       procedure DrawLinePlayer1(X, Y, W, H: real);
@@ -1691,16 +1690,6 @@ begin
   end;
 
   Renderer.DrawQuad(X, Y, 0, W, H, R, G, B, 1);
-end;
-
-procedure TScreenPartyTournamentRounds.SetAnimationProgress(Progress: real);
-begin
-  {if (ScreenSingModi.PlayerInfo.NumPlayers >= 1) then
-    Statics[StaticTeam1].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[0].Score / maxScore;
-  if (ScreenSingModi.PlayerInfo.NumPlayers >= 2) then
-    Statics[StaticTeam2].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[1].Score / maxScore;
-  if (ScreenSingModi.PlayerInfo.NumPlayers >= 3) then
-    Statics[StaticTeam3].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[2].Score / maxScore;}
 end;
 
 end.

@@ -555,7 +555,7 @@ var
   TempR: real;
   PlayerNumber: integer;
   Texture: TTexture;
-  ColorR, ColorG, ColorB, Al: single;
+  ColorR, ColorG, ColorB, A: single;
   GoldenStarPos: real;
 begin
   if (ScreenSing.settings.NotesVisible[Track]) then
@@ -587,28 +587,28 @@ begin
                   ColorR := 1;
                   ColorG := 1;
                   ColorB := 1;
-                  Al := 1; // We set alpha to 1, cause we can control the transparency through the png itself
+                  A := 1; // We set alpha to 1, cause we can control the transparency through the png itself
                 end;
                 ntGolden:
                 begin
                   ColorR := 1;
                   ColorG := 1;
                   ColorB := 0.3;
-                  Al := 1; // no stars, paint yellow -> glColor4f(1, 1, 0.3, 0.85); - we could
+                  A := 1; // no stars, paint yellow -> glColor4f(1, 1, 0.3, 0.85); - we could
                 end;
                 ntRap:
                 begin
                   ColorR := 1;
                   ColorG := 1;
                   ColorB := 1;
-                  Al := 1;
+                  A := 1;
                 end;
                 ntRapGolden:
                 begin
                   ColorR := 1;
                   ColorG := 1;
                   ColorB := 0.3;
-                  Al := 1;
+                  A := 1;
                 end;
               end; // case
             end //Else all Notes same Color
@@ -617,7 +617,7 @@ begin
               ColorR := 1;
               ColorG := 1;
               ColorB := 1;
-              Al := 1;
+              A := 1;
             end;
 
             // left part
@@ -634,7 +634,7 @@ begin
               ColR := ColorR;
               ColG := ColorG;
               ColB := ColorB;
-              Alpha := Al;
+              Alpha := A;
             end;
             Renderer.DrawTexture(Texture);
 
@@ -655,9 +655,6 @@ begin
             else
               Texture := Tex_plain_Mid[PlayerNumber];
 
-            // todo complexlogic
-            //glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-            //glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
             with Texture do
             begin
               X := Rec.Left;
@@ -667,7 +664,7 @@ begin
               ColR := ColorR;
               ColG := ColorG;
               ColB := ColorB;
-              Alpha := Al;
+              Alpha := A;
               TexX1 := 0;
               TexX2 := round((Rec.Right-Rec.Left)/32);
               TexY1 := 0;
@@ -693,7 +690,7 @@ begin
               ColR := ColorR;
               ColG := ColorG;
               ColB := ColorB;
-              Alpha := Al;
+              Alpha := A;
             end;
             Renderer.DrawTexture(Texture);
 
@@ -781,9 +778,6 @@ begin
           else
             Texture := Tex_Mid[PlayerIndex+1];
 
-          { todo complexlogic
-          glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-          glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT ); }
           with Texture do
           begin
             X := Rec.Left;
@@ -846,12 +840,12 @@ var
   Count:          integer;
   TempR:          real;
   W, H:           real;
-  Al:          single;
+  A:          single;
   Texture:        TTexture;
 begin
   if (ScreenSing.settings.NotesVisible[PlayerIndex]) then
   begin
-    Al := sqrt((1 + sin(AudioPlayback.Position * 3)))/2 + 0.05;
+    A := sqrt((1 + sin(AudioPlayback.Position * 3)))/2 + 0.05;
 
     if not CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].HasLength(TempR) then TempR := 0
     else TempR := (Right-Left) / TempR;
@@ -885,7 +879,7 @@ begin
               Y := Rec.Top;
               W := Rec.Right - Rec.Left;
               H := Rec.Bottom - Rec.Top;
-              Alpha := Al;
+              Alpha := A;
             end;
             Renderer.DrawTexture(Texture);
 
@@ -907,7 +901,7 @@ begin
               Y := Rec.Top;
               W := Rec.Right - Rec.Left;
               H := Rec.Bottom - Rec.Top;
-              Alpha := Al;
+              Alpha := A;
             end;
             Renderer.DrawTexture(Texture);
 
@@ -925,7 +919,7 @@ begin
               Y := Rec.Top;
               W := Rec.Right - Rec.Left;
               H := Rec.Bottom - Rec.Top;
-              Alpha := Al;
+              Alpha := A;
             end;
             Renderer.DrawTexture(Texture);
 
@@ -1592,7 +1586,7 @@ var
   GoldenStarPos: real;
   Space: real;
   Texture: TTexture;
-  ColorR, ColorG, ColorB, Al: single;
+  ColorR, ColorG, ColorB, A: single;
 begin
   Space := H / (NumLines - 1);
 
@@ -1613,21 +1607,21 @@ begin
             ColorR := 1;
             ColorG := 1;
             ColorB := 1;
-            Al := 0.35;
+            A := 0.35;
           end;
           ntNormal:
           begin
             ColorR := 1;
             ColorG := 1;
             ColorB := 1;
-            Al := 0.85;
+            A := 0.85;
           end;
           ntGolden:
           begin
             ColorR := 1;
             ColorG := 1;
             ColorB := 0.3;
-            Al := 0.85;
+            A := 0.85;
           end;
           ntRap:
           begin
@@ -1636,14 +1630,14 @@ begin
               ColorR := 1;
               ColorG := 1;
               ColorB := 1;
-              Al := 0.75;
+              A := 0.75;
             end
             else
             begin
               ColorR := 1;
               ColorG := 1;
               ColorB := 1;
-              Al := 0.5;
+              A := 0.5;
             end;
           end;
           ntRapGolden:
@@ -1653,14 +1647,14 @@ begin
               ColorR := 1;
               ColorG := 1;
               ColorB := 0.3;
-              Al := 0.75;
+              A := 0.75;
             end
             else
             begin
               ColorR := 1;
               ColorG := 1;
               ColorB := 0.3;
-              Al := 0.5;
+              A := 0.5;
             end;
           end;
         end; // case
@@ -1693,7 +1687,7 @@ begin
           ColR := ColorR;
           ColG := ColorG;
           ColB := ColorB;
-          Alpha := Al;
+          Alpha := A;
           TexX1 := 0;
           TexX2 := 1;
           TexY1 := 0;
@@ -1729,7 +1723,7 @@ begin
           ColR := ColorR;
           ColG := ColorG;
           ColB := ColorB;
-          Alpha := Al;
+          Alpha := A;
           TexX1 := 0;
           TexX2 := 1;
           TexY1 := 0;
@@ -1764,7 +1758,7 @@ begin
           ColR := ColorR;
           ColG := ColorG;
           ColB := ColorB;
-          Alpha := Al;
+          Alpha := A;
           TexX1 := 0;
           TexX2 := 1;
           TexY1 := 0;

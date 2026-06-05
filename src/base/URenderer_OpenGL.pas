@@ -39,34 +39,41 @@ uses
 
 type
   TViewPortArray = array[0..3] of integer;
+
+  // Abstract TRenderer base for OpenGL
   TRenderer_OpenGLBase = class(TRenderer)
     protected
       glcontext: TSDL_GLContext;
+      MajorVersion, MinorVersion: integer;
+
+      // Shader programs
       MainProgram: GLuint;
       TextProgram: GLuint;
       LineStripProgram: GLuint;
+
+      // Vertex information
       MainVAO: GLuint;
       LineStripVAO: GLuint;
       VBO: GLuint;
       EBO: GLuint;
       VBOCursor: GLuint;
       EBOCursor: GLuint;
+
+      // Transformation information
       ProjectionMatrix: Tmatrix4_single;
       OldProjectionMatrix: Tmatrix4_single;
-
       ViewPortArray: TViewPortArray;
-      MajorVersion, MinorVersion: integer;
+
+      // Shader Uniform locations
       TransformLocationMain: GLint;
       TransformLocationText: GLint;
       TransformLocationLineStrip: GLint;
       ColorLocationLineStrip: GLint;
-
       UpdateTransformMain: boolean;
       UpdateTransformText: boolean;
 
       WhiteTexture: GLuint;
       ErrorCode: GLenum;
-
       SupportsVAO: boolean;
       SupportsFBO: boolean;
 
@@ -116,8 +123,11 @@ type
       procedure SetTextClipBoundary(X: single; Direction: ClippingDirection); override;
       procedure SetClipText(Enabled: boolean); override;
       procedure ResetState(); override;
+      function GetFrameBufferData(out RowSize: integer): PByte; override;
+
   end;
 
+  // Renderer subclass for modern OpenGL (3.0 and later)
   TRenderer_OpenGL3 = class(TRenderer_OpenGLBase)
     public
       constructor Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
@@ -125,6 +135,7 @@ type
       procedure GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string); override;
     end;
 
+  // Renderer subclass for legacy OpengGL 2.x
   TRenderer_OpenGL2 = class(TRenderer_OpenGLBase)
     public
       constructor Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
@@ -132,6 +143,7 @@ type
       procedure GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string); override;
     end;
 
+  // Renderer subclass for OpenGL ES 2.0 and later
   TRenderer_OpenGLES = class(TRenderer_OpenGLBase)
     public
       constructor Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
@@ -153,6 +165,7 @@ uses
   SysUtils;
 
 const
+  // Offsets for vertex attributes (indices, not bytes)
   X_OFFSET = 0;
   Y_OFFSET = 1;
   Z_OFFSET = 2;
@@ -162,15 +175,15 @@ const
   A_OFFSET = 6;
   TEXX_OFFSET = 7;
   TEXY_OFFSET = 8;
-
   VERTEX_STRIDE = (TEXY_OFFSET - X_OFFSET + 1);
+
   VERTEX_STRIDE_BYTES = VERTEX_STRIDE * SizeOf(GLfloat);
+
+  // Offsets for VBO (indices, not bytes)
   VERTEX_TOPRIGHT = 0;
   VERTEX_BOTTOMRIGHT = 1;
   VERTEX_BOTTOMLEFT = 2;
   VERTEX_TOPLEFT = 3;
-
-  // Strides for array
   VERTEX_TOPRIGHT_OFFSET = 0;
   VERTEX_BOTTOMRIGHT_OFFSET = VERTEX_BOTTOMRIGHT * VERTEX_STRIDE;
   VERTEX_BOTTOMLEFT_OFFSET = VERTEX_BOTTOMLEFT * VERTEX_STRIDE;
@@ -180,14 +193,27 @@ const
 
 type
   TQuadVertexBufferData = array[VERTEX_TOPRIGHT..VERTEX_TOPLEFT, X_OFFSET..TEXY_OFFSET] of GLfloat;
-  TTriangleVertexBufferData = array[VERTEX_TOPRIGHT..VERTEX_BOTTOMLEFT, X_OFFSET..TEXY_OFFSET] of GLfloat;
 
 const
-  GLSL_CORE_HEADER = '#version 150 core' + #10;
-  GLSL_COMPAT_HEADER = '#version 130' + #10;
-  GLSL_LEGACY_HEADER = '#version 110' + #10;
-  ES_PRECISION_SPECIFIER = 'precision mediump float;' + #10;
+  GLSL_CORE_HEADER = '#version 150 core' + #10; // GLSL Header for OpenGL 3.2+ core profile
+  GLSL_COMPAT_HEADER = '#version 130' + #10;  // GLSL header for OpenGL 3.0-3.1
+  GLSL_LEGACY_HEADER = '#version 110' + #10; // GLSL header for OpenGL 2.0
+  ES_PRECISION_SPECIFIER = 'precision mediump float;' + #10; // GLSL ES shaders require a precision specifier
 
+{
+ * Different versions of OpenGL have different syntax for the shaders. To handle this,
+ * we introduce abstractions in square brackets. When compiling the shaders, the subclass
+ * will resolve the abstraction by substituting the syntax for the specfic version of GLSL being used:
+ *
+ * [VTX_IN] resolves to 'in' for modern GL, and 'attribute' for legacy GL and GLES
+ * [VTX_OUT] resolves to 'out' for modern GL, and 'varying' for legacy GL and GLES
+ * [FRAG_IN] resoves to 'in' for modern GL, and 'varying' for legacy GL and GLES
+ * [FRAG_OUT_DECL] declares the fragment shader output variable for modern GL, unused for legacy GL and GLES
+ * [TEXTURE_FUNC] resolves to 'texture' for modern GL, and 'texture2D' for legacy GL and GLES
+ * [FRAG_OUT] resolves to 'out_color' for modern GL, and the built-in variable 'gl_FragColor' for legacy GL and GLES
+}
+
+  // Main vertex shader source, use for drawing textures, quads, lines, triangles, glyphs
   MAIN_VERTEX_SHADER_SOURCE =
     '[VTX_IN] vec3 pos;                          ' + #10 +
     '[VTX_IN] vec4 color;                        ' + #10 +
@@ -202,6 +228,7 @@ const
 	  '  tc = tex_coords;                          ' + #10 +
     '}';
 
+  // Main fragment shader source, use for drawing textures, quads, lines, triangles
   MAIN_FRAGMENT_SHADER_SOURCE =
     '[FRAG_IN] vec4 col;                            ' + #10 +
     '[FRAG_IN] vec2 tc;                             ' + #10 +
@@ -212,6 +239,9 @@ const
     '  [FRAG_OUT] = [TEXTURE_FUNC](tex, tc) * col;  ' + #10 +
     '}';
 
+  // The text rendering requires a special fragment shader because the texture provided by FreeType
+  // is a 1 byte per pixel alpha map stored in the red channel. So we set the red value from the texture
+  // to the alpha, and use the vertex color for RGB
   TEXT_FRAGMENT_SHADER_SOURCE =
     '[FRAG_IN] vec4 col;                                             ' + #10 +
     '[FRAG_IN] vec2 tc;                                              ' + #10 +
@@ -222,6 +252,7 @@ const
     '  [FRAG_OUT] = vec4(col.rgb, [TEXTURE_FUNC](tex, tc).r * col.a);' + #10 +
     '}';
 
+  // Special vertex shader used to render line strips for the oscilloscope
   LINE_STRIP_VERTEX_SHADER_SOURCE =
     '[VTX_IN] vec2 pos;                               ' + #10 +
     'uniform mat4 transform;                          ' + #10 +
@@ -230,6 +261,7 @@ const
 	  '  gl_Position = transform * vec4(pos, 0.0, 1.0); ' + #10 +
     '}';
 
+  // Special fragment shader used to render line strips for the oscilloscope
   LINE_STRIP_FRAGMENT_SHADER_SOURCE =
     '[FRAG_OUT_DECL] ;      ' + #10 +
     'uniform vec4 color;    ' + #10 +
@@ -239,13 +271,14 @@ const
     '}';
 
   VBO_SIZE = (2 * 2 shl 20); // 2 MB
-  MAX_QUADS = (VBO_SIZE div SizeOf(TQuadVertexBufferData));
+  MAX_QUADS = (VBO_SIZE div SizeOf(TQuadVertexBufferData)); // Number of quads that can be stored in the VBO
   EBO_INDICES = MAX_QUADS * 6; // 2 triangles, 6 total vertices per quad
   EBO_SIZE = EBO_INDICES * SizeOf(GLuint);
 
 type
   TTexture_OpenGL = class(TTexture)
     protected
+      TexID: GLuint;
       constructor Create(Data: PByte; W, H: integer; const Identifier: IPath; Format: GLint; Alignment: GLint; WrapMode: GLint); overload;
       constructor Create(const Identifier: IPath); overload;
 
@@ -292,6 +325,13 @@ begin
   TexID := 0;
 end;
 
+destructor TTexture_OpenGL.Destroy();
+begin
+  if (OwnsTex) then
+    glDeleteTextures(1, @TexID);
+  inherited;
+end;
+
 procedure TTexture_OpenGL.UpdateData(Data: PByte; Width, Height: word; PixelsPerRow: integer);
 begin
   glBindTexture(GL_TEXTURE_2D, TexID);
@@ -305,6 +345,7 @@ begin
   {$ENDIF}
 end;
 
+// Copy the current framebuffer contents to the texture (used for screen fades)
 procedure TTexture_OpenGL.CopyFrameBuffer(X, Y: integer; Width, Height: cardinal);
 begin
   glBindTexture(GL_TEXTURE_2D, TexID);
@@ -314,6 +355,7 @@ begin
   {$ENDIF}
 end;
 
+// Delete the corresponding GPU texture
 procedure TTexture_OpenGL.Release();
 begin
   if (OwnsTex) then
@@ -332,15 +374,9 @@ var
   T: TTexture_OpenGL;
 begin
   T := TTexture_OpenGL.Create(Name);
+  T.TexID := TexID;
   Clone(T);
   Result := T;
-end;
-
-destructor TTexture_OpenGL.Destroy();
-begin
-  if (OwnsTex) then
-    glDeleteTextures(1, @TexID);
-  inherited;
 end;
 
 constructor TRenderer_OpenGLBase.Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
@@ -349,13 +385,12 @@ var
   S: string;
 begin
   inherited Create();
-  VBOCursor := 0;
-  EBOCursor := 0;
-  ProjectionMatrix.init_zero;
-
   self.glcontext := glcontext;
   self.MajorVersion := MajorVersion;
   self.MinorVersion := MinorVersion;
+  VBOCursor := 0;
+  EBOCursor := 0;
+  ProjectionMatrix.init_zero;
   InitOpenGL;
   ReadOpenGLCore;
   ReadCoreVersion;
@@ -376,24 +411,29 @@ begin
   else
     SWRendering := false;
 
+  // Basic setup
   CheckVersion;
   InitShaderPrograms;
   InitBuffers;
 
+  // Initialize state
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthFunc(GL_LEQUAL);
   glDepthRangef(0, 10);
   glUseProgram(MainProgram);
   glActiveTexture(GL_TEXTURE0);
+
+  // Get uniform locations in shader programs
   glUniform1i(glGetUniformLocation(MainProgram, 'tex'), 0);
   TransformLocationMain := glGetUniformLocation(MainProgram, 'transform');
   glUniform1i(glGetUniformLocation(TextProgram, 'tex'), 0);
   TransformLocationText := glGetUniformLocation(TextProgram, 'transform');
-
   TransformLocationText := glGetUniformLocation(LineStripProgram, 'transform');
   ColorLocationLineStrip := glGetUniformLocation(LineStripProgram, 'color');
 
-  // Create 1x1 white texture for drawing quads
+  // Changing the active shader program is expensive. For drawing basic shapes (quads, triangles, lines), we define
+  // a 1x1 white texture to sample color from, which lets us use the same fragment shader for quads that we use
+  // for drawing regular textures, thereby avoiding the expensive state change
   glGenTextures(1, @WhiteTexture);
   glBindTexture(GL_TEXTURE_2D, WhiteTexture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -414,75 +454,43 @@ begin
   glDeleteVertexArrays(1, @LineStripVAO);
   glDeleteBuffers(1, @VBO);
   glDeleteBuffers(1, @EBO);
-  if (WhiteTexture > 0) then
+  if (WhiteTexture <> 0) then
     glDeleteTextures(1, @WhiteTexture);
   SDL_GL_DeleteContext(glcontext);
   inherited;
 end;
 
+// Compile all shaders and link programs. The shader source is provided by the subclass, derived from the abstracted version
 procedure TRenderer_OpenGLBase.InitShaderPrograms();
 var
   VertexShader, MainFragmentShader, TextFragmentShader, LineStripVertexShader, LineStripFragmentShader: GLuint;
   MainVertexSource, MainFragmentSource, TextFragmentSource, LineStripVertexSource, LineStripFragmentSource: string;
   CompileResult: GLint;
   ErrorBuf: array[0..511] of GLcharARB;
+
+  function CompileShader(ShaderType: GLenum; Source: string; Name: string): GLuint;
+  begin
+    Result := glCreateShader(ShaderType);
+    glShaderSource(Result, 1, PPGLcharARB(@Source), nil);
+    glCompileShader(Result);
+    glGetShaderiv(Result, GL_COMPILE_STATUS, @CompileResult);
+    if (ByteBool(CompileResult) = GL_FALSE) then
+    begin
+      glGetShaderInfoLog(Result, SizeOf(ErrorBuf), nil, @ErrorBuf[0]);
+      raise Exception.Create('Failed to compile ' + Name + ' shader. OpenGL Error: ' + ErrorBuf);
+    end;
+  end;
+
 begin
+  // Get shader sources from subclass
   GetShaderSource(MainVertexSource, MainFragmentSource, TextFragmentSource, LineStripVertexSource, LineStripFragmentSource);
 
-  // Compile vertex shader
-  VertexShader := glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(VertexShader, 1, PPGLcharARB(@MainVertexSource), nil);
-  glCompileShader(VertexShader);
-  glGetShaderiv(VertexShader, GL_COMPILE_STATUS, @CompileResult);
-  if (ByteBool(CompileResult) = GL_FALSE) then
-  begin
-    glGetShaderInfoLog(VertexShader, SizeOf(ErrorBuf), nil, @ErrorBuf[0]);
-    raise Exception.Create('Failed to compile vertex shader. OpenGL Error: ' + ErrorBuf);
-  end;
-
-  // Compile main fragment shader
-  MainFragmentShader := glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(MainFragmentShader, 1, PPGLcharARB(@MainFragmentSource), nil);
-  glCompileShader(MainFragmentShader);
-  glGetShaderiv(MainFragmentShader, GL_COMPILE_STATUS, @CompileResult);
-  if (ByteBool(CompileResult) = GL_FALSE) then
-  begin
-    glGetShaderInfoLog(MainFragmentShader, SizeOf(ErrorBuf), nil, @ErrorBuf[0]);
-    raise Exception.Create('Failed to compile main fragment shader. OpenGL Error: ' + ErrorBuf);
-  end;
-
-  // Compile text fragment shader
-  TextFragmentShader := glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(TextFragmentShader, 1, PPGLcharARB(@TextFragmentSource), nil);
-  glCompileShader(TextFragmentShader);
-  glGetShaderiv(TextFragmentShader, GL_COMPILE_STATUS, @CompileResult);
-  if (ByteBool(CompileResult) = GL_FALSE) then
-  begin
-    glGetShaderInfoLog(TextFragmentShader, SizeOf(ErrorBuf), nil, @ErrorBuf[0]);
-    raise Exception.Create('Failed to compile text fragment shader. OpenGL Error: ' + ErrorBuf);
-  end;
-
-  // Compile line strip vertex shader
-  LineStripVertexShader := glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(LineStripVertexShader, 1, PPGLcharARB(@LineStripVertexSource), nil);
-  glCompileShader(LineStripVertexShader);
-  glGetShaderiv(LineStripVertexShader, GL_COMPILE_STATUS, @CompileResult);
-  if (ByteBool(CompileResult) = GL_FALSE) then
-  begin
-    glGetShaderInfoLog(LineStripVertexShader, SizeOf(ErrorBuf), nil, @ErrorBuf[0]);
-    raise Exception.Create('Failed to compile line strip vertex shader. OpenGL Error: ' + ErrorBuf);
-  end;
-
-  // Compile line strip fragment shader
-  LineStripFragmentShader := glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(LineStripFragmentShader, 1, PPGLcharARB(@LineStripFragmentSource), nil);
-  glCompileShader(LineStripFragmentShader);
-  glGetShaderiv(LineStripFragmentShader, GL_COMPILE_STATUS, @CompileResult);
-  if (ByteBool(CompileResult) = GL_FALSE) then
-  begin
-    glGetShaderInfoLog(LineStripFragmentShader, SizeOf(ErrorBuf), nil, @ErrorBuf[0]);
-    raise Exception.Create('Failed to compile line strip fragment shader. OpenGL Error: ' + ErrorBuf);
-  end;
+  // Compile vertex and fragment shaders
+  VertexShader := CompileShader(GL_VERTEX_SHADER, MainVertexSource, 'main vertex');
+  MainFragmentShader := CompileShader(GL_FRAGMENT_SHADER, MainFragmentSource, 'main fragment');
+  TextFragmentShader := CompileShader(GL_FRAGMENT_SHADER, TextFragmentSource, 'text fragment');
+  LineStripVertexShader := CompileShader(GL_VERTEX_SHADER, LineStripVertexSource, 'line strip vertex');
+  LineStripFragmentShader := CompileShader(GL_FRAGMENT_SHADER, LineStripFragmentSource, 'line strip fragment');
 
   // Link main shader program
   MainProgram := glCreateProgram();
@@ -590,6 +598,7 @@ begin
   {$ENDIF};
 end;
 
+// Setup vertex attributes for main vertex shader
 procedure TRenderer_OpenGLBase.BindMainVertexAttrib();
 begin
   // Position
@@ -609,6 +618,7 @@ begin
   {$ENDIF};
 end;
 
+// Setup vertex attributes for line strip vertex shader used for oscilloscope
 procedure TRenderer_OpenGLBase.BindLineStripVertexAttrib();
 begin
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, PGLvoid(0));
@@ -650,9 +660,11 @@ var
   ColorR, ColorG, ColorB: single;
   X2, Y2: single;
 begin
-  if (Texture.TexID = 0) then
-    Exit;
   Tex := TTexture_OpenGL(Texture);
+  if (Tex.TexID = 0) then
+    Exit;
+
+  // Setup shader
   if (SupportsVAO) then
     glBindVertexArray(MainVAO)
   else
@@ -668,8 +680,12 @@ begin
     NumQuads := 2
   else
     NumQuads := 1;
+
+  // Map VBO to system memory
   Bytes := SizeOf(TQuadVertexBufferData) * NumQuads;
   Buffer := GetArrayBuffer(Bytes);
+
+  // Fill in VBO mapped memory with vertex information from our texture
   glBindTexture(GL_TEXTURE_2D, Tex.TexID);
   with Tex do
   begin
@@ -679,7 +695,7 @@ begin
     X2 := X + W;
     Y2 := Y + H;
 
-    // Top right
+    // Top right vertex
     Buffer[VERTEX_TOPRIGHT_OFFSET + X_OFFSET] := X2;
     Buffer[VERTEX_TOPRIGHT_OFFSET + Y_OFFSET] := Y;
     Buffer[VERTEX_TOPRIGHT_OFFSET + Z_OFFSET] := Z;
@@ -689,7 +705,7 @@ begin
     Buffer[VERTEX_TOPRIGHT_OFFSET + TEXX_OFFSET] := TexX2;
     Buffer[VERTEX_TOPRIGHT_OFFSET + TEXY_OFFSET] := TexY1;
 
-    // Bottom right
+    // Bottom right vertex
     Buffer[VERTEX_BOTTOMRIGHT_OFFSET + X_OFFSET] := X2;
     Buffer[VERTEX_BOTTOMRIGHT_OFFSET + Y_OFFSET] := Y2;
     Buffer[VERTEX_BOTTOMRIGHT_OFFSET + Z_OFFSET] := Z;
@@ -699,7 +715,7 @@ begin
     Buffer[VERTEX_BOTTOMRIGHT_OFFSET + TEXX_OFFSET] := TexX2;
     Buffer[VERTEX_BOTTOMRIGHT_OFFSET + TEXY_OFFSET] := TexY2;
 
-      // Bottom left
+    // Bottom left vertex
     Buffer[VERTEX_BOTTOMLEFT_OFFSET + X_OFFSET] := X;
     Buffer[VERTEX_BOTTOMLEFT_OFFSET + Y_OFFSET] := Y2;
     Buffer[VERTEX_BOTTOMLEFT_OFFSET + Z_OFFSET] := Z;
@@ -709,7 +725,7 @@ begin
     Buffer[VERTEX_BOTTOMLEFT_OFFSET + TEXX_OFFSET] := TexX1;
     Buffer[VERTEX_BOTTOMLEFT_OFFSET + TEXY_OFFSET] := TexY2;
 
-    // Top left
+    // Top left vertex
     Buffer[VERTEX_TOPLEFT_OFFSET + X_OFFSET] := X;
     Buffer[VERTEX_TOPLEFT_OFFSET + Y_OFFSET] := Y;
     Buffer[VERTEX_TOPLEFT_OFFSET + Z_OFFSET] := Z;
@@ -754,7 +770,7 @@ begin
     begin
       Buffer := Buffer + QUAD_STRIDE;
 
-      // Top right
+      // Top right vertex
       Buffer[VERTEX_TOPRIGHT_OFFSET + X_OFFSET] := X2;
       Buffer[VERTEX_TOPRIGHT_OFFSET + Y_OFFSET] := Y + H + ReflectionSpacing;
       Buffer[VERTEX_TOPRIGHT_OFFSET + Z_OFFSET] := Z;
@@ -765,7 +781,7 @@ begin
       Buffer[VERTEX_TOPRIGHT_OFFSET + TEXX_OFFSET] := TexX2;
       Buffer[VERTEX_TOPRIGHT_OFFSET + TEXY_OFFSET] := ReflectionTexY1;
 
-      // Bottom right
+      // Bottom right vertex
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + X_OFFSET] := X2;
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + Y_OFFSET] := Y + H + ReflectionSpacing + (H * ReflectionHeight) ;
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + Z_OFFSET] := Z;
@@ -776,7 +792,7 @@ begin
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + TEXX_OFFSET] := TexX2;
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + TEXY_OFFSET] := ReflectionTexY2;
 
-        // Bottom left
+      // Bottom left vertex
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + X_OFFSET] := X;
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + Y_OFFSET] := Y + H + ReflectionSpacing + (H * ReflectionHeight);
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + Z_OFFSET] := Z;
@@ -787,7 +803,7 @@ begin
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + TEXX_OFFSET] := TexX1;
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + TEXY_OFFSET] := ReflectionTexY2;
 
-      // Top left
+      // Top left vertex
       Buffer[VERTEX_TOPLEFT_OFFSET + X_OFFSET] := X;
       Buffer[VERTEX_TOPLEFT_OFFSET + Y_OFFSET] := Y + H + ReflectionSpacing;
       Buffer[VERTEX_TOPLEFT_OFFSET + Z_OFFSET] := Z;
@@ -799,7 +815,11 @@ begin
       Buffer[VERTEX_TOPLEFT_OFFSET + TEXY_OFFSET] := ReflectionTexY1;
     end;
   end;
+
+  // Upload our vertex data to the GPU
   glUnmapBuffer(GL_ARRAY_BUFFER);
+
+  // Draw elements and update VBO and EBO positions
   glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_INT, PGLvoid(EBOCursor * SizeOf(GLuint)));
   VBOCursor := VBOCursor + (NumQuads * 4 * VERTEX_STRIDE);
   EBOCursor := EBOCursor + (NumQuads * 6);
@@ -829,6 +849,8 @@ begin
   NumQuads := Length(QuadList);
   if (NumQuads = 0) then
     Exit;
+
+  // Setup shader
   if (SupportsVAO) then
     glBindVertexArray(MainVAO)
   else
@@ -839,36 +861,40 @@ begin
     glUniformMatrix4fv(TransformLocationMain, 1, GL_TRUE, PGLfloat(@ProjectionMatrix));
     UpdateTransformMain := false;
   end;
+
+  // Map VBO to system memory
   Bytes := SizeOf(TQuadVertexBufferData) * NumQuads;
   Buffer := GetArrayBuffer(Bytes);
+
+  // Fill in VBO mapped memory with vertex information
   glBindTexture(GL_TEXTURE_2D, WhiteTexture);
   for I := Low(QuadList) to High(QuadList) do
   begin
     X2 := QuadList[I].X + QuadList[I].W;
     Y2 := QuadList[I].Y + QuadList[I].H;
 
-    // Top right
+    // Top right vertex
     Buffer[VERTEX_TOPRIGHT_OFFSET + X_OFFSET] := X2;
     Buffer[VERTEX_TOPRIGHT_OFFSET + Y_OFFSET] := QuadList[I].Y;
     Buffer[VERTEX_TOPRIGHT_OFFSET + Z_OFFSET] := QuadList[I].Z;
     Buffer[VERTEX_TOPRIGHT_OFFSET + TEXX_OFFSET] := 1;
     Buffer[VERTEX_TOPRIGHT_OFFSET + TEXY_OFFSET] := 0;
 
-    // Bottom right
+    // Bottom right vertex
     Buffer[VERTEX_BOTTOMRIGHT_OFFSET + X_OFFSET] := X2;
     Buffer[VERTEX_BOTTOMRIGHT_OFFSET + Y_OFFSET] := Y2;
     Buffer[VERTEX_BOTTOMRIGHT_OFFSET + Z_OFFSET] := QuadList[I].Z;
     Buffer[VERTEX_BOTTOMRIGHT_OFFSET + TEXX_OFFSET] := 1;
     Buffer[VERTEX_BOTTOMRIGHT_OFFSET + TEXY_OFFSET] := 1;
 
-      // Bottom left
+    // Bottom left vertex
     Buffer[VERTEX_BOTTOMLEFT_OFFSET + X_OFFSET] := QuadList[I].X;
     Buffer[VERTEX_BOTTOMLEFT_OFFSET + Y_OFFSET] := Y2;
     Buffer[VERTEX_BOTTOMLEFT_OFFSET + Z_OFFSET] := QuadList[I].Z;
     Buffer[VERTEX_BOTTOMLEFT_OFFSET + TEXX_OFFSET] := 0;
     Buffer[VERTEX_BOTTOMLEFT_OFFSET + TEXY_OFFSET] := 1;
 
-    // Top left
+    // Top left vertex
     Buffer[VERTEX_TOPLEFT_OFFSET + X_OFFSET] := QuadList[I].X;
     Buffer[VERTEX_TOPLEFT_OFFSET + Y_OFFSET] := QuadList[I].Y;
     Buffer[VERTEX_TOPLEFT_OFFSET + Z_OFFSET] := QuadList[I].Z;
@@ -879,25 +905,25 @@ begin
     if (QuadList[I].Gradient = gdNone) then
     begin
 
-      // Top right
+      // Top right vertex
       Buffer[VERTEX_TOPRIGHT_OFFSET + R_OFFSET] := QuadList[I].ColR;
       Buffer[VERTEX_TOPRIGHT_OFFSET + G_OFFSET] := QuadList[I].ColG;
       Buffer[VERTEX_TOPRIGHT_OFFSET + B_OFFSET] := QuadList[I].ColB;
       Buffer[VERTEX_TOPRIGHT_OFFSET + A_OFFSET] := QuadList[I].Alpha;
 
-      // Bottom Right
+      // Bottom Right vertex
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + R_OFFSET] := QuadList[I].ColR;
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + G_OFFSET] := QuadList[I].ColG;
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + B_OFFSET] := QuadList[I].ColB;
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + A_OFFSET] := QuadList[I].Alpha;
 
-      // Bottom Left
+      // Bottom Left vertex
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + R_OFFSET] := QuadList[I].ColR;
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + G_OFFSET] := QuadList[I].ColG;
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + B_OFFSET] := QuadList[I].ColB;
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + A_OFFSET] := QuadList[I].Alpha;
 
-      // Top Left
+      // Top Left vertex
       Buffer[VERTEX_TOPLEFT_OFFSET + R_OFFSET] := QuadList[I].ColR;
       Buffer[VERTEX_TOPLEFT_OFFSET + G_OFFSET] := QuadList[I].ColG;
       Buffer[VERTEX_TOPLEFT_OFFSET + B_OFFSET] := QuadList[I].ColB;
@@ -906,25 +932,25 @@ begin
     else if (QuadList[I].Gradient = gdVertical) then
     begin
 
-      // Top right
+      // Top right vertex
       Buffer[VERTEX_TOPRIGHT_OFFSET + R_OFFSET] := QuadList[I].ColR;
       Buffer[VERTEX_TOPRIGHT_OFFSET + G_OFFSET] := QuadList[I].ColG;
       Buffer[VERTEX_TOPRIGHT_OFFSET + B_OFFSET] := QuadList[I].ColB;
       Buffer[VERTEX_TOPRIGHT_OFFSET + A_OFFSET] := QuadList[I].Alpha;
 
-      // Bottom Right
+      // Bottom right vertex
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + R_OFFSET] := QuadList[I].ColR2;
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + G_OFFSET] := QuadList[I].ColG2;
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + B_OFFSET] := QuadList[I].ColB2;
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + A_OFFSET] := QuadList[I].Alpha2;
 
-      // Bottom Left
+      // Bottom left vertex
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + R_OFFSET] := QuadList[I].ColR2;
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + G_OFFSET] := QuadList[I].ColG2;
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + B_OFFSET] := QuadList[I].ColB2;
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + A_OFFSET] := QuadList[I].Alpha2;
 
-      // Top Left
+      // Top left vertex
       Buffer[VERTEX_TOPLEFT_OFFSET + R_OFFSET] := QuadList[I].ColR;
       Buffer[VERTEX_TOPLEFT_OFFSET + G_OFFSET] := QuadList[I].ColG;
       Buffer[VERTEX_TOPLEFT_OFFSET + B_OFFSET] := QuadList[I].ColB;
@@ -933,25 +959,25 @@ begin
     else if (QuadList[I].Gradient = gdHorizontal) then
     begin
 
-      // Top right
+      // Top right vertex
       Buffer[VERTEX_TOPRIGHT_OFFSET + R_OFFSET] := QuadList[I].ColR2;
       Buffer[VERTEX_TOPRIGHT_OFFSET + G_OFFSET] := QuadList[I].ColG2;
       Buffer[VERTEX_TOPRIGHT_OFFSET + B_OFFSET] := QuadList[I].ColB2;
       Buffer[VERTEX_TOPRIGHT_OFFSET + A_OFFSET] := QuadList[I].Alpha2;
 
-      // Bottom Right
+      // Bottom right vertex
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + R_OFFSET] := QuadList[I].ColR2;
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + G_OFFSET] := QuadList[I].ColG2;
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + B_OFFSET] := QuadList[I].ColB2;
       Buffer[VERTEX_BOTTOMRIGHT_OFFSET + A_OFFSET] := QuadList[I].Alpha2;
 
-      // Bottom Left
+      // Bottom left vertex
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + R_OFFSET] := QuadList[I].ColR;
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + G_OFFSET] := QuadList[I].ColG;
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + B_OFFSET] := QuadList[I].ColB;
       Buffer[VERTEX_BOTTOMLEFT_OFFSET + A_OFFSET] := QuadList[I].Alpha;
 
-      // Top Left
+      // Top left vertex
       Buffer[VERTEX_TOPLEFT_OFFSET + R_OFFSET] := QuadList[I].ColR;
       Buffer[VERTEX_TOPLEFT_OFFSET + G_OFFSET] := QuadList[I].ColG;
       Buffer[VERTEX_TOPLEFT_OFFSET + B_OFFSET] := QuadList[I].ColB;
@@ -961,7 +987,10 @@ begin
     Buffer := Buffer + QUAD_STRIDE;
   end;
 
+  // Upload our vertex data to the GPU
   glUnmapBuffer(GL_ARRAY_BUFFER);
+
+  // Draw elements and update VBO and EBO positions
   glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_INT, PGLvoid(EBOCursor * SizeOf(GLuint)));
   VBOCursor := VBOCursor + (NumQuads * QUAD_STRIDE);
   EBOCursor := EBOCursor + (NumQuads * 6);
@@ -981,6 +1010,8 @@ begin
   NumTriangles := Length(TriangleList);
   if (NumTriangles = 0) then
     Exit;
+
+  // Setup shader
   if (SupportsVAO) then
     glBindVertexArray(MainVAO)
   else
@@ -991,8 +1022,12 @@ begin
     glUniformMatrix4fv(TransformLocationMain, 1, GL_TRUE, PGLfloat(@ProjectionMatrix));
     UpdateTransformMain := false;
   end;
+
+  // Map VBO to system memory
   Bytes := VERTEX_STRIDE_BYTES * 3;
   Buffer := GetArrayBuffer(Bytes);
+
+  // Fill in VBO mapped memory with vertex information
   glBindTexture(GL_TEXTURE_2D, WhiteTexture);
   for I := Low(TriangleList) to High(TriangleList) do
   begin
@@ -1033,8 +1068,15 @@ begin
     Buffer := Buffer + TRIANGLE_STRIDE;
   end;
 
+  // Upload our vertex data to the GPU
   glUnmapBuffer(GL_ARRAY_BUFFER);
+
+  // Draw elements
   glDrawArrays(GL_TRIANGLES, VBOCursor div VERTEX_STRIDE, NumTriangles * 3);
+
+  // We didn't draw quads, but the VBO is optimized for drawing quads. So we
+  // caculate the equivalent quad sizes for the amount of bytes we used
+  // and update the VBO and EBO positions accordingly
   EquivalentQuads := Bytes div SizeOf(TQuadVertexBufferData);
   VBOCursor := VBOCursor + (EquivalentQuads * QUAD_STRIDE);
   EBOCursor := EBOCursor + (EquivalentQuads * 6);
@@ -1043,10 +1085,12 @@ begin
   {$ENDIF};
 end;
 
-
+// Procedure to draw lines. Because modern OpenGL no longer supports thick lines,
+// we have to decompose the lines into quads. We could use a geometry shader for this,
+// but to keep support for older OpenGL versions, we will do it on the CPU instead
 procedure TRenderer_OpenGLBase.DrawLines(LineList: TLineList);
 var
-  VecX, VecY, VecPerpX, VecPerpY, Dist, LineThicknessW, LineThicknessH, HalfLineThicknessW, HalfLineThicknessH, PixelWidth, PixelHeight, X1, X2, Y1, Y2: single;
+  VecX, VecY, VecPerpX, VecPerpY, Dist, LineThicknessW, LineThicknessH, HalfLineThicknessW, HalfLineThicknessH, X1, X2, Y1, Y2: single;
   I, NumQuads: integer;
   Buffer: PGLfloat;
   Bytes: GLuint;
@@ -1067,19 +1111,17 @@ begin
   Bytes := SizeOf(TQuadVertexBufferData) * NumQuads;
   Buffer := GetArrayBuffer(Bytes);
   glBindTexture(GL_TEXTURE_2D, WhiteTexture);
-  PixelWidth := (ScreenW div Screens) / RenderW;
-  PixelHeight := ScreenH / RenderH;
   for I := Low(LineList) to High(LineList) do
   begin
-    LineThicknessW := LineList[I].Thickness * (RenderW / (ScreenW div Screens));
-    LineThicknessH := LineList[I].Thickness * (RenderH / ScreenH);
-    HalfLineThicknessW := LineThicknessW / 2;
-    HalfLineThicknessH := LineThicknessH / 2;
+    LineThicknessW := LineList[I].Thickness * VertexW;
+    LineThicknessH := LineList[I].Thickness * VertexH;
+    HalfLineThicknessW := LineThicknessW * 0.5;
+    HalfLineThicknessH := LineThicknessH * 0.5;
 
     // Horizontal line
     if (SameValue(LineList[I].Y1, LineList[I].Y2, 0.001)) then
     begin
-      Y1 := Round((LineList[I].Y1 - HalfLineThicknessH) * PixelHeight) / PixelHeight;
+      Y1 := Round((LineList[I].Y1 - HalfLineThicknessH) * PixelH) * VertexH;
       Y2 := Y1 + LineThicknessH;
 
       // Top right
@@ -1103,7 +1145,7 @@ begin
     // Vertical line
     else if (SameValue(LineList[I].X1, LineList[I].X2, 0.001)) then
     begin
-      X1 := Round((LineList[I].X1 - HalfLineThicknessW) * PixelWidth) / PixelWidth;
+      X1 := Round((LineList[I].X1 - HalfLineThicknessW) * PixelW) * VertexW;
       X2 := X1 + LineThicknessW;
 
       // Top right
@@ -1126,10 +1168,10 @@ begin
     // Diaganol line
     else
     begin
-      X1 := Round(LineList[I].X1 * PixelWidth) / PixelWidth;
-      X2 := Round(LineList[I].X2 * PixelWidth) / PixelWidth;
-      Y1 := Round(LineList[I].Y1 * PixelHeight) / PixelHeight;
-      Y2 := Round(LineList[I].Y2 * PixelHeight) / PixelHeight;
+      X1 := Round(LineList[I].X1 * PixelW) * VertexW;
+      X2 := Round(LineList[I].X2 * PixelW) * VertexW;
+      Y1 := Round(LineList[I].Y1 * PixelH) * VertexH;
+      Y2 := Round(LineList[I].Y2 * PixelH) * VertexH;
 
       VecX := X2 - X1;
       VecY := Y2 - Y1;
@@ -1159,6 +1201,7 @@ begin
       Buffer[VERTEX_TOPLEFT_OFFSET + Y_OFFSET] := Y1 + VecPerpY;
     end;
 
+    // Now fill in Z position and colors...
 
     // Top right
     Buffer[VERTEX_TOPRIGHT_OFFSET + Z_OFFSET] := LineList[I].Z;
@@ -1215,12 +1258,12 @@ var
   X2, Y2: single;
   I: integer;
 begin
-  if (Texture.TexID = 0) then
+  Tex := TTexture_OpenGL(Texture);
+  if (Tex.TexID = 0) then
     Exit;
   NumQuads := Length(ParticleList);
   if (NumQuads = 0) then
     Exit;
-  Tex := TTexture_OpenGL(Texture);
   if (SupportsVAO) then
     glBindVertexArray(MainVAO)
   else
@@ -1415,6 +1458,8 @@ begin
   Result := glIsEnabled(GL_SCISSOR_TEST) = GL_TRUE;
 end;
 
+// The equations for the orthographic projection matrix can be easily found online, e.g. in the Khronos documentation
+// for the glOrtho function
 procedure TRenderer_OpenGLBase.SetOrthographicProjection(Left, Right, Bottom, Top, NearVal, FarVal: single);
 begin
   ProjectionMatrix.init_zero;
@@ -1499,29 +1544,34 @@ begin
   {$ENDIF};
 end;
 
+{
+ * The text cliping works by setting the edge of the orthographic projection matrix to the X boundary, and
+ * adjusting the viewport so that it aligns to the correct pixel boundary. To prevent quantization artifacts,
+ * we calculate the window (pixel) coordinate of X, then recalculate X in vertex space based on that window coordinate
+}
 procedure TRenderer_OpenGLBase.SetTextClipBoundary(X: single; Direction: ClippingDirection);
 var
   WindowBoundary: integer; // X converted to window x coordinate
-  NewX: single;
-  WidthPerScreen: integer;
+  NewX: single; // Recaculated vertex from window coordinate
 begin
-  WidthPerScreen := ScreenW div Screens;
-  WindowBoundary := Round((X / RenderW) * WidthPerScreen);
-  NewX := (WindowBoundary * RenderW) / WidthPerScreen;
+  WindowBoundary := Round(X * PixelW);
+  NewX := (WindowBoundary * VertexW);
   if (ScreenAct = 2) then
-    WindowBoundary := WindowBoundary + WidthPerScreen;
+    WindowBoundary := WindowBoundary + ScreenWPerScreen;
 
+  // Partial update of the projection matrix based on the values that are actually changing
+  // see SetOrthoGraphicProjection() function for equations
   if (Direction = cdLeft) then
   begin
     ProjectionMatrix.data[0,0] := 2 / (RenderW - NewX);
     ProjectionMatrix.data[0,3] := -1 * ((RenderW + NewX) / (RenderW - NewX));
-    glViewport(WindowBoundary, ViewPortArray[1], (ScreenAct * WidthPerScreen) - WindowBoundary, ViewPortArray[3]);
+    glViewport(WindowBoundary, ViewPortArray[1], (ScreenAct * ScreenWPerScreen) - WindowBoundary, ViewPortArray[3]);
   end
   else
   begin
     ProjectionMatrix.data[0,0] := 2 / NewX;
     ProjectionMatrix.data[0,3] := -1;
-    glViewPort((ScreenAct - 1) * WidthPerScreen, ViewPortArray[1], WindowBoundary - (ScreenAct - 1) * WidthPerScreen, ViewPortArray[3]);
+    glViewPort((ScreenAct - 1) * ScreenWPerScreen, ViewPortArray[1], WindowBoundary - (ScreenAct - 1) * ScreenWPerScreen, ViewPortArray[3]);
   end;
   UpdateTransformText := true;
   {$IFDEF DEBUG_MODE}
@@ -1553,6 +1603,19 @@ begin
   glDepthRangef(0, 10);
   if (SupportsFBO) then
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+end;
+
+function TRenderer_OpenGLBase.GetFrameBufferData(out RowSize: integer): PByte;
+var
+  Align: integer;
+begin
+  // we must take the row-alignment (4byte by default) into account
+  glGetIntegerv(GL_PACK_ALIGNMENT, @Align);
+  // calc aligned row-size
+  RowSize := ((ScreenW*3 + (Align-1)) div Align) * Align;
+
+  GetMem(Result, RowSize * ScreenH);
+  glReadPixels(0, 0, ScreenW, ScreenH, GL_RGB, GL_UNSIGNED_BYTE, Result);
 end;
 
 {$IFDEF DEBUG_MODE}
@@ -1599,7 +1662,6 @@ var
     Result := StringReplace(Result, '[FRAG_OUT]', 'out_col', [rfReplaceAll]);
     Result := StringReplace(Result, '[TEXTURE_FUNC]', 'texture', [rfReplaceAll]);
   end;
-
 begin
   if ((MajorVersion > 3) or ((MajorVersion = 3) and (MinorVersion >= 2))) then
     Header := GLSL_CORE_HEADER
@@ -1655,7 +1717,6 @@ procedure TRenderer_OpenGLES.GetShaderSource(out MainVertex, MainFragment, TextF
     Result := StringReplace(Result, '[FRAG_OUT]', 'gl_FragColor', [rfReplaceAll]);
     Result := StringReplace(Result, '[TEXTURE_FUNC]', 'texture2D', [rfReplaceAll]);
   end;
-
 begin
   MainVertex := GetVertexShader(MAIN_VERTEX_SHADER_SOURCE);
   MainFragment := GetFragmentShader(MAIN_FRAGMENT_SHADER_SOURCE);
@@ -1704,7 +1765,6 @@ procedure TRenderer_OpenGL2.GetShaderSource(out MainVertex, MainFragment, TextFr
     Result := StringReplace(Result, '[FRAG_OUT]', 'gl_FragColor', [rfReplaceAll]);
     Result := StringReplace(Result, '[TEXTURE_FUNC]', 'texture2D', [rfReplaceAll]);
   end;
-
 begin
   MainVertex := GetVertexShader(MAIN_VERTEX_SHADER_SOURCE);
   MainFragment := GetFragmentShader(MAIN_FRAGMENT_SHADER_SOURCE);

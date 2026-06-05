@@ -203,8 +203,6 @@ type
 
       procedure OnWindowResized(); virtual;
 
-      procedure SetAnimationProgress(Progress: real); virtual;
-
       function IsSelectable(Int: cardinal): boolean;
 
       procedure InteractNext; virtual;
@@ -2020,11 +2018,6 @@ begin
       exit;
     end;
   end;
-end;
-
-procedure TMenu.SetAnimationProgress(Progress: real);
-begin
-  // nothing
 end;
 
 constructor TMenuScrollBar.Create(const ThemeScrollBar: TThemeScrollBar; PosXInit: real; PosYInit: real; ScrollBarH: real; PosYMax: real);

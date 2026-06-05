@@ -284,7 +284,7 @@ procedure TDisplay.InitFadeTextures();
 var
   i: integer;
 begin
-  TexW := ScreenW div Screens;
+  TexW := ScreenWPerScreen;
   TexH := ScreenH;
   for i := 0 to 1 do
     FadeTex[i] := Renderer.CreateTexture(nil, PATH_NONE, TexW, TexH);
@@ -303,7 +303,7 @@ begin
   for S := 1 to Screens do
   begin
     ScreenAct := S;
-    Renderer.SetViewPort((S-1) * ScreenW div Screens, 0, ScreenW div Screens, ScreenH);
+    Renderer.SetViewPort((S-1) * ScreenWPerScreen, 0, ScreenWPerScreen, ScreenH);
 
     // popup check was successful... move on
     if CheckOK then
@@ -373,7 +373,7 @@ begin
           // older errors in previous OpenGL calls.
           Renderer.GetError();
 
-          FadeCopyW := ScreenW div Screens;
+          FadeCopyW := ScreenWPerScreen;
           FadeCopyH := ScreenH;
 
           // it is possible that our fade textures are too small after a window
@@ -382,7 +382,7 @@ begin
             InitFadeTextures();
 
           // copy screen to texture
-          FadeTex[S-1].CopyFrameBuffer((S-1) * ScreenW div Screens, 0, FadeCopyW, FadeCopyH);
+          FadeTex[S-1].CopyFrameBuffer((S-1) * ScreenWPerScreen, 0, FadeCopyW, FadeCopyH);
 
           if (Renderer.Error) then
           begin
@@ -423,7 +423,7 @@ begin
 
         if (FadeStateSquare < 1) then
         begin
-          FadeW := (ScreenW div Screens)/TexW;
+          FadeW := (ScreenWPerScreen)/TexW;
           FadeH := ScreenH/TexH;
           with FadeTex[S-1] do
           begin
@@ -740,20 +740,17 @@ begin
 
 end;
 
-
-// todo  complexlogic
 procedure TDisplay.SaveScreenShot;
 var
   Num:        integer;
   FileName:   IPath;
   Prefix:     UTF8String;
-  ScreenData: PChar;
+  ScreenData: PByte;
   Surface:    PSDL_Surface;
   Success:    boolean;
-  Align:      integer;
   RowSize:    integer;
 begin
-{
+
   // Exit if Screenshot-path does not exist or read-only
   if (ScreenshotsPath.IsUnset) then
     Exit;
@@ -766,14 +763,8 @@ begin
     if not FileName.Exists() then
       break;
   end;
+  ScreenData := Renderer.GetFrameBufferData(RowSize);
 
-  // we must take the row-alignment (4byte by default) into account
-  glGetIntegerv(GL_PACK_ALIGNMENT, @Align);
-  // calc aligned row-size
-  RowSize := ((ScreenW*3 + (Align-1)) div Align) * Align;
-
-  GetMem(ScreenData, RowSize * ScreenH);
-  glReadPixels(0, 0, ScreenW, ScreenH, GL_RGB, GL_UNSIGNED_BYTE, ScreenData);
   // on big endian machines (powerpc) this may need to be changed to
   // Needs to be tested. KaMiSchi Sept 2008
   // in this case one may have to add " glext, " to the list of used units
@@ -792,7 +783,7 @@ begin
 
   SDL_FreeSurface(Surface);
   FreeMem(ScreenData);
-  }
+
 end;
 
 //------------

@@ -362,7 +362,6 @@ begin
               FadeTex.Y := PosY;
               FadeTex.W := Texture.W;
               FadeTex.H := (SelectH - DeSelectH) * FadeProgress;
-              FadeTex.ScaleW := Texture.ScaleW;
               //Some Hack that Fixes a little Space between both Textures
               FadeTex.TexY2 := 0.9;
             end;
@@ -378,7 +377,6 @@ begin
               FadeTex.Y := PosY;
               FadeTex.H := Texture.H;
               FadeTex.W := (SelectW - DeSelectW) * FadeProgress;
-              FadeTex.ScaleH := Texture.ScaleH;
               //Some Hack that Fixes a little Space between both Textures
               FadeTex.TexX2 := 0.9;
             end;
@@ -394,7 +392,6 @@ begin
               FadeTex.Y := PosY  + (SelectH - DeSelectH) * FadeProgress;;
               FadeTex.W := Texture.W;
               FadeTex.H := (SelectH - DeSelectH) * FadeProgress;
-              FadeTex.ScaleW := Texture.ScaleW;
               //Some Hack that Fixes a little Space between both Textures
               FadeTex.TexY1 := 0.1;
             end;
@@ -410,7 +407,6 @@ begin
               FadeTex.Y := PosY;
               FadeTex.H := Texture.H;
               FadeTex.W := (SelectW - DeSelectW) * FadeProgress;
-              FadeTex.ScaleH := Texture.ScaleH;
               //Some Hack that Fixes a little Space between both Textures
               FadeTex.TexX1 := 0.1;
             end;

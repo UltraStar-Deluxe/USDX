@@ -59,7 +59,6 @@ type
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
       procedure UpdateRounds;
-      procedure SetAnimationProgress(Progress: real); override;
   end;
 
 const
@@ -210,16 +209,6 @@ begin
       PartyTournament.ResultPlayer[PartyTournament.Phase, PartyTournament.Next.Player2].Text := IntToStr(StrToInt(PartyTournament.ResultPlayer[PartyTournament.Phase, PartyTournament.Next.Player2].Text) + 1);
   end;
 
-end;
-
-procedure TScreenPartyTournamentWin.SetAnimationProgress(Progress: real);
-begin
-  {if (ScreenSingModi.PlayerInfo.NumPlayers >= 1) then
-    Statics[StaticTeam1].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[0].Score / maxScore;
-  if (ScreenSingModi.PlayerInfo.NumPlayers >= 2) then
-    Statics[StaticTeam2].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[1].Score / maxScore;
-  if (ScreenSingModi.PlayerInfo.NumPlayers >= 3) then
-    Statics[StaticTeam3].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[2].Score / maxScore;}
 end;
 
 end.

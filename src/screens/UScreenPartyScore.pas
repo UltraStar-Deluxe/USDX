@@ -74,7 +74,6 @@ type
       destructor Destroy; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
-      procedure SetAnimationProgress(Progress: real); override;
   end;
 
 const
@@ -224,16 +223,6 @@ begin
   // get rankings for current round
   Ranking := Party.Rounds[Party.CurrentRound].Ranking;
 
-  {//Set Statics Length
-  Statics[StaticTeam1].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[0].Percentage / 100;
-  Statics[StaticTeam2].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[1].Percentage / 100;
-  Statics[StaticTeam3].Texture.ScaleW := ScreenSingModi.PlayerInfo.Playerinfo[2].Percentage / 100;
-
-  //fix: prevents statics from drawn out of bounds.
-  if Statics[StaticTeam1].Texture.ScaleW > 99 then Statics[StaticTeam1].Texture.ScaleW := 99;
-  if Statics[StaticTeam2].Texture.ScaleW > 99 then Statics[StaticTeam2].Texture.ScaleW := 99;
-  if Statics[StaticTeam3].Texture.ScaleW > 99 then Statics[StaticTeam3].Texture.ScaleW := 99; }
-
   //Set Winnertext
   Text[TextWinner].Text := Format(Language.Translate('PARTY_SCORE_WINS'), [Party.GetWinnerString(Party.CurrentRound)]);
 
@@ -351,16 +340,6 @@ begin
 
   //start Background-Music
   SoundLib.StartBgMusic;
-end;
-
-procedure TScreenPartyScore.SetAnimationProgress(Progress: real);
-begin
-  {if (ScreenSingModi.PlayerInfo.NumPlayers >= 1) then
-    Statics[StaticTeam1].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[0].Percentage / 100;
-  if (ScreenSingModi.PlayerInfo.NumPlayers >= 2) then
-    Statics[StaticTeam2].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[1].Percentage / 100;
-  if (ScreenSingModi.PlayerInfo.NumPlayers >= 3) then
-    Statics[StaticTeam3].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[2].Percentage / 100;}
 end;
 
 end.

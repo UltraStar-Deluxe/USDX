@@ -60,7 +60,6 @@ type
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
-      procedure SetAnimationProgress(Progress: real); override;
 
       procedure InitJukebox;
   end;
@@ -339,12 +338,6 @@ begin
     FadeTo(@ScreenSong);
   end;
 
-end;
-
-procedure TScreenJukeboxPlaylist.SetAnimationProgress(Progress: real);
-begin
-  //for I := 0 to 6 do
-  //  SelectS[I].Texture.ScaleW := Progress;
 end;
 
 end.

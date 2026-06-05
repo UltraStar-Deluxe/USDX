@@ -257,12 +257,12 @@ begin
 
   self.ScreenW := UGraphic.ScreenW;
   self.ScreenH := UGraphic.ScreenH;
-  projectm_set_window_size(Handle, self.ScreenW div Screens, self.ScreenH);
+  projectm_set_window_size(Handle, self.ScreenW, self.ScreenH);
 
   SoftCut := IniFile.ReadFloat('ProjectM', 'Smooth Transition Duration', 5);
   projectm_set_soft_cut_duration(Handle, SoftCut);
 
-  PresetDuration := IniFile.ReadFloat('ProjectM', 'Preset Duration', 1000);
+  PresetDuration := IniFile.ReadFloat('ProjectM', 'Preset Duration', 60);
   projectm_set_preset_duration(Handle, PresetDuration);
 
   EasterEgg := IniFile.ReadFloat('ProjectM', 'Easter Egg Parameter', 1);
@@ -325,7 +325,7 @@ begin
   begin
     self.ScreenW := UGraphic.ScreenW;
     self.ScreenH := UGraphic.ScreenH;
-    projectm_set_window_size(Handle, self.ScreenW div Screens, self.ScreenH);
+    projectm_set_window_size(Handle, self.ScreenW, self.ScreenH);
   end;
   projectm_opengl_render_frame(Handle);
 end;

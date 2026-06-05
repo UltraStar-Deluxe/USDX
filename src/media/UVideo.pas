@@ -459,8 +459,6 @@ begin
     ParsePreferredCodecs;
   FFmpegCore.UnlockAVCodec();
 
-  fPboEnabled := PboSupported;
-
   // use custom 'ufile' protocol for UTF-8 support
   errnum := FFmpegCore.AVFormatOpenInput(@fFormatContext, PAnsiChar(UTF8ToAnsi(FileName.ToUTF8)));//'ufile:'+FileName.ToUTF8));
   if (errnum <> 0) then
@@ -602,7 +600,7 @@ begin
   begin
     FreeAndNil(fFrameTex);
     fFrameTex := Renderer.CreateTexture(nil, PATH_NONE, fTexWidth, fTexHeight);
-    if True then // complexlogic todo -> needed still?
+    if True then
       break;
     if not ReduceSize then
     begin
@@ -1038,45 +1036,7 @@ begin
   Log.BenchmarkStart(16);
   {$ENDIF}
 
-  if (not fPboEnabled) then
-  begin
-    fFrameTex.UpdateData(fAVFrameRGB^.data[0], fScaledWidth, fScaledHeight, fAVFrameRGB.linesize[0] div PIXEL_FMT_SIZE);
-  end
-  else // fPboEnabled
-  begin
-  {
-    glGetError();
-
-    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, fPboId);
-    glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB,
-        fScaledHeight * fAVFrameRGB.linesize[0],
-        nil,
-        GL_STREAM_DRAW_ARB);
-
-    bufferPtr := glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY_ARB);
-    if(bufferPtr <> nil) then
-    begin
-      Move(fAVFrameRGB^.data[0]^, bufferPtr^,
-           fScaledHeight * fAVFrameRGB.linesize[0]);
-
-      // release pointer to mapping buffer
-      glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
-    end;
-
-    glBindTexture(GL_TEXTURE_2D, fFrameTex);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
-        fScaledWidth, fScaledHeight,
-        PIXEL_FMT_OPENGL, GL_UNSIGNED_BYTE, nil);
-
-    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glErr := glGetError();
-    if (glErr <> GL_NO_ERROR) then
-      Log.LogError('PBO texture stream error: $' + IntToHex(glErr, 4), 'TVideo_FFmpeg.GetFrame');
-      }
-  end;
-
+  fFrameTex.UpdateData(fAVFrameRGB^.data[0], fScaledWidth, fScaledHeight, fAVFrameRGB.linesize[0] div PIXEL_FMT_SIZE);
   if (not fFrameTexValid) then
     fFrameTexValid := true;
 

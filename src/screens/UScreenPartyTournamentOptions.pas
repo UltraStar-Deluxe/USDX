@@ -60,7 +60,6 @@ type
       procedure UpdateTournament;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
-      procedure SetAnimationProgress(Progress: real); override;
   end;
 
 const
@@ -198,12 +197,6 @@ begin
   if (PartyTournament.PlayersCount > 8) then
     SelectsS[SelectRounds8Final].Visible := true;
 
-end;
-
-procedure TScreenPartyTournamentOptions.SetAnimationProgress(Progress: real);
-begin
-  {for I := 0 to 6 do
-    SelectS[I].Texture.ScaleW := Progress;}
 end;
 
 end.

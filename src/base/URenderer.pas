@@ -40,8 +40,8 @@ const
   {$ELSE}
   DEFAULT_RENDERRER = 'gl';
   {$ENDIF}
-  REFLECTION_HEIGHT = 0.5;
-  REFLECTION_ALPHA_DIFF = 0.3;
+  REFLECTION_HEIGHT = 0.5; // Height of the reflection relative to the texture height
+  REFLECTION_ALPHA_DIFF = 0.3; // Starting alpha of the top of reflection (subtracted from texture's alpha)
 
 type
   GradientDirection = (
@@ -66,6 +66,11 @@ type
     W: single;
     H: single;
     Z: single;
+
+    // Some quads can have a color and/or alpha gradient. If the quad does not have a color/alpha gradient,
+    // then the color/alpha values are stored in ColR,G,B,Alpha and ColR2,G2,B2 and Alpha2 are unused.
+    // If there is a color/alpha gradient, top/left value is stored in ColR,G,B,Alpha, and bottom/right
+    // value is stored in ColR2,B2,G2,Alpha2
     Gradient: GradientDirection;
     ColR: single;
     ColG: single;
@@ -99,7 +104,7 @@ type
     X2: single;
     Y2: single;
     Z: single;
-    Thickness: single;
+    Thickness: single; // Specified in Window (pixel) coordinates, NOT the virtual 800x600 vertices
     ColR: single;
     ColG: single;
     ColB: single;
@@ -138,24 +143,26 @@ type
       procedure Clone(T: TTexture); overload;
 
     public
-      TexID:    TextureID;
       X: single;
       Y: single;
       Z: single;
       W: single;
       H: single;
       Shear: single;
-      ScaleW: single; // for dynamic scalling while leaving width constant
-      ScaleH: single; // for dynamic scalling while leaving height constant
       Int: single; // intensity
       ColR, ColG, ColB: single;
       TexX1: single;
       TexY1: single;
       TexX2: single;
       TexY2: single;
+
+      // Some textures can have an alpha gradient. If the texture does NOT have an alpha gradient,
+      // then the alpha value is stored in Alpha and Alpha2 is unused. If there is an alpha gradient,
+      //  top/left value is storedin alpha, and bottom/right value is stored in Alpha2
       AlphaGradient: GradientDirection;
       Alpha: single;
       Alpha2: single;
+
       Name: IPath;
       Reflection: boolean;
       ReflectionSpacing: single;
@@ -201,6 +208,8 @@ type
       Texture: array of TTextureEntry;
     public
       function FindTexture(const Name: IPath; Typ: TTextureType; Color: cardinal): integer;
+
+      destructor Destroy; override;
   end;
 
   TRenderer = class
@@ -213,8 +222,8 @@ type
       function CreateEmptyTexture(const Identifier: IPath): TTexture; virtual; abstract;
 
     public
-      procedure SetOrthographicProjection(Left, Right, Bottom, Top, NearVal, FarVal: single); virtual; abstract;
-      procedure SetViewPort(x, y: integer; width, height: cardinal); virtual; abstract;
+
+      // Drawing functions
       procedure DrawTexture(Texture: TTexture); virtual; abstract;
       procedure DrawGlyph(Texture: TTexture); virtual; abstract;
       procedure DrawQuads(QuadList: TQuadList); virtual; abstract;
@@ -226,6 +235,10 @@ type
       procedure DrawParticles(Texture: TTexture; ParticleList: TParticleList); virtual; abstract;
       procedure DrawBoundedBox(X1, Y1, X2, Y2, Z, LineThickness, ColR, ColG, ColB, Alpha: single); virtual;
       procedure DrawLineStrip(PointList: TPointList; ScaleX, ScaleY, TranslateX, TranslateY, ColR, ColG, ColB, Alpha: single); virtual; abstract;
+
+      // State changes
+      procedure SetOrthographicProjection(Left, Right, Bottom, Top, NearVal, FarVal: single); virtual; abstract;
+      procedure SetViewPort(x, y: integer; width, height: cardinal); virtual; abstract;
       procedure SetBlend(Enabled: boolean); virtual; abstract;
       function GetBlend(): boolean; virtual; abstract;
       procedure SetDepthTest(Enabled: boolean); virtual; abstract;
@@ -255,6 +268,8 @@ type
       function CreateTexture(Data: PChar; const Name: IPath; Width, Height: word): TTexture;
       procedure UnloadTexture(const Name: IPath; Typ: TTextureType); overload;
       procedure UnloadTexture(const Name: IPath; Typ: TTextureType; Col: cardinal); overload;
+
+      function GetFrameBufferData(out RowSize: integer): PByte; virtual; abstract;
 
       constructor Create;
       destructor Destroy; override;
@@ -322,7 +337,6 @@ end;
 
 procedure TTexture.Clone(T: TTexture);
 begin
-  T.TexID := TexID;
   T.OwnsTex := false;
   T.fIsEmpty := fIsEmpty;
   T.X := X;
@@ -330,8 +344,6 @@ begin
   T.Z := Z;
   T.W := W;
   T.H := H;
-  T.ScaleW := ScaleW;
-  T.scaleH := ScaleH;
   T.Int := Int;
   T.ColR := ColR;
   T.ColG := ColG;
@@ -483,6 +495,7 @@ begin
   FreeAndNil(TextureDatabase.Texture[T].Texture);
 end;
 
+// Convenience function to draw a single quad
 procedure TRenderer.DrawQuad(X, Y, Z, W, H, ColR, ColG, ColB, Alpha: single);
 var
   QuadList: TQuadList;
@@ -501,6 +514,7 @@ begin
   DrawQuads(QuadList);
 end;
 
+// Convenience function to draw a single triangle
 procedure TRenderer.DrawTriangle(X1, Y1, X2, Y2, X3, Y3, Z, ColR, ColG, ColB, Alpha: single);
 var
   TriangleList: TTriangleList;
@@ -520,6 +534,7 @@ begin
   DrawTriangles(TriangleList);
 end;
 
+// Convenience function to draw a single line
 procedure TRenderer.DrawLine(X1, Y1, X2, Y2, Z, LineThickness, ColR, ColG, ColB, Alpha: single);
 var
   LineList: TLineList;
@@ -538,29 +553,27 @@ begin
   DrawLines(LineList);
 end;
 
+// To draw a bounded box, we break down the 4 segments into quads based on the requested line thickness (in pixels)
 procedure TRenderer.DrawBoundedBox(X1, Y1, X2, Y2, Z, LineThickness, ColR, ColG, ColB, Alpha: single);
 var
   QuadList: TQuadList;
   Offset: single;
   LineThicknessVertexW, LineThicknessVertexH: single;
   HalfLineThicknessVertexW, HalfLineThicknessVertexH : single;
-  PixelWidth, PixelHeight: single;
 begin
   SetLength(QuadList, 4);
 
-  // Calculate some necessary info
-  PixelWidth := (ScreenW div Screens) / RenderW;
-  PixelHeight := ScreenH / RenderH;
-  LineThicknessVertexW := LineThickness / PixelWidth;
-  LineThicknessVertexH := LineThickness / PixelHeight;
+  // Convert line thickness from window pixels to units of 800x600 vertices
+  LineThicknessVertexW := LineThickness * VertexW;
+  LineThicknessVertexH := LineThickness * VertexH;
   HalfLineThicknessVertexW := 0.5 * LineThicknessVertexW;
   HalfLineThicknessVertexH := 0.5 * LineThicknessVertexH;
 
-  // Snap vectices to window (pixel) coordinates
-  X1 := Round((X1 - HalfLineThicknessVertexW) * PixelWidth) / PixelWidth;
-  X2 := Round((X2 - HalfLineThicknessVertexW) * PixelWidth) / PixelWidth;
-  Y1 := Round((Y1 - HalfLineThicknessVertexH) * PixelHeight) / PixelHeight;
-  Y2 := Round((Y2 - HalfLineThicknessVertexH) * PixelHeight) / PixelHeight;
+  // Snap vectices to nearest window (pixel) coordinates to prevent quantization artifacts
+  X1 := Round((X1 - HalfLineThicknessVertexW) * PixelW) * VertexW;
+  X2 := Round((X2 - HalfLineThicknessVertexW) * PixelW) * VertexW;
+  Y1 := Round((Y1 - HalfLineThicknessVertexH) * PixelH) * VertexH;
+  Y2 := Round((Y2 - HalfLineThicknessVertexH) * PixelH) * VertexH;
 
   // Top Segment
   QuadList[0].X := X1;
@@ -619,7 +632,10 @@ begin
   DepthTest := true;
 end;
 
-
+{
+ * SDL requires that some OpenGL-related attributes are set before creating the Window. So we
+ * set these based on the intended rendering backend
+}
 procedure PreInitRenderer();
 var
   ValidRenderers: array of string;
@@ -661,6 +677,9 @@ begin
   end;
 end;
 
+{
+ * Initialize the renderer based on the type of SDL window that was created
+}
 procedure InitRenderer();
 var
   Profile: integer;
@@ -678,6 +697,15 @@ begin
     Renderer := TRenderer_OpenGL3.Create(glcontext, MajorVersion, MinorVersion)
   else
     Renderer := TRenderer_OpenGL2.Create(glcontext, MajorVersion, MinorVersion);
+end;
+
+destructor TTextureDatabase.Destroy();
+var
+  I: integer;
+begin
+  for I := Low(Texture) to High(Texture) do
+    Texture[I].Texture.Free;
+  inherited;
 end;
 
 function TTextureDatabase.FindTexture(const Name: IPath; Typ: TTextureType; Color: cardinal): integer;

@@ -125,6 +125,11 @@ var
   ScreenH:    integer;
   Screens:    integer;
   ScreenAct:  integer;
+  ScreenWPerScreen: integer;
+  PixelW: single; // Width of a screen pixel on the 800x600 grid
+  PixelH: single; // Height of a screen pixel on the 800x600 grid
+  VertexW: single; // Width of an 800x600 vertex unit in screen pixels
+  VertexH: single; // Height of an 800x600 vertex unit in screen pixels
   LastX, LastY:    integer;
   LastW, LastH:    integer;
   HasValidPosition:     boolean;
@@ -270,9 +275,6 @@ var
     Tex_Cursor_Unpressed: TTexture;
     Tex_Cursor_Pressed:   TTexture;
 
-
-  PboSupported: boolean;
-
 const
   Skin_FontR = 0;
   Skin_FontG = 0;
@@ -313,6 +315,8 @@ function HasWindowState(Flag: integer): boolean;
 // events
 procedure OnWindowMoved(x,y: integer);
 procedure OnWindowResized(w,h: integer);
+procedure CalculateScreenMetrics();
+
 
 implementation
 
@@ -619,6 +623,8 @@ end;
 
 procedure Finalize3D;
 begin
+  UnloadScreens;
+  Renderer.Free;
   UnloadFontTextures;
   SDL_QuitSubSystem(SDL_INIT_VIDEO);
 end;
@@ -763,6 +769,7 @@ NoDoubledResolution:
   RenderH := 600;
   ScreenW := ActualW;
   ScreenH := ActualH;
+  CalculateScreenMetrics;
   Renderer.SetOrthographicProjection(0, RenderW, RenderH, 0, -1, 100);
   Renderer.VSync := true;
 
@@ -908,7 +915,7 @@ begin
   begin
     // override render size
     ScreenW := w; ScreenH := h;
-
+    CalculateScreenMetrics;
     if not HasWindowState(SDL_WINDOW_MAXIMIZED or SDL_WINDOW_FULLSCREEN) then
     begin
       HasValidSize := true;
@@ -931,6 +938,15 @@ begin
   begin
     Display.OnWindowResized(); // notify display window has changed
   end;
+end;
+
+procedure CalculateScreenMetrics();
+begin
+  ScreenWPerScreen := ScreenW div Screens;
+  PixelW := ScreenWPerScreen / RenderW;
+  PixelH := ScreenH / RenderH;
+  VertexW := RenderW / ScreenWPerScreen;
+  VertexH := RenderH / ScreenH;
 end;
 
 procedure LoadLoadingScreen;

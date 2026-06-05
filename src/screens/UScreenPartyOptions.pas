@@ -70,7 +70,6 @@ type
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
-      procedure SetAnimationProgress(Progress: real); override;
 
       procedure InitClassic;
       procedure InitFree;
@@ -412,12 +411,6 @@ begin
   ScreenSong.Mode := smPartyTournament;
   AudioPlayback.PlaySound(SoundLib.Start);
   FadeTo(@ScreenPartyTournamentPlayer);
-end;
-
-procedure TScreenPartyOptions.SetAnimationProgress(Progress: real);
-begin
-  //for I := 0 to 6 do
-  //  SelectS[I].Texture.ScaleW := Progress;
 end;
 
 end.

@@ -347,7 +347,6 @@ uses
   opencv_types            in 'lib\openCV3\opencv_types.pas',
   {$ENDIF}
 
-  //UMenuStaticList in 'menu\UMenuStaticList.pas',
   UWebcam                 in 'base\UWebcam.pas',
 
   UDLLManager             in 'base\UDLLManager.pas',
