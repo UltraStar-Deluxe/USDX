@@ -1265,6 +1265,7 @@ var
 implementation
 
 uses
+  UGraphic,
   ULanguage,
   USkins,
   UPathUtils,
@@ -3743,7 +3744,7 @@ begin
   ThemeLoadText(Score.TextTitle, 'ScoreTextTitle');
   ThemeLoadText(Score.TextArtistTitle, 'ScoreTextArtistTitle');
 
-  if (Ini.Players < 3) or (Ini.Screens = 1) then
+  if (Ini.Players < 3) or (Screens = 2) then
     prefix := ''
   else
   begin
