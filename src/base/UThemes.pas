@@ -3735,6 +3735,8 @@ begin
   OpenFile(Ini.Theme);
 
   // Score
+  Score.Free;
+  Score := TThemeScore.Create;
   ThemeLoadBasic(Score, 'Score');
 
   ThemeLoadText(Score.TextArtist, 'ScoreTextArtist');
