@@ -222,11 +222,7 @@ begin
         //Editor
         if Interaction = 4 then
         begin
-          {$IFDEF UseMIDIPort}
           FadeTo(@ScreenEdit, SoundLib.Start);
-          {$ELSE}
-          ScreenPopupError.ShowPopup(Language.Translate('ERROR_NO_EDITOR'));
-          {$ENDIF}
         end;
 
         //Options

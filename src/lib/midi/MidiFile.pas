@@ -1,90 +1,4 @@
-{
-  Load a midifile and get access to tracks and events
-  I did build this component to convert midifiles to wave files
-  or play the files on a software synthesizer which I'm currenly
-  building.
-
-  version 1.0 first release
-
-  version 1.1
-    added some function
-    function KeyToStr(key : integer) : string;
-    function MyTimeToStr(val : integer) : string;
-    Bpm can be set to change speed
-
-  version 1.2
-    added some functions
-    function  GetTrackLength:integer;
-    function  Ready: boolean;
-
-  version 1.3
-    update by Chulwoong,
-    He knows how to use the MM timer, the timing is much better now, thank you
-
-  for comments/bugs
-  F.Bouwmans
-  fbouwmans@spiditel.nl
-
-  if you think this component is nice and you use it, sent me a short email.
-  I've seen that other of my components have been downloaded a lot, but I've
-  got no clue wether they are actually used.
-  Don't worry because you are free to use these components
-
-  Timing has improved, however because the messages are handled by the normal
-  windows message loop (of the main window) it is still influenced by actions
-  done on the window (minimize/maximize ..).
-  Use of a second thread with higher priority which only handles the
-  timer message should increase performance. If somebody knows such a component
-  which is freeware please let me know.
-
-  interface description:
-
-  procedure ReadFile:
-    actually read the file which is set in Filename
-
-  function GetTrack(index: integer) : TMidiTrack;
-
-  property Filename
-    set/read filename of midifile
-
-  property NumberOfTracks
-    read number of tracks in current file
-
-  property TicksPerQuarter: integer
-    ticks per quarter, tells how to interpret the time value in midi events
-
-  property FileFormat: TFileFormat
-    tells the format of the current midifile
-
-  property Bpm:integer
-    tells Beats per minut
-
-  property OnMidiEvent:TOnMidiEvent
-    called while playing for each midi event
-
-  procedure StartPlaying;
-    start playing the current loaded midifile from the beginning
-
-  procedure StopPlaying;
-    stop playing the current midifile
-
-  procedure PlayToTime(time : integer);
-    if playing yourself then events from last time to this time are produced
-
-
-  function KeyToStr(key : integer) : string;
-      give note string on key value:  e.g. C4
-
-  function MyTimeToStr(val : integer) : string;
-      give time string from msec time
-
-  function  GetTrackLength:integer;
-      gives the track lenght in msec (assuming the bpm at the start oof the file)
-
-  function  Ready: boolean;
-      now you can check wether the playback is finished
-
-}
+{ MIDI file loading, parsing, and timed event playback for the editor. }
 
 unit MidiFile;
 
@@ -98,13 +12,6 @@ interface
 
 uses
   Classes,
-{$IFDEF MSWINDOWS}
-  Windows,
-  Messages,
-  {$IFDEF FPC}
-  WinAllocation,
-  {$ENDIF}
-{$ENDIF}
   SysUtils,
   UPath;
 
@@ -161,18 +68,10 @@ type
   TMidiFile = class(TComponent)
   private
     { Private declarations }
-{$IFNDEF MSWINDOWS}
-{$IFNDEF UsePortTime}
     TimerID: Int32;
-{$ENDIF}
-{$ENDIF}
     procedure MidiTimer(sender : TObject);
-{$IFDEF MSWINDOWS}
-    procedure WndProc(var Msg : TMessage);
-{$ELSE}
     procedure SetMidiTimer;
     procedure KillMidiTimer;
-{$ENDIF}
   protected
     { Protected declarations }
     MidiFile: TBinaryFileStream;
@@ -249,100 +148,11 @@ procedure Register;
 implementation
 
 uses
-{$IFDEF MSWINDOWS}
-  mmsystem;
-{$ELSE}
-{$IFDEF UsePortTime}
-  PortTime,
-{$ENDIF}
   UMain,
   SDL2;
-{$ENDIF}
 
 const
   TIMER_RESOLUTION = 10;
-
-{$IFDEF MSWINDOWS}
-type
-{$IFDEF FPC}
-  TTimerProc = TTIMECALLBACK;
-  TTimeCaps = TIMECAPS;
-{$ELSE}
-  TTimerProc = TFNTimeCallBack;
-{$ENDIF}
-
-const
-  WM_MULTIMEDIA_TIMER = WM_USER + 127;
-
-var
-  MidiFileHandle: HWND;
-  FPriority:      dword;
-  MidiTimerID:    integer;
-  TimerPeriod:    integer;
-
-procedure TimerCallBackProc(uTimerID, uMsg: Cardinal; dwUser, dwParam1, dwParam2:dword);stdcall;
-begin
-  PostMessage(HWND(dwUser), WM_MULTIMEDIA_TIMER, 0, 0);
-end;
-
-procedure SetMidiTimer;
-var
-  TimeCaps: TTimeCaps;
-begin
-  SetPriorityClass(MidiFileHandle, REALTIME_PRIORITY_CLASS);
-  timeGetDevCaps(@TimeCaps, SizeOf(TimeCaps));
-  if TIMER_RESOLUTION < TimeCaps.wPeriodMin then
-    TimerPeriod := TimeCaps.wPeriodMin
-  else if TIMER_RESOLUTION > TimeCaps.wPeriodMax then
-    TimerPeriod := TimeCaps.wPeriodMax
-  else
-    TimerPeriod := TIMER_RESOLUTION;
-
-  timeBeginPeriod(TimerPeriod);
-  MidiTimerID := timeSetEvent(TimerPeriod, TimerPeriod, @TimerCallBackProc,
-                            dword(MidiFileHandle), TIME_PERIODIC);
-  if MidiTimerID=0 then
-    timeEndPeriod(TimerPeriod);
-end;
-
-procedure KillMidiTimer;
-begin
-  if MidiTimerID <> 0 then
-  begin
-    timeKillEvent(MidiTimerID);
-    timeEndPeriod(TimerPeriod);
-  end;
-  SetPriorityClass(MidiFileHandle, FPriority);
-end;
-
-procedure TMidiFile.WndProc(var Msg : TMessage);
-begin
-  with Msg do
-  begin
-    case Msg of
-      WM_MULTIMEDIA_TIMER:
-      begin
-        //try
-          MidiTimer(self);
-        //except
-        // Note: HandleException() is called by default if exception is not handled
-        //  Application.HandleException(Self);
-        //end;
-      end;
-    else
-      begin
-        Result := DefWindowProc(MidiFileHandle, Msg, wParam, lParam);
-      end;
-    end;
-  end;
-end;
-
-function GetMillisecondTime: integer;
-begin
-  result := windows.GetTickCount;
-end;
-
-{$ELSE}
 
 function GetMillisecondTime: integer;
 begin
@@ -357,46 +167,6 @@ begin
   MidiFile.MidiTimer(MidiFile);
 end;
 
-{$IFDEF UsePortTime}
-
-var
-  PlayingList: TFPList;
-  ListLock: PSDL_Mutex;
-
-procedure TimerCallback(timestamp : PtTimestamp; userData : Pointer); cdecl;
-var
-  param: TMidiFile;
-begin
-  SDL_LockMutex(ListLock);
-  for param in PlayingList do
-    MainThreadExec(@EventHandler, param);
-  SDL_UnlockMutex(ListLock);
-end;
-
-procedure TMidiFile.SetMidiTimer;
-var
-  WasEmpty: boolean;
-begin
-  SDL_LockMutex(ListLock);
-  if PlayingList = nil then
-    PlayingList := TFPList.Create;
-  WasEmpty := (PlayingList.First = nil);
-  PlayingList.Add(self);
-  if WasEmpty then
-    Pt_Start(TIMER_RESOLUTION, @TimerCallback, nil);
-  SDL_UnlockMutex(ListLock);
-end;
-
-procedure TMidiFile.KillMidiTimer;
-begin
-  SDL_LockMutex(ListLock);
-  PlayingList.Remove(self);
-  if PlayingList.First = nil then
-    Pt_Stop;
-  SDL_UnlockMutex(ListLock);
-end;
-
-{$ELSE}
 
 function TimerCallback(interval: UInt32; param: Pointer): UInt32; cdecl;
 begin
@@ -418,8 +188,6 @@ begin
     TimerID := 0;
   end;
 end;
-{$ENDIF}
-{$ENDIF}
 
 constructor TMidiTrack.Create;
 begin
@@ -563,10 +331,7 @@ end;
 constructor TMidifile.Create(AOwner: TComponent);
 begin
   inherited Create(AOWner);
-{$IFDEF MSWINDOWS}
-  MidiFileHandle := AllocateHWnd(WndProc);
-  FPriority := GetPriorityClass(MidiFileHandle);
-{$ENDIF}
+  TimerID := 0;
   chunkData := nil;
   chunkType := illegal;
   Tracks := TList.Create;
@@ -583,10 +348,6 @@ begin
   Tracks.Free;
 
   KillMidiTimer;
-
-{$IFDEF MSWINDOWS}
-  DeallocateHWnd(MidiFileHandle);
-{$ENDIF}
 
   inherited Destroy;
 end;

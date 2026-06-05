@@ -1,5 +1,4 @@
-{* UltraStar Deluxe - MIDI Emulation (synth)
-   Drop-in replacement for MidiOut unit. *}
+{* UltraStar Deluxe - editor preview synth. *}
 
 unit MidiOut;
 
@@ -14,10 +13,8 @@ uses
   Classes,
   SysUtils,
   ULog,
-  UPathUtils,
   UMusic,
   Math,
-  SyncObjs,
   MidiAudioSourceStream,
   UAudioPlaybackBase;
 
@@ -29,7 +26,6 @@ type
     FOpened: Boolean;
     FPlaybackStream: TAudioPlaybackStream;
     FSourceStream: TMidiAudioSourceStream;
-    FLock: TCriticalSection;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -37,7 +33,11 @@ type
     function Open: boolean; virtual;
     function Close: boolean; virtual;
 
-    procedure PutShort(MidiMessage: byte; Data1: byte; Data2: byte); virtual;
+    procedure SetVolume(Volume: Single);
+    procedure NoteOn(Pitch: Byte; Velocity: Byte = 127; Time: Double = -1.0);
+    procedure NoteOff(Pitch: Byte; Time: Double = -1.0);
+    procedure StopAll(Time: Double = -1.0);
+    procedure SetPosition(Time: Double);
     procedure Play;
     procedure Stop;
 
@@ -55,7 +55,6 @@ begin
   FOpened := False;
   FPlaybackStream := nil;
   FSourceStream := nil;
-  FLock := TCriticalSection.Create;
 end;
 
 destructor TMidiOutput.Destroy;
@@ -65,7 +64,6 @@ begin
   if Assigned(FSourceStream) then
     FreeAndNil(FSourceStream);
   FreeAndNil(FFormat);
-  FreeAndNil(FLock);
   inherited Destroy;
 end;
 
@@ -83,7 +81,7 @@ begin
     FreeAndNil(FFormat);
     FFormat := TAudioFormatInfo.Create(1, 44100, asfS16);
     if Assigned(FSourceStream) then FreeAndNil(FSourceStream);
-    FSourceStream := TMidiAudioSourceStream.Create(nil, FFormat); // nil for now, can pass TMidiFile if needed
+    FSourceStream := TMidiAudioSourceStream.Create(FFormat);
     if Assigned(FPlaybackStream) then FreeAndNil(FPlaybackStream);
     FPlaybackStream := AP.CreatePlaybackStreamForSource(FSourceStream);
     if not Assigned(FPlaybackStream) then
@@ -113,20 +111,40 @@ begin
     FreeAndNil(FSourceStream);
 end;
 
-procedure TMidiOutput.PutShort(MidiMessage: byte; Data1: byte; Data2: byte);
+procedure TMidiOutput.SetVolume(Volume: Single);
 begin
-  if ((MidiMessage and $F0) = $90) and (Data2 <> 0) then
-  begin
-    Play;
-  end
-  else if ((MidiMessage and $F0) = $B0) and (Data1 = 7) then
-  begin
-    if Assigned(FPlaybackStream) then
-       FPlaybackStream.Volume := Sqr(Data2 / 127);
-  end;
-  
+  if Volume < 0 then
+    Volume := 0
+  else if Volume > 1 then
+    Volume := 1;
+
+  if Assigned(FPlaybackStream) then
+    FPlaybackStream.Volume := Sqr(Volume);
+end;
+
+procedure TMidiOutput.NoteOn(Pitch: Byte; Velocity: Byte; Time: Double);
+begin
+  Play;
   if Assigned(FSourceStream) then
-    FSourceStream.HandleMidiEvent(MidiMessage, Data1, Data2);
+    FSourceStream.NoteOn(Pitch, Velocity, Time);
+end;
+
+procedure TMidiOutput.NoteOff(Pitch: Byte; Time: Double);
+begin
+  if Assigned(FSourceStream) then
+    FSourceStream.NoteOff(Pitch, Time);
+end;
+
+procedure TMidiOutput.StopAll(Time: Double);
+begin
+  if Assigned(FSourceStream) then
+    FSourceStream.StopAll(Time);
+end;
+
+procedure TMidiOutput.SetPosition(Time: Double);
+begin
+  if Assigned(FSourceStream) then
+    FSourceStream.Position := Time;
 end;
 
 procedure TMidiOutput.Play;
