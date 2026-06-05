@@ -1484,7 +1484,7 @@ begin
     end;
     4:
     begin // double screen
-      if (Ini.Screens = 1) then
+      if (Screens = 2) then
       begin
         V1TwoP := true;
         V2R    := true;
@@ -1509,7 +1509,7 @@ begin
     end;
     6:
     begin // double screen
-      if (Ini.Screens = 1) then
+      if (Screens = 2) then
       begin
         if (CurrentSong.isDuet) then
         begin

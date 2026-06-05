@@ -437,7 +437,7 @@ begin;
 
   if PlayersPlay = 4 then
   begin
-    if (Ini.Screens = 1) then
+    if (Screens = 2) then
     begin
       if ScreenAct = 1 then
       begin
@@ -471,7 +471,7 @@ begin;
 
   if PlayersPlay = 6 then
   begin
-    if (Ini.Screens = 1) then
+    if (Screens = 2) then
     begin
       if (CurrentSong.isDuet) then
       begin
@@ -1249,7 +1249,7 @@ begin
   begin
     if (ScreenSing.settings.NotesVisible[0]) then
     begin
-      if (Ini.Screens = 1) then
+      if (Screens = 2) then
         SingDrawNoteLines(Nr.Left, Skin_P1_NotesB - 105, Nr.Right, 15)
       else
       begin
@@ -1260,7 +1260,7 @@ begin
 
     if (ScreenSing.settings.NotesVisible[1]) then
     begin
-      if (Ini.Screens = 1) then
+      if (Screens = 2) then
         SingDrawNoteLines(Nr.Left, Skin_P2_NotesB - 105, Nr.Right, 15)
       else
       begin
@@ -1273,7 +1273,7 @@ begin
   if (PlayersPlay = 6) and (Ini.NoteLines = 1) then begin
     if (ScreenSing.settings.NotesVisible[0]) then
     begin
-      if (Ini.Screens = 1) then
+      if (Screens = 2) then
         SingDrawNoteLines(Nr.Left, 120, Nr.Right, 12)
       else
       begin
@@ -1284,7 +1284,7 @@ begin
 
     if (ScreenSing.settings.NotesVisible[1]) then
     begin
-      if (Ini.Screens = 1) then
+      if (Screens = 2) then
         SingDrawNoteLines(Nr.Left, 245, Nr.Right, 12)
       else
       begin
@@ -1295,7 +1295,7 @@ begin
 
     if (ScreenSing.settings.NotesVisible[2]) then
     begin
-      if (Ini.Screens = 1) then
+      if (Screens = 2) then
         SingDrawNoteLines(Nr.Left, 370, Nr.Right, 12)
       else
       begin
@@ -1410,7 +1410,7 @@ begin
 
     if PlayersPlay = 4 then
     begin
-      if (Ini.Screens = 0) then
+      if (Screens = 1) then
       begin
         NotesW[I - 1] := NotesW[I - 1] * 0.9;
       end;
@@ -1466,7 +1466,7 @@ begin
 
   if (PlayersPlay = 4) then
   begin
-    if (Ini.Screens = 1) then
+    if (Screens = 2) then
     begin
       // MULTISCREEN
       if (ScreenAct = 1) then
@@ -1515,7 +1515,7 @@ begin
 
   if (PlayersPlay = 6) then
   begin
-    if (Ini.Screens = 1) then
+    if (Screens = 2) then
     begin
       // MULTISCREEN
       if (ScreenAct = 1) then
