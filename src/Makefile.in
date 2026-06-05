@@ -102,6 +102,14 @@ PFLAGS_DEBUG_DEFAULT   := -Xs- -g -dDEBUG_MODE
 PFLAGS_RELEASE_DEFAULT := -Xs- -O2 -OoNOSTACKFRAME
 PFLAGS_EXTRA_DEFAULT   :=
 
+# Build Windows release binaries as GUI applications so Windows does not
+# allocate a console on launch. Debug builds keep the console for log output.
+PFLAGS_WINDOWS_GUI_DEFAULT :=
+ifneq ($(filter win32 win64,$(PPLATFORM)),)
+PFLAGS_WINDOWS_GUI_DEFAULT := -WG
+endif
+PFLAGS_WINDOWS_GUI := $(PFLAGS_WINDOWS_GUI_DEFAULT)
+
 # Debug/Release mode flags
 # Note that flags will overwrite previously specified flags,
 # e.g. "-vinwe -vi-" is the same as "-vnwe"
@@ -112,6 +120,7 @@ PFLAGS_RELEASE_ALL := $(PFLAGS_BASE) $(PFLAGS_RELEASE) $(PFLAGS_EXTRA)
 # Only used if PFLAGS was not set by the user.
 ifdef ENABLE_DEBUG
 PFLAGS_DEFAULT := $(PFLAGS_DEBUG_ALL)
+PFLAGS_WINDOWS_GUI :=
 else
 PFLAGS_DEFAULT := $(PFLAGS_RELEASE_ALL)
 endif
@@ -127,7 +136,7 @@ ifneq ($(linkflags),)
 PLINKFLAGS := -k"$(linkflags)"
 endif
 
-PFLAGS_ALL = $(PFLAGS) $(PDEFINES) $(PLINKFLAGS) $(PLDFLAGS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS)
+PFLAGS_ALL = $(PFLAGS) $(PDEFINES) $(PLINKFLAGS) $(PLDFLAGS) $(PINC_FLAGS) $(PUNIT_FLAGS) $(PCUNIT_FLAGS) $(PFLAGS_WINDOWS_GUI)
 
 #################################################
 # USDX project config
@@ -197,6 +206,7 @@ all: build
 debug: clean_obj
 	$(MAKE) debug-build
 
+debug-build: PFLAGS_WINDOWS_GUI :=
 debug-build: PFLAGS := $(PFLAGS_DEBUG_ALL)
 debug-build: build
 
@@ -208,6 +218,7 @@ debug-build: build
 release: clean_obj
 	$(MAKE) release-build
 
+release-build: PFLAGS_WINDOWS_GUI := $(PFLAGS_WINDOWS_GUI_DEFAULT)
 release-build: PFLAGS := $(PFLAGS_RELEASE_ALL)
 release-build: build
 

@@ -5,16 +5,16 @@
 ; Product Information:
 
 ; use this block for a dev version
-!define VersionStr "2026.5.0"
-!define FullVersion "2026.5.0+dev" ; semver compatible. see semver.org
+!define VersionStr "2026.6.0"
+!define FullVersion "2026.6.0+dev" ; semver compatible. see semver.org
 !define Release "Dev"
 !define DevBuild true
 !define ReleaseMeta "+dev"
 !define ReleaseApp " Dev"
 
 ; use this block for a release version
-;!define VersionStr "2026.5.0"
-;!define FullVersion "2026.5.0" ; semver compatible. see semver.org
+;!define VersionStr "2026.6.0"
+;!define FullVersion "2026.6.0" ; semver compatible. see semver.org
 ;!define Release "Stable"
 ;!define DevBuild false
 ;!define ReleaseMeta "+stable"

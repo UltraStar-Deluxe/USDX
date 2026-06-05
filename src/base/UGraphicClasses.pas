@@ -674,7 +674,7 @@ begin
     if Player[P].LastSentencePerfect then
     begin
       // 3 and 6 players in 1 screen
-      if (Ini.Screens = 0) then
+      if (Screens = 1) then
       begin
         if (PlayersPlay = 4) then
         begin
@@ -727,7 +727,7 @@ begin
                  0,1: cScreen := 1;
                  else
                  begin
-                   if (Ini.Screens = 1) then
+                   if (Screens = 2) then
                      cScreen := 2
                    else
                      cScreen := 1;
@@ -753,7 +753,7 @@ begin
                  0,1,2: cScreen := 1;
                  else
                  begin
-                   if (Ini.Screens = 1) then
+                   if (Screens = 2) then
                      cScreen := 2
                    else
                      cScreen := 1;
@@ -764,7 +764,7 @@ begin
 
       // spawn Sparkling Stars inside calculated coordinates
       Nstars := 80;
-      if (Ini.Screens = 0) and (PlayersPlay > 3) then
+      if (Screens = 1) and (PlayersPlay > 3) then
         Nstars := 40;
 
       for I := 0 to Nstars do

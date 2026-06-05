@@ -596,7 +596,6 @@ begin
           and with Texture type colorized
           also we don't need to swap for one player position }
         if (P <> 1) and
-           (Theme.Score.PlayerStatic[P, I].Typ = Texture_Type_Colorized) and
            (Length(Theme.Score.PlayerStatic[P, I].Color) >= 2) and
            (copy(Theme.Score.PlayerStatic[P, I].Color, 1, 2) = 'P' + IntToStr(PlayerNum)) then
         begin
@@ -615,6 +614,12 @@ begin
           PlayerStaticTextures[P, I, 2].Tex.Y := Statics[PlayerStatic[P, I]].Texture.Y;
           PlayerStaticTextures[P, I, 2].Tex.W := Statics[PlayerStatic[P, I]].Texture.W;
           PlayerStaticTextures[P, I, 2].Tex.H := Statics[PlayerStatic[P, I]].Texture.H;
+          if (Theme.Score.PlayerStatic[P, I].Typ <> TEXTURE_TYPE_COLORIZED) then
+          begin
+            PlayerStaticTextures[P, I, 2].Tex.ColR := R;
+            PlayerStaticTextures[P, I, 2].Tex.ColG := G;
+            PlayerStaticTextures[P, I, 2].Tex.ColB := B;
+          end;
         end;
       end;
     end;
@@ -693,28 +698,8 @@ end;
 //TODO: adapt for players 7 to 12
 procedure TScreenScore.SwapToScreen(Screen: integer);
 var
-  P, I, J, Max: integer;
+  P, I, Max: integer;
   Col: TRGB;
-
-  function FindPlayerIndexForThemeSlot(const ThemeSlot, TargetScreen: integer): integer;
-  var
-    PlayerIdx: integer;
-  begin
-    Result := -1;
-
-    if Length(PlayerPositionMap) = 0 then
-      Exit;
-
-    for PlayerIdx := Low(PlayerPositionMap) to High(PlayerPositionMap) do
-    begin
-      if (PlayerPositionMap[PlayerIdx].Position = ThemeSlot) and
-         ((TargetScreen = PlayerPositionMap[PlayerIdx].Screen) or PlayerPositionMap[PlayerIdx].BothScreens) then
-      begin
-        Result := PlayerIdx;
-        Exit;
-      end;
-    end;
-  end;
 begin
 
   case PlayersPlay of
@@ -739,15 +724,10 @@ begin
     for I:= 0 to Max - 1 do
     begin
 
-      J := FindPlayerIndexForThemeSlot(I + 1 + Max, Screen);
-      if (J <> -1) and (J <= High(Ini.PlayerColor)) then
-        Col := GetPlayerColor(Ini.PlayerColor[J])
-      else if (Screen = 2) and (I + Max <= High(Ini.PlayerColor)) then
+      if (Screen = 2) then
         Col := GetPlayerColor(Ini.PlayerColor[I + Max])
-      else if (I <= High(Ini.PlayerColor)) then
-        Col := GetPlayerColor(Ini.PlayerColor[I])
       else
-        Continue;
+        Col := GetPlayerColor(Ini.PlayerColor[I]);
 
       if (copy(Theme.Score.TextName[I + 1 + Max].Color, 1, 2) = 'P' + IntToStr(I + 1)) then
       begin
@@ -833,17 +813,6 @@ begin
       for I := 0 to High(PlayerStatic[P]) do
       begin
         Statics[PlayerStatic[P, I]].Texture := PlayerStaticTextures[P, I, Screen].Tex;
-        if (Theme.Score.PlayerStatic[P, I].Typ <> Texture_Type_Colorized) then
-        begin
-          J := FindPlayerIndexForThemeSlot(P, Screen);
-          if (J <> -1) and (J <= High(Ini.PlayerColor)) then
-          begin
-            Col := GetPlayerColor(Ini.PlayerColor[J]);
-            Statics[PlayerStatic[P, I]].Texture.ColR := Col.R;
-            Statics[PlayerStatic[P, I]].Texture.ColG := Col.G;
-            Statics[PlayerStatic[P, I]].Texture.ColB := Col.B;
-          end;
-        end;
       end;
 
     { box statics }

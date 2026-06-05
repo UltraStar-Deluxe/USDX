@@ -321,7 +321,7 @@ begin
     maybeShow([StaticP1[0], StaticP1Avatar[0]]);
   end;
 
-  if (PlayersPlay = 2) or ((PlayersPlay = 4) and (Ini.Screens = 1)) then
+  if (PlayersPlay = 2) or ((PlayersPlay = 4) and (Screens = 2)) then
   begin
     if (Screen = 2) then
     begin
@@ -340,7 +340,7 @@ begin
     end;
   end;
 
-  if (PlayersPlay = 3) or ((PlayersPlay = 6) and (Ini.Screens = 1)) then
+  if (PlayersPlay = 3) or ((PlayersPlay = 6) and (Screens = 2)) then
   begin
     if (CurrentSong.isDuet) then
     begin
@@ -385,7 +385,7 @@ begin
   end;
 
   // 4 Players in 1 Screen
-  if (PlayersPlay = 4) and (Ini.Screens = 0) then
+  if (PlayersPlay = 4) and (Screens = 1) then
   begin
     if (CurrentSong.isDuet) then
     begin
@@ -408,7 +408,7 @@ begin
   end;
 
   // 6 Players in 1 Screen
-  if (PlayersPlay = 6) and (Ini.Screens = 0) then
+  if (PlayersPlay = 6) and (Screens = 1) then
   begin
     if (CurrentSong.isDuet) then
     begin
