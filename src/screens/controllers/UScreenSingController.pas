@@ -1594,7 +1594,6 @@ var
 begin
   Log.LogStatus('TScreenSingController.Finish', 'TScreenSingController.Finish');
   AudioInput.CaptureStop;
-  AudioPlayback.Stop;
   AudioPlayback.SetSyncSource(nil);
 
   if (ScreenSong.Mode = smNormal) and SungToEnd then
