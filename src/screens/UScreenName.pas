@@ -140,6 +140,42 @@ uses
   UUnicodeUtils,
   Math;
 
+procedure AssignTexturePreservingViewport(var TargetTexture: TTexture; const SourceTexture: TTexture);
+var
+  X: real;
+  Y: real;
+  W: real;
+  H: real;
+  Z: real;
+  ScaleW: real;
+  ScaleH: real;
+begin
+  X := TargetTexture.X;
+  Y := TargetTexture.Y;
+  W := TargetTexture.W;
+  H := TargetTexture.H;
+  Z := TargetTexture.Z;
+  ScaleW := TargetTexture.ScaleW;
+  ScaleH := TargetTexture.ScaleH;
+  if SameValue(ScaleW, 0) then
+    ScaleW := SourceTexture.ScaleW;
+  if SameValue(ScaleH, 0) then
+    ScaleH := SourceTexture.ScaleH;
+  if SameValue(ScaleW, 0) then
+    ScaleW := 1;
+  if SameValue(ScaleH, 0) then
+    ScaleH := 1;
+
+  TargetTexture := SourceTexture;
+  TargetTexture.X := X;
+  TargetTexture.Y := Y;
+  TargetTexture.W := W;
+  TargetTexture.H := H;
+  TargetTexture.Z := Z;
+  TargetTexture.ScaleW := ScaleW;
+  TargetTexture.ScaleH := ScaleH;
+end;
+
 function TScreenName.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 var
   I: integer;
@@ -555,7 +591,7 @@ begin
 
   // create no-avatar
   PlayerAvatarButton[0] := AddButton(Theme.Name.PlayerAvatar);
-  Button[PlayerAvatarButton[0]].Texture := NoAvatarTexture[1];
+  AssignTexturePreservingViewport(Button[PlayerAvatarButton[0]].Texture, NoAvatarTexture[1]);
   Button[PlayerAvatarButton[0]].Selectable := false;
   Button[PlayerAvatarButton[0]].Selected := false;
   Button[PlayerAvatarButton[0]].Visible := false;
@@ -579,7 +615,7 @@ begin
     if (Avatar <> nil) then
     begin
       AvatarTexture := Avatar.GetTexture();
-      Button[PlayerAvatarButton[I]].Texture := AvatarTexture;
+      AssignTexturePreservingViewport(Button[PlayerAvatarButton[I]].Texture, AvatarTexture);
 
       Button[PlayerAvatarButton[I]].Selectable := false;
       Button[PlayerAvatarButton[I]].Selected := false;
@@ -846,10 +882,9 @@ procedure TScreenName.SetPlayerAvatar(Player: integer);
 var
   Col: TRGB;
 begin
-
   if (PlayerAvatars[Player] = 0) then
   begin
-    Statics[PlayerCurrentAvatar[Player]].Texture := NoAvatarTexture[Player + 1];
+    AssignTexturePreservingViewport(Statics[PlayerCurrentAvatar[Player]].Texture, NoAvatarTexture[Player + 1]);
 
     Col := GetPlayerColor(Num[Player]);
 
@@ -858,14 +893,14 @@ begin
     Statics[PlayerCurrentAvatar[Player]].Texture.ColB := Col.B;
   end
   else
-    Statics[PlayerCurrentAvatar[Player]].Texture := Button[PlayerAvatarButton[PlayerAvatars[Player]]].Texture;
+    AssignTexturePreservingViewport(Statics[PlayerCurrentAvatar[Player]].Texture,
+      Button[PlayerAvatarButton[PlayerAvatars[Player]]].Texture);
 
   Statics[PlayerCurrentAvatar[Player]].Texture.X := Theme.Name.PlayerSelectAvatar[Player].X;
   Statics[PlayerCurrentAvatar[Player]].Texture.Y := Theme.Name.PlayerSelectAvatar[Player].Y;
   Statics[PlayerCurrentAvatar[Player]].Texture.W := Theme.Name.PlayerSelectAvatar[Player].W;
   Statics[PlayerCurrentAvatar[Player]].Texture.H := Theme.Name.PlayerSelectAvatar[Player].H;
   Statics[PlayerCurrentAvatar[Player]].Texture.Z := Theme.Name.PlayerSelectAvatar[Player].Z;
-
   Statics[PlayerCurrentAvatar[Player]].Texture.Int := 1;
 
 end;

@@ -228,6 +228,8 @@ type
     SBGW:   integer;
 
     TextSize: integer;
+    ArrowW: integer;
+    ArrowH: integer;
 
     showArrows:boolean;
     oneItemOnly:boolean;
@@ -2711,6 +2713,8 @@ begin
   ThemeSelectS.Z := ReadFloat(SectionList, 'Z', 0);
 
   ThemeSelectS.TextSize := ReadInteger(SectionList, 'TextSize', 30);
+  ThemeSelectS.ArrowW := ReadInteger(SectionList, 'ArrowW', 0);
+  ThemeSelectS.ArrowH := ReadInteger(SectionList, 'ArrowH', 0);
 
   ThemeSelectS.SkipX := ReadInteger(SectionList, 'SkipX', 0);
 
