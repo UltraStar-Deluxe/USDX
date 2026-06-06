@@ -12,7 +12,7 @@ For linking and running the game, the following libraries are also required:
 - OpenCV if you want webcam support
 - projectM 2,x if you want audio visualisation support
 
-Prebuilt DLLs for SDL2, SDL2_image, FFmpeg, SQLite, PortAudio, and Lua can be found in the releases section of [our MXE fork](https://github.com/UltraStar-Deluxe/mxe). You can use the dldlls.py script to download the DLLs for the checked out code. The remaining DLLs needed for Windows builds are part of this repository.
+Prebuilt DLLs for SDL2, SDL2_image, FFmpeg, SQLite, PortAudio, and Lua can be found in the releases section of [our MXE fork](https://github.com/UltraStar-Deluxe/mxe). On Windows, `make` downloads and extracts the matching DLL archive and `src/config-win.inc` automatically when they are missing. For Lazarus or manual setups, run `python dldlls.py --ensure` from the repository root before building.
 
 ## Compiling using Lazarus
 1. Start Lazarus.
