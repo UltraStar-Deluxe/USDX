@@ -1278,6 +1278,9 @@ uses
 const
   MAX_INHERITANCE = 10;
 
+var
+  CurrentBaseThemeIndex: integer = -1;
+
 //-----------
 //Helper procs to use TRGB in Opengl ...maybe this should be somewhere else
 //-----------
@@ -1361,6 +1364,8 @@ procedure TTheme.OpenFile(ThemeNum: integer);
 var
   I: integer;
 begin
+  CurrentBaseThemeIndex := -1;
+
   ThemeIni := TMemIniFile.Create(Themes[ThemeNum].FileName.ToNative);
 
   // Load base theme if declared
@@ -1373,6 +1378,7 @@ begin
         if (Themes[I].BaseTheme <> '') then
           Log.LogError('Multiple base themes not allowed', 'TTheme.LoadTheme');
         BaseThemeIni := TMemIniFile.Create(Themes[I].FileName.ToNative);
+        CurrentBaseThemeIndex := I;
         Break;
       end;
     end;
@@ -1383,6 +1389,7 @@ procedure TTheme.CloseFile;
 begin
   freeandnil(ThemeIni);
   freeandnil(BaseThemeIni);
+  CurrentBaseThemeIndex := -1;
 end;
 
 procedure TTheme.LoadHeader(FileName: IPath);
@@ -1461,6 +1468,9 @@ end;
 function TTheme.LoadTheme(ThemeNum: integer; sColor: integer): boolean;
 var
   I, J:    integer;
+  ActiveSkinName: string;
+  BaseSkinName: string;
+  BaseSkins: TUTF8StringDynArray;
   IniFile: TMemIniFile;
 begin
   Result := false;
@@ -1486,7 +1496,36 @@ begin
       Skin.SkinReg := false; }
       Skin.Color := sColor;
 
-      Skin.LoadSkin(ISkin[Ini.SkinNo], Themes[ThemeNum].Name);
+      if (Length(ISkin) = 0) then
+      begin
+        Log.LogError('Theme has no selectable skins (' + Themes[ThemeNum].Name + ')', 'TTheme.LoadTheme');
+        CloseFile;
+        Exit(false);
+      end;
+
+      if (Ini.SkinNo < Low(ISkin)) or (Ini.SkinNo > High(ISkin)) then
+        Ini.SkinNo := EnsureRange(Themes[ThemeNum].DefaultSkin, Low(ISkin), High(ISkin));
+
+      ActiveSkinName := ISkin[Ini.SkinNo];
+      BaseSkinName := '';
+      SetLength(BaseSkins, 0);
+
+      if (CurrentBaseThemeIndex >= Low(Themes)) and (CurrentBaseThemeIndex <= High(Themes)) then
+      begin
+        if Skin.HasSkin(ActiveSkinName, Themes[CurrentBaseThemeIndex].Name) then
+          BaseSkinName := ActiveSkinName
+        else
+        begin
+          Skin.GetSkinsByTheme(Themes[CurrentBaseThemeIndex].Name, BaseSkins);
+          if Length(BaseSkins) > 0 then
+            BaseSkinName := BaseSkins[EnsureRange(Themes[CurrentBaseThemeIndex].DefaultSkin, Low(BaseSkins), High(BaseSkins))];
+        end;
+      end;
+
+      if (BaseSkinName <> '') then
+        Skin.LoadSkin(ActiveSkinName, Themes[ThemeNum].Name, BaseSkinName, Themes[CurrentBaseThemeIndex].Name)
+      else
+        Skin.LoadSkin(ActiveSkinName, Themes[ThemeNum].Name);
 
       LoadColors;
 
