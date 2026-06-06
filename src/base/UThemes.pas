@@ -42,6 +42,10 @@ uses
   UIni,
   UTexture,
   UPath;
+
+const
+  STAT_DETAIL_MAX_COLUMNS = 6;
+
 type
   TBackgroundType =
     (bgtNone, bgtColor, bgtTexture, bgtVideo, bgtFade, bgtAuto);
@@ -1068,6 +1072,27 @@ type
   end;
 
   //Stats Screens
+  TThemeStatMainRecentPeriod = record
+    TitleTextID: RawByteString;
+    Days: integer;
+  end;
+
+  TThemeStatDetailColumn = record
+    Width:     real;
+    GapBefore: real;
+    Align:     integer;
+    AutoWidth: boolean;
+    CompactGap: boolean;
+    Flexible:  boolean;
+  end;
+
+  TThemeStatDetailTable = record
+    ColumnCount:       integer;
+    UsePageRightBound: boolean;
+    RightInset:        real;
+    Column:            array[0..STAT_DETAIL_MAX_COLUMNS - 1] of TThemeStatDetailColumn;
+  end;
+
   TThemeStatMain = class(TThemeBasic)
     ButtonScores:     TThemeButton;
     ButtonSingers:    TThemeButton;
@@ -1076,21 +1101,41 @@ type
     ButtonExit:       TThemeButton;
 
     TextOverview:     TThemeText;
+    RecentPeriod:     array of TThemeStatMainRecentPeriod;
   end;
 
   TThemeStatDetail = class(TThemeBasic)
-    ButtonNext:       TThemeButton;
-    ButtonPrev:       TThemeButton;
-    ButtonReverse:    TThemeButton;
-    ButtonExit:       TThemeButton;
-
     TextDescription:  TThemeText;
     TextPage:         TThemeText;
+    StaticMinMedian:  TThemeStatic;
+    TextMinMedian:    TThemeText;
+    TextHeader:       TThemeText;
     TextList:         AThemeText;
+    ListX:            integer;
+    ListY:            integer;
+    ListW:            integer;
+    ListBottomY:      integer;
+    ListHeaderY:      integer;
+    MinTextSize:      real;
+    FontSizeRelaxed:  real;
+    FontSizeDense:    real;
+    FontSizeCurve:    real;
+    LineHeight:       real;
+    MinColumnGap:     real;
+    PageTextMargin:   real;
+    ColumnPadding:    real;
+    FallbackRowPitch: real;
+    MinEntries:       integer;
+    DefaultEntries:   integer;
+    MaxEntries:       integer;
+    PaddingRows:      integer;
+    FirstContentRow:  integer;
+    BestScoresTable:  TThemeStatDetailTable;
+    BestSingersTable: TThemeStatDetailTable;
+    PopularTable:     TThemeStatDetailTable;
 
     Description:      array[0..3] of UTF8String;
     DescriptionR:     array[0..3] of UTF8String;
-    FormatStr:        array[0..3] of UTF8String;
     PageStr:          UTF8String;
   end;
 
@@ -1130,6 +1175,9 @@ type
     function ReadInteger(const Sections: TThemeSectionList; const Key: string; DefaultValue: integer): integer;
     function ReadBool(const Sections: TThemeSectionList; const Key: string; DefaultValue: boolean): boolean;
     function ReadFloat(const Sections: TThemeSectionList; const Key: string; DefaultValue: real): real;
+    procedure LoadStatMainRecentPeriods;
+    procedure LoadStatDetailColumn(var Column: TThemeStatDetailColumn; const SectionName: string);
+    procedure LoadStatDetailTable(var Table: TThemeStatDetailTable; const SectionName: string);
   public
     Themes:           array of TThemeEntry;
     Loading:          TThemeLoading;
@@ -1462,6 +1510,7 @@ function TTheme.LoadTheme(ThemeNum: integer; sColor: integer): boolean;
 var
   I, J:    integer;
   IniFile: TMemIniFile;
+  SectionList: TThemeSectionList;
 begin
   Result := false;
 
@@ -2106,17 +2155,62 @@ begin
 
       ThemeLoadText (StatMain.TextOverview, 'StatMainTextOverview');
 
+      LoadStatMainRecentPeriods;
+
 
       ThemeLoadBasic(StatDetail, 'StatDetail');
 
-      ThemeLoadButton(StatDetail.ButtonNext, 'StatDetailButtonNext');
-      ThemeLoadButton(StatDetail.ButtonPrev, 'StatDetailButtonPrev');
-      ThemeLoadButton(StatDetail.ButtonReverse, 'StatDetailButtonReverse');
-      ThemeLoadButton(StatDetail.ButtonExit, 'StatDetailButtonExit');
-
       ThemeLoadText (StatDetail.TextDescription, 'StatDetailTextDescription');
       ThemeLoadText (StatDetail.TextPage, 'StatDetailTextPage');
+      ThemeLoadStatic(StatDetail.StaticMinMedian, 'StatDetailStaticMinMedian');
+      ThemeLoadText (StatDetail.TextMinMedian, 'StatDetailTextMinMedian');
+      ThemeLoadText (StatDetail.TextHeader, 'StatDetailTextHeader');
       ThemeLoadTexts(StatDetail.TextList, 'StatDetailTextList');
+
+      if Length(StatDetail.TextList) > 0 then
+      begin
+        StatDetail.ListX := StatDetail.TextList[0].X;
+        StatDetail.ListY := StatDetail.TextList[0].Y;
+        StatDetail.ListW := StatDetail.TextList[0].W;
+      end
+      else
+      begin
+        StatDetail.ListX := 0;
+        StatDetail.ListY := 0;
+        StatDetail.ListW := 0;
+      end;
+      StatDetail.ListBottomY := StatDetail.ListY;
+
+      SectionList := GetSectionList('StatDetailListArea');
+      StatDetail.ListX := ReadInteger(SectionList, 'X', StatDetail.ListX);
+      StatDetail.ListY := ReadInteger(SectionList, 'Y', StatDetail.ListY);
+      StatDetail.ListW := ReadInteger(SectionList, 'W', StatDetail.ListW);
+      StatDetail.ListBottomY := ReadInteger(SectionList, 'BottomY', StatDetail.ListBottomY);
+      StatDetail.ListHeaderY := ReadInteger(SectionList, 'HeaderY', StatDetail.TextHeader.Y);
+      StatDetail.MinTextSize := ReadFloat(SectionList, 'MinTextSize', StatDetail.MinTextSize);
+      StatDetail.FontSizeRelaxed := ReadFloat(SectionList, 'FontSizeRelaxed', StatDetail.FontSizeRelaxed);
+      StatDetail.FontSizeDense := ReadFloat(SectionList, 'FontSizeDense', StatDetail.FontSizeDense);
+      StatDetail.FontSizeCurve := ReadFloat(SectionList, 'FontSizeCurve', StatDetail.FontSizeCurve);
+      StatDetail.LineHeight := ReadFloat(SectionList, 'LineHeight', StatDetail.LineHeight);
+      StatDetail.MinColumnGap := ReadFloat(SectionList, 'MinColumnGap', StatDetail.MinColumnGap);
+      StatDetail.PageTextMargin := ReadFloat(SectionList, 'PageTextMargin', StatDetail.PageTextMargin);
+      StatDetail.ColumnPadding := ReadFloat(SectionList, 'ColumnPadding', StatDetail.ColumnPadding);
+      StatDetail.FallbackRowPitch := ReadFloat(SectionList, 'FallbackRowPitch', StatDetail.FallbackRowPitch);
+      StatDetail.MinEntries := ReadInteger(SectionList, 'MinEntries', StatDetail.MinEntries);
+      StatDetail.DefaultEntries := ReadInteger(SectionList, 'DefaultEntries', StatDetail.DefaultEntries);
+      StatDetail.MaxEntries := ReadInteger(SectionList, 'MaxEntries', StatDetail.MaxEntries);
+      if (StatDetail.MinEntries < 1) then
+        StatDetail.MinEntries := 1;
+      if (StatDetail.MaxEntries < StatDetail.MinEntries) then
+        StatDetail.MaxEntries := StatDetail.MinEntries;
+      StatDetail.DefaultEntries := EnsureRange(StatDetail.DefaultEntries,
+          StatDetail.MinEntries, StatDetail.MaxEntries);
+      StatDetail.PaddingRows := ReadInteger(SectionList, 'PaddingRows', StatDetail.PaddingRows);
+      StatDetail.FirstContentRow := ReadInteger(SectionList, 'FirstContentRow', StatDetail.FirstContentRow);
+
+      LoadStatDetailTable(StatDetail.BestScoresTable, 'StatDetailBestScoresTable');
+      LoadStatDetailTable(StatDetail.BestSingersTable, 'StatDetailBestSingersTable');
+      LoadStatDetailTable(StatDetail.PopularTable, 'StatDetailPopularTable');
 
       //Translate Texts
       StatDetail.Description[0] := Language.Translate('STAT_DESC_SCORES');
@@ -2128,11 +2222,6 @@ begin
       StatDetail.DescriptionR[1] := Language.Translate('STAT_DESC_SINGERS_REVERSED');
       StatDetail.DescriptionR[2] := Language.Translate('STAT_DESC_SONGS_REVERSED');
       StatDetail.DescriptionR[3] := Language.Translate('STAT_DESC_BANDS_REVERSED');
-
-      StatDetail.FormatStr[0] := Language.Translate('STAT_FORMAT_SCORES');
-      StatDetail.FormatStr[1] := Language.Translate('STAT_FORMAT_SINGERS');
-      StatDetail.FormatStr[2] := Language.Translate('STAT_FORMAT_SONGS');
-      StatDetail.FormatStr[3] := Language.Translate('STAT_FORMAT_BANDS');
 
       StatDetail.PageStr := Language.Translate('STAT_PAGE');
 
@@ -2287,6 +2376,58 @@ begin
     end;
   end;
   Result := DefaultValue;
+end;
+
+procedure TTheme.LoadStatMainRecentPeriods;
+var
+  PeriodIndex: integer;
+  Period: TThemeStatMainRecentPeriod;
+  SectionList: TThemeSectionList;
+begin
+  SetLength(StatMain.RecentPeriod, 0);
+  PeriodIndex := 1;
+
+  repeat
+    SectionList := GetSectionList('StatMainRecentPeriod' + IntToStr(PeriodIndex));
+    if (Length(SectionList) = 0) then
+      Break;
+
+    Period.TitleTextID := ReadString(SectionList, 'Text', '');
+    Period.Days := ReadInteger(SectionList, 'Days', 0);
+    SetLength(StatMain.RecentPeriod, Length(StatMain.RecentPeriod) + 1);
+    StatMain.RecentPeriod[High(StatMain.RecentPeriod)] := Period;
+    Inc(PeriodIndex);
+  until false;
+end;
+
+procedure TTheme.LoadStatDetailColumn(var Column: TThemeStatDetailColumn; const SectionName: string);
+var
+  SectionList: TThemeSectionList;
+begin
+  SectionList := GetSectionList(SectionName);
+
+  Column.Width := ReadFloat(SectionList, 'Width', Column.Width);
+  Column.GapBefore := ReadFloat(SectionList, 'GapBefore', Column.GapBefore);
+  Column.Align := ReadInteger(SectionList, 'Align', Column.Align);
+  Column.AutoWidth := ReadBool(SectionList, 'AutoWidth', Column.AutoWidth);
+  Column.CompactGap := ReadBool(SectionList, 'CompactGap', Column.CompactGap);
+  Column.Flexible := ReadBool(SectionList, 'Flexible', Column.Flexible);
+end;
+
+procedure TTheme.LoadStatDetailTable(var Table: TThemeStatDetailTable; const SectionName: string);
+var
+  ColumnIndex: integer;
+  SectionList: TThemeSectionList;
+begin
+  SectionList := GetSectionList(SectionName);
+
+  Table.ColumnCount := ReadInteger(SectionList, 'ColumnCount', Table.ColumnCount);
+  Table.UsePageRightBound := ReadBool(SectionList, 'UsePageRightBound', Table.UsePageRightBound);
+  Table.RightInset := ReadFloat(SectionList, 'RightInset', Table.RightInset);
+
+  for ColumnIndex := Low(Table.Column) to High(Table.Column) do
+    LoadStatDetailColumn(Table.Column[ColumnIndex],
+        SectionName + 'Column' + IntToStr(ColumnIndex + 1));
 end;
 
 procedure TTheme.ThemeLoadBasic(Theme: TThemeBasic; const Name: string);

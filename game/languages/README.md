@@ -56,63 +56,84 @@ Here are some informations about the wildcards in the language texts for the sta
 Information that will replace the wildcards:
 
 
-#### `STAT_OVERVIEW_INTRO`
+#### `STAT_OVERVIEW_LIBRARY_TOTAL`
 Format:
 
-- `%0:d` Ultrastar Version
-- `%1:d` Day of Reset (A1)
-- `%2:d` Month of Reset (A2)
-- `%3:d` Year of Reset (A3)
+- `%0:d` Count Songs
+- `%1:d` Count Artists
 
 
-#### `STAT_OVERVIEW_SONG`
+#### `STAT_OVERVIEW_LIBRARY_VIDEO`
 Format:
 
-- `%0:d` Count Songs (A1)
-- `%1:d` Count of Sung Songs (A2)
-- `%2:d` Count of UnSung Songs
-- `%3:d` Count of Songs with Video (A3)
-- `%4:s` Name of the most popular Song
+- `%0:d` Count of Songs with Video
+- `%1:d` Count of Songs without Video
 
 
-#### `STAT_OVERVIEW_PLAYER`
+#### `STAT_OVERVIEW_RESET`
 Format:
 
-- `%0:d` Count Players (A1)
-- `%1:s` Best Player (Result)
-- `%2:d` Best Players Score
-- `%3:s` Best Score Player (Result2)
-- `%4:d` Best Score
+- `%0:d` Day of Reset
+- `%1:d` Month of Reset
+- `%2:d` Year of Reset
 
-#### `STAT_FORMAT_SCORES`
+
+#### `STAT_OVERVIEW_SCORE_ACTIVITY`
 Format:
 
-- `%0:s` Singer
-- `%1:d` Score
-- `%2:s` Difficulty
-- `%3:s` Song Artist
-- `%4:s` Song Title
+- `%0:d` Count Scores
+- `%1:d` Count Players
+- `%2:d` Count Songs with Scores
 
-#### `STAT_FORMAT_SINGERS`
+
+#### `STAT_OVERVIEW_AVERAGE_SCORE`
 Format:
 
-- `%0:s` Singer
-- `%1:d` Average Score
+- `%0:d` Average Score
 
 
-#### `STAT_FORMAT_SONGS`
+#### `STAT_OVERVIEW_COVERAGE`
 Format:
 
-- `%0:s` Artist
-- `%1:s` Title
-- `%2:d` Times Sung
+- `%0:s` Percent of library with scores, including the percent sign
 
-#### `STAT_FORMAT_BANDS`
+
+#### `STAT_OVERVIEW_SCORE_DENSITY`
 Format:
 
-- `%0:s` Artist Name
-- `%1:d` Times Sung
+- `%0:s` Average scores per player
+- `%1:s` Average scores per scored song
 
+
+#### `STAT_OVERVIEW_RECENT_AVERAGE`
+Format:
+
+- `%0:d` Average score in the selected recent period
+- `%1:s` Signed score difference versus the overall average
+
+
+#### `STAT_OVERVIEW_RECENT_SHARE`
+Format:
+
+- `%0:s` Percent of all saved scores recorded in the selected recent period, including the percent sign
+
+
+#### `STAT_OVERVIEW_FUN_SCORED_SONG`
+Format:
+
+- `%0:s` Average scores per scored song
+
+
+#### `STAT_OVERVIEW_FUN_RECENT_PLAYERS`
+Format:
+
+- `%0:d` Count players with scores in the selected recent period
+
+
+#### `STAT_OVERVIEW_FUN_VIDEO_MISSING`
+Format:
+
+- `%0:d` Count songs without video
 
 Some further explanations about the wildcards:
 
@@ -124,4 +145,4 @@ Where `X` is the number of the wildcard,
 `Y` is optional, it is the number of digits for deciaml numbers (Z=d). So, if y is 2 there and the number is only 0 to 9 there will be a zero added in front of the number.  
 `z` can be d for numbers and s for texts.
 
-For the date thing in `STAT_OVERVIEW_INTRO` you may use `%1:.2d` for the day and `%2:.2d` for the month.
+For the date thing in `STAT_OVERVIEW_RESET` you may use `%0:.2d` for the day and `%1:.2d` for the month.
