@@ -78,8 +78,8 @@ type
 
   public
     Name:           UTF8String;
-    // Level === Difficulty, both terms appear to be used
-    Level:          integer;
+    Level:          integer; // 0 - easy, 1 - medium, 2 - hard
+    Track:          integer; // 0 - track 1, 1 - track 2 (duet)
 
     // Index in Teaminfo record
     TeamID:         byte;
