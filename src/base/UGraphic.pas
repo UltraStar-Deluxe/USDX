@@ -69,7 +69,7 @@ uses
   UScreenJukeboxOptions,
   UScreenJukeboxPlaylist,
   UScreenScore,
-  UScreenTop5,
+  UScreenHighScores,
   UScreenEditSub,
   UScreenEdit,
   UScreenEditConvert,
@@ -143,7 +143,7 @@ var
   ScreenJukeboxPlaylist: TScreenJukeboxPlaylist;
 
   ScreenScore:        TScreenScore;
-  ScreenTop5:         TScreenTop5;
+  ScreenHighScores:   TScreenHighScores;
   ScreenOptions:          TScreenOptions;
   ScreenOptionsGame:      TScreenOptionsGame;
   ScreenOptionsGraphics:  TScreenOptionsGraphics;
@@ -1030,7 +1030,7 @@ begin
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox Options', 3); Log.BenchmarkStart(3);
   ScreenJukeboxPlaylist :=   TScreenJukeboxPlaylist.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen Jukebox Playlist', 3); Log.BenchmarkStart(3);
-  ScreenTop5 :=             TScreenTop5.Create;
+  ScreenHighScores :=       TScreenHighScores.Create;
   SetLoadingTitle('Loading ScreenOptions & ScreenOptionsGame');
   ScreenOptions :=          TScreenOptions.Create;
   ScreenOptionsGame :=      TScreenOptionsGame.Create;
@@ -1122,7 +1122,7 @@ begin
   FreeAndNil(ScreenJukebox);
   FreeAndNil(ScreenJukeboxOptions);
   FreeAndNil(ScreenJukeboxPlaylist);
-  FreeAndNil(ScreenTop5);
+  FreeAndNil(ScreenHighScores);
   FreeAndNil(ScreenOpen);
   FreeAndNil(ScreenAbout);
   //ScreenSingModi.Free;
