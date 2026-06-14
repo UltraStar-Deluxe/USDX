@@ -171,12 +171,21 @@ type
       ReflectionTexY1: single;
       ReflectionTexY2: single;
 
-      procedure UpdateData(Data: PByte; Width, Height: word; PixelsPerRow: integer); virtual; abstract;
+      // Update the pixel data
+      procedure UpdateData(Data: PByte; Width, Height: word; PixelsPerRow: integer; Typ: TTextureType); virtual; abstract;
+
+      // Copy the framebuffer to the texture. Used for the screen transitions
       procedure CopyFrameBuffer(X, Y: integer; Width, Height: cardinal); virtual; abstract;
+
+      // Free the GPU memory, but not the TTexture object itself.
       procedure Release(); virtual; abstract;
+
+      // Copies the TTexture object, but does NOT make a copy of the GPU data. Original TTexture
+      // retains ownership of the GPU data, which will be freed when that TTexture is freed
       function Clone(): TTexture; overload; virtual; abstract;
       destructor Destroy; override;
 
+      // Returns true if no GPU data is assigned
       property IsEmpty: boolean read fIsEmpty;
 
   end;
@@ -253,8 +262,12 @@ type
       function GetErrorCode(): integer; virtual; abstract;
       procedure SetClearColor(R, G, B, A: single); virtual; abstract;
       procedure ClearFrameBuffer(Buffers: cardinal); virtual; abstract;
+
+      // Clip all vertices to the left/right of X. Used for the lyrics 'slide' effect. X is specified in the
+      // virtual 800x600 grid and the implementation should take into account the actual screen being drawn to
       procedure SetTextClipBoundary(X: single; Direction: ClippingDirection); virtual; abstract;
       procedure SetClipText(Enabled: boolean); virtual; abstract;
+
       procedure ResetState(); virtual;
 
       // Texture loading functions
@@ -265,7 +278,7 @@ type
       function LoadGlyph(Data: PByte; W, H: integer): TTexture; overload; virtual; abstract;
 
       // Data should be in RGB format (no alpha)
-      function CreateTexture(Data: PChar; const Name: IPath; Width, Height: word): TTexture;
+      function CreateTexture(Data: PChar; const Name: IPath; Width, Height: word; Typ: TTextureType): TTexture;
       procedure UnloadTexture(const Name: IPath; Typ: TTextureType); overload;
       procedure UnloadTexture(const Name: IPath; Typ: TTextureType; Col: cardinal); overload;
 
@@ -403,6 +416,7 @@ begin
   begin
     Log.LogError('Could not load texture: "' + Identifier.ToNative +'" with type "'+ TextureTypeToStr(Typ) +'"',
                  'TRenderer.LoadTexture');
+    Result := CreateEmptyTexture(Identifier);
     Exit;
   end;
 
@@ -411,6 +425,8 @@ begin
   if not assigned(TexSurface) then
   begin
     Log.LogError('Could not convert surface', 'TRenderer.LoadTexture');
+    Result := CreateEmptyTexture(Identifier);
+    SDL_FreeSurface(TexSurface);
     Exit;
   end;
 
@@ -473,9 +489,9 @@ begin
   Result := TextureDatabase.Texture[TextureIndex].Texture.Clone;
 end;
 
-function TRenderer.CreateTexture(Data: PChar; const Name: IPath; Width, Height: word): TTexture;
+function TRenderer.CreateTexture(Data: PChar; const Name: IPath; Width, Height: word; Typ: TTextureType): TTexture;
 begin
-  Result := LoadTexture(PByte(Data), Width, Height, Name, TEXTURE_TYPE_PLAIN);
+  Result := LoadTexture(PByte(Data), Width, Height, Name, Typ);
 end;
 
 procedure TRenderer.UnloadTexture(const Name: IPath; Typ: TTextureType);
@@ -557,30 +573,29 @@ end;
 procedure TRenderer.DrawBoundedBox(X1, Y1, X2, Y2, Z, LineThickness, ColR, ColG, ColB, Alpha: single);
 var
   QuadList: TQuadList;
-  Offset: single;
-  LineThicknessVertexW, LineThicknessVertexH: single;
-  HalfLineThicknessVertexW, HalfLineThicknessVertexH : single;
+  LineThicknessPixelW, LineThicknessPixelH: single;
+  HalfLineThicknessPixelW, HalfLineThicknessPixelH : single;
 begin
   SetLength(QuadList, 4);
 
   // Convert line thickness from window pixels to units of 800x600 vertices
-  LineThicknessVertexW := LineThickness * VertexW;
-  LineThicknessVertexH := LineThickness * VertexH;
-  HalfLineThicknessVertexW := 0.5 * LineThicknessVertexW;
-  HalfLineThicknessVertexH := 0.5 * LineThicknessVertexH;
+  LineThicknessPixelW := LineThickness * PixelW;
+  LineThicknessPixelH := LineThickness * PixelH;
+  HalfLineThicknessPixelW := 0.5 * LineThicknessPixelW;
+  HalfLineThicknessPixelH := 0.5 * LineThicknessPixelH;
 
   // Snap vectices to nearest window (pixel) coordinates to prevent quantization artifacts
-  X1 := Round((X1 - HalfLineThicknessVertexW) * PixelW) * VertexW;
-  X2 := Round((X2 - HalfLineThicknessVertexW) * PixelW) * VertexW;
-  Y1 := Round((Y1 - HalfLineThicknessVertexH) * PixelH) * VertexH;
-  Y2 := Round((Y2 - HalfLineThicknessVertexH) * PixelH) * VertexH;
+  X1 := Round((X1 - HalfLineThicknessPixelW) * VertexW) * PixelW;
+  X2 := Round((X2 - HalfLineThicknessPixelW) * VertexW) * PixelW;
+  Y1 := Round((Y1 - HalfLineThicknessPixelH) * VertexH) * PixelH;
+  Y2 := Round((Y2 - HalfLineThicknessPixelH) * VertexH) * PixelH;
 
   // Top Segment
   QuadList[0].X := X1;
   QuadList[0].Y := Y1;
   QuadList[0].Z := Z;
-  QuadList[0].W := X2 + LineThicknessVertexW - X1;
-  QuadList[0].H := LineThicknessVertexH;
+  QuadList[0].W := X2 + LineThicknessPixelW - X1;
+  QuadList[0].H := LineThicknessPixelH;
   QuadList[0].Gradient := gdNone;
   QuadList[0].ColR := ColR;
   QuadList[0].ColG := ColG;
@@ -589,10 +604,10 @@ begin
 
   // Left segment
   QuadList[1].X := X1;
-  QuadList[1].Y := Y1 + LineThicknessVertexH;
+  QuadList[1].Y := Y1 + LineThicknessPixelH;
   QuadList[1].Z := Z;
-  QuadList[1].W := LineThicknessVertexW;
-  QuadList[1].H := Y2 - (Y1 + LineThicknessVertexH);
+  QuadList[1].W := LineThicknessPixelW;
+  QuadList[1].H := Y2 - (Y1 + LineThicknessPixelH);
   QuadList[1].Gradient := gdNone;
   QuadList[1].ColR := ColR;
   QuadList[1].ColG := ColG;
@@ -603,8 +618,8 @@ begin
   QuadList[2].X := X1;
   QuadList[2].Y := Y2;
   QuadList[2].Z := Z;
-  QuadList[2].W := X2 - X1 + LineThicknessVertexW;
-  QuadList[2].H := LineThicknessVertexH;
+  QuadList[2].W := X2 - X1 + LineThicknessPixelW;
+  QuadList[2].H := LineThicknessPixelH;
   QuadList[2].Gradient := gdNone;
   QuadList[2].ColR := ColR;
   QuadList[2].ColG := ColG;
@@ -613,10 +628,10 @@ begin
 
   // Right segment
   QuadList[3].X := X2;
-  QuadList[3].Y := Y1 + LineThicknessVertexH;
+  QuadList[3].Y := Y1 + LineThicknessPixelH;
   QuadList[3].Z := Z;
-  QuadList[3].W := LineThicknessVertexW;
-  QuadList[3].H := Y2 - (Y1 + LineThicknessVertexH);
+  QuadList[3].W := LineThicknessPixelW;
+  QuadList[3].H := Y2 - (Y1 + LineThicknessPixelH);
   QuadList[3].Gradient := gdNone;
   QuadList[3].ColR := ColR;
   QuadList[3].ColG := ColG;
@@ -688,6 +703,8 @@ var
   glcontext: TSDL_GLContext;
 begin
   glcontext := SDL_GL_CreateContext(Screen);
+  if (glcontext = nil) then
+    raise Exception.Create('Failed to obtain OpenGL context');
   SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, @MajorVersion);
   SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, @MinorVersion);
   SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, @Profile);

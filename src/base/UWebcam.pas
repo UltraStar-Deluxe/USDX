@@ -271,7 +271,7 @@ begin
     WebcamFrame := FrameAdjust(WebcamFrame);
     WebcamFrame := FrameEffect(Ini.WebCamEffect, WebcamFrame);
 
-    TextureCam := Renderer.CreateTexture(WebcamFrame.imageData, nil, WebcamFrame.Width, WebcamFrame.Height);
+    TextureCam := Renderer.CreateTexture(WebcamFrame.imageData, nil, WebcamFrame.Width, WebcamFrame.Height, TEXTURE_TYPE_PLAIN);
 
     cvReleaseImage(@WebcamFrame);
   end;
@@ -456,11 +456,13 @@ end;
 
 {$ELSE}
 
+uses
+  SysUtils;
+
 constructor TWebcam.Create;
 begin
   inherited;
   Capture := nil;
-  TextureCam.TexNum := 0;
 end;
 
 procedure TWebcam.Start;
@@ -471,7 +473,7 @@ end;
 procedure TWebcam.Release;
 begin
   Capture := nil;
-  TextureCam.TexNum := 0;
+  FreeAndNil(TextureCam);
 end;
 
 procedure TWebcam.Restart;

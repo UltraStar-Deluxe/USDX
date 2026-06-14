@@ -156,6 +156,7 @@ type
     PlayerDuetNames:array [1..IMaxPlayerCount] of UTF8String;
 
     Tex_Background: TTexture;
+    Tex_BackgroundAspectRatio: single;
     // controls both background image and video
     BackgroundAspectCorrection: TAspectCorrection;
     FadeOut: boolean;
@@ -1169,6 +1170,7 @@ begin
     BgFile := CurrentSong.Path.Append(CurrentSong.Background);
     try
       Tex_Background := Renderer.LoadTexture(BgFile);
+      Tex_BackgroundAspectRatio := Tex_Background.W / Tex_Background.H;
       fShowBackground := fCurrentVideo = nil;
     except
       Log.LogError('Background could not be loaded: ' + BgFile.ToNative);

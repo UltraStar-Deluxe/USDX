@@ -152,7 +152,7 @@ var
   Rec:    TRecR;
   TexRec: TRecR;
   // TODO: these (especially the aspects) should just be precomputed
-  ScreenAspect, TexAspect: double;  // aspect of screen resolution and image
+  ScreenAspect: double;  // aspect of screen resolution and image
   ScaledTexWidth, ScaledTexHeight: double;
 begin
   // TODO: this is also called if a video is playing
@@ -228,36 +228,35 @@ begin
       //  1. Screen/display resolution (e.g. 1920x1080 -> 16:9)
       //  2. Render aspect (fWidth x fHeight -> variable)
       //  3. Movie aspect (video frame aspect stored in fAspect)
-      ScreenAspect := (ScreenW/Screens)/ScreenH;
-      TexAspect := ScreenSing.Tex_Background.W/ScreenSing.Tex_Background.H;
+      ScreenAspect := ScreenWPerScreen / ScreenH;
 
       case ScreenSing.BackgroundAspectCorrection of
         acoCrop: begin
-          if (ScreenAspect >= TexAspect) then
+          if (ScreenAspect >= ScreenSing.Tex_BackgroundAspectRatio) then
           begin
             ScaledTexWidth  := RenderW;
-            ScaledTexHeight := RenderH * ScreenAspect/TexAspect;
+            ScaledTexHeight := RenderH * ScreenAspect/ScreenSing.Tex_BackgroundAspectRatio;
           end else
           begin
             ScaledTexHeight := RenderH;
-            ScaledTexWidth  := RenderW * TexAspect/ScreenAspect;
+            ScaledTexWidth  := RenderW * ScreenSing.Tex_BackgroundAspectRatio/ScreenAspect;
           end;
         end;
 
         acoHalfway: begin
-          ScaledTexWidth  := (RenderW + RenderW * TexAspect/ScreenAspect)/2;
-          ScaledTexHeight := (RenderH + RenderH * ScreenAspect/TexAspect)/2;
+          ScaledTexWidth  := (RenderW + RenderW * ScreenSing.Tex_BackgroundAspectRatio/ScreenAspect)/2;
+          ScaledTexHeight := (RenderH + RenderH * ScreenAspect/ScreenSing.Tex_BackgroundAspectRatio)/2;
         end;
 
         acoLetterBox: begin
-          if (ScreenAspect <= TexAspect) then
+          if (ScreenAspect <= ScreenSing.Tex_BackgroundAspectRatio) then
           begin
             ScaledTexWidth  := RenderW;
-            ScaledTexHeight := RenderH * ScreenAspect/TexAspect;
+            ScaledTexHeight := RenderH * ScreenAspect/ScreenSing.Tex_BackgroundAspectRatio;
           end else
           begin
             ScaledTexHeight := RenderH;
-            ScaledTexWidth  := RenderW * TexAspect/ScreenAspect;
+            ScaledTexWidth  := RenderW * ScreenSing.Tex_BackgroundAspectRatio/ScreenAspect;
           end;
         end else
           raise Exception.Create('Unhandled aspect correction!');
@@ -308,7 +307,7 @@ begin
 
       (* gradient draw *)
       (* top *)
-      with ScreenSing.Tex_Background do
+      with ScreenJukebox.Tex_Background do
       begin
         X := Rec.Left;
         Y := Rec.Top;
@@ -322,14 +321,14 @@ begin
         Alpha := 0; // Top alpha
         Alpha2 := 1; // Bottom alpha
       end;
-      Renderer.DrawTexture(ScreenSing.Tex_Background);
+      Renderer.DrawTexture(ScreenJukebox.Tex_Background);
 
       (* mid *)
       Rec.Top := Rec.Bottom;
       Rec.Bottom := 490 - 20; // 490 - 20
       TexRec.Top := TexRec.Bottom;
       TexRec.Bottom := (Rec.Bottom / 600);
-      with ScreenSing.Tex_Background do
+      with ScreenJukebox.Tex_Background do
       begin
         Y := Rec.Top;
         H := Rec.Bottom - Rec.Top;
@@ -338,14 +337,14 @@ begin
         AlphaGradient := gdNone;
         Alpha := 1;
       end;
-      Renderer.DrawTexture(ScreenSing.Tex_Background);
+      Renderer.DrawTexture(ScreenJukebox.Tex_Background);
 
       (* bottom *)
       Rec.Top := Rec.Bottom;
       Rec.Bottom := 490; // 490
       TexRec.Top := TexRec.Bottom;
       TexRec.Bottom := (Rec.Bottom / 600);
-      with ScreenSing.Tex_Background do
+      with ScreenJukebox.Tex_Background do
       begin
         Y := Rec.Top;
         H := Rec.Bottom - Rec.Top;
@@ -355,11 +354,11 @@ begin
         Alpha := 1; // Top alpha
         Alpha2 := 0; // Bottom alpha
       end;
-      Renderer.DrawTexture(ScreenSing.Tex_Background);
+      Renderer.DrawTexture(ScreenJukebox.Tex_Background);
     end
     else //Full Size BG
     begin
-      with ScreenSing.Tex_Background do
+      with ScreenJukebox.Tex_Background do
       begin
         X := 0;
         Y := 0;
@@ -372,7 +371,7 @@ begin
         AlphaGradient := gdNone;
         Alpha := 1;
       end;
-      Renderer.DrawTexture(ScreenSing.Tex_Background);
+      Renderer.DrawTexture(ScreenJukebox.Tex_Background);
     end;
   end
   else
@@ -1859,7 +1858,7 @@ begin
       LyricsProgress := 1.0;
     Tex_JukeboxTimeProgress.X := x;
     Tex_JukeboxTimeProgress.Y := y;
-    Tex_JukeboxTimeProgress.W := width;
+    Tex_JukeboxTimeProgress.W := width * LyricsProgress;
     Tex_JukeboxTimeProgress.H := height;
     Tex_JukeboxTimeProgress.ColR := Theme.Jukebox.StaticSongMenuTimeProgress.ColR;
     Tex_JukeboxTimeProgress.ColG := Theme.Jukebox.StaticSongMenuTimeProgress.ColG;

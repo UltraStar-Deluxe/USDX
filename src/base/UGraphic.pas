@@ -943,10 +943,10 @@ end;
 procedure CalculateScreenMetrics();
 begin
   ScreenWPerScreen := ScreenW div Screens;
-  PixelW := ScreenWPerScreen / RenderW;
-  PixelH := ScreenH / RenderH;
-  VertexW := RenderW / ScreenWPerScreen;
-  VertexH := RenderH / ScreenH;
+  PixelW := RenderW / ScreenWPerScreen;
+  PixelH := RenderH / ScreenH;
+  VertexW := ScreenWPerScreen / RenderW;
+  VertexH := ScreenH / RenderH;
 end;
 
 procedure LoadLoadingScreen;

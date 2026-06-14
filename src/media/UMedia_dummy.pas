@@ -149,12 +149,13 @@ type
       procedure SetAlpha(Alpha: double);
       function GetAlpha(): double;
 
+      procedure SetReflection(Enabled: boolean);
+      function GetReflection: boolean;
       procedure SetReflectionSpacing(Spacing: double);
       function GetReflectionSpacing(): double;
 
       procedure GetFrame(Time: Extended);
       procedure Draw();
-      procedure DrawReflection();
 
       property Screen: integer read GetScreen;
       property Width: double read GetWidth write SetWidth;
@@ -507,6 +508,15 @@ begin
   Result := 0;
 end;
 
+procedure TVideo_Dummy.SetReflection(Enabled: boolean);
+begin
+end;
+
+function TVideo_Dummy.GetReflection: boolean;
+begin
+  Result := false;
+end;
+
 procedure TVideo_Dummy.SetReflectionSpacing(Spacing: double);
 begin
 end;
@@ -521,10 +531,6 @@ begin
 end;
 
 procedure TVideo_Dummy.Draw();
-begin
-end;
-
-procedure TVideo_Dummy.DrawReflection();
 begin
 end;
 

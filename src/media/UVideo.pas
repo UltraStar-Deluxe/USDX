@@ -78,32 +78,18 @@ uses
     {$DEFINE PIXEL_FMT_32BITS}
 {$ENDIF}
 
-//{$DEFINE PIXEL_FMT_BGR}
-//{$DEFINE PIXEL_FMT_32BITS}
-
 const
 {$IFDEF PIXEL_FMT_32BITS}
   PIXEL_FMT_SIZE   = 4;
-  {$IFDEF PIXEL_FMT_BGR}
-  //PIXEL_FMT_OPENGL = GL_BGRA;
-  PIXEL_FMT_FFMPEG = AV_PIX_FMT_BGRA;
-  {$ELSE}
-  //PIXEL_FMT_OPENGL = GL_RGBA;
   PIXEL_FMT_FFMPEG = AV_PIX_FMT_RGBA;
-  {$ENDIF}
+  VIDEO_TEXTURE_TYP = TEXTURE_TYPE_TRANSPARENT;
 {$ELSE}
   PIXEL_FMT_SIZE   = 3;
-  {$IFDEF PIXEL_FMT_BGR}
-  //PIXEL_FMT_OPENGL = GL_BGR;
-  PIXEL_FMT_FFMPEG = AV_PIX_FMT_BGR24;
-  {$ELSE}
-  //PIXEL_FMT_OPENGL = GL_RGB;
   PIXEL_FMT_FFMPEG = AV_PIX_FMT_RGB24;
-  {$ENDIF}
+  VIDEO_TEXTURE_TYP = TEXTURE_TYPE_PLAIN;
 {$ENDIF}
 
   BUFFER_ALIGN = 32;
-  ReflectionH = 0.5; //reflection height (50%)
 
 type
   IVideo_FFmpeg = interface (IVideo)
@@ -144,8 +130,6 @@ type
     fFrameRange:        TRectCoords;
 
     fAlpha:             double;
-    fReflectionSpacing: double;
-
 
     fAspect: real;        //**< width/height ratio
     fAspectCorrection: TAspectCorrection;
@@ -156,15 +140,12 @@ type
     fLoopTime: extended;  //**< start time of the current loop
     fPreferDTS: boolean;
 
-    fPboEnabled: boolean;
-    //fPboId:      GLuint;
     procedure Reset();
     function DecodeFrame(): boolean;
     procedure SynchronizeTime(Frame: PAVFrame; pts: double);
 
     procedure GetVideoRect(var ScreenRect, TexRect: TRectCoords);
     procedure DrawBorders(ScreenRect: TRectCoords);
-    procedure DrawBordersReflected(ScreenRect: TRectCoords; AlphaUpper, AlphaLower: double);
 
     procedure ShowDebugInfo();
 
@@ -212,12 +193,13 @@ type
      procedure SetAlpha(Alpha: double);
      function GetAlpha(): double;
 
+     procedure SetReflection(Enabled: boolean);
+     function GetReflection: boolean;
      procedure SetReflectionSpacing(Spacing: double);
      function GetReflectionSpacing(): double;
 
      procedure GetFrame(Time: Extended);
      procedure Draw();
-     procedure DrawReflection();
   end;
 
   TVideoPlayback_FFmpeg = class( TInterfacedObject, IVideoPlayback )
@@ -421,7 +403,6 @@ end;
 function TVideo_FFmpeg.Open(const FileName : IPath): boolean;
 var
   errnum: Integer;
-  //glErr: GLenum;
   AudioStreamIndex: integer;
   r_frame_rate: cdouble;
   PossibleCodecs: array of PAVCodec;
@@ -599,7 +580,7 @@ begin
   while true do
   begin
     FreeAndNil(fFrameTex);
-    fFrameTex := Renderer.CreateTexture(nil, PATH_NONE, fTexWidth, fTexHeight);
+    fFrameTex := Renderer.CreateTexture(nil, PATH_NONE, fTexWidth, fTexHeight, VIDEO_TEXTURE_TYP);
     if True then
       break;
     if not ReduceSize then
@@ -649,29 +630,6 @@ begin
     Exit;
   end;
 
-  if (fPboEnabled) then
-  begin
-  {
-    glGetError();
-
-    glGenBuffersARB(1, @fPboId);
-    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, fPboId);
-    glBufferDataARB(
-        GL_PIXEL_UNPACK_BUFFER_ARB,
-        fScaledHeight * fAVFrameRGB.linesize[0],
-        nil,
-        GL_STREAM_DRAW_ARB);
-    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
-
-    glErr := glGetError();
-    if (glErr <> GL_NO_ERROR) then
-    begin
-      fPboEnabled := false;
-      Log.LogError('PBO initialization failed: $' + IntToHex(glErr, 4), 'TVideo_FFmpeg.Open');
-    end;
-  }
-  end;
-
   fOpened := true;
   Result := true;
 end;
@@ -695,8 +653,6 @@ begin
   fLoop := false;
   fLoopTime := 0;
 
-  //fPboId := 0;
-
   fScreen := 1;
 
   fPosX := 0;
@@ -711,7 +667,6 @@ begin
   fFrameRange.Lower := 1;
 
   fAlpha := 1;
-  fReflectionSpacing := 0;
 end;
 
 procedure TVideo_FFmpeg.Close;
@@ -746,8 +701,6 @@ begin
 
   sws_freeContext(fSwScaleContext);
 
-  //if (fPboId <> 0) then
-  //  glDeleteBuffersARB(1, @fPboId);
   FreeAndNil(fFrameTex);
   fOpened := False;
 end;
@@ -886,13 +839,11 @@ end;
 procedure TVideo_FFmpeg.GetFrame(Time: Extended);
 var
   errnum: Integer;
-  //glErr: GLenum;
   CurrentTime: Extended;
   TimeDiff: Extended;
   DropFrameCount: Integer;
   i: Integer;
   Success: boolean;
-  //BufferPtr: PGLvoid;
 const
   SKIP_FRAME_DIFF = 0.010; // start skipping if we are >= 10ms too late
 begin
@@ -1036,7 +987,7 @@ begin
   Log.BenchmarkStart(16);
   {$ENDIF}
 
-  fFrameTex.UpdateData(fAVFrameRGB^.data[0], fScaledWidth, fScaledHeight, fAVFrameRGB.linesize[0] div PIXEL_FMT_SIZE);
+  fFrameTex.UpdateData(fAVFrameRGB^.data[0], fScaledWidth, fScaledHeight, fAVFrameRGB.linesize[0] div PIXEL_FMT_SIZE, VIDEO_TEXTURE_TYP);
   if (not fFrameTexValid) then
     fFrameTexValid := true;
 
@@ -1062,7 +1013,7 @@ begin
   //  1. Screen/display resolution (e.g. 1920x1080 -> 16:9)
   //  2. Render aspect (fWidth x fHeight -> variable)
   //  3. Movie aspect (video frame aspect stored in fAspect)
-  ScreenAspect := fWidth*((ScreenW/Screens)/RenderW)/(fHeight*(ScreenH/RenderH));
+  ScreenAspect := (fWidth*VertexW)/(fHeight*VertexH);
 
   case fAspectCorrection of
     acoCrop: begin
@@ -1152,61 +1103,10 @@ begin
     Renderer.DrawQuads(QuadList);
 end;
 
-procedure TVideo_FFmpeg.DrawBordersReflected(ScreenRect: TRectCoords; AlphaUpper, AlphaLower: double);
-var
-  rPosUpper, rPosLower: double;
-{
-  procedure DrawRect(left, right, upper, lower: double);
-  var
-    AlphaTop: double;
-    AlphaBottom: double;
-
-  begin
-    AlphaTop := AlphaUpper+(AlphaLower-AlphaUpper)*(upper-rPosUpper)/(fHeight*ReflectionH);
-    AlphaBottom := AlphaLower+(AlphaUpper-AlphaLower)*(rPosLower-lower)/(fHeight*ReflectionH);
-
-    glBegin(GL_QUADS);
-      glColor4f(0, 0, 0, AlphaTop);
-      glVertex3f(left, upper, fPosZ);
-      glVertex3f(right, upper, fPosZ);
-
-      glColor4f(0, 0, 0, AlphaBottom);
-      glVertex3f(right, lower, fPosZ);
-      glVertex3f(left, lower, fPosZ);
-    glEnd;
-  end;
-  }
-begin
-{
-  rPosUpper := fPosY+fHeight+fReflectionSpacing;
-  rPosLower := rPosUpper+fHeight*ReflectionH;
-
-  //upper border
-  if(ScreenRect.Upper > rPosUpper) then
-    DrawRect(fPosX, fPosX+fWidth, rPosUpper, ScreenRect.Upper);
-
-  //lower border
-  if(ScreenRect.Lower < rPosLower) then
-    DrawRect(fPosX, fPosX+fWidth, ScreenRect.Lower, rPosLower);
-
-  //left border
-  if(ScreenRect.Left > fPosX) then
-    DrawRect(fPosX, ScreenRect.Left, rPosUpper, rPosLower);
-
-  //right border
-  if(ScreenRect.Right < fPosX+fWidth) then
-    DrawRect(ScreenRect.Right, fPosX+fWidth, rPosUpper, rPosLower);
-    }
-end;
-
-
 procedure TVideo_FFmpeg.Draw();
 var
   ScreenRect:   TRectCoords;
   TexRect:      TRectCoords;
-  HeightFactor: double;
-  WidthFactor:  double;
-
 begin
   // exit if there's nothing to draw
   if (not fOpened) then
@@ -1219,14 +1119,11 @@ begin
   // get texture and screen positions
   GetVideoRect(ScreenRect, TexRect);
 
-  WidthFactor := (ScreenW/Screens) / RenderW;
-  HeightFactor := ScreenH / RenderH;
-
   Renderer.SetScissorRect(
-    round(fPosX*WidthFactor + (ScreenW/Screens)*(fScreen-1)),
-    round((RenderH-fPosY-fHeight)*HeightFactor),
-    round(fWidth*WidthFactor),
-    round(fHeight*HeightFactor)
+    round(fPosX*VertexW + (ScreenWPerScreen)*(fScreen-1)),
+    round((RenderH-fPosY-fHeight)*VertexH),
+    round(fWidth*VertexW),
+    round(fHeight*VertexH)
     );
 
   Renderer.ScissorTest := true;
@@ -1259,116 +1156,28 @@ begin
   {$IFEND}
 end;
 
-procedure TVideo_FFmpeg.DrawReflection();
-var
-  ScreenRect:   TRectCoords;
-  TexRect:      TRectCoords;
-  HeightFactor: double;
-  WidthFactor:  double;
-
-  AlphaTop:     double;
-  AlphaBottom:  double;
-
-  AlphaUpper:   double;
-  AlphaLower:   double;
-
-begin
-{
-  // exit if there's nothing to draw
-  if (not fOpened) then
-    Exit;
-
-  // get texture and screen positions
-  GetVideoRect(ScreenRect, TexRect);
-
-  WidthFactor := (ScreenW/Screens) / RenderW;
-  HeightFactor := ScreenH / RenderH;
-
-  glScissor(
-    round(fPosX*WidthFactor + (ScreenW/Screens)*(fScreen-1)),
-    round((RenderH-fPosY-fHeight-fReflectionSpacing-fHeight*ReflectionH)*HeightFactor),
-    round(fWidth*WidthFactor),
-    round(fHeight*HeightFactor*ReflectionH)
-    );
-
-  glEnable(GL_SCISSOR_TEST);
-  glDepthRange(0, 10);
-  glDepthFunc(GL_LEQUAL);
-  glEnable(GL_DEPTH_TEST);
-
-    glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, fFrameTex);
-
-  //calculate new ScreenRect coordinates for Reflection
-  ScreenRect.Lower := fPosY + fHeight + fReflectionSpacing
-    + (ScreenRect.Upper-fPosY) + (ScreenRect.Lower-ScreenRect.Upper)*ReflectionH;
-  ScreenRect.Upper := fPosY + fHeight + fReflectionSpacing
-    + (ScreenRect.Upper-fPosY);
-
-  AlphaUpper := fAlpha-0.3;
-  AlphaLower := 0;
-
-  AlphaTop := AlphaUpper-(AlphaLower-AlphaUpper)*
-    (ScreenRect.Upper-fPosY-fHeight-fReflectionSpacing)/fHeight;
-  AlphaBottom := AlphaLower+(AlphaUpper-AlphaLower)*
-    (fPosY+fHeight+fReflectionSpacing+fHeight*ReflectionH-ScreenRect.Lower)/fHeight;
-
-  glBegin(GL_QUADS);
-    //Top Left
-    glColor4f(1, 1, 1, AlphaTop);
-    glTexCoord2f(TexRect.Left, TexRect.Lower);
-    glVertex3f(ScreenRect.Left, ScreenRect.Upper, fPosZ);
-
-    //Bottom Left
-    glColor4f(1, 1, 1, AlphaBottom);
-    glTexCoord2f(TexRect.Left, (TexRect.Lower-TexRect.Upper)*(1-ReflectionH));
-    glVertex3f(ScreenRect.Left, ScreenRect.Lower, fPosZ);
-
-    //Bottom Right
-    glColor4f(1, 1, 1, AlphaBottom);
-    glTexCoord2f(TexRect.Right, (TexRect.Lower-TexRect.Upper)*(1-ReflectionH));
-    glVertex3f(ScreenRect.Right, ScreenRect.Lower, fPosZ);
-
-    //Top Right
-    glColor4f(1, 1, 1, AlphaTop);
-    glTexCoord2f(TexRect.Right, TexRect.Lower);
-    glVertex3f(ScreenRect.Right, ScreenRect.Upper, fPosZ);
-  glEnd;
-
-  glDisable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  //draw black borders
-  DrawBordersReflected(ScreenRect, AlphaUpper, AlphaLower);
-
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_SCISSOR_TEST);
-  }
-end;
-
 procedure TVideo_FFmpeg.ShowDebugInfo();
 begin
   {$IFDEF Info}
   if (fFrameTime+fFrameDuration < 0) then
   begin
-    glColor4f(0.7, 1, 0.3, 1);
     SetFontFamily(0);
     SetFontStyle(1);
     SetFontItalic(False);
     SetFontSize(27);
+    SetFontColor(0.7, 1, 0.3, 1);
     SetFontPos (300, 0);
     PrintText('Delay due to negative VideoGap');
-    glColor4f(1, 1, 1, 1);
   end;
   {$ENDIF}
 
   {$IFDEF DebugFrames}
     Renderer.DrawQuad(0, 0, 0, 250, 70, 0, 0, 0, 0.2)
-    glColor4f(1, 1, 1, 1);
     SetFontFamily(0);
     SetFontStyle(1);
     SetFontItalic(False);
     SetFontSize(27);
+    SetFontColor(1, 1, 1, 1);
     SetFontPos (5, 0);
     PrintText('delaying frame');
     SetFontPos (5, 20);
@@ -1529,8 +1338,6 @@ begin
   Result := fAspectCorrection;
 end;
 
-
-
 procedure TVideo_FFmpeg.SetAlpha(Alpha: double);
 begin
   fAlpha := Alpha;
@@ -1547,15 +1354,32 @@ begin
   Result := fAlpha;
 end;
 
+procedure TVideo_FFmpeg.SetReflection(Enabled: boolean);
+begin
+  if (assigned(fFrameTex)) then
+    fFrameTex.Reflection := Enabled
+end;
+
+function TVideo_FFmpeg.GetReflection: boolean;
+begin
+  if (assigned(fFrameTex)) then
+    Result := fFrameTex.Reflection
+  else
+    Result := false;
+end;
 
 procedure TVideo_FFmpeg.SetReflectionSpacing(Spacing: double);
 begin
-  fReflectionSpacing := Spacing;
+  if (assigned(fFrameTex)) then
+    fFrameTex.ReflectionSpacing:= Spacing;
 end;
 
 function TVideo_FFmpeg.GetReflectionSpacing(): double;
 begin
-  Result := fReflectionSpacing;
+  if (assigned(fFrameTex)) then
+    Result := fFrameTex.ReflectionSpacing
+  else
+    Result := 0;
 end;
 
 

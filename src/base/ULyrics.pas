@@ -478,7 +478,6 @@ var
   LyricsEffect: TLyricsEffect;
   Alpha: real;    // alphalevel to fade out at end
   FontSize, FontScale: real;
-  //ClipPlaneEq: array[0..3] of GLdouble; // clipping plane for slide effect
 
   OutlineColor_act: TRGB;                  // outline color actual line
   OutlineColor_dis: TRGB;                  // outline color next line

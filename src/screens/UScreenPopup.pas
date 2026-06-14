@@ -2140,9 +2140,9 @@ begin
   //Background:
   Renderer.DrawQuad(Rect.Left - 5, Rect.Top - 5, 0, Rect.Right + abs - Rect.Left + 5, Rect.Bottom - Rect.top + 10, 0.2, 0.2, 0.2, 0.8);
   Renderer.SetScissorRect(Rect.left-1, ScreenH-Rect.bottom-1, Rect.right-Rect.left+2, Rect.bottom-Rect.top+2);
-  Renderer.SetScissorRect(round((Rect.left-1)*(ScreenW/Screens)/RenderW+(ScreenW/Screens)*(ScreenAct-1)),
+  Renderer.SetScissorRect(round((Rect.left-1)*(ScreenWPerScreen)/RenderW+(ScreenWPerScreen)*(ScreenAct-1)),
     round((RenderH-Rect.bottom-1)*ScreenH/RenderH),
-    round((Rect.right-Rect.left+2)*(ScreenW/Screens)/RenderW),
+    round((Rect.right-Rect.left+2)*(ScreenWPerScreen)/RenderW),
     round((Rect.bottom-Rect.top+2)*ScreenH/RenderH));
   Renderer.ScissorTest := true;
   DrawTable();

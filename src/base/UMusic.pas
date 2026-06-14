@@ -431,18 +431,20 @@ type
       procedure SetAlpha(Alpha: double);
       function GetAlpha(): double;
 
+      procedure SetReflection(Enabled: boolean);
+      function GetReflection: boolean;
       procedure SetReflectionSpacing(Spacing: double);
       function GetReflectionSpacing(): double;
 
       procedure GetFrame(Time: Extended);
       procedure Draw();
-      procedure DrawReflection();
 
 
       property Screen: integer read GetScreen;
       property Width: double read GetWidth write SetWidth;
       property Height: double read GetHeight write SetHeight;
       property Alpha: double read GetAlpha write SetAlpha;
+      property Reflection: boolean read GetReflection write SetReflection;
       property ReflectionSpacing: double read GetReflectionSpacing write SetReflectionSpacing;
       property FrameAspect: real read GetFrameAspect;
       property AspectCorrection: TAspectCorrection read GetAspectCorrection write SetAspectCorrection;

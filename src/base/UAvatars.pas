@@ -386,7 +386,7 @@ begin
     if (Data <> nil) and
        (PixelFmt = ipfRGB) then
     begin
-      Result := Renderer.CreateTexture(Data, Filename, Width, Height)
+      Result := Renderer.CreateTexture(Data, Filename, Width, Height, TEXTURE_TYPE_PLAIN)
     end
     else
     begin

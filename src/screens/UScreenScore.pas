@@ -990,23 +990,25 @@ begin
     Tex_Score_NoteBarRound_Lightest[I].Free;
   end;
 
-  // Use the textures in PlayerStaticTextures and PlayerBoxTexture to free the memory, then
-  // set the texture copy in the static to nil so we avoid a double free in the destructor of TStatic
-  for S := 1 to Screens do
+  // Use the texture address stored in PlayerStaticTextures and PlayerBoxTexture to free the memory, then
+  // set the texture adddress in the TStatic object to nil so we avoid a double free in the destructor of TStatic
+  for P := Low(PlayerStaticTextures) to High(PlayerStaticTextures) do
   begin
-    for P := Low(PlayerStatic) to High(PlayerStatic) do
-      for I := 0 to High(PlayerStatic[P]) do
-      begin
-        PlayerStaticTextures[P, I, S].Tex.Free;
-        Statics[PlayerStatic[P, I]].Texture := nil;
-      end;
-    for P := Low(PlayerStatic) to High(PlayerStatic) do
+    for I := Low(PlayerStaticTextures[P]) to High(PlayerStaticTextures[P]) do
     begin
-      PlayerBoxTextures[P, 0, S].Tex.Free;
+      for S := Low(PlayerStaticTextures[P][I]) to High(PlayerStaticTextures[P][I]) do
+        PlayerStaticTextures[P, I, S].Tex.Free;
+      Statics[PlayerStatic[P, I]].Texture := nil;
+    end;
+  end;
+  for P := Low(PlayerBoxTextures) to High(PlayerBoxTextures) do
+  begin
+    for I := Low(PlayerBoxTextures[P]) to High(PlayerBoxTextures[P]) do
+    begin
+      for S := Low(PlayerBoxTextures[P][I]) to High(PlayerBoxTextures[P][I]) do
+        PlayerBoxTextures[P, I, S].Tex.Free;
       Statics[StaticBoxLightest[P]].Texture := nil;
-      PlayerBoxTextures[P, 1, S].Tex.Free;
       Statics[StaticBoxLight[P]].Texture := nil;
-      PlayerBoxTextures[P, 2, S].Tex.Free;
       Statics[StaticBoxDark[P]].Texture := nil;
     end;
   end;

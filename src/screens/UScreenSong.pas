@@ -3305,13 +3305,12 @@ begin
         fCurrentVideo.ReflectionSpacing := Reflectionspacing;
       end;
     end;
+    if Button[interaction].Reflection or (Theme.Song.Cover.SelectReflection) then
+      fCurrentVideo.Reflection := true;
 
     fCurrentVideo.AspectCorrection := acoCrop;
 
     fCurrentVideo.Draw;
-
-    if Button[interaction].Reflection or (Theme.Song.Cover.SelectReflection) then
-      fCurrentVideo.DrawReflection;
   end;
 
   // duet names

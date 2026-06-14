@@ -723,7 +723,6 @@ implementation
 
 uses
   Types,
-  ULog,
   UGraphic;
 
 const

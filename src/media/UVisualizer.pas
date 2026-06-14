@@ -72,9 +72,8 @@ type
     private
       Handle: projectm_handle;
       fInitialized: boolean;
-      fProjectMPath: string;
       Presets: array of string;
-      PresetOrder: array of cardinal;
+      PresetOrder: array of cardinal; // Random array of preset indices for Presets
       PresetIdx: cardinal;
       ScreenW, ScreenH: integer;
 
@@ -146,12 +145,13 @@ type
       procedure SetAlpha(Alpha: double);
       function GetAlpha(): double;
 
+      procedure SetReflection(Enabled: boolean);
+      function GetReflection: boolean;
       procedure SetReflectionSpacing(Spacing: double);
       function GetReflectionSpacing(): double;
 
       procedure GetFrame(Time: Extended);
       procedure Draw();
-      procedure DrawReflection();
   end;
 
 procedure PresetChangeRequested(name: PAnsiChar; user_data: pointer); cdecl;
@@ -204,7 +204,6 @@ begin
   ProjectMPath := Path(ProjectM_DataDir, pdAppend);
   if not ProjectMPath.IsAbsolute then
     ProjectMPath := Platform.GetGameSharedPath.Append(ProjectMPath);
-  fProjectMPath := ProjectMPath.ToNative();
 
   if (not SetParameters(ProjectMPath.Append('config.inp'))) then
     Exit;
@@ -278,6 +277,7 @@ begin
   Result := true;
 end;
 
+// Find all .milk presets in the preset directory, and fully read them into memory
 procedure TVideoPlayback_ProjectM.FindPresets(const Dir: IPath);
 var
   Extension: IPath;
@@ -311,7 +311,7 @@ begin
   projectm_load_preset_Data(Handle, PChar(Presets[PresetOrder[PresetIdx]]), SmoothTransition);
   PresetIdx := PresetIdx + 1;
   if (PresetIdx > High(Presets)) then
-    PresetIdx := 0;
+    PresetIdx := Low(Presets);
 end;
 
 procedure TVideoPlayback_ProjectM.AddAudioSamples(Data: PSingle; Count: integer; Channels: projectm_channels);
@@ -351,6 +351,10 @@ begin
   self.ProjectM := ProjectM;
   fRndPCMcount := 0;
   fState := pmStop;
+
+  // The ProjectM documentation recommends that all audio samples be provided in 32 bit float format. They do
+  // accept 16 bit signed integer, but will just convert it to 32 bit float interally. We will do the
+  // conversion instead, because with FFmpeg we will likely get faster results due to the assembly optimization
   AudioConverter := TAudioConverter_SWResample.Create;
   SrcFormat := AudioPlayback.GetFormatInfo();
   DstFormat := TAudioFormatInfo.Create(Min(SrcFormat.Channels, 2), SrcFormat.SampleRate, asfFloat);
@@ -485,6 +489,15 @@ begin
   Result := 1;
 end;
 
+procedure TVideo_ProjectM.SetReflection(Enabled: boolean);
+begin
+end;
+
+function TVideo_ProjectM.GetReflection: boolean;
+begin
+  Result := false;
+end;
+
 procedure TVideo_ProjectM.SetReflectionSpacing(Spacing: double);
 begin
 end;
@@ -521,7 +534,6 @@ begin
 
   Renderer.ResetState;
   Renderer.ClearFrameBuffer(CLEAR_DEPTH);
-
 end;
 
 {**
@@ -529,10 +541,6 @@ end;
  * TODO: this is not used yet. Data is directly drawn on GetFrame().
  *}
 procedure TVideo_ProjectM.Draw();
-begin
-end;
-
-procedure TVideo_ProjectM.DrawReflection();
 begin
 end;
 

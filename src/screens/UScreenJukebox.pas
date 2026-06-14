@@ -2159,8 +2159,6 @@ end;
 
 procedure TScreenJukebox.Play();
 begin
-    AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio),nil);
-    AudioPlayback.SetVolume(1.0);
 
     //AudioPlayback.Position := CurrentSong.Start;
     AudioPlayback.Position := LyricsState.GetCurrentTime();
@@ -2229,6 +2227,7 @@ var
   CurLyricsTime: real;
   VideoFrameTime: Extended;
 begin
+  Renderer.ClearFrameBuffer(CLEAR_COLOR or CLEAR_DEPTH);
   Background.Draw;
 
   // draw background picture (if any, and if no visualizations)
@@ -2567,6 +2566,9 @@ begin
     CurrentSong.Path := CatSongs.Song[CatSongs.Selected].Path;
     Exit;
   end;
+
+  AudioPlayback.Open(CurrentSong.Path.Append(CurrentSong.Audio),nil);
+  AudioPlayback.SetVolume(1.0);
 
   {*
    * == Background ==

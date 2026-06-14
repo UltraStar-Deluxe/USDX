@@ -287,7 +287,7 @@ begin
   TexW := ScreenWPerScreen;
   TexH := ScreenH;
   for i := 0 to 1 do
-    FadeTex[i] := Renderer.CreateTexture(nil, PATH_NONE, TexW, TexH);
+    FadeTex[i] := Renderer.CreateTexture(nil, PATH_NONE, TexW, TexH, TEXTURE_TYPE_PLAIN);
 end;
 
 function TDisplay.Draw: boolean;
