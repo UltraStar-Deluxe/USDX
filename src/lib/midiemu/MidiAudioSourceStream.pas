@@ -21,7 +21,7 @@ uses
   SyncObjs;
 
 type
-  TSynthEventKind = (sekNoteOn, sekNoteOff, sekStopAll);
+  TSynthEventKind = (sekNoteOn, sekNoteOff, sekClick, sekStopAll);
 
   TScheduledSynthEvent = record
     Time: Double;
@@ -46,6 +46,9 @@ type
     FNoteAge: Double;
     FReleaseAge: Double;
     FReleaseLevel: Double;
+    FClickActive: Boolean;
+    FClickAge: Double;
+    FClickVel: Double;
     FEvents: array of TScheduledSynthEvent;
     FLock: TCriticalSection;
 
@@ -53,6 +56,7 @@ type
     procedure ProcessEvents(Time: Double);
     procedure ApplyNoteOn(Pitch: Byte; Velocity: Byte);
     procedure ApplyNoteOff(Pitch: Byte);
+    procedure ApplyClick(Velocity: Byte);
     procedure ApplyStopAll;
   protected
     function IsEOF: boolean; override;
@@ -70,16 +74,20 @@ type
     procedure Close; override;
     procedure NoteOn(Pitch: Byte; Velocity: Byte = 127; Time: Double = -1.0);
     procedure NoteOff(Pitch: Byte; Time: Double = -1.0);
+    procedure Click(Velocity: Byte = 127; Time: Double = -1.0);
     procedure StopAll(Time: Double = -1.0);
   end;
 
 implementation
 
 const
-  OrganAttackTime = 0.004;
+  OrganAttackTime = 0.001;
   OrganReleaseTime = 0.050;
   OrganGain = 0.62;
   OrganSilenceLevel = 0.0004;
+  ClickDecayTime = 0.014;
+  ClickSilenceLevel = 0.0005;
+  ClickGain = 1.55;
 
 function OrganEnvelope(Age: Double): Double;
 begin
@@ -106,6 +114,38 @@ begin
     );
 end;
 
+function ClickNoise(Age: Double): Double;
+var
+  X: Double;
+begin
+  X := Sin((Age * 44100.0 + 0.137) * 15731.743) * 43758.5453;
+  Result := 2.0 * Frac(Abs(X)) - 1.0;
+end;
+
+function ClickWave(Age: Double): Double;
+var
+  Stick: Double;
+  Crack: Double;
+  Edge: Double;
+  Noise0: Double;
+  Noise1: Double;
+  Noise2: Double;
+begin
+  Noise0 := ClickNoise(Age);
+  Noise1 := ClickNoise(Age + 0.00017);
+  Noise2 := ClickNoise(Age + 0.00043);
+
+  if Noise0 >= 0 then
+    Edge := 1.0
+  else
+    Edge := -1.0;
+
+  Stick := Edge * Exp(-Age / 0.00075);
+  Crack := (Noise0 - 0.72 * Noise1 + 0.46 * Noise2) * Exp(-Age / 0.0045);
+
+  Result := 1.10 * Stick + 1.35 * Tanh(2.6 * Crack);
+end;
+
 constructor TMidiAudioSourceStream.Create(Format: TAudioFormatInfo);
 begin
   FFormat := Format.Copy;
@@ -120,6 +160,9 @@ begin
   FNoteAge := 0.0;
   FReleaseAge := 0.0;
   FReleaseLevel := 0.0;
+  FClickActive := False;
+  FClickAge := 0.0;
+  FClickVel := 0.0;
   System.SetLength(FEvents, 0);
   FLock := TCriticalSection.Create;
   Log.LogDebug('MidiAudioSourceStream: Created', 'MidiSynth');
@@ -217,6 +260,14 @@ begin
       else
         sample := 0;
 
+      if FClickActive then
+      begin
+        sample := sample + ClickWave(FClickAge) * FClickVel * ClickGain;
+        FClickAge := FClickAge + sampleTime;
+        if Exp(-FClickAge / ClickDecayTime) <= ClickSilenceLevel then
+          FClickActive := False;
+      end;
+
       // Convert to SmallInt once per frame
       tempSample := Round(sample * High(SmallInt));
       if tempSample > High(SmallInt) then
@@ -295,6 +346,8 @@ begin
         ApplyNoteOn(Event.Pitch, Event.Velocity);
       sekNoteOff:
         ApplyNoteOff(Event.Pitch);
+      sekClick:
+        ApplyClick(Event.Velocity);
       sekStopAll:
         ApplyStopAll;
     end;
@@ -325,6 +378,13 @@ begin
   end;
 end;
 
+procedure TMidiAudioSourceStream.ApplyClick(Velocity: Byte);
+begin
+  FClickActive := True;
+  FClickAge := 0;
+  FClickVel := Sqr(Velocity / 127.0);
+end;
+
 procedure TMidiAudioSourceStream.ApplyStopAll;
 begin
   FActive := False;
@@ -335,6 +395,9 @@ begin
   FNoteAge := 0;
   FReleaseAge := 0;
   FReleaseLevel := 0;
+  FClickActive := False;
+  FClickAge := 0;
+  FClickVel := 0;
   System.SetLength(FEvents, 0);
 end;
 
@@ -354,6 +417,17 @@ begin
   FLock.Enter;
   try
     QueueEvent(Time, sekNoteOff, Pitch, 0);
+    ProcessEvents(FPosition);
+  finally
+    FLock.Leave;
+  end;
+end;
+
+procedure TMidiAudioSourceStream.Click(Velocity: Byte; Time: Double);
+begin
+  FLock.Enter;
+  try
+    QueueEvent(Time, sekClick, 0, Velocity);
     ProcessEvents(FPosition);
   finally
     FLock.Leave;
