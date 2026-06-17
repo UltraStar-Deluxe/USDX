@@ -812,7 +812,7 @@ NoDoubledResolution:
   end;
   ScreenW := ActualW;
   ScreenH := ActualH;
-  UpdateUIScaleState(RenderW, RenderH, ScreenW, ScreenH);
+  UpdateUIScaleState(RenderW, RenderH, ScreenW div Screens, ScreenH);
   // Ausganswerte für die State-Machine setzen
   SDL_GL_SetSwapInterval(1); // VSYNC (currently Windows only)
 
@@ -972,7 +972,7 @@ begin
     end;
   end;
 
-  UpdateUIScaleState(RenderW, RenderH, ScreenW, ScreenH);
+  UpdateUIScaleState(RenderW, RenderH, ScreenW div Screens, ScreenH);
 
   if CurrentWindowMode = Mode_Fullscreen then
   begin
