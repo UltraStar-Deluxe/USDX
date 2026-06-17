@@ -2724,7 +2724,8 @@ begin
   if (Statics[StaticCover].Texture = nil) then
     Statics[StaticCover].Texture := Renderer.GetTexture(Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN, 0);
 
-  Statics[StaticCover].Texture.ScaleMode := lsUniform;
+  // Song covers fill their themed slots by cropping, never by stretching.
+  Statics[StaticCover].Texture.ScaleMode := lsCrop;
 
   Statics[StaticCover].Texture.X := Theme.Jukebox.SongCover.X;
   Statics[StaticCover].Texture.Y := Theme.Jukebox.SongCover.Y;

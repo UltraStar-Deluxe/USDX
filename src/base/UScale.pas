@@ -35,7 +35,7 @@ uses
   dglOpenGL;
 
 type
-  TLayoutScaleMode = (lsUniform, lsStretch);
+  TLayoutScaleMode = (lsUniform, lsStretch, lsCrop);
 
   TScaleDebugInfo = record
     ScreenWidth: integer;
@@ -69,8 +69,6 @@ type
     FillOffsetPxY: single;
   end;
 
-procedure BeginLayoutSpace;
-procedure EndLayoutSpace;
 procedure GetScaleDebugInfo(out Info: TScaleDebugInfo);
 procedure UpdateUIScaleState(RenderW, RenderH, ScreenW, ScreenH: integer);
 function GetLayoutScaleX: single;
@@ -88,18 +86,6 @@ var
   UIScaleState: TUIScaleState;
   CurrentScreenW: integer = 0;
   CurrentScreenH: integer = 0;
-
-procedure BeginLayoutSpace;
-begin
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix;
-end;
-
-procedure EndLayoutSpace;
-begin
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix;
-end;
 
 procedure GetScaleDebugInfo(out Info: TScaleDebugInfo);
 begin

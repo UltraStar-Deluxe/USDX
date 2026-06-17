@@ -612,7 +612,6 @@ begin
   ButtonCollection[Num].Texture.TexY2 := 1;
   ButtonCollection[Num].Texture.ScaleMode := ThemeCollection.Style.ScaleMode;
   ButtonCollection[Num].DeSelectTexture.ScaleMode := ThemeCollection.Style.ScaleMode;
-  ButtonCollection[Num].Texture2.ScaleMode := ThemeCollection.Style.ScaleMode;
   ButtonCollection[Num].SetSelect(false);
 
   ButtonCollection[Num].Reflection := ThemeCollection.Style.Reflection;
@@ -638,7 +637,7 @@ begin
       Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), ThemeCollection.Style.Typ);
   end;
   ButtonCollection[Num].FadeTexPos := ThemeCollection.Style.FadeTexPos;
-  if (ButtonCollection[Num].FadeTex.TexNum <> 0) then
+  if (ButtonCollection[Num].FadeTex <> nil) then
     ButtonCollection[Num].FadeTex.ScaleMode := ThemeCollection.Style.ScaleMode;
 
   BTLen := Length(ThemeCollection.Style.Text);
@@ -671,6 +670,10 @@ begin
     static.H,
     PATH_NONE
   );
+  if (Result >= 0) then
+  begin
+    Statics[Result].Texture.ScaleMode := static.ScaleMode;
+  end;
 end;
 
 function TMenu.AddStaticRectangle(static: TThemeStaticRectangle): integer;
@@ -996,7 +999,6 @@ begin
 
   Button[Result].Texture.ScaleMode := ThemeButton.ScaleMode;
   Button[Result].DeSelectTexture.ScaleMode := ThemeButton.ScaleMode;
-  Button[Result].Texture2.ScaleMode := ThemeButton.ScaleMode;
 
   Button[Result].Z := ThemeButton.Z;
 
@@ -1021,7 +1023,7 @@ begin
       Skin.GetTextureFileName(ThemeButton.FadeTex), ThemeButton.Typ);
   end;
 
-  if (Button[Result].FadeTex.TexNum <> 0) then
+  if (Button[Result].FadeTex <> nil) then
     Button[Result].FadeTex.ScaleMode := ThemeButton.ScaleMode;
 
   Button[Result].FadeTexPos := ThemeButton.FadeTexPos;

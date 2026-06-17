@@ -88,6 +88,7 @@ type
     Y: integer;
     H: integer;
     W: integer;
+    ScaleMode: TLayoutScaleMode;
   end;
 
   TThemeStaticRectangle = record
@@ -2812,6 +2813,7 @@ begin
   ThemePosition.Y := ReadInteger(SectionList, 'Y', 0);
   ThemePosition.H := ReadInteger(SectionList, 'H', 0);
   ThemePosition.W := ReadInteger(SectionList, 'W', 0);
+  ThemePosition.ScaleMode := ParseScaleMode(ReadString(SectionList, 'ScaleMode', ''), lsStretch);
 end;
 
 procedure TTheme.ThemeLoadLyricBar(var LyricBar: TThemeLyricBar; const Name: string);
