@@ -36,6 +36,10 @@ type
     procedure SetVolume(Volume: Single);
     procedure NoteOn(Pitch: Byte; Velocity: Byte = 127; Time: Double = -1.0);
     procedure NoteOff(Pitch: Byte; Time: Double = -1.0);
+    procedure Click(Velocity: Byte = 127; Time: Double = -1.0);
+    procedure QueueNoteOn(Pitch: Byte; Velocity: Byte = 127; Time: Double = -1.0);
+    procedure QueueNoteOff(Pitch: Byte; Time: Double = -1.0);
+    procedure QueueClick(Velocity: Byte = 127; Time: Double = -1.0);
     procedure StopAll(Time: Double = -1.0);
     procedure SetPosition(Time: Double);
     procedure Play;
@@ -80,9 +84,13 @@ begin
   try
     FreeAndNil(FFormat);
     FFormat := TAudioFormatInfo.Create(1, 44100, asfS16);
+    if Assigned(FPlaybackStream) then
+    begin
+      FPlaybackStream.Stop;
+      FreeAndNil(FPlaybackStream);
+    end;
     if Assigned(FSourceStream) then FreeAndNil(FSourceStream);
     FSourceStream := TMidiAudioSourceStream.Create(FFormat);
-    if Assigned(FPlaybackStream) then FreeAndNil(FPlaybackStream);
     FPlaybackStream := AP.CreatePlaybackStreamForSource(FSourceStream);
     if not Assigned(FPlaybackStream) then
     begin
@@ -124,15 +132,37 @@ end;
 
 procedure TMidiOutput.NoteOn(Pitch: Byte; Velocity: Byte; Time: Double);
 begin
+  QueueNoteOn(Pitch, Velocity, Time);
   Play;
-  if Assigned(FSourceStream) then
-    FSourceStream.NoteOn(Pitch, Velocity, Time);
 end;
 
 procedure TMidiOutput.NoteOff(Pitch: Byte; Time: Double);
 begin
+  QueueNoteOff(Pitch, Time);
+end;
+
+procedure TMidiOutput.Click(Velocity: Byte; Time: Double);
+begin
+  QueueClick(Velocity, Time);
+  Play;
+end;
+
+procedure TMidiOutput.QueueNoteOn(Pitch: Byte; Velocity: Byte; Time: Double);
+begin
+  if Assigned(FSourceStream) then
+    FSourceStream.NoteOn(Pitch, Velocity, Time);
+end;
+
+procedure TMidiOutput.QueueNoteOff(Pitch: Byte; Time: Double);
+begin
   if Assigned(FSourceStream) then
     FSourceStream.NoteOff(Pitch, Time);
+end;
+
+procedure TMidiOutput.QueueClick(Velocity: Byte; Time: Double);
+begin
+  if Assigned(FSourceStream) then
+    FSourceStream.Click(Velocity, Time);
 end;
 
 procedure TMidiOutput.StopAll(Time: Double);
@@ -143,7 +173,9 @@ end;
 
 procedure TMidiOutput.SetPosition(Time: Double);
 begin
-  if Assigned(FSourceStream) then
+  if Assigned(FPlaybackStream) then
+    FPlaybackStream.Position := Time
+  else if Assigned(FSourceStream) then
     FSourceStream.Position := Time;
 end;
 
