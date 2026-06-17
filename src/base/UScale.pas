@@ -35,7 +35,7 @@ uses
   dglOpenGL;
 
 type
-  TLayoutScaleMode = (lsUniform, lsStretch);
+  TLayoutScaleMode = (lsUniform, lsStretch, lsCrop);
 
   TScaleDebugInfo = record
     ScreenWidth: integer;

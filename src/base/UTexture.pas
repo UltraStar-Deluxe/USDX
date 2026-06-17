@@ -522,6 +522,7 @@ begin
   Result.TexY1 := 0;
   Result.TexX2 := 1;
   Result.TexY2 := 1;
+  Result.ScaleMode := lsStretch;
   Result.EdgeExtend := false;
   Result.EdgeExtendPixels := 0;
   Result.EdgeExtendSolidFill := false;

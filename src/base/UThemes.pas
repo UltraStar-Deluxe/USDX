@@ -88,6 +88,7 @@ type
     Y: integer;
     H: integer;
     W: integer;
+    ScaleMode: TLayoutScaleMode;
   end;
 
   TThemeStaticRectangle = record
@@ -389,6 +390,7 @@ type
       ZoomThumbH: integer;
       ZoomThumbStyle: integer;
       Tex: string;
+      ScaleMode: TLayoutScaleMode;
     end;
 
     //Equalizer Mod
@@ -412,6 +414,7 @@ type
       DColor:  string;
       ColR, ColG, ColB: real;
       DColR, DColG, DColB: real;
+      ScaleMode: TLayoutScaleMode;
     end;
 
 
@@ -1229,7 +1232,8 @@ type
     procedure ThemeLoadButtonCollections(var Collections: AThemeButtonCollection; const Name: string);
     procedure ThemeLoadSelectSlide(var ThemeSelectS: TThemeSelectSlide; const Name: string);
     procedure ThemeLoadEqualizer(var ThemeEqualizer: TThemeEqualizer; const Name: string);
-    procedure ThemeLoadPosition(var ThemePosition: TThemePosition; const Name: string);
+    procedure ThemeLoadPosition(var ThemePosition: TThemePosition; const Name: string;
+      DefaultScaleMode: TLayoutScaleMode = lsStretch);
     procedure ThemeLoadLyricBar(var LyricBar: TThemeLyricBar; const Name: string);
 
     procedure ThemeScoreLoad;
@@ -1292,8 +1296,15 @@ begin
     Result := lsStretch
   else if SameText(Value, 'uniform') then
     Result := lsUniform
+  else if SameText(Value, 'crop') then
+    Result := lsCrop
   else
     Result := Default;
+end;
+
+function DefaultCoverScaleMode: TLayoutScaleMode;
+begin
+  Result := lsCrop;
 end;
 
 //-----------
@@ -1642,10 +1653,12 @@ begin
       ThemeLoadButton(Jukebox.Options, 'JukeboxOptions');
       ThemeLoadText(Jukebox.TextListText, 'JukeboxListText');
       ThemeLoadText(Jukebox.TextCountText, 'JukeboxCountText');
-      ThemeLoadPosition(Jukebox.SongCover, 'JukeboxSongCover');
+      ThemeLoadPosition(Jukebox.SongCover, 'JukeboxSongCover',
+        DefaultCoverScaleMode);
 
       ThemeLoadStatics(Jukebox.StaticActualSongStatics, 'JukeboxStaticActualSong');
-      ThemeLoadPosition(Jukebox.StaticActualSongCover, 'JukeboxStaticActualSongCover');
+      ThemeLoadPosition(Jukebox.StaticActualSongCover, 'JukeboxStaticActualSongCover',
+        DefaultCoverScaleMode);
       ThemeLoadText(Jukebox.TextActualSongArtist, 'JukeboxTextActualSongArtist');
       ThemeLoadText(Jukebox.TextActualSongTitle, 'JukeboxTextActualSongTitle');
 
@@ -2827,7 +2840,8 @@ begin
   end;
 end;
 
-procedure TTheme.ThemeLoadPosition(var ThemePosition: TThemePosition; const Name: string);
+procedure TTheme.ThemeLoadPosition(var ThemePosition: TThemePosition; const Name: string;
+  DefaultScaleMode: TLayoutScaleMode);
 var
   SectionList: TThemeSectionList;
 begin
@@ -2840,6 +2854,7 @@ begin
   ThemePosition.Y := ReadInteger(SectionList, 'Y', 0);
   ThemePosition.H := ReadInteger(SectionList, 'H', 0);
   ThemePosition.W := ReadInteger(SectionList, 'W', 0);
+  ThemePosition.ScaleMode := ParseScaleMode(ReadString(SectionList, 'ScaleMode', ''), DefaultScaleMode);
 end;
 
 procedure TTheme.ThemeLoadLyricBar(var LyricBar: TThemeLyricBar; const Name: string);
@@ -3899,6 +3914,7 @@ begin
   Song.Cover.Y := ReadInteger(SectionList, 'Y', 190);
   Song.Cover.W := ReadInteger(SectionList, 'W', 300);
   Song.Cover.H := ReadInteger(SectionList, 'H', 200);
+  Song.Cover.ScaleMode := ParseScaleMode(ReadString(SectionList, 'ScaleMode', ''), DefaultCoverScaleMode);
 
   // Song menu modes: 0 - roulette, 1 - chessboard, 2 - list
   
@@ -3944,6 +3960,7 @@ begin
     Song.ListCover.Typ   := ParseTextureType(ReadString(SectionList, 'Type', ''), TEXTURE_TYPE_PLAIN);
     Song.ListCover.Tex := ReadString(SectionList, 'Tex', '');
     Song.ListCover.DTex := ReadString(SectionList, 'DTex', '');
+    Song.ListCover.ScaleMode := ParseScaleMode(ReadString(SectionList, 'ScaleMode', ''), DefaultCoverScaleMode);
 
     Song.ListCover.Color := ReadString(SectionList, 'Color', '');
 

@@ -88,7 +88,8 @@ type
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
-      procedure ConfigureCoverTexture(var Tex: TTexture; IsPlaceholder: boolean);
+      procedure ConfigureCoverTexture(var Tex: TTexture; IsPlaceholder: boolean;
+        ScaleMode: TLayoutScaleMode);
     public
       TextArtist:   integer;
       TextTitle:    integer;
@@ -468,21 +469,21 @@ begin
 
 end;
 
-procedure TScreenSong.ConfigureCoverTexture(var Tex: TTexture; IsPlaceholder: boolean);
+procedure TScreenSong.ConfigureCoverTexture(var Tex: TTexture; IsPlaceholder: boolean;
+  ScaleMode: TLayoutScaleMode);
 var
   CropX1, CropX2: real;
 begin
-  Tex.ScaleMode := lsStretch;
-  Tex.EdgeExtend := true;
+  Tex.ScaleMode := ScaleMode;
+  Tex.EdgeExtend := false;
   Tex.EdgeExtendPixels := 1;
-  // Always use textured edge extension to avoid pillar/letterboxing.
   Tex.EdgeExtendSolidFill := false;
   Tex.EdgeExtendFillR := 0;
   Tex.EdgeExtendFillG := 0;
   Tex.EdgeExtendFillB := 0;
 
-  // Placeholders: crop to a centered square region via TexX1/TexX2 and edge extend
-  if IsPlaceholder or (Tex.SourceW > Tex.SourceH * 1.5) then
+  // Placeholders use a centered square crop; real covers keep their source aspect.
+  if IsPlaceholder then
   begin
     Tex.TexX1 := 0;
     Tex.TexX2 := 1;
@@ -1944,6 +1945,9 @@ begin
       Theme.Song.ListCover.Typ,
       Theme.Song.ListCover.Reflection,
       Theme.Song.ListCover.ReflectionSpacing);
+    StaticsList[StaticList[I]].Texture.ScaleMode := Theme.Song.ListCover.ScaleMode;
+    StaticsList[StaticList[I]].TextureSelect.ScaleMode := Theme.Song.ListCover.ScaleMode;
+    StaticsList[StaticList[I]].TextureDeselect.ScaleMode := Theme.Song.ListCover.ScaleMode;
   end;
 
   SetLength(ListTextArtist, Num);
@@ -2728,7 +2732,8 @@ begin
 
   Statics[StaticActual].Texture := Texture.LoadTexture(Button[Interaction].Texture.Name);
   IsPlaceholder := Assigned(Button[Interaction].Texture.Name) and Button[Interaction].Texture.Name.Equals(PlaceholderPath);
-  ConfigureCoverTexture(Statics[StaticActual].Texture, IsPlaceholder);
+  ConfigureCoverTexture(Statics[StaticActual].Texture, IsPlaceholder,
+    Theme.Song.Cover.ScaleMode);
   Statics[StaticActual].Texture.Alpha := 1;
 
   Statics[StaticActual].Texture.X := Theme.Song.Cover.SelectX;
@@ -2809,7 +2814,8 @@ begin
 
   Statics[StaticActual].Texture := Texture.LoadTexture(Button[Interaction].Texture.Name);
   IsPlaceholder := Assigned(Button[Interaction].Texture.Name) and Button[Interaction].Texture.Name.Equals(PlaceholderPath);
-  ConfigureCoverTexture(Statics[StaticActual].Texture, IsPlaceholder);
+  ConfigureCoverTexture(Statics[StaticActual].Texture, IsPlaceholder,
+    Theme.Song.Cover.ScaleMode);
   Statics[StaticActual].Texture.Alpha := 1;
 
   Statics[StaticActual].Texture.X := Theme.Song.Cover.SelectX;
@@ -3375,7 +3381,10 @@ begin
       end;
     end;
 
-    fCurrentVideo.AspectCorrection := acoCrop;
+    if Theme.Song.Cover.ScaleMode = lsCrop then
+      fCurrentVideo.AspectCorrection := acoCrop
+    else
+      fCurrentVideo.AspectCorrection := acoLetterBox;
 
     fCurrentVideo.Draw;
 
@@ -4282,7 +4291,8 @@ begin
     PlaceholderPath := Skin.GetTextureFileName('SongCover');
     IsPlaceholder := Assigned(Button[NumberOfButtonInArray].Texture.Name) and
       Button[NumberOfButtonInArray].Texture.Name.Equals(PlaceholderPath);
-    ConfigureCoverTexture(Button[NumberOfButtonInArray].Texture, IsPlaceholder);
+    ConfigureCoverTexture(Button[NumberOfButtonInArray].Texture, IsPlaceholder,
+      Theme.Song.Cover.ScaleMode);
   end;
 end;
 

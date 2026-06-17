@@ -704,6 +704,10 @@ begin
     static.H,
     PATH_NONE
   );
+  if (Result >= 0) then
+  begin
+    Statics[Result].Texture.ScaleMode := static.ScaleMode;
+  end;
 end;
 
 function TMenu.AddStaticRectangle(static: TThemeStaticRectangle): integer;

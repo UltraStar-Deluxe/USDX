@@ -2294,7 +2294,10 @@ begin
       end;
     end;
 
-    fCurrentVideo.AspectCorrection := acoLetterBox;
+    if Theme.Jukebox.SongCover.ScaleMode = lsCrop then
+      fCurrentVideo.AspectCorrection := acoCrop
+    else
+      fCurrentVideo.AspectCorrection := acoLetterBox;
     fCurrentVideo.SetScreen(ScreenAct);
     fCurrentVideo.Draw;
     //DrawBlackBars();
@@ -2728,8 +2731,8 @@ begin
   if (Statics[StaticCover].Texture.TexNum = 0) then
     Statics[StaticCover].Texture := Texture.GetTexture(Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN, false);
 
-  Statics[StaticCover].Texture.ScaleMode := lsStretch;
-  Statics[StaticCover].Texture.EdgeExtend := true;
+  Statics[StaticCover].Texture.ScaleMode := Theme.Jukebox.SongCover.ScaleMode;
+  Statics[StaticCover].Texture.EdgeExtend := false;
   Statics[StaticCover].Texture.EdgeExtendSolidFill := false;
   Statics[StaticCover].Texture.EdgeExtendPixels := 2;
 
@@ -2744,6 +2747,8 @@ begin
   Statics[JukeboxStaticActualSongCover].Texture.Y := Theme.Jukebox.StaticActualSongCover.Y;
   Statics[JukeboxStaticActualSongCover].Texture.W := Theme.Jukebox.StaticActualSongCover.W;
   Statics[JukeboxStaticActualSongCover].Texture.H := Theme.Jukebox.StaticActualSongCover.H;
+  Statics[JukeboxStaticActualSongCover].Texture.ScaleMode := Theme.Jukebox.StaticActualSongCover.ScaleMode;
+  Statics[JukeboxStaticActualSongCover].Texture.EdgeExtend := false;
   Statics[JukeboxStaticActualSongCover].Texture.Alpha := 1;
 end;
 

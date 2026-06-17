@@ -46,6 +46,84 @@ implementation
 uses
   Math;
 
+procedure DrawTextureCrop(const Texture: TTexture; BaseX, BaseY, BaseW, BaseH: real);
+var
+  ULeft, URight: real;
+  VTop, VBottom: real;
+  SourceW, SourceH: real;
+  ActualSourceW, ActualSourceH: real;
+  LayoutScaleCorrection: real;
+  BoxAspect: real;
+  SourceAspect: real;
+  TargetSourceW: real;
+  TargetSourceH: real;
+  CropU: real;
+  CropV: real;
+begin
+  if (BaseW <= 0) or (BaseH <= 0) then
+    Exit;
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  SourceW := Texture.SourceW;
+  SourceH := Texture.SourceH;
+
+  if (GetLayoutScaleX > 0) and (GetLayoutScaleY > 0) then
+    LayoutScaleCorrection := GetLayoutScaleY / GetLayoutScaleX
+  else
+    LayoutScaleCorrection := 1.0;
+
+  ActualSourceW := SourceW * Abs(Texture.TexX2 - Texture.TexX1);
+  ActualSourceH := SourceH * Abs(Texture.TexY2 - Texture.TexY1);
+
+  if (ActualSourceW <= 0) or (ActualSourceH <= 0) then
+  begin
+    ActualSourceW := 1.0;
+    ActualSourceH := 1.0;
+  end;
+
+  ULeft := Texture.TexX1 * Texture.TexW;
+  URight := Texture.TexX2 * Texture.TexW;
+  VTop := Texture.TexY1 * Texture.TexH;
+  VBottom := Texture.TexY2 * Texture.TexH;
+
+  BoxAspect := (BaseW / BaseH) / LayoutScaleCorrection;
+  SourceAspect := ActualSourceW / ActualSourceH;
+
+  if SourceAspect > BoxAspect then
+  begin
+    TargetSourceW := ActualSourceH * BoxAspect;
+    CropU := Abs(URight - ULeft) * (1 - TargetSourceW / ActualSourceW) * 0.5;
+    ULeft := ULeft + CropU;
+    URight := URight - CropU;
+  end
+  else if SourceAspect < BoxAspect then
+  begin
+    TargetSourceH := ActualSourceW / BoxAspect;
+    CropV := Abs(VBottom - VTop) * (1 - TargetSourceH / ActualSourceH) * 0.5;
+    VTop := VTop + CropV;
+    VBottom := VBottom - CropV;
+  end;
+
+  glBegin(GL_QUADS);
+    glTexCoord2f(ULeft, VTop);
+    glVertex3f(BaseX, BaseY, Texture.Z);
+
+    glTexCoord2f(ULeft, VBottom);
+    glVertex3f(BaseX, BaseY + BaseH, Texture.Z);
+
+    glTexCoord2f(URight, VBottom);
+    glVertex3f(BaseX + BaseW, BaseY + BaseH, Texture.Z);
+
+    glTexCoord2f(URight, VTop);
+    glVertex3f(BaseX + BaseW, BaseY, Texture.Z);
+  glEnd;
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+end;
+
 procedure DrawTextureEdgeExtend(const Texture: TTexture; BaseX, BaseY, BaseW, BaseH: real);
 var
   DrawW: real;
@@ -136,9 +214,6 @@ begin
   begin
     ActualSourceW := 1.0;
     ActualSourceH := 1.0;
-  end
-  else
-  begin
   end;
 
   DrawW := (ActualSourceW / ActualSourceH) * BaseH * LayoutScaleCorrection;
@@ -236,7 +311,13 @@ var
 begin
   with Texture do
   begin
-    ResolveTextureRect(Texture, baseX, baseY, baseW, baseH);
+    baseX := X;
+    baseY := Y;
+    baseW := W * ScaleW;
+    baseH := H * ScaleH;
+
+    if not (EdgeExtend or (ScaleMode = lsCrop)) then
+      ResolveLayoutRect(baseX, baseY, baseW, baseH, ScaleMode);
 
     glColor4f(ColR * Int, ColG * Int, ColB * Int, Alpha);
     glEnable(GL_TEXTURE_2D);
@@ -249,6 +330,14 @@ begin
 //    glBlendFunc(GL_SRC_COLOR, GL_ZERO);
 
     glBindTexture(GL_TEXTURE_2D, TexNum);
+
+    if ScaleMode = lsCrop then
+    begin
+      DrawTextureCrop(Texture, baseX, baseY, baseW, baseH);
+      glDisable(GL_DEPTH_TEST);
+      glDisable(GL_TEXTURE_2D);
+      Exit;
+    end;
 
     if EdgeExtend then
     begin
