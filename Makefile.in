@@ -86,9 +86,6 @@ USE_OPENCV_CWRAPPER_DLL ?= no
 ifeq ($(EXEEXT),.exe)
 USE_OPENCV_CWRAPPER_DLL := yes
 endif
-ifeq ($(PPLATFORM),darwin)
-USE_OPENCV_CWRAPPER_DLL := yes
-endif
 
 #################################################
 # Dependencies
