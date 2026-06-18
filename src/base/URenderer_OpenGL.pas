@@ -384,6 +384,7 @@ constructor TRenderer_OpenGLBase.Create(glcontext: TSDL_GLContext; MajorVersion,
 var
   WhitePixel: array[0..3] of GLubyte = (255, 255, 255, 255);
   S: string;
+  MaxTextureSize: GLint;
 begin
   inherited Create();
   self.glcontext := glcontext;
@@ -441,6 +442,9 @@ begin
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, PGLvoid(@WhitePixel[0]));
+
+  glGetIntegerv(GL_MAX_TEXTURE_SIZE, @MaxTextureSize);
+  Limit := Min(Limit, MaxTextureSize);
 
   {$IFDEF DEBUG_MODE}
   RaiseExceptionIfError;

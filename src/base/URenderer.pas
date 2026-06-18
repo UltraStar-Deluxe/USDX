@@ -226,6 +226,7 @@ type
       TextureDatabase: TTextureDatabase;
       SWRendering: boolean;
       fSupportsProjectM: boolean;
+      Limit: integer;
 
       function LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType): TTexture; overload; virtual; abstract;
       function CreateEmptyTexture(const Identifier: IPath): TTexture; virtual; abstract;
@@ -316,7 +317,7 @@ uses
   URenderer_OpenGL;
 
 const
-  Limit = 1920;
+  DEFAULT_TEXTURE_LIMIT = 4096;
 
 constructor TTexture.Create(const Identifier: IPath);
 begin
@@ -386,6 +387,7 @@ begin
   inherited;
   SWRendering := false;
   TextureDatabase := TTextureDatabase.Create;
+  Limit := DEFAULT_TEXTURE_LIMIT;
 end;
 
 destructor TRenderer.Destroy();
