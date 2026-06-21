@@ -103,6 +103,7 @@ type
 
       BarTime:            cardinal;
       FinishScreenDraw:   boolean;
+      PreviewEnd:         real;
 
       aPlayerScoreScreenTextures: array[1..UIni.IMaxPlayerCount] of TPlayerScoreScreenTexture;
       aPlayerScoreScreenDatas:    array[1..UIni.IMaxPlayerCount] of TPlayerScoreScreenData;
@@ -1140,6 +1141,7 @@ begin
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenScore');
 
   FinishScreenDraw := false;
+  PreviewEnd := 0;
 
   {**
    * Turn backgroundmusic on
@@ -1355,6 +1357,12 @@ function TScreenScore.Draw: boolean;
 var
   PlayerCounter: integer;
 begin
+  if (PreviewEnd > 0) and (AudioPlayback.Position >= PreviewEnd) then
+  begin
+    AudioPlayback.Stop;
+    PreviewEnd := 0;
+  end;
+
 {
   player[0].ScoreInt       := 7000;
   player[0].ScoreLineInt   := 2000;
@@ -1782,6 +1790,7 @@ procedure TScreenSCore.StartPreview;
 var
   select:   integer;
   changed:  boolean;
+  PreviewPos: real;
   PreviewVolume: single;
 begin
   //When Music Preview is activated -> then change music
@@ -1812,13 +1821,12 @@ begin
     if changed then
     begin
       AudioPlayback.Close;
+      PreviewEnd := 0;
 
       if AudioPlayback.Open(CatSongs.Song[select].Path.Append(CatSongs.Song[select].Audio),nil) then
       begin
-        if (CatSongs.Song[select].PreviewStart > 0) then
-          AudioPlayback.Position := CatSongs.Song[select].PreviewStart
-        else
-          AudioPlayback.Position := (AudioPlayback.Length / 4);
+        CatSongs.Song[select].GetPreviewRange(AudioPlayback.Length, PreviewPos, PreviewEnd);
+        AudioPlayback.Position := PreviewPos;
 
         // set preview volume
         PreviewVolume := EnsureRange(Ini.PreviewVolume, 0, 100) / 100;
