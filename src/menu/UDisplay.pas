@@ -45,6 +45,11 @@ uses
   UHookableEvent;
 
 type
+  TCursorScreenHideMode = (
+    cshDefault,
+    cshIgnoreSingScreen
+  );
+
   TDisplay = class
     private
       ePreDraw: THookableEvent;
@@ -116,7 +121,7 @@ type
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
 
       { sets SDL_ShowCursor depending on options set in Ini }
-      procedure SetCursor;
+      procedure SetCursor(ScreenHideMode: TCursorScreenHideMode = cshDefault);
 
       { called when cursor moves, positioning of software cursor }
       procedure MoveCursor(X, Y: double);
@@ -517,47 +522,32 @@ begin
 end;
 
 { sets SDL_ShowCursor depending on options set in Ini }
-procedure TDisplay.SetCursor;
+procedure TDisplay.SetCursor(ScreenHideMode: TCursorScreenHideMode);
 var
   Cursor: Integer;
 begin
   Cursor := 0;
 
-  if (CurrentScreen <> @ScreenSing) or (Cursor_HiddenByScreen) then
-  begin // hide cursor on singscreen
+  if (Ini.Mouse = 2) and
+     (Cursor_HiddenByScreen <> ((CurrentScreen = @ScreenSing) and (ScreenHideMode = cshDefault))) then
+  begin
+    Cursor_Visible := false;
+    Cursor_Fade := false;
+  end;
+
+  Cursor_HiddenByScreen := (CurrentScreen = @ScreenSing) and (ScreenHideMode = cshDefault);
+
+  if not Cursor_HiddenByScreen then
+  begin
     if (Ini.Mouse = 0) and (Ini.FullScreen = 0) then
       // show sdl (os) cursor in window mode even when mouse support is off
       Cursor := 1
     else if (Ini.Mouse = 1) then
       // show sdl (os) cursor when hardware cursor is selected
       Cursor := 1;
-
-    if (Ini.Mouse <> 2) then
-      Cursor_HiddenByScreen := false;
-  end
-  else if (Ini.Mouse <> 2) then
-    Cursor_HiddenByScreen := true;
-
+  end;
 
   SDL_ShowCursor(Cursor);
-
-  if (Ini.Mouse = 2) then
-  begin
-    if Cursor_HiddenByScreen then
-    begin
-      // show software cursor
-      Cursor_HiddenByScreen := false;
-      Cursor_Visible := false;
-      Cursor_Fade := false;
-    end
-    else if (CurrentScreen = @ScreenSing) then
-    begin
-      // hide software cursor in singscreen
-      Cursor_HiddenByScreen := true;
-      Cursor_Visible := false;
-      Cursor_Fade := false;
-    end;
-  end;
 end;
 
 { called by MoveCursor and OnMouseButton to update last move and start fade in }
