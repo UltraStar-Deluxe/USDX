@@ -217,6 +217,7 @@ type
     destructor  Destroy; override;
     function    LoadSong(DuetChange: boolean): boolean;
     function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false; OutOfBoundsToFreestyle: boolean = false; AudioLength: real = 0; ForceLoadNotes: boolean = false): boolean;
+    function    GetPreviewStart(AudioLength: real): real;
     procedure   SetMedleyMode();
     procedure   Clear();
     function    MD5SongFile(SongFileR: TTextFileStream): string;
@@ -1502,6 +1503,46 @@ begin
     Result := FileLineNo
   else
     Result := -1;
+end;
+
+function TSong.GetPreviewStart(AudioLength: real): real;
+var
+  EffectiveAudioStart:  real;
+  EffectiveAudioEnd:    real;
+  EffectiveAudioLength: real;
+  PreviewOffset:        real;
+begin
+  if (AudioLength <= 0.0) then
+  begin
+    Result := 0.0;
+    Exit;
+  end;
+
+  // PreviewStart is an explicit absolute position in the audio file.
+  if ((PreviewStart > 0.0) or HasPreview) and InRange(PreviewStart, 0.0, AudioLength) then
+  begin
+    Result := PreviewStart;
+    Exit;
+  end;
+
+  EffectiveAudioStart := EnsureRange(Start, 0.0, AudioLength);
+  if (Finish > 0) then
+    EffectiveAudioEnd := EnsureRange(Finish / 1000.0, 0.0, AudioLength)
+  else
+    EffectiveAudioEnd := AudioLength;
+
+  if (EffectiveAudioEnd <= EffectiveAudioStart) then
+  begin
+    EffectiveAudioStart := 0.0;
+    EffectiveAudioEnd := AudioLength;
+  end;
+
+  EffectiveAudioLength := EffectiveAudioEnd - EffectiveAudioStart;
+  PreviewOffset := EffectiveAudioLength / 4.0;
+  if (PreviewOffset > 120.0) then
+    PreviewOffset := 60.0;
+
+  Result := EffectiveAudioStart + PreviewOffset;
 end;
 
 function TSong.GetMD5: string;

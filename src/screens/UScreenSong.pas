@@ -3640,15 +3640,7 @@ begin
   begin
     PreviewOpened := Interaction;
 
-    // preview start is either calculated (by finding the chorus) or pre-set, use it
-    if ((Song.PreviewStart > 0.0) or Song.HasPreview) and InRange(Song.PreviewStart, 0.0, AudioPlayback.Length) then
-      PreviewPos := Song.PreviewStart
-    else
-    begin // otherwise, fallback to simple preview calculation
-      PreviewPos := AudioPlayback.Length / 4;
-      // fix for invalid music file lengths
-      if (PreviewPos > 120.0) then PreviewPos := 60.0;
-    end;
+    PreviewPos := Song.GetPreviewStart(AudioPlayback.Length);
 
     AudioPlayback.Position := PreviewPos;
   
