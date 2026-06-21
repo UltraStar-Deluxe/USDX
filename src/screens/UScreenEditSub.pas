@@ -2064,6 +2064,9 @@ end;
 procedure TScreenEditSub.HandleMoveTextRight(SDL_ModState: word);
 begin
   // moves text to right in current sentence
+  if CurrentNote[CurrentTrack] >= CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].HighNote then
+    Exit;
+
   CopyToUndo;
   MoveTextToRight;
   Text[TextInfo].Text := Language.Translate('EDIT_INFO_MOVE_TEXT_RIGHT');
@@ -4053,6 +4056,9 @@ var
 begin
   LineIndex := CurrentSong.Tracks[CurrentTrack].CurrentLine;
   NoteHigh := CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].HighNote;
+
+  if CurrentNote[CurrentTrack] >= NoteHigh then
+    Exit;
 
   // last word
   CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteHigh].Text := CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteHigh-1].Text + CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[NoteHigh].Text;
