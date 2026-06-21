@@ -1805,10 +1805,7 @@ begin
 
       if AudioPlayback.Open(CatSongs.Song[select].Path.Append(CatSongs.Song[select].Audio),nil) then
       begin
-        if (CatSongs.Song[select].PreviewStart > 0) then
-          AudioPlayback.Position := CatSongs.Song[select].PreviewStart
-        else
-          AudioPlayback.Position := (AudioPlayback.Length / 4);
+        AudioPlayback.Position := CatSongs.Song[select].GetPreviewStart(AudioPlayback.Length);
 
         // set preview volume
         PreviewVolume := EnsureRange(Ini.PreviewVolume, 0, 100) / 100;
