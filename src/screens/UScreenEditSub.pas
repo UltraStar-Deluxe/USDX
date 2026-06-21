@@ -6153,7 +6153,9 @@ begin
 
   CurrentSound := AudioInputProcessor.Sound[0];
   CurrentSound.AnalyzeBuffer;
-  if (CurrentSound.ToneString <> '-') then
+  if (CurrentSound.ToneString <> '-') and
+     ((GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat) -
+       GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat)) <> 0) then
   begin
     Count := trunc((720 / (GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].EndBeat) - GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat)))*(AudioPlayback.Position - GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat)));
     DrawPlayerTrack(CurrentSound.Tone, Count, CurrentNote[CurrentTrack]);
