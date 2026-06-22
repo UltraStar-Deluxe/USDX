@@ -1783,6 +1783,11 @@ begin
       Rating := Round(LinePerfection * MAX_LINE_RATING);
       Scores.SpawnPopUp(PlayerIndex, Rating, CurrentPlayer.ScoreTotalInt);
 
+      if (Scores <> nil) then
+        Scores.SetRemainingScore(PlayerIndex,
+          CurrentPlayer.ScorePerfectRemaining / MAX_SONG_SCORE,
+          CurrentPlayer.Score + CurrentPlayer.ScoreGolden + CurrentPlayer.ScoreLine);
+
       // PerfectLineTwinkle (effect), part 1
       if Ini.EffectSing = 1 then
         CurrentPlayer.LastSentencePerfect := (LinePerfection >= 1);
