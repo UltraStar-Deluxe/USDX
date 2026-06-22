@@ -518,8 +518,9 @@
         <IsPartOfProject Value="True"/>
       </Unit118>
       <Unit119>
-        <Filename Value="screens\UScreenJukebox.pas"/>
+        <Filename Value="base\uunicodestringhelper.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="UUnicodeStringHelper"/>
       </Unit119>
       <Unit120>
         <Filename Value="screens\UScreenOptionsWebcam.pas"/>
@@ -550,11 +551,6 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="LazUtils"/>
       </Unit126>
-      <Unit127>
-        <Filename Value="base\uunicodestringhelper.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="UUnicodeStringHelper"/>
-      </Unit127>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
