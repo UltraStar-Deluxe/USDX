@@ -51,8 +51,10 @@ type
       fVisible: boolean;
       fSelectType: TSongFilter;
       fVisSongs: integer;
+      fPlaylistSearch: boolean;
 
       procedure SetTextFound(Count: Cardinal);
+      function ApplyFilter: Cardinal;
 
       //Visible //Whether the Menu should be Drawn
       //Whether the Menu should be Drawn
@@ -81,6 +83,7 @@ uses
   ULog,
   UMain,
   UParty,
+  UPlaylist,
   UScreenSong,
   UTexture,
   UUnicodeUtils;
@@ -101,7 +104,7 @@ begin
         Button[0].Text[0].ColB := Theme.SongJumpto.ButtonSearchText.ColB;
 
         Button[0].Text[0].Text := Button[0].Text[0].Text + UCS4ToUTF8String(CharCode);
-        SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, fSelectType));
+        SetTextFound(ApplyFilter);
         ScreenSong.NextRandomSearchIdx := CatSongs.VisibleSongs;
       end;
     end;
@@ -113,7 +116,7 @@ begin
           if (Interaction = 0) and (Length(Button[0].Text[0].Text) > 0) then
           begin
             Button[0].Text[0].DeleteLastLetter();
-            SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, fSelectType));
+            SetTextFound(ApplyFilter);
             ScreenSong.NextRandomSearchIdx := CatSongs.VisibleSongs;
           end;
         end;
@@ -132,7 +135,7 @@ begin
           begin
             //ScreenSong.UnLoadDetailedCover;
             Button[0].Text[0].Text := '';
-            CatSongs.SetFilter('', fltAll);
+            ApplyFilter;
             ScreenSong.NextRandomSearchIdx := CatSongs.VisibleSongs;
             SetTextFound(0);
           end;
@@ -156,7 +159,7 @@ begin
           InteractInc;
           if (Length(Button[0].Text[0].Text) > 0) then
           begin
-            SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, fSelectType));
+            SetTextFound(ApplyFilter);
             ScreenSong.NextRandomSearchIdx := CatSongs.VisibleSongs;
           end;
           Interaction := 0;
@@ -167,13 +170,45 @@ begin
           InteractDec;
           if (Length(Button[0].Text[0].Text) > 0) then
           begin
-            SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, fSelectType));
+            SetTextFound(ApplyFilter);
             ScreenSong.NextRandomSearchIdx := CatSongs.VisibleSongs;
           end;
           Interaction := 0;
         end;
     end;
   end;
+end;
+
+function TScreenSongJumpto.ApplyFilter: Cardinal;
+var
+  I: Integer;
+  FilterText: UTF8String;
+begin
+  FilterText := Button[0].Text[0].Text;
+
+  if fPlaylistSearch and (PlaylistMan.CurPlayList <> -1) then
+  begin
+    PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, fLastPlayed);
+    if Length(FilterText) = 0 then
+    begin
+      Result := CatSongs.VisibleSongs;
+      Exit;
+    end;
+
+    Result := 0;
+    CatSongs.SetFilter(FilterText, fSelectType);
+    for I := Low(CatSongs.Song) to High(CatSongs.Song) do
+    begin
+      if CatSongs.Song[I].Visible and
+         (PlaylistMan.GetIndexbySongID(I) = -1) then
+        CatSongs.Song[I].Visible := false;
+      if CatSongs.Song[I].Visible then
+        Inc(Result);
+    end;
+    CatSongs.ResetVisibleIndexCache;
+  end
+  else
+    Result := CatSongs.SetFilter(FilterText, fSelectType);
 end;
 
 constructor TScreenSongJumpto.Create;
@@ -198,6 +233,7 @@ begin
 
   Interaction := 0;
   fLastPlayed  := 0;
+  fPlaylistSearch := false;
 end;
 
 procedure TScreenSongJumpto.SetVisible(Value: boolean);
@@ -218,7 +254,8 @@ begin
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenSongJumpTo');
 
   //Reset Screen if no Old Search is Displayed
-  if (CatSongs.CatNumShow <> -2) then
+  fPlaylistSearch := (CatSongs.CatNumShow = -3) and (PlaylistMan.CurPlayList <> -1);
+  if (CatSongs.CatNumShow <> -2) and not fPlaylistSearch then
   begin
     SelectsS[0].SetSelectOpt(0);
 
