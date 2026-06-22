@@ -90,6 +90,8 @@ const
   // Switch colors for players 2 and 4, since player 2 line color is used
   // for the second part in duet, and yellow (4) looks better than red (2)
   DefaultPlayerColors: array[0..IMaxPlayerCount-1] of integer = (1, 4, 3, 2, 5, 6, 7, 8, 9, 10, 11, 12);
+  NAME_TEMPLATE_AVATAR_UNSET = '-';
+  NAME_TEMPLATE_LEVEL_UNSET = -1;
   IPlayers:     array[0..4] of UTF8String = ('1', '2', '3', '4', '6');
   IPlayersVals: array[0..4] of integer    = ( 1 ,  2 ,  3 ,  4 ,  6 );
 
@@ -134,6 +136,9 @@ type
       // Templates for Names Mod
       NameTeam:       array[0..2] of UTF8String;
       NameTemplate:   array[0..(IMaxPlayerCount-1)] of UTF8String;
+      NameTemplateColor:  array[0..(IMaxPlayerCount-1)] of integer;
+      NameTemplateAvatar: array[0..(IMaxPlayerCount-1)] of UTF8String;
+      NameTemplateLevel:  array[0..(IMaxPlayerCount-1)] of integer;
 
       // Filename of the opened iniFile
       Filename:       IPath;
@@ -1535,7 +1540,12 @@ begin
   for I := 0 to 2 do
     NameTeam[I] := IniFile.ReadString('NameTeam', 'T'+IntToStr(I+1), 'Team'+IntToStr(I+1));
   for I := 0 to 11 do
+  begin
     NameTemplate[I] := IniFile.ReadString('NameTemplate', 'Name'+IntToStr(I+1), 'Template'+IntToStr(I+1));
+    NameTemplateColor[I] := IniFile.ReadInteger('NameTemplateColor', 'Name'+IntToStr(I+1), 0);
+    NameTemplateAvatar[I] := IniFile.ReadString('NameTemplateAvatar', 'Name'+IntToStr(I+1), NAME_TEMPLATE_AVATAR_UNSET);
+    NameTemplateLevel[I] := IniFile.ReadInteger('NameTemplateLevel', 'Name'+IntToStr(I+1), NAME_TEMPLATE_LEVEL_UNSET);
+  end;
 
   // Players
   Players := ReadArrayIndex(IPlayers, IniFile, 'Game', 'Players', 0);
@@ -2124,10 +2134,27 @@ begin
     for I := 0 to High(NameTeam) do
       IniFile.WriteString('NameTeam', 'T' + IntToStr(I+1), NameTeam[I]);
     for I := 0 to High(NameTemplate) do
+    begin
       IniFile.WriteString('NameTemplate', 'Name' + IntToStr(I+1), NameTemplate[I]);
+      if (NameTemplateColor[I] > 0) then
+        IniFile.WriteInteger('NameTemplateColor', 'Name' + IntToStr(I+1), NameTemplateColor[I])
+      else
+        IniFile.DeleteKey('NameTemplateColor', 'Name' + IntToStr(I+1));
+      if (NameTemplateAvatar[I] <> NAME_TEMPLATE_AVATAR_UNSET) then
+        IniFile.WriteString('NameTemplateAvatar', 'Name' + IntToStr(I+1), NameTemplateAvatar[I])
+      else
+        IniFile.DeleteKey('NameTemplateAvatar', 'Name' + IntToStr(I+1));
+      if (NameTemplateLevel[I] <> NAME_TEMPLATE_LEVEL_UNSET) then
+        IniFile.WriteInteger('NameTemplateLevel', 'Name' + IntToStr(I+1), NameTemplateLevel[I])
+      else
+        IniFile.DeleteKey('NameTemplateLevel', 'Name' + IntToStr(I+1));
+    end;
   finally
     IniFile.Free;
   end;
+
+  if FileExists(Filename.ToNative) then
+    LastReadNames := FileAge(Filename.ToNative);
 end;
 
 
