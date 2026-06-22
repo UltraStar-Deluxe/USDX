@@ -55,7 +55,6 @@ type
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
-      procedure SetAnimationProgress(Progress: real); override;
 
       procedure SetOverview;
   end;
@@ -321,14 +320,6 @@ begin
               FormatSongOverview(Language.Translate('STAT_OVERVIEW_SONG')) + '\n \n' + 
               FormatPlayerOverview(Language.Translate('STAT_OVERVIEW_PLAYER'));
   Text[0].Text := Overview;
-end;
-
-procedure TScreenStatMain.SetAnimationProgress(Progress: real);
-var
-  I: integer;
-begin
-  for I := 0 to high(Button) do
-    Button[I].Texture.ScaleW := Progress;
 end;
 
 end.

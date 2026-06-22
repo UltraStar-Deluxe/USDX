@@ -75,7 +75,6 @@ type
       function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
-      procedure SetAnimationProgress(Progress: real); override;
   end;
 
 const
@@ -90,7 +89,6 @@ uses
   ULog,
   UMain,
   UIni,
-  UTexture,
   UUnicodeUtils,
   UScreenPartyOptions,
   ULanguage, Math;
@@ -434,12 +432,6 @@ begin
 
   UpdateInterface;
 
-end;
-
-procedure TScreenPartyTournamentPlayer.SetAnimationProgress(Progress: real);
-begin
-  {for I := 0 to high(Button) do
-    Button[I].Texture.ScaleW := Progress;   }
 end;
 
 end.

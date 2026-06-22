@@ -43,16 +43,16 @@ uses
   UMenuSelectSlide,
   UMusic,
   md5,
+  URenderer,
   USkins,
   USongs,
   UScreenSong,
   UNote,
   UFiles,
-  UTexture,
   UThemes,
   UWebSDK,
   UHelp,
-  TextGL,
+  UText,
   Math,
   Classes;
 
@@ -187,6 +187,7 @@ type
       Position_Receive_List: array[0..2] of integer;
 
       constructor Create; override;
+      destructor Destroy; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
       procedure ShowPopup(optmode: integer; optsong: integer; optweb: integer);
@@ -293,7 +294,6 @@ var
 implementation
 
 uses
-  dglOpenGL,
   UGraphic,
   UMain,
   UIni,
@@ -370,7 +370,7 @@ end;
 
 function TScreenPopupCheck.Draw: boolean;
 begin
-  glClear(GL_DEPTH_BUFFER_BIT);
+  Renderer.ClearFrameBuffer(CLEAR_DEPTH);
   Result := inherited Draw;
 end;
 
@@ -525,7 +525,7 @@ end;
 
 function TScreenPopupInsertUser.Draw: boolean;
 begin
-  glClear(GL_DEPTH_BUFFER_BIT);
+  Renderer.ClearFrameBuffer(CLEAR_DEPTH);
   Result := inherited Draw;
 end;
 
@@ -823,7 +823,7 @@ end;
 
 function TScreenPopupSendScore.Draw: boolean;
 begin
-  glClear(GL_DEPTH_BUFFER_BIT);
+  Renderer.ClearFrameBuffer(CLEAR_DEPTH);
   Result := inherited Draw;
 end;
 
@@ -960,7 +960,7 @@ constructor TScreenPopupScoreDownload.Create;
 begin
   inherited Create;
 
-  Texture_ProgressBar := Texture.LoadTexture(Skin.GetTextureFileName('ProgressBar'));
+  Texture_ProgressBar := Renderer.LoadTexture(Skin.GetTextureFileName('ProgressBar'));
 
   Theme.ScoreDownloadPopup.TextSongScoreDownload.Text := Language.Translate('SCORE_DOWNLOAD_RECEIVE_LIST');
   Theme.ScoreDownloadPopup.TextWebScoreDownload.Text := '';
@@ -975,6 +975,12 @@ begin
     AddButtonText(14, 20, 'Button 1');
 
   Interaction := 0;
+end;
+
+destructor TScreenPopupScoreDownload.Destroy;
+begin
+  Texture_ProgressBar.Free;
+  inherited;
 end;
 
 procedure TScreenPopupScoreDownload.LogSongUpdate(Artist, Title, WebName: UTF8String);
@@ -1198,7 +1204,7 @@ function TScreenPopupScoreDownload.Draw: boolean;
 var
   I: integer;
 begin
-  glClear(GL_DEPTH_BUFFER_BIT);
+  Renderer.ClearFrameBuffer(CLEAR_DEPTH);
   inherited Draw;
 
   Text[0].Text := Text_SongSituation;
@@ -1329,36 +1335,23 @@ begin
   width  := Theme.ScoreDownloadPopup.DownloadProgressSong.W;
   height := Theme.ScoreDownloadPopup.DownloadProgressSong.H;
 
-  glColor4f(Theme.ScoreDownloadPopup.DownloadProgressSong.ColR, Theme.ScoreDownloadPopup.DownloadProgressSong.ColG, Theme.ScoreDownloadPopup.DownloadProgressSong.ColB, 1); //Set Color
+  CurProgress := Actual_Song;
+  if (CurProgress > 0) then
+    Progress := CurProgress / Num_Songs;
 
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-
-  glBindTexture(GL_TEXTURE_2D,  Texture_ProgressBar.TexNum);
-
-  glBegin(GL_QUADS);
-    glTexCoord2f(0, 0);
-    glVertex2f(x, y);
-
-    CurProgress := Actual_Song;
-    if (CurProgress > 0) then
-    begin
-      Progress := CurProgress / Num_Songs;
-      glTexCoord2f((width * Progress) / 8, 0);
-      glVertex2f(x + width * Progress, y);
-
-      glTexCoord2f((width * Progress) / 8, 1);
-      glVertex2f(x + width * Progress, y + height);
-    end;
-
-    glTexCoord2f(0, 1);
-    glVertex2f(x, y + height);
-  glEnd;
-
- glDisable(GL_TEXTURE_2D);
- glDisable(GL_BLEND);
- glcolor4f(1, 0, 0, 1);
-
+  Texture_ProgressBar.X := X;
+  Texture_ProgressBar.Y := Y;
+  Texture_ProgressBar.W := width * Progress;
+  Texture_ProgressBar.H := height;
+  Texture_ProgressBar.ColR := Theme.ScoreDownloadPopup.DownloadProgressSong.ColR;
+  Texture_ProgressBar.ColG := Theme.ScoreDownloadPopup.DownloadProgressSong.ColG;
+  Texture_ProgressBar.ColB := Theme.ScoreDownloadPopup.DownloadProgressSong.ColB;
+  Texture_ProgressBar.Alpha := 1;
+  Texture_ProgressBar.TexX1 := 0;
+  Texture_ProgressBar.TexY1 := 0;
+  Texture_ProgressBar.TexX2 := (width * Progress) / 8;
+  Texture_ProgressBar.TexY2 := 1;
+  Renderer.DrawTexture(Texture_ProgressBar);
 end;
 
 procedure TScreenPopupScoreDownload.DownloadTimeBarWeb();
@@ -1374,35 +1367,23 @@ begin
   width  := Theme.ScoreDownloadPopup.DownloadProgressWeb.W;
   height := Theme.ScoreDownloadPopup.DownloadProgressWeb.H;
 
-  glColor4f(Theme.ScoreDownloadPopup.DownloadProgressWeb.ColR, Theme.ScoreDownloadPopup.DownloadProgressWeb.ColG, Theme.ScoreDownloadPopup.DownloadProgressWeb.ColB, 1); //Set Color
+  CurProgress := Actual_Song + ((Actual_Web - 1) * Num_Songs);
+  if (CurProgress > 0) then
+    Progress := CurProgress / (Num_Songs * Num_Webs);
 
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-
-  glBindTexture(GL_TEXTURE_2D, Texture_ProgressBar.TexNum);
-
-  glBegin(GL_QUADS);
-    glTexCoord2f(0, 0);
-    glVertex2f(x, y);
-
-    CurProgress := Actual_Song + ((Actual_Web - 1) * Num_Songs);
-    if (CurProgress > 0) then
-    begin
-      Progress := CurProgress / (Num_Songs * Num_Webs);
-      glTexCoord2f((width * Progress) / 8, 0);
-      glVertex2f(x + width * Progress, y);
-
-      glTexCoord2f((width * Progress) / 8, 1);
-      glVertex2f(x + width * Progress, y + height);
-    end;
-
-    glTexCoord2f(0, 1);
-    glVertex2f(x, y + height);
-  glEnd;
-
- glDisable(GL_TEXTURE_2D);
- glDisable(GL_BLEND);
- glcolor4f(1, 0, 0, 1);
+  Texture_ProgressBar.X := X;
+  Texture_ProgressBar.Y := Y;
+  Texture_ProgressBar.W := width * Progress;
+  Texture_ProgressBar.H := height;
+  Texture_ProgressBar.ColR := Theme.ScoreDownloadPopup.DownloadProgressWeb.ColR;
+  Texture_ProgressBar.ColG := Theme.ScoreDownloadPopup.DownloadProgressWeb.ColG;
+  Texture_ProgressBar.ColB := Theme.ScoreDownloadPopup.DownloadProgressWeb.ColB;
+  Texture_ProgressBar.Alpha := 1;
+  Texture_ProgressBar.TexX1 := 0;
+  Texture_ProgressBar.TexY1 := 0;
+  Texture_ProgressBar.TexX2 := (width * Progress) / 8;
+  Texture_ProgressBar.TexY2 := 1;
+  Renderer.DrawTexture(Texture_ProgressBar);
 
 end;
 
@@ -1522,7 +1503,7 @@ end;
 
 function TScreenPopup.Draw: boolean;
 begin
-  glClear(GL_DEPTH_BUFFER_BIT);
+  Renderer.ClearFrameBuffer(CLEAR_DEPTH);
   Result := inherited Draw;
 end;
 
@@ -1985,16 +1966,10 @@ end;
 
 procedure TScreenPopupHelp.DrawVolumeControls;
 begin
-  glDisable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-
   DrawVolumeBarFill(VolumeAudioSelectId, VolumeAudioIndex);
   DrawVolumeBarFill(VolumeVocalsSelectId, VolumeVocalsIndex);
   DrawVolumeBarFill(VolumeSfxSelectId, VolumeSfxIndex);
   DrawVolumeBarFill(VolumePreviewSelectId, VolumePreviewIndex);
-
-  glDisable(GL_BLEND);
-  glEnable(GL_TEXTURE_2D);
 
   DrawVolumeLabel(VolumeAudioSelectId);
   DrawVolumeLabel(VolumeVocalsSelectId);
@@ -2034,13 +2009,7 @@ begin
   if (BaseW <= 0) or (BaseH <= 0) then
     Exit;
 
-  glColor4f(BaseColor[0], BaseColor[1], BaseColor[2], BaseAlpha);
-  glBegin(GL_QUADS);
-    glVertex2f(BaseX, BaseY);
-    glVertex2f(BaseX + BaseW, BaseY);
-    glVertex2f(BaseX + BaseW, BaseY + BaseH);
-    glVertex2f(BaseX, BaseY + BaseH);
-  glEnd;
+  Renderer.DrawQuad(BaseX, BaseY, 0, BaseW, BaseH, BaseColor[0], BaseColor[1], BaseColor[2], BaseAlpha);
 
   Ratio := EnsureRange(Value, 0, 100) / 100.0;
   FillWidth := BaseW * Ratio;
@@ -2049,23 +2018,9 @@ begin
   FillB := FillColorLow[2] + (FillColorHigh[2] - FillColorLow[2]) * PreferredFillRatio;
 
   if FillWidth > 0 then
-  begin
-    glColor4f(FillR, FillG, FillB, FillAlpha);
-    glBegin(GL_QUADS);
-      glVertex2f(BaseX, BaseY);
-      glVertex2f(BaseX + FillWidth, BaseY);
-      glVertex2f(BaseX + FillWidth, BaseY + BaseH);
-      glVertex2f(BaseX, BaseY + BaseH);
-    glEnd;
-  end;
+    Renderer.DrawQuad(BaseX, BaseY, 0, FillWidth, BaseH, FillR, FillG, FillB, FillAlpha);
 
-  glColor4f(OutlineColor[0], OutlineColor[1], OutlineColor[2], OutlineAlpha);
-  glBegin(GL_LINE_LOOP);
-    glVertex2f(BaseX, BaseY);
-    glVertex2f(BaseX + BaseW, BaseY);
-    glVertex2f(BaseX + BaseW, BaseY + BaseH);
-    glVertex2f(BaseX, BaseY + BaseH);
-  glEnd;
+  Renderer.DrawBoundedBox(BaseX, BaseY, BaseX + BaseW, BaseY + BaseH, 0, 2, OutlineColor[0], OutlineColor[1], OutlineColor[2], OutlineAlpha);
 end;
 
 procedure TScreenPopupHelp.DrawVolumeLabel(SelectId: integer);
@@ -2176,29 +2131,22 @@ var
   abs:  real;
 begin
 //inherited Draw; TODO: FIX
-  glClear(GL_DEPTH_BUFFER_BIT);
+  Renderer.ClearFrameBuffer(CLEAR_DEPTH);
   if step<1 then
     abs := 20
   else
     abs := 5;
 
   //Background:
-  glEnable(GL_BLEND);
-  glbegin(gl_quads);
-    glColor4f(0.2, 0.2, 0.2, 0.8); glVertex2f(Rect.left-5, Rect.top-5);
-    glColor4f(0.2, 0.2, 0.2, 0.8); glVertex2f(Rect.right+abs, Rect.top-5);
-    glColor4f(0.2, 0.2, 0.2, 0.8); glVertex2f(Rect.right+abs, Rect.bottom+5);
-    glColor4f(0.2, 0.2, 0.2, 0.8); glVertex2f(Rect.left-5, Rect.bottom+5);
-  glEnd;
-  glDisable(GL_BLEND);
-  glScissor(Rect.left-1, ScreenH-Rect.bottom-1, Rect.right-Rect.left+2, Rect.bottom-Rect.top+2);
-  glScissor(round((Rect.left-1)*(ScreenW/Screens)/RenderW+(ScreenW/Screens)*(ScreenAct-1)),
+  Renderer.DrawQuad(Rect.Left - 5, Rect.Top - 5, 0, Rect.Right + abs - Rect.Left + 5, Rect.Bottom - Rect.top + 10, 0.2, 0.2, 0.2, 0.8);
+  Renderer.SetScissorRect(Rect.left-1, ScreenH-Rect.bottom-1, Rect.right-Rect.left+2, Rect.bottom-Rect.top+2);
+  Renderer.SetScissorRect(round((Rect.left-1)*(ScreenWPerScreen)/RenderW+(ScreenWPerScreen)*(ScreenAct-1)),
     round((RenderH-Rect.bottom-1)*ScreenH/RenderH),
-    round((Rect.right-Rect.left+2)*(ScreenW/Screens)/RenderW),
+    round((Rect.right-Rect.left+2)*(ScreenWPerScreen)/RenderW),
     round((Rect.bottom-Rect.top+2)*ScreenH/RenderH));
-  glEnable(GL_SCISSOR_TEST);
+  Renderer.ScissorTest := true;
   DrawTable();
-  glDisable(GL_SCISSOR_TEST);
+  Renderer.ScissorTest := false;
   DrawVolumeControls;
   if step<1 then
     DrawScroll(Rect.right+5, Rect.top, 10, Rect.bottom-Rect.top, Help.GetScrollPos(), barH);
@@ -2400,7 +2348,7 @@ begin
     tempStr := '';
     for I := 0 to SL.Count-1 do
     begin
-      if glTextWidth(PChar(tempStr + SL[I] + ' ')) <= (Rect.right - Rect.left - 10) then
+      if TextWidth(PChar(tempStr + SL[I] + ' ')) <= (Rect.right - Rect.left - 10) then
       begin
         if I<SL.Count-1 then
           tempStr := tempStr + SL[I] + ' '
@@ -2485,7 +2433,7 @@ begin
         tempStr := '';
         for I := 0 to SL.Count-1 do
         begin
-          if glTextWidth(PChar(tempStr + SL[I] + ' ')) <= (Rect.right - Rect.left - 10) then
+          if TextWidth(PChar(tempStr + SL[I] + ' ')) <= (Rect.right - Rect.left - 10) then
           begin
             if I<SL.Count-1 then
               tempStr := tempStr + SL[I] + ' '
@@ -2549,7 +2497,7 @@ begin
     AddLine(line, 1, Rect.right, TextsGFX[line].Y, Rect.right, TextsGFX[line].Y + TextsGFX[line].H);
 
     tempStr := msg.Sections[K].name;
-    NewText(Rect.left + round((Rect.right - Rect.left - 10)/2 - glTextWidth((PChar(tempStr)))/2), TextsGFX[line].Y + 2);
+    NewText(Rect.left + round((Rect.right - Rect.left - 10)/2 - TextWidth((PChar(tempStr)))/2), TextsGFX[line].Y + 2);
     TextsGFX[line].texts[tline].text := tempStr;
 
     NewLine(round(fieldh/2), 3);
@@ -2576,7 +2524,7 @@ begin
       tempStr := '';
       for I := 0 to Length(msg.Sections[K].Keys[J].Key) - 1 do
       begin
-        if glTextWidth(PChar(tempStr + msg.Sections[K].Keys[J].Key[I] + '+')) <= (KeyEnd - Rect.left - 10) then
+        if TextWidth(PChar(tempStr + msg.Sections[K].Keys[J].Key[I] + '+')) <= (KeyEnd - Rect.left - 10) then
         begin
           if I<Length(msg.Sections[K].Keys[J].Key)-1 then
             tempStr := tempStr + msg.Sections[K].Keys[J].Key[I] + '+'
@@ -2613,7 +2561,7 @@ begin
         tempStr := '';
         for I := 0 to SL.Count-1 do
         begin
-          if glTextWidth(PChar(tempStr + SL[I] + ' ')) <= (Rect.right - KeyEnd - 10) then
+          if TextWidth(PChar(tempStr + SL[I] + ' ')) <= (Rect.right - KeyEnd - 10) then
           begin
             if I<SL.Count-1 then
               tempStr := tempStr + SL[I] + ' '
@@ -2678,6 +2626,7 @@ var
   I, J:integer;
   maxh:   integer;
   h, offset:      integer;
+  LineList: TLineList;
 begin
 
   maxh := 2*RenderH+Rect.Bottom;
@@ -2686,10 +2635,12 @@ begin
   offset := round(Help.GetScrollPos()*(max_high-Rect.Bottom));
 
   I := 0;
+  SetLength(LineList, Length(TextsGFX[I].lines));
   while (I<Length(TextsGFX)) and (h<maxh) do
   begin
     if (TextsGFX[I].Y >= offset-20) then
     begin
+
       for J := 0 to Length(TextsGFX[I].lines) - 1 do
         DrawLine(I, J, offset);
       for J := 0 to Length(TextsGFX[I].texts) - 1 do
@@ -2703,50 +2654,32 @@ end;
 
 procedure TScreenPopupHelp.DrawLine(line, index, Y: integer);
 begin
-  glColor4f(1, 1, 1, 1);
-  glLineWidth(2);
-  glBegin(GL_LINES);
-    glVertex2f(TextsGFX[line].lines[index].fX, TextsGFX[line].lines[index].fY - Y);
-    glVertex2f(TextsGFX[line].lines[index].tX, TextsGFX[line].lines[index].tY - Y);
-  glEnd;
+  Renderer.DrawLine(TextsGFX[line].lines[index].fX, TextsGFX[line].lines[index].fY - Y, TextsGFX[line].lines[index].tX, TextsGFX[line].lines[index].tY - Y, 0, 2, 1, 1 ,1, 1);
 end;
 
 procedure TScreenPopupHelp.DrawText(line, index, Y: integer);
 begin
-  glColor4f(1, 1, 1, 1);
+  SetFontColor(1, 1, 1, 1);
   SetFontFamily(TextsGFX[line].texts[index].Font);
   SetFontStyle(TextsGFX[line].texts[index].Style);
   SetFontItalic(TextsGFX[line].texts[index].Italic);
   SetFontSize(TextsGFX[line].texts[index].Size);
   SetFontPos (TextsGFX[line].texts[index].X, TextsGFX[line].texts[index].Y - Y);
-  glPrint(PChar(TextsGFX[line].texts[index].text));
+  PrintText(PChar(TextsGFX[line].texts[index].text));
 end;
 
 procedure TScreenPopupHelp.DrawScroll(X, Y, W, H: integer; pos, len: double);
 var
   fY, tY: double;
 begin
-  glColor4f(1, 1, 1, 1);
-
-  glLineWidth(1);
-  glBegin(GL_LINE_LOOP);
-    glVertex2f(X, Y);
-    glVertex2f(X+W, Y);
-    glVertex2f(X+W, Y+H);
-    glVertex2f(X, Y+H);
-  glEnd;
+  Renderer.DrawBoundedBox(X, Y, X + W, Y + H, 0, 1, 1, 1, 1, 1);
 
   fY := Y+(H-H*len)*Pos;
   tY := fY+H*len;
   if tY+0.001>=Y+H then
     tY := Y+H;
 
-  glBegin(GL_QUADS);
-    glVertex2f(X, fY);
-    glVertex2f(X+W, fY);
-    glVertex2f(X+W, tY);
-    glVertex2f(X, tY);
-  glEnd;
+  Renderer.DrawQuad(X, fY, 0, W, ty - fy, 1, 1, 1, 1);
 end;
 
 end.

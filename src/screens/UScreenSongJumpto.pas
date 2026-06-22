@@ -73,7 +73,6 @@ const
 implementation
 
 uses
-  dglOpenGL,
   UGraphic,
   UHelp,
   UIni,
@@ -81,8 +80,8 @@ uses
   ULog,
   UMain,
   UParty,
+  URenderer,
   UScreenSong,
-  UTexture,
   UUnicodeUtils;
 
 function TScreenSongJumpto.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -235,7 +234,7 @@ end;
 
 function TScreenSongJumpto.Draw: boolean;
 begin
-  glClear(GL_DEPTH_BUFFER_BIT);
+  Renderer.ClearFrameBuffer(CLEAR_DEPTH);
   Result := inherited Draw;
 end;
 

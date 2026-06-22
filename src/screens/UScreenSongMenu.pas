@@ -41,7 +41,6 @@ uses
   UMusic,
   UThemes,
   sdl2,
-  dglOpenGL,
   SysUtils;
 
 type
@@ -105,9 +104,9 @@ uses
   UNote,
   UParty,
   UPlaylist,
+  URenderer,
   USong,
   USongs,
-  UTexture,
   UUnicodeUtils;
 
 function TScreenSongMenu.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
@@ -302,7 +301,7 @@ end;
 
 function TScreenSongMenu.Draw: boolean;
 begin
-  glClear(GL_DEPTH_BUFFER_BIT);
+  Renderer.ClearFrameBuffer(CLEAR_DEPTH);
   Result := inherited Draw;
 end;
 

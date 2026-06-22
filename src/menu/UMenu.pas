@@ -36,7 +36,6 @@ interface
 uses
   SysUtils,
   Math,
-  dglOpenGL,
   sdl2,
   UPath,
   UMenuBackground,
@@ -48,7 +47,7 @@ uses
   UMenuText,
   UMenuWidget,
   UMusic,
-  UTexture,
+  URenderer,
   UThemes;
 
 type
@@ -204,8 +203,6 @@ type
 
       procedure OnWindowResized(); virtual;
 
-      procedure SetAnimationProgress(Progress: real); virtual;
-
       function IsSelectable(Int: cardinal): boolean;
 
       procedure InteractNext; virtual;
@@ -235,7 +232,7 @@ TOptionsMenu = class(TMenu)
 
   public
     destructor Destroy; override;
-    constructor Create; overload; virtual;
+    constructor Create; overload; override;
     function DrawFG: boolean; override;
 end;
 
@@ -262,7 +259,6 @@ implementation
 uses
   UCommon,
   UDisplay,
-  UDrawTexture,
   UGraphic,
   ULanguage,
   ULog,
@@ -314,35 +310,6 @@ begin
 
   RightMbESC := true;
 end;
-{
-constructor TMenu.Create(Back: string);
-begin
-  inherited Create;
-
-  if Back <> '' then
-  begin
-//    BackImg := Texture.GetTexture(true, Back, TEXTURE_TYPE_PLAIN, 0);
-    BackImg := Texture.GetTexture(Back, TEXTURE_TYPE_PLAIN, 0); // new theme system
-    BackImg.W := 800;//640;
-    BackImg.H := 600;//480;
-    BackW := 1;
-    BackH := 1;
-  end
-  else
-    BackImg.TexNum := 0;
-
-   //Set ButtonPos to Autoset Length
-   ButtonPos := -1;
-end;
-
-constructor TMenu.Create(Back: string; W, H: integer);
-begin
-  Create(Back);
-  BackImg.W := BackImg.W / W;
-  BackImg.H := BackImg.H / H;
-  BackW := W;
-  BackH := H;
-end;   }
 
 function RGBFloatToInt(R, G, B: double): cardinal;
 begin
@@ -606,12 +573,12 @@ begin
     TempDCol := RGBFloatToInt(ThemeCollection.Style.DColR, ThemeCollection.Style.DColG, ThemeCollection.Style.DColB);
     // give encoded color to GetTexture()
     ButtonCollection[Num] := TButtonCollection.Create(
-      Texture.GetTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), TEXTURE_TYPE_COLORIZED, TempCol),
-      Texture.GetTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), TEXTURE_TYPE_COLORIZED, TempDCol));
+      Renderer.GetTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), TEXTURE_TYPE_COLORIZED, TempCol),
+      Renderer.GetTexture(Skin.GetTextureFileName(ThemeCollection.Style.Tex), TEXTURE_TYPE_COLORIZED, TempDCol));
   end
   else
   begin
-    ButtonCollection[Num] := TButtonCollection.Create(Texture.GetTexture(
+    ButtonCollection[Num] := TButtonCollection.Create(Renderer.GetTexture(
       Skin.GetTextureFileName(ThemeCollection.Style.Tex), ThemeCollection.Style.Typ));
   end;
 
@@ -659,12 +626,12 @@ begin
   ButtonCollection[Num].FadeText := ThemeCollection.Style.FadeText;
   if (ThemeCollection.Style.Typ = TEXTURE_TYPE_COLORIZED) then
   begin
-    ButtonCollection[Num].FadeTex := Texture.GetTexture(
+    ButtonCollection[Num].FadeTex := Renderer.GetTexture(
       Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), TEXTURE_TYPE_COLORIZED, TempCol)
   end
   else
   begin
-    ButtonCollection[Num].FadeTex := Texture.GetTexture(
+    ButtonCollection[Num].FadeTex := Renderer.GetTexture(
       Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), ThemeCollection.Style.Typ);
   end;
   ButtonCollection[Num].FadeTexPos := ThemeCollection.Style.FadeTexPos;
@@ -778,7 +745,7 @@ begin
   // adds static
   StatNum := Length(Statics);
   SetLength(Statics, StatNum + 1);
-  Statics[StatNum] := TStatic.Create(Texture.GetTexture(TexName, Typ, $FF00FF)); // new skin
+  Statics[StatNum] := TStatic.Create(Renderer.GetTexture(TexName, Typ, $FF00FF)); // new skin
 
   // configures static
   Statics[StatNum].Texture.X := X;
@@ -826,11 +793,11 @@ begin
   if (Typ = TEXTURE_TYPE_COLORIZED) then
   begin
     // give encoded color to GetTexture()
-    Statics[StatNum] := TStatic.Create(Texture.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB)));
+    Statics[StatNum] := TStatic.Create(Renderer.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB)));
   end
   else
   begin
-    Statics[StatNum] := TStatic.Create(Texture.GetTexture(TexName, Typ, Color)); // new skin
+    Statics[StatNum] := TStatic.Create(Renderer.GetTexture(TexName, Typ, Color)); // new skin
   end;
 
   // configures static
@@ -884,34 +851,64 @@ begin
   StatNum := Length(StaticsList);
   SetLength(StaticsList, StatNum + 1);
 
-  StaticsList[StatNum] := TStatic.Create(Texture.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB)));
-  StaticsList[StatNum].TextureSelect := Texture.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB));
-  StaticsList[StatNum].TextureDeselect := Texture.GetTexture(DTexName, Typ, RGBFloatToInt(DColR, DColG, DColB));
+  StaticsList[StatNum] := TStatic.Create(Renderer.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB)));
+  StaticsList[StatNum].TextureSelect := Renderer.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB));
+  StaticsList[StatNum].TextureDeselect := Renderer.GetTexture(DTexName, Typ, RGBFloatToInt(DColR, DColG, DColB));
 
   // configures static
   StaticsList[StatNum].Texture.X := X;
+  StaticsList[StatNum].TextureSelect.X := X;
+  StaticsList[StatNum].TextureDeselect.X := X;
   StaticsList[StatNum].Texture.Y := Y;
+  StaticsList[StatNum].TextureSelect.Y := Y;
+  StaticsList[StatNum].TextureDeSelect.Y := Y;
 
   //Set height and width via sprite size if omitted
   if(H = 0) then
-    StaticsList[StatNum].Texture.H := StaticsList[StatNum].Texture.H
+  begin
+    StaticsList[StatNum].Texture.H := StaticsList[StatNum].Texture.H;
+    StaticsList[StatNum].TextureSelect.H := StaticsList[StatNum].Texture.H;
+    StaticsList[StatNum].TextureDeSelect.H := StaticsList[StatNum].Texture.H;
+  end
   else
+  begin
     StaticsList[StatNum].Texture.H := H;
+    StaticsList[StatNum].TextureSelect.H := H;
+    StaticsList[StatNum].TextureDeSelect.H := H;
+  end;
 
   if(W = 0) then
-    StaticsList[StatNum].Texture.W := StaticsList[StatNum].Texture.W
+  begin
+    StaticsList[StatNum].Texture.W := StaticsList[StatNum].Texture.W;
+    StaticsList[StatNum].TextureSelect.W := StaticsList[StatNum].Texture.W;
+    StaticsList[StatNum].TextureDeSelect.W := StaticsList[StatNum].Texture.W;
+  end
   else
+  begin
     StaticsList[StatNum].Texture.W := W;
+    StaticsList[StatNum].TextureSelect.W := W;
+    StaticsList[StatNum].TextureDeselect.W := W;
+  end;
 
   StaticsList[StatNum].Texture.Z := Z;
+  StaticsList[StatNum].TextureSelect.Z := Z;
+  StaticsList[StatNum].TextureDeSelect.Z := Z;
+
   if (Typ <> TEXTURE_TYPE_COLORIZED) then
   begin
     StaticsList[StatNum].Texture.ColR := ColR;
     StaticsList[StatNum].Texture.ColG := ColG;
     StaticsList[StatNum].Texture.ColB := ColB;
+
+    StaticsList[StatNum].TextureSelect.ColR := ColR;
+    StaticsList[StatNum].TextureSelect.ColG := ColG;
+    StaticsList[StatNum].TextureSelect.ColB := ColB;
+
+    StaticsList[StatNum].TextureDeSelect.ColR := ColR;
+    StaticsList[StatNum].TextureDeSelect.ColG := ColG;
+    StaticsList[StatNum].TextureDeSelect.ColB := ColB;
   end;
 
-  StaticsList[StatNum].Texture.Alpha := 1;
   StaticsList[StatNum].Visible := true;
 
   //ReflectionMod
@@ -1003,13 +1000,13 @@ begin
   Button[Result].FadeText := ThemeButton.FadeText;
   if (ThemeButton.Typ = TEXTURE_TYPE_COLORIZED) then
   begin
-    Button[Result].FadeTex := Texture.GetTexture(
+    Button[Result].FadeTex := Renderer.GetTexture(
       Skin.GetTextureFileName(ThemeButton.FadeTex), TEXTURE_TYPE_COLORIZED,
       RGBFloatToInt(ThemeButton.ColR, ThemeButton.ColG, ThemeButton.ColB));
   end
   else
   begin
-    Button[Result].FadeTex := Texture.GetTexture(
+    Button[Result].FadeTex := Renderer.GetTexture(
       Skin.GetTextureFileName(ThemeButton.FadeTex), ThemeButton.Typ);
   end;
 
@@ -1076,12 +1073,12 @@ begin
   if (Typ = TEXTURE_TYPE_COLORIZED) then
   begin
     // give encoded color to GetTexture()
-    Button[Result] := TButton.Create(Texture.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB)),
-                                     Texture.GetTexture(TexName, Typ, RGBFloatToInt(DColR, DColG, DColB)));
+    Button[Result] := TButton.Create(Renderer.GetTexture(TexName, Typ, RGBFloatToInt(ColR, ColG, ColB)),
+                                     Renderer.GetTexture(TexName, Typ, RGBFloatToInt(DColR, DColG, DColB)));
   end
   else
   begin
-    Button[Result] := TButton.Create(Texture.GetTexture(TexName, Typ));
+    Button[Result] := TButton.Create(Renderer.GetTexture(TexName, Typ));
   end;
 
   // configures button
@@ -1794,27 +1791,6 @@ end;
 
 procedure TMenu.OnShow;
 begin
-  // FIXME: this needs some work. First, there should be a variable like
-  // VideoBackground so we can check whether a video-background is enabled or not.
-  // Second, a video should be stopped if the screen is hidden, but the Video.Stop()
-  // method is not implemented by now. This is necessary for theme-switching too.
-  // At the moment videos cannot be turned off without restarting USDX.
-
-  {// check if a background texture was found
-  if (BackImg.TexNum = 0)  then
-  begin
-    // try to open an animated background
-    // Note: newer versions of ffmpeg are able to open images like jpeg
-    //   so do not pass an image's filename to VideoPlayback.Open()
-    if fileexists( fFileName ) then
-    begin
-      if VideoPlayback.Open( fFileName ) then
-      begin
-        VideoBGTimer.SetTime(0);
-        VideoPlayback.Play;
-      end;
-    end;
-  end; }
   if (Background = nil) then
     AddBackground(DEFAULT_BACKGROUND);
 
@@ -2044,11 +2020,6 @@ begin
   end;
 end;
 
-procedure TMenu.SetAnimationProgress(Progress: real);
-begin
-  // nothing
-end;
-
 constructor TMenuScrollBar.Create(const ThemeScrollBar: TThemeScrollBar; PosXInit: real; PosYInit: real; ScrollBarH: real; PosYMax: real);
 begin
   PosX := PosXInit;
@@ -2072,17 +2043,10 @@ end;
 procedure TMenuScrollBar.Draw;
 begin
   case State of
-    sbsClicked: glColor4f(CColR, CColG, CColB, 1.0);
-    sbsHovered: glColor4f(HColR, HColG, HColB, 1.0);
-    sbsDefault: glColor4f(ColR, ColG, ColB, 1.0);
+    sbsClicked: Renderer.DrawQuad(PosX, PosY, 0, Width, Height, CColR, CColG, CColB, 1);
+    sbsHovered: Renderer.DrawQuad(PosX, PosY, 0, Width, Height, HColR, HColG, HColB, 1);
+    sbsDefault: Renderer.DrawQuad(PosX, PosY, 0, Width, Height, ColR, ColG, ColB, 1);
   end;
-  glBegin(GL_QUADS);
-  glVertex2f(PosX, PosY); // top left
-  glVertex2f(PosX, PosY + Height); // bottom left
-  glVertex2f(PosX + Width, PosY + Height); // bottom right
-  glVertex2f(PosX + Width, PosY); // top right
-  glEnd;
-
 end;
 
 function TMenuScrollBar.Move(Offset: real): real;
@@ -2226,16 +2190,16 @@ begin
       Button[J].Draw;
   end;
 
-  glScissor(
+  Renderer.SetScissorRect(
     Round(ScrollArea.X * ((ScreenW/RenderW) / Screens) + ((ScreenAct - 1) * (ScreenW / 2))),
     Round((RenderH - (ScrollArea.Y + ScrollArea.H))*(ScreenH/RenderH)),
     Round(ScrollArea.W*ScreenW/RenderW),
     Round(ScrollArea.H*ScreenH/RenderH)
   );
-  glEnable(GL_SCISSOR_TEST);
+  Renderer.ScissorTest := true;
   for J := 0 to High(Widgets) do
     Widgets[J].Draw;
-  glDisable(GL_SCISSOR_TEST);
+  Renderer.ScissorTest := false;
   if (Scrollable) then
     ScrollBar.Draw;
   Result := true;

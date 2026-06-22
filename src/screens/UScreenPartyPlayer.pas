@@ -85,7 +85,6 @@ type
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       procedure OnShow; override;
       
-      procedure SetAnimationProgress(Progress: real); override;
       function NoRepeatColors(ColorP:integer; Interaction:integer; Pos:integer):integer;
       procedure TeamColorButton(K: integer; Interact: integer);
       procedure ShuffleNames(var PlayerNames: array of UTF8String);
@@ -115,7 +114,6 @@ uses
   ULog,
   UMain,
   UScreenPartyOptions,
-  UTexture,
   UUnicodeUtils;
 
 var
@@ -678,12 +676,6 @@ begin
   for I := 0 to 15 do
     InteractPrev;
 
-end;
-
-procedure TScreenPartyPlayer.SetAnimationProgress(Progress: real);
-begin
-  {for I := 0 to high(Button) do
-    Button[I].Texture.ScaleW := Progress;   }
 end;
 
 // random permutation of player names according to Fisher-Yates

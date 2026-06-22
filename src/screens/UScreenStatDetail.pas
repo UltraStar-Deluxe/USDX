@@ -57,7 +57,6 @@ type
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
-      procedure SetAnimationProgress(Progress: real); override;
 
       procedure SetTitle;
       Procedure SetPage(NewPage: cardinal);
@@ -301,14 +300,6 @@ begin
   end;
 
   Database.FreeStats(StatList);
-end;
-
-procedure TScreenStatDetail.SetAnimationProgress(Progress: real);
-var
-  I: integer;
-begin
-  for I := 0 to High(Button) do
-    Button[I].Texture.ScaleW := Progress;
 end;
 
 end.

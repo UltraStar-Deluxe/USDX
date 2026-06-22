@@ -44,7 +44,7 @@ uses
   UMusic,
   UThemes,
   sdl2,
-  TextGL;
+  UText;
 
 type
   TScreenOptionsLyrics = class(TOptionsMenu)

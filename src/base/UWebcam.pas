@@ -35,7 +35,7 @@ interface
 
 uses
   Classes,
-  UTexture
+  URenderer
   {$IFDEF UseOpenCVWrapper},
   sdl2,
   opencv_highgui,
@@ -99,7 +99,6 @@ implementation
 
 {$IFDEF UseOpenCVWrapper}
 uses
-  dglOpenGL,
   SysUtils,
   ULog,
   UIni;
@@ -145,6 +144,7 @@ begin
   end;
   SDL_DestroyCond(StopCond);
   SDL_DestroyMutex(Mutex);
+  TextureCam.Free;
   inherited;
 end;
 
@@ -263,11 +263,7 @@ begin
 
   if WebcamFrame <> nil then
   begin
-    if (TextureCam.TexNum > 0) then
-    begin
-      glDeleteTextures(1, PGLuint(@TextureCam.TexNum));
-      TextureCam.TexNum := 0;
-    end;
+    FreeAndNil(TextureCam);
 
     if (Ini.WebCamFlip = 0) then
       cvFlip(WebcamFrame, nil, 1);
@@ -275,7 +271,7 @@ begin
     WebcamFrame := FrameAdjust(WebcamFrame);
     WebcamFrame := FrameEffect(Ini.WebCamEffect, WebcamFrame);
 
-    TextureCam := Texture.CreateTexture(WebcamFrame.imageData, nil, WebcamFrame.Width, WebcamFrame.Height);
+    TextureCam := Renderer.CreateTexture(WebcamFrame.imageData, nil, WebcamFrame.Width, WebcamFrame.Height, TEXTURE_TYPE_PLAIN);
 
     cvReleaseImage(@WebcamFrame);
   end;
@@ -460,11 +456,13 @@ end;
 
 {$ELSE}
 
+uses
+  SysUtils;
+
 constructor TWebcam.Create;
 begin
   inherited;
   Capture := nil;
-  TextureCam.TexNum := 0;
 end;
 
 procedure TWebcam.Start;
@@ -475,7 +473,7 @@ end;
 procedure TWebcam.Release;
 begin
   Capture := nil;
-  TextureCam.TexNum := 0;
+  FreeAndNil(TextureCam);
 end;
 
 procedure TWebcam.Restart;

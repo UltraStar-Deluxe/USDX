@@ -35,10 +35,8 @@ interface
 
 uses
   SysUtils,
-  dglOpenGL,
   UMusic,
-  UNote,
-  UTexture;
+  UNote;
 
 type
   TWord = record
@@ -118,9 +116,9 @@ type
 implementation
 
 uses
-  TextGL,
+  UText,
   UGraphic,
-  UDrawTexture,
+  URenderer,
   Math,
   UUnicodeUtils,
   USkins;
@@ -219,7 +217,7 @@ begin
   SetFontStyle(FontStyleI);
   SetFontSize(SizeR);
   SetFontItalic(Italic);
-  Word[WordNum].Width := glTextWidth(Text);
+  Word[WordNum].Width := TextWidth(Text);
   Word[WordNum].Text := Text;
   Word[WordNum].ColR := DColR;
   Word[WordNum].ColG := DColG;
@@ -277,7 +275,7 @@ function TEditorLyrics.GetCharIndexAtXInternal(const WordIndex: integer; const X
 var
   CharIndex: integer;
   TextPrefix: UTF8String;
-  TextWidth: real;
+  TextW: real;
   MaxChars: integer;
   WidthBeforeCursor: real;
   HitSlop: real;
@@ -299,8 +297,8 @@ begin
     for CharIndex := 0 to MaxChars do
     begin
       TextPrefix := UTF8Copy(Word[WordIndex].Text, 1, CharIndex);
-      TextWidth := glTextWidth(TextPrefix);
-      if (BaseX + TextWidth + HitSlop) >= X then
+      TextW := TextWidth(TextPrefix);
+      if (BaseX + TextW + HitSlop) >= X then
       begin
         Result := CharIndex;
         Exit;
@@ -311,15 +309,15 @@ begin
     Exit;
   end;
 
-  WidthBeforeCursor := glTextWidth(UTF8Copy(Word[WordIndex].Text, 1, CursorIndex));
+  WidthBeforeCursor := TextWidth(UTF8Copy(Word[WordIndex].Text, 1, CursorIndex));
 
   if X <= BaseX + WidthBeforeCursor + HitSlop then
   begin
     for CharIndex := 0 to CursorIndex do
     begin
       TextPrefix := UTF8Copy(Word[WordIndex].Text, 1, CharIndex);
-      TextWidth := glTextWidth(TextPrefix);
-      if (BaseX + TextWidth + HitSlop) >= X then
+      TextW := TextWidth(TextPrefix);
+      if (BaseX + TextW + HitSlop) >= X then
       begin
         Result := CharIndex;
         Exit;
@@ -339,8 +337,8 @@ begin
   for CharIndex := CursorIndex + 1 to MaxChars do
   begin
     TextPrefix := UTF8Copy(Word[WordIndex].Text, 1, CharIndex);
-    TextWidth := glTextWidth(TextPrefix) + CursorWidth;
-    if (BaseX + TextWidth + HitSlop) >= X then
+    TextW := TextWidth(TextPrefix) + CursorWidth;
+    if (BaseX + TextW + HitSlop) >= X then
     begin
       Result := CharIndex;
       Exit;
@@ -383,7 +381,7 @@ begin
     SetFontStyle(Word[CursorWordIndex].FontStyle);
     SetFontSize(Word[CursorWordIndex].Size);
     SetFontItalic(Word[CursorWordIndex].Italic);
-    CursorWidth := glTextWidth('|');
+    CursorWidth := TextWidth('|');
     if AlignI = 1 then
       CenterShift := CursorWidth / 2;
   end;
@@ -484,7 +482,7 @@ begin
     SetFontStyle(Word[CursorWordIndex].FontStyle);
     SetFontSize(Word[CursorWordIndex].Size);
     SetFontItalic(Word[CursorWordIndex].Italic);
-    CursorWidth := glTextWidth('|');
+    CursorWidth := TextWidth('|');
     if AlignI = 1 then
       CenterShift := CursorWidth / 2;
   end;
@@ -497,14 +495,14 @@ begin
     SetFontPos(DrawPosX, Word[WordIndex].Y);
     SetFontSize(Word[WordIndex].Size);
     SetFontItalic(Word[WordIndex].Italic);
-    glColor3f(Word[WordIndex].ColR, Word[WordIndex].ColG, Word[WordIndex].ColB);
+    SetFontColor(Word[WordIndex].ColR, Word[WordIndex].ColG, Word[WordIndex].ColB, 1);
     if CursorVisible and (CursorWordIndex = WordIndex) then
       DisplayText := UTF8Copy(Word[WordIndex].Text, 1, CursorCharIndex) + '|' +
         UTF8Copy(Word[WordIndex].Text, CursorCharIndex + 1, LengthUTF8(Word[WordIndex].Text) - CursorCharIndex)
     else
       DisplayText := Word[WordIndex].Text;
 
-    glPrint(DisplayText);
+    PrintText(DisplayText);
 
     if CursorVisible and (WordIndex = CursorWordIndex) then
       CursorShift := CursorWidth;

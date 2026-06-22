@@ -34,7 +34,7 @@ Have fun and enjoy working on a game that easily can hit 5.000 downloads in a we
 
 ### About the engine / used libraries:
 - **SDL2** is used as general framework for spawning the window, getting keyboard / other input, and getting microphone and speaker device lists stuff. SDL2 also gets the OpenGL context for the window for us.
-- **OpenGL** is used for all the graphics drawing + rendering stuff. Currently, this is mostly based on the horribly old OpenGL 1.x drawing stuff. If you know OpenGL >2.1 / OpenGL ES then please help to implement the required shading stuff and replace the old opengl instructions by the new ones. I already ported to the **dglOpenGL** library, so anything up to OpenGL 4.x should be fully supported and easily usable - just bear in mind there is lots of hardware out there that doesn't do anything newer then OpenGL 3 feature set. Also, if you don't know OpenGL that much but know SDL2 quite good, feel free to switch from directly calling OpenGL to the functions which are provided by SDL2.
+- **OpenGL** is used for all the graphics drawing + rendering stuff. Currently, this is using OpenGL 2.0 and later or OpenGL ES 2.0 and later.
 - **projectM** is used for visualisation.
 - **ffmpeg** is used for most video and audio stuff. On Windows, the bass library is used for playing mp3 files because of licensing issues of mp3 codecs.
 - **OpenCV** videoio is used for getting images from the webcam.
