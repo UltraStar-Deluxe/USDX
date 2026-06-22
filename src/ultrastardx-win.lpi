@@ -378,7 +378,7 @@
         <IsPartOfProject Value="True"/>
       </Unit84>
       <Unit85>
-        <Filename Value="screens\UScreenTop5.pas"/>
+        <Filename Value="screens\UScreenHighScores.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit85>
       <Unit86>

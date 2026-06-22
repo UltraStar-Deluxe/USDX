@@ -649,15 +649,30 @@ type
     TextNavigate:     TThemeText;
   end;
 
-  TThemeTop5 = class(TThemeBasic)
-    TextLevel:        TThemeText;
-    TextArtistTitle:  TThemeText;
+  TThemeHighScoreRows = record
+    FirstY: integer;
+    LastY: integer;
+    MinTextSize: integer;
+    MinNumberTextSize: integer;
+    MinNumberStaticSize: integer;
+  end;
 
-    StaticNumber:     AThemeStatic;
-    TextNumber:       AThemeText;
-    TextName:         AThemeText;
-    TextScore:        AThemeText;
-    TextDate:         AThemeText;
+  TThemeHighScores = class(TThemeBasic)
+    TextTitle:            TThemeText;
+    TextWhereAmI:         TThemeText;
+    TextArtistTitle:      TThemeText;
+    TextDifficultyLabel:  TThemeText;
+    TextDifficulty:       TThemeText;
+    TextContinue:         TThemeText;
+    TextSwitchDifficulty: TThemeText;
+    TextChangeCount:      TThemeText;
+
+    Rows:                 TThemeHighScoreRows;
+    RowNumberStatic:      TThemeStatic;
+    RowNumberText:        TThemeText;
+    RowNameText:          TThemeText;
+    RowScoreText:         TThemeText;
+    RowDateText:          TThemeText;
   end;
 
   TThemeOptions = class(TThemeBasic)
@@ -1144,7 +1159,7 @@ type
     Jukebox:          TThemeJukebox;
     JukeboxPlaylist:  TThemeJukeboxPlaylist;
     Score:            TThemeScore;
-    Top5:             TThemeTop5;
+    HighScores:       TThemeHighScores;
     Options:          TThemeOptions;
     OptionsSub:       TThemeOptionsSub;
 
@@ -1203,6 +1218,8 @@ type
     procedure ThemeLoadBasic(Theme: TThemeBasic; const Name: string);
     procedure ThemeLoadOptionsSub;
     procedure ThemeLoadBackground(var ThemeBackground: TThemeBackground; const Name: string);
+    procedure ThemeLoadHighScores;
+    procedure ThemeLoadHighScoreRows(var Rows: TThemeHighScoreRows; const Name: string);
     procedure ThemeLoadText(var ThemeText: TThemeText; const Name: string);
     procedure ThemeLoadTexts(var ThemeText: AThemeText; const Name: string);
 
@@ -1311,7 +1328,7 @@ begin
   Song := TThemeSong.Create;
   Sing := TThemeSing.Create;
   Score := TThemeScore.Create;
-  Top5 := TThemeTop5.Create;
+  HighScores := TThemeHighScores.Create;
   Options := TThemeOptions.Create;
   OptionsSub := TThemeOptionsSub.Create;
 
@@ -1765,16 +1782,7 @@ begin
       ThemeLoadStatic(Score.StaticNavigate, 'ScoreStaticNavigate');
       ThemeLoadText(Score.TextNavigate, 'ScoreTextNavigate');
 
-      // Top5
-      ThemeLoadBasic(Top5, 'Top5');
-
-      ThemeLoadText(Top5.TextLevel,       'Top5TextLevel');
-      ThemeLoadText(Top5.TextArtistTitle, 'Top5TextArtistTitle');
-      ThemeLoadStatics(Top5.StaticNumber, 'Top5StaticNumber');
-      ThemeLoadTexts(Top5.TextNumber,     'Top5TextNumber');
-      ThemeLoadTexts(Top5.TextName,       'Top5TextName');
-      ThemeLoadTexts(Top5.TextScore,      'Top5TextScore');
-      ThemeLoadTexts(Top5.TextDate,       'Top5TextDate');
+      ThemeLoadHighScores;
 
       // Options
       ThemeLoadBasic(Options, 'Options');
@@ -2348,6 +2356,37 @@ begin
   ThemeBackground.Color.G := ReadFloat(SectionList, 'ColG', 1);
   ThemeBackground.Color.B := ReadFloat(SectionList, 'ColB', 1);
   ThemeBackground.Alpha   := ReadFloat(SectionList, 'Alpha', 1);
+end;
+
+procedure TTheme.ThemeLoadHighScoreRows(var Rows: TThemeHighScoreRows; const Name: string);
+var
+  SectionList: TThemeSectionList;
+begin
+  SectionList := GetSectionList(Name);
+  Rows.FirstY := ReadInteger(SectionList, 'FirstY', 190);
+  Rows.LastY := ReadInteger(SectionList, 'LastY', 390);
+  Rows.MinTextSize := ReadInteger(SectionList, 'MinTextSize', 18);
+  Rows.MinNumberTextSize := ReadInteger(SectionList, 'MinNumberTextSize', 16);
+  Rows.MinNumberStaticSize := ReadInteger(SectionList, 'MinNumberStaticSize', 20);
+end;
+
+procedure TTheme.ThemeLoadHighScores;
+begin
+  ThemeLoadBasic(HighScores, 'HighScores');
+  ThemeLoadText(HighScores.TextTitle,            'HighScoresTextTitle');
+  ThemeLoadText(HighScores.TextWhereAmI,         'HighScoresTextWhereAmI');
+  ThemeLoadText(HighScores.TextArtistTitle,      'HighScoresTextArtistTitle');
+  ThemeLoadText(HighScores.TextDifficultyLabel,  'HighScoresTextDifficultyLabel');
+  ThemeLoadText(HighScores.TextDifficulty,       'HighScoresTextDifficulty');
+  ThemeLoadText(HighScores.TextContinue,         'HighScoresTextContinue');
+  ThemeLoadText(HighScores.TextSwitchDifficulty, 'HighScoresTextSwitchDifficulty');
+  ThemeLoadText(HighScores.TextChangeCount,      'HighScoresTextChangeCount');
+  ThemeLoadHighScoreRows(HighScores.Rows,        'HighScoresRows');
+  ThemeLoadStatic(HighScores.RowNumberStatic,    'HighScoresRowNumberStatic');
+  ThemeLoadText(HighScores.RowNumberText,        'HighScoresRowNumberText');
+  ThemeLoadText(HighScores.RowNameText,          'HighScoresRowNameText');
+  ThemeLoadText(HighScores.RowScoreText,         'HighScoresRowScoreText');
+  ThemeLoadText(HighScores.RowDateText,          'HighScoresRowDateText');
 end;
 
 procedure TTheme.ThemeLoadText(var ThemeText: TThemeText; const Name: string);
@@ -4024,8 +4063,8 @@ begin
   freeandnil(Score);
   Score := TThemeScore.Create;
 
-  freeandnil(Top5);
-  Top5 := TThemeTop5.Create;
+  freeandnil(HighScores);
+  HighScores := TThemeHighScores.Create;
 
   freeandnil(Options);
   Options := TThemeOptions.Create;
