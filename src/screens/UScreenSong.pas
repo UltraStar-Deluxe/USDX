@@ -84,6 +84,9 @@ type
       RandomSongOrder: CardinalArray;
       NextRandomSongIdx: cardinal;
       RandomSearchOrder: CardinalArray;
+      KeepPreviewMusicOnHide: boolean;
+      PreviewRestorePosition: real;
+      PreviewRestoreValid: boolean;
 
       procedure StartMusicPreview();
       procedure StartVideoPreview();
@@ -191,6 +194,8 @@ type
       PlayMidi: boolean;
       MidiFadeIn: boolean;
       FadeTime: cardinal;
+
+      KeepPreviewPositionOnShow: boolean;
 
       InfoMessageBG: cardinal;
       InfoMessageText: cardinal;
@@ -322,6 +327,8 @@ type
 
         procedure ResetRandomSongState;
       procedure ResetScrollList;
+
+      procedure PreservePreviewForReturn;
   end;
 
 implementation
@@ -686,6 +693,7 @@ var
   VerifySong, WebList: string;
   Fix: boolean;
   VS: integer;
+  NeedPlayersScreen: boolean;
 
   function RandomPermute(Num: integer): CardinalArray;
   var
@@ -1305,8 +1313,10 @@ begin
                 Exit;
               end;
 
+              NeedPlayersScreen := (Mode = smNormal) and (Ini.OnSongClick = 1);
               StopVideoPreview;
-              StopMusicPreview;
+              if not NeedPlayersScreen then
+                StopMusicPreview;
 
               if (Mode = smNormal) then //Normal Mode -> Start Song
               begin
@@ -1982,6 +1992,10 @@ begin
   NextRandomSongIdx := High(cardinal);
   NextRandomSearchIdx := High(cardinal);
 
+  KeepPreviewMusicOnHide := false;
+  KeepPreviewPositionOnShow := false;
+  PreviewRestorePosition := 0;
+  PreviewRestoreValid := false;
 end;
 
 procedure TScreenSong.ColorDuetNameSingers();
@@ -2868,8 +2882,11 @@ end;
 procedure TScreenSong.OnShow;
 var
   I: integer;
+  KeepPreview: boolean;
 begin
   inherited;
+
+  KeepPreviewMusicOnHide := false;
 
   CloseMessage();
 
@@ -2959,13 +2976,38 @@ begin
    *}
   SoundLib.PauseBgMusic;
 
-  if SongIndex <> Interaction then
+  KeepPreview := KeepPreviewPositionOnShow;
+  if (SongIndex <> Interaction) and not KeepPreview then
     AudioPlayback.Stop;
-
-  PreviewOpened := -1;
+  if KeepPreview then
+    PreviewOpened := Interaction
+  else
+    PreviewOpened := -1;
+  KeepPreviewPositionOnShow := false;
 
   // reset video playback engine
   fCurrentVideo := nil;
+  if KeepPreview then
+  begin
+    if PreviewRestoreValid then
+    begin
+      if (AudioPlayback.Length <= 0) then
+      begin
+        if AudioPlayback.Open(CatSongs.Song[Interaction].Path.Append(CatSongs.Song[Interaction].Audio), nil) then
+          AudioPlayback.Position := PreviewRestorePosition;
+        AudioPlayback.Play();
+      end
+      else if AudioPlayback.Finished then
+      begin
+        AudioPlayback.Position := PreviewRestorePosition;
+        AudioPlayback.Play();
+      end;
+
+      PreviewRestoreValid := false;
+    end;
+
+    StartVideoPreview();
+  end;
 
   // reset Medley-Playlist
   SetLength(PlaylistMedley.Song, 0);
@@ -3069,13 +3111,21 @@ end;
 
 procedure TScreenSong.OnHide;
 begin
+  if not KeepPreviewMusicOnHide then
+  begin
+    // turn music volume to 100%
+    AudioPlayback.SetVolume(1.0);
 
-  // turn music volume to 100%
-  AudioPlayback.SetVolume(1.0);
-
-  // stop preview
-  StopMusicPreview();
-  StopVideoPreview();
+    // stop preview
+    StopMusicPreview();
+    StopVideoPreview();
+  end
+  else
+  begin
+    // keep music preview running (e.g., player select), but stop video preview
+    StopVideoPreview();
+    KeepPreviewMusicOnHide := false;
+  end;
 end;
 
 procedure TScreenSong.DrawExtensions;
@@ -3727,6 +3777,13 @@ begin
   end;
 end;
 
+procedure TScreenSong.PreservePreviewForReturn;
+begin
+  KeepPreviewPositionOnShow := true;
+  PreviewRestorePosition := AudioPlayback.Position;
+  PreviewRestoreValid := true;
+end;
+
 // Changes previewed song
 procedure TScreenSong.ChangeMusic;
 begin
@@ -4169,8 +4226,8 @@ end;
 procedure TScreenSong.SelectPlayers;
 begin
   CatSongs.Selected := Interaction;
-  StopMusicPreview();
 
+  KeepPreviewMusicOnHide := true;
   ScreenName.Goto_SingScreen := true;
   FadeTo(@ScreenName);
 end;
@@ -4351,7 +4408,8 @@ begin
   begin
     Mode := smMedley;
 
-    StopMusicPreview();
+    if (Ini.OnSongClick <> 1) then
+      StopMusicPreview();
 
     //TODO: how about case 2? menu for medley mode?
     case Ini.OnSongClick of
@@ -4371,7 +4429,8 @@ begin
     if PlaylistMedley.NumMedleySongs = NumSongs then
     begin
       Mode := smMedley;
-      StopMusicPreview();
+      if (Ini.OnSongClick <> 1) then
+        StopMusicPreview();
 
       //TODO: how about case 2? menu for medley mode?
       case Ini.OnSongClick of
