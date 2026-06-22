@@ -41,14 +41,49 @@ uses
   UMusic,
   UThemes,
   sdl2,
-  SysUtils;
+  SysUtils,
+  Classes;
 
 type
+  TStatDetailCellValue = (
+    scvNone,
+    scvRank,
+    scvScore,
+    scvPlayer,
+    scvDifficulty,
+    scvDate,
+    scvSong,
+    scvAverageScore,
+    scvSingCount,
+    scvArtist
+  );
+
   TScreenStatDetail = class(TMenu)
+    private
+      TextHeader: array[0..STAT_DETAIL_MAX_COLUMNS - 1] of integer;
+      TextList: array of array of integer;
+      TextListWidth: array of array of real;
+      TextListValue: array[0..STAT_DETAIL_MAX_COLUMNS - 1] of TStatDetailCellValue;
+      TextDescription: integer;
+      TextPage: integer;
+      StaticMinMedian: integer;
+      TextMinMedian: integer;
+      EntriesPerPage: integer;
+      MinMedianFilter: boolean;
+
+      procedure ChangeEntriesPerPage(Delta: integer);
+      procedure ClearRows;
+      procedure RecalculatePages;
+      procedure SetRowText(Row, Column: integer; const Value: UTF8String);
+      function StatCellText(StatList: TList; Row: integer; Value: TStatDetailCellValue): UTF8String;
+      procedure UpdateListLayout(StatList: TList; VisibleEntries: integer);
+      procedure ToggleMinMedianFilter;
+      procedure UpdateMinMedianHint;
+      function ActiveFilters: TStatFilters;
+
     public
       Typ:  TStatType;
       Page: cardinal;
-      Count: byte;
       Reversed: boolean;
 
       TotEntrys: cardinal;
@@ -60,7 +95,7 @@ type
       procedure SetAnimationProgress(Progress: real); override;
 
       procedure SetTitle;
-      Procedure SetPage(NewPage: cardinal);
+      procedure SetPage(NewPage: cardinal);
   end;
 
 const
@@ -75,7 +110,195 @@ uses
   ULog,
   UUnicodeUtils,
   Math,
-  Classes;
+  TextGL,
+  StrUtils;
+
+type
+  TStatDetailColumnFlag = (cfCompactGap, cfFlexibleWidth);
+  TStatDetailColumnFlags = set of TStatDetailColumnFlag;
+  TStatDetailColumnWidthMode = (cwmFixed, cwmMeasured);
+
+  TStatDetailColumnSpec = record
+    Header: RawByteString;
+    Value: TStatDetailCellValue;
+    Width: real;
+    GapBefore: real;
+    Align: integer;
+    Flags: TStatDetailColumnFlags;
+    WidthMode: TStatDetailColumnWidthMode;
+  end;
+
+  TStatDetailColumnSpecs = array[0..STAT_DETAIL_MAX_COLUMNS - 1] of TStatDetailColumnSpec;
+
+  TStatDetailColumnDefinition = record
+    Header: RawByteString;
+    Value: TStatDetailCellValue;
+  end;
+
+  TStatDetailColumnDefinitions = array[0..STAT_DETAIL_MAX_COLUMNS - 1] of TStatDetailColumnDefinition;
+
+  TTextListLayout = record
+    RowPitch: real;
+    TextSize: real;
+  end;
+
+const
+  BEST_SCORE_COLUMNS: TStatDetailColumnDefinitions = (
+    (Header: 'STAT_DETAIL_HEADER_RANK';       Value: scvRank),
+    (Header: 'STAT_DETAIL_HEADER_SCORE';      Value: scvScore),
+    (Header: 'STAT_DETAIL_HEADER_PLAYER';     Value: scvPlayer),
+    (Header: 'STAT_DETAIL_HEADER_DIFFICULTY'; Value: scvDifficulty),
+    (Header: 'STAT_DETAIL_HEADER_DATE';       Value: scvDate),
+    (Header: 'STAT_DETAIL_HEADER_SONG';       Value: scvSong)
+  );
+  BEST_SINGER_COLUMNS: TStatDetailColumnDefinitions = (
+    (Header: 'STAT_DETAIL_HEADER_RANK';      Value: scvRank),
+    (Header: 'STAT_DETAIL_HEADER_PLAYER';    Value: scvPlayer),
+    (Header: 'STAT_DETAIL_HEADER_AVG_SCORE'; Value: scvAverageScore),
+    (Header: 'STAT_DETAIL_HEADER_SCORES';    Value: scvSingCount),
+    (Header: '';                             Value: scvNone),
+    (Header: '';                             Value: scvNone)
+  );
+  POPULAR_SONG_COLUMNS: TStatDetailColumnDefinitions = (
+    (Header: 'STAT_DETAIL_HEADER_RANK';      Value: scvRank),
+    (Header: 'STAT_DETAIL_HEADER_SONG';      Value: scvSong),
+    (Header: 'STAT_DETAIL_HEADER_SUNG';      Value: scvSingCount),
+    (Header: 'STAT_DETAIL_HEADER_AVG_SCORE'; Value: scvAverageScore),
+    (Header: '';                             Value: scvNone),
+    (Header: '';                             Value: scvNone)
+  );
+  POPULAR_BAND_COLUMNS: TStatDetailColumnDefinitions = (
+    (Header: 'STAT_DETAIL_HEADER_RANK';      Value: scvRank),
+    (Header: 'STAT_DETAIL_HEADER_ARTIST';    Value: scvArtist),
+    (Header: 'STAT_DETAIL_HEADER_SUNG';      Value: scvSingCount),
+    (Header: 'STAT_DETAIL_HEADER_AVG_SCORE'; Value: scvAverageScore),
+    (Header: '';                             Value: scvNone),
+    (Header: '';                             Value: scvNone)
+  );
+
+function FormatStatSong(const Artist, Title: UTF8String): UTF8String;
+begin
+  if (Artist = '') then
+    Result := Title
+  else if (Title = '') then
+    Result := Artist
+  else
+    Result := Artist + ' - ' + Title;
+end;
+
+function FormatStatCount(Count: integer): UTF8String;
+begin
+  Result := IntToStr(Count);
+end;
+
+function CompactValue(Value, Factor, MinFactor: real): real;
+begin
+  Result := Value * EnsureRange(Factor, MinFactor, 1.0);
+end;
+
+function MeasureTextMaxLineWidth(const Value: UTF8String; Font, Style: integer;
+    Size: real): real;
+var
+  BreakPos: integer;
+  LineStart: integer;
+  LineText: UTF8String;
+begin
+  Result := 0;
+  if (Value = '') then
+    Exit;
+
+  SetFontFamily(Font);
+  SetFontStyle(Style);
+  SetFontSize(Size);
+  SetFontItalic(false);
+
+  LineStart := 1;
+  repeat
+    BreakPos := PosEx('\n', Value, LineStart);
+    if (BreakPos = 0) then
+    begin
+      LineText := Copy(Value, LineStart, Length(Value) - LineStart + 1);
+      LineStart := Length(Value) + 1;
+    end
+    else
+    begin
+      LineText := Copy(Value, LineStart, BreakPos - LineStart);
+      LineStart := BreakPos + Length('\n');
+    end;
+
+    Result := Max(Result, glTextWidth(Trim(LineText)));
+  until (LineStart > Length(Value));
+end;
+
+function FitTextToWidth(const Value: UTF8String; Width: real; Font, Style: integer; Size: real): UTF8String;
+var
+  TextLength: integer;
+begin
+  Result := Value;
+  if (Value = '') or (Width <= 0) then
+    Exit;
+
+  SetFontFamily(Font);
+  SetFontStyle(Style);
+  SetFontSize(Size);
+
+  if (glTextWidth(Result) <= Width) then
+    Exit;
+
+  TextLength := LengthUTF8(Value);
+  repeat
+    Dec(TextLength);
+    Result := UTF8Copy(Value, 1, TextLength) + '...';
+  until (TextLength <= 0) or (glTextWidth(Result) <= Width);
+
+  if (TextLength <= 0) and (glTextWidth(Result) > Width) then
+    Result := '';
+end;
+
+function EntryDensity(RowCount, MinEntries, MaxEntries: integer; Curve: real): real;
+begin
+  Result := EnsureRange((RowCount - MinEntries) /
+      Max(1, MaxEntries - MinEntries), 0.0, 1.0);
+  if (Curve > 0) then
+    Result := Power(Result, Curve);
+end;
+
+function FontSizePerRowPitch(RowCount, MinEntries, MaxEntries: integer;
+    RelaxedRatio, DenseRatio, Curve: real): real;
+var
+  Density: real;
+begin
+  Density := EntryDensity(RowCount, MinEntries, MaxEntries, Curve);
+  Result := RelaxedRatio + Density * (DenseRatio - RelaxedRatio);
+end;
+
+{ BottomY is the lower visual bound for the final row, not its text origin. }
+function CalculateTextListLayout(TopY, BottomY: real; RowCount: integer;
+    MinTextSize, MaxTextSize, FontToPitchRatio, LineHeightFactor: real): TTextListLayout;
+var
+  AvailableHeight: real;
+  TextHeight: real;
+begin
+  RowCount := Max(1, RowCount);
+  AvailableHeight := Max(0, BottomY - TopY);
+  MaxTextSize := Max(MinTextSize, MaxTextSize);
+  FontToPitchRatio := Max(0.01, FontToPitchRatio);
+  LineHeightFactor := Max(0.01, LineHeightFactor);
+
+  if (RowCount > 1) then
+  begin
+    Result.TextSize := AvailableHeight / ((RowCount - 1) / FontToPitchRatio + LineHeightFactor);
+    Result.TextSize := EnsureRange(Result.TextSize, MinTextSize, MaxTextSize);
+
+    TextHeight := Result.TextSize * LineHeightFactor;
+    Result.RowPitch := Max(0, (AvailableHeight - TextHeight) / (RowCount - 1));
+  end
+  else
+  begin
+    Result.RowPitch := 0;
+    Result.TextSize := EnsureRange(AvailableHeight / LineHeightFactor, MinTextSize, MaxTextSize);
+  end;
+end;
 
 function TScreenStatDetail.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
@@ -103,87 +326,67 @@ begin
         begin
           ScreenPopupHelp.ShowPopup();
         end;
-      SDLK_RETURN:
-        begin
-          if Interaction = 0 then
-          begin
-            //Next Page
-            SetPage(Page+1);
-          end;
-
-          if Interaction = 1 then
-          begin
-            //Previous Page
-            if (Page > 0) then
-              SetPage(Page-1);
-          end;
-
-          if Interaction = 2 then
-          begin
-            //Reverse Order
-            Reversed := not Reversed;
-            SetPage(Page);
-          end;
-
-          if Interaction = 3 then
-          begin
-            AudioPlayback.PlaySound(SoundLib.Back);
-            FadeTo(@ScreenStatMain);
-          end;
-        end;
       SDLK_LEFT:
-      begin
-          InteractPrev;
-      end;
+        begin
+          if (Page > 0) then
+            SetPage(Page - 1);
+        end;
       SDLK_RIGHT:
-      begin
-          InteractNext;
-      end;
+        begin
+          if (Page + 1 < TotPages) then
+            SetPage(Page + 1);
+        end;
       SDLK_UP:
-      begin
-          InteractPrev;
-      end;
+        begin
+          ChangeEntriesPerPage(-1);
+        end;
       SDLK_DOWN:
-      begin
-          InteractNext;
-      end;
+        begin
+          ChangeEntriesPerPage(1);
+        end;
+      SDLK_R:
+        begin
+          Reversed := not Reversed;
+          SetPage(Page);
+        end;
+      SDLK_M:
+        begin
+          ToggleMinMedianFilter;
+        end;
     end;
   end;
 end;
 
 constructor TScreenStatDetail.Create;
 var
-  I:    integer;
+  Column: integer;
+  Row: integer;
 begin
   inherited Create;
 
-  for I := 0 to High(Theme.StatDetail.TextList) do
-    AddText(Theme.StatDetail.TextList[I]);
+  SetLength(TextList, Theme.StatDetail.MaxEntries, STAT_DETAIL_MAX_COLUMNS);
+  SetLength(TextListWidth, Theme.StatDetail.MaxEntries, STAT_DETAIL_MAX_COLUMNS);
 
-  Count := Length(Theme.StatDetail.TextList);
+  for Row := 0 to High(TextList) do
+    for Column := 0 to STAT_DETAIL_MAX_COLUMNS - 1 do
+      TextList[Row, Column] := AddText(Theme.StatDetail.TextList[0]);
 
-  AddText(Theme.StatDetail.TextDescription);
-  AddText(Theme.StatDetail.TextPage);
+  for Column := 0 to STAT_DETAIL_MAX_COLUMNS - 1 do
+    TextHeader[Column] := AddText(Theme.StatDetail.TextHeader);
+
+  TextDescription := AddText(Theme.StatDetail.TextDescription);
+  TextPage := AddText(Theme.StatDetail.TextPage);
 
   LoadFromTheme(Theme.StatDetail);
 
-  AddButton(Theme.StatDetail.ButtonNext);
-  if (Length(Button[0].Text)=0) then
-    AddButtonText(14, 20, Language.Translate('STAT_NEXT'));
+  StaticMinMedian := AddStatic(Theme.StatDetail.StaticMinMedian);
+  TextMinMedian := AddText(Theme.StatDetail.TextMinMedian);
 
-  AddButton(Theme.StatDetail.ButtonPrev);
-  if (Length(Button[1].Text)=0) then
-    AddButtonText(14, 20, Language.Translate('STAT_PREV'));
-
-  AddButton(Theme.StatDetail.ButtonReverse);
-  if (Length(Button[2].Text)=0) then
-    AddButtonText(14, 20, Language.Translate('STAT_REVERSE'));
-
-  AddButton(Theme.StatDetail.ButtonExit);
-  if (Length(Button[3].Text)=0) then
-    AddButtonText(14, 20, Theme.Options.Description[OPTIONS_DESC_INDEX_NETWORK]);
-
-  Interaction := 0;
+  EntriesPerPage := EnsureRange(Ini.StatDetailCount,
+      Theme.StatDetail.MinEntries, Theme.StatDetail.MaxEntries);
+  if (Ini.StatDetailCount <= 0) then
+    EntriesPerPage := Theme.StatDetail.DefaultEntries;
+  MinMedianFilter := false;
   Typ := TStatType(0);
 end;
 
@@ -194,111 +397,526 @@ begin
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenStatDetail');
 
+  Reversed := false;
+  MinMedianFilter := false;
+
   //Set Tot Entrys and Pages
-  TotEntrys := DataBase.GetTotalEntrys(Typ);
-  TotPages := Ceil(TotEntrys / Count);
+  TotEntrys := DataBase.GetTotalEntrys(Typ, ActiveFilters);
+  RecalculatePages;
+  UpdateMinMedianHint;
 
   //Show correct Title
   SetTitle;
 
   //Show First Page
-  Reversed := false;
   SetPage(0);
 end;
 
 procedure TScreenStatDetail.SetTitle;
 begin
   if Reversed then
-    Text[Count].Text := Theme.StatDetail.DescriptionR[Ord(Typ)]
+    Text[TextDescription].Text := Theme.StatDetail.DescriptionR[Ord(Typ)]
   else
-    Text[Count].Text := Theme.StatDetail.Description[Ord(Typ)];
+    Text[TextDescription].Text := Theme.StatDetail.Description[Ord(Typ)];
+end;
+
+procedure TScreenStatDetail.RecalculatePages;
+begin
+  TotPages := Ceil(TotEntrys / EntriesPerPage);
+  if TotPages = 0 then
+    TotPages := 1;
+end;
+
+function TScreenStatDetail.ActiveFilters: TStatFilters;
+begin
+  Result := [];
+  if (Typ = stBestSingers) and MinMedianFilter then
+    Include(Result, sfMinMedianScoreCount);
+end;
+
+procedure TScreenStatDetail.UpdateMinMedianHint;
+var
+  ShowHint: boolean;
+begin
+  ShowHint := (Typ = stBestSingers);
+  Statics[StaticMinMedian].Visible := ShowHint;
+  Text[TextMinMedian].Visible := ShowHint;
+end;
+
+procedure TScreenStatDetail.ClearRows;
+var
+  Column: integer;
+  Row: integer;
+begin
+  for Row := 0 to High(TextList) do
+    for Column := 0 to STAT_DETAIL_MAX_COLUMNS - 1 do
+      Text[TextList[Row, Column]].Text := '';
+end;
+
+procedure TScreenStatDetail.SetRowText(Row, Column: integer; const Value: UTF8String);
+var
+  TextID: integer;
+begin
+  TextID := TextList[Row, Column];
+  Text[TextID].Text := FitTextToWidth(Value, TextListWidth[Row, Column],
+      Text[TextID].Font, Text[TextID].Style, Text[TextID].Size);
+end;
+
+function TScreenStatDetail.StatCellText(StatList: TList; Row: integer;
+    Value: TStatDetailCellValue): UTF8String;
+begin
+  Result := '';
+  if (StatList = nil) or (Row < 0) or (Row >= StatList.Count) then
+    Exit;
+
+  case Typ of
+    stBestScores:
+      with TStatResultBestScores(StatList[Row]) do
+      begin
+        if (Score <= 0) then
+          Exit;
+
+        case Value of
+          scvRank:       Result := IntToStr(Page * EntriesPerPage + Row + 1);
+          scvScore:      Result := IntToStr(Score);
+          scvPlayer:     Result := Singer;
+          scvDifficulty: Result := Theme.ILevel[Difficulty];
+          scvDate:       Result := Date;
+          scvSong:       Result := FormatStatSong(SongArtist, SongTitle);
+        end;
+      end;
+
+    stBestSingers:
+      with TStatResultBestSingers(StatList[Row]) do
+      begin
+        if (AverageScore <= 0) then
+          Exit;
+
+        case Value of
+          scvRank:         Result := IntToStr(Page * EntriesPerPage + Row + 1);
+          scvPlayer:       Result := Player;
+          scvAverageScore: Result := IntToStr(AverageScore);
+          scvSingCount:    Result := FormatStatCount(Count);
+        end;
+      end;
+
+    stMostSungSong:
+      with TStatResultMostSungSong(StatList[Row]) do
+      begin
+        if (Artist = '') then
+          Exit;
+
+        case Value of
+          scvRank:         Result := IntToStr(Page * EntriesPerPage + Row + 1);
+          scvSong:         Result := FormatStatSong(Artist, Title);
+          scvSingCount:    Result := FormatStatCount(TimesSung);
+          scvAverageScore: Result := IntToStr(AverageScore);
+        end;
+      end;
+
+    stMostPopBand:
+      with TStatResultMostPopBand(StatList[Row]) do
+      begin
+        if (ArtistName = '') then
+          Exit;
+
+        case Value of
+          scvRank:         Result := IntToStr(Page * EntriesPerPage + Row + 1);
+          scvArtist:       Result := ArtistName;
+          scvSingCount:    Result := FormatStatCount(TimesSungtot);
+          scvAverageScore: Result := IntToStr(AverageScore);
+        end;
+      end;
+  end;
+end;
+
+procedure TScreenStatDetail.UpdateListLayout(StatList: TList; VisibleEntries: integer);
+var
+  Column: integer;
+  Row: integer;
+  HeaderY: real;
+  TopY: real;
+  BottomY: real;
+  ListLayout: TTextListLayout;
+  HeaderSize: real;
+  MaxTextSize: real;
+  ListX: integer;
+  ListY: integer;
+  ListW: integer;
+  ListBottomY: real;
+  ColumnCompactFactor: real;
+  LayoutRows: integer;
+  ThemeText: TThemeText;
+
+  procedure ApplyTextLayout(TextID: integer; ColumnLeft, ColumnWidth: real; Align: integer);
+  begin
+    Text[TextID].W := 0;
+    Text[TextID].H := 0;
+    Text[TextID].Align := Align;
+
+    case Align of
+      1:
+        Text[TextID].X := ColumnLeft + ColumnWidth / 2;
+      2:
+        Text[TextID].X := ColumnLeft + ColumnWidth;
+      else
+        Text[TextID].X := ColumnLeft;
+    end;
+  end;
+
+  procedure SetColumn(Column: integer; LeftFactor, WidthFactor: real; Align: integer; const HeaderText: RawByteString);
+  var
+    ColumnLeft: real;
+    ColumnWidth: real;
+    TextID: integer;
+    Row: integer;
+  begin
+    ColumnLeft := ThemeText.X + ThemeText.W * LeftFactor;
+    ColumnWidth := ThemeText.W * WidthFactor;
+
+    TextID := TextHeader[Column];
+    ApplyTextLayout(TextID, ColumnLeft, ColumnWidth, Align);
+    Text[TextID].Y := HeaderY;
+    Text[TextID].Visible := true;
+    Text[TextID].Text := Language.Translate(HeaderText);
+
+    for Row := 0 to High(TextList) do
+    begin
+      TextListWidth[Row, Column] := ColumnWidth;
+
+      TextID := TextList[Row, Column];
+      ApplyTextLayout(TextID, ColumnLeft, ColumnWidth, Align);
+      Text[TextID].Visible := Row < EntriesPerPage;
+    end;
+  end;
+
+  function ColumnGap(const Column: TStatDetailColumnSpec): real;
+  begin
+    Result := Column.GapBefore;
+    if (cfCompactGap in Column.Flags) then
+      Result := CompactValue(Result, ColumnCompactFactor,
+          Theme.StatDetail.MinColumnGap);
+  end;
+
+  function TextLeftEdge(TextID: integer): real;
+  var
+    TextWidth: real;
+  begin
+    TextWidth := MeasureTextMaxLineWidth(Text[TextID].Text, Text[TextID].Font,
+        Text[TextID].Style, Text[TextID].Size);
+
+    case Text[TextID].Align of
+      1:
+        Result := Text[TextID].X - TextWidth / 2;
+      2:
+        Result := Text[TextID].X - TextWidth;
+      else
+        Result := Text[TextID].X;
+    end;
+  end;
+
+  function PageTextRightBound: real;
+  begin
+    Result := 1.0;
+    if (ThemeText.W > 0) and (Text[TextPage].Text <> '') then
+      Result := EnsureRange((TextLeftEdge(TextPage) - Theme.StatDetail.PageTextMargin -
+          ThemeText.X) / ThemeText.W, 0.0, 1.0);
+  end;
+
+  function TableRightBound(const Table: TThemeStatDetailTable): real;
+  begin
+    if Table.UsePageRightBound then
+      Result := PageTextRightBound
+    else
+      Result := 1.0;
+
+    if (ThemeText.W > 0) then
+      Result := EnsureRange(Result - Table.RightInset /
+          ThemeText.W, 0.0, 1.0);
+  end;
+
+  function TextWidthFactor(const Value: UTF8String; Font, Style: integer;
+      Size, Padding: real): real;
+  begin
+    Result := 0;
+    if (ThemeText.W > 0) and (Value <> '') then
+      Result := (MeasureTextMaxLineWidth(Value, Font, Style, Size) + Padding) /
+          ThemeText.W;
+  end;
+
+  function ValueColumnWidth(const HeaderText: RawByteString;
+      Value: TStatDetailCellValue): real;
+  var
+    Row: integer;
+    ValueText: UTF8String;
+  begin
+    Result := TextWidthFactor(Language.Translate(HeaderText), ThemeText.Font,
+        Theme.StatDetail.TextHeader.Style, HeaderSize, Theme.StatDetail.ColumnPadding);
+
+    for Row := 0 to VisibleEntries - 1 do
+    begin
+      ValueText := StatCellText(StatList, Row, Value);
+      if (ValueText <> '') then
+        Result := Max(Result, TextWidthFactor(ValueText, ThemeText.Font,
+            ThemeText.Style, ListLayout.TextSize, Theme.StatDetail.ColumnPadding));
+    end;
+  end;
+
+  function ThemeColumnSpec(const Header: RawByteString; Value: TStatDetailCellValue;
+      const ThemeColumn: TThemeStatDetailColumn): TStatDetailColumnSpec;
+  begin
+    Result.Header := Header;
+    Result.Value := Value;
+    Result.Width := ThemeColumn.Width;
+    Result.GapBefore := ThemeColumn.GapBefore;
+    Result.Align := ThemeColumn.Align;
+    Result.Flags := [];
+    if ThemeColumn.CompactGap then
+      Include(Result.Flags, cfCompactGap);
+    if ThemeColumn.Flexible then
+      Include(Result.Flags, cfFlexibleWidth);
+    if ThemeColumn.AutoWidth then
+      Result.WidthMode := cwmMeasured
+    else
+      Result.WidthMode := cwmFixed;
+  end;
+
+  procedure SetColumnLayout(const Columns: TStatDetailColumnSpecs; ColumnCount: integer;
+      RightBoundFactor: real);
+  var
+    Column: integer;
+    FlexibleColumns: integer;
+    BaseWidth: real;
+    UsedWidth: real;
+    LayoutWidth: real;
+    FlexWidth: real;
+    LeftFactor: real;
+    WidthFactors: array[0..STAT_DETAIL_MAX_COLUMNS - 1] of real;
+    GapFactors: array[0..STAT_DETAIL_MAX_COLUMNS - 1] of real;
+  begin
+    ColumnCount := EnsureRange(ColumnCount, 0, STAT_DETAIL_MAX_COLUMNS);
+    FlexibleColumns := 0;
+    BaseWidth := 0;
+    UsedWidth := 0;
+
+    for Column := 0 to ColumnCount - 1 do
+    begin
+      GapFactors[Column] := ColumnGap(Columns[Column]);
+      if (Columns[Column].WidthMode = cwmMeasured) then
+        WidthFactors[Column] := ValueColumnWidth(Columns[Column].Header,
+            Columns[Column].Value)
+      else
+        WidthFactors[Column] := Columns[Column].Width;
+
+      BaseWidth := BaseWidth + Columns[Column].GapBefore + WidthFactors[Column];
+      UsedWidth := UsedWidth + GapFactors[Column] + WidthFactors[Column];
+
+      if (cfFlexibleWidth in Columns[Column].Flags) then
+        Inc(FlexibleColumns);
+    end;
+
+    FlexWidth := 0;
+    if (FlexibleColumns > 0) then
+      LayoutWidth := EnsureRange(RightBoundFactor, 0.0, 1.0)
+    else
+      LayoutWidth := Min(EnsureRange(RightBoundFactor, 0.0, 1.0),
+          Min(1.0, BaseWidth));
+
+    if (FlexibleColumns > 0) then
+      FlexWidth := (LayoutWidth - UsedWidth) / FlexibleColumns;
+
+    LeftFactor := 0;
+    for Column := 0 to ColumnCount - 1 do
+    begin
+      LeftFactor := LeftFactor + GapFactors[Column];
+
+      if (cfFlexibleWidth in Columns[Column].Flags) then
+        WidthFactors[Column] := Max(0.0, WidthFactors[Column] + FlexWidth);
+
+      TextListValue[Column] := Columns[Column].Value;
+      SetColumn(Column, LeftFactor,
+          Max(0.0, Min(WidthFactors[Column], 1.0 - LeftFactor)),
+          Columns[Column].Align, Columns[Column].Header);
+      LeftFactor := LeftFactor + WidthFactors[Column];
+    end;
+  end;
+
+  procedure SetColumns(const Table: TThemeStatDetailTable;
+      const Definitions: TStatDetailColumnDefinitions);
+  var
+    Columns: TStatDetailColumnSpecs;
+    Column: integer;
+    ColumnCount: integer;
+  begin
+    for Column := Low(Columns) to High(Columns) do
+      Columns[Column] := ThemeColumnSpec('', scvNone, Table.Column[Column]);
+
+    ColumnCount := EnsureRange(Table.ColumnCount, 0, STAT_DETAIL_MAX_COLUMNS);
+    while (ColumnCount > 0) and (Definitions[ColumnCount - 1].Value = scvNone) do
+      Dec(ColumnCount);
+
+    for Column := 0 to ColumnCount - 1 do
+      Columns[Column] := ThemeColumnSpec(Definitions[Column].Header,
+          Definitions[Column].Value, Table.Column[Column]);
+
+    SetColumnLayout(Columns, ColumnCount, TableRightBound(Table));
+  end;
+begin
+  ThemeText := Theme.StatDetail.TextList[0];
+  ListX := Theme.StatDetail.ListX;
+  ListY := Theme.StatDetail.ListY;
+  ListW := Theme.StatDetail.ListW;
+  ListBottomY := Theme.StatDetail.ListBottomY;
+  if (ListW <= 0) then
+    ListW := ThemeText.W;
+  if (ListBottomY <= ListY) then
+  begin
+    ListY := ThemeText.Y;
+    ListBottomY := ListY + Theme.StatDetail.FallbackRowPitch *
+        (EntriesPerPage + Theme.StatDetail.PaddingRows - 1);
+  end;
+
+  LayoutRows := EntriesPerPage + Theme.StatDetail.PaddingRows;
+  ThemeText.X := ListX;
+  ThemeText.W := ListW;
+  TopY := ListY;
+  BottomY := ListBottomY;
+  HeaderY := Theme.StatDetail.ListHeaderY;
+
+  MaxTextSize := Max(Theme.StatDetail.MinTextSize, ThemeText.Size);
+  ListLayout := CalculateTextListLayout(TopY, BottomY, LayoutRows,
+      Theme.StatDetail.MinTextSize, MaxTextSize,
+      FontSizePerRowPitch(EntriesPerPage, Theme.StatDetail.MinEntries,
+      Theme.StatDetail.MaxEntries, Theme.StatDetail.FontSizeRelaxed,
+      Theme.StatDetail.FontSizeDense, Theme.StatDetail.FontSizeCurve),
+      Theme.StatDetail.LineHeight);
+  HeaderSize := Theme.StatDetail.TextHeader.Size;
+  ColumnCompactFactor := EnsureRange(ListLayout.TextSize / MaxTextSize,
+      0.0, 1.0);
+
+  for Column := 0 to STAT_DETAIL_MAX_COLUMNS - 1 do
+  begin
+    TextListValue[Column] := scvNone;
+    Text[TextHeader[Column]].Text := '';
+    Text[TextHeader[Column]].Visible := false;
+  end;
+
+  for Row := 0 to High(TextList) do
+  begin
+    for Column := 0 to STAT_DETAIL_MAX_COLUMNS - 1 do
+    begin
+      Text[TextList[Row, Column]].Y := TopY +
+          (Row + Theme.StatDetail.FirstContentRow) * ListLayout.RowPitch;
+      Text[TextList[Row, Column]].H := 0;
+      Text[TextList[Row, Column]].Size := ListLayout.TextSize;
+      Text[TextList[Row, Column]].Visible := false;
+    end;
+  end;
+
+  case Typ of
+    stBestScores:
+      SetColumns(Theme.StatDetail.BestScoresTable, BEST_SCORE_COLUMNS);
+    stBestSingers:
+      SetColumns(Theme.StatDetail.BestSingersTable, BEST_SINGER_COLUMNS);
+    stMostSungSong:
+      SetColumns(Theme.StatDetail.PopularTable, POPULAR_SONG_COLUMNS);
+    stMostPopBand:
+      SetColumns(Theme.StatDetail.PopularTable, POPULAR_BAND_COLUMNS);
+  end;
+end;
+
+procedure TScreenStatDetail.ChangeEntriesPerPage(Delta: integer);
+var
+  FirstEntry: cardinal;
+  NewCount: integer;
+begin
+  NewCount := EnsureRange(EntriesPerPage + Delta, Theme.StatDetail.MinEntries,
+      Theme.StatDetail.MaxEntries);
+  if (NewCount = EntriesPerPage) then
+    Exit;
+
+  FirstEntry := Page * EntriesPerPage;
+  EntriesPerPage := NewCount;
+  Ini.StatDetailCount := EntriesPerPage;
+  Ini.SaveStatDetailCount;
+
+  RecalculatePages;
+  SetPage(FirstEntry div EntriesPerPage);
+end;
+
+procedure TScreenStatDetail.ToggleMinMedianFilter;
+var
+  FirstEntry: cardinal;
+  NewPage: cardinal;
+begin
+  if (Typ <> stBestSingers) then
+    Exit;
+
+  FirstEntry := Page * EntriesPerPage;
+  MinMedianFilter := not MinMedianFilter;
+  TotEntrys := DataBase.GetTotalEntrys(Typ, ActiveFilters);
+  RecalculatePages;
+  UpdateMinMedianHint;
+
+  NewPage := FirstEntry div EntriesPerPage;
+  if (NewPage >= TotPages) then
+    NewPage := TotPages - 1;
+  SetPage(NewPage);
 end;
 
 procedure TScreenStatDetail.SetPage(NewPage: cardinal);
 var
   StatList: TList;
   I: integer;
-  FormatStr: string;
-  PerPage: byte;
+  Column: integer;
+  PerPage: integer;
+  VisibleEntries: integer;
 begin
-  // fetch statistics
-  StatList := Database.GetStats(Typ, Count, NewPage, Reversed);
-  if ((StatList <> nil) and (StatList.Count > 0)) then
-  begin
-    Page := NewPage;
+  if (NewPage >= TotPages) then
+    NewPage := TotPages - 1;
+  Page := NewPage;
 
-    // reset texts
-    for I := 0 to Count-1 do
-      Text[I].Text := '';
+  if (TotEntrys = 0) then
+    PerPage := 0
+  else if (Page + 1 = TotPages) and (TotEntrys mod EntriesPerPage <> 0) then
+    PerPage := (TotEntrys mod EntriesPerPage)
+  else
+    PerPage := EntriesPerPage;
 
-    FormatStr := Theme.StatDetail.FormatStr[Ord(Typ)];
-
-    //refresh Texts
-    for I := 0 to StatList.Count-1 do
+  try
+    Text[TextPage].Text := Format(Theme.StatDetail.PageStr,
+        [Page + 1, TotPages, PerPage, TotEntrys]);
+  except
+    on E: EConvertError do
     begin
-      try
-        case Typ of
-          stBestScores: begin //Best Scores
-            with TStatResultBestScores(StatList[I]) do
-            begin
-              //Set Texts
-              if (Score > 0) then
-              begin
-                Text[I].Text := Format(FormatStr,
-                  [Singer, Score, Theme.ILevel[Difficulty], SongArtist, SongTitle, Date]);
-              end;
-            end;
-          end;
-
-          stBestSingers: begin //Best Singers
-            with TStatResultBestSingers(StatList[I]) do
-            begin
-              //Set Texts
-              if (AverageScore > 0) then
-                Text[I].Text := Format(FormatStr, [Player, AverageScore]);
-            end;
-          end;
-
-          stMostSungSong: begin //Popular Songs
-            with TStatResultMostSungSong(StatList[I]) do
-            begin
-              //Set Texts
-              if (Artist <> '') then
-                Text[I].Text := Format(FormatStr, [Artist, Title, TimesSung]);
-            end;
-          end;
-
-          stMostPopBand: begin //Popular Bands
-            with TStatResultMostPopBand(StatList[I]) do
-            begin
-              //Set Texts
-              if (ArtistName <> '') then
-                Text[I].Text := Format(FormatStr, [ArtistName, TimesSungtot]);
-            end;
-          end;
-        end;
-      except
-        on E: EConvertError do
-          Log.LogError('Error Parsing FormatString in UScreenStatDetail: ' + E.Message);
-      end;
+      Text[TextPage].Text := '';
+      Log.LogError('Error Parsing FormatString in UScreenStatDetail: ' + E.Message);
     end;
-
-    if (Page + 1 = TotPages) and (TotEntrys mod Count <> 0) then
-      PerPage := (TotEntrys mod Count)
-    else
-      PerPage := Count;
-
-    try      
-      Text[Count+1].Text := Format(Theme.StatDetail.PageStr,
-          [Page + 1, TotPages, PerPage, TotEntrys]);
-    except
-      on E: EConvertError do
-        Log.LogError('Error Parsing FormatString in UScreenStatDetail: ' + E.Message);
-    end;
-
-    //Show correct Title
-    SetTitle;
   end;
+
+  // fetch statistics
+  StatList := Database.GetStats(Typ, EntriesPerPage, NewPage, Reversed,
+      ActiveFilters);
+  if (StatList <> nil) then
+    VisibleEntries := Min(StatList.Count, EntriesPerPage)
+  else
+    VisibleEntries := 0;
+
+  UpdateListLayout(StatList, VisibleEntries);
+
+  // reset texts
+  ClearRows;
+
+  if (StatList <> nil) then
+  begin
+    for I := 0 to VisibleEntries - 1 do
+      for Column := 0 to STAT_DETAIL_MAX_COLUMNS - 1 do
+        SetRowText(I, Column, StatCellText(StatList, I, TextListValue[Column]));
+
+  end;
+
+  //Show correct Title
+  SetTitle;
 
   Database.FreeStats(StatList);
 end;
