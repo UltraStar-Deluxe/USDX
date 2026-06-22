@@ -511,6 +511,7 @@ begin
               if SwitchVideoMode(Mode_Fullscreen) = Mode_Fullscreen then Ini.FullScreen := 1
               else Ini.FullScreen := 0;
               Ini.Save();
+              Display.SetCursor;
 
               Break;
             end;
@@ -578,9 +579,8 @@ begin
                   Ini.FullScreen := 0;
                 end;
                 Ini.Save();
+                Display.SetCursor;
               end;
-
-              //Display.SetCursor;
 
               //glViewPort(0, 0, ScreenW, ScreenH);
             end;

@@ -2221,7 +2221,7 @@ begin
      Display.Cursor_HiddenByScreen then
   begin
     CursorForcedVisible := true;
-    Display.SetCursor;
+    Display.SetCursor(cshIgnoreSingScreen);
   end;
 end;
 
@@ -2233,10 +2233,7 @@ begin
   CursorForcedVisible := false;
 
   if (Display <> nil) and (Display.CurrentScreen = @ScreenSing) then
-  begin
-    Display.Cursor_HiddenByScreen := false;
     Display.SetCursor;
-  end;
 end;
 
 procedure TScreenPopupHelp.ClosePopup;

@@ -1387,7 +1387,7 @@ begin
           fShowWebCam:=false;
         end;
   Background.OnFinish;
-  Display.SetCursor;
+  Display.SetCursor(cshIgnoreSingScreen);
 end;
 
 function TScreenSingController.Draw: boolean;
