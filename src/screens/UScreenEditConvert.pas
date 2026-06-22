@@ -68,11 +68,9 @@ uses
   USongs,
   UThemes,
   math,
-  {$IFDEF UseMIDIPort}
   MidiFile,
   MidiOut,
   MidiCons,
-  {$ENDIF}
   SDL2;
 
 type
@@ -141,10 +139,8 @@ type
       ShowChannels: boolean;
       TracksArea: TMouseOverRect;
 
-      {$IFDEF UseMIDIPort}
       MidiFile:  TMidiFile;
       MidiOut:   TMidiOutput;
-      {$ENDIF}
 
       BPM:       real;
       Ticks:     real;
@@ -153,9 +149,7 @@ type
       procedure AddLyric(StartBeat: integer; LyricType: TLyricType; Text: UTF8String);
       procedure Extract(out Song: TSong; out Track: TLines);
 
-      {$IFDEF UseMIDIPort}
       procedure MidiFile1MidiEvent(event: PMidiEvent);
-      {$ENDIF}
 
       function CountSelectedTracks: integer;
       procedure ClearMidi;
@@ -216,13 +210,11 @@ const
 function TScreenEditConvert.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 var
   SDL_ModState: word;
-{$IFDEF UseMIDIPort}
   SResult: TSaveSongResult;
   MidiTrack: TMidiTrack;
   Song:  TSong;
   Lines: TLines;
   i: integer;
-{$ENDIF}
 
 begin
   Result := true;
@@ -245,10 +237,8 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          {$IFDEF UseMIDIPort}
           if (MidiFile <> nil) then
             MidiFile.StopPlaying;
-          {$ENDIF}
           AudioPlayback.PlaySound(SoundLib.Back);
           FadeTo(@ScreenEdit);
         end;
@@ -265,13 +255,11 @@ begin
           end
           else if Interaction = 1 then // play
           begin
-            {$IFDEF UseMIDIPort}
             if (MidiFile <> nil) then
             begin
               if IsPlaying then
               begin
-                MidiOut.PutShort(MIDI_STOP, 0, 0);
-                MidiOut.PutShort(MIDI_NOTEOFF or 1, 0, 127);
+                MidiOut.StopAll;
                 MidiFile.OnMidiEvent := nil;
                 MidiFile.StopPlaying;
                 Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAY');
@@ -281,17 +269,16 @@ begin
               begin
                 MidiFile.OnMidiEvent := MidiFile1MidiEvent;
                 //MidiFile.GoToTime(MidiFile.GetTrackLength div 2);
+                MidiOut.SetPosition(MidiFile.GetCurrentTime / 1000);
                 MidiFile.ContinuePlaying;
                 Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PAUSE');
                 IsPlaying := true;
                 IsPlayingSelective := false;
               end;
             end;
-            {$ENDIF}
           end
           else if Interaction = 2 then // play selected
           begin
-            {$IFDEF UseMIDIPort}
             if (MidiFile <> nil) then
             begin
               if CountSelectedTracks > 0 then
@@ -317,6 +304,7 @@ begin
                     else MidiTrack.OnMidiEvent := nil;
                   end;
 
+                  MidiOut.SetPosition(MidiFile.GetCurrentTime / 1000);
                   MidiFile.ContinuePlaying;
                   Button[Interaction].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PAUSE');
                   Button[1].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAY');
@@ -329,7 +317,6 @@ begin
                 ScreenPopupError.ShowPopup(Language.Translate('EDITOR_ERROR_NO_TRACK_SELECTED'));
               end;
             end;
-            {$ENDIF}
           end
           else if Interaction = 3 then // stop
           begin
@@ -337,7 +324,6 @@ begin
           end
           else if Interaction = 4 then // save
           begin
-            {$IFDEF UseMIDIPort}
             if CountSelectedTracks > 0 then
             begin
               Extract(Song, Lines);
@@ -353,14 +339,12 @@ begin
             begin
               ScreenPopupError.ShowPopup(Language.Translate('EDITOR_ERROR_NO_TRACK_SELECTED'));
             end;
-            {$ENDIF}
           end;
 
         end;
 
       SDLK_SPACE:
         begin
-          {$IFDEF UseMIDIPort}
           if (MidiFile <> nil) then
           begin
             if not ShowChannels then
@@ -405,7 +389,6 @@ begin
             end;
           end
 
-          {$ENDIF}
         end;
 
       SDLK_TAB:
@@ -472,9 +455,7 @@ function TScreenEditConvert.ParseMouse(MouseButton: integer; BtnDown: boolean; X
 var
   seektime: real;
   i: integer;
-  {$IFDEF UseMIDIPort}
   MidiTrack: TMidiTrack;
-  {$ENDIF}
 begin
   Result := inherited ParseMouse(MouseButton, BtnDown, X, Y);
 
@@ -486,13 +467,14 @@ begin
   begin
     if InRegion(X, Y, TracksArea) then
     begin
-      {$IFDEF UseMIDIPort}
       MidiFile.OnMidiEvent := nil;
 
       seektime := ((X - TracksArea.X) / TracksArea.W);
       seektime := seektime * MidiFile.GetTrackLength;
       if seektime < MidiFile.GetCurrentTime then
         MidiFile.GoToTime(trunc(seektime));
+      MidiOut.StopAll;
+      MidiOut.SetPosition(seektime / 1000);
 
       for i := 0 to High(MTracks) do
       begin
@@ -504,7 +486,6 @@ begin
 
       MidiFile.PlayToTime(trunc(seektime));
       MidiFile.ContinuePlaying;
-      {$ENDIF}
     end;
   end;
 end;
@@ -737,27 +718,38 @@ begin
       Inc(Result);
 end;
 
-{$IFDEF UseMIDIPort}
 procedure TScreenEditConvert.MidiFile1MidiEvent(event: PMidiEvent);
+var
+  EventTime: Double;
 begin
   //Log.LogStatus(IntToStr(event.event), 'MIDI');
   try
-    MidiOut.PutShort(event.event, event.data1, event.data2);
+    EventTime := event.time * MidiFile.GetFusPerTick / 1000000.0;
+
+    if ((event.event and $F0) = MIDI_NOTEON) and (event.data2 <> 0) then
+      MidiOut.NoteOn(event.data1, event.data2, EventTime)
+    else if (((event.event and $F0) = MIDI_NOTEOFF) or
+             (((event.event and $F0) = MIDI_NOTEON) and (event.data2 = 0))) then
+      MidiOut.NoteOff(event.data1, EventTime)
+    else if ((event.event and $F0) = MIDI_CONTROLCHANGE) and (event.data1 = 7) then
+      MidiOut.SetVolume(event.data2 / 127)
+    else if ((event.event and $F0) = MIDI_CONTROLCHANGE) and
+            ((event.data1 = MIDI_ALLNOTESOFF) or (event.data1 = $78)) then
+      MidiOut.StopAll(EventTime)
+    else if (event.event = MIDI_STOP) or (event.event = MIDI_SYSTEMRESET) then
+      MidiOut.StopAll(EventTime);
   except
     MidiFile.StopPlaying();
   end;
 end;
-{$ENDIF}
 
 constructor TScreenEditConvert.Create;
 var
   P:  integer;
 begin
   inherited Create;
-  {$IFDEF UseMIDIPort}
   MidiFile := nil;
   MidiOut := nil;
-  {$ENDIF}
 
   // TODO: Add midi channel filtering. It should allow to filer channels of instruments in single-track midi files
   //       The following lines can be uncommented to test the current UI functionality. With
@@ -794,7 +786,6 @@ begin
 end;
 
 procedure TScreenEditConvert.OnShow;
-{$IFDEF UseMIDIPort}
 var
   T:    integer; // track
   N:    integer; // note
@@ -802,7 +793,6 @@ var
   MidiEvent: PMidiEvent;
   FileOpened: boolean;
   KMIDITrackIndex, SMFTrackIndex: integer;
-{$ENDIF}
 begin
   inherited;
 
@@ -818,7 +808,6 @@ begin
   if not IsFileOpen then Exit;
   IsFileOpen := false;
 
-{$IFDEF UseMIDIPort}
   // Filename is only <> PATH_NONE if we called the OpenScreen before
   fFilename := ScreenOpen.Filename;
   if (fFilename = PATH_NONE) then
@@ -947,7 +936,6 @@ begin
     MTracks[KMIDITrackIndex].Status := MTracks[KMIDITrackIndex].Status + [tsLyrics]
   else if (SMFTrackIndex > -1) then
     MTracks[SMFTrackIndex].Status := MTracks[SMFTrackIndex].Status + [tsLyrics];
-{$ENDIF}
 end;
 
 function TScreenEditConvert.Draw: boolean;
@@ -1027,6 +1015,9 @@ begin
   TrackDiffSel := (HighNote-OffsetHighNote) - (LowNote+OffsetLowNote);
   TrackDiffOther := HighNote - LowNote;
   TrackWidth := InWidth - XTrack - 5 - Padding;
+  TrackPos := XTrack;
+  tm := 0;
+  ts := 0;
 
 
   // Draw time bar
@@ -1038,9 +1029,8 @@ begin
   SetFontPos(XTrack-TimeWidth-5, Y-YSkip);
   glPrint(Format('%.2d:%.2d', [0,0]));
   SetFontPos(Right-TimeWidth-5, Y-YSkip);
-  {$IFDEF UseMIDIPort}
-  MidiTimeToSeconds(MidiFile.GetTrackLength, tm, ts);
-  {$ENDIF}
+  if Assigned(MidiFile) then
+    MidiTimeToSeconds(MidiFile.GetTrackLength, tm, ts);
   glPrint(Format('%.2d:%.2d', [tm,ts]));
 
 
@@ -1130,20 +1120,21 @@ begin
   TracksArea.H := Y - YHeight;
 
   // playing line
-  {$IFDEF UseMIDIPort}
   if (MidiFile <> nil) then
+  begin
     // TODO: use proper event to stop midi playback
     TrackPos := XTrack + (MidiFile.GetCurrentTime/MidiFile.GetTrackLength) * TrackWidth;
     if MidiFile.GetCurrentTime > MidiFile.GetTrackLength then StopPlayback;
-  {$ENDIF}
+  end;
   DrawLine(TrackPos, Top, TrackPos, Bottom, 0.3, 0.3, 0.3);
 
   // TODO: time stamp (in seconds) seems to run slower than actual seconds. IIRC the calculation is correct. Could be related to the Mouse lag while playing
   SetFontSize(FontSize);
   SetFontPos(Max(XTrack + 5, Min(Right - 5 - 2*TimeWidth - 5, TrackPos-(0.5*TimeWidth))), Top-YSkip);
-  {$IFDEF UseMIDIPort}
-  MidiTimeToSeconds(MidiFile.GetCurrentTime, tm, ts);
-  {$ENDIF}
+  tm := 0;
+  ts := 0;
+  if Assigned(MidiFile) then
+    MidiTimeToSeconds(MidiFile.GetCurrentTime, tm, ts);
   glPrint(Format('%.2d:%.2d', [tm, ts]));
 end;
 
@@ -1226,14 +1217,11 @@ end;
 
 procedure TScreenEditConvert.OnHide;
 begin
-{$IFDEF UseMIDIPort}
   if not IsFileOpen then ClearMidi; // do not clear midi when opening file
-{$ENDIF}
 end;
 
 procedure TScreenEditConvert.ClearMidi;
 begin
-{$IFDEF UseMIDIPort}
   // clear data
   MTracks := nil;
 
@@ -1244,12 +1232,10 @@ begin
     MidiOut.Close;
     FreeAndNil(MidiOut);
   end;
-{$ENDIF}
 end;
 
 procedure TScreenEditConvert.StopPlayback;
 begin
-{$IFDEF UseMIDIPort}
   if (MidiFile <> nil) then
   begin
     MidiFile.OnMidiEvent := nil;
@@ -1260,15 +1246,14 @@ begin
 
     MidiFile.StopPlaying;
 
-    MidiOut.Close;
-    MidiOut.Open;
+    MidiOut.StopAll;
+    MidiOut.SetPosition(0);
 
     Button[1].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAY');
     Button[2].Text[0].Text := Language.Translate('SING_EDIT_CONVERT_BUTTON_PLAYSELECTED');
     IsPlaying := false;
     IsPlayingSelective := false;
   end;
-{$ENDIF}
 end;
 
 end.

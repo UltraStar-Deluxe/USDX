@@ -14,7 +14,6 @@ Build-Depends: debhelper (>= 10),
  libavformat-dev,
  libavutil-dev,
  portaudio19-dev,
- libportmidi-dev,
  libswscale-dev,
  libopencv-dev,
  libprojectm-dev (< 3.0.0)

@@ -73,26 +73,6 @@
 {$IFEND}
 
 {$@DEFINE_HAVE_PORTMIXER@ HavePortmixer}
-{$@DEFINE_HAVE_PORTMIDI@ UsePortMidi}
-{$IF Defined(UsePortMidi)}
-  {$DEFINE UseMIDIPort}
-{$IFEND}
-{$@DEFINE_HAVE_MIDI_EMU@ UseMidiEmu}
-{$IF Defined(UseMidiEmu)}
-  {$DEFINE UseMidiEmu}
-  // Ensure the midi unit block is compiled so the emulation unit is included
-  {$DEFINE UseMIDIPort}
-  // When MidiEmu is enabled we want to avoid compiling other midi backends
-  // to prevent accidental use of system synths or PortMidi. Undef those
-  // flags here so downstream conditional blocks stay disabled.
-  {$UNDEF UsePortMidi}
-  {$UNDEF UsePortTime}
-{$IFEND}
-{$@DEFINE_HAVE_PORTTIME@ UsePortTime}
-{$@DEFINE_HAVE_PORTTIME@ PortTime_in_@porttime_LIB_NAME@}
-{$IF Defined(IncludeConstants)}
-  porttime_lib_name = '@porttime_LIB_NAME@';
-{$IFEND}
 
 {$@DEFINE_USE_OPENCV_CWRAPPER@ UseOpenCVWrapper}
 {$@DEFINE_OPENCV_CORE_STANDALONE@ OpenCVCoreStandalone}

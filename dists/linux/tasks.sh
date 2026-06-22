@@ -312,36 +312,6 @@ task_portaudio() {
 	hide make distclean
 }
 
-task_portmidi() {
-	start_build portmidi PortMidi || return 0
-	cd "$SRC"
-	find portmidi/ portmidi-debian/patches/ -type f | while read a ; do
-		tr -d '\r' < "$a" > t
-		cat t >$a
-	done
-	rm t
-	cd portmidi/portmidi
-	while read a ; do
-		patch -l -N -r - -p1 < ../../portmidi-debian/patches/$a || true
-	done < ../../portmidi-debian/patches/series
-	rm -rf build
-	mkdir -p build
-	cd build
-	cmake \
-		-DCMAKE_CACHEFILE_DIR="$(pwd)/out" \
-		-DCMAKE_INSTALL_PREFIX="$PREFIX" \
-		-DCMAKE_INSTALL_LIBDIR:PATH="lib" \
-		-DCMAKE_BUILD_TYPE="Release" \
-		-DCMAKE_C_FLAGS="$CFLAGS" \
-		-DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-		-DDCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
-		..
-	make $makearg portmidi-dynamic
-	make -C pm_dylib install
-	cd ..
-	rm -r build
-}
-
 task_nasm() {
 	start_build nasm NASM || return 0
 	./configure --prefix="$PREFIX" CC="$CC" CXX="$CXX"
@@ -641,9 +611,6 @@ if [ "$1" == "all_deps" ]; then
 
 	task_sqlite
 	echo
-	task_portmidi
-	echo
-
 	task_lua
 	echo
 

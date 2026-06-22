@@ -472,63 +472,8 @@ AC_SUBST_DEFINE(HAVE_PORTAUDIO, $portaudio_HAVE)
 # find portmixer
 PKG_HAVE([portmixer], [portmixer], no)
 AC_SUBST_DEFINE(HAVE_PORTMIXER, $portmixer_HAVE)
-
-AC_ARG_ENABLE(portmidi, [AS_HELP_STRING([--disable-portmidi], [Disable PortTime Midi loop])])
-AC_ARG_WITH(porttime, [AS_HELP_STRING([--with-porttime], [Use PortTime instead of SDL Midi loop])])
-
-
-# Default to MIDI emulation on Linux and macOS unless --disable-midiemu is given
-case "$host_os" in
-    linux*|darwin*)
-        default_midiemu=yes ;;
-    *)
-        default_midiemu=no ;;
-esac
-AC_ARG_ENABLE(midiemu, [AS_HELP_STRING([--enable-midiemu],[Enable built-in MIDI emulation backend (default on Linux/macOS)])],
-    [enable_midiemu=$enableval],
-    [enable_midiemu=$default_midiemu])
-
-AC_ARG_ENABLE(disable-midiemu, [AS_HELP_STRING([--disable-midiemu],[Disable built-in MIDI emulation backend and use system MIDI backend if available])],
-    [if test x$enableval = xyes; then enable_midiemu=no; fi])
-
-
-if [[ x$enable_portmidi != xno ]] ; then
-    AC_CHECK_LIB([portmidi], [Pm_Initialize], [
-        portmidi_HAVE=yes
-        if [[ x$with_porttime = xyes ]] ; then
-            porttime_HAVE=yes
-            AC_CHECK_LIB([portmidi], [Pt_Start], [porttime_LIB_NAME=portmidi],
-                [AC_CHECK_LIB([porttime], [Pt_Start], [porttime_LIB_NAME=porttime],
-                     [AC_MSG_ERROR([PortTime library not found])])])
-        else
-            porttime_HAVE=no
-        fi
-        ], [
-        if [[ x$enable_portmidi = xyes ]] ; then
-            AC_MSG_ERROR([PortMidi library not found])
-        else
-            portmidi_HAVE=no
-        fi
-        ])
-else
-	portmidi_HAVE=no
-fi
-AC_SUBST_DEFINE(HAVE_PORTMIDI, $portmidi_HAVE)
-AC_SUBST_DEFINE(HAVE_PORTTIME, $porttime_HAVE)
-AC_SUBST(porttime_LIB_NAME)
 fi
 
-## MIDI emulation backend
-if [[ x$enable_midiemu = xyes ]] ; then
-    midiemu_HAVE=yes
-    PFLAGS_EXTRA="$PFLAGS_EXTRA -dUseMidiEmu"
-    # Avoid platform MIDI backends with system synths if built-in MIDI emulation is enabled
-    portmidi_HAVE=no
-    porttime_HAVE=no
-else
-    midiemu_HAVE=no
-fi
-AC_SUBST_DEFINE(HAVE_MIDI_EMU, $midiemu_HAVE)
 AC_SUBST(PFLAGS_EXTRA)
 
 # determine linker-flags
@@ -586,4 +531,3 @@ if test x$FPC_PLATFORM = xdarwin; then
 !!! Packaging with $MACOS_PACKAGING and libdir $MACOS_PACKAGING_LIBDIR.
                    ])
 fi
-
