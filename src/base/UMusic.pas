@@ -1601,6 +1601,7 @@ end;
 
 function FindNote(beat: integer): TPos;
 var
+  TrackIndex: integer;
   LineIndex: integer;
   NoteIndex: integer;
   found:     boolean;
@@ -1609,43 +1610,33 @@ var
 
 begin
   found := false;
+  Result.track := 0;
+  Result.line := 0;
+  Result.note := 0;
 
-  for LineIndex := 0 to High(CurrentSong.Tracks[0].Lines) do
+  for TrackIndex := 0 to High(CurrentSong.Tracks) do
   begin
-    for NoteIndex := 0 to High(CurrentSong.Tracks[0].Lines[LineIndex].Notes) do
+    for LineIndex := 0 to High(CurrentSong.Tracks[TrackIndex].Lines) do
     begin
-      if (beat >= CurrentSong.Tracks[0].Lines[LineIndex].Notes[NoteIndex].StartBeat) and
-         (beat <= CurrentSong.Tracks[0].Lines[LineIndex].Notes[NoteIndex].StartBeat + CurrentSong.Tracks[0].Lines[LineIndex].Notes[NoteIndex].Duration) then
+      for NoteIndex := 0 to High(CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes) do
       begin
-        Result.track := 0;
-        Result.line := LineIndex;
-        Result.note := NoteIndex;
-        found := true;
-        break;
-      end;
-    end;
-  end;
-
-  if found then //found exactly
-    exit;
-
-  if CurrentSong.isDuet and (PlayersPlay <> 1) then
-  begin
-    for LineIndex := 0 to High(CurrentSong.Tracks[1].Lines) do
-    begin
-      for NoteIndex := 0 to High(CurrentSong.Tracks[1].Lines[LineIndex].Notes) do
-      begin
-        if (beat >= CurrentSong.Tracks[1].Lines[LineIndex].Notes[NoteIndex].StartBeat) and
-          (beat <= CurrentSong.Tracks[1].Lines[LineIndex].Notes[NoteIndex].StartBeat + CurrentSong.Tracks[1].Lines[LineIndex].Notes[NoteIndex].Duration) then
+        if (beat >= CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat) and
+           (beat <= CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat + CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].Duration) then
         begin
-          Result.track := 1;
+          Result.track := TrackIndex;
           Result.line := LineIndex;
           Result.note := NoteIndex;
           found := true;
           break;
         end;
       end;
+
+      if found then
+        Break;
     end;
+
+    if found then
+      Break;
   end;
 
   if found then //found exactly
@@ -1653,31 +1644,16 @@ begin
 
   min := high(integer);
   //second try (approximating)
-  for LineIndex := 0 to High(CurrentSong.Tracks[0].Lines) do
+  for TrackIndex := 0 to High(CurrentSong.Tracks) do
   begin
-    for NoteIndex := 0 to High(CurrentSong.Tracks[0].Lines[LineIndex].Notes) do
+    for LineIndex := 0 to High(CurrentSong.Tracks[TrackIndex].Lines) do
     begin
-      diff := abs(CurrentSong.Tracks[0].Lines[LineIndex].Notes[NoteIndex].StartBeat - beat);
-      if diff < min then
+      for NoteIndex := 0 to High(CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes) do
       begin
-        Result.track := 0;
-        Result.line := LineIndex;
-        Result.note := NoteIndex;
-        min := diff;
-      end;
-    end;
-  end;
-
-  if CurrentSong.isDuet and (PlayersPlay <> 1) then
-  begin
-    for LineIndex := 0 to High(CurrentSong.Tracks[1].Lines) do
-    begin
-      for NoteIndex := 0 to High(CurrentSong.Tracks[1].Lines[LineIndex].Notes) do
-      begin
-        diff := abs(CurrentSong.Tracks[1].Lines[LineIndex].Notes[NoteIndex].StartBeat - beat);
+        diff := abs(CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes[NoteIndex].StartBeat - beat);
         if diff < min then
         begin
-          Result.track := 1;
+          Result.track := TrackIndex;
           Result.line := LineIndex;
           Result.note := NoteIndex;
           min := diff;
