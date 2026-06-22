@@ -303,9 +303,8 @@ type
       procedure DrawExtensions;
 
       //Medley
-      function  EnsureMedleyData(SongIndex: integer; MinSource: TMedleySource): boolean;
-      procedure StartMedley(NumSongs: integer; MinSource: TMedleySource);
-      function  getVisibleMedleyArr(MinSource: TMedleySource): TVisArr;
+      function  EnsureMedleyData(SongIndex: integer): boolean;
+      procedure StartMedley(NumSongs: integer);
 
       procedure ColorDuetNameSingers;
 
@@ -348,7 +347,7 @@ const
   PREVIEW_DEBOUNCE_MS = 150;
 
 // ***** Public methods ****** //
-function TScreenSong.EnsureMedleyData(SongIndex: integer; MinSource: TMedleySource): boolean;
+function TScreenSong.EnsureMedleyData(SongIndex: integer): boolean;
 var
   PreviousSong: TSong;
 begin
@@ -357,9 +356,10 @@ begin
   if (SongIndex < 0) or (SongIndex > High(CatSongs.Song)) then
     Exit;
 
-  if (MinSource = msCalculated) and
-    (CatSongs.Song[SongIndex].Medley.Source < MinSource) and
-    CatSongs.Song[SongIndex].CalcMedley then
+  if CatSongs.Song[SongIndex].Main then
+    Exit;
+
+  if (CatSongs.Song[SongIndex].Medley.Source < msCalculated) then
   begin
     PreviousSong := CurrentSong;
     try
@@ -369,7 +369,7 @@ begin
     end;
   end;
 
-  Result := CatSongs.Song[SongIndex].Medley.Source >= MinSource;
+  Result := CatSongs.Song[SongIndex].Medley.Source >= msCalculated;
 end;
 
 function TScreenSong.FreeListMode: boolean;
@@ -842,20 +842,10 @@ begin
 
       SDLK_F:
         begin
-          if (Mode = smNormal) and (SDL_ModState = KMOD_LSHIFT) and MakeMedley then
-          begin
-            if Length(PlaylistMedley.Song)>0 then
-            begin
-              SetLength(PlaylistMedley.Song, Length(PlaylistMedley.Song)-1);
-              PlaylistMedley.NumMedleySongs := Length(PlaylistMedley.Song);
-            end;
-
-            if Length(PlaylistMedley.Song)=0 then
-              MakeMedley := false;
-          end else if (Mode = smNormal) and EnsureMedleyData(Interaction, msCalculated) then
+          if (Mode = smNormal) and EnsureMedleyData(Interaction) then
           begin
             MakeMedley := true;
-            StartMedley(99, msCalculated);
+            StartMedley(99);
           end;
         end;
 
@@ -879,7 +869,6 @@ begin
                 end
                 else
                 begin
-                  EnsureMedleyData(Interaction, msCalculated);
                   ScreenSongMenu.OnShow;
 
                   if (ScreenSong.Mode = smJukebox) then
@@ -902,7 +891,6 @@ begin
 
               if (MakeMedley) then
               begin
-                EnsureMedleyData(Interaction, msCalculated);
                 ScreenSongMenu.MenuShow(SM_Medley)
               end
               else
@@ -945,22 +933,14 @@ begin
 
       SDLK_S:
         begin
-          if not (SDL_ModState = KMOD_LSHIFT) and EnsureMedleyData(Interaction, msTag)
-            and not MakeMedley and (Mode = smNormal) then
-            StartMedley(0, msTag)
-          else if not MakeMedley and
-            EnsureMedleyData(Interaction, msCalculated) and
-            (Mode = smNormal)then
-            StartMedley(0, msCalculated);
+          if not MakeMedley and (Mode = smNormal) and EnsureMedleyData(Interaction) then
+            StartMedley(0);
         end;
 
       SDLK_D:
         begin
-          if not (SDL_ModState = KMOD_LSHIFT) and (Mode = smNormal) and
-            (Length(getVisibleMedleyArr(msTag)) > 0) and not MakeMedley then
-            StartMedley(5, msTag)
-          else if (Mode = smNormal) and not MakeMedley then
-            StartMedley(5, msCalculated);
+          if (Mode = smNormal) and not MakeMedley then
+            StartMedley(5);
         end;
 
       SDLK_R:
@@ -4215,7 +4195,7 @@ begin
 end;
 
 //start Medley round
-procedure TScreenSong.StartMedley(NumSongs: integer; MinSource: TMedleySource);
+procedure TScreenSong.StartMedley(NumSongs: integer);
   procedure AddSong(SongNr: integer);
   begin
     SetLength(PlaylistMedley.Song, Length(PlaylistMedley.Song)+1);
@@ -4239,7 +4219,7 @@ procedure TScreenSong.StartMedley(NumSongs: integer; MinSource: TMedleySource);
     Result:=skipped;
   end;
 
-  function GetMedleyCandidateSongs(MinS: TMedleySource): TVisArr;
+  function GetMedleyCandidateSongs: TVisArr;
   var
     I: integer;
   begin
@@ -4248,11 +4228,9 @@ procedure TScreenSong.StartMedley(NumSongs: integer; MinSource: TMedleySource);
 
     for I := 0 to High(CatSongs.Song) do
     begin
-      if CatSongs.Song[Interaction].Main and CatSongs.Song[I].Main then
+      if CatSongs.Song[I].Main then
         Continue;
       if not CatSongs.Song[Interaction].Main and not CatSongs.Song[I].Visible then
-        Continue;
-      if (MinS <> msCalculated) and (CatSongs.Song[I].Medley.Source < MinS) then
         Continue;
 
       SetLength(Result, Length(Result) + 1);
@@ -4283,7 +4261,7 @@ begin
   begin
     //set up Playlist Medley
     SetLength(PlaylistMedley.Song, 0);
-    CandidateSongs := GetMedleyCandidateSongs(MinSource);
+    CandidateSongs := GetMedleyCandidateSongs;
 
     while (Length(PlaylistMedley.Song) < NumSongs) and (Length(CandidateSongs) > 0) do
     begin
@@ -4291,7 +4269,7 @@ begin
       if SongNr < 0 then
         Break;
 
-      if EnsureMedleyData(SongNr, MinSource) then
+      if EnsureMedleyData(SongNr) then
         AddSong(SongNr);
     end;
 
@@ -4299,7 +4277,7 @@ begin
   end else if not MakeMedley then //start this song
   begin
     SetLength(PlaylistMedley.Song, 0);
-    if EnsureMedleyData(Interaction, MinSource) then
+    if EnsureMedleyData(Interaction) then
     begin
       AddSong(Interaction);
       PlaylistMedley.NumMedleySongs := 1;
@@ -4309,7 +4287,7 @@ begin
   end
   else if MakeMedley then
   begin
-    if EnsureMedleyData(Interaction, MinSource) then
+    if EnsureMedleyData(Interaction) then
     begin
       AddSong(Interaction);
       PlaylistMedley.NumMedleySongs := Length(PlaylistMedley.Song);
@@ -4360,36 +4338,6 @@ begin
           else
             ScreenSongMenu.MenuShow(SM_Main);
         end;}
-      end;
-    end;
-  end;
-end;
-
-function TScreenSong.getVisibleMedleyArr(MinSource: TMedleySource): TVisArr;
-var
-  I:      integer;
-
-begin
-  Result := nil;
-  SetLength(Result, 0);
-  if CatSongs.Song[Interaction].Main then
-  begin
-    for I := 0 to High(CatSongs.Song) do
-    begin
-      if not CatSongs.Song[I].Main and (CatSongs.Song[I].Medley.Source >= MinSource) then
-      begin
-        SetLength(Result, Length(Result)+1);
-        Result[Length(Result)-1] := I;
-      end;
-    end;
-  end else
-  begin
-    for I := 0 to High(CatSongs.Song) do
-    begin
-      if CatSongs.Song[I].Visible and (CatSongs.Song[I].Medley.Source >= MinSource) then
-      begin
-        SetLength(Result, Length(Result)+1);
-        Result[Length(Result)-1] := I;
       end;
     end;
   end;
