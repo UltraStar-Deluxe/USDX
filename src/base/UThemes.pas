@@ -346,16 +346,8 @@ type
     //Video Icon Mod
     VideoIcon:        TThemeStatic;
 
-    //Medley Icons
-    MedleyIcon:             TThemeStatic;
-    CalculatedMedleyIcon:   TThemeStatic;
-
     //Duet Icon
     DuetIcon:         TThemeStatic;
-
-    //Rap Icons
-    RapIcon:          TThemeStatic;
-    RapToFreestyleIcon: TThemeStatic;
 
     //Show Cat in TopLeft Mod
     TextCat:          TThemeText;
@@ -3829,16 +3821,8 @@ begin
   //Video Icon Mod
   ThemeLoadStatic(Song.VideoIcon, 'Song' + prefix + 'VideoIcon');
 
-  //Medley Icons
-  ThemeLoadStatic(Song.MedleyIcon, 'Song' + prefix + 'MedleyIcon');
-  ThemeLoadStatic(Song.CalculatedMedleyIcon, 'Song' + prefix + 'CalculatedMedleyIcon');
-
   //Duet Icon
   ThemeLoadStatic(Song.DuetIcon, 'Song' + prefix + 'DuetIcon');
-
-  //Rap Icons
-  ThemeLoadStatic(Song.RapIcon, 'Song' + prefix + 'RapIcon');
-  ThemeLoadStatic(Song.RapToFreestyleIcon, 'Song' + prefix + 'RapToFreestyleIcon');
 
   //Show Cat in TopLeft Mod
   ThemeLoadStatic(Song.StaticCat, 'Song' + prefix + 'StaticCat');
