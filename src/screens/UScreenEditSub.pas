@@ -3744,6 +3744,77 @@ var
       end;
     end;
   end;
+
+  function IsTrailingSplitPunctuation(const Ch: UTF8String): Boolean;
+  var
+    Chars: UCS4String;
+  begin
+    Result := false;
+
+    Chars := UTF8ToUCS4String(Ch);
+    if LengthUCS4(Chars) <> 1 then
+      Exit;
+
+    case Chars[0] of
+      $0021, // !
+      $0022, // "
+      $0027, // '
+      $0029, // )
+      $002C, // ,
+      $002E, // .
+      $003A, // :
+      $003B, // ;
+      $003F, // ?
+      $005D, // ]
+      $007D, // }
+      $00AB, // left-pointing double angle quote
+      $00BB, // right-pointing double angle quote
+      $2018, // left single quotation mark
+      $2019, // right single quotation mark
+      $201A, // single low-9 quotation mark
+      $201B, // single high-reversed-9 quotation mark
+      $201C, // left double quotation mark
+      $201D, // right double quotation mark
+      $201E, // double low-9 quotation mark
+      $201F, // double high-reversed-9 quotation mark
+      $2026, // horizontal ellipsis
+      $2032, // prime
+      $2033: // double prime
+        Result := true;
+    end;
+  end;
+
+  function ExtractTrailingSplitPunctuation(var S: UTF8String): UTF8String;
+  var
+    LastChar: UTF8String;
+    LastCharPos: Integer;
+  begin
+    Result := '';
+    LastCharPos := LengthUTF8(S);
+
+    while LastCharPos > 0 do
+    begin
+      LastChar := UTF8Copy(S, LastCharPos, 1);
+      if not IsTrailingSplitPunctuation(LastChar) then
+        Break;
+
+      Result := LastChar + Result;
+      UTF8Delete(S, LastCharPos, 1);
+      LastCharPos := LengthUTF8(S);
+    end;
+  end;
+
+  procedure MoveTrailingPunctuationToContinuation(var LeftText, RightText: UTF8String);
+  var
+    TrailingPunctuation: UTF8String;
+  begin
+    if (LengthUTF8(RightText) = 0) or (UTF8Copy(RightText, 1, 1) <> '~') then
+      Exit;
+
+    TrailingPunctuation := ExtractTrailingSplitPunctuation(LeftText);
+    if TrailingPunctuation <> '' then
+      RightText := '~' + TrailingPunctuation + UTF8Copy(RightText, 2, LengthUTF8(RightText));
+  end;
 begin
   LineIndex := CurrentSong.Tracks[CurrentTrack].CurrentLine;
   NoteDuration := CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].Notes[CurrentNote[CurrentTrack]].Duration;
@@ -3852,6 +3923,7 @@ begin
         Notes[CurrentNote[CurrentTrack] + 1].Text := '~';
       Notes[CurrentNote[CurrentTrack]].Text := TrimRight(Notes[CurrentNote[CurrentTrack]].Text);
     end;
+    MoveTrailingPunctuationToContinuation(Notes[CurrentNote[CurrentTrack]].Text, Notes[CurrentNote[CurrentTrack] + 1].Text);
     Notes[CurrentNote[CurrentTrack]+1].Color := 1;
   end;
 
