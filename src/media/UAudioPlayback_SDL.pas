@@ -150,7 +150,10 @@ begin
   // So we use the average buffer-size.
   Latency := (ObtainedAudioSpec.samples/2) / FormatInfo.SampleRate;
 
-  Log.LogStatus('Opened audio device', 'TAudioPlayback_SDL.InitializeAudioPlaybackEngine');
+  Log.LogStatus('Opened audio device, SampleBufferSize: ' + 
+                IntToStr(ObtainedAudioSpec.samples) + '; SampleRate: ' + 
+                FloatToStr(FormatInfo.SampleRate) + 'Hz', 
+                'TAudioPlayback_SDL.InitializeAudioPlaybackEngine');
 
   Result := true;
 end;
