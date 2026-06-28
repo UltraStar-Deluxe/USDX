@@ -99,11 +99,14 @@ type
     fTotalSongsToLoad:   integer;
     fSongsLoaded:        integer;
     function CollectSongFiles: TPathDynArray;
+    function GetUTF8FilesystemTestSongFile: IPath;
+    function FindUTF8FilesystemTestSong: TSong;
     procedure int_LoadSongList;
     procedure DoDirChanged(Sender: TObject);
     procedure LoadSongFromFile(const FilePath: IPath);
     procedure UpdateDiscoveryProgress(SongsFound: integer; Force: boolean = false);
     procedure UpdateSongLoadingProgress(Force: boolean = false);
+    procedure ValidateUTF8FilesystemTestSong;
   protected
     procedure Execute; override;
   public
@@ -172,6 +175,7 @@ uses
   UFiles,
   UGraphic,
   UMain,
+  UMusic,
   UPathUtils,
   UNote,
   UFilesystem,
@@ -179,6 +183,14 @@ uses
 
 var
   LastLoadingEventPumpTicks: cardinal = 0;
+
+const
+  UTF8FilesystemTestName =
+    'Test ' + #$C5#$93#$E2#$89#$88#$E2#$80#$A0#$C2#$AE;
+  UTF8FilesystemTestSongFile =
+    'Test - ' + UTF8FilesystemTestName + '.txt';
+  UTF8FilesystemTestAudioFile =
+    'Test - ' + UTF8FilesystemTestName + '.m4a';
 
 procedure PumpLoadingEvents;
 const
@@ -249,6 +261,7 @@ begin
 
   // until it is fixed, simply load the song-list
   int_LoadSongList();
+  ValidateUTF8FilesystemTestSong;
 end;
 
 destructor TSongs.Destroy();
@@ -350,6 +363,87 @@ procedure TSongs.LoadSongList;
 begin
   fParseSongDirectory := true;
   Resume();
+end;
+
+function TSongs.GetUTF8FilesystemTestSongFile: IPath;
+begin
+  Result := Platform.GetGameSharedPath.
+    Append('songs').
+    Append(UTF8FilesystemTestName).
+    Append(UTF8FilesystemTestSongFile).
+    GetAbsolutePath;
+end;
+
+function TSongs.FindUTF8FilesystemTestSong: TSong;
+var
+  I: integer;
+  ExpectedFile: IPath;
+  LoadedFile: IPath;
+begin
+  Result := nil;
+  ExpectedFile := GetUTF8FilesystemTestSongFile;
+
+  for I := 0 to SongList.Count - 1 do
+  begin
+    LoadedFile := TSong(SongList[I]).Path.Append(TSong(SongList[I]).FileName).GetAbsolutePath;
+    if LoadedFile.Equals(ExpectedFile) then
+    begin
+      Result := TSong(SongList[I]);
+      Exit;
+    end;
+  end;
+end;
+
+procedure TSongs.ValidateUTF8FilesystemTestSong;
+var
+  Song: TSong;
+  AudioFile: IPath;
+begin
+  Song := FindUTF8FilesystemTestSong;
+  if not Assigned(Song) then
+  begin
+    Log.LogCritical(
+      'UTF-8 filesystem startup test failed. The bundled test song file was not loaded.',
+      'TSongs.ValidateUTF8FilesystemTestSong'
+    );
+  end;
+
+  if not Song.Audio.Equals(UTF8FilesystemTestAudioFile) then
+  begin
+    Log.LogCritical(
+      'UTF-8 filesystem startup test failed. The bundled test song audio tag was decoded as "' +
+      Song.Audio.ToNative + '" instead of "' + UTF8FilesystemTestAudioFile + '".',
+      'TSongs.ValidateUTF8FilesystemTestSong'
+    );
+  end;
+
+  AudioFile := Song.Path.Append(Song.Audio).GetAbsolutePath;
+  if not AudioFile.IsFile then
+  begin
+    Log.LogCritical(
+      'UTF-8 filesystem startup test failed. The bundled test song audio file was not found: ' +
+      AudioFile.ToNative,
+      'TSongs.ValidateUTF8FilesystemTestSong'
+    );
+  end;
+
+  if Assigned(AudioPlayback) then
+  begin
+    if not AudioPlayback.Open(AudioFile, nil) then
+    begin
+      Log.LogCritical(
+        'UTF-8 filesystem startup test failed. The bundled test song audio file could not be opened: ' +
+        AudioFile.ToNative,
+        'TSongs.ValidateUTF8FilesystemTestSong'
+      );
+    end;
+    AudioPlayback.Close;
+  end;
+
+  Log.LogStatus(
+    'UTF-8 filesystem startup test passed: ' + GetUTF8FilesystemTestSongFile.ToNative,
+    'TSongs.ValidateUTF8FilesystemTestSong'
+  );
 end;
 
 procedure TSongs.FindFilesByExtension(const Dir: IPath; const Ext: IPath; Recursive: Boolean; var Files: TPathDynArray);
