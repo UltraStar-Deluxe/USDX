@@ -1572,8 +1572,9 @@ end;
 
 function TLine.HasLength(out Len: integer): boolean;
 begin
+  Len := 0;
   Result := false;
-  if Length(Notes) >= 0 then
+  if Length(Notes) > 0 then
   begin
     Len := EndBeat - Notes[0].StartBeat;
     Result := (Len > 0);
@@ -1596,7 +1597,10 @@ end;
 
 function TLine.GetLength(): integer;
 begin
-  Result := ifthen(Length(Notes) < 0, 0, EndBeat - Notes[0].StartBeat);
+  if Length(Notes) > 0 then
+    Result := EndBeat - Notes[0].StartBeat
+  else
+    Result := 0;
 end;
 
 function FindNote(beat: integer): TPos;

@@ -579,7 +579,9 @@ begin
   // song info
   Song := TSong.Create();
   Song.Clear();
-  Song.BPM := BPM*4;
+  Song.BPM := BPM * 4;
+  if Song.BPM < MIN_BPM then
+    Song.BPM := MIN_BPM;
   SetLength(Notes, 0);
 
   // extract notes
