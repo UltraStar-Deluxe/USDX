@@ -58,6 +58,7 @@ uses
 
 type
   TPopupCheckHandler = procedure(Value: boolean; Data: Pointer);
+  TPopupErrorHandler = procedure(Value: integer; Data: Pointer);
 
   TScreenPopupCheck = class(TMenu)
     private
@@ -135,10 +136,19 @@ type
 
 type
   TScreenPopup = class(TMenu)
-    {
     private
-      CurMenu: byte; //Num of the cur. Shown Menu
-    }
+      fHandler: TPopupErrorHandler;
+      fHandlerData: Pointer;
+      fCancelValue: integer;
+      fButtonCount: integer;
+      fButtonTextX: real;
+
+      procedure ResetLayout;
+      procedure ConfigureButtons(const Captions: array of UTF8String; DefaultInteraction: integer);
+      procedure HideAndHandle(Value: integer; out Result: boolean);
+      function ButtonWidth(const Caption: UTF8String): real;
+      function MeasureLineCount(const Msg: UTF8String; MaxWidth: real): integer;
+      procedure LayoutPopup(const Msg: UTF8String; const Captions: array of UTF8String);
     public
       Visible: boolean; //Whether the Menu should be Drawn
 
@@ -146,7 +156,10 @@ type
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
       procedure OnHide; override;
-      procedure ShowPopup(const Msg: UTF8String);
+      procedure ShowPopup(const Msg: UTF8String); overload;
+      procedure ShowPopup(const Msg: UTF8String; const Captions: array of UTF8String;
+          Handler: TPopupErrorHandler; HandlerData: Pointer; DefaultInteraction: integer;
+          CancelValue: integer); overload;
       function Draw: boolean; override;
   end;
 
@@ -1457,6 +1470,8 @@ end;
 { TScreenPopup }
 
 function TScreenPopup.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+var
+  Selection: integer;
 begin
   Result := true;
   if (PressedDown) then
@@ -1471,14 +1486,13 @@ begin
       SDLK_ESCAPE,
       SDLK_BACKSPACE :
         begin
-          Visible := false;
-          Result := false;
+          HideAndHandle(fCancelValue, Result);
         end;
 
       SDLK_RETURN:
         begin
-          Visible := false;
-          Result := false;
+          Selection := EnsureRange(Interaction, 0, fButtonCount - 1);
+          HideAndHandle(Selection, Result);
         end;
 
       SDLK_DOWN:    InteractNext;
@@ -1494,6 +1508,11 @@ constructor TScreenPopup.Create;
 begin
   inherited Create;
 
+  fHandler := nil;
+  fHandlerData := nil;
+  fCancelValue := 0;
+  fButtonCount := 1;
+
   AddText(Theme.ErrorPopup.TextError);
 
   LoadFromTheme(Theme.ErrorPopup);
@@ -1502,6 +1521,17 @@ begin
   if (Length(Button[0].Text) = 0) then
     AddButtonText(14, 20, 'Button 1');
 
+  AddButton(Theme.ErrorPopup.Button1);
+  if (Length(Button[1].Text) = 0) then
+    AddButtonText(14, 20, 'Button 2');
+
+  AddButton(Theme.ErrorPopup.Button1);
+  if (Length(Button[2].Text) = 0) then
+    AddButtonText(14, 20, 'Button 3');
+
+  fButtonTextX := Button[0].TextOffset[0].X;
+
+  ResetLayout;
   Interaction := 0;
 end;
 
@@ -1521,28 +1551,260 @@ procedure TScreenPopup.OnHide;
 begin
 end;
 
-procedure TScreenPopup.ShowPopup(const Msg: UTF8String);
+procedure TScreenPopup.ResetLayout;
+var
+  ButtonIndex: integer;
 begin
-  Interaction := 0; //Reset Interaction
-  Visible := true;  //Set Visible
-  Background.OnShow;
+  Text[0].X := Theme.ErrorPopup.TextError.X;
+  Text[0].Y := Theme.ErrorPopup.TextError.Y;
+  Text[0].W := Theme.ErrorPopup.TextError.W;
+  Text[0].H := Theme.ErrorPopup.TextError.H;
+  Text[0].Size := Theme.ErrorPopup.TextError.Size;
+  Text[0].Align := Theme.ErrorPopup.TextError.Align;
 
-{  //dirty hack... Text[0] is invisible for some strange reason
-  for i:=1 to high(Text) do
-    if i-1 <= high(msg) then
-    begin
-      Text[i].Visible := true;
-      Text[i].Text := msg[i-1];
-    end
+  if (Length(Text) > 1) and (Length(Theme.ErrorPopup.Text) > 0) then
+  begin
+    Text[1].X := Theme.ErrorPopup.Text[0].X;
+    Text[1].Y := Theme.ErrorPopup.Text[0].Y;
+    Text[1].W := Theme.ErrorPopup.Text[0].W;
+    Text[1].H := Theme.ErrorPopup.Text[0].H;
+    Text[1].Size := Theme.ErrorPopup.Text[0].Size;
+    Text[1].Align := Theme.ErrorPopup.Text[0].Align;
+  end;
+
+  if (Length(Statics) > 0) and (Length(Theme.ErrorPopup.Statics) > 0) then
+  begin
+    Statics[0].Texture.X := Theme.ErrorPopup.Statics[0].X;
+    Statics[0].Texture.Y := Theme.ErrorPopup.Statics[0].Y;
+    Statics[0].Texture.W := Theme.ErrorPopup.Statics[0].W;
+    Statics[0].Texture.H := Theme.ErrorPopup.Statics[0].H;
+  end;
+
+  for ButtonIndex := 0 to High(Button) do
+  begin
+    Button[ButtonIndex].W := Theme.ErrorPopup.Button1.W;
+    Button[ButtonIndex].H := Theme.ErrorPopup.Button1.H;
+    Button[ButtonIndex].TextOffset[0].X := fButtonTextX;
+    Button[ButtonIndex].X := Theme.ErrorPopup.Button1.X;
+    Button[ButtonIndex].Y := Theme.ErrorPopup.Button1.Y;
+  end;
+end;
+
+procedure TScreenPopup.ConfigureButtons(const Captions: array of UTF8String; DefaultInteraction: integer);
+var
+  ButtonCount: integer;
+  ButtonIndex: integer;
+  ButtonGap: real;
+  ButtonWidths: array[0..2] of real;
+  TotalButtonWidth: real;
+  ButtonX: real;
+  PopupScaleX: real;
+  PopupX: real;
+  PopupW: real;
+begin
+  ButtonCount := Length(Captions);
+  if ButtonCount <= 0 then
+    ButtonCount := 1;
+  ButtonCount := Min(ButtonCount, Length(Button));
+  fButtonCount := ButtonCount;
+
+  PopupScaleX := 1;
+  PopupX := Theme.ErrorPopup.Statics[0].X;
+  PopupW := Theme.ErrorPopup.Statics[0].W;
+  if (Length(Statics) > 0) and (Theme.ErrorPopup.Statics[0].W > 0) then
+  begin
+    PopupScaleX := Statics[0].Texture.W / Theme.ErrorPopup.Statics[0].W;
+    PopupX := Statics[0].Texture.X;
+    PopupW := Statics[0].Texture.W;
+  end;
+
+  TotalButtonWidth := 0;
+  for ButtonIndex := 0 to ButtonCount - 1 do
+  begin
+    if Length(Captions) > 0 then
+      ButtonWidths[ButtonIndex] := ButtonWidth(Captions[ButtonIndex])
     else
+      ButtonWidths[ButtonIndex] := Theme.ErrorPopup.Button1.W;
+    TotalButtonWidth := TotalButtonWidth + ButtonWidths[ButtonIndex];
+  end;
+
+  if ButtonCount > 1 then
+    ButtonGap := Max(0, (PopupW - TotalButtonWidth) / (ButtonCount + 1))
+  else
+    ButtonGap := 0;
+  ButtonX := PopupX + ButtonGap;
+
+  for ButtonIndex := 0 to High(Button) do
+  begin
+    Button[ButtonIndex].Visible := (ButtonIndex < ButtonCount);
+    if ButtonIndex < ButtonCount then
     begin
-      Text[i].Visible := false;
-    end;}
-  Text[0].Text := msg;
+      if Length(Captions) > 0 then
+        Button[ButtonIndex].Text[0].Text := Captions[ButtonIndex];
+      Button[ButtonIndex].W := ButtonWidths[ButtonIndex];
+      case Button[ButtonIndex].Text[0].Align of
+        1: Button[ButtonIndex].TextOffset[0].X := fButtonTextX +
+            (ButtonWidths[ButtonIndex] - Theme.ErrorPopup.Button1.W) / 2;
+        2: Button[ButtonIndex].TextOffset[0].X := fButtonTextX +
+            ButtonWidths[ButtonIndex] - Theme.ErrorPopup.Button1.W;
+      end;
+      if ButtonCount = 1 then
+        Button[ButtonIndex].X := PopupX +
+            (Theme.ErrorPopup.Button1.X + Theme.ErrorPopup.Button1.W / 2 -
+            Theme.ErrorPopup.Statics[0].X) * PopupScaleX -
+            ButtonWidths[ButtonIndex] / 2
+      else
+      begin
+        Button[ButtonIndex].X := ButtonX;
+        ButtonX := ButtonX + ButtonWidths[ButtonIndex] + ButtonGap;
+      end;
+    end;
+  end;
 
-  Button[0].Visible := true;
+  Interaction := EnsureRange(DefaultInteraction, 0, ButtonCount - 1);
+end;
 
-  Button[0].Text[0].Text := 'OK';
+procedure TScreenPopup.HideAndHandle(Value: integer; out Result: boolean);
+begin
+  Visible := false;
+  Result := false;
+  if Assigned(fHandler) then
+    fHandler(Value, fHandlerData);
+end;
+
+function TScreenPopup.ButtonWidth(const Caption: UTF8String): real;
+begin
+  SetFontFamily(Button[0].Text[0].Font);
+  SetFontStyle(Button[0].Text[0].Style);
+  SetFontSize(Button[0].Text[0].Size);
+  Result := Max(Theme.ErrorPopup.Button1.W,
+      glTextWidth(Caption) + Theme.ErrorPopup.Button1.H);
+end;
+
+function TScreenPopup.MeasureLineCount(const Msg: UTF8String; MaxWidth: real): integer;
+begin
+  Text[0].W := MaxWidth;
+  Text[0].H := 0;
+  Text[0].Size := Theme.ErrorPopup.TextError.Size;
+  Text[0].Text := Msg;
+  Result := Max(Text[0].LineCount, 1);
+end;
+
+procedure TScreenPopup.LayoutPopup(const Msg: UTF8String; const Captions: array of UTF8String);
+const
+  HorizontalGrowth = 0.8;
+  ScaleIncrement = 0.05;
+var
+  BaseBodyHeight: real;
+  ButtonCount: integer;
+  ButtonIndex: integer;
+  CenterX: real;
+  CenterY: real;
+  LineCount: integer;
+  MaxScaleX: real;
+  MaxScaleY: real;
+  ScaleX: real;
+  ScaleY: real;
+  AvailableBodyHeight: real;
+  RequiredButtonWidth: real;
+  PopupWidth: real;
+  PopupHeight: real;
+  PopupX: real;
+  PopupY: real;
+begin
+  ResetLayout;
+
+  if (Length(Statics) = 0) or (Length(Theme.ErrorPopup.Statics) = 0) or
+      (Theme.ErrorPopup.Statics[0].W <= 0) or (Theme.ErrorPopup.Statics[0].H <= 0) then
+    Exit;
+
+  if Theme.ErrorPopup.TextError.H > 0 then
+    BaseBodyHeight := Theme.ErrorPopup.TextError.H
+  else
+    BaseBodyHeight := Max(Theme.ErrorPopup.TextError.Size,
+        Theme.ErrorPopup.Button1.Y - Theme.ErrorPopup.TextError.Y);
+
+  ButtonCount := EnsureRange(Length(Captions), 1, Length(Button));
+  RequiredButtonWidth := 0;
+  for ButtonIndex := 0 to ButtonCount - 1 do
+  begin
+    if Length(Captions) > 0 then
+      RequiredButtonWidth := RequiredButtonWidth + ButtonWidth(Captions[ButtonIndex])
+    else
+      RequiredButtonWidth := RequiredButtonWidth + Theme.ErrorPopup.Button1.W;
+  end;
+
+  CenterX := Theme.ErrorPopup.Statics[0].X + Theme.ErrorPopup.Statics[0].W / 2;
+  CenterY := Theme.ErrorPopup.Statics[0].Y + Theme.ErrorPopup.Statics[0].H / 2;
+  MaxScaleX := Max(1, 2 * Min(CenterX, RenderW - CenterX) /
+      Theme.ErrorPopup.Statics[0].W);
+  MaxScaleY := Max(1, 2 * Min(CenterY, RenderH - CenterY) /
+      Theme.ErrorPopup.Statics[0].H);
+
+  ScaleY := 1;
+  repeat
+    ScaleX := Min(MaxScaleX, 1 + (ScaleY - 1) * HorizontalGrowth);
+    AvailableBodyHeight := BaseBodyHeight +
+        Theme.ErrorPopup.Statics[0].H * (ScaleY - 1);
+    LineCount := MeasureLineCount(Msg, Theme.ErrorPopup.TextError.W * ScaleX);
+    if ((LineCount * Theme.ErrorPopup.TextError.Size <= AvailableBodyHeight) and
+        (RequiredButtonWidth <= Theme.ErrorPopup.Statics[0].W * ScaleX)) or
+        (ScaleY >= MaxScaleY) then
+      Break;
+    ScaleY := Min(ScaleY + ScaleIncrement, MaxScaleY);
+  until false;
+
+  PopupWidth := Theme.ErrorPopup.Statics[0].W * ScaleX;
+  PopupHeight := Theme.ErrorPopup.Statics[0].H * ScaleY;
+  PopupX := CenterX - PopupWidth / 2;
+  PopupY := CenterY - PopupHeight / 2;
+
+  Statics[0].Texture.X := PopupX;
+  Statics[0].Texture.Y := PopupY;
+  Statics[0].Texture.W := PopupWidth;
+  Statics[0].Texture.H := PopupHeight;
+
+  Text[0].X := PopupX + (Theme.ErrorPopup.TextError.X -
+      Theme.ErrorPopup.Statics[0].X) * ScaleX;
+  Text[0].Y := PopupY + Theme.ErrorPopup.TextError.Y -
+      Theme.ErrorPopup.Statics[0].Y;
+  Text[0].W := Theme.ErrorPopup.TextError.W * ScaleX;
+  Text[0].H := AvailableBodyHeight;
+
+  if (Length(Text) > 1) and (Length(Theme.ErrorPopup.Text) > 0) then
+  begin
+    Text[1].X := PopupX + (Theme.ErrorPopup.Text[0].X -
+        Theme.ErrorPopup.Statics[0].X) * ScaleX;
+    Text[1].Y := PopupY + Theme.ErrorPopup.Text[0].Y -
+        Theme.ErrorPopup.Statics[0].Y;
+    Text[1].W := Theme.ErrorPopup.Text[0].W * ScaleX;
+  end;
+
+  for ButtonIndex := 0 to High(Button) do
+    Button[ButtonIndex].Y := PopupY + PopupHeight -
+        (Theme.ErrorPopup.Statics[0].Y + Theme.ErrorPopup.Statics[0].H -
+        Theme.ErrorPopup.Button1.Y);
+end;
+
+procedure TScreenPopup.ShowPopup(const Msg: UTF8String); overload;
+begin
+  ShowPopup(Msg, ['OK'], nil, nil, 0, 0);
+end;
+
+procedure TScreenPopup.ShowPopup(const Msg: UTF8String; const Captions: array of UTF8String;
+    Handler: TPopupErrorHandler; HandlerData: Pointer; DefaultInteraction: integer;
+    CancelValue: integer); overload;
+begin
+  Visible := true;
+  Background.OnShow;
+  fHandler := Handler;
+  fHandlerData := HandlerData;
+  fCancelValue := CancelValue;
+
+  LayoutPopup(Msg, Captions);
+  Text[0].Text := Msg;
+
+  ConfigureButtons(Captions, DefaultInteraction);
 end;
 
 { TScreenPopupError }

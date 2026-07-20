@@ -49,6 +49,8 @@ type
 
       STicks:      cardinal;
       SelectBlink: boolean;
+
+      function GetLineCount: integer;
     public
       X:       single;
       Y:       single;
@@ -80,6 +82,8 @@ type
 
       procedure SetText(Value: UTF8String);
       property  Text: UTF8String read TextString write SetText;
+
+      property LineCount: integer read GetLineCount;
 
       procedure DeleteLastLetter; //< Deletes the rightmost letter
 
@@ -277,6 +281,11 @@ end;
 procedure TText.DeleteLastLetter;
 begin
   SetText(UTF8Copy(TextString, 1, LengthUTF8(TextString)-1));
+end;
+
+function TText.GetLineCount: integer;
+begin
+  Result := Length(TextTiles);
 end;
 
 procedure TText.Draw;
