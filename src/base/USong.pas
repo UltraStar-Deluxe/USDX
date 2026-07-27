@@ -115,7 +115,8 @@ type
     FMD5Cached  : boolean;
 
     function DecodeFilename(Filename: RawByteString): IPath;
-    procedure ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String; RapToFreestyle: boolean);
+    procedure ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer;
+      LyricS: UTF8String; RapToFreestyle, FreestyleToRap: boolean);
     procedure NewSentence(LineNumberP: integer; Param1, Param2: integer);
     procedure FindRefrain(); // tries to find a refrain for the medley mode and preview start
 
@@ -128,7 +129,9 @@ type
     function ReadTXTHeader(SongFile: TTextFileStream; ReadCustomTags: Boolean): boolean;
 
     function GetFolderCategory(const aFileName: IPath): UTF8String;
-    function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
+    function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath;
+      DuetChange, RapToFreestyle, FreestyleToRap, OutOfBoundsToFreestyle: boolean;
+      AudioLength: real): boolean;
     function GetMD5: string;
     procedure SetMD5(const Value: string);
   public
@@ -189,6 +192,8 @@ type
     DuetNames:  array of UTF8String; // duet singers name
 
     hasRap: boolean;
+    hasFreestyle: boolean;
+    NoteTypesLoaded: boolean;
 
     CustomTags: array of TCustomHeaderTag;
 
@@ -216,7 +221,10 @@ type
     constructor Create(const aFileName : IPath); overload;
     destructor  Destroy; override;
     function    LoadSong(DuetChange: boolean): boolean;
-    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false; OutOfBoundsToFreestyle: boolean = false; AudioLength: real = 0; ForceLoadNotes: boolean = false): boolean;
+    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false;
+      RapToFreestyle: boolean = false; FreestyleToRap: boolean = false;
+      OutOfBoundsToFreestyle: boolean = false; AudioLength: real = 0;
+      ForceLoadNotes: boolean = false): boolean;
     procedure   SetMedleyMode();
     procedure   Clear();
     function    MD5SongFile(SongFileR: TTextFileStream): string;
@@ -617,11 +625,13 @@ begin
   end;
 
   CurrentSong := self;
-  Result := LoadOpenedSong(SongFile, FileNamePath, DuetChange, false, false, 0);
+  Result := LoadOpenedSong(SongFile, FileNamePath, DuetChange, false, false, false, 0);
   SongFile.Free;
 end;
 
-function TSong.LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
+function TSong.LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath;
+  DuetChange, RapToFreestyle, FreestyleToRap, OutOfBoundsToFreestyle: boolean;
+  AudioLength: real): boolean;
 var
   CurLine:      RawByteString;
   LinePos:      integer;
@@ -634,6 +644,7 @@ var
   Param2:       integer;
   Param3:       integer;
   ParamLyric:   UTF8String;
+  ConvertFreestyleNote: boolean;
 
   NotesFound:   boolean;
 
@@ -669,6 +680,9 @@ begin
   Mult              := 1; // accuracy of measurement of note
   Rel[0]            := 0;
   Rel[1]            := 0;
+  hasRap            := false;
+  hasFreestyle      := false;
+  NoteTypesLoaded   := false;
 
   try
     SongFile.Position := 0;
@@ -777,11 +791,14 @@ begin
         end
         else if (Param0 in [':', '*', 'F', 'R', 'G']) then
         begin
-          // sets the rap icon if the song has rap notes
-          if(Param0 in ['R', 'G']) then
-          begin
-            Self.hasRap := true;
-          end;
+          // Remember the note types from the file before applying temporary
+          // singing-mode conversions.
+          if Param0 in ['R', 'G'] then
+            Self.hasRap := true
+          else if Param0 = 'F' then
+            Self.hasFreestyle := true;
+          ConvertFreestyleNote := FreestyleToRap and (Param0 = 'F');
+
           // read notes
           Param1 := ParseLyricIntParam(CurLine, LinePos);
           Param2 := ParseLyricIntParam(CurLine, LinePos);
@@ -797,12 +814,14 @@ begin
               'TSong.LoadSong');
             //Log.LogError('Found zero-length note at "'+Param0+' '+IntToStr(Param1)+' '+IntToStr(Param2)+' '+IntToStr(Param3)+ParamLyric+'" -> Note ignored!')
             Param0 := 'F';
+            ConvertFreestyleNote := false;
           end;
 
           if (OutOfBoundsToFreestyle and (((Self.Start > 0) and (GetTimeFromBeat(Param1, Self) < Self.Start)) or ((AudioLength > 0) and (GetTimeFromBeat(Param1 + Param3, Self) >= AudioLength)))) then
           begin
             // convert to freestyle note
             Param0 := 'F';
+            ConvertFreestyleNote := false;
             Log.LogWarn(
               Format('Note at "%s %d %d %d %s" is before audio start (%.2f < %.2f) or after audio end (%.2f >= %.2f) -> converted to freestyle note',
               [Param0, Param1, Param2, Param3, ParamLyric, GetTimeFromBeat(Param1, Self), Self.Start, GetTimeFromBeat(Param1 + Param3, Self), AudioLength]),
@@ -818,7 +837,9 @@ begin
             FileNamePath.ToNative+' Line:'+IntToStr(FileLineNo));
             Break;
           end;
-          ParseNote(CurrentTrack, Param0, (Param1+Rel[CurrentTrack]) * Mult, Param2 * Mult, Param3, ParamLyric, RapToFreestyle);
+          ParseNote(CurrentTrack, Param0, (Param1+Rel[CurrentTrack]) * Mult,
+            Param2 * Mult, Param3, ParamLyric, RapToFreestyle,
+            ConvertFreestyleNote);
         end // if
 
         else
@@ -890,6 +911,7 @@ begin
     NextTrack: ;
   end;
 
+  NoteTypesLoaded := true;
   Result := true;
 end;
 
@@ -1541,7 +1563,8 @@ begin
   FMD5Cached := Value <> '';
 end;
 
-procedure TSong.ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String; RapToFreestyle: boolean);
+procedure TSong.ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer;
+  LyricS: UTF8String; RapToFreestyle, FreestyleToRap: boolean);
 begin
 
   with Tracks[Track].Lines[Tracks[Track].High] do
@@ -1561,7 +1584,13 @@ begin
 
     // back to the normal system with normal, golden and now freestyle notes
     case TypeP of
-      'F':  Notes[HighNote].NoteType := ntFreestyle;
+      'F':
+        begin
+          if FreestyleToRap then
+            Notes[HighNote].NoteType := ntRap
+          else
+            Notes[HighNote].NoteType := ntFreestyle;
+        end;
       ':':  Notes[HighNote].NoteType := ntNormal;
       '*':  Notes[HighNote].NoteType := ntGolden;
       'R':
@@ -1571,7 +1600,13 @@ begin
           else
             Notes[HighNote].NoteType := ntRap;
         end;
-      'G':  Notes[HighNote].NoteType := ntRapGolden;
+      'G':
+        begin
+          if RapToFreestyle then
+            Notes[HighNote].NoteType := ntFreestyle
+          else
+            Notes[HighNote].NoteType := ntRapGolden;
+        end;
     end;
 
     //add this notes value ("notes length" * "notes scorefactor") to the current songs entire value
@@ -1897,6 +1932,9 @@ begin
   Medley.Source := msNone;
 
   isDuet := false;
+  hasRap := false;
+  hasFreestyle := false;
+  NoteTypesLoaded := false;
 
   SetLength(DuetNames, 2);
   DuetNames[0] := 'P1';
@@ -1905,7 +1943,10 @@ begin
   Relative := false;
 end;
 
-function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real; ForceLoadNotes: boolean): boolean;
+function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean;
+  RapToFreestyle: boolean; FreestyleToRap: boolean;
+  OutOfBoundsToFreestyle: boolean; AudioLength: real;
+  ForceLoadNotes: boolean): boolean;
 var
   SongFile: TTextFileStream;
   FileNamePath: IPath;
@@ -1938,7 +1979,8 @@ begin
     begin
       //Load Song for Medley Tags
       CurrentSong := Self;
-      NotesLoaded := LoadOpenedSong(SongFile, FileNamePath, DuetChange, RapToFreestyle, OutOfBoundsToFreestyle, AudioLength);
+      NotesLoaded := LoadOpenedSong(SongFile, FileNamePath, DuetChange,
+        RapToFreestyle, FreestyleToRap, OutOfBoundsToFreestyle, AudioLength);
       Result := Result and NotesLoaded;
     end;
 
