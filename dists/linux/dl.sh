@@ -30,6 +30,10 @@ if older 0.56 meson --version ; then
 		deps+=('python,https://www.python.org/ftp/python/3.11.2/Python-3.11.2.tar.xz,ae1c199ecb7a969588b15354e19e7b60cb65d1b9')
 		needossl=yes
 	fi
+
+	if older 1.8.2 ninja --version ; then
+		deps+=('ninja,https://github.com/ninja-build/ninja/archive/v1.11.1.tar.gz,938723cdfc7a6f7c8f84c83b9a2cecdf1e5e1ad3')
+	fi
 fi
 
 if [ $needossl = yes ] ; then

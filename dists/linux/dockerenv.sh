@@ -21,8 +21,8 @@ done
 targetarch="${ARCH-$(uname -m)}"
 
 if [ "$targetarch" == "x86_64" ]; then
-	imagename="usdx/buildenv:buster"
-	from="debian/eol:buster"
+	imagename="usdx/buildenv:jessie"
+	from="debian/eol:jessie"
 	fpcpackage="https://sourceforge.net/projects/freepascal/files/Linux/3.2.2/fpc-3.2.2.x86_64-linux.tar"
 	prefixcmd="linux64"
 else
