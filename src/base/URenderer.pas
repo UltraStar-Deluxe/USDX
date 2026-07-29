@@ -708,7 +708,7 @@ begin
   if (glcontext = nil) then
     raise Exception.Create('Failed to obtain OpenGL context');
   SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, @MajorVersion);
-  SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, @MinorVersion);
+  SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, @MinorVersion);
   SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, @Profile);
   if (Profile = SDL_GL_CONTEXT_PROFILE_ES) then
     Renderer := TRenderer_OpenGLES.Create(glcontext, MajorVersion, MinorVersion)
