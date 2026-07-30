@@ -542,7 +542,15 @@ begin
   begin
     Log.LogCritical('SDL_Init Failed', 'UGraphic.Initialize3D');
   end;
+  PreInitRenderer;
   InitializeScreen;
+  InitRenderer;
+  Renderer.Blend := true;
+  Renderer.DepthTest := true;
+  Renderer.SetOrthographicProjection(0, RenderW, RenderH, 0, -1, 100);
+  Renderer.VSync := true;
+  SDL_ShowWindow(screen);
+
   // load icon image (must be 32x32 for win32)
   Icon := LoadImage(ResourcesPath.Append(WINDOW_ICON));
   if (Icon <> nil) then
@@ -706,25 +714,22 @@ NoDoubledResolution:
     Log.LogStatus('Set Video Mode...   Borderless fullscreen', 'SDL_SetVideoMode');
     CurrentWindowMode := Mode_Borderless;
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
-              Ini.PositionX, Ini.PositionY, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN_DESKTOP or SDL_WINDOW_RESIZABLE);
+              Ini.PositionX, Ini.PositionY, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN_DESKTOP or SDL_WINDOW_RESIZABLE or SDL_WINDOW_HIDDEN);
   end
   else if Fullscreen then
   begin
     Log.LogStatus('Set Video Mode...   Fullscreen', 'SDL_SetVideoMode');
     CurrentWindowMode := Mode_Fullscreen;
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
-              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN or SDL_WINDOW_RESIZABLE);
+              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN or SDL_WINDOW_RESIZABLE or SDL_WINDOW_HIDDEN);
   end
   else
   begin
     Log.LogStatus('Set Video Mode...   Windowed', 'SDL_SetVideoMode');
     CurrentWindowMode := Mode_Windowed;
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
-              SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE);
+              SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_RESIZABLE or SDL_WINDOW_HIDDEN);
   end;
-  InitRenderer;
-  Renderer.Blend := true;
-  Renderer.DepthTest := true;
 
   if (screen = nil) then
   begin
@@ -770,8 +775,6 @@ NoDoubledResolution:
   ScreenW := ActualW;
   ScreenH := ActualH;
   CalculateScreenMetrics;
-  Renderer.SetOrthographicProjection(0, RenderW, RenderH, 0, -1, 100);
-  Renderer.VSync := true;
 
 end;
 

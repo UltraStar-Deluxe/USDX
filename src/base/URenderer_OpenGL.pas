@@ -86,7 +86,6 @@ type
       procedure BindLineStripVertexAttrib();
       function LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType): TTexture; overload; override;
       procedure DrawTexture(Texture: TTexture; Prog: GLuint; var UpdateTransform: boolean; TransformLocation: GLint); overload;
-      function CreateEmptyTexture(const Identifier: IPath): TTexture; override;
       function GetArrayBuffer(var Bytes: GLuint): PGLfloat;
       procedure UploadArray(DataSize: GLuint);
       procedure UpdateTransformationMatrix();
@@ -129,6 +128,7 @@ type
       procedure SetClipText(Enabled: boolean); override;
       procedure ResetState(); override;
       function GetFrameBufferData(out RowSize: integer): PByte; override;
+      function CreateEmptyTexture(const Identifier: IPath): TTexture; override;
 
   end;
 

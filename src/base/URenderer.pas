@@ -665,32 +665,9 @@ begin
     Params.Renderer := DEFAULT_RENDERRER;
   end;
   if (Params.Renderer = 'gles') then
-  begin
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-  end
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES)
   else if (Params.Renderer = 'gl') then
-  begin
-    // Profile Mask
-    {$IF Defined(DARWIN) or Defined(UseProjectM)}
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    {$ELSE}
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-    {$ENDIF}
-
-    // Major Version
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-
-    // Minor Version
-    {$IF Defined(UseProjectM)}
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    {$ELSEIF Defined(DARWIN)}
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-    {$ELSE}
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    {$ENDIF}
-  end;
 end;
 
 {
@@ -702,8 +679,57 @@ var
   MajorVersion: integer;
   MinorVersion: integer;
   glcontext: TSDL_GLContext;
+  MajorArray: array of SInt32;
+  MinorArray: array of SInt32;
+  ProfileArray: array of SInt32;
+  I: integer;
 begin
-  glcontext := SDL_GL_CreateContext(Screen);
+
+  // Try to get a 3.3 core profile context, then a 3.0 context, then a 2.0 context
+  if (Params.Renderer = 'gl') then
+  begin
+    MajorArray := [3, 3, 2];
+    MinorArray := [3, 0, 0];
+    ProfileArray := [SDL_GL_CONTEXT_PROFILE_CORE, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY];
+  end
+
+  // OpenGL 2.0 context for development purposes only
+  {$IFDEF DEBUG_MODE}
+  else if (Params.Renderer = 'gl2') then
+  begin
+    MajorArray := [2];
+    MinorArray := [0];
+    ProfileArray := [0];
+  end
+  {$ENDIF}
+
+  // Try to get a full 3.2 GLES context, then a 3.0 context, then a 2.0 context
+  else if (Params.Renderer = 'gles') then
+  begin
+    MajorArray := [3, 3, 2];
+    MinorArray := [2, 0, 0];
+    ProfileArray := [SDL_GL_CONTEXT_PROFILE_ES, SDL_GL_CONTEXT_PROFILE_ES, SDL_GL_CONTEXT_PROFILE_ES];
+  end;
+  for I := Low(MajorArray) to High(MajorArray) do
+  begin
+    // If we changed profile masks since the last attempt, we have to recreate the window
+    if ((I > 0) and (ProfileArray[I] <> ProfileArray[I-1])) then
+    begin
+      SDL_DestroyWindow(Screen);
+      Screen := nil;
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, ProfileArray[I]);
+      InitializeScreen;
+    end
+    else
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, ProfileArray[I]);
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, MajorArray[I]);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, MinorArray[I]);
+    glcontext := SDL_GL_CreateContext(Screen);
+    if (glcontext <> nil) then
+      break;
+  end;
+
   if (glcontext = nil) then
     raise Exception.Create('Failed to obtain OpenGL context');
   SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, @MajorVersion);
