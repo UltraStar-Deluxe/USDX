@@ -431,11 +431,9 @@ begin
   glActiveTexture(GL_TEXTURE0);
 
   // Get uniform locations in shader programs
-  glUniform1i(glGetUniformLocation(MainProgram, 'tex'), 0);
   TransformLocationMain := glGetUniformLocation(MainProgram, 'transform');
-  glUniform1i(glGetUniformLocation(TextProgram, 'tex'), 0);
   TransformLocationText := glGetUniformLocation(TextProgram, 'transform');
-  TransformLocationText := glGetUniformLocation(LineStripProgram, 'transform');
+  TransformLocationLineStrip := glGetUniformLocation(LineStripProgram, 'transform');
   ColorLocationLineStrip := glGetUniformLocation(LineStripProgram, 'color');
 
   // Changing the active shader program is expensive. For drawing basic shapes (quads, triangles, lines), we define
