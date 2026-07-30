@@ -459,8 +459,11 @@ begin
   glDeleteProgram(MainProgram);
   glDeleteProgram(TextProgram);
   glDeleteProgram(LineStripProgram);
-  glDeleteVertexArrays(1, @MainVAO);
-  glDeleteVertexArrays(1, @LineStripVAO);
+  if (SupportsVAO) then
+  begin
+    glDeleteVertexArrays(1, @MainVAO);
+    glDeleteVertexArrays(1, @LineStripVAO);
+  end;
   glDeleteBuffers(1, @VBO);
   glDeleteBuffers(1, @EBO);
   if (WhiteTexture <> 0) then
