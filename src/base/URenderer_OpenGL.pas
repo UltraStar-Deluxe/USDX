@@ -76,6 +76,9 @@ type
       ErrorCode: GLenum;
       SupportsVAO: boolean;
       SupportsFBO: boolean;
+      SupportsMappedBuffer: boolean;
+
+      MappedBuffer: PGLfloat; // OpenGL 2.0 doesn't support mapped buffers, so we manage it ourself.
 
       procedure InitShaderPrograms();
       procedure InitBuffers();
@@ -85,6 +88,7 @@ type
       procedure DrawTexture(Texture: TTexture; Prog: GLuint; var UpdateTransform: boolean; TransformLocation: GLint); overload;
       function CreateEmptyTexture(const Identifier: IPath): TTexture; override;
       function GetArrayBuffer(var Bytes: GLuint): PGLfloat;
+      procedure UploadArray(DataSize: GLuint);
       procedure UpdateTransformationMatrix();
       procedure CheckVersion(); virtual; abstract;
       procedure GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string); virtual; abstract;
@@ -463,6 +467,7 @@ begin
   if (WhiteTexture <> 0) then
     glDeleteTextures(1, @WhiteTexture);
   SDL_GL_DeleteContext(glcontext);
+  FreeMem(MappedBuffer);
   inherited;
 end;
 
@@ -655,10 +660,29 @@ begin
     VBOCursor := 0;
     EBOCursor := 0;
   end;
-  Result := PGLfloat(glMapBufferRange(GL_ARRAY_BUFFER, VBOCursor * SizeOf(GLfloat), Bytes, GL_MAP_WRITE_BIT or GL_MAP_UNSYNCHRONIZED_BIT));
+  if (SupportsMappedBuffer) then
+    Result := PGLfloat(glMapBufferRange(GL_ARRAY_BUFFER, VBOCursor * SizeOf(GLfloat), Bytes, GL_MAP_WRITE_BIT or GL_MAP_UNSYNCHRONIZED_BIT))
+  else
+  begin
+    MappedBuffer := GetMem(Bytes);
+    Result := MappedBuffer;
+  end;
+
   {$IFDEF DEBUG_MODE}
   RaiseExceptionIfError;
   {$ENDIF};
+end;
+
+procedure TRenderer_OpenGLBase.UploadArray(DataSize: GLuint);
+begin
+  if (SupportsMappedBuffer) then
+    glUnmapBuffer(GL_ARRAY_BUFFER)
+  else
+  begin
+    glBufferSubData(GL_ARRAY_BUFFER, VBOCursor * SizeOf(GLfloat), DataSize, MappedBuffer);
+    FreeMem(MappedBuffer);
+    MappedBuffer := nil;
+  end;
 end;
 
 procedure TRenderer_OpenGLBase.UpdateTransformationMatrix();
@@ -835,7 +859,7 @@ begin
   end;
 
   // Upload our vertex data to the GPU
-  glUnmapBuffer(GL_ARRAY_BUFFER);
+  UploadArray(Bytes);
 
   // Draw elements and update VBO and EBO positions
   glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_INT, PGLvoid(EBOCursor * SizeOf(GLuint)));
@@ -1007,7 +1031,7 @@ begin
   end;
 
   // Upload our vertex data to the GPU
-  glUnmapBuffer(GL_ARRAY_BUFFER);
+  UploadArray(Bytes);
 
   // Draw elements and update VBO and EBO positions
   glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_INT, PGLvoid(EBOCursor * SizeOf(GLuint)));
@@ -1088,7 +1112,7 @@ begin
   end;
 
   // Upload our vertex data to the GPU
-  glUnmapBuffer(GL_ARRAY_BUFFER);
+  UploadArray(Bytes);
 
   // Draw elements
   glDrawArrays(GL_TRIANGLES, VBOCursor div VERTEX_STRIDE, NumTriangles * 3);
@@ -1276,7 +1300,7 @@ begin
   end;
 
   // Upload our vertex data to the GPU
-  glUnmapBuffer(GL_ARRAY_BUFFER);
+  UploadArray(Bytes);
 
   // Draw elements and update VBO and EBO positions
   glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_INT, PGLvoid(EBOCursor * SizeOf(GLuint)));
@@ -1374,7 +1398,7 @@ begin
   end;
 
   // Upload our vertex data to the GPU
-  glUnmapBuffer(GL_ARRAY_BUFFER);
+  UploadArray(Bytes);
 
   // Draw elements and update VBO and EBO positions
   glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_INT, PGLvoid(EBOCursor * SizeOf(GLuint)));
@@ -1425,7 +1449,7 @@ begin
   Move(PointList[0], Buffer[0], NumPoints * SizeOf(TPoint));
 
   // Upload our vertex data to the GPU
-  glUnmapBuffer(GL_ARRAY_BUFFER);
+  UploadArray(Bytes);
 
   // Draw elements
   glDrawArrays(GL_LINE_STRIP, VBOCursor div 2, NumPoints);
@@ -1711,6 +1735,7 @@ begin
   Log.LogInfo('Using Modern OpenGL renderer', 'TRenderer_OpenGL3.CheckVersion');
   SupportsVAO := true;
   SupportsFBO := true;
+  SupportsMappedBuffer := true;
   if ((MajorVersion > 3) or ((MajorVersion = 3) and (MinorVersion >= 3))) then
     fSupportsProjectM := true;
 end;
@@ -1762,6 +1787,7 @@ begin
   begin
     SupportsVAO := true;
     fSupportsProjectM := true;
+    SupportsMappedBuffer := true;
   end
   else
   begin
@@ -1769,6 +1795,7 @@ begin
     GL_OES_vertex_array_object := Int_CheckExtension(Extensions, 'GL_OES_vertex_array_object');
     if (GL_OES_vertex_array_object) then
       SupportsVAO := true;
+
   end;
   SupportsFBO := true;
 end;
@@ -1807,15 +1834,13 @@ begin
   if (MajorVersion < 2) then
     raise Exception.Create('Could not initialize OpenGL 2.0 or later');
   Log.LogInfo('Using Legacy OpenGL renderer', 'TRenderer_OpenGL2.CheckVersion');
-  if (MajorVersion >= 3) then
-    SupportsVAO := true
-  else
-  begin
-    Extensions := Int_GetExtensionString;
-    GL_ARB_vertex_array_object := Int_CheckExtension(Extensions, 'GL_ARB_vertex_array_object');
-    if (GL_ARB_vertex_array_object) then
-      SupportsVAO := true;
-  end;
+  Extensions := Int_GetExtensionString;
+  GL_ARB_vertex_array_object := Int_CheckExtension(Extensions, 'GL_ARB_vertex_array_object');
+  if (GL_ARB_vertex_array_object) then
+    SupportsVAO := true;
+  GL_ARB_map_buffer_range := Int_CheckExtension(Extensions, 'GL_ARB_map_buffer_range');
+  if (GL_ARB_map_buffer_range) then
+    SupportsMappedBuffer := true;
   fSupportsProjectM := false;
   SupportsFBO := false;
 end;
