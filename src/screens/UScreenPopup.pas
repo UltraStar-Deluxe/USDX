@@ -2626,7 +2626,6 @@ var
   I, J:integer;
   maxh:   integer;
   h, offset:      integer;
-  LineList: TLineList;
 begin
 
   maxh := 2*RenderH+Rect.Bottom;
