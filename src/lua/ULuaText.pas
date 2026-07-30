@@ -132,6 +132,7 @@ begin
   B := luaL_checknumber(L, 3);
   A := luaL_checknumber(L, 4);
   SetFontColor(R, G, B, A);
+  Result := 0;
 end;
 
 { UText.Width(Text: String) : returns width of Text if printed
