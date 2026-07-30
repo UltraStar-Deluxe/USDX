@@ -379,7 +379,11 @@ begin
           // it is possible that our fade textures are too small after a window
           // resize. In that case resize the fade texture to fit the requirements.
           if (TexW < FadeCopyW) or (TexH < FadeCopyH) then
+          begin
+            FreeAndNil(FadeTex[0]);
+            FreeAndNil(FadeTex[1]);
             InitFadeTextures();
+          end;
 
           // copy screen to texture
           FadeTex[S-1].CopyFrameBuffer((S-1) * ScreenWPerScreen, 0, FadeCopyW, FadeCopyH);
