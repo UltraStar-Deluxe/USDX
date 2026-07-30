@@ -1074,7 +1074,7 @@ begin
   end;
 
   // Map VBO to system memory
-  Bytes := VERTEX_STRIDE_BYTES * 3;
+  Bytes := VERTEX_STRIDE_BYTES * NumTriangles;
   Buffer := GetArrayBuffer(Bytes);
 
   // Fill in VBO mapped memory with vertex information
