@@ -90,6 +90,7 @@ type
       function GetArrayBuffer(var Bytes: GLuint): PGLfloat;
       procedure UploadArray(DataSize: GLuint);
       procedure UpdateTransformationMatrix();
+      procedure UploadMatrix(Location: GLuint; var Mat: Tmatrix4_single);
       procedure CheckVersion(); virtual; abstract;
       procedure GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string); virtual; abstract;
 
@@ -689,6 +690,14 @@ begin
   UpdateTransformText := true;
 end;
 
+procedure TRenderer_OpenGLBase.UploadMatrix(Location: GLuint; var Mat: Tmatrix4_single);
+var
+  Transposed: Tmatrix4_single;
+begin
+  Transposed := Mat.transpose;
+  glUniformMatrix4fv(Location, 1, GL_FALSE, PGLfloat(@Transposed));
+end;
+
 procedure TRenderer_OpenGLBase.DrawTexture(Texture: TTexture; Prog: GLuint; var UpdateTransform: boolean; TransformLocation: GLint);
 var
   Tex: TTexture_OpenGL;
@@ -710,7 +719,7 @@ begin
   glUseProgram(Prog);
   if (UpdateTransform) then
   begin
-    glUniformMatrix4fv(TransformLocation, 1, GL_TRUE, PGLfloat(@ProjectionMatrix));
+    UploadMatrix(TransformLocation, ProjectionMatrix);
     UpdateTransform := false;
   end;
   glBindTexture(GL_TEXTURE_2D, Tex.TexID);
@@ -899,7 +908,7 @@ begin
   glUseProgram(MainProgram);
   if (UpdateTransformMain) then
   begin
-    glUniformMatrix4fv(TransformLocationMain, 1, GL_TRUE, PGLfloat(@ProjectionMatrix));
+    UploadMatrix(TransformLocationMain, ProjectionMatrix);
     UpdateTransformMain := false;
   end;
 
@@ -1060,7 +1069,7 @@ begin
   glUseProgram(MainProgram);
   if (UpdateTransformMain) then
   begin
-    glUniformMatrix4fv(TransformLocationMain, 1, GL_TRUE, PGLfloat(@ProjectionMatrix));
+    UploadMatrix(TransformLocationMain, ProjectionMatrix);
     UpdateTransformMain := false;
   end;
 
@@ -1148,7 +1157,7 @@ begin
   glUseProgram(MainProgram);
   if (UpdateTransformMain) then
   begin
-    glUniformMatrix4fv(TransformLocationMain, 1, GL_TRUE, PGLfloat(@ProjectionMatrix));
+    UploadMatrix(TransformLocationMain, ProjectionMatrix);
     UpdateTransformMain := false;
   end;
 
@@ -1333,7 +1342,7 @@ begin
   glUseProgram(MainProgram);
   if (UpdateTransformMain) then
   begin
-    glUniformMatrix4fv(TransformLocationMain, 1, GL_TRUE, PGLfloat(@ProjectionMatrix));
+    UploadMatrix(TransformLocationMain, ProjectionMatrix);
     UpdateTransformMain := false;
   end;
 
@@ -1433,7 +1442,7 @@ begin
   Transform.data[1,1] := ScaleY;
   Transform.data[1,3] := TranslateY;
   Transform := ProjectionMatrix * Transform;
-  glUniformMatrix4fv(TransformLocationLineStrip, 1, GL_TRUE, PGLfloat(@Transform));
+  UploadMatrix(TransformLocationLineStrip, Transform);
 
   // Set colors
   glUniform4f(ColorLocationLineStrip, ColR, ColG, ColB, Alpha);
