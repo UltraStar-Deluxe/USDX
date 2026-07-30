@@ -46,7 +46,7 @@ const
   ULuaRenderer_Lib_f: array [0..2] of lual_reg = (
    (name:'DrawQuad';func:ULuaRenderer_DrawQuad),
    (name:'DrawTriangle';func:ULuaRenderer_DrawTriangle),
-   (name:'DrawLine';func:ULuaRenderer_DrawQuad)
+   (name:'DrawLine';func:ULuaRenderer_DrawLine)
    );
 
 implementation
