@@ -2635,6 +2635,8 @@ begin
   offset := round(Help.GetScrollPos()*(max_high-Rect.Bottom));
 
   I := 0;
+  if (Length(TextsGFX) = 0) then
+    Exit;
   SetLength(LineList, Length(TextsGFX[I].lines));
   while (I<Length(TextsGFX)) and (h<maxh) do
   begin
