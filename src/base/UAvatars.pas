@@ -385,16 +385,9 @@ begin
     Data := Table.FieldAsBlobPtr(4, DataSize);
     if (Data <> nil) and
        (PixelFmt = ipfRGB) then
-    begin
       Result := Renderer.CreateTexture(Data, Filename, Width, Height, TEXTURE_TYPE_PLAIN)
-    end
     else
-    begin
-      // FillChar() does not decrement the ref-count of ref-counted fields
-      // -> reset Name field manually
-      Result.Name := nil;
-      FillChar(Result, SizeOf(TTexture), 0);
-    end;
+      Result := Renderer.CreateEmptyTexture(PATH_NONE);
   except on E: Exception do
     Log.LogError(E.Message, 'TAvatarDatabase.LoadAvatar');
   end;

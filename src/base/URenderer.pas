@@ -229,8 +229,6 @@ type
       Limit: integer;
 
       function LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType): TTexture; overload; virtual; abstract;
-      function CreateEmptyTexture(const Identifier: IPath): TTexture; virtual; abstract;
-
     public
 
       // Drawing functions
@@ -280,6 +278,7 @@ type
 
       // Data should be in RGB format (no alpha)
       function CreateTexture(Data: PChar; const Name: IPath; Width, Height: word; Typ: TTextureType): TTexture;
+      function CreateEmptyTexture(const Identifier: IPath): TTexture; virtual; abstract;
       procedure UnloadTexture(const Name: IPath; Typ: TTextureType); overload;
       procedure UnloadTexture(const Name: IPath; Typ: TTextureType; Col: cardinal); overload;
 
