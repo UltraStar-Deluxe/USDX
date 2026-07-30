@@ -468,9 +468,9 @@ begin
   glDeleteBuffers(1, @EBO);
   if (WhiteTexture <> 0) then
     glDeleteTextures(1, @WhiteTexture);
-  SDL_GL_DeleteContext(glcontext);
   FreeMem(MappedBuffer);
   inherited;
+  SDL_GL_DeleteContext(glcontext);
 end;
 
 // Compile all shaders and link programs. The shader source is provided by the subclass, derived from the abstracted version
