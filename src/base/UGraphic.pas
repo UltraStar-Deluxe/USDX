@@ -624,8 +624,8 @@ end;
 procedure Finalize3D;
 begin
   UnloadScreens;
-  Renderer.Free;
   UnloadFontTextures;
+  Renderer.Free;
   SDL_QuitSubSystem(SDL_INIT_VIDEO);
 end;
 
