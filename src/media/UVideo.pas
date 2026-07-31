@@ -577,19 +577,17 @@ begin
   fTexHeight  := fCodecContext^.height;
   fScaledWidth := fCodecContext^.width;
   fScaledHeight := fCodecContext^.height;
-  while true do
+  while (Max(fTexWidth, fTexHeight) > Renderer.MaxTextureSize) do
   begin
-    FreeAndNil(fFrameTex);
-    fFrameTex := Renderer.CreateTexture(nil, PATH_NONE, fTexWidth, fTexHeight, VIDEO_TEXTURE_TYP);
-    if True then
-      break;
-    if not ReduceSize then
+    if not ReduceSize() then
     begin
       Log.LogError('Failed to create video texture', 'TVideoPlayback_ffmpeg.Open');
       Close();
       Exit;
     end;
   end;
+  FreeAndNil(fFrameTex);
+  fFrameTex := Renderer.CreateTexture(nil, PATH_NONE, fTexWidth, fTexHeight, VIDEO_TEXTURE_TYP);
 
   // allocate space for decoded frame and rgb frame
   fAVFrame := av_frame_alloc();

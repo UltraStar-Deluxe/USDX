@@ -227,6 +227,7 @@ type
       SWRendering: boolean;
       fSupportsProjectM: boolean;
       Limit: integer;
+      fMaxTextureSize: integer;
 
       function LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType): TTexture; overload; virtual; abstract;
     public
@@ -294,6 +295,7 @@ type
       property SoftwareRendering: boolean read SWRendering;
       property VSync: boolean read GetVSync write SetVSync;
       property SupportsProjectM: boolean read fSupportsProjectM;
+      property MaxTextureSize: integer read fMaxTextureSize;
       property Error: boolean read GetError;
       property ErrorCode: integer read GetErrorCode;
   end;
