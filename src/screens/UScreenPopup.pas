@@ -2659,12 +2659,12 @@ end;
 
 procedure TScreenPopupHelp.DrawText(line, index, Y: integer);
 begin
-  SetFontColor(1, 1, 1, 1);
   SetFontFamily(TextsGFX[line].texts[index].Font);
   SetFontStyle(TextsGFX[line].texts[index].Style);
   SetFontItalic(TextsGFX[line].texts[index].Italic);
   SetFontSize(TextsGFX[line].texts[index].Size);
   SetFontPos (TextsGFX[line].texts[index].X, TextsGFX[line].texts[index].Y - Y);
+  SetFontColor(1, 1, 1, 1);
   PrintText(PChar(TextsGFX[line].texts[index].text));
 end;
 
