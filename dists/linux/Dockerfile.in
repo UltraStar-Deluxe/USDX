@@ -1,6 +1,6 @@
 FROM %%from%%
 
-RUN echo deb http://archive.debian.org/debian stretch-backports main >> /etc/apt/sources.list
+RUN echo deb http://archive.debian.org/debian jessie-backports main >> /etc/apt/sources.list
 
 RUN apt-get update
 
