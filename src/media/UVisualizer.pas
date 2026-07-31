@@ -373,8 +373,8 @@ end;
 
 procedure TVideo_ProjectM.Close;
 begin
-  AudioConverter.Free;
-  DstFormat.Free;
+  FreeAndNil(AudioConverter);
+  FreeAndNil(DstFormat);
 end;
 
 procedure TVideo_ProjectM.Play;
