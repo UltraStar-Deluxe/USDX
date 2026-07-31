@@ -1337,7 +1337,9 @@ begin
 
   CurProgress := Actual_Song;
   if (CurProgress > 0) then
-    Progress := CurProgress / Num_Songs;
+    Progress := CurProgress / Num_Songs
+  else
+    Progress := 0;
 
   Texture_ProgressBar.X := X;
   Texture_ProgressBar.Y := Y;
@@ -1369,7 +1371,9 @@ begin
 
   CurProgress := Actual_Song + ((Actual_Web - 1) * Num_Songs);
   if (CurProgress > 0) then
-    Progress := CurProgress / (Num_Songs * Num_Webs);
+    Progress := CurProgress / (Num_Songs * Num_Webs)
+  else
+    Progress := 0;
 
   Texture_ProgressBar.X := X;
   Texture_ProgressBar.Y := Y;
