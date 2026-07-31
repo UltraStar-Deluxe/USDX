@@ -279,9 +279,9 @@ begin
         DecoTex[Ranking[1].Rank-1].H := Statics[StaticTeam2Deco].Texture.H;
         Statics[StaticTeam2Deco].Texture.Free;
         Statics[StaticTeam2Deco].Texture := DecoTex[Ranking[1].Rank-1].Clone;
-        Statics[StaticTeam2Deco].Texture.ColR := DecoColor[Ranking[0].Rank-1].R;
-        Statics[StaticTeam2Deco].Texture.ColG := DecoColor[Ranking[0].Rank-1].G;
-        Statics[StaticTeam2Deco].Texture.ColB := DecoColor[Ranking[0].Rank-1].B;
+        Statics[StaticTeam2Deco].Texture.ColR := DecoColor[Ranking[1].Rank-1].R;
+        Statics[StaticTeam2Deco].Texture.ColG := DecoColor[Ranking[1].Rank-1].G;
+        Statics[StaticTeam2Deco].Texture.ColB := DecoColor[Ranking[1].Rank-1].B;
 
       end;
     end;
@@ -317,9 +317,9 @@ begin
         DecoTex[Ranking[2].Rank-1].H := Statics[StaticTeam3Deco].Texture.H;
         Statics[StaticTeam3Deco].Texture.Free;
         Statics[StaticTeam3Deco].Texture := DecoTex[Ranking[2].Rank-1].Clone;
-        Statics[StaticTeam3Deco].Texture.ColR := DecoColor[Ranking[0].Rank-1].R;
-        Statics[StaticTeam3Deco].Texture.ColG := DecoColor[Ranking[0].Rank-1].G;
-        Statics[StaticTeam3Deco].Texture.ColB := DecoColor[Ranking[0].Rank-1].B;
+        Statics[StaticTeam3Deco].Texture.ColR := DecoColor[Ranking[2].Rank-1].R;
+        Statics[StaticTeam3Deco].Texture.ColG := DecoColor[Ranking[2].Rank-1].G;
+        Statics[StaticTeam3Deco].Texture.ColB := DecoColor[Ranking[2].Rank-1].B;
       end;
     end;
 
