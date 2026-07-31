@@ -1172,7 +1172,7 @@ begin
   {$ENDIF}
 
   {$IFDEF DebugFrames}
-    Renderer.DrawQuad(0, 0, 0, 250, 70, 0, 0, 0, 0.2)
+    Renderer.DrawQuad(0, 0, 0, 250, 70, 0, 0, 0, 0.2);
     SetFontFamily(0);
     SetFontStyle(1);
     SetFontItalic(False);
