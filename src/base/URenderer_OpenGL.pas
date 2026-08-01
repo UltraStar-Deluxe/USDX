@@ -654,7 +654,7 @@ end;
 function TRenderer_OpenGLBase.GetArrayBuffer(var Bytes: GLuint): PGLfloat;
 begin
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  Bytes := Bytes + Bytes mod QUAD_STRIDE_BYTES;
+  Bytes := Max(QUAD_STRIDE_BYTES, Bytes + Bytes mod QUAD_STRIDE_BYTES);
   if (GLuint(VBOCursor) * SizeOf(GLfloat) + Bytes >= VBO_SIZE) then
   begin
     glBufferData(GL_ARRAY_BUFFER, VBO_SIZE, nil, GL_STREAM_DRAW);
