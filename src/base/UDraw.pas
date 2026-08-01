@@ -1795,7 +1795,7 @@ begin
   if not CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].HasLength(TempR) then TempR := 0
   else TempR := W / TempR;
 
-  if (CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].ScoreValue > 0) and ( W > 0 ) then
+  if (CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].ScoreValue > 0) and ( W > 0 ) and ((CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].EndBeat > CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[0].StartBeat)) then
       TempR := W / (CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].EndBeat - CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[0].StartBeat)
     else
       TempR := 0;
