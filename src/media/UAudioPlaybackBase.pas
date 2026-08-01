@@ -567,6 +567,7 @@ end;
 
 function TAudioPlaybackBase.GetFormatInfo(): TAudioFormatInfo;
 begin
+  Result := nil;
   if assigned(MusicStream) then
      Result := MusicStream.GetAudioFormatInfo()
   else if assigned(KaraokeMusicStream) then
