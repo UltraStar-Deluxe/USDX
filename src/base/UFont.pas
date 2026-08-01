@@ -839,15 +839,8 @@ begin
 
   // display text
   for LineIndex := 0 to High(Text) do
-  begin
+    Render(Text[LineIndex], PosX, PosY + (LineSpacing * LineIndex * ScaleY), PosZ, ScaleX, ScaleY);
 
-    // move to baseline
-    PosY := PosY + (LineSpacing * LineIndex * ScaleY);
-
-    // render text line
-    Render(Text[LineIndex], PosX, PosY, PosZ, ScaleX, ScaleY);
-
-  end;
   Renderer.DepthTest := true;
 end;
 
