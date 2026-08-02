@@ -280,10 +280,10 @@ const
     '  [FRAG_OUT] = color;  ' + #10 +
     '}';
 
-  VBO_SIZE = (2 * 2 shl 20); // 2 MB
+  VBO_SIZE = (2 shl 20); // 2 MiB; keeps all VBO indices within GLushort
   MAX_QUADS = (VBO_SIZE div QUAD_STRIDE_BYTES); // Number of quads that can be stored in the VBO
   EBO_INDICES = MAX_QUADS * 6; // 2 triangles, 6 total vertices per quad
-  EBO_SIZE = EBO_INDICES * SizeOf(GLuint);
+  EBO_SIZE = EBO_INDICES * SizeOf(GLushort);
 
 type
   TTexture_OpenGL = class(TTexture)
@@ -568,7 +568,7 @@ end;
 procedure TRenderer_OpenGLBase.InitBuffers();
 var
   I, Quad: Cardinal;
-  EBOData: array of GLuint;
+  EBOData: array of GLushort;
 begin
   if (SupportsVAO) then
   begin
@@ -879,7 +879,7 @@ begin
   UploadArray(Bytes);
 
   // Draw elements and update VBO and EBO positions
-  glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_INT, PGLvoid(EBOCursor * SizeOf(GLuint)));
+  glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_SHORT, PGLvoid(EBOCursor * SizeOf(GLushort)));
   VBOCursor := VBOCursor + (NumQuads * 4 * VERTEX_STRIDE);
   EBOCursor := EBOCursor + (NumQuads * 6);
   {$IFDEF DEBUG_MODE}
@@ -1053,7 +1053,7 @@ begin
   UploadArray(Bytes);
 
   // Draw elements and update VBO and EBO positions
-  glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_INT, PGLvoid(EBOCursor * SizeOf(GLuint)));
+  glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_SHORT, PGLvoid(EBOCursor * SizeOf(GLushort)));
   VBOCursor := VBOCursor + (NumQuads * QUAD_STRIDE);
   EBOCursor := EBOCursor + (NumQuads * 6);
   {$IFDEF DEBUG_MODE}
@@ -1326,7 +1326,7 @@ begin
   UploadArray(Bytes);
 
   // Draw elements and update VBO and EBO positions
-  glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_INT, PGLvoid(EBOCursor * SizeOf(GLuint)));
+  glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_SHORT, PGLvoid(EBOCursor * SizeOf(GLushort)));
   VBOCursor := VBOCursor + (NumQuads * QUAD_STRIDE);
   EBOCursor := EBOCursor + (NumQuads * 6);
   {$IFDEF DEBUG_MODE}
@@ -1426,7 +1426,7 @@ begin
   UploadArray(Bytes);
 
   // Draw elements and update VBO and EBO positions
-  glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_INT, PGLvoid(EBOCursor * SizeOf(GLuint)));
+  glDrawElements(GL_TRIANGLES, NumQuads * 6, GL_UNSIGNED_SHORT, PGLvoid(EBOCursor * SizeOf(GLushort)));
   VBOCursor := VBOCursor + (NumQuads * 4 * VERTEX_STRIDE);
   EBOCursor := EBOCursor + (NumQuads * 6);
   {$IFDEF DEBUG_MODE}
