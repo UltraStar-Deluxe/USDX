@@ -1555,6 +1555,7 @@ begin
     end;
     Renderer.DrawTexture(Settings.RatingBar_Bar_Tex);
   end;
+end;
 
 procedure TSingScores.UpdateBarProgress(var CurrentPos: real; const TargetPos: real);
 var
