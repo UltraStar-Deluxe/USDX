@@ -367,6 +367,7 @@ var
   Filename: IPath;
   Table: TSQLiteUniTable;
 begin
+  Result := nil;
   Table := nil;
 
   try
