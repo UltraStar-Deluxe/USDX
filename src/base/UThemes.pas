@@ -1272,6 +1272,9 @@ uses
 const
   MAX_INHERITANCE = 10;
 
+var
+  CurrentBaseThemeIndex: integer = -1;
+
 constructor TTheme.Create;
 begin
   inherited Create();
