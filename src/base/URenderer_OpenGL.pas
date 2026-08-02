@@ -917,6 +917,8 @@ begin
   // Map VBO to system memory
   Bytes := QUAD_STRIDE_BYTES * NumQuads;
   Buffer := GetArrayBuffer(Bytes);
+  if (Buffer = nil) then
+    Exit;
 
   // Fill in VBO mapped memory with vertex information
   glBindTexture(GL_TEXTURE_2D, WhiteTexture);
@@ -1078,6 +1080,8 @@ begin
   // Map VBO to system memory
   Bytes := VERTEX_STRIDE_BYTES * NumTriangles;
   Buffer := GetArrayBuffer(Bytes);
+  if (Buffer = nil) then
+    Exit;
 
   // Fill in VBO mapped memory with vertex information
   glBindTexture(GL_TEXTURE_2D, WhiteTexture);
@@ -1166,6 +1170,8 @@ begin
   // Map VBO to system memory
   Bytes := QUAD_STRIDE_BYTES * NumQuads;
   Buffer := GetArrayBuffer(Bytes);
+  if (Buffer = nil) then
+    Exit;
 
   // Fill in VBO mapped memory with vertex information
   glBindTexture(GL_TEXTURE_2D, WhiteTexture);
@@ -1351,6 +1357,8 @@ begin
   // Map VBO to system memory
   Bytes := QUAD_STRIDE_BYTES * NumQuads;
   Buffer := GetArrayBuffer(Bytes);
+  if (Buffer = nil) then
+    Exit;
 
   // Fill in VBO mapped memory with vertex information
   glBindTexture(GL_TEXTURE_2D, Tex.TexID);
@@ -1452,6 +1460,8 @@ begin
   // Map VBO to system memory
   Bytes := 2 * SizeOf(GLfloat) * NumPoints;
   Buffer := GetArrayBuffer(Bytes);
+  if (Buffer = nil) then
+    Exit;
 
   // Because our list of points is already in the correct data format, we can just directly copy
   // it into the mapped VBO without further modification
