@@ -368,14 +368,13 @@ uses
   ULog,
   UMain,
   UMenuButton,
-  UDrawTexture,
   UMenuStatic,
   UNote,
   UParty,
   UPlaylist,
   UScreenSongMenu,
   USkins,
-  TextGL,
+  UText,
   UUnicodeUtils,
   Math;
 
@@ -600,11 +599,11 @@ var
   CharLen: integer;
 begin
   Result := Value;
-  if (Result = '') or (glTextWidth(Result) <= MaxWidth) then
+  if (Result = '') or (TextWidth(Result) <= MaxWidth) then
     Exit;
 
   CharLen := Length(UTF8ToUCS4String(Value));
-  while (glTextWidth(Result) > MaxWidth) and (CharLen > 0) do
+  while (TextWidth(Result) > MaxWidth) and (CharLen > 0) do
   begin
     Dec(CharLen);
     Result := UTF8Copy(Value, 1, CharLen) + '..';
@@ -635,10 +634,10 @@ begin
 
   SongText := CatSongs.Song[Interaction].Artist + ' - ' + CatSongs.Song[Interaction].Title;
   SongText := TruncateLoopOverlayText(SongText, Theme.Song.LoopOverlay.TitleMaxW);
-  TitleW := glTextWidth(SongText);
-  TimeTextW := glTextWidth(FormatLoopClock(AudioPlayback.Position) + ' / ' + FormatLoopClock(AudioPlayback.Length));
+  TitleW := TextWidth(SongText);
+  TimeTextW := TextWidth(FormatLoopClock(AudioPlayback.Position) + ' / ' + FormatLoopClock(AudioPlayback.Length));
 
-  MaxTimeTextW := glTextWidth('99:99 / 99:99');
+  MaxTimeTextW := TextWidth('99:99 / 99:99');
   BarW := EnsureRange(TitleW - MaxTimeTextW - Theme.Song.LoopOverlay.TimeBarGap,
     Theme.Song.LoopOverlay.BarMinW, Theme.Song.LoopOverlay.BarMaxW);
   ContentW := Max(TitleW, Max(TimeTextW, MaxTimeTextW) + Theme.Song.LoopOverlay.TimeBarGap + BarW);
@@ -705,47 +704,28 @@ begin
   else
     Progress := 0;
 
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glColor4f(Theme.Song.LoopOverlay.BgR, Theme.Song.LoopOverlay.BgG,
-    Theme.Song.LoopOverlay.BgB, Theme.Song.LoopOverlay.BgA);
-  glBegin(GL_QUADS);
-    glVertex2f(X, Y);
-    glVertex2f(X, Y + H);
-    glVertex2f(X + W, Y + H);
-    glVertex2f(X + W, Y);
-  glEnd;
-  glColor4f(Theme.Song.LoopOverlay.TextR, Theme.Song.LoopOverlay.TextG,
-    Theme.Song.LoopOverlay.TextB, Theme.Song.LoopOverlay.TextA);
-  glEnable(GL_TEXTURE_2D);
+  // Fullscreen preview video is drawn at Z = 1. Keep the loop controls at
+  // that depth as well so their later draw order places them over the video.
+  Renderer.DrawQuad(X, Y, 1, W, H, Theme.Song.LoopOverlay.BgR,
+    Theme.Song.LoopOverlay.BgG, Theme.Song.LoopOverlay.BgB,
+    Theme.Song.LoopOverlay.BgA);
 
   SetFontSize(Theme.Song.LoopOverlay.FontSize);
+  SetFontZ(1);
+  SetFontColor(Theme.Song.LoopOverlay.TextR, Theme.Song.LoopOverlay.TextG,
+    Theme.Song.LoopOverlay.TextB, Theme.Song.LoopOverlay.TextA);
   SetFontPos(X + Theme.Song.LoopOverlay.TextX, Y + Theme.Song.LoopOverlay.TitleY);
-  glPrint(SongText);
+  PrintText(SongText);
   SetFontPos(X + Theme.Song.LoopOverlay.TextX, Y + Theme.Song.LoopOverlay.TimeY);
-  glPrint(TimeText);
+  PrintText(TimeText);
 
-  glDisable(GL_TEXTURE_2D);
-  glColor4f(Theme.Song.LoopOverlay.BarBgR, Theme.Song.LoopOverlay.BarBgG,
-    Theme.Song.LoopOverlay.BarBgB, Theme.Song.LoopOverlay.BarBgA);
-  glBegin(GL_QUADS);
-    glVertex2f(BarX, BarY);
-    glVertex2f(BarX, BarY + BarH);
-    glVertex2f(BarX + BarW, BarY + BarH);
-    glVertex2f(BarX + BarW, BarY);
-  glEnd;
-  glColor4f(Theme.Song.LoopOverlay.BarFillR, Theme.Song.LoopOverlay.BarFillG,
+  Renderer.DrawQuad(BarX, BarY, 1, BarW, BarH, Theme.Song.LoopOverlay.BarBgR,
+    Theme.Song.LoopOverlay.BarBgG, Theme.Song.LoopOverlay.BarBgB,
+    Theme.Song.LoopOverlay.BarBgA);
+  Renderer.DrawQuad(BarX, BarY, 1, BarW * Progress, BarH,
+    Theme.Song.LoopOverlay.BarFillR, Theme.Song.LoopOverlay.BarFillG,
     Theme.Song.LoopOverlay.BarFillB, Theme.Song.LoopOverlay.BarFillA);
-  glBegin(GL_QUADS);
-    glVertex2f(BarX, BarY);
-    glVertex2f(BarX, BarY + BarH);
-    glVertex2f(BarX + (BarW * Progress), BarY + BarH);
-    glVertex2f(BarX + (BarW * Progress), BarY);
-  glEnd;
-  glEnable(GL_TEXTURE_2D);
-
-  glEnable(GL_DEPTH_TEST);
+  SetFontZ(0);
 end;
 
 procedure TScreenSong.DrawLoopFullscreenCoverFallback;
@@ -761,23 +741,25 @@ begin
   Song := CatSongs.Song[Interaction];
   if Song.Video.IsSet or Song.Background.IsSet then
     Exit;
-  if (Interaction < 0) or (Interaction > High(Button)) or (Button[Interaction].Texture.TexNum = 0) then
+  if (Interaction < 0) or (Interaction > High(Button)) or Button[Interaction].Texture.IsEmpty then
     Exit;
 
-  FullscreenCover := Button[Interaction].Texture;
-  FullscreenCover.X := 0;
-  FullscreenCover.Y := 0;
-  FullscreenCover.W := 800;
-  FullscreenCover.H := 600;
-  FullscreenCover.Z := 1;
-  FullscreenCover.ScaleW := 1;
-  FullscreenCover.ScaleH := 1;
-  FullscreenCover.Int := 1;
-  FullscreenCover.ColR := 1;
-  FullscreenCover.ColG := 1;
-  FullscreenCover.ColB := 1;
-  FullscreenCover.Alpha := 1;
-  DrawTexture(FullscreenCover);
+  FullscreenCover := Button[Interaction].Texture.Clone();
+  try
+    FullscreenCover.X := 0;
+    FullscreenCover.Y := 0;
+    FullscreenCover.W := RenderW;
+    FullscreenCover.H := RenderH;
+    FullscreenCover.Z := 1;
+    FullscreenCover.Int := 1;
+    FullscreenCover.ColR := 1;
+    FullscreenCover.ColG := 1;
+    FullscreenCover.ColB := 1;
+    FullscreenCover.Alpha := 1;
+    Renderer.DrawTexture(FullscreenCover);
+  finally
+    FullscreenCover.Free;
+  end;
 end;
 
 procedure TScreenSong.ConfigureLoopLyricsEngine(Engine: TLyricEngine;
@@ -1559,6 +1541,13 @@ begin
 
       SDLK_J: //Show Jumpto Menu
         begin
+          if IsLoopModeActive and CoverFull then
+          begin
+            // Leave the fullscreen presentation only. Keep the preference so
+            // the next auto-advanced song (or V) returns to fullscreen.
+            CoverFull := false;
+            Exit;
+          end;
           if (Songs.SongList.Count > 0) and (FreeListMode) then
           begin
             ScreenSongJumpto.Visible := true;
@@ -4098,8 +4087,8 @@ begin
         fCurrentVideo.ReflectionSpacing := Reflectionspacing;
       end;
     end;
-    if Button[interaction].Reflection or (Theme.Song.Cover.SelectReflection) then
-      fCurrentVideo.Reflection := true;
+    fCurrentVideo.Reflection := (not CoverFull) and
+      (Button[interaction].Reflection or Theme.Song.Cover.SelectReflection);
 
     if CoverFull then
       fCurrentVideo.AspectCorrection := acoLetterBox
@@ -4108,8 +4097,6 @@ begin
 
      fCurrentVideo.Draw;
 
-     if (not CoverFull) and (Button[interaction].Reflection or (Theme.Song.Cover.SelectReflection)) then
-       fCurrentVideo.DrawReflection;
   end;
 
   // duet names
