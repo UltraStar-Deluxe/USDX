@@ -53,7 +53,6 @@ type
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
       procedure OnHide; override;
-      procedure SetAnimationProgress(Progress: real); override;
 
       procedure SetOverview;
   end;
@@ -184,14 +183,6 @@ begin
   // Format overview
   Overview := Language.Translate('ABOUT_OVERVIEW');
   Text[0].Text := Overview;
-end;
-
-procedure TScreenAbout.SetAnimationProgress(Progress: real);
-var
-  I: integer;
-begin
-  for I := 0 to high(Button) do
-    Button[I].Texture.ScaleW := Progress;
 end;
 
 procedure TScreenAbout.ShowCreditsInAbout;

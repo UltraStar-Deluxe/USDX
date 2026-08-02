@@ -19,11 +19,11 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  *
- * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/TextGL.pas $
- * $Id: TextGL.pas 2675 2010-10-17 17:00:23Z tobigun $
+ * $URL: https://ultrastardx.svn.sourceforge.net/svnroot/ultrastardx/trunk/src/base/UText.pas $
+ * $Id: UText.pas 2675 2010-10-17 17:00:23Z tobigun $
  *}
 
-unit TextGL;
+unit UText;
 
 interface
 
@@ -34,10 +34,8 @@ interface
 {$I switches.inc}
 
 uses
-  dglOpenGL,
   sdl2,
   Classes,
-  UTexture,
   UFont,
   UPath,
   ULog;
@@ -74,19 +72,22 @@ var
 procedure LoadFontFamilyNames;
 procedure BuildFonts;                         // builds all fonts
 procedure KillFonts;                          // deletes all font
-function  glTextWidth(const text: UTF8String): real; // returns text width
-procedure glPrint(const text: UTF8String);    // custom GL "Print" routine
+function  TextWidth(const text: UTF8String): real; // returns text width
+procedure PrintText(const text: UTF8String);    // custom GL "Print" routine
 procedure ResetFont();                        // reset font settings of active font
 procedure SetFontPos(X, Y: real);             // sets X and Y
 procedure SetFontZ(Z: real);                  // sets Z
 procedure SetFontSize(Size: real);
+function GetFontSize(): real;
 procedure SetFontFamily(FontFamily: integer); // sets active font family
 procedure SetFontStyle(FontStyle: integer);   // sets active font style (regular, bold, outline, boldhighres)
 procedure SetFont(Family, Style: integer); overload;   // sets active font (family + style)
 procedure SetFont(Font: TFont); overload;              // sets active font (family + style)
 procedure SetFontItalic(Enable: boolean);     // sets italic type letter (works for all fonts)
 procedure SetFontReflection(Enable:boolean;Spacing: real); // enables/disables text reflection
-procedure SetOutlineColor(R, G, B, A: GLFloat); // set outline color
+procedure SetOutlineColor(R, G, B, A: single); // set outline color
+procedure SetFontColor(R, G, B, A: single);
+
 
 implementation
 
@@ -249,7 +250,7 @@ begin
       Fonts[I][J].Font.Free;
 end;
 
-function glTextWidth(const text: UTF8String): real;
+function TextWidth(const text: UTF8String): real;
 var
   Bounds: TBoundsDbl;
 begin
@@ -258,7 +259,7 @@ begin
 end;
 
 // Custom GL "Print" Routine
-procedure glPrint(const Text: UTF8String);
+procedure PrintText(const Text: UTF8String);
 var
   GLFont: PGLFont;
 begin
@@ -268,12 +269,8 @@ begin
 
   GLFont := @Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle];
 
-  glPushMatrix();
-    // set font position
-    glTranslatef(GLFont.X, GLFont.Y + GLFont.Font.Ascender, GLFont.Z);
-    // draw string
-    GLFont.Font.Print(Text);
-  glPopMatrix();
+  // draw string
+  GLFont.Font.Print(Text, GLFont.X, GLFont.Y + GLFont.Font.Ascender, GLFont.Z);
 end;
 
 procedure ResetFont();
@@ -299,6 +296,11 @@ end;
 procedure SetFontSize(Size: real);
 begin
   Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Height := Size;
+end;
+
+function GetFontSize(): real;
+begin
+  Result := Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Height;
 end;
 
 procedure SetFontFamily(FontFamily: integer);
@@ -340,10 +342,15 @@ begin
   Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.ReflectionSpacing := Spacing - Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.Descender;
 end;
 
-procedure SetOutlineColor(R, G, B, A: GLFloat);
+procedure SetOutlineColor(R, G, B, A: single);
 begin
   if (Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Outlined) then
     TFTScalableOutlineFont(Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font).SetOutlineColor(R, G, B, A);
+end;
+
+procedure SetFontColor(R, G, B, A: single);
+begin
+  Fonts[CurrentFont.FontFamily][CurrentFont.FontStyle].Font.SetColor(R, G, B, A);
 end;
 
 end.

@@ -39,7 +39,7 @@ uses
   Classes,
   IniFiles,
   SysUtils,
-  TextGL,
+  UText,
   UCommon,
   ULog,
   UTextEncoding,

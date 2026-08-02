@@ -10,7 +10,7 @@ For linking and running the game, the following libraries are also required:
 - PortAudio
 - Lua 5.1, 5.2, 5.3 or 5.4
 - OpenCV if you want webcam support
-- projectM 2,x if you want audio visualisation support
+- projectM 4,x if you want audio visualisation support
 
 Prebuilt DLLs for SDL2, SDL2_image, FFmpeg, SQLite, PortAudio, and Lua can be found in the releases section of [our MXE fork](https://github.com/UltraStar-Deluxe/mxe). You can use the dldlls.py script to download the DLLs for the checked out code. The remaining DLLs needed for Windows builds are part of this repository.
 
@@ -32,7 +32,7 @@ Required libraries:
 - Archlinux: see the dependencies in the [ultrastardx-git](https://aur.archlinux.org/packages/ultrastardx-git) AUR package
 
 Optional libraries:
-- ProjectM visualization: `g++ libprojectm-dev` (Debian/Ubuntu) or `gcc-c++ libprojectM-devel` (Fedora)
+- [ProjectM](https://github.com/projectM-visualizer/projectm) visualization: You may need to compile this from source because 4.0 or later is required, but many distros still ship 2.x or 3.x
 - Webcam: `g++ libopencv-dev` (Debian/Ubuntu)
 
 #### MacOS (High Sierra and above)

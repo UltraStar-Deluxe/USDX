@@ -71,7 +71,6 @@ type
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
       procedure SetInteraction(Num: integer); override;
-      procedure SetAnimationProgress(Progress: real); override;
   end;
 
 const
@@ -353,14 +352,6 @@ procedure TScreenOptions.SetInteraction(Num: integer);
 begin
   inherited SetInteraction(Num);
   UpdateTextDescriptionFor(Interaction);
-end;
-
-procedure TScreenOptions.SetAnimationProgress(Progress: real);
-var i: integer;
-begin
-  // update all buttons
-  for i := 0 to High(Button) do
-    Button[i].Texture.ScaleW := Progress;
 end;
 
 procedure TScreenOptions.UpdateTextDescriptionFor(IID: integer);

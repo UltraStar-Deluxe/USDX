@@ -39,7 +39,7 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="129">
+    <Units Count="127">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -49,7 +49,7 @@
         <IsPartOfProject Value="True"/>
       </Unit1>
       <Unit2>
-        <Filename Value="base\TextGL.pas"/>
+        <Filename Value="base\UText.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit2>
       <Unit3>
@@ -184,10 +184,6 @@
         <Filename Value="base\USongs.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit35>
-      <Unit36>
-        <Filename Value="base\UTexture.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit36>
       <Unit37>
         <Filename Value="base\UThemes.pas"/>
         <IsPartOfProject Value="True"/>
@@ -204,10 +200,6 @@
         <Filename Value="menu\UDisplay.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit40>
-      <Unit41>
-        <Filename Value="menu\UDrawTexture.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit41>
       <Unit42>
         <Filename Value="menu\UMenu.pas"/>
         <IsPartOfProject Value="True"/>
@@ -477,7 +469,7 @@
         <IsPartOfProject Value="True"/>
       </Unit108>
       <Unit109>
-        <Filename Value="lua\ULuaGl.pas"/>
+        <Filename Value="lua\ULuaRenderer.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit109>
       <Unit110>
@@ -493,7 +485,7 @@
         <IsPartOfProject Value="True"/>
       </Unit112>
       <Unit113>
-        <Filename Value="lua\ULuaTextGL.pas"/>
+        <Filename Value="lua\ULuaText.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit113>
       <Unit114>

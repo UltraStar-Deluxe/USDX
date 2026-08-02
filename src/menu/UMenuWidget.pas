@@ -33,58 +33,58 @@ interface
 type
   IMenuWidget = class
     protected
-      PosYInit: real;
+      PosYInit: single;
 
     public
       Scrollable: boolean;
 
-      procedure SetX(PosX: real); virtual; abstract;
-      function GetX(): real; virtual; abstract;
-      procedure SetY(PosY: real);  virtual; abstract;
-      function GetY(): real;  virtual; abstract;
-      function GetW(): real;  virtual; abstract;
-      function GetH(): real;  virtual; abstract;
-      procedure SetScrollOffset(ScrollOffset: real); virtual;
-      function GetScrollOffset(): real;  virtual;
+      procedure SetX(PosX: single); virtual; abstract;
+      function GetX(): single; virtual; abstract;
+      procedure SetY(PosY: single);  virtual; abstract;
+      function GetY(): single;  virtual; abstract;
+      function GetW(): single;  virtual; abstract;
+      function GetH(): single;  virtual; abstract;
+      procedure SetScrollOffset(ScrollOffset: single); virtual;
+      function GetScrollOffset(): single;  virtual;
       procedure Draw; virtual; abstract;
 
-      property X: real read GetX write SetX;
-      property Y: real read GetY write SetY;
-      property YInit: real read PosYInit write PosYInit;
-      property W: real read GetW;
-      property H: real read GetH;
-      property ScrollOffset: real read GetScrollOffset write SetScrollOffset;
+      property X: single read GetX write SetX;
+      property Y: single read GetY write SetY;
+      property YInit: single read PosYInit write PosYInit;
+      property W: single read GetW;
+      property H: single read GetH;
+      property ScrollOffset: single read GetScrollOffset write SetScrollOffset;
     end;
 
   ISimpleMenuWidget = class(IMenuWidget)
     protected
-      PosX, PosY, Width, Height: real;
+      PosX, PosY, Width, Height: single;
 
     public
-      constructor Create(PosX, PosY, Width, Height: real);
-      procedure SetX(PosX: real); override;
-      function GetX(): real; override;
-      procedure SetY(PosY: real); override;
-      function GetY(): real; override;
-      function GetW(): real; override;
-      function GetH(): real; override;
-      procedure SetScrollOffset(ScrollOffset: real); override;
-      function GetScrollOffset(): real; override;
+      constructor Create(PosX, PosY, Width, Height: single);
+      procedure SetX(PosX: single); override;
+      function GetX(): single; override;
+      procedure SetY(PosY: single); override;
+      function GetY(): single; override;
+      function GetW(): single; override;
+      function GetH(): single; override;
+      procedure SetScrollOffset(ScrollOffset: single); override;
+      function GetScrollOffset(): single; override;
     end;
 
 implementation
 
-procedure IMenuWidget.SetScrollOffset(ScrollOffset: real);
+procedure IMenuWidget.SetScrollOffset(ScrollOffset: single);
 begin
   Y := YInit + ScrollOffset;
 end;
 
-function IMenuWidget.GetScrollOffset(): real;
+function IMenuWidget.GetScrollOffset(): single;
 begin
   Result := Y - Yinit;
 end;
 
-constructor ISimpleMenuWidget.Create(PosX, PosY, Width, Height: real);
+constructor ISimpleMenuWidget.Create(PosX, PosY, Width, Height: single);
 begin
   self.PosX := PosX;
   self.PosY := PosY;
@@ -93,42 +93,42 @@ begin
   PosYInit := PosY;
 end;
 
-procedure ISimpleMenuWidget.SetX(PosX: real);
+procedure ISimpleMenuWidget.SetX(PosX: single);
 begin
   self.PosX := PosX;
 end;
 
-function ISimpleMenuWidget.GetX(): real;
+function ISimpleMenuWidget.GetX(): single;
 begin
   Result := PosX
 end;
 
-procedure ISimpleMenuWidget.SetY(PosY: real);
+procedure ISimpleMenuWidget.SetY(PosY: single);
 begin
   self.PosY := PosY;
 end;
 
-function ISimpleMenuWidget.GetY(): real;
+function ISimpleMenuWidget.GetY(): single;
 begin
   Result := PosY;
 end;
 
-function ISimpleMenuWidget.GetW(): real;
+function ISimpleMenuWidget.GetW(): single;
 begin
   Result := Width;
 end;
 
-function ISimpleMenuWidget.GetH(): real;
+function ISimpleMenuWidget.GetH(): single;
 begin
   Result := Height;
 end;
 
-procedure ISimpleMenuWidget.SetScrollOffset(ScrollOffset: real);
+procedure ISimpleMenuWidget.SetScrollOffset(ScrollOffset: single);
 begin
   PosY := PosYInit + ScrollOffset;
 end;
 
-function ISimpleMenuWidget.GetScrollOffset(): real;
+function ISimpleMenuWidget.GetScrollOffset(): single;
 begin
   Result := PosY - PosYInit;
 end;

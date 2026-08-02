@@ -360,6 +360,8 @@ type
     function GetIntern: UTF8String;
     property Intern: UTF8String READ GetIntern;
   end;
+  TPathDynArray = array of IPath;
+
 
 {**
  * Creates a new path with the given pathname. PathName can be either in UTF8

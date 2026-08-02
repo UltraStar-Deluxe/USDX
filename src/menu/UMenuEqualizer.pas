@@ -55,21 +55,21 @@ type
     public
       X: integer;
       Y: integer;
-      Z: real;
+      Z: single;
 
       W: integer;
       H: integer;
       Space: integer;
 
       Visible: boolean;
-      Alpha:   real;
+      Alpha:   single;
       Color:   TRGB;
 
       Direction:  boolean;
       BandLength: integer;
 
       Reflection:        boolean;
-      Reflectionspacing: real;
+      Reflectionspacing: single;
 
 
       constructor Create(Source: IAudioPlayback; mySkin: TThemeEqualizer);
@@ -85,7 +85,7 @@ implementation
 uses
   math,
   sdl2,
-  dglOpenGL;
+  URenderer;
 
 constructor Tms_Equalizer.Create(Source: IAudioPlayback; mySkin: TThemeEqualizer);
 var
@@ -141,7 +141,7 @@ var
   I:            integer;
   ChansPerBand: byte;        // channels per band
   MaxChannel:   integer;
-  Pos:          real;
+  Pos:          single;
   CurBand:      integer;
 begin
   Source.GetFFTData(FFTData);
@@ -192,9 +192,12 @@ end;
 procedure Tms_Equalizer.Draw;
 var
   CurTime:    cardinal;
-  PosX, PosY: real;
-  I, J:       integer;
-  Diff:       real;
+  PosX, PosY: single;
+  I, J, K:    integer;
+  Diff:       single;
+  QuadList:   TQuadList;
+  NumQuads:   integer;
+  A:          single;
 
   function GetAlpha(Diff: single): single;
   begin
@@ -203,7 +206,6 @@ var
     else
       Result := (Alpha * 0.6) * (0.5 - Diff/(Bands      * (H + Space)));
   end;
-
 begin
   if (Visible) and not (AudioPlayback.Finished) then
   begin
@@ -216,17 +218,22 @@ begin
       RefreshTime := CurTime + 44;
     end;
 
-    //Draw Equalizer Bands
-    // Setup OpenGL
-    glColorRGB(Color, Alpha);
-    glDisable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-
     // Set position of the first equalizer bar
     PosY := Y;
     PosX := X;
 
+    // Calculate number of quads to draw
+    NumQuads := 0;
+    for I := Low(BandData) to High(BandData) do
+    begin
+      NumQuads := NumQuads + BandData[I];
+      if (Reflection) then
+        NumQuads := NumQuads + Min(BandData[I], BandLength div 2);
+    end;
+    SetLength(QuadList, NumQuads);
+
     // Draw bars for each band
+    K := 0;
     for I := 0 to High(BandData) do
     begin
       // Reset to lower or left position depending on the drawing-direction
@@ -240,12 +247,17 @@ begin
       for J := 1 to BandData[I] do
       begin
         // Draw block
-        glBegin(GL_QUADS);
-          glVertex3f(PosX, PosY, Z);
-          glVertex3f(PosX, PosY+H, Z);
-          glVertex3f(PosX+W, PosY+H, Z);
-          glVertex3f(PosX+W, PosY, Z);
-        glEnd;
+        QuadList[K].X := PosX;
+        QuadList[K].Y := PosY;
+        QuadList[K].Z := Z;
+        QuadList[K].W := W;
+        QuadList[K].H := H;
+        QuadList[K].ColR := Color.R;
+        QuadList[K].ColG := Color.G;
+        QuadList[K].ColB := Color.B;
+        QuadList[K].Alpha := Alpha;
+        QuadList[K].Gradient := gdNone;
+        K := K + 1;
 
         if (Reflection) and (J <= BandLength div 2) then
         begin
@@ -254,32 +266,39 @@ begin
           //Draw Reflection
           if Direction then
           begin
-            glBegin(GL_QUADS);
-              glColorRGB(Color, GetAlpha(Diff));
-              glVertex3f(PosX, Diff + Y + ReflectionSpacing, Z);
-
-              //bottom v
-              glColorRGB(Color, GetAlpha(Diff + H));
-              glVertex3f(PosX, Diff + Y+H + ReflectionSpacing, Z);
-              glVertex3f(PosX+W, Diff + Y+H + ReflectionSpacing, Z);
-
-              glColorRGB(Color, GetAlpha(Diff));
-              glVertex3f(PosX+W, Diff + Y + ReflectionSpacing, Z);
-            glEnd;
+            QuadList[K].X := PosX;
+            QuadList[K].Y := Diff + Y + ReflectionSpacing;
+            QuadList[K].Z := Z;
+            QuadList[K].W := W;
+            QuadList[K].H := H;
+            QuadList[K].ColR := Color.R;
+            QuadList[K].ColG := Color.G;
+            QuadList[K].ColB := Color.B;
+            QuadList[K].Alpha := GetAlpha(Diff);
+            QuadList[K].ColR2 := Color.R;
+            QuadList[K].ColG2 := Color.G;
+            QuadList[K].ColB2 := Color.B;
+            QuadList[K].Alpha2 := GetAlpha(Diff + H);
+            QuadList[K].Gradient := gdVertical;
           end
           else
           begin
-            glBegin(GL_QUADS);
-              glColorRGB(Color, GetAlpha(Diff));
-              glVertex3f(PosX, Diff + Y + (H + Space)*Bands + ReflectionSpacing, Z);
-              glVertex3f(PosX, Diff + Y+H  + (H + Space)*Bands + ReflectionSpacing, Z);
-              glVertex3f(PosX+W, Diff + Y+H  + (H + Space)*Bands + ReflectionSpacing, Z);
-              glVertex3f(PosX+W, Diff + Y + (H + Space)*Bands + ReflectionSpacing, Z);
-              glColorRGB(Color, GetAlpha(Diff + H));
-            glEnd;
+            QuadList[K].X := PosX;
+            QuadList[K].Y := Diff + Y + (H + Space)*Bands + ReflectionSpacing;
+            QuadList[K].Z := Z;
+            QuadList[K].W := W;
+            QuadList[K].H := H;
+            QuadList[K].ColR := Color.R;
+            QuadList[K].ColG := Color.G;
+            QuadList[K].ColB := Color.B;
+            QuadList[K].Alpha := GetAlpha(Diff);
+            QuadList[K].ColR2 := Color.R;
+            QuadList[K].ColG2 := Color.G;
+            QuadList[K].ColB2 := Color.B;
+            QuadList[K].Alpha2 := GetAlpha(Diff + H);
+            QuadList[K].Gradient := gdHorizontal;
           end;
-
-          glColorRGB(Color, Alpha);
+          K := K + 1;
         end;
 
 
@@ -297,7 +316,7 @@ begin
         PosY := PosY + H + Space;
     end;
 
-
+  Renderer.DrawQuads(QuadList);
   end;
 end;
 

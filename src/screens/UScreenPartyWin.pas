@@ -64,7 +64,6 @@ type
       constructor Create; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
-      procedure SetAnimationProgress(Progress: real); override;
   end;
 
 const
@@ -292,16 +291,6 @@ begin
     Statics[StaticTeam3BG].Visible := false;
     Statics[StaticTeam3Deco].Visible := false;
   end;
-end;
-
-procedure TScreenPartyWin.SetAnimationProgress(Progress: real);
-begin
-  {if (ScreenSingModi.PlayerInfo.NumPlayers >= 1) then
-    Statics[StaticTeam1].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[0].Score / maxScore;
-  if (ScreenSingModi.PlayerInfo.NumPlayers >= 2) then
-    Statics[StaticTeam2].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[1].Score / maxScore;
-  if (ScreenSingModi.PlayerInfo.NumPlayers >= 3) then
-    Statics[StaticTeam3].Texture.ScaleW := Progress * ScreenSingModi.PlayerInfo.Playerinfo[2].Score / maxScore;}
 end;
 
 end.

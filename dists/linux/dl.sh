@@ -18,7 +18,7 @@ older() {
 
 needossl=no
 
-if older 3.5.1 cmake --version && older 3.5.1 cmake3 --version ; then
+if older 3.20 cmake --version && older 3.20 cmake3 --version ; then
 	deps+=('cmake,https://github.com/Kitware/CMake/releases/download/v3.25.2/cmake-3.25.2.tar.gz,2f444bb9951aad09452b692d8b3b9e33309e1641')
 	needossl=yes
 fi
@@ -79,7 +79,7 @@ if older 2.26 ld --version ; then
 	fi
 fi
 deps+=('opencv,https://github.com/opencv/opencv/archive/refs/tags/4.13.0.tar.gz,fc2f2ce6f8f2d5a5c34435054334fa6046ae3d6d')
-deps+=('projectm,https://github.com/projectM-visualizer/projectm/releases/download/v2.2.1/projectM-2.2.1.tar.gz,bfd0cb09797384a814c3585b7b0369fc1c8b04fe')
+deps+=('projectm,https://github.com/projectM-visualizer/projectm/archive/refs/tags/v4.0.0.tar.gz,f354c978c11b421caf88507ad7b088ab6d339325')
 # if [ -f /.dockerenv ]; then
 # 	deps+=('fpc-x86_64,https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.x86_64-linux.tar,0720e428eaea423423e1b76a7267d6749c3399f4')
 # 	deps+=('fpc-i686,https://sourceforge.net/projects/freepascal/files/Linux/3.0.4/fpc-3.0.4.i386-linux.tar,0a51364bd1a37f1e776df5357ab5bfca8cc7ddeb')

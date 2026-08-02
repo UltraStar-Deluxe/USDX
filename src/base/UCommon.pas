@@ -49,6 +49,7 @@ type
   TIntegerDynArray = array of integer;
   TStringDynArray = array of string;
   TUTF8StringDynArray = array of UTF8String;
+  CardinalArray = array of cardinal;
 
 const
   SepWhitespace = [#9, #10, #13, ' ']; // tab, lf, cr, space
@@ -126,6 +127,7 @@ function GetArrayIndex(const SearchArray: array of integer; Value: integer): int
 
 function ParseResolutionString(const ResolutionString: string; out x, y: integer): boolean;
 function BuildResolutionString(x,y: integer): string;
+function RandomPermute(Num: integer): CardinalArray;
 
 implementation
 
@@ -782,6 +784,26 @@ begin
     FreeMem(PMemAlignHeader(PtrUInt(P) - SizeOf(TMemAlignHeader))^);
 end;
 {$WARNINGS ON}
+
+function RandomPermute(Num: integer): CardinalArray;
+var
+  Ordered: array of cardinal;
+  Idx, i: cardinal;
+begin
+  Result := nil;
+  if Num <= 0 then
+    Exit;
+  SetLength(Ordered, Num);
+  SetLength(Result, Num);
+  for i := 0 to Num-1 do Ordered[i] := i;
+  for i := 0 to Num-1 do
+  begin
+    Idx := Random(Num);
+    Result[i] := Ordered[Idx];
+    Delete(Ordered, Idx, 1);
+    Dec(Num);
+  end;
+end;
 
 
 initialization

@@ -42,10 +42,8 @@ uses
   UMenuText,
   UPath,
   USongs,
-  UTexture,
   UThemes,
   UTime,
-  dglOpenGL,
   Math,
   sdl2,
   SysUtils;

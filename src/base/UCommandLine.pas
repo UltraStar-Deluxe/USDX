@@ -74,6 +74,8 @@ type
       ConfigFile: IPath;
       ScoreFile:  IPath;
 
+      Renderer: string;
+
       // pseudo integer values
       property Language:      integer read GetLanguage;
       property Resolution:    integer read GetResolution;
@@ -291,6 +293,16 @@ begin
         begin
           // write value to string
           ScoreFile := Path(ParamStr(I + 1));
+        end;
+      end
+
+      else if (Command = 'renderer') then
+      begin
+        // check if there is another parameter to get the value from
+        if (PCount > I) then
+        begin
+          // write value to string
+          Renderer := (ParamStr(I + 1));
         end;
       end;
 

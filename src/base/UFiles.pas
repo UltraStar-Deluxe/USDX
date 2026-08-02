@@ -55,7 +55,7 @@ function SaveSong(const Song: TSong; const Tracks: array of TLines; const Name: 
 implementation
 
 uses
-  TextGL,
+  UText,
   UIni,
   UNote,
   UPlatform,

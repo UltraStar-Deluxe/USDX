@@ -54,7 +54,7 @@ type
 
   TVolumeMeter = class(ISimpleMenuWidget)
     public
-      constructor Create(PosX, PosY, Width, Height: real);
+      constructor Create(PosX, PosY, Width, Height: single);
       procedure Draw; override;
   end;
 
@@ -64,7 +64,7 @@ type
       procedure DrawPitch;
 
     public
-      constructor Create(PosX, PosY, Width, Height: real);
+      constructor Create(PosX, PosY, Width, Height: single);
       procedure Draw; override;
   end;
 
@@ -148,12 +148,12 @@ uses
   UMain,
   UMenuSelectSlide,
   UMenuText,
+  URenderer,
   UUnicodeUtils,
-  dglOpenGL,
   Math,
   sdl2,
   SysUtils,
-  TextGL;
+  UText;
 
 type
   InteractionID = (
@@ -166,7 +166,7 @@ type
     iBackButton
   );
 
-constructor TVolumeMeter.Create(PosX, PosY, Width, Height: real);
+constructor TVolumeMeter.Create(PosX, PosY, Width, Height: single);
 begin
   inherited;
 end;
@@ -176,28 +176,33 @@ var
   x1, y1, x2, y2: single;
   VolBarInnerWidth: integer;
   Volume: single;
+  QuadList: TQuadList;
 const
   VolBarInnerHSpacing = 2;
   VolBarInnerVSpacing = 1;
 begin
+  SetLength(QuadList, 2);
+
   // coordinates for black rect
   x1 := PosX;
   y1 := PosY;
   x2 := x1 + Width;
   y2 := y1 + Height;
 
-  // init blend mode
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_BLEND);
-
   // draw black background-rect
-  glColor4f(0, 0, 0, 0.8);
-  glBegin(GL_QUADS);
-    glVertex2f(x1, y1);
-    glVertex2f(x2, y1);
-    glVertex2f(x2, y2);
-    glVertex2f(x1, y2);
-  glEnd();
+  with QuadList[0] do
+  begin
+    X := x1;
+    Y := y1;
+    Z := 0;
+    W := Width;
+    H := Height;
+    ColR := 0;
+    ColG := 0;
+    ColB := 0;
+    Alpha := 0.8;
+    Gradient := gdNone;
+  end;
 
   VolBarInnerWidth := Trunc(Width - 2*VolBarInnerHSpacing);
 
@@ -213,20 +218,31 @@ begin
   y1 := y1 + VolBarInnerVSpacing;
   y2 := y2 - VolBarInnerVSpacing;
 
-  // draw volume-bar
-  glBegin(GL_QUADS);
-    // draw volume bar
-    glColor3f(0.4, 0.3, 0.3);
-    glVertex2f(x1, y1);
-    glVertex2f(x1, y2);
-    glColor3f(1, 0.1, 0.1);
-    glVertex2f(x2, y2);
-    glVertex2f(x2, y1);
-  glEnd();
-  glDisable(GL_BLEND);
+  with QuadList[1] do
+  begin
+    X := x1;
+    Y := y1;
+    Z := 0;
+    W := x2 - x1;
+    H := y2 - y1;
+    Gradient := gdHorizontal;
+
+    // left color
+    ColR := 0.4;
+    ColG := 0.3;
+    ColB := 0.3;
+    Alpha := 1;
+
+    // right color
+    ColR2 := 1;
+    ColG2 := 0.1;
+    ColB2 := 0.1;
+    Alpha2 := 1;
+  end;
+  Renderer.DrawQuads(QuadList);
 end;
 
-constructor TVUMeter.Create(PosX, PosY, Width, Height: real);
+constructor TVUMeter.Create(PosX, PosY, Width, Height: single);
 begin
   inherited;
 end;
@@ -243,28 +259,33 @@ var
   Volume, PeakVolume: single;
   Delta: single;
   VolBarInnerWidth: integer;
+  QuadList: TQuadList;
 const
   VolBarInnerHSpacing = 2;
   VolBarInnerVSpacing = 1;
 begin
+  SetLength(QuadList, 4);
+
   // coordinates for black rect
   x1 := PosX;
   y1 := PosY;
   x2 := x1 + Width;
   y2 := y1 + BarHeight;
 
-  // init blend mode
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_BLEND);
-
   // draw black background-rect
-  glColor4f(0, 0, 0, 0.8);
-  glBegin(GL_QUADS);
-    glVertex2f(x1, y1);
-    glVertex2f(x2, y1);
-    glVertex2f(x2, y2);
-    glVertex2f(x1, y2);
-  glEnd();
+  with QuadList[0] do
+  begin
+    X := x1;
+    Y := y1;
+    Z := 0;
+    W := x2 - x1;
+    H := y2 - y1;
+    Gradient := gdNone;
+    ColR := 0;
+    ColG := 0;
+    ColB := 0;
+    Alpha := 0.8;
+  end;
 
   VolBarInnerWidth := Trunc(Width - 2*VolBarInnerHSpacing);
 
@@ -276,69 +297,101 @@ begin
   x1 := PosX + VolBarInnerHSpacing;
   x2 := x1 + VolBarInnerWidth;
 
-  glBegin(GL_QUADS);
-    Volume := ScreenOptionsRecord.PreviewChannel.MaxSampleVolume();
+  Volume := ScreenOptionsRecord.PreviewChannel.MaxSampleVolume();
 
-    // coordinates for volume bar
-    x1 := PosX + VolBarInnerHSpacing;
-    x2 := x1 + VolBarInnerWidth * Volume;
+  // coordinates for volume bar
+  x1 := PosX + VolBarInnerHSpacing;
+  x2 := x1 + VolBarInnerWidth * Volume;
 
-    // draw volume bar
-    glColor3f(ScreenOptionsRecord.State.RD, ScreenOptionsRecord.State.GD, ScreenOptionsRecord.State.BD);
-    glVertex2f(x1, y1);
-    glVertex2f(x1, y2);
-    glColor3f(ScreenOptionsRecord.State.R, ScreenOptionsRecord.State.G, ScreenOptionsRecord.State.B);
-    glVertex2f(x2, y2);
-    glVertex2f(x2, y1);
+  // draw volume bar
+  with QuadList[1] do
+  begin
+    X := x1;
+    Y := y1;
+    Z := 0;
+    W := x2 - x1;
+    H := y2 - y1;
+    Gradient := gdHorizontal;
 
-    Delta := (SDL_GetTicks() - ScreenOptionsRecord.ChannelPeak.Time)/1000;
-    PeakVolume := ScreenOptionsRecord.ChannelPeak.Volume - Delta*Delta*PeakDecay;
+    // Left color
+    ColR := ScreenOptionsRecord.State.RD;
+    ColG := ScreenOptionsRecord.State.GD;
+    ColB := ScreenOptionsRecord.State.BD;
+    Alpha := 1;
 
-    // determine new peak-volume
-    if (Volume > PeakVolume) then
-    begin
-      PeakVolume := Volume;
-      ScreenOptionsRecord.ChannelPeak.Volume := Volume;
-      ScreenOptionsRecord.ChannelPeak.Time := SDL_GetTicks();
-    end;
+    // Right color
+    ColR2 := ScreenOptionsRecord.State.R;
+    ColG2 := ScreenOptionsRecord.State.G;
+    ColB2 := ScreenOptionsRecord.State.B;
+    Alpha2 := 1;
+  end;
 
-    x1 := PosX + VolBarInnerHSpacing + VolBarInnerWidth * PeakVolume;
-    x2 := x1 + 2;
+  Delta := (SDL_GetTicks() - ScreenOptionsRecord.ChannelPeak.Time)/1000;
+  PeakVolume := ScreenOptionsRecord.ChannelPeak.Volume - Delta*Delta*PeakDecay;
 
-    // draw peak
-    glColor3f(0.8, 0.8, 0.8);
-    glVertex2f(x1, y1);
-    glVertex2f(x1, y2);
-    glVertex2f(x2, y2);
-    glVertex2f(x2, y1);
+  // determine new peak-volume
+  if (Volume > PeakVolume) then
+  begin
+    PeakVolume := Volume;
+    ScreenOptionsRecord.ChannelPeak.Volume := Volume;
+    ScreenOptionsRecord.ChannelPeak.Time := SDL_GetTicks();
+  end;
 
-    // draw threshold
-    x1 := PosX + VolBarInnerHSpacing;
-    x2 := x1 + VolBarInnerWidth * IThresholdVals[Ini.ThresholdIndex];
+  x1 := PosX + VolBarInnerHSpacing + VolBarInnerWidth * PeakVolume;
+  x2 := x1 + 2;
 
-    glColor4f(0.3, 0.3, 0.3, 0.6);
-    glVertex2f(x1, y1);
-    glVertex2f(x1, y2);
-    glVertex2f(x2, y2);
-    glVertex2f(x2, y1);
-  glEnd();
+  // draw peak
+  with QuadList[2] do
+  begin
+    X := x1;
+    Y := y1;
+    Z := 0;
+    W := x2 - x1;
+    H := y2 - y1;
+    Gradient := gdNone;
+    ColR := 0.8;
+    ColG := 0.8;
+    ColB := 0.8;
+    Alpha := 1;
+  end;
 
-  glDisable(GL_BLEND);
+  // draw threshold
+  x1 := PosX + VolBarInnerHSpacing;
+  x2 := x1 + VolBarInnerWidth * IThresholdVals[Ini.ThresholdIndex];
+
+  with QuadList[3] do
+  begin
+    X := x1;
+    Y := y1;
+    Z := 0;
+    W := x2 - x1;
+    H := y2 - y1;
+    Gradient := gdNone;
+    ColR := 0.3;
+    ColG := 0.3;
+    ColB := 0.3;
+    Alpha := 0.6;
+  end;
+
+  Renderer.DrawQuads(QuadList);
 end;
 
 procedure TVUMeter.DrawPitch;
 var
   x1, y1, x2, y2: single;
   i: integer;
-  ToneBoxWidth: real;
+  ToneBoxWidth: single;
   ToneString: string;
-  ToneStringWidth, ToneStringHeight: real;
-  ToneStringMaxWidth: real;
-  ToneStringCenterXOffset: real;
+  ToneStringWidth, ToneStringHeight: single;
+  ToneStringMaxWidth: single;
+  ToneStringCenterXOffset: single;
+  QuadList: TQuadList;
 const
   PitchBarInnerHSpacing = 2;
   PitchBarInnerVSpacing = 1;
 begin
+  SetLength(QuadList, NumHalftones + 1);
+
   // calc tone pitch
   ScreenOptionsRecord.PreviewChannel.AnalyzeBuffer();
 
@@ -348,51 +401,61 @@ begin
   x2 := x + Width;
   y2 := PosY + 2.0*BarHeight;
 
-  // init blend mode
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_BLEND);
-
   // draw black background-rect
-  glColor4f(0, 0, 0, 0.8);
-  glBegin(GL_QUADS);
-    glVertex2f(x1, y1);
-    glVertex2f(x2, y1);
-    glVertex2f(x2, y2);
-    glVertex2f(x1, y2);
-  glEnd();
+  with QuadList[0] do
+  begin
+    X := x1;
+    Y := y1;
+    Z := 0;
+    W := x2 - x1;
+    H := y2 - y1;
+    Gradient := gdNone;
+    ColR := 0;
+    ColG := 0;
+    ColB := 0;
+    Alpha := 0.8;
+  end;
 
   // coordinates for tone boxes
   ToneBoxWidth := Width / NumHalftones;
   y1 := y1 + PitchBarInnerVSpacing;
   y2 := y2 - PitchBarInnerVSpacing;
 
-  glBegin(GL_QUADS);
     // draw tone boxes
     for i := 0 to NumHalftones-1 do
     begin
       x1 := PosX + i * ToneBoxWidth + PitchBarInnerHSpacing;
       x2 := x1 + ToneBoxWidth - 2*PitchBarInnerHSpacing;
 
+    with QuadList[i + 1] do
+    begin
+      X := x1;
+      Y := y1;
+      Z := 0;
+      W := x2 - x1;
+      H := y2 - y1;
+      Gradient := gdNone;
       if ((ScreenOptionsRecord.PreviewChannel.ToneValid) and
           (ScreenOptionsRecord.PreviewChannel.ToneAbs = i)) then
       begin
         // highlight current tone-pitch
-        glColor3f(1, i / (NumHalftones-1), 0)
+        ColR := 1;
+        ColG := i / (NumHalftones-1);
+        ColB := 0;
+        Alpha := 1;
       end
       else
       begin
         // grey other tone-pitches
-        glColor3f(0.3, i / (NumHalftones-1) * 0.3, 0);
+        ColR := 0.3;
+        ColG := i / (NumHalftones-1) * 0.3;
+        ColB := 0;
+        Alpha := 1;
       end;
-
-      glVertex2f(x1, y1);
-      glVertex2f(x2, y1);
-      glVertex2f(x2, y2);
-      glVertex2f(x1, y2);
     end;
-  glEnd();
+  end;
 
-  glDisable(GL_BLEND);
+  Renderer.DrawQuads(QuadList);
 
   ///
   // draw the name of the tone
@@ -407,14 +470,14 @@ begin
 
   // center
   // Note: for centering let us assume that G#4 has the max. horizontal extent
-  ToneStringWidth := glTextWidth(ToneString);
-  ToneStringMaxWidth := glTextWidth('G#4');
+  ToneStringWidth := TextWidth(ToneString);
+  ToneStringMaxWidth := TextWidth('G#4');
   ToneStringCenterXOffset := (ToneStringMaxWidth-ToneStringWidth) / 2;
 
   // draw
   SetFontPos(PosX-ToneStringWidth-ToneStringCenterXOffset, PosY + BarHeight - ToneStringHeight/2);
-  glColor3f(0, 0, 0);
-  glPrint(ToneString);
+  SetFontColor(0, 0, 0, 1);
+  PrintText(ToneString);
 
 end;
 

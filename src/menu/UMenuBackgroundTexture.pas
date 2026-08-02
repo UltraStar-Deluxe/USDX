@@ -36,9 +36,9 @@ interface
 uses
   UCommon,
   UThemes,
-  UTexture,
   UMenuBackground,
-  UPath;
+  UPath,
+  URenderer;
 
 //TMenuBackgroundColor - Background Color
 //--------
@@ -61,7 +61,6 @@ implementation
 uses
   USkins,
   SysUtils,
-  dglOpenGL,
   UGraphic;
 
 constructor TMenuBackgroundTexture.Create(const ThemedSettings: TThemeBackground);
@@ -76,50 +75,34 @@ begin
   Color       := ThemedSettings.Color;
 
   texFilename := Skin.GetTextureFileName(ThemedSettings.Tex);
-  Tex         := Texture.GetTexture(texFilename, TEXTURE_TYPE_PLAIN);
+  Tex         := Renderer.GetTexture(texFilename, TEXTURE_TYPE_PLAIN);
 
-  if (Tex.TexNum = 0) then
-  begin
-    freeandnil(Tex);
+  if (Tex = nil) then
     raise EMenuBackgroundError.Create('TMenuBackgroundTexture: Can''t load texture');
-  end;
 end;
 
 destructor  TMenuBackgroundTexture.Destroy;
 begin
-  //freeandnil(Tex); <- this causes an Access Violation o0
+  Tex.Free;
   inherited;
 end;
 
 procedure   TMenuBackgroundTexture.Draw;
 begin
   If (ScreenAct = 1) then //Clear just once when in dual screen mode
-    glClear(GL_DEPTH_BUFFER_BIT);
-    
-  glColorRGB(Color);
+    Renderer.ClearFrameBuffer(CLEAR_DEPTH);
 
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  glBindTexture(GL_TEXTURE_2D, Tex.TexNum);
-
-  glBegin(GL_QUADS);
-    glTexCoord2f(Tex.TexX1*Tex.TexW, Tex.TexY1*Tex.TexH);
-    glVertex2f(0, 0);
-
-    glTexCoord2f(Tex.TexX1*Tex.TexW, Tex.TexY2*Tex.TexH);
-    glVertex2f(0, 600);
-
-    glTexCoord2f(Tex.TexX2*Tex.TexW, Tex.TexY2*Tex.TexH);
-    glVertex2f(800, 600);
-
-    glTexCoord2f(Tex.TexX2*Tex.TexW, Tex.TexY1*Tex.TexH);
-    glVertex2f(800, 0);
-  glEnd;
-
-  glDisable(GL_BLEND);
-  glDisable(GL_TEXTURE_2D);
+  with Tex do
+  begin
+    X := 0;
+    Y := 0;
+    W := RenderW;
+    H := RenderH;
+    ColR := Color.R;
+    ColG := Color.G;
+    ColB := Color.B;
+  end;
+  Renderer.DrawTexture(Tex);
 end;
 
 end.

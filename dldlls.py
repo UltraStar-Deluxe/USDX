@@ -7,7 +7,7 @@ import sys
 import os
 import zipfile
 
-sha = 'bce8633438abaa66e19f1169f2503df86dca766c'
+sha = '355c55d2723e344c47cf353f9d47699a2ce1150a'
 filename = 'usdx-dlls-x86_64'
 urlbase = 'https://api.github.com/repos/UltraStar-Deluxe/mxe/'
 headers = {

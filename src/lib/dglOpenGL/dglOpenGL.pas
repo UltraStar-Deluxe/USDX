@@ -59,7 +59,7 @@
   Load the OpenGL Utility library
 }
 
-{$define DGL_DEPRECATED}
+{.$define DGL_DEPRECATED}
 {
   This define defines if the header should use deprecated ARB stuff or not.
   per Default the Header use deprecated Stuff.
@@ -15081,6 +15081,9 @@ procedure Read_WIN_draw_range_elements;
 procedure Read_WIN_swap_hint;
 {$ENDIF}
 
+procedure ReadCoreVersion;
+function Int_CheckExtension(AllExtensions, CheckExtension: AnsiString): Boolean;
+function Int_GetExtensionString: AnsiString;
 
 implementation
 

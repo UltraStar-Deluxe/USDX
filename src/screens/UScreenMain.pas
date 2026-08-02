@@ -59,7 +59,6 @@ type
     function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
     procedure OnShow; override;
     procedure SetInteraction(Num: integer); override;
-    procedure SetAnimationProgress(Progress: real); override;
     function Draw: boolean; override;
   end;
 
@@ -79,9 +78,9 @@ uses
   ULog,
   UNote,
   UParty,
+  URenderer,
   USkins,
   USongs,
-  UTexture,
   UUnicodeUtils;
 
 function TScreenMain.ParseInput(PressedKey: Cardinal; CharCode: UCS4Char;
@@ -299,7 +298,7 @@ begin
 
   Interaction := 0;
 
-  WantSoftwareRenderingMsg := SoftwareRendering;
+  WantSoftwareRenderingMsg := Renderer.SoftwareRendering;
 end;
 
 procedure TScreenMain.OnShow;
@@ -339,12 +338,6 @@ begin
   inherited SetInteraction(Num);
   Text[TextDescription].Text     := Theme.Main.Description[Interaction];
   Text[TextDescriptionLong].Text := Theme.Main.DescriptionLong[Interaction];
-end;
-
-procedure TScreenMain.SetAnimationProgress(Progress: real);
-begin
-  Statics[0].Texture.ScaleW := Progress;
-  Statics[0].Texture.ScaleH := Progress;
 end;
 
 end.

@@ -41,8 +41,8 @@ type
 
   { to handle the area where the mouse is over a control }
   TMouseOverRect = record
-    X, Y: Real;
-    W, H: Real;
+    X, Y: single;
+    W, H: single;
   end;
 
   { to handle the on click action }

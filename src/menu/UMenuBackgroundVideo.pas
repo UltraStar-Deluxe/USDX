@@ -102,12 +102,12 @@ const
 implementation
 
 uses
-  dglOpenGL,
   SysUtils,
   UTime,
   USkins,
   UCommon,
-  UGraphic;
+  UGraphic,
+  URenderer;
 
 constructor TMenuBackgroundVideo.Create(const ThemedSettings: TThemeBackground);
 begin
@@ -147,10 +147,10 @@ begin
   // clear just once when in dual screen mode
   if (ScreenAct = 1) then
   begin
-    glClear(GL_DEPTH_BUFFER_BIT);
+    Renderer.ClearFrameBuffer(CLEAR_DEPTH);
     // video failure -> draw blank background
     if (fBgVideo = nil) then
-      glClear(GL_COLOR_BUFFER_BIT);
+      Renderer.ClearFrameBuffer(CLEAR_COLOR);
   end;
 
   if (fBgVideo <> nil) then

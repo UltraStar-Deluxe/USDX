@@ -181,7 +181,6 @@ uses
   UMain,
   UParty,
   UScreenJukebox,
-  UTexture,
   UUnicodeUtils;
 
 function TScreenJukeboxOptions.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;

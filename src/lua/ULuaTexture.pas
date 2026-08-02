@@ -35,8 +35,7 @@ interface
 
 uses
   SysUtils,
-  ULua,
-  UTexture;
+  ULua;
 
 function luaopen_Texture (L: Plua_State): Integer; cdecl;
 

@@ -1,0 +1,137 @@
+diff --git a/src/libprojectM/MilkdropPresetFactory/Parser.cpp b/src/libprojectM/MilkdropPresetFactory/Parser.cpp
+index 29b1e26f8..1ac02c873 100755
+--- a/src/libprojectM/MilkdropPresetFactory/Parser.cpp
++++ b/src/libprojectM/MilkdropPresetFactory/Parser.cpp
+@@ -1367,7 +1367,7 @@ PerFrameEqn* Parser::parse_per_frame_eqn(std::istream& fs, int index, MilkdropPr
+     Expr* gen_expr{ nullptr };
+     PerFrameEqn* per_frame_eqn{ nullptr };
+
+-    std::array<char, maxTokenSize> string{ 0 };
++    std::array<char, maxTokenSize> string{};
+
+     token_t token = parseToken(fs, string.data());
+
+@@ -2490,7 +2490,7 @@ int Parser::parse_shape_per_frame_eqn(std::istream & fs, CustomShape * custom_sh
+     Expr* gen_expr{ nullptr };
+     PerFrameEqn* per_frame_eqn{ nullptr };
+
+-    std::array<char, maxTokenSize> string{ 0 };
++    std::array<char, maxTokenSize> string{};
+
+     if (PARSE_DEBUG)
+     {
+@@ -2581,7 +2581,7 @@ int Parser::parse_wave_per_frame_eqn(std::istream &  fs, CustomWave * custom_wav
+     Expr* gen_expr{ nullptr };
+     PerFrameEqn* per_frame_eqn{ nullptr };
+
+-    std::array<char, maxTokenSize> string{ 0 };
++    std::array<char, maxTokenSize> string{};
+
+     if (PARSE_DEBUG)
+     {
+diff --git a/src/libprojectM/PCM.hpp b/src/libprojectM/PCM.hpp
+index e173e3134..0b8fecfb3 100755
+--- a/src/libprojectM/PCM.hpp
++++ b/src/libprojectM/PCM.hpp
+@@ -120,20 +120,20 @@ private:
+     // circular PCM buffer
+     // adjust "volume" of PCM data as we go, this simplifies everything downstream...
+     // normalize to range [-1.0,1.0]
+-    std::array<float, maxSamples> m_pcmL{0.f};
+-    std::array<float, maxSamples> m_pcmR{0.f};
++    std::array<float, maxSamples> m_pcmL{};
++    std::array<float, maxSamples> m_pcmR{};
+     size_t m_start{0};
+     size_t m_newSamples{0};
+
+     // raw FFT data
+-    std::array<double, 2 * fftLength> m_freqL{0.0};
+-    std::array<double, 2 * fftLength> m_freqR{0.0};
++    std::array<double, 2 * fftLength> m_freqL{};
++    std::array<double, 2 * fftLength> m_freqR{};
+     // magnitude data
+-    std::array<float, fftLength> m_spectrumL{0.f};
+-    std::array<float, fftLength> m_spectrumR{0.f};
++    std::array<float, fftLength> m_spectrumL{};
++    std::array<float, fftLength> m_spectrumR{};
+
+-    std::array<double, fftLength> m_w{0.0};
+-    std::array<int, 34> m_ip{0};
++    std::array<double, fftLength> m_w{};
++    std::array<int, 34> m_ip{};
+
+     // see https://github.com/projectM-visualizer/projectm/issues/161
+     class AutoLevel
+diff --git a/src/libprojectM/Renderer/BeatDetect.cpp b/src/libprojectM/Renderer/BeatDetect.cpp
+index 3eb070c42..d6f7875e8 100755
+--- a/src/libprojectM/Renderer/BeatDetect.cpp
++++ b/src/libprojectM/Renderer/BeatDetect.cpp
+@@ -96,7 +96,7 @@ auto BeatDetect::CalculateBeatStatistics() -> void
+         };
+
+     static_assert(fftLength >= 256, "fftLength too small");
+-    std::array<size_t, 4> constexpr ranges{0, 3, 23, 255};
++    std::array<size_t, 4> constexpr ranges{{0, 3, 23, 255}};
+
+     float const bassIntensity = intensityBetween(ranges[0], ranges[1]);
+     updateBand(bass, bassAtt, bassSmoothed, bassIntensity);
+diff --git a/src/libprojectM/Renderer/BeatDetect.hpp b/src/libprojectM/Renderer/BeatDetect.hpp
+index c9c1d2bf6..0be7dc71f 100755
+--- a/src/libprojectM/Renderer/BeatDetect.hpp
++++ b/src/libprojectM/Renderer/BeatDetect.hpp
+@@ -82,7 +82,7 @@ private:
+     private:
+         static size_t constexpr bufferLength{80};
+         size_t m_bufferPos{0};
+-        std::array<float, bufferLength> m_buffer{0.f};
++        std::array<float, bufferLength> m_buffer{};
+         float m_current{0.f};
+     };
+
+diff --git a/src/libprojectM/Renderer/MilkdropWaveform.cpp b/src/libprojectM/Renderer/MilkdropWaveform.cpp
+index a8f5bad68..c57db11fc 100644
+--- a/src/libprojectM/Renderer/MilkdropWaveform.cpp
++++ b/src/libprojectM/Renderer/MilkdropWaveform.cpp
+@@ -252,8 +252,8 @@ void MilkdropWaveform::WaveformMath(RenderContext& context)
+     wave2Vertices = nullptr;
+
+     // NOTE: Buffer size is always 512 samples, waveform points 480 or less since some waveforms use a positive offset!
+-    std::array<float, audioSamples> pcmDataL{ 0.0f };
+-    std::array<float, audioSamples> pcmDataR{ 0.0f };
++    std::array<float, audioSamples> pcmDataL{};
++    std::array<float, audioSamples> pcmDataR{};
+
+     if (mode != MilkdropWaveformMode::SpectrumLine)
+     {
+@@ -459,15 +459,15 @@ void MilkdropWaveform::WaveformMath(RenderContext& context)
+             float dx = cosf(angle);
+             float dy = sinf(angle);
+
+-            std::array<float, 2> edgeX{
++            std::array<float, 2> edgeX{{
+                 x * cosf(angle + PI * 0.5f) - dx * 3.0f,
+                 x * cosf(angle + PI * 0.5f) + dx * 3.0f
+-            };
++            }};
+
+-            std::array<float, 2> edgeY{
++            std::array<float, 2> edgeY{{
+                 x * sinf(angle + PI * 0.5f) - dy * 3.0f,
+                 x * sinf(angle + PI * 0.5f) + dy * 3.0f
+-            };
++            }};
+
+             for (int i = 0; i < 2; i++)
+             {
+diff --git a/src/libprojectM/Renderer/TextureManager.cpp b/src/libprojectM/Renderer/TextureManager.cpp
+index 286c65f33..03cd6cd39 100644
+--- a/src/libprojectM/Renderer/TextureManager.cpp
++++ b/src/libprojectM/Renderer/TextureManager.cpp
+@@ -70,7 +70,6 @@ TextureManager::TextureManager(std::vector<std::string>& textureSearchPaths, int
+     // Query preferred internal texture format. GLES 3 only supports GL_RENDERBUFFER here, no texture targets.
+     // That's why we use GL_BGRA as default, as this is the best general-use format according to Khronos.
+     GLint preferredInternalFormat{GL_BGRA};
+-    glGetInternalformativ(GL_TEXTURE_2D, GL_RGBA8, GL_TEXTURE_IMAGE_FORMAT, sizeof(preferredInternalFormat), &preferredInternalFormat);
+ #else
+     // GLES only supports GL_RGB and GL_RGBA, so we always use the latter.
+     GLint preferredInternalFormat{GL_RGBA};

@@ -37,7 +37,6 @@ uses
   SysUtils,
   Classes,
   sdl2,
-  dglOpenGL,
   UDisplay,
   UIni,
   ULog,

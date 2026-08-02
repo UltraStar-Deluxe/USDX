@@ -48,7 +48,6 @@ type
       procedure OnShow; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure SetInteraction(Num: integer); override;
-      procedure SetAnimationProgress(Progress: real); override;
   end;
 
 const
@@ -151,12 +150,6 @@ begin
 
   // long description not used atm // IMPROVE: Theme
   //Text[TextDescriptionLong].Text := Theme.Edit.DescriptionLong[Interaction];
-end;
-
-procedure TScreenEdit.SetAnimationProgress(Progress: real);
-begin
-  Statics[0].Texture.ScaleW := Progress;
-  Statics[0].Texture.ScaleH := Progress;
 end;
 
 end.

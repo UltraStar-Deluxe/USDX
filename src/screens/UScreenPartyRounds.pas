@@ -66,7 +66,6 @@ type
       procedure OnShow; override;
       procedure InteractNext; override;
       procedure InteractPrev; override;
-      procedure SetAnimationProgress(Progress: real); override;
   end;
 
 const
@@ -86,7 +85,6 @@ uses
   UPlaylist,
   USong,
   USongs,
-  UTexture,
   UUnicodeUtils;
 
 procedure TScreenPartyRounds.InteractNext;
@@ -310,12 +308,6 @@ begin
     Party.Clear;
     Display.AbortScreenChange;
   end;
-end;
-
-procedure TScreenPartyRounds.SetAnimationProgress(Progress: real);
-begin
-  {for I := 0 to 6 do
-    SelectS[I].Texture.ScaleW := Progress;}
 end;
 
 end.

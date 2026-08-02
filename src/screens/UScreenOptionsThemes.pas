@@ -79,6 +79,7 @@ uses
   UMain,
   UPathUtils,
   URecord,
+  URenderer,
   USkins,
   UUnicodeUtils,
   SysUtils;
@@ -245,7 +246,7 @@ begin
   ScreenOptionsThemes.Draw;
 
   Display.Draw;
-  SwapBuffers;
+  Renderer.SwapBuffers;
 
   ScreenOptionsThemes.ActualTheme := self.ActualTheme;
   ScreenOptionsThemes.ActualSkin := self.ActualSkin;
