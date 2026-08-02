@@ -206,7 +206,11 @@ begin
     ProjectMPath := Platform.GetGameSharedPath.Append(ProjectMPath);
 
   if (not SetParameters(ProjectMPath.Append('config.inp'))) then
+  begin
+    projectm_destroy(Handle);
+    Handle := nil;
     Exit;
+  end;
   Randomize;
   PresetOrder := RandomPermute(Length(Presets));
   PresetIdx := 0;
