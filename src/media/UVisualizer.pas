@@ -345,7 +345,7 @@ end;
 
 constructor TVideo_ProjectM.Create(ProjectM: TVideoPlayback_ProjectM);
 var
-  SrcFormat: TAudioFormatInfo;
+  PlaybackFormat, SrcFormat: TAudioFormatInfo;
 begin
   inherited Create;
   self.ProjectM := ProjectM;
@@ -355,17 +355,28 @@ begin
   // The ProjectM documentation recommends that all audio samples be provided in 32 bit float format. They do
   // accept 16 bit signed integer, but will just convert it to 32 bit float interally. We will do the
   // conversion instead, because with FFmpeg we will likely get faster results due to the assembly optimization
-  SrcFormat := AudioPlayback.GetFormatInfo();
-  if (SrcFormat <> nil) then
+  PlaybackFormat := AudioPlayback.GetFormatInfo();
+  if (PlaybackFormat <> nil) then
   begin
-    DstFormat := TAudioFormatInfo.Create(Min(SrcFormat.Channels, 2), SrcFormat.SampleRate, asfFloat);
-    AudioConverter := TAudioConverter_SWResample.Create;
-    AudioConverter.Init(SrcFormat, DstFormat);
-    SetLength(fAudioData, AudioConverter.GetOutputBufferSize(SizeOf(TPCMData)) div SizeOf(single));
-    if (DstFormat.Channels = 1) then
-      Channels := PROJECTM_MONO
-    else
-      Channels := PROJECTM_STEREO;
+    // GetPCMData always returns interleaved signed 16-bit stereo frames,
+    // independently of the source file's native format.
+    SrcFormat := TAudioFormatInfo.Create(2, PlaybackFormat.SampleRate, asfS16);
+    try
+      DstFormat := TAudioFormatInfo.Create(2, PlaybackFormat.SampleRate, asfFloat);
+      AudioConverter := TAudioConverter_SWResample.Create;
+      if (AudioConverter.Init(SrcFormat, DstFormat)) then
+      begin
+        SetLength(fAudioData, AudioConverter.GetOutputBufferSize(SizeOf(TPCMData)) div SizeOf(single));
+        Channels := PROJECTM_STEREO;
+      end
+      else
+      begin
+        FreeAndNil(AudioConverter);
+        FreeAndNil(DstFormat);
+      end;
+    finally
+      SrcFormat.Free;
+    end;
   end;
 end;
 
@@ -514,6 +525,7 @@ procedure TVideo_ProjectM.GetFrame(Time: Extended);
 var
   nSamples: cardinal;
   nBytes: integer;
+  ConvertedBytes: integer;
   Data: TPCMData;
 begin
   if (fState <> pmPlay) then
@@ -529,11 +541,11 @@ begin
     if (nSamples = 0) then
       nSamples := GetRandomPCMData(Data);
     nBytes := nSamples * SizeOf(TPCMStereoSample);
-    AudioConverter.Convert(PByteArray(@Data[0]), PByteArray(fAudioData), nBytes);
+    ConvertedBytes := AudioConverter.Convert(PByteArray(@Data[0]), PByteArray(fAudioData), nBytes);
 
     // send audio-data to projectM
-    if (nSamples > 0) then
-      ProjectM.AddAudioSamples(PSingle(fAudioData), nSamples, Channels);
+    if (ConvertedBytes > 0) then
+      ProjectM.AddAudioSamples(PSingle(fAudioData), ConvertedBytes div DstFormat.FrameSize, Channels);
   end;
 
   // let projectM render a frame
