@@ -1535,7 +1535,7 @@ end;
 // store this in the red channel, and later assign it to alpha in the fragment shader
 function TRenderer_OpenGLBase.LoadGlyph(Data: PByte; W, H: integer): TTexture;
 begin
-  Result := TTexture_OpenGL.Create(Data, W, H, PATH_NONE, GlyphTextureFormat, 1, GL_CLAMP_TO_EDGE);
+  Result := TTexture_OpenGL.Create(Data, W, H, PATH_NONE, GlyphTextureFormat, 1, GL_CLAMP_TO_EDGE, false);
   {$IFDEF DEBUG_MODE}
   RaiseExceptionIfError;
   {$ENDIF};
