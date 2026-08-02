@@ -3167,12 +3167,12 @@ var
     Alpha := Statics[StaticIndex].Texture.Alpha;
 
     if Marked then
-      NewTexture := Texture.GetTexture(
+      NewTexture := Renderer.GetTexture(
         Skin.GetTextureFileName(ThemeStatic.Tex),
         ThemeStatic.Typ,
         RGBFloatToInt(Theme.Song.ListCover.DColR, Theme.Song.ListCover.DColG, Theme.Song.ListCover.DColB))
     else
-      NewTexture := Texture.GetTexture(
+      NewTexture := Renderer.GetTexture(
         Skin.GetTextureFileName(ThemeStatic.Tex),
         ThemeStatic.Typ,
         RGBFloatToInt(ThemeStatic.ColR, ThemeStatic.ColG, ThemeStatic.ColB));
