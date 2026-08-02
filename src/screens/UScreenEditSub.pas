@@ -1160,7 +1160,7 @@ begin
     StartVideoPreview();
     Statics[BackgroundImageId].Visible :=
       (not Assigned(fCurrentVideo)) and
-      (Statics[BackgroundImageId].Texture.TexNum > 0);
+      (not Statics[BackgroundImageId].Texture.IsEmpty);
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SONG');
   end;
 end;
@@ -4881,12 +4881,12 @@ begin
   SetFontItalic(False);
   SetFontReflection(False, 0);
   SetFontSize(14);
-  glColor4f(0, 0, 0, 1);
+  SetFontColor(0, 0, 0, 1);
 
   for LineIndex := 0 to High(Lines) do
   begin
     SetFontPos(X + 10, Y + 12 + LineIndex * 18);
-    glPrint(Lines[LineIndex]);
+    PrintText(Lines[LineIndex]);
   end;
 
   SetFont(OrgFont);
