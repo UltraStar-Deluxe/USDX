@@ -91,6 +91,7 @@ type
       procedure UpdateTransformationMatrix();
       procedure UploadMatrix(Location: GLuint; var Mat: Tmatrix4_single);
       procedure CheckVersion(); virtual; abstract;
+      procedure SetDepthRange(NearVal, FarVal: single); virtual; abstract;
       procedure GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string); virtual; abstract;
 
       {$IFDEF DEBUG_MODE}
@@ -134,6 +135,8 @@ type
 
   // Renderer subclass for modern OpenGL (3.0 and later)
   TRenderer_OpenGL3 = class(TRenderer_OpenGLBase)
+    protected
+      procedure SetDepthRange(NearVal, FarVal: single); override;
     public
       constructor Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
       procedure CheckVersion() override;
@@ -142,6 +145,8 @@ type
 
   // Renderer subclass for legacy OpengGL 2.x
   TRenderer_OpenGL2 = class(TRenderer_OpenGLBase)
+    protected
+      procedure SetDepthRange(NearVal, FarVal: single); override;
     public
       constructor Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
       procedure CheckVersion() override;
@@ -150,6 +155,8 @@ type
 
   // Renderer subclass for OpenGL ES 2.0 and later
   TRenderer_OpenGLES = class(TRenderer_OpenGLBase)
+    protected
+      procedure SetDepthRange(NearVal, FarVal: single); override;
     public
       constructor Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
       procedure CheckVersion() override;
@@ -426,7 +433,7 @@ begin
   // Initialize state
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthFunc(GL_LEQUAL);
-  glDepthRangef(0, 10);
+  SetDepthRange(0, 10);
   glUseProgram(MainProgram);
   glActiveTexture(GL_TEXTURE0);
 
@@ -1702,7 +1709,7 @@ begin
   SetViewPort(ViewPortArray[0], ViewPortArray[1], ViewPortArray[2], ViewPortArray[3]);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glDepthFunc(GL_LEQUAL);
-  glDepthRangef(0, 10);
+  SetDepthRange(0, 10);
   if (SupportsFBO) then
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 end;
@@ -1735,6 +1742,11 @@ end;
 constructor TRenderer_OpenGL3.Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
 begin
   inherited Create(glcontext, MajorVersion, MinorVersion);
+end;
+
+procedure TRenderer_OpenGL3.SetDepthRange(NearVal, FarVal: single);
+begin
+  glDepthRange(NearVal, FarVal);
 end;
 
 procedure TRenderer_OpenGL3.CheckVersion();
@@ -1782,6 +1794,13 @@ end;
 constructor TRenderer_OpenGLES.Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
 begin
   inherited Create(glcontext, MajorVersion, MinorVersion);
+end;
+
+procedure TRenderer_OpenGLES.SetDepthRange(NearVal, FarVal: single);
+begin
+  if not Assigned(glDepthRangef) then
+    raise Exception.Create('OpenGL ES does not provide glDepthRangef');
+  glDepthRangef(NearVal, FarVal);
 end;
 
 procedure TRenderer_OpenGLES.CheckVersion();
@@ -1834,6 +1853,11 @@ end;
 constructor TRenderer_OpenGL2.Create(glcontext: TSDL_GLContext; MajorVersion, MinorVersion: integer);
 begin
   inherited Create(glcontext, MajorVersion, MinorVersion);
+end;
+
+procedure TRenderer_OpenGL2.SetDepthRange(NearVal, FarVal: single);
+begin
+  glDepthRange(NearVal, FarVal);
 end;
 
 procedure TRenderer_OpenGL2.CheckVersion();
