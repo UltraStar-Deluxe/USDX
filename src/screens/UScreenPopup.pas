@@ -1678,7 +1678,7 @@ begin
   SetFontStyle(Button[0].Text[0].Style);
   SetFontSize(Button[0].Text[0].Size);
   Result := Max(Theme.ErrorPopup.Button1.W,
-      glTextWidth(Caption) + Theme.ErrorPopup.Button1.H);
+      TextWidth(Caption) + Theme.ErrorPopup.Button1.H);
 end;
 
 function TScreenPopup.MeasureLineCount(const Msg: UTF8String; MaxWidth: real): integer;
