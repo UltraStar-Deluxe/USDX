@@ -382,38 +382,12 @@ var
   end;
 
   function FindFitSize(MaximumSize: single): single;
-  var
-    HighSize: single;
-    I: integer;
-    LowSize: single;
-    TestSize: single;
   begin
-    if TextFits(MaximumSize) then
-    begin
-      Result := MaximumSize;
-      Exit;
-    end;
-
-    LowSize := 1;
-    HighSize := MaximumSize;
-    if not TextFits(LowSize) then
-    begin
-      Result := LowSize;
-      Exit;
-    end;
-
-    Result := LowSize;
-    for I := 1 to 10 do
-    begin
-      TestSize := (LowSize + HighSize) / 2;
-      if TextFits(TestSize) then
-      begin
-        Result := TestSize;
-        LowSize := TestSize;
-      end
-      else
-        HighSize := TestSize;
-    end;
+    // Preserve the original whole-pixel decrement behavior. In particular,
+    // integer theme sizes must not become fractional and blur in the renderer.
+    Result := MaximumSize;
+    while (Result > 1) and (not TextFits(Result)) do
+      Result := Max(1, Result - 1);
   end;
 
 begin
