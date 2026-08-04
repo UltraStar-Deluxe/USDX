@@ -77,6 +77,7 @@ type
       SupportsVAO: boolean;
       SupportsFBO: boolean;
       SupportsMappedBuffer: boolean;
+      GlyphTextureFormat: GLint;
 
       MappedBuffer: PGLfloat; // OpenGL 2.0 doesn't support mapped buffers, so we manage it ourself.
 
@@ -1523,7 +1524,7 @@ end;
 // store this in the red channel, and later assign it to alpha in the fragment shader
 function TRenderer_OpenGLBase.LoadGlyph(Data: PByte; W, H: integer): TTexture;
 begin
-  Result := TTexture_OpenGL.Create(Data, W, H, PATH_NONE, GL_RED, 1, GL_CLAMP_TO_EDGE);
+  Result := TTexture_OpenGL.Create(Data, W, H, PATH_NONE, GlyphTextureFormat, 1, GL_CLAMP_TO_EDGE);
   {$IFDEF DEBUG_MODE}
   RaiseExceptionIfError;
   {$ENDIF};
@@ -1768,6 +1769,7 @@ begin
   SupportsVAO := true;
   SupportsFBO := true;
   SupportsMappedBuffer := true;
+  GlyphTextureFormat := GL_RED;
   if ((MajorVersion > 3) or ((MajorVersion = 3) and (MinorVersion >= 3))) then
     fSupportsProjectM := true;
 end;
@@ -1819,6 +1821,7 @@ var
   Extensions: string;
   GL_OES_vertex_array_object: boolean;
   GL_OES_element_index_uint: boolean;
+  GL_EXT_texture_rg: boolean;
 begin
   if (MajorVersion < 2) then
     raise Exception.Create('Could not initialize OpenGL ES 2.0 or later');
@@ -1828,6 +1831,7 @@ begin
     SupportsVAO := true;
     fSupportsProjectM := true;
     SupportsMappedBuffer := true;
+    GlyphTextureFormat := GL_RED;
   end
   else
   begin
@@ -1838,7 +1842,11 @@ begin
     GL_OES_vertex_array_object := Int_CheckExtension(Extensions, 'GL_OES_vertex_array_object');
     if (GL_OES_vertex_array_object) then
       SupportsVAO := true;
-
+    GL_EXT_texture_rg := Int_CheckExtension(Extensions, 'GL_EXT_texture_rg');
+    if (GL_EXT_texture_rg) then
+      GlyphTextureFormat := GL_RED
+    else
+      GlyphTextureFormat := GL_LUMINANCE;
   end;
   SupportsFBO := true;
 end;
@@ -1891,6 +1899,7 @@ begin
     SupportsMappedBuffer := true;
   fSupportsProjectM := false;
   SupportsFBO := false;
+  GlyphTextureFormat := GL_LUMINANCE;
 end;
 
 procedure TRenderer_OpenGL2.GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string);
