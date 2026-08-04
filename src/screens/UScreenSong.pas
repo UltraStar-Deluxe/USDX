@@ -4465,7 +4465,7 @@ procedure TScreenSong.SongScore;
 begin
 
   if (CatSongs.Song[Interaction].isDuet) or (RapToFreestyle) or
-    (FreestyleToRap) or ((Mode <> smNormal) or (Ini.ShowScores = 0) or
+    ((Mode <> smNormal) or (Ini.ShowScores = 0) or
     (CatSongs.Song[Interaction].Edition = '') or ((Ini.ShowScores = 1) and
     ((Text[TextMaxScore2].Text = '0') and (Text[TextMaxScoreLocal].Text = '0')))) then
   begin
