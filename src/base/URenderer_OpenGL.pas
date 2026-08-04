@@ -1893,7 +1893,7 @@ procedure TRenderer_OpenGL2.GetShaderSource(out MainVertex, MainFragment, TextFr
   function GetVertexShader(const ShaderSource: string): string;
   begin
     Result := GLSL_LEGACY_HEADER + ShaderSource;
-    Result := StringReplace(ShaderSource, '[VTX_IN]', 'attribute', [rfReplaceAll]);
+    Result := StringReplace(Result, '[VTX_IN]', 'attribute', [rfReplaceAll]);
     Result := StringReplace(Result, '[VTX_OUT]', 'varying', [rfReplaceAll]);
   end;
   function GetFragmentShader(const ShaderSource: string): string;
