@@ -834,6 +834,11 @@ procedure SetVideoMode(Mode: FullscreenModes);
     Disp: TSDL_DisplayMode;
 begin
   if Mode = CurrentWindowMode then Exit;
+  // SDL may dispatch resize events while changing the window flags. Set the
+  // target mode first so those events cannot treat a fullscreen size as the
+  // size to restore when returning to a window.
+  CurrentWindowMode := Mode;
+
   if Mode >= Mode_Fullscreen then
   begin
     Mode := Mode and not Mode_Borderless;
@@ -852,14 +857,17 @@ begin
   else if Mode = Mode_Windowed then
   begin
     WindowModeDirty := true; // set window size dirty to restore old size after switching from fullscreen
-    SDL_SetWindowFullscreen(screen, SDL_WINDOW_RESIZABLE); // calls window-resize event which updates screen sizes
+    SDL_SetWindowFullscreen(screen, 0); // calls window-resize event which updates screen sizes
 
     ScreenW := LastW; ScreenH := LastH;
     if not HasValidSize then Ini.GetResolution(ScreenW, ScreenH);
+    // SDL sends resize notifications asynchronously. Keep the render metrics in
+    // sync now as well, otherwise the first windowed frames still use the
+    // fullscreen viewport width.
+    CalculateScreenMetrics;
     SDL_SetWindowSize(screen, ScreenW, ScreenH);
   end;
 
-  CurrentWindowMode := Mode;
 end;
 
 function SwitchVideoMode(Mode: FullscreenModes): FullscreenModes;
@@ -906,6 +914,7 @@ begin
     // override render size
     ScreenW := LastW;
     ScreenH := LastH;
+    CalculateScreenMetrics;
     SDL_SetWindowPosition(screen, LastX, LastY);
 
     // if there wasn't a windowed mode before, center window
@@ -919,7 +928,8 @@ begin
     // override render size
     ScreenW := w; ScreenH := h;
     CalculateScreenMetrics;
-    if not HasWindowState(SDL_WINDOW_MAXIMIZED or SDL_WINDOW_FULLSCREEN) then
+    if (CurrentWindowMode = Mode_Windowed) and
+       not HasWindowState(SDL_WINDOW_MAXIMIZED or SDL_WINDOW_FULLSCREEN) then
     begin
       HasValidSize := true;
       LastW := w;
