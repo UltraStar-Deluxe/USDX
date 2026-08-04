@@ -90,6 +90,11 @@ type
       procedure UploadArray(DataSize: GLuint);
       procedure UpdateTransformationMatrix();
       procedure UploadMatrix(Location: GLuint; var Mat: Tmatrix4_single);
+      procedure DrawQuadsRange(const QuadList: TQuadList; StartIndex, ItemCount: integer);
+      procedure DrawTrianglesRange(const TriangleList: TTriangleList; StartIndex, ItemCount: integer);
+      procedure DrawLinesRange(const LineList: TLineList; StartIndex, ItemCount: integer);
+      procedure DrawParticlesRange(Texture: TTexture; const ParticleList: TParticleList; StartIndex, ItemCount: integer);
+      procedure DrawLineStripRange(const PointList: TPointList; StartIndex, ItemCount: integer; ScaleX, ScaleY, TranslateX, TranslateY, ColR, ColG, ColB, Alpha: single);
       procedure CheckVersion(); virtual; abstract;
       procedure SetDepthRange(NearVal, FarVal: single); virtual; abstract;
       procedure GetShaderSource(out MainVertex, MainFragment, TextFragment, LineStripVertex, LineStripFragment: string); virtual; abstract;
@@ -282,6 +287,10 @@ const
 
   VBO_SIZE = (2 shl 20); // 2 MiB; keeps all VBO indices within GLushort
   MAX_QUADS = (VBO_SIZE div QUAD_STRIDE_BYTES); // Number of quads that can be stored in the VBO
+  // Keep non-quad submissions below this limit as well. This is conservative, but
+  // leaves enough room for the alignment used by GetArrayBuffer and keeps the
+  // chunking logic shared by all draw paths.
+  MAX_DRAW_ITEMS = MAX_QUADS;
   EBO_INDICES = MAX_QUADS * 6; // 2 triangles, 6 total vertices per quad
   EBO_SIZE = EBO_INDICES * SizeOf(GLushort);
 
@@ -663,6 +672,8 @@ begin
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   Bytes := QUAD_STRIDE_BYTES *
     Max(1, (Bytes + QUAD_STRIDE_BYTES - 1) div QUAD_STRIDE_BYTES);
+  if (Bytes > VBO_SIZE) then
+    raise Exception.CreateFmt('Requested VBO range (%d bytes) exceeds the VBO size (%d bytes)', [Bytes, VBO_SIZE]);
   if (GLuint(VBOCursor) * SizeOf(GLfloat) + Bytes >= VBO_SIZE) then
   begin
     glBufferData(GL_ARRAY_BUFFER, VBO_SIZE, nil, GL_STREAM_DRAW);
@@ -900,13 +911,28 @@ end;
 // Procedure to draw colored quads
 procedure TRenderer_OpenGLBase.DrawQuads(QuadList: TQuadList);
 var
+  StartIndex, ItemCount: integer;
+begin
+  StartIndex := 0;
+  while (StartIndex < Length(QuadList)) do
+  begin
+    ItemCount := Length(QuadList) - StartIndex;
+    if (ItemCount > MAX_DRAW_ITEMS) then
+      ItemCount := MAX_DRAW_ITEMS;
+    DrawQuadsRange(QuadList, StartIndex, ItemCount);
+    Inc(StartIndex, ItemCount);
+  end;
+end;
+
+procedure TRenderer_OpenGLBase.DrawQuadsRange(const QuadList: TQuadList; StartIndex, ItemCount: integer);
+var
   NumQuads: GLuint;
   Buffer: PGLfloat;
   Bytes: GLuint;
   X2, Y2: single;
   I: integer;
 begin
-  NumQuads := Length(QuadList);
+  NumQuads := ItemCount;
   if (NumQuads = 0) then
     Exit;
 
@@ -930,7 +956,7 @@ begin
 
   // Fill in VBO mapped memory with vertex information
   glBindTexture(GL_TEXTURE_2D, WhiteTexture);
-  for I := Low(QuadList) to High(QuadList) do
+  for I := StartIndex to StartIndex + ItemCount - 1 do
   begin
     X2 := QuadList[I].X + QuadList[I].W;
     Y2 := QuadList[I].Y + QuadList[I].H;
@@ -1063,13 +1089,28 @@ end;
 
 procedure TRenderer_OpenGLBase.DrawTriangles(TriangleList: TTriangleList);
 var
+  StartIndex, ItemCount: integer;
+begin
+  StartIndex := 0;
+  while (StartIndex < Length(TriangleList)) do
+  begin
+    ItemCount := Length(TriangleList) - StartIndex;
+    if (ItemCount > MAX_DRAW_ITEMS) then
+      ItemCount := MAX_DRAW_ITEMS;
+    DrawTrianglesRange(TriangleList, StartIndex, ItemCount);
+    Inc(StartIndex, ItemCount);
+  end;
+end;
+
+procedure TRenderer_OpenGLBase.DrawTrianglesRange(const TriangleList: TTriangleList; StartIndex, ItemCount: integer);
+var
   NumTriangles: GLuint;
   EquivalentQuads: GLuint;
   Buffer: PGLfloat;
   Bytes: GLuint;
   I: integer;
 begin
-  NumTriangles := Length(TriangleList);
+  NumTriangles := ItemCount;
   if (NumTriangles = 0) then
     Exit;
 
@@ -1093,7 +1134,7 @@ begin
 
   // Fill in VBO mapped memory with vertex information
   glBindTexture(GL_TEXTURE_2D, WhiteTexture);
-  for I := Low(TriangleList) to High(TriangleList) do
+  for I := StartIndex to StartIndex + ItemCount - 1 do
   begin
 
     // First Vertex
@@ -1154,12 +1195,27 @@ end;
 // but to keep support for older OpenGL versions, we will do it on the CPU instead
 procedure TRenderer_OpenGLBase.DrawLines(LineList: TLineList);
 var
+  StartIndex, ItemCount: integer;
+begin
+  StartIndex := 0;
+  while (StartIndex < Length(LineList)) do
+  begin
+    ItemCount := Length(LineList) - StartIndex;
+    if (ItemCount > MAX_DRAW_ITEMS) then
+      ItemCount := MAX_DRAW_ITEMS;
+    DrawLinesRange(LineList, StartIndex, ItemCount);
+    Inc(StartIndex, ItemCount);
+  end;
+end;
+
+procedure TRenderer_OpenGLBase.DrawLinesRange(const LineList: TLineList; StartIndex, ItemCount: integer);
+var
   VecX, VecY, VecPerpX, VecPerpY, Dist, LineThicknessW, LineThicknessH, HalfLineThicknessW, HalfLineThicknessH, X1, X2, Y1, Y2: single;
   I, NumQuads: integer;
   Buffer: PGLfloat;
   Bytes: GLuint;
 begin
-  NumQuads := Length(LineList);
+  NumQuads := ItemCount;
   if (NumQuads = 0) then
     Exit;
 
@@ -1183,7 +1239,7 @@ begin
 
   // Fill in VBO mapped memory with vertex information
   glBindTexture(GL_TEXTURE_2D, WhiteTexture);
-  for I := Low(LineList) to High(LineList) do
+  for I := StartIndex to StartIndex + ItemCount - 1 do
   begin
 
     // Calculate line thickness in 800x600 vertex space
@@ -1336,6 +1392,21 @@ end;
 
 procedure TRenderer_OpenGLBase.DrawParticles(Texture: TTexture; ParticleList: TParticleList);
 var
+  StartIndex, ItemCount: integer;
+begin
+  StartIndex := 0;
+  while (StartIndex < Length(ParticleList)) do
+  begin
+    ItemCount := Length(ParticleList) - StartIndex;
+    if (ItemCount > MAX_DRAW_ITEMS) then
+      ItemCount := MAX_DRAW_ITEMS;
+    DrawParticlesRange(Texture, ParticleList, StartIndex, ItemCount);
+    Inc(StartIndex, ItemCount);
+  end;
+end;
+
+procedure TRenderer_OpenGLBase.DrawParticlesRange(Texture: TTexture; const ParticleList: TParticleList; StartIndex, ItemCount: integer);
+var
   Tex: TTexture_OpenGL;
   NumQuads: GLuint;
   Buffer: PGLfloat;
@@ -1346,7 +1417,7 @@ begin
   Tex := TTexture_OpenGL(Texture);
   if (Tex.TexID = 0) then
     Exit;
-  NumQuads := Length(ParticleList);
+  NumQuads := ItemCount;
   if (NumQuads = 0) then
     Exit;
 
@@ -1370,7 +1441,7 @@ begin
 
   // Fill in VBO mapped memory with vertex information
   glBindTexture(GL_TEXTURE_2D, Tex.TexID);
-  for I := Low(ParticleList) to High(ParticleList) do
+  for I := StartIndex to StartIndex + ItemCount - 1 do
   begin
 
     X2 := ParticleList[I].X + ParticleList[I].W;
@@ -1437,12 +1508,37 @@ end;
 // Line strip procedure for oscilloscope
 procedure TRenderer_OpenGLBase.DrawLineStrip(PointList: TPointList; ScaleX, ScaleY, TranslateX, TranslateY, ColR, ColG, ColB, Alpha: single);
 var
+  StartIndex, ItemCount: integer;
+begin
+  StartIndex := 0;
+  while (StartIndex < Length(PointList)) do
+  begin
+    ItemCount := Length(PointList) - StartIndex;
+    if (StartIndex = 0) then
+    begin
+      if (ItemCount > MAX_DRAW_ITEMS) then
+        ItemCount := MAX_DRAW_ITEMS;
+      DrawLineStripRange(PointList, StartIndex, ItemCount, ScaleX, ScaleY, TranslateX, TranslateY, ColR, ColG, ColB, Alpha);
+    end
+    else
+    begin
+      // Repeat the previous point so the line remains connected across chunks.
+      if (ItemCount > MAX_DRAW_ITEMS - 1) then
+        ItemCount := MAX_DRAW_ITEMS - 1;
+      DrawLineStripRange(PointList, StartIndex - 1, ItemCount + 1, ScaleX, ScaleY, TranslateX, TranslateY, ColR, ColG, ColB, Alpha);
+    end;
+    Inc(StartIndex, ItemCount);
+  end;
+end;
+
+procedure TRenderer_OpenGLBase.DrawLineStripRange(const PointList: TPointList; StartIndex, ItemCount: integer; ScaleX, ScaleY, TranslateX, TranslateY, ColR, ColG, ColB, Alpha: single);
+var
   Transform: Tmatrix4_single;
   NumPoints, EquivalentQuads: integer;
   Buffer: PGLfloat;
   Bytes: GLuint;
 begin
-  NumPoints := Length(PointList);
+  NumPoints := ItemCount;
   if (NumPoints = 0) then
     Exit;
 
@@ -1473,7 +1569,7 @@ begin
 
   // Because our list of points is already in the correct data format, we can just directly copy
   // it into the mapped VBO without further modification
-  Move(PointList[0], Buffer[0], NumPoints * SizeOf(TPoint));
+  Move(PointList[StartIndex], Buffer[0], NumPoints * SizeOf(TPoint));
 
   // Upload our vertex data to the GPU
   UploadArray(Bytes);
