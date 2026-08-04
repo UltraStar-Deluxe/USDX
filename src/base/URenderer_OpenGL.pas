@@ -1818,6 +1818,7 @@ procedure TRenderer_OpenGLES.CheckVersion();
 var
   Extensions: string;
   GL_OES_vertex_array_object: boolean;
+  GL_OES_element_index_uint: boolean;
 begin
   if (MajorVersion < 2) then
     raise Exception.Create('Could not initialize OpenGL ES 2.0 or later');
@@ -1831,6 +1832,9 @@ begin
   else
   begin
     Extensions := Int_GetExtensionString;
+    GL_OES_element_index_uint := Int_CheckExtension(Extensions, 'GL_OES_element_index_uint');
+    if (not GL_OES_element_index_uint) then
+      raise Exception.Create('OpenGL ES driver does not support the required GL_OES_element_index_uint extension');
     GL_OES_vertex_array_object := Int_CheckExtension(Extensions, 'GL_OES_vertex_array_object');
     if (GL_OES_vertex_array_object) then
       SupportsVAO := true;
