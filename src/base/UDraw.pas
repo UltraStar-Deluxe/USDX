@@ -56,12 +56,14 @@ procedure EditDrawLine(X, YBaseNote, W, H: real; Track: integer; NumLines: integ
 procedure EditDrawBorderedBox(X, Y, W, H: integer; FillR: real = 0.9; FillG: real = 0.9; FillB: real = 0.9; FillAlpha: real = 0.5);
 procedure EditDrawBeatDelimiters(X, Y, W, H: real; Track: integer);
 
+{$IFDEF LEGACY_JUKEBOX}
 // Draw Jukebox
 procedure SingDrawJukebox;
 procedure SingDrawJukeboxBackground;
 procedure SingDrawJukeboxBlackBackground;
 procedure SingDrawJukeboxTimeBar();
 procedure SingDrawLyricHelperJukebox(Left, LyricsMid: real);
+{$ENDIF LEGACY_JUKEBOX}
 
 // Draw Webcam
 procedure SingDrawWebCamFrame;
@@ -111,7 +113,6 @@ uses
   URecord,
   URenderer,
   UScreenSingController,
-  UScreenJukebox,
   USong,
   UWebcam;
 
@@ -285,6 +286,7 @@ begin
   end;
 end;
 
+{$IFDEF LEGACY_JUKEBOX}
 procedure SingDrawJukeboxBackground;
 var
   Rec:    TRecR;
@@ -382,6 +384,7 @@ procedure SingDrawJukeboxBlackBackground;
 begin
   Renderer.DrawQuad(0, 0, 0, RenderW, RenderH, 0, 0, 0, 1);
 end;
+{$ENDIF LEGACY_JUKEBOX}
 
 procedure SingDrawOscilloscopes;
 begin;
@@ -1073,6 +1076,7 @@ begin
   end;
 end;
 
+{$IFDEF LEGACY_JUKEBOX}
 (**
  * Draws the lyrics helper bar jukebox.
  * Left: position the bar starts at
@@ -1177,6 +1181,7 @@ begin
   end;
 end;
 
+{$ENDIF LEGACY_JUKEBOX}
 procedure SingDrawLines;
 var
   NR: TRecR;         // lyrics area bounds (NR = NoteRec?)
@@ -1545,6 +1550,7 @@ begin
   end;
 end;
 
+{$IFDEF LEGACY_JUKEBOX}
 procedure SingDrawJukebox;
 var
   NR: TRecR;         // lyrics area bounds (NR = NoteRec?)
@@ -1572,6 +1578,7 @@ begin
   end;
 end;
 
+{$ENDIF LEGACY_JUKEBOX}
 // Draw Note Bars for Editor
 // There are 11 reasons for a new procedure:   (nice binary :D )
 // 1. It does not look good when you draw the golden note star effect in the editor
@@ -1824,6 +1831,7 @@ begin
   Renderer.DrawLines(LineList);
 end;
 
+{$IFDEF LEGACY_JUKEBOX}
 procedure SingDrawJukeboxTimeBar();
 var
   x, y:           real;
@@ -1873,5 +1881,7 @@ begin
     Renderer.DrawTexture(Tex_JukeboxTimeProgress);
   end;
 end;
+
+{$ENDIF LEGACY_JUKEBOX}
 
 end.
