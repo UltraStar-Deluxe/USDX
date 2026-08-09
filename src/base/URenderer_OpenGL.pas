@@ -285,6 +285,7 @@ const
   MAX_QUADS = (VBO_SIZE div QUAD_STRIDE_BYTES); // Number of quads that can be stored in the VBO
   EBO_INDICES = MAX_QUADS * 6; // 2 triangles, 6 total vertices per quad
   EBO_SIZE = EBO_INDICES * SizeOf(GLuint);
+  GL_LUMINANCE = $1909;
 
 type
   TTexture_OpenGL = class(TTexture)
