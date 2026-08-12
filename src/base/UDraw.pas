@@ -756,6 +756,10 @@ begin
             Y := Rec.Top;
             W := Rec.Right - Rec.Left;
             H := Rec.Bottom - Rec.Top;
+            ColR := 1;
+            ColG := 1;
+            ColB := 1;
+            Alpha := 1;
           end;
           Renderer.DrawTexture(Texture);
 
@@ -783,6 +787,10 @@ begin
             Y := Rec.Top;
             W := Rec.Right - Rec.Left;
             H := Rec.Bottom - Rec.Top;
+            ColR := 1;
+            ColG := 1;
+            ColB := 1;
+            Alpha := 1;
             TexX1 := 0;
             TexY1 := 0;
             TexX2 := round((Rec.Right-Rec.Left)/32);
@@ -804,6 +812,10 @@ begin
             Y := Rec.Top;
             W := Rec.Right - Rec.Left;
             H := Rec.Bottom - Rec.Top;
+            ColR := 1;
+            ColG := 1;
+            ColB := 1;
+            Alpha := 1;
           end;
           Renderer.DrawTexture(Texture);
 
