@@ -96,9 +96,6 @@ type
       //Video Icon Mod
       VideoIcon: cardinal;
 
-      //Medley Icons
-	 	  MedleyIcon:     cardinal;
-	 	  CalcMedleyIcon: cardinal;
       TextMedleyArtist:   array of integer;
       TextMedleyTitle:    array of integer;
       TextMedleyNumber:   array of integer;
@@ -108,9 +105,6 @@ type
       DuetIcon:     cardinal;
       DuetChange:   boolean;
 
-      //Rap Icons
-      RapIcon:     cardinal;
-      RapToFreestyleIcon: cardinal;
       RapToFreestyle: boolean;
 
       TextCat:   integer;
@@ -180,11 +174,7 @@ type
       ListTextTitle:      array of integer;
       ListTextYear:       array of integer;
       ListVideoIcon:      array of integer;
-      ListMedleyIcon:     array of integer;
-      ListCalcMedleyIcon: array of integer;
       ListDuetIcon:       array of integer;
-      ListRapIcon:        array of integer;
-      ListRapToFreestyleIcon: array of integer;
 
       PlayMidi: boolean;
       MidiFadeIn: boolean;
@@ -1726,8 +1716,7 @@ end;
 constructor TScreenSong.Create;
 var
   I, Num, Padding: integer;
-  TextArtistY, TextTitleY, TextYearY, StaticMedCY,
-  StaticMedMY, StaticVideoY, StaticDuetY, StaticRapY, StaticRapToFreestyleY: integer;
+  TextArtistY, TextTitleY, TextYearY, StaticVideoY, StaticDuetY: integer;
   StaticY: real;
 begin
   inherited Create;
@@ -1746,16 +1735,8 @@ begin
   //Show Video Icon Mod
   VideoIcon := AddStatic(Theme.Song.VideoIcon);
 
-  //Meldey Icons
-  MedleyIcon := AddStatic(Theme.Song.MedleyIcon);
-  CalcMedleyIcon := AddStatic(Theme.Song.CalculatedMedleyIcon);
-
   //Duet Icon
   DuetIcon := AddStatic(Theme.Song.DuetIcon);
-
-  //Rap Icons
-  RapIcon := AddStatic(Theme.Song.RapIcon);
-  RapToFreestyleIcon := AddStatic(Theme.Song.RapToFreestyleIcon);
 
   //Show Scores
   TextScore       := AddText(Theme.Song.TextScore);
@@ -1893,22 +1874,14 @@ begin
   SetLength(ListTextTitle, Num);
   SetLength(ListTextYear, Num);
   SetLength(ListVideoIcon, Num);
-  SetLength(ListMedleyIcon, Num);
-  SetLength(ListCalcMedleyIcon, Num);
   SetLength(ListDuetIcon, Num);
-  SetLength(ListRapIcon, Num);
-  SetLength(ListRapToFreestyleIcon, Num);
 
   TextArtistY := Theme.Song.TextArtist.Y;
   TextTitleY := Theme.Song.TextTitle.Y;
   TextYearY := Theme.Song.TextYear.Y;
 
   StaticVideoY := Theme.Song.VideoIcon.Y;
-  StaticMedMY := Theme.Song.MedleyIcon.Y;
-  StaticMedCY := Theme.Song.CalculatedMedleyIcon.Y;
   StaticDuetY := Theme.Song.DuetIcon.Y;
-  StaticRapY := Theme.Song.RapIcon.Y;
-  StaticRapToFreestyleY := Theme.Song.RapToFreestyleIcon.Y;
 
   for I := 0 to Num - 1 do
   begin
@@ -1927,20 +1900,8 @@ begin
     Theme.Song.VideoIcon.Y  := StaticVideoY + Padding;
     ListVideoIcon[I]  := AddStatic(Theme.Song.VideoIcon);
 
-    Theme.Song.MedleyIcon.Y  := StaticMedMY + Padding;
-    ListMedleyIcon[I] := AddStatic(Theme.Song.MedleyIcon);
-
-    Theme.Song.CalculatedMedleyIcon.Y  := StaticMedCY + Padding;
-    ListCalcMedleyIcon[I] := AddStatic(Theme.Song.CalculatedMedleyIcon);
-
     Theme.Song.DuetIcon.Y  := StaticDuetY + Padding;
     ListDuetIcon[I] := AddStatic(Theme.Song.DuetIcon);
-
-    Theme.Song.RapIcon.Y  := StaticRapY + Padding;
-    ListRapIcon[I] := AddStatic(Theme.Song.RapIcon);
-
-    Theme.Song.RapToFreestyleIcon.Y  := StaticRapToFreestyleY + Padding;
-    ListRapToFreestyleIcon[I] := AddStatic(Theme.Song.RapToFreestyleIcon);
   end;
 
   MainChessboardMinLine := 0;
@@ -2197,16 +2158,8 @@ begin
       // Set visibility of video icon
       Statics[VideoIcon].Visible := CatSongs.Song[Interaction].Video.IsSet;
 
-      // Set visibility of medley icons
-      Statics[MedleyIcon].Visible := (CatSongs.Song[Interaction].Medley.Source = msTag);
-      Statics[CalcMedleyIcon].Visible := (CatSongs.Song[Interaction].Medley.Source = msCalculated);
-
       //Set Visibility of Duet Icon
       Statics[DuetIcon].Visible := CatSongs.Song[Interaction].isDuet;
-
-      //Set Visibility of Rap Icons
-      Statics[RapIcon].Visible := CatSongs.Song[Interaction].hasRap and not RapToFreestyle;
-      Statics[RapToFreestyleIcon].Visible := CatSongs.Song[Interaction].hasRap and RapToFreestyle;
 
       // Set texts
       Text[TextArtist].Size := Theme.Song.TextArtist.Size; // reset in case it was previously decreased by a too long artist
@@ -2756,11 +2709,7 @@ begin
     Text[ListTextTitle[I]].Text  := '';
     Text[ListTextYear[I]].Text   := '';
     Statics[ListVideoIcon[I]].Visible  := false;
-    Statics[ListMedleyIcon[I]].Visible := false;
-    Statics[ListCalcMedleyIcon[I]].Visible := false;
     Statics[ListDuetIcon[I]].Visible := false;
-    Statics[ListRapIcon[I]].Visible := false;
-    Statics[ListRapToFreestyleIcon[I]].Visible := false;
 
     //reset
     StaticsList[I].Texture.Free;
@@ -2805,23 +2754,9 @@ begin
     Statics[ListVideoIcon[I]].Texture.Alpha := Alpha;
     Statics[ListVideoIcon[I]].Visible := CatSongs.Song[SongID[I]].Video.IsSet;
 
-    // Set visibility of medley icons
-    Statics[ListMedleyIcon[I]].Texture.Alpha := Alpha;
-    Statics[ListMedleyIcon[I]].Visible := (CatSongs.Song[SongID[I]].Medley.Source = msTag);
-
-    Statics[ListCalcMedleyIcon[I]].Texture.Alpha := Alpha;
-    Statics[ListCalcMedleyIcon[I]].Visible := (CatSongs.Song[SongID[I]].Medley.Source = msCalculated);
-
     //Set Visibility of Duet Icon
     Statics[ListDuetIcon[I]].Texture.Alpha := Alpha;
     Statics[ListDuetIcon[I]].Visible := CatSongs.Song[SongID[I]].isDuet;
-
-    //Set Visibility of Rap Icons
-    Statics[ListRapIcon[I]].Texture.Alpha := Alpha;
-    Statics[ListRapIcon[I]].Visible := CatSongs.Song[SongID[I]].hasRap and not RapToFreestyle;
-
-    Statics[ListRapToFreestyleIcon[I]].Texture.Alpha := Alpha;
-    Statics[ListRapToFreestyleIcon[I]].Visible := CatSongs.Song[SongID[I]].hasRap and RapToFreestyle;
 
     // Set texts
     Text[ListTextArtist[I]].Alpha := Alpha;
@@ -2878,22 +2813,14 @@ begin
       Text[ListTextTitle[I]].Visible  := false;
       Text[ListTextYear[I]].Visible   := false;
       Statics[ListVideoIcon[I]].Visible  := false;
-      Statics[ListMedleyIcon[I]].Visible := false;
-      Statics[ListCalcMedleyIcon[I]].Visible := false;
       Statics[ListDuetIcon[I]].Visible := false;
-      Statics[ListRapIcon[I]].Visible := false;
-      Statics[ListRapToFreestyleIcon[I]].Visible := false;
     end;
 
     Text[TextArtist].Visible := true;
     Text[TextTitle].Visible  := true;
     Text[TextYear].Visible   := true;
     Statics[VideoIcon].Visible  := true;
-    Statics[MedleyIcon].Visible := true;
-    Statics[CalcMedleyIcon].Visible := true;
     Statics[DuetIcon].Visible := true;
-    Statics[RapIcon].Visible := true;
-    Statics[RapToFreestyleIcon].Visible := true;
   end
   else
   begin
@@ -2905,22 +2832,14 @@ begin
       Text[ListTextTitle[I]].Visible  := true;
       Text[ListTextYear[I]].Visible   := true;
       Statics[ListVideoIcon[I]].Visible  := true;
-      Statics[ListMedleyIcon[I]].Visible := true;
-      Statics[ListCalcMedleyIcon[I]].Visible := true;
       Statics[ListDuetIcon[I]].Visible := true;
-      Statics[ListRapIcon[I]].Visible := true;
-      Statics[ListRapToFreestyleIcon[I]].Visible := true;
     end;
 
     Text[TextArtist].Visible := false;
     Text[TextTitle].Visible  := false;
     Text[TextYear].Visible   := false;
     Statics[VideoIcon].Visible  := false;
-    Statics[MedleyIcon].Visible := false;
-    Statics[CalcMedleyIcon].Visible := false;
     Statics[DuetIcon].Visible := false;
-    Statics[RapIcon].Visible := false;
-    Statics[RapToFreestyleIcon].Visible := false;
   end;
 
   // for duet names
