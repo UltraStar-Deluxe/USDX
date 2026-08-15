@@ -312,6 +312,7 @@ type
   TThemeName = class(TThemeBasic)
     PlayerButtonName:          TThemeButton;
     PlayerButtonAvatar:        TThemeButton;
+    TemplateStatus:            TThemeText;
 
     PlayerScrollAvatar: record
       NumAvatars: integer;
@@ -1512,6 +1513,7 @@ begin
 
       ThemeLoadButton(Name.PlayerButtonName, 'NamePlayerButtonName');
       ThemeLoadButton(Name.PlayerButtonAvatar, 'NamePlayerButtonAvatar');
+      ThemeLoadText(Name.TemplateStatus, 'NameTemplateStatusText');
 
       IniFile := ResolveThemeFile('NamePlayerScrollAvatar');
       Name.PlayerScrollAvatar.NumAvatars := IniFile.ReadInteger('NamePlayerScrollAvatar', 'Count', 5);

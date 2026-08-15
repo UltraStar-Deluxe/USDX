@@ -247,15 +247,28 @@ begin
 end;
 
 function TScreenName.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
+var
+  ModState: word;
 begin
   Result := inherited;
+  SuppressKey := false;
   // only suppress special keys for now
   case PressedKey of
     // Templates for Names Mod
     SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12:
-     begin
-       SuppressKey := true;
-     end;
+      begin
+        ModState := SDL_GetModState;
+
+        // Leave Alt- and Command-modified function keys to the OS/application.
+        if (ModState and (KMOD_ALT or KMOD_GUI)) <> 0 then
+          Result := false
+        // Name templates keep their original name-field context. Ctrl adds a
+        // separate full-profile shortcut that works from any control.
+        else if ((ModState and KMOD_CTRL) <> 0) or Button[PlayerName].Selected then
+          SuppressKey := true
+        else
+          Result := false;
+      end;
   end;
 end;
 
@@ -274,59 +287,82 @@ function TScreenName.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; Presse
 
   procedure HandleNameTemplate(const index: integer);
   var
-    isAlternate: boolean;
+    IsProfile: boolean;
+    IsSave: boolean;
     TemplateAvatar: integer;
     J: integer;
   begin
-    isAlternate := (SDL_ModState and (KMOD_LSHIFT + KMOD_RSHIFT + KMOD_LALT + KMOD_RALT)) <> 0;
+    if (SDL_ModState and (KMOD_ALT or KMOD_GUI)) <> 0 then
+      Exit;
 
-    if isAlternate then
+    IsProfile := (SDL_ModState and KMOD_CTRL) <> 0;
+    IsSave := (SDL_ModState and KMOD_SHIFT) <> 0;
+
+    if IsSave then
     begin
       PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
       Ini.NameTemplate[index] := Button[PlayerName].Text[0].Text;
-      Ini.NameTemplateColor[index] := Num[PlayerIndex];
-      Ini.NameTemplateAvatar[index] := PlayerAvatarButtonMD5[PlayerAvatars[PlayerIndex]];
-      Ini.NameTemplateLevel[index] := PlayerLevel[PlayerIndex];
+
+      if IsProfile then
+      begin
+        Ini.NameTemplateColor[index] := Num[PlayerIndex];
+        Ini.NameTemplateAvatar[index] := PlayerAvatarButtonMD5[PlayerAvatars[PlayerIndex]];
+        Ini.NameTemplateLevel[index] := PlayerLevel[PlayerIndex];
+      end;
+
       for J := 0 to High(PlayerNames) do
         Ini.Name[J] := PlayerNames[J];
       Ini.SaveNames;
       AudioPlayback.PlaySound(SoundLib.Change);
-      ShowTemplateStatus('Saved', index);
+
+      if IsProfile then
+        ShowTemplateStatus(Language.Translate('NAME_TEMPLATE_PROFILE_SAVED'), index)
+      else
+        ShowTemplateStatus(Language.Translate('NAME_TEMPLATE_NAME_SAVED'), index);
     end
     else
     begin
       Button[PlayerName].Text[0].Text := Ini.NameTemplate[index];
       PlayerNames[PlayerIndex] := Button[PlayerName].Text[0].Text;
 
-      if (Ini.NameTemplateColor[index] > 0) and
-        (Ini.NameTemplateColor[index] <= Length(IPlayerColorTranslated)) then
+      if IsProfile then
       begin
-        PlayerColorButton(Ini.NameTemplateColor[index]);
+        if (Ini.NameTemplateColor[index] > 0) and
+          (Ini.NameTemplateColor[index] <= Length(IPlayerColorTranslated)) then
+        begin
+          PlayerColorButton(Ini.NameTemplateColor[index]);
+        end;
+
+        if (Ini.NameTemplateAvatar[index] <> NAME_TEMPLATE_AVATAR_UNSET) then
+        begin
+          TemplateAvatar := GetArrayIndex(PlayerAvatarButtonMD5, Ini.NameTemplateAvatar[index]);
+          if (TemplateAvatar < 0) then
+            TemplateAvatar := 0;
+
+          PlayerAvatars[PlayerIndex] := TemplateAvatar;
+          AvatarTarget := TemplateAvatar;
+          AvatarCurrent := TemplateAvatar;
+          isScrolling := false;
+          SetPlayerAvatar(PlayerIndex);
+        end;
+
+        if (Ini.NameTemplateLevel[index] >= 0) and
+          (Ini.NameTemplateLevel[index] <= High(IDifficultyTranslated)) then
+        begin
+          PlayerLevel[PlayerIndex] := Ini.NameTemplateLevel[index];
+          SelectsS[PlayerSelectLevel].SetSelectOpt(PlayerLevel[PlayerIndex]);
+        end;
+
+        RefreshProfile();
+        SetInteraction(Interaction);
       end;
 
-      if (Ini.NameTemplateAvatar[index] <> NAME_TEMPLATE_AVATAR_UNSET) then
-      begin
-        TemplateAvatar := GetArrayIndex(PlayerAvatarButtonMD5, Ini.NameTemplateAvatar[index]);
-        if (TemplateAvatar < 0) then
-          TemplateAvatar := 0;
-
-        PlayerAvatars[PlayerIndex] := TemplateAvatar;
-        AvatarTarget := TemplateAvatar;
-        AvatarCurrent := TemplateAvatar;
-        isScrolling := false;
-        SetPlayerAvatar(PlayerIndex);
-      end;
-
-      if (Ini.NameTemplateLevel[index] >= 0) and
-        (Ini.NameTemplateLevel[index] <= High(IDifficultyTranslated)) then
-      begin
-        PlayerLevel[PlayerIndex] := Ini.NameTemplateLevel[index];
-        SelectsS[PlayerSelectLevel].SetSelectOpt(PlayerLevel[PlayerIndex]);
-      end;
-
-      RefreshProfile();
       AudioPlayback.PlaySound(SoundLib.Change);
-      ShowTemplateStatus('Loaded', index);
+
+      if IsProfile then
+        ShowTemplateStatus(Language.Translate('NAME_TEMPLATE_PROFILE_LOADED'), index)
+      else
+        ShowTemplateStatus(Language.Translate('NAME_TEMPLATE_NAME_LOADED'), index);
     end;
   end;
 
@@ -335,8 +371,7 @@ begin
   if (PressedDown) then
   begin // Key Down
 
-    SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
-    + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT);
+    SDL_ModState := SDL_GetModState and (KMOD_SHIFT or KMOD_CTRL or KMOD_ALT or KMOD_GUI);
 
     if (not Button[PlayerName].Selected) then
     begin
@@ -876,7 +911,7 @@ begin
   Theme.Name.SelectPlayerLevel.showArrows := true;
   PlayerSelectLevel := AddSelectSlide(Theme.Name.SelectPlayerLevel, LevelIndex, IDifficultyTranslated);
 
-  TemplateStatusText := AddText(780, 20, 0, 0, 0, 0, 20, 1, 1, 1, 2, '', false, 0, 1, false);
+  TemplateStatusText := AddText(Theme.Name.TemplateStatus);
   Text[TemplateStatusText].Visible := false;
   TemplateStatusUntil := 0;
 
