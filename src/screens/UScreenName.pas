@@ -262,9 +262,10 @@ begin
         // Leave Alt- and Command-modified function keys to the OS/application.
         if (ModState and (KMOD_ALT or KMOD_GUI)) <> 0 then
           Result := false
-        // Name templates keep their original name-field context. Ctrl adds a
-        // separate full-profile shortcut that works from any control.
-        else if ((ModState and KMOD_CTRL) <> 0) or Button[PlayerName].Selected then
+        // Plain F11 remains fullscreen unless the name field is selected.
+        // The other name and profile shortcuts work from any control.
+        else if ((ModState and (KMOD_CTRL or KMOD_SHIFT)) <> 0) or
+          (PressedKey <> SDLK_F11) or Button[PlayerName].Selected then
           SuppressKey := true
         else
           Result := false;
