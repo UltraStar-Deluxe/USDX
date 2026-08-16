@@ -587,7 +587,7 @@ begin
     end;
   end;
   FreeAndNil(fFrameTex);
-  fFrameTex := Renderer.CreateTexture(nil, PATH_NONE, fTexWidth, fTexHeight, VIDEO_TEXTURE_TYP);
+  fFrameTex := Renderer.CreateTexture(nil, PATH_NONE, fTexWidth, fTexHeight, VIDEO_TEXTURE_TYP, false);
 
   // allocate space for decoded frame and rgb frame
   fAVFrame := av_frame_alloc();
