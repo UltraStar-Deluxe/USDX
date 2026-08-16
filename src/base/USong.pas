@@ -389,6 +389,8 @@ begin
   Self.Vocals   := PATH_NONE();
   Self.Background:= PATH_NONE();
   Self.Video    := PATH_NONE();
+
+  Self.FormatVersion := TVersion.Create();
 end;
 
 // This may be changed, when we rewrite song select code.
