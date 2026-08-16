@@ -64,6 +64,7 @@ type
 
       PreviewOpened: Integer; // interaction of the Song that is loaded for preview music
                               // -1 if nothing is opened
+      PreviewEnd: real;
 
       isScrolling: boolean;   // true if song flow is about to move
 
@@ -1840,6 +1841,7 @@ begin
   Equalizer := Tms_Equalizer.Create(AudioPlayback, Theme.Song.Equalizer);
 
   PreviewOpened := -1;
+  PreviewEnd := 0;
   isScrolling := false;
 
   fCurrentVideo := nil;
@@ -3127,6 +3129,9 @@ begin
 
   FadeMessage();
 
+  if (PreviewEnd > 0) and (AudioPlayback.Position >= PreviewEnd) then
+    StopMusicPreview;
+
   if isScrolling then
   begin
     dx := SongTarget - SongCurrent;
@@ -3657,15 +3662,7 @@ begin
   begin
     PreviewOpened := Interaction;
 
-    // preview start is either calculated (by finding the chorus) or pre-set, use it
-    if ((Song.PreviewStart > 0.0) or Song.HasPreview) and InRange(Song.PreviewStart, 0.0, AudioPlayback.Length) then
-      PreviewPos := Song.PreviewStart
-    else
-    begin // otherwise, fallback to simple preview calculation
-      PreviewPos := AudioPlayback.Length / 4;
-      // fix for invalid music file lengths
-      if (PreviewPos > 120.0) then PreviewPos := 60.0;
-    end;
+    Song.GetPreviewRange(AudioPlayback.Length, PreviewPos, PreviewEnd);
 
     AudioPlayback.Position := PreviewPos;
   
@@ -3690,6 +3687,7 @@ procedure TScreenSong.StopMusicPreview();
 begin
   // Stop preview of previous song
   AudioPlayback.Stop;
+  PreviewEnd := 0;
 end;
 
 procedure TScreenSong.StartVideoPreview();
