@@ -229,7 +229,7 @@ type
       Limit: integer;
       fMaxTextureSize: integer;
 
-      function LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType): TTexture; overload; virtual; abstract;
+      function LoadTexture(Data: PByte; W, H: integer; const Identifier: IPath; Typ: TTextureType; UseMipmaps: boolean): TTexture; overload; virtual; abstract;
     public
 
       // Drawing functions
@@ -278,7 +278,7 @@ type
       function LoadGlyph(Data: PByte; W, H: integer): TTexture; overload; virtual; abstract;
 
       // Data should be in RGB format (no alpha)
-      function CreateTexture(Data: PChar; const Name: IPath; Width, Height: word; Typ: TTextureType): TTexture;
+      function CreateTexture(Data: PChar; const Name: IPath; Width, Height: word; Typ: TTextureType; UseMipmaps: boolean = true): TTexture;
       function CreateEmptyTexture(const Identifier: IPath): TTexture; virtual; abstract;
       procedure UnloadTexture(const Name: IPath; Typ: TTextureType); overload;
       procedure UnloadTexture(const Name: IPath; Typ: TTextureType; Col: cardinal); overload;
@@ -449,7 +449,7 @@ begin
     ColorizeImage(TexSurface, Col);
 
   SDL_LockSurface(TexSurface); // unlocked by SDL_FreeSurface
-  Result := LoadTexture(TexSurface^.pixels, TexSurface^.w, TexSurface^.h, Identifier, Typ);
+  Result := LoadTexture(TexSurface^.pixels, TexSurface^.w, TexSurface^.h, Identifier, Typ, true);
   SDL_FreeSurface(TexSurface);
 end;
 
@@ -492,9 +492,9 @@ begin
   Result := TextureDatabase.Texture[TextureIndex].Texture.Clone;
 end;
 
-function TRenderer.CreateTexture(Data: PChar; const Name: IPath; Width, Height: word; Typ: TTextureType): TTexture;
+function TRenderer.CreateTexture(Data: PChar; const Name: IPath; Width, Height: word; Typ: TTextureType; UseMipmaps: boolean): TTexture;
 begin
-  Result := LoadTexture(PByte(Data), Width, Height, Name, Typ);
+  Result := LoadTexture(PByte(Data), Width, Height, Name, Typ, UseMipmaps);
 end;
 
 procedure TRenderer.UnloadTexture(const Name: IPath; Typ: TTextureType);
