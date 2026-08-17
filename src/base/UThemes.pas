@@ -355,9 +355,8 @@ type
     //Duet Icon
     DuetIcon:         TThemeStatic;
 
-    //Rap Icons
+    //Rap Icon
     RapIcon:          TThemeStatic;
-    RapToFreestyleIcon: TThemeStatic;
 
     //Show Cat in TopLeft Mod
     TextCat:          TThemeText;
@@ -3811,9 +3810,8 @@ begin
   //Duet Icon
   ThemeLoadStatic(Song.DuetIcon, 'Song' + prefix + 'DuetIcon');
 
-  //Rap Icons
+  //Rap Icon
   ThemeLoadStatic(Song.RapIcon, 'Song' + prefix + 'RapIcon');
-  ThemeLoadStatic(Song.RapToFreestyleIcon, 'Song' + prefix + 'RapToFreestyleIcon');
 
   //Show Cat in TopLeft Mod
   ThemeLoadStatic(Song.StaticCat, 'Song' + prefix + 'StaticCat');

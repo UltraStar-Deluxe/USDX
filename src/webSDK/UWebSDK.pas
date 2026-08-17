@@ -49,6 +49,9 @@ type
   fModi_VerifySong = function (MD5Song: widestring): widestring;
   {$IFDEF MSWINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 
+const
+  WEBSITE_STATUS_NONSTANDARD_SCORE_FACTORS = 8;
+
 implementation
 
 end.

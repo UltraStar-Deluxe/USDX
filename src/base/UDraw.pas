@@ -115,6 +115,14 @@ uses
   USong,
   UWebcam;
 
+function NoteAlpha(NoteType: TNoteType; Alpha: real): real; inline;
+begin
+  if NoteType = ntFreestyle then
+    Result := Alpha * 0.55
+  else
+    Result := Alpha;
+end;
+
 
 procedure SingDrawWebCamFrame;
 begin
@@ -571,9 +579,7 @@ begin
       begin
         with Notes[Count] do
         begin
-          if NoteType <> ntFreestyle then
-          begin
-            If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+          If IsUnpitchedNote(NoteType) then
               Texture := Tex_plain_Left_Rap[PlayerNumber]
             else
               Texture := Tex_plain_Left[PlayerNumber];
@@ -595,7 +601,7 @@ begin
                   ColorB := 0.3;
                   A := 1; // no stars, paint yellow -> glColor4f(1, 1, 0.3, 0.85); - we could
                 end;
-                ntRap:
+                ntFreestyle, ntRap:
                 begin
                   ColorR := 1;
                   ColorG := 1;
@@ -619,10 +625,12 @@ begin
               A := 1;
             end;
 
+            A := NoteAlpha(NoteType, A);
+
             // left part
             Rec.Left  := (StartBeat - CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left + 0.5;
             Rec.Right := Rec.Left + NotesW[PlayerIndex];
-            Rec.Top := Top - (Tone-BaseNote)*LineSpacing/2 - NotesH[PlayerIndex];
+            Rec.Top := Top - (DisplayTone-BaseNote)*LineSpacing/2 - NotesH[PlayerIndex];
             Rec.Bottom := Rec.Top + 2 * NotesH[PlayerIndex];
             with Texture do
             begin
@@ -649,7 +657,7 @@ begin
             if Rec.Right <= Rec.Left then
               Rec.Right := Rec.Left;
 
-            If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+            If IsUnpitchedNote(NoteType) then
               Texture := Tex_plain_Mid_Rap[PlayerNumber]
             else
               Texture := Tex_plain_Mid[PlayerNumber];
@@ -676,7 +684,7 @@ begin
             Rec.Right := Rec.Right + NotesW[PlayerIndex];
 
 
-            if (NoteType = ntRap) or (NoteType = ntRapGolden) then
+            if IsUnpitchedNote(NoteType) then
               Texture := Tex_plain_Right_Rap[PlayerNumber]
             else
               Texture := Tex_plain_Right[PlayerNumber];
@@ -698,7 +706,6 @@ begin
             begin
               GoldenRec.SaveGoldenStarsRec(GoldenStarPos, Rec.Top, Rec.Right, Rec.Bottom);
             end;
-          end; // if not FreeStyle
         end; // with
       end; // for
     end; // with
@@ -746,7 +753,7 @@ begin
           Rec.Bottom := Rec.Top + 2 * NotesH2;
 
           // draw the left part
-          If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+          If IsUnpitchedNote(NoteType) then
             Texture := Tex_Left_Rap[PlayerIndex+1]
           else
             Texture := Tex_Left[PlayerIndex+1];
@@ -759,7 +766,7 @@ begin
             ColR := 1;
             ColG := 1;
             ColB := 1;
-            Alpha := 1;
+            Alpha := NoteAlpha(NoteType, 1);
           end;
           Renderer.DrawTexture(Texture);
 
@@ -776,7 +783,7 @@ begin
             Rec.Right := Rec.Left;
 
           // draw the middle part
-          If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+          If IsUnpitchedNote(NoteType) then
             Texture := Tex_Mid_Rap[PlayerIndex+1]
           else
             Texture := Tex_Mid[PlayerIndex+1];
@@ -795,6 +802,7 @@ begin
             TexY1 := 0;
             TexX2 := round((Rec.Right-Rec.Left)/32);
             TexY2 := 1;
+            Alpha := NoteAlpha(NoteType, 1);
           end;
           Renderer.DrawTexture(Texture);
 
@@ -802,7 +810,7 @@ begin
           Rec.Left  := Rec.Right;
           Rec.Right := Rec.Right + NotesW[PlayerIndex];
 
-          If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+          If IsUnpitchedNote(NoteType) then
             Texture := Tex_Right_Rap[PlayerIndex+1]
           else
             Texture := Tex_Right[PlayerIndex+1];
@@ -815,7 +823,7 @@ begin
             ColR := 1;
             ColG := 1;
             ColB := 1;
-            Alpha := 1;
+            Alpha := NoteAlpha(NoteType, 1);
           end;
           Renderer.DrawTexture(Texture);
 
@@ -867,8 +875,6 @@ begin
       begin
         with Notes[Count] do
         begin
-          if NoteType <> ntFreestyle then
-          begin
             // begin: 14, 20
             // easy: 6, 11
             W := NotesW[PlayerIndex] * 2 + 2;
@@ -877,10 +883,10 @@ begin
             // left
             Rec.Right := (StartBeat - CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + Left + 0.5 + 4;
             Rec.Left  := Rec.Right - W;
-            Rec.Top := Top - (Tone-BaseNote)*LineSpacing/2 - H;
+            Rec.Top := Top - (DisplayTone-BaseNote)*LineSpacing/2 - H;
             Rec.Bottom := Rec.Top + 2 * H;
 
-            If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+            If IsUnpitchedNote(NoteType) then
               Texture := Tex_BG_Left_Rap[PlayerIndex+1]
             else
               Texture := Tex_BG_Left[PlayerIndex+1];
@@ -890,7 +896,7 @@ begin
               Y := Rec.Top;
               W := Rec.Right - Rec.Left;
               H := Rec.Bottom - Rec.Top;
-              Alpha := A;
+              Alpha := NoteAlpha(NoteType, A);
             end;
             Renderer.DrawTexture(Texture);
 
@@ -902,7 +908,7 @@ begin
             if Rec.Right <= Rec.Left then
               Rec.Right := Rec.Left;
 
-            If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+            If IsUnpitchedNote(NoteType) then
               Texture := Tex_BG_Mid_Rap[PlayerIndex+1]
             else
               Texture := Tex_BG_Mid[PlayerIndex+1];
@@ -912,7 +918,7 @@ begin
               Y := Rec.Top;
               W := Rec.Right - Rec.Left;
               H := Rec.Bottom - Rec.Top;
-              Alpha := A;
+              Alpha := NoteAlpha(NoteType, A);
             end;
             Renderer.DrawTexture(Texture);
 
@@ -920,7 +926,7 @@ begin
             Rec.Left  := Rec.Right;
             Rec.Right := Rec.Left + W;
 
-            If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+            If IsUnpitchedNote(NoteType) then
               Texture := Tex_BG_Right_Rap[PlayerIndex+1]
             else
               Texture := Tex_BG_Right[PlayerIndex+1];
@@ -930,11 +936,10 @@ begin
               Y := Rec.Top;
               W := Rec.Right - Rec.Left;
               H := Rec.Bottom - Rec.Top;
-              Alpha := A;
+              Alpha := NoteAlpha(NoteType, A);
             end;
             Renderer.DrawTexture(Texture);
 
-          end; // if not FreeStyle
         end; // with
       end; // for
     end; // with
@@ -1675,7 +1680,7 @@ begin
         Rec.Right := Rec.Left + NotesW[0];
         Rec.Top := YBaseNote - (Tone-BaseNote)*Space/2 - NotesH[0];
         Rec.Bottom := Rec.Top + 2 * NotesH[0];
-        If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+        If IsUnpitchedNote(NoteType) then
         begin
           If Color = P1_INVERTED then
             Texture := Tex_Left_Rap_Inv
@@ -1711,7 +1716,7 @@ begin
         Rec.Left  := Rec.Right;
         Rec.Right := (StartBeat + Duration - CurrentSong.Tracks[Track].Lines[CurrentSong.Tracks[Track].CurrentLine].Notes[0].StartBeat) * TempR + X - NotesW[0] - 0.5;
 
-        If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+        If IsUnpitchedNote(NoteType) then
         begin
           If Color = P1_INVERTED then
             Texture := Tex_Mid_Rap_Inv
@@ -1746,7 +1751,7 @@ begin
         Rec.Left  := Rec.Right;
         Rec.Right := Rec.Right + NotesW[0];
 
-        If (NoteType = ntRap) or (NoteType = ntRapGolden) then
+        If IsUnpitchedNote(NoteType) then
         begin
           If Color = P1_INVERTED then
             Texture := Tex_Right_Rap_Inv

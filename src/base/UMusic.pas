@@ -74,12 +74,20 @@ type
   end;
 
 const
-  // ScoreFactor defines how a notehit of a specified notetype is
-  // measured in comparison to the other types
-  // 0 means this notetype is not rated at all
-  // 2 means a hit of this notetype will be rated w/ twice as much
-  // points as a hit of a notetype w/ ScoreFactor 1
-  ScoreFactor:         array[TNoteType] of integer = (0, 1, 2, 1, 2);
+  MaxScoreFactor = 200;
+  ScoreFactorName: array[TNoteType] of string =
+    ('Freestyle', 'Normal', 'Golden', 'Rap', 'RapGolden');
+
+type
+  TScoreFactor = array[TNoteType] of integer;
+
+const
+  // The scoring weights used by unmodified USDX master and expected by
+  // existing online highscore services.
+  StandardScoreFactor: TScoreFactor = (0, 100, 200, 100, 200);
+
+var
+  ScoreFactor: TScoreFactor;
 
 type
   (**
@@ -93,6 +101,7 @@ type
     StartBeat:      integer;    // beat the fragment starts at
     Duration:       integer;    // duration in beats
     Tone:           integer;    // full range tone
+    DisplayTone:    integer;    // normalized tone used by the sing screen
     Text:           UTF8String; // text assigned to this fragment (a syllable, word, etc.)
     NoteType:       TNoteType;  // note-type: golden-note/freestyle etc.
 
@@ -679,6 +688,8 @@ function  MediaManager: TInterfaceList;
 procedure DumpMediaInterfaces();
 
 function FindNote(beat: integer): TPos;
+function IsUnpitchedNote(NoteType: TNoteType): boolean;
+function HasStandardScoreFactors: boolean;
 
 implementation
 
@@ -699,6 +710,21 @@ var
   DefaultAudioInput    : IAudioInput;
   AudioDecoderList     : TInterfaceList;
   MediaInterfaceList   : TInterfaceList;
+
+function IsUnpitchedNote(NoteType: TNoteType): boolean;
+begin
+  Result := NoteType in [ntFreestyle, ntRap, ntRapGolden];
+end;
+
+function HasStandardScoreFactors: boolean;
+var
+  NoteType: TNoteType;
+begin
+  for NoteType := Low(TNoteType) to High(TNoteType) do
+    if ScoreFactor[NoteType] <> StandardScoreFactor[NoteType] then
+      Exit(false);
+  Result := true;
+end;
 
 
 constructor TAudioFormatInfo.Create(Channels: byte; SampleRate: double; Format: TAudioSampleFormat);
@@ -1693,5 +1719,8 @@ begin
     end;
   end;
 end;
+
+initialization
+  ScoreFactor := StandardScoreFactor;
 
 end.

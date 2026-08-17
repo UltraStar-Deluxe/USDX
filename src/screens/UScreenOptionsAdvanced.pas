@@ -65,18 +65,6 @@ uses
   UUnicodeUtils,
   SysUtils;
 
-type
-  InteractionID = (
-    iScreenFadeSlide,
-    iEffectSingSlide,
-    iOnSongClickSlide,
-    iAskBeforeDelSlide,
-    iPartyPopupSlide,
-    iSingScoresSlide,
-    iTopScoresSlide,
-    iBackButton
-  );
-
 function TScreenOptionsAdvanced.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
@@ -106,7 +94,7 @@ begin
       end;
       SDLK_RETURN:
         begin
-          if SelInteraction = ord(iBackButton) then
+          if Interactions[SelInteraction].Typ = iButton then
           begin
             Ini.Save;
             AudioPlayback.PlaySound(SoundLib.Back);
@@ -157,8 +145,12 @@ begin
 end;
 
 procedure TScreenOptionsAdvanced.LoadWidgets;
+var
+  NoteType: TNoteType;
+  Weight: integer;
+  DefaultSuffix: UTF8String;
+  WeightOptions: array[0..MaxScoreFactor] of UTF8String;
 begin
-  // when editing this, also update the InteractionID enum declaration
   AddSelectSlide('SING_OPTIONS_ADVANCED_SCREENFADE', Ini.ScreenFade, IScreenFadeTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_EFFECTSING', Ini.EffectSing, IEffectSingTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_ONSONGCLICK', Ini.OnSongClick, IOnSongClickTranslated);
@@ -166,6 +158,20 @@ begin
   AddSelectSlide('SING_OPTIONS_ADVANCED_PARTYPOPUP', Ini.PartyPopup, IPartyPopupTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_SINGSCORES', Ini.SingScores, ISingScoresTranslated);
   AddSelectSlide('SING_OPTIONS_ADVANCED_TOPSCORES', Ini.TopScores, ITopScoresTranslated);
+
+  DefaultSuffix := ' (' + Language.Translate('OPTION_VALUE_DEFAULT') + ')';
+  for Weight := Low(WeightOptions) to High(WeightOptions) do
+    WeightOptions[Weight] := IntToStr(Weight) + '%';
+
+  AddSection('SING_OPTIONS_ADVANCED_SCORING');
+  for NoteType := Low(TNoteType) to High(TNoteType) do
+  begin
+    Weight := StandardScoreFactor[NoteType];
+    WeightOptions[Weight] := WeightOptions[Weight] + DefaultSuffix;
+    AddSelectSlide('SING_OPTIONS_ADVANCED_SCORE_WEIGHT_' +
+      UpperCase(ScoreFactorName[NoteType]), ScoreFactor[NoteType], WeightOptions);
+    WeightOptions[Weight] := IntToStr(Weight) + '%';
+  end;
 end;
 
 end.

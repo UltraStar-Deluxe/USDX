@@ -464,6 +464,7 @@ var
   MaxSongPoints:       integer; // max. points for the song (without line bonus)
   CurNotePoints:       real;    // Points for the cur. Note (PointsperNote * ScoreFactor[CurNote])
   CurrentNoteType:     TNoteType;
+
 begin
   ActualTone := 0;
   NoteHit := false;
@@ -497,8 +498,8 @@ begin
             // check if line is active
             if ((CurrentLineFragment.StartBeat <= ActualBeat) and
               (CurrentLineFragment.StartBeat + CurrentLineFragment.Duration-1 >= ActualBeat)) and
-              (CurrentLineFragment.NoteType <> ntFreestyle) and       // but ignore FreeStyle notes
-              (CurrentLineFragment.Duration > 0) then                   // and make sure the note length is at least 1
+              (ScoreFactor[CurrentLineFragment.NoteType] > 0) and
+              (CurrentLineFragment.Duration > 0) then
             begin
               SentenceDetected := SentenceIndex;
               NoteAvailable := true;
@@ -560,14 +561,17 @@ begin
                 Range := 2 - Ini.Difficulty;
 
               // check if the player hit the correct tone within the tolerated range
-              if (Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) or (CurrentLineFragment.NoteType = ntRap) or (CurrentLineFragment.NoteType = ntRapGolden) then
+              if (ScoreFactor[CurrentLineFragment.NoteType] > 0) and
+                (CurrentSong.Tracks[CP].ScoreValue > 0) and
+                ((Abs(CurrentLineFragment.Tone - CurrentSound.Tone) <= Range) or
+                 IsUnpitchedNote(CurrentLineFragment.NoteType)) then
               begin
                 // adjust the players tone to the correct one
                 // TODO: do we need to do this?
                 // Philipp: I think we do, at least when we draw the notes.
                 //          Otherwise the notehit thing would be shifted to the
                 //          correct unhit note. I think this will look kind of strange.
-                ActualTone := CurrentLineFragment.Tone;
+                ActualTone := CurrentLineFragment.DisplayTone;
 
                 // half size notes patch
                 NoteHit := true;
@@ -582,10 +586,10 @@ begin
                 CurNotePoints := (MaxSongPoints / CurrentSong.Tracks[CP].ScoreValue) * ScoreFactor[CurrentLineFragment.NoteType];
 
                 case CurrentLineFragment.NoteType of
-                  ntNormal:    CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
-                  ntGolden:    CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
-                  ntRap:       CurrentPlayer.Score       := CurrentPlayer.Score       + CurNotePoints;
-                  ntRapGolden: CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
+                  ntFreestyle, ntNormal, ntRap:
+                    CurrentPlayer.Score := CurrentPlayer.Score + CurNotePoints;
+                  ntGolden, ntRapGolden:
+                    CurrentPlayer.ScoreGolden := CurrentPlayer.ScoreGolden + CurNotePoints;
                 end;
               end;
             end; // operation
@@ -646,7 +650,7 @@ begin
               CurrentLineFragment := @Line.Notes[LineFragmentIndex];
               if (CurrentLineFragment.StartBeat  = LastPlayerNote.Start) and
                 (CurrentLineFragment.Duration = LastPlayerNote.Duration) and
-                (CurrentLineFragment.Tone   = LastPlayerNote.Tone) then
+                (CurrentLineFragment.DisplayTone = LastPlayerNote.Tone) then
               begin
                 LastPlayerNote.Perfect := true;
               end;

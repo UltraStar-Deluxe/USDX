@@ -229,6 +229,7 @@ TOptionsMenu = class(TMenu)
     procedure LoadLegend; virtual;
     function AddSelectSlide(const Text: UTF8String; var Data: integer; const Values: array of UTF8String): integer; overload;
     function AddButton(const Text: UTF8String): integer; overload;
+    procedure AddSection(const Text: UTF8String);
 
   public
     destructor Destroy; override;
@@ -2187,6 +2188,14 @@ begin
   NumWidgets := Length(Widgets);
   SetLength(Widgets, NumWidgets + 1);
   Widgets[NumWidgets] := Button[Result];
+end;
+
+procedure TOptionsMenu.AddSection(const Text: UTF8String);
+var
+  ButtonIndex: integer;
+begin
+  ButtonIndex := AddButton(Text);
+  Button[ButtonIndex].Selectable := false;
 end;
 
 function TOptionsMenu.DrawFG;

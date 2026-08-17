@@ -115,7 +115,8 @@ type
     FMD5Cached  : boolean;
 
     function DecodeFilename(Filename: RawByteString): IPath;
-    procedure ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String; RapToFreestyle: boolean);
+    procedure ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String);
+    procedure NormalizeUnpitchedNoteTones;
     procedure NewSentence(LineNumberP: integer; Param1, Param2: integer);
     procedure FindRefrain(); // tries to find a refrain for the medley mode and preview start
 
@@ -128,7 +129,7 @@ type
     function ReadTXTHeader(SongFile: TTextFileStream; ReadCustomTags: Boolean): boolean;
 
     function GetFolderCategory(const aFileName: IPath): UTF8String;
-    function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
+    function LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
     function GetMD5: string;
     procedure SetMD5(const Value: string);
   public
@@ -216,7 +217,7 @@ type
     constructor Create(const aFileName : IPath); overload;
     destructor  Destroy; override;
     function    LoadSong(DuetChange: boolean): boolean;
-    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; RapToFreestyle: boolean = false; OutOfBoundsToFreestyle: boolean = false; AudioLength: real = 0; ForceLoadNotes: boolean = false): boolean;
+    function    Analyse(const ReadCustomTags: Boolean = false; DuetChange: boolean = false; OutOfBoundsToFreestyle: boolean = false; AudioLength: real = 0; ForceLoadNotes: boolean = false): boolean;
     procedure   GetPreviewRange(AudioLength: real; out PreviewStartPos, PreviewEndPos: real);
     procedure   SetMedleyMode();
     procedure   Clear();
@@ -618,16 +619,15 @@ begin
   end;
 
   CurrentSong := self;
-  Result := LoadOpenedSong(SongFile, FileNamePath, DuetChange, false, false, 0);
+  Result := LoadOpenedSong(SongFile, FileNamePath, DuetChange, false, 0);
   SongFile.Free;
 end;
 
-function TSong.LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
+function TSong.LoadOpenedSong(SongFile: TTextFileStream; FileNamePath: IPath; DuetChange: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real): boolean;
 var
   CurLine:      RawByteString;
   LinePos:      integer;
   TrackIndex:   integer;
-  NoteIndex:    integer;
   CurrentTrack: integer; // P1: 0, P2: 1
 
   Param0:       AnsiChar;
@@ -819,7 +819,7 @@ begin
             FileNamePath.ToNative+' Line:'+IntToStr(FileLineNo));
             Break;
           end;
-          ParseNote(CurrentTrack, Param0, (Param1+Rel[CurrentTrack]) * Mult, Param2 * Mult, Param3, ParamLyric, RapToFreestyle);
+          ParseNote(CurrentTrack, Param0, (Param1+Rel[CurrentTrack]) * Mult, Param2 * Mult, Param3, ParamLyric);
         end // if
 
         else
@@ -871,6 +871,8 @@ begin
     end;
   end;
 
+  NormalizeUnpitchedNoteTones;
+
   for TrackIndex := 0 to High(Tracks) do
   begin
     if High(Tracks[Trackindex].Lines) < 0 then
@@ -878,15 +880,14 @@ begin
 
     Tracks[Trackindex].Lines[0].LastLine := True; // fallback to make sure at least one line is marked last line
 
-    // search backwards until we find the last line with a non-freestyle note
+    // search backwards until we find the last line with a scorable note
     for LinePos := System.High(Tracks[Trackindex].Lines) downto 0 do
-      for NoteIndex := System.High(Tracks[Trackindex].Lines[LinePos].Notes) downto 0 do
-        if Tracks[Trackindex].Lines[LinePos].Notes[NoteIndex].NoteType <> ntFreestyle then
-        begin
-          Tracks[Trackindex].Lines[0].LastLine := False; // reset the fallback as we found the last line with a non-freestyle note
-          Tracks[Trackindex].Lines[LinePos].LastLine := True;
-          goto NextTrack;
-        end;
+      if Tracks[Trackindex].Lines[LinePos].ScoreValue > 0 then
+      begin
+        Tracks[Trackindex].Lines[0].LastLine := False;
+        Tracks[Trackindex].Lines[LinePos].LastLine := True;
+        goto NextTrack;
+      end;
 
     NextTrack: ;
   end;
@@ -1588,7 +1589,7 @@ begin
   FMD5Cached := Value <> '';
 end;
 
-procedure TSong.ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String; RapToFreestyle: boolean);
+procedure TSong.ParseNote(Track: integer; TypeP: char; StartP, DurationP, NoteP: integer; LyricS: UTF8String);
 begin
 
   with Tracks[Track].Lines[Tracks[Track].High] do
@@ -1611,13 +1612,7 @@ begin
       'F':  Notes[HighNote].NoteType := ntFreestyle;
       ':':  Notes[HighNote].NoteType := ntNormal;
       '*':  Notes[HighNote].NoteType := ntGolden;
-      'R':
-        begin
-          if RapToFreestyle then
-            Notes[HighNote].NoteType := ntFreestyle
-          else
-            Notes[HighNote].NoteType := ntRap;
-        end;
+      'R':  Notes[HighNote].NoteType := ntRap;
       'G':  Notes[HighNote].NoteType := ntRapGolden;
     end;
 
@@ -1628,6 +1623,7 @@ begin
     Inc(ScoreValue, Notes[HighNote].Duration * ScoreFactor[Notes[HighNote].NoteType]);
 
     Notes[HighNote].Tone := NoteP;
+    Notes[HighNote].DisplayTone := NoteP;
 
     //if a note w/ a lower pitch then the current basenote is found
     //we replace the basenote w/ the current notes pitch
@@ -1641,6 +1637,64 @@ begin
 
     EndBeat := Notes[HighNote].StartBeat + Notes[HighNote].Duration;
   end; // with
+end;
+
+procedure TSong.NormalizeUnpitchedNoteTones;
+var
+  TrackIndex, LineIndex, NoteIndex, SearchIndex: integer;
+  PreviousPitched, NextPitched: integer;
+  NoteCenter, PreviousCenter, NextCenter: double;
+  Line: PLine;
+begin
+  for TrackIndex := 0 to High(Tracks) do
+    for LineIndex := 0 to High(Tracks[TrackIndex].Lines) do
+    begin
+      Line := @Tracks[TrackIndex].Lines[LineIndex];
+      PreviousPitched := -1;
+      Line.BaseNote := High(Integer);
+
+      for NoteIndex := 0 to Line.HighNote do
+        with Line.Notes[NoteIndex] do
+        begin
+          if IsUnpitchedNote(NoteType) then
+          begin
+            NextPitched := -1;
+            for SearchIndex := NoteIndex + 1 to Line.HighNote do
+              if not IsUnpitchedNote(Line.Notes[SearchIndex].NoteType) then
+              begin
+                NextPitched := SearchIndex;
+                Break;
+              end;
+
+            if (PreviousPitched >= 0) and (NextPitched >= 0) then
+            begin
+              PreviousCenter := Line.Notes[PreviousPitched].StartBeat +
+                Line.Notes[PreviousPitched].Duration / 2;
+              NextCenter := Line.Notes[NextPitched].StartBeat +
+                Line.Notes[NextPitched].Duration / 2;
+              NoteCenter := StartBeat + Duration / 2;
+              if NextCenter > PreviousCenter then
+                DisplayTone := Round(Line.Notes[PreviousPitched].Tone +
+                  (Line.Notes[NextPitched].Tone - Line.Notes[PreviousPitched].Tone) *
+                  (NoteCenter - PreviousCenter) / (NextCenter - PreviousCenter))
+              else
+                DisplayTone := Round((Line.Notes[PreviousPitched].Tone +
+                  Line.Notes[NextPitched].Tone) / 2);
+            end
+            else if PreviousPitched >= 0 then
+              DisplayTone := Line.Notes[PreviousPitched].Tone
+            else if NextPitched >= 0 then
+              DisplayTone := Line.Notes[NextPitched].Tone
+            else
+              DisplayTone := 0;
+          end
+          else
+            PreviousPitched := NoteIndex;
+
+          if DisplayTone < Line.BaseNote then
+            Line.BaseNote := DisplayTone;
+        end;
+    end;
 end;
 
 procedure TSong.NewSentence(LineNumberP: integer; Param1, Param2: integer);
@@ -1730,7 +1784,7 @@ begin
     sentences[I] := '';
     for J := 0 to High(Tracks[0].Lines[I].Notes) do
     begin
-      if (Tracks[0].Lines[I].Notes[J].NoteType <> ntFreestyle) then
+      if ScoreFactor[Tracks[0].Lines[I].Notes[J].NoteType] > 0 then
         sentences[I] := sentences[I] + Tracks[0].Lines[I].Notes[J].Text;
     end;
   end;
@@ -1952,7 +2006,7 @@ begin
   Relative := false;
 end;
 
-function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean; RapToFreestyle: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real; ForceLoadNotes: boolean): boolean;
+function TSong.Analyse(const ReadCustomTags: Boolean; DuetChange: boolean; OutOfBoundsToFreestyle: boolean; AudioLength: real; ForceLoadNotes: boolean): boolean;
 var
   SongFile: TTextFileStream;
   FileNamePath: IPath;
@@ -1985,7 +2039,7 @@ begin
     begin
       //Load Song for Medley Tags
       CurrentSong := Self;
-      NotesLoaded := LoadOpenedSong(SongFile, FileNamePath, DuetChange, RapToFreestyle, OutOfBoundsToFreestyle, AudioLength);
+      NotesLoaded := LoadOpenedSong(SongFile, FileNamePath, DuetChange, OutOfBoundsToFreestyle, AudioLength);
       Result := Result and NotesLoaded;
     end;
 
