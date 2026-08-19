@@ -38,6 +38,7 @@
     <control>gamepad</control>
   </supports>
   <releases>
+    <release version="2026.8.1" date="2026-8-19" />
     <release version="2026.8.0" date="2026-8-11" />
     <release version="2026.6.0" date="2026-6-3" />
     <release version="2026.5.0" date="2026-5-9" />
