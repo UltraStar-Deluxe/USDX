@@ -54,9 +54,12 @@ function ULuaUsdx_Hook(L: Plua_State): Integer; cdecl;
 function ULuaUsdx_ShutMeDown(L: Plua_State): Integer; cdecl;
 
 { Usdx.GetUserPath - returns the writable user directory (the one holding the
-  config file, playlists and screenshots) as a string. plugins can not derive
-  this path themselves: it is platform dependent and redirected to the
-  executable's directory for portable installations. no arguments }
+  config file, playlists and screenshots). plugins can not derive this path
+  themselves: it is platform dependent and redirected to the executable's
+  directory for portable installations. no arguments
+
+  two results: the path in the encoding lua's io library expects, and the same
+  path as UTF-8 for display. see Lua_PushIOPath for why those differ }
 function ULuaUsdx_GetUserPath(L: Plua_State): Integer; cdecl;
 
 const
@@ -70,7 +73,7 @@ const
   );
 
 implementation
-uses sdl2, ULuaCore, ULuaUtils, UHookableEvent, UConfig, UPlatform;
+uses sdl2, ULuaCore, ULuaUtils, UHookableEvent, UConfig, UPath, UPlatform;
 
 { Usdx.Time - returns sdl_time to have time numbers comparable with
               ultrastar deluxe ones. no arguments }
@@ -149,12 +152,13 @@ begin
   P.ShutMeDown;
 end;
 
-{ Usdx.GetUserPath - returns the writable user directory as a string.
-  no arguments }
+{ Usdx.GetUserPath - returns the writable user directory, first in the
+  encoding lua's io library expects and then as UTF-8. no arguments }
 function ULuaUsdx_GetUserPath(L: Plua_State): Integer; cdecl;
   var
     top: Integer;
-    PathStr: UTF8String;
+    UserPath: IPath;
+    PathUtf8: UTF8String;
 begin
   //remove arguments (if any)
   top := lua_gettop(L);
@@ -162,10 +166,14 @@ begin
   if (top > 0) then
     lua_pop(L, top);
 
-  //push result
-  PathStr := Platform.GetGameUserPath.ToUTF8(true);
-  lua_pushstring(L, PChar(PathStr));
-  Result := 1; //one result
+  // resolve before touching the stack
+  UserPath := Platform.GetGameUserPath;
+  PathUtf8 := UserPath.ToUTF8(true);
+
+  //push results
+  Lua_PushIOPath(L, UserPath);
+  lua_pushstring(L, PChar(PathUtf8));
+  Result := 2; //two results
 end;
 
 end.
