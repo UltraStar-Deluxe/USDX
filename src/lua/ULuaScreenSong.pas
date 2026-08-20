@@ -37,11 +37,17 @@ uses ULua;
 { ScreenSong.GetSelectedSong - returns a table identifying the song that is
   currently highlighted on the song selection screen, or nil if there is none
   (another screen is showing, or the highlighted entry is a category header):
-    | Path: string     - absolute path of the song's directory
-    | FileName: string - absolute path of the song's .txt file
-    | Artist: string   - artist as given in the song header
-    | Title: string    - title as given in the song header
-  the path is authoritative; do not rebuild it from artist and title. }
+    | Path: string         - the song's directory, in the encoding the
+                             platform's file API expects, so Lua's io library
+                             can open it directly
+    | FileName: string     - the song's .txt file, same encoding
+    | PathUTF8: string     - the same directory as UTF-8, for display
+    | FileNameUTF8: string - the same file as UTF-8, for display
+    | Artist: string       - artist as given in the song header, UTF-8
+    | Title: string        - title as given in the song header, UTF-8
+  the path is authoritative; do not rebuild it from artist and title.
+  note that on Windows the native encoding is the ANSI code page, so a path
+  holding characters it can not represent is not openable from Lua at all. }
 function ULuaScreenSong_GetSelectedSong(L: Plua_State): Integer; cdecl;
 
 const
@@ -64,9 +70,10 @@ uses
   see the declaration in the interface section for its fields. }
 function ULuaScreenSong_GetSelectedSong(L: Plua_State): Integer; cdecl;
   var
-    Index:   Integer;
-    PathStr: UTF8String;
-    FileStr: UTF8String;
+    Index:    Integer;
+    SongFile: IPath;
+    PathUtf8: UTF8String;
+    FileUtf8: UTF8String;
 begin
   Result := 1;
 
@@ -89,19 +96,26 @@ begin
     Exit;
   end;
 
-  // resolve both before touching the stack, so a path error can not leave a
-  // half built table behind
-  PathStr := CatSongs.Song[Index].Path.ToUTF8(true);
-  FileStr := CatSongs.Song[Index].Path.Append(
-               CatSongs.Song[Index].FileName).ToUTF8(true);
+  // resolve everything before touching the stack, so a path error can not
+  // leave a half built table behind
+  SongFile := CatSongs.Song[Index].Path.Append(
+                CatSongs.Song[Index].FileName);
+  PathUtf8 := CatSongs.Song[Index].Path.ToUTF8(true);
+  FileUtf8 := SongFile.ToUTF8(true);
 
-  lua_CreateTable(L, 0, 4);
+  lua_CreateTable(L, 0, 6);
 
-  lua_PushString(L, PChar(PathStr));
+  Lua_PushIOPath(L, CatSongs.Song[Index].Path);
   lua_SetField(L, -2, PChar('Path'));
 
-  lua_PushString(L, PChar(FileStr));
+  Lua_PushIOPath(L, SongFile);
   lua_SetField(L, -2, PChar('FileName'));
+
+  lua_PushString(L, PChar(PathUtf8));
+  lua_SetField(L, -2, PChar('PathUTF8'));
+
+  lua_PushString(L, PChar(FileUtf8));
+  lua_SetField(L, -2, PChar('FileNameUTF8'));
 
   lua_PushString(L, PChar(CatSongs.Song[Index].Artist));
   lua_SetField(L, -2, PChar('Artist'));

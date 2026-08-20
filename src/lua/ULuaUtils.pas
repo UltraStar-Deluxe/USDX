@@ -33,7 +33,7 @@ interface
 
 {$I switches.inc}
 
-uses ULua, ULuaCore;
+uses ULua, ULuaCore, UPath;
 
 { converts a lua table with a structure like:
     * = 1 , * = 4 , * = 5
@@ -67,8 +67,80 @@ function Lua_GetOwner(L: PLua_State): TLuaPlugin;
   returns number of popped elements }
 function Lua_ClearStack(L: Plua_State): Integer;
 
+{ pushes a path in the encoding the platform's C file API expects, which is
+  what Lua's io library ends up calling.
+
+  this is deliberately neither IPath.ToNative nor SysUtils.Utf8ToAnsi.
+  UltraStar reaches the filesystem through the wide character API and treats
+  UTF-8 as its native form, so ToNative hands back UTF-8 on Windows; and
+  because UMain sets the RTL conversion code page to CP_UTF8, Utf8ToAnsi is a
+  no-op there too. Lua's io library has neither wrapper and goes straight to
+  the narrow CRT, which reads the bytes in the active ANSI code page, so UTF-8
+  passed there does not find the file.
+
+  characters the ANSI code page can not represent are lost in the conversion,
+  which leaves such a path unreachable from Lua. Nothing can be done about
+  that here, so plugins should treat a failed open as expected and report it
+  rather than assume they built the path wrongly. }
+procedure Lua_PushIOPath(L: PLua_State; const Path: IPath);
+
 
 implementation
+
+uses
+{$IFDEF MSWINDOWS}
+  Windows,
+{$ENDIF}
+  SysUtils;
+
+{$IFDEF MSWINDOWS}
+{ converts UTF-8 to the process's ANSI code page.
+
+  SysUtils.Utf8ToAnsi is useless for this: UMain calls
+  SetMultiByteConversionCodePage(CP_UTF8), which redefines the RTL's idea of
+  "ansi" as UTF-8 and turns that conversion into a no-op. Going through UTF-16
+  and asking Windows for CP_ACP explicitly is unaffected by that setting.
+
+  Characters the code page cannot represent are replaced, which yields a path
+  that does not exist. There is no way around that while Lua opens files
+  through the narrow CRT. }
+function Utf8ToACP(const Text: UTF8String): RawByteString;
+  var
+    Wide: WideString;
+    Size: Integer;
+begin
+  Result := '';
+
+  Wide := UTF8Decode(Text);
+  if (Length(Wide) = 0) then
+    Exit;
+
+  Size := WideCharToMultiByte(CP_ACP, 0, PWideChar(Wide), Length(Wide),
+                              nil, 0, nil, nil);
+  if (Size <= 0) then
+    Exit;
+
+  SetLength(Result, Size);
+  WideCharToMultiByte(CP_ACP, 0, PWideChar(Wide), Length(Wide),
+                      PAnsiChar(Result), Size, nil, nil);
+end;
+{$ENDIF}
+
+{ pushes a path in the encoding the platform's C file API expects.
+  see the comment in the interface section for why this is not ToNative. }
+procedure Lua_PushIOPath(L: PLua_State; const Path: IPath);
+  var
+    Encoded: RawByteString;
+begin
+{$IFDEF MSWINDOWS}
+  Encoded := Utf8ToACP(Path.ToUTF8(true));
+{$ELSE}
+  // the other supported platforms take UTF-8 in their narrow file API
+  Encoded := Path.ToUTF8(true);
+{$ENDIF}
+
+  lua_PushString(L, PChar(Encoded));
+end;
 
 { converts a lua table with a structure like:
     * = 1 , * = 4 , * = 5
