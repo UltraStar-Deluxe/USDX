@@ -40,6 +40,7 @@ uses
   UDisplay,
   UDLLManager,
   UFiles,
+  UHookableEvent,
   UIni,
   ULanguage,
   UMenu,
@@ -89,6 +90,15 @@ type
       procedure StartVideoPreview();
       function GetSongButtonMouseOverArea(ButtonIndex: integer): TMouseOverRect;
     public
+      { called from ParseInput before the screen acts on a key. this event is
+        breakable: a plugin consumes the key by returning any value from its
+        hook function, and passes it on by returning nothing. }
+      eParseInput:   THookableEvent;
+
+      { called once the song flow has settled on a song. plugins read the song
+        itself via ScreenSong.GetSelectedSong(). not breakable. }
+      eSongSelected: THookableEvent;
+
       TextArtist:   integer;
       TextTitle:    integer;
       TextNumber:   integer;
@@ -232,6 +242,7 @@ type
       NextRandomSearchIdx: cardinal;
 
       constructor Create; override;
+      destructor Destroy; override;
       procedure SetScroll;
       procedure SetScrollRefresh;
 
@@ -340,6 +351,8 @@ uses
   UPlaylist,
   UScreenSongMenu,
   USkins,
+  ULua,
+  ULuaUtils,
   UUnicodeUtils,
   Math;
 
@@ -349,6 +362,40 @@ const
   MAX_TIME_MOUSE_SELECT = 800;
   CHANGE_SOUND_THROTTLE_MS = 200;
   PREVIEW_DEBOUNCE_MS = 150;
+
+{ key state handed to the ScreenSong.ParseInput hook. PrepareStackProc receives
+  nothing but the lua state, so the values are stashed here immediately before
+  the chain is called. the song screen is a singleton and input is handled on
+  the main thread, so there is only ever one call in flight. }
+var
+  InputHookKey:  cardinal;
+  InputHookChar: UCS4Char;
+  InputHookMod:  word;
+  InputHookDown: boolean;
+
+{ pushes one table describing the keypress:
+    | Key: number   - the SDLK_* key code
+    | Char: number  - the unicode code point, 0 if the key produced none
+    | Mod: number   - active shift/ctrl/alt modifiers as an SDL KMOD_* mask
+    | Down: boolean - true for key down, false for key up }
+function PrepareStack_ScreenSongParseInput(L: PLua_State): Integer;
+begin
+  Result := 1;
+
+  lua_CreateTable(L, 0, 4);
+
+  lua_PushInteger(L, InputHookKey);
+  lua_SetField(L, -2, PChar('Key'));
+
+  lua_PushInteger(L, InputHookChar);
+  lua_SetField(L, -2, PChar('Char'));
+
+  lua_PushInteger(L, InputHookMod);
+  lua_SetField(L, -2, PChar('Mod'));
+
+  lua_PushBoolean(L, InputHookDown);
+  lua_SetField(L, -2, PChar('Down'));
+end;
 
 // ***** Public methods ****** //
 function TScreenSong.EnsureMedleyData(SongIndex: integer; MinSource: TMedleySource): boolean;
@@ -686,6 +733,7 @@ var
   VerifySong, WebList: string;
   Fix: boolean;
   VS: integer;
+  HookState: PLua_State;
 begin
   Result := true;
 
@@ -700,6 +748,23 @@ begin
   else if (ScreenSongJumpto.Visible) then
   begin
     Result := ScreenSongJumpto.ParseInput(PressedKey, CharCode, PressedDown);
+    Exit;
+  end;
+
+  // offer the key to plugins before acting on it ourselves. the overlays above
+  // keep priority, so a plugin never steals input from an open menu.
+  InputHookKey  := PressedKey;
+  InputHookChar := CharCode;
+  InputHookMod  := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
+                   + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT + KMOD_RALT);
+  InputHookDown := PressedDown;
+
+  HookState := eParseInput.CallHookChain(true);
+  if (HookState <> nil) then
+  begin
+    // a plugin handled this key. drop whatever it returned and report the key
+    // as consumed, so the screen does not act on it as well.
+    Lua_ClearStack(HookState);
     Exit;
   end;
 
@@ -1755,6 +1820,10 @@ var
 begin
   inherited Create;
 
+  eParseInput   := THookableEvent.Create('ScreenSong.ParseInput',
+                     @PrepareStack_ScreenSongParseInput);
+  eSongSelected := THookableEvent.Create('ScreenSong.SongSelected');
+
   LoadFromTheme(Theme.Song);
 
   TextArtist := AddText(Theme.Song.TextArtist);
@@ -1984,6 +2053,14 @@ begin
 
 end;
 
+destructor TScreenSong.Destroy;
+begin
+  eParseInput.Free;
+  eSongSelected.Free;
+
+  inherited Destroy;
+end;
+
 procedure TScreenSong.ColorDuetNameSingers();
   procedure setColor(static: integer; color: TRGB);
   begin
@@ -2145,6 +2222,8 @@ begin
   SongIndex := -1;
 
   //SetScrollRefresh;
+
+  eSongSelected.CallHookChain(false);
 end;
 
 { called before current song is deselected }

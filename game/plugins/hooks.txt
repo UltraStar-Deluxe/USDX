@@ -3,3 +3,5 @@ Usdx.LoadingFinished - called when all plugins are loaded, not breakable
 Display.PreDraw - called before a frame is Drawn - not breakable
 Display.Draw - called after a frame w/ screen is drawn. you can draw above screen here
 ScreenSing.SongLoaded - called after a song is loaded to ScreenSing in OnShow, not breakable
+ScreenSong.ParseInput - called on the song selection screen before the screen acts on a key, breakable. receives a table: Key (SDLK_* code), Char (unicode code point, 0 if none), Mod (KMOD_* modifier mask), Down (true on key down). return any value to consume the key, return nothing to pass it on. not called while the song menu or jump-to overlay is open
+ScreenSong.SongSelected - called once the song flow settles on a song, not breakable. use ScreenSong.GetSelectedSong() to read it
