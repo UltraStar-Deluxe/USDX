@@ -242,7 +242,6 @@ type
       NextRandomSearchIdx: cardinal;
 
       constructor Create; override;
-      destructor Destroy; override;
       procedure SetScroll;
       procedure SetScrollRefresh;
 
@@ -372,6 +371,24 @@ var
   InputHookChar: UCS4Char;
   InputHookMod:  word;
   InputHookDown: boolean;
+
+{ the hookable events, deliberately owned by the unit and not by the screen.
+
+  UGraphic.UnloadScreens frees ScreenSong whenever the language, theme or
+  resolution changes, and LoadScreens builds a new one. An event living on the
+  instance would be destroyed with it, taking every plugin's subscription along
+  (THookableEvent.Destroy disposes the hook chain), and the replacement would
+  start with no subscribers. Nothing errors: the plugin simply stops being
+  called, which looks exactly like the plugin having broken.
+
+  They are created once, on first construction, and never freed. Freeing them at
+  finalization would mean calling LuaCore.UnRegisterEvent at a point where
+  LuaCore may already be gone, and there is nothing to reclaim that process exit
+  does not. Display.PreDraw and Display.Draw survive a screen reload for the
+  same reason, by accident of living on TDisplay. }
+var
+  ParseInputEvent:   THookableEvent = nil;
+  SongSelectedEvent: THookableEvent = nil;
 
 { pushes one table describing the keypress:
     | Key: number   - the SDLK_* key code
@@ -1820,9 +1837,15 @@ var
 begin
   inherited Create;
 
-  eParseInput   := THookableEvent.Create('ScreenSong.ParseInput',
-                     @PrepareStack_ScreenSongParseInput);
-  eSongSelected := THookableEvent.Create('ScreenSong.SongSelected');
+  if (ParseInputEvent = nil) then
+    ParseInputEvent := THookableEvent.Create('ScreenSong.ParseInput',
+                         @PrepareStack_ScreenSongParseInput);
+  if (SongSelectedEvent = nil) then
+    SongSelectedEvent := THookableEvent.Create('ScreenSong.SongSelected');
+
+  // aliases: the events outlive this instance, see the note at their declaration
+  eParseInput   := ParseInputEvent;
+  eSongSelected := SongSelectedEvent;
 
   LoadFromTheme(Theme.Song);
 
@@ -2051,14 +2074,6 @@ begin
   NextRandomSongIdx := High(cardinal);
   NextRandomSearchIdx := High(cardinal);
 
-end;
-
-destructor TScreenSong.Destroy;
-begin
-  eParseInput.Free;
-  eSongSelected.Free;
-
-  inherited Destroy;
 end;
 
 procedure TScreenSong.ColorDuetNameSingers();
