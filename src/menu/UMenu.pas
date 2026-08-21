@@ -610,6 +610,8 @@ begin
   ButtonCollection[Num].Texture.TexY1 := 0;
   ButtonCollection[Num].Texture.TexX2 := 1;
   ButtonCollection[Num].Texture.TexY2 := 1;
+  ButtonCollection[Num].Texture.ScaleMode := ThemeCollection.Style.ScaleMode;
+  ButtonCollection[Num].DeSelectTexture.ScaleMode := ThemeCollection.Style.ScaleMode;
   ButtonCollection[Num].SetSelect(false);
 
   ButtonCollection[Num].Reflection := ThemeCollection.Style.Reflection;
@@ -635,6 +637,8 @@ begin
       Skin.GetTextureFileName(ThemeCollection.Style.FadeTex), ThemeCollection.Style.Typ);
   end;
   ButtonCollection[Num].FadeTexPos := ThemeCollection.Style.FadeTexPos;
+  if (ButtonCollection[Num].FadeTex <> nil) then
+    ButtonCollection[Num].FadeTex.ScaleMode := ThemeCollection.Style.ScaleMode;
 
   BTLen := Length(ThemeCollection.Style.Text);
   for BT := 0 to BTLen-1 do
@@ -653,6 +657,8 @@ begin
     ThemeStatic.TexX1, ThemeStatic.TexY1, ThemeStatic.TexX2, ThemeStatic.TexY2, ThemeStatic.Alpha,
     Skin.GetTextureFileName(ThemeStatic.Tex),
     ThemeStatic.Typ, $FFFFFF, ThemeStatic.Reflection, ThemeStatic.Reflectionspacing);
+    if (Result >= 0) then
+      Statics[Result].Texture.ScaleMode := ThemeStatic.ScaleMode;
 end;
 
 function TMenu.AddStaticPosition(static: TThemePosition): integer;
@@ -664,6 +670,10 @@ begin
     static.H,
     PATH_NONE
   );
+  if (Result >= 0) then
+  begin
+    Statics[Result].Texture.ScaleMode := static.ScaleMode;
+  end;
 end;
 
 function TMenu.AddStaticRectangle(static: TThemeStaticRectangle): integer;
@@ -987,6 +997,9 @@ begin
     Skin.GetTextureFileName(ThemeButton.Tex), ThemeButton.Typ,
     ThemeButton.Reflection, ThemeButton.Reflectionspacing, ThemeButton.DeSelectReflectionspacing);
 
+  Button[Result].Texture.ScaleMode := ThemeButton.ScaleMode;
+  Button[Result].DeSelectTexture.ScaleMode := ThemeButton.ScaleMode;
+
   Button[Result].Z := ThemeButton.Z;
 
   //Button Visibility
@@ -1009,6 +1022,9 @@ begin
     Button[Result].FadeTex := Renderer.GetTexture(
       Skin.GetTextureFileName(ThemeButton.FadeTex), ThemeButton.Typ);
   end;
+
+  if (Button[Result].FadeTex <> nil) then
+    Button[Result].FadeTex.ScaleMode := ThemeButton.ScaleMode;
 
   Button[Result].FadeTexPos := ThemeButton.FadeTexPos;
 

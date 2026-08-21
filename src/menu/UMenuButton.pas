@@ -133,7 +133,8 @@ implementation
 
 uses
   SysUtils,
-  UDisplay;
+  UDisplay,
+  UScale;
 
 function TButton.GetX(): single;
 begin
@@ -291,6 +292,8 @@ var
   T:       integer;
   Tick:    cardinal;
   Spacing: single;
+  BaseX, BaseY, BaseW, BaseH: single;
+  SpacingScale: single;
 begin
   if Visible then
   begin
@@ -431,8 +434,17 @@ begin
 
     if SelectBool or (FadeProgress > 0) or not Colorized then
     begin
+      BaseX := Texture.X;
+      BaseY := Texture.Y;
+      BaseW := Texture.W;
+      BaseH := Texture.H;
+      ResolveLayoutRect(BaseX, BaseY, BaseW, BaseH, Texture.ScaleMode);
+      if Texture.H <> 0 then
+        SpacingScale := BaseH / Texture.H
+      else
+        SpacingScale := 1;
       Texture.Reflection := Reflection;
-      Texture.ReflectionSpacing := Spacing;
+      Texture.ReflectionSpacing := Spacing * SpacingScale;
       Renderer.DrawTexture(Texture);
     end
     else
@@ -441,8 +453,17 @@ begin
       DeSelectTexture.Y := Texture.Y;
       DeSelectTexture.H := Texture.H;
       DeSelectTexture.W := Texture.W;
+      BaseX := DeSelectTexture.X;
+      BaseY := DeSelectTexture.Y;
+      BaseW := DeSelectTexture.W;
+      BaseH := DeSelectTexture.H;
+      ResolveLayoutRect(BaseX, BaseY, BaseW, BaseH, DeSelectTexture.ScaleMode);
+      if DeSelectTexture.H <> 0 then
+        SpacingScale := BaseH / DeSelectTexture.H
+      else
+        SpacingScale := 1;
       DeSelectTexture.Reflection := Reflection;
-      DeSelectTexture.ReflectionSpacing := Spacing;
+      DeSelectTexture.ReflectionSpacing := Spacing * SpacingScale;
       Renderer.DrawTexture(DeSelectTexture);
     end;
 
@@ -458,45 +479,59 @@ begin
 end;
 
 function TButton.GetMouseOverArea: TMouseOverRect;
+var
+  MainX, MainY, MainW, MainH: single;
+  FadeX, FadeY, FadeW, FadeH: single;
 begin
   if not(Display.Cursor_HiddenByScreen) then
   begin
+    MainX := Texture.X;
+    MainY := Texture.Y;
+    MainW := Texture.W;
+    MainH := Texture.H;
+    ResolveLayoutRect(MainX, MainY, MainW, MainH, Texture.ScaleMode);
+
     if (not Fade) then
     begin
-      Result.X := Texture.X;
-      Result.Y := Texture.Y;
-      Result.W := Texture.W;
-      Result.H := Texture.H;
+      Result.X := MainX;
+      Result.Y := MainY;
+      Result.W := MainW;
+      Result.H := MainH;
     end
     else
     begin
+      FadeX := FadeTex.X;
+      FadeY := FadeTex.Y;
+      FadeW := FadeTex.W;
+      FadeH := FadeTex.H;
+      ResolveLayoutRect(FadeX, FadeY, FadeW, FadeH, FadeTex.ScaleMode);
       case FadeTexPos of
         0: begin // fade tex on top
-          Result.X := Texture.X;
-          Result.Y := FadeTex.Y;
-          Result.W := Texture.W;
-          Result.H := FadeTex.H + Texture.H;
+          Result.X := MainX;
+          Result.Y := FadeY;
+          Result.W := MainW;
+          Result.H := FadeH + MainH;
         end;
 
         1: begin // fade tex on left side
-          Result.X := FadeTex.X;
-          Result.Y := Texture.Y;
-          Result.W := FadeTex.W + Texture.W;
-          Result.H := Texture.H;
+          Result.X := FadeX;
+          Result.Y := MainY;
+          Result.W := FadeW + MainW;
+          Result.H := MainH;
         end;
 
         2: begin // fade tex on bottom
-          Result.X := Texture.X;
-          Result.Y := Texture.Y;
-          Result.W := Texture.W;
-          Result.H := FadeTex.H + Texture.H;
+          Result.X := MainX;
+          Result.Y := MainY;
+          Result.W := MainW;
+          Result.H := FadeH + MainH;
         end;
 
         3: begin // fade tex on right side
-          Result.X := Texture.X;
-          Result.Y := Texture.Y;
-          Result.W := FadeTex.W + Texture.W;
-          Result.H := Texture.H;
+          Result.X := MainX;
+          Result.Y := MainY;
+          Result.W := FadeW + MainW;
+          Result.H := MainH;
         end;
       end;
     end;

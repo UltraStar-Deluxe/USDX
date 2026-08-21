@@ -32,7 +32,8 @@ interface
 
 uses
   sdl2,
-  UPath;
+  UPath,
+  UScale;
 
 const
   {$IF Defined(UNIX) and (not Defined(DARWIN)) and (Defined(CPUARM) or Defined(CPUAARCH64))}
@@ -148,6 +149,8 @@ type
       Z: single;
       W: single;
       H: single;
+      SourceW: single;
+      SourceH: single;
       Shear: single;
       Int: single; // intensity
       ColR, ColG, ColB: single;
@@ -170,6 +173,13 @@ type
       ReflectionAlphaDiff: single;
       ReflectionTexY1: single;
       ReflectionTexY2: single;
+      ScaleMode: TLayoutScaleMode;
+      EdgeExtend: boolean;
+      EdgeExtendSolidFill: boolean;
+      EdgeExtendPixels: single;
+      EdgeExtendFillR: single;
+      EdgeExtendFillG: single;
+      EdgeExtendFillB: single;
 
       // Update the pixel data
       procedure UpdateData(Data: PByte; Width, Height: word; PixelsPerRow: integer; Typ: TTextureType); virtual; abstract;
@@ -347,6 +357,13 @@ begin
   ReflectionAlphaDiff := REFLECTION_ALPHA_DIFF;
   ReflectionTexY1 := TexY2;
   ReflectionTexY2 := TexY1 + ReflectionHeight;
+  ScaleMode := lsStretch;
+  EdgeExtend := false;
+  EdgeExtendSolidFill := false;
+  EdgeExtendPixels := 1;
+  EdgeExtendFillR := 0;
+  EdgeExtendFillG := 0;
+  EdgeExtendFillB := 0;
   fIsEmpty := true;
 end;
 
@@ -359,6 +376,8 @@ begin
   T.Z := Z;
   T.W := W;
   T.H := H;
+  T.SourceW := SourceW;
+  T.SourceH := SourceH;
   T.Int := Int;
   T.ColR := ColR;
   T.ColG := ColG;
@@ -376,6 +395,13 @@ begin
   T.ReflectionAlphaDiff := ReflectionAlphaDiff;
   T.ReflectionTexY1 := ReflectionTexY1;
   T.ReflectionTexY2 := ReflectionTexY2;
+  T.ScaleMode := ScaleMode;
+  T.EdgeExtend := EdgeExtend;
+  T.EdgeExtendSolidFill := EdgeExtendSolidFill;
+  T.EdgeExtendPixels := EdgeExtendPixels;
+  T.EdgeExtendFillR := EdgeExtendFillR;
+  T.EdgeExtendFillG := EdgeExtendFillG;
+  T.EdgeExtendFillB := EdgeExtendFillB;
 end;
 
 destructor TTexture.Destroy();

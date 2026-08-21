@@ -47,6 +47,7 @@ uses
   UAvatars,
   UMusic,
   URenderer,
+  UScale,
   UScreenLoading,
   UScreenMain,
   UScreenName,
@@ -770,8 +771,16 @@ NoDoubledResolution:
   end;
 
   // define virtual (Render) and real (Screen) screen size
-  RenderW := 800;
-  RenderH := 600;
+  if Theme <> nil then
+  begin
+    RenderW := Theme.LayoutScreenW;
+    RenderH := Theme.LayoutScreenH;
+  end
+  else
+  begin
+    RenderW := 800;
+    RenderH := 600;
+  end;
   ScreenW := ActualW;
   ScreenH := ActualH;
   CalculateScreenMetrics;
@@ -960,6 +969,7 @@ begin
   PixelH := RenderH / ScreenH;
   VertexW := ScreenWPerScreen / RenderW;
   VertexH := ScreenH / RenderH;
+  UpdateUIScaleState(RenderW, RenderH, ScreenWPerScreen, ScreenH);
 end;
 
 procedure LoadLoadingScreen;

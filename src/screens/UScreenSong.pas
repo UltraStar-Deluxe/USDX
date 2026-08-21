@@ -48,6 +48,7 @@ uses
   UMusic,
   UPath,
   URenderer,
+  UScale,
   USong,
   USongs,
   UThemes,
@@ -2097,6 +2098,10 @@ begin
     if (CoverButton = nil) then
       Continue;
 
+    // Covers must fill their themed slots without distorting the artwork.
+    CoverButton.Texture.ScaleMode := lsCrop;
+    CoverButton.DeSelectTexture.ScaleMode := lsCrop;
+
     Song := CatSongs.Song[I];
 
     CoverFile := Song.Path.Append(Song.Cover);
@@ -2689,6 +2694,8 @@ begin
   else
     Statics[StaticActual].Texture := Renderer.LoadTexture(Button[Interaction].Texture.Name);
 
+  Statics[StaticActual].Texture.ScaleMode := lsCrop;
+
   Statics[StaticActual].Texture.Alpha := 1;
 
   Statics[StaticActual].Texture.X := Theme.Song.Cover.SelectX;
@@ -2763,6 +2770,8 @@ begin
     Statics[StaticActual].Texture := Renderer.GetTexture(Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN)
   else
     Statics[StaticActual].Texture := Renderer.LoadTexture(Button[Interaction].Texture.Name);
+
+  Statics[StaticActual].Texture.ScaleMode := lsCrop;
   Statics[StaticActual].Texture.Alpha := 1;
 
   Statics[StaticActual].Texture.X := Theme.Song.Cover.SelectX;
@@ -4243,6 +4252,7 @@ begin
   If (Button[NumberOfButtonInArray].Texture.IsEmpty) and Assigned(Button[NumberOfButtonInArray].Texture.Name) then
   begin
     Tex := Renderer.LoadTexture(Button[NumberOfButtonInArray].Texture.Name);
+    Tex.ScaleMode := lsCrop;
     Button[NumberOfButtonInArray].Texture.Free;
     Button[NumberOfButtonInArray].Texture := Tex;
   end;
