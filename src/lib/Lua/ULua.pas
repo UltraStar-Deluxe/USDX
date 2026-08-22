@@ -49,9 +49,6 @@ const
 const
   LUA_VERSION_NUM =     100*(ord(LUA_VERSION_MAJOR) - ord('0')) +       ord(LUA_VERSION_MINOR) - ord('0');
 
-{$IFDEF WIN32}
-  LUA_LIB_NAME = 'lua' + LUA_VERSION_MAJOR + '.' + lua_VERSION_MINOR + '.dll';
-{$ENDIF}
 {$IFDEF UNIX}
   {$IFDEF DARWIN}
     LUA_LIB_NAME = 'liblua.dylib';
@@ -1949,4 +1946,3 @@ end;
 ******************************************************************************)
 
 end.
-

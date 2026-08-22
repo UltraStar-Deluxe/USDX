@@ -1,9 +1,4 @@
-{ $Header: /MidiComp/MidiCons.pas 2     10/06/97 7:33 Davec $ }
-
-{ Written by David Churcher <dchurcher@cix.compulink.co.uk>,
-  released to the public domain. }
-
-{ Midi Constants }
+{ Public-domain MIDI constants adapted from David Churcher's original unit. }
 unit MidiCons;
 
 interface
