@@ -44,7 +44,7 @@ uses
 
 type
   TPlatform = class
-    function GetExecutionDir(): IPath;
+    function GetExecutionDir(): IPath; virtual;
     procedure Init; virtual;
 
     function TerminateIfAlreadyRunning(var WndTitle: string): boolean; virtual;
