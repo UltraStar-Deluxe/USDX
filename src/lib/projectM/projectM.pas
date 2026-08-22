@@ -13,6 +13,10 @@ interface
 uses
   ctypes;
 
+{$IFDEF DARWIN}
+  {$linklib projectM-4}
+{$ENDIF}
+
 const
   projectM__lib = 'projectM-4';
 
