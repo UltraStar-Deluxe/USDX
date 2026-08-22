@@ -29,7 +29,7 @@
         <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T 'Lazarus Run Output' -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="123">
+    <Units Count="124">
       <Unit0>
         <Filename Value="ultrastardx.dpr"/>
         <IsPartOfProject Value="True"/>
@@ -536,6 +536,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UMenuWidget"/>
       </Unit125>
+      <Unit126>
+        <Filename Value="lua/ULuaScreenSong.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ULuaScreenSong"/>
+      </Unit126>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

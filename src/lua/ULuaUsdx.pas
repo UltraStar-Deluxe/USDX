@@ -53,17 +53,27 @@ function ULuaUsdx_Hook(L: Plua_State): Integer; cdecl;
   unloads the calling plugin }
 function ULuaUsdx_ShutMeDown(L: Plua_State): Integer; cdecl;
 
+{ Usdx.GetUserPath - returns the writable user directory (the one holding the
+  config file, playlists and screenshots). plugins can not derive this path
+  themselves: it is platform dependent and redirected to the executable's
+  directory for portable installations. no arguments
+
+  two results: the path in the encoding lua's io library expects, and the same
+  path as UTF-8 for display. see Lua_PushIOPath for why those differ }
+function ULuaUsdx_GetUserPath(L: Plua_State): Integer; cdecl;
+
 const
-  ULuaUsdx_Lib_f: array [0..4] of lual_reg = (
+  ULuaUsdx_Lib_f: array [0..5] of lual_reg = (
     (name:'Version'; func:ULuaUsdx_Version),
     (name:'Time'; func:ULuaUsdx_Time),
     (name:'Hook'; func:ULuaUsdx_Hook),
     (name:'ShutMeDown'; func:ULuaUsdx_ShutMeDown),
+    (name:'GetUserPath'; func:ULuaUsdx_GetUserPath),
     (name:nil;func:nil)
   );
 
 implementation
-uses sdl2, ULuaCore, ULuaUtils, UHookableEvent, UConfig;
+uses sdl2, ULuaCore, ULuaUtils, UHookableEvent, UConfig, UPath, UPlatform;
 
 { Usdx.Time - returns sdl_time to have time numbers comparable with
               ultrastar deluxe ones. no arguments }
@@ -140,6 +150,30 @@ begin
   P := Lua_GetOwner(L);
 
   P.ShutMeDown;
+end;
+
+{ Usdx.GetUserPath - returns the writable user directory, first in the
+  encoding lua's io library expects and then as UTF-8. no arguments }
+function ULuaUsdx_GetUserPath(L: Plua_State): Integer; cdecl;
+  var
+    top: Integer;
+    UserPath: IPath;
+    PathUtf8: UTF8String;
+begin
+  //remove arguments (if any)
+  top := lua_gettop(L);
+
+  if (top > 0) then
+    lua_pop(L, top);
+
+  // resolve before touching the stack
+  UserPath := Platform.GetGameUserPath;
+  PathUtf8 := UserPath.ToUTF8(true);
+
+  //push results
+  Lua_PushIOPath(L, UserPath);
+  lua_pushstring(L, PChar(PathUtf8));
+  Result := 2; //two results
 end;
 
 end.

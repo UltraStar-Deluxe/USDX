@@ -98,8 +98,23 @@ function ULuaScreenSing_SetSettings(L: Plua_State): Integer; cdecl;
       | Text: string      - text of this fragment }
 function ULuaScreenSing_GetSongLines(L: Plua_State): Integer; cdecl;
 
+{ ScreenSing.GetSongInfo - returns a table identifying the song that is
+  currently being sung, or nil if there is none:
+    | Path: string         - the song's directory, in the encoding the
+                             platform's file API expects, so Lua's io library
+                             can open it directly
+    | FileName: string     - the song's .txt file, same encoding
+    | PathUTF8: string     - the same directory as UTF-8, for display
+    | FileNameUTF8: string - the same file as UTF-8, for display
+    | Artist: string       - artist as given in the song header, UTF-8
+    | Title: string        - title as given in the song header, UTF-8
+  the path is authoritative; do not rebuild it from artist and title.
+  note that on Windows the native encoding is the ANSI code page, so a path
+  holding characters it can not represent is not openable from Lua at all. }
+function ULuaScreenSing_GetSongInfo(L: Plua_State): Integer; cdecl;
+
 const
-  ULuaScreenSing_Lib_f: array [0..11] of lual_reg = (
+  ULuaScreenSing_Lib_f: array [0..12] of lual_reg = (
     (name:'GetScores';func:ULuaScreenSing_GetScores),
     (name:'GetRating';func:ULuaScreenSing_GetRating),
     (name:'GetBPM';func:ULuaScreenSing_GetBPM),
@@ -111,7 +126,8 @@ const
     (name:'Finish';func:ULuaScreenSing_Finish),
     (name:'GetSettings';func:ULuaScreenSing_GetSettings),
     (name:'SetSettings';func:ULuaScreenSing_SetSettings),
-    (name:'GetSongLines';func:ULuaScreenSing_GetSongLines)
+    (name:'GetSongLines';func:ULuaScreenSing_GetSongLines),
+    (name:'GetSongInfo';func:ULuaScreenSing_GetSongInfo)
   );
 
 implementation
@@ -123,6 +139,7 @@ uses
   UDisplay,
   UGraphic,
   UMusic,
+  UPath,
   ULuaUtils,
   SysUtils;
 
@@ -497,6 +514,51 @@ begin
     lua_ClearStack(L);
     lua_pushNil(L);
   end;
+end;
+
+{ returns a table identifying the currently sung song, or nil if there is
+  none. see the declaration in the interface section for its fields. }
+function ULuaScreenSing_GetSongInfo(L: Plua_State): Integer; cdecl;
+  var
+    SongFile: IPath;
+    PathUtf8: UTF8String;
+    FileUtf8: UTF8String;
+begin
+  Result := 1;
+
+  lua_ClearStack(L);
+
+  if (CurrentSong = nil) or (Display.CurrentScreen <> @ScreenSing) then
+  begin
+    lua_pushNil(L);
+    Exit;
+  end;
+
+  // resolve everything before touching the stack, so a path error can not
+  // leave a half built table behind
+  SongFile := CurrentSong.Path.Append(CurrentSong.FileName);
+  PathUtf8 := CurrentSong.Path.ToUTF8(true);
+  FileUtf8 := SongFile.ToUTF8(true);
+
+  lua_CreateTable(L, 0, 6);
+
+  Lua_PushIOPath(L, CurrentSong.Path);
+  lua_SetField(L, -2, PChar('Path'));
+
+  Lua_PushIOPath(L, SongFile);
+  lua_SetField(L, -2, PChar('FileName'));
+
+  lua_PushString(L, PChar(PathUtf8));
+  lua_SetField(L, -2, PChar('PathUTF8'));
+
+  lua_PushString(L, PChar(FileUtf8));
+  lua_SetField(L, -2, PChar('FileNameUTF8'));
+
+  lua_PushString(L, PChar(CurrentSong.Artist));
+  lua_SetField(L, -2, PChar('Artist'));
+
+  lua_PushString(L, PChar(CurrentSong.Title));
+  lua_SetField(L, -2, PChar('Title'));
 end;
 
 end.
