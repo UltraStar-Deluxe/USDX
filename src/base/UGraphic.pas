@@ -70,9 +70,6 @@ uses
   UScreenScore,
   UScreenTop5,
   UScreenEditSub,
-  UScreenEdit,
-  UScreenEditConvert,
-  UScreenOpen,
   UScreenAbout,
   USkins,
   UScreenSongMenu,
@@ -160,9 +157,6 @@ var
   ScreenOptionsWebcam:    TScreenOptionsWebcam;
   ScreenOptionsJukebox:   TScreenOptionsJukebox;
   ScreenEditSub:      TScreenEditSub;
-  ScreenEdit:         TScreenEdit;
-  ScreenEditConvert:  TScreenEditConvert;
-  ScreenOpen:         TScreenOpen;
   ScreenAbout:        TScreenAbout;
 
   ScreenSongMenu:     TScreenSongMenu;
@@ -1028,12 +1022,8 @@ begin
   ScreenOptionsWebcam  :=    TScreenOptionsWebcam.Create;
   SetLoadingTitle('Loading ScreenOptionsJukebox');
   ScreenOptionsJukebox :=    TScreenOptionsJukebox.Create;
-  SetLoadingTitle('Loading ScreenEditConvert & ScreenEditSub & ScreenEdit');
-  ScreenEditConvert :=      TScreenEditConvert.Create;
+  SetLoadingTitle('Loading ScreenEditSub');
   ScreenEditSub :=          TScreenEditSub.Create;
-  ScreenEdit :=             TScreenEdit.Create;
-  SetLoadingTitle('Loading ScreenOpen');
-  ScreenOpen :=             TScreenOpen.Create;
   SetLoadingTitle('Loading ScreenAbout');
   ScreenAbout :=             TScreenAbout.Create;
   Log.BenchmarkEnd(3); Log.LogBenchmark('====> Screen About', 3); Log.BenchmarkStart(3);
@@ -1094,13 +1084,10 @@ begin
   FreeAndNil(ScreenOptionsWebcam);
   FreeAndNil(ScreenOptionsJukebox);
   FreeAndNil(ScreenEditSub);
-  FreeAndNil(ScreenEdit);
-  FreeAndNil(ScreenEditConvert);
   FreeAndNil(ScreenJukebox);
   FreeAndNil(ScreenJukeboxOptions);
   FreeAndNil(ScreenJukeboxPlaylist);
   FreeAndNil(ScreenTop5);
-  FreeAndNil(ScreenOpen);
   FreeAndNil(ScreenAbout);
   //ScreenSingModi.Free;
   FreeAndNil(ScreenSongMenu);
