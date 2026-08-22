@@ -85,6 +85,7 @@ type
 
   TScore = record
     Name:       UTF8String;
+    Track:      integer;
     Score:      integer;
     Date:       UTF8String;
   end;
