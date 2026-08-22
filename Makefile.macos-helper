@@ -6,7 +6,10 @@ dest = $(macos_bundle_path)/MacOS/$(notdir $(1))
 # application.
 
 FILES :=
-NEWFILES := $(USDX_BIN)
+# Some compatibility libraries load dependencies with dlopen(), so otool
+# cannot discover them. Allow callers to add those libraries explicitly while
+# still processing their transitive dependencies and install names normally.
+NEWFILES := $(USDX_BIN) $(MACOS_EXTRA_DYLIBS)
 
 define processload
 D := $(1)
