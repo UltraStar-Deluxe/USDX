@@ -8,17 +8,13 @@ interface
 {$I switches.inc}
 
 {$IFNDEF MSWINDOWS}
-  {$IFDEF DARWIN}
-    {$LINKLIB opencvwrapper}
-  {$ELSE}
-    {$L ApiWrapper.o}
-    {$IFDEF OpenCVCoreStandalone}
-      {$IFNDEF OpenCVManualLink}
-        {$LINKLIB opencv_core}
-      {$ENDIF}
-    {$ELSE}
-      {$LINKLIB opencv_world}
+  {$L ApiWrapper.o}
+  {$IFDEF OpenCVCoreStandalone}
+    {$IFNDEF OpenCVManualLink}
+      {$LINKLIB opencv_core}
     {$ENDIF}
+  {$ELSE}
+    {$LINKLIB opencv_world}
   {$ENDIF}
 {$ENDIF}
 
@@ -33,11 +29,6 @@ uses
 {$IFDEF MSWINDOWS}
 const
   libopencvwrapper = 'opencvwrapper.dll';
-{$ENDIF}
-
-{$IFDEF DARWIN}
-const
-  libopencvwrapper = 'libopencvwrapper.dylib';
 {$ENDIF}
 
 type
@@ -69,9 +60,9 @@ function CvSizeV(p_width, p_height: integer):CvSize; overload;
 function CvSizeV(p_width, p_height: extended):CvSize; overload;
 
 function Get_UMat_depth(w: PUMatWrapper): cint; cdecl;
-  {$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
+  {$IF Defined(MSWINDOWS)}external libopencvwrapper{$ELSE}external{$ENDIF};
 function Get_UMat_as_8UC3(w: PUMatWrapper): pointer; cdecl;
-  {$IF Defined(MSWINDOWS) or Defined(DARWIN)}external libopencvwrapper{$ELSE}external{$ENDIF};
+  {$IF Defined(MSWINDOWS)}external libopencvwrapper{$ELSE}external{$ENDIF};
 
 // The type casts needed for the old API are not needed/supported by this wrapper.
 // These functions pass through their parameter unchanged to allow the type casts
