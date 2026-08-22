@@ -219,6 +219,7 @@ type
       PartyPopup:     integer;
       SingScores:     integer;
       TopScores:      integer;
+      StatDetailCount:       integer;
       SingTimebarMode:       integer;
       JukeboxTimebarMode:    integer;
 
@@ -304,6 +305,7 @@ type
       procedure SaveJukeboxSongMenu;
       procedure SaveWebcamSettings();
       procedure SaveNumberOfPlayers;
+      procedure SaveStatDetailCount;
       procedure SaveSingTimebarMode;
       procedure SaveJukeboxTimebarMode;
 
@@ -1702,6 +1704,9 @@ begin
   // TopScores
   TopScores := ReadArrayIndex(ITopScores, IniFile, 'Advanced', 'TopScores', IGNORE_INDEX, 'Player');
 
+  // StatDetailCount
+  StatDetailCount := IniFile.ReadInteger('Advanced', 'StatDetailCount', 0);
+
   // SyncTo
   SyncTo := ReadArrayIndex(ISyncTo, IniFile, 'Advanced', 'SyncTo', Ord(stMusic));
 
@@ -2014,6 +2019,9 @@ begin
     //TopScores
     IniFile.WriteString('Advanced', 'TopScores', ITopScores[TopScores]);
 
+    //StatDetailCount
+    IniFile.WriteInteger('Advanced', 'StatDetailCount', StatDetailCount);
+
     //SyncTo
     IniFile.WriteString('Advanced', 'SyncTo', ISyncTo[SyncTo]);
 
@@ -2288,6 +2296,18 @@ begin
   try
     // Players
     IniFile.WriteString('Game', 'Players', IPlayers[Players]);
+  finally
+    IniFile.Free;
+  end;
+end;
+
+procedure TIni.SaveStatDetailCount;
+var
+  IniFile: TIniFile;
+begin
+  IniFile := TSafeIniFile.Create(Filename.ToNative, 'TIni.SaveStatDetailCount');
+  try
+    IniFile.WriteInteger('Advanced', 'StatDetailCount', StatDetailCount);
   finally
     IniFile.Free;
   end;
