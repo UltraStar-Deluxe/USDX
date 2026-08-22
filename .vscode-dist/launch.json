@@ -1,0 +1,55 @@
+{
+  "version": "0.2.0",
+  "inputs": [
+    {
+      "id": "songpath",
+      "type": "promptString",
+      "description": "Path to songs folder",
+      "default": "songs"
+    }
+  ],
+  "configurations": [
+    {
+      "name": "[Windows] USDX (MSVC)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/game/ultrastardx.exe",
+      "args": ["-songpath", "${input:songpath}"],
+      "cwd": "${workspaceFolder}/game",
+      "preLaunchTask": "[any] 2. make all",
+      "windows": {} 
+    },
+    {
+      "name": "[Linux] USDX (GDB)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/game/ultrastardx",
+      "args": ["-songpath", "${input:songpath}"],
+      "cwd": "${workspaceFolder}/game",
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "preLaunchTask": "[any] 2. make all",
+      "linux": {}
+    },
+    {
+      "name": "[macOS] USDX (LLDB)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/game/ultrastardx",
+      "args": ["-songpath", "${input:songpath}"],
+      "cwd": "${workspaceFolder}/game",
+      "preLaunchTask": "[any] 2. make all",
+      "osx": {}
+    },
+    {
+      "name": "[macOS] USDX (standalone app, LLDB)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/UltraStarDeluxe.app/Contents/MacOS/ultrastardx",
+      "args": ["-songpath", "${input:songpath}"],
+      "cwd": "${workspaceFolder}/UltraStarDeluxe.app/Contents/MacOS",
+      "preLaunchTask": "[macos] make macos-standalone-app",
+      "osx": {}
+    }
+  ]
+}

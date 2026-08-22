@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    // Pascal support
+    "wosi.omnipascal",
+
+    // Makefile support
+    "ms-vscode.makefile-tools",
+
+    // Debugger
+    "vadimcn.vscode-lldb"
+  ]
+}
