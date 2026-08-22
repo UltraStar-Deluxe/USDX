@@ -148,20 +148,25 @@ begin
 end;
 
 function TScreenPartyTournamentPlayer.ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean;
+var
+  ModState: word;
 begin
   Result := inherited;
+  SuppressKey := false;
   // only suppress special keys for now
   case PressedKey of
     // Templates for Names Mod
     SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10, SDLK_F11, SDLK_F12:
-     if (Button[Interactions[Interaction].Num].Selected) then
-     begin
-       SuppressKey := true;
-     end
-     else
-     begin
-       Result := false;
-     end;
+      begin
+        ModState := SDL_GetModState;
+        if (ModState and (KMOD_ALT or KMOD_GUI)) <> 0 then
+          Result := false
+        else if (Interactions[Interaction].Typ = iButton) and
+          Button[Interactions[Interaction].Num].Selected then
+          SuppressKey := true
+        else
+          Result := false;
+      end;
   end;
 end;
 
@@ -191,8 +196,7 @@ begin
   Result := true;
 
   if (PressedDown) then
-    SDL_ModState := SDL_GetModState and (KMOD_LSHIFT + KMOD_RSHIFT
-        + KMOD_LCTRL + KMOD_RCTRL + KMOD_LALT  + KMOD_RALT)
+    SDL_ModState := SDL_GetModState and (KMOD_SHIFT or KMOD_CTRL)
   else
     SDL_ModState := 0;
 
@@ -210,8 +214,7 @@ begin
     end;
 
     // check special keys
-    isAlternate := (SDL_ModState = KMOD_LSHIFT) or (SDL_ModState = KMOD_RSHIFT);
-    isAlternate := isAlternate or (SDL_ModState = KMOD_LALT); // legacy key combination
+    isAlternate := (SDL_ModState and KMOD_SHIFT) <> 0;
     case PressedKey of
       // Templates for Names Mod
       SDLK_F1:
