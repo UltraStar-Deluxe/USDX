@@ -58,7 +58,7 @@ type
     public
       constructor Create; override;
       procedure UpdateTournament;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
   end;
 
@@ -98,7 +98,9 @@ begin
 
 end;
 
-function TScreenPartyTournamentOptions.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenPartyTournamentOptions.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
+var
+  I, J : integer;
 begin
   Result := true;
   if (PressedDown) then
