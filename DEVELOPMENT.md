@@ -38,7 +38,7 @@ Have fun and enjoy working on a game that easily can hit 5.000 downloads in a we
 - **projectM** is used for visualisation.
 - **ffmpeg** is used for most video and audio stuff. On Windows, the bass library is used for playing mp3 files because of licensing issues of mp3 codecs.
 - **OpenCV** videoio is used for getting images from the webcam.
-- **sqlite** is used for creating and accessing databases to store song scores, already scanned songs, avatar image caches and so on. Remember that changing database setup will require adding an automatic upgrade script or resetting the database file for all users and loosing ist content.
+- **sqlite** is used for creating and accessing databases to store song scores and already scanned songs. Remember that changing database setup will require adding an automatic upgrade script or resetting the database file for all users and loosing ist content.
 
 
 ### Where the game starts...:

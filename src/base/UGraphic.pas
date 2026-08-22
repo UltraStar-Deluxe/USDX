@@ -595,9 +595,9 @@ begin
   Log.LogStatus('Creating Category Covers Array', 'Initialization');
   CatCovers:= TCatCovers.Create;
 
-  // Avatars Cache
-  Log.LogStatus('Creating Avatars Cache', 'Initialization');
-  Avatars := TAvatarDatabase.Create;
+  // Avatars
+  Log.LogStatus('Loading Avatars', 'Initialization');
+  Avatars := TAvatarManager.Create;
 
   // Songs
   Log.LogStatus('Creating Song Array', 'Initialization');

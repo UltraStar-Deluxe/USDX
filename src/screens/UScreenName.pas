@@ -569,10 +569,8 @@ begin
     Hash := MD5Print(MD5File(AvatarFile.ToNative));
     PlayerAvatarButtonMD5[I] := UpperCase(Hash);
 
-    // load avatar and cache its texture
-    Avatar := Avatars.FindAvatar(AvatarFile);
-    if (Avatar = nil) then
-      Avatar := Avatars.AddAvatar(AvatarFile);
+    // load avatar directly from its file
+    Avatar := Avatars.AddAvatar(AvatarFile);
 
     if (Avatar <> nil) then
     begin
