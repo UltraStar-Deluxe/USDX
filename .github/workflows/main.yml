@@ -83,11 +83,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, macos-15-intel]
-    env:
-      SDL2_VERSION: 2.32.10
-      SDL2_SHA: 5f5993c530f084535c65a6879e9b26ad441169b3e25d789d83287040a9ca5165
-      SDL2_IMAGE_VERSION: 2.8.12
-      SDL2_IMAGE_SHA: 393f5efb50536ec13ca4f4affb69cc9966d3c3f969e6c5e701faddf9f9785381
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
@@ -104,47 +99,19 @@ jobs:
           fi
       - name: Install Homebrew Dependencies
         run: |
-          brew install fpc libjpeg-turbo jpeg-xl libavif libpng libtiff webp automake portaudio lua ffmpeg opencv
-
-      # Homebrew now ships sdl2-compat instead of SDL2, so we build SDL2 ourselves instead
-      - name: Cache SDL2 and SDL2_image
-        id: cache-sdl2
-        uses: actions/cache@v6
-        with:
-          path: ${{github.workspace}}/sdl2
-          key: sdl2-${{matrix.os}}-${{env.SDL2_VERSION}}-${{env.SDL2_IMAGE_VERSION}}
-      - name: Build SDL2 and SDL2_image
-        if: steps.cache-sdl2.outputs.cache-hit != 'true'
-        run: |
-          curl -L -O https://github.com/libsdl-org/SDL/releases/download/release-$SDL2_VERSION/SDL2-$SDL2_VERSION.tar.gz
-          echo "$SDL2_SHA SDL2-$SDL2_VERSION.tar.gz" | sha256sum -c -
-          tar -xf SDL2-$SDL2_VERSION.tar.gz
-          cmake -S SDL2-$SDL2_VERSION \
-            -B SDL2-$SDL2_VERSION/build \
-            -DBUILD_SHARED_LIBS=ON \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/sdl2 \
-            -DCMAKE_INSTALL_NAME_DIR=$GITHUB_WORKSPACE/sdl2/lib \
-            -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
-          cmake --build SDL2-$SDL2_VERSION/build --target install --parallel
-          curl -L -O https://github.com/libsdl-org/SDL_image/releases/download/release-$SDL2_IMAGE_VERSION/SDL2_image-$SDL2_IMAGE_VERSION.tar.gz
-          echo "$SDL2_IMAGE_SHA SDL2_image-$SDL2_IMAGE_VERSION.tar.gz" | sha256sum -c -
-          tar -xf SDL2_image-$SDL2_IMAGE_VERSION.tar.gz
-          cmake -S SDL2_image-$SDL2_IMAGE_VERSION \
-            -B SDL2_image-$SDL2_IMAGE_VERSION/build \
-            -DBUILD_SHARED_LIBS=ON \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/sdl2 \
-            -DCMAKE_INSTALL_NAME_DIR=$GITHUB_WORKSPACE/sdl2/lib \
-            -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
-            -DSDL2_DIR=$GITHUB_WORKSPACE/sdl2/lib/cmake/SDL2
-          cmake --build SDL2_image-$SDL2_IMAGE_VERSION/build --target install --parallel
+          brew install fpc sdl2 sdl2_image sdl3 automake portaudio lua ffmpeg opencv
       - name: Generate Build Scripts
         run: ./autogen.sh
       - name: Configure Project
-        run: PKG_CONFIG_PATH=$GITHUB_WORKSPACE/sdl2/lib/pkgconfig ./configure --with-opencv-cxx-api
+        run: ./configure --with-opencv-cxx-api
       - name: Build
-        run: make macos-dmg
+        run: make macos-dmg MACOS_EXTRA_DYLIBS=$(brew --prefix sdl3)/lib/libSDL3.dylib
+      - name: Verify bundled SDL libraries
+        run: |
+          test -f UltraStarDeluxe.app/Contents/MacOS/libSDL2-2.0.0.dylib
+          test -f UltraStarDeluxe.app/Contents/MacOS/libSDL3.dylib
+          otool -L UltraStarDeluxe.app/Contents/MacOS/ultrastardx | grep '@executable_path/libSDL2-2.0.0.dylib'
+          otool -D UltraStarDeluxe.app/Contents/MacOS/libSDL3.dylib | grep '@executable_path/libSDL3.dylib'
       - name: Rename DMG
         run: mv UltraStarDeluxe.dmg UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}.dmg
       - name: Upload Image Artifact
