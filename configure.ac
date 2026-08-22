@@ -344,9 +344,6 @@ libprojectM_PKG="projectM-4 >= 4.0"
 PKG_HAVE([libprojectM], [$libprojectM_PKG], no)
 AC_SUBST_DEFINE(HAVE_PROJECTM, $libprojectM_HAVE)
 PKG_VERSION([libprojectM], [$libprojectM_PKG])
-# get projectM include-dir
-PKG_VALUE([libprojectM], [INCLUDEDIR], [variable=includedir], [$libprojectM_PKG], 
-          [C-Header include-dir (e.g. /usr/include)])
 
 opencv_core_standalone=no
 opencv_imgproc_standalone=no

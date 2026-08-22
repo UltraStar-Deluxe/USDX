@@ -2211,6 +2211,7 @@ end;
 procedure TScreenSong.SyncCoversToSongs();
 var
   B: integer;
+  CoverFile: IPath;
 begin
   if (Length(Button) = 0) or (Length(CatSongs.Song) = 0) then
     Exit;
@@ -2221,6 +2222,19 @@ begin
       Break;
 
     UnloadCover(B);
+
+    // Refresh creates new category songs without initialized cover textures.
+    if not Assigned(CatSongs.Song[B].CoverTex) then
+    begin
+      CoverFile := CatSongs.Song[B].Path.Append(CatSongs.Song[B].Cover);
+      if not CoverFile.IsFile() then
+        CatSongs.Song[B].Cover := PATH_NONE;
+
+      if CatSongs.Song[B].Cover.IsUnset then
+        CoverFile := Skin.GetTextureFileName('SongCover');
+
+      CatSongs.Song[B].CoverTex := Renderer.CreateEmptyTexture(CoverFile);
+    end;
 
     Button[B].Texture.Free();
     Button[B].Texture := CatSongs.Song[B].CoverTex.Clone();
