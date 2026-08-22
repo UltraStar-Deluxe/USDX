@@ -245,7 +245,6 @@ var
   //Sing Bar Mod
   Tex_SingBar_Back:  TTexture;
   Tex_SingBar_Bar:  TTexture;
-  Tex_SingBar_Front:  TTexture;
   //end Singbar Mod
 
   //PhrasenBonus - Line Bonus Mod
@@ -378,7 +377,6 @@ begin
   //SingBar Mod
   Tex_SingBar_Back  := Renderer.LoadTexture(Skin.GetTextureFileName('SingBarBack'),  TEXTURE_TYPE_PLAIN, 0);
   Tex_SingBar_Bar   := Renderer.LoadTexture(Skin.GetTextureFileName('SingBarBar'),   TEXTURE_TYPE_PLAIN, 0);
-  Tex_SingBar_Front := Renderer.LoadTexture(Skin.GetTextureFileName('SingBarFront'), TEXTURE_TYPE_PLAIN, 0);
   //end Singbar Mod
 
   Log.LogStatus('Loading Textures - B', 'LoadTextures');
