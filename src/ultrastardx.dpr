@@ -322,7 +322,7 @@ uses
   UScreenEdit             in 'screens\UScreenEdit.pas',
   UScreenEditConvert      in 'screens\UScreenEditConvert.pas',
   UScreenOpen             in 'screens\UScreenOpen.pas',
-  UScreenTop5             in 'screens\UScreenTop5.pas',
+  UScreenHighScores       in 'screens\UScreenHighScores.pas',
   UScreenSongMenu         in 'screens\UScreenSongMenu.pas',
   UScreenSongJumpto       in 'screens\UScreenSongJumpto.pas',
   UScreenStatMain         in 'screens\UScreenStatMain.pas',

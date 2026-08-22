@@ -17,7 +17,7 @@
 021  UScreenSongMenu Jukebox
 022  UScreenSingController
 023  UScreenScore
-024  UScreenTop5
+024  UScreenHighScores
 
 030  UScreenPartyOptions
 031  UScreenPartyPlayer
@@ -57,6 +57,5 @@
 081  UScreenOptionsJukebox
 
 ---  UScreenPopup
-
 
 
