@@ -52,7 +52,7 @@ type
       Visible: boolean; // whether the menu should be drawn
 
       constructor Create; override;
-      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean; override;
       procedure OnShow; override;
       function Draw: boolean; override;
       procedure MenuShow(sMenu: byte);
@@ -109,7 +109,7 @@ uses
   USongs,
   UUnicodeUtils;
 
-function TScreenSongMenu.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
+function TScreenSongMenu.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; Repeated: boolean = false): boolean;
 var
   SDL_ModState:  Word;
 
