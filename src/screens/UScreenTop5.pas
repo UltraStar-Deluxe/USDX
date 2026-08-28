@@ -80,6 +80,19 @@ uses
   UNote,
   UUnicodeUtils;
 
+function TrackNumber(TrackMask: integer): integer;
+begin
+  if (TrackMask <= 0) or ((TrackMask and (TrackMask - 1)) <> 0) then
+    Exit(0);
+
+  Result := 1;
+  while TrackMask > 1 do
+  begin
+    TrackMask := TrackMask shr 1;
+    Inc(Result);
+  end;
+end;
+
 function TScreenTop5.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
@@ -177,6 +190,7 @@ end;
 procedure TScreenTop5.OnShow;
 var
   I:    integer;
+  Track: integer;
   Report: string;
 begin
   inherited;
@@ -220,6 +234,9 @@ begin
     Text[TextDate[I]].Visible := true;
 
     Text[TextName[I]].Text := CurrentSong.Score[Player[0].Level, I-1].Name;
+    Track := TrackNumber(CurrentSong.Score[Player[0].Level, I-1].TrackMask);
+    if CurrentSong.IsDuet and (Track > 0) then
+      Text[TextName[I]].Text := Text[TextName[I]].Text + ' (P' + IntToStr(Track) + ')';
     Text[TextScore[I]].Text := IntToStr(CurrentSong.Score[Player[0].Level, I-1].Score);
     Text[TextDate[I]].Text := CurrentSong.Score[Player[0].Level, I-1].Date;
   end;
@@ -241,6 +258,7 @@ end;
 procedure TScreenTop5.DrawScores(difficulty: integer);
 var
   I:    integer;
+  Track: integer;
 begin
   for I := 1 to Length(CurrentSong.Score[difficulty]) do
   begin
@@ -251,6 +269,9 @@ begin
     Text[TextDate[I]].Visible := true;
 
     Text[TextName[I]].Text := CurrentSong.Score[difficulty, I-1].Name;
+    Track := TrackNumber(CurrentSong.Score[difficulty, I-1].TrackMask);
+    if CurrentSong.IsDuet and (Track > 0) then
+      Text[TextName[I]].Text := Text[TextName[I]].Text + ' (P' + IntToStr(Track) + ')';
     Text[TextScore[I]].Text := IntToStr(CurrentSong.Score[difficulty, I-1].Score);
     Text[TextDate[I]].Text := CurrentSong.Score[difficulty, I-1].Date;
   end;
