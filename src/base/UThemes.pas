@@ -1120,11 +1120,6 @@ type
   end;
 
   TThemeStatDetail = class(TThemeBasic)
-    ButtonNext:       TThemeButton;
-    ButtonPrev:       TThemeButton;
-    ButtonReverse:    TThemeButton;
-    ButtonExit:       TThemeButton;
-
     TextDescription:  TThemeText;
     TextPage:         TThemeText;
     StaticMinMedian:  TThemeStatic;
@@ -1156,7 +1151,6 @@ type
 
     Description:      array[0..3] of UTF8String;
     DescriptionR:     array[0..3] of UTF8String;
-    FormatStr:        array[0..3] of UTF8String;
     PageStr:          UTF8String;
   end;
 
@@ -2169,11 +2163,6 @@ begin
 
       ThemeLoadBasic(StatDetail, 'StatDetail');
 
-      ThemeLoadButton(StatDetail.ButtonNext, 'StatDetailButtonNext');
-      ThemeLoadButton(StatDetail.ButtonPrev, 'StatDetailButtonPrev');
-      ThemeLoadButton(StatDetail.ButtonReverse, 'StatDetailButtonReverse');
-      ThemeLoadButton(StatDetail.ButtonExit, 'StatDetailButtonExit');
-
       ThemeLoadText (StatDetail.TextDescription, 'StatDetailTextDescription');
       ThemeLoadText (StatDetail.TextPage, 'StatDetailTextPage');
       ThemeLoadStatic(StatDetail.StaticMinMedian, 'StatDetailStaticMinMedian');
@@ -2236,11 +2225,6 @@ begin
       StatDetail.DescriptionR[1] := Language.Translate('STAT_DESC_SINGERS_REVERSED');
       StatDetail.DescriptionR[2] := Language.Translate('STAT_DESC_SONGS_REVERSED');
       StatDetail.DescriptionR[3] := Language.Translate('STAT_DESC_BANDS_REVERSED');
-
-      StatDetail.FormatStr[0] := Language.Translate('STAT_FORMAT_SCORES');
-      StatDetail.FormatStr[1] := Language.Translate('STAT_FORMAT_SINGERS');
-      StatDetail.FormatStr[2] := Language.Translate('STAT_FORMAT_SONGS');
-      StatDetail.FormatStr[3] := Language.Translate('STAT_FORMAT_BANDS');
 
       StatDetail.PageStr := Language.Translate('STAT_PAGE');
 
