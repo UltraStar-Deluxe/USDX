@@ -868,6 +868,15 @@ begin
       ScoreLast      := 0;
 
       LastSentencePerfect := false;
+
+      Track          := 0;
+      if CurrentSong.isDuet then
+      begin
+        if ScreenSong.DuetChange then
+          Track := (PlayerIndex + 1) mod 2
+        else
+          Track := PlayerIndex mod 2;
+      end;
     end;
 
   // prepare music
@@ -1885,14 +1894,20 @@ procedure TScreenSingController.SaveLocalScores;
 var
   I: integer;
   Sung: boolean;
+  Score: integer;
 begin
   Sung := false;
-  for I := 0 to PlayersPlay - 1 do
+
+  if ScreenSing.SungToEnd and (not CurrentSong.isDuet or (Ini.DuetScores = 1)) then
   begin
-    if Player[I].ScoreTotalInt > 0 then
+    for I := 0 to PlayersPlay - 1 do
     begin
-      DataBase.AddScore(CurrentSong, Player[I].Level, Player[I].Name, Player[I].ScoreTotalInt);
-      Sung := true;
+      Score := Round(Player[I].ScoreTotalInt);
+      if Score > 0 then
+      begin
+        DataBase.AddScore(CurrentSong, Player[I].Level, Length(CurrentSong.Tracks), 1 shl Player[I].Track, Player[I].Name, Score);
+        Sung := true;
+      end;
     end;
   end;
 
@@ -1908,6 +1923,9 @@ var
   TotalScore: integer;
   PlayerIndex, IndexWeb, IndexUser: integer;
 begin
+  if CurrentSong.isDuet then
+    Exit;
+
   for PlayerIndex := 1 to PlayersPlay do
   begin
     for IndexWeb := 0 to High(DataBase.NetworkUser) do
@@ -1974,6 +1992,9 @@ var
   TotalScore: integer;
   PlayerIndex, IndexWeb, IndexUser: integer;
 begin
+  if CurrentSong.isDuet then
+    Exit;
+
   for PlayerIndex := 1 to PlayersPlay do
   begin
     for IndexWeb := 0 to High(DataBase.NetworkUser) do

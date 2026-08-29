@@ -128,7 +128,7 @@ type
       procedure Init(const Filename: IPath);
       procedure ConvertFrom101To110();
       procedure ReadScore(Song: TSong; Count: integer = 5);
-      procedure AddScore(Song: TSong; Level: integer; const Name: UTF8String; Score: integer);
+      procedure AddScore(Song: TSong; Level, TrackCount, TrackMask: integer; const Name: UTF8String; Score: integer);
       procedure WriteScore(Song: TSong);
 
       procedure ReadUsers;
@@ -148,9 +148,9 @@ type
       function ReadMedia_Score(Artist, Title: UTF8String; WebID, Level: integer): integer;
       function ReadUser_Score(Artist, Title: UTF8String; WebID, Level: integer): string;
 
-      function ReadMax_ScoreLocal(Artist, Title: UTF8String; Level: integer): integer;
-      function ReadMedia_ScoreLocal(Artist, Title: UTF8String; Level: integer): integer;
-      function ReadUser_ScoreLocal(Artist, Title: UTF8String; Level: integer): string;
+      function ReadMax_ScoreLocal(Song: TSong; Level: integer): integer;
+      function ReadMedia_ScoreLocal(Song: TSong; Level: integer): integer;
+      function ReadUser_ScoreLocal(Song: TSong; Level: integer): string;
 
       function Delete_Score(Song: TSong; WebID: integer): integer;
 
@@ -248,6 +248,8 @@ begin
     ScoreDB.ExecSQL('CREATE TABLE IF NOT EXISTS [' + cUS_Scores + '] (' +
                       '[SongID] INTEGER NOT NULL, ' +
                       '[Difficulty] INTEGER NOT NULL, ' +
+                      '[TrackCount] INTEGER NOT NULL DEFAULT 1, ' +
+                      '[TrackMask] INTEGER NOT NULL DEFAULT 1, ' +
                       '[Player] TEXT NOT NULL, ' +
                       '[Score] INTEGER NOT NULL, ' +
                       '[Date] INTEGER NULL' +
@@ -336,6 +338,29 @@ begin
       ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Songs + ' ADD COLUMN [Rating] INTEGER NULL');
     end;
 
+    // Store the total track count and the tracks contributing to each score.
+    if not ScoreDB.ContainsColumn(cUS_Scores, 'TrackCount') then
+    begin
+      Log.LogInfo('adding column track count to "' + cUS_Scores + '"', 'TDataBaseSystem.Init');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Scores + ' ADD COLUMN [TrackCount] INTEGER NOT NULL DEFAULT 1');
+      if ScoreDB.ContainsColumn(cUS_Scores, 'Track') then
+        ScoreDB.ExecSQL('UPDATE ' + cUS_Scores +
+            ' SET [TrackCount] = CASE WHEN [Track] > 0 THEN 2 ELSE 1 END');
+    end
+    else
+      ScoreDB.ExecSQL('UPDATE ' + cUS_Scores + ' SET [TrackCount] = 1 WHERE [TrackCount] IS NULL');
+
+    if not ScoreDB.ContainsColumn(cUS_Scores, 'TrackMask') then
+    begin
+      Log.LogInfo('adding track mask to "' + cUS_Scores + '"', 'TDataBaseSystem.Init');
+      ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Scores + ' ADD COLUMN [TrackMask] INTEGER NOT NULL DEFAULT 1');
+      if ScoreDB.ContainsColumn(cUS_Scores, 'Track') then
+        ScoreDB.ExecSQL('UPDATE ' + cUS_Scores +
+            ' SET [TrackMask] = CASE WHEN [Track] > 0 THEN [Track] ELSE 1 END');
+    end
+    else
+      ScoreDB.ExecSQL('UPDATE ' + cUS_Scores + ' SET [TrackMask] = 1 WHERE [TrackMask] IS NULL');
+
     // convert data from previous versions
     // part #2 - accomplishment
     if finalizeConversion then
@@ -418,7 +443,8 @@ begin
     // insert old values into new db-schemes (/tables)
     ScoreDB.ExecSQL(
       'INSERT INTO ' + cUS_Scores +
-      ' SELECT  SongID, Difficulty, Player, Score, ''NULL'' FROM us_scores_101;');
+      ' ([SongID], [Difficulty], [TrackCount], [TrackMask], [Player], [Score], [Date])' +
+      ' SELECT SongID, Difficulty, 1, 1, Player, Score, NULL FROM us_scores_101;');
   end else
   begin
     Log.LogInfo(
@@ -428,7 +454,8 @@ begin
     // insert old values into new db-schemes (/tables)
     ScoreDB.ExecSQL(
       'INSERT INTO ' + cUS_Scores +
-      ' SELECT  SongID, Difficulty, Player, Score, Date FROM us_scores_101;');
+      ' ([SongID], [Difficulty], [TrackCount], [TrackMask], [Player], [Score], [Date])' +
+      ' SELECT SongID, Difficulty, 1, 1, Player, Score, Date FROM us_scores_101;');
   end;
 
     ScoreDB.ExecSQL(
@@ -548,6 +575,7 @@ procedure TDataBaseSystem.ReadScore(Song: TSong; Count: integer);
 var
   TableData:  TSQLiteUniTable;
   Difficulty: integer;
+  TrackCount, TrackMask: integer;
   I: integer;
   PlayerListed: boolean;
 begin
@@ -558,12 +586,12 @@ begin
   try
     // Search Song in DB
     TableData := ScoreDB.GetUniTable(
-      'SELECT [Difficulty], [Player], [Score], [Date] FROM [' + cUS_Scores + '] ' +
+      'SELECT [Difficulty], [TrackCount], [TrackMask], [Player], [Score], [Date] FROM [' + cUS_Scores + '] ' +
       'WHERE [SongID] = (' +
         'SELECT [ID] FROM [' + cUS_Songs + '] ' +
         'WHERE [Artist] = ? AND [Title] = ? ' +
         'LIMIT 1) ' +
-      'ORDER BY [Score] DESC;', //no LIMIT! see filter below!
+      'ORDER BY [Score] DESC, [TrackMask] ASC;', //no LIMIT! see filter below!
       [Song.Artist, Song.Title]);
 
     // Empty Old Scores
@@ -576,7 +604,10 @@ begin
     begin
       // Add one Entry to Array
       Difficulty := TableData.FieldAsInteger(TableData.FieldIndex['Difficulty']);
+      TrackCount := TableData.FieldAsInteger(TableData.FieldIndex['TrackCount']);
+      TrackMask := TableData.FieldAsInteger(TableData.FieldIndex['TrackMask']);
       if ((Difficulty >= 0) and (Difficulty <= 2)) and
+         (TrackCount = Length(Song.Tracks)) and
          (Length(Song.Score[Difficulty]) < Count) then
       begin
         //filter player
@@ -587,7 +618,8 @@ begin
           begin
             for I := 0 to High(Song.Score[Difficulty]) do
             begin
-              if (Song.Score[Difficulty, I].Name = TableData.FieldByName['Player']) then
+              if (Song.Score[Difficulty, I].Name = TableData.FieldByName['Player']) and
+                  (Song.Score[Difficulty, I].TrackMask = TrackMask) then
               begin
                 PlayerListed:=true;
                 break;
@@ -602,6 +634,8 @@ begin
 
           Song.Score[Difficulty, High(Song.Score[Difficulty])].Name  :=
             TableData.FieldByName['Player'];
+          Song.Score[Difficulty, High(Song.Score[Difficulty])].TrackCount := TrackCount;
+          Song.Score[Difficulty, High(Song.Score[Difficulty])].TrackMask := TrackMask;
           Song.Score[Difficulty, High(Song.Score[Difficulty])].Score :=
             TableData.FieldAsInteger(TableData.FieldIndex['Score']);
           Song.Score[Difficulty, High(Song.Score[Difficulty])].Date :=
@@ -626,7 +660,7 @@ end;
 (**
  * Adds one new score to DB
  *)
-procedure TDataBaseSystem.AddScore(Song: TSong; Level: integer; const Name: UTF8String; Score: integer);
+procedure TDataBaseSystem.AddScore(Song: TSong; Level, TrackCount, TrackMask: integer; const Name: UTF8String; Score: integer);
 var
   ID:        integer;
   TableData: TSQLiteTable;
@@ -660,9 +694,9 @@ begin
     // Create new entry
     ScoreDB.ExecSQL(
       'INSERT INTO [' + cUS_Scores + '] ' +
-      '([SongID] ,[Difficulty], [Player], [Score], [Date]) VALUES ' +
-      '(?, ?, ?, ?, ?);',
-      [ID, Level, Name, Score, DateTimeToUnix(Now())]);
+      '([SongID], [Difficulty], [TrackCount], [TrackMask], [Player], [Score], [Date]) VALUES ' +
+      '(?, ?, ?, ?, ?, ?, ?);',
+      [ID, Level, TrackCount, TrackMask, Name, Score, DateTimeToUnix(Now())]);
 
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.AddScore');
@@ -1209,7 +1243,7 @@ end;
 (**
  * Read Max_Score Local
  *)
-function TDataBaseSystem.ReadMax_ScoreLocal(Artist, Title: UTF8String; Level: integer): integer;
+function TDataBaseSystem.ReadMax_ScoreLocal(Song: TSong; Level: integer): integer;
 var
   Max_Score, ID: integer;
   TableData: TSQLiteTable;
@@ -1227,12 +1261,12 @@ begin
     ID := ScoreDB.GetTableValue(
           'SELECT [ID] FROM ['+cUS_Songs+'] ' +
           'WHERE [Artist] = ? AND [Title] = ?',
-          [Artist, Title]);
+          [Song.Artist, Song.Title]);
 
     Max_Score := ScoreDB.GetTableValue(
         'SELECT MAX([Score]) FROM ['+cUS_Scores+'] ' +
-        'WHERE [SongID] = ? AND [Difficulty] = ?',
-        [ID, Level]);
+        'WHERE [SongID] = ? AND [Difficulty] = ? AND [TrackCount] = ?',
+        [ID, Level, Length(Song.Tracks)]);
 
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.ReadMax_ScoreLocal');
@@ -1247,7 +1281,7 @@ end;
 (**
  * Read Media_Score
  *)
-function TDataBaseSystem.ReadMedia_ScoreLocal(Artist, Title: UTF8String; Level: integer): integer;
+function TDataBaseSystem.ReadMedia_ScoreLocal(Song: TSong; Level: integer): integer;
 var
   Media_Score, ID: integer;
   TableData: TSQLiteTable;
@@ -1264,12 +1298,12 @@ begin
     ID := ScoreDB.GetTableValue(
           'SELECT [ID] FROM ['+cUS_Songs+'] ' +
           'WHERE [Artist] = ? AND [Title] = ?',
-          [Artist, Title]);
+          [Song.Artist, Song.Title]);
 
     Media_Score := ScoreDB.GetTableValue(
         'SELECT AVG([Score]) FROM ['+cUS_Scores+'] ' +
-        'WHERE [SongID] = ? AND [Difficulty] = ?',
-        [ID, Level]);
+        'WHERE [SongID] = ? AND [Difficulty] = ? AND [TrackCount] = ?',
+        [ID, Level, Length(Song.Tracks)]);
 
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.ReadMedia_ScoreLocal');
@@ -1284,7 +1318,7 @@ end;
 (**
  * Read User_Score
  *)
-function TDataBaseSystem.ReadUser_ScoreLocal(Artist, Title: UTF8String; Level: integer): string;
+function TDataBaseSystem.ReadUser_ScoreLocal(Song: TSong; Level: integer): string;
 var
   User_Score: string;
   ID: integer;
@@ -1300,12 +1334,13 @@ begin
     ID := ScoreDB.GetTableValue(
           'SELECT [ID] FROM ['+cUS_Songs+'] ' +
           'WHERE [Artist] = ? AND [Title] = ?',
-          [Artist, Title]);
+          [Song.Artist, Song.Title]);
 
     User_Score := ScoreDB.GetTableString(
                  'SELECT [Player] FROM ['+cUS_Scores+'] ' +
-                 'WHERE [SongID] = ? and [Difficulty] = ? ORDER BY [Score] DESC LIMIT 1',
-                 [ID, Level]);
+                 'WHERE [SongID] = ? AND [Difficulty] = ? AND [TrackCount] = ? ' +
+                 'ORDER BY [Score] DESC LIMIT 1',
+                 [ID, Level, Length(Song.Tracks)]);
 
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.ReadUser_Score');
