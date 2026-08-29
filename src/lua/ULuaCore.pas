@@ -37,7 +37,8 @@ uses
   SysUtils,
   UHookableEvent,
   ULua,
-  UPath;
+  UPath,
+  UFilesystem;
 
 type
   { this exception is raised when the lua panic function
@@ -205,7 +206,6 @@ implementation
 uses
   StrUtils,
   ULog,
-  UFilesystem,
   ULuaUsdx,
   UPathUtils,
   ULuaUtils;
@@ -685,6 +685,10 @@ end;
 { does the main loading part
   can not be called by create, because Plugins[Id] isn't defined there }
 procedure TLuaPlugin.Load;
+var
+  FileHandle: TFileHandle;
+  FileSize: int64;
+  Source: RawByteString;
 begin
   // create Lua state for this plugin
   State := luaL_newstate;
@@ -693,7 +697,24 @@ begin
   // we don't expect
   lua_atPanic(State, TLua_CustomPanic);
 
-  if (LuaL_LoadFile(State, PChar(Filename.ToNative)) = 0) then
+  FileHandle := Filename.Open(fmOpenRead or fmShareDenyNone);
+  if (FileHandle <> TFileHandle(-1)) then
+  begin
+    FileSize := FileSeek(FileHandle, 0, 2);
+    FileSeek(FileHandle, 0, 0);
+    SetLength(Source, FileSize);
+    if (Length(Source) = 0) or
+       (FileRead(FileHandle, Source[1], Length(Source)) = Length(Source)) then
+      FileSize := Length(Source)
+    else
+      FileSize := -1;
+    FileClose(FileHandle);
+  end
+  else
+    FileSize := -1;
+
+  if (FileSize >= 0) and
+     (luaL_loadbuffer(State, PChar(Source), FileSize, PChar(Filename.ToUTF8)) = 0) then
   begin // file loaded successful
     { note: we run the file here, but the environment isn't
             set up now. it just causes the functions to
@@ -719,7 +740,7 @@ begin
       lua_pop(State, Lua_GetTop(State));
 
       // make current plugin filename (with absolute path) available to the plugin
-      lua_pushstring(State, PChar(Filename.ToNative));
+      lua_pushstring(State, PChar(Filename.ToUTF8));
       lua_setglobal(State, PChar('current_filename'));
 
       // now run the plugin_init function
@@ -737,7 +758,7 @@ begin
       else
       begin
         sStatus := psErrorInInit;
-        Log.LogError('error in plugin_init: ' + Self.Filename.ToNative, 'lua');
+        Log.LogError('error in plugin_init: ' + Self.Filename.ToUTF8, 'lua');
         Unload;
       end;
     end
@@ -745,7 +766,7 @@ begin
     begin
       sStatus := psErrorOnLoad;
       Log.LogError(String(lua_toString(State, 1)), 'lua');
-      Log.LogError('unable to call file: ' + Self.Filename.ToNative, 'lua');
+      Log.LogError('unable to call file: ' + Self.Filename.ToUTF8, 'lua');
       Unload;
     end;
 
@@ -754,7 +775,7 @@ begin
   begin
     sStatus := psErrorOnLoad;
     Log.LogError(String(lua_toString(State, 1)), 'lua');
-    Log.LogError('unable to load file: ' + Self.Filename.ToNative, 'lua');
+    Log.LogError('unable to load file: ' + Self.Filename.ToUTF8, 'lua');
     Unload;
   end;
 end;
