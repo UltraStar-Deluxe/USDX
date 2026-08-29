@@ -68,5 +68,6 @@ ppaslink.sh
 # created by dldlls.py on Windows
 /usdx-dlls-x86_64.zip
 /usdx-dlls-i686.zip
+/bass24.zip
 /game/*.dll
 /game/*.debug
