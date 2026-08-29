@@ -283,6 +283,7 @@ var
 procedure InitializeJoystick;
 procedure FinalizeJoyStick;
 function HasJoyStick: boolean;
+function ShouldSimulateJoystickKeyInput(Event: TSDL_event): boolean;
 
 procedure OnJoystickPollEvent(Event: TSDL_event);
 
@@ -775,10 +776,15 @@ begin
   JoyEvent.key.keysym.sym := Key;
   JoyEvent.key.keysym.scancode := SDL_GetScancodeFromKey(Key);
 
-  // always send empty/zero unicode char as workaround. Check UMain.CheckEvents
-  JoyEvent.key.keysym.unicode := 0;
+  // set un-defined unicode char to distinguish keyboard simulated events from real input events as workaround. Check UMain.CheckEvents and ShouldSimulateJoystickKeyInput
+  JoyEvent.key.keysym.unicode := SizeOf(Uint32);
 
   SDL_PushEvent(@JoyEvent);
+end;
+
+function ShouldSimulateJoystickKeyInput(Event: TSDL_event): boolean;
+begin
+  Result := HasJoyStick() and (Event.key.keysym.unicode = SizeOf(Uint32));
 end;
 
 // TODO: Move to Joystick manager
