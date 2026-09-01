@@ -42,7 +42,7 @@ uses
 type
   TDLLMan = class
     private
-      hLibW:     THandle;
+      hLibW:     {$IFDEF MSWINDOWS}THandle{$ELSE}TLibHandle{$ENDIF};
 
       P_SendScore:       fModi_SendScore;
       P_EncryptScore:    fModi_EncryptScore;
@@ -51,9 +51,11 @@ type
       P_DownloadScore:   fModi_DownloadScore;
       P_VerifySong:      fModi_VerifySong;
 
+      function WebsiteExists(Name: string): boolean;
+
     public
       Websites: array of TWebsiteInfo;
-      WebsitePaths: array of IPath;
+      DLLPaths: array of IPath;
       SelectedW: ^TWebsiteInfo;
 
       constructor Create;
@@ -104,31 +106,51 @@ begin
   inherited;
 
   SetLength(Websites, 0);
-  SetLength(WebsitePaths, Length(Websites));
+  SetLength(DLLPaths, Length(Websites));
   GetWebsiteList;
+end;
+
+function TDLLMan.WebsiteExists(Name: string): boolean;
+var
+  I: integer;
+begin
+  Result := false;
+  for I := Low(DLLPaths) to High(DLLPaths) do
+  begin
+    if (DLLPaths[I].GetName().ToUTF8() = Name) then
+    begin
+      Result := true;
+      Break;
+    end;
+  end;
 end;
 
 procedure TDLLMan.GetWebsiteList;
 var
   Iter: IFileIterator;
   FileInfo: TFileInfo;
+  I: integer;
 begin
-  Iter := FileSystem.FileFind(WebsitePath.Append('*' + DLLExt), 0);
-  while (Iter.HasNext) do
+  for I := 0 to WebsitePaths.Count - 1 do
   begin
-    SetLength(Websites, Length(Websites)+1);
-    SetLength(WebsitePaths, Length(Websites));
-
-    FileInfo := Iter.Next;
-
-    if LoadWebsiteInfo(FileInfo.Name, High(Websites)) and (Websites[High(Websites)].Name <> '') then // loaded succesful
+    Iter := FileSystem.FileFind(IPath(WebsitePaths[I]).Append('*' + DLLExt), 0);
+    while (Iter.HasNext) do
     begin
-      WebsitePaths[High(WebsitePaths)] := FileInfo.Name;
-    end
-    else // error loading
-    begin
-      SetLength(Websites, Length(Websites)-1);
-      SetLength(WebsitePaths, Length(Websites));
+      FileInfo := Iter.Next;
+      if (not WebsiteExists(FileInfo.Name.ToUTF8())) then
+      begin
+        SetLength(Websites, Length(Websites)+1);
+        SetLength(DLLPaths, Length(Websites));
+        if LoadWebsiteInfo(IPath(WebsitePaths[I]).Append(FileInfo.Name), High(Websites)) and (Websites[High(Websites)].Name <> '') then // loaded succesful
+        begin
+          DLLPaths[High(DLLPaths)] := IPath(WebsitePaths[I]).Append(FileInfo.Name);
+        end
+        else // error loading
+        begin
+          SetLength(Websites, Length(Websites)-1);
+          SetLength(DLLPaths, Length(Websites));
+        end;
+      end;
     end;
   end;
 end;
@@ -140,7 +162,7 @@ end;
 
 function TDLLMan.LoadWebsiteInfo(const Filename: IPath; No: cardinal): boolean;
 var
-  hLibg: THandle;
+  hLibg: {$IFDEF MSWINDOWS}THandle{$ELSE}TLibHandle{$ENDIF};
   Info: pModi_WebsiteInfo;
 begin
   Result := true;
@@ -149,7 +171,8 @@ begin
   ClearWebsiteInfo(No);
 
   // load libary
-  hLibg := LoadLibrary(PAnsiChar(WebsitePath.Append(Filename).ToNative));
+  hLibg := LoadLibrary(PAnsiChar(Filename.ToNative));
+
   // if loaded
   if (hLibg <> 0) then
   begin
@@ -164,19 +187,19 @@ begin
       Result := true;
     end
     else
-      Log.LogError('Could not load website "' + Filename.ToNative + '": Info procedure not found');
+      Log.LogError('Could not load website "' + Filename.GetName().ToNative + '": Info procedure not found');
 
     FreeLibrary (hLibg);
   end
   else
-    Log.LogError('Could not load website "' + Filename.ToNative + '": Library not loaded');
+    Log.LogError('Could not load website "' + Filename.GetName().ToNative + '": Library not loaded');
 end;
 
 function TDLLMan.LoadWebsite(No: cardinal): boolean;
 begin
   Result := true;
   // load libary
-  hLibW := LoadLibrary(PChar(WebsitePath.Append(WebsitePaths[No]).ToNative));
+  hLibW := LoadLibrary(PChar(DLLPaths[No].ToNative));
   // if loaded
   if (hLibW <> 0) then
   begin
@@ -195,11 +218,11 @@ begin
     end
     else
     begin
-      Log.LogError('Could not load website "' + WebsitePaths[No].ToNative + '": Basic Procedures not found');
+      Log.LogError('Could not load website "' + DLLPaths[No].GetName().ToNative + '": Basic Procedures not found');
     end;
   end
   else
-    Log.LogError('Could not load website "' + WebsitePaths[No].ToNative + '": Library not loaded');
+    Log.LogError('Could not load website "' + DLLPaths[No].GetName().ToNative + '": Library not loaded');
 end;
 
 procedure TDLLMan.UnLoadWebsite;

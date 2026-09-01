@@ -56,6 +56,8 @@ type
       function GetLogPath: IPath; override;
       function GetGameSharedPath: IPath; override;
       function GetGameUserPath: IPath; override;
+      function GetModifiableAssetPaths: IInterfaceList; override;
+      function GetWebsitePaths: IInterfaceList; override;
   end;
 
   function GetConsoleWindow: THandle; stdcall; external kernel32 name 'GetConsoleWindow';
@@ -207,6 +209,19 @@ begin
     Result := GetExecutionDir()
   else
     Result := GetSpecialPath(CSIDL_APPDATA).Append('ultrastardx', pdAppend);
+end;
+
+function TPlatformWindows.GetModifiableAssetPaths: IInterfaceList;
+begin
+  Result := TInterfaceList.Create;
+  if (UseLocalDirs) then
+    Result.Add(GetExecutionDir());
+  Result.Add(GetSpecialPath(CSIDL_APPDATA).Append('ultrastardx', pdAppend));
+end;
+
+function TPlatformWindows.GetWebsitePaths: IInterfaceList;
+begin
+  Result := GetModifiableAssetPaths();
 end;
 
 function HasConsole: Boolean;

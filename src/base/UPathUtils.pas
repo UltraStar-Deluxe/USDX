@@ -40,24 +40,27 @@ uses
 
 var
   // Absolute Paths
-  GamePath:         IPath;
   SoundPath:        IPath;
   SongPaths:        IInterfaceList;
   LogPath:          IPath;
-  ThemePath:        IPath;
-  SkinsPath:        IPath;
+  ThemePaths:       IInterfaceList;
   ScreenshotsPath:  IPath;
   CoverPaths:       IInterfaceList;
   LanguagesPath:    IPath;
-  PluginPath:       IPath;
-  FontPath:         IPath;
+  PluginPaths:      IInterfaceList;
+  FontPaths:        IInterfaceList;
   ResourcesPath:    IPath;
   PlaylistPath:     IPath;
-  WebsitePath:      IPath;
+  WebsitePaths:     IInterfaceList;
   WebScoresPath:    IPath;
-  AvatarsPath:      IPath;
+  AvatarsPaths:     IInterfaceList;
+  {$IFDEF UseProjectM}
+  VisualsPaths:     IInterfaceList;
+  {$ENDIF}
 
 function FindPath(out PathResult: IPath; const RequestedPath: IPath; NeedsWritePermission: boolean): boolean;
+function FindPaths(out PathList: IInterfaceList; const Prefixes: IInterfaceList; Suffix: string): boolean;
+
 procedure InitializePaths;
 procedure AddSongPath(const Path: IPath; CreateMissing: boolean = true);
 
@@ -79,10 +82,7 @@ begin
     PathList := TInterfaceList.Create;
 
   if Path.Equals(PATH_NONE) then
-  begin
-    Log.LogWarn('Path "'+ Path.ToNative +'" not available', 'UPathUtils.AddSpecialPath');
     Exit;
-  end;
 
   if CreateMissing then
   begin
@@ -169,12 +169,21 @@ begin
   Result := true;
 end;
 
+function FindPaths(out PathList: IInterfaceList; const Prefixes: IInterfaceList; Suffix: string): boolean;
+var
+  I: integer;
+begin
+  for I := 0 to Prefixes.Count - 1 do
+    AddSpecialPath(PathList, IPath(Prefixes[I]).Append(Suffix), true);
+end;
+
 (**
  * Function sets all absolute paths e.g. song path and makes sure the directorys exist
  *)
 procedure InitializePaths;
 var
   SharedPath, UserPath: IPath;
+  ModifiableAssetPaths: IInterfaceList;
 begin
   // Log directory (must be writable)
   if (not FindPath(LogPath, Platform.GetLogPath, true)) then
@@ -185,16 +194,19 @@ begin
 
   SharedPath := Platform.GetGameSharedPath;
   UserPath := Platform.GetGameUserPath;
+  ModifiableAssetPaths := Platform.GetModifiableAssetPaths;
 
   FindPath(SoundPath,     SharedPath.Append('sounds'),    false);
-  FindPath(ThemePath,     SharedPath.Append('themes'),    false);
-  FindPath(SkinsPath,     SharedPath.Append('themes'),    false);
+  FindPaths(ThemePaths, ModifiableAssetPaths, 'themes');
   FindPath(LanguagesPath, SharedPath.Append('languages'), false);
-  FindPath(PluginPath,    SharedPath.Append('plugins'),   false);
-  FindPath(FontPath,      SharedPath.Append('fonts'),     false);
+  FindPaths(PluginPaths, ModifiableAssetPaths, 'plugins');
+  FindPaths(FontPaths, ModifiableAssetPaths, 'fonts');
   FindPath(ResourcesPath, SharedPath.Append('resources'), false);
-  FindPath(WebsitePath,   SharedPath.Append('webs'), false);
-  FindPath(AvatarsPath, SharedPath.Append('avatars'), false);
+  FindPaths(WebsitePaths, Platform.GetWebsitePaths, 'webs');
+  FindPaths(AvatarsPaths, ModifiableAssetPaths, 'avatars');
+  {$IFDEF UseProjectM}
+  FindPaths(VisualsPaths, ModifiableAssetPaths, Path('visuals').Append('projectM').ToUTF8());
+  {$ENDIF}
 
   // Playlists are not shared as we need one directory to write too
   FindPath(PlaylistPath, UserPath.Append('playlists'), true);

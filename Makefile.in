@@ -285,9 +285,6 @@ install-data:
 	        RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/visuals" \
 	        install-data-recursive ; \
 	fi
-	$(MAKE) RECURSIVE_SRC_DIR="$(USDX_GAME_DIR)/webs" \
-            RECURSIVE_DST_DIR="$(DESTDIR)$(INSTALL_DATADIR)/themes" \
-            install-data-recursive
 	$(INSTALL_DATA) "LICENSE" "$(DESTDIR)$(INSTALL_DATADIR)/LICENSE"
 
 .PHONY: install-data-recursive
@@ -325,7 +322,6 @@ uninstall-data:
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/sounds"
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/themes"
 	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/visuals"
-	$(RM_REC) "$(DESTDIR)$(INSTALL_DATADIR)/webs"
 	$(RM)     "$(DESTDIR)$(INSTALL_DATADIR)/LICENSE"
 	-rmdir "$(DESTDIR)$(INSTALL_DATADIR)"
 
