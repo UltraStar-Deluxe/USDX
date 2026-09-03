@@ -351,24 +351,8 @@ begin
 end;
 
 procedure TAudioPlaybackBase.ToggleKaraoke;
-var
-  TargetPercent: integer;
-  VolumeChanged: boolean;
 begin
-  if not assigned(KaraokeMusicStream) then
-    Exit;
-
-  if FVocalsShare > 0.5 then
-    TargetPercent := 0
-  else
-    TargetPercent := 100;
-
-  VolumeChanged := Ini.VocalsVolume <> TargetPercent;
-  Ini.VocalsVolume := TargetPercent;
-  SetVocalsBalance(TargetPercent / 100);
-
-  if VolumeChanged then
-    Ini.Save;
+  ToggleVocalsVolume;
 end;
 
 procedure TAudioPlaybackBase.Stop;
