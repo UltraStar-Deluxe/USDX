@@ -84,10 +84,14 @@ jobs:
       matrix:
         os: [macos-latest, macos-15-intel]
     env:
-      SDL2_VERSION: 2.32.10
-      SDL2_SHA: 5f5993c530f084535c65a6879e9b26ad441169b3e25d789d83287040a9ca5165
+      SDL3_VERSION: 3.4.14
+      SDL3_SHA: 30d4aa2b3037718142b32dffd4e72f917ebb6cc5227150e7bb9c45efb2153aeb
+      SDL2_COMPAT_VERSION: 2.32.70
+      SDL2_COMPAT_SHA: 998fa62557eb46ffe7e5c3e2c123bc332f7df9d9f593b3ceed88ed1158428a44
       SDL2_IMAGE_VERSION: 2.8.12
       SDL2_IMAGE_SHA: 393f5efb50536ec13ca4f4affb69cc9966d3c3f969e6c5e701faddf9f9785381
+      SDL_MACOS_DEPLOYMENT_TARGET: 11.0
+      MACOS_EXTRA_DYLIBS: ${{ github.workspace }}/sdl2/lib/libSDL3.dylib
       PROJECTM_VERSION: 4.1.7
       PROJECTM_SHA: 16e4610b4d58981f7a2351faa58d507d3f40163a7b26ba81e19aec928c66641f
     steps:
@@ -106,36 +110,57 @@ jobs:
           fi
       - name: Install Homebrew Dependencies
         run: |
-          brew install fpc libjpeg-turbo jpeg-xl libavif libpng libtiff webp automake portaudio lua ffmpeg opencv
+          brew install fpc automake portaudio lua ffmpeg opencv
 
-      # Homebrew now ships sdl2-compat instead of SDL2, so we build SDL2 ourselves instead
-      - name: Cache SDL2 and SDL2_image
-        id: cache-sdl2
+      - name: Cache SDL libraries
+        id: cache-sdl
         uses: actions/cache@v6
         with:
           path: ${{github.workspace}}/sdl2
-          key: sdl2-${{matrix.os}}-${{env.SDL2_VERSION}}-${{env.SDL2_IMAGE_VERSION}}
-      - name: Build SDL2 and SDL2_image
-        if: steps.cache-sdl2.outputs.cache-hit != 'true'
+          key: sdl-${{matrix.os}}-${{env.SDL3_VERSION}}-${{env.SDL2_COMPAT_VERSION}}-${{env.SDL2_IMAGE_VERSION}}-macos-${{env.SDL_MACOS_DEPLOYMENT_TARGET}}
+      - name: Build SDL libraries
+        if: steps.cache-sdl.outputs.cache-hit != 'true'
         run: |
-          curl -L -O https://github.com/libsdl-org/SDL/releases/download/release-$SDL2_VERSION/SDL2-$SDL2_VERSION.tar.gz
-          echo "$SDL2_SHA SDL2-$SDL2_VERSION.tar.gz" | sha256sum -c -
-          tar -xf SDL2-$SDL2_VERSION.tar.gz
-          cmake -S SDL2-$SDL2_VERSION \
-            -B SDL2-$SDL2_VERSION/build \
+          curl -L -O https://github.com/libsdl-org/SDL/releases/download/release-$SDL3_VERSION/SDL3-$SDL3_VERSION.tar.gz
+          echo "$SDL3_SHA SDL3-$SDL3_VERSION.tar.gz" | sha256sum -c -
+          tar -xf SDL3-$SDL3_VERSION.tar.gz
+          cmake -S SDL3-$SDL3_VERSION \
+            -B SDL3-$SDL3_VERSION/build \
             -DBUILD_SHARED_LIBS=ON \
+            -DSDL_STATIC=OFF \
+            -DSDL_TESTS=OFF \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=$SDL_MACOS_DEPLOYMENT_TARGET \
             -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/sdl2 \
             -DCMAKE_INSTALL_NAME_DIR=$GITHUB_WORKSPACE/sdl2/lib \
             -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
-          cmake --build SDL2-$SDL2_VERSION/build --target install --parallel
+          cmake --build SDL3-$SDL3_VERSION/build --target install --parallel
+
+          curl -L -O https://github.com/libsdl-org/sdl2-compat/releases/download/release-$SDL2_COMPAT_VERSION/sdl2-compat-$SDL2_COMPAT_VERSION.tar.gz
+          echo "$SDL2_COMPAT_SHA sdl2-compat-$SDL2_COMPAT_VERSION.tar.gz" | sha256sum -c -
+          tar -xf sdl2-compat-$SDL2_COMPAT_VERSION.tar.gz
+          cmake -S sdl2-compat-$SDL2_COMPAT_VERSION \
+            -B sdl2-compat-$SDL2_COMPAT_VERSION/build \
+            -DSDL2COMPAT_TESTS=OFF \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=$SDL_MACOS_DEPLOYMENT_TARGET \
+            -DCMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/sdl2 \
+            -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/sdl2 \
+            -DCMAKE_INSTALL_NAME_DIR=$GITHUB_WORKSPACE/sdl2/lib \
+            -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
+          cmake --build sdl2-compat-$SDL2_COMPAT_VERSION/build --target install --parallel
+
           curl -L -O https://github.com/libsdl-org/SDL_image/releases/download/release-$SDL2_IMAGE_VERSION/SDL2_image-$SDL2_IMAGE_VERSION.tar.gz
           echo "$SDL2_IMAGE_SHA SDL2_image-$SDL2_IMAGE_VERSION.tar.gz" | sha256sum -c -
           tar -xf SDL2_image-$SDL2_IMAGE_VERSION.tar.gz
           cmake -S SDL2_image-$SDL2_IMAGE_VERSION \
             -B SDL2_image-$SDL2_IMAGE_VERSION/build \
             -DBUILD_SHARED_LIBS=ON \
+            -DSDL2IMAGE_SAMPLES=OFF \
+            -DSDL2IMAGE_TESTS=OFF \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=$SDL_MACOS_DEPLOYMENT_TARGET \
+            -DCMAKE_PREFIX_PATH=$GITHUB_WORKSPACE/sdl2 \
             -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/sdl2 \
             -DCMAKE_INSTALL_NAME_DIR=$GITHUB_WORKSPACE/sdl2/lib \
             -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
@@ -174,6 +199,70 @@ jobs:
         run: make macos-dmg
       - name: Rename DMG
         run: mv UltraStarDeluxe.dmg UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}.dmg
+      - name: Verify packaged SDL libraries
+        run: |
+          dmg="UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}.dmg"
+          mount_point="$(mktemp -d)"
+          cleanup() {
+            hdiutil detach "$mount_point" >/dev/null 2>&1 || true
+            rmdir "$mount_point" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          hdiutil attach "$dmg" -readonly -nobrowse -mountpoint "$mount_point"
+          bundle_macos_dir="$mount_point/UltraStarDeluxe.app/Contents/MacOS"
+
+          test -f "$bundle_macos_dir/libSDL2-2.0.0.dylib"
+          test -f "$bundle_macos_dir/libSDL3.dylib"
+          otool -L "$bundle_macos_dir/ultrastardx" | grep '@executable_path/libSDL2-2.0.0.dylib'
+          otool -D "$bundle_macos_dir/libSDL3.dylib" | grep '@executable_path/libSDL3.dylib'
+          vtool -show-build "$bundle_macos_dir/libSDL3.dylib" | grep "minos $SDL_MACOS_DEPLOYMENT_TARGET"
+          BUNDLE_MACOS_DIR="$bundle_macos_dir" python3 - <<'PY'
+          import ctypes
+          import os
+
+          bundle_macos_dir = os.environ["BUNDLE_MACOS_DIR"]
+          bundled_sdl3 = os.path.realpath(os.path.join(bundle_macos_dir, "libSDL3.dylib"))
+
+          dyld = ctypes.CDLL(None)
+          dyld._dyld_image_count.argtypes = []
+          dyld._dyld_image_count.restype = ctypes.c_uint32
+          dyld._dyld_get_image_name.argtypes = [ctypes.c_uint32]
+          dyld._dyld_get_image_name.restype = ctypes.c_char_p
+
+          def loaded_sdl3_paths():
+              paths = set()
+              for image_index in range(dyld._dyld_image_count()):
+                  image_name = dyld._dyld_get_image_name(image_index)
+                  if image_name:
+                      image_path = os.path.realpath(os.fsdecode(image_name))
+                      if os.path.basename(image_path) == "libSDL3.dylib":
+                          paths.add(image_path)
+              return sorted(paths)
+
+          preloaded_sdl3 = loaded_sdl3_paths()
+          if preloaded_sdl3:
+              raise RuntimeError(f"SDL3 was already loaded before the test: {preloaded_sdl3}")
+
+          sdl2 = ctypes.CDLL(os.path.join(bundle_macos_dir, "libSDL2-2.0.0.dylib"))
+          sdl2.SDL_Init.argtypes = [ctypes.c_uint32]
+          sdl2.SDL_Init.restype = ctypes.c_int
+          sdl2.SDL_Quit.argtypes = []
+          sdl2.SDL_Quit.restype = None
+          if sdl2.SDL_Init(0) != 0:
+              raise RuntimeError("SDL_Init failed through sdl2-compat")
+
+          loaded_sdl3 = loaded_sdl3_paths()
+          print(f"Expected bundled SDL3: {bundled_sdl3}")
+          print(f"Loaded SDL3 images: {loaded_sdl3}")
+
+          sdl2.SDL_Quit()
+
+          if loaded_sdl3 != [bundled_sdl3]:
+              raise RuntimeError(
+                  f"sdl2-compat did not load the bundled SDL3; loaded paths: {loaded_sdl3}"
+              )
+          PY
       - name: Upload Image Artifact
         uses: actions/upload-artifact@v6
         with:

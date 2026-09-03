@@ -455,6 +455,7 @@ export macos_bundle_path
 export INSTALL
 export INSTALL_NAME_TOOL
 export OTOOL
+export MACOS_EXTRA_DYLIBS
 
 .PHONY: macos-standalone-app
 macos-standalone-app: macos-app 
