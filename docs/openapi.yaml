@@ -1,0 +1,173 @@
+openapi: 3.1.0
+info:
+  title: UltraStar Deluxe Webserver API
+  version: "1.0.0"
+  description: |
+    HTTP API exposed by the UltraStar Deluxe game while it is running.
+    Intended for third-party frontends, remote song browsers, and tooling.
+
+    The server listens on a configurable port (default 8091) on the host
+    running the game. It is not designed to be exposed to the public internet.
+servers:
+  - url: http://localhost:8091
+    description: Local game instance (default port)
+paths:
+  /:
+    get:
+      summary: Built-in song list UI
+      description: Serves the static HTML song-list page (client-rendered from /songs.json).
+      responses:
+        "200":
+          description: HTML page
+          content:
+            text/html: {}
+  /songs.json:
+    get:
+      summary: All songs in the library
+      description: Full list of songs scanned at game startup.
+      responses:
+        "200":
+          description: Song list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongList"
+  /currentSong.json:
+    get:
+      summary: Currently playing song
+      description: Song being sung right now, or playing=false when idle.
+      responses:
+        "200":
+          description: Current song state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentSong"
+  /song/{id}/{file}:
+    get:
+      summary: Per-song media or lyrics file
+      description: |
+        Streams a file belonging to a song. The `file` path parameter selects
+        which asset to return. `file` and `txt` both return the song's raw
+        lyrics file (UltraStar .txt format); `txt` is an alias added for clarity.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+          description: Zero-based index into the song list (see /songs.json order).
+        - name: file
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [cover, background, audio, video, file, txt]
+          description: Which asset to stream.
+      responses:
+        "200":
+          description: The requested file
+          content:
+            image/jpeg: {}
+            image/png: {}
+            audio/mpeg: {}
+            video/mp4: {}
+            text/plain:
+              schema:
+                type: string
+                description: UltraStar song lyrics file (for file/txt)
+        "404":
+          description: Song id out of range, unknown file token, or file missing
+          content:
+            text/html: {}
+  /404:
+    get:
+      summary: Explicit 404 endpoint
+      responses:
+        "404":
+          description: Not found
+          content:
+            text/html: {}
+    post:
+      summary: Method not allowed
+      responses:
+        "405":
+          description: Method not allowed
+          content:
+            text/html: {}
+components:
+  schemas:
+    Song:
+      type: object
+      required: [artist, title, lang, edition, genre, year]
+      properties:
+        artist:
+          type: string
+        title:
+          type: string
+        lang:
+          type: string
+          description: Language name
+        edition:
+          type: string
+          description: Empty when unknown/none
+        genre:
+          type: string
+          description: Empty when unknown
+        year:
+          type: string
+          description: "Year as string; empty when unknown (note: integer in /currentSong.json)"
+        creator:
+          type: string
+          description: Present only when non-empty
+        duet:
+          type: boolean
+          description: Present only when true
+        hasRap:
+          type: boolean
+          description: Present only when true
+    SongList:
+      type: object
+      required: [songs]
+      properties:
+        songs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Song"
+    CurrentSongDetail:
+      type: object
+      properties:
+        artist:
+          type: string
+        title:
+          type: string
+        genre:
+          type: string
+        year:
+          type: integer
+          description: Integer here (unlike /songs.json where year is a string)
+        language:
+          type: string
+        lang:
+          type: string
+          description: Duplicate of language
+        edition:
+          type: string
+        creator:
+          type: [string, "null"]
+        duet:
+          type: boolean
+        hasRap:
+          type: boolean
+    CurrentSong:
+      type: object
+      required: [playing, song]
+      properties:
+        playing:
+          type: boolean
+        song:
+          oneOf:
+            - $ref: "#/components/schemas/CurrentSongDetail"
+            - type: "null"
+          description: Song details when playing, null when idle
