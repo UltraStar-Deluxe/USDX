@@ -536,6 +536,8 @@ procedure Initialize3D (Title: string);
 var
   Icon: PSDL_Surface;
   MaxTextureSize: integer;
+  DisplayIndex: integer;
+  DisplayMode: TSDL_DisplayMode;
 begin
   Log.LogStatus('SDL_Init', 'UGraphic.Initialize3D');
   if ( SDL_InitSubSystem(SDL_INIT_VIDEO) = -1 ) then
@@ -550,6 +552,14 @@ begin
   Renderer.SetOrthographicProjection(0, RenderW, RenderH, 0, -1, 100);
   Renderer.VSync := true;
   SDL_ShowWindow(screen);
+  if (CurrentWindowMode = Mode_Borderless) then
+  begin
+    SDL_SetWindowFullscreen(screen, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    DisplayIndex := SDL_GetWindowDisplayIndex(screen);
+    if (DisplayIndex >= 0 ) and (SDL_GetDesktopDisplayMode(DisplayIndex, @DisplayMode) = 0) then
+      OnWindowResized(DisplayMode.w, DisplayMode.h);
+  end;
+
 
   // load icon image (must be 32x32 for win32)
   Icon := LoadImage(ResourcesPath.Append(WINDOW_ICON));
