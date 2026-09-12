@@ -992,6 +992,7 @@ procedure LoadScreens(Title: string);
     LoadingStatus: string;
   begin
     SDL_SetWindowTitle(Screen, PChar(Title + ' - ' + Value));
+    Log.LogDebug(Value, 'UGraphic.LoadScreens');
     if Assigned(ScreenLoading) then
     begin
       LoadingStatus := Value;
