@@ -64,6 +64,7 @@ type
     private
       iId:        integer;
       Filename:   IPath;
+      pBaseName:  IPath;
       State:      Plua_State; //< all functions of this plugin are called with this Lua state
       bPaused:    boolean;    //< If true no lua functions from this state are called
       ErrorCount: integer;    //< counts the errors that occured during function calls of this plugin
@@ -88,6 +89,7 @@ type
       property CountErrors: integer read ErrorCount;
 
       property LuaState:    Plua_State read State;
+      property BaseName: IPath read pBaseName;
 
       procedure Load;
 
@@ -133,6 +135,7 @@ type
       Modules: array of TLuaModule; //< modules that has been registered, has to be proctected because fucntions of this unit need to get access
 
       function GetModuleIdByName(Name: string): integer; // returns id of given module, or -1 if module is not found
+      function PluginExists(const Plugin: UTF8String): boolean;
     public
       constructor Create;
       destructor Destroy; override;
@@ -241,15 +244,33 @@ begin
   inherited;
 end;
 
+function TLuaCore.PluginExists(const Plugin: UTF8String): boolean;
+var
+  I: integer;
+begin
+  Result := false;
+  for I := Low(Plugins) to High(Plugins) do
+  begin
+    if (Plugins[I].BaseName.ToUTF8() = Plugin) then
+    begin
+      Result := true;
+      Exit;
+    end;
+  end;
+end;
+
 { calls BrowseDir with plugin dir and LoadingFinished eventchain }
 procedure TLuaCore.LoadPlugins;
+var
+  I: integer;
 begin
   // we have to create event here, because in create it can
   // not be registered, because LuaCore is no assigned
   if (not Assigned(eLoadingFinished)) then
     eLoadingFinished := THookableEvent.Create('Usdx.LoadingFinished');
 
-  BrowseDir(PluginPath);
+  for I := 0 to PluginPaths.Count - 1 do
+    BrowseDir(IPath(PluginPaths[I]));
   eLoadingFinished.CallHookChain(false);
 end;
 
@@ -288,9 +309,11 @@ end;
 { tries to load filename with lua and creates the default
   usdx lua environment for the plugins state }
 procedure TLuaCore.LoadPlugin(Filename: IPath);
-  var
-    Len: integer;  
+var
+  I, Len: integer;
 begin
+  if (PluginExists(Filename.GetName().ToUTF8())) then
+    Exit;
   Len := Length(Plugins);
   SetLength(Plugins, Len + 1);
   Plugins[Len] := TLuaPlugin.Create(Filename, Len);
@@ -665,6 +688,7 @@ begin
   inherited Create;
   Self.iId := Id;
   Self.Filename := Filename;
+  Self.pBaseName := Filename.GetName;
 
   // set some default attributes
   Self.bPaused    := false;

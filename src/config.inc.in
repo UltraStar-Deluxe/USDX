@@ -54,7 +54,6 @@
 
 {$@DEFINE_HAVE_PROJECTM@ HaveProjectM}
 {$IF Defined(HaveProjectM) and Defined(IncludeConstants)}
-  ProjectM_DataDir = 'visuals/projectM';
   PROJECTM_VERSION_MAJOR   = @libprojectM_VERSION_MAJOR@;
   PROJECTM_VERSION_MINOR   = @libprojectM_VERSION_MINOR@;
   PROJECTM_VERSION_RELEASE = @libprojectM_VERSION_RELEASE@;

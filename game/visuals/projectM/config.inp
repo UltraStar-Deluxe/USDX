@@ -21,4 +21,4 @@ Hard Cut Sensitivity = 10
 ; Custom Shape Aspect Correction
 Aspect Correction = true
 
-Preset Path = visuals/projectM/presets
+Preset Path = presets

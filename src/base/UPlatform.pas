@@ -54,6 +54,8 @@ type
     function GetMusicPath:      IPath; virtual; abstract;
     function GetGameSharedPath: IPath; virtual; abstract;
     function GetGameUserPath:   IPath; virtual; abstract;
+    function GetModifiableAssetPaths: IInterfaceList; virtual; abstract;
+    function GetWebsitePaths: IInterfaceList; virtual; abstract;
   end;
 
   function Platform(): TPlatform;

@@ -55,6 +55,7 @@ uses
   UMain,
   UConfig,
   UPath,
+  UPathUtils,
   UPlatform,
   URenderer,
   URenderer_OpenGL,
@@ -175,7 +176,8 @@ end;
 
 function TVideoPlayback_ProjectM.Init(): boolean;
 var
-  ProjectMPath: IPath;
+  ProjectMConfigPath: IPath;
+  I: integer;
 begin
   Result := false;
   if (fInitialized) then
@@ -201,16 +203,21 @@ begin
     Exit;
   end;
 
-  ProjectMPath := Path(ProjectM_DataDir, pdAppend);
-  if not ProjectMPath.IsAbsolute then
-    ProjectMPath := Platform.GetGameSharedPath.Append(ProjectMPath);
-
-  if (not SetParameters(ProjectMPath.Append('config.inp'))) then
+  for I := 0 to VisualsPaths.Count - 1 do
   begin
-    projectm_destroy(Handle);
-    Handle := nil;
-    Exit;
+    ProjectMConfigPath := IPath(VisualsPaths[I]).Append('config.inp');
+    if (ProjectMConfigPath.IsFile) then
+    begin
+      if (not SetParameters(ProjectMConfigPath)) then
+      begin
+        projectm_destroy(Handle);
+        Handle := nil;
+        Exit;
+      end;
+      Break;
+    end;
   end;
+
   Randomize;
   PresetOrder := RandomPermute(Length(Presets));
   PresetIdx := 0;
@@ -235,7 +242,7 @@ begin
   IniFile := TIniFile.Create(ConfigPath.ToNative, [ifoWriteStringBoolean, ifoStripComments]);
   PresetPath := Path(IniFile.ReadString('ProjectM', 'Preset Path', ''));
   if not PresetPath.IsAbsolute then
-    PresetPath := Platform.GetGameSharedPath.Append(PresetPath);
+    PresetPath := ConfigPath.GetDir().Append(PresetPath);
   if ((PresetPath.ToUTF8() = '') or (not PresetPath.Exists())) then
   begin
     Log.LogError('Invalid ProjectM Preset Path', 'TVideoPlayback_ProjectM.SetParameters');

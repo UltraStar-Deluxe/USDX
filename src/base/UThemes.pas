@@ -1210,6 +1210,7 @@ type
     constructor Create;
 
     procedure LoadList;
+    function ThemeExists(Name: string): boolean;
 
     function LoadTheme(ThemeNum: integer; sColor: integer): boolean; // Load some theme settings from file
 
@@ -1384,17 +1385,20 @@ procedure TTheme.LoadHeader(FileName: IPath);
     Len: integer;
     Skins: TUTF8StringDynArray;
 begin
-  Entry.Filename := ThemePath.Append(FileName);
+  Entry.Filename := Path(FileName.ToNative());
   //read info from theme header
   Ini := TMemIniFile.Create(Entry.Filename.ToNative);
 
-  Entry.Name := Ini.ReadString('Theme', 'Name', FileName.SetExtension('').ToNative);
+  Entry.Name := Ini.ReadString('Theme', 'Name', FileName.GetName().SetExtension('').ToNative);
   Entry.BaseTheme := Ini.ReadString('Theme', 'BaseTheme', '');
   ThemeVersion := Trim(UpperCase(Ini.ReadString('Theme', 'US_Version', 'no version tag')));
   Entry.Creator := Ini.ReadString('Theme', 'Creator', 'Unknown');
   SkinName := Ini.ReadString('Theme', 'DefaultSkin', FileName.SetExtension('').ToNative);
 
   Ini.Free;
+
+  if (ThemeExists(Entry.Name)) then
+    Exit;
 
   // don't load theme with wrong version tag
   if ThemeVersion <> 'USD 110' then
@@ -1434,15 +1438,35 @@ procedure TTheme.LoadList;
   var
     Iter: IFileIterator;
     FileInfo: TFileInfo;
+    I: integer;
+    ThemePath: IPath;
 begin
-  Log.LogStatus('Searching for Theme : ' + ThemePath.ToNative + '*.ini', 'Theme.LoadList');
-
-  Iter := FileSystem.FileFind(ThemePath.Append('*.ini'), 0);
-  while (Iter.HasNext) do
+  for I := 0 to ThemePaths.Count - 1 do
   begin
-    FileInfo := Iter.Next;
-    Log.LogStatus('Found Theme: ' + FileInfo.Name.ToNative, 'Theme.LoadList');
-    LoadHeader(Fileinfo.Name);
+    ThemePath := IPath(ThemePaths[I]);
+    Log.LogStatus('Searching for Theme : ' + ThemePath.ToNative + '*.ini', 'Theme.LoadList');
+    Iter := FileSystem.FileFind(ThemePath.Append('*.ini'), 0);
+    while (Iter.HasNext) do
+    begin
+      FileInfo := Iter.Next;
+      Log.LogStatus('Found Theme: ' + FileInfo.Name.ToNative, 'Theme.LoadList');
+      LoadHeader(ThemePath.Append(Fileinfo.Name));
+    end;
+  end;
+end;
+
+function TTheme.ThemeExists(Name: string): boolean;
+var
+  I: integer;
+begin
+  Result := false;
+  for I := Low(Themes) to High(Themes) do
+  begin
+    if (Themes[I].Name = Name) then
+    begin
+      Result := true;
+      Exit;
+    end;
   end;
 end;
 

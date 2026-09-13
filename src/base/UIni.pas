@@ -1506,14 +1506,11 @@ var
 begin
   LoadFontFamilyNames;
   ILyricsFont := FontFamilyNames;
-  GamePath := Platform.GetGameUserPath;
-
-  Log.LogStatus( 'GamePath : ' +GamePath.ToNative , '' );
 
   if (Params.ConfigFile.IsSet) then
     FileName := Params.ConfigFile
   else
-    FileName := GamePath.Append('config.ini');
+    FileName := Platform.GetGameUserPath().Append('config.ini');
 
   Log.LogStatus('Using config : ' + FileName.ToNative, 'Ini');
   IniFile := TMemIniFile.Create(FileName.ToNative);
@@ -1577,9 +1574,9 @@ begin
   DataBase.AddWebsite;
 
   // Webs Scores Path
-  WebScoresPath := Path(IniFile.ReadString('Directories', 'WebScoresDir', WebsitePath.ToNative));
+  WebScoresPath := Path(IniFile.ReadString('Directories', 'WebScoresDir', IPath(WebsitePaths[0]).ToNative));
   if not(DirectoryExists(WebScoresPath.ToNative)) then
-    WebScoresPath :=  WebsitePath;
+    WebScoresPath :=  WebsitePaths[0] as IPath;
 
   // ShowWebScore
   if (Length(DllMan.Websites) > 0) then
