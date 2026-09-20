@@ -166,10 +166,7 @@ function TPlatformLinux.GetModifiableAssetPaths: IInterfaceList;
 begin
   Result := TInterfaceList.Create;
   if UseLocalDirs then
-  begin
-    Result.Add(GetExecutionDir());
-    Result.Add(GetHomeDir().Append('.ultrastardx'));
-  end
+    Result.Add(GetExecutionDir())
   else
   begin
     Result.Add(GetHomeDir().Append('.ultrastardx'));
@@ -181,8 +178,9 @@ function TPlatformLinux.GetWebsitePaths: IInterfaceList;
 begin
   Result := TInterfaceList.Create;
   if UseLocalDirs then
-    Result.Add(GetExecutionDir());
-  Result.Add(GetHomeDir().Append('.ultrastardx'));
+    Result.Add(GetExecutionDir())
+  else
+    Result.Add(GetHomeDir().Append('.ultrastardx'));
 end;
 
 end.

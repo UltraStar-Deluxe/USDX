@@ -193,10 +193,7 @@ function TPlatformMacOS.GetModifiableAssetPaths: IInterfaceList;
 begin
   Result := TInterfaceList.Create;
   if (IsLocal) then
-  begin
-    Result.Add(Path(ExecutionDir.ToNative()));
-    Result.Add(GetApplicationSupportPath());
-  end
+    Result.Add(Path(ExecutionDir.ToNative()))
   else if (IsBundle) then
   begin
     Result.Add(GetApplicationSupportPath());
@@ -213,8 +210,9 @@ function TPlatformMacOS.GetWebsitePaths: IInterfaceList;
 begin
   Result := TInterfaceList.Create;
   if (IsLocal) then
-    Result.Add(Path(ExecutionDir.ToNative()));
-  Result.Add(GetApplicationSupportPath());
+    Result.Add(Path(ExecutionDir.ToNative()))
+  else
+    Result.Add(GetApplicationSupportPath());
 end;
 
 function TPlatformMacOS.GetBacktraceFunction: TBacktraceStrFunc;

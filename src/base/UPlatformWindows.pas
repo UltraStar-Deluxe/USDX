@@ -45,10 +45,11 @@ uses
 type
   TPlatformWindows = class(TPlatform)
     private
-      UseLocalDirs: boolean;
+      ExecutionDirWritable: boolean;
+      IsInstalled: boolean;
       
       function GetSpecialPath(CSIDL: integer): IPath;
-      procedure DetectLocalExecution();
+      procedure DetectExecutionType();
     public
       procedure Init; override;
       function TerminateIfAlreadyRunning(var WndTitle: String): Boolean; override;
@@ -73,7 +74,7 @@ uses
 procedure TPlatformWindows.Init;
 begin
   inherited Init();
-  DetectLocalExecution();
+  DetectExecutionType();
 end;
 
 //------------------------------
@@ -124,46 +125,16 @@ begin
     Result := PATH_NONE;
 end;
 
-{**
- * Detects whether the was executed locally or globally.
- * - Local mode:
- *   - Condition:
- *     - config.ini is writable or creatable in the directory of the executable.
- *   - Examples:
- *     - The USDX zip-archive has been unpacked to a directory with write.
- *       permissions
- *     - XP: USDX was installed to %ProgramFiles% and the user is an admin.
- *     - USDX is started from an external HD- or flash-drive
- *   - Behavior:
- *     Config files like config.ini or score db reside in the directory of the
- *     executable. This is useful to enable windows users to have a portable
- *     installation e.g. on an external hdd.
- *     This is also the default behaviour of usdx prior to version 1.1
- * - Global mode:
- *   - Condition:
- *     - config.ini is not writable.
- *   - Examples:
- *     - Vista/7: USDX was installed to %ProgramFiles%.
- *     - XP: USDX was installed to %ProgramFiles% and the user is not an admin.
- *     - USDX is started from CD
- *   - Behavior:
- *     - The config files are in a separate folder (e.g. %APPDATA%\ultrastardx)
- *
- * On windows, resources (themes, language-files)
- * reside in the directory of the executable in any case
- *
- * Sets UseLocalDirs to true if the game is executed locally, false otherwise.
- *}
-procedure TPlatformWindows.DetectLocalExecution();
+procedure TPlatformWindows.DetectExecutionType();
 var
-  LocalDir, ConfigIni: IPath;
+  ExecutionDir, ConfigIni: IPath;
   Handle: TFileHandle;
 begin
-  LocalDir := GetExecutionDir();
-  ConfigIni := LocalDir.Append('config.ini');
+  ExecutionDir := GetExecutionDir();
+  ConfigIni := ExecutionDir.Append('config.ini');
 
   // check if config.ini is writable or creatable, if so use local dirs
-  UseLocalDirs := false;
+  ExecutionDirWritable := false;
   if (ConfigIni.Exists()) then
   begin
     // do not use a read-only config file
@@ -177,7 +148,7 @@ begin
       if (Handle <> INVALID_HANDLE_VALUE) then
       begin
         FileClose(Handle);
-        UseLocalDirs := true;
+        ExecutionDirWritable := true;
       end;
     end;
   end
@@ -188,9 +159,12 @@ begin
     if (Handle <> INVALID_HANDLE_VALUE) then
     begin
       FileClose(Handle);
-      UseLocalDirs := true;
+      ExecutionDirWritable := true;
     end;
   end;
+
+  // NSIS script installs some extra files such as Uninstall.exe which tells us if it's installed or portable version
+  IsInstalled := ExecutionDir.Append('Uninstall.exe').Exists() or ExecutionDir.Append('Update.exe').Exists();
 end;
 
 function TPlatformWindows.GetLogPath: IPath;
@@ -205,7 +179,7 @@ end;
 
 function TPlatformWindows.GetGameUserPath: IPath;
 begin
-  if UseLocalDirs then
+  if ExecutionDirWritable then
     Result := GetExecutionDir()
   else
     Result := GetSpecialPath(CSIDL_APPDATA).Append('ultrastardx', pdAppend);
@@ -214,9 +188,14 @@ end;
 function TPlatformWindows.GetModifiableAssetPaths: IInterfaceList;
 begin
   Result := TInterfaceList.Create;
-  if (UseLocalDirs) then
+  if (IsInstalled) then
+  begin
+    Result.Add(GetSpecialPath(CSIDL_APPDATA).Append('ultrastardx', pdAppend));
     Result.Add(GetExecutionDir());
-  Result.Add(GetSpecialPath(CSIDL_APPDATA).Append('ultrastardx', pdAppend));
+  end
+  else
+    Result.Add(GetExecutionDir());
+
 end;
 
 function TPlatformWindows.GetWebsitePaths: IInterfaceList;
