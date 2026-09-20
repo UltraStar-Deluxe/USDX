@@ -343,9 +343,6 @@ begin
     begin
       Log.LogInfo('adding column track count to "' + cUS_Scores + '"', 'TDataBaseSystem.Init');
       ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Scores + ' ADD COLUMN [TrackCount] INTEGER NOT NULL DEFAULT 1');
-      if ScoreDB.ContainsColumn(cUS_Scores, 'Track') then
-        ScoreDB.ExecSQL('UPDATE ' + cUS_Scores +
-            ' SET [TrackCount] = CASE WHEN [Track] > 0 THEN 2 ELSE 1 END');
     end
     else
       ScoreDB.ExecSQL('UPDATE ' + cUS_Scores + ' SET [TrackCount] = 1 WHERE [TrackCount] IS NULL');
@@ -354,9 +351,6 @@ begin
     begin
       Log.LogInfo('adding track mask to "' + cUS_Scores + '"', 'TDataBaseSystem.Init');
       ScoreDB.ExecSQL('ALTER TABLE ' + cUS_Scores + ' ADD COLUMN [TrackMask] INTEGER NOT NULL DEFAULT 1');
-      if ScoreDB.ContainsColumn(cUS_Scores, 'Track') then
-        ScoreDB.ExecSQL('UPDATE ' + cUS_Scores +
-            ' SET [TrackMask] = CASE WHEN [Track] > 0 THEN [Track] ELSE 1 END');
     end
     else
       ScoreDB.ExecSQL('UPDATE ' + cUS_Scores + ' SET [TrackMask] = 1 WHERE [TrackMask] IS NULL');
