@@ -54,6 +54,7 @@ type
     function GetMusicPath:      IPath; virtual; abstract;
     function GetGameSharedPath: IPath; virtual; abstract;
     function GetGameUserPath:   IPath; virtual; abstract;
+    function GetBacktraceFunction: TBacktraceStrFunc; virtual;
   end;
 
   function Platform(): TPlatform;
@@ -119,6 +120,11 @@ end;
 function TPlatform.TerminateIfAlreadyRunning(var WndTitle: string): boolean;
 begin
   Result := false;
+end;
+
+function TPlatform.GetBacktraceFunction(): TBacktraceStrFunc;
+begin
+  Result := BackTraceStrFunc;
 end;
 
 initialization
