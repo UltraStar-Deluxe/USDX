@@ -157,18 +157,34 @@ type
        * This is where a user can add themes, ....
        *}
       function  GetGameUserPath:   IPath; override;
+      function GetBacktraceFunction: TBacktraceStrFunc; override;
+
   end;
 
 implementation
+{$POINTERMATH ON}
 
 uses
+  ctypes,
   SysUtils,
+  Process,
   MacOSAll;
 
 type
   TLogSwitch = (On, Off);
+  Dl_info = record
+    dli_fname: PAnsiChar;
+    dli_fbase: Pointer;
+    dli_sname: PAnsiChar;
+    dli_saddr: Pointer;
+  end;
+  PDl_info = ^Dl_info;
+function dladdr(addr: Pointer; info: PDl_info): cint; cdecl; external 'c';
+
 const
   LogSwitch: TLogSwitch = Off;
+
+function BackTraceStrFuncMac(Addr: CodePointer): ShortString; forward;
 
 procedure TPlatformMacOS.Init;
 begin
@@ -372,6 +388,46 @@ end;
 function TPlatformMacOS.GetGameUserPath: IPath;
 begin
   Result := GetApplicationSupportPath;
+end;
+
+function TPlatformMacOS.GetBacktraceFunction: TBacktraceStrFunc;
+begin
+  Result := BackTraceStrFuncMac;
+end;
+
+function BackTraceStrFuncMac(Addr: CodePointer): ShortString;
+var
+  {$IFDEF DEBUG_MODE}
+  Output: string;
+  {$ENDIF}
+  info: Dl_info;
+  Offset: Int64;
+  SymbolName: string;
+begin
+  Result := '  ';
+  if (dladdr(Addr, @info) <> 0) then
+  begin
+    {$IFDEF DEBUG_MODE}
+    // For developers running self-compiled builds, the atos utility can provide the full stacktrace including source line numbers
+    if RunCommand('/usr/bin/atos', ['-o', info.dli_fname, '-l', Format('%p', [info.dli_fbase]), Format('%p', [Addr])], Output) then
+      Result := Result + StringReplace(Output, #10, '', [rfReplaceAll])
+
+    // For others (e.g. non-developers running a release build), the best we can do is report the symbol names
+    else
+    begin
+    {$ENDIF}
+      Offset := Addr - info.dli_saddr;
+      if (info.dli_sname <> nil) then
+        SymbolName := info.dli_sname
+      else
+        SymbolName := '???';
+      Result := Result + Format('%s (in %s) + %d', [SymbolName, Path(info.dli_fname).GetName().ToUTF8(), Offset]);
+    {$IFDEF DEBUG_MODE}
+    end;
+    {$ENDIF}
+  end
+  else
+    Result := Result + Format('%p', [Addr]);
 end;
 
 end.
