@@ -68,6 +68,7 @@ type
     function GetDefaultColor(SkinNo: integer): integer;
 
     procedure GetSkinsByTheme(Theme: string; out Skins: TUTF8StringDynArray);
+    function SkinExists(Name, Theme: string): boolean;
 
     procedure onThemeChange;
   end;
@@ -100,13 +101,17 @@ procedure TSkin.LoadList;
 var
   Iter: IFileIterator;
   DirInfo: TFileInfo;
+  I: integer;
 begin
-  Iter := FileSystem.FileFind(SkinsPath.Append('*'), faDirectory);
-  while Iter.HasNext do
+  for I := 0 to ThemePaths.Count - 1 do
   begin
-    DirInfo := Iter.Next();
-    if (not DirInfo.Name.Equals('.')) and (not DirInfo.Name.Equals('..')) then
-      ParseDir(SkinsPath.Append(DirInfo.Name, pdAppend));
+    Iter := FileSystem.FileFind(IPath(ThemePaths[I]).Append('*'), faDirectory);
+    while Iter.HasNext do
+    begin
+      DirInfo := Iter.Next();
+      if (not DirInfo.Name.Equals('.')) and (not DirInfo.Name.Equals('..')) then
+        ParseDir(IPath(ThemePaths[I]).Append(DirInfo.Name, pdAppend));
+    end;
   end;
 end;
 
@@ -127,19 +132,23 @@ procedure TSkin.LoadHeader(FileName: IPath);
 var
   SkinIni: TMemIniFile;
   S:       integer;
+  Theme, Name: string;
 begin
   SkinIni := TMemIniFile.Create(FileName.ToNative);
+  Theme    := SkinIni.ReadString('Skin', 'Theme', '');
+  Name     := SkinIni.ReadString('Skin', 'Name', '');
+  if (not SkinExists(Name, Theme)) then
+  begin
+    S := Length(Skin);
+    SetLength(Skin, S+1);
 
-  S := Length(Skin);
-  SetLength(Skin, S+1);
-  
-  Skin[S].Path     := FileName.GetPath;
-  Skin[S].FileName := FileName.GetName;
-  Skin[S].Theme    := SkinIni.ReadString('Skin', 'Theme', '');
-  Skin[S].Name     := SkinIni.ReadString('Skin', 'Name', '');
-  Skin[S].Creator  := SkinIni.ReadString('Skin', 'Creator', '');
-  Skin[S].DefaultColor := Max(0, GetArrayIndex(IColor, SkinIni.ReadString('Skin', 'Color', ''), true));
-
+    Skin[S].Path     := FileName.GetPath;
+    Skin[S].FileName := FileName.GetName;
+    Skin[S].Theme    := Theme;
+    Skin[S].Name     := Name;
+    Skin[S].Creator  := SkinIni.ReadString('Skin', 'Creator', '');
+    Skin[S].DefaultColor := Max(0, GetArrayIndex(IColor, SkinIni.ReadString('Skin', 'Color', ''), true));
+  end;
   SkinIni.Free;
 end;
 
@@ -237,6 +246,21 @@ begin
         Break;
       end;
     end;
+end;
+
+function TSkin.SkinExists(Name, Theme: string): boolean;
+var
+  I: integer;
+begin
+  Result := false;
+  for I := Low(Skin) to High(Skin) do
+  begin
+    if ((Name = Skin[I].Name) and (Theme = Skin[I].Theme)) then
+    begin
+      Result := true;
+      Exit;
+    end;
+  end;
 end;
 
 procedure TSkin.onThemeChange;

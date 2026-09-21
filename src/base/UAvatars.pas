@@ -56,14 +56,32 @@ type
 var
   Avatars: TAvatarManager;
   AvatarsList: array of IPath;
+  AvatarsMD5: array of UTF8String;
   NoAvatarTexture: array[1..UIni.IMaxPlayerCount] of TTexture;
   AvatarPlayerTextures: array[1..UIni.IMaxPlayerCount] of TTexture;
 
 implementation
 
 uses
+  md5,
+  sysutils,
   UFilesystem,
   UPathUtils;
+
+function AvatarExists(Hash: string): boolean;
+var
+  I: integer;
+begin
+  Result := false;
+  for I := Low(AvatarsMD5) to High(AvatarsMD5) do
+  begin
+    if (AvatarsMD5[I] = Hash) then
+    begin
+      Result := true;
+      Exit;
+    end;
+  end;
+end;
 
 constructor TAvatar.Create(const Filename: IPath);
 begin
@@ -76,36 +94,39 @@ begin
 end;
 
 constructor TAvatarManager.Create();
+const
+  Extensions: array[0..3] of string = ('.jpg', '.jpeg', '.png', '.webp');
 var
-  Len: Integer;
-  IterJPG, IterPNG: IFileIterator;
+  I, J, Len: Integer;
+  Iter: IFileIterator;
   FileInfo: TFileInfo;
+  AvatarPath: IPath;
+  Hash: string;
 begin
   // first position for no-avatar
   SetLength(AvatarsList, 1);
 
-  // jpg
-  IterJPG := FileSystem.FileFind(AvatarsPath.Append('*.jpg'), 0);
-  while (IterJPG.HasNext) do
+  // Find avatars
+  for I := 0 to AvatarsPaths.Count - 1 do
   begin
-    Len := Length(AvatarsList);
-    SetLength(AvatarsList, Len + 1);
-
-    FileInfo := IterJPG.Next;
-
-    AvatarsList[High(AvatarsList)] := AvatarsPath.Append(FileInfo.Name);
-  end;
-
-  // png
-  IterPNG := FileSystem.FileFind(AvatarsPath.Append('*.png'), 0);
-  while (IterPNG.HasNext) do
-  begin
-    Len := Length(AvatarsList);
-    SetLength(AvatarsList, Len + 1);
-
-    FileInfo := IterPNG.Next;
-
-    AvatarsList[High(AvatarsList)] := AvatarsPath.Append(FileInfo.Name);
+    for J := Low(Extensions) to High(Extensions) do
+    begin
+      Iter := FileSystem.FileFind(IPath(AvatarsPaths[I]).Append('*' + Extensions[J]), 0);
+      while (Iter.HasNext) do
+      begin
+        FileInfo := Iter.Next;
+        AvatarPath := IPath(AvatarsPaths[I]).Append(FileInfo.Name);
+        Hash := UpperCase(MD5Print(MD5File(AvatarPath.ToNative)));
+        if (not AvatarExists(Hash)) then
+        begin
+          Len := Length(AvatarsList);
+          SetLength(AvatarsList, Len + 1);
+          SetLength(AvatarsMD5, Len + 1);
+          AvatarsList[Len] := AvatarPath;
+          AvatarsMD5[Len] := Hash;
+        end;
+      end;
+    end;
   end;
 end;
 

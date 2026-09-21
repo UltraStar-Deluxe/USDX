@@ -107,10 +107,12 @@ const
 {**
  * Returns either Filename if it is absolute or a path relative to FontPath.
  *}
-function FindFontFile(const Filename: string): IPath;
+function FindFontFile(const IniPath: IPath; const Filename: string): IPath;
+var
+  I: integer;
+  FilePath: IPath;
 begin
-  Result := FontPath.Append(Filename);
-  // if path does not exist, try as an absolute path
+  Result := IniPath.Append(Filename);
   if (not Result.IsFile) then
     Result := Path(Filename);
 end;
@@ -123,11 +125,24 @@ procedure LoadFontFamilyNames;
 var
   FontNameIndex: integer;
   FontIni: TMemIniFile;
+  FontIniPath: IPath;
+  I: integer;
 begin
   CurrentFont.FontFamily := 0;
   CurrentFont.FontStyle := 0;
 
-  FontIni := TMemIniFile.Create(FontPath.Append('fonts.ini').ToNative);
+  FontIni := nil;
+  for I := 0 to FontPaths.Count - 1 do
+  begin
+    FontIniPath := IPath(FontPaths[I]).Append('fonts.ini');
+    if FontIniPath.IsFile then
+    begin
+      FontIni := TMemIniFile.Create(FontIniPath.ToNative);
+      break;
+    end;
+  end;
+  if (FontIni = nil) then
+    raise Exception.Create('Could not find fonts.ini file');
 
   // each section describes one font family
   FontSections := TStringList.Create;
@@ -155,6 +170,7 @@ procedure BuildFonts;
 var
   FontNameIndex, FontStyleIndex, FallbackIndex: integer;
   FontIni: TMemIniFile;
+  FontIniPath: IPath;
   FontFile: IPath;
   FontMaxResolution: Integer;
   FontPreCache: Integer;
@@ -162,8 +178,20 @@ var
   Embolden: single;
   OutlineFont: TFTScalableOutlineFont;
   SectionName: string;
+  I: integer;
 begin
-  FontIni := TMemIniFile.Create(FontPath.Append('fonts.ini').ToNative);
+  FontIni := nil;
+  for I := 0 to FontPaths.Count - 1 do
+  begin
+    FontIniPath := IPath(FontPaths[I]).Append('fonts.ini');
+    if FontIniPath.IsFile then
+    begin
+      FontIni := TMemIniFile.Create(FontIniPath.ToNative);
+      break;
+    end;
+  end;
+  if (FontIni = nil) then
+    raise Exception.Create('Could not find fonts.ini file');
 
   try
     for FontNameIndex := 0 to FontSections.Count-1 do
@@ -171,7 +199,7 @@ begin
       for FontStyleIndex := 0 to High(FONT_STYLES) do
       begin
         SectionName := FontSections[FontNameIndex];
-        FontFile := FindFontFile(FontIni.ReadString(SectionName, FONT_STYLES[FontStyleIndex] + 'File', ''));
+        FontFile := FindFontFile(FontIniPath.GetDir, FontIni.ReadString(SectionName, FONT_STYLES[FontStyleIndex] + 'File', ''));
         if (FontFile.Equals(PATH_NONE)) then
           Continue;
 
@@ -217,7 +245,7 @@ begin
 
         for FallbackIndex := 1 to 25 do
         begin
-          FontFile := FindFontFile(FontIni.ReadString(SectionName , FONT_STYLES[FontStyleIndex] + 'FallbackFile' + IntToStr(FallbackIndex), ''));
+          FontFile := FindFontFile(FontIniPath.GetDir, FontIni.ReadString(SectionName , FONT_STYLES[FontStyleIndex] + 'FallbackFile' + IntToStr(FallbackIndex), ''));
           if (FontFile.Equals(PATH_NONE)) then
             Continue;
           try

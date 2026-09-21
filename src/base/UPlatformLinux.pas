@@ -52,6 +52,8 @@ type
       function GetLogPath        : IPath; override;
       function GetGameSharedPath : IPath; override;
       function GetGameUserPath   : IPath; override;
+      function GetModifiableAssetPaths: IInterfaceList; override;
+      function GetWebsitePaths: IInterfaceList; override;
   end;
 
 implementation
@@ -158,6 +160,27 @@ begin
   // GetUserDir() is another function that returns a user path.
   // It uses env-var HOME or a fallback to a temp-dir.
   //Result := GetUserDir();
+end;
+
+function TPlatformLinux.GetModifiableAssetPaths: IInterfaceList;
+begin
+  Result := TInterfaceList.Create;
+  if UseLocalDirs then
+    Result.Add(GetExecutionDir())
+  else
+  begin
+    Result.Add(GetHomeDir().Append('.ultrastardx'));
+    Result.Add(Path(INSTALL_DATADIR));
+  end;
+end;
+
+function TPlatformLinux.GetWebsitePaths: IInterfaceList;
+begin
+  Result := TInterfaceList.Create;
+  if UseLocalDirs then
+    Result.Add(GetExecutionDir())
+  else
+    Result.Add(GetHomeDir().Append('.ultrastardx'));
 end;
 
 end.

@@ -193,7 +193,8 @@ uses
   UTextEncoding,
   UUnicodeUtils,
   SysUtils,
-  UText;
+  UText,
+  UPlatform;
 
 const
   // MIDI/KAR lyrics are specified to be ASCII only.
@@ -258,7 +259,7 @@ begin
           begin
             IsFileOpen := true;
             AudioPlayback.PlaySound(SoundLib.Start);
-            ScreenOpen.Filename := GamePath.Append('file.mid');
+            ScreenOpen.Filename := Platform.GetGameUserPath().Append('file.mid');
             ScreenOpen.BackScreen := @ScreenEditConvert;
             FadeTo(@ScreenOpen);
           end
