@@ -117,6 +117,7 @@ type
       procedure SetVersion(Version: integer);
       procedure TrimTrailingNullByte(const TableName, ColumnName: string);
       procedure MigrateTextColumns;
+      function GetScoreTrackCount(Song: TSong): integer;
     public
       // Network
       NetworkUser: array of TNetworkUser;
@@ -562,6 +563,17 @@ begin
 end;
 
 
+function TDataBaseSystem.GetScoreTrackCount(Song: TSong): integer;
+begin
+  Result := Length(Song.Tracks);
+  // Song selection normally loads only headers, without the note tracks.
+  if Result = 0 then
+    if Song.isDuet then
+      Result := 2
+    else
+      Result := 1;
+end;
+
 (**
  * Read Scores into SongArray
  *)
@@ -601,7 +613,7 @@ begin
       TrackCount := TableData.FieldAsInteger(TableData.FieldIndex['TrackCount']);
       TrackMask := TableData.FieldAsInteger(TableData.FieldIndex['TrackMask']);
       if ((Difficulty >= 0) and (Difficulty <= 2)) and
-         (TrackCount = Length(Song.Tracks)) and
+         (TrackCount = GetScoreTrackCount(Song)) and
          (Length(Song.Score[Difficulty]) < Count) then
       begin
         //filter player
@@ -1260,7 +1272,7 @@ begin
     Max_Score := ScoreDB.GetTableValue(
         'SELECT MAX([Score]) FROM ['+cUS_Scores+'] ' +
         'WHERE [SongID] = ? AND [Difficulty] = ? AND [TrackCount] = ?',
-        [ID, Level, Length(Song.Tracks)]);
+        [ID, Level, GetScoreTrackCount(Song)]);
 
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.ReadMax_ScoreLocal');
@@ -1297,7 +1309,7 @@ begin
     Media_Score := ScoreDB.GetTableValue(
         'SELECT AVG([Score]) FROM ['+cUS_Scores+'] ' +
         'WHERE [SongID] = ? AND [Difficulty] = ? AND [TrackCount] = ?',
-        [ID, Level, Length(Song.Tracks)]);
+        [ID, Level, GetScoreTrackCount(Song)]);
 
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.ReadMedia_ScoreLocal');
@@ -1334,7 +1346,7 @@ begin
                  'SELECT [Player] FROM ['+cUS_Scores+'] ' +
                  'WHERE [SongID] = ? AND [Difficulty] = ? AND [TrackCount] = ? ' +
                  'ORDER BY [Score] DESC LIMIT 1',
-                 [ID, Level, Length(Song.Tracks)]);
+                 [ID, Level, GetScoreTrackCount(Song)]);
 
   except on E: Exception do
     Log.LogError(E.Message, 'TDataBaseSystem.ReadUser_Score');
