@@ -462,9 +462,8 @@ macos-standalone-app: macos-app
 
 	@rm -f $(macos_bundle_path)/MacOS/$(USDX_BIN_NAME)
 	@$(MAKE) -f Makefile.macos-helper
+	codesign --force --deep --sign - ./UltraStarDeluxe.app
 
-# do  not forget to sign the code
-#	codesign -f -s USDX-codesign UltraStarDeluxe.app
 
 # final messages
 	@echo ""
@@ -487,7 +486,6 @@ macos-dmg: macos-standalone-app
 	find $(USDX_GAME_DIR) -name 'LICENSE.*' -maxdepth 1 -exec cp {} /Volumes/UltraStarDeluxe/Licenses \;
 #	/bin/cp ultrastardx/icons/UltraStarDeluxeVolumeIcon.icns /Volumes/UltraStarDeluxe/.VolumeIcon.icns
 #	/Developer/Tools/SetFile -a C /Volumes/UltraStarDeluxe/.VolumeIcon.icns /Volumes/UltraStarDeluxe
-	codesign --force --deep --sign - /Volumes/UltraStarDeluxe/UltraStarDeluxe.app
 	$(HDIUTIL) detach /Volumes/UltraStarDeluxe
 	$(HDIUTIL) convert UltraStarDeluxe.sparseimage -format UDBZ -o UltraStarDeluxe.dmg
 	$(RM) UltraStarDeluxe.sparseimage
