@@ -218,6 +218,18 @@ else
 # find sdl2
 PKG_HAVE([sdl2], [sdl2], yes)
 
+# Support sdl2-compat on Mac
+if [[ x$FPC_PLATFORM == xdarwin ]]; then
+    SDL2_PC_PATH=$(pkg-config --path sdl2)
+    if [[ -L "$SDL2_PC_PATH" -a $(basename $(readlink -f "$SDL2_PC_PATH")) == sdl2-compat.pc ]]; then
+        SDL3_LIBDIR=$(pkg-config --variable=libdir sdl3)
+        if [[ $? != 0 ]]; then
+            AC_MSG_ERROR([Detected sdl2-compat, but failed to locate SDL3])
+        fi
+        AC_SUBST(EXTRA_DYLIBS, $SDL3_LIBDIR/libSDL3.dylib)
+    fi
+fi
+
 # find SDL2_image
 PKG_HAVE([sdl2_image], [SDL2_image], yes)
 

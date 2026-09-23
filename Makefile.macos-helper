@@ -6,7 +6,7 @@ dest = $(macos_bundle_path)/MacOS/$(notdir $(1))
 # application.
 
 FILES :=
-NEWFILES := $(USDX_BIN)
+NEWFILES := $(USDX_BIN) $(EXTRA_DYLIBS)
 
 define processload
 D := $(1)
