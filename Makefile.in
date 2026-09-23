@@ -403,6 +403,7 @@ INSTALL_NAME_TOOL := /usr/bin/install_name_tool
 HDIUTIL := /usr/bin/hdiutil
 # pkgingLibDir := path for libraries installed using packaging system
 pkgingLibDir := @MACOS_PACKAGING_LIBDIR@
+EXTRA_DYLIBS := @EXTRA_DYLIBS@
 
 #################################################
 # macOS app-bundle
@@ -451,6 +452,7 @@ export macos_bundle_path
 export INSTALL
 export INSTALL_NAME_TOOL
 export OTOOL
+export EXTRA_DYLIBS
 
 .PHONY: macos-standalone-app
 macos-standalone-app: macos-app 
@@ -486,6 +488,7 @@ macos-dmg: macos-standalone-app
 	find $(USDX_GAME_DIR) -name 'LICENSE.*' -maxdepth 1 -exec cp {} /Volumes/UltraStarDeluxe/Licenses \;
 #	/bin/cp ultrastardx/icons/UltraStarDeluxeVolumeIcon.icns /Volumes/UltraStarDeluxe/.VolumeIcon.icns
 #	/Developer/Tools/SetFile -a C /Volumes/UltraStarDeluxe/.VolumeIcon.icns /Volumes/UltraStarDeluxe
+	codesign --force --deep --sign - /Volumes/UltraStarDeluxe/UltraStarDeluxe.app
 	$(HDIUTIL) detach /Volumes/UltraStarDeluxe
 	$(HDIUTIL) convert UltraStarDeluxe.sparseimage -format UDBZ -o UltraStarDeluxe.dmg
 	$(RM) UltraStarDeluxe.sparseimage
