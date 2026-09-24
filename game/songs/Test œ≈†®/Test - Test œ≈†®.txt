@@ -1,0 +1,12 @@
+#VERSION:1.0.0
+#TITLE:Test œ≈†®
+#ARTIST:Test
+#EDITION:Test
+#GENRE:Test
+#AUDIO:Test - Test œ≈†®.m4a
+#BPM:200
+#GAP:0
+: 0 200 0 Silence
+- 200
+: 200 200 0 Silence
+E

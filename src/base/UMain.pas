@@ -112,6 +112,10 @@ begin
   try
   {$ENDIF}
     SetMultiByteConversionCodePage(CP_UTF8);
+    {$IFDEF FPC}
+    SetMultiByteFileSystemCodePage(CP_UTF8);
+    SetMultiByteRTLFileSystemCodePage(CP_UTF8);
+    {$ENDIF}
     WindowTitle := USDXVersionStr;
 
     Platform.Init;
