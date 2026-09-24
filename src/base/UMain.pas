@@ -101,12 +101,15 @@ uses
   ULuaParty,
   ULuaScreenSing,
   UTime,
-  UWebcam;
+  UWebcam,
+  UWebServer;
   //UVideoAcinerella;
 
 procedure Main;
 var
   WindowTitle: string;
+  BadPlayer: integer;
+  Server: TWebServer;
 begin
   {$IFNDEF Debug}
   try
@@ -244,6 +247,14 @@ begin
     SoundLib.StartBgMusic;
 
     //------------------------------
+    // Start Webserver
+    //------------------------------
+    Log.LogStatus('Webserver', 'Initialization');
+    // Create and start the web server
+    Server := TWebServer.Create(8091);
+    Server.Start;
+
+    //------------------------------
     // Start Mainloop
     //------------------------------
     Log.LogStatus('Main Loop', 'Initialization');
@@ -276,6 +287,11 @@ begin
 
     Log.LogStatus('Finalize SDL', 'Finalization');
     SDL_Quit();
+
+    Log.LogStatus('Finalize Webserver', 'Finalization');
+    //Server.Terminate; // Terminate the thread
+    //Server.WaitFor;
+    //Server.Free;
 
     Log.LogStatus('Finalize Log', 'Finalization');
   {$IFNDEF Debug}

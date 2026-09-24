@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Song List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="/theme.js" fetchpriority="high" blocking="render"></script>
+    <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+    <h1>Song List</h1>
+
+    <div class="controls">
+        <div class="toggle-switch">
+            <label>
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <input type="search" id="search" placeholder="Search for songs…" aria-label="Search for songs">
+    <p id="songCount" role="status"></p>
+
+    <noscript>
+        <p>This song list requires JavaScript. The underlying data is available at
+        <a href="/songs.json">/songs.json</a>.</p>
+    </noscript>
+
+    <table id="songTable">
+        <colgroup>
+            <col class="col-artist">
+            <col class="col-title">
+            <col class="col-edition">
+            <col class="col-genre">
+            <col class="col-year">
+        </colgroup>
+        <thead>
+            <tr>
+                <th data-key="artist" aria-sort="ascending">Artist</th>
+                <th data-key="title" aria-sort="none">Title</th>
+                <th data-key="edition" aria-sort="none">Edition</th>
+                <th data-key="genre" aria-sort="none">Genre</th>
+                <th data-key="year" aria-sort="none">Year</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script src="/app.js"></script>
+</body>
+</html>
