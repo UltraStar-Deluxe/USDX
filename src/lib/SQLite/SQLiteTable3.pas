@@ -274,7 +274,6 @@ constructor TSQLiteDatabase.Create(const FileName: string);
 var
   Msg: PAnsiChar;
   iResult: integer;
-  utf8FileName: UTF8string;
 begin
   inherited Create;
   fParams := TList.Create;
@@ -283,8 +282,11 @@ begin
 
   Msg := nil;
   try
-    utf8FileName := UTF8String(FileName);
-    iResult := SQLite3_Open(PAnsiChar(utf8FileName), Fdb);
+    {$IFDEF MSWINDOWS}
+    iResult := SQLite3_Open16(PWideChar(UTF8Decode(UTF8String(FileName))), Fdb);
+    {$ELSE}
+    iResult := SQLite3_Open(PAnsiChar(UTF8String(FileName)), Fdb);
+    {$ENDIF}
 
     if iResult <> SQLITE_OK then
       if Assigned(Fdb) then
