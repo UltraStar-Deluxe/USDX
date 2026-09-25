@@ -13,7 +13,7 @@ EGIT_COMMIT="v${PV}"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="amd64 ~x86"
-IUSE="midi projectm debug webcam"
+IUSE="projectm debug webcam"
 
 RDEPEND="virtual/opengl
 	media-libs/libsdl2[opengl]
@@ -23,7 +23,6 @@ RDEPEND="virtual/opengl
 	media-video/ffmpeg
 	dev-db/sqlite
 	dev-lang/lua
-	midi? ( media-libs/portmidi )
 	projectm? ( <media-libs/libprojectm-3.0.0 )
 	webcam? ( >=media-libs/opencv-3.0.0 )"
 DEPEND="${RDEPEND}
@@ -38,7 +37,6 @@ src_prepare() {
 src_configure() {
 	econf \
 		$(use_with projectm libprojectM) \
-		$(use_enable midi portmidi) \
 		$(use_enable debug) \
 		|| die "econf failed"
 }

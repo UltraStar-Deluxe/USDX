@@ -170,6 +170,7 @@ uses
   UGraphicClasses,
   UJoystick,
   ULanguage,
+  MidiOut,
   UParty,
   UPathUtils,
   UPlatform,
@@ -177,6 +178,25 @@ uses
   USkins,
   USongs,
   UThemes;
+
+var
+  BeatClickOutput: TMidiOutput = nil;
+
+procedure PlaySyntheticBeatClick;
+begin
+  if not Assigned(BeatClickOutput) then
+  begin
+    BeatClickOutput := TMidiOutput.Create(nil);
+    if not BeatClickOutput.Open then
+    begin
+      FreeAndNil(BeatClickOutput);
+      Exit;
+    end;
+  end;
+
+  BeatClickOutput.SetVolume(EnsureRange(Ini.SfxVolume, 0, 100) / 100);
+  BeatClickOutput.Click(127);
+end;
 
 procedure TPlayer.SetScore(newScore: real);
 begin
@@ -371,7 +391,7 @@ begin
   if ((Ini.BeatClick = 1) and
     ((LyricsState.CurrentBeatC + USong.DEFAULT_RESOLUTION + CurrentSong.Tracks[0].NotesGAP) mod USong.DEFAULT_RESOLUTION = 0)) then
     begin
-      AudioPlayback.PlaySound(SoundLib.Click);
+      PlaySyntheticBeatClick;
     end;
 
     for Count := 0 to CurrentSong.Tracks[0].Lines[CurrentSong.Tracks[0].CurrentLine].HighNote do
@@ -381,7 +401,7 @@ begin
       begin
         // click assist
         if Ini.ClickAssist = 1 then
-          AudioPlayback.PlaySound(SoundLib.Click);
+          PlaySyntheticBeatClick;
 
         // drum machine
         (*
@@ -659,5 +679,8 @@ begin
   end; // for ActualBeat
   //Log.LogStatus('EndBeat', 'NewBeat');
 end;
+
+finalization
+  FreeAndNil(BeatClickOutput);
 
 end.
