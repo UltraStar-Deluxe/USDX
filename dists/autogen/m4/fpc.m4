@@ -309,6 +309,12 @@ AC_DEFUN([AC_PROG_FPC_CHECK],
 
     # remove test file
     rm -f conftest*
+
+    # These files are left when the test fails on Mac
+    if [[ x$FPC_PLATFORM == xdarwin ]]; then
+        rm -f link*.res
+        rm -f ppaslink.sh
+    fi
 ])
 
 # SYNOPSIS
