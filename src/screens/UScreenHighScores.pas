@@ -104,6 +104,19 @@ uses
   UNote,
   UUnicodeUtils;
 
+function TrackNumber(TrackMask: integer): integer;
+begin
+  if (TrackMask <= 0) or ((TrackMask and (TrackMask - 1)) <> 0) then
+    Exit(0);
+
+  Result := 1;
+  while TrackMask > 1 do
+  begin
+    TrackMask := TrackMask shr 1;
+    Inc(Result);
+  end;
+end;
+
 procedure TScreenHighScores.AddThemedFrame;
 var
   I: integer;
@@ -424,6 +437,7 @@ end;
 procedure TScreenHighScores.ShowScoresForDifficulty(difficulty: integer);
 var
   I:    integer;
+  Track: integer;
 begin
   LayoutEntryCount := EnsureRange(Length(CurrentSong.Score[difficulty]), 5, EntryCount);
   UpdateEntryLayout;
@@ -434,6 +448,10 @@ begin
     begin
       SetEntryVisible(I, true);
       Text[EntryNameText[I]].Text := CurrentSong.Score[difficulty, I].Name;
+      Track := TrackNumber(CurrentSong.Score[difficulty, I].TrackMask);
+      if CurrentSong.IsDuet and (Track > 0) then
+        Text[EntryNameText[I]].Text := Text[EntryNameText[I]].Text +
+            ' (P' + IntToStr(Track) + ')';
       Text[EntryScoreText[I]].Text := IntToStr(CurrentSong.Score[difficulty, I].Score);
       Text[EntryDateText[I]].Text := CurrentSong.Score[difficulty, I].Date;
     end
