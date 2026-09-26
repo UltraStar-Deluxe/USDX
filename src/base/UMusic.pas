@@ -669,7 +669,8 @@ function  AudioInput(): IAudioInput;
 function  AudioDecoders(): TInterfaceList;
 
 procedure SetAudioVolumePercent(Value: integer);
-procedure SetVocalsVolumePercent(Value: integer);
+procedure SetVocalsVolumePercent(Value: integer; UpdatePartialVolume: boolean = false);
+procedure ToggleVocalsVolume;
 procedure SetSfxVolumePercent(Value: integer);
 procedure SetPreviewVolumePercent(Value: integer);
 procedure SetBackgroundMusicVolumePercent(Value: integer);
@@ -818,7 +819,7 @@ begin
     Playback.SetVolume(Clamped / 100);
 end;
 
-procedure SetVocalsVolumePercent(Value: integer);
+procedure SetVocalsVolumePercent(Value: integer; UpdatePartialVolume: boolean);
 var
   Clamped: integer;
   Playback: IAudioPlayback;
@@ -831,9 +832,35 @@ begin
     Clamped := Value;
 
   Ini.VocalsVolume := Clamped;
+  if UpdatePartialVolume then
+    Ini.LastPartialVocalsVolume := Clamped;
+
   Playback := AudioPlayback();
   if assigned(Playback) then
     Playback.SetVocalsBalance(Clamped / 100);
+end;
+
+procedure ToggleVocalsVolume;
+var
+  TargetPercent: integer;
+  VolumeChanged: boolean;
+begin
+  if Ini.VocalsVolume >= 100 then
+  begin
+    TargetPercent := Ini.LastPartialVocalsVolume;
+    if (TargetPercent <= 0) or (TargetPercent >= 100) then
+      TargetPercent := 0;
+  end
+  else if Ini.VocalsVolume > 0 then
+    TargetPercent := 0
+  else
+    TargetPercent := 100;
+
+  VolumeChanged := Ini.VocalsVolume <> TargetPercent;
+  SetVocalsVolumePercent(TargetPercent, false);
+
+  if VolumeChanged then
+    Ini.Save;
 end;
 
 procedure SetSfxVolumePercent(Value: integer);
