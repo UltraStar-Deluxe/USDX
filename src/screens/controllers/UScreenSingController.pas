@@ -728,6 +728,7 @@ begin
   if (ScreenSong.Mode = smMedley) then
     CatSongs.Selected := PlaylistMedley.Song[PlaylistMedley.CurrentMedleySong-1];
 
+  ScreenSong.MarkSongStarted;
   CurrentSong := CatSongs.Song[CatSongs.Selected];
 
   {for I := 0 to High(screenSingViewRef.StaticDuet) do
