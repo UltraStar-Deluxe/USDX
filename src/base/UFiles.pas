@@ -83,6 +83,60 @@ end;
 //--------------------
 // Saves a Song
 //--------------------
+function DetectLineBreak(const Name: IPath): RawByteString;
+var
+  FileStream: TBinaryFileStream;
+  FileContent: RawByteString;
+  Index: integer;
+  CRLFCount: integer;
+  LFCount: integer;
+  CRCount: integer;
+begin
+  Result := AnsiString(#13#10);
+  if not Name.IsFile then
+    Exit;
+
+  try
+    FileStream := TBinaryFileStream.Create(Name, fmOpenRead);
+    try
+      SetLength(FileContent, FileStream.Size);
+      if Length(FileContent) > 0 then
+        FileStream.ReadBuffer(FileContent[1], Length(FileContent));
+    finally
+      FileStream.Free;
+    end;
+  except
+    Exit;
+  end;
+
+  CRLFCount := 0;
+  LFCount := 0;
+  CRCount := 0;
+  Index := 1;
+  while Index <= Length(FileContent) do
+  begin
+    if FileContent[Index] = #13 then
+    begin
+      if (Index < Length(FileContent)) and (FileContent[Index + 1] = #10) then
+      begin
+        Inc(CRLFCount);
+        Inc(Index);
+      end
+      else
+        Inc(CRCount);
+    end
+    else if FileContent[Index] = #10 then
+      Inc(LFCount);
+
+    Inc(Index);
+  end;
+
+  if (LFCount > CRLFCount) and (LFCount >= CRCount) then
+    Result := AnsiString(#10)
+  else if CRCount > CRLFCount then
+    Result := AnsiString(#13);
+end;
+
 function SaveSong(const Song: TSong; const Tracks: array of TLines; const Name: IPath; Relative: boolean): TSaveSongResult;
 var
   CurrentLine:      integer;
@@ -125,6 +179,8 @@ begin
   try
     SongFile := TMemTextFileStream.Create(Name, fmCreate);
     try
+      SongFile.LineBreak := DetectLineBreak(Name);
+
       if Song.FormatVersion.MinVersion(1,0,0,true) then
       begin
         // Only save version if it is at least 1.0.0
