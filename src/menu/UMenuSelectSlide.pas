@@ -357,9 +357,12 @@ begin
   SelectBool := Value;
   if Value then
   begin
-    Texture.ColR := ColR;
-    Texture.ColG := ColG;
-    Texture.ColB := ColB;
+    if (not Colorized) then
+    begin
+      Texture.ColR := ColR;
+      Texture.ColG := ColG;
+      Texture.ColB := ColB;
+    end;
     Texture.Int := Int;
 
     Text.ColR := TColR;
@@ -367,9 +370,12 @@ begin
     Text.ColB := TColB;
     Text.Int := TInt;
 
-    TextureSBG.ColR := SBGColR;
-    TextureSBG.ColG := SBGColG;
-    TextureSBG.ColB := SBGColB;
+    if (not ColorizedSBG) then
+    begin
+      TextureSBG.ColR := SBGColR;
+      TextureSBG.ColG := SBGColG;
+      TextureSBG.ColB := SBGColB;
+    end;
     TextureSBG.Int := SBGInt;
   end
   else
