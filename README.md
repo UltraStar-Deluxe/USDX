@@ -42,12 +42,7 @@ The [documentation](https://usdx.eu/docs/) contains more information on:
 * [Customization](https://usdx.eu/docs/customization/)
 
 ### 5. Compiling
-There are two main ways to compile the game:
-
-1. Lazarus IDE
-2. `./autogen.sh && ./configure [--enable-debug] && make`
-
-The executable will be `game/ultrastardx[.exe]`.
+The game has an Autotools-based buildsystem and can be compiled by running `./autogen.sh && ./configure [--enable-debug] && make`. The executable will be `game/ultrastardx[.exe]`.
 
 For extended information, dependencies, OS-specific notes and configure flags, see [COMPILING.md](COMPILING.md).
 
