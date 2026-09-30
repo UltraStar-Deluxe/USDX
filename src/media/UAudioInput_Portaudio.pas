@@ -140,6 +140,7 @@ var
   Error:       TPaError;
   inputParams: TPaStreamParameters;
   deviceInfo:  PPaDeviceInfo;
+  StreamInfo : PPaStreamInfo;
   {$IFDEF UsePortmixer}
   SourceIndex: integer;
   {$ENDIF}
@@ -160,7 +161,6 @@ begin
   end;
 
   Log.LogStatus('Open ' + deviceInfo^.name, 'Portaudio');
-  Log.LogStatus('Latency of ' + deviceInfo^.name + ': ' + floatToStr(inputParams.suggestedLatency), 'Portaudio');
 
   // open input stream
   Error := Pa_OpenStream(RecordStream, @inputParams, nil,
@@ -172,6 +172,14 @@ begin
     Log.LogError('Error opening stream: ' + Pa_GetErrorText(Error), 'TPortaudioInputDevice.Open');
     Exit;
   end;
+
+  StreamInfo := Pa_GetStreamInfo(RecordStream);
+  if (StreamInfo <> nil) then
+    Log.LogStatus('Latency of ' + deviceInfo^.name + ': ' + 
+                  floatToStr(StreamInfo^.inputLatency * 1000) + 
+                  'ms (requested: ' + 
+                  floatToStr(inputParams.suggestedLatency * 1000) + 
+                  'ms)', 'Portaudio');
 
   {$IFDEF UsePortmixer}
     // open default mixer
