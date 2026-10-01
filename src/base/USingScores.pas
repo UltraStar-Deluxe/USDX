@@ -54,6 +54,23 @@ const
   MaxPositions = 6; // maximum of score positions that could be added
 
 type
+  TSingInfoBarMode = (
+    sibOff,
+    sibBoth,
+    sibRatingOnly,
+    sibRemainingOnly
+  );
+
+  TBarRect = record
+    X: real;
+    Y: real;
+    W: real;
+    H: real;
+  end;
+
+  TSingBarSegment = (sbsRating, sbsRemaining);
+
+type
   //-----------
   // TScorePlayer - record containing information about a players score
   //-----------
@@ -61,13 +78,20 @@ type
     Position:       byte;     // index of the position where the player should be drawn
     Enabled:        boolean;  // is the score display enabled
     Visible:        boolean;  // is the score display visible
-    Score:          word;     // current score of the player
+    Score:          word;     // current score of the player (displayed / rounded)
+    ScoreActual:    single;   // precise accumulated score (unrounded)
     ScoreDisplayed: word;     // score cur. displayed (for counting up)
     ScoreBG:        TTexture; // texture of the players scores bg
     Color:          TRGB;     // the players color
     RBPos:          real;     // cur. percentille of the rating bar
     RBTarget:       real;     // target position of rating bar
     RBVisible:      boolean;  // is rating bar drawn
+    RemainingPos:   real;     // current percent of remaining-score bar
+    RemainingTarget: real;    // target percent of remaining-score bar
+    HighscoreMax:    integer; // best stored highscore for this song/difficulty
+    HighscoreAvg:    integer; // average stored highscore for this song/difficulty
+    HighscoreReady:  boolean; // cached flag for DB reads
+    RemainingPossibleScore: real; // remaining achievable base score (notes/rap/golden)
   end;
   aScorePlayer = array [0..MaxPlayers-1] of TScorePlayer;
 
@@ -145,6 +169,7 @@ type
       // only defined during draw, time passed between
       // current and previous call of draw
       TimePassed: Cardinal;
+      InfoBarMode: TSingInfoBarMode;
 
       // draws a popup by pointer
       procedure DrawPopUp(const PopUp: PScorePopUp);
@@ -155,8 +180,12 @@ type
       // draws a score by playerindex
       procedure DrawScore(const Index: integer);
 
-      // draws the rating bar by playerindex
-      procedure DrawRatingBar(const Index: integer);
+      // draws rating/remaining bars by player index
+      procedure DrawInfoBars(const Index: integer);
+      procedure DrawBarSegment(const Index: integer; const Rect: TBarRect; const Segment: TSingBarSegment);
+      function TryGetBarRect(const Index: integer; out Rect: TBarRect): boolean;
+      procedure UpdateBarProgress(var CurrentPos: real; const TargetPos: real);
+      procedure EnsureHighscoreStats(const Index: integer);
 
       // removes a popup w/o destroying the list
       procedure KillPopUp(const last, cur: PScorePopUp);
@@ -176,7 +205,6 @@ type
         PopUpTex:   array [0..8] of TTexture; // textures for every popup rating
 
         RatingBar_BG_Tex:  TTexture; // rating bar texs
-        RatingBar_FG_Tex:  TTexture;
         RatingBar_Bar_Tex: TTexture;
 
       end;
@@ -223,6 +251,10 @@ type
       // spawns a new line bonus popup for the player
       procedure SpawnPopUp(const PlayerIndex: byte; const Rating: integer; const Score: integer);
 
+      procedure SetInfoBarMode(const Mode: TSingInfoBarMode);
+
+      procedure SetRemainingScore(const Player: byte; const RemainingRatio: single; const ActualScore: single = -1);
+
       // removes all popups from mem
       procedure KillAllPopUps;
 
@@ -239,7 +271,9 @@ uses
   UText,
   ULog,
   UNote,
-  UGraphic;
+  UGraphic,
+  UIni,
+  UDataBase;
 
 {**
  * sets some standard settings
@@ -276,8 +310,8 @@ begin
   Settings.PopUpTex[8] := nil;
 
   Settings.RatingBar_BG_Tex   := nil;
-  Settings.RatingBar_FG_Tex   := nil;
   Settings.RatingBar_Bar_Tex  := nil;
+  InfoBarMode := sibBoth;
 end;
 
 {**
@@ -303,13 +337,19 @@ begin
     aPlayers[PlayerCount].Enabled   := Enabled;
     aPlayers[PlayerCount].Visible   := Visible;
     aPlayers[PlayerCount].Score     := Score;
+    aPlayers[PlayerCount].ScoreActual := Score;
     aPlayers[PlayerCount].ScoreDisplayed := Score;
     aPlayers[PlayerCount].ScoreBG   := ScoreBG;
     aPlayers[PlayerCount].Color     := Color;
     aPlayers[PlayerCount].RBPos     := 0.5;
     aPlayers[PlayerCount].RBTarget  := 0.5;
     aPlayers[PlayerCount].RBVisible := true;
-
+    aPlayers[PlayerCount].RemainingPos := 1.0;
+    aPlayers[PlayerCount].RemainingTarget := 1.0;
+    aPlayers[PlayerCount].HighscoreMax := 0;
+    aPlayers[PlayerCount].HighscoreAvg := 0;
+    aPlayers[PlayerCount].HighscoreReady := false;
+    aPlayers[PlayerCount].RemainingPossibleScore := MAX_SONG_SCORE;
     Inc(oPlayerCount);
   end;
 end;
@@ -404,7 +444,6 @@ begin
 
   // rating bar tex
   Settings.RatingBar_BG_Tex   :=  Tex_SingBar_Back;
-  Settings.RatingBar_FG_Tex   :=  Tex_SingBar_Front;
   Settings.RatingBar_Bar_Tex  :=  Tex_SingBar_Bar;
 
   // load positions from theme
@@ -434,6 +473,7 @@ begin
   begin
     Diff := Score - Players[Player].Score;
     aPlayers[Player].Score := Score;
+    aPlayers[Player].ScoreActual := Score;
     Inc(aPlayers[Player].ScoreDisplayed, Diff);
   end;
 end;
@@ -724,7 +764,7 @@ begin
       begin
         DoRaiseScore(I);
         DrawScore(I);
-        DrawRatingBar(I);
+        DrawInfoBars(I);
       end
     else
       // draw players w/o rating bar
@@ -1186,11 +1226,72 @@ begin
 end;
 
 
-procedure TSingScores.DrawRatingBar(const Index: integer);
+procedure TSingScores.SetInfoBarMode(const Mode: TSingInfoBarMode);
+begin
+  InfoBarMode := Mode;
+end;
+
+procedure TSingScores.SetRemainingScore(const Player: byte; const RemainingRatio: single; const ActualScore: single);
+var
+  Clamped: real;
+begin
+  if (Player >= PlayerCount) then
+    Exit;
+
+  Clamped := RemainingRatio;
+  if Clamped < 0 then
+    Clamped := 0
+  else if Clamped > 1 then
+    Clamped := 1;
+
+  aPlayers[Player].RemainingTarget := Clamped;
+  aPlayers[Player].RemainingPossibleScore := Clamped * MAX_SONG_SCORE;
+
+  if (ActualScore >= 0) then
+    aPlayers[Player].ScoreActual := ActualScore;
+
+  if (not Enabled) or (not aPlayers[Player].Enabled) then
+    aPlayers[Player].RemainingPos := Clamped;
+end;
+
+procedure TSingScores.DrawInfoBars(const Index: integer);
+var
+  Rect, SplitRect: TBarRect;
+  HalfHeight: real;
+begin
+  if (InfoBarMode = sibOff) then
+    Exit;
+
+  if not TryGetBarRect(Index, Rect) then
+    Exit;
+
+  case InfoBarMode of
+    sibRatingOnly:
+      DrawBarSegment(Index, Rect, sbsRating);
+    sibRemainingOnly:
+      DrawBarSegment(Index, Rect, sbsRemaining);
+    sibBoth:
+      begin
+        HalfHeight := (Rect.H) / 2;
+        if HalfHeight < 2 then
+          HalfHeight := Rect.H / 2;
+        if HalfHeight <= 0 then
+          HalfHeight := Rect.H;
+
+        SplitRect := Rect;
+        SplitRect.H := HalfHeight;
+        DrawBarSegment(Index, SplitRect, sbsRating);
+
+        SplitRect.Y := Rect.Y + Rect.H - HalfHeight;
+        SplitRect.H := HalfHeight;
+        DrawBarSegment(Index, SplitRect, sbsRemaining);
+      end;
+  end;
+end;
+
+function TSingScores.TryGetBarRect(const Index: integer; out Rect: TBarRect): boolean;
 var
   Position:   TScorePosition;
-  R, G, B:    real;
-  Diff: real;
   Drawing: boolean;
   procedure updatePosition(themeElements: TThemeSingPlayer);
   begin
@@ -1200,15 +1301,13 @@ var
     Position.RBH := themeElements.SingBar.H;
   end;
 begin
-  { if screens = 2 and playerplay <= 3 the 2nd screen shows the
-   textures of screen 1 }
+  Result := false;
+
   if (Screens = 2) and (PlayersPlay <= 3) then
     ScreenAct := 1;
 
   Drawing := false;
 
-  // DIRTY HACK
-  // correct position for duet with 3/6 players and 4/6 players in one screen
   if (Screens = 1) and ((PlayersPlay = 4) or (PlayersPlay = 6)) then
   begin
     Drawing := true;
@@ -1290,84 +1389,215 @@ begin
     end;
   end;
 
-  if (Drawing) then
-  begin
-    if (Enabled and Players[Index].Enabled) then
-    begin
-      // move position if enabled
-      Diff := Players[Index].RBTarget - Players[Index].RBPos;
-      if (Abs(Diff) < 0.02) then
-        aPlayers[Index].RBPos := aPlayers[Index].RBTarget
-      else
-        aPlayers[Index].RBPos := aPlayers[Index].RBPos + Diff*0.1;
-    end;
+  if (not Drawing) then
+    Exit;
 
-    // get colors for rating bar
-    if (Players[index].RBPos <= 0.22) then
+  Rect.X := Position.RBX;
+  Rect.Y := Position.RBY;
+  Rect.W := Position.RBW;
+  Rect.H := Position.RBH;
+
+  Result := true;
+end;
+
+procedure TSingScores.DrawBarSegment(const Index: integer; const Rect: TBarRect; const Segment: TSingBarSegment);
+var
+  CurrentPosPtr, TargetPosPtr: ^real;
+  Value: real;
+  FillRatio: real;
+  ScoreRatio: real;
+  ScoreValue: real;
+  R, G, B: real;
+  FillEnd: real;
+  StartX: real;
+  BackgroundEnd: real;
+  PotentialPoints: real;
+  BackgroundRatio: real;
+  MaxScoreValue, AvgScoreValue: integer;
+begin
+  if Rect.H <= 0 then
+    Exit;
+
+  if Segment = sbsRating then
+  begin
+    CurrentPosPtr := @aPlayers[Index].RBPos;
+    TargetPosPtr := @aPlayers[Index].RBTarget;
+  end
+  else
+  begin
+    CurrentPosPtr := @aPlayers[Index].RemainingPos;
+    TargetPosPtr := @aPlayers[Index].RemainingTarget;
+  end;
+
+  StartX := Rect.X;
+  BackgroundRatio := 1.0;
+  ScoreRatio := 0;
+  BackgroundEnd := Rect.X + Rect.W; // default for rating segment
+
+  if Segment = sbsRemaining then
+  begin
+    EnsureHighscoreStats(Index);
+
+    // remaining achievable points = current score + remaining perfect score (notes + bonuses)
+  PotentialPoints := aPlayers[Index].ScoreActual +
+             aPlayers[Index].RemainingPossibleScore;
+    if PotentialPoints > MAX_SONG_SCORE then
+      PotentialPoints := MAX_SONG_SCORE
+    else if PotentialPoints < 0 then
+      PotentialPoints := 0;
+
+    BackgroundRatio := PotentialPoints / MAX_SONG_SCORE;
+    TargetPosPtr^ := BackgroundRatio;
+
+    ScoreValue := aPlayers[Index].ScoreDisplayed + GetPopUpPoints(Index);
+    if ScoreValue < 0 then
+      ScoreValue := 0
+    else if ScoreValue > MAX_SONG_SCORE then
+      ScoreValue := MAX_SONG_SCORE;
+    ScoreRatio := ScoreValue / MAX_SONG_SCORE;
+  end;
+
+  if Enabled and Players[Index].Enabled then
+    UpdateBarProgress(CurrentPosPtr^, TargetPosPtr^)
+  else
+    CurrentPosPtr^ := TargetPosPtr^;
+
+  Value := CurrentPosPtr^;
+  if Value < 0 then
+    Value := 0
+  else if Value > 1 then
+    Value := 1;
+
+  FillRatio := Value;
+  if Segment = sbsRemaining then
+    FillRatio := ScoreRatio;
+
+  FillEnd := Rect.X + Rect.W * FillRatio;
+
+  if Segment = sbsRemaining then
+    BackgroundEnd := Rect.X + Rect.W * Value
+  else
+    BackgroundEnd := Rect.X + Rect.W * BackgroundRatio;
+
+  if Segment = sbsRating then
+  begin
+    if (Value <= 0.22) then
     begin
-      R := 1;
-      G := 0;
-      B := 0;
+      R := 1; G := 0; B := 0;
     end
-    else if (Players[index].RBPos <= 0.42) then
+    else if (Value <= 0.42) then
     begin
-      R := 1;
-      G := Players[index].RBPos * 5;
-      B := 0;
+      R := 1; G := Value * 5; B := 0;
     end
-    else if (Players[index].RBPos <= 0.57) then
+    else if (Value <= 0.57) then
     begin
-      R := 1;
-      G := 1;
-      B := 0;
+      R := 1; G := 1; B := 0;
     end
-    else if (Players[index].RBPos <= 0.77) then
+    else if (Value <= 0.77) then
     begin
-      R := 1 - (Players[index].RBPos - 0.57) * 5;
-      G := 1;
-      B := 0;
+      R := 1 - (Value - 0.57) * 5; G := 1; B := 0;
     end
     else
     begin
-      R := 0;
-      G := 1;
-      B := 0;
+      R := 0; G := 1; B := 0;
     end;
+  end
+  else
+  begin
+    if FillEnd > BackgroundEnd then
+      FillEnd := BackgroundEnd;
 
-    // draw rating bar bg
+    MaxScoreValue := aPlayers[Index].HighscoreMax;
+    AvgScoreValue := aPlayers[Index].HighscoreAvg;
+
+    if (MaxScoreValue <= 0) or (PotentialPoints >= MaxScoreValue) then
+    begin
+      R := 0; G := 1; B := 0; // green
+    end
+    else if (AvgScoreValue > 0) and (PotentialPoints < AvgScoreValue) then
+    begin
+      R := 1; G := 0; B := 0; // red
+    end
+    else
+    begin
+      R := 1; G := 1; B := 0; // yellow
+    end;
+  end;
+
+  if Settings.RatingBar_BG_Tex <> nil then
+  begin
     with Settings.RatingBar_BG_Tex do
     begin
-      X := Position.RBX;
-      Y := Position.RBY;
-      W := Position.RBW;
-      H := Position.RBH;
-      Alpha := 0.8
+      X := Rect.X;
+      Y := Rect.Y;
+      W := BackgroundEnd - Rect.X;
+      H := Rect.H;
+      ColR := 1;
+      ColG := 1;
+      ColB := 1;
+      Alpha := 0.8;
     end;
+    Renderer.DrawTexture(Settings.RatingBar_BG_Tex);
+  end;
 
-    // draw rating bar itself
+  if Settings.RatingBar_Bar_Tex <> nil then
+  begin
     with Settings.RatingBar_Bar_Tex do
     begin
-      X := Position.RBX;
-      Y := Position.RBY;
-      W := Position.RBW * Players[Index].RBPos;
-      H := Position.RBH;
+      X := StartX;
+      Y := Rect.Y;
+      W := FillEnd - StartX;
+      H := Rect.H;
       ColR := R;
       ColG := G;
       ColB := B;
+      Alpha := 1;
     end;
     Renderer.DrawTexture(Settings.RatingBar_Bar_Tex);
+  end;
+end;
 
-    // draw rating bar fg (the thing with the 3 lines to get better readability)
-    with Settings.RatingBar_FG_Tex do
-    begin
-      X := Position.RBX;
-      Y := Position.RBY;
-      W := Position.RBW;
-      H := Position.RBH;
-      Alpha := 0.6;
-    end;
-    Renderer.DrawTexture(Settings.RatingBar_FG_Tex);
-  end; // eo Player has Position
+procedure TSingScores.UpdateBarProgress(var CurrentPos: real; const TargetPos: real);
+var
+  Diff: real;
+begin
+  Diff := TargetPos - CurrentPos;
+  if Abs(Diff) < 0.02 then
+    CurrentPos := TargetPos
+  else
+    CurrentPos := CurrentPos + Diff * 0.1;
+end;
+
+procedure TSingScores.EnsureHighscoreStats(const Index: integer);
+var
+  Difficulty: integer;
+begin
+  if (Index < 0) or (Index >= PlayerCount) then
+    Exit;
+
+  if aPlayers[Index].HighscoreReady then
+    Exit;
+
+  aPlayers[Index].HighscoreReady := true;
+  aPlayers[Index].HighscoreMax := 0;
+  aPlayers[Index].HighscoreAvg := 0;
+
+  if (CurrentSong = nil) or (not Assigned(DataBase)) then
+    Exit;
+
+  Difficulty := Ini.PlayerLevel[Index];
+  if (Difficulty < 0) then
+    Difficulty := 0
+  else if (Difficulty > 2) then
+    Difficulty := 2;
+
+  try
+    aPlayers[Index].HighscoreMax := DataBase.ReadMax_ScoreLocal(CurrentSong.Artist, CurrentSong.Title, Difficulty);
+    aPlayers[Index].HighscoreAvg := DataBase.ReadMedia_ScoreLocal(CurrentSong.Artist, CurrentSong.Title, Difficulty);
+  except
+    on E: Exception do
+      Log.LogWarn('Unable to fetch highscore stats: ' + E.Message, 'TSingScores.EnsureHighscoreStats');
+  end;
 end;
 
 end.
