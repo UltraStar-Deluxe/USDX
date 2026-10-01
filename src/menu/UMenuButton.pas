@@ -447,7 +447,7 @@ begin
     end;
 
     //Draw FadeTex
-    if (FadeTex <> nil) then
+    if Fade and (FadeTex <> nil) then
       Renderer.DrawTexture(FadeTex);
 
     for T := 0 to High(Text) do
