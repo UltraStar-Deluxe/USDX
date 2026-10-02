@@ -98,7 +98,7 @@ type
 
       procedure SetCursor(WordIndex, CharIndex: integer);
       procedure ClearCursor;
-      function GetCursorFromPoint(const X, Y: real; out WordIndex, CharIndex: integer): boolean;
+      function GetCursorFromPoint(const X, Y, HitTop, HitBottom: real; out WordIndex, CharIndex: integer): boolean;
 
       procedure Clear;
       procedure Draw;
@@ -348,7 +348,7 @@ begin
   Result := MaxChars;
 end;
 
-function TEditorLyrics.GetCursorFromPoint(const X, Y: real; out WordIndex, CharIndex: integer): boolean;
+function TEditorLyrics.GetCursorFromPoint(const X, Y, HitTop, HitBottom: real; out WordIndex, CharIndex: integer): boolean;
 var
   Index: integer;
   LineY: real;
@@ -370,7 +370,12 @@ begin
 
   LineY := Word[0].Y;
   LineHalfHeight := SizeR;
-  if (Y < LineY - LineHalfHeight) or (Y > LineY + LineHalfHeight) then
+  if (HitBottom > HitTop) then
+  begin
+    if (Y < HitTop) or (Y > HitBottom) then
+      Exit;
+  end
+  else if (Y < LineY - LineHalfHeight) or (Y > LineY + LineHalfHeight) then
     Exit;
 
   CursorWidth := 0;
