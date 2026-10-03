@@ -83,8 +83,11 @@
   {$DEFINE UseBASSPlayback}
   {$DEFINE UseBASSInput}
 {$ELSEIF Defined(HavePortaudio)}
-  {$DEFINE UseSDLPlayback}
-  {.$DEFINE UsePortaudioPlayback}
+  {$IFDEF DARWIN}
+    {$DEFINE UsePortaudioPlayback}
+  {$ELSE}
+    {$DEFINE UseSDLPlayback}
+  {$ENDIF}
   {$DEFINE UsePortaudioInput}
   {$IFDEF HavePortmixer}
     {$DEFINE UsePortmixer}
