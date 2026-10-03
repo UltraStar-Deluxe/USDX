@@ -219,6 +219,7 @@ end;
 
 procedure TAudio_Dummy.ToggleKaraoke;
 begin
+  ToggleVocalsVolume;
 end;
 
 procedure TAudio_Dummy.Pause;

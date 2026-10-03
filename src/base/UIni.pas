@@ -189,6 +189,7 @@ type
 
       AudioVolume:    integer;
       VocalsVolume:   integer;
+      LastPartialVocalsVolume: integer;
       SfxVolume:      integer;
       BackgroundMusicVolume: integer;
 
@@ -1633,6 +1634,7 @@ begin
 
   AudioVolume  := ReadVolumePercent('Sound', 'AudioVolume', 100);
   VocalsVolume := ReadVolumePercent('Sound', 'VocalsVolume', 100);
+  LastPartialVocalsVolume := ReadVolumePercent('Sound', 'LastPartialVocalsVolume', 0);
   SfxVolume    := ReadVolumePercent('Sound', 'SfxVolume', 100);
   PreviewVolume := ReadVolumePercent('Sound', 'PreviewVolume', 30);
   BackgroundMusicVolume := ReadVolumePercent('Sound', 'BackgroundMusicVolume', 40);
@@ -1961,6 +1963,7 @@ begin
     // Volume Settings
     IniFile.WriteInteger('Sound', 'AudioVolume', AudioVolume);
     IniFile.WriteInteger('Sound', 'VocalsVolume', VocalsVolume);
+    IniFile.WriteInteger('Sound', 'LastPartialVocalsVolume', LastPartialVocalsVolume);
     IniFile.WriteInteger('Sound', 'SfxVolume', SfxVolume);
     IniFile.WriteInteger('Sound', 'BackgroundMusicVolume', BackgroundMusicVolume);
     IniFile.WriteInteger('Sound', 'PreviewVolume', PreviewVolume);
