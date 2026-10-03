@@ -10,43 +10,46 @@
 
 ### 1. Introduction:
 
-To translate USDX to a new language, copy the file Language.new to [Language].ini with [Language]
-replaced by the English name of your language (e.g. German.ini for German).
+USDX uses `English.ini` as the source template for game translations. To add a new
+language, copy `English.ini` to `[Language].ini`, with `[Language]` replaced by the
+English name of the target language (for example, `German.ini` for German).
+
 Translate all texts according to section (2) of this file.
 
 ---
 
 ### 2. Translate texts:
 
-1. For each target language there is a translation file named [Language].ini where [Language] is the target
-   language.
-2. All lines that have not been translated so far are prefixed with `;TODO:` like the following line
+1. For each target language there is a translation file named `[Language].ini` where `[Language]`
+   is the target language.
+2. Keep the same sections and keys as `English.ini`. Only translate the text after the `=`.
+3. Set the `LANGUAGE` value to the native display name of the language.
+4. Existing translation files may contain lines prefixed with `;TODO:` like the following line:
    
    ```
    ;TODO: SOME_OPTION=English text here
    ```
    
-3. Translate the text if you are familiar with the target language
-4. After you have done so remove the `;TODO: ` prefix so that it looks like in this German translation:
+5. Translate the text if you are familiar with the target language. After you have done so,
+   remove the `;TODO: ` prefix so that it looks like in this German translation:
 
    ```
    SOME_OPTION=Hier der deutsche Text
    ```
 
    IMPORTANT: Do NOT remove the `;TODO: ` prefix if you did not translate the text and it is still English.
-5. At the end of the file there might be some lines which start with `;INVALID: ` or `;UNUSED: `.
+6. At the end of the file there might be some lines which start with `;INVALID: ` or `;UNUSED: `.
    Invalid lines are not correctly formatted lines and might crash USDX. Unused lines are not used
    anymore by USDX or they have been renamed.
-6. If you want you may add your name to the END (not the beginning) of the file:
+7. If you want you may add your name to the END (not the beginning) of the file:
    
    ```
    ;TRANSLATOR: Mario Translatori
    ```
    
    Note the `;` in front of it.
-7. Share your translation with others:
-   - Send the translated file to our Patch-Tracker at SourceForge (http://sourceforge.net/tracker/?group_id=191560&atid=937872)
-   - or contact us via our Discord channel (https://discord.gg/qfS2b7VwDG)
+8. Share your translation with others by opening a pull request on GitHub or by contacting us
+   via our Discord channel (https://discord.gg/qfS2b7VwDG).
 
 ---
 
