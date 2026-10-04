@@ -551,14 +551,22 @@ begin
   Renderer.DepthTest := true;
   Renderer.SetOrthographicProjection(0, RenderW, RenderH, 0, -1, 100);
   Renderer.VSync := true;
-  SDL_ShowWindow(screen);
-  if (CurrentWindowMode = Mode_Borderless) then
+
+  // Borderless fullscreen and windows were started with SDL_WINDOW_HIDDEN flag to avoid flickers during OpenGL
+  // initialization, they need to be shown to the user after the OpenGL context is successfully created
+  if ((CurrentWindowMode = Mode_Borderless) or (CurrentWindowMode = Mode_Windowed)) then
   begin
-    SDL_SetWindowFullscreen(screen, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    DisplayIndex := SDL_GetWindowDisplayIndex(screen);
-    if (DisplayIndex >= 0 ) and (SDL_GetDesktopDisplayMode(DisplayIndex, @DisplayMode) = 0) then
-      OnWindowResized(DisplayMode.w, DisplayMode.h);
-  end;
+    SDL_ShowWindow(screen);
+    if (CurrentWindowMode = Mode_Borderless) then
+    begin
+      SDL_SetWindowFullscreen(screen, SDL_WINDOW_FULLSCREEN_DESKTOP);
+      DisplayIndex := SDL_GetWindowDisplayIndex(screen);
+      if (DisplayIndex >= 0 ) and (SDL_GetDesktopDisplayMode(DisplayIndex, @DisplayMode) = 0) then
+        OnWindowResized(DisplayMode.w, DisplayMode.h);
+    end
+  end
+  else
+    SDL_SetWindowFullscreen(screen, SDL_WINDOW_FULLSCREEN);
 
 
   // load icon image (must be 32x32 for win32)
@@ -731,7 +739,7 @@ NoDoubledResolution:
     Log.LogStatus('Set Video Mode...   Fullscreen', 'SDL_SetVideoMode');
     CurrentWindowMode := Mode_Fullscreen;
     screen := SDL_CreateWindow('UltraStar Deluxe loading...',
-              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN or SDL_WINDOW_RESIZABLE or SDL_WINDOW_HIDDEN);
+              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, W, H, SDL_WINDOW_OPENGL or SDL_WINDOW_FULLSCREEN or SDL_WINDOW_RESIZABLE);
   end
   else
   begin
