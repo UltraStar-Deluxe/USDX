@@ -7,7 +7,7 @@ For linking and running the game, the following libraries are also required:
 - [BASS](http://www.un4seen.com/bass.html)
 - some fonts like DejaVu
 - PortAudio
-- Lua 5.1, 5.2, 5.3 or 5.4
+- Lua 5.1, 5.2, 5.3, 5.4, or 5.5
 - OpenCV if you want webcam support
 - projectM 4,x if you want audio visualisation support
 
