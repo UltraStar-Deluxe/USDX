@@ -292,6 +292,7 @@ const
   Skin_P2_NotesB = 430; // 430 / 300
 
 procedure Initialize3D (Title: string);
+procedure StartSingleSong;
 procedure Finalize3D;
 procedure Reinitialize3D;
 
@@ -326,6 +327,7 @@ uses
   Math,
   UDisplay,
   UCommandLine,
+  UNote,
   UPathUtils,
   UThemes;
 
@@ -531,6 +533,63 @@ end;
 
 const
   WINDOW_ICON = 'icons/ultrastardx-icon.png';
+
+// starts singing the song given with the -song parameter
+procedure StartSingleSong;
+var
+  I:           integer;
+  SongIndex:   integer;
+  AvatarIndex: integer;
+  Col:         TRGB;
+begin
+  SongIndex := -1;
+  for I := 0 to High(CatSongs.Song) do
+  begin
+    if (not CatSongs.Song[I].Main) and
+       CatSongs.Song[I].Path.Append(CatSongs.Song[I].FileName).GetAbsolutePath.Equals(Params.Song) then
+    begin
+      SongIndex := I;
+      Break;
+    end;
+  end;
+
+  if (SongIndex = -1) then
+  begin
+    Log.LogError('Song not found: ' + Params.Song.ToNative, 'StartSingleSong');
+    ExitCode := 1;
+    Display.Fade := 0;
+    Display.NextScreenWithCheck := nil;
+    Display.CheckOK := true;
+    Exit;
+  end;
+
+  CatSongs.Selected := SongIndex;
+
+  // the player-selection screen normally initializes Player and the avatars (see TScreenName)
+  PlayersPlay := IPlayersVals[Ini.Players];
+  SetLength(Player, PlayersPlay);
+  for I := 0 to PlayersPlay - 1 do
+  begin
+    Player[I].Name := Ini.Name[I];
+    Player[I].Level := Ini.PlayerLevel[I];
+
+    AvatarIndex := GetArrayIndex(AvatarsMD5, Ini.PlayerAvatar[I]);
+    if (AvatarIndex > 0) then
+      AvatarPlayerTextures[I+1] := Avatars.AddAvatar(AvatarsList[AvatarIndex]).GetTexture()
+    else
+    begin
+      AvatarPlayerTextures[I+1] := NoAvatarTexture[I+1];
+
+      Col := GetPlayerColor(Ini.PlayerColor[I]);
+      AvatarPlayerTextures[I+1].ColR := Col.R;
+      AvatarPlayerTextures[I+1].ColG := Col.G;
+      AvatarPlayerTextures[I+1].ColB := Col.B;
+    end;
+  end;
+
+  ScreenSing := TScreenSingController.Create;
+  Display.CurrentScreen^.FadeTo(@ScreenSing);
+end;
 
 procedure Initialize3D (Title: string);
 var

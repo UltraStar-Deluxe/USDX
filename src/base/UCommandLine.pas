@@ -73,6 +73,7 @@ type
       SongPath:   IPath;
       ConfigFile: IPath;
       ScoreFile:  IPath;
+      Song:       IPath;
 
       Renderer: string;
 
@@ -94,6 +95,7 @@ const
   cDebug           = 'debug';
   cCheckSongs      = 'check-songs';
   cMediaInterfaces = 'showinterfaces';
+  cSong            = 'song';
 
 
 implementation
@@ -133,6 +135,7 @@ begin
   writeln('  '+ Fmt(cMediaInterfaces) +' : Show in-use media interfaces');
   writeln('  '+ Fmt(cDebug) +' : Display Debugging info');
   writeln('  '+ Fmt(cCheckSongs) +' : Fully validate song files during startup');
+  writeln('  '+ Fmt(cSong + ' <file>') +' : Sing the given song and exit');
   writeln;
 
   platform.halt;
@@ -161,6 +164,7 @@ begin
   SongPath    := PATH_NONE;
   ConfigFile  := PATH_NONE;
   ScoreFile   := PATH_NONE;
+  Song        := PATH_NONE;
 end;
 
 {**
@@ -293,6 +297,16 @@ begin
         begin
           // write value to string
           ScoreFile := Path(ParamStr(I + 1));
+        end;
+      end
+
+      else if (Command = cSong) then
+      begin
+        // check if there is another parameter to get the value from
+        if (PCount > I) then
+        begin
+          // write value to string
+          Song := Path(ParamStr(I + 1)).GetAbsolutePath;
         end;
       end
 

@@ -241,7 +241,10 @@ begin
     {**
       * Start background music
       *}
-    SoundLib.StartBgMusic;
+    if Params.Song.IsSet then
+      StartSingleSong
+    else
+      SoundLib.StartBgMusic;
 
     //------------------------------
     // Start Mainloop
