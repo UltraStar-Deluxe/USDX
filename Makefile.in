@@ -409,7 +409,7 @@ EXTRA_DYLIBS := @EXTRA_DYLIBS@
 # macOS app-bundle
 #################################################
 
-macos_bundle_path := UltraStarDeluxe.app/Contents
+macos_bundle_path := UltraStar\ Deluxe.app/Contents
 .PHONY: macos-app
 macos-app: all 
 # Create double clickable macOS application.
@@ -439,7 +439,7 @@ macos-app: all
 
 # final messages
 	@echo ""
-	@echo "macOS application created (UltraStarDeluxe.app)."
+	@echo "macOS application created (UltraStar Deluxe.app)."
 	@echo "Using @MACOS_PACKAGING@ with libdir @MACOS_PACKAGING_LIBDIR@"
 	@echo "Please report issues to the developer team, preferably on Discord (https://discord.gg/qfS2b7VwDG)."
 	@echo "Have fun."
@@ -464,7 +464,7 @@ macos-standalone-app: macos-app
 
 	@rm -f $(macos_bundle_path)/MacOS/$(USDX_BIN_NAME)
 	@$(MAKE) -f Makefile.macos-helper
-	codesign --force --deep --sign - ./UltraStarDeluxe.app
+	codesign --force --deep --sign - "./UltraStar Deluxe.app"
 
 
 # final messages
@@ -474,27 +474,27 @@ macos-standalone-app: macos-app
 
 .PHONY: macos-dmg
 macos-dmg: macos-standalone-app
-	@if test -d "/Volumes/UltraStarDeluxe"; then\
-		echo "Error: there is already a disk mounted on /Volumes/UltraStarDeluxe";\
+	@if test -d "/Volumes/UltraStar Deluxe"; then\
+		echo "Error: there is already a disk mounted on /Volumes/UltraStar Deluxe";\
 		exit 1;\
 	fi
-	$(RM) UltraStarDeluxe.dmg
-	$(RM) UltraStarDeluxe.sparseimage
-	$(HDIUTIL) create -type SPARSE -size 1g -fs HFS+ -volname UltraStarDeluxe -ov UltraStarDeluxe.sparseimage
-	$(HDIUTIL) attach UltraStarDeluxe.sparseimage
-	/bin/ln -s /Applications /Volumes/UltraStarDeluxe/Applications
-	/bin/cp -R UltraStarDeluxe.app /Volumes/UltraStarDeluxe
-	$(MKDIR) /Volumes/UltraStarDeluxe/Licenses
-	find $(USDX_GAME_DIR) -name 'LICENSE.*' -maxdepth 1 -exec cp {} /Volumes/UltraStarDeluxe/Licenses \;
-#	/bin/cp ultrastardx/icons/UltraStarDeluxeVolumeIcon.icns /Volumes/UltraStarDeluxe/.VolumeIcon.icns
-#	/Developer/Tools/SetFile -a C /Volumes/UltraStarDeluxe/.VolumeIcon.icns /Volumes/UltraStarDeluxe
-	codesign --force --deep --sign - /Volumes/UltraStarDeluxe/UltraStarDeluxe.app
-	$(HDIUTIL) detach /Volumes/UltraStarDeluxe
-	$(HDIUTIL) convert UltraStarDeluxe.sparseimage -format UDBZ -o UltraStarDeluxe.dmg
-	$(RM) UltraStarDeluxe.sparseimage
+	$(RM) "UltraStar Deluxe.dmg"
+	$(RM) "UltraStar Deluxe.sparseimage"
+	$(HDIUTIL) create -type SPARSE -size 1g -fs HFS+ -volname "UltraStar Deluxe" -ov "UltraStar Deluxe.sparseimage"
+	$(HDIUTIL) attach "UltraStar Deluxe.sparseimage"
+	/bin/ln -s /Applications "/Volumes/UltraStar Deluxe/Applications"
+	/bin/cp -R "UltraStar Deluxe.app" "/Volumes/UltraStar Deluxe"
+	$(MKDIR) "/Volumes/UltraStar Deluxe/Licenses"
+	find $(USDX_GAME_DIR) -name 'LICENSE.*' -maxdepth 1 -exec cp {} "/Volumes/UltraStar Deluxe/Licenses" \;
+#	/bin/cp "ultrastardx/icons/UltraStarDeluxeVolumeIcon.icns "/Volumes/UltraStar Deluxe/.VolumeIcon.icns"
+#	/Developer/Tools/SetFile -a C "/Volumes/UltraStar Deluxe/.VolumeIcon.icns" "/Volumes/UltraStar Deluxe"
+	codesign --force --deep --sign - "/Volumes/UltraStar Deluxe/UltraStar Deluxe.app"
+	$(HDIUTIL) detach "/Volumes/UltraStar Deluxe"
+	$(HDIUTIL) convert "UltraStar Deluxe.sparseimage" -format UDBZ -o "UltraStar Deluxe.dmg"
+	$(RM) "UltraStar Deluxe.sparseimage"
 
 	@echo ""
-	@echo "DMG Disk image created (UltraStarDeluxe.dmg)."
+	@echo "DMG Disk image created (UltraStar Deluxe.dmg)."
 	@echo ""
 
 # remove macOS apllication bundle and disk image
@@ -503,9 +503,9 @@ clean-macos: clean-macos-app clean-macos-dmg
 
 .PHONY: clean-macos-app
 clean-macos-app:
-	$(RM_REC) UltraStarDeluxe.app 
+	$(RM_REC) "UltraStar Deluxe.app"
 
 .PHONY: clean-macos-dmg
 clean-macos-dmg:
-	$(RM) UltraStarDeluxe.dmg 
-	$(RM) UltraStarDeluxe.sparseimage
+	$(RM) "UltraStar Deluxe.dmg"
+	$(RM) "UltraStar Deluxe.sparseimage"

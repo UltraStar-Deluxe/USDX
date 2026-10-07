@@ -45,7 +45,7 @@ Optional libraries:
 - `./autogen.sh`
 - `./configure` (see optional flags below)
 - `make` (on macOS: `make macos-standalone-app`)
-- `./game/ultrastardx[.exe]` (on MacOS: `open UltraStarDeluxe.app`)
+- `./game/ultrastardx[.exe]` (on MacOS: `open "UltraStar Deluxe.app"`)
 
 #### configure flags
 * `--enable-debug`: Outputs warnings and errors from Error.log also to the console, and prints stacktraces when an EAccessViolation occurs.

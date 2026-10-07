@@ -65,7 +65,7 @@ type
     public
       {**
        * Init simply calls @link(CreateUserFolders), which in turn scans the
-       * folder UltraStarDeluxe.app/Contents for all files and
+       * folder UltraStar Deluxe.app/Contents for all files and
        * folders. $HOME/Library/Application Support/UltraStarDeluxe_[USDX_VERSION]
        * is then checked for their presence and missing ones are copied.
        *}
