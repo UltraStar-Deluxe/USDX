@@ -138,7 +138,7 @@ jobs:
       - name: Build
         run: make macos-dmg
       - name: Rename DMG
-        run: mv UltraStarDeluxe.dmg UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}.dmg
+        run: mv "UltraStar Deluxe.dmg" "UltraStarDeluxe-mac-${{ env.arch }}-${{ env.versionName }}.dmg"
       - name: Upload Image Artifact
         uses: actions/upload-artifact@v6
         with:
