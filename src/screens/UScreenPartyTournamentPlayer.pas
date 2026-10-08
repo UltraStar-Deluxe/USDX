@@ -47,6 +47,7 @@ type
   TScreenPartyTournamentPlayer = class(TMenu)
     private
       SelectPlayers: cardinal;
+      LastEditedButton: integer;
 
       procedure UpdateInterface;
       procedure UpdatePartyTournament;
@@ -74,6 +75,7 @@ type
       constructor Create; override;
       function ShouldHandleInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean; out SuppressKey: boolean): boolean; override;
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
+      function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       procedure OnShow; override;
   end;
 
@@ -204,8 +206,22 @@ begin
     // check normal keys
     if (IsPrintableChar(CharCode)) then
     begin
-      Button[Interactions[Interaction].Num].Text[0].Text := Button[Interactions[Interaction].Num].Text[0].Text +
-                                          UCS4ToUTF8String(CharCode);
+      if LastEditedButton <> Interactions[Interaction].Num then
+      begin
+        // First character: replace the existing name
+        Button[Interactions[Interaction].Num].Text[0].Text :=
+          UCS4ToUTF8String(CharCode);
+
+        LastEditedButton := Interactions[Interaction].Num;
+      end
+      else
+      begin
+        // Following characters: append to the name
+        Button[Interactions[Interaction].Num].Text[0].Text :=
+          Button[Interactions[Interaction].Num].Text[0].Text +
+          UCS4ToUTF8String(CharCode);
+      end;
+
       Exit;
     end;
 
@@ -381,9 +397,19 @@ begin
   end;
 end;
 
+function TScreenPartyTournamentPlayer.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+begin
+  Result := true;
+  inherited ParseMouse(MouseButton, BtnDown, X, Y);
+  SetTextInput(Interactions[Interaction].Typ = iButton);
+end;
+
 constructor TScreenPartyTournamentPlayer.Create;
 begin
   inherited Create;
+
+  LastEditedButton := -1;
+  SetTextInput(false);
 
   LoadFromTheme(Theme.PartyTournamentPlayer);
 
@@ -391,25 +417,41 @@ begin
   Theme.PartyTournamentPlayer.SelectPlayers.showArrows := true;
   SelectPlayers := AddSelectSlide(Theme.PartyTournamentPlayer.SelectPlayers, CountPlayer, ITournamentPlayers);
 
-  AddButton(Theme.PartyTournamentPlayer.Player1Name);
-  AddButton(Theme.PartyTournamentPlayer.Player2Name);
-  AddButton(Theme.PartyTournamentPlayer.Player3Name);
-  AddButton(Theme.PartyTournamentPlayer.Player4Name);
+  Player1Name := AddButton(Theme.PartyTournamentPlayer.Player1Name);
+  Button[Player1Name].Text[0].Writable := true;
+  Player2Name := AddButton(Theme.PartyTournamentPlayer.Player2Name);
+  Button[Player2Name].Text[0].Writable := true;
+  Player3Name := AddButton(Theme.PartyTournamentPlayer.Player3Name);
+  Button[Player3Name].Text[0].Writable := true;
+  Player4Name := AddButton(Theme.PartyTournamentPlayer.Player4Name);
+  Button[Player4Name].Text[0].Writable := true;
 
-  AddButton(Theme.PartyTournamentPlayer.Player5Name);
-  AddButton(Theme.PartyTournamentPlayer.Player6Name);
-  AddButton(Theme.PartyTournamentPlayer.Player7Name);
-  AddButton(Theme.PartyTournamentPlayer.Player8Name);
+  Player5Name := AddButton(Theme.PartyTournamentPlayer.Player5Name);
+  Button[Player5Name].Text[0].Writable := true;
+  Player6Name := AddButton(Theme.PartyTournamentPlayer.Player6Name);
+  Button[Player6Name].Text[0].Writable := true;
+  Player7Name := AddButton(Theme.PartyTournamentPlayer.Player7Name);
+  Button[Player7Name].Text[0].Writable := true;
+  Player8Name := AddButton(Theme.PartyTournamentPlayer.Player8Name);
+  Button[Player8Name].Text[0].Writable := true;
 
-  AddButton(Theme.PartyTournamentPlayer.Player9Name);
-  AddButton(Theme.PartyTournamentPlayer.Player10Name);
-  AddButton(Theme.PartyTournamentPlayer.Player11Name);
-  AddButton(Theme.PartyTournamentPlayer.Player12Name);
+  Player9Name := AddButton(Theme.PartyTournamentPlayer.Player9Name);
+  Button[Player9Name].Text[0].Writable := true;
+  Player10Name := AddButton(Theme.PartyTournamentPlayer.Player10Name);
+  Button[Player10Name].Text[0].Writable := true;
+  Player11Name := AddButton(Theme.PartyTournamentPlayer.Player11Name);
+  Button[Player11Name].Text[0].Writable := true;
+  Player12Name := AddButton(Theme.PartyTournamentPlayer.Player12Name);
+  Button[Player12Name].Text[0].Writable := true;
 
-  AddButton(Theme.PartyTournamentPlayer.Player13Name);
-  AddButton(Theme.PartyTournamentPlayer.Player14Name);
-  AddButton(Theme.PartyTournamentPlayer.Player15Name);
-  AddButton(Theme.PartyTournamentPlayer.Player16Name);
+  Player13Name := AddButton(Theme.PartyTournamentPlayer.Player13Name);
+  Button[Player13Name].Text[0].Writable := true;
+  Player14Name := AddButton(Theme.PartyTournamentPlayer.Player14Name);
+  Button[Player14Name].Text[0].Writable := true;
+  Player15Name := AddButton(Theme.PartyTournamentPlayer.Player15Name);
+  Button[Player15Name].Text[0].Writable := true;
+  Player16Name := AddButton(Theme.PartyTournamentPlayer.Player16Name);
+  Button[Player16Name].Text[0].Writable := true;
 
   Interaction := 0;
 
@@ -417,21 +459,32 @@ end;
 
 procedure TScreenPartyTournamentPlayer.OnShow;
 var
-  I:    integer;
+  I: integer;
 begin
   inherited;
+
+  LastEditedButton := -1;
+  SetTextInput(false);
 
   if not Help.SetHelpID(ID) then
     Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyPlayer)');
 
   PartyTournament.Clear;
 
-  // Templates for Names Mod
+  // Localized default player names
   for I := 0 to 15 do
-    Button[I].Text[0].Text := Ini.Name[I];
+  begin
+    if (I < IMaxPlayerCount) and
+       ((Ini.Name[I] = 'Player' + IntToStr(I + 1)) or
+        (Ini.Name[I] = 'Player ' + IntToStr(I + 1)) or
+        (Ini.Name[I] = IPlayerTranslated[I]) or
+        (Ini.Name[I] = ULanguage.Language.Translate('OPTION_VALUE_PLAYER') + IntToStr(I + 1))) then
+      Button[I].Text[0].Text := IPlayerTranslated[I]
+    else
+      Button[I].Text[0].Text := Ini.Name[I];
+  end;
 
   UpdateInterface;
-
 end;
 
 end.
