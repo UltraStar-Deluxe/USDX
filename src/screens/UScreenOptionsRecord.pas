@@ -379,16 +379,31 @@ end;
 procedure TVUMeter.DrawPitch;
 var
   x1, y1, x2, y2: single;
+  OverlayY1, OverlayY2: single;
   i: integer;
   ToneBoxWidth: single;
   ToneString: string;
   ToneStringWidth, ToneStringHeight: single;
   ToneStringMaxWidth: single;
   ToneStringCenterXOffset: single;
+  CandidateLine: UTF8String;
+  CandidateCount: integer;
+  Candidate: TToneCandidate;
+  RawToneString: string;
+  InfoLine: UTF8String;
+  TextHeight: real;
+  TextY: real;
+  Alpha: single;
+  MaxCandidatesToDraw: integer;
   QuadList: TQuadList;
 const
   PitchBarInnerHSpacing = 2;
   PitchBarInnerVSpacing = 1;
+  CandidateColors: array[0..2, 0..2] of single = (
+    (1.0, 0.3, 0.2),
+    (0.2, 0.7, 1.0),
+    (0.6, 1.0, 0.4)
+  );
 begin
   SetLength(QuadList, NumHalftones + 1);
 
@@ -462,6 +477,10 @@ begin
   ///////
 
   ToneString := ScreenOptionsRecord.PreviewChannel.ToneString;
+  if ScreenOptionsRecord.PreviewChannel.RawToneValid then
+    RawToneString := ToneAbsToString(ScreenOptionsRecord.PreviewChannel.RawToneAbs)
+  else
+    RawToneString := '-';
   ToneStringHeight := ChannelBarsTotalHeight;
 
   // initialize font
@@ -478,6 +497,57 @@ begin
   SetFontPos(PosX-ToneStringWidth-ToneStringCenterXOffset, PosY + BarHeight - ToneStringHeight/2);
   SetFontColor(0, 0, 0, 1);
   PrintText(ToneString);
+
+  // draw diagnostics text inside the pitch area
+  TextHeight := BarHeight * 0.6;
+  SetFontSize(TextHeight);
+  TextY := PosY + 2.0*BarHeight - PitchBarInnerVSpacing - TextHeight;
+
+  InfoLine := Format('Raw: %s', [RawToneString]);
+  SetFontPos(PosX + PitchBarInnerHSpacing, TextY);
+  SetFontColor(0.9, 0.9, 0.9, 1);
+  PrintText(InfoLine);
+
+  CandidateCount := ScreenOptionsRecord.PreviewChannel.ToneCandidateCount;
+  if CandidateCount > 0 then
+  begin
+    CandidateLine := '';
+    for i := 0 to CandidateCount-1 do
+    begin
+      Candidate := ScreenOptionsRecord.PreviewChannel.ToneCandidates[i];
+      if Candidate.ToneAbs < 0 then
+        Continue;
+      CandidateLine := CandidateLine + Format('%s %d%%  ', [ToneAbsToString(Candidate.ToneAbs), Round(Candidate.Confidence * 100)]);
+    end;
+    if Length(CandidateLine) > 0 then
+    begin
+      TextY := TextY - TextHeight - 2;
+      SetFontPos(PosX + PitchBarInnerHSpacing, TextY);
+      PrintText(CandidateLine);
+    end;
+  end;
+
+  if (Ini.Debug = 1) and (CandidateCount > 0) then
+  begin
+    MaxCandidatesToDraw := CandidateCount - 1;
+    if MaxCandidatesToDraw > 2 then
+      MaxCandidatesToDraw := 2;
+    OverlayY1 := PosY + BarHeight + PitchBarInnerVSpacing;
+    OverlayY2 := PosY + 2.0*BarHeight - PitchBarInnerVSpacing;
+    for i := 0 to MaxCandidatesToDraw do
+    begin
+      Candidate := ScreenOptionsRecord.PreviewChannel.ToneCandidates[i];
+      if Candidate.ToneAbs < 0 then
+        Continue;
+      x1 := PosX + Candidate.ToneAbs * ToneBoxWidth + PitchBarInnerHSpacing;
+      x2 := x1 + ToneBoxWidth - 2 * PitchBarInnerHSpacing;
+      Alpha := Candidate.Confidence * 1.5;
+      if Alpha < 0.15 then Alpha := 0.15;
+      if Alpha > 0.9 then Alpha := 0.9;
+      Renderer.DrawQuad(x1, OverlayY1, 0, x2 - x1, OverlayY2 - OverlayY1,
+        CandidateColors[i,0], CandidateColors[i,1], CandidateColors[i,2], Alpha);
+    end;
+  end;
 
 end;
 
