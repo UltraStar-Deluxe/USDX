@@ -54,6 +54,7 @@ type
     private
       CountTeams: integer;
       CountPlayer: array [0..2] of integer;
+      LastEditedButton: integer;
 
       SelectTeams:     cardinal;
       SelectPlayers: array [0..2] of cardinal;
@@ -389,8 +390,22 @@ begin
     // check normal keys
     if (IsPrintableChar(CharCode)) then
     begin
-      Button[Interactions[Interaction].Num].Text[0].Text := Button[Interactions[Interaction].Num].Text[0].Text +
-                                          UCS4ToUTF8String(CharCode);
+      if LastEditedButton <> Interactions[Interaction].Num then
+      begin
+        // First character: replace the existing name
+        Button[Interactions[Interaction].Num].Text[0].Text :=
+          UCS4ToUTF8String(CharCode);
+
+        LastEditedButton := Interactions[Interaction].Num;
+      end
+      else
+      begin
+        // Following characters: append to the name
+        Button[Interactions[Interaction].Num].Text[0].Text :=
+          Button[Interactions[Interaction].Num].Text[0].Text +
+          UCS4ToUTF8String(CharCode);
+      end;
+
       Exit;
     end;
 
@@ -573,6 +588,7 @@ var
   ButtonID: integer;
 begin
   inherited Create;
+  LastEditedButton := -1;
 
   LoadFromTheme(Theme.PartyPlayer);
 
@@ -654,6 +670,7 @@ var
   I:    integer;
 begin
   inherited;
+  LastEditedButton := -1;
 
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenPartyPlayer');
