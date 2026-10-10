@@ -586,7 +586,7 @@ var
   IWebcamEffectTranslated:     array [0..10] of UTF8String;
 
   // Name
-  IPlayerTranslated:      array[0..(IMaxPlayerCount-1)] of UTF8String = ('Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6', 'Player 7', 'Player 8', 'Player 9', 'Player 10', 'Player 11', 'Player 12');
+  IPlayerTranslated:      array[0..(IMaxPlayerCount-1)] of UTF8String;
 
   IRed:       array[0..255] of UTF8String;
   IGreen:     array[0..255] of UTF8String;
@@ -680,6 +680,12 @@ begin
     ULanguage.Language.ChangeLanguage(ILanguage[Params.Language])
   else
     ULanguage.Language.ChangeLanguage(ILanguage[Language]);
+
+  // Player names
+  for I := 0 to IMaxPlayerCount-1 do
+  begin
+    IPlayerTranslated[I] := ULanguage.Language.Translate('OPTION_VALUE_PLAYER') + ' ' + IntToStr(I + 1);
+  end;
 
   IDifficultyTranslated[0]            := ULanguage.Language.Translate('OPTION_VALUE_EASY');
   IDifficultyTranslated[1]            := ULanguage.Language.Translate('OPTION_VALUE_MEDIUM');
