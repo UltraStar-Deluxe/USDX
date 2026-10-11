@@ -89,7 +89,9 @@ uses
   UBeatTimer,
   UPlatform,
   URenderer,
+  UScreenSingController,
   USkins,
+  USongs,
   UThemes,
   UParty,
   UPartyTournament,
@@ -103,6 +105,36 @@ uses
   UTime,
   UWebcam;
   //UVideoAcinerella;
+
+// starts singing the song given with the -song parameter
+procedure StartSingleSong;
+var
+  I: integer;
+begin
+  if (Songs.SongList.Count = 0) then
+  begin
+    Log.LogError('Could not load song: ' + Params.Song.ToNative, 'StartSingleSong');
+    ExitCode := 1;
+    Display.Fade := 0;
+    Display.NextScreenWithCheck := nil;
+    Display.CheckOK := true;
+    Exit;
+  end;
+
+  // with tabs enabled the first entry is the category button
+  for I := 0 to High(CatSongs.Song) do
+  begin
+    if not CatSongs.Song[I].Main then
+    begin
+      CatSongs.Selected := I;
+      Break;
+    end;
+  end;
+
+  ScreenName.LoadPlayersFromIni;
+  ScreenSing := TScreenSingController.Create;
+  Display.CurrentScreen^.FadeTo(@ScreenSing);
+end;
 
 procedure Main;
 var
