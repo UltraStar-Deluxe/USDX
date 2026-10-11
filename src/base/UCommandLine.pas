@@ -135,7 +135,7 @@ begin
   writeln('  '+ Fmt(cMediaInterfaces) +' : Show in-use media interfaces');
   writeln('  '+ Fmt(cDebug) +' : Display Debugging info');
   writeln('  '+ Fmt(cCheckSongs) +' : Fully validate song files during startup');
-  writeln('  '+ Fmt(cSong + ' <file>') +' : Sing the given song and exit');
+  writeln('  '+ Fmt(cSong + ' <file>') +' : Sing only the given song file and exit (song folders are not scanned)');
   writeln;
 
   platform.halt;

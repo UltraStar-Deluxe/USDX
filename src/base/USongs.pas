@@ -395,6 +395,14 @@ begin
   SetLength(Result, 0);
   SetLength(AllDirs, 0);
 
+  // -song: load only the given file instead of scanning the song folders
+  if Params.Song.IsSet then
+  begin
+    SetLength(Result, 1);
+    Result[0] := Params.Song;
+    Exit;
+  end;
+
   if SongPaths = nil then
     Exit;
 
