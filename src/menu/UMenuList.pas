@@ -28,7 +28,20 @@ interface
 {$IFDEF FPC}{$MODE Delphi}{$ENDIF}
 {$I switches.inc}
 
+uses UMenuText;
+
 type
+  TListColumn = record
+    Left, Width: real;
+    Align: integer;
+  end;
+
+  TListColumnSpec = record
+    Width, GapBefore: real;
+    Align: integer;
+    Flexible, CompactGap: boolean;
+  end;
+
   TTextListLayout = record
     RowPitch: real;
     TextSize: real;
@@ -39,9 +52,90 @@ function FitTextToWidth(const Value: UTF8String; Width: real; Font, Style: integ
 function FontSizePerRowPitch(RowCount, MinEntries, MaxEntries: integer; RelaxedRatio, DenseRatio, Curve: real): real;
 function CalculateTextListLayout(TopY, BottomY: real; RowCount: integer; MinTextSize, MaxTextSize, FontToPitchRatio, LineHeightFactor: real): TTextListLayout;
 
+procedure CalculateListColumns(const Specs: array of TListColumnSpec;
+    Left, Width, RightBound, GapScale, MinGapScale: real;
+    var Columns: array of TListColumn);
+function ListColumnFromAnchor(X, Width: real; Align: integer): TListColumn;
+procedure PositionListColumnText(Text: TText; const Column: TListColumn);
+procedure SetListCellText(Text: TText; const Column: TListColumn; const Value: UTF8String);
+
 implementation
 
 uses Math, StrUtils, SysUtils, UText, UUnicodeUtils;
+
+procedure CalculateListColumns(const Specs: array of TListColumnSpec;
+    Left, Width, RightBound, GapScale, MinGapScale: real;
+    var Columns: array of TListColumn);
+var
+  I, Count, FlexibleCount: integer;
+  BaseWidth, UsedWidth, LayoutWidth, ExtraWidth, Offset, Gap, ColumnWidth: real;
+begin
+  Count := Min(Length(Specs), Length(Columns));
+  FlexibleCount := 0;
+  BaseWidth := 0;
+  UsedWidth := 0;
+  for I := 0 to Count - 1 do
+  begin
+    Gap := Specs[I].GapBefore;
+    BaseWidth := BaseWidth + Gap + Specs[I].Width;
+    if Specs[I].CompactGap then
+      Gap := Gap * EnsureRange(GapScale, MinGapScale, 1.0);
+    UsedWidth := UsedWidth + Gap + Specs[I].Width;
+    if Specs[I].Flexible then
+      Inc(FlexibleCount);
+  end;
+
+  LayoutWidth := EnsureRange(RightBound, 0.0, 1.0);
+  ExtraWidth := 0;
+  if FlexibleCount > 0 then
+    ExtraWidth := (LayoutWidth - UsedWidth) / FlexibleCount
+  else
+    LayoutWidth := Min(LayoutWidth, Min(1.0, BaseWidth));
+
+  Offset := 0;
+  for I := 0 to Count - 1 do
+  begin
+    Gap := Specs[I].GapBefore;
+    if Specs[I].CompactGap then
+      Gap := Gap * EnsureRange(GapScale, MinGapScale, 1.0);
+    Offset := Offset + Gap;
+    ColumnWidth := Specs[I].Width;
+    if Specs[I].Flexible then
+      ColumnWidth := Max(0.0, ColumnWidth + ExtraWidth);
+    Columns[I].Left := Left + Width * Offset;
+    Columns[I].Width := Width * Max(0.0, Min(ColumnWidth, LayoutWidth - Offset));
+    Columns[I].Align := Specs[I].Align;
+    Offset := Offset + ColumnWidth;
+  end;
+end;
+
+function ListColumnFromAnchor(X, Width: real; Align: integer): TListColumn;
+begin
+  Result.Width := Width;
+  Result.Align := Align;
+  case Align of
+    1: Result.Left := X - Width / 2;
+    2: Result.Left := X - Width;
+  else
+    Result.Left := X;
+  end;
+end;
+
+procedure PositionListColumnText(Text: TText; const Column: TListColumn);
+begin
+  Text.Align := Column.Align;
+  case Column.Align of
+    1: Text.X := Column.Left + Column.Width / 2;
+    2: Text.X := Column.Left + Column.Width;
+  else
+    Text.X := Column.Left;
+  end;
+end;
+
+procedure SetListCellText(Text: TText; const Column: TListColumn; const Value: UTF8String);
+begin
+  Text.Text := FitTextToWidth(Value, Column.Width, Text.Font, Text.Style, Text.Size);
+end;
 
 function MeasureTextMaxLineWidth(const Value: UTF8String; Font, Style: integer;
     Size: real): real;

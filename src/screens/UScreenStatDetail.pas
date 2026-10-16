@@ -38,6 +38,7 @@ uses
   UDisplay,
   UIni,
   UMenu,
+  UMenuList,
   UMusic,
   UThemes,
   sdl2,
@@ -62,7 +63,7 @@ type
     private
       TextHeader: array[0..STAT_DETAIL_MAX_COLUMNS - 1] of integer;
       TextList: array of array of integer;
-      TextListWidth: array of array of real;
+      ListColumns: array[0..STAT_DETAIL_MAX_COLUMNS - 1] of TListColumn;
       TextListValue: array[0..STAT_DETAIL_MAX_COLUMNS - 1] of TStatDetailCellValue;
       TextDescription: integer;
       TextPage: integer;
@@ -107,29 +108,12 @@ uses
   ULanguage,
   ULog,
   UText,
-  UMenuList,
   UStatistics,
   UUnicodeUtils,
   Math,
   StrUtils;
 
 type
-  TStatDetailColumnFlag = (cfCompactGap, cfFlexibleWidth);
-  TStatDetailColumnFlags = set of TStatDetailColumnFlag;
-  TStatDetailColumnWidthMode = (cwmFixed, cwmMeasured);
-
-  TStatDetailColumnSpec = record
-    Header: RawByteString;
-    Value: TStatDetailCellValue;
-    Width: real;
-    GapBefore: real;
-    Align: integer;
-    Flags: TStatDetailColumnFlags;
-    WidthMode: TStatDetailColumnWidthMode;
-  end;
-
-  TStatDetailColumnSpecs = array[0..STAT_DETAIL_MAX_COLUMNS - 1] of TStatDetailColumnSpec;
-
   TStatDetailColumnDefinition = record
     Header: RawByteString;
     Value: TStatDetailCellValue;
@@ -254,7 +238,6 @@ begin
   inherited Create;
 
   SetLength(TextList, Theme.StatDetail.MaxEntries, STAT_DETAIL_MAX_COLUMNS);
-  SetLength(TextListWidth, Theme.StatDetail.MaxEntries, STAT_DETAIL_MAX_COLUMNS);
 
   for Row := 0 to High(TextList) do
     for Column := 0 to STAT_DETAIL_MAX_COLUMNS - 1 do
@@ -344,8 +327,10 @@ var
   TextID: integer;
 begin
   TextID := TextList[Row, Column];
-  Text[TextID].Text := FitTextToWidth(Value, TextListWidth[Row, Column],
-      Text[TextID].Font, Text[TextID].Style, Text[TextID].Size);
+  if ListColumns[Column].Width > 0 then
+    SetListCellText(Text[TextID], ListColumns[Column], Value)
+  else
+    Text[TextID].Text := '';
 end;
 
 function TScreenStatDetail.StatCellText(StatList: TList; Row: integer;
@@ -434,54 +419,26 @@ var
   LayoutRows: integer;
   ThemeText: TThemeText;
 
-  procedure ApplyTextLayout(TextID: integer; ColumnLeft, ColumnWidth: real; Align: integer);
+  procedure SetColumn(Column: integer; const Layout: TListColumn;
+      const HeaderText: RawByteString);
+  var
+    TextID, Row: integer;
   begin
+    TextID := TextHeader[Column];
+    PositionListColumnText(Text[TextID], Layout);
     Text[TextID].W := 0;
     Text[TextID].H := 0;
-    Text[TextID].Align := Align;
-
-    case Align of
-      1:
-        Text[TextID].X := ColumnLeft + ColumnWidth / 2;
-      2:
-        Text[TextID].X := ColumnLeft + ColumnWidth;
-      else
-        Text[TextID].X := ColumnLeft;
-    end;
-  end;
-
-  procedure SetColumn(Column: integer; LeftFactor, WidthFactor: real; Align: integer; const HeaderText: RawByteString);
-  var
-    ColumnLeft: real;
-    ColumnWidth: real;
-    TextID: integer;
-    Row: integer;
-  begin
-    ColumnLeft := ThemeText.X + ThemeText.W * LeftFactor;
-    ColumnWidth := ThemeText.W * WidthFactor;
-
-    TextID := TextHeader[Column];
-    ApplyTextLayout(TextID, ColumnLeft, ColumnWidth, Align);
     Text[TextID].Y := HeaderY;
-    Text[TextID].Visible := true;
-    Text[TextID].Text := Language.Translate(HeaderText);
-
+    Text[TextID].Visible := Layout.Width > 0;
+    SetListCellText(Text[TextID], Layout, Language.Translate(HeaderText));
     for Row := 0 to High(TextList) do
     begin
-      TextListWidth[Row, Column] := ColumnWidth;
-
       TextID := TextList[Row, Column];
-      ApplyTextLayout(TextID, ColumnLeft, ColumnWidth, Align);
-      Text[TextID].Visible := Row < EntriesPerPage;
+      PositionListColumnText(Text[TextID], Layout);
+      Text[TextID].W := 0;
+      Text[TextID].H := 0;
+      Text[TextID].Visible := (Row < EntriesPerPage) and (Layout.Width > 0);
     end;
-  end;
-
-  function ColumnGap(const Column: TStatDetailColumnSpec): real;
-  begin
-    Result := Column.GapBefore;
-    if (cfCompactGap in Column.Flags) then
-      Result := Result * EnsureRange(ColumnCompactFactor,
-          Theme.StatDetail.MinColumnGap, 1.0);
   end;
 
   function TextLeftEdge(TextID: integer): real;
@@ -548,105 +505,36 @@ var
     end;
   end;
 
-  function ThemeColumnSpec(const Header: RawByteString; Value: TStatDetailCellValue;
-      const ThemeColumn: TThemeStatDetailColumn): TStatDetailColumnSpec;
-  begin
-    Result.Header := Header;
-    Result.Value := Value;
-    Result.Width := ThemeColumn.Width;
-    Result.GapBefore := ThemeColumn.GapBefore;
-    Result.Align := ThemeColumn.Align;
-    Result.Flags := [];
-    if ThemeColumn.CompactGap then
-      Include(Result.Flags, cfCompactGap);
-    if ThemeColumn.Flexible then
-      Include(Result.Flags, cfFlexibleWidth);
-    if ThemeColumn.AutoWidth then
-      Result.WidthMode := cwmMeasured
-    else
-      Result.WidthMode := cwmFixed;
-  end;
-
-  procedure SetColumnLayout(const Columns: TStatDetailColumnSpecs; ColumnCount: integer;
-      RightBoundFactor: real);
-  var
-    Column: integer;
-    FlexibleColumns: integer;
-    BaseWidth: real;
-    UsedWidth: real;
-    LayoutWidth: real;
-    FlexWidth: real;
-    LeftFactor: real;
-    WidthFactors: array[0..STAT_DETAIL_MAX_COLUMNS - 1] of real;
-    GapFactors: array[0..STAT_DETAIL_MAX_COLUMNS - 1] of real;
-  begin
-    ColumnCount := EnsureRange(ColumnCount, 0, STAT_DETAIL_MAX_COLUMNS);
-    FlexibleColumns := 0;
-    BaseWidth := 0;
-    UsedWidth := 0;
-
-    for Column := 0 to ColumnCount - 1 do
-    begin
-      GapFactors[Column] := ColumnGap(Columns[Column]);
-      if (Columns[Column].WidthMode = cwmMeasured) then
-        WidthFactors[Column] := ValueColumnWidth(Columns[Column].Header,
-            Columns[Column].Value)
-      else
-        WidthFactors[Column] := Columns[Column].Width;
-
-      BaseWidth := BaseWidth + Columns[Column].GapBefore + WidthFactors[Column];
-      UsedWidth := UsedWidth + GapFactors[Column] + WidthFactors[Column];
-
-      if (cfFlexibleWidth in Columns[Column].Flags) then
-        Inc(FlexibleColumns);
-    end;
-
-    FlexWidth := 0;
-    if (FlexibleColumns > 0) then
-      LayoutWidth := EnsureRange(RightBoundFactor, 0.0, 1.0)
-    else
-      LayoutWidth := Min(EnsureRange(RightBoundFactor, 0.0, 1.0),
-          Min(1.0, BaseWidth));
-
-    if (FlexibleColumns > 0) then
-      FlexWidth := (LayoutWidth - UsedWidth) / FlexibleColumns;
-
-    LeftFactor := 0;
-    for Column := 0 to ColumnCount - 1 do
-    begin
-      LeftFactor := LeftFactor + GapFactors[Column];
-
-      if (cfFlexibleWidth in Columns[Column].Flags) then
-        WidthFactors[Column] := Max(0.0, WidthFactors[Column] + FlexWidth);
-
-      TextListValue[Column] := Columns[Column].Value;
-      SetColumn(Column, LeftFactor,
-          Max(0.0, Min(WidthFactors[Column], 1.0 - LeftFactor)),
-          Columns[Column].Align, Columns[Column].Header);
-      LeftFactor := LeftFactor + WidthFactors[Column];
-    end;
-  end;
-
   procedure SetColumns(const Table: TThemeStatDetailTable;
       const Definitions: TStatDetailColumnDefinitions);
   var
-    Columns: TStatDetailColumnSpecs;
-    Column: integer;
-    ColumnCount: integer;
+    Specs: array of TListColumnSpec;
+    Column, ColumnCount: integer;
   begin
-    for Column := Low(Columns) to High(Columns) do
-      Columns[Column] := ThemeColumnSpec('', scvNone, Table.Column[Column]);
-
     ColumnCount := EnsureRange(Table.ColumnCount, 0, STAT_DETAIL_MAX_COLUMNS);
     while (ColumnCount > 0) and (Definitions[ColumnCount - 1].Value = scvNone) do
       Dec(ColumnCount);
-
+    SetLength(Specs, ColumnCount);
     for Column := 0 to ColumnCount - 1 do
-      Columns[Column] := ThemeColumnSpec(Definitions[Column].Header,
-          Definitions[Column].Value, Table.Column[Column]);
-
-    SetColumnLayout(Columns, ColumnCount, TableRightBound(Table));
+    begin
+      Specs[Column].Width := Table.Column[Column].Width;
+      if Table.Column[Column].AutoWidth then
+        Specs[Column].Width := ValueColumnWidth(Definitions[Column].Header,
+            Definitions[Column].Value);
+      Specs[Column].GapBefore := Table.Column[Column].GapBefore;
+      Specs[Column].Align := Table.Column[Column].Align;
+      Specs[Column].Flexible := Table.Column[Column].Flexible;
+      Specs[Column].CompactGap := Table.Column[Column].CompactGap;
+    end;
+    CalculateListColumns(Specs, ThemeText.X, ThemeText.W, TableRightBound(Table),
+        ColumnCompactFactor, Theme.StatDetail.MinColumnGap, ListColumns);
+    for Column := 0 to ColumnCount - 1 do
+    begin
+      TextListValue[Column] := Definitions[Column].Value;
+      SetColumn(Column, ListColumns[Column], Definitions[Column].Header);
+    end;
   end;
+
 begin
   ThemeText := Theme.StatDetail.TextList[0];
   ListX := Theme.StatDetail.ListX;
