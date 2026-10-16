@@ -102,7 +102,8 @@ uses
   UMain,
   UIni,
   UNote,
-  UUnicodeUtils;
+  UUnicodeUtils,
+  UMenuList;
 
 function TrackNumber(TrackMask: integer): integer;
 begin
@@ -261,23 +262,15 @@ var
   I: integer;
   LayoutIndex: integer;
   LayoutRows: integer;
-  Density: real;
-  FontToPitchRatio: real;
-  AvailableHeight: real;
+  Layout: TTextListLayout;
 begin
   LayoutRows := LayoutEntryCount + 2;
-  Density := EnsureRange((LayoutEntryCount - 5) / 15, 0.0, 1.0);
-  Density := Power(Density, 2.0);
-  FontToPitchRatio := 0.78 + Density * (1.10 - 0.78);
-  AvailableHeight := Max(0,
-      Theme.HighScores.List.BottomY - Theme.HighScores.RowNameText.Y);
-  EntryTextSize := AvailableHeight /
-      ((LayoutRows - 1) / FontToPitchRatio + 0.85);
-  EntryTextSize := EnsureRange(EntryTextSize,
-      Theme.HighScores.List.MinTextSize,
-      Theme.HighScores.RowNameText.Size);
-  EntryRowPitch := Max(0,
-      (AvailableHeight - EntryTextSize * 0.85) / (LayoutRows - 1));
+  Layout := CalculateTextListLayout(Theme.HighScores.RowNameText.Y,
+      Theme.HighScores.List.BottomY, LayoutRows,
+      Theme.HighScores.List.MinTextSize, Theme.HighScores.RowNameText.Size,
+      FontSizePerRowPitch(LayoutEntryCount, 5, 20, 0.78, 1.10, 2.0), 0.85);
+  EntryTextSize := Layout.TextSize;
+  EntryRowPitch := Layout.RowPitch;
 
   for I := 0 to High(EntryNumberStatic) do
   begin

@@ -1150,7 +1150,6 @@ type
     PopularTable:     TThemeStatDetailTable;
 
     Description:      array[0..3] of UTF8String;
-    DescriptionR:     array[0..3] of UTF8String;
     PageStr:          UTF8String;
   end;
 
@@ -2221,10 +2220,6 @@ begin
       StatDetail.Description[2] := Language.Translate('STAT_DESC_SONGS');
       StatDetail.Description[3] := Language.Translate('STAT_DESC_BANDS');
 
-      StatDetail.DescriptionR[0] := Language.Translate('STAT_DESC_SCORES_REVERSED');
-      StatDetail.DescriptionR[1] := Language.Translate('STAT_DESC_SINGERS_REVERSED');
-      StatDetail.DescriptionR[2] := Language.Translate('STAT_DESC_SONGS_REVERSED');
-      StatDetail.DescriptionR[3] := Language.Translate('STAT_DESC_BANDS_REVERSED');
 
       StatDetail.PageStr := Language.Translate('STAT_PAGE');
 

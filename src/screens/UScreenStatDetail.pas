@@ -84,7 +84,6 @@ type
     public
       Typ:  TStatType;
       Page: cardinal;
-      Reversed: boolean;
 
       TotEntrys: cardinal;
       TotPages:  cardinal;
@@ -108,6 +107,8 @@ uses
   ULanguage,
   ULog,
   UText,
+  UMenuList,
+  UStatistics,
   UUnicodeUtils,
   Math,
   StrUtils;
@@ -136,10 +137,6 @@ type
 
   TStatDetailColumnDefinitions = array[0..STAT_DETAIL_MAX_COLUMNS - 1] of TStatDetailColumnDefinition;
 
-  TTextListLayout = record
-    RowPitch: real;
-    TextSize: real;
-  end;
 
 const
   BEST_SCORE_COLUMNS: TStatDetailColumnDefinitions = (
@@ -190,115 +187,6 @@ begin
   Result := IntToStr(Count);
 end;
 
-function CompactValue(Value, Factor, MinFactor: real): real;
-begin
-  Result := Value * EnsureRange(Factor, MinFactor, 1.0);
-end;
-
-function MeasureTextMaxLineWidth(const Value: UTF8String; Font, Style: integer;
-    Size: real): real;
-var
-  BreakPos: integer;
-  LineStart: integer;
-  LineText: UTF8String;
-begin
-  Result := 0;
-  if (Value = '') then
-    Exit;
-
-  SetFontFamily(Font);
-  SetFontStyle(Style);
-  SetFontSize(Size);
-  SetFontItalic(false);
-
-  LineStart := 1;
-  repeat
-    BreakPos := PosEx('\n', Value, LineStart);
-    if (BreakPos = 0) then
-    begin
-      LineText := Copy(Value, LineStart, Length(Value) - LineStart + 1);
-      LineStart := Length(Value) + 1;
-    end
-    else
-    begin
-      LineText := Copy(Value, LineStart, BreakPos - LineStart);
-      LineStart := BreakPos + Length('\n');
-    end;
-
-    Result := Max(Result, TextWidth(Trim(LineText)));
-  until (LineStart > Length(Value));
-end;
-
-function FitTextToWidth(const Value: UTF8String; Width: real; Font, Style: integer; Size: real): UTF8String;
-var
-  TextLength: integer;
-begin
-  Result := Value;
-  if (Value = '') or (Width <= 0) then
-    Exit;
-
-  SetFontFamily(Font);
-  SetFontStyle(Style);
-  SetFontSize(Size);
-
-  if (TextWidth(Result) <= Width) then
-    Exit;
-
-  TextLength := LengthUTF8(Value);
-  repeat
-    Dec(TextLength);
-    Result := UTF8Copy(Value, 1, TextLength) + '...';
-  until (TextLength <= 0) or (TextWidth(Result) <= Width);
-
-  if (TextLength <= 0) and (TextWidth(Result) > Width) then
-    Result := '';
-end;
-
-function EntryDensity(RowCount, MinEntries, MaxEntries: integer; Curve: real): real;
-begin
-  Result := EnsureRange((RowCount - MinEntries) /
-      Max(1, MaxEntries - MinEntries), 0.0, 1.0);
-  if (Curve > 0) then
-    Result := Power(Result, Curve);
-end;
-
-function FontSizePerRowPitch(RowCount, MinEntries, MaxEntries: integer;
-    RelaxedRatio, DenseRatio, Curve: real): real;
-var
-  Density: real;
-begin
-  Density := EntryDensity(RowCount, MinEntries, MaxEntries, Curve);
-  Result := RelaxedRatio + Density * (DenseRatio - RelaxedRatio);
-end;
-
-{ BottomY is the lower visual bound for the final row, not its text origin. }
-function CalculateTextListLayout(TopY, BottomY: real; RowCount: integer;
-    MinTextSize, MaxTextSize, FontToPitchRatio, LineHeightFactor: real): TTextListLayout;
-var
-  AvailableHeight: real;
-  TextHeight: real;
-begin
-  RowCount := Max(1, RowCount);
-  AvailableHeight := Max(0, BottomY - TopY);
-  MaxTextSize := Max(MinTextSize, MaxTextSize);
-  FontToPitchRatio := Max(0.01, FontToPitchRatio);
-  LineHeightFactor := Max(0.01, LineHeightFactor);
-
-  if (RowCount > 1) then
-  begin
-    Result.TextSize := AvailableHeight / ((RowCount - 1) / FontToPitchRatio + LineHeightFactor);
-    Result.TextSize := EnsureRange(Result.TextSize, MinTextSize, MaxTextSize);
-
-    TextHeight := Result.TextSize * LineHeightFactor;
-    Result.RowPitch := Max(0, (AvailableHeight - TextHeight) / (RowCount - 1));
-  end
-  else
-  begin
-    Result.RowPitch := 0;
-    Result.TextSize := EnsureRange(AvailableHeight / LineHeightFactor, MinTextSize, MaxTextSize);
-  end;
-end;
-
 function TScreenStatDetail.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean;
 begin
   Result := true;
@@ -343,10 +231,12 @@ begin
         begin
           ChangeEntriesPerPage(1);
         end;
-      SDLK_R:
+      SDLK_T:
         begin
-          Reversed := not Reversed;
-          SetPage(Page);
+          CycleStatPeriod;
+          TotEntrys := DataBase.GetTotalEntrys(Typ, ActiveFilters, StatSinceDate);
+          RecalculatePages;
+          SetPage(0);
         end;
       SDLK_M:
         begin
@@ -396,11 +286,10 @@ begin
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenStatDetail');
 
-  Reversed := false;
   MinMedianFilter := false;
 
   //Set Tot Entrys and Pages
-  TotEntrys := DataBase.GetTotalEntrys(Typ, ActiveFilters);
+  TotEntrys := DataBase.GetTotalEntrys(Typ, ActiveFilters, StatSinceDate);
   RecalculatePages;
   UpdateMinMedianHint;
 
@@ -413,10 +302,8 @@ end;
 
 procedure TScreenStatDetail.SetTitle;
 begin
-  if Reversed then
-    Text[TextDescription].Text := Theme.StatDetail.DescriptionR[Ord(Typ)]
-  else
-    Text[TextDescription].Text := Theme.StatDetail.Description[Ord(Typ)];
+  Text[TextDescription].Text := Theme.StatDetail.Description[Ord(Typ)] +
+      ' - ' + StatPeriodText;
 end;
 
 procedure TScreenStatDetail.RecalculatePages;
@@ -593,8 +480,8 @@ var
   begin
     Result := Column.GapBefore;
     if (cfCompactGap in Column.Flags) then
-      Result := CompactValue(Result, ColumnCompactFactor,
-          Theme.StatDetail.MinColumnGap);
+      Result := Result * EnsureRange(ColumnCompactFactor,
+          Theme.StatDetail.MinColumnGap, 1.0);
   end;
 
   function TextLeftEdge(TextID: integer): real;
@@ -853,7 +740,7 @@ begin
 
   FirstEntry := Page * EntriesPerPage;
   MinMedianFilter := not MinMedianFilter;
-  TotEntrys := DataBase.GetTotalEntrys(Typ, ActiveFilters);
+  TotEntrys := DataBase.GetTotalEntrys(Typ, ActiveFilters, StatSinceDate);
   RecalculatePages;
   UpdateMinMedianHint;
 
@@ -894,8 +781,7 @@ begin
   end;
 
   // fetch statistics
-  StatList := Database.GetStats(Typ, EntriesPerPage, NewPage, Reversed,
-      ActiveFilters);
+  StatList := Database.GetStats(Typ, EntriesPerPage, NewPage, ActiveFilters, StatSinceDate);
   if (StatList <> nil) then
     VisibleEntries := Min(StatList.Count, EntriesPerPage)
   else
