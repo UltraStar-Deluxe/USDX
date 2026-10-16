@@ -13,7 +13,7 @@ EGIT_REPO_URI="https://github.com/UltraStar-Deluxe/USDX/"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~amd64 ~x86"
-IUSE="midi projectm debug webcam portaudio"
+IUSE="projectm debug webcam portaudio"
 
 RDEPEND="virtual/opengl
 	media-libs/libsdl2[opengl]
@@ -23,7 +23,6 @@ RDEPEND="virtual/opengl
 	media-video/ffmpeg
 	dev-db/sqlite
 	dev-lang/lua
-	midi? ( media-libs/portmidi )
 	projectm? ( <media-libs/libprojectm-3.0.0 )
 	webcam? ( >=media-libs/opencv-3.0.0 )"
 DEPEND="${RDEPEND}
@@ -39,7 +38,6 @@ src_configure() {
 	econf \
 		$(use_with portaudio) \
 		$(use_with projectm libprojectM) \
-		$(use_enable midi portmidi) \
 		$(use_enable debug) \
 		|| die "econf failed"
 }
