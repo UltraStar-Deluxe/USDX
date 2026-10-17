@@ -81,6 +81,8 @@ type
       LastChangeSoundTime: integer;
       LastScrollStopTime: integer;
 
+      SongReturnPending: boolean; // song selection is pending a return from singing
+
       RandomSongOrder: CardinalArray;
       NextRandomSongIdx: cardinal;
       RandomSearchOrder: CardinalArray;
@@ -290,6 +292,7 @@ type
 
       //procedures for Menu
       procedure StartSong;
+      procedure MarkSongStarted;
       procedure OpenEditor;
       procedure DoJoker(Team: integer; SDL_ModState: Word);
       procedure SelectPlayers;
@@ -1979,6 +1982,8 @@ begin
   LastChangeSoundTime := 0;
   LastScrollStopTime := 0;
 
+  SongReturnPending := false;
+
   NextRandomSongIdx := High(cardinal);
   NextRandomSearchIdx := High(cardinal);
 
@@ -3067,17 +3072,42 @@ end;
 
 procedure TScreenSong.OnShowFinish;
 var
-  NextSongID: Integer;
+  PlaylistItem, TargetSongID, NextSongID: Integer;
+  PlaylistReloaded, PlaylistReapplied: Boolean;
 begin
   DuetChange := false;
   RapToFreestyle := false;
 
   isScrolling := true;
   CoverTime := 10;
+  PlaylistReapplied := false;
 
   if (PlaylistMan.CurPlayList <> -1) then
   begin
-    if PlaylistMan.ReloadPlayList(PlaylistMan.CurPlayList) then
+    PlaylistReloaded := PlaylistMan.ReloadPlayList(PlaylistMan.CurPlayList);
+
+    if SongReturnPending then // restore playlist selection after singing
+    begin
+      TargetSongID := CatSongs.Selected;
+
+      if Assigned(ScreenSing) and ScreenSing.SungToEnd then
+      begin
+        if PlaylistMan.Playlists[PlaylistMan.CurPlayList].FixedOrder then // continues with the next playlist item
+        begin
+          PlaylistItem := PlaylistMan.GetIndexbySongID(CatSongs.Selected);
+          if (PlaylistItem <> -1) and
+             (Length(PlaylistMan.Playlists[PlaylistMan.CurPlayList].Items) > 0) then
+            TargetSongID := PlaylistMan.Playlists[PlaylistMan.CurPlayList]
+              .Items[(PlaylistItem + 1) mod Length(PlaylistMan.Playlists[PlaylistMan.CurPlayList].Items)].SongID;
+        end
+        else
+          TargetSongID := -1; // let SetPlayList select a random song
+      end;
+
+      PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, TargetSongID);
+      PlaylistReapplied := true;
+    end
+    else if PlaylistReloaded then
     begin
       NextSongID := SongIndex;
       if (NextSongID = -1) then
@@ -3086,16 +3116,21 @@ begin
         NextSongID := Interaction;
 
       PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, NextSongID);
+      PlaylistReapplied := true;
     end;
   end;
+
+  SongReturnPending := false;
 
   FilterDuetsInPartyMode; // in party mode
 
   if (Mode = smPartyClassic) then
     SelectRandomSong;
 
-  SetScrollRefresh;
   FixSelected;
+  if PlaylistReapplied then
+    SetScroll; // update row position before refresh
+  SetScrollRefresh;
   //if (Mode = smPartyTournament) then
   //  PartyTime := SDL_GetTicks();
 
@@ -4193,6 +4228,11 @@ begin
   StopMusicPreview();
 
   FadeTo(@ScreenSing);
+end;
+
+procedure TScreenSong.MarkSongStarted;
+begin
+  SongReturnPending := (Mode = smNormal); // only normal mode returns to song selection
 end;
 
 procedure TScreenSong.SelectPlayers;
