@@ -22,13 +22,17 @@ AC_REQUIRE([CMAKE_FIND_BINARY])dnl
 AC_ARG_VAR([$1][_][$2][FLAGS], [$2 compiler flags for $1. This overrides the cmake output])dnl
 AC_ARG_VAR([$1][_LIBS], [linker flags for $1. This overrides the cmake output])dnl
 
+CMAKE_EXTRA_ARGS=
+if test -n "$CMAKE_PREFIX"; then
+    CMAKE_EXTRA_ARGS=-DCMAKE_PREFIX_PATH=$CMAKE_PREFIX
+fi
 failed=false
 AC_MSG_CHECKING([for $1])
 if test -z "${$1[]_$2[]FLAGS}"; then
-    $1[]_$2[]FLAGS=`$CMAKE_BINARY --find-package "-DNAME=$1" "-DCOMPILER_ID=m4_default([$3], [GNU])" "-DLANGUAGE=$2" -DMODE=COMPILE $4` || failed=true
+    $1[]_$2[]FLAGS=`$CMAKE_BINARY --find-package "-DNAME=$1" "-DCOMPILER_ID=m4_default([$3], [GNU])" "-DLANGUAGE=$2" -DMODE=COMPILE $4 $CMAKE_EXTRA_ARGS 2> /dev/null` || failed=true
 fi
 if test -z "${$1[]_LIBS}"; then
-    $1[]_LIBS=`$CMAKE_BINARY --find-package "-DNAME=$1" "-DCOMPILER_ID=m4_default([$3], [GNU])" "-DLANGUAGE=$2" -DMODE=LINK $4` || failed=true
+    $1[]_LIBS=`$CMAKE_BINARY --find-package "-DNAME=$1" "-DCOMPILER_ID=m4_default([$3], [GNU])" "-DLANGUAGE=$2" -DMODE=LINK $4 $CMAKE_EXTRA_ARGS 2> /dev/null` || failed=true
 fi
 
 if $failed; then

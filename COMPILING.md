@@ -11,8 +11,6 @@ For linking and running the game, the following libraries are also required:
 - OpenCV if you want webcam support
 - projectM 4,x if you want audio visualisation support
 
-Prebuilt DLLs for SDL2, SDL2_image, FFmpeg, SQLite, PortAudio, and Lua can be found in the releases section of [our MXE fork](https://github.com/UltraStar-Deluxe/mxe). You can use the dldlls.py script to download the DLLs for the checked out code. The remaining DLLs needed for Windows builds are part of this repository.
-
 ## Compiling using make
 ### Install prequisites
 #### Linux/BSD
@@ -32,9 +30,9 @@ Optional libraries:
 - `brew install sdl2 sdl2_image automake portaudio binutils sqlite freetype lua libtiff pkg-config ffmpeg opencv`
 
 #### Windows using MSYS2
-- Install [MSYS2](https://www.msys2.org)
+- Install [MSYS2](https://www.msys2.org). Use the UCRT64 environment
 - Install [FPC](https://www.freepascal.org). Use the Win32 cross-to-Win64 installer so you get the Win64 RTL units.
-- `pacman -S autoconf-wrapper automake-wrapper git make mingw-w64-x86_64-gcc mingw-w64-x86_64-tools`
+- `pacman -S base-devel mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-autotools mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-meson mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-git mingw-w64-ucrt-x86_64-ntldd mingw-w64-ucrt-x86_64-nasm patch`
 - Add some information to `.bash_profile`:
   * Path to the cross compiler: `PATH="${PATH}:/c/FPC/3.2.2/bin/i386-win32"`
   * FPC config and base: `FPCCFG="/c/FPC/3.2.2/bin/i386-win32/fpc.cfg"` and `FPCDIR="/c/FPC/3.2.2"`
@@ -42,6 +40,7 @@ Optional libraries:
 ### Compile and run
 - `git clone https://github.com/UltraStar-Deluxe/USDX`
 - `cd USDX`
+- Windows only: compile the DLLs with `make -C dists/windows install`
 - `./autogen.sh`
 - `./configure` (see optional flags below)
 - `make` (on macOS: `make macos-standalone-app`)
@@ -72,7 +71,6 @@ Optional libraries:
 
 # Windows installer
 The CI does this for you, but if you need to do it manually:
-- Complete the set of DLLs in the `game` directory using a matching release from [here](https://github.com/UltraStar-Deluxe/mxe).
 - Create Windows portable version: zip the contents of the `game` directory
 - Create Windows installer:
   * Install NSIS (also install the Graphics and Language components during setup)

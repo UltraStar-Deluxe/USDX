@@ -1,0 +1,64 @@
+From 8814e3b506b333d6fcd15f5baa815029b90611fb Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Daniel=20Gl=C3=B6ckner?= <daniel-gl@gmx.net>
+Date: Sun, 18 Aug 2024 21:28:59 +0200
+Subject: [PATCH] Remove webp animation support
+
+---
+ src/IMG_webp.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/src/IMG_webp.c b/src/IMG_webp.c
+index 932061ab..2a0501e9 100644
+--- a/src/IMG_webp.c
++++ b/src/IMG_webp.c
+@@ -57,12 +57,14 @@ static struct {
+     VP8StatusCode (*WebPGetFeaturesInternal) (const uint8_t *data, size_t data_size, WebPBitstreamFeatures* features, int decoder_abi_version);
+     uint8_t* (*WebPDecodeRGBInto) (const uint8_t* data, size_t data_size, uint8_t* output_buffer, size_t output_buffer_size, int output_stride);
+     uint8_t* (*WebPDecodeRGBAInto) (const uint8_t* data, size_t data_size, uint8_t* output_buffer, size_t output_buffer_size, int output_stride);
++#if 0
+     WebPDemuxer* (*WebPDemuxInternal)(const WebPData* data, int allow_partial, WebPDemuxState* state, int version);
+     int (*WebPDemuxGetFrame)(const WebPDemuxer *dmux, int frame_number, WebPIterator *iter);
+     int (*WebPDemuxNextFrame)(WebPIterator *iter);
+     void (*WebPDemuxReleaseIterator)(WebPIterator *iter);
+     uint32_t (*WebPDemuxGetI)(const WebPDemuxer* dmux, WebPFormatFeature feature);
+     void (*WebPDemuxDelete)(WebPDemuxer* dmux);
++#endif
+ } lib;
+ 
+ #if defined(LOAD_WEBP_DYNAMIC) && defined(LOAD_WEBPDEMUX_DYNAMIC)
+@@ -101,12 +103,14 @@ int IMG_InitWEBP()
+         FUNCTION_LOADER_LIBWEBP(WebPGetFeaturesInternal, VP8StatusCode (*) (const uint8_t *data, size_t data_size, WebPBitstreamFeatures* features, int decoder_abi_version))
+         FUNCTION_LOADER_LIBWEBP(WebPDecodeRGBInto, uint8_t * (*) (const uint8_t* data, size_t data_size, uint8_t* output_buffer, size_t output_buffer_size, int output_stride))
+         FUNCTION_LOADER_LIBWEBP(WebPDecodeRGBAInto, uint8_t * (*) (const uint8_t* data, size_t data_size, uint8_t* output_buffer, size_t output_buffer_size, int output_stride))
++#if 0
+         FUNCTION_LOADER_LIBWEBPDEMUX(WebPDemuxInternal, WebPDemuxer* (*)(const WebPData*, int, WebPDemuxState*, int))
+         FUNCTION_LOADER_LIBWEBPDEMUX(WebPDemuxGetFrame, int (*)(const WebPDemuxer *dmux, int frame_number, WebPIterator *iter))
+         FUNCTION_LOADER_LIBWEBPDEMUX(WebPDemuxNextFrame, int (*)(WebPIterator *iter))
+         FUNCTION_LOADER_LIBWEBPDEMUX(WebPDemuxReleaseIterator, void (*)(WebPIterator *iter))
+         FUNCTION_LOADER_LIBWEBPDEMUX(WebPDemuxGetI, uint32_t (*)(const WebPDemuxer* dmux, WebPFormatFeature feature))
+         FUNCTION_LOADER_LIBWEBPDEMUX(WebPDemuxDelete, void (*)(WebPDemuxer* dmux))
++#endif
+     }
+     ++lib.loaded;
+ 
+@@ -269,6 +273,7 @@ error:
+ 
+ IMG_Animation *IMG_LoadWEBPAnimation_RW(SDL_RWops *src)
+ {
++#if 0
+     Sint64 start;
+     const char *error = NULL;
+     WebPBitstreamFeatures features;
+@@ -454,6 +459,9 @@ error:
+         IMG_SetError("%s", error);
+     }
+     SDL_RWseek(src, start, RW_SEEK_SET);
++#else
++    IMG_SetError("WEBP animations are not supported");
++#endif
+     return NULL;
+ }
+ 
+-- 
+2.23.0
+

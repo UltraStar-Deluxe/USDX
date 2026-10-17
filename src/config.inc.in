@@ -24,27 +24,47 @@
   {$IF Defined(IncludeConstants)}
     FFMPEG_VERSION_INT = @FFMPEG_VERSION_INT@;
 
+    {$IFDEF MSWINDOWS}
+    av__codec = 'avcodec-@libavcodec_VERSION_MAJOR@';
+    {$ELSE}
     av__codec = 'libavcodec';
+    {$ENDIF}
     LIBAVCODEC_VERSION_MAJOR   = @libavcodec_VERSION_MAJOR@;
     LIBAVCODEC_VERSION_MINOR   = @libavcodec_VERSION_MINOR@;
     LIBAVCODEC_VERSION_RELEASE = @libavcodec_VERSION_RELEASE@;
 
+    {$IFDEF MSWINDOWS}
+    av__format = 'avformat-@libavformat_VERSION_MAJOR@';
+    {$ELSE}
     av__format = 'libavformat';
+    {$ENDIF}
     LIBAVFORMAT_VERSION_MAJOR   = @libavformat_VERSION_MAJOR@;
     LIBAVFORMAT_VERSION_MINOR   = @libavformat_VERSION_MINOR@;
     LIBAVFORMAT_VERSION_RELEASE = @libavformat_VERSION_RELEASE@;
 
+    {$IFDEF MSWINDOWS}
+    av__util = 'avutil-@libavutil_VERSION_MAJOR@';
+    {$ELSE}
     av__util = 'libavutil';
+    {$ENDIF}
     LIBAVUTIL_VERSION_MAJOR   = @libavutil_VERSION_MAJOR@;
     LIBAVUTIL_VERSION_MINOR   = @libavutil_VERSION_MINOR@;
     LIBAVUTIL_VERSION_RELEASE = @libavutil_VERSION_RELEASE@;
 
+    {$IFDEF MSWINDOWS}
+    sw__scale = 'swscale-@libswscale_VERSION_MAJOR@';
+    {$ELSE}
     sw__scale = 'libswscale';
+    {$ENDIF}
     LIBSWSCALE_VERSION_MAJOR   = @libswscale_VERSION_MAJOR@;
     LIBSWSCALE_VERSION_MINOR   = @libswscale_VERSION_MINOR@;
     LIBSWSCALE_VERSION_RELEASE = @libswscale_VERSION_RELEASE@;
 
+    {$IFDEF MSWINDOWS}
+    sw__resample = 'swresample-@libswresample_VERSION_MAJOR@';
+    {$ELSE}
     sw__resample = 'libswresample';
+    {$ENDIF}
     LIBSWRESAMPLE_VERSION_MAJOR   = @libswresample_VERSION_MAJOR@;
     LIBSWRESAMPLE_VERSION_MINOR   = @libswresample_VERSION_MINOR@;
     LIBSWRESAMPLE_VERSION_RELEASE = @libswresample_VERSION_RELEASE@;
@@ -69,6 +89,9 @@
 
 {$@DEFINE_HAVE_PORTMIXER@ HavePortmixer}
 {$@DEFINE_HAVE_PORTMIDI@ UsePortMidi}
+{$IFDEF MSWINDOWS}
+  {$DEFINE UseMIDIPort}
+{$IFEND}
 {$IF Defined(UsePortMidi)}
   {$DEFINE UseMIDIPort}
 {$IFEND}

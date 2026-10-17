@@ -75,6 +75,15 @@ AC_DEFUN([AC_SUBST_DEFINE],
 
 AC_CANONICAL_HOST
 
+case "$host_os" in
+  *mingw* | *cygwin* | *msys*)
+    is_windows=yes
+    ;;
+  *)
+    is_windows=no
+    ;;
+esac
+
 # print library options header
 AC_ARG_WITH([cfg-dummy1], [
 External Libraries:])
@@ -82,13 +91,24 @@ External Libraries:])
 # add portmixer option
 AC_ARG_WITH([portaudio],
     [AS_HELP_STRING([--with-portaudio],
-      [enable audio capture with PortAudio @<:@default=check@:>@])],
-    [with_portmixer=$withval], [with_portaudio="check"])
+      [enable audio capture with PortAudio (Mac/Linux only) @<:@default=check@:>@])],
+    [with_portaudio=$withval], [with_portaudio="check"])
 
 AC_ARG_WITH([portmixer],
     [AS_HELP_STRING([--with-portmixer],
-      [enable portmixer audio-mixer support @<:@default=check@:>@])],
+      [enable portmixer audio-mixer support (Mac/Linux only) @<:@default=check@:>@])],
     [with_portmixer=$withval], [with_portmixer="check"])
+
+if [[ x$is_windows == xyes ]]; then
+    if [[ x$with_portaudio != xcheck ]]; then
+        AC_MSG_ERROR([PortAudio option not available on Windows])
+    fi
+    with_portaudio=no
+    if [[ x$with_portmixer != xcheck ]]; then
+        AC_MSG_ERROR([PortMixer option not available on Windows])
+    fi
+    with_portmixer=no
+fi
 
 # add projectM option
 AC_ARG_WITH([libprojectM], 
@@ -207,14 +227,12 @@ fi
 # -----------------------------------------
 # check for libraries
 # -----------------------------------------
+CMAKE_PREFIX=
+if [[ x$is_windows == xyes ]]; then
+    PKG_CONFIG_PATH=$PKG_CONFIG_PATH:dists/windows/prefix/$(uname -m)/lib/pkgconfig
+    CMAKE_PREFIX=dists/windows/prefix/$(uname -m)
+fi
 
-use_generated_config=yes
-if test x$FPC_PLATFORM = xwin32 -o x$FPC_PLATFORM = xwin64; then
-    use_generated_config=no
-    AC_MSG_NOTICE([Using src/config-win.inc for Windows library configuration; skipping pkg-config checks for bundled runtime DLLs.])
-    opencv_USE_CWRAPPER=yes
-    AC_SUBST(USE_OPENCV_CWRAPPER, $opencv_USE_CWRAPPER)
-else
 # find sdl2
 PKG_HAVE([sdl2], [sdl2], yes)
 
@@ -452,9 +470,19 @@ AC_SUBST_DEFINE(HAVE_PORTAUDIO, $portaudio_HAVE)
 PKG_HAVE([portmixer], [portmixer], no)
 AC_SUBST_DEFINE(HAVE_PORTMIXER, $portmixer_HAVE)
 
-AC_ARG_ENABLE(portmidi, [AS_HELP_STRING([--disable-portmidi], [Disable PortTime Midi loop])])
-AC_ARG_WITH(porttime, [AS_HELP_STRING([--with-porttime], [Use PortTime instead of SDL Midi loop])])
-
+AC_ARG_ENABLE(portmidi, [AS_HELP_STRING([--disable-portmidi], [Disable PortTime Midi loop (Mac/Linux only)])])
+AC_ARG_WITH(porttime, [AS_HELP_STRING([--with-porttime], [Use PortTime instead of SDL Midi loop (Mac/Linux only)])])
+if [[ x$is_windows == xyes ]]; then
+    if [[ -n "$enable_portmidi" ]]; then
+        AC_MSG_ERROR([PortMidi option not available on Windows])
+    fi
+    enable_portmidi=no
+    with_portmidi=no
+    if [[ -n "$with_porttime" ]]; then
+        AC_MSG_ERROR([PortTime option not available on Windows])
+    fi
+    with_porttime=no
+fi
 
 # Default to MIDI emulation on Linux and macOS unless --disable-midiemu is given
 case "$host_os" in
@@ -495,7 +523,6 @@ fi
 AC_SUBST_DEFINE(HAVE_PORTMIDI, $portmidi_HAVE)
 AC_SUBST_DEFINE(HAVE_PORTTIME, $porttime_HAVE)
 AC_SUBST(porttime_LIB_NAME)
-fi
 
 ## MIDI emulation backend
 if [[ x$enable_midiemu = xyes ]] ; then
@@ -524,9 +551,13 @@ AC_SUBST(LIBS)
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
-if [[ "$use_generated_config" = yes ]]; then
-    AC_CONFIG_FILES([src/config-$FPC_PLATFORM.inc:src/config.inc.in])
+if [[ x$is_windows == xyes ]]; then
+    CONFIG_INC_NAME=config-win.inc
+else
+    CONFIG_INC_NAME=config-$FPC_PLATFORM.inc
 fi
+AC_CONFIG_FILES([src/$CONFIG_INC_NAME:src/config.inc.in])
+
 if [[ x$libprojectM_USE_CWRAPPER = xyes ]]; then
     AC_CONFIG_FILES([src/lib/projectM/cwrapper/Makefile])
 fi

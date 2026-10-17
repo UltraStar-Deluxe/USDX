@@ -131,6 +131,16 @@ IfFileExists $INSTDIR\libopencv_imgproc460.dll 0 +2
 Delete "$INSTDIR\libopencv_imgproc460.dll"
 IfFileExists $INSTDIR\libopencv_videoio460.dll 0 +2
 Delete "$INSTDIR\libopencv_videoio460.dll"
+IfFileExists "$INSTDIR\libwebp-7.dll" 0 +2
+Delete "$INSTDIR\libwebp-7.dll"
+IfFileExists "$INSTDIR\libtiff-6.dll" 0 +2
+Delete "$INSTDIR\libtiff-6.dll"
+IfFileExists "$INSTDIR\libjpeg-8.dll" 0 +2
+Delete "$INSTDIR\libjpeg-8.dll"
+IfFileExists "$INSTDIR\libfreetype-6.dll" 0 +2
+Delete "$INSTDIR\libfreetype-6.dll"
+IfFileExists "$INSTDIR\libsharpyuv-0.dll" 0 +2
+Delete "$INSTDIR\libsharpyuv-0.dll.dll"
 
 RMDir /r "$INSTDIR\Themes"
 RMDir /r "$INSTDIR\Skins"
