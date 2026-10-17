@@ -512,7 +512,7 @@ AC_SUBST(PFLAGS_EXTRA)
 
 # determine linker-flags
 if test x$FPC_PLATFORM = xdarwin; then
-    LDFLAGS="-macos_version_min 10.8 -undefined dynamic_lookup -headerpad_max_install_names"
+    LDFLAGS="-macos_version_min 10.8 -headerpad_max_install_names"
 fi
 #LIBS=
 AC_SUBST(LDFLAGS)
