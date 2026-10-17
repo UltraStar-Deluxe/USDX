@@ -54,6 +54,7 @@ type
     private
       CountTeams: integer;
       CountPlayer: array [0..2] of integer;
+      LastEditedButton: integer;
 
       SelectTeams:     cardinal;
       SelectPlayers: array [0..2] of cardinal;
@@ -93,6 +94,7 @@ type
       procedure UpdateParty;
       procedure CacheCurrentSetup;
       procedure RestoreCachedSetup;
+      procedure SaveCurrentSetup;
 
   end;
 
@@ -119,15 +121,48 @@ uses
 var
   Num: array[0..2] of integer;
 
+function IsDefaultPlayerName(const Name: UTF8String; Player: integer): boolean;
+begin
+  Result :=
+    (Name = 'Player' + IntToStr(Player)) or
+    (Name = 'Player ' + IntToStr(Player)) or
+    (Name = IPlayerTranslated[Player - 1]) or
+    (Name = ULanguage.Language.Translate('OPTION_VALUE_PLAYER') + IntToStr(Player)) or
+    (Name = ULanguage.Language.Translate('OPTION_VALUE_PLAYER') + ' ' + IntToStr(Player));
+end;
+
+function IsDefaultTeamName(const Name: UTF8String; Team: integer): boolean;
+begin
+  Result :=
+    (Name = 'Team' + IntToStr(Team)) or
+    (Name = 'Team ' + IntToStr(Team)) or
+    (Name = ITeamTranslated[Team - 1]) or
+    (Name = ULanguage.Language.Translate('OPTION_VALUE_TEAM') + IntToStr(Team)) or
+    (Name = ULanguage.Language.Translate('OPTION_VALUE_TEAM') + ' ' + IntToStr(Team));
+end;
+
 procedure TScreenPartyPlayer.CacheCurrentSetup;
 var
   Team, Player: integer;
+  TeamName, PlayerName: UTF8String;
 begin
   for Team := 0 to Party_Teams_Max - 1 do
   begin
-    FCachedTeamNames[Team] := Button[Team * 5].Text[0].Text;
+    TeamName := Button[Team * 5].Text[0].Text;
+    if IsDefaultTeamName(TeamName, Team + 1) then
+      FCachedTeamNames[Team] := 'Team' + IntToStr(Team + 1)
+    else
+      FCachedTeamNames[Team] := TeamName;
+
     for Player := 0 to Party_Players_Max - 1 do
-      FCachedPlayerNames[Team, Player] := Button[Team * 5 + Player + 1].Text[0].Text;
+    begin
+      PlayerName := Button[Team * 5 + Player + 1].Text[0].Text;
+      if IsDefaultPlayerName(PlayerName, Team * Party_Players_Max + Player + 1) then
+        FCachedPlayerNames[Team, Player] :=
+          'Player' + IntToStr(Team * Party_Players_Max + Player + 1)
+      else
+        FCachedPlayerNames[Team, Player] := PlayerName;
+    end;
   end;
   FCachedSetupValid := true;
 end;
@@ -135,12 +170,58 @@ end;
 procedure TScreenPartyPlayer.RestoreCachedSetup;
 var
   Team, Player: integer;
+  TeamName, PlayerName: UTF8String;
 begin
   for Team := 0 to Party_Teams_Max - 1 do
   begin
-    Button[Team * 5].Text[0].Text := FCachedTeamNames[Team];
+    TeamName := FCachedTeamNames[Team];
+    if IsDefaultTeamName(TeamName, Team + 1) then
+      Button[Team * 5].Text[0].Text := ITeamTranslated[Team]
+    else
+      Button[Team * 5].Text[0].Text := TeamName;
+
     for Player := 0 to Party_Players_Max - 1 do
-      Button[Team * 5 + Player + 1].Text[0].Text := FCachedPlayerNames[Team, Player];
+    begin
+      PlayerName := FCachedPlayerNames[Team, Player];
+      if IsDefaultPlayerName(PlayerName, Team * Party_Players_Max + Player + 1) then
+        Button[Team * 5 + Player + 1].Text[0].Text :=
+          IPlayerTranslated[Team * Party_Players_Max + Player]
+      else
+        Button[Team * 5 + Player + 1].Text[0].Text := PlayerName;
+    end;
+  end;
+end;
+
+procedure TScreenPartyPlayer.SaveCurrentSetup;
+var
+  I: integer;
+begin
+  // Save team names
+  for I := 0 to 2 do
+  begin
+    if IsDefaultTeamName(Button[I * 5].Text[0].Text, I + 1) then
+      Ini.NameTeam[I] := 'Team' + IntToStr(I + 1)
+    else
+      Ini.NameTeam[I] := Button[I * 5].Text[0].Text;
+  end;
+
+  // Save player names
+  for I := 0 to 3 do
+  begin
+    if IsDefaultPlayerName(Button[I + 1].Text[0].Text, I + 1) then
+      Ini.Name[I] := 'Player' + IntToStr(I + 1)
+    else
+      Ini.Name[I] := Button[I + 1].Text[0].Text;
+
+    if IsDefaultPlayerName(Button[I + 6].Text[0].Text, I + 5) then
+      Ini.Name[I + 4] := 'Player' + IntToStr(I + 5)
+    else
+      Ini.Name[I + 4] := Button[I + 6].Text[0].Text;
+
+    if IsDefaultPlayerName(Button[I + 11].Text[0].Text, I + 9) then
+      Ini.Name[I + 8] := 'Player' + IntToStr(I + 9)
+    else
+      Ini.Name[I + 8] := Button[I + 11].Text[0].Text;
   end;
 end;
 
@@ -309,8 +390,22 @@ begin
     // check normal keys
     if (IsPrintableChar(CharCode)) then
     begin
-      Button[Interactions[Interaction].Num].Text[0].Text := Button[Interactions[Interaction].Num].Text[0].Text +
-                                          UCS4ToUTF8String(CharCode);
+      if LastEditedButton <> Interactions[Interaction].Num then
+      begin
+        // First character: replace the existing name
+        Button[Interactions[Interaction].Num].Text[0].Text :=
+          UCS4ToUTF8String(CharCode);
+
+        LastEditedButton := Interactions[Interaction].Num;
+      end
+      else
+      begin
+        // Following characters: append to the name
+        Button[Interactions[Interaction].Num].Text[0].Text :=
+          Button[Interactions[Interaction].Num].Text[0].Text +
+          UCS4ToUTF8String(CharCode);
+      end;
+
       Exit;
     end;
 
@@ -351,6 +446,7 @@ begin
   case PressedKey of
     SDLK_ESCAPE:
       begin
+        SaveCurrentSetup;
         Ini.SaveNames;
         AudioPlayback.PlaySound(SoundLib.Back);
         FadeTo(@ScreenPartyOptions);
@@ -492,6 +588,7 @@ var
   ButtonID: integer;
 begin
   inherited Create;
+  LastEditedButton := -1;
 
   LoadFromTheme(Theme.PartyPlayer);
 
@@ -573,6 +670,7 @@ var
   I:    integer;
 begin
   inherited;
+  LastEditedButton := -1;
 
   if not Help.SetHelpID(ID) then
     Log.LogWarn('No Entry for Help-ID ' + ID, 'ScreenPartyPlayer');
@@ -588,17 +686,36 @@ begin
 
     // Templates for Names Mod
     for I := 1 to 4 do
-      Button[I].Text[0].Text := Ini.Name[I-1];
+    begin
+      if IsDefaultPlayerName(Ini.Name[I-1], I) then
+        Button[I].Text[0].Text := IPlayerTranslated[I-1]
+      else
+        Button[I].Text[0].Text := Ini.Name[I-1];
+    end;
 
     for I := 6 to 9 do
-      Button[I].Text[0].Text := Ini.Name[I-2];
+    begin
+      if IsDefaultPlayerName(Ini.Name[I-2], I-1) then
+        Button[I].Text[0].Text := IPlayerTranslated[I-2]
+      else
+        Button[I].Text[0].Text := Ini.Name[I-2];
+    end;
 
     for I := 11 to 14 do
-      Button[I].Text[0].Text := Ini.Name[I-3];
+    begin
+      if IsDefaultPlayerName(Ini.Name[I-3], I-2) then
+        Button[I].Text[0].Text := IPlayerTranslated[I-3]
+      else
+        Button[I].Text[0].Text := Ini.Name[I-3];
+    end;
 
-    Button[0].Text[0].Text := Ini.NameTeam[0];
-    Button[5].Text[0].Text := Ini.NameTeam[1];
-    Button[10].Text[0].Text := Ini.NameTeam[2];
+    for I := 0 to 2 do
+    begin
+      if IsDefaultTeamName(Ini.NameTeam[I], I + 1) then
+        Button[I * 5].Text[0].Text := ITeamTranslated[I]
+      else
+        Button[I * 5].Text[0].Text := Ini.NameTeam[I];
+    end;
     // Templates for Names Mod end
   end;
 
