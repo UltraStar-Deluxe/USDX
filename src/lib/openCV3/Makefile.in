@@ -9,7 +9,11 @@ srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 
 OBJECTS	= ApiWrapper.o
+ifneq ($(filter win32 win64,@FPC_PLATFORM@),)
+LIBRARY = ../../../game/opencvwrapper.dll
+else
 LIBRARY = libopenCV-cwrapper.a
+endif
 
 CXX      = @CXX@
 CPPFLAGS = @CPPFLAGS@
@@ -20,9 +24,16 @@ RANLIB   = @RANLIB@
 
 all: $(LIBRARY)
 
+ifneq ($(filter win32 win64,@FPC_PLATFORM@),)
+COMMA := ,
+LDFLAGS := $(foreach lib,@OpenCV_LIBS@,-Wl$(COMMA)$(if $(filter %.dll.a, $(lib)),../../../$(lib),$(lib)))
+$(LIBRARY): $(OBJECTS)
+	$(CXX) -shared -o $(LIBRARY) $(OBJECTS) $(LDFLAGS)
+else
 $(LIBRARY): $(OBJECTS)
 	ar ruv $(LIBRARY) $(OBJECTS)
 	$(RANLIB) $(LIBRARY)
+endif
 
 %.o: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(<) -o $@

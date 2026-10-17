@@ -75,19 +75,13 @@ USDX_BIN := $(USDX_GAME_DIR)/$(USDX_BIN_NAME)
 
 OPENCV_CWRAPPER_DIR := $(USDX_LIB_DIR)/openCV3
 USE_OPENCV_CWRAPPER = @USE_OPENCV_CWRAPPER@
-USE_OPENCV_CWRAPPER_DLL ?= no
-ifeq ($(EXEEXT),.exe)
-USE_OPENCV_CWRAPPER_DLL := yes
-endif
 
 #################################################
 # Dependencies
 #################################################
 
 ifeq ($(USE_OPENCV_CWRAPPER), yes)
-ifneq ($(USE_OPENCV_CWRAPPER_DLL), yes)
 DEPS += $(OPENCV_CWRAPPER_DIR)
-endif
 endif
 
 #################################################

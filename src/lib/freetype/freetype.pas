@@ -55,7 +55,7 @@ uses
 
 const
 {$IF Defined(MSWINDOWS)}
-  ft_lib = 'libfreetype-6.dll';
+  ft_lib = 'libfreetype.dll';
 {$ELSEIF Defined(DARWIN)}
   ft_lib = 'libfreetype.dylib';
   {$LINKLIB libfreetype}
