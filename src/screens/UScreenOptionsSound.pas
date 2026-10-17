@@ -51,7 +51,7 @@ type
     SfxVolumeSelectId: integer;
     PreviewVolumeSelectId: integer;
     function AddVolumeSlider(const Text: UTF8String; var Data: integer): integer;
-    procedure ApplyRealtimeSoundSettings;
+    procedure ApplyRealtimeSoundSettings(UpdatePartialVocalsVolume: boolean = false);
     function IsVolumeSlider(SelectId: integer): boolean;
     function CurrentVolumeSelectId: integer;
     function StepVolumeSlider(Delta: integer): boolean;
@@ -115,8 +115,12 @@ type
 
 function TScreenOptionsSound.ParseInput(PressedKey: cardinal;
   CharCode: UCS4Char; PressedDown: boolean): boolean;
+var
+  PrevVocalsVolume: integer;
 begin
   Result := true;
+  PrevVocalsVolume := Ini.VocalsVolume;
+
   if (PressedDown) then
   begin // Key Down
     case PressedKey of
@@ -138,6 +142,13 @@ begin
       SDLK_TAB:
       begin
         ScreenPopupHelp.ShowPopup();
+      end;
+      SDLK_K:
+      begin
+        ToggleVocalsVolume;
+        AudioPlayback.PlaySound(SoundLib.Option);
+        SyncVolumeSlidersFromIni;
+        Exit;
       end;
       SDLK_RETURN:
       begin
@@ -182,14 +193,17 @@ begin
     end;
   end;
 
-  ApplyRealtimeSoundSettings;
+  ApplyRealtimeSoundSettings(Ini.VocalsVolume <> PrevVocalsVolume);
   SyncVolumeSlidersFromIni;
 end;
 
 function TScreenOptionsSound.ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean;
+var
+  PrevVocalsVolume: integer;
 begin
+  PrevVocalsVolume := Ini.VocalsVolume;
   Result := inherited ParseMouse(MouseButton, BtnDown, X, Y);
-  ApplyRealtimeSoundSettings;
+  ApplyRealtimeSoundSettings(Ini.VocalsVolume <> PrevVocalsVolume);
   SyncVolumeSlidersFromIni;
 end;
 
@@ -332,13 +346,13 @@ begin
   Result := true;
 end;
 
-procedure TScreenOptionsSound.ApplyRealtimeSoundSettings;
+procedure TScreenOptionsSound.ApplyRealtimeSoundSettings(UpdatePartialVocalsVolume: boolean);
 var
   MusicOptionValue: integer;
 begin
   SetAudioVolumePercent(Ini.AudioVolume);
 
-  SetVocalsVolumePercent(Ini.VocalsVolume);
+  SetVocalsVolumePercent(Ini.VocalsVolume, UpdatePartialVocalsVolume);
 
   SetSfxVolumePercent(Ini.SfxVolume);
 
