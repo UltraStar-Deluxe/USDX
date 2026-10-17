@@ -23,6 +23,10 @@ interface
   {$LINKLIB libgcc_s}
 {$ENDIF}
 
+{$IFDEF DARWIN}
+  {$LINKLIB c++}
+{$ENDIF}
+
 uses
   CTypes;
 
