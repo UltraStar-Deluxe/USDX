@@ -540,7 +540,7 @@ begin
 
             // if print is pressed -> make screenshot and save to screenshot path
             if (SimKey = SDLK_SYSREQ) or (SimKey = SDLK_PRINTSCREEN) then
-              Display.SaveScreenShot
+              Display.HandleSDLScreenshotKey(SimKey, Event.key.keysym._mod)
             // if there is a visible popup then let it handle input instead of underlying screen
             // shoud be done in a way to be sure the topmost popup has preference (maybe error, then check)
             else if (ScreenPopupError <> nil) and (ScreenPopupError.Visible) then

@@ -107,6 +107,7 @@ type
       procedure InitFadeTextures();
 
       procedure SaveScreenShot;
+      procedure HandleSDLScreenshotKey(Key: cardinal; KeyModifiers: word);
 
       function  Draw: boolean;
 
@@ -234,6 +235,18 @@ begin
   end;
 end;
 {$ENDIF}
+
+procedure TDisplay.HandleSDLScreenshotKey(Key: cardinal; KeyModifiers: word);
+begin
+  {$IFDEF MSWINDOWS}
+  // RegisterHotKey owns unmodified PrintScreen only. Keep SDL handling for
+  // modified keys and as a fallback if native registration failed.
+  if PrintScreenHotKeyRegistered and (Key = SDLK_PRINTSCREEN) and
+    ((KeyModifiers and (KMOD_CTRL or KMOD_SHIFT or KMOD_ALT or KMOD_GUI)) = 0) then
+    Exit;
+  {$ENDIF}
+  SaveScreenShot;
+end;
 
 constructor TDisplay.Create;
 begin
