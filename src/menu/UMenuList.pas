@@ -174,6 +174,7 @@ end;
 function FitTextToWidth(const Value: UTF8String; Width: real; Font, Style: integer; Size: real): UTF8String;
 var
   TextLength: integer;
+  FitWidth: real;
 begin
   Result := Value;
   if (Value = '') or (Width <= 0) then
@@ -182,17 +183,20 @@ begin
   SetFontFamily(Font);
   SetFontStyle(Style);
   SetFontSize(Size);
+  SetFontItalic(false);
 
-  if (TextWidth(Result) <= Width) then
+  // Column normalization can round an exact measured fit slightly down.
+  FitWidth := Width + 0.000001 * Max(1.0, Abs(Width));
+  if (TextWidth(Result) <= FitWidth) then
     Exit;
 
   TextLength := LengthUTF8(Value);
   repeat
     Dec(TextLength);
     Result := UTF8Copy(Value, 1, TextLength) + '...';
-  until (TextLength <= 0) or (TextWidth(Result) <= Width);
+  until (TextLength <= 0) or (TextWidth(Result) <= FitWidth);
 
-  if (TextLength <= 0) and (TextWidth(Result) > Width) then
+  if (TextLength <= 0) and (TextWidth(Result) > FitWidth) then
     Result := '';
 end;
 
