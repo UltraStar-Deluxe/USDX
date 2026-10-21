@@ -298,15 +298,8 @@ end;
 procedure TScreenHighScores.UpdateColumnLayout;
 var
   Specs: array[0..2] of TListColumnSpec;
-  I: integer;
-  Left, Width, Gap, ScoreWidth: real;
-
-  procedure RespectThemeWidth(Index: integer; const ThemeText: TThemeText);
-  begin
-    if ThemeText.W > 0 then
-      EntryColumns[Index] := ListColumnFromAnchor(ThemeText.X,
-          Min(ThemeText.W, EntryColumns[Index].Width), ThemeText.Align);
-  end;
+  I, Pass, RowCount: integer;
+  Left, Width, Gap, ScoreDateGap, ScoreWidth, DateWidth, FixedWidth, Scale: real;
 begin
   EntryColumns[0] := ListColumnFromAnchor(Theme.HighScores.RowNameText.X,
       Theme.HighScores.RowNameText.W, Theme.HighScores.RowNameText.Align);
@@ -326,30 +319,55 @@ begin
       (Theme.HighScores.RowDateText.X <= Theme.HighScores.RowScoreText.X + Gap) then
     Exit;
 
-  ScoreWidth := 0;
-  for I := 0 to Min(EntryCount, Length(CurrentSong.Score[VisibleDifficulty])) - 1 do
-    ScoreWidth := Max(ScoreWidth, MeasureTextMaxLineWidth(
-        IntToStr(CurrentSong.Score[VisibleDifficulty, I].Score),
-        Theme.HighScores.RowScoreText.Font, Theme.HighScores.RowScoreText.Style,
-        ScaledSize(Theme.HighScores.RowScoreText.Size)));
+  ScoreDateGap := 20 * Min(1.0, EntryTextSize / Theme.HighScores.RowNameText.Size);
+  RowCount := Min(EntryCount, Length(CurrentSong.Score[VisibleDifficulty]));
+  // Reserve measured score and date widths, leaving at least a quarter for names.
+  // On narrow layouts reduce the numeric font sizes together instead of truncating.
+  for Pass := 0 to 10 do
+  begin
+    ScoreWidth := 2;
+    DateWidth := 2;
+    for I := 0 to RowCount - 1 do
+    begin
+      ScoreWidth := Max(ScoreWidth, 2 + MeasureTextMaxLineWidth(
+          IntToStr(CurrentSong.Score[VisibleDifficulty, I].Score),
+          Text[EntryScoreText[I]].Font, Text[EntryScoreText[I]].Style,
+          Text[EntryScoreText[I]].Size));
+      DateWidth := Max(DateWidth, 2 + MeasureTextMaxLineWidth(
+          CurrentSong.Score[VisibleDifficulty, I].Date,
+          Text[EntryDateText[I]].Font, Text[EntryDateText[I]].Style,
+          Text[EntryDateText[I]].Size));
+    end;
+    FixedWidth := ScoreWidth + DateWidth;
+    if (FixedWidth <= Width * 0.75 - Gap - ScoreDateGap) or (Pass = 10) then
+      Break;
+    Scale := Max(0.1, (Width * 0.75 - Gap - ScoreDateGap - 4) / FixedWidth);
+    for I := 0 to High(EntryScoreText) do
+    begin
+      Text[EntryScoreText[I]].Size := Text[EntryScoreText[I]].Size * Scale;
+      Text[EntryDateText[I]].Size := Text[EntryDateText[I]].Size * Scale;
+    end;
+  end;
+
   FillChar(Specs, SizeOf(Specs), 0);
   Specs[0].Flexible := true;
   Specs[1].GapBefore := Gap / Width;
   Specs[1].Width := ScoreWidth / Width;
   Specs[1].Align := 2;
-  Specs[2].GapBefore := Gap / Width;
-  Specs[2].Width := (Theme.HighScores.RowDateText.X -
-      Theme.HighScores.RowScoreText.X - Gap) / Width;
+  Specs[2].GapBefore := ScoreDateGap / Width;
+  Specs[2].Width := DateWidth / Width;
   Specs[2].Align := 2;
   CalculateListColumns(Specs, Left, Width, 1.0, 1.0, 1.0, EntryColumns);
-  RespectThemeWidth(0, Theme.HighScores.RowNameText);
-  RespectThemeWidth(1, Theme.HighScores.RowScoreText);
-  RespectThemeWidth(2, Theme.HighScores.RowDateText);
+  if Theme.HighScores.RowNameText.W > 0 then
+    EntryColumns[0].Width := Min(Theme.HighScores.RowNameText.W, EntryColumns[0].Width);
   for I := 0 to High(EntryNameText) do
   begin
     PositionListColumnText(Text[EntryNameText[I]], EntryColumns[0]);
     PositionListColumnText(Text[EntryScoreText[I]], EntryColumns[1]);
     PositionListColumnText(Text[EntryDateText[I]], EntryColumns[2]);
+    Text[EntryNameText[I]].W := EntryColumns[0].Width;
+    Text[EntryScoreText[I]].W := EntryColumns[1].Width;
+    Text[EntryDateText[I]].W := EntryColumns[2].Width;
   end;
 end;
 
