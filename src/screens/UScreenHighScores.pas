@@ -319,7 +319,7 @@ begin
       (Theme.HighScores.RowDateText.X <= Theme.HighScores.RowScoreText.X + Gap) then
     Exit;
 
-  ScoreDateGap := 20 * Min(1.0, EntryTextSize / Theme.HighScores.RowNameText.Size);
+  ScoreDateGap := 48;
   RowCount := Min(EntryCount, Length(CurrentSong.Score[VisibleDifficulty]));
   // Reserve measured score and date widths, leaving at least a quarter for names.
   // On narrow layouts reduce the numeric font sizes together instead of truncating.
