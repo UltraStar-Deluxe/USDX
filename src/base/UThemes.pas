@@ -2156,6 +2156,8 @@ begin
       ThemeLoadButton(StatMain.ButtonExit, 'StatMainButtonExit');
 
       ThemeLoadText (StatMain.TextOverview, 'StatMainTextOverview');
+      if StatMain.TextOverview.H <= 0 then
+        StatMain.TextOverview.H := Max(1, 520 - StatMain.TextOverview.Y);
 
       LoadStatMainRecentPeriods;
 
@@ -2174,6 +2176,20 @@ begin
         StatDetail.ListX := StatDetail.TextList[0].X;
         StatDetail.ListY := StatDetail.TextList[0].Y;
         StatDetail.ListW := StatDetail.TextList[0].W;
+        if StatDetail.ListW <= 0 then
+          StatDetail.ListW := Max(1, StatDetail.TextPage.X - StatDetail.ListX);
+        if ResolveThemeFile('StatDetailTextHeader') = nil then
+        begin
+          StatDetail.TextHeader := StatDetail.TextList[0];
+          StatDetail.TextHeader.Size := 14;
+          StatDetail.TextHeader.Style := ftBold;
+          StatDetail.TextHeader.Y := StatDetail.TextPage.Y + 8;
+          StatDetail.TextHeader.W := 0;
+          StatDetail.TextHeader.H := 0;
+          StatDetail.TextHeader.ColR := 0;
+          StatDetail.TextHeader.ColG := 0;
+          StatDetail.TextHeader.ColB := 0;
+        end;
       end
       else
       begin
