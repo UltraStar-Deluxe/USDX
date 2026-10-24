@@ -160,8 +160,13 @@ USE_PROJECTM_CWRAPPER := @USE_PROJECTM_CWRAPPER@
 # OpenCV
 #################################################
 
+ifeq ($(EXEEXT),.exe)
+OPENCV_CWRAPPER_DIR := $(USDX_GAME_DIR)
+OPENCV_CWRAPPER_LIB := $(OPENCV_CWRAPPER_DIR)/opencvwrapper.dll
+else
 OPENCV_CWRAPPER_DIR := $(USDX_LIB_DIR)/openCV3
 OPENCV_CWRAPPER_LIB := $(OPENCV_CWRAPPER_DIR)/libopenCV-cwrapper.a
+endif
 USE_OPENCV_CWRAPPER := @USE_OPENCV_CWRAPPER@
 USE_OPENCV_CWRAPPER_DLL ?= no
 ifeq ($(EXEEXT),.exe)
@@ -177,15 +182,13 @@ endif
 # Static libs
 #################################################
 
-STATIC_LIBS := 
+CWRAPPER_LIBS :=
 ifeq ($(USE_PROJECTM_CWRAPPER), yes)
-STATIC_LIBS += $(PROJECTM_CWRAPPER_LIB)
+CWRAPPER_LIBS += $(PROJECTM_CWRAPPER_LIB)
 endif
 
 ifeq ($(USE_OPENCV_CWRAPPER), yes)
-ifneq ($(USE_OPENCV_CWRAPPER_DLL), yes)
-STATIC_LIBS += $(OPENCV_CWRAPPER_LIB)
-endif
+CWRAPPER_LIBS += $(OPENCV_CWRAPPER_LIB)
 endif
 
 #################################################
@@ -253,7 +256,7 @@ create-pathinfo:
 	echo "INSTALL_DATADIR = '$(INSTALL_DATADIR)';" > paths.inc
 
 # check if any src-file changed and rebuild
-$(USDX_BIN): $(USDX_PROJ) $(STATIC_LIBS) $(SRC_FILES)
+$(USDX_BIN): $(USDX_PROJ) $(CWRAPPER_LIBS) $(SRC_FILES)
 	@echo "==================================="
 	@echo "Changed files:"
 	@echo "$?"

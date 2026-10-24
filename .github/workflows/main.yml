@@ -12,6 +12,8 @@ jobs:
   build_windows:
     name: Build for Windows
     runs-on: windows-2022
+    env:
+      FPC_VERSION: 3.2.2
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6
@@ -22,40 +24,50 @@ jobs:
       - name: Setup MSYS2
         uses: msys2/setup-msys2@v2
         with:
-          msystem: MSYS
+          msystem: UCRT64
           update: false
           install: >-
-            autoconf-wrapper
-            automake-wrapper
-            git
-            make
-            pkgconf
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-tools
+            base-devel
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-autotools
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-meson
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-git
+            mingw-w64-ucrt-x86_64-ntldd
+            mingw-w64-ucrt-x86_64-nasm
+            patch
+            unzip
       - name: Install Dependencies
         run: |
           curl.exe -L --max-time 60 -o fpc-installer.exe "https://sourceforge.net/projects/freepascal/files/Win32/3.2.2/fpc-3.2.2.win32.and.win64.exe/download"
           curl.exe -L --max-time 60 -o nsis-3.05-setup.exe "https://sourceforge.net/projects/nsis/files/NSIS%203/3.05/nsis-3.05-setup.exe/download"
           Start-Process -FilePath ".\\fpc-installer.exe" -ArgumentList "/TYPE=full /VERYSILENT /SP- /SUPPRESSMSGBOXES /NORESTART" -Wait
           ./nsis-3.05-setup.exe /S
-      - name: Download prebuilt DLLs
+      - name: Cache DLLs
+        id: cache-dlls
+        uses: actions/cache@v6
+        with:
+          path: dists/windows/prefix
+          key: windows-dlls-${{ hashFiles('dists/windows/tasks.sh') }}
+      - name: Build DLLs
+        if: steps.cache-dlls.outputs.cache-hit != 'true'
+        shell: msys2 {0}
+        run: make -C dists/windows
+      - name: Install DLLs
+        shell: msys2 {0}
         run: |
-          python dldlls.py
-          7z x -y usdx-dlls-x86_64.zip -ogame "*.dll"
-          7z x -y usdx-dlls-x86_64.zip -osrc "config-win.inc"
-        env:
-          ARTIFACT_ACCESS_TOKEN: ${{ secrets.MxeActionsReadAccessToken }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          touch -d @0 dists/windows/tasks.sh
+          make -C dists/windows install
       - name: Build
         shell: msys2 {0}
         run: |
-          export PATH="/usr/bin:/mingw64/bin:/c/FPC/3.2.2/bin:/c/FPC/3.2.2/bin/i386-win32:$PATH"
-          export MAKE="/usr/bin/make"
-          export FPCCFG="/c/FPC/3.2.2/bin/i386-win32/fpc.cfg"
-          export FPCDIR="/c/FPC/3.2.2"
-          export FPCMAKE="/c/FPC/3.2.2/bin/i386-win32/fpcmake"
+          export PATH="$PATH:/c/FPC/$FPC_VERSION/bin/i386-win32"
+          export FPCCFG="/c/FPC/$FPC_VERSION/bin/i386-win32/fpc.cfg"
+          export FPCDIR="/c/FPC/$FPC_VERSION"
+          export FPCMAKE="/c/FPC/$FPC_VERSION/bin/i386-win32/fpcmake"
           ./autogen.sh
-          ./configure
+          ./configure --with-opencv --with-libprojectM
           make
       - name: Create installer
         run: |
