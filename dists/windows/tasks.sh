@@ -44,9 +44,9 @@ deps+=('SDL2,https://www.libsdl.org/release/SDL2-2.32.10.tar.gz,5f5993c530f08453
 deps+=('SDL2_image,https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.8.12.tar.gz,393f5efb50536ec13ca4f4affb69cc9966d3c3f969e6c5e701faddf9f9785381')
 deps+=('sqlite,https://sqlite.org/2026/sqlite-autoconf-3530100.tar.gz,83e6b2020a034e9a7ad4a72feea59e1ad52f162e09cbd26735a3ffb98359fc4f')
 deps+=('freetype,https://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.xz,36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f')
-deps+=('dav1d,https://downloads.videolan.org/pub/videolan/dav1d/1.5.3/dav1d-1.5.3.tar.xz,732010aa5ef461fa93355ed2c6c5fedb48ddc4b74e697eaabe8907eaeb943011')
-deps+=('ffmpeg,https://ffmpeg.org/releases/ffmpeg-8.1.1.tar.xz,b6863adde98898f42602017462871b5f6333e65aec803fdd7a6308639c52edf3')
-deps+=('lua,https://www.lua.org/ftp/lua-5.4.8.tar.gz,4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae')
+deps+=('dav1d,https://downloads.videolan.org/pub/videolan/dav1d/1.5.4/dav1d-1.5.4.tar.xz,686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5')
+deps+=('ffmpeg,https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz,8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e')
+deps+=('lua,https://www.lua.org/ftp/lua-5.5.1.tar.gz,1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce')
 deps+=('libjpeg-turbo,https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/3.2.0/libjpeg-turbo-3.2.0.tar.gz,6f30092cef9fb839779646608f4ee14ae3cbac989c47fa05e841b0841f09878e')
 deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.58.tar.xz,28eb403f51f0f7405249132cecfe82ea5c0ef97f1b32c5a65828814ae0d34775')
 deps+=('libwebp,https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.6.0.tar.gz,e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564')
@@ -441,7 +441,7 @@ add_dll() {
 
 task_install() {
 	rm -f $DLL_DIR/*.debug $DLL_DIR/*.dll
-	for i in $ffmpeg_DLLs $david_DLLs $libjpeg_turbo_DLLs $libpng_DLLs $libtiff_DLLs $libwebp_DLLs $SDL2_DLLs $SDL2_image_DLLs $lua_DLLs $sqlite_DLLs $freetype_DLLs $projectm_DLLs $opencv_DLLs; do
+	for i in $ffmpeg_DLLs $dav1d_DLLs $libjpeg_turbo_DLLs $libpng_DLLs $libtiff_DLLs $libwebp_DLLs $SDL2_DLLs $SDL2_image_DLLs $lua_DLLs $sqlite_DLLs $freetype_DLLs $projectm_DLLs $opencv_DLLs; do
 		add_dll "$i"
 	done
 	for i in $PREFIX/bin/bass.dll $PREFIX/bin/msys2/*.dll; do
