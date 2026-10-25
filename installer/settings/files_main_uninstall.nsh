@@ -128,6 +128,12 @@
  Delete "$INSTDIR\libfreetype.dll"
  Delete "$INSTDIR\libsharpyuv.dll"
  Delete "$INSTDIR\projectM-4.dll"
+ Delete "$INSTDIR\avcodec-63.dll"
+ Delete "$INSTDIR\avformat-63.dll"
+ Delete "$INSTDIR\avutil-61.dll"
+ Delete "$INSTDIR\swresample-7.dll"
+ Delete "$INSTDIR\swscale-10.dll"
+ Delete "$INSTDIR\lua55.dll"
 
  StrCpy $0 "$INSTDIR\songs"
  Call un.DeleteIfEmpty 

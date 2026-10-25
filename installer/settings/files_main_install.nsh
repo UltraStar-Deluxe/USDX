@@ -140,7 +140,23 @@ Delete "$INSTDIR\libjpeg-8.dll"
 IfFileExists "$INSTDIR\libfreetype-6.dll" 0 +2
 Delete "$INSTDIR\libfreetype-6.dll"
 IfFileExists "$INSTDIR\libsharpyuv-0.dll" 0 +2
-Delete "$INSTDIR\libsharpyuv-0.dll.dll"
+Delete "$INSTDIR\libsharpyuv-0.dll"
+IfFileExists "$INSTDIR\libpng16-16.dll" 0 +2
+Delete "$INSTDIR\libpng16-16.dll"
+IfFileExists "$INSTDIR\portaudio_x64.dll" 0 +2
+Delete "$INSTDIR\portaudio_x64.dll"
+IfFileExists $INSTDIR\avcodec-62.dll 0 +2
+Delete "$INSTDIR\avcodec-62.dll"
+IfFileExists $INSTDIR\avformat-62.dll 0 +2
+Delete "$INSTDIR\avformat-62.dll"
+IfFileExists $INSTDIR\avutil-60.dll 0 +2
+Delete "$INSTDIR\avutil-60.dll"
+IfFileExists $INSTDIR\swresample-6.dll 0 +2
+Delete "$INSTDIR\swresample-6.dll"
+IfFileExists $INSTDIR\swscale-9.dll 0 +2
+Delete "$INSTDIR\swscale-9.dll"
+IfFileExists $INSTDIR\lua54.dll 0 +2
+Delete "$INSTDIR\lua54.dll"
 
 RMDir /r "$INSTDIR\Themes"
 RMDir /r "$INSTDIR\Skins"
