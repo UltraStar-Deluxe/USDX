@@ -1,0 +1,52 @@
+name: Bug report
+description: Report a problem with UltraStar Deluxe.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search existing issues before opening a new report. Report one problem at a time.
+        You do not need to diagnose the cause or suggest a fix.
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Give the shortest steps you know. If it happens only sometimes, describe when it happened and how often. If you have not seen it happen, say so and explain how you found it.
+      placeholder: |
+        1. Start USDX ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: What happened? Include the exact error message if there was one.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: USDX version
+      description: Include the version and where you installed it from. For a development build, include the commit if known.
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Operating system and version
+      placeholder: Windows 11, Ubuntu 24.04, macOS 15 ...
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Additional information
+      description: Attach relevant logs, screenshots, or a small example if available. Include hardware or settings only where relevant. Remove private information from attachments.
