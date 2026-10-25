@@ -48,6 +48,7 @@ type
     private
       SelectPlayers: cardinal;
       LastEditedButton: integer;
+      FRestoreNames: boolean;
 
       procedure UpdateInterface;
       procedure UpdatePartyTournament;
@@ -77,6 +78,7 @@ type
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       function ParseMouse(MouseButton: integer; BtnDown: boolean; X, Y: integer): boolean; override;
       procedure OnShow; override;
+      procedure OnHide; override;
   end;
 
 const
@@ -373,6 +375,7 @@ begin
     SDLK_RETURN:
       begin
         UpdatePartyTournament;
+        FRestoreNames := true;
         FadeTo(@ScreenPartyTournamentOptions, SoundLib.Start);
       end;
     // Up and Down could be done at the same time,
@@ -401,13 +404,25 @@ function TScreenPartyTournamentPlayer.ParseMouse(MouseButton: integer; BtnDown: 
 begin
   Result := true;
   inherited ParseMouse(MouseButton, BtnDown, X, Y);
-  SetTextInput(Interactions[Interaction].Typ = iButton);
+
+  SetTextInput(
+    (Interaction >= 0) and
+    (Interaction <= High(Interactions)) and
+    (Interactions[Interaction].Typ = iButton)
+  );
+end;
+
+procedure TScreenPartyTournamentPlayer.OnHide;
+begin
+  StopTextInput;
+  inherited;
 end;
 
 constructor TScreenPartyTournamentPlayer.Create;
 begin
   inherited Create;
 
+  FRestoreNames := false;
   LastEditedButton := -1;
   SetTextInput(false);
 
@@ -464,25 +479,38 @@ begin
   inherited;
 
   LastEditedButton := -1;
-  SetTextInput(false);
+  SetTextInput(
+    (Interaction >= 0) and
+    (Interaction <= High(Interactions)) and
+    (Interactions[Interaction].Typ = iButton)
+  );
 
   if not Help.SetHelpID(ID) then
     Log.LogError('No Entry for Help-ID ' + ID + ' (ScreenPartyPlayer)');
 
   PartyTournament.Clear;
 
-  // Localized default player names
-  for I := 0 to 15 do
+  if not FRestoreNames then
   begin
-    if (I < IMaxPlayerCount) and
-       ((Ini.Name[I] = 'Player' + IntToStr(I + 1)) or
-        (Ini.Name[I] = 'Player ' + IntToStr(I + 1)) or
-        (Ini.Name[I] = IPlayerTranslated[I]) or
-        (Ini.Name[I] = ULanguage.Language.Translate('OPTION_VALUE_PLAYER') + IntToStr(I + 1))) then
-      Button[I].Text[0].Text := IPlayerTranslated[I]
-    else
-      Button[I].Text[0].Text := Ini.Name[I];
+    // Localized default player names
+    for I := 0 to High(Ini.Name) do
+    begin
+      if (Ini.Name[I] = 'Player' + IntToStr(I + 1)) or
+         (Ini.Name[I] = 'Player ' + IntToStr(I + 1)) or
+         ((I < IMaxPlayerCount) and (Ini.Name[I] = IPlayerTranslated[I])) or
+         (Ini.Name[I] = ULanguage.Language.Translate('OPTION_VALUE_PLAYER') + IntToStr(I + 1)) then
+      begin
+        if I < IMaxPlayerCount then
+          Button[I].Text[0].Text := IPlayerTranslated[I]
+        else
+          Button[I].Text[0].Text := ULanguage.Language.Translate('OPTION_VALUE_PLAYER') + ' ' + IntToStr(I + 1);
+      end
+      else
+        Button[I].Text[0].Text := Ini.Name[I];
+    end;
   end;
+
+  FRestoreNames := false;
 
   UpdateInterface;
 end;
