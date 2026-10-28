@@ -689,7 +689,6 @@ var
   LineDuet:               TLyricLine;
   medley_end:             boolean;
   medley_start_applause:  boolean;
-  LastLineSungToEnd:      boolean;
 begin
   ScreenSing.Background.Draw;
 
@@ -840,38 +839,12 @@ begin
   ScreenSing.Text[TextTimeText].Text := Format('%s%.2d:%.2d', [DisplayPrefix, DisplayMin, DisplaySec]);
   ScreenSing.Text[TextTimeText].Visible := ScreenSing.Settings.TimeBarVisible;
 
-  LastLineSungToEnd := false;
   //the song was sung to the end?
-  if not ScreenSing.SungToEnd and ((not CurrentSong.isDuet) or (PlayersPlay = 1)) and
-      not ScreenSong.RapToFreestyle then
+  if (not ScreenSing.SungToEnd) and (not ScreenSong.RapToFreestyle) then
   begin
-    Line := ScreenSing.Lyrics.GetUpperLine();
-    if Line.LastLine then
-    begin
-      LastLineSungToEnd := true;
-      for T := 0 to High(Line.Words) do
-      begin
-        if (CurLyricsTime < GetTimeFromBeat(Line.Words[T].Start + Line.Words[T].Length)) and
-           (not Line.Words[T].Freestyle) then
-          LastLineSungToEnd := false;
-      end;
-    end;
-    if LastLineSungToEnd then
-      ScreenSing.SungToEnd := true;
-  end;
-
-  if not ScreenSing.SungToEnd and CurrentSong.isDuet and (PlayersPlay <> 1) and
-      not ScreenSong.RapToFreestyle then
-  begin
-    Line := ScreenSing.LyricsDuetP1.GetUpperLine();
-    LineDuet := ScreenSing.LyricsDuetP2.GetUpperLine();
-    if Line.LastLine and LineDuet.LastLine and
-        (Length(Line.Words) > 0) and (Length(LineDuet.Words) > 0) and
-        (CurLyricsTime >= GetTimeFromBeat(Line.Words[High(Line.Words)].Start +
-            Line.Words[High(Line.Words)].Length)) and
-        (CurLyricsTime >= GetTimeFromBeat(LineDuet.Words[High(LineDuet.Words)].Start +
-            LineDuet.Words[High(LineDuet.Words)].Length)) then
-      ScreenSing.SungToEnd := true;
+    ScreenSing.SungToEnd := true;
+    for T := Low(CurrentSong.Tracks) to Min(PlayersPlay - 1, High(CurrentSong.Tracks)) do
+      ScreenSing.SungToEnd := ScreenSing.SungToEnd and (CurLyricsTime >= GetTimeFromBeat(CurrentSong.Tracks[T].HighestScoredBeat));
   end;
 
   // for medley-mode:
