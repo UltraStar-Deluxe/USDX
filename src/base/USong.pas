@@ -643,6 +643,7 @@ var
   ParamLyric:   UTF8String;
 
   NotesFound:   boolean;
+  ScoredLine: boolean;
 
   procedure RemoveEmptyLinesFromTrack(const TrackIdx: integer);
   var
@@ -666,8 +667,6 @@ var
     if (Tracks[TrackIdx].High >= 0) and (Tracks[TrackIdx].CurrentLine > Tracks[TrackIdx].High) then
       Tracks[TrackIdx].CurrentLine := Tracks[TrackIdx].High;
   end;
-label
-  NextTrack;
 begin
   Result := false;
   LastError := '';
@@ -717,6 +716,7 @@ begin
         Tracks[TrackIndex].CurrentLine := 0;
         Tracks[TrackIndex].NotesGAP   := self.NotesGAP;
         Tracks[TrackIndex].ScoreValue := 0;
+        Tracks[TrackIndex].HighestScoredBeat := 0;
 
         //Add first line and set some standard values to fields
         //see procedure NewSentence for further explantation
@@ -881,20 +881,21 @@ begin
   begin
     if High(Tracks[Trackindex].Lines) < 0 then
       continue;  // no lines in this track
-
-    Tracks[Trackindex].Lines[0].LastLine := True; // fallback to make sure at least one line is marked last line
-
-    // search backwards until we find the last line with a non-freestyle note
-    for LinePos := System.High(Tracks[Trackindex].Lines) downto 0 do
-      for NoteIndex := System.High(Tracks[Trackindex].Lines[LinePos].Notes) downto 0 do
-        if Tracks[Trackindex].Lines[LinePos].Notes[NoteIndex].NoteType <> ntFreestyle then
+    Tracks[TrackIndex].Lines[High(Tracks[TrackIndex].Lines)].LastLine := true;
+    ScoredLine := false;
+    for LinePos := High(Tracks[TrackIndex].Lines) downto Low(Tracks[TrackIndex].Lines) do
+    begin
+      for NoteIndex := High(Tracks[TrackIndex].Lines[LinePos].Notes) downto Low(Tracks[TrackIndex].Lines[LinePos].Notes) do
+      begin
+        if (Tracks[TrackIndex].Lines[LinePos].Notes[NoteIndex].NoteType <> ntFreestyle) then
         begin
-          Tracks[Trackindex].Lines[0].LastLine := False; // reset the fallback as we found the last line with a non-freestyle note
-          Tracks[Trackindex].Lines[LinePos].LastLine := True;
-          goto NextTrack;
+          Tracks[TrackIndex].HighestScoredBeat := Max(Tracks[TrackIndex].HighestScoredBeat, Tracks[TrackIndex].Lines[LinePos].Notes[NoteIndex].StartBeat + Tracks[TrackIndex].Lines[LinePos].Notes[NoteIndex].Duration);
+          ScoredLine := true;
         end;
-
-    NextTrack: ;
+      end;
+      if (ScoredLine) then
+        break;
+    end;
   end;
 
   Result := true;
