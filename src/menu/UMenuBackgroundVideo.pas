@@ -97,7 +97,7 @@ type }
 {var
   BGVideoPool: TBGVideoPool;  }
 const
-  SUPPORTED_EXTS_BACKGROUNDVIDEO: array[0..6] of string = ('.avi', '.mov', '.divx', '.mpg', '.mp4', '.mpeg', '.m2v');
+  SUPPORTED_EXTS_BACKGROUNDVIDEO: array[0..7] of string = ('.avi', '.mov', '.divx', '.mpg', '.mp4', '.mpeg', '.m2v', '.webm');
 
 implementation
 
