@@ -91,17 +91,63 @@ const
 
   BUFFER_ALIGN = 32;
 
+  // Decoded (RGB) frames are prepared ahead of time by a background thread.
+  // The queue length is derived from this memory budget so that 1080p videos
+  // get about half a second of buffer (enough to ride out slow disk reads,
+  // e.g. from an external HDD) while 4K videos do not use excessive memory.
+  VIDEO_QUEUE_BYTES = 128 * 1024 * 1024;
+  VIDEO_QUEUE_MIN_FRAMES = 3;
+  VIDEO_QUEUE_MAX_FRAMES = 16;
+  // While the decoder is behind schedule it skips the RGB conversion of frames
+  // that would never be shown. To keep the picture moving even when the
+  // decoder cannot keep up at all, one frame is still converted after this
+  // many consecutive skipped frames.
+  VIDEO_MAX_CONSECUTIVE_DROPS = 15;
+  // consecutive avcodec_receive_frame errors tolerated before giving up
+  MAX_RECEIVE_ERRORS = 100;
+
 type
   IVideo_FFmpeg = interface (IVideo)
   ['{E640E130-C8C0-4399-AF02-67A3569313AB}']
     function Open(const FileName: IPath): boolean;
   end;
 
+  // A converted frame waiting in the queue
+  TVideoFrameSlot = record
+    Data:     array[0..3] of pcuint8;
+    Linesize: array[0..3] of cint;
+    Time:     extended; //**< presentation time of the frame (stream time)
+  end;
+
   TVideo_FFmpeg = class( TInterfacedObject, IVideo_FFmpeg )
   private
     fOpened: boolean;     //**< stream successfully opened
     fPaused: boolean;     //**< stream paused
-    fEOF: boolean;        //**< end-of-file state
+    fEOF: boolean;        //**< end-of-file state of the decoder (decode thread only)
+
+    {*
+     * Background decoding.
+     * The decode thread owns fFormatContext, fCodecContext, fAVFrame,
+     * fSwScaleContext and the fDec* clock. The main thread only uploads
+     * finished frames from the queue to the texture. Everything below that is
+     * accessed by both threads is protected by fLock.
+     *}
+    fDecodeThread: PSDL_Thread;
+    fLock:         PSDL_Mutex;
+    fWakeCond:     PSDL_Cond;  //**< wakes the decode thread (free slot, seek, quit)
+    fQuit:         boolean;    //**< decode thread must terminate
+    fSeekPending:  boolean;    //**< decode thread must seek to fSeekTime
+    fSeekTime:     extended;
+    fSeekGen:      integer;    //**< incremented on each seek to discard stale frames
+    fRequestedTime: extended;  //**< stream time the main thread is currently displaying
+    fDecoderEOF:   boolean;    //**< decode thread reached the end of the stream
+    fSlots:        array of TVideoFrameSlot; //**< ring buffer of converted frames
+    fSlotHead:     integer;    //**< index of the oldest queued frame
+    fSlotCount:    integer;    //**< number of queued frames
+    fDecFrameTime: extended;     //**< time of the last decoded frame (decode thread only)
+    fDecNextFrameTime: extended; //**< expected time of the next frame (decode thread only)
+    fDecSeekTarget: extended;    //**< time of the last seek (decode thread only)
+    fTexHasContent: boolean;   //**< texture was filled at least once
 
     fLoop: boolean;       //**< looping enabled
 
@@ -112,7 +158,6 @@ type
     fCodec:         PAVCodec;
 
     fAVFrame:     PAVFrame;
-    fAVFrameRGB:  PAVFrame;
 
     fFrameTex:    TTexture;
     fFrameTexValid: boolean; //**< if true, fFrameTex contains the current frame
@@ -135,14 +180,20 @@ type
     fAspectCorrection: TAspectCorrection;
 
     fFrameDuration: extended; //**< duration of a video frame in seconds (= 1/fps)
-    fFrameTime: extended; //**< video time position (absolute)
-    fNextFrameTime: extended; //**< video time position (absolute)
+    fFrameTime: extended; //**< time of the frame in the texture (main thread)
     fLoopTime: extended;  //**< start time of the current loop
     fPreferDTS: boolean;
 
     procedure Reset();
     function DecodeFrame(): boolean;
     procedure SynchronizeTime(Frame: PAVFrame; pts: double);
+
+    function AllocSlots(): boolean;
+    procedure FreeSlots();
+    procedure StartDecodeThread();
+    procedure StopDecodeThread();
+    procedure DecodeLoop();
+    procedure DoSeek(Time: extended);
 
     procedure GetVideoRect(var ScreenRect, TexRect: TRectCoords);
     procedure DrawBorders(ScreenRect: TRectCoords);
@@ -589,22 +640,16 @@ begin
   FreeAndNil(fFrameTex);
   fFrameTex := Renderer.CreateTexture(nil, PATH_NONE, fTexWidth, fTexHeight, VIDEO_TEXTURE_TYP, false);
 
-  // allocate space for decoded frame and rgb frame
   fAVFrame := av_frame_alloc();
-  fAVFrameRGB := av_frame_alloc();
-  if ((fAVFrame = nil) or (fAVFrameRGB = nil)) then
+  if (fAVFrame = nil) then
   begin
     Log.LogError('Failed to allocate buffers', 'TVideoPlayback_ffmpeg.Open');
     Close();
     Exit;
   end;
 
-  errnum := av_image_alloc(@fAVFrameRGB^.data[0], @fAVFrameRGB^.linesize[0],
-                           (fScaledWidth + BUFFER_ALIGN - 1) and -BUFFER_ALIGN, fScaledHeight,
-                           PIXEL_FMT_FFMPEG, BUFFER_ALIGN);
-  if (errnum < 0) then
+  if not AllocSlots() then
   begin
-    Log.LogError('av_image_alloc failed: ' + FFmpegCore.GetErrorString(errnum), 'TVideoPlayback_ffmpeg.Open');
     Close();
     Exit;
   end;
@@ -629,7 +674,252 @@ begin
   end;
 
   fOpened := true;
+  StartDecodeThread();
   Result := true;
+end;
+
+{**
+ * Allocates the ring buffer of converted frames. The number of slots depends
+ * on the frame size (see VIDEO_QUEUE_BYTES).
+ *}
+function TVideo_FFmpeg.AllocSlots(): boolean;
+var
+  I, NumSlots, errnum: integer;
+  FrameBytes: int64;
+begin
+  Result := false;
+
+  FrameBytes := int64((fScaledWidth + BUFFER_ALIGN - 1) and -BUFFER_ALIGN) *
+                fScaledHeight * PIXEL_FMT_SIZE;
+  if FrameBytes <= 0 then
+    FrameBytes := 1;
+  NumSlots := EnsureRange(VIDEO_QUEUE_BYTES div FrameBytes,
+                          VIDEO_QUEUE_MIN_FRAMES, VIDEO_QUEUE_MAX_FRAMES);
+
+  SetLength(fSlots, NumSlots);
+  for I := 0 to High(fSlots) do
+    FillChar(fSlots[I], SizeOf(TVideoFrameSlot), 0);
+
+  for I := 0 to High(fSlots) do
+  begin
+    errnum := av_image_alloc(@fSlots[I].Data[0], @fSlots[I].Linesize[0],
+                             (fScaledWidth + BUFFER_ALIGN - 1) and -BUFFER_ALIGN, fScaledHeight,
+                             PIXEL_FMT_FFMPEG, BUFFER_ALIGN);
+    if (errnum < 0) then
+    begin
+      Log.LogError('av_image_alloc failed: ' + FFmpegCore.GetErrorString(errnum), 'TVideoPlayback_ffmpeg.Open');
+      Exit;
+    end;
+  end;
+
+  fSlotHead := 0;
+  fSlotCount := 0;
+  Log.LogInfo('Video queue: ' + IntToStr(NumSlots) + ' frames', 'TVideoPlayback_ffmpeg.Open');
+  Result := true;
+end;
+
+procedure TVideo_FFmpeg.FreeSlots();
+var
+  I: integer;
+begin
+  for I := 0 to High(fSlots) do
+    av_freep(@fSlots[I].Data[0]);
+  SetLength(fSlots, 0);
+  fSlotHead := 0;
+  fSlotCount := 0;
+end;
+
+function VideoDecodeThreadMain(Data: Pointer): integer; cdecl;
+begin
+  try
+    TVideo_FFmpeg(Data).DecodeLoop();
+  except
+    on E: Exception do
+    begin
+      Log.LogError('Video decode thread: ' + E.Message, 'VideoDecodeThreadMain');
+      with TVideo_FFmpeg(Data) do
+      begin
+        // the exception may have left fLock held by this thread: take it
+        // (recursive), end the stream, then release every hold
+        SDL_LockMutex(fLock);
+        fDecoderEOF := true;
+        while (SDL_UnlockMutex(fLock) = 0) do;
+      end;
+    end;
+  end;
+  Result := 0;
+end;
+
+procedure TVideo_FFmpeg.StartDecodeThread();
+begin
+  fQuit := false;
+  fSeekPending := false;
+  fDecoderEOF := false;
+  fLock := SDL_CreateMutex();
+  fWakeCond := SDL_CreateCond();
+  fDecodeThread := SDL_CreateThread(@VideoDecodeThreadMain, 'USDX video decoder', Self);
+  if (fDecodeThread = nil) then
+    Log.LogError('Could not create video decode thread: ' + SDL_GetError(), 'TVideoPlayback_ffmpeg.Open');
+end;
+
+procedure TVideo_FFmpeg.StopDecodeThread();
+begin
+  if (fDecodeThread <> nil) then
+  begin
+    SDL_LockMutex(fLock);
+    fQuit := true;
+    SDL_CondBroadcast(fWakeCond);
+    SDL_UnlockMutex(fLock);
+    SDL_WaitThread(fDecodeThread, nil);
+    fDecodeThread := nil;
+  end;
+
+  if (fWakeCond <> nil) then
+    SDL_DestroyCond(fWakeCond);
+  fWakeCond := nil;
+  if (fLock <> nil) then
+    SDL_DestroyMutex(fLock);
+  fLock := nil;
+end;
+
+{**
+ * Main loop of the decode thread: keeps the queue filled with converted frames.
+ * Reading from disk, decoding and the YUV->RGB conversion all happen here so a
+ * slow disk access or an expensive frame never blocks rendering.
+ *}
+procedure TVideo_FFmpeg.DecodeLoop();
+var
+  Gen: integer;
+  Slot: integer;
+  SeekTo: extended;
+  FrameTime: extended;
+  Success: boolean;
+  Stale: boolean;
+  Drops: integer;
+  errnum: integer;
+begin
+  Drops := 0;
+  SDL_LockMutex(fLock);
+  while not fQuit do
+  begin
+    if fSeekPending then
+    begin
+      fSeekPending := false;
+      SeekTo := fSeekTime;
+      SDL_UnlockMutex(fLock);
+      DoSeek(SeekTo);
+      Drops := 0;
+      SDL_LockMutex(fLock);
+      Continue;
+    end;
+
+    if (fSlotCount >= Length(fSlots)) or fDecoderEOF then
+    begin
+      SDL_CondWait(fWakeCond, fLock);
+      Continue;
+    end;
+
+    Gen := fSeekGen;
+    SDL_UnlockMutex(fLock);
+
+    Success := DecodeFrame();
+    FrameTime := fDecFrameTime;
+
+    SDL_LockMutex(fLock);
+    if (Gen <> fSeekGen) or fQuit then
+      Continue; // a seek was requested meanwhile, this frame is obsolete
+    if not Success then
+    begin
+      fDecoderEOF := true;
+      Continue;
+    end;
+
+    // Skip the conversion of frames that are already too late to be shown
+    // (e.g. after seeking to a keyframe before the requested position, or if
+    // the decoder fell behind). A queued frame is never newer than this one,
+    // so this does not change which frame ends up on screen.
+    // Frames before the seek target are always skipped, otherwise at most
+    // VIDEO_MAX_CONSECUTIVE_DROPS in a row so the picture keeps moving.
+    Stale := (FrameTime + fFrameDuration <= fRequestedTime) and
+             ((FrameTime + fFrameDuration <= fDecSeekTarget) or
+              (Drops < VIDEO_MAX_CONSECUTIVE_DROPS));
+    if Stale then
+    begin
+      Inc(Drops);
+      Continue;
+    end;
+    Drops := 0;
+
+    // Only the decode thread writes to the slot behind the queue's tail,
+    // the main thread only reads queued slots, so no lock is needed here.
+    Slot := (fSlotHead + fSlotCount) mod Length(fSlots);
+    SDL_UnlockMutex(fLock);
+
+    errnum := -1;
+    try
+      errnum := sws_scale(fSwScaleContext, @fAVFrame.data, @fAVFrame.linesize,
+              0, fCodecContext^.Height,
+              @fSlots[Slot].Data[0], @fSlots[Slot].Linesize[0]);
+    except
+      ;
+    end;
+
+    {$IF LIBSWSCALE_VERSION < 8003000}
+    {$IF DEFINED(CPUX86_64) or DEFINED(CPUX86)}
+    // Unscaled conversion with libswscale lacked the emms instruction.
+    // With FFmpeg 7.1 these mmx(ext) implementations have been removed.
+    // I assume you won't run this game on an x86 system that does not yet support mmx.
+    asm
+      emms
+    end ['st(0)','st(1)','st(2)','st(3)','st(4)','st(5)','st(6)','st(7)',
+         'mm0','mm1','mm2','mm3','mm4','mm5','mm6','mm7'];
+    {$ENDIF}
+    {$ENDIF}
+
+    SDL_LockMutex(fLock);
+    if (errnum < 0) then
+    begin
+      Log.LogError('Image conversion failed', 'TVideoPlayback_ffmpeg.DecodeLoop');
+      Continue;
+    end;
+    if (Gen = fSeekGen) and not fQuit then
+    begin
+      fSlots[Slot].Time := FrameTime;
+      Inc(fSlotCount);
+    end;
+  end;
+  SDL_UnlockMutex(fLock);
+end;
+
+{**
+ * Seeks the stream (decode thread only).
+ * The stream is set to the first keyframe with timestamp <= Time, frames
+ * before Time are then skipped by DecodeLoop().
+ *}
+procedure TVideo_FFmpeg.DoSeek(Time: extended);
+begin
+  fDecSeekTarget := Time;
+  fDecFrameTime := Time;
+  fDecNextFrameTime := Time;
+  fEOF := false;
+
+  // Do not use the AVSEEK_FLAG_ANY here. It will seek to any frame, even
+  // non keyframes (P-/B-frames). It will produce corrupted video frames as
+  // FFmpeg does not use the information of the preceding I-frame.
+  // The picture might be gray or green until the next keyframe occurs.
+  // Instead seek the first keyframe smaller than the requested time
+  // (AVSEEK_FLAG_BACKWARD). As this can be some seconds earlier than the
+  // requested time, let DecodeLoop() skip the frames before it.
+  if (av_seek_frame(fFormatContext,
+     fStreamIndex,
+     Round(Time / av_q2d(fStream^.time_base)),
+     AVSEEK_FLAG_BACKWARD) < 0) then
+  begin
+    Log.LogError('av_seek_frame() failed', 'TVideoPlayback_ffmpeg.DoSeek');
+    Exit;
+  end;
+
+  avcodec_flush_buffers(fCodecContext);
 end;
 
 procedure TVideo_FFmpeg.Reset();
@@ -641,12 +931,19 @@ begin
   fPaused := False;
   fFrameDuration := 0;
   fFrameTime := 0;
-  fNextFrameTime := 0;
   fStream := nil;
   fStreamIndex := -1;
   fFrameTexValid := false;
+  fTexHasContent := false;
 
   fEOF := false;
+  fDecoderEOF := false;
+  fDecFrameTime := 0;
+  fDecNextFrameTime := 0;
+  fDecSeekTarget := 0;
+  fRequestedTime := 0;
+  fSeekPending := false;
+  fSeekGen := 0;
 
   fLoop := false;
   fLoopTime := 0;
@@ -669,9 +966,10 @@ end;
 
 procedure TVideo_FFmpeg.Close;
 begin
-  if assigned(fAVFrameRGB) then
-    av_freep(@fAVFrameRGB^.data[0]);
-  av_freep(@fAVFrameRGB);
+  // the decode thread uses the contexts freed below
+  StopDecodeThread();
+
+  FreeSlots();
   av_frame_free(@fAVFrame);
 
   if (fCodecContext <> nil) then
@@ -698,6 +996,7 @@ begin
   fFormatContext := nil;
 
   sws_freeContext(fSwScaleContext);
+  fSwScaleContext := nil;
 
   FreeAndNil(fFrameTex);
   fOpened := False;
@@ -707,11 +1006,11 @@ procedure TVideo_FFmpeg.SynchronizeTime(Frame: PAVFrame; pts: double);
 var
   FrameDelay: double;
 begin
-  fFrameTime := fNextFrameTime;
+  fDecFrameTime := fDecNextFrameTime;
   if (pts <> 0) then
   begin
     // if we have pts, set video clock to it
-    fFrameTime := pts;
+    fDecFrameTime := pts;
   end;
   // update the video clock
   if fCodecContext^.framerate.num = 0 then
@@ -720,13 +1019,13 @@ begin
     FrameDelay := av_q2d(av_inv_q(fCodecContext^.framerate));
   // if we are repeating a frame, adjust clock accordingly
   FrameDelay := FrameDelay + Frame^.repeat_pict * (FrameDelay * 0.5);
-  fNextFrameTime := fFrameTime + FrameDelay;
+  fDecNextFrameTime := fDecFrameTime + FrameDelay;
 end;
 
 {**
- * Decode a new frame from the video stream.
- * The decoded frame is stored in fAVFrame. fFrameTime is updated to the new frame's
- * time.
+ * Decode a new frame from the video stream (decode thread only).
+ * The decoded frame is stored in fAVFrame. fDecFrameTime is updated to the new
+ * frame's time.
  * @param pts will be updated to the presentation time of the decoded frame.
  * returns true if a frame could be decoded. False if an error or EOF occured.
  *}
@@ -740,8 +1039,10 @@ var
   dts: int64;
   fileSize: int64;
   urlError: integer;
+  ReceiveErrors: integer;
 begin
   Result := false;
+  ReceiveErrors := 0;
   FrameFinished := 0;
   AVPacket := nil;
 
@@ -760,7 +1061,17 @@ begin
       Exit;
     end;
     if errnum <> AVERROR(EAGAIN) then
-      Continue;
+    begin
+      // a single bad packet is skipped, but a persistent error would loop forever
+      Inc(ReceiveErrors);
+      if (ReceiveErrors < MAX_RECEIVE_ERRORS) then
+        Continue;
+      Log.LogError('Video decoder error: ' + IntToStr(errnum), 'TVideoPlayback_FFmpeg.DecodeFrame');
+      if (AVPacket <> nil) then
+        av_packet_free(@AVPacket);
+      Exit;
+    end;
+    ReceiveErrors := 0;
 
     if (AVPacket = nil) then
       AVPacket := av_packet_alloc();
@@ -836,14 +1147,11 @@ end;
 
 procedure TVideo_FFmpeg.GetFrame(Time: Extended);
 var
-  errnum: Integer;
   CurrentTime: Extended;
-  TimeDiff: Extended;
-  DropFrameCount: Integer;
-  i: Integer;
-  Success: boolean;
-const
-  SKIP_FRAME_DIFF = 0.010; // start skipping if we are >= 10ms too late
+  Slot: integer;
+  SlotTime: Extended;
+  Freed: boolean;
+  ReachedEnd: boolean;
 begin
   if not fOpened then
     Exit;
@@ -851,9 +1159,8 @@ begin
   if fPaused then
     Exit;
 
-  {*
-   * Synchronization - begin
-   *}
+  if (fDecodeThread = nil) then
+    Exit;
 
   // requested stream position (relative to the last loop's start)
   if (fLoop) then
@@ -861,143 +1168,82 @@ begin
   else
     CurrentTime := Time;
 
-  // check if current texture still contains the active frame
-  if (fFrameTexValid) then
-  begin
-    // time since the last frame was returned
-    TimeDiff := CurrentTime - fFrameTime;
-
-    {$IFDEF DebugDisplay}
-    DebugWriteln('Time:      '+inttostr(floor(Time*1000)) + sLineBreak +
-                 'VideoTime: '+inttostr(floor(fFrameTime*1000)) + sLineBreak +
-                 'TimeBase:  '+inttostr(floor(fFrameDuration*1000)) + sLineBreak +
-                 'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
-    {$endif}
-
-    // check if time has reached the next frame
-    if (TimeDiff < fFrameDuration) then
-    begin
-      {$ifdef DebugFrames}
-      // frame delay debug display
-      GoldenRec.Spawn(200,15,1,16,0,-1,ColoredStar,$00ff00);
-      {$endif}
-
-      {$IFDEF DebugDisplay}
-      DebugWriteln('not getting new frame' + sLineBreak +
-          'Time:      '+inttostr(floor(Time*1000)) + sLineBreak +
-          'VideoTime: '+inttostr(floor(fFrameTime*1000)) + sLineBreak +
-          'TimeBase:  '+inttostr(floor(fFrameDuration*1000)) + sLineBreak +
-          'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
-      {$endif}
-
-      // we do not need a new frame now
-      Exit;
-    end;
-  end;
-
   {$IFDEF VideoBenchmark}
   Log.BenchmarkStart(15);
   {$ENDIF}
 
-  // fetch new frame (updates fFrameTime)
-  Success := DecodeFrame();
-  TimeDiff := CurrentTime - fFrameTime;
+  Slot := -1;
+  SlotTime := 0;
+  Freed := false;
 
-  // check if we have to skip frames
-  // Either if we are one frame behind or if the skip threshold has been reached.
-  // Do not skip if the difference is less than fFrameDuration as there is no next frame.
-  // Note: We assume that fFrameDuration is the length of one frame.
-  if (TimeDiff >= Max(fFrameDuration, SKIP_FRAME_DIFF)) then
+  SDL_LockMutex(fLock);
+  fRequestedTime := CurrentTime;
+
+  // drop queued frames that have already been superseded by a newer one
+  while (fSlotCount > 1) and
+        (fSlots[(fSlotHead + 1) mod Length(fSlots)].Time <= CurrentTime) do
   begin
     {$IFDEF DebugFrames}
     //frame drop debug display
     GoldenRec.Spawn(200,55,1,16,0,-1,ColoredStar,$ff0000);
     {$ENDIF}
-    {$IFDEF DebugDisplay}
-    DebugWriteln('skipping frames' + sLineBreak +
-        'TimeBase:  '+inttostr(floor(fFrameDuration*1000)) + sLineBreak +
-        'TimeDiff:  '+inttostr(floor(TimeDifference*1000)));
+    fSlotHead := (fSlotHead + 1) mod Length(fSlots);
+    Dec(fSlotCount);
+    Freed := true;
+  end;
+
+  // show the oldest queued frame once its time has come. If the texture does
+  // not contain a valid frame yet (after opening or seeking), show the first
+  // available frame right away.
+  if (fSlotCount > 0) and
+     ((fSlots[fSlotHead].Time <= CurrentTime) or (not fFrameTexValid)) then
+  begin
+    Slot := fSlotHead;
+    SlotTime := fSlots[Slot].Time;
+  end;
+
+  ReachedEnd := (fSlotCount = 0) and fDecoderEOF;
+
+  if Freed then
+    SDL_CondSignal(fWakeCond);
+  SDL_UnlockMutex(fLock);
+
+  if (Slot >= 0) then
+  begin
+    // The decode thread does not touch queued slots, so the upload can be
+    // done without holding the lock.
+    fFrameTex.UpdateData(fSlots[Slot].Data[0], fScaledWidth, fScaledHeight,
+                         fSlots[Slot].Linesize[0] div PIXEL_FMT_SIZE, VIDEO_TEXTURE_TYP);
+    fFrameTime := SlotTime;
+    fFrameTexValid := true;
+    fTexHasContent := true;
+
+    {$ifdef DebugFrames}
+    //frame decode debug display
+    GoldenRec.Spawn(200, 35, 1, 16, 0, -1, ColoredStar, $ffff00);
     {$endif}
 
-    // update video-time
-    DropFrameCount := Trunc(TimeDiff / fFrameDuration);
-    fFrameTime := fFrameTime + DropFrameCount*fFrameDuration;
-
-    // skip frames
-    for i := 1 to DropFrameCount do
-      Success := DecodeFrame();
-  end;
-
-  // check if we got an EOF or error
-  if (not Success) then
-  begin
-    if fLoop then
+    SDL_LockMutex(fLock);
+    if (fSlotCount > 0) and (fSlotHead = Slot) then
     begin
-      // we have to loop, so rewind
-      SetPosition(0);
-      // record the start-time of the current loop, so we can
-      // determine the position in the stream (fFrameTime-fLoopTime) later.
-      fLoopTime := Time;
+      fSlotHead := (fSlotHead + 1) mod Length(fSlots);
+      Dec(fSlotCount);
+      SDL_CondSignal(fWakeCond);
     end;
-    Exit;
-  end;
-
-  {*
-   * Synchronization - end
-   *}
-
-  // TODO: support for pan&scan
-  //if (fAVFrame.pan_scan <> nil) then
-  //begin
-  //  Writeln(Format('PanScan: %d/%d', [fAVFrame.pan_scan.width, fAVFrame.pan_scan.height]));
-  //end;
-
-  // otherwise we convert the pixeldata from YUV to RGB
-  try
-
-  errnum := sws_scale(fSwScaleContext, @fAVFrame.data, @fAVFrame.linesize,
-          0, fCodecContext^.Height,
-          @fAVFrameRGB.data, @fAVFrameRGB.linesize);
-  except
-    ;
-  end;
-
-  {$IF LIBSWSCALE_VERSION < 8003000}
-  {$IF DEFINED(CPUX86_64) or DEFINED(CPUX86)}
-  // Unscaled conversion with libswscale lacked the emms instruction.
-  // With FFmpeg 7.1 these mmx(ext) implementations have been removed.
-  // I assume you won't run this game on an x86 system that does not yet support mmx.
-  asm
-    emms
-  end ['st(0)','st(1)','st(2)','st(3)','st(4)','st(5)','st(6)','st(7)',
-       'mm0','mm1','mm2','mm3','mm4','mm5','mm6','mm7'];
-  {$ENDIF}
-  {$ENDIF}
-
-  if (errnum < 0) then
+    SDL_UnlockMutex(fLock);
+  end
+  else if ReachedEnd and fLoop then
   begin
-    Log.LogError('Image conversion failed', 'TVideoPlayback_ffmpeg.GetFrame');
-    Exit;
+    // we have to loop, so rewind
+    SetPosition(0);
+    // record the start-time of the current loop, so we can
+    // determine the position in the stream (fFrameTime-fLoopTime) later.
+    fLoopTime := Time;
   end;
 
   {$IFDEF VideoBenchmark}
   Log.BenchmarkEnd(15);
-  Log.BenchmarkStart(16);
-  {$ENDIF}
-
-  fFrameTex.UpdateData(fAVFrameRGB^.data[0], fScaledWidth, fScaledHeight, fAVFrameRGB.linesize[0] div PIXEL_FMT_SIZE, VIDEO_TEXTURE_TYP);
-  if (not fFrameTexValid) then
-    fFrameTexValid := true;
-
-  {$ifdef DebugFrames}
-  //frame decode debug display
-  GoldenRec.Spawn(200, 35, 1, 16, 0, -1, ColoredStar, $ffff00);
-  {$endif}
-
-  {$IFDEF VideoBenchmark}
-  Log.BenchmarkEnd(16);
-  Log.LogBenchmark('FFmpeg', 15);
-  Log.LogBenchmark('Texture', 16);
+  Log.LogBenchmark('Texture', 15);
   {$ENDIF}
 end;
 
@@ -1125,6 +1371,17 @@ begin
     );
 
   Renderer.ScissorTest := true;
+  if not fTexHasContent then
+  begin
+    // the first frame is not decoded yet: draw black instead of an empty texture
+    ScreenRect.Left := fPosX;
+    ScreenRect.Right := fPosX;
+    ScreenRect.Upper := fPosY;
+    ScreenRect.Lower := fPosY + fHeight;
+    DrawBorders(ScreenRect);
+    Renderer.ScissorTest := false;
+    Exit;
+  end;
   with fFrameTex do
   begin
     X := ScreenRect.Left;
@@ -1211,15 +1468,16 @@ end;
 
 {**
  * Sets the stream's position.
- * The stream is set to the first keyframe with timestamp <= Time.
+ * The seek itself is done asynchronously by the decode thread (see DoSeek()):
+ * the stream is set to the first keyframe with timestamp <= Time and the frames
+ * before Time are skipped. Until the first frame at the new position is ready
+ * the last frame stays on screen.
  * Note that fFrameTime is set to Time no matter if the actual position seeked to is
  * at Time or the time of a preceding keyframe. fFrameTime will be updated to the
- * actual frame time when GetFrame() is called the next time.
+ * actual frame time when GetFrame() shows the next frame.
  * @param Time new position in seconds
  *}
 procedure TVideo_FFmpeg.SetPosition(Time: real);
-var
-  SeekFlags: integer;
 begin
   if not fOpened then
     Exit;
@@ -1230,30 +1488,21 @@ begin
   // TODO: handle fLoop-times
   //Time := Time mod VideoDuration;
 
-  // Do not use the AVSEEK_FLAG_ANY here. It will seek to any frame, even
-  // non keyframes (P-/B-frames). It will produce corrupted video frames as
-  // FFmpeg does not use the information of the preceding I-frame.
-  // The picture might be gray or green until the next keyframe occurs.
-  // Instead seek the first keyframe smaller than the requested time
-  // (AVSEEK_FLAG_BACKWARD). As this can be some seconds earlier than the
-  // requested time, let the sync in GetFrame() do its job.
-  SeekFlags := AVSEEK_FLAG_BACKWARD;
-
   fFrameTime := Time;
-  fNextFrameTime := Time;
-  fEOF := false;
   fFrameTexValid := false;
 
-  if (av_seek_frame(fFormatContext,
-     fStreamIndex,
-     Round(Time / av_q2d(fStream^.time_base)),
-     SeekFlags) < 0) then
-  begin
-      Log.LogError('av_seek_frame() failed', 'TVideoPlayback_ffmpeg.SetPosition');
-      Exit;
-  end;
+  if (fLock = nil) then
+    Exit;
 
-  avcodec_flush_buffers(fCodecContext);
+  SDL_LockMutex(fLock);
+  Inc(fSeekGen);
+  fSeekPending := true;
+  fSeekTime := Time;
+  fRequestedTime := Time;
+  fSlotCount := 0;
+  fDecoderEOF := false;
+  SDL_CondSignal(fWakeCond);
+  SDL_UnlockMutex(fLock);
 end;
 
 function  TVideo_FFmpeg.GetPosition: real;
