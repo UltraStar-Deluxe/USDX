@@ -1017,6 +1017,26 @@ var
   success:    boolean;
   AudioEnd:   real;
 
+  function CurrentSongHasNotes: boolean;
+  var
+    TrackIndex: integer;
+    LineIndex:  integer;
+  begin
+    Result := false;
+
+    for TrackIndex := 0 to High(CurrentSong.Tracks) do
+    begin
+      for LineIndex := 0 to High(CurrentSong.Tracks[TrackIndex].Lines) do
+      begin
+        if Length(CurrentSong.Tracks[TrackIndex].Lines[LineIndex].Notes) > 0 then
+        begin
+          Result := true;
+          Exit;
+        end;
+      end;
+    end;
+  end;
+
 begin
   // background texture (garbage disposal)
   FreeAndNil(Tex_Background);
@@ -1094,7 +1114,7 @@ begin
       Exit;
     end;
 
-    if Length(CurrentSong.Tracks[0].Lines) = 0 then
+    if not CurrentSongHasNotes then
     begin
       SongError();
       Exit;
@@ -1126,7 +1146,7 @@ begin
 
     //medley start and end timestamps
     StartNote := FindNote(CurrentSong.Medley.StartBeat - round(CurrentSong.BPM*CurrentSong.Medley.FadeIn_time/60));
-    MedleyStart := GetTimeFromBeat(CurrentSong.Tracks[0].Lines[StartNote.line].Notes[0].StartBeat);
+    MedleyStart := GetTimeFromBeat(CurrentSong.Tracks[StartNote.track].Lines[StartNote.line].Notes[0].StartBeat);
 
     //check Medley-Start
     if (MedleyStart+CurrentSong.Medley.FadeIn_time*0.5>GetTimeFromBeat(CurrentSong.Medley.StartBeat)) then
