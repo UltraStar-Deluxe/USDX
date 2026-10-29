@@ -1,0 +1,9 @@
+name: Something else
+description: Ask a question or raise another topic.
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What would you like to discuss?
+    validations:
+      required: true
