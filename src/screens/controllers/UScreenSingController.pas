@@ -222,6 +222,16 @@ const
   MAX_MESSAGE = 3;
   MINIMUM_START_TIME = 3;
 
+// Cmd on macOS, where Ctrl+Left/Right switches desktops, Ctrl elsewhere
+function SeekModifierHeld: boolean;
+begin
+  {$IFDEF DARWIN}
+  Result := (SDL_GetModState and KMOD_GUI) <> 0;
+  {$ELSE}
+  Result := (SDL_GetModState and KMOD_LCTRL) <> 0;
+  {$ENDIF}
+end;
+
 // method for input parsing. if false is returned, getnextwindow
 // should be checked to know the next window to load;
 
@@ -560,7 +570,7 @@ begin
 
       SDLK_RIGHT:
       begin
-        if ((SDL_ModState and KMOD_LCTRL) <> 0) then
+        if SeekModifierHeld then
         begin
           NewPosition := AudioPlayback.Position + 5.0;
           AudioPlayback.SetPosition(NewPosition);
@@ -571,7 +581,7 @@ begin
 
       SDLK_LEFT:
       begin
-        if (SDL_ModState = KMOD_LCTRL) then // seek 5 seconds backward and reset scores to avoid cheating
+        if SeekModifierHeld then // seek 5 seconds backward and reset scores to avoid cheating
         begin
           if (AudioPlayback.Position < 20.0) then
           exit;
