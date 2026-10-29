@@ -22,7 +22,7 @@ header is:
 
 unit anyascii;
 
-{$MODESWITCH OUT}
+{$MODE Delphi}
 
 interface
 
@@ -52,7 +52,7 @@ begin
 			anyascii := 3;
 			if (byte(b[loffset + 2]) and $80) <> 0 then
 				anyascii := byte(b[loffset + 2]) and $7f;
-			if anyascii <= 3 then
+			if Result <= 3 then
 				ascii := @b[loffset]
 			else
 			begin
