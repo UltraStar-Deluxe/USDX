@@ -737,6 +737,11 @@ begin
   Statics[screenSingViewRef.SongNameStatic].Visible := false;
   Text[screenSingViewRef.SongNameText].Visible := false;
 
+  // a microphone that was not connected when the devices were scanned
+  // (e.g. plugged in after the game started) is only found by a new scan
+  if AudioInputProcessor.HasMissingDevices(PlayersPlay) then
+    RefreshAudioInputDevices(aimFast);
+
   BadPlayer := AudioInputProcessor.CheckPlayersConfig(PlayersPlay);
   if (BadPlayer <> 0) and CheckPlayerConfigOnNextSong then
   begin

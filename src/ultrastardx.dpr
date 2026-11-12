@@ -277,6 +277,7 @@ uses
   UAudioPlayback_Bass       in 'media\UAudioPlayback_Bass.pas',
 {$ENDIF}
 {$IFDEF UseSDLInput}
+  UPulseSources             in 'media\UPulseSources.pas',
   UAudioInput_SDL           in 'media\UAudioInput_SDL.pas',
 {$ENDIF}
 {$IFDEF UseSDLPlayback}
