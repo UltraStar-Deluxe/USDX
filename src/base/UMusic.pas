@@ -566,6 +566,9 @@ type
 
       procedure CaptureStart;
       procedure CaptureStop;
+
+      // called once per frame, lets the backend recover lost input devices
+      procedure CheckDevices;
   end;
 
 type

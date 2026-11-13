@@ -75,6 +75,7 @@ type
       function FinalizeRecord: boolean;
       procedure CaptureStart;
       procedure CaptureStop;
+      procedure CheckDevices;
       procedure GetFFTData(var data: TFFTData);
       function GetPCMData(var data: TPCMData): Cardinal;
       function GetFormatInfo(): TAudioFormatInfo;
@@ -267,6 +268,10 @@ begin
 end;
 
 procedure TAudio_Dummy.CaptureStop;
+begin
+end;
+
+procedure TAudio_Dummy.CheckDevices;
 begin
 end;
 
