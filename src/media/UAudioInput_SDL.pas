@@ -203,16 +203,16 @@ begin
   end;
 end;
 
-// short form of a bus path for the device name, "USB 0:3:1.0" for USB devices
+// Form of a bus path used in the device name, e.g. "09:00.0-usb-0:3:1.0".
+// The controller stays part of it: the same port number exists once per
+// USB controller.
 function PortLabel(const port: UTF8String): UTF8String;
-var
-  p: integer;
+const
+  PCI_PREFIX = 'pci-0000:';
 begin
-  p := Pos('usb-', port);
-  if p > 0 then
-    Result := 'USB ' + Copy(port, p + 4, MaxInt)
-  else
-    Result := port;
+  Result := port;
+  if Copy(Result, 1, Length(PCI_PREFIX)) = PCI_PREFIX then
+    Delete(Result, 1, Length(PCI_PREFIX));
 end;
 
 function FindDeviceConfig(const name: UTF8String): integer;
