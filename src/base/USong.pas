@@ -806,7 +806,7 @@ begin
             Param0 := 'F';
           end;
 
-          if (OutOfBoundsToFreestyle and (((Self.Start > 0) and (GetTimeFromBeat(Param1, Self) < Self.Start)) or ((AudioLength > 0) and (GetTimeFromBeat(Param1 + Param3, Self) >= AudioLength)))) then
+          if (OutOfBoundsToFreestyle and (((Self.Start > 0) and (GetTimeFromBeat(Param1, Self) < Self.Start)) or ((AudioLength > 0) and (GetTimeFromBeat(Param1 + Param2, Self) >= AudioLength)))) then
           begin
             // convert to freestyle note
             Param0 := 'F';
