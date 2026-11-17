@@ -841,6 +841,7 @@ end;
 function TGenericPlaybackStream.GetRemainingBufferSize(): integer;
 var
   TimeDiff: double;
+  ConsumedBytes: double;
 begin
   if (LastReadSize <= 0) then
   begin
@@ -850,10 +851,14 @@ begin
   begin
     TimeDiff := (SDL_GetTicks() - LastReadTime) / 1000;
     // we gave the data-sink LastReadSize bytes at the last call to ReadData().
-    // Calculate how much of this should be left in the data-sink
-    Result := LastReadSize - Trunc(TimeDiff * Engine.FormatInfo.BytesPerSec);
-    if (Result < 0) then
-      Result := 0;
+    // Calculate how much of this should be left in the data-sink.
+    // Compare as double before truncating: if the stream was not read for a
+    // long time (e.g. paused or finished), the byte count exceeds the integer range.
+    ConsumedBytes := TimeDiff * Engine.FormatInfo.BytesPerSec;
+    if (ConsumedBytes >= LastReadSize) then
+      Result := 0
+    else
+      Result := LastReadSize - Trunc(ConsumedBytes);
   end;
 end;
 
