@@ -1,8 +1,0 @@
-{$H+}
-{$IFDEF FPC}
-  {$MODE OBJFPC}
-{$ELSE}
-  {$IFDEF WIN32}
-    {$APPTYPE CONSOLE}
-  {$ENDIF}
-{$ENDIF}

@@ -1,1 +1,0 @@
-!error Try 'Makewin.bat'
