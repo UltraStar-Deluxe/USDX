@@ -22,33 +22,6 @@ uses
   UConfig;
 
 const
-  (* Supported version by this header *)
-  LIBAVCODEC_MAX_VERSION_MAJOR   = 60;
-  LIBAVCODEC_MAX_VERSION_MINOR   = 31;
-  LIBAVCODEC_MAX_VERSION_RELEASE = 102;
-  LIBAVCODEC_MAX_VERSION = (LIBAVCODEC_MAX_VERSION_MAJOR * VERSION_MAJOR) +
-                           (LIBAVCODEC_MAX_VERSION_MINOR * VERSION_MINOR) +
-                           (LIBAVCODEC_MAX_VERSION_RELEASE * VERSION_RELEASE);
-
-  (* Min. supported version by this header *)
-  LIBAVCODEC_MIN_VERSION_MAJOR   = 60;
-  LIBAVCODEC_MIN_VERSION_MINOR   = 0;
-  LIBAVCODEC_MIN_VERSION_RELEASE = 100;
-  LIBAVCODEC_MIN_VERSION = (LIBAVCODEC_MIN_VERSION_MAJOR * VERSION_MAJOR) +
-                            (LIBAVCODEC_MIN_VERSION_MINOR * VERSION_MINOR) +
-                            (LIBAVCODEC_MIN_VERSION_RELEASE * VERSION_RELEASE);
-
-(* Check if linked versions are supported *)
-{$IF (LIBAVCODEC_VERSION < LIBAVCODEC_MIN_VERSION)}
-  {$MESSAGE Error 'Linked version of libavcodec is too old!'}
-{$IFEND}
-
-(* Check if linked version is supported *)
-{$IF (LIBAVCODEC_VERSION > LIBAVCODEC_MAX_VERSION)}
-  {$MESSAGE Error 'Linked version of libavcodec is not yet supported!'}
-{$IFEND}
-
-const
   FF_BUG_AUTODETECT = 1;
   AV_PKT_DATA_SKIP_SAMPLES = 11;
 type
