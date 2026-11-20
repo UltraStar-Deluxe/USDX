@@ -322,6 +322,10 @@ begin
       // keyboard/mouse/joystick events
       CheckEvents;
 
+      // recover microphones that got disconnected
+      if (AudioInput <> nil) then
+        AudioInput.CheckDevices;
+
       // display
       Done := not Display.Draw;
       Renderer.SwapBuffers;

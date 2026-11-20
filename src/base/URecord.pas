@@ -121,6 +121,7 @@ type
     public
       CfgIndex:      integer;   // index of this device in Ini.InputDeviceConfig
       Name:          UTF8String;    // soundcard name
+      Disconnected:  boolean;   // capturing was started, but the device does not deliver audio right now
       Source:        array of TAudioInputSource; // soundcard input-sources
       SourceRestore: integer;  // source-index that will be selected after capturing (-1: not detected)
       MicSource:     integer;  // source-index of mic (-1: none detected)
@@ -181,6 +182,18 @@ type
       function CheckPlayersConfig(PlayerCount: cardinal): integer; overload;
 
       {**
+       * Returns true if a device that is assigned to one of the players
+       * 1 to PlayerCount was not found by the last device scan.
+       *}
+      function HasMissingDevices(PlayerCount: integer): boolean;
+
+      {**
+       * Returns the players (bit 0 for player 1) whose device stopped
+       * delivering audio while capturing.
+       *}
+      function DisconnectedPlayers(PlayerCount: integer): cardinal;
+
+      {**
        * Handle microphone input
        *}
       procedure HandleMicrophoneData(Buffer: PByteArray; Size: integer;
@@ -205,6 +218,7 @@ type
 
       procedure CaptureStart;
       procedure CaptureStop;
+      procedure CheckDevices; virtual;
   end;
 
   TSmallIntArray = array [0..(MaxInt div SizeOf(SmallInt))-1] of SmallInt;
@@ -801,6 +815,69 @@ begin
   Result := CheckPlayersConfig(PlayerCount, PlayerState);
 end;
 
+function TAudioInputProcessor.HasMissingDevices(PlayerCount: integer): boolean;
+var
+  CfgIndex:     integer;
+  ChannelIndex: integer;
+  DeviceIndex:  integer;
+  Player:       integer;
+  Used, Found:  boolean;
+begin
+  Result := false;
+
+  for CfgIndex := 0 to High(Ini.InputDeviceConfig) do
+  begin
+    Used := false;
+    for ChannelIndex := 0 to High(Ini.InputDeviceConfig[CfgIndex].ChannelToPlayerMap) do
+    begin
+      Player := Ini.InputDeviceConfig[CfgIndex].ChannelToPlayerMap[ChannelIndex];
+      if (Player >= 1) and (Player <= PlayerCount) then
+        Used := true;
+    end;
+    if not Used then
+      continue;
+
+    Found := false;
+    for DeviceIndex := 0 to High(DeviceList) do
+    begin
+      if assigned(DeviceList[DeviceIndex]) and (DeviceList[DeviceIndex].CfgIndex = CfgIndex) then
+        Found := true;
+    end;
+
+    if not Found then
+    begin
+      Result := true;
+      Exit;
+    end;
+  end;
+end;
+
+function TAudioInputProcessor.DisconnectedPlayers(PlayerCount: integer): cardinal;
+var
+  DeviceIndex:  integer;
+  ChannelIndex: integer;
+  Device:       TAudioInputDevice;
+  DeviceCfg:    PInputDeviceConfig;
+  Player:       integer;
+begin
+  Result := 0;
+
+  for DeviceIndex := 0 to High(DeviceList) do
+  begin
+    Device := DeviceList[DeviceIndex];
+    if (not assigned(Device)) or (not Device.Disconnected) then
+      continue;
+
+    DeviceCfg := @Ini.InputDeviceConfig[Device.CfgIndex];
+    for ChannelIndex := 0 to High(DeviceCfg.ChannelToPlayerMap) do
+    begin
+      Player := DeviceCfg.ChannelToPlayerMap[ChannelIndex];
+      if (Player >= 1) and (Player <= PlayerCount) and (Player <= 32) then
+        Result := Result or (cardinal(1) shl (Player - 1));
+    end;
+  end;
+end;
+
 {*
  * Handles captured microphone input data.
  * Params:
@@ -1006,6 +1083,11 @@ begin
   end;
 
   Started := false;
+end;
+
+procedure TAudioInputBase.CheckDevices;
+begin
+  // backends that can detect and recover lost devices override this
 end;
 
 function TAudioInputBase.UnifyDeviceName(const name: UTF8String; deviceIndex: integer): UTF8String;

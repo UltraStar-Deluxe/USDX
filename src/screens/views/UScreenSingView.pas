@@ -69,6 +69,7 @@ type
     StaticTimeProgress: integer;
     TextTimeLabelText: integer;
     TextTimeText: integer;
+    LastDisconnectedPlayers: cardinal; // see UpdateMicrophoneMessage
 
     StaticP1: array [0..1] of integer;
     TextP1:   integer;
@@ -204,6 +205,7 @@ type
     procedure WriteMessage(msg: UTF8String);
     procedure FadeMessage();
     procedure CloseMessage();
+    procedure UpdateMicrophoneMessage();
 
     procedure MedleyTitleFadeOut();
 
@@ -945,6 +947,7 @@ begin
   if (ScreenSing.Settings.ScoresVisible) and ((Ini.SingScores = 1) or (Party.bPartyGame)) then
     ScreenSing.Scores.Draw;
 
+  UpdateMicrophoneMessage();
   FadeMessage();
 
   // draw pausepopup
@@ -1051,6 +1054,46 @@ begin
 
   ScreenSing.Statics[ScreenSing.InfoMessageBG].Draw;
   ScreenSing.Text[ScreenSing.InfoMessageText].Draw;
+end;
+
+{*
+ * Tells the players when a microphone got disconnected while singing
+ * and when it is back.
+ *}
+procedure TScreenSingView.UpdateMicrophoneMessage();
+var
+  Players: cardinal;
+
+  function PlayerList(Mask: cardinal): UTF8String;
+  var
+    I: integer;
+  begin
+    Result := '';
+    for I := 0 to 31 do
+    begin
+      if (Mask and (cardinal(1) shl I)) <> 0 then
+      begin
+        if Result <> '' then
+          Result := Result + ', ';
+        Result := Result + 'P' + IntToStr(I + 1);
+      end;
+    end;
+  end;
+
+begin
+  Players := AudioInputProcessor.DisconnectedPlayers(PlayersPlay);
+
+  if Players <> 0 then
+  begin
+    // keep the message on screen as long as a microphone is missing
+    if (Players <> LastDisconnectedPlayers) or
+       (int64(SDL_GetTicks) - int64(ScreenSing.MessageTime) > 1000) then
+      WriteMessage(Format(Language.Translate('SING_MIC_DISCONNECTED'), [PlayerList(Players)]));
+  end
+  else if LastDisconnectedPlayers <> 0 then
+    WriteMessage(Format(Language.Translate('SING_MIC_RECONNECTED'), [PlayerList(LastDisconnectedPlayers)]));
+
+  LastDisconnectedPlayers := Players;
 end;
 
 procedure TScreenSingView.CloseMessage();
