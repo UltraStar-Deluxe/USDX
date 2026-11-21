@@ -323,6 +323,11 @@ type
 
         procedure ResetRandomSongState;
       procedure ResetScrollList;
+
+      // reloading the song list at runtime (see UGraphic.ReloadSongsIfChanged)
+      function  CanReloadSongs: boolean;
+      function  GetSelectionKey: UTF8String;
+      procedure RestoreSelection(const Key: UTF8String);
   end;
 
 implementation
@@ -464,6 +469,105 @@ begin
     SetScrollRefresh;
   end;
 
+end;
+
+{**
+ * True if the song list may be reloaded while this screen is shown, i.e. the
+ * user is just browsing the songs and no menu, search, playlist, medley or
+ * party game depends on the current song list.
+ *}
+function TScreenSong.CanReloadSongs: boolean;
+begin
+  Result := (Mode = smNormal) and
+            (not MakeMedley) and
+            (Length(PlaylistMedley.Song) = 0) and
+            (PlaylistMan.CurPlayList = -1) and
+            (CatSongs.CatNumShow <> -2) and // search result is shown
+            not ((ScreenSongMenu <> nil) and ScreenSongMenu.Visible) and
+            not ((ScreenSongJumpto <> nil) and ScreenSongJumpto.Visible);
+end;
+
+function SongSelectionKey(Song: TSong): UTF8String;
+begin
+  if Song.Main then
+    Result := 'category:' + Song.Artist
+  else if Assigned(Song.Path) and Assigned(Song.FileName) then
+    Result := 'song:' + Song.Path.Append(Song.FileName).ToUTF8
+  else
+    Result := '';
+end;
+
+{**
+ * Identifies the selected song (or category button) independently of its
+ * index, so it can be selected again after the song list was reloaded.
+ *}
+function TScreenSong.GetSelectionKey: UTF8String;
+begin
+  Result := '';
+  if (Interaction >= 0) and (Interaction <= High(CatSongs.Song)) then
+    Result := SongSelectionKey(CatSongs.Song[Interaction]);
+end;
+
+procedure TScreenSong.RestoreSelection(const Key: UTF8String);
+var
+  I, Target, Cat: integer;
+begin
+  // note: VisibleSongs must not be called for an empty list
+  if (Key = '') or (Length(CatSongs.Song) = 0) or (CatSongs.VisibleSongs = 0) then
+    Exit;
+
+  Target := -1;
+  for I := 0 to High(CatSongs.Song) do
+  begin
+    if SongSelectionKey(CatSongs.Song[I]) = Key then
+    begin
+      Target := I;
+      Break;
+    end;
+  end;
+  if Target = -1 then
+    Exit;
+
+  // with tabs the song might be inside a closed category: open it
+  if not CatSongs.Song[Target].Visible then
+  begin
+    if CatSongs.Song[Target].Main then
+      Exit;
+
+    Cat := -1;
+    for I := Target - 1 downto 0 do
+    begin
+      if CatSongs.Song[I].Main then
+      begin
+        Cat := I;
+        Break;
+      end;
+    end;
+    if Cat = -1 then
+      Exit;
+
+    MainChessboardMinLine := 0;
+    ChessboardMinLine := 0;
+    MainListMinLine := 0;
+    ListMinLine := 0;
+
+    CatSongs.ShowCategoryList;
+    ShowCatTL(Cat);
+    CatSongs.ClickCategoryButton(Cat);
+
+    if not CatSongs.Song[Target].Visible then
+      Exit;
+  end;
+
+  if (TSongMenuMode(Ini.SongMenu) = smRoulette) then
+  begin
+    Interaction := Target;
+    FixSelected;
+  end
+  else
+    SkipTo(CatSongs.VisibleIndex(Target), Target, CatSongs.VisibleSongs);
+
+  SetScrollRefresh;
 end;
 
 procedure TScreenSong.ParseInputNextHorizontal(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);

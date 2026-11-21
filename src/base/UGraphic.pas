@@ -303,6 +303,8 @@ procedure LoadLoadingScreen;
 procedure LoadScreens(Title: string);
 procedure UnloadScreens;
 
+procedure ReloadSongsIfChanged;
+
 function LoadingThreadFunction: integer;
 
 procedure UpdateResolution;
@@ -327,6 +329,7 @@ uses
   UDisplay,
   UCommandLine,
   UPathUtils,
+  UPlaylist,
   UThemes;
 
 var
@@ -1085,6 +1088,92 @@ begin
   SetLoadingTitle('Loading ScreenStatDetail');
   ScreenStatDetail :=       TScreenStatDetail.Create;
   SDL_SetWindowTitle(Screen, PChar(Title));
+end;
+
+const
+  // reload only after the song directories did not change for this long,
+  // so a running download is finished first
+  SONG_RELOAD_SETTLE_MS = 2000;
+
+function AnyPopupVisible: boolean;
+begin
+  Result := ((ScreenPopupError <> nil) and ScreenPopupError.Visible) or
+            ((ScreenPopupInfo <> nil) and ScreenPopupInfo.Visible) or
+            ((ScreenPopupCheck <> nil) and ScreenPopupCheck.Visible) or
+            ((ScreenPopupInsertUser <> nil) and ScreenPopupInsertUser.Visible) or
+            ((ScreenPopupSendScore <> nil) and ScreenPopupSendScore.Visible) or
+            ((ScreenPopupScoreDownload <> nil) and ScreenPopupScoreDownload.Visible) or
+            ((ScreenPopupHelp <> nil) and ScreenPopupHelp.Visible);
+end;
+
+{**
+ * Reloads the song list if songs were added, changed or removed in the song
+ * directories while USDX is running (e.g. by a song downloader).
+ * Called once per frame from the main loop. The reload is only done while
+ * the main menu or the song selection (normal mode) is shown, because other
+ * screens keep references to the loaded songs.
+ *}
+procedure ReloadSongsIfChanged;
+var
+  OnSongScreen: boolean;
+  SelectionKey: UTF8String;
+begin
+  if (SongDirWatcher = nil) or (Songs = nil) or (CatSongs = nil) or
+     (ScreenSong = nil) or (Display = nil) then
+    Exit;
+
+  if not SongDirWatcher.ChangesSettled(SONG_RELOAD_SETTLE_MS) then
+    Exit;
+
+  // not while fading between screens or while a popup is open
+  if Assigned(Display.NextScreen) or Assigned(Display.NextScreenWithCheck) or
+     AnyPopupVisible then
+    Exit;
+
+  OnSongScreen := (Display.CurrentScreen = @ScreenSong);
+  if not ((Display.CurrentScreen = @ScreenMain) or
+          (OnSongScreen and ScreenSong.CanReloadSongs)) then
+    Exit;
+
+  Log.LogStatus('Song directories changed, reloading songs', 'ReloadSongsIfChanged');
+
+  // changes made from now on will trigger another reload
+  SongDirWatcher.MarkLoaded;
+
+  SelectionKey := '';
+  if OnSongScreen then
+  begin
+    SelectionKey := ScreenSong.GetSelectionKey;
+    ScreenSong.OnHide; // stops the music and video preview
+  end;
+
+  // same procedure as after changing the song sorting in the options
+  FreeAndNil(ScreenSong);
+  Songs.ReloadSongList;
+  // TScreenSong.Create modifies Theme.Song (list row positions), reset it
+  Theme.ThemeSongReload;
+  ScreenSong := TScreenSong.Create; // rebuilds CatSongs and the song buttons
+
+  if (PlaylistMan <> nil) then
+    PlaylistMan.SongListReloaded;
+
+  if OnSongScreen and (Songs.SongList.Count = 0) then
+  begin
+    // the song selection cannot be shown without songs
+    Display.CurrentScreen := @ScreenMain;
+    ScreenMain.OnShow;
+    ScreenMain.OnShowFinish;
+    ScreenMain.ShowFinish := true;
+  end
+  else if OnSongScreen then
+  begin
+    // Display.CurrentScreen points to the ScreenSong variable, so the new
+    // instance is shown from the next frame on
+    ScreenSong.OnShow;
+    ScreenSong.OnShowFinish;
+    ScreenSong.ShowFinish := true;
+    ScreenSong.RestoreSelection(SelectionKey);
+  end;
 end;
 
 function LoadingThreadFunction: integer;
