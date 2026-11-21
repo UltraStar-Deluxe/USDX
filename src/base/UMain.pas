@@ -322,6 +322,9 @@ begin
       // keyboard/mouse/joystick events
       CheckEvents;
 
+      // pick up songs added to the song directories while running
+      ReloadSongsIfChanged;
+
       // display
       Done := not Display.Draw;
       Renderer.SwapBuffers;
