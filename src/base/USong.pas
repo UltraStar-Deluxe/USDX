@@ -1637,7 +1637,7 @@ begin
 
     //if a note w/ a lower pitch then the current basenote is found
     //we replace the basenote w/ the current notes pitch
-    if Notes[HighNote].Tone < BaseNote then
+    if (Notes[HighNote].Tone < BaseNote) and (Notes[HighNote].NoteType <> ntFreestyle) then
       BaseNote := Notes[HighNote].Tone;
 
     Notes[HighNote].Color := 1; // default color to 1 for editor
