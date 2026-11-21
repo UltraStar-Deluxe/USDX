@@ -1,8 +1,9 @@
 Ultrastar Deluxe
-Copyright (C) 2007-2016 by the following:
+Copyright (C) 2007-2026 by the following:
 
 If you have contributed to this project then you deserve to be on this
-list.  Contact us (see: AUTHORS) and we'll add you.
+list.  Open an issue or pull request at
+https://github.com/UltraStar-Deluxe/USDX and we'll add you.
 
 Jay Binks "jaybinks"
 Dirk Dunger "blindy"

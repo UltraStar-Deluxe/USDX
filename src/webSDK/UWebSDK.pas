@@ -1,3 +1,6 @@
+// UltraStar Deluxe - Karaoke Game
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 unit UWebSDK;
 
 interface

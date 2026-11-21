@@ -72,12 +72,6 @@ if ! patchelf 2>&1 | grep -q syntax ; then
 	deps+=('patchelf,https://github.com/NixOS/patchelf/releases/download/0.13.1/patchelf-0.13.1.tar.bz2,5d9c1690c0fbe70c312f43d597e04b6c1eeffc60')
 fi
 
-if older 2.26 ld --version ; then
-	if [ "$ARCH" = x86_64 ] ; then
-		# newer versions contain R_X86_64_REX_GOTPCRELX relocations
-		deps+=("ipp-icv-$ARCH",https://raw.githubusercontent.com/opencv/opencv_3rdparty/7f55c0c26be418d494615afca15218566775c725/ippicv/ippicv_2021.12.0_lnx_intel64_20240425_general.tgz,145b8f21727037c047b5b0e99d952c81d99bef88)
-	fi
-fi
 deps+=('opencv,https://github.com/opencv/opencv/archive/refs/tags/4.13.0.tar.gz,fc2f2ce6f8f2d5a5c34435054334fa6046ae3d6d')
 deps+=('projectm,https://github.com/projectM-visualizer/projectm/archive/refs/tags/v4.0.0.tar.gz,f354c978c11b421caf88507ad7b088ab6d339325')
 # if [ -f /.dockerenv ]; then

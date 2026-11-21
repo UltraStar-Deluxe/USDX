@@ -1,3 +1,8 @@
+// UltraStar Deluxe - Karaoke Game
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Contains material translated from the FFmpeg C headers,
+// Copyright (c) the FFmpeg developers (LGPL-2.1-or-later).
+
 unit avformat;
 
 {$IFDEF FPC}

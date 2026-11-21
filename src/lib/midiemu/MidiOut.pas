@@ -1,3 +1,6 @@
+// UltraStar Deluxe - Karaoke Game
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 {* UltraStar Deluxe - MIDI Emulation (synth)
    Drop-in replacement for MidiOut unit. *}
 

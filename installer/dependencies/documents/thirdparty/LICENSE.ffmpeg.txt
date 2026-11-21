@@ -1,3 +1,22 @@
+The license of FFmpeg depends on how FFmpeg was configured, not on its version:
+- default configuration: LGPL-2.1-or-later
+- with --enable-version3: LGPL-3.0-or-later
+- with --enable-gpl: GPL-2.0-or-later (GPL-3.0-or-later together with --enable-version3)
+
+FFmpeg in the official UltraStar Deluxe packages:
+- Windows: built with --enable-version3, so LGPL-3.0-or-later (text below).
+  The LGPL-3.0 adds permissions to the GPL-3.0; its text is in LICENSE.gpl-3.0.txt.
+- Linux AppImage: built with --enable-gpl, so GPL-2.0-or-later (text in LICENSE).
+- macOS: uses the FFmpeg build from Homebrew; its license follows Homebrew's configuration.
+If you run UltraStar Deluxe with your system's FFmpeg (e.g. a distribution package),
+the license of that FFmpeg build applies.
+
+The source code of FFmpeg can be found here:
+https://ffmpeg.org/download.html
+The exact versions used are listed in dists/windows/tasks.sh and dists/linux/dl.sh
+in the UltraStar Deluxe source code.
+---
+
                    GNU LESSER GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
