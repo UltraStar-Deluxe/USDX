@@ -199,6 +199,7 @@ const
 implementation
 
 uses
+  UCommandLine,
   UDatabase,
   UDisplay,
   UDLLManager,
@@ -948,6 +949,16 @@ begin
   begin
     // error loading song -> go back to previous screen and show some error message
     Display.AbortScreenChange;
+
+    // single song mode -> there is no screen to go back to, quit
+    if Params.Song.IsSet then
+    begin
+      ExitCode := 1;
+      Display.Fade := 0;
+      Display.NextScreenWithCheck := nil;
+      Display.CheckOK := true;
+      Exit;
+    end;
 
     // select new song in party mode
     if ScreenSong.Mode = smPartyClassic then
@@ -1717,7 +1728,17 @@ begin
     PlaylistMedley.Stats[0].SongTitle := CurrentSong.Title;
 
     if not FadeOut then
-      Party.CallAfterSing;
+    begin
+      // single song mode -> quit instead of showing the score screen
+      if Params.Song.IsSet then
+      begin
+        Display.Fade := 0;
+        Display.NextScreenWithCheck := nil;
+        Display.CheckOK := true;
+      end
+      else
+        Party.CallAfterSing;
+    end;
 
     FadeOut := true;
   end;

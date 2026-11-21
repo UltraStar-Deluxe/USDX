@@ -111,6 +111,7 @@ type
 
       procedure GenerateAvatars();
       procedure SetPlayerAvatar(Player: integer);
+      procedure LoadPlayersFromIni(LoadAvatars: boolean = true);
   end;
 
 var
@@ -263,7 +264,6 @@ function TScreenName.ParseInput(PressedKey: cardinal; CharCode: UCS4Char; Presse
   var
     I: integer;
     SDL_ModState: word;
-    Col: TRGB;
 
   procedure HandleNameTemplate(const index: integer);
   var
@@ -360,39 +360,19 @@ begin
         begin
           StopTextInput;
           Ini.Players := CountIndex;
-          PlayersPlay:= UIni.IPlayersVals[CountIndex];
-          SetLength(Player, PlayersPlay);
 
-          for I := 1 to PlayersPlay do
+          for I := 1 to UIni.IPlayersVals[CountIndex] do
           begin
             // TODO: is it really necessary for this screen to duplicate all these Ini. arrays?
             Ini.Name[I-1] := PlayerNames[I-1];
             Ini.PlayerColor[I-1] := Num[I-1];
             Ini.SingColor[I-1] := Num[I-1];
             Ini.PlayerLevel[I-1] := PlayerLevel[I-1];
-            // also set (some) of this info in the much easier to use Player variable
-            Player[I-1].Name := PlayerNames[I-1];
-            Player[I-1].Level := PlayerLevel[I-1];
 
             Ini.PlayerAvatar[I-1] := AvatarsMD5[PlayerAvatars[I-1]];
-
-            if (PlayerAvatars[I-1] = 0) then
-            begin
-              AvatarPlayerTextures[I] := NoAvatartexture[I];
-
-              Col := GetPlayerColor(Num[I-1]);
-
-              AvatarPlayerTextures[I].ColR := Col.R;
-              AvatarPlayerTextures[I].ColG := Col.G;
-              AvatarPlayerTextures[I].ColB := Col.B;
-            end
-            else
-            begin
-              Button[PlayerAvatarButton[PlayerAvatars[I-1]]].Texture.Int := 1;
-              AvatarPlayerTextures[I] := Button[PlayerAvatarButton[PlayerAvatars[I-1]]].Texture.Clone();
-            end;
-
           end;
+
+          LoadPlayersFromIni;
 
           Ini.SaveNumberOfPlayers;
           Ini.SaveNames;
@@ -860,6 +840,43 @@ begin
 
   Statics[PlayerCurrentAvatar[Player]].Texture.Int := 1;
 
+end;
+
+// sets up Player and the avatar textures from the player settings in Ini
+procedure TScreenName.LoadPlayersFromIni(LoadAvatars: boolean);
+var
+  I:           integer;
+  AvatarIndex: integer;
+  Col:         TRGB;
+begin
+  PlayersPlay := UIni.IPlayersVals[Ini.Players];
+  SetLength(Player, PlayersPlay);
+
+  for I := 0 to PlayersPlay - 1 do
+  begin
+    Player[I].Name := Ini.Name[I];
+    Player[I].Level := Ini.PlayerLevel[I];
+
+    if not LoadAvatars then
+      Continue;
+
+    AvatarIndex := GetArrayIndex(AvatarsMD5, Ini.PlayerAvatar[I]);
+    if (AvatarIndex > 0) then
+    begin
+      Button[PlayerAvatarButton[AvatarIndex]].Texture.Int := 1;
+      AvatarPlayerTextures[I+1] := Button[PlayerAvatarButton[AvatarIndex]].Texture.Clone();
+    end
+    else
+    begin
+      AvatarPlayerTextures[I+1] := NoAvatarTexture[I+1];
+
+      Col := GetPlayerColor(Ini.PlayerColor[I]);
+
+      AvatarPlayerTextures[I+1].ColR := Col.R;
+      AvatarPlayerTextures[I+1].ColG := Col.G;
+      AvatarPlayerTextures[I+1].ColB := Col.B;
+    end;
+  end;
 end;
 
 procedure TScreenName.OnShow;
