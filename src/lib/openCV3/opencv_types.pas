@@ -1,3 +1,9 @@
+// UltraStar Deluxe - Karaoke Game
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Contains constants translated from the OpenCV 2.x C API headers,
+// Copyright (C) 2000-2008 Intel Corporation, Copyright (C) 2009 Willow Garage Inc.
+// (BSD-style license, full notice in LICENSE.opencv-c-headers.txt).
+
 unit opencv_types;
 
 interface

@@ -4,12 +4,15 @@ http://www.un4seen.com/ (2.4.2.1)
 
 fft:
 translation of audacity's FFT.cpp by hennymcc (maybe replace this with FFTW?)
+- original FFT.cpp by Dominic Mazzoni (2000), partly based on free FFT code by Don Cross
+- license: GPL-2.0-or-later, like Audacity at the time (checked on SourceForge)
 
 ffmpeg:
 - http://www.iversenit.dk/dev/ffmpeg-headers/: 2006-10
 - several bugs were fixed
 - many IFDEFS were added to the header to support multiple versions of ffmpeg (starting with end of 2006) and not only one specific version. This is necessary as we cannot control which version is used on linux. We could ship the ffmpeg lib with USDX and link statically but a stripped down ffmpeg is 15MB in size and takes 5 minutes to compile (so static linkage is not a good option).
 - the headers were updated to reflect the changes in the ffmpeg C-headers (http://svn.mplayerhq.hu/ffmpeg/trunk/ and http://svn.mplayerhq.hu/mplayer/trunk/libswscale/)
+- license: GPL-2.0-or-later (USDX contributions); contains material translated from the FFmpeg C headers (LGPL-2.1-or-later)
 
 freeimage:
 - inserted by eddie. Some compatibility fixes for platforms different than mac os x.
@@ -47,7 +50,20 @@ translation of the (patched) audacity C headers by hennymcc.
 
 projectM:
 translation of the original C++ headers and C-wrapper by hennymcc
+- license: GPL-2.0-or-later (USDX contributions); contains material translated from the projectM 4 C API headers, incl. doc comments (LGPL-2.1-or-later)
 
 sqlite:
 taken from http://www.itwriting.com/blog/a-simple-delphi-wrapper-for-sqlite-3
 - slightly patched: see *.patch files for what has been patched (e.g. Binding)
+- authors: Tim Anderson (itwriting.com), Pablo Pissanetzky, Ben Hochstrasser, Lukas Gebauer and others
+- license: no statement in the files; the license of the original wrapper has not been verified
+
+anyascii:
+Pascal port of anyascii 0.3.2 (https://github.com/anyascii/anyascii)
+- license: ISC, Copyright (c) 2020-2023 Hunter WB (full text in anyascii.pas)
+- anyascii_c_to_pas.c (converter for the data tables): CC0-1.0
+
+Lua:
+ULua.pas, Pascal wrapper for the Lua C API by Geo Massar (2006), adapted up to Lua 5.5
+- license: "Distributed as free/open source", no license named
+- Lua itself is MIT-licensed

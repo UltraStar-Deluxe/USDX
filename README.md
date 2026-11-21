@@ -1,7 +1,7 @@
 # UltraStar Deluxe
 
 [![Build Status](https://github.com/UltraStar-Deluxe/USDX/actions/workflows/main.yml/badge.svg)](https://github.com/UltraStar-Deluxe/USDX/actions/workflows/main.yml)
-[![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPL--2.0--or--later-blue.svg)](LICENSE)
 
 Official Project Website: https://usdx.eu/
 

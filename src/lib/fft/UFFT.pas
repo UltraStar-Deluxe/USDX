@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Pascal translation of FFT.cpp from Audacity (GPL-2.0-or-later).
+
 {**********************************************************************
 
   FFT.cpp

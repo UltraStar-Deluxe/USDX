@@ -1,3 +1,8 @@
+// UltraStar Deluxe - Karaoke Game
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Contains material translated from the projectM C API headers,
+// Copyright (C) 2003-2025 projectM Team (LGPL-2.1-or-later).
+
 unit projectM;
 
 {$IFDEF FPC}

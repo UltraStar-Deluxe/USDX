@@ -1,3 +1,6 @@
+// UltraStar Deluxe - Karaoke Game
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 {* UltraStar Deluxe - MIDI Audio Source Stream
  *
  * Generates synthesized audio from MIDI events for playback via the standard audio interface.
