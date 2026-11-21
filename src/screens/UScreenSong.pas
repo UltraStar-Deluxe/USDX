@@ -352,6 +352,8 @@ const
   MAX_TIME_MOUSE_SELECT = 800;
   CHANGE_SOUND_THROTTLE_MS = 200;
   PREVIEW_DEBOUNCE_MS = 150;
+  // Only open video shortly before it will be played
+  VIDEO_PREVIEW_DELAY_MS = 1000;
 
 // ***** Public methods ****** //
 function TScreenSong.EnsureMedleyData(SongIndex: integer; MinSource: TMedleySource): boolean;
@@ -2181,6 +2183,7 @@ begin
   StopMusicPreview();
   StopVideoPreview();
   PreviewOpened := -1;
+  LastPreviewStartTime := 0;
 
   //SetScrollRefresh;
 end;
@@ -2980,6 +2983,7 @@ begin
     AudioPlayback.Stop;
 
   PreviewOpened := -1;
+  LastPreviewStartTime := 0;
   DuetChange := false;
   RapToFreestyle := false;
 
@@ -3172,7 +3176,17 @@ begin
      (SDL_GetTicks - LastScrollStopTime >= PREVIEW_DEBOUNCE_MS) then
   begin
     StartMusicPreview;
+    LastPreviewStartTime := SDL_GetTicks;
+  end;
+
+  if (not isScrolling) and (PreviewOpened = Interaction) and
+     (LastPreviewStartTime > 0) and
+     (SDL_GetTicks - LastPreviewStartTime >= VIDEO_PREVIEW_DELAY_MS) then
+  begin
+    LastPreviewStartTime := 0;
     StartVideoPreview;
+    if Assigned(fCurrentVideo) then
+      CoverTime := 1;
   end;
 
   {   //basisbit todo this block was auskommentiert
@@ -3763,7 +3777,7 @@ begin
   StopVideoPreview();
   PreviewOpened := -1;
   StartMusicPreview();
-  StartVideoPreview();
+  LastPreviewStartTime := SDL_GetTicks;
 end;
 
 procedure TScreenSong.SkipTo(Target: cardinal; TargetInteraction: integer = -1; VS: integer = -1);
