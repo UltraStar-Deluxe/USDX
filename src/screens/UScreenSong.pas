@@ -1507,6 +1507,7 @@ begin
             SetScrollRefresh;
             LastSelectMouse := SDL_GetTicks;
             LastSelectTime := SDL_GetTicks;
+            LastScrollStopTime := SDL_GetTicks;
           end;
         end;
       end;
@@ -1590,6 +1591,7 @@ begin
             SetScrollRefresh;
             LastSelectMouse := SDL_GetTicks;
             LastSelectTime := SDL_GetTicks;
+            LastScrollStopTime := SDL_GetTicks;
           end;
         end;
       end;
