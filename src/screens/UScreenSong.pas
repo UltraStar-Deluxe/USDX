@@ -80,6 +80,7 @@ type
       LastPreviewStartTime: integer;
       LastChangeSoundTime: integer;
       LastScrollStopTime: integer;
+      BigCoverButton: integer; // -1 = not shared
 
       RandomSongOrder: CardinalArray;
       NextRandomSongIdx: cardinal;
@@ -299,6 +300,8 @@ type
 
       procedure UnloadCover(NumberOfButtonInArray: integer);
       procedure LoadCover(NumberOfButtonInArray: integer);
+      procedure SetBigCover;
+      procedure DetachBigCover;
 
       procedure SongScore;
 
@@ -1980,6 +1983,7 @@ begin
   LastPreviewStartTime := 0;
   LastChangeSoundTime := 0;
   LastScrollStopTime := 0;
+  BigCoverButton := -1;
 
   NextRandomSongIdx := High(cardinal);
   NextRandomSearchIdx := High(cardinal);
@@ -2125,6 +2129,8 @@ var
 begin
   if (Length(Button) = 0) or (Length(CatSongs.Song) = 0) then
     Exit;
+
+  DetachBigCover;
 
   for B := 0 to High(Button) do
   begin
@@ -2699,11 +2705,7 @@ end;
 
 procedure TScreenSong.SetChessboardScrollRefresh;
 begin
-  Statics[StaticActual].Texture.Free;
-  if (Button[Interaction].Texture.Name.IsUnset) then
-    Statics[StaticActual].Texture := Renderer.GetTexture(Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN)
-  else
-    Statics[StaticActual].Texture := Renderer.LoadTexture(Button[Interaction].Texture.Name);
+  SetBigCover;
 
   Statics[StaticActual].Texture.Alpha := 1;
 
@@ -2774,11 +2776,7 @@ var
   SongID: array of integer;
   Alpha: real;
 begin
-  Statics[StaticActual].Texture.Free;
-  if (Button[Interaction].Texture.Name.IsUnset) then
-    Statics[StaticActual].Texture := Renderer.GetTexture(Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN)
-  else
-    Statics[StaticActual].Texture := Renderer.LoadTexture(Button[Interaction].Texture.Name);
+  SetBigCover;
   Statics[StaticActual].Texture.Alpha := 1;
 
   Statics[StaticActual].Texture.X := Theme.Song.Cover.SelectX;
@@ -4248,7 +4246,59 @@ procedure TScreenSong.UnloadCover(NumberOfButtonInArray: integer);
 begin
   // background texture (garbage disposal)
   if ((not Button[NumberOfButtonInArray].Texture.IsEmpty) and (Button[NumberOfButtonInArray].Texture.Name <> Skin.GetTextureFileName('SongCover'))) then
+  begin
+    if (NumberOfButtonInArray = BigCoverButton) then
+    begin
+      DetachBigCover;
+    end;
     Button[NumberOfButtonInArray].Texture.Release();
+  end;
+end;
+
+// Show the selected song's cover, reusing the tile texture when it is already loaded
+procedure TScreenSong.SetBigCover;
+var
+  Tex: TTexture;
+begin
+  Statics[StaticActual].Texture.Free;
+  BigCoverButton := -1;
+
+  if (Button[Interaction].Texture.Name.IsUnset) then
+  begin
+    Statics[StaticActual].Texture := Renderer.GetTexture(Skin.GetTextureFileName('SongCover'), TEXTURE_TYPE_PLAIN)
+  end
+  else if not Button[Interaction].Texture.IsEmpty then
+  begin
+    Tex := Button[Interaction].Texture.Clone();
+    Tex.ColR := 1;
+    Tex.ColG := 1;
+    Tex.ColB := 1;
+    Tex.Int := 1;
+    Statics[StaticActual].Texture := Tex;
+    BigCoverButton := Interaction;
+  end
+  else
+    Statics[StaticActual].Texture := Renderer.LoadTexture(Button[Interaction].Texture.Name);
+end;
+
+procedure TScreenSong.DetachBigCover;
+var
+  Shared, Own: TTexture;
+begin
+  if (BigCoverButton < 0) then
+    Exit;
+  BigCoverButton := -1;
+
+  Shared := Statics[StaticActual].Texture;
+  Own := Renderer.LoadTexture(Shared.Name);
+  Own.X := Shared.X;
+  Own.Y := Shared.Y;
+  Own.Z := Shared.Z;
+  Own.W := Shared.W;
+  Own.H := Shared.H;
+  Own.Alpha := Shared.Alpha;
+  Shared.Free;
+  Statics[StaticActual].Texture := Own;
 end;
 
 //Detailled Cover Loading. Loads the Detailed, uncached Cover of the Song Button
