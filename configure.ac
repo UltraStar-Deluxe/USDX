@@ -99,6 +99,23 @@ AC_ARG_WITH([portmixer],
       [enable portmixer audio-mixer support (Mac/Linux only) @<:@default=check@:>@])],
     [with_portmixer=$withval], [with_portmixer="check"])
 
+# audio backend on Windows: BASS (to be removed soon) or SDL
+AC_ARG_WITH([bass],
+    [AS_HELP_STRING([--with-bass],
+      [use BASS for audio playback and capture instead of SDL (Windows only) @<:@default=yes on Windows@:>@])],
+    [with_bass=$withval], [with_bass="check"])
+
+if [[ x$is_windows == xyes ]]; then
+    if [[ x$with_bass == xcheck ]]; then
+        with_bass=yes
+    fi
+elif [[ x$with_bass == xyes ]]; then
+    AC_MSG_ERROR([BASS option only available on Windows])
+else
+    with_bass=no
+fi
+AC_SUBST_DEFINE(HAVE_BASS, $with_bass)
+
 if [[ x$is_windows == xyes ]]; then
     if [[ x$with_portaudio != xcheck ]]; then
         AC_MSG_ERROR([PortAudio option not available on Windows])
@@ -235,6 +252,7 @@ fi
 
 # find sdl2
 PKG_HAVE([sdl2], [sdl2], yes)
+PKG_VERSION([sdl2], [sdl2])
 
 # Support sdl2-compat on Mac
 if [[ x$FPC_PLATFORM == xdarwin ]]; then

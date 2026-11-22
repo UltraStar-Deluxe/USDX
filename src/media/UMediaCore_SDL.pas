@@ -40,7 +40,44 @@ uses
 function ConvertAudioFormatToSDL(Format: TAudioSampleFormat; out SDLFormat: UInt16): boolean;
 function ConvertAudioFormatFromSDL(SDLFormat: UInt16; out Format: TAudioSampleFormat): boolean;
 
+{*
+ * Newer SDL2 functions below are used only if the SDL2 found at build time
+ * (SDL2_VERSION_INT from configure) AND the library loaded at runtime are
+ * new enough, so USDX still builds and runs with older SDL2 versions.
+ *}
+
+const
+  // SDL versions in configure's MMMmmmrrr format
+  SDL_VERSION_INT_AUDIODEVICESPEC  = 2000016; // SDL_GetAudioDeviceSpec
+  SDL_VERSION_INT_DEFAULTAUDIOINFO = 2024000; // SDL_GetDefaultAudioInfo
+
+{** Version of the SDL library loaded at runtime, in MMMmmmrrr format. *}
+function SDLLinkedVersionInt(): integer;
+
+{**
+ * Preferred format of audio device Index as reported by the SDL backend.
+ * Returns false if the SDL version is too old or the backend reports
+ * nothing (e.g. ALSA, DirectSound). Requires a prior SDL_GetNumAudioDevices.
+ *}
+function SDLGetAudioDeviceSpec(Index: integer; IsCapture: boolean; out Spec: TSDL_AudioSpec): boolean;
+
+{** e.g. 's16le 2ch 44100Hz', 'unknown format' if nothing is known. *}
+function SDLAudioSpecToStr(const Spec: TSDL_AudioSpec): string;
+
+{**
+ * Logs the SDL versions and audio drivers, then the default device and all
+ * devices of one direction with the format each backend prefers.
+ * Must be called after SDL_InitSubSystem(SDL_INIT_AUDIO).
+ *}
+procedure LogSDLAudioInfo(IsCapture: boolean);
+
 implementation
+
+uses
+  SysUtils,
+  UConfig,
+  ULog;
+
 
 function ConvertAudioFormatToSDL(Format: TAudioSampleFormat; out SDLFormat: UInt16): boolean;
 begin
@@ -86,6 +123,125 @@ begin
     end;
   end;
   Result := true;
+end;
+
+function VersionIntToStr(Version: integer): string;
+begin
+  Result := Format('%d.%d.%d', [Version div 1000000, (Version div 1000) mod 1000, Version mod 1000]);
+end;
+
+function SDLLinkedVersionInt(): integer;
+var
+  Ver: TSDL_Version;
+begin
+  SDL_GetVersion(@Ver);
+  Result := Ver.major * 1000000 + Ver.minor * 1000 + Ver.patch;
+end;
+
+function SDLGetAudioDeviceSpec(Index: integer; IsCapture: boolean; out Spec: TSDL_AudioSpec): boolean;
+begin
+  FillChar(Spec, SizeOf(Spec), 0);
+  Result := false;
+  {$IF SDL2_VERSION_INT >= SDL_VERSION_INT_AUDIODEVICESPEC}
+  if SDLLinkedVersionInt() >= SDL_VERSION_INT_AUDIODEVICESPEC then
+    Result := (SDL_GetAudioDeviceSpec(Index, Ord(IsCapture), @Spec) = 0) and
+              (Spec.channels > 0);
+  {$IFEND}
+end;
+
+function SDLAudioFormatToStr(Format: TSDL_AudioFormat): string;
+begin
+  if (Format and $0100) <> 0 then // SDL_AUDIO_MASK_DATATYPE
+    Result := 'f'
+  else if (Format and $8000) <> 0 then // SDL_AUDIO_MASK_SIGNED
+    Result := 's'
+  else
+    Result := 'u';
+  Result := Result + IntToStr(Format and $FF); // SDL_AUDIO_MASK_BITSIZE
+  if (Format and $FF) > 8 then
+  begin
+    if (Format and $1000) <> 0 then // SDL_AUDIO_MASK_ENDIAN
+      Result := Result + 'be'
+    else
+      Result := Result + 'le';
+  end;
+end;
+
+function SDLAudioSpecToStr(const Spec: TSDL_AudioSpec): string;
+begin
+  if (Spec.channels = 0) and (Spec.freq = 0) then
+  begin
+    Result := 'unknown format';
+    Exit;
+  end;
+  if Spec.format <> 0 then
+    Result := SDLAudioFormatToStr(Spec.format) + ' '
+  else
+    Result := '';
+  Result := Result + IntToStr(Spec.channels) + 'ch';
+  if Spec.freq > 0 then
+    Result := Result + ' ' + IntToStr(Spec.freq) + 'Hz';
+end;
+
+procedure LogSDLAudioInfo(IsCapture: boolean);
+const
+  LogArea = 'SDL Audio';
+var
+  i:          integer;
+  Drivers:    string;
+  Direction:  string;
+  Count:      integer;
+  Spec:       TSDL_AudioSpec;
+  {$IF SDL2_VERSION_INT >= SDL_VERSION_INT_DEFAULTAUDIOINFO}
+  DefaultName: PAnsiChar;
+  {$IFEND}
+begin
+  if IsCapture then
+    Direction := 'capture'
+  else
+    Direction := 'playback';
+
+  Drivers := '';
+  for i := 0 to SDL_GetNumAudioDrivers() - 1 do
+  begin
+    if Drivers <> '' then
+      Drivers := Drivers + ', ';
+    Drivers := Drivers + SDL_GetAudioDriver(i);
+  end;
+  Log.LogInfo(Format('SDL %s (built against %s), %s driver "%s", compiled-in drivers: %s',
+      [VersionIntToStr(SDLLinkedVersionInt()), VersionIntToStr(SDL2_VERSION_INT),
+       Direction, SDL_GetCurrentAudioDriver(), Drivers]), LogArea);
+
+  {$IF SDL2_VERSION_INT >= SDL_VERSION_INT_DEFAULTAUDIOINFO}
+  if SDLLinkedVersionInt() >= SDL_VERSION_INT_DEFAULTAUDIOINFO then
+  begin
+    DefaultName := nil;
+    FillChar(Spec, SizeOf(Spec), 0);
+    if SDL_GetDefaultAudioInfo(@DefaultName, @Spec, Ord(IsCapture)) = 0 then
+    begin
+      if DefaultName <> nil then
+        Log.LogInfo(Format('Default %s device: "%s", %s',
+            [Direction, string(DefaultName), SDLAudioSpecToStr(Spec)]), LogArea)
+      else
+        Log.LogInfo(Format('Default %s device: %s',
+            [Direction, SDLAudioSpecToStr(Spec)]), LogArea);
+      SDL_free(DefaultName);
+    end
+    else
+      Log.LogInfo(Format('Default %s device: not reported by the driver', [Direction]), LogArea);
+  end;
+  {$IFEND}
+
+  Count := SDL_GetNumAudioDevices(Ord(IsCapture));
+  for i := 0 to Count - 1 do
+  begin
+    if SDLGetAudioDeviceSpec(i, IsCapture, Spec) then
+      Log.LogInfo(Format('%s device %d: "%s", %s',
+          [Direction, i, SDL_GetAudioDeviceName(i, Ord(IsCapture)), SDLAudioSpecToStr(Spec)]), LogArea)
+    else
+      Log.LogInfo(Format('%s device %d: "%s", format not reported',
+          [Direction, i, SDL_GetAudioDeviceName(i, Ord(IsCapture))]), LogArea);
+  end;
 end;
 
 end.

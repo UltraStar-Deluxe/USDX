@@ -270,6 +270,26 @@ function SDL_GetNumAudioDevices(iscapture: Integer): Integer cdecl; external SDL
 function SDL_GetAudioDeviceName(index: Integer; iscapture: Integer): PAnsiChar cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetAudioDeviceName' {$ENDIF} {$ENDIF};
 
   {**
+   *  Get the preferred audio format of a specific audio device (SDL >= 2.0.16).
+   *
+   *  Returns 0 on success, negative on error (e.g. the backend does not
+   *  report a format for this device).
+   *}
+function SDL_GetAudioDeviceSpec(index: Integer; iscapture: Integer; spec: PSDL_AudioSpec): Integer cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetAudioDeviceSpec' {$ENDIF} {$ENDIF};
+
+  {**
+   *  Get the name and preferred format of the default audio device (SDL >= 2.24.0).
+   *
+   *  name receives a string that must be freed with SDL_free(), or nil if
+   *  the backend cannot name the default device. Returns 0 on success,
+   *  negative on error (e.g. the backend has no default-device information).
+   *}
+function SDL_GetDefaultAudioInfo(name: PPAnsiChar; spec: PSDL_AudioSpec; iscapture: Integer): Integer cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_GetDefaultAudioInfo' {$ENDIF} {$ENDIF};
+
+  {** Free memory allocated by SDL (SDL_stdinc.h). *}
+procedure SDL_free(mem: Pointer) cdecl; external SDL_LibName {$IFDEF DELPHI} {$IFDEF MACOS} name '_SDL_free' {$ENDIF} {$ENDIF};
+
+  {**
    *  Open a specific audio device. Passing in a device name of NULL requests
    *  the most reasonable default (and is equivalent to calling SDL_OpenAudio()).
    *

@@ -444,7 +444,12 @@ task_install() {
 	for i in $ffmpeg_DLLs $dav1d_DLLs $libjpeg_turbo_DLLs $libpng_DLLs $libtiff_DLLs $libwebp_DLLs $SDL2_DLLs $SDL2_image_DLLs $lua_DLLs $sqlite_DLLs $freetype_DLLs $projectm_DLLs $opencv_DLLs; do
 		add_dll "$i"
 	done
-	for i in $PREFIX/bin/bass.dll $PREFIX/bin/msys2/*.dll; do
+	# WITH_BASS=no, leave bass.dll out (for builds configured --without-bass)
+	local bass_dll=$PREFIX/bin/bass.dll
+	if [ "${WITH_BASS:-yes}" = no ]; then
+		bass_dll=
+	fi
+	for i in $bass_dll $PREFIX/bin/msys2/*.dll; do
 		echo "Installing $(basename $i)"
 		install $i $DLL_DIR
 	done
