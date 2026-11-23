@@ -322,8 +322,8 @@ begin
       // keyboard/mouse/joystick events
       CheckEvents;
 
-      // pick up songs added to the song directories while running
-      ReloadSongsIfChanged;
+      // reload the songs if requested (F5)
+      ReloadSongsIfRequested;
 
       // display
       Done := not Display.Draw;

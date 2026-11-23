@@ -58,6 +58,13 @@ uses
 
 type
   TVisArr = array of integer;
+
+  // state of the song selection that is kept when the songs are reloaded
+  TSongScreenState = record
+    SelectionKey: UTF8String; // selected song or category
+    SearchActive: boolean;    // the result of a search was shown
+  end;
+
   TScreenSong = class(TMenu)
     private
       Equalizer: Tms_Equalizer;
@@ -324,10 +331,11 @@ type
         procedure ResetRandomSongState;
       procedure ResetScrollList;
 
-      // reloading the song list at runtime (see UGraphic.ReloadSongsIfChanged)
+      // reloading the songs with F5 (see UGraphic.ReloadSongsIfRequested)
       function  CanReloadSongs: boolean;
-      function  GetSelectionKey: UTF8String;
-      procedure RestoreSelection(const Key: UTF8String);
+      function  SaveState: TSongScreenState;
+      procedure RestoreState(const State: TSongScreenState);
+      procedure SelectSong(Target: integer);
   end;
 
 implementation
@@ -472,21 +480,19 @@ begin
 end;
 
 {**
- * True if the song list may be reloaded while this screen is shown, i.e. the
- * user is just browsing the songs and no menu, search, playlist, medley or
- * party game depends on the current song list.
+ * True if the songs may be reloaded (F5), i.e. the user is just browsing
+ * the songs and no medley or party game depends on the current song list.
  *}
 function TScreenSong.CanReloadSongs: boolean;
 begin
   Result := (Mode = smNormal) and
             (not MakeMedley) and
-            (Length(PlaylistMedley.Song) = 0) and
-            (PlaylistMan.CurPlayList = -1) and
-            (CatSongs.CatNumShow <> -2) and // search result is shown
-            not ((ScreenSongMenu <> nil) and ScreenSongMenu.Visible) and
-            not ((ScreenSongJumpto <> nil) and ScreenSongJumpto.Visible);
+            (Length(PlaylistMedley.Song) = 0);
 end;
 
+{**
+ * Identifies a song (or category button) independently of its index.
+ *}
 function SongSelectionKey(Song: TSong): UTF8String;
 begin
   if Song.Main then
@@ -497,41 +503,69 @@ begin
     Result := '';
 end;
 
-{**
- * Identifies the selected song (or category button) independently of its
- * index, so it can be selected again after the song list was reloaded.
- *}
-function TScreenSong.GetSelectionKey: UTF8String;
+function TScreenSong.SaveState: TSongScreenState;
 begin
-  Result := '';
+  Result.SelectionKey := '';
   if (Interaction >= 0) and (Interaction <= High(CatSongs.Song)) then
-    Result := SongSelectionKey(CatSongs.Song[Interaction]);
+    Result.SelectionKey := SongSelectionKey(CatSongs.Song[Interaction]);
+  Result.SearchActive := (CatSongs.CatNumShow = -2);
 end;
 
-procedure TScreenSong.RestoreSelection(const Key: UTF8String);
+{**
+ * Restores the playlist or search filter and the selected song after the
+ * songs were reloaded. Must be called after OnShow and OnShowFinish.
+ *}
+procedure TScreenSong.RestoreState(const State: TSongScreenState);
 var
-  I, Target, Cat: integer;
+  I, Target: integer;
 begin
-  // note: VisibleSongs must not be called for an empty list
-  if (Key = '') or (Length(CatSongs.Song) = 0) or (CatSongs.VisibleSongs = 0) then
-    Exit;
-
   Target := -1;
-  for I := 0 to High(CatSongs.Song) do
+  if (State.SelectionKey <> '') then
   begin
-    if SongSelectionKey(CatSongs.Song[I]) = Key then
+    for I := 0 to High(CatSongs.Song) do
     begin
-      Target := I;
-      Break;
+      if SongSelectionKey(CatSongs.Song[I]) = State.SelectionKey then
+      begin
+        Target := I;
+        Break;
+      end;
     end;
   end;
-  if Target = -1 then
+
+  if (PlaylistMan.CurPlayList <> -1) then
+  begin
+    // shows the playlist again and selects the song if it is part of it
+    PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, Target);
+    Exit;
+  end;
+
+  if State.SearchActive then
+  begin
+    ScreenSongJumpto.ReapplyFilter;
+    if (Target <> -1) and CatSongs.Song[Target].Visible then
+      SelectSong(Target);
+    Exit;
+  end;
+
+  if (Target <> -1) then
+    SelectSong(Target);
+end;
+
+{**
+ * Selects the song with the given index in CatSongs without scrolling
+ * through the list. With tabs, the category of the song is opened.
+ *}
+procedure TScreenSong.SelectSong(Target: integer);
+var
+  I, Cat: integer;
+begin
+  // note: VisibleSongs must not be called for an empty list
+  if (Target < 0) or (Target > High(CatSongs.Song)) or (CatSongs.VisibleSongs = 0) then
     Exit;
 
-  // with tabs the song might be inside a closed category: open it
   if not CatSongs.Song[Target].Visible then
   begin
-    if CatSongs.Song[Target].Main then
+    if CatSongs.Song[Target].Main or (Ini.Tabs <> 1) then
       Exit;
 
     Cat := -1;
@@ -543,7 +577,7 @@ begin
         Break;
       end;
     end;
-    if Cat = -1 then
+    if (Cat = -1) then
       Exit;
 
     MainChessboardMinLine := 0;
@@ -1347,6 +1381,14 @@ begin
         begin
           Help.SetHelpID(ID);
           ScreenPopupHelp.ShowPopup();
+        end;
+
+      SDLK_F5:
+        begin
+          // load the songs again, e.g. after new songs were added
+          if CanReloadSongs then
+            RequestSongReload;
+          Exit;
         end;
 
       SDLK_RETURN:

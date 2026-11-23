@@ -96,6 +96,7 @@ type
     fTotalSongsToLoad:   integer;
     fSongsLoaded:        integer;
     function CollectSongFiles: TPathDynArray;
+    procedure LoadSongFiles;
     procedure int_LoadSongList;
     procedure DoDirChanged(Sender: TObject);
     procedure LoadSongFromFile(const FilePath: IPath);
@@ -111,7 +112,7 @@ type
     destructor  Destroy(); override;
 
     procedure LoadSongList;     // load all songs
-    procedure ReloadSongList;   // frees all songs and rescans the song directories (main thread only)
+    procedure ReloadSongList;   // free all songs and load them again (main thread only)
   procedure FindFilesByExtension(const Dir: IPath; const Ext: IPath; Recursive: Boolean; var Files: TPathDynArray);
     procedure Sort(Order: TSortingType);
     property  Processing: boolean read fProcessing;
@@ -143,43 +144,9 @@ type
     function SetFilter(FilterStr: UTF8String; Filter: TSongFilter): cardinal;
   end;
 
-  TSongDirRoots = array of IPath;
-
-  {**
-   * Watches the song directories in a background thread and reports when
-   * their content has changed since the song list was loaded, e.g. because
-   * songs were added by an external downloader.
-   * The directories are polled (portable, no inotify needed): a fingerprint
-   * over the names, sizes and timestamps of all files is compared.
-   *}
-  TSongDirWatcher = class(TThread)
-  private
-    fRoots:        TSongDirRoots;
-    fLock:         TRTLCriticalSection;
-    fWakeEvent:    PRTLEvent;
-    fCurrent:      QWord;  // fingerprint of the latest scan
-    fLoaded:       QWord;  // fingerprint the song list was loaded from
-    fChangedTicks: QWord;  // time of the last detected change
-  protected
-    procedure Execute; override;
-  public
-    constructor Create(const Roots: TSongDirRoots; LoadedFingerprint: QWord);
-    destructor Destroy; override;
-
-    { true if the song directories differ from the loaded state and
-      have not changed for at least SettleMs milliseconds }
-    function ChangesSettled(SettleMs: QWord): boolean;
-    { marks the latest scanned state as loaded }
-    procedure MarkLoaded;
-  end;
-
-function GetSongDirRoots: TSongDirRoots;
-function ComputeSongDirFingerprint(const Roots: TSongDirRoots): QWord;
-
 var
   Songs:    TSongs;    // all songs
   CatSongs: TCatSongs; // categorized songs
-  SongDirWatcher: TSongDirWatcher; // detects songs added/changed while running
 
 const
   IN_ACCESS        = $00000001; //* File was accessed */
@@ -211,8 +178,6 @@ uses
 
 var
   LastLoadingEventPumpTicks: cardinal = 0;
-  // true while the song list is reloaded at runtime (no loading screen)
-  SongReloadActive: boolean = false;
 
 procedure PumpLoadingEvents;
 const
@@ -225,203 +190,10 @@ begin
   if (LastLoadingEventPumpTicks <> 0) and (NowTicks - LastLoadingEventPumpTicks < LoadingEventPumpIntervalMs) then
     Exit;
 
-  if SongReloadActive then
-    // keep the window responsive, but do not discard the user's input
-    SDL_PumpEvents
-  else
-    while SDL_PollEvent(@Event) <> 0 do
-      ;
+  while SDL_PollEvent(@Event) <> 0 do
+    ;
 
   LastLoadingEventPumpTicks := NowTicks;
-end;
-
-(*
- * Song directory watcher
- *)
-
-const
-  FNV64_OFFSET = QWord($cbf29ce484222325);
-  FNV64_PRIME  = QWord($00000100000001b3);
-  SONG_DIR_MAX_DEPTH        = 32;    // guards against symlink loops
-  SONG_DIR_POLL_INTERVAL_MS = 1500;
-  SONG_DIR_POLL_MAX_MS      = 30000;
-
-{$PUSH}
-{$Q-} // the hash functions rely on integer wrap-around
-{$R-}
-function HashMix(Hash: QWord; Value: QWord): QWord;
-var
-  I: integer;
-begin
-  Result := Hash;
-  for I := 0 to 7 do
-  begin
-    Result := (Result xor (Value and $FF)) * FNV64_PRIME;
-    Value := Value shr 8;
-  end;
-end;
-
-function HashString(Hash: QWord; const S: RawByteString): QWord;
-var
-  I: integer;
-begin
-  Result := Hash;
-  for I := 1 to Length(S) do
-    Result := (Result xor Ord(S[I])) * FNV64_PRIME;
-end;
-
-// Note: runs in the watcher thread. FileSystem and IPath are thread-safe.
-procedure FingerprintDir(const Dir: IPath; Depth: integer; var Sum, Count: QWord);
-var
-  Iter: IFileIterator;
-  FileInfo: TFileInfo;
-  EntryPath: IPath;
-  EntryHash: QWord;
-begin
-  if Depth > SONG_DIR_MAX_DEPTH then
-    Exit;
-
-  Iter := FileSystem.FileFind(Dir.Append('*'), faAnyFile);
-  while Iter.HasNext do
-  begin
-    FileInfo := Iter.Next;
-    if FileInfo.Name.Equals('.') or FileInfo.Name.Equals('..') or
-       FileInfo.Name.Equals('') then
-      Continue;
-
-    EntryPath := Dir.Append(FileInfo.Name);
-    EntryHash := HashString(FNV64_OFFSET, EntryPath.ToUTF8);
-    EntryHash := HashMix(EntryHash, QWord(FileInfo.Size));
-    EntryHash := HashMix(EntryHash, QWord(Int64(FileInfo.Time)));
-    EntryHash := HashMix(EntryHash, QWord(FileInfo.Attr and faDirectory));
-    // summing makes the result independent of the directory order
-    Sum := Sum + EntryHash;
-    Inc(Count);
-
-    if (FileInfo.Attr and faDirectory) <> 0 then
-      FingerprintDir(EntryPath, Depth + 1, Sum, Count);
-  end;
-end;
-
-function ComputeSongDirFingerprint(const Roots: TSongDirRoots): QWord;
-var
-  I: integer;
-  Sum, Count: QWord;
-begin
-  Sum := 0;
-  Count := 0;
-  for I := 0 to High(Roots) do
-    FingerprintDir(Roots[I], 0, Sum, Count);
-  Result := HashMix(HashMix(FNV64_OFFSET, Sum), Count);
-end;
-{$POP}
-
-function GetSongDirRoots: TSongDirRoots;
-var
-  I: integer;
-begin
-  Result := nil;
-  if SongPaths = nil then
-    Exit;
-
-  SetLength(Result, SongPaths.Count);
-  for I := 0 to SongPaths.Count - 1 do
-    Result[I] := SongPaths[I] as IPath;
-end;
-
-constructor TSongDirWatcher.Create(const Roots: TSongDirRoots; LoadedFingerprint: QWord);
-begin
-  inherited Create(true);
-  FreeOnTerminate := false;
-
-  fRoots := Copy(Roots);
-  InitCriticalSection(fLock);
-  fWakeEvent := RTLEventCreate;
-  fCurrent := LoadedFingerprint;
-  fLoaded := LoadedFingerprint;
-  fChangedTicks := GetTickCount64;
-
-  Start;
-end;
-
-destructor TSongDirWatcher.Destroy;
-begin
-  Terminate;
-  RTLEventSetEvent(fWakeEvent);
-  WaitFor;
-
-  inherited Destroy;
-
-  RTLEventDestroy(fWakeEvent);
-  DoneCriticalSection(fLock);
-end;
-
-procedure TSongDirWatcher.Execute;
-var
-  Fingerprint: QWord;
-  StartTicks, Duration: QWord;
-  WaitMs: QWord;
-  ScanOk: boolean;
-begin
-  WaitMs := SONG_DIR_POLL_INTERVAL_MS;
-  while not Terminated do
-  begin
-    RTLEventWaitFor(fWakeEvent, longint(WaitMs));
-    if Terminated then
-      Break;
-
-    StartTicks := GetTickCount64;
-    Fingerprint := 0;
-    ScanOk := true;
-    try
-      Fingerprint := ComputeSongDirFingerprint(fRoots);
-    except
-      ScanOk := false;
-    end;
-    Duration := GetTickCount64 - StartTicks;
-
-    // poll less often if scanning is expensive (huge song collections)
-    WaitMs := Duration * 10;
-    if WaitMs < SONG_DIR_POLL_INTERVAL_MS then
-      WaitMs := SONG_DIR_POLL_INTERVAL_MS
-    else if WaitMs > SONG_DIR_POLL_MAX_MS then
-      WaitMs := SONG_DIR_POLL_MAX_MS;
-
-    if not ScanOk then
-      Continue;
-
-    EnterCriticalSection(fLock);
-    try
-      if Fingerprint <> fCurrent then
-      begin
-        fCurrent := Fingerprint;
-        fChangedTicks := GetTickCount64;
-      end;
-    finally
-      LeaveCriticalSection(fLock);
-    end;
-  end;
-end;
-
-function TSongDirWatcher.ChangesSettled(SettleMs: QWord): boolean;
-begin
-  EnterCriticalSection(fLock);
-  try
-    Result := (fCurrent <> fLoaded) and
-              (GetTickCount64 - fChangedTicks >= SettleMs);
-  finally
-    LeaveCriticalSection(fLock);
-  end;
-end;
-
-procedure TSongDirWatcher.MarkLoaded;
-begin
-  EnterCriticalSection(fLock);
-  try
-    fLoaded := fCurrent;
-  finally
-    LeaveCriticalSection(fLock);
-  end;
 end;
 
 function CollectDirectories(const StartDir: IPath; Recursive: Boolean; Owner: TSongs = nil): TPathDynArray;
@@ -467,9 +239,6 @@ begin
 end;
 
 constructor TSongs.Create();
-var
-  Roots: TSongDirRoots;
-  LoadedFingerprint: QWord;
 begin
   // do not start thread BEFORE initialization (suspended = true)
   inherited Create(true);
@@ -477,16 +246,8 @@ begin
 
   SongList           := TList.Create();
 
-  // Take the fingerprint before loading: changes made while loading are
-  // then detected as well and trigger a reload later on.
-  Roots := GetSongDirRoots;
-  LoadedFingerprint := ComputeSongDirFingerprint(Roots);
-
   // until it is fixed, simply load the song-list
   int_LoadSongList();
-
-  if not Assigned(SongDirWatcher) then
-    SongDirWatcher := TSongDirWatcher.Create(Roots, LoadedFingerprint);
 end;
 
 destructor TSongs.Destroy();
@@ -522,45 +283,53 @@ begin
 {$ENDIF}
 end;
 
-procedure TSongs.int_LoadSongList;
+{**
+ * Scans the song directories and adds all songs found to SongList.
+ * Shows the progress on the loading screen (if it is the current screen).
+ *}
+procedure TSongs.LoadSongFiles;
 var
   I: integer;
   SongFiles: TPathDynArray;
 begin
-  SetLength(SongFiles, 0);
+  fDiscoveringDirectories := false;
+  fDiscoveryDirCount := 0;
+  fDiscoveryDirsScanned := 0;
+  fSongsLoaded := 0;
+  fTotalSongsToLoad := 0;
+  if Assigned(ScreenLoading) then
+  begin
+    ScreenLoading.SetDiscoveryProgress(0, 0, 0);
+    ScreenLoading.SetSongLoadingProgress(0, 0);
+    ScreenLoading.RefreshProgress(true);
+  end;
+
+  SongFiles := CollectSongFiles;
+
+  fTotalSongsToLoad := Length(SongFiles);
+  UpdateDiscoveryProgress(fTotalSongsToLoad, true);
+  UpdateSongLoadingProgress(true);
+
+  for I := 0 to High(SongFiles) do
+  begin
+    LoadSongFromFile(SongFiles[I]);
+    Inc(fSongsLoaded);
+    UpdateSongLoadingProgress;
+    PumpLoadingEvents;
+  end;
+
+  if fTotalSongsToLoad > 0 then
+    UpdateSongLoadingProgress(true);
+end;
+
+procedure TSongs.int_LoadSongList;
+begin
   try
     fProcessing := true;
 
     Log.LogStatus('Searching For Songs', 'SongList');
 
-    fDiscoveringDirectories := false;
-    fDiscoveryDirCount := 0;
-    fDiscoveryDirsScanned := 0;
-    fSongsLoaded := 0;
-    fTotalSongsToLoad := 0;
-    if Assigned(ScreenLoading) then
-    begin
-      ScreenLoading.SetDiscoveryProgress(0, 0, 0);
-      ScreenLoading.SetSongLoadingProgress(0, 0);
-      ScreenLoading.RefreshProgress(true);
-    end;
-
-    SongFiles := CollectSongFiles;
-
-    fTotalSongsToLoad := Length(SongFiles);
-    UpdateDiscoveryProgress(fTotalSongsToLoad, true);
-    UpdateSongLoadingProgress(true);
-
-    for I := 0 to High(SongFiles) do
-    begin
-      LoadSongFromFile(SongFiles[I]);
-      Inc(fSongsLoaded);
-      UpdateSongLoadingProgress;
-      PumpLoadingEvents;
-    end;
-
-    if fTotalSongsToLoad > 0 then
-      UpdateSongLoadingProgress(true);
+    LoadSongFiles;
 
     if assigned(CatSongs) then
       CatSongs.Refresh;
@@ -575,7 +344,6 @@ begin
     end;
 
   finally
-    SetLength(SongFiles, 0);
     Log.LogStatus('Search Complete', 'SongList');
 
     fParseSongDirectory := false;
@@ -592,15 +360,14 @@ end;
 
 {**
  * Frees all songs and loads them again from the song directories.
- * Must be called from the main thread while no screen uses the song list,
- * i.e. CatSongs and the song screen have to be rebuilt afterwards.
+ * Afterwards CatSongs and the song screen have to be rebuilt, see
+ * UGraphic.ReloadSongsIfRequested.
  *}
 procedure TSongs.ReloadSongList;
 var
   I: integer;
-  SongFiles: TPathDynArray;
 begin
-  Log.LogStatus('Reloading song list', 'TSongs.ReloadSongList');
+  Log.LogStatus('Reloading songs', 'TSongs.ReloadSongList');
 
   // category buttons are only referenced by CatSongs (not by SongList)
   if Assigned(CatSongs) then
@@ -617,23 +384,14 @@ begin
   SongList.Clear;
   CurrentSong := nil;
 
-  SetLength(SongFiles, 0);
   fProcessing := true;
-  SongReloadActive := true;
   try
-    SongFiles := CollectSongFiles;
-    for I := 0 to High(SongFiles) do
-    begin
-      LoadSongFromFile(SongFiles[I]);
-      PumpLoadingEvents;
-    end;
+    LoadSongFiles;
   finally
-    SetLength(SongFiles, 0);
-    SongReloadActive := false;
     fProcessing := false;
   end;
 
-  Log.LogStatus(Format('Song list reloaded, %d songs found', [SongList.Count]), 'TSongs.ReloadSongList');
+  Log.LogStatus(Format('%d songs loaded', [SongList.Count]), 'TSongs.ReloadSongList');
 end;
 
 procedure TSongs.FindFilesByExtension(const Dir: IPath; const Ext: IPath; Recursive: Boolean; var Files: TPathDynArray);
@@ -749,7 +507,7 @@ var
   Percent: integer;
   FilesNeeded: integer;
 begin
-  if not Assigned(ScreenLoading) or SongReloadActive then
+  if not Assigned(ScreenLoading) then
     Exit;
 
   if fDiscoveringDirectories then
@@ -774,7 +532,7 @@ end;
 
 procedure TSongs.UpdateSongLoadingProgress(Force: boolean = false);
 begin
-  if not Assigned(ScreenLoading) or SongReloadActive then
+  if not Assigned(ScreenLoading) then
     Exit;
 
   ScreenLoading.SetSongLoadingProgress(fSongsLoaded, fTotalSongsToLoad);
@@ -1414,8 +1172,5 @@ begin
 end;
 
 // -----------------------------------------------------------------------------
-
-finalization
-  FreeAndNil(SongDirWatcher);
 
 end.

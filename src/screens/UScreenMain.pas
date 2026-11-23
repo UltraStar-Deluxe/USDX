@@ -116,6 +116,12 @@ begin
         UGraphic.LoadScreens(USDXVersionStr);
       end;
 
+      SDLK_F5: begin
+        // load the songs again, e.g. after new songs were added
+        RequestSongReload;
+        Exit;
+      end;
+
       SDLK_T: begin
         FadeTo(@ScreenStatMain, SoundLib.Start);
         Exit;
