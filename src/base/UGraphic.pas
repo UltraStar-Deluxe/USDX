@@ -303,6 +303,9 @@ procedure LoadLoadingScreen;
 procedure LoadScreens(Title: string);
 procedure UnloadScreens;
 
+procedure RequestSongReload;
+procedure ReloadSongsIfRequested;
+
 function LoadingThreadFunction: integer;
 
 procedure UpdateResolution;
@@ -326,7 +329,9 @@ uses
   Math,
   UDisplay,
   UCommandLine,
+  UMenu,
   UPathUtils,
+  UPlaylist,
   UThemes;
 
 var
@@ -1085,6 +1090,74 @@ begin
   SetLoadingTitle('Loading ScreenStatDetail');
   ScreenStatDetail :=       TScreenStatDetail.Create;
   SDL_SetWindowTitle(Screen, PChar(Title));
+end;
+
+var
+  SongReloadRequested: boolean = false;
+
+// The reload is done later by the main loop, because it frees ScreenSong
+// and the request comes from its input handling.
+procedure RequestSongReload;
+begin
+  SongReloadRequested := true;
+end;
+
+procedure ShowScreenAfterSongReload(Screen: PMenu);
+begin
+  Display.CurrentScreen := Screen;
+  Screen^.OnShow;
+  Screen^.OnShowFinish;
+  Screen^.ShowFinish := true;
+end;
+
+procedure ReloadSongsIfRequested;
+var
+  FromSongScreen: boolean;
+  SongScreenState: TSongScreenState;
+begin
+  if not SongReloadRequested or (Display = nil) then
+    Exit;
+
+  // wait until a screen transition is finished
+  if Assigned(Display.NextScreen) or Assigned(Display.NextScreenWithCheck) then
+    Exit;
+
+  SongReloadRequested := false;
+
+  FromSongScreen := (Display.CurrentScreen = @ScreenSong);
+  if not (FromSongScreen or (Display.CurrentScreen = @ScreenMain)) then
+    Exit;
+
+  if FromSongScreen then
+  begin
+    SongScreenState := ScreenSong.SaveState;
+    ScreenSong.OnHide; // stops the music and video preview
+  end;
+
+  Display.CurrentScreen := @ScreenLoading;
+  ScreenLoading.OnShow;
+
+  // same procedure as after changing the song sorting in the options
+  FreeAndNil(ScreenSong);
+  Songs.ReloadSongList;
+  // TScreenSong.Create modifies Theme.Song (list row positions), reset it
+  Theme.ThemeSongReload;
+  ScreenSong := TScreenSong.Create;
+
+  // the playlists store indices into CatSongs
+  if (PlaylistMan <> nil) then
+    PlaylistMan.SongListReloaded;
+
+  ScreenLoading.OnHide;
+
+  // the song selection cannot be shown without songs
+  if FromSongScreen and (Songs.SongList.Count > 0) then
+  begin
+    ShowScreenAfterSongReload(@ScreenSong);
+    ScreenSong.RestoreState(SongScreenState);
+  end
+  else
+    ShowScreenAfterSongReload(@ScreenMain);
 end;
 
 function LoadingThreadFunction: integer;

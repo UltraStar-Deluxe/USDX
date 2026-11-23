@@ -58,6 +58,12 @@ uses
 
 type
   TVisArr = array of integer;
+
+  TSongScreenState = record
+    SelectionKey: UTF8String;
+    SearchActive: boolean;
+  end;
+
   TScreenSong = class(TMenu)
     private
       Equalizer: Tms_Equalizer;
@@ -326,6 +332,12 @@ type
 
         procedure ResetRandomSongState;
       procedure ResetScrollList;
+
+      function  CanReloadSongs: boolean;
+      function  SaveState: TSongScreenState;
+      procedure RestoreState(const State: TSongScreenState);
+      procedure OpenCategory(Cat: integer);
+      procedure SelectSong(Target: integer);
   end;
 
 implementation
@@ -469,6 +481,96 @@ begin
     SetScrollRefresh;
   end;
 
+end;
+
+function TScreenSong.CanReloadSongs: boolean;
+begin
+  // medleys and party games keep indices into the current song list
+  Result := (Mode = smNormal) and
+            (not MakeMedley) and
+            (Length(PlaylistMedley.Song) = 0);
+end;
+
+// identifies the song by its file, because the indices change on a reload
+function SongSelectionKey(Song: TSong): UTF8String;
+begin
+  if Song.Main then
+    Result := 'category:' + Song.Artist
+  else if Assigned(Song.Path) and Assigned(Song.FileName) then
+    Result := 'song:' + Song.Path.Append(Song.FileName).ToUTF8
+  else
+    Result := '';
+end;
+
+function TScreenSong.SaveState: TSongScreenState;
+begin
+  Result.SelectionKey := '';
+  if (Interaction >= 0) and (Interaction <= High(CatSongs.Song)) then
+    Result.SelectionKey := SongSelectionKey(CatSongs.Song[Interaction]);
+  Result.SearchActive := (CatSongs.CatNumShow = -2);
+end;
+
+// must be called after OnShow and OnShowFinish
+procedure TScreenSong.RestoreState(const State: TSongScreenState);
+var
+  I, Target: integer;
+begin
+  Target := -1;
+  if (State.SelectionKey <> '') then
+  begin
+    for I := 0 to High(CatSongs.Song) do
+    begin
+      if SongSelectionKey(CatSongs.Song[I]) = State.SelectionKey then
+      begin
+        Target := I;
+        Break;
+      end;
+    end;
+  end;
+
+  if (PlaylistMan.CurPlayList <> -1) then
+  begin
+    PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, Target);
+    Exit;
+  end;
+
+  if State.SearchActive then
+  begin
+    ScreenSongJumpto.ReapplyFilter;
+    if (Target <> -1) and CatSongs.Song[Target].Visible then
+      SkipTo(CatSongs.VisibleIndex(Target), Target, CatSongs.VisibleSongs);
+  end
+  else if (Target <> -1) then
+    SelectSong(Target);
+
+  // jump to the song instead of scrolling there
+  FixSelected;
+  SetScrollRefresh;
+end;
+
+procedure TScreenSong.OpenCategory(Cat: integer);
+begin
+  // otherwise ClickCategoryButton closes the category if it is already open
+  CatSongs.ShowCategoryList;
+  ShowCatTL(Cat);
+  CatSongs.ClickCategoryButton(Cat);
+end;
+
+procedure TScreenSong.SelectSong(Target: integer);
+var
+  Cat: integer;
+begin
+  if (Target < 0) or (Target > High(CatSongs.Song)) then
+    Exit;
+
+  Cat := Target - 1;
+  while (Cat >= 0) and not CatSongs.Song[Cat].Main do
+    Dec(Cat);
+  if (Cat >= 0) and not CatSongs.Song[Target].Main then
+    OpenCategory(Cat);
+
+  if CatSongs.Song[Target].Visible then
+    SkipTo(CatSongs.VisibleIndex(Target), Target, CatSongs.VisibleSongs);
 end;
 
 procedure TScreenSong.ParseInputNextHorizontal(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean);
@@ -997,13 +1099,8 @@ begin
                   Dec(I2);
                 if (I2 <= 0) then
                 begin
-                  // show cat in top left mod
-                  ShowCatTL (I);
-
                   Interaction := I;
-
-                  CatSongs.ShowCategoryList;
-                  CatSongs.ClickCategoryButton(I);
+                  OpenCategory(I);
                   SelectNext;
                   FixSelected;
                   break;
@@ -1016,30 +1113,7 @@ begin
                 I2 := Random(High(CatSongs.Song) + 1);
               until (not CatSongs.Song[I2].Main);
 
-              // search cat
-              for I := I2 downto 0 do
-              begin
-              if CatSongs.Song[I].Main then
-                break;
-              end;
-
-              // in I is now the categorie in I2 the song
-
-              // choose cat
-              CatSongs.ShowCategoryList;
-
-              // show cat in top left mod
-              ShowCatTL (I);
-
-              CatSongs.ClickCategoryButton(I);
-              SelectNext;
-
-              // Fix: not existing song selected:
-              //if (I + 1 = I2) then
-                Inc(I2);
-
-              // choose song
-              SkipTo(I2 - I);
+              SelectSong(I2);
             end
             else // random in one category
             begin
@@ -1248,6 +1322,13 @@ begin
         begin
           Help.SetHelpID(ID);
           ScreenPopupHelp.ShowPopup();
+        end;
+
+      SDLK_F5:
+        begin
+          if CanReloadSongs then
+            RequestSongReload;
+          Exit;
         end;
 
       SDLK_RETURN:
@@ -3908,13 +3989,7 @@ begin
             end;
             // I is the cat number, I2 is the no of the song within this cat
 
-            // choose cat
-            CatSongs.ShowCategoryList;
-
-            // show cat in top left mod
-            ShowCatTL(I);
-
-            CatSongs.ClickCategoryButton(I);
+            OpenCategory(I);
             SelectNext;
 
             // choose song
@@ -3972,9 +4047,7 @@ begin
       smCategory:  // one category select category and select random song
         begin
 
-          CatSongs.ShowCategoryList;
-          CatSongs.ClickCategoryButton(PlaylistMan.CurPlayList);
-          ShowCatTL(PlaylistMan.CurPlayList);
+          OpenCategory(PlaylistMan.CurPlayList);
 
           SelectNext;
           FixSelected2;

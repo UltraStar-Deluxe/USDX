@@ -322,6 +322,9 @@ begin
       // keyboard/mouse/joystick events
       CheckEvents;
 
+      // reload the songs if requested (F5)
+      ReloadSongsIfRequested;
+
       // display
       Done := not Display.Draw;
       Renderer.SwapBuffers;

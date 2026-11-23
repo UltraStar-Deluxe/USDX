@@ -96,6 +96,7 @@ type
     fTotalSongsToLoad:   integer;
     fSongsLoaded:        integer;
     function CollectSongFiles: TPathDynArray;
+    procedure LoadSongFiles;
     procedure int_LoadSongList;
     procedure DoDirChanged(Sender: TObject);
     procedure LoadSongFromFile(const FilePath: IPath);
@@ -111,6 +112,7 @@ type
     destructor  Destroy(); override;
 
     procedure LoadSongList;     // load all songs
+    procedure ReloadSongList;   // reload all songs (main thread only)
   procedure FindFilesByExtension(const Dir: IPath; const Ext: IPath; Recursive: Boolean; var Files: TPathDynArray);
     procedure Sort(Order: TSortingType);
     property  Processing: boolean read fProcessing;
@@ -281,45 +283,49 @@ begin
 {$ENDIF}
 end;
 
-procedure TSongs.int_LoadSongList;
+procedure TSongs.LoadSongFiles;
 var
   I: integer;
   SongFiles: TPathDynArray;
 begin
-  SetLength(SongFiles, 0);
+  fDiscoveringDirectories := false;
+  fDiscoveryDirCount := 0;
+  fDiscoveryDirsScanned := 0;
+  fSongsLoaded := 0;
+  fTotalSongsToLoad := 0;
+  if Assigned(ScreenLoading) then
+  begin
+    ScreenLoading.SetDiscoveryProgress(0, 0, 0);
+    ScreenLoading.SetSongLoadingProgress(0, 0);
+    ScreenLoading.RefreshProgress(true);
+  end;
+
+  SongFiles := CollectSongFiles;
+
+  fTotalSongsToLoad := Length(SongFiles);
+  UpdateDiscoveryProgress(fTotalSongsToLoad, true);
+  UpdateSongLoadingProgress(true);
+
+  for I := 0 to High(SongFiles) do
+  begin
+    LoadSongFromFile(SongFiles[I]);
+    Inc(fSongsLoaded);
+    UpdateSongLoadingProgress;
+    PumpLoadingEvents;
+  end;
+
+  if fTotalSongsToLoad > 0 then
+    UpdateSongLoadingProgress(true);
+end;
+
+procedure TSongs.int_LoadSongList;
+begin
   try
     fProcessing := true;
 
     Log.LogStatus('Searching For Songs', 'SongList');
 
-    fDiscoveringDirectories := false;
-    fDiscoveryDirCount := 0;
-    fDiscoveryDirsScanned := 0;
-    fSongsLoaded := 0;
-    fTotalSongsToLoad := 0;
-    if Assigned(ScreenLoading) then
-    begin
-      ScreenLoading.SetDiscoveryProgress(0, 0, 0);
-      ScreenLoading.SetSongLoadingProgress(0, 0);
-      ScreenLoading.RefreshProgress(true);
-    end;
-
-    SongFiles := CollectSongFiles;
-
-    fTotalSongsToLoad := Length(SongFiles);
-    UpdateDiscoveryProgress(fTotalSongsToLoad, true);
-    UpdateSongLoadingProgress(true);
-
-    for I := 0 to High(SongFiles) do
-    begin
-      LoadSongFromFile(SongFiles[I]);
-      Inc(fSongsLoaded);
-      UpdateSongLoadingProgress;
-      PumpLoadingEvents;
-    end;
-
-    if fTotalSongsToLoad > 0 then
-      UpdateSongLoadingProgress(true);
+    LoadSongFiles;
 
     if assigned(CatSongs) then
       CatSongs.Refresh;
@@ -334,7 +340,6 @@ begin
     end;
 
   finally
-    SetLength(SongFiles, 0);
     Log.LogStatus('Search Complete', 'SongList');
 
     fParseSongDirectory := false;
@@ -347,6 +352,39 @@ procedure TSongs.LoadSongList;
 begin
   fParseSongDirectory := true;
   Resume();
+end;
+
+// CatSongs and ScreenSong have to be rebuilt afterwards, see
+// UGraphic.ReloadSongsIfRequested.
+procedure TSongs.ReloadSongList;
+var
+  I: integer;
+begin
+  Log.LogStatus('Reloading songs', 'TSongs.ReloadSongList');
+
+  // category buttons are only referenced by CatSongs (not by SongList)
+  if Assigned(CatSongs) then
+  begin
+    for I := 0 to High(CatSongs.Song) do
+      if Assigned(CatSongs.Song[I]) and CatSongs.Song[I].Main then
+        CatSongs.Song[I].Free;
+    SetLength(CatSongs.Song, 0);
+    CatSongs.ResetVisibleIndexCache;
+  end;
+
+  for I := 0 to SongList.Count - 1 do
+    TSong(SongList[I]).Free;
+  SongList.Clear;
+  CurrentSong := nil;
+
+  fProcessing := true;
+  try
+    LoadSongFiles;
+  finally
+    fProcessing := false;
+  end;
+
+  Log.LogStatus(Format('%d songs loaded', [SongList.Count]), 'TSongs.ReloadSongList');
 end;
 
 procedure TSongs.FindFilesByExtension(const Dir: IPath; const Ext: IPath; Recursive: Boolean; var Files: TPathDynArray);

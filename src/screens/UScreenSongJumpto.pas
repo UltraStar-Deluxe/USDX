@@ -63,6 +63,7 @@ type
       function ParseInput(PressedKey: cardinal; CharCode: UCS4Char; PressedDown: boolean): boolean; override;
       procedure OnShow; override;
       function Draw: boolean; override;
+      procedure ReapplyFilter;
 
       property Visible: boolean read fVisible write SetVisible;
   end;
@@ -197,6 +198,12 @@ begin
 
   Interaction := 0;
   fLastPlayed  := 0;
+end;
+
+procedure TScreenSongJumpto.ReapplyFilter;
+begin
+  if (Length(Button[0].Text[0].Text) > 0) then
+    SetTextFound(CatSongs.SetFilter(Button[0].Text[0].Text, fSelectType));
 end;
 
 procedure TScreenSongJumpto.SetVisible(Value: boolean);

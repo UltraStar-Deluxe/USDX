@@ -116,6 +116,11 @@ begin
         UGraphic.LoadScreens(USDXVersionStr);
       end;
 
+      SDLK_F5: begin
+        RequestSongReload;
+        Exit;
+      end;
+
       SDLK_T: begin
         FadeTo(@ScreenStatMain, SoundLib.Start);
         Exit;

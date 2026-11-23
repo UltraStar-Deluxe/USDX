@@ -84,6 +84,7 @@ type
       procedure   SavePlayList(Index: Cardinal);
 
       procedure   RestoreSongOrder;
+      procedure   SongListReloaded;
       procedure   SetPlayList(Index: Integer; SongID: Integer = -1);
       procedure   UnsetPlaylist;
 
@@ -761,6 +762,20 @@ begin
 
   ReindexAllPlaylists;
   SongOrderDirty := True;
+end;
+
+procedure TPlayListManager.SongListReloaded;
+var
+  I: Integer;
+begin
+  // CatSongs was rebuilt in its default order
+  SongOrderDirty := False;
+
+  for I := 0 to High(Playlists) do
+  begin
+    SetLength(Playlists[I].Items, 0);
+    LoadPlayList(I, Playlists[I].Filename);
+  end;
 end;
 
 procedure TPlayListManager.RestoreSongOrder;
