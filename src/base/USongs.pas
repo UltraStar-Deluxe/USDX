@@ -112,7 +112,7 @@ type
     destructor  Destroy(); override;
 
     procedure LoadSongList;     // load all songs
-    procedure ReloadSongList;   // free all songs and load them again (main thread only)
+    procedure ReloadSongList;   // reload all songs (main thread only)
   procedure FindFilesByExtension(const Dir: IPath; const Ext: IPath; Recursive: Boolean; var Files: TPathDynArray);
     procedure Sort(Order: TSortingType);
     property  Processing: boolean read fProcessing;
@@ -283,10 +283,6 @@ begin
 {$ENDIF}
 end;
 
-{**
- * Scans the song directories and adds all songs found to SongList.
- * Shows the progress on the loading screen (if it is the current screen).
- *}
 procedure TSongs.LoadSongFiles;
 var
   I: integer;
@@ -358,11 +354,8 @@ begin
   Resume();
 end;
 
-{**
- * Frees all songs and loads them again from the song directories.
- * Afterwards CatSongs and the song screen have to be rebuilt, see
- * UGraphic.ReloadSongsIfRequested.
- *}
+// CatSongs and ScreenSong have to be rebuilt afterwards, see
+// UGraphic.ReloadSongsIfRequested.
 procedure TSongs.ReloadSongList;
 var
   I: integer;

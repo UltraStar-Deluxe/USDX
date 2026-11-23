@@ -59,10 +59,9 @@ uses
 type
   TVisArr = array of integer;
 
-  // state of the song selection that is kept when the songs are reloaded
   TSongScreenState = record
-    SelectionKey: UTF8String; // selected song or category
-    SearchActive: boolean;    // the result of a search was shown
+    SelectionKey: UTF8String;
+    SearchActive: boolean;
   end;
 
   TScreenSong = class(TMenu)
@@ -331,7 +330,6 @@ type
         procedure ResetRandomSongState;
       procedure ResetScrollList;
 
-      // reloading the songs with F5 (see UGraphic.ReloadSongsIfRequested)
       function  CanReloadSongs: boolean;
       function  SaveState: TSongScreenState;
       procedure RestoreState(const State: TSongScreenState);
@@ -479,20 +477,15 @@ begin
 
 end;
 
-{**
- * True if the songs may be reloaded (F5), i.e. the user is just browsing
- * the songs and no medley or party game depends on the current song list.
- *}
 function TScreenSong.CanReloadSongs: boolean;
 begin
+  // medleys and party games keep indices into the current song list
   Result := (Mode = smNormal) and
             (not MakeMedley) and
             (Length(PlaylistMedley.Song) = 0);
 end;
 
-{**
- * Identifies a song (or category button) independently of its index.
- *}
+// identifies the song by its file, because the indices change on a reload
 function SongSelectionKey(Song: TSong): UTF8String;
 begin
   if Song.Main then
@@ -511,10 +504,7 @@ begin
   Result.SearchActive := (CatSongs.CatNumShow = -2);
 end;
 
-{**
- * Restores the playlist or search filter and the selected song after the
- * songs were reloaded. Must be called after OnShow and OnShowFinish.
- *}
+// must be called after OnShow and OnShowFinish
 procedure TScreenSong.RestoreState(const State: TSongScreenState);
 var
   I, Target: integer;
@@ -534,7 +524,6 @@ begin
 
   if (PlaylistMan.CurPlayList <> -1) then
   begin
-    // shows the playlist again and selects the song if it is part of it
     PlaylistMan.SetPlayList(PlaylistMan.CurPlayList, Target);
     Exit;
   end;
@@ -551,10 +540,6 @@ begin
     SelectSong(Target);
 end;
 
-{**
- * Selects the song with the given index in CatSongs without scrolling
- * through the list. With tabs, the category of the song is opened.
- *}
 procedure TScreenSong.SelectSong(Target: integer);
 var
   I, Cat: integer;
@@ -1385,7 +1370,6 @@ begin
 
       SDLK_F5:
         begin
-          // load the songs again, e.g. after new songs were added
           if CanReloadSongs then
             RequestSongReload;
           Exit;

@@ -200,9 +200,6 @@ begin
   fLastPlayed  := 0;
 end;
 
-{**
- * Applies the current search again, e.g. after the songs were reloaded.
- *}
 procedure TScreenSongJumpto.ReapplyFilter;
 begin
   if (Length(Button[0].Text[0].Text) > 0) then

@@ -764,10 +764,6 @@ begin
   SongOrderDirty := True;
 end;
 
-{**
- * Resolves the songs of all playlists again after the song list was reloaded
- * (the stored SongIDs are indices into the old CatSongs list).
- *}
 procedure TPlayListManager.SongListReloaded;
 var
   I: Integer;

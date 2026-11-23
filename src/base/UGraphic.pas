@@ -1095,12 +1095,8 @@ end;
 var
   SongReloadRequested: boolean = false;
 
-{**
- * Requests to reload all songs from the song directories (F5 in the main
- * menu or in the song selection), e.g. after new songs were downloaded.
- * The reload itself is done by ReloadSongsIfRequested in the main loop,
- * because it recreates ScreenSong.
- *}
+// The reload is done later by the main loop, because it frees ScreenSong
+// and the request comes from its input handling.
 procedure RequestSongReload;
 begin
   SongReloadRequested := true;
@@ -1114,11 +1110,6 @@ begin
   Screen^.ShowFinish := true;
 end;
 
-{**
- * Called once per frame from the main loop. Shows the loading screen while
- * the songs are loaded again and then returns to the main menu or to the
- * song selection with the same selection, search filter or playlist.
- *}
 procedure ReloadSongsIfRequested;
 var
   FromSongScreen: boolean;
@@ -1151,7 +1142,7 @@ begin
   Songs.ReloadSongList;
   // TScreenSong.Create modifies Theme.Song (list row positions), reset it
   Theme.ThemeSongReload;
-  ScreenSong := TScreenSong.Create; // rebuilds CatSongs and the song buttons
+  ScreenSong := TScreenSong.Create;
 
   // the playlists store indices into CatSongs
   if (PlaylistMan <> nil) then

@@ -117,7 +117,6 @@ begin
       end;
 
       SDLK_F5: begin
-        // load the songs again, e.g. after new songs were added
         RequestSongReload;
         Exit;
       end;
