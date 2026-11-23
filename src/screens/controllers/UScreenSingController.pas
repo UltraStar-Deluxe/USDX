@@ -564,6 +564,8 @@ begin
         begin
           NewPosition := AudioPlayback.Position + 5.0;
           AudioPlayback.SetPosition(NewPosition);
+          LyricsState.SetCurrentTime(NewPosition);
+          LyricsState.UpdateBeats();
           if (Assigned(fCurrentVideo)) then
             fCurrentVideo.Position := CurrentSong.VideoGAP + NewPosition;
         end;
