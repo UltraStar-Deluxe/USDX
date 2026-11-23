@@ -41,11 +41,11 @@ uses
   UIni;
 
 procedure SingDraw;
-procedure SingDrawLines;
 procedure SingDrawBackground;
 procedure SingDrawOscilloscopes;
 procedure SingDrawOscilloscope(Position: TThemePosition; NrSound: integer);
 procedure SingDrawNoteLines(Left, Top, Right: real; LineSpacing: integer = 15; LineThickness: single = 1);
+procedure SingDrawNoteLinesForPlayer(Left, Top, Right: real; PlayerIndex, LineSpacing: integer);
 procedure SingDrawLyricHelper(CP: integer; Left, LyricsMid: real);
 procedure SingDrawLine(Left, Top, Right: real; Track, PlayerIndex: integer; LineSpacing: integer = 15);
 procedure SingDrawPlayerLine(Left, Top, W: real; Track, PlayerIndex: integer; LineSpacing: integer = 15);
@@ -544,6 +544,12 @@ begin
     Y := Top + Count * LineSpacing;
     Renderer.DrawLine(Left, Y, Right, Y, 0, LineThickness, Skin_P1_LinesR, Skin_P1_LinesG, Skin_P1_LinesB, 0.4);
   end;
+end;
+
+procedure SingDrawNoteLinesForPlayer(Left, Top, Right: real; PlayerIndex, LineSpacing: integer);
+begin
+  if (ScreenSing.Settings.InputVisible) and (Ini.NoteLines = 1) and (ScreenSing.settings.NotesVisible[PlayerIndex]) then
+    SingDrawNoteLines(Left, Top, Right, LineSpacing);
 end;
 
 // draw blank Notebars
@@ -1189,101 +1195,6 @@ begin
   end;
 end;
 
-procedure SingDrawLines;
-var
-  NR: TRecR;         // lyrics area bounds (NR = NoteRec?)
-begin
-  // positions
-  NR.Left := 20;
-  NR.Right := 780;
-  NR.Width := 760; //NR.Right - NR.Left;
-  NR.WMid  := 380;//NR.Width / 2;
-  NR.Mid   := 400;//NR.Left + NR.WMid;
-
-  // draw note-lines
-
-  // to-do : needs fix when party mode works w/ 2 screens
-  if (PlayersPlay = 1) and (Ini.NoteLines = 1) and (ScreenSing.settings.NotesVisible[0]) then
-    SingDrawNoteLines(NR.Left, Skin_P2_NotesB - 105, NR.Right, 15);
-
-  if (PlayersPlay = 2) and (Ini.NoteLines = 1) then
-  begin
-    if (ScreenSing.settings.NotesVisible[0]) then
-      SingDrawNoteLines(Nr.Left, Skin_P1_NotesB - 105, Nr.Right, 15);
-    if (ScreenSing.settings.NotesVisible[1]) then
-      SingDrawNoteLines(Nr.Left, Skin_P2_NotesB - 105, Nr.Right, 15);
-  end;
-
-  if (PlayersPlay = 3) and (Ini.NoteLines = 1) then begin
-    if (ScreenSing.settings.NotesVisible[0]) then
-      SingDrawNoteLines(Nr.Left, 120, Nr.Right, 12);
-    if (ScreenSing.settings.NotesVisible[1]) then
-      SingDrawNoteLines(Nr.Left, 245, Nr.Right, 12);
-    if (ScreenSing.settings.NotesVisible[2]) then
-      SingDrawNoteLines(Nr.Left, 370, Nr.Right, 12);
-  end;
-
-  if (PlayersPlay = 4) and (Ini.NoteLines = 1) then
-  begin
-    if (ScreenSing.settings.NotesVisible[0]) then
-    begin
-      if (Screens = 2) then
-        SingDrawNoteLines(Nr.Left, Skin_P1_NotesB - 105, Nr.Right, 15)
-      else
-      begin
-        SingDrawNoteLines(Nr.Left, Skin_P1_NotesB - 105, Nr.Right/2 - 5, 15);
-        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, Skin_P1_NotesB - 105, Nr.Right, 15)
-      end;
-    end;
-
-    if (ScreenSing.settings.NotesVisible[1]) then
-    begin
-      if (Screens = 2) then
-        SingDrawNoteLines(Nr.Left, Skin_P2_NotesB - 105, Nr.Right, 15)
-      else
-      begin
-        SingDrawNoteLines(Nr.Left, Skin_P2_NotesB - 105, Nr.Right/2 - 5, 15);
-        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, Skin_P2_NotesB - 105, Nr.Right, 15)
-      end;
-    end;
-  end;
-
-  if (PlayersPlay = 6) and (Ini.NoteLines = 1) then begin
-    if (ScreenSing.settings.NotesVisible[0]) then
-    begin
-      if (Screens = 2) then
-        SingDrawNoteLines(Nr.Left, 120, Nr.Right, 12)
-      else
-      begin
-        SingDrawNoteLines(Nr.Left, 120, Nr.Right/2 - 5, 12);
-        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, 120, Nr.Right, 12);
-      end;
-    end;
-
-    if (ScreenSing.settings.NotesVisible[1]) then
-    begin
-      if (Screens = 2) then
-        SingDrawNoteLines(Nr.Left, 245, Nr.Right, 12)
-      else
-      begin
-        SingDrawNoteLines(Nr.Left, 245, Nr.Right/2 - 5, 12);
-        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, 245, Nr.Right, 12);
-      end;
-    end;
-
-    if (ScreenSing.settings.NotesVisible[2]) then
-    begin
-      if (Screens = 2) then
-        SingDrawNoteLines(Nr.Left, 370, Nr.Right, 12)
-      else
-      begin
-        SingDrawNoteLines(Nr.Left, 370, Nr.Right/2 - 5, 12);
-        SingDrawNoteLines(Nr.Right/2 - 20 + Nr.Left, 370, Nr.Right, 12);
-      end;
-    end;
-  end;
-end;
-
 procedure SingDraw;
 var
   NR: TRecR;         // lyrics area bounds (NR = NoteRec?)
@@ -1304,6 +1215,14 @@ const
   TopThreeRows1 = 120+95;
   TopThreeRows2 = 245+95;
   TopThreeRows3 = 370+95;
+  // TODO: the lines have a different calculation, re-figure this out once it's at least all in here in one place
+  // for the lines it does actually refer to the top
+  LinesTopOneRow1 = Skin_P2_NotesB - 105;
+  LinesTopTwoRows1 = Skin_P1_NotesB - 105;
+  LinesTopTwoRows2 = Skin_P2_NotesB - 105;
+  LinesTopThreeRows1 = 120;
+  LinesTopThreeRows2 = 245;
+  LinesTopThreeRows3 = 370;
 begin
   // positions
   NR.Left := 20;
@@ -1402,13 +1321,11 @@ begin
 
   end;
 
-  // draw notes lines
-  if (ScreenSing.Settings.InputVisible) then
-    SingDrawLines;
   // Draw the Notes
   if (PlayersPlay = 1) then
   begin
     // SINGLESCREEN
+    SingDrawNoteLinesForPlayer(NR.Left, LinesTopOneRow1, NR.Right, 0, LineSpacingOneRow);
     SingDrawPlayerBGLine(NR.Left + 20, TopOneRow1, NR.Right - 20, TrackP1, 0, LineSpacingOneRow);  // Background glow    - colorized in playercolor
     SingDrawLine(NR.Left + 20, TopOneRow1, NR.Right - 20, TrackP1, 0, LineSpacingOneRow);             // Plain unsung notes - colorized in playercolor
     SingDrawPlayerLine(NR.Left + 20, TopOneRow1, NR.Width - 40, TrackP1, 0, LineSpacingOneRow);       // imho the sung notes
@@ -1417,10 +1334,12 @@ begin
   if (PlayersPlay = 2) then
   begin
     // SINGLESCREEN
+    SingDrawNoteLinesForPlayer(NR.Left, LinesTopTwoRows1, NR.Right, 0, LineSpacingTwoRows);
     SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP1, 0, LineSpacingTwoRows);
     SingDrawLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP1, 0, LineSpacingTwoRows);
     SingDrawPlayerLine(NR.Left + 20, TopTwoRows1, NR.Width - 40, TrackP1, 0, LineSpacingTwoRows);
 
+    SingDrawNoteLinesForPlayer(NR.Left, LinesTopTwoRows2, NR.Right, 1, LineSpacingTwoRows);
     SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP2, 1, LineSpacingTwoRows);
     SingDrawLine(NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP2, 1, LineSpacingTwoRows);
     SingDrawPlayerLine(NR.Left + 20, TopTwoRows2, NR.Width - 40, TrackP2, 1, LineSpacingTwoRows);
@@ -1429,14 +1348,17 @@ begin
   if (PlayersPlay = 3) then
   begin
     // SINGLESCREEN
+    SingDrawNoteLinesForPlayer(NR.Left, LinesTopThreeRows1, NR.Right, 0, LineSpacingThreeRows);
     SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP1, 0, LineSpacingThreeRows);
     SingDrawLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP1, 0, LineSpacingThreeRows);
     SingDrawPlayerLine(NR.Left + 20, TopThreeRows1, NR.Width - 40, TrackP1, 0, LineSpacingThreeRows);
 
+    SingDrawNoteLinesForPlayer(NR.Left, LinesTopThreeRows2, NR.Right, 1, LineSpacingThreeRows);
     SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP2, 1, LineSpacingThreeRows);
     SingDrawLine(NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP2, 1, LineSpacingThreeRows);
     SingDrawPlayerLine(NR.Left + 20, TopThreeRows2, NR.Width - 40, TrackP2, 1, LineSpacingThreeRows);
 
+    SingDrawNoteLinesForPlayer(NR.Left, LinesTopThreeRows3, NR.Right, 2, LineSpacingThreeRows);
     SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP3, 2, LineSpacingThreeRows);
     SingDrawLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP3, 2, LineSpacingThreeRows);
     SingDrawPlayerLine(NR.Left + 20, TopThreeRows3, NR.Width - 40, TrackP3, 2, LineSpacingThreeRows);
@@ -1450,10 +1372,12 @@ begin
       if (ScreenAct = 1) then
       begin
         // MULTISCREEN - SCREEN 1
+        SingDrawNoteLinesForPlayer(NR.Left, LinesTopTwoRows1, NR.Right, 0, LineSpacingTwoRows);
         SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP1, 0, LineSpacingTwoRows);
         SingDrawLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP1, 0, LineSpacingTwoRows);
         SingDrawPlayerLine(NR.Left + 20, TopTwoRows1, NR.Width - 40, TrackP1, 0, LineSpacingTwoRows);
 
+        SingDrawNoteLinesForPlayer(NR.Left, LinesTopTwoRows2, NR.Right, 1, LineSpacingTwoRows);
         SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP2, 1, LineSpacingTwoRows);
         SingDrawLine(NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP2, 1, LineSpacingTwoRows);
         SingDrawPlayerLine(NR.Left + 20, TopTwoRows2, NR.Width - 40, TrackP2, 1, LineSpacingTwoRows);
@@ -1461,10 +1385,12 @@ begin
       if (ScreenAct = 2) then
       begin
         // MULTISCREEN - SCREEN 2
+        SingDrawNoteLinesForPlayer(NR.Left, LinesTopTwoRows1, NR.Right, 2, LineSpacingTwoRows);
         SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP3, 2, LineSpacingTwoRows);
         SingDrawLine(NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP3, 2, LineSpacingTwoRows);
         SingDrawPlayerLine(NR.Left + 20, TopTwoRows1, NR.Width - 40, TrackP3, 2, LineSpacingTwoRows);
 
+        SingDrawNoteLinesForPlayer(NR.Left, LinesTopTwoRows2, NR.Right, 3, LineSpacingTwoRows);
         SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP4, 3, LineSpacingTwoRows);
         SingDrawLine(NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP4, 3, LineSpacingTwoRows);
         SingDrawPlayerLine(NR.Left + 20, TopTwoRows2, NR.Width - 40, TrackP4, 3, LineSpacingTwoRows);
@@ -1473,18 +1399,22 @@ begin
     else
     begin
       // SINGLESCREEN
+      SingDrawNoteLinesForPlayer(NR.Left, LinesTopTwoRows1, NR.Right/2 - 5, 0, LineSpacingTwoRows);
       SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows1, NR.Right/2 - 20, TrackP1, 0, LineSpacingTwoRows);
       SingDrawLine(NR.Left + 20, TopTwoRows1, NR.Right/2 - 20, TrackP1, 0, LineSpacingTwoRows);
       SingDrawPlayerLine(NR.Left + 20, TopTwoRows1, NR.Width/2 - 50, TrackP1, 0, LineSpacingTwoRows);
 
+      SingDrawNoteLinesForPlayer(NR.Left, LinesTopTwoRows2, NR.Right/2 - 5, 1, LineSpacingTwoRows);
       SingDrawPlayerBGLine(NR.Left + 20, TopTwoRows2, NR.Right/2 - 20, TrackP2, 1, LineSpacingTwoRows);
       SingDrawLine(NR.Left + 20, TopTwoRows2, NR.Right/2 - 20, TrackP2, 1, LineSpacingTwoRows);
       SingDrawPlayerLine(NR.Left + 20, TopTwoRows2, NR.Width/2 - 50, TrackP2, 1, LineSpacingTwoRows);
 
+      SingDrawNoteLinesForPlayer(NR.Right/2 - 20 + NR.Left, LinesTopTwoRows1, NR.Right, 2, LineSpacingTwoRows);
       SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP3, 2, LineSpacingTwoRows);
       SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, TopTwoRows1, NR.Right - 20, TrackP3, 2, LineSpacingTwoRows);
       SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, TopTwoRows1, NR.Width/2 - 30, TrackP3, 2, LineSpacingTwoRows);
 
+      SingDrawNoteLinesForPlayer(NR.Right/2 - 20 + NR.Left, LinesTopTwoRows2, NR.Right, 3, LineSpacingTwoRows);
       SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP4, 3, LineSpacingTwoRows);
       SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, TopTwoRows2, NR.Right - 20, TrackP4, 3, LineSpacingTwoRows);
       SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, TopTwoRows2, NR.Width/2 - 30, TrackP4, 3, LineSpacingTwoRows);
@@ -1499,14 +1429,17 @@ begin
       if (ScreenAct = 1) then
       begin
         // MULTISCREEN - SCREEN 1
+        SingDrawNoteLinesForPlayer(NR.Left, LinesTopThreeRows1, NR.Right, 0, LineSpacingThreeRows);
         SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP1, 0, LineSpacingThreeRows);
         SingDrawLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP1, 0, LineSpacingThreeRows);
         SingDrawPlayerLine(NR.Left + 20, TopThreeRows1, NR.Width - 40, TrackP1, 0, LineSpacingThreeRows);
 
+        SingDrawNoteLinesForPlayer(NR.Left, LinesTopThreeRows2, NR.Right, 1, LineSpacingThreeRows);
         SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP2, 1, LineSpacingThreeRows);
         SingDrawLine(NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP2, 1, LineSpacingThreeRows);
         SingDrawPlayerLine(NR.Left + 20, TopThreeRows2, NR.Width - 40, TrackP2, 1, LineSpacingThreeRows);
 
+        SingDrawNoteLinesForPlayer(NR.Left, LinesTopThreeRows3, NR.Right, 2, LineSpacingThreeRows);
         SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP3, 2, LineSpacingThreeRows);
         SingDrawLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP3, 2, LineSpacingThreeRows);
         SingDrawPlayerLine(NR.Left + 20, TopThreeRows3, NR.Width - 40, TrackP3, 2, LineSpacingThreeRows);
@@ -1514,14 +1447,17 @@ begin
       if (ScreenAct = 2) then
       begin
         // MULTISCREEN - SCREEN 2
+        SingDrawNoteLinesForPlayer(NR.Left, LinesTopThreeRows1, NR.Right, 3, LineSpacingThreeRows);
         SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP4, 3, LineSpacingThreeRows);
         SingDrawLine(NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP4, 3, LineSpacingThreeRows);
         SingDrawPlayerLine(NR.Left + 20, TopThreeRows1, NR.Width - 40, TrackP4, 3, LineSpacingThreeRows);
 
+        SingDrawNoteLinesForPlayer(NR.Left, LinesTopThreeRows2, NR.Right, 4, LineSpacingThreeRows);
         SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP5, 4, LineSpacingThreeRows);
         SingDrawLine(NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP5, 4, LineSpacingThreeRows);
         SingDrawPlayerLine(NR.Left + 20, TopThreeRows2, NR.Width - 40, TrackP5, 4, LineSpacingThreeRows);
 
+        SingDrawNoteLinesForPlayer(NR.Left, LinesTopThreeRows3, NR.Right, 5, LineSpacingThreeRows);
         SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
         SingDrawLine(NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
         SingDrawPlayerLine(NR.Left + 20, TopThreeRows3, NR.Width - 40, TrackP6, 5, LineSpacingThreeRows);
@@ -1530,26 +1466,32 @@ begin
     else
     begin
       // SINGLESCREEN
+      SingDrawNoteLinesForPlayer(NR.Left, LinesTopThreeRows1, NR.Right/2 - 5, 0, LineSpacingThreeRows);
       SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows1, NR.Right/2 - 20, TrackP1, 0, LineSpacingThreeRows);
       SingDrawLine(NR.Left + 20, TopThreeRows1, NR.Right/2 - 20, TrackP1, 0, LineSpacingThreeRows);
       SingDrawPlayerLine(NR.Left + 20, TopThreeRows1, NR.Width/2 - 50, TrackP1, 0, LineSpacingThreeRows);
 
+      SingDrawNoteLinesForPlayer(NR.Left, LinesTopThreeRows2, NR.Right/2 - 5, 1, LineSpacingThreeRows);
       SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows2, NR.Right/2 - 20, TrackP2, 1, LineSpacingThreeRows);
       SingDrawLine(NR.Left + 20, TopThreeRows2, NR.Right/2 - 20, TrackP2, 1, LineSpacingThreeRows);
       SingDrawPlayerLine(NR.Left + 20, TopThreeRows2, NR.Width/2 - 50, TrackP2, 1, LineSpacingThreeRows);
 
+      SingDrawNoteLinesForPlayer(NR.Left, LinesTopThreeRows3, NR.Right/2 - 5, 2, LineSpacingThreeRows);
       SingDrawPlayerBGLine(NR.Left + 20, TopThreeRows3, NR.Right/2 - 20, TrackP3, 2, LineSpacingThreeRows);
       SingDrawLine(NR.Left + 20, TopThreeRows3, NR.Right/2 - 20, TrackP3, 2, LineSpacingThreeRows);
       SingDrawPlayerLine(NR.Left + 20, TopThreeRows3, NR.Width/2 - 50, TrackP3, 2, LineSpacingThreeRows);
 
+      SingDrawNoteLinesForPlayer(NR.Right/2 - 20 + NR.Left, LinesTopThreeRows1, NR.Right, 3, LineSpacingThreeRows);
       SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP4, 3, LineSpacingThreeRows);
       SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows1, NR.Right - 20, TrackP4, 3, LineSpacingThreeRows);
       SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, TopThreeRows1, NR.Width/2 - 30, TrackP4, 3, LineSpacingThreeRows);
 
+      SingDrawNoteLinesForPlayer(NR.Right/2 - 20 + NR.Left, LinesTopThreeRows2, NR.Right, 4, LineSpacingThreeRows);
       SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP5, 4, LineSpacingThreeRows);
       SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows2, NR.Right - 20, TrackP5, 4, LineSpacingThreeRows);
       SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, TopThreeRows2, NR.Width/2 - 30, TrackP5, 4, LineSpacingThreeRows);
 
+      SingDrawNoteLinesForPlayer(NR.Right/2 - 20 + NR.Left, LinesTopThreeRows3, NR.Right, 5, LineSpacingThreeRows);
       SingDrawPlayerBGLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
       SingDrawLine(NR.Right/2 - 20 + NR.Left + 20, TopThreeRows3, NR.Right - 20, TrackP6, 5, LineSpacingThreeRows);
       SingDrawPlayerLine(NR.Width/2 - 10 + NR.Left + 20, TopThreeRows3, NR.Width/2 - 30, TrackP6, 5, LineSpacingThreeRows);
