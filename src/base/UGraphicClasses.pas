@@ -44,7 +44,7 @@ const
 
 type
 
- TParticleType = (GoldenNote, PerfectNote, NoteHitTwinkle, PerfectLineTwinkle, ColoredStar, Flare);
+ TParticleType = (GoldenNote, PerfectNote, NoteHitTwinkle, PerfectLineTwinkle, ColoredStar);
 
  TColour3f = record
    r, g, b: real;
@@ -251,36 +251,6 @@ begin
           mX := 0;
           mY := 0;
         end;
-    Flare:
-        begin
-          Tex := Tex_Note_Star;
-          W := 7;
-          H := 7;
-          SizeMod := (-cos((Frame+1)*5*2*pi/16)*0.5+1.1);
-          mX := RandomRange(-5,5);
-          mY := RandomRange(-5,5);
-          SetLength(Scale,4);
-          Scale[1] := 0.8;
-          Scale[2] := 0.4;
-          Scale[3] := 0.3;
-          SetLength(Col,4);
-          Col[0].r := 1;
-          Col[0].g := 0.7;
-          Col[0].b := 0.1;
-
-          Col[1].r := 1;
-          Col[1].g := 1;
-          Col[1].b := 0.4;
-
-          Col[2].r := 1;
-          Col[2].g := 1;
-          Col[2].b := 1;
-
-          Col[3].r := 1;
-          Col[3].g := 1;
-          Col[3].b := 1;
-
-        end;
     else    // just some random default values
         begin
           Tex := Tex_Note_Star;
@@ -337,16 +307,6 @@ begin
     ColoredStar:
         begin
           Alpha := (-cos((Frame+1)*2*pi/16)+1); // neat fade-in-and-out
-        end;
-    Flare:
-        begin
-          Alpha := (-cos((Frame+1)/16*1.7*pi+0.3*pi)+1); // neat fade-in-and-out
-          SizeMod := (-cos((Frame+1)*5*2*pi/16)*0.5+1.1);
-          // move around
-          X := X + mX;
-          Y := Y + mY;
-          mY := mY+1.8;
-//          mX := mX/2;
         end;
   end;
 end;
