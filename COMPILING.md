@@ -4,9 +4,8 @@ For linking and running the game, the following libraries are also required:
 - SDL2, SDL2_image
 - FFmpeg 4.0-9.0
 - SQLite 3
-- [BASS](http://www.un4seen.com/bass.html) (Windows only, use `--without-bass` for using SDL instead)
 - some fonts like DejaVu
-- PortAudio
+- PortAudio (not on Windows, where SDL is used for audio input)
 - Lua 5.1, 5.2, 5.3, 5.4, or 5.5
 - OpenCV if you want webcam support
 - projectM 4,x if you want audio visualisation support
@@ -56,9 +55,6 @@ Optional libraries:
   if the device's channel layout matches SDL's: for 4 channels: FL FR FC LFE with
   SDL's pulseaudio driver, FL FR RL RR with its pipewire driver.
   Might fix issues experienced when using PortAudio on certain distributions.
-* `--with-bass`: Windows only, the default there for now. Use BASS for audio playback and mic input.
-* `--without-bass`: Windows only. Use SDL for audio playback and microphone input instead of BASS.
-  Run `WITH_BASS=no make -C dists/windows install` so `bass.dll` is not copied into `game/`.
 * `--with-opencv`: Enable webcam support with OpenCV. By default, configure
   auto-detects OpenCV 3+ and disables webcam support if OpenCV is not found.
 * `--without-opencv`: Build without webcam support even if OpenCV is installed.

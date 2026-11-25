@@ -51,7 +51,6 @@ deps+=('libjpeg-turbo,https://github.com/libjpeg-turbo/libjpeg-turbo/releases/do
 deps+=('libpng,https://download.sourceforge.net/libpng/libpng-1.6.58.tar.xz,28eb403f51f0f7405249132cecfe82ea5c0ef97f1b32c5a65828814ae0d34775')
 deps+=('libwebp,https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.6.0.tar.gz,e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564')
 deps+=('libtiff,https://download.osgeo.org/libtiff/tiff-4.7.1.tar.xz,b92017489bdc1db3a4c97191aa4b75366673cb746de0dce5d7a749d5954681ba')
-deps+=('bass,https://www.un4seen.com/files/bass24.zip,3a03ec9a33d0f4f9d167660da51c8bb1432e8977496995455ab137277d69636e')
 PROJECTM_VERSION=4.1.6
 deps+=('projectm',https://github.com/projectM-visualizer/projectm/archive/4d2849333b63235a6af4d1f02508a97529d96dc7.tar.gz,218e1e5042ae4caaf7b17497722e9a04b4844444a6e2844f58ddce0c805043ea)
 deps+=('projectm-eval,https://github.com/projectM-visualizer/projectm-eval/archive/refs/tags/v1.0.6.tar.gz,d663f7fc2c6962e29d5f3977f22c9a988e01638911e0efabea6b7ed4dcb0a8ce')
@@ -308,10 +307,6 @@ Cflags: -I\${includedir}
 	copy_msys2_dlls "$lua_DLLs"
 }
 
-task_bass() {
-	cp -f $root/deps/bass/x64/bass.dll $PREFIX/bin
-}
-
 task_opencv() {
 	start_build opencv OpenCV || return 0
 	# Note: OpenCV does not support CMake build type None
@@ -444,12 +439,7 @@ task_install() {
 	for i in $ffmpeg_DLLs $dav1d_DLLs $libjpeg_turbo_DLLs $libpng_DLLs $libtiff_DLLs $libwebp_DLLs $SDL2_DLLs $SDL2_image_DLLs $lua_DLLs $sqlite_DLLs $freetype_DLLs $projectm_DLLs $opencv_DLLs; do
 		add_dll "$i"
 	done
-	# WITH_BASS=no, leave bass.dll out (for builds configured --without-bass)
-	local bass_dll=$PREFIX/bin/bass.dll
-	if [ "${WITH_BASS:-yes}" = no ]; then
-		bass_dll=
-	fi
-	for i in $bass_dll $PREFIX/bin/msys2/*.dll; do
+	for i in $PREFIX/bin/msys2/*.dll; do
 		echo "Installing $(basename $i)"
 		install $i $DLL_DIR
 	done
@@ -544,8 +534,6 @@ if [ "$1" == "all_deps" ]; then
 	clean_prefix
 	echo
 
-	task_bass
-	echo
 	task_libjpeg_turbo
 	echo
 	task_libpng

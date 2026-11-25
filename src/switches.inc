@@ -63,7 +63,6 @@
   // enable debug-mode. For development only!
   {.$DEFINE DEBUG}
   {$DEFINE CONSOLE}
-  {.$DEFINE HaveBASS}
   {$DEFINE UTF8_FILENAMES}
 {$ELSEIF Defined(UNIX)}
   // include defines but no constants
@@ -81,10 +80,7 @@
 {$IFEND}
 
 // audio config
-{$IF Defined(HaveBASS)}
-  {$DEFINE UseBASSPlayback}
-  {$DEFINE UseBASSInput}
-{$ELSEIF Defined(HavePortaudio)}
+{$IF Defined(HavePortaudio)}
   {$DEFINE UseSDLPlayback}
   {.$DEFINE UsePortaudioPlayback}
   {$DEFINE UsePortaudioInput}
@@ -111,10 +107,6 @@
 
 {$IF Defined(UseFFmpegVideo) or Defined(UseFFmpegDecoder)}
   {$DEFINE UseFFmpeg}
-{$IFEND}
-
-{$IF Defined(UseBASSInput) or Defined(UseBASSPlayback)}
-  {$DEFINE UseBASS}
 {$IFEND}
 
 {$IF Defined(UsePortaudioInput) or Defined(UsePortaudioPlayback)}
