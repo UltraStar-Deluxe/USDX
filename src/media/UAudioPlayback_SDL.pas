@@ -104,6 +104,8 @@ begin
     Exit;
   end;
 
+  LogSDLAudioInfo(false);
+
   SampleBufferSize := IAudioOutputBufferSizeVals[Ini.AudioOutputBufferSizeIndex];
   if (SampleBufferSize <= 0) then
   begin
@@ -150,7 +152,10 @@ begin
   // So we use the average buffer-size.
   Latency := (ObtainedAudioSpec.samples/2) / FormatInfo.SampleRate;
 
-  Log.LogStatus('Opened audio device', 'TAudioPlayback_SDL.InitializeAudioPlaybackEngine');
+  Log.LogStatus('Opened default audio device: ' + SDLAudioSpecToStr(ObtainedAudioSpec) +
+                ', ' + IntToStr(ObtainedAudioSpec.samples) + ' samples (' +
+                IntToStr(Round(ObtainedAudioSpec.samples * 1000 / ObtainedAudioSpec.freq)) +
+                'ms) per callback', 'TAudioPlayback_SDL.InitializeAudioPlaybackEngine');
 
   Result := true;
 end;

@@ -21,6 +21,7 @@ implementation
 uses
   sdl2,
   ctypes,
+  UMediaCore_SDL,
   math,
   UIni,
   ULog,
@@ -49,6 +50,12 @@ type
       procedure SetVolume(Volume: single); override;
   end;
 
+const
+  // Capture chunk size if the config has no Latency[] entry. SDL's own default
+  // (2048 samples = 46 ms at 44.1 kHz) delays the newest mic data by up to that
+  // much; BASS used 20 ms.
+  DEFAULT_CAPTURE_LATENCY_MS = 20;
+
 procedure MicrophoneCallback(inputDevice: TSDLInputDevice; input: pointer; len: cint); cdecl;
 begin
   AudioInputProcessor.HandleMicrophoneData(input, len, inputDevice);
@@ -58,6 +65,7 @@ function TSDLInputDevice.Start(): boolean;
 var
   devName: PChar;
   spec:    TSDL_AudioSpec;
+  latency: integer;
 begin
   Result := false;
 
@@ -72,9 +80,11 @@ begin
       callback := @MicrophoneCallback;
       userdata := pointer(Self);
 
-      samples := 0;
-      if Ini.InputDeviceConfig[CfgIndex].Latency > 0 then
-        samples := 1 shl Round(Max(Log2(freq / 1000 * Ini.InputDeviceConfig[CfgIndex].Latency), 0));
+      latency := Ini.InputDeviceConfig[CfgIndex].Latency;
+      if latency <= 0 then // LATENCY_AUTODETECT
+        latency := DEFAULT_CAPTURE_LATENCY_MS;
+      // power of two closest to the wanted duration (1024 at 44.1/48 kHz for 20 ms)
+      samples := 1 shl Round(Max(Log2(freq / 1000 * latency), 0));
     end;
 
     devName := nil;
@@ -84,11 +94,11 @@ begin
     DevID := SDL_OpenAudioDevice(devName, 1, @spec, @spec, 0);
     if DevID > 0 then
     begin
-      if Ini.InputDeviceConfig[CfgIndex].Latency > 0 then
-        Log.LogStatus('InputDevice "' + Name + '" opened with ' +
-                      IntToStr(spec.samples) + ' samples (' +
-                      IntToStr(round(spec.samples * 1000 / spec.freq)) +
-                      'ms) buffer', 'SDL');
+      Log.LogStatus('InputDevice "' + Name + '" opened: ' +
+                    SDLAudioSpecToStr(spec) + ', ' +
+                    IntToStr(spec.samples) + ' samples (' +
+                    IntToStr(round(spec.samples * 1000 / spec.freq)) +
+                    'ms) per callback', 'SDL');
       SDL_PauseAudioDevice(DevID, 0);
     end;
     if DevID <= 0 then
@@ -131,10 +141,12 @@ var
   spec:         TSDL_AudioSpec;
   dev:          TSDL_AudioDeviceID;
   deviceName:   UTF8String;
+  channels:     integer;
+  freq:         integer;
 begin
   Result := false;
 
-  Log.LogInfo('Using ' + SDL_GetCurrentAudioDriver + ' driver', 'SDL');
+  LogSDLAudioInfo(true);
 
   maxDevices := SDL_GetNumAudioDevices(1);
   if maxDevices < 1 then
@@ -157,14 +169,29 @@ begin
     if not ShouldProbeDevice(deviceName) then
       continue;
 
-    FillChar(spec, SizeOf(spec), 0);
-    with spec do
+    // Request the device's native channel count. With 0, SDL picks stereo and
+    // the sound server downmixes multi-channel interfaces (one mic per channel)
+    // to 2 channels (#594). SDL_AUDIO_CHANNELS still overrides this.
+    // Also request the device's native sample rate, so neither SDL nor the OS
+    // resamples the mic (on Windows, WASAPI's AUTOCONVERTPCM would otherwise
+    // convert e.g. 48 kHz to 44.1 kHz). URecord handles any rate.
+    // Needs SDL >= 2.0.16 at build time and runtime; older SDL and backends
+    // without format info (ALSA, DirectSound) keep the old behaviour.
+    channels := 0;
+    freq := 44100;
+    if SDLGetAudioDeviceSpec(i, true, spec) then
     begin
-      freq := 44100;
-      format := AUDIO_S16SYS;
-      channels := 0; // override with SDL_AUDIO_CHANNELS
-      samples := 0;
+      if (GetEnvironmentVariable('SDL_AUDIO_CHANNELS') = '') then
+        channels := Min(spec.channels, 8); // SDL2 supports at most 8 channels </3
+      if (spec.freq > 0) then
+        freq := spec.freq;
     end;
+
+    FillChar(spec, SizeOf(spec), 0);
+    spec.freq := freq;
+    spec.format := AUDIO_S16SYS;
+    spec.channels := channels;
+    spec.samples := 0;
 
     dev := SDL_OpenAudioDevice(name, 1, @spec, @spec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE or SDL_AUDIO_ALLOW_CHANNELS_CHANGE);
     if dev < 1 then
@@ -193,9 +220,7 @@ begin
 
     Log.LogStatus('InputDevice "' + device.Name + '"@' +
         IntToStr(device.AudioFormat.Channels) + 'x' +
-        FloatToStr(device.AudioFormat.SampleRate) + 'Hz ' +
-        'defaults to ' + IntToStr(spec.samples) + ' samples buffer',
-        'SDL');
+        FloatToStr(device.AudioFormat.SampleRate) + 'Hz', 'SDL');
 
     AudioInputProcessor.DeviceList[deviceIndex] := device;
     Inc(deviceIndex);

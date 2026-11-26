@@ -56,7 +56,6 @@
     {$DEFINE CONSOLE}
   {$ENDIF}
 
-  {$DEFINE HaveBASS}
 {$ELSEIF Defined(DARWIN)}
   // include defines but no constants
   {$I config-darwin.inc}

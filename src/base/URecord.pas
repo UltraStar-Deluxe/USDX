@@ -63,7 +63,15 @@ type
       fAnalysisBufferLock: PSDL_Mutex;
       fAudioFormat: TAudioFormatInfo;
       Frequencies: TFrequencyArray;
-      Delays: TDelayArray;
+      Delays: TDelayArray;          // period of each halftone in analysis samples (rounded, for AMDF)
+      FractionalDelays: TFrequencyArray; // same, unrounded (for CAMDF)
+
+      // Capture rates of 88.2 kHz and above are averaged down by this factor
+      // before analysis, so the 4096-sample window stays ~85-93 ms long
+      // (at 192 kHz it would otherwise shrink to 21 ms).
+      fAnalysisDecimation: integer;
+      fDecimationSum:      integer;
+      fDecimationCount:    integer;
 
       function GetToneString: string; // converts a tone to its string representation;
 
@@ -275,6 +283,7 @@ begin
   LogBuffer := TMemoryStream.Create;
   fAnalysisBufferLock := SDL_CreateMutex();
   AnalysisBufferSize := Length(AnalysisBuffer);
+  fAnalysisDecimation := 1;
 end;
 
 destructor TCaptureBuffer.Destroy;
@@ -309,9 +318,11 @@ end;
 
 procedure TCaptureBuffer.ProcessNewBuffer(Buffer: PByteArray; BufferSize: integer);
 var
-  BufferOffset: integer;
+  SampleOffset: integer;
   SampleCount:  integer;
-  i:            integer;
+  Samples:      PSmallIntArray;
+  Decimated:    array of SmallInt;
+  i, j:         integer;
 begin
   // apply software boost
   BoostBuffer(Buffer, BufferSize);
@@ -326,15 +337,36 @@ begin
     Exit;
 
   // process BufferArray
-  BufferOffset := 0;
-
+  Samples := PSmallIntArray(Buffer);
   SampleCount := BufferSize div SizeOf(SmallInt);
 
+  // average high capture rates down (see fAnalysisDecimation)
+  if (fAnalysisDecimation > 1) then
+  begin
+    SetLength(Decimated, SampleCount div fAnalysisDecimation + 1);
+    j := 0;
+    for i := 0 to SampleCount-1 do
+    begin
+      Inc(fDecimationSum, Samples^[i]);
+      Inc(fDecimationCount);
+      if (fDecimationCount = fAnalysisDecimation) then
+      begin
+        Decimated[j] := fDecimationSum div fAnalysisDecimation;
+        Inc(j);
+        fDecimationSum := 0;
+        fDecimationCount := 0;
+      end;
+    end;
+    Samples := PSmallIntArray(@Decimated[0]);
+    SampleCount := j;
+  end;
+
   // check if we have more new samples than we can store
+  SampleOffset := 0;
   if (SampleCount > Length(AnalysisBuffer)) then
   begin
     // discard the oldest of the new samples
-    BufferOffset := (SampleCount - Length(AnalysisBuffer)) * SizeOf(SmallInt);
+    SampleOffset := SampleCount - Length(AnalysisBuffer);
     SampleCount := Length(AnalysisBuffer);
   end;
 
@@ -346,8 +378,11 @@ begin
       AnalysisBuffer[i] := AnalysisBuffer[i+SampleCount];
 
     // copy new samples to analysis buffer
-    Move(Buffer[BufferOffset], AnalysisBuffer[Length(AnalysisBuffer)-SampleCount],
-         SampleCount * SizeOf(SmallInt));
+    if (SampleCount > 0) then
+    begin
+      Move(Samples^[SampleOffset], AnalysisBuffer[Length(AnalysisBuffer)-SampleCount],
+           SampleCount * SizeOf(SmallInt));
+    end;
 
   finally
     UnlockAnalysisBuffer();
@@ -422,13 +457,17 @@ end;
 
 procedure TCaptureBuffer.SetFrequenciesAndDelays;
 var
-  ToneIndex:   integer;
+  ToneIndex:    integer;
+  AnalysisRate: double;
 begin
+  // sample rate of the data in AnalysisBuffer
+  AnalysisRate := AudioFormat.SampleRate / fAnalysisDecimation;
   for ToneIndex := 0 to NumHalftones-1 do
   begin
     // Freq(ToneIndex) = 440 Hz * 2^((ToneIndex-33)/12) --> Freq(ToneIndex=0) = 65.4064 Hz = C2
     Frequencies[ToneIndex] := BaseToneFreq * Power(2, (ToneIndex-33)/12);
-    Delays[ToneIndex] := Round(AudioFormat.SampleRate/Frequencies[ToneIndex]);
+    FractionalDelays[ToneIndex] := AnalysisRate/Frequencies[ToneIndex];
+    Delays[ToneIndex] := Round(FractionalDelays[ToneIndex]);
   end;
 end;
 
@@ -490,22 +529,33 @@ end;
 //   D_C(\tau)=\sum_{n=0}^{N-1}|x(mod(n+\tau, N)) - x(n)|
 // where \tau = Delay, n = SampleIndex, N = AnalysisBufferSize, x = AnalysisBuffer
 // See: Equation (4) in http://www.utdallas.edu/~hxb076000/citing_papers/Muhammad%20Extended%20Average%20Magnitude%20Difference.pdf
+// The delay \tau is fractional: x(n+\tau) is linearly interpolated between
+// its two neighbouring samples. Whole-sample delays are off by up to half a
+// sample, which at 16 kHz is ~3% (half a semitone) for the highest notes.
 function TCaptureBuffer.CircularAverageMagnitudeDifference(): TCorrelationArray;
 var
   ToneIndex:   integer;
   Correlation: TCorrelationArray;
   SampleIndex: integer; // index of sample to analyze
+  Delay:       integer; // whole part of the delay
+  Frac:        real;    // fractional part of the delay
+  Mask:        integer;
+  Delayed:     real;
 begin
+  // Suggestion for calculation efficiency improvement from deuteragenie:
+  // Replacing 'i mod buffersize' by 'i & (buffersize-1)' when i is positive and buffersize is a power of two should speed the modulo compuation by 5x-10x
+  Mask := AnalysisBufferSize-1;
   // accumulate the magnitude differences for samples in AnalysisBuffer
   for ToneIndex := 0 to NumHalftones-1 do
   begin
     Correlation[ToneIndex] := 0;
+    Delay := Trunc(FractionalDelays[ToneIndex]);
+    Frac := FractionalDelays[ToneIndex] - Delay;
     for SampleIndex := 0 to (AnalysisBufferSize-1) do
     begin
-      // Suggestion for calculation efficiency improvement from deuteragenie:
-      // Replacing 'i mod buffersize' by 'i & (buffersize-1)' when i is positive and buffersize is a power of two should speed the modulo compuation by 5x-10x
-      //Correlation[ToneIndex] += Abs(AnalysisBuffer[(SampleIndex+Delays[ToneIndex]) mod AnalysisBufferSize] - AnalysisBuffer[SampleIndex]);
-      Correlation[ToneIndex] := Correlation[ToneIndex] + Abs(AnalysisBuffer[(SampleIndex+Delays[ToneIndex]) and (AnalysisBufferSize-1)] - AnalysisBuffer[SampleIndex]);
+      Delayed := (1-Frac) * AnalysisBuffer[(SampleIndex+Delay) and Mask] +
+                 Frac * AnalysisBuffer[(SampleIndex+Delay+1) and Mask];
+      Correlation[ToneIndex] := Correlation[ToneIndex] + Abs(Delayed - AnalysisBuffer[SampleIndex]);
     end;
     Correlation[ToneIndex] := Correlation[ToneIndex] / AnalysisBufferSize;
   end;
@@ -595,6 +645,11 @@ begin
   fAudioFormat := Format.Copy;
   // and adjust it because capture buffers are always mono
   fAudioFormat.Channels := 1;
+
+  // keep the analysis rate in the 44.1-88.2 kHz range (see fAnalysisDecimation)
+  fAnalysisDecimation := Max(1, Trunc(fAudioFormat.SampleRate / 44100));
+  fDecimationSum := 0;
+  fDecimationCount := 0;
 
   if (Ini.VoicePassthrough = 1) then
   begin
