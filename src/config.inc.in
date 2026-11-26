@@ -85,8 +85,6 @@
   PROJECTM_VERSION_INT = @libprojectM_VERSION_INT@;
 {$IFEND}
 
-{$@DEFINE_HAVE_BASS@ HaveBASS}
-
 {$@DEFINE_HAVE_PORTAUDIO@ HavePortaudio}
 {$IF Defined(HavePortaudio) and Defined(IncludeConstants)}
   PORTAUDIO_VERSION_MAJOR   = @portaudio_VERSION_MAJOR@;

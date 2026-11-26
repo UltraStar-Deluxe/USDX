@@ -53,7 +53,7 @@ type
 const
   // Capture chunk size if the config has no Latency[] entry. SDL's own default
   // (2048 samples = 46 ms at 44.1 kHz) delays the newest mic data by up to that
-  // much; BASS used 20 ms.
+  // much; the former BASS backend used 20 ms.
   DEFAULT_CAPTURE_LATENCY_MS = 20;
 
 procedure MicrophoneCallback(inputDevice: TSDLInputDevice; input: pointer; len: cint); cdecl;

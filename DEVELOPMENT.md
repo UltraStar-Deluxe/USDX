@@ -32,10 +32,10 @@ Have fun and enjoy working on a game that easily can hit 5.000 downloads in a we
   `BASE_REF=origin/main make whitespace-check`
 
 ### About the engine / used libraries:
-- **SDL2** is used as general framework for spawning the window, getting keyboard / other input, and getting microphone and speaker device lists stuff. SDL2 also gets the OpenGL context for the window for us.
+- **SDL2** is used as general framework for spawning the window, getting keyboard / other input, and getting microphone and speaker device lists stuff. SDL2 also gets the OpenGL context for the window for us, plays the audio and, on Windows (or with `--without-portaudio`), records the microphones.
 - **OpenGL** is used for all the graphics drawing + rendering stuff. Currently, this is using OpenGL 2.0 and later or OpenGL ES 2.0 and later.
 - **projectM** is used for visualisation.
-- **ffmpeg** is used for most video and audio stuff. On Windows, the bass library is used for playing mp3 files because of licensing issues of mp3 codecs.
+- **ffmpeg** is used for decoding video and audio files.
 - **OpenCV** videoio is used for getting images from the webcam.
 - **sqlite** is used for creating and accessing databases to store song scores and already scanned songs. Remember that changing database setup will require adding an automatic upgrade script or resetting the database file for all users and loosing ist content.
 

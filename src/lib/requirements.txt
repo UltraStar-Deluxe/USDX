@@ -8,9 +8,6 @@ Jedi-sdl
 pngImage
   http://pngdelphi.sourceforge.net/
 
-BASS.pas
-  http://www.un4seen.com/download.php?bass24
-
 ffmpeg
   http://www.iversenit.dk/dev/ffmpeg-headers/
 

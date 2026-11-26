@@ -72,10 +72,6 @@ uses
 
   freetype               in 'lib\freetype\freetype.pas',
 
-  {$IFDEF UseBass}
-  BASS                   in 'lib\bass\delphi\bass.pas',
-  UAudioCore_Bass        in 'media\UAudioCore_Bass.pas',
-  {$ENDIF}
   {$IFDEF UsePortaudio}
   portaudio              in 'lib\portaudio\portaudio.pas',
   UAudioCore_Portaudio   in 'media\UAudioCore_Portaudio.pas',
@@ -269,12 +265,6 @@ uses
 {$IFDEF UseProjectM}
   // must be after UVideo, so it will not be the default video module
   UVisualizer               in 'media\UVisualizer.pas',
-{$ENDIF}
-{$IFDEF UseBASSInput}
-  UAudioInput_Bass          in 'media\UAudioInput_Bass.pas',
-{$ENDIF}
-{$IFDEF UseBASSPlayback}
-  UAudioPlayback_Bass       in 'media\UAudioPlayback_Bass.pas',
 {$ENDIF}
 {$IFDEF UseSDLInput}
   UAudioInput_SDL           in 'media\UAudioInput_SDL.pas',
