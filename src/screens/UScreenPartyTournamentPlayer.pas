@@ -346,6 +346,13 @@ begin
           Button[Interactions[Interaction].Num].Text[0].DeleteLastLetter;
         end;
     end;
+
+    // backspace and name templates count as editing, so following characters get appended
+    if (PressedKey = SDLK_BACKSPACE) or
+       ((PressedKey >= SDLK_F1) and (PressedKey <= SDLK_F12) and not isAlternate) then
+      begin
+        LastEditedButton := Interactions[Interaction].Num;
+      end;
   end
   else
   begin
