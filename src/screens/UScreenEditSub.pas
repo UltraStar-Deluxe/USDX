@@ -714,7 +714,7 @@ begin
       // simulate sentence switch to clear props
       PreviousSentence;
 
-      CurrentBeat := Floor(GetMidBeat(CurrentSong.PreviewStart - (CurrentSong.GAP) / 1000));
+      CurrentBeat := Round(GetMidBeat(CurrentSong.PreviewStart - (CurrentSong.GAP) / 1000));
       LineIndex := 0;
       while (LineIndex <= CurrentSong.Tracks[CurrentTrack].High) and (CurrentBeat > CurrentSong.Tracks[CurrentTrack].Lines[LineIndex].EndBeat) do
         Inc(LineIndex);
@@ -908,7 +908,6 @@ begin
 
   if (SDL_ModState = KMOD_LALT) then
   begin
-    Writeln('ALT+J');
     // simulate sentence switch to clear props
     PreviousSentence;
 
@@ -1141,17 +1140,6 @@ begin
                             GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].High].EndBeat),
                             GetTimeFromBeat(Notes[High(Notes)].EndBeat));
     end;
-    if (SDL_ModState = KMOD_LALT) then
-    begin
-      {$IFDEF UseMIDIPort}
-      PlaySentenceMidi := true;
-      MidiTime  := USTime.GetTime;
-      MidiStart := AudioPlayback.Position;
-      MidiStop  := PlayStopTime;
-      {$ELSE}
-      PlaySentenceMidi := false;
-      {$ENDIF}
-    end;
     PlaySentence := true;
     AudioPlayback.Play;
     LastClick := -100;
@@ -1268,6 +1256,64 @@ begin
     AudioPlayback.Play;
     LastClick := -100;
     Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO_AND_MIDI');
+  end
+  else if SDL_ModState = KMOD_LALT then
+  begin
+    // Play Sentence + Clicks from current line onwards
+    Click := true;
+    AudioPlayback.Stop;
+    PlayVideo := false;
+    StopVideoPreview;
+    CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
+    CurrentNote[CurrentTrack] := 0;
+    R := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
+    if R <= AudioPlayback.Length then
+    begin
+      AudioPlayback.Position := R;
+      PlayStopTime := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].High].EndBeat);
+      PlaySentence := true;
+      AudioPlayback.Play;
+      LastClick := -100;
+    end;
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO_ONWARDS');
+  end
+  else if SDL_ModState = KMOD_LSHIFT or KMOD_LALT then
+  begin
+    // Play MIDI from current line onwards
+    CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
+    CurrentNote[CurrentTrack] := 0;
+    PlaySentenceMidi := true;
+    PlayVideo := false;
+    StopVideoPreview;
+    {$IFDEF UseMIDIPort} MidiTime := USTime.GetTime;
+    MidiStart := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
+    MidiStop := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].High].EndBeat); {$ENDIF}
+
+    LastClick := -100;
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_MIDI_ONWARDS');
+  end
+  else if SDL_ModState = KMOD_LSHIFT or KMOD_LCTRL or KMOD_LALT then
+  begin
+    // Play Audio+MIDI+Clicks from current line onwards
+    CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[CurrentNote[CurrentTrack]].Color := 1;
+    CurrentNote[CurrentTrack] := 0;
+    PlaySentenceMidi := true;
+    PlayVideo := false;
+    StopVideoPreview;
+    {$IFDEF UseMIDIPort} MidiTime  := USTime.GetTime;
+    MidiStart := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat);
+    MidiStop  := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].High].EndBeat); {$ENDIF}
+
+    LastClick := -100;
+
+    PlaySentence := true;
+    Click := true;
+    AudioPlayback.Stop;
+    AudioPlayback.Position := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].CurrentLine].Notes[0].StartBeat)+0;
+    PlayStopTime := GetTimeFromBeat(CurrentSong.Tracks[CurrentTrack].Lines[CurrentSong.Tracks[CurrentTrack].High].EndBeat)+0;
+    AudioPlayback.Play;
+    LastClick := -100;
+    Text[TextInfo].Text := Language.Translate('EDIT_INFO_PLAY_SENTENCE_AUDIO_AND_MIDI_ONWARDS');
   end;
   Exit;
 end;
